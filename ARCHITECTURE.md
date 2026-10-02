@@ -1,6 +1,15 @@
 # Architecture — kanevas
 
-Système de gestion de JDR (lore, campagnes, comptes-rendus, droits, cartes). Ce dépôt ne porte encore que le **socle** : une
+Système de gestion de JDR (lore, campagnes, comptes-rendus, droits, cartes). Ce qu'il permet, à
+qui et par quels écrans : `docs/parcours.md`, `docs/ecrans.md` ; ses données : `docs/donnees.md`.
+
+Ce document a deux parties : **aujourd'hui**, la carte du code tel qu'il est ; **la cible**,
+l'architecture du produit entier, posée par le cadrage de l'epic et réalisée tranche par
+tranche (sur `main`, la cible ne décrit que ce qui est construit).
+
+# Aujourd'hui
+
+Ce dépôt ne porte encore que le **socle** : une
 application Fastify (Node 20, TypeScript) qui répond `GET /healthz`, une
 mécanique OIDC d'identité, une image publiée par la CI. Aucune fonction métier.
 
@@ -60,3 +69,126 @@ Volume `/data` : emplacement réservé de SQLite et des pièces jointes, vide.
 - Au cluster (`tantive` ; Authelia est sur `homenode`) le pod tourne en `runAsUser: 0` (convention des apps `games` pour
   un hostPath inscriptible) : l'utilisateur `node` (uid 1000) de l'image est
   toléré, pas requis. Sous uid 1000 il faudrait un hostPath inscriptible par lui.
+
+
+# La cible
+
+## Organes, et qui parle à qui
+
+```
+navigateur (React, une SPA)  ──HTTP──▶  backend Fastify (une seule application)
+                                         ├─ routes HTTP ─┐
+                                         ├─ outils de l'agent (MJ | Joueur) ─┤─▶ fonctions de service ─▶ SQLite + /data/attachments
+                                         ├─ fournisseur LLM (assistant)
+                                         └─ codex exec (images), en sous-processus
+Authelia (OIDC) : identité seulement.
+```
+
+- **Navigateur** : une application React (`react-router`, AD-16), servie par le backend ; elle
+  ne parle qu'au backend, jamais à la base ni au disque. Le fil de l'assistant vit dans la page
+  (AD-28).
+- **Backend Fastify** : le seul point d'accès aux données, au disque, au fournisseur LLM et à
+  Codex (AD-4). Toute route hors `/api` est gardée par la session (AD-15) ; seul `/healthz` est
+  public.
+- **Fonctions de service** : la seule implémentation de chaque lecture et écriture, avec ses
+  gardes (`peutLireSection`, `peutEcrireSection`, `peutVoirFiche`, `peutLirePieceJointe`).
+  Routes et outils de l'agent les appellent de la même façon (AD-2) : c'est ce qui rend la
+  symétrie humain / agent vérifiable.
+- **Agents** : deux catalogues d'outils, MJ et Joueur, choisis côté serveur selon le rôle du
+  compte dans l'univers courant (AD-26).
+- **Images** : un port `GenerateurImage`, adaptateurs `mock`, `aucun`, `codex` (AD-45, AD-50).
+
+## Décisions
+
+Les numéros sont stables. Une décision retirée garde son numéro, avec ce qui la remplace.
+
+| AD | Décision |
+|---|---|
+| AD-1 | Rien du moteur d'Adestia pour stocker ou servir les données : il n'a pas d'ACL par ressource. |
+| AD-2 | Un seul chemin vers les données : un outil de l'agent n'appelle que des fonctions de service qu'une route appelle aussi. |
+| AD-3 | Tout en TypeScript sur Node. |
+| AD-4 | Toute route HTTP dans l'unique application Fastify. |
+| AD-5 | Toute donnée structurée dans l'unique fichier SQLite du volume. |
+| AD-6 | Un type de fiche est un contrat de charge utile versionné, validé en code, jamais une table ou des colonnes neuves. |
+| AD-7 | Pièces jointes : octets sur le disque du volume, jamais en base ni par un chemin statique ; une route qui revérifie les droits ; pas de limite de taille. |
+| AD-8 | Recherche plein texte (FTS5) sur titres et sections, tenue à jour par la base (AD-21) ; aucun résultat sans le filtre de droits. |
+| AD-9 | Authelia dit qui ; `membre` dit ce qu'on peut. L'admin d'instance (groupe Authelia `parents`) n'écrit que la table des membres. |
+| AD-10 | Dépôt neuf ; reprise sélective d'Antre-du-maitre : bootstrap Fastify, OIDC, transports LLM, Dockerfile et CI. |
+| AD-11 | Système de jeu : entité partagée entre univers ; le lore reste propre à chaque univers. |
+| AD-12 | *Remplacée par AD-18 et AD-19.* |
+| AD-13 | Compte créé à la première authentification (`preferred_username`). |
+| AD-14 | Migrations : fichiers SQL numérotés, appliqués au démarrage, sans ORM. |
+| AD-15 | Toute route hors `/api` gardée par la session (cookie signé), sinon redirection vers Authelia. |
+| AD-16 | Un seul routeur frontend, `react-router` ; chaque tranche y enregistre ses écrans. |
+| AD-17 | Charge utile v1 vide pour tous les types, sauf personnage (PJ \| PNJ) et compte-rendu (sa campagne) ; le contenu est dans les sections. |
+| AD-18 | Le MJ lit et écrit toute section de son univers. |
+| AD-19 | Audience d'une section : lecture et écriture des joueurs, lecture et écriture de l'auteur, quatre bascules indépendantes. |
+| AD-20 | Une relation est portée par une section et en prend la visibilité ; sa cible doit aussi être lisible. |
+| AD-21 | L'index de recherche est tenu par des déclencheurs SQLite, jamais par le code. |
+| AD-22 | Une fiche sans section lisible répond 404, comme un identifiant inconnu. |
+| AD-23 | `systeme_jeu` sans univers ; un univers le référence. |
+| AD-24 | Gabarits : une table générique typée. |
+| AD-25 | Référentiel : lu par les membres d'un univers rattaché, écrit par ses MJ. |
+| AD-26 | Le catalogue d'outils de l'agent est choisi par le serveur selon le rôle, jamais par le client. |
+| AD-27 | Les outils de l'agent composent les fonctions de service en processus, sans HTTP interne ni SQL à eux. |
+| AD-28 | Aucune conversation stockée : le fil vit dans le navigateur. |
+| AD-29 | Campagnes et scénarios : tables propres, hors fiches. |
+| AD-30 | La liste des campagnes ne porte jamais les scénarios. |
+| AD-31 | Créer une campagne ou un scénario par l'agent MJ : les mêmes fonctions que les routes. |
+| AD-32 | *Retirée : remplacée par AD-52.* |
+| AD-33 | Un compte-rendu se crée par une route propre, ouverte à tout membre, qui compose la création de fiche et de section. |
+| AD-34 | La liste des CR d'une campagne revérifie chaque CR section par section. |
+| AD-35 | Nom de fichier sur disque : UUID ; le nom d'origine n'est qu'une métadonnée. |
+| AD-36 | Garde d'une pièce jointe : celle de sa section, et le MJ seul si secrète. |
+| AD-37 | Pièces jointes en flux ; `nosniff` ; image en ligne, le reste en téléchargement. |
+| AD-38 | Un élément de carte n'est rendu que si sa fiche est lisible (`peutVoirFiche`). |
+| AD-39 | Le mode Joueur d'un MJ ne peut que restreindre. |
+| AD-40 | Le fond d'une carte est une pièce jointe, servie par la route des pièces jointes. |
+| AD-41 | Les liens d'un graphe se déduisent des relations à la lecture. |
+| AD-42 | La disposition d'un graphe se calcule dans le navigateur. |
+| AD-43 | Token et nœud : une seule table d'éléments, de forme imposée par le type de carte. |
+| AD-44 | L'outil image vérifie le droit d'écriture avant de générer, et attache par la fonction d'envoi des pièces jointes ; une image par demande. |
+| AD-45 | Génération d'image derrière un port ; l'adaptateur se choisit par configuration ; sans adaptateur, l'outil disparaît du catalogue. |
+| AD-46 | Tâches de préparation : table propre rattachée à la campagne, catégories fermées. |
+| AD-47 | Garde MJ des tâches évaluée sur l'univers de la campagne. |
+| AD-48 | L'agent propose une mise à jour, jamais ne l'écrit ; appliquer est un geste humain, dans l'interface. |
+| AD-49 | Une proposition appartient à son demandeur, s'applique une fois, et seulement si la section n'a pas changé. |
+| AD-50 | Adaptateur `codex` : `codex exec` en sous-processus, `danger-full-access` (le pod est le bac à sable), identifiants dans `CODEX_HOME` sur le volume. |
+| AD-51 | Une migration prend son numéro au moment où sa tranche se fusionne ; l'ordre des migrations est l'ordre de fusion. |
+| AD-52 | La table des fiches connaît ses sept types dès sa création ; aucune tranche ne la recrée. |
+| AD-53 | **Toute action qu'un humain déclenche a un écran.** L'agent est un second chemin, jamais le seul ; ce que l'agent propose, un humain l'applique depuis un écran. |
+| AD-54 | Identifiants du fournisseur LLM de l'assistant : posés par la tranche qui active l'assistant. [À TRANCHER] : l'abonnement Claude de Monsieur par le transport `claude-agent` repris d'Antre-du-maitre (recommandé : pas de dépense, même logique que Codex), ou une clé d'API Anthropic facturée à l'usage. Renversé si les conditions de l'abonnement interdisent un usage serveur par plusieurs comptes. |
+
+## Déploiement et exploitation
+
+| Dépôt | Ce qu'il porte | Rang de fusion |
+|---|---|---|
+| `AntorFr/kanevas` (référence) | backend, frontend, migrations, CI de l'image, toute la doc du produit | 1 |
+| `AntorFr/smart-home-charts` | `charts/kanevas`, sur `common` | 2 |
+| `AntorFr/k8s-home-lab` | HelmChart (`clusters/tantive/games/`), client OIDC dans Authelia | 3 — y fusionner, c'est déployer |
+
+- **Image** `ghcr.io/antorfr/kanevas:<x.y.z>`, publique, construite par la CI sur un tag semver ;
+  la version n'a qu'une source, le tag.
+- **URL** `https://kanevas.tantive.berard.me` (wildcard, rien à créer).
+- **Volume** `hostPath /mnt/data/kanevas/data` monté sur `/data` : la base, les pièces jointes,
+  `CODEX_HOME`. Le jeu de données répliqué du nœud est la sauvegarde ; restaurer, c'est
+  remettre ce dossier.
+- **Secrets** (OpenBao, `openbao-tantive`) : le secret du client OIDC ; les identifiants du
+  fournisseur LLM (AD-54) ; le jeton Codex, que Monsieur pose lui-même.
+
+## Sécurité
+
+| Menace | Réponse |
+|---|---|
+| Un joueur apprend qu'une chose existe (fiche, section, carte, titre) | Elle est absente partout ; son adresse répond comme une adresse inconnue (AD-22, AD-38). |
+| Un fichier secret récupéré en devinant son adresse | Nom sur disque aléatoire ; aucune route statique ; garde revérifiée à chaque octet servi (AD-7, AD-35, AD-36). |
+| L'agent comme porte dérobée | Mêmes fonctions et mêmes gardes que les routes (AD-2) ; catalogue choisi par le serveur (AD-26). |
+| Un joueur écrit dans une section que l'agent du MJ lira (injection d'instructions) | L'agent du MJ peut modifier des sections : chaque écriture est listée dans le fil avec un lien (B-26), et une mise à jour du monde n'est jamais appliquée par l'agent (AD-48). **Risque accepté** en V1, pas de confirmation par écriture. |
+| Codex s'exécute sans bac à sable, dans un pod root ; son jeton est sur le volume sauvegardé | **Risque accepté** (décision de Monsieur sur le moteur) : le pod est le bac à sable, le jeton est en 0600, un processus par demande, un répertoire jetable. |
+| Usurpation d'identité | Authelia seul authentifie ; aucune base d'utilisateurs maison. |
+
+## Différé
+
+- Import depuis Kanka — epic à part.
+- Suppression de contenu, historique, export — à rouvrir à l'usage.
+- Types de fiches dédiés avec caractéristiques structurées.
