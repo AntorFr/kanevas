@@ -80,15 +80,15 @@ Forme de la skill `exigences` ; chaque besoin cite les parcours qui le réalisen
 - **B-19** — Quand un membre écrit un compte-rendu depuis la page d'une campagne (E-6), le CR est
   lisible par toute la table et modifiable par son auteur ; le MJ lit et écrit tout CR. Plusieurs
   CR coexistent pour une même séance. *(P-4)*
-- **B-20** — Les comptes-rendus d'un univers se lisent ensemble, du plus récemment écrit au plus
-  ancien, dans la liste des CR (E-13). *(P-4, P-6)*
+- **B-20** — Les comptes-rendus d'un univers se lisent ensemble, du plus récemment créé au plus
+  ancien (un CR retouché ne remonte pas), dans la liste des CR (E-13). *(P-4, P-6)*
 - **B-21** — Quand un MJ demande à son assistant (E-12) une mise à jour du monde à partir d'un CR,
   l'assistant propose un nouveau contenu de section sans rien écrire ; le MJ voit l'actuel et le
   proposé, puis l'applique ou l'abandonne d'un geste. Rien ne s'applique tout seul. *(P-5)*
 
 ### Cartes
-- **B-22** — Un MJ pose une carte illustrée (une image de pièce jointe, des tokens liés à des
-  fiches, placés librement) ou un graphe (des fiches choisies, reliées par leurs relations) depuis
+- **B-22** — Un MJ pose une carte illustrée (une image de fond qu'il dépose sur la carte, des
+  tokens liés à des fiches, placés librement) ou un graphe (des fiches choisies, reliées par leurs relations) depuis
   la liste des cartes (E-10). *(P-3, P-9)*
 - **B-23** — Un MJ rend une carte visible des joueurs ; un joueur n'y voit que les tokens et liens
   dont il peut lire la fiche, et ouvre la fiche d'un token. *(P-3, P-6)*
@@ -110,8 +110,8 @@ Forme de la skill `exigences` ; chaque besoin cite les parcours qui le réalisen
 ### Transverse
 - **B-28** — Toute page demande une connexion ; rien du contenu n'est servi sans compte, et
   `/healthz` ne dit que le nom et la version. *(P-1)*
-- **B-29** — Chaque écran a ses états : vide, chargement, erreur, refus (caché ou expliqué),
-  contenu long. *(tous)*
+- **B-29** — Chaque écran a ses états : vide, chargement, erreur, connexion perdue, refus (caché
+  ou expliqué), contenu long. *(tous)*
 
 ## Parcours
 
@@ -201,5 +201,5 @@ dernier MJ — refusé avec la raison.
 - **Inviter un compte qui ne s'est jamais connecté**, lien d'invitation.
 - **Recherche dans tous les types à la fois** : par l'assistant seulement.
 - **Import depuis Kanka** : une epic à part.
-- **Calendrier ou chronologie, lanceur de dés, hors-ligne** : non triés.
+- **Calendrier ou chronologie, lanceur de dés, usage sans connexion (PWA)** : non triés.
 - **Historique des modifications, export, partage public.**
