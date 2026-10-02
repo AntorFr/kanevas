@@ -40,7 +40,7 @@ bascule existe (fiche, carte).
 | **E-7 Scénario** | E-6 (MJ) | écrire et relire un scénario | P-3 |
 | **E-8 Liste de fiches** | nav Lore | les fiches d'un type que le compte peut lire ; chercher dans ce type ; créer (MJ) | P-3, P-6 |
 | **E-9 Fiche** | E-8 ; un token ; un lien ; E-13 | lire et écrire les sections permises ; ajouter, réordonner, retirer une section, régler son audience, relier (MJ) ; déposer, marquer secrète, retirer une pièce jointe ; bascule mode Joueur (MJ). Un compte-rendu s'ouvre ici. | P-3 à P-7 |
-| **E-10 Cartes** | nav Cartes | les cartes lisibles ; créer une carte illustrée ou un graphe (MJ) | P-3, P-9 |
+| **E-10 Cartes** | nav Cartes | les cartes lisibles ; créer une carte illustrée (avec son image de fond) ou un graphe (MJ) | P-3, P-9 |
 | **E-11 Carte** | E-10 ; E-3 | carte illustrée : fond, tokens ; graphe : nœuds et liens. MJ : déposer ou changer le fond, placer, configurer, rendre visible, mode Joueur. Joueur : ouvrir la fiche d'un token. | P-3, P-6, P-9 |
 | **E-12 Assistant** | bouton flottant, sur tout écran d'univers | converser ; voir ce que l'agent a écrit, avec un lien ; MJ : propositions de mise à jour (actuel/proposé, **Appliquer**, **Abandonner**), images générées | P-3, P-5, P-6, P-7 |
 | **E-13 Comptes-rendus** | nav Comptes-rendus ; E-3 | tous les CR lisibles de l'univers, du plus récent, avec leur campagne | P-4, P-5, P-6 |
@@ -74,7 +74,8 @@ Hors produit : `/composants`, la bibliothèque de composants, réservée au dév
 Précisions de la matrice : créer une campagne, en changer le statut, créer un scénario sont au
 MJ seul. L'audience d'une section se règle en ligne sur la fiche (MJ). Créer une fiche ouvre une
 fenêtre (type déjà choisi, titre) qui mène à la fiche ; créer une carte se fait en ligne sur
-E-10. « Rendre visible » une carte se trouve sur la carte (E-11) et dans la liste (E-10). Une
+E-10. « Rendre visible » une carte se trouve sur la carte (E-11) et dans la liste (E-10). Le fond d'une carte illustrée se dépose à sa création (E-10) et se change sur la carte (E-11) ;
+une carte sans fond montre ses tokens sur un fond neutre. Une
 tâche de préparation s'ajoute avec sa catégorie, se coche, se décoche ; elle ne se supprime pas.
 Sur E-15, règles, créatures et objets ont le même traitement.
 
