@@ -31,15 +31,15 @@ bascule existe (fiche, carte).
 
 | Écran | Atteint depuis | Sert à | Parcours |
 |---|---|---|---|
-| **E-1 Accueil** | connexion ; logo | voir ses univers et son rôle dans chacun ; en créer un | P-1, P-6 |
+| **E-1 Accueil** | connexion ; logo | voir ses univers et son rôle dans chacun ; en créer un ; voir son identifiant | P-1, P-6 |
 | **E-2 Créer un univers** | E-1 | nom, description ; le créateur devient MJ | P-1 |
 | **E-3 Vue d'ensemble de l'univers** | E-1 ; sélecteur d'univers | la campagne active, les derniers CR, la préparation (MJ), les cartes visibles | P-3, P-4, P-6 |
 | **E-4 Membres** | nav Univers (MJ) | lister, ajouter par identifiant, changer le rôle, retirer | P-2 |
 | **E-5 Administration** | nav (admin d'instance) | lister les univers de l'instance, en gérer les membres — jamais le contenu | P-2 |
-| **E-6 Campagne** | nav Campagnes (liste) ; E-3 | liste des campagnes ; pour une campagne : statut, scénarios (MJ), préparation (MJ), comptes-rendus, « Nouveau compte-rendu » | P-3, P-4 |
+| **E-6 Campagne** | nav Campagnes (liste) ; E-3 | liste des campagnes ; pour une campagne : statut, scénarios et « Nouveau scénario » (MJ), préparation (MJ), comptes-rendus, « Nouveau compte-rendu » | P-3, P-4 |
 | **E-7 Scénario** | E-6 (MJ) | écrire et relire un scénario | P-3 |
 | **E-8 Liste de fiches** | nav Lore | les fiches d'un type que le compte peut lire ; chercher dans ce type ; créer (MJ) | P-3, P-6 |
-| **E-9 Fiche** | E-8 ; un token ; un lien ; E-13 | lire et écrire les sections permises ; audience des sections, relations (MJ) ; déposer, marquer secrète, retirer une pièce jointe ; bascule mode Joueur (MJ). Un compte-rendu s'ouvre ici. | P-3 à P-7 |
+| **E-9 Fiche** | E-8 ; un token ; un lien ; E-13 | lire et écrire les sections permises ; ajouter, réordonner, retirer une section, régler son audience, relier (MJ) ; déposer, marquer secrète, retirer une pièce jointe ; bascule mode Joueur (MJ). Un compte-rendu s'ouvre ici. | P-3 à P-7 |
 | **E-10 Cartes** | nav Cartes | les cartes lisibles ; créer une carte illustrée ou un graphe (MJ) | P-3, P-9 |
 | **E-11 Carte** | E-10 ; E-3 | carte illustrée : fond, tokens ; graphe : nœuds et liens. MJ : placer, configurer, rendre visible, mode Joueur. Joueur : ouvrir la fiche d'un token. | P-3, P-6, P-9 |
 | **E-12 Assistant** | bouton flottant, sur tout écran d'univers | converser ; voir ce que l'agent a écrit, avec un lien ; MJ : propositions de mise à jour (actuel/proposé, **Appliquer**, **Abandonner**), images générées | P-3, P-5, P-6, P-7 |
@@ -83,12 +83,12 @@ lire sont absentes, et leur adresse répond comme une adresse inconnue.
 
 ## États
 
-Chaque écran structurant a les six états de la skill `ux` (vide, chargement, erreur, hors-ligne,
-refus, contenu long) : ils se décrivent avec sa maquette finie, dans la tranche qui le construit.
+Chaque écran structurant a les six états de la skill `ux` (vide, chargement, erreur, hors-ligne —
+la connexion est perdue et l'écran le dit, sans mode hors-ligne —, refus, contenu long) : ils se décrivent avec sa maquette finie, dans la tranche qui le construit.
 Deux sont posés dès le cadrage parce qu'ils traversent tout :
 
-- **vide** d'un compte neuf (E-1) : dit quoi faire — créer un univers, ou donner son identifiant
-  à son MJ ;
+- **vide** d'un compte neuf (E-1) : dit quoi faire — créer un univers, ou donner son identifiant,
+  affiché, à son MJ ;
 - **refus** d'une ressource illisible : toujours comme une ressource inconnue.
 
 ## Maquettes

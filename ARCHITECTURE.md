@@ -142,7 +142,7 @@ Les numéros sont stables. Une décision retirée garde son numéro, avec ce qui
 | AD-36 | Garde d'une pièce jointe : celle de sa section, et le MJ seul si secrète. |
 | AD-37 | Pièces jointes en flux ; `nosniff` ; image en ligne, le reste en téléchargement. |
 | AD-38 | Un élément de carte n'est rendu que si sa fiche est lisible (`peutVoirFiche`). |
-| AD-39 | Le mode Joueur d'un MJ ne peut que restreindre. |
+| AD-39 | Le mode Joueur d'un MJ ne peut que restreindre : il montre ce que voit un joueur qui n'est l'auteur d'aucune section. |
 | AD-40 | Le fond d'une carte est une pièce jointe, servie par la route des pièces jointes. |
 | AD-41 | Les liens d'un graphe se déduisent des relations à la lecture. |
 | AD-42 | La disposition d'un graphe se calcule dans le navigateur. |

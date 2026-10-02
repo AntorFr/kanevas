@@ -14,19 +14,19 @@ façon (AD-2).
 
 | Entité | Porte | Relations | Qui lit | Qui écrit |
 |---|---|---|---|---|
-| **compte** | identifiant Authelia (`username`, unique), date de création ; aucun rôle | — | lui-même ; les MJ d'un univers commun (son identifiant) | créé à la première connexion (B-1) |
-| **univers** | nom, description | → système de jeu (facultatif) | ses membres | création : tout compte (B-2) ; modification : MJ |
+| **compte** | identifiant Authelia (`username`, unique), date de création ; aucun rôle | — | lui-même ; les membres d'un univers commun (son identifiant) ; un MJ qui tape un identifiant exact pour l'ajouter apprend seulement s'il existe ; l'admin d'instance | créé à la première connexion (B-1) |
+| **univers** | nom, description, date de création | → système de jeu (facultatif) | ses membres ; son nom : l'admin d'instance | création : tout compte (B-2) ; modification : MJ |
 | **membre** | (univers, compte, rôle MJ \| Joueur) | univers, compte | les membres de l'univers | MJ de l'univers ; admin d'instance (cette table seulement, AD-9) ; au moins un MJ par univers (B-5) |
 | **système de jeu** | nom | ← univers ; → gabarits | tout compte (nom seul) ; le contenu : membres d'un univers rattaché | création : tout MJ ; référentiel : MJ d'un univers rattaché |
 | **gabarit** | type (règle, créature, objet), nom, contenu | système de jeu | membres d'un univers rattaché | MJ d'un univers rattaché (B-14) |
-| **fiche** | type (personnage, lieu, faction, objet, événement, quête, compte-rendu), titre, charge utile versionnée par type (AD-6) — personnage : PJ \| PNJ ; compte-rendu : sa campagne | univers ; → sections | qui lit au moins une de ses sections ; sinon elle n'existe pas (B-9) | création : MJ ; un compte-rendu : tout membre (B-19) |
-| **section** | titre, ordre, contenu ; lecture et écriture des joueurs ; auteur (un compte) avec sa lecture et son écriture | fiche ; → relations, pièces jointes | le MJ ; un joueur selon les bascules (AD-19) | contenu : qui a l'écriture ; structure et audience : MJ |
+| **fiche** | type (personnage, lieu, faction, objet, événement, quête, compte-rendu), titre, créée le, modifiée le, charge utile versionnée par type (AD-6) — personnage : PJ \| PNJ ; compte-rendu : sa campagne | univers ; → sections | qui lit au moins une de ses sections ; sinon elle n'existe pas (B-9) | création : MJ ; un compte-rendu : tout membre (B-19) |
+| **section** | titre, ordre, contenu, modifiée le ; lecture et écriture des joueurs ; auteur (un compte) avec sa lecture et son écriture | fiche ; → relations, pièces jointes | le MJ ; un joueur selon les bascules (AD-19) | contenu : qui a l'écriture ; structure et audience : MJ |
 | **relation** | type (texte libre), dirigée | section porteuse → fiche cible | qui lit la section **et** la fiche cible (sinon la cible n'est pas nommée) | MJ |
 | **pièce jointe** | nom d'origine, type MIME, taille, nom sur disque (UUID), secrète | section | qui lit la section, et le MJ seul si secrète | qui écrit la section ; « secrète » : MJ |
 | **campagne** | nom, statut (en préparation, active, terminée) | univers ; → scénarios, tâches, CR | tout membre (nom, statut) | MJ |
 | **scénario** | titre, contenu | campagne | MJ | MJ |
 | **tâche de préparation** | catégorie (monstres, PNJ, cartes, déroulements, autre), libellé, faite | campagne | MJ | MJ |
-| **carte** | titre, forme (illustrée \| graphe, fixée à la création), visible des joueurs, fond (une pièce jointe image) | univers ; → éléments | MJ ; les joueurs si visible | MJ |
+| **carte** | titre, forme (illustrée \| graphe, fixée à la création), visible des joueurs, fond : une pièce jointe image déjà déposée sur une section du même univers (AD-40) | univers ; → éléments | MJ ; les joueurs si visible | MJ |
 | **élément de carte** | position en % (carte illustrée) ou rien (graphe) | carte, fiche | comme la fiche de l'élément | MJ |
 | **proposition** | contenu proposé, empreinte du contenu d'origine, appliquée le | univers, compte demandeur, section, CR source | son seul demandeur | créée par l'agent du MJ ; appliquée une fois par son demandeur, si la section n'a pas changé (B-21) |
 
@@ -40,8 +40,9 @@ ses liens (déduits des relations, AD-41).
 
 ## Règles de droits, en une phrase chacune
 
-1. Les droits viennent de **membre**, jamais d'Authelia (AD-9) ; l'admin d'instance n'a de
-   droit que sur la table des membres.
+1. Les droits sur le contenu viennent de **membre**, jamais d'Authelia (AD-9). Authelia ne
+   donne qu'une chose : le rôle d'admin d'instance (groupe `parents`), qui lit les noms des
+   univers et les membres, et n'écrit que la table des membres.
 2. Le **MJ** lit et écrit tout dans son univers (AD-18) ; un **joueur** suit les bascules de
    chaque section (AD-19).
 3. Ce qu'un compte ne peut pas lire **n'existe pas** pour lui : absent des listes, des

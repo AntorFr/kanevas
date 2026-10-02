@@ -31,19 +31,21 @@ Forme de la skill `exigences` ; chaque besoin cite les parcours qui le réalisen
   compte sans accès à aucun univers. *(P-1)*
 - **B-2** — Quand un compte crée un univers depuis l'accueil (E-2), il en devient MJ. *(P-1)*
 - **B-3** — Quand un MJ ajoute un compte à son univers depuis la page des membres (E-4), en MJ ou
-  Joueur, ce compte voit l'univers ; le MJ change ou retire ce rôle au même endroit. Un compte ne
-  s'ajoute que s'il s'est déjà connecté une fois. *(P-2)*
+  Joueur, en tapant son identifiant exact, ce compte voit l'univers ; le MJ change ou retire ce
+  rôle au même endroit. Un compte ne s'ajoute que s'il s'est déjà connecté une fois ; aucune liste
+  des comptes de l'instance n'est montrée. *(P-2)*
 - **B-4** — Si un compte perd son dernier rôle sur un univers, Kanevas lui répond comme si
   l'univers n'existait pas. *(P-2)*
 - **B-5** — Tant qu'un univers a un MJ, il en garde au moins un : retirer le dernier est refusé.
   *(P-2)*
-- **B-6** — L'admin d'instance gère les membres de tout univers depuis l'administration (E-5),
-  sans jamais en lire le contenu ; pour le lire, il s'ajoute lui-même, et cela se voit. *(P-2)*
+- **B-6** — L'admin d'instance voit le nom de tous les univers et leurs membres, et les gère
+  depuis l'administration (E-5), sans jamais en lire le contenu ; pour le lire, il s'ajoute lui-même, et cela se voit. *(P-2)*
 
 ### Lore et visibilité
 - **B-7** — Un MJ crée des fiches typées — personnage (PJ ou PNJ), lieu, faction, objet,
   événement, quête — depuis la liste d'un type (E-8). *(P-3, P-4)*
-- **B-8** — Une fiche est faite de sections ; pour chacune, le MJ choisit depuis la fiche (E-9) si
+- **B-8** — Une fiche est faite de sections, que le MJ ajoute, réordonne et retire sur la fiche
+  (E-9) ; pour chacune, il choisit si
   les joueurs la lisent, l'écrivent, et quel joueur en est l'auteur avec ses propres droits. Le MJ
   lit et écrit tout. *(P-3, P-7)*
 - **B-9** — Quand un compte ouvre une fiche, il n'en voit que les sections qu'il peut lire, sans
@@ -54,7 +56,7 @@ Forme de la skill `exigences` ; chaque besoin cite les parcours qui le réalisen
 - **B-11** — Quand un compte cherche dans la liste d'un type (E-8), Kanevas ne rend que les fiches
   qu'il peut lire, titres compris. *(P-6)*
 - **B-12** — Un MJ bascule sa lecture en mode Joueur, sur une fiche ou une carte, pour voir ce que
-  verra sa table. *(P-3)*
+  verra un joueur de sa table qui n'est l'auteur d'aucune section. *(P-3)*
 
 ### Système de jeu
 - **B-13** — Un MJ rattache son univers à un système de jeu partagé, ou en crée un, depuis les
@@ -66,7 +68,8 @@ Forme de la skill `exigences` ; chaque besoin cite les parcours qui le réalisen
 ### Campagnes, scénarios, préparation
 - **B-15** — Un MJ crée les campagnes d'un univers et en change le statut — en préparation,
   active, terminée — depuis la liste et la page de campagne (E-6). *(P-3)*
-- **B-16** — Un MJ écrit les scénarios d'une campagne (E-7) ; les joueurs ne les voient jamais.
+- **B-16** — Un MJ crée les scénarios d'une campagne depuis sa page (E-6) et les écrit (E-7) ; les
+  joueurs ne les voient jamais.
   *(P-3)*
 - **B-17** — Un MJ tient la liste de préparation d'une campagne sur sa page (E-6) : des tâches en
   cinq catégories (monstres, PNJ, cartes, déroulements, autre) qu'il coche ; une tâche cochée
@@ -77,8 +80,8 @@ Forme de la skill `exigences` ; chaque besoin cite les parcours qui le réalisen
 - **B-19** — Quand un membre écrit un compte-rendu depuis la page d'une campagne (E-6), le CR est
   lisible par toute la table et modifiable par son auteur ; le MJ lit et écrit tout CR. Plusieurs
   CR coexistent pour une même séance. *(P-4)*
-- **B-20** — Les comptes-rendus d'un univers se lisent ensemble, du plus récent au plus ancien,
-  dans la liste des CR (E-13). *(P-4, P-6)*
+- **B-20** — Les comptes-rendus d'un univers se lisent ensemble, du plus récemment écrit au plus
+  ancien, dans la liste des CR (E-13). *(P-4, P-6)*
 - **B-21** — Quand un MJ demande à son assistant (E-12) une mise à jour du monde à partir d'un CR,
   l'assistant propose un nouveau contenu de section sans rien écrire ; le MJ voit l'actuel et le
   proposé, puis l'applique ou l'abandonne d'un geste. Rien ne s'applique tout seul. *(P-5)*
@@ -120,8 +123,8 @@ demande à son assistant (E-12).
    « aucun univers ».
 2. Si elle veut mener une partie : **Créer un univers** (E-2) — nom, description ; elle arrive
    sur sa **vue d'ensemble** (E-3), en MJ.
-3. Si elle est joueuse : l'accueil lui dit de donner son identifiant à son MJ ; après son ajout,
-   l'univers apparaît dans l'accueil.
+3. Si elle est joueuse : l'accueil lui montre son identifiant et lui dit de le donner à son MJ ;
+   après son ajout, l'univers apparaît dans l'accueil.
 *Échec* : Authelia refuse — Kanevas ne montre rien.
 
 ### P-2 — Réunir sa table (MJ ; admin en recours)
@@ -134,7 +137,7 @@ dernier MJ — refusé avec la raison.
 
 ### P-3 — Préparer la séance du samedi (MJ, dimanche soir, bureau)
 1. **Vue d'ensemble** (E-3) : la campagne active, les derniers CR, la préparation en cours.
-2. **Campagne** (E-6) : il relit les CR de la dernière séance, ouvre un **scénario** (E-7) et
+2. **Campagne** (E-6) : il relit les CR les plus récents, crée ou ouvre un **scénario** (E-7) et
    l'écrit.
 3. Il coche ou ajoute des tâches de **préparation** (E-6).
 4. **Lore** : depuis la **liste d'un type** (E-8), il crée un PNJ ; sur la **fiche** (E-9), il
