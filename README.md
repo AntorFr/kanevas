@@ -66,7 +66,11 @@ variables `OIDC_*` posées (voir `.env.example`), ces deux routes répondent
 
 ## Déploiement
 
-Hors de ce dépôt : chart Helm dans `smart-home-charts` (`charts/kanevas`),
-manifeste de cluster et entrée OIDC Authelia dans `k8s-home-lab` — voir
-`epics/kanevas/technique.md` et `features/kanevas-socle/technique.md` dans le
-magasin de pilotage.
+Hors de ce dépôt : chart Helm `charts/kanevas` dans `smart-home-charts`,
+manifeste `clusters/tantive/games/kanevas-helm-config.yml` et client OIDC
+`kanevas` (`clusters/homenode/infra/authelia-helm-config.yml`) dans
+`k8s-home-lab`. Ordre : publier l'image (tag `vX.Y.Z`), publier le chart, puis
+fusionner `k8s-home-lab`, dont la fusion déploie.
+
+Pour la carte du code, les invariants et les options écartées, voir
+`ARCHITECTURE.md`.
