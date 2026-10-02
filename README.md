@@ -59,8 +59,8 @@ curl http://localhost:3001/healthz   # -> "kanevas 0.1.0"
 Sur un tag, la CI dérive ce même build-arg du tag semver poussé (`docker/metadata-action`)
 : pousser `v0.1.0` publie `ghcr.io/antorfr/kanevas:0.1.0` avec `APP_VERSION`
 embarqué à `0.1.0` — une seule source de vérité pour la version affichée et le
-tag publié. Une image construite sur `main` ou une PR porte le nom de la
-branche comme version (`kanevas main`) : seul un tag donne un semver.
+tag publié. Hors tag (`main`, PR), la valeur n'est pas un semver (À documenter : valeur
+exacte non constatée en CI) : seul un tag donne une version fiable.
 
 ## OIDC
 

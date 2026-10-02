@@ -22,8 +22,8 @@ Volume `/data` : emplacement réservé de SQLite et des pièces jointes, vide.
 ## Invariants
 
 - **La version a une seule source** : le build-arg Docker `APP_VERSION`, dérivé
-  par la CI du tag semver poussé (sur `main` ou une PR, la valeur est le nom de
-  la branche : seule une image de tag porte un semver). `/healthz` et le tag d'image publié ne
+  par la CI du tag semver poussé (hors tag, la valeur n'est pas un semver : seule une image de
+  tag en porte un). `/healthz` et le tag d'image publié ne
   peuvent donc pas diverger. `package.json` ne porte volontairement aucun
   `version`.
 - **`/healthz` est public**, en texte brut `kanevas <version>`, sans donnée.
