@@ -15,7 +15,7 @@ const envSchema = z.object({
   PORT: z.coerce.number().int().positive().default(3001),
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
   // Les quatre vont ensemble : en poser une partie laisse OIDC non configuré
-  // (routes en 404, aucune erreur au démarrage — services/oidc.ts).
+  // (routes en 404 — services/oidc.ts) ; vide ou invalide, elle échoue ici.
   OIDC_ISSUER: z.string().url().optional(),
   OIDC_CLIENT_ID: z.string().min(1).optional(),
   OIDC_CLIENT_SECRET: z.string().min(1).optional(),

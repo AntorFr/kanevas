@@ -4,7 +4,7 @@
 
 **État :** socle posé sur `feature/kanevas-socle` (PR ouverte, non fusionnée) :
 `/healthz` (`kanevas <version>`, version = build-arg `APP_VERSION`), OIDC
-d'identité, transports LLM réservés, Dockerfile non-root, CI
+d'identité, transports LLM réservés, Dockerfile (utilisateur `node`, mais le pod tourne en root au cluster), CI
 `docker-publish.yml` (test puis image GHCR). Typecheck et 8 tests verts. Carte et
 invariants : `ARCHITECTURE.md`.
 

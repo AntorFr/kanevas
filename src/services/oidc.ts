@@ -12,7 +12,8 @@ export type OidcSettings = {
 /**
  * Renvoie la config OIDC si elle est complète, sinon null (pas de connexion
  * possible). Les quatre variables vont ensemble : en poser une partie laisse
- * OIDC non configuré, les routes répondent 404, sans erreur au démarrage.
+ * OIDC non configuré, les routes répondent 404 (une valeur vide ou invalide,
+ * elle, échoue dès env.ts).
  *
  * Repris d'Antre-du-maitre (AD-10) : ne porte, ici, aucune résolution de rôle
  * — `roleFromGroups` n'est pas repris, AD-9 reste pour kanevas-identite.

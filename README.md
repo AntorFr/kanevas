@@ -39,8 +39,8 @@ curl http://localhost:3001/healthz   # -> "kanevas 0.0.0-dev"
 
 ## Réglages
 
-La liste est `.env.example`. Hors OIDC : `APP_NAME` (défaut `kanevas`), `PORT`
-(3001), `LLM_PROVIDER` (`mock` | `anthropic` | `claude-agent`, défaut `mock`,
+La liste de départ est `.env.example`. En plus : `APP_NAME` (défaut `kanevas`),
+`APP_VERSION` (défaut `0.0.0-dev`, posée par le build-arg en image), `PORT` (3001), `LLM_PROVIDER` (`mock` | `anthropic` | `claude-agent`, défaut `mock`,
 inutilisé tant qu'aucune route n'appelle un LLM).
 
 ## Version de l'application
@@ -50,6 +50,7 @@ du build-arg Docker `APP_VERSION`, jamais de `package.json` (qui n'en porte
 volontairement pas) :
 
 ```bash
+# sans --build-arg, la version vaut 0.0.0-dev
 docker build --build-arg APP_VERSION=0.1.0 -t kanevas:0.1.0 .
 docker run --rm -p 3001:3001 kanevas:0.1.0
 curl http://localhost:3001/healthz   # -> "kanevas 0.1.0"
@@ -69,9 +70,10 @@ mécanique générique d'Antre-du-maitre (découverte OIDC, PKCE, state), arrêt
 (`subject`, `username`) mais ne pose aucune session ni résolution de rôle —
 la base `univers_membres` (AD-9) n'existe pas encore. C'est
 `kanevas-identite`, pas ce socle, qui construit la suite. `GET /api/auth/config` répond `{oidcEnabled}`. Sans les quatre variables
-`OIDC_*` posées (voir `.env.example`) — y compris si une partie seulement l'est,
-sans erreur au démarrage — login et callback répondent `404` : pas de mode
-dégradé.
+`OIDC_*` posées (voir `.env.example`) — même si une partie seulement l'est —
+login et callback répondent `404` : pas de mode dégradé. Une valeur posée mais
+vide ou invalide (URL mal formée) fait en revanche échouer le démarrage
+(`ZodError`, `src/config/env.ts`).
 
 ## Déploiement
 
@@ -82,6 +84,7 @@ manifeste `clusters/tantive/games/kanevas-helm-config.yml` et client OIDC
 fusionner `k8s-home-lab`, dont la fusion déploie.
 
 Pour la carte du code, les invariants et les options écartées, voir
-`ARCHITECTURE.md`. Les sigles `AD-n` renvoient aux décisions de l'epic Kanevas,
-dont `ARCHITECTURE.md` résume celles qui touchent ce dépôt (AD-3 Node/TypeScript,
+`ARCHITECTURE.md`. Les sigles `AD-n` renvoient aux décisions de l'epic Kanevas (magasin de
+pilotage de la chaîne SDLC, hors de ce dépôt ; les commentaires qui citent
+`plan.md`, `technique.md` ou `socle-projet` en viennent), dont `ARCHITECTURE.md` résume celles qui touchent ce dépôt (AD-3 Node/TypeScript,
 AD-4 Fastify, AD-5 SQLite, AD-9 rôles par univers, AD-10 reprise d'Antre-du-maitre).
