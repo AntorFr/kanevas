@@ -8,22 +8,9 @@ build-arg Docker `APP_VERSION`, jamais de `package.json`), mécanique OIDC
 générique reprise d'Antre-du-maitre et arrêtée à l'authentification de
 l'identité (aucune résolution de rôle, AD-9 reste pour `kanevas-identite`),
 transports LLM repris et réservés (aucune route ne les appelle encore),
-Dockerfile multi-stage non-root. CI `docker-publish.yml` **écrite, committée
-localement, mais pas encore poussée** — voir blocage ci-dessous.
-
-**Bloquant (arbitrage) :** `git push origin task/kanevas-socle-repo` est
-rejeté par la forge dès que le push touche `.github/workflows/*` : « refusing
-to allow a Personal Access Token to create or update workflow without
-`workflow` scope ». Le jeton de ce pod (`SDLC_GIT_CREDENTIAL`/`GH_TOKEN`,
-même valeur) n'a pas ce scope — ni `gh`, ni l'API Contents avec le même
-jeton n'y échapperaient, la restriction est sur le jeton, pas sur la
-commande. Pas de contournement par un autre jeton du pod (dans l'esprit du
-refus, même principe que l'arbitrage précédent de cette fiche sur la création
-du dépôt). Poussé quand même : tout le reste (app, Dockerfile, doc,
-conventions) — un second commit local, non poussé, ajoute uniquement
-`.github/workflows/docker-publish.yml` (contenu revu dans la discussion de
-la fiche). Il suffit de pousser ce second commit une fois le scope accordé
-(ou que Monsieur l'ajoute lui-même depuis la discussion).
+Dockerfile multi-stage non-root. CI `docker-publish.yml` poussée (le jeton
+des pods a reçu le scope `workflow`) : job test puis build/publication GHCR
+sur tag semver, `APP_VERSION` dérivé de `docker/metadata-action`.
 
 **Pièges rencontrés :**
 - Docker absent du pod où ce socle a été écrit : le critère `docker build
