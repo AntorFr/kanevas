@@ -157,7 +157,7 @@ Les numéros sont stables. Une décision retirée garde son numéro, avec ce qui
 | AD-51 | Une migration prend son numéro au moment où sa tranche se fusionne ; l'ordre des migrations est l'ordre de fusion. |
 | AD-52 | La table des fiches connaît ses sept types dès sa création ; aucune tranche ne la recrée. |
 | AD-53 | **Toute action qu'un humain déclenche a un écran.** L'agent est un second chemin, jamais le seul ; ce que l'agent propose, un humain l'applique depuis un écran. |
-| AD-54 | Identifiants du fournisseur LLM de l'assistant : posés par la tranche qui active l'assistant. [À TRANCHER] : l'abonnement Claude de Monsieur par le transport `claude-agent` repris d'Antre-du-maitre (recommandé : pas de dépense, même logique que Codex), ou une clé d'API Anthropic facturée à l'usage. Renversé si les conditions de l'abonnement interdisent un usage serveur par plusieurs comptes. |
+| AD-54 | L'assistant accède au modèle par l'abonnement Claude de Monsieur, via le transport `claude-agent` repris d'Antre-du-maitre (décision de Monsieur, 2026-10-03) ; pas de clé d'API facturée. Les identifiants sont posés par Monsieur, pour la tranche qui active l'assistant. [À VÉRIFIER] : que les conditions de l'abonnement permettent un usage serveur par plusieurs comptes — à établir par la tranche de l'assistant, avant de coder. |
 
 ## Déploiement et exploitation
 
@@ -173,8 +173,8 @@ Les numéros sont stables. Une décision retirée garde son numéro, avec ce qui
 - **Volume** `hostPath /mnt/data/kanevas/data` monté sur `/data` : la base, les pièces jointes,
   `CODEX_HOME`. Le jeu de données répliqué du nœud est la sauvegarde ; restaurer, c'est
   remettre ce dossier.
-- **Secrets** (OpenBao, `openbao-tantive`) : le secret du client OIDC ; les identifiants du
-  fournisseur LLM (AD-54) ; le jeton Codex, que Monsieur pose lui-même.
+- **Secrets** (OpenBao, `openbao-tantive`) : le secret du client OIDC ; le jeton de l'abonnement
+  Claude (AD-54) et le jeton Codex, que Monsieur pose lui-même.
 
 ## Sécurité
 
