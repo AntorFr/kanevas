@@ -22,10 +22,13 @@ Volume `/data` : emplacement réservé de SQLite et des pièces jointes, vide.
 ## Invariants
 
 - **La version a une seule source** : le build-arg Docker `APP_VERSION`, dérivé
-  par la CI du tag semver poussé. `/healthz` et le tag d'image publié ne
+  par la CI du tag semver poussé (sur `main` ou une PR, la valeur est le nom de
+  la branche : seule une image de tag porte un semver). `/healthz` et le tag d'image publié ne
   peuvent donc pas diverger. `package.json` ne porte volontairement aucun
   `version`.
 - **`/healthz` est public**, en texte brut `kanevas <version>`, sans donnée.
+  `GET /api/auth/config` (`{oidcEnabled}`) l'est aussi ; aucune autre route
+  publique n'expose de contenu.
 - **Le callback OIDC authentifie une identité et s'arrête là** : pas de session,
   pas de rôle, pas de persistance. Les rôles par univers (AD-9) viendront d'une
   lecture de `univers_membres`, dans la feature d'identité. Sans les quatre
@@ -53,5 +56,6 @@ Volume `/data` : emplacement réservé de SQLite et des pièces jointes, vide.
   auto-bump Renovate ; MIT faute de politique de licence commune dans le parc.
   Renversé seulement si le code devait devenir confidentiel.
 - **Version lue depuis `package.json`** : écarté, deux sources non synchronisées.
-- Tourne en `runAsUser: 0` au cluster (hostPath inscriptible, convention des
-  apps `games`), alors que l'image est non-root.
+- Au cluster le pod tourne en `runAsUser: 0` (convention des apps `games` pour
+  un hostPath inscriptible) : l'utilisateur `node` (uid 1000) de l'image est
+  toléré, pas requis. Sous uid 1000 il faudrait un hostPath inscriptible par lui.

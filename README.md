@@ -24,7 +24,8 @@ src/
 ## Démarrage local
 
 ```bash
-docker run --rm -v "$PWD":/src -w /src node:20-bookworm-slim sh -c "npm ci && npm run dev"
+docker run --rm -p 3001:3001 -v "$PWD":/src -w /src node:20-bookworm-slim sh -c "npm ci && npm run dev"
+# puis, depuis l'hôte : curl http://localhost:3001/healthz
 ```
 
 Ou, avec un Node 20+ installé localement :
@@ -32,9 +33,15 @@ Ou, avec un Node 20+ installé localement :
 ```bash
 npm install
 cp .env.example .env
-npm run dev
+npm run dev            # ou : npm run build && npm start (sert dist/server.js)
 curl http://localhost:3001/healthz   # -> "kanevas 0.0.0-dev"
 ```
+
+## Réglages
+
+La liste est `.env.example`. Hors OIDC : `APP_NAME` (défaut `kanevas`), `PORT`
+(3001), `LLM_PROVIDER` (`mock` | `anthropic` | `claude-agent`, défaut `mock`,
+inutilisé tant qu'aucune route n'appelle un LLM).
 
 ## Version de l'application
 
@@ -48,10 +55,11 @@ docker run --rm -p 3001:3001 kanevas:0.1.0
 curl http://localhost:3001/healthz   # -> "kanevas 0.1.0"
 ```
 
-La CI dérive ce même build-arg du tag semver poussé (`docker/metadata-action`)
+Sur un tag, la CI dérive ce même build-arg du tag semver poussé (`docker/metadata-action`)
 : pousser `v0.1.0` publie `ghcr.io/antorfr/kanevas:0.1.0` avec `APP_VERSION`
 embarqué à `0.1.0` — une seule source de vérité pour la version affichée et le
-tag publié.
+tag publié. Une image construite sur `main` ou une PR porte le nom de la
+branche comme version (`kanevas main`) : seul un tag donne un semver.
 
 ## OIDC
 
@@ -60,9 +68,10 @@ mécanique générique d'Antre-du-maitre (découverte OIDC, PKCE, state), arrêt
 à l'authentification de l'identité : le callback confirme qui s'est connecté
 (`subject`, `username`) mais ne pose aucune session ni résolution de rôle —
 la base `univers_membres` (AD-9) n'existe pas encore. C'est
-`kanevas-identite`, pas ce socle, qui construit la suite. Sans les quatre
-variables `OIDC_*` posées (voir `.env.example`), ces deux routes répondent
-`404` : pas de mode dégradé.
+`kanevas-identite`, pas ce socle, qui construit la suite. `GET /api/auth/config` répond `{oidcEnabled}`. Sans les quatre variables
+`OIDC_*` posées (voir `.env.example`) — y compris si une partie seulement l'est,
+sans erreur au démarrage — login et callback répondent `404` : pas de mode
+dégradé.
 
 ## Déploiement
 
@@ -73,4 +82,6 @@ manifeste `clusters/tantive/games/kanevas-helm-config.yml` et client OIDC
 fusionner `k8s-home-lab`, dont la fusion déploie.
 
 Pour la carte du code, les invariants et les options écartées, voir
-`ARCHITECTURE.md`.
+`ARCHITECTURE.md`. Les sigles `AD-n` renvoient aux décisions de l'epic Kanevas,
+dont `ARCHITECTURE.md` résume celles qui touchent ce dépôt (AD-3 Node/TypeScript,
+AD-4 Fastify, AD-5 SQLite, AD-9 rôles par univers, AD-10 reprise d'Antre-du-maitre).
