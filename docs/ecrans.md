@@ -19,8 +19,12 @@ Une barre latérale unique, sur tous les écrans d'un univers :
 - pour un MJ : **Univers** ▸ Membres, Paramètres ;
 - pour un admin d'instance : **Administration**.
 
+Hors d'un univers (E-1, E-2, E-5), une barre réduite : **Mes univers**, et **Administration**
+pour un admin d'instance. Un admin qui est aussi membre d'un univers garde le lien
+**Administration** dans la barre de l'univers, sous une section « Instance ».
+
 L'**assistant** est un bouton flottant « Demander à Kanevas », sur tous les écrans d'un univers,
-hors de la barre. Un MJ voit partout un badge **mode MJ / mode Joueur** sur les écrans où la
+hors de la barre ; il n'existe pas hors d'un univers. Un MJ voit partout un badge **mode MJ / mode Joueur** sur les écrans où la
 bascule existe (fiche, carte).
 
 ## Inventaire
@@ -66,6 +70,13 @@ Hors produit : `/composants`, la bibliothèque de composants, réservée au dév
 | E-13 | tous les CR | les CR lisibles | — |
 | E-14 | tout | — | — |
 | E-15 | lire, écrire | lire | — |
+
+Précisions de la matrice : créer une campagne, en changer le statut, créer un scénario sont au
+MJ seul. L'audience d'une section se règle en ligne sur la fiche (MJ). Créer une fiche ouvre une
+fenêtre (type déjà choisi, titre) qui mène à la fiche ; créer une carte se fait en ligne sur
+E-10. « Rendre visible » une carte se trouve sur la carte (E-11) et dans la liste (E-10). Une
+tâche de préparation s'ajoute avec sa catégorie, se coche, se décoche ; elle ne se supprime pas.
+Sur E-15, règles, créatures et objets ont le même traitement.
 
 Un refus ne dit jamais qu'une chose existe : une fiche, une section, une carte qu'on ne peut pas
 lire sont absentes, et leur adresse répond comme une adresse inconnue.
