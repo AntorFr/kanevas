@@ -1,4 +1,4 @@
-# Patron repris d'Antre-du-maitre (AD-10), débarrassé de ses étapes Prisma.
+# Pattern reused from Antre-du-maitre (AD-10), minus its Prisma steps.
 
 FROM node:20-bookworm-slim AS deps
 
@@ -23,8 +23,8 @@ FROM node:20-bookworm-slim AS runtime
 
 WORKDIR /app
 
-# Seule source de vérité pour la version affichée et publiée : jamais
-# package.json (plan.md, critère de sortie de cette tâche).
+# Single source of truth for the displayed and published version: never
+# package.json.
 ARG APP_VERSION
 
 ENV NODE_ENV=production
@@ -40,9 +40,9 @@ COPY --from=build /app/package.json ./package.json
 COPY --from=build /app/dist ./dist
 
 # Run as the non-root "node" user (uid 1000) shipped by the base image.
-# /data is a mounted volume (AD-5/AD-7, vide à ce stade) : son hostPath doit
-# être writable par uid 1000 (voir le manifeste cluster pour la convention
-# podSecurityContext des apps du groupe "games").
+# /data is a mounted volume (AD-5/AD-7, empty for now): its hostPath must be
+# writable by uid 1000 (see the cluster manifest for the podSecurityContext
+# convention of the "games" group apps).
 RUN mkdir -p /data && chown -R node:node /data /app
 
 USER node

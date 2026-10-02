@@ -30,6 +30,11 @@ sur tag semver, `APP_VERSION` dérivé de `docker/metadata-action`.
   0 dépendance), puisque le testeur de cette tâche va y écrire des tests ;
   il est vert sans aucun fichier de test (0 test, exit 0).
 
+**Réouverture (verify) :** commentaires de code et Dockerfile/CI passés en
+anglais (CLAUDE.md), références à `plan.md`/`technique.md` retirées des
+commentaires (absents du dépôt). Le trailer d'attribution de 283899b reste :
+le réécrire exige un force-push, réservé à Monsieur.
+
 **Suivant :** le testeur de `kanevas-socle-repo` écrit les tests de ce code.
 En parallèle (aucune dépendance) : `kanevas-socle-chart` (chart Helm dans
 `smart-home-charts`). Puis `kanevas-socle-deploy` (`k8s-home-lab`), qui

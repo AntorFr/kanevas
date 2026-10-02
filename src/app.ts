@@ -12,12 +12,10 @@ export async function buildApp() {
     logger: env.NODE_ENV !== 'test',
   });
 
-  // Cookie signé porteur de la transaction OIDC (state + PKCE) entre la
-  // redirection vers Authelia et le callback (routes/auth.ts). Secret généré
-  // à chaque démarrage : la transaction ne survit qu'à l'aller-retour d'un
-  // même utilisateur sur la même instance, ce n'est pas un secret
-  // d'exploitation à gérer (pas d'entrée pour lui dans technique.md,
-  // Secrets).
+  // Signed cookie carrying the OIDC transaction (state + PKCE) between the
+  // redirect to Authelia and the callback (routes/auth.ts). Secret generated
+  // at each start: the transaction only lives for one user's round trip on
+  // the same instance, so it is not an operational secret to manage.
   await app.register(cookie, {
     secret: randomBytes(32).toString('hex'),
   });
