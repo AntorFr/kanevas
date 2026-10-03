@@ -148,7 +148,7 @@ Les numéros sont stables. Une décision retirée garde son numéro, avec ce qui
 | AD-42 | La disposition d'un graphe se calcule dans le navigateur. |
 | AD-43 | Token et nœud : une seule table d'éléments, de forme imposée par le type de carte. |
 | AD-44 | L'outil image vérifie le droit d'écriture avant de générer, et attache par la fonction d'envoi des pièces jointes ; une image par demande. |
-| AD-45 | Génération d'image derrière un port ; l'adaptateur se choisit par configuration ; sans adaptateur, l'outil disparaît du catalogue. |
+| AD-45 | Génération d'image derrière un port ; l'adaptateur se choisit par configuration (`codex`, ou `bouchon` en mode bouchon, AD-55) ; sans adaptateur, l'outil disparaît du catalogue. |
 | AD-46 | Tâches de préparation : table propre rattachée à la campagne, catégories fermées. |
 | AD-47 | Garde MJ des tâches évaluée sur l'univers de la campagne. |
 | AD-48 | L'agent propose une mise à jour, jamais ne l'écrit ; appliquer est un geste humain, dans l'interface. |
@@ -158,6 +158,7 @@ Les numéros sont stables. Une décision retirée garde son numéro, avec ce qui
 | AD-52 | La table des fiches connaît ses sept types dès sa création ; aucune tranche ne la recrée. |
 | AD-53 | **Toute action qu'un humain déclenche a un écran.** L'agent est un second chemin, jamais le seul ; ce que l'agent propose, un humain l'applique depuis un écran. |
 | AD-54 | L'assistant accède au modèle par l'abonnement Claude de Monsieur, via le transport `claude-agent` (décision de Monsieur, confirmée le 2026-10-03 en connaissance du fait suivant). Risque connu et accepté par Monsieur : la doc de l'Agent SDK n'autorise pas, sauf accord d'Anthropic, l'usage du login claude.ai ou de ses limites dans un produit tiers ; Kanevas sert d'autres comptes que le sien. Les identifiants sont posés par Monsieur. |
+| AD-55 | **Mode bouchon** (décision de Monsieur, 2026-10-03) : `KANEVAS_STUB=1` lance Kanevas sans aucun secret. La connexion se fait en choisissant un compte de test au lieu de passer par Authelia, l'assistant répond par un transport `bouchon` scripté qui appelle les mêmes outils, l'image vient d'un adaptateur `bouchon` qui rend une image fixe. Tout le reste est réel : base, droits, routes, outils. Un bandeau le dit sur chaque page ; l'application refuse de démarrer en bouchon si le client OIDC est configuré. Les tests et les pods de la chaîne tournent en bouchon. |
 
 ## Déploiement et exploitation
 
@@ -176,6 +177,17 @@ Les numéros sont stables. Une décision retirée garde son numéro, avec ce qui
 - **Secrets** (OpenBao, `openbao-tantive`) : le secret du client OIDC ; le jeton de l'abonnement
   Claude (AD-54) et le jeton Codex, que Monsieur pose lui-même.
 
+## Bouchons
+
+| Dépendance | Ce que le bouchon rend | Qui le construit |
+|---|---|---|
+| Authelia (OIDC) | un écran de connexion qui liste les comptes de test (Antor, Léa, Teo, Mira, Admin du groupe `parents`) ; la session est la même qu'après Authelia | `kanevas-premiere-fiche` |
+| Modèle de l'assistant (AD-54) | transport `bouchon` : des réponses scriptées, choisies par mots-clés, qui appellent les vrais outils avec les droits de la personne | `kanevas-assistant-membre` |
+| Moteur d'images (AD-50) | adaptateur `bouchon` : une image fixe, attachée par le vrai chemin (AD-44) | `kanevas-images` |
+
+Activation : `KANEVAS_STUB=1` (AD-55), jamais posée dans `k8s-home-lab`. La recette de
+Monsieur sur l'URL de production reste réelle.
+
 ## Sécurité
 
 | Menace | Réponse |
@@ -186,6 +198,7 @@ Les numéros sont stables. Une décision retirée garde son numéro, avec ce qui
 | Un joueur écrit dans une section que l'agent du MJ lira (injection d'instructions) | L'agent du MJ peut modifier des sections : chaque écriture est listée dans le fil avec un lien (B-26), et une mise à jour du monde n'est jamais appliquée par l'agent (AD-48). **Risque accepté** en V1, pas de confirmation par écriture. |
 | Codex s'exécute sans bac à sable, dans un pod root ; son jeton est sur le volume sauvegardé | **Risque accepté** (décision de Monsieur sur le moteur) : le pod est le bac à sable, le jeton est en 0600, un processus par demande, un répertoire jetable. |
 | Usurpation d'identité | Authelia seul authentifie ; aucune base d'utilisateurs maison. |
+| Le mode bouchon ouvert en production (n'importe qui choisit son compte) | L'application refuse de démarrer en bouchon si le client OIDC est configuré ; la variable n'est jamais posée dans `k8s-home-lab` ; un bandeau visible sur chaque page (AD-55). |
 
 ## Différé
 
