@@ -95,6 +95,33 @@ un Joueur.
 4. Une **pièce jointe** n'est servie que par la route qui revérifie ces droits (AD-7, AD-36).
 5. L'**agent** a exactement les droits de la personne qui lui parle (AD-2, AD-26).
 
+## Migration `kanevas-relier-chercher` (numéro pris à la fusion, AD-51 : le suivant)
+
+Une table et deux index de recherche ; aucune entité nouvelle (la relation est celle du cadrage).
+
+| Objet | Colonnes (hors clés) | Contraintes |
+|---|---|---|
+| `relations` | `id`, `section_id` (la porteuse), `cible_fiche_id`, `type` (texte libre), `cree_le` | `section_id` → `sections` **ON DELETE CASCADE** (retirer une section retire ses relations) ; `cible_fiche_id` → `fiches` **ON DELETE RESTRICT** (une fiche ne se supprime pas) ; `type` 1 à 80 caractères après rognage ; `UNIQUE (section_id, cible_fiche_id, type)` |
+| `recherche_fiches` (FTS5) | `titre` ; `rowid` = `fiches.id` | tokenizer `unicode61 remove_diacritics 2` |
+| `recherche_sections` (FTS5) | `titre`, `contenu` ; `rowid` = `sections.id` | idem |
+
+Les index sont tenus par des **déclencheurs** (AD-21) : à l'insertion, à la modification du titre
+(fiche) ou du titre et du contenu (section), à la suppression, y compris celle qu'une cascade
+provoque. La migration **remplit** les index depuis les lignes déjà présentes (une base de la
+première fiche garde ses fiches cherchables). Index SQL : `relations (section_id)` sert la lecture
+des relations d'une section ; aucun index sur `cible_fiche_id` (aucune requête de cette tranche n'en
+a besoin ; le graphe des cartes ajoutera le sien si sa requête l'exige).
+
+Ce que la base ne dit pas, et que le service porte, avec sa raison (la règle croise plusieurs
+tables) : la fiche cible est **du même univers** que la fiche de la section ; elle n'est **pas**
+cette fiche elle-même ; une section porte **100 relations** au plus ; seul un MJ crée ou retire.
+
+Lecture, évaluée pour **le compte et le mode** de l'appelant : une relation est rendue si la section
+porteuse est lisible **et** si la fiche cible l'est (au moins une section lisible ; le MJ, hors
+mode Joueur, lit toute fiche de son univers). Sinon elle est absente de la réponse, sans compteur.
+Recherche : la liste d'un type avec une condition de plus (AD-63), saisie de 1 à 100 caractères (le service refuse au-delà) ; l'index ne livre que des
+identifiants de candidats, jamais un résultat.
+
 ## Évolution
 
 Migrations SQL numérotées, appliquées au démarrage, sans ORM (AD-14). **La table des fiches
