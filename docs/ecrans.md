@@ -141,9 +141,9 @@ Deux sont posés dès le cadrage parce qu'ils traversent tout :
   « groupes : parents ») et un bouton « Se connecter en tant que … ». Sans `KANEVAS_STUB`, cette
   adresse répond « Page introuvable. ».
 - **« Connexion refusée »** (Authelia a refusé ou le retour est invalide) : « La connexion a été
-  refusée. » et un lien « Réessayer ». Aucun autre contenu.
+  refusée. » et un lien « Réessayer » qui relance la connexion (même adresse). Aucun autre contenu.
 - **« Connexion indisponible »** (Authelia injoignable) : « Authelia ne répond pas pour
-  l'instant. Réessayez dans un moment. » et un lien « Réessayer »
+  l'instant. Réessayez dans un moment. » et un lien « Réessayer » qui relance la connexion (retour à l'adresse de connexion)
 - La session expire au bout de 7 jours (AD-56). **Se déconnecter** (pied de la barre latérale)
   efface la session et mène à la connexion ; en bouchon, c'est ainsi qu'on change de compte.
 - `GET /api/moi` rend `{username, groups}` du compte connecté : c'est ce que la barre latérale
@@ -166,7 +166,7 @@ bouton « Menu ».
 | chargement | le sélecteur affiche « … » ; les items fixes sont déjà là |
 | erreur | le sélecteur affiche « Univers », sans liste (le nom n'est connu que de la liste qui n'a pas chargé) ; « Impossible de charger vos univers. » dans la liste dépliée, avec « Réessayer » |
 | connexion perdue | le bandeau ; navigation inchangée |
-| refus | sur « Page introuvable. » la barre ne montre **aucun nom d'univers** de l'adresse : seulement « Mes univers » ; le sélecteur ne liste que les univers du compte |
+| refus | sur « Page introuvable. » la barre est celle d'un écran hors univers : **pas de sélecteur**, aucun nom d'univers, seulement « Mes univers », l'identifiant, le thème, « Se déconnecter » ; dans un univers, le sélecteur ne liste que les univers du compte |
 | contenu long | 100 univers : la liste du sélecteur défile ; un nom de 80 caractères est tronqué par « … » avec infobulle |
 
 ### E-1 Accueil
