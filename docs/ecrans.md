@@ -358,12 +358,12 @@ contenu (fiches, comptes-rendus, cartes) n'est jamais affiché. », deux zones. 
 l'instance** : tous les univers, par nom (sans casse), chacun avec « N membres » (« 1 membre » au
 singulier), l'univers choisi portant le badge « Sélectionné » ; cent à la fois, puis « Charger la suite ». À droite (sous la liste sur téléphone, après
 un clic sur l'univers), **Membres — <nom de l'univers>** : la liste (identifiant, rôle MJ / Joueur,
-« Retirer <identifiant> », comme la maquette d'E-4), un champ « Identifiant du compte », le rôle (Joueur par défaut) et « Ajouter » : le même
+« Retirer <identifiant> », sur chaque ligne), un champ « Identifiant du compte », le rôle (Joueur par défaut) et « Ajouter » : le même
 geste, les mêmes refus et la même confirmation de retrait qu'E-4. Ajouter son propre identifiant, en
 MJ, est le moyen de lire le contenu : l'ajout apparaît dans la liste des membres que voit le MJ de
 l'univers ; une note sous le champ le dit : « Pour lire le contenu, l'admin s'ajoute lui-même comme
 membre : l'ajout apparaît dans la liste des membres que voit le MJ de l'univers. » Un admin membre
-qui se retire lui-même reste sur E-5 ; l'univers reste sélectionné, sa liste se met à jour sans lui, et il disparaît de l'accueil (E-1) de l'admin. Rien d'autre n'est montré de l'univers : pas de lien vers sa vue d'ensemble tant que
+qui se retire lui-même reste sur E-5 ; l'univers reste sélectionné, sa liste se met à jour sans lui, et il disparaît de l'accueil (E-1) de l'admin ; le lien « Ouvrir » disparaît avec son rôle. Rien d'autre n'est montré de l'univers : pas de lien vers sa vue d'ensemble tant que
 l'admin n'en est pas membre ; une fois membre, un lien « Ouvrir » à côté du nom mène à E-3 (un clic sur le
 nom sélectionne seulement l'univers). Aucune action sur l'univers lui-même
 (nom, description) : elles sont au MJ.
@@ -390,6 +390,7 @@ et `/administration/univers/:id`.
   n'a pas d'entrée « Administration » dans sa barre.
 - Étant donné Admin et l'univers « Les Landes grises », dont « mira » est la seule MJ, quand Admin tente de
   la retirer, alors il voit « Impossible : l'univers doit garder au moins un MJ. » et la liste est inchangée.
+- Étant donné Admin, membre MJ de « Brume », quand il ouvre l'administration, alors « Brume » porte un lien « Ouvrir » qui mène à sa vue d'ensemble, et « Lame d'Ébène » n'en porte pas ; s'il se retire de « Brume » (seul membre : refusé avec la raison du dernier MJ), le lien reste.
 - Étant donné Admin et un compte « nadia » qui ne s'est jamais connecté, quand il tente de
   l'ajouter, alors il voit « Ce compte ne s'est jamais connecté. ».
 
