@@ -135,6 +135,7 @@ demande à son assistant (E-12).
    *Exemple* : le seul MJ d'un univers a quitté la table ; l'admin ajoute un MJ qui a déjà ouvert
    Kanevas. L'admin ne lit toujours rien du contenu ; s'il veut le lire, il s'ajoute lui-même, et
    l'ajout figure dans la liste des membres que voit le MJ de l'univers.
+4. Une fois membre, il ouvre l'univers depuis E-5 : sa **vue d'ensemble** (E-3).
 *Échec* : identifiant jamais connecté — « ce compte ne s'est jamais connecté » ; retirer le
 dernier MJ — refusé avec la raison ; un compte qui n'est pas admin ouvre l'adresse — « Page
 introuvable. ».

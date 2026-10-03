@@ -64,7 +64,7 @@ bouchon » — sans `E-n` ni six états, ils n'existent pas en production.
 | E-2 | créer | créer | créer |
 | E-3 | tout | sans préparation ni scénarios | — |
 | E-4 | tout | — | — (passe par E-5) |
-| E-5 | — | — | tous les univers, leurs membres |
+| E-5 | — (un admin qui est aussi MJ d'un univers garde E-5 par sa barre, section « Instance ») | — | lister les univers et leurs membres ; ajouter, changer un rôle, retirer un membre |
 | E-6 | tout | liste, statut, CR, « Nouveau compte-rendu » ; ni scénarios ni préparation (cachés) | — |
 | E-7 | tout | — | — |
 | E-8 | lire, chercher, créer | lire, chercher | — |
@@ -351,13 +351,17 @@ Pour tout autre compte, l'entrée n'existe pas.
 
 ### E-5 Administration
 
-Deux zones. À gauche, **Univers de l'instance** : tous les univers, par nom (sans casse), chacun avec
-« N membres » ; cent à la fois, puis « Charger la suite ». À droite (sous la liste sur téléphone, après
+Sous le fil d'Ariane « Instance / Administration » et le sous-titre « Les membres se gèrent ici ; le
+contenu (fiches, comptes-rendus, cartes) n'est jamais affiché. », deux zones. À gauche, **Univers de
+l'instance** : tous les univers, par nom (sans casse), chacun avec « N membres » (« 1 membre » au
+singulier), l'univers choisi portant le badge « Sélectionné » ; cent à la fois, puis « Charger la suite ». À droite (sous la liste sur téléphone, après
 un clic sur l'univers), **Membres — <nom de l'univers>** : la liste (identifiant, rôle MJ / Joueur,
-« Retirer »), un champ « Identifiant du compte », le rôle (Joueur par défaut) et « Ajouter » : le même
+« Retirer <identifiant> »), un champ « Identifiant du compte », le rôle (Joueur par défaut) et « Ajouter » : le même
 geste, les mêmes refus et la même confirmation de retrait qu'E-4. Ajouter son propre identifiant, en
 MJ, est le moyen de lire le contenu : l'ajout apparaît dans la liste des membres que voit le MJ de
-l'univers. Rien d'autre n'est montré de l'univers : pas de lien vers sa vue d'ensemble tant que
+l'univers ; une note sous le champ le dit : « Pour lire le contenu, l'admin s'ajoute lui-même comme
+membre : l'ajout apparaît dans la liste des membres que voit le MJ de l'univers. » Un admin membre
+qui se retire lui-même reste sur E-5, la liste se met à jour et l'univers quitte son accueil. Rien d'autre n'est montré de l'univers : pas de lien vers sa vue d'ensemble tant que
 l'admin n'en est pas membre ; une fois membre, le nom mène à E-3. Aucune action sur l'univers lui-même
 (nom, description) : elles sont au MJ.
 
@@ -366,7 +370,7 @@ et `/administration/univers/:id`.
 
 | État | Ce qu'on voit | Ce qu'on peut faire |
 |---|---|---|
-| vide | aucun univers dans l'instance : « Aucun univers sur l'instance pour l'instant. » ; aucune sélection : « Choisissez un univers pour voir ses membres. » | — |
+| vide | liste des membres : sans objet, un univers a toujours un MJ (B-5) ; aucun univers dans l'instance : « Aucun univers sur l'instance pour l'instant. » ; aucune sélection : « Choisissez un univers pour voir ses membres. » | — |
 | chargement | « Chargement des univers… » ; pour les membres : « Chargement des membres… » | — |
 | erreur | « Impossible de charger les univers. » ou « Impossible de charger les membres. », avec « Réessayer » ; une écriture échouée : « L'action n'a pas abouti. Réessayez. » au-dessus de la liste des membres | « Réessayer » |
 | connexion perdue | le bandeau ; « Ajouter », le changement de rôle et « Retirer » désactivés ; les listes chargées restent | lire |
@@ -381,8 +385,8 @@ et `/administration/univers/:id`.
   la vue d'ensemble s'ouvre et Antor, sur E-4, voit « admin » dans la liste des membres.
 - Étant donné Léa, Joueuse, quand elle ouvre `/administration`, alors elle voit « Page introuvable. » et
   n'a pas d'entrée « Administration » dans sa barre.
-- Étant donné Admin et l'univers « Marche », dont « jules » est le seul MJ, quand Admin tente de le
-  retirer, alors il voit « Impossible : l'univers doit garder au moins un MJ. » et la liste est inchangée.
+- Étant donné Admin et l'univers « Les Landes grises », dont « mira » est la seule MJ, quand Admin tente de
+  la retirer, alors il voit « Impossible : l'univers doit garder au moins un MJ. » et la liste est inchangée.
 - Étant donné Admin et un compte « nadia » qui ne s'est jamais connecté, quand il tente de
   l'ajouter, alors il voit « Ce compte ne s'est jamais connecté. ».
 
