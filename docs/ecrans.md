@@ -360,8 +360,7 @@ section qu'on lit sans l'écrire, ni « Ajouter un fichier » ni « Retirer » ;
 « Secrète » ni « Rendre secrète ». Par l'API, un geste d'écriture sur une section qu'on lit sans
 l'écrire est refusé **403**, un marquage par un non-MJ aussi (403) ; ce qu'on ne lit pas répond 404.
 L'Admin d'instance n'a pas de bloc (« Page introuvable. »). Le geste « marquer / lever « secrète » » du besoin B-24 s'affiche « Rendre secrète » / « Lever le secret ».
-Le chiffre d'une confirmation de retrait de section ne compte que les pièces que le lecteur voit ; le
-texte de limite d'un MJ en mode Joueur est celui d'un Joueur.
+Le texte de limite d'un MJ en mode Joueur est celui d'un Joueur.
 
 *Ajouter.* Un bouton « Ajouter un fichier » ouvre le sélecteur de fichiers du système ; **choisir
 le fichier suffit** : l'envoi part aussitôt, un fichier après l'autre si l'on en choisit
