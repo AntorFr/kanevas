@@ -1,25 +1,33 @@
 # kanevas
 
 Système de gestion de JDR (lore, campagnes, comptes-rendus, droits, cartes).
-Ce dépôt n'héberge, à ce stade, que le **socle** : le squelette qui relie
-dépôt, image, CI et route de santé, sans aucune fonction métier.
+Ce dépôt porte le socle (santé, OIDC, image, CI) et la **première fonction métier** :
+un MJ crée un univers, y réunit ses joueurs et y écrit des fiches dont chaque section a
+son audience ; un joueur ne lit que ce que l'audience lui ouvre. Ce que le produit permet et
+par quels écrans : `docs/parcours.md`, `docs/ecrans.md`, `docs/donnees.md`. Ni relations, ni
+recherche, ni pièces jointes, ni campagnes, ni assistant, ni administration d'instance ne sont
+construits (tranches suivantes) : les passages de ces docs qui les décrivent sont la cible.
 
 ## Structure
 
 ```txt
-Dockerfile                        Image unique : API Fastify
+Dockerfile                        Image unique : API Fastify + frontend construit
 src/
-  server.ts                       Point d'entrée, démarre l'app Fastify
-  app.ts                          Assemble les plugins et les routes
+  server.ts, app.ts               Démarrage ; assemblage des plugins et des routes
   config/env.ts                   Variables d'environnement (zod)
-  routes/health.ts                GET /healthz — nom + version de l'app
-  routes/auth.ts                  Mécanique OIDC générique (voir plus bas)
-  services/oidc.ts                Découverte OIDC, config client
-  services/llm/                   Transports LLM repris d'Antre-du-maitre,
-                                   réservés aux futures features — aucune
-                                   route de ce socle ne les appelle
-.github/workflows/docker-publish.yml   CI : build, typecheck, image GHCR
+  db/                             SQLite (better-sqlite3), migrations/0001-*.sql, runner
+  services/                       comptes, univers, membres, fiches, sections, droits :
+                                   seul code qui lit ou écrit les données ; session, oidc
+  routes/                         health, auth (OIDC), session (cookie, garde, /api/moi),
+                                   bouchon, univers (+ membres), fiches (+ sections), frontend
+  services/llm/                   Transports LLM repris d'Antre-du-maitre, branchés nulle part
+frontend/                         React + Vite : charte (ui/), écrans (src/ecrans/), barre latérale
+.github/workflows/docker-publish.yml   CI : tests, build, image GHCR
 ```
+
+Un écran est un fichier `frontend/src/ecrans/<nom>.tsx` enregistré par le registre
+(`frontend/src/registre.ts`) ; les couleurs ne viennent que de `frontend/src/ui/tokens.css`
+(`docs/charte.md`).
 
 ## Démarrage local
 
@@ -37,10 +45,23 @@ npm run dev            # ou : npm run build && npm start (sert dist/server.js)
 curl http://localhost:3001/healthz   # -> "kanevas 0.0.0-dev"
 ```
 
+`npm run dev` ne sert que l'API ; `npm run build` construit aussi le frontend dans
+`dist/public`, servi par Fastify derrière la session. `npm run dev:front` lance Vite seul.
+
+### Sans Authelia : le mode bouchon
+
+```bash
+KANEVAS_STUB=1 npm run dev     # puis ouvrir http://localhost:3001/ : choix d'un compte de test
+```
+
+`/connexion-bouchon` remplace Authelia (AD-55) sous un bandeau « mode bouchon ». Kanevas refuse de
+démarrer en bouchon si une variable `OIDC_*` est posée. En production sans volume `/data`, la base est en
+mémoire (avertissement au démarrage).
+
 ## Réglages
 
 La liste de départ est `.env.example`. En plus : `APP_NAME` (défaut `kanevas`),
-`APP_VERSION` (défaut `0.0.0-dev`, posée par le build-arg en image), `PORT` (3001), `LLM_PROVIDER` (`mock` | `anthropic` | `claude-agent`, défaut `mock`,
+`APP_VERSION` (défaut `0.0.0-dev`, posée par le build-arg en image), `PORT` (3001), `DB_PATH` (fichier SQLite ; défaut `/data/kanevas.db` en production, `./data/kanevas.db` en développement), `SESSION_SECRET` (≥ 16 caractères ; à défaut `/data/session.key`), `KANEVAS_STUB` (`1`), `LLM_PROVIDER` (`mock` | `anthropic` | `claude-agent`, défaut `mock`,
 inutilisé tant qu'aucune route n'appelle un LLM).
 
 ## Version de l'application

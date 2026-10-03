@@ -84,6 +84,10 @@ dossier des pièces jointes n'existe pas encore.
 
 # La cible
 
+> Construit à ce jour : la session, le mode bouchon, les cinq tables et leurs fonctions de service,
+> les écrans E-1 à E-4, E-8 et E-9. Le reste (relations, recherche, pièces jointes, agents, images,
+> catalogue de systèmes, administration) est la cible des tranches suivantes.
+
 ## Organes, et qui parle à qui
 
 ```
