@@ -354,12 +354,15 @@ ses fichiers, et l'adresse directe répond « Page introuvable. ». Le MJ peut e
 | Joueur | celles des sections qu'il lit, hors secrètes | sur une section qu'il **écrit** (la sienne, ou ouverte en écriture aux joueurs) | non : **absent** ; sur une section qu'il ne fait que lire, « Ajouter un fichier » est absent aussi | sur une section qu'il écrit, une pièce qu'il voit | une pièce secrète est **absente** et son adresse répond « Page introuvable. » |
 | MJ en mode Joueur | comme un Joueur qui n'est l'auteur d'aucune section (AD-39) | seulement où les joueurs écrivent | absent | seulement où les joueurs écrivent | idem |
 
+| Admin d'instance | aucune | non | non | non | « Page introuvable. » |
+
 Un geste qu'un rôle n'a pas est **absent** de l'écran (jamais grisé, sauf hors connexion) : sur une
-section qu'on lit sans l'écrire, ni « Ajouter un fichier » ni « Retirer » ; pour un Joueur, ni la case
+section qu'on lit sans l'écrire, ni « Ajouter un fichier » ni « Retirer » ; pour un Joueur (et le MJ en mode Joueur), ni la case
 « Secrète » ni « Rendre secrète ». Par l'API, un geste d'écriture sur une section qu'on lit sans
 l'écrire est refusé **403**, un marquage par un non-MJ aussi (403) ; ce qu'on ne lit pas répond 404.
-Le geste « marquer / lever « secrète » » du besoin B-24 s'affiche « Rendre secrète » / « Lever le secret ».
-| Admin d'instance | aucune | non | non | non | « Page introuvable. » |
+L'Admin d'instance n'a pas de bloc (« Page introuvable. »). Le geste « marquer / lever « secrète » » du besoin B-24 s'affiche « Rendre secrète » / « Lever le secret ».
+Le chiffre d'une confirmation de retrait de section ne compte que les pièces que le lecteur voit ; le
+texte de limite d'un MJ en mode Joueur est celui d'un Joueur.
 
 *Ajouter.* Un bouton « Ajouter un fichier » ouvre le sélecteur de fichiers du système ; **choisir
 le fichier suffit** : l'envoi part aussitôt, un fichier après l'autre si l'on en choisit
