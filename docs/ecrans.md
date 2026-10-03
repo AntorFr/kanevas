@@ -350,7 +350,7 @@ E-2.
   (`frontend/src/ecrans/fiche/lignes/registre.ts`, une ligne : type de fiche concerné, composant),
   vide pour tout autre type ; aucun bloc de section existant n'est modifié. États de la ligne : le
   nom de la campagne passe à la ligne (80 caractères) ; pendant le chargement, la ligne est absente ;
-  campagne illisible ou en erreur, la ligne est absente sans message (le compte-rendu reste lisible).
+  campagne illisible ou en erreur, la ligne est absente sans message (le compte-rendu reste lisible) ; connexion perdue : la ligne déjà affichée reste cliquable (navigation seule, sans écriture).
 - *E-9, ce que chaque rôle voit d'un compte-rendu* : une seule section, « Compte-rendu », lisible de
   tous les membres. « Modifier » est offert à son auteur (le Joueur qui l'a créé) et au MJ, pas aux
   autres Joueurs ; le MJ règle l'audience comme pour toute section. Un compte-rendu créé par un MJ
@@ -384,8 +384,8 @@ puis trois panneaux (une campagne n'a ni description ni autre champ que son nom 
    tâche » : libellé (1 à 200 caractères), catégorie (obligatoire, « Autre » par défaut),
    « Ajouter ». **Aucune tâche ne se supprime** (matrice du cadrage).
 3. **Comptes-rendus** (tous) : les comptes-rendus **lisibles** de cette campagne, du plus
-   récemment créé au plus ancien, chacun : titre, auteur (« Antor » si le MJ, sinon l'identifiant
-   de l'auteur de la section ; sans auteur, rien), date de création, lien vers E-9. « Nouveau
+   récemment créé au plus ancien, chacun : titre, auteur (l'identifiant de l'auteur de la section ; un compte-rendu
+   créé par le MJ n'a pas d'auteur, AD-61 : rien n'est affiché, pas même le nom du MJ), date de création, lien vers E-9. « Nouveau
    compte-rendu » ouvre une fenêtre : « Titre » (1 à 120 caractères), « Texte » (facultatif, 20 000
    au plus), « Publier » et « Annuler » ; « Publier » crée le compte-rendu et mène à E-9 (AD-61). Si la
    création échoue, la fenêtre reste ouverte, la saisie gardée, avec « L'action n'a pas abouti.
@@ -450,7 +450,7 @@ brisé » que lui donne Antor, alors elle voit « Page introuvable. », sans le 
 ### E-13 Comptes-rendus
 
 Tous les comptes-rendus de l'univers **que le compte peut lire**, du plus récemment créé au plus
-ancien (un compte-rendu retouché ne remonte pas, B-20) ; chacun : titre, nom de sa campagne, auteur,
+ancien (un compte-rendu retouché ne remonte pas, B-20) ; chacun : titre, nom de sa campagne, auteur (comme sur E-6 : l'identifiant, rien s'il n'y en a pas),
 date de création, lien vers E-9. Cent à la fois, puis « Charger la suite ». Pas de création ici :
 « Nouveau compte-rendu » est sur E-6, qui porte la campagne.
 
@@ -486,7 +486,7 @@ compteur ni un nom que le compte ne peut pas lire.
 | erreur | le bloc seul dit « Impossible de charger ce bloc. » avec « Réessayer » ; les autres blocs restent |
 | connexion perdue | le bandeau ; contenu déjà chargé |
 | refus | sans objet pour les blocs ; le bloc Préparation est absent pour un Joueur |
-| contenu long | nom de campagne de 80 caractères, titre de compte-rendu de 120, libellé de tâche de 200 : passent à la ligne ; au plus cinq comptes-rendus, et cinq tâches par campagne active |
+| contenu long | nom de campagne de 80 caractères, titre de compte-rendu de 120, libellé de tâche de 200 : passent à la ligne ; au plus cinq comptes-rendus, et cinq tâches par campagne active ; le nombre de campagnes actives n'est pas borné (AD-60) : « Campagnes actives » et « Préparation » s'allongent avec lui, sans « Charger la suite » — voulu, une table compte quelques campagnes actives |
 
 *Critère.* Étant donné Léa, quand elle ouvre E-3, alors elle voit « Campagnes actives » et
 « Derniers comptes-rendus », jamais « Préparation » ; Antor voit les trois.
@@ -495,7 +495,7 @@ compteur ni un nom que le compte ne peut pas lire.
 
 B-15 → E-6 (liste et page) ; B-16 → E-6 et E-7 ; B-17 → E-6 ; B-18 → E-6 ; B-19 → E-6 et E-9 ;
 B-20 → E-13. Parcours : P-3 étapes 1 à 3 (E-3, E-6, E-7), P-4 en entier, P-5 étape 1 (E-13 →
-E-9) ; P-6 n'y passe pas. Les trois rôles : le Joueur a E-3, E-6
+E-9) ; P-6 étape 1 ne lit que les blocs de E-3 (derniers comptes-rendus) ; B-18 et B-20 le citent, mais aucune étape de P-6 ne passe par E-6 ni E-13. Les trois rôles : le Joueur a E-3, E-6
 (sans scénarios ni préparation), E-13 ; l'admin d'instance sans rôle n'a aucun de ces écrans.
 Reste aux autres tranches : créer une campagne ou un scénario par l'assistant
 (`kanevas-assistant-membre`), la proposition de mise à jour depuis un CR (`kanevas-monde`).
