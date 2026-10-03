@@ -13,7 +13,8 @@ Le socle (une application Fastify, Node 20, TypeScript, `GET /healthz`, une méc
 une image publiée par la CI) porte, depuis `kanevas-premiere-fiche`, la **première
 fonction métier** : comptes, univers, membres, fiches et sections, avec leurs droits ; la session
 et le mode bouchon ; le frontend React qui les montre (accueil, univers, membres, lore, fiche).
-Ni relations, ni recherche, ni pièces jointes, ni campagnes, ni assistant : tranches suivantes.
+`kanevas-relier-chercher` y ajoute les relations entre fiches et la recherche dans un type
+(index FTS5, AD-63, AD-64). Ni pièces jointes, ni campagnes, ni assistant : tranches suivantes.
 
 ## Carte
 
@@ -26,7 +27,7 @@ Ni relations, ni recherche, ni pièces jointes, ni campagnes, ni assistant : tra
   session (`src/services/session.ts`, AD-56) et crée le compte à la première connexion.
 - `src/routes/bouchon.ts` : mode bouchon (AD-55), absent de la table des routes sans `KANEVAS_STUB`.
 - `src/db/` : ouverture du fichier SQLite, `migrations/0001-*.sql`, runner (AD-14).
-- `src/services/` : `comptes`, `univers`, `membres`, `fiches`, `sections`, `droits` — les seules
+- `src/services/` : `comptes`, `univers`, `membres`, `fiches`, `sections`, `droits`, `relations` — les seules
   fonctions qui lisent ou écrivent les données (AD-2) ; `src/routes/` : routes `/api` minces.
 - `frontend/` : application React/Vite (AD-57) ; `frontend/src/ui/tokens.css` et
   `frontend/src/ui/` : tokens et composants de `docs/charte.md` ; son build est servi par Fastify.
@@ -174,6 +175,8 @@ Les numéros sont stables. Une décision retirée garde son numéro, avec ce qui
 | AD-57 | **Frontend** : React et Vite dans `frontend/`, un seul build servi par l'application Fastify (`@fastify/static`, repli sur `index.html` pour toute adresse d'écran, derrière la garde de session) ; l'image Docker construit les deux. Pas de rendu serveur, sauf les pages que la session ne peut pas précéder : choix du compte de test (AD-55), « Connexion refusée », « Connexion indisponible ». |
 | AD-58 | **Contenu de section en texte brut** : des paragraphes séparés par des lignes vides, affichés comme tels ; ni Markdown ni HTML. Écarté : Markdown (rendu à assainir, choix d'éditeur) — rouvrable sans migration, le contenu est déjà du texte. |
 | AD-59 | **Écritures de section concurrentes** : chaque section porte un entier `version`, augmenté à chaque écriture de son contenu ; l'écriture envoie la version qu'elle a lue ; si elle n'est plus la courante, elle est refusée (HTTP 409, code `section_modifiee`) et rien n'est écrit. Même mécanisme que le « la section a changé » de B-21 pour les propositions (AD-49). |
+| AD-63 | **La recherche est la liste, plus une condition.** Chercher dans un type, c'est lister ce type (même fonction, même filtre de droits, même ordre alphabétique, même pagination) avec une condition de correspondance sur les index FTS5 : l'index ne livre que des candidats, jamais un résultat (AD-8). Une fiche correspond si tous les mots sont dans son titre, ou tous dans une même section que le compte lit ; mots par début de mot, sans casse ni accents ; la saisie est neutralisée (chaque mot cité, guillemets doublés, signes sans lettre ni chiffre écartés). Écartés : un classement par pertinence et des extraits (un extrait est du contenu à filtrer, un classement trahit ce qui est caché) ; une recherche dans tous les types (hors périmètre, par l'assistant). Rouvrable sans migration. |
+| AD-64 | **Une relation se lit sous deux gardes** : la section porteuse **et** la fiche cible doivent être lisibles par le compte (et le mode) qui lit ; sinon la relation est absente de la réponse, sans placeholder ni compteur (AD-20, AD-22). Elle se crée et se retire par le seul MJ ; sa cible est du même univers, jamais sa propre fiche ; retirer une section la retire (cascade). Écartés : un marqueur « relation vers une fiche cachée » (il révèle qu'une fiche existe) ; afficher les relations entrantes sur la fiche cible (non promis ; le graphe les déduit, AD-41). |
 
 ## Déploiement et exploitation
 
