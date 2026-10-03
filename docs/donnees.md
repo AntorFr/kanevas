@@ -56,3 +56,30 @@ Migrations SQL numérotées, appliquées au démarrage, sans ORM (AD-14). **La t
 connaît ses sept types dès sa création** : aucune tranche ne la recrée. L'ordre des migrations
 suit l'ordre de fusion des tranches, et chaque tranche prend le numéro suivant au moment où elle
 se fusionne, pas avant (AD-51).
+
+## Migration `kanevas-cartes-graphes` (numéro pris à la fusion, AD-51 : le suivant)
+
+Deux tables ; aucune entité nouvelle (la carte et l'élément de carte sont ceux du cadrage). Les
+octets d'un fond ne sont pas en base (AD-7) : ils vivent sous `/data/attachments/` (AD-69).
+
+| Table | Colonnes (hors clés) | Contraintes |
+|---|---|---|
+| `cartes` | `id`, `univers_id`, `titre`, `forme` (`illustree` \| `graphe`), `visible` (booléen), `fond` (nom sur disque, UUID, facultatif), `fond_type` (type MIME déterminé par le serveur), `cree_le` | `univers_id` → `univers` ; `titre` non vide, 1 à 80 caractères ; `forme` contrainte à ces deux valeurs et **jamais modifiée** ; `visible` **faux à la création** ; `fond` et `fond_type` ensemble ou ensemble absents, et absents d'un graphe (`CHECK`) ; `fond` unique ; index `cartes (univers_id)` ; **aucune suppression** |
+| `elements_carte` | `id`, `carte_id`, `fiche_id`, `x`, `y` (réels, pourcentage, AD-70), `cree_le` | `carte_id` → `cartes` ; `fiche_id` → `fiches` **ON DELETE RESTRICT** (une fiche ne se supprime pas) ; `UNIQUE (carte_id, fiche_id)` ; `x` et `y` ensemble nuls ou ensemble entre 0 et 100 (`CHECK`) |
+
+Ce que la base ne dit pas, et que le service porte, avec sa raison (la règle croise la carte, la
+fiche et le rôle) : la fiche d'un élément est **du même univers** que la carte ; une carte
+**illustrée** porte des éléments avec position, un **graphe** des éléments sans position ; **100
+éléments** au plus par carte (AD-72) ; seul un MJ hors mode Joueur crée une carte, la règle (titre,
+visibilité), change son fond, place, déplace ou retire un élément ; un fond n'est qu'une image de
+25 Mo au plus (AD-69). Retirer un élément supprime sa ligne, jamais la fiche.
+
+Lecture, évaluée pour **le compte et le mode** de l'appelant (AD-68) : une carte se lit si le
+compte est MJ hors mode Joueur, ou si elle est visible. Un élément est rendu si sa fiche est lisible
+(au moins une section lisible ; le MJ hors mode Joueur lit toute fiche de son univers, AD-38). Les
+liens d'un graphe ne sont pas stockés (AD-41) : pour deux éléments rendus A et B, un lien « A → B,
+type » existe pour chaque relation de `relations` portée par une section de A que le lecteur lit, qui
+vise B et qui se lit sous les deux gardes d'AD-64 (par la même fonction de lecture des relations que
+la fiche). Un lien n'est rendu que si ses deux bouts le sont. Aucune réponse ne dit combien
+d'éléments ou de liens ont été écartés. La liste des cartes d'un joueur ne contient que les cartes
+visibles ; un MJ en mode Joueur voit la même.
