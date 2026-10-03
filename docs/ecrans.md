@@ -110,7 +110,7 @@ vocabulaire, pas la finition. Elles illustrent ; ce document décide.
 
 ### E-10 Cartes
 
-Le titre « Cartes », puis la liste des cartes **de l'univers que le compte lit** : le MJ les voit
+Le titre « Cartes », le sous-titre « Les cartes de l'univers. Les joueurs ne voient que celles que vous rendez visibles. » (MJ seulement), puis la liste des cartes **de l'univers que le compte lit** : le MJ les voit
 toutes ; un Joueur (et le MJ en mode Joueur, voir E-11) seulement celles qui sont **visibles**. Une
 ligne : une vignette (le fond d'une carte illustrée, un motif neutre sans fond ou pour un graphe), le
 titre, la forme (« Carte illustrée » ou « Graphe »), et pour le MJ l'état « Visible des joueurs » ou
@@ -129,7 +129,7 @@ graphe naît vide, ses fiches se choisissent sur la carte. « Annuler » ferme l
 | MJ | toutes les cartes de l'univers | oui | oui |
 | Joueur | les cartes visibles ; ni l'état ni le geste de visibilité | **absent** | **absent** |
 | MJ en mode Joueur | comme un Joueur | absent | absent |
-| Admin d'instance | aucune (« Page introuvable. ») | — | — |
+| Admin d'instance, ou compte sans rôle dans l'univers (Teo) | aucune (« Page introuvable. ») | — | — |
 
 *Textes.* Aucune carte : MJ « Aucune carte pour l'instant. Créez-en une pour commencer. » (le
 formulaire reste proposé) ; Joueur « Aucune carte n'est visible pour l'instant. » ; titre vide ou
@@ -169,22 +169,33 @@ chaque **token** est un rond portant la première lettre du titre de sa fiche, a
 (24 caractères, puis « … »). Sa zone cliquable fait au moins 44 px. Un token n'est présent que si sa
 fiche est lisible du lecteur (AD-38). **Joueur** : toucher un token ouvre la fiche (E-9) ; rien d'autre.
 **MJ (mode MJ)** : un clic **sélectionne** le token et ouvre, sous le cadre, un panneau « Maître
-Aldric · Personnage » avec « Ouvrir la fiche » et « Retirer de la carte » ; on **déplace** un token au
-glisser, ou au clavier (token sélectionné : flèches, 1 %, avec Maj 5 %) ; la position s'enregistre au
+Aldric · Personnage » avec « Ouvrir la fiche » et « Retirer de la carte » (ce bouton demande la même confirmation que la liste « Sur la carte » : rien n'est retiré au premier clic) ; on **déplace** un token au
+glisser, ou au clavier (token sélectionné : flèches, 1 %, avec Maj 5 % ; l'aide « Flèches : déplacer de 1 % (Maj : 5 %) » est affichée sous le cadre) ; la position s'enregistre au
 relâchement (ou à la touche) ; hors du cadre elle est ramenée au bord. « Ajouter une fiche » ouvre une
 fenêtre : un choix de **type** (les sept), un champ de recherche, la liste des fiches de ce type
 (celles que le MJ lit : toutes), chacune avec « Ajouter » ; une fiche déjà sur la carte porte « Déjà
-sur la carte » sans bouton. Le token apparaît au **centre** (50 %, 50 %), prêt à être déplacé.
+sur la carte » sans bouton. « Fermer » ferme la fenêtre. Le token apparaît au **centre** (50 %, 50 %), prêt à être déplacé.
 « Changer le fond » (« Ajouter un fond » s'il n'y en a pas) ouvre le sélecteur : **choisir l'image
 suffit**, elle part aussitôt et remplace l'ancienne.
 
 *Graphe.* Le cadre est un schéma : un **nœud** par fiche (rond, première lettre, titre dessous, 24
 caractères), une flèche par **lien** de la fiche d'où vient la relation vers la fiche visée, avec le
 type de la relation écrit sur la flèche (lien de A vers B : « membre de »). La disposition est celle
-du navigateur (AD-71) ; elle n'est pas modifiable. Joueur : toucher un nœud ouvre sa fiche. MJ : un
-clic sélectionne le nœud, avec « Ouvrir la fiche » et « Retirer du graphe » ; « Ajouter une fiche »
+du navigateur (AD-71) ; elle n'est pas modifiable. La zone cliquable d'un nœud fait au moins 44 px ; le
+cadre grandit avec le nombre de nœuds (au moins 60 px par nœud sur chaque côté) et, sur téléphone,
+défile dans les deux sens plutôt que de se réduire ; la liste « Sur la carte » reste le chemin sûr au toucher. Joueur : toucher un nœud ouvre sa fiche. MJ : un
+clic sélectionne le nœud, avec « Ouvrir la fiche » et « Retirer de la carte » (même mot, même confirmation que la liste « Sur la carte ») ; « Ajouter une fiche »
 est la même fenêtre. Une relation ajoutée ou retirée sur une fiche se voit au rechargement de la
 carte.
+
+*Fenêtre « Ajouter une fiche »* — états propres, car c'est elle qui décide. **Vide** : un type sans
+fiche, « Aucune fiche de ce type. » ; une recherche sans résultat, « Aucune fiche ne correspond. ».
+**Chargement** : « Chargement… » à la place de la liste, le choix du type et la recherche déjà là.
+**Erreur** : « Impossible de charger les fiches. » et « Réessayer », la fenêtre reste ouverte.
+**Connexion perdue** : le bandeau ; « Ajouter » désactivé, la liste chargée reste. **Contenu long** :
+cent fiches par page et « Charger la suite » (« Impossible de charger la suite. » en cas d'échec) ;
+un titre de 80 caractères passe à la ligne. **Refus** : sans objet, la fenêtre n'existe que pour le
+MJ hors mode Joueur.
 
 *Sur la carte* (liste sous le cadre, toujours présente quand il y a des éléments) : une ligne par
 token ou nœud, son titre en lien vers la fiche, son type ; pour le MJ, « Retirer de la carte »
@@ -206,7 +217,7 @@ cette carte : elle n'est pas visible. » avec « Quitter le mode Joueur » (un J
 | MJ | la carte, tous ses éléments (toute fiche de l'univers), tous les liens | renommer ; rendre visible ou cacher ; fond ; ajouter une fiche ; déplacer (carte illustrée) ; retirer ; mode Joueur ; ouvrir une fiche |
 | MJ en mode Joueur | comme un Joueur | ouvrir une fiche ; quitter le mode |
 | Joueur | une carte visible ; les éléments dont il lit la fiche, les liens dont il lit la relation (AD-64) et les deux bouts ; **aucun compteur de ce qui manque** | ouvrir une fiche |
-| Admin d'instance | aucune | « Page introuvable. » |
+| Admin d'instance, ou compte sans rôle dans l'univers (Teo) | aucune | « Page introuvable. » |
 
 Un geste qu'un rôle n'a pas est **absent** de l'écran (jamais grisé, sauf hors connexion). Par l'API,
 un geste d'écriture d'un non-MJ est refusé **403** sur une carte qu'il lit ; sur une carte qu'il ne
@@ -257,21 +268,27 @@ reste. Hors connexion, le fond déjà chargé reste affiché.
 
 ### E-3 — le bloc « Cartes »
 
-Sur la vue d'ensemble, un bloc **Cartes**, inscrit au registre des blocs de E-3 (un fichier dans
+Sur la vue d'ensemble, un bloc **Cartes visibles** (le titre de la maquette `e03`), inscrit au registre des blocs de E-3 (un fichier dans
 `frontend/src/ecrans/vue-ensemble/blocs/`, une ligne au registre, après les blocs des campagnes et
 des comptes-rendus ; aucun bloc existant n'est modifié). Il liste, pour tous les rôles, les **cartes
 visibles des joueurs** (cinq au plus, titre alphabétique) : le titre en lien vers E-11 et la forme ;
-dessous « Toutes les cartes » vers E-10. Le MJ voit donc ce que la table voit ; ses cartes « MJ seul »
+dessous « Toutes » vers E-10. Le MJ voit donc ce que la table voit ; ses cartes « MJ seul »
 se trouvent sur E-10.
 
 | État | Ce qu'on voit | Ce qu'on peut faire |
 |---|---|---|
-| vide | MJ : « Aucune carte visible des joueurs. » et « Toutes les cartes » ; Joueur : **pas de bloc** (ni titre ni compteur) | MJ : « Toutes les cartes » |
+| vide | MJ : « Aucune carte visible des joueurs. » et « Toutes » ; Joueur : **pas de bloc** (ni titre ni compteur) | MJ : « Toutes » |
 | chargement | le titre du bloc et « Chargement… » | — |
 | erreur | « Impossible de charger les cartes. » | « Réessayer » |
 | connexion perdue | le bandeau ; les cartes déjà chargées restent | ouvrir |
 | refus | sans objet : le refus d'E-3 couvre le bloc (« Page introuvable. ») | — |
-| contenu long | un titre tient sur une ligne, puis « … » ; au-delà de cinq cartes, cinq et « Toutes les cartes » | — |
+| contenu long | un titre tient sur une ligne, puis « … » ; au-delà de cinq cartes, cinq et « Toutes » | — |
+
+| Rôle | Voir |
+|---|---|
+| MJ | le bloc, avec les seules cartes visibles des joueurs |
+| Joueur | le bloc s'il y a au moins une carte visible, sinon aucun bloc |
+| Admin d'instance, ou compte sans rôle | aucun : E-3 lui répond « Page introuvable. » |
 
 *Critère.* Étant donné deux cartes visibles et une « MJ seul », alors le bloc de Léa en liste deux ;
 celui d'Antor aussi.
