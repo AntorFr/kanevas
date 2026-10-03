@@ -38,6 +38,23 @@ Ni relations, ni recherche, ni pièces jointes, ni campagnes, ni assistant : tra
 Volume `/data` : `kanevas.db` (SQLite, WAL) et `session.key` (secret de session, 0600) ; le
 dossier des pièces jointes n'existe pas encore.
 
+## Routes `/api`
+
+Toutes gardées par la session (401 sans session), sauf `/api/auth/*`. Les erreurs de service sont
+`introuvable` 404, `refuse` 403, `invalide` 400, `conflit` 409 (`section_modifiee`).
+
+| Route | Rôle |
+|---|---|
+| `GET /api/moi`, `POST /api/auth/logout` | identité et groupes du compte ; fin de session |
+| `GET /api/auth/config`, `GET /api/auth/oidc/login`, `.../callback` | OIDC (publiques) |
+| `GET\|POST /api/univers`, `GET /api/univers/:id` | univers du compte (avec son rôle) ; création |
+| `GET\|POST /api/univers/:id/membres`, `PATCH\|DELETE .../membres/:compteId` | membres (MJ) |
+| `GET\|POST /api/univers/:id/fiches` (`?type`, `?curseur`) | liste paginée (100) ; création (MJ) |
+| `GET .../fiches/:fid` | fiche et sections lisibles ; `?mode=joueur` lit en Joueur |
+| `POST .../fiches/:fid/sections`, `PUT .../fiches/:fid/ordre` | ajouter, ordonner (MJ) |
+| `GET\|PATCH\|DELETE .../sections/:sid` | lire ; titre et audience (MJ) ; retirer (MJ) |
+| `PUT .../sections/:sid/contenu` | écrire `{contenu, version}` ; 409 si `version` périmée |
+
 ## Invariants
 
 - **La version a une seule source** : le build-arg Docker `APP_VERSION`, dérivé
@@ -55,7 +72,7 @@ dossier des pièces jointes n'existe pas encore.
   ou invalide fait échouer le démarrage.
 - **Cinq tables, aucun ORM** : `comptes`, `univers`, `membres`, `fiches`, `sections` (migration
   0001). Aucune requête SQL hors de `src/services/` et `src/db/`.
-- **Toute route hors `/healthz` et `/api/auth/*` est gardée par la session** ; sous `/api` un
+- **Toute route hors `/healthz`, `/api/auth/*` et, en bouchon, `/connexion-bouchon` est gardée par la session** ; sous `/api` un
   défaut de session répond 401, ailleurs il redirige vers la connexion (AD-15).
 - **Rien n'appelle un LLM** : les transports compilent mais ne sont reliés à
   aucune route. Aucun secret `ANTHROPIC_API_KEY` n'est déployé.
@@ -103,8 +120,8 @@ Authelia (OIDC) : identité seulement.
   ne parle qu'au backend, jamais à la base ni au disque. Le fil de l'assistant vit dans la page
   (AD-28).
 - **Backend Fastify** : le seul point d'accès aux données, au disque, au fournisseur LLM et à
-  Codex (AD-4). Toute route hors `/api` est gardée par la session (AD-15) ; seul `/healthz` est
-  public.
+  Codex (AD-4). Toute route hors `/api` est gardée par la session (AD-15) ; seuls `/healthz`,
+  `/api/auth/*` et, en bouchon, `/connexion-bouchon` sont publics.
 - **Fonctions de service** : la seule implémentation de chaque lecture et écriture, avec ses
   gardes (`peutLireSection`, `peutEcrireSection`, `peutVoirFiche`, `peutLirePieceJointe`).
   Routes et outils de l'agent les appellent de la même façon (AD-2) : c'est ce qui rend la
@@ -200,7 +217,7 @@ Les numéros sont stables. Une décision retirée garde son numéro, avec ce qui
 
 | Dépendance | Ce que le bouchon rend | Qui le construit |
 |---|---|---|
-| Authelia (OIDC) | un écran de connexion qui liste les comptes de test (Antor, Léa, Teo, Mira, Admin) ; la session est la même qu'après Authelia, groupes compris (Admin porte `parents`, que `kanevas-recours-admin` lit comme ceux d'Authelia) | `kanevas-premiere-fiche` |
+| Authelia (OIDC) | un écran de connexion qui liste les comptes de test (Antor, Léa, Teo, Mira, Admin ; identifiants `antor`, `lea`, `teo`, `mira`, `admin`) ; la session est la même qu'après Authelia, groupes compris (Admin porte `parents`, que `kanevas-recours-admin` lit comme ceux d'Authelia) | `kanevas-premiere-fiche` |
 | Modèle de l'assistant (AD-54) | transport `bouchon` : des réponses scriptées, choisies par mots-clés, qui appellent les vrais outils avec les droits de la personne | `kanevas-assistant-membre` |
 | Moteur d'images (AD-50) | adaptateur `bouchon` : une image fixe, attachée par le vrai chemin (AD-44) ; une demande qui contient « échec » échoue, pour tester ce cas | `kanevas-images` |
 

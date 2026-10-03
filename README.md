@@ -45,16 +45,23 @@ npm run dev            # ou : npm run build && npm start (sert dist/server.js)
 curl http://localhost:3001/healthz   # -> "kanevas 0.0.0-dev"
 ```
 
-`npm run dev` ne sert que l'API ; `npm run build` construit aussi le frontend dans
-`dist/public`, servi par Fastify derrière la session. `npm run dev:front` lance Vite seul.
+`npm run dev` sert l'API, et le frontend seulement s'il a été construit : lancer d'abord
+`npm run build` (il construit `dist/public`, servi par Fastify derrière la session ; sans lui, `/`
+ne montre aucun écran). `npm run dev:front` lance Vite seul (port 5173 par défaut) et ne relaie que
+`/api` : il ne remplace pas le serveur pour la connexion en bouchon.
+
+La voie de référence reste le conteneur Node 20 de `CLAUDE.md` (celle de la CI) ; un Node local
+récent suffit pour les mêmes commandes.
 
 ### Sans Authelia : le mode bouchon
 
 ```bash
-KANEVAS_STUB=1 npm run dev     # puis ouvrir http://localhost:3001/ : choix d'un compte de test
+npm run build && KANEVAS_STUB=1 npm start   # puis ouvrir http://localhost:3001/ : choix d'un compte de test
 ```
 
-`/connexion-bouchon` remplace Authelia (AD-55) sous un bandeau « mode bouchon ». Kanevas refuse de
+`/connexion-bouchon` remplace Authelia (AD-55) sous un bandeau « mode bouchon ». Les comptes de test
+ont pour identifiants `antor`, `lea`, `teo`, `mira` et `admin` (noms affichés Antor, Léa…) : c'est
+l'identifiant qu'on tape pour ajouter un membre. Kanevas refuse de
 démarrer en bouchon si une variable `OIDC_*` est posée. En production sans volume `/data`, la base est en
 mémoire (avertissement au démarrage).
 
@@ -80,8 +87,8 @@ curl http://localhost:3001/healthz   # -> "kanevas 0.1.0"
 Sur un tag, la CI dérive ce même build-arg du tag semver poussé (`docker/metadata-action`)
 : pousser `v0.1.0` publie `ghcr.io/antorfr/kanevas:0.1.0` avec `APP_VERSION`
 embarqué à `0.1.0` — une seule source de vérité pour la version affichée et le
-tag publié. Hors tag (`main`, PR), la valeur n'est pas un semver (À documenter : valeur
-exacte non constatée en CI) : seul un tag donne une version fiable.
+tag publié. Hors tag (`main`, PR), la valeur est celle de `docker/metadata-action` pour la référence (le nom de
+branche, par exemple `main`), donc pas un semver : seul un tag donne une version fiable.
 
 ## OIDC
 
@@ -104,8 +111,8 @@ manifeste `clusters/tantive/games/kanevas-helm-config.yml` et client OIDC
 `k8s-home-lab`. Ordre : publier l'image (tag `vX.Y.Z`), publier le chart, puis
 fusionner `k8s-home-lab`, dont la fusion déploie.
 
-Pour la carte du code, les invariants et les options écartées, voir
-`ARCHITECTURE.md`. Les sigles `AD-n` renvoient aux décisions de l'epic Kanevas (magasin de
-pilotage de la chaîne SDLC, hors de ce dépôt ; les commentaires qui citent
-`plan.md`, `technique.md` ou `socle-projet` en viennent), dont `ARCHITECTURE.md` résume celles qui touchent ce dépôt (AD-3 Node/TypeScript,
-AD-4 Fastify, AD-5 SQLite, AD-9 rôles par univers, AD-10 reprise d'Antre-du-maitre).
+Pour la carte du code, les invariants et les options écartées, voir `ARCHITECTURE.md`, dont le
+tableau liste toutes les décisions `AD-n` de l'epic Kanevas, avec leur numéro stable. Des
+commentaires du code citent encore `plan.md`, `technique.md` ou `socle-projet` : ce sont des
+documents de conception tenus hors de ce dépôt (magasin de pilotage de la chaîne SDLC), dont ce
+qui doit survivre est dans `ARCHITECTURE.md` et `docs/`.
