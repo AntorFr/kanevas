@@ -101,7 +101,7 @@ vocabulaire, pas la finition. Elles illustrent ; ce document décide.
 
 ## Détail des écrans de `kanevas-cartes-graphes`
 
-> E-10 Cartes, E-11 Carte (carte illustrée et graphe), le bloc « Cartes » de E-3, l'item « Cartes »
+> E-10 Cartes, E-11 Carte (carte illustrée et graphe), le bloc « Cartes visibles » de E-3, l'item « Cartes »
 > de la barre latérale (il apparaît avec cette tranche). Mêmes six états et mêmes textes communs que
 > la première fiche (chargement, erreur, connexion perdue, écriture en cours, échec d'une écriture,
 > refus « Page introuvable. », session expirée). Maquettes : `e10` (liste : MJ, Joueuse, vide,
@@ -266,7 +266,7 @@ reste. Hors connexion, le fond déjà chargé reste affiché.
   reste ; l'adresse du fond d'une carte non visible répond 404 à Léa.
 - Étant donné Léa sur une carte, quand elle force l'adresse d'une action de MJ, alors elle reçoit 403.
 
-### E-3 — le bloc « Cartes »
+### E-3 — le bloc « Cartes visibles »
 
 Sur la vue d'ensemble, un bloc **Cartes visibles** (le titre de la maquette `e03`), inscrit au registre des blocs de E-3 (un fichier dans
 `frontend/src/ecrans/vue-ensemble/blocs/`, une ligne au registre, après les blocs des campagnes et
