@@ -2,26 +2,26 @@
 // B-12 ; docs/ecrans.md E-1..E-4, E-8, E-9) and not from the code. The real server runs in stub
 // mode (AD-55), a real Chromium plays the users Antor (MJ), Léa and Teo (players), Mira.
 //
-// PLAN DE TEST (besoin -> cas -> attendu en dur)
-//   B-2  nominal  : Antor crée « Lame d'Ébène » -> sa vue d'ensemble, badge MJ, listé à l'accueil
-//        bords    : nom vide ; nom de 80 / 81 caractères ; description 501 ; Annuler
-//   B-1  nominal  : Teo, compte neuf -> « Aucun univers pour l'instant. » + « teo »
-//        exclusion: aucun nom d'univers n'est montré à un compte sans rôle
-//   B-3  nominal  : Antor ajoute lea (Joueur) -> Léa voit l'univers, badge Joueur
-//        échec    : « personne » -> « Ce compte ne s'est jamais connecté. » ; lea deux fois -> « déjà membre »
-//        bords    : identifiant partiel refusé ; changer le rôle (MJ puis Joueur) ouvre/ferme « Membres »
-//        exclusion: aucune liste des comptes de l'instance
-//   B-7  nominal  : « Maître Aldric » (PNJ) créé depuis Personnages ; PJ ; ordre alphabétique sans casse
-//        bords    : titre vide ; 120 / 121 caractères ; liste vide MJ / Joueur ; type inconnu
-//   B-8  nominal  : ajouter, régler, réordonner, retirer (avec confirmation), modifier
-//        bords    : titre de section 80 / 81 ; contenu 20 000 / 20 001 ; texte brut ; monter la première
-//        échec    : écriture périmée -> « La section a changé depuis que vous l'avez ouverte… », texte gardé
-//   B-9  nominal  : Léa ouvre Aldric -> « Apparence » seule
-//        exclusions: pas de titre « Vérité », pas de « MJ seul », pas de réglage, pas de trace dans les
-//                    réponses du serveur ; fiche sans section lisible absente de la liste et « Page introuvable. »
-//   B-12 nominal  : Antor en mode Joueur voit ce que voit Léa ; bords : « Modifier » seulement si les joueurs écrivent
-//   B-5  échec    : retirer / rétrograder le seul MJ -> « Impossible : l'univers doit garder au moins un MJ. »
-//   B-4  nominal  : Léa retirée -> plus d'univers à l'accueil, adresses -> « Page introuvable. »
+// TEST PLAN (need -> case -> hard-coded expectation)
+//   B-2  nominal  : Antor creates « Lame d'Ébène » -> its overview, GM badge, listed on the home screen
+//        edges    : empty name; 80 / 81-character name; description 501; Annuler
+//   B-1  nominal  : Teo, a new account -> « Aucun univers pour l'instant. » + « teo »
+//        exclusion: no universe name is shown to an account without a role
+//   B-3  nominal  : Antor adds lea (Joueur) -> Léa sees the universe, Joueur badge
+//        failure  : « personne » -> « Ce compte ne s'est jamais connecté. »; lea twice -> « déjà membre »
+//        edges    : partial identifier refused; changing the role (MJ then Joueur) opens/closes « Membres »
+//        exclusion: no list of the instance's accounts
+//   B-7  nominal  : « Maître Aldric » (PNJ) created from Personnages; PJ; case-insensitive alphabetical order
+//        edges    : empty title; 120 / 121 characters; empty list GM / Player; unknown type
+//   B-8  nominal  : add, set, reorder, remove (with confirmation), edit
+//        edges    : section title 80 / 81; content 20,000 / 20,001; plain text; move the first one up
+//        failure  : stale write -> « La section a changé depuis que vous l'avez ouverte… », text kept
+//   B-9  nominal  : Léa opens Aldric -> « Apparence » only
+//        exclusions: no « Vérité » title, no « MJ seul », no setting, no trace in the
+//                    server's answers; a sheet without a readable section absent from the list and « Page introuvable. »
+//   B-12 nominal  : Antor in Player mode sees what Léa sees; edges: « Modifier » only if players write
+//   B-5  failure  : removing / demoting the only GM -> « Impossible : l'univers doit garder au moins un MJ. »
+//   B-4  nominal  : Léa removed -> no more universe on the home screen, addresses -> « Page introuvable. »
 import assert from 'node:assert/strict';
 import { after, before, test } from 'node:test';
 import {
@@ -375,7 +375,7 @@ test('B-8 retirer une section : confirmation « Retirer la section « Vérité �
   assert.deepEqual(await titresSections(antor), ['Apparence', 'Vérité — MJ seul']);
 });
 
-// ---------------------------------------------------------------- B-9 (la fiche d'Aldric : Apparence ouverte, Vérité fermée)
+// ---------------------------------------------------------------- B-9 (Aldric's sheet: Apparence open, Vérité closed)
 
 test('B-9 Léa ouvre « Maître Aldric » dont « Apparence » est lue des joueurs : elle voit « Apparence » seule, sans trace de « Vérité »', opts, async () => {
   const antor = await compte('antor');
@@ -549,7 +549,7 @@ test('B-12 mode Joueur sur une fiche dont aucune section n\'est lisible des joue
   await voit(antor, "Aucune section n'est visible des joueurs.");
 });
 
-// ---------------------------------------------------------------- B-5 puis B-4 (ils défont la table)
+// ---------------------------------------------------------------- B-5 then B-4 (they undo the table)
 
 test('B-5 Antor, seul MJ, ne peut ni se retirer ni se rétrograder : « Impossible : l\'univers doit garder au moins un MJ. », liste inchangée', opts, async () => {
   const antor = await compte('antor');

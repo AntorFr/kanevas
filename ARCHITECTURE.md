@@ -129,7 +129,7 @@ Authelia (OIDC) : identité seulement.
   ne parle qu'au backend, jamais à la base ni au disque. Le fil de l'assistant vit dans la page
   (AD-28).
 - **Backend Fastify** : le seul point d'accès aux données, au disque, au fournisseur LLM et à
-  Codex (AD-4). Toute route hors `/api` est gardée par la session (AD-15) ; seuls `/healthz`,
+  Codex (AD-4). Toute route est gardée par la session (AD-15) : 401 sous `/api`, redirection ailleurs ; seuls `/healthz`,
   `/api/auth/*` et, en bouchon, `/connexion-bouchon` sont publics.
 - **Fonctions de service** : la seule implémentation de chaque lecture et écriture, avec ses
   gardes (`peutLireSection`, `peutEcrireSection`, `peutVoirFiche`, `peutLirePieceJointe`).
@@ -159,7 +159,7 @@ Les numéros sont stables. Une décision retirée garde son numéro, avec ce qui
 | AD-12 | *Remplacée par AD-18 et AD-19.* |
 | AD-13 | Compte créé à la première authentification (`preferred_username`). |
 | AD-14 | Migrations : fichiers SQL numérotés, appliqués au démarrage, sans ORM. |
-| AD-15 | Toute route hors `/api` gardée par la session (cookie signé), sinon redirection vers Authelia — en mode bouchon, vers le choix d'un compte de test (AD-55). |
+| AD-15 | Toute route gardée par la session (cookie signé), sinon 401 sous `/api` et redirection vers Authelia — en mode bouchon, vers le choix d'un compte de test (AD-55). |
 | AD-16 | Un seul routeur frontend, `react-router` ; chaque tranche y enregistre ses écrans. |
 | AD-17 | Charge utile v1 vide pour tous les types, sauf personnage (PJ \| PNJ) et compte-rendu (sa campagne) ; le contenu est dans les sections. |
 | AD-18 | Le MJ lit et écrit toute section de son univers. |

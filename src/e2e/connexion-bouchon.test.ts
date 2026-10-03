@@ -1,12 +1,12 @@
 // Black-box tests of the session and of the stub mode (B-28, AD-55, docs/ecrans.md « Session et
 // connexion »). Real server process, real HTTP, real Chromium.
 //
-// PLAN DE TEST
-//   B-28 nominal  : sans compte, ni page ni API ne servent de contenu ; /healthz ne dit que nom et version
-//        bords    : /healthz reste public ; une fois connecté, /api/moi rend {username, groups}
-//        exclusions: Admin seul porte « parents » ; se déconnecter referme tout
-//   AD-55 nominal : /connexion-bouchon liste Antor, Léa, Teo, Mira, Admin sous le bandeau, sur chaque page
-//        échec    : une variable OIDC_* (même seule) -> refus de démarrer ; sans KANEVAS_STUB, adresse introuvable
+// TEST PLAN
+//   B-28 nominal  : without an account, neither page nor API serves content; /healthz says only name and version
+//        edges    : /healthz stays public; once signed in, /api/moi returns {username, groups}
+//        exclusions: only Admin carries « parents »; signing out closes everything
+//   AD-55 nominal : /connexion-bouchon lists Antor, Léa, Teo, Mira, Admin under the banner, on every page
+//        failure  : an OIDC_* variable (even alone) -> refuses to start; without KANEVAS_STUB, unknown address
 import assert from 'node:assert/strict';
 import { after, before, test } from 'node:test';
 import {

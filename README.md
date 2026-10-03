@@ -32,7 +32,8 @@ Un écran est un fichier `frontend/src/ecrans/<nom>.tsx` enregistré par le regi
 ## Démarrage local
 
 ```bash
-# écrit ./data/ (base et session.key) dans le dépôt monté ; ./data/ n'est pas dans .gitignore
+# écrit node_modules/ et ./data/ (base et session.key) dans le dépôt monté, en root ; les deux sont ignorés par git.
+# Sans `npm run build` préalable, cette voie ne sert que l'API : voir plus bas.
 docker run --rm -p 3001:3001 -v "$PWD":/src -w /src node:20-bookworm-slim sh -c "npm ci && npm run dev"
 # puis, depuis l'hôte : curl http://localhost:3001/healthz
 ```
@@ -49,7 +50,7 @@ curl http://localhost:3001/healthz   # -> "kanevas 0.0.0-dev"
 `npm run dev` sert l'API, et le frontend seulement s'il a été construit : lancer d'abord
 `npm run build` (il construit `dist/public`, servi par Fastify derrière la session ; sans lui, `/`
 ne montre aucun écran). `npm run dev:front` lance Vite seul (port 5173 par défaut) et ne relaie que
-`/api` : il ne remplace pas le serveur pour la connexion en bouchon.
+`/api` vers `http://localhost:3001` (écrit en dur dans `frontend/vite.config.ts` : à changer si `PORT` change) : il ne remplace pas le serveur pour la connexion en bouchon.
 
 La voie de référence reste le conteneur Node 20 de `CLAUDE.md` (celle de la CI) ; un Node local
 récent suffit pour les mêmes commandes.
@@ -62,9 +63,17 @@ npm run build && KANEVAS_STUB=1 npm start   # puis ouvrir http://localhost:3001/
 
 `/connexion-bouchon` remplace Authelia (AD-55) sous un bandeau « mode bouchon ». Les comptes de test
 ont pour identifiants `antor`, `lea`, `teo`, `mira` et `admin` (noms affichés Antor, Léa…) : c'est
-l'identifiant qu'on tape pour ajouter un membre. Kanevas refuse de
+l'identifiant qu'on tape pour ajouter un membre. Un compte n'existe qu'après sa première connexion :
+pour ajouter Léa, se connecter d'abord une fois en Léa (sinon « Ce compte ne s'est jamais connecté. »). Kanevas refuse de
 démarrer en bouchon si une variable `OIDC_*` est posée. En production sans volume `/data`, la base est en
 mémoire (avertissement au démarrage).
+
+### Tests de bout en bout
+
+`npm test` joue aussi `src/e2e/` : le vrai serveur en bouchon, piloté par un vrai Chromium via
+Playwright. Playwright n'est pas une dépendance du dépôt : il vient de l'image de travail (install
+globale). Là où il manque, comme dans la CI GitHub, ces tests sont **ignorés avec un message**, sans
+échec ; les autres tests (services, routes HTTP) tournent partout.
 
 ## Réglages
 

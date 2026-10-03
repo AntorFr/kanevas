@@ -149,7 +149,7 @@ export async function attendre(page: Any): Promise<void> {
   await page.waitForLoadState('networkidle');
 }
 
-// --- gestes de l'utilisateur, d'après docs/ecrans.md (libellés de la doc) ---
+// --- user gestures, after docs/ecrans.md (the doc's labels) ---
 
 export async function ouvrirFormulaireUnivers(page: Any): Promise<void> {
   await page.goto('/');

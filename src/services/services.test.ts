@@ -32,7 +32,7 @@ function code(fn: () => unknown): string {
   return 'aucune';
 }
 
-/** MJ Marc, joueuse Léa, étrangère Zoé (aucun rôle), un univers, une fiche, deux sections. */
+/** GM Marc, player Léa, outsider Zoé (no role), one universe, one sheet, two sections. */
 function monde() {
   const db = base();
   const marc = assurerCompte(db, 'marc');
@@ -101,7 +101,7 @@ test('lecture de l’auteur : seul l’auteur lit, pas un autre joueur', () => {
   changerAudience(db, marc.id, u.id, f.id, sec.id, { auteurId: lea.id, auteurLit: true });
   assert.equal(lireSection(db, { compteId: lea.id }, u.id, f.id, sec.id).contenu, 'Traître');
   assert.equal(code(() => lireSection(db, { compteId: jo.id }, u.id, f.id, sec.id)), 'introuvable');
-  // le mode Joueur : le MJ ou l’auteur lit comme un non-auteur
+  // Player mode: the GM or the author reads as a non-author
   assert.equal(code(() => lireSection(db, { compteId: lea.id, modeJoueur: true }, u.id, f.id, sec.id)), 'introuvable');
   assert.equal(code(() => lireFiche(db, { compteId: lea.id, modeJoueur: true }, u.id, f.id)), 'introuvable');
   assert.equal(listerFiches(db, { compteId: lea.id, modeJoueur: true }, u.id).fiches.length, 0);
@@ -128,16 +128,16 @@ test('écriture : joueurs, auteur, MJ toujours ; sinon refusé', () => {
   changerAudience(db, marc.id, u.id, f.id, pub.id, { joueursLisent: true });
   assert.equal(code(() => ecrireContenu(db, lea.id, u.id, f.id, pub.id, 'X', 1)), 'refuse');
   assert.equal(lireSection(db, { compteId: marc.id }, u.id, f.id, pub.id).contenu, 'Grand');
-  // section cachée : introuvable
+  // hidden section: not found
   assert.equal(code(() => ecrireContenu(db, lea.id, u.id, f.id, sec.id, 'X', 1)), 'introuvable');
-  // écriture des joueurs
+  // players' write
   changerAudience(db, marc.id, u.id, f.id, pub.id, { joueursEcrivent: true });
   assert.equal(ecrireContenu(db, jo.id, u.id, f.id, pub.id, 'Par jo', 1).contenu, 'Par jo');
-  // écriture de l'auteur seul
+  // author-only write
   changerAudience(db, marc.id, u.id, f.id, sec.id, { auteurId: lea.id, auteurLit: true, auteurEcrit: true });
   assert.equal(ecrireContenu(db, lea.id, u.id, f.id, sec.id, 'Par lea', 1).contenu, 'Par lea');
   assert.notEqual(code(() => ecrireContenu(db, jo.id, u.id, f.id, sec.id, 'Par jo', 2)), 'aucune');
-  // le MJ écrit toujours, même section fermée
+  // the GM always writes, even on a closed section
   changerAudience(db, marc.id, u.id, f.id, sec.id, { auteurEcrit: false, auteurLit: false });
   assert.equal(ecrireContenu(db, marc.id, u.id, f.id, sec.id, 'Par marc', 2).contenu, 'Par marc');
   assert.equal(code(() => ecrireContenu(db, lea.id, u.id, f.id, sec.id, 'Y', 3)), 'introuvable');
@@ -210,7 +210,7 @@ test('seul MJ : ni retiré ni rétrogradé, avec la raison ; avec deux MJ c’es
   }
   changerRole(db, marc.id, u.id, lea.id, 'mj');
   changerRole(db, marc.id, u.id, marc.id, 'joueur');
-  // Léa est maintenant la seule MJ
+  // Léa is now the only GM
   assert.equal(code(() => retirerMembre(db, lea.id, u.id, lea.id)), 'invalide');
   retirerMembre(db, lea.id, u.id, marc.id);
 });

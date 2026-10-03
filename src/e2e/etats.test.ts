@@ -1,14 +1,14 @@
-// Black-box tests of B-29 : chaque écran construit a ses états (vide, chargement, erreur,
-// connexion perdue, refus, contenu long) et le comportement d'écriture commun (« … », double clic,
-// échec). Textes exacts de docs/ecrans.md « Détail des écrans de kanevas-premiere-fiche ».
+// Black-box tests of B-29: every built screen has its states (empty, loading, error,
+// connection lost, refusal, long content) and the shared write behaviour (« … », double click,
+// failure). Exact texts of docs/ecrans.md « Détail des écrans de kanevas-premiere-fiche ».
 //
-// PLAN DE TEST
-//   B-29 chargement    : E-1, E-3, E-4, E-8, E-9 montrent leur texte pendant que l'API tarde
-//        erreur        : l'API échoue -> message de l'écran + « Réessayer » qui relance
-//        connexion perdue : bandeau, écrans lisibles, boutons qui écrivent désactivés, il disparaît au retour
-//        refus         : « Page introuvable. » + « Mes univers », barre sans sélecteur ni nom d'univers
-//        contenu long  : 100 univers triés par nom ; 101 fiches -> « Charger la suite » ; nom de 80 caractères tronqué avec infobulle
-//        écriture      : « … » et bouton désactivé ; un double clic ne part qu'une fois ; échec -> « L'action n'a pas abouti. Réessayez. »
+// TEST PLAN
+//   B-29 loading      : E-1, E-3, E-4, E-8, E-9 show their text while the API is slow
+//        error         : the API fails -> the screen's message + « Réessayer » which retries
+//        connection lost: banner, readable screens, writing buttons disabled, it goes away on its own on return
+//        refusal       : « Page introuvable. » + « Mes univers », sidebar without selector nor universe name
+//        long content  : 100 universes sorted by name; 101 sheets -> « Charger la suite »; 80-character name truncated with tooltip
+//        write         : « … » and disabled button; a double click goes out once; failure -> « L'action n'a pas abouti. Réessayez. »
 import assert from 'node:assert/strict';
 import { after, before, test } from 'node:test';
 import {
@@ -202,7 +202,7 @@ test('B-29 connexion perdue sur E-2, E-4, E-8, E-9 : les boutons qui écrivent s
   await page.close();
 });
 
-// ---------------------------------------------------------------- écriture
+// ---------------------------------------------------------------- write
 
 test('B-29 un double clic sur « Créer l\'univers » ne crée qu\'un univers ; le bouton affiche « … » et est désactivé pendant l\'envoi', opts, async () => {
   const page = await antor.context().newPage();
@@ -375,7 +375,7 @@ test('B-29 contenu long E-8 : 101 fiches -> cent d\'abord, « Charger la suite �
   await page.close();
 });
 
-// ---------------------------------------------------------------- barre latérale
+// ---------------------------------------------------------------- sidebar
 
 test('B-29 barre latérale : le sélecteur d\'univers montre le nom et le rôle, liste les univers du compte, « Mes univers » en pied', opts, async () => {
   await antor.goto(urlUnivers);
@@ -403,7 +403,7 @@ test('B-29 sur téléphone (moins de 760 px) la barre est un tiroir sous un bout
   await page.close();
 });
 
-// ---------------------------------------------------------------- session expirée
+// ---------------------------------------------------------------- expired session
 
 test('E-9 session expirée pendant une saisie : retour à la connexion, le texte en cours est rendu à la section après reconnexion', opts, async () => {
   const page = await antor.context().newPage();

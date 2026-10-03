@@ -102,7 +102,7 @@ test('critère : Léa lit la fiche sans la section MJ seul, sans son titre ni so
     assert.ok(!r.body.includes('Vérité'), `le titre fuit : ${r.body}`);
     assert.ok(!r.body.includes('roi déchu'), `le contenu fuit : ${r.body}`);
   }
-  // Antor, lui, voit les deux.
+  // Antor sees both.
   const mj = await appel(app, antor, 'GET', `${base}/fiches/${aldric.id}`);
   assert.deepEqual(mj.json().sections.map((s: Section) => s.titre), ['Apparence', 'Vérité — MJ seul']);
 });
@@ -140,10 +140,10 @@ test('critère : le mode Joueur d’Antor rend ce que rend Léa', async () => {
   const chezLea = await appel(app, lea, 'GET', `${base}/fiches/${aldric.id}`);
   assert.deepEqual(titres(enJoueur), titres(chezLea));
   assert.deepEqual(titres(enJoueur), ['Apparence']);
-  // La fiche sans section lisible aussi : 404 en mode Joueur, lisible en mode MJ.
+  // A sheet without a readable section too: 404 in Player mode, readable in GM mode.
   assert.equal((await appel(app, antor, 'GET', `${base}/fiches/${secrete.id}?mode=joueur`)).statusCode, 404);
   assert.equal((await appel(app, antor, 'GET', `${base}/fiches/${secrete.id}`)).statusCode, 200);
-  // Le mode Joueur ne peut que restreindre : un mode inconnu est refusé.
+  // Player mode can only restrict: an unknown mode is refused.
   assert.equal((await appel(app, antor, 'GET', `${base}/fiches/${aldric.id}?mode=dieu`)).statusCode, 400);
 });
 
@@ -164,14 +164,14 @@ test('critère : « Notes de la table », Léa auteure avec écriture, Teo ne la
   assert.equal(ecrite.statusCode, 200, ecrite.body);
   assert.equal(((await appel(app, lea, 'GET', url)).json() as Section).contenu, 'Léa a noté un indice.');
 
-  // Teo, Joueur : ni la section dans la fiche, ni par son adresse, tant que les joueurs ne la lisent pas.
+  // Teo, a player: neither the section in the sheet, nor by its address, as long as players cannot read it.
   const chezTeo = await appel(app, teo, 'GET', `${base}/fiches/${aldric.id}`);
   assert.deepEqual(chezTeo.json().sections.map((s: Section) => s.titre), ['Apparence']);
   assert.ok(!chezTeo.body.includes('Notes de la table') && !chezTeo.body.includes('indice'));
   assert.equal((await appel(app, teo, 'GET', url)).statusCode, 404);
   assert.equal((await appel(app, teo, 'PUT', `${url}/contenu`, { contenu: 'Intrus.', version: 1 })).statusCode, 404);
 
-  // Les joueurs la lisent : Teo la voit enfin, mais ne l'écrit pas.
+  // Players read it: Teo finally sees it, but cannot write it.
   await lireAuxJoueurs(app, antor, base, aldric.id, notes.id);
   assert.equal((await appel(app, teo, 'GET', url)).statusCode, 200);
   const lueParTeo = (await appel(app, teo, 'GET', url)).json() as Section;
@@ -198,11 +198,11 @@ test('critère : Léa ne peut ni réordonner, ni retirer, ni changer l’audienc
   assert.equal((await appel(app, lea, 'POST', `${f}/sections`, { titre: 'Secret de Léa' })).statusCode, 403);
   assert.equal((await appel(app, lea, 'POST', `${base}/fiches`, { type: 'lieu', titre: 'Taverne' })).statusCode, 403);
 
-  // Rien n'a bougé : l'ordre, les deux sections et l'audience sont ceux d'Antor.
+  // Nothing moved: the order, the two sections and the audience are Antor's.
   const apres = (await appel(app, antor, 'GET', f)).json();
   assert.deepEqual(apres.sections.map((s: Section) => s.titre), ['Apparence', 'Histoire']);
   assert.equal(apres.sections[0].audience.joueursLisent, true);
-  // Et le MJ, lui, réordonne.
+  // And the GM can reorder.
   assert.equal((await appel(app, antor, 'PUT', `${f}/ordre`, { ids: [b.id, a.id] })).statusCode, 204);
   const inverse = (await appel(app, antor, 'GET', f)).json();
   assert.deepEqual(inverse.sections.map((s: Section) => s.titre), ['Histoire', 'Apparence']);
@@ -223,7 +223,7 @@ test('critère : deux écritures de la même version, la seconde reçoit 409 sec
   assert.equal(seconde.json().code, 'section_modifiee');
   assert.equal(((await appel(app, antor, 'GET', url)).json() as Section).contenu, 'Première.');
 
-  // Sans version, ou avec une version qui n'en est pas une : refusée, rien d'écrit.
+  // No version, or a version that is not one: refused, nothing written.
   assert.equal((await appel(app, antor, 'PUT', `${url}/contenu`, { contenu: 'X' })).statusCode, 400);
   assert.equal((await appel(app, antor, 'PUT', `${url}/contenu`, { contenu: 'X', version: 'un' })).statusCode, 400);
   assert.equal(((await appel(app, antor, 'GET', url)).json() as Section).contenu, 'Première.');
@@ -243,7 +243,7 @@ test('critère : les listes rendent cent fiches au plus par page et un curseur p
   assert.equal(p2.suivant, null);
   const ids = new Set([...p1.fiches, ...p2.fiches].map((f: { id: number }) => f.id));
   assert.equal(ids.size, 105, 'aucune fiche perdue ni répétée entre les pages');
-  // Un filtre de type reste dans la limite.
+  // A type filter stays within the limit.
   const lieux = (await appel(app, antor, 'GET', `${base}/fiches?type=lieu`)).json();
   assert.equal(lieux.fiches.length, 100);
   assert.equal((await appel(app, antor, 'GET', `${base}/fiches?type=faction`)).json().fiches.length, 0);
@@ -255,7 +255,7 @@ test('exclusion : un compte sans rôle dans l’univers ne sait pas que la fiche
   const s = await section(app, antor, base, aldric.id, 'Apparence', 'Un vieil homme.');
   await lireAuxJoueurs(app, antor, base, aldric.id, s.id);
   const mira = await connecter(app, 'mira');
-  // Mira n'a aucun rôle dans l'univers : tout répond 404, rien ne dit que la fiche existe.
+  // Mira has no role in the universe: everything answers 404, nothing says the sheet exists.
   for (const [verbe, url] of [
     ['GET', `${base}/fiches`],
     ['GET', `${base}/fiches/${aldric.id}`],
