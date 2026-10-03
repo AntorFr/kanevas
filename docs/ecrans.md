@@ -339,7 +339,7 @@ E-2.
 
 **Qui est admin d'instance.** Le compte dont la session porte le groupe Authelia `parents` (AD-56,
 lu à la connexion ; en bouchon, Admin). Le droit est celui de la session en cours : un compte retiré
-du groupe le garde jusqu'à l'expiration de sa session (7 jours) — risque accepté (AD-82).
+du groupe le garde jusqu'à l'expiration de sa session (7 jours) — risque accepté (AD-86).
 **Ce que l'admin voit** : le nom de chaque univers, le nombre de ses membres, et ses membres
 (identifiant, rôle). **Ce qu'il ne voit jamais** : la description, une fiche, une section, un
 compte-rendu, une carte, une pièce jointe, un système de jeu — pour tout cela, il est un compte sans
