@@ -139,7 +139,7 @@ dernier MJ — refusé avec la raison.
 1. **Vue d'ensemble** (E-3) : les campagnes actives, les derniers CR, la préparation en cours.
 2. **Campagne** (E-6) : il crée la campagne (« En préparation ») ou ouvre l'existante et la passe
    « Active » ; il relit les CR les plus récents, crée ou ouvre un **scénario** (E-7) et l'écrit
-   (ou demande à son **assistant** (E-12) de créer la campagne ou le scénario).
+   (ou demande à son **assistant** (E-12) de créer la campagne ou le scénario : le bloc d'écriture mène à E-6 ou E-7).
 3. Il coche ou ajoute des tâches de **préparation** (E-6).
 4. **Lore** : depuis la **liste d'un type** (E-8), il crée un PNJ ; sur la **fiche** (E-9), il
    écrit « Apparence » (lue des joueurs) et « Vérité — MJ seul », relie le PNJ à sa faction,
@@ -148,6 +148,7 @@ dernier MJ — refusé avec la raison.
    « fais un portrait pour Apparence » : l'image est attachée à la section.
 6. **Cartes** (E-10, E-11) : il place le PNJ sur la carte de la ville, passe en **mode Joueur**
    pour vérifier, puis rend la carte visible.
+*Échec de l'assistant* : une demande de création échoue ou l'assistant est indisponible : le panneau le dit (« Je n'ai pas pu répondre — réessayer » ou « L'assistant n'est pas disponible pour le moment. »), rien n'est créé, et le MJ crée à la main (étape 2).
 *Moment fort* : la fiche en mode Joueur ne trahit aucun secret.
 
 ### P-4 — Écrire le compte-rendu (joueur ou MJ, le lendemain de la partie)
