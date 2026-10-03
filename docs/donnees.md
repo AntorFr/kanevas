@@ -91,7 +91,7 @@ cette fiche elle-même ; une section porte **100 relations** au plus ; seul un M
 Lecture, évaluée pour **le compte et le mode** de l'appelant : une relation est rendue si la section
 porteuse est lisible **et** si la fiche cible l'est (au moins une section lisible ; le MJ, hors
 mode Joueur, lit toute fiche de son univers). Sinon elle est absente de la réponse, sans compteur.
-Recherche : la liste d'un type avec une condition de plus (AD-63) ; l'index ne livre que des
+Recherche : la liste d'un type avec une condition de plus (AD-63), saisie de 1 à 100 caractères (le service refuse au-delà) ; l'index ne livre que des
 identifiants de candidats, jamais un résultat.
 
 ## Évolution

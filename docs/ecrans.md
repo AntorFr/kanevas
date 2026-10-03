@@ -391,6 +391,13 @@ section** : chacune dit son type et nomme sa cible — « membre de → Lames Gr
 type de la cible — et mène à la fiche de la cible (E-9). Une relation est dirigée : elle va de la
 section vers la cible ; la fiche cible ne montre pas les relations qui l'atteignent.
 
+| Rôle | Lire les relations d'une section | Relier, retirer | Refus |
+|---|---|---|---|
+| MJ | toutes celles de ses sections | oui | sans objet |
+| Joueur | celles dont il lit la section et la cible | non : boutons **absents** | une relation à cible illisible est **absente**, pas refusée |
+| MJ en mode Joueur | comme un Joueur qui n'est l'auteur d'aucune section | non : boutons absents | idem |
+| Admin d'instance | aucune | non | « Page introuvable. » |
+
 *Ce que voit chacun.* Une relation n'est montrée que si le compte lit la section **et** la fiche
 cible. Sinon elle est **absente** : ni ligne, ni espace, ni compteur, ni mot « cachée ». Le bloc
 d'un Joueur qui n'a aucune relation à voir n'apparaît pas du tout. Le MJ voit le bloc de chaque
@@ -403,6 +410,8 @@ section (AD-39), sans « Relier » ni « Retirer ».
 3. un champ « Chercher dans les factions » et la liste des fiches de ce type, cent à la fois avec
    « Charger la suite » : c'est la liste et la recherche de E-8, pas une autre ;
 4. choisir une fiche (une seule), puis « Relier » ; « Annuler » ferme sans rien écrire.
+
+*Le sélecteur de fiche* (étape 3) est la liste et la recherche de E-8 telles quelles : la recherche part à « Chercher » ou à Entrée, avec les mêmes états et les mêmes textes (« Recherche… », « Impossible de lancer la recherche. » et « Réessayer », « Aucun résultat pour « lames » dans les factions. », bandeau de connexion perdue avec « Chercher » et « Relier » désactivés, « Charger la suite » au-delà de 100) ; le choix se voit (puce pleine) et disparaît si l'on change le type de fiche ou la recherche.
 
 Le formulaire n'est pas gardé en cas de session expirée. Une fiche se relie à toute fiche de son
 univers, **sauf à elle-même**. Une section porte au plus 100 relations ; deux relations de même
@@ -442,10 +451,10 @@ chaque bouton « Retirer » porte l'étiquette accessible « Retirer la relation
 ### Clôture de `kanevas-relier-chercher`
 
 B-10 → bloc Relations de E-9 ; B-11 → recherche de E-8 ; B-29 → six états de la recherche et du
-bloc ci-dessus. Atteints par P-3 étape 4 (relier le PNJ à sa faction, bloc de E-9) et P-6 étape 2
+bloc ci-dessus. Atteints par P-3 étape 4 (relier le PNJ à sa faction : relier une section du PNJ, bloc de E-9) et P-6 étape 2
 (chercher « Aldric », E-8). Les deux rôles ont leur colonne : le MJ cherche et relie, le Joueur
 cherche et lit ce qu'il peut ; l'admin d'instance n'atteint ni l'un ni l'autre (« Page
-introuvable. »). Chemin d'échec de P-6 : une recherche sans résultat dit « Aucun résultat pour … »,
+introuvable. »). Chemin d'échec propre à cette tranche (`docs/parcours.md` n'en porte pas pour P-3 et P-6) : une recherche sans résultat dit « Aucun résultat pour … »,
 jamais « caché ».
 
 ## Maquettes
