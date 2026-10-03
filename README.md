@@ -18,7 +18,8 @@ src/
   services/llm/                   Transports LLM repris d'Antre-du-maitre,
                                    réservés aux futures features — aucune
                                    route de ce socle ne les appelle
-  **/*.test.ts, e2e/healthz.test.ts  Tests (node:test), /healthz sur le serveur réel
+  **/*.test.ts, e2e/healthz.test.ts,
+  e2e/oidc-login.test.ts             Tests (node:test), /healthz et connexion OIDC sur le serveur réel
 .github/workflows/docker-publish.yml   CI : tests (typecheck + npm test), puis image GHCR
 ```
 

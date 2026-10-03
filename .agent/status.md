@@ -1,11 +1,11 @@
 # Status — kanevas
 
-> MàJ : 2026-10-02
+> MàJ : 2026-10-03
 
 **État :** socle posé sur `feature/kanevas-socle` (PR ouverte, non fusionnée) :
 `/healthz` (`kanevas <version>`, version = build-arg `APP_VERSION`), OIDC
 d'identité, transports LLM réservés, Dockerfile (utilisateur `node`, mais le pod tourne en root au cluster), CI
-`docker-publish.yml` (test puis image GHCR). Typecheck et 14 tests verts. Carte et
+`docker-publish.yml` (test puis image GHCR). Typecheck et 21 tests verts. Carte et
 invariants : `ARCHITECTURE.md`.
 
 **Pièges :**
