@@ -71,7 +71,7 @@ bouchon » — sans `E-n` ni six états, ils n'existent pas en production.
 | E-9 | tout ; mode Joueur ; relier et retirer des relations | sections lisibles ; écrire celles permises ; relations lisibles (section et cible) ; pièces jointes de celles-ci | — |
 | E-10 | tout | cartes visibles | — |
 | E-11 | tout ; mode Joueur | lire une carte visible, ouvrir une fiche | — |
-| E-12 | catalogue MJ | catalogue Joueur | — |
+| E-12 | catalogue MJ (dont générer une image) | catalogue Joueur (sans image : l'outil est absent, l'assistant répond qu'il ne peut pas) | — |
 | E-13 | tous les CR | les CR lisibles | — |
 | E-14 | tout | — | — |
 | E-15 | lire, écrire | lire | — |
@@ -674,7 +674,7 @@ messages du fil (AD-75).
 
 **Ce que chaque rôle y voit.** Le Joueur : chercher, lire une fiche, lire une section, modifier une
 section, ajouter un paragraphe à une section, lister les campagnes. Le MJ : les mêmes, plus créer
-une campagne et créer un scénario. Un Joueur qui demande de créer un scénario n'a pas l'outil :
+une campagne, créer un scénario et générer une image (`kanevas-images`). Un Joueur qui demande de créer un scénario n'a pas l'outil :
 l'assistant répond qu'il ne peut pas, sans événement et sans rien créer (le texte est celui du
 modèle, il n'est pas fixé ; ce qu'on vérifie est l'absence d'écriture). Dans les deux cas
 l'assistant ne lit et n'écrit que ce que la personne lit et écrit : une section fermée est
@@ -687,8 +687,8 @@ s'inscrivent au registre de blocs (`kanevas-monde`, `kanevas-images`).
 | vide (fil sans message) | « Demandez-moi de chercher, de résumer ou d'écrire dans ce que vous pouvez lire et écrire. Exemple : « Que sait-on d'Aldric ? » » | écrire ; fermer ; « Nouvelle conversation » (sans effet sur un fil vide) |
 | chargement (disponibilité) | le bouton est présent ; dans le panneau, « Chargement… » à la place du champ et de « Envoyer » (absents, pas désactivés) ; aucun « Réessayer » tant que l'appel n'a pas répondu | fermer ; nouvelle conversation |
 | disponibilité en échec (serveur muet, erreur) | « Je n'ai pas pu répondre — réessayer » avec un bouton « Réessayer » qui relit la disponibilité ; le champ et « Envoyer » sont présents mais désactivés (`aria-disabled`) | réessayer ; fermer ; nouvelle conversation |
-| réponse en cours | le message envoyé apparaît ; « Kanevas réfléchit… » (`role="status"`) ; « Envoyer » affiche « … » et est désactivé ; le champ reste lisible | fermer (la réponse arrive dans le fil) ; « Nouvelle conversation » est désactivée tant que la réponse n'est pas arrivée |
-| erreur | « Je n'ai pas pu répondre — réessayer » (`role="alert"`), sans événement, pour toutes les causes (délai de 120 s, erreur de transport) : la personne ne les distingue pas ; demande déjà en cours (429) : « Une demande est déjà en cours. Patientez. » ; la saisie n'est jamais perdue : à l'envoi le champ se vide, la question reste dans le fil, une seule fois ; « Réessayer » (offert pour toutes les erreurs, le 429 compris) la renvoie telle quelle : le message d'erreur disparaît, « Kanevas réfléchit… » prend sa place, et la question n'est pas affichée une seconde fois | « Réessayer » renvoie la même question ; saisir autre chose ; fermer ; nouvelle conversation |
+| réponse en cours | le message envoyé apparaît ; « Kanevas réfléchit… » (`role="status"`) ; « Envoyer » affiche « … » et est désactivé ; le champ reste lisible ; au bout de 20 secondes d'attente, « Kanevas travaille toujours… Une image peut prendre jusqu'à trois minutes. » (`kanevas-images`) | fermer (la réponse arrive dans le fil) ; « Nouvelle conversation » est désactivée tant que la réponse n'est pas arrivée |
+| erreur | « Je n'ai pas pu répondre — réessayer » (`role="alert"`), sans événement, pour toutes les causes (délai de 120 s, erreur de transport) : la personne ne les distingue pas ; demande déjà en cours (429) : « Une demande est déjà en cours. Patientez. » ; la saisie n'est jamais perdue : à l'envoi le champ se vide, la question reste dans le fil, une seule fois ; « Réessayer » (offert pour toutes les erreurs, le 429 compris) la renvoie telle quelle : le message d'erreur disparaît, « Kanevas réfléchit… » prend sa place, et la question n'est pas affichée une seconde fois ; une demande avec image dure 270 secondes au plus (AD-90) : au-delà, le même texte | « Réessayer » renvoie la même question ; saisir autre chose ; fermer ; nouvelle conversation |
 | indisponible (sans jeton, hors bouchon, AD-77) | « L'assistant n'est pas disponible pour le moment. » ; champ et « Envoyer » désactivés (`aria-disabled`) | lire le fil ; fermer ; nouvelle conversation |
 | connexion perdue | le bandeau commun ; le fil reste lisible ; champ et « Envoyer » désactivés. Perdue pendant « Kanevas réfléchit… » : la réponse est perdue, l'état passe à l'erreur ci-dessus avec « Réessayer » (désactivé tant que la connexion n'est pas revenue) ; au retour de la connexion, le bandeau disparaît et le champ est réactivé | lire, ouvrir les liens ; fermer ; nouvelle conversation |
 | refus | le compte sans rôle n'a pas le bouton (rien à décrire ici) ; un refus d'outil est une réponse de l'assistant, pas un écran d'erreur — « Introuvable. », « Vous ne pouvez pas modifier cette section. », « La section a changé depuis que vous l'avez lue. Relisez-la. » —, sans événement ; la réponse commence par ce texte, la suite est du texte libre du modèle ; session expirée : la personne est menée à la connexion, le fil est perdu | refus d'outil : le fil reste, on écrit à nouveau ; fermer ; nouvelle conversation |
@@ -834,8 +834,8 @@ route authentifiée des pièces jointes (AD-67) : aucune adresse publique.
 |---|---|---|
 | vide | sans objet : le bloc n'existe que si une image a été attachée | — |
 | chargement | la vignette est un cadre gris « Chargement de l'image… » (`role="status"`) ; le libellé et le lien sont déjà là | « Ouvrir la section » |
-| erreur | image retirée depuis, ou illisible : le cadre dit « Image indisponible. » ; le libellé et le lien restent | « Ouvrir la section » |
-| connexion perdue | le bandeau commun ; une vignette déjà chargée reste ; sinon « Image indisponible. » | lire, ouvrir |
+| erreur | image retirée depuis, ou illisible : le cadre dit « Image indisponible. » avec « Recharger l'image » ; le libellé et le lien restent | « Recharger l'image » (rend la même réponse si l'image est retirée) ; « Ouvrir la section » |
+| connexion perdue | le bandeau commun ; une vignette déjà chargée reste ; sinon « Image indisponible. » avec « Recharger l'image » (désactivé tant que la connexion n'est pas revenue) | lire, ouvrir |
 | refus | sans objet : l'événement n'existe que pour un MJ qui vient d'écrire dans cette section ; si son rôle est retiré ensuite, la vignette et le lien répondent « Page introuvable. » comme toute section illisible, et le cadre dit « Image indisponible. » | — |
 | contenu long | un titre de fiche de 120 caractères et un titre de section de 80 passent à la ligne dans le libellé ; une image très haute est contenue dans 240 px de large et 320 px de haut | idem |
 
@@ -848,7 +848,7 @@ attaché.
 **Les échecs, dits par l'assistant** (réponse sans événement, rien n'est attaché) : génération en
 échec ou trop longue — « Je n'ai pas pu générer l'image. » ; section pleine (50 pièces) — « Cette section
 porte déjà 50 pièces jointes. » ; droit d'écrire retiré entre-temps — « Vous ne pouvez pas modifier cette
-section. » ; seconde image dans la même demande — « Une seule image par demande. ». Dans le bouchon, une
+section. » ; seconde image dans la même demande — « Une seule image par demande. » ; description de plus de 500 caractères — « La description est limitée à 500 caractères. » (l'assistant en propose une plus courte) ; aucun moteur d'images — l'assistant répond qu'il ne peut pas générer d'image (l'outil est absent). Dans le bouchon, une
 demande dont la description contient « échec » donne le premier cas.
 
 *Critères.*
@@ -862,6 +862,15 @@ demande dont la description contient « échec » donne le premier cas.
   générer l'image. », sans bloc « Image attachée », et la section n'a pas de pièce de plus.
 - Étant donné Antor et une section qui porte déjà 50 pièces jointes, quand il demande une image, alors
   l'assistant dit « Cette section porte déjà 50 pièces jointes. » et rien n'est attaché.
+- Étant donné une image attachée puis retirée de E-9, quand Antor rouvre le fil, alors le cadre dit
+  « Image indisponible. » avec « Recharger l'image », et « Ouvrir la section » mène toujours à E-9.
+- Étant donné une demande d'image qui dure plus de 20 secondes, alors le panneau affiche « Kanevas
+  travaille toujours… Une image peut prendre jusqu'à trois minutes. » ; et si la demande passe 270 secondes,
+  « Je n'ai pas pu répondre — réessayer ».
+- Étant donné un titre de fiche de 120 caractères, alors le libellé passe à la ligne et la vignette
+  reste dans ses bornes (240 px de large, 320 px de haut).
+- Étant donné une instance sans moteur d'images, quand Antor demande un portrait, alors l'assistant
+  répond qu'il ne peut pas générer d'image, sans événement et sans pièce jointe.
 
 ### Clôture de `kanevas-images`
 
