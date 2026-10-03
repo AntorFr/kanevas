@@ -148,7 +148,7 @@ dernier MJ — refusé avec la raison.
    « fais un portrait pour Apparence » : l'image est attachée à la section.
 6. **Cartes** (E-10, E-11) : il place le PNJ sur la carte de la ville, passe en **mode Joueur**
    pour vérifier, puis rend la carte visible.
-*Échec de l'assistant* : une demande de création échoue ou l'assistant est indisponible : le panneau le dit (« Je n'ai pas pu répondre — réessayer » ou « L'assistant n'est pas disponible pour le moment. »), rien n'est créé, et le MJ crée à la main (étape 2).
+*Échec de l'assistant* : une demande de création échoue ou l'assistant est indisponible : le panneau le dit (« Je n'ai pas pu répondre — réessayer » ou « L'assistant n'est pas disponible pour le moment. »), la création a pu avoir lieu avant que la réponse soit perdue (délai, connexion coupée) : avant de réessayer, Antor regarde E-6 ou E-7 pour ne pas créer deux fois, puis crée à la main si besoin (étape 2).
 *Moment fort* : la fiche en mode Joueur ne trahit aucun secret.
 
 ### P-4 — Écrire le compte-rendu (joueur ou MJ, le lendemain de la partie)
