@@ -55,6 +55,34 @@ avec `kanevas-relier-chercher`, qui prend le numéro suivant, AD-51).
 de 1 à n à chaque réordonnancement ou retrait. Le mode Joueur est calculé par le service, jamais
 par le client : il lit comme un Joueur **qui n'est l'auteur d'aucune section** (AD-39).
 
+## Migration `kanevas-suivi` (numéro pris à la fusion, AD-51 : le suivant de 0001)
+
+Trois tables, aucune entité nouvelle (campagne, scénario, tâche de préparation sont celles du
+cadrage). Les comptes-rendus n'ont pas de table : un compte-rendu est une fiche de type
+`compte_rendu` (charge `{"v":1,"campagne_id":…}`, déjà posée par 0001, AD-52).
+
+| Table | Colonnes (hors clés) | Contraintes |
+|---|---|---|
+| `campagnes` | `id`, `univers_id`, `nom`, `statut` (`en_preparation` \| `active` \| `terminee`), `cree_le` | `nom` non vide, 1 à 80 caractères ; `statut` contraint à ces trois valeurs, `en_preparation` à la création ; plusieurs `active` permises (AD-60) ; **aucune suppression** |
+| `scenarios` | `id`, `campagne_id`, `titre`, `contenu` (texte brut, AD-58), `version` (entier, 1 à la création, AD-62), `cree_le`, `modifie_le` | `titre` non vide, 1 à 120 caractères ; `contenu` 20 000 caractères au plus ; **aucune suppression** |
+| `taches_preparation` | `id`, `campagne_id`, `categorie` (`monstres` \| `pnj` \| `cartes` \| `deroulements` \| `autre`), `libelle`, `faite`, `faite_le` (date de la dernière coche, vide si décochée), `cree_le` | `libelle` non vide, 1 à 200 caractères ; catégorie contrainte à ces cinq valeurs (AD-46) ; **aucune suppression** |
+
+Un compte-rendu se crée en une seule transaction : la fiche (type `compte_rendu`, `campagne_id` de
+la campagne de l'univers) et **une** section « Compte-rendu » portant le texte, lisible des
+joueurs, non écrivable par eux ; si le créateur est un Joueur, il en est l'auteur, qui la lit et
+l'écrit ; si c'est un MJ, la section n'a pas d'auteur (AD-61). La campagne cible doit appartenir à
+l'univers du créateur, sinon la création échoue comme pour une campagne inconnue. Rien n'est écrit
+si l'une des deux écritures échoue. L'ordre des comptes-rendus est `cree_le` décroissant, `id`
+décroissant en cas d'égalité. Le nom de la campagne et l'auteur d'un compte-rendu se lisent à
+travers les droits de la fiche : l'auteur n'est montré que si la section est lisible du compte.
+
+Droits (en plus de ceux de 0001) : `campagnes` — nom et statut, tout membre de l'univers ; création
+et statut, MJ. `scenarios` et `taches_preparation` — MJ de l'univers **de la campagne** seul (AD-47),
+évalué sur l'univers de la campagne, jamais sur un identifiant fourni par l'appelant : un MJ d'un
+autre univers n'atteint aucun scénario ni aucune tâche, un Joueur non plus (réponse comme pour un
+identifiant inconnu, AD-22), et leur nombre ni leur existence ne sortent jamais d'une réponse à
+un Joueur.
+
 ## Règles de droits, en une phrase chacune
 
 1. Les droits sur le contenu viennent de **membre**, jamais d'Authelia (AD-9). Authelia ne

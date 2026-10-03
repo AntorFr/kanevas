@@ -26,7 +26,7 @@ Ni relations, ni recherche, ni pièces jointes, ni campagnes, ni assistant : tra
   session (`src/services/session.ts`, AD-56) et crée le compte à la première connexion.
 - `src/routes/bouchon.ts` : mode bouchon (AD-55), absent de la table des routes sans `KANEVAS_STUB`.
 - `src/db/` : ouverture du fichier SQLite, `migrations/0001-*.sql`, runner (AD-14).
-- `src/services/` : `comptes`, `univers`, `membres`, `fiches`, `sections`, `droits` — les seules
+- `src/services/` : `comptes`, `univers`, `membres`, `fiches`, `sections`, `droits`, `campagnes`, `scenarios`, `preparation`, `comptes_rendus` — les seules
   fonctions qui lisent ou écrivent les données (AD-2) ; `src/routes/` : routes `/api` minces.
 - `frontend/` : application React/Vite (AD-57) ; `frontend/src/ui/tokens.css` et
   `frontend/src/ui/` : tokens et composants de `docs/charte.md` ; son build est servi par Fastify.
@@ -174,6 +174,9 @@ Les numéros sont stables. Une décision retirée garde son numéro, avec ce qui
 | AD-57 | **Frontend** : React et Vite dans `frontend/`, un seul build servi par l'application Fastify (`@fastify/static`, repli sur `index.html` pour toute adresse d'écran, derrière la garde de session) ; l'image Docker construit les deux. Pas de rendu serveur, sauf les pages que la session ne peut pas précéder : choix du compte de test (AD-55), « Connexion refusée », « Connexion indisponible ». |
 | AD-58 | **Contenu de section en texte brut** : des paragraphes séparés par des lignes vides, affichés comme tels ; ni Markdown ni HTML. Écarté : Markdown (rendu à assainir, choix d'éditeur) — rouvrable sans migration, le contenu est déjà du texte. |
 | AD-59 | **Écritures de section concurrentes** : chaque section porte un entier `version`, augmenté à chaque écriture de son contenu ; l'écriture envoie la version qu'elle a lue ; si elle n'est plus la courante, elle est refusée (HTTP 409, code `section_modifiee`) et rien n'est écrit. Même mécanisme que le « la section a changé » de B-21 pour les propositions (AD-49). |
+| AD-60 | **Plusieurs campagnes peuvent être actives** d'un même univers : changer le statut d'une campagne ne touche à aucune autre. Écarté : une seule active (le passage d'une campagne en `active` terminerait ou suspendrait une autre à l'insu du MJ — un effet de bord caché). Rouvrable sans migration. |
+| AD-61 | **Créer un compte-rendu** est une fonction de service unique, ouverte à tout membre : une transaction qui écrit la fiche et sa section « Compte-rendu » (lisible des joueurs, écrite par son auteur Joueur, sans auteur si c'est un MJ). Le droit de créer une fiche reste au MJ ; cette fonction est la seule exception, pour le type `compte_rendu`. |
+| AD-62 | **Écritures de scénario concurrentes** : même mécanisme qu'AD-59 — un entier `version`, envoyé à l'écriture, refus 409 de code `scenario_modifie` si elle n'est plus la courante. Deux MJ peuvent écrire le même scénario. |
 
 ## Déploiement et exploitation
 
