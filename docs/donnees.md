@@ -65,7 +65,7 @@ Invariants, tenus par la base ou la fonction de service : **une seule propositio
 l'ancienne dans la même transaction) ; une proposition appliquée ne se réapplique pas ni ne
 s'abandonne ; abandonner supprime la ligne ; elle n'est lue que par son demandeur, encore MJ de
 l'univers. Aucun autre attribut sur `sections` : la `version` d'AD-59 suffit. Lecture : « périmée »
-n'est pas stocké, c'est `version` courante ≠ `version_origine`, calculé à chaque lecture.
+n'est pas stocké, c'est `version` courante ≠ `version_origine` **tant que la proposition n'est pas appliquée**, calculé à chaque lecture ; une proposition appliquée est toujours « appliquée » (appliquer augmente la `version`).
 
 ## Migration 0001 (`kanevas-premiere-fiche`)
 
