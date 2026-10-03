@@ -74,7 +74,7 @@ bouchon » — sans `E-n` ni six états, ils n'existent pas en production.
 | E-12 | catalogue MJ | catalogue Joueur | — |
 | E-13 | tous les CR | les CR lisibles | — |
 | E-14 | tout | — | — |
-| E-15 | lire, écrire (univers rattaché ; sinon —, « Page introuvable. ») | lire (idem) | — |
+| E-15 | lire, écrire | lire | — |
 
 Précisions de la matrice : créer une campagne, en changer le statut, créer un scénario sont au
 MJ seul. L'audience d'une section se règle en ligne sur la fiche (MJ). Créer une fiche ouvre une
@@ -361,9 +361,9 @@ Trois panneaux, dans cet ordre.
 |---|---|---|
 | vide | catalogue sans système : la liste ne propose que « Aucun système » et le panneau dit « Le catalogue est vide. Créez le premier système ci-dessous. » ; univers sans système : « Cet univers n'est rattaché à aucun système de jeu. » | créer un système |
 | chargement | « Chargement des paramètres… » | — |
-| erreur | « Impossible de charger cette page. » ; nom vide (univers ou système) : « Erreur : le nom est obligatoire. » sous le champ ; une écriture qui échoue : « L'action n'a pas abouti. Réessayez. » au-dessus du panneau concerné, saisie conservée | « Réessayer » |
+| erreur | « Impossible de charger cette page. » ; une écriture qui échoue : « L'action n'a pas abouti. Réessayez. » au-dessus du panneau concerné, saisie conservée | « Réessayer » |
 | connexion perdue | le bandeau ; « Enregistrer », « Rattacher », « Créer et rattacher » désactivés, saisie conservée | lire |
-| refus | Joueur : l'item « Paramètres » est absent et l'adresse montre « Page introuvable. » ; compte sans rôle, admin d'instance sans rôle dans l'univers : de même ; rôle retiré pendant que la page est ouverte : « Vous ne pouvez plus modifier ces paramètres. » à l'écriture suivante | « Mes univers » |
+| refus | Joueur : l'item « Paramètres » est absent et l'adresse montre « Page introuvable. » ; compte sans rôle, admin d'instance sans rôle dans l'univers : de même | « Mes univers » |
 | contenu long | 200 systèmes au catalogue : la liste défile ; un nom de 80 caractères est tronqué par « … » avec infobulle ; « Erreur : 80 caractères au plus. » dès le 81e (500 pour la description) | corriger |
 
 *Critères.*
@@ -396,9 +396,9 @@ envoie la version lue (AD-81).
 modification.
 
 Textes : onglet vide, MJ : « Aucune créature pour l'instant. » (« Aucune règle », « Aucun objet ») et
-le bouton d'ajout ; Joueur : « Aucune créature à voir pour l'instant. » ; écriture périmée : « Cette
-entrée a changé depuis que vous l'avez ouverte. Rechargez-la pour voir la nouvelle version ; votre texte
-reste ci-dessous. » avec « Recharger » (une entrée : une règle, une créature ou un objet) ; nom vide : « Erreur : le nom est obligatoire. » sous le champ ; nom déjà pris dans le même type : « Une créature porte déjà ce
+le bouton d'ajout ; Joueur : « Aucune créature à voir pour l'instant. » ; écriture périmée : « Ce
+gabarit a changé depuis que vous l'avez ouvert. Rechargez-le pour voir la nouvelle version ; votre texte
+reste ci-dessous. » avec « Recharger » ; nom déjà pris dans le même type : « Une créature porte déjà ce
 nom. » (« Une règle… », « Un objet… ») ; droit retiré entre-temps (rôle changé, univers détaché) :
 « Vous ne pouvez plus modifier ce système. ».
 
@@ -408,7 +408,7 @@ nom. » (« Une règle… », « Un objet… ») ; droit retiré entre-temps (r�
 | chargement | le titre absent, « Chargement du système… » | — |
 | erreur | « Impossible de charger ce système. » ; échec d'écriture : « L'action n'a pas abouti. Réessayez. », saisie conservée | « Réessayer » |
 | connexion perdue | le bandeau ; « Ajouter », « Enregistrer » désactivés, le texte en cours reste | lire |
-| refus | univers inconnu, sans rôle du compte, ou **non rattaché à un système** : « Page introuvable. » (E-3 ne montre pas de lien dans ce cas ; un MJ rattache d'abord un système par E-14) | « Mes univers » |
+| refus | univers inconnu, sans rôle du compte, ou **non rattaché à un système** : « Page introuvable. » (un MJ d'un univers sans système est mené à E-14 par E-3, qui ne montre pas de lien) | « Mes univers » |
 | contenu long | 100 gabarits : « Charger la suite » ; nom tronqué par « … » avec infobulle ; contenu de 20 000 caractères passe à la ligne et s'affiche en entier ; au-delà : « Erreur : 20 000 caractères au plus. » ; nom au-delà de 120 : « Erreur : 120 caractères au plus. » | idem |
 
 *Critères.*
@@ -424,7 +424,7 @@ nom. » (« Une règle… », « Un objet… ») ; droit retiré entre-temps (r�
   rattaché), quand il ouvre `/univers/<Brume>/systeme`, alors il voit « Page introuvable. » ; et
   sur la vue d'ensemble de « Brume » il n'y a pas de lien « Système de jeu ».
 - Étant donné deux onglets sur la même créature, quand le second enregistre après le premier, alors
-  il voit « Cette entrée a changé depuis que vous l'avez ouverte. » et son texte reste.
+  il voit « Ce gabarit a changé depuis que vous l'avez ouvert… » et son texte reste.
 
 ### Bloc « Système de jeu » de E-3
 
@@ -432,7 +432,7 @@ Un bloc de la vue d'ensemble (déposé dans `frontend/src/ecrans/vue-ensemble/bl
 visible des MJ et des Joueurs) : le nom du système et un lien « Ouvrir le système » (→ E-15). **Sans
 système, le bloc n'existe pas** : ni message, ni lien mort. Ses états : chargement — le bloc est
 absent ; erreur — le bloc est absent (la vue d'ensemble n'échoue pas pour lui) ; refus et vide —
-sans objet : un univers sans système n'a pas de bloc ; connexion perdue — le bloc reste tel qu'il a été chargé ; contenu long — le nom (80 caractères) est
+sans objet : un univers sans système n'a pas de bloc ; contenu long — le nom (80 caractères) est
 tronqué avec infobulle.
 
 ### Clôture de `kanevas-systemes`
