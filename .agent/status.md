@@ -54,3 +54,10 @@ description de plus de 500 caractères. Pas encore de tests ; rendu non vérifi�
 `PUT .../fiches/:fid/ordre` (`{ids}`), `GET|PATCH|DELETE .../sections/:sid` (PATCH : `titre` et audience
 `joueursLisent`, `joueursEcrivent`, `auteurId`, `auteurLit`, `auteurEcrit`), `PUT .../sections/:sid/contenu`
 (`{contenu, version}`, 409 `section_modifiee`). Mode Joueur : `?mode=joueur` sur les lectures. Pas encore de tests.
+
+**Tâche `kanevas-pf-fiches-ecrans` (branche `task/kanevas-pf-fiches-ecrans`) :** E-8 (`/univers/:id/fiches/:type`, slug pluriel
+de `fiche/types-fiche.ts`) et E-9 (`/univers/:id/fiche/:fid`) dans `frontend/src/ecrans/` ; sections dans `ecrans/fiche/section.tsx`.
+Blocs de section : un fichier dans `ecrans/fiche/blocs/` (export par défaut `BlocSection`), trouvé par `fiche/registre.ts`.
+Brouillon d'une section gardé en `sessionStorage` (texte + version lue). Mode Joueur = `?mode=joueur` ; en mode Joueur une 404
+est redemandée en mode MJ pour distinguer « Aucune section n'est visible des joueurs. » d'une fiche inconnue. Pas encore de
+tests ; rendu non vérifié au navigateur (ni navigateur ni Docker dans le pod : typecheck et build Vite faits avec Node).
