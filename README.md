@@ -1,29 +1,38 @@
 # kanevas
 
 Système de gestion de JDR (lore, campagnes, comptes-rendus, droits, cartes).
-Ce dépôt n'héberge, à ce stade, que le **socle** : le squelette qui relie
-dépôt, image, CI et route de santé, sans aucune fonction métier.
+Ce dépôt porte le socle (santé, OIDC, image, CI) et la **première fonction métier** :
+un MJ crée un univers, y réunit ses joueurs et y écrit des fiches dont chaque section a
+son audience ; un joueur ne lit que ce que l'audience lui ouvre. Ce que le produit permet et
+par quels écrans : `docs/parcours.md`, `docs/ecrans.md`, `docs/donnees.md`. Ni relations, ni
+recherche, ni pièces jointes, ni campagnes, ni assistant, ni administration d'instance ne sont
+construits (tranches suivantes) : les passages de ces docs qui les décrivent sont la cible.
 
 ## Structure
 
 ```txt
-Dockerfile                        Image unique : API Fastify
+Dockerfile                        Image unique : API Fastify + frontend construit
 src/
-  server.ts                       Point d'entrée, démarre l'app Fastify
-  app.ts                          Assemble les plugins et les routes
+  server.ts, app.ts               Démarrage ; assemblage des plugins et des routes
   config/env.ts                   Variables d'environnement (zod)
-  routes/health.ts                GET /healthz — nom + version de l'app
-  routes/auth.ts                  Mécanique OIDC générique (voir plus bas)
-  services/oidc.ts                Découverte OIDC, config client
-  services/llm/                   Transports LLM repris d'Antre-du-maitre,
-                                   réservés aux futures features — aucune
-                                   route de ce socle ne les appelle
-.github/workflows/docker-publish.yml   CI : build, typecheck, image GHCR
+  db/                             SQLite (better-sqlite3), migrations/0001-*.sql, runner
+  services/                       comptes, univers, membres, fiches, sections, droits :
+                                   seul code qui lit ou écrit les données ; session, oidc
+  routes/                         health, auth (OIDC), session (cookie, garde, /api/moi),
+                                   bouchon, univers (+ membres), fiches (+ sections), frontend
+  services/llm/                   Transports LLM repris d'Antre-du-maitre, branchés nulle part
+frontend/                         React + Vite : charte (ui/), écrans (src/ecrans/), barre latérale
+.github/workflows/docker-publish.yml   CI : tests, build, image GHCR
 ```
+
+Un écran est un fichier `frontend/src/ecrans/<nom>.tsx` enregistré par le registre
+(`frontend/src/registre.ts`) ; les couleurs ne viennent que de `frontend/src/ui/tokens.css`
+(`docs/charte.md`).
 
 ## Démarrage local
 
 ```bash
+# écrit ./data/ (base et session.key) dans le dépôt monté ; ./data/ n'est pas dans .gitignore
 docker run --rm -p 3001:3001 -v "$PWD":/src -w /src node:20-bookworm-slim sh -c "npm ci && npm run dev"
 # puis, depuis l'hôte : curl http://localhost:3001/healthz
 ```
@@ -37,10 +46,30 @@ npm run dev            # ou : npm run build && npm start (sert dist/server.js)
 curl http://localhost:3001/healthz   # -> "kanevas 0.0.0-dev"
 ```
 
+`npm run dev` sert l'API, et le frontend seulement s'il a été construit : lancer d'abord
+`npm run build` (il construit `dist/public`, servi par Fastify derrière la session ; sans lui, `/`
+ne montre aucun écran). `npm run dev:front` lance Vite seul (port 5173 par défaut) et ne relaie que
+`/api` : il ne remplace pas le serveur pour la connexion en bouchon.
+
+La voie de référence reste le conteneur Node 20 de `CLAUDE.md` (celle de la CI) ; un Node local
+récent suffit pour les mêmes commandes.
+
+### Sans Authelia : le mode bouchon
+
+```bash
+npm run build && KANEVAS_STUB=1 npm start   # puis ouvrir http://localhost:3001/ : choix d'un compte de test
+```
+
+`/connexion-bouchon` remplace Authelia (AD-55) sous un bandeau « mode bouchon ». Les comptes de test
+ont pour identifiants `antor`, `lea`, `teo`, `mira` et `admin` (noms affichés Antor, Léa…) : c'est
+l'identifiant qu'on tape pour ajouter un membre. Kanevas refuse de
+démarrer en bouchon si une variable `OIDC_*` est posée. En production sans volume `/data`, la base est en
+mémoire (avertissement au démarrage).
+
 ## Réglages
 
 La liste de départ est `.env.example`. En plus : `APP_NAME` (défaut `kanevas`),
-`APP_VERSION` (défaut `0.0.0-dev`, posée par le build-arg en image), `PORT` (3001), `LLM_PROVIDER` (`mock` | `anthropic` | `claude-agent`, défaut `mock`,
+`APP_VERSION` (défaut `0.0.0-dev`, posée par le build-arg en image), `PORT` (3001), `DB_PATH` (fichier SQLite ; défaut `/data/kanevas.db` en production, `./data/kanevas.db` en développement), `SESSION_SECRET` (≥ 16 caractères ; à défaut `session.key`, créée à côté de la base : `/data/session.key` en production, `./data/session.key` en développement), `KANEVAS_STUB` (`1`), `LLM_PROVIDER` (`mock` | `anthropic` | `claude-agent`, défaut `mock`,
 inutilisé tant qu'aucune route n'appelle un LLM).
 
 ## Version de l'application
@@ -59,8 +88,8 @@ curl http://localhost:3001/healthz   # -> "kanevas 0.1.0"
 Sur un tag, la CI dérive ce même build-arg du tag semver poussé (`docker/metadata-action`)
 : pousser `v0.1.0` publie `ghcr.io/antorfr/kanevas:0.1.0` avec `APP_VERSION`
 embarqué à `0.1.0` — une seule source de vérité pour la version affichée et le
-tag publié. Hors tag (`main`, PR), la valeur n'est pas un semver (À documenter : valeur
-exacte non constatée en CI) : seul un tag donne une version fiable.
+tag publié. Hors tag (`main`, PR), la valeur est celle de `docker/metadata-action` pour la référence (le nom de
+branche, par exemple `main`), donc pas un semver : seul un tag donne une version fiable.
 
 ## OIDC
 
@@ -83,8 +112,8 @@ manifeste `clusters/tantive/games/kanevas-helm-config.yml` et client OIDC
 `k8s-home-lab`. Ordre : publier l'image (tag `vX.Y.Z`), publier le chart, puis
 fusionner `k8s-home-lab`, dont la fusion déploie.
 
-Pour la carte du code, les invariants et les options écartées, voir
-`ARCHITECTURE.md`. Les sigles `AD-n` renvoient aux décisions de l'epic Kanevas (magasin de
-pilotage de la chaîne SDLC, hors de ce dépôt ; les commentaires qui citent
-`plan.md`, `technique.md` ou `socle-projet` en viennent), dont `ARCHITECTURE.md` résume celles qui touchent ce dépôt (AD-3 Node/TypeScript,
-AD-4 Fastify, AD-5 SQLite, AD-9 rôles par univers, AD-10 reprise d'Antre-du-maitre).
+Pour la carte du code, les invariants et les options écartées, voir `ARCHITECTURE.md`, dont le
+tableau liste toutes les décisions `AD-n` de l'epic Kanevas, avec leur numéro stable. Des
+commentaires du code citent encore `plan.md`, `technique.md` ou `socle-projet` : ce sont des
+documents de conception tenus hors de ce dépôt (magasin de pilotage de la chaîne SDLC), dont ce
+qui doit survivre est dans `ARCHITECTURE.md` et `docs/`.

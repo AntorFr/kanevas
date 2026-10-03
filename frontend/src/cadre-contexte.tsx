@@ -1,11 +1,11 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 
-import { lire } from './api';
+import { ErreurApi, lire } from './api';
 import type { Moi, UniversListe } from './types';
 
-type Charge<T> = { etat: 'chargement' } | { etat: 'erreur' } | { etat: 'ok'; valeur: T };
+type Charge<T> = { etat: 'chargement' } | { etat: 'erreur'; statut?: number } | { etat: 'ok'; valeur: T };
 
-function useCharge<T>(chemin: string): [Charge<T>, () => void] {
+export function useCharge<T>(chemin: string): [Charge<T>, () => void] {
   const [etat, setEtat] = useState<Charge<T>>({ etat: 'chargement' });
   const [essai, setEssai] = useState(0);
   useEffect(() => {
@@ -13,7 +13,7 @@ function useCharge<T>(chemin: string): [Charge<T>, () => void] {
     setEtat({ etat: 'chargement' });
     lire<T>(chemin).then(
       (valeur) => actif && setEtat({ etat: 'ok', valeur }),
-      () => actif && setEtat({ etat: 'erreur' }),
+      (e: unknown) => actif && setEtat({ etat: 'erreur', statut: e instanceof ErreurApi ? e.statut : undefined }),
     );
     return () => {
       actif = false;

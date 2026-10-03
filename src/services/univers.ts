@@ -25,6 +25,7 @@ export function creerUnivers(
 ): Univers {
   const nom = entree.nom.trim();
   if (nom.length < 1 || nom.length > 80) throw invalide('Le nom doit faire de 1 à 80 caractères.');
+  if ((entree.description ?? '').length > 500) throw invalide('La description doit faire 500 caractères au plus.');
   return db.transaction(() => {
     const info = db
       .prepare('INSERT INTO univers (nom, description, cree_le) VALUES (?, ?, ?)')
