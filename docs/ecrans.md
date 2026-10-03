@@ -353,7 +353,6 @@ ses fichiers, et l'adresse directe répond « Page introuvable. ». Le MJ peut e
 | MJ | toutes celles de ses sections, secrètes comprises | oui, sur toute section | oui | oui | sans objet |
 | Joueur | celles des sections qu'il lit, hors secrètes | sur une section qu'il **écrit** (la sienne, ou ouverte en écriture aux joueurs) | non : **absent** ; sur une section qu'il ne fait que lire, « Ajouter un fichier » est absent aussi | sur une section qu'il écrit, une pièce qu'il voit | une pièce secrète est **absente** et son adresse répond « Page introuvable. » |
 | MJ en mode Joueur | comme un Joueur qui n'est l'auteur d'aucune section (AD-39) | seulement où les joueurs écrivent | absent | seulement où les joueurs écrivent | idem |
-
 | Admin d'instance | aucune | non | non | non | « Page introuvable. » |
 
 Un geste qu'un rôle n'a pas est **absent** de l'écran (jamais grisé, sauf hors connexion) : sur une
