@@ -353,6 +353,12 @@ ses fichiers, et l'adresse directe répond « Page introuvable. ». Le MJ peut e
 | MJ | toutes celles de ses sections, secrètes comprises | oui, sur toute section | oui | oui | sans objet |
 | Joueur | celles des sections qu'il lit, hors secrètes | sur une section qu'il **écrit** (la sienne, ou ouverte en écriture aux joueurs) | non : **absent** ; sur une section qu'il ne fait que lire, « Ajouter un fichier » est absent aussi | sur une section qu'il écrit, une pièce qu'il voit | une pièce secrète est **absente** et son adresse répond « Page introuvable. » |
 | MJ en mode Joueur | comme un Joueur qui n'est l'auteur d'aucune section (AD-39) | seulement où les joueurs écrivent | absent | seulement où les joueurs écrivent | idem |
+
+Un geste qu'un rôle n'a pas est **absent** de l'écran (jamais grisé, sauf hors connexion) : sur une
+section qu'on lit sans l'écrire, ni « Ajouter un fichier » ni « Retirer » ; pour un Joueur, ni la case
+« Secrète » ni « Rendre secrète ». Par l'API, un geste d'écriture sur une section qu'on lit sans
+l'écrire est refusé **403**, un marquage par un non-MJ aussi (403) ; ce qu'on ne lit pas répond 404.
+Le geste « marquer / lever « secrète » » du besoin B-24 s'affiche « Rendre secrète » / « Lever le secret ».
 | Admin d'instance | aucune | non | non | non | « Page introuvable. » |
 
 *Ajouter.* Un bouton « Ajouter un fichier » ouvre le sélecteur de fichiers du système ; **choisir
@@ -361,22 +367,19 @@ plusieurs (il n'y a pas de limite de taille). Le MJ (mode MJ) voit à côté du 
 « Secrète (MJ seul) », décochée, qui s'applique aux fichiers choisis ensuite : un fichier destiné à
 rester secret ne passe donc jamais, même un instant, par la table. Pendant l'envoi, une ligne
 « portrait.png — Envoi… 42 % » (`role="status"`) avec « Annuler » ; l'envoi annulé n'écrit rien. À la
-fin, la pièce rejoint la liste. Une section porte **50 pièces jointes** au plus. Un fichier
-vide est refusé.
+fin, la pièce rejoint la liste. Une section porte **50 pièces jointes** au plus. Un fichier vide est refusé. Si l'on en choisit plusieurs, chacun est jugé seul : un refus n'arrête pas les suivants, et chaque refus devient une ligne d'erreur qui reste, avec « Ignorer » seul (« Réessayer » n'aurait pas de sens).
 
 *Marquer, retirer.* Sur chaque pièce, le MJ a « Rendre secrète » (ou « Lever le secret » quand elle
 l'est) et « Retirer « portrait.png » » ; qui écrit la section n'a que « Retirer ». Retirer demande
 confirmation sur place : « Retirer « portrait.png » ? Le fichier sera perdu. » avec « Retirer le
-fichier » et « Annuler ». Retirer une section retire ses pièces jointes. Une pièce secrète porte la
+fichier » et « Annuler ». Retirer une section retire ses pièces jointes ; la confirmation de la première fiche gagne alors « … Son contenu et sa pièce jointe seront perdus. » (une) ou « … Son contenu et ses 3 pièces jointes seront perdus. » (plusieurs) ; sans pièce, son texte ne change pas. Une pièce secrète porte la
 pastille ambre « Secrète — MJ seul » et le liseré du panneau MJ. Un fichier n'est jamais modifié
 sur place : pour le remplacer, on en ajoute un autre et l'on retire l'ancien.
 
 *Textes.* Aucune pièce : « Aucune pièce jointe. » ; taille : « 842 o », « 4,2 Ko », « 3,1 Mo »,
-« 1,2 Go » (base 1024) ; nom : celui du fichier d'origine, sans dossier, 200 caractères au plus ; une
-vignette dit son nom en texte alternatif ; échec d'envoi : « « portrait.png » : l'envoi n'a pas
+« 1,2 Go » (base 1024) ; nom : celui du fichier d'origine, sans dossier, 200 caractères au plus ; une vignette dit son nom en texte alternatif et porte en légende, dessous, son nom et sa taille (« portrait-aldric.png · 3,1 Mo »), puis ses boutons ; échec d'envoi : « « portrait.png » : l'envoi n'a pas
 abouti. » avec « Réessayer » et « Ignorer » ; fichier vide : « « notes.txt » est vide. » ; limite :
-« Cette section porte déjà 50 pièces jointes. » ; droit retiré entre-temps : « Vous ne pouvez plus
-ajouter de fichier à cette section. » ; pièce déjà retirée ou devenue illisible : « Cette pièce
+« Cette section porte déjà 50 pièces jointes. » pour le MJ, « Cette section ne peut pas recevoir d'autre fichier. » pour un Joueur (qui ne voit pas les pièces secrètes : le chiffre dirait ce qu'il ne doit pas savoir) ; droit retiré entre-temps (à l'ajout ou au retrait) : « Vous ne pouvez plus ajouter de fichier à cette section. », la fiche se recharge et « Ajouter un fichier » comme « Retirer » disparaissent ; pièce déjà retirée ou devenue illisible : « Cette pièce
 jointe n'existe plus. » (la liste se recharge) ; vignette qui ne se charge pas : « Image
 indisponible. » avec « Télécharger » ; échec d'un marquage ou d'un retrait : « L'action n'a pas
 abouti. Réessayez. », l'état d'avant revient.
@@ -389,10 +392,10 @@ section, même vide.
 |---|---|---|
 | vide | MJ, ou qui écrit la section : « Aucune pièce jointe. » et « Ajouter un fichier » ; un lecteur seul : pas de bloc | ajouter |
 | chargement | les pièces viennent avec la fiche : « Chargement de la fiche… » (E-9) ; une vignette en cours de chargement occupe sa place (cadre à la taille fixe) ; un envoi : la ligne « Envoi… 42 % » | annuler l'envoi |
-| erreur | envoi : « « portrait.png » : l'envoi n'a pas abouti. » et la ligne reste ; marquage ou retrait : « L'action n'a pas abouti. Réessayez. » ; vignette : « Image indisponible. » | « Réessayer », « Ignorer », « Télécharger » |
+| erreur | envoi : « « portrait.png » : l'envoi n'a pas abouti. » et la ligne reste ; fichier vide ou limite atteinte : le refus des textes, en ligne qui reste, avec « Ignorer » ; marquage ou retrait : « L'action n'a pas abouti. Réessayez. » ; vignette : « Image indisponible. » | « Réessayer », « Ignorer », « Télécharger » |
 | connexion perdue | le bandeau ; « Ajouter un fichier », « Rendre secrète », « Lever le secret », « Retirer » désactivés ; un envoi en cours qui échoue devient l'erreur ci-dessus ; les vignettes déjà chargées restent | voir, télécharger |
 | refus | droit d'écriture retiré : « Vous ne pouvez plus ajouter de fichier à cette section. » ; pièce retirée entre-temps : « Cette pièce jointe n'existe plus. » ; section ou fiche illisible : « Page introuvable. » ; pièce secrète pour un Joueur : absente | recharger |
-| contenu long | un nom de 200 caractères passe à la ligne ; 50 pièces : la liste entière, puis « Cette section porte déjà 50 pièces jointes. » à l'ajout ; un fichier de plusieurs Go : la progression en pourcentage, la taille en « Go » ; une vignette tient dans un cadre de 160 px de haut | idem |
+| contenu long | un nom de 200 caractères passe à la ligne ; 50 pièces : la liste entière, puis le refus de limite (texte selon le rôle) à l'ajout ; un fichier de plusieurs Go : la progression en pourcentage, la taille en « Go » ; une vignette tient dans un cadre de 160 × 120 px | idem |
 
 *Critères.*
 - Étant donné « Maître Aldric » dont Antor, MJ, dépose sur « Vérité — MJ seul » un portrait avec
@@ -413,7 +416,7 @@ section, même vide.
 - Étant donné un envoi de 2 Go en cours, quand Antor clique « Annuler », alors la ligne disparaît et
   aucune pièce n'est ajoutée.
 - Étant donné Antor qui retire la section « Apparence » portant un portrait, alors la confirmation
-  dit « … Son contenu et ses 1 pièce jointe seront perdus. » et, après confirmation, l'adresse du
+  dit « … Son contenu et sa pièce jointe seront perdus. » et, après confirmation, l'adresse du
   portrait répond « Page introuvable. ».
 
 ### Clôture de `kanevas-fichiers`
