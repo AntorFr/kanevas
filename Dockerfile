@@ -40,7 +40,7 @@ COPY --from=build /app/package.json ./package.json
 COPY --from=build /app/dist ./dist
 
 # Run as the non-root "node" user (uid 1000) shipped by the base image.
-# /data is a mounted volume (AD-5/AD-7, empty for now). Under uid 1000 its
+# /data is a mounted volume (AD-5, empty for now). Under uid 1000 its
 # hostPath must be writable by that user; the cluster actually runs the pod as
 # root (see ARCHITECTURE.md).
 RUN mkdir -p /data && chown -R node:node /data /app

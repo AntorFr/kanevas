@@ -32,7 +32,8 @@ docker run --rm -p 3001:3001 -v "$PWD":/src -w /src node:20-bookworm-slim sh -c 
 Ce bloc ne pose pas de `.env` : les valeurs par défaut suffisent pour `/healthz`, OIDC
 reste désactivé (`/api/auth/oidc/login` répond 404). Pour l'activer, créer `.env` (voir
 `.env.example`) à la racine : le montage `-v "$PWD":/src` le rend lisible. Ce bloc crée
-aussi `node_modules/` dans le dépôt de l'hôte (ignoré par git).
+aussi `node_modules/` dans le dépôt de l'hôte (ignoré par git) ; il appartient à root : à supprimer par `docker run … rm -rf node_modules`
+ou `sudo`.
 
 Ou, avec un Node 20+ installé localement :
 
@@ -45,8 +46,9 @@ curl http://localhost:3001/healthz   # -> "kanevas 0.0.0-dev"
 
 ## Réglages
 
-La liste de départ est `.env.example`. En plus : `APP_NAME` (défaut `kanevas`),
-`APP_VERSION` (défaut `0.0.0-dev`, posée par le build-arg en image), `PORT` (3001), `LLM_PROVIDER` (`mock` | `anthropic` | `claude-agent`, défaut `mock`,
+La liste de départ est `.env.example` (`PORT`, OIDC, `LLM_PROVIDER` en commentaire). Réglages
+absents du fichier : `APP_NAME` (défaut `kanevas`), `APP_VERSION` (défaut `0.0.0-dev`, posée par
+le build-arg en image). Rappel : `PORT` (3001), `LLM_PROVIDER` (`mock` | `anthropic` | `claude-agent`, défaut `mock`,
 inutilisé tant qu'aucune route n'appelle un LLM).
 
 ## Version de l'application
@@ -93,5 +95,5 @@ fusionner `k8s-home-lab`, dont la fusion déploie.
 Pour la carte du code, les invariants et les options écartées, voir
 `ARCHITECTURE.md`. Les sigles `AD-n` renvoient aux décisions de l'epic Kanevas (magasin de
 pilotage de la chaîne SDLC, hors de ce dépôt ; les commentaires qui citent
-`plan.md`, `technique.md` ou `socle-projet` en viennent), dont `ARCHITECTURE.md` résume celles qui touchent ce dépôt (AD-3 Node/TypeScript, AD-7 hors socle : défini dans l'epic, non repris ici,
+`plan.md`, `technique.md` ou `socle-projet` en viennent), dont `ARCHITECTURE.md` résume celles qui touchent ce dépôt (AD-3 Node/TypeScript,
 AD-4 Fastify, AD-5 SQLite, AD-9 rôles par univers, AD-10 reprise d'Antre-du-maitre).
