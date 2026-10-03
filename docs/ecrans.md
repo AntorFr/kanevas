@@ -47,6 +47,9 @@ bascule existe (fiche, carte).
 | **E-14 Paramètres de l'univers** | nav Univers (MJ) | nom, description, système de jeu (choisir dans le catalogue, en créer un) | P-8 |
 | **E-15 Système de jeu** | E-14 ; lien depuis E-3 | le référentiel commun : règles, créatures, objets ; ajouter, modifier (MJ d'un univers rattaché) | P-8 |
 
+Les pages de connexion du serveur (« Connexion refusée », « Connexion indisponible », atteintes
+depuis P-1) et le bandeau du mode bouchon sont décrits sous « Session et connexion ».
+
 Hors produit : `/composants`, la bibliothèque de composants, réservée au développement ; et,
 en mode bouchon seulement (AD-55), l'écran de choix d'un compte de test et le bandeau « mode
 bouchon » — sans `E-n` ni six états, ils n'existent pas en production.
@@ -81,6 +84,10 @@ une carte sans fond montre ses tokens sur un fond neutre. Une
 tâche de préparation s'ajoute avec sa catégorie, se coche, se décoche ; elle ne se supprime pas.
 Sur E-15, règles, créatures et objets ont le même traitement.
 
+Un compte **sans rôle** dans l'univers et qui n'est pas admin d'instance (Teo avant son ajout) a, dans
+cet univers, la colonne « Admin » de cette matrice moins E-5 : « — » partout, « Page introuvable. »
+si l'adresse est forcée ; il garde E-1 et E-2.
+
 Un refus ne dit jamais qu'une chose existe : une fiche, une section, une carte qu'on ne peut pas
 lire sont absentes, et leur adresse répond comme une adresse inconnue.
 
@@ -108,6 +115,18 @@ Deux sont posés dès le cadrage parce qu'ils traversent tout :
 - *Connexion perdue* : bandeau « Connexion perdue. Ce que vous voyez peut être dépassé ; rien
   n'est enregistré tant qu'elle ne revient pas. » ; les boutons qui écrivent sont désactivés ; il
   disparaît seul au retour de la connexion.
+- *Écriture en cours* (tout envoi : ajouter, changer un rôle, retirer, créer, enregistrer, régler,
+  monter, descendre, charger la suite) : le bouton qui a déclenché affiche « … » et est désactivé
+  jusqu'à la réponse (un double clic ne part qu'une fois) ; le reste de l'écran reste lisible.
+- *Échec d'une écriture* : « L'action n'a pas abouti. Réessayez. » au-dessus de la liste ou du panneau
+  concerné ; la valeur affichée revient à celle d'avant (réglage d'audience, rôle, ordre) ; une
+  saisie en cours est conservée. Échec de « Charger la suite » : « Impossible de charger la suite. »
+  et le bouton reste.
+- *Titre vide ou trop long* (fiche, section) : « Erreur : le titre est obligatoire. » ou « Erreur : 120
+  caractères au plus. » (80 pour une section), sous le champ.
+- *Session expirée pendant une saisie* : la personne est menée à la connexion ; le texte en cours
+  d'une section (E-9) est gardé dans le navigateur (`sessionStorage`) et rendu au retour sur cette
+  section, tant qu'il n'est pas enregistré ou annulé. Les formulaires E-2, E-4 et E-8 ne sont pas gardés.
 - *Refus* : toujours « Page introuvable. » et un lien « Mes univers » — pour un univers inconnu,
   un univers sans rôle, une fiche illisible, une adresse inconnue. Jamais « accès refusé ».
 - *Session expirée ou absente* : la page n'est pas montrée ; la personne est menée à la connexion
@@ -140,6 +159,15 @@ E-2) : « Mes univers », l'identifiant, le thème, « Se déconnecter ». **Un 
 pas construit n'est pas affiché** : Campagnes, Comptes-rendus, Cartes, Paramètres, Administration
 arrivent avec leurs tranches. Sur téléphone (moins de 760 px), la barre est un tiroir sous un
 bouton « Menu ».
+
+| État | Ce qu'on voit |
+|---|---|
+| vide | sans objet : l'univers courant est toujours dans le sélecteur ; hors univers, seul « Mes univers » |
+| chargement | le sélecteur affiche « … » ; les items fixes sont déjà là |
+| erreur | le sélecteur affiche le nom de l'univers de l'adresse, sans liste ; « Impossible de charger vos univers. » dans la liste dépliée, avec « Réessayer » |
+| connexion perdue | le bandeau ; navigation inchangée |
+| refus | sur « Page introuvable. » la barre ne montre **aucun nom d'univers** de l'adresse : seulement « Mes univers » ; le sélecteur ne liste que les univers du compte |
+| contenu long | 100 univers : la liste du sélecteur défile ; un nom de 80 caractères est tronqué par « … » avec infobulle |
 
 ### E-1 Accueil
 
@@ -191,7 +219,7 @@ rang, composant) ; elle ne modifie aucun bloc existant.
 | erreur | « Impossible de charger cette page. » | « Réessayer » |
 | connexion perdue | le bandeau, le contenu déjà chargé | naviguer |
 | refus | univers inconnu ou sans rôle du compte : « Page introuvable. » | « Mes univers » |
-| contenu long | une description de 500 caractères passe à la ligne | — |
+| contenu long | une description de 500 caractères passe à la ligne ; un nom de 80 caractères passe à la ligne en titre | — |
 
 *Critère.* Étant donné Teo, sans rôle dans Lame d'Ébène, quand il ouvre l'adresse de l'univers,
 alors il voit « Page introuvable. », sans le nom de l'univers.
@@ -274,8 +302,8 @@ confirmation de retrait : « Retirer la section « Vérité — MJ seul » ? Son
 | chargement | le titre absent, « Chargement de la fiche… » | — |
 | erreur | « Impossible de charger cette fiche. » ; échec d'écriture : « Enregistrement impossible. Réessayez. », texte conservé | « Réessayer » |
 | connexion perdue | le bandeau ; « Enregistrer », audience, ordre, retrait, ajout désactivés ; le texte en cours reste | lire |
-| refus | fiche inconnue ou dont rien n'est lisible : « Page introuvable. » ; section non lisible : absente | — |
-| contenu long | une section de 20 000 caractères passe à la ligne et s'affiche en entier ; plus au-delà : « Erreur : 20 000 caractères au plus. » ; titre de fiche long : passe à la ligne | idem |
+| refus | fiche inconnue ou dont rien n'est lisible : « Page introuvable. » ; section non lisible : absente. Un MJ en mode Joueur sur une fiche dont aucune section n'est lisible des joueurs voit « Aucune section n'est visible des joueurs. » (ce que verrait un joueur : « Page introuvable. ») | passer en mode MJ |
+| contenu long | une section de 20 000 caractères passe à la ligne et s'affiche en entier ; plus au-delà : « Erreur : 20 000 caractères au plus. » ; titre de fiche et titre de section de 80 caractères : passent à la ligne | idem |
 
 *Critères.*
 - Étant donné Léa, Joueuse, quand elle ouvre « Maître Aldric » (« Apparence » lue des joueurs,

@@ -125,7 +125,7 @@ demande à son assistant (E-12).
    sur sa **vue d'ensemble** (E-3), en MJ.
 3. Si elle est joueuse : l'accueil lui montre son identifiant et lui dit de le donner à son MJ ;
    après son ajout, l'univers apparaît dans l'accueil.
-*Échec* : Authelia refuse — Kanevas ne montre rien.
+*Échec* : Authelia refuse — Kanevas ne montre que « La connexion a été refusée. » (et un lien « Réessayer »), aucun contenu ; Authelia injoignable — « Authelia ne répond pas pour l'instant. Réessayez dans un moment. ».
 
 ### P-2 — Réunir sa table (MJ ; admin en recours)
 1. Le MJ ouvre **Membres** (E-4) depuis la navigation de l'univers.
