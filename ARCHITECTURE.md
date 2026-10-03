@@ -157,7 +157,7 @@ Les numéros sont stables. Une décision retirée garde son numéro, avec ce qui
 | AD-51 | Une migration prend son numéro au moment où sa tranche se fusionne ; l'ordre des migrations est l'ordre de fusion. |
 | AD-52 | La table des fiches connaît ses sept types dès sa création ; aucune tranche ne la recrée. |
 | AD-53 | **Toute action qu'un humain déclenche a un écran.** L'agent est un second chemin, jamais le seul ; ce que l'agent propose, un humain l'applique depuis un écran. |
-| AD-54 | L'assistant accède au modèle par l'abonnement Claude de Monsieur (décision de Monsieur, 2026-10-03). [À TRANCHER] : renversé par un fait vérifié le 2026-10-03 — la doc de l'Agent SDK (code.claude.com/docs/en/agent-sdk/overview) : « Unless previously approved, Anthropic does not allow third party developers to offer claude.ai login or rate limits for their products, including agents built on the Claude Agent SDK. Use the API key authentication methods… ». Kanevas sert d'autres comptes que celui de Monsieur. |
+| AD-54 | L'assistant accède au modèle par l'abonnement Claude de Monsieur, via le transport `claude-agent` (décision de Monsieur, confirmée le 2026-10-03 en connaissance du fait suivant). Risque connu et accepté par Monsieur : la doc de l'Agent SDK n'autorise pas, sauf accord d'Anthropic, l'usage du login claude.ai ou de ses limites dans un produit tiers ; Kanevas sert d'autres comptes que le sien. Les identifiants sont posés par Monsieur. |
 
 ## Déploiement et exploitation
 
