@@ -97,6 +97,17 @@ Pour chacun : **V** visuelle, **C** comportementale.
   réfléchit… » est un `role="status"` ; l'erreur un `role="alert"` ; l'état indisponible désactive
   le champ **et** dit pourquoi. Le bouton ne masque jamais un champ ou un bouton de l'écran : le
   contenu garde une marge basse de la hauteur du bouton. Aucun état par la teinte seule.
+- **Proposition de mise à jour** (bloc de E-12, `kanevas-monde`). V : le bloc « Écrit par l'assistant »
+  en plus haut : `--surface-2`, liseré `--accent` ; « Mise à jour proposée » en `--accent-texte` ; deux
+  zones côte à côte, « Actuel » sur `--surface` avec bord `--bord`, « Proposé » sur `--accent-fond` avec
+  bord `--accent` (jamais le rouge et le vert d'un diff : la teinte seule ne dit rien) ; « Appliquer »
+  bouton principal, « Abandonner » bouton secondaire ; périmée : bandeau `--danger-fond` et `--danger`.
+  C : chaque zone est une région étiquetée (`role="region"`, `aria-label` « Actuel » / « Proposé »),
+  `tabindex="0"` pour défiler au clavier ; hauteur maximale de 15 lignes ; « Appliquer » désactivé
+  par `aria-disabled` (il reste dans l'ordre de tabulation, la raison est lue dans le bandeau) ; le
+  résultat (« Appliquée… », « Proposition abandonnée. ») est un `role="status"`, la raison de
+  péremption un `role="alert"` ; après « Appliquer » ou « Abandonner » le focus va au résultat. Sous
+  760 px les zones s'empilent.
 - **Fenêtre** (créer une fiche). V : `--surface` sur voile ; C : `role="dialog"`, le focus y
   entre et y reste, Échap ferme, le focus revient au bouton qui l'a ouverte.
 - **État d'écran** (vide, chargement, erreur, refus). V : un bloc centré, texte `--texte-2`, un

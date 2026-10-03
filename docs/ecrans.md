@@ -707,6 +707,81 @@ E-12, l'admin d'instance sans rôle ne l'a pas. Aucune migration, aucune entité
 stocké. Reste aux autres tranches : les propositions de mise à jour (`kanevas-monde`), les images
 (`kanevas-images`).
 
+## Détail des écrans de `kanevas-monde`
+
+> Le bloc « proposition de mise à jour » de E-12, et rien d'autre : pas de nouvel écran, pas de
+> nouvelle adresse d'écran. Mêmes six états et mêmes textes communs que `kanevas-premiere-fiche`
+> (chargement, connexion perdue, session expirée) ; ne sont redits que les textes propres.
+> Maquette finie : `docs/maquettes/e12-propositions.html` (thème sombre ; le bloc dans ses états,
+> sur ordinateur et sur téléphone). Composant : `docs/charte.md` « Proposition de mise à jour ».
+
+**Comment une proposition naît.** Le MJ écrit dans le champ de E-12, en nommant la section et le
+compte-rendu : « Mets à jour la section Vérité d'Aldric d'après le compte-rendu de la séance 3 ».
+L'assistant ne connaît pas l'écran où se trouve la personne (AD-75 n'envoie que le message et le
+fil) : le compte-rendu se nomme dans la demande. L'assistant lit le CR et la section, puis appelle
+l'outil `proposer_mise_a_jour` (AD-80) : **rien n'est écrit dans la section**. La réponse porte un
+événement `proposition_creee` (AD-76) que le fil rend comme un bloc « Mise à jour proposée », sous
+la réponse de l'assistant, à la place d'un bloc « Écrit par l'assistant ».
+
+### Bloc « Mise à jour proposée »
+
+De haut en bas :
+
+- **l'en-tête** : « Mise à jour proposée » ; dessous, la section visée, « Section « Vérité » de
+  « Maître Aldric » », et la source, « d'après « Compte-rendu — séance 3 » » ;
+- **deux zones de texte brut côte à côte** (AD-58), étiquetées « Actuel » et « Proposé » ; sous
+  760 px elles s'empilent, « Actuel » d'abord. « Actuel » montre le contenu **courant** de la
+  section au moment de l'affichage (pas celui de la proposition) ; une section vide s'écrit « (section vide) » ;
+- **les gestes** : « Appliquer » (principal), « Abandonner », et un lien « Ouvrir » vers la fiche
+  (E-9, à la section).
+
+Le bloc se lit **au serveur** à chaque affichage et après chaque geste (AD-82) : un bloc ancien
+du fil dit la vérité du moment, pas celle de sa création. « Appliquer » écrit le contenu proposé
+dans la section (AD-81) ; « Abandonner » supprime la proposition. Ni l'un ni l'autre ne passe par
+l'assistant.
+
+**Ce que chaque rôle y voit.** Le MJ qui a demandé la proposition : le bloc entier. Le Joueur : il n'a pas
+l'outil (AD-80), donc jamais le bloc ; s'il demande une mise à jour, l'assistant répond qu'il ne
+peut pas, sans événement (texte libre du modèle, comme pour la création d'un scénario). Un autre MJ
+du même univers ne voit pas la proposition de son collègue (elle n'est à personne d'autre que son
+demandeur, AD-79) ; l'admin d'instance sans rôle n'a pas E-12. Un MJ en mode Joueur d'une fiche garde son catalogue réel (AD-74) : il peut proposer et appliquer.
+Toute lecture de la proposition par un autre compte répond comme une adresse inconnue (AD-81).
+
+| État | Ce qu'on voit | Ce qu'on peut faire |
+|---|---|---|
+| chargement (lecture de la proposition) | l'en-tête absent ; « Chargement de la proposition… » (`role="status"`) ; ni zones ni gestes | continuer à écrire dans le fil ; fermer |
+| en attente | l'en-tête, « Actuel » et « Proposé », les gestes | Appliquer ; Abandonner ; Ouvrir |
+| application ou abandon en cours | « Appliquer » (ou « Abandonner ») affiche « … » ; les deux gestes désactivés (`aria-disabled`) ; zones inchangées | attendre |
+| appliquée | « Appliquée : la section « Vérité » est à jour. » (`role="status"`) ; « Actuel » montre le contenu appliqué, « Proposé » disparaît ; plus de geste, sauf « Ouvrir » | Ouvrir |
+| abandonnée (par ce geste) | « Proposition abandonnée. » (`role="status"`) ; plus de zones ni de geste | continuer à écrire dans le fil |
+| périmée (la section a changé depuis la proposition, par n'importe qui) | le bandeau « La section a changé depuis la proposition. Demandez-en une nouvelle. » (`role="alert"`) au-dessus des zones ; « Actuel » montre le contenu courant ; « Appliquer » désactivé (`aria-disabled`) | Abandonner ; Ouvrir ; demander une nouvelle proposition dans le fil |
+| erreur | à la lecture : « Je n'ai pas pu afficher la proposition — réessayer » (`role="alert"`) avec « Réessayer » qui la relit ; à un geste : « L'action n'a pas abouti. Réessayez. » (`role="alert"`) au-dessus des gestes, la proposition reste en attente, les gestes se réactivent | Réessayer ; le geste à nouveau |
+| connexion perdue | le bandeau commun ; zones lisibles ; « Appliquer » et « Abandonner » désactivés ; au retour de la connexion, la proposition est relue | lire ; Ouvrir |
+| refus (adresse inconnue : abandonnée ailleurs, supprimée avec sa section, autre compte, MJ retiré de l'univers) | « Cette proposition n'existe plus. » ; plus de zones ni de geste ; session expirée : la personne est menée à la connexion, le fil est perdu | continuer à écrire dans le fil |
+| déjà appliquée, vue d'un autre onglet | même rendu que « appliquée » (la lecture dit l'état, AD-82) ; un « Appliquer » en course rend 409 `proposition_appliquee` et le bloc se relit | Ouvrir |
+| contenu long | contenu de 20 000 caractères : chaque zone a une hauteur maximale de 15 lignes et défile (`tabindex="0"`, étiquetée « Actuel » / « Proposé ») ; les paragraphes (lignes vides) sont conservés ; un titre de fiche ou de compte-rendu de 120 caractères passe à la ligne | faire défiler chaque zone |
+
+La proposition vit en base (AD-79) mais le fil non (AD-28) : au rechargement de la page, au changement d'univers ou
+après « Nouvelle conversation », le bloc disparaît du fil et la proposition devient inatteignable ; elle
+reste en base jusqu'à être remplacée par une nouvelle pour la même section (AD-79). Limite acceptée de la V1, bornée : une
+proposition en attente par section et par MJ.
+
+*Critère.* Étant donné Léa qui a écrit le compte-rendu « Séance 3 » et la fiche « Maître Aldric »
+dont « Vérité » dit « Il sert la Couronne », quand Antor demande à son assistant de mettre à jour
+« Vérité » d'après ce compte-rendu, alors le fil montre « Mise à jour proposée » avec « Actuel »
+et « Proposé » et **la section n'a pas changé** (la fiche, ouverte à côté, l'atteste) ; quand il clique « Appliquer », la section
+montre le contenu proposé et le bloc dit « Appliquée » ; quand une autre proposition est faite puis que
+quelqu'un modifie la section, « Appliquer » est désactivé et le bandeau dit pourquoi ; Léa,
+qui demande la même chose à son assistant, n'obtient aucune proposition.
+
+### Clôture de `kanevas-monde`
+
+B-21 → bloc « Mise à jour proposée » (toutes ses lignes) ; B-27 → proposer (générer reste à
+`kanevas-images`). Parcours : P-5 étapes 2 et 3. Rôles : le MJ a le bloc et ses gestes, le Joueur
+ne l'a pas, l'admin d'instance sans rôle n'a pas E-12. Une migration (la table `propositions`, numérotée
+à la fusion, AD-51). Reste hors de la tranche : l'application par un joueur, les propositions en
+lot, la reprise d'une proposition après rechargement.
+
 ## Maquettes
 
 `docs/maquettes/<écran>.html`, une par écran structurant, premier niveau : la structure et le
