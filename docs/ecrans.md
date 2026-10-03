@@ -116,7 +116,7 @@ Deux sont posés dès le cadrage parce qu'ils traversent tout :
   n'est enregistré tant qu'elle ne revient pas. » ; les boutons qui écrivent sont désactivés ; il
   disparaît seul au retour de la connexion.
 - *Écriture en cours* (tout envoi : ajouter, changer un rôle, retirer, créer, enregistrer, régler,
-  monter, descendre, charger la suite) : le bouton qui a déclenché affiche « … » et est désactivé
+  monter, descendre, charger la suite) : le bouton qui a déclenché affiche « … » (partout, E-2 compris) et est désactivé
   jusqu'à la réponse (un double clic ne part qu'une fois) ; le reste de l'écran reste lisible.
 - *Échec d'une écriture* : « L'action n'a pas abouti. Réessayez. » au-dessus de la liste ou du panneau
   concerné ; la valeur affichée revient à celle d'avant (réglage d'audience, rôle, ordre) ; une
@@ -143,7 +143,7 @@ Deux sont posés dès le cadrage parce qu'ils traversent tout :
 - **« Connexion refusée »** (Authelia a refusé ou le retour est invalide) : « La connexion a été
   refusée. » et un lien « Réessayer ». Aucun autre contenu.
 - **« Connexion indisponible »** (Authelia injoignable) : « Authelia ne répond pas pour
-  l'instant. Réessayez dans un moment. »
+  l'instant. Réessayez dans un moment. » et un lien « Réessayer »
 - La session expire au bout de 7 jours (AD-56). **Se déconnecter** (pied de la barre latérale)
   efface la session et mène à la connexion ; en bouchon, c'est ainsi qu'on change de compte.
 - `GET /api/moi` rend `{username, groups}` du compte connecté : c'est ce que la barre latérale
@@ -164,7 +164,7 @@ bouton « Menu ».
 |---|---|
 | vide | sans objet : l'univers courant est toujours dans le sélecteur ; hors univers, seul « Mes univers » |
 | chargement | le sélecteur affiche « … » ; les items fixes sont déjà là |
-| erreur | le sélecteur affiche le nom de l'univers de l'adresse, sans liste ; « Impossible de charger vos univers. » dans la liste dépliée, avec « Réessayer » |
+| erreur | le sélecteur affiche « Univers », sans liste (le nom n'est connu que de la liste qui n'a pas chargé) ; « Impossible de charger vos univers. » dans la liste dépliée, avec « Réessayer » |
 | connexion perdue | le bandeau ; navigation inchangée |
 | refus | sur « Page introuvable. » la barre ne montre **aucun nom d'univers** de l'adresse : seulement « Mes univers » ; le sélecteur ne liste que les univers du compte |
 | contenu long | 100 univers : la liste du sélecteur défile ; un nom de 80 caractères est tronqué par « … » avec infobulle |
@@ -196,8 +196,8 @@ en MJ (B-2).
 | État | Ce qu'on voit | Ce qu'on peut faire |
 |---|---|---|
 | vide | le formulaire vierge | remplir |
-| chargement | le bouton affiche « Création… », désactivé | — |
-| erreur | « Erreur : le nom est obligatoire. » sous le champ ; ou, si la création échoue, « L'univers n'a pas pu être créé. Réessayez. » au-dessus du formulaire, saisie conservée | corriger, réessayer |
+| chargement (écriture en cours) | le bouton affiche « … », désactivé | — |
+| erreur | « Erreur : le nom est obligatoire. » sous le champ ; ou, si la création échoue, « L'action n'a pas abouti. Réessayez. » au-dessus du formulaire, saisie conservée | corriger, réessayer |
 | connexion perdue | le bandeau ; « Créer l'univers » désactivé, saisie conservée | attendre |
 | refus | sans objet : tout compte peut créer un univers (B-2) | — |
 | contenu long | « Erreur : 80 caractères au plus. » dès le 81e (même texte pour la description avec 500) | corriger |
@@ -253,14 +253,16 @@ Pour un type de la barre (Personnages, Lieux…) : les fiches **que le compte pe
 titre (ordre alphabétique sans casse), chacune avec son badge (pour un personnage : PJ ou PNJ).
 Cent fiches à la fois, puis « Charger la suite ». Pour un MJ, « Nouveau personnage » (« Nouveau
 lieu »…) ouvre une fenêtre : « Titre » (1 à 120 caractères) et, pour un personnage, « PJ » ou
-« PNJ » (PNJ par défaut) ; « Créer la fiche » mène à E-9 de la fiche, sans section. Pas de
-recherche (`kanevas-relier-chercher`). Le type compte-rendu n'a pas d'entrée ici (E-13).
+« PNJ » (PNJ par défaut) ; « Créer la fiche » mène à E-9 de la fiche, sans section. Textes par type : « Aucun personnage », « Aucun lieu », « Aucune faction », « Aucun objet », « Aucun
+événement », « Aucune quête », suivis de « pour l'instant. » (MJ) ou « à voir pour l'instant. »
+(Joueur) ; bouton « Nouveau personnage », « Nouveau lieu », « Nouvelle faction », « Nouvel objet »,
+« Nouvel événement », « Nouvelle quête ». Pas de recherche (`kanevas-relier-chercher`). Le type compte-rendu n'a pas d'entrée ici (E-13).
 
 | État | Ce qu'on voit | Ce qu'on peut faire |
 |---|---|---|
-| vide | MJ : « Aucun personnage pour l'instant. » et « Nouveau personnage » ; Joueur : « Aucun personnage à voir pour l'instant. » | MJ : créer |
+| vide | MJ : « Aucun personnage pour l'instant. » et « Nouveau personnage » ; Joueur : « Aucun personnage à voir pour l'instant. » (autres types : voir ci-dessus) | MJ : créer |
 | chargement | « Chargement des fiches… » | — |
-| erreur | « Impossible de charger les fiches. » ; création échouée : « La fiche n'a pas pu être créée. Réessayez. », titre conservé | « Réessayer » |
+| erreur | « Impossible de charger les fiches. » ; création échouée : « L'action n'a pas abouti. Réessayez. », titre conservé | « Réessayer » |
 | connexion perdue | le bandeau ; « Nouveau … » et « Créer la fiche » désactivés | ouvrir une fiche listée |
 | refus | un type inconnu : « Page introuvable. » ; une fiche illisible est absente de la liste | — |
 | contenu long | plus de 100 fiches : « Charger la suite » ; titre trop long tronqué par « … » avec infobulle | idem |
@@ -300,10 +302,10 @@ confirmation de retrait : « Retirer la section « Vérité — MJ seul » ? Son
 |---|---|---|
 | vide | MJ : « Cette fiche n'a pas encore de section. » et « Ajouter une section » ; section vide : « Rien d'écrit pour l'instant. » | MJ : ajouter ; qui écrit : « Modifier » |
 | chargement | le titre absent, « Chargement de la fiche… » | — |
-| erreur | « Impossible de charger cette fiche. » ; échec d'écriture : « Enregistrement impossible. Réessayez. », texte conservé | « Réessayer » |
+| erreur | « Impossible de charger cette fiche. » ; échec d'écriture : « L'action n'a pas abouti. Réessayez. », texte conservé | « Réessayer » |
 | connexion perdue | le bandeau ; « Enregistrer », audience, ordre, retrait, ajout désactivés ; le texte en cours reste | lire |
 | refus | fiche inconnue ou dont rien n'est lisible : « Page introuvable. » ; section non lisible : absente. Un MJ en mode Joueur sur une fiche dont aucune section n'est lisible des joueurs voit « Aucune section n'est visible des joueurs. » (ce que verrait un joueur : « Page introuvable. ») | passer en mode MJ |
-| contenu long | une section de 20 000 caractères passe à la ligne et s'affiche en entier ; plus au-delà : « Erreur : 20 000 caractères au plus. » ; titre de fiche et titre de section de 80 caractères : passent à la ligne | idem |
+| contenu long | une section de 20 000 caractères passe à la ligne et s'affiche en entier ; plus au-delà : « Erreur : 20 000 caractères au plus. » ; titre de fiche (120 caractères) et titre de section (80) : passent à la ligne | idem |
 
 *Critères.*
 - Étant donné Léa, Joueuse, quand elle ouvre « Maître Aldric » (« Apparence » lue des joueurs,
