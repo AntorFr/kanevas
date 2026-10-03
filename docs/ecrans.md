@@ -327,6 +327,73 @@ par P-1 (E-1, E-2, E-3), P-2 (E-4), P-3 étape 4 et P-6 (E-8, E-9), P-7 (E-9). L
 leur colonne dans la matrice du cadrage ; l'admin d'instance n'a, dans cette tranche, que E-1 et
 E-2.
 
+## Détail des écrans de `kanevas-recours-admin`
+
+> E-5 et l'entrée « Administration » de la barre latérale. Les textes communs (chargement, erreur de
+> chargement, connexion perdue, écriture en cours, échec d'une écriture, refus) et les refus de
+> membres (« Ce compte ne s'est jamais connecté. », « Ce compte est déjà membre. », « Impossible :
+> l'univers doit garder au moins un MJ. ») sont ceux de « Détail des écrans de
+> `kanevas-premiere-fiche` ». Maquette finie : `docs/maquettes/e05-administration.html`.
+
+**Qui est admin d'instance.** Le compte dont la session porte le groupe Authelia `parents` (AD-56,
+lu à la connexion ; en bouchon, Admin). Le droit est celui de la session en cours : un compte retiré
+du groupe le garde jusqu'à l'expiration de sa session (7 jours) — risque accepté (AD-82).
+**Ce que l'admin voit** : le nom de chaque univers, le nombre de ses membres, et ses membres
+(identifiant, rôle). **Ce qu'il ne voit jamais** : la description, une fiche, une section, un
+compte-rendu, une carte, une pièce jointe, un système de jeu — pour tout cela, il est un compte sans
+rôle (« Page introuvable. »), tant qu'il ne s'est pas ajouté lui-même comme membre.
+
+### Barre latérale : l'entrée « Administration »
+
+Pour un admin d'instance seulement : hors d'un univers, **Administration** sous « Mes univers » ; dans un
+univers dont il est membre, **Administration** sous une section « Instance », en pied de la barre.
+Pour tout autre compte, l'entrée n'existe pas.
+
+### E-5 Administration
+
+Deux zones. À gauche, **Univers de l'instance** : tous les univers, par nom (sans casse), chacun avec
+« N membres » ; cent à la fois, puis « Charger la suite ». À droite (sous la liste sur téléphone, après
+un clic sur l'univers), **Membres — <nom de l'univers>** : la liste (identifiant, rôle MJ / Joueur,
+« Retirer »), un champ « Identifiant du compte », le rôle (Joueur par défaut) et « Ajouter » : le même
+geste, les mêmes refus et la même confirmation de retrait qu'E-4. Ajouter son propre identifiant, en
+MJ, est le moyen de lire le contenu : l'ajout apparaît dans la liste des membres que voit le MJ de
+l'univers. Rien d'autre n'est montré de l'univers : pas de lien vers sa vue d'ensemble tant que
+l'admin n'en est pas membre ; une fois membre, le nom mène à E-3. Aucune action sur l'univers lui-même
+(nom, description) : elles sont au MJ.
+
+Adresses : `/administration` (aucune sélection : « Choisissez un univers pour voir ses membres. »)
+et `/administration/univers/:id`.
+
+| État | Ce qu'on voit | Ce qu'on peut faire |
+|---|---|---|
+| vide | aucun univers dans l'instance : « Aucun univers sur l'instance pour l'instant. » ; aucune sélection : « Choisissez un univers pour voir ses membres. » | — |
+| chargement | « Chargement des univers… » ; pour les membres : « Chargement des membres… » | — |
+| erreur | « Impossible de charger les univers. » ou « Impossible de charger les membres. », avec « Réessayer » ; une écriture échouée : « L'action n'a pas abouti. Réessayez. » au-dessus de la liste des membres | « Réessayer » |
+| connexion perdue | le bandeau ; « Ajouter », le changement de rôle et « Retirer » désactivés ; les listes chargées restent | lire |
+| refus | tout compte hors du groupe : « Page introuvable. » (l'entrée n'existe pas dans sa barre) ; un univers qui n'existe pas : « Page introuvable. » ; groupe retiré à l'expiration de la session : « Page introuvable. » | « Mes univers » |
+| contenu long | 300 univers : « Charger la suite » ; 200 membres : la liste défile ; un nom de 80 caractères et un identifiant long sont tronqués par « … » avec infobulle | idem |
+
+*Critères.*
+- Étant donné « Admin » (groupe `parents`), sans rôle dans « Lame d'Ébène », quand il ouvre
+  l'administration et choisit « Lame d'Ébène », alors il voit « 2 membres », la liste antor (MJ) et lea (Joueur), et ni la description, ni aucune fiche.
+- Étant donné le même Admin, quand il ajoute « mira » en MJ (elle apparaît dans la liste) puis ouvre l'adresse de la vue d'ensemble
+  de « Lame d'Ébène », alors il voit « Page introuvable. » ; quand il s'ajoute lui-même en MJ, alors
+  la vue d'ensemble s'ouvre et Antor, sur E-4, voit « admin » dans la liste des membres.
+- Étant donné Léa, Joueuse, quand elle ouvre `/administration`, alors elle voit « Page introuvable. » et
+  n'a pas d'entrée « Administration » dans sa barre.
+- Étant donné Admin et l'univers « Marche », dont « jules » est le seul MJ, quand Admin tente de le
+  retirer, alors il voit « Impossible : l'univers doit garder au moins un MJ. » et la liste est inchangée.
+- Étant donné Admin et un compte « nadia » qui ne s'est jamais connecté, quand il tente de
+  l'ajouter, alors il voit « Ce compte ne s'est jamais connecté. ».
+
+### Clôture de `kanevas-recours-admin`
+
+B-6 → E-5 (voir les univers et leurs membres, les gérer) ; P-2 étape 3 → E-5 ; B-29 → les six états
+d'E-5 ; la lecture du groupe `parents` est posée par la première fiche (session, AD-56) et consommée
+ici. E-5 est atteint par P-2 (étape 3) et par la barre (admin). Les trois rôles ont leur colonne : le
+MJ et le Joueur n'ont pas E-5 ; l'admin n'a, hors des univers dont il est membre, que E-1, E-2 et E-5.
+Écart au cadrage : aucun.
+
 ## Maquettes
 
 `docs/maquettes/<écran>.html`, une par écran structurant, premier niveau : la structure et le

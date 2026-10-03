@@ -132,8 +132,12 @@ demande à son assistant (E-12).
 2. Il ajoute un compte par son identifiant, choisit MJ ou Joueur ; change un rôle ; retire un
    membre.
 3. En recours, l'admin ouvre l'**administration** (E-5), choisit l'univers, fait le même geste.
+   *Exemple* : le seul MJ d'un univers a quitté la table ; l'admin ajoute un MJ qui a déjà ouvert
+   Kanevas. L'admin ne lit toujours rien du contenu ; s'il veut le lire, il s'ajoute lui-même, et
+   l'ajout figure dans la liste des membres que voit le MJ de l'univers.
 *Échec* : identifiant jamais connecté — « ce compte ne s'est jamais connecté » ; retirer le
-dernier MJ — refusé avec la raison.
+dernier MJ — refusé avec la raison ; un compte qui n'est pas admin ouvre l'adresse — « Page
+introuvable. ».
 
 ### P-3 — Préparer la séance du samedi (MJ, dimanche soir, bureau)
 1. **Vue d'ensemble** (E-3) : la campagne active, les derniers CR, la préparation en cours.
