@@ -86,6 +86,17 @@ Pour chacun : **V** visuelle, **C** comportementale.
 - **Bandeau** (mode bouchon, connexion perdue). V : pleine largeur, `--danger-fond` pour la
   connexion perdue, `--mj-fond` pour le mode bouchon. C : `role="status"` ; non fermable ; texte
   exact dans `docs/ecrans.md`.
+- **Panneau d'assistant** (E-12). V : un bouton flottant « Demander à Kanevas » en `--accent` /
+  `--sur-accent`, rayon pastille, en bas à droite ; le panneau en `--fond-lateral`, bord gauche
+  `--bord-champ`, 380 px, plein écran sous 760 px ; message de la personne `--surface-3`, réponse
+  `--surface` avec bord `--bord` ; bloc « Écrit par l'assistant » : `--surface-2`, liseré `--accent`,
+  le mot « Écrit par l'assistant » en `--accent-texte` ; erreur : `--danger-fond` et `--danger`.
+  C : le bouton est atteignable à la tabulation et porte `aria-expanded` ; le panneau est un
+  `complementary` titré (`h2`) ; à l'ouverture le focus va au champ, Échap ferme et rend le focus au
+  bouton ; une nouvelle réponse est annoncée (`role="log"`, `aria-live="polite"`) ; « Kanevas
+  réfléchit… » est un `role="status"` ; l'erreur un `role="alert"` ; l'état indisponible désactive
+  le champ **et** dit pourquoi. Le bouton ne masque jamais un champ ou un bouton de l'écran : le
+  contenu garde une marge basse de la hauteur du bouton. Aucun état par la teinte seule.
 - **Fenêtre** (créer une fiche). V : `--surface` sur voile ; C : `role="dialog"`, le focus y
   entre et y reste, Échap ferme, le focus revient au bouton qui l'a ouverte.
 - **État d'écran** (vide, chargement, erreur, refus). V : un bloc centré, texte `--texte-2`, un

@@ -630,6 +630,76 @@ cherche et lit ce qu'il peut ; l'admin d'instance n'atteint ni l'un ni l'autre (
 introuvable. »). Chemin d'échec propre à cette tranche (`docs/parcours.md` n'en porte pas pour P-3 et P-6) : une recherche sans résultat dit « Aucun résultat pour … »,
 jamais « caché ». Chemin d'échec de relier une section : le refus du service s'écrit au-dessus du formulaire (« Cette relation existe déjà. », « Une fiche ne se relie pas à elle-même. », « Cette section porte déjà 100 relations. »), la saisie et le choix sont conservés ; un échec d'écriture générique et une session expirée suivent les textes communs (« L'action n'a pas abouti. Réessayez. » ; connexion, formulaire non gardé).
 
+## Détail des écrans de `kanevas-assistant-membre`
+
+> E-12 Assistant, et son ajout au shell d'un univers. Mêmes six états et mêmes textes communs que
+> `kanevas-premiere-fiche` (chargement, connexion perdue, session expirée) ; ne sont redits que les
+> textes propres. Maquette finie : `docs/maquettes/e12-assistant.html` (thème sombre ; MJ, Joueur,
+> et les états). Composant : `docs/charte.md` « Panneau d'assistant ».
+
+**Ajout au shell.** Un bouton flottant « Demander à Kanevas », en bas à droite, sur **tout écran
+d'un univers** pour un membre (MJ ou Joueur) ; il n'existe ni hors d'un univers, ni pour un compte
+sans rôle dans l'univers (l'admin d'instance sans rôle, Teo avant son ajout) : l'écran n'a alors pas
+de bouton, et l'assistant n'a pas d'adresse (404, AD-75). Il se monte par un seul fichier, sans
+modifier un composant existant du shell. Bascule « mode Joueur » d'une fiche : sans effet sur
+l'assistant, qui garde le catalogue du rôle réel (AD-74) ; le panneau le dit par sa pastille.
+
+### E-12 Assistant
+
+Un panneau à droite (380 px, sur ordinateur) qui s'ouvre au bouton et se ferme par « Fermer » ou
+Échap ; le contenu de l'écran dessous reste lisible et utilisable. Sur téléphone (moins de 760 px)
+il prend tout l'écran, et Échap ou « Fermer » rend le focus au bouton flottant. Dedans, de haut en
+bas :
+
+- **l'en-tête** : « Kanevas — assistant », la pastille du catalogue (« MJ » ou « Joueur », mot et
+  teinte), « Nouvelle conversation », « Fermer » ;
+- **le fil** : les messages de la personne et les réponses de l'assistant, en texte brut (AD-58),
+  du plus ancien au plus récent ; le fil défile et reste calé sur le dernier message ;
+- **sous une réponse, les écritures** : un bloc « Écrit par l'assistant » par événement (AD-76), le
+  libellé (« Section « Notes de la table » complétée », « Scénario « Acte III — La crypte » créé
+  dans La Couronne brisée ») et un lien « Ouvrir » vers E-9 (la fiche), E-7 (le scénario) ou E-6
+  (la campagne) ;
+- **la saisie** : le champ « Demander à Kanevas » (étiquette visible), et « Envoyer » (Entrée
+  envoie, Maj+Entrée va à la ligne).
+
+Le **fil vit dans le navigateur**, dans un contexte du shell d'univers (AD-28) : il survit à un
+changement d'écran et à la fermeture du panneau ; il disparaît au rechargement de la page, au
+changement d'univers et à la déconnexion ; « Nouvelle conversation » le vide. Il n'est écrit
+nulle part (ni stockage du navigateur, ni serveur). Le client envoie le message et les 20 derniers
+messages du fil (AD-75).
+
+**Ce que chaque rôle y voit.** Le MJ : le catalogue MJ (chercher, lire, modifier, ajouter,
+campagnes, créer une campagne ou un scénario). Le Joueur : le catalogue Joueur. Dans les deux cas
+l'assistant ne lit et n'écrit que ce que la personne lit et écrit : une section fermée est
+« Introuvable. », une section lisible mais non écrite « Vous ne pouvez pas modifier cette
+section. » (AD-74). Cette tranche **ne dessine ni proposition de mise à jour ni image** : elles
+s'inscrivent au registre de blocs (`kanevas-monde`, `kanevas-images`).
+
+| État | Ce qu'on voit | Ce qu'on peut faire |
+|---|---|---|
+| vide (fil sans message) | « Demandez-moi de chercher, de résumer ou d'écrire dans ce que vous pouvez lire et écrire. Exemple : « Que sait-on d'Aldric ? » » | écrire ; fermer |
+| chargement (disponibilité) | le bouton est présent ; dans le panneau, « Chargement… » à la place du champ | fermer |
+| réponse en cours | le message envoyé apparaît ; « Kanevas réfléchit… » (`role="status"`) ; « Envoyer » affiche « … » et est désactivé ; le champ reste lisible | fermer (la réponse arrive dans le fil) |
+| erreur | « Je n'ai pas pu répondre — réessayer » (`role="alert"`), sans événement ; demande déjà en cours (429) : « Une demande est déjà en cours. Patientez. » | « Réessayer » renvoie la même question ; saisir autre chose |
+| indisponible (sans jeton, hors bouchon, AD-77) | « L'assistant n'est pas disponible pour le moment. » ; champ et « Envoyer » désactivés (`aria-disabled`) | lire le fil, fermer |
+| connexion perdue | le bandeau commun ; le fil reste lisible ; champ et « Envoyer » désactivés | lire, ouvrir les liens |
+| refus | le compte sans rôle n'a pas le bouton ; un refus d'outil est une réponse de l'assistant (« Introuvable. »), pas un écran d'erreur ; session expirée : la personne est menée à la connexion, le fil est perdu | — |
+| contenu long | message de plus de 2 000 caractères : « Erreur : 2 000 caractères au plus. » sous le champ, « Envoyer » désactivé ; fil de plus de 20 messages : la note « Seuls les 20 derniers messages sont transmis à l'assistant. » ; réponse longue : passe à la ligne, le fil défile ; titre de 120 caractères dans un libellé : passe à la ligne | idem |
+
+*Critère.* Étant donné Léa Joueuse de « Lame d'Ébène », quand elle demande « Que sait-on d'Aldric ? »,
+alors le fil donne « Apparence » et rien de « Vérité » ; quand elle demande de lire « Vérité », le fil
+dit « Introuvable. » ; Antor, lui, obtient les deux sections, et fait créer un scénario qui apparaît
+dans le fil avec « Ouvrir » vers E-7 et sur E-6.
+
+### Clôture de `kanevas-assistant-membre`
+
+B-26 → E-12 (toutes ses lignes) ; B-27 → E-12 (créer une campagne ou un scénario ; proposer et
+générer restent à `kanevas-monde` et `kanevas-images`). Parcours : P-3 étape 5 (« rappelle-moi tout
+ce qu'on sait d'Aldric », première moitié), P-6 étape 4, P-7 étape 2. Rôles : MJ et Joueur ont
+E-12, l'admin d'instance sans rôle ne l'a pas. Aucune migration, aucune entité : le fil n'est pas
+stocké. Reste aux autres tranches : les propositions de mise à jour (`kanevas-monde`), les images
+(`kanevas-images`).
+
 ## Maquettes
 
 `docs/maquettes/<écran>.html`, une par écran structurant, premier niveau : la structure et le
