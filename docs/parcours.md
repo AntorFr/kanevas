@@ -182,6 +182,9 @@ l'assistant est indisponible ou en erreur : le panneau le dit, et la fiche reste
    (E-12) d'y ajouter un paragraphe.
 *Échec* : il demande d'écrire dans une section qu'il lit sans l'écrire : « Vous ne pouvez pas modifier
 cette section. », rien n'est écrit.
+*Échec* (dépôt) : fichier vide, section déjà à 50 pièces jointes, envoi interrompu ou droit
+d'écriture retiré — le fichier n'est pas attaché, la raison est dite sur la section (E-9), rien n'est
+laissé à moitié.
 
 ### P-8 — Monter un univers sur un système partagé (MJ)
 1. **Paramètres de l'univers** (E-14) : il choisit un système du catalogue, ou en crée un.
