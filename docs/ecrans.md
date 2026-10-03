@@ -391,7 +391,7 @@ l'entrée **sur place** (le nom, le contenu en texte brut, AD-58).
 objet » ouvre un formulaire sur place : « Nom » (1 à 120 caractères), « Contenu » (20 000 au plus,
 facultatif), « Ajouter » et « Annuler » ; sur une entrée ouverte, « Modifier » (nom et contenu),
 « Enregistrer », « Annuler ». Le type d'une entrée ne change jamais ; rien ne se supprime. Enregistrer
-envoie la version lue (AD-81).
+envoie la version lue (AD-85).
 *Un Joueur d'un univers rattaché* : la même page, lecture seule, sans bouton d'ajout ni de
 modification.
 
