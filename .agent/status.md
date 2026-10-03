@@ -41,3 +41,9 @@ leur adresse ; tiroir « Menu » sous 760 px), thème Clair/Sombre/Système (loc
 bouchon (`<meta name="kanevas-bouchon">` injecté dans `index.html` par le serveur) et connexion
 perdue. Le serveur sert `dist/public` derrière la garde ; le Dockerfile construit les deux.
 Pas de navigateur dans le pod : rendu non vérifié visuellement, ni test de contraste (testeur).
+
+**Tâche `kanevas-pf-accueil-univers` (branche `task/kanevas-pf-accueil-univers`) :** écrans E-1
+(`/`), E-2 (`/univers/nouveau`), E-3 (`/univers/:id`, refus = 404 de l'API → « Page introuvable. »)
+dans `frontend/src/ecrans/`. Blocs de E-3 : un fichier dans `ecrans/vue-ensemble/blocs/` (export
+par défaut `Bloc`), trouvé par `vue-ensemble/registre.ts`. Le service refuse aussi une
+description de plus de 500 caractères. Pas encore de tests ; rendu non vérifié au navigateur (pas de navigateur dans le pod).

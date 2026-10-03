@@ -208,9 +208,9 @@ Le nom de l'univers (titre), sa description, le badge du rôle, puis une **régi
 cette tranche, aucun bloc n'existe : la région montre « Rien à afficher pour l'instant. Les
 campagnes, les comptes-rendus et les cartes s'afficheront ici. » ; ni compteur ni lien mort.
 **Les blocs sont indépendants** : chaque tranche ajoute le sien en déposant un fichier dans
-`frontend/src/ecrans/vue-ensemble/blocs/` et en l'inscrivant dans le registre
-`frontend/src/ecrans/vue-ensemble/registre.ts` (une ligne : identifiant, rôles qui le voient,
-rang, composant) ; elle ne modifie aucun bloc existant.
+`frontend/src/ecrans/vue-ensemble/blocs/` dont l'export par défaut est un `Bloc` (identifiant,
+rôles qui le voient, rang, composant) ; le registre `frontend/src/ecrans/vue-ensemble/registre.ts`
+le trouve seul (un seul fichier, comme pour les écrans) ; elle ne modifie aucun bloc existant.
 
 | État | Ce qu'on voit | Ce qu'on peut faire |
 |---|---|---|
