@@ -25,6 +25,13 @@
   those of `docs/donnees.md`; only `src/services/` reads or writes them
   (AD-2) — routes and agent tools never carry SQL. A migration takes the next
   number when its slice merges (AD-51).
+- `frontend/` (React, Vite, `react-router`; AD-16, AD-57): `npm run build` also builds it into
+  `dist/public`, served by `routes/session.ts` behind the session guard (`@fastify/static` for
+  `/assets/`, `index.html` as the fallback of any other GET). A screen is one file
+  `frontend/src/ecrans/<nom>.tsx` exporting an `Ecran` (`registre.ts`) — never edit the router or
+  the sidebar; sidebar items live in `items.ts` and show only when a registered screen answers
+  their address. Colours only through `frontend/src/ui/tokens.css` (`docs/charte.md`). Tests of the
+  built-app routes set `FRONTEND_DIR` (under `NODE_ENV=test` no build is looked up otherwise).
 - `services/llm/*` (transport.ts, anthropic-transport.ts,
   claude-agent-transport.ts) are reprised from `Antre-du-maitre` (AD-10) and
   unused by any route yet — kept compiling, not wired in. The admin

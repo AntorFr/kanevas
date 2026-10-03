@@ -1,0 +1,51 @@
+/* Component styles; only semantic tokens (docs/charte.md), no literal colour. */
+*, *::before, *::after { box-sizing: border-box; }
+html { scroll-padding-top: 64px; }
+body { margin: 0; background: var(--fond); color: var(--texte); font: var(--t-14)/1.5 var(--police-texte); }
+h1, h2 { margin: 0; }
+h1 { font-family: var(--police-titre); font-size: var(--t-22); font-weight: 500; }
+a { color: var(--accent-texte); }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+.bouton { font: inherit; font-size: var(--t-13); min-height: 28px; min-width: 24px; padding: var(--e-1) var(--e-3);
+  border-radius: var(--rayon-champ); border: 1px solid var(--bord-champ); background: var(--surface-3);
+  color: var(--texte); cursor: pointer; transition: background var(--duree); }
+.bouton.principal { background: var(--accent); border-color: var(--accent); color: var(--sur-accent); font-weight: 600; }
+.bouton.danger { background: transparent; border-color: var(--danger); color: var(--danger); }
+.bouton.petit { font-size: var(--t-12); padding: 2px var(--e-2); }
+.bouton[aria-disabled="true"] { opacity: .5; cursor: not-allowed; }
+
+.champ { display: block; margin: var(--e-3) 0; }
+.champ > span { display: block; font-size: var(--t-13); color: var(--texte-2); margin-bottom: var(--e-1); }
+.champ input, .champ textarea, .champ select { display: block; width: 100%; font: inherit; padding: var(--e-2) var(--e-3);
+  border-radius: var(--rayon-champ); border: 1px solid var(--bord-champ); background: var(--surface-2); color: var(--texte); }
+.champ .erreur { color: var(--danger); font-size: var(--t-13); margin-top: var(--e-1); }
+
+.pastille { display: inline-block; font-size: 11px; padding: 2px 9px; border-radius: var(--rayon-pastille); white-space: nowrap; }
+.pastille.mj { background: var(--mj-fond); color: var(--mj); }
+.pastille.table { background: var(--table-fond); color: var(--table); }
+
+.panneau { background: var(--surface); border: 1px solid var(--bord); border-radius: var(--rayon-panneau);
+  padding: var(--e-3) var(--e-4); margin-bottom: var(--e-3); }
+.panneau.reserve-mj { border-left: 3px solid var(--mj); }
+.panneau > h2 { font-size: var(--t-14); font-weight: 600; margin-bottom: var(--e-2); }
+
+.bandeau { padding: var(--e-2) var(--e-4); font-size: var(--t-13); position: sticky; top: 0; z-index: 30; }
+.bandeau.bouchon { background: var(--mj-fond); color: var(--mj); }
+.bandeau.perdue { background: var(--danger-fond); color: var(--danger); }
+
+.bascule { display: inline-flex; border: 1px solid var(--bord-champ); border-radius: var(--rayon-pastille); overflow: hidden; }
+.bascule label { padding: var(--e-1) var(--e-3); cursor: pointer; color: var(--texte-2); }
+.bascule input { position: absolute; opacity: 0; }
+.bascule label:has(input:checked) { background: var(--mj-fond); color: var(--mj); }
+.bascule.joueur label:has(input:checked) { background: var(--table-fond); color: var(--table); }
+.bascule label:has(input:focus-visible) { outline: 2px solid var(--focus); outline-offset: -2px; }
+
+.voile { position: fixed; inset: 0; background: rgba(0,0,0,.55); display: flex; align-items: center; justify-content: center; z-index: 50; }
+.fenetre { background: var(--surface); color: var(--texte); border-radius: var(--rayon-panneau); padding: var(--e-5);
+  width: min(32rem, 92vw); border: 1px solid var(--bord-champ); }
+
+.etat { text-align: center; color: var(--texte-2); padding: var(--e-5) var(--e-4); }
+.etat h2 { color: var(--texte); font-size: var(--t-16); margin-bottom: var(--e-2); }
+.etat p { margin: var(--e-1) 0 var(--e-3); }
+.etat [role="alert"] { color: var(--danger); }

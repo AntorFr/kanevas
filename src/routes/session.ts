@@ -1,3 +1,5 @@
+import fastifyStatic from '@fastify/static';
+import { join } from 'node:path';
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 
 import { env } from '../config/env.js';
@@ -11,6 +13,7 @@ import {
 } from '../services/session.js';
 import { registerErreurs } from './erreurs.js';
 import { registerUniversRoutes } from './univers.js';
+import { chargerFrontend } from './frontend.js';
 import { pageIntrouvable, urlConnexion } from './pages.js';
 
 declare module 'fastify' {
@@ -40,6 +43,7 @@ export function ouvrirSession(
 
 export async function registerSessionRoutes(app: FastifyInstance) {
   app.decorateRequest('session', null);
+  const frontend = chargerFrontend();
 
   // Resolve the session on every request; the guard below decides what to do without one.
   app.addHook('onRequest', async (request: FastifyRequest) => {
@@ -63,6 +67,13 @@ export async function registerSessionRoutes(app: FastifyInstance) {
     if (!chemin.startsWith('/api') && !request.session) {
       return reply.redirect(urlConnexion());
     }
+    // An address no server route owns is a frontend screen (or its "Page introuvable.", AD-57).
+    if (frontend && request.method === 'GET' && !chemin.startsWith('/api') && !chemin.startsWith('/assets/')) {
+      return reply
+        .type('text/html; charset=utf-8')
+        .header('cache-control', 'no-cache')
+        .send(frontend.index);
+    }
     return reply.code(404).type('text/html; charset=utf-8').send(pageIntrouvable());
   });
 
@@ -77,6 +88,15 @@ export async function registerSessionRoutes(app: FastifyInstance) {
       return reply.redirect(urlConnexion());
     });
     registerErreurs(garde);
+    // Build assets (Vite's `assets/`) sit behind the session guard; every other address falls
+    // through to the not-found handler, which serves `index.html`.
+    if (frontend) {
+      await garde.register(fastifyStatic, {
+        root: join(frontend.racine, 'assets'),
+        prefix: '/assets/',
+        index: false,
+      });
+    }
     registerGuardedRoutes(garde);
     registerUniversRoutes(garde);
   });

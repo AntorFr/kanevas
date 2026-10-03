@@ -33,3 +33,11 @@ base s'ouvre dans `buildApp` (`app.db`). Erreurs : `ErreurService.code`
 redirection ailleurs ; routes inconnues restent 404), `GET /api/moi`, `POST /api/auth/logout`,
 pages « Connexion refusée / indisponible » (le callback ne rend la page que si `Accept` contient
 `text/html`, sinon l'ancien JSON 401, pour garder les tests existants). Pas encore de tests.
+
+**Tâche `kanevas-pf-shell` (branche `task/kanevas-pf-shell`) :** `frontend/` (Vite, React 19,
+react-router) : `ui/tokens.css` + composants de la charte, registre d'écrans (`src/ecrans/*.tsx`,
+aucun enregistré), barre latérale (items de `items.ts`, affichés seulement si un écran répond à
+leur adresse ; tiroir « Menu » sous 760 px), thème Clair/Sombre/Système (localStorage), bandeaux
+bouchon (`<meta name="kanevas-bouchon">` injecté dans `index.html` par le serveur) et connexion
+perdue. Le serveur sert `dist/public` derrière la garde ; le Dockerfile construit les deux.
+Pas de navigateur dans le pod : rendu non vérifié visuellement, ni test de contraste (testeur).

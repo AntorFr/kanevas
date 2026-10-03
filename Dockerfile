@@ -16,6 +16,7 @@ FROM deps AS build
 
 COPY tsconfig.json ./
 COPY src ./src
+COPY frontend ./frontend
 
 RUN npm run build
 
