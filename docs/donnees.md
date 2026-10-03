@@ -54,7 +54,7 @@ Une table, `propositions` (migration numérotée à la fusion, AD-51) :
 | `univers_id` | → `univers` | non nul ; sert à refuser une proposition lue sous un autre univers |
 | `demandeur_id` | → `comptes` | non nul ; le seul compte qui la lit, l'applique ou l'abandonne (AD-79) |
 | `section_id` | → `sections` | non nul ; suppression en cascade avec la section |
-| `cr_id` | → `fiches` | non nul ; la fiche de type `compte_rendu` d'où part la proposition ; suppression en cascade |
+| `cr_id` | → `fiches` | non nul ; la fiche de type `compte_rendu` d'où part la proposition ; cascade par précaution (aucune suppression de CR en V1) |
 | `contenu_propose` | texte | non nul, non vide, 20 000 caractères au plus (la limite d'une section) |
 | `version_origine` | entier | non nul ; la `version` que la section avait quand l'assistant l'a lue (AD-59, AD-80) |
 | `creee_le` | date | non nul |
