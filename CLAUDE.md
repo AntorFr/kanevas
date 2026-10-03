@@ -32,4 +32,4 @@
 - `routes/auth.ts` stops at identity authentication (OIDC login/callback):
   no session, no role resolution (AD-9), no persistence. Don't extend it
   without reopening `kanevas-identite`'s design first.
-- Update `.agent/status.md` in the same commit as the work it reflects.
+- Update `.agent/status.md` in the same commit as the work it reflects — except in a task of a chain feature, which leaves it alone: the feature's assembly writes it once (two tasks both adding to it conflict at integration).
