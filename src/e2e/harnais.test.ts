@@ -41,7 +41,7 @@ export async function freePort(): Promise<number> {
   });
 }
 
-/** Builds the frontend once if `dist/public` is missing (vite only; the server runs from src). */
+/** Runs `npm run build` once if `dist/public` is missing; a stale `dist/` is not rebuilt (the server runs from dist/server.js). */
 export function ensureBuilt(): void {
   if (existsSync('dist/public/index.html')) return;
   execFileSync('npm', ['run', 'build'], { stdio: 'ignore' });

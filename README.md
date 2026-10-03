@@ -50,7 +50,9 @@ curl http://localhost:3001/healthz   # -> "kanevas 0.0.0-dev"
 `npm run dev` sert l'API, et le frontend seulement s'il a été construit : lancer d'abord
 `npm run build` (il construit `dist/public`, servi par Fastify derrière la session ; sans lui, `/`
 ne montre aucun écran). `npm run dev:front` lance Vite seul (port 5173 par défaut) et ne relaie que
-`/api` vers `http://localhost:3001` (écrit en dur dans `frontend/vite.config.ts` : à changer si `PORT` change) : il ne remplace pas le serveur pour la connexion en bouchon.
+`/api` vers `http://localhost:3001` (écrit en dur dans `frontend/vite.config.ts` : à changer si `PORT` change) : il ne remplace pas le serveur pour la connexion en bouchon. Pour l'utiliser : lancer d'abord le
+serveur en bouchon (port 3001), s'y connecter sur `http://localhost:3001/`, puis ouvrir
+`http://localhost:5173/` (le cookie de session ne dépend pas du port).
 
 La voie de référence reste le conteneur Node 20 de `CLAUDE.md` (celle de la CI) ; un Node local
 récent suffit pour les mêmes commandes.
@@ -65,20 +67,23 @@ npm run build && KANEVAS_STUB=1 npm start   # puis ouvrir http://localhost:3001/
 ont pour identifiants `antor`, `lea`, `teo`, `mira` et `admin` (noms affichés Antor, Léa…) : c'est
 l'identifiant qu'on tape pour ajouter un membre. Un compte n'existe qu'après sa première connexion :
 pour ajouter Léa, se connecter d'abord une fois en Léa (sinon « Ce compte ne s'est jamais connecté. »). Kanevas refuse de
-démarrer en bouchon si une variable `OIDC_*` est posée. En production sans volume `/data`, la base est en
+démarrer en bouchon si une variable `OIDC_*` est posée. Avec `NODE_ENV=production` (celui de l'image ; `npm start` ne le pose pas) et sans volume `/data`, la base est en
 mémoire (avertissement au démarrage).
 
 ### Tests de bout en bout
 
-`npm test` joue aussi `src/e2e/` : le vrai serveur en bouchon, piloté par un vrai Chromium via
-Playwright. Playwright n'est pas une dépendance du dépôt : il vient de l'image de travail (install
-globale). Là où il manque, comme dans la CI GitHub, ces tests sont **ignorés avec un message**, sans
-échec ; les autres tests (services, routes HTTP) tournent partout.
+`npm test` joue aussi `src/e2e/` : `node dist/server.js` en bouchon, piloté par un vrai Chromium via
+Playwright. Le build n'est lancé que si `dist/public/index.html` manque : après un changement dans
+`src/` ou `frontend/`, relancer `npm run build` avant `npm test`, sinon ces tests jouent l'ancien code.
+Playwright n'est pas une dépendance du dépôt : il doit être installé globalement
+(`/usr/lib/node_modules` ou `/usr/local/lib/node_modules`) avec un Chromium, ce que ne fait ni
+`node:20-bookworm-slim` ni la CI GitHub. Là où il manque, ces tests sont **ignorés avec un message**,
+sans échec ; les autres tests (services, routes HTTP) tournent partout. La CI ne joue donc pas les e2e.
 
 ## Réglages
 
 La liste de départ est `.env.example`. En plus : `APP_NAME` (défaut `kanevas`),
-`APP_VERSION` (défaut `0.0.0-dev`, posée par le build-arg en image), `PORT` (3001), `DB_PATH` (fichier SQLite ; défaut `/data/kanevas.db` en production, `./data/kanevas.db` en développement), `SESSION_SECRET` (≥ 16 caractères ; à défaut `session.key`, créée à côté de la base : `/data/session.key` en production, `./data/session.key` en développement), `KANEVAS_STUB` (`1`), `LLM_PROVIDER` (`mock` | `anthropic` | `claude-agent`, défaut `mock`,
+`APP_VERSION` (défaut `0.0.0-dev`, posée par le build-arg en image), `PORT` (3001), `DB_PATH` (fichier SQLite ; défaut `/data/kanevas.db` avec `NODE_ENV=production`, `./data/kanevas.db` en développement), `SESSION_SECRET` (≥ 16 caractères ; à défaut `session.key`, créée à côté de la base : `/data/session.key` en production, `./data/session.key` en développement), `KANEVAS_STUB` (`1`), `LLM_PROVIDER` (`mock` | `anthropic` | `claude-agent`, défaut `mock`,
 inutilisé tant qu'aucune route n'appelle un LLM).
 
 ## Version de l'application
