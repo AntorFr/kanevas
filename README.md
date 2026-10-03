@@ -18,7 +18,8 @@ src/
   services/llm/                   Transports LLM repris d'Antre-du-maitre,
                                    réservés aux futures features — aucune
                                    route de ce socle ne les appelle
-.github/workflows/docker-publish.yml   CI : build, typecheck, image GHCR
+  **/*.test.ts, e2e/healthz.test.ts  Tests (node:test), /healthz sur le serveur réel
+.github/workflows/docker-publish.yml   CI : tests (typecheck + npm test), puis image GHCR
 ```
 
 ## Démarrage local
@@ -27,6 +28,11 @@ src/
 docker run --rm -p 3001:3001 -v "$PWD":/src -w /src node:20-bookworm-slim sh -c "npm ci && npm run dev"
 # puis, depuis l'hôte : curl http://localhost:3001/healthz
 ```
+
+Ce bloc ne pose pas de `.env` : les valeurs par défaut suffisent pour `/healthz`, OIDC
+reste désactivé (`/api/auth/oidc/login` répond 404). Pour l'activer, créer `.env` (voir
+`.env.example`) à la racine : le montage `-v "$PWD":/src` le rend lisible. Ce bloc crée
+aussi `node_modules/` dans le dépôt de l'hôte (ignoré par git).
 
 Ou, avec un Node 20+ installé localement :
 
@@ -59,8 +65,9 @@ curl http://localhost:3001/healthz   # -> "kanevas 0.1.0"
 Sur un tag, la CI dérive ce même build-arg du tag semver poussé (`docker/metadata-action`)
 : pousser `v0.1.0` publie `ghcr.io/antorfr/kanevas:0.1.0` avec `APP_VERSION`
 embarqué à `0.1.0` — une seule source de vérité pour la version affichée et le
-tag publié. Hors tag (`main`, PR), la valeur n'est pas un semver (À documenter : valeur
-exacte non constatée en CI) : seul un tag donne une version fiable.
+tag publié. Hors tag (`main`, PR), la valeur n'est pas un semver : `metadata-action` y sort le nom
+de la ref (`main`, `pr-<n>`), d'après sa documentation et non constaté en CI. Seul un tag
+donne une version fiable.
 
 ## OIDC
 
@@ -86,5 +93,5 @@ fusionner `k8s-home-lab`, dont la fusion déploie.
 Pour la carte du code, les invariants et les options écartées, voir
 `ARCHITECTURE.md`. Les sigles `AD-n` renvoient aux décisions de l'epic Kanevas (magasin de
 pilotage de la chaîne SDLC, hors de ce dépôt ; les commentaires qui citent
-`plan.md`, `technique.md` ou `socle-projet` en viennent), dont `ARCHITECTURE.md` résume celles qui touchent ce dépôt (AD-3 Node/TypeScript,
+`plan.md`, `technique.md` ou `socle-projet` en viennent), dont `ARCHITECTURE.md` résume celles qui touchent ce dépôt (AD-3 Node/TypeScript, AD-7 hors socle : défini dans l'epic, non repris ici,
 AD-4 Fastify, AD-5 SQLite, AD-9 rôles par univers, AD-10 reprise d'Antre-du-maitre).

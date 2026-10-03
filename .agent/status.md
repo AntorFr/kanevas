@@ -5,7 +5,7 @@
 **État :** socle posé sur `feature/kanevas-socle` (PR ouverte, non fusionnée) :
 `/healthz` (`kanevas <version>`, version = build-arg `APP_VERSION`), OIDC
 d'identité, transports LLM réservés, Dockerfile (utilisateur `node`, mais le pod tourne en root au cluster), CI
-`docker-publish.yml` (test puis image GHCR). Typecheck et 8 tests verts. Carte et
+`docker-publish.yml` (test puis image GHCR). Typecheck et 14 tests verts. Carte et
 invariants : `ARCHITECTURE.md`.
 
 **Pièges :**
@@ -18,8 +18,10 @@ invariants : `ARCHITECTURE.md`.
 
 **Réouverture (verify) :** commentaires de code et Dockerfile/CI passés en
 anglais (CLAUDE.md), références à `plan.md`/`technique.md` retirées des
-commentaires (absents du dépôt). Le trailer d'attribution de 283899b reste :
-le réécrire exige un force-push, réservé à Monsieur.
+commentaires (absents du dépôt). Le commit 283899b porte un trailer
+`Co-Authored-By` contraire à CLAUDE.md : le retirer demande de réécrire
+l'historique de la branche (force-push), à décider par le mainteneur ; une
+fusion en squash à la PR l'efface.
 
 **Suivant :** `kanevas-identite` (session, rôles AD-9, première écriture dans
 `/data`).
