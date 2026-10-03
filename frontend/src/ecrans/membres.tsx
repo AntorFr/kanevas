@@ -138,8 +138,8 @@ function Membres() {
               <option value="joueur">Joueur</option>
               <option value="mj">MJ</option>
             </select>
-            <Bouton petit variante="danger" ecrit enCours={enCours === `retrait-${m.compteId}` && !aRetirer} onClick={() => setARetirer(m)}>
-              {`Retirer ${m.username}`}
+            <Bouton petit variante="danger" ecrit enCours={enCours === `retrait-${m.compteId}` && !aRetirer} onClick={() => setARetirer(m)} aria-label={`Retirer ${m.username}`}>
+              Retirer
             </Bouton>
           </li>
         ))}
@@ -153,8 +153,8 @@ function Membres() {
             Elle ne verra plus l’univers.
           </p>
           <div className="actions">
-            <Bouton variante="danger" ecrit onClick={() => retirer(aRetirer)}>
-              {`Retirer ${aRetirer.username}`}
+            <Bouton variante="danger" ecrit onClick={() => retirer(aRetirer)} aria-label={`Retirer ${aRetirer.username}`}>
+              Retirer
             </Bouton>
             <Bouton onClick={() => setARetirer(undefined)}>Annuler</Bouton>
           </div>
