@@ -21,7 +21,7 @@
   change in `k8s-home-lab` (chart version + image tag pinned there).
 - No ORM, no SQL table in this repo yet: AD-5 (SQLite) only reserves the
   volume mount (`/data`), `kanevas-identite` is the first feature to write to
-  it. Don't add a database dependency "to be ready" — see `socle-projet`.
+  it. Don't add a database dependency "to be ready" — `socle-projet` is a skill of the SDLC pipeline outside this repo: the rule is simply that no DB lands before the feature that needs it.
 - `services/llm/*` (transport.ts, anthropic-transport.ts,
   claude-agent-transport.ts) are reprised from `Antre-du-maitre` (AD-10) and
   unused by any route yet — kept compiling, not wired in. The admin

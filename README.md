@@ -18,7 +18,9 @@ src/
   services/llm/                   Transports LLM repris d'Antre-du-maitre,
                                    réservés aux futures features — aucune
                                    route de ce socle ne les appelle
-.github/workflows/docker-publish.yml   CI : build, typecheck, image GHCR
+  **/*.test.ts, e2e/healthz.test.ts,
+  e2e/oidc-login.test.ts             Tests (node:test), /healthz et connexion OIDC sur le serveur réel
+.github/workflows/docker-publish.yml   CI : tests (typecheck + npm test), puis image GHCR
 ```
 
 ## Démarrage local
@@ -28,19 +30,26 @@ docker run --rm -p 3001:3001 -v "$PWD":/src -w /src node:20-bookworm-slim sh -c 
 # puis, depuis l'hôte : curl http://localhost:3001/healthz
 ```
 
+Ce bloc ne pose pas de `.env` : les valeurs par défaut suffisent pour `/healthz`, OIDC
+reste désactivé (`/api/auth/oidc/login` répond 404). Pour l'activer, créer `.env` (voir
+`.env.example`) à la racine : le montage `-v "$PWD":/src` le rend lisible. Ce bloc crée
+aussi `node_modules/` dans le dépôt de l'hôte (ignoré par git) ; il appartient à root : à supprimer par
+`docker run --rm -v "$PWD":/src -w /src node:20-bookworm-slim rm -rf node_modules` ou `sudo rm -rf node_modules`.
+
 Ou, avec un Node 20+ installé localement :
 
 ```bash
 npm install
 cp .env.example .env
-npm run dev            # ou : npm run build && npm start (sert dist/server.js)
+npm run dev            # ou, sans rechargement : npm run build && npm start (`npm start` seul échoue sans `dist/`, ignoré par git)
 curl http://localhost:3001/healthz   # -> "kanevas 0.0.0-dev"
 ```
 
 ## Réglages
 
-La liste de départ est `.env.example`. En plus : `APP_NAME` (défaut `kanevas`),
-`APP_VERSION` (défaut `0.0.0-dev`, posée par le build-arg en image), `PORT` (3001), `LLM_PROVIDER` (`mock` | `anthropic` | `claude-agent`, défaut `mock`,
+La liste de départ est `.env.example` (`PORT`, `NODE_ENV=development`, OIDC, `LLM_PROVIDER`, `ANTHROPIC_API_KEY`, `ANTHROPIC_MODEL` en commentaire ; défaut du modèle : `claude-sonnet-4-6`). Réglages
+absents du fichier : `APP_NAME` (défaut `kanevas`), `APP_VERSION` (défaut `0.0.0-dev`, posée par
+le build-arg en image). Rappel : `PORT` (3001), `LLM_PROVIDER` (`mock` | `anthropic` | `claude-agent`, défaut `mock`,
 inutilisé tant qu'aucune route n'appelle un LLM).
 
 ## Version de l'application
@@ -59,8 +68,9 @@ curl http://localhost:3001/healthz   # -> "kanevas 0.1.0"
 Sur un tag, la CI dérive ce même build-arg du tag semver poussé (`docker/metadata-action`)
 : pousser `v0.1.0` publie `ghcr.io/antorfr/kanevas:0.1.0` avec `APP_VERSION`
 embarqué à `0.1.0` — une seule source de vérité pour la version affichée et le
-tag publié. Hors tag (`main`, PR), la valeur n'est pas un semver (À documenter : valeur
-exacte non constatée en CI) : seul un tag donne une version fiable.
+tag publié. Hors tag (`main`, PR), la valeur n'est pas un semver : `metadata-action` y sort le nom
+de la ref (`main`, `pr-<n>`), d'après sa documentation et non constaté en CI. Seul un tag
+donne une version fiable.
 
 ## OIDC
 

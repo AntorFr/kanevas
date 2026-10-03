@@ -9,10 +9,10 @@ import {
   isOidcEnabled,
 } from '../services/oidc.js';
 
-// Cookie signé portant state + PKCE entre la redirection Authelia et le
-// callback. Secret de signature généré à chaque démarrage du process (voir
-// app.ts) : la transaction ne survit qu'à l'aller-retour d'un même
-// utilisateur sur la même instance, pas un secret d'exploitation à gérer.
+// Signed cookie carrying state + PKCE between the Authelia redirect and the
+// callback. Signing secret generated at each process start (see app.ts): the
+// transaction only lives for one user's round trip on the same instance, not
+// an operational secret to manage.
 const OIDC_TX_COOKIE = 'kanevas_oidc_tx';
 
 const oidcTxSchema = z.object({
@@ -21,12 +21,11 @@ const oidcTxSchema = z.object({
 });
 
 /**
- * Mécanique OIDC générique reprise d'Antre-du-maitre (AD-10), arrêtée à
- * l'authentification de l'identité : aucune résolution de rôle (AD-9), aucune
- * session posée, aucune écriture en base (AD-5 réserve l'emplacement, vide à
- * ce stade). kanevas-identite construit la suite sur ce contrat
- * (client_id kanevas, redirect_uri .../api/auth/oidc/callback — technique.md,
- * Interfaces).
+ * Generic OIDC mechanics reused from Antre-du-maitre (AD-10), stopping at
+ * identity authentication: no role resolution (AD-9), no session set, no
+ * database write (AD-5 only reserves the location, empty for now).
+ * kanevas-identite builds on this contract (client_id kanevas, redirect_uri
+ * .../api/auth/oidc/callback).
  */
 export async function registerAuthRoutes(app: FastifyInstance) {
   app.get('/api/auth/config', async () => ({
@@ -108,7 +107,7 @@ export async function registerAuthRoutes(app: FastifyInstance) {
 
       const configuration = await getOidcConfiguration(settings);
 
-      // request.url = chemin + query string ; l'origine vient du redirect URI.
+      // request.url = path + query string; the origin comes from the redirect URI.
       const currentUrl = new URL(request.url, settings.redirectUri);
 
       const tokens = await oidcClient.authorizationCodeGrant(
@@ -126,8 +125,8 @@ export async function registerAuthRoutes(app: FastifyInstance) {
         throw new Error('Missing ID token claims.');
       }
 
-      // Le scope "groups" est exposé via userinfo ; ce socle ne le lit pas
-      // encore (aucune résolution de rôle, AD-9) — kanevas-identite le fera.
+      // The "groups" scope is exposed via userinfo; this socle does not read
+      // it yet (no role resolution, AD-9) — kanevas-identite will.
       const userInfo = await oidcClient.fetchUserInfo(
         configuration,
         tokens.access_token,
@@ -143,10 +142,9 @@ export async function registerAuthRoutes(app: FastifyInstance) {
         throw new Error('Missing preferred_username claim.');
       }
 
-      // Aucune session posée, aucune écriture : rien ne consomme encore une
-      // identité authentifiée (fonctionnelle.md, hors périmètre) — se
-      // connecter en vrai n'a ici aucun effet observable différent de ne pas
-      // se connecter.
+      // No session set, no write: nothing consumes an authenticated identity
+      // yet (out of scope for this socle) — actually logging in has no
+      // observable effect different from not logging in.
       return reply.send({
         authenticated: true,
         subject: claims.sub,
