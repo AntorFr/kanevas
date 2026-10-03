@@ -327,6 +327,124 @@ par P-1 (E-1, E-2, E-3), P-2 (E-4), P-3 étape 4 et P-6 (E-8, E-9), P-7 (E-9). L
 leur colonne dans la matrice du cadrage ; l'admin d'instance n'a, dans cette tranche, que E-1 et
 E-2.
 
+## Détail des écrans de `kanevas-systemes`
+
+> E-14, E-15, le lien de E-3 vers le système, l'item « Paramètres » de la barre latérale. Les
+> textes communs (chargement, erreur, connexion perdue, écriture en cours, échec d'une écriture,
+> refus) sont ceux de « Détail des écrans de `kanevas-premiere-fiche` ». Maquettes finies :
+> `docs/maquettes/e14-parametres.html`, `e15-systeme-de-jeu.html`.
+
+**Ce que voit chacun du catalogue.** Le catalogue ne porte que des **noms** de systèmes, lus par tout
+compte qui mène au moins un univers (c'est ce qui permet à Mira de trouver « CoF Mini »). Le contenu
+d'un système (E-15) n'est lu que par les membres d'un univers qui lui est rattaché. **Aucun écran ne
+nomme un autre univers** : un système dit seulement « utilisé par N univers » (N compte l'univers
+courant), jamais lesquels. Un système « n'est pas vu » d'un univers qui n'y est pas rattaché : pas
+de lien sur E-3, et l'adresse de E-15 répond « Page introuvable. ».
+
+### E-14 Paramètres de l'univers (MJ)
+
+Trois panneaux, dans cet ordre.
+
+1. **Identité** : « Nom » (obligatoire, 80 caractères au plus), « Description » (500 au plus),
+   « Enregistrer ». Après l'enregistrement : « Enregistré. » au-dessus du panneau.
+2. **Système de jeu** : une liste « Système du catalogue » (les noms, par ordre alphabétique sans
+   casse, et en tête « Aucun système »), « Rattacher » ; si l'univers a un système : son nom, « Utilisé
+   par N univers » et « Ouvrir le système » (→ E-15). Choisir « Aucun système » puis « Rattacher »
+   **détache** l'univers (rien n'est supprimé : le système et son contenu restent, les autres
+   univers le gardent).
+3. **Créer un système** : « Nom du système » (obligatoire, 80 caractères au plus), « Créer et
+   rattacher » : le système naît au catalogue et l'univers y est rattaché en un seul geste (si l'un
+   échoue, aucun n'a lieu). Un nom déjà pris (sans tenir compte de la casse) : « Un système porte déjà
+   ce nom. » sous le champ.
+
+| État | Ce qu'on voit | Ce qu'on peut faire |
+|---|---|---|
+| vide | catalogue sans système : la liste ne propose que « Aucun système » et le panneau dit « Le catalogue est vide. Créez le premier système ci-dessous. » ; univers sans système : « Cet univers n'est rattaché à aucun système de jeu. » | créer un système |
+| chargement | « Chargement des paramètres… » | — |
+| erreur | « Impossible de charger cette page. » ; une écriture qui échoue : « L'action n'a pas abouti. Réessayez. » au-dessus du panneau concerné, saisie conservée | « Réessayer » |
+| connexion perdue | le bandeau ; « Enregistrer », « Rattacher », « Créer et rattacher » désactivés, saisie conservée | lire |
+| refus | Joueur : l'item « Paramètres » est absent et l'adresse montre « Page introuvable. » ; compte sans rôle, admin d'instance sans rôle dans l'univers : de même | « Mes univers » |
+| contenu long | 200 systèmes au catalogue : la liste défile ; un nom de 80 caractères est tronqué par « … » avec infobulle ; « Erreur : 80 caractères au plus. » dès le 81e (500 pour la description) | corriger |
+
+*Critères.*
+- Étant donné Antor, MJ de Lame d'Ébène, et un catalogue qui contient « CoF Mini », quand il choisit
+  « CoF Mini » et « Rattacher », alors le panneau montre « CoF Mini », « Utilisé par 1 univers » et
+  « Ouvrir le système ».
+- Étant donné Léa, Joueuse de Lame d'Ébène, quand elle ouvre l'adresse des paramètres, alors elle
+  voit « Page introuvable. » et l'item « Paramètres » n'est pas dans sa barre.
+- Étant donné un système « CoF Mini » existant, quand Antor en crée un autre nommé « cof mini »,
+  alors il voit « Un système porte déjà ce nom. » et rien n'est créé.
+- Étant donné Antor, univers rattaché à « CoF Mini », quand il choisit « Aucun système » et
+  « Rattacher », alors le panneau dit « Cet univers n'est rattaché à aucun système de jeu. », le lien
+  « Système de jeu » a disparu de E-3, et « CoF Mini » est toujours dans la liste du catalogue.
+
+### E-15 Système de jeu
+
+Atteint depuis E-14 (« Ouvrir le système ») et depuis E-3 (bloc « Système de jeu », ci-dessous), à
+l'adresse `/univers/:id/systeme`. Le nom du système en titre, « Référentiel commun · utilisé par N
+univers » ; trois onglets, **Règles**, **Créatures**, **Objets** (Créatures par défaut) ; sous
+l'onglet, la liste des gabarits du type par nom (ordre alphabétique sans casse), cent à la fois, puis
+« Charger la suite ». Chaque ligne : le nom et la première ligne du contenu (tronquée). Un clic ouvre
+le gabarit **sur place** (le nom, le contenu en texte brut, AD-58).
+
+*Le MJ d'un univers rattaché* : « Ajouter une règle » / « Ajouter une créature » / « Ajouter un
+objet » ouvre un formulaire sur place : « Nom » (1 à 120 caractères), « Contenu » (20 000 au plus,
+facultatif), « Ajouter » et « Annuler » ; sur un gabarit ouvert, « Modifier » (nom et contenu),
+« Enregistrer », « Annuler ». Le type d'un gabarit ne change jamais ; rien ne se supprime. Enregistrer
+envoie la version lue (AD-81).
+*Un Joueur d'un univers rattaché* : la même page, lecture seule, sans bouton d'ajout ni de
+modification.
+
+Textes : onglet vide, MJ : « Aucune créature pour l'instant. » (« Aucune règle », « Aucun objet ») et
+le bouton d'ajout ; Joueur : « Aucune créature à voir pour l'instant. » ; écriture périmée : « Ce
+gabarit a changé depuis que vous l'avez ouvert. Rechargez-le pour voir la nouvelle version ; votre texte
+reste ci-dessous. » avec « Recharger » ; nom déjà pris dans le même type : « Une créature porte déjà ce
+nom. » (« Une règle… », « Un objet… ») ; droit retiré entre-temps (rôle changé, univers détaché) :
+« Vous ne pouvez plus modifier ce système. ».
+
+| État | Ce qu'on voit | Ce qu'on peut faire |
+|---|---|---|
+| vide | l'onglet sans gabarit : texte ci-dessus | MJ : ajouter |
+| chargement | le titre absent, « Chargement du système… » | — |
+| erreur | « Impossible de charger ce système. » ; échec d'écriture : « L'action n'a pas abouti. Réessayez. », saisie conservée | « Réessayer » |
+| connexion perdue | le bandeau ; « Ajouter », « Enregistrer » désactivés, le texte en cours reste | lire |
+| refus | univers inconnu, sans rôle du compte, ou **non rattaché à un système** : « Page introuvable. » (un MJ d'un univers sans système est mené à E-14 par E-3, qui ne montre pas de lien) | « Mes univers » |
+| contenu long | 100 gabarits : « Charger la suite » ; nom tronqué par « … » avec infobulle ; contenu de 20 000 caractères passe à la ligne et s'affiche en entier ; au-delà : « Erreur : 20 000 caractères au plus. » ; nom au-delà de 120 : « Erreur : 120 caractères au plus. » | idem |
+
+*Critères.*
+- Étant donné Antor, MJ de Lame d'Ébène rattaché à « CoF Mini », quand il ajoute la créature « Garde
+  du sceau » avec son contenu, alors elle apparaît sous « Créatures ».
+- Étant donné Mira, MJ des « Landes grises » rattachée au même système, quand elle ouvre
+  « Créatures », alors elle voit « Garde du sceau » et « Utilisé par 2 univers », et aucun nom
+  d'univers.
+- Étant donné Léa, Joueuse de Lame d'Ébène, quand elle ouvre le système, alors elle voit « Garde du
+  sceau » sans « Ajouter » ni « Modifier » ; si le MJ envoie une écriture à sa place par l'adresse de
+  l'API, elle est refusée.
+- Étant donné « Admin » (groupe `parents`, MJ de l'univers « Brume » qu'il vient de créer, non
+  rattaché), quand il ouvre `/univers/<Brume>/systeme`, alors il voit « Page introuvable. » ; et
+  sur la vue d'ensemble de « Brume » il n'y a pas de lien « Système de jeu ».
+- Étant donné deux onglets sur la même créature, quand le second enregistre après le premier, alors
+  il voit « Ce gabarit a changé depuis que vous l'avez ouvert… » et son texte reste.
+
+### Bloc « Système de jeu » de E-3
+
+Un bloc de la vue d'ensemble (déposé dans `frontend/src/ecrans/vue-ensemble/blocs/`, rang bas,
+visible des MJ et des Joueurs) : le nom du système et un lien « Ouvrir le système » (→ E-15). **Sans
+système, le bloc n'existe pas** : ni message, ni lien mort. Ses états : chargement — le bloc est
+absent ; erreur — le bloc est absent (la vue d'ensemble n'échoue pas pour lui) ; refus et vide —
+sans objet : un univers sans système n'a pas de bloc ; contenu long — le nom (80 caractères) est
+tronqué avec infobulle.
+
+### Clôture de `kanevas-systemes`
+
+B-13 → E-14 (rattacher, créer et rattacher) ; B-14 → E-15 ; P-8 étape 1 → E-14, étape 2 → E-15 ; le
+lien de E-3 → bloc ci-dessus ; B-29 → les six états de E-14 et E-15. E-14 est atteint par P-8 et par
+la barre (MJ) ; E-15 par P-8 et par E-3. Les trois rôles ont leur colonne : l'admin d'instance sans
+rôle n'a ni E-14 ni E-15 ; l'admin MJ de son propre univers a ceux d'un MJ.
+Écart au cadrage : aucun. Précision : le cadrage dit « nom, description » pour E-14 ; la tranche
+construit donc aussi la **modification** du nom et de la description d'un univers, qu'aucune
+tranche précédente ne livre.
+
 ## Maquettes
 
 `docs/maquettes/<écran>.html`, une par écran structurant, premier niveau : la structure et le

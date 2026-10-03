@@ -30,6 +30,9 @@ Ni relations, ni recherche, ni pièces jointes, ni campagnes, ni assistant : tra
   fonctions qui lisent ou écrivent les données (AD-2) ; `src/routes/` : routes `/api` minces.
 - `frontend/` : application React/Vite (AD-57) ; `frontend/src/ui/tokens.css` et
   `frontend/src/ui/` : tokens et composants de `docs/charte.md` ; son build est servi par Fastify.
+- `kanevas-systemes` y ajoute `src/services/systemes.ts` (catalogue, rattacher, créer et rattacher,
+  gabarits), la modification d'un univers dans `src/services/univers.ts`, leurs routes `/api`
+  (AD-79 à AD-81), puis E-14, E-15 et le bloc « Système de jeu » de E-3.
 - `src/services/llm/` : transports LLM (`transport.ts`, `anthropic-transport.ts`,
   `claude-agent-transport.ts`), repris d'Antre-du-maitre, branchés nulle part.
 - `Dockerfile` (multi-stage, utilisateur `node`) et
@@ -174,6 +177,9 @@ Les numéros sont stables. Une décision retirée garde son numéro, avec ce qui
 | AD-57 | **Frontend** : React et Vite dans `frontend/`, un seul build servi par l'application Fastify (`@fastify/static`, repli sur `index.html` pour toute adresse d'écran, derrière la garde de session) ; l'image Docker construit les deux. Pas de rendu serveur, sauf les pages que la session ne peut pas précéder : choix du compte de test (AD-55), « Connexion refusée », « Connexion indisponible ». |
 | AD-58 | **Contenu de section en texte brut** : des paragraphes séparés par des lignes vides, affichés comme tels ; ni Markdown ni HTML. Écarté : Markdown (rendu à assainir, choix d'éditeur) — rouvrable sans migration, le contenu est déjà du texte. |
 | AD-59 | **Écritures de section concurrentes** : chaque section porte un entier `version`, augmenté à chaque écriture de son contenu ; l'écriture envoie la version qu'elle a lue ; si elle n'est plus la courante, elle est refusée (HTTP 409, code `section_modifiee`) et rien n'est écrit. Même mécanisme que le « la section a changé » de B-21 pour les propositions (AD-49). |
+| AD-79 | **Système de jeu et rattachement** : `systemes_jeu` (sans univers) et `gabarits` ; l'univers porte un `systeme_id` facultatif (AD-23, AD-24). L'accès à un système passe **toujours par un univers dont le compte est membre** (`/api/univers/:id/systeme`) : la route ne reçoit jamais d'identifiant de système en adresse, donc ne peut pas être devinée. Le catalogue (`GET /api/systemes`, noms seuls) est la seule lecture hors univers. « Créer et rattacher » est une seule transaction. Écarté : une adresse `/api/systemes/:id` gardée par « rattaché à l'un des univers du compte » (une requête par lecture, aucun gain). |
+| AD-80 | **Un système n'apprend rien sur les univers voisins** : il rend le nombre d'univers qui l'utilisent et jamais leurs noms ni leurs membres (AD-22). Précise AD-11 : « le lore reste propre à chaque univers ». Écarté : nommer les univers partenaires (maquette du cadrage), qui divulguerait l'existence d'univers dont le compte n'est pas membre. |
+| AD-81 | **Gabarits** : contenu en texte brut (AD-58) ; écriture concurrente refusée par un entier `version`, comme AD-59 (HTTP 409, code `gabarit_modifie`) ; le type est fixé à la création ; pas de suppression (cadrage). Les fonctions de service prennent l'acteur et vérifient le rôle dans l'univers de **passage** ; elles sont les seules écritures, pour les routes comme pour l'agent (AD-2). Écarté : champs structurés (niveau, DEF, PV) — hors périmètre du cadrage (caractéristiques structurées). |
 
 ## Déploiement et exploitation
 

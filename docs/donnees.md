@@ -55,6 +55,28 @@ avec `kanevas-relier-chercher`, qui prend le numéro suivant, AD-51).
 de 1 à n à chaque réordonnancement ou retrait. Le mode Joueur est calculé par le service, jamais
 par le client : il lit comme un Joueur **qui n'est l'auteur d'aucune section** (AD-39).
 
+## Migration `kanevas-systemes`
+
+> Le numéro (le suivant de la dernière migration fusionnée) se prend à la fusion de la tranche
+> (AD-51) ; ce fichier le dit alors. Deux tables, une colonne : aucune entité de plus que le cadrage.
+
+| Table | Colonnes (hors clés) | Contraintes |
+|---|---|---|
+| `systemes_jeu` | `id`, `nom`, `cree_le` | `nom` 1 à 80 caractères après rognage ; **unique sans tenir compte de la casse** (`COLLATE NOCASE`) |
+| `gabarits` | `id`, `systeme_id`, `type` (`regle` \| `creature` \| `objet`), `nom`, `contenu` (texte brut, AD-58), `version` (entier, 1 à la création, AD-81), `cree_le`, `modifie_le` | `type` contraint à ces trois valeurs, fixé à la création ; `nom` 1 à 120 caractères ; `contenu` 20 000 au plus ; `nom` unique par (système, type) sans tenir compte de la casse ; **aucune suppression** |
+| `univers` (ajout) | `systeme_id`, facultatif, → `systemes_jeu` | `NULL` par défaut (aucun univers existant n'est rattaché) |
+
+Un univers a **au plus un** système ; un système peut servir plusieurs univers. Détacher remet
+`systeme_id` à `NULL` et ne touche à aucun gabarit. Rien n'est amorcé : le catalogue naît vide, les
+systèmes sont créés par les MJ.
+
+**Droits** (AD-25) : le catalogue (`id`, `nom`) se lit par tout compte qui mène au moins un univers ;
+un système, ses gabarits et le nombre d'univers qui l'utilisent se lisent par les membres d'un
+univers rattaché ; les gabarits s'écrivent par ses MJ. **Le nombre N est le seul renseignement sur les
+autres univers** : ni leur nom, ni leurs membres (règle 3). Créer un système : tout MJ d'un univers,
+au catalogue, avec ou sans rattachement dans le même geste. Modifier le nom et la description d'un
+univers : MJ.
+
 ## Règles de droits, en une phrase chacune
 
 1. Les droits sur le contenu viennent de **membre**, jamais d'Authelia (AD-9). Authelia ne

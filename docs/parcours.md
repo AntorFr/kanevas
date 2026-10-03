@@ -178,9 +178,18 @@ dernier MJ — refusé avec la raison.
    (E-12) d'y ajouter un paragraphe.
 
 ### P-8 — Monter un univers sur un système partagé (MJ)
-1. **Paramètres de l'univers** (E-14) : il choisit un système du catalogue, ou en crée un.
+*Antor, MJ de « Lame d'Ébène », le dimanche soir ; Mira, MJ des « Landes grises », qui joue le même
+système.*
+1. **Paramètres de l'univers** (E-14) : il choisit un système du catalogue, ou en crée un
+   (« Créer et rattacher ») ; il peut aussi détacher l'univers (« Aucun système »).
 2. **Système de jeu** (E-15) : il retrouve le bestiaire commun et y ajoute une créature, que les
-   autres univers du système voient aussitôt.
+   autres univers du système voient aussitôt ; Mira, rattachée au même système, la lit.
+   *Moment fort* : la créature ajoutée par Antor apparaît chez Mira, sans que Mira voie un mot du
+   lore d'Antor.
+*Échec* : un nom de système déjà pris — « Un système porte déjà ce nom. » ; une créature modifiée
+entre-temps par l'autre MJ — « Ce gabarit a changé depuis que vous l'avez ouvert… », le texte en
+cours est gardé ; un univers détaché pendant qu'un joueur lit le système — la page du joueur répond
+« Page introuvable. » au prochain chargement.
 
 ### P-9 — Voir qui est lié à qui (MJ, puis la table)
 1. **Cartes** (E-10) → nouveau **graphe** (E-11) : il choisit les factions ; les liens viennent
