@@ -47,7 +47,9 @@ bascule existe (fiche, carte).
 | **E-14 Paramètres de l'univers** | nav Univers (MJ) | nom, description, système de jeu (choisir dans le catalogue, en créer un) | P-8 |
 | **E-15 Système de jeu** | E-14 ; lien depuis E-3 | le référentiel commun : règles, créatures, objets ; ajouter, modifier (MJ d'un univers rattaché) | P-8 |
 
-Hors produit : `/composants`, la bibliothèque de composants, réservée au développement.
+Hors produit : `/composants`, la bibliothèque de composants, réservée au développement ; et,
+en mode bouchon seulement (AD-55), l'écran de choix d'un compte de test et le bandeau « mode
+bouchon » — sans `E-n` ni six états, ils n'existent pas en production.
 
 ## Rôles × écrans × actions
 

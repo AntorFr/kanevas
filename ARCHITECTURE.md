@@ -96,7 +96,7 @@ Authelia (OIDC) : identité seulement.
   symétrie humain / agent vérifiable.
 - **Agents** : deux catalogues d'outils, MJ et Joueur, choisis côté serveur selon le rôle du
   compte dans l'univers courant (AD-26).
-- **Images** : un port `GenerateurImage`, adaptateurs `mock`, `aucun`, `codex` (AD-45, AD-50).
+- **Images** : un port `GenerateurImage`, adaptateurs `bouchon`, `aucun`, `codex` (AD-45, AD-50, AD-55).
 
 ## Décisions
 
@@ -118,7 +118,7 @@ Les numéros sont stables. Une décision retirée garde son numéro, avec ce qui
 | AD-12 | *Remplacée par AD-18 et AD-19.* |
 | AD-13 | Compte créé à la première authentification (`preferred_username`). |
 | AD-14 | Migrations : fichiers SQL numérotés, appliqués au démarrage, sans ORM. |
-| AD-15 | Toute route hors `/api` gardée par la session (cookie signé), sinon redirection vers Authelia. |
+| AD-15 | Toute route hors `/api` gardée par la session (cookie signé), sinon redirection vers Authelia — en mode bouchon, vers le choix d'un compte de test (AD-55). |
 | AD-16 | Un seul routeur frontend, `react-router` ; chaque tranche y enregistre ses écrans. |
 | AD-17 | Charge utile v1 vide pour tous les types, sauf personnage (PJ \| PNJ) et compte-rendu (sa campagne) ; le contenu est dans les sections. |
 | AD-18 | Le MJ lit et écrit toute section de son univers. |
@@ -158,7 +158,7 @@ Les numéros sont stables. Une décision retirée garde son numéro, avec ce qui
 | AD-52 | La table des fiches connaît ses sept types dès sa création ; aucune tranche ne la recrée. |
 | AD-53 | **Toute action qu'un humain déclenche a un écran.** L'agent est un second chemin, jamais le seul ; ce que l'agent propose, un humain l'applique depuis un écran. |
 | AD-54 | L'assistant accède au modèle par l'abonnement Claude de Monsieur, via le transport `claude-agent` (décision de Monsieur, confirmée le 2026-10-03 en connaissance du fait suivant). Risque connu et accepté par Monsieur : la doc de l'Agent SDK n'autorise pas, sauf accord d'Anthropic, l'usage du login claude.ai ou de ses limites dans un produit tiers ; Kanevas sert d'autres comptes que le sien. Les identifiants sont posés par Monsieur. |
-| AD-55 | **Mode bouchon** (décision de Monsieur, 2026-10-03) : `KANEVAS_STUB=1` lance Kanevas sans aucun secret. La connexion se fait en choisissant un compte de test au lieu de passer par Authelia, l'assistant répond par un transport `bouchon` scripté qui appelle les mêmes outils, l'image vient d'un adaptateur `bouchon` qui rend une image fixe. Tout le reste est réel : base, droits, routes, outils. Un bandeau le dit sur chaque page ; l'application refuse de démarrer en bouchon si le client OIDC est configuré. Les tests et les pods de la chaîne tournent en bouchon. |
+| AD-55 | **Mode bouchon** (décision de Monsieur, 2026-10-03) : `KANEVAS_STUB=1` lance Kanevas sans aucun secret. La connexion se fait en choisissant un compte de test au lieu de passer par Authelia, l'assistant répond par un transport `bouchon` scripté qui appelle les mêmes outils, l'image vient d'un adaptateur `bouchon` qui rend une image fixe. Tout le reste est réel : base, droits, routes, outils. Un bandeau le dit sur chaque page ; l'application refuse de démarrer en bouchon dès qu'une seule variable `OIDC_*` est posée. Les tests et les pods de la chaîne tournent en bouchon. |
 
 ## Déploiement et exploitation
 
@@ -181,9 +181,9 @@ Les numéros sont stables. Une décision retirée garde son numéro, avec ce qui
 
 | Dépendance | Ce que le bouchon rend | Qui le construit |
 |---|---|---|
-| Authelia (OIDC) | un écran de connexion qui liste les comptes de test (Antor, Léa, Teo, Mira, Admin du groupe `parents`) ; la session est la même qu'après Authelia | `kanevas-premiere-fiche` |
+| Authelia (OIDC) | un écran de connexion qui liste les comptes de test (Antor, Léa, Teo, Mira, Admin) ; la session est la même qu'après Authelia, groupes compris (Admin porte `parents`, que `kanevas-recours-admin` lit comme ceux d'Authelia) | `kanevas-premiere-fiche` |
 | Modèle de l'assistant (AD-54) | transport `bouchon` : des réponses scriptées, choisies par mots-clés, qui appellent les vrais outils avec les droits de la personne | `kanevas-assistant-membre` |
-| Moteur d'images (AD-50) | adaptateur `bouchon` : une image fixe, attachée par le vrai chemin (AD-44) | `kanevas-images` |
+| Moteur d'images (AD-50) | adaptateur `bouchon` : une image fixe, attachée par le vrai chemin (AD-44) ; une demande qui contient « échec » échoue, pour tester ce cas | `kanevas-images` |
 
 Activation : `KANEVAS_STUB=1` (AD-55), jamais posée dans `k8s-home-lab`. La recette de
 Monsieur sur l'URL de production reste réelle.
@@ -197,8 +197,8 @@ Monsieur sur l'URL de production reste réelle.
 | L'agent comme porte dérobée | Mêmes fonctions et mêmes gardes que les routes (AD-2) ; catalogue choisi par le serveur (AD-26). |
 | Un joueur écrit dans une section que l'agent du MJ lira (injection d'instructions) | L'agent du MJ peut modifier des sections : chaque écriture est listée dans le fil avec un lien (B-26), et une mise à jour du monde n'est jamais appliquée par l'agent (AD-48). **Risque accepté** en V1, pas de confirmation par écriture. |
 | Codex s'exécute sans bac à sable, dans un pod root ; son jeton est sur le volume sauvegardé | **Risque accepté** (décision de Monsieur sur le moteur) : le pod est le bac à sable, le jeton est en 0600, un processus par demande, un répertoire jetable. |
-| Usurpation d'identité | Authelia seul authentifie ; aucune base d'utilisateurs maison. |
-| Le mode bouchon ouvert en production (n'importe qui choisit son compte) | L'application refuse de démarrer en bouchon si le client OIDC est configuré ; la variable n'est jamais posée dans `k8s-home-lab` ; un bandeau visible sur chaque page (AD-55). |
+| Usurpation d'identité | Authelia seul authentifie ; aucune base d'utilisateurs maison. Seule dérogation : le mode bouchon, hors production (ligne suivante). |
+| Le mode bouchon ouvert en production (n'importe qui choisit son compte) | Kanevas refuse de démarrer en bouchon dès qu'une variable `OIDC_*` est posée ; la variable n'est jamais posée dans `k8s-home-lab` ; un bandeau visible sur chaque page (AD-55). |
 
 ## Différé
 
