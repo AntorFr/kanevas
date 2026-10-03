@@ -1,0 +1,71 @@
+<!doctype html>
+<!-- E-8 — illustre docs/ecrans.md, « Détail des écrans de kanevas-premiere-fiche » (MJ avec fenêtre de création, vide Joueur). Le document prime sur la maquette. -->
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Kanevas — E-8 Liste de fiches</title><style>
+:root{--bg:#101012;--weave:#131316;--s1:#1a1a1f;--s2:#212127;--s3:#2a2a31;--b:rgba(255,255,255,.07);--bs:rgba(255,255,255,.15);
+--i1:#f5f4f2;--i2:#a3a2a8;--i3:#8f8e96;--vi:#8b7cf6;--vis:#aca2f9;--vid:rgba(139,124,246,.16);--vib:rgba(139,124,246,.4);
+--am:#f2a33c;--amb:rgba(242,163,60,.14);--amd:rgba(242,163,60,.4);--te:#3fc79a;--teb:rgba(63,199,154,.14);--ted:rgba(63,199,154,.38);
+--re:#e2685b;--reb:rgba(226,104,91,.14);--red:rgba(226,104,91,.38);--serif:ui-serif,Georgia,serif;--sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--i1);font-family:var(--sans);font-size:14px}
+a{color:inherit;text-decoration:none}
+.wrap{padding:16px;display:flex;flex-direction:column;gap:22px}.wrap.single{padding:0}
+.label{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--am);margin:0 0 6px;font-weight:600}.label.j{color:var(--te)}
+.frame{display:flex;position:relative;min-height:560px;border:1px solid var(--bs);border-radius:12px;overflow:hidden;background:var(--bg)}
+.single .frame{border:0;border-radius:0;min-height:100vh}
+aside{width:236px;flex:none;background:var(--weave);border-right:1px solid var(--b);display:flex;flex-direction:column;padding:16px 12px}
+.brand{display:flex;align-items:center;gap:9px;padding:6px 8px 14px;font-family:var(--serif);font-size:17px}
+.mark{width:22px;height:22px;border-radius:6px;background:conic-gradient(from 210deg,var(--am),var(--vi),var(--am))}
+.sw{display:flex;align-items:center;gap:8px;padding:9px 10px;border-radius:9px;background:var(--s1);border:1px solid var(--b);margin-bottom:12px;font-size:13px}
+.sw .dot{width:8px;height:8px;border-radius:50%;background:var(--vis)}.sw .n{flex:1}
+nav{display:flex;flex-direction:column;gap:1px}
+.ns{font-size:10.5px;text-transform:uppercase;letter-spacing:.09em;color:var(--i3);padding:14px 10px 6px}
+.it{display:block;padding:7px 10px;border-radius:8px;color:var(--i2);font-size:13px}.it.sub{padding-left:22px}
+.it.on{background:var(--vid);color:var(--vis)}
+.sp{flex:1}.me{display:flex;align-items:center;gap:8px;padding:10px 8px 0;border-top:1px solid var(--b);font-size:12.5px;color:var(--i2)}
+.av{width:24px;height:24px;border-radius:50%;background:var(--s3);display:flex;align-items:center;justify-content:center;font-size:11px}
+.col{flex:1;min-width:0;display:flex;flex-direction:column}
+header{height:54px;flex:none;display:flex;align-items:center;gap:14px;padding:0 24px;border-bottom:1px solid var(--b);background:rgba(16,16,18,.6)}
+.crumb{font-size:12.5px;color:var(--i3);flex:1}.crumb b{color:var(--i1);font-weight:500}
+main{padding:24px 28px;max-width:1000px;width:100%}
+h1{font-family:var(--serif);font-size:22px;font-weight:500;margin:0 0 4px}
+h2{font-size:10.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--i3);margin:0 0 10px;font-weight:600}
+.sub{color:var(--i3);font-size:12.5px;margin:0 0 18px;max-width:70ch}
+.panel{background:var(--s1);border:1px solid var(--b);border-radius:12px;padding:14px 16px;margin-bottom:14px}
+.panel.mj{border-color:var(--amd);background:linear-gradient(180deg,rgba(242,163,60,.06),var(--s1) 60%)}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px}.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.hrow{display:flex;align-items:center;gap:8px;margin-bottom:10px}.hrow h2{margin:0;flex:1}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.btn{display:inline-block;font-size:12px;padding:6px 12px;border-radius:8px;border:1px solid var(--bs);background:var(--s3);color:var(--i1);font-family:inherit}
+.btn.pri{background:var(--vi);border-color:var(--vi);color:#14121f;font-weight:600}.btn.dg{color:#e88;border-color:var(--red)}.btn.sm{font-size:11px;padding:3px 8px}
+.in{display:block;width:100%;font-size:13px;padding:8px 10px;border-radius:8px;border:1px solid var(--bs);background:var(--s2);color:var(--i1);font-family:inherit}
+textarea.in{min-height:90px;resize:vertical}.fl{font-size:11.5px;color:var(--i2);margin:10px 0 4px;display:block}
+.badge{font-size:11px;padding:3px 9px;border-radius:999px;border:1px solid var(--bs);color:var(--i2);display:inline-block}
+.badge.mj{border-color:var(--amd);background:var(--amb);color:var(--am)}.badge.j{border-color:var(--ted);background:var(--teb);color:var(--te)}
+.badge.v{border-color:var(--vib);background:var(--vid);color:var(--vis)}
+.mode{display:inline-flex;border:1px solid var(--bs);border-radius:999px;overflow:hidden;font-size:11.5px}.mode span{padding:5px 13px;color:var(--i3)}
+.mode .on{background:var(--amb);color:var(--am)}.mode.pj .on{background:var(--teb);color:var(--te)}
+.li{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--b);font-size:13px}.li:last-child{border:0}.li .g{flex:1}.li .d{color:var(--i3);font-size:12px}
+.li small{display:block;color:var(--i3);font-size:11.5px}
+.card{background:var(--s1);border:1px solid var(--b);border-radius:12px;padding:14px}.card .nm{font-family:var(--serif);font-size:15px;margin-bottom:8px}
+.search{padding:8px 12px;border-radius:9px;border:1px solid var(--bs);background:var(--s2);color:var(--i3);font-size:13px;margin-bottom:14px;max-width:420px}
+.empty{padding:26px;text-align:center;color:var(--i3);border:1px dashed var(--bs);border-radius:12px}
+.alert{font-size:12px;padding:8px 12px;border-radius:8px;border:1px solid var(--red);background:var(--reb);color:var(--re);margin:8px 0}
+.chk{width:15px;height:15px;border:1.5px solid var(--bs);border-radius:4px;display:inline-block;flex:none;vertical-align:middle}
+.chk.d{background:var(--vi);border-color:var(--vi)}.done{text-decoration:line-through;color:var(--i3)}
+.cat{font-size:11px;color:var(--vis);margin:10px 0 2px;font-weight:600}
+.chip{display:inline-flex;gap:7px;font-size:12px;padding:5px 11px;border-radius:999px;border:1px solid var(--bs);background:var(--s2);margin:4px 6px 0 0}.chip b{color:var(--vis);font-weight:600}
+.add{display:inline-block;font-size:11px;padding:4px 10px;border-radius:999px;border:1px dashed var(--bs);color:var(--i3);margin:8px 6px 0 0}
+.thumb{width:92px;height:68px;border-radius:8px;border:1px solid var(--bs);background:linear-gradient(135deg,#3a2f22,#5a4430);position:relative}
+.thumb.sec{outline:2px solid var(--amd)}.thumb i{position:absolute;top:4px;left:4px;font-size:8px;font-style:normal;padding:1px 5px;border-radius:999px;background:var(--amb);color:var(--am);border:1px solid var(--amd)}
+.pj{width:92px;font-size:9.5px;color:var(--i3)}.pj .c{display:flex;gap:3px;margin-top:3px}.pj .c span{flex:1;text-align:center;border:1px solid var(--bs);border-radius:5px;padding:2px 0;background:var(--s3);color:var(--i2)}
+.fab{position:absolute;right:20px;bottom:20px;display:flex;align-items:center;gap:8px;padding:11px 18px;border-radius:999px;background:var(--vi);color:#14121f;font-weight:600;font-size:13px;box-shadow:0 8px 24px -8px rgba(0,0,0,.8)}
+.note{font-size:12px;color:var(--i3);margin-top:8px;max-width:80ch}
+.map{position:relative;height:230px;border-radius:12px;border:1px solid var(--bs);background:repeating-linear-gradient(45deg,#2b2417 0 12px,#2f281a 12px 24px)}
+.tok{position:absolute;display:flex;flex-direction:column;align-items:center;font-size:11px;gap:2px}.tok i{font-style:normal;width:30px;height:30px;border-radius:50%;background:var(--s1);border:2px solid var(--vi);display:flex;align-items:center;justify-content:center}
+.tok.sec i{border-color:var(--am)}.tok span{background:rgba(0,0,0,.6);padding:1px 6px;border-radius:6px}
+table{width:100%;border-collapse:collapse;font-size:13px}th{text-align:left;font-size:10.5px;text-transform:uppercase;letter-spacing:.07em;color:var(--i3);padding:6px 8px;font-weight:600}td{padding:9px 8px;border-top:1px solid var(--b)}
+.msg{padding:10px 12px;border-radius:10px;font-size:13px;margin-bottom:10px;line-height:1.5}.msg.u{background:var(--s3);margin-left:40px}.msg.a{background:var(--s2);border:1px solid var(--b)}
+.diff{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0}.diff div{font-size:12px;padding:8px;border-radius:8px;border:1px solid var(--b);line-height:1.5}.diff .o{background:var(--reb)}.diff .p{background:var(--teb)}
+.diff b{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--i3);margin-bottom:3px}
+.dock{width:380px;flex:none;border-left:1px solid var(--bs);background:var(--weave);padding:16px;display:flex;flex-direction:column}
+@media(max-width:760px){.frame{flex-direction:column}aside{width:auto}.g2,.g3,.diff{grid-template-columns:1fr}.dock{width:auto}}
+</style></head><body><div class="wrap"><div><div class="label ">E-8 — Personnages (Antor, MJ)</div><div class="frame" style="flex-direction:column"><div class="alert" style="margin:0;border-radius:0;border-left:0;border-right:0;color:var(--am);background:var(--amb);border-color:var(--amd)" role="status">Mode bouchon — les comptes sont fictifs. Ne jamais l'ouvrir en production.</div><div style="display:flex;flex:1;min-width:0"><aside><div class="brand"><div class="mark"></div> Kanevas</div><div class="sw"><div class="dot"></div><div class="n">Lame d'Ébène</div><span class="badge mj">MJ</span> ▾</div><nav><a class="it" href="e03-vue-ensemble.html">Vue d'ensemble</a><div class="ns">Lore</div><a class="it sub on" href="e08-liste-fiches.html">Personnages</a><a class="it sub" href="e08-liste-fiches.html">Lieux</a><a class="it sub" href="e08-liste-fiches.html">Factions</a><a class="it sub" href="e08-liste-fiches.html">Objets</a><a class="it sub" href="e08-liste-fiches.html">Événements</a><a class="it sub" href="e08-liste-fiches.html">Quêtes</a><div class="ns">Univers</div><a class="it sub" href="e04-membres.html">Membres</a></nav><div class="sp"></div><div class="me"><div class="av">A</div><div>antor<br><small>Thème : Système ▾ · Se déconnecter</small></div></div></aside><div class="col"><header><div class="crumb">Lame d'Ébène / <b>Personnages</b></div></header><main><h1>Personnages</h1><p class="row"><span class="btn pri">Nouveau personnage</span></p><div class="panel"><div class="li"><div class="g">Maître Aldric</div><span class="badge">PNJ</span></div><div class="li"><div class="g">Léa Brisefer</div><span class="badge">PJ</span></div></div><div class="panel"><b>Nouveau personnage</b><label class="fl">Titre</label><input class="in" style="max-width:320px"><div class="alert" style="max-width:320px">Erreur : le titre est obligatoire.</div><p class="row"><span>○ PJ</span><span>● PNJ</span></p><p class="row"><span class="btn pri">Créer la fiche</span><span class="btn">Annuler</span></p></div></main></div></div></div></div><div><div class="label j">E-8 — vide, Léa (Joueuse)</div><div class="frame" style="flex-direction:column"><div class="alert" style="margin:0;border-radius:0;border-left:0;border-right:0;color:var(--am);background:var(--amb);border-color:var(--amd)" role="status">Mode bouchon — les comptes sont fictifs. Ne jamais l'ouvrir en production.</div><div style="display:flex;flex:1;min-width:0"><aside><div class="brand"><div class="mark"></div> Kanevas</div><div class="sw"><div class="dot"></div><div class="n">Lame d'Ébène</div><span class="badge j">Joueur</span> ▾</div><nav><a class="it" href="e03-vue-ensemble.html">Vue d'ensemble</a><div class="ns">Lore</div><a class="it sub on" href="e08-liste-fiches.html">Personnages</a><a class="it sub" href="e08-liste-fiches.html">Lieux</a><a class="it sub" href="e08-liste-fiches.html">Factions</a><a class="it sub" href="e08-liste-fiches.html">Objets</a><a class="it sub" href="e08-liste-fiches.html">Événements</a><a class="it sub" href="e08-liste-fiches.html">Quêtes</a></nav><div class="sp"></div><div class="me"><div class="av">L</div><div>lea<br><small>Thème : Système ▾ · Se déconnecter</small></div></div></aside><div class="col"><header><div class="crumb">Lame d'Ébène / <b>Lieux</b></div></header><main><h1>Lieux</h1><div class="empty">Aucun lieu à voir pour l'instant.</div></main></div></div></div></div></div></body></html>
