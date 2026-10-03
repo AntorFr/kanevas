@@ -1,12 +1,13 @@
-import { randomBytes } from 'node:crypto';
-
 import cookie from '@fastify/cookie';
 import Fastify from 'fastify';
 
 import { dbPath, env } from './config/env.js';
 import { migrate, openDb, type Db } from './db/db.js';
 import { registerAuthRoutes } from './routes/auth.js';
+import { registerBouchonRoutes } from './routes/bouchon.js';
 import { registerHealthRoutes } from './routes/health.js';
+import { registerSessionRoutes } from './routes/session.js';
+import { chargerCleSession } from './services/session.js';
 
 declare module 'fastify' {
   interface FastifyInstance {
@@ -30,18 +31,16 @@ export async function buildApp() {
     db.close();
   });
 
-  // Cookie signé porteur de la transaction OIDC (state + PKCE) entre la
-  // redirection vers Authelia et le callback (routes/auth.ts). Secret généré
-  // à chaque démarrage : la transaction ne survit qu'à l'aller-retour d'un
-  // même utilisateur sur la même instance, ce n'est pas un secret
-  // d'exploitation à gérer (pas d'entrée pour lui dans technique.md,
-  // Secrets).
+  // Signed cookies: the session (AD-56) and the OIDC transaction (state + PKCE).
+  // The secret persists in <data dir>/session.key so sessions survive a restart.
   await app.register(cookie, {
-    secret: randomBytes(32).toString('hex'),
+    secret: chargerCleSession(env.SESSION_SECRET, dbPath),
   });
 
   await registerHealthRoutes(app);
   await registerAuthRoutes(app);
+  await registerBouchonRoutes(app);
+  await registerSessionRoutes(app);
 
   return app;
 }

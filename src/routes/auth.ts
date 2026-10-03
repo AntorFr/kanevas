@@ -3,6 +3,8 @@ import { z } from 'zod';
 import type { FastifyInstance } from 'fastify';
 
 import { env } from '../config/env.js';
+import { pageIndisponible, pageRefusee } from './pages.js';
+import { ouvrirSession } from './session.js';
 import {
   getOidcConfiguration,
   getOidcSettings,
@@ -21,19 +23,16 @@ const oidcTxSchema = z.object({
 });
 
 /**
- * Mécanique OIDC générique reprise d'Antre-du-maitre (AD-10), arrêtée à
- * l'authentification de l'identité : aucune résolution de rôle (AD-9), aucune
- * session posée, aucune écriture en base (AD-5 réserve l'emplacement, vide à
- * ce stade). kanevas-identite construit la suite sur ce contrat
- * (client_id kanevas, redirect_uri .../api/auth/oidc/callback — technique.md,
- * Interfaces).
+ * Mécanique OIDC reprise d'Antre-du-maitre (AD-10). Le callback ouvre la
+ * session (cookie signé, AD-56) et crée le compte à la première connexion
+ * (AD-13) ; aucun rôle d'univers ne vient d'Authelia (AD-9).
  */
 export async function registerAuthRoutes(app: FastifyInstance) {
   app.get('/api/auth/config', async () => ({
     oidcEnabled: isOidcEnabled(),
   }));
 
-  app.get('/api/auth/oidc/login', async (_request, reply) => {
+  app.get('/api/auth/oidc/login', async (request, reply) => {
     const settings = getOidcSettings();
 
     if (!settings) {
@@ -42,7 +41,13 @@ export async function registerAuthRoutes(app: FastifyInstance) {
       });
     }
 
-    const configuration = await getOidcConfiguration(settings);
+    let configuration;
+    try {
+      configuration = await getOidcConfiguration(settings);
+    } catch (error) {
+      request.log.error({ err: error }, 'OIDC discovery failed.');
+      return reply.code(503).type('text/html; charset=utf-8').send(pageIndisponible());
+    }
 
     const codeVerifier = oidcClient.randomPKCECodeVerifier();
     const codeChallenge =
@@ -106,7 +111,13 @@ export async function registerAuthRoutes(app: FastifyInstance) {
         JSON.parse(Buffer.from(unsigned.value, 'base64url').toString('utf8')),
       );
 
-      const configuration = await getOidcConfiguration(settings);
+      let configuration;
+      try {
+        configuration = await getOidcConfiguration(settings);
+      } catch (error) {
+        request.log.error({ err: error }, 'OIDC discovery failed.');
+        return reply.code(503).type('text/html; charset=utf-8').send(pageIndisponible());
+      }
 
       // request.url = chemin + query string ; l'origine vient du redirect URI.
       const currentUrl = new URL(request.url, settings.redirectUri);
@@ -143,17 +154,19 @@ export async function registerAuthRoutes(app: FastifyInstance) {
         throw new Error('Missing preferred_username claim.');
       }
 
-      // Aucune session posée, aucune écriture : rien ne consomme encore une
-      // identité authentifiée (fonctionnelle.md, hors périmètre) — se
-      // connecter en vrai n'a ici aucun effet observable différent de ne pas
-      // se connecter.
-      return reply.send({
-        authenticated: true,
-        subject: claims.sub,
-        username,
-      });
+      // Authelia says who (AD-9): the groups go into the session, the universe roles
+      // never come from it. The account is created on first sign-in (AD-13).
+      const groups = Array.isArray(userInfo.groups)
+        ? userInfo.groups.filter((g): g is string => typeof g === 'string')
+        : [];
+      ouvrirSession(app, reply, username, groups);
+      return reply.redirect('/');
     } catch (error) {
       request.log.error({ err: error }, 'OIDC login failed.');
+      // Browsers navigating here get the "Connexion refusée" page; API clients the JSON.
+      if (String(request.headers.accept ?? '').includes('text/html')) {
+        return reply.code(401).type('text/html; charset=utf-8').send(pageRefusee());
+      }
       return reply.code(401).send({
         authenticated: false,
       });

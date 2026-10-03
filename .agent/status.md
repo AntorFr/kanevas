@@ -26,3 +26,10 @@ base s'ouvre dans `buildApp` (`app.db`). Erreurs : `ErreurService.code`
 (`introuvable` 404, `refuse` 403, `invalide` 400, `conflit` 409
 `section_modifiee`). Sans `/data` en production, base en mémoire avec avertissement
 (le test e2e de `/healthz` tourne ainsi). Pas encore de tests de service ni de route.
+
+**Tâche `kanevas-pf-session` (branche `task/kanevas-pf-session`) :** session (cookie
+`kanevas_session` signé, secret `SESSION_SECRET` ou `/data/session.key`), mode bouchon
+(`/connexion-bouchon`, refus de démarrer avec une variable `OIDC_*`), garde (401 sous `/api`,
+redirection ailleurs ; routes inconnues restent 404), `GET /api/moi`, `POST /api/auth/logout`,
+pages « Connexion refusée / indisponible » (le callback ne rend la page que si `Accept` contient
+`text/html`, sinon l'ancien JSON 401, pour garder les tests existants). Pas encore de tests.

@@ -66,10 +66,10 @@ exacte non constatée en CI) : seul un tag donne une version fiable.
 
 `GET /api/auth/oidc/login` et `GET /api/auth/oidc/callback` reprennent la
 mécanique générique d'Antre-du-maitre (découverte OIDC, PKCE, state), arrêtée
-à l'authentification de l'identité : le callback confirme qui s'est connecté
-(`subject`, `username`) mais ne pose aucune session ni résolution de rôle —
-la base `univers_membres` (AD-9) n'existe pas encore. C'est
-`kanevas-identite`, pas ce socle, qui construit la suite. `GET /api/auth/config` répond `{oidcEnabled}`. Sans les quatre variables
+à l'authentification de l'identité : le callback ouvre la session (cookie signé,
+7 jours, AD-56) et crée le compte à la première connexion ; les rôles d'univers ne
+viennent jamais d'Authelia (AD-9). `KANEVAS_STUB=1` remplace Authelia par le choix d'un
+compte de test (`/connexion-bouchon`, AD-55). `GET /api/auth/config` répond `{oidcEnabled}`. Sans les quatre variables
 `OIDC_*` posées (voir `.env.example`) — même si une partie seulement l'est —
 login et callback répondent `404` : pas de mode dégradé. Une valeur posée mais
 vide ou invalide (URL mal formée) fait en revanche échouer le démarrage

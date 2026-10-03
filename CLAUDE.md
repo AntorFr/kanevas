@@ -32,7 +32,11 @@
   not reprised: it is a content route, out of scope for a socle that calls no
   LLM. Reintroduce it only alongside the feature that actually activates this
   transport.
-- `routes/auth.ts` stops at identity authentication (OIDC login/callback):
-  no session, no role resolution (AD-9), no persistence. Don't extend it
-  without reopening `kanevas-identite`'s design first.
+- `routes/auth.ts` authenticates the identity (OIDC login/callback) and opens
+  the signed session cookie (`routes/session.ts`, AD-56), creating the account
+  on first sign-in (AD-13). Universe roles never come from Authelia nor the
+  session (AD-9): they are read from the members table at each request. Routes
+  needing a session are registered in the guarded scope of
+  `registerSessionRoutes` (AD-15). `KANEVAS_STUB=1` (AD-55) swaps Authelia for
+  `/connexion-bouchon` and refuses to start if any `OIDC_*` variable is set.
 - Update `.agent/status.md` in the same commit as the work it reflects.
