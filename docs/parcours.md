@@ -145,12 +145,11 @@ dernier MJ — refusé avec la raison.
    écrit « Apparence » (lue des joueurs) et « Vérité — MJ seul », relie le PNJ à sa faction,
    dépose le plan d'un lieu.
 5. Il demande à son **assistant** (E-12) « rappelle-moi tout ce qu'on sait d'Aldric » puis
-   « fais un portrait pour Apparence » : l'image est attachée à la section.
+   « fais un portrait pour Apparence » : l'image est attachée à la section, et il suit « Ouvrir la section »
+   dans le fil pour la voir sur la fiche (E-9).
 6. **Cartes** (E-10, E-11) : il place le PNJ sur la carte de la ville, passe en **mode Joueur**
    pour vérifier, puis rend la carte visible.
 *Échec de l'assistant* : une demande de création échoue ou l'assistant est indisponible : le panneau le dit (« Je n'ai pas pu répondre — réessayer » ou « L'assistant n'est pas disponible pour le moment. »), la création a pu avoir lieu avant que la réponse soit perdue (délai, connexion coupée) : avant de réessayer, Antor regarde E-6 ou E-7 pour ne pas créer deux fois, puis crée à la main si besoin (étape 2).
-*Étape 5, suite* : Antor suit « Ouvrir la section » depuis le fil et retrouve l'image dans les pièces jointes
-de la section (E-9).
 *Échec de l'image* (étape 5) : la génération échoue ou dépasse le temps, la section porte déjà 50
 pièces jointes, son droit d'écrire a été retiré, la description dépasse 500 caractères ou aucun moteur
 n'est disponible — l'assistant le dit, rien n'est attaché ; Antor

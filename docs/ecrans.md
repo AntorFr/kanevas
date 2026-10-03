@@ -71,7 +71,7 @@ bouchon » — sans `E-n` ni six états, ils n'existent pas en production.
 | E-9 | tout ; mode Joueur ; relier et retirer des relations | sections lisibles ; écrire celles permises ; relations lisibles (section et cible) ; pièces jointes de celles-ci | — |
 | E-10 | tout | cartes visibles | — |
 | E-11 | tout ; mode Joueur | lire une carte visible, ouvrir une fiche | — |
-| E-12 | catalogue MJ (dont générer une image) | catalogue Joueur (sans image : l'outil est absent, l'assistant répond qu'il ne peut pas) | — |
+| E-12 | catalogue MJ (dont générer une image, si un moteur d'images est disponible) | catalogue Joueur (sans image : l'outil est absent, l'assistant répond qu'il ne peut pas) | — |
 | E-13 | tous les CR | les CR lisibles | — |
 | E-14 | tout | — | — |
 | E-15 | lire, écrire | lire | — |
@@ -679,8 +679,8 @@ l'assistant répond qu'il ne peut pas, sans événement et sans rien créer (le 
 modèle, il n'est pas fixé ; ce qu'on vérifie est l'absence d'écriture). Dans les deux cas
 l'assistant ne lit et n'écrit que ce que la personne lit et écrit : une section fermée est
 « Introuvable. », une section lisible mais non écrite « Vous ne pouvez pas modifier cette
-section. » (AD-74). Cette tranche **ne donne aucun outil sur les cartes ni les graphes** (écarté, AD-74). Elle **ne dessine ni proposition de mise à jour ni image** : elles
-s'inscrivent au registre de blocs (`kanevas-monde`, `kanevas-images`).
+section. » (AD-74). Cette tranche **ne donne aucun outil sur les cartes ni les graphes** (écarté, AD-74). Elle **ne dessine pas** la proposition de mise à jour (`kanevas-monde`) ; l'image est le bloc de
+`kanevas-images`, décrit plus bas : l'un et l'autre s'inscrivent au registre de blocs.
 
 | État | Ce qu'on voit | Ce qu'on peut faire |
 |---|---|---|
@@ -840,7 +840,7 @@ route authentifiée des pièces jointes (AD-67) : aucune adresse publique.
 | contenu long | un titre de fiche de 120 caractères et un titre de section de 80 passent à la ligne dans le libellé ; une image très haute est contenue dans 240 px de large et 320 px de haut | idem |
 
 **Pendant la génération.** L'assistant ne répond qu'à la fin (AD-75) : « Kanevas réfléchit… » reste
-affiché ; au bout de 20 secondes il devient « Kanevas travaille toujours… Une image peut prendre
+affiché ; au bout de 20 secondes, **pour un MJ seulement** (pastille « MJ » ; le Joueur n'a pas l'outil et garde « Kanevas réfléchit… »), il devient « Kanevas travaille toujours… Une image peut prendre
 jusqu'à trois minutes. » (`role="status"`). Le client n'abandonne pas la requête avant 300 secondes.
 Fermer le panneau ne l'arrête pas ; recharger la page ou quitter l'univers l'abandonne : rien n'est alors
 attaché.
@@ -862,8 +862,15 @@ demande dont la description contient « échec » donne le premier cas.
   générer l'image. », sans bloc « Image attachée », et la section n'a pas de pièce de plus.
 - Étant donné Antor et une section qui porte déjà 50 pièces jointes, quand il demande une image, alors
   l'assistant dit « Cette section porte déjà 50 pièces jointes. » et rien n'est attaché.
-- Étant donné une image attachée puis retirée de E-9, quand Antor rouvre le fil, alors le cadre dit
-  « Image indisponible. » avec « Recharger l'image », et « Ouvrir la section » mène toujours à E-9.
+- Étant donné une image attachée puis retirée de E-9, quand Antor ferme puis rouvre le panneau (le fil
+  survit, AD-28), alors le cadre dit « Image indisponible. » avec « Recharger l'image », et « Ouvrir la
+  section » mène toujours à E-9 ; « Recharger l'image » relit la vignette et, l'image étant toujours
+  retirée, rend le même texte.
+- Étant donné une image attachée, quand sa vignette charge, alors le cadre gris « Chargement de l'image… »
+  précède l'image ; et quand la connexion est perdue avant la lecture, alors le bandeau commun s'affiche et
+  le cadre dit « Image indisponible. » avec « Recharger l'image » désactivé jusqu'au retour de la connexion.
+- Étant donné Léa, Joueuse, quand l'assistant tarde plus de 20 secondes, alors elle voit toujours « Kanevas
+  réfléchit… » et jamais le texte sur l'image.
 - Étant donné une demande d'image qui dure plus de 20 secondes, alors le panneau affiche « Kanevas
   travaille toujours… Une image peut prendre jusqu'à trois minutes. » ; et si la demande passe 270 secondes,
   « Je n'ai pas pu répondre — réessayer ».
