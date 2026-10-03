@@ -343,7 +343,10 @@ E-2.
   La région « Rien à afficher pour l'instant… » ne s'affiche plus tant qu'un bloc est inscrit pour
   le rôle ; chaque bloc a son propre état vide.
 - *E-9, fiche de type compte-rendu* : sous le titre, une ligne « Campagne : <nom> » qui mène à
-  E-6 de la campagne. Pour une fiche d'un autre type, rien n'est ajouté.
+  E-6 de la campagne. Pour une fiche d'un autre type, rien n'est ajouté. E-9 n'a pas aujourd'hui
+  d'emplacement sous le titre : la tranche en ajoute **un seul**, un registre de lignes de titre
+  (`frontend/src/ecrans/fiche/lignes/registre.ts`, une ligne : type de fiche concerné, composant),
+  vide pour tout autre type ; aucun bloc de section existant n'est modifié.
 
 ### E-6 Campagne
 
