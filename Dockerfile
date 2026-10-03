@@ -25,7 +25,7 @@ WORKDIR /app
 
 # Single source of truth for the displayed and published version: never
 # package.json.
-ARG APP_VERSION
+ARG APP_VERSION=0.0.0-dev
 
 ENV NODE_ENV=production
 ENV PORT=3001
@@ -40,9 +40,9 @@ COPY --from=build /app/package.json ./package.json
 COPY --from=build /app/dist ./dist
 
 # Run as the non-root "node" user (uid 1000) shipped by the base image.
-# /data is a mounted volume (AD-5/AD-7, empty for now): its hostPath must be
-# writable by uid 1000 (see the cluster manifest for the podSecurityContext
-# convention of the "games" group apps).
+# /data is a mounted volume (AD-5/AD-7, empty for now). Under uid 1000 its
+# hostPath must be writable by that user; the cluster actually runs the pod as
+# root (see ARCHITECTURE.md).
 RUN mkdir -p /data && chown -R node:node /data /app
 
 USER node

@@ -11,8 +11,8 @@ export type OidcSettings = {
 
 /**
  * Returns the OIDC config if complete, otherwise null (no login possible).
- * The four variables go together: setting only some is a deployment error,
- * not a degraded mode.
+ * The four variables go together: setting only some leaves OIDC unconfigured
+ * and the routes answer 404 (an empty or invalid value fails in env.ts).
  *
  * Reused from Antre-du-maitre (AD-10): carries no role resolution here —
  * `roleFromGroups` is not reused, AD-9 is left to kanevas-identite.

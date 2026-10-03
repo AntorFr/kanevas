@@ -24,7 +24,8 @@ src/
 ## Démarrage local
 
 ```bash
-docker run --rm -v "$PWD":/src -w /src node:20-bookworm-slim sh -c "npm ci && npm run dev"
+docker run --rm -p 3001:3001 -v "$PWD":/src -w /src node:20-bookworm-slim sh -c "npm ci && npm run dev"
+# puis, depuis l'hôte : curl http://localhost:3001/healthz
 ```
 
 Ou, avec un Node 20+ installé localement :
@@ -32,9 +33,15 @@ Ou, avec un Node 20+ installé localement :
 ```bash
 npm install
 cp .env.example .env
-npm run dev
+npm run dev            # ou : npm run build && npm start (sert dist/server.js)
 curl http://localhost:3001/healthz   # -> "kanevas 0.0.0-dev"
 ```
+
+## Réglages
+
+La liste de départ est `.env.example`. En plus : `APP_NAME` (défaut `kanevas`),
+`APP_VERSION` (défaut `0.0.0-dev`, posée par le build-arg en image), `PORT` (3001), `LLM_PROVIDER` (`mock` | `anthropic` | `claude-agent`, défaut `mock`,
+inutilisé tant qu'aucune route n'appelle un LLM).
 
 ## Version de l'application
 
@@ -43,15 +50,17 @@ du build-arg Docker `APP_VERSION`, jamais de `package.json` (qui n'en porte
 volontairement pas) :
 
 ```bash
+# sans --build-arg, la version vaut 0.0.0-dev
 docker build --build-arg APP_VERSION=0.1.0 -t kanevas:0.1.0 .
 docker run --rm -p 3001:3001 kanevas:0.1.0
 curl http://localhost:3001/healthz   # -> "kanevas 0.1.0"
 ```
 
-La CI dérive ce même build-arg du tag semver poussé (`docker/metadata-action`)
+Sur un tag, la CI dérive ce même build-arg du tag semver poussé (`docker/metadata-action`)
 : pousser `v0.1.0` publie `ghcr.io/antorfr/kanevas:0.1.0` avec `APP_VERSION`
 embarqué à `0.1.0` — une seule source de vérité pour la version affichée et le
-tag publié.
+tag publié. Hors tag (`main`, PR), la valeur n'est pas un semver (À documenter : valeur
+exacte non constatée en CI) : seul un tag donne une version fiable.
 
 ## OIDC
 
@@ -60,13 +69,22 @@ mécanique générique d'Antre-du-maitre (découverte OIDC, PKCE, state), arrêt
 à l'authentification de l'identité : le callback confirme qui s'est connecté
 (`subject`, `username`) mais ne pose aucune session ni résolution de rôle —
 la base `univers_membres` (AD-9) n'existe pas encore. C'est
-`kanevas-identite`, pas ce socle, qui construit la suite. Sans les quatre
-variables `OIDC_*` posées (voir `.env.example`), ces deux routes répondent
-`404` : pas de mode dégradé.
+`kanevas-identite`, pas ce socle, qui construit la suite. `GET /api/auth/config` répond `{oidcEnabled}`. Sans les quatre variables
+`OIDC_*` posées (voir `.env.example`) — même si une partie seulement l'est —
+login et callback répondent `404` : pas de mode dégradé. Une valeur posée mais
+vide ou invalide (URL mal formée) fait en revanche échouer le démarrage
+(`ZodError`, `src/config/env.ts`).
 
 ## Déploiement
 
-Hors de ce dépôt : chart Helm dans `smart-home-charts` (`charts/kanevas`),
-manifeste de cluster et entrée OIDC Authelia dans `k8s-home-lab` — voir
-`epics/kanevas/technique.md` et `features/kanevas-socle/technique.md` dans le
-magasin de pilotage.
+Hors de ce dépôt : chart Helm `charts/kanevas` dans `smart-home-charts`,
+manifeste `clusters/tantive/games/kanevas-helm-config.yml` et client OIDC
+`kanevas` (`clusters/homenode/infra/authelia-helm-config.yml`) dans
+`k8s-home-lab`. Ordre : publier l'image (tag `vX.Y.Z`), publier le chart, puis
+fusionner `k8s-home-lab`, dont la fusion déploie.
+
+Pour la carte du code, les invariants et les options écartées, voir
+`ARCHITECTURE.md`. Les sigles `AD-n` renvoient aux décisions de l'epic Kanevas (magasin de
+pilotage de la chaîne SDLC, hors de ce dépôt ; les commentaires qui citent
+`plan.md`, `technique.md` ou `socle-projet` en viennent), dont `ARCHITECTURE.md` résume celles qui touchent ce dépôt (AD-3 Node/TypeScript,
+AD-4 Fastify, AD-5 SQLite, AD-9 rôles par univers, AD-10 reprise d'Antre-du-maitre).
