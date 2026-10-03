@@ -32,6 +32,7 @@ Un écran est un fichier `frontend/src/ecrans/<nom>.tsx` enregistré par le regi
 ## Démarrage local
 
 ```bash
+# écrit ./data/ (base et session.key) dans le dépôt monté ; ./data/ n'est pas dans .gitignore
 docker run --rm -p 3001:3001 -v "$PWD":/src -w /src node:20-bookworm-slim sh -c "npm ci && npm run dev"
 # puis, depuis l'hôte : curl http://localhost:3001/healthz
 ```
@@ -68,7 +69,7 @@ mémoire (avertissement au démarrage).
 ## Réglages
 
 La liste de départ est `.env.example`. En plus : `APP_NAME` (défaut `kanevas`),
-`APP_VERSION` (défaut `0.0.0-dev`, posée par le build-arg en image), `PORT` (3001), `DB_PATH` (fichier SQLite ; défaut `/data/kanevas.db` en production, `./data/kanevas.db` en développement), `SESSION_SECRET` (≥ 16 caractères ; à défaut `/data/session.key`), `KANEVAS_STUB` (`1`), `LLM_PROVIDER` (`mock` | `anthropic` | `claude-agent`, défaut `mock`,
+`APP_VERSION` (défaut `0.0.0-dev`, posée par le build-arg en image), `PORT` (3001), `DB_PATH` (fichier SQLite ; défaut `/data/kanevas.db` en production, `./data/kanevas.db` en développement), `SESSION_SECRET` (≥ 16 caractères ; à défaut `session.key`, créée à côté de la base : `/data/session.key` en production, `./data/session.key` en développement), `KANEVAS_STUB` (`1`), `LLM_PROVIDER` (`mock` | `anthropic` | `claude-agent`, défaut `mock`,
 inutilisé tant qu'aucune route n'appelle un LLM).
 
 ## Version de l'application

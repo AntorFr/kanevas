@@ -55,6 +55,15 @@ Toutes gardées par la session (401 sans session), sauf `/api/auth/*`. Les erreu
 | `GET\|PATCH\|DELETE .../sections/:sid` | lire ; titre et audience (MJ) ; retirer (MJ) |
 | `PUT .../sections/:sid/contenu` | écrire `{contenu, version}` ; 409 si `version` périmée |
 
+Corps de requête (JSON) : `POST /api/univers` `{nom, description?}` ; `POST .../membres`
+`{username, role}` (`role` : `mj` \| `joueur` ; `username` est l'identifiant exact) ; `PATCH
+.../membres/:compteId` `{role}` ; `POST .../fiches` `{type, titre, charge?}` (`charge` objet, optionnel) ;
+`POST .../sections` `{titre}` ; `PUT .../ordre` `{ids}` (tous les identifiants de section de la fiche) ;
+`PATCH .../sections/:sid` `{titre?, joueursLisent?, joueursEcrivent?, auteurLit?, auteurEcrit?,
+auteurId?}` — `auteurId` est l'**identifiant numérique du compte** (`compteId` des membres), `null` pour
+aucun auteur ; `PUT .../contenu` `{contenu, version}`. Les noms de l'API sont en camelCase, ceux de la
+base en snake_case (`docs/donnees.md`).
+
 ## Invariants
 
 - **La version a une seule source** : le build-arg Docker `APP_VERSION`, dérivé
@@ -191,7 +200,7 @@ Les numéros sont stables. Une décision retirée garde son numéro, avec ce qui
 | AD-53 | **Toute action qu'un humain déclenche a un écran.** L'agent est un second chemin, jamais le seul ; ce que l'agent propose, un humain l'applique depuis un écran. |
 | AD-54 | L'assistant accède au modèle par l'abonnement Claude de Monsieur, via le transport `claude-agent` (décision de Monsieur, confirmée le 2026-10-03 en connaissance du fait suivant). Risque connu et accepté par Monsieur : la doc de l'Agent SDK n'autorise pas, sauf accord d'Anthropic, l'usage du login claude.ai ou de ses limites dans un produit tiers ; Kanevas sert d'autres comptes que le sien. Les identifiants sont posés par Monsieur. |
 | AD-55 | **Mode bouchon** (décision de Monsieur, 2026-10-03) : `KANEVAS_STUB=1` lance Kanevas sans aucun secret. La connexion se fait en choisissant un compte de test au lieu de passer par Authelia, l'assistant répond par un transport `bouchon` scripté qui appelle les mêmes outils, l'image vient d'un adaptateur `bouchon` qui rend une image fixe. Tout le reste est réel : base, droits, routes, outils. Un bandeau le dit sur chaque page ; l'application refuse de démarrer en bouchon dès qu'une seule variable `OIDC_*` est posée. Les tests et les pods de la chaîne tournent en bouchon. |
-| AD-56 | **Session** : un cookie signé (`HttpOnly`, `SameSite=Lax`, `Secure` hors bouchon et hors test) porte l'identifiant et les groupes du compte, valable 7 jours ; le secret de signature est lu dans `SESSION_SECRET` s'il est posé, sinon créé une fois dans `/data/session.key` (0600) — la session survit à un redémarrage sans nouveau secret à déployer. Pas de session révocable en V1 : retirer un membre prend effet à la requête suivante parce que les rôles ne sont pas dans la session (AD-9). |
+| AD-56 | **Session** : un cookie signé (`HttpOnly`, `SameSite=Lax`, `Secure` hors bouchon et hors test) porte l'identifiant et les groupes du compte, valable 7 jours ; le secret de signature est lu dans `SESSION_SECRET` s'il est posé, sinon créé une fois dans `session.key` à côté de la base (`/data/session.key` en production, 0600) — la session survit à un redémarrage sans nouveau secret à déployer. Pas de session révocable en V1 : retirer un membre prend effet à la requête suivante parce que les rôles ne sont pas dans la session (AD-9). |
 | AD-57 | **Frontend** : React et Vite dans `frontend/`, un seul build servi par l'application Fastify (`@fastify/static`, repli sur `index.html` pour toute adresse d'écran, derrière la garde de session) ; l'image Docker construit les deux. Pas de rendu serveur, sauf les pages que la session ne peut pas précéder : choix du compte de test (AD-55), « Connexion refusée », « Connexion indisponible ». |
 | AD-58 | **Contenu de section en texte brut** : des paragraphes séparés par des lignes vides, affichés comme tels ; ni Markdown ni HTML. Écarté : Markdown (rendu à assainir, choix d'éditeur) — rouvrable sans migration, le contenu est déjà du texte. |
 | AD-59 | **Écritures de section concurrentes** : chaque section porte un entier `version`, augmenté à chaque écriture de son contenu ; l'écriture envoie la version qu'elle a lue ; si elle n'est plus la courante, elle est refusée (HTTP 409, code `section_modifiee`) et rien n'est écrit. Même mécanisme que le « la section a changé » de B-21 pour les propositions (AD-49). |
