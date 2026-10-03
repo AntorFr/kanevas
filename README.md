@@ -33,21 +33,21 @@ docker run --rm -p 3001:3001 -v "$PWD":/src -w /src node:20-bookworm-slim sh -c 
 Ce bloc ne pose pas de `.env` : les valeurs par défaut suffisent pour `/healthz`, OIDC
 reste désactivé (`/api/auth/oidc/login` répond 404). Pour l'activer, créer `.env` (voir
 `.env.example`) à la racine : le montage `-v "$PWD":/src` le rend lisible. Ce bloc crée
-aussi `node_modules/` dans le dépôt de l'hôte (ignoré par git) ; il appartient à root : à supprimer par `docker run … rm -rf node_modules`
-ou `sudo`.
+aussi `node_modules/` dans le dépôt de l'hôte (ignoré par git) ; il appartient à root : à supprimer par
+`docker run --rm -v "$PWD":/src -w /src node:20-bookworm-slim rm -rf node_modules` ou `sudo rm -rf node_modules`.
 
 Ou, avec un Node 20+ installé localement :
 
 ```bash
 npm install
 cp .env.example .env
-npm run dev            # ou : npm run build && npm start (sert dist/server.js)
+npm run dev            # ou, sans rechargement : npm run build && npm start (`npm start` seul échoue sans `dist/`, ignoré par git)
 curl http://localhost:3001/healthz   # -> "kanevas 0.0.0-dev"
 ```
 
 ## Réglages
 
-La liste de départ est `.env.example` (`PORT`, OIDC, `LLM_PROVIDER` en commentaire). Réglages
+La liste de départ est `.env.example` (`PORT`, `NODE_ENV=development`, OIDC, `LLM_PROVIDER`, `ANTHROPIC_API_KEY`, `ANTHROPIC_MODEL` en commentaire ; défaut du modèle : `claude-sonnet-4-6`). Réglages
 absents du fichier : `APP_NAME` (défaut `kanevas`), `APP_VERSION` (défaut `0.0.0-dev`, posée par
 le build-arg en image). Rappel : `PORT` (3001), `LLM_PROVIDER` (`mock` | `anthropic` | `claude-agent`, défaut `mock`,
 inutilisé tant qu'aucune route n'appelle un LLM).
