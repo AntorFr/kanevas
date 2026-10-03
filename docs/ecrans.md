@@ -82,7 +82,7 @@ fenêtre (type déjà choisi, titre) qui mène à la fiche ; créer une carte se
 E-10. « Rendre visible » une carte se trouve sur la carte (E-11) et dans la liste (E-10). Le fond d'une carte illustrée se dépose à sa création (E-10) et se change sur la carte (E-11) ;
 une carte sans fond montre ses tokens sur un fond neutre. Une
 tâche de préparation s'ajoute avec sa catégorie, se coche, se décoche ; elle ne se supprime pas.
-Sur E-15, règles, créatures et objets ont le même traitement.
+Sur E-15, règles, créatures et objets ont le même traitement. Sur E-3, le bloc « Système de jeu » n'existe que si l'univers est rattaché à un système (MJ et Joueur).
 
 Un compte **sans rôle** dans l'univers et qui n'est pas admin d'instance (Teo avant son ajout) a, dans
 cet univers, la colonne « Admin » de cette matrice moins E-5 : « — » partout, « Page introuvable. »
@@ -339,7 +339,7 @@ compte qui mène au moins un univers (c'est ce qui permet à Mira de trouver « 
 d'un système (E-15) n'est lu que par les membres d'un univers qui lui est rattaché. **Aucun écran ne
 nomme un autre univers** : un système dit seulement « utilisé par N univers » (N compte l'univers
 courant), jamais lesquels. Un système « n'est pas vu » d'un univers qui n'y est pas rattaché : pas
-de lien sur E-3, et l'adresse de E-15 répond « Page introuvable. ».
+de bloc sur E-3, et l'adresse de E-15 répond « Page introuvable. ».
 
 ### E-14 Paramètres de l'univers (MJ)
 
@@ -375,7 +375,7 @@ Trois panneaux, dans cet ordre.
 - Étant donné un système « CoF Mini » existant, quand Antor en crée un autre nommé « cof mini »,
   alors il voit « Un système porte déjà ce nom. » et rien n'est créé.
 - Étant donné Antor, univers rattaché à « CoF Mini », quand il choisit « Aucun système » et
-  « Rattacher », alors le panneau dit « Cet univers n'est rattaché à aucun système de jeu. », le lien
+  « Rattacher », alors le panneau dit « Cet univers n'est rattaché à aucun système de jeu. », le bloc
   « Système de jeu » a disparu de E-3, et « CoF Mini » est toujours dans la liste du catalogue.
 
 ### E-15 Système de jeu
@@ -383,14 +383,14 @@ Trois panneaux, dans cet ordre.
 Atteint depuis E-14 (« Ouvrir le système ») et depuis E-3 (bloc « Système de jeu », ci-dessous), à
 l'adresse `/univers/:id/systeme`. Le nom du système en titre, « Référentiel commun · utilisé par N
 univers » ; trois onglets, **Règles**, **Créatures**, **Objets** (Créatures par défaut) ; sous
-l'onglet, la liste des gabarits du type par nom (ordre alphabétique sans casse), cent à la fois, puis
-« Charger la suite ». Chaque ligne : le nom et la première ligne du contenu (tronquée). Un clic ouvre
-le gabarit **sur place** (le nom, le contenu en texte brut, AD-58).
+l'onglet, la liste des entrées du type par nom (ordre alphabétique sans casse), cent à la fois, puis
+« Charger la suite ». Chaque ligne (une **entrée** : une règle, une créature ou un objet ; `gabarit` dans les données) : le nom et la première ligne du contenu (tronquée). Un clic ouvre
+l'entrée **sur place** (le nom, le contenu en texte brut, AD-58).
 
 *Le MJ d'un univers rattaché* : « Ajouter une règle » / « Ajouter une créature » / « Ajouter un
 objet » ouvre un formulaire sur place : « Nom » (1 à 120 caractères), « Contenu » (20 000 au plus,
-facultatif), « Ajouter » et « Annuler » ; sur un gabarit ouvert, « Modifier » (nom et contenu),
-« Enregistrer », « Annuler ». Le type d'un gabarit ne change jamais ; rien ne se supprime. Enregistrer
+facultatif), « Ajouter » et « Annuler » ; sur une entrée ouverte, « Modifier » (nom et contenu),
+« Enregistrer », « Annuler ». Le type d'une entrée ne change jamais ; rien ne se supprime. Enregistrer
 envoie la version lue (AD-81).
 *Un Joueur d'un univers rattaché* : la même page, lecture seule, sans bouton d'ajout ni de
 modification.
@@ -404,12 +404,12 @@ nom. » (« Une règle… », « Un objet… ») ; droit retiré entre-temps (r�
 
 | État | Ce qu'on voit | Ce qu'on peut faire |
 |---|---|---|
-| vide | l'onglet sans gabarit : texte ci-dessus | MJ : ajouter |
+| vide | l'onglet sans entrée : texte ci-dessus | MJ : ajouter |
 | chargement | le titre absent, « Chargement du système… » | — |
 | erreur | « Impossible de charger ce système. » ; échec d'écriture : « L'action n'a pas abouti. Réessayez. », saisie conservée | « Réessayer » |
 | connexion perdue | le bandeau ; « Ajouter », « Enregistrer » désactivés, le texte en cours reste | lire |
-| refus | univers inconnu, sans rôle du compte, ou **non rattaché à un système** : « Page introuvable. » (E-3 ne montre pas de lien dans ce cas ; un MJ rattache d'abord un système par E-14) | « Mes univers » |
-| contenu long | 100 gabarits : « Charger la suite » ; nom tronqué par « … » avec infobulle ; contenu de 20 000 caractères passe à la ligne et s'affiche en entier ; au-delà : « Erreur : 20 000 caractères au plus. » ; nom au-delà de 120 : « Erreur : 120 caractères au plus. » | idem |
+| refus | univers inconnu, sans rôle du compte, ou **non rattaché à un système** : « Page introuvable. » (E-3 ne montre pas de bloc dans ce cas ; un MJ rattache d'abord un système par E-14) | « Mes univers » |
+| contenu long | 100 entrées : « Charger la suite » ; nom tronqué par « … » avec infobulle ; contenu de 20 000 caractères passe à la ligne et s'affiche en entier ; au-delà : « Erreur : 20 000 caractères au plus. » ; nom au-delà de 120 : « Erreur : 120 caractères au plus. » | idem |
 
 *Critères.*
 - Étant donné Antor, MJ de Lame d'Ébène rattaché à « CoF Mini », quand il ajoute la créature « Garde
@@ -422,7 +422,7 @@ nom. » (« Une règle… », « Un objet… ») ; droit retiré entre-temps (r�
   l'API, elle est refusée.
 - Étant donné « Admin » (groupe `parents`, MJ de l'univers « Brume » qu'il vient de créer, non
   rattaché), quand il ouvre `/univers/<Brume>/systeme`, alors il voit « Page introuvable. » ; et
-  sur la vue d'ensemble de « Brume » il n'y a pas de lien « Système de jeu ».
+  sur la vue d'ensemble de « Brume » il n'y a pas de bloc « Système de jeu ».
 - Étant donné deux onglets sur la même créature, quand le second enregistre après le premier, alors
   il voit « Cette entrée a changé depuis que vous l'avez ouverte. » et son texte reste.
 

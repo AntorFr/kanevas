@@ -57,8 +57,9 @@ par le client : il lit comme un Joueur **qui n'est l'auteur d'aucune section** (
 
 ## Migration `kanevas-systemes`
 
-> Le fichier prend le numéro qui suit le dernier présent sur la branche ; à la fusion, la phase merge
-> le recale sur le dernier fusionné si une autre tranche est entrée avant (AD-51), et ce fichier le dit. Deux tables, une colonne : aucune entité de plus que le cadrage.
+> Pendant le build, le fichier prend le numéro qui suit le dernier présent sur la branche : **numéro
+> provisoire**. Il n'est définitif qu'à la fusion : la phase merge le recale sur le dernier fusionné si
+> une autre tranche est entrée avant (AD-51), et corrige alors cette note. Deux tables, une colonne : aucune entité de plus que le cadrage.
 
 | Table | Colonnes (hors clés) | Contraintes |
 |---|---|---|
