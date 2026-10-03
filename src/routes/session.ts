@@ -55,7 +55,7 @@ export async function registerSessionRoutes(app: FastifyInstance) {
     return { loginUrl: urlConnexion() };
   });
 
-  // Unknown addresses: /api stays a plain 404; elsewhere no session means the sign-in.
+  // Unknown addresses: /api answers 404 even without a session; elsewhere no session means the sign-in.
   app.setNotFoundHandler(async (request, reply) => {
     const chemin = request.url.split('?')[0]!;
     if (!chemin.startsWith('/api') && !request.session) {

@@ -12,9 +12,9 @@ import {
 } from '../services/oidc.js';
 
 // Cookie signé portant state + PKCE entre la redirection Authelia et le
-// callback. Secret de signature généré à chaque démarrage du process (voir
-// app.ts) : la transaction ne survit qu'à l'aller-retour d'un même
-// utilisateur sur la même instance, pas un secret d'exploitation à gérer.
+// callback. Signé avec le secret des cookies (app.ts) : SESSION_SECRET, sinon
+// la clé persistée dans <data>/session.key (seule une base :memory: en reçoit
+// une jetable à chaque démarrage).
 const OIDC_TX_COOKIE = 'kanevas_oidc_tx';
 
 const oidcTxSchema = z.object({
@@ -137,8 +137,8 @@ export async function registerAuthRoutes(app: FastifyInstance) {
         throw new Error('Missing ID token claims.');
       }
 
-      // Le scope "groups" est exposé via userinfo ; ce socle ne le lit pas
-      // encore (aucune résolution de rôle, AD-9) — kanevas-identite le fera.
+      // Le scope "groups" est exposé via userinfo : les groupes sont lus plus bas
+      // et portés par la session, sans résolution de rôle d'univers (AD-9).
       const userInfo = await oidcClient.fetchUserInfo(
         configuration,
         tokens.access_token,

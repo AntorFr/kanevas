@@ -32,4 +32,4 @@ base s'ouvre dans `buildApp` (`app.db`). Erreurs : `ErreurService.code`
 (`/connexion-bouchon`, refus de démarrer avec une variable `OIDC_*`), garde (401 sous `/api`,
 redirection ailleurs ; routes inconnues restent 404), `GET /api/moi`, `POST /api/auth/logout`,
 pages « Connexion refusée / indisponible » (le callback ne rend la page que si `Accept` contient
-`text/html`, sinon l'ancien JSON 401, pour garder les tests existants). Pas encore de tests.
+`text/html`, sinon l'ancien JSON 401, pour garder les tests existants). Testée (session-bouchon, session-prod).
