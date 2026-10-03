@@ -73,3 +73,29 @@ Migrations SQL numérotées, appliquées au démarrage, sans ORM (AD-14). **La t
 connaît ses sept types dès sa création** : aucune tranche ne la recrée. L'ordre des migrations
 suit l'ordre de fusion des tranches, et chaque tranche prend le numéro suivant au moment où elle
 se fusionne, pas avant (AD-51).
+
+## Migration `kanevas-fichiers` (numéro pris à la fusion, AD-51 : le suivant)
+
+Une table ; aucune entité nouvelle (la pièce jointe est celle du cadrage). Les octets ne sont pas
+en base (AD-7) : ils vivent sous `/data/attachments/`.
+
+| Objet | Colonnes (hors clés) | Contraintes |
+|---|---|---|
+| `pieces_jointes` | `id`, `section_id`, `nom` (nom d'origine), `type` (type MIME **déterminé par le serveur**, AD-66), `taille` (octets), `fichier` (nom sur disque, UUID, AD-35), `secrete` (booléen), `cree_le` | `section_id` → `sections` **ON DELETE CASCADE** (retirer une section retire ses lignes) ; `fichier` unique ; `nom` 1 à 200 caractères ; `taille` > 0 ; `secrete` faux à la création sauf demande du MJ ; index `pieces_jointes (section_id)` |
+
+**Sur le disque** : `/data/attachments/<fichier>` (un fichier plat par pièce, nom = UUID) ; les envois
+en cours s'écrivent dans `/data/attachments/tmp/` puis passent d'un coup à leur nom définitif
+(AD-65) ; le dossier `tmp/` est vidé au démarrage. Une ligne et son fichier vont ensemble : jamais
+de ligne sans fichier, et un fichier sans ligne n'est pas atteignable (nom aléatoire, aucune route
+statique).
+
+Ce que la base ne dit pas, et que le service porte, avec sa raison (la règle croise la section, le
+rôle et le mode) : **50 pièces jointes** au plus par section ; ajouter ou retirer demande
+d'**écrire** la section ; `secrete` ne se pose et ne se lève que par un MJ ; une pièce se **lit** si
+la section est lisible et, si elle est secrète, par un MJ hors mode Joueur ; un fichier vide est refusé.
+Ajouter ou retirer une pièce ne change ni la `version` ni `modifie_le` de la section (ce n'est
+pas une écriture de son contenu, AD-59).
+
+Retirer une pièce, ou une section, supprime la ligne **puis** le fichier du disque ; si la
+suppression du fichier échoue, la ligne est déjà partie et l'orphelin est inatteignable (risque
+accepté : il n'y a pas de balayage des orphelins en V1).

@@ -30,13 +30,17 @@ Ni relations, ni recherche, ni pièces jointes, ni campagnes, ni assistant : tra
   fonctions qui lisent ou écrivent les données (AD-2) ; `src/routes/` : routes `/api` minces.
 - `frontend/` : application React/Vite (AD-57) ; `frontend/src/ui/tokens.css` et
   `frontend/src/ui/` : tokens et composants de `docs/charte.md` ; son build est servi par Fastify.
+- `kanevas-fichiers` y ajoute `src/services/stockage.ts` (écrire, lire, supprimer un fichier du volume),
+  `src/services/pieces-jointes.ts` (déposer, marquer, retirer, lire, garde) et leurs routes `/api`
+  (AD-65 à AD-67), puis le bloc Pièces jointes de E-9.
 - `src/services/llm/` : transports LLM (`transport.ts`, `anthropic-transport.ts`,
   `claude-agent-transport.ts`), repris d'Antre-du-maitre, branchés nulle part.
 - `Dockerfile` (multi-stage, utilisateur `node`) et
   `.github/workflows/docker-publish.yml` (tests puis image GHCR).
 
-Volume `/data` : `kanevas.db` (SQLite, WAL) et `session.key` (secret de session, 0600) ; le
-dossier des pièces jointes n'existe pas encore.
+Volume `/data` : `kanevas.db` (SQLite, WAL), `session.key` (secret de session, 0600) et
+`attachments/` (les pièces jointes, un fichier par UUID, AD-65 ; `attachments/tmp/` pour les envois
+en cours, vidé au démarrage).
 
 ## Invariants
 
@@ -174,6 +178,9 @@ Les numéros sont stables. Une décision retirée garde son numéro, avec ce qui
 | AD-57 | **Frontend** : React et Vite dans `frontend/`, un seul build servi par l'application Fastify (`@fastify/static`, repli sur `index.html` pour toute adresse d'écran, derrière la garde de session) ; l'image Docker construit les deux. Pas de rendu serveur, sauf les pages que la session ne peut pas précéder : choix du compte de test (AD-55), « Connexion refusée », « Connexion indisponible ». |
 | AD-58 | **Contenu de section en texte brut** : des paragraphes séparés par des lignes vides, affichés comme tels ; ni Markdown ni HTML. Écarté : Markdown (rendu à assainir, choix d'éditeur) — rouvrable sans migration, le contenu est déjà du texte. |
 | AD-59 | **Écritures de section concurrentes** : chaque section porte un entier `version`, augmenté à chaque écriture de son contenu ; l'écriture envoie la version qu'elle a lue ; si elle n'est plus la courante, elle est refusée (HTTP 409, code `section_modifiee`) et rien n'est écrit. Même mécanisme que le « la section a changé » de B-21 pour les propositions (AD-49). |
+| AD-65 | **Stockage et dépôt des fichiers** : un module `src/services/stockage.ts`, sans notion de section, écrit un flux dans `/data/attachments/tmp/<uuid>`, puis le déplace sur `/data/attachments/<uuid>` (même volume : un renommage) ; il lit en flux et supprime. Il sert aussi aux fonds de carte (AD-40). **`deposerPieceJointe(compte, mode, sectionId, flux, nom, secrete)` est la seule fonction d'envoi** : la route et l'outil image (AD-44) l'appellent. Elle vérifie le droit d'écrire **avant** de lire le flux, puis une seconde fois dans la transaction qui écrit la ligne (le droit peut être retiré pendant un envoi long) ; un échec ou une annulation n'écrit ni ligne ni fichier. Pas de limite de taille (AD-7), un fichier vide refusé, 50 pièces par section. Écarté : base64 en JSON (mémoire, 33 % de plus), limite de taille (décision AD-7). |
+| AD-66 | **Ce qu'on sert, et comment** : le type d'une pièce est **déterminé par le serveur à l'envoi, par la signature des premiers octets** (PNG, JPEG, GIF, WebP) ; le type annoncé par le navigateur est ignoré. Une image reconnue est servie en ligne sous son type ; **tout le reste** (SVG, HTML, PDF…) l'est en `application/octet-stream` avec `Content-Disposition: attachment` et le nom d'origine encodé (`filename*`). Toujours : `X-Content-Type-Options: nosniff`, `Content-Security-Policy: default-src 'none'; sandbox`, `Cache-Control: private, no-store`. Écarté : servir en ligne selon l'extension (un fichier « .png » qui est du HTML) ; aperçu PDF intégré (hors tranche). |
+| AD-67 | **Pas de route de liste des pièces** : elles voyagent avec la fiche, par section, déjà filtrées par la garde et le mode du lecteur (`{id, nom, taille, image, secrete}` ; `secrete` n'est rendu qu'au MJ hors mode Joueur). Un lecteur n'apprend ni le nombre ni l'existence de ce qu'il ne lit pas. Routes : ajouter (`multipart`, un fichier par requête, champ `fichier`, champ `secrete`), marquer (`secrete`), retirer, et lire le fichier (sans paramètre de mode : le droit réel du compte ; le mode Joueur ne change que ce que la fiche montre). Un compte qui ne lit pas la section, ou une pièce secrète pour un non-MJ : **404**, de corps identique à celui d'un identifiant inconnu ; qui lit sans écrire reçoit 403 à l'ajout. |
 
 ## Déploiement et exploitation
 

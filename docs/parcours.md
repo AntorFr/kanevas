@@ -176,6 +176,9 @@ dernier MJ — refusé avec la raison.
 1. Le MJ a créé la fiche de son PJ et lui en a confié une section en auteur (E-9).
 2. Le joueur l'écrit sur la **fiche** (E-9), y dépose un portrait, ou demande à son **assistant**
    (E-12) d'y ajouter un paragraphe.
+*Échec* (dépôt) : fichier vide, section déjà à 50 pièces jointes, envoi interrompu ou droit
+d'écriture retiré — le fichier n'est pas attaché, la raison est dite sur la section (E-9), rien n'est
+laissé à moitié.
 
 ### P-8 — Monter un univers sur un système partagé (MJ)
 1. **Paramètres de l'univers** (E-14) : il choisit un système du catalogue, ou en crée un.
