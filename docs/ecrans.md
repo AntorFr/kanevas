@@ -42,7 +42,7 @@ bascule existe (fiche, carte).
 | **E-9 Fiche** | E-8 ; un token ; un lien ; E-13 | lire et écrire les sections permises ; ajouter, réordonner, retirer une section, régler son audience, relier (MJ) ; déposer, marquer secrète, retirer une pièce jointe ; bascule mode Joueur (MJ). Un compte-rendu s'ouvre ici. | P-3 à P-7 |
 | **E-10 Cartes** | nav Cartes | les cartes lisibles ; créer une carte illustrée (avec son image de fond) ou un graphe (MJ) | P-3, P-9 |
 | **E-11 Carte** | E-10 ; E-3 | carte illustrée : fond, tokens ; graphe : nœuds et liens. MJ : déposer ou changer le fond, placer, configurer, rendre visible, mode Joueur. Joueur : ouvrir la fiche d'un token. | P-3, P-6, P-9 |
-| **E-12 Assistant** | bouton flottant, sur tout écran d'univers | converser ; voir ce que l'agent a écrit, avec un lien ; MJ : propositions de mise à jour (actuel/proposé, **Appliquer**, **Abandonner**), images générées | P-3, P-5, P-6, P-7 |
+| **E-12 Assistant** | bouton flottant, sur tout écran d'univers | converser ; voir ce que l'assistant a écrit, avec un lien ; MJ : propositions de mise à jour (actuel/proposé, **Appliquer**, **Abandonner**), images générées | P-3, P-5, P-6, P-7 |
 | **E-13 Comptes-rendus** | nav Comptes-rendus ; E-3 | tous les CR lisibles de l'univers, du plus récent, avec leur campagne | P-4, P-5 |
 | **E-14 Paramètres de l'univers** | nav Univers (MJ) | nom, description, système de jeu (choisir dans le catalogue, en créer un) | P-8 |
 | **E-15 Système de jeu** | E-14 ; lien depuis E-3 | le référentiel commun : règles, créatures, objets ; ajouter, modifier (MJ d'un univers rattaché) | P-8 |
@@ -658,8 +658,11 @@ bas :
 - **sous une réponse, les écritures** : un bloc « Écrit par l'assistant » par événement (AD-76), le
   libellé (« Section « Notes de la table » complétée », « Scénario « Acte III — La crypte » créé
   dans La Couronne brisée ») et un lien « Ouvrir » vers E-9 (la fiche), E-7 (le scénario) ou E-6
-  (la campagne) ;
-- **la saisie** : le champ « Demander à Kanevas » (étiquette visible), et « Envoyer » (Entrée
+  (la campagne). Les quatre écritures possibles : « Section « Notes de la table » complétée »
+  (`ajouter_a_section`, lien vers E-9), « Section « Vérité » modifiée » (`modifier_section`, lien
+  vers E-9), « Campagne « La Couronne brisée » créée » (`creer_campagne`, lien vers E-6), « Scénario
+  « Acte III — La crypte » créé dans La Couronne brisée » (`creer_scenario`, lien vers E-7) ;
+- **la saisie** : le champ, étiqueté « Demander à Kanevas » par une étiquette visible au-dessus de lui, et « Envoyer » (Entrée
   envoie, Maj+Entrée va à la ligne).
 
 Le **fil vit dans le navigateur**, dans un contexte du shell d'univers (AD-28) : il survit à un
@@ -668,22 +671,25 @@ changement d'univers et à la déconnexion ; « Nouvelle conversation » le vide
 nulle part (ni stockage du navigateur, ni serveur). Le client envoie le message et les 20 derniers
 messages du fil (AD-75).
 
-**Ce que chaque rôle y voit.** Le MJ : le catalogue MJ (chercher, lire, modifier, ajouter,
-campagnes, créer une campagne ou un scénario). Le Joueur : le catalogue Joueur. Dans les deux cas
+**Ce que chaque rôle y voit.** Le Joueur : chercher, lire une fiche, lire une section, modifier une
+section, ajouter un paragraphe à une section, lister les campagnes. Le MJ : les mêmes, plus créer
+une campagne et créer un scénario. Un Joueur qui demande de créer un scénario n'a pas l'outil :
+l'assistant répond qu'il ne peut pas, sans événement et sans rien créer (le texte est celui du
+modèle, il n'est pas fixé ; ce qu'on vérifie est l'absence d'écriture). Dans les deux cas
 l'assistant ne lit et n'écrit que ce que la personne lit et écrit : une section fermée est
 « Introuvable. », une section lisible mais non écrite « Vous ne pouvez pas modifier cette
-section. » (AD-74). Cette tranche **ne dessine ni proposition de mise à jour ni image** : elles
+section. » (AD-74). Cette tranche **ne donne aucun outil sur les cartes ni les graphes** (écarté, AD-74). Elle **ne dessine ni proposition de mise à jour ni image** : elles
 s'inscrivent au registre de blocs (`kanevas-monde`, `kanevas-images`).
 
 | État | Ce qu'on voit | Ce qu'on peut faire |
 |---|---|---|
 | vide (fil sans message) | « Demandez-moi de chercher, de résumer ou d'écrire dans ce que vous pouvez lire et écrire. Exemple : « Que sait-on d'Aldric ? » » | écrire ; fermer |
-| chargement (disponibilité) | le bouton est présent ; dans le panneau, « Chargement… » à la place du champ | fermer |
+| chargement (disponibilité) | le bouton est présent ; dans le panneau, « Chargement… » à la place du champ ; si l'appel échoue (serveur muet, erreur), le panneau passe à « Je n'ai pas pu répondre — réessayer » avec un bouton « Réessayer » qui relit la disponibilité | fermer ; réessayer |
 | réponse en cours | le message envoyé apparaît ; « Kanevas réfléchit… » (`role="status"`) ; « Envoyer » affiche « … » et est désactivé ; le champ reste lisible | fermer (la réponse arrive dans le fil) |
-| erreur | « Je n'ai pas pu répondre — réessayer » (`role="alert"`), sans événement ; demande déjà en cours (429) : « Une demande est déjà en cours. Patientez. » | « Réessayer » renvoie la même question ; saisir autre chose |
+| erreur | « Je n'ai pas pu répondre — réessayer » (`role="alert"`), sans événement, pour toutes les causes (délai de 120 s, erreur de transport) : la personne ne les distingue pas ; demande déjà en cours (429) : « Une demande est déjà en cours. Patientez. » ; la saisie n'est jamais perdue : le champ la garde, ou « Réessayer » la renvoie | « Réessayer » renvoie la même question ; saisir autre chose |
 | indisponible (sans jeton, hors bouchon, AD-77) | « L'assistant n'est pas disponible pour le moment. » ; champ et « Envoyer » désactivés (`aria-disabled`) | lire le fil, fermer |
-| connexion perdue | le bandeau commun ; le fil reste lisible ; champ et « Envoyer » désactivés | lire, ouvrir les liens |
-| refus | le compte sans rôle n'a pas le bouton ; un refus d'outil est une réponse de l'assistant (« Introuvable. »), pas un écran d'erreur ; session expirée : la personne est menée à la connexion, le fil est perdu | — |
+| connexion perdue | le bandeau commun ; le fil reste lisible ; champ et « Envoyer » désactivés. Perdue pendant « Kanevas réfléchit… » : la réponse est perdue, l'état passe à l'erreur ci-dessus avec « Réessayer » (désactivé tant que la connexion n'est pas revenue) ; au retour de la connexion, le bandeau disparaît et le champ est réactivé | lire, ouvrir les liens |
+| refus | le compte sans rôle n'a pas le bouton ; un refus d'outil est une réponse de l'assistant, pas un écran d'erreur — « Introuvable. », « Vous ne pouvez pas modifier cette section. », « La section a changé depuis que vous l'avez lue. Relisez-la. » —, sans événement ; session expirée : la personne est menée à la connexion, le fil est perdu | — |
 | contenu long | message de plus de 2 000 caractères : « Erreur : 2 000 caractères au plus. » sous le champ, « Envoyer » désactivé ; fil de plus de 20 messages : la note « Seuls les 20 derniers messages sont transmis à l'assistant. » ; réponse longue : passe à la ligne, le fil défile ; titre de 120 caractères dans un libellé : passe à la ligne | idem |
 
 *Critère.* Étant donné Léa Joueuse de « Lame d'Ébène », quand elle demande « Que sait-on d'Aldric ? »,

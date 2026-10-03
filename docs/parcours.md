@@ -138,7 +138,8 @@ dernier MJ — refusé avec la raison.
 ### P-3 — Préparer la séance du samedi (MJ, dimanche soir, bureau)
 1. **Vue d'ensemble** (E-3) : les campagnes actives, les derniers CR, la préparation en cours.
 2. **Campagne** (E-6) : il crée la campagne (« En préparation ») ou ouvre l'existante et la passe
-   « Active » ; il relit les CR les plus récents, crée ou ouvre un **scénario** (E-7) et l'écrit.
+   « Active » ; il relit les CR les plus récents, crée ou ouvre un **scénario** (E-7) et l'écrit
+   (ou demande à son **assistant** (E-12) de créer la campagne ou le scénario).
 3. Il coche ou ajoute des tâches de **préparation** (E-6).
 4. **Lore** : depuis la **liste d'un type** (E-8), il crée un PNJ ; sur la **fiche** (E-9), il
    écrit « Apparence » (lue des joueurs) et « Vérité — MJ seul », relie le PNJ à sa faction,
@@ -171,11 +172,15 @@ dernier MJ — refusé avec la raison.
    seulement ce que la table sait.
 3. Il ouvre la **carte** (E-11), touche un token, relit la fiche.
 4. Ou il demande à son **assistant** (E-12) « que sait-on d'Aldric ? ».
+*Échec* : il demande de lire « Vérité » : l'assistant répond « Introuvable. », comme l'interface ;
+l'assistant est indisponible ou en erreur : le panneau le dit, et la fiche reste lisible (E-9).
 
 ### P-7 — Tenir l'histoire de son personnage (joueur)
 1. Le MJ a créé la fiche de son PJ et lui en a confié une section en auteur (E-9).
 2. Le joueur l'écrit sur la **fiche** (E-9), y dépose un portrait, ou demande à son **assistant**
    (E-12) d'y ajouter un paragraphe.
+*Échec* : il demande d'écrire dans une section qu'il lit sans l'écrire : « Vous ne pouvez pas modifier
+cette section. », rien n'est écrit.
 
 ### P-8 — Monter un univers sur un système partagé (MJ)
 1. **Paramètres de l'univers** (E-14) : il choisit un système du catalogue, ou en crée un.
