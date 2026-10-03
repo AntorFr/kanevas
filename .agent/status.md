@@ -1,6 +1,6 @@
 # Status — kanevas
 
-> MàJ : 2026-10-02
+> MàJ : 2026-10-03
 
 **État :** socle posé sur `feature/kanevas-socle` (PR ouverte, non fusionnée) :
 `/healthz` (`kanevas <version>`, version = build-arg `APP_VERSION`), OIDC
@@ -18,3 +18,11 @@ invariants : `ARCHITECTURE.md`.
 
 **Suivant :** `kanevas-identite` (session, rôles AD-9, première écriture dans
 `/data`).
+
+**Tâche `kanevas-pf-donnees` (branche `task/kanevas-pf-donnees`) :** `src/db/`
+(better-sqlite3, migration 0001, runner idempotent) et `src/services/`
+(`comptes`, `univers`, `membres`, `fiches`, `sections`, `droits`) faits ; la
+base s'ouvre dans `buildApp` (`app.db`). Erreurs : `ErreurService.code`
+(`introuvable` 404, `refuse` 403, `invalide` 400, `conflit` 409
+`section_modifiee`). Sans `/data` en production, base en mémoire avec avertissement
+(le test e2e de `/healthz` tourne ainsi). Pas encore de tests de service ni de route.

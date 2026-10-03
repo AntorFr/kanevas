@@ -1,4 +1,5 @@
 import { config as loadEnv } from 'dotenv';
+import { existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { z } from 'zod';
 
@@ -12,6 +13,8 @@ const envSchema = z.object({
   // par la CI : le build-arg Docker `APP_VERSION` (voir Dockerfile), jamais
   // `package.json` — deux sources non synchronisées sinon (plan.md).
   APP_VERSION: z.string().min(1).default('0.0.0-dev'),
+  // SQLite file (AD-5). Defaults: the /data volume in production, memory in tests.
+  DB_PATH: z.string().min(1).optional(),
   PORT: z.coerce.number().int().positive().default(3001),
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
   // Les quatre vont ensemble : en poser une partie laisse OIDC non configuré
@@ -28,3 +31,16 @@ const envSchema = z.object({
 });
 
 export const env = envSchema.parse(process.env);
+
+// Production writes to the /data volume (the image creates it). Without that
+// directory nothing durable can be written: fall back to memory and say so
+// (app.ts) rather than refuse to start — /healthz must answer on a bare host.
+export const dbPath =
+  env.DB_PATH ??
+  (env.NODE_ENV === 'production'
+    ? existsSync('/data')
+      ? '/data/kanevas.db'
+      : ':memory:'
+    : env.NODE_ENV === 'test'
+      ? ':memory:'
+      : './data/kanevas.db');

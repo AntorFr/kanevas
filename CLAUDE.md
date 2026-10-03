@@ -19,9 +19,12 @@
 - Release: `git tag vX.Y.Z && git push origin vX.Y.Z` builds and publishes
   `ghcr.io/antorfr/kanevas:X.Y.Z` (package public). Deploying is a separate
   change in `k8s-home-lab` (chart version + image tag pinned there).
-- No ORM, no SQL table in this repo yet: AD-5 (SQLite) only reserves the
-  volume mount (`/data`), `kanevas-identite` is the first feature to write to
-  it. Don't add a database dependency "to be ready" — see `socle-projet`.
+- No ORM: SQLite through `better-sqlite3` (Node 20 has no `node:sqlite`),
+  numbered SQL migrations in `src/db/migrations/` applied at startup by
+  `src/db/db.ts` (AD-14; `npm run build` copies them to `dist/`). Tables are
+  those of `docs/donnees.md`; only `src/services/` reads or writes them
+  (AD-2) — routes and agent tools never carry SQL. A migration takes the next
+  number when its slice merges (AD-51).
 - `services/llm/*` (transport.ts, anthropic-transport.ts,
   claude-agent-transport.ts) are reprised from `Antre-du-maitre` (AD-10) and
   unused by any route yet — kept compiling, not wired in. The admin
