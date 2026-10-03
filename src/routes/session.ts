@@ -9,6 +9,8 @@ import {
   SESSION_MAX_AGE_S,
   type Session,
 } from '../services/session.js';
+import { registerErreurs } from './erreurs.js';
+import { registerUniversRoutes } from './univers.js';
 import { pageIntrouvable, urlConnexion } from './pages.js';
 
 declare module 'fastify' {
@@ -74,7 +76,9 @@ export async function registerSessionRoutes(app: FastifyInstance) {
       }
       return reply.redirect(urlConnexion());
     });
+    registerErreurs(garde);
     registerGuardedRoutes(garde);
+    registerUniversRoutes(garde);
   });
 }
 
