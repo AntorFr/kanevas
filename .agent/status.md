@@ -47,3 +47,10 @@ Pas de navigateur dans le pod : rendu non vérifié visuellement, ni test de con
 dans `frontend/src/ecrans/`. Blocs de E-3 : un fichier dans `ecrans/vue-ensemble/blocs/` (export
 par défaut `Bloc`), trouvé par `vue-ensemble/registre.ts`. Le service refuse aussi une
 description de plus de 500 caractères. Pas encore de tests ; rendu non vérifié au navigateur (pas de navigateur dans le pod).
+
+**Tâche `kanevas-pf-routes-fiches` (branche `task/kanevas-pf-routes-fiches`) :** `src/routes/fiches.ts`
+(portée gardée, aucune garde propre) : `POST|GET /api/univers/:id/fiches` (`?type`, `?curseur` ; rend
+`{fiches, suivant}`, 100 au plus), `GET .../fiches/:fid`, `POST .../fiches/:fid/sections`,
+`PUT .../fiches/:fid/ordre` (`{ids}`), `GET|PATCH|DELETE .../sections/:sid` (PATCH : `titre` et audience
+`joueursLisent`, `joueursEcrivent`, `auteurId`, `auteurLit`, `auteurEcrit`), `PUT .../sections/:sid/contenu`
+(`{contenu, version}`, 409 `section_modifiee`). Mode Joueur : `?mode=joueur` sur les lectures. Pas encore de tests.
