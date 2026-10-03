@@ -2,9 +2,9 @@ import type { FastifyInstance } from 'fastify';
 
 import { env } from '../config/env.js';
 
-// Route de santé publique (aucune vérification OIDC) : convention de sonde
-// (liveness/readiness). Réponse texte brut "kanevas <version>", la version
-// venant exclusivement de APP_VERSION (technique.md, Interfaces).
+// Public health route (no OIDC check): probe convention (liveness/readiness).
+// Plain-text answer "kanevas <version>", the version coming only from
+// APP_VERSION (technique.md, Interfaces).
 export async function registerHealthRoutes(app: FastifyInstance) {
   app.get('/healthz', async (_request, reply) => {
     reply.type('text/plain; charset=utf-8');

@@ -8,21 +8,21 @@ import type {
 } from './transport.js';
 
 /**
- * Transport Claude Agent SDK : consomme l'abonnement Claude (Pro/Max) au lieu
- * de facturer une clé API. Le SDK pilote le runtime Claude Code embarqué dans
- * le paquet npm et s'authentifie via CLAUDE_CODE_OAUTH_TOKEN (généré une fois
- * avec `claude setup-token`) ou, en dev, via les credentials `claude login`
- * de la machine.
+ * Claude Agent SDK transport: uses the Claude subscription (Pro/Max) instead
+ * of billing an API key. The SDK drives the Claude Code runtime embedded in
+ * the npm package and authenticates through CLAUDE_CODE_OAUTH_TOKEN (generated
+ * once with `claude setup-token`) or, in dev, through the machine's
+ * `claude login` credentials.
  *
- * Usage volontairement minimal : un tour unique, aucun outil, prompt système
- * custom — le SDK ne sert que de tuyau vers le modèle.
+ * Deliberately minimal use: a single turn, no tool, custom system prompt —
+ * the SDK is only a pipe to the model.
  *
- * Reprise sélective d'Antre-du-maitre (AD-10) : la fenêtre admin qui génère
- * et stocke un token sur disque (`services/claude-token.ts`) n'est pas reprise
- * ici — ce serait une route de contenu, hors périmètre d'un socle qui
- * n'appelle encore aucun LLM (fonctionnelle.md, hors périmètre). À
- * réintroduire par la feature qui active réellement ce transport, si le
- * besoin s'y confirme.
+ * Selective take-over of Antre-du-maitre (AD-10): the admin window that
+ * generates and stores a token on disk (`services/claude-token.ts`) is not
+ * taken over here — it would be a content route, out of scope for a base that
+ * still calls no LLM (fonctionnelle.md, out of scope). To be reintroduced by
+ * the feature that actually activates this transport, if the need is
+ * confirmed.
  */
 export class ClaudeAgentTransport implements LlmTextTransport {
   readonly name = 'claude-agent';
@@ -74,9 +74,9 @@ export class ClaudeAgentTransport implements LlmTextTransport {
 }
 
 /**
- * Le SDK ne prend qu'un prompt utilisateur par requête : les tours de
- * correction (user → assistant fautif → consigne) sont repliés en un seul
- * message qui cite la réponse fautive.
+ * The SDK takes a single user prompt per request: correction turns
+ * (user → faulty assistant → instruction) are folded into one message that
+ * quotes the faulty answer.
  */
 function renderPrompt(messages: LlmTransportMessage[]): string {
   if (messages.length === 1 && messages[0]) {

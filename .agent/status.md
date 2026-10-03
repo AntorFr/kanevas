@@ -41,3 +41,4 @@ leur adresse ; tiroir « Menu » sous 760 px), thème Clair/Sombre/Système (loc
 bouchon (`<meta name="kanevas-bouchon">` injecté dans `index.html` par le serveur) et connexion
 perdue. Le serveur sert `dist/public` derrière la garde ; le Dockerfile construit les deux.
 Pas de navigateur dans le pod : rendu non vérifié visuellement, ni test de contraste (testeur).
+Bandeau « Connexion perdue » : sondé toutes les 3 s sur `/healthz` tant qu'il est levé, il disparaît seul au retour du serveur. Commentaires de code traduits en anglais.
