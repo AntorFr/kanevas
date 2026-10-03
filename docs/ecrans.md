@@ -33,7 +33,7 @@ bascule existe (fiche, carte).
 |---|---|---|---|
 | **E-1 Accueil** | connexion ; logo | voir ses univers et son rôle dans chacun ; en créer un ; voir son identifiant | P-1, P-6 |
 | **E-2 Créer un univers** | E-1 | nom, description ; le créateur devient MJ | P-1 |
-| **E-3 Vue d'ensemble de l'univers** | E-1 ; sélecteur d'univers | la campagne active, les derniers CR, la préparation (MJ), les cartes visibles | P-3, P-4, P-6 |
+| **E-3 Vue d'ensemble de l'univers** | E-1 ; sélecteur d'univers ; E-5 (admin devenu membre) | la campagne active, les derniers CR, la préparation (MJ), les cartes visibles | P-2, P-3, P-4, P-6 |
 | **E-4 Membres** | nav Univers (MJ) | lister, ajouter par identifiant, changer le rôle, retirer | P-2 |
 | **E-5 Administration** | nav (admin d'instance) | lister les univers de l'instance, en gérer les membres — jamais le contenu | P-2 |
 | **E-6 Campagne** | nav Campagnes (liste) ; E-3 | liste des campagnes ; pour une campagne : statut, scénarios et « Nouveau scénario » (MJ), préparation (MJ), comptes-rendus, « Nouveau compte-rendu » | P-3, P-4 |
@@ -64,7 +64,7 @@ bouchon » — sans `E-n` ni six états, ils n'existent pas en production.
 | E-2 | créer | créer | créer |
 | E-3 | tout | sans préparation ni scénarios | — |
 | E-4 | tout | — | — (passe par E-5) |
-| E-5 | — (un admin qui est aussi MJ d'un univers garde E-5 par sa barre, section « Instance ») | — | lister les univers et leurs membres ; ajouter, changer un rôle, retirer un membre |
+| E-5 | — | — | lister les univers et leurs membres ; ajouter, changer un rôle, retirer un membre |
 | E-6 | tout | liste, statut, CR, « Nouveau compte-rendu » ; ni scénarios ni préparation (cachés) | — |
 | E-7 | tout | — | — |
 | E-8 | lire, chercher, créer | lire, chercher | — |
@@ -75,6 +75,8 @@ bouchon » — sans `E-n` ni six états, ils n'existent pas en production.
 | E-13 | tous les CR | les CR lisibles | — |
 | E-14 | tout | — | — |
 | E-15 | lire, écrire | lire | — |
+
+Un admin d'instance qui est aussi membre d'un univers, MJ ou Joueur, a dans cet univers la colonne de son rôle et garde E-5 par la section « Instance » de la barre ; hors de cet univers, la colonne Admin.
 
 Précisions de la matrice : créer une campagne, en changer le statut, créer un scénario sont au
 MJ seul. L'audience d'une section se règle en ligne sur la fiche (MJ). Créer une fiche ouvre une
@@ -356,13 +358,14 @@ contenu (fiches, comptes-rendus, cartes) n'est jamais affiché. », deux zones. 
 l'instance** : tous les univers, par nom (sans casse), chacun avec « N membres » (« 1 membre » au
 singulier), l'univers choisi portant le badge « Sélectionné » ; cent à la fois, puis « Charger la suite ». À droite (sous la liste sur téléphone, après
 un clic sur l'univers), **Membres — <nom de l'univers>** : la liste (identifiant, rôle MJ / Joueur,
-« Retirer <identifiant> »), un champ « Identifiant du compte », le rôle (Joueur par défaut) et « Ajouter » : le même
+« Retirer <identifiant> », comme la maquette d'E-4), un champ « Identifiant du compte », le rôle (Joueur par défaut) et « Ajouter » : le même
 geste, les mêmes refus et la même confirmation de retrait qu'E-4. Ajouter son propre identifiant, en
 MJ, est le moyen de lire le contenu : l'ajout apparaît dans la liste des membres que voit le MJ de
 l'univers ; une note sous le champ le dit : « Pour lire le contenu, l'admin s'ajoute lui-même comme
 membre : l'ajout apparaît dans la liste des membres que voit le MJ de l'univers. » Un admin membre
-qui se retire lui-même reste sur E-5, la liste se met à jour et l'univers quitte son accueil. Rien d'autre n'est montré de l'univers : pas de lien vers sa vue d'ensemble tant que
-l'admin n'en est pas membre ; une fois membre, le nom mène à E-3. Aucune action sur l'univers lui-même
+qui se retire lui-même reste sur E-5 ; l'univers reste sélectionné, sa liste se met à jour sans lui, et il disparaît de l'accueil (E-1) de l'admin. Rien d'autre n'est montré de l'univers : pas de lien vers sa vue d'ensemble tant que
+l'admin n'en est pas membre ; une fois membre, un lien « Ouvrir » à côté du nom mène à E-3 (un clic sur le
+nom sélectionne seulement l'univers). Aucune action sur l'univers lui-même
 (nom, description) : elles sont au MJ.
 
 Adresses : `/administration` (aucune sélection : « Choisissez un univers pour voir ses membres. »)
