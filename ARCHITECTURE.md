@@ -9,9 +9,11 @@ tranche (sur `main`, la cible ne décrit que ce qui est construit).
 
 # Aujourd'hui
 
-Ce dépôt ne porte encore que le **socle** : une
-application Fastify (Node 20, TypeScript) qui répond `GET /healthz`, une
-mécanique OIDC d'identité, une image publiée par la CI. Aucune fonction métier.
+Le socle (une application Fastify, Node 20, TypeScript, `GET /healthz`, une mécanique OIDC,
+une image publiée par la CI) porte, depuis `kanevas-premiere-fiche`, la **première
+fonction métier** : comptes, univers, membres, fiches et sections, avec leurs droits ; la session
+et le mode bouchon ; le frontend React qui les montre (accueil, univers, membres, lore, fiche).
+Ni relations, ni recherche, ni pièces jointes, ni campagnes, ni assistant : tranches suivantes.
 
 ## Carte
 
@@ -20,13 +22,21 @@ mécanique OIDC d'identité, une image publiée par la CI. Aucune fonction méti
   enregistrent.
 - `src/config/env.ts` : unique lecture de l'environnement (zod).
 - `src/routes/health.ts` : `registerHealthRoutes`, `GET /healthz`.
-- `src/routes/auth.ts`, `src/services/oidc.ts` : login et callback OIDC.
+- `src/routes/auth.ts`, `src/services/oidc.ts` : login et callback OIDC ; le callback ouvre la
+  session (`src/services/session.ts`, AD-56) et crée le compte à la première connexion.
+- `src/routes/bouchon.ts` : mode bouchon (AD-55), absent de la table des routes sans `KANEVAS_STUB`.
+- `src/db/` : ouverture du fichier SQLite, `migrations/0001-*.sql`, runner (AD-14).
+- `src/services/` : `comptes`, `univers`, `membres`, `fiches`, `sections`, `droits` — les seules
+  fonctions qui lisent ou écrivent les données (AD-2) ; `src/routes/` : routes `/api` minces.
+- `frontend/` : application React/Vite (AD-57) ; `frontend/src/ui/tokens.css` et
+  `frontend/src/ui/` : tokens et composants de `docs/charte.md` ; son build est servi par Fastify.
 - `src/services/llm/` : transports LLM (`transport.ts`, `anthropic-transport.ts`,
   `claude-agent-transport.ts`), repris d'Antre-du-maitre, branchés nulle part.
 - `Dockerfile` (multi-stage, utilisateur `node`) et
   `.github/workflows/docker-publish.yml` (tests puis image GHCR).
 
-Volume `/data` : emplacement réservé de SQLite et des pièces jointes, vide.
+Volume `/data` : `kanevas.db` (SQLite, WAL) et `session.key` (secret de session, 0600) ; le
+dossier des pièces jointes n'existe pas encore.
 
 ## Invariants
 
@@ -38,12 +48,15 @@ Volume `/data` : emplacement réservé de SQLite et des pièces jointes, vide.
 - **`/healthz` est public**, en texte brut `kanevas <version>`, sans donnée.
   `GET /api/auth/config` (`{oidcEnabled}`) l'est aussi ; aucune autre route
   publique n'expose de contenu.
-- **Le callback OIDC authentifie une identité et s'arrête là** : pas de session,
-  pas de rôle, pas de persistance. Les rôles par univers (AD-9) viendront d'une
-  lecture de `univers_membres`, dans la feature d'identité. Sans les quatre
-  variables `OIDC_*` (ou avec une partie seulement), login et callback répondent
-  404 ; une valeur vide ou invalide fait échouer le démarrage.
-- **Aucune table, aucun ORM** : AD-5 (SQLite) ne réserve que le volume.
+- **Le callback OIDC authentifie une identité, rien de plus** : il ouvre une session portant
+  l'identifiant et les groupes, et crée le compte ; **aucun rôle d'univers ne vient d'Authelia**
+  (AD-9), il se lit dans la table des membres à chaque requête. Sans les quatre variables
+  `OIDC_*` (ou avec une partie seulement), login et callback répondent 404 ; une valeur vide
+  ou invalide fait échouer le démarrage.
+- **Cinq tables, aucun ORM** : `comptes`, `univers`, `membres`, `fiches`, `sections` (migration
+  0001). Aucune requête SQL hors de `src/services/` et `src/db/`.
+- **Toute route hors `/healthz` et `/api/auth/*` est gardée par la session** ; sous `/api` un
+  défaut de session répond 401, ailleurs il redirige vers la connexion (AD-15).
 - **Rien n'appelle un LLM** : les transports compilent mais ne sont reliés à
   aucune route. Aucun secret `ANTHROPIC_API_KEY` n'est déployé.
 - Client OIDC : `client_id` `kanevas`, callback
@@ -59,9 +72,7 @@ Volume `/data` : emplacement réservé de SQLite et des pièces jointes, vide.
 - **OIDC câblé dès le socle**, pas différé : AD-10 le range parmi ce qui est
   repris au socle. `claude-token.ts` (fenêtre admin de setup-token, route de
   contenu) n'est **pas** repris : à rapporter avec la feature qui active un LLM.
-- **Pas de frontend ni de page canari** : `/healthz` en texte brut suffit. À
-  rouvrir si la bibliothèque de composants a besoin d'une page avant la première
-  page métier.
+- **Pas de page canari** : le frontend naît avec la première page métier (AD-57).
 - **Dépôt public, licence MIT** : le package GHCR public évite pull-secret et
   auto-bump Renovate ; MIT faute de politique de licence commune dans le parc.
   Renversé seulement si le code devait devenir confidentiel.
@@ -159,6 +170,10 @@ Les numéros sont stables. Une décision retirée garde son numéro, avec ce qui
 | AD-53 | **Toute action qu'un humain déclenche a un écran.** L'agent est un second chemin, jamais le seul ; ce que l'agent propose, un humain l'applique depuis un écran. |
 | AD-54 | L'assistant accède au modèle par l'abonnement Claude de Monsieur, via le transport `claude-agent` (décision de Monsieur, confirmée le 2026-10-03 en connaissance du fait suivant). Risque connu et accepté par Monsieur : la doc de l'Agent SDK n'autorise pas, sauf accord d'Anthropic, l'usage du login claude.ai ou de ses limites dans un produit tiers ; Kanevas sert d'autres comptes que le sien. Les identifiants sont posés par Monsieur. |
 | AD-55 | **Mode bouchon** (décision de Monsieur, 2026-10-03) : `KANEVAS_STUB=1` lance Kanevas sans aucun secret. La connexion se fait en choisissant un compte de test au lieu de passer par Authelia, l'assistant répond par un transport `bouchon` scripté qui appelle les mêmes outils, l'image vient d'un adaptateur `bouchon` qui rend une image fixe. Tout le reste est réel : base, droits, routes, outils. Un bandeau le dit sur chaque page ; l'application refuse de démarrer en bouchon dès qu'une seule variable `OIDC_*` est posée. Les tests et les pods de la chaîne tournent en bouchon. |
+| AD-56 | **Session** : un cookie signé (`HttpOnly`, `SameSite=Lax`, `Secure` hors bouchon et hors test) porte l'identifiant et les groupes du compte, valable 7 jours ; le secret de signature est lu dans `SESSION_SECRET` s'il est posé, sinon créé une fois dans `/data/session.key` (0600) — la session survit à un redémarrage sans nouveau secret à déployer. Pas de session révocable en V1 : retirer un membre prend effet à la requête suivante parce que les rôles ne sont pas dans la session (AD-9). |
+| AD-57 | **Frontend** : React et Vite dans `frontend/`, un seul build servi par l'application Fastify (`@fastify/static`, repli sur `index.html` pour toute adresse d'écran, derrière la garde de session) ; l'image Docker construit les deux. Pas de rendu serveur, sauf les pages que la session ne peut pas précéder : choix du compte de test (AD-55), « Connexion refusée », « Connexion indisponible ». |
+| AD-58 | **Contenu de section en texte brut** : des paragraphes séparés par des lignes vides, affichés comme tels ; ni Markdown ni HTML. Écarté : Markdown (rendu à assainir, choix d'éditeur) — rouvrable sans migration, le contenu est déjà du texte. |
+| AD-59 | **Écritures de section concurrentes** : chaque section porte un entier `version`, augmenté à chaque écriture de son contenu ; l'écriture envoie la version qu'elle a lue ; si elle n'est plus la courante, elle est refusée (HTTP 409, code `section_modifiee`) et rien n'est écrit. Même mécanisme que le « la section a changé » de B-21 pour les propositions (AD-49). |
 
 ## Déploiement et exploitation
 

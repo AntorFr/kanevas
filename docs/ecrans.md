@@ -94,6 +94,209 @@ Deux sont posés dès le cadrage parce qu'ils traversent tout :
   affiché, à son MJ ;
 - **refus** d'une ressource illisible : toujours comme une ressource inconnue.
 
+## Détail des écrans de `kanevas-premiere-fiche`
+
+> E-1, E-2, E-3, E-4, E-8, E-9, la barre latérale et la session. Vocabulaire des six états, celui
+> de B-29 : **vide**, **chargement**, **erreur**, **connexion perdue**, **refus**, **contenu
+> long**. « Sans objet » dit sa raison. Les maquettes finies sont `docs/maquettes/e01`, `e02`,
+> `e03`, `e04`, `e08`, `e09` (thème sombre, gris tertiaire de la charte).
+
+**Textes communs.**
+
+- *Chargement* : « Chargement… » (`role="status"`).
+- *Erreur de chargement* : « Impossible de charger cette page. » et le bouton « Réessayer ».
+- *Connexion perdue* : bandeau « Connexion perdue. Ce que vous voyez peut être dépassé ; rien
+  n'est enregistré tant qu'elle ne revient pas. » ; les boutons qui écrivent sont désactivés ; il
+  disparaît seul au retour de la connexion.
+- *Refus* : toujours « Page introuvable. » et un lien « Mes univers » — pour un univers inconnu,
+  un univers sans rôle, une fiche illisible, une adresse inconnue. Jamais « accès refusé ».
+- *Session expirée ou absente* : la page n'est pas montrée ; la personne est menée à la connexion
+  (Authelia, ou le choix du compte de test en bouchon).
+- *Bandeau du mode bouchon* (seulement avec `KANEVAS_STUB=1`, sur chaque page, non fermable) :
+  « Mode bouchon — les comptes sont fictifs. Ne jamais l'ouvrir en production. »
+
+### Session et connexion
+
+- **Écran de choix du compte de test** (bouchon seulement, `/connexion-bouchon`, rendu par le
+  serveur) : une ligne par compte — Antor, Léa, Teo, Mira, Admin — avec ses groupes (Admin :
+  « groupes : parents ») et un bouton « Se connecter en tant que … ». Sans `KANEVAS_STUB`, cette
+  adresse répond « Page introuvable. ».
+- **« Connexion refusée »** (Authelia a refusé ou le retour est invalide) : « La connexion a été
+  refusée. » et un lien « Réessayer ». Aucun autre contenu.
+- **« Connexion indisponible »** (Authelia injoignable) : « Authelia ne répond pas pour
+  l'instant. Réessayez dans un moment. »
+- La session expire au bout de 7 jours (AD-56). **Se déconnecter** (pied de la barre latérale)
+  efface la session et mène à la connexion ; en bouchon, c'est ainsi qu'on change de compte.
+- `GET /api/moi` rend `{username, groups}` du compte connecté : c'est ce que la barre latérale
+  affiche (l'identifiant) et ce que les tests lisent pour constater les groupes.
+
+### Barre latérale
+
+Sur tout écran d'un univers : en tête le **sélecteur d'univers** (nom, badge du rôle, la liste
+des univers du compte, « Mes univers » en pied de liste) ; **Vue d'ensemble** ; **Lore** :
+Personnages, Lieux, Factions, Objets, Événements, Quêtes ; pour un MJ, **Univers ▸ Membres** ; en
+pied, l'identifiant, le thème (Clair, Sombre, Système), « Se déconnecter ». Hors d'un univers (E-1,
+E-2) : « Mes univers », l'identifiant, le thème, « Se déconnecter ». **Un item dont l'écran n'est
+pas construit n'est pas affiché** : Campagnes, Comptes-rendus, Cartes, Paramètres, Administration
+arrivent avec leurs tranches. Sur téléphone (moins de 760 px), la barre est un tiroir sous un
+bouton « Menu ».
+
+### E-1 Accueil
+
+Liste des univers du compte : nom, début de la description, badge du rôle (MJ, Joueur) ; un clic
+mène à E-3. Bouton « Créer un univers » (→ E-2). L'identifiant du compte est affiché en tête :
+« Connecté en tant que lea ». Ordre : par nom.
+
+| État | Ce qu'on voit | Ce qu'on peut faire |
+|---|---|---|
+| vide | « Aucun univers pour l'instant. » ; « Vous menez une partie ? Créez un univers. » ; « Vous êtes joueur ? Donnez votre identifiant à votre MJ : **lea** » | « Créer un univers » |
+| chargement | « Chargement de vos univers… » | — |
+| erreur | « Impossible de charger vos univers. » | « Réessayer » |
+| connexion perdue | le bandeau ; la liste déjà chargée reste affichée | ouvrir un univers déjà listé ; « Créer un univers » désactivé |
+| refus | sans objet : la page ne montre que les univers du compte | — |
+| contenu long | 100 univers : la liste défile ; un nom de 80 caractères est tronqué par « … » avec le nom complet en infobulle ; la description tient sur deux lignes | idem |
+
+*Critère.* Étant donné un compte neuf (Teo, jamais ajouté), quand il ouvre l'accueil, alors il voit
+« Aucun univers pour l'instant. » et son identifiant « teo » affiché, et aucun nom d'univers.
+
+### E-2 Créer un univers
+
+Un formulaire : « Nom » (obligatoire, 80 caractères au plus), « Description » (facultative, 500
+au plus), « Créer l'univers » et « Annuler » (→ E-1). Créer mène à E-3 de l'univers, le créateur
+en MJ (B-2).
+
+| État | Ce qu'on voit | Ce qu'on peut faire |
+|---|---|---|
+| vide | le formulaire vierge | remplir |
+| chargement | le bouton affiche « Création… », désactivé | — |
+| erreur | « Erreur : le nom est obligatoire. » sous le champ ; ou, si la création échoue, « L'univers n'a pas pu être créé. Réessayez. » au-dessus du formulaire, saisie conservée | corriger, réessayer |
+| connexion perdue | le bandeau ; « Créer l'univers » désactivé, saisie conservée | attendre |
+| refus | sans objet : tout compte peut créer un univers (B-2) | — |
+| contenu long | « Erreur : 80 caractères au plus. » dès le 81e (même texte pour la description avec 500) | corriger |
+
+### E-3 Vue d'ensemble de l'univers (coquille)
+
+Le nom de l'univers (titre), sa description, le badge du rôle, puis une **région de blocs**. Dans
+cette tranche, aucun bloc n'existe : la région montre « Rien à afficher pour l'instant. Les
+campagnes, les comptes-rendus et les cartes s'afficheront ici. » ; ni compteur ni lien mort.
+**Les blocs sont indépendants** : chaque tranche ajoute le sien en déposant un fichier dans
+`frontend/src/ecrans/vue-ensemble/blocs/` et en l'inscrivant dans le registre
+`frontend/src/ecrans/vue-ensemble/registre.ts` (une ligne : identifiant, rôles qui le voient,
+rang, composant) ; elle ne modifie aucun bloc existant.
+
+| État | Ce qu'on voit | Ce qu'on peut faire |
+|---|---|---|
+| vide | le message de la région de blocs (ci-dessus) | naviguer par la barre |
+| chargement | le nom absent, « Chargement… » | — |
+| erreur | « Impossible de charger cette page. » | « Réessayer » |
+| connexion perdue | le bandeau, le contenu déjà chargé | naviguer |
+| refus | univers inconnu ou sans rôle du compte : « Page introuvable. » | « Mes univers » |
+| contenu long | une description de 500 caractères passe à la ligne | — |
+
+*Critère.* Étant donné Teo, sans rôle dans Lame d'Ébène, quand il ouvre l'adresse de l'univers,
+alors il voit « Page introuvable. », sans le nom de l'univers.
+
+### E-4 Membres (MJ)
+
+Une liste : identifiant, rôle (liste MJ / Joueur), « Retirer ». En haut, un champ « Identifiant du
+compte », le rôle (Joueur par défaut) et « Ajouter ». **Retirer** demande une confirmation sur
+place : « Retirer lea de Lame d'Ébène ? Elle ne verra plus l'univers. » avec « Retirer lea » et
+« Annuler ». Un MJ qui se retire lui-même alors qu'un autre MJ reste revient à E-1.
+
+Refus de la tranche, textes exacts : « Ce compte ne s'est jamais connecté. » ; « Ce compte est déjà
+membre. » ; « Impossible : l'univers doit garder au moins un MJ. » (retirer ou rétrograder le seul
+MJ).
+
+| État | Ce qu'on voit | Ce qu'on peut faire |
+|---|---|---|
+| vide | sans objet : il y a toujours au moins un MJ | — |
+| chargement | « Chargement des membres… » | — |
+| erreur | « Impossible de charger les membres. » ; une erreur d'écriture s'écrit au-dessus de la liste, la liste reste | « Réessayer » |
+| connexion perdue | le bandeau ; « Ajouter », changer, « Retirer » désactivés | — |
+| refus | pour un Joueur : l'item « Membres » est absent et son adresse montre « Page introuvable. » | « Mes univers » |
+| contenu long | 200 membres : la liste défile ; l'identifiant est tronqué par « … » avec l'infobulle | idem |
+
+*Critère.* Étant donné Antor, seul MJ de Lame d'Ébène, quand il tente de retirer Antor, alors il
+voit « Impossible : l'univers doit garder au moins un MJ. » et la liste est inchangée.
+
+### E-8 Liste de fiches
+
+Pour un type de la barre (Personnages, Lieux…) : les fiches **que le compte peut lire**, par
+titre (ordre alphabétique sans casse), chacune avec son badge (pour un personnage : PJ ou PNJ).
+Cent fiches à la fois, puis « Charger la suite ». Pour un MJ, « Nouveau personnage » (« Nouveau
+lieu »…) ouvre une fenêtre : « Titre » (1 à 120 caractères) et, pour un personnage, « PJ » ou
+« PNJ » (PNJ par défaut) ; « Créer la fiche » mène à E-9 de la fiche, sans section. Pas de
+recherche (`kanevas-relier-chercher`). Le type compte-rendu n'a pas d'entrée ici (E-13).
+
+| État | Ce qu'on voit | Ce qu'on peut faire |
+|---|---|---|
+| vide | MJ : « Aucun personnage pour l'instant. » et « Nouveau personnage » ; Joueur : « Aucun personnage à voir pour l'instant. » | MJ : créer |
+| chargement | « Chargement des fiches… » | — |
+| erreur | « Impossible de charger les fiches. » ; création échouée : « La fiche n'a pas pu être créée. Réessayez. », titre conservé | « Réessayer » |
+| connexion perdue | le bandeau ; « Nouveau … » et « Créer la fiche » désactivés | ouvrir une fiche listée |
+| refus | un type inconnu : « Page introuvable. » ; une fiche illisible est absente de la liste | — |
+| contenu long | plus de 100 fiches : « Charger la suite » ; titre trop long tronqué par « … » avec infobulle | idem |
+
+*Critère.* Étant donné la fiche « Maître Aldric », dont Léa ne lit aucune section, quand Léa ouvre la
+liste des personnages, alors elle n'y voit pas « Maître Aldric ».
+
+### E-9 Fiche
+
+Le titre, le badge du type, puis les **sections** dans leur ordre, chacune un panneau : titre,
+contenu en texte brut (AD-58), et un emplacement de **blocs de section** (relations, pièces
+jointes : les tranches suivantes y inscrivent le leur, comme pour E-3, dans
+`frontend/src/ecrans/fiche/blocs/` et `registre.ts`).
+
+*Le MJ* voit toutes les sections. Sur chacune : « Modifier » ; l'**audience**, cinq réglages —
+« Les joueurs la lisent », « Les joueurs l'écrivent », « Auteur » (liste des Joueurs de l'univers,
+ou « aucun »), « L'auteur la lit », « L'auteur l'écrit » — enregistrés au changement ; « Monter »,
+« Descendre » ; « Retirer la section ». En pied : « Ajouter une section » (titre, 1 à 80
+caractères ; la section naît vide et fermée aux joueurs). Une section réservée au MJ porte le
+mot « MJ seul » (pastille ambre). Le **mode Joueur** (bascule en tête) montre la fiche telle que la
+voit un Joueur qui n'est l'auteur d'aucune section : plus de réglages, plus de section fermée, et
+« Modifier » seulement sur celles que les joueurs écrivent (AD-39).
+
+*Un Joueur* voit les sections qu'il lit (joueurs, ou auteur si c'est lui), sans titre ni trace des
+autres ; « Modifier » sur celles qu'il peut écrire ; ni audience, ni ordre, ni ajout, ni retrait.
+Pour **modifier** : un champ de texte (20 000 caractères au plus), « Enregistrer », « Annuler ».
+Enregistrer envoie la version lue (AD-59).
+
+Textes : section sans contenu : « Rien d'écrit pour l'instant. » ; fiche sans section (MJ) : « Cette
+fiche n'a pas encore de section. » ; écriture périmée : « La section a changé depuis que vous
+l'avez ouverte. Rechargez-la pour voir la nouvelle version ; votre texte reste ci-dessous. » avec
+« Recharger la section » ; droit retiré entre-temps : « Vous ne pouvez plus modifier cette section. » ;
+confirmation de retrait : « Retirer la section « Vérité — MJ seul » ? Son contenu sera perdu. » avec
+« Retirer la section » et « Annuler ».
+
+| État | Ce qu'on voit | Ce qu'on peut faire |
+|---|---|---|
+| vide | MJ : « Cette fiche n'a pas encore de section. » et « Ajouter une section » ; section vide : « Rien d'écrit pour l'instant. » | MJ : ajouter ; qui écrit : « Modifier » |
+| chargement | le titre absent, « Chargement de la fiche… » | — |
+| erreur | « Impossible de charger cette fiche. » ; échec d'écriture : « Enregistrement impossible. Réessayez. », texte conservé | « Réessayer » |
+| connexion perdue | le bandeau ; « Enregistrer », audience, ordre, retrait, ajout désactivés ; le texte en cours reste | lire |
+| refus | fiche inconnue ou dont rien n'est lisible : « Page introuvable. » ; section non lisible : absente | — |
+| contenu long | une section de 20 000 caractères passe à la ligne et s'affiche en entier ; plus au-delà : « Erreur : 20 000 caractères au plus. » ; titre de fiche long : passe à la ligne | idem |
+
+*Critères.*
+- Étant donné Léa, Joueuse, quand elle ouvre « Maître Aldric » (« Apparence » lue des joueurs,
+  « Vérité — MJ seul » fermée), alors elle voit « Apparence » et rien d'autre : ni le titre
+  « Vérité — MJ seul », ni un compteur, ni un bouton de réglage.
+- Étant donné Antor, MJ, quand il passe en mode Joueur sur la même fiche, alors il voit la même
+  chose que Léa et plus aucun réglage.
+- Étant donné Antor qui a confié « Notes de la table » à Léa en auteur avec écriture, quand Léa
+  modifie le texte et enregistre, alors la section montre son texte ; Teo, ajouté en Joueur, ne la
+  voit pas tant que « Les joueurs la lisent » est faux.
+- Étant donné deux onglets sur la même section, quand le second enregistre après le premier,
+  alors il voit « La section a changé depuis que vous l'avez ouverte… » et son texte reste.
+
+### Clôture de la tranche
+
+Chaque besoin de `## Livre` a son écran : B-2 → E-2 ; B-3 à B-5 → E-4 ; B-7 → E-8 ; B-8 et B-9 →
+E-9 ; B-1 et B-28 → session ; B-29 → six états de chaque écran ci-dessus. Chaque écran est atteint
+par P-1 (E-1, E-2, E-3), P-2 (E-4), P-3 étape 4 et P-6 (E-8, E-9), P-7 (E-9). Les trois rôles ont
+leur colonne dans la matrice du cadrage ; l'admin d'instance n'a, dans cette tranche, que E-1 et
+E-2.
+
 ## Maquettes
 
 `docs/maquettes/<écran>.html`, une par écran structurant, premier niveau : la structure et le
