@@ -1,0 +1,44 @@
+.liste-univers { list-style: none; margin: var(--e-4) 0; padding: 0; display: flex; flex-direction: column; gap: var(--e-2); }
+.liste-univers a { display: block; padding: var(--e-3) var(--e-4); background: var(--surface); border: 1px solid var(--bord);
+  border-radius: var(--rayon-panneau); color: var(--texte); text-decoration: none; }
+.liste-univers a:hover { background: var(--surface-2); }
+.liste-univers .ligne { display: flex; align-items: center; gap: var(--e-2); }
+.liste-univers .description { color: var(--texte-2); font-size: var(--t-13); margin-top: var(--e-1);
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; }
+.connecte { color: var(--texte-2); margin-bottom: var(--e-3); }
+.connecte strong { color: var(--texte); }
+.titre-univers { display: flex; align-items: baseline; gap: var(--e-3); flex-wrap: wrap; overflow-wrap: anywhere; }
+.description-univers { color: var(--texte-2); white-space: pre-wrap; overflow-wrap: anywhere; max-width: 70ch; }
+.blocs { display: flex; flex-direction: column; gap: var(--e-4); margin-top: var(--e-4); }
+.echec { color: var(--danger); background: var(--danger-fond); padding: var(--e-2) var(--e-3); border-radius: var(--rayon-champ); margin: var(--e-3) 0; }
+.actions { display: flex; gap: var(--e-2); margin-top: var(--e-4); }
+.ajout-membre { display: flex; gap: var(--e-2); flex-wrap: wrap; align-items: center; margin: var(--e-3) 0; }
+.ajout-membre input { flex: 1; min-width: 12rem; max-width: 20rem; }
+.liste-membres { list-style: none; margin: var(--e-3) 0; padding: 0; background: var(--surface); border: 1px solid var(--bord);
+  border-radius: var(--rayon-panneau); max-height: 60vh; overflow-y: auto; }
+.liste-membres li { display: flex; align-items: center; gap: var(--e-3); padding: var(--e-2) var(--e-4); border-bottom: 1px solid var(--bord); }
+.liste-membres li > :not(.identifiant) { flex: none; white-space: nowrap; }
+.ajout-membre .bouton { flex: none; }
+.liste-membres li:last-child { border-bottom: 0; }
+.liste-membres .identifiant { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.confirmation p { overflow-wrap: anywhere; }
+.confirmation { background: var(--surface); border: 1px solid var(--bord); border-radius: var(--rayon-panneau); padding: var(--e-3) var(--e-4); }
+.enregistre { color: var(--table); background: var(--table-fond); padding: var(--e-2) var(--e-3); border-radius: var(--rayon-champ); margin: var(--e-3) 0; }
+.systeme-courant { display: flex; align-items: center; gap: var(--e-3); margin-top: var(--e-3); flex-wrap: wrap; }
+.systeme-courant .nom-systeme { max-width: 24rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.erreur-champ { color: var(--danger); font-size: var(--t-13); margin-top: calc(var(--e-1) * -1); }
+.nom-systeme-titre { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.onglets { display: flex; gap: var(--e-2); border-bottom: 1px solid var(--bord); margin: var(--e-4) 0; }
+.onglets button { background: none; border: 0; border-bottom: 2px solid transparent; color: var(--texte-2); padding: var(--e-2) var(--e-3); cursor: pointer; font: inherit; }
+.onglets button.actif { color: var(--texte); border-bottom-color: var(--texte); }
+.liste-entrees { list-style: none; margin: var(--e-3) 0; padding: 0; background: var(--surface); border: 1px solid var(--bord); border-radius: var(--rayon-panneau); }
+.liste-entrees li { border-bottom: 1px solid var(--bord); }
+.liste-entrees li:last-child { border-bottom: 0; }
+.entree-ligne { display: flex; gap: var(--e-3); width: 100%; background: none; border: 0; color: var(--texte); padding: var(--e-2) var(--e-4); text-align: left; cursor: pointer; font: inherit; }
+.entree-nom { flex: none; max-width: 16rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.entree-apercu { flex: 1; min-width: 0; color: var(--texte-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.entree-detail, .entree-formulaire { padding: var(--e-2) var(--e-4) var(--e-4); }
+.entree-contenu { white-space: pre-wrap; overflow-wrap: anywhere; }
+
+/* E-3: the empty-region message hides as soon as a block actually rendered something. */
+.blocs:has(> :not(.etat-vide-blocs)) > .etat-vide-blocs { display: none; }

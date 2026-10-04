@@ -4,6 +4,10 @@
 > y arrive, à quoi il sert, ce que chaque rôle y fait. Les états de chaque écran et la maquette
 > finie se détaillent dans la tranche qui le construit.
 
+> **Construit à ce jour** : E-1, E-2, E-3 (coquille : nom, navigation, blocs vides), E-4, E-8 (sans
+> recherche), E-9 (sans relations ni pièces jointes), E-14 (Paramètres), E-15 (Système de jeu) et le bloc « Système de jeu » de E-3, la session
+> et la barre latérale. E-5, E-6, E-7 et E-10 à E-13 sont la cible.
+
 ## Format
 
 Web. Ordinateur d'abord pour écrire (souris, clavier, glisser des tokens) ; téléphone pour lire
@@ -50,8 +54,7 @@ bascule existe (fiche, carte).
 Les pages de connexion du serveur (« Connexion refusée », « Connexion indisponible », atteintes
 depuis P-1) et le bandeau du mode bouchon sont décrits sous « Session et connexion ».
 
-Hors produit : `/composants`, la bibliothèque de composants, réservée au développement ; et,
-en mode bouchon seulement (AD-55), l'écran de choix d'un compte de test et le bandeau « mode
+Hors produit : en mode bouchon seulement (AD-55), l'écran de choix d'un compte de test et le bandeau « mode
 bouchon » — sans `E-n` ni six états, ils n'existent pas en production.
 
 ## Rôles × écrans × actions
@@ -74,7 +77,7 @@ bouchon » — sans `E-n` ni six états, ils n'existent pas en production.
 | E-12 | catalogue MJ | catalogue Joueur | — |
 | E-13 | tous les CR | les CR lisibles | — |
 | E-14 | tout | — | — |
-| E-15 | lire, écrire | lire | — |
+| E-15 | lire, écrire (univers rattaché ; sinon —, « Page introuvable. ») | lire (idem) | — |
 
 Précisions de la matrice : créer une campagne, en changer le statut, créer un scénario sont au
 MJ seul. L'audience d'une section se règle en ligne sur la fiche (MJ). Créer une fiche ouvre une
@@ -82,7 +85,7 @@ fenêtre (type déjà choisi, titre) qui mène à la fiche ; créer une carte se
 E-10. « Rendre visible » une carte se trouve sur la carte (E-11) et dans la liste (E-10). Le fond d'une carte illustrée se dépose à sa création (E-10) et se change sur la carte (E-11) ;
 une carte sans fond montre ses tokens sur un fond neutre. Une
 tâche de préparation s'ajoute avec sa catégorie, se coche, se décoche ; elle ne se supprime pas.
-Sur E-15, règles, créatures et objets ont le même traitement.
+Sur E-15, règles, créatures et objets ont le même traitement. Sur E-3, le bloc « Système de jeu » n'existe que si l'univers est rattaché à un système (MJ et Joueur).
 
 Un compte **sans rôle** dans l'univers et qui n'est pas admin d'instance (Teo avant son ajout) a, dans
 cet univers, la colonne « Admin » de cette matrice moins E-5 : « — » partout, « Page introuvable. »
@@ -105,7 +108,7 @@ Deux sont posés dès le cadrage parce qu'ils traversent tout :
 
 > E-1, E-2, E-3, E-4, E-8, E-9, la barre latérale et la session. Vocabulaire des six états, celui
 > de B-29 : **vide**, **chargement**, **erreur**, **connexion perdue**, **refus**, **contenu
-> long**. « Sans objet » dit sa raison. Les maquettes finies sont `docs/maquettes/e01`, `e02`,
+> long**. « Sans objet » dit sa raison. Les maquettes finies sont `docs/maquettes/e01-*.html`, `e02-*.html`,
 > `e03`, `e04`, `e08`, `e09` (thème sombre, gris tertiaire de la charte).
 
 **Textes communs.**
@@ -146,8 +149,9 @@ Deux sont posés dès le cadrage parce qu'ils traversent tout :
   l'instant. Réessayez dans un moment. » et un lien « Réessayer » qui relance la connexion (retour à l'adresse de connexion)
 - La session expire au bout de 7 jours (AD-56). **Se déconnecter** (pied de la barre latérale)
   efface la session et mène à la connexion ; en bouchon, c'est ainsi qu'on change de compte.
-- `GET /api/moi` rend `{username, groups}` du compte connecté : c'est ce que la barre latérale
-  affiche (l'identifiant) et ce que les tests lisent pour constater les groupes.
+- `GET /api/moi` rend `{username, groups, limites}` du compte connecté : c'est ce que la barre latérale
+  affiche (l'identifiant) et ce que les tests lisent pour constater les groupes. `limites.contenuSection`
+  (20 000) est la borne d'une section, lue par l'écran de fiche (AD-91).
 
 ### Barre latérale
 
@@ -156,8 +160,8 @@ des univers du compte, « Mes univers » en pied de liste) ; **Vue d'ensemble** 
 Personnages, Lieux, Factions, Objets, Événements, Quêtes ; pour un MJ, **Univers ▸ Membres** ; en
 pied, l'identifiant, le thème (Clair, Sombre, Système), « Se déconnecter ». Hors d'un univers (E-1,
 E-2) : « Mes univers », l'identifiant, le thème, « Se déconnecter ». **Un item dont l'écran n'est
-pas construit n'est pas affiché** : Campagnes, Comptes-rendus, Cartes, Paramètres, Administration
-arrivent avec leurs tranches. Sur téléphone (moins de 760 px), la barre est un tiroir sous un
+pas construit n'est pas affiché** : Campagnes, Comptes-rendus, Cartes, Administration
+arrivent avec leurs tranches. « Paramètres » (E-14) n'est affiché qu'au MJ. Sur téléphone (moins de 760 px), la barre est un tiroir sous un
 bouton « Menu ».
 
 | État | Ce qu'on voit |
@@ -208,9 +212,9 @@ Le nom de l'univers (titre), sa description, le badge du rôle, puis une **régi
 cette tranche, aucun bloc n'existe : la région montre « Rien à afficher pour l'instant. Les
 campagnes, les comptes-rendus et les cartes s'afficheront ici. » ; ni compteur ni lien mort.
 **Les blocs sont indépendants** : chaque tranche ajoute le sien en déposant un fichier dans
-`frontend/src/ecrans/vue-ensemble/blocs/` et en l'inscrivant dans le registre
-`frontend/src/ecrans/vue-ensemble/registre.ts` (une ligne : identifiant, rôles qui le voient,
-rang, composant) ; elle ne modifie aucun bloc existant.
+`frontend/src/ecrans/vue-ensemble/blocs/` dont l'export par défaut est un `Bloc` (identifiant,
+rôles qui le voient, rang, composant) ; le registre `frontend/src/ecrans/vue-ensemble/registre.ts`
+le trouve seul (un seul fichier, comme pour les écrans) ; elle ne modifie aucun bloc existant.
 
 | État | Ce qu'on voit | Ce qu'on peut faire |
 |---|---|---|
@@ -288,7 +292,7 @@ voit un Joueur qui n'est l'auteur d'aucune section : plus de réglages, plus de 
 
 *Un Joueur* voit les sections qu'il lit (joueurs, ou auteur si c'est lui), sans titre ni trace des
 autres ; « Modifier » sur celles qu'il peut écrire ; ni audience, ni ordre, ni ajout, ni retrait.
-Pour **modifier** : un champ de texte (20 000 caractères au plus), « Enregistrer », « Annuler ».
+Pour **modifier** : un champ de texte (20 000 caractères au plus, valeur lue dans `limites.contenuSection` de `/api/moi` ; le serveur la refuse aussi, AD-91), « Enregistrer », « Annuler ».
 Enregistrer envoie la version lue (AD-59).
 
 Textes : section sans contenu : « Rien d'écrit pour l'instant. » ; fiche sans section (MJ) : « Cette
@@ -305,7 +309,7 @@ confirmation de retrait : « Retirer la section « Vérité — MJ seul » ? Son
 | erreur | « Impossible de charger cette fiche. » ; échec d'écriture : « L'action n'a pas abouti. Réessayez. », texte conservé | « Réessayer » |
 | connexion perdue | le bandeau ; « Enregistrer », audience, ordre, retrait, ajout désactivés ; le texte en cours reste | lire |
 | refus | fiche inconnue ou dont rien n'est lisible : « Page introuvable. » ; section non lisible : absente. Un MJ en mode Joueur sur une fiche dont aucune section n'est lisible des joueurs voit « Aucune section n'est visible des joueurs. » (ce que verrait un joueur : « Page introuvable. ») | passer en mode MJ |
-| contenu long | une section de 20 000 caractères passe à la ligne et s'affiche en entier ; plus au-delà : « Erreur : 20 000 caractères au plus. » ; titre de fiche (120 caractères) et titre de section (80) : passent à la ligne | idem |
+| contenu long | une section de 20 000 caractères passe à la ligne et s'affiche en entier ; plus au-delà, dès le 20 001e caractère saisi : « Erreur : 20 000 caractères au plus. » (sous le champ ; « Enregistrer » ne part pas ; le texte saisi est gardé, y compris quand c'est le serveur qui refuse, 400, avec le même texte — pas « L'action n'a pas abouti » ; tant que `/api/moi` n'a pas rendu la limite, ou s'il a échoué, l'écran ne contrôle rien et laisse le serveur répondre) ; titre de fiche (120 caractères) et titre de section (80) : passent à la ligne | idem |
 
 *Critères.*
 - Étant donné Léa, Joueuse, quand elle ouvre « Maître Aldric » (« Apparence » lue des joueurs,
@@ -318,14 +322,135 @@ confirmation de retrait : « Retirer la section « Vérité — MJ seul » ? Son
   voit pas tant que « Les joueurs la lisent » est faux.
 - Étant donné deux onglets sur la même section, quand le second enregistre après le premier,
   alors il voit « La section a changé depuis que vous l'avez ouverte… » et son texte reste.
+- Étant donné Antor qui modifie une section, quand il saisit un 20 001e caractère, alors « Erreur :
+  20 000 caractères au plus. » apparaît sous le champ, rien n'est envoyé et son texte reste ;
+  quand le serveur refuse malgré tout (400), il voit le même texte et son texte reste.
 
 ### Clôture de la tranche
 
-Chaque besoin de `## Livre` a son écran : B-2 → E-2 ; B-3 à B-5 → E-4 ; B-7 → E-8 ; B-8 et B-9 →
+Chaque besoin livré par la tranche (fiche de la feature, `## Livre`, hors de ce dépôt) a son écran : B-2 → E-2 ; B-3 à B-5 → E-4 ; B-7 → E-8 ; B-8 et B-9 →
 E-9 ; B-1 et B-28 → session ; B-29 → six états de chaque écran ci-dessus. Chaque écran est atteint
 par P-1 (E-1, E-2, E-3), P-2 (E-4), P-3 étape 4 et P-6 (E-8, E-9), P-7 (E-9). Les trois rôles ont
 leur colonne dans la matrice du cadrage ; l'admin d'instance n'a, dans cette tranche, que E-1 et
 E-2.
+
+## Détail des écrans de `kanevas-systemes`
+
+> E-14, E-15, le lien de E-3 vers le système, l'item « Paramètres » de la barre latérale. Les
+> textes communs (chargement, erreur, connexion perdue, écriture en cours, échec d'une écriture,
+> refus) sont ceux de « Détail des écrans de `kanevas-premiere-fiche` ». Maquettes finies :
+> `docs/maquettes/e14-parametres.html`, `e15-systeme-de-jeu.html`.
+
+**Ce que voit chacun du catalogue.** Le catalogue ne porte que des **noms** de systèmes, lus par tout
+compte qui est MJ d'au moins un univers (c'est ce qui permet à Mira de trouver « CoF Mini »). Le contenu
+d'un système (E-15) n'est lu que par les membres d'un univers qui lui est rattaché. **Aucun écran ne
+nomme un autre univers** : un système dit seulement « utilisé par N univers » (N compte l'univers
+courant), jamais lesquels. Un système « n'est pas vu » d'un univers qui n'y est pas rattaché : pas
+de bloc sur E-3, et l'adresse de E-15 répond « Page introuvable. ».
+
+### E-14 Paramètres de l'univers (MJ)
+
+Trois panneaux, dans cet ordre.
+
+1. **Identité** : « Nom » (obligatoire, 80 caractères au plus), « Description » (500 au plus),
+   « Enregistrer ». Après l'enregistrement : « Enregistré. » au-dessus du panneau.
+2. **Système de jeu** : une liste « Système du catalogue » (les noms, par ordre alphabétique sans
+   casse, et en tête « Aucun système »), « Rattacher » ; si l'univers a un système : son nom, « Utilisé
+   par N univers » et « Ouvrir le système » (→ E-15). Choisir « Aucun système » puis « Rattacher »
+   **détache** l'univers (rien n'est supprimé : le système et son contenu restent, les autres
+   univers le gardent).
+3. **Créer un système** : « Nom du système » (obligatoire, 80 caractères au plus), « Créer et
+   rattacher » : le système naît au catalogue et l'univers y est rattaché en un seul geste (si l'un
+   échoue, aucun n'a lieu). Un nom déjà pris (sans tenir compte de la casse) : « Un système porte déjà
+   ce nom. » sous le champ.
+
+| État | Ce qu'on voit | Ce qu'on peut faire |
+|---|---|---|
+| vide | catalogue sans système : la liste ne propose que « Aucun système » et le panneau dit « Le catalogue est vide. Créez le premier système ci-dessous. » ; univers sans système : « Cet univers n'est rattaché à aucun système de jeu. » | créer un système |
+| chargement | « Chargement des paramètres… » | — |
+| erreur | « Impossible de charger cette page. » ; nom vide (univers ou système) : « Erreur : le nom est obligatoire. » sous le champ ; une écriture qui échoue : « L'action n'a pas abouti. Réessayez. » au-dessus du panneau concerné, saisie conservée | « Réessayer » |
+| connexion perdue | le bandeau ; « Enregistrer », « Rattacher », « Créer et rattacher » désactivés, saisie conservée | lire |
+| refus | Joueur : l'item « Paramètres » est absent et l'adresse montre « Page introuvable. » ; compte sans rôle, admin d'instance sans rôle dans l'univers : de même ; rôle retiré pendant que la page est ouverte : « Vous ne pouvez plus modifier ces paramètres. » à l'écriture suivante | « Mes univers » |
+| contenu long | 200 systèmes au catalogue : la liste défile ; un nom de 80 caractères est tronqué par « … » avec infobulle ; « Erreur : 80 caractères au plus. » dès le 81e (500 pour la description) | corriger |
+
+*Critères.*
+- Étant donné Antor, MJ de Lame d'Ébène, et un catalogue qui contient « CoF Mini », quand il choisit
+  « CoF Mini » et « Rattacher », alors le panneau montre « CoF Mini », « Utilisé par 1 univers » et
+  « Ouvrir le système ».
+- Étant donné Léa, Joueuse de Lame d'Ébène, quand elle ouvre l'adresse des paramètres, alors elle
+  voit « Page introuvable. » et l'item « Paramètres » n'est pas dans sa barre.
+- Étant donné un système « CoF Mini » existant, quand Antor en crée un autre nommé « cof mini »,
+  alors il voit « Un système porte déjà ce nom. » et rien n'est créé.
+- Étant donné Antor, univers rattaché à « CoF Mini », quand il choisit « Aucun système » et
+  « Rattacher », alors le panneau dit « Cet univers n'est rattaché à aucun système de jeu. », le bloc
+  « Système de jeu » a disparu de E-3, et « CoF Mini » est toujours dans la liste du catalogue.
+
+### E-15 Système de jeu
+
+Atteint depuis E-14 (« Ouvrir le système ») et depuis E-3 (bloc « Système de jeu », ci-dessous), à
+l'adresse `/univers/:id/systeme`. Le nom du système en titre, « Référentiel commun · utilisé par N
+univers » ; trois onglets, **Règles**, **Créatures**, **Objets** (Créatures par défaut) ; sous
+l'onglet, la liste des entrées du type par nom (ordre alphabétique sans casse), cent à la fois, puis
+« Charger la suite ». Chaque ligne (une **entrée** : une règle, une créature ou un objet ; `gabarit` dans les données) : le nom et la première ligne du contenu (tronquée). Un clic ouvre
+l'entrée **sur place** (le nom, le contenu en texte brut, AD-58).
+
+*Le MJ d'un univers rattaché* : « Ajouter une règle » / « Ajouter une créature » / « Ajouter un
+objet » ouvre un formulaire sur place : « Nom » (1 à 120 caractères), « Contenu » (20 000 au plus,
+facultatif), « Ajouter » et « Annuler » ; sur une entrée ouverte, « Modifier » (nom et contenu),
+« Enregistrer », « Annuler ». Le type d'une entrée ne change jamais ; rien ne se supprime. Enregistrer
+envoie la version lue (AD-85).
+*Un Joueur d'un univers rattaché* : la même page, lecture seule, sans bouton d'ajout ni de
+modification.
+
+Textes : onglet vide, MJ : « Aucune créature pour l'instant. » (« Aucune règle », « Aucun objet ») et
+le bouton d'ajout ; Joueur : « Aucune créature à voir pour l'instant. » ; écriture périmée : « Cette
+entrée a changé depuis que vous l'avez ouverte. Rechargez-la pour voir la nouvelle version ; votre texte
+reste ci-dessous. » avec « Recharger » (une entrée : une règle, une créature ou un objet) ; nom vide : « Erreur : le nom est obligatoire. » sous le champ ; nom déjà pris dans le même type : « Une créature porte déjà ce
+nom. » (« Une règle… », « Un objet… ») ; droit retiré entre-temps (rôle changé, univers détaché) :
+« Vous ne pouvez plus modifier ce système. ».
+
+| État | Ce qu'on voit | Ce qu'on peut faire |
+|---|---|---|
+| vide | l'onglet sans entrée : texte ci-dessus | MJ : ajouter |
+| chargement | le titre absent, « Chargement du système… » | — |
+| erreur | « Impossible de charger ce système. » ; échec d'écriture : « L'action n'a pas abouti. Réessayez. », saisie conservée | « Réessayer » |
+| connexion perdue | le bandeau ; « Ajouter », « Enregistrer » désactivés, le texte en cours reste | lire |
+| refus | univers inconnu, sans rôle du compte, ou **non rattaché à un système** : « Page introuvable. » (E-3 ne montre pas de bloc dans ce cas ; un MJ rattache d'abord un système par E-14) | « Mes univers » |
+| contenu long | 100 entrées : « Charger la suite » ; nom tronqué par « … » avec infobulle ; contenu de 20 000 caractères passe à la ligne et s'affiche en entier ; au-delà : « Erreur : 20 000 caractères au plus. » ; nom au-delà de 120 : « Erreur : 120 caractères au plus. » | idem |
+
+*Critères.*
+- Étant donné Antor, MJ de Lame d'Ébène rattaché à « CoF Mini », quand il ajoute la créature « Garde
+  du sceau » avec son contenu, alors elle apparaît sous « Créatures ».
+- Étant donné Mira, MJ des « Landes grises » rattachée au même système, quand elle ouvre
+  « Créatures », alors elle voit « Garde du sceau » et « Utilisé par 2 univers », et aucun nom
+  d'univers.
+- Étant donné Léa, Joueuse de Lame d'Ébène, quand elle ouvre le système, alors elle voit « Garde du
+  sceau » sans « Ajouter » ni « Modifier » ; si le MJ envoie une écriture à sa place par l'adresse de
+  l'API, elle est refusée.
+- Étant donné « Admin » (groupe `parents`, MJ de l'univers « Brume » qu'il vient de créer, non
+  rattaché), quand il ouvre `/univers/<Brume>/systeme`, alors il voit « Page introuvable. » ; et
+  sur la vue d'ensemble de « Brume » il n'y a pas de bloc « Système de jeu ».
+- Étant donné deux onglets sur la même créature, quand le second enregistre après le premier, alors
+  il voit « Cette entrée a changé depuis que vous l'avez ouverte. » et son texte reste.
+
+### Bloc « Système de jeu » de E-3
+
+Un bloc de la vue d'ensemble (déposé dans `frontend/src/ecrans/vue-ensemble/blocs/`, rang bas,
+visible des MJ et des Joueurs) : le nom du système et un lien « Ouvrir le système » (→ E-15). **Sans
+système, le bloc n'existe pas** : ni message, ni lien mort. Ses états : chargement — le bloc est
+absent ; erreur — le bloc est absent (la vue d'ensemble n'échoue pas pour lui) ; refus et vide —
+sans objet : un univers sans système n'a pas de bloc ; connexion perdue — le bloc reste tel qu'il a été chargé ; contenu long — le nom (80 caractères) est
+tronqué avec infobulle.
+
+### Clôture de `kanevas-systemes`
+
+B-13 → E-14 (rattacher, créer et rattacher) ; B-14 → E-15 ; P-8 étape 1 → E-14, étape 2 → E-15 ; le
+lien de E-3 → bloc ci-dessus ; B-29 → les six états de E-14 et E-15. E-14 est atteint par P-8 et par
+la barre (MJ) ; E-15 par P-8 et par E-3. Les trois rôles ont leur colonne : l'admin d'instance sans
+rôle n'a ni E-14 ni E-15 ; l'admin MJ de son propre univers a ceux d'un MJ.
+Écart au cadrage : aucun. Précision : le cadrage dit « nom, description » pour E-14 ; la tranche
+construit donc aussi la **modification** du nom et de la description d'un univers, qu'aucune
+tranche précédente ne livre.
 
 ## Détail des écrans de `kanevas-relier-chercher`
 
