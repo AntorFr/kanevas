@@ -19,9 +19,19 @@
 - Release: `git tag vX.Y.Z && git push origin vX.Y.Z` builds and publishes
   `ghcr.io/antorfr/kanevas:X.Y.Z` (package public). Deploying is a separate
   change in `k8s-home-lab` (chart version + image tag pinned there).
-- No ORM, no SQL table in this repo yet: AD-5 (SQLite) only reserves the
-  volume mount (`/data`), `kanevas-identite` is the first feature to write to
-  it. Don't add a database dependency "to be ready" — `socle-projet` is a skill of the SDLC pipeline outside this repo: the rule is simply that no DB lands before the feature that needs it.
+- No ORM: SQLite through `better-sqlite3` (Node 20 has no `node:sqlite`),
+  numbered SQL migrations in `src/db/migrations/` applied at startup by
+  `src/db/db.ts` (AD-14; `npm run build` copies them to `dist/`). Tables are
+  those of `docs/donnees.md`; only `src/services/` reads or writes them
+  (AD-2) — routes and agent tools never carry SQL. A migration takes the next
+  number when its slice merges (AD-51).
+- `frontend/` (React, Vite, `react-router`; AD-16, AD-57): `npm run build` also builds it into
+  `dist/public`, served by `routes/session.ts` behind the session guard (`@fastify/static` for
+  `/assets/`, `index.html` as the fallback of any other GET). A screen is one file
+  `frontend/src/ecrans/<nom>.tsx` exporting an `Ecran` (`registre.ts`) — never edit the router or
+  the sidebar; sidebar items live in `items.ts` and show only when a registered screen answers
+  their address. Colours only through `frontend/src/ui/tokens.css` (`docs/charte.md`). Tests of the
+  built-app routes set `FRONTEND_DIR` (under `NODE_ENV=test` no build is looked up otherwise).
 - `services/llm/*` (transport.ts, anthropic-transport.ts,
   claude-agent-transport.ts) are reprised from `Antre-du-maitre` (AD-10) and
   unused by any route yet — kept compiling, not wired in. The admin
@@ -29,7 +39,11 @@
   not reprised: it is a content route, out of scope for a socle that calls no
   LLM. Reintroduce it only alongside the feature that actually activates this
   transport.
-- `routes/auth.ts` stops at identity authentication (OIDC login/callback):
-  no session, no role resolution (AD-9), no persistence. Don't extend it
-  without reopening `kanevas-identite`'s design first.
-- Update `.agent/status.md` in the same commit as the work it reflects.
+- `routes/auth.ts` authenticates the identity (OIDC login/callback) and opens
+  the signed session cookie (`routes/session.ts`, AD-56), creating the account
+  on first sign-in (AD-13). Universe roles never come from Authelia nor the
+  session (AD-9): they are read from the members table at each request. Routes
+  needing a session are registered in the guarded scope of
+  `registerSessionRoutes` (AD-15). `KANEVAS_STUB=1` (AD-55) swaps Authelia for
+  `/connexion-bouchon` and refuses to start if any `OIDC_*` variable is set.
+- Update `.agent/status.md` in the same commit as the work it reflects — except in a task of a chain feature, which leaves it alone: the feature's assembly writes it once (two tasks both adding to it conflict at integration).

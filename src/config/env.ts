@@ -1,4 +1,5 @@
 import { config as loadEnv } from 'dotenv';
+import { existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { z } from 'zod';
 
@@ -12,6 +13,12 @@ const envSchema = z.object({
   // by the CI: the Docker build-arg `APP_VERSION` (see Dockerfile), never
   // `package.json` — two unsynchronised sources otherwise.
   APP_VERSION: z.string().min(1).default('0.0.0-dev'),
+  // SQLite file (AD-5). Defaults: the /data volume in production, memory in tests.
+  DB_PATH: z.string().min(1).optional(),
+  // Stub mode (AD-55): sign in by picking a test account, no Authelia. Never in production.
+  KANEVAS_STUB: z.enum(['1']).optional(),
+  // Session cookie signing secret (AD-56); absent, one is created once in <data dir>/session.key.
+  SESSION_SECRET: z.string().min(16).optional(),
   PORT: z.coerce.number().int().positive().default(3001),
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
   // All four go together: setting only some leaves OIDC unconfigured (routes
@@ -28,3 +35,27 @@ const envSchema = z.object({
 });
 
 export const env = envSchema.parse(process.env);
+
+// AD-55: the stub lets anyone pick any account, so it must never coexist with a
+// real OIDC configuration. Any OIDC_* variable counts, even an empty one.
+if (env.KANEVAS_STUB) {
+  const posees = Object.keys(process.env).filter((k) => k.startsWith('OIDC_'));
+  if (posees.length > 0) {
+    throw new Error(
+      `KANEVAS_STUB=1 refuses to start with OIDC variables set (${posees.join(', ')}).`,
+    );
+  }
+}
+
+// Production writes to the /data volume (the image creates it). Without that
+// directory nothing durable can be written: fall back to memory and say so
+// (app.ts) rather than refuse to start — /healthz must answer on a bare host.
+export const dbPath =
+  env.DB_PATH ??
+  (env.NODE_ENV === 'production'
+    ? existsSync('/data')
+      ? '/data/kanevas.db'
+      : ':memory:'
+    : env.NODE_ENV === 'test'
+      ? ':memory:'
+      : './data/kanevas.db');

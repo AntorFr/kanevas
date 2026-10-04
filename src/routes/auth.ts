@@ -3,6 +3,8 @@ import { z } from 'zod';
 import type { FastifyInstance } from 'fastify';
 
 import { env } from '../config/env.js';
+import { pageIndisponible, pageRefusee } from './pages.js';
+import { ouvrirSession } from './session.js';
 import {
   getOidcConfiguration,
   getOidcSettings,
@@ -10,9 +12,9 @@ import {
 } from '../services/oidc.js';
 
 // Signed cookie carrying state + PKCE between the Authelia redirect and the
-// callback. Signing secret generated at each process start (see app.ts): the
-// transaction only lives for one user's round trip on the same instance, not
-// an operational secret to manage.
+// callback. Signed with the cookie secret (app.ts): SESSION_SECRET, otherwise
+// the key persisted in <data>/session.key (only an in-memory database gets a
+// throwaway one at each start).
 const OIDC_TX_COOKIE = 'kanevas_oidc_tx';
 
 const oidcTxSchema = z.object({
@@ -21,18 +23,16 @@ const oidcTxSchema = z.object({
 });
 
 /**
- * Generic OIDC mechanics reused from Antre-du-maitre (AD-10), stopping at
- * identity authentication: no role resolution (AD-9), no session set, no
- * database write (AD-5 only reserves the location, empty for now).
- * kanevas-identite builds on this contract (client_id kanevas, redirect_uri
- * .../api/auth/oidc/callback).
+ * OIDC mechanics taken over from Antre-du-maitre (AD-10). The callback opens the
+ * session (signed cookie, AD-56) and creates the account on first sign-in
+ * (AD-13); no universe role comes from Authelia (AD-9).
  */
 export async function registerAuthRoutes(app: FastifyInstance) {
   app.get('/api/auth/config', async () => ({
     oidcEnabled: isOidcEnabled(),
   }));
 
-  app.get('/api/auth/oidc/login', async (_request, reply) => {
+  app.get('/api/auth/oidc/login', async (request, reply) => {
     const settings = getOidcSettings();
 
     if (!settings) {
@@ -41,7 +41,13 @@ export async function registerAuthRoutes(app: FastifyInstance) {
       });
     }
 
-    const configuration = await getOidcConfiguration(settings);
+    let configuration;
+    try {
+      configuration = await getOidcConfiguration(settings);
+    } catch (error) {
+      request.log.error({ err: error }, 'OIDC discovery failed.');
+      return reply.code(503).type('text/html; charset=utf-8').send(pageIndisponible());
+    }
 
     const codeVerifier = oidcClient.randomPKCECodeVerifier();
     const codeChallenge =
@@ -105,7 +111,13 @@ export async function registerAuthRoutes(app: FastifyInstance) {
         JSON.parse(Buffer.from(unsigned.value, 'base64url').toString('utf8')),
       );
 
-      const configuration = await getOidcConfiguration(settings);
+      let configuration;
+      try {
+        configuration = await getOidcConfiguration(settings);
+      } catch (error) {
+        request.log.error({ err: error }, 'OIDC discovery failed.');
+        return reply.code(503).type('text/html; charset=utf-8').send(pageIndisponible());
+      }
 
       // request.url = path + query string; the origin comes from the redirect URI.
       const currentUrl = new URL(request.url, settings.redirectUri);
@@ -125,8 +137,8 @@ export async function registerAuthRoutes(app: FastifyInstance) {
         throw new Error('Missing ID token claims.');
       }
 
-      // The "groups" scope is exposed via userinfo; this socle does not read
-      // it yet (no role resolution, AD-9) — kanevas-identite will.
+      // The "groups" scope is exposed through userinfo: the groups are read below
+      // and carried by the session, with no universe role resolution (AD-9).
       const userInfo = await oidcClient.fetchUserInfo(
         configuration,
         tokens.access_token,
@@ -142,16 +154,19 @@ export async function registerAuthRoutes(app: FastifyInstance) {
         throw new Error('Missing preferred_username claim.');
       }
 
-      // No session set, no write: nothing consumes an authenticated identity
-      // yet (out of scope for this socle) — actually logging in has no
-      // observable effect different from not logging in.
-      return reply.send({
-        authenticated: true,
-        subject: claims.sub,
-        username,
-      });
+      // Authelia says who (AD-9): the groups go into the session, the universe roles
+      // never come from it. The account is created on first sign-in (AD-13).
+      const groups = Array.isArray(userInfo.groups)
+        ? userInfo.groups.filter((g): g is string => typeof g === 'string')
+        : [];
+      ouvrirSession(app, reply, username, groups);
+      return reply.redirect('/');
     } catch (error) {
       request.log.error({ err: error }, 'OIDC login failed.');
+      // Browsers navigating here get the "Connexion refusée" page; API clients the JSON.
+      if (String(request.headers.accept ?? '').includes('text/html')) {
+        return reply.code(401).type('text/html; charset=utf-8').send(pageRefusee());
+      }
       return reply.code(401).send({
         authenticated: false,
       });
