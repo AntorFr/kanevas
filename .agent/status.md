@@ -5,10 +5,10 @@
 **État :** la branche `feature/kanevas-recours-admin` empile le socle, la première fiche et le
 recours admin ; rien n'est fusionné dans `main`. Recours admin assemblé : un compte du groupe
 `parents` voit les univers de l'instance et leurs membres, en ajoute, change le rôle, en retire
-(E-5, B-6), sans jamais lire le contenu. Typecheck, build et 130 tests verts (dont `src/e2e/administration.test.ts`, navigateur piloté en bouchon ; ces tests dépendent de Playwright, absent de `package.json`, et sautent sans lui ; sous charge, un `page.goto` peut dépasser son délai de 8 s : relancer avant d'y voir un défaut).
+(E-5, B-6), sans jamais lire le contenu. Typecheck, build et 136 tests verts (dont `src/e2e/administration*.test.ts`, navigateur piloté en bouchon ; ces tests dépendent de Playwright, absent de `package.json`, et sautent sans lui ; sous charge, un `page.goto` peut dépasser son délai de 8 s : relancer avant d'y voir un défaut).
 
-- `src/services/instance.ts` : seul module à accepter le drapeau `admin` (AD-86), ne touche que
-  `membres` ; les règles de membres sont le noyau de `services/membres.ts`, partagé avec les
+- `src/services/instance.ts` : seul module à accepter le drapeau `admin` (AD-86), écrit dans `membres` et lit
+  `univers` (id, nom, nombre de membres, AD-87) ; les règles de membres sont le noyau de `services/membres.ts`, partagé avec les
   fonctions MJ.
 - `src/routes/instance.ts` : `/api/instance/univers` et `/api/instance/univers/:id/membres`
   (GET, POST, PATCH, DELETE). Hors du groupe, 404 comme une adresse inconnue (AD-87). L'acteur
@@ -22,8 +22,8 @@ recours admin ; rien n'est fusionné dans `main`. Recours admin assemblé : un c
 - L'API de liste rend tous les univers ; la pagination par 100 est côté client (300 univers testés
   seulement en service/route, pas au navigateur).
 - Un admin sans rôle reste un compte sans rôle pour fiches et sections : c'est voulu (AD-9, AD-22).
-- Aucun test de composant du frontend ; l'écran E-5 n'a pas été vu au navigateur (pas de navigateur
-  dans le pod). Les six états sont à jouer à la recette.
+- Aucun test de composant du frontend ; l'écran E-5 est piloté en bouchon par les tests e2e (Playwright, absent de `package.json` :
+  sans lui la suite saute) mais personne ne l'a vu à l'œil. Les six états sont à jouer à la recette.
 - En bouchon, la base est vide au départ (`./data/kanevas.db` hors image, `/data` dans l'image) : créer un
   univers en antor avant de tester E-5.
 - `docker build` ne tourne pas dans les pods (pas de démon) : la CI de la PR construit l'image.

@@ -3,7 +3,7 @@
 Système de gestion de JDR (lore, campagnes, comptes-rendus, droits, cartes).
 Ce dépôt porte le socle (dépôt, image, CI, route de santé) et l'administration
 d'instance : un compte du groupe Authelia
-`parents` voit les univers et leurs membres (jamais le contenu) et les répare (E-5, B-6).
+`parents` voit les univers et leurs membres (jamais le contenu) et les répare (E-5, B-6 : un écran, un besoin ; ils sont décrits dans `docs/`, `ecrans.md` et `parcours.md`).
 
 ## Structure
 
@@ -45,7 +45,7 @@ npm run dev            # ou : npm run build && npm start (sert dist/server.js)
 curl http://localhost:3001/healthz   # -> "kanevas 0.0.0-dev"
 ```
 
-Sans docker (pod, poste nu), les tests se lancent avec `npm ci && npm run typecheck && npm test` (Node 20 ou plus). Les tests d'`src/e2e/administration.test.ts` pilotent un navigateur et peuvent expirer sous charge : relancer avant d'y voir un défaut. Corps de `POST /api/instance/univers/:id/membres` : `{"username": "mira", "role": "mj"}`. `npm run dev` ne sert que l'API : pour voir l'interface, `npm run build && KANEVAS_STUB=1 node dist/server.js`.
+Sans docker (pod, poste nu), les tests se lancent avec `npm ci && npm run typecheck && npm test` (Node 20 ou plus). Les tests d'`src/e2e/administration*.test.ts` pilotent un navigateur avec Playwright, qui n'est pas dans `package.json` (cherché en local puis dans les modules globaux de Node) : sans lui ils sautent, et après `npm ci` seul l'écran E-5 n'est donc pas éprouvé ; ils peuvent expirer sous charge : relancer avant d'y voir un défaut. Corps de `POST /api/instance/univers/:id/membres` : `{"username": "mira", "role": "mj"}`. `npm run dev` ne sert que l'API : pour voir l'interface, `npm run build && KANEVAS_STUB=1 node dist/server.js`.
 
 ## Lancer en bouchon (recette)
 

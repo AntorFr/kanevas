@@ -6,8 +6,8 @@
   same convention as `k8s-home-lab`.
 - Build and test in containers only:
   `docker run --rm -v "$PWD":/src -w /src node:20-bookworm-slim sh -c "npm ci && npm run typecheck && npm test"`
-- `npm run typecheck` : `tsc --noEmit`. `npm test` : `node --import tsx --test`
-  on the files found by `find` — Node 20 (CI, image) does not expand globs
+- `npm run typecheck` : `tsc --noEmit` on the API and on `frontend/`. `npm test` : `node --import tsx --test`
+  on the files found by `find` in `src` and `frontend/src` — Node 20 (CI, image) does not expand globs
   itself, so never pass it a quoted `src/**` pattern; no extra test runner
   dependency.
 - `package.json` carries no `version` field: the app's version is never read
