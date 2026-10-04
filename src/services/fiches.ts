@@ -1,8 +1,9 @@
 import { z } from 'zod';
 
 import type { Db } from '../db/db.js';
-import { exigerMJ, exigerRole, peutLireSection, vueSection } from './droits.js';
+import { exigerMJ, exigerRole, peutLireSection, vueMJ, vueSection } from './droits.js';
 import { introuvable, invalide } from './erreurs.js';
+import { lireLignes } from './pieces-jointes.js';
 import {
   TYPES_FICHE,
   type Acteur,
@@ -110,7 +111,10 @@ export function lireFiche(db: Db, acteur: Acteur, universId: number, ficheId: nu
   if (lisibles.length === 0 && (role !== 'mj' || acteur.modeJoueur)) throw introuvable();
   return {
     ...versFiche(fiche),
-    sections: lisibles.map((s) => vueSection(role, s, acteur)),
+    sections: lisibles.map((s) => ({
+      ...vueSection(role, s, acteur),
+      piecesJointes: lireLignes(db, s.id, vueMJ(role, acteur)),
+    })),
   };
 }
 

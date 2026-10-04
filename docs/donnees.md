@@ -101,6 +101,11 @@ se fusionne, pas avant (AD-51).
 
 ## Migration `kanevas-fichiers` (numéro pris à la fusion, AD-51 : le suivant)
 
+> Fichier : `src/db/migrations/0003-pieces-jointes.sql` — **numéro provisoire** (0003), recalé à la
+> fusion si une autre tranche est entrée avant (AD-51). Code : `src/services/stockage.ts` (octets,
+> sans notion de section) et `src/services/pieces-jointes.ts` ; dossier réglable par `ATTACHMENTS_DIR`
+> (défaut : `attachments/` à côté de la base).
+
 Une table ; aucune entité nouvelle (la pièce jointe est celle du cadrage). Les octets ne sont pas
 en base (AD-7) : ils vivent sous `/data/attachments/`.
 

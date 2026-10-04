@@ -25,6 +25,10 @@
   those of `docs/donnees.md`; only `src/services/` reads or writes them
   (AD-2) — routes and agent tools never carry SQL. A migration takes the next
   number when its slice merges (AD-51).
+- Attachments (AD-7, AD-65): bytes under `<db dir>/attachments/` (`ATTACHMENTS_DIR`), written only through
+  `services/stockage.ts` (tmp/ then rename; `tmp/` emptied at startup). `deposerPieceJointe` in
+  `services/pieces-jointes.ts` is the single upload function — later features (images, map backgrounds)
+  reuse it or `stockage.ts`, never write the volume themselves. The type is sniffed from the bytes, never trusted.
 - `frontend/` (React, Vite, `react-router`; AD-16, AD-57): `npm run build` also builds it into
   `dist/public`, served by `routes/session.ts` behind the session guard (`@fastify/static` for
   `/assets/`, `index.html` as the fallback of any other GET). A screen is one file

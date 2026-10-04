@@ -1,5 +1,7 @@
 import { config as loadEnv } from 'dotenv';
 import { existsSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { z } from 'zod';
 
@@ -15,6 +17,8 @@ const envSchema = z.object({
   APP_VERSION: z.string().min(1).default('0.0.0-dev'),
   // SQLite file (AD-5). Defaults: the /data volume in production, memory in tests.
   DB_PATH: z.string().min(1).optional(),
+  // Attachment directory (AD-7); defaults to <db dir>/attachments.
+  ATTACHMENTS_DIR: z.string().min(1).optional(),
   // Stub mode (AD-55): sign in by picking a test account, no Authelia. Never in production.
   KANEVAS_STUB: z.enum(['1']).optional(),
   // Session cookie signing secret (AD-56); absent, one is created once in <data dir>/session.key.
@@ -59,3 +63,9 @@ export const dbPath =
     : env.NODE_ENV === 'test'
       ? ':memory:'
       : './data/kanevas.db');
+
+// Attachment bytes (AD-7) live next to the database, on the same volume. In
+// memory (tests, bare host) they go under the OS temp dir.
+export const attachmentsDir =
+  env.ATTACHMENTS_DIR ??
+  (dbPath === ':memory:' ? join(tmpdir(), 'kanevas-attachments') : join(dirname(dbPath), 'attachments'));
