@@ -38,6 +38,23 @@ droits (AD-8, AD-21).
 vit dans le navigateur, AD-28), la disposition d'un graphe (calculée dans le navigateur, AD-42),
 ses liens (déduits des relations, AD-41).
 
+## Migration 0001 (`kanevas-premiere-fiche`)
+
+Cinq tables : `comptes`, `univers`, `membres`, `fiches`, `sections`. Pas de recherche (FTS5 vient
+avec `kanevas-relier-chercher`, qui prend le numéro suivant, AD-51).
+
+| Table | Colonnes (hors clés) | Contraintes |
+|---|---|---|
+| `comptes` | `id`, `username` (identifiant Authelia, `preferred_username`), `cree_le` | `username` unique ; jamais de rôle ni de groupe (les groupes vivent dans la session) |
+| `univers` | `id`, `nom`, `description`, `cree_le` | `nom` non vide, 1 à 80 caractères |
+| `membres` | `univers_id`, `compte_id`, `role` (`mj` \| `joueur`) | clé primaire (`univers_id`, `compte_id`) ; clés étrangères ; au moins un `mj` par univers garanti par le service (B-5), pas par la base |
+| `fiches` | `id`, `univers_id`, `type` (les sept : `personnage`, `lieu`, `faction`, `objet`, `evenement`, `quete`, `compte_rendu`), `titre`, `charge` (JSON versionné, AD-6 et AD-17 : `{"v":1}` ; personnage `{"v":1,"pj":true\|false}` ; compte-rendu `{"v":1,"campagne_id":…}`), `cree_le`, `modifie_le` | `type` contraint à ces sept valeurs ; `titre` non vide, 1 à 120 caractères ; **aucune suppression** |
+| `sections` | `id`, `fiche_id`, `titre`, `ordre`, `contenu` (texte brut, AD-58), `version` (entier, AD-59, 1 à la création), `modifie_le`, `joueurs_lisent`, `joueurs_ecrivent`, `auteur_id` (compte, facultatif), `auteur_lit`, `auteur_ecrit` | quatre bascules booléennes, **toutes à faux à la création** (une section naît fermée aux joueurs) ; `ordre` entier unique par fiche ; `titre` non vide, 1 à 80 caractères ; `auteur_id` doit être un membre Joueur de l'univers de la fiche, vérifié par le service ; retirer un membre efface son `auteur_id` |
+
+`modifie_le` de la fiche suit la dernière écriture d'une de ses sections. `ordre` est renuméroté
+de 1 à n à chaque réordonnancement ou retrait. Le mode Joueur est calculé par le service, jamais
+par le client : il lit comme un Joueur **qui n'est l'auteur d'aucune section** (AD-39).
+
 ## Règles de droits, en une phrase chacune
 
 1. Les droits sur le contenu viennent de **membre**, jamais d'Authelia (AD-9). Authelia ne

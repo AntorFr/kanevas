@@ -1,27 +1,46 @@
-import { randomBytes } from 'node:crypto';
-
 import cookie from '@fastify/cookie';
 import Fastify from 'fastify';
 
-import { env } from './config/env.js';
+import { dbPath, env } from './config/env.js';
+import { migrate, openDb, type Db } from './db/db.js';
 import { registerAuthRoutes } from './routes/auth.js';
+import { registerBouchonRoutes } from './routes/bouchon.js';
 import { registerHealthRoutes } from './routes/health.js';
+import { registerSessionRoutes } from './routes/session.js';
+import { chargerCleSession } from './services/session.js';
+
+declare module 'fastify' {
+  interface FastifyInstance {
+    db: Db;
+  }
+}
 
 export async function buildApp() {
   const app = Fastify({
     logger: env.NODE_ENV !== 'test',
   });
 
-  // Signed cookie carrying the OIDC transaction (state + PKCE) between the
-  // redirect to Authelia and the callback (routes/auth.ts). Secret generated
-  // at each start: the transaction only lives for one user's round trip on
-  // the same instance, so it is not an operational secret to manage.
+  // The only connection to the SQLite file; migrations are applied at startup (AD-14).
+  const db = openDb(dbPath);
+  migrate(db);
+  if (dbPath === ':memory:' && env.NODE_ENV !== 'test') {
+    app.log.warn('No /data volume: the database lives in memory and is lost at shutdown.');
+  }
+  app.decorate('db', db);
+  app.addHook('onClose', async () => {
+    db.close();
+  });
+
+  // Signed cookies: the session (AD-56) and the OIDC transaction (state + PKCE).
+  // The secret persists in <data dir>/session.key so sessions survive a restart.
   await app.register(cookie, {
-    secret: randomBytes(32).toString('hex'),
+    secret: chargerCleSession(env.SESSION_SECRET, dbPath),
   });
 
   await registerHealthRoutes(app);
   await registerAuthRoutes(app);
+  await registerBouchonRoutes(app);
+  await registerSessionRoutes(app);
 
   return app;
 }

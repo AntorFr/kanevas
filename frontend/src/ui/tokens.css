@@ -1,0 +1,65 @@
+/* Tokens of docs/charte.md — the single source the code reads. Components use only the
+   semantic tokens; the light theme is `data-theme="light"` (the "Système" choice is resolved to
+   dark or light in theme.ts, so these two blocks are the only places colours live). */
+:root {
+  color-scheme: light dark;
+
+  --fond: #101012;
+  --fond-lateral: #131316;
+  --surface: #1a1a1f;
+  --surface-2: #212127;
+  --surface-3: #2a2a31;
+  --bord: rgba(255,255,255,.07);
+  --bord-champ: #7b7a83;
+  --texte: #f5f4f2;
+  --texte-2: #a3a2a8;
+  --texte-3: #8f8e96;
+  --accent: #8b7cf6;
+  --sur-accent: #14121f;
+  --accent-texte: #aca2f9;
+  --accent-fond: rgba(139,124,246,.16);
+  --mj: #f2a33c;
+  --mj-fond: rgba(242,163,60,.14);
+  --table: #3fc79a;
+  --table-fond: rgba(63,199,154,.14);
+  --danger: #ec7b6f;
+  --danger-fond: rgba(226,104,91,.14);
+  --focus: #aca2f9;
+
+  --police-titre: ui-serif, Georgia, serif;
+  --police-texte: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --t-12: 12px; --t-13: 13px; --t-14: 14px; --t-16: 16px; --t-22: 22px;
+  --e-1: 4px; --e-2: 8px; --e-3: 12px; --e-4: 16px; --e-5: 24px;
+  --rayon-champ: 8px;
+  --rayon-panneau: 12px;
+  --rayon-pastille: 999px;
+  --duree: 120ms;
+}
+
+:root[data-theme="light"] {
+  --fond: #f4f3f0;
+  --fond-lateral: #ebe9e5;
+  --surface: #ffffff;
+  --surface-2: #f4f3f0;
+  --surface-3: #ebe9e5;
+  --bord: rgba(0,0,0,.09);
+  --bord-champ: #85848d;
+  --texte: #1b1a1f;
+  --texte-2: #4a4952;
+  --texte-3: #65646d;
+  --accent: #5240d0;
+  --sur-accent: #ffffff;
+  --accent-texte: #5240d0;
+  --accent-fond: rgba(82,64,208,.12);
+  --mj: #855000;
+  --mj-fond: rgba(242,163,60,.14);
+  --table: #0a7554;
+  --table-fond: rgba(10,117,84,.14);
+  --danger: #b0332a;
+  --danger-fond: rgba(176,51,42,.10);
+  --focus: #5240d0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root { --duree: 0ms; }
+}

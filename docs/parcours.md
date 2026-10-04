@@ -3,6 +3,10 @@
 > Doc du produit. Sur `epic/kanevas`, la cible du cadrage ; sur `main`, exactement ce qui est
 > construit. Identifiants stables : `B-n` (besoins), `P-n` (parcours), `E-n` (écrans,
 > `docs/ecrans.md`), `AD-n` (décisions, `ARCHITECTURE.md`).
+>
+> **Construit à ce jour** (`kanevas-premiere-fiche`) : P-1 en entier, P-2 étapes 1-2 (sans l'admin),
+> P-3 étape 4 (fiches et sections), P-6 étapes 1-2 (sans recherche), P-7 étape 1 et l'écriture de
+> l'étape 2. Le reste de ce document est la cible.
 
 Kanevas sert à **préparer** des parties de jeu de rôle et à en **garder la mémoire** entre les
 séances : le lore d'un univers, partagé entre le MJ et ses joueurs avec des droits fins par
@@ -125,7 +129,7 @@ demande à son assistant (E-12).
    sur sa **vue d'ensemble** (E-3), en MJ.
 3. Si elle est joueuse : l'accueil lui montre son identifiant et lui dit de le donner à son MJ ;
    après son ajout, l'univers apparaît dans l'accueil.
-*Échec* : Authelia refuse — Kanevas ne montre rien.
+*Échec* : Authelia refuse — Kanevas ne montre que « La connexion a été refusée. » (et un lien « Réessayer »), aucun contenu ; Authelia injoignable — « Authelia ne répond pas pour l'instant. Réessayez dans un moment. » ; chaque page a un lien « Réessayer » qui relance la connexion.
 
 ### P-2 — Réunir sa table (MJ ; admin en recours)
 1. Le MJ ouvre **Membres** (E-4) depuis la navigation de l'univers.
