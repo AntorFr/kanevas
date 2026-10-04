@@ -26,11 +26,12 @@ Ni relations, ni recherche, ni pièces jointes, ni campagnes, ni assistant : tra
   session (`src/services/session.ts`, AD-56) et crée le compte à la première connexion.
 - `src/routes/bouchon.ts` : mode bouchon (AD-55), absent de la table des routes sans `KANEVAS_STUB`.
 - `src/db/` : ouverture du fichier SQLite, `migrations/0001-*.sql`, runner (AD-14).
-- `src/services/` : `comptes`, `univers`, `membres`, `fiches`, `sections`, `droits` — les seules
+- `src/e2e/` : tests d'ensemble (`healthz`, `administration`, navigateur piloté en bouchon).
+- `src/services/` : `comptes`, `univers`, `membres`, `instance`, `fiches`, `sections`, `droits`, `session`, `oidc`, `erreurs`, `types` — les seules
   fonctions qui lisent ou écrivent les données (AD-2) ; `src/routes/` : routes `/api` minces ; `session.ts` pose la garde et sert le build du frontend (`frontend.ts` le localise), `univers.ts` et `instance.ts` portent les routes d'univers et d'instance, `bouchon.ts` le choix de compte de test, `pages.ts` et `erreurs.ts` les pages et erreurs communes.
 - `frontend/` : application React/Vite (AD-57) ; `frontend/src/ui/tokens.css` et
   `frontend/src/ui/` : tokens et composants de `docs/charte.md` ; son build est servi par Fastify.
-- `kanevas-recours-admin` y ajoute `src/services/instance.ts`, ses routes `/api/instance` (AD-86,
+- Administration d'instance : `src/services/instance.ts`, ses routes `/api/instance` (AD-86,
   AD-87) et l'écran E-5.
 - `src/services/llm/` : transports LLM (`transport.ts`, `anthropic-transport.ts`,
   `claude-agent-transport.ts`), repris d'Antre-du-maitre, branchés nulle part.
@@ -47,7 +48,7 @@ dossier des pièces jointes n'existe pas encore.
   tag en porte un). `/healthz` et le tag d'image publié ne
   peuvent donc pas diverger. `package.json` ne porte volontairement aucun
   `version`.
-- **`/healthz` est public**, en texte brut `kanevas <version>`, sans donnée.
+- **`/healthz` est public** (avec `/api/auth/*` et les pages de connexion, AD-15), en texte brut `kanevas <version>`, sans donnée.
   `GET /api/auth/config` (`{oidcEnabled}`) l'est aussi ; aucune autre route
   publique n'expose de contenu.
 - **Le callback OIDC authentifie une identité, rien de plus** : il ouvre une session portant

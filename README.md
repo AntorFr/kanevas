@@ -1,14 +1,14 @@
 # kanevas
 
 Système de gestion de JDR (lore, campagnes, comptes-rendus, droits, cartes).
-Ce dépôt porte le socle (dépôt, image, CI, route de santé) et, sur la branche
-`feature/kanevas-recours-admin`, l'administration d'instance : un compte du groupe Authelia
+Ce dépôt porte le socle (dépôt, image, CI, route de santé) et l'administration
+d'instance : un compte du groupe Authelia
 `parents` voit les univers et leurs membres (jamais le contenu) et les répare (E-5, B-6).
 
 ## Structure
 
 ```txt
-Dockerfile                        Image unique : API Fastify
+Dockerfile                        Image unique : API Fastify + build du frontend
 frontend/                         React/Vite ; écran E-5 : frontend/src/ecrans/administration.tsx
 src/
   server.ts                       Point d'entrée, démarre l'app Fastify
@@ -44,6 +44,8 @@ cp .env.example .env
 npm run dev            # ou : npm run build && npm start (sert dist/server.js)
 curl http://localhost:3001/healthz   # -> "kanevas 0.0.0-dev"
 ```
+
+Sans docker (pod, poste nu), les tests se lancent avec `npm ci && npm run typecheck && npm test` (Node 20 ou plus). `npm run dev` ne sert que l'API : pour voir l'interface, `npm run build && KANEVAS_STUB=1 node dist/server.js`.
 
 ## Lancer en bouchon (recette)
 

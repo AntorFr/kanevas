@@ -40,7 +40,7 @@
   LLM. Reintroduce it only alongside the feature that actually activates this
   transport.
 - `routes/auth.ts` authenticates the identity (OIDC login/callback) and opens
-  the signed session cookie (`routes/session.ts`, AD-56), creating the account
+  the signed session cookie (`services/session.ts` signs it, `routes/session.ts` guards, AD-56), creating the account
   on first sign-in (AD-13). Universe roles never come from Authelia nor the
   session (AD-9): they are read from the members table at each request. Routes
   needing a session are registered in the guarded scope of

@@ -5,7 +5,7 @@
 **État :** la branche `feature/kanevas-recours-admin` empile le socle, la première fiche et le
 recours admin ; rien n'est fusionné dans `main`. Recours admin assemblé : un compte du groupe
 `parents` voit les univers de l'instance et leurs membres, en ajoute, change le rôle, en retire
-(E-5, B-6), sans jamais lire le contenu. Typecheck, build et 111 tests verts.
+(E-5, B-6), sans jamais lire le contenu. Typecheck, build et 130 tests verts (dont `src/e2e/administration.test.ts`, navigateur piloté en bouchon).
 
 - `src/services/instance.ts` : seul module à accepter le drapeau `admin` (AD-86), ne touche que
   `membres` ; les règles de membres sont le noyau de `services/membres.ts`, partagé avec les
