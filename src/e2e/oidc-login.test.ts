@@ -145,31 +145,43 @@ test('B-28 login sends the visitor to Authelia with the kanevas client and the c
   });
 });
 
-test('B-28 the return from Authelia answers the identifier of the connected account', async () => {
+test('B-28 the return from Authelia opens the session of the connected account, whose identifier the session route answers', async () => {
   await withLogin({}, async ({ base }) => {
     const login = await fetch(`${base}/api/auth/oidc/login`, { redirect: 'manual' });
     const state = new URL(login.headers.get('location') ?? '').searchParams.get('state');
     const res = await fetch(`${base}/api/auth/oidc/callback?code=abc&state=${state}`, {
       headers: { cookie: txCookie(login) },
+      redirect: 'manual',
     });
-    assert.equal(res.status, 200);
-    const body = (await res.json()) as Record<string, unknown>;
-    assert.equal(body.authenticated, true);
-    assert.equal(body.subject, 'acct-7f3a-lea');
+    assert.equal(res.status, 302);
+    assert.equal(res.headers.get('location'), '/');
+    const session = res.headers.getSetCookie().find((c) => c.startsWith('kanevas_session='));
+    assert.ok(session, 'the return must open the session cookie');
+    const moi = await fetch(`${base}/api/moi`, { headers: { cookie: session.split(';')[0] } });
+    assert.equal(moi.status, 200);
+    const body = (await moi.json()) as Record<string, unknown>;
     assert.equal(body.username, 'lea');
   });
 });
 
-test('B-28 a successful return opens no session: only the transaction cookie is touched', async () => {
+test('B-28 a successful return opens the session and clears the transaction cookie, touching no other cookie', async () => {
   await withLogin({}, async ({ base }) => {
     const login = await fetch(`${base}/api/auth/oidc/login`, { redirect: 'manual' });
     const state = new URL(login.headers.get('location') ?? '').searchParams.get('state');
     const res = await fetch(`${base}/api/auth/oidc/callback?code=abc&state=${state}`, {
       headers: { cookie: txCookie(login) },
+      redirect: 'manual',
     });
-    for (const c of res.headers.getSetCookie()) {
-      assert.ok(c.startsWith('kanevas_oidc_tx='), `unexpected cookie set: ${c}`);
+    const cookies = res.headers.getSetCookie();
+    for (const c of cookies) {
+      assert.ok(
+        c.startsWith('kanevas_oidc_tx=') || c.startsWith('kanevas_session='),
+        `unexpected cookie set: ${c}`,
+      );
     }
+    assert.ok(cookies.some((c) => c.startsWith('kanevas_session=') && !/Max-Age=0/i.test(c)), 'session cookie set');
+    const tx = cookies.find((c) => c.startsWith('kanevas_oidc_tx='));
+    assert.ok(tx && /Max-Age=0|Expires=Thu, 01 Jan 1970/i.test(tx), 'transaction cookie cleared');
   });
 });
 
