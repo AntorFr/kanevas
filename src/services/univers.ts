@@ -1,5 +1,5 @@
 import type { Db } from '../db/db.js';
-import { exigerRole } from './droits.js';
+import { exigerMJ, exigerRole } from './droits.js';
 import { invalide } from './erreurs.js';
 import type { Role, Univers } from './types.js';
 
@@ -48,6 +48,21 @@ export function listerUnivers(db: Db, compteId: number): (Univers & { role: Role
     )
     .all(compteId) as (UniversRow & { role: Role })[];
   return rows.map((r) => ({ ...versUnivers(r), role: r.role }));
+}
+
+/** The GM renames the universe and rewrites its description (name 1–80, description ≤ 500). */
+export function modifierUnivers(
+  db: Db,
+  compteId: number,
+  universId: number,
+  entree: { nom: string; description: string },
+): Univers {
+  exigerMJ(db, universId, compteId);
+  const nom = entree.nom.trim();
+  if (nom.length < 1 || nom.length > 80) throw invalide('Le nom doit faire de 1 à 80 caractères.');
+  if (entree.description.length > 500) throw invalide('La description doit faire 500 caractères au plus.');
+  db.prepare('UPDATE univers SET nom = ?, description = ? WHERE id = ?').run(nom, entree.description, universId);
+  return versUnivers(db.prepare('SELECT * FROM univers WHERE id = ?').get(universId) as UniversRow);
 }
 
 /** Not found for a caller without a role (B-4). */

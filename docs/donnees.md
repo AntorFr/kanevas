@@ -17,7 +17,7 @@ façon (AD-2).
 | **compte** | identifiant Authelia (`username`, unique), date de création ; aucun rôle | — | lui-même ; les membres d'un univers commun (son identifiant) ; un MJ qui tape un identifiant exact pour l'ajouter apprend seulement s'il existe ; l'admin d'instance | créé à la première connexion (B-1) |
 | **univers** | nom, description, date de création | → système de jeu (facultatif) | ses membres ; son nom : l'admin d'instance | création : tout compte (B-2) ; modification : MJ |
 | **membre** | (univers, compte, rôle MJ \| Joueur) | univers, compte | les membres de l'univers ; l'admin d'instance | MJ de l'univers ; admin d'instance (cette table seulement, AD-9) ; au moins un MJ par univers (B-5) |
-| **système de jeu** | nom | ← univers ; → gabarits | tout compte (nom seul) ; le contenu : membres d'un univers rattaché | création : tout MJ ; référentiel : MJ d'un univers rattaché |
+| **système de jeu** | nom | ← univers ; → gabarits | tout MJ d'un univers (nom seul) ; le contenu : membres d'un univers rattaché | création : tout MJ ; référentiel : MJ d'un univers rattaché |
 | **gabarit** | type (règle, créature, objet), nom, contenu | système de jeu | membres d'un univers rattaché | MJ d'un univers rattaché (B-14) |
 | **fiche** | type (personnage, lieu, faction, objet, événement, quête, compte-rendu), titre, créée le, modifiée le, charge utile versionnée par type (AD-6) — personnage : PJ \| PNJ ; compte-rendu : sa campagne | univers ; → sections | qui lit au moins une de ses sections ; sinon elle n'existe pas (B-9) | création : MJ ; un compte-rendu : tout membre (B-19) |
 | **section** | titre, ordre, contenu, modifiée le ; lecture et écriture des joueurs ; auteur (un compte) avec sa lecture et son écriture | fiche ; → relations, pièces jointes | le MJ ; un joueur selon les bascules (AD-19) | contenu : qui a l'écriture ; structure et audience : MJ |
@@ -54,6 +54,31 @@ avec `kanevas-relier-chercher`, qui prend le numéro suivant, AD-51).
 `modifie_le` de la fiche suit la dernière écriture d'une de ses sections. `ordre` est renuméroté
 de 1 à n à chaque réordonnancement ou retrait. Le mode Joueur est calculé par le service, jamais
 par le client : il lit comme un Joueur **qui n'est l'auteur d'aucune section** (AD-39).
+
+## Migration `kanevas-systemes`
+
+> Fichier : `src/db/migrations/0002-systemes.sql` — **numéro provisoire** (0002).
+>
+> Pendant le build, le fichier prend le numéro qui suit le dernier présent sur la branche : **numéro
+> provisoire**. Il n'est définitif qu'à la fusion : la phase merge (l'étape de la chaîne qui fusionne les PR après la recette) le recale sur le dernier fusionné si
+> une autre tranche est entrée avant (AD-51), et corrige alors cette note. Deux tables, une colonne : aucune entité de plus que le cadrage.
+
+| Table | Colonnes (hors clés) | Contraintes |
+|---|---|---|
+| `systemes_jeu` | `id`, `nom`, `cree_le` | `nom` 1 à 80 caractères après rognage ; **unique sans tenir compte de la casse** (`COLLATE NOCASE`) |
+| `gabarits` | `id`, `systeme_id`, `type` (`regle` \| `creature` \| `objet`), `nom`, `contenu` (texte brut, AD-58), `version` (entier, 1 à la création, AD-85), `cree_le`, `modifie_le` | `type` contraint à ces trois valeurs, fixé à la création ; `nom` 1 à 120 caractères ; `contenu` 20 000 au plus ; `nom` unique par (système, type) sans tenir compte de la casse ; **aucune suppression** |
+| `univers` (ajout) | `systeme_id`, facultatif, → `systemes_jeu` | `NULL` par défaut (aucun univers existant n'est rattaché) |
+
+Un univers a **au plus un** système ; un système peut servir plusieurs univers. Détacher remet
+`systeme_id` à `NULL` et ne touche à aucun gabarit. Rien n'est amorcé : le catalogue naît vide, les
+systèmes sont créés par les MJ.
+
+**Droits** (AD-25) : le catalogue (`id`, `nom`) se lit par tout compte qui est MJ d'au moins un univers ;
+un système, ses gabarits et le nombre d'univers qui l'utilisent se lisent par les membres d'un
+univers rattaché ; les gabarits s'écrivent par ses MJ. **Le nombre N est le seul renseignement sur les
+autres univers** : ni leur nom, ni leurs membres (règle 3). Créer un système : tout MJ d'un univers,
+au catalogue, avec ou sans rattachement dans le même geste. Modifier le nom et la description d'un
+univers : MJ.
 
 ## Règles de droits, en une phrase chacune
 

@@ -2,14 +2,19 @@
 
 > MàJ : 2026-10-04
 
-**État :** `main` porte le socle et la première fiche (comptes, univers, membres, fiches, sections et
-droits, session et mode bouchon, frontend E-1 à E-4, E-8, E-9). `feature/kanevas-plafond-sections`
-y ajoute le plafond serveur de 20 000 caractères du contenu d'une section (AD-91) : PR ouverte vers
-`main`, non fusionnée. Typecheck, build et 229 tests verts sous Node 22. Carte et invariants :
-`ARCHITECTURE.md`.
+**État :** `main` porte le socle et la première fiche (comptes, univers, membres, fiches, sections,
+droits, session et mode bouchon, frontend E-1 à E-4, E-8, E-9, plafond de section AD-91).
+`feature/kanevas-systemes` y ajoute, en PR non fusionnée : la migration `0002-systemes.sql`
+(`systemes_jeu`, `gabarits`, `univers.systeme_id`), les services `systemes.ts` et `modifierUnivers`,
+les routes `src/routes/systemes.ts`, les écrans E-14 (Paramètres) et E-15 (Système de jeu) et le
+bloc « Système de jeu » de E-3 (AD-83 à AD-85). Typecheck et tests verts après fusion de `main`
+dans la branche. Carte et invariants : `ARCHITECTURE.md`.
 
-**Reste :** la recette de Monsieur au navigateur (PUT de 20 001 caractères refusé, écran qui garde le
-texte), puis la fusion et le tag `v*` qui produit l'image ; `k8s-home-lab` épingle ensuite ce tag.
+**Reste :** la recette de Monsieur au navigateur en bouchon (critère de la feature : Antor rattache
+« Lame d'Ébène » à « CoF Mini » et y ajoute une créature ; Mira rattache « Les Landes grises » et la
+voit ; Admin crée « Brume », non rattachée, sans système), puis la fusion et le tag `v*`. Rien n'est amorcé : univers et système se créent à la main
+(Antor crée « Lame d'Ébène » par E-2, ajoute Léa après sa première connexion ; Mira crée « Les Landes grises » ; Admin « Brume »). Le catalogue
+naît vide : le premier MJ crée « CoF Mini » depuis E-14. Aucune image n'existe avant le tag.
 
 **Pièges :**
 - Node 20 est la cible (CI, Dockerfile). `better-sqlite3` est donc épinglé en `^12` : la 13 exige
@@ -17,6 +22,13 @@ texte), puis la fusion et le tag `v*` qui produit l'image ; `k8s-home-lab` épin
 - La suite a été jouée sous Node 22 dans les pods de la chaîne (pas de Docker) ; la CI Node 20 fait foi.
 - La CI ne pousse d'image que sur `main` et sur un tag `v*` ; sur une PR elle ne fait qu'un build de
   validation. L'image testable n'existe qu'après le tag, posé à la fusion.
+- **Numéro de migration provisoire** : `0002-systemes.sql` ; si une autre tranche fusionne une migration
+  avant, la phase merge la recale (AD-51).
+- Systèmes : l'accès passe toujours par `/api/univers/:id/systeme…` (AD-83) ; un refus (compte sans rôle,
+  univers non rattaché) répond comme un identifiant inconnu (404) ; aucune réponse ne nomme un autre
+  univers (AD-84) ; écriture de gabarit périmée = 409 `gabarit_modifie` (AD-85). Ni suppression, ni import
+  de référentiel, ni visibilité différenciée des gabarits (hors tranche).
+- Rendu des écrans E-14 et E-15 non vérifié au navigateur (pas de navigateur dans les pods).
 - P-7 : seule l'écriture du joueur sur sa section est livrée ; portrait (`kanevas-fichiers`) et
   demande à l'assistant (`kanevas-assistant-membre`) restent aux tranches suivantes.
 - « Connexion perdue » (frontend/src/api.ts) : sondé toutes les 3 s sur `/healthz` tant que le bandeau
