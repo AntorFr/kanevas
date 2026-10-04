@@ -1,12 +1,14 @@
 import { useState } from 'react';
 
+import { useLimiteContenu } from '../../cadre-contexte';
 import { ErreurApi, appeler, lire, useConnexionPerdue } from '../../api';
 import type { Role } from '../../types';
 import { Bouton, Champ, Panneau } from '../../ui';
 import { blocsSectionVisibles } from './registre';
 import type { Audience, FicheVue, SectionVue } from './types';
 
-export const MAX_CONTENU = 20000;
+// Same text whether the screen or the server refuses (docs/ecrans.md, AD-91); the limit itself comes from /api/moi.
+const TROP_LONG = '20 000 caractères au plus.';
 const ECHEC = 'L’action n’a pas abouti. Réessayez.';
 
 export interface Joueur {
@@ -50,6 +52,7 @@ function lireBrouillon(cle: string): { texte: string; version: number } | undefi
 export function PanneauSection(p: Props) {
   const { section, fiche, role } = p;
   const perdue = useConnexionPerdue();
+  const maxContenu = useLimiteContenu();
   const cle = cleBrouillon(p.universId, fiche.id, section.id);
   const [brouillon] = useState(() => (section.peutEcrire ? lireBrouillon(cle) : undefined));
   const [edition, setEdition] = useState(brouillon !== undefined);
@@ -113,7 +116,7 @@ export function PanneauSection(p: Props) {
 
   async function enregistrer() {
     if (enCours) return;
-    if (texte.length > MAX_CONTENU) return setErreurTexte('20 000 caractères au plus.');
+    if (maxContenu !== undefined && texte.length > maxContenu) return setErreurTexte(TROP_LONG);
     setEnCours('enregistrer');
     setEchec(undefined);
     try {
@@ -125,6 +128,7 @@ export function PanneauSection(p: Props) {
       await p.rafraichir();
     } catch (e) {
       if (e instanceof ErreurApi && e.code === 'section_modifiee') setPerime(true);
+      else if (e instanceof ErreurApi && e.statut === 400) setErreurTexte(TROP_LONG);
       else if (e instanceof ErreurApi && e.statut === 403) setEchec('Vous ne pouvez plus modifier cette section.');
       else setEchec(ECHEC);
     } finally {
@@ -194,7 +198,7 @@ export function PanneauSection(p: Props) {
               zone
               etiquette={`Contenu de « ${section.titre} »`}
               value={texte}
-              erreur={erreurTexte ?? (texte.length > MAX_CONTENU ? '20 000 caractères au plus.' : undefined)}
+              erreur={erreurTexte ?? (maxContenu !== undefined && texte.length > maxContenu ? TROP_LONG : undefined)}
               onChange={(e: { target: { value: string } }) => saisir(e.target.value)}
             />
             <div className="actions">

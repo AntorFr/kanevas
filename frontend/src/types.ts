@@ -10,4 +10,5 @@ export interface UniversListe {
 export interface Moi {
   username: string;
   groups: string[];
+  limites: { contenuSection: number };
 }
