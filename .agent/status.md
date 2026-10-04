@@ -1,23 +1,33 @@
 # Status — kanevas
 
-> MàJ : 2026-10-03
+> MàJ : 2026-10-04
 
-**État :** socle posé sur `feature/kanevas-socle` (PR ouverte, non fusionnée) :
-`/healthz` (`kanevas <version>`, version = build-arg `APP_VERSION`), OIDC
-d'identité, transports LLM réservés, Dockerfile (utilisateur `node`, mais le pod tourne en root au cluster), CI
-`docker-publish.yml` (test puis image GHCR). Typecheck et 8 tests verts. Carte et
-invariants : `ARCHITECTURE.md`.
+**État :** `feature/kanevas-premiere-fiche` assemblée (PR #2 vers `main`, non fusionnée) : comptes,
+univers, membres, fiches, sections et droits (`src/services/`, migration 0001), session et mode
+bouchon, routes `/api`, frontend React (E-1 à E-4, E-8, E-9), charte et tokens. Typecheck, build et
+173 tests verts sous Node 22 (dont `src/e2e/` sous Chromium, ignorés sans Playwright : voir le README). Carte et invariants :
+`ARCHITECTURE.md`.
+
+**Reste :** la recette de Monsieur au navigateur (critère de sortie de la feature), puis la fusion
+et le tag `v*` qui produit l'image ; `k8s-home-lab` épingle ensuite ce tag.
 
 **Pièges :**
-- La CI ne publie `ghcr.io/antorfr/kanevas:0.1.0` que sur le tag `v0.1.0`, à
-  pousser après la fusion de la PR. Sur la branche, aucune image n'existe (la
-  PR ne fait qu'un build sans push). `k8s-home-lab` épingle ce tag.
-- `docker build` n'a jamais tourné dans les pods de la chaîne (pas de démon) :
-  vérifié avec Node (`APP_VERSION=0.1.0 node dist/server.js`). Le premier vrai
-  build est celui de la CI.
+- Node 20 est la cible (CI, Dockerfile). `better-sqlite3` est donc épinglé en `^12` : la 13 exige
+  Node ≥ 22 et plante (SIGSEGV) sous Node 20. Ne pas remonter sans changer aussi la CI et le Dockerfile.
+- La suite a été jouée sous Node 22 dans les pods de la chaîne (pas de Docker) ; la CI Node 20 fait foi.
+- La CI ne pousse d'image que sur `main` et sur un tag `v*` ; sur une PR elle ne fait qu'un build de
+  validation. L'image testable n'existe qu'après le tag, posé à la fusion.
+- P-7 : seule l'écriture du joueur sur sa section est livrée ; portrait (`kanevas-fichiers`) et
+  demande à l'assistant (`kanevas-assistant-membre`) restent aux tranches suivantes.
+- « Connexion perdue » (frontend/src/api.ts) : sondé toutes les 3 s sur `/healthz` tant que le bandeau
+  est levé ; il disparaît seul au retour du serveur.
+- Le serveur ne plafonne pas la taille du contenu d'une section (20 000 caractères seulement côté
+  écran) : à décider.
+- Doublons connus, non traités : `corps(request)` (routes/fiches.ts, univers.ts), message d'échec
+  des écrans, texte du bandeau bouchon (pages.ts / Cadre.tsx).
 
-**Suivant :** `kanevas-identite` (session, rôles AD-9, première écriture dans
-`/data`).
+**Suivant :** relations et recherche (`kanevas-relier-chercher`), pièces jointes, campagnes,
+administration.
 
 **Tâche `kanevas-pf-donnees` (branche `task/kanevas-pf-donnees`) :** `src/db/`
 (better-sqlite3, migration 0001, runner idempotent) et `src/services/`

@@ -4,9 +4,8 @@ import { env } from '../../config/env.js';
 import type { LlmCompletionInput, LlmTextTransport } from './transport.js';
 
 /**
- * Transport API Anthropic directe (facturation à la clé API). Repris
- * d'Antre-du-maitre (AD-10), inchangé — aucune route de ce socle ne
- * l'appelle encore.
+ * Direct Anthropic API transport (billed per API key). Taken over from
+ * Antre-du-maitre (AD-10), unchanged — no route of this base calls it yet.
  */
 export class AnthropicTransport implements LlmTextTransport {
   readonly name = 'anthropic';
@@ -25,8 +24,8 @@ export class AnthropicTransport implements LlmTextTransport {
   }
 
   async complete(input: LlmCompletionInput): Promise<string> {
-    // Le prompt système est volumineux et stable : on le met en cache
-    // Anthropic pour réduire latence et coût des tours successifs.
+    // The system prompt is large and stable: cache it on the Anthropic side
+    // to cut latency and cost of successive turns.
     const request = {
       model: this.model,
       max_tokens: input.maxTokens,

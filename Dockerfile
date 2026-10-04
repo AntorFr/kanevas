@@ -4,8 +4,11 @@ FROM node:20-bookworm-slim AS deps
 
 WORKDIR /app
 
+# python3, make and g++: better-sqlite3 compiles itself when no prebuilt binary
+# is found for the base image (node-gyp). Build stage only: the runtime stage
+# copies the compiled node_modules and needs none of them.
 RUN apt-get update \
-  && apt-get install -y --no-install-recommends ca-certificates openssl \
+  && apt-get install -y --no-install-recommends ca-certificates openssl python3 make g++ \
   && rm -rf /var/lib/apt/lists/*
 
 COPY package.json package-lock.json ./
@@ -16,6 +19,7 @@ FROM deps AS build
 
 COPY tsconfig.json ./
 COPY src ./src
+COPY frontend ./frontend
 
 RUN npm run build
 
