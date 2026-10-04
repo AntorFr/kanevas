@@ -18,3 +18,8 @@
 .fenetre .choix { display: flex; gap: var(--e-4); margin: var(--e-3) 0; }
 .fenetre .choix label { display: inline-flex; gap: var(--e-2); align-items: center; }
 .actuelle { color: var(--texte-2); white-space: pre-wrap; overflow-wrap: anywhere; border-left: 2px solid var(--bord-champ); padding-left: var(--e-3); }
+
+.recherche { display: flex; align-items: flex-start; gap: var(--e-3); flex-wrap: wrap; margin: var(--e-3) 0; }
+.recherche .champ { flex: 1; min-width: 14rem; max-width: 26rem; }
+.recherche textarea { resize: none; field-sizing: content; }
+.recherche .actions { margin-top: var(--e-5); }
