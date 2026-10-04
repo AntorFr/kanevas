@@ -8,21 +8,20 @@ import type {
 } from './transport.js';
 
 /**
- * Claude Agent SDK transport: uses the Claude subscription (Pro/Max) instead
- * of billing an API key. The SDK drives the Claude Code runtime embedded in
- * the npm package and authenticates through CLAUDE_CODE_OAUTH_TOKEN (generated
- * once with `claude setup-token`) or, in dev, through the machine's
+ * Claude Agent SDK transport: consumes the Claude subscription (Pro/Max)
+ * instead of billing an API key. The SDK drives the Claude Code runtime
+ * embedded in the npm package and authenticates via CLAUDE_CODE_OAUTH_TOKEN
+ * (generated once with `claude setup-token`) or, in dev, via the machine's
  * `claude login` credentials.
  *
- * Deliberately minimal use: a single turn, no tool, custom system prompt —
+ * Deliberately minimal usage: a single turn, no tool, custom system prompt —
  * the SDK is only a pipe to the model.
  *
- * Selective take-over of Antre-du-maitre (AD-10): the admin window that
+ * Selectively reused from Antre-du-maitre (AD-10): the admin window that
  * generates and stores a token on disk (`services/claude-token.ts`) is not
- * taken over here — it would be a content route, out of scope for a base that
- * still calls no LLM (fonctionnelle.md, out of scope). To be reintroduced by
- * the feature that actually activates this transport, if the need is
- * confirmed.
+ * reused here — it would be a content route, out of scope for a socle that
+ * calls no LLM yet. To be reintroduced by the feature that actually
+ * activates this transport, if the need is confirmed.
  */
 export class ClaudeAgentTransport implements LlmTextTransport {
   readonly name = 'claude-agent';

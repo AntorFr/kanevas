@@ -1,8 +1,8 @@
 // Transport abstraction: a future application engine builds the prompts and
 // validates the answers; the transport only sends an exchange (system +
 // messages) to a model and returns the raw text of the answer.
-// Taken over from Antre-du-maitre (AD-10): no route of this base calls these
-// transports yet (fonctionnelle.md, out of scope).
+// Reused from Antre-du-maitre (AD-10): no route of this socle calls these
+// transports yet.
 
 export interface LlmTransportMessage {
   role: 'user' | 'assistant';
@@ -15,13 +15,13 @@ export interface LlmCompletionInput {
   maxTokens: number;
   /**
    * If provided and supported by the transport, receives the raw text of the
-   * answer accumulated so far while it is generated (JSON being written).
+   * answer accumulated as it is generated (JSON being written).
    */
   onTextDelta?: (rawTextSoFar: string) => void;
 }
 
 export interface LlmTextTransport {
-  /** Provider name, used in the LLM error logs. */
+  /** Provider name, used in LLM error logs. */
   readonly name: string;
   readonly model: string;
   complete(input: LlmCompletionInput): Promise<string>;

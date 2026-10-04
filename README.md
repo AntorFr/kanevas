@@ -38,12 +38,18 @@ docker run --rm -p 3001:3001 -v "$PWD":/src -w /src node:20-bookworm-slim sh -c 
 # puis, depuis l'hôte : curl http://localhost:3001/healthz
 ```
 
+Ce bloc ne pose pas de `.env` : les valeurs par défaut suffisent pour `/healthz`, OIDC
+reste désactivé (`/api/auth/oidc/login` répond 404). Pour l'activer, créer `.env` (voir
+`.env.example`) à la racine : le montage `-v "$PWD":/src` le rend lisible. Ce bloc crée
+aussi `node_modules/` dans le dépôt de l'hôte (ignoré par git) ; il appartient à root : à supprimer par
+`docker run --rm -v "$PWD":/src -w /src node:20-bookworm-slim rm -rf node_modules` ou `sudo rm -rf node_modules`.
+
 Ou, avec un Node 20+ installé localement :
 
 ```bash
 npm install
 cp .env.example .env
-npm run dev            # ou : npm run build && npm start (sert dist/server.js)
+npm run dev            # ou, sans rechargement : npm run build && npm start (`npm start` seul échoue sans `dist/`, ignoré par git)
 curl http://localhost:3001/healthz   # -> "kanevas 0.0.0-dev"
 ```
 
@@ -103,8 +109,9 @@ curl http://localhost:3001/healthz   # -> "kanevas 0.1.0"
 Sur un tag, la CI dérive ce même build-arg du tag semver poussé (`docker/metadata-action`)
 : pousser `v0.1.0` publie `ghcr.io/antorfr/kanevas:0.1.0` avec `APP_VERSION`
 embarqué à `0.1.0` — une seule source de vérité pour la version affichée et le
-tag publié. Hors tag (`main`, PR), la valeur est celle de `docker/metadata-action` pour la référence (le nom de
-branche, par exemple `main`), donc pas un semver : seul un tag donne une version fiable.
+tag publié. Hors tag (`main`, PR), la valeur n'est pas un semver : `metadata-action` y sort le nom
+de la ref (`main`, `pr-<n>`), d'après sa documentation et non constaté en CI. Seul un tag
+donne une version fiable.
 
 ## OIDC
 

@@ -10,12 +10,12 @@ export type OidcSettings = {
 };
 
 /**
- * Returns the OIDC config if complete, else null (no sign-in possible). The
- * four variables go together: setting only some leaves OIDC unconfigured and
- * the routes answer 404 (an empty or invalid value fails in env.ts instead).
+ * Returns the OIDC config if complete, otherwise null (no login possible).
+ * The four variables go together: setting only some leaves OIDC unconfigured
+ * and the routes answer 404 (an empty or invalid value fails in env.ts).
  *
- * Taken over from Antre-du-maitre (AD-10): carries no role resolution here —
- * `roleFromGroups` is not taken over, AD-9 stays for kanevas-identite.
+ * Reused from Antre-du-maitre (AD-10): carries no role resolution here —
+ * `roleFromGroups` is not reused, AD-9 is left to kanevas-identite.
  */
 export function getOidcSettings(): OidcSettings | null {
   const { OIDC_ISSUER, OIDC_CLIENT_ID, OIDC_CLIENT_SECRET, OIDC_REDIRECT_URI } =
@@ -42,14 +42,15 @@ export function isOidcEnabled() {
   return getOidcSettings() !== null;
 }
 
-// Lazy discovery, cached: the app must start even if Authelia is briefly
-// unreachable. A failure empties the cache so the next attempt discovers again.
+// Lazy, cached discovery: the app must start even if Authelia is briefly
+// unreachable. A failure clears the cache so the next attempt retries the
+// discovery.
 let cachedConfiguration: Promise<oidc.Configuration> | null = null;
 
 export function getOidcConfiguration(settings: OidcSettings) {
   if (!cachedConfiguration) {
     // Explicit client_secret_basic: openid-client v6 defaults to
-    // client_secret_post, which Authelia refuses (its default is basic).
+    // client_secret_post, which Authelia rejects (its default is basic).
     cachedConfiguration = oidc
       .discovery(
         new URL(settings.issuer),
