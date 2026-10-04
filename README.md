@@ -22,7 +22,7 @@ src/
   services/llm/                   Transports LLM repris d'Antre-du-maitre,
                                    réservés aux futures features — aucune
                                    route de ce socle ne les appelle
-.github/workflows/docker-publish.yml   CI : build, typecheck, image GHCR
+.github/workflows/docker-publish.yml   CI : typecheck, tests, puis image GHCR (les tests bloquent l'image)
 ```
 
 ## Démarrage local
@@ -59,7 +59,8 @@ Où vivent les données : dans l'image, `/data/kanevas.db` du conteneur (perdue 
 chaque lancement) ; sans docker, `./data/kanevas.db` et `./data/session.key` (ignorés par git ; `DB_PATH`
 déplace la base, `rm -r data` repart de zéro). Aucun univers n'existe au départ : en Antor, « Créer un
 univers » (`/univers/nouveau`) ; on change de compte par « Se déconnecter » de la barre latérale.
-`npm run dev` ne sert que l'API : l'interface demande `npm run build`.
+`npm run dev` ne sert que l'API : l'interface demande `npm run build` (ou `npm run dev:front`, Vite seul).
+Le conteneur de « Démarrage local » réécrit `node_modules` de l'hôte avec des binaires Linux : n'enchaînez pas avec un Node local sans `rm -r node_modules`.
 
 ## Réglages
 

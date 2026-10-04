@@ -57,7 +57,7 @@ dossier des pièces jointes n'existe pas encore.
   ou invalide fait échouer le démarrage.
 - **Cinq tables, aucun ORM** : `comptes`, `univers`, `membres`, `fiches`, `sections` (migration
   0001). Aucune requête SQL hors de `src/services/` et `src/db/`.
-- **Toute route hors `/healthz` et `/api/auth/*` est gardée par la session** ; sous `/api` un
+- **Toute route est gardée par la session, sauf `/healthz`, `/api/auth/*` (dont la déconnexion) et les pages de connexion (`/connexion-bouchon`, « Connexion refusée »)** ; sous `/api` un
   défaut de session répond 401, ailleurs il redirige vers la connexion (AD-15).
 - **Rien n'appelle un LLM** : les transports compilent mais ne sont reliés à
   aucune route. Aucun secret `ANTHROPIC_API_KEY` n'est déployé.
@@ -101,7 +101,7 @@ Authelia (OIDC) : identité seulement.
   ne parle qu'au backend, jamais à la base ni au disque. Le fil de l'assistant vit dans la page
   (AD-28).
 - **Backend Fastify** : le seul point d'accès aux données, au disque, au fournisseur LLM et à
-  Codex (AD-4). Toute route hors `/api` est gardée par la session (AD-15) ; seul `/healthz` est
+  Codex (AD-4). Toute route est gardée par la session (AD-15) ; seul `/healthz` est
   public.
 - **Fonctions de service** : la seule implémentation de chaque lecture et écriture, avec ses
   gardes (`peutLireSection`, `peutEcrireSection`, `peutVoirFiche`, `peutLirePieceJointe`).
@@ -131,7 +131,7 @@ Les numéros sont stables. Une décision retirée garde son numéro, avec ce qui
 | AD-12 | *Remplacée par AD-18 et AD-19.* |
 | AD-13 | Compte créé à la première authentification (`preferred_username`). |
 | AD-14 | Migrations : fichiers SQL numérotés, appliqués au démarrage, sans ORM. |
-| AD-15 | Toute route hors `/api` gardée par la session (cookie signé), sinon redirection vers Authelia — en mode bouchon, vers le choix d'un compte de test (AD-55). |
+| AD-15 | Toute route gardée par la session (cookie signé), sauf `/healthz`, `/api/auth/*` et les pages de connexion ; sans session, sous `/api` 401, ailleurs redirection vers Authelia — en mode bouchon, vers le choix d'un compte de test (AD-55). |
 | AD-16 | Un seul routeur frontend, `react-router` ; chaque tranche y enregistre ses écrans. |
 | AD-17 | Charge utile v1 vide pour tous les types, sauf personnage (PJ \| PNJ) et compte-rendu (sa campagne) ; le contenu est dans les sections. |
 | AD-18 | Le MJ lit et écrit toute section de son univers. |
