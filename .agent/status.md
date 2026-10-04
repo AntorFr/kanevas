@@ -47,3 +47,11 @@ Pas de navigateur dans le pod : rendu non vérifié visuellement, ni test de con
 dans `frontend/src/ecrans/`. Blocs de E-3 : un fichier dans `ecrans/vue-ensemble/blocs/` (export
 par défaut `Bloc`), trouvé par `vue-ensemble/registre.ts`. Le service refuse aussi une
 description de plus de 500 caractères. Pas encore de tests ; rendu non vérifié au navigateur (pas de navigateur dans le pod).
+
+**Tâche `kanevas-sy-donnees` (branche `task/kanevas-sy-donnees`) :** migration `0002-systemes.sql`
+(**numéro provisoire**, AD-51 : `systemes_jeu`, `gabarits`, `univers.systeme_id` NULL), services
+`src/services/systemes.ts` (`listerSystemes`, `creerSysteme`, `rattacherSysteme`,
+`creerEtRattacherSysteme`, `lireSysteme`, `listerGabarits`, `creerGabarit`, `modifierGabarit`) et
+`modifierUnivers` dans `univers.ts`. Erreurs : conflit de détail `nom_pris` ou `gabarit_modifie`.
+Le test existant `migration: cinq tables…` attend 5 tables : à mettre à jour par le testeur.
+Pas encore de tests des nouveaux services ni de routes.
