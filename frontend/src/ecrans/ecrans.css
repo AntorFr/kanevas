@@ -39,3 +39,6 @@
 .entree-apercu { flex: 1; min-width: 0; color: var(--texte-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .entree-detail, .entree-formulaire { padding: var(--e-2) var(--e-4) var(--e-4); }
 .entree-contenu { white-space: pre-wrap; overflow-wrap: anywhere; }
+
+/* E-3: the empty-region message hides as soon as a block actually rendered something. */
+.blocs:has(> :not(.etat-vide-blocs)) > .etat-vide-blocs { display: none; }

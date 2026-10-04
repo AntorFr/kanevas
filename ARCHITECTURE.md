@@ -25,14 +25,14 @@ Ni relations, ni recherche, ni pièces jointes, ni campagnes, ni assistant : tra
 - `src/routes/auth.ts`, `src/services/oidc.ts` : login et callback OIDC ; le callback ouvre la
   session (`src/services/session.ts`, AD-56) et crée le compte à la première connexion.
 - `src/routes/bouchon.ts` : mode bouchon (AD-55), absent de la table des routes sans `KANEVAS_STUB`.
-- `src/db/` : ouverture du fichier SQLite, `migrations/0001-*.sql`, runner (AD-14).
-- `src/services/` : `comptes`, `univers`, `membres`, `fiches`, `sections`, `droits` — les seules
+- `src/db/` : ouverture du fichier SQLite, `migrations/0001-*.sql`, `0002-systemes.sql`, runner (AD-14).
+- `src/services/` : `comptes`, `univers`, `membres`, `fiches`, `sections`, `droits`, `systemes` — les seules
   fonctions qui lisent ou écrivent les données (AD-2) ; `src/routes/` : routes `/api` minces.
 - `frontend/` : application React/Vite (AD-57) ; `frontend/src/ui/tokens.css` et
   `frontend/src/ui/` : tokens et composants de `docs/charte.md` ; son build est servi par Fastify.
-- `kanevas-systemes` y ajoute `src/services/systemes.ts` (catalogue, rattacher, créer et rattacher,
-  gabarits), la modification d'un univers dans `src/services/univers.ts`, leurs routes `/api`
-  (AD-83 à AD-85), puis E-14, E-15 et le bloc « Système de jeu » de E-3.
+- `src/services/systemes.ts` : catalogue, rattacher, créer et rattacher, gabarits ; la modification
+  d'un univers est dans `src/services/univers.ts` ; leurs routes sont `src/routes/systemes.ts`
+  (AD-83 à AD-85). Écrans : E-14 (Paramètres), E-15 (Système de jeu) et le bloc « Système de jeu » de E-3.
 - `src/services/llm/` : transports LLM (`transport.ts`, `anthropic-transport.ts`,
   `claude-agent-transport.ts`), repris d'Antre-du-maitre, branchés nulle part.
 - `Dockerfile` (multi-stage, utilisateur `node`) et
@@ -44,7 +44,7 @@ dossier des pièces jointes n'existe pas encore.
 ## Routes `/api`
 
 Toutes gardées par la session (401 sans session), sauf `/api/auth/*`. Les erreurs de service sont
-`introuvable` 404, `refuse` 403, `invalide` 400, `conflit` 409 (`section_modifiee`). Retirer le dernier
+`introuvable` 404, `refuse` 403, `invalide` 400, `conflit` 409 (`section_modifiee`, `nom_pris`, `gabarit_modifie`). Retirer le dernier
 MJ répond `invalide` 400 avec la raison ; un contenu de section de plus de 20 000 caractères aussi (AD-91). Le corps d'une erreur est `{message}` (plus `code` pour le 409). Le serveur écoute sur `0.0.0.0` (`-p 3001:3001` suffit).
 En mode bouchon, `POST /connexion-bouchon` attend un corps form-urlencoded `compte=<identifiant>`.
 
@@ -53,6 +53,11 @@ En mode bouchon, `POST /connexion-bouchon` attend un corps form-urlencoded `comp
 | `GET /api/moi`, `POST /api/auth/logout` | identité, groupes et limites (`limites.contenuSection`, AD-91) du compte ; fin de session |
 | `GET /api/auth/config`, `GET /api/auth/oidc/login`, `.../callback` | OIDC (publiques) |
 | `GET\|POST /api/univers`, `GET /api/univers/:id` | univers du compte (avec son rôle) ; création |
+| `PATCH /api/univers/:id` | nom et description (MJ) |
+| `GET\|POST /api/systemes` | catalogue (couples id, nom) ; création d'un système |
+| `PUT .../systeme`, `POST .../systeme-nouveau` | rattacher (`{systemeId}` ou `null` pour détacher), créer et rattacher (MJ) |
+| `GET .../systeme` (`?type`, `?curseur`) | le système de l'univers, le nombre d'univers qui l'utilisent, ses gabarits (100 à la fois) ; 404 identique à une adresse inconnue sans rôle ou sans rattachement |
+| `POST .../systeme/gabarits`, `PUT .../systeme/gabarits/:gabaritId` | ajouter, modifier avec la version lue (MJ) |
 | `GET\|POST /api/univers/:id/membres`, `PATCH\|DELETE .../membres/:compteId` | membres (MJ) |
 | `GET\|POST /api/univers/:id/fiches` (`?type`, `?curseur`) | liste paginée (100) ; création (MJ) |
 | `GET .../fiches/:fid` | fiche et sections lisibles ; `?mode=joueur` lit en Joueur ; 404 si aucune section n'est lisible (l'écran le traduit en « Aucune section n'est visible des joueurs. ») |
@@ -115,9 +120,9 @@ base en snake_case (`docs/donnees.md`).
 
 # La cible
 
-> Construit à ce jour : la session, le mode bouchon, les cinq tables et leurs fonctions de service,
-> les écrans E-1 à E-4, E-8 et E-9. Le reste (relations, recherche, pièces jointes, agents, images,
-> catalogue de systèmes, administration) est la cible des tranches suivantes.
+> Construit à ce jour : la session, le mode bouchon, les sept tables et leurs fonctions de service,
+> les systèmes de jeu et leurs gabarits, les écrans E-1 à E-4, E-8, E-9, E-14 et E-15. Le reste (relations, recherche, pièces jointes, agents, images,
+> administration) est la cible des tranches suivantes.
 
 ## Organes, et qui parle à qui
 
