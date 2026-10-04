@@ -54,9 +54,9 @@ En mode bouchon, `POST /connexion-bouchon` attend un corps form-urlencoded `comp
 | `GET /api/auth/config`, `GET /api/auth/oidc/login`, `.../callback` | OIDC (publiques) |
 | `GET\|POST /api/univers`, `GET /api/univers/:id` | univers du compte (avec son rôle) ; création |
 | `PATCH /api/univers/:id` | nom et description (MJ) |
-| `GET\|POST /api/systemes` | catalogue (couples id, nom) ; création d'un système |
-| `PUT .../systeme`, `POST .../systeme-nouveau` | rattacher (`{systemeId}` ou `null` pour détacher), créer et rattacher (MJ) |
-| `GET .../systeme` (`?type`, `?curseur`) | le système de l'univers, le nombre d'univers qui l'utilisent, ses gabarits (100 à la fois) ; 404 identique à une adresse inconnue sans rôle ou sans rattachement |
+| `GET\|POST /api/systemes` | catalogue (couples id, nom), lu par un MJ d'au moins un univers ; création d'un système |
+| `PUT .../systeme`, `POST .../systeme-nouveau` | rattacher (`{systemeId}` ou `null` pour détacher ; 204 sans corps), créer et rattacher (201) (MJ) |
+| `GET .../systeme` (`?type` = `regle` (défaut), `creature` ou `objet`, sinon 400 ; `?curseur`) | le système de l'univers, le nombre d'univers qui l'utilisent, ses gabarits (100 à la fois) ; 404 identique à une adresse inconnue sans rôle ou sans rattachement |
 | `POST .../systeme/gabarits`, `PUT .../systeme/gabarits/:gabaritId` | ajouter, modifier avec la version lue (MJ) |
 | `GET\|POST /api/univers/:id/membres`, `PATCH\|DELETE .../membres/:compteId` | membres (MJ) |
 | `GET\|POST /api/univers/:id/fiches` (`?type`, `?curseur`) | liste paginée (100) ; création (MJ) |
@@ -89,8 +89,8 @@ base en snake_case (`docs/donnees.md`).
   (AD-9), il se lit dans la table des membres à chaque requête. Sans les quatre variables
   `OIDC_*` (ou avec une partie seulement), login et callback répondent 404 ; une valeur vide
   ou invalide fait échouer le démarrage.
-- **Cinq tables, aucun ORM** : `comptes`, `univers`, `membres`, `fiches`, `sections` (migration
-  0001). Aucune requête SQL hors de `src/services/` et `src/db/`.
+- **Sept tables, aucun ORM** : `comptes`, `univers`, `membres`, `fiches`, `sections` (migration
+  0001), `systemes_jeu`, `gabarits` (migration 0002, numéro provisoire : voir `docs/donnees.md`). Aucune requête SQL hors de `src/services/` et `src/db/`.
 - **Toute route hors `/healthz`, `/api/auth/*` et, en bouchon, `/connexion-bouchon` est gardée par la session** ; sous `/api` un
   défaut de session répond 401, ailleurs il redirige vers la connexion (AD-15).
 - **Rien n'appelle un LLM** : les transports compilent mais ne sont reliés à

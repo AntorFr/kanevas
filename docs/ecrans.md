@@ -5,8 +5,8 @@
 > finie se détaillent dans la tranche qui le construit.
 
 > **Construit à ce jour** : E-1, E-2, E-3 (coquille : nom, navigation, blocs vides), E-4, E-8 (sans
-> recherche), E-9 (sans relations ni pièces jointes), la session et la barre latérale. E-5, E-6, E-7 et
-> E-10 à E-15 sont la cible.
+> recherche), E-9 (sans relations ni pièces jointes), E-14 (Paramètres), E-15 (Système de jeu) et le bloc « Système de jeu » de E-3, la session
+> et la barre latérale. E-5, E-6, E-7 et E-10 à E-13 sont la cible.
 
 ## Format
 
@@ -160,8 +160,8 @@ des univers du compte, « Mes univers » en pied de liste) ; **Vue d'ensemble** 
 Personnages, Lieux, Factions, Objets, Événements, Quêtes ; pour un MJ, **Univers ▸ Membres** ; en
 pied, l'identifiant, le thème (Clair, Sombre, Système), « Se déconnecter ». Hors d'un univers (E-1,
 E-2) : « Mes univers », l'identifiant, le thème, « Se déconnecter ». **Un item dont l'écran n'est
-pas construit n'est pas affiché** : Campagnes, Comptes-rendus, Cartes, Paramètres, Administration
-arrivent avec leurs tranches. Sur téléphone (moins de 760 px), la barre est un tiroir sous un
+pas construit n'est pas affiché** : Campagnes, Comptes-rendus, Cartes, Administration
+arrivent avec leurs tranches. « Paramètres » (E-14) n'est affiché qu'au MJ. Sur téléphone (moins de 760 px), la barre est un tiroir sous un
 bouton « Menu ».
 
 | État | Ce qu'on voit |
@@ -342,7 +342,7 @@ E-2.
 > `docs/maquettes/e14-parametres.html`, `e15-systeme-de-jeu.html`.
 
 **Ce que voit chacun du catalogue.** Le catalogue ne porte que des **noms** de systèmes, lus par tout
-compte qui mène au moins un univers (c'est ce qui permet à Mira de trouver « CoF Mini »). Le contenu
+compte qui est MJ d'au moins un univers (c'est ce qui permet à Mira de trouver « CoF Mini »). Le contenu
 d'un système (E-15) n'est lu que par les membres d'un univers qui lui est rattaché. **Aucun écran ne
 nomme un autre univers** : un système dit seulement « utilisé par N univers » (N compte l'univers
 courant), jamais lesquels. Un système « n'est pas vu » d'un univers qui n'y est pas rattaché : pas

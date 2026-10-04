@@ -6,7 +6,7 @@
 >
 > **Construit à ce jour** (`kanevas-premiere-fiche`) : P-1 en entier, P-2 étapes 1-2 (sans l'admin),
 > P-3 étape 4 (fiches et sections), P-6 étapes 1-2 (sans recherche), P-7 étape 1 et l'écriture de
-> l'étape 2. Le reste de ce document est la cible.
+> l'étape 2, P-8 en entier (B-13, B-14 : E-14 puis E-15). Le reste de ce document est la cible.
 
 Kanevas sert à **préparer** des parties de jeu de rôle et à en **garder la mémoire** entre les
 séances : le lore d'un univers, partagé entre le MJ et ses joueurs avec des droits fins par

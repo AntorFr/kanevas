@@ -67,7 +67,7 @@ récent suffit pour les mêmes commandes.
 ### Sans Authelia : le mode bouchon
 
 ```bash
-npm run build && KANEVAS_STUB=1 npm start   # puis ouvrir http://localhost:3001/ : choix d'un compte de test
+npm run build && KANEVAS_STUB=1 npm start   # (PORT=… DB_PATH=/tmp/k.db en tête pour ne pas écrire dans ./data/) puis ouvrir http://localhost:3001/ : choix d'un compte de test
 ```
 
 `/connexion-bouchon` remplace Authelia (AD-55) sous un bandeau « mode bouchon ». Les comptes de test
