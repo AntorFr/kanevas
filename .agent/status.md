@@ -12,7 +12,8 @@ dans la branche. Carte et invariants : `ARCHITECTURE.md`.
 
 **Reste :** la recette de Monsieur au navigateur en bouchon (critère de la feature : Antor rattache
 « Lame d'Ébène » à « CoF Mini » et y ajoute une créature ; Mira rattache « Les Landes grises » et la
-voit ; Admin crée « Brume », non rattachée, sans système), puis la fusion et le tag `v*`. Le catalogue
+voit ; Admin crée « Brume », non rattachée, sans système), puis la fusion et le tag `v*`. Rien n'est amorcé : univers et système se créent à la main
+(Antor crée « Lame d'Ébène » par E-2, ajoute Léa après sa première connexion ; Mira crée « Les Landes grises » ; Admin « Brume »). Le catalogue
 naît vide : le premier MJ crée « CoF Mini » depuis E-14. Aucune image n'existe avant le tag.
 
 **Pièges :**
