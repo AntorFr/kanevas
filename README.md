@@ -13,9 +13,12 @@ frontend/                         React/Vite ; écran E-5 : frontend/src/ecrans/
 src/
   server.ts                       Point d'entrée, démarre l'app Fastify
   app.ts                          Assemble les plugins et les routes
+  db/                             SQLite et migrations numérotées
   config/env.ts                   Variables d'environnement (zod)
   routes/health.ts                GET /healthz — nom + version de l'app
   routes/auth.ts                  Mécanique OIDC générique (voir plus bas)
+  routes/session.ts               Garde de session, service du build du frontend
+  routes/bouchon.ts               Choix du compte de test (KANEVAS_STUB)
   routes/instance.ts              /api/instance : univers et membres, admin seulement (AD-87)
   services/instance.ts            Fonctions de l'admin d'instance, sur `membres` seule (AD-86)
   services/oidc.ts                Découverte OIDC, config client
@@ -28,6 +31,7 @@ src/
 ## Démarrage local
 
 ```bash
+# .env facultatif ici : sans lui, /healthz répond (NODE_ENV=development)
 docker run --rm -p 3001:3001 -v "$PWD":/src -w /src node:20-bookworm-slim sh -c "npm ci && npm run dev"
 # puis, depuis l'hôte : curl http://localhost:3001/healthz
 ```

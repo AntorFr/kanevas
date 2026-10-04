@@ -26,7 +26,7 @@
   (AD-2) — routes and agent tools never carry SQL. A migration takes the next
   number when its slice merges (AD-51).
 - `frontend/` (React, Vite, `react-router`; AD-16, AD-57): `npm run build` also builds it into
-  `dist/public`, served by `routes/session.ts` behind the session guard (`@fastify/static` for
+  `dist/public`, located by `routes/frontend.ts` and served by `routes/session.ts` behind the session guard (`@fastify/static` for
   `/assets/`, `index.html` as the fallback of any other GET). A screen is one file
   `frontend/src/ecrans/<nom>.tsx` exporting an `Ecran` (`registre.ts`) — never edit the router or
   the sidebar; sidebar items live in `items.ts` and show only when a registered screen answers
