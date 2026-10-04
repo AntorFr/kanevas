@@ -21,8 +21,8 @@ et le tag `v*` qui produit l'image ; `k8s-home-lab` épingle ensuite ce tag.
   demande à l'assistant (`kanevas-assistant-membre`) restent aux tranches suivantes.
 - « Connexion perdue » (frontend/src/api.ts) : sondé toutes les 3 s sur `/healthz` tant que le bandeau
   est levé ; il disparaît seul au retour du serveur.
-- Le serveur ne plafonne pas la taille du contenu d'une section (20 000 caractères seulement côté
-  écran) : à décider.
+- Le contenu d'une section est plafonné à 20 000 caractères par le serveur (`MAX_CONTENU_SECTION`,
+  AD-91), rendu par `GET /api/moi` (`limites.contenuSection`) ; l'écran de fiche lit cette valeur.
 - Doublons connus, non traités : `corps(request)` (routes/fiches.ts, univers.ts), message d'échec
   des écrans, texte du bandeau bouchon (pages.ts / Cadre.tsx).
 

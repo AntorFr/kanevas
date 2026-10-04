@@ -4,6 +4,7 @@ import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 
 import { env } from '../config/env.js';
 import { assurerCompte, lireCompte } from '../services/comptes.js';
+import { MAX_CONTENU_SECTION } from '../services/sections.js';
 import {
   decoderSession,
   encoderSession,
@@ -107,6 +108,10 @@ export async function registerSessionRoutes(app: FastifyInstance) {
 function registerGuardedRoutes(app: FastifyInstance) {
   app.get('/api/moi', async (request) => {
     const compte = lireCompte(app.db, request.session!.id)!;
-    return { username: compte.username, groups: request.session!.groups };
+    return {
+      username: compte.username,
+      groups: request.session!.groups,
+      limites: { contenuSection: MAX_CONTENU_SECTION },
+    };
   });
 }
