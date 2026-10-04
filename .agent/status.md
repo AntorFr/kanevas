@@ -5,7 +5,7 @@
 **État :** `feature/kanevas-premiere-fiche` assemblée (PR #2 vers `main`, non fusionnée) : comptes,
 univers, membres, fiches, sections et droits (`src/services/`, migration 0001), session et mode
 bouchon, routes `/api`, frontend React (E-1 à E-4, E-8, E-9), charte et tokens. Typecheck, build et
-173 tests verts sous Node 22 (dont `src/e2e/` sous Chromium, ignorés sans Playwright : voir le README). Carte et invariants :
+215 tests verts sous Node 22 (dont `src/e2e/` sous Chromium, ignorés sans Playwright : voir le README). Carte et invariants :
 `ARCHITECTURE.md`.
 
 **Reste :** la recette de Monsieur au navigateur (critère de sortie de la feature), puis la fusion
@@ -26,20 +26,14 @@ et le tag `v*` qui produit l'image ; `k8s-home-lab` épingle ensuite ce tag.
 - Doublons connus, non traités : `corps(request)` (routes/fiches.ts, univers.ts), message d'échec
   des écrans, texte du bandeau bouchon (pages.ts / Cadre.tsx).
 
+- Sans `/data` en production, la base est en mémoire (avertissement au démarrage) ; la clé de session
+  vient de `SESSION_SECRET`, sinon de `<data>/session.key`.
+- Le callback OIDC ne rend la page « Connexion refusée/indisponible » que si `Accept` contient
+  `text/html`, sinon 401 JSON.
+- Code mort ou sans appelant, non traité : `export { ErreurService }` (droits.ts), `renommerSection`
+  et la branche titre du PATCH d'une section (renommer est hors tranche), option `limite` de
+  `listerFiches`, `blocsVisibles`/`blocsSectionVisibles` jumeaux ; le parseur form-urlencoded du
+  bouchon vaut aussi pour `/api`.
+
 **Suivant :** relations et recherche (`kanevas-relier-chercher`), pièces jointes, campagnes,
 administration.
-
-**Tâche `kanevas-pf-donnees` (branche `task/kanevas-pf-donnees`) :** `src/db/`
-(better-sqlite3, migration 0001, runner idempotent) et `src/services/`
-(`comptes`, `univers`, `membres`, `fiches`, `sections`, `droits`) faits ; la
-base s'ouvre dans `buildApp` (`app.db`). Erreurs : `ErreurService.code`
-(`introuvable` 404, `refuse` 403, `invalide` 400, `conflit` 409
-`section_modifiee`). Sans `/data` en production, base en mémoire avec avertissement
-(le test e2e de `/healthz` tourne ainsi). Pas encore de tests de service ni de route.
-
-**Tâche `kanevas-pf-session` (branche `task/kanevas-pf-session`) :** session (cookie
-`kanevas_session` signé, secret `SESSION_SECRET` ou `/data/session.key`), mode bouchon
-(`/connexion-bouchon`, refus de démarrer avec une variable `OIDC_*`), garde (401 sous `/api`,
-redirection ailleurs ; routes inconnues restent 404), `GET /api/moi`, `POST /api/auth/logout`,
-pages « Connexion refusée / indisponible » (le callback ne rend la page que si `Accept` contient
-`text/html`, sinon l'ancien JSON 401, pour garder les tests existants). Testée (session-bouchon, session-prod).
