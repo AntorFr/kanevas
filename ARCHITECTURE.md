@@ -42,7 +42,7 @@ dossier des pièces jointes n'existe pas encore.
 
 Toutes gardées par la session (401 sans session), sauf `/api/auth/*`. Les erreurs de service sont
 `introuvable` 404, `refuse` 403, `invalide` 400, `conflit` 409 (`section_modifiee`). Retirer le dernier
-MJ répond `invalide` 400 avec la raison. Le serveur écoute sur `0.0.0.0` (`-p 3001:3001` suffit).
+MJ répond `invalide` 400 avec la raison ; un contenu de section de plus de 20 000 caractères aussi (AD-91). Le serveur écoute sur `0.0.0.0` (`-p 3001:3001` suffit).
 En mode bouchon, `POST /connexion-bouchon` attend un corps form-urlencoded `compte=<identifiant>`.
 
 | Route | Rôle |
@@ -55,12 +55,12 @@ En mode bouchon, `POST /connexion-bouchon` attend un corps form-urlencoded `comp
 | `GET .../fiches/:fid` | fiche et sections lisibles ; `?mode=joueur` lit en Joueur ; 404 si aucune section n'est lisible (l'écran le traduit en « Aucune section n'est visible des joueurs. ») |
 | `POST .../fiches/:fid/sections`, `PUT .../fiches/:fid/ordre` | ajouter, ordonner (MJ) |
 | `GET\|PATCH\|DELETE .../sections/:sid` | lire ; titre et audience (MJ) ; retirer (MJ) |
-| `PUT .../sections/:sid/contenu` | écrire `{contenu, version}` ; 409 si `version` périmée |
+| `PUT .../sections/:sid/contenu` | écrire `{contenu, version}` ; 400 si contenu > 20 000 caractères (contrôlé avant la version) ; 409 si `version` périmée |
 
 Corps de requête (JSON) : `POST /api/univers` `{nom, description?}` ; `POST .../membres`
 `{username, role}` (`role` : `mj` \| `joueur` ; `username` est l'identifiant exact) ; `PATCH
 .../membres/:compteId` `{role}` ; `POST .../fiches` `{type, titre, charge?}` (`charge` : objet, optionnel sauf si le type l'exige — `personnage` veut `{"pj": bool}`, `compte_rendu` un `campagne_id` ; formes dans `docs/donnees.md`) ;
-`POST .../sections` `{titre}` ; `PUT .../ordre` `{ids}` (tous les identifiants de section de la fiche) ;
+`POST .../sections` `{titre, contenu?}` (`contenu` : texte, même plafond ; l'écran n'envoie que `titre`) ; `PUT .../ordre` `{ids}` (tous les identifiants de section de la fiche) ;
 `PATCH .../sections/:sid` `{titre?, joueursLisent?, joueursEcrivent?, auteurLit?, auteurEcrit?,
 auteurId?}` — `auteurId` est l'**identifiant numérique du compte** (`compteId` des membres), `null` pour
 aucun auteur ; `PUT .../contenu` `{contenu, version}`. Les noms de l'API sont en camelCase, ceux de la
