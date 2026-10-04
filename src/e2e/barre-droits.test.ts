@@ -26,7 +26,7 @@ import {
 } from './harnais.test.js';
 
 // « Paramètres » (E-14) is built by kanevas-systemes: the MJ sees it, see below.
-const NAV_NON_CONSTRUITE = ['Campagnes', 'Comptes-rendus', 'Cartes', 'Administration'];
+const NAV_NON_CONSTRUITE = ['Comptes-rendus', 'Cartes', 'Administration'];
 const LORE = ['Personnages', 'Lieux', 'Factions', 'Objets', 'Événements', 'Quêtes'];
 
 describe('kanevas-premiere-fiche, barre latérale et droits', { skip: skipBrowser }, () => {
