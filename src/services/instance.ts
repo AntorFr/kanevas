@@ -11,8 +11,9 @@ import type { Membre, Role } from './types.js';
 /**
  * Instance administration (B-6, AD-86). `admin` is built by the route from the
  * session groups, never from a request body. This module is the only one that
- * accepts the flag, and it only touches `membres`: fiches, sections and
- * universe services never see it, so an admin without a role is a caller
+ * accepts the flag. It touches `membres`, plus `univers` for the instance
+ * list only (id, name, member count; AD-87). Fiches, sections and universe
+ * services never see the flag, so an admin without a role is a caller
  * without a role there (AD-22).
  */
 export interface ActeurInstance {
