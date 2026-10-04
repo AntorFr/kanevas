@@ -10,14 +10,14 @@ const STATUT: Record<CodeErreur, number> = {
 };
 
 /**
- * Maps a service error to its HTTP answer: `{message}`, plus `code` for a stale
- * section write (`section_modifiee`, AD-59). Anything else stays a 500.
+ * Maps a service error to its HTTP answer: `{message}`, plus `code` when the service gives one
+ * (`section_modifiee` AD-59, `relation_existante`, `auto_relation`…). Anything else stays a 500.
  */
 export function registerErreurs(app: FastifyInstance) {
   app.setErrorHandler((erreur, request, reply) => {
     if (erreur instanceof ErreurService) {
       const corps: { message: string; code?: string } = { message: erreur.message };
-      if (erreur.code === 'conflit' && erreur.detail) corps.code = erreur.detail;
+      if (erreur.detail) corps.code = erreur.detail;
       return reply.code(STATUT[erreur.code]).send(corps);
     }
     const statut = (erreur as { statusCode?: number }).statusCode;
