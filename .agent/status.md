@@ -1,6 +1,6 @@
 # Status — kanevas
 
-> MàJ : 2026-10-03
+> MàJ : 2026-10-04
 
 **État :** socle posé sur `feature/kanevas-socle` (PR ouverte, non fusionnée) :
 `/healthz` (`kanevas <version>`, version = build-arg `APP_VERSION`), OIDC
@@ -47,3 +47,9 @@ Pas de navigateur dans le pod : rendu non vérifié visuellement, ni test de con
 dans `frontend/src/ecrans/`. Blocs de E-3 : un fichier dans `ecrans/vue-ensemble/blocs/` (export
 par défaut `Bloc`), trouvé par `vue-ensemble/registre.ts`. Le service refuse aussi une
 description de plus de 500 caractères. Pas encore de tests ; rendu non vérifié au navigateur (pas de navigateur dans le pod).
+
+**Tâche `kanevas-ra-routes` (branche `task/kanevas-ra-routes`) :** `src/routes/instance.ts`,
+`/api/instance/univers` et `/api/instance/univers/:id/membres` (GET, POST, PATCH, DELETE), minces
+enveloppes de `services/instance`. L'acteur admin vient des groupes de la session (`parents`) ; sans
+le groupe, un `preHandler` appelle `reply.callNotFound()` : même 404 qu'une adresse inconnue (AD-87).
+Pas encore de tests ; rendu non testé hors un essai manuel en bouchon (pas de docker dans le pod).
