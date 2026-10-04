@@ -45,7 +45,7 @@ npm run dev            # ou : npm run build && npm start (sert dist/server.js)
 curl http://localhost:3001/healthz   # -> "kanevas 0.0.0-dev"
 ```
 
-Sans docker (pod, poste nu), les tests se lancent avec `npm ci && npm run typecheck && npm test` (Node 20 ou plus). Les tests d'`src/e2e/administration*.test.ts` pilotent un navigateur avec Playwright, qui n'est pas dans `package.json` (cherché en local puis dans les modules globaux de Node) : sans lui ils sautent, et après `npm ci` seul l'écran E-5 n'est donc pas éprouvé ; ils peuvent expirer sous charge : relancer avant d'y voir un défaut. Corps de `POST /api/instance/univers/:id/membres` : `{"username": "mira", "role": "mj"}`. `npm run dev` ne sert que l'API : pour voir l'interface, `npm run build && KANEVAS_STUB=1 node dist/server.js`.
+Sans docker (pod, poste nu — la règle « conteneurs seulement » de `CLAUDE.md` vise un poste qui a docker), les tests se lancent avec `npm ci && npm run typecheck && npm test` (Node 20 ou plus). Les tests d'`src/e2e/administration*.test.ts` pilotent un navigateur avec Playwright, qui n'est pas dans `package.json` (cherché en local, puis dans `/usr/lib/node_modules` et `/usr/local/lib/node_modules`) : sans lui ils sautent, et après `npm ci` seul l'écran E-5 n'est donc pas éprouvé ; ils peuvent expirer sous charge : relancer avant d'y voir un défaut. Corps de `POST /api/instance/univers/:id/membres` : `{"username": "mira", "role": "mj"}`. `npm run dev` ne sert que l'API : pour voir l'interface, `npm run build && KANEVAS_STUB=1 node dist/server.js`.
 
 ## Lancer en bouchon (recette)
 

@@ -26,7 +26,7 @@ Ni relations, ni recherche, ni pièces jointes, ni campagnes, ni assistant : tra
   session (`src/services/session.ts`, AD-56) et crée le compte à la première connexion.
 - `src/routes/bouchon.ts` : mode bouchon (AD-55), absent de la table des routes sans `KANEVAS_STUB`.
 - `src/db/` : ouverture du fichier SQLite, `migrations/0001-*.sql`, runner (AD-14).
-- `src/e2e/` : tests d'ensemble (`healthz`, `administration`, `administration-exclusions`, navigateur piloté en bouchon).
+- `src/e2e/` : tests d'ensemble (`healthz`, `administration`, `administration-exclusions`, `administration-besoin`, navigateur piloté en bouchon).
 - `src/services/` : `comptes`, `univers`, `membres`, `instance`, `fiches`, `sections`, `droits`, `session`, `oidc`, `erreurs`, `types` — les seules
   fonctions qui lisent ou écrivent les données (AD-2) ; `src/routes/` : routes `/api` minces ; `session.ts` pose la garde et sert le build du frontend (`frontend.ts` le localise), `univers.ts` et `instance.ts` portent les routes d'univers et d'instance, `bouchon.ts` le choix de compte de test, `pages.ts` et `erreurs.ts` les pages et erreurs communes.
 - `frontend/` : application React/Vite (AD-57) ; `frontend/src/ui/tokens.css` et
