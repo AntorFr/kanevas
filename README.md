@@ -45,7 +45,7 @@ npm run dev            # ou : npm run build && npm start (sert dist/server.js)
 curl http://localhost:3001/healthz   # -> "kanevas 0.0.0-dev"
 ```
 
-Sans docker (pod, poste nu — la règle « conteneurs seulement » de `CLAUDE.md` vise un poste qui a docker), les tests se lancent avec `npm ci && npm run typecheck && npm test` (Node 20 ou plus). Les tests d'`src/e2e/administration*.test.ts` pilotent un navigateur avec Playwright, qui n'est pas dans `package.json` (cherché en local, puis dans `/usr/lib/node_modules` et `/usr/local/lib/node_modules`) : sans lui ils sautent, et après `npm ci` seul l'écran E-5 n'est donc pas éprouvé ; ils peuvent expirer sous charge : relancer avant d'y voir un défaut. Corps de `POST /api/instance/univers/:id/membres` : `{"username": "mira", "role": "mj"}`. `npm run dev` ne sert que l'API : pour voir l'interface, `npm run build && KANEVAS_STUB=1 node dist/server.js`.
+Sans docker (pod, poste nu — la règle « conteneurs seulement » de `CLAUDE.md` vise un poste qui a docker), les tests se lancent avec `npm ci && npm run typecheck && npm test` (Node 20 ou plus). Les tests d'`src/e2e/administration*.test.ts` pilotent un navigateur avec Playwright, qui n'est pas dans `package.json` (cherché en local, puis dans `/usr/lib/node_modules` et `/usr/local/lib/node_modules`) : sans lui ils sautent, et après `npm ci` seul l'écran E-5 n'est donc pas éprouvé ; ils peuvent expirer sous charge : relancer avant d'y voir un défaut. Corps de `POST /api/instance/univers/:id/membres` : `{"username": "mira", "role": "mj"}`. Pour voir l'interface : `npm run build && KANEVAS_STUB=1 node dist/server.js`.
 
 ## Lancer en bouchon (recette)
 
@@ -59,14 +59,15 @@ docker run --rm -p 3001:3001 -e KANEVAS_STUB=1 kanevas:stub
 # sans docker (le frontend n'est servi qu'après le build) :
 #   npm ci && npm run build && KANEVAS_STUB=1 node dist/server.js
 # puis ouvrir http://localhost:3001/connexion-bouchon, créer un univers en Antor (la base est vide),
-# se reconnecter en « Admin », aller sur /administration
+# se connecter une fois en « Mira » (un compte jamais connecté ne peut pas être ajouté comme membre),
+# puis en « Admin », aller sur /administration et ajouter « mira »
 ```
 
 Où vivent les données : dans l'image, `/data/kanevas.db` du conteneur (perdue avec `--rm`, donc vide à
 chaque lancement) ; sans docker, `./data/kanevas.db` et `./data/session.key` (ignorés par git ; `DB_PATH`
-déplace la base, `rm -r data` repart de zéro). Aucun univers n'existe au départ : en Antor, « Créer un
+déplace la base et la clé avec elle : supprimez alors le dossier de `DB_PATH` ; sans `DB_PATH`, `rm -r data` repart de zéro). Aucun univers n'existe au départ : en Antor, « Créer un
 univers » (`/univers/nouveau`) ; on change de compte par « Se déconnecter » de la barre latérale.
-`npm run dev` ne sert que l'API : l'interface demande `npm run build` (ou `npm run dev:front`, Vite seul).
+`npm run dev` sert l'API, et l'interface seulement si `dist/public` existe déjà (`npm run build`) ; `npm run dev:front` lance Vite seul.
 Le conteneur de « Démarrage local » réécrit `node_modules` de l'hôte avec des binaires Linux : n'enchaînez pas avec un Node local sans `rm -r node_modules`.
 
 ## Réglages
@@ -118,4 +119,5 @@ Pour la carte du code, les invariants et les options écartées, voir
 `ARCHITECTURE.md`. Les sigles `AD-n` renvoient aux décisions de l'epic Kanevas (magasin de
 pilotage de la chaîne SDLC, hors de ce dépôt ; les commentaires qui citent
 `plan.md`, `technique.md` ou `socle-projet` en viennent), dont `ARCHITECTURE.md` résume celles qui touchent ce dépôt (AD-3 Node/TypeScript,
-AD-4 Fastify, AD-5 SQLite, AD-9 rôles par univers, AD-10 reprise d'Antre-du-maitre).
+AD-4 Fastify, AD-5 SQLite, AD-9 rôles par univers, AD-10 reprise d'Antre-du-maitre,
+AD-55 bouchon, AD-56 session, AD-86 et AD-87 recours de l'admin d'instance ; tableau de `ARCHITECTURE.md`).
