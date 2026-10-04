@@ -82,6 +82,8 @@ univers : MJ.
 
 ## Migration `kanevas-suivi` (numéro pris à la fusion, AD-51 : le suivant de 0001)
 
+> Fichier : `src/db/migrations/0003-suivi.sql` — **numéro provisoire** (0003), recalé à la fusion si une autre tranche entre avant (AD-51).
+
 Trois tables, aucune entité nouvelle (campagne, scénario, tâche de préparation sont celles du
 cadrage). Les comptes-rendus n'ont pas de table : un compte-rendu est une fiche de type
 `compte_rendu` (charge `{"v":1,"campagne_id":…}`, déjà posée par 0001, AD-52).
