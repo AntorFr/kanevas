@@ -13,6 +13,7 @@ import {
 } from '../services/session.js';
 import { registerErreurs } from './erreurs.js';
 import { registerUniversRoutes } from './univers.js';
+import { registerSystemesRoutes } from './systemes.js';
 import { chargerFrontend } from './frontend.js';
 import { pageIntrouvable, urlConnexion } from './pages.js';
 
@@ -99,6 +100,7 @@ export async function registerSessionRoutes(app: FastifyInstance) {
     }
     registerGuardedRoutes(garde);
     registerUniversRoutes(garde);
+    registerSystemesRoutes(garde);
   });
 }
 

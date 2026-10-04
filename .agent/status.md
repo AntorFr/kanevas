@@ -55,3 +55,10 @@ description de plus de 500 caractères. Pas encore de tests ; rendu non vérifi�
 `modifierUnivers` dans `univers.ts`. Erreurs : conflit de détail `nom_pris` ou `gabarit_modifie`.
 Le test existant `migration: cinq tables…` attend 5 tables : à mettre à jour par le testeur.
 Pas encore de tests des nouveaux services ni de routes.
+
+**Tâche `kanevas-sy-routes` (branche `task/kanevas-sy-routes`) :** `src/routes/systemes.ts`, dans la
+portée gardée : `GET|POST /api/systemes`, `PATCH /api/univers/:id` (nom, description),
+`PUT /api/univers/:id/systeme` (`{systemeId: n|null}`, 204), `POST …/systeme-nouveau` (201),
+`GET …/systeme?type=regle|creature|objet&curseur=` (système + N + `gabarits` + `suivant`),
+`POST …/systeme/gabarits` (`{type,nom,contenu}`), `PUT …/systeme/gabarits/:gabaritId`
+(`{nom,contenu,version}`). Aucune suppression. Pas encore de tests de route.
