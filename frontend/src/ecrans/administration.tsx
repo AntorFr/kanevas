@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 
+import { lire } from '../api';
 import { useCharge, useMoi, useUnivers } from '../cadre-contexte';
 import { GROUPE_ADMIN } from '../items';
 import { ListeMembres, type Membre } from '../ListeMembres';
@@ -17,7 +18,7 @@ interface UniversInstance {
 const PAGE = 100;
 
 /** Members of the selected universe; keyed by id so a change of selection resets the state. */
-function Membres({ id, nom }: { id: number; nom: string }) {
+function Membres({ id, nom, surChangement }: { id: number; nom: string; surChangement: () => void }) {
   const { recharger: rechargerUnivers } = useUnivers();
   const moi = useMoi();
   const [membres, recharger] = useCharge<Membre[]>(`/api/instance/univers/${id}/membres`);
@@ -31,7 +32,10 @@ function Membres({ id, nom }: { id: number; nom: string }) {
       nomUnivers={nom}
       membres={membres.valeur}
       // My own membership changed: the sidebar, the home and the « Ouvrir » link follow.
-      apres={(m) => m.username === monIdentifiant && rechargerUnivers()}
+      apres={(m) => {
+        if (m.username === monIdentifiant) rechargerUnivers();
+        surChangement();
+      }}
       note={
         <p className="note-admin">
           Pour lire le contenu, l’admin s’ajoute lui-même comme membre : l’ajout apparaît dans la liste des membres que voit le MJ de l’univers.
@@ -50,6 +54,11 @@ function Administration() {
   const { univers: miens } = useUnivers();
   const [univers, recharger] = useCharge<UniversInstance[]>('/api/instance/univers');
   const [affiches, setAffiches] = useState(PAGE);
+  // Member counts after a write: reloaded silently, so the screen does not flash a loading state.
+  const [frais, setFrais] = useState<UniversInstance[] | null>(null);
+  const rafraichir = () => {
+    lire<UniversInstance[]>('/api/instance/univers').then(setFrais, () => undefined);
+  };
 
   if (moi.etat === 'chargement') return <Chargement />;
   // Anyone outside the group: the answer of an unknown address.
@@ -73,12 +82,12 @@ function Administration() {
   if (univers.etat === 'erreur') {
     return <>{entete}<ErreurChargement texte="Impossible de charger les univers." onReessayer={recharger} /></>;
   }
-  const liste = univers.valeur;
+  const liste = frais ?? univers.valeur;
+  const choisi = selection === null ? undefined : liste.find((u) => u.id === selection);
+  if (selection !== null && !choisi) return <PageIntrouvable />;
   if (liste.length === 0) {
     return <>{entete}<EtatVide titre="Aucun univers sur l’instance pour l’instant." /></>;
   }
-  const choisi = selection === null ? undefined : liste.find((u) => u.id === selection);
-  if (selection !== null && !choisi) return <PageIntrouvable />;
   // The selected universe stays visible even beyond the first page.
   const rang = choisi ? liste.indexOf(choisi) + 1 : 0;
   const visibles = liste.slice(0, Math.max(affiches, rang));
@@ -108,7 +117,7 @@ function Administration() {
           {choisi ? (
             <>
               <h2>Membres — {choisi.nom}</h2>
-              <Membres key={choisi.id} id={choisi.id} nom={choisi.nom} />
+              <Membres key={choisi.id} id={choisi.id} nom={choisi.nom} surChangement={rafraichir} />
             </>
           ) : (
             <EtatVide titre="Choisissez un univers pour voir ses membres." />
