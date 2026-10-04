@@ -2,61 +2,32 @@
 
 > MàJ : 2026-10-04
 
-**État :** socle posé sur `feature/kanevas-socle` (PR ouverte, non fusionnée) :
-`/healthz` (`kanevas <version>`, version = build-arg `APP_VERSION`), OIDC
-d'identité, transports LLM réservés, Dockerfile (utilisateur `node`, mais le pod tourne en root au cluster), CI
-`docker-publish.yml` (test puis image GHCR). Typecheck et 8 tests verts. Carte et
-invariants : `ARCHITECTURE.md`.
+**État :** la branche `feature/kanevas-recours-admin` empile le socle, la première fiche et le
+recours admin ; rien n'est fusionné dans `main`. Recours admin assemblé : un compte du groupe
+`parents` voit les univers de l'instance et leurs membres, en ajoute, change le rôle, en retire
+(E-5, B-6), sans jamais lire le contenu. Typecheck, build et 111 tests verts.
 
-**Pièges :**
-- La CI ne publie `ghcr.io/antorfr/kanevas:0.1.0` que sur le tag `v0.1.0`, à
-  pousser après la fusion de la PR. Sur la branche, aucune image n'existe (la
-  PR ne fait qu'un build sans push). `k8s-home-lab` épingle ce tag.
-- `docker build` n'a jamais tourné dans les pods de la chaîne (pas de démon) :
-  vérifié avec Node (`APP_VERSION=0.1.0 node dist/server.js`). Le premier vrai
-  build est celui de la CI.
+- `src/services/instance.ts` : seul module à accepter le drapeau `admin` (AD-86), ne touche que
+  `membres` ; les règles de membres sont le noyau de `services/membres.ts`, partagé avec les
+  fonctions MJ.
+- `src/routes/instance.ts` : `/api/instance/univers` et `/api/instance/univers/:id/membres`
+  (GET, POST, PATCH, DELETE). Hors du groupe, 404 comme une adresse inconnue (AD-87). L'acteur
+  vient des groupes de la session, jamais de la requête.
+- `frontend/src/ecrans/administration.tsx` : E-5, un seul motif `/administration/*` (le registre
+  prend un chemin par fichier). Liste de membres partagée avec E-4 : `frontend/src/ListeMembres.tsx`.
+  Entrée « Administration » dans `items.ts` et `Barre.tsx`, si `/api/moi` porte `parents`.
 
-**Suivant :** `kanevas-identite` (session, rôles AD-9, première écriture dans
-`/data`).
+**Pièges encore vrais :**
+- Le groupe est lu à la connexion et vaut jusqu'à l'expiration de la session (7 jours, AD-86).
+- L'API de liste rend tous les univers ; la pagination par 100 est côté client (300 univers testés
+  seulement en service/route, pas au navigateur).
+- Un admin sans rôle reste un compte sans rôle pour fiches et sections : c'est voulu (AD-9, AD-22).
+- Aucun test de composant du frontend ; l'écran E-5 n'a pas été vu au navigateur (pas de navigateur
+  dans le pod). Les six états sont à jouer à la recette.
+- En bouchon, la base est en mémoire et vide : créer un univers en antor avant de tester E-5.
+- `docker build` ne tourne pas dans les pods (pas de démon) : la CI de la PR construit l'image.
+  Version de l'application : build-arg `APP_VERSION` seulement, jamais `package.json`.
+- Le socle publie `ghcr.io/antorfr/kanevas:<version>` seulement sur un tag `vX.Y.Z`, posé à la fusion.
+- `services/llm/*` est repris d'Antre-du-maitre et branché nulle part.
 
-**Tâche `kanevas-pf-donnees` (branche `task/kanevas-pf-donnees`) :** `src/db/`
-(better-sqlite3, migration 0001, runner idempotent) et `src/services/`
-(`comptes`, `univers`, `membres`, `fiches`, `sections`, `droits`) faits ; la
-base s'ouvre dans `buildApp` (`app.db`). Erreurs : `ErreurService.code`
-(`introuvable` 404, `refuse` 403, `invalide` 400, `conflit` 409
-`section_modifiee`). Sans `/data` en production, base en mémoire avec avertissement
-(le test e2e de `/healthz` tourne ainsi). Pas encore de tests de service ni de route.
-
-**Tâche `kanevas-pf-session` (branche `task/kanevas-pf-session`) :** session (cookie
-`kanevas_session` signé, secret `SESSION_SECRET` ou `/data/session.key`), mode bouchon
-(`/connexion-bouchon`, refus de démarrer avec une variable `OIDC_*`), garde (401 sous `/api`,
-redirection ailleurs ; routes inconnues restent 404), `GET /api/moi`, `POST /api/auth/logout`,
-pages « Connexion refusée / indisponible » (le callback ne rend la page que si `Accept` contient
-`text/html`, sinon l'ancien JSON 401, pour garder les tests existants). Pas encore de tests.
-
-**Tâche `kanevas-pf-shell` (branche `task/kanevas-pf-shell`) :** `frontend/` (Vite, React 19,
-react-router) : `ui/tokens.css` + composants de la charte, registre d'écrans (`src/ecrans/*.tsx`,
-aucun enregistré), barre latérale (items de `items.ts`, affichés seulement si un écran répond à
-leur adresse ; tiroir « Menu » sous 760 px), thème Clair/Sombre/Système (localStorage), bandeaux
-bouchon (`<meta name="kanevas-bouchon">` injecté dans `index.html` par le serveur) et connexion
-perdue. Le serveur sert `dist/public` derrière la garde ; le Dockerfile construit les deux.
-Pas de navigateur dans le pod : rendu non vérifié visuellement, ni test de contraste (testeur).
-
-**Tâche `kanevas-pf-accueil-univers` (branche `task/kanevas-pf-accueil-univers`) :** écrans E-1
-(`/`), E-2 (`/univers/nouveau`), E-3 (`/univers/:id`, refus = 404 de l'API → « Page introuvable. »)
-dans `frontend/src/ecrans/`. Blocs de E-3 : un fichier dans `ecrans/vue-ensemble/blocs/` (export
-par défaut `Bloc`), trouvé par `vue-ensemble/registre.ts`. Le service refuse aussi une
-description de plus de 500 caractères. Pas encore de tests ; rendu non vérifié au navigateur (pas de navigateur dans le pod).
-
-**Tâche `kanevas-ra-routes` (branche `task/kanevas-ra-routes`) :** `src/routes/instance.ts`,
-`/api/instance/univers` et `/api/instance/univers/:id/membres` (GET, POST, PATCH, DELETE), minces
-enveloppes de `services/instance`. L'acteur admin vient des groupes de la session (`parents`) ; sans
-le groupe, un `preHandler` appelle `reply.callNotFound()` : même 404 qu'une adresse inconnue (AD-87).
-Pas encore de tests ; rendu non testé hors un essai manuel en bouchon (pas de docker dans le pod).
-
-**Tâche `kanevas-ra-ecran-administration` (branche `task/kanevas-ra-ecran-administration`) :** E-5
-`frontend/src/ecrans/administration.tsx` (un seul motif `/administration/*`, car le registre prend un
-chemin par fichier ; `/administration/univers/:id` en est lu). La liste de membres d'E-4 est extraite
-dans `frontend/src/ListeMembres.tsx` (props `base`, `apres`, `note`) et réemployée par E-4 et E-5.
-Entrée « Administration » : `items.ts` (`ITEM_ADMIN`) et `Barre.tsx`, si `/api/moi` porte `parents`.
-Pagination par 100 côté client (l'API rend tout). Pas encore de tests ; rendu non vérifié au navigateur.
+**Reste :** recette de Monsieur au navigateur en bouchon (critère de la feature), puis fusion et tag.

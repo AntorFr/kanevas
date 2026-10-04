@@ -1,19 +1,23 @@
 # kanevas
 
 Système de gestion de JDR (lore, campagnes, comptes-rendus, droits, cartes).
-Ce dépôt n'héberge, à ce stade, que le **socle** : le squelette qui relie
-dépôt, image, CI et route de santé, sans aucune fonction métier.
+Ce dépôt porte le socle (dépôt, image, CI, route de santé) et, sur la branche
+`feature/kanevas-recours-admin`, l'administration d'instance : un compte du groupe Authelia
+`parents` voit les univers et leurs membres (jamais le contenu) et les répare (E-5, B-6).
 
 ## Structure
 
 ```txt
 Dockerfile                        Image unique : API Fastify
+frontend/                         React/Vite ; écran E-5 : frontend/src/ecrans/administration.tsx
 src/
   server.ts                       Point d'entrée, démarre l'app Fastify
   app.ts                          Assemble les plugins et les routes
   config/env.ts                   Variables d'environnement (zod)
   routes/health.ts                GET /healthz — nom + version de l'app
   routes/auth.ts                  Mécanique OIDC générique (voir plus bas)
+  routes/instance.ts              /api/instance : univers et membres, admin seulement (AD-87)
+  services/instance.ts            Fonctions de l'admin d'instance, sur `membres` seule (AD-86)
   services/oidc.ts                Découverte OIDC, config client
   services/llm/                   Transports LLM repris d'Antre-du-maitre,
                                    réservés aux futures features — aucune
@@ -36,6 +40,22 @@ cp .env.example .env
 npm run dev            # ou : npm run build && npm start (sert dist/server.js)
 curl http://localhost:3001/healthz   # -> "kanevas 0.0.0-dev"
 ```
+
+## Lancer en bouchon (recette)
+
+Le mode bouchon (`KANEVAS_STUB=1`, AD-55) remplace Authelia par le choix d'un compte de test
+(antor, lea, teo, mira, admin — ce dernier porte le groupe `parents`). Ne jamais l'ouvrir en production ;
+il refuse de démarrer si une variable `OIDC_*` est posée.
+
+```bash
+docker build -t kanevas:stub .
+docker run --rm -p 3001:3001 -e KANEVAS_STUB=1 kanevas:stub
+# sans docker : npm ci && npm run build && KANEVAS_STUB=1 node dist/server.js
+# puis ouvrir http://localhost:3001/connexion-bouchon, choisir « Admin », aller sur /administration
+```
+
+La base est en mémoire sans `/data` (avertissement au démarrage) : elle repart vide à chaque lancement.
+Il n'y a donc aucun univers à administrer tant qu'on n'en a pas créé (en antor, `/univers/nouveau`).
 
 ## Réglages
 
