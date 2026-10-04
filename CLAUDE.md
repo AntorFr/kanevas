@@ -47,3 +47,9 @@
   `registerSessionRoutes` (AD-15). `KANEVAS_STUB=1` (AD-55) swaps Authelia for
   `/connexion-bouchon` and refuses to start if any `OIDC_*` variable is set.
 - Update `.agent/status.md` in the same commit as the work it reflects — except in a task of a chain feature, which leaves it alone: the feature's assembly writes it once (two tasks both adding to it conflict at integration).
+- Search and relations (`kanevas-relier-chercher`): search is `listerFiches({recherche})`, never a second
+  function (AD-63). The FTS5 indexes (migration 0003) only deliver candidate ids and are kept by SQL
+  triggers (AD-21) — never write to `recherche_*` from code. A relation is read under both guards
+  (`lireRelations`: carrying section and target sheet readable, AD-64); do not add a count or a
+  placeholder for hidden ones. Refusal codes: `auto_relation` (invalide), `relation_existante` and
+  `limite_relations` (conflit, in `detail`).
