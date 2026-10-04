@@ -1,6 +1,5 @@
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 
-import { invalide } from '../services/erreurs.js';
 import {
   ajouterMembreInstance,
   changerRoleInstance,
@@ -9,16 +8,10 @@ import {
   retirerMembreInstance,
   type ActeurInstance,
 } from '../services/instance.js';
-import type { Role } from '../services/types.js';
-import { idDeChemin } from './univers.js';
+import { corpsAjout, corpsRole, idDeChemin } from './univers.js';
 
 /** Authelia group that makes an instance admin (B-6, AD-86). */
 export const GROUPE_ADMIN = 'parents';
-
-function corps(request: { body?: unknown }): Record<string, unknown> {
-  const b = request.body;
-  return b && typeof b === 'object' ? (b as Record<string, unknown>) : {};
-}
 
 /**
  * Instance administration routes (B-6, AD-86): thin wrappers over `services/instance`.
@@ -39,11 +32,7 @@ export function registerInstanceRoutes(app: FastifyInstance) {
   });
 
   app.get('/api/instance/univers', async (request) =>
-    listerUniversInstance(app.db, acteur(request)).map((u) => ({
-      id: u.id,
-      nom: u.nom,
-      nbMembres: u.nbMembres,
-    })),
+    listerUniversInstance(app.db, acteur(request)),
   );
 
   app.get('/api/instance/univers/:id/membres', async (request) =>
@@ -56,29 +45,19 @@ export function registerInstanceRoutes(app: FastifyInstance) {
 
   app.post('/api/instance/univers/:id/membres', async (request, reply) => {
     const id = idDeChemin((request.params as { id: string }).id);
-    const b = corps(request);
-    if (typeof b.username !== 'string') throw invalide("L'identifiant est vide.");
-    if (b.role !== undefined && typeof b.role !== 'string') throw invalide('Rôle inconnu.');
-    const membre = ajouterMembreInstance(
-      app.db,
-      acteur(request),
-      id,
-      b.username,
-      (b.role ?? 'joueur') as Role,
-    );
+    const { username, role } = corpsAjout(request);
+    const membre = ajouterMembreInstance(app.db, acteur(request), id, username, role);
     return reply.code(201).send(membre);
   });
 
   app.patch('/api/instance/univers/:id/membres/:compteId', async (request) => {
     const p = request.params as { id: string; compteId: string };
-    const b = corps(request);
-    if (typeof b.role !== 'string') throw invalide('Rôle inconnu.');
     return changerRoleInstance(
       app.db,
       acteur(request),
       idDeChemin(p.id),
       idDeChemin(p.compteId),
-      b.role as Role,
+      corpsRole(request),
     );
   });
 

@@ -12,7 +12,14 @@ export interface Item {
   section?: string;
   /** Only this role sees it. */
   role?: Role;
+  /** Only accounts whose `GET /api/moi` carries this group see it. */
+  groupe?: string;
+  /** Also shown, without its section heading, below « Mes univers » outside a universe. */
+  horsUnivers?: boolean;
 }
+
+/** Authelia group carried by `GET /api/moi` that makes an instance admin (B-6). */
+export const GROUPE_ADMIN = 'parents';
 
 export const ITEMS_UNIVERS: Item[] = [
   { libelle: 'Vue d’ensemble', chemin: (id) => `/univers/${id}` },
@@ -27,11 +34,6 @@ export const ITEMS_UNIVERS: Item[] = [
   { libelle: 'Quêtes', section: 'Lore', chemin: (id) => `/univers/${id}/fiches/quetes` },
   { libelle: 'Membres', section: 'Univers', role: 'mj', chemin: (id) => `/univers/${id}/membres` },
   { libelle: 'Paramètres', section: 'Univers', role: 'mj', chemin: (id) => `/univers/${id}/parametres` },
+  // « Administration » (E-5): instance admins only, wherever the bar is.
+  { libelle: 'Administration', section: 'Instance', groupe: GROUPE_ADMIN, horsUnivers: true, chemin: () => '/administration' },
 ];
-
-/**
- * « Administration » (E-5): only for accounts whose `GET /api/moi` carries the Authelia group
- * `parents`. Below « Mes univers » outside a universe, under « Instance » inside one.
- */
-export const GROUPE_ADMIN = 'parents';
-export const ITEM_ADMIN = { libelle: 'Administration', section: 'Instance', chemin: '/administration' };

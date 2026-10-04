@@ -4,7 +4,7 @@ import { Link, NavLink, matchPath, useLocation } from 'react-router-dom';
 import { appeler } from './api';
 import { useMoi, useUnivers } from './cadre-contexte';
 import { ecranEnregistre } from './registre';
-import { GROUPE_ADMIN, ITEM_ADMIN, ITEMS_UNIVERS } from './items';
+import { ITEMS_UNIVERS, type Item } from './items';
 import { type ChoixTheme, useTheme } from './theme';
 import { Bouton, PastilleRole } from './ui';
 
@@ -82,14 +82,11 @@ function Contenu() {
   const connu = univers.etat !== 'ok' || univers.valeur.some((u) => u.id === id);
   const dedans = id !== null && connu;
   const role = univers.etat === 'ok' ? univers.valeur.find((u) => u.id === id)?.role : undefined;
-  const items = dedans ? ITEMS_UNIVERS.filter((i) => ecranEnregistre(i.chemin(id), undefined) && (!i.role || i.role === role)) : [];
+  const groupes = moi.etat === 'ok' ? moi.valeur.groups : [];
+  const visible = (i: Item, chemin: string) => ecranEnregistre(chemin, undefined) && (!i.groupe || groupes.includes(i.groupe));
+  const items = dedans ? ITEMS_UNIVERS.filter((i) => visible(i, i.chemin(id)) && (!i.role || i.role === role)) : [];
   const sections = [...new Set(items.map((i) => i.section ?? ''))];
-  const admin = moi.etat === 'ok' && moi.valeur.groups.includes(GROUPE_ADMIN) && ecranEnregistre(ITEM_ADMIN.chemin, undefined);
-  const lienAdmin = (
-    <NavLink to={ITEM_ADMIN.chemin} className="item">
-      {ITEM_ADMIN.libelle}
-    </NavLink>
-  );
+  const horsUnivers = dedans ? [] : ITEMS_UNIVERS.filter((i) => i.horsUnivers && visible(i, i.chemin(0)));
 
   return (
     <>
@@ -101,7 +98,11 @@ function Contenu() {
             Mes univers
           </NavLink>
         )}
-        {!dedans && admin && lienAdmin}
+        {horsUnivers.map((i) => (
+          <NavLink key={i.libelle} to={i.chemin(0)} className="item">
+            {i.libelle}
+          </NavLink>
+        ))}
         {sections.map((s) => (
           <div key={s}>
             {s && <div className="section">{s}</div>}
@@ -114,12 +115,6 @@ function Contenu() {
               ))}
           </div>
         ))}
-        {dedans && admin && (
-          <div>
-            <div className="section">{ITEM_ADMIN.section}</div>
-            {lienAdmin}
-          </div>
-        )}
       </nav>
       <div className="pied">
         <div className="identifiant">{moi.etat === 'ok' ? moi.valeur.username : '…'}</div>
