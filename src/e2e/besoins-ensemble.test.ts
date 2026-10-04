@@ -666,7 +666,7 @@ describe('kanevas-premiere-fiche, du besoin', { skip: skipBrowser }, () => {
     await p.getByRole('button', { name: /^Se connecter en tant que Admin$/i }).click();
     await attendre(p);
     const moi = await p.evaluate(async () => (await fetch('/api/moi')).json());
-    assert.deepEqual(moi, { username: 'admin', groups: ['parents'] });
+    assert.deepEqual(moi, { username: 'admin', groups: ['parents'], limites: { contenuSection: 20000 } });
     assert.ok((await texte(p)).includes(bandeau));
     await p.goto('/creer-un-univers');
     await attendre(p);
@@ -681,7 +681,7 @@ describe('kanevas-premiere-fiche, du besoin', { skip: skipBrowser }, () => {
   test('Bouchon : un compte ordinaire n’a aucun groupe', async () => {
     const lea = await compte('lea');
     const moi = await lea.page.evaluate(async () => (await fetch('/api/moi')).json());
-    assert.deepEqual(moi, { username: 'lea', groups: [] });
+    assert.deepEqual(moi, { username: 'lea', groups: [], limites: { contenuSection: 20000 } });
   });
 
   test('Bouchon : l’admin d’instance sans rôle n’a pas accès au contenu d’un univers', async () => {

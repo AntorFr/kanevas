@@ -265,3 +265,22 @@ test('exclusion : un compte sans rôle dans l’univers ne sait pas que la fiche
   }
   assert.equal((await appel(app, mira, 'POST', `${base}/fiches`, { type: 'lieu', titre: 'X' })).statusCode, 404);
 });
+
+test('plafond : PUT contenu de 20 000 caractères → 200, de 20 001 → 400, section et version inchangées', async () => {
+  const { app, antor, base } = await monter();
+  const f = await fiche(app, antor, base, 'personnage', 'Maître Aldric', { pj: false });
+  const s = await section(app, antor, base, f.id, 'Notes', 'Début.');
+  const url = `${base}/fiches/${f.id}/sections/${s.id}`;
+  const ok = await appel(app, antor, 'PUT', `${url}/contenu`, { contenu: 'a'.repeat(20000), version: s.version });
+  assert.equal(ok.statusCode, 200, ok.body);
+  const v = (ok.json() as Section).version;
+  const trop = await appel(app, antor, 'PUT', `${url}/contenu`, { contenu: 'b'.repeat(20001), version: v });
+  assert.equal(trop.statusCode, 400, trop.body);
+  assert.ok(trop.body.includes('Contenu trop long : 20 000 caractères au plus.'), trop.body);
+  const lue = (await appel(app, antor, 'GET', url)).json() as Section;
+  assert.equal(lue.contenu, 'a'.repeat(20000));
+  assert.equal(lue.version, v);
+  // the creation route enforces the same ceiling
+  const creation = await appel(app, antor, 'POST', `${base}/fiches/${f.id}/sections`, { titre: 'Trop', contenu: 'c'.repeat(20001) });
+  assert.equal(creation.statusCode, 400, creation.body);
+});

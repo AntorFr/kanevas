@@ -285,3 +285,24 @@ test('un nouveau compte n’a aucun univers ; le créateur devient MJ', () => {
   assert.equal(assurerCompte(db, 'ana').id, a.id);
   assert.equal(u.nom, 'Mon univers');
 });
+
+test('plafond : 20 000 caractères passent, 20 001 refusés à l’ajout et à l’écriture, rien d’écrit', () => {
+  const { db, marc, u, f, pub } = monde();
+  const ouvert = ajouterSection(db, marc.id, u.id, f.id, { titre: 'Pile', contenu: 'a'.repeat(20000) });
+  assert.equal(ouvert.contenu.length, 20000);
+  const avant = (db.prepare('SELECT COUNT(*) AS n FROM sections').get() as { n: number }).n;
+  assert.throws(
+    () => ajouterSection(db, marc.id, u.id, f.id, { titre: 'Trop', contenu: 'a'.repeat(20001) }),
+    (e: unknown) => e instanceof ErreurService && e.code === 'invalide' && e.message === 'Contenu trop long : 20 000 caractères au plus.',
+  );
+  assert.equal((db.prepare('SELECT COUNT(*) AS n FROM sections').get() as { n: number }).n, avant);
+  const v = lireSection(db, { compteId: marc.id }, u.id, f.id, pub.id).version;
+  assert.equal(ecrireContenu(db, marc.id, u.id, f.id, pub.id, 'b'.repeat(20000), v).version, v + 1);
+  assert.throws(
+    () => ecrireContenu(db, marc.id, u.id, f.id, pub.id, 'c'.repeat(20001), v + 1),
+    (e: unknown) => e instanceof ErreurService && e.code === 'invalide' && e.message === 'Contenu trop long : 20 000 caractères au plus.',
+  );
+  const apres = lireSection(db, { compteId: marc.id }, u.id, f.id, pub.id);
+  assert.equal(apres.contenu, 'b'.repeat(20000));
+  assert.equal(apres.version, v + 1);
+});

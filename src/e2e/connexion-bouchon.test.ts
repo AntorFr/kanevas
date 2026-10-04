@@ -74,10 +74,10 @@ test('AD-55 l\'écran de choix liste Antor, Léa, Teo, Mira et Admin (groupes : 
 test('AD-55 /api/moi rend {username, groups} : Admin porte « parents », Léa aucun groupe', opts, async () => {
   const admin = await connecte(browser, srv.base, 'Admin');
   const moiAdmin = await (await admin.page.request.get('/api/moi')).json();
-  assert.deepEqual(moiAdmin, { username: 'admin', groups: ['parents'] });
+  assert.deepEqual(moiAdmin, { username: 'admin', groups: ['parents'], limites: { contenuSection: 20000 } });
   const lea = await connecte(browser, srv.base, 'Léa');
   const moiLea = await (await lea.page.request.get('/api/moi')).json();
-  assert.deepEqual(moiLea, { username: 'lea', groups: [] });
+  assert.deepEqual(moiLea, { username: 'lea', groups: [], limites: { contenuSection: 20000 } });
   await admin.ctx.close();
   await lea.ctx.close();
 });
