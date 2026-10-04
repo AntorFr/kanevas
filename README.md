@@ -45,7 +45,7 @@ npm run dev            # ou : npm run build && npm start (sert dist/server.js)
 curl http://localhost:3001/healthz   # -> "kanevas 0.0.0-dev"
 ```
 
-Sans docker (pod, poste nu), les tests se lancent avec `npm ci && npm run typecheck && npm test` (Node 20 ou plus). `npm run dev` ne sert que l'API : pour voir l'interface, `npm run build && KANEVAS_STUB=1 node dist/server.js`.
+Sans docker (pod, poste nu), les tests se lancent avec `npm ci && npm run typecheck && npm test` (Node 20 ou plus). Les tests d'`src/e2e/administration.test.ts` pilotent un navigateur et peuvent expirer sous charge : relancer avant d'y voir un défaut. Corps de `POST /api/instance/univers/:id/membres` : `{"username": "mira", "role": "mj"}`. `npm run dev` ne sert que l'API : pour voir l'interface, `npm run build && KANEVAS_STUB=1 node dist/server.js`.
 
 ## Lancer en bouchon (recette)
 
@@ -58,7 +58,8 @@ docker build -t kanevas:stub .
 docker run --rm -p 3001:3001 -e KANEVAS_STUB=1 kanevas:stub
 # sans docker (le frontend n'est servi qu'après le build) :
 #   npm ci && npm run build && KANEVAS_STUB=1 node dist/server.js
-# puis ouvrir http://localhost:3001/connexion-bouchon, choisir « Admin », aller sur /administration
+# puis ouvrir http://localhost:3001/connexion-bouchon, créer un univers en Antor (la base est vide),
+# se reconnecter en « Admin », aller sur /administration
 ```
 
 Où vivent les données : dans l'image, `/data/kanevas.db` du conteneur (perdue avec `--rm`, donc vide à
