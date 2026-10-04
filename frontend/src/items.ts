@@ -28,3 +28,10 @@ export const ITEMS_UNIVERS: Item[] = [
   { libelle: 'Membres', section: 'Univers', role: 'mj', chemin: (id) => `/univers/${id}/membres` },
   { libelle: 'Paramètres', section: 'Univers', role: 'mj', chemin: (id) => `/univers/${id}/parametres` },
 ];
+
+/**
+ * « Administration » (E-5): only for accounts whose `GET /api/moi` carries the Authelia group
+ * `parents`. Below « Mes univers » outside a universe, under « Instance » inside one.
+ */
+export const GROUPE_ADMIN = 'parents';
+export const ITEM_ADMIN = { libelle: 'Administration', section: 'Instance', chemin: '/administration' };

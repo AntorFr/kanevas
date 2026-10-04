@@ -4,7 +4,7 @@ import { Link, NavLink, matchPath, useLocation } from 'react-router-dom';
 import { appeler } from './api';
 import { useMoi, useUnivers } from './cadre-contexte';
 import { ecranEnregistre } from './registre';
-import { ITEMS_UNIVERS } from './items';
+import { GROUPE_ADMIN, ITEM_ADMIN, ITEMS_UNIVERS } from './items';
 import { type ChoixTheme, useTheme } from './theme';
 import { Bouton, PastilleRole } from './ui';
 
@@ -84,6 +84,12 @@ function Contenu() {
   const role = univers.etat === 'ok' ? univers.valeur.find((u) => u.id === id)?.role : undefined;
   const items = dedans ? ITEMS_UNIVERS.filter((i) => ecranEnregistre(i.chemin(id), undefined) && (!i.role || i.role === role)) : [];
   const sections = [...new Set(items.map((i) => i.section ?? ''))];
+  const admin = moi.etat === 'ok' && moi.valeur.groups.includes(GROUPE_ADMIN) && ecranEnregistre(ITEM_ADMIN.chemin, undefined);
+  const lienAdmin = (
+    <NavLink to={ITEM_ADMIN.chemin} className="item">
+      {ITEM_ADMIN.libelle}
+    </NavLink>
+  );
 
   return (
     <>
@@ -95,6 +101,7 @@ function Contenu() {
             Mes univers
           </NavLink>
         )}
+        {!dedans && admin && lienAdmin}
         {sections.map((s) => (
           <div key={s}>
             {s && <div className="section">{s}</div>}
@@ -107,6 +114,12 @@ function Contenu() {
               ))}
           </div>
         ))}
+        {dedans && admin && (
+          <div>
+            <div className="section">{ITEM_ADMIN.section}</div>
+            {lienAdmin}
+          </div>
+        )}
       </nav>
       <div className="pied">
         <div className="identifiant">{moi.etat === 'ok' ? moi.valeur.username : '…'}</div>

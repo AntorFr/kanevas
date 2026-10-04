@@ -53,3 +53,10 @@ description de plus de 500 caractères. Pas encore de tests ; rendu non vérifi�
 enveloppes de `services/instance`. L'acteur admin vient des groupes de la session (`parents`) ; sans
 le groupe, un `preHandler` appelle `reply.callNotFound()` : même 404 qu'une adresse inconnue (AD-87).
 Pas encore de tests ; rendu non testé hors un essai manuel en bouchon (pas de docker dans le pod).
+
+**Tâche `kanevas-ra-ecran-administration` (branche `task/kanevas-ra-ecran-administration`) :** E-5
+`frontend/src/ecrans/administration.tsx` (un seul motif `/administration/*`, car le registre prend un
+chemin par fichier ; `/administration/univers/:id` en est lu). La liste de membres d'E-4 est extraite
+dans `frontend/src/ListeMembres.tsx` (props `base`, `apres`, `note`) et réemployée par E-4 et E-5.
+Entrée « Administration » : `items.ts` (`ITEM_ADMIN`) et `Barre.tsx`, si `/api/moi` porte `parents`.
+Pagination par 100 côté client (l'API rend tout). Pas encore de tests ; rendu non vérifié au navigateur.
