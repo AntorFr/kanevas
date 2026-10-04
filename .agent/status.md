@@ -2,14 +2,14 @@
 
 > MàJ : 2026-10-04
 
-**État :** `feature/kanevas-premiere-fiche` assemblée (PR #2 vers `main`, non fusionnée) : comptes,
-univers, membres, fiches, sections et droits (`src/services/`, migration 0001), session et mode
-bouchon, routes `/api`, frontend React (E-1 à E-4, E-8, E-9), charte et tokens. Typecheck, build et
-215 tests verts sous Node 22 (dont `src/e2e/` sous Chromium, ignorés sans Playwright : voir le README). Carte et invariants :
+**État :** `main` porte le socle et la première fiche (comptes, univers, membres, fiches, sections et
+droits, session et mode bouchon, frontend E-1 à E-4, E-8, E-9). `feature/kanevas-plafond-sections`
+y ajoute le plafond serveur de 20 000 caractères du contenu d'une section (AD-91) : PR ouverte vers
+`main`, non fusionnée. Typecheck, build et 229 tests verts sous Node 22. Carte et invariants :
 `ARCHITECTURE.md`.
 
-**Reste :** la recette de Monsieur au navigateur (critère de sortie de la feature), puis la fusion
-et le tag `v*` qui produit l'image ; `k8s-home-lab` épingle ensuite ce tag.
+**Reste :** la recette de Monsieur au navigateur (PUT de 20 001 caractères refusé, écran qui garde le
+texte), puis la fusion et le tag `v*` qui produit l'image ; `k8s-home-lab` épingle ensuite ce tag.
 
 **Pièges :**
 - Node 20 est la cible (CI, Dockerfile). `better-sqlite3` est donc épinglé en `^12` : la 13 exige

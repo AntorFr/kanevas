@@ -47,7 +47,7 @@ En mode bouchon, `POST /connexion-bouchon` attend un corps form-urlencoded `comp
 
 | Route | Rôle |
 |---|---|
-| `GET /api/moi`, `POST /api/auth/logout` | identité et groupes du compte ; fin de session |
+| `GET /api/moi`, `POST /api/auth/logout` | identité, groupes et limites (`limites.contenuSection`, AD-91) du compte ; fin de session |
 | `GET /api/auth/config`, `GET /api/auth/oidc/login`, `.../callback` | OIDC (publiques) |
 | `GET\|POST /api/univers`, `GET /api/univers/:id` | univers du compte (avec son rôle) ; création |
 | `GET\|POST /api/univers/:id/membres`, `PATCH\|DELETE .../membres/:compteId` | membres (MJ) |
