@@ -103,7 +103,7 @@ Authelia (OIDC) : identité seulement.
   (AD-28).
 - **Backend Fastify** : le seul point d'accès aux données, au disque, au fournisseur LLM et à
   Codex (AD-4). Toute route est gardée par la session (AD-15) ; seul `/healthz` est
-  public.
+  public, avec `/api/auth/*` et les pages de connexion.
 - **Fonctions de service** : la seule implémentation de chaque lecture et écriture, avec ses
   gardes (`peutLireSection`, `peutEcrireSection`, `peutVoirFiche`, `peutLirePieceJointe`).
   Routes et outils de l'agent les appellent de la même façon (AD-2) : c'est ce qui rend la
