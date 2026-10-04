@@ -64,6 +64,12 @@ En mode bouchon, `POST /connexion-bouchon` attend un corps form-urlencoded `comp
 | `POST .../fiches/:fid/sections`, `PUT .../fiches/:fid/ordre` | ajouter, ordonner (MJ) |
 | `GET\|PATCH\|DELETE .../sections/:sid` | lire ; titre et audience (MJ) ; retirer (MJ) |
 | `PUT .../sections/:sid/contenu` | écrire `{contenu, version}` ; 400 si contenu > 20 000 caractères (contrôlé après les droits, avant la version) ; 409 si `version` périmée |
+| `GET\|POST /api/univers/:id/campagnes`, `GET .../campagnes/:cid` | liste (actives, en préparation, terminées, chacune par nom) et lecture (tout membre) ; création `{nom}` (MJ) |
+| `PATCH /api/campagnes/:cid` | `{statut}` (`en_preparation`, `active`, `terminee`) (MJ de l'univers de la campagne) |
+| `GET\|POST /api/campagnes/:cid/scenarios`, `GET\|PUT /api/scenarios/:sid` | scénarios `{titre, contenu?}` ; écriture `{titre, contenu, version}`, 409 `scenario_modifie` si périmée (AD-62). MJ seul, 404 pour tout autre (AD-22, AD-47) |
+| `GET\|POST /api/campagnes/:cid/taches`, `PUT /api/taches/:tid` | préparation `{categorie, libelle}` ; cocher `{faite}`. MJ seul, 404 pour tout autre |
+| `POST /api/univers/:id/comptes-rendus` | `{campagneId, titre, texte?}` ; tout membre (AD-61) ; rend la fiche |
+| `GET .../comptes-rendus` (`?campagne`, `?curseur`), `GET .../campagnes/:cid/comptes-rendus` | comptes-rendus lisibles, du plus récent, 100 au plus par page et `suivant` ; `?mode=joueur` |
 
 Corps de requête (JSON) : `POST /api/univers` `{nom, description?}` ; `POST .../membres`
 `{username, role}` (`role` : `mj` \| `joueur` ; `username` est l'identifiant exact) ; `PATCH
