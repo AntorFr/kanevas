@@ -62,3 +62,8 @@ portée gardée : `GET|POST /api/systemes`, `PATCH /api/univers/:id` (nom, descr
 `GET …/systeme?type=regle|creature|objet&curseur=` (système + N + `gabarits` + `suivant`),
 `POST …/systeme/gabarits` (`{type,nom,contenu}`), `PUT …/systeme/gabarits/:gabaritId`
 (`{nom,contenu,version}`). Aucune suppression. Pas encore de tests de route.
+
+**Tâche `kanevas-sy-ecran-systeme` :** E-15 `frontend/src/ecrans/systeme.tsx`
+(`/univers/:id/systeme` : onglets, ajout/modification MJ, version lue AD-85, « Charger la
+suite ») et le bloc E-3 `blocs/systeme.tsx` (absent sans système). Typecheck et build verts ;
+`registre.test.ts` (3e test) suppose `blocs/` vide et échoue désormais — à adapter par le testeur.
