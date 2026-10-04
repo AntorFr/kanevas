@@ -4,13 +4,32 @@ import { useSyncExternalStore } from 'react';
 let perdue = typeof navigator !== 'undefined' && navigator.onLine === false;
 const abonnes = new Set<() => void>();
 
+let sonde: ReturnType<typeof setInterval> | undefined;
+
+/** While the connection is lost, ping the public /healthz: any answer means the server is back. */
+async function sonder() {
+  try {
+    await fetch('/healthz', { cache: 'no-store' });
+    definirPerdue(false);
+  } catch {
+    /* still unreachable: the next tick tries again */
+  }
+}
+
 function definirPerdue(valeur: boolean) {
   if (perdue === valeur) return;
   perdue = valeur;
+  if (valeur) {
+    sonde = setInterval(() => void sonder(), 3000);
+  } else if (sonde !== undefined) {
+    clearInterval(sonde);
+    sonde = undefined;
+  }
   abonnes.forEach((f) => f());
 }
 
 if (typeof window !== 'undefined') {
+  if (perdue) sonde = setInterval(() => void sonder(), 3000);
   window.addEventListener('offline', () => definirPerdue(true));
   window.addEventListener('online', () => definirPerdue(false));
 }

@@ -4,6 +4,10 @@
 > y arrive, à quoi il sert, ce que chaque rôle y fait. Les états de chaque écran et la maquette
 > finie se détaillent dans la tranche qui le construit.
 
+> **Construit à ce jour** : E-1, E-2, E-3 (coquille : nom, navigation, blocs vides), E-4, E-8 (sans
+> recherche), E-9 (sans relations ni pièces jointes), la session et la barre latérale. E-5, E-6, E-7 et
+> E-10 à E-15 sont la cible.
+
 ## Format
 
 Web. Ordinateur d'abord pour écrire (souris, clavier, glisser des tokens) ; téléphone pour lire
@@ -50,8 +54,7 @@ bascule existe (fiche, carte).
 Les pages de connexion du serveur (« Connexion refusée », « Connexion indisponible », atteintes
 depuis P-1) et le bandeau du mode bouchon sont décrits sous « Session et connexion ».
 
-Hors produit : `/composants`, la bibliothèque de composants, réservée au développement ; et,
-en mode bouchon seulement (AD-55), l'écran de choix d'un compte de test et le bandeau « mode
+Hors produit : en mode bouchon seulement (AD-55), l'écran de choix d'un compte de test et le bandeau « mode
 bouchon » — sans `E-n` ni six états, ils n'existent pas en production.
 
 ## Rôles × écrans × actions
@@ -105,7 +108,7 @@ Deux sont posés dès le cadrage parce qu'ils traversent tout :
 
 > E-1, E-2, E-3, E-4, E-8, E-9, la barre latérale et la session. Vocabulaire des six états, celui
 > de B-29 : **vide**, **chargement**, **erreur**, **connexion perdue**, **refus**, **contenu
-> long**. « Sans objet » dit sa raison. Les maquettes finies sont `docs/maquettes/e01`, `e02`,
+> long**. « Sans objet » dit sa raison. Les maquettes finies sont `docs/maquettes/e01-*.html`, `e02-*.html`,
 > `e03`, `e04`, `e08`, `e09` (thème sombre, gris tertiaire de la charte).
 
 **Textes communs.**
@@ -146,8 +149,9 @@ Deux sont posés dès le cadrage parce qu'ils traversent tout :
   l'instant. Réessayez dans un moment. » et un lien « Réessayer » qui relance la connexion (retour à l'adresse de connexion)
 - La session expire au bout de 7 jours (AD-56). **Se déconnecter** (pied de la barre latérale)
   efface la session et mène à la connexion ; en bouchon, c'est ainsi qu'on change de compte.
-- `GET /api/moi` rend `{username, groups}` du compte connecté : c'est ce que la barre latérale
-  affiche (l'identifiant) et ce que les tests lisent pour constater les groupes.
+- `GET /api/moi` rend `{username, groups, limites}` du compte connecté : c'est ce que la barre latérale
+  affiche (l'identifiant) et ce que les tests lisent pour constater les groupes. `limites.contenuSection`
+  (20 000) est la borne d'une section, lue par l'écran de fiche (AD-91).
 
 ### Barre latérale
 
@@ -288,7 +292,7 @@ voit un Joueur qui n'est l'auteur d'aucune section : plus de réglages, plus de 
 
 *Un Joueur* voit les sections qu'il lit (joueurs, ou auteur si c'est lui), sans titre ni trace des
 autres ; « Modifier » sur celles qu'il peut écrire ; ni audience, ni ordre, ni ajout, ni retrait.
-Pour **modifier** : un champ de texte (20 000 caractères au plus), « Enregistrer », « Annuler ».
+Pour **modifier** : un champ de texte (20 000 caractères au plus, valeur lue dans `limites.contenuSection` de `/api/moi` ; le serveur la refuse aussi, AD-91), « Enregistrer », « Annuler ».
 Enregistrer envoie la version lue (AD-59).
 
 Textes : section sans contenu : « Rien d'écrit pour l'instant. » ; fiche sans section (MJ) : « Cette
@@ -305,7 +309,7 @@ confirmation de retrait : « Retirer la section « Vérité — MJ seul » ? Son
 | erreur | « Impossible de charger cette fiche. » ; échec d'écriture : « L'action n'a pas abouti. Réessayez. », texte conservé | « Réessayer » |
 | connexion perdue | le bandeau ; « Enregistrer », audience, ordre, retrait, ajout désactivés ; le texte en cours reste | lire |
 | refus | fiche inconnue ou dont rien n'est lisible : « Page introuvable. » ; section non lisible : absente. Un MJ en mode Joueur sur une fiche dont aucune section n'est lisible des joueurs voit « Aucune section n'est visible des joueurs. » (ce que verrait un joueur : « Page introuvable. ») | passer en mode MJ |
-| contenu long | une section de 20 000 caractères passe à la ligne et s'affiche en entier ; plus au-delà : « Erreur : 20 000 caractères au plus. » ; titre de fiche (120 caractères) et titre de section (80) : passent à la ligne | idem |
+| contenu long | une section de 20 000 caractères passe à la ligne et s'affiche en entier ; plus au-delà, dès le 20 001e caractère saisi : « Erreur : 20 000 caractères au plus. » (sous le champ ; « Enregistrer » ne part pas ; le texte saisi est gardé, y compris quand c'est le serveur qui refuse, 400, avec le même texte — pas « L'action n'a pas abouti » ; tant que `/api/moi` n'a pas rendu la limite, ou s'il a échoué, l'écran ne contrôle rien et laisse le serveur répondre) ; titre de fiche (120 caractères) et titre de section (80) : passent à la ligne | idem |
 
 *Critères.*
 - Étant donné Léa, Joueuse, quand elle ouvre « Maître Aldric » (« Apparence » lue des joueurs,
@@ -318,10 +322,13 @@ confirmation de retrait : « Retirer la section « Vérité — MJ seul » ? Son
   voit pas tant que « Les joueurs la lisent » est faux.
 - Étant donné deux onglets sur la même section, quand le second enregistre après le premier,
   alors il voit « La section a changé depuis que vous l'avez ouverte… » et son texte reste.
+- Étant donné Antor qui modifie une section, quand il saisit un 20 001e caractère, alors « Erreur :
+  20 000 caractères au plus. » apparaît sous le champ, rien n'est envoyé et son texte reste ;
+  quand le serveur refuse malgré tout (400), il voit le même texte et son texte reste.
 
 ### Clôture de la tranche
 
-Chaque besoin de `## Livre` a son écran : B-2 → E-2 ; B-3 à B-5 → E-4 ; B-7 → E-8 ; B-8 et B-9 →
+Chaque besoin livré par la tranche (fiche de la feature, `## Livre`, hors de ce dépôt) a son écran : B-2 → E-2 ; B-3 à B-5 → E-4 ; B-7 → E-8 ; B-8 et B-9 →
 E-9 ; B-1 et B-28 → session ; B-29 → six états de chaque écran ci-dessus. Chaque écran est atteint
 par P-1 (E-1, E-2, E-3), P-2 (E-4), P-3 étape 4 et P-6 (E-8, E-9), P-7 (E-9). Les trois rôles ont
 leur colonne dans la matrice du cadrage ; l'admin d'instance n'a, dans cette tranche, que E-1 et

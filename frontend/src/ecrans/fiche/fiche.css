@@ -1,0 +1,20 @@
+.liste-fiches { list-style: none; margin: var(--e-4) 0; padding: 0; display: flex; flex-direction: column; gap: var(--e-2); }
+.liste-fiches a { display: flex; align-items: center; gap: var(--e-3); padding: var(--e-3) var(--e-4); background: var(--surface);
+  border: 1px solid var(--bord); border-radius: var(--rayon-panneau); color: var(--texte); text-decoration: none; }
+.liste-fiches a:hover { background: var(--surface-2); }
+.liste-fiches .titre-fiche { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.badge-type { flex: none; font-size: 11px; padding: 2px 9px; border-radius: var(--rayon-pastille); background: var(--surface-3); color: var(--texte-2); white-space: nowrap; }
+.entete-liste { display: flex; align-items: center; justify-content: space-between; gap: var(--e-3); flex-wrap: wrap; }
+.titre-fiche-page { display: flex; align-items: baseline; gap: var(--e-3); flex-wrap: wrap; overflow-wrap: anywhere; }
+.outils-fiche { display: flex; align-items: center; gap: var(--e-3); flex-wrap: wrap; margin: var(--e-3) 0; }
+.section-fiche { margin-top: var(--e-4); }
+.section-fiche .contenu { white-space: pre-wrap; overflow-wrap: anywhere; margin: var(--e-2) 0; }
+.section-fiche .contenu.vide { color: var(--texte-2); }
+.section-fiche textarea { width: 100%; min-height: 12rem; }
+.audience { display: flex; flex-wrap: wrap; gap: var(--e-2) var(--e-4); align-items: center; margin: var(--e-3) 0; font-size: var(--t-13); }
+.audience label { display: inline-flex; gap: var(--e-2); align-items: center; }
+.section-fiche .actions { flex-wrap: wrap; }
+.ajout-section { display: flex; gap: var(--e-2); align-items: flex-end; flex-wrap: wrap; margin-top: var(--e-5); }
+.fenetre .choix { display: flex; gap: var(--e-4); margin: var(--e-3) 0; }
+.fenetre .choix label { display: inline-flex; gap: var(--e-2); align-items: center; }
+.actuelle { color: var(--texte-2); white-space: pre-wrap; overflow-wrap: anywhere; border-left: 2px solid var(--bord-champ); padding-left: var(--e-3); }
