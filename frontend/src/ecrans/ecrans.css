@@ -23,3 +23,7 @@
 .liste-membres .identifiant { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .confirmation p { overflow-wrap: anywhere; }
 .confirmation { background: var(--surface); border: 1px solid var(--bord); border-radius: var(--rayon-panneau); padding: var(--e-3) var(--e-4); }
+.enregistre { color: var(--table); background: var(--table-fond); padding: var(--e-2) var(--e-3); border-radius: var(--rayon-champ); margin: var(--e-3) 0; }
+.systeme-courant { display: flex; align-items: center; gap: var(--e-3); margin-top: var(--e-3); flex-wrap: wrap; }
+.systeme-courant .nom-systeme { max-width: 24rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.erreur-champ { color: var(--danger); font-size: var(--t-13); margin-top: calc(var(--e-1) * -1); }
