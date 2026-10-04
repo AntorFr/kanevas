@@ -50,16 +50,20 @@ il refuse de démarrer si une variable `OIDC_*` est posée.
 ```bash
 docker build -t kanevas:stub .
 docker run --rm -p 3001:3001 -e KANEVAS_STUB=1 kanevas:stub
-# sans docker : npm ci && npm run build && KANEVAS_STUB=1 node dist/server.js
+# sans docker (le frontend n'est servi qu'après le build) :
+#   npm ci && npm run build && KANEVAS_STUB=1 node dist/server.js
 # puis ouvrir http://localhost:3001/connexion-bouchon, choisir « Admin », aller sur /administration
 ```
 
-La base est en mémoire sans `/data` (avertissement au démarrage) : elle repart vide à chaque lancement.
-Il n'y a donc aucun univers à administrer tant qu'on n'en a pas créé (en antor, `/univers/nouveau`).
+Où vivent les données : dans l'image, `/data/kanevas.db` du conteneur (perdue avec `--rm`, donc vide à
+chaque lancement) ; sans docker, `./data/kanevas.db` et `./data/session.key` (ignorés par git ; `DB_PATH`
+déplace la base, `rm -r data` repart de zéro). Aucun univers n'existe au départ : en Antor, « Créer un
+univers » (`/univers/nouveau`) ; on change de compte par « Se déconnecter » de la barre latérale.
+`npm run dev` ne sert que l'API : l'interface demande `npm run build`.
 
 ## Réglages
 
-La liste de départ est `.env.example`. En plus : `APP_NAME` (défaut `kanevas`),
+La liste de départ est `.env.example`. En plus : `DB_PATH` (fichier SQLite), `SESSION_SECRET` (16 caractères au moins ; sinon créé dans `data/session.key`), `KANEVAS_STUB`, `APP_NAME` (défaut `kanevas`),
 `APP_VERSION` (défaut `0.0.0-dev`, posée par le build-arg en image), `PORT` (3001), `LLM_PROVIDER` (`mock` | `anthropic` | `claude-agent`, défaut `mock`,
 inutilisé tant qu'aucune route n'appelle un LLM).
 
@@ -79,8 +83,7 @@ curl http://localhost:3001/healthz   # -> "kanevas 0.1.0"
 Sur un tag, la CI dérive ce même build-arg du tag semver poussé (`docker/metadata-action`)
 : pousser `v0.1.0` publie `ghcr.io/antorfr/kanevas:0.1.0` avec `APP_VERSION`
 embarqué à `0.1.0` — une seule source de vérité pour la version affichée et le
-tag publié. Hors tag (`main`, PR), la valeur n'est pas un semver (À documenter : valeur
-exacte non constatée en CI) : seul un tag donne une version fiable.
+tag publié. Hors tag (`main`, PR), la valeur n'est pas un semver : seul un tag donne une version fiable.
 
 ## OIDC
 

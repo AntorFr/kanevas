@@ -24,7 +24,8 @@ recours admin ; rien n'est fusionné dans `main`. Recours admin assemblé : un c
 - Un admin sans rôle reste un compte sans rôle pour fiches et sections : c'est voulu (AD-9, AD-22).
 - Aucun test de composant du frontend ; l'écran E-5 n'a pas été vu au navigateur (pas de navigateur
   dans le pod). Les six états sont à jouer à la recette.
-- En bouchon, la base est en mémoire et vide : créer un univers en antor avant de tester E-5.
+- En bouchon, la base est vide au départ (`./data/kanevas.db` hors image, `/data` dans l'image) : créer un
+  univers en antor avant de tester E-5.
 - `docker build` ne tourne pas dans les pods (pas de démon) : la CI de la PR construit l'image.
   Version de l'application : build-arg `APP_VERSION` seulement, jamais `package.json`.
 - Le socle publie `ghcr.io/antorfr/kanevas:<version>` seulement sur un tag `vX.Y.Z`, posé à la fusion.
