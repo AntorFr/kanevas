@@ -20,7 +20,7 @@ src/
   routes/session.ts               Garde de session, service du build du frontend
   routes/bouchon.ts               Choix du compte de test (KANEVAS_STUB)
   routes/instance.ts              /api/instance : univers et membres, admin seulement (AD-87)
-  services/instance.ts            Fonctions de l'admin d'instance, sur `membres` seule (AD-86)
+  services/instance.ts            Fonctions de l'admin d'instance, sur `membres`, plus la liste des univers (AD-87)
   services/oidc.ts                Découverte OIDC, config client
   services/llm/                   Transports LLM repris d'Antre-du-maitre,
                                    réservés aux futures features — aucune
