@@ -3,6 +3,10 @@
 > Doc du produit. Sur `epic/kanevas`, la cible du cadrage ; sur `main`, exactement ce qui est
 > construit. Identifiants stables : `B-n` (besoins), `P-n` (parcours), `E-n` (écrans,
 > `docs/ecrans.md`), `AD-n` (décisions, `ARCHITECTURE.md`).
+>
+> **Construit à ce jour** (`kanevas-premiere-fiche`, systèmes, `kanevas-suivi`, `kanevas-fichiers`, `kanevas-relier-chercher`) : P-1 en entier, P-2 étapes 1-2 (sans l'admin),
+> P-3 étapes 1 à 4, P-4 en entier, P-5 étape 1 (fiches et sections), P-6 étapes 1-2 (recherche dans un type), P-7 étape 1 et l'écriture de
+> l'étape 2, P-8 en entier (B-13, B-14 : E-14 puis E-15). Le reste de ce document est la cible.
 
 Kanevas sert à **préparer** des parties de jeu de rôle et à en **garder la mémoire** entre les
 séances : le lore d'un univers, partagé entre le MJ et ses joueurs avec des droits fins par
@@ -182,11 +186,25 @@ l'assistant est indisponible ou en erreur : le panneau le dit, et la fiche reste
    (E-12) d'y ajouter un paragraphe.
 *Échec* : il demande d'écrire dans une section qu'il lit sans l'écrire : « Vous ne pouvez pas modifier
 cette section. », rien n'est écrit.
+*Échec* (dépôt) : fichier vide, section déjà à 50 pièces jointes, envoi interrompu ou droit
+d'écriture retiré — le fichier n'est pas attaché, la raison est dite sur la section (E-9), rien n'est
+laissé à moitié.
 
 ### P-8 — Monter un univers sur un système partagé (MJ)
-1. **Paramètres de l'univers** (E-14) : il choisit un système du catalogue, ou en crée un.
+*Antor, MJ de « Lame d'Ébène », le dimanche soir ; Mira, MJ des « Landes grises », qui joue le même
+système.*
+1. **Paramètres de l'univers** (E-14) : il choisit un système du catalogue, ou en crée un
+   (« Créer et rattacher ») ; il peut aussi détacher l'univers (« Aucun système ») et, dans le même écran, corriger le nom et la description de son univers.
 2. **Système de jeu** (E-15) : il retrouve le bestiaire commun et y ajoute une créature, que les
-   autres univers du système voient aussitôt.
+   autres univers du système voient aussitôt ; Mira, rattachée au même système, la lit.
+   *Moment fort* : la créature ajoutée par Antor apparaît chez Mira, sans que Mira voie un mot du
+   lore d'Antor.
+   *Variante joueur* : Léa, Joueuse de « Lame d'Ébène », ouvre le bloc « Système de jeu » de la vue d'ensemble
+   (E-3) et lit la même créature, sans pouvoir la modifier.
+*Échec* : un nom de système déjà pris — « Un système porte déjà ce nom. » ; une créature modifiée
+entre-temps par l'autre MJ — « Cette entrée a changé depuis que vous l'avez ouverte. », le texte en
+cours est gardé ; un univers détaché pendant qu'un joueur lit le système — la page du joueur répond
+« Page introuvable. » au prochain chargement.
 
 ### P-9 — Voir qui est lié à qui (MJ, puis la table)
 1. **Cartes** (E-10) → nouveau **graphe** (E-11) : il choisit les factions ; les liens viennent

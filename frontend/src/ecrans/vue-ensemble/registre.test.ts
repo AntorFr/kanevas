@@ -26,14 +26,22 @@ test('blocsVisibles : registre vide → aucun bloc', () => {
   assert.deepEqual(blocsVisibles('mj', []), []);
 });
 
+test('le bloc « Système de jeu » est enregistré pour le MJ et le Joueur', () => {
+  const mj = blocsVisibles('mj').map((b) => b.id);
+  const joueur = blocsVisibles('joueur').map((b) => b.id);
+  assert.ok(mj.includes('systeme'));
+  assert.ok(joueur.includes('systeme'));
+});
+
 test('un bloc déposé seul dans blocs/ est trouvé par le registre, sans autre fichier modifié', async () => {
   const fichier = join(import.meta.dirname, 'blocs', 'zz-bloc-de-test.tsx');
   writeFileSync(fichier, "export default { id: 'zz-test', roles: ['mj'], rang: 9, composant: () => null };\n");
   try {
     const frais = await createServer({ configFile: false, root: import.meta.dirname, server: { middlewareMode: true }, appType: 'custom', logLevel: 'silent' });
     const m = (await frais.ssrLoadModule('./registre.ts')) as typeof import('./registre');
-    assert.deepEqual(m.blocsVisibles('mj').map((b) => b.id), ['zz-test']);
-    assert.deepEqual(m.blocsVisibles('joueur'), []);
+    assert.ok(m.blocsVisibles('mj').some((b) => b.id === 'zz-test'));
+    // The test block is MJ-only: it must not leak to the Joueur role.
+    assert.ok(!m.blocsVisibles('joueur').some((b) => b.id === 'zz-test'));
     await frais.close();
   } finally {
     rmSync(fichier, { force: true });

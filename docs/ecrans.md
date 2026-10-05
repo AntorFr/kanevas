@@ -4,6 +4,10 @@
 > y arrive, à quoi il sert, ce que chaque rôle y fait. Les états de chaque écran et la maquette
 > finie se détaillent dans la tranche qui le construit.
 
+> **Construit à ce jour** : E-1, E-2, E-3 (nom, navigation et blocs : système de jeu, campagnes actives, derniers comptes-rendus, préparation pour le MJ), E-4, E-6, E-7, E-13, E-8 (avec la
+> recherche dans un type), E-9 (avec les blocs Relations et Pièces jointes), E-14 (Paramètres), E-15 (Système de jeu), la ligne « Campagne » de E-9, la session
+> et la barre latérale. E-5 et E-10 à E-12 sont la cible.
+
 ## Format
 
 Web. Ordinateur d'abord pour écrire (souris, clavier, glisser des tokens) ; téléphone pour lire
@@ -50,8 +54,7 @@ bascule existe (fiche, carte).
 Les pages de connexion du serveur (« Connexion refusée », « Connexion indisponible », atteintes
 depuis P-1) et le bandeau du mode bouchon sont décrits sous « Session et connexion ».
 
-Hors produit : `/composants`, la bibliothèque de composants, réservée au développement ; et,
-en mode bouchon seulement (AD-55), l'écran de choix d'un compte de test et le bandeau « mode
+Hors produit : en mode bouchon seulement (AD-55), l'écran de choix d'un compte de test et le bandeau « mode
 bouchon » — sans `E-n` ni six états, ils n'existent pas en production.
 
 ## Rôles × écrans × actions
@@ -74,7 +77,7 @@ bouchon » — sans `E-n` ni six états, ils n'existent pas en production.
 | E-12 | catalogue MJ | catalogue Joueur | — |
 | E-13 | tous les CR | les CR lisibles | — |
 | E-14 | tout | — | — |
-| E-15 | lire, écrire | lire | — |
+| E-15 | lire, écrire (univers rattaché ; sinon —, « Page introuvable. ») | lire (idem) | — |
 
 Précisions de la matrice : créer une campagne, en changer le statut, créer un scénario sont au
 MJ seul. L'audience d'une section se règle en ligne sur la fiche (MJ). Créer une fiche ouvre une
@@ -82,7 +85,7 @@ fenêtre (type déjà choisi, titre) qui mène à la fiche ; créer une carte se
 E-10. « Rendre visible » une carte se trouve sur la carte (E-11) et dans la liste (E-10). Le fond d'une carte illustrée se dépose à sa création (E-10) et se change sur la carte (E-11) ;
 une carte sans fond montre ses tokens sur un fond neutre. Une
 tâche de préparation s'ajoute avec sa catégorie, se coche, se décoche ; elle ne se supprime pas.
-Sur E-15, règles, créatures et objets ont le même traitement.
+Sur E-15, règles, créatures et objets ont le même traitement. Sur E-3, le bloc « Système de jeu » n'existe que si l'univers est rattaché à un système (MJ et Joueur).
 
 Un compte **sans rôle** dans l'univers et qui n'est pas admin d'instance (Teo avant son ajout) a, dans
 cet univers, la colonne « Admin » de cette matrice moins E-5 : « — » partout, « Page introuvable. »
@@ -105,7 +108,7 @@ Deux sont posés dès le cadrage parce qu'ils traversent tout :
 
 > E-1, E-2, E-3, E-4, E-8, E-9, la barre latérale et la session. Vocabulaire des six états, celui
 > de B-29 : **vide**, **chargement**, **erreur**, **connexion perdue**, **refus**, **contenu
-> long**. « Sans objet » dit sa raison. Les maquettes finies sont `docs/maquettes/e01`, `e02`,
+> long**. « Sans objet » dit sa raison. Les maquettes finies sont `docs/maquettes/e01-*.html`, `e02-*.html`,
 > `e03`, `e04`, `e08`, `e09` (thème sombre, gris tertiaire de la charte).
 
 **Textes communs.**
@@ -146,18 +149,19 @@ Deux sont posés dès le cadrage parce qu'ils traversent tout :
   l'instant. Réessayez dans un moment. » et un lien « Réessayer » qui relance la connexion (retour à l'adresse de connexion)
 - La session expire au bout de 7 jours (AD-56). **Se déconnecter** (pied de la barre latérale)
   efface la session et mène à la connexion ; en bouchon, c'est ainsi qu'on change de compte.
-- `GET /api/moi` rend `{username, groups}` du compte connecté : c'est ce que la barre latérale
-  affiche (l'identifiant) et ce que les tests lisent pour constater les groupes.
+- `GET /api/moi` rend `{username, groups, limites}` du compte connecté : c'est ce que la barre latérale
+  affiche (l'identifiant) et ce que les tests lisent pour constater les groupes. `limites.contenuSection`
+  (20 000) est la borne d'une section, lue par l'écran de fiche (AD-91).
 
 ### Barre latérale
 
 Sur tout écran d'un univers : en tête le **sélecteur d'univers** (nom, badge du rôle, la liste
 des univers du compte, « Mes univers » en pied de liste) ; **Vue d'ensemble** ; **Lore** :
-Personnages, Lieux, Factions, Objets, Événements, Quêtes ; pour un MJ, **Univers ▸ Membres** ; en
+Personnages, Lieux, Factions, Objets, Événements, Quêtes ; **Campagnes** et **Comptes-rendus** ; pour un MJ, **Univers ▸ Membres** et **Paramètres** ; en
 pied, l'identifiant, le thème (Clair, Sombre, Système), « Se déconnecter ». Hors d'un univers (E-1,
 E-2) : « Mes univers », l'identifiant, le thème, « Se déconnecter ». **Un item dont l'écran n'est
-pas construit n'est pas affiché** : Campagnes, Comptes-rendus, Cartes, Paramètres, Administration
-arrivent avec leurs tranches. Sur téléphone (moins de 760 px), la barre est un tiroir sous un
+pas construit n'est pas affiché** : Cartes et Administration
+arrivent avec leurs tranches (Campagnes et Comptes-rendus sont affichés). « Paramètres » (E-14) n'est affiché qu'au MJ. Sur téléphone (moins de 760 px), la barre est un tiroir sous un
 bouton « Menu ».
 
 | État | Ce qu'on voit |
@@ -202,10 +206,10 @@ en MJ (B-2).
 | refus | sans objet : tout compte peut créer un univers (B-2) | — |
 | contenu long | « Erreur : 80 caractères au plus. » dès le 81e (même texte pour la description avec 500) | corriger |
 
-### E-3 Vue d'ensemble de l'univers (coquille)
+### E-3 Vue d'ensemble de l'univers
 
-Le nom de l'univers (titre), sa description, le badge du rôle, puis une **région de blocs**. Dans
-cette tranche, aucun bloc n'existe : la région montre « Rien à afficher pour l'instant. Les
+Le nom de l'univers (titre), sa description, le badge du rôle, puis une **région de blocs**. Quand
+aucun bloc ne rend rien, la région montre « Rien à afficher pour l'instant. Les
 campagnes, les comptes-rendus et les cartes s'afficheront ici. » ; ni compteur ni lien mort.
 **Les blocs sont indépendants** : chaque tranche ajoute le sien en déposant un fichier dans
 `frontend/src/ecrans/vue-ensemble/blocs/` dont l'export par défaut est un `Bloc` (identifiant,
@@ -288,14 +292,15 @@ voit un Joueur qui n'est l'auteur d'aucune section : plus de réglages, plus de 
 
 *Un Joueur* voit les sections qu'il lit (joueurs, ou auteur si c'est lui), sans titre ni trace des
 autres ; « Modifier » sur celles qu'il peut écrire ; ni audience, ni ordre, ni ajout, ni retrait.
-Pour **modifier** : un champ de texte (20 000 caractères au plus), « Enregistrer », « Annuler ».
+Pour **modifier** : un champ de texte (20 000 caractères au plus, valeur lue dans `limites.contenuSection` de `/api/moi` ; le serveur la refuse aussi, AD-91), « Enregistrer », « Annuler ».
 Enregistrer envoie la version lue (AD-59).
 
 Textes : section sans contenu : « Rien d'écrit pour l'instant. » ; fiche sans section (MJ) : « Cette
 fiche n'a pas encore de section. » ; écriture périmée : « La section a changé depuis que vous
 l'avez ouverte. Rechargez-la pour voir la nouvelle version ; votre texte reste ci-dessous. » avec
 « Recharger la section » ; droit retiré entre-temps : « Vous ne pouvez plus modifier cette section. » ;
-confirmation de retrait : « Retirer la section « Vérité — MJ seul » ? Son contenu sera perdu. » avec
+confirmation de retrait : « Retirer la section « Vérité — MJ seul » ? Son contenu sera perdu. » (si elle porte
+des pièces jointes : « … Son contenu et ses 3 pièces jointes seront perdus. ») avec
 « Retirer la section » et « Annuler ».
 
 | État | Ce qu'on voit | Ce qu'on peut faire |
@@ -305,7 +310,7 @@ confirmation de retrait : « Retirer la section « Vérité — MJ seul » ? Son
 | erreur | « Impossible de charger cette fiche. » ; échec d'écriture : « L'action n'a pas abouti. Réessayez. », texte conservé | « Réessayer » |
 | connexion perdue | le bandeau ; « Enregistrer », audience, ordre, retrait, ajout désactivés ; le texte en cours reste | lire |
 | refus | fiche inconnue ou dont rien n'est lisible : « Page introuvable. » ; section non lisible : absente. Un MJ en mode Joueur sur une fiche dont aucune section n'est lisible des joueurs voit « Aucune section n'est visible des joueurs. » (ce que verrait un joueur : « Page introuvable. ») | passer en mode MJ |
-| contenu long | une section de 20 000 caractères passe à la ligne et s'affiche en entier ; plus au-delà : « Erreur : 20 000 caractères au plus. » ; titre de fiche (120 caractères) et titre de section (80) : passent à la ligne | idem |
+| contenu long | une section de 20 000 caractères passe à la ligne et s'affiche en entier ; plus au-delà, dès le 20 001e caractère saisi : « Erreur : 20 000 caractères au plus. » (sous le champ ; « Enregistrer » ne part pas ; le texte saisi est gardé, y compris quand c'est le serveur qui refuse, 400, avec le même texte — pas « L'action n'a pas abouti » ; tant que `/api/moi` n'a pas rendu la limite, ou s'il a échoué, l'écran ne contrôle rien et laisse le serveur répondre) ; titre de fiche (120 caractères) et titre de section (80) : passent à la ligne | idem |
 
 *Critères.*
 - Étant donné Léa, Joueuse, quand elle ouvre « Maître Aldric » (« Apparence » lue des joueurs,
@@ -318,14 +323,265 @@ confirmation de retrait : « Retirer la section « Vérité — MJ seul » ? Son
   voit pas tant que « Les joueurs la lisent » est faux.
 - Étant donné deux onglets sur la même section, quand le second enregistre après le premier,
   alors il voit « La section a changé depuis que vous l'avez ouverte… » et son texte reste.
+- Étant donné Antor qui modifie une section, quand il saisit un 20 001e caractère, alors « Erreur :
+  20 000 caractères au plus. » apparaît sous le champ, rien n'est envoyé et son texte reste ;
+  quand le serveur refuse malgré tout (400), il voit le même texte et son texte reste.
 
 ### Clôture de la tranche
 
-Chaque besoin de `## Livre` a son écran : B-2 → E-2 ; B-3 à B-5 → E-4 ; B-7 → E-8 ; B-8 et B-9 →
+Chaque besoin livré par la tranche (fiche de la feature, `## Livre`, hors de ce dépôt) a son écran : B-2 → E-2 ; B-3 à B-5 → E-4 ; B-7 → E-8 ; B-8 et B-9 →
 E-9 ; B-1 et B-28 → session ; B-29 → six états de chaque écran ci-dessus. Chaque écran est atteint
 par P-1 (E-1, E-2, E-3), P-2 (E-4), P-3 étape 4 et P-6 (E-8, E-9), P-7 (E-9). Les trois rôles ont
 leur colonne dans la matrice du cadrage ; l'admin d'instance n'a, dans cette tranche, que E-1 et
 E-2.
+
+## Détail des écrans de `kanevas-systemes`
+
+> E-14, E-15, le lien de E-3 vers le système, l'item « Paramètres » de la barre latérale. Les
+> textes communs (chargement, erreur, connexion perdue, écriture en cours, échec d'une écriture,
+> refus) sont ceux de « Détail des écrans de `kanevas-premiere-fiche` ». Maquettes finies :
+> `docs/maquettes/e14-parametres.html`, `e15-systeme-de-jeu.html`.
+
+**Ce que voit chacun du catalogue.** Le catalogue ne porte que des **noms** de systèmes, lus par tout
+compte qui est MJ d'au moins un univers (c'est ce qui permet à Mira de trouver « CoF Mini »). Le contenu
+d'un système (E-15) n'est lu que par les membres d'un univers qui lui est rattaché. **Aucun écran ne
+nomme un autre univers** : un système dit seulement « utilisé par N univers » (N compte l'univers
+courant), jamais lesquels. Un système « n'est pas vu » d'un univers qui n'y est pas rattaché : pas
+de bloc sur E-3, et l'adresse de E-15 répond « Page introuvable. ».
+
+### E-14 Paramètres de l'univers (MJ)
+
+Trois panneaux, dans cet ordre.
+
+1. **Identité** : « Nom » (obligatoire, 80 caractères au plus), « Description » (500 au plus),
+   « Enregistrer ». Après l'enregistrement : « Enregistré. » au-dessus du panneau.
+2. **Système de jeu** : une liste « Système du catalogue » (les noms, par ordre alphabétique sans
+   casse, et en tête « Aucun système »), « Rattacher » ; si l'univers a un système : son nom, « Utilisé
+   par N univers » et « Ouvrir le système » (→ E-15). Choisir « Aucun système » puis « Rattacher »
+   **détache** l'univers (rien n'est supprimé : le système et son contenu restent, les autres
+   univers le gardent).
+3. **Créer un système** : « Nom du système » (obligatoire, 80 caractères au plus), « Créer et
+   rattacher » : le système naît au catalogue et l'univers y est rattaché en un seul geste (si l'un
+   échoue, aucun n'a lieu). Un nom déjà pris (sans tenir compte de la casse) : « Un système porte déjà
+   ce nom. » sous le champ.
+
+| État | Ce qu'on voit | Ce qu'on peut faire |
+|---|---|---|
+| vide | catalogue sans système : la liste ne propose que « Aucun système » et le panneau dit « Le catalogue est vide. Créez le premier système ci-dessous. » ; univers sans système : « Cet univers n'est rattaché à aucun système de jeu. » | créer un système |
+| chargement | « Chargement des paramètres… » | — |
+| erreur | « Impossible de charger cette page. » ; nom vide (univers ou système) : « Erreur : le nom est obligatoire. » sous le champ ; une écriture qui échoue : « L'action n'a pas abouti. Réessayez. » au-dessus du panneau concerné, saisie conservée | « Réessayer » |
+| connexion perdue | le bandeau ; « Enregistrer », « Rattacher », « Créer et rattacher » désactivés, saisie conservée | lire |
+| refus | Joueur : l'item « Paramètres » est absent et l'adresse montre « Page introuvable. » ; compte sans rôle, admin d'instance sans rôle dans l'univers : de même ; rôle retiré pendant que la page est ouverte : « Vous ne pouvez plus modifier ces paramètres. » à l'écriture suivante | « Mes univers » |
+| contenu long | 200 systèmes au catalogue : la liste défile ; un nom de 80 caractères est tronqué par « … » avec infobulle ; « Erreur : 80 caractères au plus. » dès le 81e (500 pour la description) | corriger |
+
+*Critères.*
+- Étant donné Antor, MJ de Lame d'Ébène, et un catalogue qui contient « CoF Mini », quand il choisit
+  « CoF Mini » et « Rattacher », alors le panneau montre « CoF Mini », « Utilisé par 1 univers » et
+  « Ouvrir le système ».
+- Étant donné Léa, Joueuse de Lame d'Ébène, quand elle ouvre l'adresse des paramètres, alors elle
+  voit « Page introuvable. » et l'item « Paramètres » n'est pas dans sa barre.
+- Étant donné un système « CoF Mini » existant, quand Antor en crée un autre nommé « cof mini »,
+  alors il voit « Un système porte déjà ce nom. » et rien n'est créé.
+- Étant donné Antor, univers rattaché à « CoF Mini », quand il choisit « Aucun système » et
+  « Rattacher », alors le panneau dit « Cet univers n'est rattaché à aucun système de jeu. », le bloc
+  « Système de jeu » a disparu de E-3, et « CoF Mini » est toujours dans la liste du catalogue.
+
+### E-15 Système de jeu
+
+Atteint depuis E-14 (« Ouvrir le système ») et depuis E-3 (bloc « Système de jeu », ci-dessous), à
+l'adresse `/univers/:id/systeme`. Le nom du système en titre, « Référentiel commun · utilisé par N
+univers » ; trois onglets, **Règles**, **Créatures**, **Objets** (Créatures par défaut) ; sous
+l'onglet, la liste des entrées du type par nom (ordre alphabétique sans casse), cent à la fois, puis
+« Charger la suite ». Chaque ligne (une **entrée** : une règle, une créature ou un objet ; `gabarit` dans les données) : le nom et la première ligne du contenu (tronquée). Un clic ouvre
+l'entrée **sur place** (le nom, le contenu en texte brut, AD-58).
+
+*Le MJ d'un univers rattaché* : « Ajouter une règle » / « Ajouter une créature » / « Ajouter un
+objet » ouvre un formulaire sur place : « Nom » (1 à 120 caractères), « Contenu » (20 000 au plus,
+facultatif), « Ajouter » et « Annuler » ; sur une entrée ouverte, « Modifier » (nom et contenu),
+« Enregistrer », « Annuler ». Le type d'une entrée ne change jamais ; rien ne se supprime. Enregistrer
+envoie la version lue (AD-85).
+*Un Joueur d'un univers rattaché* : la même page, lecture seule, sans bouton d'ajout ni de
+modification.
+
+Textes : onglet vide, MJ : « Aucune créature pour l'instant. » (« Aucune règle », « Aucun objet ») et
+le bouton d'ajout ; Joueur : « Aucune créature à voir pour l'instant. » ; écriture périmée : « Cette
+entrée a changé depuis que vous l'avez ouverte. Rechargez-la pour voir la nouvelle version ; votre texte
+reste ci-dessous. » avec « Recharger » (une entrée : une règle, une créature ou un objet) ; nom vide : « Erreur : le nom est obligatoire. » sous le champ ; nom déjà pris dans le même type : « Une créature porte déjà ce
+nom. » (« Une règle… », « Un objet… ») ; droit retiré entre-temps (rôle changé, univers détaché) :
+« Vous ne pouvez plus modifier ce système. ».
+
+| État | Ce qu'on voit | Ce qu'on peut faire |
+|---|---|---|
+| vide | l'onglet sans entrée : texte ci-dessus | MJ : ajouter |
+| chargement | le titre absent, « Chargement du système… » | — |
+| erreur | « Impossible de charger ce système. » ; échec d'écriture : « L'action n'a pas abouti. Réessayez. », saisie conservée | « Réessayer » |
+| connexion perdue | le bandeau ; « Ajouter », « Enregistrer » désactivés, le texte en cours reste | lire |
+| refus | univers inconnu, sans rôle du compte, ou **non rattaché à un système** : « Page introuvable. » (E-3 ne montre pas de bloc dans ce cas ; un MJ rattache d'abord un système par E-14) | « Mes univers » |
+| contenu long | 100 entrées : « Charger la suite » ; nom tronqué par « … » avec infobulle ; contenu de 20 000 caractères passe à la ligne et s'affiche en entier ; au-delà : « Erreur : 20 000 caractères au plus. » ; nom au-delà de 120 : « Erreur : 120 caractères au plus. » | idem |
+
+*Critères.*
+- Étant donné Antor, MJ de Lame d'Ébène rattaché à « CoF Mini », quand il ajoute la créature « Garde
+  du sceau » avec son contenu, alors elle apparaît sous « Créatures ».
+- Étant donné Mira, MJ des « Landes grises » rattachée au même système, quand elle ouvre
+  « Créatures », alors elle voit « Garde du sceau » et « Utilisé par 2 univers », et aucun nom
+  d'univers.
+- Étant donné Léa, Joueuse de Lame d'Ébène, quand elle ouvre le système, alors elle voit « Garde du
+  sceau » sans « Ajouter » ni « Modifier » ; si le MJ envoie une écriture à sa place par l'adresse de
+  l'API, elle est refusée.
+- Étant donné « Admin » (groupe `parents`, MJ de l'univers « Brume » qu'il vient de créer, non
+  rattaché), quand il ouvre `/univers/<Brume>/systeme`, alors il voit « Page introuvable. » ; et
+  sur la vue d'ensemble de « Brume » il n'y a pas de bloc « Système de jeu ».
+- Étant donné deux onglets sur la même créature, quand le second enregistre après le premier, alors
+  il voit « Cette entrée a changé depuis que vous l'avez ouverte. » et son texte reste.
+
+### Bloc « Système de jeu » de E-3
+
+Un bloc de la vue d'ensemble (déposé dans `frontend/src/ecrans/vue-ensemble/blocs/`, rang bas,
+visible des MJ et des Joueurs) : le nom du système et un lien « Ouvrir le système » (→ E-15). **Sans
+système, le bloc n'existe pas** : ni message, ni lien mort. Ses états : chargement — le bloc est
+absent ; erreur — le bloc est absent (la vue d'ensemble n'échoue pas pour lui) ; refus et vide —
+sans objet : un univers sans système n'a pas de bloc ; connexion perdue — le bloc reste tel qu'il a été chargé ; contenu long — le nom (80 caractères) est
+tronqué avec infobulle.
+
+### Clôture de `kanevas-systemes`
+
+B-13 → E-14 (rattacher, créer et rattacher) ; B-14 → E-15 ; P-8 étape 1 → E-14, étape 2 → E-15 ; le
+lien de E-3 → bloc ci-dessus ; B-29 → les six états de E-14 et E-15. E-14 est atteint par P-8 et par
+la barre (MJ) ; E-15 par P-8 et par E-3. Les trois rôles ont leur colonne : l'admin d'instance sans
+rôle n'a ni E-14 ni E-15 ; l'admin MJ de son propre univers a ceux d'un MJ.
+Écart au cadrage : aucun. Précision : le cadrage dit « nom, description » pour E-14 ; la tranche
+construit donc aussi la **modification** du nom et de la description d'un univers, qu'aucune
+tranche précédente ne livre.
+
+## Détail des écrans de `kanevas-relier-chercher`
+
+> Deux ajouts, aucun écran neuf : la **recherche** dans E-8 et le **bloc Relations** de E-9.
+> Mêmes six états et mêmes textes communs que la première fiche (chargement, erreur, connexion
+> perdue, refus « Page introuvable. », écriture en cours, échec d'écriture). Maquettes : `e08` (états
+> de la recherche) et `e09` (bloc Relations) sont complétées. Le document prime sur la maquette.
+
+### E-8 — la recherche dans un type
+
+Au-dessus de la liste d'un type : un champ « Chercher dans les personnages » (« …dans les lieux »,
+« …dans les factions », « …dans les objets », « …dans les événements », « …dans les quêtes »),
+un bouton « Chercher », et, quand une recherche est en cours, « Effacer la recherche ». La
+recherche part à « Chercher » ou à la touche Entrée, jamais à la frappe. Elle est gardée dans
+l'adresse (`…/personnages?q=Aldric`) : revenir d'une fiche ramène aux résultats.
+
+*Ce qu'elle trouve.* Les mots saisis sont cherchés par début de mot, sans tenir compte des
+majuscules ni des accents (« verite » trouve « Vérité »), et **tous** doivent se trouver dans le
+**titre** de la fiche, ou **tous** dans **une même section que le compte peut lire** (titre ou
+contenu de la section). Les résultats sont les fiches de la liste du type, dans le même ordre
+alphabétique, cent à la fois avec « Charger la suite ». Un résultat s'affiche comme une ligne de la
+liste (titre, badge) : pas d'extrait, pas de compteur, pas de classement. Le texte d'une section
+que le compte ne lit pas ne trouve rien, même s'il contient les mots : la fiche est absente des
+résultats, comme elle est absente de la liste.
+
+*Saisie.* 1 à 100 caractères ; une saisie blanche équivaut à « Effacer la recherche ». Au-delà de
+100 : « Erreur : 100 caractères au plus. » sous le champ, rien n'est envoyé. Les signes sans lettre
+ni chiffre (« - », « " », « * ») ne comptent pas comme des mots ; une saisie qui n'en contient aucun
+se comporte comme une recherche sans résultat.
+
+*Rôles.* Le MJ cherche dans toutes les fiches de l'univers, y compris une fiche sans section ; un
+Joueur cherche parmi celles qu'il peut lire. « Nouveau personnage » reste visible du MJ pendant une
+recherche.
+
+| État | Ce qu'on voit | Ce qu'on peut faire |
+|---|---|---|
+| vide | « Aucun résultat pour « Vérité » dans les personnages. » — **le même texte** que la fiche existe ou non, lisible ou non | « Effacer la recherche » |
+| chargement | « Recherche… » (`role="status"`) ; l'ancienne liste n'est pas montrée | — |
+| erreur | « Impossible de lancer la recherche. » ; le champ garde sa saisie | « Réessayer » |
+| connexion perdue | le bandeau ; « Chercher » désactivé ; les résultats déjà affichés restent | ouvrir un résultat |
+| refus | sans objet pour la recherche : un type inconnu répond « Page introuvable. » comme la liste | — |
+| contenu long | plus de 100 résultats : « Charger la suite » ; un titre trop long est tronqué par « … » avec infobulle ; une saisie de 100 caractères passe à la ligne dans le champ | idem |
+
+*Critères.*
+- Étant donné la fiche « Maître Aldric » dont la section « Vérité — MJ seul » est fermée aux
+  joueurs, quand Léa cherche « Vérité » dans les personnages, alors elle voit « Aucun résultat
+  pour « Vérité » dans les personnages. » ; quand Antor fait la même recherche, il voit
+  « Maître Aldric ».
+- Étant donné Léa, quand elle cherche « aldric » dans les personnages, alors elle voit
+  « Maître Aldric » (le titre se trouve) ; et quand elle cherche « apparence », elle le voit aussi
+  (la section « Apparence » est lue des joueurs).
+- Étant donné une recherche qui n'a pas de résultat, quand Léa cherche un mot qui n'existe nulle
+  part, alors le texte affiché est le même que pour « Vérité » (aucune différence ne trahit la
+  fiche cachée).
+- Étant donné Léa devant les résultats de « Aldric », quand elle ouvre la fiche puis revient, alors
+  elle retrouve la même recherche et les mêmes résultats.
+
+### E-9 — le bloc Relations
+
+Dans chaque section, sous son contenu : un bloc **Relations**, inscrit au registre des blocs de
+section (un fichier, sans modifier un bloc existant). Il liste les relations **portées par cette
+section** : chacune dit son type et nomme sa cible — « membre de → Lames Grises », avec le badge du
+type de la cible — et mène à la fiche de la cible (E-9). Une relation est dirigée : elle va de la
+section vers la cible ; la fiche cible ne montre pas les relations qui l'atteignent.
+
+| Rôle | Lire les relations d'une section | Relier, retirer | Refus |
+|---|---|---|---|
+| MJ | toutes celles de ses sections | oui | sans objet |
+| Joueur | celles dont il lit la section et la cible | non : boutons **absents** | une relation à cible illisible est **absente**, pas refusée |
+| MJ en mode Joueur | comme un Joueur qui n'est l'auteur d'aucune section | non : boutons absents | idem |
+| Admin d'instance | aucune | non | « Page introuvable. » |
+
+*Ce que voit chacun.* Une relation n'est montrée que si le compte lit la section **et** la fiche
+cible. Sinon elle est **absente** : ni ligne, ni espace, ni compteur, ni mot « cachée ». Le bloc
+d'un Joueur qui n'a aucune relation à voir n'apparaît pas du tout. Le MJ voit le bloc de chaque
+section, même vide. En mode Joueur, le MJ voit le bloc comme un Joueur qui n'est l'auteur d'aucune
+section (AD-39), sans « Relier » ni « Retirer ».
+
+*Le MJ relie.* « Relier à une fiche » ouvre un formulaire sous la liste :
+1. « Type de relation » (texte libre, 1 à 80 caractères, par exemple « membre de ») ;
+2. « Type de fiche » (Personnage, Lieu, Faction, Objet, Événement, Quête ; Personnage par défaut) ;
+3. un champ « Chercher dans les factions » et la liste des fiches de ce type, cent à la fois avec
+   « Charger la suite » : c'est la liste et la recherche de E-8, pas une autre ;
+4. choisir une fiche (une seule), puis « Relier » ; « Annuler » ferme sans rien écrire.
+
+*Le sélecteur de fiche* (étape 3) est la liste et la recherche de E-8 telles quelles : la recherche part à « Chercher » ou à Entrée, avec les mêmes états et les mêmes textes (« Recherche… », « Impossible de lancer la recherche. » et « Réessayer », « Aucun résultat pour « lames » dans les factions. », bandeau de connexion perdue avec « Chercher » et « Relier » désactivés, « Charger la suite » au-delà de 100) ; à l'ouverture du formulaire la liste du type se charge (« Chargement des fiches… », ou « Impossible de charger les fiches. » et « Réessayer ») et « Chercher » reste actif (hors connexion perdue) ; « Relier » reste désactivé tant qu'aucune fiche n'est choisie, pendant le chargement et sur erreur ; « Effacer la recherche » rend la liste du type ; le choix se voit (puce pleine) et disparaît si l'on change le type de fiche ou la recherche.
+
+Le formulaire n'est pas gardé en cas de session expirée. Une fiche se relie à toute fiche de son
+univers, **sauf à elle-même**. Une section porte au plus 100 relations ; deux relations de même
+type vers la même fiche ne coexistent pas. « Retirer » sur une ligne supprime la relation sans
+confirmation (elle se refait en trois gestes) ; retirer une section retire ses relations avec elle.
+
+Textes : bloc sans relation (MJ) : « Aucune relation pour l'instant. » ; erreurs sous les champs :
+« Erreur : le type de relation est obligatoire. », « Erreur : 80 caractères au plus. », « Erreur :
+choisissez une fiche. » ; refus du service, au-dessus du formulaire : « Cette relation existe
+déjà. », « Une fiche ne se relie pas à elle-même. », « Cette section porte déjà 100 relations. » ;
+liste de choix vide : « Aucune faction à relier. » (autres types : « Aucun personnage… ») ;
+chaque bouton « Retirer » porte l'étiquette accessible « Retirer la relation membre de → Lames Grises ».
+
+| État | Ce qu'on voit | Ce qu'on peut faire |
+|---|---|---|
+| vide | MJ : « Aucune relation pour l'instant. » et « Relier à une fiche » ; Joueur : le bloc n'est pas là | MJ : relier |
+| chargement | « Chargement des relations… » dans le bloc seul ; le reste de la fiche reste affiché | — |
+| erreur | « Impossible de charger les relations. » dans le bloc seul, les autres sections intactes ; échec d'écriture : « L'action n'a pas abouti. Réessayez. », saisie conservée | « Réessayer » |
+| connexion perdue | le bandeau ; « Relier », « Retirer » désactivés ; la liste affichée reste | suivre un lien |
+| refus | le bloc d'une section illisible n'existe pas (la section est absente, B-9) ; une relation vers une fiche illisible est absente ; « Relier » et « Retirer » n'existent pas pour un Joueur ni en mode Joueur | — |
+| contenu long | 100 relations : la liste défile avec la section ; un type de 80 caractères et un titre de fiche de 120 passent à la ligne | idem |
+
+*Critères.*
+- Étant donné Antor, MJ, qui a relié la section « Apparence » de « Maître Aldric » à la faction
+  « Lames Grises » (« membre de ») et à la faction « Cercle des Cendres » dont aucune section n'est
+  lue des joueurs, quand Léa ouvre « Maître Aldric », alors elle voit « membre de → Lames Grises »,
+  et rien d'autre dans le bloc : ni « Cercle des Cendres », ni compteur, ni ligne vide.
+- Étant donné la même fiche, quand Antor passe en mode Joueur, alors il voit la même chose que Léa
+  et ni « Relier » ni « Retirer ».
+- Étant donné Léa, quand « Lames Grises » n'a plus de section lue des joueurs, alors la relation
+  disparaît de la fiche d'Aldric sans autre trace.
+- Étant donné Antor sur « Maître Aldric », quand il relie « Apparence » à « Maître Aldric », alors il
+  voit « Une fiche ne se relie pas à elle-même. » et rien n'est écrit.
+- Étant donné Antor, quand il retire la section « Apparence », alors ses relations disparaissent
+  avec elle et ne remontent nulle part.
+
+### Clôture de `kanevas-relier-chercher`
+
+B-10 → bloc Relations de E-9 ; B-11 → recherche de E-8 ; B-29 → six états de la recherche et du
+bloc ci-dessus. Atteints par P-3 étape 4 (relier le PNJ à sa faction : relier une section du PNJ, bloc de E-9) et P-6 étape 2
+(chercher « Aldric », E-8). Les deux rôles ont leur colonne : le MJ cherche et relie, le Joueur
+cherche et lit ce qu'il peut ; l'admin d'instance n'atteint ni l'un ni l'autre (« Page
+introuvable. »). Chemin d'échec propre à cette tranche (`docs/parcours.md` n'en porte pas pour P-3 et P-6) : une recherche sans résultat dit « Aucun résultat pour … »,
+jamais « caché ». Chemin d'échec de relier une section : le refus du service s'écrit au-dessus du formulaire (« Cette relation existe déjà. », « Une fiche ne se relie pas à elle-même. », « Cette section porte déjà 100 relations. »), la saisie et le choix sont conservés ; un échec d'écriture générique et une session expirée suivent les textes communs (« L'action n'a pas abouti. Réessayez. » ; connexion, formulaire non gardé).
 
 ## Détail des écrans de `kanevas-suivi`
 
@@ -502,61 +758,99 @@ Reste aux autres tranches : créer une campagne ou un scénario par l'assistant
 
 ## Détail des écrans de `kanevas-relier-chercher`
 
-> Deux ajouts, aucun écran neuf : la **recherche** dans E-8 et le **bloc Relations** de E-9.
-> Mêmes six états et mêmes textes communs que la première fiche (chargement, erreur, connexion
-> perdue, refus « Page introuvable. », écriture en cours, échec d'écriture). Maquettes : `e08` (états
-> de la recherche) et `e09` (bloc Relations) sont complétées. Le document prime sur la maquette.
+## Détail des écrans de `kanevas-fichiers`
 
-### E-8 — la recherche dans un type
+> Un seul ajout, aucun écran neuf : le **bloc Pièces jointes** de E-9. Mêmes six états et mêmes
+> textes communs que la première fiche (erreur, connexion perdue, refus « Page introuvable. »,
+> écriture en cours, échec d'une écriture). Maquette : `e09` (bloc Pièces jointes : MJ, Joueuse,
+> envoi, échecs). Le document prime sur la maquette.
 
-Au-dessus de la liste d'un type : un champ « Chercher dans les personnages » (« …dans les lieux »,
-« …dans les factions », « …dans les objets », « …dans les événements », « …dans les quêtes »),
-un bouton « Chercher », et, quand une recherche est en cours, « Effacer la recherche ». La
-recherche part à « Chercher » ou à la touche Entrée, jamais à la frappe. Elle est gardée dans
-l'adresse (`…/personnages?q=Aldric`) : revenir d'une fiche ramène aux résultats.
+### E-9 — le bloc Pièces jointes
 
-*Ce qu'elle trouve.* Les mots saisis sont cherchés par début de mot, sans tenir compte des
-majuscules ni des accents (« verite » trouve « Vérité »), et **tous** doivent se trouver dans le
-**titre** de la fiche, ou **tous** dans **une même section que le compte peut lire** (titre ou
-contenu de la section). Les résultats sont les fiches de la liste du type, dans le même ordre
-alphabétique, cent à la fois avec « Charger la suite ». Un résultat s'affiche comme une ligne de la
-liste (titre, badge) : pas d'extrait, pas de compteur, pas de classement. Le texte d'une section
-que le compte ne lit pas ne trouve rien, même s'il contient les mots : la fiche est absente des
-résultats, comme elle est absente de la liste.
+Dans chaque section, sous son contenu (et sous le bloc Relations s'il existe) : un bloc **Pièces
+jointes**, inscrit au registre des blocs de section (un fichier, sans modifier un bloc existant).
+Il montre les fichiers rattachés **à cette section** : une **image** (PNG, JPEG, GIF, WebP,
+reconnue à son contenu, pas à son nom) en vignette ; tout autre fichier (PDF, texte, archive…, et
+une image SVG) comme une ligne : nom, taille, « Télécharger ». Un clic sur une vignette ouvre
+l'image entière dans un nouvel onglet.
 
-*Saisie.* 1 à 100 caractères ; une saisie blanche équivaut à « Effacer la recherche ». Au-delà de
-100 : « Erreur : 100 caractères au plus. » sous le champ, rien n'est envoyé. Les signes sans lettre
-ni chiffre (« - », « " », « * ») ne comptent pas comme des mots ; une saisie qui n'en contient aucun
-se comporte comme une recherche sans résultat.
+Une pièce jointe **prend la visibilité de sa section** : qui ne lit plus la section ne voit plus
+ses fichiers, et l'adresse directe répond « Page introuvable. ». Le MJ peut en plus la marquer
+**secrète** : seul le MJ la voit, sur la fiche comme à son adresse.
 
-*Rôles.* Le MJ cherche dans toutes les fiches de l'univers, y compris une fiche sans section ; un
-Joueur cherche parmi celles qu'il peut lire. « Nouveau personnage » reste visible du MJ pendant une
-recherche.
+| Rôle | Voir | Ajouter | Marquer / lever « secrète » | Retirer | Refus |
+|---|---|---|---|---|---|
+| MJ | toutes celles de ses sections, secrètes comprises | oui, sur toute section | oui | oui | sans objet |
+| Joueur | celles des sections qu'il lit, hors secrètes | sur une section qu'il **écrit** (la sienne, ou ouverte en écriture aux joueurs) | non : **absent** ; sur une section qu'il ne fait que lire, « Ajouter un fichier » est absent aussi | sur une section qu'il écrit, une pièce qu'il voit | une pièce secrète est **absente** et son adresse répond « Page introuvable. » |
+| MJ en mode Joueur | comme un Joueur qui n'est l'auteur d'aucune section (AD-39) | seulement où les joueurs écrivent | absent | seulement où les joueurs écrivent | idem |
+| Admin d'instance | aucune | non | non | non | « Page introuvable. » |
+
+Un geste qu'un rôle n'a pas est **absent** de l'écran (jamais grisé, sauf hors connexion) : sur une
+section qu'on lit sans l'écrire, ni « Ajouter un fichier » ni « Retirer » ; pour un Joueur (et le MJ en mode Joueur), ni la case
+« Secrète » ni « Rendre secrète ». Par l'API, un geste d'écriture sur une section qu'on lit sans
+l'écrire est refusé **403**, un marquage par un non-MJ aussi (403) ; ce qu'on ne lit pas répond 404.
+L'Admin d'instance n'a pas de bloc (« Page introuvable. »). Le geste « marquer / lever « secrète » » du besoin B-24 s'affiche « Rendre secrète » / « Lever le secret ».
+Le texte de limite d'un MJ en mode Joueur est celui d'un Joueur.
+
+*Ajouter.* Un bouton « Ajouter un fichier » ouvre le sélecteur de fichiers du système ; **choisir
+le fichier suffit** : l'envoi part aussitôt, un fichier après l'autre si l'on en choisit
+plusieurs (il n'y a pas de limite de taille). Le MJ (mode MJ) voit à côté du bouton une case
+« Secrète (MJ seul) », décochée, qui s'applique aux fichiers choisis ensuite : un fichier destiné à
+rester secret ne passe donc jamais, même un instant, par la table. Pendant l'envoi, une ligne
+« portrait.png — Envoi… 42 % » (`role="status"`) avec « Annuler » ; l'envoi annulé n'écrit rien. À la
+fin, la pièce rejoint la liste. Une section porte **50 pièces jointes** au plus. Un fichier vide est refusé. Si l'on en choisit plusieurs, chacun est jugé seul : un refus n'arrête pas les suivants, et chaque refus devient une ligne d'erreur qui reste, avec « Ignorer » seul (« Réessayer » n'aurait pas de sens).
+
+*Marquer, retirer.* Sur chaque pièce, le MJ a « Rendre secrète » (ou « Lever le secret » quand elle
+l'est) et « Retirer « portrait.png » » ; qui écrit la section n'a que « Retirer ». Retirer demande
+confirmation sur place : « Retirer « portrait.png » ? Le fichier sera perdu. » avec « Retirer le
+fichier » et « Annuler ». Retirer une section retire ses pièces jointes ; la confirmation de la première fiche gagne alors « … Son contenu et sa pièce jointe seront perdus. » (une) ou « … Son contenu et ses 3 pièces jointes seront perdus. » (plusieurs) ; sans pièce, son texte ne change pas. Une pièce secrète porte la
+pastille ambre « Secrète — MJ seul » et le liseré du panneau MJ. Un fichier n'est jamais modifié
+sur place : pour le remplacer, on en ajoute un autre et l'on retire l'ancien.
+
+*Textes.* Aucune pièce : « Aucune pièce jointe. » ; taille : « 842 o », « 4,2 Ko », « 3,1 Mo »,
+« 1,2 Go » (base 1024) ; nom : celui du fichier d'origine, sans dossier, 200 caractères au plus ; une vignette dit son nom en texte alternatif et porte en légende, dessous, son nom et sa taille (« portrait-aldric.png · 3,1 Mo »), puis ses boutons ; échec d'envoi : « « portrait.png » : l'envoi n'a pas
+abouti. » avec « Réessayer » et « Ignorer » ; fichier vide : « « notes.txt » est vide. » ; limite :
+« Cette section porte déjà 50 pièces jointes. » pour le MJ, « Cette section ne peut pas recevoir d'autre fichier. » pour un Joueur (qui ne voit pas les pièces secrètes : le chiffre dirait ce qu'il ne doit pas savoir) ; droit retiré entre-temps (à l'ajout ou au retrait) : « Vous ne pouvez plus ajouter de fichier à cette section. », la fiche se recharge et « Ajouter un fichier » comme « Retirer » disparaissent ; pièce déjà retirée ou devenue illisible : « Cette pièce
+jointe n'existe plus. » (la liste se recharge) ; vignette qui ne se charge pas : « Image
+indisponible. » avec « Télécharger » ; échec d'un marquage ou d'un retrait : « L'action n'a pas
+abouti. Réessayez. », l'état d'avant revient.
+
+*Pas de bloc quand il n'a rien à dire.* Un Joueur qui ne peut rien voir ni ajouter dans une section
+n'a pas de bloc : ni titre, ni compteur, ni « Aucune pièce jointe. ». Le MJ voit le bloc de chaque
+section, même vide.
 
 | État | Ce qu'on voit | Ce qu'on peut faire |
 |---|---|---|
-| vide | « Aucun résultat pour « Vérité » dans les personnages. » — **le même texte** que la fiche existe ou non, lisible ou non | « Effacer la recherche » |
-| chargement | « Recherche… » (`role="status"`) ; l'ancienne liste n'est pas montrée | — |
-| erreur | « Impossible de lancer la recherche. » ; le champ garde sa saisie | « Réessayer » |
-| connexion perdue | le bandeau ; « Chercher » désactivé ; les résultats déjà affichés restent | ouvrir un résultat |
-| refus | sans objet pour la recherche : un type inconnu répond « Page introuvable. » comme la liste | — |
-| contenu long | plus de 100 résultats : « Charger la suite » ; un titre trop long est tronqué par « … » avec infobulle ; une saisie de 100 caractères passe à la ligne dans le champ | idem |
+| vide | MJ, ou qui écrit la section : « Aucune pièce jointe. » et « Ajouter un fichier » ; un lecteur seul : pas de bloc | ajouter |
+| chargement | les pièces viennent avec la fiche : « Chargement de la fiche… » (E-9) ; une vignette en cours de chargement occupe sa place (cadre à la taille fixe) ; un envoi : la ligne « Envoi… 42 % » | annuler l'envoi |
+| erreur | envoi : « « portrait.png » : l'envoi n'a pas abouti. » et la ligne reste ; fichier vide ou limite atteinte : le refus des textes, en ligne qui reste, avec « Ignorer » ; marquage ou retrait : « L'action n'a pas abouti. Réessayez. » ; vignette : « Image indisponible. » | « Réessayer », « Ignorer », « Télécharger » |
+| connexion perdue | le bandeau ; « Ajouter un fichier », « Rendre secrète », « Lever le secret », « Retirer » désactivés ; un envoi en cours qui échoue devient l'erreur ci-dessus ; les vignettes déjà chargées restent | voir, télécharger |
+| refus | droit d'écriture retiré : « Vous ne pouvez plus ajouter de fichier à cette section. » ; pièce retirée entre-temps : « Cette pièce jointe n'existe plus. » ; section ou fiche illisible : « Page introuvable. » ; pièce secrète pour un Joueur : absente | recharger |
+| contenu long | un nom de 200 caractères passe à la ligne ; 50 pièces : la liste entière, puis le refus de limite (texte selon le rôle) à l'ajout ; un fichier de plusieurs Go : la progression en pourcentage, la taille en « Go » ; une vignette tient dans un cadre de 160 × 120 px | idem |
 
 *Critères.*
-- Étant donné la fiche « Maître Aldric » dont la section « Vérité — MJ seul » est fermée aux
-  joueurs, quand Léa cherche « Vérité » dans les personnages, alors elle voit « Aucun résultat
-  pour « Vérité » dans les personnages. » ; quand Antor fait la même recherche, il voit
-  « Maître Aldric ».
-- Étant donné Léa, quand elle cherche « aldric » dans les personnages, alors elle voit
-  « Maître Aldric » (le titre se trouve) ; et quand elle cherche « apparence », elle le voit aussi
-  (la section « Apparence » est lue des joueurs).
-- Étant donné une recherche qui n'a pas de résultat, quand Léa cherche un mot qui n'existe nulle
-  part, alors le texte affiché est le même que pour « Vérité » (aucune différence ne trahit la
-  fiche cachée).
-- Étant donné Léa devant les résultats de « Aldric », quand elle ouvre la fiche puis revient, alors
-  elle retrouve la même recherche et les mêmes résultats.
+- Étant donné « Maître Aldric » dont Antor, MJ, dépose sur « Vérité — MJ seul » un portrait avec
+  « Secrète (MJ seul) » cochée, alors Léa, Joueuse, ne voit ni le portrait, ni le bloc de cette
+  section (qu'elle ne lit pas) ; et sur « Apparence » (lue des joueurs), où Antor a déposé un
+  autre portrait puis l'a rendu secret, Léa ne voit aucune trace du fichier : ni vignette, ni
+  « Aucune pièce jointe. », ni compteur ; l'adresse directe du portrait secret lui répond « Page
+  introuvable. », comme une adresse qui n'a jamais existé.
+- Étant donné Léa auteur de « Notes de la table » avec écriture, quand elle choisit un portrait, alors
+  il s'envoie sans autre geste et apparaît en vignette ; Teo, Joueur de l'univers, ne le voit pas
+  tant que « Les joueurs la lisent » est faux, puis le voit et ne peut ni l'ajouter ni le retirer.
+- Étant donné Antor qui dépose le plan d'un lieu en PDF, alors la ligne propose « Télécharger » et
+  le fichier se télécharge sous son nom d'origine ; un fichier « image.svg » n'est jamais affiché dans la
+  page.
+- Étant donné Antor en mode Joueur sur la fiche, alors il ne voit ni la case « Secrète », ni
+  « Rendre secrète », ni les pièces secrètes, et ne peut ajouter que sur les sections que les
+  joueurs écrivent.
+- Étant donné un envoi de 2 Go en cours, quand Antor clique « Annuler », alors la ligne disparaît et
+  aucune pièce n'est ajoutée.
+- Étant donné Antor qui retire la section « Apparence » portant un portrait, alors la confirmation
+  dit « … Son contenu et sa pièce jointe seront perdus. » et, après confirmation, l'adresse du
+  portrait répond « Page introuvable. ».
 
-### E-9 — le bloc Relations
+### Clôture de `kanevas-fichiers`
 
 Dans chaque section, sous son contenu : un bloc **Relations**, inscrit au registre des blocs de
 section (un fichier, sans modifier un bloc existant). Il liste les relations **portées par cette
@@ -706,6 +1000,9 @@ ce qu'on sait d'Aldric », première moitié), P-6 étape 4, P-7 étape 2. Rôle
 E-12, l'admin d'instance sans rôle ne l'a pas. Aucune migration, aucune entité : le fil n'est pas
 stocké. Reste aux autres tranches : les propositions de mise à jour (`kanevas-monde`), les images
 (`kanevas-images`).
+B-24 → le bloc Pièces jointes de E-9 (ajouter en un geste, voir une image, télécharger un autre
+fichier, marquer secrète, retirer). Atteint par P-3 étape 4 (le plan d'un lieu) et P-7 étape 2 (le
+portrait de son personnage). Le bloc livre ses six états (B-29), ci-dessus.
 
 ## Maquettes
 

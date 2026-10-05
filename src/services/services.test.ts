@@ -32,7 +32,7 @@ function code(fn: () => unknown): string {
   return 'aucune';
 }
 
-/** MJ Marc, joueuse Léa, étrangère Zoé (aucun rôle), un univers, une fiche, deux sections. */
+/** GM Marc, player Léa, outsider Zoé (no role), one universe, one sheet, two sections. */
 function monde() {
   const db = base();
   const marc = assurerCompte(db, 'marc');
@@ -46,16 +46,16 @@ function monde() {
   return { db, marc, lea, zoe, u, f, pub, sec };
 }
 
-test('migration: cinq tables, sept types, clés étrangères, idempotente', () => {
+test('migration: tables, sept types, clés étrangères, idempotente', () => {
   const db = openDb(':memory:');
-  assert.deepEqual(migrate(db), [1]);
+  assert.deepEqual(migrate(db), [1, 2, 3, 4, 5]);
   assert.deepEqual(migrate(db), []);
   const tables = (
-    db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' AND name != 'migrations' ORDER BY name").all() as { name: string }[]
+    db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' AND name != 'migrations' AND name NOT LIKE 'recherche!_%' ESCAPE '!' ORDER BY name").all() as { name: string }[]
   ).map((r) => r.name);
-  assert.deepEqual(tables, ['comptes', 'fiches', 'membres', 'sections', 'univers']);
+  assert.deepEqual(tables, ['campagnes', 'comptes', 'fiches', 'gabarits', 'membres', 'pieces_jointes', 'relations', 'scenarios', 'sections', 'systemes_jeu', 'taches_preparation', 'univers']);
   assert.equal(db.pragma('foreign_keys', { simple: true }), 1);
-  assert.equal((db.prepare('SELECT count(*) n FROM migrations').get() as { n: number }).n, 1);
+  assert.equal((db.prepare('SELECT count(*) n FROM migrations').get() as { n: number }).n, 5);
   assert.throws(() => db.prepare("INSERT INTO membres VALUES (99, 99, 'mj')").run());
   db.prepare("INSERT INTO univers (nom, cree_le) VALUES ('u', 'x')").run();
   for (const t of ['personnage', 'lieu', 'faction', 'objet', 'evenement', 'quete', 'compte_rendu']) {
@@ -101,7 +101,7 @@ test('lecture de l’auteur : seul l’auteur lit, pas un autre joueur', () => {
   changerAudience(db, marc.id, u.id, f.id, sec.id, { auteurId: lea.id, auteurLit: true });
   assert.equal(lireSection(db, { compteId: lea.id }, u.id, f.id, sec.id).contenu, 'Traître');
   assert.equal(code(() => lireSection(db, { compteId: jo.id }, u.id, f.id, sec.id)), 'introuvable');
-  // le mode Joueur : le MJ ou l’auteur lit comme un non-auteur
+  // Player mode: the GM or the author reads as a non-author
   assert.equal(code(() => lireSection(db, { compteId: lea.id, modeJoueur: true }, u.id, f.id, sec.id)), 'introuvable');
   assert.equal(code(() => lireFiche(db, { compteId: lea.id, modeJoueur: true }, u.id, f.id)), 'introuvable');
   assert.equal(listerFiches(db, { compteId: lea.id, modeJoueur: true }, u.id).fiches.length, 0);
@@ -128,16 +128,16 @@ test('écriture : joueurs, auteur, MJ toujours ; sinon refusé', () => {
   changerAudience(db, marc.id, u.id, f.id, pub.id, { joueursLisent: true });
   assert.equal(code(() => ecrireContenu(db, lea.id, u.id, f.id, pub.id, 'X', 1)), 'refuse');
   assert.equal(lireSection(db, { compteId: marc.id }, u.id, f.id, pub.id).contenu, 'Grand');
-  // section cachée : introuvable
+  // hidden section: not found
   assert.equal(code(() => ecrireContenu(db, lea.id, u.id, f.id, sec.id, 'X', 1)), 'introuvable');
-  // écriture des joueurs
+  // players' write
   changerAudience(db, marc.id, u.id, f.id, pub.id, { joueursEcrivent: true });
   assert.equal(ecrireContenu(db, jo.id, u.id, f.id, pub.id, 'Par jo', 1).contenu, 'Par jo');
-  // écriture de l'auteur seul
+  // author-only write
   changerAudience(db, marc.id, u.id, f.id, sec.id, { auteurId: lea.id, auteurLit: true, auteurEcrit: true });
   assert.equal(ecrireContenu(db, lea.id, u.id, f.id, sec.id, 'Par lea', 1).contenu, 'Par lea');
   assert.notEqual(code(() => ecrireContenu(db, jo.id, u.id, f.id, sec.id, 'Par jo', 2)), 'aucune');
-  // le MJ écrit toujours, même section fermée
+  // the GM always writes, even on a closed section
   changerAudience(db, marc.id, u.id, f.id, sec.id, { auteurEcrit: false, auteurLit: false });
   assert.equal(ecrireContenu(db, marc.id, u.id, f.id, sec.id, 'Par marc', 2).contenu, 'Par marc');
   assert.equal(code(() => ecrireContenu(db, lea.id, u.id, f.id, sec.id, 'Y', 3)), 'introuvable');
@@ -210,7 +210,7 @@ test('seul MJ : ni retiré ni rétrogradé, avec la raison ; avec deux MJ c’es
   }
   changerRole(db, marc.id, u.id, lea.id, 'mj');
   changerRole(db, marc.id, u.id, marc.id, 'joueur');
-  // Léa est maintenant la seule MJ
+  // Léa is now the only GM
   assert.equal(code(() => retirerMembre(db, lea.id, u.id, lea.id)), 'invalide');
   retirerMembre(db, lea.id, u.id, marc.id);
 });
@@ -284,4 +284,25 @@ test('un nouveau compte n’a aucun univers ; le créateur devient MJ', () => {
   assert.equal(listerUnivers(db, a.id)[0].role, 'mj');
   assert.equal(assurerCompte(db, 'ana').id, a.id);
   assert.equal(u.nom, 'Mon univers');
+});
+
+test('plafond : 20 000 caractères passent, 20 001 refusés à l’ajout et à l’écriture, rien d’écrit', () => {
+  const { db, marc, u, f, pub } = monde();
+  const ouvert = ajouterSection(db, marc.id, u.id, f.id, { titre: 'Pile', contenu: 'a'.repeat(20000) });
+  assert.equal(ouvert.contenu.length, 20000);
+  const avant = (db.prepare('SELECT COUNT(*) AS n FROM sections').get() as { n: number }).n;
+  assert.throws(
+    () => ajouterSection(db, marc.id, u.id, f.id, { titre: 'Trop', contenu: 'a'.repeat(20001) }),
+    (e: unknown) => e instanceof ErreurService && e.code === 'invalide' && e.message === 'Contenu trop long : 20 000 caractères au plus.',
+  );
+  assert.equal((db.prepare('SELECT COUNT(*) AS n FROM sections').get() as { n: number }).n, avant);
+  const v = lireSection(db, { compteId: marc.id }, u.id, f.id, pub.id).version;
+  assert.equal(ecrireContenu(db, marc.id, u.id, f.id, pub.id, 'b'.repeat(20000), v).version, v + 1);
+  assert.throws(
+    () => ecrireContenu(db, marc.id, u.id, f.id, pub.id, 'c'.repeat(20001), v + 1),
+    (e: unknown) => e instanceof ErreurService && e.code === 'invalide' && e.message === 'Contenu trop long : 20 000 caractères au plus.',
+  );
+  const apres = lireSection(db, { compteId: marc.id }, u.id, f.id, pub.id);
+  assert.equal(apres.contenu, 'b'.repeat(20000));
+  assert.equal(apres.version, v + 1);
 });

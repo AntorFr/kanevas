@@ -53,3 +53,9 @@ export const useUnivers = () => {
   const { univers, recharger } = useCadre();
   return { univers, recharger };
 };
+
+/** Ceiling of a section's content, once `/api/moi` has answered; `undefined` before (or if it failed): the screen then checks nothing. */
+export function useLimiteContenu(): number | undefined {
+  const moi = useContext(Contexte)?.moi;
+  return moi?.etat === 'ok' ? moi.valeur.limites?.contenuSection : undefined;
+}

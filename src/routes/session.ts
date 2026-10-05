@@ -4,6 +4,7 @@ import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 
 import { env } from '../config/env.js';
 import { assurerCompte, lireCompte } from '../services/comptes.js';
+import { MAX_CONTENU_SECTION } from '../services/sections.js';
 import {
   decoderSession,
   encoderSession,
@@ -11,8 +12,12 @@ import {
   SESSION_MAX_AGE_S,
   type Session,
 } from '../services/session.js';
+import multipart from '@fastify/multipart';
 import { registerErreurs } from './erreurs.js';
+import { registerFichesRoutes } from './fiches.js';
 import { registerUniversRoutes } from './univers.js';
+import { registerSystemesRoutes } from './systemes.js';
+import { registerSuiviRoutes } from './suivi.js';
 import { chargerFrontend } from './frontend.js';
 import { pageIntrouvable, urlConnexion } from './pages.js';
 
@@ -61,7 +66,7 @@ export async function registerSessionRoutes(app: FastifyInstance) {
     return { loginUrl: urlConnexion() };
   });
 
-  // Unknown addresses: /api stays a plain 404; elsewhere no session means the sign-in.
+  // Unknown addresses: /api answers 404 even without a session; elsewhere no session means the sign-in.
   app.setNotFoundHandler(async (request, reply) => {
     const chemin = request.url.split('?')[0]!;
     if (!chemin.startsWith('/api') && !request.session) {
@@ -88,6 +93,11 @@ export async function registerSessionRoutes(app: FastifyInstance) {
       return reply.redirect(urlConnexion());
     });
     registerErreurs(garde);
+    // Uploads are streamed to the service, never buffered: no size cap on the file (AD-65),
+    // one file and a couple of small fields per request.
+    await garde.register(multipart, {
+      limits: { fileSize: Number.MAX_SAFE_INTEGER, files: 1, fields: 4, parts: 6 },
+    });
     // Build assets (Vite's `assets/`) sit behind the session guard; every other address falls
     // through to the not-found handler, which serves `index.html`.
     if (frontend) {
@@ -99,12 +109,19 @@ export async function registerSessionRoutes(app: FastifyInstance) {
     }
     registerGuardedRoutes(garde);
     registerUniversRoutes(garde);
+    registerFichesRoutes(garde);
+    registerSystemesRoutes(garde);
+    registerSuiviRoutes(garde);
   });
 }
 
 function registerGuardedRoutes(app: FastifyInstance) {
   app.get('/api/moi', async (request) => {
     const compte = lireCompte(app.db, request.session!.id)!;
-    return { username: compte.username, groups: request.session!.groups };
+    return {
+      username: compte.username,
+      groups: request.session!.groups,
+      limites: { contenuSection: MAX_CONTENU_SECTION },
+    };
   });
 }
