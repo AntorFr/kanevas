@@ -1,7 +1,7 @@
-import { useState, type FormEvent } from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 
-import { appeler, ErreurApi, useConnexionPerdue } from '../../../api';
+import { appeler, ErreurApi } from '../../../api';
 import { useCharge } from '../../../cadre-contexte';
 import { Bouton, Champ, Chargement, ErreurChargement } from '../../../ui';
 import type { BlocSection } from '../registre';
@@ -31,7 +31,6 @@ function BlocRelations({ universId, fiche, section, role }: PropsBlocSection) {
   const mj = role === 'mj';
   const base = `/api/univers/${universId}/fiches/${fiche.id}/sections/${section.id}/relations`;
   const [etat, recharger] = useCharge<{ relations: Relation[] }>(base);
-  const perdue = useConnexionPerdue();
   const [ouvert, setOuvert] = useState(false);
   const [echec, setEchec] = useState<string>();
   const [retrait, setRetrait] = useState<number>();
@@ -96,7 +95,6 @@ function BlocRelations({ universId, fiche, section, role }: PropsBlocSection) {
           <FormulaireRelier
             universId={universId}
             url={base}
-            disabled={perdue}
             onFerme={() => setOuvert(false)}
             onRelie={() => {
               setOuvert(false);
@@ -120,7 +118,6 @@ function FormulaireRelier({
 }: {
   universId: number;
   url: string;
-  disabled: boolean;
   onFerme: () => void;
   onRelie: () => void;
 }) {
@@ -134,8 +131,7 @@ function FormulaireRelier({
   const [enCours, setEnCours] = useState(false);
   const lore = TYPES_LORE.find((t) => t.type === typeFiche)!;
 
-  async function relier(e?: FormEvent) {
-    e?.preventDefault();
+  async function relier() {
     if (enCours) return;
     const t = type.trim();
     const eType = t === '' ? 'le type de relation est obligatoire.' : t.length > LONGUEUR_TYPE ? `${LONGUEUR_TYPE} caractères au plus.` : undefined;
@@ -155,7 +151,7 @@ function FormulaireRelier({
   }
 
   return (
-    <form className="formulaire-relation" onSubmit={(e) => void relier(e)} noValidate>
+    <div className="formulaire-relation" role="group" aria-label="Relier à une fiche">
       {refus && (
         <div className="echec" role="alert">
           {refus}
@@ -164,6 +160,12 @@ function FormulaireRelier({
       <Champ
         etiquette="Type de relation"
         value={type}
+        onKeyDown={(e: { key: string; preventDefault: () => void }) => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            void relier();
+          }
+        }}
         erreur={erreurType}
         onChange={(e: { target: { value: string } }) => {
           setType(e.target.value);
@@ -216,12 +218,12 @@ function FormulaireRelier({
       />
       {erreurChoix && <div className="erreur">Erreur : {erreurChoix}</div>}
       <div className="actions">
-        <Bouton variante="principal" type="submit" ecrit enCours={enCours} disabled={choix === undefined}>
+        <Bouton variante="principal" ecrit enCours={enCours} disabled={choix === undefined} onClick={() => void relier()}>
           Relier
         </Bouton>
         <Bouton onClick={onFerme}>Annuler</Bouton>
       </div>
-    </form>
+    </div>
   );
 }
 
