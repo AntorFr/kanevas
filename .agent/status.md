@@ -7,7 +7,7 @@
 `scenarios`, `taches_preparation`), les services `campagnes`, `scenarios`, `preparation`,
 `comptes_rendus`, les routes `src/routes/suivi.ts`, les écrans E-6 (liste et page), E-7, E-13, trois
 blocs de E-3 (campagnes actives, derniers comptes-rendus, préparation pour le MJ) et la ligne
-« Campagne » de E-9. Typecheck, build et 325 tests verts (Node 22 ; la CI Node 20 fait foi, mais elle ne se déclenche que sur les PR vers `main` : la PR vers `epic/kanevas` n'en a pas).
+« Campagne » de E-9. Typecheck, build et 342 tests verts (Node 22 ; la CI Node 20 fait foi, mais elle ne se déclenche que sur les PR vers `main` : la PR vers `epic/kanevas` n'en a pas).
 Carte et invariants : `ARCHITECTURE.md`.
 
 **Reste :** la recette de Monsieur au navigateur en bouchon (critère de la feature : Antor crée « La
