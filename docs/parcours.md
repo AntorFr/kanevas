@@ -4,7 +4,7 @@
 > construit. Identifiants stables : `B-n` (besoins), `P-n` (parcours), `E-n` (écrans,
 > `docs/ecrans.md`), `AD-n` (décisions, `ARCHITECTURE.md`).
 >
-> **Construit à ce jour** (`kanevas-premiere-fiche`) : P-1 en entier, P-2 étapes 1-2 (sans l'admin),
+> **Construit à ce jour** (`kanevas-premiere-fiche`, `kanevas-systemes` pour P-8, `kanevas-relier-chercher` pour les relations et la recherche) : P-1 en entier, P-2 étapes 1-2 (sans l'admin),
 > P-3 étape 4 (fiches, sections et relations), P-6 étapes 1-2 (recherche dans un type), P-7 étape 1 et l'écriture de
 > l'étape 2, P-8 en entier (B-13, B-14 : E-14 puis E-15). Le reste de ce document est la cible.
 

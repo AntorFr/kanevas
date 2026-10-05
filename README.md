@@ -4,8 +4,8 @@ Système de gestion de JDR (lore, campagnes, comptes-rendus, droits, cartes).
 Ce dépôt porte le socle (santé, OIDC, image, CI) et la **première fonction métier** :
 un MJ crée un univers, y réunit ses joueurs et y écrit des fiches dont chaque section a
 son audience ; un joueur ne lit que ce que l'audience lui ouvre. Ce que le produit permet et
-par quels écrans : `docs/parcours.md`, `docs/ecrans.md`, `docs/donnees.md`. Il y ajoute le **système de jeu** : un référentiel (règles, créatures, objets) que plusieurs
-univers se partagent, rattaché depuis les paramètres de l'univers. Elle porte aussi les **relations** entre fiches (bloc Relations de la fiche) et la **recherche** dans un type de fiche. Ni
+par quels écrans : `docs/parcours.md`, `docs/ecrans.md`, `docs/donnees.md`. La tranche `kanevas-systemes` ajoute le **système de jeu** : un référentiel (règles, créatures, objets) que plusieurs
+univers se partagent, rattaché depuis les paramètres de l'univers. La tranche `kanevas-relier-chercher` ajoute les **relations** entre fiches (bloc Relations de la fiche) et la **recherche** dans un type de fiche. Ni
 pièces jointes, ni campagnes, ni assistant, ni administration d'instance ne sont
 construits (tranches suivantes) : les passages de ces docs qui les décrivent sont la cible.
 
@@ -138,7 +138,7 @@ manifeste `clusters/tantive/games/kanevas-helm-config.yml` et client OIDC
 fusionner `k8s-home-lab`, dont la fusion déploie.
 
 Pour la carte du code, les invariants et les options écartées, voir `ARCHITECTURE.md`, dont le
-tableau liste toutes les décisions `AD-n` de l'epic Kanevas, avec leur numéro stable. Des
+tableau liste les décisions `AD-n` construites par les tranches fusionnées, avec leur numéro stable (les numéros absents sont ceux de tranches pas encore fusionnées). Des
 commentaires du code citent encore `plan.md`, `technique.md` ou `socle-projet` : ce sont des
 documents de conception tenus hors de ce dépôt (magasin de pilotage de la chaîne SDLC), dont ce
 qui doit survivre est dans `ARCHITECTURE.md` et `docs/`.

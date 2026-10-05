@@ -64,7 +64,7 @@ En mode bouchon, `POST /connexion-bouchon` attend un corps form-urlencoded `comp
 | `GET .../fiches/:fid` | fiche et sections lisibles ; `?mode=joueur` lit en Joueur ; 404 si aucune section n'est lisible (l'écran le traduit en « Aucune section n'est visible des joueurs. ») |
 | `POST .../fiches/:fid/sections`, `PUT .../fiches/:fid/ordre` | ajouter, ordonner (MJ) |
 | `GET\|PATCH\|DELETE .../sections/:sid` | lire ; titre et audience (MJ) ; retirer (MJ) |
-| `GET\|POST .../sections/:sid/relations`, `DELETE .../fiches/relations/:rid` | relations lisibles de la section `{relations: [{id, type, cible: {id, titre, type}}]}` (AD-64) ; relier `{cibleFicheId, type}` (201) et retirer (204), MJ seul, 404 pour un joueur |
+| `GET\|POST .../sections/:sid/relations`, `DELETE /api/univers/:id/fiches/relations/:rid` (sans `:fid`) | relations lisibles de la section `{relations: [{id, type, cible: {id, titre, type}}]}` (AD-64) ; relier `{cibleFicheId, type}` (201) et retirer (204), MJ seul, 404 pour un joueur |
 | `PUT .../sections/:sid/contenu` | écrire `{contenu, version}` ; 400 si contenu > 20 000 caractères (contrôlé après les droits, avant la version) ; 409 si `version` périmée |
 
 Corps de requête (JSON) : `POST /api/univers` `{nom, description?}` ; `POST .../membres`
