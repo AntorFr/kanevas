@@ -48,14 +48,14 @@ function monde() {
 
 test('migration: tables, sept types, clés étrangères, idempotente', () => {
   const db = openDb(':memory:');
-  assert.deepEqual(migrate(db), [1, 2, 3, 4, 5]);
+  assert.deepEqual(migrate(db), [1, 2, 3, 4, 5, 6]);
   assert.deepEqual(migrate(db), []);
   const tables = (
     db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' AND name != 'migrations' AND name NOT LIKE 'recherche!_%' ESCAPE '!' ORDER BY name").all() as { name: string }[]
   ).map((r) => r.name);
-  assert.deepEqual(tables, ['campagnes', 'comptes', 'fiches', 'gabarits', 'membres', 'pieces_jointes', 'relations', 'scenarios', 'sections', 'systemes_jeu', 'taches_preparation', 'univers']);
+  assert.deepEqual(tables, ['campagnes', 'cartes', 'comptes', 'elements_carte', 'fiches', 'gabarits', 'membres', 'pieces_jointes', 'relations', 'scenarios', 'sections', 'systemes_jeu', 'taches_preparation', 'univers']);
   assert.equal(db.pragma('foreign_keys', { simple: true }), 1);
-  assert.equal((db.prepare('SELECT count(*) n FROM migrations').get() as { n: number }).n, 5);
+  assert.equal((db.prepare('SELECT count(*) n FROM migrations').get() as { n: number }).n, 6);
   assert.throws(() => db.prepare("INSERT INTO membres VALUES (99, 99, 'mj')").run());
   db.prepare("INSERT INTO univers (nom, cree_le) VALUES ('u', 'x')").run();
   for (const t of ['personnage', 'lieu', 'faction', 'objet', 'evenement', 'quete', 'compte_rendu']) {
