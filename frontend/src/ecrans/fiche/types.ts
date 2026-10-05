@@ -43,4 +43,6 @@ export interface PropsBlocSection {
   fiche: FicheVue;
   section: SectionVue;
   role: Role;
+  /** `?mode=joueur` when the GM views as a player, else ''. */
+  suffixeMode?: string;
 }

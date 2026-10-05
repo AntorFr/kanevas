@@ -27,10 +27,10 @@ const REFUS = new Set(['auto_relation', 'relation_existante', 'limite_relations'
  * the ones whose section or target the account cannot read (AD-64); a reader with nothing to see
  * gets no block at all. Only the GM relates and removes.
  */
-function BlocRelations({ universId, fiche, section, role }: PropsBlocSection) {
+function BlocRelations({ universId, fiche, section, role, suffixeMode = '' }: PropsBlocSection) {
   const mj = role === 'mj';
   const base = `/api/univers/${universId}/fiches/${fiche.id}/sections/${section.id}/relations`;
-  const [etat, recharger] = useCharge<{ relations: Relation[] }>(base);
+  const [etat, recharger] = useCharge<{ relations: Relation[] }>(`${base}${suffixeMode}`);
   const [ouvert, setOuvert] = useState(false);
   const [echec, setEchec] = useState<string>();
   const [retrait, setRetrait] = useState<number>();
@@ -47,7 +47,7 @@ function BlocRelations({ universId, fiche, section, role }: PropsBlocSection) {
     setRetrait(r.id);
     setEchec(undefined);
     try {
-      await appeler('DELETE', `/api/univers/${universId}/fiches/${fiche.id}/relations/${r.id}`);
+      await appeler('DELETE', `/api/univers/${universId}/fiches/relations/${r.id}`);
       recharger();
     } catch {
       setEchec(ECHEC);
