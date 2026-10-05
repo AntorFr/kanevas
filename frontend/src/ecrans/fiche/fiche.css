@@ -25,6 +25,10 @@
 .liste-pieces .piece { padding: var(--e-2) var(--e-3); background: var(--surface-2); border-radius: var(--rayon-champ); border-left: 3px solid transparent; }
 .liste-pieces .piece.reserve-mj { border-left-color: var(--mj); }
 .liste-pieces .nom-piece { overflow-wrap: anywhere; }
+.liste-pieces .piece { min-width: 0; }
+.liste-pieces .actions { min-width: 0; }
+.liste-pieces .actions button { max-width: 100%; white-space: normal; overflow-wrap: anywhere; text-align: left; }
+.liste-pieces .legende, .liste-pieces .confirmation { overflow-wrap: anywhere; }
 .vignette { display: flex; align-items: center; justify-content: center; width: 160px; height: 120px; background: var(--surface-3); border-radius: var(--rayon-champ); overflow: hidden; color: var(--texte-2); font-size: var(--t-13); margin-bottom: var(--e-2); }
 .vignette img { max-width: 100%; max-height: 100%; object-fit: contain; }
 .pieces-jointes .envoi { color: var(--texte-2); margin: var(--e-2) 0; overflow-wrap: anywhere; }
