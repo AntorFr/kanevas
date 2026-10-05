@@ -78,15 +78,15 @@ describe('kanevas-premiere-fiche, barre latérale et droits', { skip: skipBrowse
     await mira.ctx.close();
   });
 
-  test('barre : un compte du groupe parents (Admin) membre d’un univers n’y voit pas « Administration »', async () => {
+  test('barre : un compte du groupe parents (Admin) membre d’un univers voit « Administration » une fois, sous « Instance »', async () => {
     const admin = await compte('Admin');
     await creerUnivers(admin.page, 'Barre Admin');
     await barrePrete(admin.page);
-    assert.equal(await lien(admin.page, 'Administration').count(), 0);
+    assert.equal(await lien(admin.page, 'Administration').count(), 1);
     assert.equal(await lien(admin.page, 'Membres').count(), 1);
     await admin.page.goto('/');
     await attendre(admin.page);
-    assert.equal(await lien(admin.page, 'Administration').count(), 0);
+    assert.equal(await lien(admin.page, 'Administration').count(), 1);
     await admin.ctx.close();
   });
 
