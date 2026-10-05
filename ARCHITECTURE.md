@@ -13,7 +13,7 @@ Le socle (une application Fastify, Node 20, TypeScript, `GET /healthz`, une méc
 une image publiée par la CI) porte, depuis `kanevas-premiere-fiche`, la **première
 fonction métier** : comptes, univers, membres, fiches et sections, avec leurs droits ; la session
 et le mode bouchon ; le frontend React qui les montre (accueil, univers, membres, lore, fiche).
-Ni relations, ni recherche, ni pièces jointes, ni campagnes, ni assistant : tranches suivantes.
+Ni relations, ni recherche, ni campagnes, ni assistant : tranches suivantes. Les pièces jointes (stockage sur le volume, bloc de E-9) sont construites.
 
 ## Carte
 
@@ -25,8 +25,8 @@ Ni relations, ni recherche, ni pièces jointes, ni campagnes, ni assistant : tra
 - `src/routes/auth.ts`, `src/services/oidc.ts` : login et callback OIDC ; le callback ouvre la
   session (`src/services/session.ts`, AD-56) et crée le compte à la première connexion.
 - `src/routes/bouchon.ts` : mode bouchon (AD-55), absent de la table des routes sans `KANEVAS_STUB`.
-- `src/db/` : ouverture du fichier SQLite, `migrations/0001-*.sql`, `0002-systemes.sql`, runner (AD-14).
-- `src/services/` : `comptes`, `univers`, `membres`, `fiches`, `sections`, `droits`, `systemes` — les seules
+- `src/db/` : ouverture du fichier SQLite, `migrations/0001-*.sql`, `0002-systemes.sql`, `0003-pieces-jointes.sql`, runner (AD-14).
+- `src/services/` : `comptes`, `univers`, `membres`, `fiches`, `sections`, `droits`, `systemes`, `pieces-jointes`, `stockage` — les seules
   fonctions qui lisent ou écrivent les données (AD-2) ; `src/routes/` : routes `/api` minces.
 - `frontend/` : application React/Vite (AD-57) ; `frontend/src/ui/tokens.css` et
   `frontend/src/ui/` : tokens et composants de `docs/charte.md` ; son build est servi par Fastify.
@@ -34,9 +34,9 @@ Ni relations, ni recherche, ni pièces jointes, ni campagnes, ni assistant : tra
   d'un univers est dans `src/services/univers.ts` ; leurs routes sont `src/routes/systemes.ts`
   (AD-83 à AD-85). Écrans : E-14 (Paramètres), E-15 (Système de jeu) et le bloc « Système de jeu » de E-3.
 
-- `kanevas-fichiers` y ajoute `src/services/stockage.ts` (écrire, lire, supprimer un fichier du volume),
-  `src/services/pieces-jointes.ts` (déposer, marquer, retirer, lire, garde) et leurs routes `/api`
-  (AD-65 à AD-67), puis le bloc Pièces jointes de E-9.
+- Pièces jointes (`kanevas-fichiers`) : `src/services/stockage.ts` (écrire, lire, supprimer un fichier du volume),
+  `src/services/pieces-jointes.ts` (déposer, marquer, retirer, lire, garde) et leurs routes `/api` (dans `src/routes/fiches.ts`)
+  (AD-65 à AD-67), et le bloc Pièces jointes de E-9.
 - `src/services/llm/` : transports LLM (`transport.ts`, `anthropic-transport.ts`,
   `claude-agent-transport.ts`), repris d'Antre-du-maitre, branchés nulle part.
 - `Dockerfile` (multi-stage, utilisateur `node`) et
@@ -44,12 +44,12 @@ Ni relations, ni recherche, ni pièces jointes, ni campagnes, ni assistant : tra
 
 Volume `/data` : `kanevas.db` (SQLite, WAL), `session.key` (secret de session, 0600) et
 `attachments/` (les pièces jointes, un fichier par UUID, AD-65 ; `attachments/tmp/` pour les envois
-en cours, vidé au démarrage).
+en cours, vidé au démarrage sauf avec une base en mémoire, où le dossier est partagé).
 
 ## Routes `/api`
 
 Toutes gardées par la session (401 sans session), sauf `/api/auth/*`. Les erreurs de service sont
-`introuvable` 404, `refuse` 403, `invalide` 400, `conflit` 409 (`section_modifiee`, `nom_pris`, `gabarit_modifie`). Retirer le dernier
+`introuvable` 404, `refuse` 403, `invalide` 400, `conflit` 409 (`section_modifiee`, `nom_pris`, `gabarit_modifie`, `limite_pieces` : 50 pièces par section ; 400 `fichier_vide` pour un fichier vide). Retirer le dernier
 MJ répond `invalide` 400 avec la raison ; un contenu de section de plus de 20 000 caractères aussi (AD-91). Le corps d'une erreur est `{message}` (plus `code` pour le 409). Le serveur écoute sur `0.0.0.0` (`-p 3001:3001` suffit).
 En mode bouchon, `POST /connexion-bouchon` attend un corps form-urlencoded `compte=<identifiant>`.
 
@@ -68,6 +68,9 @@ En mode bouchon, `POST /connexion-bouchon` attend un corps form-urlencoded `comp
 | `GET .../fiches/:fid` | fiche et sections lisibles ; `?mode=joueur` lit en Joueur ; 404 si aucune section n'est lisible (l'écran le traduit en « Aucune section n'est visible des joueurs. ») |
 | `POST .../fiches/:fid/sections`, `PUT .../fiches/:fid/ordre` | ajouter, ordonner (MJ) |
 | `GET\|PATCH\|DELETE .../sections/:sid` | lire ; titre et audience (MJ) ; retirer (MJ) |
+| `POST .../sections/:sid/pieces-jointes` | ajouter une pièce (multipart, un fichier par requête ; champ `secrete` **avant** le champ `fichier`, sinon ignoré ; 201, rend la pièce) ; droit d'écriture sur la section |
+| `PATCH\|DELETE .../pieces-jointes/:pid` | marquer ou lever « secrète » `{secrete}` (MJ) ; retirer (204) |
+| `GET .../pieces-jointes/:pid/fichier` | les octets, sous les règles de lecture réelles (pas de mode) ; 404 identique à une adresse inconnue |
 | `PUT .../sections/:sid/contenu` | écrire `{contenu, version}` ; 400 si contenu > 20 000 caractères (contrôlé après les droits, avant la version) ; 409 si `version` périmée |
 
 Corps de requête (JSON) : `POST /api/univers` `{nom, description?}` ; `POST .../membres`
@@ -94,8 +97,8 @@ base en snake_case (`docs/donnees.md`).
   (AD-9), il se lit dans la table des membres à chaque requête. Sans les quatre variables
   `OIDC_*` (ou avec une partie seulement), login et callback répondent 404 ; une valeur vide
   ou invalide fait échouer le démarrage.
-- **Sept tables, aucun ORM** : `comptes`, `univers`, `membres`, `fiches`, `sections` (migration
-  0001), `systemes_jeu`, `gabarits` (migration 0002, numéro provisoire : voir `docs/donnees.md`). Aucune requête SQL hors de `src/services/` et `src/db/`.
+- **Huit tables, aucun ORM** : `comptes`, `univers`, `membres`, `fiches`, `sections` (migration
+  0001), `systemes_jeu`, `gabarits` (migration 0002), `pieces_jointes` (migration 0003 ; numéros provisoires : voir `docs/donnees.md`). Aucune requête SQL hors de `src/services/` et `src/db/`.
 - **Toute route hors `/healthz`, `/api/auth/*` et, en bouchon, `/connexion-bouchon` est gardée par la session** ; sous `/api` un
   défaut de session répond 401, ailleurs il redirige vers la connexion (AD-15).
 - **Rien n'appelle un LLM** : les transports compilent mais ne sont reliés à
@@ -125,8 +128,8 @@ base en snake_case (`docs/donnees.md`).
 
 # La cible
 
-> Construit à ce jour : la session, le mode bouchon, les sept tables et leurs fonctions de service,
-> les systèmes de jeu et leurs gabarits, les écrans E-1 à E-4, E-8, E-9, E-14 et E-15. Le reste (relations, recherche, pièces jointes, agents, images,
+> Construit à ce jour : la session, le mode bouchon, les huit tables et leurs fonctions de service,
+> les systèmes de jeu et leurs gabarits, les écrans E-1 à E-4, E-8, E-9 (avec son bloc Pièces jointes), E-14 et E-15, la table `pieces_jointes` et le stockage sur le volume. Le reste (relations, recherche, agents, images,
 > administration) est la cible des tranches suivantes.
 
 ## Organes, et qui parle à qui
@@ -225,7 +228,7 @@ Les numéros sont stables. Une décision retirée garde son numéro, avec ce qui
 | AD-91 | **Plafond du contenu d'une section, côté serveur** : le service `sections` refuse un contenu de plus de 20 000 caractères (`String.length`), à l'ajout comme à l'écriture : HTTP 400 `invalide`, « Contenu trop long : 20 000 caractères au plus. », rien d'écrit, version inchangée. La valeur vit dans une seule constante serveur (`MAX_CONTENU_SECTION`), rendue au frontend par `GET /api/moi` (`limites.contenuSection`) : l'écran ne la recopie pas. Écarté : une route `/api/limites` (un aller-retour de plus, `/api/moi` est déjà chargé par le cadre de l'écran) ; une limite configurable (hors tranche, la valeur pourra évoluer). |
 | AD-65 | **Stockage et dépôt des fichiers** : un module `src/services/stockage.ts`, sans notion de section, écrit un flux dans `/data/attachments/tmp/<uuid>`, puis le déplace sur `/data/attachments/<uuid>` (même volume : un renommage) ; il lit en flux et supprime. Il sert aussi aux fonds de carte (AD-40). **`deposerPieceJointe(compte, mode, sectionId, flux, nom, secrete)` est la seule fonction d'envoi** : la route et l'outil image (AD-44) l'appellent. Elle vérifie le droit d'écrire **avant** de lire le flux, puis une seconde fois dans la transaction qui écrit la ligne (le droit peut être retiré pendant un envoi long) ; un échec ou une annulation n'écrit ni ligne ni fichier. Pas de limite de taille (AD-7), un fichier vide refusé, 50 pièces par section. Écarté : base64 en JSON (mémoire, 33 % de plus), limite de taille (décision AD-7). |
 | AD-66 | **Ce qu'on sert, et comment** : le type d'une pièce est **déterminé par le serveur à l'envoi, par la signature des premiers octets** (PNG, JPEG, GIF, WebP) ; le type annoncé par le navigateur est ignoré. Une image reconnue est servie en ligne sous son type ; **tout le reste** (SVG, HTML, PDF…) l'est en `application/octet-stream` avec `Content-Disposition: attachment` et le nom d'origine encodé (`filename*`). Toujours : `X-Content-Type-Options: nosniff`, `Content-Security-Policy: default-src 'none'; sandbox`, `Cache-Control: private, no-store`. Écarté : servir en ligne selon l'extension (un fichier « .png » qui est du HTML) ; aperçu PDF intégré (hors tranche). |
-| AD-67 | **Pas de route de liste des pièces** : elles voyagent avec la fiche, par section, déjà filtrées par la garde et le mode du lecteur (`{id, nom, taille, image, secrete}` ; `secrete` n'est rendu qu'au MJ hors mode Joueur). Un lecteur n'apprend ni le nombre ni l'existence de ce qu'il ne lit pas. Routes : ajouter (`multipart`, un fichier par requête, champ `fichier`, champ `secrete`), marquer (`secrete`), retirer, et lire le fichier (sans paramètre de mode : le droit réel du compte ; le mode Joueur ne change que ce que la fiche montre). Un compte qui ne lit pas la section, ou une pièce secrète pour un non-MJ : **404**, de corps identique à celui d'un identifiant inconnu ; qui lit sans écrire reçoit **403** à l'ajout et au retrait, et un non-MJ qui marque ou lève « secrète » aussi (comme les gestes MJ de la première fiche). Le refus de limite (50 pièces) ne dit le chiffre qu'au MJ. |
+| AD-67 | **Pas de route de liste des pièces** : elles voyagent avec la fiche, par section, déjà filtrées par la garde et le mode du lecteur (`{id, nom, taille, image, secrete}` ; `secrete` n'est rendu qu'au MJ hors mode Joueur). Un lecteur n'apprend ni le nombre ni l'existence de ce qu'il ne lit pas. Routes : ajouter (`multipart`, un fichier par requête, champ `secrete` puis champ `fichier` : un `secrete` envoyé après le fichier est ignoré), marquer (`secrete`), retirer, et lire le fichier (sans paramètre de mode : le droit réel du compte ; le mode Joueur ne change que ce que la fiche montre). Un compte qui ne lit pas la section, ou une pièce secrète pour un non-MJ : **404**, de corps identique à celui d'un identifiant inconnu ; qui lit sans écrire reçoit **403** à l'ajout et au retrait, et un non-MJ qui marque ou lève « secrète » aussi (comme les gestes MJ de la première fiche). Le refus de limite (50 pièces) ne dit jamais le chiffre dans l'API ; l'écran le dit au seul MJ. |
 
 ## Déploiement et exploitation
 

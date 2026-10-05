@@ -5,7 +5,7 @@
 > finie se détaillent dans la tranche qui le construit.
 
 > **Construit à ce jour** : E-1, E-2, E-3 (coquille : nom, navigation, blocs vides), E-4, E-8 (sans
-> recherche), E-9 (sans relations ni pièces jointes), E-14 (Paramètres), E-15 (Système de jeu) et le bloc « Système de jeu » de E-3, la session
+> recherche), E-9 (sans relations, avec le bloc Pièces jointes), E-14 (Paramètres), E-15 (Système de jeu) et le bloc « Système de jeu » de E-3, la session
 > et la barre latérale. E-5, E-6, E-7 et E-10 à E-13 sont la cible.
 
 ## Format

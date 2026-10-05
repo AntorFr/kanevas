@@ -1,20 +1,20 @@
 # Status — kanevas
 
-> MàJ : 2026-10-04
+> MàJ : 2026-10-05
 
-**État :** `main` porte le socle et la première fiche (comptes, univers, membres, fiches, sections,
-droits, session et mode bouchon, frontend E-1 à E-4, E-8, E-9, plafond de section AD-91).
-`feature/kanevas-systemes` y ajoute, en PR non fusionnée : la migration `0002-systemes.sql`
-(`systemes_jeu`, `gabarits`, `univers.systeme_id`), les services `systemes.ts` et `modifierUnivers`,
-les routes `src/routes/systemes.ts`, les écrans E-14 (Paramètres) et E-15 (Système de jeu) et le
-bloc « Système de jeu » de E-3 (AD-83 à AD-85). Typecheck et tests verts après fusion de `main`
-dans la branche. Carte et invariants : `ARCHITECTURE.md`.
+**État :** `main` porte le socle, la première fiche et les systèmes de jeu (E-14, E-15). `feature/kanevas-fichiers`
+y ajoute, en PR non fusionnée : la migration `0003-pieces-jointes.sql` (table `pieces_jointes`),
+`services/stockage.ts` (octets sous `<dossier de la base>/attachments/`, `tmp/` vidé au démarrage),
+`services/pieces-jointes.ts` (`deposerPieceJointe` seule fonction d'envoi, marquer, retirer, lire, ouvrir),
+les quatre routes sous `…/sections/:id/pieces-jointes` et `…/pieces-jointes/:id[/fichier]`, et le bloc
+Pièces jointes de E-9 (AD-65 à AD-67). La lecture d'une fiche porte les pièces de chaque section ; la
+confirmation de retrait d'une section annonce ses pièces. Typecheck et tests verts. Carte : `ARCHITECTURE.md`.
 
-**Reste :** la recette de Monsieur au navigateur en bouchon (critère de la feature : Antor rattache
-« Lame d'Ébène » à « CoF Mini » et y ajoute une créature ; Mira rattache « Les Landes grises » et la
-voit ; Admin crée « Brume », non rattachée, sans système), puis la fusion et le tag `v*`. Rien n'est amorcé : univers et système se créent à la main
-(Antor crée « Lame d'Ébène » par E-2, ajoute Léa après sa première connexion ; Mira crée « Les Landes grises » ; Admin « Brume »). Le catalogue
-naît vide : le premier MJ crée « CoF Mini » depuis E-14. Aucune image n'existe avant le tag.
+**Reste :** la recette de Monsieur au navigateur en bouchon (critère : Antor dépose sur « Vérité » un
+portrait et le marque secret ; Léa ne le voit pas et l'adresse directe répond « Page introuvable. » ; Léa
+dépose un portrait sur sa section et le voit), puis la fusion et le tag `v*`. Rien n'est amorcé : univers,
+fiche et sections se créent à la main (Léa se connecte une fois avant d'être ajoutée). Aucune image
+n'existe avant le tag.
 
 **Pièges :**
 - Node 20 est la cible (CI, Dockerfile). `better-sqlite3` est donc épinglé en `^12` : la 13 exige
@@ -22,15 +22,20 @@ naît vide : le premier MJ crée « CoF Mini » depuis E-14. Aucune image n'exis
 - La suite a été jouée sous Node 22 dans les pods de la chaîne (pas de Docker) ; la CI Node 20 fait foi.
 - La CI ne pousse d'image que sur `main` et sur un tag `v*` ; sur une PR elle ne fait qu'un build de
   validation. L'image testable n'existe qu'après le tag, posé à la fusion.
-- **Numéro de migration provisoire** : `0002-systemes.sql` ; si une autre tranche fusionne une migration
+- **Numéro de migration provisoire** : `0003-pieces-jointes.sql` (après `0002-systemes.sql`) ; si une autre tranche fusionne une migration
   avant, la phase merge la recale (AD-51).
 - Systèmes : l'accès passe toujours par `/api/univers/:id/systeme…` (AD-83) ; un refus (compte sans rôle,
   univers non rattaché) répond comme un identifiant inconnu (404) ; aucune réponse ne nomme un autre
   univers (AD-84) ; écriture de gabarit périmée = 409 `gabarit_modifie` (AD-85). Ni suppression, ni import
   de référentiel, ni visibilité différenciée des gabarits (hors tranche).
 - Rendu des écrans E-14 et E-15 non vérifié au navigateur (pas de navigateur dans les pods).
-- P-7 : seule l'écriture du joueur sur sa section est livrée ; portrait (`kanevas-fichiers`) et
-  demande à l'assistant (`kanevas-assistant-membre`) restent aux tranches suivantes.
+- P-7 : le portrait (pièce jointe) est livré ; la demande à l'assistant (`kanevas-assistant-membre`) reste à venir.
+- Pièces jointes : le type est déterminé par la signature des octets, jamais par le navigateur ; seules PNG,
+  JPEG, GIF, WebP sont servies en ligne, le reste (SVG compris) en `attachment` sous `nosniff` et CSP sandbox.
+  Un refus de lecture répond 404 comme un identifiant inconnu (AD-22) ; 50 pièces au plus par section, pas de
+  limite de taille ; ajouter, marquer ou retirer ne change pas la `version` de la section. Pas de route de liste,
+  pas de glisser-déposer. `deposerPieceJointe` et `stockage.ts` serviront aux images générées et aux fonds de carte.
+- Rendu du bloc Pièces jointes vérifié par les tests e2e (Playwright) là où il est installé ; la CI ne les joue pas.
 - « Connexion perdue » (frontend/src/api.ts) : sondé toutes les 3 s sur `/healthz` tant que le bandeau
   est levé ; il disparaît seul au retour du serveur.
 - Le contenu d'une section est plafonné à 20 000 caractères par le serveur (`MAX_CONTENU_SECTION`,
@@ -47,5 +52,5 @@ naît vide : le premier MJ crée « CoF Mini » depuis E-14. Aucune image n'exis
   `listerFiches`, `blocsVisibles`/`blocsSectionVisibles` jumeaux ; le parseur form-urlencoded du
   bouchon vaut aussi pour `/api`.
 
-**Suivant :** relations et recherche (`kanevas-relier-chercher`), pièces jointes, campagnes,
+**Suivant :** relations et recherche (`kanevas-relier-chercher`), campagnes,
 administration.

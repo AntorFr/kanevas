@@ -5,8 +5,9 @@ Ce dépôt porte le socle (santé, OIDC, image, CI) et la **première fonction m
 un MJ crée un univers, y réunit ses joueurs et y écrit des fiches dont chaque section a
 son audience ; un joueur ne lit que ce que l'audience lui ouvre. Ce que le produit permet et
 par quels écrans : `docs/parcours.md`, `docs/ecrans.md`, `docs/donnees.md`. Il y ajoute le **système de jeu** : un référentiel (règles, créatures, objets) que plusieurs
-univers se partagent, rattaché depuis les paramètres de l'univers. Ni relations, ni
-recherche, ni pièces jointes, ni campagnes, ni assistant, ni administration d'instance ne sont
+univers se partagent, rattaché depuis les paramètres de l'univers. Il y ajoute les **pièces jointes** : sur chaque section, déposer un fichier, voir une image, télécharger
+les autres, marquer secrète (MJ), retirer. Ni relations, ni
+recherche, ni campagnes, ni assistant, ni administration d'instance ne sont
 construits (tranches suivantes) : les passages de ces docs qui les décrivent sont la cible.
 
 ## Structure
@@ -16,8 +17,9 @@ Dockerfile                        Image unique : API Fastify + frontend construi
 src/
   server.ts, app.ts               Démarrage ; assemblage des plugins et des routes
   config/env.ts                   Variables d'environnement (zod)
-  db/                             SQLite (better-sqlite3), migrations/0001, 0002, runner
-  services/                       comptes, univers, membres, fiches, sections, droits, systemes :
+  db/                             SQLite (better-sqlite3), migrations/0001 à 0003, runner
+  services/                       comptes, univers, membres, fiches, sections, droits, systemes,
+                                   pieces-jointes, stockage (octets sur le volume) :
                                    seul code qui lit ou écrit les données ; session, oidc
   routes/                         health, auth (OIDC), session (cookie, garde, /api/moi),
                                    bouchon, univers (+ membres), systemes, fiches (+ sections), frontend
@@ -91,7 +93,7 @@ sans échec ; les autres tests (services, routes HTTP) tournent partout. La CI n
 ## Réglages
 
 La liste de départ est `.env.example`. En plus : `APP_NAME` (défaut `kanevas`),
-`APP_VERSION` (défaut `0.0.0-dev`, posée par le build-arg en image), `PORT` (3001), `DB_PATH` (fichier SQLite ; défaut `/data/kanevas.db` avec `NODE_ENV=production`, `./data/kanevas.db` en développement), `SESSION_SECRET` (≥ 16 caractères ; à défaut `session.key`, créée à côté de la base : `/data/session.key` en production, `./data/session.key` en développement), `KANEVAS_STUB` (`1`), `LLM_PROVIDER` (`mock` | `anthropic` | `claude-agent`, défaut `mock`,
+`APP_VERSION` (défaut `0.0.0-dev`, posée par le build-arg en image), `PORT` (3001), `DB_PATH` (fichier SQLite ; défaut `/data/kanevas.db` avec `NODE_ENV=production`, `./data/kanevas.db` en développement), `ATTACHMENTS_DIR` (pièces jointes ; défaut `attachments/` à côté de la base, donc `/data/attachments` en production), `SESSION_SECRET` (≥ 16 caractères ; à défaut `session.key`, créée à côté de la base : `/data/session.key` en production, `./data/session.key` en développement), `KANEVAS_STUB` (`1`), `LLM_PROVIDER` (`mock` | `anthropic` | `claude-agent`, défaut `mock`,
 inutilisé tant qu'aucune route n'appelle un LLM).
 
 ## Version de l'application
