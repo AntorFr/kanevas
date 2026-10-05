@@ -62,3 +62,11 @@
   (`lireRelations`: carrying section and target sheet readable, AD-64); do not add a count or a
   placeholder for hidden ones. Refusal codes: `auto_relation` (invalide), `relation_existante` and
   `limite_relations` (conflit) : the service puts the code in `ErreurService.detail`, the route sends it as `code` in the body.
+- Maps (`kanevas-cartes-graphes`, migration 0006): `src/services/cartes.ts`. `lireCarte` is the only read
+  of a map, elements and graph links included (AD-68); the browser filters nothing. Graph links are never
+  stored (AD-41): they come from `lireRelations` per readable section, so the two guards of AD-64 apply.
+  Reads: no role, unknown id and hidden map for a non-GM are the same `introuvable`; a GM in player mode on
+  a hidden map gets `refuse` with `detail: 'mode_joueur'`. Writes (GM outside player mode only): `introuvable`
+  if the caller cannot read the map, else `refuse`. Refusal codes in `ErreurService.detail`: `fond_invalide`,
+  `fond_trop_lourd`, `position_invalide`, `fiche_inconnue` (invalide), `fiche_deja_placee`, `carte_pleine`
+  (conflit). A background goes through `stockage.ts` only and `ouvrirFond` takes no mode.
