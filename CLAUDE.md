@@ -46,4 +46,4 @@
   needing a session are registered in the guarded scope of
   `registerSessionRoutes` (AD-15). `KANEVAS_STUB=1` (AD-55) swaps Authelia for
   `/connexion-bouchon` and refuses to start if any `OIDC_*` variable is set.
-- Update `.agent/status.md` in the same commit as the work it reflects.
+- Update `.agent/status.md` in the same commit as the work it reflects — except in a task of a chain feature, which leaves it alone: the feature's assembly writes it once (two tasks both adding to it conflict at integration).

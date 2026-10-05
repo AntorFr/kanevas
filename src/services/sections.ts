@@ -11,6 +11,15 @@ import { ErreurService, introuvable, invalide, refuse } from './erreurs.js';
 import { chargerFiche, validerTitre } from './fiches.js';
 import type { Acteur, SectionRow, SectionVue } from './types.js';
 
+/** Ceiling of a section's content, in `String.length` units (AD-91); `/api/moi` hands it to the screen. */
+export const MAX_CONTENU_SECTION = 20000;
+
+function validerContenu(contenu: string): void {
+  if (contenu.length > MAX_CONTENU_SECTION) {
+    throw invalide('Contenu trop long : 20 000 caractères au plus.');
+  }
+}
+
 function chargerSection(db: Db, ficheId: number, sectionId: number): SectionRow {
   const row = db
     .prepare('SELECT * FROM sections WHERE id = ? AND fiche_id = ?')
@@ -45,6 +54,7 @@ export function ajouterSection(
   exigerMJ(db, universId, compteId);
   chargerFiche(db, universId, ficheId);
   const titre = validerTitre(entree.titre, 80, 'Le titre');
+  validerContenu(entree.contenu ?? '');
   const now = new Date().toISOString();
   const id = db.transaction(() => {
     const { n } = db
@@ -211,6 +221,7 @@ export function ecrireContenu(
       if (!peutLireSection(role, s, { compteId })) throw introuvable();
       throw refuse("Vous ne pouvez pas modifier cette section.");
     }
+    validerContenu(contenu);
     if (s.version !== version) {
       throw new ErreurService('conflit', 'La section a changé.', 'section_modifiee');
     }

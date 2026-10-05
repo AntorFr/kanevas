@@ -88,7 +88,7 @@ test('Léa : session, compte créé à la 1re fois, /api/moi sans groupe', async
   const { cookie } = await connecter(app, 'lea');
   const moi = await app.inject({ url: '/api/moi', headers: { cookie } });
   assert.equal(moi.statusCode, 200);
-  assert.deepEqual(moi.json(), { username: 'lea', groups: [] });
+  assert.deepEqual(moi.json(), { username: 'lea', groups: [], limites: { contenuSection: 20000 } });
   await connecter(app, 'lea'); // 2e fois : pas de doublon
   const apres = app.db.prepare("SELECT COUNT(*) AS n FROM comptes WHERE username='lea'").get() as { n: number };
   assert.equal(apres.n, 1);
@@ -99,7 +99,7 @@ test('Admin : /api/moi contient parents ; les groupes ne donnent aucun rôle dan
   const app = await buildApp();
   const { cookie } = await connecter(app, 'admin');
   const moi = await app.inject({ url: '/api/moi', headers: { cookie } });
-  assert.deepEqual(moi.json(), { username: 'admin', groups: ['parents'] });
+  assert.deepEqual(moi.json(), { username: 'admin', groups: ['parents'], limites: { contenuSection: 20000 } });
   await app.close();
 });
 
@@ -172,7 +172,7 @@ test('la session survit à un redémarrage (session.key)', async () => {
     { encoding: 'utf8' },
   );
   assert.equal(deux.status, 0, deux.stderr);
-  assert.ok(deux.stdout.includes('200 {"username":"lea","groups":[]}'), deux.stdout);
+  assert.ok(deux.stdout.includes('200 {"username":"lea","groups":[],"limites":{"contenuSection":20000}}'), deux.stdout);
 });
 
 test('KANEVAS_STUB=1 avec une variable OIDC_* (même vide) : le démarrage échoue', async () => {

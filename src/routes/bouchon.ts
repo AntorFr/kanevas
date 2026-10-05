@@ -13,7 +13,7 @@ const COMPTES = [
   { username: 'admin', nom: 'Admin', groups: ['parents'] },
 ];
 
-/** Test-account choice page. Without KANEVAS_STUB the address answers like any unknown one. */
+/** Test-account choice page. Without KANEVAS_STUB, GET and POST answer 404 whether or not there is a session. */
 export async function registerBouchonRoutes(app: FastifyInstance) {
   app.addContentTypeParser(
     'application/x-www-form-urlencoded',

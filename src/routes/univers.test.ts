@@ -61,17 +61,17 @@ test('critère de sortie : univers, membres, 404, dernier MJ, retrait', async ()
   // doublon
   assert.equal((await appel(app, antor, 'POST', `${base}/membres`, { username: 'lea' })).statusCode, 400);
 
-  // B-4 : Teo sans rôle
+  // B-4: Teo without a role
   assert.equal((await appel(app, teo, 'GET', base)).statusCode, 404);
   assert.equal((await appel(app, teo, 'GET', `${base}/membres`)).statusCode, 404);
   assert.equal((await appel(app, teo, 'POST', `${base}/membres`, { username: 'teo' })).statusCode, 404);
-  // Léa joueuse
+  // Léa as a player
   assert.equal((await appel(app, lea, 'GET', base)).statusCode, 200);
   assert.equal((await appel(app, lea, 'GET', `${base}/membres`)).statusCode, 404);
   assert.equal((await appel(app, lea, 'POST', `${base}/membres`, { username: 'teo', role: 'mj' })).statusCode, 403);
   assert.equal((await appel(app, lea, 'DELETE', `${base}/membres/${leaId}`)).statusCode, 403);
 
-  // MJ voit les membres
+  // the GM sees the members
   const membres = (await appel(app, antor, 'GET', `${base}/membres`)).json();
   assert.deepEqual(membres.map((m: { username: string; role: string }) => [m.username, m.role]), [
     ['antor', 'mj'],
@@ -85,10 +85,10 @@ test('critère de sortie : univers, membres, 404, dernier MJ, retrait', async ()
   assert.equal(dernier.json().message, "Impossible : l'univers doit garder au moins un MJ.");
   assert.equal((await appel(app, antor, 'PATCH', `${base}/membres/${antorId}`, { role: 'joueur' })).statusCode, 400);
 
-  // rôle inconnu
+  // unknown role
   assert.equal((await appel(app, antor, 'PATCH', `${base}/membres/${leaId}`, { role: 'roi' })).statusCode, 400);
 
-  // retrait de Léa → 404 à la requête suivante
+  // removal of Léa → 404 on the next request
   assert.equal((await appel(app, antor, 'DELETE', `${base}/membres/${leaId}`)).statusCode, 204);
   assert.equal((await appel(app, lea, 'GET', base)).statusCode, 404);
   assert.deepEqual((await appel(app, lea, 'GET', '/api/univers')).json(), []);

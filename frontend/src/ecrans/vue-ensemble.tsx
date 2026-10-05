@@ -28,11 +28,11 @@ function VueEnsemble() {
       </div>
       {u.description && <p className="description-univers">{u.description}</p>}
       <div className="blocs">
-        {blocs.length === 0 ? (
-          <div className="etat">Rien à afficher pour l’instant. Les campagnes, les comptes-rendus et les cartes s’afficheront ici.</div>
-        ) : (
-          blocs.map((b) => <b.composant key={b.id} universId={u.id} role={u.role} />)
-        )}
+        {blocs.map((b) => (
+          <b.composant key={b.id} universId={u.id} role={u.role} />
+        ))}
+        {/* A block may render nothing (e.g. no game system): the message then stays; see ecrans.css. */}
+        <div className="etat etat-vide-blocs">Rien à afficher pour l’instant. Les campagnes, les comptes-rendus et les cartes s’afficheront ici.</div>
       </div>
     </>
   );

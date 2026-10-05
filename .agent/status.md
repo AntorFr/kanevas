@@ -2,33 +2,58 @@
 
 > MàJ : 2026-10-04
 
-**État :** la branche `feature/kanevas-recours-admin` empile le socle, la première fiche et le
-recours admin ; rien n'est fusionné dans `main`. Recours admin assemblé : un compte du groupe
-`parents` voit les univers de l'instance et leurs membres, en ajoute, change le rôle, en retire
-(E-5, B-6), sans jamais lire le contenu. Typecheck, build et 143 tests verts (dont `src/e2e/administration*.test.ts`, navigateur piloté en bouchon ; ces tests dépendent de Playwright, absent de `package.json`, et sautent sans lui ; sous charge, un `page.goto` peut dépasser son délai de 8 s : relancer avant d'y voir un défaut).
+**État :** `main` porte le socle et la première fiche (comptes, univers, membres, fiches, sections,
+droits, session et mode bouchon, frontend E-1 à E-4, E-8, E-9, plafond de section AD-91).
+`feature/kanevas-systemes` y ajoute, en PR non fusionnée : la migration `0002-systemes.sql`
+(`systemes_jeu`, `gabarits`, `univers.systeme_id`), les services `systemes.ts` et `modifierUnivers`,
+les routes `src/routes/systemes.ts`, les écrans E-14 (Paramètres) et E-15 (Système de jeu) et le
+bloc « Système de jeu » de E-3 (AD-83 à AD-85). Typecheck et tests verts après fusion de `main`
+dans la branche. Carte et invariants : `ARCHITECTURE.md`.
 
-- `src/services/instance.ts` : seul module à accepter le drapeau `admin` (AD-86), écrit dans `membres` et lit
-  `univers` (id, nom, nombre de membres, AD-87) ; les règles de membres sont le noyau de `services/membres.ts`, partagé avec les
-  fonctions MJ.
-- `src/routes/instance.ts` : `/api/instance/univers` et `/api/instance/univers/:id/membres`
-  (GET, POST, PATCH, DELETE). Hors du groupe, 404 comme une adresse inconnue (AD-87). L'acteur
-  vient des groupes de la session, jamais de la requête.
-- `frontend/src/ecrans/administration.tsx` : E-5, un seul motif `/administration/*` (le registre
-  prend un chemin par fichier). Liste de membres partagée avec E-4 : `frontend/src/ListeMembres.tsx`.
-  Entrée « Administration » dans `items.ts` et `Barre.tsx`, si `/api/moi` porte `parents`.
+Sur cette branche s'ajoute l'**administration d'instance** : un compte du groupe `parents` voit les univers de
+l'instance et leurs membres, en ajoute, change le rôle, en retire (E-5, B-6, AD-86, AD-87), sans jamais lire le contenu.
 
-**Pièges encore vrais :**
-- Le groupe est lu à la connexion et vaut jusqu'à l'expiration de la session (7 jours, AD-86).
-- L'API de liste rend tous les univers ; la pagination par 100 est côté client (300 univers testés
-  seulement en service/route, pas au navigateur).
-- Un admin sans rôle reste un compte sans rôle pour fiches et sections : c'est voulu (AD-9, AD-22).
-- Aucun test de composant du frontend ; l'écran E-5 est piloté en bouchon par les tests e2e (Playwright, absent de `package.json` :
-  sans lui la suite saute) mais personne ne l'a vu à l'œil. Les six états sont à jouer à la recette.
-- En bouchon, la base est vide au départ (`./data/kanevas.db` hors image, `/data` dans l'image) : créer un
-  univers en antor avant de tester E-5.
-- `docker build` ne tourne pas dans les pods (pas de démon) : la CI de la PR construit l'image.
-  Version de l'application : build-arg `APP_VERSION` seulement, jamais `package.json`.
-- Le socle publie `ghcr.io/antorfr/kanevas:<version>` seulement sur un tag `vX.Y.Z`, posé à la fusion.
-- `services/llm/*` est repris d'Antre-du-maitre et branché nulle part.
+- `src/services/instance.ts` : seul module à accepter le drapeau `admin` (AD-86), écrit dans `membres` et lit `univers`
+  (id, nom, nombre de membres, AD-87) ; `src/routes/instance.ts` : `/api/instance/univers` et `.../:id/membres`, 404 hors du groupe.
+- `frontend/src/ecrans/administration.tsx` : E-5, un seul motif `/administration/*` ; liste de membres partagée avec E-4 (`frontend/src/ListeMembres.tsx`) ; entrée de barre portée par `items.ts` (`groupe`, `horsUnivers`).
 
-**Reste :** recette de Monsieur au navigateur en bouchon (critère de la feature), puis fusion et tag.
+**Reste :** la recette de Monsieur au navigateur en bouchon (critères des features : Antor rattache
+« Lame d'Ébène » à « CoF Mini » et y ajoute une créature ; Mira rattache « Les Landes grises » et la
+voit ; Admin crée « Brume », non rattachée, sans système), puis la fusion et le tag `v*`. Rien n'est amorcé : univers et système se créent à la main
+(Antor crée « Lame d'Ébène » par E-2, ajoute Léa après sa première connexion ; Mira crée « Les Landes grises » ; Admin « Brume »). Le catalogue
+naît vide : le premier MJ crée « CoF Mini » depuis E-14. Aucune image n'existe avant le tag.
+
+**Pièges :**
+- Administration : le groupe est lu à la connexion et vaut 7 jours (AD-86) ; la liste rend tous les univers, pagination par 100 côté client ; un admin sans rôle reste un compte sans rôle (AD-9). Les e2e `administration*` dépendent de Playwright (absent du dépôt) ; en bouchon la base est vide au départ.
+- Node 20 est la cible (CI, Dockerfile). `better-sqlite3` est donc épinglé en `^12` : la 13 exige
+  Node ≥ 22 et plante (SIGSEGV) sous Node 20. Ne pas remonter sans changer aussi la CI et le Dockerfile.
+- La suite a été jouée sous Node 22 dans les pods de la chaîne (pas de Docker) ; la CI Node 20 fait foi.
+- La CI ne pousse d'image que sur `main` et sur un tag `v*` ; sur une PR elle ne fait qu'un build de
+  validation. L'image testable n'existe qu'après le tag, posé à la fusion.
+- **Numéro de migration provisoire** : `0002-systemes.sql` ; si une autre tranche fusionne une migration
+  avant, la phase merge la recale (AD-51).
+- Systèmes : l'accès passe toujours par `/api/univers/:id/systeme…` (AD-83) ; un refus (compte sans rôle,
+  univers non rattaché) répond comme un identifiant inconnu (404) ; aucune réponse ne nomme un autre
+  univers (AD-84) ; écriture de gabarit périmée = 409 `gabarit_modifie` (AD-85). Ni suppression, ni import
+  de référentiel, ni visibilité différenciée des gabarits (hors tranche).
+- Rendu des écrans E-14 et E-15 non vérifié au navigateur (pas de navigateur dans les pods).
+- P-7 : seule l'écriture du joueur sur sa section est livrée ; portrait (`kanevas-fichiers`) et
+  demande à l'assistant (`kanevas-assistant-membre`) restent aux tranches suivantes.
+- « Connexion perdue » (frontend/src/api.ts) : sondé toutes les 3 s sur `/healthz` tant que le bandeau
+  est levé ; il disparaît seul au retour du serveur.
+- Le contenu d'une section est plafonné à 20 000 caractères par le serveur (`MAX_CONTENU_SECTION`,
+  AD-91), rendu par `GET /api/moi` (`limites.contenuSection`) ; l'écran de fiche lit cette valeur.
+- Doublons connus, non traités : `corps(request)` (routes/fiches.ts, univers.ts), message d'échec
+  des écrans, texte du bandeau bouchon (pages.ts / Cadre.tsx).
+
+- Sans `/data` en production, la base est en mémoire (avertissement au démarrage) ; la clé de session
+  vient de `SESSION_SECRET`, sinon de `<data>/session.key`.
+- Le callback OIDC ne rend la page « Connexion refusée/indisponible » que si `Accept` contient
+  `text/html`, sinon 401 JSON.
+- Code mort ou sans appelant, non traité : `export { ErreurService }` (droits.ts), `renommerSection`
+  et la branche titre du PATCH d'une section (renommer est hors tranche), option `limite` de
+  `listerFiches`, `blocsVisibles`/`blocsSectionVisibles` jumeaux ; le parseur form-urlencoded du
+  bouchon vaut aussi pour `/api`.
+
+**Suivant :** relations et recherche (`kanevas-relier-chercher`), pièces jointes, campagnes,
+
