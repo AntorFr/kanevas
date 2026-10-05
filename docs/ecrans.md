@@ -157,7 +157,7 @@ Deux sont posés dès le cadrage parce qu'ils traversent tout :
 
 Sur tout écran d'un univers : en tête le **sélecteur d'univers** (nom, badge du rôle, la liste
 des univers du compte, « Mes univers » en pied de liste) ; **Vue d'ensemble** ; **Lore** :
-Personnages, Lieux, Factions, Objets, Événements, Quêtes ; pour un MJ, **Univers ▸ Membres** ; en
+Personnages, Lieux, Factions, Objets, Événements, Quêtes ; **Campagnes** et **Comptes-rendus** ; pour un MJ, **Univers ▸ Membres** et **Paramètres** ; en
 pied, l'identifiant, le thème (Clair, Sombre, Système), « Se déconnecter ». Hors d'un univers (E-1,
 E-2) : « Mes univers », l'identifiant, le thème, « Se déconnecter ». **Un item dont l'écran n'est
 pas construit n'est pas affiché** : Cartes et Administration

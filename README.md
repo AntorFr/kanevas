@@ -4,9 +4,11 @@ Système de gestion de JDR (lore, campagnes, comptes-rendus, droits, cartes).
 Ce dépôt porte le socle (santé, OIDC, image, CI) et la **première fonction métier** :
 un MJ crée un univers, y réunit ses joueurs et y écrit des fiches dont chaque section a
 son audience ; un joueur ne lit que ce que l'audience lui ouvre. Ce que le produit permet et
-par quels écrans : `docs/parcours.md`, `docs/ecrans.md`, `docs/donnees.md`. Il ajoute le **système de jeu** : un référentiel (règles, créatures, objets) que plusieurs
-univers se partagent, rattaché depuis les paramètres de l'univers. Il ajoute aussi le **suivi de la séance** : campagnes, scénarios (MJ), préparation en cinq catégories (MJ) et comptes-rendus (tout membre). Ni relations, ni
-recherche, ni pièces jointes, ni assistant, ni administration d'instance ne sont
+par quels écrans : `docs/parcours.md`, `docs/ecrans.md`, `docs/donnees.md`.
+
+Au-delà de la première fonction métier, le dépôt porte le **système de jeu** : un référentiel (règles, créatures, objets) que plusieurs
+univers se partagent, rattaché depuis les paramètres de l'univers. Il porte aussi le **suivi de la séance** : campagnes, scénarios (MJ), préparation en cinq catégories (MJ) et comptes-rendus (tout membre). Ni relations, ni
+recherche, ni pièces jointes, ni cartes, ni images, ni assistant, ni administration d'instance ne sont
 construits (tranches suivantes) : les passages de ces docs qui les décrivent sont la cible.
 
 ## Structure
@@ -86,7 +88,7 @@ Les textes de `docs/ecrans.md` sont écrits avec l'apostrophe droite ; l'interfa
 Playwright n'est pas une dépendance du dépôt : il doit être installé globalement
 (`/usr/lib/node_modules` ou `/usr/local/lib/node_modules`) avec un Chromium, ce que ne fait ni
 `node:20-bookworm-slim` ni la CI GitHub. Là où il manque, ces tests sont **ignorés avec un message**,
-sans échec ; les autres tests (services, routes HTTP) tournent partout. La CI ne joue donc pas les e2e.
+sans échec ; les autres tests (services, routes HTTP) tournent partout. Compter environ 6 minutes pour toute la suite avec Playwright. La CI ne joue donc pas les e2e.
 
 ## Réglages
 

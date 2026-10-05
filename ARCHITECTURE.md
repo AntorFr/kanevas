@@ -14,7 +14,7 @@ une image publiée par la CI) porte, depuis `kanevas-premiere-fiche`, la **premi
 fonction métier** : comptes, univers, membres, fiches et sections, avec leurs droits ; la session
 et le mode bouchon ; le frontend React qui les montre (accueil, univers, membres, lore, fiche).
 S'y ajoutent le système de jeu et, avec `kanevas-suivi`, le suivi de la séance : campagnes, scénarios, préparation, comptes-rendus.
-Ni relations, ni recherche, ni pièces jointes, ni assistant : tranches suivantes.
+Ni relations, ni recherche, ni pièces jointes, ni cartes, ni assistant : tranches suivantes.
 
 ## Carte
 
