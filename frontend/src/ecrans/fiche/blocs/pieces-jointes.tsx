@@ -63,8 +63,9 @@ function BlocPiecesJointes({ universId, fiche, section, role, rafraichir }: Prop
   const xhrs = useRef(new Map<number, XMLHttpRequest>());
   const annulees = useRef(new Set<number>());
 
-  // A reader with nothing to see and nothing to add has no block at all.
-  if (!mj && !ecrit && pieces.length === 0) return null;
+  // A reader with nothing to see and nothing to add has no block at all — unless a message
+  // (e.g. a refused upload after the write right was withdrawn) is still to be shown.
+  if (!mj && !ecrit && pieces.length === 0 && lignes.length === 0 && !avertissement) return null;
 
   const base = `/api/univers/${universId}/fiches/${fiche.id}`;
   const urlFichier = (p: PieceJointe) => `${base}/pieces-jointes/${p.id}/fichier`;
