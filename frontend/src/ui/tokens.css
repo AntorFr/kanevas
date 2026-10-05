@@ -1,65 +1,79 @@
 /* Tokens of docs/charte.md — the single source the code reads. Components use only the
    semantic tokens; the light theme is `data-theme="light"` (the "Système" choice is resolved to
-   dark or light in theme.ts, so these two blocks are the only places colours live). */
+   dark or light in theme.ts, so these two blocks are the only places colours live). Values: docs/charte.md §2. */
 :root {
   color-scheme: light dark;
-
-  --fond: #101012;
-  --fond-lateral: #131316;
-  --surface: #1a1a1f;
-  --surface-2: #212127;
-  --surface-3: #2a2a31;
-  --bord: rgba(255,255,255,.07);
-  --bord-champ: #7b7a83;
-  --texte: #f5f4f2;
-  --texte-2: #a3a2a8;
-  --texte-3: #8f8e96;
-  --accent: #8b7cf6;
-  --sur-accent: #14121f;
-  --accent-texte: #aca2f9;
-  --accent-fond: rgba(139,124,246,.16);
+  --fond: #121317;
+  --fond-lateral: #0e0f12;
+  --surface: #191a1f;
+  --surface-2: #202128;
+  --surface-3: #2a2b33;
+  --bord: rgba(255,255,255,.08);
+  --bord-fort: rgba(255,255,255,.14);
+  --bord-champ: #74757f;
+  --texte: #ebecf0;
+  --texte-2: #a6a7b0;
+  --texte-3: #8b8c97;
+  --accent: #8b9bf0;
+  --sur-accent: #11142b;
+  --accent-texte: #9aa6f5;
+  --accent-fond: rgba(154,166,245,.16);
   --mj: #f2a33c;
   --mj-fond: rgba(242,163,60,.14);
+  --mj-bord: rgba(242,163,60,.42);
+  --mj-trame: rgba(242,163,60,.075);
   --table: #3fc79a;
   --table-fond: rgba(63,199,154,.14);
+  --table-bord: rgba(63,199,154,.55);
   --danger: #ec7b6f;
-  --danger-fond: rgba(226,104,91,.14);
-  --focus: #aca2f9;
+  --sur-danger: #1a0c0a;
+  --danger-fond: rgba(236,123,111,.14);
+  --focus: #9aa6f5;
+  --voile: rgba(5,6,9,.62);
+  --ombre-flottant: 0 0 0 1px rgba(255,255,255,.06), 0 12px 32px -6px rgba(0,0,0,.6), 0 2px 6px rgba(0,0,0,.35);
+  --squelette: rgba(255,255,255,.06);
 
-  --police-titre: ui-serif, Georgia, serif;
-  --police-texte: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  --t-12: 12px; --t-13: 13px; --t-14: 14px; --t-16: 16px; --t-22: 22px;
-  --e-1: 4px; --e-2: 8px; --e-3: 12px; --e-4: 16px; --e-5: 24px;
+  --police-titre: "Fraunces Variable", "Fraunces", "Iowan Old Style", Georgia, serif;
+  --police-lecture: "Newsreader Variable", "Newsreader", "Iowan Old Style", Georgia, serif;
+  --police-texte: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --t-12: 12px; --t-13: 13px; --t-14: 14px; --t-16: 16px; --t-18: 18px; --t-22: 22px; --t-32: 32px; --t-40: 40px;
+  --e-1: 4px; --e-2: 8px; --e-3: 12px; --e-4: 16px; --e-5: 24px; --e-6: 32px; --e-7: 48px; --e-8: 64px;
+  --rayon-item: 6px;
   --rayon-champ: 8px;
   --rayon-panneau: 12px;
   --rayon-pastille: 999px;
-  --duree: 120ms;
+  --duree: 160ms;
+  --courbe: cubic-bezier(.2,.7,.2,1);
 }
-
 :root[data-theme="light"] {
-  --fond: #f4f3f0;
-  --fond-lateral: #ebe9e5;
+  --fond: #fcfcfd;
+  --fond-lateral: #f4f5f7;
   --surface: #ffffff;
-  --surface-2: #f4f3f0;
-  --surface-3: #ebe9e5;
-  --bord: rgba(0,0,0,.09);
-  --bord-champ: #85848d;
-  --texte: #1b1a1f;
-  --texte-2: #4a4952;
-  --texte-3: #65646d;
-  --accent: #5240d0;
+  --surface-2: #f1f2f5;
+  --surface-3: #e8e9ee;
+  --bord: rgba(22,26,44,.09);
+  --bord-fort: rgba(22,26,44,.16);
+  --bord-champ: #808290;
+  --texte: #1a1b22;
+  --texte-2: #4a4c58;
+  --texte-3: #646674;
+  --accent: #3a4cc0;
   --sur-accent: #ffffff;
-  --accent-texte: #5240d0;
-  --accent-fond: rgba(82,64,208,.12);
-  --mj: #855000;
-  --mj-fond: rgba(242,163,60,.14);
-  --table: #0a7554;
-  --table-fond: rgba(10,117,84,.14);
-  --danger: #b0332a;
-  --danger-fond: rgba(176,51,42,.10);
-  --focus: #5240d0;
+  --accent-texte: #3a4cc0;
+  --accent-fond: rgba(58,76,192,.10);
+  --mj: #8a5300;
+  --mj-fond: rgba(214,140,30,.14);
+  --mj-bord: rgba(176,108,10,.45);
+  --mj-trame: rgba(176,108,10,.09);
+  --table: #08694a;
+  --table-fond: rgba(8,105,74,.12);
+  --table-bord: rgba(8,105,74,.70);
+  --danger: #b4352b;
+  --sur-danger: #ffffff;
+  --danger-fond: rgba(180,53,43,.10);
+  --focus: #3a4cc0;
+  --voile: rgba(20,22,34,.38);
+  --ombre-flottant: 0 0 0 1px rgba(22,26,44,.08), 0 12px 32px -8px rgba(22,26,44,.22), 0 2px 6px rgba(22,26,44,.08);
+  --squelette: rgba(22,26,44,.07);
 }
-
-@media (prefers-reduced-motion: reduce) {
-  :root { --duree: 0ms; }
-}
+@media (prefers-reduced-motion: reduce) { :root { --duree: 0ms; } }

@@ -41,7 +41,7 @@ a { color: var(--accent-texte); }
 .bascule.joueur label:has(input:checked) { background: var(--table-fond); color: var(--table); }
 .bascule label:has(input:focus-visible) { outline: 2px solid var(--focus); outline-offset: -2px; }
 
-.voile { position: fixed; inset: 0; background: rgba(0,0,0,.55); display: flex; align-items: center; justify-content: center; z-index: 50; }
+.voile { position: fixed; inset: 0; background: var(--voile); display: flex; align-items: center; justify-content: center; z-index: 50; }
 .fenetre { background: var(--surface); color: var(--texte); border-radius: var(--rayon-panneau); padding: var(--e-5);
   width: min(32rem, 92vw); border: 1px solid var(--bord-champ); }
 
