@@ -62,3 +62,11 @@
   (`lireRelations`: carrying section and target sheet readable, AD-64); do not add a count or a
   placeholder for hidden ones. Refusal codes: `auto_relation` (invalide), `relation_existante` and
   `limite_relations` (conflit) : the service puts the code in `ErreurService.detail`, the route sends it as `code` in the body.
+- Assistant tools (`kanevas-assistant-membre`, `src/services/assistant/`): `catalogueDe(db, compteId,
+  universId)` is the only door — the server picks the catalogue from the role read in `membres` (no role →
+  `introuvable`, AD-26); a tool is `{nom, description, schema (zod strictObject), executer}`, neutral of any
+  transport. Account, universe and role are closed over, **never a tool parameter**; the actor is
+  `{compteId}` with no player mode. Tools only compose service functions (AD-27, no SQL): refusals come
+  back as `{ok:false, erreur}` with the interface's words ("Introuvable.", …) and **no event**; only a
+  successful write returns an `evenement` (AD-76). `creer_scenario` checks the campaign belongs to the
+  catalogue's universe (`lireCampagne`) before `creerScenario`, which only guards on the campaign's own.
