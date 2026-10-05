@@ -26,7 +26,7 @@ import {
 } from './harnais.test.js';
 
 // « Paramètres » (E-14) is built by kanevas-systemes: the MJ sees it, see below.
-const NAV_NON_CONSTRUITE = ['Comptes-rendus', 'Cartes', 'Administration'];
+const NAV_NON_CONSTRUITE = ['Cartes', 'Administration'];
 const LORE = ['Personnages', 'Lieux', 'Factions', 'Objets', 'Événements', 'Quêtes'];
 
 describe('kanevas-premiere-fiche, barre latérale et droits', { skip: skipBrowser }, () => {
@@ -69,7 +69,7 @@ describe('kanevas-premiere-fiche, barre latérale et droits', { skip: skipBrowse
     const mira = await compte('Mira');
     await creerUnivers(mira.page, 'Barre MJ');
     await barrePrete(mira.page);
-    for (const nom of ['Vue d\'ensemble', ...LORE, 'Membres', 'Paramètres']) {
+    for (const nom of ['Vue d\'ensemble', 'Comptes-rendus', ...LORE, 'Membres', 'Paramètres']) {
       assert.equal(await lien(mira.page, nom).count(), 1, `lien « ${nom} » attendu une fois`);
     }
     for (const nom of NAV_NON_CONSTRUITE) {
@@ -103,7 +103,7 @@ describe('kanevas-premiere-fiche, barre latérale et droits', { skip: skipBrowse
     await lea.page.goto(chemin);
     await barrePrete(lea.page);
     assert.equal(await lien(lea.page, 'Membres').count(), 0);
-    for (const nom of LORE) assert.equal(await lien(lea.page, nom).count(), 1, nom);
+    for (const nom of ['Comptes-rendus', ...LORE]) assert.equal(await lien(lea.page, nom).count(), 1, nom);
     for (const nom of [...NAV_NON_CONSTRUITE, 'Paramètres']) assert.equal(await lien(lea.page, nom).count(), 0, nom);
     await lea.page.goto(chemin + '/membres');
     await attendre(lea.page);
