@@ -52,4 +52,4 @@
   triggers (AD-21) — never write to `recherche_*` from code. A relation is read under both guards
   (`lireRelations`: carrying section and target sheet readable, AD-64); do not add a count or a
   placeholder for hidden ones. Refusal codes: `auto_relation` (invalide), `relation_existante` and
-  `limite_relations` (conflit, in `detail`).
+  `limite_relations` (conflit) : the service puts the code in `ErreurService.detail`, the route sends it as `code` in the body.

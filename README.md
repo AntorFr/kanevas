@@ -5,8 +5,8 @@ Ce dépôt porte le socle (santé, OIDC, image, CI) et la **première fonction m
 un MJ crée un univers, y réunit ses joueurs et y écrit des fiches dont chaque section a
 son audience ; un joueur ne lit que ce que l'audience lui ouvre. Ce que le produit permet et
 par quels écrans : `docs/parcours.md`, `docs/ecrans.md`, `docs/donnees.md`. Il y ajoute le **système de jeu** : un référentiel (règles, créatures, objets) que plusieurs
-univers se partagent, rattaché depuis les paramètres de l'univers. Ni relations, ni
-recherche, ni pièces jointes, ni campagnes, ni assistant, ni administration d'instance ne sont
+univers se partagent, rattaché depuis les paramètres de l'univers. Elle porte aussi les **relations** entre fiches (bloc Relations de la fiche) et la **recherche** dans un type de fiche. Ni
+pièces jointes, ni campagnes, ni assistant, ni administration d'instance ne sont
 construits (tranches suivantes) : les passages de ces docs qui les décrivent sont la cible.
 
 ## Structure
@@ -16,8 +16,8 @@ Dockerfile                        Image unique : API Fastify + frontend construi
 src/
   server.ts, app.ts               Démarrage ; assemblage des plugins et des routes
   config/env.ts                   Variables d'environnement (zod)
-  db/                             SQLite (better-sqlite3), migrations/0001, 0002, runner
-  services/                       comptes, univers, membres, fiches, sections, droits, systemes :
+  db/                             SQLite (better-sqlite3), migrations/0001 à 0003, runner
+  services/                       comptes, univers, membres, fiches, sections, droits, systemes, relations :
                                    seul code qui lit ou écrit les données ; session, oidc
   routes/                         health, auth (OIDC), session (cookie, garde, /api/moi),
                                    bouchon, univers (+ membres), systemes, fiches (+ sections), frontend
@@ -67,7 +67,9 @@ récent suffit pour les mêmes commandes.
 ### Sans Authelia : le mode bouchon
 
 ```bash
-npm run build && KANEVAS_STUB=1 npm start   # (PORT=… DB_PATH=/tmp/k.db en tête pour ne pas écrire dans ./data/) puis ouvrir http://localhost:3001/ : choix d'un compte de test
+npm run build && KANEVAS_STUB=1 npm start   # puis ouvrir http://localhost:3001/ : choix d'un compte de test
+# sans écrire dans ./data/ ni sur le port 3001 : npm run build && PORT=3055 DB_PATH=/tmp/k.db KANEVAS_STUB=1 npm start
+# (Ctrl-C l'arrête ; lancé en arrière-plan, kill du processus ; supprimer /tmp/k.db pour repartir d'une base vide)
 ```
 
 `/connexion-bouchon` remplace Authelia (AD-55) sous un bandeau « mode bouchon ». Les comptes de test
@@ -86,7 +88,7 @@ Les textes de `docs/ecrans.md` sont écrits avec l'apostrophe droite ; l'interfa
 Playwright n'est pas une dépendance du dépôt : il doit être installé globalement
 (`/usr/lib/node_modules` ou `/usr/local/lib/node_modules`) avec un Chromium, ce que ne fait ni
 `node:20-bookworm-slim` ni la CI GitHub. Là où il manque, ces tests sont **ignorés avec un message**,
-sans échec ; les autres tests (services, routes HTTP) tournent partout. La CI ne joue donc pas les e2e.
+sans échec ; les autres tests (services, routes HTTP) tournent partout. Compter 5 à 6 minutes pour la suite complète avec les e2e. La CI ne joue donc pas les e2e.
 
 ## Réglages
 

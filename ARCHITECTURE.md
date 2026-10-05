@@ -26,7 +26,7 @@ et le mode bouchon ; le frontend React qui les montre (accueil, univers, membres
 - `src/routes/auth.ts`, `src/services/oidc.ts` : login et callback OIDC ; le callback ouvre la
   session (`src/services/session.ts`, AD-56) et crée le compte à la première connexion.
 - `src/routes/bouchon.ts` : mode bouchon (AD-55), absent de la table des routes sans `KANEVAS_STUB`.
-- `src/db/` : ouverture du fichier SQLite, `migrations/0001-*.sql`, `0002-systemes.sql`, runner (AD-14).
+- `src/db/` : ouverture du fichier SQLite, `migrations/0001-*.sql`, `0002-systemes.sql`, `0003-relier-chercher.sql`, runner (AD-14).
 - `src/services/` : `comptes`, `univers`, `membres`, `fiches`, `sections`, `droits`, `systemes`, `relations` — les seules
   fonctions qui lisent ou écrivent les données (AD-2) ; `src/routes/` : routes `/api` minces.
 - `frontend/` : application React/Vite (AD-57) ; `frontend/src/ui/tokens.css` et
@@ -45,8 +45,8 @@ dossier des pièces jointes n'existe pas encore.
 ## Routes `/api`
 
 Toutes gardées par la session (401 sans session), sauf `/api/auth/*`. Les erreurs de service sont
-`introuvable` 404, `refuse` 403, `invalide` 400, `conflit` 409 (`section_modifiee`, `nom_pris`, `gabarit_modifie`). Retirer le dernier
-MJ répond `invalide` 400 avec la raison ; un contenu de section de plus de 20 000 caractères aussi (AD-91). Le corps d'une erreur est `{message}` (plus `code` pour le 409). Le serveur écoute sur `0.0.0.0` (`-p 3001:3001` suffit).
+`introuvable` 404, `refuse` 403, `invalide` 400, `conflit` 409 (`section_modifiee`, `nom_pris`, `gabarit_modifie`, `relation_existante`, `limite_relations`) ; `auto_relation` est un 400 `invalide`. Retirer le dernier
+MJ répond `invalide` 400 avec la raison ; un contenu de section de plus de 20 000 caractères aussi (AD-91). Le corps d'une erreur est `{message}` (plus `code` quand le service en donne un). Le serveur écoute sur `0.0.0.0` (`-p 3001:3001` suffit).
 En mode bouchon, `POST /connexion-bouchon` attend un corps form-urlencoded `compte=<identifiant>`.
 
 | Route | Rôle |
@@ -60,10 +60,11 @@ En mode bouchon, `POST /connexion-bouchon` attend un corps form-urlencoded `comp
 | `GET .../systeme` (`?type` = `regle` (défaut), `creature` ou `objet`, sinon 400 ; `?curseur`) | le système de l'univers, le nombre d'univers qui l'utilisent, ses gabarits (100 à la fois) ; 404 identique à une adresse inconnue sans rôle ou sans rattachement |
 | `POST .../systeme/gabarits`, `PUT .../systeme/gabarits/:gabaritId` | ajouter, modifier avec la version lue (MJ) |
 | `GET\|POST /api/univers/:id/membres`, `PATCH\|DELETE .../membres/:compteId` | membres (MJ) |
-| `GET\|POST /api/univers/:id/fiches` (`?type`, `?curseur`) | liste paginée (100) ; création (MJ) |
+| `GET\|POST /api/univers/:id/fiches` (`?type`, `?q`, `?curseur`) | liste paginée (100), `q` (1 à 100 caractères, sinon 400) cherche dans le type (AD-63) ; création (MJ) |
 | `GET .../fiches/:fid` | fiche et sections lisibles ; `?mode=joueur` lit en Joueur ; 404 si aucune section n'est lisible (l'écran le traduit en « Aucune section n'est visible des joueurs. ») |
 | `POST .../fiches/:fid/sections`, `PUT .../fiches/:fid/ordre` | ajouter, ordonner (MJ) |
 | `GET\|PATCH\|DELETE .../sections/:sid` | lire ; titre et audience (MJ) ; retirer (MJ) |
+| `GET\|POST .../sections/:sid/relations`, `DELETE .../fiches/relations/:rid` | relations lisibles de la section `{relations: [{id, type, cible: {id, titre, type}}]}` (AD-64) ; relier `{cibleFicheId, type}` (201) et retirer (204), MJ seul, 404 pour un joueur |
 | `PUT .../sections/:sid/contenu` | écrire `{contenu, version}` ; 400 si contenu > 20 000 caractères (contrôlé après les droits, avant la version) ; 409 si `version` périmée |
 
 Corps de requête (JSON) : `POST /api/univers` `{nom, description?}` ; `POST .../membres`
@@ -90,8 +91,8 @@ base en snake_case (`docs/donnees.md`).
   (AD-9), il se lit dans la table des membres à chaque requête. Sans les quatre variables
   `OIDC_*` (ou avec une partie seulement), login et callback répondent 404 ; une valeur vide
   ou invalide fait échouer le démarrage.
-- **Sept tables, aucun ORM** : `comptes`, `univers`, `membres`, `fiches`, `sections` (migration
-  0001), `systemes_jeu`, `gabarits` (migration 0002, numéro provisoire : voir `docs/donnees.md`). Aucune requête SQL hors de `src/services/` et `src/db/`.
+- **Huit tables et deux index de recherche, aucun ORM** : `comptes`, `univers`, `membres`, `fiches`, `sections` (migration
+  0001), `systemes_jeu`, `gabarits` (migration 0002), `relations`, `recherche_fiches` et `recherche_sections` (FTS5, migration 0003, numéro provisoire : voir `docs/donnees.md`). Aucune requête SQL hors de `src/services/` et `src/db/`.
 - **Toute route hors `/healthz`, `/api/auth/*` et, en bouchon, `/connexion-bouchon` est gardée par la session** ; sous `/api` un
   défaut de session répond 401, ailleurs il redirige vers la connexion (AD-15).
 - **Rien n'appelle un LLM** : les transports compilent mais ne sont reliés à
@@ -121,8 +122,8 @@ base en snake_case (`docs/donnees.md`).
 
 # La cible
 
-> Construit à ce jour : la session, le mode bouchon, les sept tables et leurs fonctions de service,
-> les systèmes de jeu et leurs gabarits, les écrans E-1 à E-4, E-8, E-9, E-14 et E-15. Le reste (relations, recherche, pièces jointes, agents, images,
+> Construit à ce jour : la session, le mode bouchon, les tables et leurs fonctions de service,
+> les systèmes de jeu et leurs gabarits, les relations et la recherche dans un type, les écrans E-1 à E-4, E-8, E-9, E-14 et E-15. Le reste (pièces jointes, agents, images,
 > administration) est la cible des tranches suivantes.
 
 ## Organes, et qui parle à qui

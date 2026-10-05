@@ -30,7 +30,7 @@ façon (AD-2).
 | **élément de carte** | position en % (carte illustrée) ou rien (graphe) | carte, fiche | comme la fiche de l'élément | MJ |
 | **proposition** | contenu proposé, empreinte du contenu d'origine, appliquée le | univers, compte demandeur, section, CR source | son seul demandeur | créée par l'agent du MJ ; appliquée une fois par son demandeur, si la section n'a pas changé (B-21) |
 
-**Index de recherche** : un index plein texte (FTS5) sur les titres et contenus de sections, tenu
+**Index de recherche** : deux index plein texte (FTS5), l'un sur les titres de fiches, l'autre sur les titres et contenus de sections, tenus
 à jour par la base (déclencheurs) ; aucune réponse n'en sort sans repasser par le filtre de
 droits (AD-8, AD-21).
 
@@ -92,7 +92,7 @@ univers : MJ.
 4. Une **pièce jointe** n'est servie que par la route qui revérifie ces droits (AD-7, AD-36).
 5. L'**agent** a exactement les droits de la personne qui lui parle (AD-2, AD-26).
 
-## Migration `kanevas-relier-chercher` (numéro pris à la fusion, AD-51 : le suivant)
+## Migration `kanevas-relier-chercher` (`0003-relier-chercher.sql`, numéro provisoire : pris à la fusion, AD-51)
 
 Une table et deux index de recherche ; aucune entité nouvelle (la relation est celle du cadrage).
 
@@ -116,7 +116,7 @@ cette fiche elle-même ; une section porte **100 relations** au plus ; seul un M
 Lecture, évaluée pour **le compte et le mode** de l'appelant : une relation est rendue si la section
 porteuse est lisible **et** si la fiche cible l'est (au moins une section lisible ; le MJ, hors
 mode Joueur, lit toute fiche de son univers). Sinon elle est absente de la réponse, sans compteur.
-Recherche : la liste d'un type avec une condition de plus (AD-63), saisie de 1 à 100 caractères (le service refuse au-delà) ; l'index ne livre que des
+Recherche : la liste d'un type avec une condition de plus (AD-63), saisie de 1 à 100 caractères (le service refuse au-delà) ; l'API accepte `q` sans `type` (toutes les fiches lisibles), mais aucun écran ne l'emploie : la recherche tous types reste hors tranche ; l'index ne livre que des
 identifiants de candidats, jamais un résultat.
 
 ## Évolution
