@@ -25,7 +25,7 @@ async function ouvrir(page: Any, id: number, mode = ''): Promise<void> {
   await page.goto(`/univers/${U}/fiche/${id}`);
   await page.getByRole('heading', { level: 1 }).waitFor();
   await attendre(page);
-  if (mode === 'joueur') await page.getByRole('button', { name: rxExact('Mode Joueur') }).click();
+  if (mode === 'joueur') await page.getByRole('radio', { name: rxExact('Mode Joueur') }).check();
   await page.waitForFunction(() => !/Chargement des relations…/.test(document.body.innerText));
 }
 const bloc = (page: Any, titre: string) => section(page, titre).locator('.relations');
@@ -90,7 +90,7 @@ describe('kanevas-rc-ecran-relations, E-9 bloc Relations', { skip: skipBrowser }
     const t = await b.innerText();
     assert.ok(/membre de →\s*Lames Grises/.test(t), t);
     assert.ok(!/Cendres|Aucune relation|cachée|\b2\b/.test(t), t);
-    assert.equal(await b.locator('li').count(), 1);
+    assert.equal(await b.locator('.liste-relations > li').count(), 1);
     assert.equal(await bloc(lea, 'Passé').count(), 0);
     assert.equal(await lea.getByRole('button', { name: rx('Relier') }).count(), 0);
     assert.equal(await lea.getByRole('button', { name: rx('Retirer') }).count(), 0);
@@ -118,11 +118,11 @@ describe('kanevas-rc-ecran-relations, E-9 bloc Relations', { skip: skipBrowser }
     const b = bloc(antor, 'Apparence');
     await b.getByText('Une fiche ne se relie pas à elle-même.').waitFor();
     assert.equal(await b.getByLabel('Type de relation').inputValue(), 'ami de');
-    assert.equal(await b.locator('li').count(), 2);
+    assert.equal(await b.locator('.liste-relations > li').count(), 2);
     await b.getByRole('button', { name: rxExact('Annuler') }).click();
     await relier(antor, 'Apparence', 'membre de', 'Faction', 'les factions', 'Lames Grises');
     await bloc(antor, 'Apparence').getByText('Cette relation existe déjà.').waitFor();
-    assert.equal(await bloc(antor, 'Apparence').locator('li').count(), 2);
+    assert.equal(await bloc(antor, 'Apparence').locator('.liste-relations > li').count(), 2);
   });
 
   test('erreurs de champ : type vide, 81 caractères, aucune fiche choisie (Entrée)', async () => {
@@ -147,7 +147,7 @@ describe('kanevas-rc-ecran-relations, E-9 bloc Relations', { skip: skipBrowser }
     await ouvrir(antor, aldric);
     await relier(antor, 'Passé', 'de trop', 'Faction', 'les factions', 'Lames Grises');
     await bloc(antor, 'Passé').getByText('Cette section porte déjà 100 relations.').waitFor();
-    assert.equal(await bloc(antor, 'Passé').locator('li').count(), 100);
+    assert.equal(await bloc(antor, 'Passé').locator('.liste-relations > li').count(), 100);
   });
 
   test('Antor retire sans confirmation ; étiquette accessible ; Léa ne voit plus la relation', async () => {
@@ -155,7 +155,7 @@ describe('kanevas-rc-ecran-relations, E-9 bloc Relations', { skip: skipBrowser }
     const b = bloc(antor, 'Apparence');
     await b.getByRole('button', { name: 'Retirer la relation membre de → Cercle des Cendres' }).click();
     await b.getByRole('link', { name: 'Cercle des Cendres' }).waitFor({ state: 'detached' });
-    assert.equal(await b.locator('li').count(), 1);
+    assert.equal(await b.locator('.liste-relations > li').count(), 1);
   });
 
   test('« Lames Grises » sans section lue : la relation disparaît pour Léa sans trace', async () => {
@@ -171,11 +171,11 @@ describe('kanevas-rc-ecran-relations, E-9 bloc Relations', { skip: skipBrowser }
     let panne = true;
     await antor.route(`**/sections/${appId}/relations`, (r: Any) => (panne ? r.fulfill({ status: 500, body: '{}' }) : r.continue()));
     await ouvrir(antor, aldric);
-    await bloc(antor, 'Apparence').getByText('Impossible de charger les relations.').waitFor();
-    assert.equal(await bloc(antor, 'Passé').locator('li').count(), 100);
+    await section(antor, 'Apparence').getByText('Impossible de charger les relations.').waitFor();
+    assert.equal(await bloc(antor, 'Passé').locator('.liste-relations > li').count(), 100);
     assert.equal(await antor.getByText('Impossible de charger les relations.').count(), 1);
     panne = false;
-    await bloc(antor, 'Apparence').getByRole('button', { name: rxExact('Réessayer') }).click();
+    await section(antor, 'Apparence').getByRole('button', { name: rxExact('Réessayer') }).click();
     await bloc(antor, 'Apparence').getByRole('link', { name: 'Lames Grises' }).waitFor();
     await antor.unrouteAll({ behavior: 'ignoreErrors' });
   });
@@ -186,7 +186,7 @@ describe('kanevas-rc-ecran-relations, E-9 bloc Relations', { skip: skipBrowser }
       await r.continue();
     });
     await antor.goto(`/univers/${U}/fiche/${aldric}`);
-    await bloc(antor, 'Apparence').getByText('Chargement des relations…').waitFor();
+    await section(antor, 'Apparence').getByText('Chargement des relations…').waitFor();
     assert.ok((await texte(antor)).includes('Grand.'));
     await attendre(antor);
     await antor.unrouteAll({ behavior: 'ignoreErrors' });
