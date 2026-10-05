@@ -14,7 +14,7 @@ import type { Acteur, SectionRow, SectionVue } from './types.js';
 /** Ceiling of a section's content, in `String.length` units (AD-91); `/api/moi` hands it to the screen. */
 export const MAX_CONTENU_SECTION = 20000;
 
-function validerContenu(contenu: string): void {
+export function validerContenu(contenu: string): void {
   if (contenu.length > MAX_CONTENU_SECTION) {
     throw invalide('Contenu trop long : 20 000 caractères au plus.');
   }

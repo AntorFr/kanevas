@@ -2,9 +2,8 @@ import type { Db } from '../db/db.js';
 import { exigerMJDeCampagne } from './campagnes.js';
 import { ErreurService, introuvable, invalide } from './erreurs.js';
 import { validerTitre } from './fiches.js';
-
-/** Ceiling of a scenario's content (same as a section's, AD-91). */
-export const MAX_CONTENU_SCENARIO = 20000;
+// A scenario's content has the same ceiling as a section's (AD-91).
+import { validerContenu } from './sections.js';
 
 export interface Scenario {
   id: number;
@@ -35,12 +34,6 @@ const versScenario = (r: ScenarioRow): Scenario => ({
   creeLe: r.cree_le,
   modifieLe: r.modifie_le,
 });
-
-function validerContenu(contenu: string): void {
-  if (contenu.length > MAX_CONTENU_SCENARIO) {
-    throw invalide('Contenu trop long : 20 000 caractères au plus.');
-  }
-}
 
 /** A scenario, for the GM of ITS campaign's universe only (AD-47); everyone else: not found. */
 function chargerPourMJ(db: Db, compteId: number, scenarioId: number): ScenarioRow {
