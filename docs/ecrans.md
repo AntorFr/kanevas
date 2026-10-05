@@ -171,7 +171,7 @@ des univers du compte, « Mes univers » en pied de liste) ; **Vue d'ensemble** 
 Personnages, Lieux, Factions, Objets, Événements, Quêtes ; **Campagnes** et **Comptes-rendus** ; pour un MJ, **Univers ▸ Membres** et **Paramètres** ; en
 pied, le compte (avatar et identifiant) qui ouvre le menu du compte : l'identifiant, le thème
 (Clair, Sombre, Système, en trois icônes) et « Se déconnecter ». Hors d'un univers (E-1,
-E-2) : « Mes univers » et le compte en pied. **Un item dont l'écran n'est
+E-2, E-5) : « Mes univers » et le compte en pied. **Un item dont l'écran n'est
 pas construit n'est pas affiché** : Cartes et Administration
 arrivent avec leurs tranches (Campagnes et Comptes-rendus sont affichés). « Paramètres » (E-14) n'est affiché qu'au MJ. Sur téléphone (moins de 760 px), la barre est un tiroir sous un
 bouton « Menu ».
@@ -868,15 +868,22 @@ portrait de son personnage). Le bloc livre ses six états (B-29), ci-dessus.
 
 ## Détail de `kanevas-refonte-visuelle`
 
-La refonte ne change ni les droits, ni les données, ni ce que fait un écran : elle change la
-forme, et ces gestes, que le testeur vérifie. La direction, les tokens et les composants sont
-dans `docs/charte.md` ; les maquettes finies, ci-dessous, en sont l'image.
+La refonte ne change ni les droits, ni les données, ni les textes d'un écran : elle change la
+forme, et les gestes ci-dessous, que le testeur vérifie. La direction, les tokens et les
+composants sont dans `docs/charte.md`. E-1, E-3, E-6, E-8 et E-9 ont leur maquette finie ; E-2,
+E-4, E-7, E-13, E-14 et E-15 se refont dans le même cadre et avec les mêmes composants, sans
+maquette propre : leurs maquettes actuelles, faites avant la charte, valent pour le contenu et
+le vocabulaire, pas pour la forme (barre, compte, couleurs).
 
 **Partout.** Le cadre de E-9 sur tous les écrans d'un univers ; chaque entrée de navigation et
-chaque action a son icône ; le compte est derrière l'avatar (voir Navigation). Une action réussie
-est confirmée par un **toast** qui part seul (« « Apparence » enregistrée », « Audience de
-« Apparence » enregistrée », « Section « Rumeurs entendues » retirée ») ; un échec reste un message
-en ligne, comme aujourd'hui.
+chaque action a son icône ; le compte est derrière l'avatar (§ Barre latérale). Une action
+réussie est confirmée par un **toast** qui part seul après 4 s ou à « Fermer », et ne prend
+jamais le focus ; un échec n'est pas un toast : il reste un message en ligne, comme aujourd'hui.
+Textes des toasts : « « <section> » enregistrée », « Audience de « <section> » enregistrée »,
+« Section « <titre> » ajoutée — fermée aux joueurs », « Section « <titre> » retirée »,
+« « <section> » montée d'un cran » / « descendue d'un cran », « « <fichier> » ajouté » /
+« retiré », « Envoi de « <fichier> » annulé », « Relation vers « <fiche> » retirée » ; sur les
+autres écrans, le même gabarit (« « <objet> » <participe> »).
 
 **E-9 Fiche**, pour le MJ :
 
@@ -888,21 +895,52 @@ en ligne, comme aujourd'hui.
   une liste, et « Chaque changement est enregistré aussitôt. ») ;
 - un **filet** dans la marge redit la pastille : vert plein pour une section lue ou écrite par
   les joueurs, pointillé pour une section confiée ; une section « MJ seul » est hachurée d'ambre ;
-- « Modifier » paraît au survol et au focus de la section ; « Monter », « Descendre » et
-  « Retirer la section » sont dans son menu « ⋯ » ;
-- en édition : Échap annule, Ctrl+Entrée (⌘+Entrée sur Mac) enregistre.
+- « Modifier » paraît au survol et au focus de la section, et toujours sur un écran tactile ;
+  « Monter », « Descendre » et « Retirer la section » sont dans son menu « ⋯ » ;
+- en édition : Échap annule, Ctrl+Entrée (⌘+Entrée sur Mac) fait exactement ce que fait
+  « Enregistrer », y compris ses refus (écriture périmée, 20 000 caractères dépassés, connexion
+  perdue : il ne part pas, comme le bouton désactivé) ;
+- la bascule en tête s'appelle « Mode MJ » et « Mode Joueur » (« MJ » et « Joueur » au
+  téléphone) ; en mode Joueur, un bandeau sous la barre haute : « Mode Joueur : vous voyez ce
+  que voit un joueur. »
 
-En mode Joueur et pour un Joueur : ni pastille réglable, ni filet, ni hachure, ni menu « ⋯ ».
+**Un Joueur, et le MJ en mode Joueur**, ne voient aucune pastille d'audience, ni filet, ni
+hachure, ni menu « ⋯ » : la section n'a que son titre, son texte et ses blocs.
+
+| Ligne de la matrice | MJ | Joueur | MJ en mode Joueur |
+|---|---|---|---|
+| menu du compte (thème, déconnexion) | oui | oui | oui |
+| pastille et réglage d'audience | lire, régler | caché | caché |
+| filet et hachure | voir | caché | caché |
+| menu « ⋯ » (ordre, retrait) | oui | caché | caché |
+| tiroir au téléphone | oui | oui | oui |
+
+**États des composants du cadre.**
+
+| Composant | Ce qui peut arriver | Ce qu'on voit |
+|---|---|---|
+| menu du compte | connexion perdue | il s'ouvre ; le thème change (il est local) ; « Se déconnecter » reste actif |
+| réglage d'audience | échec d'un changement | l'interrupteur revient à sa valeur, « L'action n'a pas abouti. Réessayez. » sous le réglage ; pas de toast |
+| réglage d'audience | connexion perdue | interrupteurs et liste désactivés, le réglage se lit |
+| tiroir | ouvert au téléphone | la barre par-dessus la page, voile derrière ; Échap, le voile ou une entrée le ferment |
+| toast | plusieurs actions de suite | ils s'empilent, le plus récent en bas, trois au plus |
+| bandeau de connexion perdue | la connexion tombe | sous la barre haute, sur tout écran, comme aujourd'hui ; il part quand elle revient |
 
 *Critères.*
 - Étant donné Antor, MJ, sur « Maître Aldric », quand il ouvre la pastille « Lue des joueurs »
   d'« Apparence » et coupe « Les joueurs la lisent », alors la pastille dit « MJ seul », la section
   se hachure d'ambre, et un toast dit « Audience de « Apparence » enregistrée ».
-- Étant donné Antor, quand il passe en mode Joueur, alors il ne voit ni pastille réglable, ni
-  filet, ni menu « ⋯ ».
+- Étant donné Antor, quand il passe en mode Joueur, alors il voit le bandeau du mode Joueur et
+  ne voit ni pastille, ni filet, ni menu « ⋯ ».
 - Étant donné Antor sur n'importe quel écran d'un univers, quand il ouvre le menu de son avatar,
   alors il y trouve le thème (Clair, Sombre, Système, en icônes) et « Se déconnecter », et la
   barre latérale ne les porte plus.
+
+**Clôture.** Aucun besoin ni parcours nouveau : le menu du compte, le tiroir et le bandeau sont
+du cadre, atteints par toute étape de tout parcours sur un écran d'univers ; la pastille
+d'audience porte le geste de P-3 étape 4 (« Apparence » lue des joueurs, « Vérité — MJ seul »),
+déjà sur E-9 ; chaque rôle a sa colonne
+dans la matrice ci-dessus.
 
 ## Maquettes
 
