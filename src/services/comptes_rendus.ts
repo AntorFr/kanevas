@@ -99,11 +99,6 @@ export function listerComptesRendus(
   const where = ["f.univers_id = ?", "f.type = 'compte_rendu'", lisible];
   const params: (string | number)[] = [universId];
   if (!mj) params.push(lecteur);
-  // A report only counts when its campaign belongs to the listed universe: the
-  // `campagne_id` of a sheet is free-form and must never leak another universe's campaign name.
-  where.push(
-    "EXISTS (SELECT 1 FROM campagnes c WHERE c.id = json_extract(f.charge, '$.campagne_id') AND c.univers_id = f.univers_id)",
-  );
   if (options.campagneId !== undefined) {
     where.push("json_extract(f.charge, '$.campagne_id') = ?");
     params.push(options.campagneId);
@@ -135,7 +130,7 @@ export function listerComptesRendus(
          WHERE s.fiche_id = f.id AND s.auteur_id IS NOT NULL AND ${auteurLisible}
          ORDER BY s.ordre LIMIT 1) AS auteur
      FROM fiches f
-     JOIN campagnes c ON c.id = json_extract(f.charge, '$.campagne_id') AND c.univers_id = f.univers_id
+     JOIN campagnes c ON c.id = json_extract(f.charge, '$.campagne_id')
      WHERE ${filtres.join(' AND ')}
      ORDER BY f.cree_le DESC, f.id DESC LIMIT ?`;
   const args = mj ? [...p, limite + 1] : [lecteur, ...p, limite + 1];

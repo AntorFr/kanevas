@@ -7,6 +7,7 @@ import { changerStatutCampagne, creerCampagne, listerCampagnes } from './campagn
 import { assurerCompte } from './comptes.js';
 import { creerCompteRendu, listerComptesRendus } from './comptes_rendus.js';
 import { ErreurService } from './erreurs.js';
+import { creerFiche } from './fiches.js';
 import { ajouterMembre } from './membres.js';
 import { ajouterTache, cocherTache, listerTaches } from './preparation.js';
 import { creerScenario, ecrireScenario, lireScenario, listerScenarios } from './scenarios.js';
@@ -221,4 +222,19 @@ test('liste des comptes-rendus : récent d’abord, masqués ni rendus ni compt�
 test('liste des comptes-rendus : univers étranger refusé', () => {
   const { db, paul, u1 } = monde();
   assert.notEqual(code(() => listerComptesRendus(db, { compteId: paul.id }, u1.id)), undefined);
+});
+
+test('liste des comptes-rendus : la campagne d’un autre univers ne fuit ni nom ni compte', () => {
+  const { db, marc, lea, c1, c2, u1 } = monde();
+  creerCompteRendu(db, lea.id, u1.id, c1.id, { titre: 'Légitime' });
+  // a sheet's campagne_id is free-form (creerFiche): point it at the campaign of universe 2
+  const f = creerFiche(db, marc.id, u1.id, { type: 'compte_rendu', titre: 'Piégé', charge: { campagne_id: c2.id } });
+  db.prepare("INSERT INTO sections (fiche_id, titre, contenu, ordre, joueurs_lisent, joueurs_ecrivent, modifie_le) VALUES (?, 'Compte-rendu', 'x', 0, 1, 0, 'x')").run(f.id);
+  for (const who of [marc.id, lea.id]) {
+    const l = listerComptesRendus(db, { compteId: who }, u1.id);
+    assert.deepEqual(l.comptesRendus.map((x) => x.titre), ['Légitime']);
+    assert.equal(l.total, 1);
+    assert.ok(!JSON.stringify(l).includes('Camp 2'));
+    assert.equal(listerComptesRendus(db, { compteId: who }, u1.id, { campagneId: c2.id }).total, 0);
+  }
 });
