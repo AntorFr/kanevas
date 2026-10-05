@@ -24,7 +24,7 @@ compte-rendu, renommer une campagne ou une tâche. Aucune image n'existe avant l
 - La suite a été jouée sous Node 22 dans les pods de la chaîne (pas de Docker) ; la CI Node 20 fait foi.
 - La CI ne pousse d'image que sur `main` et sur un tag `v*` ; sur une PR elle ne fait qu'un build de
   validation. L'image testable n'existe qu'après le tag, posé à la fusion.
-- **Numéro de migration provisoire** : `0002-systemes.sql` ; si une autre tranche fusionne une migration
+- **Numéro de migration provisoire** : `0003-suivi.sql` (`0002-systemes.sql` est déjà dans `epic/kanevas`) ; si une autre tranche fusionne une migration
   avant, la phase merge la recale (AD-51).
 - Systèmes : l'accès passe toujours par `/api/univers/:id/systeme…` (AD-83) ; un refus (compte sans rôle,
   univers non rattaché) répond comme un identifiant inconnu (404) ; aucune réponse ne nomme un autre
