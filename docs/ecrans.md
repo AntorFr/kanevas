@@ -39,7 +39,7 @@ pour un admin d'instance, et le compte en pied. Un admin qui est aussi membre d'
 **Administration** dans la barre de l'univers, sous une section « Instance ».
 
 L'**assistant** est un bouton flottant « Demander à Kanevas », sur tous les écrans d'un univers,
-hors de la barre ; il n'existe pas hors d'un univers. Un MJ voit partout un badge **mode MJ / mode Joueur** sur les écrans où la
+hors de la barre ; il n'existe pas hors d'un univers. Un MJ voit la bascule **« Mode MJ » / « Mode Joueur »** dans la barre haute des écrans où la
 bascule existe (fiche, carte).
 
 ## Inventaire
@@ -881,9 +881,12 @@ réussie est confirmée par un **toast** qui part seul après 4 s ou à « Ferme
 jamais le focus ; un échec n'est pas un toast : il reste un message en ligne, comme aujourd'hui.
 Textes des toasts : « « <section> » enregistrée », « Audience de « <section> » enregistrée »,
 « Section « <titre> » ajoutée — fermée aux joueurs », « Section « <titre> » retirée »,
+« « <section> » reliée à « <fiche> » », « « <fichier> » est secrète » / « Le secret de
+« <fichier> » est levé »,
 « « <section> » montée d'un cran » / « descendue d'un cran », « « <fichier> » ajouté » /
 « retiré », « Envoi de « <fichier> » annulé », « Relation vers « <fiche> » retirée » ; sur les
-autres écrans, le même gabarit (« « <objet> » <participe> »).
+autres écrans, le même gabarit (« « <objet> » <participe> ») ; un message de réussite qu'un écran
+affiche aujourd'hui en ligne devient le texte de son toast (E-14 : « Enregistré. »).
 
 **E-9 Fiche**, pour le MJ :
 
@@ -895,11 +898,14 @@ autres écrans, le même gabarit (« « <objet> » <participe> »).
   une liste, et « Chaque changement est enregistré aussitôt. ») ;
 - un **filet** dans la marge redit la pastille : vert plein pour une section lue ou écrite par
   les joueurs, pointillé pour une section confiée ; une section « MJ seul » est hachurée d'ambre ;
-- « Modifier » paraît au survol et au focus de la section, et toujours sur un écran tactile ;
+- « Modifier » paraît au survol et au focus de la section, et toujours sur un écran sans survol
+  (téléphone, tablette : `hover: none`) ;
   « Monter », « Descendre » et « Retirer la section » sont dans son menu « ⋯ » ;
-- en édition : Échap annule, Ctrl+Entrée (⌘+Entrée sur Mac) fait exactement ce que fait
-  « Enregistrer », y compris ses refus (écriture périmée, 20 000 caractères dépassés, connexion
-  perdue : il ne part pas, comme le bouton désactivé) ;
+- en édition : sous le champ, le compteur « n / 20 000 » et l'aide « Échap annuler · Ctrl ↵
+  enregistrer » ; Échap fait ce que fait « Annuler » (le texte saisi est abandonné, comme
+  aujourd'hui) ; Ctrl+Entrée (⌘+Entrée sur Mac) fait exactement ce que fait « Enregistrer » :
+  il envoie, et une écriture périmée reçoit « La section a changé depuis que vous l'avez
+  ouverte… » ; au-delà de 20 000 caractères ou connexion perdue, il ne part pas, comme le bouton ;
 - la bascule en tête s'appelle « Mode MJ » et « Mode Joueur » (« MJ » et « Joueur » au
   téléphone) ; en mode Joueur, un bandeau sous la barre haute : « Mode Joueur : vous voyez ce
   que voit un joueur. »
@@ -909,7 +915,10 @@ hachure, ni menu « ⋯ » : la section n'a que son titre, son texte et ses bloc
 
 | Ligne de la matrice | MJ | Joueur | MJ en mode Joueur |
 |---|---|---|---|
-| menu du compte (thème, déconnexion) | oui | oui | oui |
+| menu du compte (thème, déconnexion) — et pour l'admin d'instance, hors univers | oui | oui | oui |
+| bascule « Mode MJ » / « Mode Joueur » et bandeau du mode Joueur | oui | caché | oui |
+| « Modifier » d'une section | oui | sur ce qu'il écrit | sur ce que les joueurs écrivent |
+| bouton « Demander à Kanevas » | oui | oui | oui |
 | pastille et réglage d'audience | lire, régler | caché | caché |
 | filet et hachure | voir | caché | caché |
 | menu « ⋯ » (ordre, retrait) | oui | caché | caché |
@@ -920,11 +929,13 @@ hachure, ni menu « ⋯ » : la section n'a que son titre, son texte et ses bloc
 | Composant | Ce qui peut arriver | Ce qu'on voit |
 |---|---|---|
 | menu du compte | connexion perdue | il s'ouvre ; le thème change (il est local) ; « Se déconnecter » reste actif |
+| menu du compte | `/api/moi` en échec | l'identifiant manque ; le thème et « Se déconnecter » restent |
+| identifiant, nom d'auteur, fil d'Ariane | trop longs | coupés par « … », le texte entier en infobulle ; le fil garde son dernier maillon entier |
 | réglage d'audience | échec d'un changement | l'interrupteur revient à sa valeur, « L'action n'a pas abouti. Réessayez. » sous le réglage ; pas de toast |
 | réglage d'audience | connexion perdue | interrupteurs et liste désactivés, le réglage se lit |
 | tiroir | ouvert au téléphone | la barre par-dessus la page, voile derrière ; Échap, le voile ou une entrée le ferment |
 | toast | plusieurs actions de suite | ils s'empilent, le plus récent en bas, trois au plus |
-| bandeau de connexion perdue | la connexion tombe | sous la barre haute, sur tout écran, comme aujourd'hui ; il part quand elle revient |
+| bandeau de connexion perdue | la connexion tombe | sous la barre haute, sur tout écran, comme aujourd'hui, au-dessus du bandeau du mode Joueur s'il y est ; il part quand elle revient |
 
 *Critères.*
 - Étant donné Antor, MJ, sur « Maître Aldric », quand il ouvre la pastille « Lue des joueurs »
@@ -936,23 +947,31 @@ hachure, ni menu « ⋯ » : la section n'a que son titre, son texte et ses bloc
   alors il y trouve le thème (Clair, Sombre, Système, en icônes) et « Se déconnecter », et la
   barre latérale ne les porte plus.
 
-**Clôture.** Aucun besoin ni parcours nouveau : le menu du compte, le tiroir et le bandeau sont
-du cadre, atteints par toute étape de tout parcours sur un écran d'univers ; la pastille
+**Clôture.** Aucun besoin ni parcours nouveau ; B-29 (les six états) est tenu par les tableaux
+ci-dessus et ceux de chaque écran ; le menu du compte, le tiroir et le bandeau sont
+du cadre, atteints par toute étape de tout parcours sur un écran d'univers ; la bascule et son
+bandeau sont P-3 (le MJ vérifie ce que voit la table) ; la pastille
 d'audience porte le geste de P-3 étape 4 (« Apparence » lue des joueurs, « Vérité — MJ seul »),
 déjà sur E-9 ; chaque rôle a sa colonne
 dans la matrice ci-dessus.
 
 ## Maquettes
 
-`docs/maquettes/<écran>.html`, une par écran structurant. Elles sont **finies** : direction,
-tokens et composants de `docs/charte.md`, dans les deux thèmes, au bureau et au téléphone, avec
-le vrai contenu. Elles illustrent ; ce document décide, et quand les deux divergent, la maquette
-a tort.
+`docs/maquettes/<écran>.html`, une par écran structurant. Elles illustrent ; ce document décide,
+et quand les deux divergent, la maquette a tort.
 
-`docs/maquettes/e09-fiche.html` **fait référence pour le cadre** de tous les écrans d'un univers
-(barre latérale, sélecteur d'univers, menu du compte, barre haute, bascule de mode, bouton
-« Demander à Kanevas », tiroir au téléphone) et pour les composants partagés (bouton, menu,
-interrupteur, pastille d'audience, toast, boîte de dialogue, champ, bloc de section). Ses états
-s'ouvrent par l'adresse (`#etat-joueur`, `#etat-menu`, `#etat-perdue`… ; la liste est en tête de
-son style). Les maquettes des autres écrans, faites avant cette charte, se refont sur ce cadre
-quand leur écran est retouché.
+**Finies** (direction, tokens et composants de `docs/charte.md`, deux thèmes, bureau et
+téléphone, vrai contenu) : E-1, E-3, E-6, E-8, E-9. `e09-fiche.html` **fait référence pour le
+cadre** de tous les écrans d'un univers (barre latérale, sélecteur d'univers, menu du compte,
+barre haute, bascule de mode, bouton « Demander à Kanevas », tiroir au téléphone) et pour les
+composants partagés. Leurs états s'ouvrent par l'adresse (`#etat-joueur`, `#etat-menu`,
+`#etat-perdue`… ; la liste est en tête de leur style). Le bloc « Cartes » de `e03` arrive avec
+`kanevas-cartes-graphes` ; jusque-là il n'est pas affiché.
+
+**D'avant la charte** : les autres. Elles valent pour le contenu et le vocabulaire, pas pour la
+forme ; un écran qui n'a qu'elles se construit dans le cadre et avec les composants de la
+maquette E-9.
+
+**Hors produit, en bouchon seulement** : la page de démonstration des composants
+(`/demo-composants`), servie quand `KANEVAS_STUB=1` et absente sinon (404), comme l'écran de
+choix d'un compte de test.
