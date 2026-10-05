@@ -19,6 +19,7 @@ import {
   retirerSection,
   type ChangementAudience,
 } from '../services/sections.js';
+import { lireRelations, relierSection, retirerRelation } from '../services/relations.js';
 import type { Acteur } from '../services/types.js';
 import { idDeChemin } from './univers.js';
 
@@ -49,13 +50,14 @@ const BASCULES = ['joueursLisent', 'joueursEcrivent', 'auteurLit', 'auteurEcrit'
 /** Sheets and sections; thin routes over `services/` (AD-2): no guard of their own. */
 export function registerFichesRoutes(app: FastifyInstance) {
   const base = '/api/univers/:id/fiches';
-  type P = { id: string; fid?: string; sid?: string };
+  type P = { id: string; fid?: string; sid?: string; rid?: string };
   const ids = (request: { params: unknown }) => {
     const p = request.params as P;
     return {
       univers: idDeChemin(p.id),
       fiche: p.fid === undefined ? 0 : idDeChemin(p.fid),
       section: p.sid === undefined ? 0 : idDeChemin(p.sid),
+      relation: p.rid === undefined ? 0 : idDeChemin(p.rid),
     };
   };
 
@@ -75,12 +77,13 @@ export function registerFichesRoutes(app: FastifyInstance) {
 
   app.get(base, async (request) => {
     const q = request.query as Record<string, unknown>;
-    for (const k of ['type', 'curseur']) {
+    for (const k of ['type', 'curseur', 'q']) {
       if (q[k] !== undefined && typeof q[k] !== 'string') throw invalide('Requête invalide.');
     }
     return listerFiches(app.db, acteur(request), ids(request).univers, {
       type: q.type as string | undefined,
       curseur: q.curseur as string | undefined,
+      recherche: q.q as string | undefined,
     });
   });
 
@@ -168,6 +171,29 @@ export function registerFichesRoutes(app: FastifyInstance) {
       b.contenu,
       b.version as number,
     );
+  });
+
+  // Relations of a section (AD-64): read under both guards by the service.
+  app.get(`${base}/:fid/sections/:sid/relations`, async (request) => {
+    const i = ids(request);
+    return { relations: lireRelations(app.db, acteur(request), i.univers, i.fiche, i.section) };
+  });
+
+  app.post(`${base}/:fid/sections/:sid/relations`, async (request, reply) => {
+    const i = ids(request);
+    const b = corps(request);
+    if (!Number.isSafeInteger(b.cibleFicheId)) throw invalide('La fiche cible est invalide.');
+    const r = relierSection(app.db, request.session!.id, i.univers, i.fiche, i.section, {
+      cibleFicheId: b.cibleFicheId as number,
+      type: chaine(b.type, 'Le type : de 1 à 80 caractères.'),
+    });
+    return reply.code(201).send(r);
+  });
+
+  app.delete(`${base}/relations/:rid`, async (request, reply) => {
+    const i = ids(request);
+    retirerRelation(app.db, request.session!.id, i.univers, i.relation);
+    return reply.code(204).send();
   });
 
   registerPiecesJointesRoutes(app, base);

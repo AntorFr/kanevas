@@ -56,3 +56,9 @@
   campaign's own universe (`exigerMJDeCampagne`, AD-47), and a player, a foreign GM or an unknown id
   all get `introuvable`. Never add a `universId` parameter there. `creerCompteRendu` is the only
   non-GM creation of a sheet (AD-61); no function deletes anything.
+- Search and relations (`kanevas-relier-chercher`): search is `listerFiches({recherche})`, never a second
+  function (AD-63). The FTS5 indexes (migration 0005) only deliver candidate ids and are kept by SQL
+  triggers (AD-21) — never write to `recherche_*` from code. A relation is read under both guards
+  (`lireRelations`: carrying section and target sheet readable, AD-64); do not add a count or a
+  placeholder for hidden ones. Refusal codes: `auto_relation` (invalide), `relation_existante` and
+  `limite_relations` (conflit) : the service puts the code in `ErreurService.detail`, the route sends it as `code` in the body.

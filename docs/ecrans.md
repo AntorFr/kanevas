@@ -4,8 +4,8 @@
 > y arrive, à quoi il sert, ce que chaque rôle y fait. Les états de chaque écran et la maquette
 > finie se détaillent dans la tranche qui le construit.
 
-> **Construit à ce jour** : E-1, E-2, E-3 (nom, navigation et blocs : système de jeu, campagnes actives, derniers comptes-rendus, préparation pour le MJ), E-4, E-6, E-7, E-13, E-8 (sans
-> recherche), E-9 (sans relations, avec le bloc Pièces jointes), E-14 (Paramètres), E-15 (Système de jeu), la ligne « Campagne » de E-9, la session
+> **Construit à ce jour** : E-1, E-2, E-3 (nom, navigation et blocs : système de jeu, campagnes actives, derniers comptes-rendus, préparation pour le MJ), E-4, E-6, E-7, E-13, E-8 (avec la
+> recherche dans un type), E-9 (avec les blocs Relations et Pièces jointes), E-14 (Paramètres), E-15 (Système de jeu), la ligne « Campagne » de E-9, la session
 > et la barre latérale. E-5 et E-10 à E-12 sont la cible.
 
 ## Format
@@ -71,7 +71,7 @@ bouchon » — sans `E-n` ni six états, ils n'existent pas en production.
 | E-6 | tout | liste, statut, CR, « Nouveau compte-rendu » ; ni scénarios ni préparation (cachés) | — |
 | E-7 | tout | — | — |
 | E-8 | lire, chercher, créer | lire, chercher | — |
-| E-9 | tout ; mode Joueur | sections lisibles ; écrire celles permises ; pièces jointes de celles-ci | — |
+| E-9 | tout ; mode Joueur ; relier et retirer des relations | sections lisibles ; écrire celles permises ; relations lisibles (section et cible) ; pièces jointes de celles-ci | — |
 | E-10 | tout | cartes visibles | — |
 | E-11 | tout ; mode Joueur | lire une carte visible, ouvrir une fiche | — |
 | E-12 | catalogue MJ | catalogue Joueur | — |
@@ -260,7 +260,7 @@ lieu »…) ouvre une fenêtre : « Titre » (1 à 120 caractères) et, pour un 
 « PNJ » (PNJ par défaut) ; « Créer la fiche » mène à E-9 de la fiche, sans section. Textes par type : « Aucun personnage », « Aucun lieu », « Aucune faction », « Aucun objet », « Aucun
 événement », « Aucune quête », suivis de « pour l'instant. » (MJ) ou « à voir pour l'instant. »
 (Joueur) ; bouton « Nouveau personnage », « Nouveau lieu », « Nouvelle faction », « Nouvel objet »,
-« Nouvel événement », « Nouvelle quête ». Pas de recherche (`kanevas-relier-chercher`). Le type compte-rendu n'a pas d'entrée ici (E-13).
+« Nouvel événement », « Nouvelle quête ». La recherche dans le type s'ajoute au-dessus de la liste (voir « Détail des écrans de `kanevas-relier-chercher` »). Le type compte-rendu n'a pas d'entrée ici (E-13).
 
 | État | Ce qu'on voit | Ce qu'on peut faire |
 |---|---|---|
@@ -452,6 +452,136 @@ rôle n'a ni E-14 ni E-15 ; l'admin MJ de son propre univers a ceux d'un MJ.
 Écart au cadrage : aucun. Précision : le cadrage dit « nom, description » pour E-14 ; la tranche
 construit donc aussi la **modification** du nom et de la description d'un univers, qu'aucune
 tranche précédente ne livre.
+
+## Détail des écrans de `kanevas-relier-chercher`
+
+> Deux ajouts, aucun écran neuf : la **recherche** dans E-8 et le **bloc Relations** de E-9.
+> Mêmes six états et mêmes textes communs que la première fiche (chargement, erreur, connexion
+> perdue, refus « Page introuvable. », écriture en cours, échec d'écriture). Maquettes : `e08` (états
+> de la recherche) et `e09` (bloc Relations) sont complétées. Le document prime sur la maquette.
+
+### E-8 — la recherche dans un type
+
+Au-dessus de la liste d'un type : un champ « Chercher dans les personnages » (« …dans les lieux »,
+« …dans les factions », « …dans les objets », « …dans les événements », « …dans les quêtes »),
+un bouton « Chercher », et, quand une recherche est en cours, « Effacer la recherche ». La
+recherche part à « Chercher » ou à la touche Entrée, jamais à la frappe. Elle est gardée dans
+l'adresse (`…/personnages?q=Aldric`) : revenir d'une fiche ramène aux résultats.
+
+*Ce qu'elle trouve.* Les mots saisis sont cherchés par début de mot, sans tenir compte des
+majuscules ni des accents (« verite » trouve « Vérité »), et **tous** doivent se trouver dans le
+**titre** de la fiche, ou **tous** dans **une même section que le compte peut lire** (titre ou
+contenu de la section). Les résultats sont les fiches de la liste du type, dans le même ordre
+alphabétique, cent à la fois avec « Charger la suite ». Un résultat s'affiche comme une ligne de la
+liste (titre, badge) : pas d'extrait, pas de compteur, pas de classement. Le texte d'une section
+que le compte ne lit pas ne trouve rien, même s'il contient les mots : la fiche est absente des
+résultats, comme elle est absente de la liste.
+
+*Saisie.* 1 à 100 caractères ; une saisie blanche équivaut à « Effacer la recherche ». Au-delà de
+100 : « Erreur : 100 caractères au plus. » sous le champ, rien n'est envoyé. Les signes sans lettre
+ni chiffre (« - », « " », « * ») ne comptent pas comme des mots ; une saisie qui n'en contient aucun
+se comporte comme une recherche sans résultat.
+
+*Rôles.* Le MJ cherche dans toutes les fiches de l'univers, y compris une fiche sans section ; un
+Joueur cherche parmi celles qu'il peut lire. « Nouveau personnage » reste visible du MJ pendant une
+recherche.
+
+| État | Ce qu'on voit | Ce qu'on peut faire |
+|---|---|---|
+| vide | « Aucun résultat pour « Vérité » dans les personnages. » — **le même texte** que la fiche existe ou non, lisible ou non | « Effacer la recherche » |
+| chargement | « Recherche… » (`role="status"`) ; l'ancienne liste n'est pas montrée | — |
+| erreur | « Impossible de lancer la recherche. » ; le champ garde sa saisie | « Réessayer » |
+| connexion perdue | le bandeau ; « Chercher » désactivé ; les résultats déjà affichés restent | ouvrir un résultat |
+| refus | sans objet pour la recherche : un type inconnu répond « Page introuvable. » comme la liste | — |
+| contenu long | plus de 100 résultats : « Charger la suite » ; un titre trop long est tronqué par « … » avec infobulle ; une saisie de 100 caractères passe à la ligne dans le champ | idem |
+
+*Critères.*
+- Étant donné la fiche « Maître Aldric » dont la section « Vérité — MJ seul » est fermée aux
+  joueurs, quand Léa cherche « Vérité » dans les personnages, alors elle voit « Aucun résultat
+  pour « Vérité » dans les personnages. » ; quand Antor fait la même recherche, il voit
+  « Maître Aldric ».
+- Étant donné Léa, quand elle cherche « aldric » dans les personnages, alors elle voit
+  « Maître Aldric » (le titre se trouve) ; et quand elle cherche « apparence », elle le voit aussi
+  (la section « Apparence » est lue des joueurs).
+- Étant donné une recherche qui n'a pas de résultat, quand Léa cherche un mot qui n'existe nulle
+  part, alors le texte affiché est le même que pour « Vérité » (aucune différence ne trahit la
+  fiche cachée).
+- Étant donné Léa devant les résultats de « Aldric », quand elle ouvre la fiche puis revient, alors
+  elle retrouve la même recherche et les mêmes résultats.
+
+### E-9 — le bloc Relations
+
+Dans chaque section, sous son contenu : un bloc **Relations**, inscrit au registre des blocs de
+section (un fichier, sans modifier un bloc existant). Il liste les relations **portées par cette
+section** : chacune dit son type et nomme sa cible — « membre de → Lames Grises », avec le badge du
+type de la cible — et mène à la fiche de la cible (E-9). Une relation est dirigée : elle va de la
+section vers la cible ; la fiche cible ne montre pas les relations qui l'atteignent.
+
+| Rôle | Lire les relations d'une section | Relier, retirer | Refus |
+|---|---|---|---|
+| MJ | toutes celles de ses sections | oui | sans objet |
+| Joueur | celles dont il lit la section et la cible | non : boutons **absents** | une relation à cible illisible est **absente**, pas refusée |
+| MJ en mode Joueur | comme un Joueur qui n'est l'auteur d'aucune section | non : boutons absents | idem |
+| Admin d'instance | aucune | non | « Page introuvable. » |
+
+*Ce que voit chacun.* Une relation n'est montrée que si le compte lit la section **et** la fiche
+cible. Sinon elle est **absente** : ni ligne, ni espace, ni compteur, ni mot « cachée ». Le bloc
+d'un Joueur qui n'a aucune relation à voir n'apparaît pas du tout. Le MJ voit le bloc de chaque
+section, même vide. En mode Joueur, le MJ voit le bloc comme un Joueur qui n'est l'auteur d'aucune
+section (AD-39), sans « Relier » ni « Retirer ».
+
+*Le MJ relie.* « Relier à une fiche » ouvre un formulaire sous la liste :
+1. « Type de relation » (texte libre, 1 à 80 caractères, par exemple « membre de ») ;
+2. « Type de fiche » (Personnage, Lieu, Faction, Objet, Événement, Quête ; Personnage par défaut) ;
+3. un champ « Chercher dans les factions » et la liste des fiches de ce type, cent à la fois avec
+   « Charger la suite » : c'est la liste et la recherche de E-8, pas une autre ;
+4. choisir une fiche (une seule), puis « Relier » ; « Annuler » ferme sans rien écrire.
+
+*Le sélecteur de fiche* (étape 3) est la liste et la recherche de E-8 telles quelles : la recherche part à « Chercher » ou à Entrée, avec les mêmes états et les mêmes textes (« Recherche… », « Impossible de lancer la recherche. » et « Réessayer », « Aucun résultat pour « lames » dans les factions. », bandeau de connexion perdue avec « Chercher » et « Relier » désactivés, « Charger la suite » au-delà de 100) ; à l'ouverture du formulaire la liste du type se charge (« Chargement des fiches… », ou « Impossible de charger les fiches. » et « Réessayer ») et « Chercher » reste actif (hors connexion perdue) ; « Relier » reste désactivé tant qu'aucune fiche n'est choisie, pendant le chargement et sur erreur ; « Effacer la recherche » rend la liste du type ; le choix se voit (puce pleine) et disparaît si l'on change le type de fiche ou la recherche.
+
+Le formulaire n'est pas gardé en cas de session expirée. Une fiche se relie à toute fiche de son
+univers, **sauf à elle-même**. Une section porte au plus 100 relations ; deux relations de même
+type vers la même fiche ne coexistent pas. « Retirer » sur une ligne supprime la relation sans
+confirmation (elle se refait en trois gestes) ; retirer une section retire ses relations avec elle.
+
+Textes : bloc sans relation (MJ) : « Aucune relation pour l'instant. » ; erreurs sous les champs :
+« Erreur : le type de relation est obligatoire. », « Erreur : 80 caractères au plus. », « Erreur :
+choisissez une fiche. » ; refus du service, au-dessus du formulaire : « Cette relation existe
+déjà. », « Une fiche ne se relie pas à elle-même. », « Cette section porte déjà 100 relations. » ;
+liste de choix vide : « Aucune faction à relier. » (autres types : « Aucun personnage… ») ;
+chaque bouton « Retirer » porte l'étiquette accessible « Retirer la relation membre de → Lames Grises ».
+
+| État | Ce qu'on voit | Ce qu'on peut faire |
+|---|---|---|
+| vide | MJ : « Aucune relation pour l'instant. » et « Relier à une fiche » ; Joueur : le bloc n'est pas là | MJ : relier |
+| chargement | « Chargement des relations… » dans le bloc seul ; le reste de la fiche reste affiché | — |
+| erreur | « Impossible de charger les relations. » dans le bloc seul, les autres sections intactes ; échec d'écriture : « L'action n'a pas abouti. Réessayez. », saisie conservée | « Réessayer » |
+| connexion perdue | le bandeau ; « Relier », « Retirer » désactivés ; la liste affichée reste | suivre un lien |
+| refus | le bloc d'une section illisible n'existe pas (la section est absente, B-9) ; une relation vers une fiche illisible est absente ; « Relier » et « Retirer » n'existent pas pour un Joueur ni en mode Joueur | — |
+| contenu long | 100 relations : la liste défile avec la section ; un type de 80 caractères et un titre de fiche de 120 passent à la ligne | idem |
+
+*Critères.*
+- Étant donné Antor, MJ, qui a relié la section « Apparence » de « Maître Aldric » à la faction
+  « Lames Grises » (« membre de ») et à la faction « Cercle des Cendres » dont aucune section n'est
+  lue des joueurs, quand Léa ouvre « Maître Aldric », alors elle voit « membre de → Lames Grises »,
+  et rien d'autre dans le bloc : ni « Cercle des Cendres », ni compteur, ni ligne vide.
+- Étant donné la même fiche, quand Antor passe en mode Joueur, alors il voit la même chose que Léa
+  et ni « Relier » ni « Retirer ».
+- Étant donné Léa, quand « Lames Grises » n'a plus de section lue des joueurs, alors la relation
+  disparaît de la fiche d'Aldric sans autre trace.
+- Étant donné Antor sur « Maître Aldric », quand il relie « Apparence » à « Maître Aldric », alors il
+  voit « Une fiche ne se relie pas à elle-même. » et rien n'est écrit.
+- Étant donné Antor, quand il retire la section « Apparence », alors ses relations disparaissent
+  avec elle et ne remontent nulle part.
+
+### Clôture de `kanevas-relier-chercher`
+
+B-10 → bloc Relations de E-9 ; B-11 → recherche de E-8 ; B-29 → six états de la recherche et du
+bloc ci-dessus. Atteints par P-3 étape 4 (relier le PNJ à sa faction : relier une section du PNJ, bloc de E-9) et P-6 étape 2
+(chercher « Aldric », E-8). Les deux rôles ont leur colonne : le MJ cherche et relie, le Joueur
+cherche et lit ce qu'il peut ; l'admin d'instance n'atteint ni l'un ni l'autre (« Page
+introuvable. »). Chemin d'échec propre à cette tranche (`docs/parcours.md` n'en porte pas pour P-3 et P-6) : une recherche sans résultat dit « Aucun résultat pour … »,
+jamais « caché ». Chemin d'échec de relier une section : le refus du service s'écrit au-dessus du formulaire (« Cette relation existe déjà. », « Une fiche ne se relie pas à elle-même. », « Cette section porte déjà 100 relations. »), la saisie et le choix sont conservés ; un échec d'écriture générique et une session expirée suivent les textes communs (« L'action n'a pas abouti. Réessayez. » ; connexion, formulaire non gardé).
 
 ## Détail des écrans de `kanevas-suivi`
 

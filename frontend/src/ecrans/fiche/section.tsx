@@ -287,7 +287,7 @@ export function PanneauSection(p: Props) {
         )}
 
         {blocs.map((b) => (
-          <b.composant key={b.id} universId={Number(p.universId)} fiche={fiche} section={section} role={role} rafraichir={p.rafraichir} />
+          <b.composant key={b.id} universId={Number(p.universId)} fiche={fiche} section={section} role={role} rafraichir={p.rafraichir} suffixeMode={p.suffixeMode} />
         ))}
       </Panneau>
     </div>

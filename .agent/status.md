@@ -2,14 +2,14 @@
 
 > MàJ : 2026-10-05
 
-**État :** `epic/kanevas` porte le socle, la première fiche, les systèmes de jeu et le suivi de la séance
-(campagnes, scénarios, préparation, comptes-rendus ; E-6, E-7, E-13). `feature/kanevas-fichiers`
-y ajoute, en PR non fusionnée : la migration `0004-pieces-jointes.sql` (table `pieces_jointes`),
-`services/stockage.ts` (octets sous `<dossier de la base>/attachments/`, `tmp/` vidé au démarrage),
-`services/pieces-jointes.ts` (`deposerPieceJointe` seule fonction d'envoi, marquer, retirer, lire, ouvrir),
-les quatre routes sous `…/sections/:id/pieces-jointes` et `…/pieces-jointes/:id[/fichier]`, et le bloc
-Pièces jointes de E-9 (AD-65 à AD-67). La lecture d'une fiche porte les pièces de chaque section ; la
-confirmation de retrait d'une section annonce ses pièces. Carte : `ARCHITECTURE.md`.
+**État :** `epic/kanevas` porte le socle, la première fiche, les systèmes de jeu, le suivi de la séance
+(campagnes, scénarios, préparation, comptes-rendus ; E-6, E-7, E-13) et les pièces jointes (migration
+`0004-pieces-jointes.sql`, AD-65 à AD-67). `feature/kanevas-relier-chercher` y ajoute, en PR non fusionnée :
+la migration `0005-relier-chercher.sql` (`relations`, index FTS5 `recherche_fiches` et `recherche_sections`,
+déclencheurs, remplissage de l'existant), `services/relations.ts` (relier, retirer, lire sous deux gardes),
+`peutVoirFiche` et les conditions SQL de lecture dans `droits.ts`, l'option `recherche` de `listerFiches`,
+les routes `?q=` et `/relations`, le composant `ListeRecherche` (E-8, réemployé par « Relier ») et le bloc
+Relations de E-9 (AD-63, AD-64). Carte et invariants : `ARCHITECTURE.md`.
 
 **Reste :** la fusion et le tag `v*` (recette acceptée par Monsieur). Rien n'est amorcé : tout se crée à
 la main (Léa se connecte une fois avant d'être ajoutée). Aucune image n'existe avant le tag.
@@ -20,8 +20,14 @@ la main (Léa se connecte une fois avant d'être ajoutée). Aucune image n'exist
 - La suite a été jouée sous Node 22 dans les pods de la chaîne (pas de Docker) ; la CI Node 20 fait foi.
 - La CI ne pousse d'image que sur `main` et sur un tag `v*` ; sur une PR elle ne fait qu'un build de
   validation. L'image testable n'existe qu'après le tag, posé à la fusion.
-- **Numéro de migration** : `0004-pieces-jointes.sql` (après `0003-suivi.sql`, recalée à la fusion, AD-51) ; si une autre tranche fusionne une migration
+- **Numéro de migration** : `0005-relier-chercher.sql` (après `0004-pieces-jointes.sql`, recalée à la fusion, AD-51) ; si une autre tranche fusionne une migration
   avant, la phase merge la recale (AD-51).
+- Recherche : `listerFiches({recherche})` seule (AD-63) ; les index FTS5 ne livrent que des identifiants
+  candidats, tenus par déclencheurs : ne jamais écrire dans `recherche_*` depuis le code. La saisie est
+  neutralisée (mots cités en préfixe) ; vide ou > 100 caractères = 400.
+- Relations : lues sous deux gardes (section porteuse et fiche cible lisibles, AD-64), sans compteur ni
+  placeholder ; seul le MJ relie ou retire, un joueur reçoit 404. Pas de relations entrantes (hors tranche).
+  Codes : `auto_relation` (400), `relation_existante` et `limite_relations` (409, 100 par section).
 - Systèmes : l'accès passe toujours par `/api/univers/:id/systeme…` (AD-83) ; un refus (compte sans rôle,
   univers non rattaché) répond comme un identifiant inconnu (404) ; aucune réponse ne nomme un autre
   univers (AD-84) ; écriture de gabarit périmée = 409 `gabarit_modifie` (AD-85). Ni suppression, ni import
@@ -54,4 +60,4 @@ la main (Léa se connecte une fois avant d'être ajoutée). Aucune image n'exist
   `listerFiches`, `blocsVisibles`/`blocsSectionVisibles` jumeaux ; le parseur form-urlencoded du
   bouchon vaut aussi pour `/api`.
 
-**Suivant :** relations et recherche (`kanevas-relier-chercher`), administration.
+**Suivant :** administration.

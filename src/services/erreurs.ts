@@ -6,7 +6,7 @@
  *  - introuvable : 404 — also what a caller without a role gets (B-4, AD-22)
  *  - refuse      : 403 — the caller can see the thing but may not do this
  *  - invalide    : 400/422 — bad input or a rule broken by the request
- *  - conflit     : 409 — stale section version (`section_modifiee`, AD-59)
+ *  - conflit     : 409 — stale version (`section_modifiee`, AD-59), `relation_existante`, `limite_relations`
  */
 export type CodeErreur = 'introuvable' | 'refuse' | 'invalide' | 'conflit';
 

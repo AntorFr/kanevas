@@ -51,7 +51,7 @@ test('migration: base 0001 avec univers â†’ systeme_id NULL partout, seconde exÃ
   db.exec("CREATE TABLE migrations (numero INTEGER PRIMARY KEY, nom TEXT NOT NULL, applique_le TEXT NOT NULL)");
   db.exec("INSERT INTO migrations VALUES (1,'0001-premiere-fiche.sql','x')");
   db.prepare("INSERT INTO univers (nom, cree_le) VALUES ('a','x'), ('b','x')").run();
-  assert.deepEqual(migrate(db), [2, 3, 4]);
+  assert.deepEqual(migrate(db), [2, 3, 4, 5]);
   assert.deepEqual(db.prepare('SELECT systeme_id FROM univers').all(), [{ systeme_id: null }, { systeme_id: null }]);
   assert.equal(n(db, 'systemes_jeu'), 0);
   assert.deepEqual(migrate(db), []);

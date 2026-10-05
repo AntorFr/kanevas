@@ -1,7 +1,15 @@
 import { z } from 'zod';
 
 import type { Db } from '../db/db.js';
-import { exigerMJ, exigerRole, peutLireSection, vueMJ, vueSection } from './droits.js';
+import {
+  exigerMJ,
+  exigerRole,
+  peutLireSection,
+  sqlFicheLisible,
+  sqlSectionLisible,
+  vueMJ,
+  vueSection,
+} from './droits.js';
 import { introuvable, invalide } from './erreurs.js';
 import { lireLignes } from './pieces-jointes.js';
 import {
@@ -118,6 +126,26 @@ export function lireFiche(db: Db, acteur: Acteur, universId: number, ficheId: nu
   };
 }
 
+export const LONGUEUR_RECHERCHE = 100;
+
+/**
+ * Turns a free search input into a safe FTS5 query (AD-63): every word is a
+ * quoted prefix phrase (quotes doubled), words without any letter or digit are
+ * dropped, NUL is a separator. Refuses an empty or over-long input; returns
+ * null when no word is left (nothing can match).
+ */
+export function motsRecherche(saisie: string): string | null {
+  const brut = saisie.replaceAll('\0', ' ').trim();
+  if (brut.length < 1 || brut.length > LONGUEUR_RECHERCHE) {
+    throw invalide(`La recherche : de 1 à ${LONGUEUR_RECHERCHE} caractères.`);
+  }
+  const mots = brut
+    .split(/\s+/)
+    .filter((m) => /[\p{L}\p{N}]/u.test(m))
+    .map((m) => `"${m.replaceAll('"', '""')}"*`);
+  return mots.length > 0 ? mots.join(' ') : null;
+}
+
 export interface PageFiches {
   fiches: Fiche[];
   /** Opaque cursor for the next page, null at the end. */
@@ -127,12 +155,14 @@ export interface PageFiches {
 /**
  * The sheets of a universe (optionally one type) the caller reads at least one
  * section of, by title without case, at most 100 per page (AD-22, B-11).
+ * With `recherche`, the same list plus one condition (AD-63): every word starts a
+ * word of the title, or all of them a word of one section the caller reads.
  */
 export function listerFiches(
   db: Db,
   acteur: Acteur,
   universId: number,
-  options: { type?: string; curseur?: string; limite?: number } = {},
+  options: { type?: string; curseur?: string; limite?: number; recherche?: string } = {},
 ): PageFiches {
   const role = exigerRole(db, universId, acteur.compteId);
   const limite = Math.min(Math.max(Math.trunc(options.limite ?? LIMITE_LISTE), 1), LIMITE_LISTE);
@@ -145,13 +175,22 @@ export function listerFiches(
     where.push('f.type = ?');
     params.push(options.type);
   }
-  if (role !== 'mj' || acteur.modeJoueur) {
-    const auteur = acteur.modeJoueur ? null : acteur.compteId;
+  const lisible = sqlFicheLisible(role, acteur, 'f');
+  if (lisible) {
+    where.push(lisible.sql);
+    params.push(...lisible.params);
+  }
+  if (options.recherche !== undefined) {
+    const match = motsRecherche(options.recherche);
+    if (match === null) return { fiches: [], suivant: null };
+    const sectionLue = sqlSectionLisible(role, acteur, 's');
     where.push(
-      `EXISTS (SELECT 1 FROM sections s WHERE s.fiche_id = f.id AND
-         (s.joueurs_lisent = 1 OR (s.auteur_lit = 1 AND s.auteur_id = ?)))`,
+      `(f.id IN (SELECT rowid FROM recherche_fiches WHERE recherche_fiches MATCH ?)
+        OR EXISTS (SELECT 1 FROM sections s WHERE s.fiche_id = f.id
+          AND s.id IN (SELECT rowid FROM recherche_sections WHERE recherche_sections MATCH ?)
+          ${sectionLue ? `AND ${sectionLue.sql}` : ''}))`,
     );
-    params.push(auteur ?? -1);
+    params.push(match, match, ...(sectionLue?.params ?? []));
   }
   if (options.curseur !== undefined) {
     let c: { t: string; i: number };
