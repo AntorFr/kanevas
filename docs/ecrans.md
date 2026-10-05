@@ -4,9 +4,9 @@
 > y arrive, à quoi il sert, ce que chaque rôle y fait. Les états de chaque écran et la maquette
 > finie se détaillent dans la tranche qui le construit.
 
-> **Construit à ce jour** : E-1, E-2, E-3 (coquille : nom, navigation, blocs vides), E-4, E-8 (sans
-> recherche), E-9 (sans relations ni pièces jointes), E-14 (Paramètres), E-15 (Système de jeu) et le bloc « Système de jeu » de E-3, la session
-> et la barre latérale. E-5, E-6, E-7 et E-10 à E-13 sont la cible.
+> **Construit à ce jour** : E-1, E-2, E-3 (nom, navigation et blocs : système de jeu, campagnes actives, derniers comptes-rendus, préparation pour le MJ), E-4, E-6, E-7, E-13, E-8 (sans
+> recherche), E-9 (sans relations ni pièces jointes), E-14 (Paramètres), E-15 (Système de jeu) la ligne « Campagne » de E-9, la session
+> et la barre latérale. E-5 et E-10 à E-12 sont la cible.
 
 ## Format
 
@@ -160,8 +160,8 @@ des univers du compte, « Mes univers » en pied de liste) ; **Vue d'ensemble** 
 Personnages, Lieux, Factions, Objets, Événements, Quêtes ; pour un MJ, **Univers ▸ Membres** ; en
 pied, l'identifiant, le thème (Clair, Sombre, Système), « Se déconnecter ». Hors d'un univers (E-1,
 E-2) : « Mes univers », l'identifiant, le thème, « Se déconnecter ». **Un item dont l'écran n'est
-pas construit n'est pas affiché** : Campagnes, Comptes-rendus, Cartes, Administration
-arrivent avec leurs tranches. « Paramètres » (E-14) n'est affiché qu'au MJ. Sur téléphone (moins de 760 px), la barre est un tiroir sous un
+pas construit n'est pas affiché** : Cartes et Administration
+arrivent avec leurs tranches (Campagnes et Comptes-rendus sont affichés). « Paramètres » (E-14) n'est affiché qu'au MJ. Sur téléphone (moins de 760 px), la barre est un tiroir sous un
 bouton « Menu ».
 
 | État | Ce qu'on voit |
@@ -206,10 +206,10 @@ en MJ (B-2).
 | refus | sans objet : tout compte peut créer un univers (B-2) | — |
 | contenu long | « Erreur : 80 caractères au plus. » dès le 81e (même texte pour la description avec 500) | corriger |
 
-### E-3 Vue d'ensemble de l'univers (coquille)
+### E-3 Vue d'ensemble de l'univers
 
-Le nom de l'univers (titre), sa description, le badge du rôle, puis une **région de blocs**. Dans
-cette tranche, aucun bloc n'existe : la région montre « Rien à afficher pour l'instant. Les
+Le nom de l'univers (titre), sa description, le badge du rôle, puis une **région de blocs**. Quand
+aucun bloc ne rend rien, la région montre « Rien à afficher pour l'instant. Les
 campagnes, les comptes-rendus et les cartes s'afficheront ici. » ; ni compteur ni lien mort.
 **Les blocs sont indépendants** : chaque tranche ajoute le sien en déposant un fichier dans
 `frontend/src/ecrans/vue-ensemble/blocs/` dont l'export par défaut est un `Bloc` (identifiant,

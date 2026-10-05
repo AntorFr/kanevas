@@ -80,7 +80,7 @@ autres univers** : ni leur nom, ni leurs membres (règle 3). Créer un système 
 au catalogue, avec ou sans rattachement dans le même geste. Modifier le nom et la description d'un
 univers : MJ.
 
-## Migration `kanevas-suivi` (numéro pris à la fusion, AD-51 : le suivant de 0001)
+## Migration `kanevas-suivi` (numéro pris à la fusion, AD-51 : le suivant de 0002)
 
 > Fichier : `src/db/migrations/0003-suivi.sql` — **numéro provisoire** (0003), recalé à la fusion si une autre tranche entre avant (AD-51).
 

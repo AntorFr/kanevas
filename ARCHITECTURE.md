@@ -51,7 +51,7 @@ dossier des pièces jointes n'existe pas encore.
 ## Routes `/api`
 
 Toutes gardées par la session (401 sans session), sauf `/api/auth/*`. Les erreurs de service sont
-`introuvable` 404, `refuse` 403, `invalide` 400, `conflit` 409 (`section_modifiee`, `nom_pris`, `gabarit_modifie`). Retirer le dernier
+`introuvable` 404, `refuse` 403, `invalide` 400, `conflit` 409 (`section_modifiee`, `nom_pris`, `gabarit_modifie`, `scenario_modifie`). Retirer le dernier
 MJ répond `invalide` 400 avec la raison ; un contenu de section de plus de 20 000 caractères aussi (AD-91). Le corps d'une erreur est `{message}` (plus `code` pour le 409). Le serveur écoute sur `0.0.0.0` (`-p 3001:3001` suffit).
 En mode bouchon, `POST /connexion-bouchon` attend un corps form-urlencoded `compte=<identifiant>`.
 
@@ -133,8 +133,8 @@ base en snake_case (`docs/donnees.md`).
 
 # La cible
 
-> Construit à ce jour : la session, le mode bouchon, les sept tables et leurs fonctions de service,
-> les systèmes de jeu et leurs gabarits, les écrans E-1 à E-4, E-8, E-9, E-14 et E-15. Le reste (relations, recherche, pièces jointes, agents, images,
+> Construit à ce jour : la session, le mode bouchon, les dix tables et leurs fonctions de service,
+> les systèmes de jeu et leurs gabarits, le suivi (campagnes, scénarios, préparation, comptes-rendus), les écrans E-1 à E-4, E-6 à E-9, E-13, E-14 et E-15. Le reste (relations, recherche, pièces jointes, agents, images,
 > administration) est la cible des tranches suivantes.
 
 ## Organes, et qui parle à qui
