@@ -13,7 +13,8 @@ Le socle (une application Fastify, Node 20, TypeScript, `GET /healthz`, une méc
 une image publiée par la CI) porte, depuis `kanevas-premiere-fiche`, la **première
 fonction métier** : comptes, univers, membres, fiches et sections, avec leurs droits ; la session
 et le mode bouchon ; le frontend React qui les montre (accueil, univers, membres, lore, fiche).
-Ni relations, ni recherche, ni pièces jointes, ni campagnes, ni assistant : tranches suivantes.
+S'y ajoutent le système de jeu et, avec `kanevas-suivi`, le suivi de la séance : campagnes, scénarios, préparation, comptes-rendus.
+Ni relations, ni recherche, ni pièces jointes, ni assistant : tranches suivantes.
 
 ## Carte
 
@@ -25,7 +26,7 @@ Ni relations, ni recherche, ni pièces jointes, ni campagnes, ni assistant : tra
 - `src/routes/auth.ts`, `src/services/oidc.ts` : login et callback OIDC ; le callback ouvre la
   session (`src/services/session.ts`, AD-56) et crée le compte à la première connexion.
 - `src/routes/bouchon.ts` : mode bouchon (AD-55), absent de la table des routes sans `KANEVAS_STUB`.
-- `src/db/` : ouverture du fichier SQLite, `migrations/0001-*.sql`, `0002-systemes.sql`, runner (AD-14).
+- `src/db/` : ouverture du fichier SQLite, `migrations/0001-*.sql`, `0002-systemes.sql`, `0003-suivi.sql`, runner (AD-14).
 - `src/services/` : `comptes`, `univers`, `membres`, `fiches`, `sections`, `droits`, `systemes`, `campagnes`, `scenarios`, `preparation`, `comptes_rendus` — les seules
   fonctions qui lisent ou écrivent les données (AD-2) ; `src/routes/` : routes `/api` minces.
 - `frontend/` : application React/Vite (AD-57) ; `frontend/src/ui/tokens.css` et
@@ -33,6 +34,12 @@ Ni relations, ni recherche, ni pièces jointes, ni campagnes, ni assistant : tra
 - `src/services/systemes.ts` : catalogue, rattacher, créer et rattacher, gabarits ; la modification
   d'un univers est dans `src/services/univers.ts` ; leurs routes sont `src/routes/systemes.ts`
   (AD-83 à AD-85). Écrans : E-14 (Paramètres), E-15 (Système de jeu) et le bloc « Système de jeu » de E-3.
+- `src/services/{campagnes,scenarios,preparation,comptes_rendus}.ts` et `src/routes/suivi.ts` : le suivi
+  (AD-29, AD-30, AD-33, AD-34, AD-46, AD-47, AD-60 à AD-62). Un compte-rendu est une fiche de type
+  `compte_rendu` ; scénarios et tâches se garde sur l'univers de la campagne, jamais sur un identifiant
+  d'univers fourni. Écrans : E-6 Campagne (+ liste), E-7 Scénario, E-13 Comptes-rendus, trois blocs de E-3
+  (campagnes actives, derniers comptes-rendus, préparation pour le MJ) et la ligne « Campagne » de E-9
+  (registre `fiche/lignes/`).
 - `src/services/llm/` : transports LLM (`transport.ts`, `anthropic-transport.ts`,
   `claude-agent-transport.ts`), repris d'Antre-du-maitre, branchés nulle part.
 - `Dockerfile` (multi-stage, utilisateur `node`) et
@@ -95,8 +102,8 @@ base en snake_case (`docs/donnees.md`).
   (AD-9), il se lit dans la table des membres à chaque requête. Sans les quatre variables
   `OIDC_*` (ou avec une partie seulement), login et callback répondent 404 ; une valeur vide
   ou invalide fait échouer le démarrage.
-- **Sept tables, aucun ORM** : `comptes`, `univers`, `membres`, `fiches`, `sections` (migration
-  0001), `systemes_jeu`, `gabarits` (migration 0002, numéro provisoire : voir `docs/donnees.md`). Aucune requête SQL hors de `src/services/` et `src/db/`.
+- **Dix tables, aucun ORM** : `comptes`, `univers`, `membres`, `fiches`, `sections` (migration
+  0001), `systemes_jeu`, `gabarits` (migration 0002), `campagnes`, `scenarios`, `taches_preparation` (migration 0003) ; numéros provisoires : voir `docs/donnees.md`. Aucune requête SQL hors de `src/services/` et `src/db/`.
 - **Toute route hors `/healthz`, `/api/auth/*` et, en bouchon, `/connexion-bouchon` est gardée par la session** ; sous `/api` un
   défaut de session répond 401, ailleurs il redirige vers la connexion (AD-15).
 - **Rien n'appelle un LLM** : les transports compilent mais ne sont reliés à

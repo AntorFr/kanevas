@@ -1,20 +1,22 @@
 # Status — kanevas
 
-> MàJ : 2026-10-04
+> MàJ : 2026-10-05
 
-**État :** `main` porte le socle et la première fiche (comptes, univers, membres, fiches, sections,
-droits, session et mode bouchon, frontend E-1 à E-4, E-8, E-9, plafond de section AD-91).
-`feature/kanevas-systemes` y ajoute, en PR non fusionnée : la migration `0002-systemes.sql`
-(`systemes_jeu`, `gabarits`, `univers.systeme_id`), les services `systemes.ts` et `modifierUnivers`,
-les routes `src/routes/systemes.ts`, les écrans E-14 (Paramètres) et E-15 (Système de jeu) et le
-bloc « Système de jeu » de E-3 (AD-83 à AD-85). Typecheck et tests verts après fusion de `main`
-dans la branche. Carte et invariants : `ARCHITECTURE.md`.
+**État :** `main` porte le socle, la première fiche et les systèmes de jeu. `feature/kanevas-suivi`
+(PR vers `epic/kanevas`, non fusionnée) ajoute : la migration `0003-suivi.sql` (`campagnes`,
+`scenarios`, `taches_preparation`), les services `campagnes`, `scenarios`, `preparation`,
+`comptes_rendus`, les routes `src/routes/suivi.ts`, les écrans E-6 (liste et page), E-7, E-13, trois
+blocs de E-3 (campagnes actives, derniers comptes-rendus, préparation pour le MJ) et la ligne
+« Campagne » de E-9. Typecheck, build et 325 tests verts (Node 22 ; la CI Node 20 fait foi).
+Carte et invariants : `ARCHITECTURE.md`.
 
-**Reste :** la recette de Monsieur au navigateur en bouchon (critère de la feature : Antor rattache
-« Lame d'Ébène » à « CoF Mini » et y ajoute une créature ; Mira rattache « Les Landes grises » et la
-voit ; Admin crée « Brume », non rattachée, sans système), puis la fusion et le tag `v*`. Rien n'est amorcé : univers et système se créent à la main
-(Antor crée « Lame d'Ébène » par E-2, ajoute Léa après sa première connexion ; Mira crée « Les Landes grises » ; Admin « Brume »). Le catalogue
-naît vide : le premier MJ crée « CoF Mini » depuis E-14. Aucune image n'existe avant le tag.
+**Reste :** la recette de Monsieur au navigateur en bouchon (critère de la feature : Antor crée « La
+Couronne brisée », l'active, écrit un scénario, ajoute et coche une tâche ; Léa voit la campagne mais ni
+scénario ni préparation, écrit un compte-rendu que Teo, ajouté en Joueur après sa première connexion,
+lit sans pouvoir le modifier ; le plus récent vient en tête ; la vue d'ensemble d'Antor montre la
+campagne active et le compte-rendu de Léa), puis la fusion et le tag `v*`. Rien n'est amorcé : tout se
+crée à la main. Hors tranche : créer une campagne par l'assistant, mettre le monde à jour depuis un
+compte-rendu, renommer une campagne ou une tâche. Aucune image n'existe avant le tag.
 
 **Pièges :**
 - Node 20 est la cible (CI, Dockerfile). `better-sqlite3` est donc épinglé en `^12` : la 13 exige
@@ -28,7 +30,11 @@ naît vide : le premier MJ crée « CoF Mini » depuis E-14. Aucune image n'exis
   univers non rattaché) répond comme un identifiant inconnu (404) ; aucune réponse ne nomme un autre
   univers (AD-84) ; écriture de gabarit périmée = 409 `gabarit_modifie` (AD-85). Ni suppression, ni import
   de référentiel, ni visibilité différenciée des gabarits (hors tranche).
-- Rendu des écrans E-14 et E-15 non vérifié au navigateur (pas de navigateur dans les pods).
+- Suivi : scénarios et tâches se gardent sur l'univers de la **campagne** (AD-47), jamais sur un identifiant
+  d'univers fourni ; un refus répond 404. Le MJ qui crée un compte-rendu n'en est pas l'auteur affiché ;
+  l'auteur Joueur lit et écrit sa section même fermée aux autres joueurs (AD-61). Plusieurs campagnes
+  peuvent être actives (AD-60) ; aucune suppression nulle part.
+- Rendu des écrans E-14, E-15 et du suivi (E-6, E-7, E-13) non vérifié au navigateur (pas de navigateur dans les pods).
 - P-7 : seule l'écriture du joueur sur sa section est livrée ; portrait (`kanevas-fichiers`) et
   demande à l'assistant (`kanevas-assistant-membre`) restent aux tranches suivantes.
 - « Connexion perdue » (frontend/src/api.ts) : sondé toutes les 3 s sur `/healthz` tant que le bandeau
@@ -47,5 +53,4 @@ naît vide : le premier MJ crée « CoF Mini » depuis E-14. Aucune image n'exis
   `listerFiches`, `blocsVisibles`/`blocsSectionVisibles` jumeaux ; le parseur form-urlencoded du
   bouchon vaut aussi pour `/api`.
 
-**Suivant :** relations et recherche (`kanevas-relier-chercher`), pièces jointes, campagnes,
-administration.
+**Suivant :** relations et recherche (`kanevas-relier-chercher`), pièces jointes, administration.
