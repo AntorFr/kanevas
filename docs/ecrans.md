@@ -4,9 +4,9 @@
 > y arrive, à quoi il sert, ce que chaque rôle y fait. Les états de chaque écran et la maquette
 > finie se détaillent dans la tranche qui le construit.
 
-> **Construit à ce jour** : E-1, E-2, E-3 (coquille : nom, navigation, blocs vides), E-4, E-8 (sans
-> recherche), E-9 (sans relations ni pièces jointes), E-14 (Paramètres), E-15 (Système de jeu) et le bloc « Système de jeu » de E-3, la session
-> et la barre latérale. E-5, E-6, E-7 et E-10 à E-13 sont la cible.
+> **Construit à ce jour** : E-1, E-2, E-3 (nom, navigation et blocs : système de jeu, campagnes actives, derniers comptes-rendus, préparation pour le MJ), E-4, E-6, E-7, E-13, E-8 (sans
+> recherche), E-9 (sans relations ni pièces jointes), E-14 (Paramètres), E-15 (Système de jeu) la ligne « Campagne » de E-9, la session
+> et la barre latérale. E-5 et E-10 à E-12 sont la cible.
 
 ## Format
 
@@ -37,7 +37,7 @@ bascule existe (fiche, carte).
 |---|---|---|---|
 | **E-1 Accueil** | connexion ; logo | voir ses univers et son rôle dans chacun ; en créer un ; voir son identifiant | P-1, P-6 |
 | **E-2 Créer un univers** | E-1 | nom, description ; le créateur devient MJ | P-1 |
-| **E-3 Vue d'ensemble de l'univers** | E-1 ; sélecteur d'univers | la campagne active, les derniers CR, la préparation (MJ), les cartes visibles | P-3, P-4, P-6 |
+| **E-3 Vue d'ensemble de l'univers** | E-1 ; sélecteur d'univers | les campagnes actives, les derniers CR, la préparation (MJ), les cartes visibles | P-3, P-4, P-6 |
 | **E-4 Membres** | nav Univers (MJ) | lister, ajouter par identifiant, changer le rôle, retirer | P-2 |
 | **E-5 Administration** | nav (admin d'instance) | lister les univers de l'instance, en gérer les membres — jamais le contenu | P-2 |
 | **E-6 Campagne** | nav Campagnes (liste) ; E-3 | liste des campagnes ; pour une campagne : statut, scénarios et « Nouveau scénario » (MJ), préparation (MJ), comptes-rendus, « Nouveau compte-rendu » | P-3, P-4 |
@@ -47,7 +47,7 @@ bascule existe (fiche, carte).
 | **E-10 Cartes** | nav Cartes | les cartes lisibles ; créer une carte illustrée (avec son image de fond) ou un graphe (MJ) | P-3, P-9 |
 | **E-11 Carte** | E-10 ; E-3 | carte illustrée : fond, tokens ; graphe : nœuds et liens. MJ : déposer ou changer le fond, placer, configurer, rendre visible, mode Joueur. Joueur : ouvrir la fiche d'un token. | P-3, P-6, P-9 |
 | **E-12 Assistant** | bouton flottant, sur tout écran d'univers | converser ; voir ce que l'agent a écrit, avec un lien ; MJ : propositions de mise à jour (actuel/proposé, **Appliquer**, **Abandonner**), images générées | P-3, P-5, P-6, P-7 |
-| **E-13 Comptes-rendus** | nav Comptes-rendus ; E-3 | tous les CR lisibles de l'univers, du plus récent, avec leur campagne | P-4, P-5, P-6 |
+| **E-13 Comptes-rendus** | nav Comptes-rendus ; E-3 | tous les CR lisibles de l'univers, du plus récent, avec leur campagne | P-4, P-5 |
 | **E-14 Paramètres de l'univers** | nav Univers (MJ) | nom, description, système de jeu (choisir dans le catalogue, en créer un) | P-8 |
 | **E-15 Système de jeu** | E-14 ; lien depuis E-3 | le référentiel commun : règles, créatures, objets ; ajouter, modifier (MJ d'un univers rattaché) | P-8 |
 
@@ -157,11 +157,11 @@ Deux sont posés dès le cadrage parce qu'ils traversent tout :
 
 Sur tout écran d'un univers : en tête le **sélecteur d'univers** (nom, badge du rôle, la liste
 des univers du compte, « Mes univers » en pied de liste) ; **Vue d'ensemble** ; **Lore** :
-Personnages, Lieux, Factions, Objets, Événements, Quêtes ; pour un MJ, **Univers ▸ Membres** ; en
+Personnages, Lieux, Factions, Objets, Événements, Quêtes ; **Campagnes** et **Comptes-rendus** ; pour un MJ, **Univers ▸ Membres** et **Paramètres** ; en
 pied, l'identifiant, le thème (Clair, Sombre, Système), « Se déconnecter ». Hors d'un univers (E-1,
 E-2) : « Mes univers », l'identifiant, le thème, « Se déconnecter ». **Un item dont l'écran n'est
-pas construit n'est pas affiché** : Campagnes, Comptes-rendus, Cartes, Administration
-arrivent avec leurs tranches. « Paramètres » (E-14) n'est affiché qu'au MJ. Sur téléphone (moins de 760 px), la barre est un tiroir sous un
+pas construit n'est pas affiché** : Cartes et Administration
+arrivent avec leurs tranches (Campagnes et Comptes-rendus sont affichés). « Paramètres » (E-14) n'est affiché qu'au MJ. Sur téléphone (moins de 760 px), la barre est un tiroir sous un
 bouton « Menu ».
 
 | État | Ce qu'on voit |
@@ -206,10 +206,10 @@ en MJ (B-2).
 | refus | sans objet : tout compte peut créer un univers (B-2) | — |
 | contenu long | « Erreur : 80 caractères au plus. » dès le 81e (même texte pour la description avec 500) | corriger |
 
-### E-3 Vue d'ensemble de l'univers (coquille)
+### E-3 Vue d'ensemble de l'univers
 
-Le nom de l'univers (titre), sa description, le badge du rôle, puis une **région de blocs**. Dans
-cette tranche, aucun bloc n'existe : la région montre « Rien à afficher pour l'instant. Les
+Le nom de l'univers (titre), sa description, le badge du rôle, puis une **région de blocs**. Quand
+aucun bloc ne rend rien, la région montre « Rien à afficher pour l'instant. Les
 campagnes, les comptes-rendus et les cartes s'afficheront ici. » ; ni compteur ni lien mort.
 **Les blocs sont indépendants** : chaque tranche ajoute le sien en déposant un fichier dans
 `frontend/src/ecrans/vue-ensemble/blocs/` dont l'export par défaut est un `Bloc` (identifiant,
@@ -451,6 +451,179 @@ rôle n'a ni E-14 ni E-15 ; l'admin MJ de son propre univers a ceux d'un MJ.
 Écart au cadrage : aucun. Précision : le cadrage dit « nom, description » pour E-14 ; la tranche
 construit donc aussi la **modification** du nom et de la description d'un univers, qu'aucune
 tranche précédente ne livre.
+
+## Détail des écrans de `kanevas-suivi`
+
+> E-6 Campagne, E-7 Scénario, E-13 Comptes-rendus, et leurs ajouts à E-3, à E-9 et à la barre
+> latérale. Mêmes six états et mêmes textes communs que ci-dessus (chargement, erreur de
+> chargement, connexion perdue, écriture en cours, échec d'écriture, refus, session expirée) ; ne
+> sont redits que les textes propres. Vocabulaire : les écrans disent « compte-rendu » en toutes
+> lettres ; « CR » n'est qu'un sigle des documents (B-19, B-20). Dates : « 22 sept. 2026 » (jour, mois
+> abrégé, année), comme sur E-9. Maquettes finies : `docs/maquettes/e06`, `e07`, `e13`, `e03`.
+
+**Ajouts aux écrans déjà construits.**
+
+- *Barre latérale* : **Campagnes** et **Comptes-rendus** apparaissent, pour tous les rôles, entre
+  « Vue d'ensemble » et « Lore ». Sur téléphone, comme les autres items (tiroir).
+- *E-3* : trois blocs, inscrits au registre (une ligne chacun, aucun bloc existant modifié) :
+  « Campagnes actives » (tous), « Derniers comptes-rendus » (tous), « Préparation » (MJ).
+  La région « Rien à afficher pour l'instant… » ne s'affiche plus tant qu'un bloc est inscrit pour
+  le rôle ; chaque bloc a son propre état vide.
+- *E-9, fiche de type compte-rendu* : sous le titre, une ligne « Campagne : <nom> » qui mène à
+  E-6 de la campagne. Pour une fiche d'un autre type, rien n'est ajouté. E-9 n'a pas aujourd'hui
+  d'emplacement sous le titre : la tranche en ajoute **un seul**, un registre de lignes de titre
+  (`frontend/src/ecrans/fiche/lignes/registre.ts`, une ligne : type de fiche concerné, composant),
+  vide pour tout autre type ; aucun bloc de section existant n'est modifié. États de la ligne : le
+  nom de la campagne passe à la ligne (80 caractères) ; pendant le chargement, la ligne est absente ;
+  campagne illisible ou en erreur, la ligne est absente sans message (le compte-rendu reste lisible) ; connexion perdue : la ligne déjà affichée reste cliquable (navigation seule, sans écriture).
+- *E-9, ce que chaque rôle voit d'un compte-rendu* : une seule section, « Compte-rendu », lisible de
+  tous les membres. « Modifier » est offert à son auteur (le Joueur qui l'a créé) et au MJ, pas aux
+  autres Joueurs ; le MJ règle l'audience comme pour toute section. Un compte-rendu créé par un MJ
+  n'a pas d'auteur. Fermer la section aux joueurs la cache aux autres Joueurs, pas à son auteur
+  (AD-61).
+
+### E-6 Campagne
+
+Deux vues, une adresse chacune : la **liste** (`/univers/:id/campagnes`) et la **page d'une
+campagne** (`/univers/:id/campagnes/:campagne`).
+
+*La liste* : les campagnes de l'univers — nom, statut — **actives d'abord, puis en préparation,
+puis terminées, chaque groupe par nom** (sans casse). Plusieurs campagnes peuvent être actives
+(AD-60). Le MJ voit pour chacune une liste de statut (« En préparation », « Active », « Terminée »)
+qu'il change en place, et en tête « Nouvelle campagne » : un champ « Nom » (1 à 80 caractères) et
+« Créer la campagne » ; la campagne naît « En préparation » et on reste sur la liste, où elle
+apparaît. Le Joueur voit le statut en badge, sans réglage. Ni le nom d'une campagne ni le libellé d'une
+tâche ne se corrigent, et rien ne se supprime : hors tranche.
+
+*La page d'une campagne* : le nom (titre), le statut (liste pour le MJ, badge pour le Joueur),
+puis trois panneaux (une campagne n'a ni description ni autre champ que son nom et son statut).
+
+1. **Scénarios** (MJ seul — le panneau n'existe pas pour un Joueur, ni son titre) : les scénarios par
+   ordre de création, le plus ancien d'abord, chacun un lien vers E-7 ; « Nouveau scénario » : un
+   champ « Titre » (1 à 120 caractères) et « Créer le scénario », qui mène à E-7.
+2. **Préparation** (MJ seul, idem) : les tâches **non cochées**, regroupées sous les cinq
+   catégories dans cet ordre — Monstres, PNJ, Cartes, Déroulements, Autre — une catégorie vide
+   n'est pas montrée ; chaque tâche : une case, son libellé. Cocher la fait passer dans le groupe
+   « Cochées (n) », sous la liste, avec son badge de catégorie, un lien « Décocher » et le libellé
+   barré ; les cochées sont triées de la plus récemment cochée à la plus ancienne. En pied, « Nouvelle
+   tâche » : libellé (1 à 200 caractères), catégorie (obligatoire, « Autre » par défaut),
+   « Ajouter ». **Aucune tâche ne se supprime** (matrice du cadrage).
+3. **Comptes-rendus** (tous) : les comptes-rendus **lisibles** de cette campagne, du plus
+   récemment créé au plus ancien, chacun : titre, auteur (l'identifiant de l'auteur de la section ; un compte-rendu
+   créé par le MJ n'a pas d'auteur, AD-61 : rien n'est affiché, pas même le nom du MJ), date de création, lien vers E-9. « Nouveau
+   compte-rendu » ouvre une fenêtre : « Titre » (1 à 120 caractères), « Texte » (facultatif, 20 000
+   au plus), « Publier » et « Annuler » ; « Publier » crée le compte-rendu et mène à E-9 (AD-61). Si la
+   création échoue, la fenêtre reste ouverte, la saisie gardée, avec « L'action n'a pas abouti.
+   Réessayez. » ; session expirée pendant la saisie : le texte est gardé comme sur E-9. Cent à la fois,
+   puis « Charger la suite ».
+
+Erreurs de saisie, sous le champ : « Erreur : le nom est obligatoire. » / « Erreur : 80 caractères
+au plus. » (campagne) ; « Erreur : le titre est obligatoire. » / « Erreur : 120 caractères au plus. »
+(scénario, compte-rendu) ; « Erreur : le libellé est obligatoire. » / « Erreur : 200 caractères au
+plus. » (tâche) ; « Erreur : 20 000 caractères au plus. » (texte du compte-rendu).
+
+Textes : liste vide, MJ : « Aucune campagne pour l'instant. » et « Nouvelle campagne » ; Joueur :
+« Aucune campagne pour l'instant. » ; scénarios vides : « Aucun scénario pour l'instant. » ;
+préparation vide, aussi quand toutes les tâches sont cochées : « Rien à préparer pour l'instant. »,
+le groupe « Cochées (n) » restant sous elle ; cochées vides : le groupe n'est pas montré ;
+comptes-rendus vides : « Aucun compte-rendu pour l'instant. » (Joueur : « Aucun compte-rendu à lire
+pour l'instant. »). Une campagne terminée garde ses panneaux et accepte de nouveaux comptes-rendus.
+
+| État | Ce qu'on voit | Ce qu'on peut faire |
+|---|---|---|
+| vide | les textes ci-dessus, panneau par panneau | MJ : créer une campagne, un scénario, une tâche ; tous : un compte-rendu |
+| chargement | « Chargement des campagnes… » (liste) ; « Chargement de la campagne… » (page), le titre absent | — |
+| erreur | « Impossible de charger les campagnes. » / « Impossible de charger cette campagne. » (le nom ou le statut illisible vide la page ; l'échec d'un seul panneau — scénarios, préparation, comptes-rendus — ne vide que ce panneau : « Impossible de charger ce panneau. » avec « Réessayer ») ; « Charger la suite » en échec : « Impossible de charger la suite. » ; un échec d'écriture (statut, tâche, création) s'écrit au-dessus du panneau, la valeur revient à celle d'avant, la saisie reste | « Réessayer » |
+| connexion perdue | le bandeau ; liste de statut, cases, « Ajouter », « Créer… », « Publier » désactivés ; saisie conservée | lire, ouvrir |
+| refus | campagne inconnue ou d'un autre univers, univers sans rôle : « Page introuvable. » ; pour un Joueur, les panneaux Scénarios et Préparation sont absents, sans titre ni compteur, et l'adresse d'un scénario répond « Page introuvable. » | « Mes univers » |
+| contenu long | 100 campagnes : la liste défile ; un nom de 80 caractères passe à la ligne ; un titre de compte-rendu de 120 caractères passe à la ligne ; 100 scénarios ou plus : la liste s'allonge ; 100 tâches ou plus par catégorie : la liste s'allonge, sans pagination ; plus de 100 comptes-rendus : « Charger la suite » | idem |
+
+*Critères.*
+- Étant donné Antor, MJ, qui a une tâche « Plan de la crypte » (Cartes) non cochée, quand il la
+  coche, alors elle quitte « Préparation » et apparaît dans « Cochées (1) » ; quand il la décoche,
+  elle revient sous « Cartes ».
+- Étant donné Léa, Joueuse, quand elle ouvre « La Couronne brisée », alors elle voit le nom, le
+  statut et les comptes-rendus, et dans la réponse de la route ni scénario ni tâche, ni leur nombre.
+- Étant donné Antor qui change le statut en « Terminée », quand Léa recharge la liste, alors le
+  badge de la campagne dit « Terminée » et la campagne passe en dernier groupe.
+
+### E-7 Scénario (MJ)
+
+Atteint depuis E-6 (liste des scénarios, « Créer le scénario »). Le titre, un lien « ← La
+Couronne brisée » vers E-6, le contenu en texte brut (AD-58) ; « Modifier » ouvre « Titre » et
+« Contenu » (20 000 caractères au plus), « Enregistrer », « Annuler ». Enregistrer envoie la version
+lue (AD-62) ; un scénario ne se supprime pas.
+
+Textes : contenu vide : « Rien d'écrit pour l'instant. » ; écriture périmée : « Ce scénario a changé
+depuis que vous l'avez ouvert. Rechargez-le pour voir la nouvelle version ; votre texte reste
+ci-dessous. » avec « Recharger le scénario » ; titre vide ou trop long : « Erreur : le titre est
+obligatoire. » / « Erreur : 120 caractères au plus. » ; contenu : « Erreur : 20 000 caractères au
+plus. ». Session expirée pendant une saisie : le texte est gardé comme sur E-9.
+
+| État | Ce qu'on voit | Ce qu'on peut faire |
+|---|---|---|
+| vide | « Rien d'écrit pour l'instant. » | « Modifier » |
+| chargement | « Chargement du scénario… », le titre absent | — |
+| erreur | « Impossible de charger ce scénario. » ; échec d'écriture : « L'action n'a pas abouti. Réessayez. », texte conservé | « Réessayer » |
+| connexion perdue | le bandeau ; « Enregistrer » désactivé, texte en cours conservé | lire |
+| refus | Joueur, scénario inconnu, d'une autre campagne ou d'un autre univers : « Page introuvable. » ; un Joueur n'a ni l'écran ni de lien vers lui | « Mes univers » |
+| contenu long | 20 000 caractères : passent à la ligne, affichés en entier ; titre de 120 caractères : passe à la ligne | idem |
+
+*Critère.* Étant donné Léa, Joueuse, quand elle ouvre l'adresse du scénario « Acte II — Le sceau
+brisé » que lui donne Antor, alors elle voit « Page introuvable. », sans le titre.
+
+### E-13 Comptes-rendus
+
+Tous les comptes-rendus de l'univers **que le compte peut lire**, du plus récemment créé au plus
+ancien (un compte-rendu retouché ne remonte pas, B-20) ; chacun : titre, nom de sa campagne, auteur (comme sur E-6 : l'identifiant, rien s'il n'y en a pas),
+date de création, lien vers E-9. Cent à la fois, puis « Charger la suite ». Pas de création ici :
+« Nouveau compte-rendu » est sur E-6, qui porte la campagne.
+
+| État | Ce qu'on voit | Ce qu'on peut faire |
+|---|---|---|
+| vide | « Aucun compte-rendu pour l'instant. » (Joueur : « Aucun compte-rendu à lire pour l'instant. ») | MJ et Joueur : « Voir les campagnes » (→ E-6) |
+| chargement | « Chargement des comptes-rendus… » | — |
+| erreur | « Impossible de charger les comptes-rendus. » ; « Charger la suite » en échec : « Impossible de charger la suite. » | « Réessayer » |
+| connexion perdue | le bandeau ; la liste chargée reste ; « Charger la suite » désactivé | ouvrir |
+| refus | un compte-rendu dont rien n'est lisible est absent de la liste, jamais signalé ; univers sans rôle : « Page introuvable. » | « Mes univers » |
+| contenu long | plus de 100 : « Charger la suite » ; titre de 120 caractères : passe à la ligne | idem |
+
+*Critère.* Étant donné Antor qui a fermé aux joueurs la section du compte-rendu « Session 11 » qu'il a écrit, quand
+Léa ouvre E-13, alors elle ne voit pas « Session 11 » et la liste ne laisse aucun trou ni compteur.
+
+### Blocs de E-3 (`kanevas-suivi`)
+
+Trois blocs indépendants, dans cet ordre. Chacun a un titre, un état vide, et ne montre jamais un
+compteur ni un nom que le compte ne peut pas lire.
+
+- **Campagnes actives** (tous) : nom de chaque campagne active, lien vers E-6 de la campagne.
+  Toutes les campagnes actives, une par ligne. Vide : « Aucune campagne active. » (MJ : suivi du lien « Voir les campagnes »).
+- **Derniers comptes-rendus** (tous) : les cinq plus récemment créés que le compte peut lire,
+  titre, campagne, date, lien vers E-9 ; lien « Tous les comptes-rendus » (→ E-13). Vide : « Aucun
+  compte-rendu pour l'instant. » (Joueur : « Aucun compte-rendu à lire pour l'instant. »).
+- **Préparation** (MJ seul — le bloc n'existe pas pour un Joueur) : par campagne active, ses cinq
+  premières tâches non cochées (plus anciennes d'abord) avec leur catégorie, lien vers E-6. Vide :
+  « Rien à préparer pour l'instant. ».
+
+| État | Ce qu'on voit |
+|---|---|
+| chargement | chaque bloc affiche « Chargement… » à sa place, indépendamment |
+| erreur | le bloc seul dit « Impossible de charger ce bloc. » avec « Réessayer » ; les autres blocs restent |
+| connexion perdue | le bandeau ; contenu déjà chargé |
+| refus | sans objet pour les blocs ; le bloc Préparation est absent pour un Joueur |
+| contenu long | nom de campagne de 80 caractères, titre de compte-rendu de 120, libellé de tâche de 200 : passent à la ligne ; au plus cinq comptes-rendus, et cinq tâches par campagne active ; le nombre de campagnes actives n'est pas borné (AD-60) : « Campagnes actives » et « Préparation » s'allongent avec lui, sans « Charger la suite » — voulu, une table compte quelques campagnes actives |
+
+*Critère.* Étant donné Léa, quand elle ouvre E-3, alors elle voit « Campagnes actives » et
+« Derniers comptes-rendus », jamais « Préparation » ; Antor voit les trois.
+
+### Clôture de la tranche
+
+B-15 → E-6 (liste et page) ; B-16 → E-6 et E-7 ; B-17 → E-6 ; B-18 → E-6 ; B-19 → E-6 et E-9 ;
+B-20 → E-13. Parcours : P-3 étapes 1 à 3 (E-3, E-6, E-7), P-4 en entier, P-5 étape 1 (E-13 →
+E-9) ; P-6 étape 1 ne lit que les blocs de E-3 (derniers comptes-rendus) ; B-18 et B-20 le citent, mais aucune étape de P-6 ne passe par E-6 ni E-13. Les trois rôles : le Joueur a E-3, E-6
+(sans scénarios ni préparation), E-13 ; l'admin d'instance sans rôle n'a aucun de ces écrans.
+Reste aux autres tranches : créer une campagne ou un scénario par l'assistant
+(`kanevas-assistant-membre`), la proposition de mise à jour depuis un CR (`kanevas-monde`).
 
 ## Maquettes
 

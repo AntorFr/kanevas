@@ -4,8 +4,8 @@
 > construit. Identifiants stables : `B-n` (besoins), `P-n` (parcours), `E-n` (écrans,
 > `docs/ecrans.md`), `AD-n` (décisions, `ARCHITECTURE.md`).
 >
-> **Construit à ce jour** (`kanevas-premiere-fiche`) : P-1 en entier, P-2 étapes 1-2 (sans l'admin),
-> P-3 étape 4 (fiches et sections), P-6 étapes 1-2 (sans recherche), P-7 étape 1 et l'écriture de
+> **Construit à ce jour** (`kanevas-premiere-fiche`, systèmes, `kanevas-suivi`) : P-1 en entier, P-2 étapes 1-2 (sans l'admin),
+> P-3 étapes 1 à 4, P-4 en entier, P-5 étape 1 (fiches et sections), P-6 étapes 1-2 (sans recherche), P-7 étape 1 et l'écriture de
 > l'étape 2, P-8 en entier (B-13, B-14 : E-14 puis E-15). Le reste de ce document est la cible.
 
 Kanevas sert à **préparer** des parties de jeu de rôle et à en **garder la mémoire** entre les
@@ -140,9 +140,9 @@ demande à son assistant (E-12).
 dernier MJ — refusé avec la raison.
 
 ### P-3 — Préparer la séance du samedi (MJ, dimanche soir, bureau)
-1. **Vue d'ensemble** (E-3) : la campagne active, les derniers CR, la préparation en cours.
-2. **Campagne** (E-6) : il relit les CR les plus récents, crée ou ouvre un **scénario** (E-7) et
-   l'écrit.
+1. **Vue d'ensemble** (E-3) : les campagnes actives, les derniers CR, la préparation en cours.
+2. **Campagne** (E-6) : il crée la campagne (« En préparation ») ou ouvre l'existante et la passe
+   « Active » ; il relit les CR les plus récents, crée ou ouvre un **scénario** (E-7) et l'écrit.
 3. Il coche ou ajoute des tâches de **préparation** (E-6).
 4. **Lore** : depuis la **liste d'un type** (E-8), il crée un PNJ ; sur la **fiche** (E-9), il
    écrit « Apparence » (lue des joueurs) et « Vérité — MJ seul », relie le PNJ à sa faction,

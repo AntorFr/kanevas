@@ -15,7 +15,7 @@ import {
 import type { Acteur } from '../services/types.js';
 import { idDeChemin } from './univers.js';
 
-function corps(request: { body?: unknown }): Record<string, unknown> {
+export function corps(request: { body?: unknown }): Record<string, unknown> {
   const b = request.body;
   return b && typeof b === 'object' && !Array.isArray(b) ? (b as Record<string, unknown>) : {};
 }
@@ -24,7 +24,7 @@ function corps(request: { body?: unknown }): Record<string, unknown> {
  * Player mode (AD-39) is asked with `?mode=joueur`; the service computes it,
  * it only ever restricts a read.
  */
-function acteur(request: { session?: { id: number } | null; query?: unknown }): Acteur {
+export function acteur(request: { session?: { id: number } | null; query?: unknown }): Acteur {
   const q = (request.query ?? {}) as Record<string, unknown>;
   if (q.mode !== undefined && q.mode !== 'joueur' && q.mode !== 'mj') {
     throw invalide('Mode inconnu.');

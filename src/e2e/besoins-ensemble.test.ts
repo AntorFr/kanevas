@@ -155,7 +155,8 @@ describe('kanevas-premiere-fiche, du besoin', { skip: skipBrowser }, () => {
     assert.ok(t.includes(UNIVERS + ' B2'));
     assert.ok(t.includes('Un monde de lames.'));
     assert.ok(/\bMJ\b/.test(t));
-    assert.ok(t.includes('Rien à afficher pour l\'instant.'));
+    assert.ok(!t.includes('Rien à afficher pour l\'instant.'), 'blocks of kanevas-suivi replace the empty region');
+    assert.ok(t.includes('Campagnes actives'));
     await antor.page.goto('/');
     await attendre(antor.page);
     const carte = antor.page.getByRole('link', { name: rx(UNIVERS + ' B2') });
