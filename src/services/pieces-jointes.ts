@@ -77,7 +77,8 @@ function exigerPlace(db: Db, sectionId: number): void {
   if (nombre(db, sectionId) >= MAX_PIECES_PAR_SECTION) {
     throw new ErreurService(
       'invalide',
-      `Une section porte 50 pièces jointes au plus.`,
+      // Neutral: the number would tell a player what they must not know (AD-67); the screen words it by role.
+      "Cette section ne peut pas recevoir d'autre fichier.",
       'limite_pieces',
     );
   }

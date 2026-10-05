@@ -101,7 +101,7 @@ se fusionne, pas avant (AD-51).
 
 ## Migration `kanevas-fichiers` (numéro pris à la fusion, AD-51 : le suivant)
 
-> Fichier : `src/db/migrations/0003-pieces-jointes.sql` — **numéro provisoire** (0003), recalé à la
+> Provisoire comme celle des systèmes ci-dessus. Fichier : `src/db/migrations/0003-pieces-jointes.sql` — **numéro provisoire** (0003), recalé à la
 > fusion si une autre tranche est entrée avant (AD-51). Code : `src/services/stockage.ts` (octets,
 > sans notion de section) et `src/services/pieces-jointes.ts` ; dossier réglable par `ATTACHMENTS_DIR`
 > (défaut : `attachments/` à côté de la base).
@@ -115,7 +115,7 @@ en base (AD-7) : ils vivent sous `/data/attachments/`.
 
 **Sur le disque** : `/data/attachments/<fichier>` (un fichier plat par pièce, nom = UUID) ; les envois
 en cours s'écrivent dans `/data/attachments/tmp/` puis passent d'un coup à leur nom définitif
-(AD-65) ; le dossier `tmp/` est vidé au démarrage. Une ligne et son fichier vont ensemble : jamais
+(AD-65) ; le dossier `tmp/` est vidé au démarrage (sauf base en mémoire). Une ligne et son fichier vont ensemble : jamais
 de ligne sans fichier, et un fichier sans ligne n'est pas atteignable (nom aléatoire, aucune route
 statique).
 
