@@ -60,11 +60,11 @@ En mode bouchon, `POST /connexion-bouchon` attend un corps form-urlencoded `comp
 | `GET .../systeme` (`?type` = `regle` (défaut), `creature` ou `objet`, sinon 400 ; `?curseur`) | le système de l'univers, le nombre d'univers qui l'utilisent, ses gabarits (100 à la fois) ; 404 identique à une adresse inconnue sans rôle ou sans rattachement |
 | `POST .../systeme/gabarits`, `PUT .../systeme/gabarits/:gabaritId` | ajouter, modifier avec la version lue (MJ) |
 | `GET\|POST /api/univers/:id/membres`, `PATCH\|DELETE .../membres/:compteId` | membres (MJ) |
-| `GET\|POST /api/univers/:id/fiches` (`?type`, `?q`, `?curseur`) | liste paginée (100), `q` (1 à 100 caractères, sinon 400) cherche dans le type (AD-63) ; création (MJ) |
+| `GET\|POST /api/univers/:id/fiches` (`?type`, `?q`, `?curseur`) | liste paginée (100), `q` (vide ou plus de 100 caractères : 400 ; sans lettre ni chiffre : liste vide) cherche dans le type (AD-63) ; création (MJ) |
 | `GET .../fiches/:fid` | fiche et sections lisibles ; `?mode=joueur` lit en Joueur ; 404 si aucune section n'est lisible (l'écran le traduit en « Aucune section n'est visible des joueurs. ») |
 | `POST .../fiches/:fid/sections`, `PUT .../fiches/:fid/ordre` | ajouter, ordonner (MJ) |
 | `GET\|PATCH\|DELETE .../sections/:sid` | lire ; titre et audience (MJ) ; retirer (MJ) |
-| `GET\|POST .../sections/:sid/relations`, `DELETE /api/univers/:id/fiches/relations/:rid` (sans `:fid`) | relations lisibles de la section `{relations: [{id, type, cible: {id, titre, type}}]}` (AD-64) ; relier `{cibleFicheId, type}` (201) et retirer (204), MJ seul, 404 pour un joueur |
+| `GET\|POST .../sections/:sid/relations`, `DELETE /api/univers/:id/fiches/relations/:rid` (sans `:fid`) | relations lisibles de la section `{relations: [{id, type, cible: {id, titre, type}}]}` (AD-64) ; relier `{cibleFicheId, type}` (201 ; `type` est le libellé libre de la relation, 1 à 80 caractères, `cible.type` est le type de fiche) et retirer (204), MJ seul, 404 pour un joueur |
 | `PUT .../sections/:sid/contenu` | écrire `{contenu, version}` ; 400 si contenu > 20 000 caractères (contrôlé après les droits, avant la version) ; 409 si `version` périmée |
 
 Corps de requête (JSON) : `POST /api/univers` `{nom, description?}` ; `POST .../membres`

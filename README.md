@@ -30,6 +30,8 @@ Un écran est un fichier `frontend/src/ecrans/<nom>.tsx` enregistré par le regi
 (`frontend/src/registre.ts`) ; les couleurs ne viennent que de `frontend/src/ui/tokens.css`
 (`docs/charte.md`).
 
+Tests sans e2e ni Docker : `npm run typecheck` puis `npm test` (voir « Tests de bout en bout » pour les e2e) ; la voie Docker de référence est dans `CLAUDE.md`.
+
 ## Démarrage local
 
 ```bash
@@ -138,7 +140,7 @@ manifeste `clusters/tantive/games/kanevas-helm-config.yml` et client OIDC
 fusionner `k8s-home-lab`, dont la fusion déploie.
 
 Pour la carte du code, les invariants et les options écartées, voir `ARCHITECTURE.md`, dont le
-tableau liste les décisions `AD-n` construites par les tranches fusionnées, avec leur numéro stable (les numéros absents sont ceux de tranches pas encore fusionnées). Des
+tableau liste les décisions `AD-n` retenues pour l'epic, construites ou non (« La cible » dit ce qui est construit), avec leur numéro stable ; les numéros absents sont des décisions retirées ou d'autres tranches, aucune n'est cachée ici. Des
 commentaires du code citent encore `plan.md`, `technique.md` ou `socle-projet` : ce sont des
 documents de conception tenus hors de ce dépôt (magasin de pilotage de la chaîne SDLC), dont ce
 qui doit survivre est dans `ARCHITECTURE.md` et `docs/`.
