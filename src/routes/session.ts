@@ -12,10 +12,12 @@ import {
   SESSION_MAX_AGE_S,
   type Session,
 } from '../services/session.js';
+import multipart from '@fastify/multipart';
 import { registerErreurs } from './erreurs.js';
 import { registerFichesRoutes } from './fiches.js';
 import { registerUniversRoutes } from './univers.js';
 import { registerSystemesRoutes } from './systemes.js';
+import { registerSuiviRoutes } from './suivi.js';
 import { chargerFrontend } from './frontend.js';
 import { pageIntrouvable, urlConnexion } from './pages.js';
 
@@ -91,6 +93,11 @@ export async function registerSessionRoutes(app: FastifyInstance) {
       return reply.redirect(urlConnexion());
     });
     registerErreurs(garde);
+    // Uploads are streamed to the service, never buffered: no size cap on the file (AD-65),
+    // one file and a couple of small fields per request.
+    await garde.register(multipart, {
+      limits: { fileSize: Number.MAX_SAFE_INTEGER, files: 1, fields: 4, parts: 6 },
+    });
     // Build assets (Vite's `assets/`) sit behind the session guard; every other address falls
     // through to the not-found handler, which serves `index.html`.
     if (frontend) {
@@ -104,6 +111,7 @@ export async function registerSessionRoutes(app: FastifyInstance) {
     registerUniversRoutes(garde);
     registerFichesRoutes(garde);
     registerSystemesRoutes(garde);
+    registerSuiviRoutes(garde);
   });
 }
 

@@ -18,7 +18,14 @@ export function registerErreurs(app: FastifyInstance) {
     if (erreur instanceof ErreurService) {
       const corps: { message: string; code?: string } = { message: erreur.message };
       if (erreur.detail) corps.code = erreur.detail;
-      return reply.code(STATUT[erreur.code]).send(corps);
+      let statut = STATUT[erreur.code];
+      // Attachments: an empty file is a 400, a full section a 409 (B-24); both carry their code.
+      if (erreur.detail === 'fichier_vide') corps.code = erreur.detail;
+      if (erreur.detail === 'limite_pieces') {
+        corps.code = erreur.detail;
+        statut = 409;
+      }
+      return reply.code(statut).send(corps);
     }
     const statut = (erreur as { statusCode?: number }).statusCode;
     if (statut && statut >= 400 && statut < 500) {

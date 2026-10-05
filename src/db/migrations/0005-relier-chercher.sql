@@ -1,4 +1,4 @@
--- Migration 0003 (kanevas-relier-chercher, number taken at merge, AD-51): the
+-- Migration 0005 (kanevas-relier-chercher, number taken at merge, AD-51): the
 -- relations carried by a section and the two FTS5 search indexes.
 -- Rules the base cannot express (same universe, not the sheet itself, at most
 -- 100 per section, GM only) are enforced by services/relations.ts.

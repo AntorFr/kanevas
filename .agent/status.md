@@ -2,20 +2,17 @@
 
 > MàJ : 2026-10-05
 
-**État :** `epic/kanevas` porte le socle, la première fiche et le système de jeu (migration 0002).
-`feature/kanevas-relier-chercher` y ajoute, en PR non fusionnée : la migration `0003-relier-chercher.sql`
-(`relations`, index FTS5 `recherche_fiches` et `recherche_sections`, déclencheurs, remplissage de
-l'existant), `services/relations.ts` (relier, retirer, lire sous deux gardes), `peutVoirFiche` et les
-conditions SQL de lecture dans `droits.ts`, l'option `recherche` de `listerFiches`, les routes `?q=` et
-`/relations`, le composant `ListeRecherche` (E-8, réemployé par « Relier ») et le bloc Relations de E-9
-(AD-63, AD-64). Typecheck, build et 337 tests verts, e2e navigateur compris (Node 22). Carte et
-invariants : `ARCHITECTURE.md`.
+**État :** `epic/kanevas` porte le socle, la première fiche, les systèmes de jeu, le suivi de la séance
+(campagnes, scénarios, préparation, comptes-rendus ; E-6, E-7, E-13) et les pièces jointes (migration
+`0004-pieces-jointes.sql`, AD-65 à AD-67). `feature/kanevas-relier-chercher` y ajoute, en PR non fusionnée :
+la migration `0005-relier-chercher.sql` (`relations`, index FTS5 `recherche_fiches` et `recherche_sections`,
+déclencheurs, remplissage de l'existant), `services/relations.ts` (relier, retirer, lire sous deux gardes),
+`peutVoirFiche` et les conditions SQL de lecture dans `droits.ts`, l'option `recherche` de `listerFiches`,
+les routes `?q=` et `/relations`, le composant `ListeRecherche` (E-8, réemployé par « Relier ») et le bloc
+Relations de E-9 (AD-63, AD-64). Carte et invariants : `ARCHITECTURE.md`.
 
-**Reste :** la recette de Monsieur au navigateur en bouchon (critère : Léa cherche « Vérité » dans les
-personnages et n'obtient rien, Antor trouve Aldric ; sur la fiche d'Aldric Léa voit « membre de » vers une
-faction lisible et pas vers la faction secrète), puis la fusion et le tag `v*`. Rien n'est amorcé : univers,
-fiches, sections et relations se créent à la main (Antor crée « Lame d'Ébène » par E-2, ajoute Léa après sa
-première connexion). Aucune image n'existe avant le tag.
+**Reste :** la fusion et le tag `v*` (recette acceptée par Monsieur). Rien n'est amorcé : tout se crée à
+la main (Léa se connecte une fois avant d'être ajoutée). Aucune image n'existe avant le tag.
 
 **Pièges :**
 - Node 20 est la cible (CI, Dockerfile). `better-sqlite3` est donc épinglé en `^12` : la 13 exige
@@ -23,7 +20,7 @@ première connexion). Aucune image n'existe avant le tag.
 - La suite a été jouée sous Node 22 dans les pods de la chaîne (pas de Docker) ; la CI Node 20 fait foi.
 - La CI ne pousse d'image que sur `main` et sur un tag `v*` ; sur une PR elle ne fait qu'un build de
   validation. L'image testable n'existe qu'après le tag, posé à la fusion.
-- **Numéro de migration provisoire** : `0003-relier-chercher.sql` ; si une autre tranche fusionne une migration
+- **Numéro de migration** : `0005-relier-chercher.sql` (après `0004-pieces-jointes.sql`, recalée à la fusion, AD-51) ; si une autre tranche fusionne une migration
   avant, la phase merge la recale (AD-51).
 - Recherche : `listerFiches({recherche})` seule (AD-63) ; les index FTS5 ne livrent que des identifiants
   candidats, tenus par déclencheurs : ne jamais écrire dans `recherche_*` depuis le code. La saisie est
@@ -35,9 +32,18 @@ première connexion). Aucune image n'existe avant le tag.
   univers non rattaché) répond comme un identifiant inconnu (404) ; aucune réponse ne nomme un autre
   univers (AD-84) ; écriture de gabarit périmée = 409 `gabarit_modifie` (AD-85). Ni suppression, ni import
   de référentiel, ni visibilité différenciée des gabarits (hors tranche).
-- Rendu des écrans E-14 et E-15 non vérifié au navigateur (pas de navigateur dans les pods).
-- P-7 : seule l'écriture du joueur sur sa section est livrée ; portrait (`kanevas-fichiers`) et
-  demande à l'assistant (`kanevas-assistant-membre`) restent aux tranches suivantes.
+- Suivi : scénarios et tâches se gardent sur l'univers de la **campagne** (AD-47), jamais sur un identifiant
+  d'univers fourni ; un refus répond 404. Le MJ qui crée un compte-rendu n'en est pas l'auteur affiché ;
+  l'auteur Joueur lit et écrit sa section même fermée aux autres joueurs (AD-61). Plusieurs campagnes
+  peuvent être actives (AD-60) ; aucune suppression nulle part.
+- Rendu des écrans E-14, E-15 et du suivi (E-6, E-7, E-13) non vérifié au navigateur (pas de navigateur dans les pods).
+- P-7 : le portrait (pièce jointe) est livré ; la demande à l'assistant (`kanevas-assistant-membre`) reste à venir.
+- Pièces jointes : le type est déterminé par la signature des octets, jamais par le navigateur ; seules PNG,
+  JPEG, GIF, WebP sont servies en ligne, le reste (SVG compris) en `attachment` sous `nosniff` et CSP sandbox.
+  Un refus de lecture répond 404 comme un identifiant inconnu (AD-22) ; 50 pièces au plus par section, pas de
+  limite de taille ; ajouter, marquer ou retirer ne change pas la `version` de la section. Pas de route de liste,
+  pas de glisser-déposer. `deposerPieceJointe` et `stockage.ts` serviront aux images générées et aux fonds de carte.
+- Rendu du bloc Pièces jointes vérifié par les tests e2e (Playwright) là où il est installé ; la CI ne les joue pas.
 - « Connexion perdue » (frontend/src/api.ts) : sondé toutes les 3 s sur `/healthz` tant que le bandeau
   est levé ; il disparaît seul au retour du serveur.
 - Le contenu d'une section est plafonné à 20 000 caractères par le serveur (`MAX_CONTENU_SECTION`,
@@ -54,5 +60,4 @@ première connexion). Aucune image n'existe avant le tag.
   `listerFiches`, `blocsVisibles`/`blocsSectionVisibles` jumeaux ; le parseur form-urlencoded du
   bouchon vaut aussi pour `/api`.
 
-**Suivant :** pièces jointes, campagnes,
-administration.
+**Suivant :** administration.

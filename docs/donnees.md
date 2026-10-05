@@ -80,6 +80,36 @@ autres univers** : ni leur nom, ni leurs membres (règle 3). Créer un système 
 au catalogue, avec ou sans rattachement dans le même geste. Modifier le nom et la description d'un
 univers : MJ.
 
+## Migration `kanevas-suivi` (numéro pris à la fusion, AD-51 : le suivant de 0002)
+
+> Fichier : `src/db/migrations/0003-suivi.sql` — **numéro provisoire** (0003), recalé à la fusion si une autre tranche entre avant (AD-51).
+
+Trois tables, aucune entité nouvelle (campagne, scénario, tâche de préparation sont celles du
+cadrage). Les comptes-rendus n'ont pas de table : un compte-rendu est une fiche de type
+`compte_rendu` (charge `{"v":1,"campagne_id":…}`, déjà posée par 0001, AD-52).
+
+| Table | Colonnes (hors clés) | Contraintes |
+|---|---|---|
+| `campagnes` | `id`, `univers_id`, `nom`, `statut` (`en_preparation` \| `active` \| `terminee`), `cree_le` | `nom` non vide, 1 à 80 caractères ; `statut` contraint à ces trois valeurs, `en_preparation` à la création ; plusieurs `active` permises (AD-60) ; **aucune suppression** |
+| `scenarios` | `id`, `campagne_id`, `titre`, `contenu` (texte brut, AD-58), `version` (entier, 1 à la création, AD-62), `cree_le`, `modifie_le` | `titre` non vide, 1 à 120 caractères ; `contenu` 20 000 caractères au plus ; **aucune suppression** |
+| `taches_preparation` | `id`, `campagne_id`, `categorie` (`monstres` \| `pnj` \| `cartes` \| `deroulements` \| `autre`), `libelle`, `faite`, `faite_le` (date de la dernière coche, vide si décochée), `cree_le` | `libelle` non vide, 1 à 200 caractères ; catégorie contrainte à ces cinq valeurs (AD-46) ; **aucune suppression** |
+
+Un compte-rendu se crée en une seule transaction : la fiche (type `compte_rendu`, `campagne_id` de
+la campagne de l'univers) et **une** section « Compte-rendu » portant le texte, lisible des
+joueurs, non écrivable par eux ; si le créateur est un Joueur, il en est l'auteur, qui la lit et
+l'écrit ; si c'est un MJ, la section n'a pas d'auteur (AD-61). La campagne cible doit appartenir à
+l'univers du créateur, sinon la création échoue comme pour une campagne inconnue. Rien n'est écrit
+si l'une des deux écritures échoue. L'ordre des comptes-rendus est `cree_le` décroissant, `id`
+décroissant en cas d'égalité. Le nom de la campagne et l'auteur d'un compte-rendu se lisent à
+travers les droits de la fiche : l'auteur n'est montré que si la section est lisible du compte.
+
+Droits (en plus de ceux de 0001) : `campagnes` — nom et statut, tout membre de l'univers ; création
+et statut, MJ. `scenarios` et `taches_preparation` — MJ de l'univers **de la campagne** seul (AD-47),
+évalué sur l'univers de la campagne, jamais sur un identifiant fourni par l'appelant : un MJ d'un
+autre univers n'atteint aucun scénario ni aucune tâche, un Joueur non plus (réponse comme pour un
+identifiant inconnu, AD-22), et leur nombre ni leur existence ne sortent jamais d'une réponse à
+un Joueur.
+
 ## Règles de droits, en une phrase chacune
 
 1. Les droits sur le contenu viennent de **membre**, jamais d'Authelia (AD-9). Authelia ne
@@ -92,7 +122,7 @@ univers : MJ.
 4. Une **pièce jointe** n'est servie que par la route qui revérifie ces droits (AD-7, AD-36).
 5. L'**agent** a exactement les droits de la personne qui lui parle (AD-2, AD-26).
 
-## Migration `kanevas-relier-chercher` (`0003-relier-chercher.sql`, numéro provisoire : pris à la fusion, AD-51)
+## Migration `kanevas-relier-chercher` (`0005-relier-chercher.sql`, recalée à la fusion après 0004, AD-51)
 
 Une table et deux index de recherche ; aucune entité nouvelle (la relation est celle du cadrage).
 
@@ -125,3 +155,34 @@ Migrations SQL numérotées, appliquées au démarrage, sans ORM (AD-14). **La t
 connaît ses sept types dès sa création** : aucune tranche ne la recrée. L'ordre des migrations
 suit l'ordre de fusion des tranches, et chaque tranche prend le numéro suivant au moment où elle
 se fusionne, pas avant (AD-51).
+
+## Migration `kanevas-fichiers` (numéro pris à la fusion, AD-51 : le suivant de 0003)
+
+> Provisoire comme celle des systèmes ci-dessus. Fichier : `src/db/migrations/0004-pieces-jointes.sql` — **numéro provisoire** (0004), recalé à la
+> fusion si une autre tranche est entrée avant (AD-51). Code : `src/services/stockage.ts` (octets,
+> sans notion de section) et `src/services/pieces-jointes.ts` ; dossier réglable par `ATTACHMENTS_DIR`
+> (défaut : `attachments/` à côté de la base).
+
+Une table ; aucune entité nouvelle (la pièce jointe est celle du cadrage). Les octets ne sont pas
+en base (AD-7) : ils vivent sous `/data/attachments/`.
+
+| Objet | Colonnes (hors clés) | Contraintes |
+|---|---|---|
+| `pieces_jointes` | `id`, `section_id`, `nom` (nom d'origine), `type` (type MIME **déterminé par le serveur**, AD-66), `taille` (octets), `fichier` (nom sur disque, UUID, AD-35), `secrete` (booléen), `cree_le` | `section_id` → `sections` **ON DELETE CASCADE** (retirer une section retire ses lignes) ; `fichier` unique ; `nom` 1 à 200 caractères ; `taille` > 0 ; `secrete` faux à la création sauf demande du MJ ; index `pieces_jointes (section_id)` |
+
+**Sur le disque** : `/data/attachments/<fichier>` (un fichier plat par pièce, nom = UUID) ; les envois
+en cours s'écrivent dans `/data/attachments/tmp/` puis passent d'un coup à leur nom définitif
+(AD-65) ; le dossier `tmp/` est vidé au démarrage (sauf base en mémoire). Une ligne et son fichier vont ensemble : jamais
+de ligne sans fichier, et un fichier sans ligne n'est pas atteignable (nom aléatoire, aucune route
+statique).
+
+Ce que la base ne dit pas, et que le service porte, avec sa raison (la règle croise la section, le
+rôle et le mode) : **50 pièces jointes** au plus par section ; ajouter ou retirer demande
+d'**écrire** la section ; `secrete` ne se pose et ne se lève que par un MJ ; une pièce se **lit** si
+la section est lisible et, si elle est secrète, par un MJ hors mode Joueur ; un fichier vide est refusé.
+Ajouter ou retirer une pièce ne change ni la `version` ni `modifie_le` de la section (ce n'est
+pas une écriture de son contenu, AD-59).
+
+Retirer une pièce, ou une section, supprime la ligne **puis** le fichier du disque ; si la
+suppression du fichier échoue, la ligne est déjà partie et l'orphelin est inatteignable (risque
+accepté : il n'y a pas de balayage des orphelins en V1).

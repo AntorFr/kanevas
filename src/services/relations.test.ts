@@ -40,7 +40,7 @@ function monde() {
 const pub = (db: Db, m: number, u: number, f: number, s: number) =>
   changerAudience(db, m, u, f, s, { joueursLisent: true });
 
-test('migration 0003 sur base 0001+0002 peuplée : relations, index remplis, idempotente', () => {
+test('migration 0005 sur base 0001+0002 peuplée : relations, index remplis, idempotente', () => {
   const db = openDb(':memory:');
   const dir = new URL('../db/migrations/', import.meta.url).pathname;
   db.exec(readFileSync(`${dir}0001-premiere-fiche.sql`, 'utf8'));
@@ -52,7 +52,7 @@ test('migration 0003 sur base 0001+0002 peuplée : relations, index remplis, ide
   db.prepare(
     "INSERT INTO sections (fiche_id, titre, ordre, contenu, version, modifie_le) VALUES (1,'Histoire',1,'dragon ancien',1,'x')",
   ).run();
-  assert.deepEqual(migrate(db), [3]);
+  assert.deepEqual(migrate(db), [3, 4, 5]);
   assert.equal(nb(db, 'relations'), 0);
   assert.equal(nb(db, 'recherche_fiches'), 1);
   assert.equal(nb(db, 'recherche_sections'), 1);
