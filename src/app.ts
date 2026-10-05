@@ -1,29 +1,49 @@
-import { randomBytes } from 'node:crypto';
-
 import cookie from '@fastify/cookie';
 import Fastify from 'fastify';
 
-import { env } from './config/env.js';
+import { dbPath, env } from './config/env.js';
+import { migrate, openDb, type Db } from './db/db.js';
+import { viderTmp } from './services/stockage.js';
 import { registerAuthRoutes } from './routes/auth.js';
+import { registerBouchonRoutes } from './routes/bouchon.js';
 import { registerHealthRoutes } from './routes/health.js';
+import { registerSessionRoutes } from './routes/session.js';
+import { chargerCleSession } from './services/session.js';
+
+declare module 'fastify' {
+  interface FastifyInstance {
+    db: Db;
+  }
+}
 
 export async function buildApp() {
   const app = Fastify({
     logger: env.NODE_ENV !== 'test',
   });
 
-  // Cookie signé porteur de la transaction OIDC (state + PKCE) entre la
-  // redirection vers Authelia et le callback (routes/auth.ts). Secret généré
-  // à chaque démarrage : la transaction ne survit qu'à l'aller-retour d'un
-  // même utilisateur sur la même instance, ce n'est pas un secret
-  // d'exploitation à gérer (pas d'entrée pour lui dans technique.md,
-  // Secrets).
+  // The only connection to the SQLite file; migrations are applied at startup (AD-14).
+  const db = openDb(dbPath);
+  migrate(db);
+  // Uploads cut short by a restart leave files in tmp/ (AD-65); in memory (tests) the dir is shared, leave it.
+  if (dbPath !== ':memory:') await viderTmp();
+  if (dbPath === ':memory:' && env.NODE_ENV !== 'test') {
+    app.log.warn('No /data volume: the database lives in memory and is lost at shutdown.');
+  }
+  app.decorate('db', db);
+  app.addHook('onClose', async () => {
+    db.close();
+  });
+
+  // Signed cookies: the session (AD-56) and the OIDC transaction (state + PKCE).
+  // The secret persists in <data dir>/session.key so sessions survive a restart.
   await app.register(cookie, {
-    secret: randomBytes(32).toString('hex'),
+    secret: chargerCleSession(env.SESSION_SECRET, dbPath),
   });
 
   await registerHealthRoutes(app);
   await registerAuthRoutes(app);
+  await registerBouchonRoutes(app);
+  await registerSessionRoutes(app);
 
   return app;
 }
