@@ -44,7 +44,7 @@ test('migration 0003 : base à jour de 0002, tables créées, seconde exécution
   db.exec(readFileSync(`${dir}0001-premiere-fiche.sql`, 'utf8'));
   db.exec('CREATE TABLE migrations (numero INTEGER PRIMARY KEY, nom TEXT NOT NULL, applique_le TEXT NOT NULL)');
   db.exec("INSERT INTO migrations VALUES (1,'0001-premiere-fiche.sql','x')");
-  assert.deepEqual(migrate(db), [2, 3]);
+  assert.deepEqual(migrate(db), [2, 3, 4]);
   for (const t of ['campagnes', 'scenarios', 'taches_preparation']) assert.equal(n(db, t), 0);
   assert.deepEqual(migrate(db), []);
 });

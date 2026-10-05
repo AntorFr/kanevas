@@ -5,7 +5,7 @@
 > finie se détaillent dans la tranche qui le construit.
 
 > **Construit à ce jour** : E-1, E-2, E-3 (nom, navigation et blocs : système de jeu, campagnes actives, derniers comptes-rendus, préparation pour le MJ), E-4, E-6, E-7, E-13, E-8 (sans
-> recherche), E-9 (sans relations ni pièces jointes), E-14 (Paramètres), E-15 (Système de jeu) la ligne « Campagne » de E-9, la session
+> recherche), E-9 (sans relations, avec le bloc Pièces jointes), E-14 (Paramètres), E-15 (Système de jeu), la ligne « Campagne » de E-9, la session
 > et la barre latérale. E-5 et E-10 à E-12 sont la cible.
 
 ## Format
@@ -299,7 +299,8 @@ Textes : section sans contenu : « Rien d'écrit pour l'instant. » ; fiche sans
 fiche n'a pas encore de section. » ; écriture périmée : « La section a changé depuis que vous
 l'avez ouverte. Rechargez-la pour voir la nouvelle version ; votre texte reste ci-dessous. » avec
 « Recharger la section » ; droit retiré entre-temps : « Vous ne pouvez plus modifier cette section. » ;
-confirmation de retrait : « Retirer la section « Vérité — MJ seul » ? Son contenu sera perdu. » avec
+confirmation de retrait : « Retirer la section « Vérité — MJ seul » ? Son contenu sera perdu. » (si elle porte
+des pièces jointes : « … Son contenu et ses 3 pièces jointes seront perdus. ») avec
 « Retirer la section » et « Annuler ».
 
 | État | Ce qu'on voit | Ce qu'on peut faire |
@@ -624,6 +625,104 @@ E-9) ; P-6 étape 1 ne lit que les blocs de E-3 (derniers comptes-rendus) ; B-18
 (sans scénarios ni préparation), E-13 ; l'admin d'instance sans rôle n'a aucun de ces écrans.
 Reste aux autres tranches : créer une campagne ou un scénario par l'assistant
 (`kanevas-assistant-membre`), la proposition de mise à jour depuis un CR (`kanevas-monde`).
+
+## Détail des écrans de `kanevas-fichiers`
+
+> Un seul ajout, aucun écran neuf : le **bloc Pièces jointes** de E-9. Mêmes six états et mêmes
+> textes communs que la première fiche (erreur, connexion perdue, refus « Page introuvable. »,
+> écriture en cours, échec d'une écriture). Maquette : `e09` (bloc Pièces jointes : MJ, Joueuse,
+> envoi, échecs). Le document prime sur la maquette.
+
+### E-9 — le bloc Pièces jointes
+
+Dans chaque section, sous son contenu (et sous le bloc Relations s'il existe) : un bloc **Pièces
+jointes**, inscrit au registre des blocs de section (un fichier, sans modifier un bloc existant).
+Il montre les fichiers rattachés **à cette section** : une **image** (PNG, JPEG, GIF, WebP,
+reconnue à son contenu, pas à son nom) en vignette ; tout autre fichier (PDF, texte, archive…, et
+une image SVG) comme une ligne : nom, taille, « Télécharger ». Un clic sur une vignette ouvre
+l'image entière dans un nouvel onglet.
+
+Une pièce jointe **prend la visibilité de sa section** : qui ne lit plus la section ne voit plus
+ses fichiers, et l'adresse directe répond « Page introuvable. ». Le MJ peut en plus la marquer
+**secrète** : seul le MJ la voit, sur la fiche comme à son adresse.
+
+| Rôle | Voir | Ajouter | Marquer / lever « secrète » | Retirer | Refus |
+|---|---|---|---|---|---|
+| MJ | toutes celles de ses sections, secrètes comprises | oui, sur toute section | oui | oui | sans objet |
+| Joueur | celles des sections qu'il lit, hors secrètes | sur une section qu'il **écrit** (la sienne, ou ouverte en écriture aux joueurs) | non : **absent** ; sur une section qu'il ne fait que lire, « Ajouter un fichier » est absent aussi | sur une section qu'il écrit, une pièce qu'il voit | une pièce secrète est **absente** et son adresse répond « Page introuvable. » |
+| MJ en mode Joueur | comme un Joueur qui n'est l'auteur d'aucune section (AD-39) | seulement où les joueurs écrivent | absent | seulement où les joueurs écrivent | idem |
+| Admin d'instance | aucune | non | non | non | « Page introuvable. » |
+
+Un geste qu'un rôle n'a pas est **absent** de l'écran (jamais grisé, sauf hors connexion) : sur une
+section qu'on lit sans l'écrire, ni « Ajouter un fichier » ni « Retirer » ; pour un Joueur (et le MJ en mode Joueur), ni la case
+« Secrète » ni « Rendre secrète ». Par l'API, un geste d'écriture sur une section qu'on lit sans
+l'écrire est refusé **403**, un marquage par un non-MJ aussi (403) ; ce qu'on ne lit pas répond 404.
+L'Admin d'instance n'a pas de bloc (« Page introuvable. »). Le geste « marquer / lever « secrète » » du besoin B-24 s'affiche « Rendre secrète » / « Lever le secret ».
+Le texte de limite d'un MJ en mode Joueur est celui d'un Joueur.
+
+*Ajouter.* Un bouton « Ajouter un fichier » ouvre le sélecteur de fichiers du système ; **choisir
+le fichier suffit** : l'envoi part aussitôt, un fichier après l'autre si l'on en choisit
+plusieurs (il n'y a pas de limite de taille). Le MJ (mode MJ) voit à côté du bouton une case
+« Secrète (MJ seul) », décochée, qui s'applique aux fichiers choisis ensuite : un fichier destiné à
+rester secret ne passe donc jamais, même un instant, par la table. Pendant l'envoi, une ligne
+« portrait.png — Envoi… 42 % » (`role="status"`) avec « Annuler » ; l'envoi annulé n'écrit rien. À la
+fin, la pièce rejoint la liste. Une section porte **50 pièces jointes** au plus. Un fichier vide est refusé. Si l'on en choisit plusieurs, chacun est jugé seul : un refus n'arrête pas les suivants, et chaque refus devient une ligne d'erreur qui reste, avec « Ignorer » seul (« Réessayer » n'aurait pas de sens).
+
+*Marquer, retirer.* Sur chaque pièce, le MJ a « Rendre secrète » (ou « Lever le secret » quand elle
+l'est) et « Retirer « portrait.png » » ; qui écrit la section n'a que « Retirer ». Retirer demande
+confirmation sur place : « Retirer « portrait.png » ? Le fichier sera perdu. » avec « Retirer le
+fichier » et « Annuler ». Retirer une section retire ses pièces jointes ; la confirmation de la première fiche gagne alors « … Son contenu et sa pièce jointe seront perdus. » (une) ou « … Son contenu et ses 3 pièces jointes seront perdus. » (plusieurs) ; sans pièce, son texte ne change pas. Une pièce secrète porte la
+pastille ambre « Secrète — MJ seul » et le liseré du panneau MJ. Un fichier n'est jamais modifié
+sur place : pour le remplacer, on en ajoute un autre et l'on retire l'ancien.
+
+*Textes.* Aucune pièce : « Aucune pièce jointe. » ; taille : « 842 o », « 4,2 Ko », « 3,1 Mo »,
+« 1,2 Go » (base 1024) ; nom : celui du fichier d'origine, sans dossier, 200 caractères au plus ; une vignette dit son nom en texte alternatif et porte en légende, dessous, son nom et sa taille (« portrait-aldric.png · 3,1 Mo »), puis ses boutons ; échec d'envoi : « « portrait.png » : l'envoi n'a pas
+abouti. » avec « Réessayer » et « Ignorer » ; fichier vide : « « notes.txt » est vide. » ; limite :
+« Cette section porte déjà 50 pièces jointes. » pour le MJ, « Cette section ne peut pas recevoir d'autre fichier. » pour un Joueur (qui ne voit pas les pièces secrètes : le chiffre dirait ce qu'il ne doit pas savoir) ; droit retiré entre-temps (à l'ajout ou au retrait) : « Vous ne pouvez plus ajouter de fichier à cette section. », la fiche se recharge et « Ajouter un fichier » comme « Retirer » disparaissent ; pièce déjà retirée ou devenue illisible : « Cette pièce
+jointe n'existe plus. » (la liste se recharge) ; vignette qui ne se charge pas : « Image
+indisponible. » avec « Télécharger » ; échec d'un marquage ou d'un retrait : « L'action n'a pas
+abouti. Réessayez. », l'état d'avant revient.
+
+*Pas de bloc quand il n'a rien à dire.* Un Joueur qui ne peut rien voir ni ajouter dans une section
+n'a pas de bloc : ni titre, ni compteur, ni « Aucune pièce jointe. ». Le MJ voit le bloc de chaque
+section, même vide.
+
+| État | Ce qu'on voit | Ce qu'on peut faire |
+|---|---|---|
+| vide | MJ, ou qui écrit la section : « Aucune pièce jointe. » et « Ajouter un fichier » ; un lecteur seul : pas de bloc | ajouter |
+| chargement | les pièces viennent avec la fiche : « Chargement de la fiche… » (E-9) ; une vignette en cours de chargement occupe sa place (cadre à la taille fixe) ; un envoi : la ligne « Envoi… 42 % » | annuler l'envoi |
+| erreur | envoi : « « portrait.png » : l'envoi n'a pas abouti. » et la ligne reste ; fichier vide ou limite atteinte : le refus des textes, en ligne qui reste, avec « Ignorer » ; marquage ou retrait : « L'action n'a pas abouti. Réessayez. » ; vignette : « Image indisponible. » | « Réessayer », « Ignorer », « Télécharger » |
+| connexion perdue | le bandeau ; « Ajouter un fichier », « Rendre secrète », « Lever le secret », « Retirer » désactivés ; un envoi en cours qui échoue devient l'erreur ci-dessus ; les vignettes déjà chargées restent | voir, télécharger |
+| refus | droit d'écriture retiré : « Vous ne pouvez plus ajouter de fichier à cette section. » ; pièce retirée entre-temps : « Cette pièce jointe n'existe plus. » ; section ou fiche illisible : « Page introuvable. » ; pièce secrète pour un Joueur : absente | recharger |
+| contenu long | un nom de 200 caractères passe à la ligne ; 50 pièces : la liste entière, puis le refus de limite (texte selon le rôle) à l'ajout ; un fichier de plusieurs Go : la progression en pourcentage, la taille en « Go » ; une vignette tient dans un cadre de 160 × 120 px | idem |
+
+*Critères.*
+- Étant donné « Maître Aldric » dont Antor, MJ, dépose sur « Vérité — MJ seul » un portrait avec
+  « Secrète (MJ seul) » cochée, alors Léa, Joueuse, ne voit ni le portrait, ni le bloc de cette
+  section (qu'elle ne lit pas) ; et sur « Apparence » (lue des joueurs), où Antor a déposé un
+  autre portrait puis l'a rendu secret, Léa ne voit aucune trace du fichier : ni vignette, ni
+  « Aucune pièce jointe. », ni compteur ; l'adresse directe du portrait secret lui répond « Page
+  introuvable. », comme une adresse qui n'a jamais existé.
+- Étant donné Léa auteur de « Notes de la table » avec écriture, quand elle choisit un portrait, alors
+  il s'envoie sans autre geste et apparaît en vignette ; Teo, Joueur de l'univers, ne le voit pas
+  tant que « Les joueurs la lisent » est faux, puis le voit et ne peut ni l'ajouter ni le retirer.
+- Étant donné Antor qui dépose le plan d'un lieu en PDF, alors la ligne propose « Télécharger » et
+  le fichier se télécharge sous son nom d'origine ; un fichier « image.svg » n'est jamais affiché dans la
+  page.
+- Étant donné Antor en mode Joueur sur la fiche, alors il ne voit ni la case « Secrète », ni
+  « Rendre secrète », ni les pièces secrètes, et ne peut ajouter que sur les sections que les
+  joueurs écrivent.
+- Étant donné un envoi de 2 Go en cours, quand Antor clique « Annuler », alors la ligne disparaît et
+  aucune pièce n'est ajoutée.
+- Étant donné Antor qui retire la section « Apparence » portant un portrait, alors la confirmation
+  dit « … Son contenu et sa pièce jointe seront perdus. » et, après confirmation, l'adresse du
+  portrait répond « Page introuvable. ».
+
+### Clôture de `kanevas-fichiers`
+
+B-24 → le bloc Pièces jointes de E-9 (ajouter en un geste, voir une image, télécharger un autre
+fichier, marquer secrète, retirer). Atteint par P-3 étape 4 (le plan d'un lieu) et P-7 étape 2 (le
+portrait de son personnage). Le bloc livre ses six états (B-29), ci-dessus.
 
 ## Maquettes
 

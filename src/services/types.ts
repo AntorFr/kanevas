@@ -73,6 +73,17 @@ export interface SectionVue {
   peutEcrire: boolean;
   /** Only in a GM view (never in player mode): the four switches and the author. */
   audience?: Audience;
+  /** Attachments the caller sees; filled by a sheet read (AD-67). */
+  piecesJointes?: PieceJointeVue[];
+}
+
+export interface PieceJointeVue {
+  id: number;
+  nom: string;
+  taille: number;
+  image: boolean;
+  /** Only rendered to the GM outside player mode. */
+  secrete?: boolean;
 }
 
 export interface Fiche {

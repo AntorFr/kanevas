@@ -46,7 +46,10 @@ test('joueur qui peut écrire : « Modifier » seulement', () => {
 test('MJ : audience, ordre, retrait ; section fermée aux joueurs porte « MJ seul »', () => {
   const h = rendre('mj', { audience, peutEcrire: true });
   for (const m of ['Les joueurs la lisent', 'Les joueurs l’écrivent', 'L’auteur la lit', 'L’auteur l’écrit', 'Monter', 'Descendre', 'Retirer la section', 'MJ seul', 'lea']) assert.ok(h.includes(m), m);
-  assert.ok(!rendre('mj', { audience: { ...audience, joueursLisent: true } }).includes('MJ seul'));
+  // The attachments block carries « Secrète (MJ seul) » (docs/ecrans.md): the open section is tested on the pill and the amber rule of the panel.
+  const ouverte = rendre('mj', { audience: { ...audience, joueursLisent: true } });
+  assert.ok(!ouverte.includes('pastille mj">MJ seul') && !/class="panneau reserve-mj"/.test(ouverte));
+  assert.ok(/pastille mj">MJ seul/.test(h) && /class="panneau reserve-mj"/.test(h));
 });
 
 test('section vide : « Rien d’écrit pour l’instant. »', () => {
