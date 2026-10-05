@@ -21,10 +21,21 @@ Une barre latérale unique, sur tous les écrans d'un univers :
 - **Vue d'ensemble** · **Campagnes** · **Comptes-rendus** · **Cartes** ;
 - **Lore** : Personnages, Lieux, Factions, Objets, Événements, Quêtes ;
 - pour un MJ : **Univers** ▸ Membres, Paramètres ;
-- pour un admin d'instance : **Administration**.
+- pour un admin d'instance : **Administration** ;
+- en pied, le **compte** : l'avatar et l'identifiant, qui ouvrent un menu — l'identifiant, le
+  **thème** (bascule à trois icônes : Clair, Sombre, Système) et « Se déconnecter ». Le thème et
+  la déconnexion ne sont pas étalés dans la barre.
 
-Hors d'un univers (E-1, E-2, E-5), une barre réduite : **Mes univers**, et **Administration**
-pour un admin d'instance. Un admin qui est aussi membre d'un univers garde le lien
+Chaque item porte son icône (`docs/charte.md`, « Icônes ») ; l'item courant est marqué. Sur
+téléphone (moins de 760 px), la barre est un tiroir sous un bouton « Menu », en tête de la barre
+haute.
+
+Au-dessus de chaque écran d'un univers, une **barre haute** : le fil d'Ariane (univers › type ›
+fiche ; au téléphone, l'icône du type et le titre seul) et, sur les écrans où elle existe, la
+bascule mode MJ / mode Joueur.
+
+Hors d'un univers (E-1, E-2, E-5), une barre réduite : **Mes univers**, **Administration**
+pour un admin d'instance, et le compte en pied. Un admin qui est aussi membre d'un univers garde le lien
 **Administration** dans la barre de l'univers, sous une section « Instance ».
 
 L'**assistant** est un bouton flottant « Demander à Kanevas », sur tous les écrans d'un univers,
@@ -147,7 +158,7 @@ Deux sont posés dès le cadrage parce qu'ils traversent tout :
   refusée. » et un lien « Réessayer » qui relance la connexion (même adresse). Aucun autre contenu.
 - **« Connexion indisponible »** (Authelia injoignable) : « Authelia ne répond pas pour
   l'instant. Réessayez dans un moment. » et un lien « Réessayer » qui relance la connexion (retour à l'adresse de connexion)
-- La session expire au bout de 7 jours (AD-56). **Se déconnecter** (pied de la barre latérale)
+- La session expire au bout de 7 jours (AD-56). **Se déconnecter** (menu du compte, en pied de la barre latérale)
   efface la session et mène à la connexion ; en bouchon, c'est ainsi qu'on change de compte.
 - `GET /api/moi` rend `{username, groups, limites}` du compte connecté : c'est ce que la barre latérale
   affiche (l'identifiant) et ce que les tests lisent pour constater les groupes. `limites.contenuSection`
@@ -158,8 +169,9 @@ Deux sont posés dès le cadrage parce qu'ils traversent tout :
 Sur tout écran d'un univers : en tête le **sélecteur d'univers** (nom, badge du rôle, la liste
 des univers du compte, « Mes univers » en pied de liste) ; **Vue d'ensemble** ; **Lore** :
 Personnages, Lieux, Factions, Objets, Événements, Quêtes ; **Campagnes** et **Comptes-rendus** ; pour un MJ, **Univers ▸ Membres** et **Paramètres** ; en
-pied, l'identifiant, le thème (Clair, Sombre, Système), « Se déconnecter ». Hors d'un univers (E-1,
-E-2) : « Mes univers », l'identifiant, le thème, « Se déconnecter ». **Un item dont l'écran n'est
+pied, le compte (avatar et identifiant) qui ouvre le menu du compte : l'identifiant, le thème
+(Clair, Sombre, Système, en trois icônes) et « Se déconnecter ». Hors d'un univers (E-1,
+E-2) : « Mes univers » et le compte en pied. **Un item dont l'écran n'est
 pas construit n'est pas affiché** : Cartes et Administration
 arrivent avec leurs tranches (Campagnes et Comptes-rendus sont affichés). « Paramètres » (E-14) n'est affiché qu'au MJ. Sur téléphone (moins de 760 px), la barre est un tiroir sous un
 bouton « Menu ».
@@ -170,7 +182,7 @@ bouton « Menu ».
 | chargement | le sélecteur affiche « … » ; les items fixes sont déjà là |
 | erreur | le sélecteur affiche « Univers », sans liste (le nom n'est connu que de la liste qui n'a pas chargé) ; « Impossible de charger vos univers. » dans la liste dépliée, avec « Réessayer » |
 | connexion perdue | le bandeau ; navigation inchangée |
-| refus | sur « Page introuvable. » la barre est celle d'un écran hors univers : **pas de sélecteur**, aucun nom d'univers, seulement « Mes univers », l'identifiant, le thème, « Se déconnecter » ; dans un univers, le sélecteur ne liste que les univers du compte |
+| refus | sur « Page introuvable. » la barre est celle d'un écran hors univers : **pas de sélecteur**, aucun nom d'univers, seulement « Mes univers » et le compte en pied ; dans un univers, le sélecteur ne liste que les univers du compte |
 | contenu long | 100 univers : la liste du sélecteur défile ; un nom de 80 caractères est tronqué par « … » avec infobulle |
 
 ### E-1 Accueil
@@ -854,7 +866,55 @@ B-24 → le bloc Pièces jointes de E-9 (ajouter en un geste, voir une image, t�
 fichier, marquer secrète, retirer). Atteint par P-3 étape 4 (le plan d'un lieu) et P-7 étape 2 (le
 portrait de son personnage). Le bloc livre ses six états (B-29), ci-dessus.
 
+## Détail de `kanevas-refonte-visuelle`
+
+La refonte ne change ni les droits, ni les données, ni ce que fait un écran : elle change la
+forme, et ces gestes, que le testeur vérifie. La direction, les tokens et les composants sont
+dans `docs/charte.md` ; les maquettes finies, ci-dessous, en sont l'image.
+
+**Partout.** Le cadre de E-9 sur tous les écrans d'un univers ; chaque entrée de navigation et
+chaque action a son icône ; le compte est derrière l'avatar (voir Navigation). Une action réussie
+est confirmée par un **toast** qui part seul (« « Apparence » enregistrée », « Audience de
+« Apparence » enregistrée », « Section « Rumeurs entendues » retirée ») ; un échec reste un message
+en ligne, comme aujourd'hui.
+
+**E-9 Fiche**, pour le MJ :
+
+- les sections ne sont plus des panneaux : titre, texte, puis ses blocs, en colonne de lecture ;
+- la **pastille d'audience**, juste après le titre de la section, dit qui la voit — « Lue des
+  joueurs » si les joueurs la lisent (« Écrite par les joueurs » s'ils l'écrivent aussi) ; sinon
+  « Confiée à <auteur> » si un auteur la lit ou l'écrit ; sinon « MJ seul » — et ouvre le
+  réglage d'audience, titré « Qui voit « <section> » » (les cinq réglages, en interrupteurs et
+  une liste, et « Chaque changement est enregistré aussitôt. ») ;
+- un **filet** dans la marge redit la pastille : vert plein pour une section lue ou écrite par
+  les joueurs, pointillé pour une section confiée ; une section « MJ seul » est hachurée d'ambre ;
+- « Modifier » paraît au survol et au focus de la section ; « Monter », « Descendre » et
+  « Retirer la section » sont dans son menu « ⋯ » ;
+- en édition : Échap annule, Ctrl+Entrée (⌘+Entrée sur Mac) enregistre.
+
+En mode Joueur et pour un Joueur : ni pastille réglable, ni filet, ni hachure, ni menu « ⋯ ».
+
+*Critères.*
+- Étant donné Antor, MJ, sur « Maître Aldric », quand il ouvre la pastille « Lue des joueurs »
+  d'« Apparence » et coupe « Les joueurs la lisent », alors la pastille dit « MJ seul », la section
+  se hachure d'ambre, et un toast dit « Audience de « Apparence » enregistrée ».
+- Étant donné Antor, quand il passe en mode Joueur, alors il ne voit ni pastille réglable, ni
+  filet, ni menu « ⋯ ».
+- Étant donné Antor sur n'importe quel écran d'un univers, quand il ouvre le menu de son avatar,
+  alors il y trouve le thème (Clair, Sombre, Système, en icônes) et « Se déconnecter », et la
+  barre latérale ne les porte plus.
+
 ## Maquettes
 
-`docs/maquettes/<écran>.html`, une par écran structurant, premier niveau : la structure et le
-vocabulaire, pas la finition. Elles illustrent ; ce document décide.
+`docs/maquettes/<écran>.html`, une par écran structurant. Elles sont **finies** : direction,
+tokens et composants de `docs/charte.md`, dans les deux thèmes, au bureau et au téléphone, avec
+le vrai contenu. Elles illustrent ; ce document décide, et quand les deux divergent, la maquette
+a tort.
+
+`docs/maquettes/e09-fiche.html` **fait référence pour le cadre** de tous les écrans d'un univers
+(barre latérale, sélecteur d'univers, menu du compte, barre haute, bascule de mode, bouton
+« Demander à Kanevas », tiroir au téléphone) et pour les composants partagés (bouton, menu,
+interrupteur, pastille d'audience, toast, boîte de dialogue, champ, bloc de section). Ses états
+s'ouvrent par l'adresse (`#etat-joueur`, `#etat-menu`, `#etat-perdue`… ; la liste est en tête de
+son style). Les maquettes des autres écrans, faites avant cette charte, se refont sur ce cadre
+quand leur écran est retouché.
