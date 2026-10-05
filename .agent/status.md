@@ -2,19 +2,17 @@
 
 > MàJ : 2026-10-05
 
-**État :** `main` porte le socle, la première fiche et les systèmes de jeu (E-14, E-15). `feature/kanevas-fichiers`
-y ajoute, en PR non fusionnée : la migration `0003-pieces-jointes.sql` (table `pieces_jointes`),
+**État :** `epic/kanevas` porte le socle, la première fiche, les systèmes de jeu et le suivi de la séance
+(campagnes, scénarios, préparation, comptes-rendus ; E-6, E-7, E-13). `feature/kanevas-fichiers`
+y ajoute, en PR non fusionnée : la migration `0004-pieces-jointes.sql` (table `pieces_jointes`),
 `services/stockage.ts` (octets sous `<dossier de la base>/attachments/`, `tmp/` vidé au démarrage),
 `services/pieces-jointes.ts` (`deposerPieceJointe` seule fonction d'envoi, marquer, retirer, lire, ouvrir),
 les quatre routes sous `…/sections/:id/pieces-jointes` et `…/pieces-jointes/:id[/fichier]`, et le bloc
 Pièces jointes de E-9 (AD-65 à AD-67). La lecture d'une fiche porte les pièces de chaque section ; la
-confirmation de retrait d'une section annonce ses pièces. Typecheck et tests verts. Carte : `ARCHITECTURE.md`.
+confirmation de retrait d'une section annonce ses pièces. Carte : `ARCHITECTURE.md`.
 
-**Reste :** la recette de Monsieur au navigateur en bouchon (critère : Antor dépose sur « Vérité » un
-portrait et le marque secret ; Léa ne le voit pas et l'adresse directe répond « Page introuvable. » ; Léa
-dépose un portrait sur sa section et le voit), puis la fusion et le tag `v*`. Rien n'est amorcé : univers,
-fiche et sections se créent à la main (Léa se connecte une fois avant d'être ajoutée). Aucune image
-n'existe avant le tag.
+**Reste :** la fusion et le tag `v*` (recette acceptée par Monsieur). Rien n'est amorcé : tout se crée à
+la main (Léa se connecte une fois avant d'être ajoutée). Aucune image n'existe avant le tag.
 
 **Pièges :**
 - Node 20 est la cible (CI, Dockerfile). `better-sqlite3` est donc épinglé en `^12` : la 13 exige
@@ -22,13 +20,17 @@ n'existe avant le tag.
 - La suite a été jouée sous Node 22 dans les pods de la chaîne (pas de Docker) ; la CI Node 20 fait foi.
 - La CI ne pousse d'image que sur `main` et sur un tag `v*` ; sur une PR elle ne fait qu'un build de
   validation. L'image testable n'existe qu'après le tag, posé à la fusion.
-- **Numéro de migration provisoire** : `0003-pieces-jointes.sql` (après `0002-systemes.sql`) ; si une autre tranche fusionne une migration
+- **Numéro de migration** : `0004-pieces-jointes.sql` (après `0003-suivi.sql`, recalée à la fusion, AD-51) ; si une autre tranche fusionne une migration
   avant, la phase merge la recale (AD-51).
 - Systèmes : l'accès passe toujours par `/api/univers/:id/systeme…` (AD-83) ; un refus (compte sans rôle,
   univers non rattaché) répond comme un identifiant inconnu (404) ; aucune réponse ne nomme un autre
   univers (AD-84) ; écriture de gabarit périmée = 409 `gabarit_modifie` (AD-85). Ni suppression, ni import
   de référentiel, ni visibilité différenciée des gabarits (hors tranche).
-- Rendu des écrans E-14 et E-15 non vérifié au navigateur (pas de navigateur dans les pods).
+- Suivi : scénarios et tâches se gardent sur l'univers de la **campagne** (AD-47), jamais sur un identifiant
+  d'univers fourni ; un refus répond 404. Le MJ qui crée un compte-rendu n'en est pas l'auteur affiché ;
+  l'auteur Joueur lit et écrit sa section même fermée aux autres joueurs (AD-61). Plusieurs campagnes
+  peuvent être actives (AD-60) ; aucune suppression nulle part.
+- Rendu des écrans E-14, E-15 et du suivi (E-6, E-7, E-13) non vérifié au navigateur (pas de navigateur dans les pods).
 - P-7 : le portrait (pièce jointe) est livré ; la demande à l'assistant (`kanevas-assistant-membre`) reste à venir.
 - Pièces jointes : le type est déterminé par la signature des octets, jamais par le navigateur ; seules PNG,
   JPEG, GIF, WebP sont servies en ligne, le reste (SVG compris) en `attachment` sous `nosniff` et CSP sandbox.
@@ -52,5 +54,4 @@ n'existe avant le tag.
   `listerFiches`, `blocsVisibles`/`blocsSectionVisibles` jumeaux ; le parseur form-urlencoded du
   bouchon vaut aussi pour `/api`.
 
-**Suivant :** relations et recherche (`kanevas-relier-chercher`), campagnes,
-administration.
+**Suivant :** relations et recherche (`kanevas-relier-chercher`), administration.

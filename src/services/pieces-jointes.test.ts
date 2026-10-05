@@ -64,9 +64,9 @@ const vide = (m: { db: Db; racine: string }) => {
 const version = (db: Db, id: number) =>
   db.prepare('SELECT version, modifie_le FROM sections WHERE id = ?').get(id);
 
-test('migration 0003 sur une base 0001-0002 avec sections : table créée, seconde exécution sans effet', () => {
+test('migration 0004 sur une base 0001-0003 avec sections : table créée, seconde exécution sans effet', () => {
   const db = openDb(':memory:');
-  assert.deepEqual(migrate(db), [1, 2, 3]);
+  assert.deepEqual(migrate(db), [1, 2, 3, 4]);
   assert.deepEqual(migrate(db), []);
   const cols = (db.prepare('PRAGMA table_info(pieces_jointes)').all() as { name: string }[]).map((c) => c.name);
   assert.deepEqual(cols, ['id', 'section_id', 'nom', 'type', 'taille', 'fichier', 'secrete', 'cree_le']);

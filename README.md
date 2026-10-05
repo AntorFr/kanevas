@@ -4,10 +4,12 @@ Système de gestion de JDR (lore, campagnes, comptes-rendus, droits, cartes).
 Ce dépôt porte le socle (santé, OIDC, image, CI) et la **première fonction métier** :
 un MJ crée un univers, y réunit ses joueurs et y écrit des fiches dont chaque section a
 son audience ; un joueur ne lit que ce que l'audience lui ouvre. Ce que le produit permet et
-par quels écrans : `docs/parcours.md`, `docs/ecrans.md`, `docs/donnees.md`. Il y ajoute le **système de jeu** : un référentiel (règles, créatures, objets) que plusieurs
-univers se partagent, rattaché depuis les paramètres de l'univers. Il y ajoute les **pièces jointes** : sur chaque section, déposer un fichier, voir une image, télécharger
+par quels écrans : `docs/parcours.md`, `docs/ecrans.md`, `docs/donnees.md`.
+
+Au-delà de la première fonction métier, le dépôt porte le **système de jeu** : un référentiel (règles, créatures, objets) que plusieurs
+univers se partagent, rattaché depuis les paramètres de l'univers. Il porte aussi le **suivi de la séance** : campagnes, scénarios (MJ), préparation en cinq catégories (MJ) et comptes-rendus (tout membre). Il porte enfin les **pièces jointes** : sur chaque section, déposer un fichier, voir une image, télécharger
 les autres, marquer secrète (MJ), retirer. Ni relations, ni
-recherche, ni campagnes, ni assistant, ni administration d'instance ne sont
+recherche, ni cartes, ni images, ni assistant, ni administration d'instance ne sont
 construits (tranches suivantes) : les passages de ces docs qui les décrivent sont la cible.
 
 ## Structure
@@ -17,12 +19,12 @@ Dockerfile                        Image unique : API Fastify + frontend construi
 src/
   server.ts, app.ts               Démarrage ; assemblage des plugins et des routes
   config/env.ts                   Variables d'environnement (zod)
-  db/                             SQLite (better-sqlite3), migrations/0001 à 0003, runner
-  services/                       comptes, univers, membres, fiches, sections, droits, systemes,
+  db/                             SQLite (better-sqlite3), migrations/0001 à 0004, runner
+  services/                       comptes, univers, membres, fiches, sections, droits, systemes, campagnes, scenarios, preparation, comptes_rendus,
                                    pieces-jointes, stockage (octets sur le volume) :
                                    seul code qui lit ou écrit les données ; session, oidc
   routes/                         health, auth (OIDC), session (cookie, garde, /api/moi),
-                                   bouchon, univers (+ membres), systemes, fiches (+ sections), frontend
+                                   bouchon, univers (+ membres), systemes, suivi, fiches (+ sections), frontend
   services/llm/                   Transports LLM repris d'Antre-du-maitre, branchés nulle part
 frontend/                         React + Vite : charte (ui/), écrans (src/ecrans/), barre latérale
 .github/workflows/docker-publish.yml   CI : tests, build, image GHCR
@@ -88,7 +90,7 @@ Les textes de `docs/ecrans.md` sont écrits avec l'apostrophe droite ; l'interfa
 Playwright n'est pas une dépendance du dépôt : il doit être installé globalement
 (`/usr/lib/node_modules` ou `/usr/local/lib/node_modules`) avec un Chromium, ce que ne fait ni
 `node:20-bookworm-slim` ni la CI GitHub. Là où il manque, ces tests sont **ignorés avec un message**,
-sans échec ; les autres tests (services, routes HTTP) tournent partout. La CI ne joue donc pas les e2e.
+sans échec ; les autres tests (services, routes HTTP) tournent partout. Compter environ 6 minutes pour toute la suite avec Playwright. La CI ne joue donc pas les e2e.
 
 ## Réglages
 

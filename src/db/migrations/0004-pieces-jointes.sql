@@ -1,4 +1,4 @@
--- Migration 0003 (kanevas-fichiers, number provisional until merge, AD-51):
+-- Migration 0004 (kanevas-fichiers, number provisional until merge, AD-51):
 -- attachments of a section. Only metadata lives here; the bytes are files under
 -- <data>/attachments/<fichier> (AD-7). Removing a section cascades to its rows,
 -- not to the disk: the service deletes the files.
