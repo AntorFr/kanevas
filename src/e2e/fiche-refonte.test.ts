@@ -292,6 +292,24 @@ describe('E-9 refaite : toasts', { skip: skipBrowser }, () => {
     await toastDe(antor, '« portrait.png » retiré').waitFor();
   });
 
+  test('envoi annulé : « Envoi de « lent.png » annulé »', async () => {
+    await ouvrir(antor);
+    const PNG = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==', 'base64');
+    let lacher!: () => void;
+    const tenu = new Promise<void>((r) => (lacher = r));
+    await antor.route('**/pieces-jointes', async (route: Any) => {
+      if (route.request().method() !== 'POST') return route.continue();
+      await tenu;
+      await route.abort();
+    });
+    const s = section(antor, 'Apparence');
+    await s.locator('input[type=file]').setInputFiles([{ name: 'lent.png', mimeType: 'image/png', buffer: PNG }]);
+    await s.getByRole('status').getByRole('button', { name: rxExact('Annuler') }).click();
+    await toastDe(antor, 'Envoi de « lent.png » annulé').waitFor();
+    lacher();
+    await antor.unroute('**/pieces-jointes', { behavior: 'ignoreErrors' });
+  });
+
   test('un échec n’est jamais un toast : le PATCH d’audience refusé laisse un message en ligne et aucun toast', async () => {
     await ouvrir(antor);
     await antor.route(/\/sections\/\d+$/, (r: Any) => (r.request().method() === 'PATCH' ? r.fulfill({ status: 500, body: '{}' }) : r.continue()));

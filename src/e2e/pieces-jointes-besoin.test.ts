@@ -253,6 +253,7 @@ describe('kanevas-fichiers — besoin B-24', () => {
     await plan.getByText(rx('petit.bin')).first().waitFor();
     await plan.getByText(rx('moyen.bin')).first().waitFor();
     await finEnvois(plan);
+    await plan.getByText('4,2 Ko').waitFor(); // the list is refetched after the last upload line is gone
     const t = await plan.innerText();
     assert.ok(t.includes('« notes.txt » est vide.'), t);
     assert.ok(t.includes('842 o'), t);

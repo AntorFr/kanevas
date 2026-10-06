@@ -155,6 +155,8 @@ describe('kanevas-rc-ecran-relations, E-9 bloc Relations', { skip: skipBrowser }
     const b = bloc(antor, 'Apparence');
     await b.getByRole('button', { name: 'Retirer la relation membre de → Cercle des Cendres' }).click();
     await b.getByRole('link', { name: 'Cercle des Cendres' }).waitFor({ state: 'detached' });
+    // The block reloads after a removal (it is briefly replaced by its loading state): wait for the list back.
+    await b.getByRole('link', { name: 'Lames Grises' }).waitFor();
     assert.equal(await b.locator('.liste-relations > li').count(), 1);
   });
 
