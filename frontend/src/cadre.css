@@ -20,13 +20,13 @@
 .selecteur-liste ul { list-style: none; margin: 0 0 var(--e-2); padding: 0; }
 .selecteur-liste a { display: flex; align-items: center; gap: var(--e-2); padding: 6px var(--e-2); border-radius: var(--rayon-champ); text-decoration: none; color: var(--texte); }
 .selecteur-liste a:hover { background: var(--surface-2); }
-.principal { flex: 1; min-width: 0; padding: var(--e-5) 28px; max-width: 1000px; }
+main.principal { flex: 1; min-width: 0; padding: var(--e-5) 28px; max-width: 1000px; }
 .menu-bouton { display: none; }
 @media (max-width: 760px) {
   .corps { flex-direction: column; }
   .menu-bouton { display: block; margin: var(--e-2) var(--e-4); align-self: flex-start; min-height: 40px; }
   .barre { display: none; width: auto; border-right: 0; border-bottom: 1px solid var(--bord); }
   .barre.ouverte { display: flex; }
-  .principal { padding: var(--e-4); }
+  main.principal { padding: var(--e-4); }
   .item, .bouton { min-height: 40px; }
 }
