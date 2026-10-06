@@ -1,7 +1,8 @@
+import { ChevronDown, FileText } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 import { Pastille } from '../../ui';
-import './suivi.css';
+import '../liste.css';
 
 export type Statut = 'en_preparation' | 'active' | 'terminee';
 
@@ -90,19 +91,22 @@ export function ListeStatut({
   onChange: (s: Statut) => void;
 }) {
   return (
-    <select
-      className="liste-statut"
-      aria-label={`Statut de ${nom}`}
-      value={statut}
-      disabled={desactive}
-      onChange={(e) => onChange(e.target.value as Statut)}
-    >
-      {STATUTS.map((s) => (
-        <option key={s} value={s}>
-          {LIBELLE_STATUT[s]}
-        </option>
-      ))}
-    </select>
+    <span className="champ-liste liste-statut-champ">
+      <select
+        className="liste-statut"
+        aria-label={`Statut de ${nom}`}
+        value={statut}
+        disabled={desactive}
+        onChange={(e) => onChange(e.target.value as Statut)}
+      >
+        {STATUTS.map((s) => (
+          <option key={s} value={s}>
+            {LIBELLE_STATUT[s]}
+          </option>
+        ))}
+      </select>
+      <ChevronDown size={14} strokeWidth={1.75} aria-hidden="true" />
+    </span>
   );
 }
 
@@ -111,9 +115,14 @@ export function LigneCompteRendu({ universId, cr, campagne }: { universId: strin
   return (
     <li className="ligne-suivi">
       <Link className="grand" to={`/univers/${universId}/fiche/${cr.id}`}>
-        <span className="titre-long">{cr.titre}</span>
-        {campagne && <small> — {cr.campagneNom}</small>}
-        {cr.auteur !== null && <small> {cr.auteur}</small>}
+        <span className="mono" aria-hidden="true">
+          <FileText size={14} strokeWidth={1.75} />
+        </span>
+        <span className="texte-ligne">
+          <span className="titre-long">{cr.titre}</span>
+          {campagne && <small> — {cr.campagneNom}</small>}
+          {cr.auteur !== null && <small> {cr.auteur}</small>}
+        </span>
       </Link>
       <span className="date">{dateCourte(cr.creeLe)}</span>
     </li>

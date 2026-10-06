@@ -1,3 +1,4 @@
+import { Plus } from 'lucide-react';
 import { useState, type FormEvent } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
@@ -5,12 +6,13 @@ import { appeler } from '../api';
 import { useCharge } from '../cadre-contexte';
 import type { Ecran } from '../registre';
 import type { UniversListe } from '../types';
-import { Bouton, Champ, Chargement, ErreurChargement, Fenetre, PageIntrouvable } from '../ui';
+import { Bouton, Champ, ChargementListe, ErreurChargement, Fenetre, PageIntrouvable, VideIcone, useToasts } from '../ui';
 import './ecrans.css';
 import './fiche/fiche.css';
+import './liste.css';
 import { ListeRecherche } from './fiche/liste-recherche';
 import type { Fiche } from './fiche/types';
-import { typeParSlug } from './fiche/types-fiche';
+import { iconeDuType, typeParSlug } from './fiche/types-fiche';
 
 const ECHEC = 'L’action n’a pas abouti. Réessayez.';
 
@@ -28,34 +30,36 @@ function Liste({ universId, type }: { universId: string; type: NonNullable<Retur
   const [univers] = useCharge<UniversListe>(`/api/univers/${universId}`);
   const [creation, setCreation] = useState(false);
 
-  if (univers.etat === 'chargement') return <Chargement texte="Chargement des fiches…" />;
+  if (univers.etat === 'chargement') return <ChargementListe texte="Chargement des fiches…" />;
   if (univers.etat === 'erreur' && univers.statut === 404) return <PageIntrouvable />;
   if (univers.etat === 'erreur') {
     return <ErreurChargement texte="Impossible de charger les fiches." onReessayer={() => window.location.reload()} />;
   }
   const mj = univers.valeur.role === 'mj';
   const nouveau = (
-    <Bouton variante="principal" ecrit onClick={() => setCreation(true)}>
+    <Bouton variante="principal" ecrit icone={Plus} onClick={() => setCreation(true)}>
       {type.nouveau}
     </Bouton>
   );
 
   return (
-    <>
-      <div className="entete-liste">
+    <div className="page-liste">
+      <header className="tete-liste">
+        <span className="glyphe-type" aria-hidden="true">
+          <Glyphe type={type.type} />
+        </span>
         <h1>{type.pluriel}</h1>
-      </div>
+        {mj && nouveau}
+      </header>
       <ListeRecherche
         universId={universId}
         type={type}
         recherche={params.get('q')?.trim() ?? ''}
         onRecherche={(q) => setParams(q === '' ? {} : { q })}
-        action={mj ? <p className="actions">{nouveau}</p> : undefined}
         videListe={
-          <div className="etat">
+          <VideIcone icone={iconeDuType(type.type)}>
             <p>{type.aucun} {mj ? 'pour l’instant.' : 'à voir pour l’instant.'}</p>
-            {mj && nouveau}
-          </div>
+          </VideIcone>
         }
       />
       {creation && (
@@ -66,8 +70,13 @@ function Liste({ universId, type }: { universId: string; type: NonNullable<Retur
           onCree={(f) => navigate(`/univers/${universId}/fiche/${f.id}`)}
         />
       )}
-    </>
+    </div>
   );
+}
+
+function Glyphe({ type }: { type: string }) {
+  const Icone = iconeDuType(type);
+  return <Icone size={20} strokeWidth={1.75} />;
 }
 
 function FenetreCreation({
@@ -86,6 +95,7 @@ function FenetreCreation({
   const [erreur, setErreur] = useState<string>();
   const [echec, setEchec] = useState(false);
   const [enCours, setEnCours] = useState(false);
+  const { toast } = useToasts();
 
   async function creer(e: FormEvent) {
     e.preventDefault();
@@ -102,6 +112,7 @@ function FenetreCreation({
         titre: t,
         ...(type.type === 'personnage' ? { charge: { pj } } : {}),
       });
+      toast(`« ${f.titre} » créée`);
       onCree(f);
     } catch {
       setEchec(true);
