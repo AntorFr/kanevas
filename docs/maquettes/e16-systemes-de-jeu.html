@@ -19,26 +19,27 @@
 </script>
 <style>
 /* =====================================================================================
-   MAQUETTE FINIE — E-16 Systèmes de jeu (hors de tout univers).
+   MAQUETTE FINIE — E-16 Systèmes de jeu (hors de tout univers), en grille de cartes.
    Illustre docs/ecrans.md : « Navigation » (barre réduite : Mes univers, Systèmes de jeu),
    « Inventaire » et « Rôles × écrans × actions » (E-16), et « Détail des écrans de
-   kanevas-illustrations » › « Systèmes de jeu, hors des univers » › « E-16 Systèmes de jeu »,
-   « Qui voit quoi (systèmes) », « Critères (systèmes) ». Décision : AD-94 ; AD-84 (jamais le nom
-   d'un univers dont le compte n'est pas membre). Cadre de e01-accueil.html, composants de
-   e09-fiche.html et docs/charte.md. Le document prime sur la maquette.
+   kanevas-illustrations » › « Systèmes de jeu, hors des univers » › « E-16 Systèmes de jeu »
+   (carte de système : en-tête dessiné d'après le nom, nom, usage, entrées, puces de vos univers,
+   « Lecture seule » ; toute la carte mène à E-15), « Qui voit quoi (systèmes) », « Critères
+   (systèmes) ». Décision : AD-94 ; AD-84. Composant : docs/charte.md, « Carte de système ».
+   Le document prime sur la maquette.
 
    Compte par défaut : antor (MJ de Lame d'Ébène → CoF Mini ; Joueur des Cendres de Vaëlis →
    Chroniques Oubliées Fantasy, en lecture seule).
    États à ouvrir par l'adresse (combinables : #etat-joueur,perdue) :
      #etat-joueur      lea (Joueuse de Lame d'Ébène) : CoF Mini, « Lecture seule »
      #etat-mira        mira (MJ des Landes grises) : CoF Mini, sa seule puce ; « Lame d'Ébène » absent
-     #etat-vide        teo : aucun système, texte pour un compte qui ne mène aucun univers
-     #etat-vide-mj     un MJ dont aucun univers n'a de système : le chemin vers les paramètres
+     #etat-vide        teo : aucun système (membre d'aucun univers)
      #etat-vide-joueur un compte MJ d'aucun univers (lea, ses univers sans système) : « … quand leur MJ en
                        rattachera un. », sans lien
+     #etat-vide-mj     un MJ dont aucun univers n'a de système : le chemin vers les paramètres
      #etat-chargement  « Chargement des systèmes… »
      #etat-erreur      « Impossible de charger les systèmes de jeu. » et « Réessayer »
-     #etat-perdue      connexion perdue : la liste reste
+     #etat-perdue      connexion perdue : la grille reste
      #etat-long        nom de 80 caractères, système utilisé par 12 univers du compte
      #etat-menu        menu du compte ouvert
      #etat-tiroir      barre latérale ouverte au téléphone
@@ -509,31 +510,42 @@ body.etat-creer .vue-accueil { display: none; }
 .vide-panneau .bouton { margin-top: var(--e-4); }
 [data-vue] { display: none; }
 
-/* Ligne de système (E-16) : la ligne d'univers de E-1, avec les puces des univers du compte. */
-.liste-sys { margin-top: var(--e-5); display: flex; flex-direction: column; }
-.ligne-sys { position: relative; display: grid; grid-template-columns: 40px minmax(0, 1fr) auto 16px; gap: 0 14px; align-items: start;
-  padding: 16px 12px; border-radius: var(--rayon-panneau); transition: background-color var(--duree); }
-.ligne-sys:hover { background: var(--surface-2); }
-.liste-sys li + li .ligne-sys::before { content: ""; position: absolute; left: 66px; right: 12px; top: 0; height: 1px; background: var(--bord); }
-.liste-sys li:hover .ligne-sys::before, .liste-sys li:hover + li .ligne-sys::before { background: transparent; }
-.ligne-sys .corps { min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+/* Carte de système (E-16) : de la famille de la carte de fiche de E-8 — pas de cadre ni d'ombre,
+   un en-tête visuel dessiné (dérivé du nom), le nom, l'usage, les entrées, les puces de vos univers. */
+.page.sys.grille-page { max-width: 1120px; }
+.grille-sys { display: grid; grid-template-columns: repeat(auto-fill, minmax(288px, 1fr)); gap: var(--e-5); margin-top: var(--e-5); }
+.carte-sys { position: relative; display: flex; flex-direction: column; gap: 12px; height: 100%; padding: 6px 6px 12px; margin: -6px;
+  border-radius: var(--rayon-panneau); transition: background-color var(--duree); }
+.carte-sys:hover { background: var(--surface-2); }
+.carte-sys:has(.lien-sys:focus-visible) { outline: 2px solid var(--focus); outline-offset: 0; }
+.visuel { position: relative; flex: none; aspect-ratio: 2 / 1; border-radius: var(--rayon-champ); overflow: hidden; background: var(--surface-2); }
+.visuel::after { content: ""; position: absolute; inset: 0; border-radius: inherit; box-shadow: inset 0 0 0 1px var(--bord); pointer-events: none; transition: box-shadow var(--duree); }
+.carte-sys:hover .visuel::after { box-shadow: inset 0 0 0 1px var(--bord-fort); }
+.visuel svg { display: block; width: 100%; height: 100%; }
+.visuel .treillis { stroke: var(--bord-fort); stroke-width: 1; fill: none; }
+.visuel .de { fill: var(--accent-fond); stroke: var(--accent-texte); stroke-opacity: .55; stroke-width: 1.5; stroke-linejoin: round; }
+.visuel .de .arete { fill: none; stroke-opacity: .35; }
+.visuel svg { color: var(--accent-texte); }
+.visuel .petit .de { fill: var(--surface); stroke: var(--bord-champ); stroke-opacity: .7; stroke-width: 1.25; }
+.visuel .petit .de .arete { stroke-opacity: .5; }
+.visuel .monogramme { font: 500 46px/1 var(--police-titre); font-variation-settings: "opsz" 144; letter-spacing: -.02em; fill: var(--texte-2); }
+.visuel .lecture { position: absolute; right: 8px; top: 8px; background: var(--surface); box-shadow: inset 0 0 0 1px var(--bord); }
+.pied-sys { display: flex; flex-direction: column; gap: 4px; padding: 0 4px; min-width: 0; }
 .lien-sys { font: 500 var(--t-18)/1.3 var(--police-titre); font-variation-settings: "opsz" 36; letter-spacing: -.005em; color: var(--texte);
-  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; }
 .lien-sys::after { content: ""; position: absolute; inset: 0; border-radius: var(--rayon-panneau); }
 .lien-sys:focus-visible { outline: none; }
-.ligne-sys:has(.lien-sys:focus-visible) { outline: 2px solid var(--focus); outline-offset: 0; }
 .meta { font-size: var(--t-13); color: var(--texte-3); }
-.meta .point { margin: 0 6px; opacity: .6; }
-.ligne-sys .puces { margin-top: 6px; }
-.ligne-sys .droite { margin-top: 2px; }
-.ligne-sys .fleche { margin-top: 6px; color: var(--texte-3); opacity: 0; transform: translateX(-4px); transition: opacity var(--duree), transform var(--duree) var(--courbe); }
-.ligne-sys:hover .fleche { opacity: 1; transform: none; }
-.squelette-sys { display: grid; grid-template-columns: 40px minmax(0, 1fr); gap: 14px; padding: 16px 12px; }
+.pied-sys .puces { margin-top: 6px; }
+.pied-sys .puce-u { position: static; }
+.puce-u.passive:hover { box-shadow: inset 0 0 0 1px var(--bord); background: var(--surface-2); }
+.carte-sys:hover .puce-u { background: var(--surface-3); }
+.squelette-carte { display: flex; flex-direction: column; gap: 12px; }
+.squelette-carte .os.cadre { aspect-ratio: 2 / 1; border-radius: var(--rayon-champ); }
 @media (max-width: 760px) {
-  .ligne-sys { grid-template-columns: 36px minmax(0, 1fr) auto; gap: 0 12px; padding: 14px 8px; }
-  .ligne-sys .sceau.sys { width: 36px; height: 36px; }
-  .ligne-sys .fleche { display: none; }
-  .liste-sys li + li .ligne-sys::before { left: 56px; right: 8px; }
+  .grille-sys { grid-template-columns: minmax(0, 1fr); gap: var(--e-4); margin-top: var(--e-4); }
+  .visuel { aspect-ratio: 5 / 2; }
+  .visuel .monogramme { font-size: 40px; }
   .puce-u { height: 30px; }
 }
 
@@ -593,18 +605,20 @@ body.etat-creer .vue-accueil { display: none; }
       </nav>
     </header>
     <div class="bandeau perdue" role="status"><svg class="i" aria-hidden="true"><use href="#i-wifi-off"/></svg>Connexion perdue. Ce que vous voyez peut être dépassé ; rien n'est enregistré tant qu'elle ne revient pas.</div>
-    <main class="page sys" id="contenu">
+    <main class="page sys grille-page" id="contenu">
       <header class="entete-liste">
         <div>
           <h1>Systèmes de jeu</h1>
           <p class="sous">Les référentiels de vos univers.</p>
         </div>
       </header>
-      <div data-vue="liste"><ul class="liste-sys" id="liste" aria-label="Vos systèmes de jeu"></ul></div>
+      <div data-vue="liste"><ul class="grille-sys" id="liste" aria-label="Vos systèmes de jeu"></ul></div>
       <div data-vue="chargement" role="status" aria-label="Chargement des systèmes…">
-        <div class="squelette-sys"><span class="os" style="width:40px;height:40px;border-radius:10px"></span><span><span class="os" style="width:36%;height:18px"></span><span class="os" style="width:58%;height:12px;margin-top:10px"></span><span class="os" style="width:140px;height:24px;margin-top:10px;border-radius:8px"></span></span></div>
-        <div class="squelette-sys"><span class="os" style="width:40px;height:40px;border-radius:10px"></span><span><span class="os" style="width:48%;height:18px"></span><span class="os" style="width:52%;height:12px;margin-top:10px"></span><span class="os" style="width:180px;height:24px;margin-top:10px;border-radius:8px"></span></span></div>
-        <div class="squelette-sys"><span class="os" style="width:40px;height:40px;border-radius:10px"></span><span><span class="os" style="width:30%;height:18px"></span><span class="os" style="width:60%;height:12px;margin-top:10px"></span><span class="os" style="width:120px;height:24px;margin-top:10px;border-radius:8px"></span></span></div>
+        <ul class="grille-sys" aria-hidden="true">
+          <li class="squelette-carte"><span class="os cadre"></span><span class="os" style="width:62%;height:18px"></span><span class="os" style="width:44%;height:12px"></span><span class="os" style="width:150px;height:26px;border-radius:8px"></span></li>
+          <li class="squelette-carte"><span class="os cadre"></span><span class="os" style="width:48%;height:18px"></span><span class="os" style="width:52%;height:12px"></span><span class="os" style="width:130px;height:26px;border-radius:8px"></span></li>
+          <li class="squelette-carte"><span class="os cadre"></span><span class="os" style="width:70%;height:18px"></span><span class="os" style="width:40%;height:12px"></span><span class="os" style="width:170px;height:26px;border-radius:8px"></span></li>
+        </ul>
         <p class="statut"><span class="tourne" aria-hidden="true"></span>Chargement des systèmes…</p>
       </div>
       <div class="alerte" data-vue="erreur" role="alert" style="margin-top:var(--e-5)">
@@ -692,35 +706,80 @@ body.etat-creer .vue-accueil { display: none; }
   $('#voile-tiroir').onclick = function () { tiroir(false, true); };
 
 
-  /* ---------------- E-16 : les systèmes du compte ---------------- */
+  /* ---------------- E-16 : les systèmes du compte, en cartes ---------------- */
   var CPT = {
     antor: [
       { nom: 'Chroniques Oubliées Fantasy', nb: 3, e: [24, 112, 58], u: [{ n: 'Les Cendres de Vaëlis', r: 'Joueur' }] },
-      { nom: 'CoF Mini', nb: 2, e: [3, 5, 2], u: [{ n: 'Lame d\'Ébène', r: 'MJ' }] }
+      { nom: 'CoF Mini', nb: 2, e: [3, 4, 2], u: [{ n: 'Lame d\'Ébène', r: 'MJ' }] }
     ],
-    lea: [ { nom: 'CoF Mini', nb: 2, e: [3, 5, 2], u: [{ n: 'Lame d\'Ébène', r: 'Joueur' }] } ],
-    mira: [ { nom: 'CoF Mini', nb: 2, e: [3, 5, 2], u: [{ n: 'Les Landes grises', r: 'MJ' }] } ]
+    lea: [ { nom: 'CoF Mini', nb: 2, e: [3, 4, 2], u: [{ n: 'Lame d\'Ébène', r: 'Joueur' }] } ],
+    mira: [ { nom: 'CoF Mini', nb: 2, e: [3, 4, 2], u: [{ n: 'Les Landes grises', r: 'MJ' }] } ]
   };
-  function nombre(n, un, plusieurs, fem) { return n === 0 ? (fem ? 'aucune ' : 'aucun ') + un : n + ' ' + (n > 1 ? plusieurs : un); }
+  function nombre(n, un, plusieurs, fem) { return n === 0 ? (fem ? 'aucune ' : 'aucun ') + un : n.toLocaleString('fr-FR') + ' ' + (n > 1 ? plusieurs : un); }
   function initiale(n) { return n.replace(/^(?:(?:les?|la)\s+|l['’])/i, '').charAt(0).toUpperCase(); }
+  function esc(t) { return t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;'); }
+  /* L'en-tête dessiné : un treillis triangulaire, un d20 et un d6 placés d'après le nom, et le
+     monogramme du système. Aucune donnée : le frontend le calcule du nom, toujours le même. */
+  function graine(t) { var h = 2166136261; for (var i = 0; i < t.length; i++) { h ^= t.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; }
+  function alea(s) { return function () { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; }; }
+  function monogramme(n) {
+    var mots = n.replace(/[’']/g, ' ').split(/\s+/).filter(function (m) { return /^[A-ZÀ-Ý0-9]/.test(m); });
+    return (mots.length > 1 ? mots[0].charAt(0) + mots[1].charAt(0) : n.slice(0, 2)).toUpperCase().replace(/(.)(.)/, function (x, a, b) { return a + b.toLowerCase(); });
+  }
+  /* Les dés dessinés : d20 (hexagone, triangle central), d8 (losange), d12 (pentagone). */
+  function de(type, cx, cy, R, rot) {
+    var P = function (ang, k) { var a = (ang + rot) * Math.PI / 180; return [cx + R * k * Math.cos(a), cy + R * k * Math.sin(a)]; };
+    var pt = function (q) { return q[0].toFixed(1) + ',' + q[1].toFixed(1); };
+    var poly = function (l) { return 'M' + l.map(pt).join(' L') + ' Z'; };
+    var contour, aretes = '';
+    if (type === 'd20') {
+      var hex = [0, 1, 2, 3, 4, 5].map(function (i) { return P(-90 + i * 60, 1); });
+      var tri = [0, 1, 2].map(function (i) { return P(-90 + i * 120, .52); });
+      contour = poly(hex); aretes = poly(tri);
+      [0, 1, 2].forEach(function (i) { var h = i * 2; [h, (h + 1) % 6, (h + 5) % 6].forEach(function (j) { aretes += ' M' + pt(tri[i]) + ' L' + pt(hex[j]); }); });
+    } else if (type === 'd8') {
+      var l = [P(-90, 1), P(0, .78), P(90, 1), P(180, .78)], c = P(0, 0);
+      contour = poly(l); aretes = 'M' + pt(l[1]) + ' L' + pt(l[3]) + ' M' + pt(l[0]) + ' L' + pt([c[0] + R * .12, c[1]]) + ' L' + pt(l[2]);
+    } else {
+      var pen = [0, 1, 2, 3, 4].map(function (i) { return P(-90 + i * 72, 1); });
+      var inn = [0, 1, 2, 3, 4].map(function (i) { return P(-90 + i * 72, .55); });
+      contour = poly(pen); aretes = poly(inn);
+      inn.forEach(function (q, i) { aretes += ' M' + pt(q) + ' L' + pt(pen[i]); });
+    }
+    return '<g class="de"><path d="' + contour + '"/><path class="arete" d="' + aretes + '"/></g>';
+  }
+  function visuel(nom) {
+    var r = alea(graine(nom)), s = '';
+    var pas = 26 + Math.floor(r() * 18), dx = r() * pas, ang = Math.floor(r() * 4) * 15;
+    var t = '';
+    for (var k = -14; k < 28; k++) t += '<path d="M' + (k * pas + dx).toFixed(1) + ',-300 l0,800"/>';
+    s += '<g class="treillis" opacity="' + (.45 + r() * .4).toFixed(2) + '">' + [0, 60, 120].map(function (d) { return '<g transform="rotate(' + (ang + d) + ' 200 100)">' + t + '</g>'; }).join('') + '</g>';
+    var gauche = r() < .35, type = ['d20', 'd8', 'd12'][Math.floor(r() * 3)];
+    var cx = gauche ? 110 + r() * 60 : 250 + r() * 100, cy = 60 + r() * 80, R = 54 + r() * 40;
+    s += '<circle cx="' + cx.toFixed(0) + '" cy="' + cy.toFixed(0) + '" r="' + (R * 1.7).toFixed(0) + '" class="halo"/>';
+    s += de(type, cx, cy, R, Math.floor(r() * 4) * 8 - 12);
+    // un second dé, plus petit, de l'autre côté
+    var x2 = gauche ? 300 + r() * 60 : 50 + r() * 110, y2 = 40 + r() * 40;
+    s += '<g class="petit">' + de(['d8', 'd12', 'd20'][Math.floor(r() * 3)], x2, y2, 20 + r() * 10, r() * 30) + '</g>';
+    s += '<text class="monogramme" x="' + (gauche ? 400 - 22 : 22) + '" y="176" text-anchor="' + (gauche ? 'end' : 'start') + '">' + esc(monogramme(nom)) + '</text>';
+    return '<svg viewBox="0 0 400 200" preserveAspectRatio="xMidYMax slice" aria-hidden="true"><defs><radialGradient id="h' + graine(nom) + '"><stop offset="0" stop-color="currentColor" stop-opacity=".22"/><stop offset="1" stop-color="currentColor" stop-opacity="0"/></radialGradient></defs>' +
+      s.replace('class="halo"', 'class="halo" fill="url(#h' + graine(nom) + ')"') + '</svg>';
+  }
   function puce(u) {
-    return '<a class="puce-u" href="e03-vue-ensemble.html" title="' + u.n.replace(/"/g, '&quot;') + ' — ' + (u.r === 'MJ' ? 'MJ' : 'Joueur') + '"><span class="sceau" aria-hidden="true">' + initiale(u.n) + '</span><span class="nom-puce"></span>' +
-      '<span class="pastille ' + (u.r === 'MJ' ? 'mj">MJ' : 'table">Joueur') + '</span></a>';
+    return '<span class="puce-u passive" title="' + esc(u.n) + ' — ' + u.r + '"><span class="sceau" aria-hidden="true">' + initiale(u.n) + '</span><span class="nom-puce">' + esc(u.n) + '</span>' +
+      '<span class="pastille ' + (u.r === 'MJ' ? 'mj">MJ' : 'table">Joueur') + '</span></span>';
   }
   function rendre(liste) {
     var ul = $('#liste'); ul.innerHTML = '';
     liste.slice().sort(function (a, b) { return a.nom.localeCompare(b.nom, 'fr', { sensitivity: 'base' }); }).forEach(function (s) {
       var li = document.createElement('li');
       var ecrit = s.u.some(function (u) { return u.r === 'MJ'; });
-      li.innerHTML = '<div class="ligne-sys"><span class="sceau sys" aria-hidden="true"><svg class="i"><use href="#i-dices"/></svg></span>' +
-        '<div class="corps"><a class="lien-sys" href="e15-systeme-de-jeu.html' + (ecrit ? '' : '#etat-lecture') + '"></a>' +
-        '<span class="meta">Utilisé par ' + nombre(s.nb, 'univers', 'univers') + '<span class="point">·</span>' +
-        nombre(s.e[0], 'règle', 'règles', true) + ', ' + nombre(s.e[1], 'créature', 'créatures', true) + ', ' + nombre(s.e[2], 'objet', 'objets') + '</span>' +
-        '<div class="puces" aria-label="Vos univers qui l\'utilisent">' + s.u.map(puce).join('') + '</div></div>' +
-        '<span class="droite">' + (ecrit ? '' : '<span class="pastille lecture"><svg class="i" aria-hidden="true"><use href="#i-eye"/></svg>Lecture seule</span>') + '</span>' +
-        '<svg class="i fleche" aria-hidden="true"><use href="#i-chevron-right"/></svg></div>';
-      var a = li.querySelector('.lien-sys'); a.textContent = s.nom; a.title = s.nom;
-      li.querySelectorAll('.nom-puce').forEach(function (x, i) { x.textContent = s.u[i].n; });
+      li.innerHTML = '<article class="carte-sys"><div class="visuel">' + visuel(s.nom) +
+        (ecrit ? '' : '<span class="pastille lecture"><svg class="i" aria-hidden="true"><use href="#i-eye"/></svg>Lecture seule</span>') + '</div>' +
+        '<div class="pied-sys"><a class="lien-sys" href="e15-systeme-de-jeu.html' + (ecrit ? '' : '#etat-lecture') + '" title="' + esc(s.nom) + '">' + esc(s.nom) + '</a>' +
+        '<span class="meta">Utilisé par ' + nombre(s.nb, 'univers', 'univers') + '</span>' +
+        '<span class="meta">' + nombre(s.e[0], 'règle', 'règles', true) + ' · ' + nombre(s.e[1], 'créature', 'créatures', true) + ' · ' + nombre(s.e[2], 'objet', 'objets') + '</span>' +
+        '<div class="puces" aria-label="Vos univers qui l\'utilisent">' + s.u.map(puce).join('') + '</div></div></article>';
       ul.appendChild(li);
     });
     vue(liste.length ? 'liste' : 'vide');
@@ -738,7 +797,8 @@ body.etat-creer .vue-accueil { display: none; }
   if (a('vide-mj')) { compte('mira', 'MI'); liste = []; $('#texte-vide').textContent = 'Un système se rattache depuis les paramètres d\'un univers que vous menez.'; $('#lien-vide').hidden = false; }
   if (a('long')) {
     var noms = ['Lame d\'Ébène', 'Les Cendres de Vaëlis', 'Les Landes grises', 'Brume', 'Annales véridiques des Baronnies d\'Outre-Marais, de leurs six rois et du roi fou', 'Le Serment de Karst', 'Les Marches de Ravenne', 'La Couronne d\'Aubrelune', 'Le Silence de Tessaly', 'Les Brumes d\'Ulmbre', 'Le Serment de Pellemont', 'Les Quatre Lunes'];
-    liste = liste.concat([{ nom: 'Règles maison des Baronnies d\'Outre-Marais, édition révisée et augmentée de 1347', nb: 14, e: [212, 0, 1], u: noms.map(function (n, i) { return { n: n, r: i % 3 ? 'Joueur' : 'MJ' }; }) }]);
+    liste = liste.concat([{ nom: 'Règles maison des Baronnies d\'Outre-Marais, édition révisée et augmentée de 1347', nb: 14, e: [212, 0, 1], u: noms.map(function (n, i) { return { n: n, r: i % 3 ? 'Joueur' : 'MJ' }; }) },
+      { nom: 'Dés & Dragons (5e)', nb: 1, e: [40, 310, 120], u: [{ n: 'Brume', r: 'MJ' }] }]);
   }
   rendre(liste);
   if (a('chargement')) vue('chargement');

@@ -195,7 +195,8 @@ bouton « Menu ».
 ### E-1 Accueil
 
 Liste des univers du compte : nom, début de la description, badge du rôle (MJ, Joueur) ; un clic
-mène à E-3. Bouton « Créer un univers » (→ E-2). L'identifiant du compte est affiché en tête :
+mène à E-3. *Depuis `kanevas-illustrations` (décision de Monsieur du 2026-10-06), une **grille de
+cartes**, comme E-8 et E-16 (« E-1 en cartes », plus bas).* Bouton « Créer un univers » (→ E-2). L'identifiant du compte est affiché en tête :
 « Connecté en tant que lea ». Ordre : par nom.
 
 | État | Ce qu'on voit | Ce qu'on peut faire |
@@ -1176,18 +1177,25 @@ comme une adresse inconnue.
 
 #### E-16 Systèmes de jeu
 
-Titre « Systèmes de jeu », sous-titre « Les référentiels de vos univers. ». Une ligne par système,
-par nom (ordre alphabétique sans casse), sans pagination (on ne voit que les systèmes de ses propres
-univers). Chaque ligne, un lien vers E-15 :
+Titre « Systèmes de jeu », sous-titre « Les référentiels de vos univers. ». Une **grille de
+cartes** (décision de Monsieur du 2026-10-06 : « des cartes plutôt qu'une liste se prête plus au
+contexte »), de la famille des cartes de fiche de E-8 : colonne de 1 120 px au plus,
+`repeat(auto-fill, minmax(288 px, 1fr))`, 24 px entre les cartes ; au téléphone, **une colonne**
+(une carte porte trop de texte et de puces pour deux). Par nom (ordre alphabétique sans casse), sans
+pagination (on ne voit que les systèmes de ses propres univers). **Toute la carte mène à E-15.**
+Chaque carte (composant « Carte de système » de `docs/charte.md`) :
 
-- un sceau 40 px à l'icône `dices` ;
-- le **nom** (Fraunces 18 px, une ligne, coupé par « … », infobulle) ;
-- dessous, en `--texte-3` : « Utilisé par 2 univers » puis le nombre d'entrées « 12 règles · 48
-  créatures · 20 objets » (« 1 règle », « aucune créature »…) ;
-- dessous, **ses univers** qui l'utilisent, en puces : sceau de l'univers, nom, pastille du rôle
-  (« MJ » ambre, « Joueur » vert) ; une puce mène à la vue d'ensemble de l'univers (E-3) ;
-- à droite, si le compte n'est MJ d'aucun de ces univers : la pastille neutre « Lecture seule »
-  (`eye`) ; sinon rien (modifier est le cas ordinaire du MJ).
+- un **en-tête dessiné** 2:1 (5:2 au téléphone), calculé par le frontend à partir du nom, toujours le
+  même pour un nom donné et sans aucune donnée : un treillis triangulaire, un grand dé (d20, d8 ou
+  d12) teinté d'encre avec un halo, un petit dé neutre, et le monogramme du système (« Cm » pour CoF
+  Mini) en Fraunces ; jamais une image, jamais un rectangle vide ;
+- si le compte n'est MJ d'aucun de ses univers : la pastille « Lecture seule » (`eye`) posée en haut à
+  droite de l'en-tête ;
+- le **nom** (Fraunces 18 px, deux lignes au plus, « … », infobulle) ;
+- en `--texte-3` : « Utilisé par 2 univers », puis « 3 règles · 4 créatures · 2 objets » (« 1 règle »,
+  « aucune créature »…) ;
+- **ses univers** qui l'utilisent, en puces (sceau, nom, pastille du rôle) ; dans la carte, les
+  puces ne sont pas des liens à part (la carte entière en est un) ; elles mènent à E-3 sur E-15.
 
 Pas d'action d'écriture sur E-16 : un système se crée et se rattache depuis E-14 (P-8), qui reste le
 seul chemin. Textes du vide : pour un compte MJ d'au moins un univers, « Aucun système de jeu pour
@@ -1198,11 +1206,11 @@ de vos univers apparaîtront ici quand leur MJ en rattachera un. ».
 | État | Ce qu'on voit | Ce qu'on peut faire |
 |---|---|---|
 | vide | « Aucun système de jeu pour l'instant. » et le texte selon le compte (ci-dessus) | « Mes univers » |
-| chargement | trois lignes squelettes et « Chargement des systèmes… » (`role="status"`) | — |
+| chargement | trois cartes squelettes (en-tête 2:1, nom, une ligne, une puce) et « Chargement des systèmes… » (`role="status"`) | — |
 | erreur | « Impossible de charger les systèmes de jeu. » | « Réessayer » |
-| connexion perdue | le bandeau ; la liste déjà chargée reste (E-16 n'écrit rien) | ouvrir un système |
-| refus | sans objet : E-16 n'a pas de paramètre et ne montre que ce que le compte voit ; un système détaché de tous ses univers disparaît de la liste au prochain chargement | — |
-| contenu long | un nom de 80 caractères : une ligne, « … », infobulle ; un système utilisé par 12 de ses univers : les puces passent à la ligne ; un nom d'univers de 80 caractères dans une puce : coupé à 24 caractères, infobulle | idem |
+| connexion perdue | le bandeau ; la grille déjà chargée reste (E-16 n'écrit rien) | ouvrir un système |
+| refus | sans objet : E-16 n'a pas de paramètre et ne montre que ce que le compte voit ; un système détaché de tous ses univers disparaît de la grille au prochain chargement | — |
+| contenu long | un nom de 80 caractères : deux lignes, « … », infobulle ; un système utilisé par 12 de ses univers : les puces passent à la ligne et la carte s'allonge (les cartes d'une rangée gardent leur en-tête aligné) ; un nom d'univers de 80 caractères dans une puce : coupé à 24 caractères, infobulle | idem |
 
 #### E-15 hors de l'univers
 
@@ -1296,6 +1304,43 @@ infobulle et dans l'étiquette accessible de la puce.
 - Étant donné Léa sur la vue d'ensemble de Lame d'Ébène, ouverte avant qu'Antor ne détache
   l'univers, quand elle clique « Ouvrir le système », alors elle voit « Page introuvable. » et le
   lien « Systèmes de jeu » ; revenue sur la vue d'ensemble, le bloc « Système de jeu » a disparu.
+
+### E-1 en cartes
+
+Décision de Monsieur (2026-10-06) : « Mes univers » passe en **grille de cartes**, comme E-8 et
+E-16, pour la cohérence. Ce qui ne change pas : l'en-tête (« Mes univers », « Connecté en tant que
+antor », « Créer un univers »), le compte « 2 univers », l'ordre par nom, E-2 et ses états. Grille :
+colonne de 1 120 px au plus, `repeat(auto-fill, minmax(288 px, 1fr))`, 24 px entre les cartes ; au
+téléphone, une colonne. **Toute la carte mène à E-3.** Chaque carte (composant « Carte d'univers »
+de `docs/charte.md`) :
+
+- un **en-tête dessiné** 2:1 (3:1 au téléphone), calculé du nom par le frontend : deux reliefs en
+  courbes de niveau (un territoire — là où le système a des dés), le sommet teinté d'encre, et le
+  **sceau** de l'univers (son initiale, article écarté : celui du sélecteur d'univers) en bas à
+  gauche ; la pastille du rôle (« MJ » ambre, « Joueur » vert) en haut à droite ;
+- le **nom** (Fraunces 18 px, une ligne, « … », infobulle) ;
+- la **description** sur deux lignes au plus (Newsreader 15 px), absente si l'univers n'en a pas ;
+- ce qui aide à choisir, en `--texte-3` : le **système de jeu** rattaché (`dices`, son nom coupé par
+  « … ») ou « Sans système de jeu », et le **nombre de membres** (`users-round`, « 2 membres »).
+
+Données : `GET /api/univers` rend en plus, par univers, `systeme: {id, nom}` ou `null` et
+`nbMembres` (les membres d'un univers se lisent déjà par ses membres : aucun droit nouveau, aucune
+colonne nouvelle).
+
+| État | Ce qu'on voit | Ce qu'on peut faire |
+|---|---|---|
+| vide | inchangé : « Aucun univers pour l'instant. » et les deux chemins (« Créer un univers », l'identifiant à donner au MJ) | « Créer un univers » |
+| chargement | trois cartes squelettes (en-tête, nom, deux lignes) et « Chargement de vos univers… » | — |
+| erreur | « Impossible de charger vos univers. » | « Réessayer » |
+| connexion perdue | le bandeau ; la grille déjà chargée reste ; « Créer un univers » désactivé | ouvrir un univers |
+| refus | sans objet : la page ne montre que les univers du compte | — |
+| contenu long | 100 univers : la grille défile ; un nom de 80 caractères : une ligne, « … », infobulle ; une description longue : deux lignes et « … » ; un nom de système de 80 caractères : coupé par « … », nom entier en infobulle | idem |
+
+*Critères.*
+- Étant donné Antor, quand il ouvre « Mes univers », alors il voit deux cartes, par nom : « Lame
+  d'Ébène » (MJ, « CoF Mini », « 2 membres ») et « Les Cendres de Vaëlis » (Joueur, « Chroniques
+  Oubliées Fantasy », « 2 membres ») ; un clic n'importe où sur une carte ouvre la vue d'ensemble.
+- Étant donné Teo, compte neuf, alors il voit l'état vide à deux chemins, inchangé.
 
 ### Données de départ du bouchon
 

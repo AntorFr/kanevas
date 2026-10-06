@@ -68,7 +68,7 @@ elles remplacent les anciennes routes `GET /api/univers/:id/systeme` et `…/sys
 |---|---|
 | `GET /api/moi`, `POST /api/auth/logout` | identité, groupes et limites (`limites.contenuSection`, AD-91) du compte ; fin de session |
 | `GET /api/auth/config`, `GET /api/auth/oidc/login`, `.../callback` | OIDC (publiques) |
-| `GET\|POST /api/univers`, `GET /api/univers/:id` | univers du compte (avec son rôle ; `GET …/:id` rend aussi `systeme: {id, nom}` ou `null`, AD-94) ; création |
+| `GET\|POST /api/univers`, `GET /api/univers/:id` | univers du compte (avec son rôle, `systeme: {id, nom}` ou `null` (AD-94) et, dans la liste, `nbMembres` pour les cartes de E-1) ; création |
 | `PATCH /api/univers/:id` | nom et description (MJ) |
 | `GET /api/systemes` | les systèmes rattachés à un univers dont le compte est membre, par nom : `[{id, nom, nbUnivers, entrees: {regle, creature, objet}, mesUnivers: [{id, nom, role}], peutEcrire}]` — jamais un univers dont le compte n'est pas membre (AD-84, AD-94) |
 | `GET /api/systemes/catalogue`, `POST /api/systemes` | catalogue (couples id, nom), lu par un MJ d'au moins un univers (E-14) ; création d'un système |

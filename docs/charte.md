@@ -296,6 +296,22 @@ décalé de 2 px) sur `:focus-visible`.
   (`alt=""`) car le titre suit ; elle se charge à l'approche ; une image qui échoue laisse la place
   au repli, sans message.
 
+**Carte de système** (E-16) et **carte d'univers** (E-1) : la carte de fiche, avec un en-tête
+dessiné au lieu d'une image.
+- V : mêmes règles que la carte de fiche — pas de cadre ni d'ombre, survol `--surface-2` derrière la
+  carte, filet intérieur `--bord` (`--bord-fort` au survol) ; en-tête 2:1, rayon `--rayon-champ`,
+  sur `--surface-2`. Système : treillis `--bord-fort`, grand dé en `--accent-fond` cerné
+  d'`--accent-texte` à 55 % avec un halo d'encre, petit dé `--surface` cerné de `--bord-champ`,
+  monogramme Fraunces 46 px `--texte-2`. Univers : courbes de niveau `--bord-fort`, les trois plus
+  hautes en `--accent-texte` à 50 %, sommet teinté à 14 % ; le sceau de l'univers (44 px, `--surface`)
+  en bas à gauche. Pastille posée en haut à droite (rôle, ou « Lecture seule » sur `--surface`).
+  Grille `minmax(288 px, 1fr)`, 24 px ; une colonne au téléphone. Nom Fraunces 18 px ; méta 13 px
+  `--texte-3`.
+- C : l'en-tête est décoratif (`aria-hidden`), calculé du nom, le même à chaque visite ; la carte
+  entière est un seul lien (anneau de focus autour d'elle) ; les puces d'univers d'une carte de
+  système ne sont pas des liens à part. Jamais l'ambre ni le vert dans l'en-tête : ils disent le
+  secret et la table.
+
 **Illustration de fiche** (en-tête de E-9).
 - V : cadre 4:5 de 176 px (96 px au téléphone), rayon `--rayon-panneau`, filet intérieur
   `--bord` ; les gestes du MJ dans une puce `--surface` + `--ombre-flottant`, en bas à droite,
