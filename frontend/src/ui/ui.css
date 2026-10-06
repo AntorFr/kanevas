@@ -12,6 +12,10 @@ a { color: var(--accent-texte); }
   display: inline-flex; align-items: center; justify-content: center; gap: 6px; border-radius: var(--rayon-champ);
   border: 1px solid var(--bord-fort); background: var(--surface-3); color: var(--texte); cursor: pointer;
   transition: background var(--duree), border-color var(--duree), color var(--duree); }
+.bouton { position: relative; }
+/* In flight the button keeps its width: the label stays laid out, hidden, under a centred « … ». */
+.bouton-contenu-masque { visibility: hidden; }
+.bouton-attente { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
 .bouton:hover { border-color: var(--bord-champ); }
 .bouton.principal { background: var(--accent); border-color: var(--accent); color: var(--sur-accent); font-weight: 600; }
 .bouton.principal:hover { filter: brightness(1.12); }

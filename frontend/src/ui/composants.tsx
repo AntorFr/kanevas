@@ -38,14 +38,9 @@ export function Bouton({ variante = 'neutre', petit, enCours, ecrit, disabled, o
         onClick?.(e);
       }}
     >
-      {enCours ? (
-        '…'
-      ) : (
-        <>
-          {Icone && <Icone size={14} strokeWidth={1.75} aria-hidden="true" />}
-          {children}
-        </>
-      )}
+      {Icone && <Icone size={14} strokeWidth={1.75} aria-hidden="true" style={enCours ? { visibility: 'hidden' } : undefined} />}
+      {enCours ? <span className="bouton-contenu-masque">{children}</span> : children}
+      {enCours && <span className="bouton-attente">…</span>}
     </button>
   );
 }
