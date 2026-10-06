@@ -32,7 +32,7 @@
 Source : `frontend/src/ui/tokens.css`, propriétés sur `:root` (sombre) et
 `:root[data-theme="light"]` ; `color-scheme: light dark`. Le choix Clair / Sombre / Système est
 mémorisé (`localStorage`, clé `kanevas-theme`) ; « Système » suit `prefers-color-scheme` et est
-résolu en sombre ou clair par `theme.ts`, si bien que ces deux blocs sont les seuls endroits où
+le choix par défaut tant que rien n'est mémorisé ; il est résolu en sombre ou clair par `theme.ts`, si bien que ces deux blocs sont les seuls endroits où
 vivent les couleurs. Les composants ne lisent que ces tokens : un hexadécimal dans un composant
 est un défaut. La maquette porte les mêmes noms et les mêmes valeurs.
 
@@ -128,7 +128,8 @@ Ceux que Kanevas suit :
   même endroit ; Échap annule, Ctrl/⌘ + Entrée enregistre ; le compteur de caractères est visible.
 - **Les réglages rares sont repliés** : l'audience d'une section se lit dans sa pastille et se
   règle derrière elle. **Les actions secondaires se révèlent au survol et au focus** (« Modifier »
-  et le menu « ⋯ » d'une section, « Retirer » d'une relation) ; elles restent visibles là où il
+  et le menu « ⋯ » d'une section, « Retirer » d'une relation ou d'un membre ; le rôle d'un membre se
+  règle derrière une pastille-menu, comme le statut) ; elles restent visibles là où il
   n'y a pas de survol (écran tactile).
 - **Les retours** : un toast par action réussie ; un message en ligne, au-dessus du panneau
   concerné, pour un échec (les textes sont ceux de `docs/ecrans.md`) ; des squelettes au
