@@ -409,8 +409,10 @@ describe('kanevas-suivi, du besoin', { skip: skipBrowser }, () => {
     await p.getByRole('checkbox', { name: rx('Tâche pnj') }).click();
     await attendre(p);
     await voit(p, 'Cochées (2)');
-    const t2 = await texte(p);
-    assert.ok(t2.lastIndexOf('Tâche pnj') < t2.lastIndexOf('Tâche carte'));
+    // Read the order inside the « Cochées » list only: the success toasts ("« Tâche pnj » cochée") sit elsewhere in the page text.
+    const t2 = (await texte(p)).split('Cochées (2)')[1]!.replaceAll(/«\s*Tâche (pnj|carte)\s*»\s*cochée/g, '');
+    assert.ok(t2.includes('Tâche pnj') && t2.includes('Tâche carte'));
+    assert.ok(t2.indexOf('Tâche pnj') < t2.indexOf('Tâche carte'));
     // No deletion.
     assert.equal(await p.getByRole('button', { name: /supprimer|retirer/i }).count(), 0);
     // Empty category not shown: Cartes and PNJ tasks were ticked, so with only Monstres/Déroulements/Autre left...
