@@ -101,7 +101,7 @@ pastille), `currentColor`. Servies par le produit (`lucide-react`), jamais par u
 étiquette accessible et une infobulle. Jamais d'émoji. Correspondances fixées : Vue d'ensemble
 `layout-grid`, Campagnes `flag`, Comptes-rendus `notebook-pen`, Personnages `users-round`, Lieux
 `map-pin`, Factions `shield`, Objets `gem`, Événements `hourglass`, Quêtes `scroll-text`, Membres
-`contact-round`, Paramètres `settings-2`, Relations `waypoints`, Pièces jointes `paperclip`, MJ
+`contact-round`, Paramètres `settings-2`, Systèmes de jeu `dices`, Mes univers `library`, Relations `waypoints`, Pièces jointes `paperclip`, MJ
 seul et secret `lock`, lu des joueurs `eye`, écrit par les joueurs `pen-line`, mode MJ
 `lock-keyhole`, assistant `sparkles`, thème `sun` / `moon` / `monitor`, déconnexion `log-out`,
 menu du téléphone `panel-left`.
@@ -283,6 +283,27 @@ décalé de 2 px) sur `:focus-visible`.
   perdue `--danger` sur `--danger-fond` avec `wifi-off` ; mode bouchon `--mj` sur `--mj-fond`.
 - C : `role="status"`, non fermable ; textes exacts dans `docs/ecrans.md`. Connexion perdue : tout
   geste qui écrit est désactivé (`aria-disabled`, 45 %).
+
+**Carte de fiche** (grille de E-8, `kanevas-illustrations`).
+- V : pas de cadre ni d'ombre (les cartes ne sont pas un kit) ; une vignette 4:3, rayon
+  `--rayon-champ`, filet intérieur `--bord` (`--bord-fort` au survol), l'image en `object-fit:
+  cover`, `object-position: 50% 30%` ; dessous, le titre 14 px graisse 500 sur deux lignes au plus
+  et la pastille PJ / PNJ (`.type`). Survol : `--surface-2` derrière la carte, 6 px de débord.
+  **Vignette de repli** : `--surface-2` tramé de points `--bord-fort` (1 px tous les 12 px) —
+  jamais la hachure, qui dit le secret —, l'initiale en Fraunces 56 px `--texte-3` (4,81 / 5,08:1
+  sur `--surface-2`), l'icône du type dans une puce `--surface` de 26 px en haut à gauche.
+- C : la carte entière est un lien (anneau de focus autour d'elle) ; l'image est décorative
+  (`alt=""`) car le titre suit ; elle se charge à l'approche ; une image qui échoue laisse la place
+  au repli, sans message.
+
+**Illustration de fiche** (en-tête de E-9).
+- V : cadre 4:5 de 176 px (96 px au téléphone), rayon `--rayon-panneau`, filet intérieur
+  `--bord` ; les gestes du MJ dans une puce `--surface` + `--ombre-flottant`, en bas à droite,
+  boutons-icônes `image-up` et `trash-2` (danger) ; « Ajouter une illustration » est un bouton
+  fantôme petit (`image-plus`) suivi de l'aide 12 px `--texte-3`. Envoi : barre 2 px `--accent`.
+- C : les gestes paraissent au survol et au focus (toujours sans survol), n'existent ni pour un
+  Joueur ni en mode Joueur ; le clic sur l'image ouvre l'original dans un nouvel onglet ; le
+  retrait se confirme sur place (« Annuler » prend le focus).
 
 **État de chargement.** V : des squelettes `--squelette` à la forme de la fiche (type, titre,
 filet, deux sections). C : `role="status"`, « Chargement de la fiche… » lu et écrit dessous.

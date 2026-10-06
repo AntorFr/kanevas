@@ -146,7 +146,8 @@ dernier MJ — refusé avec la raison.
 3. Il coche ou ajoute des tâches de **préparation** (E-6).
 4. **Lore** : depuis la **liste d'un type** (E-8), il crée un PNJ ; sur la **fiche** (E-9), il
    écrit « Apparence » (lue des joueurs) et « Vérité — MJ seul », relie le PNJ à sa faction,
-   dépose le plan d'un lieu.
+   dépose le plan d'un lieu, et pose le portrait d'Aldric en **illustration** de la fiche (visible
+   de qui voit la fiche) ; de retour sur la liste, la carte d'Aldric porte ce portrait.
 5. Il demande à son **assistant** (E-12) « rappelle-moi tout ce qu'on sait d'Aldric » puis
    « fais un portrait pour Apparence » : l'image est attachée à la section.
 6. **Cartes** (E-10, E-11) : il place le PNJ sur la carte de la ville, passe en **mode Joueur**
@@ -171,8 +172,9 @@ dernier MJ — refusé avec la raison.
 ### P-6 — Se resituer avant la séance (joueur, mercredi soir, téléphone)
 1. **Accueil** (E-1) → **vue d'ensemble** de l'univers (E-3) : les derniers CR, les cartes
    visibles.
-2. Il cherche « Aldric » dans la **liste des personnages** (E-8) et ouvre la **fiche** (E-9) :
-   seulement ce que la table sait.
+2. Il parcourt la **liste des personnages** (E-8), une grille de cartes illustrées, et reconnaît
+   Aldric à son portrait — ou le cherche par son nom — puis ouvre la **fiche** (E-9) : seulement ce
+   que la table sait.
 3. Il ouvre la **carte** (E-11), touche un token, relit la fiche.
 4. Ou il demande à son **assistant** (E-12) « que sait-on d'Aldric ? ».
 
@@ -189,10 +191,12 @@ laissé à moitié.
 système.*
 1. **Paramètres de l'univers** (E-14) : il choisit un système du catalogue, ou en crée un
    (« Créer et rattacher ») ; il peut aussi détacher l'univers (« Aucun système ») et, dans le même écran, corriger le nom et la description de son univers.
-2. **Système de jeu** (E-15) : il retrouve le bestiaire commun et y ajoute une créature, que les
+2. **Système de jeu** (E-15), qu'il ouvre depuis « Systèmes de jeu » (E-16, hors de ses univers) ou
+   par « Ouvrir le système » (E-14) : il retrouve le bestiaire commun et y ajoute une créature, que les
    autres univers du système voient aussitôt ; Mira, rattachée au même système, la lit.
    *Moment fort* : la créature ajoutée par Antor apparaît chez Mira, sans que Mira voie un mot du
-   lore d'Antor.
+   lore d'Antor — ni même le nom de son univers : sa liste « Systèmes de jeu » ne lui montre que
+   « Les Landes grises ».
    *Variante joueur* : Léa, Joueuse de « Lame d'Ébène », ouvre le bloc « Système de jeu » de la vue d'ensemble
    (E-3) et lit la même créature, sans pouvoir la modifier.
 *Échec* : un nom de système déjà pris — « Un système porte déjà ce nom. » ; une créature modifiée

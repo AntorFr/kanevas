@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>CoF Mini — Systèmes de jeu — Kanevas</title>
+<title>Systèmes de jeu — Kanevas</title>
 <meta name="color-scheme" content="light dark">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -19,32 +19,28 @@
 </script>
 <style>
 /* =====================================================================================
-   MAQUETTE FINIE — E-15 Système de jeu, hors du cadre d'un univers.
-   Illustre docs/ecrans.md : « Détail des écrans de kanevas-systemes » › « E-15 Système de jeu »
-   (onglets, entrées ouvertes sur place, ajouter, modifier, textes, six états) et « Détail des écrans
-   de kanevas-illustrations » › « Systèmes de jeu, hors des univers » › « E-15 hors de l'univers »
-   (barre réduite, fil « Systèmes de jeu › CoF Mini », « Dans vos univers », « Lecture seule »,
-   refus), « Qui voit quoi (systèmes) ». Décisions : AD-94, AD-84, AD-85.
-   Remplace la maquette d'avant, faite dans le cadre de l'univers. Le document prime sur la maquette.
+   MAQUETTE FINIE — E-16 Systèmes de jeu (hors de tout univers).
+   Illustre docs/ecrans.md : « Navigation » (barre réduite : Mes univers, Systèmes de jeu),
+   « Inventaire » et « Rôles × écrans × actions » (E-16), et « Détail des écrans de
+   kanevas-illustrations » › « Systèmes de jeu, hors des univers » › « E-16 Systèmes de jeu »,
+   « Qui voit quoi (systèmes) », « Critères (systèmes) ». Décision : AD-94 ; AD-84 (jamais le nom
+   d'un univers dont le compte n'est pas membre). Cadre de e01-accueil.html, composants de
+   e09-fiche.html et docs/charte.md. Le document prime sur la maquette.
 
-   Compte par défaut : antor, MJ de Lame d'Ébène (rattachée à CoF Mini) : il lit et modifie.
+   Compte par défaut : antor (MJ de Lame d'Ébène → CoF Mini ; Joueur des Cendres de Vaëlis →
+   Chroniques Oubliées Fantasy, en lecture seule).
    États à ouvrir par l'adresse (combinables : #etat-joueur,perdue) :
-     #etat-joueur      lea (Joueuse de Lame d'Ébène) : « Lecture seule », ni Ajouter ni Modifier
-     #etat-lecture     antor sur un système d'un univers où il est Joueur (Chroniques Oubliées Fantasy)
-     #etat-ouvert      « Loup des brumes » ouverte sur place
-     #etat-ajout       formulaire « Ajouter une créature »
-     #etat-edition     « Loup des brumes » en modification
-     #etat-perimee     écriture périmée : « Cette entrée a changé… », le texte reste
-     #etat-nom-pris    « Une créature porte déjà ce nom. »
-     #etat-retire      « Vous ne pouvez plus modifier ce système. »
-     #etat-vide        onglet Objets vide (MJ ; avec ,joueur : « … à voir pour l'instant. »)
-     #etat-chargement  « Chargement du système… »
-     #etat-erreur      « Impossible de charger ce système. »
-     #etat-perdue      connexion perdue : Ajouter, Modifier, Enregistrer désactivés
-     #etat-refus       système d'aucun univers du compte : « Page introuvable. »
-     #etat-long        nom d'entrée de 120 caractères, « Charger la suite »
-     #etat-toast       toast après un enregistrement
-     #etat-menu, #etat-tiroir
+     #etat-joueur      lea (Joueuse de Lame d'Ébène) : CoF Mini, « Lecture seule »
+     #etat-mira        mira (MJ des Landes grises) : CoF Mini, sa seule puce ; « Lame d'Ébène » absent
+     #etat-vide        teo : aucun système, texte pour un compte qui ne mène aucun univers
+     #etat-vide-mj     un MJ dont aucun univers n'a de système : le chemin vers les paramètres
+     #etat-chargement  « Chargement des systèmes… »
+     #etat-erreur      « Impossible de charger les systèmes de jeu. » et « Réessayer »
+     #etat-perdue      connexion perdue : la liste reste
+     #etat-long        nom de 80 caractères, système utilisé par 12 univers du compte
+     #etat-menu        menu du compte ouvert
+     #etat-tiroir      barre latérale ouverte au téléphone
+   Refus : sans objet (E-16 n'a pas de paramètre et ne montre que ce que le compte voit).
    ===================================================================================== */
 
 /* ---------- Tokens (docs/charte.md) — sombre ---------- */
@@ -539,59 +535,6 @@ body.etat-creer .vue-accueil { display: none; }
   .puce-u { height: 30px; }
 }
 
-/* E-15 hors univers : en-tête, onglets, entrées ouvertes sur place, formulaire en ligne. */
-.tete-sys { display: flex; align-items: center; gap: var(--e-4); }
-.tete-sys h1 { font: 500 var(--t-40)/1.08 var(--police-titre); letter-spacing: -.015em; font-variation-settings: "opsz" 144; overflow-wrap: anywhere; }
-.sous-sys { margin-top: var(--e-3); color: var(--texte-2); font-size: var(--t-14); display: flex; align-items: center; flex-wrap: wrap; gap: 8px 12px; }
-.vos-univers { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin-top: var(--e-4); font-size: var(--t-13); color: var(--texte-3); }
-.entete-sys { padding-bottom: var(--e-5); border-bottom: 1px solid var(--bord); }
-.barre-outils { display: flex; align-items: center; justify-content: space-between; gap: var(--e-3); flex-wrap: wrap; margin-top: var(--e-5); }
-.onglets { display: inline-flex; gap: 2px; padding: 2px; border-radius: var(--rayon-champ); background: var(--surface-2); box-shadow: inset 0 0 0 1px var(--bord); }
-.onglets button { display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 12px; border-radius: var(--rayon-item); font-size: var(--t-13); font-weight: 500; color: var(--texte-2);
-  transition: background-color var(--duree), color var(--duree), box-shadow var(--duree); }
-.onglets button:hover { color: var(--texte); }
-.onglets button[aria-selected="true"] { background: var(--surface); color: var(--texte); box-shadow: 0 0 0 1px var(--bord-fort), 0 1px 2px rgba(0,0,0,.18); }
-.onglets .nb { font-size: var(--t-12); color: var(--texte-3); font-variant-numeric: tabular-nums; }
-.entrees { margin-top: var(--e-4); }
-.entrees > li { position: relative; }
-.entrees > li + li::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 1px; background: var(--bord); }
-.entree-ligne { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 48px; padding: 0 8px; margin: 0 -8px; width: calc(100% + 16px);
-  border-radius: var(--rayon-champ); text-align: left; transition: background-color var(--duree); }
-.entree-ligne:hover { background: var(--surface-2); }
-.entree-nom { flex: none; max-width: 40%; font-size: var(--t-14); font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.entree-apercu { flex: 1; min-width: 0; color: var(--texte-3); font-size: var(--t-13); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.entree-ligne .chev { color: var(--texte-3); transition: transform var(--duree); }
-.entree-ligne[aria-expanded="true"] .chev { transform: rotate(180deg); }
-.entree-detail { padding: var(--e-2) 0 var(--e-5); }
-.entree-detail h2 { font: 500 var(--t-22)/1.25 var(--police-titre); font-variation-settings: "opsz" 48; }
-.entree-detail .contenu { margin-top: var(--e-3); max-width: 66ch; font: 400 var(--t-18)/1.68 var(--police-lecture); font-variation-settings: "opsz" 18; }
-.entree-detail .contenu p + p { margin-top: .6em; }
-.entree-detail .actions { display: flex; gap: 8px; margin-top: var(--e-4); }
-.formulaire-entree { margin: var(--e-4) 0; padding: var(--e-4); border-radius: var(--rayon-panneau); background: var(--surface); box-shadow: inset 0 0 0 1px var(--bord-fort); display: flex; flex-direction: column; gap: var(--e-4); }
-.formulaire-entree h3 { font: 600 var(--t-14)/1.3 var(--police-texte); }
-.formulaire-entree textarea.saisie { height: auto; min-height: 120px; padding: 10px 12px; resize: vertical; font: 400 var(--t-16)/1.6 var(--police-lecture); }
-.formulaire-entree .pied { display: flex; align-items: center; gap: 8px; justify-content: flex-end; }
-.formulaire-entree .pied .compteur { margin-right: auto; font-size: var(--t-12); color: var(--texte-3); font-variant-numeric: tabular-nums; }
-.formulaire-entree .alerte { margin-top: 0; }
-.formulaire-entree [data-message]:empty { display: none; }
-.fiche-sys:has(#zone-ajout:not(:empty)) #bouton-ajouter, [data-vue="systeme"]:has(#zone-ajout:not(:empty)) #bouton-ajouter { visibility: hidden; }
-.refus-sys { margin-top: 0; padding: 96px var(--e-5); box-shadow: none; }
-.refus-sys h2 { font: 500 var(--t-22)/1.3 var(--police-titre); }
-.suite { display: flex; justify-content: center; margin-top: var(--e-5); }
-body.lecture [data-mj] { display: none !important; }
-body.etat-refus .fiche-sys { display: none; }
-@media (max-width: 760px) {
-  .tete-sys h1 { font-size: var(--t-32); }
-  .barre-outils { flex-direction: column; align-items: stretch; }
-  .onglets { align-self: flex-start; }
-  .onglets button { height: 36px; }
-  .entree-ligne { flex-wrap: wrap; row-gap: 0; padding-top: 10px; padding-bottom: 10px; }
-  .entree-nom { max-width: calc(100% - 28px); flex: 1; }
-  .entree-apercu { order: 3; flex-basis: 100%; }
-  .barre-outils .bouton { min-height: 40px; }
-  .entree-detail .contenu { font-size: 17px; }
-}
-
 </style>
 </head>
 <body>
@@ -644,46 +587,34 @@ body.etat-refus .fiche-sys { display: none; }
     <header class="haute">
       <button class="icone bouton-menu" id="bouton-menu" aria-label="Menu" aria-expanded="false" aria-controls="barre"><svg class="i" aria-hidden="true"><use href="#i-panel-left"/></svg></button>
       <nav class="ariane" aria-label="Fil d'Ariane">
-        <a href="e16-systemes-de-jeu.html"><svg class="i p" aria-hidden="true" style="color:var(--texte-3)"><use href="#i-dices"/></svg><span class="long">Systèmes de jeu</span></a>
-        <svg class="i p sep-ariane" aria-hidden="true" id="ariane-sep"><use href="#i-chevron-right"/></svg>
-        <span aria-current="page" id="ariane-sys">CoF Mini</span>
+        <span aria-current="page"><svg class="i p" aria-hidden="true" style="color:var(--texte-3);margin-right:6px;vertical-align:-2px"><use href="#i-dices"/></svg>Systèmes de jeu</span>
       </nav>
     </header>
     <div class="bandeau perdue" role="status"><svg class="i" aria-hidden="true"><use href="#i-wifi-off"/></svg>Connexion perdue. Ce que vous voyez peut être dépassé ; rien n'est enregistré tant qu'elle ne revient pas.</div>
     <main class="page sys" id="contenu">
-      <section class="vide-panneau refus-sys" data-vue="refus">
-        <span class="rond"><svg class="i" aria-hidden="true"><use href="#i-compass"/></svg></span>
-        <h2>Page introuvable.</h2>
-        <a class="bouton" href="e16-systemes-de-jeu.html"><svg class="i p" aria-hidden="true"><use href="#i-dices"/></svg>Systèmes de jeu</a>
-      </section>
-      <div data-vue="chargement" role="status" aria-label="Chargement du système…">
-        <div style="display:flex;gap:16px;align-items:center"><span class="os" style="width:40px;height:40px;border-radius:10px"></span><span class="os" style="width:220px;height:36px"></span></div>
-        <span class="os" style="width:280px;height:14px;margin-top:16px"></span>
-        <span class="os" style="width:180px;height:24px;margin-top:16px;border-radius:8px"></span>
-        <span class="os" style="width:260px;height:32px;margin-top:40px;border-radius:8px"></span>
-        <span class="os" style="width:100%;height:14px;margin-top:28px"></span><span class="os" style="width:92%;height:14px;margin-top:22px"></span><span class="os" style="width:96%;height:14px;margin-top:22px"></span>
-        <p class="statut"><span class="tourne" aria-hidden="true"></span>Chargement du système…</p>
-      </div>
-      <div class="alerte" data-vue="erreur" role="alert">
-        <svg class="i" aria-hidden="true"><use href="#i-circle-alert"/></svg>
-        <div class="corps-alerte"><span>Impossible de charger ce système.</span><button class="bouton petit" data-reessayer><svg class="i p" aria-hidden="true"><use href="#i-rotate-ccw"/></svg>Réessayer</button></div>
-      </div>
-      <div data-vue="systeme">
-        <header class="entete-sys">
-          <div class="tete-sys"><span class="sceau sys" aria-hidden="true"><svg class="i"><use href="#i-dices"/></svg></span><h1 id="nom-sys">CoF Mini</h1></div>
-          <p class="sous-sys"><span id="usage">Référentiel commun · utilisé par 2 univers</span><span class="pastille lecture" id="lecture-seule" hidden><svg class="i" aria-hidden="true"><use href="#i-eye"/></svg>Lecture seule</span></p>
-          <div class="vos-univers"><span>Dans vos univers</span><span class="puces" id="puces"></span></div>
-        </header>
-        <div class="barre-outils">
-          <div class="onglets" role="tablist" aria-label="Type d'entrée" id="onglets"></div>
-          <button class="bouton principal" data-mj data-ecrit id="bouton-ajouter"><svg class="i p" aria-hidden="true"><use href="#i-plus"/></svg><span>Ajouter une créature</span></button>
+      <header class="entete-liste">
+        <div>
+          <h1>Systèmes de jeu</h1>
+          <p class="sous">Les référentiels de vos univers.</p>
         </div>
-        <div id="zone-ajout"></div>
-        <div id="message-sys"></div>
-        <ul class="entrees" id="entrees" role="tabpanel"></ul>
-        <section class="vide-panneau" id="vide-onglet" hidden><span class="rond"><svg class="i" aria-hidden="true"><use href="#i-dices"/></svg></span><p id="texte-vide-onglet"></p></section>
-        <div class="suite" id="suite" hidden><button class="bouton"><svg class="i p" aria-hidden="true"><use href="#i-arrow-down"/></svg>Charger la suite</button></div>
+      </header>
+      <div data-vue="liste"><ul class="liste-sys" id="liste" aria-label="Vos systèmes de jeu"></ul></div>
+      <div data-vue="chargement" role="status" aria-label="Chargement des systèmes…">
+        <div class="squelette-sys"><span class="os" style="width:40px;height:40px;border-radius:10px"></span><span><span class="os" style="width:36%;height:18px"></span><span class="os" style="width:58%;height:12px;margin-top:10px"></span><span class="os" style="width:140px;height:24px;margin-top:10px;border-radius:8px"></span></span></div>
+        <div class="squelette-sys"><span class="os" style="width:40px;height:40px;border-radius:10px"></span><span><span class="os" style="width:48%;height:18px"></span><span class="os" style="width:52%;height:12px;margin-top:10px"></span><span class="os" style="width:180px;height:24px;margin-top:10px;border-radius:8px"></span></span></div>
+        <div class="squelette-sys"><span class="os" style="width:40px;height:40px;border-radius:10px"></span><span><span class="os" style="width:30%;height:18px"></span><span class="os" style="width:60%;height:12px;margin-top:10px"></span><span class="os" style="width:120px;height:24px;margin-top:10px;border-radius:8px"></span></span></div>
+        <p class="statut"><span class="tourne" aria-hidden="true"></span>Chargement des systèmes…</p>
       </div>
+      <div class="alerte" data-vue="erreur" role="alert" style="margin-top:var(--e-5)">
+        <svg class="i" aria-hidden="true"><use href="#i-circle-alert"/></svg>
+        <div class="corps-alerte"><span>Impossible de charger les systèmes de jeu.</span><button class="bouton petit" data-reessayer><svg class="i p" aria-hidden="true"><use href="#i-rotate-ccw"/></svg>Réessayer</button></div>
+      </div>
+      <section class="vide-panneau" data-vue="vide" aria-labelledby="titre-vide">
+        <span class="rond"><svg class="i" aria-hidden="true"><use href="#i-dices"/></svg></span>
+        <h2 id="titre-vide">Aucun système de jeu pour l'instant.</h2>
+        <p id="texte-vide">Les systèmes de vos univers apparaîtront ici quand leur MJ en rattachera un.</p>
+        <a class="bouton" href="e01-accueil.html" id="lien-vide" hidden><svg class="i p" aria-hidden="true"><use href="#i-library"/></svg>Mes univers</a>
+      </section>
     </main>
   </div>
 </div>
@@ -759,143 +690,60 @@ body.etat-refus .fiche-sys { display: none; }
   $('#voile-tiroir').onclick = function () { tiroir(false, true); };
 
 
-  /* ---------------- E-15 : un système, hors des univers ---------------- */
-  var TYPES = [
-    { cle: 'regle', lib: 'Règles', un: 'règle', ajout: 'Ajouter une règle', aucun: 'Aucune règle', pris: 'Une règle porte déjà ce nom.', f: true },
-    { cle: 'creature', lib: 'Créatures', un: 'créature', ajout: 'Ajouter une créature', aucun: 'Aucune créature', pris: 'Une créature porte déjà ce nom.', f: true },
-    { cle: 'objet', lib: 'Objets', un: 'objet', ajout: 'Ajouter un objet', aucun: 'Aucun objet', pris: 'Un objet porte déjà ce nom.', f: false }
-  ];
-  var DONNEES = {
-    regle: [
-      ['Attaque au contact', 'Jet de d20 + Force + niveau, contre la DEF de la cible. Un 20 naturel est un critique : les dégâts sont doublés.'],
-      ['Points de chance', 'Un point de chance relance un jet raté, ou ajoute +10 au résultat. Chaque personnage en a deux par séance.'],
-      ['Repos', 'Une heure de repos rend 1d6 + Constitution points de vie, une fois par jour. Une nuit complète rend tout.']
+  /* ---------------- E-16 : les systèmes du compte ---------------- */
+  var CPT = {
+    antor: [
+      { nom: 'Chroniques Oubliées Fantasy', nb: 3, e: [24, 112, 58], u: [{ n: 'Les Cendres de Vaëlis', r: 'Joueur' }] },
+      { nom: 'CoF Mini', nb: 2, e: [3, 5, 2], u: [{ n: 'Lame d\'Ébène', r: 'MJ' }] }
     ],
-    creature: [
-      ['Garde du sceau', 'Gardien de pierre lié à un sceau royal ; il ne quitte jamais la porte qu\'il garde, et ne la laisse passer qu\'à qui porte le sceau.\nNiveau 4 · DEF 16 · PV 30. Masse de pierre +6, DM 1d8+3.'],
-      ['Gobelin des Landes', 'Petite créature rusée, vive et lâche. Attaque en bande et fuit dès que son chef tombe.\nNiveau 1 · DEF 12 · PV 6. Lance +2, DM 1d6.'],
-      ['Loup des brumes', 'Prédateur solitaire des marais. On l\'entend avant de le voir, jamais l\'inverse : il chasse dans le brouillard, et le brouillard le suit.\nNiveau 2 · DEF 13 · PV 14. Morsure +4, DM 1d6+2 ; une cible mordue est renversée sur 15+.'],
-      ['Sentinelle d\'Ébène', 'Gardienne animée de pierre noire, sculptée pour un roi que personne ne nomme plus.\nNiveau 6 · DEF 18 · PV 52.'],
-      ['Vouivre des tourbières', 'Serpent ailé au front orné d\'une gemme. Qui la vole ne dort plus.\nNiveau 7 · DEF 17 · PV 60. Souffle de boue, une fois tous les 1d6 tours.']
-    ],
-    objet: [
-      ['Lame grise', 'Épée courte des Lames Grises. +1 aux attaques de nuit.'],
-      ['Sceau de Val-Fortin', 'Ouvre les portes de la cité haute. Ne se prête pas.']
-    ]
+    lea: [ { nom: 'CoF Mini', nb: 2, e: [3, 5, 2], u: [{ n: 'Lame d\'Ébène', r: 'Joueur' }] } ],
+    mira: [ { nom: 'CoF Mini', nb: 2, e: [3, 5, 2], u: [{ n: 'Les Landes grises', r: 'MJ' }] } ]
   };
-  var etat = { type: 'creature', ecrit: true, ouvert: null, perdue: false };
-  var h = decodeURIComponent(location.hash || ''), et = h.indexOf('#etat-') === 0 ? h.slice(6).split(',') : [];
-  var a = function (x) { return et.indexOf(x) >= 0; };
-  function T() { return TYPES.filter(function (t) { return t.cle === etat.type; })[0]; }
-  function vue(v) { $$('[data-vue]').forEach(function (x) { x.style.display = x.dataset.vue === v ? (/alerte|vide-panneau/.test(x.className) ? 'flex' : 'block') : 'none'; }); }
+  function nombre(n, un, plusieurs, fem) { return n === 0 ? (fem ? 'aucune ' : 'aucun ') + un : n + ' ' + (n > 1 ? plusieurs : un); }
   function initiale(n) { return n.replace(/^(?:(?:les?|la)\s+|l['’])/i, '').charAt(0).toUpperCase(); }
-  function puces(us) {
-    $('#puces').innerHTML = us.map(function (u) {
-      return '<a class="puce-u" href="e03-vue-ensemble.html" title="' + u.n.replace(/"/g, '&quot;') + '"><span class="sceau" aria-hidden="true">' + initiale(u.n) + '</span><span class="nom-puce">' + u.n.replace(/</g, '&lt;') + '</span><span class="pastille ' + (u.r === 'MJ' ? 'mj">MJ' : 'table">Joueur') + '</span></a>';
-    }).join('');
+  function puce(u) {
+    return '<a class="puce-u" href="e03-vue-ensemble.html" title="' + u.n.replace(/"/g, '&quot;') + ' — ' + (u.r === 'MJ' ? 'MJ' : 'Joueur') + '"><span class="sceau" aria-hidden="true">' + initiale(u.n) + '</span><span class="nom-puce"></span>' +
+      '<span class="pastille ' + (u.r === 'MJ' ? 'mj">MJ' : 'table">Joueur') + '</span></a>';
   }
-  function onglets() {
-    $('#onglets').innerHTML = TYPES.map(function (t) {
-      return '<button role="tab" data-type="' + t.cle + '" aria-selected="' + (t.cle === etat.type) + '" tabindex="' + (t.cle === etat.type ? 0 : -1) + '">' + t.lib + '<span class="nb">' + DONNEES[t.cle].length + '</span></button>';
-    }).join('');
-    $$('#onglets [role=tab]').forEach(function (b) { b.onclick = function () { etat.type = b.dataset.type; etat.ouvert = null; $('#zone-ajout').innerHTML = ''; $('#message-sys').innerHTML = ''; rendre(); }; });
-  }
-  function paragraphes(c) { return c.split('\n').map(function (p) { return '<p>' + p.replace(/</g, '&lt;') + '</p>'; }).join(''); }
-  function rendre() {
-    onglets();
-    var t = T(), ul = $('#entrees'); ul.innerHTML = '';
-    $('#bouton-ajouter span').textContent = t.ajout;
-    var l = DONNEES[etat.type].slice().sort(function (x, y) { return x[0].localeCompare(y[0], 'fr', { sensitivity: 'base' }); });
-    $('#vide-onglet').hidden = !!l.length;
-    $('#texte-vide-onglet').textContent = t.aucun + (etat.ecrit ? ' pour l\'instant.' : ' à voir pour l\'instant.');
-    l.forEach(function (e, i) {
-      var li = document.createElement('li'), id = 'entree-' + i, ouvert = etat.ouvert === e[0];
-      li.innerHTML = '<button class="entree-ligne" aria-expanded="' + ouvert + '" aria-controls="' + id + '"><span class="entree-nom"></span><span class="entree-apercu"></span><svg class="i p chev" aria-hidden="true"><use href="#i-chevron-down"/></svg></button>' +
-        '<div class="entree-detail" id="' + id + '"' + (ouvert ? '' : ' hidden') + '><h2></h2><div class="contenu">' + paragraphes(e[1]) + '</div>' +
-        '<div class="actions" data-mj><button class="bouton" data-ecrit data-modifier><svg class="i p" aria-hidden="true"><use href="#i-pencil"/></svg>Modifier</button></div></div>';
-      li.querySelector('.entree-nom').textContent = e[0]; li.querySelector('.entree-nom').title = e[0];
-      li.querySelector('.entree-apercu').textContent = e[1].split('\n')[0];
-      li.querySelector('h2').textContent = e[0];
-      li.querySelector('.entree-ligne').onclick = function () { etat.ouvert = ouvert ? null : e[0]; rendre(); };
-      li.querySelector('[data-modifier]').onclick = function () { if (!etat.perdue) editer(li, e); };
+  function rendre(liste) {
+    var ul = $('#liste'); ul.innerHTML = '';
+    liste.slice().sort(function (a, b) { return a.nom.localeCompare(b.nom, 'fr', { sensitivity: 'base' }); }).forEach(function (s) {
+      var li = document.createElement('li');
+      var ecrit = s.u.some(function (u) { return u.r === 'MJ'; });
+      li.innerHTML = '<div class="ligne-sys"><span class="sceau sys" aria-hidden="true"><svg class="i"><use href="#i-dices"/></svg></span>' +
+        '<div class="corps"><a class="lien-sys" href="e15-systeme-de-jeu.html' + (ecrit ? '' : '#etat-lecture') + '"></a>' +
+        '<span class="meta">Utilisé par ' + nombre(s.nb, 'univers', 'univers') + '<span class="point">·</span>' +
+        nombre(s.e[0], 'règle', 'règles', true) + ', ' + nombre(s.e[1], 'créature', 'créatures', true) + ', ' + nombre(s.e[2], 'objet', 'objets') + '</span>' +
+        '<div class="puces" aria-label="Vos univers qui l\'utilisent">' + s.u.map(puce).join('') + '</div></div>' +
+        '<span class="droite">' + (ecrit ? '' : '<span class="pastille lecture"><svg class="i" aria-hidden="true"><use href="#i-eye"/></svg>Lecture seule</span>') + '</span>' +
+        '<svg class="i fleche" aria-hidden="true"><use href="#i-chevron-right"/></svg></div>';
+      var a = li.querySelector('.lien-sys'); a.textContent = s.nom; a.title = s.nom;
+      li.querySelectorAll('.nom-puce').forEach(function (x, i) { x.textContent = s.u[i].n; });
       ul.appendChild(li);
     });
-    if (etat.perdue) $$('[data-ecrit]').forEach(function (b) { b.setAttribute('aria-disabled', 'true'); });
+    vue(liste.length ? 'liste' : 'vide');
   }
-  function formulaire(titre, nom, contenu, libOk) {
-    var f = document.createElement('form'); f.className = 'formulaire-entree'; f.noValidate = true;
-    f.innerHTML = '<h3></h3><div data-message></div><label class="champ"><span>Nom</span><input class="saisie" name="nom" autocomplete="off"><span class="erreur" hidden></span></label>' +
-      '<label class="champ"><span>Contenu <small style="color:var(--texte-3);font-weight:400">facultatif</small></span><textarea class="saisie" name="contenu"></textarea></label>' +
-      '<div class="pied"><span class="compteur"></span><button class="bouton" type="button" data-annuler>Annuler</button><button class="bouton principal" type="submit" data-ecrit></button></div>';
-    f.querySelector('h3').textContent = titre; f.nom.value = nom; f.contenu.value = contenu; f.querySelector('[type=submit]').textContent = libOk;
-    var cpt = function () { f.querySelector('.compteur').textContent = f.contenu.value.length.toLocaleString('fr-FR') + ' / 20 000'; };
-    f.contenu.oninput = cpt; cpt();
-    return f;
-  }
-  function ajouter() {
-    if (etat.perdue) return;
-    var t = T(), f = formulaire(t.ajout, '', '', 'Ajouter');
-    $('#zone-ajout').innerHTML = ''; $('#zone-ajout').appendChild(f);
-    f.querySelector('[data-annuler]').onclick = function () { $('#zone-ajout').innerHTML = ''; };
-    f.onsubmit = function (ev) {
-      ev.preventDefault();
-      var n = f.nom.value.trim(), err = f.querySelector('.erreur');
-      if (!n) { err.hidden = false; err.textContent = 'Erreur : le nom est obligatoire.'; f.nom.setAttribute('aria-invalid', 'true'); return; }
-      if (DONNEES[etat.type].some(function (e) { return e[0].toLowerCase() === n.toLowerCase(); })) { err.hidden = false; err.textContent = t.pris; return; }
-      DONNEES[etat.type].push([n, f.contenu.value]); $('#zone-ajout').innerHTML = ''; etat.ouvert = n; rendre();
-      toast('« ' + n + ' » ' + (t.f ? 'ajoutée' : 'ajouté'));
-    };
-    setTimeout(function () { f.nom.focus(); }, 0);
-    return f;
-  }
-  function editer(li, e) {
-    var f = formulaire('Modifier « ' + e[0] + ' »', e[0], e[1], 'Enregistrer');
-    var d = li.querySelector('.entree-detail'); d.hidden = true; li.appendChild(f);
-    f.querySelector('[data-annuler]').onclick = function () { f.remove(); d.hidden = false; };
-    f.onsubmit = function (ev) { ev.preventDefault(); e[0] = f.nom.value.trim() || e[0]; e[1] = f.contenu.value; etat.ouvert = e[0]; rendre(); toast('« ' + e[0] + ' » ' + (T().f ? 'enregistrée' : 'enregistré')); };
-    return f;
-  }
-  $('#bouton-ajouter').onclick = ajouter;
-  $$('[data-reessayer]').forEach(function (b) { b.onclick = function () { vue('chargement'); setTimeout(function () { vue('systeme'); }, 600); }; });
-  function lecture(c) { etat.ecrit = false; document.body.classList.add('lecture'); $('#lecture-seule').hidden = false; }
+  function vue(v) { $$('[data-vue]').forEach(function (x) { x.style.display = x.dataset.vue === v ? (/alerte|vide-panneau/.test(x.className) ? 'flex' : 'block') : 'none'; }); }
+  $$('[data-reessayer]').forEach(function (b) { b.onclick = function () { vue('chargement'); setTimeout(function () { rendre(CPT.antor); }, 600); }; });
   function compte(ident, initiales) { $$('[data-ident]').forEach(function (x) { x.textContent = ident; }); $$('[data-initiales]').forEach(function (x) { x.textContent = initiales; }); }
-
-  var mesUnivers = [{ n: 'Lame d\'Ébène', r: 'MJ' }];
-  if (a('joueur')) { compte('lea', 'LÉ'); mesUnivers = [{ n: 'Lame d\'Ébène', r: 'Joueur' }]; lecture(); }
-  if (a('lecture')) {
-    mesUnivers = [{ n: 'Les Cendres de Vaëlis', r: 'Joueur' }]; lecture();
-    $('#nom-sys').textContent = 'Chroniques Oubliées Fantasy'; $('#ariane-sys').textContent = 'Chroniques Oubliées Fantasy'; $('#usage').textContent = 'Référentiel commun · utilisé par 3 univers';
-    document.title = 'Chroniques Oubliées Fantasy — Systèmes de jeu — Kanevas';
+  var liste = CPT.antor;
+  var h = decodeURIComponent(location.hash || ''), et = h.indexOf('#etat-') === 0 ? h.slice(6).split(',') : [];
+  var a = function (x) { return et.indexOf(x) >= 0; };
+  if (a('joueur')) { compte('lea', 'LÉ'); liste = CPT.lea; }
+  if (a('mira')) { compte('mira', 'MI'); liste = CPT.mira; }
+  if (a('vide')) { compte('teo', 'TE'); liste = []; }
+  if (a('vide-mj')) { compte('mira', 'MI'); liste = []; $('#texte-vide').textContent = 'Un système se rattache depuis les paramètres d\'un univers que vous menez.'; $('#lien-vide').hidden = false; }
+  if (a('long')) {
+    var noms = ['Lame d\'Ébène', 'Les Cendres de Vaëlis', 'Les Landes grises', 'Brume', 'Annales véridiques des Baronnies d\'Outre-Marais, de leurs six rois et du roi fou', 'Le Serment de Karst', 'Les Marches de Ravenne', 'La Couronne d\'Aubrelune', 'Le Silence de Tessaly', 'Les Brumes d\'Ulmbre', 'Le Serment de Pellemont', 'Les Quatre Lunes'];
+    liste = liste.concat([{ nom: 'Règles maison des Baronnies d\'Outre-Marais, édition révisée et augmentée de 1347', nb: 14, e: [212, 0, 1], u: noms.map(function (n, i) { return { n: n, r: i % 3 ? 'Joueur' : 'MJ' }; }) }]);
   }
-  puces(mesUnivers);
-  if (a('vide')) etat.type = 'objet', DONNEES.objet = [];
-  if (a('long')) { DONNEES.creature.push(['Chimère des Baronnies d\'Outre-Marais, dite la Bête aux trois gueules, gardienne des gués noyés sous le Prieuré', 'Trois têtes, trois humeurs ; une seule faim.']); $('#suite').hidden = false; }
-  if (a('ouvert') || a('edition') || a('perimee')) etat.ouvert = 'Loup des brumes';
-  if (a('perdue')) { etat.perdue = true; document.body.classList.add('etat-perdue'); $('#bouton-ajouter').setAttribute('aria-disabled', 'true'); }
-  vue('systeme');
-  rendre();
-  if (a('ajout') || a('nom-pris')) { var fa = ajouter(); if (a('nom-pris')) { fa.nom.value = 'Loup des brumes'; var er = fa.querySelector('.erreur'); er.hidden = false; er.textContent = 'Une créature porte déjà ce nom.'; } }
-  if (a('edition') || a('perimee')) {
-    var li = $$('#entrees > li').filter(function (x) { return x.querySelector('.entree-nom').textContent === 'Loup des brumes'; })[0];
-    var fe = editer(li, DONNEES.creature[2]);
-    fe.contenu.value += '\nIl hurle trois fois avant la pleine lune.';
-    if (a('perimee')) fe.querySelector('[data-message]').innerHTML = '<div class="alerte" role="alert"><svg class="i" aria-hidden="true"><use href="#i-circle-alert"/></svg><div class="corps-alerte"><span>Cette entrée a changé depuis que vous l\'avez ouverte. Rechargez-la pour voir la nouvelle version ; votre texte reste ci-dessous.</span><button class="bouton petit" type="button"><svg class="i p" aria-hidden="true"><use href="#i-rotate-ccw"/></svg>Recharger</button></div></div>';
-  }
-  if (a('retire')) $('#message-sys').innerHTML = '<div class="alerte" role="alert"><svg class="i" aria-hidden="true"><use href="#i-circle-alert"/></svg><div class="corps-alerte"><span>Vous ne pouvez plus modifier ce système.</span></div></div>';
+  rendre(liste);
   if (a('chargement')) vue('chargement');
   if (a('erreur')) vue('erreur');
-  if (a('refus')) { vue('refus'); $('#ariane-sep').style.display = 'none'; $('#ariane-sys').style.display = 'none'; }
-  if (a('toast')) setTimeout(function () { toast('« Loup des brumes » enregistré'); }, 80);
+  if (a('perdue')) document.body.classList.add('etat-perdue');
   if (a('menu')) setTimeout(function () { ouvrirMenu($('#menu-compte'), $('#bouton-compte')); }, 60);
   if (a('tiroir')) tiroir(true);
-  document.addEventListener('keydown', function (e) {
-    if (e.key === 'Escape') { if (ouvert) fermerMenu(true); else if (document.body.classList.contains('tiroir-ouvert')) tiroir(false, true); }
-    var tab = e.target.closest && e.target.closest('#onglets [role=tab]');
-    if (tab && (e.key === 'ArrowRight' || e.key === 'ArrowLeft')) {
-      var i = TYPES.findIndex(function (t) { return t.cle === etat.type; }); i = (i + (e.key === 'ArrowRight' ? 1 : 2)) % 3;
-      etat.type = TYPES[i].cle; rendre(); $('#onglets [aria-selected=true]').focus(); e.preventDefault();
-    }
-  });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') { if (ouvert) fermerMenu(true); else if (document.body.classList.contains('tiroir-ouvert')) tiroir(false, true); } });
 
 })();
 </script>

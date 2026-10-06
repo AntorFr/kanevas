@@ -34,8 +34,10 @@ Au-dessus de chaque écran d'un univers, une **barre haute** : le fil d'Ariane (
 fiche ; au téléphone, l'icône du type et le titre seul) et, sur les écrans où elle existe, la
 bascule mode MJ / mode Joueur.
 
-Hors d'un univers (E-1, E-2, E-5), une barre réduite : **Mes univers**, **Administration**
-pour un admin d'instance, et le compte en pied. Un admin qui est aussi membre d'un univers garde le lien
+Hors d'un univers (E-1, E-2, E-5, E-15, E-16), une barre réduite : **Mes univers**, **Systèmes de
+jeu**, **Administration** pour un admin d'instance, et le compte en pied. Depuis un univers, le menu
+du sélecteur d'univers mène à **Mes univers** et à **Systèmes de jeu** ; le lien du système de E-3 et
+de E-14 mène à sa page (E-15), hors de l'univers (décision du 2026-10-06, AD-94). Un admin qui est aussi membre d'un univers garde le lien
 **Administration** dans la barre de l'univers, sous une section « Instance ».
 
 L'**assistant** est un bouton flottant « Demander à Kanevas », sur tous les écrans d'un univers,
@@ -53,14 +55,15 @@ bascule existe (fiche, carte).
 | **E-5 Administration** | nav (admin d'instance) | lister les univers de l'instance, en gérer les membres — jamais le contenu | P-2 |
 | **E-6 Campagne** | nav Campagnes (liste) ; E-3 | liste des campagnes ; pour une campagne : statut, scénarios et « Nouveau scénario » (MJ), préparation (MJ), comptes-rendus, « Nouveau compte-rendu » | P-3, P-4 |
 | **E-7 Scénario** | E-6 (MJ) | écrire et relire un scénario | P-3 |
-| **E-8 Liste de fiches** | nav Lore | les fiches d'un type que le compte peut lire ; chercher dans ce type ; créer (MJ) | P-3, P-6 |
-| **E-9 Fiche** | E-8 ; un token ; un lien ; E-13 | lire et écrire les sections permises ; ajouter, réordonner, retirer une section, régler son audience, relier (MJ) ; déposer, marquer secrète, retirer une pièce jointe ; bascule mode Joueur (MJ). Un compte-rendu s'ouvre ici. | P-3 à P-7 |
+| **E-8 Liste de fiches** | nav Lore | les fiches d'un type que le compte peut lire, en grille de cartes illustrées ; chercher dans ce type ; créer (MJ) | P-3, P-6 |
+| **E-9 Fiche** | E-8 ; un token ; un lien ; E-13 | lire et écrire les sections permises ; ajouter, réordonner, retirer une section, régler son audience, relier (MJ) ; déposer, marquer secrète, retirer une pièce jointe ; poser, remplacer, retirer l'illustration (MJ) ; bascule mode Joueur (MJ). Un compte-rendu s'ouvre ici. | P-3 à P-7 |
 | **E-10 Cartes** | nav Cartes | les cartes lisibles ; créer une carte illustrée (avec son image de fond) ou un graphe (MJ) | P-3, P-9 |
 | **E-11 Carte** | E-10 ; E-3 | carte illustrée : fond, tokens ; graphe : nœuds et liens. MJ : déposer ou changer le fond, placer, configurer, rendre visible, mode Joueur. Joueur : ouvrir la fiche d'un token. | P-3, P-6, P-9 |
 | **E-12 Assistant** | bouton flottant, sur tout écran d'univers | converser ; voir ce que l'agent a écrit, avec un lien ; MJ : propositions de mise à jour (actuel/proposé, **Appliquer**, **Abandonner**), images générées | P-3, P-5, P-6, P-7 |
 | **E-13 Comptes-rendus** | nav Comptes-rendus ; E-3 | tous les CR lisibles de l'univers, du plus récent, avec leur campagne | P-4, P-5 |
 | **E-14 Paramètres de l'univers** | nav Univers (MJ) | nom, description, système de jeu (choisir dans le catalogue, en créer un) | P-8 |
-| **E-15 Système de jeu** | E-14 ; lien depuis E-3 | le référentiel commun : règles, créatures, objets ; ajouter, modifier (MJ d'un univers rattaché) | P-8 |
+| **E-15 Système de jeu** | E-16 ; lien depuis E-3 et E-14 | le référentiel commun : règles, créatures, objets ; ajouter, modifier (MJ d'un univers rattaché) ; hors du cadre d'un univers | P-8 |
+| **E-16 Systèmes de jeu** | barre réduite ; menu du sélecteur d'univers | les systèmes rattachés aux univers du compte, chacun avec ceux de ses univers qui l'utilisent | P-8 |
 
 Les pages de connexion du serveur (« Connexion refusée », « Connexion indisponible », atteintes
 depuis P-1) et le bandeau du mode bouchon sont décrits sous « Session et connexion ».
@@ -88,7 +91,8 @@ bouchon » — sans `E-n` ni six états, ils n'existent pas en production.
 | E-12 | catalogue MJ | catalogue Joueur | — |
 | E-13 | tous les CR | les CR lisibles | — |
 | E-14 | tout | — | — |
-| E-15 | lire, écrire (univers rattaché ; sinon —, « Page introuvable. ») | lire (idem) | — |
+| E-15 | lire, écrire (s'il est MJ d'un univers rattaché ; un système d'aucun de ses univers : « Page introuvable. ») | lire (idem) | — (sauf comme membre d'un univers rattaché) |
+| E-16 | les systèmes de ses univers | les systèmes de ses univers (lecture seule) | ceux de ses propres univers ; aucun sinon |
 
 Précisions de la matrice : créer une campagne, en changer le statut, créer un scénario sont au
 MJ seul. L'audience d'une section se règle en ligne sur la fiche (MJ). Créer une fiche ouvre une
@@ -399,6 +403,10 @@ Trois panneaux, dans cet ordre.
   « Système de jeu » a disparu de E-3, et « CoF Mini » est toujours dans la liste du catalogue.
 
 ### E-15 Système de jeu
+
+> Depuis `kanevas-illustrations`, E-15 vit **hors du cadre d'un univers**, à l'adresse
+> `/systemes/:sid` (voir « Systèmes de jeu, hors des univers » plus bas, AD-94) ; ce qui suit vaut
+> toujours pour son contenu, ses gestes et ses textes.
 
 Atteint depuis E-14 (« Ouvrir le système ») et depuis E-3 (bloc « Système de jeu », ci-dessous), à
 l'adresse `/univers/:id/systeme`. Le nom du système en titre, « Référentiel commun · utilisé par N
@@ -955,13 +963,307 @@ d'audience porte le geste de P-3 étape 4 (« Apparence » lue des joueurs, « V
 déjà sur E-9 ; chaque rôle a sa colonne
 dans la matrice ci-dessus.
 
+## Détail des écrans de `kanevas-illustrations` (illustrations ; systèmes de jeu hors des univers)
+
+> Décision de Monsieur (2026-10-06) : « La liste des fiches doit être présentée avec une vignette
+> d'illustration, pas juste une liste » ; « chaque fiche doit avoir une propriété possible qui est
+> son image d'illustration ». Deux changements, aucun écran neuf : **E-8 devient une grille de
+> cartes** et **l'en-tête de E-9 porte l'illustration**. Données : `docs/donnees.md` (migration
+> `kanevas-illustrations`) ; décision : AD-93. Mêmes six états et mêmes textes communs que la
+> première fiche (chargement, erreur, connexion perdue, refus « Page introuvable. », écriture en
+> cours, échec d'une écriture), mêmes toasts que la refonte visuelle. Maquettes : `e08` (grille)
+> et `e09` (en-tête). Le document prime sur la maquette.
+
+**L'illustration, en une phrase par règle.** Une fiche a **zéro ou une** illustration, une image
+PNG, JPEG, GIF ou WebP (reconnue à son contenu, pas à son nom). Elle se voit **partout où la
+fiche se voit** — comme son titre, elle n'est jamais secrète. **Le MJ seul** la pose, la remplace
+ou la retire, en mode MJ, depuis l'en-tête de E-9. Ce n'est pas une pièce jointe : elle n'est
+dans aucune section, et une image jointe à une section ne devient jamais l'illustration d'elle-même.
+
+### E-8 — la grille de cartes
+
+Les fiches du type, **dans le même ordre** (alphabétique sans casse) et avec la même règle de
+lecture qu'avant, s'affichent en **grille de cartes**. Une carte est un lien vers E-9 :
+
+- la **vignette**, cadre 4:3 aux coins `--rayon-champ`, l'image cadrée sans déformation
+  (`object-fit: cover`, recentrée vers le haut : `object-position: 50% 30%`, pour garder un
+  visage) ; l'image est décorative (`alt=""`) parce que le titre suit ;
+- le **titre**, sur deux lignes au plus, coupé par « … » avec le titre entier en infobulle ;
+- pour un personnage, la pastille **PJ** ou **PNJ** (celle de la liste d'avant) ; les autres types
+  n'ont pas de pastille : la page entière est du type.
+
+**Vignette de repli**, pour une fiche sans illustration — jamais un trou gris ni une image cassée :
+un aplat `--surface-2` tramé de points (`--bord-fort`, un point tous les 12 px), l'**initiale** du
+titre, article écarté (« Le Gué-aux-Saules » → « G »), en Fraunces 56 px (44 au téléphone) `--texte-3` au centre, et l'**icône du type** (Lucide, celle de la barre
+latérale) dans une puce en haut à gauche. Le repli sert aussi quand l'image d'une fiche ne se charge
+pas : la carte ne montre jamais d'erreur. Le tramage en points n'emprunte pas la hachure, réservée
+au secret (la section « MJ seul »).
+
+*Disposition.* Colonne de 1 120 px au plus (au lieu de 784 : une grille respire plus qu'un texte),
+`repeat(auto-fill, minmax(176 px, 1fr))`, 24 px entre les cartes (16 px entre deux rangées sous
+1 080 px). Au téléphone (moins de 760 px), **deux colonnes** (12 px entre elles, 16 px entre deux rangées),
+titre 13 px, la pastille sous le titre. Les images
+se chargent **à l'approche** (`loading="lazy"`) dans un cadre déjà à sa taille (la grille ne saute
+pas) ; leur adresse porte le jeton de l'illustration (`…/illustration?v=<jeton>`, AD-93), si bien
+qu'une image remplacée se recharge et qu'une image inchangée vient du cache.
+
+*Survol et focus.* La carte se soulève d'un plan (`--surface-2` derrière la carte, contour
+`--bord-fort` autour de la vignette) ; au clavier, l'anneau de focus entoure la carte entière.
+Pas d'ombre (la charte réserve la seule ombre à ce qui flotte).
+
+*Recherche.* Conservée telle quelle au-dessus de la grille (champ, « Chercher », « Effacer la
+recherche », adresse `?q=`) ; ses résultats sont des cartes, dans le même ordre.
+
+| État | Ce qu'on voit | Ce qu'on peut faire |
+|---|---|---|
+| vide | MJ : « Aucun personnage pour l'instant. » et « Nouveau personnage » ; Joueur : « Aucun personnage à voir pour l'instant. » (textes par type inchangés) ; recherche sans résultat : « Aucun résultat pour « Vérité » dans les personnages. » | MJ : créer ; « Effacer la recherche » |
+| chargement | dix cartes squelettes (`--squelette`, cadre 4:3 et un trait ; deux rangées au bureau) et « Chargement des fiches… » (`role="status"`) ; une recherche : « Recherche… » ; une vignette pas encore chargée : son cadre en `--squelette`, à sa taille | — |
+| erreur | « Impossible de charger les fiches. » ou « Impossible de lancer la recherche. » ; une image qui ne se charge pas : la vignette de repli, sans message | « Réessayer » |
+| connexion perdue | le bandeau ; « Nouveau … », « Chercher » désactivés ; les cartes affichées et leurs images déjà chargées restent ; une image pas encore chargée : la vignette de repli | ouvrir une fiche |
+| refus | type inconnu : « Page introuvable. » ; une fiche illisible est absente de la grille, et l'adresse de son illustration répond 404 comme une adresse inconnue | — |
+| contenu long | titre de 120 caractères : deux lignes puis « … », infobulle ; plus de 100 fiches : « Charger la suite » sous la grille ; une image très haute ou très large : cadrée en 4:3 ; un GIF animé : il s'anime | idem |
+
+### E-9 — l'illustration dans l'en-tête
+
+L'en-tête de la fiche devient deux colonnes au bureau : à gauche l'**illustration**, cadre de
+176 × 220 px (4:5, `--rayon-panneau`, contour `--bord`), l'image cadrée comme dans E-8 ; à droite,
+alignés en bas, la pastille du type et le titre. Un clic sur l'illustration ouvre l'image entière
+dans un nouvel onglet ; son texte alternatif est « Illustration de « Maître Aldric » ». **Sans
+illustration, l'en-tête reste celui d'avant** (type puis titre, pleine largeur) : pas de vignette
+de repli sur la fiche, le repli est un objet de la grille. Au téléphone, l'illustration (96 ×
+120 px) reste à gauche de la pastille et du titre, pour que le texte de la fiche commence dans le
+premier écran ; un titre long passe à la ligne à sa droite.
+
+*Les gestes du MJ* (mode MJ seulement) :
+
+- **Ajouter** — sur une fiche sans illustration, au-dessus de la pastille du type, un bouton
+  fantôme « Ajouter une illustration » (`image-plus`) suivi de l'aide « Visible de tous ceux qui
+  voient la fiche. » (12 px, `--texte-3`) ; ils paraissent au survol et au focus de l'en-tête, et
+  toujours sur un écran sans survol (comme « Modifier »). Choisir le fichier suffit : l'envoi part
+  aussitôt (un seul fichier ; le sélecteur propose `image/png, image/jpeg, image/gif, image/webp`,
+  mais c'est le serveur qui juge).
+- **Remplacer** et **Retirer** — sur une fiche illustrée, deux boutons-icônes posés en bas à droite
+  de l'illustration, sur une puce `--surface` avec `--ombre-flottant` : « Remplacer l'illustration »
+  (`image-up`) et « Retirer l'illustration » (`trash-2`, danger) ; ils paraissent au survol et au
+  focus de l'illustration, toujours sans survol. L'aide « Visible de tous ceux qui voient la
+  fiche. » est l'infobulle de « Remplacer » et se lit sous l'illustration pendant l'envoi.
+  Remplacer garde l'ancienne image affichée jusqu'à ce que la nouvelle soit enregistrée.
+- **Confirmer le retrait**, sur place, sous l'illustration : « Retirer l'illustration de « Maître
+  Aldric » ? L'image sera perdue. » avec « Annuler » et « Retirer l'illustration » (danger). Retirer
+  ne touche à aucune pièce jointe.
+
+*Textes.* Envoi : dans le cadre (au téléphone, juste sous lui), une barre de 2 px `--accent` et « Envoi… 42 % » (`role="status"`)
+avec « Annuler » ; envoi annulé : rien ne change, toast « Envoi de « portrait.png » annulé ».
+Toasts de réussite : « Illustration de « Maître Aldric » ajoutée », « … remplacée », « … retirée ».
+Échecs, en ligne sous l'en-tête (jamais en toast), avec « Ignorer » : envoi interrompu « « portrait.png » :
+l'envoi n'a pas abouti. » (et « Réessayer ») ; fichier qui n'est pas une image (400
+`pas_une_image`) « « plan.pdf » n'est pas une image. Choisissez un PNG, un JPEG, un GIF ou un
+WebP. » ; fichier vide « « portrait.png » est vide. » ; retrait échoué « L'action n'a pas abouti.
+Réessayez. » (l'image reste) ; droit perdu entre-temps (403, le compte n'est plus MJ) « Vous ne
+pouvez plus modifier l'illustration de cette fiche. », puis la fiche se recharge et les gestes
+disparaissent ; image qui ne se charge pas : le cadre `--surface-2` avec l'icône `image-off` et
+« Image indisponible. » (le MJ garde « Remplacer » et « Retirer »).
+
+| État | Ce qu'on voit | Ce qu'on peut faire |
+|---|---|---|
+| vide | fiche sans illustration : l'en-tête d'avant ; MJ (mode MJ) : « Ajouter une illustration » et l'aide | MJ : ajouter |
+| chargement | les squelettes de la fiche, avec un cadre 4:5 à gauche du titre ; une image pas encore chargée : son cadre en `--squelette` ; un envoi : « Envoi… 42 % » dans le cadre | annuler l'envoi |
+| erreur | envoi interrompu, fichier qui n'est pas une image, fichier vide, retrait échoué : le message en ligne ci-dessus ; image illisible : « Image indisponible. » | « Réessayer », « Ignorer » |
+| connexion perdue | le bandeau ; « Ajouter une illustration », « Remplacer », « Retirer » désactivés ; l'image déjà chargée reste ; un envoi en cours qui échoue devient l'erreur « l'envoi n'a pas abouti » | lire, ouvrir l'image |
+| refus | MJ rétrogradé pendant le geste : « Vous ne pouvez plus modifier l'illustration de cette fiche. » ; fiche illisible : « Page introuvable. » (et son illustration répond 404) ; Joueur : les gestes sont absents, jamais grisés | recharger |
+| contenu long | un fichier de plusieurs Go : la progression en pourcentage (pas de limite de taille, AD-7) ; une image très haute ou panoramique : cadrée en 4:5 ; un titre de 120 caractères : passe à la ligne à droite de l'illustration, au bureau comme au téléphone | idem |
+
+### Qui voit quoi
+
+| Ligne de la matrice | MJ | Joueur | MJ en mode Joueur | Admin d'instance (sans rôle) |
+|---|---|---|---|---|
+| vignette (ou repli) d'une fiche dans E-8 | toutes les fiches de l'univers | les fiches qu'il voit | sans objet : E-8 n'a pas de mode | — (« Page introuvable. ») |
+| illustration dans l'en-tête de E-9 | oui | oui, sur une fiche qu'il voit | oui, si la fiche est visible des joueurs | — |
+| ouvrir l'image entière | oui | oui | oui | — |
+| « Ajouter une illustration » et l'aide | oui | **absent** | **absent** | — |
+| « Remplacer », « Retirer » | oui | **absent** | **absent** | — |
+| adresse de l'illustration d'une fiche qu'il ne voit pas | sans objet (il voit tout) | **404**, identique à une adresse inconnue | ses droits réels : il la lit | 404 |
+| `PUT` / `DELETE` de l'illustration par l'API | oui | **403** sur une fiche qu'il voit, 404 sinon | oui (le mode ne change que l'écran) | 404 |
+
+Un Joueur auteur ou rédacteur d'une section ne pose pas d'illustration : elle est au niveau de la
+fiche, pas de la section.
+
+### Critères
+
+- Étant donné Léa, Joueuse, qui ne voit pas la fiche « Le Prieur masqué » (aucune section lue des
+  joueurs) et à qui Antor a posé une illustration, quand elle demande l'illustration de cette
+  fiche par son adresse, alors elle reçoit 404, de corps identique à celui d'un identifiant de fiche
+  qui n'a jamais existé ; et la fiche n'est pas dans sa grille.
+- Étant donné Antor, MJ, sur « Maître Aldric » sans illustration, en mode MJ, quand il survole
+  l'en-tête, alors il voit « Ajouter une illustration » et « Visible de tous ceux qui voient la
+  fiche. » ; quand il choisit « portrait-aldric.png », alors « Envoi… » paraît dans le cadre, puis
+  l'illustration s'affiche à gauche du titre et un toast dit « Illustration de « Maître Aldric »
+  ajoutée ».
+- Étant donné Léa sur la grille des personnages, quand Antor a posé ce portrait, alors la carte
+  « Maître Aldric » montre le portrait ; la carte « Bran Corvalis », sans illustration, montre la
+  vignette de repli (« B » et l'icône des personnages), jamais un cadre vide.
+- Étant donné Antor qui remplace le portrait d'Aldric, quand Léa revient sur la grille, alors elle
+  voit le nouveau portrait, sans recharger la page de force (le jeton de l'adresse a changé).
+- Étant donné Antor qui choisit « plan.pdf » (ou un fichier « image.png » qui contient du HTML),
+  alors il voit « « plan.pdf » n'est pas une image. Choisissez un PNG, un JPEG, un GIF ou un WebP. »
+  et l'illustration d'avant reste ; rien n'est écrit.
+- Étant donné Antor qui retire l'illustration et confirme « Retirer l'illustration », alors l'en-tête
+  redevient celui d'avant, la carte d'Aldric montre la vignette de repli, et l'ancienne adresse de
+  l'image répond 404.
+- Étant donné Léa sur une fiche qu'elle voit et qui porte une illustration, alors elle voit l'image
+  et ni « Remplacer », ni « Retirer », ni « Ajouter une illustration » ; un `PUT` de sa part reçoit 403.
+- Étant donné Antor en mode Joueur sur « Maître Aldric », alors il voit l'illustration et aucun de
+  ses gestes.
+- Étant donné un envoi en cours quand la connexion tombe, alors le bandeau paraît, les gestes de
+  l'illustration sont désactivés et l'envoi devient « « portrait.png » : l'envoi n'a pas abouti. »
+  avec « Réessayer » et « Ignorer ».
+- Étant donné Antor rétrogradé Joueur par un autre MJ pendant qu'il envoie, alors il voit « Vous ne
+  pouvez plus modifier l'illustration de cette fiche. » et les gestes disparaissent.
+- Étant donné la grille au téléphone (390 px), alors elle a deux colonnes et aucun titre ne déborde.
+
+### Systèmes de jeu, hors des univers
+
+> Décision de Monsieur (2026-10-06) : le système de jeu devient **une dimension à part**, pas un
+> sous-élément d'un univers. Aujourd'hui le fil d'Ariane dit « Lame d'Ébène › CoF Mini » parce que
+> tout accès à un système passe par un univers (AD-83) ; désormais un système a sa propre adresse et
+> sa place dans la barre réduite (AD-94). **Droits inchangés, aucune donnée nouvelle.** Maquettes :
+> `e16-systemes-de-jeu.html` (nouvelle), `e15-systeme-de-jeu.html` (refaite hors univers),
+> `e01-accueil.html` (l'entrée de la barre).
+
+**Un écran de plus : E-16 Systèmes de jeu**, et non E-15 « en mode liste ». La liste a sa propre
+adresse (`/systemes`), sa place dans la navigation, ses propres six états et un contenu que E-15
+n'a pas (les univers du compte, par système) ; E-15 reste la page d'**un** système
+(`/systemes/:sid`). Un écran par adresse, comme E-1 et E-3.
+
+**Navigation.**
+- Barre réduite (E-1, E-2, E-5, E-15, E-16) : « Mes univers » (`library`), **« Systèmes de jeu »**
+  (`dices`), puis « Administration » pour un admin d'instance. Sur E-15 et E-16, « Systèmes de
+  jeu » est l'item courant. Pas de bouton « Demander à Kanevas » : il n'existe que dans un univers.
+- Depuis un univers : le menu du **sélecteur d'univers** porte, sous la liste des univers, « Mes
+  univers » puis « Systèmes de jeu » (tous deux hors de l'univers). Le bloc « Système de jeu » de
+  E-3 (« Ouvrir le système ») et le panneau de E-14 (« Ouvrir le système ») mènent à E-15 de ce
+  système. Rien ne s'ajoute à la barre d'un univers : le système n'en est pas une partie.
+- Fil d'Ariane : E-16 « Systèmes de jeu » ; E-15 « Systèmes de jeu › CoF Mini » (au téléphone,
+  l'icône `dices` et le nom seul).
+- L'ancienne adresse `/univers/:id/systeme` mène à `/systemes/:sid` si l'univers est rattaché et que
+  le compte en est membre ; sinon « Page introuvable. ». Un lien gardé n'est donc pas cassé.
+
+**Ce qu'on voit d'un système, et de qui.** Un compte voit un système **seulement s'il est rattaché à
+un univers dont il est membre** ; il le **modifie s'il est MJ d'un de ces univers** (quel que soit
+son rôle dans les autres). Il voit, par système, **ses** univers qui l'utilisent, avec son rôle dans
+chacun, et le nombre total d'univers (« Utilisé par 2 univers ») — **jamais le nom d'un univers dont
+il n'est pas membre** (AD-84). L'adresse d'un système qu'il ne voit pas répond « Page introuvable. »,
+comme une adresse inconnue.
+
+#### E-16 Systèmes de jeu
+
+Titre « Systèmes de jeu », sous-titre « Les référentiels de vos univers. ». Une ligne par système,
+par nom (ordre alphabétique sans casse), sans pagination (on ne voit que les systèmes de ses propres
+univers). Chaque ligne, un lien vers E-15 :
+
+- un sceau 40 px à l'icône `dices` ;
+- le **nom** (Fraunces 18 px, une ligne, coupé par « … », infobulle) ;
+- dessous, en `--texte-3` : « Utilisé par 2 univers » puis le nombre d'entrées « 12 règles · 48
+  créatures · 20 objets » (« 1 règle », « aucune créature »…) ;
+- dessous, **ses univers** qui l'utilisent, en puces : sceau de l'univers, nom, pastille du rôle
+  (« MJ » ambre, « Joueur » vert) ; une puce mène à la vue d'ensemble de l'univers (E-3) ;
+- à droite, si le compte n'est MJ d'aucun de ces univers : la pastille neutre « Lecture seule »
+  (`eye`) ; sinon rien (modifier est le cas ordinaire du MJ).
+
+Pas d'action d'écriture sur E-16 : un système se crée et se rattache depuis E-14 (P-8), qui reste le
+seul chemin. Textes du vide : pour un compte MJ d'au moins un univers, « Aucun système de jeu pour
+l'instant. » et « Un système se rattache depuis les paramètres d'un univers que vous menez. » avec le
+lien « Mes univers » ; pour les autres, « Aucun système de jeu pour l'instant. » et « Les systèmes
+de vos univers apparaîtront ici quand leur MJ en rattachera un. ».
+
+| État | Ce qu'on voit | Ce qu'on peut faire |
+|---|---|---|
+| vide | « Aucun système de jeu pour l'instant. » et le texte selon le compte (ci-dessus) | « Mes univers » |
+| chargement | trois lignes squelettes et « Chargement des systèmes… » (`role="status"`) | — |
+| erreur | « Impossible de charger les systèmes de jeu. » | « Réessayer » |
+| connexion perdue | le bandeau ; la liste déjà chargée reste (E-16 n'écrit rien) | ouvrir un système |
+| refus | sans objet : E-16 n'a pas de paramètre et ne montre que ce que le compte voit ; un système détaché de tous ses univers disparaît de la liste au prochain chargement | — |
+| contenu long | un nom de 80 caractères : une ligne, « … », infobulle ; un système utilisé par 12 de ses univers : les puces passent à la ligne ; un nom d'univers de 80 caractères dans une puce : coupé à 24 caractères, infobulle | idem |
+
+#### E-15 hors de l'univers
+
+Le contenu de E-15 ne change pas (onglets Règles, Créatures, Objets ; entrées ouvertes sur place ;
+ajouter, modifier pour le MJ ; textes et états de `kanevas-systemes`). Ce qui change :
+
+- le **cadre** : barre réduite, « Systèmes de jeu » courant, fil « Systèmes de jeu › CoF Mini » ;
+- sous le titre (`dices`, nom) : « Référentiel commun · utilisé par 2 univers », puis la ligne
+  « Dans vos univers » et les puces de ses univers (comme sur E-16) ; si le compte ne le modifie pas,
+  la pastille « Lecture seule » ;
+- l'adresse `/systemes/:sid` ; l'onglet se garde dans l'adresse (`?type=creature`), Créatures par
+  défaut ;
+- le **refus** : système inconnu ou d'aucun univers du compte : « Page introuvable. » et un lien
+  « Systèmes de jeu » ; droit retiré pendant une écriture (le compte n'est plus MJ d'aucun univers
+  rattaché, ou l'univers est détaché) : « Vous ne pouvez plus modifier ce système. » et la page se
+  recharge (en lecture seule, ou « Page introuvable. ») ;
+- les toasts du gabarit commun : « « Garde du sceau » ajoutée », « « Loup des brumes »
+  enregistré ».
+
+#### Qui voit quoi (systèmes)
+
+| Ligne de la matrice | MJ d'un univers rattaché | Joueur d'un univers rattaché (et MJ d'aucun) | Compte sans univers rattaché (Teo ; l'admin d'instance sans rôle) |
+|---|---|---|---|
+| « Systèmes de jeu » dans la barre réduite et le menu du sélecteur | oui | oui | oui (E-16 vide) |
+| le système dans E-16 | oui, avec ses univers et son rôle | oui, « Lecture seule » | absent |
+| E-15 : lire | oui | oui | « Page introuvable. » |
+| E-15 : « Ajouter … », « Modifier » | oui | **absents** | — |
+| noms des univers d'autres comptes | jamais | jamais | jamais |
+| `GET /api/systemes/:sid` | 200 | 200 | **404**, corps identique à un identifiant inconnu |
+| `POST`/`PUT` d'une entrée | 201 / 200 | **403** | **404** |
+
+#### Critères (systèmes)
+
+- Étant donné Mira, MJ des « Landes grises » rattachées à « CoF Mini », que partage « Lame d'Ébène »
+  d'Antor, quand elle ouvre « Systèmes de jeu », alors elle voit « CoF Mini », « Utilisé par 2
+  univers » et la seule puce « Les Landes grises · MJ » ; « Lame d'Ébène » n'apparaît nulle part,
+  ni sur E-16 ni sur E-15.
+- Étant donné Antor, quand il ouvre « CoF Mini » depuis E-16, alors le fil d'Ariane dit « Systèmes de
+  jeu › CoF Mini », la barre est la barre réduite et « Systèmes de jeu » y est l'item courant.
+- Étant donné Antor sur la vue d'ensemble de Lame d'Ébène, quand il clique « Ouvrir le système »,
+  alors il arrive sur la même page E-15, hors de l'univers ; et le menu du sélecteur d'univers lui
+  propose « Systèmes de jeu ».
+- Étant donné Léa, Joueuse de Lame d'Ébène, quand elle ouvre « Systèmes de jeu », alors elle voit
+  « CoF Mini » avec « Lame d'Ébène · Joueur » et « Lecture seule » ; sur E-15, ni « Ajouter une
+  créature » ni « Modifier » ; un `POST` d'entrée de sa part reçoit 403.
+- Étant donné Antor, MJ de Lame d'Ébène (« CoF Mini ») et Joueur des Cendres de Vaëlis
+  (« Chroniques Oubliées Fantasy »), alors E-16 montre les deux systèmes, « Lecture seule » sur le
+  second seulement.
+- Étant donné Teo, membre d'aucun univers rattaché, quand il ouvre l'adresse de « CoF Mini », alors
+  il voit « Page introuvable. » ; par l'API, `GET /api/systemes/<CoF Mini>` lui répond 404 avec le
+  même corps que `GET /api/systemes/999999` ; sa liste E-16 dit « Aucun système de jeu pour
+  l'instant. ».
+- Étant donné un lien gardé vers `/univers/<Lame d'Ébène>/systeme`, quand Antor l'ouvre, alors il
+  arrive sur `/systemes/<CoF Mini>`.
+- Étant donné Antor qui détache Lame d'Ébène de « CoF Mini » (E-14), quand Léa recharge E-16, alors
+  « CoF Mini » n'y est plus et son adresse lui répond « Page introuvable. ».
+
+### Clôture de `kanevas-illustrations`
+
+La décision de Monsieur → la grille de E-8 (vignette, repli) et l'en-tête de E-9 (voir, poser,
+remplacer, retirer). Atteint par P-3 (le MJ prépare son lore : il pose l'illustration sur E-9 et la
+retrouve sur E-8) et P-6 (une joueuse parcourt le lore sur son téléphone : la grille). Chaque rôle a
+sa colonne ci-dessus ; les six états de chaque changement sont dans les tableaux (B-29).
+La seconde décision de Monsieur → E-16 (nouveau) et E-15 hors univers ; atteints par P-8 (étape 2 :
+« Systèmes de jeu », ou « Ouvrir le système » depuis E-14 / E-3) ; B-14 reste servi par E-15 ;
+chaque relation au système (MJ, Joueur, sans univers rattaché) a sa colonne. Aucun besoin ni
+donnée nouvelle ; aucun écart à `## Livre` de `kanevas-systemes`.
+
 ## Maquettes
 
 `docs/maquettes/<écran>.html`, une par écran structurant. Elles illustrent ; ce document décide,
 et quand les deux divergent, la maquette a tort.
 
 **Finies** (direction, tokens et composants de `docs/charte.md`, deux thèmes, bureau et
-téléphone, vrai contenu) : E-1, E-3, E-6, E-8, E-9. `e09-fiche.html` **fait référence pour le
+téléphone, vrai contenu) : E-1, E-3, E-6, E-8, E-9. Depuis `kanevas-illustrations`, `e08` est la grille de cartes
+(types Personnages, Lieux, Factions, `#etat-lieux`, `#etat-factions`) et `e09` porte l'illustration
+de l'en-tête ; leurs images sont des illustrations de démonstration peintes en SVG. E-15 et E-16
+(`e15-systeme-de-jeu.html`, `e16-systemes-de-jeu.html`) sont finies hors du cadre d'un univers ;
+les menus du sélecteur d'univers des maquettes `e03`, `e08`, `e09`, `e14` et la barre de `e01` portent
+« Systèmes de jeu ». `e09-fiche.html` **fait référence pour le
 cadre** de tous les écrans d'un univers (barre latérale, sélecteur d'univers, menu du compte,
 barre haute, bascule de mode, bouton « Demander à Kanevas », tiroir au téléphone) et pour les
 composants partagés. Leurs états s'ouvrent par l'adresse (`#etat-joueur`, `#etat-menu`,
