@@ -21,6 +21,7 @@ import {
   launch,
   ajouterSection,
   ouvrirFormulaireUnivers,
+  ouvrirMenuSection,
   rx,
   rxExact,
   section,
@@ -195,9 +196,17 @@ test('B-29 connexion perdue sur E-2, E-4, E-8, E-9 : les boutons qui écrivent s
   await page.context().setOffline(true);
   await voit(page, BANDEAU_PERDU);
   const s = section(page, 'Première');
-  assert.equal(await s.getByLabel('Les joueurs la lisent').isDisabled(), true);
-  assert.equal(await s.getByRole('button', { name: rxExact('Retirer la section') }).isDisabled(), true);
-  assert.equal(await page.getByRole('button', { name: rxExact('Ajouter une section') }).isDisabled(), true);
+  // The audience setting still opens and reads, but its switches and list are disabled.
+  await s.getByRole('button', { name: /régler l['’]audience de/ }).click();
+  const boite = page.getByRole('dialog', { name: /^Qui voit/ });
+  assert.equal(await boite.getByRole('switch', { name: rx('Les joueurs la lisent') }).isDisabled(), true);
+  assert.equal(await boite.getByRole('switch', { name: rx('Les joueurs l’écrivent') }).isDisabled(), true);
+  assert.equal(await boite.getByRole('combobox').isDisabled(), true);
+  await page.keyboard.press('Escape');
+  const menu = await ouvrirMenuSection(page, 'Première');
+  assert.equal(await menu.getByRole('menuitem', { name: rxExact('Retirer la section') }).getAttribute('aria-disabled'), 'true');
+  await page.keyboard.press('Escape');
+  assert.equal(await page.getByRole('button', { name: /^Ajouter une section/ }).getAttribute('aria-disabled'), 'true');
   await page.context().setOffline(false);
   await page.close();
 });
@@ -268,9 +277,13 @@ test('B-29 échec d\'écriture sur E-9 : le réglage d\'audience revient à sa v
   await section(page, 'Première').waitFor();
   await echouer(page, /\/api\/univers\/\d+\/fiches\/\d+\/sections\/\d+$/, 'PATCH');
   const s = section(page, 'Première');
-  await s.getByLabel('Les joueurs la lisent').click({ noWaitAfter: true });
+  await s.getByRole('button', { name: /régler l['’]audience de/ }).click();
+  const interrupteur = page.getByRole('dialog', { name: /^Qui voit/ }).getByRole('switch', { name: rx('Les joueurs la lisent') });
+  await interrupteur.click({ noWaitAfter: true });
   await voit(page, ECHEC);
-  assert.equal(await s.getByLabel('Les joueurs la lisent').isChecked(), false, 'back to the value shown before');
+  assert.equal(await interrupteur.getAttribute('aria-checked'), 'false', 'back to the value shown before');
+  assert.equal(await page.getByRole('status').getByText(/enregistrée/).count(), 0, 'a failure is never a toast');
+  await page.keyboard.press('Escape');
   await page.unroute(/\/api\/univers\/\d+\/fiches\/\d+\/sections\/\d+$/);
   await echouer(page, /\/api\/univers\/\d+\/fiches\/\d+\/sections\/\d+\/contenu$/, 'PUT');
   await s.getByRole('button', { name: rxExact('Modifier') }).click();
@@ -289,7 +302,8 @@ test('B-29 connexion perdue : quand la requête n\'aboutit pas puis que le serve
   const motif = /\/api\/univers\/\d+\/fiches\/\d+\/sections\/\d+$/;
   await casser(page, motif, 'PATCH');
   const s = section(page, 'Première');
-  await s.getByLabel('Les joueurs la lisent').click({ noWaitAfter: true });
+  await s.getByRole('button', { name: /régler l['’]audience de/ }).click();
+  await page.getByRole('dialog', { name: /^Qui voit/ }).getByRole('switch', { name: rx('Les joueurs la lisent') }).click({ noWaitAfter: true });
   await voit(page, BANDEAU_PERDU);
   await page.unroute(motif); // the server is reachable again
   let revenu = false;
@@ -298,7 +312,7 @@ test('B-29 connexion perdue : quand la requête n\'aboutit pas puis que le serve
     if (!revenu) await page.waitForTimeout(100);
   }
   assert.equal(revenu, true, 'the banner must go away within 30 s of the connection coming back');
-  assert.equal(await s.getByLabel('Les joueurs la lisent').isDisabled(), false);
+  assert.equal(await page.getByRole('dialog', { name: /^Qui voit/ }).getByRole('switch', { name: rx('Les joueurs la lisent') }).isDisabled(), false);
   await page.close();
 });
 

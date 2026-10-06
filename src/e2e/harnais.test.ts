@@ -212,8 +212,11 @@ export async function creerFiche(page: Any, type: keyof typeof TYPES, titre: str
 }
 
 export async function ajouterSection(page: Any, titre: string): Promise<void> {
+  // The footer button is folded: it opens the form (on an empty fiche it is the empty state's main button).
+  const ouvrir = page.getByRole('button', { name: /^Ajouter une section/ });
+  if ((await page.getByLabel('Titre de la section').count()) === 0) await ouvrir.first().click();
   await page.getByLabel('Titre de la section').fill(titre);
-  await page.getByRole('button', { name: rxExact('Ajouter une section') }).click();
+  await page.getByRole('button', { name: rxExact('Ajouter la section') }).click();
   await section(page, titre).waitFor();
 }
 
@@ -227,16 +230,58 @@ export async function voit(page: Any, s: string): Promise<void> {
   await page.getByText(rx(s)).first().waitFor();
 }
 
-/** Sets an audience checkbox of a section and waits for the saved state to come back. */
+/**
+ * Sets one audience setting of a section and waits for the saved state to come back. On the fiche the
+ * settings live in the « Qui voit « <section> » » dialog opened by the audience badge (switches and an
+ * « Auteur » list); elsewhere (suivi screens) they are still checkboxes of the panel.
+ */
 export async function regler(page: Any, titre: string, reglage: string, actif: boolean): Promise<void> {
-  const case_ = section(page, titre).getByLabel(rx(reglage));
-  if ((await case_.isChecked()) === actif) return;
-  await case_.click({ noWaitAfter: true });
-  for (let i = 0; i < 50; i++) {
+  const s = section(page, titre);
+  const pastille = s.getByRole('button', { name: /régler l['’]audience de/ });
+  if ((await pastille.count()) === 0) {
+    const case_ = s.getByLabel(rx(reglage));
     if ((await case_.isChecked()) === actif) return;
-    await page.waitForTimeout(100);
+    await case_.click({ noWaitAfter: true });
+    for (let i = 0; i < 50; i++) {
+      if ((await case_.isChecked()) === actif) return;
+      await page.waitForTimeout(100);
+    }
+    throw new Error(`audience "${reglage}" of "${titre}" did not become ${actif}`);
   }
-  throw new Error(`audience "${reglage}" of "${titre}" did not become ${actif}`);
+  await pastille.click();
+  const boite = page.getByRole('dialog', { name: /^Qui voit/ });
+  await boite.waitFor();
+  const interrupteur = boite.getByRole('switch', { name: rx(reglage) });
+  if ((await interrupteur.getAttribute('aria-checked')) !== String(actif)) {
+    await interrupteur.click({ noWaitAfter: true });
+    let ok = false;
+    for (let i = 0; i < 50 && !ok; i++) {
+      ok = (await interrupteur.getAttribute('aria-checked')) === String(actif);
+      if (!ok) await page.waitForTimeout(100);
+    }
+    if (!ok) throw new Error(`audience "${reglage}" of "${titre}" did not become ${actif}`);
+  }
+  await page.keyboard.press('Escape');
+  await boite.waitFor({ state: 'detached' });
+}
+
+/** Opens the « ⋯ » menu of a section (GM only) and returns the menu. */
+export async function ouvrirMenuSection(page: Any, titre: string): Promise<Any> {
+  await section(page, titre).getByRole('button', { name: /^Autres actions sur « / }).click();
+  const menu = page.getByRole('menu');
+  await menu.waitFor();
+  return menu;
+}
+
+/** Chooses an entry (« Monter », « Descendre », « Retirer la section ») in the « ⋯ » menu of a section. */
+export async function choisirDansMenuSection(page: Any, titre: string, entree: string): Promise<void> {
+  const menu = await ouvrirMenuSection(page, titre);
+  await menu.getByRole('menuitem', { name: rxExact(entree) }).click();
+}
+
+/** Confirms the removal dialog opened by « Retirer la section ». */
+export async function confirmerRetraitSection(page: Any): Promise<void> {
+  await page.getByRole('alertdialog').getByRole('button', { name: rxExact('Retirer la section') }).click();
 }
 
 export async function ecrireSection(page: Any, titre: string, contenu: string): Promise<void> {
