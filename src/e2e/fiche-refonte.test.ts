@@ -546,4 +546,43 @@ describe('E-9 refaite : « Modifier », menu ⋯, retrait', { skip: skipBrowser 
     }
     await antor.setViewportSize({ width: 1440, height: 900 });
   });
+
+  test('B téléphone 390 px, MJ : les actions de section sont sur la ligne du titre, en icônes, sans recouvrir titre ni pastille', async () => {
+    await antor.setViewportSize({ width: 390, height: 900 });
+    try {
+      await ouvrir(antor);
+      const titres = await titresSections(antor);
+      assert.ok(titres.length > 0);
+      for (const titre of titres) {
+        const s = section(antor, titre);
+        await s.hover();
+        const h = await s.getByRole('heading', { level: 2, name: titre }).boundingBox();
+        const actions = await s.locator('.sec-actions').first().boundingBox();
+        const menu = await s.getByRole('button', { name: /^Autres actions sur/ }).boundingBox();
+        assert.ok(h && actions && menu, titre);
+        const cy = (b: { y: number; height: number }) => b.y + b.height / 2;
+        assert.ok(Math.abs(cy(menu) - cy(h)) < 20, `${titre}: actions on the title row (dy=${cy(menu) - cy(h)})`);
+        assert.ok(actions.x >= h.x + 1 && menu.x + menu.width <= 390, `${titre}: inside the screen`);
+        const pastille = await s.locator('.pastille').first().boundingBox();
+        if (pastille) {
+          const chevauche = pastille.x < actions.x + actions.width && actions.x < pastille.x + pastille.width
+            && pastille.y < actions.y + actions.height && actions.y < pastille.y + pastille.height;
+          assert.ok(!chevauche, `${titre}: actions overlap the pastille`);
+        }
+        const mod = s.getByRole('button', { name: rxExact('Modifier') });
+        if (await mod.count()) {
+          assert.ok(((await mod.boundingBox())!.width) <= 44, `${titre}: Modifier is icon-only`);
+          assert.equal(await mod.innerText(), '', 'label hidden');
+        }
+        // The title text must not run under the actions.
+        const textW = await s.getByRole('heading', { level: 2, name: titre }).evaluate((e: Element) => {
+          const r = document.createRange(); r.selectNodeContents(e);
+          return Math.max(...[...r.getClientRects()].map((q) => q.right));
+        });
+        assert.ok(textW <= actions.x + 1, `${titre}: title text runs under the actions (${textW} > ${actions.x})`);
+      }
+    } finally {
+      await antor.setViewportSize({ width: 1440, height: 900 });
+    }
+  });
 });
