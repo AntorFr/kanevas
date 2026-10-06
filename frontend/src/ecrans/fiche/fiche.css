@@ -46,12 +46,12 @@ a.bouton { text-decoration: none; display: inline-block; }
 
 /* Secret: a « MJ seul » section is a material — hatched, ruled in amber. */
 .sec[data-aud="mj"] { margin: var(--e-5) -28px 0; padding: var(--e-5) 28px var(--e-3); border-radius: 0 var(--rayon-panneau) var(--rayon-panneau) 0;
-  background: repeating-linear-gradient(135deg, var(--mj-trame) 0 1px, transparent 1px 8px), color-mix(in srgb, var(--mj-fond) 22%, transparent);
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--mj-bord) 45%, transparent); }
+  background: repeating-linear-gradient(135deg, var(--mj-trame) 0 1px, transparent 1px 8px), var(--mj-section-fond);
+  box-shadow: inset 0 0 0 1px var(--mj-section-bord); }
 .sec[data-aud="mj"]::before { left: 0; top: 0; bottom: 0; width: 3px; border-radius: 0; background: var(--mj); }
 .sec[data-aud="mj"] .sec-actions { top: calc(var(--e-5) - 1px); right: 22px; }
 .sec[data-aud="mj"] + .sec[data-aud="mj"] { margin-top: var(--e-3); }
-.sec[data-aud="mj"] .blocs { border-top-color: color-mix(in srgb, var(--mj-bord) 50%, transparent); }
+.sec[data-aud="mj"] .blocs { border-top-color: var(--mj-section-filet); }
 @media (max-width: 760px) {
   .sec::before { left: -12px; }
   .sec[data-aud="mj"] { margin-left: -12px; margin-right: -12px; padding-left: 12px; padding-right: 12px; }
