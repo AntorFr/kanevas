@@ -178,12 +178,13 @@ function BlocPiecesJointes({ universId, fiche, section, role, rafraichir }: Prop
 
   return (
     <BlocUi libelle="Pièces jointes" icone={Paperclip} vide={pieces.length === 0 && lignes.length === 0 ? 'Aucune pièce jointe.' : undefined}>
-      <div className="pieces-jointes">
+      <div className={`pieces-jointes${pieces.length === 0 ? ' vide' : ''}`}>
         {avertissement && (
           <div className="echec" role="alert">
             {avertissement}
           </div>
         )}
+        {pieces.length > 0 && (
         <ul className="liste-pieces">
           {pieces.map((p) => {
             const vignette = p.image && !indisponibles.includes(p.id);
@@ -235,6 +236,7 @@ function BlocPiecesJointes({ universId, fiche, section, role, rafraichir }: Prop
             );
           })}
         </ul>
+        )}
         {lignes.map((l) =>
           l.erreur ? (
             <div key={l.cle} className="echec" role="alert">
