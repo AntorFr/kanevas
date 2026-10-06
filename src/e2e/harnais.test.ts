@@ -197,7 +197,7 @@ export const TYPES: Record<string, { nav: string; nouveau: string }> = {
 };
 
 export async function allerListe(page: Any, type: keyof typeof TYPES): Promise<void> {
-  await page.getByRole('link', { name: rxExact(TYPES[type]!.nav) }).click();
+  await page.getByRole('complementary', { name: 'Barre latérale' }).getByRole('link', { name: rxExact(TYPES[type]!.nav) }).click();
   await attendre(page);
 }
 
