@@ -19,6 +19,7 @@ import {
   type Any,
   ajouterMembre,
   ajouterSection,
+  choisirAuteur,
   allerMembres,
   attendre,
   connecte,
@@ -79,8 +80,7 @@ before(async () => {
   for (const t of ['Apparence', 'Vérité — MJ seul', 'Notes de la table', 'Plan']) await ajouterSection(antor, t);
   await regler(antor, 'Apparence', 'Les joueurs la lisent', true);
   await regler(antor, 'Plan', 'Les joueurs la lisent', true);
-  const n = section(antor, 'Notes de la table');
-  await n.getByRole('combobox', { name: /Auteur/ }).selectOption({ label: 'lea' });
+  await choisirAuteur(antor, 'Notes de la table', 'lea');
   await regler(antor, 'Notes de la table', 'L’auteur la lit', true);
   await regler(antor, 'Notes de la table', 'L’auteur l’écrit', true);
   urlFiche = new URL(antor.url()).pathname;

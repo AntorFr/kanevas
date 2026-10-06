@@ -265,6 +265,19 @@ export async function regler(page: Any, titre: string, reglage: string, actif: b
   await boite.waitFor({ state: 'detached' });
 }
 
+/** Picks the author of a section in the audience dialog (GM), waits for the save, and closes the dialog. */
+export async function choisirAuteur(page: Any, titre: string, identifiant: string): Promise<void> {
+  await section(page, titre).getByRole('button', { name: /régler l['’]audience de/ }).click();
+  const boite = page.getByRole('dialog', { name: /^Qui voit/ });
+  const liste = boite.getByRole('combobox', { name: /Auteur/ });
+  await liste.selectOption({ label: identifiant });
+  await boite.getByRole('switch', { name: rx('L’auteur la lit') }).waitFor();
+  for (let i = 0; i < 50 && (await boite.getByRole('switch', { name: rx('L’auteur la lit') }).isDisabled()); i++) await page.waitForTimeout(100);
+  await liste.focus();
+  await page.keyboard.press('Escape');
+  await boite.waitFor({ state: 'detached' });
+}
+
 /** Opens the « ⋯ » menu of a section (GM only) and returns the menu. */
 export async function ouvrirMenuSection(page: Any, titre: string): Promise<Any> {
   await section(page, titre).getByRole('button', { name: /^Autres actions sur « / }).click();
