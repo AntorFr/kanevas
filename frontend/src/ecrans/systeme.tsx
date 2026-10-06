@@ -1,10 +1,13 @@
+import { BookOpen, Check, ChevronDown, Pencil, Plus } from 'lucide-react';
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import { useParams } from 'react-router-dom';
 
 import { ErreurApi, appeler } from '../api';
 import type { Ecran } from '../registre';
-import { Bouton, Champ, Chargement, ErreurChargement, PageIntrouvable } from '../ui';
+import { Bouton, Champ, ChargementListe, ErreurChargement, PageIntrouvable, VideIcone, useToasts } from '../ui';
 import './ecrans.css';
+import './liste.css';
+import './reglages.css';
 
 type Type = 'regle' | 'creature' | 'objet';
 
@@ -102,7 +105,7 @@ function Formulaire({
         onChange={(e: { target: { value: string } }) => setContenu(e.target.value)}
       />
       <div className="actions">
-        <Bouton type="submit" variante="principal" ecrit enCours={enCours}>
+        <Bouton type="submit" variante="principal" ecrit icone={Check} enCours={enCours}>
           {libelle}
         </Bouton>
         <Bouton onClick={onAnnuler}>Annuler</Bouton>
@@ -123,6 +126,7 @@ function Systeme() {
   const [ouverte, setOuverte] = useState<number>();
   const [edition, setEdition] = useState<number>();
   const [ajout, setAjout] = useState(false);
+  const { toast } = useToasts();
   const [echecSuite, setEchecSuite] = useState(false);
   const [suiteEnCours, setSuiteEnCours] = useState(false);
 
@@ -162,7 +166,7 @@ function Systeme() {
   if (etat === 'introuvable') return <PageIntrouvable />;
   if (!entete) {
     if (etat === 'erreur') return <ErreurChargement texte="Impossible de charger ce système." onReessayer={() => setEssai((n) => n + 1)} />;
-    return <Chargement texte="Chargement du système…" />;
+    return <ChargementListe texte="Chargement du système…" />;
   }
   const peutEcrire = entete.peutEcrire;
 
@@ -186,6 +190,7 @@ function Systeme() {
       const g = await appeler<Gabarit>('POST', `${base}/gabarits`, { type, nom: v.nom, contenu: v.contenu });
       setEntrees((l) => [...l, g].sort(alpha));
       setAjout(false);
+      toast(`« ${g.nom} » ajouté`);
     } catch (e) {
       return messageEcriture(e);
     }
@@ -196,6 +201,7 @@ function Systeme() {
       const m = await appeler<Gabarit>('PUT', `${base}/gabarits/${g.id}`, { nom: v.nom, contenu: v.contenu, version: g.version });
       setEntrees((l) => l.map((x) => (x.id === g.id ? m : x)).sort(alpha));
       setEdition(undefined);
+      toast(`« ${m.nom} » enregistré`);
     } catch (e) {
       return messageEcriture(e);
     }
@@ -213,11 +219,14 @@ function Systeme() {
   }
 
   return (
-    <>
-      <h1 className="nom-systeme-titre" title={entete.nom}>
-        {entete.nom}
-      </h1>
-      <p className="description-univers">Référentiel commun · utilisé par {entete.universUtilisateurs} univers</p>
+    <div className="page-liste">
+      <header className="tete-liste">
+        <span className="glyphe-type" aria-hidden="true">
+          <BookOpen size={20} strokeWidth={1.75} />
+        </span>
+        <h1 title={entete.nom}>{entete.nom}</h1>
+      </header>
+      <p className="sous-titre-page">Référentiel commun · utilisé par {entete.universUtilisateurs} univers</p>
       <div role="tablist" className="onglets">
         {ONGLETS.map((o) => (
           <button
@@ -233,7 +242,7 @@ function Systeme() {
         ))}
       </div>
       <div role="tabpanel">
-        {etat === 'chargement' && <Chargement texte="Chargement du système…" />}
+        {etat === 'chargement' && <ChargementListe texte="Chargement du système…" />}
         {etat === 'erreur' && (
           <ErreurChargement texte="Impossible de charger ce système." onReessayer={() => setEssai((n) => n + 1)} />
         )}
@@ -241,7 +250,7 @@ function Systeme() {
           <>
             {peutEcrire && !ajout && (
               <div className="actions">
-                <Bouton variante="principal" ecrit onClick={() => setAjout(true)}>
+                <Bouton variante="principal" ecrit icone={Plus} onClick={() => setAjout(true)}>
                   {onglet.ajout}
                 </Bouton>
               </div>
@@ -249,8 +258,12 @@ function Systeme() {
             {ajout && (
               <Formulaire initial={{ nom: '', contenu: '' }} libelle="Ajouter" onEnvoi={ajouter} onAnnuler={() => setAjout(false)} />
             )}
-            {entrees.length === 0 && !ajout && <div className="etat">{peutEcrire ? onglet.vide : onglet.videJoueur}</div>}
-            <ul className="liste-entrees">
+            {entrees.length === 0 && !ajout && (
+              <VideIcone icone={BookOpen}>
+                <p>{peutEcrire ? onglet.vide : onglet.videJoueur}</p>
+              </VideIcone>
+            )}
+            <ul className="lignes liste-entrees">
               {entrees.map((g) => (
                 <li key={g.id}>
                   <button
@@ -266,6 +279,7 @@ function Systeme() {
                       {g.nom}
                     </strong>
                     <span className="entree-apercu">{premiereLigne(g.contenu)}</span>
+                    <ChevronDown size={16} strokeWidth={1.75} aria-hidden="true" className="entree-chevron" />
                   </button>
                   {ouverte === g.id &&
                     (edition === g.id ? (
@@ -276,7 +290,7 @@ function Systeme() {
                         <p className="entree-contenu">{g.contenu}</p>
                         {peutEcrire && (
                           <div className="actions">
-                            <Bouton ecrit onClick={() => setEdition(g.id)}>
+                            <Bouton ecrit icone={Pencil} onClick={() => setEdition(g.id)}>
                               Modifier
                             </Bouton>
                           </div>
@@ -301,7 +315,7 @@ function Systeme() {
           </>
         )}
       </div>
-    </>
+    </div>
   );
 }
 

@@ -1,0 +1,43 @@
+/* E-4, E-14, E-15: the frame and the rows of E-8 (liste.css); only what these three add. */
+.page-liste .sous-titre-page { color: var(--texte-2); font-size: var(--t-14); margin: var(--e-2) 0 0; overflow-wrap: anywhere; }
+
+/* E-4: the members, one row each, the role in a list, 200 of them scroll */
+.liste-membres { max-height: 60vh; overflow-y: auto; margin-top: var(--e-4); }
+.liste-membres .ligne-suivi { padding-right: var(--e-2); }
+.liste-membres .grand { cursor: default; }
+.liste-membres .identifiant { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.liste-membres .ligne-suivi > :not(.grand) { flex: none; }
+.page-liste .formulaire-ligne .champ input[placeholder] { min-width: 12rem; }
+
+/* E-14: the current system under the list */
+.systeme-courant { display: flex; align-items: center; gap: var(--e-3); margin-top: var(--e-3); flex-wrap: wrap; }
+.systeme-courant .nom-systeme { max-width: 24rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.systeme-courant .bouton { text-decoration: none; }
+.erreur-champ { color: var(--danger); font-size: var(--t-13); margin-top: calc(var(--e-1) * -1); }
+.page-liste .panneau form .champ { max-width: 560px; }
+
+/* E-15: three tabs as a segmented control, entries as rows that open in place */
+.onglets { display: inline-flex; gap: 2px; padding: 2px; margin: var(--e-5) 0 var(--e-2); background: var(--surface-2);
+  border: 1px solid var(--bord); border-radius: var(--rayon-champ); }
+.onglets button { background: none; border: 0; border-radius: var(--rayon-item); color: var(--texte-2); padding: 0 var(--e-4); min-height: 30px;
+  cursor: pointer; font: inherit; font-size: var(--t-13); font-weight: 500; transition: background-color var(--duree), color var(--duree); }
+.onglets button:hover { color: var(--texte); }
+.onglets button.actif { background: var(--surface); color: var(--texte); box-shadow: 0 0 0 1px var(--bord-fort); }
+.onglets button:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
+.liste-entrees { margin-top: var(--e-3); }
+.liste-entrees li { position: relative; }
+.liste-entrees li + li::before { content: ""; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: var(--bord); }
+.entree-ligne { display: flex; align-items: center; gap: var(--e-3); width: 100%; min-height: 44px; padding: 0 var(--e-2); margin: 0;
+  background: none; border: 0; border-radius: var(--rayon-champ); color: var(--texte); text-align: left; cursor: pointer; font: inherit;
+  transition: background-color var(--duree); }
+.entree-ligne:hover { background: var(--surface-2); }
+.entree-ligne:focus-visible { outline: 2px solid var(--focus); outline-offset: -2px; }
+.entree-nom { flex: none; max-width: 16rem; font-size: var(--t-14); font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.entree-apercu { flex: 1; min-width: 0; color: var(--texte-3); font-size: var(--t-13); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.entree-chevron { flex: none; color: var(--texte-3); transition: transform var(--duree); }
+.entree-ligne[aria-expanded="true"] .entree-chevron { transform: rotate(180deg); }
+.entree-detail, .entree-formulaire { padding: var(--e-2) var(--e-2) var(--e-4); }
+.entree-detail h2 { font: 500 var(--t-22)/1.25 var(--police-titre); font-variation-settings: "opsz" 48; margin-bottom: var(--e-2); overflow-wrap: anywhere; }
+.entree-contenu { white-space: pre-wrap; overflow-wrap: anywhere; font: 400 var(--t-18)/1.68 var(--police-lecture); max-width: 70ch; }
+.entree-formulaire .champ textarea { max-width: 70ch; }
+@media (max-width: 760px) { .entree-apercu { display: none; } .entree-nom { max-width: none; flex: 1; } }

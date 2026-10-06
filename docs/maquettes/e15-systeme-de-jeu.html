@@ -1,71 +1,605 @@
 <!doctype html>
-<!-- E-15. -->
-<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Kanevas — E-15 Système de jeu</title><style>
-:root{--bg:#101012;--weave:#131316;--s1:#1a1a1f;--s2:#212127;--s3:#2a2a31;--b:rgba(255,255,255,.07);--bs:rgba(255,255,255,.15);
---i1:#f5f4f2;--i2:#a3a2a8;--i3:#6b6a72;--vi:#8b7cf6;--vis:#aca2f9;--vid:rgba(139,124,246,.16);--vib:rgba(139,124,246,.4);
---am:#f2a33c;--amb:rgba(242,163,60,.14);--amd:rgba(242,163,60,.4);--te:#3fc79a;--teb:rgba(63,199,154,.14);--ted:rgba(63,199,154,.38);
---re:#e2685b;--reb:rgba(226,104,91,.14);--red:rgba(226,104,91,.38);--serif:ui-serif,Georgia,serif;--sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--i1);font-family:var(--sans);font-size:14px}
-a{color:inherit;text-decoration:none}
-.wrap{padding:16px;display:flex;flex-direction:column;gap:22px}.wrap.single{padding:0}
-.label{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--am);margin:0 0 6px;font-weight:600}.label.j{color:var(--te)}
-.frame{display:flex;position:relative;min-height:560px;border:1px solid var(--bs);border-radius:12px;overflow:hidden;background:var(--bg)}
-.single .frame{border:0;border-radius:0;min-height:100vh}
-aside{width:236px;flex:none;background:var(--weave);border-right:1px solid var(--b);display:flex;flex-direction:column;padding:16px 12px}
-.brand{display:flex;align-items:center;gap:9px;padding:6px 8px 14px;font-family:var(--serif);font-size:17px}
-.mark{width:22px;height:22px;border-radius:6px;background:conic-gradient(from 210deg,var(--am),var(--vi),var(--am))}
-.sw{display:flex;align-items:center;gap:8px;padding:9px 10px;border-radius:9px;background:var(--s1);border:1px solid var(--b);margin-bottom:12px;font-size:13px}
-.sw .dot{width:8px;height:8px;border-radius:50%;background:var(--vis)}.sw .n{flex:1}
-nav{display:flex;flex-direction:column;gap:1px}
-.ns{font-size:10.5px;text-transform:uppercase;letter-spacing:.09em;color:var(--i3);padding:14px 10px 6px}
-.it{display:block;padding:7px 10px;border-radius:8px;color:var(--i2);font-size:13px}.it.sub{padding-left:22px}
-.it.on{background:var(--vid);color:var(--vis)}
-.sp{flex:1}.me{display:flex;align-items:center;gap:8px;padding:10px 8px 0;border-top:1px solid var(--b);font-size:12.5px;color:var(--i2)}
-.av{width:24px;height:24px;border-radius:50%;background:var(--s3);display:flex;align-items:center;justify-content:center;font-size:11px}
-.col{flex:1;min-width:0;display:flex;flex-direction:column}
-header{height:54px;flex:none;display:flex;align-items:center;gap:14px;padding:0 24px;border-bottom:1px solid var(--b);background:rgba(16,16,18,.6)}
-.crumb{font-size:12.5px;color:var(--i3);flex:1}.crumb b{color:var(--i1);font-weight:500}
-main{padding:24px 28px;max-width:1000px;width:100%}
-h1{font-family:var(--serif);font-size:22px;font-weight:500;margin:0 0 4px}
-h2{font-size:10.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--i3);margin:0 0 10px;font-weight:600}
-.sub{color:var(--i3);font-size:12.5px;margin:0 0 18px;max-width:70ch}
-.panel{background:var(--s1);border:1px solid var(--b);border-radius:12px;padding:14px 16px;margin-bottom:14px}
-.panel.mj{border-color:var(--amd);background:linear-gradient(180deg,rgba(242,163,60,.06),var(--s1) 60%)}
-.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px}.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
-.hrow{display:flex;align-items:center;gap:8px;margin-bottom:10px}.hrow h2{margin:0;flex:1}
-.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
-.btn{display:inline-block;font-size:12px;padding:6px 12px;border-radius:8px;border:1px solid var(--bs);background:var(--s3);color:var(--i1);font-family:inherit}
-.btn.pri{background:var(--vi);border-color:var(--vi);color:#14121f;font-weight:600}.btn.dg{color:#e88;border-color:var(--red)}.btn.sm{font-size:11px;padding:3px 8px}
-.in{display:block;width:100%;font-size:13px;padding:8px 10px;border-radius:8px;border:1px solid var(--bs);background:var(--s2);color:var(--i1);font-family:inherit}
-textarea.in{min-height:90px;resize:vertical}.fl{font-size:11.5px;color:var(--i2);margin:10px 0 4px;display:block}
-.badge{font-size:11px;padding:3px 9px;border-radius:999px;border:1px solid var(--bs);color:var(--i2);display:inline-block}
-.badge.mj{border-color:var(--amd);background:var(--amb);color:var(--am)}.badge.j{border-color:var(--ted);background:var(--teb);color:var(--te)}
-.badge.v{border-color:var(--vib);background:var(--vid);color:var(--vis)}
-.mode{display:inline-flex;border:1px solid var(--bs);border-radius:999px;overflow:hidden;font-size:11.5px}.mode span{padding:5px 13px;color:var(--i3)}
-.mode .on{background:var(--amb);color:var(--am)}.mode.pj .on{background:var(--teb);color:var(--te)}
-.li{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--b);font-size:13px}.li:last-child{border:0}.li .g{flex:1}.li .d{color:var(--i3);font-size:12px}
-.li small{display:block;color:var(--i3);font-size:11.5px}
-.card{background:var(--s1);border:1px solid var(--b);border-radius:12px;padding:14px}.card .nm{font-family:var(--serif);font-size:15px;margin-bottom:8px}
-.search{padding:8px 12px;border-radius:9px;border:1px solid var(--bs);background:var(--s2);color:var(--i3);font-size:13px;margin-bottom:14px;max-width:420px}
-.empty{padding:26px;text-align:center;color:var(--i3);border:1px dashed var(--bs);border-radius:12px}
-.alert{font-size:12px;padding:8px 12px;border-radius:8px;border:1px solid var(--red);background:var(--reb);color:var(--re);margin:8px 0}
-.chk{width:15px;height:15px;border:1.5px solid var(--bs);border-radius:4px;display:inline-block;flex:none;vertical-align:middle}
-.chk.d{background:var(--vi);border-color:var(--vi)}.done{text-decoration:line-through;color:var(--i3)}
-.cat{font-size:11px;color:var(--vis);margin:10px 0 2px;font-weight:600}
-.chip{display:inline-flex;gap:7px;font-size:12px;padding:5px 11px;border-radius:999px;border:1px solid var(--bs);background:var(--s2);margin:4px 6px 0 0}.chip b{color:var(--vis);font-weight:600}
-.add{display:inline-block;font-size:11px;padding:4px 10px;border-radius:999px;border:1px dashed var(--bs);color:var(--i3);margin:8px 6px 0 0}
-.thumb{width:92px;height:68px;border-radius:8px;border:1px solid var(--bs);background:linear-gradient(135deg,#3a2f22,#5a4430);position:relative}
-.thumb.sec{outline:2px solid var(--amd)}.thumb i{position:absolute;top:4px;left:4px;font-size:8px;font-style:normal;padding:1px 5px;border-radius:999px;background:var(--amb);color:var(--am);border:1px solid var(--amd)}
-.pj{width:92px;font-size:9.5px;color:var(--i3)}.pj .c{display:flex;gap:3px;margin-top:3px}.pj .c span{flex:1;text-align:center;border:1px solid var(--bs);border-radius:5px;padding:2px 0;background:var(--s3);color:var(--i2)}
-.fab{position:absolute;right:20px;bottom:20px;display:flex;align-items:center;gap:8px;padding:11px 18px;border-radius:999px;background:var(--vi);color:#14121f;font-weight:600;font-size:13px;box-shadow:0 8px 24px -8px rgba(0,0,0,.8)}
-.note{font-size:12px;color:var(--i3);margin-top:8px;max-width:80ch}
-.map{position:relative;height:230px;border-radius:12px;border:1px solid var(--bs);background:repeating-linear-gradient(45deg,#2b2417 0 12px,#2f281a 12px 24px)}
-.tok{position:absolute;display:flex;flex-direction:column;align-items:center;font-size:11px;gap:2px}.tok i{font-style:normal;width:30px;height:30px;border-radius:50%;background:var(--s1);border:2px solid var(--vi);display:flex;align-items:center;justify-content:center}
-.tok.sec i{border-color:var(--am)}.tok span{background:rgba(0,0,0,.6);padding:1px 6px;border-radius:6px}
-table{width:100%;border-collapse:collapse;font-size:13px}th{text-align:left;font-size:10.5px;text-transform:uppercase;letter-spacing:.07em;color:var(--i3);padding:6px 8px;font-weight:600}td{padding:9px 8px;border-top:1px solid var(--b)}
-.msg{padding:10px 12px;border-radius:10px;font-size:13px;margin-bottom:10px;line-height:1.5}.msg.u{background:var(--s3);margin-left:40px}.msg.a{background:var(--s2);border:1px solid var(--b)}
-.diff{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0}.diff div{font-size:12px;padding:8px;border-radius:8px;border:1px solid var(--b);line-height:1.5}.diff .o{background:var(--reb)}.diff .p{background:var(--teb)}
-.diff b{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--i3);margin-bottom:3px}
-.dock{width:380px;flex:none;border-left:1px solid var(--bs);background:var(--weave);padding:16px;display:flex;flex-direction:column}
-@media(max-width:760px){.frame{flex-direction:column}aside{width:auto}.g2,.g3,.diff{grid-template-columns:1fr}.dock{width:auto}}
-</style></head><body><div class="wrap"><div><div class="label ">Mode MJ (d'un univers rattaché)</div><div class="frame"><aside><div class="brand"><div class="mark"></div> Kanevas</div><div class="sw"><div class="dot"></div><div class="n">Lame d'Ébène</div><span class="badge mj">MJ</span> ▾</div><nav><a class="it" href="e03-vue-ensemble.html">Vue d'ensemble</a><a class="it" href="e06-campagne.html">Campagnes</a><a class="it" href="e13-comptes-rendus.html">Comptes-rendus</a><a class="it" href="e10-cartes.html">Cartes</a><div class="ns">Lore</div><a class="it sub" href="e08-liste-fiches.html">Personnages</a><a class="it sub" href="e08-liste-fiches.html">Lieux</a><a class="it sub" href="e08-liste-fiches.html">Factions</a><a class="it sub" href="e08-liste-fiches.html">Objets</a><a class="it sub" href="e08-liste-fiches.html">Événements</a><a class="it sub" href="e08-liste-fiches.html">Quêtes</a><div class="ns">Univers</div><a class="it sub" href="e04-membres.html">Membres</a><a class="it sub on" href="e14-parametres.html">Paramètres</a></nav><div class="sp"></div><div class="me"><div class="av">A</div>Antor</div></aside><div class="col"><header><div class="crumb">Lame d'Ébène / Univers / Paramètres / <b>CoF Mini</b></div></header><main><div class="hrow"><h1 style="flex:1;margin:0">CoF Mini</h1><span class="btn pri">Ajouter une créature</span></div><p class="sub">Référentiel commun · utilisé par 2 univers.</p><div class="row" style="margin-bottom:12px"><span class="badge">Règles</span><span class="badge v">Créatures</span><span class="badge">Objets</span></div><div class="panel"><div class="li"><div class="g">Garde du sceau<small>Créature de garde, armure lourde, hallebarde…</small><div style="margin-top:8px">Niveau trois, armé d'une hallebarde. Garde le sceau de la Couronne brisée.</div></div><span class="btn sm">Modifier</span></div><div class="li"><div class="g">Revenant<small>Mort-vivant lié à un serment brisé…</small></div></div><div class="li"><div class="g">Loup des Landes Grises<small>Prédateur des marais, chasse en meute…</small></div></div></div></main></div><div class="fab">✦ Demander à Kanevas</div></div></div><div><div class="label j">Vue Joueur (Léa) — lecture</div><div class="frame"><aside><div class="brand"><div class="mark"></div> Kanevas</div><div class="sw"><div class="dot"></div><div class="n">Lame d'Ébène</div><span class="badge j">Joueur</span> ▾</div><nav><a class="it on" href="e03-vue-ensemble.html">Vue d'ensemble</a><a class="it" href="e06-campagne.html">Campagnes</a><a class="it" href="e13-comptes-rendus.html">Comptes-rendus</a><a class="it" href="e10-cartes.html">Cartes</a><div class="ns">Lore</div><a class="it sub" href="e08-liste-fiches.html">Personnages</a><a class="it sub" href="e08-liste-fiches.html">Lieux</a><a class="it sub" href="e08-liste-fiches.html">Factions</a><a class="it sub" href="e08-liste-fiches.html">Objets</a><a class="it sub" href="e08-liste-fiches.html">Événements</a><a class="it sub" href="e08-liste-fiches.html">Quêtes</a></nav><div class="sp"></div><div class="me"><div class="av">L</div>Léa</div></aside><div class="col"><header><div class="crumb">Lame d'Ébène / Vue d'ensemble / <b>CoF Mini</b></div></header><main><div class="hrow"><h1 style="flex:1;margin:0">CoF Mini</h1></div><p class="sub">Référentiel commun · utilisé par 2 univers.</p><div class="row" style="margin-bottom:12px"><span class="badge">Règles</span><span class="badge v">Créatures</span><span class="badge">Objets</span></div><div class="panel"><div class="li"><div class="g">Garde du sceau<small>Créature de garde, armure lourde, hallebarde…</small></div></div><div class="li"><div class="g">Revenant<small>Mort-vivant lié à un serment brisé…</small></div></div><div class="li"><div class="g">Loup des Landes Grises<small>Prédateur des marais, chasse en meute…</small></div></div></div></main></div><div class="fab">✦ Demander à Kanevas</div></div></div><div><div class="label">État vide — onglet Objets (MJ)</div><div class="empty">Aucun objet pour l'instant.<br><span class="btn pri" style="margin-top:8px">Ajouter un objet</span></div></div><div><div class="label">Refus — univers sans système</div><div class="empty">Page introuvable.<br><a class="btn" href="e01-accueil.html">Mes univers</a></div></div><div><div class="label">Formulaire sur place — Ajouter une créature (MJ)</div><div class="panel mj"><label class="fl">Nom</label><input class="in" value="Revenant du pont"><label class="fl">Contenu</label><textarea class="in">Mort-vivant lié à un serment brisé.</textarea><div class="row" style="margin-top:12px"><span class="btn pri">Ajouter</span><span class="btn">Annuler</span></div></div></div><div><div class="label">Écriture périmée (MJ)</div><div class="panel mj"><p style="color:var(--re)">Cette entrée a changé depuis que vous l'avez ouverte. Rechargez-la pour voir la nouvelle version ; votre texte reste ci-dessous.</p><span class="btn">Recharger</span></div></div><div><div class="label">Bloc « Système de jeu » de E-3 (MJ et Joueur)</div><div class="panel"><h2>Système de jeu</h2><div class="li"><div class="g">CoF Mini</div><a class="btn sm" href="e15-systeme-de-jeu.html">Ouvrir le système</a></div></div></div></div></body></html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Système de jeu — Lame d'Ébène — Kanevas</title>
+<meta name="color-scheme" content="light dark">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&display=swap" rel="stylesheet">
+<script>
+/* Thème avant le premier rendu : choix mémorisé (Clair, Sombre, Système), sinon le système. */
+(function () {
+  var c = 'systeme';
+  try { c = localStorage.getItem('kanevas-theme') || 'systeme'; } catch (e) {}
+  var clair = c === 'clair' || (c === 'systeme' && matchMedia('(prefers-color-scheme: light)').matches);
+  document.documentElement.dataset.theme = clair ? 'light' : 'dark';
+})();
+</script>
+<style>
+/* ===== MAQUETTE — E-15 Système de jeu. Cadre et composants de e09-fiche.html ; les textes sont ceux de docs/ecrans.md, qui prime ===== */
+
+/* ---------- Tokens (docs/charte.md) — sombre ---------- */
+:root {
+  color-scheme: dark;
+  --fond: #121317;
+  --fond-lateral: #0e0f12;
+  --surface: #191a1f;
+  --surface-2: #202128;
+  --surface-3: #2a2b33;
+  --bord: rgba(255,255,255,.08);
+  --bord-fort: rgba(255,255,255,.14);
+  --bord-champ: #74757f;
+  --texte: #ebecf0;
+  --texte-2: #a6a7b0;
+  --texte-3: #8b8c97;
+  --accent: #8b9bf0;
+  --sur-accent: #11142b;
+  --accent-texte: #9aa6f5;
+  --accent-fond: rgba(154,166,245,.16);
+  --mj: #f2a33c;
+  --mj-fond: rgba(242,163,60,.14);
+  --mj-bord: rgba(242,163,60,.42);
+  --mj-trame: rgba(242,163,60,.075);
+  --table: #3fc79a;
+  --table-fond: rgba(63,199,154,.14);
+  --table-bord: rgba(63,199,154,.55);
+  --danger: #ec7b6f;
+  --sur-danger: #1a0c0a;
+  --danger-fond: rgba(236,123,111,.14);
+  --focus: #9aa6f5;
+  --voile: rgba(5,6,9,.62);
+  --ombre-flottant: 0 0 0 1px rgba(255,255,255,.06), 0 12px 32px -6px rgba(0,0,0,.6), 0 2px 6px rgba(0,0,0,.35);
+  --squelette: rgba(255,255,255,.06);
+
+  --police-titre: "Fraunces", "Iowan Old Style", Georgia, serif;
+  --police-lecture: "Newsreader", "Iowan Old Style", Georgia, serif;
+  --police-texte: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --t-12: 12px; --t-13: 13px; --t-14: 14px; --t-16: 16px; --t-18: 18px; --t-22: 22px; --t-32: 32px; --t-40: 40px;
+  --e-1: 4px; --e-2: 8px; --e-3: 12px; --e-4: 16px; --e-5: 24px; --e-6: 32px; --e-7: 48px; --e-8: 64px;
+  --rayon-item: 6px;
+  --rayon-champ: 8px;
+  --rayon-panneau: 12px;
+  --rayon-pastille: 999px;
+  --duree: 160ms;
+  --courbe: cubic-bezier(.2,.7,.2,1);
+}
+/* ---------- Tokens — clair ---------- */
+:root[data-theme="light"] {
+  color-scheme: light;
+  --fond: #fcfcfd;
+  --fond-lateral: #f4f5f7;
+  --surface: #ffffff;
+  --surface-2: #f1f2f5;
+  --surface-3: #e8e9ee;
+  --bord: rgba(22,26,44,.09);
+  --bord-fort: rgba(22,26,44,.16);
+  --bord-champ: #808290;
+  --texte: #1a1b22;
+  --texte-2: #4a4c58;
+  --texte-3: #646674;
+  --accent: #3a4cc0;
+  --sur-accent: #ffffff;
+  --accent-texte: #3a4cc0;
+  --accent-fond: rgba(58,76,192,.10);
+  --mj: #8a5300;
+  --mj-fond: rgba(214,140,30,.14);
+  --mj-bord: rgba(176,108,10,.45);
+  --mj-trame: rgba(176,108,10,.09);
+  --table: #08694a;
+  --table-fond: rgba(8,105,74,.12);
+  --table-bord: rgba(8,105,74,.70);
+  --danger: #b4352b;
+  --sur-danger: #ffffff;
+  --danger-fond: rgba(180,53,43,.10);
+  --focus: #3a4cc0;
+  --voile: rgba(20,22,34,.38);
+  --ombre-flottant: 0 0 0 1px rgba(22,26,44,.08), 0 12px 32px -8px rgba(22,26,44,.22), 0 2px 6px rgba(22,26,44,.08);
+  --squelette: rgba(22,26,44,.07);
+}
+@media (prefers-reduced-motion: reduce) { :root { --duree: 0ms; } }
+
+/* ---------- Base ---------- */
+*, *::before, *::after { box-sizing: border-box; }
+html { scroll-padding-top: 72px; -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: var(--fond); color: var(--texte); font: 400 var(--t-14)/1.5 var(--police-texte);
+  -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; font-feature-settings: "cv11", "ss01"; }
+h1, h2, h3, p, ul { margin: 0; }
+[hidden] { display: none !important; }
+ul { padding: 0; list-style: none; }
+a { color: inherit; text-decoration: none; }
+button, input, select, textarea { font: inherit; color: inherit; }
+button { background: none; border: 0; padding: 0; cursor: pointer; }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; border-radius: var(--rayon-item); }
+.i { width: 16px; height: 16px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.75;
+  stroke-linecap: round; stroke-linejoin: round; }
+.i.p { width: 14px; height: 14px; }
+.i.pp { width: 12px; height: 12px; stroke-width: 2; }
+.lecteur { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+kbd { font: 500 11px/1 var(--police-texte); color: var(--texte-3); border: 1px solid var(--bord-fort);
+  border-bottom-width: 2px; border-radius: 4px; padding: 2px 5px; }
+
+/* ---------- Bouton ---------- */
+.bouton { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 30px;
+  padding: 0 var(--e-3); border-radius: var(--rayon-champ); border: 1px solid var(--bord-fort);
+  background: var(--surface-3); color: var(--texte); font-size: var(--t-13); font-weight: 500; white-space: nowrap;
+  transition: background-color var(--duree), border-color var(--duree), color var(--duree); }
+.bouton:hover { border-color: var(--bord-champ); }
+.bouton.principal { background: var(--accent); border-color: transparent; color: var(--sur-accent); }
+.bouton.principal:hover { background: color-mix(in srgb, var(--accent) 88%, var(--texte)); }
+.bouton.danger { background: var(--danger); border-color: transparent; color: var(--sur-danger); }
+.bouton.danger:hover { background: color-mix(in srgb, var(--danger) 88%, var(--texte)); }
+.bouton.fantome { background: transparent; border-color: transparent; color: var(--texte-2); }
+.bouton.fantome:hover { background: var(--surface-2); color: var(--texte); }
+.bouton.petit { min-height: 26px; padding: 0 var(--e-2); font-size: var(--t-12); }
+.bouton[aria-disabled="true"], .bouton:disabled { opacity: .45; cursor: not-allowed; }
+.icone { width: 28px; height: 28px; display: inline-grid; place-items: center; border-radius: var(--rayon-item);
+  color: var(--texte-3); transition: background-color var(--duree), color var(--duree); }
+.icone:hover, .icone[aria-expanded="true"] { background: var(--surface-2); color: var(--texte); }
+.icone.danger:hover { background: var(--danger-fond); color: var(--danger); }
+.icone[aria-disabled="true"] { opacity: .4; cursor: not-allowed; }
+.lien-action { display: inline-flex; align-items: center; gap: 6px; min-height: 26px; padding: 0 6px; margin-left: -6px;
+  border-radius: var(--rayon-item); color: var(--texte-2); font-size: var(--t-13); font-weight: 500;
+  transition: background-color var(--duree), color var(--duree); }
+.lien-action:hover { background: var(--surface-2); color: var(--texte); }
+.lien-action .i { color: var(--texte-3); }
+.lien-action[aria-disabled="true"] { opacity: .45; cursor: not-allowed; }
+
+/* ---------- Pastilles ---------- */
+.pastille { display: inline-flex; align-items: center; gap: 5px; height: 22px; padding: 0 8px;
+  border-radius: var(--rayon-pastille); font: 500 var(--t-12)/1 var(--police-texte); white-space: nowrap;
+  background: var(--surface-2); color: var(--texte-2); }
+.pastille.mj { background: var(--mj-fond); color: var(--mj); }
+.pastille.table { background: var(--table-fond); color: var(--table); }
+.pastille .av { width: 16px; height: 16px; font-size: 9px; margin-left: -4px; }
+button.pastille { cursor: pointer; transition: box-shadow var(--duree); }
+button.pastille:hover, button.pastille[aria-expanded="true"] { box-shadow: inset 0 0 0 1px currentColor; }
+button.pastille .chev { opacity: .7; margin-right: -2px; }
+.type { display: inline-flex; align-items: center; gap: 6px; height: 24px; padding: 0 9px 0 7px;
+  border-radius: var(--rayon-item); background: var(--surface-2); color: var(--texte-2); font-size: var(--t-12); font-weight: 500; }
+.type .i { color: var(--texte-3); }
+
+/* ---------- Avatar ---------- */
+.av { width: 28px; height: 28px; border-radius: 50%; display: inline-grid; place-items: center; flex: none;
+  background: var(--accent-fond); color: var(--accent-texte); font: 600 11px/1 var(--police-texte); letter-spacing: .02em; }
+.av.l { background: var(--table-fond); color: var(--table); }
+
+/* =====================================================================================
+   Cadre
+   ===================================================================================== */
+.app { display: grid; grid-template-columns: 252px minmax(0, 1fr); min-height: 100vh; }
+.colonne-barre { background: var(--fond-lateral); border-right: 1px solid var(--bord); }
+.barre { position: sticky; top: 0; height: 100vh; display: flex; flex-direction: column; padding: var(--e-3) var(--e-3) var(--e-3); }
+
+/* Sélecteur d'univers */
+.ancre { position: relative; }
+.univers { display: flex; align-items: center; gap: 10px; width: 100%; padding: 6px; border-radius: var(--rayon-champ); text-align: left;
+  transition: background-color var(--duree); }
+.univers:hover, .univers[aria-expanded="true"] { background: var(--surface-2); }
+.sceau { width: 30px; height: 30px; border-radius: 8px; flex: none; display: grid; place-items: center;
+  background: var(--surface-3); color: var(--texte); font: 600 15px/1 var(--police-titre); box-shadow: inset 0 0 0 1px var(--bord-fort); }
+.univers .nom { flex: 1; min-width: 0; font-weight: 600; font-size: var(--t-14); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.univers > .i { color: var(--texte-3); }
+.univers { display: grid; grid-template-columns: 30px minmax(0,1fr) auto; grid-template-areas: "s n c" "s r c"; column-gap: 10px; row-gap: 2px; align-items: center; }
+.univers > .sceau { grid-area: s; } .univers > .nom { grid-area: n; } .univers > .pastille { grid-area: r; justify-self: start; font-size: 11px; height: 18px; } .univers > .i { grid-area: c; }
+
+
+/* Navigation */
+.barre nav { flex: 1; overflow-y: auto; margin-top: var(--e-3); padding-right: 2px; }
+.groupe + .groupe { margin-top: var(--e-4); }
+.groupe-titre { padding: 0 10px 4px; font-size: var(--t-12); font-weight: 500; color: var(--texte-3); }
+.item { display: flex; align-items: center; gap: 10px; min-height: 30px; padding: 0 10px; border-radius: var(--rayon-item);
+  color: var(--texte-2); font-size: var(--t-13); font-weight: 500; transition: background-color var(--duree), color var(--duree); }
+.item .i { color: var(--texte-3); transition: color var(--duree); }
+.item:hover { background: var(--surface-2); color: var(--texte); }
+.item:hover .i { color: var(--texte-2); }
+.item[aria-current="page"] { background: var(--accent-fond); color: var(--texte); }
+.item[aria-current="page"] .i { color: var(--accent-texte); }
+
+/* Pied : le compte */
+.pied { padding-top: var(--e-2); border-top: 1px solid var(--bord); }
+.compte { display: flex; align-items: center; gap: 10px; width: 100%; padding: 6px; border-radius: var(--rayon-champ); text-align: left;
+  transition: background-color var(--duree); }
+.compte:hover, .compte[aria-expanded="true"] { background: var(--surface-2); }
+.compte .ident { flex: 1; min-width: 0; font-size: var(--t-13); font-weight: 500; }
+.compte > .i { color: var(--texte-3); }
+
+/* ---------- Menu ---------- */
+.menu { position: absolute; z-index: 40; min-width: 220px; padding: 4px; border-radius: var(--rayon-panneau);
+  background: var(--surface); box-shadow: var(--ombre-flottant);
+  opacity: 0; transform: translateY(4px) scale(.98); pointer-events: none; visibility: hidden;
+  transition: opacity var(--duree) var(--courbe), transform var(--duree) var(--courbe), visibility 0s linear var(--duree); }
+.menu.ouvert { opacity: 1; transform: none; pointer-events: auto; visibility: visible; transition-delay: 0s; }
+.menu .entree { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 32px; padding: 0 10px;
+  border-radius: var(--rayon-item); font-size: var(--t-13); color: var(--texte); text-align: left; }
+.menu .entree .i { color: var(--texte-3); }
+.menu .entree:hover, .menu .entree:focus-visible { background: var(--surface-2); outline: none; }
+.menu .entree.danger { color: var(--danger); }
+.menu .entree.danger .i { color: var(--danger); }
+.menu .entree .fin { margin-left: auto; color: var(--texte-3); font-size: var(--t-12); display: flex; gap: 6px; align-items: center; }
+.menu .entree[aria-disabled="true"] { opacity: .45; cursor: not-allowed; }
+.menu .entree[aria-disabled="true"]:hover { background: none; }
+.menu .sep { height: 1px; background: var(--bord); margin: 4px -4px; }
+.menu .titre-menu { padding: 8px 10px 4px; font-size: var(--t-12); color: var(--texte-3); font-weight: 500; }
+.menu-compte { left: 0; right: 0; bottom: calc(100% + 6px); }
+.menu-compte .qui { display: flex; align-items: center; gap: 10px; padding: 8px 10px 10px; }
+.menu-compte .qui b { display: block; font-weight: 600; font-size: var(--t-13); }
+.menu-compte .qui small { color: var(--texte-3); font-size: var(--t-12); }
+.menu-univers { left: 0; right: 0; top: calc(100% + 6px); }
+.menu-univers .role { margin-left: auto; }
+
+/* Bascule de thème : soleil, lune, écran */
+.themes { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 4px 4px 4px 10px; min-height: 40px; }
+.themes > span { font-size: var(--t-13); }
+.segments { display: inline-flex; padding: 2px; gap: 2px; border-radius: var(--rayon-champ); background: var(--surface-2); }
+.segments button { width: 30px; height: 26px; display: grid; place-items: center; border-radius: var(--rayon-item); color: var(--texte-3);
+  transition: background-color var(--duree), color var(--duree), box-shadow var(--duree); }
+.segments button:hover { color: var(--texte); }
+.segments button[aria-checked="true"] { background: var(--surface); color: var(--texte); box-shadow: 0 0 0 1px var(--bord-fort), 0 1px 2px rgba(0,0,0,.18); }
+
+/* ---------- Barre haute ---------- */
+.zone-principale { min-width: 0; display: flex; flex-direction: column; }
+.haute { position: sticky; top: 0; z-index: 20; height: 52px; display: flex; align-items: center; gap: var(--e-3);
+  padding: 0 var(--e-5); border-bottom: 1px solid var(--bord);
+  background: color-mix(in srgb, var(--fond) 82%, transparent); backdrop-filter: saturate(1.4) blur(12px); -webkit-backdrop-filter: saturate(1.4) blur(12px); }
+.bouton-menu { display: none; }
+.ariane { display: flex; align-items: center; gap: 2px; min-width: 0; flex: 1; font-size: var(--t-13); color: var(--texte-2); }
+.ariane a { display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 6px; border-radius: var(--rayon-item); white-space: nowrap;
+  transition: background-color var(--duree), color var(--duree); }
+.ariane a:hover { background: var(--surface-2); color: var(--texte); }
+.ariane .i.sep-ariane { color: var(--texte-3); opacity: .7; }
+.ariane [aria-current] { padding: 0 6px; color: var(--texte); font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ariane .court { display: none; }
+
+/* Bascule mode MJ / mode Joueur */
+.mode { display: inline-flex; padding: 2px; gap: 2px; border-radius: var(--rayon-champ); background: var(--surface-2); box-shadow: inset 0 0 0 1px var(--bord); }
+.mode button { display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 10px; border-radius: var(--rayon-item);
+  font-size: var(--t-13); font-weight: 500; color: var(--texte-2); transition: background-color var(--duree), color var(--duree); }
+.mode button:hover { color: var(--texte); }
+.mode button[aria-checked="true"].mj { background: var(--mj-fond); color: var(--mj); }
+.mode button[aria-checked="true"].joueur { background: var(--table-fond); color: var(--table); }
+
+/* Bandeaux du cadre */
+.bandeau { display: none; align-items: center; gap: 10px; padding: 8px var(--e-5); font-size: var(--t-13); border-bottom: 1px solid var(--bord); }
+.bandeau.perdue { background: linear-gradient(var(--danger-fond), var(--danger-fond)), var(--fond); color: var(--danger); position: sticky; top: 52px; z-index: 19; }
+.bandeau.joueur { background: linear-gradient(var(--table-fond), var(--table-fond)), var(--fond); color: var(--table); position: sticky; top: 52px; z-index: 19; }
+body.etat-perdue .bandeau.perdue { display: flex; }
+body.mode-joueur .bandeau.joueur { display: flex; }
+body.etat-perdue .bandeau.joueur { top: 89px; }
+
+/* ---------- Champ, édition en place ---------- */
+.champ { display: flex; flex-direction: column; gap: 6px; }
+.champ > span { font-size: var(--t-12); font-weight: 500; color: var(--texte-2); }
+.saisie { width: 100%; height: 34px; padding: 0 10px; border-radius: var(--rayon-champ); border: 1px solid var(--bord-champ);
+  background: var(--surface); color: var(--texte); font-size: var(--t-14); transition: border-color var(--duree), box-shadow var(--duree); }
+.saisie:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-fond); }
+.saisie::placeholder { color: var(--texte-3); }
+.champ .erreur { font-size: var(--t-12); color: var(--danger); }
+
+/* Message dans un panneau (échec d'écriture, écriture périmée, refus) */
+.alerte { display: flex; align-items: flex-start; gap: 10px; margin-top: var(--e-3); padding: 10px 12px; border-radius: var(--rayon-champ);
+  background: var(--danger-fond); color: var(--texte); font-size: var(--t-13); }
+.alerte > .i { color: var(--danger); margin-top: 2px; }
+.alerte .corps-alerte { flex: 1; display: flex; flex-direction: column; align-items: flex-start; gap: 8px; }
+
+/* ---------- Boîte de dialogue ---------- */
+.voile { position: fixed; inset: 0; z-index: 60; display: grid; place-items: center; padding: var(--e-4); background: var(--voile);
+  opacity: 0; visibility: hidden; transition: opacity var(--duree), visibility 0s linear var(--duree); }
+.voile.ouvert { opacity: 1; visibility: visible; transition-delay: 0s; }
+.dialogue { width: min(440px, 100%); padding: var(--e-5); border-radius: var(--rayon-panneau); background: var(--surface); box-shadow: var(--ombre-flottant);
+  transform: translateY(6px) scale(.98); transition: transform var(--duree) var(--courbe); }
+.voile.ouvert .dialogue { transform: none; }
+.dialogue .ic-dialogue { width: 36px; height: 36px; border-radius: 10px; display: grid; place-items: center; background: var(--danger-fond); color: var(--danger); margin-bottom: var(--e-4); }
+.dialogue h3 { font: 600 var(--t-16)/1.35 var(--police-texte); }
+.dialogue p { margin-top: 6px; color: var(--texte-2); font-size: var(--t-14); }
+.dialogue .actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: var(--e-5); }
+
+/* ---------- Toast ---------- */
+.toasts { position: fixed; left: 50%; bottom: var(--e-5); transform: translateX(-50%); z-index: 70; display: flex; flex-direction: column; align-items: center; gap: 8px; pointer-events: none; }
+.toast { display: flex; align-items: center; gap: 10px; min-height: 40px; padding: 0 8px 0 12px; border-radius: var(--rayon-champ);
+  background: var(--surface); box-shadow: var(--ombre-flottant); font-size: var(--t-13); pointer-events: auto;
+  opacity: 0; transform: translateY(8px); transition: opacity var(--duree) var(--courbe), transform var(--duree) var(--courbe); }
+.toast.visible { opacity: 1; transform: none; }
+.toast > .i { color: var(--table); }
+.toast .fermer { width: 24px; height: 24px; }
+
+/* ---------- Demander à Kanevas ---------- */
+.assistant { position: fixed; right: var(--e-5); bottom: var(--e-5); z-index: 30; display: inline-flex; align-items: center; gap: 8px;
+  height: 40px; padding: 0 16px 0 13px; border-radius: 999px; background: var(--texte); color: var(--fond); font-weight: 500; font-size: var(--t-13);
+  box-shadow: 0 8px 24px -6px rgba(0,0,0,.45); transition: transform var(--duree) var(--courbe); }
+.assistant:hover { transform: translateY(-1px); }
+.assistant kbd { color: color-mix(in srgb, var(--fond) 65%, var(--texte)); border-color: color-mix(in srgb, var(--fond) 30%, var(--texte)); margin-left: 4px; }
+
+.os { border-radius: 6px; background: var(--squelette); }
+/* ---------- Connexion perdue : les gestes qui écrivent sont désactivés ---------- */
+body.etat-perdue [data-ecrit] { opacity: .45; pointer-events: none; }
+body.etat-perdue [data-ecrit-recherche] { opacity: .45; pointer-events: none; }
+/* ---------- Tiroir (téléphone) ---------- */
+.voile-tiroir { display: none; }
+
+
+/* =====================================================================================
+   E-8 — la liste d'un type
+   ===================================================================================== */
+/* « .principal » nomme aussi la colonne du cadre (e09) : le bouton principal garde sa disposition en ligne. */
+.bouton.principal { flex-direction: row; display: inline-flex; }
+.page.liste { width: 100%; max-width: 784px; margin: 0 auto; padding: var(--e-8) var(--e-7) 160px; }
+
+/* Tête : glyphe du type, titre, action principale */
+.tete-liste { display: flex; align-items: center; gap: var(--e-4); flex-wrap: wrap; }
+.glyphe-type { width: 40px; height: 40px; flex: none; display: grid; place-items: center; border-radius: 10px;
+  background: var(--surface-2); color: var(--texte-2); box-shadow: inset 0 0 0 1px var(--bord); }
+.glyphe-type .i { width: 20px; height: 20px; }
+.tete-liste h1 { flex: 1; min-width: 0; font: 500 var(--t-40)/1.08 var(--police-titre); letter-spacing: -.015em;
+  font-variation-settings: "opsz" 144; }
+
+/* Recherche dans le type */
+.chercher { display: flex; flex-wrap: wrap; align-items: flex-start; gap: var(--e-2); margin-top: var(--e-6); }
+.champ-recherche { position: relative; flex: 1 1 220px; min-width: 0; display: flex; align-items: flex-start; gap: 8px;
+  min-height: 34px; padding: 0 8px 0 10px; border-radius: var(--rayon-champ); border: 1px solid var(--bord-champ); background: var(--surface);
+  transition: border-color var(--duree), box-shadow var(--duree); cursor: text; }
+.champ-recherche:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-fond); }
+.champ-recherche > .i { color: var(--texte-3); margin-top: 8px; }
+.champ-recherche textarea { flex: 1; min-width: 0; display: block; height: 32px; padding: 6px 0; border: 0; background: transparent; resize: none;
+  font-size: var(--t-14); line-height: 20px; overflow: hidden; overflow-wrap: anywhere; }
+.champ-recherche textarea:focus { outline: none; }
+.champ-recherche textarea::placeholder { color: var(--texte-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.champ-recherche kbd { margin-top: 8px; opacity: 0; transition: opacity var(--duree); }
+.champ-recherche:focus-within kbd { opacity: 1; }
+.champ-recherche.en-erreur { border-color: var(--danger); }
+.champ-recherche.en-erreur:focus-within { box-shadow: 0 0 0 3px var(--danger-fond); }
+.chercher .bouton { min-height: 34px; }
+.chercher .erreur { flex-basis: 100%; font-size: var(--t-12); color: var(--danger); }
+
+/* La liste : une ligne par fiche */
+.lignes { margin-top: var(--e-5); }
+.lignes li { position: relative; }
+.lignes li + li::before { content: ""; position: absolute; top: 0; left: 40px; right: 0; height: 1px; background: var(--bord); }
+.lignes li:hover::before, .lignes li:hover + li::before { opacity: 0; }
+.ligne { display: flex; align-items: center; gap: 12px; min-height: 44px; padding: 0 8px 0 6px; margin: 0 -8px 0 -6px;
+  border-radius: var(--rayon-champ); transition: background-color var(--duree); }
+.ligne:hover { background: var(--surface-2); }
+.ligne:focus-visible { outline-offset: -2px; border-radius: var(--rayon-champ); }
+.mono { width: 28px; height: 28px; flex: none; display: grid; place-items: center; border-radius: var(--rayon-item);
+  background: var(--surface-2); box-shadow: inset 0 0 0 1px var(--bord); color: var(--texte-2);
+  font: 500 14px/1 var(--police-titre); font-variation-settings: "opsz" 48; transition: background-color var(--duree); }
+.ligne:hover .mono { background: var(--surface-3); }
+.ligne .titre { flex: 1; min-width: 0; font-size: var(--t-14); font-weight: 500; color: var(--texte);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ligne .type { flex: none; height: 22px; padding: 0 8px; }
+.ligne .type.pj { color: var(--texte); box-shadow: inset 0 0 0 1px var(--bord-fort); background: transparent; }
+.ligne > .fin { display: none; color: var(--texte-3); }
+.ligne mark { background: none; color: inherit; box-shadow: inset 0 -2px 0 var(--accent-fond); }
+
+.suite { display: flex; justify-content: center; margin-top: var(--e-5); }
+
+/* Vide, aucun résultat, refus : un panneau centré */
+.vide-liste { margin-top: var(--e-5); padding: var(--e-7) var(--e-5); border-radius: var(--rayon-panneau); text-align: center;
+  box-shadow: inset 0 0 0 1px var(--bord); display: flex; flex-direction: column; align-items: center; }
+.vide-liste .rond { width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; background: var(--surface-2); color: var(--texte-3); }
+.vide-liste .rond .i { width: 20px; height: 20px; }
+.vide-liste p { margin: var(--e-3) 0 0; color: var(--texte-2); font-size: var(--t-14); max-width: 44ch; overflow-wrap: anywhere; }
+.vide-liste .bouton { margin-top: var(--e-4); }
+.refus { margin-top: 0; padding-top: 96px; padding-bottom: 96px; box-shadow: none; }
+.refus p { font: 500 var(--t-22)/1.3 var(--police-titre); color: var(--texte); margin-top: var(--e-4); }
+
+/* Chargement */
+.squelettes li { display: flex; align-items: center; gap: 12px; min-height: 44px; }
+.squelettes li + li { border-top: 1px solid var(--bord); }
+.statut { margin-top: var(--e-4); font-size: var(--t-13); color: var(--texte-3); display: flex; align-items: center; gap: 8px; }
+.tourne { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--bord-fort); border-top-color: var(--texte-2); animation: tourne .8s linear infinite; }
+@keyframes tourne { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .tourne { animation: none; } }
+.alerte .bouton { margin-top: 2px; }
+
+/* ---------- Fenêtre « Nouveau personnage » ---------- */
+.dialogue.creer .ic-dialogue { background: var(--accent-fond); color: var(--accent-texte); }
+.dialogue.creer .ic-dialogue .i { width: 18px; height: 18px; }
+.dialogue form { display: flex; flex-direction: column; gap: var(--e-4); margin-top: var(--e-5); }
+.dialogue .alerte { margin-top: 0; }
+.dialogue .saisie.en-erreur { border-color: var(--danger); }
+.dialogue .saisie.en-erreur:focus { box-shadow: 0 0 0 3px var(--danger-fond); }
+.genre { display: inline-flex; padding: 2px; gap: 2px; border-radius: var(--rayon-champ); background: var(--surface-2); box-shadow: inset 0 0 0 1px var(--bord); align-self: flex-start; }
+.genre button { display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 12px; border-radius: var(--rayon-item);
+  font-size: var(--t-13); font-weight: 500; color: var(--texte-2); transition: background-color var(--duree), color var(--duree), box-shadow var(--duree); }
+.genre button:hover { color: var(--texte); }
+.genre button[aria-checked="true"] { background: var(--surface); color: var(--texte); box-shadow: 0 0 0 1px var(--bord-fort), 0 1px 2px rgba(0,0,0,.18); }
+.genre button .i { color: var(--texte-3); }
+.genre button[aria-checked="true"] .i { color: var(--accent-texte); }
+.dialogue .aide-genre { font-size: var(--t-12); color: var(--texte-3); }
+.dialogue .actions { margin-top: var(--e-2); }
+
+/* ---------- États de la page ---------- */
+[data-vue] { display: none; }
+body[data-vue-active="liste"] [data-vue~="liste"],
+body[data-vue-active="vide"] [data-vue~="vide"],
+body[data-vue-active="aucun"] [data-vue~="aucun"],
+body[data-vue-active="chargement"] [data-vue~="chargement"],
+body[data-vue-active="recherche"] [data-vue~="recherche"],
+body[data-vue-active="erreur"] [data-vue~="erreur"],
+body[data-vue-active="erreur-recherche"] [data-vue~="erreur-recherche"],
+body[data-vue-active="refus"] [data-vue~="refus"] { display: var(--affiche, block); }
+.vide-liste, .alerte { --affiche: flex; }
+body[data-vue-active="refus"] .page.liste > :not([data-vue~="refus"]) { display: none; }
+body.joueur [data-mj] { display: none !important; }
+
+@media (max-width: 1080px) {
+  .page.liste { padding-left: var(--e-6); padding-right: var(--e-6); }
+}
+@media (max-width: 760px) {
+  .page.liste { padding: var(--e-6) var(--e-4) 140px; }
+  .tete-liste { gap: var(--e-3); }
+  .glyphe-type { width: 36px; height: 36px; }
+  .tete-liste h1 { font-size: var(--t-32); }
+  .tete-liste .bouton.principal { min-height: 40px; width: 40px; padding: 0; }
+  .tete-liste .bouton.principal .lib-creer { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+  .tete-liste .bouton.principal .i { width: 18px; height: 18px; }
+  .chercher { margin-top: var(--e-5); }
+  .champ-recherche { min-height: 40px; }
+  .champ-recherche > .i, .champ-recherche kbd { margin-top: 11px; }
+  .champ-recherche textarea { height: 38px; padding: 9px 0; font-size: 16px; }
+  .champ-recherche kbd { display: none; }
+  .champ-recherche { padding-left: 9px; gap: 7px; }
+  .champ-recherche textarea::placeholder { font-size: 15px; }
+  .chercher .bouton { padding: 0 12px; }
+  .chercher .bouton { min-height: 40px; }
+  .ligne { min-height: 52px; }
+  .ligne > .fin { display: block; margin-right: -2px; }
+  .vide-liste { padding: var(--e-6) var(--e-4); }
+  .dialogue .actions .bouton { min-height: 40px; }
+  .genre button { height: 36px; }
+}
+
+/* ---------- Téléphone : le cadre, comme e09-fiche.html ---------- */
+@media (max-width: 760px) {
+  .app { grid-template-columns: minmax(0, 1fr); }
+  .colonne-barre { position: fixed; z-index: 50; top: 0; bottom: 0; left: 0; width: min(300px, 86vw); border-right: 1px solid var(--bord-fort);
+    transform: translateX(-100%); transition: transform var(--duree) var(--courbe); box-shadow: var(--ombre-flottant); visibility: hidden; }
+  body.tiroir-ouvert .colonne-barre { transform: none; visibility: visible; }
+  .voile-tiroir { display: block; position: fixed; inset: 0; z-index: 45; background: var(--voile); opacity: 0; visibility: hidden; transition: opacity var(--duree); }
+  body.tiroir-ouvert .voile-tiroir { opacity: 1; visibility: visible; }
+  .item, .compte, .univers, .menu .entree { min-height: 40px; }
+  .haute { padding: 0 var(--e-2) 0 6px; gap: 4px; }
+  .bouton-menu { display: inline-grid; width: 40px; height: 40px; }
+  .ariane > a:first-child, .ariane > a:first-child + .sep-ariane { display: none; }
+  .bandeau { padding: 8px var(--e-4); }
+  .lien-action, .bouton.petit { min-height: 36px; }
+  .assistant { right: var(--e-4); bottom: var(--e-4); width: 48px; height: 48px; padding: 0; justify-content: center; }
+  .assistant .lib-assistant, .assistant kbd { display: none; }
+  .assistant .i { width: 20px; height: 20px; }
+  .toasts { left: var(--e-4); right: 80px; bottom: var(--e-4); transform: none; align-items: stretch; }
+}
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition-duration: 0ms !important; } }
+</style>
+<style>
+/* Ajouts propres à E-4, E-14, E-15 : rien que des composants du cadre ; aucune couleur en dur. */
+.bloc-etat { margin: var(--e-7, 48px) 0 var(--e-3); font-size: var(--t-12); font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--texte-3); }
+.liste-ligne { display: flex; align-items: flex-end; gap: var(--e-2); flex-wrap: wrap; margin-top: var(--e-4); }
+.liste-ligne .champ { flex: 1; min-width: 12rem; max-width: 20rem; }
+.liste-ligne .champ.etroit { flex: none; min-width: 7rem; }
+.saisie.liste { appearance: none; padding-right: 30px; }
+.champ-liste { position: relative; display: block; }
+.champ-liste .i { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); color: var(--texte-3); pointer-events: none; }
+.liste-statut { appearance: none; font: inherit; font-size: var(--t-13); font-weight: 500; min-height: 30px; padding: 0 30px 0 var(--e-3); background: var(--surface-2); color: var(--texte); border: 1px solid var(--bord-fort); border-radius: var(--rayon-champ); }
+.ligne .av { width: 28px; height: 28px; flex: none; }
+.ligne .titre { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.section-reglage { padding: var(--e-4) 0 var(--e-2); border-top: 1px solid var(--bord); margin-top: var(--e-4); position: relative; padding-left: var(--e-4); border-radius: var(--rayon-champ);
+  background: linear-gradient(90deg, var(--mj-trame), transparent 40%); box-shadow: inset 2px 0 0 var(--mj-bord); }
+.section-reglage h2 { font: 500 var(--t-22)/1.25 var(--police-titre); letter-spacing: -.005em; margin-bottom: var(--e-1); display: flex; align-items: center; gap: var(--e-2); }
+.section-reglage .actions { margin-top: var(--e-3); display: flex; gap: var(--e-2); }
+.section-reglage p { color: var(--texte-3); margin-top: var(--e-2); }
+.systeme-courant { display: flex; align-items: center; gap: var(--e-3); margin-top: var(--e-3); flex-wrap: wrap; }
+.onglets { display: inline-flex; gap: 2px; padding: 2px; margin: var(--e-5) 0 var(--e-2); background: var(--surface-2); border: 1px solid var(--bord); border-radius: var(--rayon-champ); }
+.onglets button { background: none; border: 0; border-radius: var(--rayon-item); color: var(--texte-2); padding: 0 var(--e-4); min-height: 30px; font: inherit; font-size: var(--t-13); font-weight: 500; }
+.onglets button.actif { background: var(--surface); color: var(--texte); box-shadow: 0 0 0 1px var(--bord-fort); }
+.entree-ligne { display: flex; align-items: center; gap: var(--e-3); min-height: 44px; padding: 0 var(--e-2); border-radius: var(--rayon-champ); }
+.entree-nom { flex: none; font-weight: 500; }
+.entree-apercu { flex: 1; min-width: 0; color: var(--texte-3); font-size: var(--t-13); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.entree-detail { padding: var(--e-2) var(--e-2) var(--e-4); }
+.entree-detail h2 { font: 500 var(--t-22)/1.25 var(--police-titre); margin-bottom: var(--e-2); }
+.entree-detail .contenu { font: 400 var(--t-18)/1.68 var(--police-lecture); max-width: 70ch; }
+.exemple-dialogue { position: static; display: grid; opacity: 1; visibility: visible; padding: 0; background: none; place-items: start; }
+.exemple-dialogue .dialogue { transform: none; box-shadow: var(--ombre-flottant); }
+.exemple-toast { position: static; transform: none; opacity: 1; display: inline-flex; margin-top: var(--e-3); }
+.sous-titre { color: var(--texte-2); font-size: var(--t-14); margin-top: var(--e-2); }
+</style>
+</head>
+<body>
+<svg xmlns="http://www.w3.org/2000/svg" width="0" height="0" style="position:absolute" aria-hidden="true"><!-- Lucide (lucide-static, ISC), tracés copiés tels quels --><symbol id="i-arrow-down" viewBox="0 0 24 24"><path d="M12 5v14" /> <path d="m19 12-7 7-7-7" /></symbol><symbol id="i-arrow-right" viewBox="0 0 24 24"><path d="M5 12h14" /> <path d="m12 5 7 7-7 7" /></symbol><symbol id="i-arrow-up" viewBox="0 0 24 24"><path d="m5 12 7-7 7 7" /> <path d="M12 19V5" /></symbol><symbol id="i-book-open" viewBox="0 0 24 24"><path d="M12 5v16" /> <path d="M20.001 19A2 2 0 0022 17V5a2 2 0 00-1.999-2L16 3.002A5 5 0 0012 5a5 5 0 00-4-2H4a2 2 0 00-2 2v12a2 2 0 001.999 2H8a5 5 0 014 2 5 5 0 014-2z" /></symbol><symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5" /></symbol><symbol id="i-chevron-down" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6" /></symbol><symbol id="i-chevron-right" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6" /></symbol><symbol id="i-chevrons-up-down" viewBox="0 0 24 24"><path d="m7 15 5 5 5-5" /> <path d="m7 9 5-5 5 5" /></symbol><symbol id="i-circle-alert" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" /> <line x1="12" x2="12" y1="8" y2="12" /> <line x1="12" x2="12.01" y1="16" y2="16" /></symbol><symbol id="i-circle-check" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" /> <path d="m16 9-5.5 5.5L8 12" /></symbol><symbol id="i-contact-round" viewBox="0 0 24 24"><path d="M16 2v2" /> <path d="M17.915 21a6 6 0 10-12 0" /> <path d="M8 2v2" /> <circle cx="12" cy="11" r="4" /> <rect x="3" y="3" width="18" height="18" rx="2" /></symbol><symbol id="i-download" viewBox="0 0 24 24"><path d="M12 15V3" /> <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /> <path d="m7 10 5 5 5-5" /></symbol><symbol id="i-ellipsis" viewBox="0 0 24 24"><circle cx="12" cy="12" r="1" /> <circle cx="19" cy="12" r="1" /> <circle cx="5" cy="12" r="1" /></symbol><symbol id="i-eye" viewBox="0 0 24 24"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0" /> <circle cx="12" cy="12" r="3" /></symbol><symbol id="i-eye-off" viewBox="0 0 24 24"><path d="M10.733 5.076a10.744 10.744 0 0 1 11.205 6.575 1 1 0 0 1 0 .696 10.747 10.747 0 0 1-1.444 2.49" /> <path d="M14.084 14.158a3 3 0 0 1-4.242-4.242" /> <path d="M17.479 17.499a10.75 10.75 0 0 1-15.417-5.151 1 1 0 0 1 0-.696 10.75 10.75 0 0 1 4.446-5.143" /> <path d="m2 2 20 20" /></symbol><symbol id="i-file-text" viewBox="0 0 24 24"><path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z" /> <path d="M14 2v5a1 1 0 0 0 1 1h5" /> <path d="M10 9H8" /> <path d="M16 13H8" /> <path d="M16 17H8" /></symbol><symbol id="i-flag" viewBox="0 0 24 24"><path d="M4 22V4a1 1 0 0 1 .4-.8A6 6 0 0 1 8 2c3 0 5 2 7.333 2q2 0 3.067-.8A1 1 0 0 1 20 4v10a1 1 0 0 1-.4.8A6 6 0 0 1 16 16c-3 0-5-2-8-2a6 6 0 0 0-4 1.528" /></symbol><symbol id="i-gem" viewBox="0 0 24 24"><path d="M10.5 3 8 9l4 13 4-13-2.5-6" /> <path d="M17 3a2 2 0 0 1 1.6.8l3 4a2 2 0 0 1 .013 2.382l-7.99 10.986a2 2 0 0 1-3.247 0l-7.99-10.986A2 2 0 0 1 2.4 7.8l2.998-3.997A2 2 0 0 1 7 3z" /> <path d="M2 9h20" /></symbol><symbol id="i-git-compare-arrows" viewBox="0 0 24 24"><circle cx="5" cy="6" r="3" /> <path d="M12 6h5a2 2 0 0 1 2 2v7" /> <path d="m15 9-3-3 3-3" /> <circle cx="19" cy="18" r="3" /> <path d="M12 18H7a2 2 0 0 1-2-2V9" /> <path d="m9 15 3 3-3 3" /></symbol><symbol id="i-hourglass" viewBox="0 0 24 24"><path d="M5 22h14" /> <path d="M5 2h14" /> <path d="M17 22v-4.172a2 2 0 0 0-.586-1.414L12 12l-4.414 4.414A2 2 0 0 0 7 17.828V22" /> <path d="M7 2v4.172a2 2 0 0 0 .586 1.414L12 12l4.414-4.414A2 2 0 0 0 17 6.172V2" /></symbol><symbol id="i-image" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2" ry="2" /> <circle cx="9" cy="9" r="2" /> <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" /></symbol><symbol id="i-layout-grid" viewBox="0 0 24 24"><rect width="7" height="7" x="3" y="3" rx="1" /> <rect width="7" height="7" x="14" y="3" rx="1" /> <rect width="7" height="7" x="14" y="14" rx="1" /> <rect width="7" height="7" x="3" y="14" rx="1" /></symbol><symbol id="i-library" viewBox="0 0 24 24"><path d="m16 6 4 14" /> <path d="M12 6v14" /> <path d="M8 8v12" /> <path d="M4 4v16" /></symbol><symbol id="i-lock" viewBox="0 0 24 24"><rect width="18" height="11" x="3" y="11" rx="2" ry="2" /> <path d="M7 11V7a5 5 0 0 1 10 0v4" /></symbol><symbol id="i-lock-keyhole" viewBox="0 0 24 24"><circle cx="12" cy="16" r="1" /> <rect x="3" y="10" width="18" height="12" rx="2" /> <path d="M7 10V7a5 5 0 0 1 10 0v3" /></symbol><symbol id="i-log-out" viewBox="0 0 24 24"><path d="m16 17 5-5-5-5" /> <path d="M21 12H9" /> <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /></symbol><symbol id="i-map-pin" viewBox="0 0 24 24"><path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0" /> <circle cx="12" cy="10" r="3" /></symbol><symbol id="i-monitor" viewBox="0 0 24 24"><rect width="20" height="14" x="2" y="3" rx="2" /> <line x1="8" x2="16" y1="21" y2="21" /> <line x1="12" x2="12" y1="17" y2="21" /></symbol><symbol id="i-moon" viewBox="0 0 24 24"><path d="M20.985 12.486a9 9 0 1 1-9.473-9.472c.405-.022.617.46.402.803a6 6 0 0 0 8.268 8.268c.344-.215.825-.004.803.401" /></symbol><symbol id="i-notebook-pen" viewBox="0 0 24 24"><path d="M13.4 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7.4" /> <path d="M2 6h4" /> <path d="M2 10h4" /> <path d="M2 14h4" /> <path d="M2 18h4" /> <path d="M21.378 5.626a1 1 0 1 0-3.004-3.004l-5.01 5.012a2 2 0 0 0-.506.854l-.837 2.87a.5.5 0 0 0 .62.62l2.87-.837a2 2 0 0 0 .854-.506z" /></symbol><symbol id="i-panel-left" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2" /> <path d="M9 3v18" /></symbol><symbol id="i-paperclip" viewBox="0 0 24 24"><path d="m16 6-8.414 8.586a2 2 0 0 0 2.829 2.829l8.414-8.586a4 4 0 1 0-5.657-5.657l-8.379 8.551a6 6 0 1 0 8.485 8.485l8.379-8.551" /></symbol><symbol id="i-pen-line" viewBox="0 0 24 24"><path d="M13 21h8" /> <path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z" /></symbol><symbol id="i-pencil" viewBox="0 0 24 24"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z" /> <path d="m15 5 4 4" /></symbol><symbol id="i-plus" viewBox="0 0 24 24"><path d="M5 12h14" /> <path d="M12 5v14" /></symbol><symbol id="i-rotate-ccw" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" /> <path d="M3 3v5h5" /></symbol><symbol id="i-scroll-text" viewBox="0 0 24 24"><path d="M15 12h-5" /> <path d="M15 8h-5" /> <path d="M19 17V5a2 2 0 0 0-2-2H4" /> <path d="M8 21h12a2 2 0 0 0 2-2v-1a1 1 0 0 0-1-1H11a1 1 0 0 0-1 1v1a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v2a1 1 0 0 0 1 1h3" /></symbol><symbol id="i-settings-2" viewBox="0 0 24 24"><path d="M14 17H5" /> <path d="M19 7h-9" /> <circle cx="17" cy="17" r="3" /> <circle cx="7" cy="7" r="3" /></symbol><symbol id="i-shield" viewBox="0 0 24 24"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z" /></symbol><symbol id="i-sparkles" viewBox="0 0 24 24"><path d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z" /> <path d="M20 2v4" /> <path d="M22 4h-4" /> <circle cx="4" cy="20" r="2" /></symbol><symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4" /> <path d="M12 2v2" /> <path d="M12 20v2" /> <path d="m4.93 4.93 1.41 1.41" /> <path d="m17.66 17.66 1.41 1.41" /> <path d="M2 12h2" /> <path d="M20 12h2" /> <path d="m6.34 17.66-1.41 1.41" /> <path d="m19.07 4.93-1.41 1.41" /></symbol><symbol id="i-trash-2" viewBox="0 0 24 24"><path d="M10 11v6" /> <path d="M14 11v6" /> <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" /> <path d="M3 6h18" /> <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /></symbol><symbol id="i-upload" viewBox="0 0 24 24"><path d="M12 3v12" /> <path d="m17 8-5-5-5 5" /> <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /></symbol><symbol id="i-user-round" viewBox="0 0 24 24"><circle cx="12" cy="8" r="5" /> <path d="M20 21a8 8 0 0 0-16 0" /></symbol><symbol id="i-users-round" viewBox="0 0 24 24"><path d="M18 21a8 8 0 0 0-16 0" /> <circle cx="10" cy="8" r="5" /> <path d="M22 20c0-3.37-2-6.5-4-8a5 5 0 0 0-.45-8.3" /></symbol><symbol id="i-waypoints" viewBox="0 0 24 24"><path d="m10.586 5.414-5.172 5.172" /> <path d="m18.586 13.414-5.172 5.172" /> <path d="M6 12h12" /> <circle cx="12" cy="20" r="2" /> <circle cx="12" cy="4" r="2" /> <circle cx="20" cy="12" r="2" /> <circle cx="4" cy="12" r="2" /></symbol><symbol id="i-wifi-off" viewBox="0 0 24 24"><path d="M12 20h.01" /> <path d="M8.5 16.429a5 5 0 0 1 7 0" /> <path d="M5 12.859a10 10 0 0 1 5.17-2.69" /> <path d="M19 12.859a10 10 0 0 0-2.007-1.523" /> <path d="M2 8.82a15 15 0 0 1 4.177-2.643" /> <path d="M22 8.82a15 15 0 0 0-11.288-3.764" /> <path d="m2 2 20 20" /></symbol><symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18" /> <path d="m6 6 12 12" /></symbol><symbol id="i-search" viewBox="0 0 24 24"><path d="m21 21-4.34-4.34" /> <circle cx="11" cy="11" r="8" /></symbol><symbol id="i-search-x" viewBox="0 0 24 24"><path d="m13.5 8.5-5 5" /> <path d="m8.5 8.5 5 5" /> <circle cx="11" cy="11" r="8" /> <path d="m21 21-4.3-4.3" /></symbol><symbol id="i-compass" viewBox="0 0 24 24"><path d="m16.24 7.76-1.804 5.411a2 2 0 0 1-1.265 1.265L7.76 16.24l1.804-5.411a2 2 0 0 1 1.265-1.265z" /> <circle cx="12" cy="12" r="10" /></symbol></svg>
+
+<div class="app">
+  <!-- ============================ Barre latérale (cadre de e09-fiche.html) ============================ -->
+  <div class="colonne-barre" id="barre">
+    <aside class="barre" aria-label="Barre latérale" tabindex="-1" style="outline:none">
+      <div class="ancre">
+        <button class="univers" id="bouton-univers" aria-haspopup="menu" aria-expanded="false" aria-controls="menu-univers" title="Lame d'Ébène — changer d'univers">
+          <span class="sceau" aria-hidden="true">L</span>
+          <span class="nom">Lame d'Ébène</span>
+          <span class="pastille mj" id="pastille-role">MJ</span>
+          <svg class="i p" aria-hidden="true"><use href="#i-chevrons-up-down"/></svg>
+        </button>
+        <div class="menu menu-univers" id="menu-univers" role="menu" aria-label="Vos univers">
+          <div class="titre-menu">Vos univers</div>
+          <a class="entree" role="menuitem" href="#" aria-current="true"><span class="sceau" style="width:22px;height:22px;font-size:12px;border-radius:6px">L</span>Lame d'Ébène<span class="fin"><span class="pastille mj" id="pastille-role-menu">MJ</span><svg class="i p" aria-hidden="true"><use href="#i-check"/></svg></span></a>
+          <a class="entree" role="menuitem" href="#"><span class="sceau" style="width:22px;height:22px;font-size:12px;border-radius:6px">C</span>Les Cendres de Vaëlis<span class="fin"><span class="pastille table">Joueur</span></span></a>
+          <div class="sep"></div>
+          <a class="entree" role="menuitem" href="e01-accueil.html"><svg class="i" aria-hidden="true"><use href="#i-library"/></svg>Mes univers</a>
+        </div>
+      </div>
+
+      <nav aria-label="Navigation principale">
+        <div class="groupe">
+          <a class="item" href="e03-vue-ensemble.html"><svg class="i" aria-hidden="true"><use href="#i-layout-grid"/></svg>Vue d'ensemble</a>
+          <a class="item" href="e06-campagne.html"><svg class="i" aria-hidden="true"><use href="#i-flag"/></svg>Campagnes</a>
+          <a class="item" href="e13-comptes-rendus.html"><svg class="i" aria-hidden="true"><use href="#i-notebook-pen"/></svg>Comptes-rendus</a>
+        </div>
+        <div class="groupe">
+          <div class="groupe-titre">Lore</div>
+          <a class="item" href="e08-liste-fiches.html"><svg class="i" aria-hidden="true"><use href="#i-users-round"/></svg>Personnages</a>
+          <a class="item" href="e08-liste-fiches.html"><svg class="i" aria-hidden="true"><use href="#i-map-pin"/></svg>Lieux</a>
+          <a class="item" href="e08-liste-fiches.html"><svg class="i" aria-hidden="true"><use href="#i-shield"/></svg>Factions</a>
+          <a class="item" href="e08-liste-fiches.html"><svg class="i" aria-hidden="true"><use href="#i-gem"/></svg>Objets</a>
+          <a class="item" href="e08-liste-fiches.html"><svg class="i" aria-hidden="true"><use href="#i-hourglass"/></svg>Événements</a>
+          <a class="item" href="e08-liste-fiches.html"><svg class="i" aria-hidden="true"><use href="#i-scroll-text"/></svg>Quêtes</a>
+        </div>
+        <div class="groupe" data-mj>
+          <div class="groupe-titre">Univers</div>
+          <a class="item" href="e04-membres.html"><svg class="i" aria-hidden="true"><use href="#i-contact-round"/></svg>Membres</a>
+          <a class="item" href="e14-parametres.html" aria-current="page" id="item-courant"><svg class="i" aria-hidden="true"><use href="#i-settings-2"/></svg>Paramètres</a>
+        </div>
+      </nav>
+
+      <div class="pied ancre">
+        <div class="menu menu-compte" id="menu-compte" role="menu" aria-label="Compte">
+          <div class="qui"><span class="av" data-av>AN</span><span><b data-ident>antor</b><small>Votre identifiant</small></span></div>
+          <div class="sep"></div>
+          <div class="themes">
+            <span id="lib-theme">Thème</span>
+            <div class="segments" role="radiogroup" aria-labelledby="lib-theme">
+              <button role="radio" data-theme-choix="clair" aria-checked="false" aria-label="Clair" title="Clair"><svg class="i p" aria-hidden="true"><use href="#i-sun"/></svg></button>
+              <button role="radio" data-theme-choix="sombre" aria-checked="false" aria-label="Sombre" title="Sombre"><svg class="i p" aria-hidden="true"><use href="#i-moon"/></svg></button>
+              <button role="radio" data-theme-choix="systeme" aria-checked="true" aria-label="Système" title="Système"><svg class="i p" aria-hidden="true"><use href="#i-monitor"/></svg></button>
+            </div>
+          </div>
+          <div class="sep"></div>
+          <button class="entree" role="menuitem" data-toast="Déconnexion : vous seriez mené à la connexion."><svg class="i" aria-hidden="true"><use href="#i-log-out"/></svg>Se déconnecter</button>
+        </div>
+        <button class="compte" id="bouton-compte" aria-haspopup="menu" aria-expanded="false" aria-controls="menu-compte">
+          <span class="av" aria-hidden="true" data-av>AN</span>
+          <span class="ident" data-ident>antor</span>
+          <svg class="i p" aria-hidden="true"><use href="#i-chevrons-up-down"/></svg>
+        </button>
+      </div>
+    </aside>
+  </div>
+  <div class="voile-tiroir" id="voile-tiroir"></div>
+
+  <!-- ============================ Zone principale ============================ -->
+  <div class="zone-principale">
+    <header class="haute">
+      <button class="icone bouton-menu" id="bouton-menu" aria-label="Menu" aria-expanded="false" aria-controls="barre"><svg class="i" aria-hidden="true"><use href="#i-panel-left"/></svg></button>
+      <nav class="ariane" aria-label="Fil d'Ariane">
+        <a href="e03-vue-ensemble.html"><span class="sceau" style="width:18px;height:18px;font-size:10px;border-radius:5px" aria-hidden="true">L</span>Lame d'Ébène</a>
+        <svg class="i p sep-ariane" aria-hidden="true" data-ariane-type><use href="#i-chevron-right"/></svg>
+        <span aria-current="page" data-ariane-type>CoF Mini</span>
+      </nav>
+    </header>
+    <div class="bandeau perdue" role="status"><svg class="i" aria-hidden="true"><use href="#i-wifi-off"/></svg>Connexion perdue. Ce que vous voyez peut être dépassé ; rien n'est enregistré tant qu'elle ne revient pas.</div>
+
+<main class="page liste" id="contenu">
+<header class="tete-liste"><span class="glyphe-type" aria-hidden="true"><svg class="i" aria-hidden="true"><use href="#i-book-open"/></svg></span><h1>CoF Mini</h1></header>
+<p class="sous-titre">Référentiel commun · utilisé par 1 univers</p>
+<div role="tablist" class="onglets"><button role="tab">Règles</button><button role="tab" class="actif" aria-selected="true">Créatures</button><button role="tab">Objets</button></div>
+<div style="margin-top:12px"><button class="bouton principal"><svg class="i p" aria-hidden="true"><use href="#i-plus"/></svg>Ajouter une créature</button></div>
+<ul class="lignes"><li><div class="entree-ligne"><strong class="entree-nom">Gobelin des Landes</strong><span class="entree-apercu">Petite créature rusée, vive et lâche.</span><svg class="i p" aria-hidden="true"><use href="#i-chevron-down"/></svg></div></li><li><div class="entree-ligne"><strong class="entree-nom">Loup des brumes</strong><span class="entree-apercu">Prédateur solitaire des marais.</span><svg class="i p" aria-hidden="true"><use href="#i-chevron-down"/></svg></div><div class="entree-detail"><h2>Loup des brumes</h2><p class="contenu">Prédateur solitaire des marais.</p><div class="actions" style="display:flex;margin-top:12px"><button class="bouton"><svg class="i p" aria-hidden="true"><use href="#i-pencil"/></svg>Modifier</button></div></div></li><li><div class="entree-ligne"><strong class="entree-nom">Sentinelle d'Ébène</strong><span class="entree-apercu">Gardienne animée de pierre noire.</span><svg class="i p" aria-hidden="true"><use href="#i-chevron-down"/></svg></div></li></ul>
+<p class="bloc-etat">Toast après une action réussie</p><div class="toast visible exemple-toast" role="status"><svg class="i" aria-hidden="true"><use href="#i-circle-check"/></svg><span>« Loup des brumes » enregistré</span><button class="icone fermer" aria-label="Fermer"><svg class="i p" aria-hidden="true"><use href="#i-x"/></svg></button></div>
+<p class="bloc-etat">Chargement</p><div role="status" aria-label="Chargement du système…"><ul class="lignes squelettes" aria-hidden="true"><li><span class="os" style="width:28px;height:28px"></span><span class="os" style="width:34%;height:12px"></span></li><li><span class="os" style="width:28px;height:28px"></span><span class="os" style="width:46%;height:12px"></span></li><li><span class="os" style="width:28px;height:28px"></span><span class="os" style="width:28%;height:12px"></span></li></ul><p class="statut">Chargement du système…</p></div>
+<p class="bloc-etat">Erreur de chargement</p><div class="alerte" role="alert"><svg class="i" aria-hidden="true"><use href="#i-circle-alert"/></svg><div class="corps-alerte"><span>Impossible de charger ce système.</span><button class="bouton petit"><svg class="i p" aria-hidden="true"><use href="#i-rotate-ccw"/></svg>Réessayer</button></div></div>
+<p class="bloc-etat">Vide</p><div class="vide-liste"><span class="rond"><svg class="i" aria-hidden="true"><use href="#i-book-open"/></svg></span><p>Aucune créature pour l’instant.</p></div>
+<p class="bloc-etat">Écriture périmée</p><div class="alerte" role="alert"><svg class="i" aria-hidden="true"><use href="#i-circle-alert"/></svg><div class="corps-alerte"><span>Cette entrée a changé depuis que vous l’avez ouverte. Rechargez-la pour voir la nouvelle version ; votre texte reste ci-dessous.</span><button class="bouton petit">Recharger</button></div></div>
+</main>
+</div>
+</div>
+</body>
+</html>

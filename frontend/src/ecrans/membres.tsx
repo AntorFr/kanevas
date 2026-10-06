@@ -1,3 +1,4 @@
+import { ChevronDown, Trash2, UserPlus, Users } from 'lucide-react';
 import { useEffect, useState, type FormEvent } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
@@ -5,8 +6,10 @@ import { ErreurApi, appeler, useConnexionPerdue } from '../api';
 import { useCharge, useMoi, useUnivers } from '../cadre-contexte';
 import type { Ecran } from '../registre';
 import type { Role, UniversListe } from '../types';
-import { Bouton, Chargement, ErreurChargement, PageIntrouvable } from '../ui';
+import { Avatar, Bouton, BoiteDialogue, Champ, ChargementListe, ErreurChargement, PageIntrouvable, useToasts } from '../ui';
 import './ecrans.css';
+import './liste.css';
+import './reglages.css';
 
 interface Membre {
   compteId: number;
@@ -28,6 +31,7 @@ function Membres() {
   const perdue = useConnexionPerdue();
   const moi = useMoi();
   const { recharger: rechargerUnivers } = useUnivers();
+  const { toast } = useToasts();
   const [univers] = useCharge<UniversListe>(`/api/univers/${id}`);
   const [membres, recharger] = useCharge<Membre[]>(`/api/univers/${id}/membres`);
   const [liste, setListe] = useState<Membre[]>([]);
@@ -41,7 +45,7 @@ function Membres() {
     if (membres.etat === 'ok') setListe(membres.valeur);
   }, [membres]);
 
-  if (membres.etat === 'chargement' || univers.etat === 'chargement') return <Chargement texte="Chargement des membres…" />;
+  if (membres.etat === 'chargement' || univers.etat === 'chargement') return <ChargementListe texte="Chargement des membres…" />;
   // A player, or an unknown universe: the same answer.
   if (membres.etat === 'erreur' && membres.statut === 404) return <PageIntrouvable />;
   if (univers.etat === 'erreur' && univers.statut === 404) return <PageIntrouvable />;
@@ -70,11 +74,16 @@ function Membres() {
   async function ajouter(e: FormEvent) {
     e.preventDefault();
     if (identifiant.trim() === '') return;
+    let nomAjoute = '';
     const ok = await ecrire('ajout', async () => {
       const m = await appeler<Membre>('POST', base, { username: identifiant.trim(), role: roleAjout });
+      nomAjoute = m.username;
       setListe((l) => [...l, m].sort((a, b) => a.username.localeCompare(b.username, 'fr', { sensitivity: 'base' })));
     });
-    if (ok) setIdentifiant(''); // on failure the input is kept
+    if (ok) {
+      setIdentifiant(''); // on failure the input is kept
+      toast(`« ${nomAjoute} » ajouté`);
+    }
   }
 
   async function changer(m: Membre, role: Role) {
@@ -82,6 +91,7 @@ function Membres() {
       await appeler('PATCH', `${base}/${m.compteId}`, { role });
       setListe((l) => l.map((x) => (x.compteId === m.compteId ? { ...x, role } : x)));
     });
+    if (ok) toast(`« ${m.username} » enregistré`);
     if (ok && m.username === monIdentifiant && role !== 'mj') {
       rechargerUnivers();
       navigate('/'); // no longer a GM: this screen is not ours any more
@@ -94,6 +104,7 @@ function Membres() {
       setListe((l) => l.filter((x) => x.compteId !== m.compteId));
     });
     setARetirer(undefined);
+    if (ok) toast(`« ${m.username} » retiré`);
     if (ok && m.username === monIdentifiant) {
       rechargerUnivers();
       navigate('/');
@@ -101,20 +112,31 @@ function Membres() {
   }
 
   return (
-    <>
-      <h1>Membres</h1>
-      <form className="ajout-membre" onSubmit={ajouter} noValidate>
-        <input
-          aria-label="Identifiant du compte"
+    <div className="page-liste">
+      <header className="tete-liste">
+        <span className="glyphe-type" aria-hidden="true">
+          <Users size={20} strokeWidth={1.75} />
+        </span>
+        <h1>Membres</h1>
+      </header>
+      <form className="formulaire-ligne" onSubmit={ajouter} noValidate aria-label="Ajouter un membre">
+        <Champ
+          etiquette="Identifiant du compte"
           placeholder="Identifiant du compte"
           value={identifiant}
-          onChange={(e) => setIdentifiant(e.target.value)}
+          onChange={(e: { target: { value: string } }) => setIdentifiant(e.target.value)}
         />
-        <select aria-label="Rôle" value={roleAjout} onChange={(e) => setRoleAjout(e.target.value as Role)}>
+        <Champ
+          etiquette="Rôle"
+          aria-label="Rôle"
+          liste
+          value={roleAjout}
+          onChange={(e: { target: { value: string } }) => setRoleAjout(e.target.value as Role)}
+        >
           <option value="joueur">Joueur</option>
           <option value="mj">MJ</option>
-        </select>
-        <Bouton type="submit" variante="principal" ecrit enCours={enCours === 'ajout'}>
+        </Champ>
+        <Bouton type="submit" variante="principal" ecrit icone={UserPlus} enCours={enCours === 'ajout'}>
           Ajouter
         </Bouton>
       </form>
@@ -123,44 +145,45 @@ function Membres() {
           {echec}
         </div>
       )}
-      <ul className="liste-membres">
+      <ul className="suivi-liste liste-membres">
         {liste.map((m) => (
-          <li key={m.compteId}>
-            <span className="identifiant" title={m.username}>
-              {m.username}
+          <li key={m.compteId} className="ligne-suivi">
+            <span className="grand">
+              <Avatar nom={m.username} joueur={m.role !== 'mj'} />
+              <span className="texte-ligne identifiant" title={m.username}>
+                {m.username}
+              </span>
             </span>
-            <select
-              aria-label={`Rôle de ${m.username}`}
-              value={m.role}
-              disabled={enCours === `role-${m.compteId}` || perdue}
-              onChange={(e) => changer(m, e.target.value as Role)}
-            >
-              <option value="joueur">Joueur</option>
-              <option value="mj">MJ</option>
-            </select>
-            <Bouton petit variante="danger" ecrit enCours={enCours === `retrait-${m.compteId}` && !aRetirer} onClick={() => setARetirer(m)} aria-label={`Retirer ${m.username}`}>
+            <span className="champ-liste liste-statut-champ">
+              <select
+                className="liste-statut"
+                aria-label={`Rôle de ${m.username}`}
+                value={m.role}
+                disabled={enCours === `role-${m.compteId}` || perdue}
+                onChange={(e) => changer(m, e.target.value as Role)}
+              >
+                <option value="joueur">Joueur</option>
+                <option value="mj">MJ</option>
+              </select>
+              <ChevronDown size={14} strokeWidth={1.75} aria-hidden="true" />
+            </span>
+            <Bouton petit variante="danger" ecrit icone={Trash2} enCours={enCours === `retrait-${m.compteId}` && !aRetirer} onClick={() => setARetirer(m)} aria-label={`Retirer ${m.username}`}>
               Retirer
             </Bouton>
           </li>
         ))}
       </ul>
       {aRetirer && (
-        <div className="confirmation" role="alertdialog" aria-label="Confirmer le retrait">
-          <p>
-            <strong>
-              Retirer {aRetirer.username} de {nomUnivers} ?
-            </strong>{' '}
-            Elle ne verra plus l’univers.
-          </p>
-          <div className="actions">
-            <Bouton variante="danger" ecrit onClick={() => retirer(aRetirer)} aria-label={`Retirer ${aRetirer.username}`}>
-              Retirer
-            </Bouton>
-            <Bouton onClick={() => setARetirer(undefined)}>Annuler</Bouton>
-          </div>
-        </div>
+        <BoiteDialogue
+          titre={`Retirer ${aRetirer.username} de ${nomUnivers} ?`}
+          texte="Elle ne verra plus l’univers."
+          action={`Retirer ${aRetirer.username}`}
+          enCours={enCours === `retrait-${aRetirer.compteId}`}
+          onConfirmer={() => retirer(aRetirer)}
+          onFermer={() => setARetirer(undefined)}
+        />
       )}
-    </>
+    </div>
   );
 }
 
