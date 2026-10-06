@@ -2,10 +2,10 @@ import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import { Link, useParams } from 'react-router-dom';
 
 import { ErreurApi, appeler, lire, useConnexionPerdue } from '../api';
-import { useCharge } from '../cadre-contexte';
+import { useBasculeMode, useCharge, useTitreAriane } from '../cadre-contexte';
 import type { Ecran } from '../registre';
 import type { Role, UniversListe } from '../types';
-import { BasculeMjJoueur, Bouton, Champ, Chargement, ErreurChargement, PageIntrouvable, Pastille } from '../ui';
+import { Bouton, Champ, Chargement, ErreurChargement, PageIntrouvable } from '../ui';
 import './ecrans.css';
 import './fiche/fiche.css';
 import { PanneauSection, type Joueur } from './fiche/section';
@@ -27,7 +27,6 @@ function PageFiche() {
   const { id, fid } = useParams();
   const perdue = useConnexionPerdue();
   const [univers] = useCharge<UniversListe>(`/api/univers/${id}`);
-  const [mode, setMode] = useState<'mj' | 'joueur'>('mj');
   const [etat, setEtat] = useState<Etat>({ k: 'chargement' });
   const [essai, setEssai] = useState(0);
   const [joueurs, setJoueurs] = useState<Joueur[]>([]);
@@ -37,6 +36,9 @@ function PageFiche() {
   const [ajoutEnCours, setAjoutEnCours] = useState(false);
 
   const role: Role | undefined = univers.etat === 'ok' ? univers.valeur.role : undefined;
+  // The GM / player toggle lives in the frame's top bar; it is offered unless the sheet does not exist.
+  const mode = useBasculeMode(role === 'mj' && etat.k !== 'introuvable');
+  useTitreAriane(etat.k === 'ok' || etat.k === 'aucune-visible' ? etat.fiche.titre : undefined);
   const modeEffectif: 'mj' | 'joueur' = role === 'mj' ? mode : 'joueur';
   const suffixe = role === 'mj' && mode === 'joueur' ? '?mode=joueur' : '';
   const base = `/api/univers/${id}/fiches/${fid}`;
@@ -139,12 +141,6 @@ function PageFiche() {
       {lignesDuType(fiche.type).map((l, i) => (
         <l.composant key={i} universId={id!} fiche={fiche} />
       ))}
-      {mj && (
-        <div className="outils-fiche">
-          <BasculeMjJoueur mode={mode} onChange={setMode} />
-          {mode === 'joueur' && <Pastille sens="table">Vue d’un joueur</Pastille>}
-        </div>
-      )}
       {echec && (
         <div className="echec" role="alert">
           {echec}

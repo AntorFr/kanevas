@@ -6,7 +6,6 @@
 .badge-type { flex: none; font-size: 11px; padding: 2px 9px; border-radius: var(--rayon-pastille); background: var(--surface-3); color: var(--texte-2); white-space: nowrap; }
 .entete-liste { display: flex; align-items: center; justify-content: space-between; gap: var(--e-3); flex-wrap: wrap; }
 .titre-fiche-page { display: flex; align-items: baseline; gap: var(--e-3); flex-wrap: wrap; overflow-wrap: anywhere; }
-.outils-fiche { display: flex; align-items: center; gap: var(--e-3); flex-wrap: wrap; margin: var(--e-3) 0; }
 .section-fiche { margin-top: var(--e-4); }
 .section-fiche .contenu { white-space: pre-wrap; overflow-wrap: anywhere; margin: var(--e-2) 0; }
 .section-fiche .contenu.vide { color: var(--texte-2); }

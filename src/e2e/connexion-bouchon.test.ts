@@ -99,7 +99,9 @@ test('B-28 « Se déconnecter » efface la session : plus de contenu, retour au 
   const { ctx, page } = await connecte(browser, srv.base, 'Teo');
   await page.goto('/');
   await voit(page, 'Connecté en tant que teo');
-  await page.getByRole('button', { name: rxExact('Se déconnecter') }).click();
+  // The account lives behind the avatar at the foot of the bar (docs/ecrans.md, § Barre latérale).
+  await page.locator('aside .pied .menu-declencheur').click();
+  await page.getByRole('menuitem', { name: rxExact('Se déconnecter') }).click();
   await page.waitForURL((u: URL) => u.pathname === '/connexion-bouchon');
   await voit(page, 'Choisir un compte de test');
   const res = await page.request.get('/api/moi', { maxRedirects: 0 });
@@ -111,7 +113,9 @@ test('B-28 « Se déconnecter » efface la session : plus de contenu, retour au 
 
 test('AD-55 changer de compte : se déconnecter puis choisir Léa donne l\'identifiant lea', opts, async () => {
   const { ctx, page } = await connecte(browser, srv.base, 'Teo');
-  await page.getByRole('button', { name: rxExact('Se déconnecter') }).click();
+  // The account lives behind the avatar at the foot of the bar (docs/ecrans.md, § Barre latérale).
+  await page.locator('aside .pied .menu-declencheur').click();
+  await page.getByRole('menuitem', { name: rxExact('Se déconnecter') }).click();
   await page.waitForURL((u: URL) => u.pathname === '/connexion-bouchon');
   await page.getByRole('button', { name: rxExact('Se connecter en tant que Léa') }).click();
   await voit(page, 'Connecté en tant que lea');

@@ -1,3 +1,19 @@
+import {
+  Flag,
+  Gem,
+  Hourglass,
+  LayoutGrid,
+  Map as Carte,
+  MapPin,
+  NotebookPen,
+  ScrollText,
+  Settings2,
+  Shield,
+  ContactRound,
+  UsersRound,
+  type LucideIcon,
+} from 'lucide-react';
+
 import type { Role } from './types';
 
 /**
@@ -7,6 +23,7 @@ import type { Role } from './types';
  */
 export interface Item {
   libelle: string;
+  icone: LucideIcon;
   chemin: (universId: number) => string;
   /** Section heading in the bar; items with the same one are grouped. */
   section?: string;
@@ -15,16 +32,16 @@ export interface Item {
 }
 
 export const ITEMS_UNIVERS: Item[] = [
-  { libelle: 'Vue d’ensemble', chemin: (id) => `/univers/${id}` },
-  { libelle: 'Campagnes', chemin: (id) => `/univers/${id}/campagnes` },
-  { libelle: 'Comptes-rendus', chemin: (id) => `/univers/${id}/comptes-rendus` },
-  { libelle: 'Cartes', chemin: (id) => `/univers/${id}/cartes` },
-  { libelle: 'Personnages', section: 'Lore', chemin: (id) => `/univers/${id}/fiches/personnages` },
-  { libelle: 'Lieux', section: 'Lore', chemin: (id) => `/univers/${id}/fiches/lieux` },
-  { libelle: 'Factions', section: 'Lore', chemin: (id) => `/univers/${id}/fiches/factions` },
-  { libelle: 'Objets', section: 'Lore', chemin: (id) => `/univers/${id}/fiches/objets` },
-  { libelle: 'Événements', section: 'Lore', chemin: (id) => `/univers/${id}/fiches/evenements` },
-  { libelle: 'Quêtes', section: 'Lore', chemin: (id) => `/univers/${id}/fiches/quetes` },
-  { libelle: 'Membres', section: 'Univers', role: 'mj', chemin: (id) => `/univers/${id}/membres` },
-  { libelle: 'Paramètres', section: 'Univers', role: 'mj', chemin: (id) => `/univers/${id}/parametres` },
+  { libelle: 'Vue d’ensemble', icone: LayoutGrid, chemin: (id) => `/univers/${id}` },
+  { libelle: 'Campagnes', icone: Flag, chemin: (id) => `/univers/${id}/campagnes` },
+  { libelle: 'Comptes-rendus', icone: NotebookPen, chemin: (id) => `/univers/${id}/comptes-rendus` },
+  { libelle: 'Cartes', icone: Carte, chemin: (id) => `/univers/${id}/cartes` },
+  { libelle: 'Personnages', icone: UsersRound, section: 'Lore', chemin: (id) => `/univers/${id}/fiches/personnages` },
+  { libelle: 'Lieux', icone: MapPin, section: 'Lore', chemin: (id) => `/univers/${id}/fiches/lieux` },
+  { libelle: 'Factions', icone: Shield, section: 'Lore', chemin: (id) => `/univers/${id}/fiches/factions` },
+  { libelle: 'Objets', icone: Gem, section: 'Lore', chemin: (id) => `/univers/${id}/fiches/objets` },
+  { libelle: 'Événements', icone: Hourglass, section: 'Lore', chemin: (id) => `/univers/${id}/fiches/evenements` },
+  { libelle: 'Quêtes', icone: ScrollText, section: 'Lore', chemin: (id) => `/univers/${id}/fiches/quetes` },
+  { libelle: 'Membres', icone: ContactRound, section: 'Univers', role: 'mj', chemin: (id) => `/univers/${id}/membres` },
+  { libelle: 'Paramètres', icone: Settings2, section: 'Univers', role: 'mj', chemin: (id) => `/univers/${id}/parametres` },
 ];

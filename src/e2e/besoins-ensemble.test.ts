@@ -672,7 +672,8 @@ describe('kanevas-premiere-fiche, du besoin', { skip: skipBrowser }, () => {
     await p.goto('/creer-un-univers');
     await attendre(p);
     assert.ok((await texte(p)).includes(bandeau), 'bandeau on every page');
-    await p.getByRole('button', { name: rxExact('Se déconnecter') }).click();
+    await p.locator('aside .pied .menu-declencheur').click();
+    await p.getByRole('menuitem', { name: rxExact('Se déconnecter') }).click();
     await attendre(p);
     assert.ok(p.url().includes('connexion'));
     const apres = await fetch(srv.base + '/api/moi', { redirect: 'manual' });

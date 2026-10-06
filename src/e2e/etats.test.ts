@@ -312,7 +312,14 @@ test('B-29 refus : « Page introuvable. » et « Mes univers » ; la barre n\'a 
     const t = await texte(mira);
     assert.ok(!t.includes('États') && !t.includes('Fiche des états'), `${url}: nothing is named`);
     const aside = await mira.locator('aside').innerText();
-    for (const mot of ['Mes univers', 'mira', 'Thème', 'Se déconnecter']) assert.ok(aside.includes(mot), `${url}: sidebar has ${mot}`);
+    for (const mot of ['Mes univers', 'mira']) assert.ok(aside.includes(mot), `${url}: sidebar has ${mot}`);
+    // The theme and « Se déconnecter » are behind the avatar, not in the bar.
+    for (const mot of ['Thème', 'Se déconnecter']) assert.ok(!aside.includes(mot), `${url}: the bar does not carry ${mot}`);
+    await mira.locator('aside .pied .menu-declencheur').click();
+    const menu = mira.getByRole('menu', { name: 'Compte' });
+    await menu.getByRole('menuitem', { name: rxExact('Se déconnecter') }).waitFor();
+    await menu.getByRole('group', { name: 'Thème' }).waitFor();
+    await mira.keyboard.press('Escape');
     assert.ok(!/Vue d.ensemble|Personnages|Membres/.test(aside), `${url}: no universe navigation`);
     await mira.getByRole('link', { name: rxExact('Mes univers') }).first().waitFor();
   }
