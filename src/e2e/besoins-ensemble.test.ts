@@ -308,7 +308,8 @@ describe('kanevas-premiere-fiche, du besoin', { skip: skipBrowser }, () => {
     await attendre(p);
     await retirer(p, 'antor');
     await p.getByRole('heading', { name: 'Mes univers', level: 1 }).waitFor();
-    assert.ok(!(await texte(p)).includes(UNIVERS + ' B5c'));
+    // The « créé » toast (4 s, survives navigation by design) may still carry the name: read the page content only.
+    assert.ok(!((await p.locator('main').innerText()) as string).includes(UNIVERS + ' B5c'));
   });
 
   // ---------- B-7 ----------
