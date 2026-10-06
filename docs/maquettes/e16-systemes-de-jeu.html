@@ -34,6 +34,8 @@
      #etat-mira        mira (MJ des Landes grises) : CoF Mini, sa seule puce ; « Lame d'Ébène » absent
      #etat-vide        teo : aucun système, texte pour un compte qui ne mène aucun univers
      #etat-vide-mj     un MJ dont aucun univers n'a de système : le chemin vers les paramètres
+     #etat-vide-joueur un compte MJ d'aucun univers (lea, ses univers sans système) : « … quand leur MJ en
+                       rattachera un. », sans lien
      #etat-chargement  « Chargement des systèmes… »
      #etat-erreur      « Impossible de charger les systèmes de jeu. » et « Réessayer »
      #etat-perdue      connexion perdue : la liste reste
@@ -732,6 +734,7 @@ body.etat-creer .vue-accueil { display: none; }
   if (a('joueur')) { compte('lea', 'LÉ'); liste = CPT.lea; }
   if (a('mira')) { compte('mira', 'MI'); liste = CPT.mira; }
   if (a('vide')) { compte('teo', 'TE'); liste = []; }
+  if (a('vide-joueur')) { compte('lea', 'LÉ'); liste = []; }
   if (a('vide-mj')) { compte('mira', 'MI'); liste = []; $('#texte-vide').textContent = 'Un système se rattache depuis les paramètres d\'un univers que vous menez.'; $('#lien-vide').hidden = false; }
   if (a('long')) {
     var noms = ['Lame d\'Ébène', 'Les Cendres de Vaëlis', 'Les Landes grises', 'Brume', 'Annales véridiques des Baronnies d\'Outre-Marais, de leurs six rois et du roi fou', 'Le Serment de Karst', 'Les Marches de Ravenne', 'La Couronne d\'Aubrelune', 'Le Silence de Tessaly', 'Les Brumes d\'Ulmbre', 'Le Serment de Pellemont', 'Les Quatre Lunes'];

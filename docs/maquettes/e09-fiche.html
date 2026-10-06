@@ -51,6 +51,8 @@
      #etat-pas-image           « « plan.pdf » n'est pas une image. … » ; l'illustration d'avant reste
      #etat-envoi-ko            « « portrait-aldric.png » : l'envoi n'a pas abouti. », « Réessayer » et « Ignorer »
      #etat-fichier-vide        « « portrait.png » est vide. » et « Ignorer »
+     #etat-retrait-ko          retrait échoué : la confirmation fermée, « L'action n'a pas abouti. Réessayez. »,
+                               « Réessayer » et « Ignorer » ; l'illustration reste
      #etat-retrait-illustration confirmation du retrait, sur place
      #etat-illustration-ko     l'image ne se charge pas : « Image indisponible. »
      #etat-refus-illustration  le MJ a été rétrogradé : « Vous ne pouvez plus modifier l'illustration… »
@@ -1898,6 +1900,7 @@ var ILLUS = (function () {
   if (aIll('sans-illustration')) { entete.classList.remove('illustree'); imgIll.removeAttribute('src'); document.body.classList.add('montrer-gestes'); }
   if (aIll('envoi-illustration')) { document.body.classList.add('montrer-gestes'); envoyerIll('portrait-aldric.png', 'stop'); }
   if (aIll('envoi-ko')) alerteIll('« portrait-aldric.png » : l\u2019envoi n\u2019a pas abouti.', true);
+  if (aIll('retrait-ko')) { document.body.classList.add('montrer-gestes'); alerteIll('L\u2019action n\u2019a pas abouti. Réessayez.', true); var rr = msgIll.querySelector('[data-ill-reessayer]'); rr.removeAttribute('data-ill-reessayer'); rr.setAttribute('data-ill-retirer', ''); }
   if (aIll('fichier-vide')) alerteIll('« portrait.png » est vide.');
   if (aIll('pas-image')) alerteIll('« plan.pdf » n’est pas une image. Choisissez un PNG, un JPEG, un GIF ou un WebP.');
   if (aIll('retrait-illustration')) { document.body.classList.add('montrer-gestes'); confirmerRetraitIll(); }

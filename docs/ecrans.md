@@ -73,7 +73,8 @@ bouchon » — sans `E-n` ni six états, ils n'existent pas en production.
 
 ## Rôles × écrans × actions
 
-« — » : l'écran n'est pas proposé (absent de la navigation, et 404 si on force l'adresse).
+« — » : l'écran n'est pas proposé (absent de la navigation, et 404 si on force l'adresse). E-15 et
+E-16 vivent hors des univers : leurs cases disent le rôle dans un univers rattaché au système.
 
 | Écran | MJ | Joueur | Admin d'instance (sans rôle dans l'univers) |
 |---|---|---|---|
@@ -91,8 +92,8 @@ bouchon » — sans `E-n` ni six états, ils n'existent pas en production.
 | E-12 | catalogue MJ | catalogue Joueur | — |
 | E-13 | tous les CR | les CR lisibles | — |
 | E-14 | tout | — | — |
-| E-15 | hors des univers : les droits dépendent du rôle dans les univers rattachés au système, pas de l'univers courant — matrice « Qui voit quoi (systèmes) » de `kanevas-illustrations` | idem | idem |
-| E-16 | idem : matrice « Qui voit quoi (systèmes) » | idem | idem |
+| E-15 (hors univers ; les colonnes disent le rôle dans un univers **rattaché au système**) | lire ; « Ajouter … », « Modifier » | lire (« Lecture seule ») ; ni « Ajouter » ni « Modifier » | « Page introuvable. », sauf s'il est lui-même membre d'un univers rattaché : alors la colonne de son rôle là (l'admin MJ d'un univers rattaché lit et modifie) |
+| E-16 (hors univers) | ses systèmes, avec ses univers et son rôle | ses systèmes, « Lecture seule » | la liste de ses propres systèmes (comme MJ ou Joueur s'il est membre d'un univers rattaché) ; vide sinon — l'écran est proposé à tout compte |
 
 Précisions de la matrice : créer une campagne, en changer le statut, créer un scénario sont au
 MJ seul. L'audience d'une section se règle en ligne sur la fiche (MJ). Créer une fiche ouvre une
@@ -103,9 +104,10 @@ tâche de préparation s'ajoute avec sa catégorie, se coche, se décoche ; elle
 Sur E-15, règles, créatures et objets ont le même traitement. Sur E-3, le bloc « Système de jeu » n'existe que si l'univers est rattaché à un système (MJ et Joueur).
 
 Un compte **sans rôle** dans l'univers et qui n'est pas admin d'instance (Teo avant son ajout) a, dans
-cet univers, la colonne « Admin » de cette matrice moins E-5 : « — » partout, « Page introuvable. »
-si l'adresse est forcée ; il garde E-1 et E-2, et, hors des univers, E-16 et E-15 selon les
-systèmes de ses propres univers (matrice « Qui voit quoi (systèmes) », `kanevas-illustrations`).
+cet univers, la colonne « Admin » de cette matrice pour les écrans **de cet univers** (E-3, E-4,
+E-6 à E-14) : « — », « Page introuvable. » si l'adresse est forcée. Hors des univers, il garde E-1,
+E-2 et E-16 (vide s'il n'est membre d'aucun univers rattaché), et E-15 pour les systèmes de ses
+propres univers.
 
 Un refus ne dit jamais qu'une chose existe : une fiche, une section, une carte qu'on ne peut pas
 lire sont absentes, et leur adresse répond comme une adresse inconnue.
@@ -172,7 +174,7 @@ Deux sont posés dès le cadrage parce qu'ils traversent tout :
 ### Barre latérale
 
 Sur tout écran d'un univers : en tête le **sélecteur d'univers** (nom, badge du rôle, la liste
-des univers du compte, « Mes univers » en pied de liste) ; **Vue d'ensemble** ; **Lore** :
+des univers du compte, puis « Mes univers » et « Systèmes de jeu » en pied de liste) ; **Vue d'ensemble** ; **Lore** :
 Personnages, Lieux, Factions, Objets, Événements, Quêtes ; **Campagnes** et **Comptes-rendus** ; pour un MJ, **Univers ▸ Membres** et **Paramètres** ; en
 pied, le compte (avatar et identifiant) qui ouvre le menu du compte : l'identifiant, le thème
 (Clair, Sombre, Système, en trois icônes) et « Se déconnecter ». Hors d'un univers (E-1,
@@ -1065,7 +1067,8 @@ Toasts de réussite : « Illustration de « Maître Aldric » ajoutée », « �
 l'envoi n'a pas abouti. » (et « Réessayer ») ; fichier qui n'est pas une image (400
 `pas_une_image`) « « plan.pdf » n'est pas une image. Choisissez un PNG, un JPEG, un GIF ou un
 WebP. » ; fichier vide « « portrait.png » est vide. » ; retrait échoué « L'action n'a pas abouti.
-Réessayez. » (l'image reste) ; droit perdu entre-temps (403, le compte n'est plus MJ) « Vous ne
+Réessayez. » (la confirmation se ferme, l'image reste ; « Réessayer » relance le retrait, « Ignorer »
+efface le message) ; droit perdu entre-temps (403, le compte n'est plus MJ) « Vous ne
 pouvez plus modifier l'illustration de cette fiche. », puis la fiche se recharge et les gestes
 disparaissent ; image qui ne se charge pas : le cadre `--surface-2` avec l'icône `image-off` et
 « Image indisponible. » (le MJ garde « Remplacer » et « Retirer »).
@@ -1122,9 +1125,14 @@ fiche, pas de la section.
   ses gestes.
 - Étant donné Antor qui choisit un fichier vide « portrait.png », alors il voit « « portrait.png »
   est vide. » avec « Ignorer », l'illustration d'avant reste, et rien n'est écrit.
-- Étant donné Antor qui confirme « Retirer l'illustration » quand le serveur échoue, alors il voit
-  « L'action n'a pas abouti. Réessayez. », et l'illustration reste affichée, sur la fiche comme dans
-  la grille.
+- Étant donné Antor qui confirme « Retirer l'illustration » quand le serveur échoue, alors la
+  confirmation se ferme et il voit, sous l'en-tête, « L'action n'a pas abouti. Réessayez. » avec
+  « Réessayer » (qui relance le retrait) et « Ignorer » ; l'illustration reste affichée, sur la fiche
+  comme dans la grille.
+- Étant donné une illustration dont l'image ne se charge pas, quand Antor (mode MJ) ouvre la fiche,
+  alors le cadre dit « Image indisponible. » et il garde « Remplacer » et « Retirer » ; quand Léa
+  ouvre la même fiche, alors elle voit le même cadre « Image indisponible. », sans aucun geste, et,
+  sur la grille, la carte montre la vignette de repli.
 - Étant donné un envoi en cours quand la connexion tombe, alors le bandeau paraît, les gestes de
   l'illustration sont désactivés et l'envoi devient « « portrait.png » : l'envoi n'a pas abouti. »
   avec « Réessayer » et « Ignorer ».
@@ -1283,7 +1291,7 @@ infobulle et dans l'étiquette accessible de la puce.
   « Brume », et `/univers/<Brume>/systeme` répond « Page introuvable. ».
 - Étant donné Antor sur E-14 de Lame d'Ébène, ouvert pendant qu'un autre MJ de l'univers la
   détache de « CoF Mini », quand il clique « Ouvrir le système », alors il voit « Page
-  introuvable. » ; revenu sur E-14, le panneau dit « Cet univers n'est rattaché à aucun système de
+  introuvable. » et le lien « Systèmes de jeu » ; revenu sur E-14, le panneau dit « Cet univers n'est rattaché à aucun système de
   jeu. ».
 - Étant donné Léa sur la vue d'ensemble de Lame d'Ébène, ouverte avant qu'Antor ne détache
   l'univers, quand elle clique « Ouvrir le système », alors elle voit « Page introuvable. » et le
@@ -1305,6 +1313,18 @@ entrées, les fiches **sans illustration**, et versionne les fichiers de démons
 `kanevas-il-illustration-ecrans`, qui en dépend, y ajoute les illustrations (par la fonction de pose)
 et les fichiers d'échec (« plan.pdf », le fichier vide). Les colonnes « avec illustration » du
 tableau ci-dessous sont donc celles du second temps.
+
+**Provoquer les échecs en bouchon** (règles du bouchon, comme « une demande qui contient « échec » »
+du moteur d'images, AD-55 ; elles vivent dans la couche du bouchon, enregistrée seulement avec
+`KANEVAS_STUB=1`, jamais dans le service) :
+- **retrait qui échoue** : retirer l'illustration d'une fiche dont le titre contient « échec » répond
+  une erreur serveur et ne retire rien ; le semis pose une telle fiche, « Le Portrait de l'échec »
+  (personnage PNJ de Lame d'Ébène, « Apparence » lue des joueurs, avec illustration) ;
+- **image illisible** : le semis pose « La Fresque effacée » (lieu de Lame d'Ébène, lu des joueurs),
+  dont l'illustration est enregistrée mais dont le fichier est absent du disque : sa lecture échoue,
+  E-9 dit « Image indisponible. » et la grille montre la vignette de repli ;
+- **envoi qui n'aboutit pas** : couper le réseau du navigateur pendant l'envoi ; **fichier refusé** :
+  « plan.pdf » et le fichier vide du semis.
 
 | Objet | Contenu |
 |---|---|
