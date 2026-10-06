@@ -42,7 +42,8 @@ export function FournisseurCadre({ children }: { children: ReactNode }) {
   const [mode, setMode] = useState<ModeVue>('mj');
   const [bascule, setBascule] = useState(false);
   const [titre, setTitre] = useState<string>();
-  const vue = useMemo(() => ({ mode, setMode, bascule, setBascule, titre, setTitre }), [mode, bascule, titre]);
+  const [section, setSection] = useState<string>();
+  const vue = useMemo(() => ({ mode, setMode, bascule, setBascule, titre, setTitre, section, setSection }), [mode, bascule, titre, section]);
   return (
     <Contexte.Provider value={valeur}>
       <ContexteVue.Provider value={vue}>{children}</ContexteVue.Provider>
@@ -62,6 +63,9 @@ interface Vue {
   /** Last crumb of the breadcrumb, set by the screen that knows it (a sheet's title). */
   titre?: string;
   setTitre: (t?: string) => void;
+  /** Label of the sidebar item the last crumb hangs under, when the address alone does not say (a sheet's type). */
+  section?: string;
+  setSection: (s?: string) => void;
 }
 
 const ContexteVue = createContext<Vue>({
@@ -70,6 +74,7 @@ const ContexteVue = createContext<Vue>({
   bascule: false,
   setBascule: () => {},
   setTitre: () => {},
+  setSection: () => {},
 });
 
 /** What the frame needs to draw the top bar: the mode, whether to offer the toggle, the last crumb. */
@@ -93,12 +98,16 @@ export function useBasculeMode(active: boolean): ModeVue {
 }
 
 /** Gives the breadcrumb its last crumb (the whole text, truncated by the bar if long). */
-export function useTitreAriane(titre: string | undefined): void {
-  const { setTitre } = useVue();
+export function useTitreAriane(titre: string | undefined, section?: string): void {
+  const { setTitre, setSection } = useVue();
   useEffect(() => {
     setTitre(titre);
-    return () => setTitre(undefined);
-  }, [titre, setTitre]);
+    setSection(titre === undefined ? undefined : section);
+    return () => {
+      setTitre(undefined);
+      setSection(undefined);
+    };
+  }, [titre, section, setTitre, setSection]);
 }
 
 function useCadre(): Cadre {

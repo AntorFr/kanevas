@@ -38,7 +38,8 @@ function PageFiche() {
   const role: Role | undefined = univers.etat === 'ok' ? univers.valeur.role : undefined;
   // The GM / player toggle lives in the frame's top bar; it is offered unless the sheet does not exist.
   const mode = useBasculeMode(role === 'mj' && etat.k !== 'introuvable');
-  useTitreAriane(etat.k === 'ok' || etat.k === 'aucune-visible' ? etat.fiche.titre : undefined);
+  const ficheVue = etat.k === 'ok' || etat.k === 'aucune-visible' ? etat.fiche : undefined;
+  useTitreAriane(ficheVue?.titre, ficheVue && typeParType(ficheVue.type)?.pluriel);
   const modeEffectif: 'mj' | 'joueur' = role === 'mj' ? mode : 'joueur';
   const suffixe = role === 'mj' && mode === 'joueur' ? '?mode=joueur' : '';
   const base = `/api/univers/${id}/fiches/${fid}`;
