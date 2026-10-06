@@ -15,8 +15,8 @@ function BlocSysteme({ universId }: { universId: number }) {
   useEffect(() => {
     let actif = true;
     setNom(undefined);
-    lire<{ nom: string }>(`/api/univers/${universId}/systeme?type=regle`).then(
-      (s) => actif && setNom(s.nom),
+    lire<{ systeme: { nom: string } | null }>(`/api/univers/${universId}`).then(
+      (u) => actif && setNom(u.systeme?.nom),
       () => actif && setNom(undefined),
     );
     return () => {

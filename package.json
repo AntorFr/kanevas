@@ -7,7 +7,7 @@
   },
   "scripts": {
     "dev": "tsx watch src/server.ts",
-    "build": "tsc -p tsconfig.json && cp -r src/db/migrations dist/db/ && vite build --config frontend/vite.config.ts",
+    "build": "tsc -p tsconfig.json && cp -r src/db/migrations dist/db/ && cp -r src/bouchon/demo dist/bouchon/ && vite build --config frontend/vite.config.ts",
     "start": "node dist/server.js",
     "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p frontend/tsconfig.json",
     "test": "node --import tsx --test $(find src frontend/src -name '*.test.ts')",

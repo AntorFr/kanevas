@@ -5,6 +5,8 @@ export interface UniversListe {
   nom: string;
   description: string;
   role: Role;
+  systeme?: { id: number; nom: string } | null;
+  nbMembres?: number;
 }
 
 export interface Moi {

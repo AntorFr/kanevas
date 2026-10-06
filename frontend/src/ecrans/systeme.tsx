@@ -1,5 +1,5 @@
 import { BookOpen, Check, ChevronDown, Pencil, Plus } from 'lucide-react';
-import { useCallback, useEffect, useState, type FormEvent } from 'react';
+import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react';
 import { useParams } from 'react-router-dom';
 
 import { ErreurApi, appeler } from '../api';
@@ -22,7 +22,7 @@ interface Gabarit {
 interface Page {
   id: number;
   nom: string;
-  universUtilisateurs: number;
+  nbUnivers: number;
   peutEcrire: boolean;
   gabarits: Gabarit[];
   suivant: string | null;
@@ -118,7 +118,7 @@ function Formulaire({
 function Systeme() {
   const { id } = useParams();
   const [type, setType] = useState<Type>('creature');
-  const [entete, setEntete] = useState<Pick<Page, 'nom' | 'universUtilisateurs' | 'peutEcrire'>>();
+  const [entete, setEntete] = useState<Pick<Page, 'nom' | 'nbUnivers' | 'peutEcrire'>>();
   const [entrees, setEntrees] = useState<Gabarit[]>([]);
   const [suivant, setSuivant] = useState<string | null>(null);
   const [etat, setEtat] = useState<'chargement' | 'ok' | 'erreur' | 'introuvable'>('chargement');
@@ -130,13 +130,16 @@ function Systeme() {
   const [echecSuite, setEchecSuite] = useState(false);
   const [suiteEnCours, setSuiteEnCours] = useState(false);
 
-  const base = `/api/univers/${id}/systeme`;
+  // The system has its own address (AD-94): resolved from the universe of the screen's address.
+  const baseRef = useRef('');
   const onglet = ONGLETS.find((o) => o.type === type)!;
 
   const charger = useCallback(async (t: Type) => {
-    const p = await appeler<Page>('GET', `${base}?type=${t}`);
-    return p;
-  }, [base]);
+    const u = await appeler<{ systeme: { id: number } | null }>('GET', `/api/univers/${id}`);
+    if (!u.systeme) throw new ErreurApi(404, 'Introuvable');
+    baseRef.current = `/api/systemes/${u.systeme.id}`;
+    return appeler<Page>('GET', `${baseRef.current}?type=${t}`);
+  }, [id]);
 
   useEffect(() => {
     let actif = true;
@@ -148,7 +151,7 @@ function Systeme() {
     charger(type).then(
       (p) => {
         if (!actif) return;
-        setEntete({ nom: p.nom, universUtilisateurs: p.universUtilisateurs, peutEcrire: p.peutEcrire });
+        setEntete({ nom: p.nom, nbUnivers: p.nbUnivers, peutEcrire: p.peutEcrire });
         setEntrees(p.gabarits);
         setSuivant(p.suivant);
         setEtat('ok');
@@ -175,7 +178,7 @@ function Systeme() {
     setSuiteEnCours(true);
     setEchecSuite(false);
     try {
-      const p = await appeler<Page>('GET', `${base}?type=${type}&curseur=${encodeURIComponent(suivant)}`);
+      const p = await appeler<Page>('GET', `${baseRef.current}?type=${type}&curseur=${encodeURIComponent(suivant)}`);
       setEntrees((l) => [...l, ...p.gabarits]);
       setSuivant(p.suivant);
     } catch {
@@ -187,7 +190,7 @@ function Systeme() {
 
   async function ajouter(v: { nom: string; contenu: string }) {
     try {
-      const g = await appeler<Gabarit>('POST', `${base}/gabarits`, { type, nom: v.nom, contenu: v.contenu });
+      const g = await appeler<Gabarit>('POST', `${baseRef.current}/gabarits`, { type, nom: v.nom, contenu: v.contenu });
       setEntrees((l) => [...l, g].sort(alpha));
       setAjout(false);
       toast(`« ${g.nom} » ajouté`);
@@ -198,7 +201,7 @@ function Systeme() {
 
   async function enregistrer(g: Gabarit, v: { nom: string; contenu: string }) {
     try {
-      const m = await appeler<Gabarit>('PUT', `${base}/gabarits/${g.id}`, { nom: v.nom, contenu: v.contenu, version: g.version });
+      const m = await appeler<Gabarit>('PUT', `${baseRef.current}/gabarits/${g.id}`, { nom: v.nom, contenu: v.contenu, version: g.version });
       setEntrees((l) => l.map((x) => (x.id === g.id ? m : x)).sort(alpha));
       setEdition(undefined);
       toast(`« ${m.nom} » enregistré`);
@@ -226,7 +229,7 @@ function Systeme() {
         </span>
         <h1 title={entete.nom}>{entete.nom}</h1>
       </header>
-      <p className="sous-titre-page">Référentiel commun · utilisé par {entete.universUtilisateurs} univers</p>
+      <p className="sous-titre-page">Référentiel commun · utilisé par {entete.nbUnivers} univers</p>
       <div role="tablist" className="onglets">
         {ONGLETS.map((o) => (
           <button
