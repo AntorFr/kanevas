@@ -5,8 +5,20 @@
 .liste-membres { max-height: 60vh; overflow-y: auto; margin-top: var(--e-4); }
 .liste-membres .ligne-suivi { padding-right: var(--e-2); }
 .liste-membres .grand { cursor: default; }
-.liste-membres .identifiant { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.liste-membres .membre-nom { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; border: 0; box-shadow: none; background: none; padding: 0; }
 .liste-membres .ligne-suivi > :not(.grand) { flex: none; }
+/* One height (28 px) for the avatar, the role and the action: the row reads on one line. */
+.liste-membres .ligne-suivi { min-height: 44px; }
+.liste-membres .avatar { width: 28px; height: 28px; }
+.liste-membres .actions-revelees .bouton.petit { min-height: 28px; height: 28px; }
+/* The role is a pastille that opens a menu (native select underneath), not a bordered field. */
+.role-pastille { position: relative; display: inline-flex; align-items: center; height: 28px; border-radius: var(--rayon-pastille); }
+.role-pastille .liste-statut { height: 28px; min-height: 28px; padding: 0 var(--e-6) 0 var(--e-3); border: 0; border-radius: var(--rayon-pastille);
+  font-size: var(--t-12); background: var(--surface-2); color: var(--texte-2); }
+.role-pastille.mj .liste-statut { background: var(--mj-fond); color: var(--mj); }
+.role-pastille .liste-statut:hover:not(:disabled) { box-shadow: 0 0 0 1px var(--bord-fort); }
+.role-pastille.mj .liste-statut:hover:not(:disabled) { box-shadow: 0 0 0 1px var(--mj-bord); }
+.role-pastille svg { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); pointer-events: none; color: currentColor; }
 .page-liste .formulaire-ligne .champ input[placeholder] { min-width: 12rem; }
 
 /* E-14: the current system under the list */
