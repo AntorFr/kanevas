@@ -129,15 +129,15 @@ test('bouton : Entrée et Espace activent ; désactivé ne part pas ; « … » 
   const b = page.locator('.demo .bouton.principal').nth(3); // « Enregistrer »: its name becomes « … » while it sends
   await b.focus();
   await page.keyboard.press('Enter');
-  assert.equal((await b.textContent()).trim(), '…');
+  assert.equal((await b.innerText()).trim(), '…');
   assert.equal(await b.getAttribute('aria-disabled'), 'true');
   await page.keyboard.press('Space');
   await b.click();
   await page.waitForTimeout(1800);
-  assert.equal((await b.textContent()).trim(), 'Enregistrer');
+  assert.equal((await b.innerText()).trim(), 'Enregistrer');
   await b.focus();
   await page.keyboard.press('Space');
-  assert.equal((await b.textContent()).trim(), '…', 'Espace active aussi');
+  assert.equal((await b.innerText()).trim(), '…', 'Espace active aussi');
   await page.waitForTimeout(1800);
   // disabled: reachable by aria, never fires
   const dis = page.getByRole('button', { name: 'Danger', exact: true });
