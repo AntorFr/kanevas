@@ -61,6 +61,11 @@ Forme de la skill `exigences` ; chaque besoin cite les parcours qui le réalisen
   qu'il peut lire, titres compris. *(P-6)*
 - **B-12** — Un MJ bascule sa lecture en mode Joueur, sur une fiche ou une carte, pour voir ce que
   verra un joueur de sa table qui n'est l'auteur d'aucune section. *(P-3)*
+- **B-30** — Un MJ pose, remplace ou retire l'**illustration** d'une fiche (une image PNG, JPEG,
+  GIF ou WebP au plus, depuis son en-tête, E-9) ; quiconque voit la fiche la voit, en tête de la
+  fiche et en vignette dans la liste du type (E-8), où une fiche sans illustration porte une
+  vignette de repli dessinée ; un Joueur ne la pose pas, et qui ne voit pas la fiche n'en obtient
+  rien (son adresse répond comme une adresse inconnue). *(P-3, P-6)*
 
 ### Système de jeu
 - **B-13** — Un MJ rattache son univers à un système de jeu partagé, ou en crée un, depuis les
@@ -68,6 +73,11 @@ Forme de la skill `exigences` ; chaque besoin cite les parcours qui le réalisen
 - **B-14** — Les MJ des univers d'un même système en enrichissent le référentiel commun (règles,
   créatures, objets) depuis la page du système (E-15) ; les membres de ces univers le lisent, les
   autres ne le voient pas. *(P-8)*
+- **B-31** — Un compte retrouve, **hors de tout univers**, les systèmes de jeu rattachés à ses
+  univers (E-16), chacun avec ceux de ses univers qui l'utilisent et jamais les autres, et ouvre la
+  page d'un système (E-15) à sa propre adresse, sans passer par un univers ; il le lit s'il est
+  membre d'un univers rattaché, le modifie s'il est MJ de l'un d'eux, et l'adresse d'un système
+  qu'il ne voit pas répond comme une adresse inconnue. *(P-8)*
 
 ### Campagnes, scénarios, préparation
 - **B-15** — Un MJ crée les campagnes d'un univers et en change le statut — en préparation,
@@ -153,6 +163,10 @@ dernier MJ — refusé avec la raison.
 6. **Cartes** (E-10, E-11) : il place le PNJ sur la carte de la ville, passe en **mode Joueur**
    pour vérifier, puis rend la carte visible.
 *Moment fort* : la fiche en mode Joueur ne trahit aucun secret.
+*Échec* (illustration, étape 4) : il choisit un PDF ou un fichier vide — « « plan.pdf » n'est pas
+une image… » ou « « portrait.png » est vide. », l'illustration d'avant reste ; l'envoi est coupé —
+« l'envoi n'a pas abouti », avec « Réessayer » ; un autre MJ l'a rétrogradé Joueur entre-temps —
+« Vous ne pouvez plus modifier l'illustration de cette fiche. » et les gestes disparaissent.
 
 ### P-4 — Écrire le compte-rendu (joueur ou MJ, le lendemain de la partie)
 1. Depuis la **vue d'ensemble** (E-3) ou la **liste des campagnes** (E-6), il ouvre la campagne.
@@ -177,6 +191,10 @@ dernier MJ — refusé avec la raison.
    que la table sait.
 3. Il ouvre la **carte** (E-11), touche un token, relit la fiche.
 4. Ou il demande à son **assistant** (E-12) « que sait-on d'Aldric ? ».
+*Échec* (illustration, étape 2) : une image ne se charge pas (réseau du téléphone) — la carte
+montre la vignette de repli, jamais une image cassée, et la fiche « Image indisponible. » ; une
+fiche que le MJ a fermée aux joueurs entre-temps disparaît de la grille, et l'adresse de son
+illustration répond comme une adresse inconnue.
 
 ### P-7 — Tenir l'histoire de son personnage (joueur)
 1. Le MJ a créé la fiche de son PJ et lui en a confié une section en auteur (E-9).

@@ -84,15 +84,15 @@ bouchon » — sans `E-n` ni six états, ils n'existent pas en production.
 | E-5 | — | — | tous les univers, leurs membres |
 | E-6 | tout | liste, statut, CR, « Nouveau compte-rendu » ; ni scénarios ni préparation (cachés) | — |
 | E-7 | tout | — | — |
-| E-8 | lire, chercher, créer | lire, chercher | — |
-| E-9 | tout ; mode Joueur ; relier et retirer des relations | sections lisibles ; écrire celles permises ; relations lisibles (section et cible) ; pièces jointes de celles-ci | — |
+| E-8 | lire, chercher, créer ; la vignette de chaque fiche (son illustration, ou le repli dessiné) | lire, chercher ; la vignette des fiches qu'il voit | — |
+| E-9 | tout ; mode Joueur ; relier et retirer des relations ; poser, remplacer, retirer l'illustration (hors mode Joueur) | sections lisibles ; écrire celles permises ; relations lisibles (section et cible) ; pièces jointes de celles-ci ; voir l'illustration, jamais la poser | — |
 | E-10 | tout | cartes visibles | — |
 | E-11 | tout ; mode Joueur | lire une carte visible, ouvrir une fiche | — |
 | E-12 | catalogue MJ | catalogue Joueur | — |
 | E-13 | tous les CR | les CR lisibles | — |
 | E-14 | tout | — | — |
-| E-15 | lire, écrire (s'il est MJ d'un univers rattaché ; un système d'aucun de ses univers : « Page introuvable. ») | lire (idem) | — (sauf comme membre d'un univers rattaché) |
-| E-16 | les systèmes de ses univers | les systèmes de ses univers (lecture seule) | ceux de ses propres univers ; aucun sinon |
+| E-15 | hors des univers : les droits dépendent du rôle dans les univers rattachés au système, pas de l'univers courant — matrice « Qui voit quoi (systèmes) » de `kanevas-illustrations` | idem | idem |
+| E-16 | idem : matrice « Qui voit quoi (systèmes) » | idem | idem |
 
 Précisions de la matrice : créer une campagne, en changer le statut, créer un scénario sont au
 MJ seul. L'audience d'une section se règle en ligne sur la fiche (MJ). Créer une fiche ouvre une
@@ -362,7 +362,9 @@ E-2.
 compte qui est MJ d'au moins un univers (c'est ce qui permet à Mira de trouver « CoF Mini »). Le contenu
 d'un système (E-15) n'est lu que par les membres d'un univers qui lui est rattaché. **Aucun écran ne
 nomme un autre univers** : un système dit seulement « utilisé par N univers » (N compte l'univers
-courant), jamais lesquels. Un système « n'est pas vu » d'un univers qui n'y est pas rattaché : pas
+courant), jamais lesquels. Depuis `kanevas-illustrations`, E-16 et E-15 nomment **les seuls univers
+du compte** qui utilisent le système (« Dans vos univers », avec son rôle) ; un univers dont le compte
+n'est pas membre n'est jamais nommé, sur aucun écran ni dans aucune réponse (AD-84, AD-94). Un système « n'est pas vu » d'un univers qui n'y est pas rattaché : pas
 de bloc sur E-3, et l'adresse de E-15 répond « Page introuvable. ».
 
 ### E-14 Paramètres de l'univers (MJ)
@@ -408,8 +410,9 @@ Trois panneaux, dans cet ordre.
 > `/systemes/:sid` (voir « Systèmes de jeu, hors des univers » plus bas, AD-94) ; ce qui suit vaut
 > toujours pour son contenu, ses gestes et ses textes.
 
-Atteint depuis E-14 (« Ouvrir le système ») et depuis E-3 (bloc « Système de jeu », ci-dessous), à
-l'adresse `/univers/:id/systeme`. Le nom du système en titre, « Référentiel commun · utilisé par N
+Atteint depuis E-14 (« Ouvrir le système ») et depuis E-3 (bloc « Système de jeu », ci-dessous) —
+et depuis E-16 ; son adresse est désormais `/systemes/:sid` (*remplacé par le § de
+`kanevas-illustrations`*). Le nom du système en titre, « Référentiel commun · utilisé par N
 univers » ; trois onglets, **Règles**, **Créatures**, **Objets** (Créatures par défaut) ; sous
 l'onglet, la liste des entrées du type par nom (ordre alphabétique sans casse), cent à la fois, puis
 « Charger la suite ». Chaque ligne (une **entrée** : une règle, une créature ou un objet ; `gabarit` dans les données) : le nom et la première ligne du contenu (tronquée). Un clic ouvre
@@ -436,7 +439,7 @@ nom. » (« Une règle… », « Un objet… ») ; droit retiré entre-temps (r�
 | chargement | le titre absent, « Chargement du système… » | — |
 | erreur | « Impossible de charger ce système. » ; échec d'écriture : « L'action n'a pas abouti. Réessayez. », saisie conservée | « Réessayer » |
 | connexion perdue | le bandeau ; « Ajouter », « Enregistrer » désactivés, le texte en cours reste | lire |
-| refus | univers inconnu, sans rôle du compte, ou **non rattaché à un système** : « Page introuvable. » (E-3 ne montre pas de bloc dans ce cas ; un MJ rattache d'abord un système par E-14) | « Mes univers » |
+| refus | *remplacé* : voir la matrice d'états de « E-15 hors de l'univers » (`kanevas-illustrations`) — le refus mène à « Systèmes de jeu » | — |
 | contenu long | 100 entrées : « Charger la suite » ; nom tronqué par « … » avec infobulle ; contenu de 20 000 caractères passe à la ligne et s'affiche en entier ; au-delà : « Erreur : 20 000 caractères au plus. » ; nom au-delà de 120 : « Erreur : 120 caractères au plus. » | idem |
 
 *Critères.*
@@ -448,9 +451,10 @@ nom. » (« Une règle… », « Un objet… ») ; droit retiré entre-temps (r�
 - Étant donné Léa, Joueuse de Lame d'Ébène, quand elle ouvre le système, alors elle voit « Garde du
   sceau » sans « Ajouter » ni « Modifier » ; si le MJ envoie une écriture à sa place par l'adresse de
   l'API, elle est refusée.
-- Étant donné « Admin » (groupe `parents`, MJ de l'univers « Brume » qu'il vient de créer, non
-  rattaché), quand il ouvre `/univers/<Brume>/systeme`, alors il voit « Page introuvable. » ; et
-  sur la vue d'ensemble de « Brume » il n'y a pas de bloc « Système de jeu ».
+- *Remplacé par le § de `kanevas-illustrations` (critère de Teo, et l'ancienne adresse) :* étant
+  donné « Admin » (groupe `parents`, MJ de l'univers « Brume » qu'il vient de créer, non rattaché),
+  quand il ouvre `/univers/<Brume>/systeme`, alors il voit « Page introuvable. » ; et sur la vue
+  d'ensemble de « Brume » il n'y a pas de bloc « Système de jeu ».
 - Étant donné deux onglets sur la même créature, quand le second enregistre après le premier, alors
   il voit « Cette entrée a changé depuis que vous l'avez ouverte. » et son texte reste.
 
@@ -1203,6 +1207,30 @@ ajouter, modifier pour le MJ ; textes et états de `kanevas-systemes`). Ce qui c
 - les toasts du gabarit commun : « « Garde du sceau » ajoutée », « « Loup des brumes »
   enregistré ».
 
+| État | Ce qu'on voit | Ce qu'on peut faire |
+|---|---|---|
+| vide | un onglet sans entrée : « Aucune créature pour l'instant. » (MJ, avec « Ajouter une créature ») ; « Aucune créature à voir pour l'instant. » (lecture seule) ; « Aucune règle », « Aucun objet » de même | MJ : ajouter |
+| chargement | squelettes du titre, du sous-titre, des puces, des onglets et de trois lignes ; « Chargement du système… » (`role="status"`) | — |
+| erreur | « Impossible de charger ce système. » ; échec d'écriture : « L'action n'a pas abouti. Réessayez. », saisie gardée ; écriture périmée : « Cette entrée a changé depuis que vous l'avez ouverte… » ; nom vide ou déjà pris : sous le champ | « Réessayer », « Recharger » |
+| connexion perdue | le bandeau ; « Ajouter … », « Modifier », « Enregistrer » désactivés, le texte en cours reste ; les puces d'univers restent des liens | lire |
+| refus | système inconnu, ou rattaché à aucun univers du compte (y compris par l'ancienne adresse) : « Page introuvable. » et le lien **« Systèmes de jeu »** (plus « Mes univers ») ; droit perdu pendant une écriture : « Vous ne pouvez plus modifier ce système. », puis la page se recharge en lecture seule ou en « Page introuvable. » ; un Joueur : « Ajouter … » et « Modifier » sont absents | « Systèmes de jeu » |
+| contenu long | 100 entrées : « Charger la suite » ; nom d'entrée de 120 caractères tronqué par « … », infobulle ; contenu de 20 000 caractères en entier ; nom de système de 80 caractères : le titre passe à la ligne | idem |
+
+*Le bloc « Dans vos univers »* (E-15 et chaque ligne de E-16) arrive avec le système : il n'a ni
+chargement ni erreur à lui. Vide : sans objet — un système visible est toujours rattaché à au moins
+un univers du compte. Connexion perdue : il reste affiché, ses liens mènent à E-3. Refus : un univers
+dont le compte a été retiré disparaît des puces au chargement suivant (et le système entier, si
+c'était le dernier). Contenu long : douze univers ou plus — les puces passent à la ligne sous le
+libellé ; un nom d'univers de 80 caractères — coupé à 24 caractères par « … », nom entier en
+infobulle et dans l'étiquette accessible de la puce.
+
+#### E-3 et E-14 : ce que la retouche change
+
+| Écran | Ce qui change | État touché |
+|---|---|---|
+| E-3, bloc « Système de jeu » | « Ouvrir le système » mène à `/systemes/:sid` (E-15 hors univers) ; le bloc lit le système dans `GET /api/univers/:id` (`systeme: {id, nom}`) | refus : si le système est devenu illisible entre-temps (un MJ a détaché l'univers), le clic mène à E-15 qui dit « Page introuvable. » avec « Systèmes de jeu » ; au retour sur E-3, le bloc a disparu (il n'existe pas sans système) |
+| E-14, panneau « Système de jeu » | « Ouvrir le système » mène à `/systemes/:sid` ; la liste du catalogue se lit dans `GET /api/systemes/catalogue` | refus : de même, si un autre MJ a détaché l'univers pendant que la page était ouverte, E-15 dit « Page introuvable. » ; revenu sur E-14, le panneau dit « Cet univers n'est rattaché à aucun système de jeu. » ; erreur du catalogue : « Impossible de charger cette page. » comme avant |
+
 #### Qui voit quoi (systèmes)
 
 | Ligne de la matrice | MJ d'un univers rattaché | Joueur d'un univers rattaché (et MJ d'aucun) | Compte sans univers rattaché (Teo ; l'admin d'instance sans rôle) |
@@ -1240,17 +1268,42 @@ ajouter, modifier pour le MJ ; textes et états de `kanevas-systemes`). Ce qui c
   arrive sur `/systemes/<CoF Mini>`.
 - Étant donné Antor qui détache Lame d'Ébène de « CoF Mini » (E-14), quand Léa recharge E-16, alors
   « CoF Mini » n'y est plus et son adresse lui répond « Page introuvable. ».
+- Étant donné Léa sur la vue d'ensemble de Lame d'Ébène, ouverte avant qu'Antor ne détache
+  l'univers, quand elle clique « Ouvrir le système », alors elle voit « Page introuvable. » et le
+  lien « Systèmes de jeu » ; revenue sur la vue d'ensemble, le bloc « Système de jeu » a disparu.
+
+### Données de départ du bouchon
+
+Les critères de cette tranche supposent un monde. **En mode bouchon (AD-55), au démarrage du
+serveur et seulement si la base n'a encore aucun univers**, Kanevas sème ce jeu de départ, par les
+fonctions de service (AD-2) — pas par du SQL — et sans rien qui existe hors bouchon. Le semis vit au
+démarrage du serveur, pas dans la fabrique de l'application : les tests, qui bâtissent leur
+application sur une base vide, ne le reçoivent que s'ils l'appellent. Les images sont quelques
+fichiers PNG et WebP de démonstration versionnés avec le code, déposés par la vraie fonction de pose
+(AD-93), avec un fichier « plan.pdf » et un fichier vide pour les échecs.
+
+| Objet | Contenu |
+|---|---|
+| comptes | ceux du bouchon : Antor, Léa, Teo, Mira, Admin (inchangés) |
+| « Lame d'Ébène » | Antor MJ, Léa Joueuse ; rattachée à « CoF Mini » |
+| « Les Landes grises » | Mira MJ ; rattachées à « CoF Mini » |
+| « Les Cendres de Vaëlis » | Admin MJ, Antor Joueur ; rattachées à « Chroniques Oubliées Fantasy » |
+| Teo | membre d'aucun univers (donc d'aucun univers rattaché) |
+| « CoF Mini » | règles « Attaque au contact », « Points de chance », « Repos » ; créatures « Gobelin des Landes », « Loup des brumes », « Sentinelle d'Ébène », « Vouivre des tourbières » (pas « Garde du sceau », que le critère fait ajouter) ; objets « Lame grise », « Sceau de Val-Fortin » |
+| « Chroniques Oubliées Fantasy » | quelques entrées de chaque type |
+| personnages de Lame d'Ébène | « Maître Aldric » (PNJ ; « Apparence » lue des joueurs, « Vérité — MJ seul » fermée ; **sans** illustration au départ, pour le critère d'ajout) ; « Bran Corvalis » (PNJ, « Apparence » lue, sans illustration) ; « Le Prieur masqué » (PNJ, une seule section « Secret — MJ seul » : **invisible de Léa** ; **avec** illustration) ; « Léa Brisefer » (PJ, avec illustration) ; « Dame Ombeline de Val-Fortin » (PNJ, avec illustration) ; « Suie » (PNJ, avec illustration) |
+| lieux et factions de Lame d'Ébène | « Val-Fortin » et « Le Pendu Joyeux » (avec illustration), « Rue des Cordiers » (sans) ; « Lames Grises » (avec), « Cercle des Cendres » (section MJ seul, avec illustration : invisible de Léa) |
 
 ### Clôture de `kanevas-illustrations`
 
-La décision de Monsieur → la grille de E-8 (vignette, repli) et l'en-tête de E-9 (voir, poser,
-remplacer, retirer). Atteint par P-3 (le MJ prépare son lore : il pose l'illustration sur E-9 et la
+B-30 → la grille de E-8 (vignette, repli) et l'en-tête de E-9 (voir, poser, remplacer, retirer). Atteint par P-3 (le MJ prépare son lore : il pose l'illustration sur E-9 et la
 retrouve sur E-8) et P-6 (une joueuse parcourt le lore sur son téléphone : la grille). Chaque rôle a
 sa colonne ci-dessus ; les six états de chaque changement sont dans les tableaux (B-29).
-La seconde décision de Monsieur → E-16 (nouveau) et E-15 hors univers ; atteints par P-8 (étape 2 :
+B-31 → E-16 (nouveau) et E-15 hors univers ; atteints par P-8 (étape 2 :
 « Systèmes de jeu », ou « Ouvrir le système » depuis E-14 / E-3) ; B-14 reste servi par E-15 ;
-chaque relation au système (MJ, Joueur, sans univers rattaché) a sa colonne. Aucun besoin ni
-donnée nouvelle ; aucun écart à `## Livre` de `kanevas-systemes`.
+chaque relation au système (MJ, Joueur, sans univers rattaché) a sa colonne. Aucune donnée
+nouvelle ; B-13 et B-14 sont inchangés. Les deux besoins viennent des décisions de Monsieur du
+2026-10-06, écrites en B-30 et B-31 (`docs/parcours.md`).
 
 ## Maquettes
 
