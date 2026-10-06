@@ -194,6 +194,7 @@ test('PDF : une ligne avec « Télécharger », nom d’origine ; SVG : jamais a
   const b = bloc(antor, 'Plan');
   await b.getByText(/image\.svg/).waitFor();
   await b.getByText('plan.pdf', { exact: true }).waitFor();
+  await b.getByRole('link', { name: rxExact('Télécharger') }).nth(1).waitFor();
   assert.equal(await b.locator('img').count(), 0, 'no <img>, even for the SVG');
   assert.equal(await b.locator('object, embed, iframe, svg:not([aria-hidden="true"])').count(), 0);
   assert.equal(await b.getByRole('link', { name: rxExact('Télécharger') }).count(), 2);

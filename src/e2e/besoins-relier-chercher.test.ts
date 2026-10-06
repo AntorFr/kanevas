@@ -656,6 +656,25 @@ describe('kanevas-relier-chercher, du besoin', { skip: skipBrowser }, () => {
       const debordement = await m2.antor.evaluate(() => document.documentElement.scrollWidth > window.innerWidth);
       assert.equal(debordement, false, 'défilement horizontal de la page');
     });
+
+    test('états : même contenu extrême au téléphone (390 px) — ni défilement horizontal ni jeton hors de la ligne', async () => {
+      const m2 = await monde("Lame d'Ébène relier long tel");
+      const long = 'L'.repeat(60) + ' ' + 'o'.repeat(59);
+      const cible = (await api(m2.antor, 'POST', `/api/univers/${m2.U}/fiches`, { type: 'faction', titre: long })).id;
+      await relation(m2, m2.apparence, cible, 'x'.repeat(40) + ' ' + 'y'.repeat(39));
+      await m2.antor.setViewportSize({ width: 390, height: 800 });
+      await ouvrirFiche(m2.antor, m2, m2.aldric);
+      const hors = await m2.antor.evaluate(() => {
+        const w = window.innerWidth;
+        const sortants = [...document.querySelectorAll('main *, .relations *')].filter((e) => {
+          const r = e.getBoundingClientRect();
+          return r.width > 0 && r.right > w + 0.5;
+        }).map((e) => e.tagName + '.' + e.className);
+        return { scroll: document.documentElement.scrollWidth > w, sortants };
+      });
+      assert.equal(hors.scroll, false, 'défilement horizontal de la page');
+      assert.deepEqual(hors.sortants, [], 'éléments hors écran');
+    });
   });
 });
 
