@@ -2,7 +2,7 @@
 .cadre { --h-bouchon: 0px; min-height: 100vh; }
 /* The stub banner stays on top; the bar and the top bar start under it. */
 .cadre.avec-bouchon { --h-bouchon: 36px; }
-.cadre > .bandeau { position: sticky; top: 0; z-index: 60; height: var(--h-bouchon); padding-top: 0; padding-bottom: 0; }
+.cadre > .bandeau { position: sticky; top: 0; z-index: 30; height: var(--h-bouchon); padding-top: 0; padding-bottom: 0; }
 .app { display: grid; grid-template-columns: 252px minmax(0, 1fr); min-height: calc(100vh - var(--h-bouchon)); }
 .colonne-barre { background: var(--fond-lateral); border-right: 1px solid var(--bord); }
 .barre { position: sticky; top: var(--h-bouchon); height: calc(100vh - var(--h-bouchon)); display: flex; flex-direction: column; padding: var(--e-3); outline: none; }
