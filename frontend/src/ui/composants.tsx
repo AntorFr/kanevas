@@ -163,9 +163,12 @@ export function Pastille({
   icone: Icone,
   onClick,
   etiquette,
+  expanded,
   children,
 }: {
   sens: 'mj' | 'table' | 'neutre' | 'secrete';
+  /** A button that opens a setting: whether it is open (`aria-expanded`). */
+  expanded?: boolean;
   icone?: LucideIcon;
   onClick?: () => void;
   /** Accessible name when it is a button (state and gesture). */
@@ -181,7 +184,14 @@ export function Pastille({
   );
   if (onClick) {
     return (
-      <button type="button" className={`pastille ${sens} cliquable`} aria-label={etiquette} onClick={onClick}>
+      <button
+        type="button"
+        className={`pastille ${sens} cliquable`}
+        aria-label={etiquette}
+        aria-haspopup={expanded === undefined ? undefined : 'dialog'}
+        aria-expanded={expanded}
+        onClick={onClick}
+      >
         {contenu}
       </button>
     );
@@ -198,11 +208,13 @@ export function PastilleAudience({
   etat,
   auteur,
   section,
+  expanded,
   onRegler,
 }: {
   etat: EtatAudience;
   auteur?: string;
   section?: string;
+  expanded?: boolean;
   onRegler?: () => void;
 }) {
   const mot = motAudience(etat, auteur);
@@ -213,6 +225,7 @@ export function PastilleAudience({
       sens={sens}
       icone={icone}
       onClick={onRegler}
+      expanded={expanded}
       etiquette={onRegler ? `${mot} — régler l’audience de « ${section ?? ''} »` : undefined}
     >
       {etat === 'confiee' && auteur && <Avatar nom={auteur} joueur petit />}

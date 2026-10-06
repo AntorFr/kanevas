@@ -3,14 +3,16 @@ import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import { FournisseurCadre } from './cadre-contexte';
 import { Cadre } from './Cadre';
 import { ecrans } from './registre';
-import { PageIntrouvable } from './ui';
+import { FournisseurToasts, PageIntrouvable } from './ui';
 
 // One router (AD-16): every registered screen inside the frame, then « Page introuvable. ».
 const routeur = createBrowserRouter([
   {
     element: (
       <FournisseurCadre>
-        <Cadre />
+        <FournisseurToasts>
+          <Cadre />
+        </FournisseurToasts>
       </FournisseurCadre>
     ),
     children: [
