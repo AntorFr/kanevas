@@ -3,7 +3,7 @@
 import assert from 'node:assert/strict';
 import { after, before, describe, test } from 'node:test';
 
-import { type Any, attendre, connecte, launch, rx, rxExact, section, skipBrowser, startServer, texte, type Server } from './harnais.test.js';
+import { type Any, attendre, ligneRelation, connecte, launch, rx, rxExact, section, skipBrowser, startServer, texte, type Server } from './harnais.test.js';
 
 let srv: Server;
 let browser: Any;
@@ -28,7 +28,7 @@ async function ouvrir(page: Any, id: number, mode = ''): Promise<void> {
   if (mode === 'joueur') await page.getByRole('radio', { name: rxExact('Mode Joueur') }).check();
   await page.waitForFunction(() => !/Chargement des relations…/.test(document.body.innerText));
 }
-const bloc = (page: Any, titre: string) => section(page, titre).locator('.relations');
+const bloc = (page: Any, titre: string) => section(page, titre).getByRole('group', { name: 'Relations' });
 async function relier(page: Any, titreSection: string, type: string, typeFiche: string, chercherDans: string, cible: string): Promise<void> {
   const b = bloc(page, titreSection);
   await b.getByRole('button', { name: rxExact('Relier à une fiche') }).click();
@@ -88,7 +88,7 @@ describe('kanevas-rc-ecran-relations, E-9 bloc Relations', { skip: skipBrowser }
     await ouvrir(lea, aldric);
     const b = bloc(lea, 'Apparence');
     const t = await b.innerText();
-    assert.ok(/membre de →\s*Lames Grises/.test(t), t);
+    assert.equal(await ligneRelation(lea, 'membre de', 'Lames Grises').count(), 1, t);
     assert.ok(!/Cendres|Aucune relation|cachée|\b2\b/.test(t), t);
     assert.equal(await b.locator('.liste-relations > li').count(), 1);
     assert.equal(await bloc(lea, 'Passé').count(), 0);
@@ -100,7 +100,7 @@ describe('kanevas-rc-ecran-relations, E-9 bloc Relations', { skip: skipBrowser }
     await ouvrir(antor, aldric, 'joueur');
     const b = bloc(antor, 'Apparence');
     const t = await b.innerText();
-    assert.ok(/membre de →\s*Lames Grises/.test(t), t);
+    assert.equal(await ligneRelation(antor, 'membre de', 'Lames Grises').count(), 1, t);
     assert.ok(!/Cendres/.test(t), t);
     assert.equal(await antor.getByRole('button', { name: rx('Relier') }).count(), 0);
     assert.equal(await antor.getByRole('button', { name: rx('Retirer') }).count(), 0);

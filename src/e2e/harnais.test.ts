@@ -278,6 +278,17 @@ export async function choisirAuteur(page: Any, titre: string, identifiant: strin
   await boite.waitFor({ state: 'detached' });
 }
 
+/**
+ * The row of a relation « <lien> → <cible> »: the type, an arrow (an icon, not text) and a link to the target.
+ * Several rows when several sections carry it.
+ */
+export function ligneRelation(page: Any, lien: string, cible: string): Any {
+  return page
+    .getByRole('listitem')
+    .filter({ has: page.getByText(lien, { exact: true }) })
+    .filter({ has: page.getByRole('link', { name: rx(cible) }) });
+}
+
 /** Opens the « ⋯ » menu of a section (GM only) and returns the menu. */
 export async function ouvrirMenuSection(page: Any, titre: string): Promise<Any> {
   await section(page, titre).getByRole('button', { name: /^Autres actions sur « / }).click();
