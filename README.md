@@ -9,7 +9,7 @@ par quels écrans : `docs/parcours.md`, `docs/ecrans.md`, `docs/donnees.md`.
 Au-delà de la première fonction métier, le dépôt porte le **système de jeu** : un référentiel (règles, créatures, objets) que plusieurs
 univers se partagent, rattaché depuis les paramètres de l'univers. Il porte aussi le **suivi de la séance** : campagnes, scénarios (MJ), préparation en cinq catégories (MJ) et comptes-rendus (tout membre). Il porte enfin les **pièces jointes** : sur chaque section, déposer un fichier, voir une image, télécharger
 les autres, marquer secrète (MJ), retirer. Il porte aussi les **relations** entre fiches (bloc Relations de la fiche) et la **recherche** dans un type de fiche. Ni
-cartes, ni images, ni assistant, ni administration d'instance ne sont
+cartes, ni génération d'images, ni assistant, ni administration d'instance ne sont
 construits (tranches suivantes) : les passages de ces docs qui les décrivent sont la cible.
 
 ## Structure
@@ -32,7 +32,10 @@ frontend/                         React + Vite : charte (ui/), écrans (src/ecra
 
 Un écran est un fichier `frontend/src/ecrans/<nom>.tsx` enregistré par le registre
 (`frontend/src/registre.ts`) ; les couleurs ne viennent que de `frontend/src/ui/tokens.css`
-(`docs/charte.md`).
+(`docs/charte.md`). Le cadre (`Cadre.tsx`, `Barre.tsx` : navigation à icônes, barre haute, tiroir au téléphone,
+menu de l'avatar qui porte le thème et la déconnexion) et les composants partagés (`frontend/src/ui/` : bouton, menu, toast,
+boîte de dialogue, interrupteur, pastille…) sont communs à tous les écrans. Les polices (Fraunces, Newsreader, Inter,
+`@fontsource`) et les icônes (`lucide-react`) sont empaquetées, sans requête vers un hôte tiers (AD-92).
 
 Tests sans e2e ni Docker : `npm run typecheck` puis `npm test` (voir « Tests de bout en bout » pour les e2e) ; la voie Docker de référence est dans `CLAUDE.md`.
 
@@ -85,6 +88,9 @@ pour ajouter Léa, se connecter d'abord une fois en Léa (sinon « Ce compte ne 
 démarrer en bouchon si une variable `OIDC_*` est posée. Avec `NODE_ENV=production` (celui de l'image ; `npm start` ne le pose pas) et sans volume `/data`, la base est en
 mémoire (avertissement au démarrage).
 
+En bouchon seulement, `/demo-composants` (session requise) montre les composants de la charte dans tous leurs états ;
+hors bouchon, cette adresse répond 404.
+
 ### Tests de bout en bout
 
 `npm test` joue aussi `src/e2e/` : `node dist/server.js` en bouchon, piloté par un vrai Chromium via
@@ -94,7 +100,7 @@ Les textes de `docs/ecrans.md` sont écrits avec l'apostrophe droite ; l'interfa
 Playwright n'est pas une dépendance du dépôt : il doit être installé globalement
 (`/usr/lib/node_modules` ou `/usr/local/lib/node_modules`) avec un Chromium, ce que ne fait ni
 `node:20-bookworm-slim` ni la CI GitHub. Là où il manque, ces tests sont **ignorés avec un message**,
-sans échec ; les autres tests (services, routes HTTP) tournent partout. Compter environ 6 minutes pour toute la suite avec Playwright. La CI ne joue donc pas les e2e.
+sans échec ; les autres tests (services, routes HTTP) tournent partout. Compter une vingtaine de minutes pour toute la suite avec Playwright (silencieuse jusqu'à la fin). La CI ne joue donc pas les e2e.
 
 ## Réglages
 

@@ -288,7 +288,7 @@ filet, deux sections). C : `role="status"`, « Chargement de la fiche… » lu e
 
 ## 5. Seuils
 
-Plancher : WCAG 2.2 AA. Mesuré avec `scripts/contraste.py` de la skill `charte-graphique` ; une
+Plancher : WCAG 2.2 AA. Mesuré avec le script de contraste de la skill `charte-graphique` (hors de ce dépôt), rejoué par `frontend/src/ui/contraste.test.ts` ; une
 teinte translucide est composée sur ce qui est dessous.
 
 | Premier plan | Fond | Thème | Ratio | Seuil | |
@@ -338,8 +338,7 @@ teinte (1.4.1). `--texte-3` n'est jamais posé sur `--surface-3`.
 Aucun ratio sous un seuil.
 
 **Valeurs de tokens existants changées par cette charte — décision de Monsieur.** La maquette
-et cette charte les portent ; `frontend/src/ui/tokens.css` garde les anciennes valeurs tant que
-Monsieur n'a pas validé et qu'une tranche ne les a pas appliquées au code (les noms, eux, ne
+et cette charte les portent ; `frontend/src/ui/tokens.css` les porte depuis `kanevas-refonte-visuelle` (les noms, eux, ne
 changent pas : le code les lit tels quels).
 
 | Token | Avant (sombre / clair) | Après | Raison |
