@@ -11,7 +11,7 @@ import './accueil.css';
 function SqueletteListe() {
   return (
     <div role="status">
-      <div className="tete-liste">
+      <div className="tete-colonnes">
         <span className="squelette" style={{ width: 64, height: 12 }} aria-hidden="true" />
       </div>
       {[
@@ -107,7 +107,7 @@ function Accueil() {
       )}
       {univers.etat === 'ok' && !vide && (
         <>
-          <div className="tete-liste" aria-hidden="true">
+          <div className="tete-colonnes" aria-hidden="true">
             <span>{univers.valeur.length} univers</span>
             <span className="col-role">Votre rôle</span>
           </div>

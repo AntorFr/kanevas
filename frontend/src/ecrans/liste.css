@@ -42,7 +42,7 @@
 .champ-recherche { position: relative; flex: 1 1 220px; min-width: 0; }
 .champ-recherche > svg { position: absolute; left: 10px; top: 9px; color: var(--texte-3); pointer-events: none; z-index: 1; }
 .champ-recherche .champ { margin: 0; }
-.champ-recherche .champ > span:first-child { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; margin: 0; }
+.champ-recherche .champ > .lib-champ { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; margin: 0; }
 .champ-recherche textarea { min-height: 34px; height: 34px; padding: 6px 10px 6px 34px; font: var(--t-14)/20px var(--police-texte); resize: none; overflow-wrap: anywhere; }
 .recherche .actions { margin: 0; }
 .recherche .actions .bouton { min-height: 34px; }
