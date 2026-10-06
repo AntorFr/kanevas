@@ -15,6 +15,7 @@ import {
   skipBrowser,
   startServer,
 } from './harnais.test.js';
+import { changerStatut, ouvrirNouveauScenario } from './suivi-aide.js';
 
 const opts = { skip: skipBrowser, timeout: 180000 };
 let srv: Awaited<ReturnType<typeof startServer>>;
@@ -48,11 +49,12 @@ test('E-6/E-7/E-13 : chaque action réussie a son toast, sans prendre le focus',
   await p.getByRole('button', { name: rxExact('Créer la campagne') }).click();
   await toastDe(p, '« Camp toast » créée').waitFor();
 
-  await p.locator('main').getByRole('combobox').first().selectOption({ label: 'Active' });
+  await changerStatut(p, 'Active', 'Camp toast');
   await toastDe(p, '« Camp toast » enregistrée').waitFor();
 
   await p.getByRole('link', { name: 'Camp toast' }).click();
   await p.getByRole('heading', { name: 'Camp toast', level: 1 }).waitFor();
+  await ouvrirNouveauScenario(p);
   await p.getByLabel('Titre', { exact: true }).first().fill('Acte toast');
   await p.getByRole('button', { name: rxExact('Créer le scénario') }).click();
   await p.getByRole('heading', { name: 'Acte toast', level: 1 }).waitFor();
