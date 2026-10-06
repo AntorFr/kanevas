@@ -58,7 +58,7 @@ a.bouton { text-decoration: none; display: inline-block; }
 .fiche .blocs .bloc-contenu > .bloc-vide { min-height: 28px; display: inline-flex; align-items: center; }
 /* Empty block: the text and the add action share one row, like Relations. */
 .pieces-jointes.vide { display: contents; }
-.pieces-jointes.vide .ajout-piece { margin-top: 0; }
+.pieces-jointes.vide .ajout-piece { display: contents; }
 .liste-relations { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; width: 100%; }
 .relation .bouton-icone { width: 26px; height: 26px; }
 .liste-pieces { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 12px; width: 100%; }
