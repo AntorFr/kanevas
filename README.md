@@ -37,7 +37,7 @@ menu de l'avatar qui porte le thème et la déconnexion) et les composants parta
 boîte de dialogue, interrupteur, pastille…) sont communs à tous les écrans. Les polices (Fraunces, Newsreader, Inter,
 `@fontsource`) et les icônes (`lucide-react`) sont empaquetées, sans requête vers un hôte tiers (AD-92).
 
-Tests sans e2e ni Docker : `npm run typecheck` puis `npm test` (voir « Tests de bout en bout » pour les e2e) ; la voie Docker de référence est dans `CLAUDE.md`.
+Tests : `npm run typecheck` puis `npm test` — `npm test` joue aussi les e2e quand Playwright est installé, une vingtaine de minutes (voir « Tests de bout en bout »). Un seul fichier : `node --import tsx --test <fichier>.test.ts` ; la voie Docker de référence est dans `CLAUDE.md`.
 
 ## Démarrage local
 
@@ -89,7 +89,7 @@ démarrer en bouchon si une variable `OIDC_*` est posée. Avec `NODE_ENV=product
 mémoire (avertissement au démarrage).
 
 En bouchon seulement, `/demo-composants` (session requise) montre les composants de la charte dans tous leurs états ;
-hors bouchon, cette adresse répond 404.
+hors bouchon, cette adresse répond 404 une fois connecté (302 vers la connexion sinon).
 
 ### Tests de bout en bout
 

@@ -15,7 +15,7 @@ Relations de E-9 (AD-63, AD-64). Carte et invariants : `ARCHITECTURE.md`.
 polices et icônes embarquées (AD-92), composants partagés (`frontend/src/ui/`), cadre (navigation à icônes, barre haute,
 tiroir au téléphone, thème et déconnexion dans le menu de l'avatar, seul endroit du thème), E-1 à E-4, E-6 à E-9, E-13 à E-15
 avec leurs états, pastille/filet d'audience, menu « ⋯ » et toasts sur la fiche. Aucun geste, droit ni donnée nouveau.
-Page `/demo-composants` en bouchon seulement. Maquettes de `docs/maquettes/` refaites.
+Thème par défaut « Système » (tant que rien n'est mémorisé) ; sur E-4, « Retirer » est révélé au survol/focus et le rôle est une pastille-menu. Page `/demo-composants` en bouchon seulement. Maquettes finies : E-1, E-3, E-6, E-8, E-9 (E-4 corrigée) ; E-2, E-7, E-13 à E-15 se tiennent au cadre et aux composants.
 
 **Reste :** la fusion et le tag `v*` (recette acceptée par Monsieur). Rien n'est amorcé : tout se crée à
 la main (Léa se connecte une fois avant d'être ajoutée). Aucune image n'existe avant le tag.

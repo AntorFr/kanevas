@@ -38,7 +38,7 @@ Hors d'un univers (E-1, E-2, E-5), une barre réduite : **Mes univers**, **Admin
 pour un admin d'instance, et le compte en pied. Un admin qui est aussi membre d'un univers garde le lien
 **Administration** dans la barre de l'univers, sous une section « Instance ».
 
-L'**assistant** est un bouton flottant « Demander à Kanevas », sur tous les écrans d'un univers,
+L'**assistant** (livré avec E-12, absent de la refonte visuelle) est un bouton flottant « Demander à Kanevas », sur tous les écrans d'un univers,
 hors de la barre ; il n'existe pas hors d'un univers. Un MJ voit la bascule **« Mode MJ » / « Mode Joueur »** dans la barre haute des écrans où la
 bascule existe (fiche, carte).
 
@@ -918,7 +918,7 @@ hachure, ni menu « ⋯ » : la section n'a que son titre, son texte et ses bloc
 | menu du compte (thème, déconnexion) — et pour l'admin d'instance, hors univers | oui | oui | oui |
 | bascule « Mode MJ » / « Mode Joueur » et bandeau du mode Joueur | oui | caché | oui |
 | « Modifier » d'une section | oui | sur ce qu'il écrit | sur ce que les joueurs écrivent |
-| bouton « Demander à Kanevas » | oui | oui | oui |
+| bouton « Demander à Kanevas » (E-12, pas encore construit) | oui | oui | oui |
 | pastille et réglage d'audience | lire, régler | caché | caché |
 | filet et hachure | voir | caché | caché |
 | menu « ⋯ » (ordre, retrait) | oui | caché | caché |
