@@ -281,7 +281,7 @@ Les numéros sont stables. Une décision retirée garde son numéro, avec ce qui
 |---|---|---|
 | Authelia (OIDC) | un écran de connexion qui liste les comptes de test (Antor, Léa, Teo, Mira, Admin ; identifiants `antor`, `lea`, `teo`, `mira`, `admin`) ; la session est la même qu'après Authelia, groupes compris (Admin porte `parents`, que `kanevas-recours-admin` lit comme ceux d'Authelia) | `kanevas-premiere-fiche` |
 | Modèle de l'assistant (AD-54) | transport `bouchon` : des réponses scriptées, choisies par mots-clés, qui appellent les vrais outils avec les droits de la personne | `kanevas-assistant-membre` |
-| Données de départ (recette, critères) | au démarrage en bouchon, sur une base sans univers : univers, membres, systèmes, fiches et illustrations de démonstration, semés par les fonctions de service (`docs/ecrans.md`, « Données de départ du bouchon ») ; jamais hors bouchon, jamais dans les tests qui ne l'appellent pas | `kanevas-illustrations` |
+| Données de départ (recette, critères) | au démarrage en bouchon, sur une base sans univers : univers, membres, systèmes, fiches et illustrations de démonstration, semés par les fonctions de service (`docs/ecrans.md`, « Données de départ du bouchon ») ; jamais hors bouchon, jamais dans les tests qui ne l'appellent pas | `kanevas-illustrations` : `kanevas-il-systemes-serveur` (mécanisme, monde sans illustration), puis `kanevas-il-illustration-ecrans` (illustrations, fichiers d'échec) |
 | Moteur d'images (AD-50) | adaptateur `bouchon` : une image fixe, attachée par le vrai chemin (AD-44) ; une demande qui contient « échec » échoue, pour tester ce cas | `kanevas-images` |
 
 Activation : `KANEVAS_STUB=1` (AD-55), jamais posée dans `k8s-home-lab`. La recette de

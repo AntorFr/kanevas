@@ -166,7 +166,9 @@ dernier MJ — refusé avec la raison.
 *Échec* (illustration, étape 4) : il choisit un PDF ou un fichier vide — « « plan.pdf » n'est pas
 une image… » ou « « portrait.png » est vide. », l'illustration d'avant reste ; l'envoi est coupé —
 « l'envoi n'a pas abouti », avec « Réessayer » ; un autre MJ l'a rétrogradé Joueur entre-temps —
-« Vous ne pouvez plus modifier l'illustration de cette fiche. » et les gestes disparaissent.
+« Vous ne pouvez plus modifier l'illustration de cette fiche. » et les gestes disparaissent ; le
+retrait échoue — « L'action n'a pas abouti. Réessayez. », l'illustration reste ; l'image ne se charge
+pas — le cadre dit « Image indisponible. » et il garde « Remplacer » et « Retirer ».
 
 ### P-4 — Écrire le compte-rendu (joueur ou MJ, le lendemain de la partie)
 1. Depuis la **vue d'ensemble** (E-3) ou la **liste des campagnes** (E-6), il ouvre la campagne.

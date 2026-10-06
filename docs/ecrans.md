@@ -104,7 +104,8 @@ Sur E-15, règles, créatures et objets ont le même traitement. Sur E-3, le blo
 
 Un compte **sans rôle** dans l'univers et qui n'est pas admin d'instance (Teo avant son ajout) a, dans
 cet univers, la colonne « Admin » de cette matrice moins E-5 : « — » partout, « Page introuvable. »
-si l'adresse est forcée ; il garde E-1 et E-2.
+si l'adresse est forcée ; il garde E-1 et E-2, et, hors des univers, E-16 et E-15 selon les
+systèmes de ses propres univers (matrice « Qui voit quoi (systèmes) », `kanevas-illustrations`).
 
 Un refus ne dit jamais qu'une chose existe : une fiche, une section, une carte qu'on ne peut pas
 lire sont absentes, et leur adresse répond comme une adresse inconnue.
@@ -175,18 +176,18 @@ des univers du compte, « Mes univers » en pied de liste) ; **Vue d'ensemble** 
 Personnages, Lieux, Factions, Objets, Événements, Quêtes ; **Campagnes** et **Comptes-rendus** ; pour un MJ, **Univers ▸ Membres** et **Paramètres** ; en
 pied, le compte (avatar et identifiant) qui ouvre le menu du compte : l'identifiant, le thème
 (Clair, Sombre, Système, en trois icônes) et « Se déconnecter ». Hors d'un univers (E-1,
-E-2, E-5) : « Mes univers » et le compte en pied. **Un item dont l'écran n'est
+E-2, E-5, E-15, E-16) : « Mes univers », « Systèmes de jeu » et le compte en pied. **Un item dont l'écran n'est
 pas construit n'est pas affiché** : Cartes et Administration
 arrivent avec leurs tranches (Campagnes et Comptes-rendus sont affichés). « Paramètres » (E-14) n'est affiché qu'au MJ. Sur téléphone (moins de 760 px), la barre est un tiroir sous un
 bouton « Menu ».
 
 | État | Ce qu'on voit |
 |---|---|
-| vide | sans objet : l'univers courant est toujours dans le sélecteur ; hors univers, seul « Mes univers » |
+| vide | sans objet : l'univers courant est toujours dans le sélecteur ; hors univers, « Mes univers » et « Systèmes de jeu » |
 | chargement | le sélecteur affiche « … » ; les items fixes sont déjà là |
 | erreur | le sélecteur affiche « Univers », sans liste (le nom n'est connu que de la liste qui n'a pas chargé) ; « Impossible de charger vos univers. » dans la liste dépliée, avec « Réessayer » |
 | connexion perdue | le bandeau ; navigation inchangée |
-| refus | sur « Page introuvable. » la barre est celle d'un écran hors univers : **pas de sélecteur**, aucun nom d'univers, seulement « Mes univers » et le compte en pied ; dans un univers, le sélecteur ne liste que les univers du compte |
+| refus | sur « Page introuvable. » la barre est celle d'un écran hors univers : **pas de sélecteur**, aucun nom d'univers, seulement « Mes univers », « Systèmes de jeu » et le compte en pied ; dans un univers, le sélecteur ne liste que les univers du compte |
 | contenu long | 100 univers : la liste du sélecteur défile ; un nom de 80 caractères est tronqué par « … » avec infobulle |
 
 ### E-1 Accueil
@@ -445,9 +446,10 @@ nom. » (« Une règle… », « Un objet… ») ; droit retiré entre-temps (r�
 *Critères.*
 - Étant donné Antor, MJ de Lame d'Ébène rattaché à « CoF Mini », quand il ajoute la créature « Garde
   du sceau » avec son contenu, alors elle apparaît sous « Créatures ».
-- Étant donné Mira, MJ des « Landes grises » rattachée au même système, quand elle ouvre
-  « Créatures », alors elle voit « Garde du sceau » et « Utilisé par 2 univers », et aucun nom
-  d'univers.
+- *Remplacé par le critère de Mira du § de `kanevas-illustrations` (la seule puce « Les Landes
+  grises · MJ ») :* étant donné Mira, MJ des « Landes grises » rattachée au même système, quand
+  elle ouvre « Créatures », alors elle voit « Garde du sceau » et « Utilisé par 2 univers », et aucun
+  nom d'univers.
 - Étant donné Léa, Joueuse de Lame d'Ébène, quand elle ouvre le système, alors elle voit « Garde du
   sceau » sans « Ajouter » ni « Modifier » ; si le MJ envoie une écriture à sa place par l'adresse de
   l'API, elle est refusée.
@@ -1118,6 +1120,11 @@ fiche, pas de la section.
   et ni « Remplacer », ni « Retirer », ni « Ajouter une illustration » ; un `PUT` de sa part reçoit 403.
 - Étant donné Antor en mode Joueur sur « Maître Aldric », alors il voit l'illustration et aucun de
   ses gestes.
+- Étant donné Antor qui choisit un fichier vide « portrait.png », alors il voit « « portrait.png »
+  est vide. » avec « Ignorer », l'illustration d'avant reste, et rien n'est écrit.
+- Étant donné Antor qui confirme « Retirer l'illustration » quand le serveur échoue, alors il voit
+  « L'action n'a pas abouti. Réessayez. », et l'illustration reste affichée, sur la fiche comme dans
+  la grille.
 - Étant donné un envoi en cours quand la connexion tombe, alors le bandeau paraît, les gestes de
   l'illustration sont désactivés et l'envoi devient « « portrait.png » : l'envoi n'a pas abouti. »
   avec « Réessayer » et « Ignorer ».
@@ -1268,6 +1275,16 @@ infobulle et dans l'étiquette accessible de la puce.
   arrive sur `/systemes/<CoF Mini>`.
 - Étant donné Antor qui détache Lame d'Ébène de « CoF Mini » (E-14), quand Léa recharge E-16, alors
   « CoF Mini » n'y est plus et son adresse lui répond « Page introuvable. ».
+- Étant donné Mira, quand elle ouvre « Créatures » de « CoF Mini » après qu'Antor y a ajouté
+  « Garde du sceau », alors elle la voit, avec « Utilisé par 2 univers » et la seule puce « Les
+  Landes grises · MJ ».
+- Étant donné « Admin », MJ de l'univers « Brume » qu'il vient de créer, non rattaché, alors la vue
+  d'ensemble de « Brume » n'a pas de bloc « Système de jeu », E-16 ne lui montre aucun système de
+  « Brume », et `/univers/<Brume>/systeme` répond « Page introuvable. ».
+- Étant donné Antor sur E-14 de Lame d'Ébène, ouvert pendant qu'un autre MJ de l'univers la
+  détache de « CoF Mini », quand il clique « Ouvrir le système », alors il voit « Page
+  introuvable. » ; revenu sur E-14, le panneau dit « Cet univers n'est rattaché à aucun système de
+  jeu. ».
 - Étant donné Léa sur la vue d'ensemble de Lame d'Ébène, ouverte avant qu'Antor ne détache
   l'univers, quand elle clique « Ouvrir le système », alors elle voit « Page introuvable. » et le
   lien « Systèmes de jeu » ; revenue sur la vue d'ensemble, le bloc « Système de jeu » a disparu.
@@ -1281,6 +1298,13 @@ démarrage du serveur, pas dans la fabrique de l'application : les tests, qui b�
 application sur une base vide, ne le reçoivent que s'ils l'appellent. Les images sont quelques
 fichiers PNG et WebP de démonstration versionnés avec le code, déposés par la vraie fonction de pose
 (AD-93), avec un fichier « plan.pdf » et un fichier vide pour les échecs.
+
+Il se pose **en deux temps**, comme les tâches : `kanevas-il-systemes-serveur` pose le mécanisme
+(semis au démarrage en bouchon, base sans univers), les univers, les membres, les systèmes et leurs
+entrées, les fiches **sans illustration**, et versionne les fichiers de démonstration ;
+`kanevas-il-illustration-ecrans`, qui en dépend, y ajoute les illustrations (par la fonction de pose)
+et les fichiers d'échec (« plan.pdf », le fichier vide). Les colonnes « avec illustration » du
+tableau ci-dessous sont donc celles du second temps.
 
 | Objet | Contenu |
 |---|---|
