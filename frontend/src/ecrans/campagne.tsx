@@ -1,4 +1,4 @@
-import { ArrowDown, Plus } from 'lucide-react';
+import { ArrowDown, Flag, Plus } from 'lucide-react';
 import { useEffect, useState, type FormEvent } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 
@@ -71,14 +71,21 @@ function Page({ universId, campagneId }: { universId: string; campagneId: string
       <Link className="lien-retour" to={`/univers/${universId}/campagnes`}>
         ← Campagnes
       </Link>
-      <div className="entete-suivi">
+      <header className="entete-suivi">
+        <span className="type-campagne">
+          <Flag size={14} strokeWidth={1.75} aria-hidden="true" />
+          Campagne
+        </span>
         <h1>{c.nom}</h1>
-        {mj ? (
-          <ListeStatut statut={c.statut} nom={c.nom} desactive={perdue} onChange={(s) => void changer(s)} />
-        ) : (
-          <BadgeStatut statut={c.statut} />
-        )}
-      </div>
+        <div className="proprietes">
+          <span className="lib-prop">Statut</span>
+          {mj ? (
+            <ListeStatut statut={c.statut} nom={c.nom} desactive={perdue} onChange={(s) => void changer(s)} />
+          ) : (
+            <BadgeStatut statut={c.statut} />
+          )}
+        </div>
+      </header>
       {echec && (
         <div className="echec" role="alert">
           {ECHEC}
@@ -104,6 +111,7 @@ function PanneauScenarios({ universId, campagneId }: { universId: string; campag
   const [erreur, setErreur] = useState<string>();
   const [echec, setEchec] = useState(false);
   const [enCours, setEnCours] = useState(false);
+  const [ouvert, setOuvert] = useState(false);
   const { toast } = useToasts();
 
   async function creer(e: FormEvent) {
@@ -127,6 +135,11 @@ function PanneauScenarios({ universId, campagneId }: { universId: string; campag
 
   return (
     <Panneau titre="Scénarios" reserveMj>
+      {!ouvert && (
+        <Bouton className="lien-action action-sec" variante="fantome" petit ecrit icone={Plus} onClick={() => setOuvert(true)}>
+          Nouveau scénario
+        </Bouton>
+      )}
       {echec && (
         <div className="echec" role="alert">
           {ECHEC}
@@ -136,7 +149,7 @@ function PanneauScenarios({ universId, campagneId }: { universId: string; campag
       {donnees.etat === 'erreur' && <ErreurPanneau onReessayer={recharger} />}
       {donnees.etat === 'ok' &&
         (donnees.valeur.scenarios.length === 0 ? (
-          <p>Aucun scénario pour l’instant.</p>
+          !ouvert && <p>Aucun scénario pour l’instant.</p>
         ) : (
           <ul className="suivi-liste">
             {[...donnees.valeur.scenarios]
@@ -150,12 +163,26 @@ function PanneauScenarios({ universId, campagneId }: { universId: string; campag
               ))}
           </ul>
         ))}
-      <form className="formulaire-ligne" onSubmit={creer} noValidate aria-label="Nouveau scénario">
-        <Champ etiquette="Titre" value={titre} erreur={erreur} onChange={(e: { target: { value: string } }) => setTitre(e.target.value)} />
-        <Bouton type="submit" ecrit icone={Plus} enCours={enCours}>
-          Créer le scénario
-        </Bouton>
-      </form>
+      {ouvert && (
+        <form className="formulaire-ligne ouvert" onSubmit={creer} noValidate aria-label="Nouveau scénario">
+          <Champ
+            etiquette="Titre"
+            placeholder="1 à 120 caractères"
+            autoFocus
+            value={titre}
+            erreur={erreur}
+            onChange={(e: { target: { value: string } }) => setTitre(e.target.value)}
+          />
+          <div className="actions">
+            <Bouton variante="fantome" onClick={() => { setOuvert(false); setTitre(''); setErreur(undefined); }}>
+              Annuler
+            </Bouton>
+            <Bouton type="submit" variante="principal" ecrit enCours={enCours}>
+              Créer le scénario
+            </Bouton>
+          </div>
+        </form>
+      )}
     </Panneau>
   );
 }
@@ -274,8 +301,12 @@ function PanneauPreparation({ campagneId }: { campagneId: number }) {
           )}
         </>
       )}
-      <form className="formulaire-ligne" onSubmit={ajouter} noValidate aria-label="Nouvelle tâche">
-        <Champ etiquette="Nouvelle tâche" value={libelle} erreur={erreur} onChange={(e: { target: { value: string } }) => setLibelle(e.target.value)} />
+      <form className="formulaire-ligne ajout-tache" onSubmit={ajouter} noValidate aria-label="Nouvelle tâche">
+        <div className="titre-form" aria-hidden="true">
+          <Plus size={14} strokeWidth={1.75} />
+          Nouvelle tâche
+        </div>
+        <Champ etiquette="Nouvelle tâche" placeholder="1 à 200 caractères" value={libelle} erreur={erreur} onChange={(e: { target: { value: string } }) => setLibelle(e.target.value)} />
         <Champ etiquette="Catégorie" liste value={categorie} onChange={(e: { target: { value: string } }) => setCategorie(e.target.value as Categorie)}>
           {CATEGORIES.map((c) => (
             <option key={c.valeur} value={c.valeur}>
@@ -325,7 +356,7 @@ function PanneauComptesRendus({ universId, campagneId, mj }: { universId: string
 
   return (
     <Panneau titre="Comptes-rendus">
-      <Bouton variante="principal" petit ecrit icone={Plus} onClick={() => setCreation(true)}>
+      <Bouton className="action-sec" variante="principal" ecrit icone={Plus} onClick={() => setCreation(true)}>
         Nouveau compte-rendu
       </Bouton>
       {page.etat === 'chargement' && <ChargementListe texte="Chargement…" />}

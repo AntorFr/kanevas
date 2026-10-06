@@ -2,7 +2,7 @@
 .fenetre .choix label { display: inline-flex; gap: var(--e-2); align-items: center; }
 .actuelle { color: var(--texte-2); white-space: pre-wrap; overflow-wrap: anywhere; border-left: 2px solid var(--bord-champ); padding-left: var(--e-3); }
 
-a.bouton { text-decoration: none; display: inline-block; }
+a.bouton { text-decoration: none; display: inline-flex; }
 
 /* ---------- La fiche (E-9) : une colonne de lecture, des sections sans panneau ---------- */
 .fiche { max-width: 784px; margin: 0 auto; padding: var(--e-4) 0 120px; }
