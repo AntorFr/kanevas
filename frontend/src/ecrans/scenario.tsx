@@ -1,10 +1,11 @@
+import { Pencil } from 'lucide-react';
 import { useState, type FormEvent } from 'react';
 import { Link, useParams } from 'react-router-dom';
 
 import { appeler, ErreurApi } from '../api';
 import { useCharge } from '../cadre-contexte';
 import type { Ecran } from '../registre';
-import { Bouton, Champ, Chargement, ErreurChargement, PageIntrouvable } from '../ui';
+import { Bouton, Champ, Chargement, ErreurChargement, PageIntrouvable, useToasts } from '../ui';
 import './ecrans.css';
 import { ECHEC, type Campagne, type Scenario } from './suivi/commun';
 
@@ -49,6 +50,7 @@ function lireBrouillon(id: number): { titre: string; contenu: string; version: n
 
 function Vue({ universId, campagne, initial }: { universId: string; campagne: Campagne; initial: Scenario }) {
   const brouillon = lireBrouillon(initial.id);
+  const { toast } = useToasts();
   const [scenario, setScenario] = useState(initial);
   const [edition, setEdition] = useState(brouillon !== undefined);
   const [titre, setTitre] = useState(brouillon?.titre ?? initial.titre);
@@ -115,6 +117,7 @@ function Vue({ universId, campagne, initial }: { universId: string; campagne: Ca
       sessionStorage.removeItem(cleBrouillon(scenario.id));
       setScenario(maj);
       setEdition(false);
+      toast(`« ${maj.titre} » enregistré`);
     } catch (err) {
       if (err instanceof ErreurApi && err.statut === 409 && err.code === 'scenario_modifie') setPerime(true);
       else setEchec(true);
@@ -142,19 +145,25 @@ function Vue({ universId, campagne, initial }: { universId: string; campagne: Ca
   }
 
   return (
-    <>
-      <p>
-        <Link to={`/univers/${universId}/campagnes/${campagne.id}`}>← {campagne.nom}</Link>
-      </p>
-      <h1 className="titre-long">{scenario.titre}</h1>
+    <div className="page-liste">
+      <Link className="lien-retour" to={`/univers/${universId}/campagnes/${campagne.id}`}>
+        ← {campagne.nom}
+      </Link>
+      <header className="tete-liste">
+        <h1 className="titre-long">{scenario.titre}</h1>
+        {!edition && (
+          <Bouton variante="principal" icone={Pencil} onClick={modifier}>
+            Modifier
+          </Bouton>
+        )}
+      </header>
       {!edition ? (
         <>
-          {scenario.contenu === '' ? <p>Rien d’écrit pour l’instant.</p> : <div className="contenu-scenario">{scenario.contenu}</div>}
-          <div className="actions">
-            <Bouton variante="principal" onClick={modifier}>
-              Modifier
-            </Bouton>
-          </div>
+          {scenario.contenu === '' ? (
+            <p className="texte-vide-page">Rien d’écrit pour l’instant.</p>
+          ) : (
+            <div className="contenu-scenario">{scenario.contenu}</div>
+          )}
         </>
       ) : (
         <form onSubmit={enregistrer} noValidate>
@@ -199,7 +208,7 @@ function Vue({ universId, campagne, initial }: { universId: string; campagne: Ca
           </div>
         </form>
       )}
-    </>
+    </div>
   );
 }
 

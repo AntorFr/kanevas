@@ -1,3 +1,4 @@
+import { ArrowDown, Plus } from 'lucide-react';
 import { useEffect, useState, type FormEvent } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 
@@ -5,7 +6,7 @@ import { appeler, lire, useConnexionPerdue } from '../api';
 import { useCharge } from '../cadre-contexte';
 import type { Ecran } from '../registre';
 import type { UniversListe } from '../types';
-import { Bouton, Champ, Chargement, ErreurChargement, Fenetre, PageIntrouvable, Panneau } from '../ui';
+import { Bouton, Champ, Chargement, ChargementListe, ErreurChargement, Fenetre, PageIntrouvable, Panneau, useToasts } from '../ui';
 import './ecrans.css';
 import {
   BadgeStatut,
@@ -34,6 +35,7 @@ function Page({ universId, campagneId }: { universId: string; campagneId: string
   const [donnees, recharger] = useCharge<Campagne>(`/api/univers/${universId}/campagnes/${campagneId}`);
   const [camp, setCamp] = useState<Campagne>();
   const [echec, setEchec] = useState(false);
+  const { toast } = useToasts();
 
   useEffect(() => {
     if (donnees.etat === 'ok') setCamp(donnees.valeur);
@@ -57,6 +59,7 @@ function Page({ universId, campagneId }: { universId: string; campagneId: string
     setCamp({ ...c, statut });
     try {
       setCamp(await appeler<Campagne>('PATCH', `/api/campagnes/${c.id}`, { statut }));
+      toast(`« ${c.nom} » enregistrée`);
     } catch {
       setCamp({ ...c, statut: avant });
       setEchec(true);
@@ -64,10 +67,10 @@ function Page({ universId, campagneId }: { universId: string; campagneId: string
   }
 
   return (
-    <>
-      <p>
-        <Link to={`/univers/${universId}/campagnes`}>← Campagnes</Link>
-      </p>
+    <div className="page-liste">
+      <Link className="lien-retour" to={`/univers/${universId}/campagnes`}>
+        ← Campagnes
+      </Link>
       <div className="entete-suivi">
         <h1>{c.nom}</h1>
         {mj ? (
@@ -86,7 +89,7 @@ function Page({ universId, campagneId }: { universId: string; campagneId: string
         {mj && <PanneauPreparation campagneId={c.id} />}
         <PanneauComptesRendus universId={universId} campagneId={c.id} mj={mj} />
       </div>
-    </>
+    </div>
   );
 }
 
@@ -101,6 +104,7 @@ function PanneauScenarios({ universId, campagneId }: { universId: string; campag
   const [erreur, setErreur] = useState<string>();
   const [echec, setEchec] = useState(false);
   const [enCours, setEnCours] = useState(false);
+  const { toast } = useToasts();
 
   async function creer(e: FormEvent) {
     e.preventDefault();
@@ -113,6 +117,7 @@ function PanneauScenarios({ universId, campagneId }: { universId: string; campag
     setEnCours(true);
     try {
       const s = await appeler<Scenario>('POST', `/api/campagnes/${campagneId}/scenarios`, { titre: t });
+      toast(`« ${s.titre} » créé`);
       navigate(`/univers/${universId}/scenarios/${s.id}`);
     } catch {
       setEchec(true);
@@ -127,7 +132,7 @@ function PanneauScenarios({ universId, campagneId }: { universId: string; campag
           {ECHEC}
         </div>
       )}
-      {donnees.etat === 'chargement' && <Chargement />}
+      {donnees.etat === 'chargement' && <ChargementListe texte="Chargement…" />}
       {donnees.etat === 'erreur' && <ErreurPanneau onReessayer={recharger} />}
       {donnees.etat === 'ok' &&
         (donnees.valeur.scenarios.length === 0 ? (
@@ -139,7 +144,7 @@ function PanneauScenarios({ universId, campagneId }: { universId: string; campag
               .map((s) => (
                 <li key={s.id} className="ligne-suivi">
                   <Link className="grand" to={`/univers/${universId}/scenarios/${s.id}`}>
-                    {s.titre}
+                    <span className="texte-ligne">{s.titre}</span>
                   </Link>
                 </li>
               ))}
@@ -147,7 +152,7 @@ function PanneauScenarios({ universId, campagneId }: { universId: string; campag
         ))}
       <form className="formulaire-ligne" onSubmit={creer} noValidate aria-label="Nouveau scénario">
         <Champ etiquette="Titre" value={titre} erreur={erreur} onChange={(e: { target: { value: string } }) => setTitre(e.target.value)} />
-        <Bouton type="submit" ecrit enCours={enCours}>
+        <Bouton type="submit" ecrit icone={Plus} enCours={enCours}>
           Créer le scénario
         </Bouton>
       </form>
@@ -163,6 +168,7 @@ function PanneauPreparation({ campagneId }: { campagneId: number }) {
   const [erreur, setErreur] = useState<string>();
   const [echec, setEchec] = useState(false);
   const [enCours, setEnCours] = useState(false);
+  const { toast } = useToasts();
 
   useEffect(() => {
     if (donnees.etat === 'ok') setTaches(donnees.valeur.taches);
@@ -181,6 +187,7 @@ function PanneauPreparation({ campagneId }: { campagneId: number }) {
       const t = await appeler<Tache>('POST', `/api/campagnes/${campagneId}/taches`, { categorie, libelle: l });
       setTaches((x) => [...x, t]);
       setLibelle('');
+      toast(`« ${t.libelle} » ajoutée`);
     } catch {
       setEchec(true);
     } finally {
@@ -193,6 +200,7 @@ function PanneauPreparation({ campagneId }: { campagneId: number }) {
     try {
       const maj = await appeler<Tache>('PUT', `/api/taches/${t.id}`, { faite });
       setTaches((x) => x.map((y) => (y.id === t.id ? maj : y)));
+      toast(`« ${t.libelle} » ${faite ? 'cochée' : 'décochée'}`);
     } catch {
       setEchec(true);
     }
@@ -208,7 +216,7 @@ function PanneauPreparation({ campagneId }: { campagneId: number }) {
           {ECHEC}
         </div>
       )}
-      {donnees.etat === 'chargement' && <Chargement />}
+      {donnees.etat === 'chargement' && <ChargementListe texte="Chargement…" />}
       {donnees.etat === 'erreur' && <ErreurPanneau onReessayer={recharger} />}
       {donnees.etat === 'ok' && (
         <>
@@ -224,12 +232,14 @@ function PanneauPreparation({ campagneId }: { campagneId: number }) {
                   <ul className="suivi-liste">
                     {l.map((t) => (
                       <li key={t.id} className="ligne-suivi">
-                        <input
-                          type="checkbox"
-                          checked={false}
-                          aria-label={t.libelle}
-                          onChange={() => void cocher(t, true)}
-                        />
+                        <span className="case">
+                          <input
+                            type="checkbox"
+                            checked={false}
+                            aria-label={t.libelle}
+                            onChange={() => void cocher(t, true)}
+                          />
+                        </span>
                         <span className="libelle">{t.libelle}</span>
                       </li>
                     ))}
@@ -266,17 +276,14 @@ function PanneauPreparation({ campagneId }: { campagneId: number }) {
       )}
       <form className="formulaire-ligne" onSubmit={ajouter} noValidate aria-label="Nouvelle tâche">
         <Champ etiquette="Nouvelle tâche" value={libelle} erreur={erreur} onChange={(e: { target: { value: string } }) => setLibelle(e.target.value)} />
-        <label className="champ">
-          <span>Catégorie</span>
-          <select value={categorie} onChange={(e) => setCategorie(e.target.value as Categorie)}>
-            {CATEGORIES.map((c) => (
-              <option key={c.valeur} value={c.valeur}>
-                {c.libelle}
-              </option>
-            ))}
-          </select>
-        </label>
-        <Bouton type="submit" ecrit enCours={enCours}>
+        <Champ etiquette="Catégorie" liste value={categorie} onChange={(e: { target: { value: string } }) => setCategorie(e.target.value as Categorie)}>
+          {CATEGORIES.map((c) => (
+            <option key={c.valeur} value={c.valeur}>
+              {c.libelle}
+            </option>
+          ))}
+        </Champ>
+        <Bouton type="submit" ecrit icone={Plus} enCours={enCours}>
           Ajouter
         </Bouton>
       </form>
@@ -318,10 +325,10 @@ function PanneauComptesRendus({ universId, campagneId, mj }: { universId: string
 
   return (
     <Panneau titre="Comptes-rendus">
-      <Bouton variante="principal" petit ecrit onClick={() => setCreation(true)}>
+      <Bouton variante="principal" petit ecrit icone={Plus} onClick={() => setCreation(true)}>
         Nouveau compte-rendu
       </Bouton>
-      {page.etat === 'chargement' && <Chargement />}
+      {page.etat === 'chargement' && <ChargementListe texte="Chargement…" />}
       {page.etat === 'erreur' && <ErreurPanneau onReessayer={recharger} />}
       {page.etat === 'ok' &&
         (liste.length === 0 ? (
@@ -339,7 +346,7 @@ function PanneauComptesRendus({ universId, campagneId, mj }: { universId: string
         </div>
       )}
       {suivant !== null && (
-        <Bouton enCours={suiteEnCours} onClick={chargerSuite} disabled={perdue}>
+        <Bouton icone={ArrowDown} enCours={suiteEnCours} onClick={chargerSuite} disabled={perdue}>
           Charger la suite
         </Bouton>
       )}
@@ -365,6 +372,7 @@ const MAX_TEXTE = 20000;
 
 function FenetreCompteRendu({ universId, campagneId, onFermer }: { universId: string; campagneId: number; onFermer: () => void }) {
   const navigate = useNavigate();
+  const { toast } = useToasts();
   const brouillon = lireBrouillonCr(campagneId);
   const [titre, setTitre] = useState(brouillon?.titre ?? '');
   const [texte, setTexte] = useState(brouillon?.texte ?? '');
@@ -412,6 +420,7 @@ function FenetreCompteRendu({ universId, campagneId, onFermer }: { universId: st
         texte,
       });
       sessionStorage.removeItem(cleBrouillonCr(campagneId));
+      toast(`« ${t} » publié`);
       navigate(`/univers/${universId}/fiche/${f.id}`);
     } catch {
       setEchec(true);

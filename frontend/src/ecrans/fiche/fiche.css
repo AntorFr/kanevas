@@ -1,18 +1,7 @@
-.liste-fiches { list-style: none; margin: var(--e-4) 0; padding: 0; display: flex; flex-direction: column; gap: var(--e-2); }
-.liste-fiches a { display: flex; align-items: center; gap: var(--e-3); padding: var(--e-3) var(--e-4); background: var(--surface);
-  border: 1px solid var(--bord); border-radius: var(--rayon-panneau); color: var(--texte); text-decoration: none; }
-.liste-fiches a:hover { background: var(--surface-2); }
-.liste-fiches .titre-fiche { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.badge-type { flex: none; font-size: 11px; padding: 2px 9px; border-radius: var(--rayon-pastille); background: var(--surface-3); color: var(--texte-2); white-space: nowrap; }
-.entete-liste { display: flex; align-items: center; justify-content: space-between; gap: var(--e-3); flex-wrap: wrap; }
 .fenetre .choix { display: flex; gap: var(--e-4); margin: var(--e-3) 0; }
 .fenetre .choix label { display: inline-flex; gap: var(--e-2); align-items: center; }
 .actuelle { color: var(--texte-2); white-space: pre-wrap; overflow-wrap: anywhere; border-left: 2px solid var(--bord-champ); padding-left: var(--e-3); }
 
-.recherche { display: flex; align-items: flex-start; gap: var(--e-3); flex-wrap: wrap; margin: var(--e-3) 0; }
-.recherche .champ { flex: 1; min-width: 14rem; max-width: 26rem; }
-.recherche textarea { resize: none; field-sizing: content; }
-.recherche .actions { margin-top: var(--e-5); }
 a.bouton { text-decoration: none; display: inline-block; }
 
 /* ---------- La fiche (E-9) : une colonne de lecture, des sections sans panneau ---------- */
@@ -90,6 +79,10 @@ a.bouton { text-decoration: none; display: inline-block; }
 .pied-edition .compteur.trop { color: var(--danger); }
 .pied-edition .aide { font-size: var(--t-12); color: var(--texte-3); margin-right: 6px; }
 .erreur-edition { margin-top: var(--e-2); font-size: var(--t-12); color: var(--danger); }
+.alerte { display: flex; align-items: flex-start; gap: 10px; margin-top: var(--e-3); padding: 10px 12px; border-radius: var(--rayon-champ);
+  background: var(--danger-fond); color: var(--texte); font-size: var(--t-13); }
+.alerte > svg { color: var(--danger); margin-top: 2px; flex: none; }
+.alerte .corps-alerte { flex: 1; display: flex; flex-direction: column; align-items: flex-start; gap: 8px; }
 
 /* Audience setting, folded behind the badge */
 .menu.audience { top: calc(100% + 8px); left: 0; width: 320px; padding: 6px; }

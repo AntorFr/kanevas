@@ -250,7 +250,8 @@ describe('kanevas-premiere-fiche, du besoin', { skip: skipBrowser }, () => {
     await voit(p, 'Retirer lea de ' + UNIVERS + ' B4 ?');
     await p.getByRole('button', { name: 'Retirer lea', exact: true }).last().click();
     await attendre(p);
-    assert.ok(!(await texte(p)).match(/\blea\b/));
+    // the toast « lea » retiré (kanevas-rv-reglages) names her by design: the member list must not
+    assert.ok(!((await p.locator('.liste-membres').innerText()) as string).match(/\blea\b/));
     const lea = await compte('lea');
     await lea.page.goto('/');
     await attendre(lea.page);

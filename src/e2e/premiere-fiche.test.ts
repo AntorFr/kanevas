@@ -602,8 +602,12 @@ test('B-4 retirer Léa : confirmation, Annuler la garde ; une fois retirée elle
   await antor.goto(urlUnivers);
   await allerMembres(antor);
   await antor.getByRole('button', { name: rx('Retirer lea') }).click();
-  await voit(antor, "Retirer lea de Lame d'Ébène ? Elle ne verra plus l'univers.");
-  await antor.getByRole('button', { name: rxExact('Annuler') }).click();
+  // the confirmation is the standard dialog: title (h2) and text (p) are two elements
+  const confirmation = antor.getByRole('alertdialog', { name: /Retirer lea de Lame d.Ébène \?/ });
+  await confirmation.waitFor();
+  assert.equal(((await confirmation.innerText()) as string).replace(/’/g, "'").replace(/\s+/g, ' ').includes("Elle ne verra plus l'univers."), true);
+  await confirmation.getByRole('button', { name: rxExact('Annuler') }).click();
+  await confirmation.waitFor({ state: 'detached' });
   await lea.goto('/');
   await voit(lea, NOM);
   await antor.getByRole('button', { name: rx('Retirer lea') }).click();
