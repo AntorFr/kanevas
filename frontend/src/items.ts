@@ -17,9 +17,9 @@ import {
 import type { Role } from './types';
 
 /**
- * The sidebar's items (docs/ecrans.md, « Barre latérale »). They are fixed here and never edited
- * by a screen task: an item shows only when a registered screen answers its address, so an
- * unbuilt screen (Campagnes, Cartes…) has no entry in the bar. `chemin(id)` is the concrete address.
+ * The sidebar's items (docs/ecrans.md, « Barre latérale »). They live here, not in the bar: an item
+ * shows only when a registered screen answers its address, so a screen not built yet (Cartes…)
+ * has no entry in the bar until it is registered. `chemin(id)` is the concrete address.
  */
 export interface Item {
   libelle: string;

@@ -97,7 +97,7 @@
 .bandeaux { position: sticky; top: calc(var(--h-bouchon) + 52px); z-index: 19; }
 .bandeaux .bandeau { position: static; border-bottom: 1px solid var(--bord); padding-left: var(--e-5); padding-right: var(--e-5); }
 
-main.principal { flex: 1; min-width: 0; padding: var(--e-5) 28px; width: 100%; max-width: 1000px; }
+main.principal { flex: 1; min-width: 0; padding: var(--e-5) 28px; width: 100%; max-width: 1000px; margin-inline: auto; }
 
 /* Drawer (phone) */
 .voile-tiroir { display: none; }

@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Link, matchPath, useLocation } from 'react-router-dom';
 
 import { appeler } from './api';
-import { useMoi, useUnivers } from './cadre-contexte';
+import { useMoi, useUnivers, useVue } from './cadre-contexte';
 import { ITEMS_UNIVERS, type Item } from './items';
 import { ecranEnregistre } from './registre';
 import { type ChoixTheme, useTheme } from './theme';
@@ -16,8 +16,12 @@ export function universDeLAdresse(chemin: string): number | null {
   return id && /^\d+$/.test(id) ? Number(id) : null;
 }
 
-/** An item is current on its own address, and below it (a sheet under « Lore » is not an item: no mark). */
-export function itemCourant(item: Item, id: number, pathname: string): boolean {
+/**
+ * An item is current on its own address and below it; a sheet's address is under no item, so the
+ * sheet names its type (`section`, the label of the item it hangs under) and that item is current.
+ */
+export function itemCourant(item: Item, id: number, pathname: string, section?: string): boolean {
+  if (section !== undefined && pathname.startsWith(`/univers/${id}/fiche/`)) return item.libelle === section;
   const chemin = item.chemin(id);
   return pathname === chemin || (chemin !== `/univers/${id}` && pathname.startsWith(`${chemin}/`));
 }
@@ -183,6 +187,7 @@ function Compte() {
 function Contenu({ onNavigue }: { onNavigue: () => void }) {
   const { pathname } = useLocation();
   const { univers } = useUnivers();
+  const { section } = useVue();
   const id = universDeLAdresse(pathname);
   // Inside a universe only if the account has it: an unknown universe, or one without a role,
   // gets the bar of a screen outside (no selector, no name) — the refusal state of docs/ecrans.md.
@@ -219,7 +224,7 @@ function Contenu({ onNavigue }: { onNavigue: () => void }) {
             {items
               .filter((i) => (i.section ?? '') === s)
               .map((i) => (
-                <Link key={i.libelle} to={i.chemin(id!)} className="item" aria-current={itemCourant(i, id!, pathname) ? 'page' : undefined}>
+                <Link key={i.libelle} to={i.chemin(id!)} className="item" aria-current={itemCourant(i, id!, pathname, section) ? 'page' : undefined}>
                   <i.icone size={16} strokeWidth={1.75} aria-hidden="true" />
                   {i.libelle}
                 </Link>
