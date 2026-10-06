@@ -21,7 +21,7 @@
 import assert from 'node:assert/strict';
 import { after, before, describe, test } from 'node:test';
 import {
-  type Any, attendre, connecte, launch, rx, rxExact, section, skipBrowser, startServer, texte, type Server,
+  type Any, attendre, choisirDansMenuSection, confirmerRetraitSection, connecte, launch, regler, rx, rxExact, section, skipBrowser, startServer, texte, type Server,
 } from './harnais.test.ts';
 
 const PNG = Buffer.from(
@@ -214,11 +214,7 @@ describe('kanevas-fichiers — besoin B-24', () => {
     assert.equal(rep.status(), 404);
     // Antor opens the section to players
     await ouvrirFiche(antor.page, m);
-    await (async () => {
-      const c = section(antor.page, 'Notes de la table').getByLabel(rx('Les joueurs la lisent'));
-      await c.click({ noWaitAfter: true });
-      for (let i = 0; i < 50 && !(await c.isChecked()); i++) await antor.page.waitForTimeout(100);
-    })();
+    await regler(antor.page, 'Notes de la table', 'Les joueurs la lisent', true);
     await attendre(antor.page);
     await ouvrirFiche(pageTeo, m);
     const vue = section(pageTeo, 'Notes de la table');
@@ -413,9 +409,9 @@ describe('kanevas-fichiers — besoin B-24', () => {
     const piece = (await deposer(antor.ctx, m, 'Apparence', 'portrait.png', PNG)) as Any;
     await ouvrirFiche(antor.page, m);
     const app = section(antor.page, 'Apparence');
-    await app.getByRole('button', { name: rxExact('Retirer la section') }).click();
-    await antor.page.getByText(rx('Son contenu et sa pièce jointe seront perdus.')).waitFor();
-    await antor.page.getByRole('button', { name: rxExact('Retirer la section') }).last().click();
+    await choisirDansMenuSection(antor.page, 'Apparence', 'Retirer la section');
+    await antor.page.getByRole('alertdialog').getByText(rx('Son contenu et sa pièce jointe seront perdus.')).waitFor();
+    await confirmerRetraitSection(antor.page);
     await attendre(antor.page);
     assert.equal((await antor.ctx.request.get(`${pj(m, piece.id, '/fichier')}`)).status(), 404);
   });
