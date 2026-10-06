@@ -172,9 +172,7 @@ export function Sceau({
 }) {
   const initiale = Array.from(nom.trim())[0]?.toUpperCase() ?? '';
   return (
-    <span className={`sceau${taille ? ` ${taille}` : ''}${chargement ? ' charge' : inconnu || !initiale ? ' inconnu' : ''}`} aria-hidden="true">
-      {chargement ? '' : inconnu || !initiale ? '?' : initiale}
-    </span>
+    <span className={`sceau${taille ? ` ${taille}` : ''}${chargement ? ' charge' : inconnu || !initiale ? ' inconnu' : ''}`} aria-hidden="true" data-initiale={chargement ? '' : inconnu || !initiale ? '?' : initiale} />
   );
 }
 
