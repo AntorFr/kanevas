@@ -259,3 +259,38 @@ test('Joueur : la barre n’a ni Membres ni Paramètres, le compte reste', opts,
   await b.getByRole('button', { name: /antor|lea|léa/i }).click();
   await lea.getByRole('menuitem', { name: 'Se déconnecter' }).waitFor();
 });
+
+test('barre latérale : sur une fiche, le type de la fiche est l’item courant et lui seul', opts, async () => {
+  await sur(antor, urlFiche);
+  const courants = barre(antor).locator('[aria-current="page"]');
+  await courants.first().waitFor();
+  assert.equal(await courants.count(), 1);
+  assert.match(await courants.innerText(), /^\s*Personnages\s*$/);
+});
+
+test('thème : sans choix mémorisé, Système suit la préférence du navigateur', opts, async () => {
+  const { ctx, page } = await connecte(browser, srv.base, 'Antor');
+  for (const [pref, attendu] of [['light', 'light'], ['dark', 'dark']] as const) {
+    await page.emulateMedia({ colorScheme: pref });
+    await page.evaluate(() => localStorage.clear());
+    await sur(page, urlFiche);
+    assert.equal(await page.evaluate(() => document.documentElement.dataset.theme), attendu);
+    await ouvrirCompte(page);
+    assert.equal(await page.getByRole('menuitemradio', { name: 'Système' }).getAttribute('aria-checked'), 'true');
+    await page.keyboard.press('Escape');
+  }
+  await ctx.close();
+});
+
+test('cadre : la colonne de lecture est centrée dans l’aire à droite de la barre', opts, async () => {
+  await antor.setViewportSize({ width: 1920, height: 1000 });
+  await sur(antor, urlFiche);
+  const m = await antor.evaluate(() => {
+    const r = (document.querySelector('main.principal') as HTMLElement).getBoundingClientRect();
+    const b = (document.querySelector('aside') as HTMLElement).getBoundingClientRect();
+    return { gauche: r.left - b.right, droite: window.innerWidth - r.right, largeur: r.width };
+  });
+  assert.ok(m.largeur <= 1001, `column capped (${m.largeur})`);
+  assert.ok(Math.abs(m.gauche - m.droite) <= 2, `centered: ${m.gauche} vs ${m.droite}`);
+  await antor.setViewportSize({ width: 1440, height: 900 });
+});
