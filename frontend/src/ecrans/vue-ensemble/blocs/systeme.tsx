@@ -1,8 +1,8 @@
-import { useEffect, useState } from 'react';
+import { ArrowRight, Dices } from 'lucide-react';
+import { useEffect, useId, useState } from 'react';
 import { Link } from 'react-router-dom';
 
 import { lire } from '../../../api';
-import { Panneau } from '../../../ui';
 import type { Bloc } from '../registre';
 
 /**
@@ -10,6 +10,7 @@ import type { Bloc } from '../registre';
  * loading, or on any error, the block does not exist (nothing is rendered).
  */
 function BlocSysteme({ universId }: { universId: number }) {
+  const id = useId();
   const [nom, setNom] = useState<string>();
   useEffect(() => {
     let actif = true;
@@ -24,17 +25,26 @@ function BlocSysteme({ universId }: { universId: number }) {
   }, [universId]);
   if (nom === undefined) return null;
   return (
-    <Panneau titre="Système de jeu">
-      <div className="systeme-courant">
-        <strong className="nom-systeme" title={nom}>
-          {nom}
-        </strong>
-        <Link className="bouton neutre" to={`/univers/${universId}/systeme`}>
-          Ouvrir le système
+    <section className="bloc-ve" aria-labelledby={id}>
+      <div className="bloc-tete">
+        <h2 id={id}>Système de jeu</h2>
+      </div>
+      <div className="lignes">
+        <Link className="ligne systeme" to={`/univers/${universId}/systeme`}>
+          <span className="tuile">
+            <Dices size={16} strokeWidth={1.75} aria-hidden="true" />
+          </span>
+          <span className="corps">
+            <span className="titre" title={nom}>
+              {nom}
+            </span>
+            <span className="sous">Ouvrir le système</span>
+          </span>
+          <ArrowRight size={14} strokeWidth={1.75} aria-hidden="true" className="fleche" />
         </Link>
       </div>
-    </Panneau>
+    </section>
   );
 }
 
-export default { id: 'systeme', roles: ['mj', 'joueur'], rang: 90, composant: BlocSysteme } satisfies Bloc;
+export default { id: 'systeme', roles: ['mj', 'joueur'], rang: 90, composant: BlocSysteme, colonne: 'laterale' } satisfies Bloc;

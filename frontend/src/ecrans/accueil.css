@@ -1,0 +1,93 @@
+/* E-1 Accueil and E-2 Créer un univers (docs/maquettes/e01-accueil.html) */
+.accueil, .creer { max-width: 784px; margin: 0 auto; padding: var(--e-4) 0 120px; }
+.entete-liste { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--e-4) var(--e-5); flex-wrap: wrap;
+  padding-bottom: var(--e-5); border-bottom: 1px solid var(--bord); }
+.entete-liste > .bouton { margin-top: 8px; }
+.entete-liste h1, .entete-form h1 { font: 500 var(--t-40)/1.08 var(--police-titre); letter-spacing: -.015em; font-variation-settings: "opsz" 144; overflow-wrap: anywhere; }
+.connecte { display: flex; align-items: center; gap: 8px; margin: var(--e-3) 0 0; color: var(--texte-2); font-size: var(--t-14); }
+.connecte .avatar { width: 20px; height: 20px; font-size: 9px; }
+.connecte strong { color: var(--texte); font-weight: 600; }
+
+.tete-liste { display: flex; justify-content: space-between; align-items: center; padding: var(--e-5) 12px var(--e-2);
+  font-size: var(--t-12); font-weight: 500; color: var(--texte-3); }
+.tete-liste .col-role { width: 72px; text-align: left; margin-right: 30px; }
+
+.liste-univers { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.liste-univers li + li .ligne-univers::before { content: ""; position: absolute; left: 66px; right: 12px; top: 0; height: 1px; background: var(--bord); }
+.liste-univers a.ligne-univers { position: relative; display: grid; grid-template-columns: 40px minmax(0, 1fr) 72px 16px; align-items: center; gap: 0 14px;
+  min-height: 80px; padding: 14px 12px; border: 0; background: transparent; border-radius: var(--rayon-panneau); color: var(--texte);
+  text-decoration: none; transition: background-color var(--duree); }
+.liste-univers a.ligne-univers:hover { background: var(--surface-2); }
+.liste-univers li:hover .ligne-univers::before, .liste-univers li:hover + li .ligne-univers::before { background: transparent; }
+.ligne-univers:focus-visible { outline-offset: 0; }
+.ligne-univers .sceau { align-self: start; margin-top: 1px; }
+.ligne-univers .corps { min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.ligne-univers .nom-u { font: 500 var(--t-18)/1.3 var(--police-titre); font-variation-settings: "opsz" 36; letter-spacing: -.005em;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ligne-univers .desc-u { font: 400 15px/1.5 var(--police-lecture); color: var(--texte-2); font-variation-settings: "opsz" 16;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; max-width: 60ch; }
+.ligne-univers .pastille { justify-self: start; align-self: start; margin-top: 2px; }
+.ligne-univers .fleche { align-self: start; margin-top: 5px; color: var(--texte-3); opacity: 0; transform: translateX(-4px);
+  transition: opacity var(--duree), transform var(--duree) var(--courbe); }
+.ligne-univers:hover .fleche, .ligne-univers:focus-visible .fleche { opacity: 1; transform: none; }
+@media (hover: none) { .ligne-univers .fleche { opacity: 1; transform: none; } }
+
+/* Seals: 40 px in the list, 48 px in the form header, 52 px in the overview header */
+.sceau.moyen { width: 40px; height: 40px; border-radius: 10px; font-size: 19px; }
+.sceau.grand { width: 48px; height: 48px; border-radius: 12px; font-size: 24px; }
+.sceau.inconnu { color: transparent; background: transparent; box-shadow: none; border: 1px dashed var(--bord-champ); }
+
+.squelette-univers { display: grid; grid-template-columns: 40px minmax(0, 1fr); gap: 14px; padding: 14px 12px; }
+.accueil > [role="alert"] { margin-top: var(--e-5); }
+
+/* Empty: a new account, two ways in */
+.accueil-vide { margin-top: var(--e-6); border-radius: var(--rayon-panneau); box-shadow: inset 0 0 0 1px var(--bord-fort); overflow: hidden; }
+.vide-tete { padding: var(--e-6) var(--e-6) var(--e-5); }
+.vide-tete .ic-vide { width: 40px; height: 40px; border-radius: 10px; display: grid; place-items: center; background: var(--surface-2); color: var(--texte-2); }
+.vide-tete h2 { margin-top: var(--e-4); font: 500 var(--t-22)/1.25 var(--police-titre); font-variation-settings: "opsz" 48; }
+.chemins { display: grid; grid-template-columns: 1fr 1fr; border-top: 1px solid var(--bord); }
+.chemin { display: flex; flex-direction: column; align-items: flex-start; gap: var(--e-3); padding: var(--e-5) var(--e-6) var(--e-6); }
+.chemin + .chemin { border-left: 1px solid var(--bord); }
+.chemin > svg { color: var(--texte-3); }
+.chemin p { margin: 0; font-size: var(--t-14); color: var(--texte-2); line-height: 1.7; }
+.chemin p b { color: var(--texte); font-weight: 500; }
+.chemin > .bouton { margin-top: auto; }
+.identifiant { display: inline-flex; align-items: center; gap: 4px; height: 34px; padding: 0 4px 0 12px; border-radius: var(--rayon-champ); vertical-align: middle;
+  background: var(--surface-2); box-shadow: inset 0 0 0 1px var(--bord-fort); font-size: var(--t-14); font-weight: 600; letter-spacing: .01em; color: var(--texte); }
+
+/* E-2 */
+.creer .formulaire { max-width: 560px; }
+.entete-form { padding-bottom: var(--e-5); border-bottom: 1px solid var(--bord); }
+.entete-form .sceau { margin-bottom: var(--e-5); transition: color var(--duree); }
+.chapo { margin: var(--e-3) 0 0; color: var(--texte-2); font-size: var(--t-14); }
+.chapo .pastille { vertical-align: 1px; margin: 0 2px; }
+.champs { display: flex; flex-direction: column; gap: var(--e-5); margin-top: var(--e-6); }
+.champs .champ { margin: 0; }
+.creer .alerte { margin-top: var(--e-5); }
+.actions-form { display: flex; align-items: center; justify-content: flex-end; gap: 8px; margin-top: var(--e-6); padding-top: var(--e-5); border-top: 1px solid var(--bord); }
+.actions-form .aide-clavier { margin-right: auto; display: flex; align-items: center; gap: 4px; font-size: var(--t-12); color: var(--texte-3); }
+.actions-form .bouton { min-height: 34px; padding: 0 var(--e-4); }
+kbd { font: 500 11px/1 var(--police-texte); color: var(--texte-3); border: 1px solid var(--bord-fort); border-radius: 4px; padding: 3px 5px; }
+
+@media (max-width: 760px) {
+  .accueil, .creer { padding-top: var(--e-2); }
+  .entete-liste h1, .entete-form h1 { font-size: var(--t-32); }
+  .entete-liste { flex-direction: column; }
+  .entete-liste .bouton { min-height: 40px; padding: 0 var(--e-4); }
+  .tete-liste { padding-left: 8px; padding-right: 8px; }
+  .tete-liste .col-role { display: none; }
+  .liste-univers a.ligne-univers { grid-template-columns: 36px minmax(0, 1fr) auto; gap: 0 12px; padding: 12px 8px; align-items: start; }
+  .ligne-univers .sceau.moyen { width: 36px; height: 36px; font-size: 17px; }
+  .ligne-univers .fleche { display: none; }
+  .liste-univers li + li .ligne-univers::before { left: 56px; right: 8px; }
+  .chemins { grid-template-columns: 1fr; }
+  .chemin + .chemin { border-left: 0; border-top: 1px solid var(--bord); }
+  .vide-tete { padding: var(--e-5) var(--e-5) var(--e-4); }
+  .chemin { padding: var(--e-5); }
+  .chemin > .bouton { min-height: 40px; }
+  .identifiant { height: 40px; }
+  .identifiant .bouton-icone { width: 36px; height: 36px; }
+  .actions-form .aide-clavier { display: none; }
+  .actions-form .bouton { min-height: 40px; flex: 1; }
+}
+.sceau.charge { background: var(--squelette); box-shadow: none; }

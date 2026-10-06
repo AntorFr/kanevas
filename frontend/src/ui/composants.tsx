@@ -1,4 +1,4 @@
-import { ChevronDown, Eye, Lock, PenLine, WifiOff, type LucideIcon } from 'lucide-react';
+import { ChevronDown, CircleAlert, Eye, Lock, PenLine, WifiOff, type LucideIcon } from 'lucide-react';
 import { useEffect, useId, useRef, type ButtonHTMLAttributes, type ReactNode } from 'react';
 
 import { useConnexionPerdue } from '../api';
@@ -87,26 +87,47 @@ export function BoutonIcone({
 /**
  * Field with a visible label (34 px); the error sits under it, prefixed « Erreur : », via
  * aria-describedby. `zone` is a textarea, `liste` a dressed native select (`children` = options).
+ * `grand` is the page-form size (title-sized input), `facultatif` says so beside the label,
+ * `compteur` (« 12 / 80 ») sits at the foot, red when `trop`.
  */
 export function Champ({
   etiquette,
   erreur,
   zone,
   liste,
+  grand,
+  facultatif,
+  compteur,
+  trop,
   children,
   ...reste
-}: { etiquette: string; erreur?: string; zone?: boolean; liste?: boolean; children?: ReactNode } & Record<string, unknown>) {
+}: {
+  etiquette: string;
+  erreur?: string;
+  zone?: boolean;
+  liste?: boolean;
+  grand?: boolean;
+  facultatif?: boolean;
+  compteur?: string;
+  trop?: boolean;
+  children?: ReactNode;
+} & Record<string, unknown>) {
   const id = useId();
   const idErreur = `${id}-e`;
+  const idCompteur = `${id}-c`;
+  const decrit = [erreur ? idErreur : '', compteur ? idCompteur : ''].filter(Boolean).join(' ');
   const props = {
     ...reste,
     id,
     'aria-invalid': erreur ? true : undefined,
-    'aria-describedby': erreur ? idErreur : undefined,
+    'aria-describedby': decrit || undefined,
   };
   return (
-    <label className="champ" htmlFor={id}>
-      <span>{etiquette}</span>
+    <div className={`champ${grand ? ' grand' : ''}`}>
+      <label className="lib-champ" htmlFor={id}>
+        {etiquette}
+        {facultatif && <small>facultative</small>}
+      </label>
       {zone ? (
         <textarea {...props} />
       ) : liste ? (
@@ -117,12 +138,43 @@ export function Champ({
       ) : (
         <input {...props} />
       )}
-      {erreur && (
-        <div className="erreur" id={idErreur}>
-          Erreur : {erreur}
+      {(erreur || compteur) && (
+        <div className="pied-champ">
+          {erreur && (
+            <div className="erreur" id={idErreur}>
+              <CircleAlert size={12} strokeWidth={2} aria-hidden="true" />
+              <span>Erreur : {erreur}</span>
+            </div>
+          )}
+          {compteur && (
+            <span className={`compteur${trop ? ' trop' : ''}`} id={idCompteur}>
+              {compteur}
+            </span>
+          )}
         </div>
       )}
-    </label>
+    </div>
+  );
+}
+
+/** The universe's seal: its initial on a tile. `inconnu` is the dashed placeholder (no name yet). */
+export function Sceau({
+  nom,
+  taille,
+  inconnu,
+  chargement,
+}: {
+  nom: string;
+  taille?: 'grand' | 'moyen' | 'petit';
+  inconnu?: boolean;
+  /** The name is not known yet: a skeleton tile, no mark. */
+  chargement?: boolean;
+}) {
+  const initiale = Array.from(nom.trim())[0]?.toUpperCase() ?? '';
+  return (
+    <span className={`sceau${taille ? ` ${taille}` : ''}${chargement ? ' charge' : inconnu || !initiale ? ' inconnu' : ''}`} aria-hidden="true">
+      {chargement ? '' : inconnu || !initiale ? '?' : initiale}
+    </span>
   );
 }
 

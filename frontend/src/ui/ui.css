@@ -48,6 +48,16 @@ a { color: var(--accent-texte); }
 .champ input:focus, .champ textarea:focus, .champ select:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-fond); }
 .champ [aria-invalid="true"] { border-color: var(--danger); }
 .champ .erreur { color: var(--danger); font-size: var(--t-13); margin-top: var(--e-1); }
+.champ > .lib-champ { display: flex; align-items: baseline; gap: 8px; font-size: var(--t-13); font-weight: 500; color: var(--texte); margin-bottom: var(--e-1); }
+.champ > .lib-champ small { font-size: var(--t-12); font-weight: 400; color: var(--texte-3); }
+.champ .pied-champ { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; min-height: 18px; margin-top: var(--e-1);
+  font-size: var(--t-12); color: var(--texte-3); }
+.champ .pied-champ .erreur { display: inline-flex; align-items: center; gap: 6px; margin-top: 0; font-size: var(--t-12); font-weight: 500; }
+.champ .pied-champ .compteur { margin-left: auto; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.champ .pied-champ .compteur.trop { color: var(--danger); }
+.champ.grand input { min-height: 44px; padding: 0 var(--e-3); font: 500 var(--t-18)/1 var(--police-titre); font-variation-settings: "opsz" 36; }
+.champ.grand textarea { min-height: 128px; font-size: var(--t-16); }
+.champ [aria-invalid="true"]:focus { box-shadow: 0 0 0 3px var(--danger-fond); }
 .champ-liste { position: relative; display: block; }
 .champ-liste select { appearance: none; padding-right: var(--e-6); }
 .champ-liste svg { position: absolute; right: var(--e-3); top: 50%; transform: translateY(-50%); color: var(--texte-3); pointer-events: none; }
@@ -200,3 +210,26 @@ a { color: var(--accent-texte); }
 .squelette-texte { margin: var(--e-3) 0 0; color: var(--texte-3); font-size: var(--t-13); }
 a.jeton { color: var(--texte); text-decoration: none; font-weight: 500; }
 a.jeton:hover { box-shadow: inset 0 0 0 1px var(--bord-champ); }
+
+/* Inline alert (a failure that stays on the page) */
+.alerte { display: flex; align-items: flex-start; gap: 10px; margin-top: var(--e-3); padding: 10px 12px; border-radius: var(--rayon-champ);
+  background: var(--danger-fond); color: var(--texte); font-size: var(--t-13); }
+.alerte > svg { color: var(--danger); margin-top: 2px; flex: none; }
+.alerte .corps-alerte { flex: 1; display: flex; flex-direction: column; align-items: flex-start; gap: 8px; }
+.alerte.en-ligne { align-items: center; }
+.alerte.en-ligne .corps-alerte { flex-direction: row; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px 12px; }
+
+/* Whole-page message: refusal and load failure */
+.page-message { max-width: 520px; margin: var(--e-7) auto 0; text-align: center; }
+.page-message .ic-message { width: 44px; height: 44px; margin: 0 auto var(--e-4); border-radius: 12px; display: grid; place-items: center;
+  background: var(--surface-2); color: var(--texte-2); box-shadow: inset 0 0 0 1px var(--bord); }
+.page-message.erreur .ic-message { background: var(--danger-fond); color: var(--danger); box-shadow: none; }
+.page-message h1 { font: 500 var(--t-32)/1.15 var(--police-titre); font-variation-settings: "opsz" 144; letter-spacing: -.01em; }
+.page-message .actions { margin-top: var(--e-5); display: flex; justify-content: center; gap: var(--e-2); }
+
+/* Quiet link-action (head or foot of a block) */
+.lien-action { display: inline-flex; align-items: center; gap: 6px; min-height: 26px; padding: 0 6px; margin-left: -6px; border-radius: var(--rayon-item);
+  color: var(--texte-2); font-size: var(--t-13); font-weight: 500; text-decoration: none; transition: background-color var(--duree), color var(--duree); }
+.lien-action:hover { background: var(--surface-2); color: var(--texte); }
+.lien-action svg { color: var(--texte-3); }
+@media (max-width: 760px) { .lien-action, .bouton.petit { min-height: 36px; } }
