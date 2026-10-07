@@ -1,0 +1,89 @@
+/* Cards of E-16 (system) and E-1 (universe): the family of the sheet card of E-8, a drawn header
+   instead of an image (docs/charte.md, « Carte de système »). Tokens only. */
+.page-cartes { width: 100%; max-width: 1120px; margin: 0 auto; padding: var(--e-4) 0 120px; }
+.grille-cartes { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(288px, 1fr)); gap: var(--e-5); margin: var(--e-5) 0 0; }
+.grille-cartes > li { min-width: 0; }
+.carte-dessin { position: relative; display: flex; flex-direction: column; gap: 12px; height: 100%; padding: 6px 6px 12px; margin: -6px;
+  border-radius: var(--rayon-panneau); transition: background-color var(--duree); }
+.carte-dessin:hover { background: var(--surface-2); }
+.carte-dessin:has(.lien-carte:focus-visible), a.carte-dessin:focus-visible { outline: 2px solid var(--focus); outline-offset: 0; }
+a.carte-dessin { color: var(--texte); text-decoration: none; }
+.entete-dessin { order: -1; position: relative; flex: none; aspect-ratio: 2 / 1; border-radius: var(--rayon-champ); overflow: hidden; background: var(--surface-2); color: var(--accent-texte); }
+.entete-dessin::after { content: ""; position: absolute; inset: 0; border-radius: inherit; box-shadow: inset 0 0 0 1px var(--bord); pointer-events: none; transition: box-shadow var(--duree); }
+.carte-dessin:hover .entete-dessin::after { box-shadow: inset 0 0 0 1px var(--bord-fort); }
+.entete-dessin svg.dessin { display: block; width: 100%; height: 100%; }
+.entete-dessin .pastille { position: absolute; right: 8px; top: 8px; box-shadow: inset 0 0 0 1px var(--bord); }
+.entete-dessin .pastille.lecture { background: var(--surface); color: var(--texte-2); }
+.entete-dessin .pastille.mj { background: linear-gradient(var(--mj-fond), var(--mj-fond)), var(--surface); }
+.entete-dessin .pastille.table { background: linear-gradient(var(--table-fond), var(--table-fond)), var(--surface); }
+
+/* System header */
+.dessin-systeme .treillis { stroke: var(--bord-fort); stroke-width: 1; fill: none; }
+.dessin-systeme .de { fill: var(--accent-fond); stroke: var(--accent-texte); stroke-opacity: .55; stroke-width: 1.5; stroke-linejoin: round; }
+.dessin-systeme .de .arete { fill: none; stroke-opacity: .35; }
+.dessin-systeme .petit .de { fill: var(--surface); stroke: var(--bord-champ); stroke-opacity: .7; stroke-width: 1.25; }
+.dessin-systeme .petit .de .arete { stroke-opacity: .5; }
+.dessin-systeme .monogramme { font: 500 46px/1 var(--police-titre); font-variation-settings: "opsz" 144; letter-spacing: -.02em; fill: var(--texte-2); }
+
+/* Universe header */
+.dessin-univers .niveau { fill: none; stroke: var(--bord-fort); stroke-width: 1.1; }
+.dessin-univers .niveau.haut { stroke: currentColor; stroke-opacity: .5; }
+.dessin-univers .sommet { fill: currentColor; fill-opacity: .14; }
+.entete-dessin .pos-sceau { position: absolute; left: 12px; bottom: 12px; display: flex; }
+.entete-dessin .pos-sceau .sceau { width: 44px; height: 44px; border-radius: 11px; font-size: 22px; background: var(--surface); }
+
+.pied-dessin { display: flex; flex-direction: column; gap: 4px; padding: 0 4px; min-width: 0; }
+.lien-carte { font: 500 var(--t-18)/1.3 var(--police-titre); font-variation-settings: "opsz" 36; letter-spacing: -.005em; color: var(--texte); text-decoration: none; overflow-wrap: anywhere; }
+.lien-carte.deux-lignes { display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.lien-carte.une-ligne { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; overflow-wrap: normal; }
+.lien-carte::after { content: ""; position: absolute; inset: 0; border-radius: var(--rayon-panneau); }
+.lien-carte:focus-visible { outline: none; }
+.meta-carte { font-size: var(--t-13); color: var(--texte-3); }
+.desc-carte { font: 400 15px/1.5 var(--police-lecture); color: var(--texte-2); font-variation-settings: "opsz" 16;
+  display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; }
+.meta-u { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 12px; margin-top: 4px; font-size: var(--t-13); color: var(--texte-3); }
+.meta-u > span { display: inline-flex; align-items: center; gap: 6px; min-width: 0; }
+.meta-u .sys-u { max-width: 100%; }
+.meta-u .sys-u .t { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* Chips of the universes of the account */
+.puces { display: flex; flex-wrap: wrap; gap: 6px; }
+.puce-u { position: relative; z-index: 1; display: inline-flex; align-items: center; gap: 6px; height: 26px; padding: 0 3px; border-radius: var(--rayon-champ);
+  background: var(--surface-2); box-shadow: inset 0 0 0 1px var(--bord); font-size: var(--t-12); font-weight: 500; color: var(--texte); text-decoration: none; max-width: 100%;
+  transition: box-shadow var(--duree), background-color var(--duree); }
+a.puce-u:hover { box-shadow: inset 0 0 0 1px var(--bord-fort); background: var(--surface-3); }
+.puce-u .sceau { width: 20px; height: 20px; border-radius: 5px; font-size: 11px; }
+.puce-u .nom-puce { max-width: 24ch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.puce-u .pastille { height: 18px; padding: 0 6px; font-size: 11px; }
+.carte-dessin .puces { margin-top: 6px; }
+.carte-dessin .puce-u { position: static; }
+.carte-dessin:hover .puce-u { background: var(--surface-3); }
+
+/* Skeletons */
+.squelette-carte { display: flex; flex-direction: column; gap: 12px; }
+.squelette-carte .squelette { display: block; }
+.squelette-carte .cadre-sq { aspect-ratio: 2 / 1; border-radius: var(--rayon-champ); }
+
+/* E-15 head */
+.sous-sys { margin: var(--e-3) 0 0; color: var(--texte-2); font-size: var(--t-14); display: flex; align-items: center; flex-wrap: wrap; gap: 8px 12px; }
+.vos-univers { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin-top: var(--e-4); font-size: var(--t-13); color: var(--texte-3); }
+.pastille.lecture { background: var(--surface-2); color: var(--texte-2); }
+
+/* E-16 head and empty state */
+.page-cartes .sous-titre { margin: var(--e-3) 0 0; color: var(--texte-2); font-size: var(--t-14); }
+.vide-panneau { margin-top: var(--e-6); padding: var(--e-7) var(--e-5); border-radius: var(--rayon-panneau); text-align: center; box-shadow: inset 0 0 0 1px var(--bord);
+  display: flex; flex-direction: column; align-items: center; }
+.vide-panneau .rond { width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; background: var(--surface-2); color: var(--texte-3); }
+.vide-panneau h2 { margin-top: var(--e-4); font: 500 var(--t-22)/1.3 var(--police-titre); font-variation-settings: "opsz" 48; }
+.vide-panneau p { margin-top: var(--e-2); color: var(--texte-2); font-size: var(--t-14); max-width: 46ch; }
+.vide-panneau .bouton { margin-top: var(--e-4); }
+.page-cartes > [role="alert"] { margin-top: var(--e-5); }
+
+@media (max-width: 760px) {
+  .page-cartes { padding-top: var(--e-2); }
+  .grille-cartes { grid-template-columns: minmax(0, 1fr); gap: var(--e-4); margin-top: var(--e-4); }
+  .entete-dessin.tete-systeme { aspect-ratio: 5 / 2; }
+  .entete-dessin.tete-univers { aspect-ratio: 3 / 1; }
+  .dessin-systeme .monogramme { font-size: 40px; }
+  .puce-u { height: 30px; }
+}

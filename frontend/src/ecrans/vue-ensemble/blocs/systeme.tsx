@@ -11,26 +11,27 @@ import type { Bloc } from '../registre';
  */
 function BlocSysteme({ universId }: { universId: number }) {
   const id = useId();
-  const [nom, setNom] = useState<string>();
+  const [systeme, setSysteme] = useState<{ id: number; nom: string }>();
   useEffect(() => {
     let actif = true;
-    setNom(undefined);
-    lire<{ systeme: { nom: string } | null }>(`/api/univers/${universId}`).then(
-      (u) => actif && setNom(u.systeme?.nom),
-      () => actif && setNom(undefined),
+    setSysteme(undefined);
+    lire<{ systeme: { id: number; nom: string } | null }>(`/api/univers/${universId}`).then(
+      (u) => actif && setSysteme(u.systeme ?? undefined),
+      () => actif && setSysteme(undefined),
     );
     return () => {
       actif = false;
     };
   }, [universId]);
-  if (nom === undefined) return null;
+  if (systeme === undefined) return null;
+  const { nom } = systeme;
   return (
     <section className="bloc-ve" aria-labelledby={id}>
       <div className="bloc-tete">
         <h2 id={id}>Système de jeu</h2>
       </div>
       <div className="lignes">
-        <Link className="ligne systeme" to={`/univers/${universId}/systeme`}>
+        <Link className="ligne systeme" to={`/systemes/${systeme.id}`}>
           <span className="tuile">
             <Dices size={16} strokeWidth={1.75} aria-hidden="true" />
           </span>

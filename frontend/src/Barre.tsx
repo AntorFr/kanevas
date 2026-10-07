@@ -1,4 +1,4 @@
-import { Check, ChevronsUpDown, Library, LogOut, Monitor, Moon, Sun } from 'lucide-react';
+import { Check, ChevronsUpDown, Dices, Library, LogOut, Monitor, Moon, Sun } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { Link, matchPath, useLocation } from 'react-router-dom';
 
@@ -111,6 +111,10 @@ function Selecteur({ courant, onChoix }: { courant: number; onChoix: () => void 
             <Library size={16} strokeWidth={1.75} aria-hidden="true" />
             Mes univers
           </Link>
+          <Link to="/systemes" className="menu-entree" onClick={choisi}>
+            <Dices size={16} strokeWidth={1.75} aria-hidden="true" />
+            Systèmes de jeu
+          </Link>
         </div>
       )}
     </div>
@@ -215,6 +219,10 @@ function Contenu({ onNavigue }: { onNavigue: () => void }) {
             <Link to="/" className="item" aria-current={pathname === '/' ? 'page' : undefined}>
               <Library size={16} strokeWidth={1.75} aria-hidden="true" />
               Mes univers
+            </Link>
+            <Link to="/systemes" className="item" aria-current={pathname === '/systemes' || pathname.startsWith('/systemes/') ? 'page' : undefined}>
+              <Dices size={16} strokeWidth={1.75} aria-hidden="true" />
+              Systèmes de jeu
             </Link>
           </div>
         )}

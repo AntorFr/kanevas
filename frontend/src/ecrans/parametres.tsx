@@ -275,7 +275,7 @@ function Parametres() {
                 {systeme.nom}
               </strong>
               <span>Utilisé par {systeme.nbUnivers} univers</span>
-              <Link className="bouton neutre" to={`/univers/${id}/systeme`}>
+              <Link className="bouton neutre" to={`/systemes/${systeme.id}`}>
                 Ouvrir le système
                 <ArrowRight size={14} strokeWidth={1.75} aria-hidden="true" />
               </Link>

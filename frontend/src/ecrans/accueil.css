@@ -93,3 +93,8 @@ kbd { font: 500 11px/1 var(--police-texte); color: var(--texte-3); border: 1px s
   .actions-form .bouton { min-height: 40px; flex: 1; }
 }
 .sceau.charge { background: var(--squelette); box-shadow: none; }
+
+/* E-1 as a grid of cards (kanevas-illustrations): the column widens to the grid's */
+.accueil.accueil-cartes { max-width: 1120px; }
+.accueil-cartes .tete-liste { padding-left: 0; padding-right: 0; }
+.accueil-cartes .grille-cartes { margin-top: var(--e-2); }

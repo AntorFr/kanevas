@@ -1,13 +1,17 @@
-import { BookOpen, Check, ChevronDown, Pencil, Plus } from 'lucide-react';
+import { BookOpen, Check, ChevronDown, Dices, Eye, Pencil, Plus } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
 
 import { ErreurApi, appeler } from '../api';
+import { useTitreAriane } from '../cadre-contexte';
+import type { SystemeCompte } from '../types';
 import type { Ecran } from '../registre';
-import { Bouton, Champ, ChargementListe, ErreurChargement, PageIntrouvable, VideIcone, useToasts } from '../ui';
+import { Bouton, Champ, ChargementListe, ErreurChargement, PageIntrouvable, Pastille, VideIcone, useToasts } from '../ui';
+import { PucesUnivers } from './systeme/puces';
 import './ecrans.css';
 import './liste.css';
 import './reglages.css';
+import './cartes.css';
 
 type Type = 'regle' | 'creature' | 'objet';
 
@@ -19,11 +23,7 @@ interface Gabarit {
   version: number;
 }
 
-interface Page {
-  id: number;
-  nom: string;
-  nbUnivers: number;
-  peutEcrire: boolean;
+interface Page extends SystemeCompte {
   gabarits: Gabarit[];
   suivant: string | null;
 }
@@ -44,12 +44,14 @@ const ONGLETS: { type: Type; titre: string; ajout: string; vide: string; videJou
 const premiereLigne = (c: string) => c.split('\n').find((l) => l.trim() !== '') ?? '';
 const alpha = (a: Gabarit, b: Gabarit) => a.nom.localeCompare(b.nom, 'fr', { sensitivity: 'base' });
 
+type Retour = { perime?: true; perdu?: true; texte: string };
+
 /** Message under a failed write: stale version, name taken, right removed, or generic. */
-function messageEcriture(e: unknown): { perime?: true; texte: string } {
+function messageEcriture(e: unknown): { perime?: true; perdu?: true; texte: string } {
   if (e instanceof ErreurApi) {
     if (e.statut === 409 && e.code === 'gabarit_modifie') return { perime: true, texte: PERIME };
     if (e.statut === 409) return { texte: e.message };
-    if (e.statut === 403 || e.statut === 404) return { texte: PLUS_DROIT };
+    if (e.statut === 403 || e.statut === 404) return { texte: PLUS_DROIT, perdu: true };
   }
   return { texte: ECHEC };
 }
@@ -63,13 +65,13 @@ function Formulaire({
 }: {
   initial: { nom: string; contenu: string };
   libelle: string;
-  onEnvoi: (v: { nom: string; contenu: string }) => Promise<{ perime?: true; texte: string } | undefined>;
+  onEnvoi: (v: { nom: string; contenu: string }) => Promise<Retour | undefined>;
   onAnnuler: () => void;
 }) {
   const [nom, setNom] = useState(initial.nom);
   const [contenu, setContenu] = useState(initial.contenu);
   const [nomVide, setNomVide] = useState(false);
-  const [echec, setEchec] = useState<{ perime?: true; texte: string }>();
+  const [echec, setEchec] = useState<Retour>();
   const [enCours, setEnCours] = useState(false);
 
   const erreurNom =
@@ -114,11 +116,15 @@ function Formulaire({
   );
 }
 
-/** E-15 Système de jeu: the shared reference of the universe's system (rules, creatures, objects). */
+const TYPES: Type[] = ['regle', 'creature', 'objet'];
+
+/** E-15 Système de jeu: the shared reference of a system, at its own address (AD-94). */
 function Systeme() {
-  const { id } = useParams();
-  const [type, setType] = useState<Type>('creature');
-  const [entete, setEntete] = useState<Pick<Page, 'nom' | 'nbUnivers' | 'peutEcrire'>>();
+  const { sid } = useParams();
+  const [params, setParams] = useSearchParams();
+  const demande = params.get('type');
+  const type: Type = TYPES.find((t) => t === demande) ?? 'creature';
+  const [entete, setEntete] = useState<Omit<Page, 'gabarits' | 'suivant'>>();
   const [entrees, setEntrees] = useState<Gabarit[]>([]);
   const [suivant, setSuivant] = useState<string | null>(null);
   const [etat, setEtat] = useState<'chargement' | 'ok' | 'erreur' | 'introuvable'>('chargement');
@@ -129,17 +135,20 @@ function Systeme() {
   const { toast } = useToasts();
   const [echecSuite, setEchecSuite] = useState(false);
   const [suiteEnCours, setSuiteEnCours] = useState(false);
+  const [plusDroit, setPlusDroit] = useState(false);
+  useTitreAriane(entete?.nom);
 
-  // The system has its own address (AD-94): resolved from the universe of the screen's address.
-  const baseRef = useRef('');
+  const base = `/api/systemes/${sid}`;
   const onglet = ONGLETS.find((o) => o.type === type)!;
+  const choisir = (t: Type) => setParams(t === 'creature' ? {} : { type: t }, { replace: true });
 
-  const charger = useCallback(async (t: Type) => {
-    const u = await appeler<{ systeme: { id: number } | null }>('GET', `/api/univers/${id}`);
-    if (!u.systeme) throw new ErreurApi(404, 'Introuvable');
-    baseRef.current = `/api/systemes/${u.systeme.id}`;
-    return appeler<Page>('GET', `${baseRef.current}?type=${t}`);
-  }, [id]);
+  const charger = useCallback((t: Type) => appeler<Page>('GET', `${base}?type=${t}`), [base]);
+
+  // Another system's address: nothing of the previous one stays.
+  useEffect(() => {
+    setEntete(undefined);
+    setPlusDroit(false);
+  }, [sid]);
 
   useEffect(() => {
     let actif = true;
@@ -151,9 +160,10 @@ function Systeme() {
     charger(type).then(
       (p) => {
         if (!actif) return;
-        setEntete({ nom: p.nom, nbUnivers: p.nbUnivers, peutEcrire: p.peutEcrire });
-        setEntrees(p.gabarits);
-        setSuivant(p.suivant);
+        const { gabarits, suivant: s, ...tete } = p;
+        setEntete(tete);
+        setEntrees(gabarits);
+        setSuivant(s);
         setEtat('ok');
       },
       (e: unknown) => {
@@ -166,7 +176,7 @@ function Systeme() {
   }, [charger, type, essai]);
 
   // Tabs stay visible while an other tab loads, but the very first load shows the loading state alone.
-  if (etat === 'introuvable') return <PageIntrouvable />;
+  if (etat === 'introuvable') return <PageIntrouvable retour="systemes" />;
   if (!entete) {
     if (etat === 'erreur') return <ErreurChargement texte="Impossible de charger ce système." onReessayer={() => setEssai((n) => n + 1)} />;
     return <ChargementListe texte="Chargement du système…" />;
@@ -178,7 +188,7 @@ function Systeme() {
     setSuiteEnCours(true);
     setEchecSuite(false);
     try {
-      const p = await appeler<Page>('GET', `${baseRef.current}?type=${type}&curseur=${encodeURIComponent(suivant)}`);
+      const p = await appeler<Page>('GET', `${base}?type=${type}&curseur=${encodeURIComponent(suivant)}`);
       setEntrees((l) => [...l, ...p.gabarits]);
       setSuivant(p.suivant);
     } catch {
@@ -188,25 +198,36 @@ function Systeme() {
     }
   }
 
+  /** A right withdrawn during a write: say so, and reload the page (read-only, or « Page introuvable. »). */
+  function echecEcriture(e: unknown) {
+    const m = messageEcriture(e);
+    if (m.perdu) {
+      setPlusDroit(true);
+      setEssai((n) => n + 1);
+      return undefined;
+    }
+    return m;
+  }
+
   async function ajouter(v: { nom: string; contenu: string }) {
     try {
-      const g = await appeler<Gabarit>('POST', `${baseRef.current}/gabarits`, { type, nom: v.nom, contenu: v.contenu });
+      const g = await appeler<Gabarit>('POST', `${base}/gabarits`, { type, nom: v.nom, contenu: v.contenu });
       setEntrees((l) => [...l, g].sort(alpha));
       setAjout(false);
       toast(`« ${g.nom} » ajouté`);
     } catch (e) {
-      return messageEcriture(e);
+      return echecEcriture(e);
     }
   }
 
   async function enregistrer(g: Gabarit, v: { nom: string; contenu: string }) {
     try {
-      const m = await appeler<Gabarit>('PUT', `${baseRef.current}/gabarits/${g.id}`, { nom: v.nom, contenu: v.contenu, version: g.version });
+      const m = await appeler<Gabarit>('PUT', `${base}/gabarits/${g.id}`, { nom: v.nom, contenu: v.contenu, version: g.version });
       setEntrees((l) => l.map((x) => (x.id === g.id ? m : x)).sort(alpha));
       setEdition(undefined);
       toast(`« ${m.nom} » enregistré`);
     } catch (e) {
-      return messageEcriture(e);
+      return echecEcriture(e);
     }
   }
 
@@ -225,11 +246,27 @@ function Systeme() {
     <div className="page-liste">
       <header className="tete-liste">
         <span className="glyphe-type" aria-hidden="true">
-          <BookOpen size={20} strokeWidth={1.75} />
+          <Dices size={20} strokeWidth={1.75} />
         </span>
         <h1 title={entete.nom}>{entete.nom}</h1>
       </header>
-      <p className="sous-titre-page">Référentiel commun · utilisé par {entete.nbUnivers} univers</p>
+      <p className="sous-sys">
+        <span>Référentiel commun · utilisé par {entete.nbUnivers} univers</span>
+        {!peutEcrire && (
+          <Pastille sens="neutre" icone={Eye}>
+            Lecture seule
+          </Pastille>
+        )}
+      </p>
+      <div className="vos-univers">
+        <span>Dans vos univers</span>
+        <PucesUnivers univers={entete.mesUnivers} lien />
+      </div>
+      {plusDroit && (
+        <div className="echec" role="alert">
+          {PLUS_DROIT}
+        </div>
+      )}
       <div role="tablist" className="onglets">
         {ONGLETS.map((o) => (
           <button
@@ -238,7 +275,7 @@ function Systeme() {
             role="tab"
             aria-selected={o.type === type}
             className={o.type === type ? 'actif' : undefined}
-            onClick={() => setType(o.type)}
+            onClick={() => choisir(o.type)}
           >
             {o.titre}
           </button>
@@ -330,7 +367,7 @@ function EditionEntree({
   onRecharger,
 }: {
   g: Gabarit;
-  onEnregistrer: (v: { nom: string; contenu: string }) => Promise<{ perime?: true; texte: string } | undefined>;
+  onEnregistrer: (v: { nom: string; contenu: string }) => Promise<Retour | undefined>;
   onAnnuler: () => void;
   onRecharger: () => Promise<void>;
 }) {
@@ -367,4 +404,4 @@ function EditionEntree({
   );
 }
 
-export default { chemin: '/univers/:id/systeme', composant: Systeme } satisfies Ecran;
+export default { chemin: '/systemes/:sid', composant: Systeme } satisfies Ecran;
