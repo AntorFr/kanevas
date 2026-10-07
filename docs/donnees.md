@@ -193,8 +193,8 @@ accepté : il n'y a pas de balayage des orphelins en V1).
 
 ## Migration `kanevas-illustrations` (numéro pris à la fusion, AD-51)
 
-> Fichier : `src/db/migrations/<n>-illustrations.sql`, `<n>` étant le numéro qui suit le dernier
-> présent sur la branche au build — **numéro provisoire**, recalé à la fusion si une autre tranche
+> Fichier : `src/db/migrations/0006-illustrations.sql` — **numéro provisoire**, celui qui suit le dernier
+> présent sur la branche, recalé à la fusion si une autre tranche
 > est entrée avant (AD-51). Décision : AD-93.
 
 **Conceptuel.** Une fiche a **zéro ou une** illustration : une image (PNG, JPEG, GIF ou WebP)

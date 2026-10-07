@@ -27,15 +27,15 @@ Ni cartes, ni assistant : tranches suivantes. Les pièces jointes (stockage sur 
 - `src/routes/auth.ts`, `src/services/oidc.ts` : login et callback OIDC ; le callback ouvre la
   session (`src/services/session.ts`, AD-56) et crée le compte à la première connexion.
 - `src/routes/bouchon.ts` : mode bouchon (AD-55), absent de la table des routes sans `KANEVAS_STUB`.
-- `src/db/` : ouverture du fichier SQLite, `migrations/0001-*.sql`, `0002-systemes.sql`, `0003-suivi.sql`, `0004-pieces-jointes.sql`, `0005-relier-chercher.sql`, runner (AD-14).
-- `src/services/` : `comptes`, `univers`, `membres`, `fiches`, `sections`, `droits`, `systemes`, `relations`, `campagnes`, `scenarios`, `preparation`, `comptes_rendus`, `pieces-jointes`, `stockage` — les seules
+- `src/db/` : ouverture du fichier SQLite, `migrations/0001-*.sql`, `0002-systemes.sql`, `0003-suivi.sql`, `0004-pieces-jointes.sql`, `0005-relier-chercher.sql`, `0006-illustrations.sql`, runner (AD-14).
+- `src/services/` : `comptes`, `univers`, `membres`, `fiches`, `sections`, `droits`, `systemes`, `relations`, `campagnes`, `scenarios`, `preparation`, `comptes_rendus`, `pieces-jointes`, `illustrations`, `stockage` — les seules
   fonctions qui lisent ou écrivent les données (AD-2) ; `src/routes/` : routes `/api` minces.
 - `frontend/` : application React/Vite (AD-57) ; `frontend/src/ui/tokens.css` et
   `frontend/src/ui/` : tokens et composants de `docs/charte.md` ; son build est servi par Fastify. Le cadre
   (`Cadre.tsx`, `Barre.tsx`) est commun à tous les écrans ; `/demo-composants` (bouchon seul, 404 sinon, `routes/session.ts`) montre les composants (AD-92 pour polices et icônes).
 - `src/services/systemes.ts` : catalogue, rattacher, créer et rattacher, gabarits ; la modification
   d'un univers est dans `src/services/univers.ts` ; leurs routes sont `src/routes/systemes.ts`
-  (AD-83 à AD-85). Écrans : E-14 (Paramètres), E-15 (Système de jeu) et le bloc « Système de jeu » de E-3.
+  (AD-83 à AD-85, AD-94). Écrans : E-14 (Paramètres), E-16 (Systèmes de jeu, `ecrans/systemes.tsx`), E-15 (Système de jeu, `/systemes/:sid`, `ecrans/systeme.tsx`) et le bloc « Système de jeu » de E-3.
 - `src/services/{campagnes,scenarios,preparation,comptes_rendus}.ts` et `src/routes/suivi.ts` : le suivi
   (AD-29, AD-30, AD-33, AD-34, AD-46, AD-47, AD-60 à AD-62). Un compte-rendu est une fiche de type
   `compte_rendu` ; scénarios et tâches se garde sur l'univers de la campagne, jamais sur un identifiant
@@ -46,6 +46,8 @@ Ni cartes, ni assistant : tranches suivantes. Les pièces jointes (stockage sur 
 - Pièces jointes (`kanevas-fichiers`) : `src/services/stockage.ts` (écrire, lire, supprimer un fichier du volume),
   `src/services/pieces-jointes.ts` (déposer, marquer, retirer, lire, garde) et leurs routes `/api` (dans `src/routes/fiches.ts`)
   (AD-65 à AD-67), et le bloc Pièces jointes de E-9.
+- Illustrations (`kanevas-illustrations`, AD-93) : `src/services/illustrations.ts` (poser, retirer, lire ; octets via `stockage.ts`), routes dans `src/routes/fiches.ts`, grille de cartes de E-8 et en-tête de E-9.
+- `src/bouchon/depart.ts` et `src/bouchon/demo/` : monde de démonstration semé en bouchon sur une base sans univers (par les fonctions de service) ; `KANEVAS_SANS_SEMIS=1` le coupe.
 - `src/services/llm/` : transports LLM (`transport.ts`, `anthropic-transport.ts`,
   `claude-agent-transport.ts`), repris d'Antre-du-maitre, branchés nulle part.
 - `Dockerfile` (multi-stage, utilisateur `node`) et
@@ -72,7 +74,7 @@ elles remplacent les anciennes routes `GET /api/univers/:id/systeme` et `…/sys
 | `PATCH /api/univers/:id` | nom et description (MJ) |
 | `GET /api/systemes` | les systèmes rattachés à un univers dont le compte est membre, par nom : `[{id, nom, nbUnivers, entrees: {regle, creature, objet}, mesUnivers: [{id, nom, role}], peutEcrire}]` — jamais un univers dont le compte n'est pas membre (AD-84, AD-94) |
 | `GET /api/systemes/catalogue`, `POST /api/systemes` | catalogue (couples id, nom), lu par un MJ d'au moins un univers (E-14) ; création d'un système |
-| `GET /api/systemes/:sid` (`:sid` entier ; `?type` = `regle`, `creature` (défaut de l'écran) ou `objet`, sinon 400 ; `?curseur`) | le système, `nbUnivers`, `mesUnivers`, `peutEcrire` et ses entrées (100 à la fois) ; 404 identique à un identifiant inconnu s'il n'est rattaché à aucun univers du compte (AD-94) |
+| `GET /api/systemes/:sid` (`:sid` entier ; `?type` = `regle` (défaut de l'API ; l'écran demande `creature`), `creature` ou `objet`, sinon 400 ; `?curseur`) | le système, `nbUnivers`, `mesUnivers`, `peutEcrire`, et `gabarits` (les entrées du type, 100 à la fois) avec `suivant` (curseur de la page suivante ou null) ; 404 identique à un identifiant inconnu s'il n'est rattaché à aucun univers du compte (AD-94) |
 | `POST /api/systemes/:sid/gabarits`, `PUT /api/systemes/:sid/gabarits/:gabaritId` | ajouter, modifier avec la version lue (AD-85) : MJ d'au moins un univers rattaché ; 403 pour qui lit sans être MJ ; 404 pour qui ne le voit pas |
 | `PUT /api/univers/:id/systeme`, `POST /api/univers/:id/systeme-nouveau` | rattacher (`{systemeId}` ou `null` pour détacher ; 204 sans corps), créer et rattacher (201) (MJ) |
 | `GET\|POST /api/univers/:id/membres`, `PATCH\|DELETE .../membres/:compteId` | membres (MJ) |
@@ -118,7 +120,7 @@ base en snake_case (`docs/donnees.md`).
   `OIDC_*` (ou avec une partie seulement), login et callback répondent 404 ; une valeur vide
   ou invalide fait échouer le démarrage.
 - **Douze tables et deux index de recherche, aucun ORM** : `comptes`, `univers`, `membres`, `fiches`, `sections` (migration
-  0001), `systemes_jeu`, `gabarits` (migration 0002), `campagnes`, `scenarios`, `taches_preparation` (migration 0003), `pieces_jointes` (migration 0004), `relations`, `recherche_fiches` et `recherche_sections` (FTS5, migration 0005) ; numéros provisoires : voir `docs/donnees.md`. Aucune requête SQL hors de `src/services/` et `src/db/`.
+  0001), `systemes_jeu`, `gabarits` (migration 0002), `campagnes`, `scenarios`, `taches_preparation` (migration 0003), `pieces_jointes` (migration 0004), `relations`, `recherche_fiches` et `recherche_sections` (FTS5, migration 0005) ; trois colonnes d'illustration sur `fiches` (migration 0006) ; numéros provisoires : voir `docs/donnees.md`. Aucune requête SQL hors de `src/services/` et `src/db/`.
 - **Toute route hors `/healthz`, `/api/auth/*` et, en bouchon, `/connexion-bouchon` est gardée par la session** ; sous `/api` un
   défaut de session répond 401, ailleurs il redirige vers la connexion (AD-15).
 - **Rien n'appelle un LLM** : les transports compilent mais ne sont reliés à
@@ -149,7 +151,7 @@ base en snake_case (`docs/donnees.md`).
 # La cible
 
 > Construit à ce jour : la session, le mode bouchon, les tables et leurs fonctions de service,
-> les systèmes de jeu et leurs gabarits, les relations et la recherche dans un type, le suivi (campagnes, scénarios, préparation, comptes-rendus), les écrans E-1 à E-4, E-6 à E-9 (E-9 avec son bloc Pièces jointes), E-13, E-14 et E-15, et le stockage des fichiers sur le volume. Le reste (agents, images,
+> les systèmes de jeu et leurs gabarits, les relations et la recherche dans un type, le suivi (campagnes, scénarios, préparation, comptes-rendus), les écrans E-1 à E-4, E-6 à E-9 (E-9 avec son bloc Pièces jointes), E-13, E-14, E-15 et E-16, l'illustration des fiches, et le stockage des fichiers sur le volume. Le reste (agents, images,
 > administration) est la cible des tranches suivantes.
 
 ## Organes, et qui parle à qui
@@ -242,7 +244,7 @@ Les numéros sont stables. Une décision retirée garde son numéro, avec ce qui
 | AD-57 | **Frontend** : React et Vite dans `frontend/`, un seul build servi par l'application Fastify (`@fastify/static`, repli sur `index.html` pour toute adresse d'écran, derrière la garde de session) ; l'image Docker construit les deux. Pas de rendu serveur, sauf les pages que la session ne peut pas précéder : choix du compte de test (AD-55), « Connexion refusée », « Connexion indisponible ». |
 | AD-58 | **Contenu de section en texte brut** : des paragraphes séparés par des lignes vides, affichés comme tels ; ni Markdown ni HTML. Écarté : Markdown (rendu à assainir, choix d'éditeur) — rouvrable sans migration, le contenu est déjà du texte. |
 | AD-59 | **Écritures de section concurrentes** : chaque section porte un entier `version`, augmenté à chaque écriture de son contenu ; l'écriture envoie la version qu'elle a lue ; si elle n'est plus la courante, elle est refusée (HTTP 409, code `section_modifiee`) et rien n'est écrit. Même mécanisme que le « la section a changé » de B-21 pour les propositions (AD-49). |
-| AD-83 | *La règle d'accès « toujours par un univers » est remplacée par AD-94 ; le reste tient.* **Système de jeu et rattachement** : `systemes_jeu` (sans univers) et `gabarits` ; l'univers porte un `systeme_id` facultatif (AD-23, AD-24). L'accès à un système passe **toujours par un univers dont le compte est membre** (`/api/univers/:id/systeme`) : la route ne reçoit jamais d'identifiant de système en adresse, donc ne peut pas être devinée. Le catalogue (`GET /api/systemes`, noms seuls) est la seule lecture hors univers. « Créer et rattacher » est une seule transaction. Écarté : une adresse `/api/systemes/:id` gardée par « rattaché à l'un des univers du compte » (une requête par lecture, aucun gain). |
+| AD-83 | *La règle d'accès « toujours par un univers » est remplacée par AD-94 (routes `/api/systemes/:sid`, catalogue à `GET /api/systemes/catalogue`) ; le reste tient.* **Système de jeu et rattachement** : `systemes_jeu` (sans univers) et `gabarits` ; l'univers porte un `systeme_id` facultatif (AD-23, AD-24). Dans cette décision d'origine, l'accès à un système passait **toujours par un univers dont le compte est membre** (`/api/univers/:id/systeme`) ; le catalogue ne donnait que des noms. « Créer et rattacher » est une seule transaction. Écarté : une adresse `/api/systemes/:id` gardée par « rattaché à l'un des univers du compte » (une requête par lecture, aucun gain). |
 | AD-84 | **Un système n'apprend rien sur les univers voisins** : il rend le nombre d'univers qui l'utilisent et jamais leurs noms ni leurs membres (AD-22). Précise AD-11 : « le lore reste propre à chaque univers ». Écarté : nommer les univers partenaires (maquette du cadrage), qui divulguerait l'existence d'univers dont le compte n'est pas membre. |
 | AD-85 | **Gabarits** : contenu en texte brut (AD-58) ; écriture concurrente refusée par un entier `version`, comme AD-59 (HTTP 409, code `gabarit_modifie`) ; le type est fixé à la création ; pas de suppression (cadrage). Les fonctions de service prennent l'acteur et vérifient le rôle dans l'univers de **passage** ; elles sont les seules écritures, pour les routes comme pour l'agent (AD-2). Écarté : champs structurés (niveau, DEF, PV) — hors périmètre du cadrage (caractéristiques structurées). |
 | AD-91 | **Plafond du contenu d'une section, côté serveur** : le service `sections` refuse un contenu de plus de 20 000 caractères (`String.length`), à l'ajout comme à l'écriture : HTTP 400 `invalide`, « Contenu trop long : 20 000 caractères au plus. », rien d'écrit, version inchangée. La valeur vit dans une seule constante serveur (`MAX_CONTENU_SECTION`), rendue au frontend par `GET /api/moi` (`limites.contenuSection`) : l'écran ne la recopie pas. Écarté : une route `/api/limites` (un aller-retour de plus, `/api/moi` est déjà chargé par le cadre de l'écran) ; une limite configurable (hors tranche, la valeur pourra évoluer). |

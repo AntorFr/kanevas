@@ -8,7 +8,7 @@ par quels écrans : `docs/parcours.md`, `docs/ecrans.md`, `docs/donnees.md`.
 
 Au-delà de la première fonction métier, le dépôt porte le **système de jeu** : un référentiel (règles, créatures, objets) que plusieurs
 univers se partagent, rattaché depuis les paramètres de l'univers. Il porte aussi le **suivi de la séance** : campagnes, scénarios (MJ), préparation en cinq catégories (MJ) et comptes-rendus (tout membre). Il porte enfin les **pièces jointes** : sur chaque section, déposer un fichier, voir une image, télécharger
-les autres, marquer secrète (MJ), retirer. Il porte aussi les **relations** entre fiches (bloc Relations de la fiche) et la **recherche** dans un type de fiche. Ni
+les autres, marquer secrète (MJ), retirer. Chaque fiche peut porter une **illustration** (posée par le MJ, grille de cartes E-8, en-tête de E-9), et les **systèmes de jeu** ont leur écran hors des univers (E-16, E-15). Il porte aussi les **relations** entre fiches (bloc Relations de la fiche) et la **recherche** dans un type de fiche. Ni
 cartes, ni génération d'images, ni assistant, ni administration d'instance ne sont
 construits (tranches suivantes) : les passages de ces docs qui les décrivent sont la cible.
 
@@ -19,12 +19,13 @@ Dockerfile                        Image unique : API Fastify + frontend construi
 src/
   server.ts, app.ts               Démarrage ; assemblage des plugins et des routes
   config/env.ts                   Variables d'environnement (zod)
-  db/                             SQLite (better-sqlite3), migrations/0001 à 0005, runner
+  db/                             SQLite (better-sqlite3), migrations/0001 à 0006, runner
   services/                       comptes, univers, membres, fiches, sections, droits, systemes, relations, campagnes, scenarios, preparation, comptes_rendus,
-                                   pieces-jointes, stockage (octets sur le volume) :
+                                   pieces-jointes, illustrations, stockage (octets sur le volume) :
                                    seul code qui lit ou écrit les données ; session, oidc
   routes/                         health, auth (OIDC), session (cookie, garde, /api/moi),
                                    bouchon, univers (+ membres), systemes, suivi, fiches (+ sections), frontend
+  bouchon/                        Monde de démonstration semé au démarrage en bouchon (depart.ts) et ses fichiers (demo/)
   services/llm/                   Transports LLM repris d'Antre-du-maitre, branchés nulle part
 frontend/                         React + Vite : charte (ui/), écrans (src/ecrans/), barre latérale
 .github/workflows/docker-publish.yml   CI : tests, build, image GHCR
@@ -37,7 +38,7 @@ menu de l'avatar qui porte le thème et la déconnexion) et les composants parta
 boîte de dialogue, interrupteur, pastille…) sont communs à tous les écrans. Les polices (Fraunces, Newsreader, Inter,
 `@fontsource`) et les icônes (`lucide-react`) sont empaquetées, sans requête vers un hôte tiers (AD-92).
 
-Tests sans e2e ni Docker : `npm run typecheck` puis `npm test` (voir « Tests de bout en bout » pour les e2e) ; la voie Docker de référence est dans `CLAUDE.md`.
+Tests sans Docker : `npm run typecheck` puis `npm test` (ils jouent aussi les e2e là où Playwright est installé, ce qui est long : voir « Tests de bout en bout ») ; la voie Docker de référence est dans `CLAUDE.md`.
 
 ## Démarrage local
 
@@ -70,8 +71,8 @@ ne montre aucun écran). `npm run dev:front` lance Vite seul (port 5173 par déf
 serveur en bouchon (port 3001), s'y connecter sur `http://localhost:3001/`, puis ouvrir
 `http://localhost:5173/` (le cookie de session ne dépend pas du port).
 
-La voie de référence reste le conteneur Node 20 de `CLAUDE.md` (celle de la CI) ; un Node local
-récent suffit pour les mêmes commandes.
+La voie de référence reste le conteneur Node 20 de `CLAUDE.md` (celle de la CI) ; sans Docker, un Node local
+récent suffit pour les mêmes commandes (`npm ci && npm run typecheck && npm test`).
 
 ### Sans Authelia : le mode bouchon
 
@@ -83,8 +84,10 @@ npm run build && KANEVAS_STUB=1 npm start   # puis ouvrir http://localhost:3001/
 
 `/connexion-bouchon` remplace Authelia (AD-55) sous un bandeau « mode bouchon ». Les comptes de test
 ont pour identifiants `antor`, `lea`, `teo`, `mira` et `admin` (noms affichés Antor, Léa…) : c'est
-l'identifiant qu'on tape pour ajouter un membre. Un compte n'existe qu'après sa première connexion :
-pour ajouter Léa, se connecter d'abord une fois en Léa (sinon « Ce compte ne s'est jamais connecté. »). Kanevas refuse de
+l'identifiant qu'on tape pour ajouter un membre. Sur une base sans univers, le bouchon sème au démarrage un monde de
+démonstration (« Lame d'Ébène » : Antor MJ, Léa joueuse ; « Les Landes grises » : Mira MJ ; le système « CoF Mini » ;
+des fiches, dont certaines illustrées ; « Les Cendres de Vaëlis », Admin MJ et Antor joueur, rattachée à « Chroniques Oubliées Fantasy » ; Teo n'est membre d'aucun univers) ; `KANEVAS_SANS_SEMIS=1` le coupe. Un compte créé hors semis n'existe qu'après sa
+première connexion (sinon « Ce compte ne s'est jamais connecté. » à l'ajout). Kanevas refuse de
 démarrer en bouchon si une variable `OIDC_*` est posée. Avec `NODE_ENV=production` (celui de l'image ; `npm start` ne le pose pas) et sans volume `/data`, la base est en
 mémoire (avertissement au démarrage).
 
@@ -100,12 +103,12 @@ Les textes de `docs/ecrans.md` sont écrits avec l'apostrophe droite ; l'interfa
 Playwright n'est pas une dépendance du dépôt : il doit être installé globalement
 (`/usr/lib/node_modules` ou `/usr/local/lib/node_modules`) avec un Chromium, ce que ne fait ni
 `node:20-bookworm-slim` ni la CI GitHub. Là où il manque, ces tests sont **ignorés avec un message**,
-sans échec ; les autres tests (services, routes HTTP) tournent partout. Compter une vingtaine de minutes pour toute la suite avec Playwright (silencieuse jusqu'à la fin). La CI ne joue donc pas les e2e.
+sans échec ; les autres tests (services, routes HTTP) tournent partout. Compter une vingtaine de minutes pour toute la suite avec Playwright (silencieuse jusqu'à la fin ; un message « ignoré » en tête de sortie dit que Playwright n'est pas vu). La CI ne joue donc pas les e2e.
 
 ## Réglages
 
 La liste de départ est `.env.example`. En plus : `APP_NAME` (défaut `kanevas`),
-`APP_VERSION` (défaut `0.0.0-dev`, posée par le build-arg en image), `PORT` (3001), `DB_PATH` (fichier SQLite ; défaut `/data/kanevas.db` avec `NODE_ENV=production`, `./data/kanevas.db` en développement), `ATTACHMENTS_DIR` (pièces jointes ; défaut `attachments/` à côté de la base, donc `/data/attachments` en production), `SESSION_SECRET` (≥ 16 caractères ; à défaut `session.key`, créée à côté de la base : `/data/session.key` en production, `./data/session.key` en développement), `KANEVAS_STUB` (`1`), `LLM_PROVIDER` (`mock` | `anthropic` | `claude-agent`, défaut `mock`,
+`APP_VERSION` (défaut `0.0.0-dev`, posée par le build-arg en image), `PORT` (3001), `DB_PATH` (fichier SQLite ; défaut `/data/kanevas.db` avec `NODE_ENV=production`, `./data/kanevas.db` en développement), `ATTACHMENTS_DIR` (pièces jointes ; défaut `attachments/` à côté de la base, donc `/data/attachments` en production), `SESSION_SECRET` (≥ 16 caractères ; à défaut `session.key`, créée à côté de la base : `/data/session.key` en production, `./data/session.key` en développement), `KANEVAS_STUB` (`1`), `KANEVAS_SANS_SEMIS` (`1` : pas de monde de démonstration en bouchon), `FRONTEND_DIR` (dossier du frontend construit, pour les tests de routes), `LLM_PROVIDER` (`mock` | `anthropic` | `claude-agent`, défaut `mock`,
 inutilisé tant qu'aucune route n'appelle un LLM).
 
 ## Version de l'application

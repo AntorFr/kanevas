@@ -5,7 +5,7 @@
 > finie se détaillent dans la tranche qui le construit.
 
 > **Construit à ce jour** : E-1, E-2, E-3 (nom, navigation et blocs : système de jeu, campagnes actives, derniers comptes-rendus, préparation pour le MJ), E-4, E-6, E-7, E-13, E-8 (avec la
-> recherche dans un type), E-9 (avec les blocs Relations et Pièces jointes), E-14 (Paramètres), E-15 (Système de jeu), la ligne « Campagne » de E-9, la session
+> recherche dans un type, en grille de cartes illustrées), E-9 (avec les blocs Relations et Pièces jointes et l'illustration en tête), E-14 (Paramètres), E-15 (Système de jeu, à `/systemes/:sid`), E-16 (Systèmes de jeu), la ligne « Campagne » de E-9, la session
 > et la barre latérale. E-5 et E-10 à E-12 sont la cible.
 
 ## Format
