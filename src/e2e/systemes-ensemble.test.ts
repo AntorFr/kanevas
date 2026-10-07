@@ -254,7 +254,7 @@ describe('B-14 le référentiel commun', opts, () => {
     await attendre(antor);
     await antor.getByRole('link', { name: rx('Ouvrir le système') }).or(antor.getByRole('button', { name: rx('Ouvrir le système') })).first().click();
     await attendre(antor);
-    assert.match(antor.url(), new RegExp(`/univers/${idLame}/systeme$`));
+    assert.match(antor.url(), new RegExp(`/systemes/\\d+$`)); // E-15 has its own address (AD-94)
     await voit(antor, 'CoF Mini');
     await voit(antor, 'Référentiel commun · utilisé par 2 univers');
     await voit(antor, "Aucune créature pour l'instant.");
