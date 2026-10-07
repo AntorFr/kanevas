@@ -226,4 +226,27 @@ describe('kanevas-il-systemes-ecrans', { skip: skipBrowser }, () => {
     }
     await ctx.close();
   });
+
+  test('E-1 : la méta d\'une carte tient sur une ligne à 1024, 1280 et 1440, le nom de système long coupé par « … »', opts, async () => {
+    const long = 'Système des Cendres et des Brumes '.repeat(3).trim().slice(0, 80);
+    const u = await antor.request.fetch(`${srv.base}/api/univers`, { method: 'POST', data: { nom: 'Les Cendres de Méta' } });
+    const idU = (await u.json()).id;
+    const sys = await antor.request.fetch(`${srv.base}/api/systemes`, { method: 'POST', data: { nom: long } });
+    const idS = (await sys.json()).id;
+    assert.equal((await antor.request.fetch(`${srv.base}/api/univers/${idU}/systeme`, { method: 'PUT', data: { systemeId: idS } })).status(), 204);
+    for (const w of [1024, 1280, 1440]) {
+      await antor.setViewportSize({ width: w, height: 900 });
+      await va(antor, '/');
+      const m = await antor.locator('.carte-dessin', { hasText: 'Les Cendres de Méta' }).locator('.meta-u').evaluate((el: Element) => {
+        const tops = Array.from(el.children).map((c) => Math.round(c.getBoundingClientRect().top));
+        const t = el.querySelector('.sys-u .t') as HTMLElement;
+        return { tops, coupe: t.scrollWidth > t.clientWidth, h: el.getBoundingClientRect().height, texte: el.textContent };
+      });
+      assert.equal(new Set(m.tops).size, 1, `${w}px : méta sur plusieurs lignes ${m.tops}`);
+      assert.match(m.texte ?? '', /1 membre\b/);
+      assert.ok(m.coupe, `${w}px : nom du système non coupé`);
+      await photo(antor, `meta-e1-${w}`);
+    }
+    await antor.setViewportSize({ width: 1280, height: 720 });
+  });
 });
