@@ -234,7 +234,10 @@ test('B-7 titre vide ou de 121 caractères refusé ; 120 accepté ; les fiches s
   await creerFiche(antor, 'lieu', 'L'.repeat(120));
   await allerListe(antor, 'lieu');
   await voit(antor, 'charlie');
-  const noms: string[] = await antor.locator('main a').allInnerTexts();
+  const noms: string[] = await antor.locator('main a').evaluateAll((els: HTMLElement[]) =>
+    // A grid card (E-8) leads with its fallback initial: its title is `.titre`.
+    els.map((e) => (e.querySelector('.titre') as HTMLElement | null)?.innerText ?? e.innerText),
+  );
   const courts = noms.map((n) => n.split('\n')[0]!.trim()).filter((n) => n.length < 20);
   assert.deepEqual(courts, ['Alpha', 'bravo', 'charlie']);
 });
