@@ -17,7 +17,8 @@ import { creerUnivers } from '../services/univers.js';
 /**
  * Starting world of the stub mode (AD-55, `docs/ecrans.md` « Données de départ du bouchon »),
  * seeded through the service functions (AD-2), never SQL. First half: universes, members,
- * systems and sheets without illustration; the illustrations come with the screens task.
+ * systems and sheets without illustration; the illustrations are seeded afterwards by
+ * `semerIllustrations` (below), which `server.ts` calls once this function has returned.
  * Demonstration files live in `./demo/` (versioned with the code).
  */
 export function semerBouchon(db: Db): boolean {

@@ -65,7 +65,7 @@ export function registerSystemesRoutes(app: FastifyInstance) {
     return reply.code(201).send(s);
   });
 
-  // `:sid` is an integer by route constraint: "catalogue" is never taken for an identifier.
+  // `:sid` is checked by `idDeChemin` in the handler; the static `/api/systemes/catalogue` route wins over `:sid`, so "catalogue" is never taken for an identifier.
   const sid = (request: { params: unknown }) => idDeChemin((request.params as { sid: string }).sid);
 
   app.get('/api/systemes/:sid', async (request) => {
