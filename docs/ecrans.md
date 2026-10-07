@@ -1348,7 +1348,7 @@ Les critères de cette tranche supposent un monde. **En mode bouchon (AD-55), au
 serveur et seulement si la base n'a encore aucun univers**, Kanevas sème ce jeu de départ, par les
 fonctions de service (AD-2) — pas par du SQL — et sans rien qui existe hors bouchon. Le semis vit au
 démarrage du serveur, pas dans la fabrique de l'application : les tests, qui bâtissent leur
-application sur une base vide, ne le reçoivent que s'ils l'appellent. Les images sont quelques
+application sur une base vide, ne le reçoivent que s'ils l'appellent ; les serveurs que lance le harnais e2e posent `KANEVAS_SANS_SEMIS=1` (bouchon seulement) pour garder une base vide. Les images sont quelques
 fichiers PNG et WebP de démonstration versionnés avec le code, déposés par la vraie fonction de pose
 (AD-93), avec un fichier « plan.pdf » et un fichier vide pour les échecs.
 

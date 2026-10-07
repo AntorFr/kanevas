@@ -1,5 +1,5 @@
 import { ArrowRight, Check, Link2, Plus, Settings } from 'lucide-react';
-import { useEffect, useState, type FormEvent } from 'react';
+import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import { Link, useParams } from 'react-router-dom';
 
 import { ErreurApi, appeler } from '../api';
@@ -41,11 +41,13 @@ function Parametres() {
   const [mes, rechargerMes] = useCharge<SystemeUnivers[]>('/api/systemes');
   const rechargerCourant = rechargerMes;
   // The universe's own system (AD-94): its `systeme` ref, completed by the visible systems for the count.
-  const courant:
+  type Courant =
     | { etat: 'chargement' }
     | { etat: 'erreur'; statut?: number }
-    | { etat: 'ok'; valeur: SystemeUnivers } =
-    mes.etat !== 'ok' || univers.etat === 'chargement'
+    | { etat: 'ok'; valeur: SystemeUnivers };
+  const courant = useMemo<Courant>(
+      () =>
+        mes.etat !== 'ok' || univers.etat === 'chargement'
       ? mes.etat === 'erreur' ? mes : { etat: 'chargement' }
       : univers.etat === 'erreur'
         ? { etat: 'erreur', statut: univers.statut }
@@ -57,7 +59,9 @@ function Parametres() {
                 nbUnivers: 1,
               },
             }
-          : { etat: 'erreur', statut: 404 };
+          : { etat: 'erreur', statut: 404 },
+      [mes, univers],
+    );
 
   const [nom, setNom] = useState('');
   const [description, setDescription] = useState('');

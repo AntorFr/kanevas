@@ -5,7 +5,7 @@ import { env } from './config/env.js';
 const app = await buildApp();
 
 // Stub mode only (AD-55): the starting world, on a database that has no universe yet.
-if (env.KANEVAS_STUB && semerBouchon(app.db)) app.log.info('Stub starting data seeded.');
+if (env.KANEVAS_STUB && !env.KANEVAS_SANS_SEMIS && semerBouchon(app.db)) app.log.info('Stub starting data seeded.');
 
 try {
   await app.listen({
