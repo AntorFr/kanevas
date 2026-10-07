@@ -229,6 +229,34 @@ describe('kanevas-il-illustration-ecrans, E-8 grille et E-9 en-tête', { skip: s
     await ctx.close();
   });
 
+  for (const [nom, w, bas] of [['bureau 1600 px', 1600, 10], ['téléphone 390 px', 390, 8]] as const) {
+    test(`survol d'une carte, ${nom} : le fond entoure tout le contenu, marge basse comprise`, opts, async () => {
+      const ctx = await browser.newContext({ baseURL: srv.base, viewport: { width: w, height: 900 } });
+      const p = await ctx.newPage();
+      p.setDefaultTimeout(8000);
+      await p.goto('/connexion-bouchon');
+      await p.getByRole('button', { name: /^Se connecter en tant que Antor$/i }).click();
+      await p.waitForLoadState('networkidle');
+      await grille(p, 'personnages');
+      const n = await p.locator('a.carte').count();
+      assert.ok(n >= 5);
+      // Every card (the tallest of its row included): content never overflows, bottom margin kept.
+      const m = (await p.locator('a.carte').evaluateAll((els: Element[]) =>
+        els.map((e) => {
+          const r = e.getBoundingClientRect();
+          const pied = e.querySelector('.pied-carte')!.getBoundingClientRect();
+          return { reste: Math.round(r.bottom - pied.bottom), deborde: e.scrollHeight - e.clientHeight };
+        }))) as { reste: number; deborde: number }[];
+      for (const c of m) {
+        assert.ok(c.deborde <= 1, `overflow ${JSON.stringify(m)}`);
+        assert.ok(c.reste >= bas - 1, `bottom margin ${c.reste} < ${bas}`);
+      }
+      await p.locator('a.carte').nth(0).hover();
+      await photo(p, `survol-${w}`);
+      await ctx.close();
+    });
+  }
+
   test('téléphone 390 px : deux colonnes, rien ne déborde, en-tête illustré à gauche du titre', opts, async () => {
     const ctx = await browser.newContext({ baseURL: srv.base, viewport: { width: 390, height: 844 } });
     const p = await ctx.newPage();
