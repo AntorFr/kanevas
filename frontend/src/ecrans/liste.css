@@ -123,9 +123,10 @@
 main.principal:has(.page-grille) { max-width: 1176px; }
 /* The title shares the left edge of the grid (the generic header carries 12px / 8px of side padding). */
 .page-grille .tete-liste { padding-left: 0; padding-right: 0; }
-.grille-fiches { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(176px, 1fr)); gap: var(--e-5); margin: var(--e-5) 0 0; }
+.grille-fiches { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(176px, 1fr)); column-gap: var(--e-5); row-gap: calc(var(--e-5) - 16px); margin: calc(var(--e-5) - 6px) 0 0; }
 .grille-fiches > li { min-width: 0; }
-.carte { position: relative; display: flex; flex-direction: column; gap: 10px; height: calc(100% + 12px); padding: 6px 6px 10px; margin: -6px;
+/* The card plane reaches 6px past the content (10px below): only sideways is that a negative margin, so the row height is the tallest card's own. */
+.carte { position: relative; display: flex; flex-direction: column; gap: 10px; height: 100%; padding: 6px 6px 10px; margin: 0 -6px;
   border-radius: var(--rayon-panneau); color: var(--texte); text-decoration: none; transition: background-color var(--duree); }
 .carte:hover { background: var(--surface-2); text-decoration: none; }
 .carte:focus-visible { outline-offset: 0; border-radius: var(--rayon-panneau); }
@@ -150,10 +151,10 @@ main.principal:has(.page-grille) { max-width: 1176px; }
 .grille-fiches.squelettes .cadre { display: block; width: 100%; aspect-ratio: 4 / 3; border-radius: var(--rayon-champ); }
 .grille-fiches.squelettes .trait { display: block; height: 12px; }
 
-@media (max-width: 1080px) { .grille-fiches { row-gap: var(--e-4); } }
+@media (max-width: 1080px) { .grille-fiches { row-gap: 0; } }
 @media (max-width: 760px) {
-  .grille-fiches { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--e-4) var(--e-3); margin-top: var(--e-4); }
-  .carte { gap: 8px; height: calc(100% + 8px); padding: 4px 4px 8px; margin: -4px; }
+  .grille-fiches { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: var(--e-3); row-gap: calc(var(--e-4) - 12px); margin-top: calc(var(--e-4) - 4px); }
+  .carte { gap: 8px; padding: 4px 4px 8px; margin: 0 -4px; }
   .pied-carte { flex-direction: column; gap: 6px; padding: 0 1px; }
   .pied-carte .titre { font-size: var(--t-13); }
   .initiale { font-size: 44px; }
