@@ -42,7 +42,7 @@
 .champ-recherche { position: relative; flex: 1 1 220px; min-width: 0; }
 .champ-recherche > svg { position: absolute; left: 10px; top: 9px; color: var(--texte-3); pointer-events: none; z-index: 1; }
 .champ-recherche .champ { margin: 0; }
-.champ-recherche .champ > span:first-child { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; margin: 0; }
+.champ-recherche .champ > .lib-champ { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; margin: 0; }
 .champ-recherche textarea { min-height: 34px; height: 34px; padding: 6px 10px 6px 34px; font: var(--t-14)/20px var(--police-texte); resize: none; overflow-wrap: anywhere; }
 .recherche .actions { margin: 0; }
 .recherche .actions .bouton { min-height: 34px; }
@@ -119,6 +119,10 @@
 
 /* ---------- La grille de cartes de fiches (E-8, kanevas-illustrations) ---------- */
 .page-liste.page-grille { max-width: 1120px; }
+/* E-8 is wider than the 1000px column of the other screens: 1120px of grid + the 2 x 28px of padding (5 cards of 176px need 976px). */
+main.principal:has(.page-grille) { max-width: 1176px; }
+/* The title shares the left edge of the grid (the generic header carries 12px / 8px of side padding). */
+.page-grille .tete-liste { padding-left: 0; padding-right: 0; }
 .grille-fiches { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(176px, 1fr)); gap: var(--e-5); margin: var(--e-5) 0 0; }
 .grille-fiches > li { min-width: 0; }
 .carte { position: relative; display: flex; flex-direction: column; gap: 10px; height: 100%; padding: 6px 6px 10px; margin: -6px;
