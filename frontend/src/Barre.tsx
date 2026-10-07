@@ -7,7 +7,7 @@ import { useMoi, useUnivers, useVue } from './cadre-contexte';
 import { ITEMS_UNIVERS, type Item } from './items';
 import { ecranEnregistre } from './registre';
 import { type ChoixTheme, useTheme } from './theme';
-import { Avatar, Bouton, Menu, PastilleRole, type EntreeMenu } from './ui';
+import { Avatar, Bouton, initialeUnivers, Menu, PastilleRole, type EntreeMenu } from './ui';
 
 /** Id of the universe in the address, or null outside a universe. */
 export function universDeLAdresse(chemin: string): number | null {
@@ -30,7 +30,7 @@ export function itemCourant(item: Item, id: number, pathname: string, section?: 
 export function Sceau({ nom, petit }: { nom: string; petit?: boolean }) {
   return (
     <span className={`sceau${petit ? ' petit' : ''}`} aria-hidden="true">
-      {nom.trim().charAt(0).toUpperCase() || '·'}
+      {initialeUnivers(nom) || '·'}
     </span>
   );
 }

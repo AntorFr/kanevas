@@ -41,9 +41,10 @@ a.carte-dessin { color: var(--texte); text-decoration: none; }
 .meta-carte { font-size: var(--t-13); color: var(--texte-3); }
 .desc-carte { font: 400 15px/1.5 var(--police-lecture); color: var(--texte-2); font-variation-settings: "opsz" 16;
   display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; }
-.meta-u { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 12px; margin-top: 4px; font-size: var(--t-13); color: var(--texte-3); }
+.meta-u { display: flex; align-items: center; flex-wrap: nowrap; gap: 4px 12px; margin-top: 4px; font-size: var(--t-13); color: var(--texte-3); }
 .meta-u > span { display: inline-flex; align-items: center; gap: 6px; min-width: 0; }
-.meta-u .sys-u { max-width: 100%; }
+.meta-u > span:not(.sys-u) { flex: none; white-space: nowrap; }
+.meta-u .sys-u { flex: 0 1 auto; }
 .meta-u .sys-u .t { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 /* Chips of the universes of the account */

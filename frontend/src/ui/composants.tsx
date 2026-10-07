@@ -157,6 +157,13 @@ export function Champ({
   );
 }
 
+/** The initial of a universe name, a leading article (le, les, la, l') set aside: « Les Cendres » → « C ». */
+export function initialeUnivers(nom: string): string {
+  const net = nom.trim();
+  const sans = net.replace(/^(?:(?:les?|la)\s+|l['’])/i, '');
+  return (Array.from(sans)[0] ?? Array.from(net)[0] ?? '').toUpperCase();
+}
+
 /** The universe's seal: its initial on a tile. `inconnu` is the dashed placeholder (no name yet). */
 export function Sceau({
   nom,
@@ -170,7 +177,7 @@ export function Sceau({
   /** The name is not known yet: a skeleton tile, no mark. */
   chargement?: boolean;
 }) {
-  const initiale = Array.from(nom.trim())[0]?.toUpperCase() ?? '';
+  const initiale = initialeUnivers(nom);
   return (
     <span className={`sceau${taille ? ` ${taille}` : ''}${chargement ? ' charge' : inconnu || !initiale ? ' inconnu' : ''}`} aria-hidden="true" data-initiale={chargement ? '' : inconnu || !initiale ? '?' : initiale} />
   );
