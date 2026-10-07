@@ -386,11 +386,23 @@ export function Fenetre({ titre, onFermer, children }: { titre: string; onFermer
 }
 
 /** Loading skeleton shaped like a sheet (type, title, rule, two sections); `role="status"`, the text is read and written. */
-export function SqueletteFiche({ texte = 'Chargement de la fiche…' }: { texte?: string }) {
+export function SqueletteFiche({ texte = 'Chargement de la fiche…', cadre }: { texte?: string; cadre?: boolean }) {
   return (
     <div className="squelette-fiche" role="status">
-      <div className="squelette s-type" aria-hidden="true" />
-      <div className="squelette s-titre" aria-hidden="true" />
+      {cadre ? (
+        <div className="s-entete" aria-hidden="true">
+          <div className="squelette s-cadre" />
+          <div>
+            <div className="squelette s-type" />
+            <div className="squelette s-titre" />
+          </div>
+        </div>
+      ) : (
+        <>
+          <div className="squelette s-type" aria-hidden="true" />
+          <div className="squelette s-titre" aria-hidden="true" />
+        </>
+      )}
       <div className="squelette s-filet" aria-hidden="true" />
       {[0, 1].map((i) => (
         <div key={i} className="squelette-section" aria-hidden="true">

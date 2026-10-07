@@ -6,11 +6,12 @@ import { appeler } from '../api';
 import { useCharge } from '../cadre-contexte';
 import type { Ecran } from '../registre';
 import type { UniversListe } from '../types';
-import { Bouton, Champ, ChargementListe, ErreurChargement, Fenetre, PageIntrouvable, VideIcone, useToasts } from '../ui';
+import { Bouton, Champ, ErreurChargement, Fenetre, PageIntrouvable, VideIcone, useToasts } from '../ui';
 import './ecrans.css';
 import './fiche/fiche.css';
 import './liste.css';
 import { ListeRecherche } from './fiche/liste-recherche';
+import { ChargementGrille } from './fiche/vignette';
 import type { Fiche } from './fiche/types';
 import { iconeDuType, typeParSlug } from './fiche/types-fiche';
 
@@ -30,7 +31,13 @@ function Liste({ universId, type }: { universId: string; type: NonNullable<Retur
   const [univers] = useCharge<UniversListe>(`/api/univers/${universId}`);
   const [creation, setCreation] = useState(false);
 
-  if (univers.etat === 'chargement') return <ChargementListe texte="Chargement des fiches…" />;
+  if (univers.etat === 'chargement') {
+    return (
+      <div className="page-liste page-grille">
+        <ChargementGrille texte="Chargement des fiches…" />
+      </div>
+    );
+  }
   if (univers.etat === 'erreur' && univers.statut === 404) return <PageIntrouvable />;
   if (univers.etat === 'erreur') {
     return <ErreurChargement texte="Impossible de charger les fiches." onReessayer={() => window.location.reload()} />;
@@ -43,7 +50,7 @@ function Liste({ universId, type }: { universId: string; type: NonNullable<Retur
   );
 
   return (
-    <div className="page-liste">
+    <div className="page-liste page-grille">
       <header className="tete-liste">
         <span className="glyphe-type" aria-hidden="true">
           <Glyphe type={type.type} />

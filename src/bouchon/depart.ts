@@ -1,4 +1,12 @@
+import { readFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { Readable } from 'node:stream';
+import { fileURLToPath } from 'node:url';
+
 import type { Db } from '../db/db.js';
+import { attachmentsDir } from '../config/env.js';
+import { poserIllustration } from '../services/illustrations.js';
+import { supprimerFichier } from '../services/stockage.js';
 import { ajouterMembre } from '../services/membres.js';
 import { ajouterSection, changerAudience } from '../services/sections.js';
 import { creerFiche } from '../services/fiches.js';
@@ -88,4 +96,51 @@ export function semerBouchon(db: Db): boolean {
     fiche('faction', 'Cercle des Cendres', [{ titre: 'Secret — MJ seul', lue: false }]);
   })();
   return true;
+}
+
+const DEMO = join(dirname(fileURLToPath(import.meta.url)), 'demo');
+
+/** Reads a demonstration file shipped with the code (`./demo/`). */
+export function fichierDemo(nom: string): Buffer {
+  return readFileSync(join(DEMO, nom));
+}
+
+/**
+ * Second half of the stub starting world: the illustrations, put by the real upload function
+ * (AD-93), and the two refusal files (« plan.pdf », the empty one) which stay in `./demo/` for the
+ * browser to pick. To be called right after `semerBouchon` returned true.
+ */
+export async function semerIllustrations(db: Db, racine: string = attachmentsDir): Promise<void> {
+  const antor = assurerCompte(db, 'antor').id;
+  const lignes = db.prepare('SELECT id, univers_id, titre FROM fiches').all() as {
+    id: number;
+    univers_id: number;
+    titre: string;
+  }[];
+  const trouver = (titre: string) => {
+    const l = lignes.find((x) => x.titre === titre);
+    if (!l) throw new Error(`Fiche de démonstration absente : ${titre}`);
+    return l;
+  };
+  const poser = async (titre: string, fichier: string) => {
+    const l = trouver(titre);
+    return poserIllustration(db, antor, l.univers_id, l.id, Readable.from([fichierDemo(fichier)]), racine);
+  };
+
+  const portraits: [string, string][] = [
+    ['Le Prieur masqué', 'portrait-ambre.png'],
+    ['Léa Brisefer', 'portrait-ambre.png'],
+    ['Dame Ombeline de Val-Fortin', 'portrait-ambre.png'],
+    ['Suie', 'portrait-ambre.png'],
+    ["Le Portrait de l'échec", 'portrait-ambre.png'],
+    ['Val-Fortin', 'paysage-brume.png'],
+    ['Le Pendu Joyeux', 'paysage-brume.png'],
+    ['Lames Grises', 'blason-cendre.png'],
+    ['Cercle des Cendres', 'blason-cendre.png'],
+  ];
+  for (const [titre, fichier] of portraits) await poser(titre, fichier);
+
+  // « La Fresque effacée »: the illustration is recorded but its file is gone from the disk.
+  const fresque = await poser('La Fresque effacée', 'fresque.webp');
+  supprimerFichier(fresque.jeton, racine);
 }
