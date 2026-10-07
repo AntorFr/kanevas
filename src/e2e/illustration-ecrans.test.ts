@@ -204,6 +204,31 @@ describe('kanevas-il-illustration-ecrans, E-8 grille et E-9 en-tête', { skip: s
     assert.equal((await carte(lea, 'Maître Aldric').locator('.initiale').innerText()).trim(), 'M');
   });
 
+  test('bureau large 1600 px : 5 colonnes, titre aligné sur la grille, libellé de recherche masqué', opts, async () => {
+    const ctx = await browser.newContext({ baseURL: srv.base, viewport: { width: 1600, height: 900 } });
+    const p = await ctx.newPage();
+    p.setDefaultTimeout(8000);
+    await p.goto('/connexion-bouchon');
+    await p.getByRole('button', { name: /^Se connecter en tant que Léa$/i }).click();
+    await p.waitForLoadState('networkidle');
+    await grille(p, 'personnages');
+    const lefts = (await p.locator('a.carte').evaluateAll((els: Element[]) => els.map((e) => Math.round(e.getBoundingClientRect().left)))) as number[];
+    assert.equal(new Set(lefts).size, 5, `columns: ${[...new Set(lefts)]}`);
+    const grilleBox = await p.locator('ul.grille-fiches').boundingBox();
+    assert.ok(grilleBox && grilleBox.width <= 1120 + 1 && grilleBox.width >= 976);
+    const glyphe = await p.locator('.tete-liste .glyphe-type').boundingBox();
+    assert.ok(glyphe && Math.abs(glyphe.x - grilleBox.x) <= 1, `title icon x ${glyphe?.x} vs grid x ${grilleBox.x}`);
+    const lib = p.locator('.champ-recherche .lib-champ');
+    const lb = await lib.boundingBox();
+    assert.ok(!lb || (lb.width <= 1 && lb.height <= 1), 'search label visually hidden');
+    assert.ok((await lib.count()) === 1, 'label stays in the DOM for screen readers');
+    const champ = await p.locator('.champ-recherche textarea').boundingBox();
+    const btn = await p.getByRole('button', { name: 'Chercher' }).boundingBox();
+    assert.ok(champ && btn && champ.height <= 36 && Math.abs(btn.y + btn.height / 2 - (champ.y + champ.height / 2)) <= 3, 'button on the field line');
+    await photo(p, 'grille-bureau-large');
+    await ctx.close();
+  });
+
   test('téléphone 390 px : deux colonnes, rien ne déborde, en-tête illustré à gauche du titre', opts, async () => {
     const ctx = await browser.newContext({ baseURL: srv.base, viewport: { width: 390, height: 844 } });
     const p = await ctx.newPage();
