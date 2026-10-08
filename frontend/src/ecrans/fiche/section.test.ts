@@ -48,8 +48,8 @@ test('MJ : audience, ordre, retrait ; section fermée aux joueurs porte « MJ se
   for (const m of ['Les joueurs la lisent', 'Les joueurs l’écrivent', 'L’auteur la lit', 'L’auteur l’écrit', 'Monter', 'Descendre', 'Retirer la section', 'MJ seul', 'lea']) assert.ok(h.includes(m), m);
   // The attachments block carries « Secrète (MJ seul) » (docs/ecrans.md): the open section is tested on the pill and the amber rule of the panel.
   const ouverte = rendre('mj', { audience: { ...audience, joueursLisent: true } });
-  assert.ok(!ouverte.includes('pastille mj">MJ seul') && !/class="panneau reserve-mj"/.test(ouverte));
-  assert.ok(/pastille mj">MJ seul/.test(h) && /class="panneau reserve-mj"/.test(h));
+  assert.ok(!/pastille mj">(<svg.*?<\/svg>)?MJ seul/.test(ouverte) && !/class="panneau reserve-mj"/.test(ouverte));
+  assert.ok(/pastille mj">(<svg.*?<\/svg>)?MJ seul/.test(h) && /class="panneau reserve-mj"/.test(h));
 });
 
 test('section vide : « Rien d’écrit pour l’instant. »', () => {
