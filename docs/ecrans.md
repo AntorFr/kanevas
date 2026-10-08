@@ -381,7 +381,7 @@ Pour tout autre compte, l'entrée n'existe pas.
 
 ### E-5 Administration
 
-Sous le fil d'Ariane « Instance / Administration » et le sous-titre « Les membres se gèrent ici ; le
+La barre haute porte le fil « Instance / Administration » ; sous le titre et le sous-titre « Les membres se gèrent ici ; le
 contenu (fiches, comptes-rendus, cartes) n'est jamais affiché. », deux zones. À gauche, **Univers de
 l'instance** : tous les univers, par nom (sans casse), chacun avec « N membres » (« 1 membre » au
 singulier), l'univers choisi portant le badge « Sélectionné » ; cent à la fois, puis « Charger la suite ». À droite (sous la liste sur téléphone, après
