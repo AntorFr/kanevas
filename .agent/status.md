@@ -11,12 +11,19 @@ déclencheurs, remplissage de l'existant), `services/relations.ts` (relier, reti
 les routes `?q=` et `/relations`, le composant `ListeRecherche` (E-8, réemployé par « Relier ») et le bloc
 Relations de E-9 (AD-63, AD-64). Carte et invariants : `ARCHITECTURE.md`.
 
-Sur cette branche s'ajoute l'**administration d'instance** : un compte du groupe `parents` voit les univers de
-l'instance et leurs membres, en ajoute, change le rôle, en retire (E-5, B-6, AD-86, AD-87), sans jamais lire le contenu.
+Sur cette branche s'ajoute le recours admin : un compte du groupe
+`parents` voit les univers de l'instance et leurs membres, en ajoute, change le rôle, en retire
+(E-5, B-6), sans jamais lire le contenu. Typecheck, build et tests verts (dont `src/e2e/administration*.test.ts`, navigateur piloté en bouchon ; ces tests dépendent de Playwright, absent de `package.json`, et sautent sans lui ; sous charge, un `page.goto` peut dépasser son délai de 8 s : relancer avant d'y voir un défaut).
 
-- `src/services/instance.ts` : seul module à accepter le drapeau `admin` (AD-86), écrit dans `membres` et lit `univers`
-  (id, nom, nombre de membres, AD-87) ; `src/routes/instance.ts` : `/api/instance/univers` et `.../:id/membres`, 404 hors du groupe.
-- `frontend/src/ecrans/administration.tsx` : E-5, un seul motif `/administration/*` ; liste de membres partagée avec E-4 (`frontend/src/ListeMembres.tsx`) ; entrée de barre portée par `items.ts` (`groupe`, `horsUnivers`).
+- `src/services/instance.ts` : seul module à accepter le drapeau `admin` (AD-86), écrit dans `membres` et lit
+  `univers` (id, nom, nombre de membres, AD-87) ; les règles de membres sont le noyau de `services/membres.ts`, partagé avec les
+  fonctions MJ.
+- `src/routes/instance.ts` : `/api/instance/univers` et `/api/instance/univers/:id/membres`
+  (GET, POST, PATCH, DELETE). Hors du groupe, 404 comme une adresse inconnue (AD-87). L'acteur
+  vient des groupes de la session, jamais de la requête.
+- `frontend/src/ecrans/administration.tsx` : E-5, un seul motif `/administration/*` (le registre
+  prend un chemin par fichier). Liste de membres partagée avec E-4 : `frontend/src/ListeMembres.tsx`.
+  Entrée « Administration » déclarée dans `items.ts` (champs `groupe` et `horsUnivers`) ; `Barre.tsx` reste générique : elle montre l'entrée si `/api/moi` porte le groupe `parents`.
 
 **Reste :** la recette de Monsieur de l'administration au navigateur en bouchon (Mira est ajoutée par Admin à « Lame d'Ébène »), puis la fusion et le tag `v*` (recette du reste acceptée par Monsieur). Rien n'est amorcé : tout se crée à
 la main (Léa se connecte une fois avant d'être ajoutée). Aucune image n'existe avant le tag.

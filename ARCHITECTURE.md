@@ -28,9 +28,9 @@ Ni cartes, ni assistant : tranches suivantes. Les pièces jointes (stockage sur 
   session (`src/services/session.ts`, AD-56) et crée le compte à la première connexion.
 - `src/routes/bouchon.ts` : mode bouchon (AD-55), absent de la table des routes sans `KANEVAS_STUB`.
 - `src/db/` : ouverture du fichier SQLite, `migrations/0001-*.sql`, `0002-systemes.sql`, `0003-suivi.sql`, `0004-pieces-jointes.sql`, `0005-relier-chercher.sql`, runner (AD-14).
-- `src/e2e/` : tests d'ensemble (`healthz`, `administration`, `administration-exclusions`, `administration-besoin`, navigateur piloté en bouchon).
+- `src/e2e/` : tests d'ensemble (`healthz`, `administration`, `administration-exclusions`, `administration-besoin`, `administration-bords-reprise`, navigateur piloté en bouchon).
 - `src/services/` : `comptes`, `univers`, `membres`, `instance`, `fiches`, `sections`, `droits`, `systemes`, `relations`, `campagnes`, `scenarios`, `preparation`, `comptes_rendus`, `pieces-jointes`, `stockage` — les seules
-  fonctions qui lisent ou écrivent les données (AD-2) ; `src/routes/` : routes `/api` minces.
+  fonctions qui lisent ou écrivent les données (AD-2) ; `src/routes/` : routes `/api` minces ; `session.ts` pose la garde et sert le build du frontend (`frontend.ts` le localise), `univers.ts` et `instance.ts` portent les routes d'univers et d'instance, `bouchon.ts` le choix de compte de test, `pages.ts` et `erreurs.ts` les pages et erreurs communes.
 - `frontend/` : application React/Vite (AD-57) ; `frontend/src/ui/tokens.css` et
   `frontend/src/ui/` : tokens et composants de `docs/charte.md` ; son build est servi par Fastify.
 - `src/services/systemes.ts` : catalogue, rattacher, créer et rattacher, gabarits ; la modification

@@ -67,6 +67,8 @@ ne montre aucun écran). `npm run dev:front` lance Vite seul (port 5173 par déf
 serveur en bouchon (port 3001), s'y connecter sur `http://localhost:3001/`, puis ouvrir
 `http://localhost:5173/` (le cookie de session ne dépend pas du port).
 
+Sans docker (pod, poste nu — la règle « conteneurs seulement » de `CLAUDE.md` vise un poste qui a docker), les tests se lancent avec `npm ci && npm run typecheck && npm test` (Node 20 ou plus). Les tests d'`src/e2e/administration*.test.ts` pilotent un navigateur avec Playwright, qui n'est pas dans `package.json` (cherché en local, puis dans `/usr/lib/node_modules` et `/usr/local/lib/node_modules`) : sans lui ils sautent (pour les jouer : `npm i -g playwright && npx playwright install chromium`), et après `npm ci` seul l'écran E-5 n'est donc pas éprouvé ; ils peuvent expirer sous charge : relancer avant d'y voir un défaut. Corps de `POST /api/instance/univers/:id/membres` : `{"username": "mira", "role": "mj"}`. Pour voir l'interface : `npm run build && KANEVAS_STUB=1 node dist/server.js`.
+
 La voie de référence reste le conteneur Node 20 de `CLAUDE.md` (celle de la CI) ; un Node local
 récent suffit pour les mêmes commandes.
 
