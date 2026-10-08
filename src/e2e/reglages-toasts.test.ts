@@ -128,7 +128,7 @@ test('E-15 : ajouter et modifier une entrée donnent leur toast, sans prendre le
   await p.getByRole('link', { name: 'Ouvrir le système' }).click();
   await p.getByRole('heading', { name: 'CoF Toast', level: 1 }).waitFor();
   await attendre(p);
-  await p.getByRole('tab', { name: rxExact('Créatures') }).click();
+  await p.getByRole('tab', { name: /^Créatures( \d+)?$/ }).click();
   await p.getByRole('button', { name: rxExact('Ajouter une créature') }).click();
   await p.getByLabel(/^Nom(?! du système)/).fill('Garde');
   await p.getByLabel('Contenu').fill('Lance');

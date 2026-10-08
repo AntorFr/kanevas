@@ -71,7 +71,9 @@ async function systeme(page: Any, id: number, onglet = 'Créatures'): Promise<vo
   await ongletVers(page, onglet);
 }
 async function ongletVers(page: Any, onglet: string): Promise<void> {
-  await page.getByRole('tab', { name: rxExact(onglet) }).or(page.getByRole('button', { name: rxExact(onglet) })).first().click();
+  // the tab name carries its count since E-15 shows « Règles 3 » (maquette e15)
+  const nom = new RegExp(rxExact(onglet).source.slice(0, -1) + '( \\d+)?$');
+  await page.getByRole('tab', { name: nom }).or(page.getByRole('button', { name: rxExact(onglet) })).first().click();
   await attendre(page);
 }
 async function creerEtRattacher(page: Any, nom: string): Promise<void> {

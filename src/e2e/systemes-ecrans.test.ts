@@ -286,4 +286,67 @@ describe('kanevas-il-systemes-ecrans', { skip: skipBrowser }, () => {
     await photo(pg, 'titre-e15-tel');
     await frais.ctx.close();
   });
+
+  test('E-15 au bureau 1440 : onglets avec compteurs, « Ajouter une créature » à droite sur la ligne des onglets sous le filet, colonne de 688 px', opts, async () => {
+    const frais = await connecte(browser, srv.base, 'Antor');
+    const pg = frais.page;
+    await pg.setViewportSize({ width: 1440, height: 900 });
+    // own system (3 rules, 5 creatures, 2 objects as in the maquette): earlier tests detach the seeded one
+    const post = async (url: string, data: Any) => (await pg.request.fetch(srv.base + url, { method: 'POST', data })).json();
+    const idU = (await post('/api/univers', { nom: 'Univers des compteurs' })).id;
+    const idS = (await post('/api/systemes', { nom: 'Système compté' })).id;
+    assert.equal((await pg.request.fetch(`${srv.base}/api/univers/${idU}/systeme`, { method: 'PUT', data: { systemeId: idS } })).status(), 204);
+    const quoi: [string, number][] = [['regle', 3], ['creature', 5], ['objet', 2]];
+    for (const [type, k] of quoi) for (let i = 1; i <= k; i++) await post(`/api/systemes/${idS}/gabarits`, { type, nom: `${type} ${i}`, contenu: 'x' });
+    const e15 = `/systemes/${idS}`;
+    await va(pg, e15);
+    const tabs = (await pg.getByRole('tab').allInnerTexts()).map((t: string) => t.replace(/\s+/g, ' ').trim());
+    assert.deepEqual(tabs, ['Règles 3', 'Créatures 5', 'Objets 2']);
+    const m = await pg.evaluate(() => {
+      let bouton: Element | null = null;
+      for (const x of Array.from(document.querySelectorAll('button'))) if (/^Ajouter une créature/.test(x.textContent ?? '')) bouton = x;
+      const onglets = document.querySelector('[role=tablist]');
+      const tete = document.querySelector('.entete-sys, header.tete-liste');
+      const col = document.querySelector('.page-liste');
+      const b = bouton ? bouton.getBoundingClientRect() : null, o = onglets ? onglets.getBoundingClientRect() : null, c = col ? col.getBoundingClientRect() : null;
+      return b && o && c && tete ? {
+        bx: b.left, br: b.right, by: b.top + b.height / 2, oy: o.top + o.height / 2, or: o.right, cw: c.width, cr: c.right,
+        filet: getComputedStyle(tete).borderBottomWidth, teteBas: tete.getBoundingClientRect().bottom, oTop: o.top,
+      } : null;
+    });
+    assert.ok(m, 'bouton, onglets ou colonne introuvables');
+    assert.equal(Math.round(m.cw), 688, 'colonne de contenu');
+    assert.ok(Math.abs(m.by - m.oy) <= 12, `bouton pas sur la ligne des onglets (${m.by} vs ${m.oy})`);
+    assert.ok(m.bx > m.or, 'bouton pas à droite des onglets');
+    assert.ok(Math.abs(m.br - m.cr) <= 1, 'bouton pas calé à droite de la colonne');
+    assert.ok(m.oTop >= m.teteBas, 'onglets au-dessus du filet');
+    assert.equal(m.filet, '1px');
+    await photo(pg, 'e15-1440');
+    // the count follows an add
+    await pg.getByRole('tab', { name: /^Créatures/ }).click();
+    await pg.getByRole('button', { name: /^Ajouter une créature/ }).click();
+    await pg.getByLabel(/Nom/).first().fill('Veilleur compté');
+    await pg.getByRole('button', { name: /^Ajouter$/ }).click();
+    await pg.getByRole('tab', { name: 'Créatures 6' }).waitFor();
+    await frais.ctx.close();
+  });
+
+  test('E-16 au bureau 1440 : colonne de contenu x 334-1358, trois cartes de 325 px', opts, async () => {
+    const frais = await connecte(browser, srv.base, 'Antor');
+    const pg = frais.page;
+    await pg.setViewportSize({ width: 1440, height: 900 });
+    await va(pg, '/systemes');
+    const m = await pg.evaluate(() => {
+      const g = document.querySelector('.grille-cartes') as HTMLElement;
+      const gr = g.getBoundingClientRect();
+      const cs = Array.from(g.children).map((c) => Math.round(c.getBoundingClientRect().width));
+      return { x: Math.round(gr.left), r: Math.round(gr.right), cs, top: Math.round((g.children[0] as HTMLElement).getBoundingClientRect().top) };
+    });
+    assert.equal(m.x, 334);
+    assert.equal(m.r, 1358);
+    assert.ok(m.cs.length >= 1);
+    for (const w of m.cs) assert.ok(Math.abs(w - 325) <= 1, `carte de ${w} px`);
+    await photo(pg, 'e16-1440');
+    await frais.ctx.close();
+  });
 });
