@@ -4,7 +4,7 @@
 
 **État :** `epic/kanevas` porte le socle, la première fiche, les systèmes de jeu, le suivi de la séance
 (campagnes, scénarios, préparation, comptes-rendus ; E-6, E-7, E-13) et les pièces jointes (migration
-`0004-pieces-jointes.sql`, AD-65 à AD-67). `feature/kanevas-relier-chercher` y ajoute, en PR non fusionnée :
+`0004-pieces-jointes.sql`, AD-65 à AD-67). `kanevas-relier-chercher` (fusionnée, PR #8) y a ajouté :
 la migration `0005-relier-chercher.sql` (`relations`, index FTS5 `recherche_fiches` et `recherche_sections`,
 déclencheurs, remplissage de l'existant), `services/relations.ts` (relier, retirer, lire sous deux gardes),
 `peutVoirFiche` et les conditions SQL de lecture dans `droits.ts`, l'option `recherche` de `listerFiches`,
@@ -23,7 +23,8 @@ la main (Léa se connecte une fois avant d'être ajoutée). Aucune image n'exist
 **Pièges :**
 - Node 20 est la cible (CI, Dockerfile). `better-sqlite3` est donc épinglé en `^12` : la 13 exige
   Node ≥ 22 et plante (SIGSEGV) sous Node 20. Ne pas remonter sans changer aussi la CI et le Dockerfile.
-- La suite a été jouée sous Node 22 dans les pods de la chaîne (pas de Docker) ; la CI Node 20 fait foi.
+- La suite a été jouée sous Node 22 dans les pods de la chaîne (pas de Docker) ; la CI Node 20 fait foi. La voie Docker de `CLAUDE.md` est la référence ; un Node 20+ local donne le même résultat (README).
+- Code : `routes/frontend.ts` trouve le build (`FRONTEND_DIR`, `dist/public`), `routes/erreurs.ts` traduit les erreurs de service en réponses HTTP, `routes/pages.ts` sert les pages HTML du bouchon.
 - La CI ne pousse d'image que sur `main` et sur un tag `v*` ; sur une PR elle ne fait qu'un build de
   validation. L'image testable n'existe qu'après le tag, posé à la fusion.
 - **Numéro de migration** : `0005-relier-chercher.sql` (après `0004-pieces-jointes.sql`, recalée à la fusion, AD-51) ; si une autre tranche fusionne une migration
