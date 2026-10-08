@@ -585,4 +585,36 @@ describe('E-9 refaite : « Modifier », menu ⋯, retrait', { skip: skipBrowser 
       await antor.setViewportSize({ width: 1440, height: 900 });
     }
   });
+  test('boîte « Qui voit » : select Auteur habillé (appearance none + chevron) et panneau entièrement dans l’écran à 390 px, clair et sombre', async () => {
+    await antor.setViewportSize({ width: 390, height: 900 });
+    try {
+      for (const theme of ['clair', 'sombre']) {
+        await antor.evaluate((t: string) => localStorage.setItem('kanevas-theme', t), theme);
+        await ouvrir(antor);
+        const titres = await titresSections(antor);
+        for (const titre of titres) {
+          const s = section(antor, titre);
+          const pastille = s.getByRole('button', { name: PASTILLE });
+          if (!(await pastille.count())) continue;
+          await pastille.click();
+          const panneau = antor.locator('.menu.audience');
+          await panneau.waitFor();
+          const b = await panneau.boundingBox();
+          assert.ok(b && b.x >= 0 && b.x + b.width <= 390, `${theme}/${titre}: panel inside the screen (x=${b?.x}, w=${b?.width})`);
+          assert.equal(await antor.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), true, `${theme}/${titre}: no horizontal scroll`);
+          for (const sw of await panneau.getByRole('switch').all()) {
+            const sb = await sw.boundingBox();
+            assert.ok(sb && sb.x >= 0 && sb.x + sb.width <= 390, `${theme}/${titre}: switch inside the screen`);
+          }
+          const sel = panneau.locator('select').first();
+          assert.equal(await sel.evaluate((e: Element) => getComputedStyle(e).appearance), 'none', 'Auteur select is styled');
+          assert.equal(await panneau.locator('.champ-liste svg').count(), 1, 'chevron present');
+          await antor.keyboard.press('Escape');
+        }
+      }
+    } finally {
+      await antor.evaluate(() => localStorage.removeItem('kanevas-theme'));
+      await antor.setViewportSize({ width: 1440, height: 900 });
+    }
+  });
 });
