@@ -418,7 +418,7 @@ et `/administration/univers/:id`.
   n'a pas d'entrée « Administration » dans sa barre.
 - Étant donné Admin et l'univers « Les Landes grises », dont « mira » est la seule MJ, quand Admin tente de
   la retirer, alors il voit « Impossible : l'univers doit garder au moins un MJ. » et la liste est inchangée.
-- Étant donné Admin, membre MJ de « Brume », quand il ouvre l'administration, alors « Brume » porte un lien « Ouvrir » qui mène à sa vue d'ensemble, et « Lame d'Ébène » n'en porte pas ; s'il se retire de « Brume » (seul membre : refusé avec la raison du dernier MJ), le lien reste.
+- Étant donné Admin, membre MJ de « Brume » (univers que le test crée ; le monde semé du bouchon n'a pas « Brume » : y jouer « Les Cendres de Vaëlis », où Admin est MJ), quand il ouvre l'administration, alors « Brume » porte un lien « Ouvrir » qui mène à sa vue d'ensemble, et « Lame d'Ébène » n'en porte pas ; s'il se retire de « Brume » (seul membre : refusé avec la raison du dernier MJ), le lien reste.
 - Étant donné Admin et un compte « nadia » qui ne s'est jamais connecté, quand il tente de
   l'ajouter, alors il voit « Ce compte ne s'est jamais connecté. ».
 
