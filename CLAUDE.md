@@ -63,7 +63,7 @@
   (`lireRelations`: carrying section and target sheet readable, AD-64); do not add a count or a
   placeholder for hidden ones. Refusal codes: `auto_relation` (invalide), `relation_existante` and
   `limite_relations` (conflit) : the service puts the code in `ErreurService.detail`, the route sends it as `code` in the body.
-- Maps (`kanevas-cartes-graphes`, migration 0006): `src/services/cartes.ts`. `lireCarte` is the only read
+- Maps (`kanevas-cartes-graphes`, migration 0007): `src/services/cartes.ts`. `lireCarte` is the only read
   of a map, elements and graph links included (AD-68); the browser filters nothing. Graph links are never
   stored (AD-41): they come from `lireRelations` per readable section, so the two guards of AD-64 apply.
   Reads: no role, unknown id and hidden map for a non-GM are the same `introuvable`; a GM in player mode on

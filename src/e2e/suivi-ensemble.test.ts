@@ -399,7 +399,8 @@ describe('kanevas-suivi, du besoin', { skip: skipBrowser }, () => {
     await ajouterTache(p, 'Tâche pnj', 'PNJ');
     await ajouterTache(p, 'Tâche monstre', 'Monstres');
     await ajouterTache(p, 'm'.repeat(200), 'Autre');
-    const t = await texte(p);
+    // « Cartes » is also a sidebar item since kanevas-cartes-graphes: measure the order in the page body only.
+    const t = await p.locator('main').innerText();
     const ordre = ['Monstres', 'PNJ', 'Cartes', 'Déroulements', 'Autre'].map((c) => t.indexOf(c));
     assert.ok(ordre.every((x) => x >= 0), 'five categories shown when each has a task');
     assert.deepEqual([...ordre].sort((a, b) => a - b), ordre);
@@ -419,7 +420,7 @@ describe('kanevas-suivi, du besoin', { skip: skipBrowser }, () => {
     // Empty category not shown: Cartes and PNJ tasks were ticked, so with only Monstres/Déroulements/Autre left...
     await p.getByRole('checkbox', { name: rx('Tâche monstre') }).click();
     await attendre(p);
-    const avantCochees = (await texte(p)).split('Cochées')[0]!;
+    const avantCochees = (await p.locator('main').innerText()).split('Cochées')[0]!;
     assert.ok(!avantCochees.includes('Monstres'));
     assert.ok(!avantCochees.includes('Cartes'));
   });

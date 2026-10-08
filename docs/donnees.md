@@ -191,7 +191,8 @@ pas une écriture de son contenu, AD-59).
 Retirer une pièce, ou une section, supprime la ligne **puis** le fichier du disque ; si la
 suppression du fichier échoue, la ligne est déjà partie et l'orphelin est inatteignable (risque
 accepté : il n'y a pas de balayage des orphelins en V1).
-## Migration `kanevas-cartes-graphes` (`0006-cartes.sql`, numéro provisoire recalé à la fusion si une autre tranche entre avant, AD-51)
+
+## Migration `kanevas-cartes-graphes` (`0007-cartes.sql`, numéro provisoire recalé à la fusion si une autre tranche entre avant, AD-51)
 
 Deux tables ; aucune entité nouvelle (la carte et l'élément de carte sont ceux du cadrage). Les
 octets d'un fond ne sont pas en base (AD-7) : ils vivent sous `/data/attachments/` (AD-69).

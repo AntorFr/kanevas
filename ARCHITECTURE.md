@@ -15,7 +15,7 @@ fonction métier** : comptes, univers, membres, fiches et sections, avec leurs d
 et le mode bouchon ; le frontend React qui les montre (accueil, univers, membres, lore, fiche).
 S'y ajoutent le système de jeu et, avec `kanevas-suivi`, le suivi de la séance : campagnes, scénarios, préparation, comptes-rendus.
 `kanevas-relier-chercher` y ajoute les relations entre fiches et la recherche dans un type (index FTS5, AD-63, AD-64).
-Ni cartes, ni assistant : tranches suivantes. Les pièces jointes (stockage sur le volume, bloc de E-9) sont construites.
+Ni assistant ni administration : tranches suivantes ; les cartes et graphes sont construits. Les pièces jointes (stockage sur le volume, bloc de E-9) sont construites.
 
 ## Carte
 
@@ -27,8 +27,8 @@ Ni cartes, ni assistant : tranches suivantes. Les pièces jointes (stockage sur 
 - `src/routes/auth.ts`, `src/services/oidc.ts` : login et callback OIDC ; le callback ouvre la
   session (`src/services/session.ts`, AD-56) et crée le compte à la première connexion.
 - `src/routes/bouchon.ts` : mode bouchon (AD-55), absent de la table des routes sans `KANEVAS_STUB`.
-- `src/db/` : ouverture du fichier SQLite, `migrations/0001-*.sql`, `0002-systemes.sql`, `0003-suivi.sql`, `0004-pieces-jointes.sql`, `0005-relier-chercher.sql`, `0006-illustrations.sql`, runner (AD-14).
-- `src/services/` : `comptes`, `univers`, `membres`, `fiches`, `sections`, `droits`, `systemes`, `relations`, `campagnes`, `scenarios`, `preparation`, `comptes_rendus`, `pieces-jointes`, `illustrations`, `stockage` — les seules
+- `src/db/` : ouverture du fichier SQLite, `migrations/0001-*.sql`, `0002-systemes.sql`, `0003-suivi.sql`, `0004-pieces-jointes.sql`, `0005-relier-chercher.sql`, `0006-illustrations.sql`, `0007-cartes.sql`, runner (AD-14).
+- `src/services/` : `comptes`, `univers`, `membres`, `fiches`, `sections`, `droits`, `systemes`, `relations`, `campagnes`, `scenarios`, `preparation`, `comptes_rendus`, `pieces-jointes`, `illustrations`, `cartes`, `stockage` — les seules
   fonctions qui lisent ou écrivent les données (AD-2) ; `src/routes/` : routes `/api` minces.
 - `frontend/` : application React/Vite (AD-57) ; `frontend/src/ui/tokens.css` et
   `frontend/src/ui/` : tokens et composants de `docs/charte.md` ; son build est servi par Fastify. Le cadre
@@ -51,8 +51,9 @@ Ni cartes, ni assistant : tranches suivantes. Les pièces jointes (stockage sur 
 - `src/services/llm/` : transports LLM (`transport.ts`, `anthropic-transport.ts`,
   `claude-agent-transport.ts`), repris d'Antre-du-maitre, branchés nulle part.
 - `kanevas-cartes-graphes` y ajoute `src/services/cartes.ts` (créer, lire sous les droits du lecteur, régler,
-  placer, retirer ; fond de carte par `stockage.ts`), ses routes `/api` et les écrans E-10 et E-11
-  (`frontend/src/ecrans/cartes/`, `frontend/src/ecrans/carte/`, dont la disposition d'un graphe) ; AD-68 à AD-72.
+  placer, retirer ; fond de carte par `stockage.ts`), ses routes `/api` (`src/routes/cartes.ts`) et les écrans E-10 et E-11
+  (`frontend/src/ecrans/cartes.tsx` et `carte.tsx` ; leurs composants et la disposition d'un graphe sont dans les dossiers
+  `ecrans/cartes/` et `ecrans/carte/`) ; AD-68 à AD-72.
 - `Dockerfile` (multi-stage, utilisateur `node`) et
   `.github/workflows/docker-publish.yml` (tests puis image GHCR).
 
@@ -97,6 +98,10 @@ elles remplacent les anciennes routes `GET /api/univers/:id/systeme` et `…/sys
 | `GET\|POST /api/campagnes/:cid/taches`, `PUT /api/taches/:tid` | préparation `{categorie, libelle}` ; cocher `{faite}`. MJ seul, 404 pour tout autre |
 | `POST /api/univers/:id/comptes-rendus` | `{campagneId, titre, texte?}` ; tout membre (AD-61) ; rend la fiche |
 | `GET .../comptes-rendus` (`?campagne`, `?curseur`), `GET .../campagnes/:cid/comptes-rendus` | comptes-rendus lisibles, du plus récent, 100 au plus par page et `suivant` ; `?mode=joueur` |
+| `GET\|POST /api/univers/:id/cartes` | liste des cartes lisibles (`?curseur`) ; création `{titre, forme}` (`illustree` \| `graphe`), ou multipart avec `titre` et `forme` **avant** `fichier` (fond d'une carte illustrée). MJ hors mode Joueur seul (AD-72) |
+| `GET\|PATCH /api/univers/:id/cartes/:cid` | `lireCarte` : carte, éléments et liens déjà filtrés (AD-68) ; règle `{titre?, visible?}` |
+| `PUT\|GET /api/univers/:id/cartes/:cid/fond` | remplacer le fond (multipart, champ `fichier`, image de 25 Mo au plus, AD-69) ; le lire (droit réel du compte, sans mode) |
+| `POST /api/univers/:id/cartes/:cid/elements`, `PATCH\|DELETE …/elements/:eid` | placer `{ficheId, x?, y?}` (pas de position sur un graphe) ; déplacer `{x, y}` ; retirer (204, la fiche reste) |
 
 Corps de requête (JSON) : `POST /api/univers` `{nom, description?}` ; `POST .../membres`
 `{username, role}` (`role` : `mj` \| `joueur` ; `username` est l'identifiant exact) ; `PATCH
@@ -122,8 +127,8 @@ base en snake_case (`docs/donnees.md`).
   (AD-9), il se lit dans la table des membres à chaque requête. Sans les quatre variables
   `OIDC_*` (ou avec une partie seulement), login et callback répondent 404 ; une valeur vide
   ou invalide fait échouer le démarrage.
-- **Douze tables et deux index de recherche, aucun ORM** : `comptes`, `univers`, `membres`, `fiches`, `sections` (migration
-  0001), `systemes_jeu`, `gabarits` (migration 0002), `campagnes`, `scenarios`, `taches_preparation` (migration 0003), `pieces_jointes` (migration 0004), `relations`, `recherche_fiches` et `recherche_sections` (FTS5, migration 0005) ; trois colonnes d'illustration sur `fiches` (migration 0006) ; numéros provisoires : voir `docs/donnees.md`. Aucune requête SQL hors de `src/services/` et `src/db/`.
+- **Quatorze tables et deux index de recherche, aucun ORM** : `comptes`, `univers`, `membres`, `fiches`, `sections` (migration
+  0001), `systemes_jeu`, `gabarits` (migration 0002), `campagnes`, `scenarios`, `taches_preparation` (migration 0003), `pieces_jointes` (migration 0004), `relations`, `recherche_fiches` et `recherche_sections` (FTS5, migration 0005) ; trois colonnes d'illustration sur `fiches` (migration 0006), `cartes` et `elements_carte` (migration 0007) ; numéros provisoires : voir `docs/donnees.md`. Aucune requête SQL hors de `src/services/` et `src/db/`.
 - **Toute route hors `/healthz`, `/api/auth/*` et, en bouchon, `/connexion-bouchon` est gardée par la session** ; sous `/api` un
   défaut de session répond 401, ailleurs il redirige vers la connexion (AD-15).
 - **Rien n'appelle un LLM** : les transports compilent mais ne sont reliés à
@@ -154,7 +159,7 @@ base en snake_case (`docs/donnees.md`).
 # La cible
 
 > Construit à ce jour : la session, le mode bouchon, les tables et leurs fonctions de service,
-> les systèmes de jeu et leurs gabarits, les relations et la recherche dans un type, le suivi (campagnes, scénarios, préparation, comptes-rendus), les écrans E-1 à E-4, E-6 à E-9 (E-9 avec son bloc Pièces jointes), E-13, E-14, E-15 et E-16, l'illustration des fiches, et le stockage des fichiers sur le volume. Le reste (agents, images,
+> les systèmes de jeu et leurs gabarits, les relations et la recherche dans un type, le suivi (campagnes, scénarios, préparation, comptes-rendus), les écrans E-1 à E-4, E-6 à E-9 (E-9 avec son bloc Pièces jointes), E-13, E-14, E-15 et E-16, l'illustration des fiches, les cartes et graphes (E-10, E-11, bloc « Cartes visibles » de E-3), et le stockage des fichiers sur le volume. Le reste (agents, images,
 > administration) est la cible des tranches suivantes.
 
 ## Organes, et qui parle à qui
