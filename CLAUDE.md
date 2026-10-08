@@ -79,3 +79,9 @@
   (in-process MCP server `kanevas`, `tools: []`, `settingSources: []`, token only in the call's `env`).
   Events are collected by the orchestration around the tools, not by the adapters. Errors are `ErreurAssistant`
   with a fixed message — never the cause, which could quote the token. The text transport of `services/llm/*` is untouched.
+- Assistant screen (`kanevas-am-ecran`, E-12): `frontend/src/ecrans/assistant.tsx` is the only mount — it mounts the
+  floating button and panel in their own React root beside the router (no shell component edited; its registered path
+  answers « Page introuvable. »). It therefore reads the address and navigates through `ecrans/assistant/adresse.ts`
+  (history entry + `popstate`). The thread lives in memory in `assistant/fil.ts` (AD-28, never in browser storage);
+  blocks under an answer are one line per event `type` in `assistant/blocs/registre.ts`. Never target `.principal`
+  alone in CSS: it is also the primary button variant — use `main.principal`.
