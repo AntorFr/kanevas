@@ -35,7 +35,7 @@ Ni cartes, ni assistant : tranches suivantes. Les pièces jointes (stockage sur 
   (`Cadre.tsx`, `Barre.tsx`) est commun à tous les écrans ; `/demo-composants` (bouchon seul, 404 sinon, `routes/session.ts`) montre les composants (AD-92 pour polices et icônes).
 - `src/services/systemes.ts` : catalogue, rattacher, créer et rattacher, gabarits ; la modification
   d'un univers est dans `src/services/univers.ts` ; leurs routes sont `src/routes/systemes.ts`
-  (AD-83 à AD-85, AD-94). Écrans : E-14 (Paramètres), E-16 (Systèmes de jeu, `ecrans/systemes.tsx`), E-15 (Système de jeu, `/systemes/:sid`, `ecrans/systeme.tsx`) et le bloc « Système de jeu » de E-3.
+  (AD-83 à AD-85, AD-94). Écrans : E-14 (Paramètres), E-16 (Systèmes de jeu, `ecrans/systemes.tsx`), E-15 (Système de jeu, `/systemes/:sid`, `ecrans/systeme.tsx` ; l'ancienne adresse `/univers/:id/systeme` redirige par `ecrans/systeme-ancien.tsx`) et le bloc « Système de jeu » de E-3.
 - `src/services/{campagnes,scenarios,preparation,comptes_rendus}.ts` et `src/routes/suivi.ts` : le suivi
   (AD-29, AD-30, AD-33, AD-34, AD-46, AD-47, AD-60 à AD-62). Un compte-rendu est une fiche de type
   `compte_rendu` ; scénarios et tâches se garde sur l'univers de la campagne, jamais sur un identifiant
