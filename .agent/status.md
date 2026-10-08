@@ -31,6 +31,13 @@ démarrage ; hors bouchon rien n'est amorcé. Aucune image n'existe avant le tag
 - Node 20 est la cible (CI, Dockerfile). `better-sqlite3` est donc épinglé en `^12` : la 13 exige
   Node ≥ 22 et plante (SIGSEGV) sous Node 20. Ne pas remonter sans changer aussi la CI et le Dockerfile.
 - La suite a été jouée sous Node 22 dans les pods de la chaîne (pas de Docker) ; la CI Node 20 fait foi.
+  La règle « conteneurs uniquement » de `CLAUDE.md` est la voie de référence ; un Node local ≥ 20 (README) est le repli quand
+  Docker manque.
+- Les trois « PR non fusionnée » ci-dessus s'empilent : refonte → illustrations (cette branche) ; dans l'état de la
+  branche, tout leur code est présent. Les numéros de migration (0005, 0006) sont ceux de la branche, à recaler seulement
+  si une autre tranche fusionne avant (AD-51).
+- Vocabulaire : « Monsieur » = le commanditaire qui fait la recette ; « tranche » = une feature livrée ; « phase merge » = la
+  fusion après recette ; E-n / B-n / P-n = écrans / besoins / parcours, définis dans `docs/ecrans.md` et `docs/parcours.md`.
 - La CI ne pousse d'image que sur `main` et sur un tag `v*` ; sur une PR elle ne fait qu'un build de
   validation. L'image testable n'existe qu'après le tag, posé à la fusion.
 - **Numéro de migration** : `0005-relier-chercher.sql` (après `0004-pieces-jointes.sql`, recalée à la fusion, AD-51) ; si une autre tranche fusionne une migration
