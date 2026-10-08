@@ -1,0 +1,11 @@
+.relations { margin-top: var(--e-4); }
+.relations h3 { font-size: var(--t-14); color: var(--texte-2); margin: 0 0 var(--e-2); }
+.relations .liste-relations { list-style: none; margin: 0 0 var(--e-3); padding: 0; display: flex; flex-direction: column; gap: var(--e-2); }
+.relations .liste-relations li { display: flex; align-items: center; gap: var(--e-3); padding: var(--e-2) var(--e-3); background: var(--surface); border-radius: var(--rayon-champ); }
+.relations .ligne-relation { flex: 1; min-width: 0; display: flex; align-items: center; gap: var(--e-2); flex-wrap: wrap; overflow-wrap: anywhere; }
+.relations .formulaire-relation { border: 1px solid var(--surface-3); border-radius: var(--rayon-champ); padding: var(--e-3); display: flex; flex-direction: column; gap: var(--e-3); }
+.relations .choix-fiche { width: 100%; display: flex; align-items: center; gap: var(--e-3); text-align: left; background: var(--surface); color: var(--texte); border: 0; padding: var(--e-3) var(--e-4); cursor: pointer; }
+.relations .choix-fiche:hover { background: var(--surface-2); }
+.relations .choix-fiche .puce { flex: none; width: 12px; height: 12px; border-radius: 50%; border: 2px solid var(--texte-2); }
+.relations .choix-fiche[aria-pressed="true"] .puce { background: var(--texte); }
+.relations .liste-fiches li a, .relations .liste-fiches li button { border-radius: var(--rayon-champ); }

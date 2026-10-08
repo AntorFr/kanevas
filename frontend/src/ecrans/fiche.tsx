@@ -10,6 +10,7 @@ import './ecrans.css';
 import './fiche/fiche.css';
 import { PanneauSection, type Joueur } from './fiche/section';
 import type { FicheVue } from './fiche/types';
+import { lignesDuType } from './fiche/lignes/registre';
 import { badgeFiche, typeParType } from './fiche/types-fiche';
 
 const ECHEC = 'L’action n’a pas abouti. Réessayez.';
@@ -135,6 +136,9 @@ function PageFiche() {
         <h1>{fiche.titre}</h1>
         <span className="badge-type">{badgeFiche(fiche)}</span>
       </div>
+      {lignesDuType(fiche.type).map((l, i) => (
+        <l.composant key={i} universId={id!} fiche={fiche} />
+      ))}
       {mj && (
         <div className="outils-fiche">
           <BasculeMjJoueur mode={mode} onChange={setMode} />

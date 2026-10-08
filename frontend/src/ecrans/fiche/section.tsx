@@ -167,6 +167,9 @@ export function PanneauSection(p: Props) {
     if (!ok) setARetirer(false);
   }
 
+  const nbPieces = section.piecesJointes?.length ?? 0;
+  const perte =
+    nbPieces === 0 ? 'Son contenu sera perdu.' : nbPieces === 1 ? 'Son contenu et sa pièce jointe seront perdus.' : `Son contenu et ses ${nbPieces} pièces jointes seront perdus.`;
   const blocs = blocsSectionVisibles(role);
   const inactif = Boolean(enCours) || perdue;
 
@@ -271,7 +274,7 @@ export function PanneauSection(p: Props) {
             </div>
             {aRetirer && (
               <div className="confirmation" role="alertdialog" aria-label="Confirmer le retrait">
-                <p>Retirer la section « {section.titre} » ? Son contenu sera perdu.</p>
+                <p>Retirer la section « {section.titre} » ? {perte}</p>
                 <div className="actions">
                   <Bouton variante="danger" ecrit enCours={enCours === 'retrait'} onClick={retirer}>
                     Retirer la section
@@ -284,7 +287,7 @@ export function PanneauSection(p: Props) {
         )}
 
         {blocs.map((b) => (
-          <b.composant key={b.id} universId={Number(p.universId)} fiche={fiche} section={section} role={role} />
+          <b.composant key={b.id} universId={Number(p.universId)} fiche={fiche} section={section} role={role} rafraichir={p.rafraichir} suffixeMode={p.suffixeMode} />
         ))}
       </Panneau>
     </div>

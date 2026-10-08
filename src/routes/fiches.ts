@@ -1,6 +1,13 @@
+import '@fastify/multipart';
 import type { FastifyInstance } from 'fastify';
 
 import { invalide } from '../services/erreurs.js';
+import {
+  deposerPieceJointe,
+  marquerSecrete,
+  ouvrirPieceJointe,
+  retirerPieceJointe,
+} from '../services/pieces-jointes.js';
 import { creerFiche, lireFiche, listerFiches } from '../services/fiches.js';
 import {
   ajouterSection,
@@ -12,10 +19,11 @@ import {
   retirerSection,
   type ChangementAudience,
 } from '../services/sections.js';
+import { lireRelations, relierSection, retirerRelation } from '../services/relations.js';
 import type { Acteur } from '../services/types.js';
 import { idDeChemin } from './univers.js';
 
-function corps(request: { body?: unknown }): Record<string, unknown> {
+export function corps(request: { body?: unknown }): Record<string, unknown> {
   const b = request.body;
   return b && typeof b === 'object' && !Array.isArray(b) ? (b as Record<string, unknown>) : {};
 }
@@ -24,7 +32,7 @@ function corps(request: { body?: unknown }): Record<string, unknown> {
  * Player mode (AD-39) is asked with `?mode=joueur`; the service computes it,
  * it only ever restricts a read.
  */
-function acteur(request: { session?: { id: number } | null; query?: unknown }): Acteur {
+export function acteur(request: { session?: { id: number } | null; query?: unknown }): Acteur {
   const q = (request.query ?? {}) as Record<string, unknown>;
   if (q.mode !== undefined && q.mode !== 'joueur' && q.mode !== 'mj') {
     throw invalide('Mode inconnu.');
@@ -42,13 +50,14 @@ const BASCULES = ['joueursLisent', 'joueursEcrivent', 'auteurLit', 'auteurEcrit'
 /** Sheets and sections; thin routes over `services/` (AD-2): no guard of their own. */
 export function registerFichesRoutes(app: FastifyInstance) {
   const base = '/api/univers/:id/fiches';
-  type P = { id: string; fid?: string; sid?: string };
+  type P = { id: string; fid?: string; sid?: string; rid?: string };
   const ids = (request: { params: unknown }) => {
     const p = request.params as P;
     return {
       univers: idDeChemin(p.id),
       fiche: p.fid === undefined ? 0 : idDeChemin(p.fid),
       section: p.sid === undefined ? 0 : idDeChemin(p.sid),
+      relation: p.rid === undefined ? 0 : idDeChemin(p.rid),
     };
   };
 
@@ -68,12 +77,13 @@ export function registerFichesRoutes(app: FastifyInstance) {
 
   app.get(base, async (request) => {
     const q = request.query as Record<string, unknown>;
-    for (const k of ['type', 'curseur']) {
+    for (const k of ['type', 'curseur', 'q']) {
       if (q[k] !== undefined && typeof q[k] !== 'string') throw invalide('Requête invalide.');
     }
     return listerFiches(app.db, acteur(request), ids(request).univers, {
       type: q.type as string | undefined,
       curseur: q.curseur as string | undefined,
+      recherche: q.q as string | undefined,
     });
   });
 
@@ -162,5 +172,108 @@ export function registerFichesRoutes(app: FastifyInstance) {
       b.version as number,
     );
   });
+
+  // Relations of a section (AD-64): read under both guards by the service.
+  app.get(`${base}/:fid/sections/:sid/relations`, async (request) => {
+    const i = ids(request);
+    return { relations: lireRelations(app.db, acteur(request), i.univers, i.fiche, i.section) };
+  });
+
+  app.post(`${base}/:fid/sections/:sid/relations`, async (request, reply) => {
+    const i = ids(request);
+    const b = corps(request);
+    if (!Number.isSafeInteger(b.cibleFicheId)) throw invalide('La fiche cible est invalide.');
+    const r = relierSection(app.db, request.session!.id, i.univers, i.fiche, i.section, {
+      cibleFicheId: b.cibleFicheId as number,
+      type: chaine(b.type, 'Le type : de 1 à 80 caractères.'),
+    });
+    return reply.code(201).send(r);
+  });
+
+  app.delete(`${base}/relations/:rid`, async (request, reply) => {
+    const i = ids(request);
+    retirerRelation(app.db, request.session!.id, i.univers, i.relation);
+    return reply.code(204).send();
+  });
+
+  registerPiecesJointesRoutes(app, base);
 }
 
+/** `secrete` as a form field or JSON boolean; anything else is a bad request. */
+function booleen(valeur: unknown): boolean {
+  if (valeur === undefined || valeur === '' || valeur === 'false' || valeur === false) return false;
+  if (valeur === 'true' || valeur === true) return true;
+  throw invalide('Le réglage « secrète » doit être vrai ou faux.');
+}
+
+function secreteDuCorps(valeur: unknown): boolean {
+  if (typeof valeur !== 'boolean') throw invalide('Le réglage « secrète » doit être vrai ou faux.');
+  return valeur;
+}
+
+/** Content-Disposition for a download: ASCII fallback plus the RFC 5987 UTF-8 name. */
+function dispositionAttachement(nom: string): string {
+  const ascii = nom.replace(/[^\x20-\x7e]|["\\%;]/g, '_');
+  return `attachment; filename="${ascii}"; filename*=UTF-8''${encodeURIComponent(nom).replace(/['()*]/g, (c) => `%${c.charCodeAt(0).toString(16).toUpperCase()}`)}`;
+}
+
+/** Attachments of a section: thin routes, the services own every rule (AD-2, AD-67). No list route, no static serving. */
+function registerPiecesJointesRoutes(app: FastifyInstance, base: string) {
+  const idPiece = (request: { params: unknown }) =>
+    idDeChemin((request.params as { pid: string }).pid);
+
+  // One file per request, streamed to the service. Field `secrete` must precede `fichier`.
+  app.post(`${base}/:fid/sections/:sid/pieces-jointes`, async (request, reply) => {
+    const a = acteur(request);
+    const section = idDeChemin((request.params as { sid: string }).sid);
+    if (!request.isMultipart()) throw invalide('Envoi multipart attendu (champ « fichier »).');
+    const premiere = await request.file();
+    if (!premiere || premiere.fieldname !== 'fichier') throw invalide('Champ « fichier » manquant.');
+    const part = premiere;
+    const secrete = booleen((part.fields.secrete as { value?: unknown } | undefined)?.value);
+    const nom = part.filename.split(/[\\/]/).pop() ?? '';
+    // An interrupted or truncated body must not look like a complete file.
+    async function* flux() {
+      for await (const morceau of part.file) yield morceau as Buffer;
+      if (part.file.truncated) throw invalide('Envoi interrompu.');
+    }
+    const vue = await deposerPieceJointe(app.db, a.compteId, !!a.modeJoueur, section, flux(), nom, secrete);
+    return reply.code(201).send(vue);
+  });
+
+  app.patch(`${base}/:fid/pieces-jointes/:pid`, async (request) => {
+    const a = acteur(request);
+    return marquerSecrete(
+      app.db,
+      a.compteId,
+      !!a.modeJoueur,
+      idPiece(request),
+      secreteDuCorps(corps(request).secrete),
+    );
+  });
+
+  app.delete(`${base}/:fid/pieces-jointes/:pid`, async (request, reply) => {
+    const a = acteur(request);
+    await retirerPieceJointe(app.db, a.compteId, !!a.modeJoueur, idPiece(request));
+    return reply.code(204).send();
+  });
+
+  // No player mode on a direct read (AD-37): the actor is the account alone.
+  app.get(`${base}/:fid/pieces-jointes/:pid/fichier`, async (request, reply) => {
+    const f = await ouvrirPieceJointe(
+      app.db,
+      { compteId: request.session!.id, modeJoueur: false },
+      idPiece(request),
+    );
+    reply
+      .header('X-Content-Type-Options', 'nosniff')
+      .header('Content-Security-Policy', "default-src 'none'; sandbox")
+      .header('Cache-Control', 'private, no-store')
+      .header('Content-Length', f.taille);
+    if (f.type.startsWith('image/')) return reply.type(f.type).send(f.flux);
+    return reply
+      .type('application/octet-stream')
+      .header('Content-Disposition', dispositionAttachement(f.nom))
+      .send(f.flux);
+  });
+}

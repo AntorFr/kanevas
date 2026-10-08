@@ -1,0 +1,22 @@
+.suivi-liste { list-style: none; margin: var(--e-3) 0; padding: 0; background: var(--surface); border: 1px solid var(--bord);
+  border-radius: var(--rayon-panneau); }
+.ligne-suivi { display: flex; align-items: center; gap: var(--e-3); padding: var(--e-2) var(--e-4); border-bottom: 1px solid var(--bord); }
+.ligne-suivi:last-child { border-bottom: 0; }
+.ligne-suivi .grand { flex: 1; min-width: 0; color: var(--texte); text-decoration: none; overflow-wrap: anywhere; }
+.ligne-suivi .grand:hover { text-decoration: underline; }
+.ligne-suivi .grand small { color: var(--texte-2); }
+.ligne-suivi .date { flex: none; color: var(--texte-2); font-size: var(--t-13); white-space: nowrap; }
+.liste-campagnes { max-height: 70vh; overflow-y: auto; }
+.liste-statut { font: inherit; padding: var(--e-1) var(--e-2); background: var(--surface-2); color: var(--texte);
+  border: 1px solid var(--bord-champ); border-radius: var(--rayon-champ); }
+.badge-statut { font-size: var(--t-12); padding: 2px 9px; border-radius: var(--rayon-pastille); background: var(--surface-3); color: var(--texte-2); }
+.entete-suivi { display: flex; align-items: center; gap: var(--e-3); flex-wrap: wrap; }
+.entete-suivi h1 { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.formulaire-ligne { display: flex; gap: var(--e-2); align-items: flex-start; flex-wrap: wrap; margin: var(--e-3) 0; }
+.formulaire-ligne .champ { flex: 1; min-width: 12rem; margin: 0; }
+.categorie-prepa { font-size: var(--t-13); color: var(--texte-2); margin: var(--e-3) 0 var(--e-1); }
+.tache-faite .libelle { text-decoration: line-through; color: var(--texte-2); }
+.ligne-suivi .libelle { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.contenu-scenario { white-space: pre-wrap; overflow-wrap: anywhere; }
+.titre-long { overflow-wrap: anywhere; }
+.panneaux-suivi { display: flex; flex-direction: column; gap: var(--e-4); margin-top: var(--e-4); }

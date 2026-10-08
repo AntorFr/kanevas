@@ -3,13 +3,14 @@
 Système de gestion de JDR (lore, campagnes, comptes-rendus, droits, cartes).
 Ce dépôt porte le socle (santé, OIDC, image, CI), la **première fonction métier** :
 un MJ crée un univers, y réunit ses joueurs et y écrit des fiches dont chaque section a
-son audience ; un joueur ne lit que ce que l'audience lui ouvre — le **système de jeu**, un référentiel
-(règles, créatures, objets) que plusieurs univers se partagent, rattaché depuis les paramètres de
-l'univers — et l'**administration d'instance** : un compte du groupe Authelia `parents` voit les univers
-et leurs membres (jamais le contenu) et les répare (E-5, B-6). Ce que le produit permet et par quels
-écrans : `docs/parcours.md`, `docs/ecrans.md`, `docs/donnees.md`. Ni relations, ni recherche, ni pièces
-jointes, ni campagnes, ni assistant ne sont construits (tranches suivantes) : les passages de ces docs
-qui les décrivent sont la cible.
+son audience ; un joueur ne lit que ce que l'audience lui ouvre. Ce que le produit permet et
+par quels écrans : `docs/parcours.md`, `docs/ecrans.md`, `docs/donnees.md`.
+
+Au-delà de la première fonction métier, le dépôt porte le **système de jeu** : un référentiel (règles, créatures, objets) que plusieurs
+univers se partagent, rattaché depuis les paramètres de l'univers. Il porte aussi le **suivi de la séance** : campagnes, scénarios (MJ), préparation en cinq catégories (MJ) et comptes-rendus (tout membre). Il porte enfin les **pièces jointes** : sur chaque section, déposer un fichier, voir une image, télécharger
+les autres, marquer secrète (MJ), retirer. Il porte aussi les **relations** entre fiches (bloc Relations de la fiche) et la **recherche** dans un type de fiche. Il porte l'**administration d'instance** : un compte du groupe Authelia `parents` voit les univers et leurs membres (jamais le contenu) et les répare (E-5, B-6). Ni
+cartes, ni images, ni assistant ne sont
+construits (tranches suivantes) : les passages de ces docs qui les décrivent sont la cible.
 
 ## Structure
 
@@ -18,12 +19,12 @@ Dockerfile                        Image unique : API Fastify + frontend construi
 src/
   server.ts, app.ts               Démarrage ; assemblage des plugins et des routes
   config/env.ts                   Variables d'environnement (zod)
-  db/                             SQLite (better-sqlite3), migrations/0001, 0002, runner
-  services/                       comptes, univers, membres, instance, fiches, sections, droits, systemes :
+  db/                             SQLite (better-sqlite3), migrations/0001 à 0005, runner
+  services/                       comptes, univers, membres, instance, fiches, sections, droits, systemes, relations, campagnes, scenarios, preparation, comptes_rendus,
+                                   pieces-jointes, stockage (octets sur le volume) :
                                    seul code qui lit ou écrit les données ; session, oidc
   routes/                         health, auth (OIDC), session (cookie, garde, /api/moi),
-                                   bouchon, univers (+ membres), instance (admin, AD-87), systemes,
-                                   fiches (+ sections), frontend
+                                   bouchon, univers (+ membres), instance (admin, AD-87), systemes, suivi, fiches (+ sections), frontend
   services/llm/                   Transports LLM repris d'Antre-du-maitre, branchés nulle part
 frontend/                         React + Vite : charte (ui/), écrans (src/ecrans/, dont E-5 administration.tsx), barre latérale
 .github/workflows/docker-publish.yml   CI : tests, build, image GHCR
@@ -32,6 +33,8 @@ frontend/                         React + Vite : charte (ui/), écrans (src/ecra
 Un écran est un fichier `frontend/src/ecrans/<nom>.tsx` enregistré par le registre
 (`frontend/src/registre.ts`) ; les couleurs ne viennent que de `frontend/src/ui/tokens.css`
 (`docs/charte.md`).
+
+Tests sans e2e ni Docker : `npm run typecheck` puis `npm test` (voir « Tests de bout en bout » pour les e2e) ; la voie Docker de référence est dans `CLAUDE.md`.
 
 ## Démarrage local
 
@@ -70,7 +73,9 @@ récent suffit pour les mêmes commandes.
 ### Sans Authelia : le mode bouchon
 
 ```bash
-npm run build && KANEVAS_STUB=1 npm start   # (PORT=… DB_PATH=/tmp/k.db en tête pour ne pas écrire dans ./data/) puis ouvrir http://localhost:3001/ : choix d'un compte de test
+npm run build && KANEVAS_STUB=1 npm start   # puis ouvrir http://localhost:3001/ : choix d'un compte de test
+# sans écrire dans ./data/ ni sur le port 3001 : npm run build && PORT=3055 DB_PATH=/tmp/k.db KANEVAS_STUB=1 npm start
+# (Ctrl-C l'arrête ; lancé en arrière-plan, kill du processus ; supprimer /tmp/k.db pour repartir d'une base vide)
 ```
 
 `/connexion-bouchon` remplace Authelia (AD-55) sous un bandeau « mode bouchon ». Les comptes de test
@@ -89,13 +94,13 @@ Les textes de `docs/ecrans.md` sont écrits avec l'apostrophe droite ; l'interfa
 Playwright n'est pas une dépendance du dépôt : il doit être installé globalement
 (`/usr/lib/node_modules` ou `/usr/local/lib/node_modules`) avec un Chromium, ce que ne fait ni
 `node:20-bookworm-slim` ni la CI GitHub. Là où il manque, ces tests sont **ignorés avec un message**,
-sans échec ; les autres tests (services, routes HTTP) tournent partout. La CI ne joue donc pas les e2e.
+sans échec ; les autres tests (services, routes HTTP) tournent partout. Compter environ 6 minutes pour toute la suite avec Playwright. La CI ne joue donc pas les e2e.
 Sans docker (pod, poste nu), `npm ci && npm run typecheck && npm test` suffit (Node 20 ou plus). Recette de l'administration en bouchon : créer un univers en Antor, se connecter une fois en « Mira » (un compte jamais connecté ne peut pas être ajouté), puis en « Admin », ouvrir `/administration` et ajouter « mira ». Les e2e `src/e2e/administration*.test.ts` pilotent E-5.
 
 ## Réglages
 
 La liste de départ est `.env.example`. En plus : `APP_NAME` (défaut `kanevas`),
-`APP_VERSION` (défaut `0.0.0-dev`, posée par le build-arg en image), `PORT` (3001), `DB_PATH` (fichier SQLite ; défaut `/data/kanevas.db` avec `NODE_ENV=production`, `./data/kanevas.db` en développement), `SESSION_SECRET` (≥ 16 caractères ; à défaut `session.key`, créée à côté de la base : `/data/session.key` en production, `./data/session.key` en développement), `KANEVAS_STUB` (`1`), `LLM_PROVIDER` (`mock` | `anthropic` | `claude-agent`, défaut `mock`,
+`APP_VERSION` (défaut `0.0.0-dev`, posée par le build-arg en image), `PORT` (3001), `DB_PATH` (fichier SQLite ; défaut `/data/kanevas.db` avec `NODE_ENV=production`, `./data/kanevas.db` en développement), `ATTACHMENTS_DIR` (pièces jointes ; défaut `attachments/` à côté de la base, donc `/data/attachments` en production), `SESSION_SECRET` (≥ 16 caractères ; à défaut `session.key`, créée à côté de la base : `/data/session.key` en production, `./data/session.key` en développement), `KANEVAS_STUB` (`1`), `LLM_PROVIDER` (`mock` | `anthropic` | `claude-agent`, défaut `mock`,
 inutilisé tant qu'aucune route n'appelle un LLM).
 
 ## Version de l'application
@@ -140,7 +145,7 @@ manifeste `clusters/tantive/games/kanevas-helm-config.yml` et client OIDC
 fusionner `k8s-home-lab`, dont la fusion déploie.
 
 Pour la carte du code, les invariants et les options écartées, voir `ARCHITECTURE.md`, dont le
-tableau liste toutes les décisions `AD-n` de l'epic Kanevas, avec leur numéro stable. Des
+tableau liste les décisions `AD-n` retenues pour l'epic, construites ou non (« La cible » dit ce qui est construit), avec leur numéro stable ; les numéros absents sont des décisions retirées ou d'autres tranches, aucune n'est cachée ici. Des
 commentaires du code citent encore `plan.md`, `technique.md` ou `socle-projet` : ce sont des
 documents de conception tenus hors de ce dépôt (magasin de pilotage de la chaîne SDLC), dont ce
 qui doit survivre est dans `ARCHITECTURE.md` et `docs/`.

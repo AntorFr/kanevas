@@ -1,3 +1,4 @@
+import { attachmentsDir } from '../config/env.js';
 import type { Db } from '../db/db.js';
 import {
   exigerMJ,
@@ -9,12 +10,14 @@ import {
 } from './droits.js';
 import { ErreurService, introuvable, invalide, refuse } from './erreurs.js';
 import { chargerFiche, validerTitre } from './fiches.js';
+import { fichiersDeSections } from './pieces-jointes.js';
+import { supprimerFichier } from './stockage.js';
 import type { Acteur, SectionRow, SectionVue } from './types.js';
 
 /** Ceiling of a section's content, in `String.length` units (AD-91); `/api/moi` hands it to the screen. */
 export const MAX_CONTENU_SECTION = 20000;
 
-function validerContenu(contenu: string): void {
+export function validerContenu(contenu: string): void {
   if (contenu.length > MAX_CONTENU_SECTION) {
     throw invalide('Contenu trop long : 20 000 caractères au plus.');
   }
@@ -122,10 +125,13 @@ export function retirerSection(
   universId: number,
   ficheId: number,
   sectionId: number,
+  racine: string = attachmentsDir,
 ): void {
   exigerMJ(db, universId, compteId);
   chargerFiche(db, universId, ficheId);
   chargerSection(db, ficheId, sectionId);
+  // The CASCADE drops the rows, not the files: collect them first, delete them after the commit.
+  const fichiers = fichiersDeSections(db, [sectionId]);
   db.transaction(() => {
     db.prepare('DELETE FROM sections WHERE id = ?').run(sectionId);
     const restants = (
@@ -136,6 +142,7 @@ export function retirerSection(
     renumeroter(db, ficheId, restants);
     toucherFiche(db, ficheId, new Date().toISOString());
   })();
+  for (const f of fichiers) supprimerFichier(f, racine);
 }
 
 export interface ChangementAudience {

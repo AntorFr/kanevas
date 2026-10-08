@@ -1,15 +1,16 @@
-import { useEffect, useState, type FormEvent } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { useState, type FormEvent } from 'react';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
-import { appeler, lire, useConnexionPerdue } from '../api';
+import { appeler } from '../api';
 import { useCharge } from '../cadre-contexte';
 import type { Ecran } from '../registre';
 import type { UniversListe } from '../types';
 import { Bouton, Champ, Chargement, ErreurChargement, Fenetre, PageIntrouvable } from '../ui';
 import './ecrans.css';
 import './fiche/fiche.css';
-import type { Fiche, PageFiches } from './fiche/types';
-import { badgeFiche, typeParSlug } from './fiche/types-fiche';
+import { ListeRecherche } from './fiche/liste-recherche';
+import type { Fiche } from './fiche/types';
+import { typeParSlug } from './fiche/types-fiche';
 
 const ECHEC = 'L’action n’a pas abouti. Réessayez.';
 
@@ -23,93 +24,40 @@ function ListeFiches() {
 
 function Liste({ universId, type }: { universId: string; type: NonNullable<ReturnType<typeof typeParSlug>> }) {
   const navigate = useNavigate();
-  const perdue = useConnexionPerdue();
+  const [params, setParams] = useSearchParams();
   const [univers] = useCharge<UniversListe>(`/api/univers/${universId}`);
-  const base = `/api/univers/${universId}/fiches?type=${type.type}`;
-  const [page, recharger] = useCharge<PageFiches>(base);
-  const [fiches, setFiches] = useState<Fiche[]>([]);
-  const [suivant, setSuivant] = useState<string | null>(null);
-  const [suiteEnCours, setSuiteEnCours] = useState(false);
-  const [suiteEchec, setSuiteEchec] = useState(false);
   const [creation, setCreation] = useState(false);
 
-  useEffect(() => {
-    if (page.etat === 'ok') {
-      setFiches(page.valeur.fiches);
-      setSuivant(page.valeur.suivant);
-    }
-  }, [page]);
-
-  if (page.etat === 'chargement' || univers.etat === 'chargement') return <Chargement texte="Chargement des fiches…" />;
-  if (
-    (page.etat === 'erreur' && page.statut === 404) ||
-    (univers.etat === 'erreur' && univers.statut === 404)
-  ) {
-    return <PageIntrouvable />;
-  }
-  if (page.etat === 'erreur' || univers.etat === 'erreur') {
-    return <ErreurChargement texte="Impossible de charger les fiches." onReessayer={recharger} />;
+  if (univers.etat === 'chargement') return <Chargement texte="Chargement des fiches…" />;
+  if (univers.etat === 'erreur' && univers.statut === 404) return <PageIntrouvable />;
+  if (univers.etat === 'erreur') {
+    return <ErreurChargement texte="Impossible de charger les fiches." onReessayer={() => window.location.reload()} />;
   }
   const mj = univers.valeur.role === 'mj';
-
-  async function chargerSuite() {
-    if (suiteEnCours || suivant === null) return;
-    setSuiteEnCours(true);
-    setSuiteEchec(false);
-    try {
-      const p = await lire<PageFiches>(`${base}&curseur=${encodeURIComponent(suivant)}`);
-      setFiches((l) => [...l, ...p.fiches]);
-      setSuivant(p.suivant);
-    } catch {
-      setSuiteEchec(true);
-    } finally {
-      setSuiteEnCours(false);
-    }
-  }
+  const nouveau = (
+    <Bouton variante="principal" ecrit onClick={() => setCreation(true)}>
+      {type.nouveau}
+    </Bouton>
+  );
 
   return (
     <>
       <div className="entete-liste">
         <h1>{type.pluriel}</h1>
-        {mj && fiches.length > 0 && (
-          <Bouton variante="principal" ecrit onClick={() => setCreation(true)}>
-            {type.nouveau}
-          </Bouton>
-        )}
       </div>
-      {fiches.length === 0 ? (
-        <div className="etat">
-          <p>{type.aucun} {mj ? 'pour l’instant.' : 'à voir pour l’instant.'}</p>
-          {mj && (
-            <Bouton variante="principal" ecrit onClick={() => setCreation(true)}>
-              {type.nouveau}
-            </Bouton>
-          )}
-        </div>
-      ) : (
-        <ul className="liste-fiches">
-          {fiches.map((f) => (
-            <li key={f.id}>
-              <Link to={`/univers/${universId}/fiche/${f.id}`}>
-                <span className="titre-fiche" title={f.titre}>
-                  {f.titre}
-                </span>
-                <span className="badge-type">{badgeFiche(f)}</span>
-              </Link>
-            </li>
-          ))}
-        </ul>
-      )}
-      {suiteEchec && (
-        <div className="echec" role="alert">
-          Impossible de charger la suite.
-        </div>
-      )}
-      {suivant !== null && (
-        <Bouton ecrit={false} enCours={suiteEnCours} onClick={chargerSuite} disabled={perdue}>
-          Charger la suite
-        </Bouton>
-      )}
+      <ListeRecherche
+        universId={universId}
+        type={type}
+        recherche={params.get('q')?.trim() ?? ''}
+        onRecherche={(q) => setParams(q === '' ? {} : { q })}
+        action={mj ? <p className="actions">{nouveau}</p> : undefined}
+        videListe={
+          <div className="etat">
+            <p>{type.aucun} {mj ? 'pour l’instant.' : 'à voir pour l’instant.'}</p>
+            {mj && nouveau}
+          </div>
+        }
+      />
       {creation && (
         <FenetreCreation
           universId={universId}
