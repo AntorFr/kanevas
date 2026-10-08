@@ -137,6 +137,21 @@ function Corps({
     }
   }
 
+  /** A graph's links are the server's, per readable section (AD-41, AD-68): re-read them after the elements change. */
+  async function recalculerLiens() {
+    if (illustree) return;
+    try {
+      const tout = await lire<CarteLue>(base);
+      maj((l) => ({ ...l, elements: tout.elements, liens: tout.liens }));
+    } catch {
+      // Keep the local elements; drop links whose end is no longer on the map.
+      maj((l) => {
+        const sur = new Set(l.elements.map((o) => o.ficheId));
+        return { ...l, liens: l.liens?.filter((k) => sur.has(k.de) && sur.has(k.vers)) };
+      });
+    }
+  }
+
   async function retirer(elementId: number) {
     if (retraitEnCours) return;
     setEchec(false);
@@ -144,6 +159,7 @@ function Corps({
     try {
       await appeler('DELETE', `${base}/elements/${elementId}`);
       maj((l) => ({ ...l, elements: l.elements.filter((o) => o.id !== elementId) }));
+      await recalculerLiens();
       setConfirme(undefined);
       setSelection((s) => (s === elementId ? undefined : s));
     } catch {
@@ -159,6 +175,7 @@ function Corps({
     try {
       const e = await appeler<Element>('POST', `${base}/elements`, illustree ? { ficheId, x: 50, y: 50 } : { ficheId });
       maj((l) => ({ ...l, elements: [...l.elements, e] }));
+      await recalculerLiens();
       setSelection(illustree ? e.id : undefined);
     } catch (e) {
       if (e instanceof ErreurApi && e.code === 'carte_pleine') setErreurAjout('Cette carte porte déjà 100 éléments.');
