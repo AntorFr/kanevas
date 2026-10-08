@@ -249,4 +249,38 @@ describe('kanevas-il-systemes-ecrans', { skip: skipBrowser }, () => {
     }
     await antor.setViewportSize({ width: 1280, height: 720 });
   });
+
+  test('E-15 et E-8 : le titre h1 a la couleur du texte principal, icône et titre alignés sur la colonne', opts, async () => {
+    await antor.setViewportSize({ width: 1280, height: 800 });
+    const e8 = `/univers/${ids["Lame d'Ébène"]}/fiches/personnages`;
+    for (const w of [1280, 390]) {
+      await antor.setViewportSize({ width: w, height: 800 });
+      for (const url of [`/systemes/${ids['CoF Mini']}`, e8]) {
+        await va(antor, url);
+        assert.ok(await antor.locator('header.tete-liste h1').count(), url + ' : ' + (await texte(antor)).slice(0, 200));
+        const m = await antor.evaluate(() => {
+          const probe = document.createElement('span');
+          probe.style.color = 'var(--texte)';
+          document.body.appendChild(probe);
+          const texte = getComputedStyle(probe).color;
+          probe.remove();
+          const h1 = document.querySelector('header.tete-liste h1') as HTMLElement;
+          const hdr = document.querySelector('header.tete-liste') as HTMLElement;
+          const col = document.querySelector('.page-liste, .page-grille') as HTMLElement;
+          const g = document.querySelector('header.tete-liste .glyphe-type') as HTMLElement | null;
+          return {
+            texte, h1: getComputedStyle(h1).color, pad: getComputedStyle(hdr).paddingLeft,
+            xHdr: hdr.getBoundingClientRect().left, xCol: col.getBoundingClientRect().left,
+            xGlyphe: g ? g.getBoundingClientRect().left : null,
+          };
+        });
+        assert.equal(m.h1, m.texte, `${w}px ${url} : titre pas à la couleur du texte`);
+        assert.equal(m.pad, '0px', `${w}px ${url} : en-tête décalé`);
+        assert.equal(m.xHdr, m.xCol);
+        if (m.xGlyphe !== null) assert.equal(m.xGlyphe, m.xCol, `${w}px ${url} : icône décalée`);
+      }
+    }
+    await photo(antor, 'titre-e15-tel');
+    await antor.setViewportSize({ width: 1280, height: 720 });
+  });
 });
