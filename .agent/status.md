@@ -4,7 +4,7 @@
 
 **État :** `epic/kanevas` porte le socle, la première fiche, les systèmes de jeu, le suivi de la séance
 (campagnes, scénarios, préparation, comptes-rendus ; E-6, E-7, E-13) et les pièces jointes (migration
-`0004-pieces-jointes.sql`, AD-65 à AD-67). `feature/kanevas-relier-chercher` y ajoute, en PR non fusionnée :
+`0004-pieces-jointes.sql`, AD-65 à AD-67). `kanevas-relier-chercher` (fusionnée, PR #8) y ajoute :
 la migration `0005-relier-chercher.sql` (`relations`, index FTS5 `recherche_fiches` et `recherche_sections`,
 déclencheurs, remplissage de l'existant), `services/relations.ts` (relier, retirer, lire sous deux gardes),
 `peutVoirFiche` et les conditions SQL de lecture dans `droits.ts`, l'option `recherche` de `listerFiches`,
@@ -33,8 +33,7 @@ démarrage ; hors bouchon rien n'est amorcé. Aucune image n'existe avant le tag
 - La suite a été jouée sous Node 22 dans les pods de la chaîne (pas de Docker) ; la CI Node 20 fait foi.
   La règle « conteneurs uniquement » de `CLAUDE.md` est la voie de référence ; un Node local ≥ 20 (README) est le repli quand
   Docker manque.
-- Les trois « PR non fusionnée » ci-dessus s'empilent : refonte → illustrations (cette branche) ; dans l'état de la
-  branche, tout leur code est présent. Les numéros de migration (0005, 0006) sont ceux de la branche, à recaler seulement
+- Les deux « PR non fusionnée » ci-dessus s'empilent : refonte → illustrations (cette branche). Les migrations 0005 (déjà sur `epic/kanevas`) et 0006 sont celles de la branche ; 0006 est à recaler seulement
   si une autre tranche fusionne avant (AD-51).
 - Vocabulaire : « Monsieur » = le commanditaire qui fait la recette ; « tranche » = une feature livrée ; « phase merge » = la
   fusion après recette ; E-n / B-n / P-n = écrans / besoins / parcours, définis dans `docs/ecrans.md` et `docs/parcours.md`.

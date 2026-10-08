@@ -107,7 +107,7 @@ sans échec ; les autres tests (services, routes HTTP) tournent partout. Compter
 
 ## Réglages
 
-La liste de départ est `.env.example`. En plus : `APP_NAME` (défaut `kanevas` ; seul le texte de `/healthz` le reprend),
+La liste de départ est `.env.example` (elle porte aussi `NODE_ENV`, `ANTHROPIC_API_KEY` et `ANTHROPIC_MODEL`, inutilisés tant qu'aucune route n'appelle un LLM). En plus : `APP_NAME` (défaut `kanevas` ; seul le texte de `/healthz` le reprend),
 `APP_VERSION` (défaut `0.0.0-dev`, posée par le build-arg en image), `PORT` (3001), `DB_PATH` (fichier SQLite ; défaut `/data/kanevas.db` avec `NODE_ENV=production`, `./data/kanevas.db` en développement), `ATTACHMENTS_DIR` (pièces jointes ; défaut `attachments/` à côté de la base, donc `/data/attachments` en production), `SESSION_SECRET` (≥ 16 caractères ; à défaut `session.key`, créée à côté de la base : `/data/session.key` en production, `./data/session.key` en développement), `KANEVAS_STUB` (`1`), `KANEVAS_SANS_SEMIS` (`1` : pas de monde de démonstration en bouchon), `FRONTEND_DIR` (dossier du frontend construit ; posé par les tests de routes, inutile à l'exploitation), `LLM_PROVIDER` (`mock` | `anthropic` | `claude-agent`, défaut `mock`,
 inutilisé tant qu'aucune route n'appelle un LLM).
 
@@ -155,5 +155,5 @@ fusionner `k8s-home-lab`, dont la fusion déploie.
 Pour la carte du code, les invariants et les options écartées, voir `ARCHITECTURE.md`, dont le
 tableau liste les décisions `AD-n` retenues pour l'epic, construites ou non (« La cible » dit ce qui est construit), avec leur numéro stable ; les numéros absents sont des décisions retirées ou d'autres tranches, aucune n'est cachée ici. Des
 commentaires du code citent encore `plan.md`, `technique.md` ou `socle-projet` : ce sont des
-documents de conception tenus hors de ce dépôt (magasin de pilotage de la chaîne SDLC), dont ce
+documents de conception (« Monsieur » est le commanditaire qui fait la recette, « tranche » une feature livrée, « phase merge » la fusion qui suit la recette) tenus hors de ce dépôt (magasin de pilotage de la chaîne SDLC), dont ce
 qui doit survivre est dans `ARCHITECTURE.md` et `docs/`.

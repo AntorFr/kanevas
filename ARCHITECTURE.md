@@ -61,7 +61,7 @@ en cours, vidé au démarrage sauf avec une base en mémoire, où le dossier est
 
 Toutes gardées par la session (401 sans session), sauf `/api/auth/*`. Les erreurs de service sont
 `introuvable` 404, `refuse` 403, `invalide` 400, `conflit` 409 (`section_modifiee`, `nom_pris`, `gabarit_modifie`, `scenario_modifie`, `relation_existante`, `limite_relations`, `limite_pieces` : 50 pièces par section ; 400 `fichier_vide` pour un fichier vide ; `auto_relation` est un 400 `invalide`). Retirer le dernier
-MJ répond `invalide` 400 avec la raison ; un contenu de section de plus de 20 000 caractères aussi (AD-91). Le corps d'une erreur est `{message}` (plus `code` quand le service en donne un). Le serveur écoute sur `0.0.0.0` (`-p 3001:3001` suffit).
+MJ répond `invalide` 400 avec la raison ; un contenu de section de plus de 20 000 caractères aussi (AD-91). Le corps d'une erreur de service est `{message}` (plus `code` quand le service en donne un) ; une adresse `/api/...` qu'aucune route ne porte (par exemple une route retirée par AD-94) répond 404 par la page HTML « Page introuvable. », pas par du JSON. Le serveur écoute sur `0.0.0.0` (`-p 3001:3001` suffit).
 En mode bouchon, `POST /connexion-bouchon` attend un corps form-urlencoded `compte=<identifiant>`.
 Les lignes qui citent AD-93 ou AD-94 sont celles de `kanevas-illustrations`, construites par elle ;
 elles remplacent les anciennes routes `GET /api/univers/:id/systeme` et `…/systeme/gabarits*`.
