@@ -1,6 +1,8 @@
 /* Cards of E-16 (system) and E-1 (universe): the family of the sheet card of E-8, a drawn header
    instead of an image (docs/charte.md, « Carte de système »). Tokens only. */
-.page-cartes { width: 100%; max-width: 1120px; margin: 0 auto; padding: var(--e-4) 0 120px; }
+.page-cartes { width: 100%; max-width: 1024px; margin: 0 auto; padding: var(--e-4) 0 120px; }
+/* E-16 / E-1 (maquettes): 1024px of content (1120px page minus 2 x 48px), three cards of 325px; the cadre column leaves room for it. */
+main.principal:has(.page-cartes) { max-width: calc(1024px + 2 * 28px); }
 .grille-cartes { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(288px, 1fr)); gap: var(--e-5); margin: var(--e-5) 0 0; }
 .grille-cartes > li { min-width: 0; }
 .carte-dessin { position: relative; display: flex; flex-direction: column; gap: 12px; height: 100%; padding: 6px 6px 12px; margin: -6px;

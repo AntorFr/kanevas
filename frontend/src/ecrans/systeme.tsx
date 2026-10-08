@@ -213,6 +213,7 @@ function Systeme() {
     try {
       const g = await appeler<Gabarit>('POST', `${base}/gabarits`, { type, nom: v.nom, contenu: v.contenu });
       setEntrees((l) => [...l, g].sort(alpha));
+      setEntete((t) => (t ? { ...t, entrees: { ...t.entrees, [type]: t.entrees[type] + 1 } } : t));
       setAjout(false);
       toast(`« ${g.nom} » ajouté`);
     } catch (e) {
@@ -243,7 +244,8 @@ function Systeme() {
   }
 
   return (
-    <div className="page-liste">
+    <div className="page-liste page-systeme">
+      <div className="entete-sys">
       <header className="tete-liste">
         <span className="glyphe-type" aria-hidden="true">
           <Dices size={20} strokeWidth={1.75} />
@@ -262,24 +264,33 @@ function Systeme() {
         <span>Dans vos univers</span>
         <PucesUnivers univers={entete.mesUnivers} lien />
       </div>
+      </div>
       {plusDroit && (
         <div className="echec" role="alert">
           {PLUS_DROIT}
         </div>
       )}
-      <div role="tablist" className="onglets">
-        {ONGLETS.map((o) => (
-          <button
-            key={o.type}
-            type="button"
-            role="tab"
-            aria-selected={o.type === type}
-            className={o.type === type ? 'actif' : undefined}
-            onClick={() => choisir(o.type)}
-          >
-            {o.titre}
-          </button>
-        ))}
+      <div className="barre-outils">
+        <div role="tablist" className="onglets">
+          {ONGLETS.map((o) => (
+            <button
+              key={o.type}
+              type="button"
+              role="tab"
+              aria-selected={o.type === type}
+              className={o.type === type ? 'actif' : undefined}
+              onClick={() => choisir(o.type)}
+            >
+              {o.titre}
+              <span className="nb">{entete.entrees[o.type]}</span>
+            </button>
+          ))}
+        </div>
+        {etat === 'ok' && peutEcrire && !ajout && (
+          <Bouton variante="principal" ecrit icone={Plus} onClick={() => setAjout(true)}>
+            {onglet.ajout}
+          </Bouton>
+        )}
       </div>
       <div role="tabpanel">
         {etat === 'chargement' && <ChargementListe texte="Chargement du système…" />}
@@ -288,13 +299,6 @@ function Systeme() {
         )}
         {etat === 'ok' && (
           <>
-            {peutEcrire && !ajout && (
-              <div className="actions">
-                <Bouton variante="principal" ecrit icone={Plus} onClick={() => setAjout(true)}>
-                  {onglet.ajout}
-                </Bouton>
-              </div>
-            )}
             {ajout && (
               <Formulaire initial={{ nom: '', contenu: '' }} libelle="Ajouter" onEnvoi={ajouter} onAnnuler={() => setAjout(false)} />
             )}

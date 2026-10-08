@@ -166,3 +166,15 @@ main.principal:has(.page-grille) { max-width: 1080px; }
   .pied-carte .titre { font-size: var(--t-13); }
   .initiale { font-size: 44px; }
 }
+
+/* ---------- E-15 (docs/maquettes/e15): the column is 784px with 2 x 48px of padding, so 688px of content ---------- */
+.page-liste.page-systeme { max-width: 688px; }
+.page-systeme .entete-sys { padding-bottom: var(--e-5); border-bottom: 1px solid var(--bord); }
+.page-systeme .barre-outils { display: flex; align-items: center; justify-content: space-between; gap: var(--e-3); flex-wrap: wrap; margin-top: var(--e-5); }
+.page-systeme .barre-outils .onglets { margin: 0; }
+.page-systeme .onglets button { display: inline-flex; align-items: center; gap: 6px; }
+.page-systeme .onglets .nb { font-size: var(--t-12); color: var(--texte-3); font-variant-numeric: tabular-nums; }
+@media (max-width: 760px) {
+  .page-systeme .barre-outils { flex-direction: column; align-items: stretch; }
+  .page-systeme .barre-outils .onglets { align-self: flex-start; }
+}
