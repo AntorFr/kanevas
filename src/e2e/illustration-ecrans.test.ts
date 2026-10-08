@@ -229,6 +229,42 @@ describe('kanevas-il-illustration-ecrans, E-8 grille et E-9 en-tête', { skip: s
     await ctx.close();
   });
 
+  test('bureau 1440 px : grille de x 334 à 1358 (maquette e08), cinq colonnes', opts, async () => {
+    const ctx = await browser.newContext({ baseURL: srv.base, viewport: { width: 1440, height: 900 } });
+    const p = await ctx.newPage();
+    p.setDefaultTimeout(8000);
+    await p.goto('/connexion-bouchon');
+    await p.getByRole('button', { name: /^Se connecter en tant que Antor$/i }).click();
+    await p.waitForLoadState('networkidle');
+    await grille(p, 'personnages');
+    const b = await p.locator('ul.grille-fiches').boundingBox();
+    assert.ok(b && Math.abs(b.x - 334) <= 1 && Math.abs(b.x + b.width - 1358) <= 1, `grid ${b?.x}..${b && b.x + b.width}`);
+    const lefts = (await p.locator('a.carte').evaluateAll((els: Element[]) => els.map((e) => Math.round(e.getBoundingClientRect().left)))) as number[];
+    assert.equal(new Set(lefts).size, 5);
+    await photo(p, 'grille-1440');
+    await ctx.close();
+  });
+
+  test('téléphone 390 px : « Nouveau personnage » en « + » carré à droite du titre', opts, async () => {
+    const ctx = await browser.newContext({ baseURL: srv.base, viewport: { width: 390, height: 844 } });
+    const p = await ctx.newPage();
+    p.setDefaultTimeout(8000);
+    await p.goto('/connexion-bouchon');
+    await p.getByRole('button', { name: /^Se connecter en tant que Antor$/i }).click();
+    await p.waitForLoadState('networkidle');
+    await grille(p, 'personnages');
+    const btn = p.getByRole('button', { name: 'Nouveau personnage' });
+    const bb = await btn.boundingBox();
+    const h1 = await p.getByRole('heading', { level: 1 }).boundingBox();
+    assert.ok(bb && h1);
+    assert.ok(Math.abs(bb.width - 40) <= 1 && Math.abs(bb.height - 40) <= 1, `square ${bb.width}x${bb.height}`);
+    assert.ok(bb.x >= h1.x + h1.width - 1 || bb.x > 200, 'button right of the title');
+    assert.ok(Math.abs(bb.y + bb.height / 2 - (h1.y + h1.height / 2)) <= 12, 'same line as the title');
+    assert.ok((await p.locator('.tete-liste .bouton .lib-creer').count()) === 1);
+    await photo(p, 'liste-390-plus');
+    await ctx.close();
+  });
+
   for (const [nom, w, bas] of [['bureau 1600 px', 1600, 10], ['téléphone 390 px', 390, 8]] as const) {
     test(`survol d'une carte, ${nom} : le fond entoure tout le contenu, marge basse comprise`, opts, async () => {
       const ctx = await browser.newContext({ baseURL: srv.base, viewport: { width: w, height: 900 } });
