@@ -1,6 +1,6 @@
 # Status — kanevas
 
-> MàJ : 2026-10-08
+> MàJ : 2026-10-08 (assemblage de kanevas-assistant-membre)
 
 **État :** `epic/kanevas` porte le socle, la première fiche, les systèmes de jeu, le suivi de la séance
 (campagnes, scénarios, préparation, comptes-rendus ; E-6, E-7, E-13) et les pièces jointes (migration
@@ -11,30 +11,42 @@ déclencheurs, remplissage de l'existant), `services/relations.ts` (relier, reti
 les routes `?q=` et `/relations`, le composant `ListeRecherche` (E-8, réemployé par « Relier ») et le bloc
 Relations de E-9 (AD-63, AD-64). Carte et invariants : `ARCHITECTURE.md`.
 
-`feature/kanevas-refonte-visuelle` (PR non fusionnée) refait la charte et tous les écrans construits : tokens clair/sombre,
+`feature/kanevas-refonte-visuelle` (fusionnée dans `epic/kanevas`) refait la charte et tous les écrans construits : tokens clair/sombre,
 polices et icônes embarquées (AD-92), composants partagés (`frontend/src/ui/`), cadre (navigation à icônes, barre haute,
 tiroir au téléphone, thème et déconnexion dans le menu de l'avatar, seul endroit du thème), E-1 à E-4, E-6 à E-9, E-13 à E-15
 avec leurs états, pastille/filet d'audience, menu « ⋯ » et toasts sur la fiche. Aucun geste, droit ni donnée nouveau.
 Page `/demo-composants` en bouchon seulement. Maquettes de `docs/maquettes/` refaites.
 
-`feature/kanevas-illustrations` (PR non fusionnée, part de `feature/kanevas-refonte-visuelle` : fusionner la refonte d'abord)
-ajoute : l'illustration d'une fiche (migration `0006-illustrations.sql`, `services/illustrations.ts`, routes
+`feature/kanevas-illustrations` (fusionnée dans `epic/kanevas`, PR #10) ajoute : l'illustration d'une fiche (migration `0006-illustrations.sql`, `services/illustrations.ts`, routes
 `PUT|DELETE|GET …/fiches/:fid/illustration`, AD-93), la grille de cartes illustrées (E-8) et l'illustration en tête de E-9 ;
 le système de jeu hors des univers (AD-94) : `GET /api/systemes` (systèmes du compte), `/api/systemes/catalogue`,
 `/api/systemes/:sid…`, écrans E-16 « Systèmes de jeu » et E-15 à `/systemes/:sid` (l'ancienne adresse redirige), E-1 en
 cartes ; le semis du bouchon (`src/bouchon/depart.ts`, fichiers dans `src/bouchon/demo/`).
 
-**Reste :** la fusion et le tag `v*` (recette acceptée par Monsieur). En bouchon, le monde de recette est semé au
+`feature/kanevas-assistant-membre` (PR non fusionnée, part de `epic/kanevas`) ajoute l'assistant de chaque membre (E-12, AD-73 à AD-78),
+sans migration : `src/services/assistant/` (catalogues d'outils MJ et Joueur fermés sur compte, univers et rôle ; port `AgentTransport`
+et adaptateurs `bouchon` et `claude-agent` ; disponibilité ; orchestration `repondre`), `src/routes/assistant.ts`
+(`GET /api/univers/:id/assistant`, `POST …/assistant/messages` ; formats dans `ARCHITECTURE.md`), et l'écran `frontend/src/ecrans/assistant*` (bouton flottant inversé, panneau, fil en
+mémoire, registre de blocs d'écriture). Outils : chercher, lire_fiche, lire_section, modifier_section, ajouter_a_section,
+lister_campagnes ; le MJ en plus creer_campagne et creer_scenario. Aucun outil de carte, de graphe, de proposition ni d'image.
+
+**Reste :** la fusion et le tag `v*` (recette acceptée par Monsieur). Pour l'assistant : le **premier vrai appel** au modèle n'a jamais eu lieu —
+l'adaptateur `claude-agent` n'est exercé que par une `query` factice. Il se joue sur l'URL déployée, après la fusion de `kanevas-am-deploy`
+(`k8s-home-lab`) et la pose du jeton `CLAUDE_CODE_OAUTH_TOKEN` par Monsieur (OpenBao `claude/kanevas`, property `token`) ; si le SDK refuse
+des outils en processus avec ce jeton, reprendre `claude-agent.ts` (AD-73). Sans jeton, l'assistant se dit indisponible. En bouchon, le monde de recette est semé au
 démarrage ; hors bouchon rien n'est amorcé. Aucune image n'existe avant le tag.
 
 **Pièges :**
+- Assistant : `repondre` est l'unique entrée ; ne jamais passer le compte, l'univers ou le rôle en paramètre d'un outil, ni lire
+  `process.env` hors `config/env.ts` (seule exception : `FRONTEND_DIR`, `routes/frontend.ts`). Une erreur du transport est rendue par un message fixe (jamais la cause, qui pourrait citer le jeton).
+  Le verrou « une demande à la fois par compte » est en mémoire du processus (une seule instance). Le panneau se monte dans sa propre racine
+  React (`assistant.tsx`) : il lit l'adresse par `assistant/adresse.ts`, pas par le routeur.
 - Node 20 est la cible (CI, Dockerfile). `better-sqlite3` est donc épinglé en `^12` : la 13 exige
   Node ≥ 22 et plante (SIGSEGV) sous Node 20. Ne pas remonter sans changer aussi la CI et le Dockerfile.
 - La suite a été jouée sous Node 22 dans les pods de la chaîne (pas de Docker) ; la CI Node 20 fait foi.
   La règle « conteneurs uniquement » de `CLAUDE.md` est la voie de référence ; un Node local ≥ 20 (README) est le repli quand
   Docker manque.
-- Les deux « PR non fusionnée » ci-dessus s'empilent : refonte → illustrations (cette branche). Les migrations 0005 (déjà sur `epic/kanevas`) et 0006 sont celles de la branche ; 0006 est à recaler seulement
-  si une autre tranche fusionne avant (AD-51).
+- Migrations : 0001 à 0006 sont sur `epic/kanevas` ; l'assistant n'en ajoute aucune. Une tranche suivante prend le numéro 0007 si rien d'autre ne fusionne avant (AD-51).
 - Vocabulaire : « Monsieur » = le commanditaire qui fait la recette ; « tranche » = une feature livrée ; « phase merge » = la
   fusion après recette ; E-n / B-n / P-n = écrans / besoins / parcours, définis dans `docs/ecrans.md` et `docs/parcours.md`.
 - La CI ne pousse d'image que sur `main` et sur un tag `v*` ; sur une PR elle ne fait qu'un build de
@@ -55,8 +67,8 @@ démarrage ; hors bouchon rien n'est amorcé. Aucune image n'existe avant le tag
   d'univers fourni ; un refus répond 404. Le MJ qui crée un compte-rendu n'en est pas l'auteur affiché ;
   l'auteur Joueur lit et écrit sa section même fermée aux autres joueurs (AD-61). Plusieurs campagnes
   peuvent être actives (AD-60) ; aucune suppression nulle part.
-- Refonte visuelle : le regard sur les maquettes (bureau, téléphone, clair, sombre) est celui de la vérification et de la recette ; aucun écran n'écrit de couleur en dur (tokens seuls) ; un écran neuf prend le cadre et les composants de `ui/`, il ne recrée ni bouton, ni menu, ni champ. E-5, E-10 à E-12 rattrapent le cadre dans leur tranche.
-- P-7 : le portrait (pièce jointe) est livré ; la demande à l'assistant (`kanevas-assistant-membre`) reste à venir.
+- Refonte visuelle : le regard sur les maquettes (bureau, téléphone, clair, sombre) est celui de la vérification et de la recette ; aucun écran n'écrit de couleur en dur (tokens seuls) ; un écran neuf prend le cadre et les composants de `ui/`, il ne recrée ni bouton, ni menu, ni champ. E-5, E-10 et E-11 rattrapent le cadre dans leur tranche ; E-12 le prend déjà (tokens, `Bouton`, `Chargement`, `PastilleRole`).
+- P-7 : le portrait (pièce jointe) et la demande à l'assistant (E-12) sont livrés.
 - Pièces jointes : le type est déterminé par la signature des octets, jamais par le navigateur ; seules PNG,
   JPEG, GIF, WebP sont servies en ligne, le reste (SVG compris) en `attachment` sous `nosniff` et CSP sandbox.
   Un refus de lecture répond 404 comme un identifiant inconnu (AD-22) ; 50 pièces au plus par section, pas de
@@ -85,6 +97,6 @@ démarrage ; hors bouchon rien n'est amorcé. Aucune image n'existe avant le tag
   relations/cartes/recherche, outil d'assistant.
 - Bouchon : au démarrage, sur une base sans univers, `semerBouchon` pose le monde de recette (Lame d'Ébène, Landes grises,
   CoF Mini…) puis `semerIllustrations` ; `KANEVAS_SANS_SEMIS=1` le coupe (utilisé par les e2e). Jamais hors bouchon.
-- Numéro de migration `0006` à recaler à la fusion si une autre tranche en a pris un (AD-51).
+- Migrations : voir « Pièges » (0001 à 0006 sont sur `epic/kanevas`).
 
 **Suivant :** administration.

@@ -152,7 +152,8 @@ dernier MJ — refusé avec la raison.
 ### P-3 — Préparer la séance du samedi (MJ, dimanche soir, bureau)
 1. **Vue d'ensemble** (E-3) : les campagnes actives, les derniers CR, la préparation en cours.
 2. **Campagne** (E-6) : il crée la campagne (« En préparation ») ou ouvre l'existante et la passe
-   « Active » ; il relit les CR les plus récents, crée ou ouvre un **scénario** (E-7) et l'écrit.
+   « Active » ; il relit les CR les plus récents, crée ou ouvre un **scénario** (E-7) et l'écrit
+   (ou demande à son **assistant** (E-12) de créer la campagne ou le scénario : le bloc d'écriture mène à E-6 ou E-7).
 3. Il coche ou ajoute des tâches de **préparation** (E-6).
 4. **Lore** : depuis la **liste d'un type** (E-8), il crée un PNJ ; sur la **fiche** (E-9), il
    écrit « Apparence » (lue des joueurs) et « Vérité — MJ seul », relie le PNJ à sa faction,
@@ -162,6 +163,7 @@ dernier MJ — refusé avec la raison.
    « fais un portrait pour Apparence » : l'image est attachée à la section.
 6. **Cartes** (E-10, E-11) : il place le PNJ sur la carte de la ville, passe en **mode Joueur**
    pour vérifier, puis rend la carte visible.
+*Échec de l'assistant* : une demande de création échoue ou l'assistant est indisponible : le panneau le dit (« Je n'ai pas pu répondre — réessayer » ou « L'assistant n'est pas disponible pour le moment. »), la création a pu avoir lieu avant que la réponse soit perdue (délai, connexion coupée) : avant de réessayer, Antor regarde E-6 ou E-7 pour ne pas créer deux fois, puis crée à la main si besoin (étape 2).
 *Moment fort* : la fiche en mode Joueur ne trahit aucun secret.
 *Échec* (illustration, étape 4) : il choisit un PDF ou un fichier vide — « « plan.pdf » n'est pas
 une image… » ou « « portrait.png » est vide. », l'illustration d'avant reste ; l'envoi est coupé —
@@ -193,6 +195,8 @@ pas — le cadre dit « Image indisponible. » et il garde « Remplacer » et «
    que la table sait.
 3. Il ouvre la **carte** (E-11), touche un token, relit la fiche.
 4. Ou il demande à son **assistant** (E-12) « que sait-on d'Aldric ? ».
+*Échec* : il demande de lire « Vérité » : l'assistant répond « Introuvable. », comme l'interface ;
+l'assistant est indisponible ou en erreur : le panneau le dit, et la fiche reste lisible (E-9).
 *Échec* (illustration, étape 2) : une image ne se charge pas (réseau du téléphone) — la carte
 montre la vignette de repli, jamais une image cassée, et la fiche « Image indisponible. » ; une
 fiche que le MJ a fermée aux joueurs entre-temps disparaît de la grille, et l'adresse de son
@@ -202,6 +206,8 @@ illustration répond comme une adresse inconnue.
 1. Le MJ a créé la fiche de son PJ et lui en a confié une section en auteur (E-9).
 2. Le joueur l'écrit sur la **fiche** (E-9), y dépose un portrait, ou demande à son **assistant**
    (E-12) d'y ajouter un paragraphe.
+*Échec* : il demande d'écrire dans une section qu'il lit sans l'écrire : « Vous ne pouvez pas modifier
+cette section. », rien n'est écrit.
 *Échec* (dépôt) : fichier vide, section déjà à 50 pièces jointes, envoi interrompu ou droit
 d'écriture retiré — le fichier n'est pas attaché, la raison est dite sur la section (E-9), rien n'est
 laissé à moitié.

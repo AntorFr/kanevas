@@ -284,6 +284,20 @@ décalé de 2 px) sur `:focus-visible`.
 - C : `role="status"`, non fermable ; textes exacts dans `docs/ecrans.md`. Connexion perdue : tout
   geste qui écrit est désactivé (`aria-disabled`, 45 %).
 
+**Panneau d'assistant** (E-12, `kanevas-assistant-membre`).
+- V : un bouton flottant « Demander à Kanevas » **inversé** (`--texte` sur `--fond`, voir « Écarts
+  assumés »), rayon pastille, icône `sparkles`, `--ombre-flottant`, en bas à droite ; le panneau en
+  `--fond-lateral`, bord gauche `--bord-champ`, 380 px, plein écran sous 760 px ; message de la
+  personne `--surface-3`, réponse `--surface` avec bord `--bord` ; bloc « Écrit par l'assistant » :
+  `--surface-2`, liseré `--accent`, le mot en `--accent-texte` ; erreur : `--danger-fond` et
+  `--danger`. Le bouton « Envoyer » et les autres sont des **Boutons** ci-dessus.
+- C : le bouton est atteignable à la tabulation et porte `aria-expanded` ; le panneau est un
+  `complementary` titré (`h2`) ; à l'ouverture le focus va au champ, Échap ferme et rend le focus au
+  bouton ; le fil est un `role="log"` (`aria-live="polite"`) ; « Kanevas réfléchit… » est un
+  `role="status"`, l'erreur un `role="alert"` ; l'état indisponible désactive le champ **et** dit
+  pourquoi. Le bouton ne masque jamais un champ ou un bouton de l'écran : le contenu garde une marge
+  basse de la hauteur du bouton. Aucun état par la teinte seule.
+
 **Carte de fiche** (grille de E-8, `kanevas-illustrations`).
 - V : pas de cadre ni d'ombre (les cartes ne sont pas un kit) ; une vignette 4:3, rayon
   `--rayon-champ`, filet intérieur `--bord` (`--bord-fort` au survol), l'image en `object-fit:
