@@ -70,8 +70,9 @@ par le client : il lit comme un Joueur **qui n'est l'auteur d'aucune section** (
 | `univers` (ajout) | `systeme_id`, facultatif, → `systemes_jeu` | `NULL` par défaut (aucun univers existant n'est rattaché) |
 
 Un univers a **au plus un** système ; un système peut servir plusieurs univers. Détacher remet
-`systeme_id` à `NULL` et ne touche à aucun gabarit. Rien n'est amorcé : le catalogue naît vide, les
-systèmes sont créés par les MJ.
+`systeme_id` à `NULL` et ne touche à aucun gabarit. Rien n'est amorcé hors bouchon : le catalogue naît vide, les
+systèmes sont créés par les MJ. En bouchon seulement, le semis de démonstration crée « CoF Mini » et
+« Chroniques Oubliées Fantasy » (`src/bouchon/depart.ts`).
 
 **Droits** (AD-25) : le catalogue (`id`, `nom`) se lit par tout compte qui est MJ d'au moins un univers ;
 un système, ses gabarits et le nombre d'univers qui l'utilisent se lisent par les membres d'un

@@ -38,13 +38,13 @@ menu de l'avatar qui porte le thème et la déconnexion) et les composants parta
 boîte de dialogue, interrupteur, pastille…) sont communs à tous les écrans. Les polices (Fraunces, Newsreader, Inter,
 `@fontsource`) et les icônes (`lucide-react`) sont empaquetées, sans requête vers un hôte tiers (AD-92).
 
-Tests sans Docker : `npm run typecheck` puis `npm test` (ils jouent aussi les e2e là où Playwright est installé, ce qui est long : voir « Tests de bout en bout ») ; la voie Docker de référence est dans `CLAUDE.md`.
+Tests sans Docker : `npm run typecheck` puis `npm test` (ils jouent aussi les e2e là où Playwright est installé, ce qui est long : voir « Tests de bout en bout » ; un seul fichier : `node --import tsx --test src/e2e/<fichier>.test.ts`, et jamais deux suites à la fois, les e2e démarrent leurs serveurs et échouent en masse sous concurrence) ; la voie Docker de référence est dans `CLAUDE.md`.
 
 ## Démarrage local
 
 ```bash
 # écrit node_modules/ et ./data/ (base et session.key) dans le dépôt monté, en root ; les deux sont ignorés par git.
-# Sans `npm run build` préalable, cette voie ne sert que l'API : voir plus bas.
+# Sans `npm run build` préalable (fait dans l'hôte, hors de cette commande), cette voie ne sert que l'API : voir plus bas.
 docker run --rm -p 3001:3001 -v "$PWD":/src -w /src node:20-bookworm-slim sh -c "npm ci && npm run dev"
 # puis, depuis l'hôte : curl http://localhost:3001/healthz
 ```
