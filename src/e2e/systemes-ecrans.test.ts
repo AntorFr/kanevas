@@ -251,14 +251,17 @@ describe('kanevas-il-systemes-ecrans', { skip: skipBrowser }, () => {
   });
 
   test('E-15 et E-8 : le titre h1 a la couleur du texte principal, icône et titre alignés sur la colonne', opts, async () => {
-    await antor.setViewportSize({ width: 1280, height: 800 });
+    const frais = await connecte(browser, srv.base, 'Antor'); // own context: earlier tests leave the shared page offline
+    const pg = frais.page;
     const e8 = `/univers/${ids["Lame d'Ébène"]}/fiches/personnages`;
+    await va(pg, '/systemes'); // earlier tests detach systems: take one E-16 still lists
+    const e15 = new URL(await pg.locator('a[href^="/systemes/"]').first().evaluate((a: HTMLAnchorElement) => a.href)).pathname;
     for (const w of [1280, 390]) {
-      await antor.setViewportSize({ width: w, height: 800 });
-      for (const url of [`/systemes/${ids['CoF Mini']}`, e8]) {
-        await va(antor, url);
-        assert.ok(await antor.locator('header.tete-liste h1').count(), url + ' : ' + (await texte(antor)).slice(0, 200));
-        const m = await antor.evaluate(() => {
+      await pg.setViewportSize({ width: w, height: 800 });
+      for (const url of [e15, e8]) {
+        await va(pg, url);
+        assert.ok(await pg.locator('header.tete-liste h1').count(), url + ' : ' + (await texte(pg)).slice(0, 200));
+        const m = await pg.evaluate(() => {
           const probe = document.createElement('span');
           probe.style.color = 'var(--texte)';
           document.body.appendChild(probe);
@@ -280,7 +283,7 @@ describe('kanevas-il-systemes-ecrans', { skip: skipBrowser }, () => {
         if (m.xGlyphe !== null) assert.equal(m.xGlyphe, m.xCol, `${w}px ${url} : icône décalée`);
       }
     }
-    await photo(antor, 'titre-e15-tel');
-    await antor.setViewportSize({ width: 1280, height: 720 });
+    await photo(pg, 'titre-e15-tel');
+    await frais.ctx.close();
   });
 });
