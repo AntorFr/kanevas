@@ -1,4 +1,4 @@
-import { BookOpen, Eye, Pencil, PenLine, UserRound } from 'lucide-react';
+import { BookOpen, ChevronDown, Eye, Pencil, PenLine, UserRound } from 'lucide-react';
 import { useEffect, useId, useRef } from 'react';
 
 import { Interrupteur } from '../../ui';
@@ -72,19 +72,22 @@ export function ReglageAudience({
           <UserRound size={14} strokeWidth={1.75} aria-hidden="true" />
           Auteur
         </span>
-        <select
-          className="choix"
-          value={a.auteurId ?? ''}
-          disabled={inactif}
-          onChange={(e) => onChange({ auteurId: e.target.value === '' ? null : Number(e.target.value) })}
-        >
-          <option value="">aucun</option>
-          {joueurs.map((j) => (
-            <option key={j.compteId} value={j.compteId}>
-              {j.username}
-            </option>
-          ))}
-        </select>
+        <span className="champ-liste">
+          <select
+            className="choix"
+            value={a.auteurId ?? ''}
+            disabled={inactif}
+            onChange={(e) => onChange({ auteurId: e.target.value === '' ? null : Number(e.target.value) })}
+          >
+            <option value="">aucun</option>
+            {joueurs.map((j) => (
+              <option key={j.compteId} value={j.compteId}>
+                {j.username}
+              </option>
+            ))}
+          </select>
+          <ChevronDown size={16} strokeWidth={1.75} aria-hidden="true" />
+        </span>
       </label>
       <Interrupteur etiquette="L’auteur la lit" icone={BookOpen} coche={a.auteurLit} disabled={inactif || a.auteurId === null} onChange={(v) => onChange({ auteurLit: v })} />
       <Interrupteur etiquette="L’auteur l’écrit" icone={Pencil} coche={a.auteurEcrit} disabled={inactif || a.auteurId === null} onChange={(v) => onChange({ auteurEcrit: v })} />
