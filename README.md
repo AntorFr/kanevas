@@ -43,7 +43,8 @@ Tests : `npm run typecheck` puis `npm test` — `npm test` joue aussi les e2e qu
 
 ```bash
 # écrit node_modules/ et ./data/ (base et session.key) dans le dépôt monté, en root ; les deux sont ignorés par git.
-# Sans `npm run build` préalable, cette voie ne sert que l'API : voir plus bas.
+# Sans `npm run build` préalable, cette voie ne sert que l'API et n'a pas d'écran de connexion :
+# pour l'application entière en bouchon (`KANEVAS_STUB=1`), voir plus bas.
 docker run --rm -p 3001:3001 -v "$PWD":/src -w /src node:20-bookworm-slim sh -c "npm ci && npm run dev"
 # puis, depuis l'hôte : curl http://localhost:3001/healthz
 ```
@@ -150,7 +151,4 @@ manifeste `clusters/tantive/games/kanevas-helm-config.yml` et client OIDC
 fusionner `k8s-home-lab`, dont la fusion déploie.
 
 Pour la carte du code, les invariants et les options écartées, voir `ARCHITECTURE.md`, dont le
-tableau liste les décisions `AD-n` retenues pour l'epic, construites ou non (« La cible » dit ce qui est construit), avec leur numéro stable ; les numéros absents sont des décisions retirées ou d'autres tranches, aucune n'est cachée ici. Des
-commentaires du code citent encore `plan.md`, `technique.md` ou `socle-projet` : ce sont des
-documents de conception tenus hors de ce dépôt (magasin de pilotage de la chaîne SDLC), dont ce
-qui doit survivre est dans `ARCHITECTURE.md` et `docs/`.
+tableau liste les décisions `AD-n` retenues pour l'epic, construites ou non (« La cible » dit ce qui est construit), avec leur numéro stable ; les numéros absents sont des décisions retirées ou d'autres tranches, aucune n'est cachée ici.
