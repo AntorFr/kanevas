@@ -11,6 +11,7 @@ import './cartes/cartes.css';
 import './carte/carte.css';
 import { adresseFond, FORMES } from './cartes/commun';
 import { AjoutFiche } from './carte/ajout-fiche';
+import { CadreGraphe } from './carte/cadre-graphe';
 import { CadreIllustre } from './carte/cadre-illustre';
 import { adresseFiche, ECHEC, libelleType, type CarteLue, type Element } from './carte/types';
 
@@ -347,7 +348,15 @@ function Corps({
           {gerer && <p className="carte-aide">Flèches : déplacer de 1 % (Maj : 5 %)</p>}
         </>
       ) : (
-        elements.length === 0 && <div className="etat"><p>{videTexte}</p></div>
+        <CadreGraphe
+          universId={universId}
+          elements={elements}
+          liens={lue.liens ?? []}
+          gerer={gerer}
+          selection={selection}
+          onSelection={setSelection}
+          vide={videTexte}
+        />
       )}
 
       {gerer && choisi && (

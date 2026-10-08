@@ -37,3 +37,11 @@
   .carte-entete .carte-actions { width: 100%; }
   .carte-sur li { padding: var(--e-2) var(--e-3); }
 }
+.graphe-zone { overflow: auto; max-width: 100%; border: 1px solid var(--bord); border-radius: var(--rayon-panneau); }
+.graphe-zone .carte-cadre { border: 0; border-radius: 0; overflow: visible; max-width: none; }
+.graphe-vide { min-height: 150px; }
+.graphe-liens { position: absolute; inset: 0; pointer-events: none; }
+.graphe-lien line { stroke: var(--texte-2); stroke-width: 1.5; }
+.graphe-pointe { fill: var(--texte-2); }
+.graphe-lien text { fill: var(--texte-2); font-size: 12px; }
+.graphe .carte-token { touch-action: manipulation; }
