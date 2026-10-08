@@ -1,0 +1,17 @@
+.cartes-liste { list-style: none; margin: var(--e-3) 0; padding: 0; background: var(--surface); border: 1px solid var(--bord); border-radius: var(--rayon-champ); }
+.carte-ligne { display: flex; align-items: center; gap: var(--e-3); padding: var(--e-2) var(--e-4); border-bottom: 1px solid var(--bord); flex-wrap: wrap; }
+.carte-ligne:last-child { border-bottom: 0; }
+.carte-vignette { flex: none; width: 64px; height: 40px; border-radius: 4px; border: 1px solid var(--bord); object-fit: cover; background: var(--surface-2, var(--bord)); display: block; }
+.carte-vignette.neutre { background-image: repeating-linear-gradient(45deg, transparent 0 6px, var(--bord) 6px 7px); }
+.carte-corps { flex: 1; min-width: 12rem; }
+.carte-corps a { color: var(--texte); overflow-wrap: anywhere; }
+.carte-corps small { display: block; color: var(--texte-2); }
+.carte-etat { display: flex; align-items: center; gap: var(--e-2); }
+.carte-formulaire { background: var(--surface); border: 1px solid var(--bord); border-radius: var(--rayon-champ); padding: var(--e-3) var(--e-4); margin: var(--e-3) 0; }
+.carte-formulaire .actions { display: flex; gap: var(--e-2); align-items: center; flex-wrap: wrap; }
+.carte-fichier { display: flex; gap: var(--e-2); align-items: center; flex-wrap: wrap; margin: var(--e-3) 0; }
+.carte-fichier input[type='file'] { position: absolute; width: 1px; height: 1px; opacity: 0; overflow: hidden; }
+.bloc-cartes { list-style: none; margin: 0 0 var(--e-2); padding: 0; }
+.bloc-cartes li { display: flex; gap: var(--e-2); align-items: baseline; min-width: 0; }
+.bloc-cartes a { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.bloc-cartes small { color: var(--texte-2); flex: none; }
