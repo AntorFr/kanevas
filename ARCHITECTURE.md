@@ -64,7 +64,7 @@ en cours, vidé au démarrage sauf avec une base en mémoire, où le dossier est
 ## Routes `/api`
 
 Toutes gardées par la session (401 sans session), sauf `/api/auth/*`. Les erreurs de service sont
-`introuvable` 404, `refuse` 403, `invalide` 400, `conflit` 409 (`section_modifiee`, `nom_pris`, `gabarit_modifie`, `scenario_modifie`, `relation_existante`, `limite_relations`, `limite_pieces` : 50 pièces par section ; 400 `fichier_vide` pour un fichier vide ; `auto_relation` est un 400 `invalide`). Retirer le dernier
+`introuvable` 404, `refuse` 403, `invalide` 400, `conflit` 409 (`section_modifiee`, `nom_pris`, `gabarit_modifie`, `scenario_modifie`, `relation_existante`, `limite_relations`, `limite_pieces` : 50 pièces par section, `fiche_deja_placee` et `carte_pleine` des cartes ; 413 `fond_trop_lourd` pour un fond de plus de 25 Mo ; 400 `fichier_vide` pour un fichier vide ; `auto_relation` est un 400 `invalide`). Retirer le dernier
 MJ répond `invalide` 400 avec la raison ; un contenu de section de plus de 20 000 caractères aussi (AD-91). Le corps d'une erreur de service est `{message}` (plus `code` quand le service en donne un) ; une adresse `/api/...` qu'aucune route ne porte (par exemple une route retirée par AD-94) répond 404 par la page HTML « Page introuvable. », pas par du JSON. Le serveur écoute sur `0.0.0.0` (`-p 3001:3001` suffit).
 En mode bouchon, `POST /connexion-bouchon` attend un corps form-urlencoded `compte=<identifiant>`.
 Les lignes qui citent AD-93 ou AD-94 sont celles de `kanevas-illustrations`, construites par elle ;
@@ -98,7 +98,7 @@ elles remplacent les anciennes routes `GET /api/univers/:id/systeme` et `…/sys
 | `GET\|POST /api/campagnes/:cid/taches`, `PUT /api/taches/:tid` | préparation `{categorie, libelle}` ; cocher `{faite}`. MJ seul, 404 pour tout autre |
 | `POST /api/univers/:id/comptes-rendus` | `{campagneId, titre, texte?}` ; tout membre (AD-61) ; rend la fiche |
 | `GET .../comptes-rendus` (`?campagne`, `?curseur`), `GET .../campagnes/:cid/comptes-rendus` | comptes-rendus lisibles, du plus récent, 100 au plus par page et `suivant` ; `?mode=joueur` |
-| `GET\|POST /api/univers/:id/cartes` | liste des cartes lisibles (`?curseur`) ; création `{titre, forme}` (`illustree` \| `graphe`), ou multipart avec `titre` et `forme` **avant** `fichier` (fond d'une carte illustrée). MJ hors mode Joueur seul (AD-72) |
+| `GET\|POST /api/univers/:id/cartes` | liste des cartes lisibles (`?curseur`) ; création `{titre, forme}` (`forme` obligatoire en JSON ; le défaut « illustrée » est celui du formulaire et de la voie multipart ; `illustree` \| `graphe`), ou multipart avec `titre` et `forme` **avant** `fichier` (fond d'une carte illustrée). MJ hors mode Joueur seul (AD-72) |
 | `GET\|PATCH /api/univers/:id/cartes/:cid` | `lireCarte` : carte, éléments et liens déjà filtrés (AD-68) ; règle `{titre?, visible?}` |
 | `PUT\|GET /api/univers/:id/cartes/:cid/fond` | remplacer le fond (multipart, champ `fichier`, image de 25 Mo au plus, AD-69) ; le lire (droit réel du compte, sans mode) |
 | `POST /api/univers/:id/cartes/:cid/elements`, `PATCH\|DELETE …/elements/:eid` | placer `{ficheId, x?, y?}` (pas de position sur un graphe) ; déplacer `{x, y}` ; retirer (204, la fiche reste) |

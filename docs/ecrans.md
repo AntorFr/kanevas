@@ -1435,7 +1435,7 @@ graphe naît vide, ses fiches se choisissent sur la carte. « Annuler » ferme l
 formulaire reste proposé) ; Joueur « Aucune carte n'est visible pour l'instant. » ; titre vide ou
 trop long : « Erreur : le titre est obligatoire. » / « Erreur : 80 caractères au plus. » ; fond qui
 n'est pas une image PNG, JPEG, GIF ou WebP, ou vide : « Erreur : ce fichier n'est pas une image (PNG,
-JPEG, GIF ou WebP). » ; fond de plus de 25 Mo : « Erreur : l'image dépasse 25 Mo. » ; échec de
+JPEG, GIF ou WebP). » ; fond de plus de 25 Mo (réponse 413) : « Erreur : l'image dépasse 25 Mo. » ; échec de
 création : « La carte n'a pas pu être créée. Réessayez. », le formulaire garde sa saisie (le fond
 choisi aussi). Une vignette qui ne se charge pas montre le motif neutre.
 
@@ -1614,8 +1614,8 @@ les menus du sélecteur d'univers des maquettes `e03`, `e08`, `e09`, `e14` et la
 cadre** de tous les écrans d'un univers (barre latérale, sélecteur d'univers, menu du compte,
 barre haute, bascule de mode, bouton « Demander à Kanevas », tiroir au téléphone) et pour les
 composants partagés. Leurs états s'ouvrent par l'adresse (`#etat-joueur`, `#etat-menu`,
-`#etat-perdue`… ; la liste est en tête de leur style). Le bloc « Cartes » de `e03` arrive avec
-`kanevas-cartes-graphes` ; jusque-là il n'est pas affiché.
+`#etat-perdue`… ; la liste est en tête de leur style). Le bloc « Cartes visibles » de `e03` est affiché depuis
+`kanevas-cartes-graphes`.
 
 **D'avant la charte** : les autres. Elles valent pour le contenu et le vocabulaire, pas pour la
 forme ; un écran qui n'a qu'elles se construit dans le cadre et avec les composants de la
