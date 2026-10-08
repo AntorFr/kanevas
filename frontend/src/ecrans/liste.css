@@ -121,7 +121,6 @@
 .liste-statut-champ { display: inline-block; flex: none; }
 .liste-statut-champ svg { right: 10px; }
 .liste-statut-champ .liste-statut { padding-right: var(--e-6); }
-.ajout-tache .champ > span:first-child { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; margin: 0; }
 .formulaire-ligne.ouvert .actions { display: flex; gap: var(--e-2); }
 
 /* ---------- La grille de cartes de fiches (E-8, kanevas-illustrations) ---------- */

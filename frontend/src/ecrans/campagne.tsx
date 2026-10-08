@@ -305,7 +305,7 @@ function PanneauPreparation({ campagneId }: { campagneId: number }) {
           <Plus size={14} strokeWidth={1.75} />
           Nouvelle tâche
         </div>
-        <Champ etiquette="Nouvelle tâche" placeholder="1 à 200 caractères" value={libelle} erreur={erreur} onChange={(e: { target: { value: string } }) => setLibelle(e.target.value)} />
+        <Champ etiquette="Libellé" aria-label="Nouvelle tâche" placeholder="1 à 200 caractères" value={libelle} erreur={erreur} onChange={(e: { target: { value: string } }) => setLibelle(e.target.value)} />
         <Champ etiquette="Catégorie" liste value={categorie} onChange={(e: { target: { value: string } }) => setCategorie(e.target.value as Categorie)}>
           {CATEGORIES.map((c) => (
             <option key={c.valeur} value={c.valeur}>
