@@ -5,8 +5,8 @@
 > finie se détaillent dans la tranche qui le construit.
 
 > **Construit à ce jour** : E-1, E-2, E-3 (nom, navigation et blocs : système de jeu, campagnes actives, derniers comptes-rendus, préparation pour le MJ), E-4, E-6, E-7, E-13, E-8 (avec la
-> recherche dans un type, en grille de cartes illustrées), E-9 (avec les blocs Relations et Pièces jointes et l'illustration en tête), E-14 (Paramètres), E-15 (Système de jeu, à `/systemes/:sid`), E-16 (Systèmes de jeu), la ligne « Campagne » de E-9, la session
-> et la barre latérale. E-5 et E-10 à E-12 sont la cible.
+> recherche dans un type, en grille de cartes illustrées), E-9 (avec les blocs Relations et Pièces jointes et l'illustration en tête), E-12 (Assistant), E-14 (Paramètres), E-15 (Système de jeu, à `/systemes/:sid`), E-16 (Systèmes de jeu), la ligne « Campagne » de E-9, la session
+> et la barre latérale. E-5, E-10 et E-11 sont la cible.
 
 ## Format
 
@@ -782,8 +782,8 @@ B-15 → E-6 (liste et page) ; B-16 → E-6 et E-7 ; B-17 → E-6 ; B-18 → E-6
 B-20 → E-13. Parcours : P-3 étapes 1 à 3 (E-3, E-6, E-7), P-4 en entier, P-5 étape 1 (E-13 →
 E-9) ; P-6 étape 1 ne lit que les blocs de E-3 (derniers comptes-rendus) ; B-18 et B-20 le citent, mais aucune étape de P-6 ne passe par E-6 ni E-13. Les trois rôles : le Joueur a E-3, E-6
 (sans scénarios ni préparation), E-13 ; l'admin d'instance sans rôle n'a aucun de ces écrans.
-Reste aux autres tranches : créer une campagne ou un scénario par l'assistant
-(`kanevas-assistant-membre`), la proposition de mise à jour depuis un CR (`kanevas-monde`).
+Reste aux autres tranches : la proposition de mise à jour depuis un CR (`kanevas-monde`) ; créer une campagne ou un scénario par
+l'assistant est construit (E-12, `kanevas-assistant-membre`).
 
 ## Détail des écrans de `kanevas-relier-chercher`
 
@@ -988,7 +988,7 @@ bas :
 - **la saisie** : le champ, étiqueté « Demander à Kanevas » par une étiquette visible au-dessus de lui (son texte d'aide est « Votre question »), dans tous les états où il est affiché, et « Envoyer » (Entrée
   envoie, Maj+Entrée va à la ligne).
 
-Le **fil vit dans le navigateur**, dans un contexte du shell d'univers (AD-28) : il survit à un
+Le **fil vit dans le navigateur**, dans un magasin du module `frontend/src/ecrans/assistant/fil.ts`, hors du routeur et du stockage du navigateur (AD-28) : il survit à un
 changement d'écran et à la fermeture du panneau ; il disparaît au rechargement de la page, au
 changement d'univers et à la déconnexion ; « Nouvelle conversation » le vide. Il n'est écrit
 nulle part (ni stockage du navigateur, ni serveur). Le client envoie le message et les 20 derniers

@@ -111,48 +111,6 @@ bougent : l'apparition d'un menu, d'un réglage ou d'une boîte (opacité et 4 p
 toast, l'interrupteur. Aucune animation d'entrée de page. Sous `prefers-reduced-motion`,
 `--duree` vaut 0.
 
-- **Bouton** (neutre, principal, danger, petit). V : neutre `--surface-3` contour `--bord-champ` ;
-  principal `--accent` texte `--sur-accent` ; danger contour et texte `--danger` ; rayon
-  `--rayon-champ`. Désactivé : opacité réduite **et** `aria-disabled`, jamais la teinte seule.
-  C : atteignable à la tabulation, Entrée et Espace l'activent ; un bouton destructif porte le
-  verbe et l'objet (« Retirer la section Apparence »), jamais « OK » ; pendant l'action, il
-  affiche « … » et ne se déclenche pas deux fois.
-- **Champ** (texte, zone de texte, liste). V : `--surface-2`, contour `--bord-champ`, rayon
-  `--rayon-champ`. C : une étiquette visible liée au champ ; l'erreur s'affiche sous le champ, en
-  `--danger` avec le mot « Erreur » devant, reliée par `aria-describedby`.
-- **Pastille de rôle / d'audience** (MJ, Joueur, « MJ seul », « lue des joueurs »). V : fond
-  `--mj-fond` + texte `--mj`, ou `--table-fond` + `--table`, rayon pastille. C : l'état est dit par
-  **mot + teinte**, jamais la teinte seule ; même teinte pour le même sens sur tous les écrans.
-- **Panneau** (une section de fiche, un bloc d'écran). V : `--surface`, bord `--bord`, rayon
-  `--rayon-panneau` ; un panneau réservé au MJ porte un liseré `--mj` à gauche et le mot « MJ
-  seul ». C : un panneau est un `section` titré (`h2`) ; son titre est lu par un lecteur d'écran.
-- **Barre latérale.** V : `--fond-lateral`, item actif `--accent-fond` + `--accent-texte` ; sur
-  téléphone elle devient un tiroir sous un bouton « Menu ». C : navigation `nav` ; l'item actif a
-  `aria-current="page"` ; le tiroir se ferme à Échap et rend le focus à « Menu » ; un item dont
-  l'écran n'est pas proposé au rôle n'est pas affiché.
-- **Bascule MJ / Joueur** (mode Joueur de la fiche). V : deux segments, l'actif en `--mj-fond`
-  (mode MJ) ou `--table-fond` (mode Joueur). C : groupe de deux boutons radio ; le changement est
-  annoncé (« Mode Joueur : vous voyez ce que voit un joueur »).
-- **Bandeau** (mode bouchon, connexion perdue). V : pleine largeur, `--danger-fond` pour la
-  connexion perdue, `--mj-fond` pour le mode bouchon. C : `role="status"` ; non fermable ; texte
-  exact dans `docs/ecrans.md`.
-- **Panneau d'assistant** (E-12). V : un bouton flottant « Demander à Kanevas » en `--accent` /
-  `--sur-accent`, rayon pastille, en bas à droite ; le panneau en `--fond-lateral`, bord gauche
-  `--bord-champ`, 380 px, plein écran sous 760 px ; message de la personne `--surface-3`, réponse
-  `--surface` avec bord `--bord` ; bloc « Écrit par l'assistant » : `--surface-2`, liseré `--accent`,
-  le mot « Écrit par l'assistant » en `--accent-texte` ; erreur : `--danger-fond` et `--danger`.
-  C : le bouton est atteignable à la tabulation et porte `aria-expanded` ; le panneau est un
-  `complementary` titré (`h2`) ; à l'ouverture le focus va au champ, Échap ferme et rend le focus au
-  bouton ; une nouvelle réponse est annoncée (`role="log"`, `aria-live="polite"`) ; « Kanevas
-  réfléchit… » est un `role="status"` ; l'erreur un `role="alert"` ; l'état indisponible désactive
-  le champ **et** dit pourquoi. Le bouton ne masque jamais un champ ou un bouton de l'écran : le
-  contenu garde une marge basse de la hauteur du bouton. Aucun état par la teinte seule.
-- **Fenêtre** (créer une fiche). V : `--surface` sur voile ; C : `role="dialog"`, le focus y
-  entre et y reste, Échap ferme, le focus revient au bouton qui l'a ouverte.
-- **État d'écran** (vide, chargement, erreur, refus). V : un bloc centré, texte `--texte-2`, un
-  titre, une action. C : chargement `role="status"` ; erreur `role="alert"` avec le bouton
-  « Réessayer ».
-
 ## 3. Usages
 
 Ceux que Kanevas suit :
@@ -325,6 +283,20 @@ décalé de 2 px) sur `:focus-visible`.
   perdue `--danger` sur `--danger-fond` avec `wifi-off` ; mode bouchon `--mj` sur `--mj-fond`.
 - C : `role="status"`, non fermable ; textes exacts dans `docs/ecrans.md`. Connexion perdue : tout
   geste qui écrit est désactivé (`aria-disabled`, 45 %).
+
+**Panneau d'assistant** (E-12, `kanevas-assistant-membre`).
+- V : un bouton flottant « Demander à Kanevas » **inversé** (`--texte` sur `--fond`, voir « Écarts
+  assumés »), rayon pastille, icône `sparkles`, `--ombre-flottant`, en bas à droite ; le panneau en
+  `--fond-lateral`, bord gauche `--bord-champ`, 380 px, plein écran sous 760 px ; message de la
+  personne `--surface-3`, réponse `--surface` avec bord `--bord` ; bloc « Écrit par l'assistant » :
+  `--surface-2`, liseré `--accent`, le mot en `--accent-texte` ; erreur : `--danger-fond` et
+  `--danger`. Le bouton « Envoyer » et les autres sont des **Boutons** ci-dessus.
+- C : le bouton est atteignable à la tabulation et porte `aria-expanded` ; le panneau est un
+  `complementary` titré (`h2`) ; à l'ouverture le focus va au champ, Échap ferme et rend le focus au
+  bouton ; le fil est un `role="log"` (`aria-live="polite"`) ; « Kanevas réfléchit… » est un
+  `role="status"`, l'erreur un `role="alert"` ; l'état indisponible désactive le champ **et** dit
+  pourquoi. Le bouton ne masque jamais un champ ou un bouton de l'écran : le contenu garde une marge
+  basse de la hauteur du bouton. Aucun état par la teinte seule.
 
 **Carte de fiche** (grille de E-8, `kanevas-illustrations`).
 - V : pas de cadre ni d'ombre (les cartes ne sont pas un kit) ; une vignette 4:3, rayon

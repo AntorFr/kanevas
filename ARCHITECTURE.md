@@ -130,10 +130,13 @@ base en snake_case (`docs/donnees.md`).
   0001), `systemes_jeu`, `gabarits` (migration 0002), `campagnes`, `scenarios`, `taches_preparation` (migration 0003), `pieces_jointes` (migration 0004), `relations`, `recherche_fiches` et `recherche_sections` (FTS5, migration 0005) ; trois colonnes d'illustration sur `fiches` (migration 0006) ; numéros provisoires : voir `docs/donnees.md`. Aucune requête SQL hors de `src/services/` et `src/db/`.
 - **Toute route hors `/healthz`, `/api/auth/*` et, en bouchon, `/connexion-bouchon` est gardée par la session** ; sous `/api` un
   défaut de session répond 401, ailleurs il redirige vers la connexion (AD-15).
-- **Rien n'appelle un LLM** : les transports compilent mais ne sont reliés à
-  aucune route. Aucun secret `ANTHROPIC_API_KEY` n'est déployé.
+- **Une seule route appelle un modèle : l'assistant** (`src/routes/assistant.ts`, par `repondre`, AD-73), avec le jeton de
+  l'abonnement `CLAUDE_CODE_OAUTH_TOKEN` ; le transport texte de `services/llm/*` n'est relié à rien. Aucun secret `ANTHROPIC_API_KEY` n'est déployé.
+  Les deux routes (sous la garde de session, AD-15) : `GET /api/univers/:id/assistant` rend `{disponible, catalogue: 'mj'|'joueur'}` ;
+  `POST /api/univers/:id/assistant/messages`, corps `{message, historique: [{role: 'user'|'assistant', content}]}`, rend
+  `{reponse, evenements: [{type, libelle, cible}]}` ; une erreur rend `{message, code}` (codes d'AD-75 et d'AD-77).
 - Client OIDC : `client_id` `kanevas`, callback
-  `https://kanevas.tantive.berard.me/api/auth/oidc/callback`, émetteur
+  `https://kanevas.berard.me/api/auth/oidc/callback`, émetteur
   `https://auth.berard.me`. Ces valeurs sont partagées avec la déclaration du
   client dans `k8s-home-lab` : les changer ici impose de changer là-bas.
 
@@ -158,8 +161,8 @@ base en snake_case (`docs/donnees.md`).
 # La cible
 
 > Construit à ce jour : la session, le mode bouchon, les tables et leurs fonctions de service,
-> les systèmes de jeu et leurs gabarits, les relations et la recherche dans un type, le suivi (campagnes, scénarios, préparation, comptes-rendus), les écrans E-1 à E-4, E-6 à E-9 (E-9 avec son bloc Pièces jointes), E-13, E-14, E-15 et E-16, l'illustration des fiches, et le stockage des fichiers sur le volume. Le reste (agents, images,
-> administration) est la cible des tranches suivantes.
+> les systèmes de jeu et leurs gabarits, les relations et la recherche dans un type, le suivi (campagnes, scénarios, préparation, comptes-rendus), les écrans E-1 à E-4, E-6 à E-9 (E-9 avec son bloc Pièces jointes), E-13, E-14, E-15 et E-16, l'illustration des fiches, le stockage des fichiers sur le volume, et l'assistant du membre (E-12 ; ses outils : chercher, lire, écrire dans une section, créer une campagne ou un scénario). Le reste (propositions de mise à jour, images,
+> cartes, administration) est la cible des tranches suivantes.
 
 ## Organes, et qui parle à qui
 
@@ -283,7 +286,7 @@ Les numéros sont stables. Une décision retirée garde son numéro, avec ce qui
 
 - **Image** `ghcr.io/antorfr/kanevas:<x.y.z>`, publique, construite par la CI sur un tag semver ;
   la version n'a qu'une source, le tag.
-- **URL** `https://kanevas.tantive.berard.me` (wildcard, rien à créer).
+- **URL** `https://kanevas.berard.me` (wildcard, rien à créer).
 - **Volume** `hostPath /mnt/data/kanevas/data` monté sur `/data` : la base, les pièces jointes,
   `CODEX_HOME`. Le jeu de données répliqué du nœud est la sauvegarde ; restaurer, c'est
   remettre ce dossier.

@@ -3,7 +3,7 @@
   position: fixed; right: var(--e-5); bottom: var(--e-5); z-index: 30;
   display: inline-flex; align-items: center; gap: var(--e-2);
   padding: var(--e-3) var(--e-5); border: 0; border-radius: var(--rayon-pastille);
-  background: var(--accent); color: var(--sur-accent);
+  background: var(--texte); color: var(--fond);
   font: 600 var(--t-14) var(--police-texte); cursor: pointer; box-shadow: var(--ombre-flottant);
 }
 .asst-bouton:focus-visible, .asst-panneau textarea:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
