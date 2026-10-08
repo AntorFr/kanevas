@@ -27,7 +27,7 @@
 
 /* The add form on one line: the identifier takes the room, the role and the button their content */
 .admin-zones .formulaire-ligne { flex-wrap: nowrap; }
-.admin-zones .formulaire-ligne .champ:first-child { flex: 1 1 0; min-width: 0; }
+.admin-zones .formulaire-ligne .champ:first-child { flex: 1 1 12rem; min-width: 12rem; }
 .admin-zones .formulaire-ligne .champ:nth-child(2) { flex: none; min-width: 0; width: 7rem; }
 .admin-zones .formulaire-ligne .bouton { flex: none; white-space: nowrap; }
 @media (max-width: 760px) { .admin-zones .formulaire-ligne { flex-wrap: wrap; } }
