@@ -105,7 +105,8 @@
 
 /* Phone */
 @media (max-width: 760px) {
-  .panneaux-suivi .panneau > .action-sec, .panneaux-suivi .panneau.reserve-mj > .action-sec { position: static; margin: var(--e-2) 0 0 calc(-1 * (var(--e-2) + 1px)); }
+  .panneaux-suivi .panneau > .action-sec, .panneaux-suivi .panneau.reserve-mj > .action-sec { position: static; margin: var(--e-2) 0 0; }
+  .panneaux-suivi .panneau > .lien-action.action-sec, .panneaux-suivi .panneau.reserve-mj > .lien-action.action-sec { margin-left: calc(-1 * (var(--e-2) + 1px)); }
   .panneaux-suivi .panneau.reserve-mj { margin-left: -12px; margin-right: -12px; padding-left: 12px; padding-right: 12px; }
   .tete-liste h1, .entete-suivi h1 { font-size: var(--t-32); }
   .page-liste { padding-top: var(--e-2); }
