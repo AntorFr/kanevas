@@ -1,0 +1,33 @@
+/* E-5 Administration: two bordered panels, the member rows as a table, quiet row actions. */
+.admin-zones > .panneau { margin-bottom: 0; }
+.admin-zones .panneau > h2 { font-size: var(--t-12); font-weight: 600; text-transform: uppercase; letter-spacing: .08em; color: var(--texte-3); margin-bottom: var(--e-2); }
+.admin-zones .liste-instance { background: none; border: 0; border-radius: 0; margin: 0; }
+.admin-zones .liste-instance li { padding: var(--e-2) 0; }
+
+/* « Aucune sélection » / « Aucun univers »: a dashed block, muted, centred */
+.vide-pointille .etat { border: 1px dashed var(--bord-fort); border-radius: var(--rayon-panneau); padding: var(--e-6) var(--e-5); color: var(--texte-3); }
+.vide-pointille .etat h2 { font: 400 var(--t-14)/1.5 var(--police-texte); color: var(--texte-3); margin: 0; }
+
+/* Member table: headers, plain identifier, role as a pill, « Retirer » revealed on hover/focus */
+.admin-zones .entetes-membres { display: flex; gap: 12px; padding: 6px 0 0; font-size: var(--t-12); font-weight: 600; text-transform: uppercase; letter-spacing: .07em; color: var(--texte-3); }
+.admin-zones .entetes-membres span:first-child { flex: 1; padding-left: 40px; }
+.admin-zones .entetes-membres span:last-child { width: 96px; }
+.admin-zones .liste-membres { margin-top: var(--e-1); max-height: 50vh; }
+.liste-membres .identifiant-membre { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--texte); }
+.liste-membres .liste-statut-champ svg { opacity: 0; transition: opacity var(--duree); }
+.liste-membres .ligne-suivi:hover .liste-statut-champ svg, .liste-membres .liste-statut-champ:focus-within svg { opacity: 1; }
+.liste-membres .liste-statut { border-color: transparent; border-radius: var(--rayon-pastille); font-size: var(--t-12); padding: 0 var(--e-5) 0 var(--e-3); min-height: 24px; }
+.liste-membres .liste-statut-champ svg { right: var(--e-2); }
+.liste-membres .liste-statut-champ.mj .liste-statut { background: var(--mj-fond); color: var(--mj); }
+.liste-membres .liste-statut-champ.table .liste-statut { background: var(--table-fond); color: var(--table); }
+.liste-membres .retirer-membre { color: var(--texte-3); opacity: 0; transition: opacity var(--duree), color var(--duree), background-color var(--duree); }
+.liste-membres .ligne-suivi:hover .retirer-membre, .liste-membres .ligne-suivi:focus-within .retirer-membre, .liste-membres .retirer-membre:focus-visible { opacity: 1; }
+.liste-membres .retirer-membre:hover { color: var(--danger); background: var(--danger-fond); }
+@media (hover: none) { .liste-membres .retirer-membre, .liste-membres .liste-statut-champ svg { opacity: 1; } }
+
+/* The add form on one line: the identifier takes the room, the role and the button their content */
+.admin-zones .formulaire-ligne { flex-wrap: nowrap; }
+.admin-zones .formulaire-ligne .champ:first-child { flex: 1 1 0; min-width: 0; }
+.admin-zones .formulaire-ligne .champ:nth-child(2) { flex: none; min-width: 0; width: 7rem; }
+.admin-zones .formulaire-ligne .bouton { flex: none; white-space: nowrap; }
+@media (max-width: 760px) { .admin-zones .formulaire-ligne { flex-wrap: wrap; } }

@@ -8,6 +8,9 @@ import { ListeMembres, type Membre } from '../ListeMembres';
 import type { Ecran } from '../registre';
 import { Bouton, Chargement, EtatVide, ErreurChargement, PageIntrouvable, Pastille } from '../ui';
 import './ecrans.css';
+import './liste.css';
+import './reglages.css';
+import './administration.css';
 
 interface UniversInstance {
   id: number;
@@ -30,6 +33,7 @@ function Membres({ id, nom, surChangement }: { id: number; nom: string; surChang
     <ListeMembres
       base={`/api/instance/univers/${id}/membres`}
       nomUnivers={nom}
+      entetes
       membres={membres.valeur}
       // My own membership changed: the sidebar, the home and the « Ouvrir » link follow.
       apres={(m) => {
@@ -70,9 +74,6 @@ function Administration() {
 
   const entete = (
     <>
-      <div className="fil">
-        Instance / <strong>Administration</strong>
-      </div>
       <h1>Administration</h1>
       <p className="admin-sous-titre">Les membres se gèrent ici ; le contenu (fiches, comptes-rendus, cartes) n’est jamais affiché.</p>
     </>
@@ -86,7 +87,7 @@ function Administration() {
   const choisi = selection === null ? undefined : liste.find((u) => u.id === selection);
   if (selection !== null && !choisi) return <PageIntrouvable />;
   if (liste.length === 0) {
-    return <>{entete}<EtatVide titre="Aucun univers sur l’instance pour l’instant." /></>;
+    return <>{entete}<div className="vide-pointille"><EtatVide titre="Aucun univers sur l’instance pour l’instant." /></div></>;
   }
   // The selected universe stays visible even beyond the first page.
   const rang = choisi ? liste.indexOf(choisi) + 1 : 0;
@@ -97,7 +98,7 @@ function Administration() {
     <>
       {entete}
       <div className="admin-zones">
-        <section>
+        <section className="panneau">
           <h2>Univers de l’instance</h2>
           <ul className="liste-instance">
             {visibles.map((u) => (
@@ -113,14 +114,16 @@ function Administration() {
           </ul>
           {visibles.length < liste.length && <Bouton onClick={() => setAffiches(visibles.length + PAGE)}>Charger la suite</Bouton>}
         </section>
-        <section>
+        <section className="panneau">
           {choisi ? (
             <>
               <h2>Membres — {choisi.nom}</h2>
               <Membres key={choisi.id} id={choisi.id} nom={choisi.nom} surChangement={rafraichir} />
             </>
           ) : (
-            <EtatVide titre="Choisissez un univers pour voir ses membres." />
+            <div className="vide-pointille">
+              <EtatVide titre="Choisissez un univers pour voir ses membres." />
+            </div>
           )}
         </section>
       </div>

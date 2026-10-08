@@ -33,12 +33,15 @@ export function ListeMembres({
   membres,
   apres,
   note,
+  entetes,
 }: {
   base: string;
   nomUnivers: string;
   membres: Membre[];
   apres?: (m: Membre, evenement: Evenement) => void;
   note?: ReactNode;
+  /** Column headers (« Identifiant », « Rôle ») over the rows, as E-5 shows them. */
+  entetes?: boolean;
 }) {
   const perdue = useConnexionPerdue();
   const { toast } = useToasts();
@@ -136,16 +139,22 @@ export function ListeMembres({
           {echec}
         </div>
       )}
+      {entetes && (
+        <div className="entetes-membres" aria-hidden="true">
+          <span>Identifiant</span>
+          <span>Rôle</span>
+        </div>
+      )}
       <ul className="suivi-liste liste-membres">
         {liste.map((m) => (
           <li key={m.compteId} className="ligne-suivi">
             <span className="grand">
               <Avatar nom={m.username} joueur={m.role !== 'mj'} />
-              <span className="texte-ligne identifiant" title={m.username}>
+              <span className="texte-ligne identifiant-membre" title={m.username}>
                 {m.username}
               </span>
             </span>
-            <span className="champ-liste liste-statut-champ">
+            <span className={`champ-liste liste-statut-champ ${m.role === 'mj' ? 'mj' : 'table'}`}>
               <select
                 className="liste-statut"
                 aria-label={`Rôle de ${m.username}`}
@@ -158,7 +167,7 @@ export function ListeMembres({
               </select>
               <ChevronDown size={14} strokeWidth={1.75} aria-hidden="true" />
             </span>
-            <Bouton petit variante="danger" ecrit icone={Trash2} enCours={enCours === `retrait-${m.compteId}` && !aRetirer} onClick={() => setARetirer(m)} aria-label={`Retirer ${m.username}`}>
+            <Bouton petit variante="fantome" className="retirer-membre" ecrit icone={Trash2} enCours={enCours === `retrait-${m.compteId}` && !aRetirer} onClick={() => setARetirer(m)} aria-label={`Retirer ${m.username}`}>
               Retirer
             </Bouton>
           </li>
