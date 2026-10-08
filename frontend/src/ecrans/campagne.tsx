@@ -3,7 +3,7 @@ import { useEffect, useState, type FormEvent } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 
 import { appeler, lire, useConnexionPerdue } from '../api';
-import { useCharge } from '../cadre-contexte';
+import { useCharge, useTitreAriane } from '../cadre-contexte';
 import type { Ecran } from '../registre';
 import type { UniversListe } from '../types';
 import { Bouton, Champ, Chargement, ChargementListe, ErreurChargement, Fenetre, PageIntrouvable, Panneau, useToasts } from '../ui';
@@ -36,6 +36,7 @@ function Page({ universId, campagneId }: { universId: string; campagneId: string
   const [camp, setCamp] = useState<Campagne>();
   const [echec, setEchec] = useState(false);
   const { toast } = useToasts();
+  useTitreAriane(donnees.etat === 'ok' ? (camp ?? donnees.valeur).nom : undefined);
 
   useEffect(() => {
     if (donnees.etat === 'ok') setCamp(donnees.valeur);
@@ -68,9 +69,6 @@ function Page({ universId, campagneId }: { universId: string; campagneId: string
 
   return (
     <div className="page-liste">
-      <Link className="lien-retour" to={`/univers/${universId}/campagnes`}>
-        ← Campagnes
-      </Link>
       <header className="entete-suivi">
         <span className="type-campagne">
           <Flag size={14} strokeWidth={1.75} aria-hidden="true" />
