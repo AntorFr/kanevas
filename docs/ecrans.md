@@ -963,7 +963,7 @@ jamais « caché ». Chemin d'échec de relier une section : le refus du service
 **Ajout au shell.** Un bouton flottant « Demander à Kanevas », en bas à droite, sur **tout écran
 d'un univers** pour un membre (MJ ou Joueur) ; il n'existe ni hors d'un univers, ni pour un compte
 sans rôle dans l'univers (l'admin d'instance sans rôle, Teo avant son ajout) : l'écran n'a alors pas
-de bouton, et l'assistant n'a pas d'adresse (404, AD-75). Il se monte par un seul fichier, sans
+de bouton, et l'assistant n'a pas de page à lui (l'adresse `/univers/:id/assistant` répond « Page introuvable. ») et sa route d'API répond 404 (AD-75). Il se monte par un seul fichier, sans
 modifier un composant existant du shell. Bascule « mode Joueur » d'une fiche : sans effet sur
 l'assistant, qui garde le catalogue du rôle réel (AD-74) ; le panneau le dit par sa pastille.
 

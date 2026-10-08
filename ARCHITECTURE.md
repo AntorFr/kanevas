@@ -25,7 +25,7 @@ Pas de cartes : tranche suivante ; l'assistant ne propose encore aucune mise à 
 - `src/server.ts`, `src/app.ts` : démarrage et assemblage de l'app Fastify
   (`buildApp`), seule application du dépôt ; toutes les routes futures s'y
   enregistrent.
-- `src/config/env.ts` : unique lecture de l'environnement (zod).
+- `src/config/env.ts` : lecture de l'environnement (zod) ; seule exception, `FRONTEND_DIR`, lu par `src/routes/frontend.ts` (réglage des tests).
 - `src/routes/health.ts` : `registerHealthRoutes`, `GET /healthz`.
 - `src/routes/auth.ts`, `src/services/oidc.ts` : login et callback OIDC ; le callback ouvre la
   session (`src/services/session.ts`, AD-56) et crée le compte à la première connexion.
@@ -33,7 +33,7 @@ Pas de cartes : tranche suivante ; l'assistant ne propose encore aucune mise à 
 - `src/services/assistant/` : le catalogue d'outils d'un rôle (AD-74), le port `AgentTransport` et ses
   adaptateurs `bouchon` et `claude-agent` (AD-73, AD-78), la disponibilité (AD-77) et
   l'orchestration d'une demande (AD-75) ; `src/routes/assistant.ts` : les deux routes. Aucune requête SQL
-  dans ce module (AD-5).
+  dans ce module (AD-2, AD-27).
 - `src/db/` : ouverture du fichier SQLite, `migrations/0001-*.sql`, `0002-systemes.sql`, `0003-suivi.sql`, `0004-pieces-jointes.sql`, `0005-relier-chercher.sql`, `0006-illustrations.sql`, runner (AD-14).
 - `src/services/` : `comptes`, `univers`, `membres`, `fiches`, `sections`, `droits`, `systemes`, `relations`, `campagnes`, `scenarios`, `preparation`, `comptes_rendus`, `pieces-jointes`, `illustrations`, `stockage` — les seules
   fonctions qui lisent ou écrivent les données (AD-2) ; `src/routes/` : routes `/api` minces.
@@ -127,7 +127,7 @@ base en snake_case (`docs/donnees.md`).
   `OIDC_*` (ou avec une partie seulement), login et callback répondent 404 ; une valeur vide
   ou invalide fait échouer le démarrage.
 - **Douze tables et deux index de recherche, aucun ORM** : `comptes`, `univers`, `membres`, `fiches`, `sections` (migration
-  0001), `systemes_jeu`, `gabarits` (migration 0002), `campagnes`, `scenarios`, `taches_preparation` (migration 0003), `pieces_jointes` (migration 0004), `relations`, `recherche_fiches` et `recherche_sections` (FTS5, migration 0005) ; trois colonnes d'illustration sur `fiches` (migration 0006) ; numéros provisoires : voir `docs/donnees.md`. Aucune requête SQL hors de `src/services/` et `src/db/`.
+  0001), `systemes_jeu`, `gabarits` (migration 0002), `campagnes`, `scenarios`, `taches_preparation` (migration 0003), `pieces_jointes` (migration 0004), `relations`, `recherche_fiches` et `recherche_sections` (FTS5, migration 0005) ; trois colonnes d'illustration sur `fiches` (migration 0006) ; les numéros 0001 à 0006 sont définitifs, les suivants se prennent à la fusion (AD-51 ; `docs/donnees.md`). Aucune requête SQL hors de `src/services/` et `src/db/`.
 - **Toute route hors `/healthz`, `/api/auth/*` et, en bouchon, `/connexion-bouchon` est gardée par la session** ; sous `/api` un
   défaut de session répond 401, ailleurs il redirige vers la connexion (AD-15).
 - **Une seule route appelle un modèle : l'assistant** (`src/routes/assistant.ts`, par `repondre`, AD-73), avec le jeton de

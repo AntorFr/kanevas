@@ -38,7 +38,7 @@ démarrage ; hors bouchon rien n'est amorcé. Aucune image n'existe avant le tag
 
 **Pièges :**
 - Assistant : `repondre` est l'unique entrée ; ne jamais passer le compte, l'univers ou le rôle en paramètre d'un outil, ni lire
-  `process.env` hors `config/env.ts`. Une erreur du transport est rendue par un message fixe (jamais la cause, qui pourrait citer le jeton).
+  `process.env` hors `config/env.ts` (seule exception : `FRONTEND_DIR`, `routes/frontend.ts`). Une erreur du transport est rendue par un message fixe (jamais la cause, qui pourrait citer le jeton).
   Le verrou « une demande à la fois par compte » est en mémoire du processus (une seule instance). Le panneau se monte dans sa propre racine
   React (`assistant.tsx`) : il lit l'adresse par `assistant/adresse.ts`, pas par le routeur.
 - Node 20 est la cible (CI, Dockerfile). `better-sqlite3` est donc épinglé en `^12` : la 13 exige
@@ -97,6 +97,6 @@ démarrage ; hors bouchon rien n'est amorcé. Aucune image n'existe avant le tag
   relations/cartes/recherche, outil d'assistant.
 - Bouchon : au démarrage, sur une base sans univers, `semerBouchon` pose le monde de recette (Lame d'Ébène, Landes grises,
   CoF Mini…) puis `semerIllustrations` ; `KANEVAS_SANS_SEMIS=1` le coupe (utilisé par les e2e). Jamais hors bouchon.
-- Numéro de migration `0006` à recaler à la fusion si une autre tranche en a pris un (AD-51).
+- Migrations : voir « Pièges » (0001 à 0006 sont sur `epic/kanevas`).
 
 **Suivant :** administration.
