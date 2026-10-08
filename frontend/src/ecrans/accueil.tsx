@@ -145,7 +145,7 @@ function Accueil() {
       )}
       {univers.etat === 'ok' && !vide && (
         <>
-          <div className="tete-liste" aria-hidden="true">
+          <div className="tete-colonnes" aria-hidden="true">
             <span>{univers.valeur.length} univers</span>
           </div>
           <ul className="grille-cartes" aria-label="Vos univers">
