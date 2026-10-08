@@ -127,7 +127,7 @@ Deux sont posés dès le cadrage parce qu'ils traversent tout :
 > E-1, E-2, E-3, E-4, E-8, E-9, la barre latérale et la session. Vocabulaire des six états, celui
 > de B-29 : **vide**, **chargement**, **erreur**, **connexion perdue**, **refus**, **contenu
 > long**. « Sans objet » dit sa raison. Les maquettes finies sont `docs/maquettes/e01-*.html`, `e02-*.html`,
-> `e03`, `e04`, `e08`, `e09` (thème sombre, gris tertiaire de la charte).
+> `e03`, `e04`, `e08`, `e09` (thème sombre, gris tertiaire de la charte) ; la refonte (`kanevas-refonte-visuelle`) les a reprises sur la charte actuelle : la liste à jour est celle de « Finies » en fin de document.
 
 **Textes communs.**
 

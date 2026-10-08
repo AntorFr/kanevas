@@ -26,13 +26,14 @@ Ni cartes, ni assistant : tranches suivantes. Les pièces jointes (stockage sur 
 - `src/routes/health.ts` : `registerHealthRoutes`, `GET /healthz`.
 - `src/routes/auth.ts`, `src/services/oidc.ts` : login et callback OIDC ; le callback ouvre la
   session (`src/services/session.ts`, AD-56) et crée le compte à la première connexion.
+- `src/routes/frontend.ts` : sert le build du frontend (`FRONTEND_DIR`, `dist/public`) derrière la garde de session ; `src/routes/erreurs.ts` : traduit les erreurs de service en réponses HTTP ; `src/routes/pages.ts` : pages HTML du bouchon.
 - `src/routes/bouchon.ts` : mode bouchon (AD-55), absent de la table des routes sans `KANEVAS_STUB`.
 - `src/db/` : ouverture du fichier SQLite, `migrations/0001-*.sql`, `0002-systemes.sql`, `0003-suivi.sql`, `0004-pieces-jointes.sql`, `0005-relier-chercher.sql`, `0006-illustrations.sql`, runner (AD-14).
 - `src/services/` : `comptes`, `univers`, `membres`, `fiches`, `sections`, `droits`, `systemes`, `relations`, `campagnes`, `scenarios`, `preparation`, `comptes_rendus`, `pieces-jointes`, `illustrations`, `stockage` — les seules
   fonctions qui lisent ou écrivent les données (AD-2) ; `src/routes/` : routes `/api` minces.
 - `frontend/` : application React/Vite (AD-57) ; `frontend/src/ui/tokens.css` et
   `frontend/src/ui/` : tokens et composants de `docs/charte.md` ; son build est servi par Fastify. Le cadre
-  (`Cadre.tsx`, `Barre.tsx`) est commun à tous les écrans ; `/demo-composants` (bouchon seul, 404 sinon, `routes/session.ts`) montre les composants (AD-92 pour polices et icônes).
+  (`Cadre.tsx`, `Barre.tsx`) est commun à tous les écrans ; `/demo-composants` (bouchon seul, 404 sinon) montre les composants (AD-92 pour polices et icônes).
 - `src/services/systemes.ts` : catalogue, rattacher, créer et rattacher, gabarits ; la modification
   d'un univers est dans `src/services/univers.ts` ; leurs routes sont `src/routes/systemes.ts`
   (AD-83 à AD-85, AD-94). Écrans : E-14 (Paramètres), E-16 (Systèmes de jeu, `ecrans/systemes.tsx`), E-15 (Système de jeu, `/systemes/:sid`, `ecrans/systeme.tsx` ; l'ancienne adresse `/univers/:id/systeme` redirige par `ecrans/systeme-ancien.tsx`) et le bloc « Système de jeu » de E-3.
