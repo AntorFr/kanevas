@@ -1,4 +1,4 @@
-import { ChevronDown, Trash2, UserPlus, Users } from 'lucide-react';
+import { ChevronDown, Trash2, UserPlus, ContactRound } from 'lucide-react';
 import { useEffect, useState, type FormEvent } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
@@ -115,7 +115,7 @@ function Membres() {
     <div className="page-liste">
       <header className="tete-liste">
         <span className="glyphe-type" aria-hidden="true">
-          <Users size={20} strokeWidth={1.75} />
+          <ContactRound size={20} strokeWidth={1.75} />
         </span>
         <h1>Membres</h1>
       </header>
