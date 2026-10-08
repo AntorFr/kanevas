@@ -109,6 +109,12 @@
   .panneaux-suivi .panneau.reserve-mj { margin-left: -12px; margin-right: -12px; padding-left: 12px; padding-right: 12px; }
   .tete-liste h1, .entete-suivi h1 { font-size: var(--t-32); }
   .page-liste { padding-top: var(--e-2); }
+  /* E-8: the create button is a square « + » at the right of the title; its label stays for screen readers. */
+  .page-grille .tete-liste { gap: var(--e-3); flex-wrap: nowrap; }
+  .page-grille .tete-liste .bouton { min-height: 40px; width: 40px; padding: 0; flex: none; }
+  .page-grille .tete-liste .bouton .lib-creer { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .page-grille .tete-liste .bouton svg { width: 18px; height: 18px; }
+  .page-grille .glyphe-type { width: 36px; height: 36px; }
 }
 .titre-formulaire { margin-top: var(--e-6); font-size: var(--t-16) !important; font-family: var(--police-texte) !important; font-weight: 600 !important; }
 .liste-statut-champ { display: inline-block; flex: none; }
@@ -118,9 +124,10 @@
 .formulaire-ligne.ouvert .actions { display: flex; gap: var(--e-2); }
 
 /* ---------- La grille de cartes de fiches (E-8, kanevas-illustrations) ---------- */
-.page-liste.page-grille { max-width: 1120px; }
-/* E-8 is wider than the 1000px column of the other screens: 1120px of grid + the 2 x 28px of padding (5 cards of 176px need 976px). */
-main.principal:has(.page-grille) { max-width: 1176px; }
+.page-liste.page-grille { max-width: 1024px; }
+/* E-8 is wider than the 1000px column of the other screens: the mockup's 1120px page minus its 2 x 48px of padding is a 1024px grid
+   (5 cards of 176px need 976px); main.principal adds its own 2 x 28px. */
+main.principal:has(.page-grille) { max-width: 1080px; }
 /* The title shares the left edge of the grid (the generic header carries 12px / 8px of side padding). */
 .page-grille .tete-liste { padding-left: 0; padding-right: 0; }
 .grille-fiches { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(176px, 1fr)); column-gap: var(--e-5); row-gap: calc(var(--e-5) - 16px); margin: calc(var(--e-5) - 6px) 0 0; }

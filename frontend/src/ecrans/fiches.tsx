@@ -44,8 +44,8 @@ function Liste({ universId, type }: { universId: string; type: NonNullable<Retur
   }
   const mj = univers.valeur.role === 'mj';
   const nouveau = (
-    <Bouton variante="principal" ecrit icone={Plus} onClick={() => setCreation(true)}>
-      {type.nouveau}
+    <Bouton variante="principal" ecrit icone={Plus} title={type.nouveau} onClick={() => setCreation(true)}>
+      <span className="lib-creer">{type.nouveau}</span>
     </Bouton>
   );
 
