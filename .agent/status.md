@@ -1,6 +1,6 @@
 # Status — kanevas
 
-> MàJ : 2026-10-06
+> MàJ : 2026-10-08
 
 **État :** `epic/kanevas` porte le socle, la première fiche, les systèmes de jeu, le suivi de la séance
 (campagnes, scénarios, préparation, comptes-rendus ; E-6, E-7, E-13) et les pièces jointes (migration
@@ -43,6 +43,8 @@ la main (Léa se connecte une fois avant d'être ajoutée). Aucune image n'exist
   l'auteur Joueur lit et écrit sa section même fermée aux autres joueurs (AD-61). Plusieurs campagnes
   peuvent être actives (AD-60) ; aucune suppression nulle part.
 - Refonte visuelle : le regard sur les maquettes (bureau, téléphone, clair, sombre) est celui de la vérification et de la recette ; aucun écran n'écrit de couleur en dur (tokens seuls) ; un écran neuf prend le cadre et les composants de `ui/`, il ne recrée ni bouton, ni menu, ni champ. E-5, E-10 à E-12 rattrapent le cadre dans leur tranche.
+- Fil d'Ariane : une page qui nomme un objet appelle `useTitreAriane(nom)` (`cadre-contexte`) ; E-9 et E-6 le font, E-7 s'arrête à l'univers (maquette ancienne, forme non exigée). Le select « Auteur » de la boîte « Qui voit » est désactivé pendant l'enregistrement : un test qui y pose le focus attend d'abord sa réactivation.
+- Suite e2e (Playwright) : sous forte charge, deux tests (premiere-fiche B-9, refonte-besoin matrice E-9 mode Joueur) échouent par intermittence et passent seuls ; non attribué à un défaut du produit.
 - P-7 : le portrait (pièce jointe) est livré ; la demande à l'assistant (`kanevas-assistant-membre`) reste à venir.
 - Pièces jointes : le type est déterminé par la signature des octets, jamais par le navigateur ; seules PNG,
   JPEG, GIF, WebP sont servies en ligne, le reste (SVG compris) en `attachment` sous `nosniff` et CSP sandbox.
