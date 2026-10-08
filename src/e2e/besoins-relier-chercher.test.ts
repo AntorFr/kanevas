@@ -6,7 +6,7 @@
 import assert from 'node:assert/strict';
 import { after, before, describe, test } from 'node:test';
 
-import { type Any, attendre, connecte, launch, rx, rxExact, section, skipBrowser, startServer, texte as texteBrut, type Server } from './harnais.test.js';
+import { type Any, attendre, ligneRelation, connecte, launch, rx, rxExact, section, skipBrowser, startServer, texte as texteBrut, type Server } from './harnais.test.js';
 
 /** Visible text of the page with whitespace collapsed (a relation is drawn over several lines). */
 const texte = async (page: Any): Promise<string> => (await texteBrut(page)).replace(/\s+/g, ' ');
@@ -96,7 +96,10 @@ async function chercher(page: Any, mot: string, type = 'personnages'): Promise<v
 }
 const aucun = (mot: string, type = 'personnages') => `Aucun résultat pour « ${mot} » dans les ${type}.`;
 const liens = async (page: Any): Promise<string[]> =>
-  (await page.locator('main a').allInnerTexts()).map((t: string) => (t.split('\n')[0] ?? '').replace(/’/g, "'"));
+  // A grid card (E-8, AD-93) leads with its thumbnail (the fallback initial): its title is `.titre`.
+  (await page.locator('main a').evaluateAll((els: HTMLElement[]) =>
+    els.map((e) => (e.querySelector('.titre') as HTMLElement | null)?.innerText ?? e.innerText),
+  )).map((t: string) => (t.split('\n')[0] ?? '').replace(/’/g, "'"));
 
 /** Collects every API response body seen by the page, to look for leaks the screen would hide. */
 function espion(page: Any): { corps: () => Promise<string> } {
@@ -404,7 +407,7 @@ describe('kanevas-relier-chercher, du besoin', { skip: skipBrowser }, () => {
       const e = espion(m.lea);
       await ouvrirFiche(m.lea, m, m.aldric);
       const t = await texte(m.lea);
-      assert.ok(t.includes('membre de → Lames Grises'), t);
+      assert.equal(await ligneRelation(m.lea, 'membre de', 'Lames Grises').count(), 1);
       assert.ok(!t.includes('Cercle des Cendres'));
       assert.ok(!/cachée?s?/i.test(t));
       const bloc = await section(m.lea, 'Apparence').getByRole('list').allInnerTexts();
@@ -430,8 +433,8 @@ describe('kanevas-relier-chercher, du besoin', { skip: skipBrowser }, () => {
     test('rôle : Antor (MJ) voit les deux relations, avec « Relier à une fiche » et un « Retirer … » étiqueté', async () => {
       await ouvrirFiche(m.antor, m, m.aldric);
       const t = await texte(m.antor);
-      assert.ok(t.includes('membre de → Lames Grises'));
-      assert.ok(t.includes('membre de → Cercle des Cendres'));
+      assert.equal(await ligneRelation(m.antor, 'membre de', 'Lames Grises').count(), 1);
+      assert.equal(await ligneRelation(m.antor, 'membre de', 'Cercle des Cendres').count(), 1);
       await m.antor.getByRole('button', { name: rxExact('Relier à une fiche') }).first().waitFor();
       await m.antor.getByRole('button', { name: 'Retirer la relation membre de → Lames Grises', exact: true }).waitFor();
     });
@@ -439,7 +442,7 @@ describe('kanevas-relier-chercher, du besoin', { skip: skipBrowser }, () => {
     test('mode Joueur : Antor voit la même chose que Léa, sans « Relier » ni « Retirer »', async () => {
       await ouvrirFiche(m.antor, m, m.aldric, 'joueur');
       const t = await texte(m.antor);
-      assert.ok(t.includes('membre de → Lames Grises'));
+      assert.equal(await ligneRelation(m.antor, 'membre de', 'Lames Grises').count(), 1);
       assert.ok(!t.includes('Cercle des Cendres'));
       assert.equal(await m.antor.getByRole('button', { name: rx('Relier') }).count(), 0);
       assert.equal(await m.antor.getByRole('button', { name: rx('Retirer la relation') }).count(), 0);
@@ -475,7 +478,7 @@ describe('kanevas-relier-chercher, du besoin', { skip: skipBrowser }, () => {
       const m2 = await monde("Lame d'Ébène relations perdues");
       await relation(m2, m2.apparence, m2.grises, 'membre de');
       await ouvrirFiche(m2.lea, m2, m2.aldric);
-      assert.ok((await texte(m2.lea)).includes('membre de → Lames Grises'));
+      assert.equal(await ligneRelation(m2.lea, 'membre de', 'Lames Grises').count(), 1);
       await api(m2.antor, 'PATCH', `/api/univers/${m2.U}/fiches/${m2.grises}/sections/${m2.grisesPresentation}`, { joueursLisent: false });
       await ouvrirFiche(m2.lea, m2, m2.aldric);
       const t = await texte(m2.lea);
@@ -492,7 +495,7 @@ describe('kanevas-relier-chercher, du besoin', { skip: skipBrowser }, () => {
       assert.ok(!t.includes('trahit'));
       assert.ok(!t.includes('Lames Grises'));
       await ouvrirFiche(m2.antor, m2, m2.aldric);
-      assert.ok((await texte(m2.antor)).includes('trahit → Lames Grises'));
+      assert.equal(await ligneRelation(m2.antor, 'trahit', 'Lames Grises').count(), 1);
     });
 
     test('P-3 étape 4 : Antor relie la section « Apparence » du PNJ à sa faction par le formulaire ; Léa la voit', async () => {
@@ -508,14 +511,14 @@ describe('kanevas-relier-chercher, du besoin', { skip: skipBrowser }, () => {
       assert.ok(!(await bloc.innerText()).includes('Cercle des Cendres'), 'la recherche du sélecteur ne filtre pas');
       await bloc.getByText('Lames Grises').first().click();
       await bloc.getByRole('button', { name: rxExact('Relier') }).click();
-      await voit(m2.antor, 'membre de → Lames Grises');
+      await ligneRelation(m2.antor, 'membre de', 'Lames Grises').first().waitFor();
       await ouvrirFiche(m2.lea, m2, m2.aldric);
-      assert.ok((await texte(m2.lea)).includes('membre de → Lames Grises'));
+      assert.equal(await ligneRelation(m2.lea, 'membre de', 'Lames Grises').count(), 1);
       // Retirer, sans confirmation
       await ouvrirFiche(m2.antor, m2, m2.aldric);
       await m2.antor.getByRole('button', { name: 'Retirer la relation membre de → Lames Grises', exact: true }).click();
       await attendre(m2.antor);
-      await absent(m2.antor, 'membre de → Lames Grises');
+      await ligneRelation(m2.antor, 'membre de', 'Lames Grises').first().waitFor({ state: 'detached' });
       await ouvrirFiche(m2.lea, m2, m2.aldric);
       assert.ok(!(await texte(m2.lea)).includes('Lames Grises'));
     });
@@ -536,7 +539,7 @@ describe('kanevas-relier-chercher, du besoin', { skip: skipBrowser }, () => {
       await bloc.getByText('Erreur : 80 caractères au plus.').waitFor();
       await bloc.getByLabel('Type de relation').fill('x'.repeat(80));
       await bloc.getByRole('button', { name: rxExact('Relier') }).click();
-      await voit(m2.antor, `${'x'.repeat(80)} → Lames Grises`);
+      await ligneRelation(m2.antor, 'x'.repeat(80), 'Lames Grises').first().waitFor();
     });
 
     test('échec : relier une fiche à elle-même — « Une fiche ne se relie pas à elle-même. », rien d’écrit', async () => {
@@ -550,7 +553,7 @@ describe('kanevas-relier-chercher, du besoin', { skip: skipBrowser }, () => {
       await bloc.getByRole('button', { name: rxExact('Relier') }).click();
       await bloc.getByText('Une fiche ne se relie pas à elle-même.').waitFor();
       await ouvrirFiche(m2.antor, m2, m2.aldric);
-      assert.ok(!(await texte(m2.antor)).includes('double de →'));
+      assert.equal(await ligneRelation(m2.antor, 'double de', 'Maître Aldric').count(), 0);
     });
 
     test('échec : deux relations de même type vers la même fiche — « Cette relation existe déjà. » ; un autre type passe', async () => {
@@ -567,7 +570,7 @@ describe('kanevas-relier-chercher, du besoin', { skip: skipBrowser }, () => {
       assert.equal(await bloc.getByLabel('Type de relation').inputValue(), 'membre de', 'saisie perdue');
       await bloc.getByLabel('Type de relation').fill('espionne');
       await bloc.getByRole('button', { name: rxExact('Relier') }).click();
-      await voit(m2.antor, 'espionne → Lames Grises');
+      await ligneRelation(m2.antor, 'espionne', 'Lames Grises').first().waitFor();
     });
 
     test('bord : une section porte 100 relations au plus — la 101e est refusée : « Cette section porte déjà 100 relations. »', async () => {
@@ -610,7 +613,7 @@ describe('kanevas-relier-chercher, du besoin', { skip: skipBrowser }, () => {
       const d = await m2.lea.request.fetch(srv.base + `/api/univers/${m2.U}/fiches/relations/${cree.id}`, { method: 'DELETE' });
       assert.ok(d.status() === 403 || d.status() === 404, `DELETE -> ${d.status()}`);
       await ouvrirFiche(m2.lea, m2, m2.aldric);
-      assert.ok((await texte(m2.lea)).includes('membre de → Lames Grises'), 'relation retirée par une Joueuse');
+      assert.equal(await ligneRelation(m2.lea, 'membre de', 'Lames Grises').count(), 1, 'relation retirée par une Joueuse');
     });
 
     test('exclusion : retirer la section « Apparence » retire ses relations, qui ne remontent pas à la recréation', async () => {
@@ -642,7 +645,7 @@ describe('kanevas-relier-chercher, du besoin', { skip: skipBrowser }, () => {
       await m.antor.getByText(rx(BANDEAU)).waitFor();
       assert.equal(await m.antor.getByRole('button', { name: 'Retirer la relation membre de → Lames Grises', exact: true }).isDisabled(), true);
       assert.equal(await m.antor.getByRole('button', { name: rxExact('Relier à une fiche') }).first().isDisabled(), true);
-      assert.ok((await texte(m.antor)).includes('membre de → Lames Grises'));
+      assert.equal(await ligneRelation(m.antor, 'membre de', 'Lames Grises').count(), 1);
       await m.antor.context().setOffline(false);
     });
 
@@ -655,6 +658,25 @@ describe('kanevas-relier-chercher, du besoin', { skip: skipBrowser }, () => {
       await ouvrirFiche(m2.antor, m2, m2.aldric);
       const debordement = await m2.antor.evaluate(() => document.documentElement.scrollWidth > window.innerWidth);
       assert.equal(debordement, false, 'défilement horizontal de la page');
+    });
+
+    test('états : même contenu extrême au téléphone (390 px) — ni défilement horizontal ni jeton hors de la ligne', async () => {
+      const m2 = await monde("Lame d'Ébène relier long tel");
+      const long = 'L'.repeat(60) + ' ' + 'o'.repeat(59);
+      const cible = (await api(m2.antor, 'POST', `/api/univers/${m2.U}/fiches`, { type: 'faction', titre: long })).id;
+      await relation(m2, m2.apparence, cible, 'x'.repeat(40) + ' ' + 'y'.repeat(39));
+      await m2.antor.setViewportSize({ width: 390, height: 800 });
+      await ouvrirFiche(m2.antor, m2, m2.aldric);
+      const hors = await m2.antor.evaluate(() => {
+        const w = window.innerWidth;
+        const sortants = [...document.querySelectorAll('main *, .relations *')].filter((e) => {
+          const r = e.getBoundingClientRect();
+          return r.width > 0 && r.right > w + 0.5;
+        }).map((e) => e.tagName + '.' + e.className);
+        return { scroll: document.documentElement.scrollWidth > w, sortants };
+      });
+      assert.equal(hors.scroll, false, 'défilement horizontal de la page');
+      assert.deepEqual(hors.sortants, [], 'éléments hors écran');
     });
   });
 });
