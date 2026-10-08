@@ -136,6 +136,27 @@ describe('E-9 refaite : audience, filet, hachure', { skip: skipBrowser }, () => 
     assert.equal(await antor.evaluate(() => document.activeElement?.getAttribute('aria-label') ?? ''), (await pastille.getAttribute('aria-label')) ?? '?', 'the focus is back on the badge');
   });
 
+  test('la boîte « Qui voit » : Échap la ferme aussi juste après un interrupteur, pendant l’enregistrement (charte E-9)', async () => {
+    await ouvrir(antor);
+    const pastille = section(antor, 'Vérité').getByRole('button', { name: PASTILLE });
+    await antor.route('**/api/**', async (route: Any) => {
+      if (route.request().method() === 'PATCH') await new Promise((r) => setTimeout(r, 600));
+      await route.continue().catch(() => {});
+    });
+    try {
+      await pastille.click();
+      const boite = antor.getByRole('dialog', { name: 'Qui voit « Vérité »' });
+      await boite.waitFor();
+      await boite.getByRole('switch', { name: rx('Les joueurs la lisent') }).click({ noWaitAfter: true });
+      await antor.keyboard.press('Escape');
+      await boite.waitFor({ state: 'detached', timeout: 2000 });
+    } finally {
+      await antor.unroute('**/api/**');
+    }
+    // leave the section as found
+    await regler(antor, 'Vérité', 'Les joueurs la lisent', false);
+  });
+
   test('les quatre états de la pastille et du filet : lue, écrite, confiée à <auteur>, MJ seul', async () => {
     await ouvrir(antor);
     assert.equal(await section(antor, 'Apparence').getAttribute('data-aud'), 'table');
