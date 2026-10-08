@@ -242,7 +242,7 @@ export function Panneau({ titre, reserveMj, children }: { titre: string; reserve
   return (
     <section className={`panneau${reserveMj ? ' reserve-mj' : ''}`} aria-labelledby={id}>
       <h2 id={id}>
-        {titre} {reserveMj && <Pastille sens="mj">MJ seul</Pastille>}
+        {titre} {reserveMj && <Pastille sens="mj" icone={Lock}>MJ seul</Pastille>}
       </h2>
       {children}
     </section>
