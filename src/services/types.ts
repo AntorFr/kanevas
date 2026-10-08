@@ -94,6 +94,12 @@ export interface Fiche {
   charge: Record<string, unknown>;
   creeLe: string;
   modifieLe: string;
+  /** Opaque token of the illustration (AD-93), null when the sheet has none. */
+  illustration: IllustrationVue | null;
+}
+
+export interface IllustrationVue {
+  jeton: string;
 }
 
 export interface FicheVue extends Fiche {

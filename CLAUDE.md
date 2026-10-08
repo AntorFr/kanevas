@@ -33,8 +33,9 @@
   `dist/public`, located by `routes/frontend.ts` and served by `routes/session.ts` behind the session guard (`@fastify/static` for
   `/assets/`, `index.html` as the fallback of any other GET). A screen is one file
   `frontend/src/ecrans/<nom>.tsx` exporting an `Ecran` (`registre.ts`) — never edit the router or
-  the sidebar; sidebar items live in `items.ts` and show only when a registered screen answers
-  their address. Colours only through `frontend/src/ui/tokens.css` (`docs/charte.md`). Tests of the
+  the sidebar for the screens of a universe; sidebar items live in `items.ts` and show only when a registered screen answers
+  their address. The two outside-universe links (« Mes univers », « Systèmes de jeu ») are fixed in
+  `Barre.tsx` and the universe selector menu. Colours only through `frontend/src/ui/tokens.css` (`docs/charte.md`). Tests of the
   built-app routes set `FRONTEND_DIR` (under `NODE_ENV=test` no build is looked up otherwise).
 - `services/llm/*` (transport.ts, anthropic-transport.ts,
   claude-agent-transport.ts) are reprised from `Antre-du-maitre` (AD-10) and

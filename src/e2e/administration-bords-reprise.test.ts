@@ -64,6 +64,7 @@ async function demarrer(): Promise<Serveur> {
     PORT: String(port),
     NODE_ENV: 'development',
     KANEVAS_STUB: '1',
+    KANEVAS_SANS_SEMIS: '1', // these tests build their own world
     DB_PATH: dbPath,
     SESSION_SECRET: 'e2e-secret-0123456789',
   };
@@ -233,7 +234,9 @@ describe('E-5 Administration : bords, exclusions et contenu long (B-6, B-29)', {
       const { ctx, page } = await connecter(s, 'admin');
       await ouvrirAdmin(page);
       await page.getByText('Univers de l’instance').or(page.getByText("Univers de l'instance")).first().waitFor();
-      await page.getByText('Se déconnecter').first().click();
+      // The account menu (avatar, foot of the bar) carries « Se déconnecter ».
+      await page.getByRole('button', { name: /admin/i }).first().click();
+      await page.getByRole('menuitem', { name: 'Se déconnecter' }).click();
       await page.waitForLoadState('networkidle');
       await page.goto('/connexion-bouchon');
       await page.getByRole('button', { name: 'Se connecter en tant que Léa' }).click();

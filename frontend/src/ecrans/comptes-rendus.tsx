@@ -1,3 +1,4 @@
+import { ArrowDown, FileText } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 
@@ -5,7 +6,7 @@ import { lire, useConnexionPerdue } from '../api';
 import { useCharge } from '../cadre-contexte';
 import type { Ecran } from '../registre';
 import type { UniversListe } from '../types';
-import { Bouton, Chargement, ErreurChargement, PageIntrouvable } from '../ui';
+import { Bouton, ChargementListe, ErreurChargement, PageIntrouvable, VideIcone } from '../ui';
 import './ecrans.css';
 import { LigneCompteRendu, type CompteRendu, type PageComptesRendus } from './suivi/commun';
 
@@ -28,7 +29,7 @@ function ComptesRendus() {
   }, [page]);
 
   if (page.etat === 'chargement' || univers.etat === 'chargement') {
-    return <Chargement texte="Chargement des comptes-rendus…" />;
+    return <ChargementListe texte="Chargement des comptes-rendus…" />;
   }
   if ((page.etat === 'erreur' && page.statut === 404) || (univers.etat === 'erreur' && univers.statut === 404)) {
     return <PageIntrouvable />;
@@ -54,13 +55,20 @@ function ComptesRendus() {
   }
 
   return (
-    <>
-      <h1>Comptes-rendus</h1>
+    <div className="page-liste">
+      <header className="tete-liste">
+        <span className="glyphe-type" aria-hidden="true">
+          <FileText size={20} strokeWidth={1.75} />
+        </span>
+        <h1>Comptes-rendus</h1>
+      </header>
       {liste.length === 0 ? (
-        <div className="etat">
+        <VideIcone icone={FileText}>
           <p>{mj ? 'Aucun compte-rendu pour l’instant.' : 'Aucun compte-rendu à lire pour l’instant.'}</p>
-          <Link to={`/univers/${id}/campagnes`}>Voir les campagnes</Link>
-        </div>
+          <Link className="bouton" to={`/univers/${id}/campagnes`}>
+            Voir les campagnes
+          </Link>
+        </VideIcone>
       ) : (
         <ul className="suivi-liste">
           {liste.map((cr) => (
@@ -74,11 +82,11 @@ function ComptesRendus() {
         </div>
       )}
       {suivant !== null && (
-        <Bouton enCours={suiteEnCours} onClick={chargerSuite} disabled={perdue}>
+        <Bouton icone={ArrowDown} enCours={suiteEnCours} onClick={chargerSuite} disabled={perdue}>
           Charger la suite
         </Bouton>
       )}
-    </>
+    </div>
   );
 }
 

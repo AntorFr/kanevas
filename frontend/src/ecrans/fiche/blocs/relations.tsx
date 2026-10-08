@@ -1,9 +1,10 @@
+import { Plus, Waypoints, X } from 'lucide-react';
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
 
 import { appeler, ErreurApi } from '../../../api';
 import { useCharge } from '../../../cadre-contexte';
-import { Bouton, Champ, Chargement, ErreurChargement } from '../../../ui';
+import { BlocSection as BlocUi, Bouton, BoutonIcone, Champ, Chargement, ErreurChargement, LigneRelation, useToasts } from '../../../ui';
+import { iconeDuType } from '../types-fiche';
 import type { BlocSection } from '../registre';
 import { ListeRecherche } from '../liste-recherche';
 import type { Fiche, PropsBlocSection } from '../types';
@@ -34,6 +35,7 @@ function BlocRelations({ universId, fiche, section, role, suffixeMode = '' }: Pr
   const [ouvert, setOuvert] = useState(false);
   const [echec, setEchec] = useState<string>();
   const [retrait, setRetrait] = useState<number>();
+  const { toast } = useToasts();
 
   if (etat.etat === 'chargement') return <Chargement texte="Chargement des relations…" />;
   if (etat.etat === 'erreur') {
@@ -49,6 +51,7 @@ function BlocRelations({ universId, fiche, section, role, suffixeMode = '' }: Pr
     try {
       await appeler('DELETE', `/api/univers/${universId}/fiches/relations/${r.id}`);
       recharger();
+      toast(`Relation vers « ${r.cible.titre} » retirée`);
     } catch {
       setEchec(ECHEC);
     } finally {
@@ -57,56 +60,60 @@ function BlocRelations({ universId, fiche, section, role, suffixeMode = '' }: Pr
   }
 
   return (
-    <div className="relations">
-      <h3>Relations</h3>
-      {relations.length === 0 ? (
-        <p>Aucune relation pour l’instant.</p>
-      ) : (
-        <ul className="liste-relations">
-          {relations.map((r) => (
-            <li key={r.id}>
-              <span className="ligne-relation">
-                <span>{r.type} →</span>
-                <Link to={`/univers/${universId}/fiche/${r.cible.id}`}>{r.cible.titre}</Link>
-                <span className="badge-type">{badgeFiche(r.cible as Fiche)}</span>
-              </span>
-              {mj && (
-                <Bouton
-                  petit
-                  ecrit
-                  enCours={retrait === r.id}
-                  aria-label={`Retirer la relation ${r.type} → ${r.cible.titre}`}
-                  onClick={() => void retirer(r)}
-                >
-                  Retirer
-                </Bouton>
-              )}
-            </li>
+    <BlocUi libelle="Relations" icone={Waypoints} vide={relations.length === 0 ? 'Aucune relation pour l’instant.' : undefined}>
+      <div className="relations">
+        {relations.length > 0 && (
+          <ul className="liste-relations">
+            {relations.map((r) => (
+              <li key={r.id}>
+                <LigneRelation
+                  lien={r.type}
+                  icone={iconeDuType(r.cible.type)}
+                  cible={r.cible.titre}
+                  type={badgeFiche(r.cible as Fiche)}
+                  vers={`/univers/${universId}/fiche/${r.cible.id}`}
+                  actions={
+                    mj && (
+                      <BoutonIcone
+                        etiquette={`Retirer la relation ${r.type} → ${r.cible.titre}`}
+                        infobulle="Retirer"
+                        icone={X}
+                        danger
+                        ecrit
+                        disabled={retrait === r.id}
+                        onClick={() => void retirer(r)}
+                      />
+                    )
+                  }
+                />
+              </li>
+            ))}
+          </ul>
+        )}
+        {echec && !ouvert && (
+          <div className="alerte" role="alert">
+            <span>{echec}</span>
+          </div>
+        )}
+        {mj &&
+          (ouvert ? (
+            <FormulaireRelier
+              universId={universId}
+              url={base}
+              onFerme={() => setOuvert(false)}
+              onRelie={(titre) => {
+                setOuvert(false);
+                recharger();
+                toast(`« ${section.titre} » reliée à « ${titre} »`);
+              }}
+            />
+          ) : (
+            <Bouton variante="fantome" petit ecrit icone={Plus} onClick={() => setOuvert(true)}>
+              Relier à une fiche
+            </Bouton>
           ))}
-        </ul>
-      )}
-      {echec && !ouvert && (
-        <div className="echec" role="alert">
-          {echec}
-        </div>
-      )}
-      {mj &&
-        (ouvert ? (
-          <FormulaireRelier
-            universId={universId}
-            url={base}
-            onFerme={() => setOuvert(false)}
-            onRelie={() => {
-              setOuvert(false);
-              recharger();
-            }}
-          />
-        ) : (
-          <Bouton ecrit onClick={() => setOuvert(true)}>
-            Relier à une fiche
-          </Bouton>
-        ))}
-    </div>
+      </div>
+    </BlocUi>
   );
 }
 
@@ -119,7 +126,7 @@ function FormulaireRelier({
   universId: number;
   url: string;
   onFerme: () => void;
-  onRelie: () => void;
+  onRelie: (titre: string) => void;
 }) {
   const [type, setType] = useState('');
   const [typeFiche, setTypeFiche] = useState(TYPES_LORE[0]!.type);
@@ -143,7 +150,7 @@ function FormulaireRelier({
     setEnCours(true);
     try {
       await appeler('POST', url, { cibleFicheId: choix.id, type: t });
-      onRelie();
+      onRelie(choix.titre);
     } catch (err) {
       setRefus(err instanceof ErreurApi && err.code && REFUS.has(err.code) ? err.message : ECHEC);
       setEnCours(false);

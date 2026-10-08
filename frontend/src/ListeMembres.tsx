@@ -1,8 +1,9 @@
+import { ChevronDown, Trash2, UserPlus } from 'lucide-react';
 import { useEffect, useState, type FormEvent, type ReactNode } from 'react';
 
 import { ErreurApi, appeler, useConnexionPerdue } from './api';
 import type { Role } from './types';
-import { Bouton } from './ui';
+import { Avatar, Bouton, BoiteDialogue, Champ, useToasts } from './ui';
 import './ecrans/ecrans.css';
 
 export interface Membre {
@@ -40,6 +41,7 @@ export function ListeMembres({
   note?: ReactNode;
 }) {
   const perdue = useConnexionPerdue();
+  const { toast } = useToasts();
   const [liste, setListe] = useState<Membre[]>(membres);
   const [identifiant, setIdentifiant] = useState('');
   const [roleAjout, setRoleAjout] = useState<Role>('joueur');
@@ -75,7 +77,10 @@ export function ListeMembres({
     });
     if (ok) {
       setIdentifiant(''); // on failure the input is kept
-      if (ajoute) apres?.(ajoute, 'ajout');
+      if (ajoute) {
+        toast(`« ${ajoute.username} » ajouté`);
+        apres?.(ajoute, 'ajout');
+      }
     }
   }
 
@@ -84,7 +89,10 @@ export function ListeMembres({
       await appeler('PATCH', `${base}/${m.compteId}`, { role });
       setListe((l) => l.map((x) => (x.compteId === m.compteId ? { ...x, role } : x)));
     });
-    if (ok) apres?.({ ...m, role }, 'role');
+    if (ok) {
+      toast(`« ${m.username} » enregistré`);
+      apres?.({ ...m, role }, 'role');
+    }
   }
 
   async function retirer(m: Membre) {
@@ -93,23 +101,32 @@ export function ListeMembres({
       setListe((l) => l.filter((x) => x.compteId !== m.compteId));
     });
     setARetirer(undefined);
-    if (ok) apres?.(m, 'retrait');
+    if (ok) {
+      toast(`« ${m.username} » retiré`);
+      apres?.(m, 'retrait');
+    }
   }
 
   return (
     <>
-      <form className="ajout-membre" onSubmit={ajouter} noValidate>
-        <input
-          aria-label="Identifiant du compte"
+      <form className="formulaire-ligne" onSubmit={ajouter} noValidate aria-label="Ajouter un membre">
+        <Champ
+          etiquette="Identifiant du compte"
           placeholder="Identifiant du compte"
           value={identifiant}
-          onChange={(e) => setIdentifiant(e.target.value)}
+          onChange={(e: { target: { value: string } }) => setIdentifiant(e.target.value)}
         />
-        <select aria-label="Rôle" value={roleAjout} onChange={(e) => setRoleAjout(e.target.value as Role)}>
+        <Champ
+          etiquette="Rôle"
+          aria-label="Rôle"
+          liste
+          value={roleAjout}
+          onChange={(e: { target: { value: string } }) => setRoleAjout(e.target.value as Role)}
+        >
           <option value="joueur">Joueur</option>
           <option value="mj">MJ</option>
-        </select>
-        <Bouton type="submit" variante="principal" ecrit enCours={enCours === 'ajout'}>
+        </Champ>
+        <Bouton type="submit" variante="principal" ecrit icone={UserPlus} enCours={enCours === 'ajout'}>
           Ajouter
         </Bouton>
       </form>
@@ -119,42 +136,43 @@ export function ListeMembres({
           {echec}
         </div>
       )}
-      <ul className="liste-membres">
+      <ul className="suivi-liste liste-membres">
         {liste.map((m) => (
-          <li key={m.compteId}>
-            <span className="identifiant" title={m.username}>
-              {m.username}
+          <li key={m.compteId} className="ligne-suivi">
+            <span className="grand">
+              <Avatar nom={m.username} joueur={m.role !== 'mj'} />
+              <span className="texte-ligne identifiant" title={m.username}>
+                {m.username}
+              </span>
             </span>
-            <select
-              aria-label={`Rôle de ${m.username}`}
-              value={m.role}
-              disabled={enCours === `role-${m.compteId}` || perdue}
-              onChange={(e) => changer(m, e.target.value as Role)}
-            >
-              <option value="joueur">Joueur</option>
-              <option value="mj">MJ</option>
-            </select>
-            <Bouton petit variante="danger" ecrit enCours={enCours === `retrait-${m.compteId}` && !aRetirer} onClick={() => setARetirer(m)} aria-label={`Retirer ${m.username}`}>
+            <span className="champ-liste liste-statut-champ">
+              <select
+                className="liste-statut"
+                aria-label={`Rôle de ${m.username}`}
+                value={m.role}
+                disabled={enCours === `role-${m.compteId}` || perdue}
+                onChange={(e) => changer(m, e.target.value as Role)}
+              >
+                <option value="joueur">Joueur</option>
+                <option value="mj">MJ</option>
+              </select>
+              <ChevronDown size={14} strokeWidth={1.75} aria-hidden="true" />
+            </span>
+            <Bouton petit variante="danger" ecrit icone={Trash2} enCours={enCours === `retrait-${m.compteId}` && !aRetirer} onClick={() => setARetirer(m)} aria-label={`Retirer ${m.username}`}>
               Retirer
             </Bouton>
           </li>
         ))}
       </ul>
       {aRetirer && (
-        <div className="confirmation" role="alertdialog" aria-label="Confirmer le retrait">
-          <p>
-            <strong>
-              Retirer {aRetirer.username} de {nomUnivers} ?
-            </strong>{' '}
-            Elle ne verra plus l’univers.
-          </p>
-          <div className="actions">
-            <Bouton variante="danger" ecrit onClick={() => retirer(aRetirer)} aria-label={`Retirer ${aRetirer.username}`}>
-              Retirer
-            </Bouton>
-            <Bouton onClick={() => setARetirer(undefined)}>Annuler</Bouton>
-          </div>
-        </div>
+        <BoiteDialogue
+          titre={`Retirer ${aRetirer.username} de ${nomUnivers} ?`}
+          texte="Elle ne verra plus l’univers."
+          action={`Retirer ${aRetirer.username}`}
+          enCours={enCours === `retrait-${aRetirer.compteId}`}
+          onConfirmer={() => retirer(aRetirer)}
+          onFermer={() => setARetirer(undefined)}
+        />
       )}
     </>
   );

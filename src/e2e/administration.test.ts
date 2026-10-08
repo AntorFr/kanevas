@@ -60,6 +60,7 @@ async function demarrer(): Promise<Serveur> {
     PORT: String(port),
     NODE_ENV: 'development',
     KANEVAS_STUB: '1',
+    KANEVAS_SANS_SEMIS: '1', // these tests build their own world
     DB_PATH: join(dossier, 'kanevas.db'),
     SESSION_SECRET: 'e2e-secret-0123456789',
   };

@@ -1,11 +1,14 @@
+import { Users } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 
 import { useCharge, useMoi, useUnivers } from '../cadre-contexte';
 import { ListeMembres, type Membre } from '../ListeMembres';
 import type { Ecran } from '../registre';
 import type { UniversListe } from '../types';
-import { Chargement, ErreurChargement, PageIntrouvable } from '../ui';
+import { ChargementListe, ErreurChargement, PageIntrouvable } from '../ui';
 import './ecrans.css';
+import './liste.css';
+import './reglages.css';
 
 /** E-4 Membres (GM only): the shared member list over the universe's own routes. */
 function Membres() {
@@ -16,7 +19,7 @@ function Membres() {
   const [univers] = useCharge<UniversListe>(`/api/univers/${id}`);
   const [membres, recharger] = useCharge<Membre[]>(`/api/univers/${id}/membres`);
 
-  if (membres.etat === 'chargement' || univers.etat === 'chargement') return <Chargement texte="Chargement des membres…" />;
+  if (membres.etat === 'chargement' || univers.etat === 'chargement') return <ChargementListe texte="Chargement des membres…" />;
   // A player, or an unknown universe: the same answer.
   if (membres.etat === 'erreur' && membres.statut === 404) return <PageIntrouvable />;
   if (univers.etat === 'erreur' && univers.statut === 404) return <PageIntrouvable />;
@@ -26,8 +29,13 @@ function Membres() {
   const monIdentifiant = moi.etat === 'ok' ? moi.valeur.username : undefined;
 
   return (
-    <>
-      <h1>Membres</h1>
+    <div className="page-liste">
+      <header className="tete-liste">
+        <span className="glyphe-type" aria-hidden="true">
+          <Users size={20} strokeWidth={1.75} />
+        </span>
+        <h1>Membres</h1>
+      </header>
       <ListeMembres
         base={`/api/univers/${id}/membres`}
         nomUnivers={univers.valeur.nom}
@@ -40,7 +48,7 @@ function Membres() {
           }
         }}
       />
-    </>
+    </div>
   );
 }
 
