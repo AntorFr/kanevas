@@ -43,8 +43,6 @@ démarrage ; hors bouchon rien n'est amorcé. Aucune image n'existe avant le tag
   fusion après recette ; E-n / B-n / P-n = écrans / besoins / parcours, définis dans `docs/ecrans.md` et `docs/parcours.md`.
 - La CI ne pousse d'image que sur `main` et sur un tag `v*` ; sur une PR elle ne fait qu'un build de
   validation. L'image testable n'existe qu'après le tag, posé à la fusion.
-- **Numéro de migration** : `0005-relier-chercher.sql` (après `0004-pieces-jointes.sql`, numéro de la branche) ; si une autre tranche fusionne une migration
-  avant, la phase merge la recale (AD-51).
 - Recherche : `listerFiches({recherche})` seule (AD-63) ; les index FTS5 ne livrent que des identifiants
   candidats, tenus par déclencheurs : ne jamais écrire dans `recherche_*` depuis le code. La saisie est
   neutralisée (mots cités en préfixe) ; vide ou > 100 caractères = 400.
