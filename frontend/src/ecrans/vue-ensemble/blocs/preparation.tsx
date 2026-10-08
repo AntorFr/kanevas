@@ -1,7 +1,9 @@
+import { ChevronRight, Flag } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 import { lire } from '../../../api';
-import { BlocSuivi } from '../../suivi/blocs-commun';
+import { Pastille } from '../../../ui';
+import { BlocSuivi, VideBloc } from '../../suivi/blocs-commun';
 import { libelleCategorie, type Campagne, type Tache } from '../../suivi/commun';
 import type { Bloc } from '../registre';
 
@@ -15,6 +17,8 @@ function Preparation({ universId }: { universId: number }) {
   return (
     <BlocSuivi
       titre="Préparation"
+      reserveMj
+      lignes={3}
       cle={universId}
       charger={async (): Promise<Groupe[]> => {
         const { campagnes } = await lire<{ campagnes: Campagne[] }>(`/api/univers/${universId}/campagnes`);
@@ -30,22 +34,24 @@ function Preparation({ universId }: { universId: number }) {
     >
       {(groupes) =>
         groupes.length === 0 ? (
-          <div className="etat">
-            <p>Rien à préparer pour l’instant.</p>
-          </div>
+          <VideBloc>Rien à préparer pour l’instant.</VideBloc>
         ) : (
           groupes.map((g) => (
-            <div key={g.campagne.id}>
-              <h3>
-                <Link to={`/univers/${universId}/campagnes/${g.campagne.id}`}>
-                  <span className="titre-long">{g.campagne.nom}</span>
-                </Link>
-              </h3>
-              <ul className="suivi-liste">
+            <div key={g.campagne.id} className="groupe-prep">
+              <Link className="groupe-prep-tete" to={`/univers/${universId}/campagnes/${g.campagne.id}`}>
+                <Flag size={14} strokeWidth={1.75} aria-hidden="true" />
+                <span>{g.campagne.nom}</span>
+                <span className="ouvrir">
+                  Ouvrir
+                  <ChevronRight size={12} strokeWidth={2} aria-hidden="true" />
+                </span>
+              </Link>
+              <ul className="taches" aria-label={`Tâches non cochées de ${g.campagne.nom}`}>
                 {g.taches.map((t) => (
-                  <li key={t.id} className="ligne-suivi">
-                    <span className="titre-long">{t.libelle}</span>
-                    <small>{libelleCategorie(t.categorie)}</small>
+                  <li key={t.id} className="tache">
+                    <span className="rond" aria-hidden="true" />
+                    <span className="lib">{t.libelle}</span>
+                    <Pastille sens="neutre">{libelleCategorie(t.categorie)}</Pastille>
                   </li>
                 ))}
               </ul>
@@ -57,4 +63,4 @@ function Preparation({ universId }: { universId: number }) {
   );
 }
 
-export default { id: 'preparation', roles: ['mj'], rang: 30, composant: Preparation } satisfies Bloc;
+export default { id: 'preparation', roles: ['mj'], rang: 30, composant: Preparation, colonne: 'laterale' } satisfies Bloc;

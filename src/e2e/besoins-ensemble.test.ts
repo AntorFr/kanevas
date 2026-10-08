@@ -7,6 +7,10 @@ import { after, before, describe, test } from 'node:test';
 import {
   type Any,
   ajouterSection,
+  ouvrirMenuSection,
+  choisirAuteur,
+  choisirDansMenuSection,
+  confirmerRetraitSection,
   allerListe,
   allerMembres,
   attendre as attendreHarnais,
@@ -246,7 +250,8 @@ describe('kanevas-premiere-fiche, du besoin', { skip: skipBrowser }, () => {
     await voit(p, 'Retirer lea de ' + UNIVERS + ' B4 ?');
     await p.getByRole('button', { name: 'Retirer lea', exact: true }).last().click();
     await attendre(p);
-    assert.ok(!(await texte(p)).match(/\blea\b/));
+    // the toast « lea » retiré (kanevas-rv-reglages) names her by design: the member list must not
+    assert.ok(!((await p.locator('.liste-membres').innerText()) as string).match(/\blea\b/));
     const lea = await compte('lea');
     await lea.page.goto('/');
     await attendre(lea.page);
@@ -304,7 +309,8 @@ describe('kanevas-premiere-fiche, du besoin', { skip: skipBrowser }, () => {
     await attendre(p);
     await retirer(p, 'antor');
     await p.getByRole('heading', { name: 'Mes univers', level: 1 }).waitFor();
-    assert.ok(!(await texte(p)).includes(UNIVERS + ' B5c'));
+    // The « créé » toast (4 s, survives navigation by design) may still carry the name: read the page content only.
+    assert.ok(!((await p.locator('main').innerText()) as string).includes(UNIVERS + ' B5c'));
   });
 
   // ---------- B-7 ----------
@@ -405,9 +411,11 @@ describe('kanevas-premiere-fiche, du besoin', { skip: skipBrowser }, () => {
     const s = section(p, 'Quais');
     const contenu = (await s.innerText()).replace(/’/g, "'");
     assert.ok(contenu.includes('Rien d\'écrit pour l\'instant.'));
-    assert.ok(contenu.includes('MJ seul'));
-    assert.equal(await s.getByLabel(rx('Les joueurs la lisent')).isChecked(), false);
-    assert.equal(await s.getByLabel(rx('Les joueurs l\'écrivent')).isChecked(), false);
+    await s.getByRole('button', { name: /^MJ seul — régler l['’]audience de/ }).click();
+    const boite = p.getByRole('dialog', { name: /^Qui voit « Quais »/ });
+    assert.equal(await boite.getByRole('switch', { name: rx('Les joueurs la lisent') }).getAttribute('aria-checked'), 'false');
+    assert.equal(await boite.getByRole('switch', { name: rx('Les joueurs l\'écrivent') }).getAttribute('aria-checked'), 'false');
+    await p.keyboard.press('Escape');
   });
 
   test('B-8 réordonner : Monter/Descendre ; retirer demande confirmation, Annuler garde', async () => {
@@ -416,21 +424,23 @@ describe('kanevas-premiere-fiche, du besoin', { skip: skipBrowser }, () => {
     await creerFiche(p, 'lieu', 'Tour');
     for (const t of ['A', 'B', 'C']) await ajouterSection(p, t);
     assert.deepEqual(await titresSections(p), ['A', 'B', 'C']);
-    await section(p, 'C').getByRole('button', { name: rxExact('Monter') }).click();
+    await choisirDansMenuSection(p, 'C', 'Monter');
     await attendre(p);
     assert.deepEqual(await titresSections(p), ['A', 'C', 'B']);
     await p.reload();
     await attendre(p);
     assert.deepEqual(await titresSections(p), ['A', 'C', 'B'], 'ordre persisté');
-    await section(p, 'A').getByRole('button', { name: rxExact('Descendre') }).click();
+    await choisirDansMenuSection(p, 'A', 'Descendre');
     await attendre(p);
     assert.deepEqual(await titresSections(p), ['C', 'A', 'B']);
-    await section(p, 'B').getByRole('button', { name: rxExact('Retirer la section') }).click();
-    await voit(p, 'Retirer la section « B » ? Son contenu sera perdu.');
-    await p.getByRole('button', { name: rxExact('Annuler') }).click();
+    await choisirDansMenuSection(p, 'B', 'Retirer la section');
+    const dialogue = p.getByRole('alertdialog', { name: rx('Retirer la section « B » ?') });
+    await dialogue.waitFor();
+    assert.ok(rx('Son contenu sera perdu.').test(await dialogue.innerText()));
+    await dialogue.getByRole('button', { name: rxExact('Annuler') }).click();
     assert.deepEqual(await titresSections(p), ['C', 'A', 'B']);
-    await section(p, 'B').getByRole('button', { name: rxExact('Retirer la section') }).click();
-    await p.getByRole('button', { name: rxExact('Retirer la section') }).last().click();
+    await choisirDansMenuSection(p, 'B', 'Retirer la section');
+    await confirmerRetraitSection(p);
     await attendre(p);
     assert.deepEqual(await titresSections(p), ['C', 'A']);
   });
@@ -439,10 +449,11 @@ describe('kanevas-premiere-fiche, du besoin', { skip: skipBrowser }, () => {
     const { antor } = await table(UNIVERS + ' B8t', []);
     const p = antor.page;
     await creerFiche(p, 'lieu', 'Puits');
-    await p.getByRole('button', { name: rxExact('Ajouter une section') }).click();
+    await p.getByRole('button', { name: /^Ajouter une section/ }).click();
+    await p.getByRole('button', { name: rxExact('Ajouter la section') }).click();
     await voit(p, 'Erreur : le titre est obligatoire.');
     await p.getByLabel('Titre de la section').fill('s'.repeat(81));
-    await p.getByRole('button', { name: rxExact('Ajouter une section') }).click();
+    await p.getByRole('button', { name: rxExact('Ajouter la section') }).click();
     await voit(p, 'Erreur : 80 caractères au plus.');
   });
 
@@ -520,7 +531,7 @@ describe('kanevas-premiere-fiche, du besoin', { skip: skipBrowser }, () => {
     await creerFiche(p, 'personnage', 'Léa PJ', true);
     const url = p.url();
     await ajouterSection(p, 'Journal');
-    await section(p, 'Journal').getByLabel(rx('Auteur')).selectOption({ label: 'lea' });
+    await choisirAuteur(p, 'Journal', 'lea');
     await attendre(p);
     await regler(p, 'Journal', 'L\'auteur la lit', true);
     const lea = await compte('lea');
@@ -542,7 +553,7 @@ describe('kanevas-premiere-fiche, du besoin', { skip: skipBrowser }, () => {
     await ajouterSection(p, 'Apparence');
     await regler(p, 'Apparence', 'Les joueurs la lisent', true);
     await ajouterSection(p, 'Notes de la table');
-    await section(p, 'Notes de la table').getByLabel(rx('Auteur')).selectOption({ label: 'lea' });
+    await choisirAuteur(p, 'Notes de la table', 'lea');
     await attendre(p);
     await regler(p, 'Notes de la table', 'L\'auteur la lit', true);
     await regler(p, 'Notes de la table', 'L\'auteur l\'écrit', true);
@@ -617,7 +628,7 @@ describe('kanevas-premiere-fiche, du besoin', { skip: skipBrowser }, () => {
     const p = antor.page;
     await creerFiche(p, 'personnage', 'Journal de Léa', true);
     await ajouterSection(p, 'Journal');
-    await section(p, 'Journal').getByLabel(rx('Auteur')).selectOption({ label: 'lea' });
+    await choisirAuteur(p, 'Journal', 'lea');
     await attendre(p);
     await regler(p, 'Journal', 'L\'auteur la lit', true);
     await modeJoueur(p);
@@ -672,7 +683,8 @@ describe('kanevas-premiere-fiche, du besoin', { skip: skipBrowser }, () => {
     await p.goto('/creer-un-univers');
     await attendre(p);
     assert.ok((await texte(p)).includes(bandeau), 'bandeau on every page');
-    await p.getByRole('button', { name: rxExact('Se déconnecter') }).click();
+    await p.locator('aside .pied .menu-declencheur').click();
+    await p.getByRole('menuitem', { name: rxExact('Se déconnecter') }).click();
     await attendre(p);
     assert.ok(p.url().includes('connexion'));
     const apres = await fetch(srv.base + '/api/moi', { redirect: 'manual' });
@@ -752,8 +764,10 @@ describe('kanevas-premiere-fiche, du besoin', { skip: skipBrowser }, () => {
     await attendre(p);
     await antor.ctx.setOffline(true);
     await voit(p, 'Connexion perdue.');
-    assert.equal(await p.getByRole('button', { name: rxExact('Ajouter une section') }).isDisabled(), true);
-    assert.equal(await p.getByRole('button', { name: rxExact('Monter') }).first().isDisabled(), true);
+    assert.equal(await p.getByRole('button', { name: /^Ajouter une section/ }).getAttribute('aria-disabled'), 'true');
+    const menu = await ouvrirMenuSection(p, 'Apparence');
+    assert.equal(await menu.getByRole('menuitem', { name: rxExact('Descendre') }).getAttribute('aria-disabled'), 'true');
+    await p.keyboard.press('Escape');
     await antor.ctx.setOffline(false);
     // erreur de chargement de la fiche
     await p.route('**/api/univers/*/fiches/*', (r: Any) => r.fulfill({ status: 500, body: '{}' }));
@@ -786,10 +800,12 @@ describe('kanevas-premiere-fiche, du besoin', { skip: skipBrowser }, () => {
     await p.route('**/api/univers/*/fiches/*/sections/*', (r: Any) =>
       r.request().method() === 'PATCH' ? r.fulfill({ status: 500, body: '{}' }) : r.continue(),
     );
-    const c = section(p, 'Apparence').getByLabel(rx('Les joueurs l\'écrivent'));
+    await section(p, 'Apparence').getByRole('button', { name: /régler l['’]audience de/ }).click();
+    const c = p.getByRole('dialog', { name: /^Qui voit/ }).getByRole('switch', { name: rx('Les joueurs l\'écrivent') });
     await c.click({ noWaitAfter: true });
     await voit(p, 'L\'action n\'a pas abouti. Réessayez.');
-    assert.equal(await c.isChecked(), false);
+    assert.equal(await c.getAttribute('aria-checked'), 'false');
+    assert.equal(await p.getByRole('status').getByText(/enregistrée/).count(), 0, 'a failure is never a toast');
   });
 });
 

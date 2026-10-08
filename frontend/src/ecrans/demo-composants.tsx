@@ -11,7 +11,6 @@ import {
   BoutonIcone,
   Case,
   Champ,
-  FournisseurToasts,
   Interrupteur,
   LigneFichier,
   LigneRelation,
@@ -287,11 +286,8 @@ function Demo() {
 
 function PageDemo() {
   if (!bouchon) return <PageIntrouvable />;
-  return (
-    <FournisseurToasts>
-      <Demo />
-    </FournisseurToasts>
-  );
+  // The toast region is the application's (App.tsx): one region, not one per screen.
+  return <Demo />;
 }
 
 export default { chemin: '/demo-composants', composant: PageDemo } satisfies Ecran;

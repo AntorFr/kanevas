@@ -5,7 +5,11 @@ import { useEffect, useId, useRef, useState, type ReactNode } from 'react';
 export type EntreeMenu =
   | { libelle: string; icone?: LucideIcon; onChoisir: () => void; danger?: boolean; impossible?: boolean }
   | { separateur: true }
-  | { titre: string };
+  | { titre: string }
+  /** Free, non-interactive content (who is signed in, for instance). */
+  | { contenu: ReactNode }
+  /** A named row of exclusive choices shown as icon buttons (theme); choosing keeps the menu open. */
+  | { groupe: string; options: { libelle: string; icone: LucideIcon; actif: boolean; onChoisir: () => void }[] };
 
 const estAction = (e: EntreeMenu): e is Extract<EntreeMenu, { libelle: string }> => 'libelle' in e;
 
@@ -34,6 +38,8 @@ export function Menu({
   icone,
   entrees,
   aligne = 'fin',
+  ouvre = 'bas',
+  large,
 }: {
   /** Accessible name of the trigger. */
   etiquette: string;
@@ -42,6 +48,10 @@ export function Menu({
   icone?: LucideIcon;
   entrees: EntreeMenu[];
   aligne?: 'debut' | 'fin';
+  /** Side the menu opens on: below the trigger (default) or above it (a trigger at the foot of a bar). */
+  ouvre?: 'bas' | 'haut';
+  /** The trigger and the menu take the width of their container. */
+  large?: boolean;
 }) {
   const [ouvert, setOuvert] = useState(false);
   const racine = useRef<HTMLDivElement>(null);
@@ -49,7 +59,7 @@ export function Menu({
   const idMenu = useId();
   const Icone = icone;
 
-  const items = () => Array.from(racine.current?.querySelectorAll<HTMLElement>('[role="menuitem"]') ?? []);
+  const items = () => Array.from(racine.current?.querySelectorAll<HTMLElement>('[role="menuitem"],[role="menuitemradio"]') ?? []);
   const fermer = (rendreFocus: boolean) => {
     setOuvert(false);
     if (rendreFocus) bouton.current?.focus();
@@ -85,7 +95,7 @@ export function Menu({
   };
 
   return (
-    <div className={`menu-racine ${aligne}`} ref={racine}>
+    <div className={`menu-racine ${aligne} ${ouvre}${large ? ' large' : ''}`} ref={racine}>
       <button
         ref={bouton}
         type="button"
@@ -109,6 +119,30 @@ export function Menu({
         <div className="menu" role="menu" id={idMenu} aria-label={etiquette} onKeyDown={toucheMenu}>
           {entrees.map((e, i) => {
             if ('separateur' in e) return <div key={i} className="menu-separateur" role="separator" />;
+            if ('contenu' in e) return <div key={i} className="menu-contenu">{e.contenu}</div>;
+            if ('groupe' in e) {
+              return (
+                <div key={i} className="menu-groupe" role="group" aria-label={e.groupe}>
+                  <span aria-hidden="true">{e.groupe}</span>
+                  <div className="menu-segments">
+                    {e.options.map((o) => (
+                      <button
+                        key={o.libelle}
+                        type="button"
+                        role="menuitemradio"
+                        aria-checked={o.actif}
+                        aria-label={o.libelle}
+                        title={o.libelle}
+                        tabIndex={-1}
+                        onClick={o.onChoisir}
+                      >
+                        <o.icone size={14} strokeWidth={1.75} aria-hidden="true" />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              );
+            }
             if (!estAction(e)) {
               return (
                 <div key={i} className="menu-titre" role="presentation">

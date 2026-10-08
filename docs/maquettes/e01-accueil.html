@@ -25,8 +25,12 @@
    « États » (vide d'un compte neuf), « Textes communs », « Barre latérale »,
    « E-1 Accueil », « E-2 Créer un univers ».
    Cadre, tokens et composants : docs/maquettes/e09-fiche.html et docs/charte.md (copiés tels
-   quels). Ajouts de cette maquette : la marque (hors univers), la ligne d'univers, l'état
+   quels). Barre réduite : « Mes univers » et « Systèmes de jeu » (E-16, kanevas-illustrations, AD-94). Ajouts de cette maquette : la marque (hors univers), la ligne d'univers, l'état
    vide à deux chemins, le formulaire de page. Le document prime sur la maquette.
+
+   Depuis kanevas-illustrations : E-1 en grille de cartes (docs/ecrans.md, « E-1 en cartes ») — en-tête
+   dessiné d'après le nom (courbes de niveau et sceau), nom, description sur deux lignes, rôle,
+   système de jeu rattaché et nombre de membres ; toute la carte mène à E-3.
 
    Compte par défaut : antor (MJ de Lame d'Ébène, Joueur des Cendres de Vaëlis).
    États à ouvrir par l'adresse (combinables : #etat-creer,perdue) :
@@ -434,6 +438,54 @@ body.etat-creer .vue-accueil { display: none; }
 .actions-form .aide-clavier { margin-right: auto; display: flex; align-items: center; gap: 4px; font-size: var(--t-12); color: var(--texte-3); }
 .actions-form .bouton { min-height: 34px; padding: 0 var(--e-4); }
 
+
+/* =====================================================================================
+   E-1 en grille de cartes (kanevas-illustrations) — même famille que la carte de fiche (E-8) et
+   la carte de système (E-16) : pas de cadre ni d'ombre, un en-tête dessiné d'après le nom. Pour un
+   univers : des courbes de niveau (un territoire), et son sceau, celui du sélecteur d'univers.
+   ===================================================================================== */
+.page.vue-accueil { max-width: 1120px; }
+.accueil-vide { max-width: 784px; }
+.vue-accueil .tete-liste { padding-left: 0; padding-right: 0; }
+.vue-accueil .charge-liste p { margin-left: 0 !important; }
+.grille-u.liste-univers { display: grid; grid-template-columns: repeat(auto-fill, minmax(288px, 1fr)); gap: var(--e-5); margin-top: var(--e-2); }
+.carte-u { position: relative; display: flex; flex-direction: column; gap: 10px; height: 100%; padding: 6px 6px 12px; margin: -6px;
+  border-radius: var(--rayon-panneau); transition: background-color var(--duree); }
+.carte-u:hover { background: var(--surface-2); }
+.carte-u:has(.lien-u:focus-visible) { outline: 2px solid var(--focus); outline-offset: 0; }
+.visuel-u { position: relative; flex: none; aspect-ratio: 2 / 1; border-radius: var(--rayon-champ); overflow: hidden; background: var(--surface-2); color: var(--accent-texte); }
+.visuel-u::after { content: ""; position: absolute; inset: 0; border-radius: inherit; box-shadow: inset 0 0 0 1px var(--bord); pointer-events: none; transition: box-shadow var(--duree); }
+.carte-u:hover .visuel-u::after { box-shadow: inset 0 0 0 1px var(--bord-fort); }
+.visuel-u svg { display: block; width: 100%; height: 100%; }
+.visuel-u .niveau { fill: none; stroke: var(--bord-fort); stroke-width: 1.1; }
+.visuel-u .niveau.haut { stroke: currentColor; stroke-opacity: .5; }
+.visuel-u .sommet { fill: currentColor; fill-opacity: .14; }
+.visuel-u .sceau { position: absolute; left: 12px; bottom: 12px; width: 44px; height: 44px; border-radius: 11px; font-size: 22px;
+  background: var(--surface); box-shadow: inset 0 0 0 1px var(--bord-fort), 0 1px 2px rgba(0,0,0,.12); }
+.visuel-u .pastille { position: absolute; right: 8px; top: 8px; box-shadow: inset 0 0 0 1px var(--bord); }
+.visuel-u .pastille.mj { background: color-mix(in srgb, var(--surface) 70%, transparent); }
+.visuel-u .pastille.mj, .visuel-u .pastille.table { backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
+.pied-u { display: flex; flex-direction: column; gap: 4px; padding: 0 4px; min-width: 0; }
+.lien-u { font: 500 var(--t-18)/1.3 var(--police-titre); font-variation-settings: "opsz" 36; letter-spacing: -.005em; color: var(--texte);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lien-u::after { content: ""; position: absolute; inset: 0; border-radius: var(--rayon-panneau); }
+.lien-u:focus-visible { outline: none; }
+.pied-u .desc-u { font: 400 15px/1.5 var(--police-lecture); color: var(--texte-2); font-variation-settings: "opsz" 16;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.pied-u .meta-u { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 12px; margin-top: 4px; font-size: var(--t-13); color: var(--texte-3); }
+.pied-u .meta-u > span { display: inline-flex; align-items: center; gap: 6px; min-width: 0; }
+.pied-u .meta-u .i { width: 14px; height: 14px; }
+.pied-u .meta-u .sys-u { max-width: 100%; }
+.pied-u .meta-u .sys-u .t { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.squelette-u { display: flex; flex-direction: column; gap: 12px; }
+.squelette-u .os { display: block; }
+.squelette-u .os.cadre { aspect-ratio: 2 / 1; border-radius: var(--rayon-champ); }
+.charge-liste .grille-u { display: grid; grid-template-columns: repeat(auto-fill, minmax(288px, 1fr)); gap: var(--e-5); margin-top: var(--e-5); }
+@media (max-width: 760px) {
+  .grille-u.liste-univers, .charge-liste .grille-u { grid-template-columns: minmax(0, 1fr); gap: var(--e-4); }
+  .visuel-u { aspect-ratio: 3 / 1; }
+}
+
 /* =====================================================================================
    Téléphone et petites largeurs (cadre : identique à e09-fiche.html)
    ===================================================================================== */
@@ -482,7 +534,7 @@ body.etat-creer .vue-accueil { display: none; }
 </style>
 </head>
 <body>
-<svg xmlns="http://www.w3.org/2000/svg" width="0" height="0" style="position:absolute" aria-hidden="true"><!-- Lucide (lucide-static, ISC), tracés copiés tels quels --><symbol id="i-chevron-right" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6" /></symbol><symbol id="i-chevrons-up-down" viewBox="0 0 24 24"><path d="m7 15 5 5 5-5" /> <path d="m7 9 5-5 5 5" /></symbol><symbol id="i-circle-alert" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" /> <line x1="12" x2="12" y1="8" y2="12" /> <line x1="12" x2="12.01" y1="16" y2="16" /></symbol><symbol id="i-circle-check" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" /> <path d="m16 9-5.5 5.5L8 12" /></symbol><symbol id="i-copy" viewBox="0 0 24 24"><rect width="14" height="14" x="8" y="8" rx="2" ry="2" /> <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" /></symbol><symbol id="i-feather" viewBox="0 0 24 24"><path d="M14.086 18.412A2 2 0 0112.67 19H5v-7.672a2 2 0 01.586-1.414L11.75 3.75a6 6 0 118.49 8.49z" /> <path d="M16 8 2 22" /> <path d="M17.488 15H9" /></symbol><symbol id="i-library" viewBox="0 0 24 24"><path d="m16 6 4 14" /> <path d="M12 6v14" /> <path d="M8 8v12" /> <path d="M4 4v16" /></symbol><symbol id="i-log-out" viewBox="0 0 24 24"><path d="m16 17 5-5-5-5" /> <path d="M21 12H9" /> <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /></symbol><symbol id="i-monitor" viewBox="0 0 24 24"><rect width="20" height="14" x="2" y="3" rx="2" /> <line x1="8" x2="16" y1="21" y2="21" /> <line x1="12" x2="12" y1="17" y2="21" /></symbol><symbol id="i-moon" viewBox="0 0 24 24"><path d="M20.985 12.486a9 9 0 1 1-9.473-9.472c.405-.022.617.46.402.803a6 6 0 0 0 8.268 8.268c.344-.215.825-.004.803.401" /></symbol><symbol id="i-panel-left" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2" /> <path d="M9 3v18" /></symbol><symbol id="i-plus" viewBox="0 0 24 24"><path d="M5 12h14" /> <path d="M12 5v14" /></symbol><symbol id="i-rotate-ccw" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" /> <path d="M3 3v5h5" /></symbol><symbol id="i-server-cog" viewBox="0 0 24 24"><path d="m10.852 14.772-.383.923" /> <path d="M13.148 14.772a3 3 0 1 0-2.296-5.544l-.383-.923" /> <path d="m13.148 9.228.383-.923" /> <path d="m13.53 15.696-.382-.924a3 3 0 1 1-2.296-5.544" /> <path d="m14.772 10.852.923-.383" /> <path d="m14.772 13.148.923.383" /> <path d="M4.5 10H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2h-.5" /> <path d="M4.5 14H4a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-4a2 2 0 0 0-2-2h-.5" /> <path d="M6 18h.01" /> <path d="M6 6h.01" /> <path d="m9.228 10.852-.923-.383" /> <path d="m9.228 13.148-.923.383" /></symbol><symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4" /> <path d="M12 2v2" /> <path d="M12 20v2" /> <path d="m4.93 4.93 1.41 1.41" /> <path d="m17.66 17.66 1.41 1.41" /> <path d="M2 12h2" /> <path d="M20 12h2" /> <path d="m6.34 17.66-1.41 1.41" /> <path d="m19.07 4.93-1.41 1.41" /></symbol><symbol id="i-users-round" viewBox="0 0 24 24"><path d="M18 21a8 8 0 0 0-16 0" /> <circle cx="10" cy="8" r="5" /> <path d="M22 20c0-3.37-2-6.5-4-8a5 5 0 0 0-.45-8.3" /></symbol><symbol id="i-wifi-off" viewBox="0 0 24 24"><path d="M12 20h.01" /> <path d="M8.5 16.429a5 5 0 0 1 7 0" /> <path d="M5 12.859a10 10 0 0 1 5.17-2.69" /> <path d="M19 12.859a10 10 0 0 0-2.007-1.523" /> <path d="M2 8.82a15 15 0 0 1 4.177-2.643" /> <path d="M22 8.82a15 15 0 0 0-11.288-3.764" /> <path d="m2 2 20 20" /></symbol><symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18" /> <path d="m6 6 12 12" /></symbol></svg>
+<svg xmlns="http://www.w3.org/2000/svg" width="0" height="0" style="position:absolute" aria-hidden="true"><!-- Lucide (lucide-static, ISC), tracés copiés tels quels --><symbol id="i-chevron-right" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6" /></symbol><symbol id="i-chevrons-up-down" viewBox="0 0 24 24"><path d="m7 15 5 5 5-5" /> <path d="m7 9 5-5 5 5" /></symbol><symbol id="i-circle-alert" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" /> <line x1="12" x2="12" y1="8" y2="12" /> <line x1="12" x2="12.01" y1="16" y2="16" /></symbol><symbol id="i-circle-check" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" /> <path d="m16 9-5.5 5.5L8 12" /></symbol><symbol id="i-copy" viewBox="0 0 24 24"><rect width="14" height="14" x="8" y="8" rx="2" ry="2" /> <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" /></symbol><symbol id="i-feather" viewBox="0 0 24 24"><path d="M14.086 18.412A2 2 0 0112.67 19H5v-7.672a2 2 0 01.586-1.414L11.75 3.75a6 6 0 118.49 8.49z" /> <path d="M16 8 2 22" /> <path d="M17.488 15H9" /></symbol><symbol id="i-library" viewBox="0 0 24 24"><path d="m16 6 4 14" /> <path d="M12 6v14" /> <path d="M8 8v12" /> <path d="M4 4v16" /></symbol><symbol id="i-log-out" viewBox="0 0 24 24"><path d="m16 17 5-5-5-5" /> <path d="M21 12H9" /> <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /></symbol><symbol id="i-monitor" viewBox="0 0 24 24"><rect width="20" height="14" x="2" y="3" rx="2" /> <line x1="8" x2="16" y1="21" y2="21" /> <line x1="12" x2="12" y1="17" y2="21" /></symbol><symbol id="i-moon" viewBox="0 0 24 24"><path d="M20.985 12.486a9 9 0 1 1-9.473-9.472c.405-.022.617.46.402.803a6 6 0 0 0 8.268 8.268c.344-.215.825-.004.803.401" /></symbol><symbol id="i-panel-left" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2" /> <path d="M9 3v18" /></symbol><symbol id="i-plus" viewBox="0 0 24 24"><path d="M5 12h14" /> <path d="M12 5v14" /></symbol><symbol id="i-rotate-ccw" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" /> <path d="M3 3v5h5" /></symbol><symbol id="i-server-cog" viewBox="0 0 24 24"><path d="m10.852 14.772-.383.923" /> <path d="M13.148 14.772a3 3 0 1 0-2.296-5.544l-.383-.923" /> <path d="m13.148 9.228.383-.923" /> <path d="m13.53 15.696-.382-.924a3 3 0 1 1-2.296-5.544" /> <path d="m14.772 10.852.923-.383" /> <path d="m14.772 13.148.923.383" /> <path d="M4.5 10H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2h-.5" /> <path d="M4.5 14H4a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-4a2 2 0 0 0-2-2h-.5" /> <path d="M6 18h.01" /> <path d="M6 6h.01" /> <path d="m9.228 10.852-.923-.383" /> <path d="m9.228 13.148-.923.383" /></symbol><symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4" /> <path d="M12 2v2" /> <path d="M12 20v2" /> <path d="m4.93 4.93 1.41 1.41" /> <path d="m17.66 17.66 1.41 1.41" /> <path d="M2 12h2" /> <path d="M20 12h2" /> <path d="m6.34 17.66-1.41 1.41" /> <path d="m19.07 4.93-1.41 1.41" /></symbol><symbol id="i-users-round" viewBox="0 0 24 24"><path d="M18 21a8 8 0 0 0-16 0" /> <circle cx="10" cy="8" r="5" /> <path d="M22 20c0-3.37-2-6.5-4-8a5 5 0 0 0-.45-8.3" /></symbol><symbol id="i-wifi-off" viewBox="0 0 24 24"><path d="M12 20h.01" /> <path d="M8.5 16.429a5 5 0 0 1 7 0" /> <path d="M5 12.859a10 10 0 0 1 5.17-2.69" /> <path d="M19 12.859a10 10 0 0 0-2.007-1.523" /> <path d="M2 8.82a15 15 0 0 1 4.177-2.643" /> <path d="M22 8.82a15 15 0 0 0-11.288-3.764" /> <path d="m2 2 20 20" /></symbol><symbol id="i-dices" viewBox="0 0 24 24"><rect width="12" height="12" x="2" y="10" rx="2" ry="2" /> <path d="m17.92 14 3.5-3.5a2.24 2.24 0 0 0 0-3l-5-4.92a2.24 2.24 0 0 0-3 0L10 6" /> <path d="M6 18h.01" /> <path d="M10 14h.01" /> <path d="M15 6h.01" /> <path d="M18 9h.01" /></symbol><symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18" /> <path d="m6 6 12 12" /></symbol></svg>
 
 <div class="app">
   <!-- ============================ Barre latérale (réduite : hors d'un univers) ============================ -->
@@ -496,6 +548,7 @@ body.etat-creer .vue-accueil { display: none; }
       <nav aria-label="Navigation principale">
         <div class="groupe">
           <a class="item" href="e01-accueil.html" aria-current="page" data-nav-accueil><svg class="i" aria-hidden="true"><use href="#i-library"/></svg>Mes univers</a>
+          <a class="item" href="e16-systemes-de-jeu.html"><svg class="i" aria-hidden="true"><use href="#i-dices"/></svg>Systèmes de jeu</a>
           <a class="item item-admin" href="e05-administration.html"><svg class="i" aria-hidden="true"><use href="#i-server-cog"/></svg>Administration</a>
         </div>
       </nav>
@@ -551,8 +604,7 @@ body.etat-creer .vue-accueil { display: none; }
       <!-- Chargement -->
       <div class="charge-liste" role="status">
         <div class="tete-liste"><span class="os" style="width:64px;height:12px"></span></div>
-        <div class="os-ligne"><span class="os" style="width:40px;height:40px;border-radius:10px"></span><span><span class="os" style="display:block;width:38%;height:18px"></span><span class="os" style="display:block;width:86%;height:12px;margin-top:10px"></span><span class="os" style="display:block;width:64%;height:12px;margin-top:8px"></span></span></div>
-        <div class="os-ligne"><span class="os" style="width:40px;height:40px;border-radius:10px"></span><span><span class="os" style="display:block;width:46%;height:18px"></span><span class="os" style="display:block;width:80%;height:12px;margin-top:10px"></span><span class="os" style="display:block;width:52%;height:12px;margin-top:8px"></span></span></div>
+        <ul class="grille-u" aria-hidden="true"><li class="squelette-u"><span class="os cadre"></span><span class="os" style="width:52%;height:18px"></span><span class="os" style="width:92%;height:12px"></span><span class="os" style="width:70%;height:12px"></span></li><li class="squelette-u"><span class="os cadre"></span><span class="os" style="width:64%;height:18px"></span><span class="os" style="width:92%;height:12px"></span><span class="os" style="width:58%;height:12px"></span></li><li class="squelette-u"><span class="os cadre"></span><span class="os" style="width:40%;height:18px"></span><span class="os" style="width:92%;height:12px"></span><span class="os" style="width:76%;height:12px"></span></li></ul>
         <p style="margin:var(--e-5) 12px 0;color:var(--texte-3);font-size:var(--t-13)">Chargement de vos univers…</p>
       </div>
 
@@ -583,21 +635,8 @@ body.etat-creer .vue-accueil { display: none; }
       </section>
 
       <!-- La liste -->
-      <div class="tete-liste" aria-hidden="true"><span id="compte-univers">2 univers</span><span class="col-role">Votre rôle</span></div>
-      <ul class="liste-univers" id="liste" aria-label="Vos univers">
-        <li><a class="ligne-univers" href="e03-vue-ensemble.html">
-          <span class="sceau" aria-hidden="true">L</span>
-          <span class="corps"><span class="nom-u">Lame d'Ébène</span><span class="desc-u">Une cité marchande où chaque guilde cache un serment brisé. Les Lames Grises tiennent le port, le Cercle des Cendres tient les Lames, et personne ne sait qui tient le Cercle.</span></span>
-          <span class="pastille mj">MJ</span>
-          <svg class="i fleche" aria-hidden="true"><use href="#i-chevron-right"/></svg>
-        </a></li>
-        <li><a class="ligne-univers" href="e03-vue-ensemble.html">
-          <span class="sceau" aria-hidden="true">C</span>
-          <span class="corps"><span class="nom-u">Les Cendres de Vaëlis</span><span class="desc-u">Un empire tombé en une nuit. Trois siècles plus tard, ses cendres tiennent encore chaud à qui ose creuser sous les dunes.</span></span>
-          <span class="pastille table">Joueur</span>
-          <svg class="i fleche" aria-hidden="true"><use href="#i-chevron-right"/></svg>
-        </a></li>
-      </ul>
+      <div class="tete-liste" aria-hidden="true"><span id="compte-univers">2 univers</span></div>
+      <ul class="grille-u liste-univers" id="liste" aria-label="Vos univers"></ul>
     </main>
 
     <!-- ============================ E-2 Créer un univers ============================ -->
@@ -746,6 +785,52 @@ body.etat-creer .vue-accueil { display: none; }
     if (document.body.classList.contains('etat-creer') && (e.ctrlKey || e.metaKey) && e.key === 'Enter') $('#form-creer').requestSubmit();
   });
 
+  /* ---------------- E-1 : les univers, en cartes ---------------- */
+  var UNIVERS = [
+    { nom: 'Lame d\'Ébène', desc: 'Une cité marchande où chaque guilde cache un serment brisé. Les Lames Grises tiennent le port, le Cercle des Cendres tient les Lames, et personne ne sait qui tient le Cercle.', role: 'MJ', sys: 'CoF Mini', membres: 2 },
+    { nom: 'Les Cendres de Vaëlis', desc: 'Un empire tombé en une nuit. Trois siècles plus tard, ses cendres tiennent encore chaud à qui ose creuser sous les dunes.', role: 'Joueur', sys: 'Chroniques Oubliées Fantasy', membres: 2 }
+  ];
+  function graine(t) { var h = 2166136261; for (var i = 0; i < t.length; i++) { h ^= t.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; }
+  function alea(s) { return function () { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; }; }
+  function escU(t) { return t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;'); }
+  function initialeU(n) { return n.replace(/^(?:(?:les?|la)\s+|l['’])/i, '').charAt(0).toUpperCase(); }
+  /* Un territoire dessiné d'après le nom : deux reliefs en courbes de niveau. Aucune donnée. */
+  function relief(r, cx, cy, R, n, haut) {
+    var a = [r() * .22, r() * .16, r() * .1], ph = [r() * 6.3, r() * 6.3, r() * 6.3], s = '';
+    for (var k = 0; k < n; k++) {
+      var f = 1 - k / n, d = '';
+      for (var i = 0; i <= 72; i++) {
+        var t = i / 72 * Math.PI * 2, rr = R * f * (1 + a[0] * Math.sin(2 * t + ph[0]) + a[1] * Math.sin(3 * t + ph[1]) + a[2] * Math.sin(5 * t + ph[2] + k * .3));
+        d += (i ? ' L' : 'M') + (cx + rr * 1.6 * Math.cos(t)).toFixed(1) + ',' + (cy + rr * Math.sin(t)).toFixed(1);
+      }
+      s += '<path class="niveau' + (haut && k >= n - 3 ? ' haut' : '') + '" d="' + d + ' Z"/>';
+      if (haut && k === n - 1) s += '<path class="sommet" d="' + d + ' Z"/>';
+    }
+    return s;
+  }
+  function visuelU(nom) {
+    var r = alea(graine(nom)), s = '';
+    s += relief(r, 250 + r() * 90, 70 + r() * 60, 70 + r() * 30, 8, true);
+    s += relief(r, 60 + r() * 90, 150 + r() * 40, 40 + r() * 20, 5, false);
+    return '<svg viewBox="0 0 400 200" preserveAspectRatio="xMidYMid slice" aria-hidden="true">' + s + '</svg>';
+  }
+  function carteU(u) {
+    var li = document.createElement('li');
+    li.innerHTML = '<article class="carte-u"><div class="visuel-u">' + visuelU(u.nom) + '<span class="sceau" aria-hidden="true">' + initialeU(u.nom) + '</span>' +
+      '<span class="pastille ' + (u.role === 'MJ' ? 'mj">MJ' : 'table">Joueur') + '</span></div>' +
+      '<div class="pied-u"><a class="lien-u" href="e03-vue-ensemble.html" title="' + escU(u.nom) + '">' + escU(u.nom) + '</a>' +
+      (u.desc ? '<span class="desc-u">' + escU(u.desc) + '</span>' : '') +
+      '<span class="meta-u">' + (u.sys ? '<span class="sys-u" title="Système de jeu : ' + escU(u.sys) + '"><svg class="i" aria-hidden="true"><use href="#i-dices"/></svg><span class="t">' + escU(u.sys) + '</span></span>' : '<span>Sans système de jeu</span>') +
+      '<span><svg class="i" aria-hidden="true"><use href="#i-users-round"/></svg>' + u.membres + ' membre' + (u.membres > 1 ? 's' : '') + '</span></span></div></article>';
+    return li;
+  }
+  function rendreU(l) {
+    var ul = $('#liste'); ul.innerHTML = '';
+    l.slice().sort(function (a, b) { return a.nom.localeCompare(b.nom, 'fr', { sensitivity: 'base' }); }).forEach(function (u) { ul.appendChild(carteU(u)); });
+    $('#compte-univers').textContent = l.length + ' univers';
+  }
+  rendreU(UNIVERS);
+
   /* ---------------- Contenu long : 100 univers ---------------- */
   function longue() {
     var a = ['La Couronne', 'Le Serment', 'Les Marches', 'Les Brumes', 'Le Silence'];
@@ -754,23 +839,10 @@ body.etat-creer .vue-accueil { display: none; }
     var noms = [];
     a.forEach(function (x) { b.forEach(function (y) { noms.push(x + ' ' + y); }); });
     noms[0] = 'Annales véridiques des Baronnies d\'Outre-Marais, de leurs six rois et du roi fou';
-    noms.sort(function (x, y) { return x.localeCompare(y, 'fr'); });
     var descs = ['Une cité marchande où chaque guilde cache un serment brisé. Les Lames Grises tiennent le port, le Cercle des Cendres tient les Lames, et personne ne sait qui tient le Cercle.',
       'Campagne du jeudi soir.', '', 'Des marais, des brumes et un roi qui ne dort plus.'];
-    var ul = $('#liste'); ul.innerHTML = '';
-    noms.forEach(function (n, i) {
-      var li = document.createElement('li');
-      var mj = i % 3 === 0, d = descs[i % descs.length];
-      var initiale = n.replace(/^(les?|la|l')\s*/i, '').charAt(0).toUpperCase();
-      li.innerHTML = '<a class="ligne-univers" href="e03-vue-ensemble.html"><span class="sceau" aria-hidden="true"></span><span class="corps"><span class="nom-u"></span><span class="desc-u"></span></span>' +
-        '<span class="pastille ' + (mj ? 'mj">MJ' : 'table">Joueur') + '</span><svg class="i fleche" aria-hidden="true"><use href="#i-chevron-right"/></svg></a>';
-      li.querySelector('.sceau').textContent = initiale;
-      li.querySelector('.nom-u').textContent = n; li.querySelector('.nom-u').title = n;
-      var de = li.querySelector('.desc-u');
-      if (d) de.textContent = d; else de.remove();
-      ul.appendChild(li);
-    });
-    $('#compte-univers').textContent = noms.length + ' univers';
+    var syss = ['CoF Mini', '', 'Chroniques Oubliées Fantasy', 'Règles maison des Baronnies d\'Outre-Marais, édition révisée et augmentée de 1347'];
+    rendreU(noms.map(function (n, i) { return { nom: n, desc: descs[i % descs.length], role: i % 3 === 0 ? 'MJ' : 'Joueur', sys: syss[i % syss.length], membres: 1 + (i * 7) % 12 }; }));
   }
 
   /* ---------------- Un compte ---------------- */

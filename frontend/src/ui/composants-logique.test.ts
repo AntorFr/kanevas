@@ -46,3 +46,11 @@ test('audience : le mot se déduit des cinq réglages (charte, Pastille d’audi
   assert.equal(motAudience('confiee', 'Léa'), 'Confiée à Léa');
   assert.equal(motAudience('mj'), 'MJ seul');
 });
+
+test('sceau : l\'article écarté donne l\'initiale du nom (maquette e01, initialeU)', async () => {
+  const { initialeUnivers } = await import('./composants');
+  assert.equal(initialeUnivers('Les Cendres de Vaëlis'), 'C');
+  assert.equal(initialeUnivers("L'Aube rouge"), 'A');
+  assert.equal(initialeUnivers('la Marche'), 'M');
+  assert.equal(initialeUnivers('Lesath'), 'L');
+});

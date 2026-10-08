@@ -1,5 +1,6 @@
 import { ArrowRight, FileText, Lock, type LucideIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
+import { Link } from 'react-router-dom';
 
 import { Pastille } from './composants';
 
@@ -36,25 +37,37 @@ export function LigneRelation({
   icone: Icone,
   cible,
   type,
+  vers,
   actions,
 }: {
   lien: string;
   icone: LucideIcon;
   cible: string;
   type: string;
+  /** Address of the target sheet: the token becomes a link. */
+  vers?: string;
   actions?: ReactNode;
 }) {
+  const jeton = (
+    <>
+      <Icone size={14} strokeWidth={1.75} aria-hidden="true" />
+      <span className="jeton-titre" title={cible}>
+        {cible}
+      </span>
+      <span className="jeton-type">{type}</span>
+    </>
+  );
   return (
     <div className="relation">
       <span className="relation-lien">{lien}</span>
       <ArrowRight size={14} strokeWidth={1.75} aria-hidden="true" className="relation-fleche" />
-      <span className="jeton">
-        <Icone size={14} strokeWidth={1.75} aria-hidden="true" />
-        <span className="jeton-titre" title={cible}>
-          {cible}
-        </span>
-        <span className="jeton-type">{type}</span>
-      </span>
+      {vers ? (
+        <Link className="jeton" to={vers}>
+          {jeton}
+        </Link>
+      ) : (
+        <span className="jeton">{jeton}</span>
+      )}
       {actions && <span className="actions-revelees">{actions}</span>}
     </div>
   );
@@ -106,11 +119,19 @@ export function LigneFichier({
 /** A thumbnail 160 × 120 with its caption; a secret one is ringed in amber and wears its badge. */
 export function Vignette({
   src,
+  alt = '',
+  href,
+  onErreur,
   legende,
   secrete,
   actions,
 }: {
   src: string;
+  /** Alternative text of the image (the file name); empty = decorative. */
+  alt?: string;
+  /** The picture opens this address in a new tab. */
+  href?: string;
+  onErreur?: () => void;
   legende: string;
   secrete?: boolean;
   actions?: ReactNode;
@@ -118,7 +139,13 @@ export function Vignette({
   return (
     <figure className="vignette-bloc">
       <div className={`vignette-image${secrete ? ' secrete' : ''}`}>
-        <img src={src} alt="" width={160} height={120} />
+        {href ? (
+          <a href={href} target="_blank" rel="noopener noreferrer" title={`Ouvrir ${alt} dans un nouvel onglet`}>
+            <img src={src} alt={alt} width={160} height={120} onError={onErreur} />
+          </a>
+        ) : (
+          <img src={src} alt={alt} width={160} height={120} onError={onErreur} />
+        )}
         {secrete && (
           <span className="vignette-pastille">
             <Pastille sens="secrete" icone={Lock}>

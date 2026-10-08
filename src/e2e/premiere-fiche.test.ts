@@ -28,6 +28,9 @@ import {
   type Any,
   ajouterMembre,
   ajouterSection,
+  choisirDansMenuSection,
+  confirmerRetraitSection,
+  ouvrirMenuSection,
   allerListe,
   allerMembres,
   attendre,
@@ -231,7 +234,10 @@ test('B-7 titre vide ou de 121 caractères refusé ; 120 accepté ; les fiches s
   await creerFiche(antor, 'lieu', 'L'.repeat(120));
   await allerListe(antor, 'lieu');
   await voit(antor, 'charlie');
-  const noms: string[] = await antor.locator('main a').allInnerTexts();
+  const noms: string[] = await antor.locator('main a').evaluateAll((els: HTMLElement[]) =>
+    // A grid card (E-8) leads with its fallback initial: its title is `.titre`.
+    els.map((e) => (e.querySelector('.titre') as HTMLElement | null)?.innerText ?? e.innerText),
+  );
   const courts = noms.map((n) => n.split('\n')[0]!.trim()).filter((n) => n.length < 20);
   assert.deepEqual(courts, ['Alpha', 'bravo', 'charlie']);
 });
@@ -272,43 +278,52 @@ test('B-8 Antor ajoute « Apparence » puis « Vérité — MJ seul » : section
   assert.deepEqual(await titresSections(antor), ['Apparence', 'Vérité — MJ seul']);
   const s = section(antor, 'Apparence');
   assert.ok((await s.innerText()).replace(/’/g, "'").includes("Rien d'écrit pour l'instant."));
-  assert.ok(/MJ seul/.test(await s.locator('h2').innerText()), 'a new section is closed to players: « MJ seul »');
-  assert.equal(await s.getByLabel('Les joueurs la lisent').isChecked(), false);
+  await s.getByRole('button', { name: /^MJ seul — régler l['’]audience de/ }).waitFor();
+  await s.getByRole('button', { name: /régler l['’]audience de/ }).click();
+  const boite = antor.getByRole('dialog', { name: /^Qui voit « Apparence »/ });
+  assert.equal(await boite.getByRole('switch', { name: rx('Les joueurs la lisent') }).getAttribute('aria-checked'), 'false');
+  assert.equal(await boite.getByRole('switch', { name: rx('Les joueurs l’écrivent') }).getAttribute('aria-checked'), 'false');
+  await antor.keyboard.press('Escape');
 });
 
 test('B-8 titre de section vide ou de 81 caractères refusé ; 80 accepté', opts, async () => {
   const antor = await compte('antor');
   await antor.goto(urlFiche);
   await section(antor, 'Apparence').waitFor();
-  await antor.getByRole('button', { name: rxExact('Ajouter une section') }).click();
+  await antor.getByRole('button', { name: /^Ajouter une section/ }).click();
+  await antor.getByRole('button', { name: rxExact('Ajouter la section') }).click();
   await voit(antor, 'Erreur : le titre est obligatoire.');
   await antor.getByLabel('Titre de la section').fill('S'.repeat(81));
-  await antor.getByRole('button', { name: rxExact('Ajouter une section') }).click();
+  await antor.getByRole('button', { name: rxExact('Ajouter la section') }).click();
   await voit(antor, 'Erreur : 80 caractères au plus.');
   assert.equal((await titresSections(antor)).length, 2);
   await antor.getByLabel('Titre de la section').fill('S'.repeat(80));
-  await antor.getByRole('button', { name: rxExact('Ajouter une section') }).click();
+  await antor.getByRole('button', { name: rxExact('Ajouter la section') }).click();
   await section(antor, 'S'.repeat(80)).waitFor();
   assert.equal((await titresSections(antor)).length, 3);
   // retire it again (cleanup of the shared scenario)
-  await section(antor, 'S'.repeat(80)).getByRole('button', { name: rxExact('Retirer la section') }).click();
-  await antor.getByRole('button', { name: rxExact('Retirer la section') }).last().click();
+  await choisirDansMenuSection(antor, 'S'.repeat(80), 'Retirer la section');
+  await confirmerRetraitSection(antor);
 });
 
 test('B-8 monter / descendre réordonne et l\'ordre survit au rechargement ; « Monter » sur la première est sans effet', opts, async () => {
   const antor = await compte('antor');
   await antor.goto(urlFiche);
   await section(antor, 'Vérité').waitFor();
-  await section(antor, 'Apparence').getByRole('button', { name: rxExact('Monter') }).click({ force: true });
+  // « Monter » on the first section is inert: visible in the menu, aria-disabled, nothing moves.
+  const menuPremiere = await ouvrirMenuSection(antor, 'Apparence');
+  assert.equal(await menuPremiere.getByRole('menuitem', { name: rxExact('Monter') }).getAttribute('aria-disabled'), 'true');
+  await menuPremiere.getByRole('menuitem', { name: rxExact('Monter') }).click({ force: true });
+  await antor.keyboard.press('Escape');
   await antor.waitForTimeout(500);
   assert.deepEqual(await titresSections(antor), ['Apparence', 'Vérité — MJ seul']);
-  await section(antor, 'Vérité').getByRole('button', { name: rxExact('Monter') }).click();
+  await choisirDansMenuSection(antor, 'Vérité', 'Monter');
   for (let i = 0; i < 40 && (await titresSections(antor))[0] !== 'Vérité — MJ seul'; i++) await antor.waitForTimeout(100);
   assert.deepEqual(await titresSections(antor), ['Vérité — MJ seul', 'Apparence']);
   await antor.reload();
   await section(antor, 'Apparence').waitFor();
   assert.deepEqual(await titresSections(antor), ['Vérité — MJ seul', 'Apparence']);
-  await section(antor, 'Vérité').getByRole('button', { name: rxExact('Descendre') }).click();
+  await choisirDansMenuSection(antor, 'Vérité', 'Descendre');
   for (let i = 0; i < 40 && (await titresSections(antor))[0] !== 'Apparence'; i++) await antor.waitForTimeout(100);
   assert.deepEqual(await titresSections(antor), ['Apparence', 'Vérité — MJ seul']);
 });
@@ -327,8 +342,9 @@ test('B-8 écrire : le texte s\'affiche en texte brut (le HTML n\'est pas interp
   await voit(antor, 'Erreur : 20 000 caractères au plus.');
   await s.getByRole('textbox').fill('y'.repeat(20000));
   await s.getByRole('button', { name: rxExact('Enregistrer') }).click();
-  await s.locator('.contenu').waitFor();
-  assert.equal((await s.locator('.contenu').innerText()).length, 20000);
+  const plein = s.getByText(/^y{20000}$/);
+  await plein.waitFor();
+  assert.equal(((await plein.textContent()) ?? '').length, 20000);
   await ecrireSection(antor, 'Apparence', 'Grand, barbe grise.');
   await voit(antor, 'Grand, barbe grise.');
   await ecrireSection(antor, 'Vérité', 'Aldric est le traître.');
@@ -365,12 +381,14 @@ test('B-8 retirer une section : confirmation « Retirer la section « Vérité �
   await antor.goto(urlFiche);
   await ajouterSection(antor, 'Éphémère');
   await section(antor, 'Éphémère').waitFor();
-  await section(antor, 'Éphémère').getByRole('button', { name: rxExact('Retirer la section') }).click();
-  await voit(antor, 'Retirer la section « Éphémère » ? Son contenu sera perdu.');
-  await antor.getByRole('alertdialog').getByRole('button', { name: rxExact('Annuler') }).click();
+  await choisirDansMenuSection(antor, 'Éphémère', 'Retirer la section');
+  const dialogue = antor.getByRole('alertdialog', { name: rx('Retirer la section « Éphémère » ?') });
+  await dialogue.waitFor();
+  assert.ok(rx('Son contenu sera perdu.').test(await dialogue.innerText()));
+  await dialogue.getByRole('button', { name: rxExact('Annuler') }).click();
   assert.equal(await section(antor, 'Éphémère').count(), 1);
-  await section(antor, 'Éphémère').getByRole('button', { name: rxExact('Retirer la section') }).click();
-  await antor.getByRole('alertdialog').getByRole('button', { name: rxExact('Retirer la section') }).click();
+  await choisirDansMenuSection(antor, 'Éphémère', 'Retirer la section');
+  await confirmerRetraitSection(antor);
   for (let i = 0; i < 40 && (await section(antor, 'Éphémère').count()) > 0; i++) await antor.waitForTimeout(100);
   assert.equal(await section(antor, 'Éphémère').count(), 0);
   assert.deepEqual(await titresSections(antor), ['Apparence', 'Vérité — MJ seul']);
@@ -384,7 +402,7 @@ test('B-9 Léa ouvre « Maître Aldric » dont « Apparence » est lue des joueu
   await antor.goto(urlFiche);
   await section(antor, 'Apparence').waitFor();
   await regler(antor, 'Apparence', 'Les joueurs la lisent', true);
-  assert.equal(await section(antor, 'Apparence').locator('h2').innerText().then((h: string) => /MJ seul/.test(h)), false, 'the « MJ seul » pill goes once players read it');
+  await section(antor, 'Apparence').getByRole('button', { name: /^Lue des joueurs — régler l['’]audience de/ }).waitFor();
 
   const corps: string[] = [];
   lea.on('response', async (r: Any) => {
@@ -452,7 +470,12 @@ test('B-9 Léa, auteur d\'une section fermée aux joueurs, la lit et l\'écrit ;
   await ajouterSection(antor, 'Notes de la table');
   await section(antor, 'Notes de la table').waitFor();
   const s = section(antor, 'Notes de la table');
-  await s.getByRole('combobox', { name: /Auteur/ }).selectOption({ label: 'lea' });
+  await s.getByRole('button', { name: /régler l['’]audience de/ }).click();
+  await antor.getByRole('dialog', { name: /^Qui voit/ }).getByRole('combobox', { name: /Auteur/ }).selectOption({ label: 'lea' });
+  await antor.getByRole('dialog', { name: /^Qui voit/ }).getByRole('switch', { name: rx('L’auteur la lit') }).waitFor();
+  await antor.getByRole('dialog', { name: /^Qui voit/ }).getByRole('combobox', { name: /Auteur/ }).focus();
+  await antor.keyboard.press('Escape');
+  await antor.getByRole('dialog', { name: /^Qui voit/ }).waitFor({ state: 'detached' });
   await regler(antor, 'Notes de la table', "L'auteur la lit", true);
   await regler(antor, 'Notes de la table', "L'auteur l'écrit", true);
 
@@ -522,6 +545,10 @@ test('B-12 Antor en mode Joueur voit « Apparence » seule, comme Léa, et plus 
   for (const mot of ['Les joueurs la lisent', 'Monter', 'Descendre', 'Retirer la section', 'Ajouter une section', 'Modifier']) {
     assert.ok(!t.includes(mot), `no « ${mot} » in player mode (nobody lets players write Apparence)`);
   }
+  await voit(antor, 'Mode Joueur : vous voyez ce que voit un joueur.');
+  assert.equal(await antor.getByRole('button', { name: /régler l['’]audience de/ }).count(), 0, 'no audience badge in player mode');
+  assert.equal(await antor.getByRole('button', { name: /^Autres actions sur/ }).count(), 0, 'no « ⋯ » menu in player mode');
+  assert.equal(await antor.locator('main section[data-aud]').count(), 0, 'no rule nor hatching in player mode');
   await antor.getByLabel('Mode MJ').check();
   await section(antor, 'Vérité').waitFor();
   assert.deepEqual(await titresSections(antor), ['Apparence', 'Vérité — MJ seul', 'Notes de la table']);
@@ -537,6 +564,7 @@ test('B-12 en mode Joueur, « Modifier » n\'apparaît que sur une section que l
   await section(antor, 'Apparence').getByRole('button', { name: rxExact('Modifier') }).waitFor();
   assert.equal(await antor.getByRole('button', { name: rxExact('Modifier') }).count(), 1);
   await antor.getByLabel('Mode MJ').check();
+  await section(antor, 'Apparence').getByRole('button', { name: /régler l['’]audience de/ }).waitFor();
   await regler(antor, 'Apparence', 'Les joueurs l\'écrivent', false);
 });
 
@@ -577,8 +605,12 @@ test('B-4 retirer Léa : confirmation, Annuler la garde ; une fois retirée elle
   await antor.goto(urlUnivers);
   await allerMembres(antor);
   await antor.getByRole('button', { name: rx('Retirer lea') }).click();
-  await voit(antor, "Retirer lea de Lame d'Ébène ? Elle ne verra plus l'univers.");
-  await antor.getByRole('button', { name: rxExact('Annuler') }).click();
+  // the confirmation is the standard dialog: title (h2) and text (p) are two elements
+  const confirmation = antor.getByRole('alertdialog', { name: /Retirer lea de Lame d.Ébène \?/ });
+  await confirmation.waitFor();
+  assert.equal(((await confirmation.innerText()) as string).replace(/’/g, "'").replace(/\s+/g, ' ').includes("Elle ne verra plus l'univers."), true);
+  await confirmation.getByRole('button', { name: rxExact('Annuler') }).click();
+  await confirmation.waitFor({ state: 'detached' });
   await lea.goto('/');
   await voit(lea, NOM);
   await antor.getByRole('button', { name: rx('Retirer lea') }).click();

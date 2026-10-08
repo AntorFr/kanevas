@@ -7,20 +7,8 @@
   display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; }
 .connecte { color: var(--texte-2); margin-bottom: var(--e-3); }
 .connecte strong { color: var(--texte); }
-.titre-univers { display: flex; align-items: baseline; gap: var(--e-3); flex-wrap: wrap; overflow-wrap: anywhere; }
-.description-univers { color: var(--texte-2); white-space: pre-wrap; overflow-wrap: anywhere; max-width: 70ch; }
-.blocs { display: flex; flex-direction: column; gap: var(--e-4); margin-top: var(--e-4); }
 .echec { color: var(--danger); background: var(--danger-fond); padding: var(--e-2) var(--e-3); border-radius: var(--rayon-champ); margin: var(--e-3) 0; }
 .actions { display: flex; gap: var(--e-2); margin-top: var(--e-4); }
-.ajout-membre { display: flex; gap: var(--e-2); flex-wrap: wrap; align-items: center; margin: var(--e-3) 0; }
-.ajout-membre input { flex: 1; min-width: 12rem; max-width: 20rem; }
-.liste-membres { list-style: none; margin: var(--e-3) 0; padding: 0; background: var(--surface); border: 1px solid var(--bord);
-  border-radius: var(--rayon-panneau); max-height: 60vh; overflow-y: auto; }
-.liste-membres li { display: flex; align-items: center; gap: var(--e-3); padding: var(--e-2) var(--e-4); border-bottom: 1px solid var(--bord); }
-.liste-membres li > :not(.identifiant) { flex: none; white-space: nowrap; }
-.ajout-membre .bouton { flex: none; }
-.liste-membres li:last-child { border-bottom: 0; }
-.liste-membres .identifiant { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .confirmation p { overflow-wrap: anywhere; }
 .confirmation { background: var(--surface); border: 1px solid var(--bord); border-radius: var(--rayon-panneau); padding: var(--e-3) var(--e-4); }
 .enregistre { color: var(--table); background: var(--table-fond); padding: var(--e-2) var(--e-3); border-radius: var(--rayon-champ); margin: var(--e-3) 0; }

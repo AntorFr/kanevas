@@ -1,4 +1,4 @@
-import { ChevronDown, Eye, Lock, PenLine, WifiOff, type LucideIcon } from 'lucide-react';
+import { ChevronDown, CircleAlert, Eye, Lock, PenLine, WifiOff, type LucideIcon } from 'lucide-react';
 import { useEffect, useId, useRef, type ButtonHTMLAttributes, type ReactNode } from 'react';
 
 import { useConnexionPerdue } from '../api';
@@ -87,26 +87,47 @@ export function BoutonIcone({
 /**
  * Field with a visible label (34 px); the error sits under it, prefixed « Erreur : », via
  * aria-describedby. `zone` is a textarea, `liste` a dressed native select (`children` = options).
+ * `grand` is the page-form size (title-sized input), `facultatif` says so beside the label,
+ * `compteur` (« 12 / 80 ») sits at the foot, red when `trop`.
  */
 export function Champ({
   etiquette,
   erreur,
   zone,
   liste,
+  grand,
+  facultatif,
+  compteur,
+  trop,
   children,
   ...reste
-}: { etiquette: string; erreur?: string; zone?: boolean; liste?: boolean; children?: ReactNode } & Record<string, unknown>) {
+}: {
+  etiquette: string;
+  erreur?: string;
+  zone?: boolean;
+  liste?: boolean;
+  grand?: boolean;
+  facultatif?: boolean;
+  compteur?: string;
+  trop?: boolean;
+  children?: ReactNode;
+} & Record<string, unknown>) {
   const id = useId();
   const idErreur = `${id}-e`;
+  const idCompteur = `${id}-c`;
+  const decrit = [erreur ? idErreur : '', compteur ? idCompteur : ''].filter(Boolean).join(' ');
   const props = {
     ...reste,
     id,
     'aria-invalid': erreur ? true : undefined,
-    'aria-describedby': erreur ? idErreur : undefined,
+    'aria-describedby': decrit || undefined,
   };
   return (
-    <label className="champ" htmlFor={id}>
-      <span>{etiquette}</span>
+    <div className={`champ${grand ? ' grand' : ''}`}>
+      <label className="lib-champ" htmlFor={id}>
+        {etiquette}
+        {facultatif && <small>facultative</small>}
+      </label>
       {zone ? (
         <textarea {...props} />
       ) : liste ? (
@@ -117,12 +138,48 @@ export function Champ({
       ) : (
         <input {...props} />
       )}
-      {erreur && (
-        <div className="erreur" id={idErreur}>
-          Erreur : {erreur}
+      {(erreur || compteur) && (
+        <div className="pied-champ">
+          {erreur && (
+            <div className="erreur" id={idErreur}>
+              <CircleAlert size={12} strokeWidth={2} aria-hidden="true" />
+              <span>Erreur : {erreur}</span>
+            </div>
+          )}
+          {compteur && (
+            <span className={`compteur${trop ? ' trop' : ''}`} id={idCompteur}>
+              {compteur}
+            </span>
+          )}
         </div>
       )}
-    </label>
+    </div>
+  );
+}
+
+/** The initial of a universe name, a leading article (le, les, la, l') set aside: « Les Cendres » → « C ». */
+export function initialeUnivers(nom: string): string {
+  const net = nom.trim();
+  const sans = net.replace(/^(?:(?:les?|la)\s+|l['’])/i, '');
+  return (Array.from(sans)[0] ?? Array.from(net)[0] ?? '').toUpperCase();
+}
+
+/** The universe's seal: its initial on a tile. `inconnu` is the dashed placeholder (no name yet). */
+export function Sceau({
+  nom,
+  taille,
+  inconnu,
+  chargement,
+}: {
+  nom: string;
+  taille?: 'grand' | 'moyen' | 'petit';
+  inconnu?: boolean;
+  /** The name is not known yet: a skeleton tile, no mark. */
+  chargement?: boolean;
+}) {
+  const initiale = initialeUnivers(nom);
+  return (
+    <span className={`sceau${taille ? ` ${taille}` : ''}${chargement ? ' charge' : inconnu || !initiale ? ' inconnu' : ''}`} aria-hidden="true" data-initiale={chargement ? '' : inconnu || !initiale ? '?' : initiale} />
   );
 }
 
@@ -163,9 +220,12 @@ export function Pastille({
   icone: Icone,
   onClick,
   etiquette,
+  expanded,
   children,
 }: {
   sens: 'mj' | 'table' | 'neutre' | 'secrete';
+  /** A button that opens a setting: whether it is open (`aria-expanded`). */
+  expanded?: boolean;
   icone?: LucideIcon;
   onClick?: () => void;
   /** Accessible name when it is a button (state and gesture). */
@@ -181,7 +241,14 @@ export function Pastille({
   );
   if (onClick) {
     return (
-      <button type="button" className={`pastille ${sens} cliquable`} aria-label={etiquette} onClick={onClick}>
+      <button
+        type="button"
+        className={`pastille ${sens} cliquable`}
+        aria-label={etiquette}
+        aria-haspopup={expanded === undefined ? undefined : 'dialog'}
+        aria-expanded={expanded}
+        onClick={onClick}
+      >
         {contenu}
       </button>
     );
@@ -198,11 +265,13 @@ export function PastilleAudience({
   etat,
   auteur,
   section,
+  expanded,
   onRegler,
 }: {
   etat: EtatAudience;
   auteur?: string;
   section?: string;
+  expanded?: boolean;
   onRegler?: () => void;
 }) {
   const mot = motAudience(etat, auteur);
@@ -213,6 +282,7 @@ export function PastilleAudience({
       sens={sens}
       icone={icone}
       onClick={onRegler}
+      expanded={expanded}
       etiquette={onRegler ? `${mot} — régler l’audience de « ${section ?? ''} »` : undefined}
     >
       {etat === 'confiee' && auteur && <Avatar nom={auteur} joueur petit />}
@@ -323,11 +393,23 @@ export function Fenetre({ titre, onFermer, children }: { titre: string; onFermer
 }
 
 /** Loading skeleton shaped like a sheet (type, title, rule, two sections); `role="status"`, the text is read and written. */
-export function SqueletteFiche({ texte = 'Chargement de la fiche…' }: { texte?: string }) {
+export function SqueletteFiche({ texte = 'Chargement de la fiche…', cadre }: { texte?: string; cadre?: boolean }) {
   return (
     <div className="squelette-fiche" role="status">
-      <div className="squelette s-type" aria-hidden="true" />
-      <div className="squelette s-titre" aria-hidden="true" />
+      {cadre ? (
+        <div className="s-entete" aria-hidden="true">
+          <div className="squelette s-cadre" />
+          <div>
+            <div className="squelette s-type" />
+            <div className="squelette s-titre" />
+          </div>
+        </div>
+      ) : (
+        <>
+          <div className="squelette s-type" aria-hidden="true" />
+          <div className="squelette s-titre" aria-hidden="true" />
+        </>
+      )}
       <div className="squelette s-filet" aria-hidden="true" />
       {[0, 1].map((i) => (
         <div key={i} className="squelette-section" aria-hidden="true">

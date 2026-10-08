@@ -1,12 +1,15 @@
-import { useEffect, useState, type FormEvent } from 'react';
+import { ArrowRight, Check, Link2, Plus, Settings } from 'lucide-react';
+import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import { Link, useParams } from 'react-router-dom';
 
 import { ErreurApi, appeler } from '../api';
 import { useCharge, useUnivers } from '../cadre-contexte';
 import type { Ecran } from '../registre';
 import type { UniversListe } from '../types';
-import { Bouton, Champ, Chargement, ErreurChargement, PageIntrouvable, Panneau } from '../ui';
+import { Bouton, Champ, ChargementListe, ErreurChargement, PageIntrouvable, Panneau, useToasts } from '../ui';
 import './ecrans.css';
+import './liste.css';
+import './reglages.css';
 
 const NOM_MAX = 80;
 const DESCRIPTION_MAX = 500;
@@ -20,7 +23,7 @@ interface SystemeCatalogue {
 }
 
 interface SystemeUnivers extends SystemeCatalogue {
-  universUtilisateurs: number;
+  nbUnivers: number;
 }
 
 /** A role removed while the page is open answers 403 on the next write; anything else is generic. */
@@ -32,9 +35,33 @@ function messageEchec(e: unknown): string {
 function Parametres() {
   const { id } = useParams();
   const { recharger: rechargerUnivers } = useUnivers();
+  const { toast } = useToasts();
   const [univers, rechargerUniv] = useCharge<UniversListe>(`/api/univers/${id}`);
-  const [catalogue, rechargerCat] = useCharge<SystemeCatalogue[]>('/api/systemes');
-  const [courant, rechargerCourant] = useCharge<SystemeUnivers>(`/api/univers/${id}/systeme`);
+  const [catalogue, rechargerCat] = useCharge<SystemeCatalogue[]>('/api/systemes/catalogue');
+  const [mes, rechargerMes] = useCharge<SystemeUnivers[]>('/api/systemes');
+  const rechargerCourant = rechargerMes;
+  // The universe's own system (AD-94): its `systeme` ref, completed by the visible systems for the count.
+  type Courant =
+    | { etat: 'chargement' }
+    | { etat: 'erreur'; statut?: number }
+    | { etat: 'ok'; valeur: SystemeUnivers };
+  const courant = useMemo<Courant>(
+      () =>
+        mes.etat !== 'ok' || univers.etat === 'chargement'
+      ? mes.etat === 'erreur' ? mes : { etat: 'chargement' }
+      : univers.etat === 'erreur'
+        ? { etat: 'erreur', statut: univers.statut }
+        : univers.valeur.systeme
+          ? {
+              etat: 'ok',
+              valeur: mes.valeur.find((x) => x.id === univers.valeur.systeme!.id) ?? {
+                ...univers.valeur.systeme,
+                nbUnivers: 1,
+              },
+            }
+          : { etat: 'erreur', statut: 404 },
+      [mes, univers],
+    );
 
   const [nom, setNom] = useState('');
   const [description, setDescription] = useState('');
@@ -45,7 +72,6 @@ function Parametres() {
   const [nomSysteme, setNomSysteme] = useState('');
   const [nomSystemeVide, setNomSystemeVide] = useState(false);
   const [nomPris, setNomPris] = useState(false);
-  const [enregistre, setEnregistre] = useState(false);
   const [echecIdentite, setEchecIdentite] = useState<string>();
   const [echecRattache, setEchecRattache] = useState<string>();
   const [echecCreation, setEchecCreation] = useState<string>();
@@ -71,7 +97,7 @@ function Parametres() {
   }, [courant]);
 
   const etats = [univers, catalogue, courant];
-  if (etats.some((e) => e.etat === 'chargement')) return <Chargement texte="Chargement des paramètres…" />;
+  if (etats.some((e) => e.etat === 'chargement')) return <ChargementListe texte="Chargement des paramètres…" />;
   // A player, no role, or an unknown universe: the same answer. (No system is a 404 of its own.)
   if (univers.etat === 'erreur' && univers.statut === 404) return <PageIntrouvable />;
   if (univers.etat === 'ok' && univers.valeur.role !== 'mj') return <PageIntrouvable />;
@@ -107,7 +133,10 @@ function Parametres() {
 
   async function relire() {
     try {
-      setSysteme(await appeler<SystemeUnivers>('GET', `${base}/systeme`));
+      const u = await appeler<UniversListe>('GET', base);
+      const l = await appeler<SystemeUnivers[]>('GET', '/api/systemes');
+      const ref = u.systeme;
+      setSysteme(ref ? (l.find((x) => x.id === ref.id) ?? { ...ref, nbUnivers: 1 }) : null);
     } catch (e) {
       if (e instanceof ErreurApi && e.statut === 404) setSysteme(null);
       else throw e;
@@ -116,7 +145,6 @@ function Parametres() {
 
   async function enregistrer(e: FormEvent) {
     e.preventDefault();
-    setEnregistre(false);
     setEchecIdentite(undefined);
     if (nom.trim() === '') return setNomVide(true);
     if (nom.length > NOM_MAX || description.length > DESCRIPTION_MAX) return;
@@ -130,13 +158,14 @@ function Parametres() {
     );
     if (ok) {
       setNomVide(false);
-      setEnregistre(true);
+      toast('Enregistré.');
     }
   }
 
   async function rattacher() {
     setEchecRattache(undefined);
-    await ecrire(
+    const avant = systeme?.nom;
+    const ok = await ecrire(
       'rattache',
       async () => {
         await appeler('PUT', `${base}/systeme`, { systemeId: choix === AUCUN ? null : Number(choix) });
@@ -144,6 +173,7 @@ function Parametres() {
       },
       setEchecRattache,
     );
+    if (ok) toast(choix === AUCUN ? (avant ? `« ${avant} » détaché` : 'Aucun système rattaché') : `« ${liste.find((x) => String(x.id) === choix)?.nom ?? ''} » rattaché`);
   }
 
   async function creer(e: FormEvent) {
@@ -153,6 +183,7 @@ function Parametres() {
     if (nomSysteme.trim() === '') return setNomSystemeVide(true);
     if (nomSysteme.length > NOM_MAX) return;
     let pris = false;
+    const nomCree = nomSysteme;
     const ok = await ecrire(
       'creation',
       async () => {
@@ -173,6 +204,7 @@ function Parametres() {
       setEchecCreation,
     );
     if (ok && !pris) {
+      toast(`« ${nomCree} » créé et rattaché`);
       setNomSysteme('');
       setNomSystemeVide(false);
     }
@@ -192,99 +224,85 @@ function Parametres() {
   };
 
   return (
-    <>
-      <h1>Paramètres de l’univers</h1>
-      {enregistre && (
-        <div className="enregistre" role="status">
-          Enregistré.
-        </div>
-      )}
-      <Panneau titre="Identité" reserveMj>
-        {echecIdentite && (
-          <div className="echec" role="alert">
-            {echecIdentite}
-          </div>
-        )}
-        <form onSubmit={enregistrer} noValidate>
-          <Champ etiquette="Nom" value={nom} erreur={erreurNom} onChange={saisie(setNom, () => setEnregistre(false))} />
-          <Champ
-            etiquette="Description"
-            zone
-            rows={4}
-            value={description}
-            erreur={erreurDescription}
-            onChange={saisie(setDescription, () => setEnregistre(false))}
-          />
-          <div className="actions">
-            <Bouton type="submit" variante="principal" ecrit enCours={enCours === 'identite'}>
-              Enregistrer
+    <div className="page-liste">
+      <header className="tete-liste">
+        <span className="glyphe-type" aria-hidden="true">
+          <Settings size={20} strokeWidth={1.75} />
+        </span>
+        <h1>Paramètres de l’univers</h1>
+      </header>
+      <div className="panneaux-suivi">
+        <Panneau titre="Identité" reserveMj>
+          {echecIdentite && (
+            <div className="echec" role="alert">
+              {echecIdentite}
+            </div>
+          )}
+          <form onSubmit={enregistrer} noValidate>
+            <Champ etiquette="Nom" value={nom} erreur={erreurNom} onChange={saisie(setNom)} />
+            <Champ etiquette="Description" zone rows={4} value={description} erreur={erreurDescription} onChange={saisie(setDescription)} />
+            <div className="actions">
+              <Bouton type="submit" variante="principal" ecrit icone={Check} enCours={enCours === 'identite'}>
+                Enregistrer
+              </Bouton>
+            </div>
+          </form>
+        </Panneau>
+
+        <Panneau titre="Système de jeu" reserveMj>
+          {echecRattache && (
+            <div className="echec" role="alert">
+              {echecRattache}
+            </div>
+          )}
+          {liste.length === 0 && <p>Le catalogue est vide. Créez le premier système ci-dessous.</p>}
+          <div className="formulaire-ligne">
+            <Champ etiquette="Système du catalogue" liste value={choix} onChange={(e: { target: { value: string } }) => setChoix(e.target.value)}>
+              <option value={AUCUN}>Aucun système</option>
+              {liste.map((s) => (
+                <option key={s.id} value={s.id}>
+                  {s.nom}
+                </option>
+              ))}
+            </Champ>
+            <Bouton variante="principal" ecrit icone={Link2} enCours={enCours === 'rattache'} onClick={rattacher}>
+              Rattacher
             </Bouton>
           </div>
-        </form>
-      </Panneau>
+          {systeme ? (
+            <div className="systeme-courant">
+              <strong className="nom-systeme" title={systeme.nom}>
+                {systeme.nom}
+              </strong>
+              <span>Utilisé par {systeme.nbUnivers} univers</span>
+              <Link className="bouton neutre" to={`/systemes/${systeme.id}`}>
+                Ouvrir le système
+                <ArrowRight size={14} strokeWidth={1.75} aria-hidden="true" />
+              </Link>
+            </div>
+          ) : (
+            <p>Cet univers n’est rattaché à aucun système de jeu.</p>
+          )}
+        </Panneau>
 
-      <Panneau titre="Système de jeu" reserveMj>
-        {echecRattache && (
-          <div className="echec" role="alert">
-            {echecRattache}
-          </div>
-        )}
-        {liste.length === 0 && <p>Le catalogue est vide. Créez le premier système ci-dessous.</p>}
-        <label className="champ">
-          <span>Système du catalogue</span>
-          <select value={choix} onChange={(e) => setChoix(e.target.value)}>
-            <option value={AUCUN}>Aucun système</option>
-            {liste.map((s) => (
-              <option key={s.id} value={s.id}>
-                {s.nom}
-              </option>
-            ))}
-          </select>
-        </label>
-        <div className="actions">
-          <Bouton variante="principal" ecrit enCours={enCours === 'rattache'} onClick={rattacher}>
-            Rattacher
-          </Bouton>
-        </div>
-        {systeme ? (
-          <div className="systeme-courant">
-            <strong className="nom-systeme" title={systeme.nom}>
-              {systeme.nom}
-            </strong>
-            <span>
-              Utilisé par {systeme.universUtilisateurs} univers
-            </span>
-            <Link className="bouton neutre" to={`/univers/${id}/systeme`}>
-              Ouvrir le système
-            </Link>
-          </div>
-        ) : (
-          <p>Cet univers n’est rattaché à aucun système de jeu.</p>
-        )}
-      </Panneau>
-
-      <Panneau titre="Créer un système" reserveMj>
-        {echecCreation && (
-          <div className="echec" role="alert">
-            {echecCreation}
-          </div>
-        )}
-        <form onSubmit={creer} noValidate>
-          <Champ
-            etiquette="Nom du système"
-            value={nomSysteme}
-            erreur={erreurNomSysteme}
-            onChange={saisie(setNomSysteme, () => setNomPris(false))}
-          />
-          {nomPris && <div className="erreur-champ">Un système porte déjà ce nom.</div>}
-          <div className="actions">
-            <Bouton type="submit" ecrit enCours={enCours === 'creation'}>
-              Créer et rattacher
-            </Bouton>
-          </div>
-        </form>
-      </Panneau>
-    </>
+        <Panneau titre="Créer un système" reserveMj>
+          {echecCreation && (
+            <div className="echec" role="alert">
+              {echecCreation}
+            </div>
+          )}
+          <form onSubmit={creer} noValidate>
+            <Champ etiquette="Nom du système" value={nomSysteme} erreur={erreurNomSysteme} onChange={saisie(setNomSysteme, () => setNomPris(false))} />
+            {nomPris && <div className="erreur-champ">Un système porte déjà ce nom.</div>}
+            <div className="actions">
+              <Bouton type="submit" icone={Plus} ecrit enCours={enCours === 'creation'}>
+                Créer et rattacher
+              </Bouton>
+            </div>
+          </form>
+        </Panneau>
+      </div>
+    </div>
   );
 }
 

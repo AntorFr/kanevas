@@ -61,6 +61,11 @@ Forme de la skill `exigences` ; chaque besoin cite les parcours qui le réalisen
   qu'il peut lire, titres compris. *(P-6)*
 - **B-12** — Un MJ bascule sa lecture en mode Joueur, sur une fiche ou une carte, pour voir ce que
   verra un joueur de sa table qui n'est l'auteur d'aucune section. *(P-3)*
+- **B-30** — Un MJ pose, remplace ou retire l'**illustration** d'une fiche (une image PNG, JPEG,
+  GIF ou WebP au plus, depuis son en-tête, E-9) ; quiconque voit la fiche la voit, en tête de la
+  fiche et en vignette dans la liste du type (E-8), où une fiche sans illustration porte une
+  vignette de repli dessinée ; un Joueur ne la pose pas, et qui ne voit pas la fiche n'en obtient
+  rien (son adresse répond comme une adresse inconnue). *(P-3, P-6)*
 
 ### Système de jeu
 - **B-13** — Un MJ rattache son univers à un système de jeu partagé, ou en crée un, depuis les
@@ -68,6 +73,11 @@ Forme de la skill `exigences` ; chaque besoin cite les parcours qui le réalisen
 - **B-14** — Les MJ des univers d'un même système en enrichissent le référentiel commun (règles,
   créatures, objets) depuis la page du système (E-15) ; les membres de ces univers le lisent, les
   autres ne le voient pas. *(P-8)*
+- **B-31** — Un compte retrouve, **hors de tout univers**, les systèmes de jeu rattachés à ses
+  univers (E-16), chacun avec ceux de ses univers qui l'utilisent et jamais les autres, et ouvre la
+  page d'un système (E-15) à sa propre adresse, sans passer par un univers ; il le lit s'il est
+  membre d'un univers rattaché, le modifie s'il est MJ de l'un d'eux, et l'adresse d'un système
+  qu'il ne voit pas répond comme une adresse inconnue. *(P-8)*
 
 ### Campagnes, scénarios, préparation
 - **B-15** — Un MJ crée les campagnes d'un univers et en change le statut — en préparation,
@@ -142,16 +152,25 @@ dernier MJ — refusé avec la raison.
 ### P-3 — Préparer la séance du samedi (MJ, dimanche soir, bureau)
 1. **Vue d'ensemble** (E-3) : les campagnes actives, les derniers CR, la préparation en cours.
 2. **Campagne** (E-6) : il crée la campagne (« En préparation ») ou ouvre l'existante et la passe
-   « Active » ; il relit les CR les plus récents, crée ou ouvre un **scénario** (E-7) et l'écrit.
+   « Active » ; il relit les CR les plus récents, crée ou ouvre un **scénario** (E-7) et l'écrit
+   (ou demande à son **assistant** (E-12) de créer la campagne ou le scénario : le bloc d'écriture mène à E-6 ou E-7).
 3. Il coche ou ajoute des tâches de **préparation** (E-6).
 4. **Lore** : depuis la **liste d'un type** (E-8), il crée un PNJ ; sur la **fiche** (E-9), il
    écrit « Apparence » (lue des joueurs) et « Vérité — MJ seul », relie le PNJ à sa faction,
-   dépose le plan d'un lieu.
+   dépose le plan d'un lieu, et pose le portrait d'Aldric en **illustration** de la fiche (visible
+   de qui voit la fiche) ; de retour sur la liste, la carte d'Aldric porte ce portrait.
 5. Il demande à son **assistant** (E-12) « rappelle-moi tout ce qu'on sait d'Aldric » puis
    « fais un portrait pour Apparence » : l'image est attachée à la section.
 6. **Cartes** (E-10, E-11) : il place le PNJ sur la carte de la ville, passe en **mode Joueur**
    pour vérifier, puis rend la carte visible.
+*Échec de l'assistant* : une demande de création échoue ou l'assistant est indisponible : le panneau le dit (« Je n'ai pas pu répondre — réessayer » ou « L'assistant n'est pas disponible pour le moment. »), la création a pu avoir lieu avant que la réponse soit perdue (délai, connexion coupée) : avant de réessayer, Antor regarde E-6 ou E-7 pour ne pas créer deux fois, puis crée à la main si besoin (étape 2).
 *Moment fort* : la fiche en mode Joueur ne trahit aucun secret.
+*Échec* (illustration, étape 4) : il choisit un PDF ou un fichier vide — « « plan.pdf » n'est pas
+une image… » ou « « portrait.png » est vide. », l'illustration d'avant reste ; l'envoi est coupé —
+« l'envoi n'a pas abouti », avec « Réessayer » ; un autre MJ l'a rétrogradé Joueur entre-temps —
+« Vous ne pouvez plus modifier l'illustration de cette fiche. » et les gestes disparaissent ; le
+retrait échoue — « L'action n'a pas abouti. Réessayez. », l'illustration reste ; l'image ne se charge
+pas — le cadre dit « Image indisponible. » et il garde « Remplacer » et « Retirer ».
 
 ### P-4 — Écrire le compte-rendu (joueur ou MJ, le lendemain de la partie)
 1. Depuis la **vue d'ensemble** (E-3) ou la **liste des campagnes** (E-6), il ouvre la campagne.
@@ -171,15 +190,24 @@ dernier MJ — refusé avec la raison.
 ### P-6 — Se resituer avant la séance (joueur, mercredi soir, téléphone)
 1. **Accueil** (E-1) → **vue d'ensemble** de l'univers (E-3) : les derniers CR, les cartes
    visibles.
-2. Il cherche « Aldric » dans la **liste des personnages** (E-8) et ouvre la **fiche** (E-9) :
-   seulement ce que la table sait.
+2. Il parcourt la **liste des personnages** (E-8), une grille de cartes illustrées, et reconnaît
+   Aldric à son portrait — ou le cherche par son nom — puis ouvre la **fiche** (E-9) : seulement ce
+   que la table sait.
 3. Il ouvre la **carte** (E-11), touche un token, relit la fiche.
 4. Ou il demande à son **assistant** (E-12) « que sait-on d'Aldric ? ».
+*Échec* : il demande de lire « Vérité » : l'assistant répond « Introuvable. », comme l'interface ;
+l'assistant est indisponible ou en erreur : le panneau le dit, et la fiche reste lisible (E-9).
+*Échec* (illustration, étape 2) : une image ne se charge pas (réseau du téléphone) — la carte
+montre la vignette de repli, jamais une image cassée, et la fiche « Image indisponible. » ; une
+fiche que le MJ a fermée aux joueurs entre-temps disparaît de la grille, et l'adresse de son
+illustration répond comme une adresse inconnue.
 
 ### P-7 — Tenir l'histoire de son personnage (joueur)
 1. Le MJ a créé la fiche de son PJ et lui en a confié une section en auteur (E-9).
 2. Le joueur l'écrit sur la **fiche** (E-9), y dépose un portrait, ou demande à son **assistant**
    (E-12) d'y ajouter un paragraphe.
+*Échec* : il demande d'écrire dans une section qu'il lit sans l'écrire : « Vous ne pouvez pas modifier
+cette section. », rien n'est écrit.
 *Échec* (dépôt) : fichier vide, section déjà à 50 pièces jointes, envoi interrompu ou droit
 d'écriture retiré — le fichier n'est pas attaché, la raison est dite sur la section (E-9), rien n'est
 laissé à moitié.
@@ -189,10 +217,12 @@ laissé à moitié.
 système.*
 1. **Paramètres de l'univers** (E-14) : il choisit un système du catalogue, ou en crée un
    (« Créer et rattacher ») ; il peut aussi détacher l'univers (« Aucun système ») et, dans le même écran, corriger le nom et la description de son univers.
-2. **Système de jeu** (E-15) : il retrouve le bestiaire commun et y ajoute une créature, que les
+2. **Système de jeu** (E-15), qu'il ouvre depuis « Systèmes de jeu » (E-16, hors de ses univers) ou
+   par « Ouvrir le système » (E-14) : il retrouve le bestiaire commun et y ajoute une créature, que les
    autres univers du système voient aussitôt ; Mira, rattachée au même système, la lit.
    *Moment fort* : la créature ajoutée par Antor apparaît chez Mira, sans que Mira voie un mot du
-   lore d'Antor.
+   lore d'Antor — ni même le nom de son univers : sa liste « Systèmes de jeu » ne lui montre que
+   « Les Landes grises ».
    *Variante joueur* : Léa, Joueuse de « Lame d'Ébène », ouvre le bloc « Système de jeu » de la vue d'ensemble
    (E-3) et lit la même créature, sans pouvoir la modifier.
 *Échec* : un nom de système déjà pris — « Un système porte déjà ce nom. » ; une créature modifiée

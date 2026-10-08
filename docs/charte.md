@@ -32,7 +32,7 @@
 Source : `frontend/src/ui/tokens.css`, propriétés sur `:root` (sombre) et
 `:root[data-theme="light"]` ; `color-scheme: light dark`. Le choix Clair / Sombre / Système est
 mémorisé (`localStorage`, clé `kanevas-theme`) ; « Système » suit `prefers-color-scheme` et est
-résolu en sombre ou clair par `theme.ts`, si bien que ces deux blocs sont les seuls endroits où
+le choix par défaut tant que rien n'est mémorisé ; il est résolu en sombre ou clair par `theme.ts`, si bien que ces deux blocs sont les seuls endroits où
 vivent les couleurs. Les composants ne lisent que ces tokens : un hexadécimal dans un composant
 est un défaut. La maquette porte les mêmes noms et les mêmes valeurs.
 
@@ -101,7 +101,7 @@ pastille), `currentColor`. Servies par le produit (`lucide-react`), jamais par u
 étiquette accessible et une infobulle. Jamais d'émoji. Correspondances fixées : Vue d'ensemble
 `layout-grid`, Campagnes `flag`, Comptes-rendus `notebook-pen`, Personnages `users-round`, Lieux
 `map-pin`, Factions `shield`, Objets `gem`, Événements `hourglass`, Quêtes `scroll-text`, Membres
-`contact-round`, Paramètres `settings-2`, Relations `waypoints`, Pièces jointes `paperclip`, MJ
+`contact-round`, Paramètres `settings-2`, Systèmes de jeu `dices`, Mes univers `library`, Relations `waypoints`, Pièces jointes `paperclip`, MJ
 seul et secret `lock`, lu des joueurs `eye`, écrit par les joueurs `pen-line`, mode MJ
 `lock-keyhole`, assistant `sparkles`, thème `sun` / `moon` / `monitor`, déconnexion `log-out`,
 menu du téléphone `panel-left`.
@@ -128,7 +128,8 @@ Ceux que Kanevas suit :
   même endroit ; Échap annule, Ctrl/⌘ + Entrée enregistre ; le compteur de caractères est visible.
 - **Les réglages rares sont repliés** : l'audience d'une section se lit dans sa pastille et se
   règle derrière elle. **Les actions secondaires se révèlent au survol et au focus** (« Modifier »
-  et le menu « ⋯ » d'une section, « Retirer » d'une relation) ; elles restent visibles là où il
+  et le menu « ⋯ » d'une section, « Retirer » d'une relation ou d'un membre ; le rôle d'un membre se
+  règle derrière une pastille-menu, comme le statut) ; elles restent visibles là où il
   n'y a pas de survol (écran tactile).
 - **Les retours** : un toast par action réussie ; un message en ligne, au-dessus du panneau
   concerné, pour un échec (les textes sont ceux de `docs/ecrans.md`) ; des squelettes au
@@ -283,12 +284,63 @@ décalé de 2 px) sur `:focus-visible`.
 - C : `role="status"`, non fermable ; textes exacts dans `docs/ecrans.md`. Connexion perdue : tout
   geste qui écrit est désactivé (`aria-disabled`, 45 %).
 
+**Panneau d'assistant** (E-12, `kanevas-assistant-membre`).
+- V : un bouton flottant « Demander à Kanevas » **inversé** (`--texte` sur `--fond`, voir « Écarts
+  assumés »), rayon pastille, icône `sparkles`, `--ombre-flottant`, en bas à droite ; le panneau en
+  `--fond-lateral`, bord gauche `--bord-champ`, 380 px, plein écran sous 760 px ; message de la
+  personne `--surface-3`, réponse `--surface` avec bord `--bord` ; bloc « Écrit par l'assistant » :
+  `--surface-2`, liseré `--accent`, le mot en `--accent-texte` ; erreur : `--danger-fond` et
+  `--danger`. Le bouton « Envoyer » et les autres sont des **Boutons** ci-dessus.
+- C : le bouton est atteignable à la tabulation et porte `aria-expanded` ; le panneau est un
+  `complementary` titré (`h2`) ; à l'ouverture le focus va au champ, Échap ferme et rend le focus au
+  bouton ; le fil est un `role="log"` (`aria-live="polite"`) ; « Kanevas réfléchit… » est un
+  `role="status"`, l'erreur un `role="alert"` ; l'état indisponible désactive le champ **et** dit
+  pourquoi. Le bouton ne masque jamais un champ ou un bouton de l'écran : le contenu garde une marge
+  basse de la hauteur du bouton. Aucun état par la teinte seule.
+
+**Carte de fiche** (grille de E-8, `kanevas-illustrations`).
+- V : pas de cadre ni d'ombre (les cartes ne sont pas un kit) ; une vignette 4:3, rayon
+  `--rayon-champ`, filet intérieur `--bord` (`--bord-fort` au survol), l'image en `object-fit:
+  cover`, `object-position: 50% 30%` ; dessous, le titre 14 px graisse 500 sur deux lignes au plus
+  et la pastille PJ / PNJ (`.type`). Survol : `--surface-2` derrière la carte, 6 px de débord.
+  **Vignette de repli** : `--surface-2` tramé de points `--bord-fort` (1 px tous les 12 px) —
+  jamais la hachure, qui dit le secret —, l'initiale en Fraunces 56 px `--texte-3` (4,81 / 5,08:1
+  sur `--surface-2`), l'icône du type dans une puce `--surface` de 26 px en haut à gauche.
+- C : la carte entière est un lien (anneau de focus autour d'elle) ; l'image est décorative
+  (`alt=""`) car le titre suit ; elle se charge à l'approche ; une image qui échoue laisse la place
+  au repli, sans message.
+
+**Carte de système** (E-16) et **carte d'univers** (E-1) : la carte de fiche, avec un en-tête
+dessiné au lieu d'une image.
+- V : mêmes règles que la carte de fiche — pas de cadre ni d'ombre, survol `--surface-2` derrière la
+  carte, filet intérieur `--bord` (`--bord-fort` au survol) ; en-tête 2:1, rayon `--rayon-champ`,
+  sur `--surface-2`. Système : treillis `--bord-fort`, grand dé en `--accent-fond` cerné
+  d'`--accent-texte` à 55 % avec un halo d'encre, petit dé `--surface` cerné de `--bord-champ`,
+  monogramme Fraunces 46 px `--texte-2`. Univers : courbes de niveau `--bord-fort`, les trois plus
+  hautes en `--accent-texte` à 50 %, sommet teinté à 14 % ; le sceau de l'univers (44 px, `--surface`)
+  en bas à gauche. Pastille posée en haut à droite (rôle, ou « Lecture seule » sur `--surface`).
+  Grille `minmax(288 px, 1fr)`, 24 px ; une colonne au téléphone. Nom Fraunces 18 px ; méta 13 px
+  `--texte-3`.
+- C : l'en-tête est décoratif (`aria-hidden`), calculé du nom, le même à chaque visite ; la carte
+  entière est un seul lien (anneau de focus autour d'elle) ; les puces d'univers d'une carte de
+  système ne sont pas des liens à part. Jamais l'ambre ni le vert dans l'en-tête : ils disent le
+  secret et la table.
+
+**Illustration de fiche** (en-tête de E-9).
+- V : cadre 4:5 de 176 px (96 px au téléphone), rayon `--rayon-panneau`, filet intérieur
+  `--bord` ; les gestes du MJ dans une puce `--surface` + `--ombre-flottant`, en bas à droite,
+  boutons-icônes `image-up` et `trash-2` (danger) ; « Ajouter une illustration » est un bouton
+  fantôme petit (`image-plus`) suivi de l'aide 12 px `--texte-3`. Envoi : barre 2 px `--accent`.
+- C : les gestes paraissent au survol et au focus (toujours sans survol), n'existent ni pour un
+  Joueur ni en mode Joueur ; le clic sur l'image ouvre l'original dans un nouvel onglet ; le
+  retrait se confirme sur place (« Annuler » prend le focus).
+
 **État de chargement.** V : des squelettes `--squelette` à la forme de la fiche (type, titre,
 filet, deux sections). C : `role="status"`, « Chargement de la fiche… » lu et écrit dessous.
 
 ## 5. Seuils
 
-Plancher : WCAG 2.2 AA. Mesuré avec `scripts/contraste.py` de la skill `charte-graphique` ; une
+Plancher : WCAG 2.2 AA. Mesuré avec le script de contraste de la skill `charte-graphique` (hors de ce dépôt), rejoué par `frontend/src/ui/contraste.test.ts` ; une
 teinte translucide est composée sur ce qui est dessous.
 
 | Premier plan | Fond | Thème | Ratio | Seuil | |
@@ -338,8 +390,7 @@ teinte (1.4.1). `--texte-3` n'est jamais posé sur `--surface-3`.
 Aucun ratio sous un seuil.
 
 **Valeurs de tokens existants changées par cette charte — décision de Monsieur.** La maquette
-et cette charte les portent ; `frontend/src/ui/tokens.css` garde les anciennes valeurs tant que
-Monsieur n'a pas validé et qu'une tranche ne les a pas appliquées au code (les noms, eux, ne
+et cette charte les portent ; `frontend/src/ui/tokens.css` les porte depuis `kanevas-refonte-visuelle` (les noms, eux, ne
 changent pas : le code les lit tels quels).
 
 | Token | Avant (sombre / clair) | Après | Raison |

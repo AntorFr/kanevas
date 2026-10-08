@@ -1,8 +1,8 @@
-import { useEffect, useState } from 'react';
+import { ArrowRight, Dices } from 'lucide-react';
+import { useEffect, useId, useState } from 'react';
 import { Link } from 'react-router-dom';
 
 import { lire } from '../../../api';
-import { Panneau } from '../../../ui';
 import type { Bloc } from '../registre';
 
 /**
@@ -10,31 +10,42 @@ import type { Bloc } from '../registre';
  * loading, or on any error, the block does not exist (nothing is rendered).
  */
 function BlocSysteme({ universId }: { universId: number }) {
-  const [nom, setNom] = useState<string>();
+  const id = useId();
+  const [systeme, setSysteme] = useState<{ id: number; nom: string }>();
   useEffect(() => {
     let actif = true;
-    setNom(undefined);
-    lire<{ nom: string }>(`/api/univers/${universId}/systeme?type=regle`).then(
-      (s) => actif && setNom(s.nom),
-      () => actif && setNom(undefined),
+    setSysteme(undefined);
+    lire<{ systeme: { id: number; nom: string } | null }>(`/api/univers/${universId}`).then(
+      (u) => actif && setSysteme(u.systeme ?? undefined),
+      () => actif && setSysteme(undefined),
     );
     return () => {
       actif = false;
     };
   }, [universId]);
-  if (nom === undefined) return null;
+  if (systeme === undefined) return null;
+  const { nom } = systeme;
   return (
-    <Panneau titre="Système de jeu">
-      <div className="systeme-courant">
-        <strong className="nom-systeme" title={nom}>
-          {nom}
-        </strong>
-        <Link className="bouton neutre" to={`/univers/${universId}/systeme`}>
-          Ouvrir le système
+    <section className="bloc-ve" aria-labelledby={id}>
+      <div className="bloc-tete">
+        <h2 id={id}>Système de jeu</h2>
+      </div>
+      <div className="lignes">
+        <Link className="ligne systeme" to={`/systemes/${systeme.id}`}>
+          <span className="tuile">
+            <Dices size={16} strokeWidth={1.75} aria-hidden="true" />
+          </span>
+          <span className="corps">
+            <span className="titre" title={nom}>
+              {nom}
+            </span>
+            <span className="sous">Ouvrir le système</span>
+          </span>
+          <ArrowRight size={14} strokeWidth={1.75} aria-hidden="true" className="fleche" />
         </Link>
       </div>
-    </Panneau>
+    </section>
   );
 }
 
-export default { id: 'systeme', roles: ['mj', 'joueur'], rang: 90, composant: BlocSysteme } satisfies Bloc;
+export default { id: 'systeme', roles: ['mj', 'joueur'], rang: 90, composant: BlocSysteme, colonne: 'laterale' } satisfies Bloc;
