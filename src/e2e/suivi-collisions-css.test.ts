@@ -95,7 +95,8 @@ test('E-3 : écart titre → première ligne sans marge de liste ; E-1 garde son
     const s = getComputedStyle(e);
     return { c: s.color, p: s.paddingLeft, d: s.display };
   });
-  assert.equal(t.p, '12px');
+  // E-1 is a grid of cards since kanevas-illustrations: `.accueil-cartes .tete-colonnes` aligns the header on the grid (0), not on the old 12px list rows.
+  assert.equal(t.p, '0px');
   assert.equal(t.d, 'flex');
   assert.notEqual(t.c, await page.evaluate(() => { const x = document.createElement('i'); x.style.color = 'var(--texte)'; document.body.appendChild(x); const c = getComputedStyle(x).color; x.remove(); return c; }));
 });
