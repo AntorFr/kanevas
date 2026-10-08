@@ -1,18 +1,13 @@
+import { Check, ChevronsUpDown, Dices, Library, LogOut, Monitor, Moon, Sun } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
-import { Link, NavLink, matchPath, useLocation } from 'react-router-dom';
+import { Link, matchPath, useLocation } from 'react-router-dom';
 
 import { appeler } from './api';
-import { useMoi, useUnivers } from './cadre-contexte';
+import { useMoi, useUnivers, useVue } from './cadre-contexte';
+import { ITEMS_UNIVERS, type Item } from './items';
 import { ecranEnregistre } from './registre';
-import { ITEMS_UNIVERS } from './items';
 import { type ChoixTheme, useTheme } from './theme';
-import { Bouton, PastilleRole } from './ui';
-
-const THEMES: [ChoixTheme, string][] = [
-  ['clair', 'Clair'],
-  ['sombre', 'Sombre'],
-  ['systeme', 'Système'],
-];
+import { Avatar, Bouton, initialeUnivers, Menu, PastilleRole, type EntreeMenu } from './ui';
 
 /** Id of the universe in the address, or null outside a universe. */
 export function universDeLAdresse(chemin: string): number | null {
@@ -21,28 +16,77 @@ export function universDeLAdresse(chemin: string): number | null {
   return id && /^\d+$/.test(id) ? Number(id) : null;
 }
 
-function Selecteur({ courant }: { courant: number }) {
+/**
+ * An item is current on its own address and below it; a sheet's address is under no item, so the
+ * sheet names its type (`section`, the label of the item it hangs under) and that item is current.
+ */
+export function itemCourant(item: Item, id: number, pathname: string, section?: string): boolean {
+  if (section !== undefined && pathname.startsWith(`/univers/${id}/fiche/`)) return item.libelle === section;
+  const chemin = item.chemin(id);
+  return pathname === chemin || (chemin !== `/univers/${id}` && pathname.startsWith(`${chemin}/`));
+}
+
+/** The seal of a universe: its initial on a quiet tile. */
+export function Sceau({ nom, petit }: { nom: string; petit?: boolean }) {
+  return (
+    <span className={`sceau${petit ? ' petit' : ''}`} aria-hidden="true">
+      {initialeUnivers(nom) || '·'}
+    </span>
+  );
+}
+
+function Selecteur({ courant, onChoix }: { courant: number; onChoix: () => void }) {
   const { univers, recharger } = useUnivers();
   const [ouvert, setOuvert] = useState(false);
+  const racine = useRef<HTMLDivElement>(null);
+  const bouton = useRef<HTMLButtonElement>(null);
   const actuel = univers.etat === 'ok' ? univers.valeur.find((u) => u.id === courant) : undefined;
   const etiquette = univers.etat === 'chargement' ? '…' : actuel ? actuel.nom : 'Univers';
+
+  useEffect(() => {
+    if (!ouvert) return;
+    racine.current?.querySelector<HTMLElement>('.menu a, .menu button')?.focus();
+    const dehors = (e: PointerEvent) => {
+      if (!racine.current?.contains(e.target as Node)) setOuvert(false);
+    };
+    const touche = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape') return;
+      e.stopPropagation();
+      setOuvert(false);
+      bouton.current?.focus();
+    };
+    document.addEventListener('pointerdown', dehors);
+    document.addEventListener('keydown', touche, true);
+    return () => {
+      document.removeEventListener('pointerdown', dehors);
+      document.removeEventListener('keydown', touche, true);
+    };
+  }, [ouvert]);
+
+  const choisi = () => {
+    setOuvert(false);
+    onChoix();
+  };
   return (
-    <div className="selecteur">
+    <div className="selecteur" ref={racine}>
       <button
+        ref={bouton}
         type="button"
-        className="selecteur-bouton"
+        className="univers"
         aria-expanded={ouvert}
         aria-haspopup="true"
-        title={actuel?.nom}
+        title={actuel ? `${actuel.nom} — changer d’univers` : undefined}
         onClick={() => setOuvert(!ouvert)}
       >
-        <span className="tronque">{etiquette}</span>
+        <Sceau nom={actuel ? actuel.nom : ''} />
+        <span className="nom tronque">{etiquette}</span>
         {actuel && <PastilleRole role={actuel.role} />}
+        <ChevronsUpDown size={14} strokeWidth={1.75} aria-hidden="true" />
       </button>
       {ouvert && (
-        <div className="selecteur-liste">
+        <div className="menu menu-univers">
           {univers.etat === 'erreur' && (
-            <div>
+            <div className="menu-contenu">
               <p role="alert">Impossible de charger vos univers.</p>
               <Bouton petit onClick={recharger}>
                 Réessayer
@@ -50,19 +94,26 @@ function Selecteur({ courant }: { courant: number }) {
             </div>
           )}
           {univers.etat === 'ok' && (
-            <ul>
+            <>
+              <div className="menu-titre">Vos univers</div>
               {univers.valeur.map((u) => (
-                <li key={u.id}>
-                  <Link to={`/univers/${u.id}`} title={u.nom} onClick={() => setOuvert(false)}>
-                    <span className="tronque">{u.nom}</span>
-                    <PastilleRole role={u.role} />
-                  </Link>
-                </li>
+                <Link key={u.id} to={`/univers/${u.id}`} className="menu-entree" title={u.nom} onClick={choisi}>
+                  <Sceau nom={u.nom} petit />
+                  <span className="tronque">{u.nom}</span>
+                  <PastilleRole role={u.role} />
+                  {u.id === courant && <Check size={14} strokeWidth={1.75} aria-hidden="true" />}
+                </Link>
               ))}
-            </ul>
+              <div className="menu-separateur" role="separator" />
+            </>
           )}
-          <Link to="/" onClick={() => setOuvert(false)}>
+          <Link to="/" className="menu-entree" onClick={choisi}>
+            <Library size={16} strokeWidth={1.75} aria-hidden="true" />
             Mes univers
+          </Link>
+          <Link to="/systemes" className="menu-entree" onClick={choisi}>
+            <Dices size={16} strokeWidth={1.75} aria-hidden="true" />
+            Systèmes de jeu
           </Link>
         </div>
       )}
@@ -70,12 +121,77 @@ function Selecteur({ courant }: { courant: number }) {
   );
 }
 
-/** The bar's content: universe selector and items inside a universe, « Mes univers » outside. */
-function Contenu() {
-  const { pathname } = useLocation();
-  const { univers } = useUnivers();
+const THEMES: { choix: ChoixTheme; libelle: string; icone: typeof Sun }[] = [
+  { choix: 'clair', libelle: 'Clair', icone: Sun },
+  { choix: 'sombre', libelle: 'Sombre', icone: Moon },
+  { choix: 'systeme', libelle: 'Système', icone: Monitor },
+];
+
+/** The account: an avatar and the identifier, opening the menu with the theme and « Se déconnecter ». */
+function Compte() {
   const moi = useMoi();
   const [theme, setTheme] = useTheme();
+  const nom = moi.etat === 'ok' ? moi.valeur.username : undefined;
+  const entrees: EntreeMenu[] = [
+    ...(nom
+      ? [
+          {
+            contenu: (
+              <div className="qui">
+                <Avatar nom={nom} />
+                <span>
+                  <b className="tronque" title={nom}>
+                    {nom}
+                  </b>
+                  <small>Votre identifiant</small>
+                </span>
+              </div>
+            ),
+          } as EntreeMenu,
+          { separateur: true } as EntreeMenu,
+        ]
+      : []),
+    {
+      groupe: 'Thème',
+      options: THEMES.map((t) => ({ libelle: t.libelle, icone: t.icone, actif: theme === t.choix, onChoisir: () => setTheme(t.choix) })),
+    },
+    { separateur: true },
+    {
+      libelle: 'Se déconnecter',
+      icone: LogOut,
+      onChoisir: async () => {
+        const r = await appeler<{ loginUrl: string }>('POST', '/api/auth/logout');
+        window.location.assign(r.loginUrl);
+      },
+    },
+  ];
+  return (
+    <div className="pied">
+      <Menu
+        etiquette="Compte"
+        large
+        ouvre="haut"
+        aligne="debut"
+        entrees={entrees}
+        declencheur={
+          <>
+            <Avatar nom={nom ?? '?'} />
+            <span className="ident tronque" title={nom}>
+              {moi.etat === 'chargement' ? '…' : (nom ?? 'Compte')}
+            </span>
+            <ChevronsUpDown size={14} strokeWidth={1.75} aria-hidden="true" />
+          </>
+        }
+      />
+    </div>
+  );
+}
+
+/** The bar's content: universe selector and items inside a universe, « Mes univers » outside. */
+function Contenu({ onNavigue }: { onNavigue: () => void }) {
+  const { pathname } = useLocation();
+  const { univers } = useUnivers();
+  const { section } = useVue();
   const id = universDeLAdresse(pathname);
   // Inside a universe only if the account has it: an unknown universe, or one without a role,
   // gets the bar of a screen outside (no selector, no name) — the refusal state of docs/ecrans.md.
@@ -87,78 +203,73 @@ function Contenu() {
 
   return (
     <>
-      <div className="marque">Kanevas</div>
-      {dedans && <Selecteur courant={id} />}
+      {dedans ? (
+        <Selecteur courant={id} onChoix={onNavigue} />
+      ) : (
+        <Link to="/" className="marque" aria-label="Kanevas — Mes univers">
+          <span className="sceau" aria-hidden="true">
+            K
+          </span>
+          <span className="nom-marque">Kanevas</span>
+        </Link>
+      )}
       <nav aria-label="Navigation principale">
         {!dedans && (
-          <NavLink to="/" end className="item">
-            Mes univers
-          </NavLink>
+          <div className="groupe">
+            <Link to="/" className="item" aria-current={pathname === '/' ? 'page' : undefined}>
+              <Library size={16} strokeWidth={1.75} aria-hidden="true" />
+              Mes univers
+            </Link>
+            <Link to="/systemes" className="item" aria-current={pathname === '/systemes' || pathname.startsWith('/systemes/') ? 'page' : undefined}>
+              <Dices size={16} strokeWidth={1.75} aria-hidden="true" />
+              Systèmes de jeu
+            </Link>
+          </div>
         )}
         {sections.map((s) => (
-          <div key={s}>
-            {s && <div className="section">{s}</div>}
+          <div key={s} className="groupe">
+            {s && <div className="groupe-titre">{s}</div>}
             {items
               .filter((i) => (i.section ?? '') === s)
               .map((i) => (
-                <NavLink key={i.libelle} to={i.chemin(id!)} end className="item">
+                <Link key={i.libelle} to={i.chemin(id!)} className="item" aria-current={itemCourant(i, id!, pathname, section) ? 'page' : undefined}>
+                  <i.icone size={16} strokeWidth={1.75} aria-hidden="true" />
                   {i.libelle}
-                </NavLink>
+                </Link>
               ))}
           </div>
         ))}
       </nav>
-      <div className="pied">
-        <div className="identifiant">{moi.etat === 'ok' ? moi.valeur.username : '…'}</div>
-        <label className="theme">
-          Thème
-          <select value={theme} onChange={(e) => setTheme(e.target.value as ChoixTheme)}>
-            {THEMES.map(([v, l]) => (
-              <option key={v} value={v}>
-                {l}
-              </option>
-            ))}
-          </select>
-        </label>
-        <Bouton
-          petit
-          onClick={async () => {
-            const r = await appeler<{ loginUrl: string }>('POST', '/api/auth/logout');
-            window.location.assign(r.loginUrl);
-          }}
-        >
-          Se déconnecter
-        </Bouton>
-      </div>
+      <Compte />
     </>
   );
 }
 
-/** Fixed bar on wide screens, a drawer under « Menu » below 760 px (Escape closes, focus returns). */
-export function Barre() {
-  const [tiroir, setTiroir] = useState(false);
-  const menu = useRef<HTMLButtonElement>(null);
+/**
+ * Fixed bar on wide screens; below 760 px a drawer over the page with a veil behind, opened from the
+ * top bar's « Menu ». Escape, the veil or an entry close it; the focus goes in, then back to « Menu ».
+ */
+export function Barre({ tiroir, fermer }: { tiroir: boolean; fermer: (rendreFocus: boolean) => void }) {
+  const barre = useRef<HTMLElement>(null);
   const { pathname } = useLocation();
-  useEffect(() => setTiroir(false), [pathname]);
+  useEffect(() => fermer(false), [pathname]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (!tiroir) return;
+    barre.current?.focus();
     const touche = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        setTiroir(false);
-        menu.current?.focus();
-      }
+      if (e.key === 'Escape') fermer(true);
     };
     document.addEventListener('keydown', touche);
     return () => document.removeEventListener('keydown', touche);
-  }, [tiroir]);
+  }, [tiroir]); // eslint-disable-line react-hooks/exhaustive-deps
   return (
     <>
-      <button type="button" ref={menu} className="bouton menu-bouton" aria-expanded={tiroir} aria-controls="barre" onClick={() => setTiroir(!tiroir)}>
-        Menu
-      </button>
-      <aside id="barre" className={`barre${tiroir ? ' ouverte' : ''}`}>
-        <Contenu />
-      </aside>
+      <div id="barre" className={`colonne-barre${tiroir ? ' ouverte' : ''}`}>
+        <aside ref={barre} className="barre" aria-label="Barre latérale" tabIndex={-1}>
+          <Contenu onNavigue={() => fermer(false)} />
+        </aside>
+      </div>
+      <div className={`voile-tiroir${tiroir ? ' ouvert' : ''}`} onClick={() => fermer(true)} aria-hidden="true" />
     </>
   );
 }

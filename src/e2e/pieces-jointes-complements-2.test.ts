@@ -139,6 +139,7 @@ describe('kanevas-fichiers — compléments 2', () => {
     await antor.page.getByLabel('Mode Joueur').check();
     await attendre(antor.page);
     // the switch reloads the fiche: wait until the read-only section has lost its « Retirer », then assert
+    await section(antor.page, 'Journal').getByRole('button', { name: rx('Retirer « j.png »') }).waitFor();
     await section(antor.page, 'Apparence').getByRole('button', { name: rx('Retirer') }).waitFor({ state: 'detached' });
     await attendre(antor.page);
     assert.equal(await section(antor.page, 'Journal').getByRole('button', { name: rx('Retirer « j.png »') }).count(), 1);

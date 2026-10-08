@@ -12,6 +12,8 @@ export interface Bloc {
   roles: Role[];
   /** Ascending order on the page. */
   rang: number;
+  /** Column of the desktop layout; the DOM order is the rank, so a phone reads them in rank order. Default: the main one. */
+  colonne?: 'principale' | 'laterale';
   composant: ComponentType<{ universId: number; role: Role }>;
 }
 

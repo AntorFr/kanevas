@@ -1,6 +1,7 @@
 import type { FastifyInstance } from 'fastify';
 
 import { env } from '../config/env.js';
+import { chargerFiche } from '../services/fiches.js';
 import { echapper, page, pageIntrouvable } from './pages.js';
 import { ouvrirSession } from './session.js';
 
@@ -15,6 +16,26 @@ const COMPTES = [
 
 /** Test-account choice page. Without KANEVAS_STUB, GET and POST answer 404 whether or not there is a session. */
 export async function registerBouchonRoutes(app: FastifyInstance) {
+  // Stub-only failure rule (AD-55, `docs/ecrans.md` « Provoquer les échecs en bouchon »): removing the
+  // illustration of a sheet whose title contains « échec » answers a server error and removes nothing.
+  // It lives here, in the stub layer, never in the service.
+  if (env.KANEVAS_STUB) {
+    const RETRAIT = /^\/api\/univers\/(\d+)\/fiches\/(\d+)\/illustration\/?(\?.*)?$/;
+    app.addHook('preHandler', async (request, reply) => {
+      if (request.method !== 'DELETE') return;
+      const m = RETRAIT.exec(request.url);
+      if (!m || !request.session) return;
+      try {
+        const f = chargerFiche(app.db, Number(m[1]), Number(m[2]));
+        if (/échec/i.test(f.titre)) {
+          return reply.code(500).send({ message: 'Échec simulé par le bouchon.' });
+        }
+      } catch {
+        /* unknown sheet: the real route answers */
+      }
+    });
+  }
+
   app.addContentTypeParser(
     'application/x-www-form-urlencoded',
     { parseAs: 'string' },

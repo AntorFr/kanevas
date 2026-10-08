@@ -19,6 +19,8 @@ import {
   type Any,
   ajouterMembre,
   ajouterSection,
+  choisirDansMenuSection,
+  choisirAuteur,
   allerMembres,
   attendre,
   connecte,
@@ -55,7 +57,7 @@ async function ouvrir(page: Any): Promise<void> {
   await page.goto(urlFiche);
   await attendre(page);
 }
-const bloc = (page: Any, titre: string) => section(page, titre).locator('.pieces-jointes');
+const bloc = (page: Any, titre: string) => section(page, titre).getByRole('group', { name: 'Pièces jointes' });
 const choisir = (page: Any, titre: string, ...fichiers: Any[]) => section(page, titre).locator('input[type=file]').setInputFiles(fichiers);
 
 before(async () => {
@@ -79,8 +81,7 @@ before(async () => {
   for (const t of ['Apparence', 'Vérité — MJ seul', 'Notes de la table', 'Plan']) await ajouterSection(antor, t);
   await regler(antor, 'Apparence', 'Les joueurs la lisent', true);
   await regler(antor, 'Plan', 'Les joueurs la lisent', true);
-  const n = section(antor, 'Notes de la table');
-  await n.getByRole('combobox', { name: /Auteur/ }).selectOption({ label: 'lea' });
+  await choisirAuteur(antor, 'Notes de la table', 'lea');
   await regler(antor, 'Notes de la table', 'L’auteur la lit', true);
   await regler(antor, 'Notes de la table', 'L’auteur l’écrit', true);
   urlFiche = new URL(antor.url()).pathname;
@@ -120,7 +121,6 @@ test('B-24 cocher « Secrète (MJ seul) » puis choisir : l’envoi part seul, v
   assert.equal(await b.locator('img[alt="portrait.png"]').count(), 1);
   assert.ok((await b.innerText()).includes('portrait.png · 70 o'));
   assert.ok(!(await b.innerText()).includes('Aucune pièce jointe.'));
-  assert.ok(/\(1\)/.test(await b.locator('h3').innerText()));
 });
 
 test('B-24 « Rendre secrète » sur une pièce publique, puis « Lever le secret »', opts, async () => {
@@ -130,12 +130,12 @@ test('B-24 « Rendre secrète » sur une pièce publique, puis « Lever le secre
   const b = bloc(antor, 'Apparence');
   await b.locator('img').waitFor();
   assert.equal(await b.getByText('Secrète — MJ seul').count(), 0, 'case is unticked by default: public');
-  await b.getByRole('button', { name: rxExact('Rendre secrète') }).click();
+  await b.getByRole('button', { name: /^Rendre secrète « / }).click();
   await b.getByText('Secrète — MJ seul').waitFor();
-  await b.getByRole('button', { name: rxExact('Lever le secret') }).waitFor();
-  await b.getByRole('button', { name: rxExact('Lever le secret') }).click();
-  await b.getByRole('button', { name: rxExact('Rendre secrète') }).waitFor();
-  await b.getByRole('button', { name: rxExact('Rendre secrète') }).click();
+  await b.getByRole('button', { name: /^Lever le secret de « / }).waitFor();
+  await b.getByRole('button', { name: /^Lever le secret de « / }).click();
+  await b.getByRole('button', { name: /^Rendre secrète « / }).waitFor();
+  await b.getByRole('button', { name: /^Rendre secrète « / }).click();
   await b.getByText('Secrète — MJ seul').waitFor();
 });
 
@@ -193,9 +193,10 @@ test('PDF : une ligne avec « Télécharger », nom d’origine ; SVG : jamais a
   await choisir(antor, 'Plan', PDF, SVG);
   const b = bloc(antor, 'Plan');
   await b.getByText(/image\.svg/).waitFor();
-  await b.getByText(/plan\.pdf ·/).waitFor();
+  await b.getByText('plan.pdf', { exact: true }).waitFor();
+  await b.getByRole('link', { name: rxExact('Télécharger') }).nth(1).waitFor();
   assert.equal(await b.locator('img').count(), 0, 'no <img>, even for the SVG');
-  assert.equal(await b.locator('svg, object, embed, iframe').count(), 0);
+  assert.equal(await b.locator('object, embed, iframe, svg:not([aria-hidden="true"])').count(), 0);
   assert.equal(await b.getByRole('link', { name: rxExact('Télécharger') }).count(), 2);
   const [dl] = await Promise.all([antor.waitForEvent('download'), b.getByRole('link', { name: rxExact('Télécharger') }).first().click()]);
   assert.equal(dl.suggestedFilename(), 'plan.pdf');
@@ -203,7 +204,7 @@ test('PDF : une ligne avec « Télécharger », nom d’origine ; SVG : jamais a
   const lea = await compte('lea', 'Léa');
   await ouvrir(lea);
   const bl = bloc(lea, 'Plan');
-  await bl.getByText(/plan\.pdf ·/).waitFor();
+  await bl.getByText('plan.pdf', { exact: true }).waitFor();
   assert.equal(await bl.getByRole('button').count(), 0);
   const fiche = await (await lea.request.get(apiFiche)).json();
   const p = fiche.sections.find((s: Any) => s.titre === 'Plan').piecesJointes.find((x: Any) => x.nom === 'image.svg');
@@ -225,7 +226,8 @@ test('envoi annulé : la ligne « Envoi… » (role=status) porte « Annuler » 
   await choisir(antor, 'Apparence', png('annule.png'));
   const ligne = bloc(antor, 'Apparence').getByRole('status');
   await ligne.waitFor();
-  assert.ok(/annule\.png — Envoi… \d+ %/.test(await ligne.innerText()));
+  const enCours = await ligne.innerText();
+  assert.ok(enCours.includes('annule.png') && /Envoi… \d+ %/.test(enCours), enCours);
   await ligne.getByRole('button', { name: rxExact('Annuler') }).click();
   await ligne.waitFor({ state: 'detached' });
   await antor.waitForTimeout(500);
@@ -257,7 +259,8 @@ test('fichier vide : refus en ligne avec « Ignorer » seul, sans arrêter le fi
   await choisir(antor, 'Plan', { name: 'notes.txt', mimeType: 'text/plain', buffer: Buffer.alloc(0) }, { name: 'suite.txt', mimeType: 'text/plain', buffer: Buffer.from('ok') });
   const b = bloc(antor, 'Plan');
   await b.getByText('« notes.txt » est vide.').waitFor();
-  await b.getByText(/suite\.txt · 2 o/).waitFor();
+  await b.getByText('suite.txt', { exact: true }).waitFor();
+  await b.getByText('2 o', { exact: true }).waitFor();
   const ligne = b.locator('.echec', { hasText: 'est vide.' });
   assert.equal(await ligne.getByRole('button', { name: rxExact('Réessayer') }).count(), 0);
   await ligne.getByRole('button', { name: rxExact('Ignorer') }).click();
@@ -309,19 +312,21 @@ test('retrait d’une section : « … et sa pièce jointe » (une), « … ses 
   await ouvrir(antor);
   await ajouterSection(antor, 'Éphémère');
   const s = section(antor, 'Éphémère');
-  await s.getByRole('button', { name: rxExact('Retirer la section') }).click();
-  await voit(antor, 'Retirer la section « Éphémère » ? Son contenu sera perdu.');
-  assert.ok(!(await s.innerText()).includes('pièce'.concat(' jointe seront')));
-  await s.getByRole('button', { name: rxExact('Annuler') }).click();
+  await choisirDansMenuSection(antor, 'Éphémère', 'Retirer la section');
+  const dialogue = antor.getByRole('alertdialog', { name: rx('Retirer la section « Éphémère » ?') });
+  await dialogue.waitFor();
+  assert.ok(rx('Son contenu sera perdu.').test(await dialogue.innerText()));
+  assert.ok(!(await dialogue.innerText()).includes('pièce'));
+  await dialogue.getByRole('button', { name: rxExact('Annuler') }).click();
   await choisir(antor, 'Éphémère', png('a.png'));
   await bloc(antor, 'Éphémère').locator('img').waitFor();
-  await s.getByRole('button', { name: rxExact('Retirer la section') }).click();
-  await voit(antor, 'Son contenu et sa pièce jointe seront perdus.');
-  await s.getByRole('button', { name: rxExact('Annuler') }).click();
+  await choisirDansMenuSection(antor, 'Éphémère', 'Retirer la section');
+  await antor.getByRole('alertdialog').getByText('Son contenu et sa pièce jointe seront perdus.').waitFor();
+  await antor.getByRole('alertdialog').getByRole('button', { name: rxExact('Annuler') }).click();
   await choisir(antor, 'Éphémère', png('b.png'), png('c.png'));
   await bloc(antor, 'Éphémère').locator('li.piece').nth(2).waitFor();
-  await s.getByRole('button', { name: rxExact('Retirer la section') }).click();
-  await voit(antor, 'Son contenu et ses 3 pièces jointes seront perdus.');
+  await choisirDansMenuSection(antor, 'Éphémère', 'Retirer la section');
+  await antor.getByRole('alertdialog').getByText('Son contenu et ses 3 pièces jointes seront perdus.').waitFor();
 });
 
 test('mode Joueur : Antor ne voit ni la case « Secrète », ni « Rendre secrète », ni les pièces secrètes', opts, async () => {
