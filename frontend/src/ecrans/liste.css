@@ -109,6 +109,12 @@
   .panneaux-suivi .panneau.reserve-mj { margin-left: -12px; margin-right: -12px; padding-left: 12px; padding-right: 12px; }
   .tete-liste h1, .entete-suivi h1 { font-size: var(--t-32); }
   .page-liste { padding-top: var(--e-2); }
+  /* E-8: the create button is a square « + » at the right of the title; its label stays for screen readers. */
+  .page-grille .tete-liste { gap: var(--e-3); flex-wrap: nowrap; }
+  .page-grille .tete-liste .bouton { min-height: 40px; width: 40px; padding: 0; flex: none; }
+  .page-grille .tete-liste .bouton .lib-creer { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .page-grille .tete-liste .bouton svg { width: 18px; height: 18px; }
+  .page-grille .glyphe-type { width: 36px; height: 36px; }
 }
 .titre-formulaire { margin-top: var(--e-6); font-size: var(--t-16) !important; font-family: var(--police-texte) !important; font-weight: 600 !important; }
 .liste-statut-champ { display: inline-block; flex: none; }
@@ -116,3 +122,59 @@
 .liste-statut-champ .liste-statut { padding-right: var(--e-6); }
 .ajout-tache .champ > span:first-child { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; margin: 0; }
 .formulaire-ligne.ouvert .actions { display: flex; gap: var(--e-2); }
+
+/* ---------- La grille de cartes de fiches (E-8, kanevas-illustrations) ---------- */
+.page-liste.page-grille { max-width: 1024px; }
+/* E-8 is wider than the 1000px column of the other screens: the mockup's 1120px page minus its 2 x 48px of padding is a 1024px grid
+   (5 cards of 176px need 976px); main.principal adds its own 2 x 28px. */
+main.principal:has(.page-grille) { max-width: 1080px; }
+/* The title shares the left edge of the grid (the generic header carries 12px / 8px of side padding). */
+.page-grille .tete-liste { padding-left: 0; padding-right: 0; }
+.grille-fiches { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(176px, 1fr)); column-gap: var(--e-5); row-gap: calc(var(--e-5) - 16px); margin: calc(var(--e-5) - 6px) 0 0; }
+.grille-fiches > li { min-width: 0; }
+/* The card plane reaches 6px past the content (10px below): only sideways is that a negative margin, so the row height is the tallest card's own. */
+.carte { position: relative; display: flex; flex-direction: column; gap: 10px; height: 100%; padding: 6px 6px 10px; margin: 0 -6px;
+  border-radius: var(--rayon-panneau); color: var(--texte); text-decoration: none; transition: background-color var(--duree); }
+.carte:hover { background: var(--surface-2); text-decoration: none; }
+.carte:focus-visible { outline-offset: 0; border-radius: var(--rayon-panneau); }
+.vue { position: relative; flex: none; aspect-ratio: 4 / 3; border-radius: var(--rayon-champ); overflow: hidden; background: var(--squelette); }
+.vue::after { content: ""; position: absolute; inset: 0; border-radius: inherit; box-shadow: inset 0 0 0 1px var(--bord); pointer-events: none;
+  transition: box-shadow var(--duree); }
+.carte:hover .vue::after { box-shadow: inset 0 0 0 1px var(--bord-fort); }
+.vue img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: 50% 30%; }
+/* Fallback thumbnail: dots (the hatching is reserved for the secret), the initial, the type icon. */
+.repli { position: absolute; inset: 0; display: grid; place-items: center;
+  background: radial-gradient(var(--bord-fort) 1px, transparent 1.6px) 6px 6px / 12px 12px, var(--surface-2); }
+.repli::before { content: ""; position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 55%, var(--surface-2) 0 28%, transparent 62%); }
+.initiale { position: relative; font: 500 56px/1 var(--police-titre); font-variation-settings: "opsz" 144; color: var(--texte-3); letter-spacing: -.02em; }
+.puce-type { position: absolute; left: 8px; top: 8px; width: 26px; height: 26px; display: grid; place-items: center; border-radius: var(--rayon-item);
+  background: var(--surface); color: var(--texte-3); box-shadow: inset 0 0 0 1px var(--bord); }
+.pied-carte { display: flex; align-items: flex-start; gap: 8px; padding: 0 2px; }
+.pied-carte .titre { flex: 1; min-width: 0; font-size: var(--t-14); font-weight: 500; line-height: 1.35; color: var(--texte);
+  display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; }
+.pied-carte .badge-type { margin-top: -1px; }
+.pied-carte .badge-type.pj { color: var(--texte); box-shadow: inset 0 0 0 1px var(--bord-fort); background: transparent; }
+.grille-fiches.squelettes > li { display: flex; flex-direction: column; align-items: flex-start; gap: 12px; }
+.grille-fiches.squelettes .cadre { display: block; width: 100%; aspect-ratio: 4 / 3; border-radius: var(--rayon-champ); }
+.grille-fiches.squelettes .trait { display: block; height: 12px; }
+
+@media (max-width: 1080px) { .grille-fiches { row-gap: 0; } }
+@media (max-width: 760px) {
+  .grille-fiches { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: var(--e-3); row-gap: calc(var(--e-4) - 12px); margin-top: calc(var(--e-4) - 4px); }
+  .carte { gap: 8px; padding: 4px 4px 8px; margin: 0 -4px; }
+  .pied-carte { flex-direction: column; gap: 6px; padding: 0 1px; }
+  .pied-carte .titre { font-size: var(--t-13); }
+  .initiale { font-size: 44px; }
+}
+
+/* ---------- E-15 (docs/maquettes/e15): the column is 784px with 2 x 48px of padding, so 688px of content ---------- */
+.page-liste.page-systeme { max-width: 688px; }
+.page-systeme .entete-sys { padding-bottom: var(--e-5); border-bottom: 1px solid var(--bord); }
+.page-systeme .barre-outils { display: flex; align-items: center; justify-content: space-between; gap: var(--e-3); flex-wrap: wrap; margin-top: var(--e-5); }
+.page-systeme .barre-outils .onglets { margin: 0; }
+.page-systeme .onglets button { display: inline-flex; align-items: center; gap: 6px; }
+.page-systeme .onglets .nb { font-size: var(--t-12); color: var(--texte-3); font-variant-numeric: tabular-nums; }
+@media (max-width: 760px) {
+  .page-systeme .barre-outils { flex-direction: column; align-items: stretch; }
+  .page-systeme .barre-outils .onglets { align-self: flex-start; }
+}

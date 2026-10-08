@@ -13,6 +13,7 @@ import { PanneauSection, type Joueur } from './fiche/section';
 import type { FicheVue } from './fiche/types';
 import { lignesDuType } from './fiche/lignes/registre';
 import { badgeFiche, iconeDuType, typeParType } from './fiche/types-fiche';
+import { EnteteFiche, type MessageIllustration } from './fiche/entete';
 
 const ECHEC = 'L’action n’a pas abouti. Réessayez.';
 
@@ -37,8 +38,16 @@ function PageFiche() {
   const [erreurTitre, setErreurTitre] = useState<string>();
   const [ajoutEnCours, setAjoutEnCours] = useState(false);
   const [ajoutOuvert, setAjoutOuvert] = useState(false);
+  const [messageIll, setMessageIll] = useState<MessageIllustration>();
+  // The server refused an illustration write (403): the account is no longer GM of this universe.
+  const [roleRetire, setRoleRetire] = useState(false);
 
-  const role: Role | undefined = univers.etat === 'ok' ? univers.valeur.role : undefined;
+  useEffect(() => {
+    setMessageIll(undefined);
+    setRoleRetire(false);
+  }, [id, fid]);
+
+  const role: Role | undefined = univers.etat === 'ok' ? (roleRetire ? 'joueur' : univers.valeur.role) : undefined;
   // The GM / player toggle lives in the frame's top bar; it is offered unless the sheet does not exist.
   const mode = useBasculeMode(role === 'mj' && etat.k !== 'introuvable');
   const ficheVue = etat.k === 'ok' || etat.k === 'aucune-visible' ? etat.fiche : undefined;
@@ -92,12 +101,12 @@ function PageFiche() {
 
   if (univers.etat === 'erreur' && univers.statut === 404) return <PageIntrouvable />;
   if (etat.k === 'introuvable') return <PageIntrouvable />;
-  if (etat.k === 'chargement' || univers.etat === 'chargement') return <SqueletteFiche />;
+  if (etat.k === 'chargement' || univers.etat === 'chargement') return <SqueletteFiche cadre />;
   if (etat.k === 'erreur' || univers.etat === 'erreur') {
     return <ErreurChargement texte="Impossible de charger cette fiche." onReessayer={() => setEssai((n) => n + 1)} />;
   }
 
-  const mj = univers.valeur.role === 'mj';
+  const mj = role === 'mj';
   const fiche = etat.fiche;
   const sections = etat.k === 'ok' ? fiche.sections : [];
   const gestion = mj && modeEffectif === 'mj';
@@ -141,15 +150,20 @@ function PageFiche() {
   const formulaire = gestion && etat.k === 'ok' && ajoutOuvert;
   return (
     <article className="fiche" aria-labelledby="titre-fiche">
-      <header className="entete">
-        <span className="type">
-          <Icone size={14} strokeWidth={1.75} aria-hidden="true" />
-          {badgeFiche(fiche)}
-        </span>
-        <h1 id="titre-fiche" tabIndex={-1}>
-          {fiche.titre}
-        </h1>
-      </header>
+      <EnteteFiche
+        universId={id!}
+        fiche={fiche}
+        gestion={gestion && etat.k === 'ok'}
+        badge={badgeFiche(fiche)}
+        Icone={Icone}
+        message={messageIll}
+        setMessage={setMessageIll}
+        rafraichir={rafraichir}
+        onDroitPerdu={() => {
+          setRoleRetire(true);
+          void rafraichir();
+        }}
+      />
       {lignesDuType(fiche.type).map((l, i) => (
         <l.composant key={i} universId={id!} fiche={fiche} />
       ))}

@@ -37,7 +37,7 @@ async function fini(page: Any): Promise<void> {
   await attendre(page);
 }
 async function titres(page: Any): Promise<string[]> {
-  return page.locator('ul.liste-fiches li .titre-fiche').allInnerTexts();
+  return page.locator('ul.grille-fiches li .carte .titre').allInnerTexts();
 }
 async function photo(page: Any, nom: string): Promise<void> {
   await page.screenshot({ path: `${SHOTS}/${nom}.png` });
@@ -146,7 +146,7 @@ describe('kanevas-rc-ecran-recherche, E-8 recherche', { skip: skipBrowser }, () 
     assert.equal((await titres(antor)).length, 100);
     await photo(antor, 'cent-resultats');
     await antor.getByRole('button', { name: rxExact('Charger la suite') }).click();
-    await antor.waitForFunction(() => document.querySelectorAll('ul.liste-fiches li').length === 105);
+    await antor.waitForFunction(() => document.querySelectorAll('ul.grille-fiches li').length === 105);
     assert.equal(await antor.getByRole('button', { name: rxExact('Charger la suite') }).count(), 0);
     const t = await titres(antor);
     assert.equal(t[0], 'Halle 001');

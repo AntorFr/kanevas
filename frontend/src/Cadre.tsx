@@ -1,4 +1,4 @@
-import { ChevronRight, Eye, Library, LockKeyhole, PanelLeft } from 'lucide-react';
+import { ChevronRight, Dices, Eye, Library, LockKeyhole, PanelLeft } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { Link, Outlet, matchPath, useLocation } from 'react-router-dom';
 
@@ -15,8 +15,10 @@ interface Maillon {
   libelle: string;
   vers?: string;
   /** Sits before the text on a phone, where the label of a middle crumb is dropped. */
-  icone?: 'bibliotheque' | 'item';
+  icone?: 'bibliotheque' | 'item' | 'systemes' | 'systemes-court';
   sceau?: boolean;
+  /** Dropped on a phone with its separator (the first crumb of a page of a system). */
+  long?: boolean;
 }
 
 /**
@@ -26,6 +28,12 @@ interface Maillon {
  */
 export function maillons(pathname: string, nomUnivers: string | undefined, titre: string | undefined, dedans: boolean, section?: string): Maillon[] {
   if (!dedans) {
+    if (pathname === '/systemes') return [{ libelle: 'Systèmes de jeu', icone: 'systemes' }];
+    if (matchPath('/systemes/:sid', pathname)) {
+      const liste: Maillon[] = [{ libelle: 'Systèmes de jeu', vers: '/systemes', icone: 'systemes', long: true }];
+      if (titre) liste.push({ libelle: titre, icone: 'systemes-court' });
+      return liste;
+    }
     if (matchPath('/univers/nouveau', pathname)) return [{ libelle: 'Mes univers', vers: '/', icone: 'bibliotheque' }, { libelle: 'Créer un univers' }];
     return pathname === '/' ? [{ libelle: 'Mes univers', icone: 'bibliotheque' }] : [{ libelle: 'Mes univers', vers: '/', icone: 'bibliotheque' }];
   }
@@ -37,7 +45,6 @@ export function maillons(pathname: string, nomUnivers: string | undefined, titre
     .filter((i) => section !== undefined || pathname === i.chemin(Number(id)) || pathname.startsWith(`${i.chemin(Number(id))}/`))
     .sort((a, b) => b.chemin(Number(id)).length - a.chemin(Number(id)).length)[0];
   if (item) liste.push({ libelle: item.libelle, vers: item.chemin(Number(id)), icone: 'item' });
-  else if (matchPath('/univers/:id/systeme', pathname)) liste.push({ libelle: 'Système de jeu', vers: `${racine}/systeme` });
   if (titre) liste.push({ libelle: titre });
   // The last crumb is the page you are on: it is not a link.
   const dernier = liste[liste.length - 1]!;
@@ -59,18 +66,18 @@ function Ariane() {
     <nav className="ariane" aria-label="Fil d’Ariane">
       {liste.map((m, i) => {
         const dernier = i === liste.length - 1;
-        const Icone = m.icone === 'bibliotheque' ? Library : m.icone === 'item' ? icones.get(m.libelle) : undefined;
+        const Icone = m.icone === 'bibliotheque' ? Library : m.icone === 'item' ? icones.get(m.libelle) : m.icone === 'systemes' || m.icone === 'systemes-court' ? Dices : undefined;
         const milieu = !dernier && i > 0 && m.icone === 'item' && Icone !== undefined;
         const contenu = (
           <>
             {m.sceau && <Sceau nom={m.libelle} petit />}
-            {Icone && !m.sceau && <Icone className={m.icone === 'item' ? 'court' : 'toujours'} size={14} strokeWidth={1.75} aria-hidden="true" />}
+            {Icone && !m.sceau && <Icone className={m.icone === 'item' || m.icone === 'systemes-court' ? 'court' : 'toujours'} size={14} strokeWidth={1.75} aria-hidden="true" />}
             <span className={`${milieu ? 'lib-ariane ' : ''}tronque`}>{m.libelle}</span>
           </>
         );
         return (
-          <span key={i} className={`maillon${dernier ? ' dernier' : ''}${m.sceau && !dernier ? ' long' : ''}${milieu ? ' milieu' : ''}`}>
-            {i > 0 && <ChevronRight className={`sep-ariane${i === 1 && liste[0]!.sceau ? ' long' : ''}`} size={14} strokeWidth={1.75} aria-hidden="true" />}
+          <span key={i} className={`maillon${dernier ? ' dernier' : ''}${(m.sceau || m.long) && !dernier ? ' long' : ''}${milieu ? ' milieu' : ''}`}>
+            {i > 0 && <ChevronRight className={`sep-ariane${i === 1 && (liste[0]!.sceau || liste[0]!.long) ? ' long' : ''}`} size={14} strokeWidth={1.75} aria-hidden="true" />}
             {m.vers ? (
               <Link to={m.vers} title={m.libelle}>
                 {contenu}

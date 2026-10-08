@@ -1,4 +1,4 @@
-import { Check, ChevronsUpDown, Library, LogOut, Monitor, Moon, Sun } from 'lucide-react';
+import { Check, ChevronsUpDown, Dices, Library, LogOut, Monitor, Moon, Sun } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { Link, matchPath, useLocation } from 'react-router-dom';
 
@@ -7,7 +7,7 @@ import { useMoi, useUnivers, useVue } from './cadre-contexte';
 import { ITEMS_UNIVERS, type Item } from './items';
 import { ecranEnregistre } from './registre';
 import { type ChoixTheme, useTheme } from './theme';
-import { Avatar, Bouton, Menu, PastilleRole, type EntreeMenu } from './ui';
+import { Avatar, Bouton, initialeUnivers, Menu, PastilleRole, type EntreeMenu } from './ui';
 
 /** Id of the universe in the address, or null outside a universe. */
 export function universDeLAdresse(chemin: string): number | null {
@@ -30,7 +30,7 @@ export function itemCourant(item: Item, id: number, pathname: string, section?: 
 export function Sceau({ nom, petit }: { nom: string; petit?: boolean }) {
   return (
     <span className={`sceau${petit ? ' petit' : ''}`} aria-hidden="true">
-      {nom.trim().charAt(0).toUpperCase() || '·'}
+      {initialeUnivers(nom) || '·'}
     </span>
   );
 }
@@ -110,6 +110,10 @@ function Selecteur({ courant, onChoix }: { courant: number; onChoix: () => void 
           <Link to="/" className="menu-entree" onClick={choisi}>
             <Library size={16} strokeWidth={1.75} aria-hidden="true" />
             Mes univers
+          </Link>
+          <Link to="/systemes" className="menu-entree" onClick={choisi}>
+            <Dices size={16} strokeWidth={1.75} aria-hidden="true" />
+            Systèmes de jeu
           </Link>
         </div>
       )}
@@ -215,6 +219,10 @@ function Contenu({ onNavigue }: { onNavigue: () => void }) {
             <Link to="/" className="item" aria-current={pathname === '/' ? 'page' : undefined}>
               <Library size={16} strokeWidth={1.75} aria-hidden="true" />
               Mes univers
+            </Link>
+            <Link to="/systemes" className="item" aria-current={pathname === '/systemes' || pathname.startsWith('/systemes/') ? 'page' : undefined}>
+              <Dices size={16} strokeWidth={1.75} aria-hidden="true" />
+              Systèmes de jeu
             </Link>
           </div>
         )}

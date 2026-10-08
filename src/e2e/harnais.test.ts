@@ -61,6 +61,8 @@ export async function startServer(extraEnv: Record<string, string> = {}): Promis
     PORT: String(port),
     NODE_ENV: 'production',
     KANEVAS_STUB: '1',
+    // The e2e suites build their own world: no starting data (docs/ecrans.md).
+    KANEVAS_SANS_SEMIS: '1',
     DB_PATH: join(dir, 'k.db'),
     SESSION_SECRET: 'e2e-secret-e2e-secret-e2e',
   };

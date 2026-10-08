@@ -1,36 +1,74 @@
-import { ChevronRight, Copy, Feather, Library, Plus, UsersRound } from 'lucide-react';
+import { Copy, Dices, Feather, Library, Plus, UsersRound } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 
 import { useMoi, useUnivers } from '../cadre-contexte';
+import type { UniversListe } from '../types';
 import { Avatar, Bouton, BoutonIcone, ErreurChargement, PastilleRole, Sceau, useToasts } from '../ui';
+import { VisuelUnivers } from '../ui/dessins';
 import type { Ecran } from '../registre';
 import './ecrans.css';
 import './accueil.css';
+import './cartes.css';
 
-/** Loading skeleton shaped like the list (rows of seal, name, two lines), then the words. */
+/** Loading skeleton shaped like the grid (header, name, two lines), then the words. */
 function SqueletteListe() {
   return (
     <div role="status">
-      <div className="tete-colonnes">
-        <span className="squelette" style={{ width: 64, height: 12 }} aria-hidden="true" />
-      </div>
-      {[
-        ['38%', '86%', '64%'],
-        ['46%', '80%', '52%'],
-      ].map((l, i) => (
-        <div className="squelette-univers" key={i} aria-hidden="true">
-          <span className="squelette" style={{ width: 40, height: 40, borderRadius: 10 }} />
-          <span>
-            <span className="squelette" style={{ display: 'block', width: l[0], height: 18 }} />
-            <span className="squelette" style={{ display: 'block', width: l[1], height: 12, marginTop: 10 }} />
-            <span className="squelette" style={{ display: 'block', width: l[2], height: 12, marginTop: 8 }} />
-          </span>
-        </div>
-      ))}
-      <p className="squelette-texte" style={{ margin: 'var(--e-5) 12px 0' }}>
+      <ul className="grille-cartes" aria-hidden="true">
+        {[
+          ['58%', '90%', '60%'],
+          ['44%', '84%', '50%'],
+          ['66%', '78%', '56%'],
+        ].map((l, i) => (
+          <li key={i} className="squelette-carte">
+            <span className="squelette cadre-sq" />
+            <span className="squelette" style={{ width: l[0], height: 18 }} />
+            <span className="squelette" style={{ width: l[1], height: 12 }} />
+            <span className="squelette" style={{ width: l[2], height: 12 }} />
+          </li>
+        ))}
+      </ul>
+      <p className="squelette-texte" style={{ margin: 'var(--e-5) 0 0' }}>
         Chargement de vos univers…
       </p>
     </div>
+  );
+}
+
+/** One universe card (E-1): a drawn header, the name, the description, the system and the members. */
+function CarteUnivers({ u }: { u: UniversListe }) {
+  const membres = u.nbMembres ?? 0;
+  return (
+    <Link className="carte-dessin" to={`/univers/${u.id}`}>
+      {/* The text comes first in the source (read first, the link's name starts with the universe); CSS puts the header on top. */}
+      <div className="pied-dessin">
+        <span className="lien-carte une-ligne nom-u" title={u.nom}>
+          {u.nom}
+        </span>
+        {u.description && <span className="desc-carte">{u.description}</span>}
+        <span className="meta-u">
+          {u.systeme ? (
+            <span className="sys-u" title={`Système de jeu : ${u.systeme.nom}`}>
+              <Dices size={14} strokeWidth={1.75} aria-hidden="true" />
+              <span className="t">{u.systeme.nom}</span>
+            </span>
+          ) : (
+            <span>Sans système de jeu</span>
+          )}
+          <span>
+            <UsersRound size={14} strokeWidth={1.75} aria-hidden="true" />
+            {membres} membre{membres > 1 ? 's' : ''}
+          </span>
+        </span>
+      </div>
+      <div className="entete-dessin tete-univers">
+        <VisuelUnivers nom={u.nom} />
+        <span className="pos-sceau">
+          <Sceau nom={u.nom} taille="moyen" />
+        </span>
+        <PastilleRole role={u.role} />
+      </div>
+    </Link>
   );
 }
 
@@ -59,7 +97,7 @@ function Accueil() {
   }
 
   return (
-    <div className="accueil">
+    <div className={vide ? 'accueil' : 'accueil accueil-cartes'}>
       <header className="entete-liste">
         <div>
           <h1>Mes univers</h1>
@@ -109,22 +147,11 @@ function Accueil() {
         <>
           <div className="tete-colonnes" aria-hidden="true">
             <span>{univers.valeur.length} univers</span>
-            <span className="col-role">Votre rôle</span>
           </div>
-          <ul className="liste-univers" aria-label="Vos univers">
+          <ul className="grille-cartes" aria-label="Vos univers">
             {univers.valeur.map((u) => (
               <li key={u.id}>
-                <Link className="ligne-univers" to={`/univers/${u.id}`}>
-                  <Sceau nom={u.nom} taille="moyen" />
-                  <span className="corps">
-                    <span className="nom-u" title={u.nom}>
-                      {u.nom}
-                    </span>
-                    {u.description && <span className="desc-u">{u.description}</span>}
-                  </span>
-                  <PastilleRole role={u.role} />
-                  <ChevronRight size={16} strokeWidth={1.75} aria-hidden="true" className="fleche" />
-                </Link>
+                <CarteUnivers u={u} />
               </li>
             ))}
           </ul>

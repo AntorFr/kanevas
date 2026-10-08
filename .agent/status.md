@@ -1,10 +1,10 @@
 # Status — kanevas
 
-> MàJ : 2026-10-06
+> MàJ : 2026-10-08
 
 **État :** `epic/kanevas` porte le socle, la première fiche, les systèmes de jeu, le suivi de la séance
 (campagnes, scénarios, préparation, comptes-rendus ; E-6, E-7, E-13) et les pièces jointes (migration
-`0004-pieces-jointes.sql`, AD-65 à AD-67). `feature/kanevas-relier-chercher` y ajoute, en PR non fusionnée :
+`0004-pieces-jointes.sql`, AD-65 à AD-67). `kanevas-relier-chercher` (fusionnée, PR #8) y ajoute :
 la migration `0005-relier-chercher.sql` (`relations`, index FTS5 `recherche_fiches` et `recherche_sections`,
 déclencheurs, remplissage de l'existant), `services/relations.ts` (relier, retirer, lire sous deux gardes),
 `peutVoirFiche` et les conditions SQL de lecture dans `droits.ts`, l'option `recherche` de `listerFiches`,
@@ -17,16 +17,29 @@ tiroir au téléphone, thème et déconnexion dans le menu de l'avatar, seul end
 avec leurs états, pastille/filet d'audience, menu « ⋯ » et toasts sur la fiche. Aucun geste, droit ni donnée nouveau.
 Thème par défaut « Système » (tant que rien n'est mémorisé) ; sur E-4, « Retirer » est révélé au survol/focus et le rôle est une pastille-menu. Page `/demo-composants` en bouchon seulement. Maquettes finies : E-1, E-3, E-6, E-8, E-9 (E-4 corrigée) ; E-2, E-7, E-13 à E-15 se tiennent au cadre et aux composants.
 
-**Reste :** la fusion et le tag `v*` (recette acceptée par Monsieur). Rien n'est amorcé : tout se crée à
-la main (Léa se connecte une fois avant d'être ajoutée). Aucune image n'existe avant le tag.
+`feature/kanevas-illustrations` (PR non fusionnée, part de `feature/kanevas-refonte-visuelle` : fusionner la refonte d'abord)
+ajoute : l'illustration d'une fiche (migration `0006-illustrations.sql`, `services/illustrations.ts`, routes
+`PUT|DELETE|GET …/fiches/:fid/illustration`, AD-93), la grille de cartes illustrées (E-8) et l'illustration en tête de E-9 ;
+le système de jeu hors des univers (AD-94) : `GET /api/systemes` (systèmes du compte), `/api/systemes/catalogue`,
+`/api/systemes/:sid…`, écrans E-16 « Systèmes de jeu » et E-15 à `/systemes/:sid` (l'ancienne adresse redirige), E-1 en
+cartes ; le semis du bouchon (`src/bouchon/depart.ts`, fichiers dans `src/bouchon/demo/`).
+
+**Reste :** la fusion et le tag `v*` (recette acceptée par Monsieur). En bouchon, le monde de recette est semé au
+démarrage ; hors bouchon rien n'est amorcé. Aucune image n'existe avant le tag.
 
 **Pièges :**
 - Node 20 est la cible (CI, Dockerfile). `better-sqlite3` est donc épinglé en `^12` : la 13 exige
   Node ≥ 22 et plante (SIGSEGV) sous Node 20. Ne pas remonter sans changer aussi la CI et le Dockerfile.
 - La suite a été jouée sous Node 22 dans les pods de la chaîne (pas de Docker) ; la CI Node 20 fait foi.
+  La règle « conteneurs uniquement » de `CLAUDE.md` est la voie de référence ; un Node local ≥ 20 (README) est le repli quand
+  Docker manque.
+- Les deux « PR non fusionnée » ci-dessus s'empilent : refonte → illustrations (cette branche). Les migrations 0005 (déjà sur `epic/kanevas`) et 0006 sont celles de la branche ; 0006 est à recaler seulement
+  si une autre tranche fusionne avant (AD-51).
+- Vocabulaire : « Monsieur » = le commanditaire qui fait la recette ; « tranche » = une feature livrée ; « phase merge » = la
+  fusion après recette ; E-n / B-n / P-n = écrans / besoins / parcours, définis dans `docs/ecrans.md` et `docs/parcours.md`.
 - La CI ne pousse d'image que sur `main` et sur un tag `v*` ; sur une PR elle ne fait qu'un build de
   validation. L'image testable n'existe qu'après le tag, posé à la fusion.
-- **Numéro de migration** : `0005-relier-chercher.sql` (après `0004-pieces-jointes.sql`, recalée à la fusion, AD-51) ; si une autre tranche fusionne une migration
+- **Numéro de migration** : `0005-relier-chercher.sql` (après `0004-pieces-jointes.sql`, numéro de la branche) ; si une autre tranche fusionne une migration
   avant, la phase merge la recale (AD-51).
 - Recherche : `listerFiches({recherche})` seule (AD-63) ; les index FTS5 ne livrent que des identifiants
   candidats, tenus par déclencheurs : ne jamais écrire dans `recherche_*` depuis le code. La saisie est
@@ -34,8 +47,8 @@ la main (Léa se connecte une fois avant d'être ajoutée). Aucune image n'exist
 - Relations : lues sous deux gardes (section porteuse et fiche cible lisibles, AD-64), sans compteur ni
   placeholder ; seul le MJ relie ou retire, un joueur reçoit 404. Pas de relations entrantes (hors tranche).
   Codes : `auto_relation` (400), `relation_existante` et `limite_relations` (409, 100 par section).
-- Systèmes : l'accès passe toujours par `/api/univers/:id/systeme…` (AD-83) ; un refus (compte sans rôle,
-  univers non rattaché) répond comme un identifiant inconnu (404) ; aucune réponse ne nomme un autre
+- Systèmes : l'accès est `/api/systemes/:sid…` (AD-94), gardé par « rattaché à un univers dont le compte est membre » ; seuls
+  rattacher/détacher/créer-et-rattacher restent sous `/api/univers/:id/systeme…`. Un refus répond comme un identifiant inconnu (404) ; aucune réponse ne nomme un autre
   univers (AD-84) ; écriture de gabarit périmée = 409 `gabarit_modifie` (AD-85). Ni suppression, ni import
   de référentiel, ni visibilité différenciée des gabarits (hors tranche).
 - Suivi : scénarios et tâches se gardent sur l'univers de la **campagne** (AD-47), jamais sur un identifiant
@@ -65,5 +78,13 @@ la main (Léa se connecte une fois avant d'être ajoutée). Aucune image n'exist
   et la branche titre du PATCH d'une section (renommer est hors tranche), option `limite` de
   `listerFiches`, `blocsVisibles`/`blocsSectionVisibles` jumeaux ; le parseur form-urlencoded du
   bouchon vaut aussi pour `/api`.
+
+- Illustration (AD-93) : le MJ seul pose/remplace/retire ; le type est lu à la signature ; aucun traitement d'image ni plafond
+  de taille ; le jeton `?v=` rend l'image cachable un an, le serveur revérifie le droit à chaque requête ; le fichier remplacé
+  ou retiré est supprimé du disque. Hors tranche : « utiliser comme illustration » une pièce jointe, illustration dans
+  relations/cartes/recherche, outil d'assistant.
+- Bouchon : au démarrage, sur une base sans univers, `semerBouchon` pose le monde de recette (Lame d'Ébène, Landes grises,
+  CoF Mini…) puis `semerIllustrations` ; `KANEVAS_SANS_SEMIS=1` le coupe (utilisé par les e2e). Jamais hors bouchon.
+- Numéro de migration `0006` à recaler à la fusion si une autre tranche en a pris un (AD-51).
 
 **Suivant :** administration.

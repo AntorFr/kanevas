@@ -122,3 +122,46 @@ a.bouton { text-decoration: none; display: inline-flex; }
 .ajout-section form .champ { flex: 1; margin: 0; }
 .ajout-section form .boutons { display: flex; gap: 8px; padding-top: 22px; }
 @media (max-width: 760px) { .ajout-section > button small { display: none; } .ajout-section form { flex-direction: column; align-items: stretch; } .ajout-section form .boutons { padding-top: 0; } }
+
+/* ---------- L'illustration dans l'en-tête (kanevas-illustrations) ---------- */
+.entete.illustree { display: grid; grid-template-columns: 176px minmax(0, 1fr); column-gap: 28px; align-items: end; }
+.illustration { margin: 0; width: 176px; }
+.boite-ill { position: relative; border-radius: var(--rayon-panneau); overflow: hidden; }
+.cadre-ill { position: relative; display: block; aspect-ratio: 4 / 5; border-radius: var(--rayon-panneau); overflow: hidden; background: var(--squelette); }
+.cadre-ill::after { content: ""; position: absolute; inset: 0; border-radius: inherit; box-shadow: inset 0 0 0 1px var(--bord); pointer-events: none; }
+.cadre-ill img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: 50% 30%; }
+a.cadre-ill:focus-visible { outline-offset: 2px; border-radius: var(--rayon-panneau); }
+.gestes-ill { position: absolute; right: 8px; bottom: 8px; display: flex; gap: 2px; padding: 2px; border-radius: var(--rayon-champ);
+  background: var(--surface); box-shadow: var(--ombre-flottant); opacity: 0; transition: opacity var(--duree); }
+.illustration:hover .gestes-ill, .illustration:focus-within .gestes-ill { opacity: 1; }
+@media (hover: none) { .gestes-ill { opacity: 1; } }
+.ko-ill { position: absolute; inset: 0; z-index: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; padding: 12px;
+  background: var(--surface-2); color: var(--texte-3); font-size: var(--t-12); text-align: center; }
+.envoi-ill { position: absolute; left: 0; right: 0; bottom: 0; display: flex; align-items: center; gap: 8px; padding: 9px 8px 8px 10px;
+  background: var(--surface); font-size: var(--t-12); color: var(--texte-2); }
+.envoi-ill::before { content: ""; position: absolute; left: 0; top: 0; height: 2px; width: var(--progres, 0%); background: var(--accent); transition: width var(--duree); }
+.envoi-ill span { flex: 1; }
+.envoi-ill .bouton { min-height: 24px; padding: 0 8px; }
+.aide-ill { margin-top: 8px; font-size: var(--t-12); line-height: 1.4; color: var(--texte-3); }
+.tete-texte { min-width: 0; }
+/* Sheet without illustration: the old header; the GM has « Ajouter une illustration » on hover and focus. */
+.ajout-ill { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 10px; margin: -8px 0 12px; opacity: 0; transition: opacity var(--duree); }
+.entete:hover .ajout-ill, .entete:focus-within .ajout-ill { opacity: 1; }
+@media (hover: none) { .ajout-ill { opacity: 1; } }
+.ajout-ill .bouton { margin-left: -8px; }
+.ajout-ill .aide { font-size: var(--t-12); color: var(--texte-3); }
+.confirmation-ill { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 12px; margin-top: var(--e-4); padding: 10px 12px;
+  border-radius: var(--rayon-champ); background: var(--surface-2); box-shadow: inset 0 0 0 1px var(--bord); font-size: var(--t-13); }
+.confirmation-ill > span:first-child { flex: 1 1 auto; min-width: 220px; }
+.actions-ill { display: flex; gap: 8px; margin-left: auto; flex: none; }
+.message-ill .etat.alerte { margin-top: var(--e-4); }
+@media (max-width: 760px) {
+  .entete.illustree { grid-template-columns: 96px minmax(0, 1fr); column-gap: var(--e-4); }
+  .illustration { width: 96px; }
+  .gestes-ill { right: 4px; bottom: 4px; }
+  .boite-ill { overflow: visible; }
+  .envoi-ill { position: relative; flex-wrap: wrap; gap: 0 6px; margin-top: 6px; padding: 6px 0 0; background: none; }
+  .envoi-ill .bouton { min-height: 36px; margin-left: -8px; }
+  .gestes-ill .bouton-icone { width: 36px; height: 36px; }
+  .ajout-ill .bouton { min-height: 36px; }
+}

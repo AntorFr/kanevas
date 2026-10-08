@@ -36,6 +36,8 @@ export interface Fiche {
   type: string;
   titre: string;
   charge: { v?: number; pj?: boolean };
+  /** The sheet's illustration (AD-93): `jeton` changes at each replacement and goes in the image address. */
+  illustration?: { jeton: string } | null;
 }
 
 export interface FicheVue extends Fiche {

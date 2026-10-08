@@ -8,6 +8,11 @@ import {
   ouvrirPieceJointe,
   retirerPieceJointe,
 } from '../services/pieces-jointes.js';
+import {
+  ouvrirIllustration,
+  poserIllustration,
+  retirerIllustration,
+} from '../services/illustrations.js';
 import { creerFiche, lireFiche, listerFiches } from '../services/fiches.js';
 import {
   ajouterSection,
@@ -196,6 +201,7 @@ export function registerFichesRoutes(app: FastifyInstance) {
     return reply.code(204).send();
   });
 
+  registerIllustrationRoutes(app, base);
   registerPiecesJointesRoutes(app, base);
 }
 
@@ -274,6 +280,58 @@ function registerPiecesJointesRoutes(app: FastifyInstance, base: string) {
     return reply
       .type('application/octet-stream')
       .header('Content-Disposition', dispositionAttachement(f.nom))
+      .send(f.flux);
+  });
+}
+
+/** The illustration of a sheet (AD-93): thin routes, the service owns the rules. */
+function registerIllustrationRoutes(app: FastifyInstance, base: string) {
+  const adresse = `${base}/:fid/illustration`;
+  const cible = (request: { params: unknown }) => {
+    const p = request.params as { id: string; fid: string };
+    return { univers: idDeChemin(p.id), fiche: idDeChemin(p.fid) };
+  };
+
+  app.put(adresse, async (request) => {
+    const c = cible(request);
+    if (!request.isMultipart()) throw invalide('Envoi multipart attendu (champ « fichier »).');
+    const part = await request.file();
+    if (!part || part.fieldname !== 'fichier') throw invalide('Champ « fichier » manquant.');
+    async function* flux() {
+      for await (const morceau of part!.file) yield morceau as Buffer;
+      if (part!.file.truncated) throw invalide('Envoi interrompu.');
+    }
+    const r = await poserIllustration(app.db, request.session!.id, c.univers, c.fiche, flux());
+    return { illustration: r };
+  });
+
+  app.delete(adresse, async (request, reply) => {
+    const c = cible(request);
+    retirerIllustration(app.db, request.session!.id, c.univers, c.fiche);
+    return reply.code(204).send();
+  });
+
+  // Real rights, no player mode on a direct read (AD-37).
+  app.get(adresse, async (request, reply) => {
+    const c = cible(request);
+    const v = (request.query as Record<string, unknown>).v;
+    const f = await ouvrirIllustration(
+      app.db,
+      { compteId: request.session!.id, modeJoueur: false },
+      c.univers,
+      c.fiche,
+      typeof v === 'string' ? v : undefined,
+    );
+    return reply
+      .type(f.type)
+      .header('Content-Disposition', 'inline')
+      .header('X-Content-Type-Options', 'nosniff')
+      .header('Content-Security-Policy', "default-src 'none'; sandbox")
+      .header(
+        'Cache-Control',
+        f.courant ? 'private, max-age=31536000, immutable' : 'private, no-store',
+      )
+      .header('Content-Length', f.taille)
       .send(f.flux);
   });
 }
