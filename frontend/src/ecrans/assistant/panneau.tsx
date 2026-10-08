@@ -93,7 +93,7 @@ export function Panneau({ universId, dispo, relireDispo, fermer, surOuverture, c
           </p>
         )}
         {fil.messages.length > MAX_HISTORIQUE && (
-          <p className="asst-note">Seuls les 20 derniers messages sont transmis à l’assistant.</p>
+          <p className="asst-note">Seuls les {MAX_HISTORIQUE} derniers messages sont transmis à l’assistant.</p>
         )}
         {fil.messages.map((m, i) => (
           <div key={i} className={`asst-message ${m.role === 'user' ? 'personne' : 'assistant'}`}>
@@ -142,7 +142,7 @@ export function Panneau({ universId, dispo, relireDispo, fermer, surOuverture, c
             <textarea
               id={`${idTitre}-champ`}
               ref={champ}
-              rows={3}
+              rows={1}
               placeholder="Votre question"
               value={texte}
               readOnly={champInactif}

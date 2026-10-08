@@ -39,7 +39,15 @@ body.asst-ouvert .zone-principale { margin-right: 380px; }
 .asst-saisie textarea[aria-disabled="true"] { opacity: .55; }
 .asst-indispo { margin: 0; color: var(--texte-2); font-size: var(--t-13); }
 .asst-champ-erreur { margin: 0; color: var(--danger); font-size: var(--t-13); }
+@media (min-width: 760px) {
+  .asst-saisie { flex-direction: row; flex-wrap: wrap; align-items: flex-end; }
+  .asst-saisie > * { flex: 1 0 100%; }
+  .asst-saisie > textarea { order: 1; flex: 1 1 0; min-width: 0; resize: none; }
+  .asst-saisie > button { order: 2; flex: 0 0 auto; }
+  .asst-saisie > .asst-champ-erreur { order: 3; }
+}
 @media (max-width: 759px) {
+  .asst-saisie textarea { min-height: 5.5em; }
   .asst-panneau { width: 100%; border-left: 0; }
   body.asst-ouvert .zone-principale { margin-right: 0; }
   body.asst-ouvert .asst-bouton { right: var(--e-5); }
