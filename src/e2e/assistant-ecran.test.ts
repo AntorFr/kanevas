@@ -492,3 +492,28 @@ test('bureau : panneau de 380 px à droite, le contenu dessous reste utilisable'
   assert.ok(Math.abs(b.x + b.width - vp.width) <= 1);
   await lea.getByRole('heading', { level: 1 }).first().waitFor();
 });
+
+test('saisie au bureau : champ d’une ligne, « Envoyer » à sa droite sur la même ligne', opts, async () => {
+  await ouvrir(lea);
+  await nouvelle(lea);
+  const c = await champ(lea).boundingBox();
+  const e = await envoyer(lea).boundingBox();
+  assert.ok(e.x >= c.x + c.width - 1, `Envoyer (x=${e.x}) must sit right of the field (ends ${c.x + c.width})`);
+  assert.ok(Math.abs(e.y + e.height / 2 - (c.y + c.height / 2)) <= c.height, 'same row');
+  assert.ok(c.height < 60, `one-line field, got ${c.height}px`);
+  assert.ok(c.width > 200, `field takes the remaining width, got ${c.width}px`);
+});
+
+test('saisie au téléphone : « Envoyer » reste empilé sous le champ', opts, async () => {
+  const ctx = await browser.newContext({ baseURL: srv.base, viewport: { width: 390, height: 800 } });
+  const p = await ctx.newPage();
+  p.setDefaultTimeout(8000);
+  await p.goto('/connexion-bouchon');
+  await p.getByRole('button', { name: /^Se connecter en tant que Léa$/i }).click();
+  await attendre(p);
+  await ouvrir(p);
+  const c = await champ(p).boundingBox();
+  const e = await envoyer(p).boundingBox();
+  assert.ok(e.y >= c.y + c.height - 1, `Envoyer (y=${e.y}) must sit under the field (ends ${c.y + c.height})`);
+  await ctx.close();
+});
