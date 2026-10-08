@@ -1,11 +1,13 @@
+import { Search, SearchX, X } from 'lucide-react';
 import { useEffect, useState, type FormEvent, type KeyboardEvent, type ReactNode } from 'react';
-import { Link } from 'react-router-dom';
 
 import { lire, useConnexionPerdue } from '../../api';
 import { useCharge } from '../../cadre-contexte';
-import { Bouton, Champ, Chargement, ErreurChargement, PageIntrouvable } from '../../ui';
+import { Bouton, Champ, ChargementListe, ErreurChargement, PageIntrouvable, VideIcone } from '../../ui';
+import '../liste.css';
 import type { Fiche, PageFiches } from './types';
-import { badgeFiche, type TypeLore } from './types-fiche';
+import type { TypeLore } from './types-fiche';
+import { CarteFiche, ChargementGrille } from './vignette';
 
 /** Longest search the server accepts (B-11). */
 export const LONGUEUR_RECHERCHE = 100;
@@ -26,7 +28,7 @@ interface Props {
   /** The search in force (empty = the whole list). The caller owns it: address, local state… */
   recherche: string;
   onRecherche: (recherche: string) => void;
-  /** Content of one row; by default a link to the sheet with its badge. */
+  /** Content of one row of a plain list; by default the grid of cards (E-8). */
   ligne?: (f: Fiche) => ReactNode;
   /** Shown between the field and the results, except on the empty plain list (`videListe` holds it then). */
   action?: ReactNode;
@@ -73,20 +75,28 @@ export function ListeRecherche({ universId, type, recherche, onRecherche, ligne,
   return (
     <>
       <form className="recherche" onSubmit={chercher} noValidate role="search">
-        <Champ
-          etiquette={etiquette}
-          zone
-          rows={1}
-          value={saisie}
-          erreur={erreur}
-          onChange={(e: { target: { value: string } }) => setSaisie(e.target.value)}
-          onKeyDown={touche}
-        />
+        <div className="champ-recherche">
+          <Search size={16} strokeWidth={1.75} aria-hidden="true" />
+          <Champ
+            etiquette={etiquette}
+            zone
+            rows={1}
+            placeholder={etiquette}
+            value={saisie}
+            erreur={erreur}
+            onChange={(e: { target: { value: string } }) => setSaisie(e.target.value)}
+            onKeyDown={touche}
+          />
+        </div>
         <div className="actions">
           <Bouton type="submit" disabled={perdue}>
             Chercher
           </Bouton>
-          {recherche !== '' && <Bouton onClick={effacer}>Effacer la recherche</Bouton>}
+          {recherche !== '' && (
+            <Bouton variante="fantome" icone={X} onClick={effacer}>
+              Effacer la recherche
+            </Bouton>
+          )}
         </div>
       </form>
       <Resultats
@@ -124,7 +134,10 @@ function Resultats({
   const [suiteEchec, setSuiteEchec] = useState(false);
   const cherche = recherche !== '';
 
-  if (page.etat === 'chargement') return <Chargement texte={cherche ? 'Recherche…' : 'Chargement des fiches…'} />;
+  if (page.etat === 'chargement') {
+    const texte = cherche ? 'Recherche…' : 'Chargement des fiches…';
+    return ligne ? <ChargementListe texte={texte} /> : <ChargementGrille texte={texte} />;
+  }
   if (page.etat === 'erreur' && page.statut === 404) return <PageIntrouvable />;
   if (page.etat === 'erreur') {
     return (
@@ -159,27 +172,16 @@ function Resultats({
         <>
           {action}
           {fiches.length === 0 ? (
-            <div className="etat">
+            <VideIcone icone={SearchX}>
               <p>
                 Aucun résultat pour « {recherche} » dans {dans(type)}.
               </p>
               <Bouton onClick={onEffacer}>Effacer la recherche</Bouton>
-            </div>
+            </VideIcone>
           ) : (
-            <ul className="liste-fiches">
+            <ul className={ligne ? 'liste-fiches' : 'grille-fiches'}>
               {fiches.map((f) => (
-                <li key={f.id}>
-                  {ligne ? (
-                    ligne(f)
-                  ) : (
-                    <Link to={`/univers/${universId}/fiche/${f.id}`}>
-                      <span className="titre-fiche" title={f.titre}>
-                        {f.titre}
-                      </span>
-                      <span className="badge-type">{badgeFiche(f)}</span>
-                    </Link>
-                  )}
-                </li>
+                <li key={f.id}>{ligne ? ligne(f) : <CarteFiche universId={universId} fiche={f} />}</li>
               ))}
             </ul>
           )}

@@ -73,8 +73,10 @@ export async function registerSessionRoutes(app: FastifyInstance) {
     if (!chemin.startsWith('/api') && !request.session) {
       return reply.redirect(urlConnexion());
     }
+    // The components demo page exists only in stub mode (docs/ecrans.md, « Maquettes »): otherwise it is unknown.
+    const demoAbsente = chemin.replace(/\/+$/, '') === '/demo-composants' && !env.KANEVAS_STUB;
     // An address no server route owns is a frontend screen (or its "Page introuvable.", AD-57).
-    if (frontend && request.method === 'GET' && !chemin.startsWith('/api') && !chemin.startsWith('/assets/')) {
+    if (frontend && !demoAbsente && request.method === 'GET' && !chemin.startsWith('/api') && !chemin.startsWith('/assets/')) {
       return reply
         .type('text/html; charset=utf-8')
         .header('cache-control', 'no-cache')

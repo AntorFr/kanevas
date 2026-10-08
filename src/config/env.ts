@@ -21,6 +21,8 @@ const envSchema = z.object({
   ATTACHMENTS_DIR: z.string().min(1).optional(),
   // Stub mode (AD-55): sign in by picking a test account, no Authelia. Never in production.
   KANEVAS_STUB: z.enum(['1']).optional(),
+  // Stub mode only: `1` skips the starting-world seeding (e2e servers that build their own world).
+  KANEVAS_SANS_SEMIS: z.enum(['1']).optional(),
   // Session cookie signing secret (AD-56); absent, one is created once in <data dir>/session.key.
   SESSION_SECRET: z.string().min(16).optional(),
   PORT: z.coerce.number().int().positive().default(3001),

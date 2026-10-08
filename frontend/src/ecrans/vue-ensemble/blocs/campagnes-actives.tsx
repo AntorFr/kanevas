@@ -1,7 +1,8 @@
+import { ArrowRight, Flag } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 import { lire } from '../../../api';
-import { BlocSuivi } from '../../suivi/blocs-commun';
+import { BlocSuivi, VideBloc } from '../../suivi/blocs-commun';
 import type { Campagne } from '../../suivi/commun';
 import type { Bloc } from '../registre';
 
@@ -11,6 +12,7 @@ function CampagnesActives({ universId }: { universId: number }) {
     <BlocSuivi
       titre="Campagnes actives"
       cle={universId}
+      lignes={1}
       charger={async () =>
         (await lire<{ campagnes: Campagne[] }>(`/api/univers/${universId}/campagnes`)).campagnes.filter(
           (c) => c.statut === 'active',
@@ -19,20 +21,27 @@ function CampagnesActives({ universId }: { universId: number }) {
     >
       {(campagnes) =>
         campagnes.length === 0 ? (
-          <div className="etat">
-            <p>Aucune campagne active.</p>
-            <Link to={`/univers/${universId}/campagnes`}>Voir les campagnes</Link>
-          </div>
+          <VideBloc>
+            Aucune campagne active.
+            <Link className="lien-action" to={`/univers/${universId}/campagnes`}>
+              <Flag size={14} strokeWidth={1.75} aria-hidden="true" />
+              Voir les campagnes
+            </Link>
+          </VideBloc>
         ) : (
-          <ul className="suivi-liste">
+          <div className="lignes">
             {campagnes.map((c) => (
-              <li key={c.id} className="ligne-suivi">
-                <Link className="grand" to={`/univers/${universId}/campagnes/${c.id}`}>
-                  <span className="titre-long">{c.nom}</span>
-                </Link>
-              </li>
+              <Link key={c.id} className="ligne campagne" to={`/univers/${universId}/campagnes/${c.id}`}>
+                <span className="tuile">
+                  <Flag size={16} strokeWidth={1.75} aria-hidden="true" />
+                </span>
+                <span className="corps">
+                  <span className="titre">{c.nom}</span>
+                </span>
+                <ArrowRight size={14} strokeWidth={1.75} aria-hidden="true" className="fleche" />
+              </Link>
             ))}
-          </ul>
+          </div>
         )
       }
     </BlocSuivi>

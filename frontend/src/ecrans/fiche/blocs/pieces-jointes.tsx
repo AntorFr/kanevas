@@ -1,7 +1,8 @@
+import { Eye, EyeOff, Paperclip, Trash2, Upload } from 'lucide-react';
 import { useRef, useState } from 'react';
 
 import { ErreurApi, appeler, useConnexionPerdue } from '../../../api';
-import { Bouton, Pastille } from '../../../ui';
+import { BlocSection as BlocUi, Bouton, BoutonIcone, Case, LigneFichier, Vignette, useToasts } from '../../../ui';
 import type { BlocSection } from '../registre';
 import { MESSAGES_PIECES as T, formaterTaille } from '../pieces';
 import type { PieceJointe, PropsBlocSection } from '../types';
@@ -48,6 +49,7 @@ function envoyer(url: string, fichier: File, secrete: boolean, progres: (pct: nu
 
 function BlocPiecesJointes({ universId, fiche, section, role, rafraichir }: PropsBlocSection) {
   const perdue = useConnexionPerdue();
+  const { toast } = useToasts();
   const mj = role === 'mj';
   const ecrit = mj || section.peutEcrire;
   const pieces = section.piecesJointes ?? [];
@@ -81,9 +83,13 @@ function BlocPiecesJointes({ universId, fiche, section, role, rafraichir }: Prop
     xhrs.current.delete(l.cle);
     if (r.ok) {
       retirerLigne(l.cle);
-      return rafraichir();
+      await rafraichir();
+      return toast(`« ${l.nom} » ajouté`);
     }
-    if (r.statut === -1) return retirerLigne(l.cle); // cancelled: nothing was written
+    if (r.statut === -1) {
+      retirerLigne(l.cle); // cancelled: nothing was written
+      return toast(`Envoi de « ${l.nom} » annulé`);
+    }
     if (r.code === 'fichier_vide') return changer(l.cle, { erreur: T.vide(l.nom) });
     if (r.code === 'limite_pieces') return changer(l.cle, { erreur: T.limite(role) });
     if (r.statut === 403) {
@@ -111,7 +117,7 @@ function BlocPiecesJointes({ universId, fiche, section, role, rafraichir }: Prop
     else retirerLigne(cle);
   }
 
-  async function agir(id: number, action: () => Promise<void>, droit = false) {
+  async function agir(id: number, action: () => Promise<void>, droit = false, confirmation?: string) {
     if (enCours !== undefined) return;
     setEnCours(id);
     setEchecs(({ [id]: _, ...reste }) => reste);
@@ -120,6 +126,7 @@ function BlocPiecesJointes({ universId, fiche, section, role, rafraichir }: Prop
       await action();
       setARetirer(undefined);
       await rafraichir();
+      if (confirmation) toast(confirmation);
     } catch (e) {
       const statut = e instanceof ErreurApi ? e.statut : 0;
       if (statut === 404) {
@@ -144,111 +151,131 @@ function BlocPiecesJointes({ universId, fiche, section, role, rafraichir }: Prop
     </a>
   );
 
+  const actionsDe = (p: PieceJointe) => (
+    <>
+      {mj && (
+        <BoutonIcone
+          etiquette={`${p.secrete ? 'Lever le secret de' : 'Rendre secrète'} « ${p.nom} »`}
+          infobulle={p.secrete ? 'Lever le secret' : 'Rendre secrète'}
+          icone={p.secrete ? Eye : EyeOff}
+          ecrit
+          disabled={enCours === p.id && aRetirer === undefined}
+          onClick={() =>
+            agir(
+              p.id,
+              () => appeler('PATCH', `${base}/pieces-jointes/${p.id}`, { secrete: !p.secrete }),
+              false,
+              p.secrete ? `Le secret de « ${p.nom} » est levé` : `« ${p.nom} » est secrète`,
+            )
+          }
+        />
+      )}
+      {ecrit && aRetirer !== p.id && (
+        <BoutonIcone etiquette={`Retirer « ${p.nom} »`} infobulle="Retirer" icone={Trash2} danger ecrit onClick={() => setARetirer(p.id)} />
+      )}
+    </>
+  );
+
   return (
-    <div className="pieces-jointes">
-      <h3>
-        Pièces jointes {pieces.length > 0 && <span className="compteur">({pieces.length})</span>}
-      </h3>
-      {avertissement && (
-        <div className="echec" role="alert">
-          {avertissement}
-        </div>
-      )}
-      {pieces.length === 0 && lignes.length === 0 && <p className="vide">Aucune pièce jointe.</p>}
-      <ul className="liste-pieces">
-        {pieces.map((p) => (
-          <li key={p.id} className={`piece${p.secrete ? ' reserve-mj' : ''}`}>
-            {p.image && !indisponibles.includes(p.id) ? (
-              <a className="vignette" href={urlFichier(p)} target="_blank" rel="noopener noreferrer">
-                <img
-                  src={urlFichier(p)}
-                  alt={p.nom}
-                  onError={() => setIndisponibles((i) => [...i, p.id])}
-                />
-              </a>
-            ) : p.image ? (
-              <div className="vignette indisponible">Image indisponible.</div>
-            ) : null}
-            <div className="legende">
-              <span className="nom-piece">
-                {p.nom} · {formaterTaille(p.taille)}
-              </span>{' '}
-              {p.secrete && <Pastille sens="mj">Secrète — MJ seul</Pastille>}
-            </div>
-            <div className="actions">
-              {(!p.image || indisponibles.includes(p.id)) && telecharger(p)}
-              {mj && (
-                <Bouton
-                  petit
-                  ecrit
-                  enCours={enCours === p.id && aRetirer === undefined}
-                  onClick={() => agir(p.id, () => appeler('PATCH', `${base}/pieces-jointes/${p.id}`, { secrete: !p.secrete }))}
-                >
-                  {p.secrete ? 'Lever le secret' : 'Rendre secrète'}
+    <BlocUi libelle="Pièces jointes" icone={Paperclip} vide={pieces.length === 0 && lignes.length === 0 ? 'Aucune pièce jointe.' : undefined}>
+      <div className={`pieces-jointes${pieces.length === 0 ? ' vide' : ''}`}>
+        {avertissement && (
+          <div className="echec" role="alert">
+            {avertissement}
+          </div>
+        )}
+        {pieces.length > 0 && (
+        <ul className="liste-pieces">
+          {pieces.map((p) => {
+            const vignette = p.image && !indisponibles.includes(p.id);
+            return (
+              <li key={p.id} className={`piece${p.image ? ' image' : ''}${p.secrete ? ' reserve-mj' : ''}`}>
+                {vignette ? (
+                  <Vignette
+                    src={urlFichier(p)}
+                    alt={p.nom}
+                    href={urlFichier(p)}
+                    onErreur={() => setIndisponibles((i) => [...i, p.id])}
+                    legende={`${p.nom} · ${formaterTaille(p.taille)}`}
+                    secrete={p.secrete}
+                    actions={actionsDe(p)}
+                  />
+                ) : (
+                  <>
+                    {p.image && <div className="vignette indisponible">Image indisponible.</div>}
+                    <LigneFichier
+                      nom={p.nom}
+                      taille={formaterTaille(p.taille)}
+                      secret={p.secrete}
+                      actions={
+                        <>
+                          {telecharger(p)}
+                          {actionsDe(p)}
+                        </>
+                      }
+                    />
+                  </>
+                )}
+                {echecs[p.id] && (
+                  <div className="echec" role="alert">
+                    {echecs[p.id]}
+                  </div>
+                )}
+                {ecrit && aRetirer === p.id && (
+                  <div className="confirmation" role="alertdialog" aria-label="Confirmer le retrait">
+                    <p>Retirer « {p.nom} » ? Le fichier sera perdu.</p>
+                    <div className="actions">
+                      <Bouton variante="danger" ecrit enCours={enCours === p.id} onClick={() => agir(p.id, () => appeler('DELETE', `${base}/pieces-jointes/${p.id}`), true, `« ${p.nom} » retiré`)}>
+                        Retirer le fichier
+                      </Bouton>
+                      <Bouton onClick={() => setARetirer(undefined)}>Annuler</Bouton>
+                    </div>
+                  </div>
+                )}
+              </li>
+            );
+          })}
+        </ul>
+        )}
+        {lignes.map((l) =>
+          l.erreur ? (
+            <div key={l.cle} className="echec" role="alert">
+              {l.erreur}{' '}
+              {l.reessayable && (
+                <Bouton petit ecrit onClick={() => void televerser(l)}>
+                  Réessayer
                 </Bouton>
-              )}
-              {ecrit && aRetirer !== p.id && (
-                <Bouton petit variante="danger" ecrit onClick={() => setARetirer(p.id)}>
-                  Retirer « {p.nom} »
-                </Bouton>
-              )}
-            </div>
-            {echecs[p.id] && (
-              <div className="echec" role="alert">
-                {echecs[p.id]}
-              </div>
-            )}
-            {ecrit && aRetirer === p.id && (
-              <div className="confirmation" role="alertdialog" aria-label="Confirmer le retrait">
-                <p>Retirer « {p.nom} » ? Le fichier sera perdu.</p>
-                <div className="actions">
-                  <Bouton variante="danger" ecrit enCours={enCours === p.id} onClick={() => agir(p.id, () => appeler('DELETE', `${base}/pieces-jointes/${p.id}`), true)}>
-                    Retirer le fichier
-                  </Bouton>
-                  <Bouton onClick={() => setARetirer(undefined)}>Annuler</Bouton>
-                </div>
-              </div>
-            )}
-          </li>
-        ))}
-      </ul>
-      {lignes.map((l) =>
-        l.erreur ? (
-          <div key={l.cle} className="echec" role="alert">
-            {l.erreur}{' '}
-            {l.reessayable && (
-              <Bouton petit ecrit onClick={() => void televerser(l)}>
-                Réessayer
+              )}{' '}
+              <Bouton petit onClick={() => retirerLigne(l.cle)}>
+                Ignorer
               </Bouton>
-            )}{' '}
-            <Bouton petit onClick={() => retirerLigne(l.cle)}>
-              Ignorer
+            </div>
+          ) : (
+            <div key={l.cle} className="envoi" role="status">
+              <LigneFichier
+                nom={l.nom}
+                secret={l.secrete}
+                progression={l.pct}
+                actions={
+                  <Bouton petit onClick={() => annuler(l.cle)}>
+                    Annuler
+                  </Bouton>
+                }
+              />
+            </div>
+          ),
+        )}
+        {ecrit && (
+          <div className="ajout-piece">
+            <input ref={sel} type="file" multiple hidden tabIndex={-1} aria-hidden onChange={(e) => void choisir(e.target.files)} />
+            <Bouton variante="fantome" petit icone={Upload} ecrit disabled={perdue} onClick={() => sel.current?.click()}>
+              Ajouter un fichier
             </Bouton>
+            {mj && <Case etiquette="Secrète (MJ seul)" mj checked={secrete} onChange={(e) => setSecrete(e.target.checked)} />}
           </div>
-        ) : (
-          <div key={l.cle} className="envoi" role="status">
-            {l.nom} — Envoi… {l.pct} %{' '}
-            <Bouton petit onClick={() => annuler(l.cle)}>
-              Annuler
-            </Bouton>
-          </div>
-        ),
-      )}
-      {ecrit && (
-        <div className="ajout-piece">
-          <input ref={sel} type="file" multiple hidden tabIndex={-1} aria-hidden onChange={(e) => void choisir(e.target.files)} />
-          <Bouton ecrit disabled={perdue} onClick={() => sel.current?.click()}>
-            Ajouter un fichier
-          </Bouton>
-          {mj && (
-            <label>
-              <input type="checkbox" checked={secrete} onChange={(e) => setSecrete(e.target.checked)} />
-              Secrète (MJ seul)
-            </label>
-          )}
-        </div>
-      )}
-    </div>
+        )}
+      </div>
+    </BlocUi>
   );
 }
 
