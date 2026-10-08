@@ -1,4 +1,4 @@
-import { ArrowDown, Flag, Plus } from 'lucide-react';
+import { ArrowDown, FileText, Flag, Plus } from 'lucide-react';
 import { useEffect, useState, type FormEvent } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 
@@ -157,6 +157,7 @@ function PanneauScenarios({ universId, campagneId }: { universId: string; campag
               .map((s) => (
                 <li key={s.id} className="ligne-suivi">
                   <Link className="grand" to={`/univers/${universId}/scenarios/${s.id}`}>
+                    <FileText size={14} strokeWidth={1.75} aria-hidden="true" style={{ flex: "none", color: "var(--texte-3)" }} />
                     <span className="texte-ligne">{s.titre}</span>
                   </Link>
                 </li>
