@@ -4,7 +4,7 @@
 
 **État :** `epic/kanevas` porte le socle, la première fiche, les systèmes de jeu, le suivi de la séance
 (campagnes, scénarios, préparation, comptes-rendus ; E-6, E-7, E-13) et les pièces jointes (migration
-`0004-pieces-jointes.sql`, AD-65 à AD-67). `kanevas-relier-chercher` (fusionnée, PR #8) y ajoute :
+`0004-pieces-jointes.sql`, AD-65 à AD-67). `kanevas-relier-chercher` (fusionnée, PR #8) y a ajouté :
 la migration `0005-relier-chercher.sql` (`relations`, index FTS5 `recherche_fiches` et `recherche_sections`,
 déclencheurs, remplissage de l'existant), `services/relations.ts` (relier, retirer, lire sous deux gardes),
 `peutVoirFiche` et les conditions SQL de lecture dans `droits.ts`, l'option `recherche` de `listerFiches`,
@@ -30,9 +30,8 @@ démarrage ; hors bouchon rien n'est amorcé. Aucune image n'existe avant le tag
 **Pièges :**
 - Node 20 est la cible (CI, Dockerfile). `better-sqlite3` est donc épinglé en `^12` : la 13 exige
   Node ≥ 22 et plante (SIGSEGV) sous Node 20. Ne pas remonter sans changer aussi la CI et le Dockerfile.
-- La suite a été jouée sous Node 22 dans les pods de la chaîne (pas de Docker) ; la CI Node 20 fait foi.
-  La règle « conteneurs uniquement » de `CLAUDE.md` est la voie de référence ; un Node local ≥ 20 (README) est le repli quand
-  Docker manque.
+- La suite a été jouée sous Node 22 dans les pods de la chaîne (pas de Docker) ; la CI Node 20 fait foi. La voie Docker de `CLAUDE.md` est la référence ; un Node 20+ local donne le même résultat (README).
+- Code : `routes/frontend.ts` trouve le build (`FRONTEND_DIR`, `dist/public`), `routes/erreurs.ts` traduit les erreurs de service en réponses HTTP, `routes/pages.ts` sert les pages HTML du bouchon.
 - Les deux « PR non fusionnée » ci-dessus s'empilent : refonte → illustrations (cette branche). Les migrations 0005 (déjà sur `epic/kanevas`) et 0006 sont celles de la branche ; 0006 est à recaler seulement
   si une autre tranche fusionne avant (AD-51).
 - Vocabulaire : « Monsieur » = le commanditaire qui fait la recette ; « tranche » = une feature livrée ; « phase merge » = la
@@ -56,6 +55,8 @@ démarrage ; hors bouchon rien n'est amorcé. Aucune image n'existe avant le tag
   l'auteur Joueur lit et écrit sa section même fermée aux autres joueurs (AD-61). Plusieurs campagnes
   peuvent être actives (AD-60) ; aucune suppression nulle part.
 - Refonte visuelle : le regard sur les maquettes (bureau, téléphone, clair, sombre) est celui de la vérification et de la recette ; aucun écran n'écrit de couleur en dur (tokens seuls) ; un écran neuf prend le cadre et les composants de `ui/`, il ne recrée ni bouton, ni menu, ni champ. E-5, E-10 à E-12 rattrapent le cadre dans leur tranche.
+- Fil d'Ariane : une page qui nomme un objet appelle `useTitreAriane(nom)` (`cadre-contexte`) ; E-9 et E-6 le font, E-7 s'arrête à l'univers (maquette ancienne, forme non exigée). Le select « Auteur » de la boîte « Qui voit » est désactivé pendant l'enregistrement : un test qui y pose le focus attend d'abord sa réactivation.
+- Suite e2e (Playwright) : sous forte charge, deux tests (premiere-fiche B-9, refonte-besoin matrice E-9 mode Joueur) échouent par intermittence et passent seuls ; non attribué à un défaut du produit.
 - P-7 : le portrait (pièce jointe) est livré ; la demande à l'assistant (`kanevas-assistant-membre`) reste à venir.
 - Pièces jointes : le type est déterminé par la signature des octets, jamais par le navigateur ; seules PNG,
   JPEG, GIF, WebP sont servies en ligne, le reste (SVG compris) en `attachment` sous `nosniff` et CSP sandbox.
