@@ -15,7 +15,7 @@ fonction métier** : comptes, univers, membres, fiches et sections, avec leurs d
 et le mode bouchon ; le frontend React qui les montre (accueil, univers, membres, lore, fiche).
 S'y ajoutent le système de jeu et, avec `kanevas-suivi`, le suivi de la séance : campagnes, scénarios, préparation, comptes-rendus.
 `kanevas-relier-chercher` y ajoute les relations entre fiches et la recherche dans un type (index FTS5, AD-63, AD-64).
-Ni cartes, ni assistant : tranches suivantes. Les pièces jointes (stockage sur le volume, bloc de E-9) sont construites.
+`kanevas-recours-admin` y ajoute l'administration d'instance (E-5, AD-86, AD-87). Ni cartes, ni assistant : tranches suivantes. Les pièces jointes (stockage sur le volume, bloc de E-9) sont construites.
 
 ## Carte
 
@@ -28,7 +28,7 @@ Ni cartes, ni assistant : tranches suivantes. Les pièces jointes (stockage sur 
   session (`src/services/session.ts`, AD-56) et crée le compte à la première connexion.
 - `src/routes/bouchon.ts` : mode bouchon (AD-55), absent de la table des routes sans `KANEVAS_STUB`.
 - `src/db/` : ouverture du fichier SQLite, `migrations/0001-*.sql`, `0002-systemes.sql`, `0003-suivi.sql`, `0004-pieces-jointes.sql`, `0005-relier-chercher.sql`, `0006-illustrations.sql`, runner (AD-14).
-- `src/e2e/` : tests d'ensemble (`healthz`, `administration`, `administration-exclusions`, `administration-besoin`, `administration-bords-reprise`, navigateur piloté en bouchon).
+- `src/e2e/` : tests d'ensemble, serveur réel en bouchon et navigateur piloté (Playwright, ignoré s'il manque) ; E-5 : `administration*.test.ts`.
 - `src/services/` : `comptes`, `univers`, `membres`, `instance`, `fiches`, `sections`, `droits`, `systemes`, `relations`, `campagnes`, `scenarios`, `preparation`, `comptes_rendus`, `pieces-jointes`, `illustrations`, `stockage` — les seules
   fonctions qui lisent ou écrivent les données (AD-2) ; `src/routes/` : routes `/api` minces ; `univers.ts` et `instance.ts` portent les routes d'univers et d'instance.
 - `frontend/` : application React/Vite (AD-57) ; `frontend/src/ui/tokens.css` et
@@ -82,6 +82,7 @@ elles remplacent les anciennes routes `GET /api/univers/:id/systeme` et `…/sys
 | `POST /api/systemes/:sid/gabarits`, `PUT /api/systemes/:sid/gabarits/:gabaritId` | ajouter, modifier avec la version lue (AD-85) : MJ d'au moins un univers rattaché ; 403 pour qui lit sans être MJ ; 404 pour qui ne le voit pas |
 | `PUT /api/univers/:id/systeme`, `POST /api/univers/:id/systeme-nouveau` | rattacher (`{systemeId}` ou `null` pour détacher ; 204 sans corps), créer et rattacher (201) (MJ) |
 | `GET\|POST /api/univers/:id/membres`, `PATCH\|DELETE .../membres/:compteId` | membres (MJ) |
+| `GET /api/instance/univers`, `GET\|POST /api/instance/univers/:id/membres`, `PATCH\|DELETE .../membres/:compteId` | admin d'instance (groupe `parents`, AD-86, AD-87) : `{id, nom, nbMembres}` ; membres d'un univers, ajout (201), rôle, retrait (204) ; hors du groupe, 404 comme une adresse inconnue |
 | `GET\|POST /api/univers/:id/fiches` (`?type`, `?q`, `?curseur`) | liste paginée (100), `q` (vide ou plus de 100 caractères : 400 ; sans lettre ni chiffre : liste vide) cherche dans le type (AD-63) ; création (MJ) |
 | `GET .../fiches/:fid` | fiche et sections lisibles ; `?mode=joueur` lit en Joueur ; 404 si aucune section n'est lisible (l'écran le traduit en « Aucune section n'est visible des joueurs. ») |
 | `POST .../fiches/:fid/sections`, `PUT .../fiches/:fid/ordre` | ajouter, ordonner (MJ) |
@@ -155,8 +156,7 @@ base en snake_case (`docs/donnees.md`).
 # La cible
 
 > Construit à ce jour : la session, le mode bouchon, les tables et leurs fonctions de service,
-> les systèmes de jeu et leurs gabarits, les relations et la recherche dans un type, le suivi (campagnes, scénarios, préparation, comptes-rendus), les écrans E-1 à E-4, E-6 à E-9 (E-9 avec son bloc Pièces jointes), E-13, E-14, E-15 et E-16, l'illustration des fiches, et le stockage des fichiers sur le volume. Le reste (agents, images,
-> administration) est la cible des tranches suivantes.
+> les systèmes de jeu et leurs gabarits, les relations et la recherche dans un type, le suivi (campagnes, scénarios, préparation, comptes-rendus), les écrans E-1 à E-9 (dont E-5 Administration) (E-9 avec son bloc Pièces jointes), E-13, E-14, E-15 et E-16, l'illustration des fiches, et le stockage des fichiers sur le volume. Le reste (agents, images) est la cible des tranches suivantes.
 
 ## Organes, et qui parle à qui
 

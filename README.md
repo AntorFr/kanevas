@@ -45,6 +45,7 @@ Tests sans Docker : `npm run typecheck` puis `npm test` (ils jouent aussi les e2
 ```bash
 # écrit node_modules/ et ./data/ (base et session.key) dans le dépôt monté, en root ; les deux sont ignorés par git.
 # Sans `npm run build` préalable (fait dans l'hôte, hors de cette commande), cette voie ne sert que l'API : voir plus bas.
+# Pour voir les écrans (dont E-5, `/administration`) : `npm run build && KANEVAS_STUB=1 npm start` (section « mode bouchon »).
 docker run --rm -p 3001:3001 -v "$PWD":/src -w /src node:20-bookworm-slim sh -c "npm ci && npm run dev"
 # puis, depuis l'hôte : curl http://localhost:3001/healthz
 ```
