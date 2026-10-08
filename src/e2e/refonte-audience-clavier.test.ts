@@ -46,7 +46,10 @@ test('Échap pressé dans la liste « Auteur » après le choix d’un auteur fe
   await boite.waitFor();
   await boite.getByRole('combobox', { name: /Auteur/ }).selectOption({ label: 'lea' });
   await boite.getByRole('switch', { name: /L’auteur la lit/ }).waitFor();
-  await boite.getByRole('combobox', { name: /Auteur/ }).focus();
+  // The list is disabled while the PATCH is in flight: focus it only once it is enabled again.
+  const auteur = boite.getByRole('combobox', { name: /Auteur/ });
+  await antor.waitForFunction((el: HTMLSelectElement) => !el.disabled, await auteur.elementHandle());
+  await auteur.focus();
   await antor.keyboard.press('Escape');
   await boite.waitFor({ state: 'detached' });
   assert.equal(await pastille.getAttribute('aria-expanded'), 'false');

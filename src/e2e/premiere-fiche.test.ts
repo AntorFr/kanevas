@@ -470,7 +470,10 @@ test('B-9 Léa, auteur d\'une section fermée aux joueurs, la lit et l\'écrit ;
   await s.getByRole('button', { name: /régler l['’]audience de/ }).click();
   await antor.getByRole('dialog', { name: /^Qui voit/ }).getByRole('combobox', { name: /Auteur/ }).selectOption({ label: 'lea' });
   await antor.getByRole('dialog', { name: /^Qui voit/ }).getByRole('switch', { name: rx('L’auteur la lit') }).waitFor();
-  await antor.getByRole('dialog', { name: /^Qui voit/ }).getByRole('combobox', { name: /Auteur/ }).focus();
+  // The list is disabled while the PATCH is in flight: focus it only once it is enabled again.
+  const auteur = antor.getByRole('dialog', { name: /^Qui voit/ }).getByRole('combobox', { name: /Auteur/ });
+  await antor.waitForFunction((el: HTMLSelectElement) => !el.disabled, await auteur.elementHandle());
+  await auteur.focus();
   await antor.keyboard.press('Escape');
   await antor.getByRole('dialog', { name: /^Qui voit/ }).waitFor({ state: 'detached' });
   await regler(antor, 'Notes de la table', "L'auteur la lit", true);
