@@ -46,7 +46,7 @@ AD-75). La table `propositions` du cadrage est posée par `kanevas-monde` (ci-de
 
 ## Propositions de mise à jour (`kanevas-monde`)
 
-Une table, `propositions` (migration numérotée à la fusion, AD-51) :
+Une table, `propositions` (migration `0007-propositions.sql`, AD-51) :
 
 | Colonne | Type | Contrainte |
 |---|---|---|

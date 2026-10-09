@@ -35,7 +35,7 @@ appellent les mêmes fonctions de service que les routes, avec les droits de la 
   adaptateurs `bouchon` et `claude-agent` (AD-73, AD-78), la disponibilité (AD-77) et
   l'orchestration d'une demande (AD-75) ; `src/routes/assistant.ts` : les deux routes. Aucune requête SQL
   dans ce module (AD-2, AD-27).
-- `src/db/` : ouverture du fichier SQLite, `migrations/0001-*.sql`, `0002-systemes.sql`, `0003-suivi.sql`, `0004-pieces-jointes.sql`, `0005-relier-chercher.sql`, `0006-illustrations.sql`, runner (AD-14).
+- `src/db/` : ouverture du fichier SQLite, `migrations/0001-*.sql`, `0002-systemes.sql`, `0003-suivi.sql`, `0004-pieces-jointes.sql`, `0005-relier-chercher.sql`, `0006-illustrations.sql`, `0007-propositions.sql`, runner (AD-14).
 - `src/e2e/` : tests d'ensemble, serveur réel en bouchon et navigateur piloté (Playwright, ignoré s'il manque) ; E-5 : `administration*.test.ts`.
 - `src/services/` : `comptes`, `univers`, `membres`, `instance`, `fiches`, `sections`, `droits`, `systemes`, `relations`, `campagnes`, `scenarios`, `preparation`, `comptes_rendus`, `propositions`, `pieces-jointes`, `illustrations`, `stockage` — les seules
   fonctions qui lisent ou écrivent les données (AD-2) ; `src/routes/` : routes `/api` minces ; `univers.ts` et `instance.ts` portent les routes d'univers et d'instance.
