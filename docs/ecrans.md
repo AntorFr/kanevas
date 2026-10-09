@@ -429,6 +429,7 @@ d'E-5 ; la lecture du groupe `parents` est posée par la première fiche (sessio
 ici. E-5 est atteint par P-2 (étape 3) et par la barre (admin). Les trois rôles ont leur colonne : le
 MJ et le Joueur n'ont pas E-5 ; l'admin n'a, hors des univers dont il est membre, que E-1, E-2 et E-5.
 Écart au cadrage : aucun.
+
 ## Détail des écrans de `kanevas-systemes`
 
 > E-14, E-15, le lien de E-3 vers le système, l'item « Paramètres » de la barre latérale. Les

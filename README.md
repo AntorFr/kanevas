@@ -46,7 +46,8 @@ Tests sans Docker : `npm run typecheck` puis `npm test` (ils jouent aussi les e2
 ```bash
 # écrit node_modules/ et ./data/ (base et session.key) dans le dépôt monté, en root ; les deux sont ignorés par git.
 # Sans `npm run build` préalable (fait dans l'hôte, hors de cette commande), cette voie ne sert que l'API : voir plus bas.
-# Pour voir les écrans (dont E-5, `/administration`) : `npm run build && KANEVAS_STUB=1 npm start` (section « mode bouchon »).
+# Pour voir les écrans (dont E-5, `/administration`) : même conteneur, mais `sh -c "npm ci && npm run build && KANEVAS_STUB=1 npm start"`
+# (ou, avec Node ≥ 20 sur l'hôte, `npm ci` puis la commande de la section « mode bouchon »).
 docker run --rm -p 3001:3001 -v "$PWD":/src -w /src node:20-bookworm-slim sh -c "npm ci && npm run dev"
 # puis, depuis l'hôte : curl http://localhost:3001/healthz
 ```
@@ -79,7 +80,7 @@ récent suffit pour les mêmes commandes (`npm ci && npm run typecheck && npm te
 ### Sans Authelia : le mode bouchon
 
 ```bash
-npm run build && KANEVAS_STUB=1 npm start   # puis ouvrir http://localhost:3001/ : choix d'un compte de test
+npm ci && npm run build && KANEVAS_STUB=1 npm start   # puis ouvrir http://localhost:3001/ : choix d'un compte de test
 # le semis précède l'écoute du port (moins d'une seconde ici) ; sans écrire dans ./data/ ni sur le port 3001 : npm run build && PORT=3055 DB_PATH=/tmp/k.db KANEVAS_STUB=1 npm start
 # (Ctrl-C l'arrête ; lancé en arrière-plan, kill du processus ; supprimer /tmp/k.db pour repartir d'une base vide ; `session.key` et `attachments/` se créent à côté de la base, donc dans /tmp : prendre un dossier dédié, `DB_PATH=/tmp/kanevas-essai/k.db`, et le supprimer en entier)
 ```
