@@ -1,6 +1,6 @@
 # Status — kanevas
 
-> MàJ : 2026-10-09 (assemblage de kanevas-monde, sur kanevas-assistant-membre)
+> MàJ : 2026-10-09 (assemblage de kanevas-monde, rattrapée sur epic/kanevas)
 
 **État :** `epic/kanevas` porte le socle, la première fiche, les systèmes de jeu, le suivi de la séance
 (campagnes, scénarios, préparation, comptes-rendus ; E-6, E-7, E-13) et les pièces jointes (migration
@@ -55,7 +55,7 @@ migration `0007-propositions.sql` (table `propositions`, index unique partiel «
 (créer, lire, appliquer, abandonner ; l'état `en_attente | perimee | appliquee` est calculé à chaque lecture), l'outil `proposer_mise_a_jour` du seul
 catalogue MJ (événement `proposition_creee`) et sa règle du bouchon (« Mets à jour la section « S » de « F » d'après le compte-rendu « C » »),
 `routes/propositions.ts` (`GET …/propositions/:pid`, `POST …/appliquer`, `POST …/abandonner` ; aucune route de création), et le bloc « Mise à jour proposée »
-(`ecrans/assistant/blocs/proposition.tsx`). Appliquer passe par `ecrireContenu` avec la `version` lue. Typecheck et build verts ; `npm test` joué sous Node 22 à l'assemblage, 0 échec attribuable à la tranche (voir `Pièges` pour Node 20). Les e2e du bloc (`src/e2e/proposition-ecran.test.ts`) dépendent de Playwright, absent du dépôt, et sautent sans lui.
+(`ecrans/assistant/blocs/proposition.tsx`). Appliquer passe par `ecrireContenu` avec la `version` lue. Typecheck et build verts ; `npm test` joué sous Node 22 à l'assemblage, 0 échec attribuable à la tranche ; la CI Node 20 fait foi. Les e2e du bloc (`src/e2e/proposition-ecran.test.ts`) dépendent de Playwright, absent du dépôt, et sautent sans lui.
 **Reste (monde) :** la recette de Monsieur au navigateur en bouchon (scénario dans le README), puis la fusion et le tag `v*`.
 
 **Reste (recours admin) :** la recette de Monsieur de l'administration au navigateur en bouchon (Admin ajoute Mira à « Lame d'Ébène » ; le monde de recette est semé), puis la fusion et le tag `v*`. Aucune image n'existe avant le tag.
