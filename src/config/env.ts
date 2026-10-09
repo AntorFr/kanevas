@@ -1,5 +1,7 @@
 import { config as loadEnv } from 'dotenv';
 import { existsSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { z } from 'zod';
 
@@ -9,26 +11,33 @@ loadEnv({
 
 const envSchema = z.object({
   APP_NAME: z.string().min(1).default('kanevas'),
-  // Seule source de vérité pour la version affichée par /healthz et publiée
-  // par la CI : le build-arg Docker `APP_VERSION` (voir Dockerfile), jamais
-  // `package.json` — deux sources non synchronisées sinon (plan.md).
+  // Single source of truth for the version shown by /healthz and published
+  // by the CI: the Docker build-arg `APP_VERSION` (see Dockerfile), never
+  // `package.json` — two unsynchronised sources otherwise.
   APP_VERSION: z.string().min(1).default('0.0.0-dev'),
   // SQLite file (AD-5). Defaults: the /data volume in production, memory in tests.
   DB_PATH: z.string().min(1).optional(),
+  // Attachment directory (AD-7); defaults to <db dir>/attachments.
+  ATTACHMENTS_DIR: z.string().min(1).optional(),
   // Stub mode (AD-55): sign in by picking a test account, no Authelia. Never in production.
   KANEVAS_STUB: z.enum(['1']).optional(),
+  // Stub mode only: `1` skips the starting-world seeding (e2e servers that build their own world).
+  KANEVAS_SANS_SEMIS: z.enum(['1']).optional(),
   // Session cookie signing secret (AD-56); absent, one is created once in <data dir>/session.key.
   SESSION_SECRET: z.string().min(16).optional(),
   PORT: z.coerce.number().int().positive().default(3001),
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
-  // Les quatre vont ensemble : en poser une partie laisse OIDC non configuré
-  // (routes en 404 — services/oidc.ts) ; vide ou invalide, elle échoue ici.
+  // All four go together: setting only some leaves OIDC unconfigured (routes
+  // return 404 — services/oidc.ts); an empty or invalid value fails here.
   OIDC_ISSUER: z.string().url().optional(),
   OIDC_CLIENT_ID: z.string().min(1).optional(),
   OIDC_CLIENT_SECRET: z.string().min(1).optional(),
   OIDC_REDIRECT_URI: z.string().url().optional(),
-  // Transports LLM repris d'Antre-du-maitre (AD-10) : aucune route de ce
-  // socle ne les appelle encore (fonctionnelle.md, hors périmètre).
+  // Assistant (AD-54, AD-77): Claude subscription token, set by the operator; empty or absent =
+  // no assistant outside the stub. Read here only, never logged.
+  CLAUDE_CODE_OAUTH_TOKEN: z.string().optional(),
+  // LLM transports reused from Antre-du-maitre (AD-10): no route calls them; only
+  // ANTHROPIC_MODEL is read, by the assistant's claude-agent adapter (AD-73).
   ANTHROPIC_API_KEY: z.string().optional(),
   ANTHROPIC_MODEL: z.string().min(1).default('claude-sonnet-4-6'),
   LLM_PROVIDER: z.enum(['mock', 'anthropic', 'claude-agent']).default('mock'),
@@ -59,3 +68,9 @@ export const dbPath =
     : env.NODE_ENV === 'test'
       ? ':memory:'
       : './data/kanevas.db');
+
+// Attachment bytes (AD-7) live next to the database, on the same volume. In
+// memory (tests, bare host) they go under the OS temp dir.
+export const attachmentsDir =
+  env.ATTACHMENTS_DIR ??
+  (dbPath === ':memory:' ? join(tmpdir(), 'kanevas-attachments') : join(dirname(dbPath), 'attachments'));

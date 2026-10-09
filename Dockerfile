@@ -1,11 +1,14 @@
-# Patron repris d'Antre-du-maitre (AD-10), débarrassé de ses étapes Prisma.
+# Pattern reused from Antre-du-maitre (AD-10), minus its Prisma steps.
 
 FROM node:20-bookworm-slim AS deps
 
 WORKDIR /app
 
+# python3, make and g++: better-sqlite3 compiles itself when no prebuilt binary
+# is found for the base image (node-gyp). Build stage only: the runtime stage
+# copies the compiled node_modules and needs none of them.
 RUN apt-get update \
-  && apt-get install -y --no-install-recommends ca-certificates openssl \
+  && apt-get install -y --no-install-recommends ca-certificates openssl python3 make g++ \
   && rm -rf /var/lib/apt/lists/*
 
 COPY package.json package-lock.json ./
@@ -24,8 +27,8 @@ FROM node:20-bookworm-slim AS runtime
 
 WORKDIR /app
 
-# Seule source de vérité pour la version affichée et publiée : jamais
-# package.json (plan.md, critère de sortie de cette tâche).
+# Single source of truth for the displayed and published version: never
+# package.json.
 ARG APP_VERSION=0.0.0-dev
 
 ENV NODE_ENV=production
@@ -41,7 +44,7 @@ COPY --from=build /app/package.json ./package.json
 COPY --from=build /app/dist ./dist
 
 # Run as the non-root "node" user (uid 1000) shipped by the base image.
-# /data is a mounted volume (AD-5/AD-7, vide à ce stade). Under uid 1000 its
+# /data is a mounted volume (AD-5, empty for now). Under uid 1000 its
 # hostPath must be writable by that user; the cluster actually runs the pod as
 # root (see ARCHITECTURE.md).
 RUN mkdir -p /data && chown -R node:node /data /app

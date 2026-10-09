@@ -42,6 +42,49 @@ export function peutLireSection(role: Role, s: SectionRow, acteur: Acteur): bool
   return s.joueurs_lisent === 1 || (s.auteur_id !== null && s.auteur_id === r.auteurId && s.auteur_lit === 1);
 }
 
+/**
+ * SQL condition "this section row (alias `alias`) is readable by the caller",
+ * the SQL twin of `peutLireSection`. Empty when the caller reads everything.
+ */
+export function sqlSectionLisible(
+  role: Role,
+  acteur: Acteur,
+  alias: string,
+): { sql: string; params: number[] } | null {
+  const r = regard(role, acteur);
+  if (r.mj) return null;
+  return {
+    sql: `(${alias}.joueurs_lisent = 1 OR (${alias}.auteur_lit = 1 AND ${alias}.auteur_id = ?))`,
+    params: [r.auteurId ?? -1],
+  };
+}
+
+/**
+ * SQL condition "this sheet row (alias `alias`) is readable by the caller":
+ * at least one readable section; the GM outside player mode reads every sheet.
+ */
+export function sqlFicheLisible(
+  role: Role,
+  acteur: Acteur,
+  alias: string,
+): { sql: string; params: number[] } | null {
+  const lisible = sqlSectionLisible(role, acteur, 's');
+  if (!lisible) return null;
+  return {
+    sql: `EXISTS (SELECT 1 FROM sections s WHERE s.fiche_id = ${alias}.id AND ${lisible.sql})`,
+    params: lisible.params,
+  };
+}
+
+/** True when the caller reads this sheet (of the universe they hold `role` in), B-9, AD-38. */
+export function peutVoirFiche(db: Db, role: Role, ficheId: number, acteur: Acteur): boolean {
+  const cond = sqlFicheLisible(role, acteur, 'f');
+  const row = db
+    .prepare(`SELECT 1 AS ok FROM fiches f WHERE f.id = ?${cond ? ` AND ${cond.sql}` : ''}`)
+    .get(ficheId, ...(cond?.params ?? []));
+  return row !== undefined;
+}
+
 /** Write rights come from the audience (AD-19); the GM always writes (AD-18). */
 export function peutEcrireSection(role: Role, s: SectionRow, compteId: number): boolean {
   if (role === 'mj') return true;
