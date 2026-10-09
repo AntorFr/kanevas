@@ -61,6 +61,12 @@ avec `kanevas-relier-chercher`, qui prend le numéro suivant, AD-51).
 de 1 à n à chaque réordonnancement ou retrait. Le mode Joueur est calculé par le service, jamais
 par le client : il lit comme un Joueur **qui n'est l'auteur d'aucune section** (AD-39).
 
+## `kanevas-recours-admin` : aucune migration
+
+Aucune table, aucune colonne : l'admin d'instance n'est pas une donnée (AD-9). Sa seule lecture hors
+des univers dont il est membre : le nom de chaque univers et le nombre de ses membres, puis la liste
+des membres d'un univers (identifiant, rôle) ; son seul geste : ajouter, changer le rôle, retirer un
+membre (B-6). Il ne lit ni ne modifie jamais la description, les fiches ou rien d'autre.
 ## Migration `kanevas-systemes`
 
 > Fichier : `src/db/migrations/0002-systemes.sql` — **numéro provisoire** (0002).

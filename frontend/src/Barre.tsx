@@ -192,14 +192,18 @@ function Contenu({ onNavigue }: { onNavigue: () => void }) {
   const { pathname } = useLocation();
   const { univers } = useUnivers();
   const { section } = useVue();
+  const moi = useMoi();
   const id = universDeLAdresse(pathname);
   // Inside a universe only if the account has it: an unknown universe, or one without a role,
   // gets the bar of a screen outside (no selector, no name) — the refusal state of docs/ecrans.md.
   const connu = univers.etat !== 'ok' || univers.valeur.some((u) => u.id === id);
   const dedans = id !== null && connu;
   const role = univers.etat === 'ok' ? univers.valeur.find((u) => u.id === id)?.role : undefined;
-  const items = dedans ? ITEMS_UNIVERS.filter((i) => ecranEnregistre(i.chemin(id), undefined) && (!i.role || i.role === role)) : [];
+  const groupes = moi.etat === 'ok' ? moi.valeur.groups : [];
+  const visible = (i: Item, chemin: string) => ecranEnregistre(chemin, undefined) && (!i.groupe || groupes.includes(i.groupe));
+  const items = dedans ? ITEMS_UNIVERS.filter((i) => visible(i, i.chemin(id)) && (!i.role || i.role === role)) : [];
   const sections = [...new Set(items.map((i) => i.section ?? ''))];
+  const horsUnivers = dedans ? [] : ITEMS_UNIVERS.filter((i) => i.horsUnivers && visible(i, i.chemin(0)));
 
   return (
     <>
@@ -226,6 +230,12 @@ function Contenu({ onNavigue }: { onNavigue: () => void }) {
             </Link>
           </div>
         )}
+        {horsUnivers.map((i) => (
+          <Link key={i.libelle} to={i.chemin(0)} className="item" aria-current={pathname === i.chemin(0) || pathname.startsWith(`${i.chemin(0)}/`) ? 'page' : undefined}>
+            <i.icone size={16} strokeWidth={1.75} aria-hidden="true" />
+            {i.libelle}
+          </Link>
+        ))}
         {sections.map((s) => (
           <div key={s} className="groupe">
             {s && <div className="groupe-titre">{s}</div>}

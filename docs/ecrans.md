@@ -4,9 +4,9 @@
 > y arrive, à quoi il sert, ce que chaque rôle y fait. Les états de chaque écran et la maquette
 > finie se détaillent dans la tranche qui le construit.
 
-> **Construit à ce jour** : E-1, E-2, E-3 (nom, navigation et blocs : système de jeu, campagnes actives, derniers comptes-rendus, préparation pour le MJ), E-4, E-6, E-7, E-13, E-8 (avec la
+> **Construit à ce jour** : E-1, E-2, E-3 (nom, navigation et blocs : système de jeu, campagnes actives, derniers comptes-rendus, préparation pour le MJ), E-4, E-5 (Administration), E-6, E-7, E-13, E-8 (avec la
 > recherche dans un type, en grille de cartes illustrées), E-9 (avec les blocs Relations et Pièces jointes et l'illustration en tête), E-12 (Assistant), E-14 (Paramètres), E-15 (Système de jeu, à `/systemes/:sid`), E-16 (Systèmes de jeu), la ligne « Campagne » de E-9, la session
-> et la barre latérale. E-5, E-10 et E-11 sont la cible.
+> et la barre latérale. E-10 et E-11 sont la cible.
 
 ## Format
 
@@ -50,7 +50,7 @@ bascule existe (fiche, carte).
 |---|---|---|---|
 | **E-1 Accueil** | connexion ; logo | voir ses univers et son rôle dans chacun ; en créer un ; voir son identifiant | P-1, P-6 |
 | **E-2 Créer un univers** | E-1 | nom, description ; le créateur devient MJ | P-1 |
-| **E-3 Vue d'ensemble de l'univers** | E-1 ; sélecteur d'univers | les campagnes actives, les derniers CR, la préparation (MJ), les cartes visibles | P-3, P-4, P-6 |
+| **E-3 Vue d'ensemble de l'univers** | E-1 ; sélecteur d'univers ; E-5 (admin devenu membre) | les campagnes actives, les derniers CR, la préparation (MJ), les cartes visibles | P-2, P-3, P-4, P-6 |
 | **E-4 Membres** | nav Univers (MJ) | lister, ajouter par identifiant, changer le rôle, retirer | P-2 |
 | **E-5 Administration** | nav (admin d'instance) | lister les univers de l'instance, en gérer les membres — jamais le contenu | P-2 |
 | **E-6 Campagne** | nav Campagnes (liste) ; E-3 | liste des campagnes ; pour une campagne : statut, scénarios et « Nouveau scénario » (MJ), préparation (MJ), comptes-rendus, « Nouveau compte-rendu » | P-3, P-4 |
@@ -82,7 +82,7 @@ E-16 vivent hors des univers : leurs cases disent le rôle dans un univers ratta
 | E-2 | créer | créer | créer |
 | E-3 | tout | sans préparation ni scénarios | — |
 | E-4 | tout | — | — (passe par E-5) |
-| E-5 | — | — | tous les univers, leurs membres |
+| E-5 | — | — | lister les univers et leurs membres ; ajouter, changer un rôle, retirer un membre |
 | E-6 | tout | liste, statut, CR, « Nouveau compte-rendu » ; ni scénarios ni préparation (cachés) | — |
 | E-7 | tout | — | — |
 | E-8 | lire, chercher, créer ; la vignette de chaque fiche (son illustration, ou le repli dessiné) | lire, chercher ; la vignette des fiches qu'il voit | — |
@@ -94,6 +94,8 @@ E-16 vivent hors des univers : leurs cases disent le rôle dans un univers ratta
 | E-14 | tout | — | — |
 | E-15 (hors univers ; les colonnes disent le rôle dans un univers **rattaché au système**) | lire ; « Ajouter … », « Modifier » | lire (« Lecture seule ») ; ni « Ajouter » ni « Modifier » | « Page introuvable. », sauf s'il est lui-même membre d'un univers rattaché : alors la colonne de son rôle là (l'admin MJ d'un univers rattaché lit et modifie) |
 | E-16 (hors univers) | ses systèmes, avec ses univers et son rôle | ses systèmes, « Lecture seule » | la liste de ses propres systèmes (comme MJ ou Joueur s'il est membre d'un univers rattaché) ; vide sinon — l'écran est proposé à tout compte |
+
+Un admin d'instance qui est aussi membre d'un univers, MJ ou Joueur, a dans cet univers la colonne de son rôle et garde E-5 par la section « Instance » de la barre ; hors de cet univers, la colonne Admin.
 
 Précisions de la matrice : créer une campagne, en changer le statut, créer un scénario sont au
 MJ seul. L'audience d'une section se règle en ligne sur la fiche (MJ). Créer une fiche ouvre une
@@ -178,9 +180,9 @@ des univers du compte, puis « Mes univers » et « Systèmes de jeu » en pied 
 Personnages, Lieux, Factions, Objets, Événements, Quêtes ; **Campagnes** et **Comptes-rendus** ; pour un MJ, **Univers ▸ Membres** et **Paramètres** ; en
 pied, le compte (avatar et identifiant) qui ouvre le menu du compte : l'identifiant, le thème
 (Clair, Sombre, Système, en trois icônes) et « Se déconnecter ». Hors d'un univers (E-1,
-E-2, E-5, E-15, E-16) : « Mes univers », « Systèmes de jeu » et le compte en pied. **Un item dont l'écran n'est
-pas construit n'est pas affiché** : Cartes et Administration
-arrivent avec leurs tranches (Campagnes et Comptes-rendus sont affichés). « Paramètres » (E-14) n'est affiché qu'au MJ. Sur téléphone (moins de 760 px), la barre est un tiroir sous un
+E-2, E-5, E-15, E-16) : « Mes univers », « Systèmes de jeu », « Administration » pour un compte du groupe `parents` (E-5, plus bas) et le compte en pied. **Un item dont l'écran n'est
+pas construit n'est pas affiché** : Cartes
+arrive avec sa tranche (Campagnes et Comptes-rendus sont affichés). « Paramètres » (E-14) n'est affiché qu'au MJ. Sur téléphone (moins de 760 px), la barre est un tiroir sous un
 bouton « Menu ».
 
 | État | Ce qu'on voit |
@@ -352,8 +354,81 @@ des pièces jointes : « … Son contenu et ses 3 pièces jointes seront perdus.
 Chaque besoin livré par la tranche (fiche de la feature, `## Livre`, hors de ce dépôt) a son écran : B-2 → E-2 ; B-3 à B-5 → E-4 ; B-7 → E-8 ; B-8 et B-9 →
 E-9 ; B-1 et B-28 → session ; B-29 → six états de chaque écran ci-dessus. Chaque écran est atteint
 par P-1 (E-1, E-2, E-3), P-2 (E-4), P-3 étape 4 et P-6 (E-8, E-9), P-7 (E-9). Les trois rôles ont
-leur colonne dans la matrice du cadrage ; l'admin d'instance n'a, dans cette tranche, que E-1 et
-E-2.
+leur colonne dans la matrice du cadrage ; l'admin d'instance n'avait, avant `kanevas-recours-admin`, que E-1 et
+E-2 ; E-5 lui vient avec cette tranche (plus bas).
+
+## Détail des écrans de `kanevas-recours-admin`
+
+> E-5 et l'entrée « Administration » de la barre latérale. Les textes communs (chargement, erreur de
+> chargement, connexion perdue, écriture en cours, échec d'une écriture, refus) et les refus de
+> membres (« Ce compte ne s'est jamais connecté. », « Ce compte est déjà membre. », « Impossible :
+> l'univers doit garder au moins un MJ. ») sont ceux de « Détail des écrans de
+> `kanevas-premiere-fiche` ». Maquette finie : `docs/maquettes/e05-administration.html`.
+
+**Qui est admin d'instance.** Le compte dont la session porte le groupe Authelia `parents` (AD-56,
+lu à la connexion ; en bouchon, Admin). Le droit est celui de la session en cours : un compte retiré
+du groupe le garde jusqu'à l'expiration de sa session (7 jours) — risque accepté (AD-86).
+**Ce que l'admin voit** : le nom de chaque univers, le nombre de ses membres, et ses membres
+(identifiant, rôle). **Ce qu'il ne voit jamais** : la description, une fiche, une section, un
+compte-rendu, une carte, une pièce jointe, un système de jeu — pour tout cela, il est un compte sans
+rôle (« Page introuvable. »), tant qu'il ne s'est pas ajouté lui-même comme membre.
+
+### Barre latérale : l'entrée « Administration »
+
+Pour un admin d'instance seulement : hors d'un univers, **Administration** sous « Mes univers » ; dans un
+univers dont il est membre, **Administration** sous une section « Instance », en pied de la barre.
+Pour tout autre compte, l'entrée n'existe pas.
+
+### E-5 Administration
+
+La barre haute porte le fil « Instance / Administration » ; sous le titre et le sous-titre « Les membres se gèrent ici ; le
+contenu (fiches, comptes-rendus, cartes) n'est jamais affiché. », deux zones. À gauche, **Univers de
+l'instance** : tous les univers, par nom (sans casse), chacun avec « N membres » (« 1 membre » au
+singulier), l'univers choisi portant le badge « Sélectionné » ; cent à la fois, puis « Charger la suite ». À droite (sous la liste sur téléphone, après
+un clic sur l'univers), **Membres — <nom de l'univers>** : la liste (identifiant, rôle MJ / Joueur,
+« Retirer <identifiant> » sur chaque ligne, révélé au survol et au focus au bureau, toujours visible sans survol), puis, sous la liste, un champ « Identifiant du compte », le rôle (Joueur par défaut) et « Ajouter » : le même
+geste, les mêmes refus et la même confirmation de retrait qu'E-4. Ajouter son propre identifiant, en
+MJ, est le moyen de lire le contenu : l'ajout apparaît dans la liste des membres que voit le MJ de
+l'univers ; une note sous le champ le dit : « Pour lire le contenu, l'admin s'ajoute lui-même comme
+membre : l'ajout apparaît dans la liste des membres que voit le MJ de l'univers. » Un admin membre
+qui se retire lui-même reste sur E-5 ; l'univers reste sélectionné, sa liste se met à jour sans lui, et il disparaît de l'accueil (E-1) de l'admin ; le lien « Ouvrir » disparaît avec son rôle. Rien d'autre n'est montré de l'univers : pas de lien vers sa vue d'ensemble tant que
+l'admin n'en est pas membre ; une fois membre, un lien « Ouvrir » à côté du nom mène à E-3 (un clic sur le
+nom sélectionne seulement l'univers). Aucune action sur l'univers lui-même
+(nom, description) : elles sont au MJ.
+
+Adresses : `/administration` (aucune sélection : « Choisissez un univers pour voir ses membres. »)
+et `/administration/univers/:id`.
+
+| État | Ce qu'on voit | Ce qu'on peut faire |
+|---|---|---|
+| vide | liste des membres : sans objet, un univers a toujours un MJ (B-5) ; aucun univers dans l'instance : « Aucun univers sur l'instance pour l'instant. » ; aucune sélection : « Choisissez un univers pour voir ses membres. » | — |
+| chargement | « Chargement des univers… » ; pour les membres : « Chargement des membres… » | — |
+| erreur | « Impossible de charger les univers. » ou « Impossible de charger les membres. », avec « Réessayer » ; une écriture échouée : « L'action n'a pas abouti. Réessayez. » au-dessus de la liste des membres | « Réessayer » |
+| connexion perdue | le bandeau ; « Ajouter », le changement de rôle et « Retirer » désactivés ; les listes chargées restent | lire |
+| refus | tout compte hors du groupe : « Page introuvable. » (l'entrée n'existe pas dans sa barre) ; un univers qui n'existe pas : « Page introuvable. » ; groupe retiré à l'expiration de la session : « Page introuvable. » | « Mes univers » |
+| contenu long | 300 univers : « Charger la suite » ; 200 membres : la liste défile ; un nom de 80 caractères et un identifiant long sont tronqués par « … » avec infobulle | idem |
+
+*Critères.*
+- Étant donné « Admin » (groupe `parents`), sans rôle dans « Lame d'Ébène », quand il ouvre
+  l'administration et choisit « Lame d'Ébène », alors il voit « 2 membres », la liste antor (MJ) et lea (Joueur), et ni la description, ni aucune fiche.
+- Étant donné le même Admin, quand il ajoute « mira » en MJ (elle apparaît dans la liste) puis ouvre l'adresse de la vue d'ensemble
+  de « Lame d'Ébène », alors il voit « Page introuvable. » ; quand il s'ajoute lui-même en MJ, alors
+  la vue d'ensemble s'ouvre et Antor, sur E-4, voit « admin » dans la liste des membres.
+- Étant donné Léa, Joueuse, quand elle ouvre `/administration`, alors elle voit « Page introuvable. » et
+  n'a pas d'entrée « Administration » dans sa barre.
+- Étant donné Admin et l'univers « Les Landes grises », dont « mira » est la seule MJ, quand Admin tente de
+  la retirer, alors il voit « Impossible : l'univers doit garder au moins un MJ. » et la liste est inchangée.
+- Étant donné Admin, membre MJ de « Brume » (univers que le test crée ; le monde semé du bouchon n'a pas « Brume » : y jouer « Les Cendres de Vaëlis », où Admin est MJ), quand il ouvre l'administration, alors « Brume » porte un lien « Ouvrir » qui mène à sa vue d'ensemble, et « Lame d'Ébène » n'en porte pas ; s'il se retire de « Brume » (seul membre : refusé avec la raison du dernier MJ), le lien reste.
+- Étant donné Admin et un compte « nadia » qui ne s'est jamais connecté, quand il tente de
+  l'ajouter, alors il voit « Ce compte ne s'est jamais connecté. ».
+
+### Clôture de `kanevas-recours-admin`
+
+B-6 → E-5 (voir les univers et leurs membres, les gérer) ; P-2 étape 3 → E-5 ; B-29 → les six états
+d'E-5 ; la lecture du groupe `parents` est posée par la première fiche (session, AD-56) et consommée
+ici. E-5 est atteint par P-2 (étape 3) et par la barre (admin). Les trois rôles ont leur colonne : le
+MJ et le Joueur n'ont pas E-5 ; l'admin n'a, hors des univers dont il est membre, que E-1, E-2 et E-5.
+Écart au cadrage : aucun.
 
 ## Détail des écrans de `kanevas-systemes`
 

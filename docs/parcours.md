@@ -4,7 +4,7 @@
 > construit. Identifiants stables : `B-n` (besoins), `P-n` (parcours), `E-n` (écrans,
 > `docs/ecrans.md`), `AD-n` (décisions, `ARCHITECTURE.md`).
 >
-> **Construit à ce jour** (`kanevas-premiere-fiche`, systèmes, `kanevas-suivi`, `kanevas-fichiers`, `kanevas-relier-chercher`) : P-1 en entier, P-2 étapes 1-2 (sans l'admin),
+> **Construit à ce jour** (`kanevas-premiere-fiche`, systèmes, `kanevas-suivi`, `kanevas-fichiers`, `kanevas-relier-chercher`, `kanevas-recours-admin`) : P-1 en entier, P-2 en entier (étape 3 : l'admin répare les membres, E-5),
 > P-3 étapes 1 à 4, P-4 en entier, P-5 étape 1 (fiches et sections), P-6 étapes 1-2 (recherche dans un type), P-7 étape 1 et l'écriture de
 > l'étape 2, P-8 en entier (B-13, B-14 : E-14 puis E-15). Le reste de ce document est la cible.
 
@@ -146,8 +146,13 @@ demande à son assistant (E-12).
 2. Il ajoute un compte par son identifiant, choisit MJ ou Joueur ; change un rôle ; retire un
    membre.
 3. En recours, l'admin ouvre l'**administration** (E-5), choisit l'univers, fait le même geste.
+   *Exemple* : le seul MJ d'un univers a quitté la table ; l'admin ajoute un MJ qui a déjà ouvert
+   Kanevas. L'admin ne lit toujours rien du contenu ; s'il veut le lire, il s'ajoute lui-même, et
+   l'ajout figure dans la liste des membres que voit le MJ de l'univers.
+4. Une fois membre, il ouvre l'univers depuis E-5 : sa **vue d'ensemble** (E-3).
 *Échec* : identifiant jamais connecté — « ce compte ne s'est jamais connecté » ; retirer le
-dernier MJ — refusé avec la raison.
+dernier MJ — refusé avec la raison ; un compte qui n'est pas admin ouvre l'adresse — « Page
+introuvable. ».
 
 ### P-3 — Préparer la séance du samedi (MJ, dimanche soir, bureau)
 1. **Vue d'ensemble** (E-3) : les campagnes actives, les derniers CR, la préparation en cours.
