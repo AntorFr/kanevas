@@ -31,6 +31,7 @@ interface FicheRow {
   charge: string;
   cree_le: string;
   modifie_le: string;
+  illustration_fichier: string | null;
 }
 
 export const versFiche = (r: FicheRow): Fiche => ({
@@ -41,6 +42,7 @@ export const versFiche = (r: FicheRow): Fiche => ({
   charge: JSON.parse(r.charge) as Record<string, unknown>,
   creeLe: r.cree_le,
   modifieLe: r.modifie_le,
+  illustration: r.illustration_fichier ? { jeton: r.illustration_fichier } : null,
 });
 
 /**

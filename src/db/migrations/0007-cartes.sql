@@ -1,4 +1,4 @@
--- Migration 0006 (kanevas-cartes-graphes, number provisional until merge, AD-51):
+-- Migration 0007 (kanevas-cartes-graphes, number provisional until merge, AD-51):
 -- maps (illustrated or graph) and the sheets placed on them. The bytes of a
 -- background are a file under <data>/attachments/<fond> (AD-7, AD-69).
 -- Rules the base cannot express (same universe as the sheet, position present

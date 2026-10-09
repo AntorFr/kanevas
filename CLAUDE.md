@@ -33,8 +33,9 @@
   `dist/public`, served by `routes/session.ts` behind the session guard (`@fastify/static` for
   `/assets/`, `index.html` as the fallback of any other GET). A screen is one file
   `frontend/src/ecrans/<nom>.tsx` exporting an `Ecran` (`registre.ts`) — never edit the router or
-  the sidebar; sidebar items live in `items.ts` and show only when a registered screen answers
-  their address. Colours only through `frontend/src/ui/tokens.css` (`docs/charte.md`). Tests of the
+  the sidebar for the screens of a universe; sidebar items live in `items.ts` and show only when a registered screen answers
+  their address. The two outside-universe links (« Mes univers », « Systèmes de jeu ») are fixed in
+  `Barre.tsx` and the universe selector menu. Colours only through `frontend/src/ui/tokens.css` (`docs/charte.md`). Tests of the
   built-app routes set `FRONTEND_DIR` (under `NODE_ENV=test` no build is looked up otherwise).
 - `services/llm/*` (transport.ts, anthropic-transport.ts,
   claude-agent-transport.ts) are reprised from `Antre-du-maitre` (AD-10) and
@@ -62,7 +63,7 @@
   (`lireRelations`: carrying section and target sheet readable, AD-64); do not add a count or a
   placeholder for hidden ones. Refusal codes: `auto_relation` (invalide), `relation_existante` and
   `limite_relations` (conflit) : the service puts the code in `ErreurService.detail`, the route sends it as `code` in the body.
-- Maps (`kanevas-cartes-graphes`, migration 0006): `src/services/cartes.ts`. `lireCarte` is the only read
+- Maps (`kanevas-cartes-graphes`, migration 0007): `src/services/cartes.ts`. `lireCarte` is the only read
   of a map, elements and graph links included (AD-68); the browser filters nothing. Graph links are never
   stored (AD-41): they come from `lireRelations` per readable section, so the two guards of AD-64 apply.
   Reads: no role, unknown id and hidden map for a non-GM are the same `introuvable`; a GM in player mode on
@@ -70,3 +71,26 @@
   if the caller cannot read the map, else `refuse`. Refusal codes in `ErreurService.detail`: `fond_invalide`,
   `fond_trop_lourd`, `position_invalide`, `fiche_inconnue` (invalide), `fiche_deja_placee`, `carte_pleine`
   (conflit). A background goes through `stockage.ts` only and `ouvrirFond` takes no mode.
+
+- Assistant tools (`kanevas-assistant-membre`, `src/services/assistant/`): `catalogueDe(db, compteId,
+  universId)` is the only door — the server picks the catalogue from the role read in `membres` (no role →
+  `introuvable`, AD-26); a tool is `{nom, description, schema (zod strictObject), executer}`, neutral of any
+  transport. Account, universe and role are closed over, **never a tool parameter**; the actor is
+  `{compteId}` with no player mode. Tools only compose service functions (AD-27, no SQL): refusals come
+  back as `{ok:false, erreur}` with the interface's words ("Introuvable.", …) and **no event**; only a
+  successful write returns an `evenement` (AD-76). `creer_scenario` checks the campaign belongs to the
+  catalogue's universe (`lireCampagne`) before `creerScenario`, which only guards on the campaign's own.
+- Assistant transport (`kanevas-am-transport`, `src/services/assistant/`): `repondre(db, compteId, universId,
+  message, historique, deps?)` is the single entry point. Availability (`disponibilite.ts`, AD-77) is checked
+  **first**: `KANEVAS_STUB=1` → `bouchon`, non-empty `CLAUDE_CODE_OAUTH_TOKEN` → `claude-agent`, else
+  `assistant_indisponible` and no adapter is built (never a silent stub fallback). `AgentTransport` (`transport.ts`)
+  is the port; adapters `bouchon.ts` (AD-78 script calling the real catalogue tools) and `claude-agent.ts`
+  (in-process MCP server `kanevas`, `tools: []`, `settingSources: []`, token only in the call's `env`).
+  Events are collected by the orchestration around the tools, not by the adapters. Errors are `ErreurAssistant`
+  with a fixed message — never the cause, which could quote the token. The text transport of `services/llm/*` is untouched.
+- Assistant screen (`kanevas-am-ecran`, E-12): `frontend/src/ecrans/assistant.tsx` is the only mount — it mounts the
+  floating button and panel in their own React root beside the router (no shell component edited; its registered path
+  answers « Page introuvable. »). It therefore reads the address and navigates through `ecrans/assistant/adresse.ts`
+  (history entry + `popstate`). The thread lives in memory in `assistant/fil.ts` (AD-28, never in browser storage);
+  blocks under an answer are one line per event `type` in `assistant/blocs/registre.ts`. Never target `.principal`
+  alone in CSS: it is also the primary button variant — use `main.principal`.

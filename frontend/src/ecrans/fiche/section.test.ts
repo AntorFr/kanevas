@@ -43,13 +43,34 @@ test('joueur qui peut écrire : « Modifier » seulement', () => {
   assert.ok(!h.includes('Retirer'));
 });
 
-test('MJ : audience, ordre, retrait ; section fermée aux joueurs porte « MJ seul »', () => {
+test('MJ : la pastille dit l’audience et ouvre son réglage ; la section « MJ seul » est hachurée, les autres portent leur filet', () => {
+  const ferme = rendre('mj', { audience, peutEcrire: true });
+  assert.match(ferme, /<button[^>]*aria-label="MJ seul — régler l’audience de « Apparence »"[^>]*>/);
+  assert.match(ferme, /<button[^>]*aria-haspopup="dialog"[^>]*aria-expanded="false"/);
+  assert.ok(ferme.includes('data-aud="mj"'), 'hatched in amber');
+  const lue = rendre('mj', { audience: { ...audience, joueursLisent: true } });
+  assert.match(lue, /Lue des joueurs — régler l’audience de « Apparence »/);
+  assert.ok(lue.includes('data-aud="table"') && !lue.includes('data-aud="mj"'));
+  const ecrite = rendre('mj', { audience: { ...audience, joueursLisent: true, joueursEcrivent: true } });
+  assert.match(ecrite, /Écrite par les joueurs — régler l’audience/);
+  assert.ok(ecrite.includes('data-aud="table-ecrit"'));
+  const confiee = rendre('mj', { audience: { ...audience, auteurId: 2, auteurLit: true } });
+  assert.match(confiee, /Confiée à lea — régler l’audience/);
+  assert.ok(confiee.includes('data-aud="confiee"'));
+  // An author without any right on the section does not confide it: MJ only.
+  assert.match(rendre('mj', { audience: { ...audience, auteurId: 2 } }), /MJ seul — régler/);
+});
+
+test('MJ : le réglage et les actions d’ordre et de retrait ne sont rendus qu’une fois leur boîte ouverte ; le menu ⋯ est là', () => {
   const h = rendre('mj', { audience, peutEcrire: true });
-  for (const m of ['Les joueurs la lisent', 'Les joueurs l’écrivent', 'L’auteur la lit', 'L’auteur l’écrit', 'Monter', 'Descendre', 'Retirer la section', 'MJ seul', 'lea']) assert.ok(h.includes(m), m);
-  // The attachments block carries « Secrète (MJ seul) » (docs/ecrans.md): the open section is tested on the pill and the amber rule of the panel.
-  const ouverte = rendre('mj', { audience: { ...audience, joueursLisent: true } });
-  assert.ok(!ouverte.includes('pastille mj">MJ seul') && !/class="panneau reserve-mj"/.test(ouverte));
-  assert.ok(/pastille mj">MJ seul/.test(h) && /class="panneau reserve-mj"/.test(h));
+  assert.match(h, /aria-label="Autres actions sur « Apparence »"/);
+  for (const m of ['Les joueurs la lisent', 'Les joueurs l’écrivent', 'Qui voit', 'Monter', 'Descendre', 'Retirer la section']) assert.ok(!h.includes(m), `${m} before opening`);
+  assert.match(h, /Modifier/);
+});
+
+test('joueur : aucune pastille, filet, hachure ni menu ⋯, même sur une section que les joueurs lisent', () => {
+  const h = rendre('joueur', { audience: { ...audience, joueursLisent: true } });
+  for (const m of ['data-aud', 'régler l’audience', 'Autres actions', 'pastille', 'Lue des joueurs']) assert.ok(!h.includes(m), m);
 });
 
 test('section vide : « Rien d’écrit pour l’instant. »', () => {

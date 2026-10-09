@@ -19,7 +19,7 @@
 import assert from 'node:assert/strict';
 import { after, before, describe, test } from 'node:test';
 import {
-  type Any, attendre, connecte, launch, rx, rxExact, section, skipBrowser, startServer, texte, type Server,
+  type Any, attendre, choisirDansMenuSection, confirmerRetraitSection, connecte, launch, regler, rx, rxExact, section, skipBrowser, startServer, texte, type Server,
 } from './harnais.test.ts';
 
 const PNG = Buffer.from(
@@ -232,10 +232,9 @@ describe('kanevas-fichiers — compléments', () => {
     const p = await deposer(antor.ctx, m, 'Plan', 'secret.pdf', PDF, true);
     assert.equal((await antor.ctx.request.get(pj(m, p.id, '/fichier'))).status(), 200);
     await ouvrirFiche(antor.page, m);
-    const plan = section(antor.page, 'Plan');
-    await plan.getByRole('button', { name: rx('Retirer la section') }).first().click();
-    await antor.page.getByText(rx('Son contenu et sa pièce jointe seront perdus.')).waitFor();
-    await antor.page.getByRole('button', { name: rxExact('Retirer la section') }).last().click();
+    await choisirDansMenuSection(antor.page, 'Plan', 'Retirer la section');
+    await antor.page.getByRole('alertdialog').getByText(rx('Son contenu et sa pièce jointe seront perdus.')).waitFor();
+    await confirmerRetraitSection(antor.page);
     await attendre(antor.page);
     for (let i = 0; i < 30 && (await antor.ctx.request.get(pj(m, p.id, '/fichier'))).status() !== 404; i++) await antor.page.waitForTimeout(100);
     assert.equal((await antor.ctx.request.get(pj(m, p.id, '/fichier'))).status(), 404);

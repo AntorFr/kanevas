@@ -1,7 +1,8 @@
+import { NotebookPen } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 import { lire } from '../../../api';
-import { BlocSuivi } from '../../suivi/blocs-commun';
+import { BlocSuivi, VideBloc } from '../../suivi/blocs-commun';
 import { dateCourte, type PageComptesRendus } from '../../suivi/commun';
 import type { Bloc } from '../registre';
 import type { Role } from '../../../types';
@@ -12,32 +13,40 @@ function DerniersComptesRendus({ universId, role }: { universId: number; role: R
     <BlocSuivi
       titre="Derniers comptes-rendus"
       cle={universId}
+      lignes={3}
+      lien={
+        <Link className="lien-action" to={`/univers/${universId}/comptes-rendus`}>
+          <NotebookPen size={14} strokeWidth={1.75} aria-hidden="true" />
+          Tous les comptes-rendus
+        </Link>
+      }
       charger={async () =>
         (await lire<PageComptesRendus>(`/api/univers/${universId}/comptes-rendus`)).comptesRendus.slice(0, 5)
       }
     >
-      {(liste) => (
-        <>
-          {liste.length === 0 ? (
-            <div className="etat">
-              <p>{role === 'mj' ? 'Aucun compte-rendu pour l’instant.' : 'Aucun compte-rendu à lire pour l’instant.'}</p>
-            </div>
-          ) : (
-            <ul className="suivi-liste">
-              {liste.map((cr) => (
-                <li key={cr.id} className="ligne-suivi">
-                  <Link className="grand" to={`/univers/${universId}/fiche/${cr.id}`}>
-                    <span className="titre-long">{cr.titre}</span>
-                    <small> — {cr.campagneNom}</small>
-                  </Link>
-                  <span className="date">{dateCourte(cr.creeLe)}</span>
-                </li>
-              ))}
-            </ul>
-          )}
-          <Link to={`/univers/${universId}/comptes-rendus`}>Tous les comptes-rendus</Link>
-        </>
-      )}
+      {(liste) =>
+        liste.length === 0 ? (
+          <VideBloc>{role === 'mj' ? 'Aucun compte-rendu pour l’instant.' : 'Aucun compte-rendu à lire pour l’instant.'}</VideBloc>
+        ) : (
+          <div className="lignes">
+            {liste.map((cr) => (
+              <Link key={cr.id} className="ligne" to={`/univers/${universId}/fiche/${cr.id}`}>
+                <span className="tuile">
+                  <NotebookPen size={14} strokeWidth={1.75} aria-hidden="true" />
+                </span>
+                <span className="corps">
+                  <span className="titre">{cr.titre}</span>
+                  <span className="sous">
+                    {cr.campagneNom}
+                    <span className="date-tel"> · {dateCourte(cr.creeLe)}</span>
+                  </span>
+                </span>
+                <span className="meta">{dateCourte(cr.creeLe)}</span>
+              </Link>
+            ))}
+          </div>
+        )
+      }
     </BlocSuivi>
   );
 }

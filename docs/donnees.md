@@ -19,7 +19,7 @@ façon (AD-2).
 | **membre** | (univers, compte, rôle MJ \| Joueur) | univers, compte | les membres de l'univers ; l'admin d'instance | MJ de l'univers ; admin d'instance (cette table seulement, AD-9) ; au moins un MJ par univers (B-5) |
 | **système de jeu** | nom | ← univers ; → gabarits | tout MJ d'un univers (nom seul) ; le contenu : membres d'un univers rattaché | création : tout MJ ; référentiel : MJ d'un univers rattaché |
 | **gabarit** | type (règle, créature, objet), nom, contenu | système de jeu | membres d'un univers rattaché | MJ d'un univers rattaché (B-14) |
-| **fiche** | type (personnage, lieu, faction, objet, événement, quête, compte-rendu), titre, créée le, modifiée le, charge utile versionnée par type (AD-6) — personnage : PJ \| PNJ ; compte-rendu : sa campagne | univers ; → sections | qui lit au moins une de ses sections ; sinon elle n'existe pas (B-9) | création : MJ ; un compte-rendu : tout membre (B-19) |
+| **fiche** | type (personnage, lieu, faction, objet, événement, quête, compte-rendu), titre, créée le, modifiée le, charge utile versionnée par type (AD-6) — personnage : PJ \| PNJ ; compte-rendu : sa campagne ; **illustration** facultative (une image au plus, AD-93) | univers ; → sections | qui lit au moins une de ses sections ; sinon elle n'existe pas (B-9) ; son illustration : qui voit la fiche | création : MJ ; un compte-rendu : tout membre (B-19) ; l'illustration : MJ |
 | **section** | titre, ordre, contenu, modifiée le ; lecture et écriture des joueurs ; auteur (un compte) avec sa lecture et son écriture | fiche ; → relations, pièces jointes | le MJ ; un joueur selon les bascules (AD-19) | contenu : qui a l'écriture ; structure et audience : MJ |
 | **relation** | type (texte libre), dirigée | section porteuse → fiche cible | qui lit la section **et** la fiche cible (sinon la cible n'est pas nommée) | MJ |
 | **pièce jointe** | nom d'origine, type MIME, taille, nom sur disque (UUID), secrète | section | qui lit la section, et le MJ seul si secrète | qui écrit la section ; « secrète » : MJ |
@@ -37,6 +37,12 @@ droits (AD-8, AD-21).
 **Pas de table** pour : les sessions (cookie signé), les conversations avec l'assistant (le fil
 vit dans le navigateur, AD-28), la disposition d'un graphe (calculée dans le navigateur, AD-42),
 ses liens (déduits des relations, AD-41).
+
+## Assistant (`kanevas-assistant-membre`)
+
+Aucune migration, aucune table, aucun attribut : l'assistant lit et écrit par les fonctions de
+service existantes (AD-2, AD-74), et le fil de la conversation n'est stocké nulle part (AD-28,
+AD-75). La table `propositions` du cadrage reste à `kanevas-monde`.
 
 ## Migration 0001 (`kanevas-premiere-fiche`)
 
@@ -70,15 +76,18 @@ par le client : il lit comme un Joueur **qui n'est l'auteur d'aucune section** (
 | `univers` (ajout) | `systeme_id`, facultatif, → `systemes_jeu` | `NULL` par défaut (aucun univers existant n'est rattaché) |
 
 Un univers a **au plus un** système ; un système peut servir plusieurs univers. Détacher remet
-`systeme_id` à `NULL` et ne touche à aucun gabarit. Rien n'est amorcé : le catalogue naît vide, les
-systèmes sont créés par les MJ.
+`systeme_id` à `NULL` et ne touche à aucun gabarit. Rien n'est amorcé hors bouchon : le catalogue naît vide, les
+systèmes sont créés par les MJ. En bouchon seulement, le semis de démonstration crée « CoF Mini » et
+« Chroniques Oubliées Fantasy » (`src/bouchon/depart.ts`).
 
 **Droits** (AD-25) : le catalogue (`id`, `nom`) se lit par tout compte qui est MJ d'au moins un univers ;
 un système, ses gabarits et le nombre d'univers qui l'utilisent se lisent par les membres d'un
 univers rattaché ; les gabarits s'écrivent par ses MJ. **Le nombre N est le seul renseignement sur les
 autres univers** : ni leur nom, ni leurs membres (règle 3). Créer un système : tout MJ d'un univers,
 au catalogue, avec ou sans rattachement dans le même geste. Modifier le nom et la description d'un
-univers : MJ.
+univers : MJ. Depuis `kanevas-illustrations` (AD-94), un système se lit à sa propre adresse, sous la même
+garde (rattaché à un univers dont le compte est membre ; écrire : MJ d'un de ces univers) : aucune
+colonne ni table de plus.
 
 ## Migration `kanevas-suivi` (numéro pris à la fusion, AD-51 : le suivant de 0002)
 
@@ -121,6 +130,8 @@ un Joueur.
    recherches, des cartes, des liens ; son adresse répond 404 (AD-22).
 4. Une **pièce jointe** n'est servie que par la route qui revérifie ces droits (AD-7, AD-36).
 5. L'**agent** a exactement les droits de la personne qui lui parle (AD-2, AD-26).
+6. L'**illustration** d'une fiche se voit par qui voit la fiche et se pose par le MJ seul ; elle
+   n'est jamais secrète (AD-93).
 
 ## Migration `kanevas-relier-chercher` (`0005-relier-chercher.sql`, recalée à la fusion après 0004, AD-51)
 
@@ -186,7 +197,7 @@ pas une écriture de son contenu, AD-59).
 Retirer une pièce, ou une section, supprime la ligne **puis** le fichier du disque ; si la
 suppression du fichier échoue, la ligne est déjà partie et l'orphelin est inatteignable (risque
 accepté : il n'y a pas de balayage des orphelins en V1).
-## Migration `kanevas-cartes-graphes` (`0006-cartes.sql`, numéro provisoire recalé à la fusion si une autre tranche entre avant, AD-51)
+## Migration `kanevas-cartes-graphes` (`0007-cartes.sql`, numéro provisoire recalé à la fusion si une autre tranche entre avant, AD-51)
 
 Deux tables ; aucune entité nouvelle (la carte et l'élément de carte sont ceux du cadrage). Les
 octets d'un fond ne sont pas en base (AD-7) : ils vivent sous `/data/attachments/` (AD-69).
@@ -212,3 +223,63 @@ vise B et qui se lit sous les deux gardes d'AD-64 (par la même fonction de lect
 la fiche). Un lien n'est rendu que si ses deux bouts le sont. Aucune réponse ne dit combien
 d'éléments ou de liens ont été écartés. La liste des cartes d'un joueur ne contient que les cartes
 visibles ; un MJ en mode Joueur voit la même.
+
+
+## Migration `kanevas-illustrations` (numéro pris à la fusion, AD-51)
+
+> Fichier : `src/db/migrations/0006-illustrations.sql` — **numéro provisoire**, celui qui suit le dernier
+> présent sur la branche, recalé à la fusion si une autre tranche
+> est entrée avant (AD-51). Décision : AD-93.
+
+**Conceptuel.** Une fiche a **zéro ou une** illustration : une image (PNG, JPEG, GIF ou WebP)
+choisie par le MJ pour la représenter dans la liste (E-8) et en tête de la fiche (E-9). Ce n'est
+pas une pièce jointe : elle n'appartient à aucune section, n'en prend pas la visibilité et n'a
+pas de nom d'origine à montrer. Invariants : (1) une fiche a au plus une illustration ; (2) une
+illustration est entière ou absente — son fichier, son type et sa taille vont ensemble ; (3) son
+type est l'un des quatre types d'image servis en ligne (AD-66) ; (4) un fichier sur le disque
+n'appartient qu'à une illustration.
+
+**Logique : trois colonnes sur `fiches`, pas de table.** La cardinalité « au plus une » est celle
+d'une colonne : une table liée devrait la reconstruire par un `UNIQUE (fiche_id)` et ajouterait
+une entité que le cadrage n'a pas (« une tranche ajoute des attributs, jamais une entité »).
+
+| Colonne (ajout à `fiches`) | Type | Absence (`NULL`) | Contrainte (invariant) |
+|---|---|---|---|
+| `illustration_fichier` | texte : nom sur disque, un UUID (AD-35) | la fiche n'a pas d'illustration | index unique `fiches_illustration_fichier` (4) — `ALTER TABLE … ADD COLUMN` ne peut pas porter `UNIQUE`, d'où l'index ; plusieurs `NULL` y sont permis |
+| `illustration_type` | texte : type MIME **déterminé par le serveur** à la signature (AD-66) | idem | `CHECK (illustration_type IN ('image/png','image/jpeg','image/gif','image/webp'))` (3) |
+| `illustration_taille` | entier : octets | idem | `CHECK (illustration_taille > 0 AND (illustration_fichier IS NULL) = (illustration_type IS NULL) AND (illustration_type IS NULL) = (illustration_taille IS NULL))` (2) ; (1) tient par construction |
+
+Vérifié sur SQLite 3.46 : `ADD COLUMN` accepte ces `CHECK` (qui peuvent nommer une colonne déjà
+présente), les lignes existantes (toutes `NULL`) les passent, un triplet incomplet ou un type
+`image/svg+xml` est refusé. Pas de clé étrangère (rien n'est référencé), donc pas d'`ON DELETE` ;
+les fiches ne se suppriment pas (migration 0001).
+
+**Physique.** Même base, mêmes réglages (WAL, `foreign_keys`). Les octets vont sur le disque, par
+le module de stockage d'AD-65, dans le même dossier que les pièces jointes
+(`/data/attachments/<illustration_fichier>`), jamais en base (AD-7). Index : seulement l'index
+unique ci-dessus, qui porte l'invariant (4) ; aucune requête ne cherche une fiche par son
+illustration. La liste E-8 lit les colonnes avec la ligne de la fiche qu'elle lit déjà.
+
+**Plan de migration.** Un seul temps, **élargir** : trois colonnes nullables et un index, aucune
+donnée reprise, aucune colonne lue par l'ancien code. Le code de la tranche part avec elle ; un
+retour arrière laisse des colonnes ignorées. Rien à resserrer. Multi-tenant : inchangé (la fiche
+est déjà dans son univers).
+
+**Écrire.** Poser et remplacer : le serveur écrit le flux dans `tmp/`, lit sa signature, le
+déplace à son nom définitif, puis **dans une transaction** revérifie que le compte est MJ de
+l'univers de la fiche et écrit les trois colonnes ; **après** la validation, il supprime le
+fichier remplacé. Retirer : remet les trois colonnes à `NULL`, puis supprime le fichier. Un échec
+ou une annulation n'écrit ni colonne ni fichier ; un fichier remplacé ou retiré dont la
+suppression échoue reste orphelin et inatteignable (même risque accepté que les pièces jointes).
+Poser, remplacer ou retirer ne change pas `modifie_le` de la fiche (ce n'est pas une écriture de
+ses sections). Le dossier `tmp/` est vidé au démarrage, comme pour les pièces jointes.
+
+**Droits, une phrase chacun.**
+- **Voir** l'illustration : qui voit la fiche (au moins une section lisible ; le MJ, toute fiche de
+  son univers), selon ses droits réels — le mode Joueur d'un MJ ne change que ce que l'écran montre.
+- **Poser, remplacer, retirer** : un MJ de l'univers de la fiche ; un Joueur ne le peut pas, même
+  auteur ou rédacteur d'une section.
+- **Jamais secrète** : elle est au niveau de la fiche, comme son titre ; qui voit le titre voit
+  l'illustration.
+- **Fiche invisible** : son illustration n'existe pas pour le compte (réponse identique à un
+  identifiant inconnu, AD-22, AD-67).
