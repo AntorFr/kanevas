@@ -7,6 +7,7 @@ import { ErreurService } from '../erreurs.js';
 import { lireFiche, listerFiches } from '../fiches.js';
 import { choisirAdaptateur, type AdaptateurChoisi } from '../images/index.js';
 import { deposerPieceJointe, verifierDepot } from '../pieces-jointes.js';
+import { creerProposition } from '../propositions.js';
 import { creerScenario } from '../scenarios.js';
 import { ecrireContenu, lireSection } from '../sections.js';
 import { TYPES_FICHE } from '../types.js';
@@ -221,6 +222,34 @@ export function catalogueDe(
               type: 'scenario_cree',
               libelle: `Scénario « ${s.titre} » créé dans ${campagne.nom}`,
               cible: { type: 'scenario', campagneId, scenarioId: s.id },
+            },
+          };
+        },
+      ),
+      outil(
+        'proposer_mise_a_jour',
+        "Propose un nouveau contenu pour une section, d'après un compte-rendu. N'écrit jamais dans la section : le MJ applique ou abandonne la proposition lui-même. `version` est celle rendue par `lire_section`.",
+        z.strictObject({
+          section_id: id,
+          cr_id: id,
+          version: z.number().int(),
+          contenu: z.string(),
+        }),
+        ({ section_id, cr_id, version, contenu }) => {
+          const p = creerProposition(db, compteId, universId, {
+            sectionId: section_id,
+            crId: cr_id,
+            contenu,
+            version,
+          });
+          const fiche = lireFiche(db, acteur, universId, p.ficheId);
+          const section = fiche.sections.find((x) => x.id === p.sectionId);
+          return {
+            donnees: { id: p.id, etat: p.etat },
+            evenement: {
+              type: 'proposition_creee',
+              libelle: `Mise à jour proposée : section « ${section?.titre ?? ''} » de « ${fiche.titre} »`,
+              cible: { type: 'proposition', propositionId: p.id },
             },
           };
         },

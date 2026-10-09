@@ -61,3 +61,24 @@ body.asst-ouvert .zone-principale { margin-right: 380px; }
 .asst-image-vide[role="status"] { height: 60px; background: var(--surface-2); border-style: solid; border-color: transparent; }
 .asst-image-vide p { margin: 0; }
 .asst-image-recharger { margin: var(--e-2) 0; }
+/* Bloc « Mise à jour proposée » (docs/charte.md, « Proposition de mise à jour »). */
+.asst-prop { margin-top: var(--e-2); padding: var(--e-3); background: var(--surface-2); border: 1px solid var(--bord); border-left: 3px solid var(--accent); border-radius: var(--rayon-champ); font-size: var(--t-13); display: flex; flex-direction: column; gap: var(--e-2); }
+.asst-prop p, .asst-prop h3 { margin: 0; }
+.asst-prop-titre { color: var(--accent-texte); font-size: var(--t-12); font-weight: 600; text-transform: uppercase; letter-spacing: .07em; }
+.asst-prop-source { color: var(--texte-2); overflow-wrap: anywhere; }
+.asst-prop-etat { overflow-wrap: anywhere; }
+.asst-prop-etat:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.asst-prop-alerte { display: flex; align-items: flex-start; gap: var(--e-2); padding: var(--e-2) var(--e-3); border-radius: var(--rayon-champ); background: var(--danger-fond); color: var(--danger); }
+.asst-prop-alerte svg { flex: none; margin-top: 2px; }
+.asst-prop-perdue { padding: var(--e-2) var(--e-3); border-radius: var(--rayon-champ); background: var(--danger-fond); color: var(--danger); }
+.asst-prop-zones { display: grid; grid-template-columns: 1fr; gap: var(--e-2); }
+.asst-prop-zone { min-width: 0; max-height: calc(15 * 1.5em + 2 * var(--e-2)); overflow: auto; padding: var(--e-2); background: var(--surface); border: 1px solid var(--bord); border-radius: var(--rayon-champ); }
+.asst-prop-zone.propose { background: var(--accent-fond); border-color: var(--accent); }
+.asst-prop-zone:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.asst-prop-lib { display: block; font-size: var(--t-12); font-variant-caps: all-small-caps; letter-spacing: .06em; color: var(--texte-2); margin-bottom: var(--e-1); }
+.asst-prop-texte { white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.5; }
+.asst-prop-gestes { display: flex; flex-wrap: wrap; align-items: center; gap: var(--e-2); }
+.asst-prop-ouvrir { text-decoration: none; }
+@media (min-width: 760px) {
+  .asst-prop-zones { grid-template-columns: 1fr 1fr; }
+}

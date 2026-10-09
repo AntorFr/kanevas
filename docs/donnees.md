@@ -28,7 +28,7 @@ façon (AD-2).
 | **tâche de préparation** | catégorie (monstres, PNJ, cartes, déroulements, autre), libellé, faite | campagne | MJ | MJ |
 | **carte** | titre, forme (illustrée \| graphe, fixée à la création), visible des joueurs, fond : une image déposée sur la carte elle-même, rangée sur le disque comme une pièce jointe (AD-40) | univers ; → éléments | MJ ; les joueurs si visible | MJ |
 | **élément de carte** | position en % (carte illustrée) ou rien (graphe) | carte, fiche | comme la fiche de l'élément | MJ |
-| **proposition** | contenu proposé, empreinte du contenu d'origine, appliquée le | univers, compte demandeur, section, CR source | son seul demandeur | créée par l'agent du MJ ; appliquée une fois par son demandeur, si la section n'a pas changé (B-21) |
+| **proposition** | contenu proposé, empreinte du contenu d'origine (la `version` de la section, AD-59), créée le, appliquée le | univers, compte demandeur, section, CR source | son seul demandeur | créée par l'agent du MJ ; appliquée une fois par son demandeur, si la section n'a pas changé (B-21) |
 
 **Index de recherche** : deux index plein texte (FTS5), l'un sur les titres de fiches, l'autre sur les titres et contenus de sections, tenus
 à jour par la base (déclencheurs) ; aucune réponse n'en sort sans repasser par le filtre de
@@ -42,7 +42,30 @@ ses liens (déduits des relations, AD-41).
 
 Aucune migration, aucune table, aucun attribut : l'assistant lit et écrit par les fonctions de
 service existantes (AD-2, AD-74), et le fil de la conversation n'est stocké nulle part (AD-28,
-AD-75). La table `propositions` du cadrage reste à `kanevas-monde`.
+AD-75). La table `propositions` du cadrage est posée par `kanevas-monde` (ci-dessous).
+
+## Propositions de mise à jour (`kanevas-monde`)
+
+Une table, `propositions` (migration `0008-propositions.sql`, AD-51) :
+
+| Colonne | Type | Contrainte |
+|---|---|---|
+| `id` | entier | clé |
+| `univers_id` | → `univers` | non nul ; sert à refuser une proposition lue sous un autre univers |
+| `demandeur_id` | → `comptes` | non nul ; le seul compte qui la lit, l'applique ou l'abandonne (AD-79) |
+| `section_id` | → `sections` | non nul ; suppression en cascade avec la section |
+| `cr_id` | → `fiches` | non nul ; la fiche de type `compte_rendu` d'où part la proposition ; cascade par précaution (aucune suppression de CR en V1) |
+| `contenu_propose` | texte | non nul, non vide, 20 000 caractères au plus (la limite d'une section) |
+| `version_origine` | entier | non nul ; la `version` que la section avait quand l'assistant l'a lue (AD-59, AD-80) |
+| `creee_le` | date | non nul |
+| `appliquee_le` | date | nul tant qu'elle est en attente |
+
+Invariants, tenus par la base ou la fonction de service : **une seule proposition en attente par
+(demandeur, section)** (index unique partiel sur `appliquee_le IS NULL` ; la nouvelle remplace
+l'ancienne dans la même transaction) ; une proposition appliquée ne se réapplique pas ni ne
+s'abandonne ; abandonner supprime la ligne ; elle n'est lue que par son demandeur, encore MJ de
+l'univers. Aucun autre attribut sur `sections` : la `version` d'AD-59 suffit. Lecture : « périmée »
+n'est pas stocké, c'est `version` courante ≠ `version_origine` **tant que la proposition n'est pas appliquée**, calculé à chaque lecture ; une proposition appliquée est toujours « appliquée » (appliquer augmente la `version`).
 
 ## Migration 0001 (`kanevas-premiere-fiche`)
 

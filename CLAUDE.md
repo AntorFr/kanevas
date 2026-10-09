@@ -95,6 +95,12 @@
   (history entry + `popstate`). The thread lives in memory in `assistant/fil.ts` (AD-28, never in browser storage);
   blocks under an answer are one line per event `type` in `assistant/blocs/registre.ts`. Never target `.principal`
   alone in CSS: it is also the primary button variant — use `main.principal`.
+- Update proposals (`kanevas-monde`, `src/services/propositions.ts`, migration 0008, AD-79/AD-81): a proposal is
+  read, applied and abandoned **only by its requester**, still a GM of the universe — anyone else gets
+  `introuvable`. `etat` is computed at each read (`appliquee` first, then `perimee` if the section `version`
+  moved, else `en_attente`), never stored. `appliquerProposition` writes through `ecrireContenu` with
+  `version_origine` in the same transaction as the mark (`section_modifiee`, `proposition_appliquee` as
+  `ErreurService.detail`, both `conflit`). Never write a section from here by another path (AD-48).
 - Image engine (`kanevas-images`, `src/services/images/`): `choisirAdaptateur()` (AD-88) picks `bouchon` with
   `KANEVAS_STUB=1`, else `codex` if an executable `codex` is on the `PATH` and `$CODEX_HOME/auth.json` exists
   (existence only, never read), else `aucun` — never a silent stub. `CODEX_HOME` and the scratch root are read in

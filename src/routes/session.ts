@@ -21,6 +21,7 @@ import { registerUniversRoutes } from './univers.js';
 import { registerSystemesRoutes } from './systemes.js';
 import { registerSuiviRoutes } from './suivi.js';
 import { registerAssistantRoutes } from './assistant.js';
+import { registerPropositionsRoutes } from './propositions.js';
 import { chargerFrontend } from './frontend.js';
 import { pageIntrouvable, urlConnexion } from './pages.js';
 
@@ -120,6 +121,7 @@ export async function registerSessionRoutes(app: FastifyInstance) {
     registerSuiviRoutes(garde);
     registerCartesRoutes(garde);
     registerAssistantRoutes(garde);
+    registerPropositionsRoutes(garde);
   });
 }
 

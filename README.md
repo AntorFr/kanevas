@@ -8,8 +8,8 @@ par quels écrans : `docs/parcours.md`, `docs/ecrans.md`, `docs/donnees.md`. Les
 
 Au-delà de la première fonction métier, le dépôt porte le **système de jeu** : un référentiel (règles, créatures, objets) que plusieurs
 univers se partagent, rattaché depuis les paramètres de l'univers. Il porte aussi le **suivi de la séance** : campagnes, scénarios (MJ), préparation en cinq catégories (MJ) et comptes-rendus (tout membre). Il porte enfin les **pièces jointes** : sur chaque section, déposer un fichier, voir une image, télécharger
-les autres, marquer secrète (MJ), retirer. Il porte l'**administration d'instance** : un compte du groupe Authelia `parents` voit les univers et leurs membres (jamais le contenu) et les répare (E-5, B-6). Chaque fiche peut porter une **illustration** (posée par le MJ, grille de cartes E-8, en-tête de E-9), et les **systèmes de jeu** ont leur écran hors des univers (E-16, E-15). Il porte aussi les **relations** entre fiches (bloc Relations de la fiche) et la **recherche** dans un type de fiche, les **cartes** (E-10, E-11 : carte illustrée avec fond et tokens, ou graphe des relations ; visibles ou non des joueurs ; bloc « Cartes visibles » de E-3) et l'**assistant** de chaque membre (E-12 : un panneau de conversation qui cherche, lit, écrit et, pour le MJ, crée une campagne ou un scénario, avec exactement les droits de la personne ; l'accès au modèle passe par l'abonnement Claude de l'exploitant, `CLAUDE_CODE_OAUTH_TOKEN`, et en bouchon un script répond). Le MJ peut aussi lui demander un **portrait** : l'assistant génère une image et l'attache à la section (moteur Codex sur l'abonnement de l'exploitant ; en bouchon, une image fixe). Les propositions de mise à jour du monde ne sont
-pas construites (tranche suivante) : les passages de ces docs qui les décrivent sont la cible.
+les autres, marquer secrète (MJ), retirer. Il porte l'**administration d'instance** : un compte du groupe Authelia `parents` voit les univers et leurs membres (jamais le contenu) et les répare (E-5, B-6). Chaque fiche peut porter une **illustration** (posée par le MJ, grille de cartes E-8, en-tête de E-9), et les **systèmes de jeu** ont leur écran hors des univers (E-16, E-15). Il porte aussi les **relations** entre fiches (bloc Relations de la fiche) et la **recherche** dans un type de fiche, les **cartes** (E-10, E-11 : carte illustrée avec fond et tokens, ou graphe des relations ; visibles ou non des joueurs ; bloc « Cartes visibles » de E-3) et l'**assistant** de chaque membre (E-12 : un panneau de conversation qui cherche, lit, écrit et, pour le MJ, crée une campagne ou un scénario et **propose une mise à jour d'une section** d'après un compte-rendu, que seul son geste « Appliquer » écrit, avec exactement les droits de la personne ; l'accès au modèle passe par l'abonnement Claude de l'exploitant, `CLAUDE_CODE_OAUTH_TOKEN`, et en bouchon un script répond). Le MJ peut aussi lui demander un **portrait** : l'assistant génère une image et l'attache à la section (moteur Codex sur l'abonnement de l'exploitant ; en bouchon, une image fixe).
+
 
 ## Structure
 
@@ -18,12 +18,12 @@ Dockerfile                        Image unique : API Fastify + frontend construi
 src/
   server.ts, app.ts               Démarrage ; assemblage des plugins et des routes
   config/env.ts                   Variables d'environnement (zod)
-  db/                             SQLite (better-sqlite3), migrations/0001 à 0007, runner
-  services/                       comptes, univers, membres, instance, fiches, sections, droits, systemes, relations, campagnes, scenarios, preparation, comptes_rendus,
+  db/                             SQLite (better-sqlite3), migrations/0001 à 0008, runner
+  services/                       comptes, univers, membres, instance, fiches, sections, droits, systemes, relations, campagnes, scenarios, preparation, comptes_rendus, propositions,
                                    pieces-jointes, illustrations, cartes, stockage (octets sur le volume) :
                                    seul code qui lit ou écrit les données ; session, oidc
   routes/                         health, auth (OIDC), session (cookie, garde, /api/moi),
-                                   bouchon, univers (+ membres), instance (admin, AD-87), systemes, suivi, cartes, fiches (+ sections), assistant, frontend
+                                   bouchon, univers (+ membres), instance (admin, AD-87), systemes, suivi, cartes, fiches (+ sections), propositions, assistant, frontend
   bouchon/                        Monde de démonstration semé au démarrage en bouchon (depart.ts) et ses fichiers (demo/)
   services/assistant/             L'assistant : catalogues d'outils, port AgentTransport (bouchon, claude-agent), orchestration
   services/images/                Moteur d'images de l'assistant : port GenerateurImage, adaptateurs bouchon, codex, aucun (AD-88, AD-90)
@@ -96,6 +96,13 @@ mémoire (avertissement au démarrage).
 
 En bouchon seulement, `/demo-composants` (session requise) montre les composants de la charte dans tous leurs états ;
 hors bouchon, cette adresse répond 404.
+
+Recette de la mise à jour du monde en bouchon (le semis ne contient ni campagne ni compte-rendu ; « Maître Aldric » a une section « Vérité — MJ seul », que « Vérité » suffit à désigner). Toujours dans « Lame d'Ébène » :
+1. En `antor`, dans le panneau de l'assistant (bouton flottant) : « Crée une campagne « Marches » ».
+2. Se déconnecter (menu de l'avatar) puis `/connexion-bouchon` : en `lea`, depuis la fiche de la campagne ou l'écran des comptes-rendus (E-13, `docs/ecrans.md`), créer le compte-rendu, titre exactement « Séance 3 » (le bouchon cherche ce titre tel quel), dans cette campagne.
+3. En `antor`, dans le panneau : « Mets à jour la section « Vérité » de « Maître Aldric » d'après le compte-rendu « Séance 3 » » ; le fil montre « Mise à jour proposée » (actuel, proposé) et la fiche est inchangée jusqu'à « Appliquer ». « Proposé » = le contenu actuel suivi de « Mise à jour d'après « Séance 3 ». » ; après « Appliquer », le bloc dit « Appliquée : la section « Vérité — MJ seul » est à jour. » et la fiche montre ce contenu.
+4. Modifier la section depuis la fiche avant d'appliquer rend la proposition périmée (« Appliquer » désactivé, raison affichée).
+5. La même demande en `lea` ne crée rien : l'assistant répond « Je ne peux pas le faire : l'outil « proposer_mise_a_jour » ne fait pas partie de ceux dont vous disposez. », sans bloc. Une proposition ne se retrouve pas après un rechargement du fil (AD-79).
 
 ### Tests de bout en bout
 

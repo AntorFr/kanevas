@@ -6,7 +6,7 @@ import { ErreurApi, appeler } from '../../api';
 export const MAX_MESSAGE = 2000;
 export const MAX_HISTORIQUE = 20;
 
-export type TypeEvenement = 'section_modifiee' | 'section_completee' | 'campagne_creee' | 'scenario_cree' | 'image_attachee';
+export type TypeEvenement = 'section_modifiee' | 'section_completee' | 'campagne_creee' | 'scenario_cree' | 'image_attachee' | 'proposition_creee';
 
 /** The client never gives up before this (an image request lasts 270 s at most, AD-90). */
 export const DELAI_REQUETE_MS = 300_000;
@@ -15,7 +15,7 @@ export const DELAI_REQUETE_MS = 300_000;
 export interface Evenement {
   type: TypeEvenement;
   libelle: string;
-  cible: { type: 'fiche' | 'campagne' | 'scenario'; [cle: string]: string | number };
+  cible: { type: 'fiche' | 'campagne' | 'scenario' | 'proposition'; [cle: string]: string | number };
 }
 
 export interface MessageAffiche {
