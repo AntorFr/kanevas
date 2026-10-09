@@ -136,12 +136,11 @@ describe('E-5 formulaire d\'ajout de membre : repli à 390 px, une ligne au bure
     try {
       const antor = await connecter(s, 'antor');
       const lame = await creerUnivers(antor.ctx, "Lame d'Ébène");
-      const { ctx, page } = await connecter(s, 'admin');
+      const { page } = await connecter(s, 'admin');
       await page.setViewportSize({ width: largeur, height: 900 });
       await ouvrirAdmin(page, `/administration/univers/${lame}`);
       const form = page.getByRole('form', { name: 'Ajouter un membre' });
       await form.waitFor();
-      const champ = form.getByPlaceholder('Identifiant du compte');
       const mesures = await page.evaluate(() => {
         const f = document.querySelector('form[aria-label="Ajouter un membre"]') as HTMLElement;
         const champs = Array.from(f.querySelectorAll('input, select')) as HTMLElement[];
@@ -154,11 +153,12 @@ describe('E-5 formulaire d\'ajout de membre : repli à 390 px, une ligne au bure
           scroll: document.documentElement.scrollWidth,
           fenetre: window.innerWidth,
           placeholderTronque: input.scrollWidth > input.clientWidth,
+          // header « Rôle » vs the first role pill of the member list (E-5 alignment)
+          enteteRole: Math.round((document.querySelector('.entetes-membres span:nth-child(2)') as HTMLElement).getBoundingClientRect().left),
+          pastille: Math.round((document.querySelector('.liste-membres .liste-statut') as HTMLElement).getBoundingClientRect().left),
         };
       });
       await capture(page, `formulaire-ajout-${largeur}`);
-      assert.ok(await champ.isVisible());
-      void ctx;
       return mesures;
     } finally {
       s.stop();
@@ -175,11 +175,20 @@ describe('E-5 formulaire d\'ajout de membre : repli à 390 px, une ligne au bure
     assert.equal(m.scroll, m.fenetre, 'no horizontal overflow');
   });
 
+  // Fails if the « Rôle » header stops sitting over the role pills (it used to be a fixed 96 px).
+  test('entete_role_aligne_sur_les_pastilles', async () => {
+    for (const largeur of [1280, 390]) {
+      const m = await mesurer(largeur);
+      assert.ok(Math.abs(m.enteteRole - m.pastille) <= 8, `${largeur}px: header at ${m.enteteRole}, pill at ${m.pastille}`);
+    }
+  });
+
   // Fails if the desktop form stops being a single line.
   test('bureau_formulaire_sur_une_ligne', async () => {
     const m = await mesurer(1280);
     assert.ok(m.largeurIdentifiant >= 190);
-    assert.equal(new Set([...m.dessus, m.topBouton]).size >= 1 && Math.max(...m.dessus, m.topBouton) - Math.min(...m.dessus, m.topBouton) <= 12, true, `tops differ: ${m.dessus} / ${m.topBouton}`);
+    const tops = [...m.dessus, m.topBouton];
+    assert.ok(Math.max(...tops) - Math.min(...tops) <= 12, `tops differ: ${tops}`);
     assert.equal(m.scroll, m.fenetre);
   });
 });
