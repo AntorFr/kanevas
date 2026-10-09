@@ -47,3 +47,7 @@
 .graphe-lien text { fill: var(--texte-2); font-size: 12px; paint-order: stroke; stroke: var(--surface-2, var(--surface)); stroke-width: 4px; stroke-linejoin: round; }
 .graphe-zone .carte-token span { max-width: 160px; overflow: hidden; text-overflow: ellipsis; }
 .graphe .carte-token { touch-action: manipulation; }
+
+/* « Retirer de la carte » : contour danger, pas un aplat (maquette e11, btn dg), dans le panneau du token et la liste. */
+.carte-panneau .bouton.danger, .carte-sur .bouton.danger { background: transparent; color: var(--danger); border-color: var(--danger); font-weight: 400; filter: none; }
+.carte-panneau .bouton.danger:hover, .carte-sur .bouton.danger:hover { background: var(--danger-fond); filter: none; }
