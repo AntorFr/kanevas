@@ -11,7 +11,11 @@
 /* Member table: headers, plain identifier, role as a pill, « Retirer » revealed on hover/focus */
 .admin-zones .entetes-membres { display: flex; gap: 12px; padding: 6px 0 0; font-size: var(--t-12); font-weight: 600; text-transform: uppercase; letter-spacing: .07em; color: var(--texte-3); }
 .admin-zones .entetes-membres span:first-child { flex: 1; padding-left: 40px; }
-.admin-zones .entetes-membres span:last-child { width: 96px; }
+.admin-zones .entetes-membres span:nth-child(2) { flex: none; width: var(--largeur-pastille-role); }
+.admin-zones .entetes-membres .entete-retrait { flex: none; visibility: hidden; }
+.admin-zones { --largeur-pastille-role: 6.5rem; }
+.admin-zones .liste-membres .liste-statut-champ { width: var(--largeur-pastille-role); }
+.admin-zones .liste-membres .liste-statut { width: 100%; }
 .admin-zones .liste-membres { margin-top: var(--e-1); max-height: 50vh; }
 .liste-membres .identifiant-membre { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--texte); }
 .liste-membres .liste-statut-champ svg { opacity: 0; transition: opacity var(--duree); }

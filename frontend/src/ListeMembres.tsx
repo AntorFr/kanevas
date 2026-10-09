@@ -143,6 +143,12 @@ export function ListeMembres({
         <div className="entetes-membres" aria-hidden="true">
           <span>Identifiant</span>
           <span>Rôle</span>
+          {/* Same box as the row's « Retirer » button, invisible: the header reserves the row's own width (no fixed number) */}
+          <span className="entete-retrait">
+            <Bouton petit variante="fantome" icone={Trash2} tabIndex={-1}>
+              Retirer
+            </Bouton>
+          </span>
         </div>
       )}
       <ul className="suivi-liste liste-membres">
