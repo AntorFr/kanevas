@@ -1747,7 +1747,7 @@ reste. Hors connexion, le fond déjà chargé reste affiché.
 
 Sur la vue d'ensemble, un bloc **Cartes visibles** (le titre de la maquette `e03`), inscrit au registre des blocs de E-3 (un fichier dans
 `frontend/src/ecrans/vue-ensemble/blocs/` que le registre trouve seul (rang après les blocs des campagnes et
-des comptes-rendus ; aucun bloc existant n'est modifié). Il liste, pour tous les rôles, les **cartes
+des comptes-rendus) ; aucun bloc existant n'est modifié). Il liste, pour tous les rôles, les **cartes
 visibles des joueurs** (cinq au plus, titre alphabétique) : le titre en lien vers E-11 et la forme ;
 dessous « Toutes » vers E-10. Chaque carte est une vignette (le fond de la carte, ou le motif neutre
 d'un graphe ou d'une carte sans fond) avec une icône carte, le titre et la forme. Le MJ voit donc ce que la table voit ; ses cartes « MJ seul »
