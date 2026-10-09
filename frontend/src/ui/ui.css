@@ -203,6 +203,10 @@ a { color: var(--accent-texte); }
 .s-type { width: 84px; height: 14px; margin-bottom: var(--e-3); }
 .s-titre { width: 62%; height: 40px; margin-bottom: var(--e-4); }
 .s-filet { width: 100%; height: 1px; margin-bottom: var(--e-5); }
+.s-entete { display: grid; grid-template-columns: 176px minmax(0, 1fr); column-gap: 28px; align-items: end; }
+.s-entete .s-titre { width: 80%; }
+.s-cadre { aspect-ratio: 4 / 5; border-radius: var(--rayon-panneau); margin-bottom: var(--e-4); }
+@media (max-width: 760px) { .s-entete { grid-template-columns: 96px minmax(0, 1fr); column-gap: var(--e-4); } }
 .squelette-section { margin-bottom: var(--e-6); }
 .s-sous-titre { width: 28%; height: 22px; margin-bottom: var(--e-3); }
 .s-ligne { height: 14px; margin-bottom: var(--e-2); }

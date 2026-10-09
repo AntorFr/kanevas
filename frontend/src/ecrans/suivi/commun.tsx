@@ -1,7 +1,7 @@
-import { ChevronDown, FileText } from 'lucide-react';
+import { Check, ChevronDown, CircleCheck, CircleDashed, CirclePlay, NotebookPen, type LucideIcon } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
-import { Pastille } from '../../ui';
+import { Menu } from '../../ui';
 import '../liste.css';
 
 export type Statut = 'en_preparation' | 'active' | 'terminee';
@@ -72,13 +72,26 @@ export function dateCourte(iso: string): string {
   return new Date(iso).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
-/** Status badge for a player: a word plus a tint. */
-export function BadgeStatut({ statut }: { statut: Statut }) {
-  const sens = statut === 'active' ? 'table' : statut === 'en_preparation' ? 'mj' : undefined;
-  return sens ? <Pastille sens={sens}>{LIBELLE_STATUT[statut]}</Pastille> : <span className="badge-statut">{LIBELLE_STATUT[statut]}</span>;
+const ICONE_STATUT: Record<Statut, LucideIcon> = { en_preparation: CircleDashed, active: CirclePlay, terminee: CircleCheck };
+
+/** Status pill: icon, word, tint (charte, « Pastille »). */
+function PastilleStatut({ statut, chevron }: { statut: Statut; chevron?: boolean }) {
+  const Icone = ICONE_STATUT[statut];
+  return (
+    <span className={`statut ${statut}`}>
+      <Icone size={14} strokeWidth={1.75} aria-hidden="true" />
+      <span>{LIBELLE_STATUT[statut]}</span>
+      {chevron && <ChevronDown size={12} strokeWidth={1.75} aria-hidden="true" />}
+    </span>
+  );
 }
 
-/** Status list of a GM; the change is made in place by the parent. */
+/** Status of a player: the pill alone, nothing to set. */
+export function BadgeStatut({ statut }: { statut: Statut }) {
+  return <PastilleStatut statut={statut} />;
+}
+
+/** Status of a GM: the pill opens a menu of the three statuses; the change is made in place by the parent. */
 export function ListeStatut({
   statut,
   nom,
@@ -91,22 +104,24 @@ export function ListeStatut({
   onChange: (s: Statut) => void;
 }) {
   return (
-    <span className="champ-liste liste-statut-champ">
-      <select
-        className="liste-statut"
-        aria-label={`Statut de ${nom}`}
-        value={statut}
-        disabled={desactive}
-        onChange={(e) => onChange(e.target.value as Statut)}
-      >
-        {STATUTS.map((s) => (
-          <option key={s} value={s}>
-            {LIBELLE_STATUT[s]}
-          </option>
-        ))}
-      </select>
-      <ChevronDown size={14} strokeWidth={1.75} aria-hidden="true" />
-    </span>
+    <Menu
+      etiquette={`Statut de ${nom}`}
+      aligne="debut"
+      declencheur={
+        <>
+          <PastilleStatut statut={statut} chevron />
+          <span className="cache-lecteur"> — changer le statut de « {nom} »</span>
+        </>
+      }
+      entrees={STATUTS.map((s) => ({
+        libelle: LIBELLE_STATUT[s],
+        icone: s === statut ? Check : ICONE_STATUT[s],
+        impossible: desactive,
+        onChoisir: () => {
+          if (s !== statut) onChange(s);
+        },
+      }))}
+    />
   );
 }
 
@@ -116,7 +131,7 @@ export function LigneCompteRendu({ universId, cr, campagne }: { universId: strin
     <li className="ligne-suivi">
       <Link className="grand" to={`/univers/${universId}/fiche/${cr.id}`}>
         <span className="mono" aria-hidden="true">
-          <FileText size={14} strokeWidth={1.75} />
+          <NotebookPen size={14} strokeWidth={1.75} />
         </span>
         <span className="texte-ligne">
           <span className="titre-long">{cr.titre}</span>

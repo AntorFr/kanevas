@@ -1,4 +1,4 @@
-import { CircleAlert, FileQuestion, Library, RotateCcw, type LucideIcon } from 'lucide-react';
+import { CircleAlert, Dices, FileQuestion, Library, RotateCcw, type LucideIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 
@@ -80,7 +80,7 @@ export function EtatVide({ titre, children }: { titre: string; children?: ReactN
  * The refusal, which is also the answer for an unknown address: never « accès refusé ».
  * The bar needs no hint: it shows a selector only for a universe the account has.
  */
-export function PageIntrouvable() {
+export function PageIntrouvable({ retour = 'univers' }: { retour?: 'univers' | 'systemes' } = {}) {
   return (
     <div className="page-message" role="alert">
       <div className="ic-message">
@@ -88,10 +88,17 @@ export function PageIntrouvable() {
       </div>
       <h1>Page introuvable.</h1>
       <div className="actions">
-        <Link className="bouton neutre" to="/">
-          <Library size={14} strokeWidth={1.75} aria-hidden="true" />
-          Mes univers
-        </Link>
+        {retour === 'systemes' ? (
+          <Link className="bouton neutre" to="/systemes">
+            <Dices size={14} strokeWidth={1.75} aria-hidden="true" />
+            Systèmes de jeu
+          </Link>
+        ) : (
+          <Link className="bouton neutre" to="/">
+            <Library size={14} strokeWidth={1.75} aria-hidden="true" />
+            Mes univers
+          </Link>
+        )}
       </div>
     </div>
   );

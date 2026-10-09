@@ -1,5 +1,5 @@
-import { ArrowRight, Check, Link2, Plus, Settings } from 'lucide-react';
-import { useEffect, useState, type FormEvent } from 'react';
+import { ArrowRight, Check, Link2, Plus, Settings2 } from 'lucide-react';
+import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import { Link, useParams } from 'react-router-dom';
 
 import { ErreurApi, appeler } from '../api';
@@ -23,7 +23,7 @@ interface SystemeCatalogue {
 }
 
 interface SystemeUnivers extends SystemeCatalogue {
-  universUtilisateurs: number;
+  nbUnivers: number;
 }
 
 /** A role removed while the page is open answers 403 on the next write; anything else is generic. */
@@ -37,8 +37,31 @@ function Parametres() {
   const { recharger: rechargerUnivers } = useUnivers();
   const { toast } = useToasts();
   const [univers, rechargerUniv] = useCharge<UniversListe>(`/api/univers/${id}`);
-  const [catalogue, rechargerCat] = useCharge<SystemeCatalogue[]>('/api/systemes');
-  const [courant, rechargerCourant] = useCharge<SystemeUnivers>(`/api/univers/${id}/systeme`);
+  const [catalogue, rechargerCat] = useCharge<SystemeCatalogue[]>('/api/systemes/catalogue');
+  const [mes, rechargerMes] = useCharge<SystemeUnivers[]>('/api/systemes');
+  const rechargerCourant = rechargerMes;
+  // The universe's own system (AD-94): its `systeme` ref, completed by the visible systems for the count.
+  type Courant =
+    | { etat: 'chargement' }
+    | { etat: 'erreur'; statut?: number }
+    | { etat: 'ok'; valeur: SystemeUnivers };
+  const courant = useMemo<Courant>(
+      () =>
+        mes.etat !== 'ok' || univers.etat === 'chargement'
+      ? mes.etat === 'erreur' ? mes : { etat: 'chargement' }
+      : univers.etat === 'erreur'
+        ? { etat: 'erreur', statut: univers.statut }
+        : univers.valeur.systeme
+          ? {
+              etat: 'ok',
+              valeur: mes.valeur.find((x) => x.id === univers.valeur.systeme!.id) ?? {
+                ...univers.valeur.systeme,
+                nbUnivers: 1,
+              },
+            }
+          : { etat: 'erreur', statut: 404 },
+      [mes, univers],
+    );
 
   const [nom, setNom] = useState('');
   const [description, setDescription] = useState('');
@@ -110,7 +133,10 @@ function Parametres() {
 
   async function relire() {
     try {
-      setSysteme(await appeler<SystemeUnivers>('GET', `${base}/systeme`));
+      const u = await appeler<UniversListe>('GET', base);
+      const l = await appeler<SystemeUnivers[]>('GET', '/api/systemes');
+      const ref = u.systeme;
+      setSysteme(ref ? (l.find((x) => x.id === ref.id) ?? { ...ref, nbUnivers: 1 }) : null);
     } catch (e) {
       if (e instanceof ErreurApi && e.statut === 404) setSysteme(null);
       else throw e;
@@ -201,7 +227,7 @@ function Parametres() {
     <div className="page-liste">
       <header className="tete-liste">
         <span className="glyphe-type" aria-hidden="true">
-          <Settings size={20} strokeWidth={1.75} />
+          <Settings2 size={20} strokeWidth={1.75} />
         </span>
         <h1>Paramètres de l’univers</h1>
       </header>
@@ -248,8 +274,8 @@ function Parametres() {
               <strong className="nom-systeme" title={systeme.nom}>
                 {systeme.nom}
               </strong>
-              <span>Utilisé par {systeme.universUtilisateurs} univers</span>
-              <Link className="bouton neutre" to={`/univers/${id}/systeme`}>
+              <span>Utilisé par {systeme.nbUnivers} univers</span>
+              <Link className="bouton neutre" to={`/systemes/${systeme.id}`}>
                 Ouvrir le système
                 <ArrowRight size={14} strokeWidth={1.75} aria-hidden="true" />
               </Link>

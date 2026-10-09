@@ -17,6 +17,7 @@ import {
   startServer,
   texte,
 } from './harnais.test.js';
+import { changerStatut, declencheurStatut, ouvrirNouveauScenario, statutAffiche } from './suivi-aide.js';
 
 const opts = { skip: skipBrowser, timeout: 180000 };
 let srv: Awaited<ReturnType<typeof startServer>>;
@@ -67,13 +68,11 @@ test('MJ : crée la campagne, la passe Active en place, la page, le scénario, l
   assert.match(await texte(antor), /En préparation/);
   await antor.screenshot({ path: '/tmp/e6-liste.png' });
 
-  const statut = antor.locator('main').getByRole('combobox').first();
-  await statut.selectOption({ label: 'Active' });
+  await changerStatut(antor, 'Active', NOM);
   await attendre(antor);
   await antor.reload();
   await antor.getByRole('link', { name: rx(NOM) }).waitFor();
-  assert.equal(await antor.locator('main').getByRole('combobox').first().inputValue().then((v: string) => v), await antor.locator('main').getByRole('combobox').first().inputValue());
-  assert.match(await antor.locator('main').getByRole('combobox').first().evaluate((e: Any) => e.options[e.selectedIndex].text), /Active/);
+  assert.equal(await statutAffiche(antor, NOM), 'Active');
 
   await antor.getByRole('link', { name: rx(NOM) }).click();
   await antor.getByRole('heading', { name: NOM, level: 1 }).waitFor();
@@ -85,6 +84,7 @@ test('MJ : crée la campagne, la passe Active en place, la page, le scénario, l
   await antor.screenshot({ path: '/tmp/e6-page-vide.png' });
 
   // scenario
+  await ouvrirNouveauScenario(antor);
   await antor.getByLabel('Titre', { exact: true }).first().fill('Acte II — Le sceau brisé');
   await antor.getByRole('button', { name: rxExact('Créer le scénario') }).click();
   await antor.getByRole('heading', { name: 'Acte II — Le sceau brisé', level: 1 }).waitFor();
@@ -97,6 +97,8 @@ test('MJ : crée la campagne, la passe Active en place, la page, le scénario, l
   await antor.getByRole('button', { name: rxExact('Enregistrer') }).click();
   await antor.getByText('<b>gras</b> & suite').waitFor(); // plain text (AD-58)
   assert.equal(await antor.locator('main b').count(), 0);
+  // wait for the edit to be left (PUT answered, draft removed) before cutting the page
+  await antor.getByRole('button', { name: rxExact('Modifier') }).waitFor();
   await antor.reload();
   await antor.getByText('<b>gras</b> & suite').waitFor();
   await antor.screenshot({ path: '/tmp/e7-ecrit.png' });
@@ -136,7 +138,7 @@ test('Joueuse : voit nom et statut, ni Scénarios ni Préparation ; adresse du s
   assert.ok(t.includes('Comptes-rendus'));
   for (const s of ['Scénarios', 'Préparation', 'Acte II', 'Plan de la crypte', 'Cochées', 'Nouveau scénario'])
     assert.ok(!t.includes(s), `« ${s} » ne doit pas être visible d'un joueur`);
-  assert.equal(await page.locator('main').getByRole('combobox').count(), 0);
+  assert.equal(await declencheurStatut(page).count(), 0);
   await page.screenshot({ path: '/tmp/e6-joueur.png' });
   await page.goto(urlScenario);
   await page.getByText('Page introuvable.').waitFor();
@@ -158,7 +160,7 @@ test('statut Terminée : le badge de la liste de Léa le dit, dernier groupe', o
   const page = lea.page;
   await page.goto(`/univers/${uid}/campagnes`);
   await page.getByRole('link', { name: rx(NOM) }).waitFor();
-  assert.equal(await page.locator('main').getByRole('combobox').count(), 0);
+  assert.equal(await declencheurStatut(page).count(), 0);
   let t = await texte(page);
   assert.ok(avant(t, NOM, 'Zzz Active'), 'actives par nom');
   assert.ok(avant(t, 'Zzz Active', 'Aaa Préparation'), 'actives avant préparation');
@@ -167,7 +169,7 @@ test('statut Terminée : le badge de la liste de Léa le dit, dernier groupe', o
   await antor.goto(`/univers/${uid}/campagnes`);
   await antor.getByRole('link', { name: rx(NOM) }).waitFor();
   const ligne = antor.getByRole('listitem').filter({ hasText: NOM });
-  await ligne.locator('select').selectOption({ label: 'Terminée' });
+  await changerStatut(antor, 'Terminée', NOM, ligne);
   await attendre(antor);
   await page.reload();
   await page.getByRole('link', { name: rx(NOM) }).waitFor();
@@ -315,8 +317,9 @@ test('états : chargement, erreur avec Réessayer, panneau en échec isolé, con
   await page.context().setOffline(true);
   await page.getByText(/Connexion perdue/).waitFor({ timeout: 30000 });
   assert.ok(await page.getByRole('button', { name: rxExact('Ajouter') }).isDisabled());
-  assert.ok(await page.getByRole('button', { name: rxExact('Créer le scénario') }).isDisabled());
-  assert.ok(await page.locator('main').getByRole('combobox').first().isDisabled());
+  assert.ok(await page.getByRole('button', { name: 'Nouveau scénario', exact: true }).isDisabled());
+  await declencheurStatut(page).click();
+  assert.equal(await page.getByRole('menuitem', { name: 'Terminée', exact: true }).getAttribute('aria-disabled'), 'true');
   await page.screenshot({ path: '/tmp/e6-hors-ligne.png' });
   await page.context().setOffline(false);
 });

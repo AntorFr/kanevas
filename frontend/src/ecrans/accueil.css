@@ -8,9 +8,9 @@
 .connecte .avatar { width: 20px; height: 20px; font-size: 9px; }
 .connecte strong { color: var(--texte); font-weight: 600; }
 
-.tete-liste { display: flex; justify-content: space-between; align-items: center; padding: var(--e-5) 12px var(--e-2);
+.tete-colonnes { display: flex; justify-content: space-between; align-items: center; padding: var(--e-5) 12px var(--e-2);
   font-size: var(--t-12); font-weight: 500; color: var(--texte-3); }
-.tete-liste .col-role { width: 72px; text-align: left; margin-right: 30px; }
+.tete-colonnes .col-role { width: 72px; text-align: left; margin-right: 30px; }
 
 .liste-univers { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
 .liste-univers li + li .ligne-univers::before { content: ""; position: absolute; left: 66px; right: 12px; top: 0; height: 1px; background: var(--bord); }
@@ -76,8 +76,8 @@ kbd { font: 500 11px/1 var(--police-texte); color: var(--texte-3); border: 1px s
   .entete-liste h1, .entete-form h1 { font-size: var(--t-32); }
   .entete-liste { flex-direction: column; }
   .entete-liste .bouton { min-height: 40px; padding: 0 var(--e-4); }
-  .tete-liste { padding-left: 8px; padding-right: 8px; }
-  .tete-liste .col-role { display: none; }
+  .tete-colonnes { padding-left: 8px; padding-right: 8px; }
+  .tete-colonnes .col-role { display: none; }
   .liste-univers a.ligne-univers { grid-template-columns: 36px minmax(0, 1fr) auto; gap: 0 12px; padding: 12px 8px; align-items: start; }
   .ligne-univers .sceau.moyen { width: 36px; height: 36px; font-size: 17px; }
   .ligne-univers .fleche { display: none; }
@@ -93,3 +93,8 @@ kbd { font: 500 11px/1 var(--police-texte); color: var(--texte-3); border: 1px s
   .actions-form .bouton { min-height: 40px; flex: 1; }
 }
 .sceau.charge { background: var(--squelette); box-shadow: none; }
+
+/* E-1 as a grid of cards (kanevas-illustrations): the column widens to the grid's */
+.accueil.accueil-cartes { max-width: 1120px; }
+.accueil-cartes .tete-colonnes { padding-left: 0; padding-right: 0; }
+.accueil-cartes .grille-cartes { margin-top: var(--e-2); }

@@ -96,7 +96,10 @@ async function chercher(page: Any, mot: string, type = 'personnages'): Promise<v
 }
 const aucun = (mot: string, type = 'personnages') => `Aucun résultat pour « ${mot} » dans les ${type}.`;
 const liens = async (page: Any): Promise<string[]> =>
-  (await page.locator('main a').allInnerTexts()).map((t: string) => (t.split('\n')[0] ?? '').replace(/’/g, "'"));
+  // A grid card (E-8, AD-93) leads with its thumbnail (the fallback initial): its title is `.titre`.
+  (await page.locator('main a').evaluateAll((els: HTMLElement[]) =>
+    els.map((e) => (e.querySelector('.titre') as HTMLElement | null)?.innerText ?? e.innerText),
+  )).map((t: string) => (t.split('\n')[0] ?? '').replace(/’/g, "'"));
 
 /** Collects every API response body seen by the page, to look for leaks the screen would hide. */
 function espion(page: Any): { corps: () => Promise<string> } {

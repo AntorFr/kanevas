@@ -25,6 +25,7 @@
 import assert from 'node:assert/strict';
 import { after, before, test } from 'node:test';
 import {
+  choisirAuteur,
   type Any,
   ajouterMembre,
   ajouterSection,
@@ -234,7 +235,10 @@ test('B-7 titre vide ou de 121 caractères refusé ; 120 accepté ; les fiches s
   await creerFiche(antor, 'lieu', 'L'.repeat(120));
   await allerListe(antor, 'lieu');
   await voit(antor, 'charlie');
-  const noms: string[] = await antor.locator('main a').allInnerTexts();
+  const noms: string[] = await antor.locator('main a').evaluateAll((els: HTMLElement[]) =>
+    // A grid card (E-8) leads with its fallback initial: its title is `.titre`.
+    els.map((e) => (e.querySelector('.titre') as HTMLElement | null)?.innerText ?? e.innerText),
+  );
   const courts = noms.map((n) => n.split('\n')[0]!.trim()).filter((n) => n.length < 20);
   assert.deepEqual(courts, ['Alpha', 'bravo', 'charlie']);
 });
@@ -467,12 +471,7 @@ test('B-9 Léa, auteur d\'une section fermée aux joueurs, la lit et l\'écrit ;
   await ajouterSection(antor, 'Notes de la table');
   await section(antor, 'Notes de la table').waitFor();
   const s = section(antor, 'Notes de la table');
-  await s.getByRole('button', { name: /régler l['’]audience de/ }).click();
-  await antor.getByRole('dialog', { name: /^Qui voit/ }).getByRole('combobox', { name: /Auteur/ }).selectOption({ label: 'lea' });
-  await antor.getByRole('dialog', { name: /^Qui voit/ }).getByRole('switch', { name: rx('L’auteur la lit') }).waitFor();
-  await antor.getByRole('dialog', { name: /^Qui voit/ }).getByRole('combobox', { name: /Auteur/ }).focus();
-  await antor.keyboard.press('Escape');
-  await antor.getByRole('dialog', { name: /^Qui voit/ }).waitFor({ state: 'detached' });
+  await choisirAuteur(antor, 'Notes de la table', 'lea');
   await regler(antor, 'Notes de la table', "L'auteur la lit", true);
   await regler(antor, 'Notes de la table', "L'auteur l'écrit", true);
 
@@ -533,8 +532,18 @@ test('B-12 Antor en mode Joueur voit « Apparence » seule, comme Léa, et plus 
   await antor.goto(urlFiche);
   await section(antor, 'Vérité').waitFor();
   await antor.getByLabel('Mode Joueur').check();
-  await section(antor, 'Apparence').waitFor();
-  for (let i = 0; i < 40 && (await section(antor, 'Vérité').count()) > 0; i++) await antor.waitForTimeout(100);
+  // the switch goes through the loading skeleton: « Vérité » is gone there too, and Apparence's text may
+  // still be the one of the GM view. Wait for the loaded player view: banner shown, Vérité gone and
+  // Apparence's text present at the same time.
+  let pret = false;
+  for (let i = 0; i < 80 && !pret; i++) {
+    pret =
+      (await section(antor, 'Vérité').count()) === 0 &&
+      (await antor.getByText('Mode Joueur : vous voyez ce que voit un joueur.').count()) > 0 &&
+      (await antor.getByText('Grand, barbe grise.').count()) > 0;
+    if (!pret) await antor.waitForTimeout(100);
+  }
+  assert.ok(pret, 'the player view is loaded');
   const t = await texte(antor);
   assert.deepEqual(await titresSections(antor), ['Apparence']);
   assert.ok(t.includes('Grand, barbe grise.'));

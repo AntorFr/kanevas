@@ -157,6 +157,13 @@ export function Champ({
   );
 }
 
+/** The initial of a universe name, a leading article (le, les, la, l') set aside: « Les Cendres » → « C ». */
+export function initialeUnivers(nom: string): string {
+  const net = nom.trim();
+  const sans = net.replace(/^(?:(?:les?|la)\s+|l['’])/i, '');
+  return (Array.from(sans)[0] ?? Array.from(net)[0] ?? '').toUpperCase();
+}
+
 /** The universe's seal: its initial on a tile. `inconnu` is the dashed placeholder (no name yet). */
 export function Sceau({
   nom,
@@ -170,7 +177,7 @@ export function Sceau({
   /** The name is not known yet: a skeleton tile, no mark. */
   chargement?: boolean;
 }) {
-  const initiale = Array.from(nom.trim())[0]?.toUpperCase() ?? '';
+  const initiale = initialeUnivers(nom);
   return (
     <span className={`sceau${taille ? ` ${taille}` : ''}${chargement ? ' charge' : inconnu || !initiale ? ' inconnu' : ''}`} aria-hidden="true" data-initiale={chargement ? '' : inconnu || !initiale ? '?' : initiale} />
   );
@@ -305,7 +312,7 @@ export function Panneau({ titre, reserveMj, children }: { titre: string; reserve
   return (
     <section className={`panneau${reserveMj ? ' reserve-mj' : ''}`} aria-labelledby={id}>
       <h2 id={id}>
-        {titre} {reserveMj && <Pastille sens="mj">MJ seul</Pastille>}
+        {titre} {reserveMj && <Pastille sens="mj" icone={Lock}>MJ seul</Pastille>}
       </h2>
       {children}
     </section>
@@ -386,11 +393,23 @@ export function Fenetre({ titre, onFermer, children }: { titre: string; onFermer
 }
 
 /** Loading skeleton shaped like a sheet (type, title, rule, two sections); `role="status"`, the text is read and written. */
-export function SqueletteFiche({ texte = 'Chargement de la fiche…' }: { texte?: string }) {
+export function SqueletteFiche({ texte = 'Chargement de la fiche…', cadre }: { texte?: string; cadre?: boolean }) {
   return (
     <div className="squelette-fiche" role="status">
-      <div className="squelette s-type" aria-hidden="true" />
-      <div className="squelette s-titre" aria-hidden="true" />
+      {cadre ? (
+        <div className="s-entete" aria-hidden="true">
+          <div className="squelette s-cadre" />
+          <div>
+            <div className="squelette s-type" />
+            <div className="squelette s-titre" />
+          </div>
+        </div>
+      ) : (
+        <>
+          <div className="squelette s-type" aria-hidden="true" />
+          <div className="squelette s-titre" aria-hidden="true" />
+        </>
+      )}
       <div className="squelette s-filet" aria-hidden="true" />
       {[0, 1].map((i) => (
         <div key={i} className="squelette-section" aria-hidden="true">

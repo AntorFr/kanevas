@@ -23,6 +23,7 @@ import {
   voit,
   type Server,
 } from './harnais.test.js';
+import { changerStatut, declencheurStatut, ouvrirNouveauScenario, statutAffiche } from './suivi-aide.js';
 
 const PREUVES = '/tmp/kanevas-preuves';
 
@@ -120,15 +121,16 @@ describe('kanevas-suivi, du besoin', { skip: skipBrowser }, () => {
     await voit(p, 'Aucune campagne pour l\'instant.');
     await creerCampagne(p, 'La Couronne brisée');
     await voit(p, 'La Couronne brisée');
-    await p.locator('main').getByRole('combobox').first().selectOption({ label: 'Active' });
+    await changerStatut(p, 'Active', 'La Couronne brisée');
     await attendre(p);
     await p.reload();
     await attendre(p);
-    assert.equal(await p.locator('main').getByRole('combobox').first().inputValue().then(async (v: string) => (await p.locator('main').getByRole('combobox').first().locator(`option[value="${v}"]`).innerText())), 'Active');
+    assert.equal(await statutAffiche(p, 'La Couronne brisée'), 'Active');
 
     // A scenario, written.
     await ouvrirCampagne(p, 'La Couronne brisée');
     const urlCampagne = p.url();
+    await ouvrirNouveauScenario(p);
     await p.getByLabel('Titre').fill('Acte II — Le sceau brisé');
     await p.getByRole('button', { name: rxExact('Créer le scénario') }).click();
     await p.getByRole('heading', { name: 'Acte II — Le sceau brisé', level: 1 }).waitFor();
@@ -261,18 +263,16 @@ describe('kanevas-suivi, du besoin', { skip: skipBrowser }, () => {
     await creerCampagne(p, 'y'.repeat(80));
     await voit(p, 'y'.repeat(80));
     assert.ok(p.url().endsWith('/campagnes'), 'creation stays on the list');
-    const statut = p.locator('main').getByRole('combobox').first();
-    assert.equal(await statut.locator('option:checked').innerText(), 'En préparation');
+    assert.equal(await statutAffiche(p, 'y'.repeat(80)), 'En préparation');
     // Two campaigns active in the same universe.
     await creerCampagne(p, 'Beta');
-    await p.locator('main').getByRole('combobox').nth(0).selectOption({ label: 'Active' });
+    await changerStatut(p, 'Active', 'Beta');
     await attendre(p);
-    await p.locator('main').getByRole('combobox').nth(1).selectOption({ label: 'Active' });
+    await changerStatut(p, 'Active', 'y'.repeat(80));
     await attendre(p);
     await p.reload();
     await attendre(p);
-    const n = await p.locator('main').getByRole('combobox').evaluateAll((els: Any[]) => els.map((e) => e.options[e.selectedIndex].text));
-    assert.deepEqual(n, ['Active', 'Active']);
+    assert.deepEqual([await statutAffiche(p, 'Beta'), await statutAffiche(p, 'y'.repeat(80))], ['Active', 'Active']);
     await p.goto(`/univers/${idUnivers}`);
     await attendre(p);
     const t = await texte(p);
@@ -288,7 +288,7 @@ describe('kanevas-suivi, du besoin', { skip: skipBrowser }, () => {
     // Order of creation in the list is by name; set statuses by name.
     async function statut(nom: string, s: string) {
       const ligne = p.getByRole('listitem').filter({ hasText: nom }).first();
-      await ligne.getByRole('combobox').selectOption({ label: s });
+      await changerStatut(p, s, nom, ligne);
       await attendre(p);
     }
     await statut('Zèbre', 'Active');
@@ -303,7 +303,7 @@ describe('kanevas-suivi, du besoin', { skip: skipBrowser }, () => {
     const pos = ordre.map((x) => t.indexOf(x));
     assert.ok(pos.every((x) => x >= 0));
     assert.deepEqual([...pos].sort((a, b) => a - b), pos, 'Mouette, Zèbre (actives), alpha (en préparation), Bravo (terminée)');
-    assert.equal(await lea.page.locator('main').getByRole('combobox').count(), 0);
+    assert.equal(await declencheurStatut(lea.page).count(), 0);
     assert.ok(t.includes('Terminée') && t.includes('En préparation'));
     assert.ok(!t.includes('Nouvelle campagne'));
     await lea.page.screenshot({ path: `${PREUVES}/suivi-liste-lea.png` });
@@ -315,12 +315,12 @@ describe('kanevas-suivi, du besoin', { skip: skipBrowser }, () => {
     await allerCampagnes(p, idUnivers);
     await creerCampagne(p, 'A-campagne');
     await creerCampagne(p, 'B-campagne');
-    await p.getByRole('listitem').filter({ hasText: 'A-campagne' }).getByRole('combobox').selectOption({ label: 'Active' });
+    await changerStatut(p, 'Active', 'A-campagne');
     await attendre(p);
     const lea = await compte('lea');
     await lea.page.goto(`/univers/${idUnivers}/campagnes`);
     await attendre(lea.page);
-    await p.getByRole('listitem').filter({ hasText: 'A-campagne' }).getByRole('combobox').selectOption({ label: 'Terminée' });
+    await changerStatut(p, 'Terminée', 'A-campagne');
     await attendre(p);
     await lea.page.reload();
     await attendre(lea.page);
@@ -337,6 +337,7 @@ describe('kanevas-suivi, du besoin', { skip: skipBrowser }, () => {
     await creerCampagne(p, 'Camp');
     await ouvrirCampagne(p, 'Camp');
     await voit(p, 'Aucun scénario pour l\'instant.');
+    await ouvrirNouveauScenario(p);
     await p.getByRole('button', { name: rxExact('Créer le scénario') }).click();
     await voit(p, 'Erreur : le titre est obligatoire.');
     await p.getByLabel('Titre').fill('t'.repeat(121));
@@ -429,6 +430,7 @@ describe('kanevas-suivi, du besoin', { skip: skipBrowser }, () => {
     await allerCampagnes(p, idUnivers);
     await creerCampagne(p, 'Camp secrète');
     await ouvrirCampagne(p, 'Camp secrète');
+    await ouvrirNouveauScenario(p);
     await p.getByLabel('Titre').fill('Scénario secret');
     await p.getByRole('button', { name: rxExact('Créer le scénario') }).click();
     await p.getByRole('heading', { name: 'Scénario secret', level: 1 }).waitFor();
@@ -533,7 +535,7 @@ describe('kanevas-suivi, du besoin', { skip: skipBrowser }, () => {
     const p = antor.page;
     await allerCampagnes(p, idUnivers);
     await creerCampagne(p, 'Camp');
-    await p.locator('main').getByRole('combobox').first().selectOption({ label: 'Terminée' });
+    await changerStatut(p, 'Terminée', 'Camp');
     await attendre(p);
     await ouvrirCampagne(p, 'Camp');
     const url = p.url();
@@ -638,7 +640,7 @@ describe('kanevas-suivi, du besoin', { skip: skipBrowser }, () => {
     const p = antor.page;
     await allerCampagnes(p, idUnivers);
     await creerCampagne(p, 'Camp');
-    await p.locator('main').getByRole('combobox').first().selectOption({ label: 'Active' });
+    await changerStatut(p, 'Active', 'Camp');
     await attendre(p);
     await p.route('**/api/univers/*/comptes-rendus*', (r: Any) => r.fulfill({ status: 500, body: '{}', contentType: 'application/json' }));
     await p.goto(`/univers/${idUnivers}/comptes-rendus`);

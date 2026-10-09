@@ -136,6 +136,27 @@ describe('E-9 refaite : audience, filet, hachure', { skip: skipBrowser }, () => 
     assert.equal(await antor.evaluate(() => document.activeElement?.getAttribute('aria-label') ?? ''), (await pastille.getAttribute('aria-label')) ?? '?', 'the focus is back on the badge');
   });
 
+  test('la boîte « Qui voit » : Échap la ferme aussi juste après un interrupteur, pendant l’enregistrement (charte E-9)', async () => {
+    await ouvrir(antor);
+    const pastille = section(antor, 'Vérité').getByRole('button', { name: PASTILLE });
+    await antor.route('**/api/**', async (route: Any) => {
+      if (route.request().method() === 'PATCH') await new Promise((r) => setTimeout(r, 600));
+      await route.continue().catch(() => {});
+    });
+    try {
+      await pastille.click();
+      const boite = antor.getByRole('dialog', { name: 'Qui voit « Vérité »' });
+      await boite.waitFor();
+      await boite.getByRole('switch', { name: rx('Les joueurs la lisent') }).click({ noWaitAfter: true });
+      await antor.keyboard.press('Escape');
+      await boite.waitFor({ state: 'detached', timeout: 2000 });
+    } finally {
+      await antor.unroute('**/api/**');
+    }
+    // leave the section as found
+    await regler(antor, 'Vérité', 'Les joueurs la lisent', false);
+  });
+
   test('les quatre états de la pastille et du filet : lue, écrite, confiée à <auteur>, MJ seul', async () => {
     await ouvrir(antor);
     assert.equal(await section(antor, 'Apparence').getAttribute('data-aud'), 'table');
@@ -526,5 +547,95 @@ describe('E-9 refaite : « Modifier », menu ⋯, retrait', { skip: skipBrowser 
     await antor.getByText(/n.a pas encore de section/).waitFor();
     await antor.getByRole('button', { name: /^Ajouter une section/ }).waitFor();
     await antor.screenshot({ path: '/tmp/rv-fiche-vide.png' });
+  });
+  test('V3 blocs vides : « Aucune pièce jointe. » et « Ajouter un fichier » sur une seule ligne, comme Relations (bureau et 390 px)', async () => {
+    for (const largeur of [1440, 390]) {
+      await antor.setViewportSize({ width: largeur, height: 900 });
+      await ouvrir(antor);
+      for (const titre of ['Vérité', 'Notes de la table']) {
+        const s = section(antor, titre);
+        for (const [bloc, action] of [['Pièces jointes', 'Ajouter un fichier'], ['Relations', 'Relier à une fiche']] as const) {
+          const b = s.getByRole('group', { name: bloc });
+          const vide = await b.locator('.bloc-vide').boundingBox();
+          const bouton = await b.getByRole('button', { name: rxExact(action) }).boundingBox();
+          assert.ok(vide && bouton, `${titre}/${bloc}@${largeur}`);
+          const dy = Math.abs(vide.y + vide.height / 2 - (bouton.y + bouton.height / 2));
+          assert.ok(dy < 8, `${titre}/${bloc}@${largeur}: text and action on one row (dy=${dy})`);
+          assert.ok(bouton.x >= vide.x + vide.width - 1, `${titre}/${bloc}@${largeur}: action after the text`);
+        }
+      }
+    }
+    await antor.setViewportSize({ width: 1440, height: 900 });
+  });
+
+  test('B téléphone 390 px, MJ : les actions de section sont sur la ligne du titre, en icônes, sans recouvrir titre ni pastille', async () => {
+    await antor.setViewportSize({ width: 390, height: 900 });
+    try {
+      await ouvrir(antor);
+      const titres = await titresSections(antor);
+      assert.ok(titres.length > 0);
+      for (const titre of titres) {
+        const s = section(antor, titre);
+        await s.hover();
+        const h = await s.getByRole('heading', { level: 2, name: titre }).boundingBox();
+        const actions = await s.locator('.sec-actions').first().boundingBox();
+        const menu = await s.getByRole('button', { name: /^Autres actions sur/ }).boundingBox();
+        assert.ok(h && actions && menu, titre);
+        const cy = (b: { y: number; height: number }) => b.y + b.height / 2;
+        assert.ok(Math.abs(cy(menu) - cy(h)) < 20, `${titre}: actions on the title row (dy=${cy(menu) - cy(h)})`);
+        assert.ok(actions.x >= h.x + 1 && menu.x + menu.width <= 390, `${titre}: inside the screen`);
+        const pastille = await s.locator('.pastille').first().boundingBox();
+        if (pastille) {
+          const chevauche = pastille.x < actions.x + actions.width && actions.x < pastille.x + pastille.width
+            && pastille.y < actions.y + actions.height && actions.y < pastille.y + pastille.height;
+          assert.ok(!chevauche, `${titre}: actions overlap the pastille`);
+        }
+        const mod = s.getByRole('button', { name: rxExact('Modifier') });
+        if (await mod.count()) {
+          assert.ok(((await mod.boundingBox())!.width) <= 44, `${titre}: Modifier is icon-only`);
+          assert.equal(await mod.innerText(), '', 'label hidden');
+        }
+        // The title text must not run under the actions.
+        const textW = await s.getByRole('heading', { level: 2, name: titre }).evaluate((e: Element) => {
+          const r = document.createRange(); r.selectNodeContents(e);
+          return Math.max(...[...r.getClientRects()].map((q) => q.right));
+        });
+        assert.ok(textW <= actions.x + 1, `${titre}: title text runs under the actions (${textW} > ${actions.x})`);
+      }
+    } finally {
+      await antor.setViewportSize({ width: 1440, height: 900 });
+    }
+  });
+  test('boîte « Qui voit » : select Auteur habillé (appearance none + chevron) et panneau entièrement dans l’écran à 390 px, clair et sombre', async () => {
+    await antor.setViewportSize({ width: 390, height: 900 });
+    try {
+      for (const theme of ['clair', 'sombre']) {
+        await antor.evaluate((t: string) => localStorage.setItem('kanevas-theme', t), theme);
+        await ouvrir(antor);
+        const titres = await titresSections(antor);
+        for (const titre of titres) {
+          const s = section(antor, titre);
+          const pastille = s.getByRole('button', { name: PASTILLE });
+          if (!(await pastille.count())) continue;
+          await pastille.click();
+          const panneau = antor.locator('.menu.audience');
+          await panneau.waitFor();
+          const b = await panneau.boundingBox();
+          assert.ok(b && b.x >= 0 && b.x + b.width <= 390, `${theme}/${titre}: panel inside the screen (x=${b?.x}, w=${b?.width})`);
+          assert.equal(await antor.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), true, `${theme}/${titre}: no horizontal scroll`);
+          for (const sw of await panneau.getByRole('switch').all()) {
+            const sb = await sw.boundingBox();
+            assert.ok(sb && sb.x >= 0 && sb.x + sb.width <= 390, `${theme}/${titre}: switch inside the screen`);
+          }
+          const sel = panneau.locator('select').first();
+          assert.equal(await sel.evaluate((e: Element) => getComputedStyle(e).appearance), 'none', 'Auteur select is styled');
+          assert.equal(await panneau.locator('.champ-liste svg').count(), 1, 'chevron present');
+          await antor.keyboard.press('Escape');
+        }
+      }
+    } finally {
+      await antor.evaluate(() => localStorage.removeItem('kanevas-theme'));
+      await antor.setViewportSize({ width: 1440, height: 900 });
+    }
   });
 });

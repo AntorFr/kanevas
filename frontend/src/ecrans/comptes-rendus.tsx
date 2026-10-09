@@ -1,4 +1,4 @@
-import { ArrowDown, FileText } from 'lucide-react';
+import { ArrowDown, NotebookPen } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 
@@ -58,12 +58,12 @@ function ComptesRendus() {
     <div className="page-liste">
       <header className="tete-liste">
         <span className="glyphe-type" aria-hidden="true">
-          <FileText size={20} strokeWidth={1.75} />
+          <NotebookPen size={20} strokeWidth={1.75} />
         </span>
         <h1>Comptes-rendus</h1>
       </header>
       {liste.length === 0 ? (
-        <VideIcone icone={FileText}>
+        <VideIcone icone={NotebookPen}>
           <p>{mj ? 'Aucun compte-rendu pour l’instant.' : 'Aucun compte-rendu à lire pour l’instant.'}</p>
           <Link className="bouton" to={`/univers/${id}/campagnes`}>
             Voir les campagnes
