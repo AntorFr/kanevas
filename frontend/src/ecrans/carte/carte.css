@@ -14,11 +14,12 @@
 .carte-cadre.neutre .carte-message { pointer-events: none; }
 .carte-token { position: absolute; transform: translate(-50%, -50%); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; min-width: 44px; min-height: 44px; padding: 0; border: 0; background: transparent; color: var(--texte); font: inherit; font-size: var(--t-12, 12px); cursor: pointer; touch-action: none; text-decoration: none; }
 .carte-token i { font-style: normal; font-weight: 600; width: 30px; height: 30px; border-radius: 50%; background: var(--surface); border: 2px solid var(--accent, var(--texte)); display: flex; align-items: center; justify-content: center; }
-.carte-token span { background: var(--voile); color: var(--texte); padding: 1px 6px; border-radius: 6px; white-space: nowrap; }
-.carte-token.sel i { box-shadow: 0 0 0 4px var(--bord); border-color: var(--mj, var(--accent, var(--texte))); }
+.carte-token span { background: color-mix(in srgb, var(--surface) 90%, transparent); color: var(--texte); box-shadow: 0 0 0 1px var(--bord-fort); padding: 1px 6px; border-radius: 6px; white-space: nowrap; }
+.carte-token.sel i { border-color: var(--mj); box-shadow: 0 0 0 3px var(--surface), 0 0 0 5px var(--mj); }
 .carte-token:focus-visible { outline: 2px solid var(--accent, var(--texte)); outline-offset: 2px; }
 .carte-aide { color: var(--texte-2); font-size: var(--t-12, 12px); margin: var(--e-2) 0; }
 .carte-panneau { background: var(--surface); border: 1px solid var(--bord); border-radius: var(--rayon-champ); padding: var(--e-3) var(--e-4); margin: var(--e-3) 0; display: flex; flex-wrap: wrap; gap: var(--e-2); align-items: center; }
+.carte-panneau.mj { border-color: var(--mj-bord); background: linear-gradient(180deg, var(--mj-fond), var(--surface) 60%); }
 .carte-panneau strong { flex: 1 1 12rem; overflow-wrap: anywhere; }
 .carte-sur h2 { margin: var(--e-4) 0 var(--e-2); }
 .carte-sur ul { list-style: none; margin: 0; padding: 0; background: var(--surface); border: 1px solid var(--bord); border-radius: var(--rayon-champ); max-height: 24rem; overflow-y: auto; }
