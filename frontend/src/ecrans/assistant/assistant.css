@@ -67,10 +67,10 @@ body.asst-ouvert .zone-principale { margin-right: 380px; }
 .asst-prop-zone { min-width: 0; max-height: calc(15 * 1.5em + 2 * var(--e-2)); overflow: auto; padding: var(--e-2); background: var(--surface); border: 1px solid var(--bord); border-radius: var(--rayon-champ); }
 .asst-prop-zone.propose { background: var(--accent-fond); border-color: var(--accent); }
 .asst-prop-zone:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
-.asst-prop-zone b { display: block; font-size: var(--t-12); color: var(--texte-2); margin-bottom: var(--e-1); }
+.asst-prop-lib { display: block; font-size: var(--t-12); font-variant-caps: all-small-caps; letter-spacing: .06em; color: var(--texte-2); margin-bottom: var(--e-1); }
 .asst-prop-texte { white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.5; }
 .asst-prop-gestes { display: flex; flex-wrap: wrap; align-items: center; gap: var(--e-2); }
-.asst-prop-ouvrir { display: inline-flex; align-items: center; gap: var(--e-1); color: var(--accent-texte); text-decoration: underline; }
+.asst-prop-ouvrir { text-decoration: none; }
 @media (min-width: 760px) {
   .asst-prop-zones { grid-template-columns: 1fr 1fr; }
 }

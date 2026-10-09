@@ -1,4 +1,4 @@
-import { CircleAlert, ExternalLink } from 'lucide-react';
+import { CircleAlert } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { ErreurApi, appeler, lire, useConnexionPerdue } from '../../../api';
@@ -49,6 +49,8 @@ export function Proposition({ evenement, universId, surOuverture }: PropsBloc) {
   const apresGeste = useRef(false);
   const resultat = useRef<HTMLParagraphElement>(null);
   const vivant = useRef(true);
+  const racine = useRef<HTMLDivElement>(null);
+  const defile = useRef(false);
   useEffect(() => {
     vivant.current = true;
     return () => {
@@ -107,6 +109,14 @@ export function Proposition({ evenement, universId, surOuverture }: PropsBloc) {
     }
   }, [perdue, lireTout]);
 
+  // The block grows once read: bring it, gestures included, into view in the thread (once).
+  useEffect(() => {
+    if (phase === 'ok' && !defile.current && racine.current) {
+      defile.current = true;
+      racine.current.scrollIntoView?.({ block: 'end' });
+    }
+  }, [phase]);
+
   // After a gesture the focus goes to its result.
   useEffect(() => {
     if (apresGeste.current && resultat.current && (phase === 'abandonnee' || prop?.etat === 'appliquee')) {
@@ -150,7 +160,7 @@ export function Proposition({ evenement, universId, surOuverture }: PropsBloc) {
   const lienFiche = prop ? `/univers/${universId}/fiche/${prop.ficheId}` : null;
   const ouvrir = lienFiche && (
     <a
-      className="asst-prop-ouvrir"
+      className="bouton petit asst-prop-ouvrir"
       href={lienFiche}
       onClick={(e) => {
         if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
@@ -159,7 +169,7 @@ export function Proposition({ evenement, universId, surOuverture }: PropsBloc) {
         aller(lienFiche);
       }}
     >
-      Ouvrir <ExternalLink size={12} strokeWidth={1.75} aria-hidden="true" />
+      Ouvrir
     </a>
   );
 
@@ -226,7 +236,7 @@ export function Proposition({ evenement, universId, surOuverture }: PropsBloc) {
   const vide = '(section vide)';
 
   return (
-    <div className="asst-prop" aria-busy={occupe || undefined}>
+    <div className="asst-prop" ref={racine} aria-busy={occupe || undefined}>
       {perdue && <p className="asst-prop-perdue" role="status">{TEXTE_PERDUE}</p>}
       {entete}
       {appliquee && (
@@ -241,12 +251,12 @@ export function Proposition({ evenement, universId, surOuverture }: PropsBloc) {
       )}
       <div className="asst-prop-zones">
         <div className="asst-prop-zone" role="region" aria-label="Actuel" tabIndex={0}>
-          <b>Actuel</b>
+          <span className="asst-prop-lib">Actuel</span>
           <div className="asst-prop-texte">{prop.contenuActuel === '' ? vide : prop.contenuActuel}</div>
         </div>
         {!appliquee && (
           <div className="asst-prop-zone propose" role="region" aria-label="Proposé" tabIndex={0}>
-            <b>Proposé</b>
+            <span className="asst-prop-lib">Proposé</span>
             <div className="asst-prop-texte">{prop.contenuPropose}</div>
           </div>
         )}

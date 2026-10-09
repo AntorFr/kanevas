@@ -261,3 +261,21 @@ test('390 px : les zones s’empilent, « Actuel » d’abord', opts, async () =
     await antor.setViewportSize({ width: 1280, height: 720 });
   }
 });
+
+test('défilement : à l’arrivée de la réponse, le bloc et ses gestes sont visibles dans le fil', opts, async () => {
+  await poser('Il sert la Couronne');
+  await antor.setViewportSize({ width: 390, height: 600 });
+  try {
+    await demander(antor);
+    await attendreBloc(antor);
+    await antor.waitForFunction(() => {
+      const fil = document.querySelector('.asst-fil') as Element;
+      const b = Array.from(document.querySelectorAll('.asst-prop-gestes button')).pop() as Element;
+      const f = fil.getBoundingClientRect();
+      const r = b.getBoundingClientRect();
+      return r.top >= f.top && r.bottom <= f.bottom + 1;
+    });
+  } finally {
+    await antor.setViewportSize({ width: 1280, height: 720 });
+  }
+});
