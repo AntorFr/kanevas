@@ -40,7 +40,7 @@ du sélecteur d'univers mène à **Mes univers** et à **Systèmes de jeu** ; le
 de E-14 mène à sa page (E-15), hors de l'univers (décision du 2026-10-06, AD-94). Un admin qui est aussi membre d'un univers garde le lien
 **Administration** dans la barre de l'univers, sous une section « Instance ».
 
-L'**assistant** est un bouton flottant « Demander à Kanevas », sur tous les écrans d'un univers,
+L'**assistant** (livré avec E-12, absent de la refonte visuelle) est un bouton flottant « Demander à Kanevas », sur tous les écrans d'un univers,
 hors de la barre ; il n'existe pas hors d'un univers. Un MJ voit la bascule **« Mode MJ » / « Mode Joueur »** dans la barre haute des écrans où la
 bascule existe (fiche, carte).
 
@@ -127,7 +127,7 @@ Deux sont posés dès le cadrage parce qu'ils traversent tout :
 > E-1, E-2, E-3, E-4, E-8, E-9, la barre latérale et la session. Vocabulaire des six états, celui
 > de B-29 : **vide**, **chargement**, **erreur**, **connexion perdue**, **refus**, **contenu
 > long**. « Sans objet » dit sa raison. Les maquettes finies sont `docs/maquettes/e01-*.html`, `e02-*.html`,
-> `e03`, `e04`, `e08`, `e09` (thème sombre, gris tertiaire de la charte).
+> `e03`, `e04`, `e08`, `e09` (thème sombre, gris tertiaire de la charte) ; la refonte (`kanevas-refonte-visuelle`) les a reprises sur la charte actuelle : la liste à jour est celle de « Finies » en fin de document.
 
 **Textes communs.**
 
@@ -1085,7 +1085,7 @@ hachure, ni menu « ⋯ » : la section n'a que son titre, son texte et ses bloc
 | menu du compte (thème, déconnexion) — et pour l'admin d'instance, hors univers | oui | oui | oui |
 | bascule « Mode MJ » / « Mode Joueur » et bandeau du mode Joueur | oui | caché | oui |
 | « Modifier » d'une section | oui | sur ce qu'il écrit | sur ce que les joueurs écrivent |
-| bouton « Demander à Kanevas » | oui | oui | oui |
+| bouton « Demander à Kanevas » (E-12, pas encore construit) | oui | oui | oui |
 | pastille et réglage d'audience | lire, régler | caché | caché |
 | filet et hachure | voir | caché | caché |
 | menu « ⋯ » (ordre, retrait) | oui | caché | caché |

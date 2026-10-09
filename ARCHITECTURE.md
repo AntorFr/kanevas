@@ -29,6 +29,7 @@ Pas de cartes : tranche suivante ; l'assistant ne propose encore aucune mise à 
 - `src/routes/health.ts` : `registerHealthRoutes`, `GET /healthz`.
 - `src/routes/auth.ts`, `src/services/oidc.ts` : login et callback OIDC ; le callback ouvre la
   session (`src/services/session.ts`, AD-56) et crée le compte à la première connexion.
+- `src/routes/frontend.ts` : sert le build du frontend (`FRONTEND_DIR`, `dist/public`) derrière la garde de session ; `src/routes/erreurs.ts` : traduit les erreurs de service en réponses HTTP ; `src/routes/pages.ts` : pages HTML du bouchon.
 - `src/routes/bouchon.ts` : mode bouchon (AD-55), absent de la table des routes sans `KANEVAS_STUB`.
 - `src/services/assistant/` : le catalogue d'outils d'un rôle (AD-74), le port `AgentTransport` et ses
   adaptateurs `bouchon` et `claude-agent` (AD-73, AD-78), la disponibilité (AD-77) et
@@ -39,7 +40,7 @@ Pas de cartes : tranche suivante ; l'assistant ne propose encore aucune mise à 
   fonctions qui lisent ou écrivent les données (AD-2) ; `src/routes/` : routes `/api` minces.
 - `frontend/` : application React/Vite (AD-57) ; `frontend/src/ui/tokens.css` et
   `frontend/src/ui/` : tokens et composants de `docs/charte.md` ; son build est servi par Fastify. Le cadre
-  (`Cadre.tsx`, `Barre.tsx`) est commun à tous les écrans ; `/demo-composants` (bouchon seul, 404 sinon, `routes/session.ts`) montre les composants (AD-92 pour polices et icônes).
+  (`Cadre.tsx`, `Barre.tsx`) est commun à tous les écrans ; `/demo-composants` (bouchon seul, 404 sinon) montre les composants (AD-92 pour polices et icônes).
 - `src/services/systemes.ts` : catalogue, rattacher, créer et rattacher, gabarits ; la modification
   d'un univers est dans `src/services/univers.ts` ; leurs routes sont `src/routes/systemes.ts`
   (AD-83 à AD-85, AD-94). Écrans : E-14 (Paramètres), E-16 (Systèmes de jeu, `ecrans/systemes.tsx`), E-15 (Système de jeu, `/systemes/:sid`, `ecrans/systeme.tsx` ; l'ancienne adresse `/univers/:id/systeme` redirige par `ecrans/systeme-ancien.tsx`) et le bloc « Système de jeu » de E-3.

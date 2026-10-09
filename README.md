@@ -45,7 +45,8 @@ Tests sans Docker : `npm run typecheck` puis `npm test` (ils jouent aussi les e2
 
 ```bash
 # écrit node_modules/ et ./data/ (base et session.key) dans le dépôt monté, en root ; les deux sont ignorés par git.
-# Sans `npm run build` préalable (fait dans l'hôte, hors de cette commande), cette voie ne sert que l'API : voir plus bas.
+# Sans `npm run build` préalable, cette voie ne sert que l'API et n'a pas d'écran de connexion :
+# pour l'application entière en bouchon (`KANEVAS_STUB=1`), voir plus bas.
 docker run --rm -p 3001:3001 -v "$PWD":/src -w /src node:20-bookworm-slim sh -c "npm ci && npm run dev"
 # puis, depuis l'hôte : curl http://localhost:3001/healthz
 ```
@@ -93,7 +94,7 @@ démarrer en bouchon si une variable `OIDC_*` est posée. Avec `NODE_ENV=product
 mémoire (avertissement au démarrage).
 
 En bouchon seulement, `/demo-composants` (session requise) montre les composants de la charte dans tous leurs états ;
-hors bouchon, cette adresse répond 404.
+hors bouchon, cette adresse répond 404 une fois connecté (302 vers la connexion sinon).
 
 ### Tests de bout en bout
 

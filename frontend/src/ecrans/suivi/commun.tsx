@@ -1,4 +1,4 @@
-import { Check, ChevronDown, CircleCheck, CircleDashed, CirclePlay, FileText, type LucideIcon } from 'lucide-react';
+import { Check, ChevronDown, CircleCheck, CircleDashed, CirclePlay, NotebookPen, type LucideIcon } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 import { Menu } from '../../ui';
@@ -131,7 +131,7 @@ export function LigneCompteRendu({ universId, cr, campagne }: { universId: strin
     <li className="ligne-suivi">
       <Link className="grand" to={`/univers/${universId}/fiche/${cr.id}`}>
         <span className="mono" aria-hidden="true">
-          <FileText size={14} strokeWidth={1.75} />
+          <NotebookPen size={14} strokeWidth={1.75} />
         </span>
         <span className="texte-ligne">
           <span className="titre-long">{cr.titre}</span>

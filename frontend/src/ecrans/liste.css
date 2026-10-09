@@ -99,13 +99,14 @@
 .formulaire-ligne.ouvert { padding: var(--e-4); border-radius: var(--rayon-panneau); background: var(--surface); box-shadow: 0 0 0 1px var(--bord-fort); margin-top: var(--e-2); }
 .ajout-tache { margin-top: var(--e-4); padding-top: var(--e-4); border-top: 1px dashed var(--mj-section-filet); }
 .ajout-tache .titre-form { display: flex; align-items: center; gap: 8px; width: 100%; font-size: var(--t-13); font-weight: 500; color: var(--texte-2); }
-.panneaux-suivi .panneau > .bouton { margin-top: var(--e-2); }
+.panneaux-suivi .panneau > .bouton:not(.action-sec) { margin-top: var(--e-2); }
 .panneaux-suivi .suivi-liste { margin-top: var(--e-1); }
 .panneaux-suivi .panneau > p { color: var(--texte-3); margin: var(--e-2) 0 0; }
 
 /* Phone */
 @media (max-width: 760px) {
   .panneaux-suivi .panneau > .action-sec, .panneaux-suivi .panneau.reserve-mj > .action-sec { position: static; margin: var(--e-2) 0 0; }
+  .panneaux-suivi .panneau > .lien-action.action-sec, .panneaux-suivi .panneau.reserve-mj > .lien-action.action-sec { margin-left: calc(-1 * (var(--e-2) + 1px)); }
   .panneaux-suivi .panneau.reserve-mj { margin-left: -12px; margin-right: -12px; padding-left: 12px; padding-right: 12px; }
   .tete-liste h1, .entete-suivi h1 { font-size: var(--t-32); }
   .page-liste { padding-top: var(--e-2); }
@@ -120,7 +121,6 @@
 .liste-statut-champ { display: inline-block; flex: none; }
 .liste-statut-champ svg { right: 10px; }
 .liste-statut-champ .liste-statut { padding-right: var(--e-6); }
-.ajout-tache .champ > span:first-child { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; margin: 0; }
 .formulaire-ligne.ouvert .actions { display: flex; gap: var(--e-2); }
 
 /* ---------- La grille de cartes de fiches (E-8, kanevas-illustrations) ---------- */
