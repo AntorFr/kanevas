@@ -45,7 +45,7 @@ export function maillons(pathname: string, nomUnivers: string | undefined, titre
   const surRacine = pathname === racine || pathname === `${racine}/`;
   const item = ITEMS_UNIVERS.filter((i) => (i.chemin(Number(id)) === racine ? surRacine && section === undefined : true))
     .filter((i) => section === undefined || i.libelle === section)
-    .filter((i) => section !== undefined || (i.chemin(Number(id)) === racine ? surRacine : pathname === i.chemin(Number(id)) || pathname.startsWith(`${i.chemin(Number(id))}/`)))
+    .filter((i) => section !== undefined || i.chemin(Number(id)) === racine || pathname === i.chemin(Number(id)) || pathname.startsWith(`${i.chemin(Number(id))}/`))
     .sort((a, b) => b.chemin(Number(id)).length - a.chemin(Number(id)).length)[0];
   if (item) liste.push({ libelle: item.libelle, vers: item.chemin(Number(id)), icone: 'item' });
   if (titre) liste.push({ libelle: titre });
