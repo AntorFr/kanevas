@@ -60,6 +60,40 @@ function lireSection(a: Appel, section: string): string {
   return INTROUVABLE;
 }
 
+function proposer(a: Appel, section: string, fiche: string, cr: string): string {
+  if (!a.a('proposer_mise_a_jour')) return absent('proposer_mise_a_jour');
+  const crs = a.faire('chercher', { mots: cr, type: 'compte_rendu' });
+  if (!crs.ok) return crs.erreur;
+  const source = (crs.donnees as Donnees).fiches.find(
+    (f: Donnees) => f.titre.toLowerCase() === cr.toLowerCase(),
+  );
+  if (!source) return INTROUVABLE;
+  const cherche = a.faire('chercher', { mots: fiche });
+  if (!cherche.ok) return cherche.erreur;
+  const mot = section.toLowerCase();
+  for (const f of (cherche.donnees as Donnees).fiches) {
+    if (f.titre.toLowerCase() !== fiche.toLowerCase() || f.id === source.id) continue;
+    const lue = a.faire('lire_fiche', { ficheId: f.id });
+    if (!lue.ok) continue;
+    const s = (lue.donnees as Donnees).sections.find((x: Donnees) =>
+      x.titre.toLowerCase().includes(mot),
+    );
+    if (!s) continue;
+    const l = a.faire('lire_section', { ficheId: f.id, sectionId: s.id });
+    if (!l.ok) return l.erreur;
+    const d = l.donnees as Donnees;
+    const ajout = `Mise à jour d'après « ${cr} ».`;
+    const r = a.faire('proposer_mise_a_jour', {
+      section_id: s.id,
+      cr_id: source.id,
+      version: d.version,
+      contenu: d.contenu === '' ? ajout : `${d.contenu}\n\n${ajout}`,
+    });
+    return r.ok ? `Mise à jour proposée pour la section « ${s.titre} » de « ${f.titre} ».` : r.erreur;
+  }
+  return INTROUVABLE;
+}
+
 function ajouter(a: Appel, texte: string, section: string): string {
   const cherche = a.faire('chercher', { mots: section });
   if (!cherche.ok) return cherche.erreur;
@@ -103,6 +137,10 @@ type Regle = { motif: RegExp; agir: (a: Appel, m: RegExpMatchArray) => string };
 const REGLES: Regle[] = [
   { motif: /cr[ée]e un sc[ée]nario «\s*(.+?)\s*» dans «\s*(.+?)\s*»/i, agir: (a, m) => creerScenario(a, m[1]!, m[2]!) },
   { motif: /cr[ée]e une campagne «\s*(.+?)\s*»/i, agir: (a, m) => creerCampagne(a, m[1]!) },
+  {
+    motif: /mets [àa] jour la section «\s*(.+?)\s*» de «\s*(.+?)\s*» d['’]après le compte-rendu «\s*(.+?)\s*»/i,
+    agir: (a, m) => proposer(a, m[1]!, m[2]!, m[3]!),
+  },
   { motif: /lis-moi la section «\s*(.+?)\s*»/i, agir: (a, m) => lireSection(a, m[1]!) },
   { motif: /ajoute le paragraphe «\s*(.+?)\s*» dans «\s*(.+?)\s*»/i, agir: (a, m) => ajouter(a, m[1]!, m[2]!) },
   { motif: /que sait-on d(?:e |['’])\s*(.+?)\s*\??\s*$/i, agir: (a, m) => queSaitOn(a, m[1]!) },
