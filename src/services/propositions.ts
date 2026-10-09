@@ -1,7 +1,7 @@
 import type { Db } from '../db/db.js';
-import { exigerMJ } from './droits.js';
+import { exigerMJ, roleDe } from './droits.js';
 import { ErreurService, introuvable, invalide } from './erreurs.js';
-import { ecrireContenu, MAX_CONTENU_SECTION } from './sections.js';
+import { ecrireContenu, validerContenu } from './sections.js';
 import type { SectionRow } from './types.js';
 
 /** `appliquee` once applied (whatever the section did since), else `perimee` if the section moved on. */
@@ -70,10 +70,7 @@ function charger(
     .prepare('SELECT * FROM propositions WHERE id = ? AND univers_id = ? AND demandeur_id = ?')
     .get(id, universId, compteId) as PropositionRow | undefined;
   if (!p) throw introuvable();
-  const role = db
-    .prepare('SELECT role FROM membres WHERE univers_id = ? AND compte_id = ?')
-    .get(universId, compteId) as { role: string } | undefined;
-  if (role?.role !== 'mj') throw introuvable();
+  if (roleDe(db, universId, compteId) !== 'mj') throw introuvable();
   const s = db.prepare('SELECT * FROM sections WHERE id = ?').get(p.section_id) as SectionRow;
   return { p, s };
 }
@@ -103,9 +100,7 @@ export function creerProposition(
     .get(entree.crId, universId);
   if (!cr) throw invalide("La source doit être un compte-rendu de cet univers.");
   if (entree.contenu.trim() === '') throw invalide('Le contenu proposé est vide.');
-  if (entree.contenu.length > MAX_CONTENU_SECTION) {
-    throw invalide('Contenu trop long : 20 000 caractères au plus.');
-  }
+  validerContenu(entree.contenu);
   if (s.version !== entree.version) {
     throw new ErreurService('conflit', 'La section a changé.', 'section_modifiee');
   }
