@@ -7,7 +7,8 @@ import { disponibilite, type ConfigAssistant } from './disponibilite.js';
 import { ErreurAssistant } from './erreurs.js';
 import { INSTRUCTION_SYSTEME } from './instruction.js';
 import type { AgentTransport, MessageFil } from './transport.js';
-import type { Evenement, Outil } from './types.js';
+import type { AdaptateurChoisi } from '../images/index.js';
+import type { ContexteDemande, Evenement, Outil, Resultat } from './types.js';
 
 /** AD-75 limits, checked by the routes (400) and read by the screen. */
 export const MAX_MESSAGE = 2000;
@@ -24,6 +25,58 @@ export interface DepsRepondre {
   /** Replaces the transport chosen by availability (tests). */
   transport?: AgentTransport;
   delaiMs?: number;
+  /** Image engine of the catalogue; default: the one the configuration picks (AD-88). */
+  images?: AdaptateurChoisi;
+  /** Aborted when the client leaves: stops the engine, nothing is attached (AD-89). */
+  signal?: AbortSignal;
+}
+
+/**
+ * The deadline of a request (AD-75). It stops while a `horsDelai` tool runs (AD-90: the time spent
+ * in the image tool is not counted), and resumes with what was left.
+ */
+class Echeance {
+  private minuteur: NodeJS.Timeout | undefined;
+  private reste: number;
+  private debut = 0;
+  private enCours = 0;
+  readonly depasse: Promise<never>;
+
+  constructor(
+    delaiMs: number,
+    private readonly surDelai: () => void,
+  ) {
+    this.reste = delaiMs;
+    let rejeter!: (e: Error) => void;
+    this.depasse = new Promise<never>((_, rejet) => (rejeter = rejet));
+    this.depasse.catch(() => {});
+    this.rejeter = rejeter;
+    this.armer();
+  }
+  private rejeter: (e: Error) => void;
+
+  private armer() {
+    this.debut = Date.now();
+    this.minuteur = setTimeout(() => {
+      this.surDelai();
+      this.rejeter(new Error('delai'));
+    }, this.reste);
+  }
+
+  pause() {
+    if (this.enCours++ > 0) return;
+    clearTimeout(this.minuteur);
+    this.reste = Math.max(0, this.reste - (Date.now() - this.debut));
+  }
+
+  reprendre() {
+    if (--this.enCours > 0) return;
+    this.armer();
+  }
+
+  arreter() {
+    clearTimeout(this.minuteur);
+  }
 }
 
 function transportDe(config: ConfigAssistant): AgentTransport {
@@ -57,25 +110,31 @@ export async function repondre(
   }
   const transport = deps.transport ?? transportDe(config);
 
-  const catalogue = catalogueDe(db, compteId, universId);
+  const catalogue = catalogueDe(db, compteId, universId, deps.images);
   const evenements: Evenement[] = [];
+  const abort = new AbortController();
+  const echeance = new Echeance(deps.delaiMs ?? DELAI_MS, () => abort.abort());
+  if (deps.signal) {
+    if (deps.signal.aborted) abort.abort();
+    else deps.signal.addEventListener('abort', () => abort.abort(), { once: true });
+  }
+  // Shared by every tool call of this request (AD-89: one image per request).
+  const contexte: ContexteDemande = { signal: abort.signal };
+  const collecter = (r: Resultat): Resultat => {
+    if (r.ok && r.evenement) evenements.push(r.evenement);
+    return r;
+  };
   const outils: Outil[] = catalogue.outils.map((o) => ({
     ...o,
-    executer(args) {
-      const r = o.executer(args);
-      if (r.ok && r.evenement) evenements.push(r.evenement);
-      return r;
+    executer(args, c = contexte) {
+      if (!o.horsDelai) {
+        const r = o.executer(args, c);
+        return r instanceof Promise ? r.then(collecter) : collecter(r);
+      }
+      echeance.pause();
+      return Promise.resolve(o.executer(args, c)).then(collecter).finally(() => echeance.reprendre());
     },
   }));
-
-  const abort = new AbortController();
-  let minuteur: NodeJS.Timeout | undefined;
-  const delai = new Promise<never>((_, rejet) => {
-    minuteur = setTimeout(() => {
-      abort.abort();
-      rejet(new Error('delai'));
-    }, deps.delaiMs ?? DELAI_MS);
-  });
 
   try {
     const texte = await Promise.race([
@@ -86,13 +145,13 @@ export async function repondre(
         outils,
         abort,
       }),
-      delai,
+      echeance.depasse,
     ]);
     return { reponse: texte, evenements };
   } catch {
     abort.abort();
     throw new ErreurAssistant('assistant_erreur', "L'assistant n'a pas pu répondre.");
   } finally {
-    clearTimeout(minuteur);
+    echeance.arreter();
   }
 }

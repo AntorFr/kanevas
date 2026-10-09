@@ -52,3 +52,12 @@ body.asst-ouvert .zone-principale { margin-right: 380px; }
   body.asst-ouvert .zone-principale { margin-right: 0; }
   body.asst-ouvert .asst-bouton { right: var(--e-5); }
 }
+
+/* Block « Image attachée » (kanevas-images). */
+.asst-image-cadre { margin: var(--e-2) 0; max-width: 240px; }
+.asst-image-cadre img { display: block; max-width: 240px; max-height: 320px; width: auto; height: auto; border-radius: var(--rayon-champ); border: 1px solid var(--bord); }
+.asst-image-cadre img[hidden] { display: none; }
+.asst-image-vide { box-sizing: border-box; width: 240px; height: 160px; display: flex; align-items: center; justify-content: center; text-align: center; background: var(--surface-2); border: 1px dashed var(--bord-fort); color: var(--texte-3); border-radius: var(--rayon-champ); font-size: var(--t-13); }
+.asst-image-vide[role="status"] { height: 60px; background: var(--surface-2); border-style: solid; border-color: transparent; }
+.asst-image-vide p { margin: 0; }
+.asst-image-recharger { margin: var(--e-2) 0; }

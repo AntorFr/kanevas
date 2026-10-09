@@ -6,7 +6,10 @@ import { ErreurApi, appeler } from '../../api';
 export const MAX_MESSAGE = 2000;
 export const MAX_HISTORIQUE = 20;
 
-export type TypeEvenement = 'section_modifiee' | 'section_completee' | 'campagne_creee' | 'scenario_cree';
+export type TypeEvenement = 'section_modifiee' | 'section_completee' | 'campagne_creee' | 'scenario_cree' | 'image_attachee';
+
+/** The client never gives up before this (an image request lasts 270 s at most, AD-90). */
+export const DELAI_REQUETE_MS = 300_000;
 
 /** What an agent write adds to an answer (AD-76); the client builds the link from `cible`. */
 export interface Evenement {
@@ -84,6 +87,7 @@ async function demander(universId: number, message: string, historique: MessageA
         message,
         historique: historique.slice(-MAX_HISTORIQUE).map((m) => ({ role: m.role, content: m.content })),
       },
+      DELAI_REQUETE_MS,
     );
     if (mine !== generation) return;
     poser({

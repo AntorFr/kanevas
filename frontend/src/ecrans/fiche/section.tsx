@@ -198,7 +198,7 @@ export function PanneauSection(p: Props) {
   const mac = typeof navigator !== 'undefined' && /Mac|iPhone|iPad/.test(navigator.platform);
 
   return (
-    <section className="sec" data-aud={reserveMj ? 'mj' : filet} aria-labelledby={idTitre}>
+    <section className="sec" id={`section-${section.id}`} data-aud={reserveMj ? 'mj' : filet} aria-labelledby={idTitre}>
       <div className="sec-tete">
         <h2 id={idTitre}>{section.titre}</h2>
         {mj && a && etat && (

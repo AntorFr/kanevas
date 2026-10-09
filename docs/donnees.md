@@ -125,6 +125,13 @@ autre univers n'atteint aucun scénario ni aucune tâche, un Joueur non plus (r�
 identifiant inconnu, AD-22), et leur nombre ni leur existence ne sortent jamais d'une réponse à
 un Joueur.
 
+## `kanevas-images` : aucune migration
+
+Aucune table, aucune colonne : une image générée est une **pièce jointe** ordinaire (`pieces_jointes`,
+`kanevas-fichiers`), créée par la fonction d'envoi unique (AD-65). La description demandée n'est
+stockée nulle part (AD-28) ; seul le fichier l'est. Les identifiants du moteur d'images vivent dans
+`CODEX_HOME` sur le volume, hors base (AD-50).
+
 ## Règles de droits, en une phrase chacune
 
 1. Les droits sur le contenu viennent de **membre**, jamais d'Authelia (AD-9). Authelia ne
