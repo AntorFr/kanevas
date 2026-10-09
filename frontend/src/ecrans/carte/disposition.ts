@@ -94,3 +94,63 @@ export function disposer(noeuds: NoeudDispo[], liens: LienDispo[]): Map<number, 
   tries.forEach((t, i) => sortie.set(t.id, { x: nx[i]!, y: ny[i]! }));
   return sortie;
 }
+
+export interface Taille {
+  largeur: number;
+  hauteur: number;
+}
+
+/** Room one node takes (title included) and the margin kept around the outer ones, in pixels. */
+export const CASE = { largeur: 150, hauteur: 70 };
+export const MARGE = 40;
+
+/**
+ * The size a graph of `n` nodes needs inside `disponible` pixels of width: the width follows the screen
+ * (never narrower than one node), the height grows with the number of rows the nodes need.
+ */
+export function tailleCadre(n: number, disponible: number): Taille {
+  const largeur = Math.max(CASE.largeur + 2 * MARGE, Math.floor(disponible));
+  const colonnes = Math.max(1, Math.floor((largeur - 2 * MARGE) / CASE.largeur));
+  const lignes = Math.max(1, Math.ceil(n / colonnes));
+  return { largeur, hauteur: Math.max(380, Math.ceil(lignes * CASE.hauteur * 1.6) + 2 * MARGE) };
+}
+
+/**
+ * Maps the unit-square layout into a frame of `taille` pixels, then pushes overlapping boxes apart
+ * (deterministic: fixed order, fixed iterations) so no two nodes share a case.
+ */
+export function enPixels(unite: Map<number, Point>, taille: Taille): Map<number, Point> {
+  const ids = [...unite.keys()];
+  const px = ids.map((id) => MARGE + unite.get(id)!.x * (taille.largeur - 2 * MARGE));
+  const py = ids.map((id) => MARGE + unite.get(id)!.y * (taille.hauteur - 2 * MARGE));
+  const n = ids.length;
+  for (let it = 0; it < 120; it++) {
+    let bouge = false;
+    for (let i = 0; i < n; i++) {
+      for (let j = i + 1; j < n; j++) {
+        const dx = px[j]! - px[i]!;
+        const dy = py[j]! - py[i]!;
+        const ox = CASE.largeur - Math.abs(dx);
+        const oy = CASE.hauteur - Math.abs(dy);
+        if (ox <= 0 || oy <= 0) continue;
+        bouge = true;
+        // Separate along the axis that needs the least move; the sign of a tie follows the index.
+        if (ox / CASE.largeur < oy / CASE.hauteur) {
+          const s = (dx === 0 ? (i < j ? -1 : 1) : Math.sign(dx)) * (ox / 2 + 0.5);
+          px[i]! -= s;
+          px[j]! += s;
+        } else {
+          const s = (dy === 0 ? (i < j ? -1 : 1) : Math.sign(dy)) * (oy / 2 + 0.5);
+          py[i]! -= s;
+          py[j]! += s;
+        }
+      }
+    }
+    for (let i = 0; i < n; i++) {
+      px[i] = Math.min(taille.largeur - MARGE, Math.max(MARGE, px[i]!));
+      py[i] = Math.min(taille.hauteur - MARGE, Math.max(MARGE, py[i]!));
+    }
+    if (!bouge) break;
+  }
+  return new Map(ids.map((id, i) => [id, { x: px[i]!, y: py[i]! }]));
+}
