@@ -322,6 +322,50 @@ test('retrait : confirmation, rien au premier clic, Annuler, puis la fiche reste
   assert.equal((await elements()).filter((e: Any) => e.titre === 'Maître Aldric').length, 1, 'rien retiré au premier clic');
 });
 
+test('panneau du token : « Retirer de la carte » en contour, rien ne le recouvre (pastille de l\'assistant)', opts, async () => {
+  for (const viewport of [{ width: 1280, height: 800 }, { width: 375, height: 700 }]) {
+    const ctx = await browser.newContext({ viewport, baseURL: srv.base });
+    const page = await ctx.newPage();
+    await page.goto('/connexion-bouchon');
+    await page.getByRole('button', { name: /Antor/ }).click();
+    await page.waitForLoadState('networkidle');
+    await ouvrir(page);
+    await token(page, 'Maître Aldric').click();
+    await page.getByRole('link', { name: rxExact('Ouvrir la fiche') }).waitFor();
+    const bouton = page.getByRole('button', { name: rxExact('Retirer de la carte') }).first();
+    await bouton.scrollIntoViewIfNeeded();
+    const style = await bouton.evaluate((el: Any) => {
+      const c = getComputedStyle(el);
+      return { fond: c.backgroundColor, bord: c.borderTopColor, texte: c.color };
+    });
+    assert.equal(style.fond, 'rgba(0, 0, 0, 0)', `aplat au lieu d'un contour (${viewport.width}px)`);
+    assert.equal(style.bord, style.texte, 'contour de la couleur danger');
+    const recouvert = await page.evaluate(() => {
+      const panneau = document.querySelector('.carte-panneau') as HTMLElement;
+      const pastille = document.querySelector('.asst-bouton') as HTMLElement | null;
+      const rp = pastille?.getBoundingClientRect();
+      return Array.from(panneau.querySelectorAll('button, a')).map((b) => {
+        const r = b.getBoundingClientRect();
+        const el = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
+        const sous = !!el && (b === el || b.contains(el));
+        const chevauche = !!rp && r.left < rp.right && r.right > rp.left && r.top < rp.bottom && r.bottom > rp.top;
+        return { nom: b.textContent, sous, chevauche, pastille: !!rp };
+      });
+    });
+    assert.ok(recouvert.length >= 2);
+    assert.ok(recouvert[0].pastille, 'la pastille de l\'assistant est affichée');
+    for (const b of recouvert) {
+      assert.ok(b.sous, `« ${b.nom} » recouvert (${viewport.width}px)`);
+      assert.ok(!b.chevauche, `« ${b.nom} » sous la pastille (${viewport.width}px)`);
+    }
+    await page.screenshot({ path: `/tmp/e11-panneau-${viewport.width}.png` });
+    // a real click on the button reaches it: the confirmation opens
+    await bouton.click();
+    await page.getByText('Retirer « Maître Aldric » de cette carte ? La fiche reste.').waitFor();
+    await ctx.close();
+  }
+});
+
 test('renommer : champ, vide refusé, enregistré', opts, async () => {
   await ouvrir(antor);
   await antor.getByRole('button', { name: rxExact('Renommer') }).click();
