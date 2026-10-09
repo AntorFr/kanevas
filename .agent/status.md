@@ -1,6 +1,6 @@
 # Status — kanevas
 
-> MàJ : 2026-10-09 (assemblage de kanevas-recours-admin, sur kanevas-assistant-membre)
+> MàJ : 2026-10-09 (assemblage de kanevas-monde, sur kanevas-assistant-membre)
 
 **État :** `epic/kanevas` porte le socle, la première fiche, les systèmes de jeu, le suivi de la séance
 (campagnes, scénarios, préparation, comptes-rendus ; E-6, E-7, E-13) et les pièces jointes (migration
@@ -28,7 +28,7 @@ sans migration : `src/services/assistant/` (catalogues d'outils MJ et Joueur fer
 et adaptateurs `bouchon` et `claude-agent` ; disponibilité ; orchestration `repondre`), `src/routes/assistant.ts`
 (`GET /api/univers/:id/assistant`, `POST …/assistant/messages` ; formats dans `ARCHITECTURE.md`), et l'écran `frontend/src/ecrans/assistant*` (bouton flottant inversé, panneau, fil en
 mémoire, registre de blocs d'écriture). Outils : chercher, lire_fiche, lire_section, modifier_section, ajouter_a_section,
-lister_campagnes ; le MJ en plus creer_campagne et creer_scenario. Aucun outil de carte, de graphe, de proposition ni d'image.
+lister_campagnes ; le MJ en plus creer_campagne et creer_scenario. Aucun outil de carte, de graphe ni d'image (la proposition vient de `kanevas-monde`, ci-dessous).
 
 **Reste :** la fusion et le tag `v*` (recette acceptée par Monsieur). Pour l'assistant : le **premier vrai appel** au modèle n'a jamais eu lieu —
 l'adaptateur `claude-agent` n'est exercé que par une `query` factice. Il se joue sur l'URL déployée, après la fusion de `kanevas-am-deploy`
@@ -50,6 +50,14 @@ démarrage ; hors bouchon rien n'est amorcé. Aucune image n'existe avant le tag
   prend un chemin par fichier). Liste de membres partagée avec E-4 : `frontend/src/ListeMembres.tsx` (composants de `ui/`, toasts « ajouté / enregistré / retiré », boîte de dialogue de retrait).
   Entrée « Administration » déclarée dans `items.ts` (champs `groupe` et `horsUnivers`) ; `Barre.tsx` reste générique : elle montre l'entrée si `/api/moi` porte le groupe `parents`.
 
+`feature/kanevas-monde` (PR non fusionnée, rattrapée sur `epic/kanevas`) ajoute la mise à jour du monde depuis un compte-rendu (P-5, B-21, AD-79 à AD-82) :
+migration `0007-propositions.sql` (table `propositions`, index unique partiel « une en attente par demandeur et section »), `services/propositions.ts`
+(créer, lire, appliquer, abandonner ; l'état `en_attente | perimee | appliquee` est calculé à chaque lecture), l'outil `proposer_mise_a_jour` du seul
+catalogue MJ (événement `proposition_creee`) et sa règle du bouchon (« Mets à jour la section « S » de « F » d'après le compte-rendu « C » »),
+`routes/propositions.ts` (`GET …/propositions/:pid`, `POST …/appliquer`, `POST …/abandonner` ; aucune route de création), et le bloc « Mise à jour proposée »
+(`ecrans/assistant/blocs/proposition.tsx`). Appliquer passe par `ecrireContenu` avec la `version` lue. Typecheck et build verts ; `npm test` joué sous Node 22 à l'assemblage, 0 échec attribuable à la tranche (voir `Pièges` pour Node 20). Les e2e du bloc (`src/e2e/proposition-ecran.test.ts`) dépendent de Playwright, absent du dépôt, et sautent sans lui.
+**Reste (monde) :** la recette de Monsieur au navigateur en bouchon (scénario dans le README), puis la fusion et le tag `v*`.
+
 **Reste (recours admin) :** la recette de Monsieur de l'administration au navigateur en bouchon (Admin ajoute Mira à « Lame d'Ébène » ; le monde de recette est semé), puis la fusion et le tag `v*`. Aucune image n'existe avant le tag.
 
 **Pièges :**
@@ -63,7 +71,7 @@ démarrage ; hors bouchon rien n'est amorcé. Aucune image n'existe avant le tag
 - La suite a été jouée sous Node 22 dans les pods de la chaîne (pas de Docker) ; la CI Node 20 fait foi.
   La règle « conteneurs uniquement » de `CLAUDE.md` est la voie de référence ; un Node local ≥ 20 (README) est le repli quand
   Docker manque.
-- Migrations : 0001 à 0006 sont sur `epic/kanevas` ; l'assistant n'en ajoute aucune. Une tranche suivante prend le numéro 0007 si rien d'autre ne fusionne avant (AD-51).
+- Numéro de migration de `kanevas-monde` : 0007, définitif à la fusion (AD-51), la marche à suivre est dans la ligne « Migrations » en fin de fichier.
 - Les « PR non fusionnée » ci-dessus s'empilent sur `epic/kanevas` ; `recours-admin` est rattrapée dessus et n'ajoute aucune migration.
 - Vocabulaire : « Monsieur » = le commanditaire qui fait la recette ; « tranche » = une feature livrée ; « phase merge » = la
   fusion après recette ; E-n / B-n / P-n = écrans / besoins / parcours, définis dans `docs/ecrans.md` et `docs/parcours.md`.
@@ -114,6 +122,7 @@ démarrage ; hors bouchon rien n'est amorcé. Aucune image n'existe avant le tag
   relations/cartes/recherche, outil d'assistant.
 - Bouchon : au démarrage, sur une base sans univers, `semerBouchon` pose le monde de recette (Lame d'Ébène, Landes grises,
   CoF Mini…) puis `semerIllustrations` ; `KANEVAS_SANS_SEMIS=1` le coupe (utilisé par les e2e). Jamais hors bouchon.
-- Migrations : voir « Pièges » (0001 à 0006 sont sur `epic/kanevas`).
+- Migrations : 0001 à 0006 sur `epic/kanevas`, 0007 (propositions) sur la branche de `kanevas-monde`. Si le numéro change à la fusion, renuméroter le fichier, `ARCHITECTURE.md` et les assertions `migrate(db)` des tests (`grep -rn "deepEqual(migrate" src`).
+- Propositions (AD-79 à AD-82) : lues, appliquées, abandonnées par leur seul demandeur, encore MJ ; tout autre compte reçoit 404. Le fil ne se garde pas (AD-28) : après un rechargement, une proposition en attente n'est plus atteignable (limite écrite, bornée à une par MJ et section ; pas de liste « mes propositions »). Hors tranche : application par un joueur, propositions en lot. L'assistant ne sait pas quel écran est ouvert : le compte-rendu se nomme dans la demande. Le semis du bouchon n'a ni campagne ni compte-rendu : la recette les crée (README).
 
 **Suivant :** les tranches non encore livrées.
