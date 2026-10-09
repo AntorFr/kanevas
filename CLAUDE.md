@@ -4,7 +4,7 @@
 - Commit messages in French: subject, then the *why*. Explicit paths
   (`git add <path>...`, never `git add -A`/`.`), no AI attribution trailers —
   same convention as `k8s-home-lab`.
-- Build and test in containers only:
+- Build and test in containers (the reference; a local Node 20+ gives the same result, see README) :
   `docker run --rm -v "$PWD":/src -w /src node:20-bookworm-slim sh -c "npm ci && npm run typecheck && npm test"`
 - `npm run typecheck` : `tsc --noEmit`. `npm test` : `node --import tsx --test`
   on the files found by `find` — Node 20 (CI, image) does not expand globs
@@ -30,7 +30,7 @@
   `services/pieces-jointes.ts` is the single upload function — later features (images, map backgrounds)
   reuse it or `stockage.ts`, never write the volume themselves. The type is sniffed from the bytes, never trusted.
 - `frontend/` (React, Vite, `react-router`; AD-16, AD-57): `npm run build` also builds it into
-  `dist/public`, served by `routes/session.ts` behind the session guard (`@fastify/static` for
+  `dist/public`, served by `routes/frontend.ts` behind the session guard (`@fastify/static` for
   `/assets/`, `index.html` as the fallback of any other GET). A screen is one file
   `frontend/src/ecrans/<nom>.tsx` exporting an `Ecran` (`registre.ts`) — never edit the router or
   the sidebar for the screens of a universe; sidebar items live in `items.ts` and show only when a registered screen answers

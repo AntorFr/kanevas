@@ -230,8 +230,8 @@ export function PanneauSection(p: Props) {
       {(section.peutEcrire && !edition) || mj ? (
         <div className="sec-actions">
           {section.peutEcrire && !edition && (
-            <Bouton variante="fantome" petit ecrit icone={Pencil} onClick={modifier}>
-              Modifier
+            <Bouton variante="fantome" petit ecrit icone={Pencil} aria-label="Modifier" onClick={modifier}>
+              <span className="lib-modifier">Modifier</span>
             </Bouton>
           )}
           {mj && (

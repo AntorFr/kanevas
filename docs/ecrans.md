@@ -40,7 +40,7 @@ du sélecteur d'univers mène à **Mes univers** et à **Systèmes de jeu** ; le
 de E-14 mène à sa page (E-15), hors de l'univers (décision du 2026-10-06, AD-94). Un admin qui est aussi membre d'un univers garde le lien
 **Administration** dans la barre de l'univers, sous une section « Instance ».
 
-L'**assistant** est un bouton flottant « Demander à Kanevas », sur tous les écrans d'un univers,
+L'**assistant** (livré avec E-12, absent de la refonte visuelle) est un bouton flottant « Demander à Kanevas », sur tous les écrans d'un univers,
 hors de la barre ; il n'existe pas hors d'un univers. Un MJ voit la bascule **« Mode MJ » / « Mode Joueur »** dans la barre haute des écrans où la
 bascule existe (fiche, carte).
 
@@ -127,7 +127,7 @@ Deux sont posés dès le cadrage parce qu'ils traversent tout :
 > E-1, E-2, E-3, E-4, E-8, E-9, la barre latérale et la session. Vocabulaire des six états, celui
 > de B-29 : **vide**, **chargement**, **erreur**, **connexion perdue**, **refus**, **contenu
 > long**. « Sans objet » dit sa raison. Les maquettes finies sont `docs/maquettes/e01-*.html`, `e02-*.html`,
-> `e03`, `e04`, `e08`, `e09` (thème sombre, gris tertiaire de la charte).
+> `e03`, `e04`, `e08`, `e09` (thème sombre, gris tertiaire de la charte) ; la refonte (`kanevas-refonte-visuelle`) les a reprises sur la charte actuelle : la liste à jour est celle de « Finies » en fin de document.
 
 **Textes communs.**
 
@@ -174,8 +174,8 @@ Deux sont posés dès le cadrage parce qu'ils traversent tout :
 ### Barre latérale
 
 Sur tout écran d'un univers : en tête le **sélecteur d'univers** (nom, badge du rôle, la liste
-des univers du compte, puis « Mes univers » et « Systèmes de jeu » en pied de liste) ; **Vue d'ensemble** ; **Lore** :
-Personnages, Lieux, Factions, Objets, Événements, Quêtes ; **Campagnes** et **Comptes-rendus** ; pour un MJ, **Univers ▸ Membres** et **Paramètres** ; en
+des univers du compte, puis « Mes univers » et « Systèmes de jeu » en pied de liste) ; **Vue d'ensemble** ; **Campagnes** ; **Comptes-rendus** ; **Lore** :
+Personnages, Lieux, Factions, Objets, Événements, Quêtes ; pour un MJ, **Univers ▸ Membres** et **Paramètres** ; en
 pied, le compte (avatar et identifiant) qui ouvre le menu du compte : l'identifiant, le thème
 (Clair, Sombre, Système, en trois icônes) et « Se déconnecter ». Hors d'un univers (E-1,
 E-2, E-5, E-15, E-16) : « Mes univers », « Systèmes de jeu » et le compte en pied. **Un item dont l'écran n'est
@@ -785,8 +785,6 @@ E-9) ; P-6 étape 1 ne lit que les blocs de E-3 (derniers comptes-rendus) ; B-18
 Reste aux autres tranches : la proposition de mise à jour depuis un CR (`kanevas-monde`) ; créer une campagne ou un scénario par
 l'assistant est construit (E-12, `kanevas-assistant-membre`).
 
-## Détail des écrans de `kanevas-relier-chercher`
-
 ## Détail des écrans de `kanevas-fichiers`
 
 > Un seul ajout, aucun écran neuf : le **bloc Pièces jointes** de E-9. Mêmes six états et mêmes
@@ -944,15 +942,6 @@ chaque bouton « Retirer » porte l'étiquette accessible « Retirer la relation
 - Étant donné Antor, quand il retire la section « Apparence », alors ses relations disparaissent
   avec elle et ne remontent nulle part.
 
-### Clôture de `kanevas-relier-chercher`
-
-B-10 → bloc Relations de E-9 ; B-11 → recherche de E-8 ; B-29 → six états de la recherche et du
-bloc ci-dessus. Atteints par P-3 étape 4 (relier le PNJ à sa faction : relier une section du PNJ, bloc de E-9) et P-6 étape 2
-(chercher « Aldric », E-8). Les deux rôles ont leur colonne : le MJ cherche et relie, le Joueur
-cherche et lit ce qu'il peut ; l'admin d'instance n'atteint ni l'un ni l'autre (« Page
-introuvable. »). Chemin d'échec propre à cette tranche (`docs/parcours.md` n'en porte pas pour P-3 et P-6) : une recherche sans résultat dit « Aucun résultat pour … »,
-jamais « caché ». Chemin d'échec de relier une section : le refus du service s'écrit au-dessus du formulaire (« Cette relation existe déjà. », « Une fiche ne se relie pas à elle-même. », « Cette section porte déjà 100 relations. »), la saisie et le choix sont conservés ; un échec d'écriture générique et une session expirée suivent les textes communs (« L'action n'a pas abouti. Réessayez. » ; connexion, formulaire non gardé).
-
 ## Détail des écrans de `kanevas-assistant-membre`
 
 > E-12 Assistant, et son ajout au shell d'un univers. Mêmes six états et mêmes textes communs que
@@ -1085,7 +1074,7 @@ hachure, ni menu « ⋯ » : la section n'a que son titre, son texte et ses bloc
 | menu du compte (thème, déconnexion) — et pour l'admin d'instance, hors univers | oui | oui | oui |
 | bascule « Mode MJ » / « Mode Joueur » et bandeau du mode Joueur | oui | caché | oui |
 | « Modifier » d'une section | oui | sur ce qu'il écrit | sur ce que les joueurs écrivent |
-| bouton « Demander à Kanevas » | oui | oui | oui |
+| bouton « Demander à Kanevas » (E-12, pas encore construit) | oui | oui | oui |
 | pastille et réglage d'audience | lire, régler | caché | caché |
 | filet et hachure | voir | caché | caché |
 | menu « ⋯ » (ordre, retrait) | oui | caché | caché |

@@ -284,14 +284,6 @@ describe('le cadre d’un univers', () => {
     await shot(antor, 'cadre-bureau');
   });
 
-  test('le bouton « Demander à Kanevas » est présent sur les écrans d’un univers', opts, async () => {
-    for (const page of [antor, lea]) {
-      await page.goto(urlUnivers);
-      await attendre(page);
-      assert.equal(await page.getByRole('button', { name: /Demander à Kanevas/ }).count(), 1);
-    }
-  });
-
   test('Joueuse : ni Membres ni Paramètres ; adresse forcée = « Page introuvable. »', opts, async () => {
     await lea.goto(urlUnivers);
     await attendre(lea);

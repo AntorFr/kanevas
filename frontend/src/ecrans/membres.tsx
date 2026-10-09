@@ -1,4 +1,4 @@
-import { ChevronDown, Trash2, UserPlus, Users } from 'lucide-react';
+import { ChevronDown, Trash2, UserPlus, ContactRound } from 'lucide-react';
 import { useEffect, useState, type FormEvent } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
@@ -115,7 +115,7 @@ function Membres() {
     <div className="page-liste">
       <header className="tete-liste">
         <span className="glyphe-type" aria-hidden="true">
-          <Users size={20} strokeWidth={1.75} />
+          <ContactRound size={20} strokeWidth={1.75} />
         </span>
         <h1>Membres</h1>
       </header>
@@ -150,11 +150,11 @@ function Membres() {
           <li key={m.compteId} className="ligne-suivi">
             <span className="grand">
               <Avatar nom={m.username} joueur={m.role !== 'mj'} />
-              <span className="texte-ligne identifiant" title={m.username}>
+              <span className="texte-ligne membre-nom" title={m.username}>
                 {m.username}
               </span>
             </span>
-            <span className="champ-liste liste-statut-champ">
+            <span className={`champ-liste liste-statut-champ role-pastille ${m.role === 'mj' ? 'mj' : 'joueur'}`}>
               <select
                 className="liste-statut"
                 aria-label={`Rôle de ${m.username}`}
@@ -167,9 +167,11 @@ function Membres() {
               </select>
               <ChevronDown size={14} strokeWidth={1.75} aria-hidden="true" />
             </span>
-            <Bouton petit variante="danger" ecrit icone={Trash2} enCours={enCours === `retrait-${m.compteId}` && !aRetirer} onClick={() => setARetirer(m)} aria-label={`Retirer ${m.username}`}>
-              Retirer
-            </Bouton>
+            <span className="actions-revelees">
+              <Bouton petit variante="danger" ecrit icone={Trash2} enCours={enCours === `retrait-${m.compteId}` && !aRetirer} onClick={() => setARetirer(m)} aria-label={`Retirer ${m.username}`}>
+                Retirer
+              </Bouton>
+            </span>
           </li>
         ))}
       </ul>

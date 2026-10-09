@@ -294,3 +294,26 @@ test('cadre : la colonne de lecture est centrée dans l’aire à droite de la b
   assert.ok(Math.abs(m.gauche - m.droite) <= 2, `centered: ${m.gauche} vs ${m.droite}`);
   await antor.setViewportSize({ width: 1440, height: 900 });
 });
+
+test('barre haute : la Vue d’ensemble (E-3) a le fil « univers › Vue d’ensemble », dernier maillon page courante sans lien', opts, async () => {
+  await antor.setViewportSize({ width: 1440, height: 900 });
+  await sur(antor, urlUnivers);
+  const fil = antor.getByRole('navigation', { name: /Ariane/ });
+  assert.equal((await fil.innerText()).replace(/\s+/g, ' ').trim(), 'L Lame d’Ébène Vue d’ensemble');
+  assert.equal(await fil.locator('[aria-current="page"]').innerText(), 'Vue d’ensemble');
+  assert.equal(await fil.getByRole('link', { name: /Vue d’ensemble/ }).count(), 0);
+  await fil.getByRole('link', { name: /Lame d’Ébène/ }).waitFor();
+});
+
+test('barre haute : les autres fils ne gagnent pas de « Vue d’ensemble » (liste d’un type, membres, fiche)', opts, async () => {
+  await antor.setViewportSize({ width: 1440, height: 900 });
+  for (const [url, attendu] of [
+    [`${urlUnivers}/fiches/personnages`, 'L Lame d’Ébène Personnages'],
+    [`${urlUnivers}/membres`, 'L Lame d’Ébène Membres'],
+    [urlFiche, 'L Lame d’Ébène Personnages Maître Aldric'],
+  ] as const) {
+    await sur(antor, url);
+    const t = (await antor.getByRole('navigation', { name: /Ariane/ }).innerText()).replace(/\s+/g, ' ').trim();
+    assert.equal(t, attendu, url);
+  }
+});

@@ -44,8 +44,14 @@ a.bouton { text-decoration: none; display: inline-flex; }
 @media (max-width: 760px) {
   .sec::before { left: -12px; }
   .sec[data-aud="mj"] { margin-left: -12px; margin-right: -12px; padding-left: 12px; padding-right: 12px; }
-  .sec-tete { padding-right: 0; }
-  .sec-actions, .sec[data-aud="mj"] .sec-actions { position: static; justify-content: flex-end; margin-top: var(--e-1); }
+  .sec-tete { padding-right: 64px; }
+  .sec[data-aud="mj"] .sec-tete { padding-right: 72px; }
+  /* Actions stay on the title row, icons only (maquette e09). */
+  .sec-actions { top: calc(var(--e-5) - 2px); right: -8px; }
+  .sec[data-aud="mj"] .sec-actions { right: 8px; }
+  .sec-actions .lib-modifier { display: none; }
+  .sec-actions .bouton.fantome { width: 36px; padding: 0; min-height: 36px; justify-content: center; }
+  .sec-actions .bouton-icone { width: 36px; height: 36px; }
 }
 
 /* Section blocks: Relations, Pièces jointes */
@@ -96,7 +102,14 @@ a.bouton { text-decoration: none; display: inline-flex; }
   background: var(--surface-2); color: var(--texte); font: inherit; font-size: var(--t-13); }
 .audience .reglage-echec { margin: 4px 4px 0; padding: 6px 10px; border-radius: var(--rayon-item); background: var(--danger-fond); color: var(--texte); font-size: var(--t-12); }
 .audience .reglage-note { padding: 6px 10px; font-size: var(--t-12); color: var(--texte-3); border-top: 1px solid var(--bord); margin: 4px 0 0; }
-@media (max-width: 760px) { .menu.audience { width: min(320px, calc(100vw - 32px)); } }
+.audience .champ-liste select { padding-right: var(--e-6); }
+.audience .champ-liste svg { right: var(--e-2); }
+/* Phone: the panel anchors to the title row, not to the badge, so it never leaves the screen. */
+@media (max-width: 760px) {
+  .sec-tete { position: relative; }
+  .sec .ancre { position: static; }
+  .menu.audience { left: 0; right: 0; width: auto; max-width: 320px; }
+}
 
 /* Adding a section */
 .ajout-section { margin-top: var(--e-6); }

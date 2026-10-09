@@ -106,3 +106,4 @@
   .bloc-ve.mj-seul { margin: 0 calc(-1 * var(--e-4)); padding: var(--e-5) var(--e-4) var(--e-4) calc(var(--e-4) + 3px); border-radius: 0; }
   .groupe-prep-tete { min-height: 40px; }
 }
+.bloc-ve .lignes { margin-top: 0; }

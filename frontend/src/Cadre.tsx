@@ -40,15 +40,18 @@ export function maillons(pathname: string, nomUnivers: string | undefined, titre
   const id = universDeLAdresse(pathname) ?? matchPath('/univers/:id', pathname)?.params.id;
   const racine = `/univers/${id}`;
   const liste: Maillon[] = [{ libelle: nomUnivers ?? 'Univers', vers: racine, sceau: true }];
-  const item = ITEMS_UNIVERS.filter((i) => i.chemin(Number(id)) !== racine)
+  // The overview is the universe's own address: its item is a crumb only on that address itself
+  // (« univers › Vue d'ensemble »); on any other page the universe crumb already stands for it.
+  const surRacine = pathname === racine || pathname === `${racine}/`;
+  const item = ITEMS_UNIVERS.filter((i) => (i.chemin(Number(id)) === racine ? surRacine && section === undefined : true))
     .filter((i) => section === undefined || i.libelle === section)
-    .filter((i) => section !== undefined || pathname === i.chemin(Number(id)) || pathname.startsWith(`${i.chemin(Number(id))}/`))
+    .filter((i) => section !== undefined || (i.chemin(Number(id)) === racine ? surRacine : pathname === i.chemin(Number(id)) || pathname.startsWith(`${i.chemin(Number(id))}/`)))
     .sort((a, b) => b.chemin(Number(id)).length - a.chemin(Number(id)).length)[0];
   if (item) liste.push({ libelle: item.libelle, vers: item.chemin(Number(id)), icone: 'item' });
   if (titre) liste.push({ libelle: titre });
   // The last crumb is the page you are on: it is not a link.
   const dernier = liste[liste.length - 1]!;
-  liste[liste.length - 1] = { ...dernier, vers: titre || pathname === dernier.vers ? undefined : dernier.vers };
+  liste[liste.length - 1] = { ...dernier, vers: titre || pathname === dernier.vers || (surRacine && dernier.vers === racine) ? undefined : dernier.vers };
   return liste;
 }
 
