@@ -13,20 +13,28 @@ Le socle (une application Fastify, Node 20, TypeScript, `GET /healthz`, une méc
 une image publiée par la CI) porte, depuis `kanevas-premiere-fiche`, la **première
 fonction métier** : comptes, univers, membres, fiches et sections, avec leurs droits ; la session
 et le mode bouchon ; le frontend React qui les montre (accueil, univers, membres, lore, fiche).
-S'y ajoutent le système de jeu et, avec `kanevas-suivi`, le suivi de la séance : campagnes, scénarios, préparation, comptes-rendus.
-`kanevas-relier-chercher` y ajoute les relations entre fiches et la recherche dans un type (index FTS5, AD-63, AD-64).
-`kanevas-recours-admin` y ajoute l'administration d'instance (E-5, AD-86, AD-87). Ni cartes, ni assistant : tranches suivantes. Les pièces jointes (stockage sur le volume, bloc de E-9) sont construites.
+S'y ajoutent le système de jeu et, avec `kanevas-suivi`, le suivi de la séance : campagnes, scénarios,
+préparation, comptes-rendus ; `kanevas-relier-chercher`, les relations entre fiches et la recherche dans un
+type (index FTS5, AD-63, AD-64) ; les pièces jointes (stockage sur le volume, bloc de E-9) ;
+`kanevas-assistant-membre`, l'assistant de chaque membre : un panneau de conversation dont les outils
+appellent les mêmes fonctions de service que les routes, avec les droits de la personne (AD-73 à AD-78).
+Pas de cartes : tranche suivante ; l'assistant ne propose encore aucune mise à jour du monde ni aucune image.
+`kanevas-recours-admin` y ajoute l'administration d'instance (E-5, AD-86, AD-87).
 
 ## Carte
 
 - `src/server.ts`, `src/app.ts` : démarrage et assemblage de l'app Fastify
   (`buildApp`), seule application du dépôt ; toutes les routes futures s'y
   enregistrent.
-- `src/config/env.ts` : unique lecture de l'environnement (zod).
+- `src/config/env.ts` : lecture de l'environnement (zod) ; seule exception, `FRONTEND_DIR`, lu par `src/routes/frontend.ts` (réglage des tests).
 - `src/routes/health.ts` : `registerHealthRoutes`, `GET /healthz`.
 - `src/routes/auth.ts`, `src/services/oidc.ts` : login et callback OIDC ; le callback ouvre la
   session (`src/services/session.ts`, AD-56) et crée le compte à la première connexion.
 - `src/routes/bouchon.ts` : mode bouchon (AD-55), absent de la table des routes sans `KANEVAS_STUB`.
+- `src/services/assistant/` : le catalogue d'outils d'un rôle (AD-74), le port `AgentTransport` et ses
+  adaptateurs `bouchon` et `claude-agent` (AD-73, AD-78), la disponibilité (AD-77) et
+  l'orchestration d'une demande (AD-75) ; `src/routes/assistant.ts` : les deux routes. Aucune requête SQL
+  dans ce module (AD-2, AD-27).
 - `src/db/` : ouverture du fichier SQLite, `migrations/0001-*.sql`, `0002-systemes.sql`, `0003-suivi.sql`, `0004-pieces-jointes.sql`, `0005-relier-chercher.sql`, `0006-illustrations.sql`, runner (AD-14).
 - `src/e2e/` : tests d'ensemble, serveur réel en bouchon et navigateur piloté (Playwright, ignoré s'il manque) ; E-5 : `administration*.test.ts`.
 - `src/services/` : `comptes`, `univers`, `membres`, `instance`, `fiches`, `sections`, `droits`, `systemes`, `relations`, `campagnes`, `scenarios`, `preparation`, `comptes_rendus`, `pieces-jointes`, `illustrations`, `stockage` — les seules
@@ -125,13 +133,16 @@ base en snake_case (`docs/donnees.md`).
   `OIDC_*` (ou avec une partie seulement), login et callback répondent 404 ; une valeur vide
   ou invalide fait échouer le démarrage.
 - **Douze tables et deux index de recherche, aucun ORM** : `comptes`, `univers`, `membres`, `fiches`, `sections` (migration
-  0001), `systemes_jeu`, `gabarits` (migration 0002), `campagnes`, `scenarios`, `taches_preparation` (migration 0003), `pieces_jointes` (migration 0004), `relations`, `recherche_fiches` et `recherche_sections` (FTS5, migration 0005) ; trois colonnes d'illustration sur `fiches` (migration 0006) ; numéros provisoires : voir `docs/donnees.md`. Aucune requête SQL hors de `src/services/` et `src/db/`.
+  0001), `systemes_jeu`, `gabarits` (migration 0002), `campagnes`, `scenarios`, `taches_preparation` (migration 0003), `pieces_jointes` (migration 0004), `relations`, `recherche_fiches` et `recherche_sections` (FTS5, migration 0005) ; trois colonnes d'illustration sur `fiches` (migration 0006) ; les numéros 0001 à 0006 sont définitifs, les suivants se prennent à la fusion (AD-51 ; `docs/donnees.md`). Aucune requête SQL hors de `src/services/` et `src/db/`.
 - **Toute route hors `/healthz`, `/api/auth/*` et, en bouchon, `/connexion-bouchon` est gardée par la session** ; sous `/api` un
   défaut de session répond 401, ailleurs il redirige vers la connexion (AD-15).
-- **Rien n'appelle un LLM** : les transports compilent mais ne sont reliés à
-  aucune route. Aucun secret `ANTHROPIC_API_KEY` n'est déployé.
+- **Une seule route appelle un modèle : l'assistant** (`src/routes/assistant.ts`, par `repondre`, AD-73), avec le jeton de
+  l'abonnement `CLAUDE_CODE_OAUTH_TOKEN` ; le transport texte de `services/llm/*` n'est relié à rien. Aucun secret `ANTHROPIC_API_KEY` n'est déployé.
+  Les deux routes (sous la garde de session, AD-15) : `GET /api/univers/:id/assistant` rend `{disponible, catalogue: 'mj'|'joueur'}` ;
+  `POST /api/univers/:id/assistant/messages`, corps `{message, historique: [{role: 'user'|'assistant', content}]}`, rend
+  `{reponse, evenements: [{type, libelle, cible}]}` ; une erreur rend `{message, code}` (codes d'AD-75 et d'AD-77).
 - Client OIDC : `client_id` `kanevas`, callback
-  `https://kanevas.tantive.berard.me/api/auth/oidc/callback`, émetteur
+  `https://kanevas.berard.me/api/auth/oidc/callback`, émetteur
   `https://auth.berard.me`. Ces valeurs sont partagées avec la déclaration du
   client dans `k8s-home-lab` : les changer ici impose de changer là-bas.
 
@@ -156,7 +167,8 @@ base en snake_case (`docs/donnees.md`).
 # La cible
 
 > Construit à ce jour : la session, le mode bouchon, les tables et leurs fonctions de service,
-> les systèmes de jeu et leurs gabarits, les relations et la recherche dans un type, le suivi (campagnes, scénarios, préparation, comptes-rendus), les écrans E-1 à E-9 (dont E-5 Administration) (E-9 avec son bloc Pièces jointes), E-13, E-14, E-15 et E-16, l'illustration des fiches, et le stockage des fichiers sur le volume. Le reste (agents, images) est la cible des tranches suivantes.
+> les systèmes de jeu et leurs gabarits, les relations et la recherche dans un type, le suivi (campagnes, scénarios, préparation, comptes-rendus), les écrans E-1 à E-9 (E-9 avec son bloc Pièces jointes), E-13, E-14, E-15 et E-16, l'illustration des fiches, le stockage des fichiers sur le volume, et l'assistant du membre (E-12 ; ses outils : chercher, lire, écrire dans une section, créer une campagne ou un scénario). Le reste (propositions de mise à jour, images,
+> cartes) est la cible des tranches suivantes.
 
 ## Organes, et qui parle à qui
 
@@ -180,7 +192,7 @@ Authelia (OIDC) : identité seulement.
   Routes et outils de l'agent les appellent de la même façon (AD-2) : c'est ce qui rend la
   symétrie humain / agent vérifiable.
 - **Agents** : deux catalogues d'outils, MJ et Joueur, choisis côté serveur selon le rôle du
-  compte dans l'univers courant (AD-26).
+  compte dans l'univers courant (AD-26, AD-74), derrière le port `AgentTransport` (AD-73).
 - **Images** : un port `GenerateurImage`, adaptateurs `bouchon`, `aucun`, `codex` (AD-45, AD-50, AD-55).
 
 ## Décisions
@@ -262,6 +274,12 @@ Les numéros sont stables. Une décision retirée garde son numéro, avec ce qui
 | AD-62 | **Écritures de scénario concurrentes** : même mécanisme qu'AD-59 — un entier `version`, envoyé à l'écriture, refus 409 de code `scenario_modifie` si elle n'est plus la courante. Deux MJ peuvent écrire le même scénario. |
 | AD-63 | **La recherche est la liste, plus une condition.** Chercher dans un type, c'est lister ce type (même fonction, même filtre de droits, même ordre alphabétique, même pagination) avec une condition de correspondance sur les index FTS5 : l'index ne livre que des candidats, jamais un résultat (AD-8). Une fiche correspond si tous les mots sont dans son titre, ou tous dans une même section que le compte lit ; mots par début de mot, sans casse ni accents ; la saisie est neutralisée (chaque mot cité, guillemets doublés, signes sans lettre ni chiffre écartés). Écartés : un classement par pertinence et des extraits (un extrait est du contenu à filtrer, un classement trahit ce qui est caché) ; une recherche dans tous les types (hors périmètre, par l'assistant). Rouvrable sans migration. |
 | AD-64 | **Une relation se lit sous deux gardes** : la section porteuse **et** la fiche cible doivent être lisibles par le compte (et le mode) qui lit ; sinon la relation est absente de la réponse, sans placeholder ni compteur (AD-20, AD-22). Elle se crée et se retire par le seul MJ ; sa cible est du même univers, jamais sa propre fiche ; retirer une section la retire (cascade). Écartés : un marqueur « relation vers une fiche cachée » (il révèle qu'une fiche existe) ; afficher les relations entrantes sur la fiche cible (non promis ; le graphe les déduit, AD-41). |
+| AD-73 | **L'agent est un port `AgentTransport`, distinct du transport texte** repris d'Antre-du-maitre (conçu pour un tour sans outil). Adaptateurs : `claude-agent` (Agent SDK, abonnement de Monsieur, AD-54) et `bouchon` (AD-78). Pour `claude-agent` : les outils du catalogue sont exposés par un serveur MCP **en processus** nommé `kanevas` ; `tools` vide (aucun outil intégré du SDK : ni fichiers, ni shell, ni réseau) ; `settingSources` vide (le SDK ne charge aucun réglage du pod) ; `allowedTools` égal aux seuls `mcp__kanevas__<outil>` du catalogue ; `permissionMode` `dontAsk` ; `maxTurns` 12 ; un `AbortController` ; le jeton `CLAUDE_CODE_OAUTH_TOKEN` passé dans l'`env` de l'appel, lu par le seul module de configuration, jamais journalisé ni renvoyé. Le port est assez étroit pour qu'un outil (images, propositions) s'ajoute au catalogue sans le modifier. Écarté : réutiliser le transport texte (pas d'outils) ; les outils intégrés du SDK (porte dérobée sur le pod). Risque connu, tranché (non une question ouverte) : que le SDK accepte des outils en processus avec ce jeton ; ne se constate qu'au premier vrai appel, qui a lieu après la recette (voir l'ordre ci-dessous), et jusque-là l'adaptateur `claude-agent` n'est exercé que par une `query` factice. Ordre : la recette de la tranche se joue en bouchon ; le premier vrai appel se joue sur l'URL déployée, donc **après** la fusion de `kanevas-am-deploy` (qui déclare une variable facultative, inoffensive tant que Monsieur n'a pas posé la valeur) et la pose du jeton. Si c'est faux, c'est l'adaptateur `claude-agent` qui est repris (réouverture de la tâche `kanevas-am-transport`) ; la variable déjà déclarée reste, sans effet. |
+| AD-74 | **Deux catalogues, choisis par le serveur.** Joueur : `chercher` (un mot ou plus, dans un type ou dans tous : sans type, l'outil appelle la recherche d'un type, AD-63, pour chacun des sept types et rend les fiches par type puis titre, 20 au plus, en disant quand la liste est tronquée), `lire_fiche`, `lire_section`, `modifier_section`, `ajouter_a_section` (ajoute un paragraphe après le contenu, sans recopier le texte existant), `lister_campagnes`. MJ : ceux-là, plus `creer_campagne` et `creer_scenario` (AD-31). Un outil est une description, un schéma et un exécuteur qui appelle une fonction de service que la route appelle aussi (AD-2) ; **le compte, l'univers et le rôle ne sont jamais des paramètres** : ils viennent de la session et de l'adresse de la route, et l'acteur est le compte seul, sans mode Joueur (un MJ en mode Joueur garde son catalogue MJ). Un compte sans rôle dans l'univers n'a pas de catalogue (même refus qu'un univers inconnu). Un outil refusé rend le même résultat que l'interface — « Introuvable. » pour ce qui n'est pas lisible, « Vous ne pouvez pas modifier cette section. » pour ce qui est lisible sans être écrit, « La section a changé depuis que vous l'avez lue. Relisez-la. » pour une version périmée (AD-59) — et n'ajoute aucun événement (AD-76). Les lectures rendent la `version` de la section. L'instruction système dit que l'assistant a exactement les droits de la personne, répond en français, et sur « Introuvable. » dit qu'il ne trouve pas, sans rien affirmer d'autre. Écarté : un outil de création de fiche ou de réglage d'audience (B-26 promet chercher, résumer, modifier) ; un outil sur les cartes et les graphes (hors de B-26 : ils se lisent à l'écran, pas par l'assistant). |
+| AD-75 | **Une demande, une réponse**, sans flux ni état serveur (AD-28 interdit de stocker la conversation) : le client envoie le message et les 20 derniers messages du fil ; limites : 2 000 caractères par message, 20 messages d'historique, 12 tours d'agent, 120 secondes (l'`AbortController` arrête l'agent), **une demande à la fois par compte** (verrou dans le processus, une seule instance, AD-5, libéré sur erreur et sur délai). Erreurs : 400 (message vide, trop long, historique trop long), 404 (compte sans rôle ou univers inconnu), 429 `assistant_occupe`, 502 `assistant_erreur` (échec du transport ou délai, aucune écriture annoncée), 503 `assistant_indisponible` (AD-77). Écarté : le flux SSE (reprise, annulation, pour un gain d'affichage). À rouvrir si les réponses dépassent régulièrement 30 secondes. |
+| AD-76 | **Ce que l'agent a écrit se dit.** Chaque outil d'écriture réussi ajoute à la réponse un **événement** `{type, libelle, cible}` : `section_modifiee`, `section_completee`, `campagne_creee`, `scenario_cree`. Le libellé est écrit par le serveur et ne nomme que ce que la personne peut lire (le scénario et la campagne pour un MJ). La `cible` (type, identifiants) permet au client de construire le lien. Côté écran, un **registre de blocs** (`frontend/src/ecrans/assistant/blocs/registre.ts`) : une ligne par `type` d'événement ; cette tranche inscrit le bloc `ecriture`, les tranches `kanevas-monde` et `kanevas-images` inscrivent le leur sans modifier un bloc existant. |
+| AD-77 | **Sans jeton, l'assistant est indisponible et le dit.** Disponibilité : `bouchon` si `KANEVAS_STUB=1`, `claude-agent` si `CLAUDE_CODE_OAUTH_TOKEN` est non vide, sinon aucune : la route de disponibilité rend `disponible: false`, l'envoi rend 503 `assistant_indisponible`, ni le bouchon ni le SDK ne sont appelés — jamais de repli silencieux sur le bouchon. La variable est facultative dans le déploiement : un secret manquant ne casse ni OIDC ni le démarrage. Le jeton est posé par Monsieur (AD-54). |
+| AD-78 | **Le bouchon de l'assistant est un script de mots-clés ordonné** : la première règle dont les mots-clés figurent dans le message gagne ; elle appelle les vrais outils du catalogue de la personne, et compose la réponse de leur résultat. Règles : « crée un scénario « T » dans « C » » → `creer_scenario` ; « crée une campagne « C » » → `creer_campagne` ; « lis-moi la section « S » » → `lire_section` ; « ajoute le paragraphe « P » dans « S » » → `ajouter_a_section` ; « que sait-on d'X » → `chercher` puis `lire_fiche` ; un message contenant « échec » lève l'erreur de transport ; sinon la réponse « Je ne sais répondre qu'à des demandes de test : chercher, lire, ajouter, créer une campagne ou un scénario. » Un outil absent du catalogue (le Joueur demande de créer un scénario) donne un refus, jamais une écriture. |
 | AD-65 | **Stockage et dépôt des fichiers** : un module `src/services/stockage.ts`, sans notion de section, écrit un flux dans `/data/attachments/tmp/<uuid>`, puis le déplace sur `/data/attachments/<uuid>` (même volume : un renommage) ; il lit en flux et supprime. Il sert aussi aux fonds de carte (AD-40). **`deposerPieceJointe(compte, mode, sectionId, flux, nom, secrete)` est la seule fonction d'envoi** : la route et l'outil image (AD-44) l'appellent. Elle vérifie le droit d'écrire **avant** de lire le flux, puis une seconde fois dans la transaction qui écrit la ligne (le droit peut être retiré pendant un envoi long) ; un échec ou une annulation n'écrit ni ligne ni fichier. Pas de limite de taille (AD-7), un fichier vide refusé, 50 pièces par section. Écarté : base64 en JSON (mémoire, 33 % de plus), limite de taille (décision AD-7). |
 | AD-66 | **Ce qu'on sert, et comment** : le type d'une pièce est **déterminé par le serveur à l'envoi, par la signature des premiers octets** (PNG, JPEG, GIF, WebP) ; le type annoncé par le navigateur est ignoré. Une image reconnue est servie en ligne sous son type ; **tout le reste** (SVG, HTML, PDF…) l'est en `application/octet-stream` avec `Content-Disposition: attachment` et le nom d'origine encodé (`filename*`). Toujours : `X-Content-Type-Options: nosniff`, `Content-Security-Policy: default-src 'none'; sandbox`, `Cache-Control: private, no-store`. Écarté : servir en ligne selon l'extension (un fichier « .png » qui est du HTML) ; aperçu PDF intégré (hors tranche). |
 | AD-67 | **Pas de route de liste des pièces** : elles voyagent avec la fiche, par section, déjà filtrées par la garde et le mode du lecteur (`{id, nom, taille, image, secrete}` ; `secrete` n'est rendu qu'au MJ hors mode Joueur). Un lecteur n'apprend ni le nombre ni l'existence de ce qu'il ne lit pas. Routes : ajouter (`multipart`, un fichier par requête, champ `secrete` puis champ `fichier` : un `secrete` envoyé après le fichier est ignoré), marquer (`secrete`), retirer, et lire le fichier (sans paramètre de mode : le droit réel du compte ; le mode Joueur ne change que ce que la fiche montre). Un compte qui ne lit pas la section, ou une pièce secrète pour un non-MJ : **404**, de corps identique à celui d'un identifiant inconnu ; qui lit sans écrire reçoit **403** à l'ajout et au retrait, et un non-MJ qui marque ou lève « secrète » aussi (comme les gestes MJ de la première fiche). Le refus de limite (50 pièces) ne dit jamais le chiffre dans l'API ; l'écran le dit au seul MJ. |
@@ -276,7 +294,7 @@ Les numéros sont stables. Une décision retirée garde son numéro, avec ce qui
 
 - **Image** `ghcr.io/antorfr/kanevas:<x.y.z>`, publique, construite par la CI sur un tag semver ;
   la version n'a qu'une source, le tag.
-- **URL** `https://kanevas.tantive.berard.me` (wildcard, rien à créer).
+- **URL** `https://kanevas.berard.me` (wildcard, rien à créer).
 - **Volume** `hostPath /mnt/data/kanevas/data` monté sur `/data` : la base, les pièces jointes,
   `CODEX_HOME`. Le jeu de données répliqué du nœud est la sauvegarde ; restaurer, c'est
   remettre ce dossier.

@@ -38,6 +38,12 @@ droits (AD-8, AD-21).
 vit dans le navigateur, AD-28), la disposition d'un graphe (calculée dans le navigateur, AD-42),
 ses liens (déduits des relations, AD-41).
 
+## Assistant (`kanevas-assistant-membre`)
+
+Aucune migration, aucune table, aucun attribut : l'assistant lit et écrit par les fonctions de
+service existantes (AD-2, AD-74), et le fil de la conversation n'est stocké nulle part (AD-28,
+AD-75). La table `propositions` du cadrage reste à `kanevas-monde`.
+
 ## Migration 0001 (`kanevas-premiere-fiche`)
 
 Cinq tables : `comptes`, `univers`, `membres`, `fiches`, `sections`. Pas de recherche (FTS5 vient

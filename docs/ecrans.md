@@ -5,8 +5,8 @@
 > finie se détaillent dans la tranche qui le construit.
 
 > **Construit à ce jour** : E-1, E-2, E-3 (nom, navigation et blocs : système de jeu, campagnes actives, derniers comptes-rendus, préparation pour le MJ), E-4, E-5 (Administration), E-6, E-7, E-13, E-8 (avec la
-> recherche dans un type, en grille de cartes illustrées), E-9 (avec les blocs Relations et Pièces jointes et l'illustration en tête), E-14 (Paramètres), E-15 (Système de jeu, à `/systemes/:sid`), E-16 (Systèmes de jeu), la ligne « Campagne » de E-9, la session
-> et la barre latérale. E-10 à E-12 sont la cible.
+> recherche dans un type, en grille de cartes illustrées), E-9 (avec les blocs Relations et Pièces jointes et l'illustration en tête), E-12 (Assistant), E-14 (Paramètres), E-15 (Système de jeu, à `/systemes/:sid`), E-16 (Systèmes de jeu), la ligne « Campagne » de E-9, la session
+> et la barre latérale. E-10 et E-11 sont la cible.
 
 ## Format
 
@@ -59,7 +59,7 @@ bascule existe (fiche, carte).
 | **E-9 Fiche** | E-8 ; un token ; un lien ; E-13 | lire et écrire les sections permises ; ajouter, réordonner, retirer une section, régler son audience, relier (MJ) ; déposer, marquer secrète, retirer une pièce jointe ; poser, remplacer, retirer l'illustration (MJ) ; bascule mode Joueur (MJ). Un compte-rendu s'ouvre ici. | P-3 à P-7 |
 | **E-10 Cartes** | nav Cartes | les cartes lisibles ; créer une carte illustrée (avec son image de fond) ou un graphe (MJ) | P-3, P-9 |
 | **E-11 Carte** | E-10 ; E-3 | carte illustrée : fond, tokens ; graphe : nœuds et liens. MJ : déposer ou changer le fond, placer, configurer, rendre visible, mode Joueur. Joueur : ouvrir la fiche d'un token. | P-3, P-6, P-9 |
-| **E-12 Assistant** | bouton flottant, sur tout écran d'univers | converser ; voir ce que l'agent a écrit, avec un lien ; MJ : propositions de mise à jour (actuel/proposé, **Appliquer**, **Abandonner**), images générées | P-3, P-5, P-6, P-7 |
+| **E-12 Assistant** | bouton flottant, sur tout écran d'univers | converser ; voir ce que l'assistant a écrit, avec un lien ; MJ : propositions de mise à jour (actuel/proposé, **Appliquer**, **Abandonner**), images générées | P-3, P-5, P-6, P-7 |
 | **E-13 Comptes-rendus** | nav Comptes-rendus ; E-3 | tous les CR lisibles de l'univers, du plus récent, avec leur campagne | P-4, P-5 |
 | **E-14 Paramètres de l'univers** | nav Univers (MJ) | nom, description, système de jeu (choisir dans le catalogue, en créer un) | P-8 |
 | **E-15 Système de jeu** | E-16 ; lien depuis E-3 et E-14 | le référentiel commun : règles, créatures, objets ; ajouter, modifier (MJ d'un univers rattaché) ; hors du cadre d'un univers | P-8 |
@@ -856,8 +856,10 @@ B-15 → E-6 (liste et page) ; B-16 → E-6 et E-7 ; B-17 → E-6 ; B-18 → E-6
 B-20 → E-13. Parcours : P-3 étapes 1 à 3 (E-3, E-6, E-7), P-4 en entier, P-5 étape 1 (E-13 →
 E-9) ; P-6 étape 1 ne lit que les blocs de E-3 (derniers comptes-rendus) ; B-18 et B-20 le citent, mais aucune étape de P-6 ne passe par E-6 ni E-13. Les trois rôles : le Joueur a E-3, E-6
 (sans scénarios ni préparation), E-13 ; l'admin d'instance sans rôle n'a aucun de ces écrans.
-Reste aux autres tranches : créer une campagne ou un scénario par l'assistant
-(`kanevas-assistant-membre`), la proposition de mise à jour depuis un CR (`kanevas-monde`).
+Reste aux autres tranches : la proposition de mise à jour depuis un CR (`kanevas-monde`) ; créer une campagne ou un scénario par
+l'assistant est construit (E-12, `kanevas-assistant-membre`).
+
+## Détail des écrans de `kanevas-relier-chercher`
 
 ## Détail des écrans de `kanevas-fichiers`
 
@@ -953,6 +955,154 @@ section, même vide.
 
 ### Clôture de `kanevas-fichiers`
 
+Dans chaque section, sous son contenu : un bloc **Relations**, inscrit au registre des blocs de
+section (un fichier, sans modifier un bloc existant). Il liste les relations **portées par cette
+section** : chacune dit son type et nomme sa cible — « membre de → Lames Grises », avec le badge du
+type de la cible — et mène à la fiche de la cible (E-9). Une relation est dirigée : elle va de la
+section vers la cible ; la fiche cible ne montre pas les relations qui l'atteignent.
+
+| Rôle | Lire les relations d'une section | Relier, retirer | Refus |
+|---|---|---|---|
+| MJ | toutes celles de ses sections | oui | sans objet |
+| Joueur | celles dont il lit la section et la cible | non : boutons **absents** | une relation à cible illisible est **absente**, pas refusée |
+| MJ en mode Joueur | comme un Joueur qui n'est l'auteur d'aucune section | non : boutons absents | idem |
+| Admin d'instance | aucune | non | « Page introuvable. » |
+
+*Ce que voit chacun.* Une relation n'est montrée que si le compte lit la section **et** la fiche
+cible. Sinon elle est **absente** : ni ligne, ni espace, ni compteur, ni mot « cachée ». Le bloc
+d'un Joueur qui n'a aucune relation à voir n'apparaît pas du tout. Le MJ voit le bloc de chaque
+section, même vide. En mode Joueur, le MJ voit le bloc comme un Joueur qui n'est l'auteur d'aucune
+section (AD-39), sans « Relier » ni « Retirer ».
+
+*Le MJ relie.* « Relier à une fiche » ouvre un formulaire sous la liste :
+1. « Type de relation » (texte libre, 1 à 80 caractères, par exemple « membre de ») ;
+2. « Type de fiche » (Personnage, Lieu, Faction, Objet, Événement, Quête ; Personnage par défaut) ;
+3. un champ « Chercher dans les factions » et la liste des fiches de ce type, cent à la fois avec
+   « Charger la suite » : c'est la liste et la recherche de E-8, pas une autre ;
+4. choisir une fiche (une seule), puis « Relier » ; « Annuler » ferme sans rien écrire.
+
+*Le sélecteur de fiche* (étape 3) est la liste et la recherche de E-8 telles quelles : la recherche part à « Chercher » ou à Entrée, avec les mêmes états et les mêmes textes (« Recherche… », « Impossible de lancer la recherche. » et « Réessayer », « Aucun résultat pour « lames » dans les factions. », bandeau de connexion perdue avec « Chercher » et « Relier » désactivés, « Charger la suite » au-delà de 100) ; à l'ouverture du formulaire la liste du type se charge (« Chargement des fiches… », ou « Impossible de charger les fiches. » et « Réessayer ») et « Chercher » reste actif (hors connexion perdue) ; « Relier » reste désactivé tant qu'aucune fiche n'est choisie, pendant le chargement et sur erreur ; « Effacer la recherche » rend la liste du type ; le choix se voit (puce pleine) et disparaît si l'on change le type de fiche ou la recherche.
+
+Le formulaire n'est pas gardé en cas de session expirée. Une fiche se relie à toute fiche de son
+univers, **sauf à elle-même**. Une section porte au plus 100 relations ; deux relations de même
+type vers la même fiche ne coexistent pas. « Retirer » sur une ligne supprime la relation sans
+confirmation (elle se refait en trois gestes) ; retirer une section retire ses relations avec elle.
+
+Textes : bloc sans relation (MJ) : « Aucune relation pour l'instant. » ; erreurs sous les champs :
+« Erreur : le type de relation est obligatoire. », « Erreur : 80 caractères au plus. », « Erreur :
+choisissez une fiche. » ; refus du service, au-dessus du formulaire : « Cette relation existe
+déjà. », « Une fiche ne se relie pas à elle-même. », « Cette section porte déjà 100 relations. » ;
+liste de choix vide : « Aucune faction à relier. » (autres types : « Aucun personnage… ») ;
+chaque bouton « Retirer » porte l'étiquette accessible « Retirer la relation membre de → Lames Grises ».
+
+| État | Ce qu'on voit | Ce qu'on peut faire |
+|---|---|---|
+| vide | MJ : « Aucune relation pour l'instant. » et « Relier à une fiche » ; Joueur : le bloc n'est pas là | MJ : relier |
+| chargement | « Chargement des relations… » dans le bloc seul ; le reste de la fiche reste affiché | — |
+| erreur | « Impossible de charger les relations. » dans le bloc seul, les autres sections intactes ; échec d'écriture : « L'action n'a pas abouti. Réessayez. », saisie conservée | « Réessayer » |
+| connexion perdue | le bandeau ; « Relier », « Retirer » désactivés ; la liste affichée reste | suivre un lien |
+| refus | le bloc d'une section illisible n'existe pas (la section est absente, B-9) ; une relation vers une fiche illisible est absente ; « Relier » et « Retirer » n'existent pas pour un Joueur ni en mode Joueur | — |
+| contenu long | 100 relations : la liste défile avec la section ; un type de 80 caractères et un titre de fiche de 120 passent à la ligne | idem |
+
+*Critères.*
+- Étant donné Antor, MJ, qui a relié la section « Apparence » de « Maître Aldric » à la faction
+  « Lames Grises » (« membre de ») et à la faction « Cercle des Cendres » dont aucune section n'est
+  lue des joueurs, quand Léa ouvre « Maître Aldric », alors elle voit « membre de → Lames Grises »,
+  et rien d'autre dans le bloc : ni « Cercle des Cendres », ni compteur, ni ligne vide.
+- Étant donné la même fiche, quand Antor passe en mode Joueur, alors il voit la même chose que Léa
+  et ni « Relier » ni « Retirer ».
+- Étant donné Léa, quand « Lames Grises » n'a plus de section lue des joueurs, alors la relation
+  disparaît de la fiche d'Aldric sans autre trace.
+- Étant donné Antor sur « Maître Aldric », quand il relie « Apparence » à « Maître Aldric », alors il
+  voit « Une fiche ne se relie pas à elle-même. » et rien n'est écrit.
+- Étant donné Antor, quand il retire la section « Apparence », alors ses relations disparaissent
+  avec elle et ne remontent nulle part.
+
+### Clôture de `kanevas-relier-chercher`
+
+B-10 → bloc Relations de E-9 ; B-11 → recherche de E-8 ; B-29 → six états de la recherche et du
+bloc ci-dessus. Atteints par P-3 étape 4 (relier le PNJ à sa faction : relier une section du PNJ, bloc de E-9) et P-6 étape 2
+(chercher « Aldric », E-8). Les deux rôles ont leur colonne : le MJ cherche et relie, le Joueur
+cherche et lit ce qu'il peut ; l'admin d'instance n'atteint ni l'un ni l'autre (« Page
+introuvable. »). Chemin d'échec propre à cette tranche (`docs/parcours.md` n'en porte pas pour P-3 et P-6) : une recherche sans résultat dit « Aucun résultat pour … »,
+jamais « caché ». Chemin d'échec de relier une section : le refus du service s'écrit au-dessus du formulaire (« Cette relation existe déjà. », « Une fiche ne se relie pas à elle-même. », « Cette section porte déjà 100 relations. »), la saisie et le choix sont conservés ; un échec d'écriture générique et une session expirée suivent les textes communs (« L'action n'a pas abouti. Réessayez. » ; connexion, formulaire non gardé).
+
+## Détail des écrans de `kanevas-assistant-membre`
+
+> E-12 Assistant, et son ajout au shell d'un univers. Mêmes six états et mêmes textes communs que
+> `kanevas-premiere-fiche` (chargement, connexion perdue, session expirée) ; ne sont redits que les
+> textes propres. Maquette finie : `docs/maquettes/e12-assistant.html` (thème sombre ; MJ, Joueur,
+> et les états). Composant : `docs/charte.md` « Panneau d'assistant ».
+
+**Ajout au shell.** Un bouton flottant « Demander à Kanevas », en bas à droite, sur **tout écran
+d'un univers** pour un membre (MJ ou Joueur) ; il n'existe ni hors d'un univers, ni pour un compte
+sans rôle dans l'univers (l'admin d'instance sans rôle, Teo avant son ajout) : l'écran n'a alors pas
+de bouton, et l'assistant n'a pas de page à lui (l'adresse `/univers/:id/assistant` répond « Page introuvable. ») et sa route d'API répond 404 (AD-75). Il se monte par un seul fichier, sans
+modifier un composant existant du shell. Bascule « mode Joueur » d'une fiche : sans effet sur
+l'assistant, qui garde le catalogue du rôle réel (AD-74) ; le panneau le dit par sa pastille.
+
+### E-12 Assistant
+
+Un panneau à droite (380 px, sur ordinateur) qui s'ouvre au bouton et se ferme par « Fermer » ou
+Échap ; le contenu de l'écran dessous reste lisible et utilisable. Sur téléphone (moins de 760 px)
+il prend tout l'écran, et Échap ou « Fermer » rend le focus au bouton flottant. Dedans, de haut en
+bas :
+
+- **l'en-tête** : « Kanevas — assistant », la pastille du catalogue (« MJ » ou « Joueur », mot et
+  teinte), « Nouvelle conversation », « Fermer » ;
+- **le fil** : les messages de la personne et les réponses de l'assistant, en texte brut (AD-58),
+  du plus ancien au plus récent ; le fil défile et reste calé sur le dernier message ;
+- **sous une réponse, les écritures** : un bloc « Écrit par l'assistant » par événement (AD-76), le
+  libellé (« Section « Notes de la table » complétée », « Scénario « Acte III — La crypte » créé
+  dans La Couronne brisée ») et un lien « Ouvrir » vers E-9 (la fiche), E-7 (le scénario) ou E-6
+  (la campagne). Les quatre écritures possibles : « Section « Notes de la table » complétée »
+  (`ajouter_a_section`, lien vers E-9), « Section « Vérité » modifiée » (`modifier_section`, lien
+  vers E-9), « Campagne « La Couronne brisée » créée » (`creer_campagne`, lien vers E-6), « Scénario
+  « Acte III — La crypte » créé dans La Couronne brisée » (`creer_scenario`, lien vers E-7) ;
+- **la saisie** : le champ, étiqueté « Demander à Kanevas » par une étiquette visible au-dessus de lui (son texte d'aide est « Votre question »), dans tous les états où il est affiché, et « Envoyer » (Entrée
+  envoie, Maj+Entrée va à la ligne).
+
+Le **fil vit dans le navigateur**, dans un magasin du module `frontend/src/ecrans/assistant/fil.ts`, hors du routeur et du stockage du navigateur (AD-28) : il survit à un
+changement d'écran et à la fermeture du panneau ; il disparaît au rechargement de la page, au
+changement d'univers et à la déconnexion ; « Nouvelle conversation » le vide. Il n'est écrit
+nulle part (ni stockage du navigateur, ni serveur). Le client envoie le message et les 20 derniers
+messages du fil (AD-75).
+
+**Ce que chaque rôle y voit.** Le Joueur : chercher, lire une fiche, lire une section, modifier une
+section, ajouter un paragraphe à une section, lister les campagnes. Le MJ : les mêmes, plus créer
+une campagne et créer un scénario. Un Joueur qui demande de créer un scénario n'a pas l'outil :
+l'assistant répond qu'il ne peut pas, sans événement et sans rien créer (le texte est celui du
+modèle, il n'est pas fixé ; ce qu'on vérifie est l'absence d'écriture). Dans les deux cas
+l'assistant ne lit et n'écrit que ce que la personne lit et écrit : une section fermée est
+« Introuvable. », une section lisible mais non écrite « Vous ne pouvez pas modifier cette
+section. » (AD-74). Cette tranche **ne donne aucun outil sur les cartes ni les graphes** (écarté, AD-74). Elle **ne dessine ni proposition de mise à jour ni image** : elles
+s'inscrivent au registre de blocs (`kanevas-monde`, `kanevas-images`).
+
+| État | Ce qu'on voit | Ce qu'on peut faire |
+|---|---|---|
+| vide (fil sans message) | « Demandez-moi de chercher, de résumer ou d'écrire dans ce que vous pouvez lire et écrire. Exemple : « Que sait-on d'Aldric ? » » | écrire ; fermer ; « Nouvelle conversation » (sans effet sur un fil vide) |
+| chargement (disponibilité) | le bouton est présent ; dans le panneau, « Chargement… » à la place du champ et de « Envoyer » (absents, pas désactivés) ; aucun « Réessayer » tant que l'appel n'a pas répondu | fermer ; nouvelle conversation |
+| disponibilité en échec (serveur muet, erreur) | « Je n'ai pas pu répondre — réessayer » avec un bouton « Réessayer » qui relit la disponibilité ; le champ et « Envoyer » sont présents mais désactivés (`aria-disabled`) | réessayer ; fermer ; nouvelle conversation |
+| réponse en cours | le message envoyé apparaît ; « Kanevas réfléchit… » (`role="status"`) ; « Envoyer » affiche « … » et est désactivé ; le champ reste lisible | fermer (la réponse arrive dans le fil) ; « Nouvelle conversation » est désactivée tant que la réponse n'est pas arrivée |
+| erreur | « Je n'ai pas pu répondre — réessayer » (`role="alert"`), sans événement, pour toutes les causes (délai de 120 s, erreur de transport) : la personne ne les distingue pas ; demande déjà en cours (429) : « Une demande est déjà en cours. Patientez. » ; la saisie n'est jamais perdue : à l'envoi le champ se vide, la question reste dans le fil, une seule fois ; « Réessayer » (offert pour toutes les erreurs, le 429 compris) la renvoie telle quelle : le message d'erreur disparaît, « Kanevas réfléchit… » prend sa place, et la question n'est pas affichée une seconde fois | « Réessayer » renvoie la même question ; saisir autre chose ; fermer ; nouvelle conversation |
+| indisponible (sans jeton, hors bouchon, AD-77) | « L'assistant n'est pas disponible pour le moment. » ; champ et « Envoyer » désactivés (`aria-disabled`) | lire le fil ; fermer ; nouvelle conversation |
+| connexion perdue | le bandeau commun ; le fil reste lisible ; champ et « Envoyer » désactivés. Perdue pendant « Kanevas réfléchit… » : la réponse est perdue, l'état passe à l'erreur ci-dessus avec « Réessayer » (désactivé tant que la connexion n'est pas revenue) ; au retour de la connexion, le bandeau disparaît et le champ est réactivé | lire, ouvrir les liens ; fermer ; nouvelle conversation |
+| refus | le compte sans rôle n'a pas le bouton (rien à décrire ici) ; un refus d'outil est une réponse de l'assistant, pas un écran d'erreur — « Introuvable. », « Vous ne pouvez pas modifier cette section. », « La section a changé depuis que vous l'avez lue. Relisez-la. » —, sans événement ; la réponse commence par ce texte, la suite est du texte libre du modèle ; session expirée : la personne est menée à la connexion, le fil est perdu | refus d'outil : le fil reste, on écrit à nouveau ; fermer ; nouvelle conversation |
+| contenu long | message de plus de 2 000 caractères : « Erreur : 2 000 caractères au plus. » sous le champ, « Envoyer » désactivé ; fil de plus de 20 messages : la note « Seuls les 20 derniers messages sont transmis à l'assistant. » ; réponse longue : passe à la ligne, le fil défile ; titre de 120 caractères dans un libellé : passe à la ligne | écrire (après avoir raccourci le message) ; fermer ; nouvelle conversation |
+
+*Critère.* Étant donné Léa Joueuse de « Lame d'Ébène », quand elle demande « Que sait-on d'Aldric ? »,
+alors le fil donne « Apparence » et rien de « Vérité » ; quand elle demande de lire « Vérité », le fil
+dit « Introuvable. » ; Antor, lui, obtient les deux sections, et fait créer un scénario qui apparaît
+dans le fil avec « Ouvrir » vers E-7 et sur E-6.
+
+### Clôture de `kanevas-assistant-membre`
+
+B-26 → E-12 (toutes ses lignes) ; B-27 → E-12 (créer une campagne ou un scénario ; proposer et
+générer restent à `kanevas-monde` et `kanevas-images`). Parcours : P-3 étape 5 (« rappelle-moi tout
+ce qu'on sait d'Aldric », première moitié), P-6 étape 4, P-7 étape 2. Rôles : MJ et Joueur ont
+E-12, l'admin d'instance sans rôle ne l'a pas. Aucune migration, aucune entité : le fil n'est pas
+stocké. Reste aux autres tranches : les propositions de mise à jour (`kanevas-monde`), les images
+(`kanevas-images`).
 B-24 → le bloc Pièces jointes de E-9 (ajouter en un geste, voir une image, télécharger un autre
 fichier, marquer secrète, retirer). Atteint par P-3 étape 4 (le plan d'un lieu) et P-7 étape 2 (le
 portrait de son personnage). Le bloc livre ses six états (B-29), ci-dessus.
