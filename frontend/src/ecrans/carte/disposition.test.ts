@@ -84,3 +84,25 @@ test('enPixels : deux nœuds voisins ne partagent pas une case, résultat identi
   }
   assert.equal(chevauche, 0);
 });
+
+test('enPixels : le graphe des factions garde sa forme de triangle et sans recouvrement à 375, 768 et 1280 px', async () => {
+  const { enPixels, tailleCadre, CASE } = await import('./disposition');
+  const noeuds = [...N, { id: 4, titre: 'Le Pendu Joyeux' }];
+  const liens = [...L, { de: 2, vers: 3 }];
+  for (const largeur of [375, 768, 1280]) {
+    const t = tailleCadre(noeuds.length, largeur);
+    const p = enPixels(disposer(noeuds, liens), t);
+    assert.deepEqual([...p], [...enPixels(disposer(noeuds, liens), t)], 'déterministe');
+    const pts = [...p.values()];
+    for (const q of pts) assert.ok(Number.isFinite(q.x) && q.x >= 0 && q.x <= t.largeur && q.y >= 0 && q.y <= t.hauteur);
+    for (let i = 0; i < pts.length; i++) for (let j = i + 1; j < pts.length; j++) {
+      const rec = Math.abs(pts[i]!.x - pts[j]!.x) < CASE.largeur - 1 && Math.abs(pts[i]!.y - pts[j]!.y) < CASE.hauteur - 1;
+      assert.ok(!rec, `recouvrement à ${largeur} px`);
+    }
+  }
+  // Wide frame: the three linked nodes are not stacked in one column.
+  const t = tailleCadre(4, 1280);
+  const p = enPixels(disposer(noeuds, liens), t);
+  const xs = [1, 2, 3].map((id) => p.get(id)!.x);
+  assert.ok(Math.max(...xs) - Math.min(...xs) > CASE.largeur, 'pas en colonne');
+});
