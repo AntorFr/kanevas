@@ -116,41 +116,37 @@ export function tailleCadre(n: number, disponible: number): Taille {
 }
 
 /**
- * Maps the unit-square layout into a frame of `taille` pixels, then pushes overlapping boxes apart
- * (deterministic: fixed order, fixed iterations) so no two nodes share a case.
+ * Maps the unit-square layout into a frame of `taille` pixels by giving each node its own free case of
+ * a CASE-sized grid: the nearest one to its ideal spot, nodes taken in the layout's own order (titles,
+ * then ids). Deterministic, and no two nodes can ever overlap.
  */
 export function enPixels(unite: Map<number, Point>, taille: Taille): Map<number, Point> {
-  const ids = [...unite.keys()];
-  const px = ids.map((id) => MARGE + unite.get(id)!.x * (taille.largeur - 2 * MARGE));
-  const py = ids.map((id) => MARGE + unite.get(id)!.y * (taille.hauteur - 2 * MARGE));
-  const n = ids.length;
-  for (let it = 0; it < 120; it++) {
-    let bouge = false;
-    for (let i = 0; i < n; i++) {
-      for (let j = i + 1; j < n; j++) {
-        const dx = px[j]! - px[i]!;
-        const dy = py[j]! - py[i]!;
-        const ox = CASE.largeur - Math.abs(dx);
-        const oy = CASE.hauteur - Math.abs(dy);
-        if (ox <= 0 || oy <= 0) continue;
-        bouge = true;
-        // Separate along the axis that needs the least move; the sign of a tie follows the index.
-        if (ox / CASE.largeur < oy / CASE.hauteur) {
-          const s = (dx === 0 ? (i < j ? -1 : 1) : Math.sign(dx)) * (ox / 2 + 0.5);
-          px[i]! -= s;
-          px[j]! += s;
-        } else {
-          const s = (dy === 0 ? (i < j ? -1 : 1) : Math.sign(dy)) * (oy / 2 + 0.5);
-          py[i]! -= s;
-          py[j]! += s;
-        }
+  const colonnes = Math.max(1, Math.floor((taille.largeur - 2 * MARGE) / CASE.largeur));
+  const lignes = Math.max(1, Math.floor((taille.hauteur - 2 * MARGE) / CASE.hauteur));
+  const ox = (taille.largeur - colonnes * CASE.largeur) / 2 + CASE.largeur / 2;
+  const oy = (taille.hauteur - lignes * CASE.hauteur) / 2 + CASE.hauteur / 2;
+  const libres: Point[] = [];
+  for (let r = 0; r < lignes; r++) for (let c = 0; c < colonnes; c++) libres.push({ x: ox + c * CASE.largeur, y: oy + r * CASE.hauteur });
+  const sortie = new Map<number, Point>();
+  for (const [id, u] of unite) {
+    const idealX = MARGE + u.x * (taille.largeur - 2 * MARGE);
+    const idealY = MARGE + u.y * (taille.hauteur - 2 * MARGE);
+    let meilleur = -1;
+    let dMin = Infinity;
+    for (let i = 0; i < libres.length; i++) {
+      const d = Math.hypot(libres[i]!.x - idealX, libres[i]!.y - idealY);
+      if (d < dMin) {
+        dMin = d;
+        meilleur = i;
       }
     }
-    for (let i = 0; i < n; i++) {
-      px[i] = Math.min(taille.largeur - MARGE, Math.max(MARGE, px[i]!));
-      py[i] = Math.min(taille.hauteur - MARGE, Math.max(MARGE, py[i]!));
+    if (meilleur < 0) {
+      // More nodes than cases (frame sized by the caller): fall back on the ideal spot.
+      sortie.set(id, { x: idealX, y: idealY });
+      continue;
     }
-    if (!bouge) break;
+    sortie.set(id, libres[meilleur]!);
+    libres.splice(meilleur, 1);
   }
-  return new Map(ids.map((id, i) => [id, { x: px[i]!, y: py[i]! }]));
+  return sortie;
 }
