@@ -6,13 +6,13 @@ import { ErreurApi, appeler } from '../../api';
 export const MAX_MESSAGE = 2000;
 export const MAX_HISTORIQUE = 20;
 
-export type TypeEvenement = 'section_modifiee' | 'section_completee' | 'campagne_creee' | 'scenario_cree';
+export type TypeEvenement = 'section_modifiee' | 'section_completee' | 'campagne_creee' | 'scenario_cree' | 'proposition_creee';
 
 /** What an agent write adds to an answer (AD-76); the client builds the link from `cible`. */
 export interface Evenement {
   type: TypeEvenement;
   libelle: string;
-  cible: { type: 'fiche' | 'campagne' | 'scenario'; [cle: string]: string | number };
+  cible: { type: 'fiche' | 'campagne' | 'scenario' | 'proposition'; [cle: string]: string | number };
 }
 
 export interface MessageAffiche {
