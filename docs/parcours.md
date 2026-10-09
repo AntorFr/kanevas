@@ -186,8 +186,8 @@ pas — le cadre dit « Image indisponible. » et il garde « Remplacer » et «
 
 ### P-5 — Mettre le monde à jour après la partie (MJ)
 1. Il lit les CR (E-13 → E-9).
-2. Depuis un CR, il demande à son **assistant** (E-12) : « mets à jour la section Vérité d'Aldric
-   d'après ce CR ».
+2. Depuis un CR, il demande à son **assistant** (E-12), en nommant ce CR (l'assistant ne sait pas quel
+   écran est ouvert) : « mets à jour la section Vérité d'Aldric d'après le compte-rendu de la séance 3 ».
 3. Le panneau montre l'actuel et le proposé ; il **applique** ou **abandonne** d'un clic.
 4. Sinon, il édite la fiche lui-même (E-9).
 *Échec* : la section a changé depuis la proposition — appliquer est refusé, avec la raison.

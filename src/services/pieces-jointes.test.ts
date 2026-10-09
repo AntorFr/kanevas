@@ -66,7 +66,7 @@ const version = (db: Db, id: number) =>
 
 test('migration 0004 sur une base 0001-0003 avec sections : table créée, seconde exécution sans effet', () => {
   const db = openDb(':memory:');
-  assert.deepEqual(migrate(db), [1, 2, 3, 4, 5, 6, 7]);
+  assert.deepEqual(migrate(db), [1, 2, 3, 4, 5, 6, 7, 8]);
   assert.deepEqual(migrate(db), []);
   const cols = (db.prepare('PRAGMA table_info(pieces_jointes)').all() as { name: string }[]).map((c) => c.name);
   assert.deepEqual(cols, ['id', 'section_id', 'nom', 'type', 'taille', 'fichier', 'secrete', 'cree_le']);
