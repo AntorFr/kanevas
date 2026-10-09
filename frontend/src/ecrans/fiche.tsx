@@ -99,6 +99,13 @@ function PageFiche() {
     if (e.k === 'ok' || e.k === 'aucune-visible') setEtat(e);
   }, [charger]);
 
+  // The assistant wrote into this sheet (« Ouvrir la section » from its panel): read it again.
+  useEffect(() => {
+    const relire = () => void rafraichir();
+    window.addEventListener('kanevas:fiche-ecrite', relire);
+    return () => window.removeEventListener('kanevas:fiche-ecrite', relire);
+  }, [rafraichir]);
+
   if (univers.etat === 'erreur' && univers.statut === 404) return <PageIntrouvable />;
   if (etat.k === 'introuvable') return <PageIntrouvable />;
   if (etat.k === 'chargement' || univers.etat === 'chargement') return <SqueletteFiche cadre />;

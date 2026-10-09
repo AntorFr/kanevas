@@ -42,17 +42,6 @@ export function ImageAttachee({ evenement, universId, surOuverture }: PropsBloc)
         {etat === 'indisponible' ? (
           <div className="asst-image-vide">
             <p>Image indisponible.</p>
-            <Bouton
-              petit
-              icone={RotateCcw}
-              disabled={perdue}
-              onClick={() => {
-                setEtat('chargement');
-                setEssai((n) => n + 1);
-              }}
-            >
-              Recharger l’image
-            </Bouton>
           </div>
         ) : (
           <img
@@ -65,6 +54,21 @@ export function ImageAttachee({ evenement, universId, surOuverture }: PropsBloc)
           />
         )}
       </div>
+      {etat === 'indisponible' && (
+        <div className="asst-image-recharger">
+          <Bouton
+            petit
+            icone={RotateCcw}
+            disabled={perdue}
+            onClick={() => {
+              setEtat('chargement');
+              setEssai((n) => n + 1);
+            }}
+          >
+            Recharger l’image
+          </Bouton>
+        </div>
+      )}
       <a
         href={lien}
         onClick={(e) => {
@@ -72,6 +76,8 @@ export function ImageAttachee({ evenement, universId, surOuverture }: PropsBloc)
           e.preventDefault();
           surOuverture();
           aller(lien);
+          // A sheet already on screen does not know the image: ask it to read itself again.
+          window.dispatchEvent(new Event('kanevas:fiche-ecrite'));
         }}
       >
         Ouvrir la section <ExternalLink size={12} strokeWidth={1.75} aria-hidden="true" />

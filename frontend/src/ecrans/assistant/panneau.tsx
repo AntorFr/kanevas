@@ -73,6 +73,11 @@ export function Panneau({ universId, dispo, relireDispo, fermer, surOuverture, c
     if (el) el.scrollTop = el.scrollHeight;
   }, [fil.messages, fil.etat]);
 
+  // A thumbnail loads after the answer is laid out: keep the bottom of the thread in view.
+  const surImage = (e: React.SyntheticEvent) => {
+    if (e.target instanceof HTMLImageElement && defilement.current) defilement.current.scrollTop = defilement.current.scrollHeight;
+  };
+
   const attente = fil.etat === 'attente';
   const longue = useAttenteLongue(attente);
   const mj = dispo.k === 'ok' && dispo.catalogue === 'mj';
@@ -102,7 +107,7 @@ export function Panneau({ universId, dispo, relireDispo, fermer, surOuverture, c
         </Bouton>
       </header>
 
-      <div className="asst-fil" ref={defilement} role="log" aria-live="polite" aria-label="Conversation">
+      <div className="asst-fil" ref={defilement} onLoadCapture={surImage} role="log" aria-live="polite" aria-label="Conversation">
         {fil.messages.length === 0 && (
           <p className="asst-vide">
             Demandez-moi de chercher, de résumer ou d’écrire dans ce que vous pouvez lire et écrire. Exemple : « Que sait-on
