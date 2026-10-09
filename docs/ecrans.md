@@ -174,8 +174,8 @@ Deux sont posés dès le cadrage parce qu'ils traversent tout :
 ### Barre latérale
 
 Sur tout écran d'un univers : en tête le **sélecteur d'univers** (nom, badge du rôle, la liste
-des univers du compte, puis « Mes univers » et « Systèmes de jeu » en pied de liste) ; **Vue d'ensemble** ; **Lore** :
-Personnages, Lieux, Factions, Objets, Événements, Quêtes ; **Campagnes** et **Comptes-rendus** ; pour un MJ, **Univers ▸ Membres** et **Paramètres** ; en
+des univers du compte, puis « Mes univers » et « Systèmes de jeu » en pied de liste) ; **Vue d'ensemble** ; **Campagnes** ; **Comptes-rendus** ; **Lore** :
+Personnages, Lieux, Factions, Objets, Événements, Quêtes ; pour un MJ, **Univers ▸ Membres** et **Paramètres** ; en
 pied, le compte (avatar et identifiant) qui ouvre le menu du compte : l'identifiant, le thème
 (Clair, Sombre, Système, en trois icônes) et « Se déconnecter ». Hors d'un univers (E-1,
 E-2, E-5, E-15, E-16) : « Mes univers », « Systèmes de jeu » et le compte en pied. **Un item dont l'écran n'est
