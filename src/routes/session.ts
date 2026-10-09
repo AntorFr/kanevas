@@ -14,6 +14,7 @@ import {
 } from '../services/session.js';
 import multipart from '@fastify/multipart';
 import { registerErreurs } from './erreurs.js';
+import { registerCartesRoutes } from './cartes.js';
 import { registerInstanceRoutes } from './instance.js';
 import { registerFichesRoutes } from './fiches.js';
 import { registerUniversRoutes } from './univers.js';
@@ -118,6 +119,7 @@ export async function registerSessionRoutes(app: FastifyInstance) {
     registerFichesRoutes(garde);
     registerSystemesRoutes(garde);
     registerSuiviRoutes(garde);
+    registerCartesRoutes(garde);
     registerAssistantRoutes(garde);
     registerPropositionsRoutes(garde);
   });

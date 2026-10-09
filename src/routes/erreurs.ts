@@ -25,6 +25,8 @@ export function registerErreurs(app: FastifyInstance) {
         corps.code = erreur.detail;
         statut = 409;
       }
+      // A background over 25 MB (AD-69).
+      if (erreur.detail === 'fond_trop_lourd') statut = 413;
       return reply.code(statut).send(corps);
     }
     const statut = (erreur as { statusCode?: number }).statusCode;

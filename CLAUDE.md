@@ -28,8 +28,8 @@
   number when its slice merges (AD-51).
 - Attachments (AD-7, AD-65): bytes under `<db dir>/attachments/` (`ATTACHMENTS_DIR`), written only through
   `services/stockage.ts` (tmp/ then rename; `tmp/` emptied at startup). `deposerPieceJointe` in
-  `services/pieces-jointes.ts` is the single upload function — later features (images, map backgrounds)
-  reuse it or `stockage.ts`, never write the volume themselves. The type is sniffed from the bytes, never trusted.
+  `services/pieces-jointes.ts` is the upload function of section attachments; images and map backgrounds
+  (`services/cartes.ts`, AD-69) go through `stockage.ts` directly, never write the volume themselves. The type is sniffed from the bytes, never trusted.
 - `frontend/` (React, Vite, `react-router`; AD-16, AD-57): `npm run build` also builds it into
   `dist/public`, located by `routes/frontend.ts` and served by `routes/session.ts` behind the session guard (`@fastify/static` for
   `/assets/`, `index.html` as the fallback of any other GET). A screen is one file
@@ -64,6 +64,15 @@
   (`lireRelations`: carrying section and target sheet readable, AD-64); do not add a count or a
   placeholder for hidden ones. Refusal codes: `auto_relation` (invalide), `relation_existante` and
   `limite_relations` (conflit) : the service puts the code in `ErreurService.detail`, the route sends it as `code` in the body.
+- Maps (`kanevas-cartes-graphes`, migration 0007): `src/services/cartes.ts`. `lireCarte` is the only read
+  of a map, elements and graph links included (AD-68); the browser filters nothing. Graph links are never
+  stored (AD-41): they come from `lireRelations` per readable section, so the two guards of AD-64 apply.
+  Reads: no role, unknown id and hidden map for a non-GM are the same `introuvable`; a GM in player mode on
+  a hidden map gets `refuse` with `detail: 'mode_joueur'`. Writes (GM outside player mode only): `introuvable`
+  if the caller cannot read the map, else `refuse`. Refusal codes in `ErreurService.detail`: `fond_invalide`,
+  `fond_trop_lourd`, `position_invalide`, `fiche_inconnue` (invalide), `fiche_deja_placee`, `carte_pleine`
+  (conflit). The route answers `fond_trop_lourd` with 413. A background goes through `stockage.ts` only and `ouvrirFond` takes no mode.
+
 - Assistant tools (`kanevas-assistant-membre`, `src/services/assistant/`): `catalogueDe(db, compteId,
   universId)` is the only door — the server picks the catalogue from the role read in `membres` (no role →
   `introuvable`, AD-26); a tool is `{nom, description, schema (zod strictObject), executer}`, neutral of any
@@ -86,7 +95,7 @@
   (history entry + `popstate`). The thread lives in memory in `assistant/fil.ts` (AD-28, never in browser storage);
   blocks under an answer are one line per event `type` in `assistant/blocs/registre.ts`. Never target `.principal`
   alone in CSS: it is also the primary button variant — use `main.principal`.
-- Update proposals (`kanevas-monde`, `src/services/propositions.ts`, migration 0007, AD-79/AD-81): a proposal is
+- Update proposals (`kanevas-monde`, `src/services/propositions.ts`, migration 0008, AD-79/AD-81): a proposal is
   read, applied and abandoned **only by its requester**, still a GM of the universe — anyone else gets
   `introuvable`. `etat` is computed at each read (`appliquee` first, then `perimee` if the section `version`
   moved, else `en_attente`), never stored. `appliquerProposition` writes through `ecrireContenu` with

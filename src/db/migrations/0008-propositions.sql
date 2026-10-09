@@ -1,4 +1,4 @@
--- Migration 0007 (kanevas-monde, number provisional until merge, AD-51):
+-- Migration 0008 (kanevas-monde, number provisional until merge, AD-51):
 -- update proposals (AD-79). A proposal is one row, read, applied and dropped by its
 -- requester only; "stale" is never stored (current section version <> version_origine).
 

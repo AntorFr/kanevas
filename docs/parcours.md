@@ -248,7 +248,7 @@ cours est gardé ; un univers détaché pendant qu'un joueur lit le système —
   types de fiches dédiés plus tard.
 - **Supprimer** une fiche, un univers, une campagne, un scénario, un CR, une carte, une tâche,
   un système : rien ne se supprime en V1, sauf une pièce jointe, une section, une relation, un
-  membre. *(choix de cadrage, à revoir à l'usage)*
+  membre, et le token ou le nœud d'une carte (on le retire de la carte ; sa fiche reste). *(choix de cadrage, à revoir à l'usage)*
 - **Créer une fiche en joueur** : le MJ crée toute fiche, y compris celle d'un PJ, et en ouvre une
   section à son joueur.
 - **Inviter un compte qui ne s'est jamais connecté**, lien d'invitation.

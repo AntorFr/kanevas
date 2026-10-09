@@ -11,7 +11,13 @@ déclencheurs, remplissage de l'existant), `services/relations.ts` (relier, reti
 les routes `?q=` et `/relations`, le composant `ListeRecherche` (E-8, réemployé par « Relier ») et le bloc
 Relations de E-9 (AD-63, AD-64). Carte et invariants : `ARCHITECTURE.md`.
 
-`feature/kanevas-refonte-visuelle` (fusionnée dans `epic/kanevas`) refait la charte et tous les écrans construits : tokens clair/sombre,
+`feature/kanevas-cartes-graphes` (PR vers `epic/kanevas`, non fusionnée) ajoute : la migration `0007-cartes.sql` (`cartes`,
+`elements_carte`), `services/cartes.ts` (`lireCarte` seule lecture, filtrée pour le lecteur ; fond par `stockage.ts`, 25 Mo, AD-69),
+les routes `/api/univers/:id/cartes…`, E-10 « Cartes », E-11 (carte illustrée à tokens en pourcentage, AD-70 ; graphe dont les liens
+sont les relations lues sous les deux gardes et la disposition calculée dans le navigateur, AD-71) et le bloc « Cartes visibles » de E-3
+(AD-68 à AD-72). Hors tranche : outils de l'agent sur les cartes, calques, échelle, zoom.
+
+`kanevas-refonte-visuelle` (fusionnée) a refait la charte et tous les écrans construits : tokens clair/sombre,
 polices et icônes embarquées (AD-92), composants partagés (`frontend/src/ui/`), cadre (navigation à icônes, barre haute,
 tiroir au téléphone, thème et déconnexion dans le menu de l'avatar, seul endroit du thème), E-1 à E-4, E-6 à E-9, E-13 à E-15
 avec leurs états, pastille/filet d'audience, menu « ⋯ » et toasts sur la fiche. Aucun geste, droit ni donnée nouveau.
@@ -51,7 +57,7 @@ démarrage ; hors bouchon rien n'est amorcé. Aucune image n'existe avant le tag
   Entrée « Administration » déclarée dans `items.ts` (champs `groupe` et `horsUnivers`) ; `Barre.tsx` reste générique : elle montre l'entrée si `/api/moi` porte le groupe `parents`.
 
 `feature/kanevas-monde` (PR non fusionnée, rattrapée sur `epic/kanevas`) ajoute la mise à jour du monde depuis un compte-rendu (P-5, B-21, AD-79 à AD-82) :
-migration `0007-propositions.sql` (table `propositions`, index unique partiel « une en attente par demandeur et section »), `services/propositions.ts`
+migration `0008-propositions.sql` (table `propositions`, index unique partiel « une en attente par demandeur et section »), `services/propositions.ts`
 (créer, lire, appliquer, abandonner ; l'état `en_attente | perimee | appliquee` est calculé à chaque lecture), l'outil `proposer_mise_a_jour` du seul
 catalogue MJ (événement `proposition_creee`) et sa règle du bouchon (« Mets à jour la section « S » de « F » d'après le compte-rendu « C » »),
 `routes/propositions.ts` (`GET …/propositions/:pid`, `POST …/appliquer`, `POST …/abandonner` ; aucune route de création), et le bloc « Mise à jour proposée »
@@ -71,7 +77,7 @@ catalogue MJ (événement `proposition_creee`) et sa règle du bouchon (« Mets 
 - La suite a été jouée sous Node 22 dans les pods de la chaîne (pas de Docker) ; la CI Node 20 fait foi.
   La règle « conteneurs uniquement » de `CLAUDE.md` est la voie de référence ; un Node local ≥ 20 (README) est le repli quand
   Docker manque.
-- Numéro de migration de `kanevas-monde` : 0007, définitif à la fusion (AD-51), la marche à suivre est dans la ligne « Migrations » en fin de fichier.
+- Migrations : 0001 à 0007 sont sur `epic/kanevas` ; 0008 (propositions) sur la branche de `kanevas-monde`, à recaler seulement si une autre tranche fusionne avant (AD-51).
 - Les « PR non fusionnée » ci-dessus s'empilent sur `epic/kanevas` ; `recours-admin` est rattrapée dessus et n'ajoute aucune migration.
 - Vocabulaire : « Monsieur » = le commanditaire qui fait la recette ; « tranche » = une feature livrée ; « phase merge » = la
   fusion après recette ; E-n / B-n / P-n = écrans / besoins / parcours, définis dans `docs/ecrans.md` et `docs/parcours.md`.
@@ -92,13 +98,13 @@ catalogue MJ (événement `proposition_creee`) et sa règle du bouchon (« Mets 
   d'univers fourni ; un refus répond 404. Le MJ qui crée un compte-rendu n'en est pas l'auteur affiché ;
   l'auteur Joueur lit et écrit sa section même fermée aux autres joueurs (AD-61). Plusieurs campagnes
   peuvent être actives (AD-60) ; aucune suppression nulle part.
-- Refonte visuelle : le regard sur les maquettes (bureau, téléphone, clair, sombre) est celui de la vérification et de la recette ; aucun écran n'écrit de couleur en dur (tokens seuls) ; un écran neuf prend le cadre et les composants de `ui/`, il ne recrée ni bouton, ni menu, ni champ. E-10 et E-11 rattrapent le cadre dans leur tranche ; E-12 le prend déjà (tokens, `Bouton`, `Chargement`, `PastilleRole`).
+- Refonte visuelle : le regard sur les maquettes (bureau, téléphone, clair, sombre) est celui de la vérification et de la recette ; aucun écran n'écrit de couleur en dur (tokens seuls) ; un écran neuf prend le cadre et les composants de `ui/`, il ne recrée ni bouton, ni menu, ni champ. E-10 et E-11 sont construits avec le cadre ; E-12 le prend déjà (tokens, `Bouton`, `Chargement`, `PastilleRole`).
 - P-7 : le portrait (pièce jointe) et la demande à l'assistant (E-12) sont livrés.
 - Pièces jointes : le type est déterminé par la signature des octets, jamais par le navigateur ; seules PNG,
   JPEG, GIF, WebP sont servies en ligne, le reste (SVG compris) en `attachment` sous `nosniff` et CSP sandbox.
   Un refus de lecture répond 404 comme un identifiant inconnu (AD-22) ; 50 pièces au plus par section, pas de
   limite de taille ; ajouter, marquer ou retirer ne change pas la `version` de la section. Pas de route de liste,
-  pas de glisser-déposer. `deposerPieceJointe` et `stockage.ts` serviront aux images générées et aux fonds de carte.
+  pas de glisser-déposer. `stockage.ts` sert aussi aux fonds de carte (`services/cartes.ts`, AD-69), qui ne passent pas par `deposerPieceJointe`.
 - Rendu du bloc Pièces jointes vérifié par les tests e2e (Playwright) là où il est installé ; la CI ne les joue pas.
 - « Connexion perdue » (frontend/src/api.ts) : sondé toutes les 3 s sur `/healthz` tant que le bandeau
   est levé ; il disparaît seul au retour du serveur.
@@ -122,7 +128,7 @@ catalogue MJ (événement `proposition_creee`) et sa règle du bouchon (« Mets 
   relations/cartes/recherche, outil d'assistant.
 - Bouchon : au démarrage, sur une base sans univers, `semerBouchon` pose le monde de recette (Lame d'Ébène, Landes grises,
   CoF Mini…) puis `semerIllustrations` ; `KANEVAS_SANS_SEMIS=1` le coupe (utilisé par les e2e). Jamais hors bouchon.
-- Migrations : 0001 à 0006 sur `epic/kanevas`, 0007 (propositions) sur la branche de `kanevas-monde`. Si le numéro change à la fusion, renuméroter le fichier, `ARCHITECTURE.md` et les assertions `migrate(db)` des tests (`grep -rn "deepEqual(migrate" src`).
+- Cartes : un graphe n'a ni position stockée ni déplacement de nœud (AD-71) ; la forme d'une carte ne change jamais ; un fond ne se retire pas, il se remplace ; aucune suppression de carte ni d'élément autre que « Retirer de la carte ». La fiche retirée reste.
 - Propositions (AD-79 à AD-82) : lues, appliquées, abandonnées par leur seul demandeur, encore MJ ; tout autre compte reçoit 404. Le fil ne se garde pas (AD-28) : après un rechargement, une proposition en attente n'est plus atteignable (limite écrite, bornée à une par MJ et section ; pas de liste « mes propositions »). Hors tranche : application par un joueur, propositions en lot. L'assistant ne sait pas quel écran est ouvert : le compte-rendu se nomme dans la demande. Le semis du bouchon n'a ni campagne ni compte-rendu : la recette les crée (README).
 
 **Suivant :** les tranches non encore livrées.
