@@ -1,5 +1,5 @@
 import type { Db } from '../db/db.js';
-import { exigerRole } from './droits.js';
+import { exigerMJ, exigerRole } from './droits.js';
 import { invalide } from './erreurs.js';
 import type { Role, Univers } from './types.js';
 
@@ -39,20 +39,63 @@ export function creerUnivers(
   })();
 }
 
-/** The universes the account has a role in, with that role; a new account gets []. */
-export function listerUnivers(db: Db, compteId: number): (Univers & { role: Role })[] {
+export interface SystemeRef {
+  id: number;
+  nom: string;
+}
+
+/** The system of a universe as the universe shows it: `null` when detached (AD-94). */
+function systemeRef(db: Db, universId: number): SystemeRef | null {
+  return (
+    (db
+      .prepare('SELECT s.id, s.nom FROM univers u JOIN systemes_jeu s ON s.id = u.systeme_id WHERE u.id = ?')
+      .get(universId) as SystemeRef | undefined) ?? null
+  );
+}
+
+/** The universes the account has a role in, with that role, system and member count; a new account gets []. */
+export function listerUnivers(
+  db: Db,
+  compteId: number,
+): (Univers & { role: Role; systeme: SystemeRef | null; nbMembres: number })[] {
   const rows = db
     .prepare(
-      `SELECT u.*, m.role FROM univers u JOIN membres m ON m.univers_id = u.id
+      `SELECT u.*, m.role,
+              (SELECT COUNT(*) FROM membres x WHERE x.univers_id = u.id) AS nb_membres
+       FROM univers u JOIN membres m ON m.univers_id = u.id
        WHERE m.compte_id = ? ORDER BY u.nom COLLATE NOCASE, u.id`,
     )
-    .all(compteId) as (UniversRow & { role: Role })[];
-  return rows.map((r) => ({ ...versUnivers(r), role: r.role }));
+    .all(compteId) as (UniversRow & { role: Role; nb_membres: number })[];
+  return rows.map((r) => ({
+    ...versUnivers(r),
+    role: r.role,
+    systeme: systemeRef(db, r.id),
+    nbMembres: r.nb_membres,
+  }));
+}
+
+/** The GM renames the universe and rewrites its description (name 1–80, description ≤ 500). */
+export function modifierUnivers(
+  db: Db,
+  compteId: number,
+  universId: number,
+  entree: { nom: string; description: string },
+): Univers {
+  exigerMJ(db, universId, compteId);
+  const nom = entree.nom.trim();
+  if (nom.length < 1 || nom.length > 80) throw invalide('Le nom doit faire de 1 à 80 caractères.');
+  if (entree.description.length > 500) throw invalide('La description doit faire 500 caractères au plus.');
+  db.prepare('UPDATE univers SET nom = ?, description = ? WHERE id = ?').run(nom, entree.description, universId);
+  return versUnivers(db.prepare('SELECT * FROM univers WHERE id = ?').get(universId) as UniversRow);
 }
 
 /** Not found for a caller without a role (B-4). */
-export function lireUnivers(db: Db, compteId: number, universId: number): Univers & { role: Role } {
+export function lireUnivers(
+  db: Db,
+  compteId: number,
+  universId: number,
+): Univers & { role: Role; systeme: SystemeRef | null } {
   const role = exigerRole(db, universId, compteId);
   const row = db.prepare('SELECT * FROM univers WHERE id = ?').get(universId) as UniversRow;
-  return { ...versUnivers(row), role };
+  return { ...versUnivers(row), role, systeme: systemeRef(db, universId) };
 }

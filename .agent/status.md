@@ -1,49 +1,119 @@
 # Status — kanevas
 
-> MàJ : 2026-10-03
+> MàJ : 2026-10-09 (assemblage de kanevas-recours-admin, sur kanevas-assistant-membre)
 
-**État :** socle posé sur `feature/kanevas-socle` (PR ouverte, non fusionnée) :
-`/healthz` (`kanevas <version>`, version = build-arg `APP_VERSION`), OIDC
-d'identité, transports LLM réservés, Dockerfile (utilisateur `node`, mais le pod tourne en root au cluster), CI
-`docker-publish.yml` (test puis image GHCR). Typecheck et 8 tests verts. Carte et
-invariants : `ARCHITECTURE.md`.
+**État :** `epic/kanevas` porte le socle, la première fiche, les systèmes de jeu, le suivi de la séance
+(campagnes, scénarios, préparation, comptes-rendus ; E-6, E-7, E-13) et les pièces jointes (migration
+`0004-pieces-jointes.sql`, AD-65 à AD-67). `kanevas-relier-chercher` (fusionnée, PR #8) y ajoute :
+la migration `0005-relier-chercher.sql` (`relations`, index FTS5 `recherche_fiches` et `recherche_sections`,
+déclencheurs, remplissage de l'existant), `services/relations.ts` (relier, retirer, lire sous deux gardes),
+`peutVoirFiche` et les conditions SQL de lecture dans `droits.ts`, l'option `recherche` de `listerFiches`,
+les routes `?q=` et `/relations`, le composant `ListeRecherche` (E-8, réemployé par « Relier ») et le bloc
+Relations de E-9 (AD-63, AD-64). Carte et invariants : `ARCHITECTURE.md`.
+
+`feature/kanevas-refonte-visuelle` (fusionnée dans `epic/kanevas`) refait la charte et tous les écrans construits : tokens clair/sombre,
+polices et icônes embarquées (AD-92), composants partagés (`frontend/src/ui/`), cadre (navigation à icônes, barre haute,
+tiroir au téléphone, thème et déconnexion dans le menu de l'avatar, seul endroit du thème), E-1 à E-4, E-6 à E-9, E-13 à E-15
+avec leurs états, pastille/filet d'audience, menu « ⋯ » et toasts sur la fiche. Aucun geste, droit ni donnée nouveau.
+Page `/demo-composants` en bouchon seulement. Maquettes de `docs/maquettes/` refaites.
+
+`feature/kanevas-illustrations` (fusionnée dans `epic/kanevas`, PR #10) ajoute : l'illustration d'une fiche (migration `0006-illustrations.sql`, `services/illustrations.ts`, routes
+`PUT|DELETE|GET …/fiches/:fid/illustration`, AD-93), la grille de cartes illustrées (E-8) et l'illustration en tête de E-9 ;
+le système de jeu hors des univers (AD-94) : `GET /api/systemes` (systèmes du compte), `/api/systemes/catalogue`,
+`/api/systemes/:sid…`, écrans E-16 « Systèmes de jeu » et E-15 à `/systemes/:sid` (l'ancienne adresse redirige), E-1 en
+cartes ; le semis du bouchon (`src/bouchon/depart.ts`, fichiers dans `src/bouchon/demo/`).
+
+`feature/kanevas-assistant-membre` (PR non fusionnée, part de `epic/kanevas`) ajoute l'assistant de chaque membre (E-12, AD-73 à AD-78),
+sans migration : `src/services/assistant/` (catalogues d'outils MJ et Joueur fermés sur compte, univers et rôle ; port `AgentTransport`
+et adaptateurs `bouchon` et `claude-agent` ; disponibilité ; orchestration `repondre`), `src/routes/assistant.ts`
+(`GET /api/univers/:id/assistant`, `POST …/assistant/messages` ; formats dans `ARCHITECTURE.md`), et l'écran `frontend/src/ecrans/assistant*` (bouton flottant inversé, panneau, fil en
+mémoire, registre de blocs d'écriture). Outils : chercher, lire_fiche, lire_section, modifier_section, ajouter_a_section,
+lister_campagnes ; le MJ en plus creer_campagne et creer_scenario. Aucun outil de carte, de graphe, de proposition ni d'image.
+
+**Reste :** la fusion et le tag `v*` (recette acceptée par Monsieur). Pour l'assistant : le **premier vrai appel** au modèle n'a jamais eu lieu —
+l'adaptateur `claude-agent` n'est exercé que par une `query` factice. Il se joue sur l'URL déployée, après la fusion de `kanevas-am-deploy`
+(`k8s-home-lab`) et la pose du jeton `CLAUDE_CODE_OAUTH_TOKEN` par Monsieur (OpenBao `claude/kanevas`, property `token`) ; si le SDK refuse
+des outils en processus avec ce jeton, reprendre `claude-agent.ts` (AD-73). Sans jeton, l'assistant se dit indisponible. En bouchon, le monde de recette est semé au
+démarrage ; hors bouchon rien n'est amorcé. Aucune image n'existe avant le tag.
+
+`feature/kanevas-recours-admin` (PR non fusionnée, rattrapée sur `epic/kanevas` après la refonte visuelle) ajoute le recours admin : un compte du groupe
+`parents` voit les univers de l'instance et leurs membres, en ajoute, change le rôle, en retire
+(E-5, B-6), sans jamais lire le contenu. L'écran suit la maquette e05 et la charte (panneaux, en-têtes Identifiant/Rôle, « Retirer » discret, fil dans la barre haute ; le formulaire d'ajout passe à la ligne sous 760 px, l'identifiant gardant 12 rem au moins). Typecheck, build et tests verts (dont `src/e2e/administration*.test.ts`, navigateur piloté en bouchon ; ces tests dépendent de Playwright, absent de `package.json`, et sautent sans lui ; sous charge, un `page.goto` peut dépasser son délai de 8 s : relancer avant d'y voir un défaut).
+
+- `src/services/instance.ts` : seul module à accepter le drapeau `admin` (AD-86), écrit dans `membres` et lit
+  `univers` (id, nom, nombre de membres, AD-87) ; les règles de membres sont le noyau de `services/membres.ts`, partagé avec les
+  fonctions MJ.
+- `src/routes/instance.ts` : `/api/instance/univers` et `/api/instance/univers/:id/membres`
+  (GET, POST, PATCH, DELETE). Hors du groupe, 404 comme une adresse inconnue (AD-87). L'acteur
+  vient des groupes de la session, jamais de la requête.
+- `frontend/src/ecrans/administration.tsx` : E-5, un seul motif `/administration/*` (le registre
+  prend un chemin par fichier). Liste de membres partagée avec E-4 : `frontend/src/ListeMembres.tsx` (composants de `ui/`, toasts « ajouté / enregistré / retiré », boîte de dialogue de retrait).
+  Entrée « Administration » déclarée dans `items.ts` (champs `groupe` et `horsUnivers`) ; `Barre.tsx` reste générique : elle montre l'entrée si `/api/moi` porte le groupe `parents`.
+
+**Reste (recours admin) :** la recette de Monsieur de l'administration au navigateur en bouchon (Admin ajoute Mira à « Lame d'Ébène » ; le monde de recette est semé), puis la fusion et le tag `v*`. Aucune image n'existe avant le tag.
 
 **Pièges :**
-- La CI ne publie `ghcr.io/antorfr/kanevas:0.1.0` que sur le tag `v0.1.0`, à
-  pousser après la fusion de la PR. Sur la branche, aucune image n'existe (la
-  PR ne fait qu'un build sans push). `k8s-home-lab` épingle ce tag.
-- `docker build` n'a jamais tourné dans les pods de la chaîne (pas de démon) :
-  vérifié avec Node (`APP_VERSION=0.1.0 node dist/server.js`). Le premier vrai
-  build est celui de la CI.
+- Administration : le groupe est lu à la connexion et vaut 7 jours (AD-86) ; la liste rend tous les univers, pagination par 100 côté client ; un admin sans rôle reste un compte sans rôle (AD-9). Les e2e `administration*` dépendent de Playwright (absent du dépôt) .
+- Assistant : `repondre` est l'unique entrée ; ne jamais passer le compte, l'univers ou le rôle en paramètre d'un outil, ni lire
+  `process.env` hors `config/env.ts` (seule exception : `FRONTEND_DIR`, `routes/frontend.ts`). Une erreur du transport est rendue par un message fixe (jamais la cause, qui pourrait citer le jeton).
+  Le verrou « une demande à la fois par compte » est en mémoire du processus (une seule instance). Le panneau se monte dans sa propre racine
+  React (`assistant.tsx`) : il lit l'adresse par `assistant/adresse.ts`, pas par le routeur.
+- Node 20 est la cible (CI, Dockerfile). `better-sqlite3` est donc épinglé en `^12` : la 13 exige
+  Node ≥ 22 et plante (SIGSEGV) sous Node 20. Ne pas remonter sans changer aussi la CI et le Dockerfile.
+- La suite a été jouée sous Node 22 dans les pods de la chaîne (pas de Docker) ; la CI Node 20 fait foi.
+  La règle « conteneurs uniquement » de `CLAUDE.md` est la voie de référence ; un Node local ≥ 20 (README) est le repli quand
+  Docker manque.
+- Migrations : 0001 à 0006 sont sur `epic/kanevas` ; l'assistant n'en ajoute aucune. Une tranche suivante prend le numéro 0007 si rien d'autre ne fusionne avant (AD-51).
+- Les « PR non fusionnée » ci-dessus s'empilent sur `epic/kanevas` ; `recours-admin` est rattrapée dessus et n'ajoute aucune migration.
+- Vocabulaire : « Monsieur » = le commanditaire qui fait la recette ; « tranche » = une feature livrée ; « phase merge » = la
+  fusion après recette ; E-n / B-n / P-n = écrans / besoins / parcours, définis dans `docs/ecrans.md` et `docs/parcours.md`.
+- La CI ne pousse d'image que sur `main` et sur un tag `v*` ; sur une PR elle ne fait qu'un build de
+  validation. L'image testable n'existe qu'après le tag, posé à la fusion.
+- **Numéro de migration** : `0005-relier-chercher.sql` est sur `epic/kanevas` (fusionnée) et figée ; la migration de la prochaine tranche prend le numéro suivant à sa fusion (AD-51).
+- Recherche : `listerFiches({recherche})` seule (AD-63) ; les index FTS5 ne livrent que des identifiants
+  candidats, tenus par déclencheurs : ne jamais écrire dans `recherche_*` depuis le code. La saisie est
+  neutralisée (mots cités en préfixe) ; vide ou > 100 caractères = 400.
+- Relations : lues sous deux gardes (section porteuse et fiche cible lisibles, AD-64), sans compteur ni
+  placeholder ; seul le MJ relie ou retire, un joueur reçoit 404. Pas de relations entrantes (hors tranche).
+  Codes : `auto_relation` (400), `relation_existante` et `limite_relations` (409, 100 par section).
+- Systèmes : l'accès est `/api/systemes/:sid…` (AD-94), gardé par « rattaché à un univers dont le compte est membre » ; seuls
+  rattacher/détacher/créer-et-rattacher restent sous `/api/univers/:id/systeme…`. Un refus répond comme un identifiant inconnu (404) ; aucune réponse ne nomme un autre
+  univers (AD-84) ; écriture de gabarit périmée = 409 `gabarit_modifie` (AD-85). Ni suppression, ni import
+  de référentiel, ni visibilité différenciée des gabarits (hors tranche).
+- Suivi : scénarios et tâches se gardent sur l'univers de la **campagne** (AD-47), jamais sur un identifiant
+  d'univers fourni ; un refus répond 404. Le MJ qui crée un compte-rendu n'en est pas l'auteur affiché ;
+  l'auteur Joueur lit et écrit sa section même fermée aux autres joueurs (AD-61). Plusieurs campagnes
+  peuvent être actives (AD-60) ; aucune suppression nulle part.
+- Refonte visuelle : le regard sur les maquettes (bureau, téléphone, clair, sombre) est celui de la vérification et de la recette ; aucun écran n'écrit de couleur en dur (tokens seuls) ; un écran neuf prend le cadre et les composants de `ui/`, il ne recrée ni bouton, ni menu, ni champ. E-10 et E-11 rattrapent le cadre dans leur tranche ; E-12 le prend déjà (tokens, `Bouton`, `Chargement`, `PastilleRole`).
+- P-7 : le portrait (pièce jointe) et la demande à l'assistant (E-12) sont livrés.
+- Pièces jointes : le type est déterminé par la signature des octets, jamais par le navigateur ; seules PNG,
+  JPEG, GIF, WebP sont servies en ligne, le reste (SVG compris) en `attachment` sous `nosniff` et CSP sandbox.
+  Un refus de lecture répond 404 comme un identifiant inconnu (AD-22) ; 50 pièces au plus par section, pas de
+  limite de taille ; ajouter, marquer ou retirer ne change pas la `version` de la section. Pas de route de liste,
+  pas de glisser-déposer. `deposerPieceJointe` et `stockage.ts` serviront aux images générées et aux fonds de carte.
+- Rendu du bloc Pièces jointes vérifié par les tests e2e (Playwright) là où il est installé ; la CI ne les joue pas.
+- « Connexion perdue » (frontend/src/api.ts) : sondé toutes les 3 s sur `/healthz` tant que le bandeau
+  est levé ; il disparaît seul au retour du serveur.
+- Le contenu d'une section est plafonné à 20 000 caractères par le serveur (`MAX_CONTENU_SECTION`,
+  AD-91), rendu par `GET /api/moi` (`limites.contenuSection`) ; l'écran de fiche lit cette valeur.
+- Doublons connus, non traités : `corps(request)` (routes/fiches.ts, univers.ts), message d'échec
+  des écrans, texte du bandeau bouchon (pages.ts / Cadre.tsx).
 
-**Suivant :** `kanevas-identite` (session, rôles AD-9, première écriture dans
-`/data`).
+- Sans `/data` en production, la base est en mémoire (avertissement au démarrage) ; la clé de session
+  vient de `SESSION_SECRET`, sinon de `<data>/session.key`.
+- Le callback OIDC ne rend la page « Connexion refusée/indisponible » que si `Accept` contient
+  `text/html`, sinon 401 JSON.
+- Code mort ou sans appelant, non traité : `export { ErreurService }` (droits.ts), `renommerSection`
+  et la branche titre du PATCH d'une section (renommer est hors tranche), option `limite` de
+  `listerFiches`, `blocsVisibles`/`blocsSectionVisibles` jumeaux ; le parseur form-urlencoded du
+  bouchon vaut aussi pour `/api`.
 
-**Tâche `kanevas-pf-donnees` (branche `task/kanevas-pf-donnees`) :** `src/db/`
-(better-sqlite3, migration 0001, runner idempotent) et `src/services/`
-(`comptes`, `univers`, `membres`, `fiches`, `sections`, `droits`) faits ; la
-base s'ouvre dans `buildApp` (`app.db`). Erreurs : `ErreurService.code`
-(`introuvable` 404, `refuse` 403, `invalide` 400, `conflit` 409
-`section_modifiee`). Sans `/data` en production, base en mémoire avec avertissement
-(le test e2e de `/healthz` tourne ainsi). Pas encore de tests de service ni de route.
+- Illustration (AD-93) : le MJ seul pose/remplace/retire ; le type est lu à la signature ; aucun traitement d'image ni plafond
+  de taille ; le jeton `?v=` rend l'image cachable un an, le serveur revérifie le droit à chaque requête ; le fichier remplacé
+  ou retiré est supprimé du disque. Hors tranche : « utiliser comme illustration » une pièce jointe, illustration dans
+  relations/cartes/recherche, outil d'assistant.
+- Bouchon : au démarrage, sur une base sans univers, `semerBouchon` pose le monde de recette (Lame d'Ébène, Landes grises,
+  CoF Mini…) puis `semerIllustrations` ; `KANEVAS_SANS_SEMIS=1` le coupe (utilisé par les e2e). Jamais hors bouchon.
+- Migrations : voir « Pièges » (0001 à 0006 sont sur `epic/kanevas`).
 
-**Tâche `kanevas-pf-session` (branche `task/kanevas-pf-session`) :** session (cookie
-`kanevas_session` signé, secret `SESSION_SECRET` ou `/data/session.key`), mode bouchon
-(`/connexion-bouchon`, refus de démarrer avec une variable `OIDC_*`), garde (401 sous `/api`,
-redirection ailleurs ; routes inconnues restent 404), `GET /api/moi`, `POST /api/auth/logout`,
-pages « Connexion refusée / indisponible » (le callback ne rend la page que si `Accept` contient
-`text/html`, sinon l'ancien JSON 401, pour garder les tests existants). Pas encore de tests.
-
-**Tâche `kanevas-pf-shell` (branche `task/kanevas-pf-shell`) :** `frontend/` (Vite, React 19,
-react-router) : `ui/tokens.css` + composants de la charte, registre d'écrans (`src/ecrans/*.tsx`,
-aucun enregistré), barre latérale (items de `items.ts`, affichés seulement si un écran répond à
-leur adresse ; tiroir « Menu » sous 760 px), thème Clair/Sombre/Système (localStorage), bandeaux
-bouchon (`<meta name="kanevas-bouchon">` injecté dans `index.html` par le serveur) et connexion
-perdue. Le serveur sert `dist/public` derrière la garde ; le Dockerfile construit les deux.
-Pas de navigateur dans le pod : rendu non vérifié visuellement, ni test de contraste (testeur).
-
-**Tâche `kanevas-pf-accueil-univers` (branche `task/kanevas-pf-accueil-univers`) :** écrans E-1
-(`/`), E-2 (`/univers/nouveau`), E-3 (`/univers/:id`, refus = 404 de l'API → « Page introuvable. »)
-dans `frontend/src/ecrans/`. Blocs de E-3 : un fichier dans `ecrans/vue-ensemble/blocs/` (export
-par défaut `Bloc`), trouvé par `vue-ensemble/registre.ts`. Le service refuse aussi une
-description de plus de 500 caractères. Pas encore de tests ; rendu non vérifié au navigateur (pas de navigateur dans le pod).
+**Suivant :** les tranches non encore livrées.

@@ -11,10 +11,10 @@ import {
   isOidcEnabled,
 } from '../services/oidc.js';
 
-// Cookie signé portant state + PKCE entre la redirection Authelia et le
-// callback. Secret de signature généré à chaque démarrage du process (voir
-// app.ts) : la transaction ne survit qu'à l'aller-retour d'un même
-// utilisateur sur la même instance, pas un secret d'exploitation à gérer.
+// Signed cookie carrying state + PKCE between the Authelia redirect and the
+// callback. Signed with the cookie secret (app.ts): SESSION_SECRET, otherwise
+// the key persisted in <data>/session.key (only an in-memory database gets a
+// throwaway one at each start).
 const OIDC_TX_COOKIE = 'kanevas_oidc_tx';
 
 const oidcTxSchema = z.object({
@@ -23,9 +23,9 @@ const oidcTxSchema = z.object({
 });
 
 /**
- * Mécanique OIDC reprise d'Antre-du-maitre (AD-10). Le callback ouvre la
- * session (cookie signé, AD-56) et crée le compte à la première connexion
- * (AD-13) ; aucun rôle d'univers ne vient d'Authelia (AD-9).
+ * OIDC mechanics taken over from Antre-du-maitre (AD-10). The callback opens the
+ * session (signed cookie, AD-56) and creates the account on first sign-in
+ * (AD-13); no universe role comes from Authelia (AD-9).
  */
 export async function registerAuthRoutes(app: FastifyInstance) {
   app.get('/api/auth/config', async () => ({
@@ -119,7 +119,7 @@ export async function registerAuthRoutes(app: FastifyInstance) {
         return reply.code(503).type('text/html; charset=utf-8').send(pageIndisponible());
       }
 
-      // request.url = chemin + query string ; l'origine vient du redirect URI.
+      // request.url = path + query string; the origin comes from the redirect URI.
       const currentUrl = new URL(request.url, settings.redirectUri);
 
       const tokens = await oidcClient.authorizationCodeGrant(
@@ -137,8 +137,8 @@ export async function registerAuthRoutes(app: FastifyInstance) {
         throw new Error('Missing ID token claims.');
       }
 
-      // Le scope "groups" est exposé via userinfo ; ce socle ne le lit pas
-      // encore (aucune résolution de rôle, AD-9) — kanevas-identite le fera.
+      // The "groups" scope is exposed through userinfo: the groups are read below
+      // and carried by the session, with no universe role resolution (AD-9).
       const userInfo = await oidcClient.fetchUserInfo(
         configuration,
         tokens.access_token,

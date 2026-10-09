@@ -1,0 +1,154 @@
+.fenetre .choix { display: flex; gap: var(--e-4); margin: var(--e-3) 0; }
+.fenetre .choix label { display: inline-flex; gap: var(--e-2); align-items: center; }
+.actuelle { color: var(--texte-2); white-space: pre-wrap; overflow-wrap: anywhere; border-left: 2px solid var(--bord-champ); padding-left: var(--e-3); }
+
+a.bouton { text-decoration: none; display: inline-flex; }
+
+/* ---------- La fiche (E-9) : une colonne de lecture, des sections sans panneau ---------- */
+.fiche { max-width: 784px; margin: 0 auto; padding: var(--e-4) 0 120px; }
+.fiche .entete { padding-bottom: var(--e-5); border-bottom: 1px solid var(--bord); }
+.fiche .type { display: inline-flex; align-items: center; gap: 6px; height: 24px; padding: 0 9px 0 7px; border-radius: var(--rayon-item);
+  background: var(--surface-2); color: var(--texte-2); font-size: var(--t-12); font-weight: 500; }
+.fiche .type svg { color: var(--texte-3); }
+.fiche .entete h1 { margin-top: var(--e-4); font: 500 var(--t-40)/1.08 var(--police-titre); letter-spacing: -.015em;
+  font-variation-settings: "opsz" 144; overflow-wrap: anywhere; }
+.fiche .entete h1:focus-visible { outline: none; }
+.vide-fiche { display: flex; flex-direction: column; align-items: center; gap: var(--e-3); color: var(--texte-2); }
+
+.sections { margin-top: var(--e-2); }
+.sec { position: relative; padding: var(--e-6) 0 var(--e-2); }
+/* The margin rule: who reads the section, said again beside it. */
+.sec::before { content: ""; position: absolute; left: -28px; top: calc(var(--e-6) + 6px); bottom: var(--e-2); width: 2px; border-radius: 2px; }
+.sec[data-aud="table"]::before, .sec[data-aud="table-ecrit"]::before { background: var(--table-bord); }
+.sec[data-aud="confiee"]::before { background: repeating-linear-gradient(180deg, var(--bord-champ) 0 4px, transparent 4px 8px); }
+.sec-tete { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 12px; padding-right: 132px; min-height: 30px; }
+.sec-tete h2 { font: 500 var(--t-22)/1.25 var(--police-titre); letter-spacing: -.005em; font-variation-settings: "opsz" 48; overflow-wrap: anywhere; }
+.sec .ancre { position: relative; display: inline-flex; }
+.sec-actions { position: absolute; right: -6px; top: calc(var(--e-6) - 1px); display: flex; align-items: center; gap: 2px;
+  opacity: 0; transition: opacity var(--duree); }
+.sec:hover .sec-actions, .sec:focus-within .sec-actions, .sec-actions:has([aria-expanded="true"]) { opacity: 1; }
+@media (hover: none) { .sec-actions { opacity: 1; } }
+.sec .texte { margin-top: var(--e-3); max-width: 66ch; font: 400 var(--t-18)/1.68 var(--police-lecture); color: var(--texte);
+  font-variation-settings: "opsz" 18; white-space: pre-wrap; overflow-wrap: anywhere; }
+.sec .texte.vide { color: var(--texte-3); font-style: italic; }
+.sec .actuelle { margin-top: var(--e-3); }
+
+/* Secret: a « MJ seul » section is a material — hatched, ruled in amber. */
+.sec[data-aud="mj"] { margin: var(--e-5) -28px 0; padding: var(--e-5) 28px var(--e-3); border-radius: 0 var(--rayon-panneau) var(--rayon-panneau) 0;
+  background: repeating-linear-gradient(135deg, var(--mj-trame) 0 1px, transparent 1px 8px), var(--mj-section-fond);
+  box-shadow: inset 0 0 0 1px var(--mj-section-bord); }
+.sec[data-aud="mj"]::before { left: 0; top: 0; bottom: 0; width: 3px; border-radius: 0; background: var(--mj); }
+.sec[data-aud="mj"] .sec-actions { top: calc(var(--e-5) - 1px); right: 22px; }
+.sec[data-aud="mj"] + .sec[data-aud="mj"] { margin-top: var(--e-3); }
+.sec[data-aud="mj"] .blocs { border-top-color: var(--mj-section-filet); }
+@media (max-width: 760px) {
+  .sec::before { left: -12px; }
+  .sec[data-aud="mj"] { margin-left: -12px; margin-right: -12px; padding-left: 12px; padding-right: 12px; }
+  .sec-tete { padding-right: 0; }
+  .sec-actions, .sec[data-aud="mj"] .sec-actions { position: static; justify-content: flex-end; margin-top: var(--e-1); }
+}
+
+/* Section blocks: Relations, Pièces jointes */
+.fiche .blocs { display: block; gap: 0; margin-top: var(--e-4); border-top: 1px solid var(--bord); }
+.fiche .blocs .bloc-section + .bloc-section { border-top: 1px dashed var(--bord); }
+.fiche .blocs .bloc-section:first-child { border-top: 0; }
+.fiche .blocs .bloc-contenu { gap: 4px 14px; }
+.relations { display: contents; }
+.pieces-jointes { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; width: 100%; }
+.fiche .blocs .bloc-contenu > .bloc-vide { min-height: 28px; display: inline-flex; align-items: center; }
+/* Empty block: the text and the add action share one row, like Relations. */
+.pieces-jointes.vide { display: contents; }
+.pieces-jointes.vide .ajout-piece { display: contents; }
+.liste-relations { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; width: 100%; }
+.relation .bouton-icone { width: 26px; height: 26px; }
+.liste-pieces { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 12px; width: 100%; }
+.liste-pieces .piece { min-width: 0; }
+.liste-pieces .piece:not(.image) { flex: 1 0 100%; }
+.liste-pieces .confirmation { margin-top: var(--e-2); }
+.liste-pieces .legende, .liste-pieces .confirmation { overflow-wrap: anywhere; }
+.vignette.indisponible { color: var(--texte-3); font-size: var(--t-13); padding: var(--e-2) 0; }
+.pieces-jointes .envoi { width: 100%; }
+.pieces-jointes .echec { margin: var(--e-1) 0; overflow-wrap: anywhere; width: 100%; }
+.ajout-piece { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 16px; margin-top: 2px; }
+
+/* In-place editing */
+.sec .edition { margin: var(--e-3) -14px 0; border-radius: var(--rayon-panneau); background: var(--surface);
+  box-shadow: 0 0 0 1px var(--accent), 0 0 0 4px var(--accent-fond); }
+.sec .edition textarea { display: block; width: 100%; min-height: 168px; resize: vertical; padding: 12px 14px 8px; border: 0; background: transparent;
+  color: var(--texte); font: 400 var(--t-18)/1.68 var(--police-lecture); font-variation-settings: "opsz" 18; border-radius: var(--rayon-panneau) var(--rayon-panneau) 0 0; }
+.sec .edition textarea:focus { outline: none; }
+.pied-edition { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; padding: 8px 8px 8px 14px; border-top: 1px solid var(--bord); }
+.pied-edition .compteur { margin-right: auto; font-size: var(--t-12); color: var(--texte-3); font-variant-numeric: tabular-nums; }
+.pied-edition .compteur.trop { color: var(--danger); }
+.pied-edition .aide { font-size: var(--t-12); color: var(--texte-3); margin-right: 6px; }
+.erreur-edition { margin-top: var(--e-2); font-size: var(--t-12); color: var(--danger); }
+.alerte { display: flex; align-items: flex-start; gap: 10px; margin-top: var(--e-3); padding: 10px 12px; border-radius: var(--rayon-champ);
+  background: var(--danger-fond); color: var(--texte); font-size: var(--t-13); }
+.alerte > svg { color: var(--danger); margin-top: 2px; flex: none; }
+.alerte .corps-alerte { flex: 1; display: flex; flex-direction: column; align-items: flex-start; gap: 8px; }
+
+/* Audience setting, folded behind the badge */
+.menu.audience { top: calc(100% + 8px); left: 0; width: 320px; padding: 6px; }
+.audience .reglage { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 40px; padding: 0 var(--e-2); font-size: var(--t-13); }
+.audience .reglage-libelle { display: inline-flex; align-items: center; gap: var(--e-2); }
+.audience .reglage-libelle svg { color: var(--texte-3); }
+.audience .choix { height: 28px; padding: 0 var(--e-2); border-radius: var(--rayon-item); border: 1px solid var(--bord-champ);
+  background: var(--surface-2); color: var(--texte); font: inherit; font-size: var(--t-13); }
+.audience .reglage-echec { margin: 4px 4px 0; padding: 6px 10px; border-radius: var(--rayon-item); background: var(--danger-fond); color: var(--texte); font-size: var(--t-12); }
+.audience .reglage-note { padding: 6px 10px; font-size: var(--t-12); color: var(--texte-3); border-top: 1px solid var(--bord); margin: 4px 0 0; }
+@media (max-width: 760px) { .menu.audience { width: min(320px, calc(100vw - 32px)); } }
+
+/* Adding a section */
+.ajout-section { margin-top: var(--e-6); }
+.ajout-section > button { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 44px; padding: 0 12px; margin-left: -12px;
+  border: 0; background: none; border-radius: var(--rayon-champ); color: var(--texte-3); font: inherit; font-size: var(--t-14); cursor: pointer;
+  transition: background-color var(--duree), color var(--duree); }
+.ajout-section > button:hover { background: var(--surface-2); color: var(--texte); }
+.ajout-section > button small { margin-left: auto; font-size: var(--t-12); color: var(--texte-3); }
+.ajout-section form { display: flex; align-items: flex-start; gap: 8px; }
+.ajout-section form .champ { flex: 1; margin: 0; }
+.ajout-section form .boutons { display: flex; gap: 8px; padding-top: 22px; }
+@media (max-width: 760px) { .ajout-section > button small { display: none; } .ajout-section form { flex-direction: column; align-items: stretch; } .ajout-section form .boutons { padding-top: 0; } }
+
+/* ---------- L'illustration dans l'en-tête (kanevas-illustrations) ---------- */
+.entete.illustree { display: grid; grid-template-columns: 176px minmax(0, 1fr); column-gap: 28px; align-items: end; }
+.illustration { margin: 0; width: 176px; }
+.boite-ill { position: relative; border-radius: var(--rayon-panneau); overflow: hidden; }
+.cadre-ill { position: relative; display: block; aspect-ratio: 4 / 5; border-radius: var(--rayon-panneau); overflow: hidden; background: var(--squelette); }
+.cadre-ill::after { content: ""; position: absolute; inset: 0; border-radius: inherit; box-shadow: inset 0 0 0 1px var(--bord); pointer-events: none; }
+.cadre-ill img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: 50% 30%; }
+a.cadre-ill:focus-visible { outline-offset: 2px; border-radius: var(--rayon-panneau); }
+.gestes-ill { position: absolute; right: 8px; bottom: 8px; display: flex; gap: 2px; padding: 2px; border-radius: var(--rayon-champ);
+  background: var(--surface); box-shadow: var(--ombre-flottant); opacity: 0; transition: opacity var(--duree); }
+.illustration:hover .gestes-ill, .illustration:focus-within .gestes-ill { opacity: 1; }
+@media (hover: none) { .gestes-ill { opacity: 1; } }
+.ko-ill { position: absolute; inset: 0; z-index: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; padding: 12px;
+  background: var(--surface-2); color: var(--texte-3); font-size: var(--t-12); text-align: center; }
+.envoi-ill { position: absolute; left: 0; right: 0; bottom: 0; display: flex; align-items: center; gap: 8px; padding: 9px 8px 8px 10px;
+  background: var(--surface); font-size: var(--t-12); color: var(--texte-2); }
+.envoi-ill::before { content: ""; position: absolute; left: 0; top: 0; height: 2px; width: var(--progres, 0%); background: var(--accent); transition: width var(--duree); }
+.envoi-ill span { flex: 1; }
+.envoi-ill .bouton { min-height: 24px; padding: 0 8px; }
+.aide-ill { margin-top: 8px; font-size: var(--t-12); line-height: 1.4; color: var(--texte-3); }
+.tete-texte { min-width: 0; }
+/* Sheet without illustration: the old header; the GM has « Ajouter une illustration » on hover and focus. */
+.ajout-ill { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 10px; margin: -8px 0 12px; opacity: 0; transition: opacity var(--duree); }
+.entete:hover .ajout-ill, .entete:focus-within .ajout-ill { opacity: 1; }
+@media (hover: none) { .ajout-ill { opacity: 1; } }
+.ajout-ill .bouton { margin-left: -8px; }
+.ajout-ill .aide { font-size: var(--t-12); color: var(--texte-3); }
+.confirmation-ill { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 12px; margin-top: var(--e-4); padding: 10px 12px;
+  border-radius: var(--rayon-champ); background: var(--surface-2); box-shadow: inset 0 0 0 1px var(--bord); font-size: var(--t-13); }
+.confirmation-ill > span:first-child { flex: 1 1 auto; min-width: 220px; }
+.actions-ill { display: flex; gap: 8px; margin-left: auto; flex: none; }
+.message-ill .etat.alerte { margin-top: var(--e-4); }
+@media (max-width: 760px) {
+  .entete.illustree { grid-template-columns: 96px minmax(0, 1fr); column-gap: var(--e-4); }
+  .illustration { width: 96px; }
+  .gestes-ill { right: 4px; bottom: 4px; }
+  .boite-ill { overflow: visible; }
+  .envoi-ill { position: relative; flex-wrap: wrap; gap: 0 6px; margin-top: 6px; padding: 6px 0 0; background: none; }
+  .envoi-ill .bouton { min-height: 36px; margin-left: -8px; }
+  .gestes-ill .bouton-icone { width: 36px; height: 36px; }
+  .ajout-ill .bouton { min-height: 36px; }
+}

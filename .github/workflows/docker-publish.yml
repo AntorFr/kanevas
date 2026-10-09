@@ -65,10 +65,9 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
-          # Version embarquée dans l'image : dérivée du même tag semver que
-          # `meta` utilise pour le tag d'image publié, jamais de package.json
-          # (plan.md, critère de sortie de kanevas-socle-repo) — une seule
-          # source de vérité pour les deux.
+          # Version embedded in the image: derived from the same semver tag
+          # `meta` uses for the published image tag, never from package.json
+          # — a single source of truth for both.
           build-args: |
             APP_VERSION=${{ steps.meta.outputs.version }}
           # Multi-arch only on a clean stable tag (vX.Y.Z without suffix);
