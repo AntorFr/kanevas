@@ -386,7 +386,7 @@ contenu (fiches, comptes-rendus, cartes) n'est jamais affiché. », deux zones. 
 l'instance** : tous les univers, par nom (sans casse), chacun avec « N membres » (« 1 membre » au
 singulier), l'univers choisi portant le badge « Sélectionné » ; cent à la fois, puis « Charger la suite ». À droite (sous la liste sur téléphone, après
 un clic sur l'univers), **Membres — <nom de l'univers>** : la liste (identifiant, rôle MJ / Joueur,
-« Retirer <identifiant> », sur chaque ligne), un champ « Identifiant du compte », le rôle (Joueur par défaut) et « Ajouter » : le même
+« Retirer <identifiant> » sur chaque ligne, révélé au survol et au focus au bureau, toujours visible sans survol), puis, sous la liste, un champ « Identifiant du compte », le rôle (Joueur par défaut) et « Ajouter » : le même
 geste, les mêmes refus et la même confirmation de retrait qu'E-4. Ajouter son propre identifiant, en
 MJ, est le moyen de lire le contenu : l'ajout apparaît dans la liste des membres que voit le MJ de
 l'univers ; une note sous le champ le dit : « Pour lire le contenu, l'admin s'ajoute lui-même comme
