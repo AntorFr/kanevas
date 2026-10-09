@@ -285,6 +285,21 @@ test('bornes : titres de 120 et 80 caractères passent à la ligne, image très 
   await antor.unroute('**/assistant/messages');
 });
 
+test('P-3 étape 5 : demande faite sur la fiche déjà ouverte → « Ouvrir la section » montre la nouvelle image sans rechargement', opts, async () => {
+  await ouvrir(antor, URL_FICHE);
+  await nouvelle(antor);
+  const s = antor.getByRole('region', { name: rx('Apparence') });
+  await s.waitFor();
+  const avant = await s.getByRole('group', { name: 'Pièces jointes' }).getByText(/image-.*\.png/).count();
+  await demander(antor, DEMANDE);
+  const b = bloc(antor).first();
+  await b.locator('img').waitFor({ state: 'visible' });
+  await b.getByRole('link', { name: /Ouvrir la section/ }).click();
+  await antor.waitForTimeout(1500);
+  const apres = await s.getByRole('group', { name: 'Pièces jointes' }).getByText(/image-.*\.png/).count();
+  assert.equal(apres, avant + 1);
+});
+
 test('existant : un bloc d’écriture de texte reste intact', opts, async () => {
   await ouvrir(antor);
   await nouvelle(antor);
