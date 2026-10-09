@@ -1,6 +1,6 @@
 # Status — kanevas
 
-> MàJ : 2026-10-08 (assemblage de kanevas-assistant-membre)
+> MàJ : 2026-10-09 (assemblage de kanevas-recours-admin, sur kanevas-assistant-membre)
 
 **État :** `epic/kanevas` porte le socle, la première fiche, les systèmes de jeu, le suivi de la séance
 (campagnes, scénarios, préparation, comptes-rendus ; E-6, E-7, E-13) et les pièces jointes (migration
