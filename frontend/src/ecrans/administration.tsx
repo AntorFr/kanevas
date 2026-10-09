@@ -6,7 +6,7 @@ import { useCharge, useMoi, useUnivers } from '../cadre-contexte';
 import { GROUPE_ADMIN } from '../items';
 import { ListeMembres, type Membre } from '../ListeMembres';
 import type { Ecran } from '../registre';
-import { Bouton, Chargement, EtatVide, ErreurChargement, PageIntrouvable, Pastille } from '../ui';
+import { Bouton, Chargement, EtatVide, ErreurChargement, PageIntrouvable } from '../ui';
 import './ecrans.css';
 import './liste.css';
 import './reglages.css';
@@ -108,7 +108,7 @@ function Administration() {
                   <span className="nom">{u.nom}</span>
                   <small>{u.nbMembres === 1 ? '1 membre' : `${u.nbMembres} membres`}</small>
                 </Link>
-                {u.id === selection && <Pastille sens="table">Sélectionné</Pastille>}
+                {u.id === selection && <span className="pastille selectionne">Sélectionné</span>}
                 {roles.has(u.id) && <Link to={`/univers/${u.id}`}>Ouvrir</Link>}
               </li>
             ))}

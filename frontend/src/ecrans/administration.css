@@ -9,12 +9,13 @@
 .vide-pointille .etat h2 { font: 400 var(--t-14)/1.5 var(--police-texte); color: var(--texte-3); margin: 0; }
 
 /* Member table: headers, plain identifier, role as a pill, « Retirer » revealed on hover/focus */
-.admin-zones .entetes-membres { display: flex; gap: 12px; padding: 6px 0 0; font-size: var(--t-12); font-weight: 600; text-transform: uppercase; letter-spacing: .07em; color: var(--texte-3); }
-.admin-zones .entetes-membres span:first-child { flex: 1; padding-left: 40px; }
-.admin-zones .entetes-membres span:nth-child(2) { flex: none; width: var(--largeur-pastille-role); }
-.admin-zones .entetes-membres .entete-retrait { flex: none; visibility: hidden; }
+.admin-zones .table-membres { display: grid; grid-template-columns: minmax(0, 1fr) var(--largeur-pastille-role) auto; column-gap: 12px; }
+.admin-zones .table-membres > * { grid-column: 1 / -1; display: grid; grid-template-columns: subgrid; align-items: center; }
+.admin-zones .table-membres .ligne-suivi { grid-column: 1 / -1; display: grid; grid-template-columns: subgrid; align-items: center; margin: 0; padding: 0; }
+.admin-zones .entetes-membres { padding: 6px 0 0; font-size: var(--t-12); font-weight: 600; text-transform: uppercase; letter-spacing: .07em; color: var(--texte-3); }
+.admin-zones .entetes-membres span:first-child { padding-left: 40px; }
 .admin-zones { --largeur-pastille-role: 6.5rem; }
-.admin-zones .liste-membres .liste-statut-champ { width: var(--largeur-pastille-role); }
+.admin-zones .liste-membres .liste-statut-champ { width: 100%; }
 .admin-zones .liste-membres .liste-statut { width: 100%; }
 .admin-zones .liste-membres { margin-top: var(--e-1); max-height: 50vh; }
 .liste-membres .identifiant-membre { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--texte); }
@@ -35,3 +36,4 @@
 .admin-zones .formulaire-ligne .champ:nth-child(2) { flex: none; min-width: 0; width: 7rem; }
 .admin-zones .formulaire-ligne .bouton { flex: none; white-space: nowrap; }
 @media (max-width: 760px) { .admin-zones .formulaire-ligne { flex-wrap: wrap; } }
+.pastille.selectionne { background: var(--accent-fond); color: var(--accent-texte); }
