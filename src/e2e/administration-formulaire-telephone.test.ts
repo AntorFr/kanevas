@@ -179,7 +179,7 @@ describe('E-5 formulaire d\'ajout de membre : repli à 390 px, une ligne au bure
   test('entete_role_aligne_sur_les_pastilles', async () => {
     for (const largeur of [1280, 390]) {
       const m = await mesurer(largeur);
-      assert.ok(Math.abs(m.enteteRole - m.pastille) <= 8, `${largeur}px: header at ${m.enteteRole}, pill at ${m.pastille}`);
+      assert.ok(Math.abs(m.enteteRole - m.pastille) <= 1, `${largeur}px: header at ${m.enteteRole}, pill at ${m.pastille}`);
     }
   });
 

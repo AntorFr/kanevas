@@ -161,6 +161,20 @@ describe('E-5 Administration (B-6, P-2 étape 3)', { skip: raisonSaut }, () => {
       await page.getByText('lea', { exact: true }).waitFor();
       assert.equal(await page.getByText('Description secrète').count(), 0);
       assert.equal(await page.getByText('Sélectionné').count(), 1);
+      // charte: the selection badge is accent (indigo), never the green « lu par la table »
+      const couleurs = await page.getByText('Sélectionné').evaluate((n) => {
+        const out: Record<string, string> = { texte: getComputedStyle(n).color };
+        for (const v of ['--accent-texte', '--table']) {
+          const d = document.createElement('i');
+          d.style.color = `var(${v})`;
+          document.body.append(d);
+          out[v] = getComputedStyle(d).color;
+          d.remove();
+        }
+        return out;
+      });
+      assert.equal(couleurs.texte, couleurs['--accent-texte']);
+      assert.notEqual(couleurs.texte, couleurs['--table']);
       await capture(page, 'admin-voit-membres');
       // no role: the universe overview is "Page introuvable."
       const id = page.url().match(/\/administration\/univers\/(\d+)/)?.[1];
