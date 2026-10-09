@@ -75,8 +75,8 @@
 .ariane .maillon { display: inline-flex; align-items: center; gap: 2px; min-width: 0; flex: 0 1 auto; }
 .ariane .maillon.dernier { flex: 0 0 auto; max-width: 100%; } /* the last crumb stays whole; the ones before give way first */
 .ariane a { display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 6px; min-width: 0; overflow: hidden; border-radius: var(--rayon-item); color: inherit; text-decoration: none; white-space: nowrap;
-.ariane a:focus-visible { outline-offset: -2px; } /* overflow:hidden would clip an outer outline */
   transition: background-color var(--duree), color var(--duree); }
+.ariane a:focus-visible { outline-offset: -2px; } /* overflow:hidden would clip an outer outline */
 .ariane a:hover { background: var(--surface-2); color: var(--texte); }
 .ariane .courant { display: inline-flex; align-items: center; gap: 6px; min-width: 0; padding: 0 6px; }
 .ariane .dernier .courant { color: var(--texte); font-weight: 500; }
