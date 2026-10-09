@@ -1,6 +1,6 @@
 # Status — kanevas
 
-> MàJ : 2026-10-09 (assemblage de kanevas-recours-admin, sur kanevas-assistant-membre)
+> MàJ : 2026-10-09 (assemblage de kanevas-images, sur kanevas-assistant-membre)
 
 **État :** `epic/kanevas` porte le socle, la première fiche, les systèmes de jeu, le suivi de la séance
 (campagnes, scénarios, préparation, comptes-rendus ; E-6, E-7, E-13) et les pièces jointes (migration
@@ -36,11 +36,21 @@ et adaptateurs `bouchon` et `claude-agent` ; disponibilité ; orchestration `rep
 mémoire, registre de blocs d'écriture). Outils : chercher, lire_fiche, lire_section, modifier_section, ajouter_a_section,
 lister_campagnes ; le MJ en plus creer_campagne et creer_scenario. Aucun outil de carte, de graphe ni de proposition. `kanevas-images` (tâche `kanevas-im-outil`) ajoute au catalogue MJ `generer_image` (absent si l'adaptateur d'images est `aucun`), l'événement `image_attachee` et la règle « portrait » du bouchon ; le délai de 120 s de la demande est suspendu pendant l'outil (AD-89, AD-90).
 
+`feature/kanevas-images` (PR non fusionnée) ajoute, sans migration, la génération d'un portrait par l'assistant du MJ (P-3 étape 5, AD-88 à AD-90) :
+`src/services/images/` (port `GenerateurImage`, adaptateurs `bouchon` — PNG fixe, « échec » lève —, `codex` — `codex exec` en sous-processus, 150 s,
+fichier repéré par liste avant/après sous verrou — et `aucun`, choisis par `choisirAdaptateur()`), `verifierDepot` dans `pieces-jointes.ts`
+(droit refusé avant de dépenser le moteur), l'outil `generer_image` du catalogue MJ, l'événement `image_attachee`, la règle « portrait » du bouchon,
+le bloc « Image attachée » de E-12 (vignette, « Ouvrir la section », état « Image indisponible. ») et l'attente longue (« Kanevas travaille toujours… » dès 20 s ;
+requête coupée à 300 s). `CODEX_HOME` (défaut `<dossier de la base>/codex`) ; le `Dockerfile` épingle `@openai/codex` (`CODEX_VERSION`).
+Pièges : le résultat du moteur doit avoir une signature d'image servie en ligne ; rien du moteur n'est journalisé (`auth.json`) ; une seule image par demande ; le
+temps passé dans l'outil n'entre pas dans les 120 s de la demande. **Reste :** le **premier vrai appel** à Codex, sur l'URL déployée, une fois `auth.json` posé par
+Monsieur dans `/data/codex` (si Codex ne génère pas sous abonnement ou range ailleurs, corriger le repérage du fichier, AD-90) ; le bouchon est vert.
+
 **Reste :** la fusion et le tag `v*` (recette acceptée par Monsieur). Pour l'assistant : le **premier vrai appel** au modèle n'a jamais eu lieu —
 l'adaptateur `claude-agent` n'est exercé que par une `query` factice. Il se joue sur l'URL déployée, après la fusion de `kanevas-am-deploy`
 (`k8s-home-lab`) et la pose du jeton `CLAUDE_CODE_OAUTH_TOKEN` par Monsieur (OpenBao `claude/kanevas`, property `token`) ; si le SDK refuse
 des outils en processus avec ce jeton, reprendre `claude-agent.ts` (AD-73). Sans jeton, l'assistant se dit indisponible. En bouchon, le monde de recette est semé au
-démarrage ; hors bouchon rien n'est amorcé. Aucune image n'existe avant le tag.
+démarrage ; hors bouchon rien n'est amorcé. Aucune image Docker n'existe avant le tag.
 
 `feature/kanevas-recours-admin` (PR non fusionnée, rattrapée sur `epic/kanevas` après la refonte visuelle) ajoute le recours admin : un compte du groupe
 `parents` voit les univers de l'instance et leurs membres, en ajoute, change le rôle, en retire
@@ -56,12 +66,12 @@ démarrage ; hors bouchon rien n'est amorcé. Aucune image n'existe avant le tag
   prend un chemin par fichier). Liste de membres partagée avec E-4 : `frontend/src/ListeMembres.tsx` (composants de `ui/`, toasts « ajouté / enregistré / retiré », boîte de dialogue de retrait).
   Entrée « Administration » déclarée dans `items.ts` (champs `groupe` et `horsUnivers`) ; `Barre.tsx` reste générique : elle montre l'entrée si `/api/moi` porte le groupe `parents`.
 
-**Reste (recours admin) :** la recette de Monsieur de l'administration au navigateur en bouchon (Admin ajoute Mira à « Lame d'Ébène » ; le monde de recette est semé), puis la fusion et le tag `v*`. Aucune image n'existe avant le tag.
+**Reste (recours admin) :** la recette de Monsieur de l'administration au navigateur en bouchon (Admin ajoute Mira à « Lame d'Ébène » ; le monde de recette est semé), puis la fusion et le tag `v*`. Aucune image Docker n'existe avant le tag.
 
 **Pièges :**
 - Administration : le groupe est lu à la connexion et vaut 7 jours (AD-86) ; la liste rend tous les univers, pagination par 100 côté client ; un admin sans rôle reste un compte sans rôle (AD-9). Les e2e `administration*` dépendent de Playwright (absent du dépôt) .
 - Assistant : `repondre` est l'unique entrée ; ne jamais passer le compte, l'univers ou le rôle en paramètre d'un outil, ni lire
-  `process.env` hors `config/env.ts` (seule exception : `FRONTEND_DIR`, `routes/frontend.ts`). Une erreur du transport est rendue par un message fixe (jamais la cause, qui pourrait citer le jeton).
+  `process.env` hors `config/env.ts` (exceptions : `FRONTEND_DIR` dans `routes/frontend.ts`, `PATH` pour repérer `codex` dans `services/images/index.ts` ; le sous-processus `codex` ne reçoit qu'un environnement filtré, sans les secrets du serveur). Une erreur du transport est rendue par un message fixe (jamais la cause, qui pourrait citer le jeton).
   Le verrou « une demande à la fois par compte » est en mémoire du processus (une seule instance). Le panneau se monte dans sa propre racine
   React (`assistant.tsx`) : il lit l'adresse par `assistant/adresse.ts`, pas par le routeur.
 - Node 20 est la cible (CI, Dockerfile). `better-sqlite3` est donc épinglé en `^12` : la 13 exige

@@ -18,7 +18,7 @@ préparation, comptes-rendus ; `kanevas-relier-chercher`, les relations entre fi
 type (index FTS5, AD-63, AD-64) ; les pièces jointes (stockage sur le volume, bloc de E-9) ;
 `kanevas-assistant-membre`, l'assistant de chaque membre : un panneau de conversation dont les outils
 appellent les mêmes fonctions de service que les routes, avec les droits de la personne (AD-73 à AD-78).
-Les cartes et graphes (E-10, E-11) sont construits ; l'assistant ne propose encore aucune mise à jour du monde ni aucune image.
+Les cartes et graphes (E-10, E-11) sont construits ; l'assistant ne propose encore aucune mise à jour du monde ; `kanevas-images` lui ajoute la génération d'un portrait attaché à une section (AD-88 à AD-90).
 `kanevas-recours-admin` y ajoute l'administration d'instance (E-5, AD-86, AD-87).
 
 ## Carte
@@ -178,7 +178,7 @@ base en snake_case (`docs/donnees.md`).
 # La cible
 
 > Construit à ce jour : la session, le mode bouchon, les tables et leurs fonctions de service,
-> les systèmes de jeu et leurs gabarits, les relations et la recherche dans un type, le suivi (campagnes, scénarios, préparation, comptes-rendus), les écrans E-1 à E-11, E-13, E-14, E-15 et E-16 (E-9 avec son bloc Pièces jointes), l'illustration des fiches, les cartes et graphes (E-10, E-11, bloc « Cartes visibles » de E-3), le stockage des fichiers sur le volume, et l'assistant du membre (E-12 ; ses outils : chercher, lire, écrire dans une section, créer une campagne ou un scénario). Le reste (propositions de mise à jour, images)
+> les systèmes de jeu et leurs gabarits, les relations et la recherche dans un type, le suivi (campagnes, scénarios, préparation, comptes-rendus), les écrans E-1 à E-11, E-13, E-14, E-15 et E-16 (E-9 avec son bloc Pièces jointes), l'illustration des fiches, les cartes et graphes (E-10, E-11, bloc « Cartes visibles » de E-3), le stockage des fichiers sur le volume, et l'assistant du membre (E-12 ; ses outils : chercher, lire, écrire dans une section, créer une campagne ou un scénario, et pour le MJ générer une image attachée à une section). Le reste (propositions de mise à jour)
 > est la cible des tranches suivantes.
 
 ## Organes, et qui parle à qui

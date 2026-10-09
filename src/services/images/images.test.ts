@@ -171,3 +171,16 @@ test('image Docker : codex installé avec une version épinglée', () => {
   assert.match(d, /ARG CODEX_VERSION=\d+\.\d+\.\d+/);
   assert.match(d, /npm install -g @openai\/codex@\$\{CODEX_VERSION\}/);
 });
+
+test("codex : le sous-processus ne reçoit pas les secrets du serveur", async () => {
+  const b = banc(`${ECRIT_PNG(null as never)}\necho "SECRET:[$CLAUDE_CODE_OAUTH_TOKEN$SESSION_SECRET]" >> "${'$'}0.env"`);
+  process.env.CLAUDE_CODE_OAUTH_TOKEN = 'tok-serveur';
+  process.env.SESSION_SECRET = 'sess-serveur';
+  try {
+    await choisir(b).generateur.generer('x');
+  } finally {
+    delete process.env.CLAUDE_CODE_OAUTH_TOKEN;
+    delete process.env.SESSION_SECRET;
+  }
+  assert.equal(readFileSync(join(b.bin, 'codex.env'), 'utf8').trim(), 'SECRET:[]');
+});

@@ -60,7 +60,7 @@ function executer(
     if (signal?.aborted) return reject(new ErreurGeneration());
     const enfant = spawn(executable, args, {
       cwd,
-      env: { ...process.env, CODEX_HOME: codexHome },
+      env: environnementEnfant(codexHome),
       stdio: 'ignore',
     });
     let fini = false;
@@ -127,4 +127,22 @@ export function generateurCodex(options: OptionsCodex): GenerateurImage {
       });
     },
   };
+}
+
+// The engine gets only what it needs to run and reach the network, never the server's secrets
+// (CLAUDE_CODE_OAUTH_TOKEN, SESSION_SECRET, OIDC_*, …).
+const VARIABLES_ENFANT = [
+  'PATH', 'HOME', 'LANG', 'LC_ALL', 'TMPDIR', 'TZ',
+  'HTTP_PROXY', 'HTTPS_PROXY', 'NO_PROXY', 'http_proxy', 'https_proxy', 'no_proxy',
+  'SSL_CERT_FILE', 'SSL_CERT_DIR', 'NODE_EXTRA_CA_CERTS',
+];
+
+function environnementEnfant(codexHome: string): NodeJS.ProcessEnv {
+  const env: NodeJS.ProcessEnv = {};
+  for (const nom of VARIABLES_ENFANT) {
+    const valeur = process.env[nom];
+    if (valeur !== undefined) env[nom] = valeur;
+  }
+  env.CODEX_HOME = codexHome;
+  return env;
 }

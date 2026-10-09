@@ -9,7 +9,7 @@ export const PNG_BOUCHON = Buffer.from(
 /** Stub adapter (AD-55): a fixed image; a description containing « échec » fails (B-25). */
 export const generateurBouchon: GenerateurImage = {
   async generer(description) {
-    if (description.toLowerCase().includes('échec')) throw new ErreurGeneration();
+    if (/[ée]chec/i.test(description)) throw new ErreurGeneration();
     return Buffer.from(PNG_BOUCHON);
   },
 };
