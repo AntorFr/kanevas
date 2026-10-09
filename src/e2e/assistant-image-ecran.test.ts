@@ -307,3 +307,47 @@ test('existant : un bloc d’écriture de texte reste intact', opts, async () =>
   await panneau(antor).getByRole('log').locator('.asst-attente').waitFor({ state: 'detached' });
   assert.equal(await bloc(antor).count(), 0);
 });
+
+// The thread must scroll after the block is rendered in its new state (loaded or unavailable).
+test('défilement à 390 px : « Ouvrir la section » et « Recharger l’image » restent au-dessus de la saisie', opts, async () => {
+  await antor.setViewportSize({ width: 390, height: 844 });
+  // The image arrives (or fails) after the answer is laid out, as on a real network.
+  await antor.route('**/pieces-jointes/*/fichier*', async (route: Any) => {
+    await new Promise((r) => setTimeout(r, 400));
+    return route.fulfill({
+      status: 200,
+      contentType: 'image/svg+xml',
+      body: '<svg xmlns="http://www.w3.org/2000/svg" width="240" height="320"><rect width="240" height="320" fill="red"/></svg>',
+    });
+  });
+  try {
+    await ouvrir(antor);
+    await nouvelle(antor);
+    await demander(antor, DEMANDE);
+    const b = bloc(antor).last();
+    await b.locator('img').waitFor({ state: 'visible' });
+    const dessus = async (loc: Any) => {
+      const l = await loc.boundingBox();
+      const s = await panneau(antor).locator('.asst-saisie').boundingBox();
+      return l.y + l.height <= s.y + 1;
+    };
+    assert.ok(await dessus(b.getByRole('link', { name: /Ouvrir la section/ })), 'link visible once loaded');
+    // Reopened: the same pieces now answer 404 (the URL carries a nonce, so `indispo` is added by the route below).
+    await antor.unroute('**/pieces-jointes/*/fichier*');
+    await antor.route('**/pieces-jointes/*/fichier*', async (route: Any) => {
+      await new Promise((r) => setTimeout(r, 400));
+      return route.fulfill({ status: 404, body: '' });
+    });
+    await panneau(antor).getByRole('button', { name: /Fermer/ }).click();
+    await bouton(antor).click();
+    await panneau(antor).waitFor();
+    const t = bloc(antor).filter({ hasText: 'Image indisponible.' }).last();
+    await t.waitFor();
+    await t.getByRole('button', { name: 'Recharger l’image' }).waitFor();
+    assert.ok(await dessus(t.getByRole('button', { name: 'Recharger l’image' })), 'button visible when unavailable');
+    assert.ok(await dessus(t.getByRole('link', { name: /Ouvrir la section/ })), 'link visible when unavailable');
+  } finally {
+    await antor.unroute('**/pieces-jointes/*/fichier*');
+    await antor.setViewportSize({ width: 1280, height: 720 });
+  }
+});

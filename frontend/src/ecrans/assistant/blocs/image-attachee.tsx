@@ -1,5 +1,5 @@
 import { ExternalLink, ImagePlus, RotateCcw } from 'lucide-react';
-import { useRef, useState } from 'react';
+import { useLayoutEffect, useRef, useState } from 'react';
 
 import { useConnexionPerdue } from '../../../api';
 import { Bouton } from '../../../ui';
@@ -23,12 +23,20 @@ export function ImageAttachee({ evenement, universId, surOuverture }: PropsBloc)
   const montage = useRef('');
   if (!montage.current) montage.current = `${Date.now().toString(36)}-${++compteurMontages}`;
   const [essai, setEssai] = useState(0);
+  const racine = useRef<HTMLDivElement>(null);
+
+  // The block grows once rendered in its new state (image shown, or the unavailable frame and its
+  // button): scroll the thread after that render, not from the load handlers, which run before it.
+  useLayoutEffect(() => {
+    const fil = racine.current?.closest('.asst-fil');
+    if (fil) fil.scrollTop = fil.scrollHeight;
+  }, [etat]);
 
   const lien = `/univers/${universId}/fiche/${ficheId}#section-${sectionId}`;
   const source = `/api/univers/${universId}/fiches/${ficheId}/pieces-jointes/${pieceId}/fichier?essai=${montage.current}-${essai}`;
 
   return (
-    <div className="asst-ecriture">
+    <div className="asst-ecriture" ref={racine}>
       <p className="asst-ecriture-mot">
         <ImagePlus size={12} strokeWidth={1.75} aria-hidden="true" /> Écrit par l’assistant
       </p>
