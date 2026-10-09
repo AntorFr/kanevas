@@ -42,8 +42,19 @@ export function ReglageAudience({
       const cible = e.target as Element;
       if (!racine.current?.contains(cible) && !racine.current?.parentElement?.contains(cible)) fermer.current();
     };
+    // Escape closes the setting wherever the focus is (typically still on the badge that opened it).
+    const echap = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && !e.defaultPrevented) {
+        e.preventDefault();
+        fermer.current();
+      }
+    };
     document.addEventListener('pointerdown', dehors);
-    return () => document.removeEventListener('pointerdown', dehors);
+    document.addEventListener('keydown', echap);
+    return () => {
+      document.removeEventListener('pointerdown', dehors);
+      document.removeEventListener('keydown', echap);
+    };
   }, []);
 
   const a = audience;
