@@ -86,3 +86,18 @@ test('E-4 : le MJ porte la teinte MJ, le joueur non (pastille de rôle)', opts, 
   const joueur = await fond('lea');
   assert.notEqual(mj, joueur);
 });
+
+// Panne visée : l'icône du titre d'un écran de réglages diverge de celle de la navigation (charte.md:104).
+const iconeLucide = (svg: Any) => svg.evaluate((e: Element) => (e.getAttribute('class') ?? '').split(/\s+/).filter((c) => c.startsWith('lucide-') && c !== 'lucide').join(' '));
+
+test('E-4 / E-14 : l\'icône du titre est celle de l\'entrée de navigation', opts, async () => {
+  for (const [nom, attendue] of [['Membres', 'lucide-contact-round'], ['Paramètres', 'lucide-settings2']] as const) {
+    await p.getByRole('link', { name: nom, exact: true }).click();
+    await p.getByRole('heading', { name: nom, level: 1 }).waitFor();
+    await attendre(p);
+    const titre = await iconeLucide(p.locator('.tete-liste .glyphe-type svg'));
+    const nav = await iconeLucide(p.getByRole('link', { name: nom, exact: true }).locator('svg').first());
+    assert.equal(nav, titre, `${nom} : titre ≠ navigation`);
+    assert.match(titre, new RegExp(attendue.replace('settings2', 'settings-2')));
+  }
+});

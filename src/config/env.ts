@@ -33,8 +33,11 @@ const envSchema = z.object({
   OIDC_CLIENT_ID: z.string().min(1).optional(),
   OIDC_CLIENT_SECRET: z.string().min(1).optional(),
   OIDC_REDIRECT_URI: z.string().url().optional(),
-  // LLM transports reused from Antre-du-maitre (AD-10): no route of this
-  // socle calls them yet.
+  // Assistant (AD-54, AD-77): Claude subscription token, set by the operator; empty or absent =
+  // no assistant outside the stub. Read here only, never logged.
+  CLAUDE_CODE_OAUTH_TOKEN: z.string().optional(),
+  // LLM transports reused from Antre-du-maitre (AD-10): no route calls them; only
+  // ANTHROPIC_MODEL is read, by the assistant's claude-agent adapter (AD-73).
   ANTHROPIC_API_KEY: z.string().optional(),
   ANTHROPIC_MODEL: z.string().min(1).default('claude-sonnet-4-6'),
   LLM_PROVIDER: z.enum(['mock', 'anthropic', 'claude-agent']).default('mock'),
