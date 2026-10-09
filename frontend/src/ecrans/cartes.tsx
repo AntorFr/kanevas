@@ -1,3 +1,4 @@
+import { Eye, EyeOff, ImagePlus, Plus, ChevronDown, X } from 'lucide-react';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 
@@ -8,25 +9,12 @@ import type { UniversListe } from '../types';
 import { Bouton, Champ, Chargement, ErreurChargement, Pastille, PageIntrouvable } from '../ui';
 import './ecrans.css';
 import './cartes/cartes.css';
-import { adresseCarte, adresseFond, FORMES, type Carte, type PageCartes } from './cartes/commun';
+import { Vignette } from './cartes/vignette';
+import { adresseCarte, FORMES, type Carte, type PageCartes } from './cartes/commun';
 
 const ECHEC = 'L’action n’a pas abouti. Réessayez.';
 const NON_IMAGE = 'ce fichier n’est pas une image (PNG, JPEG, GIF ou WebP).';
 const TROP_LOURD = 'l’image dépasse 25 Mo.';
-
-function Vignette({ universId, carte }: { universId: string; carte: Carte }) {
-  const [casse, setCasse] = useState(false);
-  if (carte.forme !== 'illustree' || !carte.fond || casse) return <span className="carte-vignette neutre" aria-hidden="true" />;
-  return (
-    <img
-      className="carte-vignette"
-      src={adresseFond(universId, carte.id)}
-      alt=""
-      loading="lazy"
-      onError={() => setCasse(true)}
-    />
-  );
-}
 
 /** E-10 Cartes: the maps the account reads; the GM creates one and flips its visibility in place. */
 function Cartes() {
@@ -165,7 +153,7 @@ function Cartes() {
         </div>
       )}
       {mj && !ouvert && (
-        <Bouton variante="principal" ecrit onClick={() => setOuvert(true)}>
+        <Bouton variante="principal" icone={Plus} ecrit onClick={() => setOuvert(true)}>
           Nouvelle carte
         </Bouton>
       )}
@@ -203,17 +191,17 @@ function Cartes() {
                     setErreurFond(undefined);
                   }}
                 />
-                <Bouton onClick={() => saisieFichier.current?.click()}>Choisir une image</Bouton>
+                <Bouton icone={ImagePlus} onClick={() => saisieFichier.current?.click()}>Choisir une image</Bouton>
                 <span>{fond ? fond.name : 'Image de fond (facultative)'}</span>
               </div>
               {erreurFond && <div className="champ"><div className="erreur" role="alert">Erreur : {erreurFond}</div></div>}
             </div>
           )}
           <div className="actions">
-            <Bouton type="submit" variante="principal" ecrit enCours={enCours}>
+            <Bouton type="submit" variante="principal" icone={Plus} ecrit enCours={enCours}>
               Créer
             </Bouton>
-            <Bouton onClick={fermer}>Annuler</Bouton>
+            <Bouton icone={X} onClick={fermer}>Annuler</Bouton>
           </div>
         </form>
       )}
@@ -225,7 +213,7 @@ function Cartes() {
         <ul className="cartes-liste">
           {cartes.map((c) => (
             <li key={c.id} className="carte-ligne">
-              <Vignette universId={id!} carte={c} />
+              <Vignette universId={id!} carte={c} classe="carte-vignette" />
               <div className="carte-corps">
                 <Link to={adresseCarte(id!, c.id)}>{c.titre}</Link>
                 <small>{FORMES[c.forme]}</small>
@@ -233,7 +221,7 @@ function Cartes() {
               {mj && c.visible !== undefined && (
                 <div className="carte-etat">
                   {c.visible ? <Pastille sens="table">Visible des joueurs</Pastille> : <Pastille sens="mj">MJ seul</Pastille>}
-                  <Bouton petit ecrit enCours={enCoursVisible === c.id} onClick={() => void basculer(c)}>
+                  <Bouton petit icone={c.visible ? EyeOff : Eye} ecrit enCours={enCoursVisible === c.id} onClick={() => void basculer(c)}>
                     {c.visible ? 'Cacher aux joueurs' : 'Rendre visible'}
                   </Bouton>
                 </div>
@@ -248,7 +236,7 @@ function Cartes() {
         </div>
       )}
       {suivant !== null && (
-        <Bouton enCours={suiteEnCours} onClick={() => void chargerSuite()} disabled={perdue}>
+        <Bouton icone={ChevronDown} enCours={suiteEnCours} onClick={() => void chargerSuite()} disabled={perdue}>
           Charger la suite
         </Bouton>
       )}

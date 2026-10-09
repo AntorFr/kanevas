@@ -1728,7 +1728,7 @@ reste. Hors connexion, le fond déjà chargé reste affiché.
 - Étant donné Antor qui déplace le token d'Aldric puis recharge, alors il est à sa nouvelle place ;
   une panne pendant le déplacement le ramène à l'ancienne et affiche « L'action n'a pas abouti.
   Réessayez. ».
-- Étant donné le graphe « Les factions » avec « Les Lames Grises », « Les Ombres de Fer » et « La
+- Étant donné le graphe « Les factions » avec « Les Lames Grises », « Les Corbeaux » et « La
   Guilde » ; la relation « allié de » de la première vers la deuxième, portée par une section que
   Léa ne lit pas, et « rival de » de la première vers la troisième, portée par une section qu'elle lit :
   Antor voit les deux liens ; Léa, qui lit les trois fiches, voit seulement « rival de » ; si elle ne

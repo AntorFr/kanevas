@@ -1,9 +1,12 @@
+import { ArrowRight, Map, RotateCcw } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 
 import { lire } from '../../../api';
 import type { Role } from '../../../types';
-import { Bouton, Chargement, Panneau } from '../../../ui';
+import { Alerte, Bouton } from '../../../ui';
+import { BlocVue, VideBloc } from '../../suivi/blocs-commun';
+import { Vignette } from '../../cartes/vignette';
 import { adresseCarte, FORMES, type Carte, type PageCartes } from '../../cartes/commun';
 import '../../cartes/cartes.css';
 import type { Bloc } from '../registre';
@@ -44,36 +47,59 @@ function CartesVisibles({ universId, role }: { universId: number; role: Role }) 
 
   if (etat.etat === 'ok' && etat.cartes.length === 0 && role !== 'mj') return null;
   return (
-    <Panneau titre="Cartes visibles">
-      {etat.etat === 'chargement' && <Chargement />}
-      {etat.etat === 'erreur' && (
-        <div className="etat">
-          <p role="alert">Impossible de charger les cartes.</p>
-          <Bouton onClick={() => setEssai((n) => n + 1)}>Réessayer</Bouton>
+    <BlocVue
+      titre="Cartes visibles"
+      donnee="cartes"
+      lien={
+        etat.etat === 'ok' ? (
+          <Link className="lien-action" to={`/univers/${universId}/cartes`}>
+            <ArrowRight size={14} strokeWidth={1.75} aria-hidden="true" />
+            Toutes
+          </Link>
+        ) : undefined
+      }
+    >
+      {etat.etat === 'chargement' && (
+        <div className="charge-bloc" role="status">
+          <div className="cartes">
+            <div className="os-carte">
+              <span className="squelette" />
+            </div>
+          </div>
+          <p>Chargement…</p>
         </div>
       )}
-      {etat.etat === 'ok' && (
-        <>
-          {etat.cartes.length === 0 ? (
-            <div className="etat">
-              <p>Aucune carte visible des joueurs.</p>
-            </div>
-          ) : (
-            <ul className="bloc-cartes">
-              {etat.cartes.map((c) => (
-                <li key={c.id}>
-                  <Link to={adresseCarte(universId, c.id)} title={c.titre}>
-                    {c.titre}
-                  </Link>
-                  <small>{FORMES[c.forme]}</small>
-                </li>
-              ))}
-            </ul>
-          )}
-          <Link to={`/univers/${universId}/cartes`}>Toutes</Link>
-        </>
+      {etat.etat === 'erreur' && (
+        <Alerte
+          action={
+            <Bouton petit icone={RotateCcw} onClick={() => setEssai((n) => n + 1)}>
+              Réessayer
+            </Bouton>
+          }
+        >
+          Impossible de charger les cartes.
+        </Alerte>
       )}
-    </Panneau>
+      {etat.etat === 'ok' &&
+        (etat.cartes.length === 0 ? (
+          <VideBloc>Aucune carte visible des joueurs.</VideBloc>
+        ) : (
+          <ul className="cartes">
+            {etat.cartes.map((c) => (
+              <li key={c.id}>
+                <Link className="carte-ve" to={adresseCarte(universId, c.id)} title={c.titre}>
+                  <Vignette universId={universId} carte={c} classe="apercu" />
+                  <span className="lib-carte">
+                    <Map size={14} strokeWidth={1.75} aria-hidden="true" />
+                    <b>{c.titre}</b>
+                    <small>{FORMES[c.forme]}</small>
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        ))}
+    </BlocVue>
   );
 }
 
