@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react';
+import { ExternalLink, ImagePlus, Images, Pencil, Plus, Trash2, Eye, EyeOff } from 'lucide-react';
 import { Link, useParams } from 'react-router-dom';
 
 import { ErreurApi, appeler, envoyerFichier, lire, useConnexionPerdue } from '../api';
@@ -292,6 +293,7 @@ function Corps({
         {gerer && !renommer && (
           <Bouton
             ecrit
+            icone={Pencil}
             onClick={() => {
               setTitre(carte.titre);
               setRenommer(true);
@@ -306,7 +308,7 @@ function Corps({
         {gerer && carte.visible !== undefined && (
           <>
             {carte.visible ? <Pastille sens="table">Visible des joueurs</Pastille> : <Pastille sens="mj">MJ seul</Pastille>}
-            <Bouton petit ecrit enCours={visibleEnCours} onClick={() => void basculerVisible()}>
+            <Bouton petit ecrit icone={carte.visible ? EyeOff : Eye} enCours={visibleEnCours} onClick={() => void basculerVisible()}>
               {carte.visible ? 'Cacher aux joueurs' : 'Rendre visible'}
             </Bouton>
           </>
@@ -319,7 +321,7 @@ function Corps({
       )}
       {gerer && (
         <div className="carte-actions">
-          <Bouton variante="principal" ecrit onClick={() => setAjout(true)}>
+          <Bouton variante="principal" ecrit icone={Plus} onClick={() => setAjout(true)}>
             Ajouter une fiche
           </Bouton>
           {illustree && (
@@ -334,7 +336,7 @@ function Corps({
                 tabIndex={-1}
                 onChange={(e) => void choisirFond(e.target.files?.[0])}
               />
-              <Bouton ecrit enCours={fondEnCours} onClick={() => saisieFichier.current?.click()}>
+              <Bouton ecrit icone={carte.fond ? Images : ImagePlus} enCours={fondEnCours} onClick={() => saisieFichier.current?.click()}>
                 {carte.fond ? 'Changer le fond' : 'Ajouter un fond'}
               </Bouton>
             </>
@@ -377,14 +379,15 @@ function Corps({
       )}
 
       {gerer && choisi && (
-        <div className="carte-panneau">
+        <div className="carte-panneau mj">
           <strong>
             {choisi.titre} · {libelleType(choisi.type)}
           </strong>
           <Link className="bouton neutre" to={adresseFiche(universId, choisi.ficheId)}>
+            <ExternalLink size={14} strokeWidth={1.75} aria-hidden="true" />
             Ouvrir la fiche
           </Link>
-          <Bouton ecrit onClick={() => setConfirme({ id: choisi.id, lieu: 'panneau' })}>
+          <Bouton ecrit variante="danger" icone={Trash2} onClick={() => setConfirme({ id: choisi.id, lieu: 'panneau' })}>
             Retirer de la carte
           </Bouton>
           {retirerConfirme('panneau', choisi)}
@@ -400,7 +403,7 @@ function Corps({
                 <Link to={adresseFiche(universId, e.ficheId)}>{e.titre}</Link>
                 <small>{libelleType(e.type)}</small>
                 {gerer && (
-                  <Bouton petit ecrit onClick={() => setConfirme({ id: e.id, lieu: 'liste' })}>
+                  <Bouton petit ecrit variante="danger" icone={Trash2} onClick={() => setConfirme({ id: e.id, lieu: 'liste' })}>
                     Retirer de la carte
                   </Bouton>
                 )}

@@ -208,6 +208,27 @@ test('token : zone ≥ 44 px, glisser puis recharger, clavier 1 % puis 5 %', opt
   assert.ok((await texte(antor)).includes('Flèches : déplacer de 1 % (Maj : 5 %)'));
 });
 
+test('token sélectionné : anneau ambre visible, panneau MJ ambré, icônes sur les actions', opts, async () => {
+  await ouvrir(antor);
+  const icones = await antor.locator('main button svg, main a svg').count();
+  assert.ok(icones >= 3, `icônes sur les actions de l'en-tête : ${icones}`);
+  await token(antor, 'Maître Aldric').click();
+  await attendre(antor);
+  const panneau = antor.locator('.carte-panneau');
+  await panneau.waitFor();
+  const couleurs = await antor.evaluate(() => {
+    const t = document.querySelector('.carte-token[aria-pressed=true] i') as HTMLElement;
+    const p = document.querySelector('.carte-panneau') as HTMLElement;
+    return { ombre: getComputedStyle(t).boxShadow, borduresT: getComputedStyle(t).borderTopColor, borduresP: getComputedStyle(p).borderTopColor };
+  });
+  const AMBRE = /242, 163, 60|138, 83, 0/; // --mj, thème sombre ou clair
+  assert.match(couleurs.ombre, AMBRE, `anneau ambre (--mj) attendu : ${couleurs.ombre}`);
+  assert.match(couleurs.borduresT, AMBRE);
+  assert.match(couleurs.borduresP, /242, 163, 60|176, 108, 10/, `panneau ambré : ${couleurs.borduresP}`);
+  assert.ok(await panneau.getByRole('button', { name: /Retirer/ }).locator('svg').count() >= 1, 'icône sur Retirer');
+  await antor.screenshot({ path: '/tmp/e11-selection.png' });
+});
+
 test('panne pendant le déplacement : retour en place et message', opts, async () => {
   await ouvrir(antor);
   const avant = (await elements())[0];

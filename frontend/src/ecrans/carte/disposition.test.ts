@@ -68,3 +68,19 @@ test('les titres identiques se départagent par identifiant : stable', () => {
   ];
   assert.deepEqual([...disposer(m, []).entries()], [...disposer([...m].reverse(), []).entries()]);
 });
+
+test('enPixels : deux nœuds voisins ne partagent pas une case, résultat identique à chaque appel', async () => {
+  const { enPixels, tailleCadre, CASE } = await import('./disposition');
+  const noeuds = Array.from({ length: 40 }, (_, i) => ({ id: i + 1, titre: `N${i}` }));
+  const t = tailleCadre(40, 390);
+  const a = enPixels(disposer(noeuds, []), t);
+  const b = enPixels(disposer(noeuds, []), t);
+  assert.deepEqual([...a], [...b]);
+  assert.ok(t.largeur <= 390);
+  const pts = [...a.values()];
+  let chevauche = 0;
+  for (let i = 0; i < pts.length; i++) for (let j = i + 1; j < pts.length; j++) {
+    if (Math.abs(pts[i]!.x - pts[j]!.x) < CASE.largeur - 1 && Math.abs(pts[i]!.y - pts[j]!.y) < CASE.hauteur - 1) chevauche++;
+  }
+  assert.equal(chevauche, 0);
+});

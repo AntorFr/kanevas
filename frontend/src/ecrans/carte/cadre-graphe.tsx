@@ -1,14 +1,9 @@
-import { useMemo } from 'react';
+import { useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 
-import { disposer } from './disposition';
+import { disposer, enPixels, tailleCadre } from './disposition';
 import { adresseFiche, titreCourt, type Element, type Lien } from './types';
 
-/** Room kept around the outer nodes, and the least room per node on each side (E-11). */
-const MARGE = 60;
-const PAR_NOEUD = 60;
-const LARGEUR_MIN = 640;
-const HAUTEUR_MIN = 400;
 const RAYON = 15;
 
 interface Props {
@@ -25,22 +20,31 @@ interface Props {
 /** The frame of a graph: one node per sheet, one arrow per link, laid out in the browser (AD-71). */
 export function CadreGraphe({ universId, elements, liens, gerer, selection, onSelection, vide }: Props) {
   const n = elements.length;
-  const largeur = Math.max(LARGEUR_MIN, n * PAR_NOEUD + 2 * MARGE);
-  const hauteur = Math.max(HAUTEUR_MIN, n * PAR_NOEUD + 2 * MARGE);
+  const zone = useRef<HTMLDivElement>(null);
+  const [dispo, setDispo] = useState(640);
+  // The frame takes the width the page gives it; what does not fit scrolls, never overlaps.
+  useLayoutEffect(() => {
+    const el = zone.current;
+    if (!el) return;
+    const mesure = () => setDispo(el.clientWidth || 640);
+    mesure();
+    if (typeof ResizeObserver === 'undefined') return;
+    const obs = new ResizeObserver(mesure);
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, [n === 0]);
+  const { largeur, hauteur } = tailleCadre(n, dispo);
 
-  // The layout depends on the graph this reader received, and on nothing else.
+  // The layout depends on the graph this reader received, and on the frame size, and on nothing else.
   const points = useMemo(
-    () => disposer(elements.map((e) => ({ id: e.ficheId, titre: e.titre })), liens),
-    [elements, liens],
+    () => enPixels(disposer(elements.map((e) => ({ id: e.ficheId, titre: e.titre })), liens), { largeur, hauteur }),
+    [elements, liens, largeur, hauteur],
   );
-  const pos = (ficheId: number) => {
-    const p = points.get(ficheId) ?? { x: 0.5, y: 0.5 };
-    return { x: MARGE + p.x * (largeur - 2 * MARGE), y: MARGE + p.y * (hauteur - 2 * MARGE) };
-  };
+  const pos = (ficheId: number) => points.get(ficheId) ?? { x: largeur / 2, y: hauteur / 2 };
 
   if (n === 0) {
     return (
-      <div className="carte-zone">
+      <div className="carte-zone" ref={zone}>
         <div className="carte-cadre graphe-vide">
           <div className="carte-message vide">
             <p>{vide}</p>
@@ -51,7 +55,7 @@ export function CadreGraphe({ universId, elements, liens, gerer, selection, onSe
   }
 
   return (
-    <div className="carte-zone graphe-zone">
+    <div className="carte-zone graphe-zone" ref={zone}>
       <div className="carte-cadre graphe" style={{ width: largeur, height: hauteur }}>
         <svg className="graphe-liens" width={largeur} height={hauteur} viewBox={`0 0 ${largeur} ${hauteur}`} aria-hidden="true">
           <defs>

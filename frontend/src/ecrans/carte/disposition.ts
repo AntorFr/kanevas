@@ -94,3 +94,59 @@ export function disposer(noeuds: NoeudDispo[], liens: LienDispo[]): Map<number, 
   tries.forEach((t, i) => sortie.set(t.id, { x: nx[i]!, y: ny[i]! }));
   return sortie;
 }
+
+export interface Taille {
+  largeur: number;
+  hauteur: number;
+}
+
+/** Room one node takes (title included) and the margin kept around the outer ones, in pixels. */
+export const CASE = { largeur: 150, hauteur: 70 };
+export const MARGE = 40;
+
+/**
+ * The size a graph of `n` nodes needs inside `disponible` pixels of width: the width follows the screen
+ * (never narrower than one node), the height grows with the number of rows the nodes need.
+ */
+export function tailleCadre(n: number, disponible: number): Taille {
+  const largeur = Math.max(CASE.largeur + 2 * MARGE, Math.floor(disponible));
+  const colonnes = Math.max(1, Math.floor((largeur - 2 * MARGE) / CASE.largeur));
+  const lignes = Math.max(1, Math.ceil(n / colonnes));
+  return { largeur, hauteur: Math.max(380, Math.ceil(lignes * CASE.hauteur * 1.6) + 2 * MARGE) };
+}
+
+/**
+ * Maps the unit-square layout into a frame of `taille` pixels by giving each node its own free case of
+ * a CASE-sized grid: the nearest one to its ideal spot, nodes taken in the layout's own order (titles,
+ * then ids). Deterministic, and no two nodes can ever overlap.
+ */
+export function enPixels(unite: Map<number, Point>, taille: Taille): Map<number, Point> {
+  const colonnes = Math.max(1, Math.floor((taille.largeur - 2 * MARGE) / CASE.largeur));
+  const lignes = Math.max(1, Math.floor((taille.hauteur - 2 * MARGE) / CASE.hauteur));
+  const ox = (taille.largeur - colonnes * CASE.largeur) / 2 + CASE.largeur / 2;
+  const oy = (taille.hauteur - lignes * CASE.hauteur) / 2 + CASE.hauteur / 2;
+  const libres: Point[] = [];
+  for (let r = 0; r < lignes; r++) for (let c = 0; c < colonnes; c++) libres.push({ x: ox + c * CASE.largeur, y: oy + r * CASE.hauteur });
+  const sortie = new Map<number, Point>();
+  for (const [id, u] of unite) {
+    const idealX = MARGE + u.x * (taille.largeur - 2 * MARGE);
+    const idealY = MARGE + u.y * (taille.hauteur - 2 * MARGE);
+    let meilleur = -1;
+    let dMin = Infinity;
+    for (let i = 0; i < libres.length; i++) {
+      const d = Math.hypot(libres[i]!.x - idealX, libres[i]!.y - idealY);
+      if (d < dMin) {
+        dMin = d;
+        meilleur = i;
+      }
+    }
+    if (meilleur < 0) {
+      // More nodes than cases (frame sized by the caller): fall back on the ideal spot.
+      sortie.set(id, { x: idealX, y: idealY });
+      continue;
+    }
+    sortie.set(id, libres[meilleur]!);
+    libres.splice(meilleur, 1);
+  }
+  return sortie;
+}
