@@ -399,6 +399,7 @@ describe('kanevas-suivi, du besoin', { skip: skipBrowser }, () => {
     await ajouterTache(p, 'Tâche pnj', 'PNJ');
     await ajouterTache(p, 'Tâche monstre', 'Monstres');
     await ajouterTache(p, 'm'.repeat(200), 'Autre');
+    // « Cartes » is also a sidebar item (E-10): measure the order in the page body only.
     const t = await p.locator('main.principal').innerText();
     const ordre = ['Monstres', 'PNJ', 'Cartes', 'Déroulements', 'Autre'].map((c) => t.indexOf(c));
     assert.ok(ordre.every((x) => x >= 0), 'five categories shown when each has a task');

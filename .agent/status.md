@@ -11,7 +11,13 @@ déclencheurs, remplissage de l'existant), `services/relations.ts` (relier, reti
 les routes `?q=` et `/relations`, le composant `ListeRecherche` (E-8, réemployé par « Relier ») et le bloc
 Relations de E-9 (AD-63, AD-64). Carte et invariants : `ARCHITECTURE.md`.
 
-`feature/kanevas-refonte-visuelle` (fusionnée dans `epic/kanevas`) refait la charte et tous les écrans construits : tokens clair/sombre,
+`feature/kanevas-cartes-graphes` (PR vers `epic/kanevas`, non fusionnée) ajoute : la migration `0007-cartes.sql` (`cartes`,
+`elements_carte`), `services/cartes.ts` (`lireCarte` seule lecture, filtrée pour le lecteur ; fond par `stockage.ts`, 25 Mo, AD-69),
+les routes `/api/univers/:id/cartes…`, E-10 « Cartes », E-11 (carte illustrée à tokens en pourcentage, AD-70 ; graphe dont les liens
+sont les relations lues sous les deux gardes et la disposition calculée dans le navigateur, AD-71) et le bloc « Cartes visibles » de E-3
+(AD-68 à AD-72). Hors tranche : outils de l'agent sur les cartes, calques, échelle, zoom.
+
+`kanevas-refonte-visuelle` (fusionnée) a refait la charte et tous les écrans construits : tokens clair/sombre,
 polices et icônes embarquées (AD-92), composants partagés (`frontend/src/ui/`), cadre (navigation à icônes, barre haute,
 tiroir au téléphone, thème et déconnexion dans le menu de l'avatar, seul endroit du thème), E-1 à E-4, E-6 à E-9, E-13 à E-15
 avec leurs états, pastille/filet d'audience, menu « ⋯ » et toasts sur la fiche. Aucun geste, droit ni donnée nouveau.
@@ -46,13 +52,11 @@ démarrage ; hors bouchon rien n'est amorcé. Aucune image n'existe avant le tag
 - La suite a été jouée sous Node 22 dans les pods de la chaîne (pas de Docker) ; la CI Node 20 fait foi.
   La règle « conteneurs uniquement » de `CLAUDE.md` est la voie de référence ; un Node local ≥ 20 (README) est le repli quand
   Docker manque.
-- Migrations : 0001 à 0006 sont sur `epic/kanevas` ; l'assistant n'en ajoute aucune. Une tranche suivante prend le numéro 0007 si rien d'autre ne fusionne avant (AD-51).
+- Migrations : 0001 à 0007 sont sur la branche des cartes (0007 = cartes), à recaler seulement si une autre tranche fusionne avant (AD-51).
 - Vocabulaire : « Monsieur » = le commanditaire qui fait la recette ; « tranche » = une feature livrée ; « phase merge » = la
   fusion après recette ; E-n / B-n / P-n = écrans / besoins / parcours, définis dans `docs/ecrans.md` et `docs/parcours.md`.
 - La CI ne pousse d'image que sur `main` et sur un tag `v*` ; sur une PR elle ne fait qu'un build de
   validation. L'image testable n'existe qu'après le tag, posé à la fusion.
-- **Numéro de migration** : `0005-relier-chercher.sql` (après `0004-pieces-jointes.sql`, numéro de la branche) ; si une autre tranche fusionne une migration
-  avant, la phase merge la recale (AD-51).
 - Recherche : `listerFiches({recherche})` seule (AD-63) ; les index FTS5 ne livrent que des identifiants
   candidats, tenus par déclencheurs : ne jamais écrire dans `recherche_*` depuis le code. La saisie est
   neutralisée (mots cités en préfixe) ; vide ou > 100 caractères = 400.
@@ -67,7 +71,7 @@ démarrage ; hors bouchon rien n'est amorcé. Aucune image n'existe avant le tag
   d'univers fourni ; un refus répond 404. Le MJ qui crée un compte-rendu n'en est pas l'auteur affiché ;
   l'auteur Joueur lit et écrit sa section même fermée aux autres joueurs (AD-61). Plusieurs campagnes
   peuvent être actives (AD-60) ; aucune suppression nulle part.
-- Refonte visuelle : le regard sur les maquettes (bureau, téléphone, clair, sombre) est celui de la vérification et de la recette ; aucun écran n'écrit de couleur en dur (tokens seuls) ; un écran neuf prend le cadre et les composants de `ui/`, il ne recrée ni bouton, ni menu, ni champ. E-5, E-10 et E-11 rattrapent le cadre dans leur tranche ; E-12 le prend déjà (tokens, `Bouton`, `Chargement`, `PastilleRole`).
+- Refonte visuelle : le regard sur les maquettes (bureau, téléphone, clair, sombre) est celui de la vérification et de la recette ; aucun écran n'écrit de couleur en dur (tokens seuls) ; un écran neuf prend le cadre et les composants de `ui/`, il ne recrée ni bouton, ni menu, ni champ. E-10 et E-11 sont construits avec le cadre ; E-5 le rattrape dans sa tranche ; E-12 le prend déjà (tokens, `Bouton`, `Chargement`, `PastilleRole`).
 - P-7 : le portrait (pièce jointe) et la demande à l'assistant (E-12) sont livrés.
 - Pièces jointes : le type est déterminé par la signature des octets, jamais par le navigateur ; seules PNG,
   JPEG, GIF, WebP sont servies en ligne, le reste (SVG compris) en `attachment` sous `nosniff` et CSP sandbox.
@@ -97,6 +101,7 @@ démarrage ; hors bouchon rien n'est amorcé. Aucune image n'existe avant le tag
   relations/cartes/recherche, outil d'assistant.
 - Bouchon : au démarrage, sur une base sans univers, `semerBouchon` pose le monde de recette (Lame d'Ébène, Landes grises,
   CoF Mini…) puis `semerIllustrations` ; `KANEVAS_SANS_SEMIS=1` le coupe (utilisé par les e2e). Jamais hors bouchon.
-- Migrations : voir « Pièges » (0001 à 0006 sont sur `epic/kanevas`).
+- Cartes : un graphe n'a ni position stockée ni déplacement de nœud (AD-71) ; la forme d'une carte ne change jamais ; un fond ne se retire pas, il se remplace ; aucune suppression de carte ni d'élément autre que « Retirer de la carte ». La fiche retirée reste.
+- Numéro de migration `0007` (cartes) à recaler à la fusion si une autre tranche en a pris un (AD-51).
 
 **Suivant :** administration.

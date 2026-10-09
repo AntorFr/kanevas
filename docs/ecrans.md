@@ -5,8 +5,8 @@
 > finie se détaillent dans la tranche qui le construit.
 
 > **Construit à ce jour** : E-1, E-2, E-3 (nom, navigation et blocs : système de jeu, campagnes actives, derniers comptes-rendus, préparation pour le MJ), E-4, E-6, E-7, E-13, E-8 (avec la
-> recherche dans un type, en grille de cartes illustrées), E-9 (avec les blocs Relations et Pièces jointes et l'illustration en tête), E-12 (Assistant), E-14 (Paramètres), E-15 (Système de jeu, à `/systemes/:sid`), E-16 (Systèmes de jeu), la ligne « Campagne » de E-9, la session
-> et la barre latérale. E-5, E-10 et E-11 sont la cible.
+> recherche dans un type, en grille de cartes illustrées), E-9 (avec les blocs Relations et Pièces jointes et l'illustration en tête), E-10 et E-11 (cartes et graphes, avec le bloc « Cartes visibles » de E-3), E-12 (Assistant), E-14 (Paramètres), E-15 (Système de jeu, à `/systemes/:sid`), E-16 (Systèmes de jeu), la ligne « Campagne » de E-9, la session
+> et la barre latérale. E-5 est la cible.
 
 ## Format
 
@@ -1606,7 +1606,7 @@ graphe naît vide, ses fiches se choisissent sur la carte. « Annuler » ferme l
 formulaire reste proposé) ; Joueur « Aucune carte n'est visible pour l'instant. » ; titre vide ou
 trop long : « Erreur : le titre est obligatoire. » / « Erreur : 80 caractères au plus. » ; fond qui
 n'est pas une image PNG, JPEG, GIF ou WebP, ou vide : « Erreur : ce fichier n'est pas une image (PNG,
-JPEG, GIF ou WebP). » ; fond de plus de 25 Mo : « Erreur : l'image dépasse 25 Mo. » ; échec de
+JPEG, GIF ou WebP). » ; fond de plus de 25 Mo (réponse 413) : « Erreur : l'image dépasse 25 Mo. » ; échec de
 création : « La carte n'a pas pu être créée. Réessayez. », le formulaire garde sa saisie (le fond
 choisi aussi). Une vignette qui ne se charge pas montre le motif neutre.
 

@@ -1,0 +1,47 @@
+.carte-entete { display: flex; flex-wrap: wrap; align-items: center; gap: var(--e-3); margin-bottom: var(--e-3); }
+.carte-entete h1 { overflow-wrap: anywhere; flex: 1 1 16rem; min-width: 0; }
+.carte-entete .carte-actions { display: flex; flex-wrap: wrap; gap: var(--e-2); align-items: center; }
+.carte-renommer { display: flex; flex-wrap: wrap; gap: var(--e-2); align-items: flex-end; flex: 1 1 16rem; }
+.carte-renommer .champ { flex: 1 1 12rem; }
+.carte-sous { color: var(--texte-2); display: flex; gap: var(--e-2); align-items: center; flex-wrap: wrap; margin-bottom: var(--e-3); }
+.carte-zone { width: 100%; }
+.carte-cadre { position: relative; width: 100%; border: 1px solid var(--bord); border-radius: var(--rayon-panneau); overflow: hidden; background: var(--surface-2, var(--surface)); }
+.carte-cadre.neutre { aspect-ratio: 16 / 10; background-image: repeating-linear-gradient(45deg, transparent 0 12px, var(--bord) 12px 13px); }
+.carte-cadre.en-attente { aspect-ratio: 16 / 10; }
+.carte-cadre.en-attente .carte-fond { position: absolute; inset: 0; opacity: 0; width: 100%; height: 100%; }
+.carte-fond { display: block; width: 100%; height: auto; }
+.carte-message { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--e-2); text-align: center; padding: var(--e-3); color: var(--texte-2); }
+.carte-cadre.neutre .carte-message { pointer-events: none; }
+.carte-token { position: absolute; transform: translate(-50%, -50%); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; min-width: 44px; min-height: 44px; padding: 0; border: 0; background: transparent; color: var(--texte); font: inherit; font-size: var(--t-12, 12px); cursor: pointer; touch-action: none; text-decoration: none; }
+.carte-token i { font-style: normal; font-weight: 600; width: 30px; height: 30px; border-radius: 50%; background: var(--surface); border: 2px solid var(--accent, var(--texte)); display: flex; align-items: center; justify-content: center; }
+.carte-token span { background: var(--voile); color: var(--texte); padding: 1px 6px; border-radius: 6px; white-space: nowrap; }
+.carte-token.sel i { box-shadow: 0 0 0 4px var(--bord); border-color: var(--mj, var(--accent, var(--texte))); }
+.carte-token:focus-visible { outline: 2px solid var(--accent, var(--texte)); outline-offset: 2px; }
+.carte-aide { color: var(--texte-2); font-size: var(--t-12, 12px); margin: var(--e-2) 0; }
+.carte-panneau { background: var(--surface); border: 1px solid var(--bord); border-radius: var(--rayon-champ); padding: var(--e-3) var(--e-4); margin: var(--e-3) 0; display: flex; flex-wrap: wrap; gap: var(--e-2); align-items: center; }
+.carte-panneau strong { flex: 1 1 12rem; overflow-wrap: anywhere; }
+.carte-sur h2 { margin: var(--e-4) 0 var(--e-2); }
+.carte-sur ul { list-style: none; margin: 0; padding: 0; background: var(--surface); border: 1px solid var(--bord); border-radius: var(--rayon-champ); max-height: 24rem; overflow-y: auto; }
+.carte-sur li { display: flex; flex-wrap: wrap; align-items: center; gap: var(--e-2); padding: var(--e-2) var(--e-4); border-bottom: 1px solid var(--bord); }
+.carte-sur li:last-child { border-bottom: 0; }
+.carte-sur li a { color: var(--texte); overflow-wrap: anywhere; flex: 1 1 10rem; }
+.carte-sur li small { color: var(--texte-2); }
+.carte-confirme { flex-basis: 100%; display: flex; flex-wrap: wrap; gap: var(--e-2); align-items: center; }
+.carte-ajout { display: flex; flex-direction: column; gap: var(--e-3); min-width: 0; }
+.carte-ajout-liste { list-style: none; margin: 0; padding: 0; max-height: 18rem; overflow-y: auto; }
+.carte-ajout-liste li { display: flex; align-items: center; gap: var(--e-2); padding: var(--e-2) 0; border-bottom: 1px solid var(--bord); }
+.carte-ajout-titre { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.carte-ajout-titre small, .carte-deja { color: var(--texte-2); }
+.carte-ajout .actions { display: flex; gap: var(--e-2); }
+@media (max-width: 760px) {
+  .carte-entete .carte-actions { width: 100%; }
+  .carte-sur li { padding: var(--e-2) var(--e-3); }
+}
+.graphe-zone { overflow: auto; max-width: 100%; border: 1px solid var(--bord); border-radius: var(--rayon-panneau); }
+.graphe-zone .carte-cadre { border: 0; border-radius: 0; overflow: visible; max-width: none; }
+.graphe-vide { min-height: 150px; }
+.graphe-liens { position: absolute; inset: 0; pointer-events: none; }
+.graphe-lien line { stroke: var(--texte-2); stroke-width: 1.5; }
+.graphe-pointe { fill: var(--texte-2); }
+.graphe-lien text { fill: var(--texte-2); font-size: 12px; }
+.graphe .carte-token { touch-action: manipulation; }
