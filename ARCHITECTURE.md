@@ -18,7 +18,7 @@ préparation, comptes-rendus ; `kanevas-relier-chercher`, les relations entre fi
 type (index FTS5, AD-63, AD-64) ; les pièces jointes (stockage sur le volume, bloc de E-9) ;
 `kanevas-assistant-membre`, l'assistant de chaque membre : un panneau de conversation dont les outils
 appellent les mêmes fonctions de service que les routes, avec les droits de la personne (AD-73 à AD-78).
-Pas de cartes : tranche suivante ; l'assistant ne propose encore aucune mise à jour du monde ni aucune image.
+Les cartes et graphes (E-10, E-11) sont construits ; l'assistant ne propose encore aucune mise à jour du monde ni aucune image.
 `kanevas-recours-admin` y ajoute l'administration d'instance (E-5, AD-86, AD-87).
 
 ## Carte
@@ -35,9 +35,9 @@ Pas de cartes : tranche suivante ; l'assistant ne propose encore aucune mise à 
   adaptateurs `bouchon` et `claude-agent` (AD-73, AD-78), la disponibilité (AD-77) et
   l'orchestration d'une demande (AD-75) ; `src/routes/assistant.ts` : les deux routes. Aucune requête SQL
   dans ce module (AD-2, AD-27).
-- `src/db/` : ouverture du fichier SQLite, `migrations/0001-*.sql`, `0002-systemes.sql`, `0003-suivi.sql`, `0004-pieces-jointes.sql`, `0005-relier-chercher.sql`, `0006-illustrations.sql`, runner (AD-14).
+- `src/db/` : ouverture du fichier SQLite, `migrations/0001-*.sql`, `0002-systemes.sql`, `0003-suivi.sql`, `0004-pieces-jointes.sql`, `0005-relier-chercher.sql`, `0006-illustrations.sql`, `0007-cartes.sql` (provisoire, AD-51), runner (AD-14).
 - `src/e2e/` : tests d'ensemble, serveur réel en bouchon et navigateur piloté (Playwright, ignoré s'il manque) ; E-5 : `administration*.test.ts`.
-- `src/services/` : `comptes`, `univers`, `membres`, `instance`, `fiches`, `sections`, `droits`, `systemes`, `relations`, `campagnes`, `scenarios`, `preparation`, `comptes_rendus`, `pieces-jointes`, `illustrations`, `stockage` — les seules
+- `src/services/` : `comptes`, `univers`, `membres`, `instance`, `fiches`, `sections`, `droits`, `systemes`, `relations`, `campagnes`, `scenarios`, `preparation`, `comptes_rendus`, `pieces-jointes`, `illustrations`, `cartes`, `stockage` — les seules
   fonctions qui lisent ou écrivent les données (AD-2) ; `src/routes/` : routes `/api` minces ; `univers.ts` et `instance.ts` portent les routes d'univers et d'instance.
 - `frontend/` : application React/Vite (AD-57) ; `frontend/src/ui/tokens.css` et
   `frontend/src/ui/` : tokens et composants de `docs/charte.md` ; son build est servi par Fastify. Le cadre
@@ -62,6 +62,10 @@ Pas de cartes : tranche suivante ; l'assistant ne propose encore aucune mise à 
 - `src/bouchon/depart.ts` et `src/bouchon/demo/` : monde de démonstration semé en bouchon sur une base sans univers (par les fonctions de service) ; `KANEVAS_SANS_SEMIS=1` le coupe.
 - `src/services/llm/` : transports LLM (`transport.ts`, `anthropic-transport.ts`,
   `claude-agent-transport.ts`), repris d'Antre-du-maitre, branchés nulle part.
+- `kanevas-cartes-graphes` y ajoute `src/services/cartes.ts` (créer, lire sous les droits du lecteur, régler,
+  placer, retirer ; fond de carte par `stockage.ts`), ses routes `/api` (`src/routes/cartes.ts`) et les écrans E-10 et E-11
+  (`frontend/src/ecrans/cartes.tsx` et `carte.tsx` ; leurs composants et la disposition d'un graphe sont dans les dossiers
+  `ecrans/cartes/` et `ecrans/carte/`) ; AD-68 à AD-72.
 - `Dockerfile` (multi-stage, utilisateur `node`) et
   `.github/workflows/docker-publish.yml` (tests puis image GHCR).
 
@@ -72,7 +76,7 @@ en cours, vidé au démarrage sauf avec une base en mémoire, où le dossier est
 ## Routes `/api`
 
 Toutes gardées par la session (401 sans session), sauf `/api/auth/*`. Les erreurs de service sont
-`introuvable` 404, `refuse` 403, `invalide` 400, `conflit` 409 (`section_modifiee`, `nom_pris`, `gabarit_modifie`, `scenario_modifie`, `relation_existante`, `limite_relations`, `limite_pieces` : 50 pièces par section ; 400 `fichier_vide` pour un fichier vide ; `auto_relation` est un 400 `invalide`). Retirer le dernier
+`introuvable` 404, `refuse` 403, `invalide` 400, `conflit` 409 (`section_modifiee`, `nom_pris`, `gabarit_modifie`, `scenario_modifie`, `relation_existante`, `limite_relations`, `limite_pieces` : 50 pièces par section, `fiche_deja_placee` et `carte_pleine` des cartes ; 413 `fond_trop_lourd` pour un fond de plus de 25 Mo ; 400 `fichier_vide` pour une pièce vide (un fond de carte vide est un 400 `fond_invalide`) ; `auto_relation` est un 400 `invalide`). Retirer le dernier
 MJ répond `invalide` 400 avec la raison ; un contenu de section de plus de 20 000 caractères aussi (AD-91). Le corps d'une erreur de service est `{message}` (plus `code` quand le service en donne un) ; une adresse `/api/...` qu'aucune route ne porte (par exemple une route retirée par AD-94) répond 404 par la page HTML « Page introuvable. », pas par du JSON. Le serveur écoute sur `0.0.0.0` (`-p 3001:3001` suffit).
 En mode bouchon, `POST /connexion-bouchon` attend un corps form-urlencoded `compte=<identifiant>`.
 Les lignes qui citent AD-93 ou AD-94 sont celles de `kanevas-illustrations`, construites par elle ;
@@ -107,6 +111,10 @@ elles remplacent les anciennes routes `GET /api/univers/:id/systeme` et `…/sys
 | `GET\|POST /api/campagnes/:cid/taches`, `PUT /api/taches/:tid` | préparation `{categorie, libelle}` ; cocher `{faite}`. MJ seul, 404 pour tout autre |
 | `POST /api/univers/:id/comptes-rendus` | `{campagneId, titre, texte?}` ; tout membre (AD-61) ; rend la fiche |
 | `GET .../comptes-rendus` (`?campagne`, `?curseur`), `GET .../campagnes/:cid/comptes-rendus` | comptes-rendus lisibles, du plus récent, 100 au plus par page et `suivant` ; `?mode=joueur` |
+| `GET\|POST /api/univers/:id/cartes` | liste des cartes lisibles (`?curseur`) ; création `{titre, forme}` (`forme` obligatoire en JSON ; le défaut « illustrée » est celui du formulaire et de la voie multipart ; `illustree` \| `graphe`), ou multipart avec `titre` et `forme` **avant** `fichier` (fond d'une carte illustrée). MJ hors mode Joueur seul (AD-72) |
+| `GET\|PATCH /api/univers/:id/cartes/:cid` | `lireCarte` : carte, éléments et liens déjà filtrés (AD-68) ; `?mode=joueur` lit en Joueur (403 `mode_joueur` pour le MJ si la carte n'est pas visible) ; règle `{titre?, visible?}` |
+| `PUT\|GET /api/univers/:id/cartes/:cid/fond` | remplacer le fond (multipart, champ `fichier`, image de 25 Mo au plus, AD-69) ; le lire (droit réel du compte, sans mode) |
+| `POST /api/univers/:id/cartes/:cid/elements`, `PATCH\|DELETE …/elements/:eid` | placer `{ficheId, x, y}` (`x` et `y` obligatoires sur une carte illustrée, de 0 à 100 — hors bornes, ramenés au bord —, interdits sur un graphe : `{ficheId}` seul) ; déplacer `{x, y}` ; retirer (204, la fiche reste) |
 
 Corps de requête (JSON) : `POST /api/univers` `{nom, description?}` ; `POST .../membres`
 `{username, role}` (`role` : `mj` \| `joueur` ; `username` est l'identifiant exact) ; `PATCH
@@ -132,8 +140,8 @@ base en snake_case (`docs/donnees.md`).
   (AD-9), il se lit dans la table des membres à chaque requête. Sans les quatre variables
   `OIDC_*` (ou avec une partie seulement), login et callback répondent 404 ; une valeur vide
   ou invalide fait échouer le démarrage.
-- **Douze tables et deux index de recherche, aucun ORM** : `comptes`, `univers`, `membres`, `fiches`, `sections` (migration
-  0001), `systemes_jeu`, `gabarits` (migration 0002), `campagnes`, `scenarios`, `taches_preparation` (migration 0003), `pieces_jointes` (migration 0004), `relations`, `recherche_fiches` et `recherche_sections` (FTS5, migration 0005) ; trois colonnes d'illustration sur `fiches` (migration 0006) ; les numéros 0001 à 0006 sont définitifs, les suivants se prennent à la fusion (AD-51 ; `docs/donnees.md`). Aucune requête SQL hors de `src/services/` et `src/db/`.
+- **Quatorze tables et deux index de recherche, aucun ORM** : `comptes`, `univers`, `membres`, `fiches`, `sections` (migration
+  0001), `systemes_jeu`, `gabarits` (migration 0002), `campagnes`, `scenarios`, `taches_preparation` (migration 0003), `pieces_jointes` (migration 0004), `relations`, `recherche_fiches` et `recherche_sections` (FTS5, migration 0005) ; trois colonnes d'illustration sur `fiches` (migration 0006), `cartes` et `elements_carte` (migration 0007) ; les numéros 0001 à 0006 sont définitifs, 0007 est provisoire et les suivants se prennent à la fusion (AD-51 ; `docs/donnees.md`). Aucune requête SQL hors de `src/services/` et `src/db/`.
 - **Toute route hors `/healthz`, `/api/auth/*` et, en bouchon, `/connexion-bouchon` est gardée par la session** ; sous `/api` un
   défaut de session répond 401, ailleurs il redirige vers la connexion (AD-15).
 - **Une seule route appelle un modèle : l'assistant** (`src/routes/assistant.ts`, par `repondre`, AD-73), avec le jeton de
@@ -167,8 +175,8 @@ base en snake_case (`docs/donnees.md`).
 # La cible
 
 > Construit à ce jour : la session, le mode bouchon, les tables et leurs fonctions de service,
-> les systèmes de jeu et leurs gabarits, les relations et la recherche dans un type, le suivi (campagnes, scénarios, préparation, comptes-rendus), les écrans E-1 à E-9 (E-9 avec son bloc Pièces jointes), E-13, E-14, E-15 et E-16, l'illustration des fiches, le stockage des fichiers sur le volume, et l'assistant du membre (E-12 ; ses outils : chercher, lire, écrire dans une section, créer une campagne ou un scénario). Le reste (propositions de mise à jour, images,
-> cartes) est la cible des tranches suivantes.
+> les systèmes de jeu et leurs gabarits, les relations et la recherche dans un type, le suivi (campagnes, scénarios, préparation, comptes-rendus), les écrans E-1 à E-11, E-13, E-14, E-15 et E-16 (E-9 avec son bloc Pièces jointes), l'illustration des fiches, les cartes et graphes (E-10, E-11, bloc « Cartes visibles » de E-3), le stockage des fichiers sur le volume, et l'assistant du membre (E-12 ; ses outils : chercher, lire, écrire dans une section, créer une campagne ou un scénario). Le reste (propositions de mise à jour, images)
+> est la cible des tranches suivantes.
 
 ## Organes, et qui parle à qui
 
@@ -283,6 +291,11 @@ Les numéros sont stables. Une décision retirée garde son numéro, avec ce qui
 | AD-65 | **Stockage et dépôt des fichiers** : un module `src/services/stockage.ts`, sans notion de section, écrit un flux dans `/data/attachments/tmp/<uuid>`, puis le déplace sur `/data/attachments/<uuid>` (même volume : un renommage) ; il lit en flux et supprime. Il sert aussi aux fonds de carte (AD-40). **`deposerPieceJointe(compte, mode, sectionId, flux, nom, secrete)` est la seule fonction d'envoi** : la route et l'outil image (AD-44) l'appellent. Elle vérifie le droit d'écrire **avant** de lire le flux, puis une seconde fois dans la transaction qui écrit la ligne (le droit peut être retiré pendant un envoi long) ; un échec ou une annulation n'écrit ni ligne ni fichier. Pas de limite de taille (AD-7), un fichier vide refusé, 50 pièces par section. Écarté : base64 en JSON (mémoire, 33 % de plus), limite de taille (décision AD-7). |
 | AD-66 | **Ce qu'on sert, et comment** : le type d'une pièce est **déterminé par le serveur à l'envoi, par la signature des premiers octets** (PNG, JPEG, GIF, WebP) ; le type annoncé par le navigateur est ignoré. Une image reconnue est servie en ligne sous son type ; **tout le reste** (SVG, HTML, PDF…) l'est en `application/octet-stream` avec `Content-Disposition: attachment` et le nom d'origine encodé (`filename*`). Toujours : `X-Content-Type-Options: nosniff`, `Content-Security-Policy: default-src 'none'; sandbox`, `Cache-Control: private, no-store`. Écarté : servir en ligne selon l'extension (un fichier « .png » qui est du HTML) ; aperçu PDF intégré (hors tranche). |
 | AD-67 | **Pas de route de liste des pièces** : elles voyagent avec la fiche, par section, déjà filtrées par la garde et le mode du lecteur (`{id, nom, taille, image, secrete}` ; `secrete` n'est rendu qu'au MJ hors mode Joueur). Un lecteur n'apprend ni le nombre ni l'existence de ce qu'il ne lit pas. Routes : ajouter (`multipart`, un fichier par requête, champ `secrete` puis champ `fichier` : un `secrete` envoyé après le fichier est ignoré), marquer (`secrete`), retirer, et lire le fichier (sans paramètre de mode : le droit réel du compte ; le mode Joueur ne change que ce que la fiche montre). Un compte qui ne lit pas la section, ou une pièce secrète pour un non-MJ : **404**, de corps identique à celui d'un identifiant inconnu ; qui lit sans écrire reçoit **403** à l'ajout et au retrait, et un non-MJ qui marque ou lève « secrète » aussi (comme les gestes MJ de la première fiche). Le refus de limite (50 pièces) ne dit jamais le chiffre dans l'API ; l'écran le dit au seul MJ. |
+| AD-68 | **Une carte se lit par une seule fonction**, `lireCarte(compte, mode, carteId)`, qui rend la carte, ses éléments et, pour un graphe, ses liens — déjà filtrés pour ce lecteur ; le navigateur ne filtre rien. Une carte se lit si le compte est MJ hors mode Joueur, ou si elle est **visible** ; sinon l'adresse répond 404 comme une adresse inconnue (AD-22). Un élément n'est rendu que si sa fiche est lisible (AD-38) ; un lien que si sa relation se lit (AD-64) et que ses deux bouts sont rendus. Aucun compteur, aucun marqueur de ce qui manque. Le mode Joueur d'un MJ sur une carte non visible n'est pas un 404 : l'écran dit qu'un joueur ne la verrait pas (AD-39). |
+| AD-69 | **Le fond d'une carte** est une image (PNG, JPEG, GIF, WebP, reconnue à la signature des premiers octets comme AD-66 ; tout autre fichier est refusé) de **25 Mo au plus** (précise AD-40 et déroge à AD-7, qui n'a pas de limite pour les pièces jointes : un fond est affiché tel quel par le navigateur), écrite par `stockage.ts` (AD-65). Remplacer écrit le nouveau fichier, change la ligne, puis supprime l'ancien ; il n'y a pas de retrait sans remplacement. Servi par `GET /api/univers/:id/cartes/:carteId/fond`, qui revérifie la lecture de la carte à chaque requête (droit réel du compte, sans mode), avec les en-têtes d'AD-66. Écarté : réemployer `deposerPieceJointe` (une carte n'a pas de section ni de secret à porter) ; aucune limite de taille (un fond de plusieurs Go gèle le navigateur). |
+| AD-70 | **Position d'un token** : deux nombres de 0 à 100, en pourcentage de la largeur et de la hauteur du cadre de la carte, **arrondis à deux décimales**. Le cadre prend le rapport largeur/hauteur de l'image de fond (16/10 sans fond) : une position garde son sens à toute taille d'écran et si le fond est remplacé par une image de même rapport. Écarté : des pixels (cassent au changement de taille). Pas de version ni de verrou : deux MJ qui déplacent le même token, la dernière écriture gagne (une position n'est pas un contenu). |
+| AD-71 | **Disposition d'un graphe** : une fonction pure du navigateur (`disposition.ts`, sans dépendance), déterministe — départ sur un cercle dans l'ordre des titres puis des identifiants, 300 itérations d'un placement par forces (répulsion entre nœuds, attraction le long des liens) — appliquée **au seul graphe que le serveur a rendu**. Les nœuds qu'un lecteur ne voit pas n'ont donc aucune influence sur ce qu'il voit : la disposition ne trahit rien. Le MJ ne déplace pas un nœud. Écarté : une bibliothèque de graphe (dépendance pour 40 lignes) ; stocker la disposition (les positions d'un MJ trahiraient les nœuds cachés). |
+| AD-72 | **Limites** : 100 éléments au plus par carte, une fiche au plus une fois par carte, pas de plafond de cartes par univers. Ajouter un élément demande une fiche **du même univers** ; sur une carte illustrée il porte une position, sur un graphe il n'en porte pas (la forme est fixée à la création). Retirer un élément est un geste du MJ qui ne touche pas à la fiche. Seul le MJ (hors mode Joueur) crée, règle, place, retire. |
 
 ## Déploiement et exploitation
 

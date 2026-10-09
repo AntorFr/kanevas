@@ -1,0 +1,108 @@
+// Tests of the graph layout (AD-71), written from the exit criterion of kanevas-cg-ecran-graphe:
+// deterministic, unaffected by nodes the reader did not receive, within the unit square.
+import assert from 'node:assert/strict';
+import { test } from 'node:test';
+
+import { disposer } from './disposition';
+
+const N = [
+  { id: 3, titre: 'La Guilde' },
+  { id: 1, titre: 'Les Lames Grises' },
+  { id: 2, titre: 'Les Ombres de Fer' },
+];
+const L = [
+  { de: 1, vers: 2 },
+  { de: 1, vers: 3 },
+];
+
+test('vide : aucune position ; un seul nœud : au centre', () => {
+  assert.equal(disposer([], []).size, 0);
+  assert.deepEqual([...disposer([{ id: 7, titre: 'Seul' }], []).entries()], [[7, { x: 0.5, y: 0.5 }]]);
+});
+
+test('même graphe, même disposition, quel que soit l’ordre d’arrivée des nœuds', () => {
+  const a = disposer(N, L);
+  const b = disposer([...N].reverse(), L);
+  assert.equal(a.size, 3);
+  for (const n of N) assert.deepEqual(a.get(n.id), b.get(n.id));
+  // Link order only reorders float sums: same picture to well under a pixel.
+  const c = disposer(N, [...L].reverse());
+  for (const n of N) {
+    assert.ok(Math.abs(a.get(n.id)!.x - c.get(n.id)!.x) < 1e-3);
+    assert.ok(Math.abs(a.get(n.id)!.y - c.get(n.id)!.y) < 1e-3);
+  }
+  assert.deepEqual([...disposer(N, L).entries()], [...a.entries()]);
+});
+
+test('un nœud absent de la réponse ne change rien : la disposition ne dépend que du graphe reçu', () => {
+  // Léa's graph (2 nodes, no link) is the same whether or not a third node exists server-side.
+  const deux = N.filter((n) => n.id !== 3);
+  const a = disposer(deux, []);
+  const b = disposer(deux, []);
+  assert.deepEqual([...a.entries()], [...b.entries()]);
+});
+
+test('toutes les positions restent dans le carré unité, sans NaN, deux nœuds distincts', () => {
+  const grand = Array.from({ length: 100 }, (_, i) => ({ id: i + 1, titre: `Fiche ${i % 7}` }));
+  const liens = grand.slice(1).map((n) => ({ de: 1, vers: n.id }));
+  const p = disposer(grand, liens);
+  assert.equal(p.size, 100);
+  for (const { x, y } of p.values()) {
+    assert.ok(Number.isFinite(x) && Number.isFinite(y));
+    assert.ok(x >= 0 && x <= 1 && y >= 0 && y <= 1);
+  }
+  const deux = disposer(N.slice(0, 2), []);
+  const [u, v] = [...deux.values()];
+  assert.ok(Math.hypot(u!.x - v!.x, u!.y - v!.y) > 0.5, 'deux nœuds sont écartés');
+});
+
+test('liens vers un nœud inconnu ou sur soi-même : ignorés, sans erreur', () => {
+  const p = disposer(N, [...L, { de: 1, vers: 99 }, { de: 2, vers: 2 }]);
+  assert.equal(p.size, 3);
+});
+
+test('les titres identiques se départagent par identifiant : stable', () => {
+  const m = [
+    { id: 5, titre: 'Même' },
+    { id: 4, titre: 'Même' },
+  ];
+  assert.deepEqual([...disposer(m, []).entries()], [...disposer([...m].reverse(), []).entries()]);
+});
+
+test('enPixels : deux nœuds voisins ne partagent pas une case, résultat identique à chaque appel', async () => {
+  const { enPixels, tailleCadre, CASE } = await import('./disposition');
+  const noeuds = Array.from({ length: 40 }, (_, i) => ({ id: i + 1, titre: `N${i}` }));
+  const t = tailleCadre(40, 390);
+  const a = enPixels(disposer(noeuds, []), t);
+  const b = enPixels(disposer(noeuds, []), t);
+  assert.deepEqual([...a], [...b]);
+  assert.ok(t.largeur <= 390);
+  const pts = [...a.values()];
+  let chevauche = 0;
+  for (let i = 0; i < pts.length; i++) for (let j = i + 1; j < pts.length; j++) {
+    if (Math.abs(pts[i]!.x - pts[j]!.x) < CASE.largeur - 1 && Math.abs(pts[i]!.y - pts[j]!.y) < CASE.hauteur - 1) chevauche++;
+  }
+  assert.equal(chevauche, 0);
+});
+
+test('enPixels : le graphe des factions garde sa forme de triangle et sans recouvrement à 375, 768 et 1280 px', async () => {
+  const { enPixels, tailleCadre, CASE } = await import('./disposition');
+  const noeuds = [...N, { id: 4, titre: 'Le Pendu Joyeux' }];
+  const liens = [...L, { de: 2, vers: 3 }];
+  for (const largeur of [375, 768, 1280]) {
+    const t = tailleCadre(noeuds.length, largeur);
+    const p = enPixels(disposer(noeuds, liens), t);
+    assert.deepEqual([...p], [...enPixels(disposer(noeuds, liens), t)], 'déterministe');
+    const pts = [...p.values()];
+    for (const q of pts) assert.ok(Number.isFinite(q.x) && q.x >= 0 && q.x <= t.largeur && q.y >= 0 && q.y <= t.hauteur);
+    for (let i = 0; i < pts.length; i++) for (let j = i + 1; j < pts.length; j++) {
+      const rec = Math.abs(pts[i]!.x - pts[j]!.x) < CASE.largeur - 1 && Math.abs(pts[i]!.y - pts[j]!.y) < CASE.hauteur - 1;
+      assert.ok(!rec, `recouvrement à ${largeur} px`);
+    }
+  }
+  // Wide frame: the three linked nodes are not stacked in one column.
+  const t = tailleCadre(4, 1280);
+  const p = enPixels(disposer(noeuds, liens), t);
+  const xs = [1, 2, 3].map((id) => p.get(id)!.x);
+  assert.ok(Math.max(...xs) - Math.min(...xs) > CASE.largeur, 'pas en colonne');
+});
