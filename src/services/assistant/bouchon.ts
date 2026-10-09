@@ -1,6 +1,7 @@
 import { ErreurTransport } from './erreurs.js';
 import type { AgentTransport, DemandeAgent } from './transport.js';
 import type { Outil } from './types.js';
+import { ECHEC_IMAGE } from './catalogue.js';
 
 export const HORS_SCRIPT =
   "Je ne sais répondre qu'à des demandes de test : chercher, lire, ajouter, créer une campagne ou un scénario.";
@@ -128,6 +129,11 @@ const REGLES: Regle[] = [
   {
     motif: /fais un portrait pour «\s*(.+?)\s*» d(?:e |['’])\s*«\s*(.+?)\s*»/i,
     agir: (a, m, message) => portrait(a, m[1]!, m[2]!, message),
+  },
+  {
+    // A portrait request that does not fit the form but says « échec »: the image failure, not a transport error.
+    motif: /portrait.*[ée]chec|[ée]chec.*portrait/i,
+    agir: (a) => (a.a('generer_image') ? ECHEC_IMAGE : absent('generer_image')),
   },
   {
     motif: /[ée]chec/i,

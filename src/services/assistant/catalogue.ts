@@ -6,7 +6,7 @@ import { exigerRole } from '../droits.js';
 import { ErreurService } from '../erreurs.js';
 import { lireFiche, listerFiches } from '../fiches.js';
 import { choisirAdaptateur, type AdaptateurChoisi } from '../images/index.js';
-import { deposerPieceJointe, verifierDepot } from '../pieces-jointes.js';
+import { deposerPieceJointe, MAX_PIECES_PAR_SECTION, verifierDepot } from '../pieces-jointes.js';
 import { creerScenario } from '../scenarios.js';
 import { ecrireContenu, lireSection } from '../sections.js';
 import { TYPES_FICHE } from '../types.js';
@@ -23,6 +23,7 @@ const SECTION_PERIMEE = "La section a changé depuis que vous l'avez lue. Relise
 /** Longest description handed to the image engine (AD-89). */
 export const MAX_DESCRIPTION_IMAGE = 500;
 export const ECHEC_IMAGE = "Je n'ai pas pu générer l'image.";
+const SECTION_PLEINE = `Cette section porte déjà ${MAX_PIECES_PAR_SECTION} pièces jointes.`;
 const UNE_IMAGE = 'Une seule image par demande.';
 const DESCRIPTION_LONGUE = `La description est limitée à ${MAX_DESCRIPTION_IMAGE} caractères.`;
 
@@ -55,6 +56,10 @@ function outil<S extends z.ZodObject>(
       try {
         return { ok: true, ...run(p.data) };
       } catch (e) {
+        // The tool is GM-only: the GM's wording of the limit, with its figure (docs/ecrans.md).
+        if (e instanceof ErreurService && e.detail === 'limite_pieces') {
+          return { ok: false, erreur: SECTION_PLEINE };
+        }
         return refus(e);
       }
     },
@@ -296,6 +301,10 @@ function outilImage(db: Db, compteId: number, universId: number, images: Adaptat
           },
         };
       } catch (e) {
+        // The tool is GM-only: the GM's wording of the limit, with its figure (docs/ecrans.md).
+        if (e instanceof ErreurService && e.detail === 'limite_pieces') {
+          return { ok: false, erreur: SECTION_PLEINE };
+        }
         return refus(e);
       }
     },
