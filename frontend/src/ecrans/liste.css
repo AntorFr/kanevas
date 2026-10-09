@@ -3,7 +3,7 @@
 .page-liste > .lien-retour { margin-bottom: var(--e-3); }
 .tete-liste { display: flex; align-items: center; gap: var(--e-4); flex-wrap: wrap; }
 .tete-liste h1 { flex: 1 1 auto; font: 500 var(--t-40)/1.08 var(--police-titre); letter-spacing: -.015em;
-  font-variation-settings: "opsz" 144; overflow-wrap: break-word; }
+  font-variation-settings: "opsz" 144; overflow-wrap: anywhere; min-width: 0; }
 .glyphe-type { width: 40px; height: 40px; flex: none; display: grid; place-items: center; border-radius: 10px;
   background: var(--surface-2); color: var(--texte-2); box-shadow: inset 0 0 0 1px var(--bord); }
 .page-liste h2 { font: 500 var(--t-22)/1.25 var(--police-titre); letter-spacing: -.005em; font-variation-settings: "opsz" 48; }
@@ -56,7 +56,7 @@
   color: var(--texte); border: 1px solid var(--bord-fort); border-radius: var(--rayon-champ); cursor: pointer; }
 .liste-statut:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
 .liste-statut:disabled { opacity: .45; cursor: not-allowed; }
-.entete-suivi h1 { flex: 1 1 auto; overflow-wrap: break-word; font: 500 var(--t-40)/1.08 var(--police-titre); letter-spacing: -.015em; font-variation-settings: "opsz" 144; }
+.entete-suivi h1 { flex: 1 1 auto; overflow-wrap: anywhere; min-width: 0; font: 500 var(--t-40)/1.08 var(--police-titre); letter-spacing: -.015em; font-variation-settings: "opsz" 144; }
 .categorie-prepa { font-size: var(--t-13); font-weight: 500; color: var(--texte-3); margin: var(--e-4) 0 0; }
 .tache-faite .libelle { text-decoration: line-through; color: var(--texte-3); }
 .contenu-scenario { white-space: pre-wrap; overflow-wrap: anywhere; font: 400 var(--t-18)/1.68 var(--police-lecture); max-width: 70ch; margin-top: var(--e-5); }
