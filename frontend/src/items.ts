@@ -19,7 +19,7 @@ import type { Role } from './types';
 
 /**
  * The sidebar's items (docs/ecrans.md, « Barre latérale »). They live here, not in the bar: an item
- * shows only when a registered screen answers its address, so a screen not built yet (Cartes…)
+ * shows only when a registered screen answers its address, so a screen not built yet
  * has no entry in the bar until it is registered. `chemin(id)` is the concrete address.
  */
 export interface Item {

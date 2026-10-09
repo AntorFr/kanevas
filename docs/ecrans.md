@@ -4,9 +4,9 @@
 > y arrive, à quoi il sert, ce que chaque rôle y fait. Les états de chaque écran et la maquette
 > finie se détaillent dans la tranche qui le construit.
 
-> **Construit à ce jour** : E-1, E-2, E-3 (nom, navigation et blocs : système de jeu, campagnes actives, derniers comptes-rendus, préparation pour le MJ), E-4, E-5 (Administration), E-6, E-7, E-13, E-8 (avec la
-> recherche dans un type, en grille de cartes illustrées), E-9 (avec les blocs Relations et Pièces jointes et l'illustration en tête), E-12 (Assistant), E-14 (Paramètres), E-15 (Système de jeu, à `/systemes/:sid`), E-16 (Systèmes de jeu), la ligne « Campagne » de E-9, la session
-> et la barre latérale. E-10 et E-11 sont la cible.
+> **Construit à ce jour** : E-1, E-2, E-3 (nom, navigation et blocs : système de jeu, campagnes actives, derniers comptes-rendus, préparation pour le MJ, cartes visibles), E-4, E-5 (Administration), E-6, E-7, E-13, E-8 (avec la
+> recherche dans un type, en grille de cartes illustrées), E-9 (avec les blocs Relations et Pièces jointes et l'illustration en tête), E-10 et E-11 (cartes et graphes), E-12 (Assistant), E-14 (Paramètres), E-15 (Système de jeu, à `/systemes/:sid`), E-16 (Systèmes de jeu), la ligne « Campagne » de E-9, la session
+> et la barre latérale.
 
 ## Format
 
@@ -58,7 +58,7 @@ bascule existe (fiche, carte).
 | **E-8 Liste de fiches** | nav Lore | les fiches d'un type que le compte peut lire, en grille de cartes illustrées ; chercher dans ce type ; créer (MJ) | P-3, P-6 |
 | **E-9 Fiche** | E-8 ; un token ; un lien ; E-13 | lire et écrire les sections permises ; ajouter, réordonner, retirer une section, régler son audience, relier (MJ) ; déposer, marquer secrète, retirer une pièce jointe ; poser, remplacer, retirer l'illustration (MJ) ; bascule mode Joueur (MJ). Un compte-rendu s'ouvre ici. | P-3 à P-7 |
 | **E-10 Cartes** | nav Cartes | les cartes lisibles ; créer une carte illustrée (avec son image de fond) ou un graphe (MJ) | P-3, P-9 |
-| **E-11 Carte** | E-10 ; E-3 | carte illustrée : fond, tokens ; graphe : nœuds et liens. MJ : déposer ou changer le fond, placer, configurer, rendre visible, mode Joueur. Joueur : ouvrir la fiche d'un token. | P-3, P-6, P-9 |
+| **E-11 Carte** | E-10 ; E-3 | carte illustrée : fond, tokens ; graphe : nœuds et liens. MJ : déposer ou changer le fond, placer, rendre visible, mode Joueur. Joueur : ouvrir la fiche d'un token. | P-3, P-6, P-9 |
 | **E-12 Assistant** | bouton flottant, sur tout écran d'univers | converser ; voir ce que l'assistant a écrit, avec un lien ; MJ : propositions de mise à jour (actuel/proposé, **Appliquer**, **Abandonner**), images générées | P-3, P-5, P-6, P-7 |
 | **E-13 Comptes-rendus** | nav Comptes-rendus ; E-3 | tous les CR lisibles de l'univers, du plus récent, avec leur campagne | P-4, P-5 |
 | **E-14 Paramètres de l'univers** | nav Univers (MJ) | nom, description, système de jeu (choisir dans le catalogue, en créer un) | P-8 |
@@ -176,13 +176,12 @@ Deux sont posés dès le cadrage parce qu'ils traversent tout :
 ### Barre latérale
 
 Sur tout écran d'un univers : en tête le **sélecteur d'univers** (nom, badge du rôle, la liste
-des univers du compte, puis « Mes univers » et « Systèmes de jeu » en pied de liste) ; **Vue d'ensemble** ; **Lore** :
-Personnages, Lieux, Factions, Objets, Événements, Quêtes ; **Campagnes** et **Comptes-rendus** ; pour un MJ, **Univers ▸ Membres** et **Paramètres** ; en
+des univers du compte, puis « Mes univers » et « Systèmes de jeu » en pied de liste) ; **Vue d'ensemble** ; **Campagnes**, **Comptes-rendus** et **Cartes** ; **Lore** :
+Personnages, Lieux, Factions, Objets, Événements, Quêtes ; pour un MJ, **Univers ▸ Membres** et **Paramètres** ; en
 pied, le compte (avatar et identifiant) qui ouvre le menu du compte : l'identifiant, le thème
 (Clair, Sombre, Système, en trois icônes) et « Se déconnecter ». Hors d'un univers (E-1,
 E-2, E-5, E-15, E-16) : « Mes univers », « Systèmes de jeu », « Administration » pour un compte du groupe `parents` (E-5, plus bas) et le compte en pied. **Un item dont l'écran n'est
-pas construit n'est pas affiché** : Cartes
-arrive avec sa tranche (Campagnes et Comptes-rendus sont affichés). « Paramètres » (E-14) n'est affiché qu'au MJ. Sur téléphone (moins de 760 px), la barre est un tiroir sous un
+pas construit n'est pas affiché** (Campagnes, Comptes-rendus et Cartes sont affichés). « Paramètres » (E-14) n'est affiché qu'au MJ. Sur téléphone (moins de 760 px), la barre est un tiroir sous un
 bouton « Menu ».
 
 | État | Ce qu'on voit |
@@ -1718,8 +1717,8 @@ les menus du sélecteur d'univers des maquettes `e03`, `e08`, `e09`, `e14` et la
 cadre** de tous les écrans d'un univers (barre latérale, sélecteur d'univers, menu du compte,
 barre haute, bascule de mode, bouton « Demander à Kanevas », tiroir au téléphone) et pour les
 composants partagés. Leurs états s'ouvrent par l'adresse (`#etat-joueur`, `#etat-menu`,
-`#etat-perdue`… ; la liste est en tête de leur style). Le bloc « Cartes » de `e03` arrive avec
-`kanevas-cartes-graphes` ; jusque-là il n'est pas affiché.
+`#etat-perdue`… ; la liste est en tête de leur style). Le bloc « Cartes visibles » de `e03` et les maquettes `e10` et `e11` appartiennent à
+`kanevas-cartes-graphes` (détail plus bas).
 
 **D'avant la charte** : les autres. Elles valent pour le contenu et le vocabulaire, pas pour la
 forme ; un écran qui n'a qu'elles se construit dans le cadre et avec les composants de la
@@ -1728,3 +1727,212 @@ maquette E-9.
 **Hors produit, en bouchon seulement** : la page de démonstration des composants
 (`/demo-composants`), servie quand `KANEVAS_STUB=1` et absente sinon (404), comme l'écran de
 choix d'un compte de test.
+
+## Détail des écrans de `kanevas-cartes-graphes`
+
+> E-10 Cartes, E-11 Carte (carte illustrée et graphe), le bloc « Cartes visibles » de E-3, l'item « Cartes »
+> de la barre latérale (il apparaît avec cette tranche). Mêmes états (B-29) et mêmes textes communs que
+> la première fiche (chargement, erreur, connexion perdue, écriture en cours, échec d'une écriture,
+> refus « Page introuvable. », session expirée). Maquettes : `e10` (liste : MJ, Joueuse, vide,
+> création en erreur) et `e11` (carte illustrée et graphe : MJ, MJ en mode Joueur, Joueuse, états).
+> Le document prime sur la maquette.
+
+### E-10 Cartes
+
+Le titre « Cartes », le sous-titre « Les cartes de l'univers. Les joueurs ne voient que celles que vous rendez visibles. » (MJ seulement), puis la liste des cartes **de l'univers que le compte lit** : le MJ les voit
+toutes ; un Joueur seulement celles qui sont **visibles**. Une
+ligne : une vignette (le fond d'une carte illustrée, un motif neutre sans fond ou pour un graphe), le
+titre, la forme (« Carte illustrée » ou « Graphe »), et pour le MJ l'état « Visible des joueurs » ou
+« MJ seul » (seul ce dernier est une pastille ambre) avec le geste inverse : « Rendre visible » / « Cacher aux joueurs », qui
+agit au clic. Un clic sur le titre ouvre la carte (E-11). Ordre : titre alphabétique, puis création ;
+cent cartes par page et « Charger la suite ».
+
+*Créer (MJ).* En tête, « Nouvelle carte » ouvre un formulaire en ligne : **Titre** (1 à 80
+caractères), **Forme** (« Carte illustrée » par défaut, ou « Graphe » ; elle ne se change plus
+ensuite), et pour une carte illustrée **Image de fond** (« Choisir une image », facultative : choisir
+n'envoie rien, l'image part avec « Créer »). « Créer » mène à la carte (E-11), **non visible** ; un
+graphe naît vide, ses fiches se choisissent sur la carte. « Annuler » ferme le formulaire.
+
+| Rôle | Voir | Créer | Rendre visible / cacher |
+|---|---|---|---|
+| MJ | toutes les cartes de l'univers | oui | oui |
+| Joueur | les cartes visibles ; ni l'état ni le geste de visibilité | **absent** | **absent** |
+| MJ en mode Joueur | sur E-10 la bascule n'est pas proposée : le MJ y voit toujours la liste complète ; le mode Joueur se joue sur E-11 | — | — |
+| Admin d'instance, ou compte sans rôle dans l'univers (Teo) | aucune (« Page introuvable. ») | — | — |
+
+*Textes.* Aucune carte : MJ « Aucune carte pour l'instant. Créez-en une pour commencer. » (le
+formulaire reste proposé) ; Joueur « Aucune carte n'est visible pour l'instant. » ; titre vide ou
+trop long : « Erreur : le titre est obligatoire. » / « Erreur : 80 caractères au plus. » ; fond qui
+n'est pas une image PNG, JPEG, GIF ou WebP, ou vide : « Erreur : ce fichier n'est pas une image (PNG,
+JPEG, GIF ou WebP). » ; fond de plus de 25 Mo (réponse 413) : « Erreur : l'image dépasse 25 Mo. » ; échec de
+création : « La carte n'a pas pu être créée. Réessayez. », le formulaire garde sa saisie (le fond
+choisi aussi). Une vignette qui ne se charge pas montre le motif neutre.
+
+| État | Ce qu'on voit | Ce qu'on peut faire |
+|---|---|---|
+| vide | les textes ci-dessus ; pour le MJ, « Nouvelle carte » | créer (MJ) |
+| chargement | « Chargement… » seul, à la place de l'écran | — |
+| erreur | « Impossible de charger cette page. » ; échec d'une visibilité : « L'action n'a pas abouti. Réessayez. » et l'état d'avant | « Réessayer » |
+| connexion perdue | le bandeau ; « Nouvelle carte », « Créer », « Rendre visible », « Cacher aux joueurs » désactivés ; la liste chargée reste | ouvrir une carte déjà listée |
+| refus | Admin d'instance, ou compte sans rôle : « Page introuvable. » et « Mes univers » | « Mes univers » |
+| contenu long | un titre de 80 caractères passe à la ligne ; 100 cartes, puis « Charger la suite » (« Impossible de charger la suite. » et le bouton reste en cas d'échec) | charger la suite |
+
+*Critères.*
+- Étant donné Antor, MJ, qui crée « La ville de Brume » (carte illustrée, avec un fond) puis revient à
+  la liste, alors Léa ne la voit pas ; quand Antor clique « Rendre visible », elle la voit, sans
+  l'état de visibilité ni le geste.
+- Étant donné un fichier « plan.pdf » choisi comme fond, alors la création est refusée par le texte
+  ci-dessus et rien n'est créé.
+- Étant donné Teo, sans rôle dans l'univers, quand il force l'adresse de la liste, alors il voit
+  « Page introuvable. ».
+
+### E-11 Carte
+
+En tête : le titre (MJ : « Renommer » — un champ en ligne, 1 à 80 caractères, « Enregistrer » /
+« Annuler »), la forme, l'état de visibilité, et pour le MJ la **bascule mode MJ / mode Joueur** (celle de la barre haute) et
+« Rendre visible » / « Cacher aux joueurs ». Dessous, **le cadre** de la carte, puis la liste
+« Sur la carte », puis (graphe) la liste « Liens ».
+
+*Carte illustrée.* Le cadre montre l'image de fond à ses proportions (16/10 neutre sans fond, AD-70) ;
+chaque **token** est un rond portant la première lettre du titre de sa fiche, avec le titre dessous
+(24 caractères, puis « … »). Sa zone cliquable fait au moins 44 px. Un token n'est présent que si sa
+fiche est lisible du lecteur (AD-38). **Joueur** : toucher un token ouvre la fiche (E-9) ; rien d'autre.
+**MJ (mode MJ)** : un clic **sélectionne** le token et met le token en évidence (anneau ambre, la couleur du MJ) et ouvre, sous le cadre, un panneau MJ au liseré ambre « Maître
+Aldric · Personnage » avec « Ouvrir la fiche » et « Retirer de la carte » (ce bouton demande la même confirmation que la liste « Sur la carte » : rien n'est retiré au premier clic) ; on **déplace** un token au
+glisser, ou au clavier (token sélectionné : flèches, 1 %, avec Maj 5 % ; l'aide « Flèches : déplacer de 1 % (Maj : 5 %) » est affichée sous le cadre) ; la position s'enregistre au
+relâchement (ou à la touche) ; hors du cadre elle est ramenée au bord. « Ajouter une fiche » ouvre une
+fenêtre : un choix de **type** (les sept), un champ de recherche (lancée par « Chercher » ou Entrée ; plus de 100 caractères : « 100 caractères au plus. »), la liste des fiches de ce type
+(celles que le MJ lit : toutes), chacune avec « Ajouter » ; une fiche déjà sur la carte porte « Déjà
+sur la carte » sans bouton. « Fermer » ferme la fenêtre. Le token apparaît au **centre** (50 %, 50 %), prêt à être déplacé.
+« Changer le fond » (« Ajouter un fond » s'il n'y en a pas) ouvre le sélecteur : **choisir l'image
+suffit**, elle part aussitôt et remplace l'ancienne.
+
+*Graphe.* Le cadre est un schéma : un **nœud** par fiche (rond, première lettre, titre dessous, 24
+caractères), une flèche par **lien** de la fiche d'où vient la relation vers la fiche visée, avec le
+type de la relation écrit sur la flèche (lien de A vers B : « membre de »). La disposition est celle
+du navigateur (AD-71) ; elle n'est pas modifiable. La zone cliquable d'un nœud fait au moins 44 px ; le
+cadre prend la largeur que la page lui donne (jamais moins d'un nœud plus ses marges) et sa hauteur
+grandit avec le nombre de lignes de nœuds ; chaque nœud occupe sa propre case (150 × 70 px) d'une
+grille, donc deux nœuds ne se recouvrent jamais ; ce qui ne tient pas dans la largeur (téléphone)
+défile, et la liste « Sur la carte » reste le chemin sûr au toucher. Joueur : toucher un nœud ouvre sa fiche. MJ : un
+clic sélectionne le nœud, avec « Ouvrir la fiche » et « Retirer de la carte » (même mot, même confirmation que la liste « Sur la carte ») ; « Ajouter une fiche »
+est la même fenêtre. Une relation ajoutée ou retirée sur une fiche se voit au rechargement de la
+carte.
+
+*Fenêtre « Ajouter une fiche »* — états propres, car c'est elle qui décide. **Vide** : un type sans
+fiche, « Aucune fiche de ce type. » ; une recherche sans résultat, « Aucune fiche ne correspond. ».
+**Chargement** : « Chargement… » à la place de la liste, le choix du type et la recherche déjà là.
+**Erreur** : « Impossible de charger les fiches. » et « Réessayer », la fenêtre reste ouverte.
+**Connexion perdue** : le bandeau ; « Ajouter » désactivé, la liste chargée reste. **Contenu long** :
+cent fiches par page et « Charger la suite » (« Impossible de charger la suite. » en cas d'échec) ;
+un titre de 80 caractères passe à la ligne. **Refus** : sans objet, la fenêtre n'existe que pour le
+MJ hors mode Joueur.
+
+Chaque action de E-10 et de E-11 porte une icône Lucide (règle de `docs/charte.md`, « Icônes ») : Renommer un crayon, Rendre visible / Cacher un œil / œil barré, Ajouter une fiche un plus, Fond une image, Retirer une corbeille, Ouvrir la fiche un lien externe.
+
+*Sur la carte* (liste sous le cadre, toujours présente quand il y a des éléments) : une ligne par
+token ou nœud, son titre en lien vers la fiche, son type ; pour le MJ, « Retirer de la carte »
+(confirmation sur place : « Retirer « Maître Aldric » de cette carte ? La fiche reste. » avec
+« Retirer de la carte » et « Annuler ») ; c'est aussi le chemin au clavier et au lecteur d'écran.
+*Liens* (graphe) : une ligne « Maître Aldric — membre de → Les Lames Grises » par lien ; aucun lien :
+« Aucun lien entre ces fiches. ».
+
+*Visibilité et mode Joueur.* « Rendre visible » rend la carte lisible des Joueurs ; « Cacher aux
+joueurs » la leur retire (au prochain chargement de leur côté : elle leur répond « Page
+introuvable. »). Le **mode Joueur** (AD-39) montre au MJ la carte telle que la verrait un Joueur qui
+n'est l'auteur d'aucune section : mêmes tokens, mêmes nœuds, mêmes liens, plus aucun geste de
+modification. Sur une carte **non visible**, le MJ en mode Joueur voit « Les joueurs ne voient pas
+cette carte : elle n'est pas visible. » avec « Quitter le mode Joueur » (un Joueur, lui, recevrait
+« Page introuvable. »).
+
+| Rôle | Voir | Gestes |
+|---|---|---|
+| MJ | la carte, tous ses éléments (toute fiche de l'univers), tous les liens | renommer ; rendre visible ou cacher ; fond ; ajouter une fiche ; déplacer (carte illustrée) ; retirer ; mode Joueur ; ouvrir une fiche |
+| MJ en mode Joueur | comme un Joueur | ouvrir une fiche ; quitter le mode |
+| Joueur | une carte visible ; les éléments dont il lit la fiche, les liens dont il lit la relation (AD-64) et les deux bouts ; **aucun compteur de ce qui manque** | ouvrir une fiche |
+| Admin d'instance, ou compte sans rôle dans l'univers (Teo) | aucune | « Page introuvable. » |
+
+Un geste qu'un rôle n'a pas est **absent** de l'écran (jamais grisé, sauf hors connexion). Par l'API,
+un geste d'écriture d'un non-MJ est refusé **403** sur une carte qu'il lit ; sur une carte qu'il ne
+lit pas, **404**. Un token dont la fiche devient illisible disparaît au chargement suivant, sans trace.
+
+*Textes.* Carte illustrée sans token : MJ « Aucun token. Ajoutez une fiche pour la placer sur la
+carte. » ; Joueur « Rien à voir sur cette carte pour l'instant. ». Graphe sans nœud : MJ « Aucune fiche.
+Ajoutez des fiches pour voir leurs liens. » ; Joueur « Rien à voir sur ce graphe pour l'instant. ».
+Fond : fichier non image ou vide « Erreur : ce fichier n'est pas une image (PNG, JPEG, GIF ou WebP). »,
+plus de 25 Mo « Erreur : l'image dépasse 25 Mo. ». 100 éléments : « Cette carte porte déjà 100
+éléments. ». Fiche devenue inconnue à l'ajout : « Cette fiche n'existe plus. » (la liste de la fenêtre
+se recharge). Échec d'un déplacement, d'un retrait, d'un ajout, d'un renommage, d'une visibilité, d'un
+fond : « L'action n'a pas abouti. Réessayez. », et l'état d'avant revient (le token retourne à sa
+place) ; une saisie en cours est conservée. Titre vide ou trop long : les textes d'E-10. Le fond qui
+ne charge pas : dans le cadre « Le fond de la carte n'a pas pu être chargé. » avec « Réessayer » ;
+les tokens ne sont pas posés (leurs positions n'ont de sens que sur le fond), la liste « Sur la carte »
+reste. Hors connexion, le fond déjà chargé reste affiché.
+
+| État | Ce qu'on voit | Ce qu'on peut faire |
+|---|---|---|
+| vide | les textes « Aucun token », « Aucune fiche », « Rien à voir… » ; « Aucun lien entre ces fiches. » pour un graphe sans lien | MJ : ajouter une fiche |
+| chargement | « Chargement… » ; le cadre à 16/10 neutre jusqu'au chargement du fond (« Chargement… » dedans), les tokens posés quand le fond est là | — |
+| erreur | « Impossible de charger cette page. » ; fond : le message du cadre ; échec d'une écriture : « L'action n'a pas abouti. Réessayez. » | « Réessayer » |
+| connexion perdue | le bandeau ; renommer, visibilité, fond, « Ajouter une fiche », déplacer, retirer désactivés (carte illustrée : les tokens deviennent des liens vers la fiche, sans sélection ni glisser ; graphe : la sélection reste) ; la carte chargée reste | lire, ouvrir une fiche |
+| refus | carte inconnue ou illisible, compte sans rôle ou Admin : « Page introuvable. » et « Mes univers » ; MJ en mode Joueur sur une carte non visible : sa propre phrase | « Mes univers », « Quitter le mode Joueur » |
+| contenu long | un titre de 80 caractères passe à la ligne ; 100 éléments : titres de 24 caractères puis « … » (le titre entier dans la liste « Sur la carte », qui défile) ; une image très large ou très haute garde ses proportions et tient en largeur ; téléphone : le cadre prend toute la largeur, une seule colonne | — |
+
+*Critères.*
+- Étant donné la carte illustrée « La ville de Brume » avec un fond, où Antor place « Maître Aldric »
+  et « Les Ombres de Fer » (faction dont Léa ne lit aucune section) puis la rend visible, quand Léa
+  l'ouvre, alors elle voit le fond et le token d'Aldric, ni le token ni le titre de la faction, ni
+  « Les Ombres de Fer » dans la liste « Sur la carte » ; quand elle touche le token d'Aldric, alors
+  elle arrive sur sa fiche.
+- Étant donné la même carte, quand Antor passe en mode Joueur, alors il voit exactement ce que voit
+  Léa ; quand il la cache aux joueurs, alors Léa, au rechargement, voit « Page introuvable. » et la
+  carte n'est plus dans sa liste.
+- Étant donné Antor qui déplace le token d'Aldric puis recharge, alors il est à sa nouvelle place ;
+  une panne pendant le déplacement le ramène à l'ancienne et affiche « L'action n'a pas abouti.
+  Réessayez. ».
+- Étant donné le graphe « Les factions » avec « Les Lames Grises », « Les Corbeaux » et « La
+  Guilde » ; la relation « allié de » de la première vers la deuxième, portée par une section que
+  Léa ne lit pas, et « rival de » de la première vers la troisième, portée par une section qu'elle lit :
+  Antor voit les deux liens ; Léa, qui lit les trois fiches de ce graphe, voit seulement « rival de » ;
+  si elle ne lisait pas « La Guilde », elle verrait deux nœuds et aucun lien.
+- Étant donné un graphe où Antor a mis aussi « Les Ombres de Fer » (Léa n'en lit aucune section),
+  alors Léa n'y voit ni son nœud ni ses liens, et aucune trace de leur absence.
+- Étant donné le fond « plan.pdf » choisi sur une carte, alors le refus s'affiche et le fond d'avant
+  reste ; l'adresse du fond d'une carte non visible répond 404 à Léa.
+- Étant donné Léa sur une carte, quand elle force l'adresse d'une action de MJ, alors elle reçoit 403.
+
+### E-3 — le bloc « Cartes visibles »
+
+Sur la vue d'ensemble, un bloc **Cartes visibles** (le titre de la maquette `e03`), inscrit au registre des blocs de E-3 (un fichier dans
+`frontend/src/ecrans/vue-ensemble/blocs/` que le registre trouve seul (rang après les blocs des campagnes et
+des comptes-rendus) ; aucun bloc existant n'est modifié). Il liste, pour tous les rôles, les **cartes
+visibles des joueurs** (cinq au plus, titre alphabétique) : le titre en lien vers E-11 et la forme ;
+dessous « Toutes » vers E-10. Chaque carte est une vignette (le fond de la carte, ou le motif neutre
+d'un graphe ou d'une carte sans fond) avec une icône carte, le titre et la forme. Le MJ voit donc ce que la table voit ; ses cartes « MJ seul »
+se trouvent sur E-10.
+
+| État | Ce qu'on voit | Ce qu'on peut faire |
+|---|---|---|
+| vide | MJ : « Aucune carte visible des joueurs. » et « Toutes » ; Joueur : **pas de bloc** (ni titre ni compteur) | MJ : « Toutes » |
+| chargement | le titre du bloc et « Chargement… » | — |
+| erreur | « Impossible de charger les cartes. » | « Réessayer » |
+| connexion perdue | le bandeau ; les cartes déjà chargées restent | ouvrir |
+| refus | sans objet : le refus d'E-3 couvre le bloc (« Page introuvable. ») | — |
+| contenu long | un titre tient sur une ligne, puis « … » ; au-delà de cinq cartes, cinq et « Toutes » | — |
+
+| Rôle | Voir |
+|---|---|
+| MJ | le bloc, avec les seules cartes visibles des joueurs |
+| Joueur | le bloc s'il y a au moins une carte visible, sinon aucun bloc |
+| Admin d'instance, ou compte sans rôle | aucun : E-3 lui répond « Page introuvable. » |
+
+*Critère.* Étant donné deux cartes visibles et une « MJ seul », alors le bloc de Léa en liste deux ;
+celui d'Antor aussi.
+
+### Clôture de `kanevas-cartes-graphes`
+
+B-22 → E-10 (créer une carte illustrée avec son fond, ou un graphe) et E-11 (placer des tokens,
+choisir les fiches d'un graphe) ; B-23 → « Rendre visible » et la lecture filtrée d'un joueur ;
+B-12 (carte) → le mode Joueur de E-11. Atteint par P-3 étape 6 (placer le PNJ, mode Joueur, rendre
+visible), P-6 étape 3 (la carte d'un joueur) et P-9 en entier (le graphe). Les écrans E-10 et E-11
+et le bloc de E-3 livrent leurs six états (B-29), ci-dessus.
