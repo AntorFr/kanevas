@@ -45,5 +45,5 @@
 .graphe-lien line { stroke: var(--texte-2); stroke-width: 1.5; }
 .graphe-pointe { fill: var(--texte-2); }
 .graphe-lien text { fill: var(--texte-2); font-size: 12px; paint-order: stroke; stroke: var(--surface-2, var(--surface)); stroke-width: 4px; stroke-linejoin: round; }
-.graphe-zone .carte-token span { max-width: 170px; overflow: hidden; text-overflow: ellipsis; }
+.graphe-zone .carte-token span { max-width: 160px; overflow: hidden; text-overflow: ellipsis; }
 .graphe .carte-token { touch-action: manipulation; }

@@ -101,7 +101,7 @@ export interface Taille {
 }
 
 /** Room one node takes (title included) and the margin kept around the outer ones, in pixels. */
-export const CASE = { largeur: 150, hauteur: 70 };
+export const CASE = { largeur: 180, hauteur: 76 };
 export const MARGE = 40;
 
 /**
@@ -116,11 +116,57 @@ export function tailleCadre(n: number, disponible: number): Taille {
 }
 
 /**
- * Maps the unit-square layout into a frame of `taille` pixels by giving each node its own free case of
- * a CASE-sized grid: the nearest one to its ideal spot, nodes taken in the layout's own order (titles,
- * then ids). Deterministic, and no two nodes can ever overlap.
+ * Maps the unit-square layout into a frame of `taille` pixels: the layout's own shape is kept (scaled to the
+ * frame), then any two nodes whose CASE-sized boxes overlap are pushed apart along the axis of least
+ * penetration. Deterministic (fixed pair order, fixed pass count). If the frame is too tight for that to
+ * converge, each node falls back on its own free case of a grid, so two nodes never overlap.
  */
 export function enPixels(unite: Map<number, Point>, taille: Taille): Map<number, Point> {
+  const minX = Math.min(MARGE + CASE.largeur / 2, taille.largeur / 2);
+  const maxX = Math.max(minX, taille.largeur - MARGE - CASE.largeur / 2);
+  const minY = Math.min(MARGE + CASE.hauteur / 2, taille.hauteur / 2);
+  const maxY = Math.max(minY, taille.hauteur - MARGE - CASE.hauteur / 2);
+  const ids = [...unite.keys()];
+  const pts = ids.map((id) => ({ x: minX + unite.get(id)!.x * (maxX - minX), y: minY + unite.get(id)!.y * (maxY - minY) }));
+  const borne = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
+  const chevauche = (a: Point, b: Point) => Math.abs(a.x - b.x) < CASE.largeur - 0.5 && Math.abs(a.y - b.y) < CASE.hauteur - 0.5;
+  let propre = false;
+  for (let passe = 0; passe < 300 && !propre; passe++) {
+    propre = true;
+    for (let i = 0; i < pts.length; i++) {
+      for (let j = i + 1; j < pts.length; j++) {
+        const a = pts[i]!;
+        const b = pts[j]!;
+        if (!chevauche(a, b)) continue;
+        propre = false;
+        const px = CASE.largeur - Math.abs(a.x - b.x);
+        const py = CASE.hauteur - Math.abs(a.y - b.y);
+        if (px < py) {
+          const s = a.x <= b.x ? 1 : -1;
+          a.x -= (s * px) / 2;
+          b.x += (s * px) / 2;
+        } else {
+          const s = a.y <= b.y ? 1 : -1;
+          a.y -= (s * py) / 2;
+          b.y += (s * py) / 2;
+        }
+        a.x = borne(a.x, minX, maxX);
+        b.x = borne(b.x, minX, maxX);
+        a.y = borne(a.y, minY, maxY);
+        b.y = borne(b.y, minY, maxY);
+      }
+    }
+  }
+  if (propre) {
+    const sortie = new Map<number, Point>();
+    ids.forEach((id, i) => sortie.set(id, pts[i]!));
+    return sortie;
+  }
+  return enGrille(unite, taille);
+}
+
+/** Fallback: each node gets the free case of a CASE-sized grid nearest to its ideal spot (layout order). */
+function enGrille(unite: Map<number, Point>, taille: Taille): Map<number, Point> {
   const colonnes = Math.max(1, Math.floor((taille.largeur - 2 * MARGE) / CASE.largeur));
   const lignes = Math.max(1, Math.floor((taille.hauteur - 2 * MARGE) / CASE.hauteur));
   const ox = (taille.largeur - colonnes * CASE.largeur) / 2 + CASE.largeur / 2;
