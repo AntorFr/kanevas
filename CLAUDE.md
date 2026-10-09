@@ -4,10 +4,11 @@
 - Commit messages in French: subject, then the *why*. Explicit paths
   (`git add <path>...`, never `git add -A`/`.`), no AI attribution trailers —
   same convention as `k8s-home-lab`.
-- Build and test in containers only:
+- Build and test in containers (reference). In a pod without Docker, Node >= 20 on the host runs the same commands
+  (`npm ci && npm run typecheck && npm test`), see the README:
   `docker run --rm -v "$PWD":/src -w /src node:20-bookworm-slim sh -c "npm ci && npm run typecheck && npm test"`
-- `npm run typecheck` : `tsc --noEmit`. `npm test` : `node --import tsx --test`
-  on the files found by `find` — Node 20 (CI, image) does not expand globs
+- `npm run typecheck` : `tsc --noEmit` on the API and on `frontend/`. `npm test` : `node --import tsx --test`
+  on the files found by `find` in `src` and `frontend/src` — Node 20 (CI, image) does not expand globs
   itself, so never pass it a quoted `src/**` pattern; no extra test runner
   dependency.
 - `package.json` carries no `version` field: the app's version is never read
@@ -30,7 +31,7 @@
   `services/pieces-jointes.ts` is the single upload function — later features (images, map backgrounds)
   reuse it or `stockage.ts`, never write the volume themselves. The type is sniffed from the bytes, never trusted.
 - `frontend/` (React, Vite, `react-router`; AD-16, AD-57): `npm run build` also builds it into
-  `dist/public`, served by `routes/session.ts` behind the session guard (`@fastify/static` for
+  `dist/public`, located by `routes/frontend.ts` and served by `routes/session.ts` behind the session guard (`@fastify/static` for
   `/assets/`, `index.html` as the fallback of any other GET). A screen is one file
   `frontend/src/ecrans/<nom>.tsx` exporting an `Ecran` (`registre.ts`) — never edit the router or
   the sidebar for the screens of a universe; sidebar items live in `items.ts` and show only when a registered screen answers
@@ -45,7 +46,7 @@
   LLM. Reintroduce it only alongside the feature that actually activates this
   transport.
 - `routes/auth.ts` authenticates the identity (OIDC login/callback) and opens
-  the signed session cookie (`routes/session.ts`, AD-56), creating the account
+  the signed session cookie (`services/session.ts` signs it, `routes/session.ts` guards, AD-56), creating the account
   on first sign-in (AD-13). Universe roles never come from Authelia nor the
   session (AD-9): they are read from the members table at each request. Routes
   needing a session are registered in the guarded scope of

@@ -1,5 +1,5 @@
 import { Eye, EyeOff, ImagePlus, Plus, ChevronDown, X } from 'lucide-react';
-import { useEffect, useRef, useState, type FormEvent } from 'react';
+import { useEffect, useId, useRef, useState, type FormEvent } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 
 import { appeler, lire, useConnexionPerdue } from '../api';
@@ -39,6 +39,7 @@ function Cartes() {
   const [enCours, setEnCours] = useState(false);
   const [enCoursVisible, setEnCoursVisible] = useState<number>();
   const saisieFichier = useRef<HTMLInputElement>(null);
+  const idFond = useId();
 
   useEffect(() => {
     if (page.etat === 'ok') {
@@ -170,21 +171,26 @@ function Cartes() {
             erreur={erreurTitre}
             onChange={(e: { target: { value: string } }) => setTitre(e.target.value)}
           />
-          <label className="champ">
-            <span>Forme</span>
-            <select value={forme} onChange={(e) => setForme(e.target.value as Carte['forme'])}>
-              <option value="illustree">Carte illustrée</option>
-              <option value="graphe">Graphe</option>
-            </select>
-          </label>
+          <Champ
+            liste
+            etiquette="Forme"
+            value={forme}
+            onChange={(e: { target: { value: string } }) => setForme(e.target.value as Carte['forme'])}
+          >
+            <option value="illustree">Carte illustrée</option>
+            <option value="graphe">Graphe</option>
+          </Champ>
           {forme === 'illustree' && (
             <div>
+              <label className="lib-champ" htmlFor={idFond}>
+                Image de fond<small>facultative</small>
+              </label>
               <div className="carte-fichier">
                 <input
+                  id={idFond}
                   ref={saisieFichier}
                   type="file"
                   accept="image/png,image/jpeg,image/gif,image/webp"
-                  aria-label="Image de fond"
                   tabIndex={-1}
                   onChange={(e) => {
                     setFond(e.target.files?.[0] ?? null);
@@ -192,7 +198,7 @@ function Cartes() {
                   }}
                 />
                 <Bouton icone={ImagePlus} onClick={() => saisieFichier.current?.click()}>Choisir une image</Bouton>
-                <span>{fond ? fond.name : 'Image de fond (facultative)'}</span>
+                <span>{fond ? fond.name : 'Aucune image choisie'}</span>
               </div>
               {erreurFond && <div className="champ"><div className="erreur" role="alert">Erreur : {erreurFond}</div></div>}
             </div>

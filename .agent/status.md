@@ -1,6 +1,6 @@
 # Status — kanevas
 
-> MàJ : 2026-10-08 (assemblage de kanevas-assistant-membre)
+> MàJ : 2026-10-09 (assemblage de kanevas-recours-admin, sur kanevas-assistant-membre)
 
 **État :** `epic/kanevas` porte le socle, la première fiche, les systèmes de jeu, le suivi de la séance
 (campagnes, scénarios, préparation, comptes-rendus ; E-6, E-7, E-13) et les pièces jointes (migration
@@ -42,7 +42,24 @@ l'adaptateur `claude-agent` n'est exercé que par une `query` factice. Il se jou
 des outils en processus avec ce jeton, reprendre `claude-agent.ts` (AD-73). Sans jeton, l'assistant se dit indisponible. En bouchon, le monde de recette est semé au
 démarrage ; hors bouchon rien n'est amorcé. Aucune image n'existe avant le tag.
 
+`feature/kanevas-recours-admin` (PR non fusionnée, rattrapée sur `epic/kanevas` après la refonte visuelle) ajoute le recours admin : un compte du groupe
+`parents` voit les univers de l'instance et leurs membres, en ajoute, change le rôle, en retire
+(E-5, B-6), sans jamais lire le contenu. L'écran suit la maquette e05 et la charte (panneaux, en-têtes Identifiant/Rôle, « Retirer » discret, fil dans la barre haute ; le formulaire d'ajout passe à la ligne sous 760 px, l'identifiant gardant 12 rem au moins). Typecheck, build et tests verts (dont `src/e2e/administration*.test.ts`, navigateur piloté en bouchon ; ces tests dépendent de Playwright, absent de `package.json`, et sautent sans lui ; sous charge, un `page.goto` peut dépasser son délai de 8 s : relancer avant d'y voir un défaut).
+
+- `src/services/instance.ts` : seul module à accepter le drapeau `admin` (AD-86), écrit dans `membres` et lit
+  `univers` (id, nom, nombre de membres, AD-87) ; les règles de membres sont le noyau de `services/membres.ts`, partagé avec les
+  fonctions MJ.
+- `src/routes/instance.ts` : `/api/instance/univers` et `/api/instance/univers/:id/membres`
+  (GET, POST, PATCH, DELETE). Hors du groupe, 404 comme une adresse inconnue (AD-87). L'acteur
+  vient des groupes de la session, jamais de la requête.
+- `frontend/src/ecrans/administration.tsx` : E-5, un seul motif `/administration/*` (le registre
+  prend un chemin par fichier). Liste de membres partagée avec E-4 : `frontend/src/ListeMembres.tsx` (composants de `ui/`, toasts « ajouté / enregistré / retiré », boîte de dialogue de retrait).
+  Entrée « Administration » déclarée dans `items.ts` (champs `groupe` et `horsUnivers`) ; `Barre.tsx` reste générique : elle montre l'entrée si `/api/moi` porte le groupe `parents`.
+
+**Reste (recours admin) :** la recette de Monsieur de l'administration au navigateur en bouchon (Admin ajoute Mira à « Lame d'Ébène » ; le monde de recette est semé), puis la fusion et le tag `v*`. Aucune image n'existe avant le tag.
+
 **Pièges :**
+- Administration : le groupe est lu à la connexion et vaut 7 jours (AD-86) ; la liste rend tous les univers, pagination par 100 côté client ; un admin sans rôle reste un compte sans rôle (AD-9). Les e2e `administration*` dépendent de Playwright (absent du dépôt) .
 - Assistant : `repondre` est l'unique entrée ; ne jamais passer le compte, l'univers ou le rôle en paramètre d'un outil, ni lire
   `process.env` hors `config/env.ts` (seule exception : `FRONTEND_DIR`, `routes/frontend.ts`). Une erreur du transport est rendue par un message fixe (jamais la cause, qui pourrait citer le jeton).
   Le verrou « une demande à la fois par compte » est en mémoire du processus (une seule instance). Le panneau se monte dans sa propre racine
@@ -52,11 +69,13 @@ démarrage ; hors bouchon rien n'est amorcé. Aucune image n'existe avant le tag
 - La suite a été jouée sous Node 22 dans les pods de la chaîne (pas de Docker) ; la CI Node 20 fait foi.
   La règle « conteneurs uniquement » de `CLAUDE.md` est la voie de référence ; un Node local ≥ 20 (README) est le repli quand
   Docker manque.
-- Migrations : 0001 à 0007 sont sur la branche des cartes (0007 = cartes), à recaler seulement si une autre tranche fusionne avant (AD-51).
+- Migrations : 0001 à 0006 sont sur `epic/kanevas`, 0007 (cartes) sur la branche des cartes, à recaler seulement si une autre tranche fusionne avant (AD-51).
+- Les « PR non fusionnée » ci-dessus s'empilent sur `epic/kanevas` ; `recours-admin` est rattrapée dessus et n'ajoute aucune migration.
 - Vocabulaire : « Monsieur » = le commanditaire qui fait la recette ; « tranche » = une feature livrée ; « phase merge » = la
   fusion après recette ; E-n / B-n / P-n = écrans / besoins / parcours, définis dans `docs/ecrans.md` et `docs/parcours.md`.
 - La CI ne pousse d'image que sur `main` et sur un tag `v*` ; sur une PR elle ne fait qu'un build de
   validation. L'image testable n'existe qu'après le tag, posé à la fusion.
+- **Numéro de migration** : `0005-relier-chercher.sql` est sur `epic/kanevas` (fusionnée) et figée ; la migration de la prochaine tranche prend le numéro suivant à sa fusion (AD-51).
 - Recherche : `listerFiches({recherche})` seule (AD-63) ; les index FTS5 ne livrent que des identifiants
   candidats, tenus par déclencheurs : ne jamais écrire dans `recherche_*` depuis le code. La saisie est
   neutralisée (mots cités en préfixe) ; vide ou > 100 caractères = 400.
@@ -71,7 +90,7 @@ démarrage ; hors bouchon rien n'est amorcé. Aucune image n'existe avant le tag
   d'univers fourni ; un refus répond 404. Le MJ qui crée un compte-rendu n'en est pas l'auteur affiché ;
   l'auteur Joueur lit et écrit sa section même fermée aux autres joueurs (AD-61). Plusieurs campagnes
   peuvent être actives (AD-60) ; aucune suppression nulle part.
-- Refonte visuelle : le regard sur les maquettes (bureau, téléphone, clair, sombre) est celui de la vérification et de la recette ; aucun écran n'écrit de couleur en dur (tokens seuls) ; un écran neuf prend le cadre et les composants de `ui/`, il ne recrée ni bouton, ni menu, ni champ. E-10 et E-11 sont construits avec le cadre ; E-5 le rattrape dans sa tranche ; E-12 le prend déjà (tokens, `Bouton`, `Chargement`, `PastilleRole`).
+- Refonte visuelle : le regard sur les maquettes (bureau, téléphone, clair, sombre) est celui de la vérification et de la recette ; aucun écran n'écrit de couleur en dur (tokens seuls) ; un écran neuf prend le cadre et les composants de `ui/`, il ne recrée ni bouton, ni menu, ni champ. E-10 et E-11 sont construits avec le cadre ; E-12 le prend déjà (tokens, `Bouton`, `Chargement`, `PastilleRole`).
 - P-7 : le portrait (pièce jointe) et la demande à l'assistant (E-12) sont livrés.
 - Pièces jointes : le type est déterminé par la signature des octets, jamais par le navigateur ; seules PNG,
   JPEG, GIF, WebP sont servies en ligne, le reste (SVG compris) en `attachment` sous `nosniff` et CSP sandbox.
@@ -104,4 +123,4 @@ démarrage ; hors bouchon rien n'est amorcé. Aucune image n'existe avant le tag
 - Cartes : un graphe n'a ni position stockée ni déplacement de nœud (AD-71) ; la forme d'une carte ne change jamais ; un fond ne se retire pas, il se remplace ; aucune suppression de carte ni d'élément autre que « Retirer de la carte ». La fiche retirée reste.
 - Numéro de migration `0007` (cartes) à recaler à la fusion si une autre tranche en a pris un (AD-51).
 
-**Suivant :** administration.
+**Suivant :** les tranches non encore livrées.
