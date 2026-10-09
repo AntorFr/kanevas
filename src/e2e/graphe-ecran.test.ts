@@ -34,6 +34,19 @@ async function api(page: Any, method: string, path: string, data?: unknown) {
   const r = await page.request.fetch(path, { method, data });
   return { status: r.status(), body: await r.json().catch(() => null) };
 }
+
+/** Pairs of node boxes that overlap (more than 1 px on both axes). */
+async function chevauchements(page: Any): Promise<string[]> {
+  return page.evaluate(() => {
+    const b = [...document.querySelectorAll('.graphe .carte-token')].map((e) => ({ t: (e.textContent ?? '').trim(), r: e.getBoundingClientRect() }));
+    const out: string[] = [];
+    for (let i = 0; i < b.length; i++) for (let j = i + 1; j < b.length; j++) {
+      const a = b[i]!.r, c = b[j]!.r;
+      if (Math.min(a.right, c.right) - Math.max(a.left, c.left) > 1 && Math.min(a.bottom, c.bottom) - Math.max(a.top, c.top) > 1) out.push(`${b[i]!.t} / ${b[j]!.t}`);
+    }
+    return out;
+  });
+}
 const base = () => `/api/univers/${uid}/cartes/${cid}`;
 async function ouvrir(page: Any, suffixe = '') {
   await page.goto(`/univers/${uid}/cartes/${cid}${suffixe}`);
@@ -257,9 +270,34 @@ test('100 nœuds : sans erreur, zones ≥ 44 px, titres à 24 caractères + …,
   assert.equal(await antor.locator('.graphe .carte-token').filter({ hasText: long }).count(), 0, 'titre tronqué dans le cadre');
   assert.ok(await antor.locator('.carte-sur').getByText(long).count() >= 1, 'titre entier dans la liste');
   const cadre = await antor.locator('.graphe').boundingBox();
-  assert.ok(cadre.width >= 100 * 60 && cadre.height >= 100 * 60, `cadre ${cadre.width}x${cadre.height}`);
+  const vp = antor.viewportSize();
+  assert.ok(cadre.width <= vp.width, `cadre à la largeur disponible, pas plus large que l'écran : ${cadre.width} > ${vp.width}`);
+  assert.deepEqual(await chevauchements(antor), [], 'aucun nœud ne recouvre un autre (100 nœuds)');
   await antor.screenshot({ path: '/tmp/e11-graphe-100.png' });
   assert.deepEqual(erreurs, []);
+});
+
+test('100 nœuds à 390 px : cadre dans l’écran, aucun recouvrement, tous les nœuds atteignables', opts, async () => {
+  const g = (await api(antor, 'POST', `/api/univers/${uid}/cartes`, { titre: 'Mobile', forme: 'graphe' })).body.id as number;
+  for (let i = 0; i < 30; i++) {
+    const f = (await api(antor, 'POST', `/api/univers/${uid}/fiches`, { type: 'lieu', titre: `Mob ${i}` })).body.id;
+    assert.equal((await api(antor, 'POST', `/api/univers/${uid}/cartes/${g}/elements`, { ficheId: f })).status, 201);
+  }
+  await antor.setViewportSize({ width: 390, height: 800 });
+  await antor.goto(`/univers/${uid}/cartes/${g}`);
+  await antor.getByRole('heading', { name: 'Mobile', level: 1 }).waitFor();
+  await attendre(antor);
+  assert.equal(await noeuds(antor).count(), 30);
+  const cadre = await antor.locator('.graphe').boundingBox();
+  assert.ok(cadre.width <= 390, `cadre ${cadre.width}`);
+  assert.deepEqual(await chevauchements(antor), []);
+  const hors = await antor.evaluate(() => {
+    const c = document.querySelector('.graphe')!.getBoundingClientRect();
+    return [...document.querySelectorAll('.graphe .carte-token')].filter((e) => { const r = e.getBoundingClientRect(); return r.left < c.left - 1 || r.right > c.right + 1; }).length;
+  });
+  assert.equal(hors, 0, 'aucun nœud hors du cadre horizontalement');
+  await antor.screenshot({ path: '/tmp/e11-graphe-390.png' });
+  await antor.setViewportSize({ width: 1280, height: 720 });
 });
 
 test('erreur et connexion perdue du graphe', opts, async () => {
