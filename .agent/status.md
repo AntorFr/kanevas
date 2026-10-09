@@ -28,7 +28,7 @@ sans migration : `src/services/assistant/` (catalogues d'outils MJ et Joueur fer
 et adaptateurs `bouchon` et `claude-agent` ; disponibilité ; orchestration `repondre`), `src/routes/assistant.ts`
 (`GET /api/univers/:id/assistant`, `POST …/assistant/messages` ; formats dans `ARCHITECTURE.md`), et l'écran `frontend/src/ecrans/assistant*` (bouton flottant inversé, panneau, fil en
 mémoire, registre de blocs d'écriture). Outils : chercher, lire_fiche, lire_section, modifier_section, ajouter_a_section,
-lister_campagnes ; le MJ en plus creer_campagne et creer_scenario. Aucun outil de carte, de graphe, de proposition ni d'image.
+lister_campagnes ; le MJ en plus creer_campagne et creer_scenario. Aucun outil de carte, de graphe ni de proposition. `kanevas-images` (tâche `kanevas-im-outil`) ajoute au catalogue MJ `generer_image` (absent si l'adaptateur d'images est `aucun`), l'événement `image_attachee` et la règle « portrait » du bouchon ; le délai de 120 s de la demande est suspendu pendant l'outil (AD-89, AD-90).
 
 **Reste :** la fusion et le tag `v*` (recette acceptée par Monsieur). Pour l'assistant : le **premier vrai appel** au modèle n'a jamais eu lieu —
 l'adaptateur `claude-agent` n'est exercé que par une `query` factice. Il se joue sur l'URL déployée, après la fusion de `kanevas-am-deploy`
