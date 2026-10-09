@@ -279,3 +279,25 @@ test('défilement : à l’arrivée de la réponse, le bloc et ses gestes sont v
     await antor.setViewportSize({ width: 1280, height: 720 });
   }
 });
+
+test('défilement : au téléphone, le refus « section changée » garde les gestes visibles dans le fil', opts, async () => {
+  await poser('Il sert la Couronne');
+  await antor.setViewportSize({ width: 390, height: 600 });
+  try {
+    await demander(antor);
+    await attendreBloc(antor);
+    await poser('Modifié par Antor');
+    // a DOM click: Playwright's own click would scroll the button into view and hide the bug
+    await appliquer(antor).evaluate((el) => (el as HTMLElement).click());
+    await bloc(antor).getByRole('alert').filter({ hasText: 'La section a changé depuis la proposition.' }).waitFor();
+    await antor.waitForFunction(() => {
+      const fil = document.querySelector('.asst-fil') as Element;
+      const b = Array.from(document.querySelectorAll('.asst-prop-gestes button, .asst-prop-gestes a')).pop() as Element;
+      const f = fil.getBoundingClientRect();
+      const r = b.getBoundingClientRect();
+      return r.top >= f.top && r.bottom <= f.bottom + 1;
+    });
+  } finally {
+    await antor.setViewportSize({ width: 1280, height: 720 });
+  }
+});

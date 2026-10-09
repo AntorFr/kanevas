@@ -50,7 +50,7 @@ export function Proposition({ evenement, universId, surOuverture }: PropsBloc) {
   const resultat = useRef<HTMLParagraphElement>(null);
   const vivant = useRef(true);
   const racine = useRef<HTMLDivElement>(null);
-  const defile = useRef(false);
+  const defile = useRef('');
   useEffect(() => {
     vivant.current = true;
     return () => {
@@ -109,13 +109,15 @@ export function Proposition({ evenement, universId, surOuverture }: PropsBloc) {
     }
   }, [perdue, lireTout]);
 
-  // The block grows once read: bring it, gestures included, into view in the thread (once).
+  // The block grows once read, and again when it turns stale: bring it, gestures included,
+  // into view in the thread (once per state).
+  const etatVu = prop?.etat ?? '';
   useEffect(() => {
-    if (phase === 'ok' && !defile.current && racine.current) {
-      defile.current = true;
+    if (phase === 'ok' && defile.current !== etatVu && racine.current) {
+      defile.current = etatVu;
       racine.current.scrollIntoView?.({ block: 'end' });
     }
-  }, [phase]);
+  }, [phase, etatVu]);
 
   // After a gesture the focus goes to its result.
   useEffect(() => {
