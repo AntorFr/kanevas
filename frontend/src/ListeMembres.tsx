@@ -34,6 +34,7 @@ export function ListeMembres({
   apres,
   note,
   entetes,
+  formulaireApres,
 }: {
   base: string;
   nomUnivers: string;
@@ -42,6 +43,8 @@ export function ListeMembres({
   note?: ReactNode;
   /** Column headers (« Identifiant », « Rôle ») over the rows, as E-5 shows them. */
   entetes?: boolean;
+  /** E-5 order: the list first, then the add form (with its note and failure message). E-4 keeps the form on top. */
+  formulaireApres?: boolean;
 }) {
   const perdue = useConnexionPerdue();
   const { toast } = useToasts();
@@ -110,7 +113,7 @@ export function ListeMembres({
     }
   }
 
-  return (
+  const ajout = (
     <>
       <form className="formulaire-ligne" onSubmit={ajouter} noValidate aria-label="Ajouter un membre">
         <Champ
@@ -139,6 +142,12 @@ export function ListeMembres({
           {echec}
         </div>
       )}
+    </>
+  );
+
+  return (
+    <>
+      {!formulaireApres && ajout}
       {entetes && (
         <div className="entetes-membres" aria-hidden="true">
           <span>Identifiant</span>
@@ -179,6 +188,7 @@ export function ListeMembres({
           </li>
         ))}
       </ul>
+      {formulaireApres && ajout}
       {aRetirer && (
         <BoiteDialogue
           titre={`Retirer ${aRetirer.username} de ${nomUnivers} ?`}

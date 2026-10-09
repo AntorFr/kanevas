@@ -34,6 +34,7 @@ function Membres({ id, nom, surChangement }: { id: number; nom: string; surChang
       base={`/api/instance/univers/${id}/membres`}
       nomUnivers={nom}
       entetes
+      formulaireApres
       membres={membres.valeur}
       // My own membership changed: the sidebar, the home and the « Ouvrir » link follow.
       apres={(m) => {
