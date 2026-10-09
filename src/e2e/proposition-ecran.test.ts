@@ -301,3 +301,36 @@ test('défilement : au téléphone, le refus « section changée » garde les ge
     await antor.setViewportSize({ width: 1280, height: 720 });
   }
 });
+
+// Independent re-check of E-12 « périmée … découverte au clic » on a phone: the fil already holds an earlier
+// block (so it is long and scrolled), a second proposal arrives, the section changes, then « Appliquer ».
+// Fails if the fil is only scrolled once (on arrival) and not again when the refusal makes the block taller.
+test('défilement : au téléphone, avec deux blocs dans le fil, le refus « section changée » garde les gestes du dernier bloc visibles', opts, async () => {
+  await poser('Il sert la Couronne');
+  await antor.setViewportSize({ width: 390, height: 600 });
+  try {
+    await demander(antor);
+    await attendreBloc(antor);
+    await panneau(antor).getByRole('textbox', { name: 'Demander à Kanevas' }).fill(DEMANDE);
+    await panneau(antor).getByRole('button', { name: 'Envoyer' }).click();
+    await panneau(antor).locator('.asst-prop').nth(1).getByRole('button', { name: 'Appliquer' }).waitFor();
+    await attendre(antor);
+    assert.equal(await panneau(antor).locator('.asst-prop').count(), 2);
+    await poser('Modifié par Antor');
+    assert.equal(await lireSection(), 'Modifié par Antor');
+    await appliquer(antor).evaluate((el) => (el as HTMLElement).click());
+    await bloc(antor).getByRole('alert').filter({ hasText: 'La section a changé depuis la proposition.' }).waitFor();
+    assert.equal(await lireSection(), 'Modifié par Antor', 'rien n’est écrit');
+    await antor.waitForFunction(() => {
+      const fil = document.querySelector('.asst-fil') as Element;
+      const blocs = document.querySelectorAll('.asst-prop');
+      const dernier = blocs[blocs.length - 1] as Element;
+      const b = Array.from(dernier.querySelectorAll('.asst-prop-gestes button, .asst-prop-gestes a')).pop() as Element;
+      const f = fil.getBoundingClientRect();
+      const r = b.getBoundingClientRect();
+      return r.top >= f.top && r.bottom <= f.bottom + 1;
+    }, undefined, { timeout: 3000 });
+  } finally {
+    await antor.setViewportSize({ width: 1280, height: 720 });
+  }
+});
