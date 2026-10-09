@@ -43,7 +43,7 @@ fichier repéré par liste avant/après sous verrou — et `aucun`, choisis par 
 le bloc « Image attachée » de E-12 (vignette, « Ouvrir la section », état « Image indisponible. ») et l'attente longue (« Kanevas travaille toujours… » dès 20 s ;
 requête coupée à 300 s). `CODEX_HOME` (défaut `<dossier de la base>/codex`) ; le `Dockerfile` épingle `@openai/codex` (`CODEX_VERSION`).
 Pièges : le résultat du moteur doit avoir une signature d'image servie en ligne ; rien du moteur n'est journalisé (`auth.json`) ; une seule image par demande ; le
-temps passé dans l'outil n'entre pas dans les 120 s de la demande. **Reste :** le **premier vrai appel** à Codex, sur l'URL déployée, une fois `auth.json` posé par
+temps passé dans l'outil n'entre pas dans les 120 s de la demande ; « Ouvrir la section » depuis la fiche déjà ouverte la relit (événement `kanevas:fiche-ecrite`) ; une section à 50 pièces répond « Cette section porte déjà 50 pièces jointes. ». **Reste :** le **premier vrai appel** à Codex, sur l'URL déployée, une fois `auth.json` posé par
 Monsieur dans `/data/codex` (si Codex ne génère pas sous abonnement ou range ailleurs, corriger le repérage du fichier, AD-90) ; le bouchon est vert.
 
 **Reste :** la fusion et le tag `v*` (recette acceptée par Monsieur). Pour l'assistant : le **premier vrai appel** au modèle n'a jamais eu lieu —
