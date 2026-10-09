@@ -56,16 +56,20 @@ export class ErreurApi extends Error {
 }
 
 /** JSON call to the backend. 401 means the session ended: go back through the sign-in. */
-export async function appeler<T>(methode: string, chemin: string, corps?: unknown): Promise<T> {
+export async function appeler<T>(methode: string, chemin: string, corps?: unknown, delaiMs?: number): Promise<T> {
   let reponse: Response;
+  const signal = delaiMs === undefined ? undefined : AbortSignal.timeout(delaiMs);
   try {
     reponse = await fetch(chemin, {
       method: methode,
       headers: corps === undefined ? undefined : { 'content-type': 'application/json' },
       body: corps === undefined ? undefined : JSON.stringify(corps),
       credentials: 'same-origin',
+      signal,
     });
   } catch {
+    // A deadline we set ourselves is not a lost connection.
+    if (signal?.aborted) throw new ErreurApi(0, 'Délai dépassé.');
     definirPerdue(true);
     throw new ErreurApi(0, 'Connexion perdue.');
   }

@@ -33,6 +33,21 @@ export function useDisponibilite(universId: number | null): [Disponibilite, () =
   return [etat, () => setEssai((n) => n + 1)];
 }
 
+const TEXTE_LONGUE = 'Kanevas travaille toujours… Une image peut prendre jusqu’à trois minutes.';
+const SEUIL_LONG_MS = 20_000;
+
+/** True once a pending answer has lasted 20 s, whatever the request (the client cannot know). */
+function useAttenteLongue(attente: boolean): boolean {
+  const [longue, setLongue] = useState(false);
+  useEffect(() => {
+    setLongue(false);
+    if (!attente) return;
+    const t = setTimeout(() => setLongue(true), SEUIL_LONG_MS);
+    return () => clearTimeout(t);
+  }, [attente]);
+  return longue;
+}
+
 interface Props {
   universId: number;
   dispo: Disponibilite;
@@ -59,6 +74,8 @@ export function Panneau({ universId, dispo, relireDispo, fermer, surOuverture, c
   }, [fil.messages, fil.etat]);
 
   const attente = fil.etat === 'attente';
+  const longue = useAttenteLongue(attente);
+  const mj = dispo.k === 'ok' && dispo.catalogue === 'mj';
   const trop = texte.length > MAX_MESSAGE;
   const disponible = dispo.k === 'ok' && dispo.disponible;
   const champInactif = !disponible || perdue;
@@ -106,7 +123,7 @@ export function Panneau({ universId, dispo, relireDispo, fermer, surOuverture, c
         ))}
         {attente && (
           <p className="asst-attente" role="status">
-            Kanevas réfléchit…
+            {longue && mj ? TEXTE_LONGUE : 'Kanevas réfléchit…'}
           </p>
         )}
         {fil.etat === 'erreur' && (
