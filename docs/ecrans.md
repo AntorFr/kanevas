@@ -1582,7 +1582,7 @@ choix d'un compte de test.
 ### E-10 Cartes
 
 Le titre « Cartes », le sous-titre « Les cartes de l'univers. Les joueurs ne voient que celles que vous rendez visibles. » (MJ seulement), puis la liste des cartes **de l'univers que le compte lit** : le MJ les voit
-toutes ; un Joueur (et le MJ en mode Joueur, voir E-11) seulement celles qui sont **visibles**. Une
+toutes ; un Joueur seulement celles qui sont **visibles**. Une
 ligne : une vignette (le fond d'une carte illustrée, un motif neutre sans fond ou pour un graphe), le
 titre, la forme (« Carte illustrée » ou « Graphe »), et pour le MJ l'état « Visible des joueurs » ou
 « MJ seul » (seul ce dernier est une pastille ambre) avec le geste inverse : « Rendre visible » / « Cacher aux joueurs », qui
@@ -1599,7 +1599,7 @@ graphe naît vide, ses fiches se choisissent sur la carte. « Annuler » ferme l
 |---|---|---|---|
 | MJ | toutes les cartes de l'univers | oui | oui |
 | Joueur | les cartes visibles ; ni l'état ni le geste de visibilité | **absent** | **absent** |
-| MJ en mode Joueur | comme un Joueur | absent | absent |
+| MJ en mode Joueur | sur E-10 la bascule n'est pas proposée : le MJ y voit toujours la liste complète ; le mode Joueur se joue sur E-11 | — | — |
 | Admin d'instance, ou compte sans rôle dans l'univers (Teo) | aucune (« Page introuvable. ») | — | — |
 
 *Textes.* Aucune carte : MJ « Aucune carte pour l'instant. Créez-en une pour commencer. » (le
@@ -1643,7 +1643,7 @@ fiche est lisible du lecteur (AD-38). **Joueur** : toucher un token ouvre la fic
 Aldric · Personnage » avec « Ouvrir la fiche » et « Retirer de la carte » (ce bouton demande la même confirmation que la liste « Sur la carte » : rien n'est retiré au premier clic) ; on **déplace** un token au
 glisser, ou au clavier (token sélectionné : flèches, 1 %, avec Maj 5 % ; l'aide « Flèches : déplacer de 1 % (Maj : 5 %) » est affichée sous le cadre) ; la position s'enregistre au
 relâchement (ou à la touche) ; hors du cadre elle est ramenée au bord. « Ajouter une fiche » ouvre une
-fenêtre : un choix de **type** (les sept), un champ de recherche, la liste des fiches de ce type
+fenêtre : un choix de **type** (les sept), un champ de recherche (lancée par « Chercher » ou Entrée ; plus de 100 caractères : « 100 caractères au plus. »), la liste des fiches de ce type
 (celles que le MJ lit : toutes), chacune avec « Ajouter » ; une fiche déjà sur la carte porte « Déjà
 sur la carte » sans bouton. « Fermer » ferme la fenêtre. Le token apparaît au **centre** (50 %, 50 %), prêt à être déplacé.
 « Changer le fond » (« Ajouter un fond » s'il n'y en a pas) ouvre le sélecteur : **choisir l'image
@@ -1746,7 +1746,7 @@ reste. Hors connexion, le fond déjà chargé reste affiché.
 ### E-3 — le bloc « Cartes visibles »
 
 Sur la vue d'ensemble, un bloc **Cartes visibles** (le titre de la maquette `e03`), inscrit au registre des blocs de E-3 (un fichier dans
-`frontend/src/ecrans/vue-ensemble/blocs/`, une ligne au registre, après les blocs des campagnes et
+`frontend/src/ecrans/vue-ensemble/blocs/` que le registre trouve seul (rang après les blocs des campagnes et
 des comptes-rendus ; aucun bloc existant n'est modifié). Il liste, pour tous les rôles, les **cartes
 visibles des joueurs** (cinq au plus, titre alphabétique) : le titre en lien vers E-11 et la forme ;
 dessous « Toutes » vers E-10. Chaque carte est une vignette (le fond de la carte, ou le motif neutre
