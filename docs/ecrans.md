@@ -179,8 +179,8 @@ Personnages, Lieux, Factions, Objets, Événements, Quêtes ; **Campagnes** et *
 pied, le compte (avatar et identifiant) qui ouvre le menu du compte : l'identifiant, le thème
 (Clair, Sombre, Système, en trois icônes) et « Se déconnecter ». Hors d'un univers (E-1,
 E-2, E-5, E-15, E-16) : « Mes univers », « Systèmes de jeu » et le compte en pied. **Un item dont l'écran n'est
-pas construit n'est pas affiché** : Cartes et Administration
-arrivent avec leurs tranches (Campagnes et Comptes-rendus sont affichés). « Paramètres » (E-14) n'est affiché qu'au MJ. Sur téléphone (moins de 760 px), la barre est un tiroir sous un
+pas construit n'est pas affiché** : Administration
+arrive avec sa tranche (Campagnes, Comptes-rendus et Cartes sont affichés). « Paramètres » (E-14) n'est affiché qu'au MJ. Sur téléphone (moins de 760 px), la barre est un tiroir sous un
 bouton « Menu ».
 
 | État | Ce qu'on voit |
@@ -1573,7 +1573,7 @@ choix d'un compte de test.
 ## Détail des écrans de `kanevas-cartes-graphes`
 
 > E-10 Cartes, E-11 Carte (carte illustrée et graphe), le bloc « Cartes visibles » de E-3, l'item « Cartes »
-> de la barre latérale (il apparaît avec cette tranche). Mêmes six états et mêmes textes communs que
+> de la barre latérale (il apparaît avec cette tranche). Mêmes états (B-29) et mêmes textes communs que
 > la première fiche (chargement, erreur, connexion perdue, écriture en cours, échec d'une écriture,
 > refus « Page introuvable. », session expirée). Maquettes : `e10` (liste : MJ, Joueuse, vide,
 > création en erreur) et `e11` (carte illustrée et graphe : MJ, MJ en mode Joueur, Joueuse, états).
@@ -1639,7 +1639,7 @@ En tête : le titre (MJ : « Renommer » — un champ en ligne, 1 à 80 caractè
 chaque **token** est un rond portant la première lettre du titre de sa fiche, avec le titre dessous
 (24 caractères, puis « … »). Sa zone cliquable fait au moins 44 px. Un token n'est présent que si sa
 fiche est lisible du lecteur (AD-38). **Joueur** : toucher un token ouvre la fiche (E-9) ; rien d'autre.
-**MJ (mode MJ)** : un clic **sélectionne** le token et ouvre, sous le cadre, un panneau « Maître
+**MJ (mode MJ)** : un clic **sélectionne** le token et met le token en évidence (anneau ambre, la couleur du MJ) et ouvre, sous le cadre, un panneau MJ au liseré ambre « Maître
 Aldric · Personnage » avec « Ouvrir la fiche » et « Retirer de la carte » (ce bouton demande la même confirmation que la liste « Sur la carte » : rien n'est retiré au premier clic) ; on **déplace** un token au
 glisser, ou au clavier (token sélectionné : flèches, 1 %, avec Maj 5 % ; l'aide « Flèches : déplacer de 1 % (Maj : 5 %) » est affichée sous le cadre) ; la position s'enregistre au
 relâchement (ou à la touche) ; hors du cadre elle est ramenée au bord. « Ajouter une fiche » ouvre une
@@ -1653,8 +1653,10 @@ suffit**, elle part aussitôt et remplace l'ancienne.
 caractères), une flèche par **lien** de la fiche d'où vient la relation vers la fiche visée, avec le
 type de la relation écrit sur la flèche (lien de A vers B : « membre de »). La disposition est celle
 du navigateur (AD-71) ; elle n'est pas modifiable. La zone cliquable d'un nœud fait au moins 44 px ; le
-cadre grandit avec le nombre de nœuds (au moins 60 px par nœud sur chaque côté) et, sur téléphone,
-défile dans les deux sens plutôt que de se réduire ; la liste « Sur la carte » reste le chemin sûr au toucher. Joueur : toucher un nœud ouvre sa fiche. MJ : un
+cadre prend la largeur que la page lui donne (jamais moins d'un nœud plus ses marges) et sa hauteur
+grandit avec le nombre de lignes de nœuds ; chaque nœud occupe sa propre case (150 × 70 px) d'une
+grille, donc deux nœuds ne se recouvrent jamais ; ce qui ne tient pas dans la largeur (téléphone)
+défile, et la liste « Sur la carte » reste le chemin sûr au toucher. Joueur : toucher un nœud ouvre sa fiche. MJ : un
 clic sélectionne le nœud, avec « Ouvrir la fiche » et « Retirer de la carte » (même mot, même confirmation que la liste « Sur la carte ») ; « Ajouter une fiche »
 est la même fenêtre. Une relation ajoutée ou retirée sur une fiche se voit au rechargement de la
 carte.
@@ -1667,6 +1669,8 @@ fiche, « Aucune fiche de ce type. » ; une recherche sans résultat, « Aucune 
 cent fiches par page et « Charger la suite » (« Impossible de charger la suite. » en cas d'échec) ;
 un titre de 80 caractères passe à la ligne. **Refus** : sans objet, la fenêtre n'existe que pour le
 MJ hors mode Joueur.
+
+Chaque action de E-10 et de E-11 porte une icône Lucide (règle de `docs/charte.md`, « Icônes ») : Renommer un crayon, Rendre visible / Cacher un œil / œil barré, Ajouter une fiche un plus, Fond une image, Retirer une corbeille, Ouvrir la fiche un lien externe.
 
 *Sur la carte* (liste sous le cadre, toujours présente quand il y a des éléments) : une ligne par
 token ou nœud, son titre en lien vers la fiche, son type ; pour le MJ, « Retirer de la carte »
@@ -1731,8 +1735,10 @@ reste. Hors connexion, le fond déjà chargé reste affiché.
 - Étant donné le graphe « Les factions » avec « Les Lames Grises », « Les Corbeaux » et « La
   Guilde » ; la relation « allié de » de la première vers la deuxième, portée par une section que
   Léa ne lit pas, et « rival de » de la première vers la troisième, portée par une section qu'elle lit :
-  Antor voit les deux liens ; Léa, qui lit les trois fiches, voit seulement « rival de » ; si elle ne
-  lisait pas « La Guilde », elle verrait deux nœuds et aucun lien.
+  Antor voit les deux liens ; Léa, qui lit les trois fiches de ce graphe, voit seulement « rival de » ;
+  si elle ne lisait pas « La Guilde », elle verrait deux nœuds et aucun lien.
+- Étant donné un graphe où Antor a mis aussi « Les Ombres de Fer » (Léa n'en lit aucune section),
+  alors Léa n'y voit ni son nœud ni ses liens, et aucune trace de leur absence.
 - Étant donné le fond « plan.pdf » choisi sur une carte, alors le refus s'affiche et le fond d'avant
   reste ; l'adresse du fond d'une carte non visible répond 404 à Léa.
 - Étant donné Léa sur une carte, quand elle force l'adresse d'une action de MJ, alors elle reçoit 403.
@@ -1743,7 +1749,8 @@ Sur la vue d'ensemble, un bloc **Cartes visibles** (le titre de la maquette `e03
 `frontend/src/ecrans/vue-ensemble/blocs/`, une ligne au registre, après les blocs des campagnes et
 des comptes-rendus ; aucun bloc existant n'est modifié). Il liste, pour tous les rôles, les **cartes
 visibles des joueurs** (cinq au plus, titre alphabétique) : le titre en lien vers E-11 et la forme ;
-dessous « Toutes » vers E-10. Le MJ voit donc ce que la table voit ; ses cartes « MJ seul »
+dessous « Toutes » vers E-10. Chaque carte est une vignette (le fond de la carte, ou le motif neutre
+d'un graphe ou d'une carte sans fond) avec une icône carte, le titre et la forme. Le MJ voit donc ce que la table voit ; ses cartes « MJ seul »
 se trouvent sur E-10.
 
 | État | Ce qu'on voit | Ce qu'on peut faire |
