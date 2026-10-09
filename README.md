@@ -105,7 +105,7 @@ Les textes de `docs/ecrans.md` sont écrits avec l'apostrophe droite ; l'interfa
 Playwright n'est pas une dépendance du dépôt : il doit être installé globalement
 (`/usr/lib/node_modules` ou `/usr/local/lib/node_modules`) avec un Chromium, ce que ne fait ni
 `node:20-bookworm-slim` ni la CI GitHub. Pour savoir s'il est vu : `ls /usr/lib/node_modules/playwright`. Là où il manque, ces tests sont **ignorés avec un message**,
-sans échec ; les autres tests (services, routes HTTP) tournent partout. Compter une dizaine de minutes même sans les e2e, une vingtaine avec Playwright (silencieuse jusqu'à la fin ; un message « ignoré » en tête de sortie dit que Playwright n'est pas vu). La CI ne joue donc pas les e2e.
+sans échec ; les autres tests (services, routes HTTP) tournent partout. Compter une dizaine de minutes (11 min mesurées avec Playwright, 934 tests, selon la machine) (silencieuse jusqu'à la fin ; un message « ignoré » en tête de sortie dit que Playwright n'est pas vu). La CI ne joue donc pas les e2e.
 
 ## Réglages
 
