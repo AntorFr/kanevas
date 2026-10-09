@@ -37,7 +37,7 @@ async function api(page: Any, method: string, path: string, data?: unknown) {
   return { status: r.status(), body: await r.json().catch(() => null) };
 }
 const ligne = (page: Any, titre: string) => page.locator('li').filter({ has: page.getByRole('link', { name: rxExact(titre) }) });
-const bloc = (page: Any) => page.locator('section, article, div').filter({ has: page.getByRole('heading', { name: 'Cartes visibles' }) }).last();
+const bloc = (page: Any) => page.locator('section[data-bloc="cartes"]');
 
 async function versCartes(page: Any) {
   await page.goto(`/univers/${uid}/cartes`);
