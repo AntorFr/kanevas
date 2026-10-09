@@ -252,3 +252,30 @@ test('le délai ne repart qu’avec ce qui restait : modèle lent après l’out
     (e: any) => e.code === 'assistant_erreur',
   );
 });
+
+test('section pleine : le texte MJ « Cette section porte déjà 50 pièces jointes. » (outil et bouchon)', async () => {
+  const { db, antor, app, outil, dit, pieces } = monde();
+  const dir = (await import('node:fs')).mkdtempSync((await import('node:path')).join((await import('node:os')).tmpdir(), 'im-'));
+  for (let i = 0; i < MAX_PIECES_PAR_SECTION; i++) {
+    await deposerPieceJointe(db, antor.id, false, app.id, Readable.from([PNG_BOUCHON]), `p${i}.png`, false, dir);
+  }
+  const { etat, images } = moteurEspion();
+  const r: any = await outil(antor.id, images).executer({ sectionId: app.id, description: 'x' });
+  assert.deepEqual(r, { ok: false, erreur: 'Cette section porte déjà 50 pièces jointes.' });
+  assert.equal(etat.appels, 0);
+  const b = await dit(antor.id, PORTRAIT);
+  assert.equal(b.reponse, 'Cette section porte déjà 50 pièces jointes.');
+  assert.deepEqual(b.evenements, []);
+  assert.equal(pieces().length, MAX_PIECES_PAR_SECTION);
+});
+
+test('portrait hors forme contenant « échec » : message d’échec d’image, pas d’erreur de transport', async () => {
+  const { antor, lea, dit, pieces } = monde();
+  const r = await dit(antor.id, "Fais un portrait de l'échec d'Aldric.");
+  assert.equal(r.reponse, "Je n'ai pas pu générer l'image.");
+  assert.deepEqual(r.evenements, []);
+  assert.equal(pieces().length, 0);
+  const l = await dit(lea.id, "Fais un portrait de l'échec d'Aldric.");
+  assert.ok(l.reponse.includes('generer_image'), l.reponse);
+  assert.equal(pieces().length, 0);
+});
