@@ -4,7 +4,7 @@
 - Commit messages in French: subject, then the *why*. Explicit paths
   (`git add <path>...`, never `git add -A`/`.`), no AI attribution trailers —
   same convention as `k8s-home-lab`.
-- Build and test in containers only:
+- Build and test in containers (the reference; a local Node 20+ gives the same result, see README) :
   `docker run --rm -v "$PWD":/src -w /src node:20-bookworm-slim sh -c "npm ci && npm run typecheck && npm test"`
 - `npm run typecheck` : `tsc --noEmit`. `npm test` : `node --import tsx --test`
   on the files found by `find` — Node 20 (CI, image) does not expand globs

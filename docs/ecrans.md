@@ -785,8 +785,6 @@ E-9) ; P-6 étape 1 ne lit que les blocs de E-3 (derniers comptes-rendus) ; B-18
 Reste aux autres tranches : la proposition de mise à jour depuis un CR (`kanevas-monde`) ; créer une campagne ou un scénario par
 l'assistant est construit (E-12, `kanevas-assistant-membre`).
 
-## Détail des écrans de `kanevas-relier-chercher`
-
 ## Détail des écrans de `kanevas-fichiers`
 
 > Un seul ajout, aucun écran neuf : le **bloc Pièces jointes** de E-9. Mêmes six états et mêmes
@@ -943,15 +941,6 @@ chaque bouton « Retirer » porte l'étiquette accessible « Retirer la relation
   voit « Une fiche ne se relie pas à elle-même. » et rien n'est écrit.
 - Étant donné Antor, quand il retire la section « Apparence », alors ses relations disparaissent
   avec elle et ne remontent nulle part.
-
-### Clôture de `kanevas-relier-chercher`
-
-B-10 → bloc Relations de E-9 ; B-11 → recherche de E-8 ; B-29 → six états de la recherche et du
-bloc ci-dessus. Atteints par P-3 étape 4 (relier le PNJ à sa faction : relier une section du PNJ, bloc de E-9) et P-6 étape 2
-(chercher « Aldric », E-8). Les deux rôles ont leur colonne : le MJ cherche et relie, le Joueur
-cherche et lit ce qu'il peut ; l'admin d'instance n'atteint ni l'un ni l'autre (« Page
-introuvable. »). Chemin d'échec propre à cette tranche (`docs/parcours.md` n'en porte pas pour P-3 et P-6) : une recherche sans résultat dit « Aucun résultat pour … »,
-jamais « caché ». Chemin d'échec de relier une section : le refus du service s'écrit au-dessus du formulaire (« Cette relation existe déjà. », « Une fiche ne se relie pas à elle-même. », « Cette section porte déjà 100 relations. »), la saisie et le choix sont conservés ; un échec d'écriture générique et une session expirée suivent les textes communs (« L'action n'a pas abouti. Réessayez. » ; connexion, formulaire non gardé).
 
 ## Détail des écrans de `kanevas-assistant-membre`
 

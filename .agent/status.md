@@ -17,6 +17,8 @@ tiroir au téléphone, thème et déconnexion dans le menu de l'avatar, seul end
 avec leurs états, pastille/filet d'audience, menu « ⋯ » et toasts sur la fiche. Aucun geste, droit ni donnée nouveau.
 Thème par défaut « Système » (tant que rien n'est mémorisé) ; sur E-4, « Retirer » est révélé au survol/focus et le rôle est une pastille-menu. Page `/demo-composants` en bouchon seulement. Maquettes finies : E-1, E-3, E-6, E-8, E-9 (E-4 corrigée) ; E-2, E-7, E-13 à E-15 se tiennent au cadre et aux composants.
 
+`kanevas-assistant-membre` (fusionnée, PR #11) a ajouté l'assistant (E-12, `services/assistant/`, `routes/assistant.ts`).
+
 `kanevas-illustrations` (fusionnée, PR #10) a ajouté à `epic/kanevas` : l'illustration d'une fiche (migration `0006-illustrations.sql`, `services/illustrations.ts`, routes
 `PUT|DELETE|GET …/fiches/:fid/illustration`, AD-93), la grille de cartes illustrées (E-8) et l'illustration en tête de E-9 ;
 le système de jeu hors des univers (AD-94) : `GET /api/systemes` (systèmes du compte), `/api/systemes/catalogue`,
@@ -54,7 +56,7 @@ démarrage ; hors bouchon rien n'est amorcé. Aucune image n'existe avant le tag
 - Fil d'Ariane : une page qui nomme un objet appelle `useTitreAriane(nom)` (`cadre-contexte`) ; E-9 et E-6 le font, E-7 s'arrête à l'univers (maquette ancienne, forme non exigée). Le select « Auteur » de la boîte « Qui voit » est désactivé pendant l'enregistrement : un test qui y pose le focus attend d'abord sa réactivation.
 - Écarts connus laissés à la recette (non bloquants) : E-2 montre un sceau en pointillé vide tant que le nom est vide (voulu dans le code, `Sceau` « inconnu », non décrit par `docs/ecrans.md`) ; E-7 garde « ← » en texte et « Modifier » plein accent (sa maquette est ancienne) ; les pastilles « MJ seul » des panneaux portent le cadenas.
 - Suite e2e (Playwright) : sous forte charge, deux tests (premiere-fiche B-9, refonte-besoin matrice E-9 mode Joueur) échouent par intermittence et passent seuls ; non attribué à un défaut du produit.
-- P-7 : le portrait (pièce jointe) est livré ; la demande à l'assistant (`kanevas-assistant-membre`) reste à venir.
+- P-7 : le portrait (pièce jointe) est livré ; la demande à l'assistant (`kanevas-assistant-membre`, E-12) est livrée sur `epic/kanevas`.
 - Pièces jointes : le type est déterminé par la signature des octets, jamais par le navigateur ; seules PNG,
   JPEG, GIF, WebP sont servies en ligne, le reste (SVG compris) en `attachment` sous `nosniff` et CSP sandbox.
   Un refus de lecture répond 404 comme un identifiant inconnu (AD-22) ; 50 pièces au plus par section, pas de
