@@ -150,3 +150,20 @@ test('C : Vue d’ensemble d’un univers au nom long : « Vue d’ensemble » r
   assert.ok(await dernier.locator('.tronque').evaluate((e: HTMLElement) => e.scrollWidth <= e.clientWidth));
   assert.equal(await fil(antor).getByRole('link', { name: /Vue d’ensemble/ }).count(), 0);
 });
+
+// D. Keyboard focus on a crumb link stays visible: the link clips its content (overflow:hidden so the text
+// can be cut by « … »), so an outline drawn outside its box would be cut off.
+test('D : le focus clavier d’un maillon du fil reste visible (contour dans le lien, non rogné)', opts, async () => {
+  await versFiche('Aldric');
+  const univers = fil(antor).getByRole('link').first();
+  await antor.keyboard.press('Tab'); // make the next programmatic focus count as keyboard-driven
+  await univers.focus();
+  const etat = await univers.evaluate((a: HTMLElement) => {
+    const s = getComputedStyle(a);
+    return { focusVisible: a.matches(':focus-visible'), overflow: s.overflow, style: s.outlineStyle, largeur: parseFloat(s.outlineWidth), decalage: parseFloat(s.outlineOffset) };
+  });
+  assert.equal(etat.focusVisible, true);
+  assert.notEqual(etat.style, 'none');
+  assert.ok(etat.largeur > 0);
+  if (etat.overflow !== 'visible') assert.ok(etat.decalage < 0, `outline-offset ${etat.decalage}px would be clipped by overflow:${etat.overflow}`);
+});
