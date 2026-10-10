@@ -7,7 +7,8 @@ on:
   release:
     types: [published]      # → also tag :latest
   pull_request:
-    branches: [main]        # validation build, no push
+    branches: [main, 'epic/**']   # validation build, no push ; epic/** : la fusion d'une
+                                  # tranche dans sa branche d'epic exige ces bancs (2026-10-11)
   workflow_dispatch:
 
 permissions:
