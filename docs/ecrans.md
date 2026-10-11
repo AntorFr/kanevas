@@ -103,7 +103,7 @@ E-16 vivent hors des univers : leurs cases disent le rôle dans un univers ratta
 | E-6 | tout | liste, statut, CR, « Nouveau compte-rendu » ; ni scénarios ni préparation (cachés) | — |
 | E-7 | tout | — | — |
 | E-8 | lire, chercher, créer ; la vignette de chaque fiche (son illustration, ou le repli dessiné) | lire, chercher ; la vignette des fiches qu'il voit | — |
-| E-9 | tout ; mode Joueur ; relier et retirer des relations ; poser, remplacer, retirer l'illustration (hors mode Joueur) ; *(kanevas-import)* sous-type, réserver un fichier au MJ | sections lisibles ; écrire celles permises ; relations lisibles (section et cible) ; pièces jointes de celles-ci ; voir l'illustration, jamais la poser ; *(kanevas-import)* dans une section qu'il écrit, ajouter un fichier ou en choisir un qu'il voit (les deux chemins de B-55) et retirer une référence ; fichiers sous double garde ; jamais régler une visibilité (**caché**) | — |
+| E-9 | tout ; mode Joueur ; relier et retirer des relations ; poser, remplacer, retirer l'illustration (hors mode Joueur) ; *(kanevas-import)* sous-type, réserver un fichier au MJ, voir un fichier en attente d'import (tuile) | sections lisibles ; écrire celles permises ; relations lisibles (section et cible) ; pièces jointes de celles-ci ; voir l'illustration, jamais la poser ; *(kanevas-import)* dans une section qu'il écrit, ajouter un fichier ou en choisir un qu'il voit (les deux chemins de B-55) et retirer une référence ; fichiers sous double garde ; jamais régler une visibilité (**caché**) ; un fichier en attente d'import : rien (**caché**) | — |
 | E-10 | tout | cartes visibles | — |
 | E-11 | tout ; mode Joueur | lire une carte visible, ouvrir une fiche | — |
 | E-12 | catalogue MJ ; propositions : le MJ demandeur seul les voit, les applique, les abandonne | catalogue Joueur ; propositions : **caché** (ni outil ni bloc ; ce qu'on vérifie est l'absence de proposition et de bloc, pas le texte libre de l'assistant) | — |
@@ -2143,7 +2143,18 @@ texte « Fichier en attente d'import : « img:quais ». » (la clé telle qu'env
 document `[tarifs](fichier:cle:doc:tarifs)` est souligné en tirets `--texte-3`, avec cette phrase en
 infobulle. Pour tout autre lecteur, et pour le MJ en mode Joueur : rien, ni tuile, ni blanc, ni ligne.
 Elle ne compte pas parmi les 100 fichiers joints tant que la clé n'est pas résolue, ne se retire pas
-(pas de menu : elle disparaît à l'arrivée du fichier) et n'est dans aucune liste de la médiathèque.
+(pas de menu : elle disparaît à l'arrivée du fichier) et n'est dans aucune liste de la médiathèque. *États* : **chargement** — rien avant l'arrivée de la
+fiche, donc pas de tuile qui clignote ; **vide** — une section dont les seules jointes sont en attente
+montre ses tuiles, pas « Aucun fichier joint. » ; **erreur** et **connexion perdue** — sans objet, la
+tuile est du texte de la fiche (ceux de la fiche valent) ; **refus** — « caché » : le lecteur non MJ ne
+reçoit pas même la clé ; **contenu extrême** — une clé de 200 caractères se coupe en « … » avec la clé
+entière en infobulle, 100 tuiles dans un bloc défilent dans leur cadre. **À l'arrivée du fichier** : la
+page déjà ouverte du MJ ne change pas seule ; au rechargement, la tuile est remplacée par le fichier.
+**Au-delà de 100** : un `PUT /fiches` dont une section nomme plus de 100 clés de `fichiers` est refusé
+(400 `invalide`, `champ: fichiers`, compté « refusée » au lot) ; si, à l'arrivée des fichiers, la
+section atteindrait 100, la jointure en trop reste en attente et le lot avertit « section « Notes » :
+100 fichiers joints au plus, « K » reste en attente ». Le mot de l'utilisateur est « fichier en attente » (jamais « référence » sur E-9 ; E-18 compte
+« liens et références en attente » pour le lot).
 
 **Blocs de fiche** (après les sections, hors de toute section) :
 - **Contient** (`folder-tree`) — les enfants lisibles, par type puis titre, chacun avec son icône ; 50
@@ -2391,7 +2402,9 @@ toast « Adresse copiée. »). Deux panneaux.
    les refus et avertissements, chacun avec la clé d'origine, ce qui est en cause et la raison
    (« section « Vérité » : 112 000 caractères, 100 000 au plus » ; « parent lieu:les-docks inconnu :
    fiche écrite sans parent » ; « section « Notes » modifiée dans Kanevas depuis le dernier import : non
-   écrasée » ; « titre modifié dans Kanevas : non écrasé »), en deux groupes titrés par leur compte (« 3 refusées », « 2 avertissements »), 200 au
+   écrasée » ; « titre modifié dans Kanevas : non écrasé » ; pour un fichier, « fichier vide : 0 octet, refusé »,
+  « visibilité modifiée dans Kanevas : non écrasée », « nom modifié dans Kanevas : non écrasé » ; pour
+  une référence, « fichier « img:quais » inconnu : référence en attente »), en deux groupes titrés par leur compte (« 3 refusées », « 2 avertissements »), 200 au
    plus puis « … et 37 autres ». Un lot sans refus ni avertissement ne se déplie pas. Le jeton,
    l'adresse et les clés d'origine sont en chasse fixe (pile système `ui-monospace`, charte).
 
