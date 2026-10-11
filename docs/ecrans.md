@@ -2017,14 +2017,15 @@ séparé, « Supprimer la fiche… » en `--danger`.
 - *Changer le type* : une liste des types de la liste du produit, activés d'abord, puis « Autres
   types » ; pour « Personnage », le choix PJ / PNJ. Le compte-rendu n'y figure pas ; un compte-rendu n'a
   pas cette entrée.
-- *Déplacer sous…* : la liste de recherche (tous types, fiches que le MJ lit), plus « Aucun parent » ;
+- *Déplacer sous…* : boîte « Déplacer « Port-Sel » sous… », champ « Chercher une fiche » et la liste de
+  recherche (tous types, fiches que le MJ lit), plus « Aucun parent » ; « Déplacer » / « Annuler » ;
   un descendant de la fiche est refusé : « Une fiche ne peut pas être rangée sous l'un de ses
   descendants. ».
 - *Alias et étiquettes* : deux champs à pastilles (Entrée ajoute, × retire) ; une étiquette se
   complète sur celles de l'univers ; alias 1 à 120 caractères, 20 au plus ; étiquette 1 à 40
   caractères, 20 au plus par fiche.
 - *Supprimer la fiche* : boîte de dialogue « Supprimer « Port-Sel » ? » qui compte ce qui part —
-  « 2 sections et 1 pièce jointe ; 3 relations qui la visent ; 1 place sur une carte. Ses 4 enfants
+  « 3 sections et 1 pièce jointe ; 3 relations qui la visent ; 1 place sur une carte. Ses 4 enfants
   remonteront sous « Les Sphères ». Les liens qui la visent deviendront des liens cassés. » — et
   « Supprimer la fiche » (`--danger`) / « Annuler ». Après : retour à la liste du type, toast « Fiche
   supprimée. ». Ces nombres ne sont montrés qu'au MJ, qui lit tout.
@@ -2061,6 +2062,8 @@ refuse : « Vous ne pouvez pas modifier cette section. ».
   fiche, alors cette section n'a pas « Modifier ».
 - Étant donné « Rapport secret de l'amirauté » (MJ seul) qui lie « Port-Sel », quand Léa ouvre
   « Port-Sel », alors « Mentionnée dans » ne nomme pas ce rapport ; Antor l'y voit.
+- Étant donné « Port-Sel » sous « Les Sphères » (monde illisible de Léa), sans autre ancêtre, quand
+  Léa ouvre « Port-Sel », alors le fil est « Lame d'Ébène › Lieux › Port-Sel ».
 - Étant donné « Port-Sel » sous « Les Sphères » (monde illisible de Léa) sous « Le Grand Vide »
   (lisible), quand Léa ouvre « Port-Sel », alors le fil est « Lame d'Ébène › Lieux › Le Grand Vide ›
   Port-Sel ».
@@ -2117,8 +2120,11 @@ est du contenu à filtrer, un classement trahit ce qui est caché). 100 puis « 
 | contenu long | 501 résultats : 100 puis la suite ; titre long tronqué par « … » avec infobulle | idem |
 
 *Critères.*
-- Étant donné le mot « tenu » présent seulement dans le bloc MJ de « Port-Sel », quand Léa cherche
-  « tenu », alors « Port-Sel » n'est pas un résultat ; quand Antor cherche « tenu », il l'est.
+- Étant donné le mot « sous-main » présent seulement dans le bloc MJ de « Port-Sel », quand Léa
+  cherche « sous-main », alors « Port-Sel » n'est pas un résultat ; quand Antor le cherche, il l'est.
+- Étant donné le texte de lien « La Guilde des Brumes » écrit dans « Histoire » (lue de Léa) vers une
+  fiche que Léa ne lit pas, quand Léa cherche « guilde », alors « Port-Sel » est un résultat et « La
+  Guilde des Brumes » n'en est pas un.
 - Étant donné « Port-Sel » d'alias « Salport », quand Léa cherche « salport », alors « Port-Sel » est
   un résultat, avec « alias : Salport ».
 - Étant donné l'étiquette « Côte des Brumes » posée sur « Port-Sel » et sur « La Guilde des Brumes »

@@ -390,10 +390,11 @@ a expiré — la ligne dit « Expiré », le script reçoit 401.
    « Mentionnée dans » (les fiches qui la citent) ; sous le titre, ses alias et ses étiquettes.
 3. Il passe en **mode Joueur** : le bloc MJ a disparu sans laisser de trou ; le lien vers « La
    Guilde des Brumes », fiche MJ seul, est devenu du texte ; « Mentionnée dans » a perdu « Rapport
-   secret de l'amirauté ».
-4. Léa, sur son téléphone, ouvre la **recherche** (E-17), tape « guilde » : elle ne trouve pas
-   « Port-Sel » par le mot du bloc MJ, ni « La Guilde des Brumes » ; elle trouve « Port-Sel » par son
-   alias « Salport » ; elle touche l'étiquette « Côte des Brumes » et voit les fiches qu'elle lit.
+   secret de l'amirauté » et « La Guilde des Brumes », qu'un joueur ne lit pas.
+4. Léa, sur son téléphone, ouvre la **recherche** (E-17), tape « sous-main », un mot qui n'est que
+   dans le bloc MJ : aucun résultat. Elle tape « guilde » : elle trouve « Port-Sel » (le texte du lien
+   est écrit dans « Histoire », qu'elle lit) mais jamais la fiche « La Guilde des Brumes » ; elle trouve
+   « Port-Sel » par son alias « Salport » ; elle touche l'étiquette « Côte des Brumes » et voit les fiches qu'elle lit.
 5. Elle ouvre « Maître Aldric » par un lien, puis revient par le fil d'Ariane.
 6. Elle demande à son **assistant** (E-12) « que sait-on de Port-Sel ? » : il ne cite rien du bloc
    MJ.
@@ -422,9 +423,10 @@ E-14 ni les bascules de E-15 (« Lecture seule »).
    puis « Enregistrer ».
 2. Dans l'en-tête, il renomme la fiche « Port-Sel-sur-Brume » ; menu « ⋯ » : « Changer le type »
    (Lieu → Monde) ; « Déplacer sous… » « Les Sphères » ; « Alias et étiquettes ».
-3. Menu « ⋯ » d'un doublon : « Supprimer la fiche », la confirmation dit « 2 sections, 1 pièce
-   jointe, 3 relations qui la visent et 1 place sur une carte partiront ; ses 4 enfants remonteront
-   sous « Les Sphères » ; les liens qui la visent deviendront des liens cassés. »
+3. Menu « ⋯ » d'un doublon : « Supprimer la fiche… » ; la boîte compte ce qui part avec elle
+   (sections, pièces jointes, relations qui la visent, places sur une carte), dit sous quelle fiche
+   remontent ses enfants et que les liens qui la visent deviendront des liens cassés (texte exact :
+   E-9).
 *Échec* : un déplacement qui ferait un cycle (« Les Sphères » sous l'un de ses enfants) — « Une fiche
 ne peut pas être rangée sous l'un de ses descendants. » ; un Joueur auteur d'une section qui contient
 un bloc MJ — « Modifier » n'y paraît pas ; un texte qui passe 100 000 caractères — « Erreur : 100 000
