@@ -8,6 +8,7 @@ import { registerAuthRoutes } from './routes/auth.js';
 import { registerBouchonRoutes } from './routes/bouchon.js';
 import { registerHealthRoutes } from './routes/health.js';
 import { registerSessionRoutes } from './routes/session.js';
+import { ConnexionClaude } from './services/assistant/connexion-claude.js';
 import type { DepsRepondre } from './services/assistant/repondre.js';
 import { chargerCleSession } from './services/session.js';
 
@@ -16,6 +17,8 @@ declare module 'fastify' {
     db: Db;
     /** Config/transport/deadline overrides of the assistant; empty in production, set by tests. */
     assistantDeps: DepsRepondre;
+    /** The single token connection session (AD-112); tests set its `options`. */
+    connexionClaude: ConnexionClaude;
   }
 }
 
@@ -34,7 +37,12 @@ export async function buildApp() {
   }
   app.decorate('db', db);
   app.decorate('assistantDeps', {});
+  app.decorate(
+    'connexionClaude',
+    new ConnexionClaude({ config: () => ({ ...env, ...app.assistantDeps.config }) }),
+  );
   app.addHook('onClose', async () => {
+    await app.connexionClaude.fermer();
     db.close();
   });
 

@@ -1,6 +1,7 @@
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 
 import { env } from '../config/env.js';
+import { ErreurConnexion } from '../services/assistant/connexion-claude.js';
 import { disponibilite } from '../services/assistant/disponibilite.js';
 import { etatJeton } from '../services/assistant/jeton.js';
 import {
@@ -38,6 +39,37 @@ export function registerInstanceRoutes(app: FastifyInstance) {
   app.get('/api/instance/assistant/jeton', async () => {
     const config = app.assistantDeps.config ?? env;
     return { ...etatJeton(config), assistant: disponibilite(config) };
+  });
+
+  // The session refuses with a fixed message and a code, never the cause (AD-112 4).
+  const STATUT_CONNEXION = { connexion_impossible: 502, connexion_echouee: 400, connexion_expiree: 410 } as const;
+  const refus = (reply: FastifyReply, e: unknown) => {
+    if (!(e instanceof ErreurConnexion)) throw e;
+    return reply.code(STATUT_CONNEXION[e.code]).send({ message: e.message, code: e.code });
+  };
+
+  app.post('/api/instance/assistant/jeton/connexion', async (_request, reply) => {
+    try {
+      return reply.code(201).send(await app.connexionClaude.demarrer());
+    } catch (e) {
+      return refus(reply, e);
+    }
+  });
+
+  app.post('/api/instance/assistant/jeton/code', async (request, reply) => {
+    const code = (request.body as { code?: unknown } | null | undefined)?.code;
+    try {
+      const etat = await app.connexionClaude.soumettreCode(code);
+      const config = app.assistantDeps.config ?? env;
+      return { ...etat, assistant: disponibilite(config) };
+    } catch (e) {
+      return refus(reply, e);
+    }
+  });
+
+  app.delete('/api/instance/assistant/jeton/connexion', async (_request, reply) => {
+    await app.connexionClaude.annuler();
+    return reply.code(204).send();
   });
 
   app.get('/api/instance/univers', async (request) =>
