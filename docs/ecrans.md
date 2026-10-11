@@ -2167,7 +2167,7 @@ ni fichier dans un bloc (`kanevas-import-mediatheque`), ni la recherche tous typ
 sont fermées dès maintenant. Maquette : `e09-fiche-importee.html` (« Port-Sel », « Histoire » : le bloc
 `.bloc-mj`, le bouton `.outil-mj` de la barre, l'état `#etat-joueur`) ; aucun écran nouveau.
 
-- **Parcours** : lire, P-12 étapes 3 et 6 ; écrire, P-14 étape 1 (« Bloc MJ ») ; vérifier en mode Joueur,
+- **Parcours** : lire, P-12 étapes 3 et 6 ; chercher dans un type, P-6 étapes 1-2 (la recherche tous types, P-12 étape 4, est à `kanevas-import-recherche`) ; écrire, P-14 étape 1 (« Bloc MJ ») ; vérifier en mode Joueur,
   P-10 étape 6 ; importer un contenu qui porte `:::mj`, P-10 étape 4.
 - **La syntaxe** : une ligne `:::mj`, des lignes de texte, une ligne `:::`. Le MJ la tape ou la pose par
   le bouton. Tout ce que le bloc couvre est secret, **quelle que soit la forme** : paragraphes, liste,
@@ -2177,14 +2177,16 @@ sont fermées dès maintenant. Maquette : `e09-fiche-importee.html` (« Port-Sel
   gouverne, tout ce qu'il couvre est retiré. `:::MJ` (autre casse) et `::: mj` suivi de mots ne sont pas
   des blocs : du texte, visible de tous — une règle de plus que le MJ n'a pas à apprendre.
 - **Le bouton « Bloc MJ »** (MJ seulement, `lock`, après « Fichier » et un filet dans la barre de l'éditeur,
-  avant la bascule « Écrire / Aperçu » ; libellé « Bloc MJ » visible sur ordinateur, l'icône seule à 36 px sur
-  téléphone, infobulle « Bloc MJ · entoure la sélection », libellé accessible « Bloc MJ ») : avec une sélection, il l'entoure d'une ligne `:::mj` avant et d'une
+  avant la bascule « Écrire / Aperçu » ; libellé « Bloc MJ » visible sur ordinateur, l'icône seule de 36 px sous le
+  seuil « téléphone » de la maquette (`@media` de `e09-fiche-importee.html`), sans infobulle au toucher : le libellé accessible la remplace ; infobulle « Bloc MJ · entoure la sélection », libellé accessible « Bloc MJ ») : avec une sélection, il l'entoure d'une ligne `:::mj` avant et d'une
   ligne `:::` après (en ajoutant les sauts de ligne qui manquent, pour que les deux lignes soient seules) ;
   sans sélection, il pose les deux lignes à la suite l'une de l'autre, une ligne vide entre, le curseur sur
   la ligne vide. Il n'a pas de raccourci clavier. Il ne retire pas un bloc : on efface ses deux lignes.
   Un joueur qui écrit la section, ou le MJ en mode Joueur, ne le voit pas.
-- **Aperçu** (« Écrire / Aperçu ») : ses états (en cours, vide, échec, trop long) sont ceux de
-  `kanevas-import-markdown` ; un contexte d'univers refusé ou inconnu n'est pas une erreur, le bloc n'existe simplement
+- **Aperçu** (« Écrire / Aperçu ») : ses états sont ceux de `kanevas-import-markdown` — « Aperçu en cours… »,
+  « Rien à prévisualiser. », « L'aperçu n'a pas abouti. Réessayez. » avec « Réessayer », « Erreur : 100 000 caractères au plus. » — ;
+  l'aperçu d'un scénario (E-7) ou d'une entrée de système (E-15) laisse `:::mj` en texte comme leur lecture (seule l'édition d'une
+  section de E-9 demande la nature « section » avec son univers et son mode, AD-114) ; un contexte d'univers refusé ou inconnu n'est pas une erreur, le bloc n'existe simplement
   pas dans l'aperçu. Pour le MJ, le bloc paraît comme à la lecture, hachuré ; pour qui n'est
   pas MJ, ou hors d'un univers, il n'existe pas (l'aperçu applique la même vue que la lecture, AD-114).
 - **Cas extrêmes** : un bloc de 100 000 caractères défile avec la section ; un tableau large dans un bloc
@@ -2199,7 +2201,9 @@ sont fermées dès maintenant. Maquette : `e09-fiche-importee.html` (« Port-Sel
 - **Écrire une section qui contient un bloc** : le MJ seul (AD-98). Pour un joueur qui l'écrit par
   son audience, ou pour le MJ en mode Joueur qui imite un tel joueur, « Modifier » n'apparaît pas ; s'il y
   parvient par une autre voie (l'API de session, `modifier_section`, `ajouter_a_section`), le serveur répond 403,
-  « Vous ne pouvez pas modifier cette section. », et rien n'est écrit. Un joueur qui écrit un contenu qui
+  « Vous ne pouvez pas modifier cette section. », et rien n'est écrit. L'absence de « Modifier » dit à une joueuse
+  qui écrit la section qu'elle ne peut pas la modifier, jamais pourquoi : aucun message ne nomme le bloc, et c'est
+  la seule trace d'un bloc que ce choix laisse (acceptée : elle ne livre aucun mot du secret). Un joueur qui écrit un contenu qui
   **contient** un bloc (il a tapé `:::mj` dans une section qui n'en avait pas) reçoit 400, « Un bloc MJ ne peut être
   écrit que par un MJ. », sous le champ, texte conservé ; il en va de même du texte d'un compte-rendu qu'il crée (E-6),
   dont la fenêtre montre ce message sous le champ comme ses autres refus. En mode Joueur, le MJ n'a pas « Modifier »
@@ -2228,7 +2232,7 @@ sont fermées dès maintenant. Maquette : `e09-fiche-importee.html` (« Port-Sel
 
   | | MJ | Joueur qui lit | Joueur qui écrit la section | MJ en mode Joueur |
   |---|---|---|---|---|
-  | Voit le bloc | oui, hachuré | non, rien | non, rien | non, rien |
+  | Voit le bloc | oui, hachuré | rien | rien | rien |
   | « Bloc MJ » dans la barre | oui | sans objet (pas d'édition) | **caché** | **caché** |
   | Écrit une section à bloc | oui | non | non (« Modifier » **caché**, 403) | par l'API oui ; à l'écran « Modifier » **caché** |
   | Écrit un contenu qui contient un bloc (section, texte d'un compte-rendu créé en E-6) | oui | non | non (**refusé** : 400, message sous le champ) | par l'API oui |
@@ -2246,6 +2250,8 @@ sont fermées dès maintenant. Maquette : `e09-fiche-importee.html` (« Port-Sel
   l'instant. » ; Antor y voit le bloc.
 - Étant donné un scénario ou une entrée de système dont le texte porte `:::mj … :::`, quand il se lit, alors
   les trois lignes se lisent comme du texte, sans cadre.
+- Étant donné un compte-rendu dont le texte porte un bloc, écrit par Antor, quand Léa le lit sur E-9, alors elle
+  n'en lit rien du bloc et n'a pas « Modifier » sur ce texte.
 - Étant donné Léa qui crée un compte-rendu dont le texte porte `:::mj … :::`, quand elle l'envoie, alors la
   fenêtre dit « Un bloc MJ ne peut être écrit que par un MJ. » et rien n'est créé.
 - Étant donné Léa qui écrit une section qu'elle peut écrire et qui tape `:::mj … :::` dans son texte, quand
