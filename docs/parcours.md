@@ -139,8 +139,10 @@ Forme de la skill `exigences` ; chaque besoin cite les parcours qui le réalisen
   la crée si la clé est inconnue dans l'univers, la met à jour si elle est connue, et ne change rien si
   rien n'a changé — fiche, sections, relations, alias, étiquettes, parent, pièces jointes, illustration,
   campagnes et scénarios ; rejouer le même import ne crée aucun doublon. *(P-10)*
-- **B-48** — Si une section importée a été **modifiée dans Kanevas** depuis son dernier import, alors
-  un nouvel import ne l'écrase pas et le dit dans le rapport. *(P-10)*
+- **B-48** — Si ce qu'un import a écrit a été **modifié dans Kanevas** depuis (par un humain ou son
+  assistant) — le titre, le type, le parent, les alias, les étiquettes d'une fiche ; le titre, le
+  contenu, l'audience d'une section —, alors un nouvel import n'écrase pas ce qui a été modifié,
+  écrit le reste, et le rapport du lot nomme chaque champ laissé. *(P-10, P-14)*
 - **B-49** — Un MJ voit sur E-18 les **lots d'import** de son univers : quand, par quel jeton, combien
   de fiches créées, mises à jour, inchangées, refusées, et pour chaque refus la clé d'origine et la
   raison. *(P-10)*
@@ -358,8 +360,10 @@ Il veut d'abord un essai jetable, puis la vraie base, sans doublon ni fuite.*
    « 3 créées, 498 inchangées » — aucun doublon.
 8. **Paramètres** (E-14), « Supprimer l'univers », il tape « Essai Kanka » : l'univers disparaît de
    l'accueil.
-9. Il refait 2 à 7 sur l'univers réel ; les jours suivants, Léa écrit dans une section importée ; un
-   import rejoué ne l'écrase pas et le lot le dit : « 1 section modifiée dans Kanevas, non écrasée ».
+9. Il refait 2 à 7 sur l'univers réel ; les jours suivants, Léa écrit dans une section importée et
+   Antor renomme « Port-Sel » en « Port-Sel-sur-Brume » (P-14) ; un import rejoué n'écrase ni l'un ni
+   l'autre et le lot le dit : « section « Notes » de personnage:lea-pj modifiée dans Kanevas : non
+   écrasée » ; « lieu:port-sel : titre modifié dans Kanevas : non écrasé ».
 10. **Accès par API** (E-18) : il révoque le jeton (P-11).
 *Moment fort* : le second lot « 0 créée, 501 inchangées » — rejouer est sans risque.
 *Échec* : jeton mal copié ou révoqué — le script reçoit 401 « Jeton invalide. », rien n'est écrit,

@@ -2165,7 +2165,7 @@ toast « Adresse copiée. »). Deux panneaux.
    les refus et avertissements, chacun avec la clé d'origine, ce qui est en cause et la raison
    (« section « Vérité » : 112 000 caractères, 100 000 au plus » ; « parent lieu:les-docks inconnu :
    fiche écrite sans parent » ; « section « Notes » modifiée dans Kanevas depuis le dernier import : non
-   écrasée »), en deux groupes titrés par leur compte (« 3 refusées », « 2 avertissements »), 200 au
+   écrasée » ; « titre modifié dans Kanevas : non écrasé »), en deux groupes titrés par leur compte (« 3 refusées », « 2 avertissements »), 200 au
    plus puis « … et 37 autres ». Un lot sans refus ni avertissement ne se déplie pas. Le jeton,
    l'adresse et les clés d'origine sont en chasse fixe (pile système `ui-monospace`, charte).
 
