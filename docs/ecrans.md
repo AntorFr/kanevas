@@ -776,7 +776,7 @@ puis trois panneaux (une campagne n'a ni description ni autre champ que son nom 
    récemment créé au plus ancien, chacun : titre, auteur (l'identifiant de l'auteur de la section ; un compte-rendu
    créé par le MJ n'a pas d'auteur, AD-61 : rien n'est affiché, pas même le nom du MJ), date de création, lien vers E-9. « Nouveau
    compte-rendu » ouvre une fenêtre : « Titre » (1 à 120 caractères), « Texte » (facultatif, 100 000
-   au plus ; 100 000 depuis `kanevas-import`, AD-106), « Publier » et « Annuler » ; « Publier » crée le compte-rendu et mène à E-9 (AD-61). Si la
+   au plus depuis `kanevas-import`, AD-106 ; 20 000 avant), « Publier » et « Annuler » ; « Publier » crée le compte-rendu et mène à E-9 (AD-61). Si la
    création échoue, la fenêtre reste ouverte, la saisie gardée, avec « L'action n'a pas abouti.
    Réessayez. » ; session expirée pendant la saisie : le texte est gardé comme sur E-9. Cent à la fois,
    puis « Charger la suite ».
@@ -2046,9 +2046,8 @@ pour l'emplacement du rendu (le contenu y devient mis en forme, la mise en page 
 - **Parcours** : lire, P-12 étape 2 (E-9, E-7, E-15, E-12) ; écrire et prévisualiser, P-14 étape 1 (E-9, E-7, E-15).
   Le texte d'un compte-rendu se lit rendu sur E-9 ; la fenêtre « Nouveau compte-rendu » de E-6 garde son
   champ simple dans cette tranche, avec le plafond de 100 000 (« Erreur : 100 000 caractères au plus. ») et
-  sans barre ni aperçu ; au-delà de 100 000 caractères le compteur de sa fenêtre passe en `--danger`,
-  « Erreur : 100 000 caractères au plus. » s'écrit sous le champ et « Publier » est désactivé, comme avec les
-  20 000 d'avant ; ses autres états (échec de « Publier », texte vide) sont ceux de E-6 et ne changent pas.
+  sans barre ni aperçu ; son compteur et son erreur « Erreur : 100 000 caractères au plus. » existent déjà (maquette `e06`) : seul le
+  seuil passe de 20 000 à 100 000 ; ses autres états sont ceux de E-6 et ne changent pas.
 - **Maquettes** : `e09-fiche-importee.html` (`#etat-edition`, `#etat-apercu`) montre la barre **complète**
   de l'epic (avec « Lien vers une fiche », « Fichier », la liste ouverte par `[[`) ; cette tranche n'en
   construit que « Gras », « Italique » et la bascule, les autres boutons viennent avec leurs tranches. La
@@ -2071,8 +2070,8 @@ pour l'emplacement du rendu (le contenu y devient mis en forme, la mise en page 
 - **États de l'aperçu** : en cours, « Aperçu en cours… » (le champ reste, bascule désactivée) ; texte
   vide, « Rien à prévisualiser. » ; échec ou hors ligne, « L'aperçu n'a pas abouti. Réessayez. » avec
   « Réessayer », et le champ intact (message aussi d'une session expirée ou d'un refus du serveur : le texte saisi n'est pas perdu) ; plus de 100 000 caractères, pas d'appel, « Erreur : 100 000
-  caractères au plus. » sous le champ. Le compteur passe en `--danger` au-delà de 100 000 et
-  « Enregistrer » est désactivé, comme avec les 20 000 d'avant.
+  caractères au plus. » sous le champ. Au-delà de 100 000, le comportement de E-9 d'aujourd'hui
+  (§ E-9, « contenu long ») tient avec le nouveau seuil.
 - **Qui voit quoi** : la lecture ne montre que le rendu. Le champ d'édition reçoit la **source** :
   elle n'est envoyée qu'à qui peut écrire la section (le scénario, au MJ qui le lit). Un joueur, ou le MJ
   en mode Joueur, ne la reçoit pas ; la réponse de lecture de Léa ne contient pas le Markdown.
