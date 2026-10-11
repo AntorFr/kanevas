@@ -156,8 +156,9 @@ Forme de la skill `exigences` ; chaque besoin cite les parcours qui le réalisen
   campagnes et scénarios ; rejouer le même import ne crée aucun doublon. *(P-10)*
 - **B-48** — Si ce qu'un import a écrit a été **modifié dans Kanevas** depuis (par un humain ou son
   assistant) — le titre, le type, le sous-type, le parent, les alias, les étiquettes d'une fiche ; le titre, le
-  contenu, l'audience d'une section ; le nom et le statut d'une campagne ; le titre et le contenu
-  d'un scénario —, alors un nouvel import n'écrase pas ce qui a été modifié,
+  contenu, l'audience, les fichiers joints d'une section ; l'illustration d'une fiche ; le nom et le
+  statut d'une campagne ; le titre et le contenu d'un scénario ; le nom et la **visibilité** d'un
+  fichier de la médiathèque —, alors un nouvel import n'écrase pas ce qui a été modifié,
   écrit le reste, et le rapport du lot nomme chaque champ laissé. *(P-10, P-14)*
 - **B-49** — Un MJ voit sur E-18 les **lots d'import** de son univers : quand, par quel jeton, combien
   de fiches créées, mises à jour, inchangées, refusées, et pour chaque refus la clé d'origine et la
