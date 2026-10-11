@@ -997,6 +997,7 @@ body.lecture [data-mj] { display: none !important; }
   function appliquer(t, choix) {
     t.force = choix === 'suit' ? null : choix;
     rendreUnivers(); rendreLore();
+    toast(t.nom + (choix === 'suit' ? ' : suit le système.' : choix === 'on' ? ' : activé dans Lame d’Ébène.' : ' : désactivé dans Lame d’Ébène.'));
     var b = $('#types-univers li[data-cle="' + t.cle + '"] [aria-checked="true"]'); if (b) b.focus();
   }
   function choisir(cle, choix) {
