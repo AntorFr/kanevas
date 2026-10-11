@@ -2413,6 +2413,60 @@ l'univers » (`--danger`) ne s'active que si le nom tapé est exact (casse compr
   « Supprimer l'univers » reste inactif ; avec le nom exact, l'univers est supprimé, et Léa qui en
   ouvre une adresse voit « Page introuvable. ».
 
+#### Les types — ce que `kanevas-import-types` construit
+
+Le panneau « Supprimer l'univers » de E-14 n'est pas de cette tranche (il est à `kanevas-import-tenir`) ;
+celle-ci construit le panneau et l'onglet « Types de fiche » ci-dessus, et ce qui suit.
+La liste des types (identifiant, adresse, libellés, icône) est celle du serveur (AD-113) : les écrans
+la lisent par `GET /api/univers/:id/types`, ils n'en tiennent aucune copie. Icônes (Lucide) :
+Personnage `users-round`, Lieu `map-pin`, Faction `shield`, Objet `gem`, Événement `hourglass`, Quête
+`scroll-text`, Créature `paw-print`, Race `dna`, Vaisseau `ship`, Savoir `lightbulb`, Récit `book-open`,
+Règle `scale`, Note `sticky-note` ; adresses de E-8 : `/univers/:id/fiches/<pluriel>` (`creatures`,
+`races`, `vaisseaux`, `savoirs`, `recits`, `regles`, `notes`).
+
+**Barre latérale.** La section « Lore » se construit de la réponse : les types activés, dans l'ordre de la
+liste. Pendant le chargement, trois lignes de squelette sous le titre « Lore » ; en erreur, la ligne
+« Impossible de charger les types. » et « Réessayer » à sa place — le reste de la barre ne bouge pas.
+Après un réglage (E-14, E-15) sur un autre onglet, la barre se met à jour au retour sur l'onglet ou au
+prochain chargement, jamais au milieu d'une saisie.
+
+**E-8 — création et sous-type.** La liste « Type » de la fenêtre de création ne propose que les types
+activés ; le champ « Sous-type » (facultatif, 60 caractères au plus, « Erreur : 60 caractères au plus. »)
+propose, en tapant, les sous-types déjà employés pour le type choisi (titre « Sous-types de lieu déjà
+employés ») ; changer le type dans la fenêtre vide le champ. Si le type vient d'être désactivé par un
+autre MJ, « Créer » répond « Ce type est désactivé dans cet univers. » dans la fenêtre, rien n'est créé. Le
+filtre « Sous-type » n'apparaît que si au moins une fiche lisible du type en porte un ; pendant son
+chargement il est désactivé (« Sous-type : … ») ; s'il échoue, « Sous-types indisponibles. » à sa place
+et la grille reste utilisable. Un sous-type filtré qui n'a plus de fiche (renommée entre-temps) rend
+« Aucune fiche de ce sous-type. » avec « Voir tous les lieux ».
+
+**E-9 — sous-type en place.** Le MJ (hors mode Joueur) clique le sous-type du badge : champ, liste de
+complétion, Entrée enregistre, Échap annule (maquette `#etat-sous-type`). Enregistrement en cours : champ
+désactivé, « Enregistrement… ». Échec : « L'action n'a pas abouti. Réessayez. » sous le champ, la valeur
+tapée est gardée. Un champ vidé retire le sous-type (« Sous-type retiré. »). Un joueur lit le sous-type en
+simple texte ; une fiche sans sous-type ne montre rien à un joueur.
+
+**E-9 — « Changer le type… »** (MJ, hors mode Joueur ; absent pour un compte-rendu) : maquette
+`e09-fiche-importee.html#etat-changer-type`. Boîte « Changer le type de « Port-Sel » » : une
+liste à choix unique des types, les types activés d'abord, puis le titre « Autres types » avec les
+désactivés (« désactivé » en `--texte-3`), le type courant coché et indiqué « (actuel) » ; choisir
+« Personnage » ouvre le choix « PJ / PNJ » (PNJ par défaut) ; le champ « Sous-type » (vide d'office pour un
+autre type, avec les sous-types déjà employés pour le type choisi). Si la fiche a un sous-type, la boîte dit :
+« Le sous-type « Port » sera retiré. » tant que le champ n'est pas rempli. Boutons « Changer le
+type » (désactivé tant que le type reste l'actuel) et « Annuler ». Après : la fiche se recharge sous son
+nouveau type, toast « Type changé : Note → Savoir. », le fil d'Ariane et la barre suivent ; ses sections,
+relations, places sur une carte et propositions sont intactes.
+Échecs : « Le type n'a pas changé. Réessayez. » dans la boîte (elle reste ouverte) ; un MJ qui n'a plus de
+rôle : « Vous ne pouvez plus modifier cette fiche. » ; connexion perdue : bandeau, bouton désactivé.
+
+*Critères de la tranche* (les critères d'écran ci-dessus restent les siens).
+- Étant donné « Les Cristaux d'Ombre » (Savoir · Ressource), quand Antor la passe en Note, alors elle est
+  dans « Notes » sans sous-type, et la boîte l'avait annoncé.
+- Étant donné « Lame d'Ébène » où « Note » est désactivé, quand Antor ouvre « Changer le type… » d'une
+  fiche, alors « Note » est sous « Autres types » et le choisir fonctionne.
+- Étant donné un type désactivé, quand Antor ouvre l'adresse de sa liste, alors elle s'ouvre avec « Ce type
+  est désactivé dans cet univers. » et sans bouton de création.
+
 ### E-7, E-13, E-5
 
 - **E-7** et les entrées de **E-15** : l'éditeur et le rendu Markdown ci-dessus, avec ce que permet
