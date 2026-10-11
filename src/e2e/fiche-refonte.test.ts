@@ -10,8 +10,8 @@
 //   matrice   : Joueur (Léa) : aucune pastille/filet/⋯, « Modifier » seulement sur ce qu'elle écrit
 //   toasts    : un toast par action réussie, texte exact, ne prend pas le focus, part seul après 4 s,
 //               « Fermer » le retire, trois au plus ; un échec n'en donne pas
-//   édition   : compteur « n / 20 000 », aide ; Échap abandonne ; Ctrl+Entrée enregistre ;
-//               > 20 000 et connexion perdue : Ctrl+Entrée ne part pas ; périmée : message
+//   édition   : compteur « n / 100 000 », aide ; Échap abandonne ; Ctrl+Entrée enregistre ;
+//               > 100 000 et connexion perdue : Ctrl+Entrée ne part pas ; périmée : message
 //   « Modifier » : au survol/focus ; toujours là sans survol (hover: none)
 //   boîte d'audience : titre « Qui voit « … » », note, Échap ferme et rend le focus à la pastille
 import assert from 'node:assert/strict';
@@ -331,14 +331,14 @@ describe('E-9 refaite : édition', { skip: skipBrowser }, () => {
     return s;
   }
 
-  test('sous le champ : le compteur « n / 20 000 » suit la saisie et l’aide « Échap annuler · Ctrl ↵ enregistrer »', async () => {
+  test('sous le champ : le compteur « n / 100 000 » suit la saisie et l’aide « Échap annuler · Ctrl ↵ enregistrer »', async () => {
     await ouvrir(antor);
     const s = await editer(antor);
     const t = (await s.innerText()).replace(/\s+/g, ' ');
-    assert.ok(/0 \/ 20\s000/.test(t.replace(/ /g, ' ')), t);
+    assert.ok(/0 \/ 100\s000/.test(t.replace(/ /g, ' ')), t);
     assert.ok(t.includes('Échap annuler · Ctrl ↵ enregistrer'), t);
     await s.getByRole('textbox').fill('abcde');
-    assert.ok(/5 \/ 20\s000/.test((await s.innerText()).replace(/ /g, ' ')));
+    assert.ok(/5 \/ 100\s000/.test((await s.innerText()).replace(/ /g, ' ')));
     await antor.keyboard.press('Escape');
   });
 
@@ -366,17 +366,17 @@ describe('E-9 refaite : édition', { skip: skipBrowser }, () => {
     await section(antor, 'Rumeurs').getByText('On dit qu’Aldric boite.').waitFor();
   });
 
-  test('au-delà de 20 000 caractères, Ctrl+Entrée ne part pas (comme le bouton) et le compteur le dit', async () => {
+  test('au-delà de 100 000 caractères, Ctrl+Entrée ne part pas (comme le bouton) et le compteur le dit', async () => {
     await ouvrir(antor);
     const s = await editer(antor);
     let puts = 0;
     antor.on('request', (r: Any) => r.method() === 'PUT' && puts++);
-    await s.getByRole('textbox').fill('x'.repeat(20001));
+    await s.getByRole('textbox').fill('x'.repeat(100001));
     await antor.keyboard.press('Control+Enter');
     await antor.waitForTimeout(500);
     assert.equal(puts, 0, 'no request left');
-    assert.ok(await s.getByText(/20 000 caractères au plus\./).first().isVisible());
-    await s.getByRole('textbox').fill('y'.repeat(20000));
+    assert.ok(await s.getByText(/100 000 caractères au plus\./).first().isVisible());
+    await s.getByRole('textbox').fill('y'.repeat(100000));
     await antor.keyboard.press('Control+Enter');
     await s.getByRole('textbox').waitFor({ state: 'detached' });
     assert.equal(puts, 1);

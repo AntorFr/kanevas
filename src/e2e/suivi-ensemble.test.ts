@@ -330,7 +330,7 @@ describe('kanevas-suivi, du besoin', { skip: skipBrowser }, () => {
   });
 
   // ---------- B-16, B-17 bords et exclusions ----------
-  test('B-16 bords : titre vide, 121 refusés ; contenu de 20 001 refusé ; écriture périmée gardée', async () => {
+  test('B-16 bords : titre vide, 121 refusés ; contenu de 100 001 refusé ; écriture périmée gardée', async () => {
     const { antor, idUnivers } = await table('Univers B16');
     const p = antor.page;
     await allerCampagnes(p, idUnivers);
@@ -347,16 +347,16 @@ describe('kanevas-suivi, du besoin', { skip: skipBrowser }, () => {
     await p.getByRole('button', { name: rxExact('Créer le scénario') }).click();
     await p.getByRole('heading', { level: 1 }).filter({ hasText: 't'.repeat(120) }).waitFor();
     await attendre(p);
-    // 20 001 characters refused.
+    // 100 001 characters refused.
     await p.getByRole('button', { name: rxExact('Modifier') }).click();
-    await p.getByLabel('Contenu').fill('c'.repeat(20001));
+    await p.getByLabel('Contenu').fill('c'.repeat(100001));
     await p.getByRole('button', { name: rxExact('Enregistrer') }).click();
-    await voit(p, 'Erreur : 20 000 caractères au plus.');
-    // 20 000 accepted.
-    await p.getByLabel('Contenu').fill('c'.repeat(20000));
+    await voit(p, 'Erreur : 100 000 caractères au plus.');
+    // 100 000 accepted.
+    await p.getByLabel('Contenu').fill('c'.repeat(100000));
     await p.getByRole('button', { name: rxExact('Enregistrer') }).click();
     await attendre(p);
-    assert.ok((await texte(p)).includes('c'.repeat(20000)));
+    assert.ok((await texte(p)).includes('c'.repeat(100000)));
     // Stale write: a second tab of Antor opened before the first write.
     const urlScenario = p.url();
     const p2 = await antor.ctx.newPage();
@@ -551,7 +551,7 @@ describe('kanevas-suivi, du besoin', { skip: skipBrowser }, () => {
     assert.ok(t.indexOf('Même séance B') < t.indexOf('Même séance A'));
   });
 
-  test('B-19 bords : titre vide ou 121, texte de 20 001 refusés, fenêtre ouverte et saisie gardée ; Annuler ne crée rien', async () => {
+  test('B-19 bords : titre vide ou 121, texte de 100 001 refusés, fenêtre ouverte et saisie gardée ; Annuler ne crée rien', async () => {
     const { antor, idUnivers } = await table('Univers B19d');
     const p = antor.page;
     await allerCampagnes(p, idUnivers);
@@ -565,9 +565,9 @@ describe('kanevas-suivi, du besoin', { skip: skipBrowser }, () => {
     await f.getByRole('button', { name: rxExact('Publier') }).click();
     await voit(p, 'Erreur : 120 caractères au plus.');
     await f.getByLabel('Titre').fill('Valide');
-    await f.getByLabel('Texte').fill('x'.repeat(20001));
+    await f.getByLabel('Texte').fill('x'.repeat(100001));
     await f.getByRole('button', { name: rxExact('Publier') }).click();
-    await voit(p, 'Erreur : 20 000 caractères au plus.');
+    await voit(p, 'Erreur : 100 000 caractères au plus.');
     assert.equal(await f.getByLabel('Titre').inputValue(), 'Valide');
     await f.getByRole('button', { name: rxExact('Annuler') }).click();
     await attendre(p);

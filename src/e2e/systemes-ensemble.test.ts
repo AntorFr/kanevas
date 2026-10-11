@@ -329,7 +329,7 @@ describe('B-14 le référentiel commun', opts, () => {
     await voit(antor, 'Règle homonyme.');
   });
 
-  test('nom vide : « Erreur : le nom est obligatoire. » ; 121 caractères : « Erreur : 120 caractères au plus. » ; contenu de 20 001 : « Erreur : 20 000 caractères au plus. »', opts, async () => {
+  test('nom vide : « Erreur : le nom est obligatoire. » ; 121 caractères : « Erreur : 120 caractères au plus. » ; contenu de 100 001 : « Erreur : 100 000 caractères au plus. »', opts, async () => {
     await ongletVers(antor, 'Objets');
     await antor.getByRole('button', { name: rxExact('Ajouter un objet') }).click();
     await antor.getByRole('button', { name: rxExact('Ajouter') }).click();
@@ -338,10 +338,10 @@ describe('B-14 le référentiel commun', opts, () => {
     await antor.getByRole('button', { name: rxExact('Ajouter') }).click();
     await voit(antor, 'Erreur : 120 caractères au plus.');
     await antor.getByLabel(NOM).fill('Clé de brume');
-    await antor.getByLabel('Contenu').fill('c'.repeat(20001));
+    await antor.getByLabel('Contenu').fill('c'.repeat(100001));
     await antor.getByRole('button', { name: rxExact('Ajouter') }).click();
-    await voit(antor, 'Erreur : 20 000 caractères au plus.');
-    await antor.getByLabel('Contenu').fill('c'.repeat(20000));
+    await voit(antor, 'Erreur : 100 000 caractères au plus.');
+    await antor.getByLabel('Contenu').fill('c'.repeat(100000));
     await antor.getByRole('button', { name: rxExact('Ajouter') }).click();
     await attendre(antor);
     await voit(antor, 'Clé de brume');

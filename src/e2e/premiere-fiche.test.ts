@@ -328,7 +328,7 @@ test('B-8 monter / descendre réordonne et l\'ordre survit au rechargement ; « 
   assert.deepEqual(await titresSections(antor), ['Apparence', 'Vérité — MJ seul']);
 });
 
-test('B-8 écrire : le texte s\'affiche en texte brut (le HTML n\'est pas interprété), 20 000 caractères passent, 20 001 sont refusés', opts, async () => {
+test('B-8 écrire : le texte s\'affiche en texte brut (le HTML n\'est pas interprété), 100 000 caractères passent, 100 001 sont refusés', opts, async () => {
   const antor = await compte('antor');
   await antor.goto(urlFiche);
   await section(antor, 'Apparence').waitFor();
@@ -337,14 +337,14 @@ test('B-8 écrire : le texte s\'affiche en texte brut (le HTML n\'est pas interp
   assert.equal(await section(antor, 'Apparence').locator('b').count(), 0);
   const s = section(antor, 'Apparence');
   await s.getByRole('button', { name: rxExact('Modifier') }).click();
-  await s.getByRole('textbox').fill('x'.repeat(20001));
+  await s.getByRole('textbox').fill('x'.repeat(100001));
   await s.getByRole('button', { name: rxExact('Enregistrer') }).click();
-  await voit(antor, 'Erreur : 20 000 caractères au plus.');
-  await s.getByRole('textbox').fill('y'.repeat(20000));
+  await voit(antor, 'Erreur : 100 000 caractères au plus.');
+  await s.getByRole('textbox').fill('y'.repeat(100000));
   await s.getByRole('button', { name: rxExact('Enregistrer') }).click();
-  const plein = s.getByText(/^y{20000}$/);
+  const plein = s.getByText(/^y{100000}$/);
   await plein.waitFor();
-  assert.equal(((await plein.textContent()) ?? '').length, 20000);
+  assert.equal(((await plein.textContent()) ?? '').length, 100000);
   await ecrireSection(antor, 'Apparence', 'Grand, barbe grise.');
   await voit(antor, 'Grand, barbe grise.');
   await ecrireSection(antor, 'Vérité', 'Aldric est le traître.');

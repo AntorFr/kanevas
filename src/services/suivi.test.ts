@@ -44,7 +44,7 @@ test('migration 0003 : base à jour de 0002, tables créées, seconde exécution
   db.exec(readFileSync(`${dir}0001-premiere-fiche.sql`, 'utf8'));
   db.exec('CREATE TABLE migrations (numero INTEGER PRIMARY KEY, nom TEXT NOT NULL, applique_le TEXT NOT NULL)');
   db.exec("INSERT INTO migrations VALUES (1,'0001-premiere-fiche.sql','x')");
-  assert.deepEqual(migrate(db), [2, 3, 4, 5, 6, 7, 8]);
+  assert.deepEqual(migrate(db), [2, 3, 4, 5, 6, 7, 8, 9]);
   for (const t of ['campagnes', 'scenarios', 'taches_preparation']) assert.equal(n(db, t), 0);
   assert.deepEqual(migrate(db), []);
 });
@@ -54,7 +54,7 @@ test('contraintes SQL : statut, catégorie, cohérence faite / faite_le', () => 
   assert.throws(() => db.prepare("INSERT INTO campagnes (univers_id, nom, statut, cree_le) VALUES (?, 'x', 'zzz', 'x')").run(u1.id));
   assert.throws(() => db.prepare("INSERT INTO taches_preparation (campagne_id, categorie, libelle, cree_le) VALUES (?, 'zzz', 'x', 'x')").run(c1.id));
   assert.throws(() => db.prepare("INSERT INTO taches_preparation (campagne_id, categorie, libelle, faite, cree_le) VALUES (?, 'pnj', 'x', 1, 'x')").run(c1.id));
-  assert.throws(() => db.prepare("INSERT INTO scenarios (campagne_id, titre, contenu, cree_le, modifie_le) VALUES (?, 'x', ?, 'x', 'x')").run(c1.id, 'a'.repeat(20001)));
+  assert.throws(() => db.prepare("INSERT INTO scenarios (campagne_id, titre, contenu, cree_le, modifie_le) VALUES (?, 'x', ?, 'x', 'x')").run(c1.id, 'a'.repeat(100001)));
 });
 
 test('campagne : En préparation, nom 1–80, plusieurs Active sans toucher aux autres', () => {
@@ -99,11 +99,11 @@ test('scénarios : bornes titre/contenu et version', () => {
   const { db, marc, c1 } = monde();
   assert.equal(code(() => creerScenario(db, marc.id, c1.id, { titre: '' })), 'invalide');
   assert.equal(code(() => creerScenario(db, marc.id, c1.id, { titre: 'x'.repeat(121) })), 'invalide');
-  assert.equal(code(() => creerScenario(db, marc.id, c1.id, { titre: 'x', contenu: 'a'.repeat(20001) })), 'invalide');
+  assert.equal(code(() => creerScenario(db, marc.id, c1.id, { titre: 'x', contenu: 'a'.repeat(100001) })), 'invalide');
   assert.equal(n(db, 'scenarios'), 0);
-  const s = creerScenario(db, marc.id, c1.id, { titre: 'x'.repeat(120), contenu: 'a'.repeat(20000) });
+  const s = creerScenario(db, marc.id, c1.id, { titre: 'x'.repeat(120), contenu: 'a'.repeat(100000) });
   assert.equal(code(() => ecrireScenario(db, marc.id, s.id, { titre: '', contenu: 'b' }, 1)), 'invalide');
-  assert.equal(code(() => ecrireScenario(db, marc.id, s.id, { titre: 't', contenu: 'a'.repeat(20001) }, 1)), 'invalide');
+  assert.equal(code(() => ecrireScenario(db, marc.id, s.id, { titre: 't', contenu: 'a'.repeat(100001) }, 1)), 'invalide');
   const v2 = ecrireScenario(db, marc.id, s.id, { titre: 't', contenu: 'b' }, 1);
   assert.equal(v2.version, 2);
   // stale version: conflict, nothing written
@@ -176,7 +176,7 @@ test('compte-rendu : campagne d’un autre univers ou inconnue, titre invalide �
   }
   assert.notEqual(code(() => creerCompteRendu(db, marc.id, u2.id, c1.id, { titre: 'x' })), undefined);
   assert.equal(code(() => creerCompteRendu(db, lea.id, u1.id, c1.id, { titre: '' })), 'invalide');
-  assert.equal(code(() => creerCompteRendu(db, lea.id, u1.id, c1.id, { titre: 'x', texte: 'a'.repeat(20001) })), 'invalide');
+  assert.equal(code(() => creerCompteRendu(db, lea.id, u1.id, c1.id, { titre: 'x', texte: 'a'.repeat(100001) })), 'invalide');
   assert.equal(n(db, 'fiches'), 0);
   assert.equal(n(db, 'sections'), 0);
   // second write fails → first rolled back
