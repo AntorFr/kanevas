@@ -986,8 +986,8 @@ section, même vide.
   jamais existé.
 - Étant donné Léa auteur de « Notes de la table » avec écriture, quand elle choisit un portrait, alors
   il s'envoie sans autre geste et apparaît en vignette ; Teo, Joueur de l'univers (ajouté d'abord par
-  Antor), ne le voit pas tant que « Les joueurs la lisent » est faux, puis le voit et ne peut ni le
-  joindre ni le retirer.
+  Antor), ne le voit pas : la visibilité d'un fichier est fixée à son ajout (AD-111), ouvrir ensuite la
+  section aux joueurs ne la change pas ; il ne peut ni le joindre ni le retirer.
 - Étant donné Antor qui joint le plan d'un lieu en PDF, alors la ligne propose « Télécharger » et
   le fichier se télécharge sous son nom d'origine ; un fichier « image.svg » n'est jamais affiché dans la
   page.

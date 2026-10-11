@@ -513,8 +513,8 @@ Recommencez. », l'ancien jeton reste.
 ### P-16 — Ranger et partager les fichiers (Antor, MJ, puis Léa, Joueuse)
 *Après l'import, la médiathèque de « Lame d'Ébène » porte 1 100 images et 40 documents, dont ceux
 qu'aucune fiche n'utilisait dans Kanka.*
-1. **Médiathèque** (E-19), depuis la barre : Antor filtre « Images » et « Non utilisés », retrouve
-   « carte-des-sphères.png », la renomme « Carte des Sphères » ; il passe à « Documents » : « Règles
+1. **Médiathèque** (E-19), depuis la barre : Antor filtre « Images » puis cherche par le nom,
+   retrouve « carte-des-sphères.png » (utilisée dans trois fiches), la renomme « Carte des Sphères » ; il passe à « Documents » : « Règles
    de la Guilde.pdf » (PDF, 2,4 Mo).
 2. Il ouvre « plan-du-repaire.png » (« Visible des joueurs », insérée dans « Histoire » des « Docks »
    et jointe à « Description » de « Port-Sel », deux sections lues des joueurs) et la passe à
@@ -531,8 +531,8 @@ qu'aucune fiche n'utilisait dans Kanka.*
    fichiers joints de « Description » ; sa
    **Médiathèque** (E-19) ne lui montre que les fichiers visibles des joueurs, et pour « Carte des
    Sphères » les seules fiches qu'elle lit.
-5. Antor supprime un doublon d'image : la confirmation liste « Port-Sel (illustration) » et « Maître
-   Aldric — « Apparence » (jointe) » ; il remplace d'abord l'illustration, puis supprime.
+5. Antor supprime un doublon d'image : la confirmation liste « Val-Fortin — « Description » »,
+   « Maître Aldric — « Apparence » (jointe) » et « Port-Sel (illustration) » ; il remplace d'abord l'illustration, puis supprime.
 *Moment fort* : un même fichier, utilisé dans trois fiches, change de droits en un geste, et Kanevas
 dit exactement où les joueurs le perdent.
 *Échec* : un fichier vide — « « notes.txt » est vide. », rien n'est ajouté ; un envoi coupé —
