@@ -114,10 +114,13 @@ Recette de la mise à jour du monde en bouchon (le semis ne contient ni campagne
 Playwright. Le build n'est lancé que si `dist/public/index.html` manque : après un changement dans
 `src/` ou `frontend/`, relancer `npm run build` avant `npm test`, sinon ces tests jouent l'ancien code.
 Les textes de `docs/ecrans.md` sont écrits avec l'apostrophe droite ; l'interface porte l'apostrophe typographique (’).
-Playwright n'est pas une dépendance du dépôt : il doit être installé globalement
-(`/usr/lib/node_modules` ou `/usr/local/lib/node_modules`) avec un Chromium, ce que ne fait ni
-`node:20-bookworm-slim` ni la CI GitHub. Pour savoir s'il est vu : `ls /usr/lib/node_modules/playwright`. Là où il manque, ces tests sont **ignorés avec un message**,
-sans échec ; les autres tests (services, routes HTTP) tournent partout. Compter une dizaine de minutes même sans les e2e, une vingtaine avec Playwright (silencieuse jusqu'à la fin ; un message « ignoré » en tête de sortie dit que Playwright n'est pas vu). La CI ne joue donc pas les e2e.
+Playwright n'est pas une dépendance du dépôt (`package.json` ne le porte pas) : `src/e2e/harnais.test.ts` le cherche
+dans le répertoire courant, puis dans `/usr/lib/node_modules` et `/usr/local/lib/node_modules`, et il lui faut un Chromium.
+La CI l'installe sans l'enregistrer (`npm install --no-save playwright@1.63.0 && npx playwright install --with-deps chromium`),
+donc elle joue les e2e (environ 8 min). Pour savoir s'il est vu chez soi : `node -e "require('playwright')"` depuis la racine du dépôt.
+Là où il manque, ces tests sont **ignorés avec un message** en tête de sortie, sans échec ; les autres tests (services, routes HTTP)
+tournent partout. Compter une dizaine de minutes sans les e2e, une vingtaine avec, sur un pod chargé (silencieuse jusqu'à la fin).
+Sous forte charge, un e2e peut dépasser son délai de 8 s : le relancer seul avant d'y voir un défaut.
 Recette de l'administration en bouchon (le monde de démonstration est semé : « Lame d'Ébène », « Les Landes grises », « Les Cendres de Vaëlis », cinq comptes déjà connus) : se connecter en « Admin », ouvrir `/administration`, choisir « Lame d'Ébène » (où Admin n'a aucun rôle) et ajouter « mira ». Un compte jamais connecté (« nadia ») est refusé. Les e2e `src/e2e/administration*.test.ts` pilotent E-5.
 Recette des cartes en bouchon (le semis ne contient aucune carte) : en « antor », ouvrir « Cartes » de « Lame d'Ébène », créer « La ville de Brume » (carte illustrée, avec une image en fond), y ajouter une fiche, puis « Rendre visible » ; se reconnecter en « lea » : la carte est dans sa liste, avec les seuls tokens des fiches qu'elle lit. Un graphe se crée de même (forme « Graphe »). Le mode Joueur d'Antor montre ce que voit Léa.
 

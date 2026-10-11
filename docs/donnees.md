@@ -1,8 +1,9 @@
 # Kanevas — données
 
 > Doc du produit (voir `docs/parcours.md`, `docs/ecrans.md`). Toutes les entités du produit,
-> leurs relations et qui lit ou écrit quoi. **Une tranche ajoute des attributs, jamais une
-> entité** : une entité de plus est une question pour le cadrage.
+> leurs relations et qui lit ou écrit quoi. **Une tranche ajoute des attributs ; une entité
+> de plus est une décision de cadrage**, prise avant la tranche (c'est ainsi que sont venues les cartes, les propositions et
+> les pièces jointes) et jamais en cours de route.
 
 Un seul fichier SQLite sur le volume (`/data/kanevas.db`, AD-5) ; clés étrangères actives, WAL,
 une seule connexion d'écriture. Les octets des pièces jointes vont sur le disque du même volume
