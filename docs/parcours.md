@@ -361,8 +361,8 @@ illustration répond comme une adresse inconnue.
    (E-12) d'y ajouter un paragraphe.
 *Échec* : il demande d'écrire dans une section qu'il lit sans l'écrire : « Vous ne pouvez pas modifier
 cette section. », rien n'est écrit.
-*Échec* (dépôt) : fichier vide, section déjà à 50 pièces jointes (100 fichiers joints depuis
-`kanevas-import`, AD-111), envoi interrompu ou droit
+*Échec* (dépôt) : fichier vide, section déjà à son maximum de fichiers joints (50 avant
+`kanevas-import`, 100 depuis, AD-111), envoi interrompu ou droit
 d'écriture retiré — le fichier n'est pas attaché, la raison est dite sur la section (E-9), rien n'est
 laissé à moitié.
 
@@ -513,8 +513,8 @@ Recommencez. », l'ancien jeton reste.
 ### P-16 — Ranger et partager les fichiers (Antor, MJ, puis Léa, Joueuse)
 *Après l'import, la médiathèque de « Lame d'Ébène » porte 1 100 images et 40 documents, dont ceux
 qu'aucune fiche n'utilisait dans Kanka.*
-1. **Médiathèque** (E-19), depuis la barre : Antor filtre « Images » et « Non utilisés », retrouve
-   « carte-des-sphères.png », la renomme « Carte des Sphères » ; il passe à « Documents » : « Règles
+1. **Médiathèque** (E-19), depuis la barre : Antor filtre « Images » puis cherche par le nom,
+   retrouve « carte-des-sphères.png » (utilisée dans trois fiches), la renomme « Carte des Sphères » ; il passe à « Documents » : « Règles
    de la Guilde.pdf » (PDF, 2,4 Mo).
 2. Il ouvre « plan-du-repaire.png » (« Visible des joueurs », insérée dans « Histoire » des « Docks »
    et jointe à « Description » de « Port-Sel », deux sections lues des joueurs) et la passe à
@@ -526,12 +526,13 @@ qu'aucune fiche n'utilisait dans Kanka.*
    déplace dans un bloc MJ, l'avertissement disparaît. Puis « Fichier » ▸ « Ajouter depuis l'appareil »
    « tarifs-du-port.pdf » : le document entre dans la médiathèque, visible des joueurs, et se joint à la
    section ; il enregistre.
-4. Léa ouvre « Port-Sel » : à la place de l'image du plan du repaire, dans « Les Docks », elle lit
-   « Image réservée au MJ. » ; elle télécharge « tarifs-du-port.pdf » depuis les pièces jointes ; sa
+4. Léa ouvre « Les Docks » : à la place de l'image du plan du repaire, dans « Histoire », elle lit
+   « Image réservée au MJ. » ; elle ouvre « Port-Sel » et télécharge « tarifs-du-port.pdf » depuis les
+   fichiers joints de « Description » ; sa
    **Médiathèque** (E-19) ne lui montre que les fichiers visibles des joueurs, et pour « Carte des
    Sphères » les seules fiches qu'elle lit.
-5. Antor supprime un doublon d'image : la confirmation liste « Port-Sel (illustration) » et « Maître
-   Aldric — « Apparence » (jointe) » ; il remplace d'abord l'illustration, puis supprime.
+5. Antor supprime un doublon d'image : la confirmation liste « Val-Fortin — « Description » »,
+   « Maître Aldric — « Apparence » (jointe) » et « Port-Sel (illustration) » ; il remplace d'abord l'illustration, puis supprime.
 *Moment fort* : un même fichier, utilisé dans trois fiches, change de droits en un geste, et Kanevas
 dit exactement où les joueurs le perdent.
 *Échec* : un fichier vide — « « notes.txt » est vide. », rien n'est ajouté ; un envoi coupé —
