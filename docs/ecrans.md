@@ -218,7 +218,7 @@ bouton « Menu ».
 
 | État | Ce qu'on voit |
 |---|---|
-| vide | sans objet : l'univers courant est toujours dans le sélecteur ; hors univers, « Mes univers » et « Systèmes de jeu » |
+| vide | sans objet pour le sélecteur : l'univers courant y est toujours ; la section « Lore » peut être vide si tous ses types sont désactivés (texte plus bas, « Barre latérale ») ; hors univers, « Mes univers » et « Systèmes de jeu » |
 | chargement | le sélecteur affiche « … » ; les items fixes sont déjà là |
 | erreur | le sélecteur affiche « Univers », sans liste (le nom n'est connu que de la liste qui n'a pas chargé) ; « Impossible de charger vos univers. » dans la liste dépliée, avec « Réessayer » |
 | connexion perdue | le bandeau ; navigation inchangée |
@@ -523,7 +523,7 @@ Trois panneaux, dans cet ordre.
 Atteint depuis E-14 (« Ouvrir le système ») et depuis E-3 (bloc « Système de jeu », ci-dessous) —
 et depuis E-16 ; son adresse est désormais `/systemes/:sid` (*remplacé par le § de
 `kanevas-illustrations`*). Le nom du système en titre, « Référentiel commun · utilisé par N
-univers » ; trois onglets, **Règles**, **Créatures**, **Objets** (Créatures par défaut) ; sous
+univers » ; quatre onglets, **Règles**, **Créatures**, **Objets** (Créatures par défaut) et **Types de fiche** (kanevas-import-types, décrit plus bas) ; sous
 l'onglet, la liste des entrées du type par nom (ordre alphabétique sans casse), cent à la fois, puis
 « Charger la suite ». Chaque ligne (une **entrée** : une règle, une créature ou un objet ; `gabarit` dans les données) : le nom et la première ligne du contenu (tronquée). Un clic ouvre
 l'entrée **sur place** (le nom, le contenu en texte brut, AD-58).
@@ -2401,7 +2401,7 @@ l'univers » (`--danger`) ne s'active que si le nom tapé est exact (casse compr
 | erreur | un changement qui échoue : « L'action n'a pas abouti. Réessayez. » au-dessus du panneau, la bascule revient ; suppression qui échoue : le message dans la boîte, l'univers reste | « Réessayer » |
 | connexion perdue | le bandeau ; bascules, interrupteurs, « Supprimer l'univers » désactivés | lire |
 | refus | E-14 : Joueur — page introuvable (inchangé) ; E-15 : Joueur — lecture seule ; un MJ qui n'a plus de rôle : « Vous ne pouvez plus modifier ces paramètres. » | — |
-| contenu long | E-15 : les mêmes états que ci-dessous (squelette de l'onglet, « L'action n'a pas abouti. Réessayez. », bandeau de connexion perdue qui désactive les interrupteurs, une colonne au téléphone) ; 13 types réglables : la liste tient sans défiler au bureau, une colonne au téléphone (la bascule passe sous le nom) ; nom d'univers de 80 caractères dans la boîte : passe à la ligne | idem |
+| contenu long | E-15 : les mêmes états que ceux de cette ligne et des lignes précédentes de ce tableau (squelette de l'onglet, « L'action n'a pas abouti. Réessayez. », bandeau de connexion perdue qui désactive les interrupteurs, une colonne au téléphone) ; 13 types réglables : la liste tient sans défiler au bureau, une colonne au téléphone (la bascule passe sous le nom) ; nom d'univers de 80 caractères dans la boîte : passe à la ligne | idem |
 
 *Critères.*
 - Étant donné « CoF Mini » qui désactive « Vaisseau » et « Lame d'Ébène » qui le force à « Activé »,
@@ -2470,6 +2470,23 @@ types… » et « Changer le type » reste désactivé. Contenu long : un titre 
 le titre de la boîte ; un sous-type de 60 caractères est tronqué par une ellipse dans le badge, entier dans son
 infobulle et dans le champ. Échecs : « Le type n'a pas changé. Réessayez. » dans la boîte (elle reste ouverte) ; un MJ qui n'a plus de
 rôle : « Vous ne pouvez plus modifier cette fiche. » ; connexion perdue : bandeau, bouton désactivé.
+Enregistrement en cours : le bouton passe à « Enregistrement… » et la boîte est figée. Échec de lecture de la
+liste des types : « Impossible de charger les types. » et « Réessayer » à la place de la liste, bouton désactivé.
+La liste des 13 types défile dans la boîte (hauteur bornée) au bureau comme au téléphone, où la boîte occupe
+l'écran. Un sous-type de plus de 60 caractères saisi dans le champ : « Erreur : 60 caractères au plus. ». Le
+cas « vide » est sans objet : la liste des types n'est jamais vide (treize types réglables).
+**E-9 — sous-type en place.** La liste de complétion défile au-delà de huit entrées ; sans sous-type déjà
+employé pour ce type, elle n'apparaît pas et le champ reste libre.
+**E-8 — compte du filtre.** Le compte de « Port (N) » reste toujours visible, jusqu'à 9 999 ; au-delà la
+pastille dit « Port (9 999+) ».
+**E-14 — bascule d'un type.** Toast, comme celui de E-15 (même composant, maquette `e14` : `.toast`) :
+« Vaisseau : activé dans Lame d'Ébène. » / « … : désactivé dans … » / « … : suit le système. ».
+**E-15 — « Types de fiche ».** « Utilisé par 0 univers » et « Utilisé par 1 univers » (singulier) sous la liste ;
+un nom de système de 80 caractères passe à la ligne dans l'en-tête.
+**Rôles (kanevas-import-types).** Joueur : E-9 montre le sous-type en lecture seule ; « Changer le type… » est
+**caché** ; le champ « Sous-type » de la création est **absent** (la création n'est pas offerte) ; le lien
+« Régler les types » de la barre est **caché**. Admin d'instance sans rôle dans l'univers : il n'a pas la section
+« Lore » (la barre n'est celle d'aucun univers pour lui).
 
 La maquette `e08-liste-fiches.html` n'est pas redessinée pour le sous-type : le texte ci-dessus dit où il se pose
 (sous le titre de la carte, `--texte-3` ; filtre à côté de la recherche).
