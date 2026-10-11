@@ -45,7 +45,7 @@ function chargerPourMJ(db: Db, compteId: number, scenarioId: number): ScenarioRo
   return s;
 }
 
-/** The GM creates a scenario (title 1 to 120, content up to 20 000), version 1. */
+/** The GM creates a scenario (title 1 to 120, content up to 100 000), version 1. */
 export function creerScenario(
   db: Db,
   compteId: number,

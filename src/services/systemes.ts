@@ -1,3 +1,4 @@
+import { validerContenu } from './sections.js';
 import type { Db } from '../db/db.js';
 import { exigerMJ } from './droits.js';
 import { ErreurService, introuvable, invalide, refuse } from './erreurs.js';
@@ -236,7 +237,7 @@ export function listerGabarits(
 function validerGabarit(nom: string, contenu: string): string {
   const n = nom.trim();
   if (n.length < 1 || n.length > 120) throw invalide('Le nom doit faire de 1 à 120 caractères.');
-  if (contenu.length > 20000) throw invalide('Le contenu doit faire 20 000 caractères au plus.');
+  validerContenu(contenu);
   return n;
 }
 

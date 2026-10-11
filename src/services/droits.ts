@@ -1,5 +1,6 @@
 import type { Db } from '../db/db.js';
 import { ErreurService, introuvable, refuse } from './erreurs.js';
+import { rendreMarkdown } from './markdown.js';
 import type { Acteur, Audience, Role, SectionRow, SectionVue } from './types.js';
 
 /** The caller's role in a universe, read from `membres` on every call (AD-9). */
@@ -103,18 +104,20 @@ export function audienceDe(s: SectionRow): Audience {
 
 /** The view of a section for a caller who may read it. */
 export function vueSection(role: Role, s: SectionRow, acteur: Acteur): SectionVue {
+  // Player mode is a read view: it never shows a write right the player lacks as a non-author.
+  const peutEcrire = acteur.modeJoueur
+    ? peutEcrireSection('joueur', s, -1)
+    : peutEcrireSection(role, s, acteur.compteId);
   const vue: SectionVue = {
     id: s.id,
     titre: s.titre,
     ordre: s.ordre,
-    contenu: s.contenu,
+    html: rendreMarkdown(s.contenu),
     version: s.version,
     modifieLe: s.modifie_le,
-    // Player mode is a read view: it never shows a write right the player lacks as a non-author.
-    peutEcrire: acteur.modeJoueur
-      ? peutEcrireSection('joueur', s, -1)
-      : peutEcrireSection(role, s, acteur.compteId),
+    peutEcrire,
   };
+  if (peutEcrire || acteur.avecSource) vue.contenu = s.contenu; // the source goes only to who may write it (AD-112)
   if (vueMJ(role, acteur)) vue.audience = audienceDe(s);
   return vue;
 }
