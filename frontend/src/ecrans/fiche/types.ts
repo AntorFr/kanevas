@@ -21,7 +21,10 @@ export interface SectionVue {
   id: number;
   titre: string;
   ordre: number;
-  contenu: string;
+  /** Markdown source: only when the caller may write the section (AD-112). */
+  contenu?: string;
+  /** The rendered source (AD-112), for every reader. */
+  html: string;
   version: number;
   modifieLe: string;
   peutEcrire: boolean;

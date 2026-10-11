@@ -5,7 +5,7 @@ import { Link, useParams } from 'react-router-dom';
 import { appeler, ErreurApi } from '../api';
 import { useCharge } from '../cadre-contexte';
 import type { Ecran } from '../registre';
-import { Bouton, Champ, Chargement, ErreurChargement, PageIntrouvable, useToasts } from '../ui';
+import { Bouton, Champ, Chargement, ErreurChargement, Markdown, PageIntrouvable, useToasts } from '../ui';
 import './ecrans.css';
 import { ECHEC, type Campagne, type Scenario } from './suivi/commun';
 
@@ -159,10 +159,10 @@ function Vue({ universId, campagne, initial }: { universId: string; campagne: Ca
       </header>
       {!edition ? (
         <>
-          {scenario.contenu === '' ? (
+          {scenario.html.trim() === '' ? (
             <p className="texte-vide-page">Rien d’écrit pour l’instant.</p>
           ) : (
-            <div className="contenu-scenario">{scenario.contenu}</div>
+            <Markdown className="contenu-scenario" html={scenario.html} />
           )}
         </>
       ) : (

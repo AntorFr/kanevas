@@ -6,7 +6,7 @@ import { ErreurApi, appeler } from '../api';
 import { useTitreAriane } from '../cadre-contexte';
 import type { SystemeCompte } from '../types';
 import type { Ecran } from '../registre';
-import { Bouton, Champ, ChargementListe, ErreurChargement, PageIntrouvable, Pastille, VideIcone, useToasts } from '../ui';
+import { Bouton, Champ, ChargementListe, ErreurChargement, Markdown, PageIntrouvable, Pastille, VideIcone, useToasts } from '../ui';
 import { PucesUnivers } from './systeme/puces';
 import './ecrans.css';
 import './liste.css';
@@ -19,7 +19,9 @@ interface Gabarit {
   id: number;
   type: Type;
   nom: string;
-  contenu: string;
+  /** Markdown source: only for who may write the templates (AD-112). */
+  contenu?: string;
+  html: string;
   version: number;
 }
 
@@ -42,6 +44,11 @@ const ONGLETS: { type: Type; titre: string; ajout: string; vide: string; videJou
 ];
 
 const premiereLigne = (c: string) => c.split('\n').find((l) => l.trim() !== '') ?? '';
+// A reader has no source: the one-line preview comes from the text of the rendered HTML (parsed inertly, never inserted).
+const apercuDe = (g: Gabarit) =>
+  g.contenu !== undefined
+    ? premiereLigne(g.contenu)
+    : premiereLigne(new DOMParser().parseFromString(g.html, 'text/html').body.firstElementChild?.textContent ?? '');
 const alpha = (a: Gabarit, b: Gabarit) => a.nom.localeCompare(b.nom, 'fr', { sensitivity: 'base' });
 
 type Retour = { perime?: true; perdu?: true; texte: string };
@@ -322,7 +329,7 @@ function Systeme() {
                     <strong className="entree-nom" title={g.nom}>
                       {g.nom}
                     </strong>
-                    <span className="entree-apercu">{premiereLigne(g.contenu)}</span>
+                    <span className="entree-apercu">{apercuDe(g)}</span>
                     <ChevronDown size={16} strokeWidth={1.75} aria-hidden="true" className="entree-chevron" />
                   </button>
                   {ouverte === g.id &&
@@ -331,7 +338,7 @@ function Systeme() {
                     ) : (
                       <div className="entree-detail">
                         <h2>{g.nom}</h2>
-                        <p className="entree-contenu">{g.contenu}</p>
+                        <Markdown className="entree-contenu" html={g.html} />
                         {peutEcrire && (
                           <div className="actions">
                             <Bouton ecrit icone={Pencil} onClick={() => setEdition(g.id)}>
@@ -379,9 +386,9 @@ function EditionEntree({
   return (
     <div className="entree-detail">
       <h2>{g.nom}</h2>
-      <p className="entree-contenu">{g.contenu}</p>
+      <Markdown className="entree-contenu" html={g.html} />
       <Formulaire
-        initial={{ nom: g.nom, contenu: g.contenu }}
+        initial={{ nom: g.nom, contenu: g.contenu ?? '' }}
         libelle="Enregistrer"
         onAnnuler={onAnnuler}
         onEnvoi={async (v) => {

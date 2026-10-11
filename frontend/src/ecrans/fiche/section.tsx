@@ -4,7 +4,7 @@ import { useId, useRef, useState } from 'react';
 import { useLimiteContenu } from '../../cadre-contexte';
 import { ErreurApi, appeler, lire, useConnexionPerdue } from '../../api';
 import type { Role } from '../../types';
-import { Bouton, BoiteDialogue, Menu, PastilleAudience, etatAudience, useToasts } from '../../ui';
+import { Bouton, BoiteDialogue, Markdown, Menu, PastilleAudience, etatAudience, useToasts } from '../../ui';
 import { ReglageAudience, type Joueur } from './audience';
 import { blocsSectionVisibles } from './registre';
 import type { Audience, FicheVue, SectionVue } from './types';
@@ -95,7 +95,7 @@ export function PanneauSection(p: Props) {
   }
 
   function modifier() {
-    setTexte(section.contenu);
+    setTexte(section.contenu ?? '');
     setVersionLue(section.version);
     setPerime(false);
     setActuel(undefined);
@@ -151,7 +151,7 @@ export function PanneauSection(p: Props) {
     await ecrire('recharger', async () => {
       const s = await lire<SectionVue>(`${url}${p.suffixeMode}`);
       setVersionLue(s.version);
-      setActuel(s.contenu);
+      setActuel(s.contenu ?? '');
       setPerime(false);
       try {
         sessionStorage.setItem(cle, JSON.stringify({ texte, version: s.version }));
@@ -327,9 +327,11 @@ export function PanneauSection(p: Props) {
           )}
         </>
       ) : (
-        <p className={`texte${section.contenu === '' ? ' vide' : ''}`}>
-          {section.contenu === '' ? 'Rien d’écrit pour l’instant.' : section.contenu}
-        </p>
+        section.html.trim() === '' ? (
+          <p className="texte vide">Rien d’écrit pour l’instant.</p>
+        ) : (
+          <Markdown className="texte" html={section.html} />
+        )
       )}
 
       <div className="blocs">
