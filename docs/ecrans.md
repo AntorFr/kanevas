@@ -119,7 +119,7 @@ Ce que `kanevas-import` ajoute aux lignes existantes : **E-8** — MJ : la vue e
 dans les seuls types activés ; Joueur : l'arbre des fiches qu'il voit. **E-9** — MJ : écrire le
 Markdown, insérer liens et blocs MJ, renommer, changer le type, déplacer, alias et étiquettes,
 supprimer (menu « ⋯ » de l'en-tête, hors mode Joueur), voir la clé d'origine ; Joueur : lire le
-Markdown, suivre les liens vers ce qu'il voit, « Contient » et « Mentionnée dans » réduits à ce qu'il
+Markdown (clé d'origine cachée), suivre les liens vers ce qu'il voit, « Contient » et « Mentionnée dans » réduits à ce qu'il
 lit ; écrire une section permise **sauf si elle contient un bloc MJ** (« Modifier » **caché**) ; alias
 et étiquettes visibles, jamais modifiables (**caché**). **E-14** — MJ : « Types de fiche »,
 « Supprimer l'univers ». **E-15** — MJ d'un univers rattaché : « Types de fiche » (bascules) ;
@@ -2059,9 +2059,7 @@ séparé, « Supprimer la fiche… » en `--danger`.
 *Dans la tranche `kanevas-import-fil`*, la ligne « Importée · clé … » est la seule entrée du menu : pour une
 fiche sans clé d'origine, le menu « ⋯ » n'est pas affiché ; « créée le … » est la date de création de la
 fiche (`creeLe` de l'import s'il l'a donnée, B-50, sinon la date de l'import). La clé d'origine est cachée à
-tout autre rôle que le MJ (hors mode Joueur) : ni le menu, ni la réponse de lecture. Le bouton « Demander à
-Kanevas » de la maquette de E-18 est le bouton de l'assistant présent sur tous les écrans (B-26, E-12), sans
-rien de propre à E-18.
+tout autre rôle que le MJ (hors mode Joueur) : ni le menu, ni la réponse de lecture.
 
 - *Changer le type* : une liste des types de la liste du produit, activés d'abord, puis « Autres
   types » ; pour « Personnage », le choix PJ / PNJ ; et le champ « Sous-type » (vidé au changement de
@@ -2321,7 +2319,7 @@ mode Joueur (« Rechercher », une étiquette).
 *Maquette finie* : `docs/maquettes/e18-acces-api.html` (états `#etat-nouveau`, `#etat-jeton-montre`,
 `#etat-lot`, `#etat-vide`, `#etat-perdue`).
 
-Atteint par « Univers ▸ Accès par API » (`key-round`), MJ seul. Une introduction d'une ligne :
+Atteint par « Univers ▸ Accès par API » (`key-round`), MJ seul. Le bouton « Demander à Kanevas » de la maquette est celui de l'assistant, présent sur tous les écrans (B-26, E-12), sans rien de propre à E-18. Une introduction d'une ligne :
 « Un jeton permet à un script d'écrire dans cet univers avec vos droits, par l'API d'import. » et
 l'**adresse de base** à copier (`https://kanevas.berard.me/api/import/v1/univers/<id>`, « Copier »,
 toast « Adresse copiée. »). Deux panneaux.
@@ -2335,8 +2333,8 @@ toast « Adresse copiée. »). Deux panneaux.
    « Jeton copié. »), et « Il ne sera plus jamais affiché. Rangez-le dans la configuration de votre
    script. », « J'ai copié le jeton » — tant que le jeton est montré, seul ce bouton ferme la boîte
    (ni Échap ni le voile) ; la ligne du jeton arrive alors en tête de la liste. Le jeton d'un MJ qui n'a plus ce rôle (B-46) reste listé, avec la pastille « Inactif »
-   et l'infobulle « Son créateur n'est plus MJ de cet univers. » ; « Révoquer » reste possible. Pendant « Créer le
-   jeton » et « Révoquer le jeton » le bouton est désactivé et dit « Création… » / « Révocation… » (pas de double envoi). *Révoquer* : boîte « Révoquer « Script Kanka — Mac » ? Le script
+   et l'infobulle « Son créateur n'est plus MJ de cet univers. » (au toucher, la même phrase s'écrit sous la ligne) ; il reste parmi les jetons actifs, rangé avec eux par date de création ; « Révoquer » reste possible. Pendant « Créer le
+   jeton » et « Révoquer le jeton » le bouton est désactivé et dit « Création… » / « Révocation… » (pas de double envoi) ; « Annuler » et la fermeture de la boîte sont désactivés aussi jusqu'à la réponse. La maquette ne dessine ni « Inactif » ni ces boutons : le texte d'ici fait foi (même pastille que « Révoqué », en `--texte-2`). *Révoquer* : boîte « Révoquer « Script Kanka — Mac » ? Le script
    qui l'utilise ne pourra plus rien écrire. », « Révoquer le jeton » (`--danger`) / « Annuler » ; toast « Jeton révoqué. ».
 2. **Lots d'import** — les 20 derniers lots, du plus récent : date d'ouverture, jeton, état (« En
    cours », « Clos », « Abandonné » — ouvert depuis plus de 24 h sans écriture), et les compteurs

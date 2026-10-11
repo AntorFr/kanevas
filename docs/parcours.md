@@ -414,7 +414,7 @@ Il veut d'abord un essai jetable, puis la vraie base, sans doublon ni fuite.*
    Kanka sont dans l'ordre de leurs dates d'origine ; sur une fiche, le menu « ⋯ » montre sa clé
    d'origine (« lieu:port-sel »).
 7. Il corrige le script (il coupe la section trop longue en deux), le relance : le nouveau lot dit
-   « Fiches : 3 créées, 498 inchangées · Fichiers : 1 140 inchangés · … · 0 en attente » — aucun doublon.
+   « Fiches : 3 créées · 498 inchangées · Fichiers : 1 140 inchangés · … · 0 en attente » — aucun doublon.
 8. **Paramètres** (E-14), « Supprimer l'univers », il tape « Essai Kanka » : l'univers disparaît de
    l'accueil.
 9. Il refait 2 à 7 sur l'univers réel ; les jours suivants, Léa écrit dans une section importée et
@@ -440,7 +440,7 @@ raison dans le lot ; supprimer l'univers en tapant un autre nom — le bouton re
 5. Plus tard : « Révoquer » sur la ligne, confirmation « Révoquer « Script Kanka — Mac » ? Le script
    qui l'utilise ne pourra plus rien écrire. » ; la ligne passe en « Révoqué ».
 *Échec* : un autre MJ a retiré son rôle à Antor — ses jetons cessent d'agir (401) et il ne voit plus
-E-18 (« Page introuvable. ») ; un Joueur force l'adresse de E-18 — « Page introuvable. » ; le jeton
+E-18 (« Page introuvable. ») et, pour un autre MJ, la ligne de ses jetons porte la pastille « Inactif » ; un Joueur force l'adresse de E-18 — « Page introuvable. » ; le jeton
 a expiré — la ligne dit « Expiré », le script reçoit 401.
 
 ### P-12 — Lire la base importée (Antor, MJ, puis Léa, Joueuse, au téléphone)
