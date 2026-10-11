@@ -491,9 +491,10 @@ Recommencez. », l'ancien jeton reste.
 n'utilisait dans Kanka.*
 1. **Médiathèque** (E-19), depuis la barre : Antor filtre « Non utilisées », retrouve
    « carte-des-sphères.png », la renomme « Carte des Sphères ».
-2. Il ouvre « plan-du-repaire.png » (« Visible des joueurs », utilisée par « Les Docks », section
-   « Histoire » lue des joueurs) et la passe à « Réservée au MJ » : Kanevas liste « Les Docks —
-   « Histoire » » où les joueurs ne la verront plus ; il confirme.
+2. Il ouvre « plan-du-repaire.png » (« Visible des joueurs », insérée dans « Histoire » des « Docks »
+   et jointe à « Description » de « Port-Sel », deux sections lues des joueurs) et la passe à
+   « Réservée au MJ » : Kanevas liste ces deux endroits, où les joueurs ne la verront plus ; il
+   confirme.
 3. Sur « Port-Sel » (**E-9**), il modifie « Description » (lue des joueurs) : « Image » ▸ « Depuis la
    médiathèque », il choisit « Plan secret de la Guilde » (réservée au MJ) : l'éditeur avertit « Cette
    image est réservée au MJ : les joueurs qui lisent cette section ne la verront pas. » ; il la déplace

@@ -2112,7 +2112,7 @@ réglée sur E-19 (ou par « Réserver au MJ » dans le menu de la vignette, mê
 ### E-19 Médiathèque
 
 *Maquette finie* : `docs/maquettes/e19-mediatheque.html` (états `#etat-joueur`, `#etat-image`,
-`#etat-supprimer`, `#etat-reserver`, `#etat-choisir`, `#etat-vide`, `#etat-perdue`).
+`#etat-supprimer`, `#etat-reserver`, `#etat-choisir`, `#etat-averti`, `#etat-vide`, `#etat-perdue`).
 Décision de Monsieur du 2026-10-11 (B-53 à B-56, AD-111).
 
 Atteint par « Médiathèque » (`images`) dans la barre de l'univers, sous « Cartes », pour tout membre.
@@ -2132,15 +2132,20 @@ jointes de Description ») et un lien —, et pour un MJ « Supprimer l'image »
 
 - *Réserver au MJ* une image utilisée dans une section lue des joueurs, ou en illustration d'une fiche
   que des joueurs voient : boîte « Réserver « plan-du-repaire.png » au MJ ? Les joueurs ne la verront
-  plus dans : Les Docks — « Histoire ». » ; « Réserver au MJ » / « Annuler ». Sans tel usage : aucun
-  avertissement, toast « Image réservée au MJ. ».
+  plus dans : Les Docks — « Histoire » ; Port-Sel — « Description » (jointe). » ; « Réserver au MJ » /
+  « Annuler », puis le toast « Image réservée au MJ. ». Sans tel usage : pas de boîte, le même toast.
+  Rendre une image visible, la renommer : sans toast. Nom vide : « Erreur : le nom est obligatoire. » ;
+  au-delà de 200 : « Erreur : 200 caractères au plus. ». « Utilisée dans » n'apparaît pas pour une image
+  qu'aucune fiche visible du lecteur n'utilise. Glisser des fichiers sur la page (MJ) : un voile « Déposez
+  les images pour les ajouter. ».
 - *Supprimer* : boîte « Supprimer « Carte des Sphères » ? Elle est utilisée dans 3 fiches : Port-Sel
   (illustration), Les Sphères (« Histoire »), Maître Aldric (pièces jointes de « Apparence »). Elle
   disparaîtra de ces fiches. » ; sans usage : « Supprimer « Carte des Sphères » ? » ; « Supprimer
   l'image » (`--danger`) / « Annuler » ; toast « Image supprimée. ».
 
 **Le choix d'une image** (depuis E-9 : « Image » de l'éditeur, « Joindre une image » du bloc Pièces
-jointes, « Choisir l'illustration ») ouvre la même grille dans une boîte, filtrée sur ce que le compte
+jointes, « Choisir l'illustration ») ouvre la même grille dans une boîte « Choisir une image » (champ
+« Chercher par nom »), filtrée sur ce que le compte
 voit, avec « Depuis l'appareil » en tête ; choisir insère `![nom](image:<id>)` au point d'insertion, ou
 joint l'image, ou pose l'illustration. L'avertissement de B-55 s'affiche sous le champ (ou dans la
 boîte d'illustration) tant que la condition tient ; il n'empêche rien.
