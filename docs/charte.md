@@ -109,7 +109,7 @@ seul et secret `lock`, lu des joueurs `eye`, écrit par les joueurs `pen-line`, 
 menu du téléphone `panel-left`.
 Depuis `kanevas-import` (types et écrans nouveaux, même jeu, mêmes règles) : Créatures `paw-print`,
 Races `dna`, Vaisseaux `ship`, Savoirs `lightbulb` (savoir général : histoire, phénomènes, ressources, chronologie), Récits `book-open`, Règles `scale`, Notes
-`sticky-note`, Rechercher `search`, Accès par API `key-round`, Médiathèque `images`, Cartes `map` (la barre l'avait sans icône fixée), image réservée au MJ `lock` (cadre neutre, `--texte-3`), étiquette `tag`, Contient
+`sticky-note`, Rechercher `search`, Accès par API `key-round`, Médiathèque `images`, document `file-text` (PDF), `file-spreadsheet` (tableur), `file-archive` (archive), `file` (autre), « Fichier » de l'éditeur `paperclip`, Cartes `map` (la barre l'avait sans icône fixée), image réservée au MJ `lock` (cadre neutre, `--texte-3`), étiquette `tag`, Contient
 `folder-tree`, Mentionnée dans `link-2`, vue en arbre `list-tree`, lien cassé `link-2-off`.
 
 **Mouvement.** `--duree` 160 ms, `--courbe` *(nouveau)* `cubic-bezier(.2,.7,.2,1)`. Seuls
