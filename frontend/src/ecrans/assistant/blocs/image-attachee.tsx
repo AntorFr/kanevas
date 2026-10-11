@@ -41,7 +41,7 @@ export function ImageAttachee({ evenement, universId, surOuverture }: PropsBloc)
         <ImagePlus size={12} strokeWidth={1.75} aria-hidden="true" /> Écrit par l’assistant
       </p>
       <p className="asst-ecriture-libelle">{evenement.libelle}</p>
-      <div className="asst-image-cadre">
+      <div className={etat === 'charge' ? 'asst-image-cadre asst-image-cadre-charge' : 'asst-image-cadre'}>
         {etat === 'chargement' && (
           <div className="asst-image-vide" role="status">
             Chargement de l’image…

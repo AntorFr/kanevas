@@ -351,3 +351,16 @@ test('défilement à 390 px : « Ouvrir la section » et « Recharger l’image 
     await antor.setViewportSize({ width: 1280, height: 720 });
   }
 });
+
+test('vignette : un cadre de 240×160 contient l’image, même minuscule (PNG 1×1 du bouchon)', opts, async () => {
+  await ouvrir(antor);
+  await nouvelle(antor);
+  await demander(antor, DEMANDE);
+  const b = bloc(antor).last();
+  await b.locator('img').waitFor({ state: 'visible' });
+  const cadre = await b.locator('.asst-image-cadre').boundingBox();
+  assert.equal(Math.round(cadre.width), 240);
+  assert.ok(cadre.height >= 160, `frame height ${cadre.height}`);
+  const img = await b.locator('img').boundingBox();
+  assert.ok(img.width <= 240 && img.x >= cadre.x && img.y >= cadre.y, 'image stays inside the frame');
+});
