@@ -1,5 +1,8 @@
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 
+import { env } from '../config/env.js';
+import { disponibilite } from '../services/assistant/disponibilite.js';
+import { etatJeton } from '../services/assistant/jeton.js';
 import {
   ajouterMembreInstance,
   changerRoleInstance,
@@ -29,6 +32,12 @@ export function registerInstanceRoutes(app: FastifyInstance) {
   app.addHook('preHandler', async (request: FastifyRequest, reply: FastifyReply) => {
     if (!request.url.startsWith('/api/instance')) return;
     if (!acteur(request).admin) return reply.callNotFound();
+  });
+
+  // AD-112: the state of the assistant token, never its value.
+  app.get('/api/instance/assistant/jeton', async () => {
+    const config = app.assistantDeps.config ?? env;
+    return { ...etatJeton(config), assistant: disponibilite(config) };
   });
 
   app.get('/api/instance/univers', async (request) =>
