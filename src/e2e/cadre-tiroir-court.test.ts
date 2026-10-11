@@ -115,3 +115,48 @@ test('tiroir Joueur 390×526 : pas de « Paramètres », la dernière entrée «
   const r = await atteignable(lea, 'Quêtes');
   assert.ok(r.ok, `Quêtes inatteignable : ${r.info}`);
 });
+
+// Reopening « le pied n'est plus ancré, la liste s'arrête net sans indice de suite » : at the opening of the drawer on
+// a short phone, the foot sits on the bottom edge of the screen, a fade above it hints that the list goes on, and once
+// scrolled to the end « Paramètres » is above the foot, not under it.
+async function mesuresPied(p: Any) {
+  return barre(p).evaluate((b: Any) => {
+    const pied = b.querySelector('.pied');
+    const r = pied.getBoundingClientRect();
+    const f = getComputedStyle(pied, '::before');
+    return { bas: r.bottom, haut: r.top, vh: window.innerHeight, fondu: f.backgroundImage, hFondu: f.height, defile: b.scrollHeight - b.clientHeight };
+  });
+}
+
+for (const theme of ['Clair', 'Sombre'] as const) {
+  test(`tiroir MJ ${theme}, 390×526 à l'ouverture : pied ancré en bas de l'écran et fondu qui montre la suite`, opts, async () => {
+    await choisirTheme(antor, theme);
+    await ouvrirTiroir(antor, 526);
+    const m = await mesuresPied(antor);
+    assert.ok(m.defile > 40, `la barre devrait défiler (${m.defile} px) : ce test suppose une liste plus haute que l'écran`);
+    assert.ok(m.vh - m.bas <= 13, `pied non ancré en bas : ${JSON.stringify(m)}`);
+    assert.match(m.fondu, /linear-gradient/, `aucun fondu au-dessus du pied : ${JSON.stringify(m)}`);
+    assert.equal(m.hFondu, '20px');
+    // scrolled to the end: the foot is still on the bottom edge and « Paramètres » ends above its top
+    await barre(antor).evaluate((b: Any) => { b.scrollTop = b.scrollHeight; });
+    const fin = await mesuresPied(antor);
+    assert.ok(fin.vh - fin.bas <= 13, `pied décroché après défilement : ${JSON.stringify(fin)}`);
+    const bas = await barre(antor).getByRole('link', { name: rxExact('Paramètres') }).evaluate((el: Any) => el.getBoundingClientRect().bottom);
+    assert.ok(bas <= fin.haut + 1, `Paramètres (bas ${bas}) passe sous le pied (haut ${fin.haut})`);
+    // nothing of the list shows through the strip left under the foot (the bar's padding)
+    const dessous = await barre(antor).evaluate((b: Any) => {
+      const t = document.elementFromPoint(150, window.innerHeight - 4);
+      return t && t !== b && !!t.closest('nav') ? t.outerHTML.slice(0, 80) : '';
+    });
+    assert.equal(dessous, '', `la liste se voit sous le pied : ${dessous}`);
+    await antor.waitForTimeout(500); // the slide-in ends
+    await antor.screenshot({ path: `/tmp/tiroir-pied-${theme}.png` });
+  });
+}
+
+test('tiroir MJ 390×900 : quand tout tient, le pied reste en bas du tiroir et la barre ne défile pas', opts, async () => {
+  await ouvrirTiroir(antor, 900);
+  const m = await mesuresPied(antor);
+  assert.ok(m.vh - m.bas <= 13, `pied non ancré : ${JSON.stringify(m)}`);
+  assert.ok(m.defile <= 1, `la barre défile alors que tout tient : ${JSON.stringify(m)}`);
+});
