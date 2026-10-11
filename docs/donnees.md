@@ -238,7 +238,7 @@ de ligne sans fichier, et un fichier sans ligne n'est pas atteignable (nom aléa
 statique).
 
 Ce que la base ne dit pas, et que le service porte, avec sa raison (la règle croise la section, le
-rôle et le mode) : **50 pièces jointes** au plus par section ; ajouter ou retirer demande
+rôle et le mode) : **50 pièces jointes** au plus par section (*100 fichiers joints depuis `kanevas-import`, AD-111*) ; ajouter ou retirer demande
 d'**écrire** la section ; `secrete` ne se pose et ne se lève que par un MJ ; une pièce se **lit** si
 la section est lisible et, si elle est secrète, par un MJ hors mode Joueur ; un fichier vide est refusé.
 Ajouter ou retirer une pièce ne change ni la `version` ni `modifie_le` de la section (ce n'est
