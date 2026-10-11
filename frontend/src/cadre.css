@@ -121,6 +121,16 @@ main.principal { flex: 1; min-width: 0; padding: var(--e-5) 28px; width: 100%; m
   .bandeaux .bandeau { padding-left: var(--e-4); padding-right: var(--e-4); }
   main.principal { padding: var(--e-4); }
 }
+/* A short phone (landscape or a small screen): tighter rows so the whole navigation fits above the foot; the
+   whole bar scrolls (foot included) when it still does not fit, so the last entry is always reachable. */
+@media (max-width: 760px) and (max-height: 640px) {
+  .item, .menu-groupe { min-height: 34px; }
+  .groupe + .groupe { margin-top: var(--e-3); }
+  .barre { overflow-y: auto; }
+  .barre nav { flex: none; overflow: visible; }
+  .pied { margin-top: auto; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .colonne-barre, .voile-tiroir { transition: none; }
 }
