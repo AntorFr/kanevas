@@ -161,6 +161,8 @@ describe('matrice des rôles sur E-9', () => {
     assert.ok((await antor.getByRole('button', { name: /Autres actions sur/ }).count()) > 0, 'le MJ a le menu ⋯');
     await antor.getByRole('radio', { name: /Mode Joueur|^Joueur/ }).click();
     await antor.getByText(BANDEAU_JOUEUR).waitFor();
+    // The banner shows at once; the sheet is reloaded in player mode a moment later.
+    await antor.getByText('Vérité — MJ seul').waitFor({ state: 'detached' });
     assert.equal(await antor.getByRole('button', { name: /Autres actions sur/ }).count(), 0);
     assert.equal(await antor.getByRole('button', { name: /^(Lue des joueurs|MJ seul|Écrite par les joueurs|Confiée à)/ }).count(), 0);
     assert.equal(await antor.getByText('Vérité — MJ seul').count(), 0, 'la section fermée est absente');
