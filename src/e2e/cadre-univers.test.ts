@@ -222,6 +222,30 @@ test('tiroir : le voile ferme, une entrée navigue et ferme', opts, async () => 
   await barre(antor).waitFor({ state: 'hidden' });
 });
 
+test('tiroir : sur un téléphone court (390×526) la dernière entrée « Paramètres » est atteignable et non masquée par le pied', opts, async () => {
+  await antor.setViewportSize({ width: 390, height: 526 });
+  await sur(antor, urlFiche);
+  await antor.getByRole('button', { name: 'Menu', exact: true }).click();
+  await barre(antor).waitFor({ state: 'visible' });
+  const dernier = barre(antor).getByRole('link', { name: rxExact('Paramètres') });
+  await dernier.scrollIntoViewIfNeeded();
+  // after scrolling, the entry is inside the viewport and is the topmost element at its centre (not under the foot)
+  const etat = await dernier.evaluate((el: Any) => {
+    const r = el.getBoundingClientRect();
+    const haut = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
+    return { bas: r.bottom, haut: r.top, vh: window.innerHeight, visible: !!haut && (el === haut || el.contains(haut)) };
+  });
+  assert.ok(etat.haut >= 0 && etat.bas <= etat.vh, `Paramètres hors de l’écran : ${JSON.stringify(etat)}`);
+  assert.equal(etat.visible, true, `Paramètres masqué par un autre élément : ${JSON.stringify(etat)}`);
+  // no entry is hidden in a small scrolling window above the foot: the navigation shows whole (the bar scrolls as one)
+  const nav = await barre(antor).locator('nav').first().evaluate((el: Any) => ({ defile: el.scrollHeight - el.clientHeight }));
+  assert.ok(nav.defile <= 1, `la navigation défile dans une fenêtre réduite (${nav.defile} px cachés)`);
+  // the account button of the foot stays reachable too
+  const compte = barre(antor).getByRole('button', { name: /antor/i });
+  await compte.scrollIntoViewIfNeeded();
+  assert.equal(await compte.isVisible(), true);
+});
+
 test('tiroir : au bureau, pas de bouton « Menu » et la barre est affichée', opts, async () => {
   await antor.setViewportSize({ width: 1440, height: 900 });
   await sur(antor, urlFiche);
