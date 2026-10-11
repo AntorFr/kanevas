@@ -260,7 +260,7 @@ Les numéros sont stables. Une décision retirée garde son numéro, avec ce qui
 | AD-41 | Les liens d'un graphe se déduisent des relations à la lecture. |
 | AD-42 | La disposition d'un graphe se calcule dans le navigateur. |
 | AD-43 | Token et nœud : une seule table d'éléments, de forme imposée par le type de carte. |
-| AD-44 | L'outil image vérifie le droit d'écriture avant de générer, et attache par la fonction d'envoi des pièces jointes ; une image par demande. |
+| AD-44 | *Amendée par AD-111 (`kanevas-import`) : l'image générée entre dans la médiathèque (visible des joueurs, le défaut) et est jointe à la section par la même fonction que le geste humain, plus par la fonction d'envoi des pièces jointes.* L'outil image vérifie le droit d'écriture avant de générer, et attache par la fonction d'envoi des pièces jointes ; une image par demande. |
 | AD-45 | Génération d'image derrière un port ; l'adaptateur se choisit par configuration (`codex`, ou `bouchon` en mode bouchon, AD-55) ; sans adaptateur, l'outil disparaît du catalogue. |
 | AD-46 | Tâches de préparation : table propre rattachée à la campagne, catégories fermées. |
 | AD-47 | Garde MJ des tâches évaluée sur l'univers de la campagne. |

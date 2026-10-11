@@ -1742,8 +1742,9 @@ composants partagés. Leurs états s'ouvrent par l'adresse (`#etat-joueur`, `#et
 
 **Finies par le cadrage de `kanevas-import`** : `e09-fiche-importee.html` (E-9 : Markdown, liens,
 bloc MJ, fil d'ancêtres, « Contient », « Mentionnée dans », menu de la fiche), `e18-acces-api.html`
-(E-18) et `e14-types-de-fiche.html` (panneaux « Types de fiche » de E-14 et E-15, suppression d'un
-univers), dans le cadre et avec les composants de `e09-fiche.html`.
+(E-18), `e14-types-de-fiche.html` (panneaux « Types de fiche » de E-14 et E-15, suppression d'un
+univers) et `e19-mediatheque.html` (E-19, le choix d'une image), dans le cadre et avec les composants
+de `e09-fiche.html`.
 
 **D'avant la charte** : les autres. Elles valent pour le contenu et le vocabulaire, pas pour la
 forme ; un écran qui n'a qu'elles se construit dans le cadre et avec les composants de la
@@ -2019,7 +2020,9 @@ au téléphone, jamais la page.
 
 **En-tête.** Fil d'Ariane : univers › type › ancêtres **lisibles** du plus haut au plus proche ›
 fiche ; un ancêtre illisible est sauté sans marque (B-35) ; plus de trois ancêtres : le premier, « … »
-(menu des autres), les deux derniers. Le badge du type porte le **sous-type** : « Lieu · Port » (B-52) ;
+(menu des autres), les deux derniers. « Poser » ou « Remplacer » l'illustration (MJ) ouvre le choix d'une
+image (E-19) au lieu du sélecteur de fichier ; « Retirer » ôte la référence, l'image reste dans la
+médiathèque. Le badge du type porte le **sous-type** : « Lieu · Port » (B-52) ;
 MJ, hors mode Joueur : un clic sur le sous-type l'édite en place, avec la liste des sous-types déjà
 employés pour ce type dans l'univers (complétion, sans tenir compte de la casse ; Entrée enregistre, un
 champ vidé retire le sous-type ; 1 à 60 caractères). Sous le titre : « Aussi appelée Salport, Port-aux-Sels » (alias,
@@ -2357,8 +2360,9 @@ l'univers » (`--danger`) ne s'active que si le nom tapé est exact (casse compr
   qu'ils ne montrent pas) · B-35 E-9, E-8 · B-36 E-9 · B-37 E-17 · B-38 E-9, E-17 · B-39 E-9 · B-40 E-9 ·
   B-41 E-14 · B-42 E-14, E-15, barre · B-43 E-9 · B-44 E-9 · B-45, B-46, B-49 E-18 · B-47, B-48 : **pas
   d'écran, par décision** — le geste est le script, son résultat se lit sur E-18 (B-49) ; AD-53 tient :
-  l'écran d'un import est E-18 · B-50 E-9, E-13 · B-51 E-5 — tient.
+  l'écran d'un import est E-18 · B-50 E-9, E-13 · B-51 E-5 · B-52 E-8, E-9, E-17 · B-53, B-54 E-19 ·
+  B-55 E-9 (éditeur, choix d'une image) · B-56 : pas d'écran (le script), résultat sur E-19 et E-18 — tient.
 - **Chaque écran est atteint par un parcours** : E-17 (P-12), E-18 (P-10, P-11), E-14 et E-15 (P-13,
-  P-10), E-9 (P-12, P-14), E-8 (P-12), E-5 (P-15) — tient.
-- **Chaque rôle a sa colonne** : MJ, Joueur, Admin d'instance pour E-17 et E-18 (matrice) ; le script
+  P-10), E-9 (P-12, P-14, P-16), E-8 (P-12), E-5 (P-15), E-19 (P-16, P-10) — tient.
+- **Chaque rôle a sa colonne** : MJ, Joueur, Admin d'instance pour E-17, E-18 et E-19 (matrice) ; le script
   d'import n'est pas un rôle : il agit comme le MJ du jeton, sur l'API seule — tient.
