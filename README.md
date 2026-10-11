@@ -44,6 +44,8 @@ Tests sans Docker : `npm run typecheck` puis `npm test` (ils jouent aussi les e2
 
 ## Démarrage local
 
+**Pour voir les écrans, passe à la section « mode bouchon » ci-dessous** (build du frontend, puis `KANEVAS_STUB=1`). Le bloc qui suit ne lance que l'API.
+
 ```bash
 # écrit node_modules/ et ./data/ (base et session.key) dans le dépôt monté, en root ; les deux sont ignorés par git.
 # Sans `npm run build` préalable (fait dans l'hôte, hors de cette commande), cette voie ne sert que l'API : voir plus bas.
