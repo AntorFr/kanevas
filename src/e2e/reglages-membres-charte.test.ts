@@ -101,3 +101,36 @@ test('E-4 / E-14 : l\'icône du titre est celle de l\'entrée de navigation', op
     assert.match(titre, new RegExp(attendue.replace('settings2', 'settings-2')));
   }
 });
+
+// Panne visée : les règles de révélation au survol de E-12 (administration.css) visaient toute .liste-membres
+// et cachaient au repos le chevron de la pastille de rôle de E-4, qui signale que le rôle se change ici.
+const chevron = (page: Any, nom: string) =>
+  page.getByLabel(`Rôle de ${nom}`).locator('xpath=..').locator('svg').evaluate((e: Element) => getComputedStyle(e).opacity);
+
+test('E-4 : le chevron de la pastille de rôle est visible au repos', opts, async () => {
+  await allerMembres(p);
+  await p.getByLabel('Rôle de lea').waitFor();
+  await p.mouse.move(2, 2);
+  await p.evaluate(() => (document.activeElement as HTMLElement | null)?.blur());
+  await attendre(p);
+  assert.equal(await chevron(p, 'lea'), '1');
+  assert.equal(await chevron(p, 'antor'), '1');
+});
+
+test('E-12 : le chevron du rôle reste caché au repos et apparaît au survol (non-régression)', opts, async () => {
+  const id = /\/univers\/([^/]+)/.exec(p.url())?.[1];
+  assert.ok(id, 'identifiant d\'univers dans l\'adresse');
+  const admin = (await connecte(browser, srv.base, 'admin')).page;
+  try {
+    await admin.goto(`${srv.base}/administration/univers/${id}`);
+    await admin.getByLabel('Rôle de lea').waitFor();
+    await attendre(admin);
+    await admin.mouse.move(2, 2);
+    assert.equal(await chevron(admin, 'lea'), '0');
+    await admin.getByLabel('Rôle de lea').locator('xpath=ancestor::li').hover();
+    await admin.waitForTimeout(400);
+    assert.equal(await chevron(admin, 'lea'), '1');
+  } finally {
+    await admin.close();
+  }
+});
