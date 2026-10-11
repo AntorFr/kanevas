@@ -30,6 +30,7 @@ export function registerErreurs(app: FastifyInstance) {
       return reply.code(statut).send(corps);
     }
     const statut = (erreur as { statusCode?: number }).statusCode;
+    if (statut === 413) return reply.code(413).send({ message: 'Corps de requête trop volumineux.' });
     if (statut && statut >= 400 && statut < 500) {
       return reply.code(statut).send({ message: 'Requête invalide.' });
     }

@@ -6,6 +6,7 @@ import { migrate, openDb, type Db } from './db/db.js';
 import { viderTmp } from './services/stockage.js';
 import { registerAuthRoutes } from './routes/auth.js';
 import { registerBouchonRoutes } from './routes/bouchon.js';
+import { registerImportRoutes } from './routes/import.js';
 import { registerHealthRoutes } from './routes/health.js';
 import { registerSessionRoutes } from './routes/session.js';
 import type { DepsRepondre } from './services/assistant/repondre.js';
@@ -47,6 +48,7 @@ export async function buildApp() {
   await registerHealthRoutes(app);
   await registerAuthRoutes(app);
   await registerBouchonRoutes(app);
+  await registerImportRoutes(app);
   await registerSessionRoutes(app);
 
   return app;

@@ -101,3 +101,9 @@
   moved, else `en_attente`), never stored. `appliquerProposition` writes through `ecrireContenu` with
   `version_origine` in the same transaction as the mark (`section_modifiee`, `proposition_appliquee` as
   `ErreurService.detail`, both `conflit`). Never write a section from here by another path (AD-48).
+- Import API (`kanevas-import-fil`, migration 0009, AD-103/104): `routes/import.ts` is the scope `/api/import/v1`, beside the
+  session guard — only a `Bearer kvs_…` token opens it (`verifierJeton`: fingerprint, not revoked, not expired, creator still
+  GM), the cookie is ignored there and no other route reads `Authorization`. Refusal is always the same 401 `jeton_invalide`
+  and opens no batch; another universe is 404. The clock is `app.horloge()` (tests move it). `services/jetons.ts` and
+  `services/lots.ts` are the only readers/writers of `jetons_api` / `lots_import`; write services of later slices count
+  through `noterDansLot` (counters per nature, report capped at 1 000).
