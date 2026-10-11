@@ -2272,6 +2272,8 @@ facultatif, avec la même complétion que E-9.
 
 ### E-17 Recherche
 
+*Maquette finie* : `docs/maquettes/e17-recherche.html` (MJ, Joueur, mode Joueur, étiquette, savoir, états).
+
 Adresse `/univers/:id/recherche?q=…&type=…&etiquette=…`. Un champ en tête (focus à l'ouverture,
 1 à 100 caractères), dessous deux rangées de filtres : les **types** (pastilles à icône, « Tous » par
 défaut ; **seuls les types activés** ont leur pastille, B-42 — une fiche d'un type désactivé reste un
@@ -2309,6 +2311,16 @@ mode Joueur (« Rechercher », une étiquette).
   un résultat, avec « alias : Salport ».
 - Étant donné l'étiquette « Côte des Brumes » posée sur « Port-Sel » et sur « La Guilde des Brumes »
   (illisible de Léa), quand Léa filtre sur elle, alors seul « Port-Sel » est rendu.
+
+### La recherche — ce que `kanevas-import-recherche` construit
+
+- **Fichier et adresse** : `frontend/src/ecrans/recherche.tsx` (un `Ecran` du registre), adresse `/univers/:id/recherche`. L'entrée « Rechercher » (`search`) est la **première** de `items.ts`, avant « Vue d'ensemble », et ne montre qu'avec l'écran enregistré. Le raccourci `/` (hors d'un champ de saisie, d'une boîte ouverte ou de l'éditeur) est posé une fois par le cadre (`useRaccourciRecherche`, appelé dans `Cadre.tsx`) et navigue vers l'adresse ci-dessus ; hors d'un univers il ne fait rien.
+- **Saisie** : la recherche part 300 ms après la dernière frappe ou à Entrée, et à chaque changement de pastille ; une saisie plus courte que 1 caractère utile ne part pas ; l'adresse suit l'état (`?q=&type=&etiquette=&mode=`, remplacement d'entrée d'historique, pas d'empilement). Une seule requête est en vol : la plus récente gagne.
+- **Pastilles de types** : « Tous » puis les types **activés** (ordre de la liste du produit) ; une seule à la fois. Pastilles d'étiquettes : celles que renvoie `GET /api/univers/:id/etiquettes` (nom, ordre alphabétique sans casse), une seule à la fois ; retirer la pastille active la ré-appuie. Une adresse qui nomme un type ou une étiquette inconnus ou non proposés les ignore (pas d'erreur).
+- **Mode Joueur** : la bascule du cadre (`cadre-contexte`) ; le MJ qui arrive d'une fiche en mode Joueur garde le mode (`&mode=joueur` posé par le lien « Rechercher » et par les pastilles d'étiquette de E-9). Un non-MJ n'a pas la bascule et l'adresse `mode=joueur` n'y change rien.
+- **Résultat** : lien vers E-9 ; l'alias n'est montré que si le **titre ne correspond pas** aux mots et qu'un alias y correspond (le premier par ordre alphabétique) ; les étiquettes de la fiche suivent, chacune ré-applique le filtre. Les pastilles d'étiquettes proposées et celles d'une fiche ne comptent jamais une fiche illisible.
+- **E-9** : sous le titre « Aussi appelée … » et les pastilles d'étiquettes (liens vers E-17 `?etiquette=`) ; la boîte « Alias et étiquettes… » enregistre les deux listes d'un coup (« Enregistrer » / « Annuler » ; refus : « Erreur : 20 alias au plus. », « Erreur : 20 étiquettes au plus. », « Erreur : 120 caractères au plus. », « Erreur : 40 caractères au plus. » ; un doublon sans tenir compte de la casse est ignoré à la saisie) ; toast « Alias et étiquettes enregistrés. ». Elle est cachée à un joueur et au MJ en mode Joueur.
+- **Semis du bouchon** (`KANEVAS_STUB=1`, univers « Lame d'Ébène ») : alias « Salport » et « Port-aux-Sels » sur « Port-Sel » ; étiquette « Côte des Brumes » sur « Port-Sel » et « La Guilde des Brumes » (illisible de Léa) ; savoir lisible « Chronique de l'Âge d'Ombre » (sous-type « Récit ») ; le mot « sous-main » seulement dans le bloc MJ de « Port-Sel ».
 
 ### E-18 Accès par API (MJ)
 
