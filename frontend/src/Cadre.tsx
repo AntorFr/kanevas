@@ -23,7 +23,7 @@ interface Maillon {
 
 /**
  * The crumbs of an address (pure, tested): the universe, then the section of the sidebar that
- * answers, then the last crumb a screen gave (a sheet's title). Outside a universe: « Mes univers »,
+ * answers, then, when a screen gave one, its parent crumb (E-7: the campaign), then the last crumb it gave (a sheet's title). Outside a universe: « Mes univers »,
  * then « Créer un univers ».
  */
 export function maillons(pathname: string, nomUnivers: string | undefined, titre: string | undefined, dedans: boolean, section?: string, parent?: Parent): Maillon[] {
