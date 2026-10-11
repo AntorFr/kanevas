@@ -1982,6 +1982,14 @@ onglet), images de la section (`![légende](piece:…)`, B-44), liens vers une f
 blocs MJ (`:::mj` … `:::`, B-34). **Ce qui reste du texte** : tout HTML écrit dans le contenu, une
 image d'une autre adresse (le texte de l'image s'affiche à sa place), un lien d'un autre schéma.
 
+**Selon le texte** (AD-97) : dans une **section** (et un compte-rendu), tout ce qui précède. Dans un
+**scénario** (E-7), les liens `[[…]]` visent les fiches de l'univers de sa campagne, résolus sous les
+mêmes droits (le lecteur d'un scénario est un MJ de cet univers) ; ils ne comptent pas dans
+« Mentionnée dans » (un scénario n'est pas une fiche) ; pas d'image ni de bloc MJ (un scénario n'a pas
+de pièce jointe et est déjà au MJ seul). Dans une **entrée de système** (E-15), partagée entre les
+univers rattachés : **pas de lien `[[…]]`** — `[[…]]` y reste du texte, tel qu'écrit, et l'éditeur n'a
+ni « Lien vers une fiche » ni la liste ouverte par `[[` ; pas d'image ni de bloc MJ non plus.
+
 **L'éditeur** (édition en place, charte « L'édition en place ») : le champ de texte garde la police
 de lecture ; au-dessus, une barre d'outils discrète — « Gras », « Italique », « Lien vers une fiche »,
 « Image de la section », et pour un MJ « Bloc MJ » (entoure la sélection) — et la bascule « Écrire /
@@ -2241,8 +2249,9 @@ l'univers » (`--danger`) ne s'active que si le nom tapé est exact (casse compr
 
 ### E-7, E-13, E-5
 
-- **E-7** et les entrées de **E-15** : l'éditeur et le rendu Markdown ci-dessus ; « Bloc MJ » n'y
-  paraît pas (un scénario est déjà au MJ seul ; une entrée de système n'a pas d'audience).
+- **E-7** et les entrées de **E-15** : l'éditeur et le rendu Markdown ci-dessus, avec ce que permet
+  chaque texte (« Selon le texte ») : E-7 garde « Lien vers une fiche » ; ni E-7 ni E-15 n'ont
+  « Image de la section » ni « Bloc MJ » ; E-15 n'a pas de lien vers une fiche.
 - **E-13** : l'ordre est la date de création de la fiche, qui est sa **date d'origine** si l'import en
   a donné une (B-50) ; la ligne montre cette date.
 - **E-5** (seulement si B-51 est retenu) : un panneau « Jeton de l'assistant » sous la liste des

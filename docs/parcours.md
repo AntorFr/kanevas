@@ -85,7 +85,9 @@ Forme de la skill `exigences` ; chaque besoin cite les parcours qui le réalisen
   lire et insère un **lien** vers celle qu'il choisit ; à la lecture, un lien vers une fiche que le
   lecteur voit s'ouvre sur cette fiche ; un lien vers une fiche qu'il ne voit pas s'affiche comme le
   texte autour, sans soulignement ni trace ; un lien dont la cible n'existe pas (supprimée, jamais
-  importée) s'affiche en texte pour un joueur et marqué « lien cassé » pour un MJ. *(P-12, P-14)*
+  importée) s'affiche en texte pour un joueur et marqué « lien cassé » pour un MJ. Dans un scénario,
+  un lien vise une fiche de l'univers de sa campagne, sous les mêmes droits ; dans une entrée de
+  système de jeu, partagée entre univers, `[[…]]` reste du texte. *(P-12, P-14)*
 - **B-34** — Un MJ pose dans une section un **bloc MJ** (E-9, « Bloc MJ » de l'éditeur, ou
   l'import) ; tant que le lecteur n'est pas MJ hors mode Joueur, Kanevas ne lui en livre rien : ni
   sur la fiche, ni par l'assistant, ni par la recherche (un mot qui n'est que dans un bloc MJ ne fait
