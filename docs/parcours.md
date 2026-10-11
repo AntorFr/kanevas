@@ -403,10 +403,10 @@ Il veut d'abord un essai jetable, puis la vraie base, sans doublon ni fuite.*
    audience) — les comptes-rendus avec la clé de leur campagne —, puis les relations, et clôt le lot
    (l'ordre d'AD-104).
    Les fichiers, images et documents, vont d'abord dans la **médiathèque** (E-19), chacun avec ses
-   droits — « Réservée au MJ » pour ceux que Kanka n'affiche que dans du contenu MJ, « Visible des
+   droits — « Réservé au MJ » pour ceux que Kanka n'affiche que dans du contenu MJ, « Visible des
    joueurs » sinon —, y compris les 385 Mo qu'aucune fiche n'utilise ; les fiches les référencent.
 5. **Accès par API** (E-18), bloc « Lots d'import » : « Fiches : 498 créées, 3 refusées · Fichiers :
-   1 140 créés · Campagnes : 4 créées · Scénarios : 12 créés · Relations : 324 créées · 6 en attente » ; il
+   1 140 créés · Campagnes : 4 créées · Scénarios : 12 créés · Relations : 324 créées · 6 liens et références en attente » ; il
    déplie les refus : « personnage:aldric-le-gris — section « Vérité » : 112 000 caractères, 100 000
    au plus ».
 6. Il ouvre quelques fiches (**E-8** en arbre, **E-9**, **E-17**) et passe en **mode Joueur** pour
@@ -416,7 +416,7 @@ Il veut d'abord un essai jetable, puis la vraie base, sans doublon ni fuite.*
    Kanka sont dans l'ordre de leurs dates d'origine ; sur une fiche, le menu « ⋯ » montre sa clé
    d'origine (« lieu:port-sel »).
 7. Il corrige le script (il coupe la section trop longue en deux), le relance : le nouveau lot dit
-   « Fiches : 3 créées · 498 inchangées · Fichiers : 1 140 inchangés · … · 0 en attente » — aucun doublon.
+   « Fiches : 3 créées · 498 inchangées · Fichiers : 1 140 inchangés · … » (rien en attente : la ligne est omise) — aucun doublon.
 8. **Paramètres** (E-14), « Supprimer l'univers », il tape « Essai Kanka » : l'univers disparaît de
    l'accueil.
 9. Il refait 2 à 7 sur l'univers réel ; les jours suivants, Léa écrit dans une section importée et
@@ -426,7 +426,7 @@ Il veut d'abord un essai jetable, puis la vraie base, sans doublon ni fuite.*
    Antor a passé « Visible des joueurs » (E-19) n'est pas rétabli « Réservé au MJ » : « visibilité
    modifiée dans Kanevas : non écrasée ».
 10. **Accès par API** (E-18) : il révoque le jeton (P-11).
-*Moment fort* : le second lot « Fiches : 0 créée, 501 inchangées » et rien de créé dans aucune autre
+*Moment fort* : le second lot « Fiches : 501 inchangées » et rien de créé dans aucune autre
 nature — rejouer est sans risque.
 *Échec* : jeton mal copié ou révoqué — le script reçoit 401 « Jeton invalide. », rien n'est écrit,
 et aucun lot n'apparaît ; un parent ou une cible de relation inconnue — la fiche est écrite sans ce

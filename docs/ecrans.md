@@ -2153,7 +2153,7 @@ page déjà ouverte du MJ ne change pas seule ; au rechargement, la tuile est re
 **Au-delà de 100** : un `PUT /fiches` dont une section nomme plus de 100 clés de `fichiers` est refusé
 (400 `invalide`, `champ: fichiers`, compté « refusée » au lot) ; si, à l'arrivée des fichiers, la
 section atteindrait 100, la jointure en trop reste en attente et le lot avertit « section « Notes » :
-100 fichiers joints au plus, « K » reste en attente ». Le mot de l'utilisateur est « fichier en attente » (jamais « référence » sur E-9 ; E-18 compte
+100 fichiers joints au plus, « K » reste en attente ». En édition et en « Aperçu », le texte garde la clé telle qu'écrite (`fichier:cle:K`) : l'aperçu montre la tuile, l'éditeur la source. Le mot de l'utilisateur est « fichier en attente » (jamais « référence » sur E-9 ; E-18 compte
 « liens et références en attente » pour le lot).
 
 **Blocs de fiche** (après les sections, hors de toute section) :
