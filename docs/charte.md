@@ -80,7 +80,9 @@ boutons, blocs) · `--t-14` corps d'interface · `--t-16` titre de boîte de dia
 *(nouveau)* texte à lire (17 px au téléphone), interligne 1,68, 66 caractères au plus par ligne ·
 `--t-22` titre de section · `--t-32` *(nouveau)* titre de fiche au téléphone · `--t-40`
 *(nouveau)* titre de fiche au bureau, interligne 1,08, approche −1,5 %. Graisses : 400 lecture,
-500 interface et titres, 600 nom d'univers et titres de boîte.
+500 interface et titres, 600 nom d'univers et titres de boîte. *(kanevas-import)* `--police-code` : pile système
+`ui-monospace, "SF Mono", Menlo, Consolas, monospace`, pour ce qui se copie à l'identique (un jeton
+d'API, une adresse, une clé d'origine, du code dans un texte) ; aucune fonte de plus n'est servie.
 
 **Espace.** Grille de 4 px : `--e-1` 4 · `--e-2` 8 · `--e-3` 12 · `--e-4` 16 · `--e-5` 24 ·
 `--e-6` 32 *(nouveau)* · `--e-7` 48 *(nouveau)* · `--e-8` 64 *(nouveau)*. Colonne de lecture :

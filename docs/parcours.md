@@ -407,8 +407,8 @@ rien depuis le dernier import — absente de l'arbre, de la recherche et des « 
 *Antor joue « CoF Mini » dans « Lame d'Ébène », sauf que son univers a des vaisseaux.*
 1. **Système de jeu** (E-15), bloc « Types de fiche » : il désactive « Vaisseau » et « Monde » pour
    le système ; Mira, MJ d'un autre univers du système, voit ces types quitter sa barre.
-2. **Paramètres** de « Lame d'Ébène » (E-14), bloc « Types de fiche » : chaque type dit « Suit le
-   système (activé) » ou « (désactivé) » ; il force « Vaisseau » à **Activé**.
+2. **Paramètres** de « Lame d'Ébène » (E-14), bloc « Types de fiche » : chaque type dit « Système · activé »
+   ou « Système · désactivé » ; il force « Vaisseau » à **Activé**.
 3. La barre latérale de « Lame d'Ébène » montre « Vaisseaux », pas « Mondes ».
 4. Plus tard, le système réactive « Monde » : « Lame d'Ébène », qui le suit, le montre aussitôt ;
    « Vaisseau », forcé, ne bouge pas.

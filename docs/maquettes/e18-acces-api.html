@@ -1,0 +1,1031 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Accès par API — Lame d'Ébène — Kanevas</title>
+<meta name="color-scheme" content="light dark">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&display=swap" rel="stylesheet">
+<script>
+/* Thème avant le premier rendu : choix mémorisé (Clair, Sombre, Système), sinon le système. */
+(function () {
+  var c = 'systeme';
+  try { c = localStorage.getItem('kanevas-theme') || 'systeme'; } catch (e) {}
+  var clair = c === 'clair' || (c === 'systeme' && matchMedia('(prefers-color-scheme: light)').matches);
+  document.documentElement.dataset.theme = clair ? 'light' : 'dark';
+})();
+</script>
+<style>
+/* =====================================================================================
+   MAQUETTE — E-18 Accès par API (MJ), kanevas-import.
+   Illustre docs/ecrans.md, « Détail des écrans de kanevas-import (cadrage) » › « E-18 Accès par
+   API (MJ) » : l'introduction et l'adresse de base à copier ; le panneau « Jetons » (une ligne
+   par jeton, actifs puis révoqués et expirés, « Révoquer » au survol, visible au toucher) ; la
+   boîte « Nouveau jeton » (Nom, Durée, « Créer le jeton », puis le jeton montré une fois,
+   « Copier », « J'ai copié le jeton ») ; la boîte « Révoquer » ; le panneau « Lots d'import »
+   (date, jeton, état, compteurs ; une ligne se déplie sur ses refus et avertissements) ; les
+   états vide et connexion perdue. Parcours P-10 et P-11 (docs/parcours.md).
+   Cadre, tokens et composants : e09-fiche.html et docs/charte.md (icône `key-round`).
+   Le document prime sur la maquette.
+
+   États à ouvrir par l'adresse (combinables : #etat-lot,perdue ; tous atteignables aussi au clic) :
+     (aucun)              canonique : 4 jetons, 3 lots repliés
+     #etat-nouveau        boîte « Nouveau jeton » : Nom, Durée (7 jours / 30 jours / 90 jours / 1 an)
+     #etat-jeton-montre   la même boîte montre le jeton une fois : « Copier », « J'ai copié le jeton »
+     #etat-revoquer       boîte « Révoquer « Script Kanka — Mac » ? »
+     #etat-lot            le lot du 11 oct. 2026, 14:05 déplié : 3 refus, 2 avertissements
+     #etat-vide           aucun jeton, aucun lot
+     #etat-perdue         bandeau « Connexion perdue » ; « Nouveau jeton » et « Révoquer » désactivés
+   Et ceux du cadre : #etat-menu, #etat-univers, #etat-tiroir.
+   ===================================================================================== */
+
+/* ---------- Tokens (docs/charte.md) — sombre ---------- */
+:root {
+  color-scheme: dark;
+  --fond: #121317;
+  --fond-lateral: #0e0f12;
+  --surface: #191a1f;
+  --surface-2: #202128;
+  --surface-3: #2a2b33;
+  --bord: rgba(255,255,255,.08);
+  --bord-fort: rgba(255,255,255,.14);
+  --bord-champ: #74757f;
+  --texte: #ebecf0;
+  --texte-2: #a6a7b0;
+  --texte-3: #8b8c97;
+  --accent: #8b9bf0;
+  --sur-accent: #11142b;
+  --accent-texte: #9aa6f5;
+  --accent-fond: rgba(154,166,245,.16);
+  --mj: #f2a33c;
+  --mj-fond: rgba(242,163,60,.14);
+  --mj-bord: rgba(242,163,60,.42);
+  --mj-trame: rgba(242,163,60,.075);
+  --table: #3fc79a;
+  --table-fond: rgba(63,199,154,.14);
+  --table-bord: rgba(63,199,154,.55);
+  --danger: #ec7b6f;
+  --sur-danger: #1a0c0a;
+  --danger-fond: rgba(236,123,111,.14);
+  --focus: #9aa6f5;
+  --voile: rgba(5,6,9,.62);
+  --ombre-flottant: 0 0 0 1px rgba(255,255,255,.06), 0 12px 32px -6px rgba(0,0,0,.6), 0 2px 6px rgba(0,0,0,.35);
+  --squelette: rgba(255,255,255,.06);
+
+  --police-titre: "Fraunces", "Iowan Old Style", Georgia, serif;
+  --police-lecture: "Newsreader", "Iowan Old Style", Georgia, serif;
+  --police-texte: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --t-12: 12px; --t-13: 13px; --t-14: 14px; --t-16: 16px; --t-18: 18px; --t-22: 22px; --t-32: 32px; --t-40: 40px;
+  --e-1: 4px; --e-2: 8px; --e-3: 12px; --e-4: 16px; --e-5: 24px; --e-6: 32px; --e-7: 48px; --e-8: 64px;
+  --rayon-item: 6px;
+  --rayon-champ: 8px;
+  --rayon-panneau: 12px;
+  --rayon-pastille: 999px;
+  --duree: 160ms;
+  --courbe: cubic-bezier(.2,.7,.2,1);
+}
+/* ---------- Tokens — clair ---------- */
+:root[data-theme="light"] {
+  color-scheme: light;
+  --fond: #fcfcfd;
+  --fond-lateral: #f4f5f7;
+  --surface: #ffffff;
+  --surface-2: #f1f2f5;
+  --surface-3: #e8e9ee;
+  --bord: rgba(22,26,44,.09);
+  --bord-fort: rgba(22,26,44,.16);
+  --bord-champ: #808290;
+  --texte: #1a1b22;
+  --texte-2: #4a4c58;
+  --texte-3: #646674;
+  --accent: #3a4cc0;
+  --sur-accent: #ffffff;
+  --accent-texte: #3a4cc0;
+  --accent-fond: rgba(58,76,192,.10);
+  --mj: #8a5300;
+  --mj-fond: rgba(214,140,30,.14);
+  --mj-bord: rgba(176,108,10,.45);
+  --mj-trame: rgba(176,108,10,.09);
+  --table: #08694a;
+  --table-fond: rgba(8,105,74,.12);
+  --table-bord: rgba(8,105,74,.70);
+  --danger: #b4352b;
+  --sur-danger: #ffffff;
+  --danger-fond: rgba(180,53,43,.10);
+  --focus: #3a4cc0;
+  --voile: rgba(20,22,34,.38);
+  --ombre-flottant: 0 0 0 1px rgba(22,26,44,.08), 0 12px 32px -8px rgba(22,26,44,.22), 0 2px 6px rgba(22,26,44,.08);
+  --squelette: rgba(22,26,44,.07);
+}
+@media (prefers-reduced-motion: reduce) { :root { --duree: 0ms; } }
+
+/* ---------- Base ---------- */
+*, *::before, *::after { box-sizing: border-box; }
+html { scroll-padding-top: 72px; -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: var(--fond); color: var(--texte); font: 400 var(--t-14)/1.5 var(--police-texte);
+  -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; font-feature-settings: "cv11", "ss01"; }
+h1, h2, h3, p, ul { margin: 0; }
+[hidden] { display: none !important; }
+ul { padding: 0; list-style: none; }
+a { color: inherit; text-decoration: none; }
+button, input, select, textarea { font: inherit; color: inherit; }
+button { background: none; border: 0; padding: 0; cursor: pointer; }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; border-radius: var(--rayon-item); }
+.i { width: 16px; height: 16px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.75;
+  stroke-linecap: round; stroke-linejoin: round; }
+.i.p { width: 14px; height: 14px; }
+.i.pp { width: 12px; height: 12px; stroke-width: 2; }
+.lecteur { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+kbd { font: 500 11px/1 var(--police-texte); color: var(--texte-3); border: 1px solid var(--bord-fort);
+  border-bottom-width: 2px; border-radius: 4px; padding: 2px 5px; }
+
+/* ---------- Bouton ---------- */
+.bouton { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 30px;
+  padding: 0 var(--e-3); border-radius: var(--rayon-champ); border: 1px solid var(--bord-fort);
+  background: var(--surface-3); color: var(--texte); font-size: var(--t-13); font-weight: 500; white-space: nowrap;
+  transition: background-color var(--duree), border-color var(--duree), color var(--duree); }
+.bouton:hover { border-color: var(--bord-champ); }
+.bouton.principal { background: var(--accent); border-color: transparent; color: var(--sur-accent); }
+.bouton.principal:hover { background: color-mix(in srgb, var(--accent) 88%, var(--texte)); }
+.bouton.danger { background: var(--danger); border-color: transparent; color: var(--sur-danger); }
+.bouton.danger:hover { background: color-mix(in srgb, var(--danger) 88%, var(--texte)); }
+.bouton.fantome { background: transparent; border-color: transparent; color: var(--texte-2); }
+.bouton.fantome:hover { background: var(--surface-2); color: var(--texte); }
+.bouton.petit { min-height: 26px; padding: 0 var(--e-2); font-size: var(--t-12); }
+.bouton[aria-disabled="true"], .bouton:disabled { opacity: .45; cursor: not-allowed; }
+.icone { width: 28px; height: 28px; display: inline-grid; place-items: center; border-radius: var(--rayon-item);
+  color: var(--texte-3); transition: background-color var(--duree), color var(--duree); }
+.icone:hover, .icone[aria-expanded="true"] { background: var(--surface-2); color: var(--texte); }
+.icone.danger:hover { background: var(--danger-fond); color: var(--danger); }
+.icone[aria-disabled="true"] { opacity: .4; cursor: not-allowed; }
+.lien-action { display: inline-flex; align-items: center; gap: 6px; min-height: 26px; padding: 0 6px; margin-left: -6px;
+  border-radius: var(--rayon-item); color: var(--texte-2); font-size: var(--t-13); font-weight: 500;
+  transition: background-color var(--duree), color var(--duree); }
+.lien-action:hover { background: var(--surface-2); color: var(--texte); }
+.lien-action .i { color: var(--texte-3); }
+.lien-action[aria-disabled="true"] { opacity: .45; cursor: not-allowed; }
+
+/* ---------- Pastilles ---------- */
+.pastille { display: inline-flex; align-items: center; gap: 5px; height: 22px; padding: 0 8px;
+  border-radius: var(--rayon-pastille); font: 500 var(--t-12)/1 var(--police-texte); white-space: nowrap;
+  background: var(--surface-2); color: var(--texte-2); }
+.pastille.mj { background: var(--mj-fond); color: var(--mj); }
+.pastille.table { background: var(--table-fond); color: var(--table); }
+.pastille .av { width: 16px; height: 16px; font-size: 9px; margin-left: -4px; }
+button.pastille { cursor: pointer; transition: box-shadow var(--duree); }
+button.pastille:hover, button.pastille[aria-expanded="true"] { box-shadow: inset 0 0 0 1px currentColor; }
+button.pastille .chev { opacity: .7; margin-right: -2px; }
+.type { display: inline-flex; align-items: center; gap: 6px; height: 24px; padding: 0 9px 0 7px;
+  border-radius: var(--rayon-item); background: var(--surface-2); color: var(--texte-2); font-size: var(--t-12); font-weight: 500; }
+.type .i { color: var(--texte-3); }
+
+/* ---------- Avatar ---------- */
+.av { width: 28px; height: 28px; border-radius: 50%; display: inline-grid; place-items: center; flex: none;
+  background: var(--accent-fond); color: var(--accent-texte); font: 600 11px/1 var(--police-texte); letter-spacing: .02em; }
+.av.l { background: var(--table-fond); color: var(--table); }
+
+/* =====================================================================================
+   Cadre
+   ===================================================================================== */
+.app { display: grid; grid-template-columns: 252px minmax(0, 1fr); min-height: 100vh; }
+.colonne-barre { background: var(--fond-lateral); border-right: 1px solid var(--bord); }
+.barre { position: sticky; top: 0; height: 100vh; display: flex; flex-direction: column; padding: var(--e-3) var(--e-3) var(--e-3); }
+
+/* Sélecteur d'univers */
+.ancre { position: relative; }
+.univers { display: flex; align-items: center; gap: 10px; width: 100%; padding: 6px; border-radius: var(--rayon-champ); text-align: left;
+  transition: background-color var(--duree); }
+.univers:hover, .univers[aria-expanded="true"] { background: var(--surface-2); }
+.sceau { width: 30px; height: 30px; border-radius: 8px; flex: none; display: grid; place-items: center;
+  background: var(--surface-3); color: var(--texte); font: 600 15px/1 var(--police-titre); box-shadow: inset 0 0 0 1px var(--bord-fort); }
+.univers .nom { flex: 1; min-width: 0; font-weight: 600; font-size: var(--t-14); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.univers > .i { color: var(--texte-3); }
+.univers { display: grid; grid-template-columns: 30px minmax(0,1fr) auto; grid-template-areas: "s n c" "s r c"; column-gap: 10px; row-gap: 2px; align-items: center; }
+.univers > .sceau { grid-area: s; } .univers > .nom { grid-area: n; } .univers > .pastille { grid-area: r; justify-self: start; font-size: 11px; height: 18px; } .univers > .i { grid-area: c; }
+
+
+/* Navigation */
+.barre nav { flex: 1; overflow-y: auto; margin-top: var(--e-3); padding-right: 2px; }
+.groupe + .groupe { margin-top: var(--e-4); }
+.groupe-titre { padding: 0 10px 4px; font-size: var(--t-12); font-weight: 500; color: var(--texte-3); }
+.item { display: flex; align-items: center; gap: 10px; min-height: 30px; padding: 0 10px; border-radius: var(--rayon-item);
+  color: var(--texte-2); font-size: var(--t-13); font-weight: 500; transition: background-color var(--duree), color var(--duree); }
+.item .i { color: var(--texte-3); transition: color var(--duree); }
+.item:hover { background: var(--surface-2); color: var(--texte); }
+.item:hover .i { color: var(--texte-2); }
+.item[aria-current="page"] { background: var(--accent-fond); color: var(--texte); }
+.item[aria-current="page"] .i { color: var(--accent-texte); }
+
+/* Pied : le compte */
+.pied { padding-top: var(--e-2); border-top: 1px solid var(--bord); }
+.compte { display: flex; align-items: center; gap: 10px; width: 100%; padding: 6px; border-radius: var(--rayon-champ); text-align: left;
+  transition: background-color var(--duree); }
+.compte:hover, .compte[aria-expanded="true"] { background: var(--surface-2); }
+.compte .ident { flex: 1; min-width: 0; font-size: var(--t-13); font-weight: 500; }
+.compte > .i { color: var(--texte-3); }
+
+/* ---------- Menu ---------- */
+.menu { position: absolute; z-index: 40; min-width: 220px; padding: 4px; border-radius: var(--rayon-panneau);
+  background: var(--surface); box-shadow: var(--ombre-flottant);
+  opacity: 0; transform: translateY(4px) scale(.98); pointer-events: none; visibility: hidden;
+  transition: opacity var(--duree) var(--courbe), transform var(--duree) var(--courbe), visibility 0s linear var(--duree); }
+.menu.ouvert { opacity: 1; transform: none; pointer-events: auto; visibility: visible; transition-delay: 0s; }
+.menu .entree { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 32px; padding: 0 10px;
+  border-radius: var(--rayon-item); font-size: var(--t-13); color: var(--texte); text-align: left; }
+.menu .entree .i { color: var(--texte-3); }
+.menu .entree:hover, .menu .entree:focus-visible { background: var(--surface-2); outline: none; }
+.menu .entree.danger { color: var(--danger); }
+.menu .entree.danger .i { color: var(--danger); }
+.menu .entree .fin { margin-left: auto; color: var(--texte-3); font-size: var(--t-12); display: flex; gap: 6px; align-items: center; }
+.menu .entree[aria-disabled="true"] { opacity: .45; cursor: not-allowed; }
+.menu .entree[aria-disabled="true"]:hover { background: none; }
+.menu .sep { height: 1px; background: var(--bord); margin: 4px -4px; }
+.menu .titre-menu { padding: 8px 10px 4px; font-size: var(--t-12); color: var(--texte-3); font-weight: 500; }
+.menu-compte { left: 0; right: 0; bottom: calc(100% + 6px); }
+.menu-compte .qui { display: flex; align-items: center; gap: 10px; padding: 8px 10px 10px; }
+.menu-compte .qui b { display: block; font-weight: 600; font-size: var(--t-13); }
+.menu-compte .qui small { color: var(--texte-3); font-size: var(--t-12); }
+.menu-univers { left: 0; right: 0; top: calc(100% + 6px); }
+.menu-univers .role { margin-left: auto; }
+
+/* Bascule de thème : soleil, lune, écran */
+.themes { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 4px 4px 4px 10px; min-height: 40px; }
+.themes > span { font-size: var(--t-13); }
+.segments { display: inline-flex; padding: 2px; gap: 2px; border-radius: var(--rayon-champ); background: var(--surface-2); }
+.segments button { width: 30px; height: 26px; display: grid; place-items: center; border-radius: var(--rayon-item); color: var(--texte-3);
+  transition: background-color var(--duree), color var(--duree), box-shadow var(--duree); }
+.segments button:hover { color: var(--texte); }
+.segments button[aria-checked="true"] { background: var(--surface); color: var(--texte); box-shadow: 0 0 0 1px var(--bord-fort), 0 1px 2px rgba(0,0,0,.18); }
+
+/* ---------- Barre haute ---------- */
+.zone-principale { min-width: 0; display: flex; flex-direction: column; }
+.haute { position: sticky; top: 0; z-index: 20; height: 52px; display: flex; align-items: center; gap: var(--e-3);
+  padding: 0 var(--e-5); border-bottom: 1px solid var(--bord);
+  background: color-mix(in srgb, var(--fond) 82%, transparent); backdrop-filter: saturate(1.4) blur(12px); -webkit-backdrop-filter: saturate(1.4) blur(12px); }
+.bouton-menu { display: none; }
+.ariane { display: flex; align-items: center; gap: 2px; min-width: 0; flex: 1; font-size: var(--t-13); color: var(--texte-2); }
+.ariane a { display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 6px; border-radius: var(--rayon-item); white-space: nowrap;
+  transition: background-color var(--duree), color var(--duree); }
+.ariane a:hover { background: var(--surface-2); color: var(--texte); }
+.ariane .i.sep-ariane { color: var(--texte-3); opacity: .7; }
+.ariane [aria-current] { padding: 0 6px; color: var(--texte); font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ariane .court { display: none; }
+
+/* Bascule mode MJ / mode Joueur */
+.mode { display: inline-flex; padding: 2px; gap: 2px; border-radius: var(--rayon-champ); background: var(--surface-2); box-shadow: inset 0 0 0 1px var(--bord); }
+.mode button { display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 10px; border-radius: var(--rayon-item);
+  font-size: var(--t-13); font-weight: 500; color: var(--texte-2); transition: background-color var(--duree), color var(--duree); }
+.mode button:hover { color: var(--texte); }
+.mode button[aria-checked="true"].mj { background: var(--mj-fond); color: var(--mj); }
+.mode button[aria-checked="true"].joueur { background: var(--table-fond); color: var(--table); }
+
+/* Bandeaux du cadre */
+.bandeau { display: none; align-items: center; gap: 10px; padding: 8px var(--e-5); font-size: var(--t-13); border-bottom: 1px solid var(--bord); }
+.bandeau.perdue { background: linear-gradient(var(--danger-fond), var(--danger-fond)), var(--fond); color: var(--danger); position: sticky; top: 52px; z-index: 19; }
+.bandeau.joueur { background: linear-gradient(var(--table-fond), var(--table-fond)), var(--fond); color: var(--table); position: sticky; top: 52px; z-index: 19; }
+body.etat-perdue .bandeau.perdue { display: flex; }
+body.mode-joueur .bandeau.joueur { display: flex; }
+body.etat-perdue .bandeau.joueur { top: 89px; }
+
+/* ---------- Champ, édition en place ---------- */
+.champ { display: flex; flex-direction: column; gap: 6px; }
+.champ > span { font-size: var(--t-12); font-weight: 500; color: var(--texte-2); }
+.saisie { width: 100%; height: 34px; padding: 0 10px; border-radius: var(--rayon-champ); border: 1px solid var(--bord-champ);
+  background: var(--surface); color: var(--texte); font-size: var(--t-14); transition: border-color var(--duree), box-shadow var(--duree); }
+.saisie:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-fond); }
+.saisie::placeholder { color: var(--texte-3); }
+.champ .erreur { font-size: var(--t-12); color: var(--danger); }
+
+/* Message dans un panneau (échec d'écriture, écriture périmée, refus) */
+.alerte { display: flex; align-items: flex-start; gap: 10px; margin-top: var(--e-3); padding: 10px 12px; border-radius: var(--rayon-champ);
+  background: var(--danger-fond); color: var(--texte); font-size: var(--t-13); }
+.alerte > .i { color: var(--danger); margin-top: 2px; }
+.alerte .corps-alerte { flex: 1; display: flex; flex-direction: column; align-items: flex-start; gap: 8px; }
+
+/* ---------- Boîte de dialogue ---------- */
+.voile { position: fixed; inset: 0; z-index: 60; display: grid; place-items: center; padding: var(--e-4); background: var(--voile);
+  opacity: 0; visibility: hidden; transition: opacity var(--duree), visibility 0s linear var(--duree); }
+.voile.ouvert { opacity: 1; visibility: visible; transition-delay: 0s; }
+.dialogue { width: min(440px, 100%); padding: var(--e-5); border-radius: var(--rayon-panneau); background: var(--surface); box-shadow: var(--ombre-flottant);
+  transform: translateY(6px) scale(.98); transition: transform var(--duree) var(--courbe); }
+.voile.ouvert .dialogue { transform: none; }
+.dialogue .ic-dialogue { width: 36px; height: 36px; border-radius: 10px; display: grid; place-items: center; background: var(--danger-fond); color: var(--danger); margin-bottom: var(--e-4); }
+.dialogue h3 { font: 600 var(--t-16)/1.35 var(--police-texte); }
+.dialogue p { margin-top: 6px; color: var(--texte-2); font-size: var(--t-14); }
+.dialogue .actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: var(--e-5); }
+
+/* ---------- Toast ---------- */
+.toasts { position: fixed; left: 50%; bottom: var(--e-5); transform: translateX(-50%); z-index: 70; display: flex; flex-direction: column; align-items: center; gap: 8px; pointer-events: none; }
+.toast { display: flex; align-items: center; gap: 10px; min-height: 40px; padding: 0 8px 0 12px; border-radius: var(--rayon-champ);
+  background: var(--surface); box-shadow: var(--ombre-flottant); font-size: var(--t-13); pointer-events: auto;
+  opacity: 0; transform: translateY(8px); transition: opacity var(--duree) var(--courbe), transform var(--duree) var(--courbe); }
+.toast.visible { opacity: 1; transform: none; }
+.toast > .i { color: var(--table); }
+.toast .fermer { width: 24px; height: 24px; }
+
+/* ---------- Demander à Kanevas ---------- */
+.assistant { position: fixed; right: var(--e-5); bottom: var(--e-5); z-index: 30; display: inline-flex; align-items: center; gap: 8px;
+  height: 40px; padding: 0 16px 0 13px; border-radius: 999px; background: var(--texte); color: var(--fond); font-weight: 500; font-size: var(--t-13);
+  box-shadow: 0 8px 24px -6px rgba(0,0,0,.45); transition: transform var(--duree) var(--courbe); }
+.assistant:hover { transform: translateY(-1px); }
+.assistant kbd { color: color-mix(in srgb, var(--fond) 65%, var(--texte)); border-color: color-mix(in srgb, var(--fond) 30%, var(--texte)); margin-left: 4px; }
+
+.os { border-radius: 6px; background: var(--squelette); }
+/* ---------- Connexion perdue : les gestes qui écrivent sont désactivés ---------- */
+body.etat-perdue [data-ecrit] { opacity: .45; pointer-events: none; }
+body.etat-perdue [data-ecrit-recherche] { opacity: .45; pointer-events: none; }
+/* ---------- Tiroir (téléphone) ---------- */
+.voile-tiroir { display: none; }
+
+
+
+/* ---------- Page, tête, fenêtre et bascule segmentée (e14-parametres.html, E-8) ---------- */
+/* « .principal » nomme aussi la colonne du cadre (e09) : le bouton principal garde sa disposition en ligne. */
+.bouton.principal { flex-direction: row; display: inline-flex; }
+.page.liste { width: 100%; max-width: 784px; margin: 0 auto; padding: var(--e-8) var(--e-7) 160px; }
+
+/* Tête : glyphe du type, titre, action principale */
+.tete-liste { display: flex; align-items: center; gap: var(--e-4); flex-wrap: wrap; }
+.glyphe-type { width: 40px; height: 40px; flex: none; display: grid; place-items: center; border-radius: 10px;
+  background: var(--surface-2); color: var(--texte-2); box-shadow: inset 0 0 0 1px var(--bord); }
+.glyphe-type .i { width: 20px; height: 20px; }
+.tete-liste h1 { flex: 1; min-width: 0; font: 500 var(--t-40)/1.08 var(--police-titre); letter-spacing: -.015em;
+  font-variation-settings: "opsz" 144; }
+
+/* ---------- Fenêtre « Nouveau personnage » ---------- */
+.dialogue.creer .ic-dialogue { background: var(--accent-fond); color: var(--accent-texte); }
+.dialogue.creer .ic-dialogue .i { width: 18px; height: 18px; }
+.dialogue form { display: flex; flex-direction: column; gap: var(--e-4); margin-top: var(--e-5); }
+.dialogue .alerte { margin-top: 0; }
+.dialogue .saisie.en-erreur { border-color: var(--danger); }
+.dialogue .saisie.en-erreur:focus { box-shadow: 0 0 0 3px var(--danger-fond); }
+.genre { display: inline-flex; padding: 2px; gap: 2px; border-radius: var(--rayon-champ); background: var(--surface-2); box-shadow: inset 0 0 0 1px var(--bord); align-self: flex-start; }
+.genre button { display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 12px; border-radius: var(--rayon-item);
+  font-size: var(--t-13); font-weight: 500; color: var(--texte-2); transition: background-color var(--duree), color var(--duree), box-shadow var(--duree); }
+.genre button:hover { color: var(--texte); }
+.genre button[aria-checked="true"] { background: var(--surface); color: var(--texte); box-shadow: 0 0 0 1px var(--bord-fort), 0 1px 2px rgba(0,0,0,.18); }
+.genre button .i { color: var(--texte-3); }
+.genre button[aria-checked="true"] .i { color: var(--accent-texte); }
+.dialogue .aide-genre { font-size: var(--t-12); color: var(--texte-3); }
+.dialogue .actions { margin-top: var(--e-2); }
+@media (max-width: 1080px) {
+  .page.liste { padding-left: var(--e-6); padding-right: var(--e-6); }
+}
+@media (max-width: 760px) {
+  .page.liste { padding: var(--e-6) var(--e-4) 140px; }
+  .tete-liste { gap: var(--e-3); }
+  .glyphe-type { width: 36px; height: 36px; }
+  .tete-liste h1 { font-size: var(--t-32); }
+  .dialogue .actions .bouton { min-height: 40px; }
+  .genre button { height: 36px; }
+}
+
+/* ---------- Téléphone : le cadre, comme e09-fiche.html ---------- */
+@media (max-width: 760px) {
+  .app { grid-template-columns: minmax(0, 1fr); }
+  .colonne-barre { position: fixed; z-index: 50; top: 0; bottom: 0; left: 0; width: min(300px, 86vw); border-right: 1px solid var(--bord-fort);
+    transform: translateX(-100%); transition: transform var(--duree) var(--courbe); box-shadow: var(--ombre-flottant); visibility: hidden; }
+  body.tiroir-ouvert .colonne-barre { transform: none; visibility: visible; }
+  .voile-tiroir { display: block; position: fixed; inset: 0; z-index: 45; background: var(--voile); opacity: 0; visibility: hidden; transition: opacity var(--duree); }
+  body.tiroir-ouvert .voile-tiroir { opacity: 1; visibility: visible; }
+  .item, .compte, .univers, .menu .entree { min-height: 40px; }
+  .haute { padding: 0 var(--e-2) 0 6px; gap: 4px; }
+  .bouton-menu { display: inline-grid; width: 40px; height: 40px; }
+  .ariane > a:first-child, .ariane > a:first-child + .sep-ariane { display: none; }
+  .bandeau { padding: 8px var(--e-4); }
+  .lien-action, .bouton.petit { min-height: 36px; }
+  .assistant { right: var(--e-4); bottom: var(--e-4); width: 48px; height: 48px; padding: 0; justify-content: center; }
+  .assistant .lib-assistant, .assistant kbd { display: none; }
+  .assistant .i { width: 20px; height: 20px; }
+  .toasts { left: var(--e-4); right: 80px; bottom: var(--e-4); transform: none; align-items: stretch; }
+}
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition-duration: 0ms !important; } }
+
+/* =====================================================================================
+   E-18 — Accès par API. Rien que des composants du cadre et des tokens de la charte ;
+   aucune couleur en dur.
+   ===================================================================================== */
+/* La charte n'a pas de police à chasse fixe : pile système, sans fonte servie. */
+.chasse { font-family: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace; font-variant-ligatures: none; letter-spacing: 0; }
+
+.intro { margin-top: var(--e-4); max-width: 72ch; color: var(--texte-2); font-size: var(--t-14); }
+
+/* Une valeur à copier : l'adresse de base, le jeton */
+.copie { display: flex; align-items: stretch; gap: var(--e-2); }
+.valeur { flex: 1; min-width: 0; display: flex; align-items: center; min-height: 34px; padding: 7px 10px; border-radius: var(--rayon-champ);
+  background: var(--surface-2); box-shadow: inset 0 0 0 1px var(--bord); color: var(--texte); font-size: 13px; line-height: 20px;
+  overflow-wrap: anywhere; user-select: all; }
+.copie .bouton { min-height: 34px; align-self: flex-start; }
+.adresse { margin-top: var(--e-5); display: flex; flex-direction: column; gap: 6px; max-width: 600px; }
+.adresse > .lib { font-size: var(--t-12); font-weight: 500; color: var(--texte-2); }
+
+/* Les deux panneaux */
+.panneau { margin-top: var(--e-7); }
+.tete-panneau { display: flex; align-items: center; gap: var(--e-3); min-height: 32px; margin-bottom: var(--e-3); }
+.tete-panneau h2 { flex: 1; min-width: 0; font: 500 var(--t-22)/1.25 var(--police-titre); letter-spacing: -.005em; font-variation-settings: "opsz" 48; }
+.tete-panneau .note-panneau { font-size: var(--t-12); color: var(--texte-3); }
+.cadre-liste { padding: 4px; border-radius: var(--rayon-panneau); box-shadow: inset 0 0 0 1px var(--bord); }
+.cadre-liste > li { position: relative; }
+.cadre-liste > li + li::before { content: ""; position: absolute; top: 0; left: 52px; right: 12px; height: 1px; background: var(--bord); }
+.cadre-liste > li:hover::before, .cadre-liste > li:hover + li::before,
+.cadre-liste > li.deplie::before, .cadre-liste > li.deplie + li::before { opacity: 0; }
+
+/* Une ligne de jeton */
+.jeton { display: flex; align-items: center; gap: 12px; min-height: 60px; padding: 10px 10px 10px 12px; border-radius: var(--rayon-champ);
+  transition: background-color var(--duree); }
+.jeton.actif:hover, .jeton.actif:focus-within { background: var(--surface-2); }
+.ic-ligne { width: 28px; height: 28px; flex: none; display: grid; place-items: center; border-radius: var(--rayon-item);
+  background: var(--surface-2); box-shadow: inset 0 0 0 1px var(--bord); color: var(--texte-2); transition: background-color var(--duree); }
+.jeton.actif:hover .ic-ligne { background: var(--surface-3); }
+.jeton.inactif .ic-ligne { background: transparent; color: var(--texte-3); }
+.jeton .corps { flex: 1; min-width: 0; }
+.jeton .nom { display: block; font-size: var(--t-14); font-weight: 500; color: var(--texte); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.jeton.inactif .nom { color: var(--texte-2); }
+.meta { display: flex; flex-wrap: wrap; column-gap: 6px; margin-top: 2px; font-size: var(--t-13); color: var(--texte-3); }
+.meta > span:not(:last-child)::after { content: "·"; margin-left: 6px; }
+.meta .recent { color: var(--texte-2); }
+.revoquer { color: var(--texte-2); opacity: 0; transition: opacity var(--duree), background-color var(--duree), color var(--duree); }
+.jeton:hover .revoquer, .jeton:focus-within .revoquer, .revoquer:focus-visible { opacity: 1; }
+.revoquer:hover { background: var(--danger-fond); color: var(--danger); }
+.revoquer .i { color: currentColor; }
+@media (hover: none) { .revoquer { opacity: 1; } }
+body.etat-perdue .revoquer { opacity: .45; }
+.pastille .i.pp { margin-left: -1px; }
+.pastille.revoque { background: var(--danger-fond); color: var(--danger); }
+
+/* Une ligne de lot */
+.lot-tete { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 60px; padding: 10px 10px 10px 12px; text-align: left;
+  border-radius: var(--rayon-champ); transition: background-color var(--duree); }
+button.lot-tete:hover, .deplie > .lot-tete { background: var(--surface-2); }
+button.lot-tete:focus-visible { outline-offset: -2px; border-radius: var(--rayon-champ); }
+.lot-tete .chev { width: 28px; height: 28px; flex: none; display: grid; place-items: center; color: var(--texte-3); }
+.lot-tete .chev .i { transition: transform var(--duree) var(--courbe); }
+.lot-tete[aria-expanded="true"] .chev .i { transform: rotate(90deg); color: var(--texte); }
+.lot-tete .corps { flex: 1; min-width: 0; }
+.lot-ligne1 { display: flex; flex-wrap: wrap; column-gap: 8px; align-items: baseline; }
+.lot-date { font-size: var(--t-14); font-weight: 500; color: var(--texte); white-space: nowrap; }
+.lot-jeton { display: inline-flex; align-items: center; gap: 5px; min-width: 0; font-size: var(--t-13); color: var(--texte-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lot-jeton .i { color: var(--texte-3); }
+.compteurs { display: flex; flex-wrap: wrap; column-gap: 6px; margin-top: 2px; font-size: var(--t-13); color: var(--texte-3); font-variant-numeric: tabular-nums; }
+.compteurs > span:not(:last-child)::after { content: "·"; margin-left: 6px; color: var(--texte-3); }
+.compteurs .plein { color: var(--texte-2); }
+.compteurs .refus-n { color: var(--danger); }
+
+/* Le détail d'un lot déplié : refus puis avertissements */
+.lot-detail { padding: 4px 12px 14px 52px; }
+.lot-detail[hidden] { display: none; }
+.groupe-pb + .groupe-pb { margin-top: var(--e-4); }
+.groupe-pb h3 { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; font-size: var(--t-12); font-weight: 500; color: var(--texte-3); }
+.probleme { display: grid; grid-template-columns: 16px minmax(0, 14.5rem) minmax(0, 1fr); column-gap: 10px; align-items: baseline;
+  padding: 7px 0; border-top: 1px solid var(--bord); font-size: var(--t-13); }
+.probleme .i { align-self: center; }
+.probleme.refus .i { color: var(--danger); }
+.probleme.avert .i { color: var(--texte-2); }
+.probleme .cle { color: var(--texte); font-size: 12.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.probleme .raison { color: var(--texte-2); }
+
+/* États vides des panneaux */
+.vide-panneau { display: flex; flex-direction: column; align-items: center; text-align: center; padding: var(--e-6) var(--e-5); }
+.vide-panneau .rond { width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; background: var(--surface-2); color: var(--texte-3); }
+.vide-panneau p { margin-top: var(--e-3); max-width: 40ch; color: var(--texte-2); font-size: var(--t-14); }
+.vide-panneau .bouton { margin-top: var(--e-4); }
+[data-plein], [data-vide] { }
+body.etat-vide [data-plein] { display: none; }
+body:not(.etat-vide) [data-vide] { display: none; }
+
+/* La boîte « Nouveau jeton » : le formulaire, puis le jeton montré une fois */
+.dialogue.creer h3 + .sous-dialogue { margin-top: 4px; color: var(--texte-2); font-size: var(--t-13); }
+.dialogue .duree { align-self: flex-start; }
+.dialogue .duree button { padding: 0 12px; }
+.dialogue .champ .erreur[hidden] { display: none; }
+.face-jeton[hidden], .face-form[hidden] { display: none; }
+.face-jeton { display: flex; flex-direction: column; gap: var(--e-4); margin-top: var(--e-5); }
+.face-jeton .lib { font-size: var(--t-12); font-weight: 500; color: var(--texte-2); margin-bottom: 6px; display: block; }
+.face-jeton .valeur { font-size: 13px; white-space: nowrap; overflow-x: auto; user-select: all; background: var(--surface-2); box-shadow: inset 0 0 0 1px var(--bord-fort); }
+.unefois { display: flex; gap: 10px; align-items: flex-start; padding: 10px 12px; border-radius: var(--rayon-champ);
+  background: var(--surface-2); color: var(--texte); font-size: var(--t-13); }
+.unefois .i { color: var(--texte-2); margin-top: 2px; }
+.dialogue.creer .actions { margin-top: var(--e-1); }
+.dialogue.revoquer-dlg .actions { margin-top: var(--e-5); }
+.dialogue.revoquer-dlg .ic-dialogue .i { width: 18px; height: 18px; }
+
+@media (max-width: 760px) {
+  .page.liste { padding-bottom: 120px; }
+  .intro { font-size: var(--t-14); }
+  .copie .bouton { min-height: 40px; }
+  .valeur { min-height: 40px; padding: 9px 10px; }
+  .panneau { margin-top: var(--e-6); }
+  .tete-panneau .bouton { min-height: 40px; }
+  .jeton { align-items: flex-start; gap: 10px; padding: 12px 6px 12px 8px; }
+  .jeton .ic-ligne { margin-top: 2px; }
+  .jeton .revoquer { margin-top: 2px; }
+  .meta { flex-direction: column; }
+  .meta > span:not(:last-child)::after { content: none; }
+  .cadre-liste > li + li::before { left: 46px; right: 8px; }
+  .lot-tete { align-items: flex-start; gap: 8px; padding: 12px 6px 12px 4px; }
+  .lot-tete .pastille { margin-top: 2px; }
+  .lot-detail { padding: 2px 8px 14px 40px; }
+  .probleme { grid-template-columns: 16px minmax(0, 1fr); row-gap: 2px; }
+  .probleme .raison { grid-column: 2; }
+  .probleme .cle { white-space: normal; overflow-wrap: anywhere; }
+  .dialogue .duree { align-self: stretch; display: grid; grid-template-columns: repeat(4, 1fr); }
+  .dialogue .duree button { justify-content: center; padding: 0 4px; }
+  .dialogue .actions { flex-direction: column-reverse; }
+  .face-jeton .valeur { white-space: normal; overflow-wrap: anywhere; }
+  .face-jeton > div { min-width: 0; }
+  .dialogue .actions .bouton { width: 100%; }
+}
+</style>
+</head>
+<body>
+<svg xmlns="http://www.w3.org/2000/svg" width="0" height="0" style="position:absolute" aria-hidden="true"><!-- Lucide (lucide-static / lucide-react, ISC), tracés copiés tels quels --><symbol id="i-book-open" viewBox="0 0 24 24"><path d="M12 5v16" /> <path d="M20.001 19A2 2 0 0022 17V5a2 2 0 00-1.999-2L16 3.002A5 5 0 0012 5a5 5 0 00-4-2H4a2 2 0 00-2 2v12a2 2 0 001.999 2H8a5 5 0 014 2 5 5 0 014-2z" /></symbol><symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5" /></symbol><symbol id="i-chevron-down" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6" /></symbol><symbol id="i-chevron-right" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6" /></symbol><symbol id="i-chevrons-up-down" viewBox="0 0 24 24"><path d="m7 15 5 5 5-5" /> <path d="m7 9 5-5 5 5" /></symbol><symbol id="i-circle-alert" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" /> <line x1="12" x2="12" y1="8" y2="12" /> <line x1="12" x2="12.01" y1="16" y2="16" /></symbol><symbol id="i-circle-check" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" /> <path d="m16 9-5.5 5.5L8 12" /></symbol><symbol id="i-contact-round" viewBox="0 0 24 24"><path d="M16 2v2" /> <path d="M17.915 21a6 6 0 10-12 0" /> <path d="M8 2v2" /> <circle cx="12" cy="11" r="4" /> <rect x="3" y="3" width="18" height="18" rx="2" /></symbol><symbol id="i-flag" viewBox="0 0 24 24"><path d="M4 22V4a1 1 0 0 1 .4-.8A6 6 0 0 1 8 2c3 0 5 2 7.333 2q2 0 3.067-.8A1 1 0 0 1 20 4v10a1 1 0 0 1-.4.8A6 6 0 0 1 16 16c-3 0-5-2-8-2a6 6 0 0 0-4 1.528" /></symbol><symbol id="i-gem" viewBox="0 0 24 24"><path d="M10.5 3 8 9l4 13 4-13-2.5-6" /> <path d="M17 3a2 2 0 0 1 1.6.8l3 4a2 2 0 0 1 .013 2.382l-7.99 10.986a2 2 0 0 1-3.247 0l-7.99-10.986A2 2 0 0 1 2.4 7.8l2.998-3.997A2 2 0 0 1 7 3z" /> <path d="M2 9h20" /></symbol><symbol id="i-hourglass" viewBox="0 0 24 24"><path d="M5 22h14" /> <path d="M5 2h14" /> <path d="M17 22v-4.172a2 2 0 0 0-.586-1.414L12 12l-4.414 4.414A2 2 0 0 0 7 17.828V22" /> <path d="M7 2v4.172a2 2 0 0 0 .586 1.414L12 12l4.414-4.414A2 2 0 0 0 17 6.172V2" /></symbol><symbol id="i-layout-grid" viewBox="0 0 24 24"><rect width="7" height="7" x="3" y="3" rx="1" /> <rect width="7" height="7" x="14" y="3" rx="1" /> <rect width="7" height="7" x="14" y="14" rx="1" /> <rect width="7" height="7" x="3" y="14" rx="1" /></symbol><symbol id="i-library" viewBox="0 0 24 24"><path d="m16 6 4 14" /> <path d="M12 6v14" /> <path d="M8 8v12" /> <path d="M4 4v16" /></symbol><symbol id="i-log-out" viewBox="0 0 24 24"><path d="m16 17 5-5-5-5" /> <path d="M21 12H9" /> <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /></symbol><symbol id="i-map-pin" viewBox="0 0 24 24"><path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0" /> <circle cx="12" cy="10" r="3" /></symbol><symbol id="i-monitor" viewBox="0 0 24 24"><rect width="20" height="14" x="2" y="3" rx="2" /> <line x1="8" x2="16" y1="21" y2="21" /> <line x1="12" x2="12" y1="17" y2="21" /></symbol><symbol id="i-moon" viewBox="0 0 24 24"><path d="M20.985 12.486a9 9 0 1 1-9.473-9.472c.405-.022.617.46.402.803a6 6 0 0 0 8.268 8.268c.344-.215.825-.004.803.401" /></symbol><symbol id="i-notebook-pen" viewBox="0 0 24 24"><path d="M13.4 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7.4" /> <path d="M2 6h4" /> <path d="M2 10h4" /> <path d="M2 14h4" /> <path d="M2 18h4" /> <path d="M21.378 5.626a1 1 0 1 0-3.004-3.004l-5.01 5.012a2 2 0 0 0-.506.854l-.837 2.87a.5.5 0 0 0 .62.62l2.87-.837a2 2 0 0 0 .854-.506z" /></symbol><symbol id="i-panel-left" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2" /> <path d="M9 3v18" /></symbol><symbol id="i-plus" viewBox="0 0 24 24"><path d="M5 12h14" /> <path d="M12 5v14" /></symbol><symbol id="i-rotate-ccw" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" /> <path d="M3 3v5h5" /></symbol><symbol id="i-scroll-text" viewBox="0 0 24 24"><path d="M15 12h-5" /> <path d="M15 8h-5" /> <path d="M19 17V5a2 2 0 0 0-2-2H4" /> <path d="M8 21h12a2 2 0 0 0 2-2v-1a1 1 0 0 0-1-1H11a1 1 0 0 0-1 1v1a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v2a1 1 0 0 0 1 1h3" /></symbol><symbol id="i-settings-2" viewBox="0 0 24 24"><path d="M14 17H5" /> <path d="M19 7h-9" /> <circle cx="17" cy="17" r="3" /> <circle cx="7" cy="7" r="3" /></symbol><symbol id="i-shield" viewBox="0 0 24 24"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z" /></symbol><symbol id="i-sparkles" viewBox="0 0 24 24"><path d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z" /> <path d="M20 2v4" /> <path d="M22 4h-4" /> <circle cx="4" cy="20" r="2" /></symbol><symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4" /> <path d="M12 2v2" /> <path d="M12 20v2" /> <path d="m4.93 4.93 1.41 1.41" /> <path d="m17.66 17.66 1.41 1.41" /> <path d="M2 12h2" /> <path d="M20 12h2" /> <path d="m6.34 17.66-1.41 1.41" /> <path d="m19.07 4.93-1.41 1.41" /></symbol><symbol id="i-users-round" viewBox="0 0 24 24"><path d="M18 21a8 8 0 0 0-16 0" /> <circle cx="10" cy="8" r="5" /> <path d="M22 20c0-3.37-2-6.5-4-8a5 5 0 0 0-.45-8.3" /></symbol><symbol id="i-wifi-off" viewBox="0 0 24 24"><path d="M12 20h.01" /> <path d="M8.5 16.429a5 5 0 0 1 7 0" /> <path d="M5 12.859a10 10 0 0 1 5.17-2.69" /> <path d="M19 12.859a10 10 0 0 0-2.007-1.523" /> <path d="M2 8.82a15 15 0 0 1 4.177-2.643" /> <path d="M22 8.82a15 15 0 0 0-11.288-3.764" /> <path d="m2 2 20 20" /></symbol><symbol id="i-dices" viewBox="0 0 24 24"><rect width="12" height="12" x="2" y="10" rx="2" ry="2" /> <path d="m17.92 14 3.5-3.5a2.24 2.24 0 0 0 0-3l-5-4.92a2.24 2.24 0 0 0-3 0L10 6" /> <path d="M6 18h.01" /> <path d="M10 14h.01" /> <path d="M15 6h.01" /> <path d="M18 9h.01" /></symbol><symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18" /> <path d="m6 6 12 12" /></symbol><symbol id="i-key-round" viewBox="0 0 24 24"><path d="M2.586 17.414A2 2 0 0 0 2 18.828V21a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h1a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h.172a2 2 0 0 0 1.414-.586l.814-.814a6.5 6.5 0 1 0-4-4z" /> <circle cx="16.5" cy="7.5" r=".5" fill="currentColor" /></symbol><symbol id="i-paw-print" viewBox="0 0 24 24"><circle cx="11" cy="4" r="2" /> <circle cx="18" cy="8" r="2" /> <circle cx="20" cy="16" r="2" /> <path d="M9 10a5 5 0 0 1 5 5v3.5a3.5 3.5 0 0 1-6.84 1.045Q6.52 17.48 4.46 16.84A3.5 3.5 0 0 1 5.5 10Z" /></symbol><symbol id="i-dna" viewBox="0 0 24 24"><path d="m10 16 1.5 1.5" /> <path d="m14 8-1.5-1.5" /> <path d="M15 2c-1.798 1.998-2.518 3.995-2.807 5.993" /> <path d="m16.5 10.5 1 1" /> <path d="m17 6-2.891-2.891" /> <path d="M2 15c6.667-6 13.333 0 20-6" /> <path d="m20 9 .891.891" /> <path d="M3.109 14.109 4 15" /> <path d="m6.5 12.5 1 1" /> <path d="m7 18 2.891 2.891" /> <path d="M9 22c1.798-1.998 2.518-3.995 2.807-5.993" /></symbol><symbol id="i-ship" viewBox="0 0 24 24"><path d="M12 2v2" /> <path d="M12 9.189V13" /> <path d="M19 12V6a2 2 0 00-2-2H7a2 2 0 00-2 2v6" /> <path d="M19.38 19A11.6 11.6 0 0021 13l-8.188-3.639a2 2 0 00-1.624 0L3 13.001a11.6 11.6 0 002.81 7.76" /> <path d="M2 20c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1s1.2 1 2.5 1c2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1" /></symbol><symbol id="i-scale" viewBox="0 0 24 24"><path d="M12 3v18" /> <path d="m19 8 3 8a5 5 0 0 1-6 0zV7" /> <path d="M3 7h1a17 17 0 0 0 8-2 17 17 0 0 0 8 2h1" /> <path d="m5 8 3 8a5 5 0 0 1-6 0zV7" /> <path d="M7 21h10" /></symbol><symbol id="i-sticky-note" viewBox="0 0 24 24"><path d="M21 9a2.4 2.4 0 0 0-.706-1.706l-3.588-3.588A2.4 2.4 0 0 0 15 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2z" /> <path d="M15 3v5a1 1 0 0 0 1 1h5" /></symbol><symbol id="i-search" viewBox="0 0 24 24"><path d="m21 21-4.34-4.34" /> <circle cx="11" cy="11" r="8" /></symbol><symbol id="i-copy" viewBox="0 0 24 24"><rect width="14" height="14" x="8" y="8" rx="2" ry="2" /> <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" /></symbol><symbol id="i-ban" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" /> <path d="M4.929 4.929 19.07 19.071" /></symbol><symbol id="i-circle-x" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" /> <path d="m15 9-6 6" /> <path d="m9 9 6 6" /></symbol><symbol id="i-triangle-alert" viewBox="0 0 24 24"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3" /> <path d="M12 9v4" /> <path d="M12 17h.01" /></symbol><symbol id="i-compass" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" /> <path d="m16.24 7.76-1.804 5.411a2 2 0 0 1-1.265 1.265L7.76 16.24l1.804-5.411a2 2 0 0 1 1.265-1.265z" /></symbol><symbol id="i-circle-dashed" viewBox="0 0 24 24"><path d="M10.1 2.182a10 10 0 0 1 3.8 0" /> <path d="M13.9 21.818a10 10 0 0 1-3.8 0" /> <path d="M17.609 3.721a10 10 0 0 1 2.69 2.7" /> <path d="M2.182 13.9a10 10 0 0 1 0-3.8" /> <path d="M20.279 17.609a10 10 0 0 1-2.7 2.69" /> <path d="M21.818 10.1a10 10 0 0 1 0 3.8" /> <path d="M3.721 6.391a10 10 0 0 1 2.7-2.69" /> <path d="M6.391 20.279a10 10 0 0 1-2.69-2.7" /></symbol></svg>
+
+<div class="app">
+  <!-- ============================ Barre latérale (cadre de e09-fiche.html) ============================ -->
+  <div class="colonne-barre" id="barre">
+    <aside class="barre" aria-label="Barre latérale" tabindex="-1" style="outline:none">
+      <div class="ancre">
+        <button class="univers" id="bouton-univers" aria-haspopup="menu" aria-expanded="false" aria-controls="menu-univers" title="Lame d'Ébène — changer d'univers">
+          <span class="sceau" aria-hidden="true">L</span>
+          <span class="nom">Lame d'Ébène</span>
+          <span class="pastille mj" id="pastille-role">MJ</span>
+          <svg class="i p" aria-hidden="true"><use href="#i-chevrons-up-down"/></svg>
+        </button>
+        <div class="menu menu-univers" id="menu-univers" role="menu" aria-label="Vos univers">
+          <div class="titre-menu">Vos univers</div>
+          <a class="entree" role="menuitem" href="#" aria-current="true"><span class="sceau" style="width:22px;height:22px;font-size:12px;border-radius:6px">L</span>Lame d'Ébène<span class="fin"><span class="pastille mj" id="pastille-role-menu">MJ</span><svg class="i p" aria-hidden="true"><use href="#i-check"/></svg></span></a>
+          <a class="entree" role="menuitem" href="#"><span class="sceau" style="width:22px;height:22px;font-size:12px;border-radius:6px">C</span>Les Cendres de Vaëlis<span class="fin"><span class="pastille table">Joueur</span></span></a>
+          <div class="sep"></div>
+          <a class="entree" role="menuitem" href="e01-accueil.html"><svg class="i" aria-hidden="true"><use href="#i-library"/></svg>Mes univers</a>
+                  </div>
+      </div>
+
+      <nav aria-label="Navigation principale">
+        <div class="groupe">
+          <a class="item" href="e17-recherche.html"><svg class="i" aria-hidden="true"><use href="#i-search"/></svg>Rechercher</a>
+        </div>
+        <div class="groupe">
+          <a class="item" href="e03-vue-ensemble.html"><svg class="i" aria-hidden="true"><use href="#i-layout-grid"/></svg>Vue d'ensemble</a>
+          <a class="item" href="e06-campagne.html"><svg class="i" aria-hidden="true"><use href="#i-flag"/></svg>Campagnes</a>
+          <a class="item" href="e13-comptes-rendus.html"><svg class="i" aria-hidden="true"><use href="#i-notebook-pen"/></svg>Comptes-rendus</a>
+        </div>
+        <div class="groupe">
+          <div class="groupe-titre">Lore</div>
+          <a class="item" href="e08-liste-fiches.html"><svg class="i" aria-hidden="true"><use href="#i-users-round"/></svg>Personnages</a>
+          <a class="item" href="e08-liste-fiches.html"><svg class="i" aria-hidden="true"><use href="#i-map-pin"/></svg>Lieux</a>
+          <a class="item" href="e08-liste-fiches.html"><svg class="i" aria-hidden="true"><use href="#i-shield"/></svg>Factions</a>
+          <a class="item" href="e08-liste-fiches.html"><svg class="i" aria-hidden="true"><use href="#i-gem"/></svg>Objets</a>
+          <a class="item" href="e08-liste-fiches.html"><svg class="i" aria-hidden="true"><use href="#i-hourglass"/></svg>Événements</a>
+          <a class="item" href="e08-liste-fiches.html"><svg class="i" aria-hidden="true"><use href="#i-scroll-text"/></svg>Quêtes</a>
+          <a class="item" href="e08-liste-fiches.html"><svg class="i" aria-hidden="true"><use href="#i-paw-print"/></svg>Créatures</a>
+          <a class="item" href="e08-liste-fiches.html"><svg class="i" aria-hidden="true"><use href="#i-dna"/></svg>Races</a>
+          <a class="item" href="e08-liste-fiches.html"><svg class="i" aria-hidden="true"><use href="#i-ship"/></svg>Vaisseaux</a>
+          <a class="item" href="e08-liste-fiches.html"><svg class="i" aria-hidden="true"><use href="#i-book-open"/></svg>Récits</a>
+          <a class="item" href="e08-liste-fiches.html"><svg class="i" aria-hidden="true"><use href="#i-scale"/></svg>Règles</a>
+          <a class="item" href="e08-liste-fiches.html"><svg class="i" aria-hidden="true"><use href="#i-sticky-note"/></svg>Notes</a>
+        </div>
+        <div class="groupe">
+          <div class="groupe-titre">Univers</div>
+          <a class="item" href="e04-membres.html"><svg class="i" aria-hidden="true"><use href="#i-contact-round"/></svg>Membres</a>
+          <a class="item" href="e14-parametres.html"><svg class="i" aria-hidden="true"><use href="#i-settings-2"/></svg>Paramètres</a>
+          <a class="item" href="e18-acces-api.html" aria-current="page"><svg class="i" aria-hidden="true"><use href="#i-key-round"/></svg>Accès par API</a>
+        </div>
+      </nav>
+
+      <div class="pied ancre">
+        <div class="menu menu-compte" id="menu-compte" role="menu" aria-label="Compte">
+          <div class="qui"><span class="av" data-av>AN</span><span><b data-ident>antor</b><small>Votre identifiant</small></span></div>
+          <div class="sep"></div>
+          <div class="themes">
+            <span id="lib-theme">Thème</span>
+            <div class="segments" role="radiogroup" aria-labelledby="lib-theme">
+              <button role="radio" data-theme-choix="clair" aria-checked="false" aria-label="Clair" title="Clair"><svg class="i p" aria-hidden="true"><use href="#i-sun"/></svg></button>
+              <button role="radio" data-theme-choix="sombre" aria-checked="false" aria-label="Sombre" title="Sombre"><svg class="i p" aria-hidden="true"><use href="#i-moon"/></svg></button>
+              <button role="radio" data-theme-choix="systeme" aria-checked="true" aria-label="Système" title="Système"><svg class="i p" aria-hidden="true"><use href="#i-monitor"/></svg></button>
+            </div>
+          </div>
+          <div class="sep"></div>
+          <button class="entree" role="menuitem" data-toast="Déconnexion : vous seriez mené à la connexion."><svg class="i" aria-hidden="true"><use href="#i-log-out"/></svg>Se déconnecter</button>
+        </div>
+        <button class="compte" id="bouton-compte" aria-haspopup="menu" aria-expanded="false" aria-controls="menu-compte">
+          <span class="av" aria-hidden="true" data-av>AN</span>
+          <span class="ident" data-ident>antor</span>
+          <svg class="i p" aria-hidden="true"><use href="#i-chevrons-up-down"/></svg>
+        </button>
+      </div>
+    </aside>
+  </div>
+  <div class="voile-tiroir" id="voile-tiroir"></div>
+
+  <!-- ============================ Zone principale ============================ -->
+  <div class="zone-principale">
+    <header class="haute">
+      <button class="icone bouton-menu" id="bouton-menu" aria-label="Menu" aria-expanded="false" aria-controls="barre"><svg class="i" aria-hidden="true"><use href="#i-panel-left"/></svg></button>
+      <nav class="ariane" aria-label="Fil d'Ariane">
+        <a href="e03-vue-ensemble.html"><span class="sceau" style="width:18px;height:18px;font-size:10px;border-radius:5px" aria-hidden="true">L</span>Lame d'Ébène</a>
+        <svg class="i p sep-ariane" aria-hidden="true"><use href="#i-chevron-right"/></svg>
+        <span aria-current="page">Accès par API</span>
+      </nav>
+    </header>
+    <div class="bandeau perdue" role="status"><svg class="i" aria-hidden="true"><use href="#i-wifi-off"/></svg>Connexion perdue. Ce que vous voyez peut être dépassé ; rien n'est enregistré tant qu'elle ne revient pas.</div>
+<main class="page liste" id="contenu">
+  <header class="tete-liste"><span class="glyphe-type" aria-hidden="true"><svg class="i" aria-hidden="true"><use href="#i-key-round"/></svg></span><h1>Accès par API</h1></header>
+  <p class="intro">Un jeton permet à un script d'écrire dans cet univers avec vos droits, par l'API d'import.</p>
+  <div class="adresse">
+    <span class="lib" id="lib-adresse">Adresse de base</span>
+    <div class="copie">
+      <code class="valeur chasse" id="adresse" aria-labelledby="lib-adresse">https://kanevas.berard.me/api/import/v1/univers/7</code>
+      <button class="bouton" data-copier="adresse" aria-label="Copier l'adresse de base"><svg class="i p" aria-hidden="true"><use href="#i-copy"/></svg>Copier</button>
+    </div>
+  </div>
+
+  <!-- ===================== Panneau 1 : Jetons ===================== -->
+  <section class="panneau" aria-labelledby="h-jetons">
+    <div class="tete-panneau">
+      <h2 id="h-jetons">Jetons</h2>
+      <button class="bouton principal" id="nouveau-jeton" data-ecrit aria-haspopup="dialog"><svg class="i p" aria-hidden="true"><use href="#i-plus"/></svg>Nouveau jeton</button>
+    </div>
+    <ul class="cadre-liste" id="jetons" data-plein>
+      <li data-jeton="Script Kanka — Mac">
+        <div class="jeton actif">
+          <span class="ic-ligne" aria-hidden="true"><svg class="i p"><use href="#i-key-round"/></svg></span>
+          <span class="corps">
+            <span class="nom" title="Script Kanka — Mac">Script Kanka — Mac</span>
+            <span class="meta"><span>créé par antor le 11 oct. 2026</span><span class="recent">dernier usage il y a 3 min</span><span data-fin>expire le 10 nov. 2026</span></span>
+          </span>
+          <button class="bouton petit fantome revoquer" data-ecrit data-revoquer aria-label="Révoquer « Script Kanka — Mac »"><svg class="i p" aria-hidden="true"><use href="#i-ban"/></svg>Révoquer</button>
+        </div>
+      </li>
+      <li data-jeton="Essai de Mira">
+        <div class="jeton actif">
+          <span class="ic-ligne" aria-hidden="true"><svg class="i p"><use href="#i-key-round"/></svg></span>
+          <span class="corps">
+            <span class="nom" title="Essai de Mira">Essai de Mira</span>
+            <span class="meta"><span>créé par mira le 11 oct. 2026</span><span>jamais utilisé</span><span data-fin>expire le 18 oct. 2026</span></span>
+          </span>
+          <button class="bouton petit fantome revoquer" data-ecrit data-revoquer aria-label="Révoquer « Essai de Mira »"><svg class="i p" aria-hidden="true"><use href="#i-ban"/></svg>Révoquer</button>
+        </div>
+      </li>
+      <li data-jeton="Ancien script">
+        <div class="jeton inactif">
+          <span class="ic-ligne" aria-hidden="true"><svg class="i p"><use href="#i-key-round"/></svg></span>
+          <span class="corps">
+            <span class="nom" title="Ancien script">Ancien script</span>
+            <span class="meta"><span>créé par antor le 2 oct. 2026</span><span>dernier usage le 3 oct. 2026</span></span>
+          </span>
+          <span class="pastille revoque"><svg class="i pp" aria-hidden="true"><use href="#i-ban"/></svg>Révoqué</span>
+        </div>
+      </li>
+      <li data-jeton="Test septembre">
+        <div class="jeton inactif">
+          <span class="ic-ligne" aria-hidden="true"><svg class="i p"><use href="#i-key-round"/></svg></span>
+          <span class="corps">
+            <span class="nom" title="Test septembre">Test septembre</span>
+            <span class="meta"><span>créé par antor le 14 sept. 2026</span><span>jamais utilisé</span></span>
+          </span>
+          <span class="pastille"><svg class="i pp" aria-hidden="true"><use href="#i-hourglass"/></svg>Expiré</span>
+        </div>
+      </li>
+    </ul>
+    <div class="cadre-liste" data-vide>
+      <div class="vide-panneau">
+        <span class="rond" aria-hidden="true"><svg class="i"><use href="#i-key-round"/></svg></span>
+        <p>Aucun jeton. Créez-en un pour qu'un script écrive dans cet univers.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== Panneau 2 : Lots d'import ===================== -->
+  <section class="panneau" aria-labelledby="h-lots">
+    <div class="tete-panneau">
+      <h2 id="h-lots">Lots d'import</h2>
+    </div>
+    <ul class="cadre-liste" id="lots" data-plein>
+      <li>
+        <button class="lot-tete" aria-expanded="false" aria-controls="lot-3">
+          <span class="chev" aria-hidden="true"><svg class="i p"><use href="#i-chevron-right"/></svg></span>
+          <span class="corps">
+            <span class="lot-ligne1"><span class="lot-date">11 oct. 2026, 15:52</span><span class="lot-jeton"><svg class="i pp" aria-hidden="true"><use href="#i-key-round"/></svg>Script Kanka — Mac</span></span>
+            <span class="compteurs"><span class="plein">3 créées</span><span>0 mises à jour</span><span class="plein">498 inchangées</span><span>0 refusées</span><span class="plein">1 avertissement</span></span>
+          </span>
+          <span class="pastille"><svg class="i pp" aria-hidden="true"><use href="#i-check"/></svg>Clos</span>
+        </button>
+        <div class="lot-detail" id="lot-3" hidden>
+          <div class="groupe-pb">
+            <h3>1 avertissement</h3>
+            <ul>
+              <li class="probleme avert"><svg class="i p" aria-hidden="true"><use href="#i-triangle-alert"/></svg><span class="cle chasse" title="lieu:port-sel">lieu:port-sel</span><span class="raison">section « Notes » modifiée dans Kanevas depuis le dernier import : non écrasée</span></li>
+            </ul>
+          </div>
+        </div>
+      </li>
+      <li>
+        <button class="lot-tete" aria-expanded="false" aria-controls="lot-2" id="tete-lot-2">
+          <span class="chev" aria-hidden="true"><svg class="i p"><use href="#i-chevron-right"/></svg></span>
+          <span class="corps">
+            <span class="lot-ligne1"><span class="lot-date">11 oct. 2026, 14:05</span><span class="lot-jeton"><svg class="i pp" aria-hidden="true"><use href="#i-key-round"/></svg>Script Kanka — Mac</span></span>
+            <span class="compteurs"><span class="plein">498 créées</span><span>0 mises à jour</span><span>0 inchangées</span><span class="refus-n">3 refusées</span><span class="plein">2 avertissements</span></span>
+          </span>
+          <span class="pastille"><svg class="i pp" aria-hidden="true"><use href="#i-check"/></svg>Clos</span>
+        </button>
+        <div class="lot-detail" id="lot-2" hidden>
+          <div class="groupe-pb">
+            <h3>3 refusées</h3>
+            <ul>
+              <li class="probleme refus"><svg class="i p" aria-hidden="true"><use href="#i-circle-x"/></svg><span class="cle chasse" title="personnage:aldric-le-gris">personnage:aldric-le-gris</span><span class="raison">section « Vérité » : 112 000 caractères, 100 000 au plus</span></li>
+              <li class="probleme refus"><svg class="i p" aria-hidden="true"><use href="#i-circle-x"/></svg><span class="cle chasse" title="lieu:carte-des-sphères">lieu:carte-des-sphères</span><span class="raison">image « sphères.png » : fichier vide</span></li>
+              <li class="probleme refus"><svg class="i p" aria-hidden="true"><use href="#i-circle-x"/></svg><span class="cle chasse" title="creature:kraken-ancien">creature:kraken-ancien</span><span class="raison">type « monstre » inconnu de Kanevas</span></li>
+            </ul>
+          </div>
+          <div class="groupe-pb">
+            <h3>2 avertissements</h3>
+            <ul>
+              <li class="probleme avert"><svg class="i p" aria-hidden="true"><use href="#i-triangle-alert"/></svg><span class="cle chasse" title="lieu:la-taverne-du-kraken">lieu:la-taverne-du-kraken</span><span class="raison">parent lieu:les-docks inconnu : fiche écrite sans parent</span></li>
+              <li class="probleme avert"><svg class="i p" aria-hidden="true"><use href="#i-triangle-alert"/></svg><span class="cle chasse" title="lieu:port-sel">lieu:port-sel</span><span class="raison">section « Notes » modifiée dans Kanevas depuis le dernier import : non écrasée</span></li>
+            </ul>
+          </div>
+        </div>
+      </li>
+      <li>
+        <div class="lot-tete">
+          <span class="chev" aria-hidden="true"></span>
+          <span class="corps">
+            <span class="lot-ligne1"><span class="lot-date">3 oct. 2026, 21:18</span><span class="lot-jeton"><svg class="i pp" aria-hidden="true"><use href="#i-key-round"/></svg>Ancien script</span></span>
+            <span class="compteurs"><span class="plein">57 créées</span><span>0 mises à jour</span><span>0 inchangées</span><span>0 refusées</span><span>0 avertissement</span></span>
+          </span>
+          <span class="pastille"><svg class="i pp" aria-hidden="true"><use href="#i-circle-dashed"/></svg>Abandonné</span>
+        </div>
+      </li>
+    </ul>
+    <div class="cadre-liste" data-vide>
+      <div class="vide-panneau">
+        <p>Aucun lot d'import pour l'instant.</p>
+      </div>
+    </div>
+  </section>
+</main>
+<button class="assistant" aria-label="Demander à Kanevas" data-toast="L'assistant (E-12) s'ouvre ici."><svg class="i" aria-hidden="true"><use href="#i-sparkles"/></svg><span class="lib-assistant">Demander à Kanevas</span></button>
+  </div>
+</div>
+
+<!-- Boîte « Nouveau jeton » : le formulaire, puis le jeton montré une seule fois -->
+<div class="voile" id="voile-nouveau" aria-hidden="true">
+  <div class="dialogue creer" role="dialog" aria-modal="true" aria-labelledby="dlg-nouveau-titre">
+    <div class="ic-dialogue"><svg class="i" aria-hidden="true"><use href="#i-key-round"/></svg></div>
+    <h3 id="dlg-nouveau-titre">Nouveau jeton</h3>
+    <form class="face-form" id="form-jeton" novalidate>
+      <label class="champ"><span>Nom</span><input class="saisie" id="nom-jeton" maxlength="80" required aria-describedby="err-nom" autocomplete="off"><span class="erreur" id="err-nom" hidden>Erreur : le nom est obligatoire.</span></label>
+      <div class="champ">
+        <span id="lib-duree">Durée</span>
+        <div class="genre duree" role="radiogroup" aria-labelledby="lib-duree">
+          <button type="button" role="radio" aria-checked="false" tabindex="-1" data-jours="7">7 jours</button>
+          <button type="button" role="radio" aria-checked="true" data-jours="30">30 jours</button>
+          <button type="button" role="radio" aria-checked="false" tabindex="-1" data-jours="90">90 jours</button>
+          <button type="button" role="radio" aria-checked="false" tabindex="-1" data-jours="365">1 an</button>
+        </div>
+      </div>
+      <div class="actions">
+        <button type="button" class="bouton" id="annuler-jeton">Annuler</button>
+        <button type="submit" class="bouton principal" data-ecrit>Créer le jeton</button>
+      </div>
+    </form>
+    <div class="face-jeton" id="face-jeton" hidden>
+      <div>
+        <span class="lib" id="lib-jeton">Script Kanka — Mac</span>
+        <code class="valeur chasse" id="valeur-jeton" aria-labelledby="lib-jeton">kvs_R7mQ2xTzLw0vN5cKa9hJ1sYbE6pXdGu3iFoW8tyHq_Z</code>
+      </div>
+      <p class="unefois"><svg class="i p" aria-hidden="true"><use href="#i-circle-alert"/></svg><span>Il ne sera plus jamais affiché. Rangez-le dans la configuration de votre script.</span></p>
+      <div class="actions">
+        <button type="button" class="bouton" data-copier="jeton" aria-label="Copier le jeton"><svg class="i p" aria-hidden="true"><use href="#i-copy"/></svg>Copier</button>
+        <button type="button" class="bouton principal" id="jai-copie">J'ai copié le jeton</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Boîte « Révoquer » -->
+<div class="voile" id="voile-revoquer" aria-hidden="true">
+  <div class="dialogue revoquer-dlg" role="alertdialog" aria-modal="true" aria-labelledby="dlg-rev-titre" aria-describedby="dlg-rev-texte">
+    <div class="ic-dialogue"><svg class="i" aria-hidden="true"><use href="#i-ban"/></svg></div>
+    <h3 id="dlg-rev-titre">Révoquer « Script Kanka — Mac » ?</h3>
+    <p id="dlg-rev-texte">Le script qui l'utilise ne pourra plus rien écrire.</p>
+    <div class="actions">
+      <button class="bouton" id="rev-annuler">Annuler</button>
+      <button class="bouton danger" id="rev-confirmer" data-ecrit>Révoquer le jeton</button>
+    </div>
+  </div>
+</div>
+
+<div class="toasts" id="toasts" role="status" aria-live="polite"></div>
+
+<script>
+(function () {
+  'use strict';
+  var $ = function (s, r) { return (r || document).querySelector(s); };
+  var $$ = function (s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
+  var perdue = function () { return document.body.classList.contains('etat-perdue'); };
+
+  /* ---------------- Toast (e09) ---------------- */
+  function toast(texte) {
+    var t = document.createElement('div');
+    t.className = 'toast';
+    t.innerHTML = '<svg class="i" aria-hidden="true"><use href="#i-circle-check"/></svg><span></span>' +
+      '<button class="icone fermer" aria-label="Fermer"><svg class="i p" aria-hidden="true"><use href="#i-x"/></svg></button>';
+    t.querySelector('span').textContent = texte;
+    $('#toasts').appendChild(t);
+    requestAnimationFrame(function () { requestAnimationFrame(function () { t.classList.add('visible'); }); });
+    var fin = function () { t.classList.remove('visible'); setTimeout(function () { t.remove(); }, 250); };
+    t.querySelector('.fermer').onclick = fin;
+    setTimeout(fin, 4000);
+  }
+  $$('[data-toast]').forEach(function (b) { b.addEventListener('click', function () { toast(b.dataset.toast); }); });
+
+  /* ---------------- Menus du cadre (e09) ---------------- */
+  var ouvert = null;
+  function fermerMenu(rendreFocus) {
+    if (!ouvert) return;
+    ouvert.menu.classList.remove('ouvert'); ouvert.bouton.setAttribute('aria-expanded', 'false');
+    if (rendreFocus) ouvert.bouton.focus();
+    ouvert = null;
+  }
+  function ouvrirMenu(menu, bouton, focusPremier) {
+    fermerMenu(false);
+    menu.classList.add('ouvert'); bouton.setAttribute('aria-expanded', 'true');
+    ouvert = { menu: menu, bouton: bouton };
+    if (focusPremier) { var p = menu.querySelector('[role=menuitem],[role=radio][aria-checked=true]'); if (p) p.focus(); }
+  }
+  function basculer(menu, bouton, e) {
+    e.stopPropagation();
+    if (ouvert && ouvert.menu === menu) fermerMenu(false); else ouvrirMenu(menu, bouton, e.detail === 0);
+  }
+  $('#bouton-compte').onclick = function (e) { basculer($('#menu-compte'), this, e); };
+  $('#bouton-univers').onclick = function (e) { basculer($('#menu-univers'), this, e); };
+  document.addEventListener('click', function (e) { if (ouvert && !ouvert.menu.contains(e.target)) fermerMenu(false); });
+
+  /* ---------------- Thème (e09) ---------------- */
+  function appliquerTheme(c) {
+    var clair = c === 'clair' || (c === 'systeme' && matchMedia('(prefers-color-scheme: light)').matches);
+    document.documentElement.dataset.theme = clair ? 'light' : 'dark';
+    $$('[data-theme-choix]').forEach(function (b) { var on = b.dataset.themeChoix === c; b.setAttribute('aria-checked', on); b.tabIndex = on ? 0 : -1; });
+  }
+  var choixTheme = 'systeme';
+  try { choixTheme = localStorage.getItem('kanevas-theme') || 'systeme'; } catch (e) {}
+  appliquerTheme(choixTheme);
+  $$('[data-theme-choix]').forEach(function (b) {
+    b.onclick = function (e) {
+      e.stopPropagation(); choixTheme = b.dataset.themeChoix;
+      try { localStorage.setItem('kanevas-theme', choixTheme); } catch (er) {}
+      appliquerTheme(choixTheme);
+    };
+  });
+  matchMedia('(prefers-color-scheme: light)').addEventListener('change', function () { if (choixTheme === 'systeme') appliquerTheme('systeme'); });
+
+  /* ---------------- Tiroir (téléphone) ---------------- */
+  function tiroir(o, rendre) {
+    document.body.classList.toggle('tiroir-ouvert', o);
+    $('#bouton-menu').setAttribute('aria-expanded', o);
+    if (o) setTimeout(function () { $('.barre').focus(); }, 50); else if (rendre) $('#bouton-menu').focus();
+  }
+  $('#bouton-menu').onclick = function () { tiroir(!document.body.classList.contains('tiroir-ouvert')); };
+  $('#voile-tiroir').onclick = function () { tiroir(false, true); };
+
+  /* ---------------- Copier (l'adresse, le jeton) ---------------- */
+  $$('[data-copier]').forEach(function (b) {
+    b.onclick = function () {
+      var quoi = b.dataset.copier, v = $(quoi === 'jeton' ? '#valeur-jeton' : '#adresse').textContent;
+      try { navigator.clipboard.writeText(v).catch(function () {}); } catch (e) {}
+      if (quoi === 'jeton') toast('Jeton copié.');
+    };
+  });
+
+  /* ---------------- Boîtes de dialogue ---------------- */
+  var dlgOuvert = null, retour = null;
+  function ouvrir(voile, depuis, focus) {
+    dlgOuvert = voile; retour = depuis;
+    voile.classList.add('ouvert'); voile.setAttribute('aria-hidden', 'false');
+    setTimeout(function () { if (focus) focus.focus(); }, 30);
+  }
+  function fermer() {
+    if (!dlgOuvert) return;
+    dlgOuvert.classList.remove('ouvert'); dlgOuvert.setAttribute('aria-hidden', 'true'); dlgOuvert = null;
+    if (retour) retour.focus();
+  }
+  function jetonMontre() { return !$('#face-jeton').hidden; }
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') {
+      if (dlgOuvert) { if (!(dlgOuvert.id === 'voile-nouveau' && jetonMontre())) fermer(); return; }
+      if (ouvert) return fermerMenu(true);
+      if (document.body.classList.contains('tiroir-ouvert')) return tiroir(false, true);
+    }
+    if (e.key === 'Tab' && dlgOuvert) {
+      var f = $$('button:not([hidden]), input', dlgOuvert).filter(function (x) { return x.offsetParent !== null && x.tabIndex >= 0; });
+      var i = f.indexOf(document.activeElement);
+      if (e.shiftKey && i <= 0) { f[f.length - 1].focus(); e.preventDefault(); }
+      else if (!e.shiftKey && i === f.length - 1) { f[0].focus(); e.preventDefault(); }
+    }
+  });
+  $$('.voile').forEach(function (v) { v.addEventListener('click', function (e) { if (e.target === v && !(v.id === 'voile-nouveau' && jetonMontre())) fermer(); }); });
+
+  /* Nouveau jeton */
+  var duree = 30;
+  function choisirDuree(b) {
+    $$('.duree [role=radio]').forEach(function (x) { var on = x === b; x.setAttribute('aria-checked', on); x.tabIndex = on ? 0 : -1; });
+    duree = +b.dataset.jours;
+  }
+  $$('.duree [role=radio]').forEach(function (b) { b.onclick = function () { choisirDuree(b); }; });
+  $('.duree').addEventListener('keydown', function (e) {
+    if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+    var r = $$('.duree [role=radio]'), i = r.indexOf(document.activeElement);
+    i = (i + (e.key === 'ArrowRight' ? 1 : r.length - 1)) % r.length; choisirDuree(r[i]); r[i].focus(); e.preventDefault();
+  });
+  function ouvrirNouveau(nom) {
+    if (perdue()) return;
+    $('#form-jeton').hidden = false; $('#face-jeton').hidden = true; $('#err-nom').hidden = true;
+    $('#nom-jeton').classList.remove('en-erreur'); $('#nom-jeton').value = nom || '';
+    ouvrir($('#voile-nouveau'), $('#nouveau-jeton'), $('#nom-jeton'));
+  }
+  $('#nouveau-jeton').onclick = function () { ouvrirNouveau(''); };
+  $('#annuler-jeton').onclick = fermer;
+  function montrerJeton(nom) {
+    $('#lib-jeton').textContent = nom;
+    $('#form-jeton').hidden = true; $('#face-jeton').hidden = false;
+  }
+  $('#form-jeton').onsubmit = function (e) {
+    e.preventDefault();
+    if (perdue()) return;
+    var nom = $('#nom-jeton').value.trim();
+    if (!nom) { $('#err-nom').hidden = false; $('#nom-jeton').classList.add('en-erreur'); $('#nom-jeton').focus(); return; }
+    montrerJeton(nom);
+    setTimeout(function () { $('[data-copier="jeton"]').focus(); }, 30);
+  };
+  var FIN = { 7: '18 oct. 2026', 30: '10 nov. 2026', 90: '9 janv. 2027', 365: '11 oct. 2027' };
+  $('#jai-copie').onclick = function () {
+    var nom = $('#lib-jeton').textContent;
+    fermer();
+    // La valeur ne reste nulle part : la boîte est vidée.
+    $('#valeur-jeton').textContent = '';
+    var li = document.createElement('li'); li.dataset.jeton = nom;
+    li.innerHTML = '<div class="jeton actif"><span class="ic-ligne" aria-hidden="true"><svg class="i p"><use href="#i-key-round"/></svg></span>' +
+      '<span class="corps"><span class="nom"></span><span class="meta"><span>créé par antor le 11 oct. 2026</span><span>jamais utilisé</span><span data-fin>expire le ' + FIN[duree] + '</span></span></span>' +
+      '<button class="bouton petit fantome revoquer" data-ecrit data-revoquer><svg class="i p" aria-hidden="true"><use href="#i-ban"/></svg>Révoquer</button></div>';
+    li.querySelector('.nom').textContent = nom; li.querySelector('.nom').title = nom;
+    li.querySelector('[data-revoquer]').setAttribute('aria-label', 'Révoquer « ' + nom + ' »');
+    document.body.classList.remove('etat-vide');
+    $('#jetons').insertBefore(li, $('#jetons').firstChild);
+  };
+
+  /* Révoquer */
+  var aRevoquer = null;
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest('[data-revoquer]');
+    if (!b || perdue()) return;
+    aRevoquer = b.closest('li');
+    $('#dlg-rev-titre').textContent = 'Révoquer « ' + aRevoquer.dataset.jeton + ' » ?';
+    ouvrir($('#voile-revoquer'), b, $('#rev-annuler'));
+  });
+  $('#rev-annuler').onclick = fermer;
+  $('#rev-confirmer').onclick = function () {
+    if (perdue() || !aRevoquer) return;
+    var j = aRevoquer.querySelector('.jeton');
+    j.classList.replace('actif', 'inactif');
+    var fin = j.querySelector('[data-fin]'); if (fin) fin.remove();
+    j.querySelector('[data-revoquer]').outerHTML = '<span class="pastille revoque"><svg class="i pp" aria-hidden="true"><use href="#i-ban"/></svg>Révoqué</span>';
+    // Actifs d'abord, puis révoqués et expirés.
+    var premierInactif = $$('#jetons > li').filter(function (l) { return l !== aRevoquer && l.querySelector('.inactif'); })[0];
+    $('#jetons').insertBefore(aRevoquer, premierInactif || null);
+    retour = $('#nouveau-jeton'); fermer();
+  };
+
+  /* ---------------- Lots : une ligne se déplie ---------------- */
+  function deplier(b, o) {
+    var d = document.getElementById(b.getAttribute('aria-controls'));
+    b.setAttribute('aria-expanded', o); d.hidden = !o; b.parentNode.classList.toggle('deplie', o);
+  }
+  $$('button.lot-tete').forEach(function (b) { b.onclick = function () { deplier(b, b.getAttribute('aria-expanded') !== 'true'); }; });
+
+  /* ---------------- États par l'adresse : #etat-lot,perdue ---------------- */
+  window.addEventListener('hashchange', function () { location.reload(); });
+  var h = decodeURIComponent(location.hash || '');
+  if (h.indexOf('#etat-') === 0) {
+    h.slice(6).split(',').forEach(function (et) {
+      if (et === 'nouveau' || et === 'jeton-montre') {
+        // La boîte montre la création de « Script Kanka — Mac » : sa ligne n'existe pas encore.
+        var l = $('[data-jeton="Script Kanka — Mac"]'); if (l) l.remove();
+        ouvrirNouveau('Script Kanka — Mac');
+        if (et === 'jeton-montre') { montrerJeton('Script Kanka — Mac'); setTimeout(function () { $('[data-copier="jeton"]').focus(); $('[data-copier="jeton"]').blur(); }, 40); }
+      }
+      if (et === 'revoquer') setTimeout(function () { $('[data-jeton="Script Kanka — Mac"] [data-revoquer]').click(); }, 30);
+      if (et === 'lot') { deplier($('#tete-lot-2'), true); setTimeout(function () { $('#tete-lot-2').scrollIntoView({ block: 'start' }); window.scrollBy(0, -72); }, 30); }
+      if (et === 'vide') document.body.classList.add('etat-vide');
+      if (et === 'perdue') { document.body.classList.add('etat-perdue'); $$('[data-ecrit]').forEach(function (b) { b.setAttribute('aria-disabled', 'true'); b.tabIndex = -1; }); }
+      if (et === 'menu') setTimeout(function () { ouvrirMenu($('#menu-compte'), $('#bouton-compte')); }, 60);
+      if (et === 'univers') setTimeout(function () { ouvrirMenu($('#menu-univers'), $('#bouton-univers')); }, 60);
+      if (et === 'tiroir') tiroir(true);
+    });
+  }
+})();
+</script>
+</body>
+</html>

@@ -2131,24 +2131,28 @@ est du contenu à filtrer, un classement trahit ce qui est caché). 100 puis « 
 
 Atteint par « Univers ▸ Accès par API » (`key-round`), MJ seul. Une introduction d'une ligne :
 « Un jeton permet à un script d'écrire dans cet univers avec vos droits, par l'API d'import. » et
-l'adresse de base à copier (`https://kanevas.berard.me/api/import/v1/univers/<id>`). Deux panneaux.
+l'**adresse de base** à copier (`https://kanevas.berard.me/api/import/v1/univers/<id>`, « Copier »,
+toast « Adresse copiée. »). Deux panneaux.
 
 1. **Jetons** — « Nouveau jeton » (`plus`). Une ligne par jeton, actifs d'abord puis révoqués et expirés
    (les 20 derniers) : nom, « créé par antor le 11 oct. 2026 », « dernier usage il y a 3 min » ou
    « jamais », « expire le 10 nov. 2026 » ou la pastille « Révoqué » / « Expiré » ; « Révoquer » au
    survol (visible au toucher). *Nouveau jeton* : boîte « Nouveau jeton » — « Nom » (1 à 80 caractères,
    obligatoire), « Durée » (bascule segmentée 7 jours, **30 jours**, 90 jours, 1 an), « Créer le
-   jeton » ; puis la même boîte montre le jeton dans un champ en chasse fixe, « Copier » (toast
+   jeton », « Annuler » ; puis la même boîte montre le jeton dans un champ en chasse fixe, « Copier » (toast
    « Jeton copié. »), et « Il ne sera plus jamais affiché. Rangez-le dans la configuration de votre
-   script. », « J'ai copié le jeton ». *Révoquer* : boîte « Révoquer « Script Kanka — Mac » ? Le script
-   qui l'utilise ne pourra plus rien écrire. », « Révoquer le jeton » (`--danger`) / « Annuler ».
+   script. », « J'ai copié le jeton » — tant que le jeton est montré, seul ce bouton ferme la boîte
+   (ni Échap ni le voile) ; la ligne du jeton arrive alors en tête de la liste. *Révoquer* : boîte « Révoquer « Script Kanka — Mac » ? Le script
+   qui l'utilise ne pourra plus rien écrire. », « Révoquer le jeton » (`--danger`) / « Annuler » ; toast « Jeton révoqué. ».
 2. **Lots d'import** — les 20 derniers lots, du plus récent : date d'ouverture, jeton, état (« En
    cours », « Clos », « Abandonné » — ouvert depuis plus de 24 h sans écriture), et les compteurs
    « 498 créées · 0 mises à jour · 0 inchangées · 3 refusées · 1 avertissement ». Une ligne se déplie :
    les refus et avertissements, chacun avec la clé d'origine, ce qui est en cause et la raison
    (« section « Vérité » : 112 000 caractères, 100 000 au plus » ; « parent lieu:les-docks inconnu :
    fiche écrite sans parent » ; « section « Notes » modifiée dans Kanevas depuis le dernier import : non
-   écrasée »), 200 au plus puis « … et 37 autres ».
+   écrasée »), en deux groupes titrés par leur compte (« 3 refusées », « 2 avertissements »), 200 au
+   plus puis « … et 37 autres ». Un lot sans refus ni avertissement ne se déplie pas. Le jeton,
+   l'adresse et les clés d'origine sont en chasse fixe (pile système `ui-monospace`, charte).
 
 | État | Ce qu'on voit | Ce qu'on peut faire |
 |---|---|---|
@@ -2176,9 +2180,10 @@ l'adresse de base à copier (`https://kanevas.berard.me/api/import/v1/univers/<i
 états `#etat-sans-systeme`, `#etat-confirmer`, `#etat-joueur`, `#etat-supprimer-univers`).
 
 **E-15 (système)** : un quatrième onglet « Types de fiche » après Règles, Créatures, Objets. Une ligne
-par type de la liste du produit (sauf compte-rendu) : icône, nom, et un **interrupteur** « Activé ».
+par type de la liste du produit (sauf compte-rendu) : icône, nom, et un **interrupteur** « Activé »
+(colonne titrée « Système »).
 Sous la liste : « Utilisé par N univers. Un univers peut forcer un type à activé ou désactivé dans ses
-paramètres. » Basculer enregistre aussitôt (toast « Vaisseau désactivé pour CoF Mini. ») ; tout univers
+paramètres. » Basculer enregistre aussitôt (toast « Vaisseau désactivé pour CoF Mini. » ou « Vaisseau activé pour CoF Mini. ») ; tout univers
 qui suit le système le voit au chargement suivant. Joueur : la liste, interrupteurs en lecture seule
 (« Lecture seule »).
 
@@ -2186,10 +2191,12 @@ qui suit le système le voit au chargement suivant. Joueur : la liste, interrupt
 type : icône, nom, le nombre de fiches de l'univers de ce type (« 201 fiches »), et une **bascule
 segmentée à trois choix** : « Système · activé » (ou « Système · désactivé » ; « Par défaut · activé »
 pour un univers sans système), « Activé », « Désactivé ». Un choix forcé porte un point d'accent à
-gauche du nom ; la ligne dit, si le forçage contredit le système, « Le système le désactive. ».
-Enregistré au changement. Désactiver (par forçage ou en suivant) un type qui a des fiches demande
+gauche du nom ; la ligne dit, si le forçage contredit le système, « Le système le désactive. » (ou « Le système
+l'active. »). Enregistré au changement, toast « Vaisseau : activé dans Lame d'Ébène. » (« désactivé »,
+« suit le système »). Désactiver (par forçage ou en suivant) un type qui a des fiches demande
 confirmation : « Désactiver « Lieu » dans Lame d'Ébène ? Les 201 lieux restent ; on les atteint par un
-lien, la recherche ou l'arbre. » Le panneau « Supprimer l'univers » ferme la page, séparé par un filet
+lien, la recherche ou l'arbre. » (au singulier : « Le seul événement reste ; … »), boutons
+« Désactiver » / « Annuler ». Le panneau « Supprimer l'univers » ferme la page, séparé par un filet
 `--danger` : « Supprimer l'univers » ouvre une boîte « Supprimer « Lame d'Ébène » ? Tout son contenu —
 fiches, sections, pièces jointes, campagnes, cartes, jetons — sera effacé, pour tous ses membres. Le
 système de jeu reste. » ; un champ « Tapez le nom de l'univers pour confirmer » ; « Supprimer
@@ -2203,7 +2210,7 @@ l'univers » (`--danger`) ne s'active que si le nom tapé est exact (casse compr
 | erreur | un changement qui échoue : « L'action n'a pas abouti. Réessayez. » au-dessus du panneau, la bascule revient ; suppression qui échoue : le message dans la boîte, l'univers reste | « Réessayer » |
 | connexion perdue | le bandeau ; bascules, interrupteurs, « Supprimer l'univers » désactivés | lire |
 | refus | E-14 : Joueur — page introuvable (inchangé) ; E-15 : Joueur — lecture seule ; un MJ qui n'a plus de rôle : « Vous ne pouvez plus modifier ces paramètres. » | — |
-| contenu long | 14 types : la liste tient sans défiler au bureau, une colonne au téléphone (la bascule passe sous le nom) ; nom d'univers de 80 caractères dans la boîte : passe à la ligne | idem |
+| contenu long | 13 types réglables : la liste tient sans défiler au bureau, une colonne au téléphone (la bascule passe sous le nom) ; nom d'univers de 80 caractères dans la boîte : passe à la ligne | idem |
 
 *Critères.*
 - Étant donné « CoF Mini » qui désactive « Vaisseau » et « Lame d'Ébène » qui le force à « Activé »,
