@@ -102,7 +102,6 @@ catalogue MJ (événement `proposition_creee`) et sa règle du bouchon (« Mets 
 - Fil d'Ariane : une page qui nomme un objet appelle `useTitreAriane(nom)` (`cadre-contexte`) ; E-9 et E-6 le font, la Vue d'ensemble (E-3) montre « univers › Vue d'ensemble » par `maillons()` (`Cadre.tsx`) ; le dernier maillon reste entier, les précédents cèdent d'abord (`cadre.css`) ; E-7 s'arrête à l'univers (maquette ancienne, forme non exigée). Le select « Auteur » de la boîte « Qui voit » est désactivé pendant l'enregistrement : un test qui y pose le focus attend d'abord sa réactivation.
 - Écarts connus laissés à la recette (non bloquants) : E-2 montre un sceau en pointillé vide tant que le nom est vide (voulu dans le code, `Sceau` « inconnu », non décrit par `docs/ecrans.md`) ; E-7 garde « ← » en texte et « Modifier » plein accent (sa maquette est ancienne) ; les pastilles « MJ seul » des panneaux portent le cadenas.
 - Suite e2e (Playwright) : sous forte charge, deux tests (premiere-fiche B-9, refonte-besoin matrice E-9 mode Joueur) échouent par intermittence et passent seuls ; non attribué à un défaut du produit.
-- P-7 : le portrait (pièce jointe) est livré ; la demande à l'assistant (`kanevas-assistant-membre`, E-12) est livrée sur `epic/kanevas`.
 - P-7 : le portrait (pièce jointe) et la demande à l'assistant (E-12) sont livrés.
 - Pièces jointes : le type est déterminé par la signature des octets, jamais par le navigateur ; seules PNG,
   JPEG, GIF, WebP sont servies en ligne, le reste (SVG compris) en `attachment` sous `nosniff` et CSP sandbox.
