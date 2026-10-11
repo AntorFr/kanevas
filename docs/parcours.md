@@ -361,8 +361,8 @@ illustration répond comme une adresse inconnue.
    (E-12) d'y ajouter un paragraphe.
 *Échec* : il demande d'écrire dans une section qu'il lit sans l'écrire : « Vous ne pouvez pas modifier
 cette section. », rien n'est écrit.
-*Échec* (dépôt) : fichier vide, section déjà à 50 pièces jointes (100 fichiers joints depuis
-`kanevas-import`, AD-111), envoi interrompu ou droit
+*Échec* (dépôt) : fichier vide, section déjà à son maximum de fichiers joints (50 avant
+`kanevas-import`, 100 depuis, AD-111), envoi interrompu ou droit
 d'écriture retiré — le fichier n'est pas attaché, la raison est dite sur la section (E-9), rien n'est
 laissé à moitié.
 
@@ -526,8 +526,9 @@ qu'aucune fiche n'utilisait dans Kanka.*
    déplace dans un bloc MJ, l'avertissement disparaît. Puis « Fichier » ▸ « Ajouter depuis l'appareil »
    « tarifs-du-port.pdf » : le document entre dans la médiathèque, visible des joueurs, et se joint à la
    section ; il enregistre.
-4. Léa ouvre « Port-Sel » : à la place de l'image du plan du repaire, dans « Les Docks », elle lit
-   « Image réservée au MJ. » ; elle télécharge « tarifs-du-port.pdf » depuis les pièces jointes ; sa
+4. Léa ouvre « Les Docks » : à la place de l'image du plan du repaire, dans « Histoire », elle lit
+   « Image réservée au MJ. » ; elle ouvre « Port-Sel » et télécharge « tarifs-du-port.pdf » depuis les
+   fichiers joints de « Description » ; sa
    **Médiathèque** (E-19) ne lui montre que les fichiers visibles des joueurs, et pour « Carte des
    Sphères » les seules fiches qu'elle lit.
 5. Antor supprime un doublon d'image : la confirmation liste « Port-Sel (illustration) » et « Maître
