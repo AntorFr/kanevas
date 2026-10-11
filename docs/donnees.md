@@ -22,6 +22,8 @@ façon (AD-2).
 | **fiche** | type (la liste du produit, AD-102 : personnage, lieu, faction, objet, événement, quête, compte-rendu, et depuis `kanevas-import` créature, race, vaisseau, savoir, récit, règle, note), **sous-type** libre (B-52), titre, créée le (date d'origine si l'import la donne, B-50), modifiée le, charge utile versionnée par type (AD-6) — personnage : PJ \| PNJ ; compte-rendu : sa campagne ; **illustration** facultative (une image au plus, AD-93) ; *(kanevas-import)* **parent** facultatif (une fiche du même univers, AD-99), **alias**, **étiquettes**, **clé d'origine** facultative | univers ; → sections ; → parent ; ← enfants | qui lit au moins une de ses sections ; sinon elle n'existe pas (B-9) ; son illustration, ses alias, ses étiquettes : qui voit la fiche ; sa clé d'origine : le MJ | création : MJ ; un compte-rendu : tout membre (B-19) ; l'illustration, le titre, le type, le parent, les alias, les étiquettes, la suppression : MJ (B-38 à B-40) |
 | **section** | titre, ordre, contenu (Markdown depuis `kanevas-import`, AD-95, avec ses **blocs MJ**, AD-98), modifiée le ; lecture et écriture des joueurs ; auteur (un compte) avec sa lecture et son écriture ; *(kanevas-import)* clé d'origine, version du dernier import | fiche ; → relations, pièces jointes, liens | le MJ ; un joueur selon les bascules (AD-19), **sans ses blocs MJ** | contenu : qui a l'écriture, **un MJ seul si elle contient un bloc MJ** ; structure et audience : MJ |
 | **relation** | type (texte libre), dirigée | section porteuse → fiche cible | qui lit la section **et** la fiche cible (sinon la cible n'est pas nommée) | MJ |
+| **image** *(kanevas-import, médiathèque, AD-111)* | nom, type (PNG, JPEG, GIF, WebP), taille, nom sur disque (UUID), empreinte, **visibilité** (`joueurs` par défaut \| `mj`), ajoutée par, ajoutée le, clé d'origine | univers ; ← références (sections, illustrations) | le MJ : toutes ; un joueur : celles `joueurs` ; **dans une fiche** : si le conteneur **et** l'image sont lisibles (double garde) | MJ : tout ; qui écrit une section : en ajouter une en la déposant (visible des joueurs) ; l'import |
+| **référence d'image** *(kanevas-import)* | une image jointe à une section, ou insérée dans son texte (et alors, dans un bloc MJ ou non) | section → image | comme l'image, sous double garde | déduite du texte à chaque écriture ; jointe ou retirée par qui écrit la section |
 | **pièce jointe** | nom d'origine, type MIME, taille, nom sur disque (UUID), secrète | section | qui lit la section, et le MJ seul si secrète | qui écrit la section ; « secrète » : MJ |
 | **campagne** | nom, statut (en préparation, active, terminée) | univers ; → scénarios, tâches, CR | tout membre (nom, statut) | MJ |
 | **scénario** | titre, contenu | campagne | MJ | MJ |
@@ -166,7 +168,11 @@ un Joueur.
 4. Une **pièce jointe** n'est servie que par la route qui revérifie ces droits (AD-7, AD-36).
 5. L'**agent** a exactement les droits de la personne qui lui parle (AD-2, AD-26).
 6. L'**illustration** d'une fiche se voit par qui voit la fiche et se pose par le MJ seul ; elle
-   n'est jamais secrète (AD-93).
+   n'est jamais secrète (AD-93). *Depuis `kanevas-import` : l'illustration est une image de la
+   médiathèque ; elle se voit si la fiche **et** l'image sont lisibles (AD-111, décision de Monsieur du 2026-10-11).*
+10. *(kanevas-import)* Une **image de la médiathèque** porte ses propres droits ; dans une fiche, elle
+   ne se montre que si son conteneur **et** elle-même sont lisibles ; sinon, dans un conteneur lisible,
+   « Image réservée au MJ. » (AD-111).
 7. *(kanevas-import)* Un **bloc MJ** n'existe que pour un MJ hors mode Joueur : ni sur la fiche, ni dans
    l'index qu'un non-MJ interroge, ni dans un lien entrant, ni dans une image (AD-98).
 8. *(kanevas-import)* Un **lien** ou un **lien entrant** se lit sous les deux gardes d'une relation :
@@ -330,9 +336,10 @@ ses sections). Le dossier `tmp/` est vidé au démarrage, comme pour les pièces
 
 ## Cadrage `kanevas-import` : le modèle
 
-> Proposé le 2026-10-11 (`epic/kanevas-import`). Décisions : AD-95 à AD-109. Six entités nouvelles —
-> lien, alias, étiquette, réglage de type, jeton d'API, lot d'import — et des attributs sur fiche,
-> section, pièce jointe, campagne, scénario. Les tranches de l'epic ajouteront des attributs,
+> Proposé le 2026-10-11 (`epic/kanevas-import`). Décisions : AD-95 à AD-111. Huit entités nouvelles —
+> lien, alias, étiquette, réglage de type, jeton d'API, lot d'import, image (médiathèque) et référence
+> d'image — et des attributs sur fiche,
+> section, pièce jointe, campagne, scénario ; la médiathèque est une décision de Monsieur du 2026-10-11. Les tranches de l'epic ajouteront des attributs,
 > jamais une entité. Numéros de migration : pris à la fusion (AD-51) ; les noms ci-dessous sont
 > provisoires.
 
@@ -393,7 +400,7 @@ Invariants, en phrases :
 | `sous_type` | nouvelle, texte 1 à 60 après rognage ; nulle : pas de sous-type (B-52, décision de Monsieur du 2026-10-11) | `CHECK (sous_type IS NULL OR length(trim(sous_type)) BETWEEN 1 AND 60)` ; propre au type : le service le vide quand le type change ; index `fiches (univers_id, type, sous_type)` — le filtre de E-8 et la complétion de E-9 (les sous-types distincts d'un type dans l'univers, sans tenir compte de la casse) |
 | `dernier_import` | nouvelle, JSON : les valeurs que le dernier import a écrites — titre, type (et PJ), sous-type, alias, étiquettes ; pour le parent, la clé **demandée** et le parent **écrit** ; nulle : jamais écrite par un import | (12) écrit par le service à chaque écriture d'import ; un champ dont la valeur courante diffère de la valeur **écrite** a été modifié dans Kanevas ; un champ laissé par B-48 garde la valeur écrite d'avant (il reste « modifié ») ; tant que le parent écrit diffère du parent demandé (cible absente, cycle), la fiche est **parent en attente** : chaque rejeu retente de poser le parent demandé, et ce n'est jamais pris pour une modification humaine |
 | `cree_le`, `modifie_le` | inchangées ; `cree_le` peut venir de l'import (B-50) | — |
-| `illustration_empreinte` | nouvelle, SHA-256 de l'illustration ; nulle avec elle | ensemble avec les trois colonnes d'illustration (`CHECK` étendu) ; sert à ne pas renvoyer une illustration inchangée (AD-104) |
+| `illustration_image_id` | nouvelle, → `images` **ON DELETE SET NULL** ; nulle : pas d'illustration | remplace les trois colonnes d'illustration d'AD-93 (`illustration_fichier`, `_type`, `_taille`), **non recopiées** : la recréation migre chaque illustration existante en une image de la médiathèque (`joueurs`) et pose cette référence (AD-111) ; même univers que la fiche : service |
 | `id` | `AUTOINCREMENT` gardé | (3) — vérifié dans `0001-premiere-fiche.sql` : SQLite ne réemploie pas un identifiant `AUTOINCREMENT` |
 
 Les autres colonnes et index (illustration, AD-93) sont recopiés tels quels ; les déclencheurs de
@@ -403,6 +410,8 @@ Les autres colonnes et index (illustration, AD-93) sont recopiés tels quels ; l
 
 | Table | Colonnes (hors clés) | Contraintes |
 |---|---|---|
+| `images` | `id`, `univers_id`, `nom`, `type`, `taille`, `fichier`, `empreinte`, `visibilite`, `cle_origine`, `ajoutee_par`, `ajoutee_le`, `dernier_import` (JSON : nom et visibilité écrits par le dernier import ; nul : jamais) | → `univers` ; → `comptes` ; `type` `CHECK` dans les quatre types d'image (AD-66) ; `taille > 0` ; `fichier` unique ; `visibilite` `CHECK IN ('joueurs','mj')`, défaut `joueurs` (décision de Monsieur du 2026-10-11) ; `nom` 1 à 200 ; index unique `(univers_id, cle_origine)` ; index `(univers_id, ajoutee_le)` — la grille de E-19 |
+| `images_sections` | `image_id`, `section_id`, `jointe` (booléen), `dans_texte` (booléen), `dans_bloc_mj` (booléen) | clé primaire `(image_id, section_id)` ; → `images` ON DELETE CASCADE ; → `sections` ON DELETE CASCADE ; `CHECK (jointe OR dans_texte)` ; même univers : service ; `dans_texte` et `dans_bloc_mj` recalculés à chaque écriture du contenu (comme `liens`) ; index `(section_id)` — le rendu, et `(image_id)` — « Utilisée dans » et la suppression |
 | `fiche_alias` | `fiche_id`, `alias` | → `fiches` ON DELETE CASCADE ; `alias` 1 à 120 ; `UNIQUE (fiche_id, alias COLLATE NOCASE)` (6) ; 20 au plus par fiche : service |
 | `etiquettes` | `id`, `univers_id`, `nom`, `cree_le` | → `univers` ; `nom` 1 à 40 ; `UNIQUE (univers_id, nom COLLATE NOCASE)` (6) |
 | `fiche_etiquettes` | `fiche_id`, `etiquette_id` | clé primaire des deux ; → `fiches` et → `etiquettes` ON DELETE CASCADE ; même univers : service ; 20 au plus par fiche : service |
@@ -417,7 +426,7 @@ Les autres colonnes et index (illustration, AD-93) sont recopiés tels quels ; l
 | Table | Colonnes | Contrainte |
 |---|---|---|
 | `sections` | `contenu_public` (texte ; le contenu sans blocs MJ), `cle_origine` (nulle : née dans Kanevas), `version_importee` (entier ; nul : jamais écrite par un import), `dernier_import` (JSON : titre et audience écrits par le dernier import ; nul : jamais) | (12) le contenu est modifié dans Kanevas si `version` ≠ `version_importee`, le titre ou l'audience si la valeur courante ≠ `dernier_import` ; (8) écrit par le service dans la même transaction que `contenu` (AD-98) — une fonction Markdown ne s'écrit pas en SQL ; index unique `(fiche_id, cle_origine)` (2) |
-| `pieces_jointes` | `cle_origine`, `empreinte` (SHA-256 des octets, pour ne pas renvoyer une image inchangée) | index unique `(section_id, cle_origine)` (2) |
+| `pieces_jointes` | `cle_origine`, `empreinte` (SHA-256 des octets, pour ne pas renvoyer un fichier inchangé) ; *depuis AD-111, une pièce jointe n'est plus une image* : la migration transforme chaque pièce image existante en image de la médiathèque (`mj` si `secrete`, `joueurs` sinon) jointe à sa section, puis supprime la ligne de pièce (le fichier sur disque est repris tel quel, sans copie) | index unique `(section_id, cle_origine)` (2) |
 | `campagnes` | `cle_origine`, `dernier_import` (JSON : nom et statut écrits par le dernier import ; nul : jamais) | index unique `(univers_id, cle_origine)` (2) ; (12) même règle, champ par champ |
 | `scenarios` | `cle_origine`, `dernier_import` (JSON : titre écrit ; nul : jamais), `version_importee` (la `version` laissée par le dernier import) | index unique `(campagne_id, cle_origine)` (2) ; (12) le contenu est modifié dans Kanevas si `version` ≠ `version_importee`, le titre si la valeur courante ≠ `dernier_import` |
 

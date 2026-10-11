@@ -12,8 +12,8 @@
 > Kanevas à une base existante — d'abord la base Kanka de Monsieur (501 fiches), poussée par un script
 > qui tourne sur son Mac — et lui donner ce qu'il faut pour y vivre : Markdown, liens `[[…]]`, blocs MJ
 > dans un texte, arbre des fiches, liens entrants, recherche tous types, alias et étiquettes, types de
-> fiche plus nombreux et choisis par système et par univers, suppression, jeton d'API. B-32 à B-52,
-> P-10 à P-15, E-17 et E-18, AD-95 à AD-109. Tous les `[À TRANCHER]` du cadrage ont été tranchés par Monsieur le 2026-10-11 ; ce qui en reste ouvert est marqué `[À TRANCHER]` à leur place.
+> fiche plus nombreux et choisis par système et par univers, suppression, jeton d'API, sous-type, médiathèque. B-32 à B-56,
+> P-10 à P-16, E-17 à E-19, AD-95 à AD-111. Les `[À TRANCHER]` du cadrage ont été tranchés par Monsieur le 2026-10-11 ; ce qui reste ouvert est marqué `[À TRANCHER]` à sa place.
 
 Kanevas sert à **préparer** des parties de jeu de rôle et à en **garder la mémoire** entre les
 séances : le lore d'un univers, partagé entre le MJ et ses joueurs avec des droits fins par
@@ -134,9 +134,12 @@ Forme de la skill `exigences` ; chaque besoin cite les parcours qui le réalisen
   étiquettes restent, transversales (B-38). *(P-12, P-14 ; décision de Monsieur du 2026-10-11)*
 - **B-43** — Le contenu d'une section tient jusqu'à **100 000 caractères** (au lieu de 20 000) ;
   au-delà, l'écriture est refusée comme aujourd'hui (AD-91, AD-106). *(P-10, P-14)*
-- **B-44** — Quand une section affiche une **image insérée dans son texte**, l'image est une pièce
-  jointe de cette section, servie par la même route et sous les mêmes droits (B-24) ; une image
-  insérée dans un bloc MJ est secrète. *(P-12)*
+- **B-44** — Toute image d'une fiche — son illustration, une image jointe à une section, une image
+  insérée dans un texte — est une image de la **médiathèque** de l'univers (B-53), **référencée**, jamais
+  copiée. Quand un compte lit une section qui en montre une, il la voit si la section (et, dans un bloc
+  MJ, le bloc) **et** l'image lui sont ouvertes ; si la section l'est et l'image non, la mention « Image
+  réservée au MJ. » tient sa place ; une image dans un bloc MJ disparaît avec le bloc. L'illustration
+  suit la même double garde (la fiche et l'image). *(P-12, P-16 ; décision de Monsieur du 2026-10-11)*
 
 ### Import et accès par API (`kanevas-import`)
 - **B-45** — Un MJ crée un **jeton d'API** pour son univers depuis « Accès par API » (E-18) : un nom,
@@ -160,6 +163,26 @@ Forme de la skill `exigences` ; chaque besoin cite les parcours qui le réalisen
 - **B-50** — Une fiche importée garde sa **clé d'origine** (visible du MJ seul, E-9) et peut porter sa
   **date d'origine** de création, qui ordonne les comptes-rendus (E-13) comme une date de Kanevas.
   *(P-10, P-12)*
+
+### Médiathèque (`kanevas-import`, décision de Monsieur du 2026-10-11)
+- **B-53** — Chaque univers a une **médiathèque** (E-19) : un MJ y ajoute des images (PNG, JPEG, GIF,
+  WebP), en change le nom et la **visibilité** — « Visible des joueurs » (le défaut) ou « Réservée au
+  MJ » —, et en supprime une ; quiconque est membre y voit les images qui lui sont ouvertes (un joueur :
+  celles visibles des joueurs), et pour chacune les fiches **qu'il lit** qui l'utilisent. *(P-16, P-10)*
+- **B-54** — Quand un MJ supprime une image utilisée (E-19), Kanevas demande confirmation en listant les
+  fiches qui l'utilisent ; après, ces fiches ne la montrent plus (« Image supprimée de la médiathèque. »
+  pour un MJ, rien pour un joueur). Quand un MJ réserve au MJ une image utilisée dans une section lue
+  des joueurs, Kanevas le prévient de même, en listant ces sections. *(P-16)*
+- **B-55** — Quand un compte qui écrit une section y pose une image (insérée dans le texte ou jointe,
+  E-9) — choisie dans la médiathèque parmi celles qu'il voit, ou déposée depuis son appareil, ce qui
+  l'ajoute à la médiathèque, visible des joueurs —, et que l'image est réservée au MJ alors que la
+  section est lue des joueurs, l'éditeur l'avertit : « Cette image est réservée au MJ : les joueurs qui
+  lisent cette section ne la verront pas. » ; de même pour une illustration réservée au MJ sur une fiche
+  que des joueurs voient. *(P-16)*
+- **B-56** — L'API d'import pousse des images dans la médiathèque avec une clé d'origine et des droits
+  explicites (« Visible des joueurs » par défaut) ; les images de l'export qu'aucune fiche n'utilise y
+  entrent aussi. Le script **doit** envoyer « Réservée au MJ » pour une image que la source n'utilise que
+  dans du contenu MJ. *(P-10 ; décision de Monsieur du 2026-10-11)*
 
 ### Assistant : son jeton posé depuis l'administration (`kanevas-import`)
 - **B-51** — Quand l'admin d'instance
@@ -358,6 +381,9 @@ Il veut d'abord un essai jetable, puis la vraie base, sans doublon ni fuite.*
    étiquettes, sections en Markdown avec leurs liens `[[…]]`, leurs blocs MJ, leurs images, leur
    audience) — les comptes-rendus avec la clé de leur campagne —, puis les relations, et clôt le lot
    (l'ordre d'AD-104).
+   Les images vont dans la **médiathèque** (E-19), chacune avec ses droits — « Réservée au MJ » pour
+   celles que Kanka n'affiche que dans du contenu MJ, « Visible des joueurs » sinon —, y compris les
+   385 Mo qu'aucune fiche n'utilise ; les fiches les référencent.
 5. **Accès par API** (E-18), bloc « Lots d'import » : « 501 fiches — 498 créées, 3 refusées » ; il
    déplie les refus : « personnage:aldric-le-gris — section « Vérité » : 112 000 caractères, 100 000
    au plus ».
@@ -459,6 +485,29 @@ caractères au plus. », le texte reste.
    sur tous les univers, sans redéploiement.
 *Échec* : le code est faux ou la fenêtre a expiré (10 minutes) — « La connexion n'a pas abouti.
 Recommencez. », l'ancien jeton reste.
+
+### P-16 — Ranger et partager les images (Antor, MJ, puis Léa, Joueuse)
+*Après l'import, la médiathèque de « Lame d'Ébène » porte 1 100 images, dont celles qu'aucune fiche
+n'utilisait dans Kanka.*
+1. **Médiathèque** (E-19), depuis la barre : Antor filtre « Non utilisées », retrouve
+   « carte-des-sphères.png », la renomme « Carte des Sphères ».
+2. Il ouvre « plan-du-repaire.png » (« Visible des joueurs », utilisée par « Les Docks », section
+   « Histoire » lue des joueurs) et la passe à « Réservée au MJ » : Kanevas liste « Les Docks —
+   « Histoire » » où les joueurs ne la verront plus ; il confirme.
+3. Sur « Port-Sel » (**E-9**), il modifie « Description » (lue des joueurs) : « Image » ▸ « Depuis la
+   médiathèque », il choisit « Plan secret de la Guilde » (réservée au MJ) : l'éditeur avertit « Cette
+   image est réservée au MJ : les joueurs qui lisent cette section ne la verront pas. » ; il la déplace
+   dans un bloc MJ, l'avertissement disparaît ; il enregistre.
+4. Léa ouvre « Port-Sel » : à la place de l'image du plan du repaire, dans « Les Docks », elle lit
+   « Image réservée au MJ. » ; sa **Médiathèque** (E-19) ne lui montre que les images visibles des
+   joueurs, et pour « Carte des Sphères » les seules fiches qu'elle lit.
+5. Antor supprime un doublon d'image : la confirmation liste « Port-Sel (illustration) » et « Maître
+   Aldric — « Apparence » (jointe) » ; il remplace d'abord l'illustration, puis supprime.
+*Moment fort* : une même image, utilisée dans trois fiches, change de droits en un geste, et Kanevas
+dit exactement où les joueurs la perdent.
+*Échec* : un fichier qui n'est pas une image — « « regles.pdf » n'est pas une image. » (il va en pièce
+jointe d'une section) ; un envoi coupé — « L'envoi n'a pas abouti. », rien n'est ajouté ; un joueur
+force l'adresse d'une image réservée au MJ — « Page introuvable. ».
 
 ## Hors périmètre
 

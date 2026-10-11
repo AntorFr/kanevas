@@ -18,7 +18,7 @@ Web. Ordinateur d'abord pour écrire (souris, clavier, glisser des tokens) ; té
 Une barre latérale unique, sur tous les écrans d'un univers :
 
 - en tête, le **sélecteur d'univers** (les univers du compte, son rôle en badge) ;
-- **Vue d'ensemble** · **Campagnes** · **Comptes-rendus** · **Cartes** ;
+- **Vue d'ensemble** · **Campagnes** · **Comptes-rendus** · **Cartes** · depuis `kanevas-import`, **Médiathèque** (E-19) ;
 - **Lore** : Personnages, Lieux, Factions, Objets, Événements, Quêtes — depuis `kanevas-import`,
   les **types activés pour l'univers** (B-42), dans l'ordre de la liste du produit : Personnages,
   Lieux, Factions, Objets, Événements, Quêtes, Créatures, Races, Vaisseaux, Savoirs, Récits, Règles,
@@ -70,6 +70,7 @@ bascule existe (fiche, carte et, depuis `kanevas-import`, recherche E-17).
 | **E-15 Système de jeu** | E-16 ; lien depuis E-3 et E-14 | le référentiel commun : règles, créatures, objets ; ajouter, modifier (MJ d'un univers rattaché) ; hors du cadre d'un univers | P-8 |
 | **E-16 Systèmes de jeu** | barre réduite ; menu du sélecteur d'univers | les systèmes rattachés aux univers du compte, chacun avec ceux de ses univers qui l'utilisent | P-8 |
 | **E-17 Recherche** *(kanevas-import)* | « Rechercher » de la barre ; `/` ; une étiquette touchée sur E-9 | chercher dans tous les types, titres, alias et sections lisibles ; filtrer par type et par étiquette | P-12 |
+| **E-19 Médiathèque** *(kanevas-import)* | nav Médiathèque ; « Image » de l'éditeur et choix d'une illustration (E-9) | voir les images ouvertes au compte et où elles servent ; MJ : ajouter, renommer, régler la visibilité, supprimer | P-16, P-10 |
 | **E-18 Accès par API** *(kanevas-import)* | nav Univers ▸ Accès par API (MJ) | créer, lister, révoquer les jetons d'API de l'univers ; voir les lots d'import et leurs refus | P-10, P-11 |
 
 Écrans **modifiés** par `kanevas-import` : **E-8** (types activés, vue en arbre), **E-9** (Markdown,
@@ -108,6 +109,7 @@ E-16 vivent hors des univers : leurs cases disent le rôle dans un univers ratta
 | E-15 (hors univers ; les colonnes disent le rôle dans un univers **rattaché au système**) | lire ; « Ajouter … », « Modifier » | lire (« Lecture seule ») ; ni « Ajouter » ni « Modifier » | « Page introuvable. », sauf s'il est lui-même membre d'un univers rattaché : alors la colonne de son rôle là (l'admin MJ d'un univers rattaché lit et modifie) |
 | E-16 (hors univers) | ses systèmes, avec ses univers et son rôle | ses systèmes, « Lecture seule » | la liste de ses propres systèmes (comme MJ ou Joueur s'il est membre d'un univers rattaché) ; vide sinon — l'écran est proposé à tout compte |
 | E-17 *(kanevas-import)* | chercher dans toutes les fiches de l'univers, blocs MJ compris ; en **mode Joueur**, comme un joueur (ni blocs MJ, ni fiches qu'un joueur ne lit pas) ; filtres : les types activés ; les fiches des types désactivés restent des résultats sous « Tous » | chercher dans ce qu'il lit, hors blocs MJ ; filtres par type et par étiquette des seules fiches qu'il voit | — |
+| E-19 *(kanevas-import)* | tout : ajouter, renommer, visibilité, supprimer ; « Utilisée dans » complet | les images visibles des joueurs ; « Utilisée dans » réduit aux fiches qu'il lit ; ni ajout (**caché** ; il ajoute une image par une section qu'il écrit, E-9), ni réglage, ni suppression (**cachés**) | — |
 | E-18 *(kanevas-import)* | créer un jeton ; voir et révoquer tous les jetons de l'univers (y compris ceux d'un autre MJ) ; voir les lots | — (**caché** : absent de la barre, « Page introuvable. » par l'adresse) | — |
 
 Ce que `kanevas-import` ajoute aux lignes existantes : **E-8** — MJ : la vue en arbre, la création
@@ -1962,10 +1964,10 @@ et le bloc de E-3 livrent leurs six états (B-29), ci-dessus.
 
 ## Détail des écrans de `kanevas-import` (cadrage)
 
-> Cadrage proposé le 2026-10-11 (`epic/kanevas-import`). Besoins B-32 à B-51, parcours P-10 à P-15,
-> décisions AD-95 à AD-109. Les tranches détaillent leurs écrans dans ce cadre ; elles ne
+> Cadrage proposé le 2026-10-11 (`epic/kanevas-import`). Besoins B-32 à B-56, parcours P-10 à P-16,
+> décisions AD-95 à AD-111. Les tranches détaillent leurs écrans dans ce cadre ; elles ne
 > l'inventent pas. Écrans structurants, avec maquette finie : **E-9** (la fiche importée, moment fort
-> de P-12), **E-18** (Accès par API, P-10 et P-11), **E-14 / E-15 « Types de fiche »** (P-13). E-17 et
+> de P-12), **E-18** (Accès par API, P-10 et P-11), **E-14 / E-15 « Types de fiche »** (P-13), **E-19** (Médiathèque, P-16). E-17 et
 > l'arbre de E-8 sont décrits ici sans maquette : ils se construisent avec les composants de E-8
 > (grille, recherche, pastilles). Les textes communs (chargement, erreur, connexion perdue, refus)
 > sont ceux de `kanevas-premiere-fiche`.
@@ -1977,7 +1979,7 @@ Markdown (B-32, AD-95). **Ce qui se met en forme** : paragraphes (un saut de lig
 saut de ligne, comme le texte brut d'avant), intertitres `##` à `####` (rendus sous le titre de la
 section, jamais au-dessus), gras, italique, barré, listes à puces et numérotées, citations, code,
 filets, tableaux, liens web (`http`, `https`, `mailto` seulement ; ils s'ouvrent dans un nouvel
-onglet), images de la section (`![légende](piece:…)`, B-44), liens vers une fiche (`[[…]]`, B-33),
+onglet), images de la médiathèque (`![légende](image:…)`, B-44), liens vers une fiche (`[[…]]`, B-33),
 blocs MJ (`:::mj` … `:::`, B-34). **Ce qui reste du texte** : tout HTML écrit dans le contenu, une
 image d'une autre adresse (le texte de l'image s'affiche à sa place), un lien d'un autre schéma.
 
@@ -1994,7 +1996,7 @@ d'import ne les refuse pas.
 
 **L'éditeur** (édition en place, charte « L'édition en place ») : le champ de texte garde la police
 de lecture ; au-dessus, une barre d'outils discrète — « Gras », « Italique », « Lien vers une fiche »,
-« Image de la section », et pour un MJ « Bloc MJ » (entoure la sélection) — et la bascule « Écrire /
+« Image », et pour un MJ « Bloc MJ » (entoure la sélection) — et la bascule « Écrire /
 Aperçu ». Raccourcis : Ctrl/⌘+B, Ctrl/⌘+I, Ctrl/⌘+K (lien vers une fiche), Échap annule, Ctrl/⌘+Entrée
 enregistre. Taper `[[` ouvre la liste de recherche de E-8 (`ListeRecherche`, tous types) au point
 d'insertion ; choisir une fiche insère `[[<id>|<titre>]]`, Échap ferme la liste et laisse `[[`. Le
@@ -2048,6 +2050,19 @@ séparé, « Supprimer la fiche… » en `--danger`.
 contient un bloc MJ, même s'il en a l'écriture (B-34) ; s'il l'ouvre par une autre voie, le serveur
 refuse : « Vous ne pouvez pas modifier cette section. ».
 
+**Images** (B-44, B-55, AD-111). Une image de la section (insérée, jointe) ou l'illustration se montre
+si le lecteur la voit ; sinon, dans une section qu'il lit, un cadre neutre (`lock`, `--texte-3`) dit
+« Image réservée au MJ. », avec la légende s'il y en a une ; dans un bloc MJ, rien. L'illustration
+réservée au MJ d'une fiche qu'un joueur voit : la même mention dans l'en-tête, la vignette de repli
+dans la grille de E-8 (sans mention). Image supprimée : « Image supprimée de la médiathèque. » pour un
+MJ, rien pour un joueur. En mode Joueur, le MJ voit ce que voit un joueur. L'éditeur : « Image » ouvre le
+choix d'une image (E-19, « Le choix d'une image ») ; le bloc **Pièces jointes** garde les fichiers qui ne
+sont pas des images (PDF…) comme avant, et montre en vignettes les **images jointes** (références) avec,
+pour un MJ, la pastille « MJ seul » d'une image réservée ; « Retirer » ôte la référence, jamais l'image
+de la médiathèque ; déposer une image dans le bloc l'ajoute à la médiathèque (visible des joueurs) et la
+joint. Le réglage « secrète » ne vaut plus que pour les fichiers ; pour une image, c'est sa visibilité,
+réglée sur E-19 (ou par « Réserver au MJ » dans le menu de la vignette, même boîte que E-19).
+
 **Blocs de fiche** (après les sections, hors de toute section) :
 - **Contient** (`folder-tree`) — les enfants lisibles, par type puis titre, chacun avec son icône ; 50
   puis « Afficher les N suivants » (N compté sur ce que le lecteur voit). Absent s'il n'y en a aucun.
@@ -2088,6 +2103,66 @@ refuse : « Vous ne pouvez pas modifier cette section. ».
   un lien vers elle dans « Maître Aldric » est marqué « lien cassé » pour Antor et du texte pour Léa.
 - Étant donné un contenu qui contient `<script>alert(1)</script>` et `<b>gras</b>`, quand la section
   s'affiche, alors ces balises s'affichent comme du texte, et aucun script ne s'exécute.
+
+### E-19 Médiathèque
+
+*Maquette finie* : `docs/maquettes/e19-mediatheque.html` (états `#etat-joueur`, `#etat-image`,
+`#etat-supprimer`, `#etat-reserver`, `#etat-choisir`, `#etat-vide`, `#etat-perdue`).
+Décision de Monsieur du 2026-10-11 (B-53 à B-56, AD-111).
+
+Atteint par « Médiathèque » (`images`) dans la barre de l'univers, sous « Cartes », pour tout membre.
+En tête : le titre, « 1 104 images » (celles que le lecteur voit) et, pour un MJ, « Ajouter des images »
+(plusieurs fichiers à la fois, ou un glisser-déposer sur la page). Une rangée de filtres : la recherche
+par nom ; pour un MJ, « Visibilité » (Toutes, Visibles des joueurs, Réservées au MJ) ; « Usage » (Toutes,
+Utilisées, Non utilisées) ; l'ordre (Plus récentes, Nom). Une **grille de vignettes** (cadrage
+`cover`, chargement à l'approche) : le nom dessous, et pour un MJ, sur une image réservée, la pastille
+« MJ seul » (`lock`) ; 100 puis « Charger la suite ».
+
+Un clic ouvre le **panneau de l'image** (à droite au bureau, plein écran au téléphone) : l'image en
+grand, le nom (MJ : éditable en place, 1 à 200 caractères), la **visibilité** en bascule segmentée
+« Visible des joueurs » / « Réservée au MJ » (MJ ; un joueur ne voit pas ce réglage), type, taille,
+« ajoutée par lea le 12 oct. 2026 », la clé d'origine (MJ, si importée), **Utilisée dans** — les fiches
+que le lecteur voit, chacune avec l'endroit (« Illustration », « Histoire » (dans le texte), « Pièces
+jointes de Description ») et un lien —, et pour un MJ « Supprimer l'image » (`--danger`).
+
+- *Réserver au MJ* une image utilisée dans une section lue des joueurs, ou en illustration d'une fiche
+  que des joueurs voient : boîte « Réserver « plan-du-repaire.png » au MJ ? Les joueurs ne la verront
+  plus dans : Les Docks — « Histoire ». » ; « Réserver au MJ » / « Annuler ». Sans tel usage : aucun
+  avertissement, toast « Image réservée au MJ. ».
+- *Supprimer* : boîte « Supprimer « Carte des Sphères » ? Elle est utilisée dans 3 fiches : Port-Sel
+  (illustration), Les Sphères (« Histoire »), Maître Aldric (pièces jointes de « Apparence »). Elle
+  disparaîtra de ces fiches. » ; sans usage : « Supprimer « Carte des Sphères » ? » ; « Supprimer
+  l'image » (`--danger`) / « Annuler » ; toast « Image supprimée. ».
+
+**Le choix d'une image** (depuis E-9 : « Image » de l'éditeur, « Joindre une image » du bloc Pièces
+jointes, « Choisir l'illustration ») ouvre la même grille dans une boîte, filtrée sur ce que le compte
+voit, avec « Depuis l'appareil » en tête ; choisir insère `![nom](image:<id>)` au point d'insertion, ou
+joint l'image, ou pose l'illustration. L'avertissement de B-55 s'affiche sous le champ (ou dans la
+boîte d'illustration) tant que la condition tient ; il n'empêche rien.
+
+| État | Ce qu'on voit | Ce qu'on peut faire |
+|---|---|---|
+| vide | MJ : « Aucune image pour l'instant. Ajoutez-en, ou posez-en une dans une fiche. » et « Ajouter des images » ; joueur : « Aucune image à voir pour l'instant. » ; un filtre sans résultat : « Aucune image ne correspond. » | MJ : ajouter |
+| chargement | vignettes en squelette ; une vignette qui charge garde son cadre | — |
+| erreur | « Impossible de charger la médiathèque. » ; un fichier refusé dans un envoi multiple : « « regles.pdf » n'est pas une image. » sous la grille, les autres sont ajoutées ; envoi coupé : « L'envoi n'a pas abouti. », avec « Réessayer » ; suppression ou changement qui échoue : « L'action n'a pas abouti. Réessayez. », rien n'a changé | « Réessayer » |
+| connexion perdue | le bandeau ; « Ajouter des images », la bascule, « Supprimer » désactivés | regarder ce qui est chargé |
+| refus | une image réservée au MJ n'existe pas pour un joueur (absente, son adresse : « Page introuvable. ») ; ni réglage de visibilité, ni suppression, ni ajout pour un joueur (**caché**) ; rôle retiré pendant la page : « Vous ne pouvez plus modifier cette image. » | « Mes univers » |
+| contenu long | 1 104 images : 100 puis la suite ; nom de 200 caractères tronqué par « … » avec infobulle ; une image utilisée dans 40 fiches : « Utilisée dans » montre 10 puis « Afficher les 30 autres » ; image de 30 Mo : l'aperçu se charge, rien n'est redimensionné (AD-93) | idem |
+
+*Critères.*
+- Étant donné « plan-du-repaire.png » réservée au MJ et insérée dans « Histoire » des « Docks », lue
+  des joueurs, quand Léa lit « Les Docks », alors elle voit « Image réservée au MJ. » à sa place ; et
+  sa médiathèque ne montre pas cette image.
+- Étant donné la même image insérée dans un bloc MJ, quand Léa lit la section, alors rien ne paraît,
+  ni l'image ni la mention.
+- Étant donné Antor qui pose une image réservée au MJ dans une section lue des joueurs, alors
+  l'éditeur affiche l'avertissement de B-55 ; dans une section MJ seul, non.
+- Étant donné « Carte des Sphères » utilisée par trois fiches, quand Antor la supprime, alors la boîte
+  liste les trois fiches ; après, Antor voit « Image supprimée de la médiathèque. » à sa place dans
+  « Les Sphères », et Léa ne voit rien.
+- Étant donné une image visible des joueurs utilisée par « Port-Sel » (lisible de Léa) et par
+  « Rapport secret de l'amirauté » (MJ seul), quand Léa ouvre l'image, alors « Utilisée dans » ne nomme
+  que « Port-Sel ».
 
 ### E-8 Liste de fiches — l'arbre
 
@@ -2266,7 +2341,7 @@ l'univers » (`--danger`) ne s'active que si le nom tapé est exact (casse compr
 
 - **E-7** et les entrées de **E-15** : l'éditeur et le rendu Markdown ci-dessus, avec ce que permet
   chaque texte (« Selon le texte ») : E-7 garde « Lien vers une fiche » ; ni E-7 ni E-15 n'ont
-  « Image de la section » ni « Bloc MJ » ; E-15 n'a pas de lien vers une fiche.
+  « Image » ni « Bloc MJ » ; E-15 n'a pas de lien vers une fiche.
 - **E-13** : l'ordre est la date de création de la fiche, qui est sa **date d'origine** si l'import en
   a donné une (B-50) ; la ligne montre cette date.
 - **E-5** (B-51, dernière tranche) : un panneau « Jeton de l'assistant » sous la liste des
