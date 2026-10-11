@@ -92,8 +92,9 @@ Forme de la skill `exigences` ; chaque besoin cite les parcours qui le réalisen
   l'import) ; tant que le lecteur n'est pas MJ hors mode Joueur, Kanevas ne lui en livre rien : ni
   sur la fiche, ni par l'assistant, ni par la recherche (un mot qui n'est que dans un bloc MJ ne fait
   pas trouver la fiche), ni par les liens entrants (un lien écrit dans un bloc MJ ne compte pas), ni
-  par les images qu'il contient. Une section qui contient un bloc MJ ne s'écrit que par un MJ.
-  *(P-12, P-14)*
+  par les images qu'il contient. Une section qui contient un bloc MJ ne s'écrit que par un MJ. Un
+  fichier **ajouté depuis un bloc MJ** entre dans la médiathèque « Réservé au MJ » (B-55). *(P-12, P-14 ;
+  décision de Monsieur du 2026-10-11)*
 - **B-35** — Un MJ range une fiche **sous une autre** du même univers (E-9, « Déplacer sous… », ou
   l'import) ; la fiche montre alors ses ancêtres dans le fil d'Ariane et ses **enfants** dans un bloc ;
   la liste d'un type (E-8) se lit aussi **en arbre**. Un lecteur n'y voit que les fiches qu'il peut
@@ -186,11 +187,15 @@ Forme de la skill `exigences` ; chaque besoin cite les parcours qui le réalisen
 - **B-55** — Un compte qui écrit une section y met un fichier par **deux chemins**, sur E-9 (en édition
   depuis la barre d'outils, ou par « Joindre un fichier » du bloc Pièces jointes) :
   (1) **ajouter un fichier** depuis son appareil — en un seul geste, le fichier entre dans la
-  médiathèque (visible des joueurs) **et** s'intègre à la fiche : image dans le texte, fichier joint à
-  la section, ou illustration (MJ) ; (2) **choisir dans la médiathèque** un fichier qu'il voit, par le
-  sélecteur. Si le fichier posé est réservé au MJ alors que la section (ou la fiche, pour une
+  médiathèque **et** s'intègre à la fiche : image dans le texte, fichier joint à la section, ou
+  illustration (MJ) ; sa visibilité **suit l'endroit d'ajout** : dans un bloc MJ, ou dans une section
+  que les joueurs ne lisent pas tous, « Réservé au MJ » ; ailleurs, « Visible des joueurs » ; (2)
+  **choisir dans la médiathèque** un fichier qu'il voit, par le sélecteur — sa visibilité ne change
+  pas. Celui qui a ajouté un fichier le **voit toujours**, dans la médiathèque et dans la fiche. Si le
+  fichier posé est réservé au MJ alors que la section (ou la fiche, pour une
   illustration) est lue des joueurs, l'éditeur l'avertit : « Ce fichier est réservé au MJ : les joueurs
-  qui lisent cette section ne le verront pas. » *(P-16, P-3, P-7)*
+  qui lisent cette section ne le verront pas. » *(P-16, P-3, P-7 ; décision de Monsieur du 2026-10-11 : le défaut « Visible
+  des joueurs » ne vaut plus que pour un ajout direct dans la médiathèque et pour l'import)*
 - **B-56** — L'API d'import pousse des fichiers dans la médiathèque, images et documents, avec une clé
   d'origine et des droits explicites (« Visible des joueurs » par défaut), puis les fiches les
   référencent ; les fichiers de l'export qu'aucune fiche n'utilise y entrent aussi. Le script **doit**

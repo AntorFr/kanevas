@@ -112,7 +112,7 @@ E-16 vivent hors des univers : leurs cases disent le rôle dans un univers ratta
 | E-15 (hors univers ; les colonnes disent le rôle dans un univers **rattaché au système**) | lire ; « Ajouter … », « Modifier » | lire (« Lecture seule ») ; ni « Ajouter » ni « Modifier » | « Page introuvable. », sauf s'il est lui-même membre d'un univers rattaché : alors la colonne de son rôle là (l'admin MJ d'un univers rattaché lit et modifie) |
 | E-16 (hors univers) | ses systèmes, avec ses univers et son rôle | ses systèmes, « Lecture seule » | la liste de ses propres systèmes (comme MJ ou Joueur s'il est membre d'un univers rattaché) ; vide sinon — l'écran est proposé à tout compte |
 | E-17 *(kanevas-import)* | chercher dans toutes les fiches de l'univers, blocs MJ compris ; en **mode Joueur**, comme un joueur (ni blocs MJ, ni fiches qu'un joueur ne lit pas) ; filtres : les types activés ; les fiches des types désactivés restent des résultats sous « Tous » | chercher dans ce qu'il lit, hors blocs MJ ; filtres par type et par étiquette des seules fiches qu'il voit | — |
-| E-19 *(kanevas-import)* | tout : ajouter, renommer, visibilité, supprimer ; « Utilisé dans » complet | les fichiers visibles des joueurs ; « Utilisé dans » réduit aux fiches qu'il lit ; ni ajout depuis E-19 (**caché** ; il ajoute un fichier par une section qu'il écrit, E-9), ni réglage, ni suppression (**cachés**) | — |
+| E-19 *(kanevas-import)* | tout : ajouter, renommer, visibilité, supprimer ; « Utilisé dans » complet | les fichiers visibles des joueurs et ceux qu'il a ajoutés ; « Utilisé dans » réduit aux fiches qu'il lit ; ni ajout depuis E-19 (**caché** ; il ajoute un fichier par une section qu'il écrit, E-9), ni réglage, ni suppression (**cachés**) | — |
 | E-18 *(kanevas-import)* | créer un jeton ; voir et révoquer tous les jetons de l'univers (y compris ceux d'un autre MJ) ; voir les lots | — (**caché** : absent de la barre, « Page introuvable. » par l'adresse) | — |
 
 Ce que `kanevas-import` ajoute aux lignes existantes : **E-8** — MJ : la vue en arbre, la création
@@ -2075,14 +2075,19 @@ médiathèque. » pour un MJ, rien pour un joueur. En mode Joueur, le MJ voit ce
 « Joindre un fichier » en pied du bloc Pièces jointes — présent hors édition pour qui écrit la section,
 comme le dépôt d'avant (`kanevas-fichiers`) — ouvrent le même menu —
 1. **« Ajouter depuis l'appareil »** (ou un glisser-déposer sur la section) : en **un seul geste**, le
-   fichier entre dans la médiathèque (visible des joueurs, ajouté par le compte) **et** s'intègre à la
+   fichier entre dans la médiathèque (ajouté par le compte ; **visibilité selon l'endroit d'ajout** : dans
+   un bloc MJ, ou dans une section que les joueurs ne lisent pas tous, « Réservé au MJ » — la ligne du
+   fichier le dit par sa pastille « MJ seul » — ; ailleurs, « Visible des joueurs » ; une illustration :
+   « Visible des joueurs » si la fiche a une section lue des joueurs) **et** s'intègre à la
    fiche — depuis la barre d'outils, une image s'insère dans le texte au point d'insertion
    (`![nom](fichier:<id>)`) et un document y met un lien (`[nom](fichier:<id>)`) ; depuis le bloc, le
    fichier est joint à la section ; depuis l'en-tête (« Poser » ou « Remplacer » l'illustration, MJ),
    une image devient l'illustration. Un échec n'ajoute rien à la médiathèque ni à la fiche.
 2. **« Choisir dans la médiathèque »** : le sélecteur de E-19 (« Choisir un fichier »), filtré sur ce
    que le compte voit (et sur les images pour l'illustration) ; choisir intègre la référence de la même
-   façon, sans rien ajouter à la médiathèque.
+   façon, sans rien ajouter à la médiathèque, **sans changer sa visibilité**.
+Celui qui a ajouté un fichier le **voit toujours**, ici et dans E-19, même réservé au MJ (troisième règle
+de lecture d'AD-111).
 L'avertissement de B-55 s'affiche sous le champ, ou dans la boîte de l'illustration, tant que la
 condition tient (un fichier réservé au MJ posé hors bloc MJ dans une section lue des joueurs, ou en
 illustration d'une fiche que des joueurs voient) ; il n'empêche rien.
@@ -2185,7 +2190,7 @@ sur ce que le compte voit, sur « Images » quand on pose l'illustration ; chois
 | chargement | tuiles en squelette ; une vignette qui charge garde son cadre | — |
 | erreur | « Impossible de charger la médiathèque. » ; un fichier vide dans un envoi multiple : « « notes.txt » est vide. » sous la grille, les autres sont ajoutés ; envoi coupé : « L'envoi n'a pas abouti. », avec « Réessayer » ; suppression ou changement qui échoue : « L'action n'a pas abouti. Réessayez. », rien n'a changé | « Réessayer » |
 | connexion perdue | le bandeau ; « Ajouter des fichiers », la bascule de visibilité, « Supprimer » désactivés | regarder ce qui est chargé |
-| refus | un fichier réservé au MJ n'existe pas pour un joueur (absent, son adresse : « Page introuvable. ») ; ni réglage de visibilité, ni suppression, ni ajout depuis E-19 pour un joueur (**caché** ; il ajoute un fichier par une section qu'il écrit, E-9) ; rôle retiré pendant la page : « Vous ne pouvez plus modifier ce fichier. » | « Mes univers » |
+| refus | un fichier réservé au MJ, qu'il n'a pas ajouté, n'existe pas pour un joueur (absent, son adresse : « Page introuvable. ») ; ni réglage de visibilité, ni suppression, ni ajout depuis E-19 pour un joueur (**caché** ; il ajoute un fichier par une section qu'il écrit, E-9) ; rôle retiré pendant la page : « Vous ne pouvez plus modifier ce fichier. » | « Mes univers » |
 | contenu long | 1 140 fichiers : 100 puis la suite ; nom de 200 caractères tronqué par « … » avec infobulle ; un fichier utilisé dans 40 fiches : 10 puis « Afficher les 30 autres » ; image de 30 Mo : l'aperçu se charge, rien n'est redimensionné (AD-93) ; document de 300 Mo : la tuile et « Télécharger », rien n'est chargé d'avance | idem |
 
 *Critères.*
@@ -2196,9 +2201,13 @@ sur ce que le compte voit, sur « Images » quand on pose l'illustration ; chois
 - Étant donné Antor qui, en modifiant une section lue des joueurs, choisit dans la médiathèque un
   fichier réservé au MJ, alors l'éditeur affiche l'avertissement de B-55 ; dans une section MJ seul,
   non.
-- Étant donné Léa, auteur avec écriture de « Notes de la table », quand elle ajoute « carnet.pdf »
-  depuis son appareil, alors le document est joint à la section **et** figure dans la médiathèque,
-  visible des joueurs, « ajouté par lea ».
+- Étant donné Léa, auteur avec écriture de « Notes de la table » (que les autres joueurs ne lisent pas),
+  quand elle ajoute « carnet.pdf » depuis son appareil, alors le document est joint à la section **et**
+  figure dans la médiathèque, « Réservé au MJ », « ajouté par lea » ; Léa le voit dans la section et
+  dans sa médiathèque, Teo ne le voit nulle part.
+- Étant donné Antor qui ajoute « plan.png » depuis un bloc MJ de « Port-Sel », alors le fichier entre
+  « Réservé au MJ » ; ajouté depuis « Description », lue des joueurs, il entre « Visible des joueurs » ;
+  choisi ensuite dans la médiathèque pour un bloc MJ, sa visibilité ne change pas.
 - Étant donné « Carte des Sphères » utilisée par trois fiches, quand Antor la supprime, alors la boîte
   liste les trois fiches ; après, Antor voit « Fichier supprimé de la médiathèque. » à sa place dans
   « Les Sphères », et Léa ne voit rien.
