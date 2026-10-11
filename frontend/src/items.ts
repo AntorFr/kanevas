@@ -9,6 +9,7 @@ import {
   ScrollText,
   Settings2,
   Shield,
+  ShieldCheck,
   ContactRound,
   UsersRound,
   type LucideIcon,
@@ -18,7 +19,7 @@ import type { Role } from './types';
 
 /**
  * The sidebar's items (docs/ecrans.md, « Barre latérale »). They live here, not in the bar: an item
- * shows only when a registered screen answers its address, so a screen not built yet (Cartes…)
+ * shows only when a registered screen answers its address, so a screen not built yet
  * has no entry in the bar until it is registered. `chemin(id)` is the concrete address.
  */
 export interface Item {
@@ -29,7 +30,14 @@ export interface Item {
   section?: string;
   /** Only this role sees it. */
   role?: Role;
+  /** Only accounts whose `GET /api/moi` carries this group see it. */
+  groupe?: string;
+  /** Also shown, without its section heading, below « Mes univers » outside a universe. */
+  horsUnivers?: boolean;
 }
+
+/** Authelia group carried by `GET /api/moi` that makes an instance admin (B-6). */
+export const GROUPE_ADMIN = 'parents';
 
 export const ITEMS_UNIVERS: Item[] = [
   { libelle: 'Vue d’ensemble', icone: LayoutGrid, chemin: (id) => `/univers/${id}` },
@@ -44,4 +52,6 @@ export const ITEMS_UNIVERS: Item[] = [
   { libelle: 'Quêtes', icone: ScrollText, section: 'Lore', chemin: (id) => `/univers/${id}/fiches/quetes` },
   { libelle: 'Membres', icone: ContactRound, section: 'Univers', role: 'mj', chemin: (id) => `/univers/${id}/membres` },
   { libelle: 'Paramètres', icone: Settings2, section: 'Univers', role: 'mj', chemin: (id) => `/univers/${id}/parametres` },
+  // « Administration » (E-5): instance admins only, wherever the bar is.
+  { libelle: 'Administration', icone: ShieldCheck, section: 'Instance', groupe: GROUPE_ADMIN, horsUnivers: true, chemin: () => '/administration' },
 ];

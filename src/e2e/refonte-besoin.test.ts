@@ -272,10 +272,11 @@ describe('le cadre d’un univers', () => {
     await antor.goto(urlUnivers);
     await attendre(antor);
     const barre = nav(antor);
-    for (const l of ['Vue d’ensemble', 'Campagnes', 'Comptes-rendus', 'Personnages', 'Lieux', 'Factions', 'Objets', 'Événements', 'Quêtes', 'Membres', 'Paramètres'])
+    for (const l of ['Vue d’ensemble', 'Campagnes', 'Comptes-rendus', 'Cartes', 'Personnages', 'Lieux', 'Factions', 'Objets', 'Événements', 'Quêtes', 'Membres', 'Paramètres'])
       assert.equal(await barre.getByRole('link', { name: rx(l) }).count(), 1, l);
-    for (const l of ['Cartes', 'Administration'])
-      assert.equal(await barre.getByRole('link', { name: rx(l) }).count(), 0, `${l} absent`);
+    // « Cartes » is in the sidebar since kanevas-cartes-graphes (E-10); « Administration » is still absent for a GM.
+    assert.equal(await barre.getByRole('link', { name: rx('Cartes') }).count(), 1, 'Cartes présent');
+    assert.equal(await barre.getByRole('link', { name: rx('Administration') }).count(), 0, 'Administration absent');
     const sansIcone = await barre.getByRole('link').evaluateAll((els: Element[]) =>
       els.filter((e) => !e.querySelector('svg')).map((e) => e.textContent),
     );

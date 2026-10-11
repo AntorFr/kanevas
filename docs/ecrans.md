@@ -4,9 +4,9 @@
 > y arrive, à quoi il sert, ce que chaque rôle y fait. Les états de chaque écran et la maquette
 > finie se détaillent dans la tranche qui le construit.
 
-> **Construit à ce jour** : E-1, E-2, E-3 (nom, navigation et blocs : système de jeu, campagnes actives, derniers comptes-rendus, préparation pour le MJ), E-4, E-6, E-7, E-13, E-8 (avec la
-> recherche dans un type, en grille de cartes illustrées), E-9 (avec les blocs Relations et Pièces jointes et l'illustration en tête), E-12 (Assistant), E-14 (Paramètres), E-15 (Système de jeu, à `/systemes/:sid`), E-16 (Systèmes de jeu), la ligne « Campagne » de E-9, la session
-> et la barre latérale. E-5, E-10 et E-11 sont la cible.
+> **Construit à ce jour** : E-1, E-2, E-3 (nom, navigation et blocs : système de jeu, campagnes actives, derniers comptes-rendus, préparation pour le MJ, cartes visibles), E-4, E-5 (Administration), E-6, E-7, E-13, E-8 (avec la
+> recherche dans un type, en grille de cartes illustrées), E-9 (avec les blocs Relations et Pièces jointes et l'illustration en tête), E-10 et E-11 (cartes et graphes), E-12 (Assistant), E-14 (Paramètres), E-15 (Système de jeu, à `/systemes/:sid`), E-16 (Systèmes de jeu), la ligne « Campagne » de E-9, la session
+> et la barre latérale.
 
 ## Format
 
@@ -50,7 +50,7 @@ bascule existe (fiche, carte).
 |---|---|---|---|
 | **E-1 Accueil** | connexion ; logo | voir ses univers et son rôle dans chacun ; en créer un ; voir son identifiant | P-1, P-6 |
 | **E-2 Créer un univers** | E-1 | nom, description ; le créateur devient MJ | P-1 |
-| **E-3 Vue d'ensemble de l'univers** | E-1 ; sélecteur d'univers | les campagnes actives, les derniers CR, la préparation (MJ), les cartes visibles | P-3, P-4, P-6 |
+| **E-3 Vue d'ensemble de l'univers** | E-1 ; sélecteur d'univers ; E-5 (admin devenu membre) | les campagnes actives, les derniers CR, la préparation (MJ), les cartes visibles | P-2, P-3, P-4, P-6 |
 | **E-4 Membres** | nav Univers (MJ) | lister, ajouter par identifiant, changer le rôle, retirer | P-2 |
 | **E-5 Administration** | nav (admin d'instance) | lister les univers de l'instance, en gérer les membres — jamais le contenu | P-2 |
 | **E-6 Campagne** | nav Campagnes (liste) ; E-3 | liste des campagnes ; pour une campagne : statut, scénarios et « Nouveau scénario » (MJ), préparation (MJ), comptes-rendus, « Nouveau compte-rendu » | P-3, P-4 |
@@ -58,7 +58,7 @@ bascule existe (fiche, carte).
 | **E-8 Liste de fiches** | nav Lore | les fiches d'un type que le compte peut lire, en grille de cartes illustrées ; chercher dans ce type ; créer (MJ) | P-3, P-6 |
 | **E-9 Fiche** | E-8 ; un token ; un lien ; E-13 | lire et écrire les sections permises ; ajouter, réordonner, retirer une section, régler son audience, relier (MJ) ; déposer, marquer secrète, retirer une pièce jointe ; poser, remplacer, retirer l'illustration (MJ) ; bascule mode Joueur (MJ). Un compte-rendu s'ouvre ici. | P-3 à P-7 |
 | **E-10 Cartes** | nav Cartes | les cartes lisibles ; créer une carte illustrée (avec son image de fond) ou un graphe (MJ) | P-3, P-9 |
-| **E-11 Carte** | E-10 ; E-3 | carte illustrée : fond, tokens ; graphe : nœuds et liens. MJ : déposer ou changer le fond, placer, configurer, rendre visible, mode Joueur. Joueur : ouvrir la fiche d'un token. | P-3, P-6, P-9 |
+| **E-11 Carte** | E-10 ; E-3 | carte illustrée : fond, tokens ; graphe : nœuds et liens. MJ : déposer ou changer le fond, placer, rendre visible, mode Joueur. Joueur : ouvrir la fiche d'un token. | P-3, P-6, P-9 |
 | **E-12 Assistant** | bouton flottant, sur tout écran d'univers | converser ; voir ce que l'assistant a écrit, avec un lien ; MJ : propositions de mise à jour (actuel/proposé, **Appliquer**, **Abandonner**), images générées | P-3, P-5, P-6, P-7 |
 | **E-13 Comptes-rendus** | nav Comptes-rendus ; E-3 | tous les CR lisibles de l'univers, du plus récent, avec leur campagne | P-4, P-5 |
 | **E-14 Paramètres de l'univers** | nav Univers (MJ) | nom, description, système de jeu (choisir dans le catalogue, en créer un) | P-8 |
@@ -82,18 +82,20 @@ E-16 vivent hors des univers : leurs cases disent le rôle dans un univers ratta
 | E-2 | créer | créer | créer |
 | E-3 | tout | sans préparation ni scénarios | — |
 | E-4 | tout | — | — (passe par E-5) |
-| E-5 | — | — | tous les univers, leurs membres |
+| E-5 | — | — | lister les univers et leurs membres ; ajouter, changer un rôle, retirer un membre |
 | E-6 | tout | liste, statut, CR, « Nouveau compte-rendu » ; ni scénarios ni préparation (cachés) | — |
 | E-7 | tout | — | — |
 | E-8 | lire, chercher, créer ; la vignette de chaque fiche (son illustration, ou le repli dessiné) | lire, chercher ; la vignette des fiches qu'il voit | — |
 | E-9 | tout ; mode Joueur ; relier et retirer des relations ; poser, remplacer, retirer l'illustration (hors mode Joueur) | sections lisibles ; écrire celles permises ; relations lisibles (section et cible) ; pièces jointes de celles-ci ; voir l'illustration, jamais la poser | — |
 | E-10 | tout | cartes visibles | — |
 | E-11 | tout ; mode Joueur | lire une carte visible, ouvrir une fiche | — |
-| E-12 | catalogue MJ | catalogue Joueur | — |
+| E-12 | catalogue MJ ; propositions : le MJ demandeur seul les voit, les applique, les abandonne | catalogue Joueur ; propositions : **caché** (ni outil ni bloc ; ce qu'on vérifie est l'absence de proposition et de bloc, pas le texte libre de l'assistant) | — |
 | E-13 | tous les CR | les CR lisibles | — |
 | E-14 | tout | — | — |
 | E-15 (hors univers ; les colonnes disent le rôle dans un univers **rattaché au système**) | lire ; « Ajouter … », « Modifier » | lire (« Lecture seule ») ; ni « Ajouter » ni « Modifier » | « Page introuvable. », sauf s'il est lui-même membre d'un univers rattaché : alors la colonne de son rôle là (l'admin MJ d'un univers rattaché lit et modifie) |
 | E-16 (hors univers) | ses systèmes, avec ses univers et son rôle | ses systèmes, « Lecture seule » | la liste de ses propres systèmes (comme MJ ou Joueur s'il est membre d'un univers rattaché) ; vide sinon — l'écran est proposé à tout compte |
+
+Un admin d'instance qui est aussi membre d'un univers, MJ ou Joueur, a dans cet univers la colonne de son rôle et garde E-5 par la section « Instance » de la barre ; hors de cet univers, la colonne Admin.
 
 Précisions de la matrice : créer une campagne, en changer le statut, créer un scénario sont au
 MJ seul. L'audience d'une section se règle en ligne sur la fiche (MJ). Créer une fiche ouvre une
@@ -174,13 +176,12 @@ Deux sont posés dès le cadrage parce qu'ils traversent tout :
 ### Barre latérale
 
 Sur tout écran d'un univers : en tête le **sélecteur d'univers** (nom, badge du rôle, la liste
-des univers du compte, puis « Mes univers » et « Systèmes de jeu » en pied de liste) ; **Vue d'ensemble** ; **Campagnes** ; **Comptes-rendus** ; **Lore** :
+des univers du compte, puis « Mes univers » et « Systèmes de jeu » en pied de liste) ; **Vue d'ensemble** ; **Campagnes**, **Comptes-rendus** et **Cartes** ; **Lore** :
 Personnages, Lieux, Factions, Objets, Événements, Quêtes ; pour un MJ, **Univers ▸ Membres** et **Paramètres** ; en
 pied, le compte (avatar et identifiant) qui ouvre le menu du compte : l'identifiant, le thème
 (Clair, Sombre, Système, en trois icônes) et « Se déconnecter ». Hors d'un univers (E-1,
-E-2, E-5, E-15, E-16) : « Mes univers », « Systèmes de jeu » et le compte en pied. **Un item dont l'écran n'est
-pas construit n'est pas affiché** : Cartes et Administration
-arrivent avec leurs tranches (Campagnes et Comptes-rendus sont affichés). « Paramètres » (E-14) n'est affiché qu'au MJ. Sur téléphone (moins de 760 px), la barre est un tiroir sous un
+E-2, E-5, E-15, E-16) : « Mes univers », « Systèmes de jeu », « Administration » pour un compte du groupe `parents` (E-5, plus bas) et le compte en pied. **Un item dont l'écran n'est
+pas construit n'est pas affiché** (Campagnes, Comptes-rendus et Cartes sont affichés). « Paramètres » (E-14) n'est affiché qu'au MJ. Sur téléphone (moins de 760 px), la barre est un tiroir sous un
 bouton « Menu ».
 
 | État | Ce qu'on voit |
@@ -352,8 +353,81 @@ des pièces jointes : « … Son contenu et ses 3 pièces jointes seront perdus.
 Chaque besoin livré par la tranche (fiche de la feature, `## Livre`, hors de ce dépôt) a son écran : B-2 → E-2 ; B-3 à B-5 → E-4 ; B-7 → E-8 ; B-8 et B-9 →
 E-9 ; B-1 et B-28 → session ; B-29 → six états de chaque écran ci-dessus. Chaque écran est atteint
 par P-1 (E-1, E-2, E-3), P-2 (E-4), P-3 étape 4 et P-6 (E-8, E-9), P-7 (E-9). Les trois rôles ont
-leur colonne dans la matrice du cadrage ; l'admin d'instance n'a, dans cette tranche, que E-1 et
-E-2.
+leur colonne dans la matrice du cadrage ; l'admin d'instance n'avait, avant `kanevas-recours-admin`, que E-1 et
+E-2 ; E-5 lui vient avec cette tranche (plus bas).
+
+## Détail des écrans de `kanevas-recours-admin`
+
+> E-5 et l'entrée « Administration » de la barre latérale. Les textes communs (chargement, erreur de
+> chargement, connexion perdue, écriture en cours, échec d'une écriture, refus) et les refus de
+> membres (« Ce compte ne s'est jamais connecté. », « Ce compte est déjà membre. », « Impossible :
+> l'univers doit garder au moins un MJ. ») sont ceux de « Détail des écrans de
+> `kanevas-premiere-fiche` ». Maquette finie : `docs/maquettes/e05-administration.html`.
+
+**Qui est admin d'instance.** Le compte dont la session porte le groupe Authelia `parents` (AD-56,
+lu à la connexion ; en bouchon, Admin). Le droit est celui de la session en cours : un compte retiré
+du groupe le garde jusqu'à l'expiration de sa session (7 jours) — risque accepté (AD-86).
+**Ce que l'admin voit** : le nom de chaque univers, le nombre de ses membres, et ses membres
+(identifiant, rôle). **Ce qu'il ne voit jamais** : la description, une fiche, une section, un
+compte-rendu, une carte, une pièce jointe, un système de jeu — pour tout cela, il est un compte sans
+rôle (« Page introuvable. »), tant qu'il ne s'est pas ajouté lui-même comme membre.
+
+### Barre latérale : l'entrée « Administration »
+
+Pour un admin d'instance seulement : hors d'un univers, **Administration** sous « Mes univers » ; dans un
+univers dont il est membre, **Administration** sous une section « Instance », en pied de la barre.
+Pour tout autre compte, l'entrée n'existe pas.
+
+### E-5 Administration
+
+La barre haute porte le fil « Instance / Administration » ; sous le titre et le sous-titre « Les membres se gèrent ici ; le
+contenu (fiches, comptes-rendus, cartes) n'est jamais affiché. », deux zones. À gauche, **Univers de
+l'instance** : tous les univers, par nom (sans casse), chacun avec « N membres » (« 1 membre » au
+singulier), l'univers choisi portant le badge « Sélectionné » ; cent à la fois, puis « Charger la suite ». À droite (sous la liste sur téléphone, après
+un clic sur l'univers), **Membres — <nom de l'univers>** : la liste (identifiant, rôle MJ / Joueur,
+« Retirer <identifiant> » sur chaque ligne, révélé au survol et au focus au bureau, toujours visible sans survol), puis, sous la liste, un champ « Identifiant du compte », le rôle (Joueur par défaut) et « Ajouter » : le même
+geste, les mêmes refus et la même confirmation de retrait qu'E-4. Ajouter son propre identifiant, en
+MJ, est le moyen de lire le contenu : l'ajout apparaît dans la liste des membres que voit le MJ de
+l'univers ; une note sous le champ le dit : « Pour lire le contenu, l'admin s'ajoute lui-même comme
+membre : l'ajout apparaît dans la liste des membres que voit le MJ de l'univers. » Un admin membre
+qui se retire lui-même reste sur E-5 ; l'univers reste sélectionné, sa liste se met à jour sans lui, et il disparaît de l'accueil (E-1) de l'admin ; le lien « Ouvrir » disparaît avec son rôle. Rien d'autre n'est montré de l'univers : pas de lien vers sa vue d'ensemble tant que
+l'admin n'en est pas membre ; une fois membre, un lien « Ouvrir » à côté du nom mène à E-3 (un clic sur le
+nom sélectionne seulement l'univers). Aucune action sur l'univers lui-même
+(nom, description) : elles sont au MJ.
+
+Adresses : `/administration` (aucune sélection : « Choisissez un univers pour voir ses membres. »)
+et `/administration/univers/:id`.
+
+| État | Ce qu'on voit | Ce qu'on peut faire |
+|---|---|---|
+| vide | liste des membres : sans objet, un univers a toujours un MJ (B-5) ; aucun univers dans l'instance : « Aucun univers sur l'instance pour l'instant. » ; aucune sélection : « Choisissez un univers pour voir ses membres. » | — |
+| chargement | « Chargement des univers… » ; pour les membres : « Chargement des membres… » | — |
+| erreur | « Impossible de charger les univers. » ou « Impossible de charger les membres. », avec « Réessayer » ; une écriture échouée : « L'action n'a pas abouti. Réessayez. » au-dessus de la liste des membres | « Réessayer » |
+| connexion perdue | le bandeau ; « Ajouter », le changement de rôle et « Retirer » désactivés ; les listes chargées restent | lire |
+| refus | tout compte hors du groupe : « Page introuvable. » (l'entrée n'existe pas dans sa barre) ; un univers qui n'existe pas : « Page introuvable. » ; groupe retiré à l'expiration de la session : « Page introuvable. » | « Mes univers » |
+| contenu long | 300 univers : « Charger la suite » ; 200 membres : la liste défile ; un nom de 80 caractères et un identifiant long sont tronqués par « … » avec infobulle | idem |
+
+*Critères.*
+- Étant donné « Admin » (groupe `parents`), sans rôle dans « Lame d'Ébène », quand il ouvre
+  l'administration et choisit « Lame d'Ébène », alors il voit « 2 membres », la liste antor (MJ) et lea (Joueur), et ni la description, ni aucune fiche.
+- Étant donné le même Admin, quand il ajoute « mira » en MJ (elle apparaît dans la liste) puis ouvre l'adresse de la vue d'ensemble
+  de « Lame d'Ébène », alors il voit « Page introuvable. » ; quand il s'ajoute lui-même en MJ, alors
+  la vue d'ensemble s'ouvre et Antor, sur E-4, voit « admin » dans la liste des membres.
+- Étant donné Léa, Joueuse, quand elle ouvre `/administration`, alors elle voit « Page introuvable. » et
+  n'a pas d'entrée « Administration » dans sa barre.
+- Étant donné Admin et l'univers « Les Landes grises », dont « mira » est la seule MJ, quand Admin tente de
+  la retirer, alors il voit « Impossible : l'univers doit garder au moins un MJ. » et la liste est inchangée.
+- Étant donné Admin, membre MJ de « Brume » (univers que le test crée ; le monde semé du bouchon n'a pas « Brume » : y jouer « Les Cendres de Vaëlis », où Admin est MJ), quand il ouvre l'administration, alors « Brume » porte un lien « Ouvrir » qui mène à sa vue d'ensemble, et « Lame d'Ébène » n'en porte pas ; s'il se retire de « Brume » (seul membre : refusé avec la raison du dernier MJ), le lien reste.
+- Étant donné Admin et un compte « nadia » qui ne s'est jamais connecté, quand il tente de
+  l'ajouter, alors il voit « Ce compte ne s'est jamais connecté. ».
+
+### Clôture de `kanevas-recours-admin`
+
+B-6 → E-5 (voir les univers et leurs membres, les gérer) ; P-2 étape 3 → E-5 ; B-29 → les six états
+d'E-5 ; la lecture du groupe `parents` est posée par la première fiche (session, AD-56) et consommée
+ici. E-5 est atteint par P-2 (étape 3) et par la barre (admin). Les trois rôles ont leur colonne : le
+MJ et le Joueur n'ont pas E-5 ; l'admin n'a, hors des univers dont il est membre, que E-1, E-2 et E-5.
+Écart au cadrage : aucun.
 
 ## Détail des écrans de `kanevas-systemes`
 
@@ -1533,6 +1607,83 @@ chaque relation au système (MJ, Joueur, sans univers rattaché) a sa colonne. A
 nouvelle ; B-13 et B-14 sont inchangés. Les deux besoins viennent des décisions de Monsieur du
 2026-10-06, écrites en B-30 et B-31 (`docs/parcours.md`).
 
+## Détail des écrans de `kanevas-monde`
+
+> Le bloc « proposition de mise à jour » de E-12, et rien d'autre : pas de nouvel écran, pas de
+> nouvelle adresse d'écran. Mêmes six états et mêmes textes communs que `kanevas-premiere-fiche`
+> (chargement, connexion perdue, session expirée) ; ne sont redits que les textes propres.
+> Maquette finie : `docs/maquettes/e12-propositions.html` (thème sombre ; le bloc dans ses états,
+> sur ordinateur et sur téléphone). Composant : `docs/charte.md` « Proposition de mise à jour ».
+
+**Comment une proposition naît.** Le MJ écrit dans le champ de E-12, en nommant la section et le
+compte-rendu : « Mets à jour la section Vérité d'Aldric d'après le compte-rendu de la séance 3 ».
+L'assistant ne connaît pas l'écran où se trouve la personne (AD-75 n'envoie que le message et le
+fil) : le compte-rendu se nomme dans la demande. La réponse de l'assistant qui accompagne le bloc est du texte libre du modèle (la maquette en illustre un). L'assistant lit le CR et la section, puis appelle
+l'outil `proposer_mise_a_jour` (AD-80) : **rien n'est écrit dans la section**. La réponse porte un
+événement `proposition_creee` (AD-76) que le fil rend comme un bloc « Mise à jour proposée », sous
+la réponse de l'assistant, à la place d'un bloc « Écrit par l'assistant ».
+
+### Bloc « Mise à jour proposée »
+
+De haut en bas :
+
+- **l'en-tête** : « Mise à jour proposée » ; dessous, la section visée, « Section « Vérité » de
+  « Maître Aldric » », et la source, « d'après « Séance 3 » » ;
+- **deux zones de texte brut côte à côte** (AD-58), étiquetées « Actuel » et « Proposé » ; sous
+  760 px elles s'empilent, « Actuel » d'abord. « Actuel » montre le contenu **courant** de la
+  section au moment de l'affichage (pas celui de la proposition) ; une section vide s'écrit « (section vide) » ;
+- **les gestes** : « Appliquer » (principal), « Abandonner », et un lien « Ouvrir » vers la fiche
+  (E-9, à la section).
+
+Le bloc se lit **au serveur** à chaque affichage et après chaque geste (AD-82) : un bloc ancien
+du fil dit la vérité du moment, pas celle de sa création. « Appliquer » écrit le contenu proposé
+dans la section (AD-81) ; « Abandonner » supprime la proposition. Ni l'un ni l'autre ne passe par
+l'assistant.
+
+**Ce que chaque rôle y voit.** Le MJ qui a demandé la proposition : le bloc entier. Le Joueur : il n'a pas
+l'outil (AD-80), donc jamais le bloc ; s'il demande une mise à jour, l'assistant répond qu'il ne
+peut pas, sans événement (texte libre du modèle, comme pour la création d'un scénario). Un autre MJ
+du même univers ne voit pas la proposition de son collègue : **caché**, l'adresse répond comme une adresse inconnue (elle n'est à personne d'autre que son
+demandeur, AD-79) ; l'admin d'instance sans rôle n'a pas E-12. Un MJ en mode Joueur d'une fiche garde son catalogue réel (AD-74) : il peut proposer et appliquer.
+Toute lecture de la proposition par un autre compte répond comme une adresse inconnue (AD-81).
+
+| État | Ce qu'on voit | Ce qu'on peut faire |
+|---|---|---|
+| vide | sans objet : le bloc n'existe qu'avec une proposition (l'outil refuse un contenu vide, AD-80), donc « Proposé » n'est jamais vide ; une section vide s'écrit « (section vide) » dans « Actuel » | — |
+| chargement (lecture de la proposition) | l'en-tête absent ; « Chargement de la proposition… » (`role="status"`) ; ni zones ni gestes | continuer à écrire dans le fil ; fermer |
+| en attente | l'en-tête, « Actuel » et « Proposé », les gestes | Appliquer ; Abandonner ; Ouvrir |
+| relecture (après un geste, ou à l'affichage d'un bloc déjà lu) | l'ancien contenu reste lisible, sans « Chargement… » ; les gestes sont désactivés (`aria-disabled`) le temps de la relecture | lire ; Ouvrir |
+| application ou abandon en cours | « Appliquer » (ou « Abandonner ») affiche « … » ; les deux gestes désactivés (`aria-disabled`) ; zones inchangées | attendre |
+| appliquée | l'en-tête reste (section visée, source) ; « Appliquée : la section « Vérité » est à jour. » (`role="status"`) ; « Actuel » montre le contenu appliqué, « Proposé » disparaît ; plus de geste, sauf « Ouvrir » | Ouvrir |
+| abandonnée (par ce geste) | l'en-tête reste (section visée, source) ; « Proposition abandonnée. » (`role="status"`) ; plus de zones ni de geste | continuer à écrire dans le fil |
+| périmée (la section a changé depuis la proposition, par n'importe qui), vue à l'affichage **ou découverte au clic** sur « Appliquer » (refus `section_modifiee` : le bloc se relit et passe à cet état, rien n'est écrit) | le bandeau « La section a changé depuis la proposition. Demandez-en une nouvelle. » (`role="alert"`) au-dessus des zones ; « Actuel » montre le contenu courant ; « Appliquer » désactivé (`aria-disabled`) | Abandonner ; Ouvrir ; demander une nouvelle proposition dans le fil. Une proposition **appliquée** ne devient jamais « périmée » : elle reste « appliquée » même si la section change ensuite |
+| erreur | à la lecture : « Je n'ai pas pu afficher la proposition — réessayer » (`role="alert"`) avec « Réessayer » qui la relit ; à un geste : « L'action n'a pas abouti. Réessayez. » (`role="alert"`) au-dessus des gestes, la proposition reste en attente, les gestes se réactivent | Réessayer ; le geste à nouveau |
+| connexion perdue | le bandeau commun (« Connexion perdue. Ce que vous voyez peut être dépassé ; rien n'est enregistré tant qu'elle ne revient pas. », texte de `kanevas-premiere-fiche`) ; zones lisibles ; « Appliquer » et « Abandonner » désactivés ; perdue pendant un geste en cours, la réponse est perdue : le « … » disparaît, les gestes restent désactivés, et au retour de la connexion la proposition est relue — le bloc dit ce que la base dit (appliquée ou en attente), jamais un état supposé | lire ; Ouvrir |
+| refus (adresse inconnue : abandonnée ailleurs, supprimée avec sa section, autre compte, MJ retiré de l'univers) | « Cette proposition n'existe plus. » ; plus de zones ni de geste ; session expirée : la personne est menée à la connexion, le fil est perdu | continuer à écrire dans le fil |
+| déjà appliquée, vue d'un autre onglet | même rendu que « appliquée » (la lecture dit l'état, AD-82) ; un « Appliquer » ou un « Abandonner » en course rend 409 `proposition_appliquee` et le bloc se relit | Ouvrir |
+| contenu long | contenu de 20 000 caractères : chaque zone a une hauteur maximale de 15 lignes et défile (`tabindex="0"`, étiquetée « Actuel » / « Proposé ») ; les paragraphes (lignes vides) sont conservés ; un titre de fiche ou de compte-rendu de 120 caractères passe à la ligne | faire défiler chaque zone |
+
+La proposition vit en base (AD-79) mais le fil non (AD-28) : au rechargement de la page, au changement d'univers ou
+après « Nouvelle conversation », le bloc disparaît du fil et la proposition devient inatteignable ; elle
+reste en base jusqu'à être remplacée par une nouvelle pour la même section (AD-79). Limite acceptée de la V1, bornée : une
+proposition en attente par section et par MJ.
+
+*Critère.* Étant donné Léa qui a écrit le compte-rendu « Séance 3 » et la fiche « Maître Aldric »
+dont « Vérité » dit « Il sert la Couronne », quand Antor demande à son assistant de mettre à jour
+« Vérité » d'après ce compte-rendu, alors le fil montre « Mise à jour proposée » avec « Actuel »
+et « Proposé » et **la section n'a pas changé** (la fiche, ouverte à côté, l'atteste) ; quand il clique « Appliquer », la section
+montre le contenu proposé et le bloc dit « Appliquée » ; quand une autre proposition est faite puis que
+quelqu'un modifie la section, « Appliquer » est désactivé et le bandeau dit pourquoi ; Léa,
+qui demande la même chose à son assistant, n'obtient aucune proposition.
+
+### Clôture de `kanevas-monde`
+
+B-21 → bloc « Mise à jour proposée » (toutes ses lignes) ; B-27 → proposer (générer reste à
+`kanevas-images`). Parcours : P-5 étapes 2 et 3. Rôles : le MJ a le bloc et ses gestes, le Joueur
+ne l'a pas, l'admin d'instance sans rôle n'a pas E-12. Une migration (la table `propositions`, numérotée
+à la fusion, AD-51). Reste hors de la tranche : l'application par un joueur, les propositions en
+lot, la reprise d'une proposition après rechargement.
+
 ## Maquettes
 
 `docs/maquettes/<écran>.html`, une par écran structurant. Elles illustrent ; ce document décide,
@@ -1548,8 +1699,8 @@ les menus du sélecteur d'univers des maquettes `e03`, `e08`, `e09`, `e14` et la
 cadre** de tous les écrans d'un univers (barre latérale, sélecteur d'univers, menu du compte,
 barre haute, bascule de mode, bouton « Demander à Kanevas », tiroir au téléphone) et pour les
 composants partagés. Leurs états s'ouvrent par l'adresse (`#etat-joueur`, `#etat-menu`,
-`#etat-perdue`… ; la liste est en tête de leur style). Le bloc « Cartes » de `e03` arrive avec
-`kanevas-cartes-graphes` ; jusque-là il n'est pas affiché.
+`#etat-perdue`… ; la liste est en tête de leur style). Le bloc « Cartes visibles » de `e03` et les maquettes `e10` et `e11` appartiennent à
+`kanevas-cartes-graphes` (détail plus bas).
 
 **D'avant la charte** : les autres. Elles valent pour le contenu et le vocabulaire, pas pour la
 forme ; un écran qui n'a qu'elles se construit dans le cadre et avec les composants de la
@@ -1558,3 +1709,212 @@ maquette E-9.
 **Hors produit, en bouchon seulement** : la page de démonstration des composants
 (`/demo-composants`), servie quand `KANEVAS_STUB=1` et absente sinon (404), comme l'écran de
 choix d'un compte de test.
+
+## Détail des écrans de `kanevas-cartes-graphes`
+
+> E-10 Cartes, E-11 Carte (carte illustrée et graphe), le bloc « Cartes visibles » de E-3, l'item « Cartes »
+> de la barre latérale (il apparaît avec cette tranche). Mêmes états (B-29) et mêmes textes communs que
+> la première fiche (chargement, erreur, connexion perdue, écriture en cours, échec d'une écriture,
+> refus « Page introuvable. », session expirée). Maquettes : `e10` (liste : MJ, Joueuse, vide,
+> création en erreur) et `e11` (carte illustrée et graphe : MJ, MJ en mode Joueur, Joueuse, états).
+> Le document prime sur la maquette.
+
+### E-10 Cartes
+
+Le titre « Cartes », le sous-titre « Les cartes de l'univers. Les joueurs ne voient que celles que vous rendez visibles. » (MJ seulement), puis la liste des cartes **de l'univers que le compte lit** : le MJ les voit
+toutes ; un Joueur seulement celles qui sont **visibles**. Une
+ligne : une vignette (le fond d'une carte illustrée, un motif neutre sans fond ou pour un graphe), le
+titre, la forme (« Carte illustrée » ou « Graphe »), et pour le MJ l'état « Visible des joueurs » ou
+« MJ seul » (seul ce dernier est une pastille ambre) avec le geste inverse : « Rendre visible » / « Cacher aux joueurs », qui
+agit au clic. Un clic sur le titre ouvre la carte (E-11). Ordre : titre alphabétique, puis création ;
+cent cartes par page et « Charger la suite ».
+
+*Créer (MJ).* En tête, « Nouvelle carte » ouvre un formulaire en ligne : **Titre** (1 à 80
+caractères), **Forme** (« Carte illustrée » par défaut, ou « Graphe » ; elle ne se change plus
+ensuite), et pour une carte illustrée **Image de fond** (« Choisir une image », facultative : choisir
+n'envoie rien, l'image part avec « Créer »). « Créer » mène à la carte (E-11), **non visible** ; un
+graphe naît vide, ses fiches se choisissent sur la carte. « Annuler » ferme le formulaire.
+
+| Rôle | Voir | Créer | Rendre visible / cacher |
+|---|---|---|---|
+| MJ | toutes les cartes de l'univers | oui | oui |
+| Joueur | les cartes visibles ; ni l'état ni le geste de visibilité | **absent** | **absent** |
+| MJ en mode Joueur | sur E-10 la bascule n'est pas proposée : le MJ y voit toujours la liste complète ; le mode Joueur se joue sur E-11 | — | — |
+| Admin d'instance, ou compte sans rôle dans l'univers (Teo) | aucune (« Page introuvable. ») | — | — |
+
+*Textes.* Aucune carte : MJ « Aucune carte pour l'instant. Créez-en une pour commencer. » (le
+formulaire reste proposé) ; Joueur « Aucune carte n'est visible pour l'instant. » ; titre vide ou
+trop long : « Erreur : le titre est obligatoire. » / « Erreur : 80 caractères au plus. » ; fond qui
+n'est pas une image PNG, JPEG, GIF ou WebP, ou vide : « Erreur : ce fichier n'est pas une image (PNG,
+JPEG, GIF ou WebP). » ; fond de plus de 25 Mo (réponse 413) : « Erreur : l'image dépasse 25 Mo. » ; échec de
+création : « La carte n'a pas pu être créée. Réessayez. », le formulaire garde sa saisie (le fond
+choisi aussi). Une vignette qui ne se charge pas montre le motif neutre.
+
+| État | Ce qu'on voit | Ce qu'on peut faire |
+|---|---|---|
+| vide | les textes ci-dessus ; pour le MJ, « Nouvelle carte » | créer (MJ) |
+| chargement | « Chargement… » seul, à la place de l'écran | — |
+| erreur | « Impossible de charger cette page. » ; échec d'une visibilité : « L'action n'a pas abouti. Réessayez. » et l'état d'avant | « Réessayer » |
+| connexion perdue | le bandeau ; « Nouvelle carte », « Créer », « Rendre visible », « Cacher aux joueurs » désactivés ; la liste chargée reste | ouvrir une carte déjà listée |
+| refus | Admin d'instance, ou compte sans rôle : « Page introuvable. » et « Mes univers » | « Mes univers » |
+| contenu long | un titre de 80 caractères passe à la ligne ; 100 cartes, puis « Charger la suite » (« Impossible de charger la suite. » et le bouton reste en cas d'échec) | charger la suite |
+
+*Critères.*
+- Étant donné Antor, MJ, qui crée « La ville de Brume » (carte illustrée, avec un fond) puis revient à
+  la liste, alors Léa ne la voit pas ; quand Antor clique « Rendre visible », elle la voit, sans
+  l'état de visibilité ni le geste.
+- Étant donné un fichier « plan.pdf » choisi comme fond, alors la création est refusée par le texte
+  ci-dessus et rien n'est créé.
+- Étant donné Teo, sans rôle dans l'univers, quand il force l'adresse de la liste, alors il voit
+  « Page introuvable. ».
+
+### E-11 Carte
+
+En tête : le titre (MJ : « Renommer » — un champ en ligne, 1 à 80 caractères, « Enregistrer » /
+« Annuler »), la forme, l'état de visibilité, et pour le MJ la **bascule mode MJ / mode Joueur** (celle de la barre haute) et
+« Rendre visible » / « Cacher aux joueurs ». Dessous, **le cadre** de la carte, puis la liste
+« Sur la carte », puis (graphe) la liste « Liens ».
+
+*Carte illustrée.* Le cadre montre l'image de fond à ses proportions (16/10 neutre sans fond, AD-70) ;
+chaque **token** est un rond portant la première lettre du titre de sa fiche, avec le titre dessous
+(24 caractères, puis « … »). Sa zone cliquable fait au moins 44 px. Un token n'est présent que si sa
+fiche est lisible du lecteur (AD-38). **Joueur** : toucher un token ouvre la fiche (E-9) ; rien d'autre.
+**MJ (mode MJ)** : un clic **sélectionne** le token et met le token en évidence (anneau ambre, la couleur du MJ) et ouvre, sous le cadre, un panneau MJ au liseré ambre « Maître
+Aldric · Personnage » avec « Ouvrir la fiche » et « Retirer de la carte » (ce bouton demande la même confirmation que la liste « Sur la carte » : rien n'est retiré au premier clic) ; on **déplace** un token au
+glisser, ou au clavier (token sélectionné : flèches, 1 %, avec Maj 5 % ; l'aide « Flèches : déplacer de 1 % (Maj : 5 %) » est affichée sous le cadre) ; la position s'enregistre au
+relâchement (ou à la touche) ; hors du cadre elle est ramenée au bord. « Ajouter une fiche » ouvre une
+fenêtre : un choix de **type** (les sept), un champ de recherche (lancée par « Chercher » ou Entrée ; plus de 100 caractères : « 100 caractères au plus. »), la liste des fiches de ce type
+(celles que le MJ lit : toutes), chacune avec « Ajouter » ; une fiche déjà sur la carte porte « Déjà
+sur la carte » sans bouton. « Fermer » ferme la fenêtre. Le token apparaît au **centre** (50 %, 50 %), prêt à être déplacé.
+« Changer le fond » (« Ajouter un fond » s'il n'y en a pas) ouvre le sélecteur : **choisir l'image
+suffit**, elle part aussitôt et remplace l'ancienne.
+
+*Graphe.* Le cadre est un schéma : un **nœud** par fiche (rond, première lettre, titre dessous, 24
+caractères), une flèche par **lien** de la fiche d'où vient la relation vers la fiche visée, avec le
+type de la relation écrit sur la flèche (lien de A vers B : « membre de »). La disposition est celle
+du navigateur (AD-71) ; elle n'est pas modifiable. La zone cliquable d'un nœud fait au moins 44 px ; le
+cadre prend la largeur que la page lui donne (jamais moins d'un nœud plus ses marges) et sa hauteur
+grandit avec le nombre de lignes de nœuds ; chaque nœud occupe sa propre case (150 × 70 px) d'une
+grille, donc deux nœuds ne se recouvrent jamais ; ce qui ne tient pas dans la largeur (téléphone)
+défile, et la liste « Sur la carte » reste le chemin sûr au toucher. Joueur : toucher un nœud ouvre sa fiche. MJ : un
+clic sélectionne le nœud, avec « Ouvrir la fiche » et « Retirer de la carte » (même mot, même confirmation que la liste « Sur la carte ») ; « Ajouter une fiche »
+est la même fenêtre. Une relation ajoutée ou retirée sur une fiche se voit au rechargement de la
+carte.
+
+*Fenêtre « Ajouter une fiche »* — états propres, car c'est elle qui décide. **Vide** : un type sans
+fiche, « Aucune fiche de ce type. » ; une recherche sans résultat, « Aucune fiche ne correspond. ».
+**Chargement** : « Chargement… » à la place de la liste, le choix du type et la recherche déjà là.
+**Erreur** : « Impossible de charger les fiches. » et « Réessayer », la fenêtre reste ouverte.
+**Connexion perdue** : le bandeau ; « Ajouter » désactivé, la liste chargée reste. **Contenu long** :
+cent fiches par page et « Charger la suite » (« Impossible de charger la suite. » en cas d'échec) ;
+un titre de 80 caractères passe à la ligne. **Refus** : sans objet, la fenêtre n'existe que pour le
+MJ hors mode Joueur.
+
+Chaque action de E-10 et de E-11 porte une icône Lucide (règle de `docs/charte.md`, « Icônes ») : Renommer un crayon, Rendre visible / Cacher un œil / œil barré, Ajouter une fiche un plus, Fond une image, Retirer une corbeille, Ouvrir la fiche un lien externe.
+
+*Sur la carte* (liste sous le cadre, toujours présente quand il y a des éléments) : une ligne par
+token ou nœud, son titre en lien vers la fiche, son type ; pour le MJ, « Retirer de la carte »
+(confirmation sur place : « Retirer « Maître Aldric » de cette carte ? La fiche reste. » avec
+« Retirer de la carte » et « Annuler ») ; c'est aussi le chemin au clavier et au lecteur d'écran.
+*Liens* (graphe) : une ligne « Maître Aldric — membre de → Les Lames Grises » par lien ; aucun lien :
+« Aucun lien entre ces fiches. ».
+
+*Visibilité et mode Joueur.* « Rendre visible » rend la carte lisible des Joueurs ; « Cacher aux
+joueurs » la leur retire (au prochain chargement de leur côté : elle leur répond « Page
+introuvable. »). Le **mode Joueur** (AD-39) montre au MJ la carte telle que la verrait un Joueur qui
+n'est l'auteur d'aucune section : mêmes tokens, mêmes nœuds, mêmes liens, plus aucun geste de
+modification. Sur une carte **non visible**, le MJ en mode Joueur voit « Les joueurs ne voient pas
+cette carte : elle n'est pas visible. » avec « Quitter le mode Joueur » (un Joueur, lui, recevrait
+« Page introuvable. »).
+
+| Rôle | Voir | Gestes |
+|---|---|---|
+| MJ | la carte, tous ses éléments (toute fiche de l'univers), tous les liens | renommer ; rendre visible ou cacher ; fond ; ajouter une fiche ; déplacer (carte illustrée) ; retirer ; mode Joueur ; ouvrir une fiche |
+| MJ en mode Joueur | comme un Joueur | ouvrir une fiche ; quitter le mode |
+| Joueur | une carte visible ; les éléments dont il lit la fiche, les liens dont il lit la relation (AD-64) et les deux bouts ; **aucun compteur de ce qui manque** | ouvrir une fiche |
+| Admin d'instance, ou compte sans rôle dans l'univers (Teo) | aucune | « Page introuvable. » |
+
+Un geste qu'un rôle n'a pas est **absent** de l'écran (jamais grisé, sauf hors connexion). Par l'API,
+un geste d'écriture d'un non-MJ est refusé **403** sur une carte qu'il lit ; sur une carte qu'il ne
+lit pas, **404**. Un token dont la fiche devient illisible disparaît au chargement suivant, sans trace.
+
+*Textes.* Carte illustrée sans token : MJ « Aucun token. Ajoutez une fiche pour la placer sur la
+carte. » ; Joueur « Rien à voir sur cette carte pour l'instant. ». Graphe sans nœud : MJ « Aucune fiche.
+Ajoutez des fiches pour voir leurs liens. » ; Joueur « Rien à voir sur ce graphe pour l'instant. ».
+Fond : fichier non image ou vide « Erreur : ce fichier n'est pas une image (PNG, JPEG, GIF ou WebP). »,
+plus de 25 Mo « Erreur : l'image dépasse 25 Mo. ». 100 éléments : « Cette carte porte déjà 100
+éléments. ». Fiche devenue inconnue à l'ajout : « Cette fiche n'existe plus. » (la liste de la fenêtre
+se recharge). Échec d'un déplacement, d'un retrait, d'un ajout, d'un renommage, d'une visibilité, d'un
+fond : « L'action n'a pas abouti. Réessayez. », et l'état d'avant revient (le token retourne à sa
+place) ; une saisie en cours est conservée. Titre vide ou trop long : les textes d'E-10. Le fond qui
+ne charge pas : dans le cadre « Le fond de la carte n'a pas pu être chargé. » avec « Réessayer » ;
+les tokens ne sont pas posés (leurs positions n'ont de sens que sur le fond), la liste « Sur la carte »
+reste. Hors connexion, le fond déjà chargé reste affiché.
+
+| État | Ce qu'on voit | Ce qu'on peut faire |
+|---|---|---|
+| vide | les textes « Aucun token », « Aucune fiche », « Rien à voir… » ; « Aucun lien entre ces fiches. » pour un graphe sans lien | MJ : ajouter une fiche |
+| chargement | « Chargement… » ; le cadre à 16/10 neutre jusqu'au chargement du fond (« Chargement… » dedans), les tokens posés quand le fond est là | — |
+| erreur | « Impossible de charger cette page. » ; fond : le message du cadre ; échec d'une écriture : « L'action n'a pas abouti. Réessayez. » | « Réessayer » |
+| connexion perdue | le bandeau ; renommer, visibilité, fond, « Ajouter une fiche », déplacer, retirer désactivés (carte illustrée : les tokens deviennent des liens vers la fiche, sans sélection ni glisser ; graphe : la sélection reste) ; la carte chargée reste | lire, ouvrir une fiche |
+| refus | carte inconnue ou illisible, compte sans rôle ou Admin : « Page introuvable. » et « Mes univers » ; MJ en mode Joueur sur une carte non visible : sa propre phrase | « Mes univers », « Quitter le mode Joueur » |
+| contenu long | un titre de 80 caractères passe à la ligne ; 100 éléments : titres de 24 caractères puis « … » (le titre entier dans la liste « Sur la carte », qui défile) ; une image très large ou très haute garde ses proportions et tient en largeur ; téléphone : le cadre prend toute la largeur, une seule colonne | — |
+
+*Critères.*
+- Étant donné la carte illustrée « La ville de Brume » avec un fond, où Antor place « Maître Aldric »
+  et « Les Ombres de Fer » (faction dont Léa ne lit aucune section) puis la rend visible, quand Léa
+  l'ouvre, alors elle voit le fond et le token d'Aldric, ni le token ni le titre de la faction, ni
+  « Les Ombres de Fer » dans la liste « Sur la carte » ; quand elle touche le token d'Aldric, alors
+  elle arrive sur sa fiche.
+- Étant donné la même carte, quand Antor passe en mode Joueur, alors il voit exactement ce que voit
+  Léa ; quand il la cache aux joueurs, alors Léa, au rechargement, voit « Page introuvable. » et la
+  carte n'est plus dans sa liste.
+- Étant donné Antor qui déplace le token d'Aldric puis recharge, alors il est à sa nouvelle place ;
+  une panne pendant le déplacement le ramène à l'ancienne et affiche « L'action n'a pas abouti.
+  Réessayez. ».
+- Étant donné le graphe « Les factions » avec « Les Lames Grises », « Les Corbeaux » et « La
+  Guilde » ; la relation « allié de » de la première vers la deuxième, portée par une section que
+  Léa ne lit pas, et « rival de » de la première vers la troisième, portée par une section qu'elle lit :
+  Antor voit les deux liens ; Léa, qui lit les trois fiches de ce graphe, voit seulement « rival de » ;
+  si elle ne lisait pas « La Guilde », elle verrait deux nœuds et aucun lien.
+- Étant donné un graphe où Antor a mis aussi « Les Ombres de Fer » (Léa n'en lit aucune section),
+  alors Léa n'y voit ni son nœud ni ses liens, et aucune trace de leur absence.
+- Étant donné le fond « plan.pdf » choisi sur une carte, alors le refus s'affiche et le fond d'avant
+  reste ; l'adresse du fond d'une carte non visible répond 404 à Léa.
+- Étant donné Léa sur une carte, quand elle force l'adresse d'une action de MJ, alors elle reçoit 403.
+
+### E-3 — le bloc « Cartes visibles »
+
+Sur la vue d'ensemble, un bloc **Cartes visibles** (le titre de la maquette `e03`), inscrit au registre des blocs de E-3 (un fichier dans
+`frontend/src/ecrans/vue-ensemble/blocs/` que le registre trouve seul (rang après les blocs des campagnes et
+des comptes-rendus) ; aucun bloc existant n'est modifié). Il liste, pour tous les rôles, les **cartes
+visibles des joueurs** (cinq au plus, titre alphabétique) : le titre en lien vers E-11 et la forme ;
+dessous « Toutes » vers E-10. Chaque carte est une vignette (le fond de la carte, ou le motif neutre
+d'un graphe ou d'une carte sans fond) avec une icône carte, le titre et la forme. Le MJ voit donc ce que la table voit ; ses cartes « MJ seul »
+se trouvent sur E-10.
+
+| État | Ce qu'on voit | Ce qu'on peut faire |
+|---|---|---|
+| vide | MJ : « Aucune carte visible des joueurs. » et « Toutes » ; Joueur : **pas de bloc** (ni titre ni compteur) | MJ : « Toutes » |
+| chargement | le titre du bloc et « Chargement… » | — |
+| erreur | « Impossible de charger les cartes. » | « Réessayer » |
+| connexion perdue | le bandeau ; les cartes déjà chargées restent | ouvrir |
+| refus | sans objet : le refus d'E-3 couvre le bloc (« Page introuvable. ») | — |
+| contenu long | un titre tient sur une ligne, puis « … » ; au-delà de cinq cartes, cinq et « Toutes » | — |
+
+| Rôle | Voir |
+|---|---|
+| MJ | le bloc, avec les seules cartes visibles des joueurs |
+| Joueur | le bloc s'il y a au moins une carte visible, sinon aucun bloc |
+| Admin d'instance, ou compte sans rôle | aucun : E-3 lui répond « Page introuvable. » |
+
+*Critère.* Étant donné deux cartes visibles et une « MJ seul », alors le bloc de Léa en liste deux ;
+celui d'Antor aussi.
+
+### Clôture de `kanevas-cartes-graphes`
+
+B-22 → E-10 (créer une carte illustrée avec son fond, ou un graphe) et E-11 (placer des tokens,
+choisir les fiches d'un graphe) ; B-23 → « Rendre visible » et la lecture filtrée d'un joueur ;
+B-12 (carte) → le mode Joueur de E-11. Atteint par P-3 étape 6 (placer le PNJ, mode Joueur, rendre
+visible), P-6 étape 3 (la carte d'un joueur) et P-9 en entier (le graphe). Les écrans E-10 et E-11
+et le bloc de E-3 livrent leurs six états (B-29), ci-dessus.
