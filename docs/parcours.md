@@ -428,7 +428,7 @@ nature — rejouer est sans risque.
 et aucun lot n'apparaît ; un parent ou une cible de relation inconnue — la fiche est écrite sans ce
 parent ou sans cette relation, avec un avertissement dans le lot ; un lien `[[…]]` vers une clé
 encore inconnue — il reste en attente et se résout quand la fiche arrive (au même lot ou au suivant) ;
-le réseau coupe au milieu — le lot reste « ouvert » sur E-18, sans dommage : rejouer reprend là où
+le réseau coupe au milieu — le lot reste « En cours » sur E-18, sans dommage : rejouer reprend là où
 c'était, puisque tout ce qui est déjà écrit sort « inchangé » ; une image de 0 octet — refusée, la
 raison dans le lot ; supprimer l'univers en tapant un autre nom — le bouton reste inactif.
 
