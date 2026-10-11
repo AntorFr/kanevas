@@ -828,8 +828,8 @@ plus. ». Session expirée pendant une saisie : le texte est gardé comme sur E-
 |---|---|---|
 | vide | « Rien d'écrit pour l'instant. » | « Modifier » |
 | chargement | « Chargement du scénario… », le titre absent | — |
-| erreur | « Impossible de charger ce scénario. » ; échec d'écriture : « L'action n'a pas abouti. Réessayez. », texte conservé | « Réessayer » |
-| connexion perdue | le bandeau ; « Enregistrer » désactivé, texte en cours conservé | lire |
+| erreur | « Impossible de charger ce scénario. » ; échec d'écriture : « L'action n'a pas abouti. Réessayez. », texte conservé ; *(kanevas-import-liens)* la liste de `[[` : « Impossible de chercher. » et « Réessayer », et un lien cassé ou en attente y est marqué (le lecteur est un MJ) | « Réessayer » |
+| connexion perdue | le bandeau ; « Enregistrer » désactivé, texte en cours conservé ; *(kanevas-import-liens)* la liste de `[[` ne s'ouvre pas | lire |
 | refus | Joueur, scénario inconnu, d'une autre campagne ou d'un autre univers : « Page introuvable. » ; un Joueur n'a ni l'écran ni de lien vers lui | « Mes univers » |
 | contenu long | 20 000 caractères : passent à la ligne, affichés en entier ; titre de 120 caractères : passe à la ligne | idem |
 
@@ -2111,10 +2111,11 @@ est marqué comme pour un MJ (le lecteur d'un scénario l'est toujours). *Maquet
 | Rôle | Éditeur : `[[` et « Lien vers une fiche » | Lecture d'un lien | « Mentionnée dans » |
 |---|---|---|---|
 | MJ, hors mode Joueur | oui (E-9, E-7) | lien, cassé, en attente marqués | tout ce qu'il lit, blocs MJ compris |
-| MJ en mode Joueur | non, comme tout geste d'écriture en mode Joueur | comme un Joueur | comme un Joueur |
-| Joueur | oui, sur une section qu'il écrit | lien si la cible est lue, sinon le texte seul (**caché**) ; cassé et en attente : le texte seul | sources lisibles, hors blocs MJ |
-| Joueur, écriture d'un lien vers une fiche qu'il ne lit pas | **refusé** : `lien_illisible` | — | — |
-| Admin d'instance non membre | n'atteint ni E-9 ni E-7 (« Page introuvable. ») | — | — |
+| MJ en mode Joueur | **caché** (aucun geste d'écriture en mode Joueur) | comme un Joueur | comme un Joueur |
+| Joueur, section qu'il écrit sans bloc MJ | oui | lien si la cible est lue ; sinon, cassé et en attente compris, le texte seul (**caché**, sans marque) | sources lisibles, hors blocs MJ |
+| Joueur, section qu'il n'écrit pas, ou qui contient un bloc MJ (B-34) | **caché** : pas de « Modifier », donc ni bouton ni liste | idem | idem |
+| Joueur qui tape à la main le lien d'une fiche qu'il ne lit pas | **refusé** : `lien_illisible` | — | — |
+| Admin d'instance non membre | **caché** : « Page introuvable. » sur E-9 et E-7 | — | — |
 
 *Critères* (liste et bloc).
 - Étant donné Antor qui édite « Histoire » de « Port-Sel », quand il tape `[[` puis « ald », alors la liste montre
@@ -2128,8 +2129,19 @@ est marqué comme pour un MJ (le lecteur d'un scénario l'est toujours). *Maquet
 - Étant donné « Anse-aux-Sels » dans « Essai Kanka », quand Antor la lit, alors « les contrebandiers du Repaire » est
   souligné en tirets `--texte-3` (« Lien en attente : aucune fiche n'a encore la clé « faction:repaire ». ») et « Capitaine
   Hesk » en tirets `--danger` ; Léa lit les deux en texte simple.
-- Étant donné Léa, auteur avec écriture d'une section de « Port-Sel », quand elle y tape un lien vers « La Guilde des
-  Brumes », alors « Cette fiche n'existe pas ou vous ne pouvez pas la lire. » paraît sous le champ.
+- Étant donné Antor qui a accordé l'écriture aux joueurs sur « Description » de « Port-Sel », et Léa qui y tape à la
+  main `[[<id>]]` (l'identifiant d'une adresse de fiche) de « La Guilde des Brumes », quand elle enregistre, alors
+  « Cette fiche n'existe pas ou vous ne pouvez pas la lire. » paraît sous le champ, son texte intact, la section inchangée.
+- Étant donné une recherche lente, quand Antor tape `[[` puis « ald », alors « Recherche… » paraît sous la saisie jusqu'à la
+  réponse ; hors connexion, `[[` reste du texte et le bandeau commun parle.
+- Étant donné 60 fiches qui répondent à « a », alors la liste montre 50 lignes puis « Affinez la recherche pour voir les
+  autres. » ; un titre de 120 caractères tient sur une ligne finissant par « … ».
+- Étant donné Léa sur une section de « Port-Sel » qu'elle n'écrit pas, alors ni « Lien vers une fiche » ni liste n'existent
+  pour elle ; sur une section qui contient un bloc MJ, pas de « Modifier ».
+- Étant donné « Afficher les 10 suivants » dont la requête est lente, alors le bouton dit « Chargement… » désactivé ; si elle
+  échoue, « Impossible de charger la suite. » et « Réessayer » ; sans réseau, le bouton est désactivé.
+- Étant donné Antor dans le scénario « La Couronne brisée » et la recherche qui échoue, quand il tape `[[`, alors
+  « Impossible de chercher. » et « Réessayer » ; un lien cassé du scénario y est marqué.
 
 ### E-9 Fiche — ce que `kanevas-import` change
 
