@@ -2136,6 +2136,15 @@ E-19 s'il est lu ailleurs par des joueurs) ; « Ouvrir dans la médiathèque ».
 section (« Cette section porte déjà 100 fichiers joints. » au MJ, « Cette section ne peut pas recevoir
 d'autre fichier. » au joueur) ; les références dans le texte ne comptent pas.
 
+**Référence de fichier en attente** (import, `fichiers_attente`, AD-111) : le fichier d'une clé que
+l'univers ne connaît pas encore. Pour un MJ hors mode Joueur, une image du texte, une ligne du bloc
+Pièces jointes et l'emplacement de l'illustration montrent la même tuile, en tirets `--texte-3`,
+texte « Fichier en attente d'import : « img:quais ». » (la clé telle qu'envoyée) ; un lien de
+document `[tarifs](fichier:cle:doc:tarifs)` est souligné en tirets `--texte-3`, avec cette phrase en
+infobulle. Pour tout autre lecteur, et pour le MJ en mode Joueur : rien, ni tuile, ni blanc, ni ligne.
+Elle ne compte pas parmi les 100 fichiers joints tant que la clé n'est pas résolue, ne se retire pas
+(pas de menu : elle disparaît à l'arrivée du fichier) et n'est dans aucune liste de la médiathèque.
+
 **Blocs de fiche** (après les sections, hors de toute section) :
 - **Contient** (`folder-tree`) — les enfants lisibles, par type puis titre, chacun avec son icône ; 50
   puis « Afficher les N suivants » (N compté sur ce que le lecteur voit). Absent s'il n'y en a aucun.
