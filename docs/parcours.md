@@ -12,8 +12,8 @@
 > Kanevas à une base existante — d'abord la base Kanka de Monsieur (501 fiches), poussée par un script
 > qui tourne sur son Mac — et lui donner ce qu'il faut pour y vivre : Markdown, liens `[[…]]`, blocs MJ
 > dans un texte, arbre des fiches, liens entrants, recherche tous types, alias et étiquettes, types de
-> fiche plus nombreux et choisis par système et par univers, suppression, jeton d'API. B-32 à B-50,
-> P-10 à P-14, E-17 et E-18. Les points encore ouverts sont marqués `[À TRANCHER]` à leur place.
+> fiche plus nombreux et choisis par système et par univers, suppression, jeton d'API. B-32 à B-51,
+> P-10 à P-15, E-17 et E-18, AD-95 à AD-109 (B-51, P-15 et AD-109 `[À TRANCHER]`). Les points encore ouverts sont marqués `[À TRANCHER]` à leur place.
 
 Kanevas sert à **préparer** des parties de jeu de rôle et à en **garder la mémoire** entre les
 séances : le lore d'un univers, partagé entre le MJ et ses joueurs avec des droits fins par
@@ -342,10 +342,11 @@ Il veut d'abord un essai jetable, puis la vraie base, sans doublon ni fuite.*
    « Vaisseau » à activé (le système le désactive) — P-13.
 3. **Accès par API** (E-18) : « Nouveau jeton », nom « Script Kanka — Mac », durée 30 jours ;
    Kanevas montre le jeton une fois ; il le copie dans la configuration du script.
-4. *Hors de Kanevas* : il lance le script ; le script ouvre un **lot**, pousse les fiches (clé
-   d'origine, type, titre, parent, alias, étiquettes, sections en Markdown avec leurs liens `[[…]]`,
-   leurs blocs MJ, leurs images, leur audience), puis les relations, les campagnes et les
-   comptes-rendus, et clôt le lot.
+4. *Hors de Kanevas* : il lance le script ; le script ouvre un **lot**, pousse d'abord les
+   **campagnes**, puis les fiches, parents d'abord (clé d'origine, type, titre, parent, alias,
+   étiquettes, sections en Markdown avec leurs liens `[[…]]`, leurs blocs MJ, leurs images, leur
+   audience) — les comptes-rendus avec la clé de leur campagne —, puis les relations, et clôt le lot
+   (l'ordre d'AD-104).
 5. **Accès par API** (E-18), bloc « Lots d'import » : « 501 fiches — 498 créées, 3 refusées » ; il
    déplie les refus : « personnage:aldric-le-gris — section « Vérité » : 112 000 caractères, 100 000
    au plus ».

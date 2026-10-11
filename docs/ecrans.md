@@ -47,7 +47,7 @@ de E-14 mène à sa page (E-15), hors de l'univers (décision du 2026-10-06, AD-
 
 L'**assistant** est un bouton flottant « Demander à Kanevas », sur tous les écrans d'un univers,
 hors de la barre ; il n'existe pas hors d'un univers. Un MJ voit la bascule **« Mode MJ » / « Mode Joueur »** dans la barre haute des écrans où la
-bascule existe (fiche, carte).
+bascule existe (fiche, carte et, depuis `kanevas-import`, recherche E-17).
 
 ## Inventaire
 
@@ -108,7 +108,7 @@ E-16 vivent hors des univers : leurs cases disent le rôle dans un univers ratta
 | E-14 | tout | — | — |
 | E-15 (hors univers ; les colonnes disent le rôle dans un univers **rattaché au système**) | lire ; « Ajouter … », « Modifier » | lire (« Lecture seule ») ; ni « Ajouter » ni « Modifier » | « Page introuvable. », sauf s'il est lui-même membre d'un univers rattaché : alors la colonne de son rôle là (l'admin MJ d'un univers rattaché lit et modifie) |
 | E-16 (hors univers) | ses systèmes, avec ses univers et son rôle | ses systèmes, « Lecture seule » | la liste de ses propres systèmes (comme MJ ou Joueur s'il est membre d'un univers rattaché) ; vide sinon — l'écran est proposé à tout compte |
-| E-17 *(kanevas-import)* | chercher dans toutes les fiches de l'univers, blocs MJ compris (E-17 n'a pas de mode Joueur) ; tous les types, désactivés compris, en filtre « Autres types » | chercher dans ce qu'il lit, hors blocs MJ ; filtres par type et par étiquette des seules fiches qu'il voit | — |
+| E-17 *(kanevas-import)* | chercher dans toutes les fiches de l'univers, blocs MJ compris ; en **mode Joueur**, comme un joueur (ni blocs MJ, ni fiches qu'un joueur ne lit pas) ; filtres : les types activés ; les fiches des types désactivés restent des résultats sous « Tous » | chercher dans ce qu'il lit, hors blocs MJ ; filtres par type et par étiquette des seules fiches qu'il voit | — |
 | E-18 *(kanevas-import)* | créer un jeton ; voir et révoquer tous les jetons de l'univers (y compris ceux d'un autre MJ) ; voir les lots | — (**caché** : absent de la barre, « Page introuvable. » par l'adresse) | — |
 
 Ce que `kanevas-import` ajoute aux lignes existantes : **E-8** — MJ : la vue en arbre, la création
@@ -2103,12 +2103,17 @@ dans cet univers. » et sans bouton de création. Le choix du type à la créati
 
 Adresse `/univers/:id/recherche?q=…&type=…&etiquette=…`. Un champ en tête (focus à l'ouverture,
 1 à 100 caractères), dessous deux rangées de filtres : les **types** (pastilles à icône, « Tous » par
-défaut ; les types désactivés regroupés sous « Autres types ») et les **étiquettes** (une liste à
+défaut ; **seuls les types activés** ont leur pastille, B-42 — une fiche d'un type désactivé reste un
+résultat sous « Tous ») et les **étiquettes** (une liste à
 compléter, celles des fiches que le compte voit). Les résultats : la ligne de E-8 (vignette, icône du
 type, titre, badge) plus, si la fiche a été trouvée par un alias, « alias : Salport » ; ses étiquettes.
 **Ordre** : titre, alphabétique sans casse — pas de pertinence ni d'extrait (AD-63 tient : un extrait
 est du contenu à filtrer, un classement trahit ce qui est caché). 100 puis « Charger la suite ». Une
-étiquette seule, sans mot, liste les fiches qui la portent.
+étiquette seule, sans mot, liste les fiches qui la portent. **Mode Joueur** (MJ) : la barre haute de
+E-17 porte la bascule « Mode MJ » / « Mode Joueur » ; en mode Joueur, la recherche répond comme pour un
+joueur qui n'est l'auteur d'aucune section (AD-39, AD-101) — sans blocs MJ, sans fiche qu'un joueur ne
+lit pas ; le mode passe par l'adresse (`&mode=joueur`) et suit le MJ qui arrive d'une fiche ouverte en
+mode Joueur (« Rechercher », une étiquette).
 
 | État | Ce qu'on voit | Ce qu'on peut faire |
 |---|---|---|
@@ -2122,6 +2127,10 @@ est du contenu à filtrer, un classement trahit ce qui est caché). 100 puis « 
 *Critères.*
 - Étant donné le mot « sous-main » présent seulement dans le bloc MJ de « Port-Sel », quand Léa
   cherche « sous-main », alors « Port-Sel » n'est pas un résultat ; quand Antor le cherche, il l'est.
+  Quand Antor le cherche en mode Joueur, « Port-Sel » n'est pas un résultat.
+- Étant donné « Monde » désactivé dans Lame d'Ébène et « Les Sphères » (un monde lisible de Léa),
+  quand Léa cherche « sphères », alors « Les Sphères » est un résultat sous « Tous », et aucune
+  pastille « Monde » n'est proposée.
 - Étant donné le texte de lien « La Guilde des Brumes » écrit dans « Histoire » (lue de Léa) vers une
   fiche que Léa ne lit pas, quand Léa cherche « guilde », alors « Port-Sel » est un résultat et « La
   Guilde des Brumes » n'en est pas un.
