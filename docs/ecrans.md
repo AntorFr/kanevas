@@ -2036,6 +2036,40 @@ section, à sa place dans le texte ; en mode Joueur et pour tout autre lecteur, 
 blanc, pas de filet, le paragraphe suivant suit le précédent. Un tableau large défile dans son cadre
 au téléphone, jamais la page.
 
+### Le Markdown — ce que `kanevas-import-markdown` construit (E-9, E-7, E-15, E-12)
+
+Cette tranche livre le rendu et l'éditeur **sans** lien `[[…]]`, sans fichier et sans bloc MJ (leurs
+tranches les ajoutent à la même barre et au même rendu). Maquette : `e09-fiche-importee.html`,
+`#etat-edition` pour l'éditeur ; `e07-scenario.html`, `e15-systeme-de-jeu.html` et `e12-propositions.html`
+pour l'emplacement du rendu (le contenu y devient mis en forme, la mise en page ne change pas).
+
+- **Rendu** : un seul composant montre le HTML que le serveur a rendu, partout (sections et
+  comptes-rendus de E-9, scénario de E-7, entrées de E-15, zones de E-12). Les intertitres `#` et `##`
+  s'affichent au niveau « intertitre » le plus haut, `###` et `####` plus bas : jamais au niveau du
+  titre de la section. Un lien web s'ouvre dans un nouvel onglet. Tableau large : il défile dans son
+  cadre. Contenu vide : « Rien d'écrit pour l'instant. » (déjà le texte d'aujourd'hui). Un contenu
+  d'avant (texte brut) se lit comme avant : paragraphes et sauts de ligne.
+- **Éditeur** (E-9, E-7, E-15, et le texte d'un compte-rendu à sa création) : le champ, au-dessus la
+  barre « Gras » (`bold`), « Italique » (`italic`) et la bascule « Écrire / Aperçu » (deux boutons, l'un
+  actif, `aria-pressed`) ; sous le champ, le compteur « 12 480 / 100 000 ». Ctrl/⌘+B et Ctrl/⌘+I entourent
+  la sélection (ou posent deux marques et placent le curseur entre elles), Ctrl/⌘+Entrée enregistre,
+  Échap annule. « Aperçu » remplace le champ par le rendu de la même fonction que la lecture ; le texte
+  saisi reste dans le champ et revient avec « Écrire ». Les boutons « Lien vers une fiche », « Fichier » et
+  « Bloc MJ » n'existent pas encore.
+- **États de l'aperçu** : en cours, « Aperçu en cours… » (le champ reste, bascule désactivée) ; texte
+  vide, « Rien à prévisualiser. » ; échec ou hors ligne, « L'aperçu n'a pas abouti. Réessayez. » avec
+  « Réessayer », et le champ intact ; plus de 100 000 caractères, pas d'appel, « Erreur : 100 000
+  caractères au plus. » sous le champ. Le compteur passe en `--danger` au-delà de 100 000 et
+  « Enregistrer » est désactivé, comme avec les 20 000 d'avant.
+- **Qui voit quoi** : la lecture ne montre que le rendu. Le champ d'édition reçoit la **source** :
+  elle n'est envoyée qu'à qui peut écrire la section (le scénario, au MJ qui le lit). Un joueur, ou le MJ
+  en mode Joueur, ne la reçoit pas ; la réponse de lecture de Léa ne contient pas le Markdown.
+- **E-12** : au-dessus des zones « Actuel » et « Proposé », deux boutons « Rendu / Source » (« Rendu »
+  par défaut) ; « Source » montre le Markdown brut des deux zones, côte à côte comme aujourd'hui. Le fil
+  de conversation reste en texte.
+- **Plafond** : 100 000 caractères pour une section, un compte-rendu, un scénario, une entrée de système et
+  un contenu proposé ; au-delà le serveur répond 400 « Contenu trop long : 100 000 caractères au plus. ».
+
 ### E-9 Fiche — ce que `kanevas-import` change
 
 *Maquette finie* : `docs/maquettes/e09-fiche-importee.html` (« Port-Sel », états `#etat-fichier`, `#etat-joindre`, `#etat-sous-type`, `#etat-joueur`,
