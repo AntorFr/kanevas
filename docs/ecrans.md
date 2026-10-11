@@ -828,7 +828,7 @@ plus. ». Session expirée pendant une saisie : le texte est gardé comme sur E-
 |---|---|---|
 | vide | « Rien d'écrit pour l'instant. » | « Modifier » |
 | chargement | « Chargement du scénario… », le titre absent | — |
-| erreur | « Impossible de charger ce scénario. » ; échec d'écriture : « L'action n'a pas abouti. Réessayez. », texte conservé ; *(kanevas-import-liens)* la liste de `[[` : « Impossible de chercher. » et « Réessayer », et un lien cassé ou en attente y est marqué (le lecteur est un MJ) | « Réessayer » |
+| erreur | « Impossible de charger ce scénario. » ; échec d'écriture : « L'action n'a pas abouti. Réessayez. », texte conservé ; *(kanevas-import-liens)* la liste de `[[` : « Impossible de chercher. » et « Réessayer » | « Réessayer » |
 | connexion perdue | le bandeau ; « Enregistrer » désactivé, texte en cours conservé ; *(kanevas-import-liens)* la liste de `[[` ne s'ouvre pas | lire |
 | refus | Joueur, scénario inconnu, d'une autre campagne ou d'un autre univers : « Page introuvable. » ; un Joueur n'a ni l'écran ni de lien vers lui | « Mes univers » |
 | contenu long | 20 000 caractères : passent à la ligne, affichés en entier ; titre de 120 caractères : passe à la ligne | idem |
@@ -2096,23 +2096,25 @@ compteur de ce qui est caché ; `mentionsSuite` se calcule sur ce que le lecteur
 
 *États* (B-29). **Liste ouverte par `[[`** : chargement — la ligne « Recherche… » sous la saisie (la liste précédente
 s'efface) ; vide — « Aucune fiche. » ; erreur — « Impossible de chercher. » et « Réessayer » ; connexion perdue
-— la liste ne s'ouvre pas, `[[` reste du texte ; refus — l'éditeur n'est offert qu'à qui écrit la section, il n'y a donc ni
+— la liste ne s'ouvre pas, `[[` reste du texte, « Enregistrer » est désactivé et le texte en cours conservé ; refus — l'éditeur n'est offert qu'à qui écrit la section, il n'y a donc ni
 bouton ni liste pour les autres (**caché**) ; contenu extrême — un titre de 120 caractères tient sur une ligne
 tronquée par « … » (le titre entier en infobulle), plus de 50 résultats : les 50 premiers puis la ligne
 « Affinez la recherche pour voir les autres. ». **Bloc « Mentionnée dans »** : la suite en cours — le bouton « Afficher
 les N suivants » devient « Chargement… » désactivé ; échec — « Impossible de charger la suite. » et « Réessayer » ;
 connexion perdue — le bouton est désactivé ; les 50 premières arrivent avec la fiche (pas d'état propre).
 **Refus d'écriture** `lien_illisible` : le message, en `--danger`, sous le champ de l'éditeur (E-9 comme E-7), le
-texte conservé, l'enregistrement non fait. **E-7** : mêmes états pour la liste ; un lien cassé ou en attente y
-est marqué comme pour un MJ (le lecteur d'un scénario l'est toujours). *Maquette* : `e09-fiche-importee.html#etat-liens`.
+texte conservé, l'enregistrement non fait. **E-7** : mêmes états pour la liste (lignes « erreur » et « connexion perdue » du tableau de E-7) ; E-7 est un écran MJ
+seul qui ne connaît pas le mode Joueur : un lien cassé ou en attente y est toujours marqué ; `lien_illisible` y est sans objet
+(un MJ lit toutes les fiches de l'univers). *Maquette* : `e09-fiche-importee.html#etat-liens`.
 
 *Qui fait quoi* (liens) :
 
 | Rôle | Éditeur : `[[` et « Lien vers une fiche » | Lecture d'un lien | « Mentionnée dans » |
 |---|---|---|---|
 | MJ, hors mode Joueur | oui (E-9, E-7) | lien, cassé, en attente marqués | tout ce qu'il lit, blocs MJ compris |
-| MJ en mode Joueur | **caché** (aucun geste d'écriture en mode Joueur) | comme un Joueur | comme un Joueur |
-| Joueur, section qu'il écrit sans bloc MJ | oui | lien si la cible est lue ; sinon, cassé et en attente compris, le texte seul (**caché**, sans marque) | sources lisibles, hors blocs MJ |
+| MJ en mode Joueur, sur E-9 | **caché** (aucun geste d'écriture en mode Joueur) | comme un Joueur | comme un Joueur |
+| Joueur, sur E-7 | **caché** : « Page introuvable. », ni écran ni lien vers lui | — | — |
+| Joueur, section qu'il écrit sans bloc MJ | oui | lien si la cible est lue ; sinon, cassé et en attente compris, le texte seul (**caché**, sans marque) | sources lisibles, hors blocs MJ ; le reste est **caché**, sans compteur |
 | Joueur, section qu'il n'écrit pas, ou qui contient un bloc MJ (B-34) | **caché** : pas de « Modifier », donc ni bouton ni liste | idem | idem |
 | Joueur qui tape à la main le lien d'une fiche qu'il ne lit pas | **refusé** : `lien_illisible` | — | — |
 | Admin d'instance non membre | **caché** : « Page introuvable. » sur E-9 et E-7 | — | — |
@@ -2141,7 +2143,8 @@ est marqué comme pour un MJ (le lecteur d'un scénario l'est toujours). *Maquet
 - Étant donné « Afficher les 10 suivants » dont la requête est lente, alors le bouton dit « Chargement… » désactivé ; si elle
   échoue, « Impossible de charger la suite. » et « Réessayer » ; sans réseau, le bouton est désactivé.
 - Étant donné Antor dans le scénario « La Couronne brisée » et la recherche qui échoue, quand il tape `[[`, alors
-  « Impossible de chercher. » et « Réessayer » ; un lien cassé du scénario y est marqué.
+  « Impossible de chercher. » et « Réessayer » ; hors connexion, `[[` y reste du texte, « Enregistrer » est désactivé et son
+  texte conservé ; un lien cassé du scénario y est marqué.
 
 ### E-9 Fiche — ce que `kanevas-import` change
 
