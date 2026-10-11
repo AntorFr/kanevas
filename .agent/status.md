@@ -79,7 +79,7 @@ catalogue MJ (événement `proposition_creee`) et sa règle du bouchon (« Mets 
 **Pièges :**
 - Administration : le groupe est lu à la connexion et vaut 7 jours (AD-86) ; la liste rend tous les univers, pagination par 100 côté client ; un admin sans rôle reste un compte sans rôle (AD-9). Les e2e `administration*` dépendent de Playwright (absent du dépôt) .
 - Assistant : `repondre` est l'unique entrée ; ne jamais passer le compte, l'univers ou le rôle en paramètre d'un outil, ni lire
-  `process.env` hors `config/env.ts` (exceptions : `FRONTEND_DIR` dans `routes/frontend.ts`, `PATH` pour repérer `codex` dans `services/images/index.ts` ; le sous-processus `codex` ne reçoit qu'un environnement filtré, sans les secrets du serveur). Une erreur du transport est rendue par un message fixe (jamais la cause, qui pourrait citer le jeton).
+  `process.env` hors `config/env.ts` (exceptions : `FRONTEND_DIR` dans `routes/frontend.ts`, `PATH` pour repérer `codex` dans `services/images/index.ts` ; `services/images/codex.ts` lit `process.env` pour bâtir l'environnement filtré du sous-processus ; le sous-processus `codex` ne reçoit qu'un environnement filtré, sans les secrets du serveur). Une erreur du transport est rendue par un message fixe (jamais la cause, qui pourrait citer le jeton).
   Le verrou « une demande à la fois par compte » est en mémoire du processus (une seule instance). Le panneau se monte dans sa propre racine
   React (`assistant.tsx`) : il lit l'adresse par `assistant/adresse.ts`, pas par le routeur.
 - Node 20 est la cible (CI, Dockerfile). `better-sqlite3` est donc épinglé en `^12` : la 13 exige
