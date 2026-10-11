@@ -33,7 +33,7 @@ Source : `frontend/src/ui/tokens.css`, propriétés sur `:root` (sombre) et
 `:root[data-theme="light"]` ; `color-scheme: light dark`. Le choix Clair / Sombre / Système est
 mémorisé (`localStorage`, clé `kanevas-theme`) ; « Système » suit `prefers-color-scheme` et est
 le choix par défaut tant que rien n'est mémorisé ; il est résolu en sombre ou clair par `theme.ts`, si bien que ces deux blocs sont les seuls endroits où
-vivent les couleurs. Les composants ne lisent que ces tokens : un hexadécimal dans un composant
+vivent les couleurs. Trois tokens dérivés des tokens MJ (`--mj-section-fond`, `--mj-section-bord`, `--mj-section-filet`, mélangés par `color-mix`) donnent à une section « MJ seul » son fond, son bord et son filet ambre. Les composants ne lisent que ces tokens : un hexadécimal dans un composant
 est un défaut. La maquette porte les mêmes noms et les mêmes valeurs.
 
 Les neutres sont teintés vers l'encre (bleu froid très léger), jamais un gris pur.
