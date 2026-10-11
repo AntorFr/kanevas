@@ -201,7 +201,7 @@ Deux sont posés dès le cadrage parce qu'ils traversent tout :
   efface la session et mène à la connexion ; en bouchon, c'est ainsi qu'on change de compte.
 - `GET /api/moi` rend `{username, groups, limites}` du compte connecté : c'est ce que la barre latérale
   affiche (l'identifiant) et ce que les tests lisent pour constater les groupes. `limites.contenuSection`
-  (20 000) est la borne d'une section, lue par l'écran de fiche (AD-91).
+  (100 000) est la borne d'une section, lue par l'écran de fiche (AD-91).
 
 ### Barre latérale
 
@@ -343,7 +343,7 @@ voit un Joueur qui n'est l'auteur d'aucune section : plus de réglages, plus de 
 
 *Un Joueur* voit les sections qu'il lit (joueurs, ou auteur si c'est lui), sans titre ni trace des
 autres ; « Modifier » sur celles qu'il peut écrire ; ni audience, ni ordre, ni ajout, ni retrait.
-Pour **modifier** : un champ de texte (20 000 caractères au plus, valeur lue dans `limites.contenuSection` de `/api/moi` ; le serveur la refuse aussi, AD-91), « Enregistrer », « Annuler ».
+Pour **modifier** : un champ de texte (100 000 caractères au plus, valeur lue dans `limites.contenuSection` de `/api/moi` ; le serveur la refuse aussi, AD-91, AD-106 ; 20 000 avant `kanevas-import`), « Enregistrer », « Annuler ».
 Enregistrer envoie la version lue (AD-59).
 
 Textes : section sans contenu : « Rien d'écrit pour l'instant. » ; fiche sans section (MJ) : « Cette
@@ -361,7 +361,7 @@ des pièces jointes : « … Son contenu et ses 3 pièces jointes seront perdus.
 | erreur | « Impossible de charger cette fiche. » ; échec d'écriture : « L'action n'a pas abouti. Réessayez. », texte conservé | « Réessayer » |
 | connexion perdue | le bandeau ; « Enregistrer », audience, ordre, retrait, ajout désactivés ; le texte en cours reste | lire |
 | refus | fiche inconnue ou dont rien n'est lisible : « Page introuvable. » ; section non lisible : absente. Un MJ en mode Joueur sur une fiche dont aucune section n'est lisible des joueurs voit « Aucune section n'est visible des joueurs. » (ce que verrait un joueur : « Page introuvable. ») | passer en mode MJ |
-| contenu long | une section de 20 000 caractères passe à la ligne et s'affiche en entier ; plus au-delà, dès le 20 001e caractère saisi : « Erreur : 20 000 caractères au plus. » (sous le champ ; « Enregistrer » ne part pas ; le texte saisi est gardé, y compris quand c'est le serveur qui refuse, 400, avec le même texte — pas « L'action n'a pas abouti » ; tant que `/api/moi` n'a pas rendu la limite, ou s'il a échoué, l'écran ne contrôle rien et laisse le serveur répondre) ; titre de fiche (120 caractères) et titre de section (80) : passent à la ligne | idem |
+| contenu long | une section de 100 000 caractères passe à la ligne et s'affiche en entier ; plus au-delà, dès le 100 001e caractère saisi : « Erreur : 100 000 caractères au plus. » (sous le champ ; « Enregistrer » ne part pas ; le texte saisi est gardé, y compris quand c'est le serveur qui refuse, 400, avec le même texte — pas « L'action n'a pas abouti » ; tant que `/api/moi` n'a pas rendu la limite, ou s'il a échoué, l'écran ne contrôle rien et laisse le serveur répondre) ; titre de fiche (120 caractères) et titre de section (80) : passent à la ligne | idem |
 
 *Critères.*
 - Étant donné Léa, Joueuse, quand elle ouvre « Maître Aldric » (« Apparence » lue des joueurs,
@@ -374,8 +374,8 @@ des pièces jointes : « … Son contenu et ses 3 pièces jointes seront perdus.
   voit pas tant que « Les joueurs la lisent » est faux.
 - Étant donné deux onglets sur la même section, quand le second enregistre après le premier,
   alors il voit « La section a changé depuis que vous l'avez ouverte… » et son texte reste.
-- Étant donné Antor qui modifie une section, quand il saisit un 20 001e caractère, alors « Erreur :
-  20 000 caractères au plus. » apparaît sous le champ, rien n'est envoyé et son texte reste ;
+- Étant donné Antor qui modifie une section, quand il saisit un 100 001e caractère, alors « Erreur :
+  100 000 caractères au plus. » apparaît sous le champ, rien n'est envoyé et son texte reste ;
   quand le serveur refuse malgré tout (400), il voit le même texte et son texte reste.
 
 ### Clôture de la tranche
@@ -548,7 +548,7 @@ nom. » (« Une règle… », « Un objet… ») ; droit retiré entre-temps (r�
 | erreur | « Impossible de charger ce système. » ; échec d'écriture : « L'action n'a pas abouti. Réessayez. », saisie conservée | « Réessayer » |
 | connexion perdue | le bandeau ; « Ajouter », « Enregistrer » désactivés, le texte en cours reste | lire |
 | refus | *remplacé* : voir la matrice d'états de « E-15 hors de l'univers » (`kanevas-illustrations`) — le refus mène à « Systèmes de jeu » | — |
-| contenu long | 100 entrées : « Charger la suite » ; nom tronqué par « … » avec infobulle ; contenu de 20 000 caractères passe à la ligne et s'affiche en entier ; au-delà : « Erreur : 20 000 caractères au plus. » ; nom au-delà de 120 : « Erreur : 120 caractères au plus. » | idem |
+| contenu long | 100 entrées : « Charger la suite » ; nom tronqué par « … » avec infobulle ; contenu de 100 000 caractères passe à la ligne et s'affiche en entier ; au-delà : « Erreur : 100 000 caractères au plus. » ; nom au-delà de 120 : « Erreur : 120 caractères au plus. » | idem |
 
 *Critères.*
 - Étant donné Antor, MJ de Lame d'Ébène rattaché à « CoF Mini », quand il ajoute la créature « Garde
@@ -775,7 +775,7 @@ puis trois panneaux (une campagne n'a ni description ni autre champ que son nom 
 3. **Comptes-rendus** (tous) : les comptes-rendus **lisibles** de cette campagne, du plus
    récemment créé au plus ancien, chacun : titre, auteur (l'identifiant de l'auteur de la section ; un compte-rendu
    créé par le MJ n'a pas d'auteur, AD-61 : rien n'est affiché, pas même le nom du MJ), date de création, lien vers E-9. « Nouveau
-   compte-rendu » ouvre une fenêtre : « Titre » (1 à 120 caractères), « Texte » (facultatif, 20 000
+   compte-rendu » ouvre une fenêtre : « Titre » (1 à 120 caractères), « Texte » (facultatif, 100 000
    au plus ; 100 000 depuis `kanevas-import`, AD-106), « Publier » et « Annuler » ; « Publier » crée le compte-rendu et mène à E-9 (AD-61). Si la
    création échoue, la fenêtre reste ouverte, la saisie gardée, avec « L'action n'a pas abouti.
    Réessayez. » ; session expirée pendant la saisie : le texte est gardé comme sur E-9. Cent à la fois,
@@ -784,7 +784,7 @@ puis trois panneaux (une campagne n'a ni description ni autre champ que son nom 
 Erreurs de saisie, sous le champ : « Erreur : le nom est obligatoire. » / « Erreur : 80 caractères
 au plus. » (campagne) ; « Erreur : le titre est obligatoire. » / « Erreur : 120 caractères au plus. »
 (scénario, compte-rendu) ; « Erreur : le libellé est obligatoire. » / « Erreur : 200 caractères au
-plus. » (tâche) ; « Erreur : 20 000 caractères au plus. » (texte du compte-rendu).
+plus. » (tâche) ; « Erreur : 100 000 caractères au plus. » (texte du compte-rendu).
 
 Textes : liste vide, MJ : « Aucune campagne pour l'instant. » et « Nouvelle campagne » ; Joueur :
 « Aucune campagne pour l'instant. » ; scénarios vides : « Aucun scénario pour l'instant. » ;
@@ -821,7 +821,7 @@ lue (AD-62) ; un scénario ne se supprime pas.
 Textes : contenu vide : « Rien d'écrit pour l'instant. » ; écriture périmée : « Ce scénario a changé
 depuis que vous l'avez ouvert. Rechargez-le pour voir la nouvelle version ; votre texte reste
 ci-dessous. » avec « Recharger le scénario » ; titre vide ou trop long : « Erreur : le titre est
-obligatoire. » / « Erreur : 120 caractères au plus. » ; contenu : « Erreur : 20 000 caractères au
+obligatoire. » / « Erreur : 120 caractères au plus. » ; contenu : « Erreur : 100 000 caractères au
 plus. ». Session expirée pendant une saisie : le texte est gardé comme sur E-9.
 
 | État | Ce qu'on voit | Ce qu'on peut faire |
@@ -831,7 +831,7 @@ plus. ». Session expirée pendant une saisie : le texte est gardé comme sur E-
 | erreur | « Impossible de charger ce scénario. » ; échec d'écriture : « L'action n'a pas abouti. Réessayez. », texte conservé | « Réessayer » |
 | connexion perdue | le bandeau ; « Enregistrer » désactivé, texte en cours conservé | lire |
 | refus | Joueur, scénario inconnu, d'une autre campagne ou d'un autre univers : « Page introuvable. » ; un Joueur n'a ni l'écran ni de lien vers lui | « Mes univers » |
-| contenu long | 20 000 caractères : passent à la ligne, affichés en entier ; titre de 120 caractères : passe à la ligne | idem |
+| contenu long | 100 000 caractères : passent à la ligne, affichés en entier ; titre de 120 caractères : passe à la ligne | idem |
 
 *Critère.* Étant donné Léa, Joueuse, quand elle ouvre l'adresse du scénario « Acte II — Le sceau
 brisé » que lui donne Antor, alors elle voit « Page introuvable. », sans le titre.
@@ -1174,11 +1174,11 @@ affiche aujourd'hui en ligne devient le texte de son toast (E-14 : « Enregistr�
 - « Modifier » paraît au survol et au focus de la section, et toujours sur un écran sans survol
   (téléphone, tablette : `hover: none`) ;
   « Monter », « Descendre » et « Retirer la section » sont dans son menu « ⋯ » ;
-- en édition : sous le champ, le compteur « n / 20 000 » et l'aide « Échap annuler · Ctrl ↵
+- en édition : sous le champ, le compteur « n / 100 000 » et l'aide « Échap annuler · Ctrl ↵
   enregistrer » ; Échap fait ce que fait « Annuler » (le texte saisi est abandonné, comme
   aujourd'hui) ; Ctrl+Entrée (⌘+Entrée sur Mac) fait exactement ce que fait « Enregistrer » :
   il envoie, et une écriture périmée reçoit « La section a changé depuis que vous l'avez
-  ouverte… » ; au-delà de 20 000 caractères ou connexion perdue, il ne part pas, comme le bouton ;
+  ouverte… » ; au-delà de 100 000 caractères ou connexion perdue, il ne part pas, comme le bouton ;
 - la bascule en tête s'appelle « Mode MJ » et « Mode Joueur » (« MJ » et « Joueur » au
   téléphone) ; en mode Joueur, un bandeau sous la barre haute : « Mode Joueur : vous voyez ce
   que voit un joueur. »
@@ -1495,7 +1495,7 @@ ajouter, modifier pour le MJ ; textes et états de `kanevas-systemes`). Ce qui c
 | erreur | « Impossible de charger ce système. » ; échec d'écriture : « L'action n'a pas abouti. Réessayez. », saisie gardée ; écriture périmée : « Cette entrée a changé depuis que vous l'avez ouverte… » ; nom vide ou déjà pris : sous le champ | « Réessayer », « Recharger » |
 | connexion perdue | le bandeau ; « Ajouter … », « Modifier », « Enregistrer » désactivés, le texte en cours reste ; les puces d'univers restent des liens | lire |
 | refus | système inconnu, ou rattaché à aucun univers du compte (y compris par l'ancienne adresse) : « Page introuvable. » et le lien **« Systèmes de jeu »** (plus « Mes univers ») ; droit perdu pendant une écriture : « Vous ne pouvez plus modifier ce système. », puis la page se recharge en lecture seule ou en « Page introuvable. » ; un Joueur : « Ajouter … » et « Modifier » sont absents | « Systèmes de jeu » |
-| contenu long | 100 entrées : « Charger la suite » ; nom d'entrée de 120 caractères tronqué par « … », infobulle ; contenu de 20 000 caractères en entier ; nom de système de 80 caractères : le titre passe à la ligne | idem |
+| contenu long | 100 entrées : « Charger la suite » ; nom d'entrée de 120 caractères tronqué par « … », infobulle ; contenu de 100 000 caractères en entier ; nom de système de 80 caractères : le titre passe à la ligne | idem |
 
 *Le bloc « Dans vos univers »* (E-15 et chaque ligne de E-16) arrive avec le système : il n'a ni
 chargement ni erreur à lui. Vide : sans objet — un système visible est toujours rattaché à au moins
@@ -1722,7 +1722,7 @@ Toute lecture de la proposition par un autre compte répond comme une adresse in
 | connexion perdue | le bandeau commun (« Connexion perdue. Ce que vous voyez peut être dépassé ; rien n'est enregistré tant qu'elle ne revient pas. », texte de `kanevas-premiere-fiche`) ; zones lisibles ; « Appliquer » et « Abandonner » désactivés ; perdue pendant un geste en cours, la réponse est perdue : le « … » disparaît, les gestes restent désactivés, et au retour de la connexion la proposition est relue — le bloc dit ce que la base dit (appliquée ou en attente), jamais un état supposé | lire ; Ouvrir |
 | refus (adresse inconnue : abandonnée ailleurs, supprimée avec sa section, autre compte, MJ retiré de l'univers) | « Cette proposition n'existe plus. » ; plus de zones ni de geste ; session expirée : la personne est menée à la connexion, le fil est perdu | continuer à écrire dans le fil |
 | déjà appliquée, vue d'un autre onglet | même rendu que « appliquée » (la lecture dit l'état, AD-82) ; un « Appliquer » ou un « Abandonner » en course rend 409 `proposition_appliquee` et le bloc se relit | Ouvrir |
-| contenu long | contenu de 20 000 caractères : chaque zone a une hauteur maximale de 15 lignes et défile (`tabindex="0"`, étiquetée « Actuel » / « Proposé ») ; les paragraphes (lignes vides) sont conservés ; un titre de fiche ou de compte-rendu de 120 caractères passe à la ligne | faire défiler chaque zone |
+| contenu long | contenu de 100 000 caractères : chaque zone a une hauteur maximale de 15 lignes et défile (`tabindex="0"`, étiquetée « Actuel » / « Proposé ») ; les paragraphes (lignes vides) sont conservés ; un titre de fiche ou de compte-rendu de 120 caractères passe à la ligne | faire défiler chaque zone |
 
 La proposition vit en base (AD-79) mais le fil non (AD-28) : au rechargement de la page, au changement d'univers ou
 après « Nouvelle conversation », le bloc disparaît du fil et la proposition devient inatteignable ; elle

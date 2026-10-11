@@ -77,7 +77,7 @@ en cours, vidé au démarrage sauf avec une base en mémoire, où le dossier est
 
 Toutes gardées par la session (401 sans session), sauf `/api/auth/*`. Les erreurs de service sont
 `introuvable` 404, `refuse` 403, `invalide` 400, `conflit` 409 (`section_modifiee`, `nom_pris`, `gabarit_modifie`, `scenario_modifie`, `proposition_appliquee`, `relation_existante`, `limite_relations`, `limite_pieces` : 50 pièces par section — *100 fichiers joints depuis `kanevas-import`, AD-111*, `fiche_deja_placee` et `carte_pleine` des cartes ; 413 `fond_trop_lourd` pour un fond de plus de 25 Mo ; 400 `fichier_vide` pour une pièce vide (un fond de carte vide est un 400 `fond_invalide`) ; `auto_relation` est un 400 `invalide`). Retirer le dernier
-MJ répond `invalide` 400 avec la raison ; un contenu de section de plus de 20 000 caractères aussi (AD-91). Le corps d'une erreur de service est `{message}` (plus `code` quand le service en donne un) ; une adresse `/api/...` qu'aucune route ne porte (par exemple une route retirée par AD-94) répond 404 par la page HTML « Page introuvable. », pas par du JSON. Le serveur écoute sur `0.0.0.0` (`-p 3001:3001` suffit).
+MJ répond `invalide` 400 avec la raison ; un contenu de section de plus de 100 000 caractères aussi (AD-91). Le corps d'une erreur de service est `{message}` (plus `code` quand le service en donne un) ; une adresse `/api/...` qu'aucune route ne porte (par exemple une route retirée par AD-94) répond 404 par la page HTML « Page introuvable. », pas par du JSON. Le serveur écoute sur `0.0.0.0` (`-p 3001:3001` suffit).
 En mode bouchon, `POST /connexion-bouchon` attend un corps form-urlencoded `compte=<identifiant>`.
 Les lignes qui citent AD-93 ou AD-94 sont celles de `kanevas-illustrations`, construites par elle ;
 elles remplacent les anciennes routes `GET /api/univers/:id/systeme` et `…/systeme/gabarits*`.
@@ -104,7 +104,7 @@ elles remplacent les anciennes routes `GET /api/univers/:id/systeme` et `…/sys
 | `PATCH\|DELETE .../pieces-jointes/:pid` | marquer ou lever « secrète » `{secrete}` (MJ) ; retirer (204) |
 | `GET .../pieces-jointes/:pid/fichier` | les octets, sous les règles de lecture réelles (pas de mode) ; 404 identique à une adresse inconnue |
 | `PUT\|DELETE\|GET .../fiches/:fid/illustration` (`GET` : `?v=<jeton>`) | poser ou remplacer (multipart, une partie `fichier` ; MJ ; 400 `pas_une_image`, `fichier_vide`), retirer (204, MJ), lire (qui voit la fiche ; 404 identique sinon) ; la liste et la fiche rendent `illustration: null` ou `{jeton}` (AD-93) |
-| `PUT .../sections/:sid/contenu` | écrire `{contenu, version}` ; 400 si contenu > 20 000 caractères (contrôlé après les droits, avant la version) ; 409 si `version` périmée |
+| `PUT .../sections/:sid/contenu` | écrire `{contenu, version}` ; 400 si contenu > 100 000 caractères (contrôlé après les droits, avant la version) ; 409 si `version` périmée |
 | `GET\|POST /api/univers/:id/campagnes`, `GET .../campagnes/:cid` | liste (actives, en préparation, terminées, chacune par nom) et lecture (tout membre) ; création `{nom}` (MJ) |
 | `PATCH /api/campagnes/:cid` | `{statut}` (`en_preparation`, `active`, `terminee`) (MJ de l'univers de la campagne) |
 | `GET\|POST /api/campagnes/:cid/scenarios`, `GET\|PUT /api/scenarios/:sid` | scénarios `{titre, contenu?}` ; écriture `{titre, contenu, version}`, 409 `scenario_modifie` si périmée (AD-62). MJ seul, 404 pour tout autre (AD-22, AD-47) |
