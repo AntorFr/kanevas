@@ -78,14 +78,14 @@ table{width:100%;border-collapse:collapse;font-size:13px}th{text-align:left;font
 <table><tr><th>Identifiant</th><th>Rôle</th><th></th></tr><tr><td>mira</td><td>MJ ▾</td><td><span class="btn sm dg">Retirer mira</span></td></tr><tr><td>teo</td><td>Joueur ▾</td><td><span class="btn sm dg">Retirer teo</span></td></tr></table>
 <label class="fl">Identifiant du compte</label><div class="row"><input class="in" style="flex:1" value="admin"><span class="in" style="width:110px">MJ ▾</span><span class="btn pri">Ajouter</span></div>
 <p class="note">Pour lire le contenu, l'admin s'ajoute lui-même comme membre : l'ajout apparaît dans la liste des membres que voit le MJ de l'univers.</p></div></div>
-<!-- kanevas-import-jeton-assistant : panneau pleine largeur sous les deux zones (docs/ecrans.md « Détail de l'écran de kanevas-import-jeton-assistant »). Jamais la valeur du jeton. -->
+<!-- kanevas-import-jeton-assistant (états principaux ; les autres : tableau de docs/ecrans.md) : panneau pleine largeur sous les deux zones (docs/ecrans.md « Détail de l'écran de kanevas-import-jeton-assistant »). Jamais la valeur du jeton. -->
 <section class="panel" aria-labelledby="ja"><div class="hrow"><h2 id="ja">Jeton de l'assistant</h2></div>
 <p role="status">Jeton posé le 11 octobre 2026.</p><p class="note">L'assistant est disponible sur tous les univers.</p>
 <div class="row" style="margin-top:10px"><span class="btn">Reconnecter l'abonnement</span></div></section>
 <section class="panel"><h2>Jeton de l'assistant — connexion en cours</h2>
 <label class="fl">Adresse d'autorisation</label><div class="row"><div class="in" style="flex:1;word-break:break-all;max-height:64px;overflow:auto">https://claude.ai/oauth/authorize?code=true&amp;client_id=…</div><a class="btn sm">Ouvrir</a><span class="btn sm">Copier</span></div>
 <label class="fl">Code</label><div class="row"><input class="in" style="flex:1" value=""><span class="btn pri" aria-disabled="true" style="opacity:.5">Valider</span><span class="btn">Annuler</span></div>
-<p class="note">Cette connexion expire dans 10 minutes (reste 9 min).</p></section>
+<p class="note">Cette connexion expire dans 10 minutes. Reste 9 min.</p></section>
 <div class="g2"><section class="panel"><h2>Jeton de l'assistant — vide</h2><p>Aucun jeton posé.</p><p class="note">L'assistant est indisponible tant qu'aucun jeton n'est posé.</p><span class="btn pri">Connecter l'abonnement</span></section>
 <section class="panel"><h2>Jeton de l'assistant — échec</h2><div class="alert">La connexion n'a pas abouti. Recommencez.</div><p>Aucun jeton posé.</p><span class="btn pri">Connecter l'abonnement</span></section>
 <section class="panel"><h2>Jeton de l'assistant — expirée</h2><div class="alert">La connexion a expiré. Recommencez.</div><p>Jeton posé le 11 octobre 2026.</p><span class="btn">Reconnecter l'abonnement</span></section>
