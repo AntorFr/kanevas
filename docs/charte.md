@@ -105,6 +105,10 @@ pastille), `currentColor`. Servies par le produit (`lucide-react`), jamais par u
 seul et secret `lock`, lu des joueurs `eye`, écrit par les joueurs `pen-line`, mode MJ
 `lock-keyhole`, assistant `sparkles`, thème `sun` / `moon` / `monitor`, déconnexion `log-out`,
 menu du téléphone `panel-left`.
+Depuis `kanevas-import` (types et écrans nouveaux, même jeu, mêmes règles) : Créatures `paw-print`,
+Races `dna`, Vaisseaux `ship`, Mondes `globe`, Récits `book-open`, Règles `scale`, Notes
+`sticky-note`, Rechercher `search`, Accès par API `key-round`, étiquette `tag`, Contient
+`folder-tree`, Mentionnée dans `link-2`, vue en arbre `list-tree`, lien cassé `link-2-off`.
 
 **Mouvement.** `--duree` 160 ms, `--courbe` *(nouveau)* `cubic-bezier(.2,.7,.2,1)`. Seuls
 bougent : l'apparition d'un menu, d'un réglage ou d'une boîte (opacité et 4 px), le tiroir, le
@@ -144,6 +148,15 @@ Ceux que Kanevas suit :
   dans E-8. Elle est proposée, pas dessinée.
 - **Le bouton de l'assistant est sombre sur clair (inversé), pas en accent** : il flotte sur
   toute page et ne doit pas se confondre avec l'action principale de l'écran.
+
+**Le secret dans le texte** (`kanevas-import`, aucun token nouveau). Un **bloc MJ** au milieu
+d'une section prend la matière de la section MJ seul, à l'échelle d'un paragraphe : trame
+`--mj-trame`, filet gauche `--mj` de 2 px, contour `--mj-bord`, `--rayon-champ`, pastille « MJ seul »
+(`lock`) en tête ; il ne déborde pas de la colonne (seule la section entière déborde). Un **lien vers
+une fiche** est en `--accent-texte`, souligné à 1 px à 30 % d'opacité, plein au survol ; un **lien
+cassé** (MJ seul) garde la couleur du texte, souligné en tirets `--danger` ; un **lien en attente**
+(MJ seul), en tirets `--texte-3`. Un lien vers une fiche illisible n'a **aucune** marque : il est du
+texte. L'état est porté par le soulignement **et** l'infobulle, jamais par la seule couleur.
 
 ## 4. Composants
 

@@ -19,8 +19,13 @@ Une barre latérale unique, sur tous les écrans d'un univers :
 
 - en tête, le **sélecteur d'univers** (les univers du compte, son rôle en badge) ;
 - **Vue d'ensemble** · **Campagnes** · **Comptes-rendus** · **Cartes** ;
-- **Lore** : Personnages, Lieux, Factions, Objets, Événements, Quêtes ;
-- pour un MJ : **Univers** ▸ Membres, Paramètres ;
+- **Lore** : Personnages, Lieux, Factions, Objets, Événements, Quêtes — depuis `kanevas-import`,
+  les **types activés pour l'univers** (B-42), dans l'ordre de la liste du produit : Personnages,
+  Lieux, Factions, Objets, Événements, Quêtes, Créatures, Races, Vaisseaux, Mondes, Récits, Règles,
+  Notes ;
+- depuis `kanevas-import`, en tête de la barre sous le sélecteur d'univers : **Rechercher** (E-17 ;
+  raccourci `/` hors d'un champ) ;
+- pour un MJ : **Univers** ▸ Membres, Paramètres, et depuis `kanevas-import` **Accès par API** (E-18) ;
 - pour un admin d'instance : **Administration** ;
 - en pied, le **compte** : l'avatar et l'identifiant, qui ouvrent un menu — l'identifiant, le
   **thème** (bascule à trois icônes : Clair, Sombre, Système) et « Se déconnecter ». Le thème et
@@ -31,7 +36,7 @@ téléphone (moins de 760 px), la barre est un tiroir sous un bouton « Menu »,
 haute.
 
 Au-dessus de chaque écran d'un univers, une **barre haute** : le fil d'Ariane (univers › type ›
-fiche ; au téléphone, l'icône du type et le titre seul) et, sur les écrans où elle existe, la
+fiche ; depuis `kanevas-import`, univers › type › ancêtres lisibles › fiche, B-35 ; au téléphone, l'icône du type et le titre seul) et, sur les écrans où elle existe, la
 bascule mode MJ / mode Joueur.
 
 Hors d'un univers (E-1, E-2, E-5, E-15, E-16), une barre réduite : **Mes univers**, **Systèmes de
@@ -64,6 +69,15 @@ bascule existe (fiche, carte).
 | **E-14 Paramètres de l'univers** | nav Univers (MJ) | nom, description, système de jeu (choisir dans le catalogue, en créer un) | P-8 |
 | **E-15 Système de jeu** | E-16 ; lien depuis E-3 et E-14 | le référentiel commun : règles, créatures, objets ; ajouter, modifier (MJ d'un univers rattaché) ; hors du cadre d'un univers | P-8 |
 | **E-16 Systèmes de jeu** | barre réduite ; menu du sélecteur d'univers | les systèmes rattachés aux univers du compte, chacun avec ceux de ses univers qui l'utilisent | P-8 |
+| **E-17 Recherche** *(kanevas-import)* | « Rechercher » de la barre ; `/` ; une étiquette touchée sur E-9 | chercher dans tous les types, titres, alias et sections lisibles ; filtrer par type et par étiquette | P-12 |
+| **E-18 Accès par API** *(kanevas-import)* | nav Univers ▸ Accès par API (MJ) | créer, lister, révoquer les jetons d'API de l'univers ; voir les lots d'import et leurs refus | P-10, P-11 |
+
+Écrans **modifiés** par `kanevas-import` : **E-8** (types activés, vue en arbre), **E-9** (Markdown,
+liens, blocs MJ, fil d'ancêtres, blocs « Contient » et « Mentionnée dans », alias et étiquettes, menu
+de la fiche : renommer, changer le type, déplacer, supprimer, clé d'origine), **E-7** et **E-15**
+(contenu en Markdown), **E-14** (« Types de fiche », « Supprimer l'univers »), **E-15** (« Types de
+fiche » du système), **E-13** (ordre par date d'origine), la barre latérale ; **E-5** seulement si
+B-51 est retenu (« Jeton de l'assistant »).
 
 Les pages de connexion du serveur (« Connexion refusée », « Connexion indisponible », atteintes
 depuis P-1) et le bandeau du mode bouchon sont décrits sous « Session et connexion ».
@@ -94,6 +108,18 @@ E-16 vivent hors des univers : leurs cases disent le rôle dans un univers ratta
 | E-14 | tout | — | — |
 | E-15 (hors univers ; les colonnes disent le rôle dans un univers **rattaché au système**) | lire ; « Ajouter … », « Modifier » | lire (« Lecture seule ») ; ni « Ajouter » ni « Modifier » | « Page introuvable. », sauf s'il est lui-même membre d'un univers rattaché : alors la colonne de son rôle là (l'admin MJ d'un univers rattaché lit et modifie) |
 | E-16 (hors univers) | ses systèmes, avec ses univers et son rôle | ses systèmes, « Lecture seule » | la liste de ses propres systèmes (comme MJ ou Joueur s'il est membre d'un univers rattaché) ; vide sinon — l'écran est proposé à tout compte |
+| E-17 *(kanevas-import)* | chercher dans toutes les fiches de l'univers, blocs MJ compris (hors mode Joueur) ; tous les types, désactivés compris, en filtre « Autres types » | chercher dans ce qu'il lit, hors blocs MJ ; filtres par type et par étiquette des seules fiches qu'il voit | — |
+| E-18 *(kanevas-import)* | créer un jeton ; voir et révoquer tous les jetons de l'univers (y compris ceux d'un autre MJ) ; voir les lots | — (**caché** : absent de la barre, « Page introuvable. » par l'adresse) | — |
+
+Ce que `kanevas-import` ajoute aux lignes existantes : **E-8** — MJ : la vue en arbre, la création
+dans les seuls types activés ; Joueur : l'arbre des fiches qu'il voit. **E-9** — MJ : écrire le
+Markdown, insérer liens et blocs MJ, renommer, changer le type, déplacer, alias et étiquettes,
+supprimer (menu « ⋯ » de l'en-tête, hors mode Joueur), voir la clé d'origine ; Joueur : lire le
+Markdown, suivre les liens vers ce qu'il voit, « Contient » et « Mentionnée dans » réduits à ce qu'il
+lit ; écrire une section permise **sauf si elle contient un bloc MJ** (« Modifier » **caché**) ; alias
+et étiquettes visibles, jamais modifiables (**caché**). **E-14** — MJ : « Types de fiche »,
+« Supprimer l'univers ». **E-15** — MJ d'un univers rattaché : « Types de fiche » (bascules) ;
+Joueur : la liste en lecture seule.
 
 Un admin d'instance qui est aussi membre d'un univers, MJ ou Joueur, a dans cet univers la colonne de son rôle et garde E-5 par la section « Instance » de la barre ; hors de cet univers, la colonne Admin.
 
@@ -1713,6 +1739,11 @@ composants partagés. Leurs états s'ouvrent par l'adresse (`#etat-joueur`, `#et
 `#etat-perdue`… ; la liste est en tête de leur style). Le bloc « Cartes visibles » de `e03` et les maquettes `e10` et `e11` appartiennent à
 `kanevas-cartes-graphes` (détail plus bas).
 
+**Finies par le cadrage de `kanevas-import`** : `e09-fiche-importee.html` (E-9 : Markdown, liens,
+bloc MJ, fil d'ancêtres, « Contient », « Mentionnée dans », menu de la fiche), `e18-acces-api.html`
+(E-18) et `e14-types-de-fiche.html` (panneaux « Types de fiche » de E-14 et E-15, suppression d'un
+univers), dans le cadre et avec les composants de `e09-fiche.html`.
+
 **D'avant la charte** : les autres. Elles valent pour le contenu et le vocabulaire, pas pour la
 forme ; un écran qui n'a qu'elles se construit dans le cadre et avec les composants de la
 maquette E-9.
@@ -1929,3 +1960,284 @@ choisir les fiches d'un graphe) ; B-23 → « Rendre visible » et la lecture fi
 B-12 (carte) → le mode Joueur de E-11. Atteint par P-3 étape 6 (placer le PNJ, mode Joueur, rendre
 visible), P-6 étape 3 (la carte d'un joueur) et P-9 en entier (le graphe). Les écrans E-10 et E-11
 et le bloc de E-3 livrent leurs six états (B-29), ci-dessus.
+
+## Détail des écrans de `kanevas-import` (cadrage)
+
+> Cadrage proposé le 2026-10-11 (`epic/kanevas-import`). Besoins B-32 à B-51, parcours P-10 à P-15,
+> décisions AD-95 à AD-109. Les tranches détaillent leurs écrans dans ce cadre ; elles ne
+> l'inventent pas. Écrans structurants, avec maquette finie : **E-9** (la fiche importée, moment fort
+> de P-12), **E-18** (Accès par API, P-10 et P-11), **E-14 / E-15 « Types de fiche »** (P-13). E-17 et
+> l'arbre de E-8 sont décrits ici sans maquette : ils se construisent avec les composants de E-8
+> (grille, recherche, pastilles). Les textes communs (chargement, erreur, connexion perdue, refus)
+> sont ceux de `kanevas-premiere-fiche`.
+
+### Le Markdown, partout où l'on écrit un texte long
+
+Sections (E-9), scénarios (E-7), entrées d'un système (E-15), comptes-rendus (E-9) : le texte est du
+Markdown (B-32, AD-95). **Ce qui se met en forme** : paragraphes (un saut de ligne simple reste un
+saut de ligne, comme le texte brut d'avant), intertitres `##` à `####` (rendus sous le titre de la
+section, jamais au-dessus), gras, italique, barré, listes à puces et numérotées, citations, code,
+filets, tableaux, liens web (`http`, `https`, `mailto` seulement ; ils s'ouvrent dans un nouvel
+onglet), images de la section (`![légende](piece:…)`, B-44), liens vers une fiche (`[[…]]`, B-33),
+blocs MJ (`:::mj` … `:::`, B-34). **Ce qui reste du texte** : tout HTML écrit dans le contenu, une
+image d'une autre adresse (le texte de l'image s'affiche à sa place), un lien d'un autre schéma.
+
+**L'éditeur** (édition en place, charte « L'édition en place ») : le champ de texte garde la police
+de lecture ; au-dessus, une barre d'outils discrète — « Gras », « Italique », « Lien vers une fiche »,
+« Image de la section », et pour un MJ « Bloc MJ » (entoure la sélection) — et la bascule « Écrire /
+Aperçu ». Raccourcis : Ctrl/⌘+B, Ctrl/⌘+I, Ctrl/⌘+K (lien vers une fiche), Échap annule, Ctrl/⌘+Entrée
+enregistre. Taper `[[` ouvre la liste de recherche de E-8 (`ListeRecherche`, tous types) au point
+d'insertion ; choisir une fiche insère `[[<id>|<titre>]]`, Échap ferme la liste et laisse `[[`. Le
+compteur dit « 12 480 / 100 000 ».
+
+**Rendu** : un lien vers une fiche lisible est en `--accent-texte`, souligné fin, avec l'icône du type
+au survol ; vers une fiche illisible : le texte, sans aucune marque ; **lien cassé** (MJ seul) : le
+texte souligné en tirets `--danger`, infobulle « Lien cassé : cette fiche n'existe plus. » ; **lien en
+attente** d'import (MJ seul) : souligné en tirets `--texte-3`, infobulle « Lien en attente : aucune
+fiche n'a encore la clé « personnage:aldric ». ». Un **bloc MJ**, pour le MJ hors mode Joueur, prend
+la matière de la section MJ seul (trame hachurée, filet ambre, pastille « MJ seul » `lock`) **dans** la
+section, à sa place dans le texte ; en mode Joueur et pour tout autre lecteur, il n'existe pas — pas de
+blanc, pas de filet, le paragraphe suivant suit le précédent. Un tableau large défile dans son cadre
+au téléphone, jamais la page.
+
+### E-9 Fiche — ce que `kanevas-import` change
+
+*Maquette finie* : `docs/maquettes/e09-fiche-importee.html` (« Port-Sel », états `#etat-joueur`,
+`#etat-edition`, `#etat-supprimer`, `#etat-deplacer`).
+
+**En-tête.** Fil d'Ariane : univers › type › ancêtres **lisibles** du plus haut au plus proche ›
+fiche ; un ancêtre illisible est sauté sans marque (B-35) ; plus de trois ancêtres : le premier, « … »
+(menu des autres), les deux derniers. Sous le titre : « Aussi appelée Salport, Port-aux-Sels » (alias,
+`--texte-2`) et les **étiquettes** en pastilles neutres (`tag`), chacune un lien vers E-17 filtrée.
+MJ, hors mode Joueur : le titre s'édite en place (clic, Entrée enregistre) ; le menu « ⋯ » de l'en-tête
+porte « Changer le type… », « Déplacer sous… », « Alias et étiquettes… », une ligne d'information
+« Importée · clé lieu:port-sel · créée le 3 mars 2021 » (si la fiche a une clé d'origine, B-50) et,
+séparé, « Supprimer la fiche… » en `--danger`.
+
+- *Changer le type* : une liste des types de la liste du produit, activés d'abord, puis « Autres
+  types » ; pour « Personnage », le choix PJ / PNJ. Le compte-rendu n'y figure pas ; un compte-rendu n'a
+  pas cette entrée.
+- *Déplacer sous…* : la liste de recherche (tous types, fiches que le MJ lit), plus « Aucun parent » ;
+  un descendant de la fiche est refusé : « Une fiche ne peut pas être rangée sous l'un de ses
+  descendants. ».
+- *Alias et étiquettes* : deux champs à pastilles (Entrée ajoute, × retire) ; une étiquette se
+  complète sur celles de l'univers ; alias 1 à 120 caractères, 20 au plus ; étiquette 1 à 40
+  caractères, 20 au plus par fiche.
+- *Supprimer la fiche* : boîte de dialogue « Supprimer « Port-Sel » ? » qui compte ce qui part —
+  « 2 sections et 1 pièce jointe ; 3 relations qui la visent ; 1 place sur une carte. Ses 4 enfants
+  remonteront sous « Les Sphères ». Les liens qui la visent deviendront des liens cassés. » — et
+  « Supprimer la fiche » (`--danger`) / « Annuler ». Après : retour à la liste du type, toast « Fiche
+  supprimée. ». Ces nombres ne sont montrés qu'au MJ, qui lit tout.
+
+**Sections.** Rendu Markdown ci-dessus. « Modifier » n'apparaît pas pour un Joueur sur une section qui
+contient un bloc MJ, même s'il en a l'écriture (B-34) ; s'il l'ouvre par une autre voie, le serveur
+refuse : « Vous ne pouvez pas modifier cette section. ».
+
+**Blocs de fiche** (après les sections, hors de toute section) :
+- **Contient** (`folder-tree`) — les enfants lisibles, par type puis titre, chacun avec son icône ; 50
+  puis « Afficher les N suivants » (N compté sur ce que le lecteur voit). Absent s'il n'y en a aucun.
+- **Mentionnée dans** (`link-2`) — les fiches qui la citent et que le lecteur voit : titre, icône,
+  et le pourquoi : « lien dans « Histoire » » ou le libellé de la relation (« Amiral de »). 50 puis la
+  suite. Absent s'il n'y en a aucune (B-36). Jamais de compteur de ce qui est caché.
+
+| État | Ce qu'on voit | Ce qu'on peut faire |
+|---|---|---|
+| vide | fiche importée sans section : comme avant ; ni « Contient » ni « Mentionnée dans » | MJ : ajouter une section |
+| chargement | squelettes de l'en-tête et de deux sections ; les blocs de fiche arrivent avec la fiche (une seule réponse) | — |
+| erreur | « Impossible de charger cette fiche. » ; image insérée qui ne se charge pas : « Image indisponible. » à sa place, sa légende dessous ; déplacement, changement de type, suppression qui échoue : « L'action n'a pas abouti. Réessayez. », rien n'a changé | « Réessayer » |
+| connexion perdue | le bandeau ; « Modifier », le menu « ⋯ », l'édition du titre désactivés ; les liens restent suivables | lire |
+| refus | fiche illisible : « Page introuvable. » ; un lien vers elle n'est que du texte ; supprimée pendant la lecture : « Page introuvable. » à l'action suivante ; Joueur : ni menu « ⋯ », ni édition du titre (**caché**) | « Mes univers » |
+| contenu long | section de 100 000 caractères : rendue en entier, l'éditeur défile ; « Erreur : 100 000 caractères au plus. » au-delà ; tableau de 12 colonnes : défile dans son cadre ; 300 enfants : 50 puis la suite ; titre de 120 caractères et fil de 6 ancêtres : le fil se replie (« … ») | idem |
+
+*Critères.*
+- Étant donné « Port-Sel » dont la section « Histoire » (lue des joueurs) contient un bloc MJ « Le port
+  est tenu par la Guilde des Brumes », quand Léa ouvre la fiche, alors elle lit « Histoire » sans
+  aucun mot du bloc, sans espace ni marque à sa place.
+- Étant donné la même fiche, quand Antor passe en mode Joueur, alors il voit exactement ce que voit
+  Léa ; revenu en mode MJ, le bloc est hachuré d'ambre, pastille « MJ seul ».
+- Étant donné un lien `[[…]]` de « Port-Sel » vers « La Guilde des Brumes » (fiche dont Léa ne lit
+  rien), quand Léa lit « Port-Sel », alors « La Guilde des Brumes » est du texte simple, sans lien.
+- Étant donné Léa auteur avec écriture d'une section qui contient un bloc MJ, quand elle ouvre la
+  fiche, alors cette section n'a pas « Modifier ».
+- Étant donné « Rapport secret de l'amirauté » (MJ seul) qui lie « Port-Sel », quand Léa ouvre
+  « Port-Sel », alors « Mentionnée dans » ne nomme pas ce rapport ; Antor l'y voit.
+- Étant donné « Port-Sel » sous « Les Sphères » (monde illisible de Léa) sous « Le Grand Vide »
+  (lisible), quand Léa ouvre « Port-Sel », alors le fil est « Lame d'Ébène › Lieux › Le Grand Vide ›
+  Port-Sel ».
+- Étant donné Antor qui déplace « Les Sphères » sous « Port-Sel », son enfant, alors il voit « Une
+  fiche ne peut pas être rangée sous l'un de ses descendants. » et rien ne change.
+- Étant donné Antor qui supprime « Port-Sel » (4 enfants, parent « Les Sphères »), alors les 4
+  enfants ont « Les Sphères » pour parent, l'adresse de « Port-Sel » répond « Page introuvable. », et
+  un lien vers elle dans « Maître Aldric » est marqué « lien cassé » pour Antor et du texte pour Léa.
+- Étant donné un contenu qui contient `<script>alert(1)</script>` et `<b>gras</b>`, quand la section
+  s'affiche, alors ces balises s'affichent comme du texte, et aucun script ne s'exécute.
+
+### E-8 Liste de fiches — l'arbre
+
+Une bascule « Grille / Arbre » (icônes `layout-grid`, `list-tree`) à côté de la recherche ; le choix est
+mémorisé par type dans le navigateur. **L'arbre** : les fiches du type que le compte lit, dont le
+parent est absent, illisible ou d'un autre type, par titre ; une fiche dont le parent lisible est d'un
+autre type porte « dans Les Sphères » (`--texte-3`, lien). Chaque nœud qui a des enfants **du même
+type** lisibles a un chevron ; déplier charge ses enfants (100, puis « Charger la suite »). Pas de
+compteur d'enfants (il ne compterait que le lisible, mais n'aide en rien). La recherche dans le type
+rend la grille, jamais l'arbre. Les types de la barre sont ceux qui sont activés ; l'adresse d'un type
+désactivé ouvre quand même sa liste (on y arrive par une fiche), avec la ligne « Ce type est désactivé
+dans cet univers. » et sans bouton de création. Le choix du type à la création : les types activés.
+
+| État | Ce qu'on voit | Ce qu'on peut faire |
+|---|---|---|
+| vide | les textes de la grille ; nouveaux types : « Aucune créature », « Aucune race », « Aucun vaisseau », « Aucun monde », « Aucun récit », « Aucune règle », « Aucune note » + « pour l'instant. » / « à voir pour l'instant. » ; boutons « Nouvelle créature », « Nouvelle race », « Nouveau vaisseau », « Nouveau monde », « Nouveau récit », « Nouvelle règle », « Nouvelle note » | MJ : créer |
+| chargement | « Chargement des fiches… » ; un nœud qui se déplie : « Chargement… » sous lui | — |
+| erreur | « Impossible de charger les fiches. » ; un nœud : « Impossible de charger la suite. » | « Réessayer » |
+| connexion perdue | le bandeau ; « Nouveau … » désactivé | déplier ce qui est chargé |
+| refus | un type inconnu de la liste du produit : « Page introuvable. » | — |
+| contenu long | 201 lieux : 100 racines puis la suite ; 12 niveaux de profondeur : l'indentation plafonne à 6 niveaux, la profondeur se lit au chevron | idem |
+
+*Critère.* Étant donné « La Taverne du Kraken » sous « Port-Sel », lisibles de Léa, quand Léa passe
+« Lieux » en arbre et déplie « Port-Sel », alors elle voit « La Taverne du Kraken » dessous.
+
+### E-17 Recherche
+
+Adresse `/univers/:id/recherche?q=…&type=…&etiquette=…`. Un champ en tête (focus à l'ouverture,
+1 à 100 caractères), dessous deux rangées de filtres : les **types** (pastilles à icône, « Tous » par
+défaut ; les types désactivés regroupés sous « Autres types ») et les **étiquettes** (une liste à
+compléter, celles des fiches que le compte voit). Les résultats : la ligne de E-8 (vignette, icône du
+type, titre, badge) plus, si la fiche a été trouvée par un alias, « alias : Salport » ; ses étiquettes.
+**Ordre** : titre, alphabétique sans casse — pas de pertinence ni d'extrait (AD-63 tient : un extrait
+est du contenu à filtrer, un classement trahit ce qui est caché). 100 puis « Charger la suite ». Une
+étiquette seule, sans mot, liste les fiches qui la portent.
+
+| État | Ce qu'on voit | Ce qu'on peut faire |
+|---|---|---|
+| vide | sans saisie ni filtre : « Cherchez un nom, un alias ou un mot. » ; sans résultat : « Aucune fiche ne correspond. » | changer la saisie, retirer un filtre |
+| chargement | « Recherche… » sous le champ, les résultats d'avant restent grisés | — |
+| erreur | « La recherche n'a pas abouti. Réessayez. » ; plus de 100 caractères : « Erreur : 100 caractères au plus. » | « Réessayer » |
+| connexion perdue | le bandeau ; le champ reste, la recherche ne part pas | — |
+| refus | compte sans rôle : « Page introuvable. » ; une fiche illisible n'est jamais un résultat, une étiquette qui ne porte que des fiches illisibles n'est pas proposée | — |
+| contenu long | 501 résultats : 100 puis la suite ; titre long tronqué par « … » avec infobulle | idem |
+
+*Critères.*
+- Étant donné le mot « tenu » présent seulement dans le bloc MJ de « Port-Sel », quand Léa cherche
+  « tenu », alors « Port-Sel » n'est pas un résultat ; quand Antor cherche « tenu », il l'est.
+- Étant donné « Port-Sel » d'alias « Salport », quand Léa cherche « salport », alors « Port-Sel » est
+  un résultat, avec « alias : Salport ».
+- Étant donné l'étiquette « Côte des Brumes » posée sur « Port-Sel » et sur « La Guilde des Brumes »
+  (illisible de Léa), quand Léa filtre sur elle, alors seul « Port-Sel » est rendu.
+
+### E-18 Accès par API (MJ)
+
+*Maquette finie* : `docs/maquettes/e18-acces-api.html` (états `#etat-nouveau`, `#etat-jeton-montre`,
+`#etat-lot`, `#etat-vide`, `#etat-perdue`).
+
+Atteint par « Univers ▸ Accès par API » (`key-round`), MJ seul. Une introduction d'une ligne :
+« Un jeton permet à un script d'écrire dans cet univers avec vos droits, par l'API d'import. » et
+l'adresse de base à copier (`https://kanevas.berard.me/api/import/v1/univers/<id>`). Deux panneaux.
+
+1. **Jetons** — « Nouveau jeton » (`plus`). Une ligne par jeton, actifs d'abord puis révoqués et expirés
+   (les 20 derniers) : nom, « créé par antor le 11 oct. 2026 », « dernier usage il y a 3 min » ou
+   « jamais », « expire le 10 nov. 2026 » ou la pastille « Révoqué » / « Expiré » ; « Révoquer » au
+   survol (visible au toucher). *Nouveau jeton* : boîte « Nouveau jeton » — « Nom » (1 à 80 caractères,
+   obligatoire), « Durée » (bascule segmentée 7 jours, **30 jours**, 90 jours, 1 an), « Créer le
+   jeton » ; puis la même boîte montre le jeton dans un champ en chasse fixe, « Copier » (toast
+   « Jeton copié. »), et « Il ne sera plus jamais affiché. Rangez-le dans la configuration de votre
+   script. », « J'ai copié le jeton ». *Révoquer* : boîte « Révoquer « Script Kanka — Mac » ? Le script
+   qui l'utilise ne pourra plus rien écrire. », « Révoquer le jeton » (`--danger`) / « Annuler ».
+2. **Lots d'import** — les 20 derniers lots, du plus récent : date d'ouverture, jeton, état (« En
+   cours », « Clos », « Abandonné » — ouvert depuis plus de 24 h sans écriture), et les compteurs
+   « 498 créées · 0 mises à jour · 0 inchangées · 3 refusées · 1 avertissement ». Une ligne se déplie :
+   les refus et avertissements, chacun avec la clé d'origine, ce qui est en cause et la raison
+   (« section « Vérité » : 112 000 caractères, 100 000 au plus » ; « parent lieu:les-docks inconnu :
+   fiche écrite sans parent » ; « section « Notes » modifiée dans Kanevas depuis le dernier import : non
+   écrasée »), 200 au plus puis « … et 37 autres ».
+
+| État | Ce qu'on voit | Ce qu'on peut faire |
+|---|---|---|
+| vide | « Aucun jeton. Créez-en un pour qu'un script écrive dans cet univers. » ; « Aucun lot d'import pour l'instant. » | « Nouveau jeton » |
+| chargement | squelettes des deux panneaux | — |
+| erreur | « Impossible de charger cette page. » ; nom vide : « Erreur : le nom est obligatoire. » ; création ou révocation qui échoue : « L'action n'a pas abouti. Réessayez. », rien n'a changé (aucun jeton à moitié créé) | « Réessayer » |
+| connexion perdue | le bandeau ; « Nouveau jeton » et « Révoquer » désactivés ; si la boîte montre un jeton, il reste affiché jusqu'à « J'ai copié le jeton » | copier |
+| refus | Joueur, compte sans rôle, admin sans rôle : item absent, « Page introuvable. » ; rôle retiré pendant la page : « Vous ne pouvez plus gérer l'accès par API de cet univers. » à l'action suivante | « Mes univers » |
+| contenu long | nom de 80 caractères tronqué par « … » avec infobulle ; un lot de 501 refus : 200 puis « … et 301 autres » ; plus de 20 jetons : les 20 derniers, les actifs toujours tous | idem |
+
+*Critères.*
+- Étant donné Antor, MJ, quand il crée « Script Kanka — Mac » pour 30 jours, alors le jeton s'affiche
+  une fois ; après « J'ai copié le jeton », la ligne montre le nom, « jamais » et l'expiration, et la
+  valeur n'est plus nulle part à l'écran ni dans une réponse de l'API.
+- Étant donné ce jeton révoqué, quand le script appelle l'API d'import avec lui, alors il reçoit 401
+  et aucun lot n'apparaît.
+- Étant donné un lot clos avec 3 refus, quand Antor déplie la ligne, alors il lit les 3 clés d'origine
+  et leur raison.
+- Étant donné Léa, Joueuse, quand elle ouvre l'adresse de E-18, alors elle voit « Page introuvable. »
+  et l'item n'est pas dans sa barre.
+
+### E-14 et E-15 — « Types de fiche »
+
+*Maquette finie* : `docs/maquettes/e14-types-de-fiche.html` (le panneau de E-14, le panneau de E-15,
+états `#etat-sans-systeme`, `#etat-confirmer`, `#etat-joueur`, `#etat-supprimer-univers`).
+
+**E-15 (système)** : un quatrième onglet « Types de fiche » après Règles, Créatures, Objets. Une ligne
+par type de la liste du produit (sauf compte-rendu) : icône, nom, et un **interrupteur** « Activé ».
+Sous la liste : « Utilisé par N univers. Un univers peut forcer un type à activé ou désactivé dans ses
+paramètres. » Basculer enregistre aussitôt (toast « Vaisseau désactivé pour CoF Mini. ») ; tout univers
+qui suit le système le voit au chargement suivant. Joueur : la liste, interrupteurs en lecture seule
+(« Lecture seule »).
+
+**E-14 (univers)** : un quatrième panneau « Types de fiche », après « Créer un système ». Une ligne par
+type : icône, nom, le nombre de fiches de l'univers de ce type (« 201 fiches »), et une **bascule
+segmentée à trois choix** : « Système · activé » (ou « Système · désactivé » ; « Par défaut · activé »
+pour un univers sans système), « Activé », « Désactivé ». Un choix forcé porte un point d'accent à
+gauche du nom ; la ligne dit, si le forçage contredit le système, « Le système le désactive. ».
+Enregistré au changement. Désactiver (par forçage ou en suivant) un type qui a des fiches demande
+confirmation : « Désactiver « Lieu » dans Lame d'Ébène ? Les 201 lieux restent ; on les atteint par un
+lien, la recherche ou l'arbre. » Le panneau « Supprimer l'univers » ferme la page, séparé par un filet
+`--danger` : « Supprimer l'univers » ouvre une boîte « Supprimer « Lame d'Ébène » ? Tout son contenu —
+fiches, sections, pièces jointes, campagnes, cartes, jetons — sera effacé, pour tous ses membres. Le
+système de jeu reste. » ; un champ « Tapez le nom de l'univers pour confirmer » ; « Supprimer
+l'univers » (`--danger`) ne s'active que si le nom tapé est exact (casse comprise). Après : E-1, toast
+« Univers supprimé. ».
+
+| État | Ce qu'on voit | Ce qu'on peut faire |
+|---|---|---|
+| vide | sans objet : la liste du produit n'est jamais vide ; univers sans système : la colonne « Par défaut · activé » | forcer |
+| chargement | squelette du panneau ; les autres panneaux se chargent seuls | — |
+| erreur | un changement qui échoue : « L'action n'a pas abouti. Réessayez. » au-dessus du panneau, la bascule revient ; suppression qui échoue : le message dans la boîte, l'univers reste | « Réessayer » |
+| connexion perdue | le bandeau ; bascules, interrupteurs, « Supprimer l'univers » désactivés | lire |
+| refus | E-14 : Joueur — page introuvable (inchangé) ; E-15 : Joueur — lecture seule ; un MJ qui n'a plus de rôle : « Vous ne pouvez plus modifier ces paramètres. » | — |
+| contenu long | 14 types : la liste tient sans défiler au bureau, une colonne au téléphone (la bascule passe sous le nom) ; nom d'univers de 80 caractères dans la boîte : passe à la ligne | idem |
+
+*Critères.*
+- Étant donné « CoF Mini » qui désactive « Vaisseau » et « Lame d'Ébène » qui le force à « Activé »,
+  quand Antor ouvre « Lame d'Ébène », alors « Vaisseaux » est dans sa barre ; quand Mira ouvre « Les
+  Landes grises » (qui suit le système), il n'y est pas.
+- Étant donné « Lame d'Ébène » qui suit le système pour « Monde », quand le système réactive « Monde »,
+  alors « Mondes » apparaît dans la barre de « Lame d'Ébène » au chargement suivant.
+- Étant donné un univers dont le MJ désactive « Lieu », alors « Lieux » quitte la barre et la création,
+  et un lien vers un lieu ouvre toujours sa fiche.
+- Étant donné Antor qui tape « lame d'ébène » dans la boîte de suppression de « Lame d'Ébène », alors
+  « Supprimer l'univers » reste inactif ; avec le nom exact, l'univers est supprimé, et Léa qui en
+  ouvre une adresse voit « Page introuvable. ».
+
+### E-7, E-13, E-5
+
+- **E-7** et les entrées de **E-15** : l'éditeur et le rendu Markdown ci-dessus ; « Bloc MJ » n'y
+  paraît pas (un scénario est déjà au MJ seul ; une entrée de système n'a pas d'audience).
+- **E-13** : l'ordre est la date de création de la fiche, qui est sa **date d'origine** si l'import en
+  a donné une (B-50) ; la ligne montre cette date.
+- **E-5** (seulement si B-51 est retenu) : un panneau « Jeton de l'assistant » sous la liste des
+  univers — « Aucun jeton posé. » ou « Jeton posé le 11 octobre 2026. » (jamais la valeur) ;
+  « Connecter l'abonnement » montre l'adresse d'autorisation (« Ouvrir », « Copier ») et un champ
+  « Code » avec « Valider » ; la fenêtre expire au bout de 10 minutes (« La connexion a expiré.
+  Recommencez. ») ; un code refusé : « La connexion n'a pas abouti. Recommencez. », l'ancien jeton reste.
+  États et maquette : la tranche.
+
+### Clôture de `kanevas-import` (cadrage)
+
+- **Chaque besoin a un écran** : B-32 E-9, E-7, E-15 · B-33 E-9 · B-34 E-9 (et E-17, E-12 pour ce
+  qu'ils ne montrent pas) · B-35 E-9, E-8 · B-36 E-9 · B-37 E-17 · B-38 E-9, E-17 · B-39 E-9 · B-40 E-9 ·
+  B-41 E-14 · B-42 E-14, E-15, barre · B-43 E-9 · B-44 E-9 · B-45, B-46, B-49 E-18 · B-47, B-48 : **pas
+  d'écran, par décision** — le geste est le script, son résultat se lit sur E-18 (B-49) ; AD-53 tient :
+  l'écran d'un import est E-18 · B-50 E-9, E-13 · B-51 E-5 (`[À TRANCHER]`) — tient.
+- **Chaque écran est atteint par un parcours** : E-17 (P-12), E-18 (P-10, P-11), E-14 et E-15 (P-13,
+  P-10), E-9 (P-12, P-14), E-8 (P-12), E-5 (P-15) — tient.
+- **Chaque rôle a sa colonne** : MJ, Joueur, Admin d'instance pour E-17 et E-18 (matrice) ; le script
+  d'import n'est pas un rôle : il agit comme le MJ du jeton, sur l'API seule — tient.
