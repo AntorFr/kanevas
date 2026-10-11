@@ -2144,7 +2144,7 @@ En tête : le titre, « 1 140 fichiers » (ceux que le lecteur voit) et, pour un
 fichiers » (plusieurs à la fois, ou un glisser-déposer sur la page : voile « Déposez les fichiers pour
 les ajouter. »). Une bascule segmentée **Tout · Images · Documents** ; une rangée de filtres : la
 recherche par nom (« Chercher par nom ») ; pour un MJ, « Visibilité » (Toutes, Visibles des joueurs,
-Réservées au MJ) ; « Usage » (Tous, Utilisés, Non utilisés) ; l'ordre (Plus récents, Nom). Une
+Réservées au MJ) ; « Usage » (Tous, Utilisés, Non utilisés — calculé sur les usages que le lecteur peut lire : pour un joueur, « Non utilisés » veut dire « utilisé nulle part où il lit », jamais « utilisé dans une fiche fermée » ; D1) ; l'ordre (Plus récents, Nom). Une
 **grille** : une image en vignette (cadrage `cover`, chargement à l'approche) ; un **document** en
 tuile de même taille — l'icône de son type (`file-text` PDF, `file-spreadsheet` tableur, `file-archive`
 archive, `file` sinon), l'extension en pastille, la taille (« 2,4 Mo ») ; le nom dessous ; pour un MJ,
@@ -2155,9 +2155,7 @@ grand, ou pour un document sa grande icône, son type (« Document PDF », « Ta
 ZIP », « Document ODT » : la nature et l'extension) et « Télécharger » ; le nom (MJ : éditable en
 place, 1 à 200 caractères) ; la **visibilité** en bascule segmentée « Visible des joueurs » /
 « Réservé au MJ » (MJ ; un joueur ne voit pas ce réglage) ; type, taille, « ajouté par lea le 12 oct.
-2026 », la clé d'origine (MJ, si importé) ; **Utilisé dans** — les fiches que le lecteur voit, chacune
-avec l'endroit (« Illustration », « Histoire » (dans le texte), « Pièces jointes de Description ») et un
-lien — ; pour un MJ « Supprimer le fichier » (`--danger`). Aucun aperçu intégré d'un PDF (AD-66).
+2026 », la clé d'origine (MJ, si importé) ; **Utilisé dans** — les usages **que le lecteur peut lire** : pour chaque fiche qu'il voit, l'illustration (si la fiche lui est visible) et les seules sections qu'il lit, avec leur titre (« Histoire » (dans le texte), « Pièces jointes de Description ») et un lien ; pour un non-MJ (E-19 n'a pas de mode Joueur), jamais un usage dans une section qu'il ne lit pas ni dans un bloc MJ — un fichier dont aucun usage ne lui est lisible n'a pas de bloc « Utilisé dans » (D1) — ; pour un MJ « Supprimer le fichier » (`--danger`). Aucun aperçu intégré d'un PDF (AD-66).
 
 - *Réserver au MJ* un fichier lu des joueurs ailleurs : boîte « Réserver « plan-du-repaire.png » au
   MJ ? Les joueurs ne le verront plus dans : Les Docks — « Histoire » ; Port-Sel — « Description »
@@ -2202,6 +2200,9 @@ sur ce que le compte voit, sur « Images » quand on pose l'illustration ; chois
 - Étant donné un fichier visible des joueurs utilisé par « Port-Sel » (lisible de Léa) et par « Rapport
   secret de l'amirauté » (MJ seul), quand Léa ouvre le fichier, alors « Utilisé dans » ne nomme que
   « Port-Sel ».
+- Étant donné un fichier visible des joueurs joint à « Vérité — MJ seul » de « Maître Aldric » (fiche
+  que Léa voit par « Apparence ») et inséré dans un bloc MJ de « Port-Sel », quand Léa ouvre le fichier,
+  alors il n'a pas de bloc « Utilisé dans », et il paraît sous le filtre « Non utilisés ».
 - Étant donné la bascule sur « Documents », alors seuls les documents paraissent, chacun avec l'icône
   de son type, son nom et sa taille.
 
