@@ -70,9 +70,35 @@ export function creerJeton(
   if (!(DUREES_JETON as readonly unknown[]).includes(duree)) {
     throw invalide('Erreur : la durée est invalide.');
   }
-  const valeur = `kvs_${randomBytes(32).toString('base64url')}`;
+  return inserer(db, compteId, universId, nom, duree as number, `kvs_${randomBytes(32).toString('base64url')}`, maintenant);
+}
+
+/**
+ * Stub starting world only (AD-55): a token of a fixed, well-known value. Same insertion as
+ * `creerJeton`; the value is the one the tests and the recipe use.
+ */
+export function creerJetonDeValeur(
+  db: Db,
+  compteId: number,
+  universId: number,
+  entree: { nom: string; dureeJours: (typeof DUREES_JETON)[number]; valeur: string },
+  maintenant: Date = new Date(),
+): Jeton {
+  exigerMJ(db, universId, compteId);
+  return inserer(db, compteId, universId, entree.nom, entree.dureeJours, entree.valeur, maintenant).jeton;
+}
+
+function inserer(
+  db: Db,
+  compteId: number,
+  universId: number,
+  nom: string,
+  duree: number,
+  valeur: string,
+  maintenant: Date,
+): { jeton: Jeton; valeur: string } {
   const creeLe = maintenant.toISOString();
-  const expireLe = new Date(maintenant.getTime() + (duree as number) * JOUR_MS).toISOString();
+  const expireLe = new Date(maintenant.getTime() + duree * JOUR_MS).toISOString();
   const { lastInsertRowid } = db
     .prepare(
       `INSERT INTO jetons_api (univers_id, compte_id, nom, empreinte, cree_le, expire_le)

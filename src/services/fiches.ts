@@ -89,7 +89,13 @@ export function creerFiche(
   db: Db,
   compteId: number,
   universId: number,
-  entree: { type: string; titre: string; charge?: Record<string, unknown> },
+  entree: {
+    type: string;
+    titre: string;
+    charge?: Record<string, unknown>;
+    /** Import only (B-50, AD-107): the origin key and dates of the sheet, and what the import wrote. */
+    origine?: { cle: string; creeLe?: string; modifieLe?: string; dernierImport: unknown };
+  },
 ): Fiche {
   exigerMJ(db, universId, compteId);
   if (!(TYPES_FICHE as readonly string[]).includes(entree.type)) {
@@ -100,13 +106,71 @@ export function creerFiche(
   const charge = CHARGES[type].safeParse({ v: 1, ...entree.charge });
   if (!charge.success) throw invalide('Charge utile invalide pour ce type de fiche.');
   const now = new Date().toISOString();
+  const o = entree.origine;
+  const cree = o?.creeLe ?? now;
   const info = db
     .prepare(
-      `INSERT INTO fiches (univers_id, type, titre, charge, cree_le, modifie_le)
-       VALUES (?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO fiches (univers_id, type, titre, charge, cree_le, modifie_le, cle_origine, dernier_import)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
     )
-    .run(universId, type, titre, JSON.stringify(charge.data), now, now);
+    .run(
+      universId,
+      type,
+      titre,
+      JSON.stringify(charge.data),
+      cree,
+      o?.modifieLe ?? (cree > now ? cree : now),
+      o?.cle ?? null,
+      o ? JSON.stringify(o.dernierImport) : null,
+    );
   return versFiche(chargerFiche(db, universId, Number(info.lastInsertRowid)));
+}
+
+/** The GM renames a sheet (the screen to do it comes later; the import already needs it). */
+export function renommerFiche(
+  db: Db,
+  compteId: number,
+  universId: number,
+  ficheId: number,
+  titre: string,
+): Fiche {
+  exigerMJ(db, universId, compteId);
+  chargerFiche(db, universId, ficheId);
+  const t = validerTitre(titre, 120, 'Le titre');
+  db.prepare('UPDATE fiches SET titre = ?, modifie_le = ? WHERE id = ?').run(
+    t,
+    new Date().toISOString(),
+    ficheId,
+  );
+  return versFiche(chargerFiche(db, universId, ficheId));
+}
+
+/**
+ * The GM changes the type of a sheet among the six writable ones, with the payload of the new
+ * type (a character keeps or loses `pj`). A session report cannot be changed into or out of.
+ */
+export function changerTypeFiche(
+  db: Db,
+  compteId: number,
+  universId: number,
+  ficheId: number,
+  type: string,
+  charge?: Record<string, unknown>,
+): Fiche {
+  exigerMJ(db, universId, compteId);
+  const actuelle = chargerFiche(db, universId, ficheId);
+  if (!(TYPES_FICHE as readonly string[]).includes(type) || type === 'compte_rendu' || actuelle.type === 'compte_rendu') {
+    throw invalide('Type de fiche inconnu.');
+  }
+  const c = CHARGES[type as TypeFiche].safeParse({ v: 1, ...charge });
+  if (!c.success) throw invalide('Charge utile invalide pour ce type de fiche.');
+  db.prepare('UPDATE fiches SET type = ?, charge = ?, modifie_le = ? WHERE id = ?').run(
+    type,
+    JSON.stringify(c.data),
+    new Date().toISOString(),
+    ficheId,
+  );
+  return versFiche(chargerFiche(db, universId, ficheId));
 }
 
 /**
