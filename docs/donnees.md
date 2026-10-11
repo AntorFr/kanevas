@@ -63,7 +63,7 @@ Une table, `propositions` (migration `0008-propositions.sql`, AD-51) :
 | `demandeur_id` | → `comptes` | non nul ; le seul compte qui la lit, l'applique ou l'abandonne (AD-79) |
 | `section_id` | → `sections` | non nul ; suppression en cascade avec la section |
 | `cr_id` | → `fiches` | non nul ; la fiche de type `compte_rendu` d'où part la proposition ; cascade par précaution (aucune suppression de CR en V1) |
-| `contenu_propose` | texte | non nul, non vide, 20 000 caractères au plus (la limite d'une section ; 100 000 depuis `kanevas-import`, AD-106) |
+| `contenu_propose` | texte | non nul, non vide, 100 000 caractères au plus (la limite d'une section, AD-106 ; migration 0009) |
 | `version_origine` | entier | non nul ; la `version` que la section avait quand l'assistant l'a lue (AD-59, AD-80) |
 | `creee_le` | date | non nul |
 | `appliquee_le` | date | nul tant qu'elle est en attente |
