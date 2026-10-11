@@ -284,7 +284,7 @@ describe('kanevas-images : états du bloc « Image attachée » (B-29)', { skip:
   test('vignette_en_chargement_montre_le_cadre_gris_puis_l_image', async () => {
     // Fails if the loading frame is missing or the link/label are not there while the image loads.
     const m = await monde('Images chargement');
-    await m.antor.route('**/pieces-jointes/*/fichier', async (route: Any) => {
+    await m.antor.route('**/pieces-jointes/*/fichier*', async (route: Any) => {
       await new Promise((r) => setTimeout(r, 2500));
       await route.continue();
     });
