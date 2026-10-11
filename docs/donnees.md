@@ -396,7 +396,14 @@ Invariants, en phrases :
 
 ### Logique
 
-**`fiches`, recréée une fois** (la seule recréation de table du produit, AD-102) :
+**`fiches` : deux colonnes ajoutées d'abord, puis recréée une fois** (la seule recréation de table du
+produit, AD-102). Ordre du plan de l'epic : la tranche `kanevas-import-fil` ajoute `cle_origine` (avec
+son index unique) et `dernier_import` par `ALTER TABLE … ADD COLUMN`, sans recréation ; la tranche
+`kanevas-import-types` recrée la table — `CHECK` levé, `parent_id` et `sous_type` ajoutés, toutes les
+autres colonnes recopiées, `cle_origine`, `dernier_import` et les trois colonnes d'illustration d'AD-93
+comprises ; la tranche `kanevas-import-mediatheque` ajoute `illustration_fichier_id` par `ADD COLUMN`,
+y migre les illustrations, et laisse les trois colonnes d'AD-93 **inutilisées** — leur retrait est un
+resserrement d'une tranche suivante, hors de cette epic. Le tableau dit l'état final de l'epic :
 
 | Colonne | Changement | Contrainte (invariant) |
 |---|---|---|
@@ -406,11 +413,11 @@ Invariants, en phrases :
 | `sous_type` | nouvelle, texte 1 à 60 après rognage ; nulle : pas de sous-type (B-52, décision de Monsieur du 2026-10-11) | `CHECK (sous_type IS NULL OR length(trim(sous_type)) BETWEEN 1 AND 60)` ; propre au type : le service le vide quand le type change ; index `fiches (univers_id, type, sous_type)` — le filtre de E-8 et la complétion de E-9 (les sous-types distincts d'un type dans l'univers, sans tenir compte de la casse) |
 | `dernier_import` | nouvelle, JSON : les valeurs que le dernier import a écrites — titre, type (et PJ), sous-type, alias, étiquettes ; l'illustration (clé) ; pour le parent, la clé **demandée** et le parent **écrit** ; nulle : jamais écrite par un import | (12) écrit par le service à chaque écriture d'import ; un champ dont la valeur courante diffère de la valeur **écrite** a été modifié dans Kanevas ; un champ laissé par B-48 garde la valeur écrite d'avant (il reste « modifié ») ; tant que le parent écrit diffère du parent demandé (cible absente, cycle), la fiche est **parent en attente** : chaque rejeu retente de poser le parent demandé, et ce n'est jamais pris pour une modification humaine |
 | `cree_le`, `modifie_le` | inchangées ; `cree_le` peut venir de l'import (B-50) | — |
-| `illustration_fichier_id` | nouvelle, → `fichiers` **ON DELETE SET NULL** ; nulle : pas d'illustration | remplace les trois colonnes d'illustration d'AD-93 (`illustration_fichier`, `_type`, `_taille`), **non recopiées** : la recréation migre chaque illustration existante en un fichier de la médiathèque (`joueurs`) et pose cette référence (AD-111) ; même univers que la fiche, et un fichier image : service |
+| `illustration_fichier_id` | nouvelle (ajoutée par la tranche de la médiathèque, `ADD COLUMN`), → `fichiers` **ON DELETE SET NULL** ; nulle : pas d'illustration | remplace les trois colonnes d'illustration d'AD-93 (`illustration_fichier`, `_type`, `_taille`), qui restent **inutilisées** jusqu'à leur retrait (resserrement hors epic) : la migration de cette tranche fait de chaque illustration existante un fichier de la médiathèque (`joueurs`) et pose cette référence (AD-111) ; même univers que la fiche, et un fichier image : service |
 | `id` | `AUTOINCREMENT` gardé | (3) — vérifié dans `0001-premiere-fiche.sql` : SQLite ne réemploie pas un identifiant `AUTOINCREMENT` |
 
-Les autres colonnes et index (illustration, AD-93) sont recopiés tels quels ; les déclencheurs de
-`recherche_fiches` sont recréés.
+Les autres colonnes et index (illustration, AD-93, et les colonnes ajoutées par le fil) sont recopiés
+tels quels ; les déclencheurs de `recherche_fiches` sont recréés.
 
 **Tables nouvelles :**
 
@@ -479,8 +486,12 @@ pend d'une ligne qui le porte, et toute requête filtre dessus. Un système de j
 
 ### Plan de migration
 
+0. **Élargir** (la tranche du fil) : `ALTER TABLE fiches ADD COLUMN cle_origine`, son index unique
+   `(univers_id, cle_origine)`, et `ADD COLUMN dernier_import` ; les colonnes ajoutées à `sections`
+   (`contenu_public` vient avec le bloc MJ, `cle_origine`, `version_importee`, `dernier_import` avec le
+   fil).
 1. **Élargir** (une migration, la tranche des types) : recréer `fiches` sans `CHECK` sur le type, avec
-   `parent_id` et `cle_origine` — procédure SQLite de recréation (nouvelle table, copie, suppression,
+   `parent_id` et `sous_type`, en recopiant `cle_origine` et `dernier_import` — procédure SQLite de recréation (nouvelle table, copie, suppression,
    renommage, index et déclencheurs recréés, `PRAGMA foreign_key_check` vide). **Fait porteur** :
    l'exécuteur de migrations ouvre une transaction par fichier avec `foreign_keys` actif
    (`src/db/db.ts:18` et `:50`), et SQLite ignore `PRAGMA foreign_keys` dans une transaction ; supprimer

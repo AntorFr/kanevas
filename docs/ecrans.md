@@ -1641,6 +1641,21 @@ du moteur d'images, AD-55 ; elles vivent dans la couche du bouchon, enregistrée
 | personnages de Lame d'Ébène | « Maître Aldric » (PNJ ; « Apparence » lue des joueurs, « Vérité — MJ seul » fermée ; **sans** illustration au départ, pour le critère d'ajout) ; « Bran Corvalis » (PNJ, « Apparence » lue, sans illustration) ; « Le Prieur masqué » (PNJ, une seule section « Secret — MJ seul » : **invisible de Léa** ; **avec** illustration) ; « Léa Brisefer » (PJ, avec illustration) ; « Dame Ombeline de Val-Fortin » (PNJ, avec illustration) ; « Suie » (PNJ, avec illustration) |
 | lieux et factions de Lame d'Ébène | « Val-Fortin » et « Le Pendu Joyeux » (avec illustration), « Rue des Cordiers » (sans) ; « Lames Grises » (avec), « Cercle des Cendres » (section MJ seul, avec illustration : invisible de Léa) |
 
+**Semis de `kanevas-import`** (ajouté au même semis, par les fonctions de service, chaque morceau par
+la tranche qui le cite la première ; plan de l'epic) :
+
+| Objet | Contenu | Semé par |
+|---|---|---|
+| « Port-Sel » (lieu de Lame d'Ébène) | « Description » lue des joueurs (Markdown : intertitre, liste, tableau des quartiers), « Histoire » lue des joueurs avec un bloc MJ « Le port est tenu en sous-main par la Guilde des Brumes… », « Vérité » MJ seul | `kanevas-import-secrets` |
+| « La Guilde des Brumes » (faction, MJ seul) ; « Rapport secret de l'amirauté » (événement, MJ seul) | la Guilde invisible de Léa ; le rapport porte, dans un bloc MJ, un lien vers « Maître Aldric » ; « Histoire » de Port-Sel lie « Maître Aldric » et « La Guilde des Brumes » ; « Apparence » de « Maître Aldric » lie « Port-Sel » | `kanevas-import-liens` |
+| « Les Sphères » (lieu, MJ seul) ; « La Taverne du Kraken », « Les Docks », « Le Phare aux Sels », « Quartier des Cordiers » (lieux lus des joueurs) | Port-Sel sous Les Sphères ; les quatre sous Port-Sel | `kanevas-import-arbre` |
+| sous-types des lieux existants | « Val-Fortin » · Ville, « Le Pendu Joyeux » · Taverne, « Rue des Cordiers » · Rue | `kanevas-import-types` |
+| alias, étiquettes, un savoir | Port-Sel : alias « Salport », « Port-aux-Sels », étiquette « Côte des Brumes » (aussi sur « Cercle des Cendres », invisible de Léa) ; « Chronique de l'Âge d'Ombre » (savoir, lu des joueurs) | `kanevas-import-recherche` |
+| fichiers de la médiathèque | « Plan secret de la Guilde » (image, réservée au MJ, non utilisée) ; « Carte des Sphères » (image, visible des joueurs) : illustration de Port-Sel, insérée dans « Description » de « Val-Fortin », jointe à « Apparence » de « Maître Aldric » ; « port-sel-quais.webp » joint à « Description » de Port-Sel ; « Notes de la table », section de « Léa Brisefer » dont Léa est l'auteur (lit, écrit), fermée aux autres joueurs | `kanevas-import-mediatheque` |
+
+Teo reste membre d'aucun univers dans le semis : un critère qui a besoin de lui l'ajoute d'abord en
+Joueur de « Lame d'Ébène » (E-4).
+
 ### Clôture de `kanevas-illustrations`
 
 B-30 → la grille de E-8 (vignette, repli) et l'en-tête de E-9 (voir, poser, remplacer, retirer). Atteint par P-3 (le MJ prépare son lore : il pose l'illustration sur E-9 et la
@@ -2201,7 +2216,8 @@ sur ce que le compte voit, sur « Images » quand on pose l'illustration ; chois
 - Étant donné Antor qui, en modifiant une section lue des joueurs, choisit dans la médiathèque un
   fichier réservé au MJ, alors l'éditeur affiche l'avertissement de B-55 ; dans une section MJ seul,
   non.
-- Étant donné Léa, auteur avec écriture de « Notes de la table » (que les autres joueurs ne lisent pas),
+- Étant donné Teo ajouté en Joueur de « Lame d'Ébène » par Antor, et Léa, auteur avec écriture de
+  « Notes de la table » (que les autres joueurs ne lisent pas),
   quand elle ajoute « carnet.pdf » depuis son appareil, alors le document est joint à la section **et**
   figure dans la médiathèque, « Réservé au MJ », « ajouté par lea » ; Léa le voit dans la section et
   dans sa médiathèque, Teo ne le voit nulle part.
