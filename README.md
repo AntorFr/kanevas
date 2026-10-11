@@ -171,7 +171,6 @@ manifeste `clusters/tantive/games/kanevas-helm-config.yml` et client OIDC
 fusionner `k8s-home-lab`, dont la fusion déploie.
 
 Pour la carte du code, les invariants et les options écartées, voir `ARCHITECTURE.md`, dont le
-tableau liste les décisions `AD-n` retenues pour l'epic, construites ou non (« La cible » dit ce qui est construit), avec leur numéro stable ; les numéros absents sont des décisions retirées ou d'autres tranches, aucune n'est cachée ici. Des
-commentaires du code citent encore `plan.md`, `technique.md` ou `socle-projet` : ce sont des
-documents de conception (« Monsieur » est le commanditaire qui fait la recette, « tranche » une feature livrée, « phase merge » la fusion qui suit la recette) tenus hors de ce dépôt (magasin de pilotage de la chaîne SDLC), dont ce
-qui doit survivre est dans `ARCHITECTURE.md` et `docs/`.
+tableau liste les décisions `AD-n` retenues pour l'epic, construites ou non (« La cible » dit ce qui est construit), avec leur numéro stable ; les numéros absents sont des décisions retirées ou d'autres tranches, aucune n'est cachée ici. Les
+documents de conception sont tenus hors de ce dépôt (magasin de pilotage de la chaîne SDLC) ; ce
+qui doit survivre est dans `ARCHITECTURE.md` et `docs/`. « Monsieur » est le commanditaire qui fait la recette, « tranche » une feature livrée, « phase merge » la fusion qui suit la recette.

@@ -1112,8 +1112,8 @@ portrait de son personnage). Le bloc livre ses six états (B-29), ci-dessus.
 La refonte ne change ni les droits, ni les données, ni les textes d'un écran : elle change la
 forme, et les gestes ci-dessous, que le testeur vérifie. La direction, les tokens et les
 composants sont dans `docs/charte.md`. E-1, E-3, E-6, E-8 et E-9 ont leur maquette finie ; E-2,
-E-4, E-7, E-13, E-14 et E-15 se refont dans le même cadre et avec les mêmes composants, sans
-maquette propre : leurs maquettes actuelles, faites avant la charte, valent pour le contenu et
+E-4, E-7, E-13 et E-14 se refont dans le même cadre et avec les mêmes composants, sans
+maquette propre (celle de E-15, `e15-systeme-de-jeu.html`, est finie hors du cadre d'un univers) : leurs maquettes actuelles, faites avant la charte, valent pour le contenu et
 le vocabulaire, pas pour la forme (barre, compte, couleurs).
 
 **Partout.** Le cadre de E-9 sur tous les écrans d'un univers ; chaque entrée de navigation et
