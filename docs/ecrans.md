@@ -2158,6 +2158,90 @@ d'autre fichier. » au joueur) ; les références dans le texte ne comptent pas.
 - Étant donné un contenu qui contient `<script>alert(1)</script>` et `<b>gras</b>`, quand la section
   s'affiche, alors ces balises s'affichent comme du texte, et aucun script ne s'exécute.
 
+### Le bloc MJ — ce que `kanevas-import-secrets` construit (E-9, E-12, import)
+
+Cette tranche livre le bloc `:::mj` (B-34, AD-98, AD-114) sur le rendu et l'éditeur que
+`kanevas-import-markdown` pose. Elle ne livre ni lien `[[…]]` dans un bloc (`kanevas-import-liens`),
+ni fichier dans un bloc (`kanevas-import-mediatheque`), ni la recherche tous types
+(`kanevas-import-recherche`) ; la recherche **d'un type** (E-8) et celle de l'assistant (`chercher`) lui
+sont fermées dès maintenant. Maquette : `e09-fiche-importee.html` (« Port-Sel », « Histoire » : le bloc
+`.bloc-mj`, le bouton `.outil-mj` de la barre, l'état `#etat-joueur`) ; aucun écran nouveau.
+
+- **Parcours** : lire, P-12 étapes 3 et 6 ; écrire, P-14 étape 1 (« Bloc MJ ») ; vérifier en mode Joueur,
+  P-10 étape 6 ; importer un contenu qui porte `:::mj`, P-10 étape 4.
+- **La syntaxe** : une ligne `:::mj`, des lignes de texte, une ligne `:::`. Le MJ la tape ou la pose par
+  le bouton. Tout ce que le bloc couvre est secret, **quelle que soit la forme** : paragraphes, liste,
+  tableau, citation. Un bloc ne s'ouvre pas dans un bloc de code (` ``` `) : là, `:::mj` reste du texte, et
+  n'est donc pas un secret. Un bloc **jamais fermé** couvre le texte jusqu'à la fin de la section
+  (le doute joue contre l'affichage, jamais contre le secret). Un bloc dans un bloc : le plus extérieur
+  gouverne, tout ce qu'il couvre est retiré. `:::MJ` (autre casse) et `::: mj` suivi de mots ne sont pas
+  des blocs : du texte, visible de tous — une règle de plus que le MJ n'a pas à apprendre.
+- **Le bouton « Bloc MJ »** (MJ seulement, `lock`, sa place est à droite de « Lien vers une fiche » et
+  « Fichier » dans la barre de l'éditeur) : avec une sélection, il l'entoure d'une ligne `:::mj` avant et d'une
+  ligne `:::` après (en ajoutant les sauts de ligne qui manquent, pour que les deux lignes soient seules) ;
+  sans sélection, il pose les deux lignes à la suite l'une de l'autre, une ligne vide entre, le curseur sur
+  la ligne vide. Il n'a pas de raccourci clavier. Il ne retire pas un bloc : on efface ses deux lignes.
+  Un joueur qui écrit la section, ou le MJ en mode Joueur, ne le voit pas.
+- **Aperçu** (« Écrire / Aperçu ») : pour le MJ, le bloc paraît comme à la lecture, hachuré ; pour qui n'est
+  pas MJ, ou hors d'un univers, il n'existe pas (l'aperçu applique la même vue que la lecture, AD-114).
+- **Lecture** : pour un MJ hors mode Joueur, le bloc prend la matière de la section « MJ seul » (trame
+  hachurée d'ambre, filet, pastille « MJ seul » `lock`, libellé accessible « Bloc MJ seul »), à sa place dans le
+  texte. Pour tout autre lecteur et pour le MJ en mode Joueur, le bloc n'existe pas : ni blanc, ni filet, ni
+  pastille, le paragraphe suivant suit le précédent ; la réponse de lecture ne contient pas un mot du bloc.
+  Une section dont tout le texte est dans un bloc se lit, pour un non-MJ, « Rien d'écrit pour l'instant. ».
+- **Écrire une section qui contient un bloc** : le MJ seul (AD-98). Pour un joueur qui l'écrit par
+  son audience, ou pour le MJ en mode Joueur qui imite un tel joueur, « Modifier » n'apparaît pas ; s'il y
+  parvient par une autre voie (l'API de session, `modifier_section`, `ajouter_a_section`), le serveur répond 403,
+  « Vous ne pouvez pas modifier cette section. », et rien n'est écrit. Un joueur qui écrit un contenu qui
+  **contient** un bloc (il a tapé `:::mj` dans une section qui n'en avait pas) reçoit 400, « Un bloc MJ ne peut être
+  écrit que par un MJ. », sous le champ, texte conservé ; il en va de même du texte d'un compte-rendu qu'il crée (E-6),
+  dont la fenêtre montre ce message sous le champ comme ses autres refus. Le MJ en mode Joueur n'est pas concerné : le
+  mode ne restreint que des lectures (AD-39) ; il écrit comme MJ.
+- **L'assistant** (E-12) : `lire_fiche` et `lire_section` rendent, pour un compte joueur, le Markdown
+  **public** (sans bloc) ; pour un compte MJ, la source entière — son catalogue reste celui du MJ même
+  quand il est en mode Joueur à l'écran (AD-74). `modifier_section` et `ajouter_a_section` d'un joueur sont refusés
+  sur une section à bloc (« Vous ne pouvez pas modifier cette section. », sans événement) et sur un contenu qui
+  contient un bloc (« Un bloc MJ ne peut être écrit que par un MJ. »). `modifiable` vaut faux pour une telle
+  section. Un MJ qui écrit une section par l'assistant peut y poser un bloc.
+- **La recherche** (E-8, `chercher`) : un non-MJ, ou un MJ en mode Joueur, ne cherche que dans les titres
+  et le texte **public** des sections ; un mot qui n'est que dans un bloc ne fait pas trouver la fiche. Un
+  MJ hors mode Joueur cherche dans tout le texte.
+- **L'import** : `PUT /fiches/:cle` accepte `:::mj` dans le `contenu` d'une section ; le contenu public
+  est calculé comme pour une écriture d'écran, dans la même transaction. Le jeton est celui d'un MJ : la règle
+  « seul un MJ écrit un bloc » ne le gêne pas. Un contenu rejoué à l'identique reste `inchangee`.
+- **États** : ceux de E-9 (chargement, vide, erreur, connexion perdue, refus, contenu long). Le refus d'une
+  écriture est le message ci-dessus, sous le champ, texte conservé ; la section d'un joueur qui contient un bloc
+  est lisible sans « Modifier » (**caché**, pas grisé).
+- **Rôles** :
+
+  | | MJ | Joueur qui lit | Joueur qui écrit la section | MJ en mode Joueur |
+  |---|---|---|---|---|
+  | Voit le bloc | oui, hachuré | non, rien | non, rien | non, rien |
+  | « Bloc MJ » dans la barre | oui | sans objet (pas d'édition) | **caché** | **caché** |
+  | Écrit une section à bloc | oui | non | non (« Modifier » **caché**, 403) | oui (le mode ne limite que les lectures) |
+  | Écrit un contenu qui contient un bloc | oui | non | non (400) | oui |
+  | Trouve une fiche par un mot du bloc | oui | non | non | non |
+  | L'assistant lui rend le bloc | oui | non | non | oui (catalogue du MJ) |
+
+*Critères.*
+- Étant donné « Port-Sel » dont « Histoire » (lue des joueurs) contient un bloc MJ de trois paragraphes, quand
+  Léa la lit, alors le premier et le dernier paragraphe du texte se suivent sans blanc supplémentaire, et la
+  réponse du serveur ne contient aucun mot du bloc.
+- Étant donné un bloc dans une liste à puces, un bloc dans une citation et un bloc jamais fermé en fin de
+  texte, quand Léa lit, alors rien de ce qu'ils couvrent ne paraît.
+- Étant donné `:::mj` écrit dans un bloc de code, quand Léa lit, alors il se lit comme du texte.
+- Étant donné Léa qui écrit une section qu'elle peut écrire et qui tape `:::mj … :::` dans son texte, quand
+  elle enregistre, alors elle lit « Un bloc MJ ne peut être écrit que par un MJ. » et son texte est conservé.
+- Étant donné la même Léa et une section où Antor a posé un bloc, quand elle envoie une écriture à
+  l'API, alors la réponse est 403 et la section est inchangée ; l'assistant de Léa, qui tente
+  `modifier_section`, reçoit « Vous ne pouvez pas modifier cette section. » et aucun événement n'est émis.
+- Étant donné un mot qui n'est que dans un bloc de « Port-Sel », quand Léa le cherche dans « Lieux », alors
+  « Port-Sel » n'est pas rendue ; Antor la trouve ; Antor en mode Joueur ne la trouve pas.
+- Étant donné Antor sur « Histoire » en édition, quand il sélectionne un paragraphe et touche « Bloc MJ »,
+  alors le paragraphe est entre `:::mj` et `:::` ; « Aperçu » le montre hachuré ; Léa ne voit rien après « Enregistrer ».
+- Étant donné un import de `contenu` à bloc MJ, rejoué à l'identique, alors la réponse dit `inchangee`
+  la seconde fois et Léa ne lit rien du bloc.
+
 ### E-19 Médiathèque
 
 *Maquette finie* : `docs/maquettes/e19-mediatheque.html` (états `#etat-joueur`, `#etat-image`,

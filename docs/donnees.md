@@ -439,7 +439,7 @@ tels quels ; les déclencheurs de `recherche_fiches` sont recréés.
 
 | Table | Colonnes | Contrainte |
 |---|---|---|
-| `sections` | `contenu_public` (texte ; le contenu sans blocs MJ), `cle_origine` (nulle : née dans Kanevas), `version_importee` (entier ; nul : jamais écrite par un import), `dernier_import` (JSON : titre, audience et ensemble des fichiers joints (clés) écrits par le dernier import ; nul : jamais) | (12) le contenu est modifié dans Kanevas si `version` ≠ `version_importee`, le titre ou l'audience si la valeur courante ≠ `dernier_import` ; (8) écrit par le service dans la même transaction que `contenu` (AD-98) — une fonction Markdown ne s'écrit pas en SQL ; index unique `(fiche_id, cle_origine)` (2) |
+| `sections` | `contenu_public` (texte `NOT NULL DEFAULT ''` ; le contenu sans blocs MJ ; « la section contient un bloc » est `contenu_public ≠ contenu`, AD-114 ; vide par défaut : un site d'écriture oublié montre une section vide, il ne fuit pas), `cle_origine` (nulle : née dans Kanevas), `version_importee` (entier ; nul : jamais écrite par un import), `dernier_import` (JSON : titre, audience et ensemble des fichiers joints (clés) écrits par le dernier import ; nul : jamais) | (12) le contenu est modifié dans Kanevas si `version` ≠ `version_importee`, le titre ou l'audience si la valeur courante ≠ `dernier_import` ; (8) écrit par le service dans la même transaction que `contenu` (AD-98) — une fonction Markdown ne s'écrit pas en SQL ; index unique `(fiche_id, cle_origine)` (2) |
 | `pieces_jointes` | aucune : la table **n'est plus écrite ni lue** depuis AD-111 ; la migration transforme chaque ligne en un fichier de la médiathèque (`mj` si `secrete`, `joueurs` sinon ; même nom sur disque, sans copie) joint à sa section, puis vide la table ; sa suppression part dans une tranche suivante (resserrer, une fois l'image d'avant hors service) |
 | `campagnes` | `cle_origine`, `dernier_import` (JSON : nom et statut écrits par le dernier import ; nul : jamais) | index unique `(univers_id, cle_origine)` (2) ; (12) même règle, champ par champ |
 | `scenarios` | `cle_origine`, `dernier_import` (JSON : titre écrit ; nul : jamais), `version_importee` (la `version` laissée par le dernier import) | index unique `(campagne_id, cle_origine)` (2) ; (12) le contenu est modifié dans Kanevas si `version` ≠ `version_importee`, le titre si la valeur courante ≠ `dernier_import` |
@@ -500,7 +500,7 @@ pend d'une ligne qui le porte, et toute requête filtre dessus. Un système de j
    vérifier `foreign_key_check` avant de valider. Comptage des lignes avant et après, sur une copie de
    la base de production (`/mnt/data/kanevas/data/kanevas.db`).
 2. **Élargir** (une migration par tranche qui en a besoin) : les tables nouvelles et les colonnes
-   ajoutées, toutes nullables ou avec défaut ; aucune donnée reprise, sauf `contenu_public = contenu`
+   ajoutées, toutes nullables ou avec défaut ; aucune donnée reprise, sauf `contenu_public = contenu` (`UPDATE` de la migration de la tranche du bloc MJ, avant la recréation de l'index, dont le numéro se prend à la fusion, AD-51)
    pour les sections existantes (aucun bloc MJ n'existait : la syntaxe `:::mj` est nouvelle) et le
    remplissage des index de recherche recréés.
 3. **Migrer** : sans objet — aucun ancien lecteur ne survit (frontend et backend partent dans la même
