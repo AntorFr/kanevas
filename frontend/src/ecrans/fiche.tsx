@@ -30,7 +30,7 @@ function PageFiche() {
   const perdue = useConnexionPerdue();
   const { toast } = useToasts();
   const [univers] = useCharge<UniversListe>(`/api/univers/${id}`);
-  const [etat, setEtat] = useState<Etat>({ k: 'chargement' });
+  const [etatLu, setEtatLu] = useState<{ cle: string; etat: Etat }>({ cle: '', etat: { k: 'chargement' } });
   const [essai, setEssai] = useState(0);
   const [joueurs, setJoueurs] = useState<Joueur[]>([]);
   const [echec, setEchec] = useState<string>();
@@ -49,12 +49,17 @@ function PageFiche() {
 
   const role: Role | undefined = univers.etat === 'ok' ? (roleRetire ? 'joueur' : univers.valeur.role) : undefined;
   // The GM / player toggle lives in the frame's top bar; it is offered unless the sheet does not exist.
-  const mode = useBasculeMode(role === 'mj' && etat.k !== 'introuvable');
-  const ficheVue = etat.k === 'ok' || etat.k === 'aucune-visible' ? etat.fiche : undefined;
-  useTitreAriane(ficheVue?.titre, ficheVue && typeParType(ficheVue.type)?.pluriel);
+  const mode = useBasculeMode(role === 'mj' && etatLu.etat.k !== 'introuvable');
   const modeEffectif: 'mj' | 'joueur' = role === 'mj' ? mode : 'joueur';
   const suffixe = role === 'mj' && mode === 'joueur' ? '?mode=joueur' : '';
   const base = `/api/univers/${id}/fiches/${fid}`;
+  // A sheet read for another mode (or another sheet) is never shown: on the render where the mode flips,
+  // before the effect reloads, the GM view with its closed sections must not flash under the player banner.
+  const cle = `${base}${suffixe}`;
+  const etat: Etat = etatLu.cle === cle ? etatLu.etat : { k: 'chargement' };
+  const setEtat = useCallback((e: Etat) => setEtatLu({ cle, etat: e }), [cle]);
+  const ficheVue = etat.k === 'ok' || etat.k === 'aucune-visible' ? etat.fiche : undefined;
+  useTitreAriane(ficheVue?.titre, ficheVue && typeParType(ficheVue.type)?.pluriel);
 
   const charger = useCallback(async (): Promise<Etat> => {
     try {
