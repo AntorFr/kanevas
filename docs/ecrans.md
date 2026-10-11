@@ -1988,7 +1988,10 @@ mêmes droits (le lecteur d'un scénario est un MJ de cet univers) ; ils ne comp
 « Mentionnée dans » (un scénario n'est pas une fiche) ; pas d'image ni de bloc MJ (un scénario n'a pas
 de pièce jointe et est déjà au MJ seul). Dans une **entrée de système** (E-15), partagée entre les
 univers rattachés : **pas de lien `[[…]]`** — `[[…]]` y reste du texte, tel qu'écrit, et l'éditeur n'a
-ni « Lien vers une fiche » ni la liste ouverte par `[[` ; pas d'image ni de bloc MJ non plus.
+ni « Lien vers une fiche » ni la liste ouverte par `[[` ; pas d'image ni de bloc MJ non plus. Dans
+un scénario comme dans une entrée de système, `![…](piece:…)` et `:::mj` **ne sont pas interprétés** :
+ils restent du texte, affiché tel qu'écrit (même règle que `[[…]]` dans une entrée de système) ; l'API
+d'import ne les refuse pas.
 
 **L'éditeur** (édition en place, charte « L'édition en place ») : le champ de texte garde la police
 de lecture ; au-dessus, une barre d'outils discrète — « Gras », « Italique », « Lien vers une fiche »,

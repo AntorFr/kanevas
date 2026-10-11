@@ -379,7 +379,9 @@ Invariants, en phrases :
     les liens qui la visent deviennent cassés.
 11. Supprimer un univers ne laisse aucune ligne qui le vise (le système de jeu n'est pas à lui).
 12. Un import n'écrase jamais un champ qu'un humain a modifié dans Kanevas depuis le dernier import :
-    la fiche et la section savent ce que le dernier import a écrit (B-48).
+    la fiche, la section, la campagne et le scénario savent ce que le dernier import a écrit (B-48).
+    Un champ que l'import n'a pas pu écrire (parent absent ou qui ferait un cycle) est **en attente**,
+    jamais une modification humaine.
 
 ### Logique
 
@@ -390,7 +392,7 @@ Invariants, en phrases :
 | `type` | le `CHECK` des sept valeurs est **levé** | validé par le service contre la liste du code (5) — la base ne peut plus le garantir : c'est le prix d'un type sans migration, choisi par Monsieur |
 | `parent_id` | nouvelle, → `fiches`, **ON DELETE SET NULL** ; nul : la fiche est à la racine | (1) même univers et pas de cycle : **service** (la règle traverse la table ; un déclencheur récursif est rejeté, AD-99) ; `CHECK (parent_id <> id)` |
 | `cle_origine` | nouvelle, texte 1 à 200 ; nulle : fiche née dans Kanevas | (2) index unique `(univers_id, cle_origine)` (plusieurs `NULL` permis) |
-| `dernier_import` | nouvelle, JSON : les valeurs que le dernier import a écrites — titre, type (et PJ), parent (clé), alias, étiquettes ; nulle : jamais écrite par un import | (12) écrit par le service à chaque écriture d'import ; un champ dont la valeur courante diffère de celle-ci a été modifié dans Kanevas |
+| `dernier_import` | nouvelle, JSON : les valeurs que le dernier import a écrites — titre, type (et PJ), alias, étiquettes ; pour le parent, la clé **demandée** et le parent **écrit** ; nulle : jamais écrite par un import | (12) écrit par le service à chaque écriture d'import ; un champ dont la valeur courante diffère de la valeur **écrite** a été modifié dans Kanevas ; un champ laissé par B-48 garde la valeur écrite d'avant (il reste « modifié ») ; tant que le parent écrit diffère du parent demandé (cible absente, cycle), la fiche est **parent en attente** : chaque rejeu retente de poser le parent demandé, et ce n'est jamais pris pour une modification humaine |
 | `cree_le`, `modifie_le` | inchangées ; `cree_le` peut venir de l'import (B-50) | — |
 | `illustration_empreinte` | nouvelle, SHA-256 de l'illustration ; nulle avec elle | ensemble avec les trois colonnes d'illustration (`CHECK` étendu) ; sert à ne pas renvoyer une illustration inchangée (AD-104) |
 | `id` | `AUTOINCREMENT` gardé | (3) — vérifié dans `0001-premiere-fiche.sql` : SQLite ne réemploie pas un identifiant `AUTOINCREMENT` |
@@ -418,8 +420,9 @@ Les autres colonnes et index (illustration, AD-93) sont recopiés tels quels ; l
 |---|---|---|
 | `sections` | `contenu_public` (texte ; le contenu sans blocs MJ), `cle_origine` (nulle : née dans Kanevas), `version_importee` (entier ; nul : jamais écrite par un import), `dernier_import` (JSON : titre et audience écrits par le dernier import ; nul : jamais) | (12) le contenu est modifié dans Kanevas si `version` ≠ `version_importee`, le titre ou l'audience si la valeur courante ≠ `dernier_import` ; (8) écrit par le service dans la même transaction que `contenu` (AD-98) — une fonction Markdown ne s'écrit pas en SQL ; index unique `(fiche_id, cle_origine)` (2) |
 | `pieces_jointes` | `cle_origine`, `empreinte` (SHA-256 des octets, pour ne pas renvoyer une image inchangée) | index unique `(section_id, cle_origine)` (2) |
-| `campagnes`, `cartes` | `cle_origine` | index unique `(univers_id, cle_origine)` (2) |
-| `scenarios` | `cle_origine` | index unique `(campagne_id, cle_origine)` (2) |
+| `campagnes` | `cle_origine`, `dernier_import` (JSON : nom et statut écrits par le dernier import ; nul : jamais) | index unique `(univers_id, cle_origine)` (2) ; (12) même règle, champ par champ |
+| `cartes` | `cle_origine` | index unique `(univers_id, cle_origine)` (2) |
+| `scenarios` | `cle_origine`, `dernier_import` (JSON : titre écrit ; nul : jamais), `version_importee` (la `version` laissée par le dernier import) | index unique `(campagne_id, cle_origine)` (2) ; (12) le contenu est modifié dans Kanevas si `version` ≠ `version_importee`, le titre si la valeur courante ≠ `dernier_import` |
 
 **Ce que la base ne dit pas, et que le service porte**, avec sa raison : même univers pour parent,
 étiquette, cible de lien et de relation (la règle croise deux tables) ; pas de cycle (récursif) ; le
