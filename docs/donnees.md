@@ -19,7 +19,7 @@ façon (AD-2).
 | **membre** | (univers, compte, rôle MJ \| Joueur) | univers, compte | les membres de l'univers ; l'admin d'instance | MJ de l'univers ; admin d'instance (cette table seulement, AD-9) ; au moins un MJ par univers (B-5) |
 | **système de jeu** | nom | ← univers ; → gabarits | tout MJ d'un univers (nom seul) ; le contenu : membres d'un univers rattaché | création : tout MJ ; référentiel : MJ d'un univers rattaché |
 | **gabarit** | type (règle, créature, objet), nom, contenu | système de jeu | membres d'un univers rattaché | MJ d'un univers rattaché (B-14) |
-| **fiche** | type (la liste du produit, AD-102 : personnage, lieu, faction, objet, événement, quête, compte-rendu, et depuis `kanevas-import` créature, race, vaisseau, savoir, récit, règle, note), **sous-type** libre (B-52), titre, créée le (date d'origine si l'import la donne, B-50), modifiée le, charge utile versionnée par type (AD-6) — personnage : PJ \| PNJ ; compte-rendu : sa campagne ; **illustration** facultative (une image au plus, AD-93) ; *(kanevas-import)* **parent** facultatif (une fiche du même univers, AD-99), **alias**, **étiquettes**, **clé d'origine** facultative | univers ; → sections ; → parent ; ← enfants | qui lit au moins une de ses sections ; sinon elle n'existe pas (B-9) ; son illustration, ses alias, ses étiquettes : qui voit la fiche ; sa clé d'origine : le MJ | création : MJ ; un compte-rendu : tout membre (B-19) ; l'illustration, le titre, le type, le parent, les alias, les étiquettes, la suppression : MJ (B-38 à B-40) |
+| **fiche** | type (la liste du produit, AD-102 : personnage, lieu, faction, objet, événement, quête, compte-rendu, et depuis `kanevas-import` créature, race, vaisseau, savoir, récit, règle, note), **sous-type** libre (B-52), titre, créée le (date d'origine si l'import la donne, B-50), modifiée le, charge utile versionnée par type (AD-6) — personnage : PJ \| PNJ ; compte-rendu : sa campagne ; **illustration** facultative (une image au plus, AD-93) ; *(kanevas-import)* **parent** facultatif (une fiche du même univers, AD-99), **alias**, **étiquettes**, **clé d'origine** facultative | univers ; → sections ; → parent ; ← enfants | qui lit au moins une de ses sections ; sinon elle n'existe pas (B-9) ; son illustration, ses alias, ses étiquettes : qui voit la fiche ; sa clé d'origine : le MJ | création : MJ ; un compte-rendu : tout membre (B-19) ; l'illustration, le titre, le type, le sous-type, le parent, les alias, les étiquettes, la suppression : MJ (B-38 à B-40, B-52) |
 | **section** | titre, ordre, contenu (Markdown depuis `kanevas-import`, AD-95, avec ses **blocs MJ**, AD-98), modifiée le ; lecture et écriture des joueurs ; auteur (un compte) avec sa lecture et son écriture ; *(kanevas-import)* clé d'origine, version du dernier import | fiche ; → relations, pièces jointes, liens | le MJ ; un joueur selon les bascules (AD-19), **sans ses blocs MJ** | contenu : qui a l'écriture, **un MJ seul si elle contient un bloc MJ** ; structure et audience : MJ |
 | **relation** | type (texte libre), dirigée | section porteuse → fiche cible | qui lit la section **et** la fiche cible (sinon la cible n'est pas nommée) | MJ |
 | **fichier** *(kanevas-import, médiathèque, AD-111)* | nom, type (déterminé à la signature ; image si PNG, JPEG, GIF, WebP, document sinon), taille, nom sur disque (UUID), empreinte, **visibilité** (`joueurs` par défaut \| `mj`), ajouté par, ajouté le, clé d'origine | univers ; ← références (sections, illustrations) | le MJ : tous ; un joueur : ceux `joueurs` ; **dans une fiche** : si le conteneur **et** le fichier sont lisibles (double garde) | MJ : tout ; qui écrit une section : en ajouter un depuis la fiche (visible des joueurs, en un geste avec sa référence) ; l'import |
@@ -86,7 +86,7 @@ avec `kanevas-relier-chercher`, qui prend le numéro suivant, AD-51).
 | `univers` | `id`, `nom`, `description`, `cree_le` | `nom` non vide, 1 à 80 caractères |
 | `membres` | `univers_id`, `compte_id`, `role` (`mj` \| `joueur`) | clé primaire (`univers_id`, `compte_id`) ; clés étrangères ; au moins un `mj` par univers garanti par le service (B-5), pas par la base |
 | `fiches` | `id`, `univers_id`, `type` (les sept : `personnage`, `lieu`, `faction`, `objet`, `evenement`, `quete`, `compte_rendu` ; *depuis `kanevas-import`, la liste du produit, sans `CHECK` : AD-102 et « Cadrage `kanevas-import` » plus bas*), `titre`, `charge` (JSON versionné, AD-6 et AD-17 : `{"v":1}` ; personnage `{"v":1,"pj":true\|false}` ; compte-rendu `{"v":1,"campagne_id":…}`), `cree_le`, `modifie_le` | `type` contraint à ces sept valeurs (*contrainte levée par la recréation de `kanevas-import`, AD-102*) ; `titre` non vide, 1 à 120 caractères ; **aucune suppression** (*suppression par le MJ depuis `kanevas-import`, AD-105*) |
-| `sections` | `id`, `fiche_id`, `titre`, `ordre`, `contenu` (texte brut, AD-58 ; 20 000 caractères au plus, AD-91), `version` (entier, AD-59, 1 à la création), `modifie_le`, `joueurs_lisent`, `joueurs_ecrivent`, `auteur_id` (compte, facultatif), `auteur_lit`, `auteur_ecrit` | quatre bascules booléennes, **toutes à faux à la création** (une section naît fermée aux joueurs) ; `ordre` entier unique par fiche ; `titre` non vide, 1 à 80 caractères ; `contenu` borné par le service seul (`MAX_CONTENU_SECTION`), pas par un `CHECK` ; `auteur_id` doit être un membre Joueur de l'univers de la fiche, vérifié par le service ; retirer un membre efface son `auteur_id` |
+| `sections` | `id`, `fiche_id`, `titre`, `ordre`, `contenu` (texte brut, AD-58 ; 20 000 caractères au plus *(100 000 depuis `kanevas-import`, AD-106 : la même constante pour tout texte Markdown)*, AD-91), `version` (entier, AD-59, 1 à la création), `modifie_le`, `joueurs_lisent`, `joueurs_ecrivent`, `auteur_id` (compte, facultatif), `auteur_lit`, `auteur_ecrit` | quatre bascules booléennes, **toutes à faux à la création** (une section naît fermée aux joueurs) ; `ordre` entier unique par fiche ; `titre` non vide, 1 à 80 caractères ; `contenu` borné par le service seul (`MAX_CONTENU_SECTION`), pas par un `CHECK` ; `auteur_id` doit être un membre Joueur de l'univers de la fiche, vérifié par le service ; retirer un membre efface son `auteur_id` |
 
 `modifie_le` de la fiche suit la dernière écriture d'une de ses sections. `ordre` est renuméroté
 de 1 à n à chaque réordonnancement ou retrait. Le mode Joueur est calculé par le service, jamais
@@ -109,7 +109,7 @@ membre (B-6). Il ne lit ni ne modifie jamais la description, les fiches ou rien 
 | Table | Colonnes (hors clés) | Contraintes |
 |---|---|---|
 | `systemes_jeu` | `id`, `nom`, `cree_le` | `nom` 1 à 80 caractères après rognage ; **unique sans tenir compte de la casse** (`COLLATE NOCASE`) |
-| `gabarits` | `id`, `systeme_id`, `type` (`regle` \| `creature` \| `objet`), `nom`, `contenu` (texte brut, AD-58), `version` (entier, 1 à la création, AD-85), `cree_le`, `modifie_le` | `type` contraint à ces trois valeurs, fixé à la création ; `nom` 1 à 120 caractères ; `contenu` 20 000 au plus ; `nom` unique par (système, type) sans tenir compte de la casse ; **aucune suppression** |
+| `gabarits` | `id`, `systeme_id`, `type` (`regle` \| `creature` \| `objet`), `nom`, `contenu` (texte brut, AD-58), `version` (entier, 1 à la création, AD-85), `cree_le`, `modifie_le` | `type` contraint à ces trois valeurs, fixé à la création ; `nom` 1 à 120 caractères ; `contenu` 20 000 au plus *(100 000 depuis `kanevas-import`, AD-106 : la même constante pour tout texte Markdown)* ; `nom` unique par (système, type) sans tenir compte de la casse ; **aucune suppression** |
 | `univers` (ajout) | `systeme_id`, facultatif, → `systemes_jeu` | `NULL` par défaut (aucun univers existant n'est rattaché) |
 
 Un univers a **au plus un** système ; un système peut servir plusieurs univers. Détacher remet
@@ -137,7 +137,7 @@ cadrage). Les comptes-rendus n'ont pas de table : un compte-rendu est une fiche 
 | Table | Colonnes (hors clés) | Contraintes |
 |---|---|---|
 | `campagnes` | `id`, `univers_id`, `nom`, `statut` (`en_preparation` \| `active` \| `terminee`), `cree_le` | `nom` non vide, 1 à 80 caractères ; `statut` contraint à ces trois valeurs, `en_preparation` à la création ; plusieurs `active` permises (AD-60) ; **aucune suppression** |
-| `scenarios` | `id`, `campagne_id`, `titre`, `contenu` (texte brut, AD-58), `version` (entier, 1 à la création, AD-62), `cree_le`, `modifie_le` | `titre` non vide, 1 à 120 caractères ; `contenu` 20 000 caractères au plus ; **aucune suppression** |
+| `scenarios` | `id`, `campagne_id`, `titre`, `contenu` (texte brut, AD-58), `version` (entier, 1 à la création, AD-62), `cree_le`, `modifie_le` | `titre` non vide, 1 à 120 caractères ; `contenu` 20 000 caractères au plus *(100 000 depuis `kanevas-import`, AD-106 : la même constante pour tout texte Markdown)* ; **aucune suppression** |
 | `taches_preparation` | `id`, `campagne_id`, `categorie` (`monstres` \| `pnj` \| `cartes` \| `deroulements` \| `autre`), `libelle`, `faite`, `faite_le` (date de la dernière coche, vide si décochée), `cree_le` | `libelle` non vide, 1 à 200 caractères ; catégorie contrainte à ces cinq valeurs (AD-46) ; **aucune suppression** |
 
 Un compte-rendu se crée en une seule transaction : la fiche (type `compte_rendu`, `campagne_id` de
@@ -165,7 +165,7 @@ un Joueur.
    chaque section (AD-19).
 3. Ce qu'un compte ne peut pas lire **n'existe pas** pour lui : absent des listes, des
    recherches, des cartes, des liens ; son adresse répond 404 (AD-22).
-4. Une **pièce jointe** n'est servie que par la route qui revérifie ces droits (AD-7, AD-36).
+4. Une **pièce jointe** n'est servie que par la route qui revérifie ces droits (AD-7, AD-36). *Depuis `kanevas-import`, voir la règle 10 : tout fichier est servi par la route des fichiers, sous sa visibilité, et montré dans une fiche sous double garde.*
 5. L'**agent** a exactement les droits de la personne qui lui parle (AD-2, AD-26).
 6. L'**illustration** d'une fiche se voit par qui voit la fiche et se pose par le MJ seul ; elle
    n'est jamais secrète (AD-93). *Depuis `kanevas-import` : l'illustration est une image de la
@@ -330,7 +330,8 @@ ses sections). Le dossier `tmp/` est vidé au démarrage, comme pour les pièces
 - **Poser, remplacer, retirer** : un MJ de l'univers de la fiche ; un Joueur ne le peut pas, même
   auteur ou rédacteur d'une section.
 - **Jamais secrète** : elle est au niveau de la fiche, comme son titre ; qui voit le titre voit
-  l'illustration.
+  l'illustration. *Tombe avec `kanevas-import` (AD-111, décision de Monsieur du 2026-10-11) : l'illustration est un fichier de
+  la médiathèque ; elle se voit si la fiche **et** le fichier sont lisibles.*
 - **Fiche invisible** : son illustration n'existe pas pour le compte (réponse identique à un
   identifiant inconnu, AD-22, AD-67).
 
@@ -339,7 +340,7 @@ ses sections). Le dossier `tmp/` est vidé au démarrage, comme pour les pièces
 > Proposé le 2026-10-11 (`epic/kanevas-import`). Décisions : AD-95 à AD-111. Huit entités nouvelles —
 > lien, alias, étiquette, réglage de type, jeton d'API, lot d'import, fichier (médiathèque) et référence
 > de fichier — et des attributs sur fiche,
-> section, pièce jointe, campagne, scénario ; la médiathèque est une décision de Monsieur du 2026-10-11. Les tranches de l'epic ajouteront des attributs,
+> section, campagne, scénario (la pièce jointe devient une référence de fichier) ; la médiathèque est une décision de Monsieur du 2026-10-11. Les tranches de l'epic ajouteront des attributs,
 > jamais une entité. Numéros de migration : pris à la fusion (AD-51) ; les noms ci-dessous sont
 > provisoires.
 
@@ -360,13 +361,16 @@ erDiagram
   UNIVERS ||--o{ JETON : "a"
   COMPTE ||--o{ JETON : "agit par"
   JETON ||--o{ LOT : "ouvre"
+  UNIVERS ||--o{ FICHIER : "médiathèque"
+  SECTION }o--o{ FICHIER : "référence (texte, joint)"
+  FICHE }o--o| FICHIER : "illustration"
 ```
 
 Invariants, en phrases :
 1. Le parent d'une fiche est une autre fiche **du même univers**, et une fiche n'est jamais son
    propre ancêtre (pas de cycle).
 2. Une **clé d'origine** désigne au plus une fiche par univers, au plus une section par fiche, au plus
-   une pièce jointe par section, une campagne par univers, un scénario par campagne.
+   un fichier par univers, une campagne par univers, un scénario par campagne.
 3. Un identifiant de fiche n'est **jamais réemployé** : un lien `[[42|…]]` vers une fiche supprimée
    reste cassé, il ne vise jamais une autre fiche.
 4. Un lien vise une fiche, ou attend une clé d'origine, ou est cassé — jamais deux à la fois.
@@ -421,7 +425,7 @@ Les autres colonnes et index (illustration, AD-93) sont recopiés tels quels ; l
 | `types_systeme` | `systeme_id`, `type`, `active` (booléen) | clé primaire `(systeme_id, type)` (5) ; → `systemes_jeu` ; l'absence d'une ligne : le défaut du produit (activé) |
 | `types_univers` | `univers_id`, `type`, `active` (booléen) | clé primaire `(univers_id, type)` (5) ; → `univers` ; l'absence d'une ligne : l'univers suit son système |
 | `jetons_api` | `id`, `univers_id`, `compte_id`, `nom`, `empreinte`, `cree_le`, `expire_le`, `revoque_le` (nul : actif), `dernier_usage_le` (nul : jamais) | → `univers`, → `comptes` ; `empreinte` unique (7) ; `nom` 1 à 80 ; `CHECK (expire_le > cree_le)` ; un an au plus : service |
-| `lots_import` | `id`, `univers_id`, `jeton_id`, `ouvert_le`, `clos_le` (nul : en cours), `dernier_ecrit_le`, `creees`, `mises_a_jour`, `inchangees`, `refusees`, `avertissements` (entiers ≥ 0), `rapport` (JSON : 1 000 entrées au plus, `{cle, objet, raison, gravite}`) | → `univers`, → `jetons_api` ; « abandonné » n'est pas stocké : ouvert et `dernier_ecrit_le` de plus de 24 h |
+| `lots_import` | `id`, `univers_id`, `jeton_id`, `ouvert_le`, `clos_le` (nul : en cours), `dernier_ecrit_le`, `compteurs` (JSON : par nature — `fiches`, `fichiers`, `campagnes`, `scenarios`, `relations` — `{creees, mises_a_jour, inchangees, refusees}`, entiers ≥ 0), `avertissements`, `en_attente` (entiers ≥ 0 ; liens et références en attente à la clôture), `rapport` (JSON : 1 000 entrées au plus, `{cle, objet, raison, gravite}`) | → `univers`, → `jetons_api` ; « abandonné » n'est pas stocké : ouvert et `dernier_ecrit_le` de plus de 24 h |
 
 **Colonnes ajoutées** (`ALTER TABLE … ADD COLUMN`, comme 0002 et 0006) :
 
@@ -440,8 +444,10 @@ encore MJ à chaque usage (le rôle change sans toucher au jeton). **Supprimer**
 fonction de service par geste, une transaction, qui supprime dans l'ordre ce qui vise la fiche ou
 l'univers ; les clés étrangères existantes, sans `ON DELETE` ou en `RESTRICT` (`relations.cible_fiche_id`,
 `elements_carte.fiche_id`, tout `univers_id`), **restent** : un oubli du service fait échouer la
-transaction au lieu de laisser une ligne orpheline. Les fichiers (pièces, illustrations, fonds) se
-suppriment du disque **après** la validation ; un échec laisse un orphelin inatteignable (risque déjà
+transaction au lieu de laisser une ligne orpheline. Supprimer une fiche **ne supprime aucun fichier
+de la médiathèque** : ses références partent avec elle, les fichiers restent (« Non utilisés » s'ils ne
+servent plus ailleurs, AD-111). Supprimer un univers supprime sa médiathèque : les fichiers (et les fonds
+de carte) se suppriment du disque **après** la validation ; un échec laisse un orphelin inatteignable (risque déjà
 accepté, `kanevas-fichiers`).
 
 **Droits, une phrase chacun** (en plus des règles ci-dessus) : alias et étiquettes se voient par qui

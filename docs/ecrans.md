@@ -61,7 +61,7 @@ bascule existe (fiche, carte et, depuis `kanevas-import`, recherche E-17).
 | **E-6 Campagne** | nav Campagnes (liste) ; E-3 | liste des campagnes ; pour une campagne : statut, scénarios et « Nouveau scénario » (MJ), préparation (MJ), comptes-rendus, « Nouveau compte-rendu » | P-3, P-4 |
 | **E-7 Scénario** | E-6 (MJ) | écrire et relire un scénario | P-3 |
 | **E-8 Liste de fiches** | nav Lore | les fiches d'un type que le compte peut lire, en grille de cartes illustrées ; chercher dans ce type ; créer (MJ) | P-3, P-6 |
-| **E-9 Fiche** | E-8 ; un token ; un lien ; E-13 | lire et écrire les sections permises ; ajouter, réordonner, retirer une section, régler son audience, relier (MJ) ; déposer, marquer secrète, retirer une pièce jointe ; poser, remplacer, retirer l'illustration (MJ) ; bascule mode Joueur (MJ). Un compte-rendu s'ouvre ici. | P-3 à P-7 |
+| **E-9 Fiche** | E-8 ; un token ; un lien ; E-13 | lire et écrire les sections permises ; ajouter, réordonner, retirer une section, régler son audience, relier (MJ) ; joindre un fichier (les deux chemins d'ajout, AD-111), réserver un fichier au MJ (MJ), retirer une référence ; régler le sous-type (MJ) ; poser, remplacer, retirer l'illustration (MJ) ; bascule mode Joueur (MJ). Un compte-rendu s'ouvre ici. | P-3 à P-7 |
 | **E-10 Cartes** | nav Cartes | les cartes lisibles ; créer une carte illustrée (avec son image de fond) ou un graphe (MJ) | P-3, P-9 |
 | **E-11 Carte** | E-10 ; E-3 | carte illustrée : fond, tokens ; graphe : nœuds et liens. MJ : déposer ou changer le fond, placer, rendre visible, mode Joueur. Joueur : ouvrir la fiche d'un token. | P-3, P-6, P-9 |
 | **E-12 Assistant** | bouton flottant, sur tout écran d'univers | converser ; voir ce que l'assistant a écrit, avec un lien ; MJ : propositions de mise à jour (actuel/proposé, **Appliquer**, **Abandonner**), images générées | P-3, P-5, P-6, P-7 |
@@ -73,9 +73,12 @@ bascule existe (fiche, carte et, depuis `kanevas-import`, recherche E-17).
 | **E-19 Médiathèque** *(kanevas-import)* | nav Médiathèque ; « Choisir dans la médiathèque » de l'éditeur et de l'illustration (E-9) | voir les fichiers (images, documents) ouverts au compte et où ils servent ; MJ : ajouter, renommer, régler la visibilité, supprimer | P-16, P-10 |
 | **E-18 Accès par API** *(kanevas-import)* | nav Univers ▸ Accès par API (MJ) | créer, lister, révoquer les jetons d'API de l'univers ; voir les lots d'import et leurs refus | P-10, P-11 |
 
-Écrans **modifiés** par `kanevas-import` : **E-8** (types activés, vue en arbre), **E-9** (Markdown,
-liens, blocs MJ, fil d'ancêtres, blocs « Contient » et « Mentionnée dans », alias et étiquettes, menu
-de la fiche : renommer, changer le type, déplacer, supprimer, clé d'origine), **E-7** et **E-15**
+Écrans **modifiés** par `kanevas-import` : **E-8** (types activés, vue en arbre, sous-type sur la
+carte, filtre « Sous-type », champ « Sous-type » de la création, illustration sous double garde),
+**E-9** (Markdown, liens, blocs MJ, fil d'ancêtres, blocs « Contient » et « Mentionnée dans », alias et
+étiquettes, sous-type éditable, fichiers de la médiathèque — les deux chemins d'ajout, le bloc Pièces
+jointes de références, l'illustration, les mentions « réservé au MJ » —, menu de la fiche : renommer,
+changer le type, déplacer, supprimer, clé d'origine), **E-7** et **E-15**
 (contenu en Markdown), **E-14** (« Types de fiche », « Supprimer l'univers »), **E-15** (« Types de
 fiche » du système), **E-13** (ordre par date d'origine), la barre latérale ; **E-5** (« Jeton de l'assistant », B-51).
 
@@ -100,7 +103,7 @@ E-16 vivent hors des univers : leurs cases disent le rôle dans un univers ratta
 | E-6 | tout | liste, statut, CR, « Nouveau compte-rendu » ; ni scénarios ni préparation (cachés) | — |
 | E-7 | tout | — | — |
 | E-8 | lire, chercher, créer ; la vignette de chaque fiche (son illustration, ou le repli dessiné) | lire, chercher ; la vignette des fiches qu'il voit | — |
-| E-9 | tout ; mode Joueur ; relier et retirer des relations ; poser, remplacer, retirer l'illustration (hors mode Joueur) | sections lisibles ; écrire celles permises ; relations lisibles (section et cible) ; pièces jointes de celles-ci ; voir l'illustration, jamais la poser | — |
+| E-9 | tout ; mode Joueur ; relier et retirer des relations ; poser, remplacer, retirer l'illustration (hors mode Joueur) ; *(kanevas-import)* sous-type, réserver un fichier au MJ | sections lisibles ; écrire celles permises ; relations lisibles (section et cible) ; pièces jointes de celles-ci ; voir l'illustration, jamais la poser ; *(kanevas-import)* dans une section qu'il écrit, ajouter un fichier ou en choisir un qu'il voit (les deux chemins de B-55) et retirer une référence ; fichiers sous double garde ; jamais régler une visibilité (**caché**) | — |
 | E-10 | tout | cartes visibles | — |
 | E-11 | tout ; mode Joueur | lire une carte visible, ouvrir une fiche | — |
 | E-12 | catalogue MJ ; propositions : le MJ demandeur seul les voit, les applique, les abandonne | catalogue Joueur ; propositions : **caché** (ni outil ni bloc ; ce qu'on vérifie est l'absence de proposition et de bloc, pas le texte libre de l'assistant) | — |
@@ -524,7 +527,7 @@ l'onglet, la liste des entrées du type par nom (ordre alphabétique sans casse)
 l'entrée **sur place** (le nom, le contenu en texte brut, AD-58).
 
 *Le MJ d'un univers rattaché* : « Ajouter une règle » / « Ajouter une créature » / « Ajouter un
-objet » ouvre un formulaire sur place : « Nom » (1 à 120 caractères), « Contenu » (20 000 au plus,
+objet » ouvre un formulaire sur place : « Nom » (1 à 120 caractères), « Contenu » (20 000 au plus ; 100 000 depuis `kanevas-import`, AD-106 ;
 facultatif), « Ajouter » et « Annuler » ; sur une entrée ouverte, « Modifier » (nom et contenu),
 « Enregistrer », « Annuler ». Le type d'une entrée ne change jamais ; rien ne se supprime. Enregistrer
 envoie la version lue (AD-85).
@@ -773,7 +776,7 @@ puis trois panneaux (une campagne n'a ni description ni autre champ que son nom 
    récemment créé au plus ancien, chacun : titre, auteur (l'identifiant de l'auteur de la section ; un compte-rendu
    créé par le MJ n'a pas d'auteur, AD-61 : rien n'est affiché, pas même le nom du MJ), date de création, lien vers E-9. « Nouveau
    compte-rendu » ouvre une fenêtre : « Titre » (1 à 120 caractères), « Texte » (facultatif, 20 000
-   au plus), « Publier » et « Annuler » ; « Publier » crée le compte-rendu et mène à E-9 (AD-61). Si la
+   au plus ; 100 000 depuis `kanevas-import`, AD-106), « Publier » et « Annuler » ; « Publier » crée le compte-rendu et mène à E-9 (AD-61). Si la
    création échoue, la fenêtre reste ouverte, la saisie gardée, avec « L'action n'a pas abouti.
    Réessayez. » ; session expirée pendant la saisie : le texte est gardé comme sur E-9. Cent à la fois,
    puis « Charger la suite ».
@@ -812,7 +815,7 @@ pour l'instant. »). Une campagne terminée garde ses panneaux et accepte de nou
 
 Atteint depuis E-6 (liste des scénarios, « Créer le scénario »). Le titre, un lien « ← La
 Couronne brisée » vers E-6, le contenu en texte brut (AD-58) ; « Modifier » ouvre « Titre » et
-« Contenu » (20 000 caractères au plus), « Enregistrer », « Annuler ». Enregistrer envoie la version
+« Contenu » (20 000 caractères au plus ; 100 000 et Markdown depuis `kanevas-import`, AD-95, AD-106), « Enregistrer », « Annuler ». Enregistrer envoie la version
 lue (AD-62) ; un scénario ne se supprime pas.
 
 Textes : contenu vide : « Rien d'écrit pour l'instant. » ; écriture périmée : « Ce scénario a changé
@@ -1079,7 +1082,7 @@ bas :
 
 - **l'en-tête** : « Kanevas — assistant », la pastille du catalogue (« MJ » ou « Joueur », mot et
   teinte), « Nouvelle conversation », « Fermer » ;
-- **le fil** : les messages de la personne et les réponses de l'assistant, en texte brut (AD-58),
+- **le fil** : les messages de la personne et les réponses de l'assistant, en texte brut (AD-58 — le fil le reste après `kanevas-import`),
   du plus ancien au plus récent ; le fil défile et reste calé sur le dernier message ;
 - **sous une réponse, les écritures** : un bloc « Écrit par l'assistant » par événement (AD-76), le
   libellé (« Section « Notes de la table » complétée », « Scénario « Acte III — La crypte » créé
@@ -1226,6 +1229,8 @@ déjà sur E-9 ; chaque rôle a sa colonne
 dans la matrice ci-dessus.
 
 ## Détail des écrans de `kanevas-illustrations` (illustrations ; systèmes de jeu hors des univers)
+
+> *Amendé par `kanevas-import` (AD-111, AD-93 amendée, décisions de Monsieur du 2026-10-11) : l'illustration est un fichier image de la médiathèque, référencé par la fiche ; elle se voit si la fiche **et** le fichier sont lisibles — « jamais secrète » tombe ; un joueur qui voit la fiche lit « Image réservée au MJ. » en en-tête et la vignette de repli dans E-8 quand l'illustration est réservée au MJ ; elle se pose par les deux chemins d'ajout de E-9. La matrice « Qui voit quoi » ci-dessous vaut avec cette double garde.*
 
 > Décision de Monsieur (2026-10-06) : « La liste des fiches doit être présentée avec une vignette
 > d'illustration, pas juste une liste » ; « chaque fiche doit avoir une propriété possible qui est
@@ -1669,7 +1674,7 @@ De haut en bas :
 
 - **l'en-tête** : « Mise à jour proposée » ; dessous, la section visée, « Section « Vérité » de
   « Maître Aldric » », et la source, « d'après « Séance 3 » » ;
-- **deux zones de texte brut côte à côte** (AD-58), étiquetées « Actuel » et « Proposé » ; sous
+- **deux zones de texte brut côte à côte** (AD-58 ; *depuis `kanevas-import`, rendues en Markdown par la fonction de rendu d'AD-95, vue du MJ, avec une bascule « Rendu / Source » au-dessus des deux*), étiquetées « Actuel » et « Proposé » ; sous
   760 px elles s'empilent, « Actuel » d'abord. « Actuel » montre le contenu **courant** de la
   section au moment de l'affichage (pas celui de la proposition) ; une section vide s'écrit « (section vide) » ;
 - **les gestes** : « Appliquer » (principal), « Abandonner », et un lien « Ouvrir » vers la fiche
@@ -1829,7 +1834,7 @@ fiche est lisible du lecteur (AD-38). **Joueur** : toucher un token ouvre la fic
 Aldric · Personnage » avec « Ouvrir la fiche » et « Retirer de la carte » (ce bouton demande la même confirmation que la liste « Sur la carte » : rien n'est retiré au premier clic) ; on **déplace** un token au
 glisser, ou au clavier (token sélectionné : flèches, 1 %, avec Maj 5 % ; l'aide « Flèches : déplacer de 1 % (Maj : 5 %) » est affichée sous le cadre) ; la position s'enregistre au
 relâchement (ou à la touche) ; hors du cadre elle est ramenée au bord. « Ajouter une fiche » ouvre une
-fenêtre : un choix de **type** (les sept), un champ de recherche (lancée par « Chercher » ou Entrée ; plus de 100 caractères : « 100 caractères au plus. »), la liste des fiches de ce type
+fenêtre : un choix de **type** (les sept ; *depuis `kanevas-import`, la liste du produit, types activés d'abord, AD-102*), un champ de recherche (lancée par « Chercher » ou Entrée ; plus de 100 caractères : « 100 caractères au plus. »), la liste des fiches de ce type
 (celles que le MJ lit : toutes), chacune avec « Ajouter » ; une fiche déjà sur la carte porte « Déjà
 sur la carte » sans bouton. « Fermer » ferme la fenêtre. Le token apparaît au **centre** (50 %, 50 %), prêt à être déplacé.
 « Changer le fond » (« Ajouter un fond » s'il n'y en a pas) ouvre le sélecteur : **choisir l'image
@@ -2048,7 +2053,7 @@ séparé, « Supprimer la fiche… » en `--danger`.
   complète sur celles de l'univers ; alias 1 à 120 caractères, 20 au plus ; étiquette 1 à 40
   caractères, 20 au plus par fiche.
 - *Supprimer la fiche* : boîte de dialogue « Supprimer « Port-Sel » ? » qui compte ce qui part —
-  « 3 sections et 1 pièce jointe ; 3 relations qui la visent ; 1 place sur une carte. Ses 4 enfants
+  « 3 sections ; 3 relations qui la visent ; 1 place sur une carte. Ses 2 fichiers restent dans la médiathèque. Ses 4 enfants
   remonteront sous « Les Sphères ». Les liens qui la visent deviendront des liens cassés. » — et
   « Supprimer la fiche » (`--danger`) / « Annuler ». Après : retour à la liste du type, toast « Fiche
   supprimée. ». Ces nombres ne sont montrés qu'au MJ, qui lit tout.
@@ -2301,7 +2306,10 @@ toast « Adresse copiée. »). Deux panneaux.
    qui l'utilise ne pourra plus rien écrire. », « Révoquer le jeton » (`--danger`) / « Annuler » ; toast « Jeton révoqué. ».
 2. **Lots d'import** — les 20 derniers lots, du plus récent : date d'ouverture, jeton, état (« En
    cours », « Clos », « Abandonné » — ouvert depuis plus de 24 h sans écriture), et les compteurs
-   « 498 créées · 0 mises à jour · 0 inchangées · 3 refusées · 1 avertissement ». Une ligne se déplie :
+   **par nature d'objet**, à la suite et séparés par « · », les natures sans objet omises : « Fiches : 498 créées ·
+   3 refusées », « Fichiers : 1 140 créés », « Campagnes : 4 créées », « Scénarios : 12 créés »,
+   « Relations : 324 créées », puis « 6 liens et références en attente » et « 1 avertissement ». Une
+   ligne se déplie :
    les refus et avertissements, chacun avec la clé d'origine, ce qui est en cause et la raison
    (« section « Vérité » : 112 000 caractères, 100 000 au plus » ; « parent lieu:les-docks inconnu :
    fiche écrite sans parent » ; « section « Notes » modifiée dans Kanevas depuis le dernier import : non
@@ -2353,7 +2361,7 @@ confirmation : « Désactiver « Lieu » dans Lame d'Ébène ? Les 201 lieux res
 lien, la recherche ou l'arbre. » (au singulier : « Le seul événement reste ; … »), boutons
 « Désactiver » / « Annuler ». Le panneau « Supprimer l'univers » ferme la page, séparé par un filet
 `--danger` : « Supprimer l'univers » ouvre une boîte « Supprimer « Lame d'Ébène » ? Tout son contenu —
-fiches, sections, pièces jointes, campagnes, cartes, jetons — sera effacé, pour tous ses membres. Le
+fiches, sections, fichiers de la médiathèque, campagnes, cartes, jetons — sera effacé, pour tous ses membres. Le
 système de jeu reste. » ; un champ « Tapez le nom de l'univers pour confirmer » ; « Supprimer
 l'univers » (`--danger`) ne s'active que si le nom tapé est exact (casse comprise). Après : E-1, toast
 « Univers supprimé. ».

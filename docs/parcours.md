@@ -111,7 +111,8 @@ Forme de la skill `exigences` ; chaque besoin cite les parcours qui le réalisen
   depuis son en-tête (E-9). Le type d'un compte-rendu ne change pas, et une fiche ne devient pas un
   compte-rendu. *(P-14)*
 - **B-40** — Un MJ **supprime une fiche** depuis son en-tête (E-9), après confirmation qui nomme ce
-  qui part avec elle (sections, pièces jointes, relations qui la visent, places sur les cartes) ; ses
+  qui part avec elle (sections et leurs références de fichier, relations qui la visent, places sur les
+  cartes ; les fichiers eux-mêmes restent dans la médiathèque) ; ses
   enfants remontent sous son parent ; les liens qui la visaient deviennent des liens cassés (B-33).
   *(P-14)* Une fiche importée supprimée **revient** au rejeu suivant si le script l'envoie encore :
   pour qu'elle ne revienne pas, on la supprime dans l'export. Aucune trace de la suppression n'est
@@ -132,7 +133,8 @@ Forme de la skill `exigences` ; chaque besoin cite les parcours qui le réalisen
   son sous-type, sur sa carte (E-8), dans son en-tête (E-9) et dans la recherche (E-17), qui le trouve ;
   la liste d'un type (E-8) se **filtre par sous-type** parmi ceux des fiches que le lecteur voit. Les
   étiquettes restent, transversales (B-38). *(P-12, P-14 ; décision de Monsieur du 2026-10-11)*
-- **B-43** — Le contenu d'une section tient jusqu'à **100 000 caractères** (au lieu de 20 000) ;
+- **B-43** — Tout texte Markdown — le contenu d'une section (et le texte d'un compte-rendu), d'un
+  scénario, d'une entrée de système — tient jusqu'à **100 000 caractères** (au lieu de 20 000) ;
   au-delà, l'écriture est refusée comme aujourd'hui (AD-91, AD-106). *(P-10, P-14)*
 - **B-44** — Tout fichier d'une fiche — son illustration (une image), un fichier joint à une section
   (image ou document), une image ou un lien de fichier dans un texte — est un fichier de la
@@ -161,8 +163,9 @@ Forme de la skill `exigences` ; chaque besoin cite les parcours qui le réalisen
   fichier de la médiathèque —, alors un nouvel import n'écrase pas ce qui a été modifié,
   écrit le reste, et le rapport du lot nomme chaque champ laissé. *(P-10, P-14)*
 - **B-49** — Un MJ voit sur E-18 les **lots d'import** de son univers : quand, par quel jeton, combien
-  de fiches créées, mises à jour, inchangées, refusées, et pour chaque refus la clé d'origine et la
-  raison. *(P-10)*
+  d'objets créés, mis à jour, inchangés, refusés, **par nature** (fiches, fichiers, campagnes,
+  scénarios, relations), combien de liens et références restent en attente, et pour chaque refus la
+  clé d'origine et la raison. *(P-10)*
 - **B-50** — Une fiche importée garde sa **clé d'origine** (visible du MJ seul, E-9) et peut porter sa
   **date d'origine** de création, qui ordonne les comptes-rendus (E-13) comme une date de Kanevas.
   *(P-10, P-12)*
@@ -397,7 +400,8 @@ Il veut d'abord un essai jetable, puis la vraie base, sans doublon ni fuite.*
    Les fichiers, images et documents, vont d'abord dans la **médiathèque** (E-19), chacun avec ses
    droits — « Réservée au MJ » pour ceux que Kanka n'affiche que dans du contenu MJ, « Visible des
    joueurs » sinon —, y compris les 385 Mo qu'aucune fiche n'utilise ; les fiches les référencent.
-5. **Accès par API** (E-18), bloc « Lots d'import » : « 501 fiches — 498 créées, 3 refusées » ; il
+5. **Accès par API** (E-18), bloc « Lots d'import » : « Fiches : 498 créées, 3 refusées · Fichiers :
+   1 140 créés · Campagnes : 4 créées · Scénarios : 12 créés · Relations : 324 créées · 6 en attente » ; il
    déplie les refus : « personnage:aldric-le-gris — section « Vérité » : 112 000 caractères, 100 000
    au plus ».
 6. Il ouvre quelques fiches (**E-8** en arbre, **E-9**, **E-17**) et passe en **mode Joueur** pour
@@ -405,7 +409,7 @@ Il veut d'abord un essai jetable, puis la vraie base, sans doublon ni fuite.*
    Kanka sont dans l'ordre de leurs dates d'origine ; sur une fiche, le menu « ⋯ » montre sa clé
    d'origine (« lieu:port-sel »).
 7. Il corrige le script (il coupe la section trop longue en deux), le relance : le nouveau lot dit
-   « 3 créées, 498 inchangées » — aucun doublon.
+   « Fiches : 3 créées, 498 inchangées · Fichiers : 1 140 inchangés · … · 0 en attente » — aucun doublon.
 8. **Paramètres** (E-14), « Supprimer l'univers », il tape « Essai Kanka » : l'univers disparaît de
    l'accueil.
 9. Il refait 2 à 7 sur l'univers réel ; les jours suivants, Léa écrit dans une section importée et
@@ -413,7 +417,8 @@ Il veut d'abord un essai jetable, puis la vraie base, sans doublon ni fuite.*
    l'autre et le lot le dit : « section « Notes » de personnage:lea-pj modifiée dans Kanevas : non
    écrasée » ; « lieu:port-sel : titre modifié dans Kanevas : non écrasé ».
 10. **Accès par API** (E-18) : il révoque le jeton (P-11).
-*Moment fort* : le second lot « 0 créée, 501 inchangées » — rejouer est sans risque.
+*Moment fort* : le second lot « Fiches : 0 créée, 501 inchangées » et rien de créé dans aucune autre
+nature — rejouer est sans risque.
 *Échec* : jeton mal copié ou révoqué — le script reçoit 401 « Jeton invalide. », rien n'est écrit,
 et aucun lot n'apparaît ; un parent ou une cible de relation inconnue — la fiche est écrite sans ce
 parent ou sans cette relation, avec un avertissement dans le lot ; un lien `[[…]]` vers une clé
@@ -481,7 +486,8 @@ E-14 ni les bascules de E-15 (« Lecture seule »).
    menu « ⋯ » : « Déplacer sous… » « Les Sphères » ; « Alias et étiquettes ». Sur « Les Cristaux
    d'Ombre », importée en Note, « Changer le type » : Note → Savoir, sous-type « Ressource ».
 3. Menu « ⋯ » d'un doublon : « Supprimer la fiche… » ; la boîte compte ce qui part avec elle
-   (sections, pièces jointes, relations qui la visent, places sur une carte), dit sous quelle fiche
+   (sections, relations qui la visent, places sur une carte ; ses fichiers restent dans la médiathèque),
+   dit sous quelle fiche
    remontent ses enfants et que les liens qui la visent deviendront des liens cassés (texte exact :
    E-9) ; le doublon venait de Kanka : Antor le retire aussi de l'export, sinon le prochain import le
    recrée (B-40).
@@ -537,7 +543,7 @@ introuvable. ».
 - **Supprimer** une campagne, un scénario, un CR, une carte, une tâche, un système : rien de cela
   ne se supprime, sauf une pièce jointe, une section, une relation, un membre, et le token ou le nœud
   d'une carte (on le retire de la carte ; sa fiche reste). *(choix de cadrage, à revoir à l'usage)*
-  Depuis `kanevas-import`, une **fiche** et un **univers** se suppriment (B-40, B-41) ; un CR, qui
+  Depuis `kanevas-import`, une **fiche**, un **univers** et un **fichier de la médiathèque** se suppriment (B-40, B-41, B-54) ; un CR, qui
   est une fiche, se supprime avec l'univers et, par un MJ, comme une fiche.
 - **Créer une fiche en joueur** : le MJ crée toute fiche, y compris celle d'un PJ, et en ouvre une
   section à son joueur.

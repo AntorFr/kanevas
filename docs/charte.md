@@ -55,9 +55,9 @@ Les neutres sont teintés vers l'encre (bleu froid très léger), jamais un gris
 | `--sur-accent` | `#11142b` | `#ffffff` | texte sur `--accent` |
 | `--accent-texte` | `#9aa6f5` | `#3a4cc0` | icône ou texte d'accent (item courant, avatar) |
 | `--accent-fond` | `rgba(154,166,245,.16)` | `rgba(58,76,192,.10)` | item courant de la navigation, halo d'un champ en édition |
-| `--mj` | `#f2a33c` | `#8a5300` | **réservé au MJ** : texte, icône, filet de la section MJ seul, cadre d'une pièce secrète |
+| `--mj` | `#f2a33c` | `#8a5300` | **réservé au MJ** : texte, icône, filet de la section MJ seul, cadre d'une pièce secrète (depuis `kanevas-import` : d'un fichier réservé au MJ) |
 | `--mj-fond` | `rgba(242,163,60,.14)` | `rgba(214,140,30,.14)` | fond de la pastille « MJ seul », segment « Mode MJ » |
-| `--mj-bord` *(nouveau)* | `rgba(242,163,60,.42)` | `rgba(176,108,10,.45)` | contour d'une section MJ seul, d'une pièce secrète |
+| `--mj-bord` *(nouveau)* | `rgba(242,163,60,.42)` | `rgba(176,108,10,.45)` | contour d'une section MJ seul, d'une pièce secrète (d'un fichier réservé au MJ) |
 | `--mj-trame` *(nouveau)* | `rgba(242,163,60,.075)` | `rgba(176,108,10,.09)` | hachure de la section MJ seul (1 px tous les 8 px, à 135°) |
 | `--table` | `#3fc79a` | `#08694a` | **lu par la table** : texte, icône |
 | `--table-fond` | `rgba(63,199,154,.14)` | `rgba(8,105,74,.12)` | pastille « Lue des joueurs », segment « Mode Joueur », bandeau du mode Joueur |
@@ -203,7 +203,7 @@ décalé de 2 px) sur `:focus-visible`.
   d'une section : **Lue des joueurs** (`eye`, `--table` sur `--table-fond`) ; **Écrite par les
   joueurs** (`pen-line`, mêmes teintes) ; **Confiée à Léa** (avatar de l'auteur, neutre
   `--texte-2` sur `--surface-2`) ; **MJ seul** (`lock`, `--mj` sur `--mj-fond`). Rôle dans le
-  sélecteur : « MJ » ambre, « Joueur » vert. Pièce secrète : « Secrète — MJ seul » (`lock`,
+  sélecteur : « MJ » ambre, « Joueur » vert. Pièce secrète : « Secrète — MJ seul » (`lock`, *depuis `kanevas-import`, un fichier réservé au MJ porte la pastille « MJ seul », même rendu ; AD-111*,
   `--mj` sur `--surface` cerné de `--mj-bord`), posée sur la vignette. Sur une fiche du MJ, la
   pastille est un bouton (chevron 12 px) : au survol, un anneau de sa propre teinte. Elle se
   place **juste après le titre** de la section, jamais poussée par les actions.
@@ -286,7 +286,7 @@ décalé de 2 px) sur `:focus-visible`.
   `--texte-3`), contenu à droite ; au téléphone, l'un sous l'autre. Relation : « membre de »
   `--texte-2`, flèche, puis la cible en jeton (`--surface-2`, icône du type, titre, type en
   `--texte-3`). Vignette 160 × 120, rayon `--rayon-champ`, légende 12 px dessous puis ses
-  boutons-icônes ; une pièce secrète est cernée de 2 px `--mj` et porte sa pastille. Fichier :
+  boutons-icônes ; une pièce secrète (un fichier réservé au MJ, depuis `kanevas-import`) est cernée de 2 px `--mj` et porte sa pastille. Fichier :
   une ligne de 40 px cernée de `--bord` (secret : `--mj-bord` et filet `--mj`), icône, nom,
   taille, boutons-icônes. Envoi : la même ligne avec « Envoi… 42 % » et une barre de 2 px
   `--accent`. Vide : « Aucune relation pour l'instant. » en `--texte-3` suivi de l'action.
