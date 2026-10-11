@@ -2024,8 +2024,10 @@ fiche ; un ancêtre illisible est sauté sans marque (B-35) ; plus de trois anc�
 image (E-19) au lieu du sélecteur de fichier ; « Retirer » ôte la référence, l'image reste dans la
 médiathèque. Le badge du type porte le **sous-type** : « Lieu · Port » (B-52) ;
 MJ, hors mode Joueur : un clic sur le sous-type l'édite en place, avec la liste des sous-types déjà
-employés pour ce type dans l'univers (complétion, sans tenir compte de la casse ; Entrée enregistre, un
-champ vidé retire le sous-type ; 1 à 60 caractères). Sous le titre : « Aussi appelée Salport, Port-aux-Sels » (alias,
+employés pour ce type dans l'univers, par ordre alphabétique (titre de la liste « Sous-types de lieu
+déjà employés » ; complétion sans tenir compte de la casse ; aide « Entrée enregistre · Échap annule »
+et « Champ vide : plus de sous-type » ; 1 à 60 caractères, au-delà « Erreur : 60 caractères au plus. ») ;
+une fiche sans sous-type montre au MJ le libellé « Sous-type » à cet endroit, rien à un joueur. Sous le titre : « Aussi appelée Salport, Port-aux-Sels » (alias,
 `--texte-2`) et les **étiquettes** en pastilles neutres (`tag`), chacune un lien vers E-17 filtrée.
 MJ, hors mode Joueur : le titre s'édite en place (clic, Entrée enregistre) ; le menu « ⋯ » de l'en-tête
 porte « Changer le type… », « Déplacer sous… », « Alias et étiquettes… », une ligne d'information
