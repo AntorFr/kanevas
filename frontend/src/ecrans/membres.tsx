@@ -1,4 +1,4 @@
-import { Users } from 'lucide-react';
+import { ContactRound } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 
 import { useCharge, useMoi, useUnivers } from '../cadre-contexte';
@@ -32,7 +32,7 @@ function Membres() {
     <div className="page-liste">
       <header className="tete-liste">
         <span className="glyphe-type" aria-hidden="true">
-          <Users size={20} strokeWidth={1.75} />
+          <ContactRound size={20} strokeWidth={1.75} />
         </span>
         <h1>Membres</h1>
       </header>
