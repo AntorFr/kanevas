@@ -1163,6 +1163,24 @@ body.mode-joueur .image-section.reservee .image-reservee { display: flex; }
   </div>
 </div>
 
+<!-- États des liens (#etat-liens) : planche statique, jamais montrée sans l'adresse. -->
+<section id="etats-liens" hidden style="max-width: 640px; margin: 24px auto; padding: 0 16px; display: grid; gap: 20px;">
+  <div><div class="bloc-lib">Liste de « [[ » — recherche en cours</div>
+    <div class="liste-liens" style="position: static; width: auto;" role="listbox" aria-busy="true"><div class="option" style="color: var(--texte-3);">Recherche…</div></div></div>
+  <div><div class="bloc-lib">Liste de « [[ » — aucun résultat</div>
+    <div class="liste-liens" style="position: static; width: auto;"><div class="option" style="color: var(--texte-3);">Aucune fiche.</div></div></div>
+  <div><div class="bloc-lib">Liste de « [[ » — erreur</div>
+    <div class="liste-liens" style="position: static; width: auto;" role="alert"><div class="option">Impossible de chercher.</div><div class="option"><button type="button" class="bouton">Réessayer</button></div></div></div>
+  <div><div class="bloc-lib">Liste de « [[ » — plus de 50 résultats, titre de 120 caractères</div>
+    <div class="liste-liens" style="position: static; width: auto;"><div class="option"><svg class="i p" aria-hidden="true"><use href="#i-map-pin"/></svg><span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">Le très long nom d'un port de la côte des Brumes où les contrebandiers et les saleurs se disputent depuis des générations le droit d'amarrer…</span><span class="type-option">Lieu</span></div><div class="option" style="color: var(--texte-3);">Affinez la recherche pour voir les autres.</div></div></div>
+  <div><div class="bloc-lib">Enregistrer un lien vers une fiche illisible</div>
+    <p role="alert" style="color: var(--danger); font-size: var(--t-14);">Cette fiche n'existe pas ou vous ne pouvez pas la lire.</p></div>
+  <div><div class="bloc-lib">Mentionnée dans — la suite</div>
+    <button type="button" class="bouton">Afficher les 10 suivants</button>
+    <button type="button" class="bouton" disabled aria-busy="true">Chargement…</button>
+    <p role="alert" style="color: var(--danger); font-size: var(--t-14);">Impossible de charger la suite. <button type="button" class="bouton">Réessayer</button></p></div>
+</section>
+
 <!-- Assistant -->
 <button class="assistant" aria-label="Demander à Kanevas"><svg class="i" aria-hidden="true"><use href="#i-sparkles"/></svg><span class="lib-assistant">Demander à Kanevas</span></button>
 
@@ -1993,6 +2011,7 @@ var ILLUS = (function () {
       });
       if (et === 'supprimer') plus_tard(function () { ouvrirDialogue($('#voile-supprimer'), $('#sup-annuler')); });
       if (et === 'tiroir') tiroir(true);
+      if (et === 'liens') { $('#etats-liens').hidden = false; $('#etats-liens').style.display = 'grid'; $('#etats-liens').scrollIntoView(); }
     });
   }
 })();

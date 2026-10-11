@@ -1648,7 +1648,7 @@ la tranche qui le cite la première ; plan de l'epic) :
 |---|---|---|
 | « Essai Kanka » (univers, sans système) et un jeton d'API | Antor MJ, Léa Joueuse ; le jeton « Jeton du bouchon » d'Antor, valeur fixe connue des tests (`kvs_bouchon_essai…`), un an, semé **en bouchon seulement** comme tout le semis ; c'est là et avec lui que les critères importent (aucun import dans « Lame d'Ébène ») | `kanevas-import-fil` |
 | « Port-Sel » (lieu de Lame d'Ébène) | « Description » lue des joueurs (Markdown : intertitre, liste, tableau des quartiers), « Histoire » lue des joueurs avec un bloc MJ « Le port est tenu en sous-main par la Guilde des Brumes… », « Vérité » MJ seul | `kanevas-import-secrets` |
-| « La Guilde des Brumes » (faction, MJ seul) ; « Rapport secret de l'amirauté » (événement, MJ seul) | la Guilde invisible de Léa ; le rapport porte, dans un bloc MJ, un lien vers « Maître Aldric » ; « Histoire » de Port-Sel lie « Maître Aldric » et « La Guilde des Brumes » ; « Apparence » de « Maître Aldric » lie « Port-Sel » | `kanevas-import-liens` |
+| « La Guilde des Brumes » (faction, MJ seul) ; « Rapport secret de l'amirauté » (événement, MJ seul) | la Guilde invisible de Léa ; le rapport porte, dans un bloc MJ, un lien vers « Maître Aldric » ; « Histoire » de Port-Sel lie « Maître Aldric » et « La Guilde des Brumes » ; « Apparence » de « Maître Aldric » lie « Port-Sel » ; « Description » de « La Guilde des Brumes » lie « Maître Aldric » ; dans « Essai Kanka », le lieu « Anse-aux-Sels » (lu des joueurs) dont « Description » porte `[[cle:faction:repaire|les contrebandiers du Repaire]]` (en attente) et `[[999999|Capitaine Hesk]]` (cassé : aucune fiche ne porte cet identifiant) | `kanevas-import-liens` |
 | « Les Sphères » (lieu, MJ seul) ; « La Taverne du Kraken », « Les Docks », « Le Phare aux Sels », « Quartier des Cordiers » (lieux lus des joueurs) ; « Le Repaire des contrebandiers » (lieu, MJ seul) | Port-Sel sous Les Sphères ; les cinq sous Port-Sel, dont le Repaire, invisible de Léa | `kanevas-import-arbre` |
 | sous-types des lieux existants | « Val-Fortin » · Ville, « Le Pendu Joyeux » · Taverne, « Rue des Cordiers » · Rue | `kanevas-import-types` |
 | alias, étiquettes, un savoir | Port-Sel : alias « Salport », « Port-aux-Sels », étiquette « Côte des Brumes » (aussi sur « Cercle des Cendres », invisible de Léa) ; « Chronique de l'Âge d'Ombre » (savoir, lu des joueurs) | `kanevas-import-recherche` |
@@ -2093,6 +2093,43 @@ même fiche cite de plusieurs façons. Une source compte si sa fiche est lisible
 porte le lien (ou la relation) l'est, **et** que le lien n'est pas dans un bloc MJ pour un non-MJ ; une
 fiche qui se cite elle-même ne s'affiche pas ; l'ordre est le titre puis l'identifiant. Jamais de
 compteur de ce qui est caché ; `mentionsSuite` se calcule sur ce que le lecteur voit seulement.
+
+*États* (B-29). **Liste ouverte par `[[`** : chargement — la ligne « Recherche… » sous la saisie (la liste précédente
+s'efface) ; vide — « Aucune fiche. » ; erreur — « Impossible de chercher. » et « Réessayer » ; connexion perdue
+— la liste ne s'ouvre pas, `[[` reste du texte ; refus — l'éditeur n'est offert qu'à qui écrit la section, il n'y a donc ni
+bouton ni liste pour les autres (**caché**) ; contenu extrême — un titre de 120 caractères tient sur une ligne
+tronquée par « … » (le titre entier en infobulle), plus de 50 résultats : les 50 premiers puis la ligne
+« Affinez la recherche pour voir les autres. ». **Bloc « Mentionnée dans »** : la suite en cours — le bouton « Afficher
+les N suivants » devient « Chargement… » désactivé ; échec — « Impossible de charger la suite. » et « Réessayer » ;
+connexion perdue — le bouton est désactivé ; les 50 premières arrivent avec la fiche (pas d'état propre).
+**Refus d'écriture** `lien_illisible` : le message, en `--danger`, sous le champ de l'éditeur (E-9 comme E-7), le
+texte conservé, l'enregistrement non fait. **E-7** : mêmes états pour la liste ; un lien cassé ou en attente y
+est marqué comme pour un MJ (le lecteur d'un scénario l'est toujours). *Maquette* : `e09-fiche-importee.html#etat-liens`.
+
+*Qui fait quoi* (liens) :
+
+| Rôle | Éditeur : `[[` et « Lien vers une fiche » | Lecture d'un lien | « Mentionnée dans » |
+|---|---|---|---|
+| MJ, hors mode Joueur | oui (E-9, E-7) | lien, cassé, en attente marqués | tout ce qu'il lit, blocs MJ compris |
+| MJ en mode Joueur | non, comme tout geste d'écriture en mode Joueur | comme un Joueur | comme un Joueur |
+| Joueur | oui, sur une section qu'il écrit | lien si la cible est lue, sinon le texte seul (**caché**) ; cassé et en attente : le texte seul | sources lisibles, hors blocs MJ |
+| Joueur, écriture d'un lien vers une fiche qu'il ne lit pas | **refusé** : `lien_illisible` | — | — |
+| Admin d'instance non membre | n'atteint ni E-9 ni E-7 (« Page introuvable. ») | — | — |
+
+*Critères* (liste et bloc).
+- Étant donné Antor qui édite « Histoire » de « Port-Sel », quand il tape `[[` puis « ald », alors la liste montre
+  « Maître Aldric » avec l'icône et le libellé de son type ; Entrée insère `[[<id>|Maître Aldric]]`, Échap ferme
+  la liste en laissant `[[`.
+- Étant donné la recherche qui échoue, quand Antor tape `[[`, alors « Impossible de chercher. » et « Réessayer »
+  paraissent et son texte reste.
+- Étant donné une recherche sans résultat, alors « Aucune fiche. ».
+- Étant donné 60 fiches qui citent « Maître Aldric » lisibles de Léa, quand elle ouvre sa fiche, alors « Mentionnée dans »
+  en montre 50 et « Afficher les 10 suivants » ; la touche les ajoute ; sans réseau, le bouton est désactivé.
+- Étant donné « Anse-aux-Sels » dans « Essai Kanka », quand Antor la lit, alors « les contrebandiers du Repaire » est
+  souligné en tirets `--texte-3` (« Lien en attente : aucune fiche n'a encore la clé « faction:repaire ». ») et « Capitaine
+  Hesk » en tirets `--danger` ; Léa lit les deux en texte simple.
+- Étant donné Léa, auteur avec écriture d'une section de « Port-Sel », quand elle y tape un lien vers « La Guilde des
+  Brumes », alors « Cette fiche n'existe pas ou vous ne pouvez pas la lire. » paraît sous le champ.
 
 ### E-9 Fiche — ce que `kanevas-import` change
 
