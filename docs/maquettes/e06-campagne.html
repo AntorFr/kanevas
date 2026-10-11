@@ -1078,7 +1078,7 @@ body.etat-perdue [data-ecrit] { opacity: .45; pointer-events: none; }
   function majCompteurs() {
     var t = $('#cr-titre').value.length, x = $('#cr-texte').value.length;
     $('#cpt-titre').textContent = t + ' / 120'; $('#cpt-titre').style.color = t > 120 ? 'var(--danger)' : '';
-    $('#cpt-texte').textContent = x.toLocaleString('fr-FR') + ' / 100 000'; $('#cpt-texte').style.color = x > 20000 ? 'var(--danger)' : '';
+    $('#cpt-texte').textContent = x.toLocaleString('fr-FR') + ' / 100 000'; $('#cpt-texte').style.color = x > 100000 ? 'var(--danger)' : '';
   }
   function ouvrirCR(depuis, echec) {
     retourCR = depuis;
@@ -1112,7 +1112,7 @@ body.etat-perdue [data-ecrit] { opacity: .45; pointer-events: none; }
     var t = $('#cr-titre').value.trim(), x = $('#cr-texte').value, ok = true;
     var et = !t ? 'Erreur : le titre est obligatoire.' : t.length > 120 ? 'Erreur : 120 caractères au plus.' : '';
     $('#err-cr-titre').textContent = et; $('#err-cr-titre').hidden = !et; if (et) { $('#cr-titre').setAttribute('aria-invalid', 'true'); ok = false; }
-    var ex = x.length > 20000 ? 'Erreur : 100 000 caractères au plus.' : '';
+    var ex = x.length > 100000 ? 'Erreur : 100 000 caractères au plus.' : '';
     $('#err-cr-texte').textContent = ex; $('#err-cr-texte').hidden = !ex; if (ex) ok = false;
     if (!ok) return (et ? $('#cr-titre') : $('#cr-texte')).focus();
     trouver(E.id).crs.unshift({ titre: t, auteur: E.joueur ? 'lea' : '', date: '5 oct. 2026' });

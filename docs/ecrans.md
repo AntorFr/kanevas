@@ -2046,7 +2046,9 @@ pour l'emplacement du rendu (le contenu y devient mis en forme, la mise en page 
 - **Parcours** : lire, P-12 étape 2 (E-9, E-7, E-15, E-12) ; écrire et prévisualiser, P-14 étape 1 (E-9, E-7, E-15).
   Le texte d'un compte-rendu se lit rendu sur E-9 ; la fenêtre « Nouveau compte-rendu » de E-6 garde son
   champ simple dans cette tranche, avec le plafond de 100 000 (« Erreur : 100 000 caractères au plus. ») et
-  sans barre ni aperçu.
+  sans barre ni aperçu ; au-delà de 100 000 caractères le compteur de sa fenêtre passe en `--danger`,
+  « Erreur : 100 000 caractères au plus. » s'écrit sous le champ et « Publier » est désactivé, comme avec les
+  20 000 d'avant ; ses autres états (échec de « Publier », texte vide) sont ceux de E-6 et ne changent pas.
 - **Maquettes** : `e09-fiche-importee.html` (`#etat-edition`, `#etat-apercu`) montre la barre **complète**
   de l'epic (avec « Lien vers une fiche », « Fichier », la liste ouverte par `[[`) ; cette tranche n'en
   construit que « Gras », « Italique » et la bascule, les autres boutons viennent avec leurs tranches. La
@@ -2059,7 +2061,7 @@ pour l'emplacement du rendu (le contenu y devient mis en forme, la mise en page 
   titre de la section. Un lien web s'ouvre dans un nouvel onglet. Tableau large : il défile dans son
   cadre. Contenu vide : « Rien d'écrit pour l'instant. » (déjà le texte d'aujourd'hui). Un contenu
   d'avant (texte brut) se lit comme avant : paragraphes et sauts de ligne.
-- **Éditeur** (E-9, E-7, E-15, et le texte d'un compte-rendu à sa création) : le champ, au-dessus la
+- **Éditeur** (E-9, E-7, E-15) : le champ, au-dessus la
   barre « Gras » (`bold`), « Italique » (`italic`) et la bascule « Écrire / Aperçu » (deux boutons, l'un
   actif, `role="radio"`) ; sous le champ, le compteur « 12 480 / 100 000 ». Ctrl/⌘+B et Ctrl/⌘+I entourent
   la sélection (ou posent deux marques et placent le curseur entre elles), Ctrl/⌘+Entrée enregistre,
@@ -2086,9 +2088,10 @@ pour l'emplacement du rendu (le contenu y devient mis en forme, la mise en page 
   | | MJ | Joueur lecteur | Joueur qui écrit la section | MJ en mode Joueur |
   |---|---|---|---|---|
   | Lit le rendu | oui | oui | oui | oui |
-  | Reçoit la source | oui | non | oui | comme le rôle qu'il imite |
+  | Reçoit la source | oui | non (le champ n'est pas dans la réponse) | oui | comme le rôle qu'il imite |
   | Barre, aperçu, compteur | en édition | caché | en édition | comme le rôle qu'il imite |
-  | E-7, E-15, E-12 | éditeur au MJ, rendu pour qui lit | sans objet (MJ seul) | sans objet | sans objet |
+  | E-7, E-12 | éditeur au MJ, rendu pour qui lit | écran absent (404, MJ seul) | écran absent | écran absent |
+  | E-15 (système rattaché) | éditeur au MJ, rendu | rendu seul, ni source ni barre (champ absent) | sans objet | rendu seul |
 - **Plafond** : 100 000 caractères pour une section, un compte-rendu, un scénario, une entrée de système et
   un contenu proposé ; au-delà le serveur répond 400 « Contenu trop long : 100 000 caractères au plus. ».
 
