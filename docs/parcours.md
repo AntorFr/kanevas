@@ -350,7 +350,9 @@ Il veut d'abord un essai jetable, puis la vraie base, sans doublon ni fuite.*
    déplie les refus : « personnage:aldric-le-gris — section « Vérité » : 112 000 caractères, 100 000
    au plus ».
 6. Il ouvre quelques fiches (**E-8** en arbre, **E-9**, **E-17**) et passe en **mode Joueur** pour
-   vérifier qu'aucun bloc MJ ne paraît — P-12.
+   vérifier qu'aucun bloc MJ ne paraît — P-12 ; dans **Comptes-rendus** (E-13), les 36 journaux de
+   Kanka sont dans l'ordre de leurs dates d'origine ; sur une fiche, le menu « ⋯ » montre sa clé
+   d'origine (« lieu:port-sel »).
 7. Il corrige le script (il coupe la section trop longue en deux), le relance : le nouveau lot dit
    « 3 créées, 498 inchangées » — aucun doublon.
 8. **Paramètres** (E-14), « Supprimer l'univers », il tape « Essai Kanka » : l'univers disparaît de
@@ -473,3 +475,15 @@ Recommencez. », l'ancien jeton reste.
 - **Export vers Kanka ou un autre outil** : non trié.
 - **Calendrier ou chronologie, lanceur de dés, usage sans connexion (PWA)** : non triés.
 - **Historique des modifications, export, partage public.**
+
+## Contrôle croisé du cadrage `kanevas-import`
+
+Fait le 2026-10-11 sur la proposition (skill `cadrage`, étape 6).
+
+| Croisement | Résultat |
+|---|---|
+| Chaque besoin a un parcours | B-32 P-12, P-14 · B-33 P-12, P-14 · B-34 P-12, P-14 · B-35 P-12, P-14 · B-36 P-12 · B-37 P-12 · B-38 P-12, P-14 · B-39 P-14 · B-40 P-14 · B-41 P-10 · B-42 P-13, P-10 · B-43 P-10, P-14 · B-44 P-12 · B-45 P-11, P-10 · B-46 P-11 · B-47 à B-49 P-10 · B-50 P-10 · B-51 P-15 — **tient**. |
+| Chaque geste humain d'un parcours a un écran | P-10 : E-1, E-2, E-14, E-18, E-8, E-9, E-17, E-13 ; l'étape 4 n'est pas un geste dans Kanevas (le script, hors produit, par décision de Monsieur) et son résultat se lit sur E-18 · P-11 : E-18 · P-12 : E-8, E-9, E-17, E-12 · P-13 : E-15, E-14, barre · P-14 : E-9 · P-15 : E-5 — **tient**. |
+| Chaque écran a ses données | E-17 : fiches, alias, étiquettes, index (titre, alias, `contenu_public`) · E-18 : jetons d'API, lots d'import · E-14 / E-15 : réglages de type · E-9 : liens, parent, alias, étiquettes, clé d'origine · E-13 : `cree_le` (date d'origine) · E-5 : un fichier du volume, pas une entité (B-51) — **tient**. |
+| Chaque entité sert un parcours | lien P-12, P-14 · alias et étiquette P-12, P-14 · réglage de type P-13 · jeton d'API P-11 · lot d'import P-10 — **tient**. |
+| Trous comblés par un choix écrit | l'import n'a pas d'écran de déclenchement (le script) : choix de Monsieur, écrit ; « vider un univers d'essai » remplacé par « supprimer l'univers » (AD-105) ; les cartes dans l'API `[À TRANCHER]` (AD-104). |
