@@ -115,8 +115,10 @@ E-16 vivent hors des univers : leurs cases disent le rôle dans un univers ratta
 | E-19 *(kanevas-import)* | tout : ajouter, renommer, visibilité, supprimer ; « Utilisé dans » complet | les fichiers visibles des joueurs et ceux qu'il a ajoutés ; « Utilisé dans » réduit aux fiches qu'il lit ; ni ajout depuis E-19 (**caché** ; il ajoute un fichier par une section qu'il écrit, E-9), ni réglage, ni suppression (**cachés**) | — |
 | E-18 *(kanevas-import)* | créer un jeton ; voir et révoquer tous les jetons de l'univers (y compris ceux d'un autre MJ) ; voir les lots | — (**caché** : absent de la barre, « Page introuvable. » par l'adresse) | — |
 
-Ce que `kanevas-import` ajoute aux lignes existantes : **E-8** — MJ : la vue en arbre, la création
-dans les seuls types activés ; Joueur : l'arbre des fiches qu'il voit. **E-9** — MJ : écrire le
+Ce que `kanevas-import` ajoute aux lignes existantes : **barre latérale** — tous : la section « Lore »
+ne montre que les types activés ; **E-8** — MJ : la vue en arbre, la création dans les seuls types activés,
+avec son champ « Sous-type », le filtre « Sous-type » ; Joueur : l'arbre des fiches qu'il voit, le filtre
+« Sous-type » sur ce qu'il voit, ni création ni champ. **E-9** — MJ : écrire le
 Markdown, insérer liens et blocs MJ, renommer, changer le type, déplacer, alias et étiquettes,
 supprimer (menu « ⋯ » de l'en-tête, hors mode Joueur), voir la clé d'origine ; Joueur : lire le
 Markdown, suivre les liens vers ce qu'il voit, « Contient » et « Mentionnée dans » réduits à ce qu'il
@@ -2038,7 +2040,7 @@ au téléphone, jamais la page.
 
 ### E-9 Fiche — ce que `kanevas-import` change
 
-*Maquette finie* : `docs/maquettes/e09-fiche-importee.html` (« Port-Sel », états `#etat-fichier`, `#etat-joindre`, `#etat-sous-type`, `#etat-joueur`,
+*Maquette finie* : `docs/maquettes/e09-fiche-importee.html` (« Port-Sel », états `#etat-fichier`, `#etat-joindre`, `#etat-sous-type`, `#etat-changer-type`, `#etat-joueur`,
 `#etat-edition`, `#etat-supprimer`, `#etat-deplacer`).
 
 **En-tête.** Fil d'Ariane : univers › type › ancêtres **lisibles** du plus haut au plus proche ›
@@ -2377,7 +2379,7 @@ qui suit le système le voit au chargement suivant. Joueur : la liste, interrupt
 (« Lecture seule »).
 
 **E-14 (univers)** : un quatrième panneau « Types de fiche », après « Créer un système ». Une ligne par
-type : icône, nom, le nombre de fiches de l'univers de ce type (« 201 fiches »), et une **bascule
+type : icône, nom, le nombre de fiches de l'univers de ce type (« Aucune fiche », « 1 fiche », « 201 fiches »), et une **bascule
 segmentée à trois choix** : « Système · activé » (ou « Système · désactivé » ; « Par défaut · activé »
 pour un univers sans système), « Activé », « Désactivé ». Un choix forcé porte un point d'accent à
 gauche du nom ; la ligne dit, si le forçage contredit le système, « Le système le désactive. » (ou « Le système
@@ -2399,7 +2401,7 @@ l'univers » (`--danger`) ne s'active que si le nom tapé est exact (casse compr
 | erreur | un changement qui échoue : « L'action n'a pas abouti. Réessayez. » au-dessus du panneau, la bascule revient ; suppression qui échoue : le message dans la boîte, l'univers reste | « Réessayer » |
 | connexion perdue | le bandeau ; bascules, interrupteurs, « Supprimer l'univers » désactivés | lire |
 | refus | E-14 : Joueur — page introuvable (inchangé) ; E-15 : Joueur — lecture seule ; un MJ qui n'a plus de rôle : « Vous ne pouvez plus modifier ces paramètres. » | — |
-| contenu long | 13 types réglables : la liste tient sans défiler au bureau, une colonne au téléphone (la bascule passe sous le nom) ; nom d'univers de 80 caractères dans la boîte : passe à la ligne | idem |
+| contenu long | E-15 : les mêmes états que ci-dessous (squelette de l'onglet, « L'action n'a pas abouti. Réessayez. », bandeau de connexion perdue qui désactive les interrupteurs, une colonne au téléphone) ; 13 types réglables : la liste tient sans défiler au bureau, une colonne au téléphone (la bascule passe sous le nom) ; nom d'univers de 80 caractères dans la boîte : passe à la ligne | idem |
 
 *Critères.*
 - Étant donné « CoF Mini » qui désactive « Vaisseau » et « Lame d'Ébène » qui le force à « Activé »,
@@ -2427,6 +2429,9 @@ Règle `scale`, Note `sticky-note` ; adresses de E-8 : `/univers/:id/fiches/<plu
 **Barre latérale.** La section « Lore » se construit de la réponse : les types activés, dans l'ordre de la
 liste. Pendant le chargement, trois lignes de squelette sous le titre « Lore » ; en erreur, la ligne
 « Impossible de charger les types. » et « Réessayer » à sa place — le reste de la barre ne bouge pas.
+Si aucun type n'est activé (tous désactivés), la section montre « Aucun type de fiche activé. » (et, au MJ,
+le lien « Régler les types » vers E-14). Connexion perdue : la barre garde la dernière liste lue ; sans liste
+déjà lue, c'est l'état d'erreur.
 Après un réglage (E-14, E-15) sur un autre onglet, la barre se met à jour au retour sur l'onglet ou au
 prochain chargement, jamais au milieu d'une saisie.
 
@@ -2437,13 +2442,16 @@ employés ») ; changer le type dans la fenêtre vide le champ. Si le type vient
 autre MJ, « Créer » répond « Ce type est désactivé dans cet univers. » dans la fenêtre, rien n'est créé. Le
 filtre « Sous-type » n'apparaît que si au moins une fiche lisible du type en porte un ; pendant son
 chargement il est désactivé (« Sous-type : … ») ; s'il échoue, « Sous-types indisponibles. » à sa place
-et la grille reste utilisable. Un sous-type filtré qui n'a plus de fiche (renommée entre-temps) rend
+et la grille reste utilisable. Si « Créer » échoue : « L'action n'a pas abouti. Réessayez. » dans la fenêtre, la saisie gardée. Contenu long : 40
+sous-types distincts : la liste du filtre défile ; un sous-type de 60 caractères est tronqué par une ellipse, entier
+dans son infobulle. Un sous-type filtré qui n'a plus de fiche (renommée entre-temps) rend
 « Aucune fiche de ce sous-type. » avec « Voir tous les lieux ».
 
 **E-9 — sous-type en place.** Le MJ (hors mode Joueur) clique le sous-type du badge : champ, liste de
 complétion, Entrée enregistre, Échap annule (maquette `#etat-sous-type`). Enregistrement en cours : champ
 désactivé, « Enregistrement… ». Échec : « L'action n'a pas abouti. Réessayez. » sous le champ, la valeur
-tapée est gardée. Un champ vidé retire le sous-type (« Sous-type retiré. »). Un joueur lit le sous-type en
+tapée est gardée. Un champ vidé retire le sous-type (« Sous-type retiré. »). Connexion perdue : l'édition est désactivée (le sous-type reste lisible). Contenu long : 60 caractères, tronqués par
+une ellipse dans le badge, entiers dans l'infobulle. Un joueur lit le sous-type en
 simple texte ; une fiche sans sous-type ne montre rien à un joueur.
 
 **E-9 — « Changer le type… »** (MJ, hors mode Joueur ; absent pour un compte-rendu) : maquette
@@ -2456,8 +2464,15 @@ autre type, avec les sous-types déjà employés pour le type choisi). Si la fic
 type » (désactivé tant que le type reste l'actuel) et « Annuler ». Après : la fiche se recharge sous son
 nouveau type, toast « Type changé : Note → Savoir. », le fil d'Ariane et la barre suivent ; ses sections,
 relations, places sur une carte et propositions sont intactes.
-Échecs : « Le type n'a pas changé. Réessayez. » dans la boîte (elle reste ouverte) ; un MJ qui n'a plus de
+Le choix PJ / PNJ n'apparaît que pour **devenir** un personnage ; le PJ / PNJ d'un personnage existant ne se
+change pas ici. Chargement : tant que la liste des types n'est pas lue, la liste de la boîte dit « Chargement des
+types… » et « Changer le type » reste désactivé. Contenu long : un titre de 120 caractères passe à la ligne dans
+le titre de la boîte ; un sous-type de 60 caractères est tronqué par une ellipse dans le badge, entier dans son
+infobulle et dans le champ. Échecs : « Le type n'a pas changé. Réessayez. » dans la boîte (elle reste ouverte) ; un MJ qui n'a plus de
 rôle : « Vous ne pouvez plus modifier cette fiche. » ; connexion perdue : bandeau, bouton désactivé.
+
+La maquette `e08-liste-fiches.html` n'est pas redessinée pour le sous-type : le texte ci-dessus dit où il se pose
+(sous le titre de la carte, `--texte-3` ; filtre à côté de la recherche).
 
 *Critères de la tranche* (les critères d'écran ci-dessus restent les siens).
 - Étant donné « Les Cristaux d'Ombre » (Savoir · Ressource), quand Antor la passe en Note, alors elle est
