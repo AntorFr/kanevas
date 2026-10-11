@@ -2000,7 +2000,7 @@ et le bloc de E-3 livrent leurs six états (B-29), ci-dessus.
 
 Sections (E-9), scénarios (E-7), entrées d'un système (E-15), comptes-rendus (E-9) : le texte est du
 Markdown (B-32, AD-95). **Ce qui se met en forme** : paragraphes (un saut de ligne simple reste un
-saut de ligne, comme le texte brut d'avant), intertitres `##` à `####` (rendus sous le titre de la
+saut de ligne, comme le texte brut d'avant), intertitres `#` à `####` (`#` et `##` au même niveau, rendus sous le titre de la
 section, jamais au-dessus), gras, italique, barré, listes à puces et numérotées, citations, code,
 filets, tableaux, liens web (`http`, `https`, `mailto` seulement ; ils s'ouvrent dans un nouvel
 onglet), fichiers de la médiathèque (une image `![légende](fichier:…)`, un document `[nom](fichier:…)`, B-44), liens vers une fiche (`[[…]]`, B-33),
@@ -2043,6 +2043,16 @@ tranches les ajoutent à la même barre et au même rendu). Maquette : `e09-fich
 `#etat-edition` pour l'éditeur ; `e07-scenario.html`, `e15-systeme-de-jeu.html` et `e12-propositions.html`
 pour l'emplacement du rendu (le contenu y devient mis en forme, la mise en page ne change pas).
 
+- **Parcours** : lire, P-12 étape 2 (E-9, E-7, E-15, E-12) ; écrire et prévisualiser, P-14 étape 1 (E-9, E-7, E-15).
+  Le texte d'un compte-rendu se lit rendu sur E-9 ; la fenêtre « Nouveau compte-rendu » de E-6 garde son
+  champ simple dans cette tranche, avec le plafond de 100 000 (« Erreur : 100 000 caractères au plus. ») et
+  sans barre ni aperçu.
+- **Maquettes** : `e09-fiche-importee.html` (`#etat-edition`, `#etat-apercu`) montre la barre **complète**
+  de l'epic (avec « Lien vers une fiche », « Fichier », la liste ouverte par `[[`) ; cette tranche n'en
+  construit que « Gras », « Italique » et la bascule, les autres boutons viennent avec leurs tranches. La
+  bascule est un groupe de deux options (`role="radio"`, `aria-checked`) comme la maquette. Les maquettes de
+  E-7, E-15 et E-12 gardent leur mise en page : l'éditeur y est le même, la bascule « Rendu / Source » de
+  E-12 s'ajoute au-dessus des deux zones, à la façon de la bascule « Écrire / Aperçu ».
 - **Rendu** : un seul composant montre le HTML que le serveur a rendu, partout (sections et
   comptes-rendus de E-9, scénario de E-7, entrées de E-15, zones de E-12). Les intertitres `#` et `##`
   s'affichent au niveau « intertitre » le plus haut, `###` et `####` plus bas : jamais au niveau du
@@ -2051,14 +2061,14 @@ pour l'emplacement du rendu (le contenu y devient mis en forme, la mise en page 
   d'avant (texte brut) se lit comme avant : paragraphes et sauts de ligne.
 - **Éditeur** (E-9, E-7, E-15, et le texte d'un compte-rendu à sa création) : le champ, au-dessus la
   barre « Gras » (`bold`), « Italique » (`italic`) et la bascule « Écrire / Aperçu » (deux boutons, l'un
-  actif, `aria-pressed`) ; sous le champ, le compteur « 12 480 / 100 000 ». Ctrl/⌘+B et Ctrl/⌘+I entourent
+  actif, `role="radio"`) ; sous le champ, le compteur « 12 480 / 100 000 ». Ctrl/⌘+B et Ctrl/⌘+I entourent
   la sélection (ou posent deux marques et placent le curseur entre elles), Ctrl/⌘+Entrée enregistre,
   Échap annule. « Aperçu » remplace le champ par le rendu de la même fonction que la lecture ; le texte
   saisi reste dans le champ et revient avec « Écrire ». Les boutons « Lien vers une fiche », « Fichier » et
   « Bloc MJ » n'existent pas encore.
 - **États de l'aperçu** : en cours, « Aperçu en cours… » (le champ reste, bascule désactivée) ; texte
   vide, « Rien à prévisualiser. » ; échec ou hors ligne, « L'aperçu n'a pas abouti. Réessayez. » avec
-  « Réessayer », et le champ intact ; plus de 100 000 caractères, pas d'appel, « Erreur : 100 000
+  « Réessayer », et le champ intact (message aussi d'une session expirée ou d'un refus du serveur : le texte saisi n'est pas perdu) ; plus de 100 000 caractères, pas d'appel, « Erreur : 100 000
   caractères au plus. » sous le champ. Le compteur passe en `--danger` au-delà de 100 000 et
   « Enregistrer » est désactivé, comme avec les 20 000 d'avant.
 - **Qui voit quoi** : la lecture ne montre que le rendu. Le champ d'édition reçoit la **source** :
@@ -2066,7 +2076,19 @@ pour l'emplacement du rendu (le contenu y devient mis en forme, la mise en page 
   en mode Joueur, ne la reçoit pas ; la réponse de lecture de Léa ne contient pas le Markdown.
 - **E-12** : au-dessus des zones « Actuel » et « Proposé », deux boutons « Rendu / Source » (« Rendu »
   par défaut) ; « Source » montre le Markdown brut des deux zones, côte à côte comme aujourd'hui. Le fil
-  de conversation reste en texte.
+  de conversation reste en texte. Après « Appliquer » ou « Abandonner », le choix « Rendu / Source » est
+  conservé ; une proposition périmée garde ses deux zones lisibles dans le mode choisi.
+- **Cas extrêmes** : une zone de E-12 garde sa hauteur de 15 lignes et défile ; un mot ou une adresse sans
+  espace passe à la ligne sans élargir la page à 375 px ; une image d'une autre adresse
+  (`![plan](https://…)`) se lit « plan » (son texte alternatif), sans image.
+- **Rôles** :
+
+  | | MJ | Joueur lecteur | Joueur qui écrit la section | MJ en mode Joueur |
+  |---|---|---|---|---|
+  | Lit le rendu | oui | oui | oui | oui |
+  | Reçoit la source | oui | non | oui | comme le rôle qu'il imite |
+  | Barre, aperçu, compteur | en édition | caché | en édition | comme le rôle qu'il imite |
+  | E-7, E-15, E-12 | éditeur au MJ, rendu pour qui lit | sans objet (MJ seul) | sans objet | sans objet |
 - **Plafond** : 100 000 caractères pour une section, un compte-rendu, un scénario, une entrée de système et
   un contenu proposé ; au-delà le serveur répond 400 « Contenu trop long : 100 000 caractères au plus. ».
 

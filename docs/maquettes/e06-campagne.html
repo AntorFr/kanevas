@@ -702,7 +702,7 @@ body.etat-perdue [data-ecrit] { opacity: .45; pointer-events: none; }
         <input class="saisie" id="cr-titre" autocomplete="off" placeholder="Par exemple : Session 13 — La crypte" aria-describedby="err-cr-titre">
         <span class="erreur" id="err-cr-titre" hidden></span>
       </label>
-      <label class="champ"><span class="champ-tete">Texte <small>facultatif</small><span class="compteur-champ" id="cpt-texte">0 / 20 000</span></span>
+      <label class="champ"><span class="champ-tete">Texte <small>facultatif</small><span class="compteur-champ" id="cpt-texte">0 / 100 000</span></span>
         <textarea class="saisie" id="cr-texte" placeholder="Ce qui s'est passé, ce qu'on a appris, ce qu'il reste à faire…" aria-describedby="err-cr-texte"></textarea>
         <span class="erreur" id="err-cr-texte" hidden></span>
       </label>
@@ -1078,7 +1078,7 @@ body.etat-perdue [data-ecrit] { opacity: .45; pointer-events: none; }
   function majCompteurs() {
     var t = $('#cr-titre').value.length, x = $('#cr-texte').value.length;
     $('#cpt-titre').textContent = t + ' / 120'; $('#cpt-titre').style.color = t > 120 ? 'var(--danger)' : '';
-    $('#cpt-texte').textContent = x.toLocaleString('fr-FR') + ' / 20 000'; $('#cpt-texte').style.color = x > 20000 ? 'var(--danger)' : '';
+    $('#cpt-texte').textContent = x.toLocaleString('fr-FR') + ' / 100 000'; $('#cpt-texte').style.color = x > 20000 ? 'var(--danger)' : '';
   }
   function ouvrirCR(depuis, echec) {
     retourCR = depuis;
@@ -1112,7 +1112,7 @@ body.etat-perdue [data-ecrit] { opacity: .45; pointer-events: none; }
     var t = $('#cr-titre').value.trim(), x = $('#cr-texte').value, ok = true;
     var et = !t ? 'Erreur : le titre est obligatoire.' : t.length > 120 ? 'Erreur : 120 caractères au plus.' : '';
     $('#err-cr-titre').textContent = et; $('#err-cr-titre').hidden = !et; if (et) { $('#cr-titre').setAttribute('aria-invalid', 'true'); ok = false; }
-    var ex = x.length > 20000 ? 'Erreur : 20 000 caractères au plus.' : '';
+    var ex = x.length > 20000 ? 'Erreur : 100 000 caractères au plus.' : '';
     $('#err-cr-texte').textContent = ex; $('#err-cr-texte').hidden = !ex; if (ex) ok = false;
     if (!ok) return (et ? $('#cr-titre') : $('#cr-texte')).focus();
     trouver(E.id).crs.unshift({ titre: t, auteur: E.joueur ? 'lea' : '', date: '5 oct. 2026' });

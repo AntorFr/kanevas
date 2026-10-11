@@ -1653,7 +1653,7 @@ var ILLUS = (function () {
     var auto = function () { ta.style.height = 'auto'; ta.style.height = Math.max(168, ta.scrollHeight + 2) + 'px'; };
     var maj = function () {
       var n = ta.value.length, trop = n > LIMITE;
-      cpt.textContent = trop ? 'Erreur : 20 000 caractères au plus.' : n.toLocaleString('fr-FR') + ' / 20 000';
+      cpt.textContent = trop ? 'Erreur : 100 000 caractères au plus.' : n.toLocaleString('fr-FR') + ' / 100 000';
       cpt.classList.toggle('trop', trop); enr.setAttribute('aria-disabled', trop); auto();
     };
     maj(); ta.addEventListener('input', maj);
