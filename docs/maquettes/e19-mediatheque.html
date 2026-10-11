@@ -20,37 +20,46 @@
 <style>
 /* =====================================================================================
    MAQUETTE FINIE — E-19 Médiathèque, kanevas-import.
-   Illustre docs/ecrans.md, « Détail des écrans de kanevas-import (cadrage) » › « E-19 Médiathèque » :
-     · la tête (titre, « 1 104 images », « Ajouter des images » pour un MJ) ; la rangée de filtres
-       (recherche par nom, « Visibilité » pour un MJ, « Usage », l'ordre) ; la grille de vignettes
-       (cadrage cover, chargement à l'approche, le nom dessous, pastille « MJ seul » d'une image
-       réservée), puis « Charger la suite » ;
-     · le panneau de l'image (à droite au bureau, plein écran au téléphone) : l'image en grand, le nom
-       éditable en place, la bascule « Visible des joueurs » / « Réservée au MJ », type, taille,
-       « ajoutée par … le … », la clé d'origine, « Utilisée dans », « Supprimer l'image » ;
-     · les boîtes « Réserver … au MJ ? » et « Supprimer … ? » (textes exacts) ;
-     · « Le choix d'une image » ouvert depuis l'éditeur de E-9 (« Image » de la barre d'outils) : la
-       même grille dans une boîte, « Depuis l'appareil » en tête ; puis l'avertissement de B-55 sous le
-       champ ;
-     · et, de « E-9 Fiche — ce que kanevas-import change », le paragraphe « Images » (pastille « MJ
-       seul » d'une image jointe, avertissement de l'éditeur).
+   Illustre docs/ecrans.md, « E-19 Médiathèque » (décisions de Monsieur du 2026-10-11 : la médiathèque
+   porte TOUS les fichiers de l'univers, images et documents) :
+     · la tête (titre, « 1 140 fichiers », « Ajouter des fichiers » pour un MJ) ; la bascule segmentée
+       « Tout · Images · Documents » ; la rangée de filtres (recherche par nom, « Visibilité » pour un MJ,
+       « Usage », l'ordre) ; la grille : une image en vignette (cadrage cover, chargement à l'approche),
+       un document en tuile de même taille (l'icône de son type, l'extension en pastille, la taille),
+       le nom dessous, la pastille « MJ seul » d'un fichier réservé ; puis « Charger la suite » ;
+     · le panneau du fichier (à droite au bureau, plein écran au téléphone) : l'image en grand, ou pour
+       un document sa grande icône, son type et « Télécharger » (aucun aperçu intégré, AD-66) ; le nom
+       éditable en place, la bascule « Visible des joueurs » / « Réservé au MJ », type, taille,
+       « ajouté par … le … », la clé d'origine, « Utilisé dans », « Supprimer le fichier » ;
+     · les boîtes « Réserver … au MJ ? » et « Supprimer … ? » (textes exacts, « Elle »/« Il » selon le
+       fichier) ;
+     · le sélecteur « Choisir un fichier » ouvert depuis l'éditeur de E-9 (« Fichier » ▸ « Choisir dans
+       la médiathèque ») : la même grille dans une boîte, « Ajouter depuis l'appareil » en tête ; puis
+       l'avertissement de B-55 sous le champ ;
+     · et, de « E-9 Fiche — ce que kanevas-import change », le paragraphe « Fichiers » (une image
+       s'insère par `![nom](fichier:<id>)`, un document par `[nom](fichier:<id>)`).
    Parcours P-16 (docs/parcours.md). Cadre, tokens et composants : e09-fiche.html, e18-acces-api.html
-   et docs/charte.md (icônes `images`, `lock`). Le document prime sur la maquette.
+   et docs/charte.md (icônes `images`, `lock`, `file-text` PDF, `file-spreadsheet` tableur,
+   `file-archive` archive, `file` autre, « Fichier » de l'éditeur `paperclip`). Le document prime.
    Les images sont des peintures de démonstration en SVG (portraits, paysages, blasons : celles de
    e08-liste-fiches.html ; cartes, plans, carte céleste : dessinées ici), dans de vraies <img>.
 
    États à ouvrir par l'adresse (combinables : #etat-image,perdue ; tous atteignables aussi au clic) :
-     (aucun)            canonique : Antor (MJ), la grille, 24 vignettes dont 5 « MJ seul »
+     (aucun)            canonique : Antor (MJ), « Tout », 31 fichiers (24 images, 7 documents), dont
+                        8 « MJ seul »
+     #etat-documents    la bascule sur « Documents » : les 7 documents seuls
+     #etat-document     panneau de « Règles de la Guilde.pdf » (grande icône, type, « Télécharger »,
+                        visibilité, « Utilisé dans », « Supprimer le fichier »)
      #etat-image        panneau de « plan-du-repaire.png » (visible des joueurs, utilisée dans 2 fiches)
      #etat-reserver     le même panneau et la boîte « Réserver « plan-du-repaire.png » au MJ ? »
      #etat-supprimer    panneau de « Carte des Sphères » et la boîte « Supprimer « Carte des Sphères » ? »
-     #etat-choisir      E-9 « Port-Sel », « Description » en édition : la boîte du choix d'une image
+     #etat-choisir      E-9 « Port-Sel », « Description » en édition : la boîte « Choisir un fichier »
      #etat-averti       la même édition après le choix de « Plan secret de la Guilde » (réservée au
                         MJ) : l'avertissement de B-55 sous le champ (au clic depuis #etat-choisir)
-     #etat-joueur       Léa (Joueuse) : seules les images visibles des joueurs, sans ajout ni filtre
+     #etat-joueur       Léa (Joueuse) : seuls les fichiers visibles des joueurs, sans ajout ni filtre
                         « Visibilité » ; panneau de « Carte des Sphères » sans bascule ni suppression,
-                        « Utilisée dans » réduit aux fiches qu'elle lit
-     #etat-vide         aucune image (texte du MJ ; #etat-vide,joueur : celui du joueur)
+                        « Utilisé dans » réduit aux fiches qu'elle lit
+     #etat-vide         aucun fichier (texte du MJ ; #etat-vide,joueur : celui du joueur)
      #etat-perdue       bandeau « Connexion perdue » ; ajout, bascule, suppression désactivés
    Et ceux du cadre : #etat-menu, #etat-univers, #etat-tiroir.
    ===================================================================================== */
@@ -432,7 +441,7 @@ body.etat-perdue [data-ecrit-recherche] { opacity: .45; pointer-events: none; }
   transition: box-shadow var(--duree); }
 .vignette:hover .vue::after { box-shadow: inset 0 0 0 1px var(--bord-fort); }
 .vue img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: 50% 40%; }
-/* L'image ouverte dans le panneau : un anneau d'encre, décalé de 2 px (non-texte, 3:1 sur --fond). */
+/* Le fichier ouvert dans le panneau : un anneau d'encre, décalé de 2 px (non-texte, 3:1 sur --fond). */
 .vignette[aria-current="true"] .vue::after { box-shadow: inset 0 0 0 2px var(--accent), inset 0 0 0 4px var(--fond); }
 .nom-img { display: block; min-width: 0; max-width: 100%; padding: 0 2px; font-size: var(--t-13); font-weight: 500; line-height: 1.35; color: var(--texte);
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -441,6 +450,36 @@ body.etat-perdue [data-ecrit-recherche] { opacity: .45; pointer-events: none; }
   box-shadow: inset 0 0 0 1px var(--mj-bord), 0 1px 3px rgba(0,0,0,.25); }
 .suite { display: flex; flex-direction: column; align-items: center; gap: 8px; margin-top: var(--e-6); }
 .suite .note { font-size: var(--t-12); color: var(--texte-3); font-variant-numeric: tabular-nums; }
+
+/* La tuile d'un document : même cadre 4:3 que la vignette ; l'icône du type au centre, l'extension
+   en pastille et la taille au pied. Une feuille posée sur le fond, sans teinte par type : l'icône dit
+   le type, la pastille le confirme en toutes lettres. */
+.vue.doc { display: flex; flex-direction: column; align-items: center; justify-content: center;
+  background: radial-gradient(var(--bord) 1px, transparent 1.4px) 0 0 / 12px 12px, var(--surface-2); }
+.vue.doc .feuille { width: 64px; height: 64px; display: grid; place-items: center; border-radius: 14px; margin-top: -14px;
+  background: var(--surface); color: var(--texte-2); box-shadow: inset 0 0 0 1px var(--bord-fort), 0 1px 2px rgba(0,0,0,.12);
+  transition: color var(--duree), transform var(--duree) var(--courbe); }
+.vue.doc .feuille .i { width: 30px; height: 30px; stroke-width: 1.5; }
+.vignette:hover .vue.doc .feuille { color: var(--texte); transform: translateY(-1px); }
+.vue.doc .pied-doc { position: absolute; left: 8px; right: 8px; bottom: 8px; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.ext { display: inline-flex; align-items: center; height: 20px; padding: 0 7px; border-radius: 5px; background: var(--surface);
+  color: var(--texte-2); box-shadow: inset 0 0 0 1px var(--bord-fort); font: 600 11px/1 var(--police-texte); letter-spacing: .04em; }
+.poids { font-size: var(--t-12); color: var(--texte-2); font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+/* La bascule « Tout · Images · Documents » : au-dessus des filtres, segments neutres (ceux du thème) */
+.bascule-type { display: inline-flex; margin-top: var(--e-6); padding: 2px; gap: 2px; border-radius: var(--rayon-champ);
+  background: var(--surface-2); box-shadow: inset 0 0 0 1px var(--bord); }
+.bascule-type button { display: inline-flex; align-items: center; gap: 6px; height: 30px; padding: 0 12px; border-radius: var(--rayon-item);
+  font-size: var(--t-13); font-weight: 500; color: var(--texte-2); transition: background-color var(--duree), color var(--duree), box-shadow var(--duree); }
+.bascule-type button .i { color: var(--texte-3); }
+.bascule-type button:hover { color: var(--texte); }
+.bascule-type button[aria-checked="true"] { background: var(--surface); color: var(--texte); box-shadow: 0 0 0 1px var(--bord-fort), 0 1px 2px rgba(0,0,0,.18); }
+.bascule-type button[aria-checked="true"] .i { color: var(--texte-2); }
+.bascule-type + .filtres { margin-top: var(--e-3); }
+/* Sombre : la feuille et la pastille d'extension montent d'un cran (--surface-3), pour se poser sur le fond
+   au lieu de s'y creuser. */
+:root:not([data-theme="light"]) .feuille, :root:not([data-theme="light"]) .vue.doc .ext { background: var(--surface-3); }
+.ch-outils .bascule-type { margin-top: 0; }
 
 /* Vide, aucun résultat */
 .vide-liste { margin-top: var(--e-5); padding: var(--e-7) var(--e-5); border-radius: var(--rayon-panneau); text-align: center;
@@ -456,7 +495,7 @@ body.etat-vide [data-plein] { display: none !important; }
 body:not(.etat-vide) [data-vide] { display: none !important; }
 body.role-joueur [data-vide-mj], body:not(.role-joueur) [data-vide-joueur] { display: none; }
 
-/* ---------- Le panneau de l'image ---------- */
+/* ---------- Le panneau du fichier ---------- */
 .zone-principale { transition: margin-right var(--duree) var(--courbe); }
 body.panneau-ouvert .zone-principale { margin-right: 400px; }
 body.panneau-ouvert .assistant { right: calc(400px + var(--e-5)); }
@@ -472,6 +511,15 @@ body.panneau-ouvert .panneau-image { transform: none; opacity: 1; visibility: vi
 .apercu-image { display: grid; place-items: center; height: 248px; border-radius: var(--rayon-champ); overflow: hidden; position: relative;
   background: radial-gradient(var(--bord-fort) 1px, transparent 1.4px) 0 0 / 12px 12px, var(--surface-2); box-shadow: inset 0 0 0 1px var(--bord); }
 .apercu-image img { display: block; max-width: 100%; max-height: 100%; object-fit: contain; }
+/* Un document : pas d'aperçu intégré (AD-66) — sa grande icône, son type, « Télécharger ». */
+.apercu-doc { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; height: 248px;
+  border-radius: var(--rayon-champ); background: radial-gradient(var(--bord) 1px, transparent 1.4px) 0 0 / 12px 12px, var(--surface-2);
+  box-shadow: inset 0 0 0 1px var(--bord); }
+.apercu-doc .feuille { width: 88px; height: 88px; display: grid; place-items: center; border-radius: 18px; background: var(--surface);
+  color: var(--texte-2); box-shadow: inset 0 0 0 1px var(--bord-fort), 0 2px 6px rgba(0,0,0,.14); }
+.apercu-doc .feuille .i { width: 42px; height: 42px; stroke-width: 1.4; }
+.apercu-doc .type-doc { margin-top: 2px; font-size: var(--t-13); color: var(--texte-2); }
+.apercu-doc .bouton { margin-top: 4px; }
 .pi-nom { display: flex; align-items: flex-start; gap: 6px; margin-top: var(--e-4); }
 .pi-nom h2 { flex: 1; min-width: 0; font: 500 var(--t-22)/1.25 var(--police-titre); letter-spacing: -.005em; font-variation-settings: "opsz" 48;
   overflow-wrap: anywhere; border-radius: var(--rayon-item); }
@@ -524,7 +572,7 @@ body.etat-perdue [data-ecrit] { opacity: .45; pointer-events: none; }
 .dialogue .liste-fiches .ou { color: var(--texte-3); }
 .dialogue .liste-fiches + p { margin-top: 10px; }
 
-/* La boîte du choix d'une image : la même grille, plus petite */
+/* Le sélecteur « Choisir un fichier » : la même grille, plus petite */
 .dialogue.choisir { width: min(860px, 100%); max-height: min(720px, calc(100vh - 48px)); display: flex; flex-direction: column; padding: 0; }
 .ch-tete { display: flex; align-items: center; gap: 12px; padding: 18px 16px 0 24px; }
 .ch-tete h3 { flex: 1; }
@@ -541,6 +589,9 @@ body.etat-perdue [data-ecrit] { opacity: .45; pointer-events: none; }
 .depuis-appareil:hover { background: var(--surface-2); }
 .depuis-appareil:hover .cadre { border-color: var(--accent); }
 .depuis-appareil .nom-img { color: var(--texte); }
+.depuis-appareil .cadre .lib-appareil { padding: 0 10px; font-size: var(--t-13); font-weight: 500; line-height: 1.3; color: var(--texte); text-align: center; }
+.ch-grille .vue.doc .feuille { width: 44px; height: 44px; border-radius: 11px; margin-top: 0; }
+.ch-grille .vue.doc .feuille .i { width: 22px; height: 22px; }
 .dialogue.choisir .vignette:hover { background: var(--surface-2); }
 
 /* ---------- E-9 derrière la boîte du choix (fiche « Port-Sel », « Description » en édition) ---------- */
@@ -557,6 +608,7 @@ body:not(.vue-fiche) [data-vue="fiche"], body.vue-fiche [data-vue="mediatheque"]
 .outils { display: flex; align-items: center; flex-wrap: wrap; gap: 2px; padding: 6px 8px; border-bottom: 1px solid var(--bord); }
 .outils .icone { width: 30px; height: 30px; }
 .outils .filet-outils { width: 1px; height: 18px; margin: 0 6px; background: var(--bord-fort); }
+.menu-fichier { top: calc(100% + 6px); left: -4px; min-width: 248px; }
 .outil-mj { display: inline-flex; align-items: center; gap: 6px; height: 30px; padding: 0 9px; border-radius: var(--rayon-item);
   color: var(--mj); font-size: var(--t-13); font-weight: 500; }
 .outil-mj:hover { background: var(--mj-fond); }
@@ -592,6 +644,13 @@ body:not(.vue-fiche) [data-vue="fiche"], body.vue-fiche [data-vue="mediatheque"]
   .tete-liste .nombre { padding-bottom: 3px; }
   .tete-liste [data-ajouter] { flex-basis: 100%; min-height: 40px; }
   .filtres { margin-top: var(--e-5); gap: 6px; }
+  .bascule-type { display: flex; margin-top: var(--e-5); }
+  .bascule-type button { flex: 1; justify-content: center; height: 36px; padding: 0 8px; }
+  .vue.doc .feuille { width: 52px; height: 52px; border-radius: 12px; margin-top: -12px; }
+  .vue.doc .feuille .i { width: 26px; height: 26px; }
+  .vue.doc .pied-doc { left: 6px; right: 6px; bottom: 6px; }
+  .apercu-doc { height: 260px; }
+  .apercu-doc .bouton { min-height: 40px; }
   .champ-recherche { flex: 1 1 100%; max-width: none; height: 40px; }
   .champ-recherche input { height: 38px; font-size: 16px; }
   .filtre { height: 36px; }
@@ -634,7 +693,7 @@ body:not(.vue-fiche) [data-vue="fiche"], body.vue-fiche [data-vue="mediatheque"]
 </style>
 </head>
 <body>
-<svg xmlns="http://www.w3.org/2000/svg" width="0" height="0" style="position:absolute" aria-hidden="true"><!-- Lucide (lucide-static, ISC), tracés copiés tels quels --><symbol id="i-arrow-down" viewBox="0 0 24 24"><path d="M12 5v14" /> <path d="m19 12-7 7-7-7" /></symbol><symbol id="i-arrow-down-wide-narrow" viewBox="0 0 24 24"><path d="m3 16 4 4 4-4" /> <path d="M7 20V4" /> <path d="M11 4h10" /> <path d="M11 8h7" /> <path d="M11 12h4" /></symbol><symbol id="i-arrow-up-right" viewBox="0 0 24 24"><path d="M7 7h10v10" /> <path d="M7 17 17 7" /></symbol><symbol id="i-bold" viewBox="0 0 24 24"><path d="M6 12h9a4 4 0 0 1 0 8H7a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h7a4 4 0 0 1 0 8" /></symbol><symbol id="i-book-open" viewBox="0 0 24 24"><path d="M12 5v16" /> <path d="M20.001 19A2 2 0 0022 17V5a2 2 0 00-1.999-2L16 3.002A5 5 0 0012 5a5 5 0 00-4-2H4a2 2 0 00-2 2v12a2 2 0 001.999 2H8a5 5 0 014 2 5 5 0 014-2z" /></symbol><symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5" /></symbol><symbol id="i-chevron-down" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6" /></symbol><symbol id="i-chevron-right" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6" /></symbol><symbol id="i-chevrons-up-down" viewBox="0 0 24 24"><path d="m7 15 5 5 5-5" /> <path d="m7 9 5-5 5 5" /></symbol><symbol id="i-circle-check" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" /> <path d="m16 9-5.5 5.5L8 12" /></symbol><symbol id="i-contact-round" viewBox="0 0 24 24"><path d="M16 2v2" /> <path d="M17.915 21a6 6 0 10-12 0" /> <path d="M8 2v2" /> <circle cx="12" cy="11" r="4" /> <rect x="3" y="3" width="18" height="18" rx="2" /></symbol><symbol id="i-dices" viewBox="0 0 24 24"><rect width="12" height="12" x="2" y="10" rx="2" ry="2" /> <path d="m17.92 14 3.5-3.5a2.24 2.24 0 0 0 0-3l-5-4.92a2.24 2.24 0 0 0-3 0L10 6" /> <path d="M6 18h.01" /> <path d="M10 14h.01" /> <path d="M15 6h.01" /> <path d="M18 9h.01" /></symbol><symbol id="i-dna" viewBox="0 0 24 24"><path d="m10 16 1.5 1.5" /> <path d="m14 8-1.5-1.5" /> <path d="M15 2c-1.798 1.998-2.518 3.995-2.807 5.993" /> <path d="m16.5 10.5 1 1" /> <path d="m17 6-2.891-2.891" /> <path d="M2 15c6.667-6 13.333 0 20-6" /> <path d="m20 9 .891.891" /> <path d="M3.109 14.109 4 15" /> <path d="m6.5 12.5 1 1" /> <path d="m7 18 2.891 2.891" /> <path d="M9 22c1.798-1.998 2.518-3.995 2.807-5.993" /></symbol><symbol id="i-eye" viewBox="0 0 24 24"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0" /> <circle cx="12" cy="12" r="3" /></symbol><symbol id="i-flag" viewBox="0 0 24 24"><path d="M4 22V4a1 1 0 0 1 .4-.8A6 6 0 0 1 8 2c3 0 5 2 7.333 2q2 0 3.067-.8A1 1 0 0 1 20 4v10a1 1 0 0 1-.4.8A6 6 0 0 1 16 16c-3 0-5-2-8-2a6 6 0 0 0-4 1.528" /></symbol><symbol id="i-gem" viewBox="0 0 24 24"><path d="M10.5 3 8 9l4 13 4-13-2.5-6" /> <path d="M17 3a2 2 0 0 1 1.6.8l3 4a2 2 0 0 1 .013 2.382l-7.99 10.986a2 2 0 0 1-3.247 0l-7.99-10.986A2 2 0 0 1 2.4 7.8l2.998-3.997A2 2 0 0 1 7 3z" /> <path d="M2 9h20" /></symbol><symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" /> <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20" /> <path d="M2 12h20" /></symbol><symbol id="i-hourglass" viewBox="0 0 24 24"><path d="M5 22h14" /> <path d="M5 2h14" /> <path d="M17 22v-4.172a2 2 0 0 0-.586-1.414L12 12l-4.414 4.414A2 2 0 0 0 7 17.828V22" /> <path d="M7 2v4.172a2 2 0 0 0 .586 1.414L12 12l4.414-4.414A2 2 0 0 0 17 6.172V2" /></symbol><symbol id="i-image" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2" ry="2" /> <circle cx="9" cy="9" r="2" /> <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" /></symbol><symbol id="i-image-plus" viewBox="0 0 24 24"><path d="M16 5h6" /> <path d="M19 2v6" /> <path d="M21 11.5V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7.5" /> <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" /> <circle cx="9" cy="9" r="2" /></symbol><symbol id="i-images" viewBox="0 0 24 24"><path d="m22 11-1.296-1.296a2.4 2.4 0 0 0-3.408 0L11 16" /> <path d="M4 8a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2" /> <circle cx="13" cy="7" r="1" fill="currentColor" /> <rect x="8" y="2" width="14" height="14" rx="2" /></symbol><symbol id="i-italic" viewBox="0 0 24 24"><line x1="19" x2="10" y1="4" y2="4" /> <line x1="14" x2="5" y1="20" y2="20" /> <line x1="15" x2="9" y1="4" y2="20" /></symbol><symbol id="i-key-round" viewBox="0 0 24 24"><path d="M2.586 17.414A2 2 0 0 0 2 18.828V21a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h1a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h.172a2 2 0 0 0 1.414-.586l.814-.814a6.5 6.5 0 1 0-4-4z" /> <circle cx="16.5" cy="7.5" r=".5" fill="currentColor" /></symbol><symbol id="i-layout-grid" viewBox="0 0 24 24"><rect width="7" height="7" x="3" y="3" rx="1" /> <rect width="7" height="7" x="14" y="3" rx="1" /> <rect width="7" height="7" x="14" y="14" rx="1" /> <rect width="7" height="7" x="3" y="14" rx="1" /></symbol><symbol id="i-library" viewBox="0 0 24 24"><path d="m16 6 4 14" /> <path d="M12 6v14" /> <path d="M8 8v12" /> <path d="M4 4v16" /></symbol><symbol id="i-lightbulb" viewBox="0 0 24 24"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5" /> <path d="M9 18h6" /> <path d="M10 22h4" /></symbol><symbol id="i-link" viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" /> <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" /></symbol><symbol id="i-lock" viewBox="0 0 24 24"><rect width="18" height="11" x="3" y="11" rx="2" ry="2" /> <path d="M7 11V7a5 5 0 0 1 10 0v4" /></symbol><symbol id="i-lock-keyhole" viewBox="0 0 24 24"><circle cx="12" cy="16" r="1" /> <rect x="3" y="10" width="18" height="12" rx="2" /> <path d="M7 10V7a5 5 0 0 1 10 0v3" /></symbol><symbol id="i-log-out" viewBox="0 0 24 24"><path d="m16 17 5-5-5-5" /> <path d="M21 12H9" /> <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /></symbol><symbol id="i-map" viewBox="0 0 24 24"><path d="M14.106 5.553a2 2 0 0 0 1.788 0l3.659-1.83A1 1 0 0 1 21 4.619v12.764a1 1 0 0 1-.553.894l-4.553 2.277a2 2 0 0 1-1.788 0l-4.212-2.106a2 2 0 0 0-1.788 0l-3.659 1.83A1 1 0 0 1 3 19.381V6.618a1 1 0 0 1 .553-.894l4.553-2.277a2 2 0 0 1 1.788 0z" /> <path d="M15 5.764v15" /> <path d="M9 3.236v15" /></symbol><symbol id="i-map-pin" viewBox="0 0 24 24"><path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0" /> <circle cx="12" cy="10" r="3" /></symbol><symbol id="i-monitor" viewBox="0 0 24 24"><rect width="20" height="14" x="2" y="3" rx="2" /> <line x1="8" x2="16" y1="21" y2="21" /> <line x1="12" x2="12" y1="17" y2="21" /></symbol><symbol id="i-moon" viewBox="0 0 24 24"><path d="M20.985 12.486a9 9 0 1 1-9.473-9.472c.405-.022.617.46.402.803a6 6 0 0 0 8.268 8.268c.344-.215.825-.004.803.401" /></symbol><symbol id="i-notebook-pen" viewBox="0 0 24 24"><path d="M13.4 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7.4" /> <path d="M2 6h4" /> <path d="M2 10h4" /> <path d="M2 14h4" /> <path d="M2 18h4" /> <path d="M21.378 5.626a1 1 0 1 0-3.004-3.004l-5.01 5.012a2 2 0 0 0-.506.854l-.837 2.87a.5.5 0 0 0 .62.62l2.87-.837a2 2 0 0 0 .854-.506z" /></symbol><symbol id="i-panel-left" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2" /> <path d="M9 3v18" /></symbol><symbol id="i-paw-print" viewBox="0 0 24 24"><circle cx="11" cy="4" r="2" /> <circle cx="18" cy="8" r="2" /> <circle cx="20" cy="16" r="2" /> <path d="M9 10a5 5 0 0 1 5 5v3.5a3.5 3.5 0 0 1-6.84 1.045Q6.52 17.48 4.46 16.84A3.5 3.5 0 0 1 5.5 10Z" /></symbol><symbol id="i-pencil" viewBox="0 0 24 24"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z" /> <path d="m15 5 4 4" /></symbol><symbol id="i-scale" viewBox="0 0 24 24"><path d="M12 3v18" /> <path d="m19 8 3 8a5 5 0 0 1-6 0zV7" /> <path d="M3 7h1a17 17 0 0 0 8-2 17 17 0 0 0 8 2h1" /> <path d="m5 8 3 8a5 5 0 0 1-6 0zV7" /> <path d="M7 21h10" /></symbol><symbol id="i-scroll-text" viewBox="0 0 24 24"><path d="M15 12h-5" /> <path d="M15 8h-5" /> <path d="M19 17V5a2 2 0 0 0-2-2H4" /> <path d="M8 21h12a2 2 0 0 0 2-2v-1a1 1 0 0 0-1-1H11a1 1 0 0 0-1 1v1a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v2a1 1 0 0 0 1 1h3" /></symbol><symbol id="i-search" viewBox="0 0 24 24"><path d="m21 21-4.34-4.34" /> <circle cx="11" cy="11" r="8" /></symbol><symbol id="i-settings-2" viewBox="0 0 24 24"><path d="M14 17H5" /> <path d="M19 7h-9" /> <circle cx="17" cy="17" r="3" /> <circle cx="7" cy="7" r="3" /></symbol><symbol id="i-shield" viewBox="0 0 24 24"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z" /></symbol><symbol id="i-ship" viewBox="0 0 24 24"><path d="M12 2v2" /> <path d="M12 9.189V13" /> <path d="M19 12V6a2 2 0 00-2-2H7a2 2 0 00-2 2v6" /> <path d="M19.38 19A11.6 11.6 0 0021 13l-8.188-3.639a2 2 0 00-1.624 0L3 13.001a11.6 11.6 0 002.81 7.76" /> <path d="M2 20c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1s1.2 1 2.5 1c2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1" /></symbol><symbol id="i-sparkles" viewBox="0 0 24 24"><path d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z" /> <path d="M20 2v4" /> <path d="M22 4h-4" /> <circle cx="4" cy="20" r="2" /></symbol><symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4" /> <path d="M12 2v2" /> <path d="M12 20v2" /> <path d="m4.93 4.93 1.41 1.41" /> <path d="m17.66 17.66 1.41 1.41" /> <path d="M2 12h2" /> <path d="M20 12h2" /> <path d="m6.34 17.66-1.41 1.41" /> <path d="m19.07 4.93-1.41 1.41" /></symbol><symbol id="i-trash-2" viewBox="0 0 24 24"><path d="M10 11v6" /> <path d="M14 11v6" /> <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" /> <path d="M3 6h18" /> <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /></symbol><symbol id="i-upload" viewBox="0 0 24 24"><path d="M12 3v12" /> <path d="m17 8-5-5-5 5" /> <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /></symbol><symbol id="i-users-round" viewBox="0 0 24 24"><path d="M18 21a8 8 0 0 0-16 0" /> <circle cx="10" cy="8" r="5" /> <path d="M22 20c0-3.37-2-6.5-4-8a5 5 0 0 0-.45-8.3" /></symbol><symbol id="i-wifi-off" viewBox="0 0 24 24"><path d="M12 20h.01" /> <path d="M8.5 16.429a5 5 0 0 1 7 0" /> <path d="M5 12.859a10 10 0 0 1 5.17-2.69" /> <path d="M19 12.859a10 10 0 0 0-2.007-1.523" /> <path d="M2 8.82a15 15 0 0 1 4.177-2.643" /> <path d="M22 8.82a15 15 0 0 0-11.288-3.764" /> <path d="m2 2 20 20" /></symbol><symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18" /> <path d="m6 6 12 12" /></symbol></svg>
+<svg xmlns="http://www.w3.org/2000/svg" width="0" height="0" style="position:absolute" aria-hidden="true"><!-- Lucide (lucide-static, ISC), tracés copiés tels quels --><symbol id="i-arrow-down" viewBox="0 0 24 24"><path d="M12 5v14" /> <path d="m19 12-7 7-7-7" /></symbol><symbol id="i-arrow-down-wide-narrow" viewBox="0 0 24 24"><path d="m3 16 4 4 4-4" /> <path d="M7 20V4" /> <path d="M11 4h10" /> <path d="M11 8h7" /> <path d="M11 12h4" /></symbol><symbol id="i-arrow-up-right" viewBox="0 0 24 24"><path d="M7 7h10v10" /> <path d="M7 17 17 7" /></symbol><symbol id="i-bold" viewBox="0 0 24 24"><path d="M6 12h9a4 4 0 0 1 0 8H7a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h7a4 4 0 0 1 0 8" /></symbol><symbol id="i-book-open" viewBox="0 0 24 24"><path d="M12 5v16" /> <path d="M20.001 19A2 2 0 0022 17V5a2 2 0 00-1.999-2L16 3.002A5 5 0 0012 5a5 5 0 00-4-2H4a2 2 0 00-2 2v12a2 2 0 001.999 2H8a5 5 0 014 2 5 5 0 014-2z" /></symbol><symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5" /></symbol><symbol id="i-chevron-down" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6" /></symbol><symbol id="i-chevron-right" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6" /></symbol><symbol id="i-chevrons-up-down" viewBox="0 0 24 24"><path d="m7 15 5 5 5-5" /> <path d="m7 9 5-5 5 5" /></symbol><symbol id="i-circle-check" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" /> <path d="m16 9-5.5 5.5L8 12" /></symbol><symbol id="i-contact-round" viewBox="0 0 24 24"><path d="M16 2v2" /> <path d="M17.915 21a6 6 0 10-12 0" /> <path d="M8 2v2" /> <circle cx="12" cy="11" r="4" /> <rect x="3" y="3" width="18" height="18" rx="2" /></symbol><symbol id="i-dices" viewBox="0 0 24 24"><rect width="12" height="12" x="2" y="10" rx="2" ry="2" /> <path d="m17.92 14 3.5-3.5a2.24 2.24 0 0 0 0-3l-5-4.92a2.24 2.24 0 0 0-3 0L10 6" /> <path d="M6 18h.01" /> <path d="M10 14h.01" /> <path d="M15 6h.01" /> <path d="M18 9h.01" /></symbol><symbol id="i-dna" viewBox="0 0 24 24"><path d="m10 16 1.5 1.5" /> <path d="m14 8-1.5-1.5" /> <path d="M15 2c-1.798 1.998-2.518 3.995-2.807 5.993" /> <path d="m16.5 10.5 1 1" /> <path d="m17 6-2.891-2.891" /> <path d="M2 15c6.667-6 13.333 0 20-6" /> <path d="m20 9 .891.891" /> <path d="M3.109 14.109 4 15" /> <path d="m6.5 12.5 1 1" /> <path d="m7 18 2.891 2.891" /> <path d="M9 22c1.798-1.998 2.518-3.995 2.807-5.993" /></symbol><symbol id="i-eye" viewBox="0 0 24 24"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0" /> <circle cx="12" cy="12" r="3" /></symbol><symbol id="i-download" viewBox="0 0 24 24"><path d="M12 15V3" /> <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /> <path d="m7 10 5 5 5-5" /></symbol><symbol id="i-file" viewBox="0 0 24 24"><path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z" /> <path d="M14 2v5a1 1 0 0 0 1 1h5" /></symbol><symbol id="i-file-archive" viewBox="0 0 24 24"><path d="M13.659 22H18a2 2 0 0 0 2-2V8a2.4 2.4 0 0 0-.706-1.706l-3.588-3.588A2.4 2.4 0 0 0 14 2H6a2 2 0 0 0-2 2v11.5" /> <path d="M14 2v5a1 1 0 0 0 1 1h5" /> <path d="M8 12v-1" /> <path d="M8 18v-2" /> <path d="M8 7V6" /> <circle cx="8" cy="20" r="2" /></symbol><symbol id="i-file-spreadsheet" viewBox="0 0 24 24"><path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z" /> <path d="M14 2v5a1 1 0 0 0 1 1h5" /> <path d="M8 13h2" /> <path d="M14 13h2" /> <path d="M8 17h2" /> <path d="M14 17h2" /></symbol><symbol id="i-file-text" viewBox="0 0 24 24"><path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z" /> <path d="M14 2v5a1 1 0 0 0 1 1h5" /> <path d="M10 9H8" /> <path d="M16 13H8" /> <path d="M16 17H8" /></symbol><symbol id="i-paperclip" viewBox="0 0 24 24"><path d="m16 6-8.414 8.586a2 2 0 0 0 2.829 2.829l8.414-8.586a4 4 0 1 0-5.657-5.657l-8.379 8.551a6 6 0 1 0 8.485 8.485l8.379-8.551" /></symbol><symbol id="i-flag" viewBox="0 0 24 24"><path d="M4 22V4a1 1 0 0 1 .4-.8A6 6 0 0 1 8 2c3 0 5 2 7.333 2q2 0 3.067-.8A1 1 0 0 1 20 4v10a1 1 0 0 1-.4.8A6 6 0 0 1 16 16c-3 0-5-2-8-2a6 6 0 0 0-4 1.528" /></symbol><symbol id="i-gem" viewBox="0 0 24 24"><path d="M10.5 3 8 9l4 13 4-13-2.5-6" /> <path d="M17 3a2 2 0 0 1 1.6.8l3 4a2 2 0 0 1 .013 2.382l-7.99 10.986a2 2 0 0 1-3.247 0l-7.99-10.986A2 2 0 0 1 2.4 7.8l2.998-3.997A2 2 0 0 1 7 3z" /> <path d="M2 9h20" /></symbol><symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" /> <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20" /> <path d="M2 12h20" /></symbol><symbol id="i-hourglass" viewBox="0 0 24 24"><path d="M5 22h14" /> <path d="M5 2h14" /> <path d="M17 22v-4.172a2 2 0 0 0-.586-1.414L12 12l-4.414 4.414A2 2 0 0 0 7 17.828V22" /> <path d="M7 2v4.172a2 2 0 0 0 .586 1.414L12 12l4.414-4.414A2 2 0 0 0 17 6.172V2" /></symbol><symbol id="i-image" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2" ry="2" /> <circle cx="9" cy="9" r="2" /> <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" /></symbol><symbol id="i-image-plus" viewBox="0 0 24 24"><path d="M16 5h6" /> <path d="M19 2v6" /> <path d="M21 11.5V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7.5" /> <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" /> <circle cx="9" cy="9" r="2" /></symbol><symbol id="i-images" viewBox="0 0 24 24"><path d="m22 11-1.296-1.296a2.4 2.4 0 0 0-3.408 0L11 16" /> <path d="M4 8a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2" /> <circle cx="13" cy="7" r="1" fill="currentColor" /> <rect x="8" y="2" width="14" height="14" rx="2" /></symbol><symbol id="i-italic" viewBox="0 0 24 24"><line x1="19" x2="10" y1="4" y2="4" /> <line x1="14" x2="5" y1="20" y2="20" /> <line x1="15" x2="9" y1="4" y2="20" /></symbol><symbol id="i-key-round" viewBox="0 0 24 24"><path d="M2.586 17.414A2 2 0 0 0 2 18.828V21a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h1a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h.172a2 2 0 0 0 1.414-.586l.814-.814a6.5 6.5 0 1 0-4-4z" /> <circle cx="16.5" cy="7.5" r=".5" fill="currentColor" /></symbol><symbol id="i-layout-grid" viewBox="0 0 24 24"><rect width="7" height="7" x="3" y="3" rx="1" /> <rect width="7" height="7" x="14" y="3" rx="1" /> <rect width="7" height="7" x="14" y="14" rx="1" /> <rect width="7" height="7" x="3" y="14" rx="1" /></symbol><symbol id="i-library" viewBox="0 0 24 24"><path d="m16 6 4 14" /> <path d="M12 6v14" /> <path d="M8 8v12" /> <path d="M4 4v16" /></symbol><symbol id="i-lightbulb" viewBox="0 0 24 24"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5" /> <path d="M9 18h6" /> <path d="M10 22h4" /></symbol><symbol id="i-link" viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" /> <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" /></symbol><symbol id="i-lock" viewBox="0 0 24 24"><rect width="18" height="11" x="3" y="11" rx="2" ry="2" /> <path d="M7 11V7a5 5 0 0 1 10 0v4" /></symbol><symbol id="i-lock-keyhole" viewBox="0 0 24 24"><circle cx="12" cy="16" r="1" /> <rect x="3" y="10" width="18" height="12" rx="2" /> <path d="M7 10V7a5 5 0 0 1 10 0v3" /></symbol><symbol id="i-log-out" viewBox="0 0 24 24"><path d="m16 17 5-5-5-5" /> <path d="M21 12H9" /> <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /></symbol><symbol id="i-map" viewBox="0 0 24 24"><path d="M14.106 5.553a2 2 0 0 0 1.788 0l3.659-1.83A1 1 0 0 1 21 4.619v12.764a1 1 0 0 1-.553.894l-4.553 2.277a2 2 0 0 1-1.788 0l-4.212-2.106a2 2 0 0 0-1.788 0l-3.659 1.83A1 1 0 0 1 3 19.381V6.618a1 1 0 0 1 .553-.894l4.553-2.277a2 2 0 0 1 1.788 0z" /> <path d="M15 5.764v15" /> <path d="M9 3.236v15" /></symbol><symbol id="i-map-pin" viewBox="0 0 24 24"><path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0" /> <circle cx="12" cy="10" r="3" /></symbol><symbol id="i-monitor" viewBox="0 0 24 24"><rect width="20" height="14" x="2" y="3" rx="2" /> <line x1="8" x2="16" y1="21" y2="21" /> <line x1="12" x2="12" y1="17" y2="21" /></symbol><symbol id="i-moon" viewBox="0 0 24 24"><path d="M20.985 12.486a9 9 0 1 1-9.473-9.472c.405-.022.617.46.402.803a6 6 0 0 0 8.268 8.268c.344-.215.825-.004.803.401" /></symbol><symbol id="i-notebook-pen" viewBox="0 0 24 24"><path d="M13.4 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7.4" /> <path d="M2 6h4" /> <path d="M2 10h4" /> <path d="M2 14h4" /> <path d="M2 18h4" /> <path d="M21.378 5.626a1 1 0 1 0-3.004-3.004l-5.01 5.012a2 2 0 0 0-.506.854l-.837 2.87a.5.5 0 0 0 .62.62l2.87-.837a2 2 0 0 0 .854-.506z" /></symbol><symbol id="i-panel-left" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2" /> <path d="M9 3v18" /></symbol><symbol id="i-paw-print" viewBox="0 0 24 24"><circle cx="11" cy="4" r="2" /> <circle cx="18" cy="8" r="2" /> <circle cx="20" cy="16" r="2" /> <path d="M9 10a5 5 0 0 1 5 5v3.5a3.5 3.5 0 0 1-6.84 1.045Q6.52 17.48 4.46 16.84A3.5 3.5 0 0 1 5.5 10Z" /></symbol><symbol id="i-pencil" viewBox="0 0 24 24"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z" /> <path d="m15 5 4 4" /></symbol><symbol id="i-scale" viewBox="0 0 24 24"><path d="M12 3v18" /> <path d="m19 8 3 8a5 5 0 0 1-6 0zV7" /> <path d="M3 7h1a17 17 0 0 0 8-2 17 17 0 0 0 8 2h1" /> <path d="m5 8 3 8a5 5 0 0 1-6 0zV7" /> <path d="M7 21h10" /></symbol><symbol id="i-scroll-text" viewBox="0 0 24 24"><path d="M15 12h-5" /> <path d="M15 8h-5" /> <path d="M19 17V5a2 2 0 0 0-2-2H4" /> <path d="M8 21h12a2 2 0 0 0 2-2v-1a1 1 0 0 0-1-1H11a1 1 0 0 0-1 1v1a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v2a1 1 0 0 0 1 1h3" /></symbol><symbol id="i-search" viewBox="0 0 24 24"><path d="m21 21-4.34-4.34" /> <circle cx="11" cy="11" r="8" /></symbol><symbol id="i-settings-2" viewBox="0 0 24 24"><path d="M14 17H5" /> <path d="M19 7h-9" /> <circle cx="17" cy="17" r="3" /> <circle cx="7" cy="7" r="3" /></symbol><symbol id="i-shield" viewBox="0 0 24 24"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z" /></symbol><symbol id="i-ship" viewBox="0 0 24 24"><path d="M12 2v2" /> <path d="M12 9.189V13" /> <path d="M19 12V6a2 2 0 00-2-2H7a2 2 0 00-2 2v6" /> <path d="M19.38 19A11.6 11.6 0 0021 13l-8.188-3.639a2 2 0 00-1.624 0L3 13.001a11.6 11.6 0 002.81 7.76" /> <path d="M2 20c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1s1.2 1 2.5 1c2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1" /></symbol><symbol id="i-sparkles" viewBox="0 0 24 24"><path d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z" /> <path d="M20 2v4" /> <path d="M22 4h-4" /> <circle cx="4" cy="20" r="2" /></symbol><symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4" /> <path d="M12 2v2" /> <path d="M12 20v2" /> <path d="m4.93 4.93 1.41 1.41" /> <path d="m17.66 17.66 1.41 1.41" /> <path d="M2 12h2" /> <path d="M20 12h2" /> <path d="m6.34 17.66-1.41 1.41" /> <path d="m19.07 4.93-1.41 1.41" /></symbol><symbol id="i-trash-2" viewBox="0 0 24 24"><path d="M10 11v6" /> <path d="M14 11v6" /> <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" /> <path d="M3 6h18" /> <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /></symbol><symbol id="i-upload" viewBox="0 0 24 24"><path d="M12 3v12" /> <path d="m17 8-5-5-5 5" /> <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /></symbol><symbol id="i-users-round" viewBox="0 0 24 24"><path d="M18 21a8 8 0 0 0-16 0" /> <circle cx="10" cy="8" r="5" /> <path d="M22 20c0-3.37-2-6.5-4-8a5 5 0 0 0-.45-8.3" /></symbol><symbol id="i-wifi-off" viewBox="0 0 24 24"><path d="M12 20h.01" /> <path d="M8.5 16.429a5 5 0 0 1 7 0" /> <path d="M5 12.859a10 10 0 0 1 5.17-2.69" /> <path d="M19 12.859a10 10 0 0 0-2.007-1.523" /> <path d="M2 8.82a15 15 0 0 1 4.177-2.643" /> <path d="M22 8.82a15 15 0 0 0-11.288-3.764" /> <path d="m2 2 20 20" /></symbol><symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18" /> <path d="m6 6 12 12" /></symbol></svg>
 
 <div class="app">
   <!-- ============================ Barre latérale (cadre de e09-fiche.html, à jour de kanevas-import) ============================ -->
@@ -744,9 +803,15 @@ body:not(.vue-fiche) [data-vue="fiche"], body.vue-fiche [data-vue="mediatheque"]
   <header class="tete-liste">
     <span class="glyphe-type" aria-hidden="true"><svg class="i"><use href="#i-images"/></svg></span>
     <h1 id="titre-mediatheque">Médiathèque</h1>
-    <span class="nombre" id="nombre" data-plein>1 104 images</span>
-    <button class="bouton principal" data-mj data-ecrit data-ajouter data-plein data-toast="Le sélecteur de fichiers s'ouvrirait ici (plusieurs images à la fois)."><svg class="i p" aria-hidden="true"><use href="#i-image-plus"/></svg>Ajouter des images</button>
+    <span class="nombre" id="nombre" data-plein>1 140 fichiers</span>
+    <button class="bouton principal" data-mj data-ecrit data-ajouter data-plein data-toast="Le sélecteur de fichiers s'ouvrirait ici (plusieurs fichiers à la fois)."><svg class="i p" aria-hidden="true"><use href="#i-upload"/></svg>Ajouter des fichiers</button>
   </header>
+
+  <div class="bascule-type" role="radiogroup" aria-label="Fichiers à montrer" id="bascule-type" data-plein>
+    <button role="radio" aria-checked="true" data-t="tout"><svg class="i p" aria-hidden="true"><use href="#i-layout-grid"/></svg>Tout</button>
+    <button role="radio" aria-checked="false" tabindex="-1" data-t="image"><svg class="i p" aria-hidden="true"><use href="#i-image"/></svg>Images</button>
+    <button role="radio" aria-checked="false" tabindex="-1" data-t="doc"><svg class="i p" aria-hidden="true"><use href="#i-file-text"/></svg>Documents</button>
+  </div>
 
   <div class="filtres" role="search" aria-label="Filtrer la médiathèque" data-plein>
     <label class="champ-recherche">
@@ -762,35 +827,35 @@ body:not(.vue-fiche) [data-vue="fiche"], body.vue-fiche [data-vue="mediatheque"]
       </div>
     </div>
     <div class="ancre-filtre">
-      <button class="filtre" id="f-usage" aria-haspopup="menu" aria-expanded="false" aria-controls="m-usage">Usage<span class="val">Toutes</span><svg class="i p chev" aria-hidden="true"><use href="#i-chevron-down"/></svg></button>
+      <button class="filtre" id="f-usage" aria-haspopup="menu" aria-expanded="false" aria-controls="m-usage">Usage<span class="val">Tous</span><svg class="i p chev" aria-hidden="true"><use href="#i-chevron-down"/></svg></button>
       <div class="menu menu-filtre" id="m-usage" role="menu" aria-label="Usage" data-filtre="usage">
-        <button class="entree" role="menuitemradio" aria-checked="true" data-v="toutes">Toutes<svg class="i p coche" aria-hidden="true"><use href="#i-check"/></svg></button>
-        <button class="entree" role="menuitemradio" aria-checked="false" data-v="utilisees">Utilisées<svg class="i p coche" aria-hidden="true"><use href="#i-check"/></svg></button>
-        <button class="entree" role="menuitemradio" aria-checked="false" data-v="non">Non utilisées<svg class="i p coche" aria-hidden="true"><use href="#i-check"/></svg></button>
+        <button class="entree" role="menuitemradio" aria-checked="true" data-v="toutes">Tous<svg class="i p coche" aria-hidden="true"><use href="#i-check"/></svg></button>
+        <button class="entree" role="menuitemradio" aria-checked="false" data-v="utilisees">Utilisés<svg class="i p coche" aria-hidden="true"><use href="#i-check"/></svg></button>
+        <button class="entree" role="menuitemradio" aria-checked="false" data-v="non">Non utilisés<svg class="i p coche" aria-hidden="true"><use href="#i-check"/></svg></button>
       </div>
     </div>
     <div class="ancre-filtre droite pousse">
-      <button class="filtre" id="f-ordre" aria-haspopup="menu" aria-expanded="false" aria-controls="m-ordre" aria-label="Ordre : Plus récentes"><svg class="i p" aria-hidden="true"><use href="#i-arrow-down-wide-narrow"/></svg><span class="val">Plus récentes</span><svg class="i p chev" aria-hidden="true"><use href="#i-chevron-down"/></svg></button>
+      <button class="filtre" id="f-ordre" aria-haspopup="menu" aria-expanded="false" aria-controls="m-ordre" aria-label="Ordre : Plus récents"><svg class="i p" aria-hidden="true"><use href="#i-arrow-down-wide-narrow"/></svg><span class="val">Plus récents</span><svg class="i p chev" aria-hidden="true"><use href="#i-chevron-down"/></svg></button>
       <div class="menu menu-filtre" id="m-ordre" role="menu" aria-label="Ordre" data-filtre="ordre">
-        <button class="entree" role="menuitemradio" aria-checked="true" data-v="recentes">Plus récentes<svg class="i p coche" aria-hidden="true"><use href="#i-check"/></svg></button>
+        <button class="entree" role="menuitemradio" aria-checked="true" data-v="recentes">Plus récents<svg class="i p coche" aria-hidden="true"><use href="#i-check"/></svg></button>
         <button class="entree" role="menuitemradio" aria-checked="false" data-v="nom">Nom<svg class="i p coche" aria-hidden="true"><use href="#i-check"/></svg></button>
       </div>
     </div>
   </div>
 
   <ul class="grille" id="grille" aria-labelledby="titre-mediatheque" data-plein></ul>
-  <div class="vide-liste" id="aucune" hidden><span class="rond" aria-hidden="true"><svg class="i"><use href="#i-search"/></svg></span><p>Aucune image ne correspond.</p></div>
-  <div class="suite" id="suite" data-plein><button class="bouton" data-toast="Les 100 images suivantes se chargeraient ici."><svg class="i p" aria-hidden="true"><use href="#i-arrow-down"/></svg>Charger la suite</button></div>
+  <div class="vide-liste" id="aucune" hidden><span class="rond" aria-hidden="true"><svg class="i"><use href="#i-search"/></svg></span><p>Aucun fichier ne correspond.</p></div>
+  <div class="suite" id="suite" data-plein><button class="bouton" data-toast="Les 100 fichiers suivants se chargeraient ici."><svg class="i p" aria-hidden="true"><use href="#i-arrow-down"/></svg>Charger la suite</button></div>
 
   <div class="vide-liste" data-vide>
     <span class="rond" aria-hidden="true"><svg class="i"><use href="#i-images"/></svg></span>
-    <p data-vide-mj>Aucune image pour l'instant. Ajoutez-en, ou posez-en une dans une fiche.</p>
-    <button class="bouton principal" data-vide-mj data-ecrit data-toast="Le sélecteur de fichiers s'ouvrirait ici (plusieurs images à la fois)."><svg class="i p" aria-hidden="true"><use href="#i-image-plus"/></svg>Ajouter des images</button>
-    <p data-vide-joueur>Aucune image à voir pour l'instant.</p>
+    <p data-vide-mj>Aucun fichier pour l'instant. Ajoutez-en, ou posez-en un dans une fiche.</p>
+    <button class="bouton principal" data-vide-mj data-ecrit data-toast="Le sélecteur de fichiers s'ouvrirait ici (plusieurs fichiers à la fois)."><svg class="i p" aria-hidden="true"><use href="#i-upload"/></svg>Ajouter des fichiers</button>
+    <p data-vide-joueur>Aucun fichier à voir pour l'instant.</p>
   </div>
 </main>
 
-<!-- ===================== E-9 « Port-Sel », derrière le choix d'une image ===================== -->
+<!-- ===================== E-9 « Port-Sel », derrière le sélecteur « Choisir un fichier » ===================== -->
 <div data-vue="fiche">
 <main class="page fiche">
   <span class="type"><svg class="i p" aria-hidden="true"><use href="#i-map-pin"/></svg>Lieu · Port</span>
@@ -803,7 +868,13 @@ body:not(.vue-fiche) [data-vue="fiche"], body.vue-fiche [data-vue="mediatheque"]
         <button class="icone" title="Italique · Ctrl I" aria-label="Italique"><svg class="i" aria-hidden="true"><use href="#i-italic"/></svg></button>
         <span class="filet-outils" aria-hidden="true"></span>
         <button class="icone" title="Lien vers une fiche · Ctrl K" aria-label="Lien vers une fiche"><svg class="i" aria-hidden="true"><use href="#i-link"/></svg></button>
-        <button class="icone" id="outil-image" title="Image" aria-label="Image" aria-haspopup="dialog" aria-expanded="false"><svg class="i" aria-hidden="true"><use href="#i-image"/></svg></button>
+        <span class="ancre">
+          <button class="icone" id="outil-image" title="Fichier" aria-label="Fichier" aria-haspopup="menu" aria-expanded="false" aria-controls="menu-fichier"><svg class="i" aria-hidden="true"><use href="#i-paperclip"/></svg></button>
+          <div class="menu menu-fichier" id="menu-fichier" role="menu" aria-label="Fichier">
+            <button class="entree" role="menuitem" id="fichier-appareil" data-ecrit><svg class="i" aria-hidden="true"><use href="#i-upload"/></svg>Ajouter depuis l'appareil</button>
+            <button class="entree" role="menuitem" id="fichier-mediatheque"><svg class="i" aria-hidden="true"><use href="#i-images"/></svg>Choisir dans la médiathèque</button>
+          </div>
+        </span>
         <span class="filet-outils" aria-hidden="true"></span>
         <button class="outil-mj" title="Bloc MJ · entoure la sélection" aria-label="Bloc MJ"><svg class="i p" aria-hidden="true"><use href="#i-lock"/></svg><span class="lib-outil">Bloc MJ</span></button>
         <div class="segments bascule-apercu" role="radiogroup" aria-label="Écrire ou voir l'aperçu">
@@ -812,7 +883,7 @@ body:not(.vue-fiche) [data-vue="fiche"], body.vue-fiche [data-vue="mediatheque"]
       </div>
       <div class="source" id="source" contenteditable="true" role="textbox" aria-multiline="true" aria-label="Contenu de « Description »" spellcheck="false">Port-Sel s'accroche à la falaise comme un nid de goélands. Ses quais sentent le sel, le goudron et la saumure ; on y décharge les barges du Fleuve-Gris à toute heure.
 
-<span class="md-img">![Les toits de la Ville-Haute](image:2207)</span>
+<span class="md-img">![Les toits de la Ville-Haute](fichier:2207)</span>
 
 Au pied du Phare aux Sels, la <span class="md-gras">**Ville-Basse**</span> se serre contre les entrepôts. Sous la halle aux poissons, une porte basse mène aux caves de la Guilde.
 
@@ -821,7 +892,7 @@ Au pied du Phare aux Sels, la <span class="md-gras">**Ville-Basse**</span> se se
         <span class="aide"><kbd>Échap</kbd> annuler · <kbd>Ctrl</kbd><kbd>↵</kbd> enregistrer</span>
         <button class="bouton fantome">Annuler</button><button class="bouton principal">Enregistrer</button></div>
     </div>
-    <p class="avert-mj" id="avert-mj" role="status" hidden><svg class="i p" aria-hidden="true"><use href="#i-lock"/></svg><span>Cette image est réservée au MJ : les joueurs qui lisent cette section ne la verront pas.</span></p>
+    <p class="avert-mj" id="avert-mj" role="status" hidden><svg class="i p" aria-hidden="true"><use href="#i-lock"/></svg><span>Ce fichier est réservé au MJ : les joueurs qui lisent cette section ne le verront pas.</span></p>
   </section>
 </main>
 </div>
@@ -830,33 +901,38 @@ Au pied du Phare aux Sels, la <span class="md-gras">**Ville-Basse**</span> se se
   </div>
 </div>
 
-<!-- ===================== Le panneau de l'image ===================== -->
+<!-- ===================== Le panneau du fichier ===================== -->
 <aside class="panneau-image" id="panneau" aria-labelledby="pi-titre" aria-hidden="true">
   <div class="pi-barre">
     <span class="lib"></span>
-    <button class="icone" id="pi-fermer" aria-label="Fermer le panneau de l'image" title="Fermer · Échap"><svg class="i" aria-hidden="true"><use href="#i-x"/></svg></button>
+    <button class="icone" id="pi-fermer" aria-label="Fermer le panneau du fichier" title="Fermer · Échap"><svg class="i" aria-hidden="true"><use href="#i-x"/></svg></button>
   </div>
   <div class="pi-corps">
     <a class="apercu-image" id="pi-apercu" href="#" target="_blank" rel="noopener" title="Ouvrir l'image entière"><img id="pi-img" alt="" decoding="async"></a>
+    <div class="apercu-doc" id="pi-doc" hidden>
+      <span class="feuille" aria-hidden="true"><svg class="i"><use id="pi-doc-ic" href="#i-file-text"/></svg></span>
+      <span class="type-doc" id="pi-doc-type">Document PDF</span>
+      <button class="bouton" id="pi-telecharger"><svg class="i p" aria-hidden="true"><use href="#i-download"/></svg>Télécharger</button>
+    </div>
     <div class="pi-nom">
       <h2 id="pi-titre" tabindex="-1">plan-du-repaire.png</h2>
-      <button class="icone" id="pi-renommer" data-mj data-ecrit aria-label="Renommer l'image" title="Renommer"><svg class="i p" aria-hidden="true"><use href="#i-pencil"/></svg></button>
+      <button class="icone" id="pi-renommer" data-mj data-ecrit aria-label="Renommer le fichier" title="Renommer"><svg class="i p" aria-hidden="true"><use href="#i-pencil"/></svg></button>
     </div>
     <div class="visibilite" role="radiogroup" aria-label="Visibilité" id="pi-visibilite" data-mj>
       <button role="radio" class="joueurs" aria-checked="true" data-vis="joueurs"><svg class="i p" aria-hidden="true"><use href="#i-eye"/></svg>Visible des joueurs</button>
-      <button role="radio" class="mj" aria-checked="false" tabindex="-1" data-vis="mj"><svg class="i p" aria-hidden="true"><use href="#i-lock"/></svg>Réservée au MJ</button>
+      <button role="radio" class="mj" aria-checked="false" tabindex="-1" data-vis="mj"><svg class="i p" aria-hidden="true"><use href="#i-lock"/></svg>Réservé au MJ</button>
     </div>
     <div class="pi-meta">
       <div class="ligne-meta"><span id="pi-type">PNG</span><span id="pi-taille">1,2 Mo</span></div>
-      <div id="pi-ajout">ajoutée par lea le 12 oct. 2026</div>
+      <div id="pi-ajout">ajouté par lea le 12 oct. 2026</div>
       <div class="cle" id="pi-cle" data-mj>Clé d'origine <code class="chasse" id="pi-cle-val">image:plan-du-repaire</code></div>
     </div>
     <div class="pi-bloc" id="pi-usages-bloc">
-      <h3>Utilisée dans</h3>
+      <h3>Utilisé dans</h3>
       <ul class="usages" id="pi-usages"></ul>
     </div>
     <div class="pi-pied" data-mj>
-      <button class="bouton fantome danger-texte" id="pi-supprimer" data-ecrit><svg class="i p" aria-hidden="true"><use href="#i-trash-2"/></svg>Supprimer l'image</button>
+      <button class="bouton fantome danger-texte" id="pi-supprimer" data-ecrit><svg class="i p" aria-hidden="true"><use href="#i-trash-2"/></svg>Supprimer le fichier</button>
     </div>
   </div>
 </aside>
@@ -866,7 +942,7 @@ Au pied du Phare aux Sels, la <span class="md-gras">**Ville-Basse**</span> se se
   <div class="dialogue" role="alertdialog" aria-modal="true" aria-labelledby="dlg-res-titre" aria-describedby="dlg-res-texte">
     <div class="ic-dialogue mj"><svg class="i" aria-hidden="true"><use href="#i-lock"/></svg></div>
     <h3 id="dlg-res-titre">Réserver « plan-du-repaire.png » au MJ ?</h3>
-    <p id="dlg-res-texte">Les joueurs ne la verront plus dans : Les Docks — « Histoire » ; Port-Sel — « Description » (jointe).</p>
+    <p id="dlg-res-texte">Les joueurs ne le verront plus dans : Les Docks — « Histoire » ; Port-Sel — « Description » (jointe).</p>
     <div class="actions">
       <button class="bouton" id="res-annuler">Annuler</button>
       <button class="bouton principal" id="res-confirmer" data-ecrit>Réserver au MJ</button>
@@ -882,16 +958,16 @@ Au pied du Phare aux Sels, la <span class="md-gras">**Ville-Basse**</span> se se
     <div id="dlg-sup-texte"></div>
     <div class="actions">
       <button class="bouton" id="sup-annuler">Annuler</button>
-      <button class="bouton danger" id="sup-confirmer" data-ecrit>Supprimer l'image</button>
+      <button class="bouton danger" id="sup-confirmer" data-ecrit>Supprimer le fichier</button>
     </div>
   </div>
 </div>
 
-<!-- Le choix d'une image (depuis « Image » de l'éditeur de E-9) -->
+<!-- Le sélecteur « Choisir un fichier » (depuis « Fichier » ▸ « Choisir dans la médiathèque » de l'éditeur de E-9) -->
 <div class="voile" id="voile-choisir" aria-hidden="true">
   <div class="dialogue choisir" role="dialog" aria-modal="true" aria-labelledby="ch-titre">
     <div class="ch-tete">
-      <h3 id="ch-titre">Choisir une image</h3>
+      <h3 id="ch-titre">Choisir un fichier</h3>
       <button class="icone" id="ch-fermer" aria-label="Fermer"><svg class="i" aria-hidden="true"><use href="#i-x"/></svg></button>
     </div>
     <div class="ch-outils">
@@ -1424,7 +1500,8 @@ var CARTO = (function () {
   var perdue = function () { return document.body.classList.contains('etat-perdue'); };
   var joueur = function () { return document.body.classList.contains('role-joueur'); };
 
-  /* ---------------- Les images de « Lame d'Ébène » (les 24 plus récentes des 1 104) ----------------
+  /* ---------------- Les fichiers de « Lame d'Ébène » (les 31 plus récents des 1 140 : 24 images, 7 documents) ----------------
+     doc : le type d'un document ('pdf', 'tableur', 'archive', 'autre' — l'icône de la charte) ; absent pour une image.
      vis : 'joueurs' ou 'mj'. Chaque usage : la fiche, son icône, l'endroit, si Léa lit la fiche (lu),
      et si l'endroit est lu des joueurs (table) — ce qui déclenche l'avertissement de « Réserver ». */
   var C = CARTO, I = IMAGES;
@@ -1437,6 +1514,8 @@ var CARTO = (function () {
       peint: function () { return C.plan({ id: 'gui', style: 'bleu', graine: 37, pieces: [[80, 70, 240, 170, 'HALLE'], [320, 70, 220, 110, 'COMPTOIR'], [540, 70, 180, 260, 'ARCHIVES'], [80, 240, 160, 230, 'CAVE'], [240, 240, 300, 230, 'SALLE DES BRUMES']],
         portes: [[310, 120, 'v'], [180, 240, 'h'], [400, 180, 'h'], [530, 280, 'v']], escaliers: [[100, 400, 110, 50]], colonnes: [[330, 320], [450, 320], [330, 400], [450, 400]], passage: 'M160,440 C160,520 420,520 480,470 C540,420 640,420 660,330', croix: [660, 300], titre: 'GUILDE DES BRUMES · CAVES' }); },
       usages: [{ f: 'La Guilde des Brumes', ic: 'shield', ou: 'Illustration', lu: false }] },
+    { id: 'tarifs', nom: 'tarifs-du-port.pdf', doc: 'pdf', vis: 'joueurs', type: 'PDF', taille: '186 Ko', par: 'antor', le: '11 oct. 2026',
+      usages: [{ f: 'Port-Sel', ic: 'map-pin', ou: 'Pièces jointes de Description', lu: true, table: true }] },
     { id: 'spheres', nom: 'Carte des Sphères', vis: 'joueurs', type: 'PNG', taille: '3,8 Mo', par: 'antor', le: '10 oct. 2026', cle: 'image:carte-des-spheres',
       peint: function () { return C.spheres({ id: 'sph' }); },
       usages: [{ f: 'Port-Sel', ic: 'map-pin', ou: 'Illustration', lu: true, table: true }, { f: 'Les Sphères', ic: 'globe', ou: '« Histoire » (dans le texte)', lu: false }, { f: 'Maître Aldric', ic: 'users-round', ou: 'Pièces jointes de « Apparence »', lu: true, table: true }] },
@@ -1446,6 +1525,8 @@ var CARTO = (function () {
       peint: I['Maître Aldric'], usages: [{ f: 'Maître Aldric', ic: 'users-round', ou: 'Illustration', lu: true, table: true }] },
     { id: 'prieur', nom: 'le-prieur-masque.png', vis: 'mj', type: 'PNG', taille: '980 Ko', par: 'antor', le: '10 oct. 2026', cle: 'image:le-prieur-masque', pos: '50% 28%',
       peint: I['Le Prieur masqué'], usages: [{ f: 'Le Prieur masqué', ic: 'users-round', ou: 'Illustration', lu: false }] },
+    { id: 'regles', nom: 'Règles de la Guilde.pdf', doc: 'pdf', vis: 'joueurs', type: 'PDF', taille: '2,4 Mo', par: 'antor', le: '10 oct. 2026', cle: 'fichier:regles-de-la-guilde',
+      usages: [{ f: 'Guilde des Cartographes', ic: 'shield', ou: 'Pièces jointes de « Statuts »', lu: true, table: true }, { f: 'La Guilde des Brumes', ic: 'shield', ou: '« Histoire » (dans le texte)', lu: false }] },
     { id: 'fleuve', nom: 'carte-du-fleuve-gris.png', vis: 'joueurs', type: 'PNG', taille: '2,1 Mo', par: 'antor', le: '10 oct. 2026', cle: 'image:carte-du-fleuve-gris',
       peint: function () { return C.carte({ id: 'flv', graine: 41, fleuves: ['M40,120 C180,160 220,260 330,280 C450,300 470,420 600,450 C680,470 720,520 770,560', 'M330,280 C360,200 420,150 520,90'], monts: [[600, 150, 14, 160], [180, 420, 9, 120]], forets: [[200, 240, 26, 120], [520, 300, 18, 100]], routes: ['M140,180 C260,200 320,330 470,380', 'M470,380 C560,360 640,300 680,220'],
         villes: [[140, 180, 'Val-Fortin'], [470, 380, 'Port-Sel'], [330, 280, 'Gué-aux-Saules'], [680, 220, '']], rose: [690, 470, 0.9], titre: 'Le Fleuve-Gris', cart: [40, 516, 260] }); },
@@ -1456,6 +1537,8 @@ var CARTO = (function () {
       peint: I['Val-Fortin'], usages: [{ f: 'Val-Fortin', ic: 'map-pin', ou: 'Illustration', lu: true, table: true }] },
     { id: 'lames', nom: 'blason-lames-grises.png', vis: 'joueurs', type: 'PNG', taille: '220 Ko', par: 'antor', le: '9 oct. 2026', cle: 'image:blason-lames-grises',
       peint: I['Lames Grises'], usages: [{ f: 'Lames Grises', ic: 'shield', ou: 'Illustration', lu: true, table: true }] },
+    { id: 'registre', nom: 'registre-des-navires.xlsx', doc: 'tableur', vis: 'mj', type: 'XLSX', taille: '96 Ko', par: 'antor', le: '9 oct. 2026', cle: 'fichier:registre-des-navires',
+      usages: [{ f: 'Port-Sel', ic: 'map-pin', ou: 'Pièces jointes de Description', lu: true }, { f: 'La Guilde des Brumes', ic: 'shield', ou: 'Pièces jointes de « Commerce »', lu: false }] },
     { id: 'archipel', nom: "Carte de l'archipel des Sels", vis: 'joueurs', type: 'PNG', taille: '2,9 Mo', par: 'antor', le: '9 oct. 2026', cle: 'image:archipel-des-sels',
       peint: function () { return C.carte({ id: 'arc', graine: 53, mer: true, terre: '#e8cf96', terres: [[250, 230, 150, 105, 0.3], [520, 180, 80, 60, 0.35], [600, 380, 120, 80, 0.3], [380, 430, 50, 36, 0.4], [700, 150, 36, 28, 0.4]], monts: [[230, 210, 7, 80], [610, 370, 6, 70]], forets: [[300, 260, 12, 70]],
         villes: [[320, 300, 'Port-Sel'], [520, 190, 'Salport'], [560, 410, '']], routes: ['M320,300 C400,260 460,220 520,190', 'M320,300 C420,360 500,400 560,410'], rose: [100, 110, 0.8], titre: "L'Archipel des Sels", cart: [470, 520, 290] }); },
@@ -1464,23 +1547,31 @@ var CARTO = (function () {
       peint: I['Les égouts de la rue des Cordiers'], usages: [{ f: 'Les égouts de la rue des Cordiers', ic: 'map-pin', ou: '« Plan » (dans le texte)', lu: false }] },
     { id: 'isaure', nom: 'portrait-isaure.webp', vis: 'joueurs', type: 'WebP', taille: '296 Ko', par: 'isaure', le: '8 oct. 2026', pos: '50% 28%',
       peint: I['Isaure Marchelune'], usages: [{ f: 'Isaure Marchelune', ic: 'users-round', ou: 'Illustration', lu: true, table: true }] },
+    { id: 'carnet', nom: 'carnet.pdf', doc: 'pdf', vis: 'joueurs', type: 'PDF', taille: '1,8 Mo', par: 'lea', le: '8 oct. 2026',
+      usages: [{ f: 'Léa Brisefer', ic: 'users-round', ou: 'Pièces jointes de « Notes de la table »', lu: true, table: true }] },
     { id: 'foret', nom: 'foret-brumecendre.jpg', vis: 'joueurs', type: 'JPEG', taille: '1,1 Mo', par: 'antor', le: '8 oct. 2026', cle: 'image:foret-brumecendre',
       peint: I['Forêt de Brumecendre'], usages: [] },
     { id: 'cendres', nom: 'sceau-cercle-des-cendres.png', vis: 'mj', type: 'PNG', taille: '184 Ko', par: 'antor', le: '7 oct. 2026', cle: 'image:sceau-cercle-des-cendres',
       peint: I['Cercle des Cendres'], usages: [{ f: 'Cercle des Cendres', ic: 'shield', ou: 'Illustration', lu: false }] },
     { id: 'osric', nom: 'portrait-osric.jpg', vis: 'joueurs', type: 'JPEG', taille: '344 Ko', par: 'antor', le: '7 oct. 2026', cle: 'image:portrait-osric', pos: '50% 28%',
       peint: I['Osric Vautrin, receleur des quais'], usages: [{ f: 'Osric Vautrin, receleur des quais', ic: 'users-round', ou: 'Illustration', lu: true, table: true }] },
+    { id: 'archives', nom: 'archives-kanka.zip', doc: 'archive', vis: 'mj', type: 'ZIP', taille: '148 Mo', par: 'antor', le: '7 oct. 2026', cle: 'fichier:archives-kanka',
+      usages: [] },
     { id: 'prieure', nom: 'prieure-val-fortin.jpg', vis: 'joueurs', type: 'JPEG', taille: '1,3 Mo', par: 'antor', le: '7 oct. 2026', cle: 'image:prieure-val-fortin',
       peint: I['Le Prieuré de Val-Fortin'], usages: [{ f: 'Le Prieuré de Val-Fortin', ic: 'map-pin', ou: 'Illustration', lu: true, table: true }] },
     { id: 'phare', nom: 'plan-phare-aux-sels.png', vis: 'joueurs', type: 'PNG', taille: '870 Ko', par: 'antor', le: '6 oct. 2026', cle: 'image:plan-phare-aux-sels',
       peint: function () { return C.plan({ id: 'pha', graine: 43, pieces: [[250, 70, 300, 300, 'La lanterne'], [150, 370, 500, 140, 'Logis du gardien'], [550, 140, 150, 160, 'Huilerie']], portes: [[400, 370, 'h'], [550, 200, 'v'], [300, 510, 'h']], escaliers: [[280, 300, 120, 50]], colonnes: [[330, 150], [470, 150]], titre: 'Le Phare aux Sels' }); },
       usages: [{ f: 'Le Phare aux Sels', ic: 'map-pin', ou: 'Pièces jointes de Description', lu: true, table: true }] },
+    { id: 'chrono', nom: 'chronologie.odt', doc: 'autre', vis: 'joueurs', type: 'ODT', taille: '64 Ko', par: 'antor', le: '6 oct. 2026', cle: 'fichier:chronologie',
+      usages: [{ f: 'Les Sphères', ic: 'globe', ou: '« Histoire » (dans le texte)', lu: false }] },
     { id: 'suie', nom: 'suie-corbeau.png', vis: 'joueurs', type: 'PNG', taille: '502 Ko', par: 'antor', le: '6 oct. 2026', cle: 'image:suie-corbeau', pos: '50% 50%',
       peint: I['Suie'], usages: [{ f: 'Suie', ic: 'users-round', ou: 'Illustration', lu: true, table: true }] },
     { id: 'routes', nom: 'carte-routes-commerciales.png', vis: 'mj', type: 'PNG', taille: '3,1 Mo', par: 'antor', le: '5 oct. 2026', cle: 'image:routes-commerciales',
       peint: function () { return C.carte({ id: 'rou', graine: 61, mer: true, papier: ['#ecdcb4', '#c8a86c'], terre: '#e2c78a', terres: [[200, 300, 210, 230, 0.22], [640, 260, 120, 160, 0.28]], monts: [[170, 220, 12, 140], [660, 230, 8, 90]], forets: [[260, 400, 22, 120]],
         villes: [[300, 200, 'Val-Fortin'], [380, 380, 'Port-Sel'], [600, 300, 'Kesh'], [680, 160, '']], routes: ['M380,380 C470,420 540,360 600,300', 'M380,380 C460,300 560,180 680,160', 'M300,200 C330,280 360,330 380,380', 'M600,300 C660,360 720,420 760,520'], rose: [520, 110, 0.8], titre: 'Routes de la Guilde', cart: [470, 520, 290] }); },
       usages: [{ f: 'La Guilde des Brumes', ic: 'shield', ou: 'Pièces jointes de « Commerce »', lu: false }] },
+    { id: 'rapport', nom: 'rapport-amiraute.pdf', doc: 'pdf', vis: 'mj', type: 'PDF', taille: '3,2 Mo', par: 'antor', le: '5 oct. 2026', cle: 'fichier:rapport-amiraute',
+      usages: [{ f: "Rapport secret de l'amirauté", ic: 'scroll-text', ou: 'Pièces jointes de Description', lu: false }] },
     { id: 'garde', nom: 'blason-garde.png', vis: 'joueurs', type: 'PNG', taille: '205 Ko', par: 'antor', le: '5 oct. 2026', cle: 'image:blason-garde',
       peint: I['Garde de Val-Fortin'], usages: [{ f: 'Garde de Val-Fortin', ic: 'shield', ou: 'Illustration', lu: true, table: true }] },
     { id: 'ombeline', nom: 'portrait-ombeline.jpg', vis: 'joueurs', type: 'JPEG', taille: '430 Ko', par: 'antor', le: '4 oct. 2026', cle: 'image:portrait-ombeline', pos: '50% 26%',
@@ -1492,6 +1583,10 @@ var CARTO = (function () {
   ];
   var cache = {};
   function src(im) { return cache[im.id] || (cache[im.id] = im.peint()); }
+  // Un document : l'icône de son type (docs/charte.md) et son type en toutes lettres dans le panneau.
+  var DOC = { pdf: { ic: 'file-text', lib: 'Document PDF' }, tableur: { ic: 'file-spreadsheet', lib: 'Tableur' },
+    archive: { ic: 'file-archive', lib: 'Archive' }, autre: { ic: 'file', lib: 'Document' } };
+  function libType(im) { return DOC[im.doc].lib + (im.doc === 'pdf' ? '' : ' ' + im.type); }
   var parId = {}; IMG.forEach(function (im, i) { im.rang = i; parId[im.id] = im; });
 
   /* ---------------- Toast (e09) ---------------- */
@@ -1564,7 +1659,7 @@ var CARTO = (function () {
   $('#voile-tiroir').onclick = function () { tiroir(false, true); };
 
   /* ---------------- Filtres et grille ---------------- */
-  var filtre = { q: '', vis: 'toutes', usage: 'toutes', ordre: 'recentes' };
+  var filtre = { t: 'tout', q: '', vis: 'toutes', usage: 'toutes', ordre: 'recentes' };
   var norm = function (s) { return s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase(); };
   function visibles() { return IMG.filter(function (im) { return !joueur() || im.vis === 'joueurs'; }); }
   function usagesLus(im) { return joueur() ? im.usages.filter(function (u) { return u.lu; }) : im.usages; }
@@ -1572,6 +1667,8 @@ var CARTO = (function () {
     var l = visibles().filter(function (im) {
       if (q && norm(im.nom).indexOf(norm(q)) < 0) return false;
       if (!avecFiltres) return true;
+      if (filtre.t === 'image' && im.doc) return false;
+      if (filtre.t === 'doc' && !im.doc) return false;
       if (filtre.vis !== 'toutes' && im.vis !== filtre.vis) return false;
       if (filtre.usage === 'utilisees' && !usagesLus(im).length) return false;
       if (filtre.usage === 'non' && usagesLus(im).length) return false;
@@ -1582,9 +1679,16 @@ var CARTO = (function () {
   }
   function vignette(im, auChoix) {
     var li = document.createElement('li');
-    li.innerHTML = '<button class="vignette" type="button"><span class="vue"><img alt="" width="800" height="600" loading="lazy" decoding="async"></span><span class="nom-img"></span></button>';
-    var b = $('.vignette', li), img = $('img', li);
-    img.src = src(im); if (im.pos) img.style.objectPosition = im.pos;
+    if (im.doc) {
+      li.innerHTML = '<button class="vignette" type="button"><span class="vue doc"><span class="feuille" aria-hidden="true"><svg class="i"><use href="#i-' + DOC[im.doc].ic + '"/></svg></span>' +
+        '<span class="pied-doc"><span class="ext"></span><span class="poids"></span></span></span><span class="nom-img"></span></button>';
+      $('.ext', li).textContent = im.type; $('.poids', li).textContent = im.taille;
+    } else {
+      li.innerHTML = '<button class="vignette" type="button"><span class="vue"><img alt="" width="800" height="600" loading="lazy" decoding="async"></span><span class="nom-img"></span></button>';
+      var img = $('img', li);
+      img.src = src(im); if (im.pos) img.style.objectPosition = im.pos;
+    }
+    var b = $('.vignette', li);
     $('.nom-img', li).textContent = im.nom; $('.nom-img', li).title = im.nom;
     b.dataset.id = im.id;
     var mj = im.vis === 'mj' && !joueur();
@@ -1593,7 +1697,7 @@ var CARTO = (function () {
       p.innerHTML = '<svg class="i pp" aria-hidden="true"><use href="#i-lock"/></svg>MJ seul';
       $('.vue', li).appendChild(p);
     }
-    b.setAttribute('aria-label', im.nom + (mj ? ' — MJ seul' : '') + (auChoix ? ' — insérer' : ''));
+    b.setAttribute('aria-label', im.nom + (im.doc ? ', ' + im.type + ', ' + im.taille : '') + (mj ? ' — MJ seul' : '') + (auChoix ? ' — insérer' : ''));
     if (!auChoix) { b.setAttribute('aria-controls', 'panneau'); if (courante === im.id) b.setAttribute('aria-current', 'true'); }
     return li;
   }
@@ -1603,8 +1707,20 @@ var CARTO = (function () {
     l.forEach(function (im) { ul.appendChild(vignette(im)); });
     $('#aucune').hidden = !!l.length || document.body.classList.contains('etat-vide');
     $('#suite').hidden = !l.length || filtre.q !== '' || filtre.vis !== 'toutes' || filtre.usage !== 'toutes';
-    $('#nombre').textContent = joueur() ? '1 061 images' : '1 104 images';
+    $('#nombre').textContent = joueur() ? '1 093 fichiers' : '1 140 fichiers';
   }
+  // La bascule « Tout · Images · Documents » (flèches gauche et droite entre les segments).
+  function poserType(t) {
+    filtre.t = t;
+    $$('#bascule-type [role=radio]').forEach(function (b) { var on = b.dataset.t === t; b.setAttribute('aria-checked', on); b.tabIndex = on ? 0 : -1; });
+    rendre();
+  }
+  $$('#bascule-type [role=radio]').forEach(function (b) { b.onclick = function () { poserType(b.dataset.t); }; });
+  $('#bascule-type').addEventListener('keydown', function (e) {
+    if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+    e.preventDefault(); var r = $$('#bascule-type [role=radio]'), i = r.indexOf(document.activeElement);
+    var n = r[(i + (e.key === 'ArrowRight' ? 1 : r.length - 1)) % r.length]; n.focus(); poserType(n.dataset.t);
+  });
   $('#q').addEventListener('input', function () { filtre.q = this.value.trim(); rendre(); });
   $$('.ancre-filtre').forEach(function (a) {
     var b = $('.filtre', a), m = $('.menu', a);
@@ -1623,7 +1739,7 @@ var CARTO = (function () {
     });
   });
 
-  /* ---------------- Le panneau de l'image ---------------- */
+  /* ---------------- Le panneau du fichier ---------------- */
   var courante = null, depuis = null;
   function usageLi(u) {
     var li = document.createElement('li');
@@ -1638,11 +1754,12 @@ var CARTO = (function () {
   function ouvrirPanneau(id, rendreA) {
     var im = parId[id]; if (!im) return;
     courante = id; depuis = rendreA || depuis;
-    $('#pi-img').src = src(im); $('#pi-apercu').href = src(im);
-    $('#pi-img').alt = im.nom;
+    $('#pi-apercu').hidden = !!im.doc; $('#pi-doc').hidden = !im.doc;
+    if (im.doc) { $('#pi-doc-ic').setAttribute('href', '#i-' + DOC[im.doc].ic); $('#pi-doc-type').textContent = libType(im); }
+    else { $('#pi-img').src = src(im); $('#pi-apercu').href = src(im); $('#pi-img').alt = im.nom; }
     $('#pi-titre').textContent = im.nom;
     $('#pi-type').textContent = im.type; $('#pi-taille').textContent = im.taille;
-    $('#pi-ajout').textContent = 'ajoutée par ' + im.par + ' le ' + im.le;
+    $('#pi-ajout').textContent = 'ajouté par ' + im.par + ' le ' + im.le;
     $('#pi-cle').hidden = !im.cle; if (im.cle) $('#pi-cle-val').textContent = im.cle;
     majVisibilite(im);
     var u = usagesLus(im), ul = $('#pi-usages'); ul.innerHTML = '';
@@ -1662,12 +1779,13 @@ var CARTO = (function () {
     ouvrirPanneau(b.dataset.id, b); setTimeout(function () { $('#pi-titre').focus({ preventScroll: true }); }, 30);
   });
   $('#pi-fermer').onclick = fermerPanneau;
+  $('#pi-telecharger').onclick = function () { toast('« ' + parId[courante].nom + ' » se téléchargerait ici.'); };
 
   // Le nom, éditable en place (MJ) : 1 à 200 caractères ; Entrée enregistre, Échap annule.
   function renommer() {
     if (joueur() || perdue() || !courante) return;
     var h = $('#pi-titre'), im = parId[courante], s = document.createElement('input');
-    s.className = 'saisie'; s.value = im.nom; s.maxLength = 200; s.setAttribute('aria-label', 'Nom de l\'image');
+    s.className = 'saisie'; s.value = im.nom; s.maxLength = 200; s.setAttribute('aria-label', 'Nom du fichier');
     h.hidden = true; $('#pi-renommer').hidden = true; h.after(s); s.focus(); s.select();
     var fini = false;
     function fin(garder) {
@@ -1681,19 +1799,19 @@ var CARTO = (function () {
   }
   $('#pi-titre').onclick = renommer; $('#pi-renommer').onclick = renommer;
 
-  // La visibilité : « Réservée au MJ » demande confirmation si des joueurs perdent l'image quelque part.
+  // La visibilité : « Réservé au MJ » demande confirmation si des joueurs perdent le fichier quelque part.
   function poserVis(v) {
     var im = parId[courante]; if (!im || perdue() || im.vis === v) return;
     if (v === 'mj') {
       var perdus = im.usages.filter(function (u) { return u.table; });
       if (perdus.length) {
         $('#dlg-res-titre').textContent = 'Réserver « ' + im.nom + ' » au MJ ?';
-        $('#dlg-res-texte').textContent = 'Les joueurs ne la verront plus dans : ' + perdus.map(function (u) { return u.f + ' — ' + u.ou.replace(' (dans le texte)', ''); }).join(', ') + '.';
-        if (im.id === 'repaire') $('#dlg-res-texte').textContent = 'Les joueurs ne la verront plus dans : Les Docks — « Histoire » ; Port-Sel — « Description » (jointe).';
+        $('#dlg-res-texte').textContent = 'Les joueurs ne le verront plus dans : ' + perdus.map(function (u) { return u.f + ' — ' + u.ou.replace(' (dans le texte)', ''); }).join(' ; ') + '.';
+        if (im.id === 'repaire') $('#dlg-res-texte').textContent = 'Les joueurs ne le verront plus dans : Les Docks — « Histoire » ; Port-Sel — « Description » (jointe).';
         ouvrir($('#voile-reserver'), $('#pi-visibilite [data-vis=mj]'), $('#res-annuler'));
         return;
       }
-      im.vis = 'mj'; majVisibilite(im); rendre(); toast('Image réservée au MJ.');
+      im.vis = 'mj'; majVisibilite(im); rendre(); toast('Fichier réservé au MJ.');
       return;
     }
     im.vis = v; majVisibilite(im); rendre();
@@ -1715,7 +1833,6 @@ var CARTO = (function () {
   function fermer() {
     if (!dlgOuvert) return;
     dlgOuvert.classList.remove('ouvert'); dlgOuvert.setAttribute('aria-hidden', 'true');
-    if (dlgOuvert.id === 'voile-choisir') $('#outil-image').setAttribute('aria-expanded', 'false');
     dlgOuvert = null;
     if (retour && document.contains(retour)) retour.focus();
   }
@@ -1739,17 +1856,18 @@ var CARTO = (function () {
   $('#res-annuler').onclick = fermer;
   $('#res-confirmer').onclick = function () {
     if (perdue()) return;
-    var im = parId[courante]; im.vis = 'mj'; majVisibilite(im); rendre(); fermer(); toast('Image réservée au MJ.');
+    var im = parId[courante]; im.vis = 'mj'; majVisibilite(im); rendre(); fermer(); toast('Fichier réservé au MJ.');
   };
 
-  /* Supprimer l'image */
+  /* Supprimer le fichier */
   function ouvrirSupprimer() {
     var im = parId[courante]; if (!im || perdue()) return;
     $('#dlg-sup-titre').textContent = 'Supprimer « ' + im.nom + ' » ?';
     var t = $('#dlg-sup-texte'); t.innerHTML = '';
     if (im.usages.length) {
       // Texte de docs/ecrans.md : « Elle est utilisée dans 3 fiches : Port-Sel (illustration), … Elle disparaîtra de ces fiches. »
-      var p1 = document.createElement('p'); p1.textContent = 'Elle est utilisée dans ' + im.usages.length + (im.usages.length > 1 ? ' fiches :' : ' fiche :');
+      // (« Il est utilisé… Il disparaîtra… » pour un document)
+      var p1 = document.createElement('p'); p1.textContent = (im.doc ? 'Il est utilisé dans ' : 'Elle est utilisée dans ') + im.usages.length + (im.usages.length > 1 ? ' fiches :' : ' fiche :');
       var ul = document.createElement('ul'); ul.className = 'liste-fiches';
       var COURT = { spheres: ['Port-Sel (illustration)', 'Les Sphères (« Histoire »)', 'Maître Aldric (pièces jointes de « Apparence »)'] };
       im.usages.forEach(function (u, i) {
@@ -1758,7 +1876,7 @@ var CARTO = (function () {
         li.children[1].textContent = COURT[im.id] ? COURT[im.id][i] : u.f + ' (' + u.ou.replace(' (dans le texte)', '').replace(/^Illustration$/, 'illustration').replace(/^Pièces jointes/, 'pièces jointes') + ')';
         ul.appendChild(li);
       });
-      var p2 = document.createElement('p'); p2.textContent = 'Elle disparaîtra de ces fiches.';
+      var p2 = document.createElement('p'); p2.textContent = (im.doc ? 'Il' : 'Elle') + ' disparaîtra de ' + (im.usages.length > 1 ? 'ces fiches.' : 'cette fiche.');
       t.appendChild(p1); t.appendChild(ul); t.appendChild(p2);
     }
     ouvrir($('#voile-supprimer'), $('#pi-supprimer'), $('#sup-annuler'));
@@ -1768,31 +1886,35 @@ var CARTO = (function () {
   $('#sup-confirmer').onclick = function () {
     if (perdue()) return;
     var id = courante; IMG = IMG.filter(function (x) { return x.id !== id; }); delete parId[id];
-    retour = null; fermer(); depuis = null; fermerPanneau(); rendre(); toast('Image supprimée.');
+    retour = null; fermer(); depuis = null; fermerPanneau(); rendre(); toast('Fichier supprimé.');
     var premiere = $('#grille .vignette'); if (premiere) premiere.focus();
   };
 
-  /* ---------------- Le choix d'une image (depuis l'éditeur de E-9) ---------------- */
+  /* ---------------- Le sélecteur « Choisir un fichier » (depuis l'éditeur de E-9) ---------------- */
   function rendreChoix() {
     var ul = $('#ch-liste'); ul.innerHTML = '';
     var tete = document.createElement('li');
-    tete.innerHTML = '<button class="depuis-appareil" type="button" data-ecrit><span class="cadre"><svg class="i" aria-hidden="true"><use href="#i-upload"/></svg></span><span class="nom-img">Depuis l\'appareil</span></button>';
-    $('button', tete).onclick = function () { toast('Le sélecteur de fichiers de l\'appareil s\'ouvrirait ici.'); };
+    tete.innerHTML = '<button class="depuis-appareil" type="button" data-ecrit><span class="cadre"><svg class="i" aria-hidden="true"><use href="#i-upload"/></svg><span class="lib-appareil">Ajouter depuis l\'appareil</span></span></button>';
+    $('button', tete).onclick = function () { toast('Le sélecteur de fichiers de l\'appareil s\'ouvrirait ici ; le fichier entrerait dans la médiathèque et dans la fiche.'); };
     ul.appendChild(tete);
     filtrees($('#ch-q').value.trim(), false).forEach(function (im) { ul.appendChild(vignette(im, true)); });
   }
   $('#ch-q').addEventListener('input', rendreChoix);
   function ouvrirChoix() {
-    rendreChoix(); $('#outil-image').setAttribute('aria-expanded', 'true');
+    rendreChoix();
     ouvrir($('#voile-choisir'), $('#outil-image'), $('#ch-q'));
   }
-  $('#outil-image').onclick = ouvrirChoix;
+  // « Fichier » (paperclip) ouvre le menu des deux chemins d'ajout (E-9, « Fichiers »).
+  $('#outil-image').onclick = function (e) { basculer($('#menu-fichier'), this, e); };
+  $('#fichier-appareil').onclick = function () { fermerMenu(false); if (!perdue()) toast('Le sélecteur de fichiers de l\'appareil s\'ouvrirait ici ; le fichier entrerait dans la médiathèque et dans la fiche.'); };
+  $('#fichier-mediatheque').onclick = function () { fermerMenu(false); ouvrirChoix(); };
   $('#ch-fermer').onclick = fermer;
   function inserer(im) {
     var pi = $('#point-insertion');
-    var md = document.createElement('span'); md.className = 'md-img'; md.textContent = '![' + im.nom + '](image:' + (im.id === 'guilde' ? '8812' : '7' + im.rang + '04') + ')';
+    // Une image s'insère par ![nom](fichier:<id>), un document y met un lien [nom](fichier:<id>).
+    var md = document.createElement('span'); md.className = 'md-img'; md.textContent = (im.doc ? '[' : '![') + im.nom + '](fichier:' + (im.id === 'guilde' ? '8812' : '7' + im.rang + '04') + ')';
     pi.parentNode.insertBefore(md, pi);
-    // L'avertissement de B-55 : la section est lue des joueurs et l'image leur est réservée.
+    // L'avertissement de B-55 : la section est lue des joueurs et le fichier leur est réservé.
     $('#avert-mj').hidden = im.vis !== 'mj';
   }
   $('#ch-liste').addEventListener('click', function (e) {
@@ -1823,6 +1945,8 @@ var CARTO = (function () {
   rendre();
   etats.forEach(function (et) {
     if (et === 'image') ouvrirPanneau('repaire');
+    if (et === 'documents') poserType('doc');
+    if (et === 'document') ouvrirPanneau('regles');
     if (et === 'reserver') { ouvrirPanneau('repaire'); setTimeout(function () { poserVis('mj'); }, 40); }
     if (et === 'supprimer') { ouvrirPanneau('spheres'); setTimeout(ouvrirSupprimer, 40); }
     if (et === 'joueur' && etats.indexOf('vide') < 0 && etats.indexOf('image') < 0) ouvrirPanneau('spheres');

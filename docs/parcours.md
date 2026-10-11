@@ -179,7 +179,8 @@ Forme de la skill `exigences` ; chaque besoin cite les parcours qui le réalisen
   médiathèque. » pour un MJ, rien pour un joueur). Quand un MJ réserve au MJ un fichier utilisé dans une
   section lue des joueurs (E-19, ou le menu du fichier joint sur E-9), Kanevas le prévient de même, en
   listant ces sections. *(P-16)*
-- **B-55** — Un compte qui écrit une section y met un fichier par **deux chemins**, sur E-9 en édition :
+- **B-55** — Un compte qui écrit une section y met un fichier par **deux chemins**, sur E-9 (en édition
+  depuis la barre d'outils, ou par « Joindre un fichier » du bloc Pièces jointes) :
   (1) **ajouter un fichier** depuis son appareil — en un seul geste, le fichier entre dans la
   médiathèque (visible des joueurs) **et** s'intègre à la fiche : image dans le texte, fichier joint à
   la section, ou illustration (MJ) ; (2) **choisir dans la médiathèque** un fichier qu'il voit, par le

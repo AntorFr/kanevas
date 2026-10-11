@@ -2017,7 +2017,7 @@ au téléphone, jamais la page.
 
 ### E-9 Fiche — ce que `kanevas-import` change
 
-*Maquette finie* : `docs/maquettes/e09-fiche-importee.html` (« Port-Sel », états `#etat-joueur`,
+*Maquette finie* : `docs/maquettes/e09-fiche-importee.html` (« Port-Sel », états `#etat-fichier`, `#etat-joindre`, `#etat-sous-type`, `#etat-joueur`,
 `#etat-edition`, `#etat-supprimer`, `#etat-deplacer`).
 
 **En-tête.** Fil d'Ariane : univers › type › ancêtres **lisibles** du plus haut au plus proche ›
@@ -2066,8 +2066,9 @@ L'illustration réservée au MJ d'une fiche qu'un joueur voit : la même mention
 vignette de repli dans la grille de E-8 (sans mention). Fichier supprimé : « Fichier supprimé de la
 médiathèque. » pour un MJ, rien pour un joueur. En mode Joueur, le MJ voit ce que voit un joueur.
 
-**Deux chemins d'ajout, en édition** : le bouton « Fichier » (`paperclip`) de la barre d'outils, et
-« Joindre un fichier » en pied du bloc Pièces jointes, ouvrent le même menu —
+**Deux chemins d'ajout** : le bouton « Fichier » (`paperclip`) de la barre d'outils, en édition, et
+« Joindre un fichier » en pied du bloc Pièces jointes — présent hors édition pour qui écrit la section,
+comme le dépôt d'avant (`kanevas-fichiers`) — ouvrent le même menu —
 1. **« Ajouter depuis l'appareil »** (ou un glisser-déposer sur la section) : en **un seul geste**, le
    fichier entre dans la médiathèque (visible des joueurs, ajouté par le compte) **et** s'intègre à la
    fiche — depuis la barre d'outils, une image s'insère dans le texte au point d'insertion
@@ -2150,7 +2151,8 @@ archive, `file` sinon), l'extension en pastille, la taille (« 2,4 Mo ») ; le n
 la pastille « MJ seul » (`lock`) sur un fichier réservé. 100 puis « Charger la suite ».
 
 Un clic ouvre le **panneau du fichier** (à droite au bureau, plein écran au téléphone) : l'image en
-grand, ou pour un document sa grande icône, son type et « Télécharger » ; le nom (MJ : éditable en
+grand, ou pour un document sa grande icône, son type (« Document PDF », « Tableur XLSX », « Archive
+ZIP », « Document ODT » : la nature et l'extension) et « Télécharger » ; le nom (MJ : éditable en
 place, 1 à 200 caractères) ; la **visibilité** en bascule segmentée « Visible des joueurs » /
 « Réservé au MJ » (MJ ; un joueur ne voit pas ce réglage) ; type, taille, « ajouté par lea le 12 oct.
 2026 », la clé d'origine (MJ, si importé) ; **Utilisé dans** — les fiches que le lecteur voit, chacune
