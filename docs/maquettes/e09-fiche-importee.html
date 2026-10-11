@@ -750,10 +750,17 @@ a.pastille.etiquette:hover { color: var(--texte); box-shadow: inset 0 0 0 1px va
 .lien-casse:focus-visible { border-radius: 3px; }
 .lien-casse .bulle { color: var(--texte); }
 .lien-casse .bulle .i { color: var(--danger); }
+/* Lien en attente d'import (MJ seul) : comme le cassé, des tirets --texte-3 (la fiche n'est pas encore arrivée). */
+.lien-attente { position: relative; color: inherit; text-decoration: underline dashed; text-decoration-color: var(--texte-3);
+  text-decoration-thickness: 1.5px; text-underline-offset: 3px; cursor: help; }
+.lien-attente:focus-visible { border-radius: 3px; }
+.lien-attente .bulle { color: var(--texte); }
+.lien-attente .bulle .i { color: var(--texte-3); }
+.lien-attente:hover .bulle, .lien-attente:focus-visible .bulle { opacity: 1; visibility: visible; transform: translate(-50%, 0); transition-delay: 0s; }
 /* Pour qui ne lit pas la cible (et en mode Joueur) : le texte, sans aucune marque. */
-body.mode-joueur .lien-fiche[data-illisible], body.mode-joueur .lien-casse {
+body.mode-joueur .lien-fiche[data-illisible], body.mode-joueur .lien-casse, body.mode-joueur .lien-attente {
   color: inherit; text-decoration: none; cursor: auto; pointer-events: none; }
-body.mode-joueur .lien-fiche[data-illisible] .bulle, body.mode-joueur .lien-casse .bulle { display: none; }
+body.mode-joueur .lien-fiche[data-illisible] .bulle, body.mode-joueur .lien-casse .bulle, body.mode-joueur .lien-attente .bulle { display: none; }
 
 /* Bloc MJ : la matière de la section MJ seul, à l'échelle d'un paragraphe, dans la colonne. */
 .bloc-mj { position: relative; margin-top: 1.1em !important; padding: 12px 16px 14px 18px; border-radius: var(--rayon-champ);
@@ -1110,7 +1117,7 @@ body.mode-joueur .image-section.reservee .image-reservee { display: flex; }
                 <span class="pastille mj"><svg class="i pp" aria-hidden="true"><use href="#i-lock"/></svg>MJ seul</span>
                 <p>Le port est tenu en sous-main par la Guilde des Brumes : le maître de port lui doit sa charge, et la cloche de brume sonne quand elle le décide. Les joueurs ne doivent l'apprendre qu'en suivant l'argent du sel.</p>
               </div>
-              <p>En l'an 1312, une tempête emporta la moitié des Docks et la flotte du <span class="lien-casse" tabindex="0" aria-describedby="bulle-casse">Capitaine Hesk<span class="bulle" role="tooltip" id="bulle-casse"><svg class="i p" aria-hidden="true"><use href="#i-link-2-off"/></svg>Lien cassé : cette fiche n'existe plus.</span></span>. Depuis, l'Amirauté y entretient une garnison de vingt hommes que personne ne prend au sérieux, et chaque saleur garde une barque prête derrière sa maison.</p>
+              <p>En l'an 1312, une tempête emporta la moitié des Docks et la flotte du <span class="lien-casse" tabindex="0" aria-describedby="bulle-casse">Capitaine Hesk<span class="bulle" role="tooltip" id="bulle-casse"><svg class="i p" aria-hidden="true"><use href="#i-link-2-off"/></svg>Lien cassé : cette fiche n'existe plus.</span></span> et les <span class="lien-attente" tabindex="0" aria-describedby="bulle-attente">contrebandiers du Repaire<span class="bulle" role="tooltip" id="bulle-attente"><svg class="i p" aria-hidden="true"><use href="#i-link-2-off"/></svg>Lien en attente : aucune fiche n'a encore la clé « faction:repaire ».</span></span>. Depuis, l'Amirauté y entretient une garnison de vingt hommes que personne ne prend au sérieux, et chaque saleur garde une barque prête derrière sa maison.</p>
             </div>
           </section>
 
@@ -1686,6 +1693,7 @@ var ILLUS = (function () {
       else if (a.dataset.href) a.setAttribute('href', a.dataset.href);
     });
     $$('.lien-casse').forEach(function (s) { s.tabIndex = joueur ? -1 : 0; if (joueur) s.removeAttribute('aria-describedby'); else s.setAttribute('aria-describedby', 'bulle-casse'); });
+    $$('.lien-attente').forEach(function (s) { s.tabIndex = joueur ? -1 : 0; if (joueur) s.removeAttribute('aria-describedby'); else s.setAttribute('aria-describedby', 'bulle-attente'); });
     var h1 = $('#titre-fiche'); h1.tabIndex = joueur ? -1 : 0; if (joueur) h1.removeAttribute('title'); else h1.title = 'Cliquer pour renommer';
     var st = $('#sous-type'); st.tabIndex = joueur ? -1 : 0; if (joueur) { st.removeAttribute('title'); st.setAttribute('aria-disabled', 'true'); } else { st.title = 'Modifier le sous-type'; st.removeAttribute('aria-disabled'); }
     if (joueur && !$('#st-edition').hidden) $('#st-saisie').blur();

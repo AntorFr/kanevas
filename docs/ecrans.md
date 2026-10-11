@@ -2036,6 +2036,64 @@ section, à sa place dans le texte ; en mode Joueur et pour tout autre lecteur, 
 blanc, pas de filet, le paragraphe suivant suit le précédent. Un tableau large défile dans son cadre
 au téléphone, jamais la page.
 
+### Les liens `[[…]]` — ce que `kanevas-import-liens` construit
+
+*Reconnu* (AD-116) : `[[<id>|<texte>]]` (l'identifiant est un entier ≥ 1) et `[[cle:<clé>|<texte>]]`
+(une clé d'origine d'import), et à l'écriture seulement `[[<id>]]`. Le texte fait 1 à 200 caractères, sans
+`]`, `|` ni saut de ligne ; une forme qui ne tient pas ces règles, ou qui se trouve dans un bloc de code
+ou dans un code en ligne, reste du texte. `[[cle:…]]` s'accepte de l'import comme de l'éditeur (même
+résolution). Un `[[<id>]]` écrit sans texte est **réécrit** par le service en `[[<id>|<titre courant>]]`
+avant d'enregistrer, si l'auteur lit la fiche ; sinon l'écriture est refusée (400, code `lien_illisible`,
+« Cette fiche n'existe pas ou vous ne pouvez pas la lire. »), le texte reste dans le champ. Un
+`[[<id>|<texte>]]` dont la cible est absente ou illisible de l'auteur s'enregistre (le texte est celui de
+l'auteur, rien ne fuit) ; il se lira comme un lien cassé ou comme du texte, selon le lecteur.
+
+*Lecture* : le rendu d'un lien dépend du lecteur et se décide **au rendu, par la cible**, pas par la
+table `liens` : cible lisible du lecteur → `<a class="lien-fiche" href="/univers/<u>/fiche/<id>"
+data-type="<type>">` ; cible illisible → le texte seul, sans élément ni marque ; cible supprimée → pour le
+MJ hors mode Joueur `<span class="lien-casse" tabindex="0">` et son infobulle, le texte seul pour tout
+autre lecteur ; clé en attente → pour le MJ hors mode Joueur `<span class="lien-attente" tabindex="0">`
+(infobulle « Lien en attente : aucune fiche n'a encore la clé « <clé> ». »), le texte seul pour tout autre
+lecteur. En mode Joueur le MJ lit comme un joueur. Un lien dans un bloc MJ n'existe, comme le bloc, que
+pour le MJ hors mode Joueur (le bloc est ôté avant le rendu, AD-98). Le rendu résout tous les liens d'un
+texte en **une** requête (jamais une par lien). L'assistant reçoit `[texte](fiche:<id>)` pour une cible
+lisible et `texte` sinon, jamais un identifiant illisible (AD-96).
+
+*Écriture* : le service qui écrit le contenu d'une section (le point d'écriture unique de
+`kanevas-import-secrets`) remplace, dans la même transaction, les lignes de `liens` de la section : une
+par lien trouvé, avec `dans_bloc_mj` d'après la position du lien, jamais par expression régulière hors des
+jetons du moteur Markdown. Les textes déjà enregistrés avant la tranche ne sont pas rejoués : un
+`[[…]]` d'avant n'était pas une syntaxe, et la table se remplit à la première écriture de la section.
+
+*Import* : `[[cle:<clé>|<texte>]]` dont la clé est connue de l'univers s'enregistre en `[[<id>|<texte>]]` ;
+sinon il reste tel quel, ligne de `liens` « en attente » (`cible_cle`). La création de la fiche qui porte
+la clé réécrit, **dans la même transaction**, les contenus qui l'attendent (`contenu`, `contenu_public`,
+lignes de `liens`) sans toucher à `version`, à `version_importee` ni à `modifie_le` de la section. Un
+rejeu compare le texte envoyé **après** y avoir résolu les clés connues : un lien déjà résolu rend
+« inchangée » (AD-104). Le lot compte « liens et références en attente » à sa clôture (`en_attente`).
+
+*Scénario* (E-7) : mêmes formes, résolues à la lecture dans l'univers de la campagne du scénario, sous les
+droits du lecteur (un MJ de l'univers) ; une clé en attente se résout à la lecture par l'index des clés
+d'origine ; aucune ligne de `liens`. L'éditeur d'un scénario a « Lien vers une fiche » et la liste ouverte
+par `[[`. *Entrée de système* (E-15) : `[[…]]` reste du texte, sans bouton ni liste.
+
+*La liste ouverte par `[[`* (et « Lien vers une fiche », Ctrl/⌘+K) : le composant `ListeRecherche`, appelé
+sans `type` ; elle cherche par titre dans toutes les fiches que le compte lit
+(`GET /api/univers/:id/fiches?q=`), 50 au plus, chaque ligne avec l'icône et le libellé du type.
+Taper après `[[` filtre ; ↑ ↓ choisissent, Entrée insère `[[<id>|<titre>]]` et ferme la liste, Échap la
+ferme et laisse `[[`. Vide de résultat : « Aucune fiche. ». Erreur : « Impossible de chercher. » et
+« Réessayer » ; la saisie n'est pas perdue. Connexion perdue : la liste ne s'ouvre pas, le bandeau commun
+parle.
+
+*« Mentionnée dans »* (B-36, AD-100) : la route de la fiche rend `mentions` (50 premières) et `mentionsSuite`
+(booléen) ; `GET /api/univers/:id/fiches/:fid/mentions?apres=<n>` rend les 50 suivantes. Une ligne par fiche
+source : titre (lien vers elle), icône du type, et le pourquoi — « lien dans « Histoire » » (la section
+qui porte le lien), le libellé de la relation (« Amiral de »), ou les deux séparés par « · » si la
+même fiche cite de plusieurs façons. Une source compte si sa fiche est lisible **et** que la section qui
+porte le lien (ou la relation) l'est, **et** que le lien n'est pas dans un bloc MJ pour un non-MJ ; une
+fiche qui se cite elle-même ne s'affiche pas ; l'ordre est le titre puis l'identifiant. Jamais de
+compteur de ce qui est caché ; `mentionsSuite` se calcule sur ce que le lecteur voit seulement.
+
 ### E-9 Fiche — ce que `kanevas-import` change
 
 *Maquette finie* : `docs/maquettes/e09-fiche-importee.html` (« Port-Sel », états `#etat-fichier`, `#etat-joindre`, `#etat-sous-type`, `#etat-joueur`,
