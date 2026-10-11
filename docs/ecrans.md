@@ -2270,6 +2270,56 @@ facultatif, avec la même complétion que E-9.
   « Port » que Léa ne lit pas, quand Léa filtre « Lieux » sur « Port », alors elle voit « Port-Sel » et
   « Havre-Gris », et le filtre dit « Port (2) ».
 
+### Ce que `kanevas-import-arbre` construit (E-8 arbre, E-9 fil, « Contient », « Déplacer sous… »)
+
+*Précisions de la tranche, sur le cadre ci-dessus (AD-99, AD-115) ; la maquette de E-9 est `e09-fiche-importee.html`
+(`#etat-deplacer`), l'arbre n'en a pas.*
+
+**Arbre (E-8).** L'adresse ne change pas ; le choix « Grille / Arbre » est gardé par type sous la clé
+`kanevas:vue-liste:<univers>:<type>` du navigateur (`localStorage`, valeurs `grille`, `arbre`) ; absent : la grille.
+La liste est un `role="tree"`, chaque nœud un `role="treeitem"` avec `aria-expanded` quand il a un chevron et
+`aria-level` ; le chevron est un bouton (`aria-label` « Déplier » / « Replier ») distinct du lien vers la fiche ;
+au clavier, flèche droite déplie, flèche gauche replie, Entrée ouvre. Déplier appelle
+`GET …/fiches?type=T&parent=<id>` ; replier garde ce qui est chargé, le déplier de nouveau ne rappelle pas.
+Les racines sont `…&parent=racine` ; « Charger la suite » charge la page suivante d'un nœud ou des racines.
+Un nœud sans enfant lisible du même type n'a pas de chevron (le champ `aDesEnfants`). La ligne d'un nœud :
+icône du type, titre, sous-type (`--texte-3`), et « dans « La Guilde des Brumes » » quand `dans` est rendu.
+Au téléphone, l'indentation vaut 12 px par niveau, plafonnée à 6 niveaux ; la ligne ne passe pas sous 44 px de haut.
+En mode Joueur d'un MJ, la bascule garde son choix et l'arbre se recharge sous le mode.
+
+**Fil d'Ariane (E-9).** `ancetres` vient de la vue de la fiche ; chaque ancêtre est un lien vers sa fiche ; une
+fiche sans ancêtre lisible a le fil de toujours. Plus de trois ancêtres : le premier, « … » (un menu qui liste
+les autres, avec leur type), les deux derniers. Le retour par le fil (P-12 étape 5) est ce lien : aucun état
+particulier. Un ancêtre qui devient illisible entre deux lectures n'est plus dans le fil à la lecture suivante.
+
+**« Contient » (E-9).** Le bloc suit les textes de `Contient` plus haut. Il appelle
+`GET …/fiches/:fid/enfants` une fois la fiche chargée, indépendamment des sections : son erreur ne retire pas le
+texte. Ses états : *chargement* « Chargement… » sous le titre du bloc ; *erreur* « Impossible de charger les
+enfants. » avec « Réessayer » ; *vide* le bloc est absent ; *contenu long* 50 puis « Afficher les N suivants »
+(N = ce que la page suivante compte, jamais un total). En mode Joueur le bloc se relit sous le mode.
+
+**« Déplacer sous… » (E-9).** La boîte est celle de `#etat-deplacer`. Le champ cherche dans la liste de
+recherche existante (`GET …/fiches?q=`, sans `type`, 300 ms après la frappe, 1 caractère au moins, 100 au plus) ;
+la fiche elle-même est écartée de la liste ; « Aucun parent » est la première ligne et met la fiche à la racine.
+« Déplacer » reste inactif tant qu'aucune ligne n'est choisie ; il envoie `PATCH …/fiches/:fid` `{parent}`. Réponses :
+204 → la boîte se ferme, le fil se recharge et le toast dit « Fiche déplacée. » ; 400 `cycle` → le texte
+« Une fiche ne peut pas être rangée sous l'un de ses descendants. » sous le champ, la boîte reste ouverte ;
+400 `trop_profond` → « La hiérarchie est trop profonde. » ; 404 → « Introuvable. » ; connexion perdue →
+bandeau, « Déplacer » désactivé. La boîte n'existe que pour un MJ hors mode Joueur.
+
+*Critères de la tranche* (les données sont celles du semis, `docs/ecrans.md` plus haut) :
+- Étant donné « Les Sphères » (lieu MJ seul) dont « Port-Sel » est l'enfant, quand Léa ouvre « Lieux » en arbre,
+  alors « Port-Sel » est une racine sans « dans … » (son parent est illisible) ; Antor, lui, voit « Les Sphères »
+  racine, et « Port-Sel » dessous.
+- Étant donné « Le Repaire des contrebandiers » (MJ seul) sous « Port-Sel », quand Léa déplie « Port-Sel », alors
+  elle voit « La Taverne du Kraken », « Les Docks », « Le Phare aux Sels » et « Quartier des Cordiers », pas le Repaire,
+  et aucun nombre ne lui dit qu'il existe.
+- Étant donné un enfant d'un autre type sous « Port-Sel » (un événement lu des joueurs), quand Léa déplie
+  « Port-Sel » dans « Lieux », alors cet enfant n'y est pas ; il est dans « Contient » de « Port-Sel », et dans
+  « Événements » il porte « dans Port-Sel ».
+- Étant donné une réponse de `GET …/fiches?type=lieu&parent=racine` pour Léa, alors aucun champ ne porte le titre,
+  l'identifiant ou le nombre d'une fiche qu'elle ne lit pas (`dans` est `null` si le parent est illisible).
+
 ### E-17 Recherche
 
 Adresse `/univers/:id/recherche?q=…&type=…&etiquette=…`. Un champ en tête (focus à l'ouverture,
