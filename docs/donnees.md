@@ -388,6 +388,7 @@ Invariants, en phrases :
 | `parent_id` | nouvelle, → `fiches`, **ON DELETE SET NULL** ; nul : la fiche est à la racine | (1) même univers et pas de cycle : **service** (la règle traverse la table ; un déclencheur récursif est rejeté, AD-99) ; `CHECK (parent_id <> id)` |
 | `cle_origine` | nouvelle, texte 1 à 200 ; nulle : fiche née dans Kanevas | (2) index unique `(univers_id, cle_origine)` (plusieurs `NULL` permis) |
 | `cree_le`, `modifie_le` | inchangées ; `cree_le` peut venir de l'import (B-50) | — |
+| `illustration_empreinte` | nouvelle, SHA-256 de l'illustration ; nulle avec elle | ensemble avec les trois colonnes d'illustration (`CHECK` étendu) ; sert à ne pas renvoyer une illustration inchangée (AD-104) |
 | `id` | `AUTOINCREMENT` gardé | (3) — vérifié dans `0001-premiere-fiche.sql` : SQLite ne réemploie pas un identifiant `AUTOINCREMENT` |
 
 Les autres colonnes et index (illustration, AD-93) sont recopiés tels quels ; les déclencheurs de
