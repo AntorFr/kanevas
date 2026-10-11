@@ -33,7 +33,6 @@ façon (AD-2).
 | **étiquette** *(kanevas-import)* | nom, unique dans l'univers | univers ; ↔ fiches | ses fiches qu'un compte voit ; une étiquette sans fiche visible n'existe pas pour lui | MJ ; l'import (créée au premier usage) |
 | **réglage de type** *(kanevas-import)* | un type, activé ou non — au système ; forcé activé ou désactivé — à l'univers ; l'absence veut dire « suit » (AD-102) | système de jeu ou univers | membres d'un univers rattaché (système) ; membres de l'univers (univers) | MJ d'un univers rattaché (système, B-42) ; MJ de l'univers (univers) |
 | **jeton d'API** *(kanevas-import)* | nom, empreinte (jamais la valeur), créé le, expire le, révoqué le, dernier usage | univers, compte du MJ qui l'a créé (l'acteur) | les MJ de l'univers (sans la valeur) | création : MJ ; révocation : tout MJ de l'univers (B-45, B-46) |
-| **clé supprimée** *(kanevas-import, `[À TRANCHER]` B-40)* | une clé d'origine, la date de suppression | univers | les MJ (par le rapport d'un lot) | posée par la suppression d'une fiche importée depuis E-9 ; levée par un import qui demande `recreer` ; effacée avec l'univers |
 | **lot d'import** *(kanevas-import)* | ouvert le, clos le, état, compteurs (créées, mises à jour, inchangées, refusées, avertissements), rapport des refus et avertissements | univers, jeton | les MJ de l'univers | le serveur, pour un script qui présente un jeton (B-49) |
 | **proposition** | contenu proposé, empreinte du contenu d'origine (la `version` de la section, AD-59), créée le, appliquée le | univers, compte demandeur, section, CR source | son seul demandeur | créée par l'agent du MJ ; appliquée une fois par son demandeur, si la section n'a pas changé (B-21) |
 
@@ -331,9 +330,9 @@ ses sections). Le dossier `tmp/` est vidé au démarrage, comme pour les pièces
 
 ## Cadrage `kanevas-import` : le modèle
 
-> Proposé le 2026-10-11 (`epic/kanevas-import`). Décisions : AD-95 à AD-109 (AD-109 `[À TRANCHER]`). Six entités nouvelles —
+> Proposé le 2026-10-11 (`epic/kanevas-import`). Décisions : AD-95 à AD-109. Six entités nouvelles —
 > lien, alias, étiquette, réglage de type, jeton d'API, lot d'import — et des attributs sur fiche,
-> section, pièce jointe, campagne, scénario, carte. Les tranches de l'epic ajouteront des attributs,
+> section, pièce jointe, campagne, scénario. Les tranches de l'epic ajouteront des attributs,
 > jamais une entité. Numéros de migration : pris à la fusion (AD-51) ; les noms ci-dessous sont
 > provisoires.
 
@@ -360,8 +359,7 @@ Invariants, en phrases :
 1. Le parent d'une fiche est une autre fiche **du même univers**, et une fiche n'est jamais son
    propre ancêtre (pas de cycle).
 2. Une **clé d'origine** désigne au plus une fiche par univers, au plus une section par fiche, au plus
-   une pièce jointe par section, une campagne par univers, un scénario par campagne, une carte par
-   univers.
+   une pièce jointe par section, une campagne par univers, un scénario par campagne.
 3. Un identifiant de fiche n'est **jamais réemployé** : un lien `[[42|…]]` vers une fiche supprimée
    reste cassé, il ne vise jamais une autre fiche.
 4. Un lien vise une fiche, ou attend une clé d'origine, ou est cassé — jamais deux à la fois.
@@ -411,7 +409,6 @@ Les autres colonnes et index (illustration, AD-93) sont recopiés tels quels ; l
 | `types_systeme` | `systeme_id`, `type`, `active` (booléen) | clé primaire `(systeme_id, type)` (5) ; → `systemes_jeu` ; l'absence d'une ligne : le défaut du produit (activé) |
 | `types_univers` | `univers_id`, `type`, `active` (booléen) | clé primaire `(univers_id, type)` (5) ; → `univers` ; l'absence d'une ligne : l'univers suit son système |
 | `jetons_api` | `id`, `univers_id`, `compte_id`, `nom`, `empreinte`, `cree_le`, `expire_le`, `revoque_le` (nul : actif), `dernier_usage_le` (nul : jamais) | → `univers`, → `comptes` ; `empreinte` unique (7) ; `nom` 1 à 80 ; `CHECK (expire_le > cree_le)` ; un an au plus : service |
-| `cles_supprimees` *(`[À TRANCHER]`, B-40)* | `univers_id`, `cle`, `supprimee_le` | clé primaire `(univers_id, cle)` ; → `univers` ; écrite dans la transaction de la suppression d'une fiche qui a une `cle_origine` (par E-9, pas par l'API) ; lue par l'assurance d'une fiche (index : la clé primaire) |
 | `lots_import` | `id`, `univers_id`, `jeton_id`, `ouvert_le`, `clos_le` (nul : en cours), `dernier_ecrit_le`, `creees`, `mises_a_jour`, `inchangees`, `refusees`, `avertissements` (entiers ≥ 0), `rapport` (JSON : 1 000 entrées au plus, `{cle, objet, raison, gravite}`) | → `univers`, → `jetons_api` ; « abandonné » n'est pas stocké : ouvert et `dernier_ecrit_le` de plus de 24 h |
 
 **Colonnes ajoutées** (`ALTER TABLE … ADD COLUMN`, comme 0002 et 0006) :
@@ -421,7 +418,6 @@ Les autres colonnes et index (illustration, AD-93) sont recopiés tels quels ; l
 | `sections` | `contenu_public` (texte ; le contenu sans blocs MJ), `cle_origine` (nulle : née dans Kanevas), `version_importee` (entier ; nul : jamais écrite par un import), `dernier_import` (JSON : titre et audience écrits par le dernier import ; nul : jamais) | (12) le contenu est modifié dans Kanevas si `version` ≠ `version_importee`, le titre ou l'audience si la valeur courante ≠ `dernier_import` ; (8) écrit par le service dans la même transaction que `contenu` (AD-98) — une fonction Markdown ne s'écrit pas en SQL ; index unique `(fiche_id, cle_origine)` (2) |
 | `pieces_jointes` | `cle_origine`, `empreinte` (SHA-256 des octets, pour ne pas renvoyer une image inchangée) | index unique `(section_id, cle_origine)` (2) |
 | `campagnes` | `cle_origine`, `dernier_import` (JSON : nom et statut écrits par le dernier import ; nul : jamais) | index unique `(univers_id, cle_origine)` (2) ; (12) même règle, champ par champ |
-| `cartes` | `cle_origine` | index unique `(univers_id, cle_origine)` (2) |
 | `scenarios` | `cle_origine`, `dernier_import` (JSON : titre écrit ; nul : jamais), `version_importee` (la `version` laissée par le dernier import) | index unique `(campagne_id, cle_origine)` (2) ; (12) le contenu est modifié dans Kanevas si `version` ≠ `version_importee`, le titre si la valeur courante ≠ `dernier_import` |
 
 **Ce que la base ne dit pas, et que le service porte**, avec sa raison : même univers pour parent,
@@ -478,8 +474,8 @@ pend d'une ligne qui le porte, et toute requête filtre dessus. Un système de j
    pour les sections existantes (aucun bloc MJ n'existait : la syntaxe `:::mj` est nouvelle) et le
    remplissage des index de recherche recréés.
 3. **Migrer** : sans objet — aucun ancien lecteur ne survit (frontend et backend partent dans la même
-   image). Les contenus en texte brut sont **relus comme du Markdown** (AD-95, `[À TRANCHER]` à sa
-   place).
+   image). Les contenus en texte brut sont **relus tels quels comme du Markdown**, sans colonne de
+   format (AD-95 ; décision de Monsieur du 2026-10-11 : la base de production est vide).
 4. **Resserrer** : rien à resserrer ; aucune colonne n'est retirée.
 
 Retour arrière : une image d'avant la recréation de `fiches` relit la table (mêmes colonnes et plus) ;

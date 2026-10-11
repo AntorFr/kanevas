@@ -13,7 +13,7 @@
 > qui tourne sur son Mac — et lui donner ce qu'il faut pour y vivre : Markdown, liens `[[…]]`, blocs MJ
 > dans un texte, arbre des fiches, liens entrants, recherche tous types, alias et étiquettes, types de
 > fiche plus nombreux et choisis par système et par univers, suppression, jeton d'API. B-32 à B-51,
-> P-10 à P-15, E-17 et E-18, AD-95 à AD-109 (B-51, P-15 et AD-109 `[À TRANCHER]`). Les points encore ouverts sont marqués `[À TRANCHER]` à leur place.
+> P-10 à P-15, E-17 et E-18, AD-95 à AD-109. Tous les `[À TRANCHER]` du cadrage ont été tranchés par Monsieur le 2026-10-11 ; ce qui en reste ouvert est marqué `[À TRANCHER]` à leur place.
 
 Kanevas sert à **préparer** des parties de jeu de rôle et à en **garder la mémoire** entre les
 séances : le lore d'un univers, partagé entre le MJ et ses joueurs avec des droits fins par
@@ -113,14 +113,9 @@ Forme de la skill `exigences` ; chaque besoin cite les parcours qui le réalisen
 - **B-40** — Un MJ **supprime une fiche** depuis son en-tête (E-9), après confirmation qui nomme ce
   qui part avec elle (sections, pièces jointes, relations qui la visent, places sur les cartes) ; ses
   enfants remontent sous son parent ; les liens qui la visaient deviennent des liens cassés (B-33).
-  *(P-14)* — `[À TRANCHER]` *Une fiche importée supprimée, puis un rejeu* : **recommandation, une
-  pierre tombale** — supprimer depuis E-9 une fiche qui a une clé d'origine garde cette clé, marquée
-  supprimée ; un rejeu qui l'envoie ne la recrée pas, et le lot le dit (« lieu:port-sel : supprimée
-  dans Kanevas, non recréée ») ; le script peut la faire revenir en le demandant (`recreer`) ; une
-  suppression par l'API (`DELETE`, la source l'a retirée) ne laisse pas de pierre ; supprimer
-  l'univers efface tout, pierres comprises. Ce qui renverserait : vouloir que la base Kanka reste la
-  source tant que dure la reprise (supprimer à la main pour réimporter propre) — alors pas de pierre,
-  et le rejeu recrée la fiche.
+  *(P-14)* Une fiche importée supprimée **revient** au rejeu suivant si le script l'envoie encore :
+  pour qu'elle ne revienne pas, on la supprime dans l'export. Aucune trace de la suppression n'est
+  gardée (décision de Monsieur du 2026-10-11).
 - **B-41** — Un MJ **supprime un univers** depuis ses paramètres (E-14), en tapant son nom pour
   confirmer ; tout son contenu et ses jetons partent, ses membres n'y ont plus accès, et son adresse
   répond comme une adresse inconnue. Un système de jeu rattaché reste. *(P-10)*
@@ -161,17 +156,15 @@ Forme de la skill `exigences` ; chaque besoin cite les parcours qui le réalisen
   *(P-10, P-12)*
 
 ### Assistant : son jeton posé depuis l'administration (`kanevas-import`)
-- **B-51** — `[À TRANCHER]` *Inclure ou non ce besoin dans l'epic.* Quand l'admin d'instance
+- **B-51** — Quand l'admin d'instance
   ouvre « Jeton de l'assistant » dans l'administration (E-5), il lance la connexion à l'abonnement
   Claude (`claude setup-token`), ouvre l'adresse que Kanevas lui montre, colle le code rendu, et
   l'assistant devient disponible sans redéploiement ; l'écran dit si un jeton est posé et depuis
-  quand, jamais sa valeur. *(P-15)* — **Recommandation : l'inclure, en tranche indépendante, la
-  dernière.** Raisons : le code existe dans Antre-du-maitre (une fenêtre et trois routes, le binaire
+  quand, jamais sa valeur. *(P-15)* — **Inclus, en dernière tranche indépendante** (décision de Monsieur du 2026-10-11).
+  Le code existe dans Antre-du-maitre (une fenêtre et trois routes, le binaire
   `claude` est celui que l'Agent SDK, déjà dépendance de Kanevas, embarque ; `script` pour le
   pseudo-terminal), E-5 existe, et aujourd'hui poser ou renouveler le jeton passe par OpenBao et un
-  redémarrage. Ce qui renverserait : vouloir une epic courte, centrée sur l'import (la tranche n'a
-  aucun lien avec lui et peut partir seule, hors epic) ; ou refuser un processus `claude` lancé par
-  le serveur dans le pod.
+  redémarrage. La tranche n'a aucun lien avec l'import : elle part seule, la dernière.
 
 ### Système de jeu
 - **B-13** — Un MJ rattache son univers à un système de jeu partagé, ou en crée un, depuis les
@@ -441,14 +434,14 @@ E-14 ni les bascules de E-15 (« Lecture seule »).
 3. Menu « ⋯ » d'un doublon : « Supprimer la fiche… » ; la boîte compte ce qui part avec elle
    (sections, pièces jointes, relations qui la visent, places sur une carte), dit sous quelle fiche
    remontent ses enfants et que les liens qui la visent deviendront des liens cassés (texte exact :
-   E-9) ; le doublon venait de Kanka : sa clé d'origine reste marquée supprimée, et le prochain import
-   ne le recrée pas (B-40, `[À TRANCHER]`).
+   E-9) ; le doublon venait de Kanka : Antor le retire aussi de l'export, sinon le prochain import le
+   recrée (B-40).
 *Échec* : un déplacement qui ferait un cycle (« Les Sphères » sous l'un de ses enfants) — « Une fiche
 ne peut pas être rangée sous l'un de ses descendants. » ; un Joueur auteur d'une section qui contient
 un bloc MJ — « Modifier » n'y paraît pas ; un texte qui passe 100 000 caractères — « Erreur : 100 000
 caractères au plus. », le texte reste.
 
-### P-15 — Poser le jeton de l'assistant (admin d'instance) `[À TRANCHER]` (B-51)
+### P-15 — Poser le jeton de l'assistant (admin d'instance) (B-51)
 1. **Administration** (E-5), bloc « Jeton de l'assistant » : « Aucun jeton posé » ; « Connecter
    l'abonnement ».
 2. Kanevas montre une adresse ; il l'ouvre, s'authentifie chez Anthropic, copie le code.
@@ -479,13 +472,12 @@ Recommencez. », l'ancien jeton reste.
   version (B-42). *(décision de Monsieur, 2026-10-11)*
 - **Choix des types par campagne** : le choix vit au système et à l'univers. *(décision de Monsieur,
   2026-10-11)*
-- **Médiathèque** (images d'un univers hors de toute fiche) : les 385 Mo d'images de Kanka qu'aucune
-  fiche n'utilise restent sur le Mac. Une image vit dans la section qui l'affiche (B-44).
-  `[À TRANCHER]` : recommandation, pas de médiathèque ; ce qui renverserait — Monsieur veut retrouver
-  ces images dans Kanevas (alors une médiathèque par univers, avec sa propre audience).
-- **Créatures et vaisseaux structurés** (caractéristiques en champs) : leurs fiches importées sont
-  des sections en Markdown, tableaux compris. `[À TRANCHER]` : recommandation, différer ; ce qui
-  renverserait — Monsieur veut trier ou filtrer par caractéristique, ou les rendre au combat.
+- **Créatures et vaisseaux structurés** (caractéristiques en champs par système) : une autre epic ;
+  ici, leurs fiches importées sont des sections en Markdown, tableaux compris. *(décision de Monsieur du 2026-10-11)*
+- **Cartes dans l'API d'import** : une autre epic, « plus évoluée » ; ici, une carte Kanka s'importe
+  comme une fiche ordinaire avec son image. *(décision de Monsieur du 2026-10-11)*
+- **Chronologie comme type à part** (une frise) : une epic plus évoluée, comme les cartes ; ici, une
+  chronologie est une fiche « Savoir ». *(décision de Monsieur du 2026-10-11)*
 - **Blocs secrets par joueur** dans un texte : le bloc MJ n'a qu'une audience, le MJ ; un secret
   pour un seul joueur reste une section à auteur (AD-19).
 - **Historique d'un import, annulation d'un lot** : un lot se rejoue, il ne se défait pas ; on
@@ -503,5 +495,5 @@ Fait le 2026-10-11 sur la proposition (skill `cadrage`, étape 6), refait après
 | Chaque besoin a un parcours | B-32 P-12, P-14 · B-33 P-12, P-14 · B-34 P-12, P-14 · B-35 P-12, P-14 · B-36 P-12 · B-37 P-12 · B-38 P-12, P-14 · B-39 P-14 · B-40 P-14 · B-41 P-10 · B-42 P-13, P-10 · B-43 P-10, P-14 · B-44 P-12 · B-45 P-11, P-10 · B-46 P-11 · B-47 P-10 · B-48 P-10, P-14 (titre et section modifiés puis rejeu) · B-49 P-10 · B-50 P-10 · B-51 P-15 — **tient**. |
 | Chaque geste humain d'un parcours a un écran | P-10 : E-1, E-2, E-14, E-18, E-8, E-9, E-17, E-13 ; l'étape 4 n'est pas un geste dans Kanevas (le script, hors produit, par décision de Monsieur) et son résultat se lit sur E-18 · P-11 : E-18 · P-12 : E-8, E-9, E-17, E-12 · P-13 : E-15, E-14, barre · P-14 : E-9 · P-15 : E-5 — **tient**. |
 | Chaque écran a ses données | E-17 : fiches, alias, étiquettes, index (titre, alias, `contenu_public`) · E-18 : jetons d'API, lots d'import · E-14 / E-15 : réglages de type · E-9 : liens, parent, alias, étiquettes, clé d'origine · E-13 : `cree_le` (date d'origine) · E-5 : un fichier du volume, pas une entité (B-51) — **tient**. |
-| Chaque entité sert un parcours | lien P-12, P-14 · alias et étiquette P-12, P-14 · réglage de type P-13 · jeton d'API P-11 · lot d'import P-10 · clé supprimée (`[À TRANCHER]`, B-40) P-14 étape 3 puis P-10 — **tient**. |
-| Trous comblés par un choix écrit | l'import n'a pas d'écran de déclenchement (le script) : choix de Monsieur, écrit ; « vider un univers d'essai » remplacé par « supprimer l'univers » (AD-105) ; les cartes dans l'API `[À TRANCHER]` (AD-104) ; E-17 prend la bascule de mode (P-10 étape 6 vérifie aussi la recherche en mode Joueur) ; liens d'un scénario et d'une entrée de système réglés (AD-97). |
+| Chaque entité sert un parcours | lien P-12, P-14 · alias et étiquette P-12, P-14 · réglage de type P-13 · jeton d'API P-11 · lot d'import P-10 — **tient**. |
+| Trous comblés par un choix écrit | l'import n'a pas d'écran de déclenchement (le script) : choix de Monsieur, écrit ; « vider un univers d'essai » remplacé par « supprimer l'univers » (AD-105) ; les cartes hors de l'API (AD-104, décision de Monsieur) ; E-17 prend la bascule de mode (P-10 étape 6 vérifie aussi la recherche en mode Joueur) ; liens d'un scénario et d'une entrée de système réglés (AD-97). |

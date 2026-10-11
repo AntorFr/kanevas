@@ -76,8 +76,7 @@ bascule existe (fiche, carte et, depuis `kanevas-import`, recherche E-17).
 liens, blocs MJ, fil d'ancêtres, blocs « Contient » et « Mentionnée dans », alias et étiquettes, menu
 de la fiche : renommer, changer le type, déplacer, supprimer, clé d'origine), **E-7** et **E-15**
 (contenu en Markdown), **E-14** (« Types de fiche », « Supprimer l'univers »), **E-15** (« Types de
-fiche » du système), **E-13** (ordre par date d'origine), la barre latérale ; **E-5** seulement si
-B-51 est retenu (« Jeton de l'assistant »).
+fiche » du système), **E-13** (ordre par date d'origine), la barre latérale ; **E-5** (« Jeton de l'assistant », B-51).
 
 Les pages de connexion du serveur (« Connexion refusée », « Connexion indisponible », atteintes
 depuis P-1) et le bandeau du mode bouchon sont décrits sous « Session et connexion ».
@@ -2257,7 +2256,7 @@ l'univers » (`--danger`) ne s'active que si le nom tapé est exact (casse compr
   « Image de la section » ni « Bloc MJ » ; E-15 n'a pas de lien vers une fiche.
 - **E-13** : l'ordre est la date de création de la fiche, qui est sa **date d'origine** si l'import en
   a donné une (B-50) ; la ligne montre cette date.
-- **E-5** (seulement si B-51 est retenu) : un panneau « Jeton de l'assistant » sous la liste des
+- **E-5** (B-51, dernière tranche) : un panneau « Jeton de l'assistant » sous la liste des
   univers — « Aucun jeton posé. » ou « Jeton posé le 11 octobre 2026. » (jamais la valeur) ;
   « Connecter l'abonnement » montre l'adresse d'autorisation (« Ouvrir », « Copier ») et un champ
   « Code » avec « Valider » ; la fenêtre expire au bout de 10 minutes (« La connexion a expiré.
@@ -2270,7 +2269,7 @@ l'univers » (`--danger`) ne s'active que si le nom tapé est exact (casse compr
   qu'ils ne montrent pas) · B-35 E-9, E-8 · B-36 E-9 · B-37 E-17 · B-38 E-9, E-17 · B-39 E-9 · B-40 E-9 ·
   B-41 E-14 · B-42 E-14, E-15, barre · B-43 E-9 · B-44 E-9 · B-45, B-46, B-49 E-18 · B-47, B-48 : **pas
   d'écran, par décision** — le geste est le script, son résultat se lit sur E-18 (B-49) ; AD-53 tient :
-  l'écran d'un import est E-18 · B-50 E-9, E-13 · B-51 E-5 (`[À TRANCHER]`) — tient.
+  l'écran d'un import est E-18 · B-50 E-9, E-13 · B-51 E-5 — tient.
 - **Chaque écran est atteint par un parcours** : E-17 (P-12), E-18 (P-10, P-11), E-14 et E-15 (P-13,
   P-10), E-9 (P-12, P-14), E-8 (P-12), E-5 (P-15) — tient.
 - **Chaque rôle a sa colonne** : MJ, Joueur, Admin d'instance pour E-17 et E-18 (matrice) ; le script
