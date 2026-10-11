@@ -34,7 +34,7 @@ frontend/                         React + Vite : charte (ui/), écrans (src/ecra
 ```
 
 Un écran est un fichier `frontend/src/ecrans/<nom>.tsx` enregistré par le registre
-(`frontend/src/registre.ts`) ; les couleurs ne viennent que de `frontend/src/ui/tokens.css`
+(`frontend/src/registre.ts`) ; les couleurs du frontend ne viennent que de `frontend/src/ui/tokens.css` (seule exception, le bandeau bouchon des pages rendues par le serveur, `src/routes/pages.ts`)
 (`docs/charte.md`). Le cadre (`Cadre.tsx`, `Barre.tsx` : navigation à icônes, barre haute, tiroir au téléphone,
 menu de l'avatar qui porte le thème et la déconnexion) et les composants partagés (`frontend/src/ui/` : bouton, menu, toast,
 boîte de dialogue, interrupteur, pastille…) sont communs à tous les écrans. Les polices (Fraunces, Newsreader, Inter,
@@ -53,6 +53,7 @@ Tests sans Docker : `npm run typecheck` puis `npm test` (ils jouent aussi les e2
 # (ou, avec Node ≥ 20 sur l'hôte, `npm ci` puis la commande de la section « mode bouchon »).
 docker run --rm -p 3001:3001 -v "$PWD":/src -w /src node:20-bookworm-slim sh -c "npm ci && npm run dev"
 # puis, depuis l'hôte : curl http://localhost:3001/healthz
+# (sans KANEVAS_STUB=1 ni les quatre OIDC_*, `/` mène à une connexion OIDC qui répond 404 : aucun écran, pour les voir lancer le mode bouchon ci-dessus)
 ```
 
 Ce bloc ne pose pas de `.env` : les valeurs par défaut suffisent pour `/healthz`, OIDC

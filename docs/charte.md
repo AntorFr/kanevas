@@ -101,7 +101,7 @@ pastille), `currentColor`. Servies par le produit (`lucide-react`), jamais par u
 étiquette accessible et une infobulle. Jamais d'émoji. Correspondances fixées : Vue d'ensemble
 `layout-grid`, Campagnes `flag`, Comptes-rendus `notebook-pen`, Personnages `users-round`, Lieux
 `map-pin`, Factions `shield`, Objets `gem`, Événements `hourglass`, Quêtes `scroll-text`, Membres
-`contact-round`, Paramètres `settings-2`, Systèmes de jeu `dices`, Mes univers `library`, Relations `waypoints`, Pièces jointes `paperclip`, MJ
+`contact-round`, Paramètres `settings-2`, Systèmes de jeu `dices`, Mes univers `library`, Cartes `map`, Administration `shield-check`, Relations `waypoints`, Pièces jointes `paperclip`, MJ
 seul et secret `lock`, lu des joueurs `eye`, écrit par les joueurs `pen-line`, mode MJ
 `lock-keyhole`, assistant `sparkles`, thème `sun` / `moon` / `monitor`, déconnexion `log-out`,
 menu du téléphone `panel-left`.

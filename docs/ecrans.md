@@ -73,7 +73,7 @@ bouchon » — sans `E-n` ni six états, ils n'existent pas en production.
 
 ## Rôles × écrans × actions
 
-« — » : l'écran n'est pas proposé (absent de la navigation, et 404 si on force l'adresse). E-15 et
+« — » : l'écran n'est pas proposé (absent de la navigation ; si on force l'adresse, l'écran affiche « Page introuvable. » et l'API répond 404). E-15 et
 E-16 vivent hors des univers : leurs cases disent le rôle dans un univers rattaché au système.
 
 | Écran | MJ | Joueur | Admin d'instance (sans rôle dans l'univers) |
