@@ -21,7 +21,7 @@ Une barre latérale unique, sur tous les écrans d'un univers :
 - **Vue d'ensemble** · **Campagnes** · **Comptes-rendus** · **Cartes** ;
 - **Lore** : Personnages, Lieux, Factions, Objets, Événements, Quêtes — depuis `kanevas-import`,
   les **types activés pour l'univers** (B-42), dans l'ordre de la liste du produit : Personnages,
-  Lieux, Factions, Objets, Événements, Quêtes, Créatures, Races, Vaisseaux, Mondes, Récits, Règles,
+  Lieux, Factions, Objets, Événements, Quêtes, Créatures, Races, Vaisseaux, Savoirs, Récits, Règles,
   Notes ;
 - depuis `kanevas-import`, en tête de la barre sous le sélecteur d'univers : **Rechercher** (E-17 ;
   raccourci `/` hors d'un champ) ;
@@ -2017,7 +2017,10 @@ au téléphone, jamais la page.
 
 **En-tête.** Fil d'Ariane : univers › type › ancêtres **lisibles** du plus haut au plus proche ›
 fiche ; un ancêtre illisible est sauté sans marque (B-35) ; plus de trois ancêtres : le premier, « … »
-(menu des autres), les deux derniers. Sous le titre : « Aussi appelée Salport, Port-aux-Sels » (alias,
+(menu des autres), les deux derniers. Le badge du type porte le **sous-type** : « Lieu · Port » (B-52) ;
+MJ, hors mode Joueur : un clic sur le sous-type l'édite en place, avec la liste des sous-types déjà
+employés pour ce type dans l'univers (complétion, sans tenir compte de la casse ; Entrée enregistre, un
+champ vidé retire le sous-type ; 1 à 60 caractères). Sous le titre : « Aussi appelée Salport, Port-aux-Sels » (alias,
 `--texte-2`) et les **étiquettes** en pastilles neutres (`tag`), chacune un lien vers E-17 filtrée.
 MJ, hors mode Joueur : le titre s'édite en place (clic, Entrée enregistre) ; le menu « ⋯ » de l'en-tête
 porte « Changer le type… », « Déplacer sous… », « Alias et étiquettes… », une ligne d'information
@@ -2025,8 +2028,9 @@ porte « Changer le type… », « Déplacer sous… », « Alias et étiquettes
 séparé, « Supprimer la fiche… » en `--danger`.
 
 - *Changer le type* : une liste des types de la liste du produit, activés d'abord, puis « Autres
-  types » ; pour « Personnage », le choix PJ / PNJ. Le compte-rendu n'y figure pas ; un compte-rendu n'a
-  pas cette entrée.
+  types » ; pour « Personnage », le choix PJ / PNJ ; et le champ « Sous-type » (vidé au changement de
+  type, puisqu'il est propre au type, avec les sous-types déjà employés pour le nouveau type). Le
+  compte-rendu n'y figure pas ; un compte-rendu n'a pas cette entrée.
 - *Déplacer sous…* : boîte « Déplacer « Port-Sel » sous… », champ « Chercher une fiche » et la liste de
   recherche (tous types, fiches que le MJ lit), plus « Aucun parent » ; « Déplacer » / « Annuler » ;
   un descendant de la fiche est refusé : « Une fiche ne peut pas être rangée sous l'un de ses
@@ -2072,9 +2076,9 @@ refuse : « Vous ne pouvez pas modifier cette section. ».
   fiche, alors cette section n'a pas « Modifier ».
 - Étant donné « Rapport secret de l'amirauté » (MJ seul) qui lie « Port-Sel », quand Léa ouvre
   « Port-Sel », alors « Mentionnée dans » ne nomme pas ce rapport ; Antor l'y voit.
-- Étant donné « Port-Sel » sous « Les Sphères » (monde illisible de Léa), sans autre ancêtre, quand
+- Étant donné « Port-Sel » sous « Les Sphères » (lieu illisible de Léa), sans autre ancêtre, quand
   Léa ouvre « Port-Sel », alors le fil est « Lame d'Ébène › Lieux › Port-Sel ».
-- Étant donné « Port-Sel » sous « Les Sphères » (monde illisible de Léa) sous « Le Grand Vide »
+- Étant donné « Port-Sel » sous « Les Sphères » (lieu illisible de Léa) sous « Le Grand Vide »
   (lisible), quand Léa ouvre « Port-Sel », alors le fil est « Lame d'Ébène › Lieux › Le Grand Vide ›
   Port-Sel ».
 - Étant donné Antor qui déplace « Les Sphères » sous « Port-Sel », son enfant, alors il voit « Une
@@ -2090,16 +2094,22 @@ refuse : « Vous ne pouvez pas modifier cette section. ».
 Une bascule « Grille / Arbre » (icônes `layout-grid`, `list-tree`) à côté de la recherche ; le choix est
 mémorisé par type dans le navigateur. **L'arbre** : les fiches du type que le compte lit, dont le
 parent est absent, illisible ou d'un autre type, par titre ; une fiche dont le parent lisible est d'un
-autre type porte « dans Les Sphères » (`--texte-3`, lien). Chaque nœud qui a des enfants **du même
+autre type porte « dans La Guilde des Brumes » (`--texte-3`, lien). Chaque nœud qui a des enfants **du même
 type** lisibles a un chevron ; déplier charge ses enfants (100, puis « Charger la suite »). Pas de
 compteur d'enfants (il ne compterait que le lisible, mais n'aide en rien). La recherche dans le type
 rend la grille, jamais l'arbre. Les types de la barre sont ceux qui sont activés ; l'adresse d'un type
 désactivé ouvre quand même sa liste (on y arrive par une fiche), avec la ligne « Ce type est désactivé
 dans cet univers. » et sans bouton de création. Le choix du type à la création : les types activés.
 
+**Sous-type** (B-52, décision de Monsieur du 2026-10-11) : la carte d'une fiche (grille) et la ligne de l'arbre montrent
+son sous-type sous le titre (`--texte-3`) ; un filtre « Sous-type » à côté de la recherche (« Tous » ;
+puis les sous-types des fiches du type que le lecteur voit, par ordre alphabétique, avec leur nombre de
+fiches lisibles) ; un sous-type filtré rend la grille. La fenêtre de création a un champ « Sous-type »
+facultatif, avec la même complétion que E-9.
+
 | État | Ce qu'on voit | Ce qu'on peut faire |
 |---|---|---|
-| vide | les textes de la grille ; nouveaux types : « Aucune créature », « Aucune race », « Aucun vaisseau », « Aucun monde », « Aucun récit », « Aucune règle », « Aucune note » + « pour l'instant. » / « à voir pour l'instant. » ; boutons « Nouvelle créature », « Nouvelle race », « Nouveau vaisseau », « Nouveau monde », « Nouveau récit », « Nouvelle règle », « Nouvelle note » | MJ : créer |
+| vide | les textes de la grille ; nouveaux types : « Aucune créature », « Aucune race », « Aucun vaisseau », « Aucun savoir », « Aucun récit », « Aucune règle », « Aucune note » + « pour l'instant. » / « à voir pour l'instant. » ; boutons « Nouvelle créature », « Nouvelle race », « Nouveau vaisseau », « Nouveau savoir », « Nouveau récit », « Nouvelle règle », « Nouvelle note » | MJ : créer |
 | chargement | « Chargement des fiches… » ; un nœud qui se déplie : « Chargement… » sous lui | — |
 | erreur | « Impossible de charger les fiches. » ; un nœud : « Impossible de charger la suite. » | « Réessayer » |
 | connexion perdue | le bandeau ; « Nouveau … » désactivé | déplier ce qui est chargé |
@@ -2108,6 +2118,9 @@ dans cet univers. » et sans bouton de création. Le choix du type à la créati
 
 *Critère.* Étant donné « La Taverne du Kraken » sous « Port-Sel », lisibles de Léa, quand Léa passe
 « Lieux » en arbre et déplie « Port-Sel », alors elle voit « La Taverne du Kraken » dessous.
+- Étant donné « Port-Sel » et « Havre-Gris » de sous-type « Port », et « Port-Noir » de sous-type
+  « Port » que Léa ne lit pas, quand Léa filtre « Lieux » sur « Port », alors elle voit « Port-Sel » et
+  « Havre-Gris », et le filtre dit « Port (2) ».
 
 ### E-17 Recherche
 
@@ -2116,7 +2129,7 @@ Adresse `/univers/:id/recherche?q=…&type=…&etiquette=…`. Un champ en tête
 défaut ; **seuls les types activés** ont leur pastille, B-42 — une fiche d'un type désactivé reste un
 résultat sous « Tous ») et les **étiquettes** (une liste à
 compléter, celles des fiches que le compte voit). Les résultats : la ligne de E-8 (vignette, icône du
-type, titre, badge) plus, si la fiche a été trouvée par un alias, « alias : Salport » ; ses étiquettes.
+type, titre, badge, sous-type) plus, si la fiche a été trouvée par un alias, « alias : Salport » ; ses étiquettes.
 **Ordre** : titre, alphabétique sans casse — pas de pertinence ni d'extrait (AD-63 tient : un extrait
 est du contenu à filtrer, un classement trahit ce qui est caché). 100 puis « Charger la suite ». Une
 étiquette seule, sans mot, liste les fiches qui la portent. **Mode Joueur** (MJ) : la barre haute de
@@ -2138,9 +2151,9 @@ mode Joueur (« Rechercher », une étiquette).
 - Étant donné le mot « sous-main » présent seulement dans le bloc MJ de « Port-Sel », quand Léa
   cherche « sous-main », alors « Port-Sel » n'est pas un résultat ; quand Antor le cherche, il l'est.
   Quand Antor le cherche en mode Joueur, « Port-Sel » n'est pas un résultat.
-- Étant donné « Monde » désactivé dans Lame d'Ébène et « Les Sphères » (un monde lisible de Léa),
-  quand Léa cherche « sphères », alors « Les Sphères » est un résultat sous « Tous », et aucune
-  pastille « Monde » n'est proposée.
+- Étant donné « Savoir » désactivé dans Lame d'Ébène et « Chronique de l'Âge d'Ombre » (un savoir
+  lisible de Léa), quand Léa cherche « chronique », alors elle est un résultat sous « Tous », et aucune
+  pastille « Savoir » n'est proposée.
 - Étant donné le texte de lien « La Guilde des Brumes » écrit dans « Histoire » (lue de Léa) vers une
   fiche que Léa ne lit pas, quand Léa cherche « guilde », alors « Port-Sel » est un résultat et « La
   Guilde des Brumes » n'en est pas un.
@@ -2241,8 +2254,8 @@ l'univers » (`--danger`) ne s'active que si le nom tapé est exact (casse compr
 - Étant donné « CoF Mini » qui désactive « Vaisseau » et « Lame d'Ébène » qui le force à « Activé »,
   quand Antor ouvre « Lame d'Ébène », alors « Vaisseaux » est dans sa barre ; quand Mira ouvre « Les
   Landes grises » (qui suit le système), il n'y est pas.
-- Étant donné « Lame d'Ébène » qui suit le système pour « Monde », quand le système réactive « Monde »,
-  alors « Mondes » apparaît dans la barre de « Lame d'Ébène » au chargement suivant.
+- Étant donné « Lame d'Ébène » qui suit le système pour « Note », quand le système réactive « Note »,
+  alors « Notes » apparaît dans la barre de « Lame d'Ébène » au chargement suivant.
 - Étant donné un univers dont le MJ désactive « Lieu », alors « Lieux » quitte la barre et la création,
   et un lien vers un lieu ouvre toujours sa fiche.
 - Étant donné Antor qui tape « lame d'ébène » dans la boîte de suppression de « Lame d'Ébène », alors

@@ -12,7 +12,7 @@
 > Kanevas à une base existante — d'abord la base Kanka de Monsieur (501 fiches), poussée par un script
 > qui tourne sur son Mac — et lui donner ce qu'il faut pour y vivre : Markdown, liens `[[…]]`, blocs MJ
 > dans un texte, arbre des fiches, liens entrants, recherche tous types, alias et étiquettes, types de
-> fiche plus nombreux et choisis par système et par univers, suppression, jeton d'API. B-32 à B-51,
+> fiche plus nombreux et choisis par système et par univers, suppression, jeton d'API. B-32 à B-52,
 > P-10 à P-15, E-17 et E-18, AD-95 à AD-109. Tous les `[À TRANCHER]` du cadrage ont été tranchés par Monsieur le 2026-10-11 ; ce qui en reste ouvert est marqué `[À TRANCHER]` à leur place.
 
 Kanevas sert à **préparer** des parties de jeu de rôle et à en **garder la mémoire** entre les
@@ -55,7 +55,7 @@ Forme de la skill `exigences` ; chaque besoin cite les parcours qui le réalisen
 
 ### Lore et visibilité
 - **B-7** — Un MJ crée des fiches typées — personnage (PJ ou PNJ), lieu, faction, objet,
-  événement, quête, et depuis `kanevas-import` créature, vaisseau, race, monde, récit, règle, note
+  événement, quête, et depuis `kanevas-import` créature, vaisseau, race, savoir, récit, règle, note
   (la liste du produit, B-42), parmi les types activés pour son univers — depuis la liste d'un type (E-8). *(P-3, P-4, P-13)*
 - **B-8** — Une fiche est faite de sections, que le MJ ajoute, réordonne et retire sur la fiche
   (E-9) ; pour chacune, il choisit si
@@ -126,6 +126,12 @@ Forme de la skill `exigences` ; chaque besoin cite les parcours qui le réalisen
   activé). Un type désactivé quitte la barre latérale, la création (E-8) et les filtres de la
   recherche (E-17) ; ses fiches restent, atteintes par un lien, la recherche ou l'arbre. Le
   compte-rendu n'est pas réglable. *(P-13)*
+- **B-52** — Un MJ donne à une fiche un **sous-type** libre, propre à son type (Savoir · Ressource,
+  Lieu · Planète, Vaisseau · Frégate), à la création (E-8) ou depuis son en-tête (E-9), en le tapant ;
+  E-9 lui propose les sous-types déjà employés pour ce type dans l'univers. Quiconque voit la fiche voit
+  son sous-type, sur sa carte (E-8), dans son en-tête (E-9) et dans la recherche (E-17), qui le trouve ;
+  la liste d'un type (E-8) se **filtre par sous-type** parmi ceux des fiches que le lecteur voit. Les
+  étiquettes restent, transversales (B-38). *(P-12, P-14 ; décision de Monsieur du 2026-10-11)*
 - **B-43** — Le contenu d'une section tient jusqu'à **100 000 caractères** (au lieu de 20 000) ;
   au-delà, l'écriture est refusée comme aujourd'hui (AD-91, AD-106). *(P-10, P-14)*
 - **B-44** — Quand une section affiche une **image insérée dans son texte**, l'image est une pièce
@@ -144,7 +150,7 @@ Forme de la skill `exigences` ; chaque besoin cite les parcours qui le réalisen
   rien n'a changé — fiche, sections, relations, alias, étiquettes, parent, pièces jointes, illustration,
   campagnes et scénarios ; rejouer le même import ne crée aucun doublon. *(P-10)*
 - **B-48** — Si ce qu'un import a écrit a été **modifié dans Kanevas** depuis (par un humain ou son
-  assistant) — le titre, le type, le parent, les alias, les étiquettes d'une fiche ; le titre, le
+  assistant) — le titre, le type, le sous-type, le parent, les alias, les étiquettes d'une fiche ; le titre, le
   contenu, l'audience d'une section ; le nom et le statut d'une campagne ; le titre et le contenu
   d'un scénario —, alors un nouvel import n'écrase pas ce qui a été modifié,
   écrit le reste, et le rapport du lot nomme chaque champ laissé. *(P-10, P-14)*
@@ -389,13 +395,15 @@ E-18 (« Page introuvable. ») ; un Joueur force l'adresse de E-18 — « Page i
 a expiré — la ligne dit « Expiré », le script reçoit 401.
 
 ### P-12 — Lire la base importée (Antor, MJ, puis Léa, Joueuse, au téléphone)
-1. Antor ouvre **Lieux** (E-8), passe la liste **en arbre** : « Port-Sel » (« dans Les Sphères »,
-   un monde) déplié montre « La Taverne du Kraken » et « Les Docks ».
+1. Antor ouvre **Lieux** (E-8), passe la liste **en arbre** : « Les Sphères » (Lieu · Sphère)
+   déplié montre « Port-Sel » (Lieu · Port), qui déplié montre « La Taverne du Kraken » et « Les
+   Docks » ; il filtre sur le sous-type « Port » : « Port-Sel » et « Havre-Gris ».
 2. Il ouvre « Port-Sel » (**E-9**) : le fil d'Ariane « Lame d'Ébène › Lieux › Les Sphères ›
    Port-Sel » ; le texte en Markdown (intertitres, un tableau des quartiers, une image insérée) ; des
    liens vers « Maître Aldric » et « La Guilde des Brumes » ; au milieu de « Histoire », un **bloc MJ**
    hachuré d'ambre (« Le port est tenu par la Guilde… ») ; en bas, « Contient » (ses enfants) et
-   « Mentionnée dans » (les fiches qui la citent) ; sous le titre, ses alias et ses étiquettes.
+   « Mentionnée dans » (les fiches qui la citent) ; à côté du type, son sous-type « Lieu · Port » ;
+   sous le titre, ses alias et ses étiquettes.
 3. Il passe en **mode Joueur** : le bloc MJ a disparu sans laisser de trou ; le lien vers « La
    Guilde des Brumes », fiche MJ seul, est devenu du texte ; « Mentionnée dans » a perdu « Rapport
    secret de l'amirauté » et « La Guilde des Brumes », qu'un joueur ne lit pas.
@@ -414,12 +422,12 @@ rien depuis le dernier import — absente de l'arbre, de la recherche et des « 
 
 ### P-13 — Choisir les types d'un système et d'un univers (MJ)
 *Antor joue « CoF Mini » dans « Lame d'Ébène », sauf que son univers a des vaisseaux.*
-1. **Système de jeu** (E-15), bloc « Types de fiche » : il désactive « Vaisseau » et « Monde » pour
+1. **Système de jeu** (E-15), bloc « Types de fiche » : il désactive « Vaisseau » et « Note » pour
    le système ; Mira, MJ d'un autre univers du système, voit ces types quitter sa barre.
 2. **Paramètres** de « Lame d'Ébène » (E-14), bloc « Types de fiche » : chaque type dit « Système · activé »
    ou « Système · désactivé » ; il force « Vaisseau » à **Activé**.
-3. La barre latérale de « Lame d'Ébène » montre « Vaisseaux », pas « Mondes ».
-4. Plus tard, le système réactive « Monde » : « Lame d'Ébène », qui le suit, le montre aussitôt ;
+3. La barre latérale de « Lame d'Ébène » montre « Vaisseaux », pas « Notes ».
+4. Plus tard, le système réactive « Note » : « Lame d'Ébène », qui le suit, le montre aussitôt ;
    « Vaisseau », forcé, ne bouge pas.
 *Échec* : il désactive « Lieu » alors que l'univers a 201 lieux — la confirmation dit « Les 201 lieux
 restent ; on les atteint par un lien, la recherche ou l'arbre. » ; un Joueur ne voit ni le bloc de
@@ -429,8 +437,10 @@ E-14 ni les bascules de E-15 (« Lecture seule »).
 1. Sur « Port-Sel » (**E-9**), « Modifier » la section « Histoire » : il tape `[[`, choisit « Maître
    Aldric » dans la liste qui s'ouvre ; il sélectionne une phrase et la met en **bloc MJ** ; « Aperçu »,
    puis « Enregistrer ».
-2. Dans l'en-tête, il renomme la fiche « Port-Sel-sur-Brume » ; menu « ⋯ » : « Changer le type »
-   (Lieu → Monde) ; « Déplacer sous… » « Les Sphères » ; « Alias et étiquettes ».
+2. Dans l'en-tête, il renomme la fiche « Port-Sel-sur-Brume » ; il change son sous-type « Port » en
+   « Port franc » (la liste lui propose les sous-types de lieu déjà employés : Sphère, Port, Taverne…) ;
+   menu « ⋯ » : « Déplacer sous… » « Les Sphères » ; « Alias et étiquettes ». Sur « Les Cristaux
+   d'Ombre », importée en Note, « Changer le type » : Note → Savoir, sous-type « Ressource ».
 3. Menu « ⋯ » d'un doublon : « Supprimer la fiche… » ; la boîte compte ce qui part avec elle
    (sections, pièces jointes, relations qui la visent, places sur une carte), dit sous quelle fiche
    remontent ses enfants et que les liens qui la visent deviendront des liens cassés (texte exact :

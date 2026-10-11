@@ -108,7 +108,7 @@ seul et secret `lock`, lu des joueurs `eye`, écrit par les joueurs `pen-line`, 
 `lock-keyhole`, assistant `sparkles`, thème `sun` / `moon` / `monitor`, déconnexion `log-out`,
 menu du téléphone `panel-left`.
 Depuis `kanevas-import` (types et écrans nouveaux, même jeu, mêmes règles) : Créatures `paw-print`,
-Races `dna`, Vaisseaux `ship`, Mondes `globe`, Récits `book-open`, Règles `scale`, Notes
+Races `dna`, Vaisseaux `ship`, Savoirs `lightbulb` (savoir général : histoire, phénomènes, ressources, chronologie), Récits `book-open`, Règles `scale`, Notes
 `sticky-note`, Rechercher `search`, Accès par API `key-round`, étiquette `tag`, Contient
 `folder-tree`, Mentionnée dans `link-2`, vue en arbre `list-tree`, lien cassé `link-2-off`.
 
