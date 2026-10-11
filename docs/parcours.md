@@ -111,7 +111,14 @@ Forme de la skill `exigences` ; chaque besoin cite les parcours qui le réalisen
 - **B-40** — Un MJ **supprime une fiche** depuis son en-tête (E-9), après confirmation qui nomme ce
   qui part avec elle (sections, pièces jointes, relations qui la visent, places sur les cartes) ; ses
   enfants remontent sous son parent ; les liens qui la visaient deviennent des liens cassés (B-33).
-  *(P-14)*
+  *(P-14)* — `[À TRANCHER]` *Une fiche importée supprimée, puis un rejeu* : **recommandation, une
+  pierre tombale** — supprimer depuis E-9 une fiche qui a une clé d'origine garde cette clé, marquée
+  supprimée ; un rejeu qui l'envoie ne la recrée pas, et le lot le dit (« lieu:port-sel : supprimée
+  dans Kanevas, non recréée ») ; le script peut la faire revenir en le demandant (`recreer`) ; une
+  suppression par l'API (`DELETE`, la source l'a retirée) ne laisse pas de pierre ; supprimer
+  l'univers efface tout, pierres comprises. Ce qui renverserait : vouloir que la base Kanka reste la
+  source tant que dure la reprise (supprimer à la main pour réimporter propre) — alors pas de pierre,
+  et le rejeu recrée la fiche.
 - **B-41** — Un MJ **supprime un univers** depuis ses paramètres (E-14), en tapant son nom pour
   confirmer ; tout son contenu et ses jetons partent, ses membres n'y ont plus accès, et son adresse
   répond comme une adresse inconnue. Un système de jeu rattaché reste. *(P-10)*
@@ -431,7 +438,8 @@ E-14 ni les bascules de E-15 (« Lecture seule »).
 3. Menu « ⋯ » d'un doublon : « Supprimer la fiche… » ; la boîte compte ce qui part avec elle
    (sections, pièces jointes, relations qui la visent, places sur une carte), dit sous quelle fiche
    remontent ses enfants et que les liens qui la visent deviendront des liens cassés (texte exact :
-   E-9).
+   E-9) ; le doublon venait de Kanka : sa clé d'origine reste marquée supprimée, et le prochain import
+   ne le recrée pas (B-40, `[À TRANCHER]`).
 *Échec* : un déplacement qui ferait un cycle (« Les Sphères » sous l'un de ses enfants) — « Une fiche
 ne peut pas être rangée sous l'un de ses descendants. » ; un Joueur auteur d'une section qui contient
 un bloc MJ — « Modifier » n'y paraît pas ; un texte qui passe 100 000 caractères — « Erreur : 100 000
