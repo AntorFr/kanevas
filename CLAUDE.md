@@ -4,10 +4,11 @@
 - Commit messages in French: subject, then the *why*. Explicit paths
   (`git add <path>...`, never `git add -A`/`.`), no AI attribution trailers —
   same convention as `k8s-home-lab`.
-- Build and test in containers (the reference; a local Node 20+ gives the same result, see README) :
+- Build and test in containers (reference). In a pod without Docker, Node >= 20 on the host runs the same commands
+  (`npm ci && npm run typecheck && npm test`), see the README:
   `docker run --rm -v "$PWD":/src -w /src node:20-bookworm-slim sh -c "npm ci && npm run typecheck && npm test"`
-- `npm run typecheck` : `tsc --noEmit`. `npm test` : `node --import tsx --test`
-  on the files found by `find` — Node 20 (CI, image) does not expand globs
+- `npm run typecheck` : `tsc --noEmit` on the API and on `frontend/`. `npm test` : `node --import tsx --test`
+  on the files found by `find` in `src` and `frontend/src` — Node 20 (CI, image) does not expand globs
   itself, so never pass it a quoted `src/**` pattern; no extra test runner
   dependency.
 - `package.json` carries no `version` field: the app's version is never read
@@ -27,10 +28,10 @@
   number when its slice merges (AD-51).
 - Attachments (AD-7, AD-65): bytes under `<db dir>/attachments/` (`ATTACHMENTS_DIR`), written only through
   `services/stockage.ts` (tmp/ then rename; `tmp/` emptied at startup). `deposerPieceJointe` in
-  `services/pieces-jointes.ts` is the single upload function — later features (images, map backgrounds)
-  reuse it or `stockage.ts`, never write the volume themselves. The type is sniffed from the bytes, never trusted.
+  `services/pieces-jointes.ts` is the upload function of section attachments; images and map backgrounds
+  (`services/cartes.ts`, AD-69) go through `stockage.ts` directly, never write the volume themselves. The type is sniffed from the bytes, never trusted.
 - `frontend/` (React, Vite, `react-router`; AD-16, AD-57): `npm run build` also builds it into
-  `dist/public`, served by `routes/frontend.ts` behind the session guard (`@fastify/static` for
+  `dist/public`, located by `routes/frontend.ts` and served by `routes/session.ts` behind the session guard (`@fastify/static` for
   `/assets/`, `index.html` as the fallback of any other GET). A screen is one file
   `frontend/src/ecrans/<nom>.tsx` exporting an `Ecran` (`registre.ts`) — never edit the router or
   the sidebar for the screens of a universe; sidebar items live in `items.ts` and show only when a registered screen answers
@@ -45,7 +46,7 @@
   LLM. Reintroduce it only alongside the feature that actually activates this
   transport.
 - `routes/auth.ts` authenticates the identity (OIDC login/callback) and opens
-  the signed session cookie (`routes/session.ts`, AD-56), creating the account
+  the signed session cookie (`services/session.ts` signs it, `routes/session.ts` guards, AD-56), creating the account
   on first sign-in (AD-13). Universe roles never come from Authelia nor the
   session (AD-9): they are read from the members table at each request. Routes
   needing a session are registered in the guarded scope of
@@ -63,6 +64,15 @@
   (`lireRelations`: carrying section and target sheet readable, AD-64); do not add a count or a
   placeholder for hidden ones. Refusal codes: `auto_relation` (invalide), `relation_existante` and
   `limite_relations` (conflit) : the service puts the code in `ErreurService.detail`, the route sends it as `code` in the body.
+- Maps (`kanevas-cartes-graphes`, migration 0007): `src/services/cartes.ts`. `lireCarte` is the only read
+  of a map, elements and graph links included (AD-68); the browser filters nothing. Graph links are never
+  stored (AD-41): they come from `lireRelations` per readable section, so the two guards of AD-64 apply.
+  Reads: no role, unknown id and hidden map for a non-GM are the same `introuvable`; a GM in player mode on
+  a hidden map gets `refuse` with `detail: 'mode_joueur'`. Writes (GM outside player mode only): `introuvable`
+  if the caller cannot read the map, else `refuse`. Refusal codes in `ErreurService.detail`: `fond_invalide`,
+  `fond_trop_lourd`, `position_invalide`, `fiche_inconnue` (invalide), `fiche_deja_placee`, `carte_pleine`
+  (conflit). The route answers `fond_trop_lourd` with 413. A background goes through `stockage.ts` only and `ouvrirFond` takes no mode.
+
 - Assistant tools (`kanevas-assistant-membre`, `src/services/assistant/`): `catalogueDe(db, compteId,
   universId)` is the only door — the server picks the catalogue from the role read in `membres` (no role →
   `introuvable`, AD-26); a tool is `{nom, description, schema (zod strictObject), executer}`, neutral of any
@@ -85,3 +95,9 @@
   (history entry + `popstate`). The thread lives in memory in `assistant/fil.ts` (AD-28, never in browser storage);
   blocks under an answer are one line per event `type` in `assistant/blocs/registre.ts`. Never target `.principal`
   alone in CSS: it is also the primary button variant — use `main.principal`.
+- Update proposals (`kanevas-monde`, `src/services/propositions.ts`, migration 0008, AD-79/AD-81): a proposal is
+  read, applied and abandoned **only by its requester**, still a GM of the universe — anyone else gets
+  `introuvable`. `etat` is computed at each read (`appliquee` first, then `perimee` if the section `version`
+  moved, else `en_attente`), never stored. `appliquerProposition` writes through `ecrireContenu` with
+  `version_origine` in the same transaction as the mark (`section_modifiee`, `proposition_appliquee` as
+  `ErreurService.detail`, both `conflit`). Never write a section from here by another path (AD-48).

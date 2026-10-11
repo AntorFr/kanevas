@@ -2,6 +2,7 @@ import type { ComponentType } from 'react';
 
 import type { Evenement, TypeEvenement } from '../fil';
 import { Ecriture } from './ecriture';
+import { Proposition } from './proposition';
 
 export interface PropsBloc {
   evenement: Evenement;
@@ -19,4 +20,5 @@ export const blocs: Partial<Record<TypeEvenement, ComponentType<PropsBloc>>> = {
   section_completee: Ecriture,
   campagne_creee: Ecriture,
   scenario_cree: Ecriture,
+  proposition_creee: Proposition,
 };

@@ -19,9 +19,24 @@ export function idDeChemin(valeur: unknown): number {
   return n;
 }
 
-function corps(request: { body?: unknown }): Record<string, unknown> {
+export function corps(request: { body?: unknown }): Record<string, unknown> {
   const b = request.body;
   return b && typeof b === 'object' ? (b as Record<string, unknown>) : {};
+}
+
+/** Body of a member addition: identifier and optional role (defaults to player). */
+export function corpsAjout(request: { body?: unknown }): { username: string; role: Role } {
+  const b = corps(request);
+  if (typeof b.username !== 'string') throw invalide("L'identifiant est vide.");
+  if (b.role !== undefined && typeof b.role !== 'string') throw invalide('Rôle inconnu.');
+  return { username: b.username, role: (b.role ?? 'joueur') as Role };
+}
+
+/** Body of a role change. */
+export function corpsRole(request: { body?: unknown }): Role {
+  const b = corps(request);
+  if (typeof b.role !== 'string') throw invalide('Rôle inconnu.');
+  return b.role as Role;
 }
 
 /** Universes and members; thin routes over `services/` (AD-2, AD-4). Guarded scope only. */
@@ -51,29 +66,19 @@ export function registerUniversRoutes(app: FastifyInstance) {
 
   app.post('/api/univers/:id/membres', async (request, reply) => {
     const id = idDeChemin((request.params as { id: string }).id);
-    const b = corps(request);
-    if (typeof b.username !== 'string') throw invalide("L'identifiant est vide.");
-    if (b.role !== undefined && typeof b.role !== 'string') throw invalide('Rôle inconnu.');
-    const membre = ajouterMembre(
-      app.db,
-      request.session!.id,
-      id,
-      b.username,
-      (b.role ?? 'joueur') as Role,
-    );
+    const { username, role } = corpsAjout(request);
+    const membre = ajouterMembre(app.db, request.session!.id, id, username, role);
     return reply.code(201).send(membre);
   });
 
   app.patch('/api/univers/:id/membres/:compteId', async (request) => {
     const p = request.params as { id: string; compteId: string };
-    const b = corps(request);
-    if (typeof b.role !== 'string') throw invalide('Rôle inconnu.');
     return changerRole(
       app.db,
       request.session!.id,
       idDeChemin(p.id),
       idDeChemin(p.compteId),
-      b.role as Role,
+      corpsRole(request),
     );
   });
 

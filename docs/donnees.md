@@ -28,7 +28,7 @@ façon (AD-2).
 | **tâche de préparation** | catégorie (monstres, PNJ, cartes, déroulements, autre), libellé, faite | campagne | MJ | MJ |
 | **carte** | titre, forme (illustrée \| graphe, fixée à la création), visible des joueurs, fond : une image déposée sur la carte elle-même, rangée sur le disque comme une pièce jointe (AD-40) | univers ; → éléments | MJ ; les joueurs si visible | MJ |
 | **élément de carte** | position en % (carte illustrée) ou rien (graphe) | carte, fiche | comme la fiche de l'élément | MJ |
-| **proposition** | contenu proposé, empreinte du contenu d'origine, appliquée le | univers, compte demandeur, section, CR source | son seul demandeur | créée par l'agent du MJ ; appliquée une fois par son demandeur, si la section n'a pas changé (B-21) |
+| **proposition** | contenu proposé, empreinte du contenu d'origine (la `version` de la section, AD-59), créée le, appliquée le | univers, compte demandeur, section, CR source | son seul demandeur | créée par l'agent du MJ ; appliquée une fois par son demandeur, si la section n'a pas changé (B-21) |
 
 **Index de recherche** : deux index plein texte (FTS5), l'un sur les titres de fiches, l'autre sur les titres et contenus de sections, tenus
 à jour par la base (déclencheurs) ; aucune réponse n'en sort sans repasser par le filtre de
@@ -42,7 +42,30 @@ ses liens (déduits des relations, AD-41).
 
 Aucune migration, aucune table, aucun attribut : l'assistant lit et écrit par les fonctions de
 service existantes (AD-2, AD-74), et le fil de la conversation n'est stocké nulle part (AD-28,
-AD-75). La table `propositions` du cadrage reste à `kanevas-monde`.
+AD-75). La table `propositions` du cadrage est posée par `kanevas-monde` (ci-dessous).
+
+## Propositions de mise à jour (`kanevas-monde`)
+
+Une table, `propositions` (migration `0008-propositions.sql`, AD-51) :
+
+| Colonne | Type | Contrainte |
+|---|---|---|
+| `id` | entier | clé |
+| `univers_id` | → `univers` | non nul ; sert à refuser une proposition lue sous un autre univers |
+| `demandeur_id` | → `comptes` | non nul ; le seul compte qui la lit, l'applique ou l'abandonne (AD-79) |
+| `section_id` | → `sections` | non nul ; suppression en cascade avec la section |
+| `cr_id` | → `fiches` | non nul ; la fiche de type `compte_rendu` d'où part la proposition ; cascade par précaution (aucune suppression de CR en V1) |
+| `contenu_propose` | texte | non nul, non vide, 20 000 caractères au plus (la limite d'une section) |
+| `version_origine` | entier | non nul ; la `version` que la section avait quand l'assistant l'a lue (AD-59, AD-80) |
+| `creee_le` | date | non nul |
+| `appliquee_le` | date | nul tant qu'elle est en attente |
+
+Invariants, tenus par la base ou la fonction de service : **une seule proposition en attente par
+(demandeur, section)** (index unique partiel sur `appliquee_le IS NULL` ; la nouvelle remplace
+l'ancienne dans la même transaction) ; une proposition appliquée ne se réapplique pas ni ne
+s'abandonne ; abandonner supprime la ligne ; elle n'est lue que par son demandeur, encore MJ de
+l'univers. Aucun autre attribut sur `sections` : la `version` d'AD-59 suffit. Lecture : « périmée »
+n'est pas stocké, c'est `version` courante ≠ `version_origine` **tant que la proposition n'est pas appliquée**, calculé à chaque lecture ; une proposition appliquée est toujours « appliquée » (appliquer augmente la `version`).
 
 ## Migration 0001 (`kanevas-premiere-fiche`)
 
@@ -61,6 +84,12 @@ avec `kanevas-relier-chercher`, qui prend le numéro suivant, AD-51).
 de 1 à n à chaque réordonnancement ou retrait. Le mode Joueur est calculé par le service, jamais
 par le client : il lit comme un Joueur **qui n'est l'auteur d'aucune section** (AD-39).
 
+## `kanevas-recours-admin` : aucune migration
+
+Aucune table, aucune colonne : l'admin d'instance n'est pas une donnée (AD-9). Sa seule lecture hors
+des univers dont il est membre : le nom de chaque univers et le nombre de ses membres, puis la liste
+des membres d'un univers (identifiant, rôle) ; son seul geste : ajouter, changer le rôle, retirer un
+membre (B-6). Il ne lit ni ne modifie jamais la description, les fiches ou rien d'autre.
 ## Migration `kanevas-systemes`
 
 > Fichier : `src/db/migrations/0002-systemes.sql` — **numéro provisoire** (0002).
@@ -197,6 +226,34 @@ pas une écriture de son contenu, AD-59).
 Retirer une pièce, ou une section, supprime la ligne **puis** le fichier du disque ; si la
 suppression du fichier échoue, la ligne est déjà partie et l'orphelin est inatteignable (risque
 accepté : il n'y a pas de balayage des orphelins en V1).
+
+## Migration `kanevas-cartes-graphes` (`0007-cartes.sql`, numéro provisoire recalé à la fusion si une autre tranche entre avant, AD-51)
+
+Deux tables ; aucune entité nouvelle (la carte et l'élément de carte sont ceux du cadrage). Les
+octets d'un fond ne sont pas en base (AD-7) : ils vivent sous `/data/attachments/` (AD-69).
+
+| Table | Colonnes (hors clés) | Contraintes |
+|---|---|---|
+| `cartes` | `id`, `univers_id`, `titre`, `forme` (`illustree` \| `graphe`), `visible` (booléen), `fond` (nom sur disque, UUID, facultatif), `fond_type` (type MIME déterminé par le serveur), `cree_le` | `univers_id` → `univers` ; `titre` non vide, 1 à 80 caractères ; `forme` contrainte à ces deux valeurs et **jamais modifiée** ; `visible` **faux à la création** ; `fond` et `fond_type` ensemble ou ensemble absents, et absents d'un graphe (`CHECK`) ; `fond` unique ; index `cartes (univers_id)` ; **aucune suppression** |
+| `elements_carte` | `id`, `carte_id`, `fiche_id`, `x`, `y` (réels, pourcentage, AD-70), `cree_le` | `carte_id` → `cartes` ; `fiche_id` → `fiches` **ON DELETE RESTRICT** (une fiche ne se supprime pas) ; `UNIQUE (carte_id, fiche_id)` ; `x` et `y` ensemble nuls ou ensemble entre 0 et 100 (`CHECK`) |
+
+Ce que la base ne dit pas, et que le service porte, avec sa raison (la règle croise la carte, la
+fiche et le rôle) : la fiche d'un élément est **du même univers** que la carte ; une carte
+**illustrée** porte des éléments avec position, un **graphe** des éléments sans position ; **100
+éléments** au plus par carte (AD-72) ; seul un MJ hors mode Joueur crée une carte, la règle (titre,
+visibilité), change son fond, place, déplace ou retire un élément ; un fond n'est qu'une image de
+25 Mo au plus (AD-69). Retirer un élément supprime sa ligne, jamais la fiche.
+
+Lecture, évaluée pour **le compte et le mode** de l'appelant (AD-68) : une carte se lit si le
+compte est MJ hors mode Joueur, ou si elle est visible. Un élément est rendu si sa fiche est lisible
+(au moins une section lisible ; le MJ hors mode Joueur lit toute fiche de son univers, AD-38). Les
+liens d'un graphe ne sont pas stockés (AD-41) : pour deux éléments rendus A et B, un lien « A → B,
+type » existe pour chaque relation de `relations` portée par une section de A que le lecteur lit, qui
+vise B et qui se lit sous les deux gardes d'AD-64 (par la même fonction de lecture des relations que
+la fiche). Un lien n'est rendu que si ses deux bouts le sont. Aucune réponse ne dit combien
+d'éléments ou de liens ont été écartés. La liste des cartes d'un joueur ne contient que les cartes
+visibles ; un MJ en mode Joueur voit la même.
+
 
 ## Migration `kanevas-illustrations` (numéro pris à la fusion, AD-51)
 

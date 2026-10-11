@@ -28,6 +28,10 @@ interface Maillon {
  */
 export function maillons(pathname: string, nomUnivers: string | undefined, titre: string | undefined, dedans: boolean, section?: string): Maillon[] {
   if (!dedans) {
+    // E-5: the instance screen, not a universe's; its crumb says where it sits in the bar.
+    if (pathname === '/administration' || pathname.startsWith('/administration/')) {
+      return [{ libelle: 'Instance' }, { libelle: 'Administration' }];
+    }
     if (pathname === '/systemes') return [{ libelle: 'Systèmes de jeu', icone: 'systemes' }];
     if (matchPath('/systemes/:sid', pathname)) {
       const liste: Maillon[] = [{ libelle: 'Systèmes de jeu', vers: '/systemes', icone: 'systemes', long: true }];

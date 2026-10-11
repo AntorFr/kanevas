@@ -9,12 +9,13 @@ export type TypeEvenement =
   | 'section_modifiee'
   | 'section_completee'
   | 'campagne_creee'
-  | 'scenario_cree';
+  | 'scenario_cree'
+  | 'proposition_creee';
 
 export interface Evenement {
   type: TypeEvenement;
   libelle: string;
-  cible: { type: 'fiche' | 'campagne' | 'scenario'; [id: string]: string | number };
+  cible: { type: 'fiche' | 'campagne' | 'scenario' | 'proposition'; [id: string]: string | number };
 }
 
 /**
