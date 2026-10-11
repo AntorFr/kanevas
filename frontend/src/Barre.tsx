@@ -21,7 +21,7 @@ export function universDeLAdresse(chemin: string): number | null {
  * sheet names its type (`section`, the label of the item it hangs under) and that item is current.
  */
 export function itemCourant(item: Item, id: number, pathname: string, section?: string): boolean {
-  if (section !== undefined && pathname.startsWith(`/univers/${id}/fiche/`)) return item.libelle === section;
+  if (section !== undefined && (pathname.startsWith(`/univers/${id}/fiche/`) || pathname.startsWith(`/univers/${id}/scenarios/`))) return item.libelle === section;
   const chemin = item.chemin(id);
   return pathname === chemin || (chemin !== `/univers/${id}` && pathname.startsWith(`${chemin}/`));
 }
