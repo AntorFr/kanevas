@@ -1,6 +1,6 @@
 # Status — kanevas
 
-> MàJ : 2026-10-11 (assemblage de kanevas-refonte-visuelle, rattrapée sur epic/kanevas)
+> MàJ : 2026-10-12 (assemblage de kanevas-refonte-visuelle, E-2 sans sceau vide)
 
 **Lecture de ce fichier :** le clone qui le porte contient déjà toutes les tranches nommées ci-dessous (migrations 0001 à 0008, assistant,
 administration, propositions) ; « PR non fusionnée » dit seulement que la tranche n'est pas encore sur `main`, pas qu'elle manque du code.
@@ -104,7 +104,7 @@ catalogue MJ (événement `proposition_creee`) et sa règle du bouchon (« Mets 
 - Refonte visuelle : le regard sur les maquettes (bureau, téléphone, clair, sombre) est celui de la vérification et de la recette ; aucun écran n'écrit de couleur en dur (tokens seuls) ; un écran neuf prend le cadre et les composants de `ui/`, il ne recrée ni bouton, ni menu, ni champ. E-5, E-10 à E-12 prennent le cadre dans leur tranche (déjà posé sur `epic/kanevas`).
 - Pièges visuels (corrigés, tests e2e) : les cartes d'E-1 tiennent à ~325 px à 1440 px (nom du système entier, méta sur deux lignes au plus) ; le chevron de la pastille de rôle reste visible au repos sur E-4 (`.liste-membres`) et caché sur E-5, l'administration (`.admin-zones`). La pastille de rôle de E-4 est ajustée à son texte (libellé dimensionnant, `select` natif transparent superposé : clic, clavier et tactile gardés). En mode Joueur le bandeau paraît avant le rechargement de la fiche : un bref instant la section « MJ seul » reste à l'écran (le test attend sa disparition). Rouge intermittent sur la suite complète (1289 tests verts au dernier passage entier, ~16 min ; des échecs de timeout s'y voient parfois sous charge, verts seuls) ; ne pas lancer deux suites ni un `build` dans le même clone en parallèle.
 - Fil d'Ariane : une page qui nomme un objet appelle `useTitreAriane(nom)` (`cadre-contexte`) ; E-9 et E-6 le font, la Vue d'ensemble (E-3) montre « univers › Vue d'ensemble » par `maillons()` (`Cadre.tsx`) ; le dernier maillon reste entier, les précédents cèdent d'abord (`cadre.css`) ; E-7 montre « Campagnes › campagne › scénario » (`useTitreAriane` prend un maillon parent optionnel ; l'item Campagnes est courant sur `/scenarios/`). Le select « Auteur » de la boîte « Qui voit » est désactivé pendant l'enregistrement : un test qui y pose le focus attend d'abord sa réactivation.
-- Écarts connus laissés à la recette (non bloquants) : E-2 montre un sceau en pointillé vide tant que le nom est vide (voulu dans le code, `Sceau` « inconnu », non décrit par `docs/ecrans.md`) ; E-7 garde « ← » en texte et « Modifier » plein accent (sa maquette est ancienne) ; les pastilles « MJ seul » des panneaux portent le cadenas.
+- Écarts connus laissés à la recette (non bloquants) : E-7 garde « ← » en texte et « Modifier » plein accent (sa maquette est ancienne) ; les pastilles « MJ seul » des panneaux portent le cadenas.
 - Suite e2e (Playwright) : sous forte charge, des tests (premiere-fiche B-9, matrice E-9, `administration-badge-entete` dont le `page.goto` dépasse 8 s en CI) échouent par intermittence et passent seuls ; non attribué à un défaut du produit.
 - P-7 : le portrait (pièce jointe) et la demande à l'assistant (E-12) sont livrés.
 - Pièces jointes : le type est déterminé par la signature des octets, jamais par le navigateur ; seules PNG,
