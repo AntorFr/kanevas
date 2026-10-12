@@ -175,6 +175,7 @@ export function ListeMembres({
                 <option value="joueur">Joueur</option>
                 <option value="mj">MJ</option>
               </select>
+              <span className="role-libelle" aria-hidden="true">{m.role === 'mj' ? 'MJ' : 'Joueur'}</span>
               <ChevronDown size={14} strokeWidth={1.75} aria-hidden="true" />
             </span>
             <span className="actions-revelees">
