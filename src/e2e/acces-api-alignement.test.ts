@@ -30,7 +30,7 @@ before(async () => {
     fetch(`${srv.base}${base}/fiches/${encodeURIComponent(cle)}?lot=${lot}`, { method: 'PUT', headers: { ...h, 'content-type': 'application/json' }, body: JSON.stringify(body) });
   const ok = await put('lieu:port-sel', { type: 'lieu', titre: 'Port-Sel', sections: [{ cle: 'desc', titre: 'Description', contenu: 'Un port.', joueursLisent: true }] });
   assert.equal(ok.status, 200);
-  for (const k of ['a', 'b', 'c']) await put('mauvais:' + k, { type: 'inconnu', titre: 'x' });
+  for (const k of ['compte-rendu:seance-1', 'monstre:x', 'mauvais:c']) await put(k, { type: 'inconnu', titre: 'x' });
   await fetch(`${srv.base}${base}/lots/${lot}/clore`, { method: 'POST', headers: h });
   const fiches = (await (await antor.request.get(`/api/univers/${uid}/fiches`)).json()).fiches;
   ficheId = fiches.find((f: Any) => f.titre === 'Port-Sel').id;
@@ -53,7 +53,33 @@ test('E-18 : sections à plat, refusées en rouge, pastille Clos avec icône', o
   const gris = await antor.locator('.compteurs').first().evaluate((e: Element) => getComputedStyle(e).color);
   assert.notEqual(rouge, gris);
   const pastille = antor.locator('li', { hasText: 'Clos' }).first().getByText('Clos').first();
-  assert.ok(await pastille.locator('xpath=ancestor-or-self::*[1]').locator('svg').count() + (await pastille.locator('xpath=..').locator('svg').count()) > 0);
+  const pastilleClos = antor.locator('.pastille', { hasText: 'Clos' }).first();
+  await pastilleClos.waitFor();
+  assert.equal(await pastilleClos.locator('svg').count(), 1, 'la pastille Clos porte une icône');
+});
+
+test('E-18 : la clé d’un jeton est dans une tuile 28 px bordée, estompée si révoqué', opts, async () => {
+  await antor.setViewportSize({ width: 1280, height: 800 });
+  await antor.goto(`/univers/${uid}/acces-api`);
+  const tuile = antor.locator('.jeton .ic-ligne').first();
+  await tuile.waitFor();
+  const t = await tuile.evaluate((e: Element) => { const r = e.getBoundingClientRect(); const c = getComputedStyle(e); return { w: r.width, h: r.height, ombre: c.boxShadow, fond: c.backgroundColor }; });
+  assert.equal(Math.round(t.w), 28);
+  assert.equal(Math.round(t.h), 28);
+  assert.notEqual(t.ombre, 'none');
+  assert.notEqual(t.fond, 'rgba(0, 0, 0, 0)', 'un jeton actif a une tuile pleine');
+});
+
+test('E-18 : au téléphone la clé d’origine d’un lot déplié reste entière', opts, async () => {
+  await antor.setViewportSize({ width: 390, height: 800 });
+  await antor.goto(`/univers/${uid}/acces-api`);
+  await antor.getByRole('heading', { name: 'Lots d’import' }).waitFor();
+  await antor.locator('.lot-tete').first().click();
+  const cle = antor.locator('.probleme .cle', { hasText: 'compte-rendu:seance-1' }).first();
+  await cle.waitFor();
+  const { h, lh, w, sw } = await cle.evaluate((e: Element) => ({ h: e.getBoundingClientRect().height, lh: parseFloat(getComputedStyle(e).lineHeight), w: e.getBoundingClientRect().width, sw: e.scrollWidth }));
+  assert.ok(h <= lh * 1.2, `clé coupée sur plusieurs lignes: ${h} > ${lh}`);
+  assert.ok(sw <= Math.ceil(w), 'clé tronquée');
 });
 
 test('E-9 : la ligne « Importée » du menu ⋯ tient sur une ligne', opts, async () => {
@@ -63,12 +89,8 @@ test('E-9 : la ligne « Importée » du menu ⋯ tient sur une ligne', opts, asy
   const ligne = antor.locator('.info-fiche span').first();
   await ligne.waitFor();
   assert.match(await ligne.innerText(), /^Importée · clé\s+lieu:port-sel\s+· créée le/);
-  await antor.waitForTimeout(500);
-  await antor.screenshot({ path: '/tmp/menu-importee.png' });
   const { h, lh } = await ligne.evaluate((e: Element) => ({ h: e.getBoundingClientRect().height, lh: parseFloat(getComputedStyle(e).lineHeight) }));
   assert.ok(h <= lh * 1.2, `ligne sur plusieurs lignes: ${h} > ${lh}`);
-  await antor.waitForTimeout(500);
-  await antor.screenshot({ path: '/tmp/menu-importee.png' });
 });
 
 test('E-9 : au téléphone la ligne reste dans l’écran, clé insécable', opts, async () => {
@@ -77,10 +99,6 @@ test('E-9 : au téléphone la ligne reste dans l’écran, clé insécable', opt
   await antor.getByRole('button', { name: /^Autres actions sur/ }).first().click();
   const menu = antor.locator('.menu:has(.info-fiche)');
   await menu.waitFor();
-  await antor.waitForTimeout(500);
-  await antor.screenshot({ path: '/tmp/menu-importee-390.png' });
   const r = await menu.evaluate((e: Element) => e.getBoundingClientRect().toJSON());
-  assert.ok(r.left >= 0 && r.right <= 390, `menu hors écran: ${r.left}..${r.right}`);
-  await antor.waitForTimeout(500);
-  await antor.screenshot({ path: '/tmp/menu-importee-390.png' });
+  assert.ok(r.left >= 12 && r.right <= 390 - 12, `menu sans marge de 12 px: ${r.left}..${r.right}`);
 });
