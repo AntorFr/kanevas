@@ -110,6 +110,13 @@ a.bouton { text-decoration: none; display: inline-flex; }
   .sec .ancre { position: static; }
   .menu.audience { left: 0; right: 0; width: auto; max-width: 320px; }
 }
+/* Phone: the open setting is a sheet pinned to the bottom, and toasts move to the top meanwhile, so
+   a toast never covers a row of the setting (charte, 2.4.11: no element overlaps another). */
+@media (max-width: 760px) {
+  .menu.audience { position: fixed; top: auto; bottom: 0; left: 0; right: 0; max-width: none; max-height: 70vh; overflow-y: auto;
+    border-radius: var(--rayon-panneau) var(--rayon-panneau) 0 0; padding-bottom: calc(6px + env(safe-area-inset-bottom)); z-index: 65; }
+  body:has(.menu.audience) .toasts { bottom: auto; top: var(--e-4); }
+}
 
 /* Adding a section */
 .ajout-section { margin-top: var(--e-6); }
