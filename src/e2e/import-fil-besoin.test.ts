@@ -373,6 +373,8 @@ test('B-46 · révoquer sur E-18 (confirmation, « Révoqué »), puis l’appel
     await boite.getByRole('button', { name: 'Révoquer le jeton' }).click();
     await page.getByText(rx('Jeton révoqué.')).first().waitFor();
     await attendre(page);
+    // The toast shows before the list is reloaded: wait for the badge instead of reading the row once.
+    await ligne(page, 'Script Kanka — Mac').getByText('Révoqué', { exact: true }).waitFor();
     assert.match(norm(await ligne(page, 'Script Kanka — Mac').innerText()), /Révoqué/);
     const r = await imp(m, jeton, 'POST', '/lots');
     assert.equal(r.statut, 401);
