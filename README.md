@@ -118,7 +118,7 @@ curl -X POST -H "Authorization: Bearer $JETON" $B/lots            # ouvre (ou re
 curl -X PUT -H "Authorization: Bearer $JETON" -H 'content-type: application/json' "$B/fiches/lieu:port-sel?lot=<lotId>" \
   -d '{"type":"lieu","titre":"Port-Sel","sections":[{"cle":"desc","titre":"Description","contenu":"…","joueursLisent":true},{"cle":"verite","titre":"Vérité","contenu":"…"}]}'
 ```
-Une section lue des seuls MJ omet `joueursLisent`. Réponse `creee`, puis `inchangee` au rejeu ; E-18 montre les lots. En `lea`, « Description » se lit et « Vérité » n'existe pas. Sans `?lot=`, l'écriture réussit mais aucun lot ne la compte. Seules `GET /`, les trois routes de lots (ouvrir, lire, clore) et `PUT /fiches/:cle` existent ici (pas de `/fichiers`, de relations ni de `DELETE`). Un `compte_rendu` (listé inactif par `GET`) est refusé (400, `champ: type`) jusqu'à `kanevas-import-reprise`. Le contenu est rendu en Markdown (AD-95).
+Une section lue des seuls MJ omet `joueursLisent`. Réponse `creee`, puis `inchangee` au rejeu ; E-18 montre les lots. En `lea`, « Description » se lit et « Vérité » n'existe pas. Sans `?lot=`, l'écriture réussit mais aucun lot ne la compte. Seules `GET /`, les trois routes de lots (ouvrir, lire, clore) et `PUT /fiches/:cle` existent ici (pas de `/fichiers`, de relations ni de `DELETE` : ces adresses répondent un 404 HTML, non du JSON ; les champs que la tranche ne traite pas, comme `alias` ou `parent`, sont ignorés sans avertissement). Un `compte_rendu` (listé inactif par `GET`) est refusé (400, `champ: type`) jusqu'à `kanevas-import-reprise`. Le contenu est rendu en Markdown (AD-95).
 
 ### Tests de bout en bout
 
