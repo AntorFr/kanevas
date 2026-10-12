@@ -16,6 +16,7 @@ construite (tranches suivantes) : les passages de ces docs qui les décrivent so
 
 ```txt
 Dockerfile                        Image unique : API Fastify + frontend construit
+scripts/faux-setup-token.mjs        Le `claude setup-token` du bouchon (copié dans l'image)
 src/
   server.ts, app.ts               Démarrage ; assemblage des plugins et des routes
   config/env.ts                   Variables d'environnement (zod)
@@ -27,7 +28,6 @@ src/
                                    bouchon, univers (+ membres), instance (admin, AD-87), systemes, suivi, cartes, fiches (+ sections), propositions, assistant, frontend
   bouchon/                        Monde de démonstration semé au démarrage en bouchon (depart.ts) et ses fichiers (demo/)
   services/assistant/             L'assistant : catalogues d'outils, port AgentTransport (bouchon, claude-agent), orchestration, jeton et sa session de connexion
-  scripts/                        faux-setup-token.mjs : le `claude setup-token` du bouchon (copié dans l'image)
   services/llm/                   Transports LLM repris d'Antre-du-maitre, branchés nulle part
 frontend/                         React + Vite : charte (ui/), écrans (src/ecrans/, dont E-5 administration.tsx), barre latérale
 .github/workflows/docker-publish.yml   CI : tests, build, image GHCR
@@ -116,7 +116,7 @@ Playwright n'est pas une dépendance du dépôt : il doit être installé global
 `node:20-bookworm-slim` ni la CI GitHub. Pour savoir s'il est vu : `ls /usr/lib/node_modules/playwright`. Là où il manque, ces tests sont **ignorés avec un message**,
 sans échec ; les autres tests (services, routes HTTP) tournent partout. Compter une dizaine de minutes même sans les e2e, une vingtaine avec Playwright (silencieuse jusqu'à la fin ; un message « ignoré » en tête de sortie dit que Playwright n'est pas vu). La CI ne joue donc pas les e2e.
 Recette de l'administration en bouchon (le monde de démonstration est semé : « Lame d'Ébène », « Les Landes grises », « Les Cendres de Vaëlis », cinq comptes déjà connus) : se connecter en « Admin », ouvrir `/administration`, choisir « Lame d'Ébène » (où Admin n'a aucun rôle) et ajouter « mira ». Un compte jamais connecté (« nadia ») est refusé. Les e2e `src/e2e/administration*.test.ts` pilotent E-5.
-Recette du jeton de l'assistant en bouchon (P-15) : en « Admin », sur `/administration`, le panneau « Jeton de l'assistant » dit « Aucun jeton posé. » ; « Connecter l'abonnement » montre une adresse (fixe en bouchon) et un champ « Code » ; `bouchon` donne « Jeton posé le … » ; tout autre code, « La connexion n'a pas abouti. Recommencez. » et l'état d'avant reste. La valeur du jeton n'apparaît jamais ; « lea » reçoit « Page introuvable. ». En bouchon l'assistant répond déjà par son script : la disponibilité réelle se joue sur l'URL déployée (premier vrai appel au modèle, geste de Monsieur). Le jeton posé écrit `claude/oauth-token` à côté de la base (`./data/claude/` en développement).
+Recette du jeton de l'assistant en bouchon (P-15) : en « Admin », sur `/administration`, le panneau « Jeton de l'assistant » dit « Aucun jeton posé. » ; « Connecter l'abonnement » montre une adresse (fixe en bouchon) et un champ « Code » ; `bouchon` donne « Jeton posé le … » ; tout autre code, « La connexion n'a pas abouti. Recommencez. » et l'état d'avant reste. La valeur du jeton n'apparaît jamais ; « lea » reçoit « Page introuvable. ». En bouchon l'assistant répond déjà par son script : la disponibilité réelle se joue sur l'URL déployée (premier vrai appel au modèle, geste de Monsieur). Sans navigateur : `curl -c j -d compte=admin http://localhost:3055/connexion-bouchon`, puis, avec `-b j`, `POST /api/instance/assistant/jeton/connexion` (rend `connexionId`, `adresse`, `expireLe`), `POST …/jeton/code` avec `{"connexionId":"…","code":"bouchon"}` (JSON) et `GET …/jeton` pour l'état. Le jeton posé écrit `claude/oauth-token` à côté de la base (`./data/claude/` en développement).
 Recette des cartes en bouchon (le semis ne contient aucune carte) : en « antor », ouvrir « Cartes » de « Lame d'Ébène », créer « La ville de Brume » (carte illustrée, avec une image en fond), y ajouter une fiche, puis « Rendre visible » ; se reconnecter en « lea » : la carte est dans sa liste, avec les seuls tokens des fiches qu'elle lit. Un graphe se crée de même (forme « Graphe »). Le mode Joueur d'Antor montre ce que voit Léa.
 
 ## Réglages
