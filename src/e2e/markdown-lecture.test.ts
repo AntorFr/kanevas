@@ -100,6 +100,15 @@ test('E-9 : Léa lit la section en Markdown, le hostile en texte, aucun dialogue
   await verifierRendu(page, '.md >> nth=0');
   const brut = await texte(page);
   assert.match(brut, /Texte simple\./);
+  // Rendered intertitle: 19px/500, strictly below the section title (22px).
+  const tailles = await page.evaluate(() => {
+    const h3 = getComputedStyle(document.querySelector('.md h3') as Element);
+    const h2 = getComputedStyle(document.querySelector('.sec-tete h2') as Element);
+    return { h3: h3.fontSize, poids: h3.fontWeight, h2: h2.fontSize };
+  });
+  assert.equal(tailles.h3, '19px');
+  assert.equal(tailles.poids, '500');
+  assert.equal(tailles.h2, '22px');
   assert.deepEqual(dlg, []);
   await page.close();
 });
