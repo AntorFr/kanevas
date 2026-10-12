@@ -375,7 +375,9 @@ describe('P-10 critère : Léa lit « Description » et rien de « Vérité »',
     const r = await m.session('lea', 'GET', `/api/univers/${m.essai}/fiches/${f.id}`);
     assert.equal(r.status, 200);
     assert.deepEqual(r.json.sections.map((s: Any) => s.titre), ['Description']);
-    assert.equal(r.json.sections[0].contenu, 'Un port brumeux aux quais de sel.');
+    // AD-113: a reader gets the rendered `html`, never the Markdown source (`contenu`).
+    assert.equal(r.json.sections[0].contenu, undefined);
+    assert.match(r.json.sections[0].html, /Un port brumeux aux quais de sel\./);
     assert.ok(!JSON.stringify(r.json).includes('Guilde'), 'secret leaked');
     assert.ok(!JSON.stringify(r.json).includes('cle_origine') && !JSON.stringify(r.json).includes('lieu:port-sel'), 'origin key leaked to a player');
   });

@@ -1,6 +1,6 @@
 # Status — kanevas
 
-> MàJ : 2026-10-12 (assemblage de kanevas-import-markdown, sur `feature/kanevas-import-markdown` ; le reste décrit `epic/kanevas`)
+> MàJ : 2026-10-12 (assemblage de kanevas-import-fil, sur `feature/kanevas-import-fil`, epic/kanevas-import fusionnée ; le reste décrit `epic/kanevas`)
 
 **État :** `epic/kanevas` porte le socle, la première fiche, les systèmes de jeu, le suivi de la séance
 (campagnes, scénarios, préparation, comptes-rendus ; E-6, E-7, E-13) et les pièces jointes (migration
@@ -79,7 +79,7 @@ catalogue MJ (événement `proposition_creee`) et sa règle du bouchon (« Mets 
 - La suite a été jouée sous Node 22 dans les pods de la chaîne (pas de Docker) ; la CI Node 20 fait foi.
   La règle « conteneurs uniquement » de `CLAUDE.md` est la voie de référence ; un Node local ≥ 20 (README) est le repli quand
   Docker manque.
-- Migrations : 0001 à 0007 sont sur `epic/kanevas` ; 0008 (propositions) sur la branche de `kanevas-monde` ; 0009 (plafond 100 000) sur cette feature, à recaler seulement si une autre tranche fusionne avant (AD-51).
+- Migrations : 0001 à 0007 sont sur `epic/kanevas` ; 0008 (propositions) sur la branche de `kanevas-monde` ; 0009 (plafond 100 000) sur `epic/kanevas-import` ; 0010 (fil : jetons, lots, clés d'origine) sur cette feature, renumérotée de 0009 à la fusion de l'epic (AD-51).
 - Les « PR non fusionnée » ci-dessus s'empilent sur `epic/kanevas` ; `recours-admin` est rattrapée dessus et n'ajoute aucune migration.
 - Vocabulaire : « Monsieur » = le commanditaire qui fait la recette ; « tranche » = une feature livrée ; « phase merge » = la
   fusion après recette ; E-n / B-n / P-n = écrans / besoins / parcours, les écrans (E-n) sont dans `docs/ecrans.md`, les besoins (B-n) et les parcours (P-n) dans `docs/parcours.md`.
@@ -134,11 +134,11 @@ catalogue MJ (événement `proposition_creee`) et sa règle du bouchon (« Mets 
 - Propositions (AD-79 à AD-82) : lues, appliquées, abandonnées par leur seul demandeur, encore MJ ; tout autre compte reçoit 404. Le fil ne se garde pas (AD-28) : après un rechargement, une proposition en attente n'est plus atteignable (limite écrite, bornée à une par MJ et section ; pas de liste « mes propositions »). Hors tranche : application par un joueur, propositions en lot. L'assistant ne sait pas quel écran est ouvert : le compte-rendu se nomme dans la demande. Le semis du bouchon n'a ni campagne ni compte-rendu : la recette les crée (README).
 
 `feature/kanevas-import-fil` (PR vers `epic/kanevas-import`, non fusionnée) ajoute l'API d'import et E-18 (AD-103, AD-104 ; B-45 à B-50, P-10 étapes 3-5-7-10, P-11) :
-migration `0009-fil-contrat.sql` (`jetons_api`, `lots_import`, `fiches.cle_origine` / `dernier_import`, `sections.cle_origine` / `version_importee` / `dernier_import`),
+migration `0010-fil-contrat.sql` (0009 est le plafond de l'epic) (`jetons_api`, `lots_import`, `fiches.cle_origine` / `dernier_import`, `sections.cle_origine` / `version_importee` / `dernier_import`),
 `services/jetons.ts`, `services/lots.ts`, `services/import-fiches.ts` (`assurerFiche`, composition des services existants), scope `routes/import.ts` (`/api/import/v1`, Bearer seul,
 401 `jeton_invalide` unique, 404 autre univers, corps 8 Mio), routes de session `routes/acces-api.ts`, écran `frontend/src/ecrans/acces-api.tsx` (E-18),
 ligne « Importée · clé … » du menu « ⋯ » de E-9 (MJ seul ; `cleOrigine` jamais dans une lecture de joueur). Semis du bouchon : « Essai Kanka » (Antor MJ, Léa joueuse) et `JETON_BOUCHON`.
-- Seule la fiche est importée ici, six types (pas `compte_rendu`, refusé 400 `champ: type`) ; contenu en texte (plafond 20 000 inchangé), pas de bloc MJ, lien, parent, alias, fichier, relation.
+- Seule la fiche est importée ici, six types (pas `compte_rendu`, refusé 400 `champ: type`) ; contenu reçu en texte, plafond 100 000 (AD-106, `contenuSection` de `GET /`), pas de bloc MJ, lien, parent, alias, fichier, relation.
 - Un titre de fiche ou de section modifié hors de l'import n'est pas écrasé au rejeu (avertissement au lot) ; une section sans clé n'est jamais touchée ; rien ne se supprime par omission.
 - Un rejeu sans lot (`?lot=` absent) écrit mais ne laisse aucune trace de compteur ; un lot clos répond 409 `lot_clos`.
 - Reste : la recette de Monsieur au navigateur en bouchon (README, « Recette de l'accès par API »), la fusion dans `epic/kanevas-import`. Tranches suivantes : markdown, secrets, liens, types, arbre, recherche, fichiers, reprise. Pas de tag avant la fusion de l'epic.
