@@ -6,15 +6,15 @@
 .copie { display: flex; align-items: center; gap: var(--e-2); }
 .copie .valeur { flex: 1; min-width: 0; padding: 6px var(--e-3); font-size: var(--t-13); background: var(--surface-2);
   border-radius: var(--rayon-champ); overflow-wrap: anywhere; user-select: all; }
-.page-acces-api .panneau { margin-top: var(--e-5); }
+.page-acces-api .bloc-api { margin-top: var(--e-7); }
 .tete-panneau { display: flex; align-items: center; justify-content: space-between; gap: var(--e-3); margin-bottom: var(--e-3); }
 .tete-panneau h2 { font: 500 var(--t-22)/1.25 var(--police-titre); }
-.cadre-liste { list-style: none; margin: 0; padding: 0; border-radius: var(--rayon-panneau); box-shadow: inset 0 0 0 1px var(--bord); }
+.cadre-liste { list-style: none; margin: 0; padding: 4px; border-radius: var(--rayon-panneau); box-shadow: inset 0 0 0 1px var(--bord); }
 .cadre-liste > li + li { border-top: 1px solid var(--bord); }
 .vide-panneau-api { display: flex; flex-direction: column; align-items: center; gap: var(--e-2); padding: var(--e-6) var(--e-4);
   text-align: center; color: var(--texte-2); font-size: var(--t-14); }
 
-.jeton { display: flex; align-items: center; gap: var(--e-3); padding: var(--e-3) var(--e-4); }
+.page-acces-api .jeton { display: flex; align-items: center; gap: var(--e-3); min-height: 60px; padding: 10px 10px 10px 12px; background: transparent; border-radius: var(--rayon-champ); }
 .jeton.inactif .nom { color: var(--texte-2); }
 .jeton .ic-ligne { color: var(--texte-3); flex: none; display: grid; }
 .jeton .corps { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
@@ -36,6 +36,7 @@ li.ouvert .lot-tete .chev { transform: rotate(90deg); }
 .lot-ligne1 { display: flex; flex-wrap: wrap; gap: 0 var(--e-3); font-size: var(--t-14); }
 .lot-date { font-weight: 500; }
 .lot-jeton { display: inline-flex; align-items: center; gap: 4px; color: var(--texte-2); }
+.compteurs .refus-n { color: var(--danger); }
 .compteurs { font-size: var(--t-13); color: var(--texte-2); }
 .lot-detail { padding: 0 var(--e-4) var(--e-4) calc(var(--e-4) + 16px + var(--e-3)); display: flex; flex-direction: column; gap: var(--e-3); }
 .groupe-pb h3 { font-size: var(--t-12); font-weight: 600; color: var(--texte-2); margin-bottom: var(--e-1); }

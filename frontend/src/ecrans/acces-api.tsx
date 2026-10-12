@@ -1,4 +1,4 @@
-import { Ban, ChevronRight, CircleX, Copy, Hourglass, KeyRound, Plus, TriangleAlert } from 'lucide-react';
+import { Ban, Check, ChevronRight, CircleX, Copy, Hourglass, KeyRound, Loader, Plus, TriangleAlert } from 'lucide-react';
 import { useEffect, useId, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
 
@@ -256,6 +256,18 @@ function LigneJeton({ jeton, maintenant, onRevoquer }: { jeton: JetonVue; mainte
   );
 }
 
+const ICONE_LOT = { en_cours: Loader, clos: Check, abandonne: Ban } as const;
+
+/** Counters of a batch line: the « N refusée(s) » pieces read in the danger colour. */
+function colorerRefus(m: string) {
+  return m.split(' · ').map((part, i) => (
+    <span key={i} className={/refusée/.test(part) ? 'refus-n' : undefined}>
+      {i > 0 && ' · '}
+      {part}
+    </span>
+  ));
+}
+
 function GroupeProbleme({ titre, entrees, autres, sorte }: { titre: string; entrees: EntreeRapport[]; autres: number; sorte: 'refus' | 'avert' }) {
   const Icone = sorte === 'refus' ? CircleX : TriangleAlert;
   return (
@@ -303,12 +315,14 @@ function LigneLot({ lot }: { lot: LotVue }) {
             : morceaux.map((m, i) => (
                 <span key={i}>
                   {i > 0 && ' · '}
-                  {m}
+                  {colorerRefus(m)}
                 </span>
               ))}
         </span>
       </span>
-      <Pastille sens="neutre">{ETAT_LOT[lot.etat]}</Pastille>
+      <Pastille sens="neutre" icone={ICONE_LOT[lot.etat]}>
+        {ETAT_LOT[lot.etat]}
+      </Pastille>
     </>
   );
   return (
@@ -407,7 +421,7 @@ function AccesApi() {
         </div>
       </div>
 
-      <section className="panneau" aria-labelledby="h-jetons">
+      <section className="bloc-api" aria-labelledby="h-jetons">
         <div className="tete-panneau">
           <h2 id="h-jetons">Jetons</h2>
           <Bouton variante="principal" icone={Plus} ecrit aria-haspopup="dialog" onClick={() => setNouveau(true)}>
@@ -440,7 +454,7 @@ function AccesApi() {
         )}
       </section>
 
-      <section className="panneau" aria-labelledby="h-lots">
+      <section className="bloc-api" aria-labelledby="h-lots">
         <div className="tete-panneau">
           <h2 id="h-lots">Lots d’import</h2>
         </div>

@@ -219,7 +219,7 @@ export function EnteteFiche({ universId, fiche, gestion, badge, Icone, message, 
                       <div className="info-fiche">
                         <Info size={14} strokeWidth={1.75} aria-hidden="true" />
                         <span>
-                          Importée · clé <code>{fiche.cleOrigine}</code> · créée le {dateLongue(fiche.creeLe)}
+                          Importée · clé{'\u00a0'}<code>{fiche.cleOrigine}</code>{'\u00a0'}· créée le {dateLongue(fiche.creeLe)}
                         </span>
                       </div>
                     ),
