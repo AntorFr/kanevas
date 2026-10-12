@@ -501,14 +501,17 @@ ne peut pas être rangée sous l'un de ses descendants. » ; un Joueur auteur d'
 un bloc MJ — « Modifier » n'y paraît pas ; un texte qui passe 100 000 caractères — « Erreur : 100 000
 caractères au plus. », le texte reste.
 
-### P-15 — Poser le jeton de l'assistant (admin d'instance) (B-51)
+### P-15 — Poser le jeton de l'assistant (Admin, admin d'instance) (B-51)
+*Admin vient de déployer Kanevas : l'assistant n'a pas encore de jeton, et il ne veut pas passer par un redéploiement.*
 1. **Administration** (E-5), bloc « Jeton de l'assistant » : « Aucun jeton posé » ; « Connecter
    l'abonnement ».
 2. Kanevas montre une adresse ; il l'ouvre, s'authentifie chez Anthropic, copie le code.
 3. Il colle le code, « Valider » : « Jeton posé le 11 octobre 2026. » ; l'assistant est disponible
-   sur tous les univers, sans redéploiement.
-*Échec* : le code est faux ou la fenêtre a expiré (10 minutes) — « La connexion n'a pas abouti.
-Recommencez. », l'ancien jeton reste.
+   sur tous les univers, sans redéploiement. *(Moment fort : « Jeton posé le … » apparaît, sans que la valeur du jeton soit montrée nulle part.)*
+*Échec* : le code est faux — « La connexion n'a pas abouti. Recommencez. » ; la fenêtre a expiré (10 minutes)
+ou le serveur a redémarré — « La connexion a expiré. Recommencez. » ; le programme de connexion ne démarre pas —
+« La connexion n'a pas pu démarrer. Réessayez. » ; dans tous les cas l'ancien état reste. Si le jeton vient du
+déploiement, le panneau dit « Jeton fourni par le déploiement. » et se reconnecte de même.
 
 ### P-16 — Ranger et partager les fichiers (Antor, MJ, puis Léa, Joueuse)
 *Après l'import, la médiathèque de « Lame d'Ébène » porte 1 100 images et 40 documents, dont ceux

@@ -1,6 +1,6 @@
 # Status — kanevas
 
-> MàJ : 2026-10-12 (assemblage de kanevas-import-fil)
+> MàJ : 2026-10-12 (assemblage de kanevas-import-fil, après kanevas-import-jeton-assistant)
 
 **État :** `epic/kanevas` porte le socle, la première fiche, les systèmes de jeu, le suivi de la séance
 (campagnes, scénarios, préparation, comptes-rendus ; E-6, E-7, E-13) et les pièces jointes (migration
@@ -68,7 +68,7 @@ catalogue MJ (événement `proposition_creee`) et sa règle du bouchon (« Mets 
 
 **Pièges :**
 - Administration : le groupe est lu à la connexion et vaut 7 jours (AD-86) ; la liste rend tous les univers, pagination par 100 côté client ; un admin sans rôle reste un compte sans rôle (AD-9). Les e2e `administration*` dépendent de Playwright (absent du dépôt) .
-- Assistant : `repondre` est l'unique entrée ; ne jamais passer le compte, l'univers ou le rôle en paramètre d'un outil, ni lire
+- Assistant : `repondre` est l'unique entrée ; ne jamais passer le compte, l'univers ou le rôle en paramètre d'un outil, ni lire la configuration par
   `process.env` hors `config/env.ts` (seule exception : `FRONTEND_DIR`, `routes/frontend.ts`). Une erreur du transport est rendue par un message fixe (jamais la cause, qui pourrait citer le jeton).
   Le verrou « une demande à la fois par compte » est en mémoire du processus (une seule instance). Le panneau se monte dans sa propre racine
   React (`assistant.tsx`) : il lit l'adresse par `assistant/adresse.ts`, pas par le routeur.
@@ -140,5 +140,14 @@ ligne « Importée · clé … » du menu « ⋯ » de E-9 (MJ seul ; `cleOrigin
 - Un titre de fiche ou de section modifié hors de l'import n'est pas écrasé au rejeu (avertissement au lot) ; une section sans clé n'est jamais touchée ; rien ne se supprime par omission.
 - Un rejeu sans lot (`?lot=` absent) écrit mais ne laisse aucune trace de compteur ; un lot clos répond 409 `lot_clos`.
 - Reste : la recette de Monsieur au navigateur en bouchon (README, « Recette de l'accès par API »), la fusion dans `epic/kanevas-import`. Tranches suivantes : markdown, secrets, liens, types, arbre, recherche, fichiers, reprise. Pas de tag avant la fusion de l'epic.
+
+`feature/kanevas-import-jeton-assistant` (PR vers `epic/kanevas-import`, non fusionnée) ajoute le jeton de l'assistant posé depuis l'administration (P-15, B-51, AD-109, AD-112), sans migration :
+`services/assistant/jeton.ts` (fichier `<dossier de la base>/claude/oauth-token`, 0600, prime sur `CLAUDE_CODE_OAUTH_TOKEN`, seul résolveur lu par `disponibilite` et `repondre`),
+`services/assistant/connexion-claude.ts` (une session `claude setup-token` sous `script`, 10 min, processus tué à chaque issue),
+trois routes `/api/instance/assistant/jeton…` plus le `GET` d'état (404 hors `parents`), `scripts/faux-setup-token.mjs` (bouchon : code `bouchon`, copié dans l'image) et le panneau de E-5
+(`ecrans/administration/jeton-assistant.tsx`, pleine largeur sous les deux zones). Typecheck, build et tests verts (voir PR). Aucune réponse ne porte la valeur du jeton ni le code.
+**Reste (jeton) :** la recette de Monsieur en bouchon (README), la fusion ; puis le premier vrai appel au modèle sur l'URL déployée avec un jeton réellement posé depuis l'écran
+(`script` et le binaire `claude` du SDK n'ont été éprouvés qu'avec le faux `setup-token` ; le vrai flux, jamais).
+**Pièges (jeton) :** ne lire ni la variable ni le fichier hors de `jeton.ts` ; en bouchon l'assistant reste en transport `bouchon` même avec un jeton posé (AD-77), la disponibilité se prouve par une configuration injectée sans `KANEVAS_STUB` ; la session est en mémoire du processus (une instance, un redémarrage la perd : « La connexion a expiré ») ; un jeton `deploiement` n'a pas de date ; le volume `/data` doit être inscriptible pour que la pose réussisse ; sans volume (base en mémoire) le fichier va sous le dossier temporaire et le jeton est perdu au redémarrage.
 
 **Suivant :** les tranches non encore livrées.

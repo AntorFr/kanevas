@@ -41,10 +41,11 @@
 - `services/llm/*` (transport.ts, anthropic-transport.ts,
   claude-agent-transport.ts) are reprised from `Antre-du-maitre` (AD-10) and
   unused by any route yet — kept compiling, not wired in. The admin
-  setup-token window (`services/claude-token.ts` upstream) was deliberately
-  not reprised: it is a content route, out of scope for a socle that calls no
-  LLM. Reintroduce it only alongside the feature that actually activates this
-  transport.
+  setup-token window (`claude-token.ts` upstream) is rewritten as
+  `services/assistant/connexion-claude.ts` (AD-112); the token is read only
+  through `services/assistant/jeton.ts` (volume file `<data dir>/claude/oauth-token`
+  first, then `CLAUDE_CODE_OAUTH_TOKEN`) — never read either elsewhere, never
+  return, log or relay the token or the pasted code.
 - `routes/auth.ts` authenticates the identity (OIDC login/callback) and opens
   the signed session cookie (`services/session.ts` signs it, `routes/session.ts` guards, AD-56), creating the account
   on first sign-in (AD-13). Universe roles never come from Authelia nor the
@@ -83,7 +84,7 @@
   catalogue's universe (`lireCampagne`) before `creerScenario`, which only guards on the campaign's own.
 - Assistant transport (`kanevas-am-transport`, `src/services/assistant/`): `repondre(db, compteId, universId,
   message, historique, deps?)` is the single entry point. Availability (`disponibilite.ts`, AD-77) is checked
-  **first**: `KANEVAS_STUB=1` → `bouchon`, non-empty `CLAUDE_CODE_OAUTH_TOKEN` → `claude-agent`, else
+  **first**: `KANEVAS_STUB=1` → `bouchon`, a token (`jetonEffectif()`: the posed file, else non-empty `CLAUDE_CODE_OAUTH_TOKEN`) → `claude-agent`, else
   `assistant_indisponible` and no adapter is built (never a silent stub fallback). `AgentTransport` (`transport.ts`)
   is the port; adapters `bouchon.ts` (AD-78 script calling the real catalogue tools) and `claude-agent.ts`
   (in-process MCP server `kanevas`, `tools: []`, `settingSources: []`, token only in the call's `env`).
