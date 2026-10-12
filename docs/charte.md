@@ -217,7 +217,9 @@ décalé de 2 px) sur `:focus-visible`.
 **Toast.**
 - V : `--surface`, `--ombre-flottant`, rayon `--rayon-champ`, 40 px de haut ; icône
   `circle-check` en `--table`, texte 13 px, bouton-icône « Fermer ». Centré en bas au bureau ;
-  au téléphone, pleine largeur moins la place du bouton de l'assistant.
+  au téléphone, pleine largeur moins la place du bouton de l'assistant ; tant que le réglage
+  d'audience (feuille en bas au téléphone) est ouvert, les toasts passent en haut de l'écran
+  pour ne pas en couvrir une ligne.
 - C : un toast par action réussie (« « Rumeurs entendues » enregistrée », « Audience de
   « Apparence » enregistrée », « Section « … » retirée »), dans une région `role="status"`
   `aria-live="polite"` ; il part seul après 4 s, ou à « Fermer » ; il ne prend jamais le focus.
