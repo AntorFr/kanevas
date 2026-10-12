@@ -1,6 +1,7 @@
 import { ErreurTransport } from './erreurs.js';
 import type { AgentTransport, DemandeAgent } from './transport.js';
 import type { Outil } from './types.js';
+import { ECHEC_IMAGE } from './catalogue.js';
 
 export const HORS_SCRIPT =
   "Je ne sais répondre qu'à des demandes de test : chercher, lire, ajouter, créer une campagne ou un scénario.";
@@ -15,7 +16,7 @@ class Appel {
   }
 
   /** Runs a tool; the stub only calls a tool it checked is in the catalogue. */
-  faire(nom: string, args: unknown) {
+  async faire(nom: string, args: unknown) {
     const o = this.outils.find((x) => x.nom === nom);
     if (!o) throw new ErreurTransport('Outil absent.');
     return o.executer(args);
@@ -27,63 +28,63 @@ const absent = (nom: string) =>
 
 type Donnees = Record<string, any>;
 
-function creerScenario(a: Appel, titre: string, campagne: string): string {
+async function creerScenario(a: Appel, titre: string, campagne: string): Promise<string> {
   if (!a.a('creer_scenario')) return absent('creer_scenario');
-  const l = a.faire('lister_campagnes', {});
+  const l = await a.faire('lister_campagnes', {});
   if (!l.ok) return l.erreur;
   const c = (l.donnees as Donnees).campagnes.find((x: Donnees) => x.nom === campagne);
   if (!c) return INTROUVABLE;
-  const r = a.faire('creer_scenario', { campagneId: c.id, titre });
+  const r = await a.faire('creer_scenario', { campagneId: c.id, titre });
   return r.ok ? `Scénario « ${titre} » créé dans ${campagne}.` : r.erreur;
 }
 
-function creerCampagne(a: Appel, nom: string): string {
+async function creerCampagne(a: Appel, nom: string): Promise<string> {
   if (!a.a('creer_campagne')) return absent('creer_campagne');
-  const r = a.faire('creer_campagne', { nom });
+  const r = await a.faire('creer_campagne', { nom });
   return r.ok ? `Campagne « ${nom} » créée.` : r.erreur;
 }
 
-function lireSection(a: Appel, section: string): string {
-  const cherche = a.faire('chercher', { mots: section });
+async function lireSection(a: Appel, section: string): Promise<string> {
+  const cherche = await a.faire('chercher', { mots: section });
   if (!cherche.ok) return cherche.erreur;
   const mot = section.toLowerCase();
   for (const f of (cherche.donnees as Donnees).fiches) {
-    const fiche = a.faire('lire_fiche', { ficheId: f.id });
+    const fiche = await a.faire('lire_fiche', { ficheId: f.id });
     if (!fiche.ok) continue;
     const s = (fiche.donnees as Donnees).sections.find((x: Donnees) =>
       x.titre.toLowerCase().includes(mot),
     );
     if (!s) continue;
-    const r = a.faire('lire_section', { ficheId: f.id, sectionId: s.id });
+    const r = await a.faire('lire_section', { ficheId: f.id, sectionId: s.id });
     return r.ok ? `${s.titre} : ${(r.donnees as Donnees).contenu}` : r.erreur;
   }
   return INTROUVABLE;
 }
 
-function proposer(a: Appel, section: string, fiche: string, cr: string): string {
+async function proposer(a: Appel, section: string, fiche: string, cr: string): Promise<string> {
   if (!a.a('proposer_mise_a_jour')) return absent('proposer_mise_a_jour');
-  const crs = a.faire('chercher', { mots: cr, type: 'compte_rendu' });
+  const crs = await a.faire('chercher', { mots: cr, type: 'compte_rendu' });
   if (!crs.ok) return crs.erreur;
   const source = (crs.donnees as Donnees).fiches.find(
     (f: Donnees) => f.titre.toLowerCase() === cr.toLowerCase(),
   );
   if (!source) return INTROUVABLE;
-  const cherche = a.faire('chercher', { mots: fiche });
+  const cherche = await a.faire('chercher', { mots: fiche });
   if (!cherche.ok) return cherche.erreur;
   const mot = section.toLowerCase();
   for (const f of (cherche.donnees as Donnees).fiches) {
     if (f.titre.toLowerCase() !== fiche.toLowerCase() || f.id === source.id) continue;
-    const lue = a.faire('lire_fiche', { ficheId: f.id });
+    const lue = await a.faire('lire_fiche', { ficheId: f.id });
     if (!lue.ok) continue;
     const s = (lue.donnees as Donnees).sections.find((x: Donnees) =>
       x.titre.toLowerCase().includes(mot),
     );
     if (!s) continue;
-    const l = a.faire('lire_section', { ficheId: f.id, sectionId: s.id });
+    const l = await a.faire('lire_section', { ficheId: f.id, sectionId: s.id });
     if (!l.ok) return l.erreur;
     const d = l.donnees as Donnees;
     const ajout = `Mise à jour d'après « ${cr} ».`;
-    const r = a.faire('proposer_mise_a_jour', {
+    const r = await a.faire('proposer_mise_a_jour', {
       section_id: s.id,
       cr_id: source.id,
       version: d.version,
@@ -94,18 +95,18 @@ function proposer(a: Appel, section: string, fiche: string, cr: string): string 
   return INTROUVABLE;
 }
 
-function ajouter(a: Appel, texte: string, section: string): string {
-  const cherche = a.faire('chercher', { mots: section });
+async function ajouter(a: Appel, texte: string, section: string): Promise<string> {
+  const cherche = await a.faire('chercher', { mots: section });
   if (!cherche.ok) return cherche.erreur;
   const mot = section.toLowerCase();
   for (const f of (cherche.donnees as Donnees).fiches) {
-    const fiche = a.faire('lire_fiche', { ficheId: f.id });
+    const fiche = await a.faire('lire_fiche', { ficheId: f.id });
     if (!fiche.ok) continue;
     const s = (fiche.donnees as Donnees).sections.find((x: Donnees) =>
       x.titre.toLowerCase().includes(mot),
     );
     if (!s) continue;
-    const r = a.faire('ajouter_a_section', {
+    const r = await a.faire('ajouter_a_section', {
       ficheId: f.id,
       sectionId: s.id,
       texte,
@@ -116,12 +117,12 @@ function ajouter(a: Appel, texte: string, section: string): string {
   return INTROUVABLE;
 }
 
-function queSaitOn(a: Appel, sujet: string): string {
-  const cherche = a.faire('chercher', { mots: sujet });
+async function queSaitOn(a: Appel, sujet: string): Promise<string> {
+  const cherche = await a.faire('chercher', { mots: sujet });
   if (!cherche.ok) return cherche.erreur;
   const lignes: string[] = [];
   for (const f of (cherche.donnees as Donnees).fiches.slice(0, 3)) {
-    const fiche = a.faire('lire_fiche', { ficheId: f.id });
+    const fiche = await a.faire('lire_fiche', { ficheId: f.id });
     if (!fiche.ok) continue;
     const d = fiche.donnees as Donnees;
     lignes.push(
@@ -131,7 +132,26 @@ function queSaitOn(a: Appel, sujet: string): string {
   return lignes.length > 0 ? lignes.join('\n\n') : INTROUVABLE;
 }
 
-type Regle = { motif: RegExp; agir: (a: Appel, m: RegExpMatchArray) => string };
+/** « Fais un portrait pour « S » d'« F » » (AD-89): the message itself is the description. */
+async function portrait(a: Appel, section: string, fiche: string, message: string): Promise<string> {
+  if (!a.a('generer_image')) return absent('generer_image');
+  const cherche = await a.faire('chercher', { mots: fiche });
+  if (!cherche.ok) return cherche.erreur;
+  const mot = section.toLowerCase();
+  for (const f of (cherche.donnees as Donnees).fiches) {
+    if (f.titre.toLowerCase() !== fiche.toLowerCase()) continue;
+    const lue = await a.faire('lire_fiche', { ficheId: f.id });
+    if (!lue.ok) continue;
+    const s = (lue.donnees as Donnees).sections.find((x: Donnees) => x.titre.toLowerCase().includes(mot));
+    if (!s) continue;
+    const r = await a.faire('generer_image', { sectionId: s.id, description: message });
+    if (r.ok) return `Image attachée à la section « ${s.titre} » de « ${f.titre} ».`;
+    return r.erreur;
+  }
+  return INTROUVABLE;
+}
+
+type Regle = { motif: RegExp; agir: (a: Appel, m: RegExpMatchArray, message: string) => string | Promise<string> };
 
 /** Ordered: the first rule whose keywords appear in the message wins (AD-78). */
 const REGLES: Regle[] = [
@@ -144,6 +164,15 @@ const REGLES: Regle[] = [
   { motif: /lis-moi la section «\s*(.+?)\s*»/i, agir: (a, m) => lireSection(a, m[1]!) },
   { motif: /ajoute le paragraphe «\s*(.+?)\s*» dans «\s*(.+?)\s*»/i, agir: (a, m) => ajouter(a, m[1]!, m[2]!) },
   { motif: /que sait-on d(?:e |['’])\s*(.+?)\s*\??\s*$/i, agir: (a, m) => queSaitOn(a, m[1]!) },
+  {
+    motif: /fais un portrait pour «\s*(.+?)\s*» d(?:e |['’])\s*«\s*(.+?)\s*»/i,
+    agir: (a, m, message) => portrait(a, m[1]!, m[2]!, message),
+  },
+  {
+    // A portrait request that does not fit the form but says « échec »: the image failure, not a transport error.
+    motif: /portrait.*[ée]chec|[ée]chec.*portrait/i,
+    agir: (a) => (a.a('generer_image') ? ECHEC_IMAGE : absent('generer_image')),
+  },
   {
     motif: /[ée]chec/i,
     agir: () => {
@@ -160,7 +189,7 @@ export class BouchonTransport implements AgentTransport {
     const appel = new Appel(demande.outils);
     for (const regle of REGLES) {
       const m = demande.message.match(regle.motif);
-      if (m) return regle.agir(appel, m);
+      if (m) return regle.agir(appel, m, demande.message);
     }
     return HORS_SCRIPT;
   }

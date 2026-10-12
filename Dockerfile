@@ -39,6 +39,13 @@ RUN apt-get update \
   && apt-get install -y --no-install-recommends ca-certificates openssl \
   && rm -rf /var/lib/apt/lists/*
 
+# The image engine (AD-50, AD-90): the `codex` executable, pinned. Its credentials are not in the image
+# (`auth.json` is put in CODEX_HOME on the volume by the operator).
+ARG CODEX_VERSION=0.162.0
+RUN npm install -g @openai/codex@${CODEX_VERSION} \
+  && npm cache clean --force \
+  && codex --version
+
 COPY --from=build /app/node_modules ./node_modules
 COPY --from=build /app/package.json ./package.json
 COPY --from=build /app/dist ./dist
