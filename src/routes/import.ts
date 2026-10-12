@@ -75,8 +75,9 @@ export async function registerImportRoutes(app: FastifyInstance) {
       return {
         univers: ctx.univers,
         compte: ctx.compte,
-        // The product list with its activation; all on until the types slice (B-42).
-        types: TYPES_FICHE.map((type) => ({ type, active: true })),
+        // The product list with its activation; all on, except compte_rendu, until the types slice (B-42).
+        // `compte_rendu` is listed but not accepted by `PUT /fiches` until kanevas-import-reprise.
+        types: TYPES_FICHE.map((type) => ({ type, active: type !== 'compte_rendu' })),
         limites: { contenuSection: MAX_CONTENU_SECTION, entreesRapport: MAX_RAPPORT },
       };
     });

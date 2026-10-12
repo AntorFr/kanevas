@@ -19,12 +19,12 @@ Dockerfile                        Image unique : API Fastify + frontend construi
 src/
   server.ts, app.ts               Démarrage ; assemblage des plugins et des routes
   config/env.ts                   Variables d'environnement (zod)
-  db/                             SQLite (better-sqlite3), migrations/0001 à 0008, runner
+  db/                             SQLite (better-sqlite3), migrations/0001 à 0009, runner
   services/                       comptes, univers, membres, instance, fiches, sections, droits, systemes, relations, campagnes, scenarios, preparation, comptes_rendus, propositions,
-                                   pieces-jointes, illustrations, cartes, stockage (octets sur le volume) :
+                                   pieces-jointes, illustrations, cartes, jetons, lots, import (contexte du jeton), import-fiches (API d'import), stockage (octets sur le volume) :
                                    seul code qui lit ou écrit les données ; session, oidc
   routes/                         health, auth (OIDC), session (cookie, garde, /api/moi),
-                                   bouchon, univers (+ membres), instance (admin, AD-87), systemes, suivi, cartes, fiches (+ sections), propositions, assistant, frontend
+                                   bouchon, univers (+ membres), instance (admin, AD-87), systemes, suivi, cartes, fiches (+ sections), propositions, assistant, acces-api (E-18, session), import (API d'import à jeton, `/api/import/v1`), frontend
   bouchon/                        Monde de démonstration semé au démarrage en bouchon (depart.ts) et ses fichiers (demo/)
   services/assistant/             L'assistant : catalogues d'outils, port AgentTransport (bouchon, claude-agent), orchestration
   services/llm/                   Transports LLM repris d'Antre-du-maitre, branchés nulle part
@@ -103,6 +103,17 @@ Recette de la mise à jour du monde en bouchon (le semis ne contient ni campagne
 3. En `antor`, dans le panneau : « Mets à jour la section « Vérité » de « Maître Aldric » d'après le compte-rendu « Séance 3 » » ; le fil montre « Mise à jour proposée » (actuel, proposé) et la fiche est inchangée jusqu'à « Appliquer ». « Proposé » = le contenu actuel suivi de « Mise à jour d'après « Séance 3 ». » ; après « Appliquer », le bloc dit « Appliquée : la section « Vérité — MJ seul » est à jour. » et la fiche montre ce contenu.
 4. Modifier la section depuis la fiche avant d'appliquer rend la proposition périmée (« Appliquer » désactivé, raison affichée).
 5. La même demande en `lea` ne crée rien : l'assistant répond « Je ne peux pas le faire : l'outil « proposer_mise_a_jour » ne fait pas partie de ceux dont vous disposez. », sans bloc. Une proposition ne se retrouve pas après un rechargement du fil (AD-79).
+
+Recette de l'accès par API en bouchon (« Essai Kanka » est semé : Antor MJ, Léa joueuse, et un « Jeton du bouchon » de valeur fixe `JETON_BOUCHON`, `src/bouchon/depart.ts`). En `antor`, « Essai Kanka » ▸ « Accès par API » (E-18) : créer un jeton, qui ne s'affiche qu'une fois. Avec lui (ou le jeton du bouchon), l'API d'import (AD-103, AD-104), sur une base neuve (« Essai Kanka » est le 4ᵉ univers semé, id 4 ; sinon l'id est celui de l'adresse de base copiable sur E-18) :
+```bash
+JETON=kvs_bouchon_essai_Hq7Zr2LmX9cVt4Wd8KpNb3YsJf6Ga0Ue   # le jeton du bouchon, ou celui créé sur E-18
+B=http://localhost:3001/api/import/v1/univers/4          # sans barre finale
+curl -H "Authorization: Bearer $JETON" $B                        # le contrat : types, limites
+curl -X POST -H "Authorization: Bearer $JETON" $B/lots            # ouvre (ou reprend) un lot ; {lotId}
+curl -X PUT -H "Authorization: Bearer $JETON" -H 'content-type: application/json' "$B/fiches/lieu:port-sel?lot=<lotId>" \
+  -d '{"type":"lieu","titre":"Port-Sel","sections":[{"cle":"desc","titre":"Description","contenu":"…","joueursLisent":true},{"cle":"verite","titre":"Vérité","contenu":"…"}]}'
+```
+Une section lue des seuls MJ omet `joueursLisent`. Réponse `creee`, puis `inchangee` au rejeu ; E-18 montre les lots. En `lea`, « Description » se lit et « Vérité » n'existe pas. Sans `?lot=`, l'écriture réussit mais aucun lot ne la compte. Seules ces quatre routes de lots et `PUT /fiches/:cle` existent ici (pas de `/fichiers`, de relations ni de `DELETE`). Un `compte_rendu` (listé inactif par `GET`) est refusé (400, `champ: type`) jusqu'à `kanevas-import-reprise`. Le contenu s'affiche en texte (le Markdown vient avec `kanevas-import-markdown`).
 
 ### Tests de bout en bout
 
