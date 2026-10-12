@@ -216,11 +216,11 @@ cartes**, comme E-8 et E-16 (« E-1 en cartes », plus bas).* Bouton « Créer u
 
 Un formulaire : « Nom » (obligatoire, 80 caractères au plus), « Description » (facultative, 500
 au plus), « Créer l'univers » et « Annuler » (→ E-1). Créer mène à E-3 de l'univers, le créateur
-en MJ (B-2).
+en MJ (B-2). Dès que le nom est saisi, le sceau de l'univers (son initiale) s'affiche en aperçu au-dessus du titre ; tant que le nom est vide, rien.
 
 | État | Ce qu'on voit | Ce qu'on peut faire |
 |---|---|---|
-| vide | le formulaire vierge | remplir |
+| vide | le formulaire vierge, sans aperçu | remplir |
 | chargement (écriture en cours) | le bouton affiche « … », désactivé | — |
 | erreur | « Erreur : le nom est obligatoire. » sous le champ ; ou, si la création échoue, « L'action n'a pas abouti. Réessayez. » au-dessus du formulaire, saisie conservée | corriger, réessayer |
 | connexion perdue | le bandeau ; « Créer l'univers » désactivé, saisie conservée | attendre |
