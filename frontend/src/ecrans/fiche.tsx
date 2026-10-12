@@ -29,7 +29,7 @@ function PageFiche() {
   const { id, fid } = useParams();
   const perdue = useConnexionPerdue();
   const { toast } = useToasts();
-  const [univers] = useCharge<UniversListe>(`/api/univers/${id}`);
+  const [univers, rechargerUnivers] = useCharge<UniversListe>(`/api/univers/${id}`);
   const [etatLu, setEtatLu] = useState<{ cle: string; etat: Etat }>({ cle: '', etat: { k: 'chargement' } });
   const [essai, setEssai] = useState(0);
   const [joueurs, setJoueurs] = useState<Joueur[]>([]);
@@ -115,7 +115,10 @@ function PageFiche() {
   if (etat.k === 'introuvable') return <PageIntrouvable />;
   if (etat.k === 'chargement' || univers.etat === 'chargement') return <SqueletteFiche cadre />;
   if (etat.k === 'erreur' || univers.etat === 'erreur') {
-    return <ErreurChargement texte="Impossible de charger cette fiche." onReessayer={() => setEssai((n) => n + 1)} />;
+    return <ErreurChargement texte="Impossible de charger cette fiche." onReessayer={() => {
+      setEssai((n) => n + 1);
+      if (univers.etat === 'erreur') rechargerUnivers();
+    }} />;
   }
 
   const mj = role === 'mj';

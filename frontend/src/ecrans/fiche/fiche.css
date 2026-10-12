@@ -39,9 +39,12 @@ a.bouton { text-decoration: none; display: inline-flex; }
   box-shadow: inset 0 0 0 1px var(--mj-section-bord); }
 .sec[data-aud="mj"]::before { left: 0; top: 0; bottom: 0; width: 3px; border-radius: 0; background: var(--mj); }
 .sec[data-aud="mj"] .sec-actions { top: calc(var(--e-5) - 1px); right: 22px; }
-.sec[data-aud="mj"] + .sec[data-aud="mj"] { margin-top: var(--e-3); }
+/* Two secret sections in a row: the charte's 32 px between sections, the amber frame's padding included. */
+.sec[data-aud="mj"] + .sec[data-aud="mj"] { margin-top: var(--e-6); }
 .sec[data-aud="mj"] .blocs { border-top-color: var(--mj-section-filet); }
 @media (max-width: 760px) {
+  .fiche .entete h1 { font-size: var(--t-32); }
+  .sec .texte { font-size: 17px; }
   .sec::before { left: -12px; }
   .sec[data-aud="mj"] { margin-left: -12px; margin-right: -12px; padding-left: 12px; padding-right: 12px; }
   .sec-tete { padding-right: 64px; }
