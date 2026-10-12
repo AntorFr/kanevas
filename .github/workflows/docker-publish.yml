@@ -22,9 +22,10 @@ env:
 jobs:
   test:
     runs-on: ubuntu-latest
-    # The full suite takes about 8 min with a browser. A test that leaves its server open
-    # once hung the job until GitHub's 6 h limit: no image from v0.7.0 to v0.10.0.
-    timeout-minutes: 30
+    # The full suite takes about 8 min with a browser on a 12-core host, about 20 min here
+    # with the screen tests two at a time. A test that leaves its server open once hung the
+    # job until GitHub's 6 h limit: no image from v0.7.0 to v0.10.0.
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -38,7 +39,14 @@ jobs:
       - name: Playwright pour les tests d'écran
         run: npm install --no-save playwright@1.63.0 && npx playwright install --with-deps chromium
       - run: npm run typecheck
-      - run: npm test
+      # `npm test` split in two, same files and same runner. On a 4-vCPU runner, the screen
+      # tests at the default parallelism (one per core) each drive a Chromium and their 8 s
+      # waits expire at random (2026-10-12: a different test red on every run). Two at a
+      # time gives each one the CPU it waits on; no test is changed or skipped.
+      - name: Tests (hors écran)
+        run: node --import tsx --test $(find src frontend/src -name '*.test.ts' -not -path 'src/e2e/*')
+      - name: Tests d'écran, deux à la fois
+        run: node --import tsx --test --test-concurrency=2 $(find src/e2e -name '*.test.ts')
 
   build:
     needs: test
