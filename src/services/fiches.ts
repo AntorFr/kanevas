@@ -32,6 +32,7 @@ interface FicheRow {
   cree_le: string;
   modifie_le: string;
   illustration_fichier: string | null;
+  cle_origine: string | null;
 }
 
 export const versFiche = (r: FicheRow): Fiche => ({
@@ -185,6 +186,8 @@ export function lireFiche(db: Db, acteur: Acteur, universId: number, ficheId: nu
   if (lisibles.length === 0 && (role !== 'mj' || acteur.modeJoueur)) throw introuvable();
   return {
     ...versFiche(fiche),
+    // The origin key is a GM matter (B-50): a reader's answer has no such field at all.
+    ...(vueMJ(role, acteur) && fiche.cle_origine ? { cleOrigine: fiche.cle_origine } : {}),
     sections: lisibles.map((s) => ({
       ...vueSection(role, s, acteur),
       piecesJointes: lireLignes(db, s.id, vueMJ(role, acteur)),

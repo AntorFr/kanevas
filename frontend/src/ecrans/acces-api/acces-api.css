@@ -1,0 +1,58 @@
+/* E-18 Accès par API (docs/maquettes/e18-acces-api.html). Colours only through tokens.css. */
+.chasse { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; }
+.page-acces-api .intro { margin-top: var(--e-3); color: var(--texte-2); font-size: var(--t-14); }
+.page-acces-api .adresse { margin: var(--e-4) 0 var(--e-5); }
+.page-acces-api .adresse .lib { display: block; margin-bottom: var(--e-1); font-size: var(--t-12); color: var(--texte-3); }
+.copie { display: flex; align-items: center; gap: var(--e-2); }
+.copie .valeur { flex: 1; min-width: 0; padding: 6px var(--e-3); font-size: var(--t-13); background: var(--surface-2);
+  border-radius: var(--rayon-champ); overflow-wrap: anywhere; user-select: all; }
+.page-acces-api .panneau { margin-top: var(--e-5); }
+.tete-panneau { display: flex; align-items: center; justify-content: space-between; gap: var(--e-3); margin-bottom: var(--e-3); }
+.tete-panneau h2 { font: 500 var(--t-22)/1.25 var(--police-titre); }
+.cadre-liste { list-style: none; margin: 0; padding: 0; border-radius: var(--rayon-panneau); box-shadow: inset 0 0 0 1px var(--bord); }
+.cadre-liste > li + li { border-top: 1px solid var(--bord); }
+.vide-panneau-api { display: flex; flex-direction: column; align-items: center; gap: var(--e-2); padding: var(--e-6) var(--e-4);
+  text-align: center; color: var(--texte-2); font-size: var(--t-14); }
+
+.jeton { display: flex; align-items: center; gap: var(--e-3); padding: var(--e-3) var(--e-4); }
+.jeton.inactif .nom { color: var(--texte-2); }
+.jeton .ic-ligne { color: var(--texte-3); flex: none; display: grid; }
+.jeton .corps { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.jeton .nom { font-weight: 500; font-size: var(--t-14); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.jeton .meta { display: flex; flex-wrap: wrap; gap: 0 var(--e-3); font-size: var(--t-12); color: var(--texte-3); }
+.jeton .note-inactif { display: none; font-size: var(--t-12); color: var(--texte-2); }
+@media (hover: none) { .jeton .note-inactif { display: block; } }
+.jeton .revoquer { opacity: 0; }
+.jeton:hover .revoquer, .jeton:focus-within .revoquer { opacity: 1; }
+@media (hover: none) { .jeton .revoquer { opacity: 1; } }
+
+.lot-tete { display: flex; align-items: center; gap: var(--e-3); width: 100%; padding: var(--e-3) var(--e-4); font: inherit; text-align: left;
+  color: inherit; background: transparent; border: 0; }
+button.lot-tete { cursor: pointer; }
+button.lot-tete:hover { background: var(--surface-2); }
+.lot-tete .chev { width: 16px; flex: none; color: var(--texte-3); display: grid; transition: transform var(--duree); }
+li.ouvert .lot-tete .chev { transform: rotate(90deg); }
+.lot-tete .corps { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.lot-ligne1 { display: flex; flex-wrap: wrap; gap: 0 var(--e-3); font-size: var(--t-14); }
+.lot-date { font-weight: 500; }
+.lot-jeton { display: inline-flex; align-items: center; gap: 4px; color: var(--texte-2); }
+.compteurs { font-size: var(--t-13); color: var(--texte-2); }
+.lot-detail { padding: 0 var(--e-4) var(--e-4) calc(var(--e-4) + 16px + var(--e-3)); display: flex; flex-direction: column; gap: var(--e-3); }
+.groupe-pb h3 { font-size: var(--t-12); font-weight: 600; color: var(--texte-2); margin-bottom: var(--e-1); }
+.groupe-pb ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--e-1); }
+.probleme { display: flex; align-items: baseline; gap: var(--e-2); font-size: var(--t-13); }
+.probleme svg { flex: none; align-self: center; }
+.probleme.refus svg { color: var(--danger); }
+.probleme.avert svg { color: var(--mj); }
+.probleme .cle { color: var(--texte); font-size: var(--t-12); overflow-wrap: anywhere; }
+.probleme .raison { color: var(--texte-2); }
+.groupe-pb .autres { font-size: var(--t-12); color: var(--texte-3); }
+
+.boite-jeton { width: min(480px, calc(100vw - 32px)); }
+.boite-jeton .boite-corps { display: flex; flex-direction: column; gap: var(--e-3); }
+.boite-jeton form { display: flex; flex-direction: column; gap: var(--e-3); }
+.boite-jeton .segments { display: inline-flex; border: 1px solid var(--bord-champ); border-radius: var(--rayon-pastille); overflow: hidden; }
+.boite-jeton .segments label { padding: var(--e-1) var(--e-3); cursor: pointer; color: var(--texte-2); font-size: var(--t-13); }
+.boite-jeton .segments input { position: absolute; opacity: 0; }
+.boite-jeton .segments label:has(input:checked) { background: var(--accent-fond); color: var(--accent-texte); }
+.boite-jeton .segments label:has(input:focus-visible) { outline: 2px solid var(--focus); outline-offset: -2px; }
