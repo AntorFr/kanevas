@@ -165,7 +165,7 @@ describe('kanevas-import-jeton-assistant : B-51 / P-15 / E-5 panneau (navigateur
     await valider(p, 'bouchon');
     await voir(p, 'Jeton posé le');
     for (const ctx of [m.admin.ctx]) {
-      for (const r of [await ctx.request.get(ROUTE), await ctx.request.post(ROUTE + '/connexion'), await ctx.request.post(ROUTE + '/code', { data: { code: 'mauvais' } })]) {
+      for (const r of [await ctx.request.get(ROUTE), await ctx.request.post(ROUTE + '/connexion'), await ctx.request.post(ROUTE + '/code', { data: { connexionId: 'inconnue', code: 'mauvais' } })]) {
         m.reponses.push(await r.text());
       }
     }
@@ -229,7 +229,7 @@ describe('kanevas-import-jeton-assistant : B-51 / P-15 / E-5 panneau (navigateur
     await p.getByLabel('Code', { exact: true }).waitFor({ state: 'detached' });
     await attendre(p);
     assert.match(await texte(panneau(p)), /Aucun jeton posé\./);
-    const r = await m.admin.ctx.request.post(ROUTE + '/code', { data: { code: 'bouchon' } });
+    const r = await m.admin.ctx.request.post(ROUTE + '/code', { data: { connexionId: 'inconnue', code: 'bouchon' } });
     assert.equal(r.status(), 410);
     assert.equal((await r.json()).code, 'connexion_expiree');
     assert.equal(existsSync(m.fichier), false);
@@ -388,7 +388,7 @@ describe('kanevas-import-jeton-assistant : B-51 / P-15 / E-5 panneau (navigateur
   it('Léa (hors du groupe parents) reçoit 404 sur toutes les routes du panneau, ne voit pas le panneau, et ne pose rien', async () => {
     const m = await monde();
     const req = m.lea.ctx.request;
-    const code = { data: { code: 'bouchon' } };
+    const code = { data: { connexionId: 'inconnue', code: 'bouchon' } };
     assert.equal((await req.get(ROUTE)).status(), 404);
     assert.equal((await req.post(ROUTE + '/connexion')).status(), 404);
     assert.equal((await req.post(ROUTE + '/code', code)).status(), 404);
