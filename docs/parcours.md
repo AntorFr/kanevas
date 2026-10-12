@@ -165,10 +165,15 @@ introuvable. ».
    dépose le plan d'un lieu, et pose le portrait d'Aldric en **illustration** de la fiche (visible
    de qui voit la fiche) ; de retour sur la liste, la carte d'Aldric porte ce portrait.
 5. Il demande à son **assistant** (E-12) « rappelle-moi tout ce qu'on sait d'Aldric » puis
-   « fais un portrait pour Apparence » : l'image est attachée à la section.
+   « fais un portrait pour Apparence » : l'image est attachée à la section, et il suit « Ouvrir la section »
+   dans le fil pour la voir sur la fiche (E-9).
 6. **Cartes** (E-10, E-11) : il place le PNJ sur la carte de la ville, passe en **mode Joueur**
    pour vérifier, puis rend la carte visible.
 *Échec de l'assistant* : une demande de création échoue ou l'assistant est indisponible : le panneau le dit (« Je n'ai pas pu répondre — réessayer » ou « L'assistant n'est pas disponible pour le moment. »), la création a pu avoir lieu avant que la réponse soit perdue (délai, connexion coupée) : avant de réessayer, Antor regarde E-6 ou E-7 pour ne pas créer deux fois, puis crée à la main si besoin (étape 2).
+*Échec de l'image* (étape 5) : la génération échoue ou dépasse le temps, la section porte déjà 50
+pièces jointes, son droit d'écrire a été retiré, la description dépasse 500 caractères ou aucun moteur
+n'est disponible — l'assistant le dit, rien n'est attaché ; Antor
+peut redemander, ou déposer lui-même une image sur E-9 (P-3 étape 4).
 *Moment fort* : la fiche en mode Joueur ne trahit aucun secret.
 *Échec* (illustration, étape 4) : il choisit un PDF ou un fichier vide — « « plan.pdf » n'est pas
 une image… » ou « « portrait.png » est vide. », l'illustration d'avant reste ; l'envoi est coupé —

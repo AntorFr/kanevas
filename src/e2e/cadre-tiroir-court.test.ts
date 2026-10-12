@@ -160,3 +160,22 @@ test('tiroir MJ 390×900 : quand tout tient, le pied reste en bas du tiroir et l
   assert.ok(m.vh - m.bas <= 13, `pied non ancré : ${JSON.stringify(m)}`);
   assert.ok(m.defile <= 1, `la barre défile alors que tout tient : ${JSON.stringify(m)}`);
 });
+
+// Reopening « MJ 390×664 : la nav défile de 30 px, Paramètres coupé sous le pied, sans fondu » : the drawer rule must
+// hold at every phone height, not only under 640 px.
+for (const theme of ['Clair', 'Sombre'] as const) {
+  test(`tiroir MJ ${theme}, 390×664 : « Paramètres » atteignable au-dessus du pied, fondu présent tant que la barre défile`, opts, async () => {
+    await choisirTheme(antor, theme);
+    await ouvrirTiroir(antor, 664);
+    const m = await mesuresPied(antor);
+    assert.ok(m.vh - m.bas <= 13, `pied non ancré à l'ouverture : ${JSON.stringify(m)}`);
+    assert.match(m.fondu, /linear-gradient/, `aucun fondu au-dessus du pied : ${JSON.stringify(m)}`);
+    const caches = await barre(antor).locator('nav').first().evaluate((el: Any) => el.scrollHeight - el.clientHeight);
+    assert.ok(caches <= 1, `${caches} px de navigation cachés dans le nav seul, sous le pied`);
+    const r = await atteignable(antor, 'Paramètres');
+    assert.ok(r.ok, `Paramètres inatteignable : ${r.info}`);
+    const fin = await mesuresPied(antor);
+    const bas = await barre(antor).getByRole('link', { name: rxExact('Paramètres') }).evaluate((el: Any) => el.getBoundingClientRect().bottom);
+    assert.ok(bas <= fin.haut + 1, `Paramètres (bas ${bas}) passe sous le pied (haut ${fin.haut})`);
+  });
+}
