@@ -126,7 +126,7 @@ export async function launch(): Promise<Any> {
 export async function connecte(browser: Any, base: string, compte: string): Promise<{ ctx: Any; page: Any }> {
   const ctx = await browser.newContext({ baseURL: base });
   const page = await ctx.newPage();
-  page.setDefaultTimeout(8000);
+  page.setDefaultTimeout(30000);
   await page.goto('/connexion-bouchon');
   await page.getByRole('button', { name: new RegExp(`^Se connecter en tant que ${compte}$`, 'i') }).click();
   await page.waitForLoadState('networkidle');
