@@ -85,6 +85,35 @@ describe('critère de sortie au téléphone', { skip: skipBrowser }, () => {
     });
   }
 
+  for (const theme of ['light', 'dark'] as const) {
+    test(`${theme} : le toast d'audience ne recouvre ni la dernière ligne du réglage ni son aide (charte 2.4.11)`, opts, async () => {
+      // a short phone screen (390 x 300, a phone in landscape): the setting is as tall as the space left
+      // above the zone where toasts stand, so a toast at the bottom would sit on its last rows
+      await tel.setViewportSize({ width: 390, height: 300 });
+      await tel.emulateMedia({ colorScheme: theme });
+      await tel.goto(urlAldric);
+      await attendre(tel);
+      const s = section(tel, 'Apparence');
+      await s.getByRole('button', { name: /régler l['’]audience de/ }).click();
+      const boite = tel.getByRole('dialog', { name: /^Qui voit/ });
+      await boite.waitFor();
+      const interrupteur = boite.getByRole('switch', { name: rx('Les joueurs l’écrivent') });
+      await interrupteur.click();
+      const toast = tel.getByText('Audience de « Apparence » enregistrée');
+      await toast.waitFor();
+      const t = await toast.boundingBox();
+      const derniere = await boite.getByRole('switch', { name: rx('L’auteur l’écrit') }).boundingBox();
+      const aide = await boite.getByText('Chaque changement est enregistré aussitôt.').boundingBox();
+      assert.ok(t && derniere && aide, 'toast, dernière ligne et aide sont affichés');
+      const chevauche = (a: Any, b: Any) => a.x < b.x + b.width && b.x < a.x + a.width && a.y < b.y + b.height && b.y < a.y + a.height;
+      assert.equal(chevauche(t, derniere), false, 'le toast ne recouvre pas « L’auteur l’écrit »');
+      assert.equal(chevauche(t, aide), false, 'le toast ne recouvre pas l’aide');
+      await tel.keyboard.press('Escape');
+      await boite.waitFor({ state: 'detached' });
+      await tel.setViewportSize({ width: 390, height: 844 });
+    });
+  }
+
   test('le thème se règle depuis l’avatar du tiroir : trois choix et « Se déconnecter » tiennent dans l’écran', opts, async () => {
     await tel.goto(urlAldric);
     await attendre(tel);
