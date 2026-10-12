@@ -1,6 +1,6 @@
 # Status — kanevas
 
-> MàJ : 2026-10-12 (assemblage de kanevas-refonte-visuelle ; E-2 : l'aperçu du sceau attend le nom)
+> MàJ : 2026-10-12 (assemblage de kanevas-refonte-visuelle ; E-14 sur sa maquette, tiroir à toute hauteur)
 
 **Lecture de ce fichier :** le clone qui le porte contient déjà toutes les tranches nommées ci-dessous (migrations 0001 à 0008, assistant,
 administration, propositions) ; « PR non fusionnée » dit seulement que la tranche n'est pas encore sur `main`, pas qu'elle manque du code.
@@ -22,9 +22,9 @@ sont les relations lues sous les deux gardes et la disposition calculée dans le
 
 `feature/kanevas-refonte-visuelle` (PR non fusionnée, rattrapée sur `epic/kanevas` : cartes, administration, propositions) refait la charte et tous les écrans construits : tokens clair/sombre,
 polices et icônes embarquées (AD-92), composants partagés (`frontend/src/ui/`), cadre (navigation à icônes, barre haute,
-tiroir au téléphone (sur un téléphone court, la navigation défile, le pied — compte — reste ancré en bas sous un fondu qui dit qu'il y a une suite, et « Paramètres » reste atteignable), thème et déconnexion dans le menu de l'avatar, seul endroit du thème), E-1 à E-4, E-6 à E-9, E-13 à E-15
+tiroir au téléphone (à toute hauteur de téléphone, la navigation défile, le pied — compte — reste ancré en bas sous un fondu qui dit qu'il y a une suite, et « Paramètres » reste atteignable ; testé à 526 et 664 px), thème et déconnexion dans le menu de l'avatar, seul endroit du thème), E-1 à E-4, E-6 à E-9, E-13 à E-15
 avec leurs états, pastille/filet d'audience, menu « ⋯ » et toasts sur la fiche. Aucun geste, droit ni donnée nouveau.
-Page `/demo-composants` en bouchon seulement. Maquettes de `docs/maquettes/` refaites.
+Page `/demo-composants` en bouchon seulement. Maquettes de `docs/maquettes/` refaites. E-14 suit sa maquette (teinte ambre légère, filet 2 px, colonne de 688 px, champs pleine largeur), non la hachure de la charte, réservée au secret d'une section d'E-9 (décision du 2026-10-12).
 
 `feature/kanevas-illustrations` (fusionnée dans `epic/kanevas`, PR #10) ajoute : l'illustration d'une fiche (migration `0006-illustrations.sql`, `services/illustrations.ts`, routes
 `PUT|DELETE|GET …/fiches/:fid/illustration`, AD-93), la grille de cartes illustrées (E-8) et l'illustration en tête de E-9 ;
