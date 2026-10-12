@@ -13,7 +13,7 @@ const { assurerCompte } = await import('../services/comptes.js');
 const { creerUnivers } = await import('../services/univers.js');
 const { ajouterMembre } = await import('../services/membres.js');
 const { creerFiche } = await import('../services/fiches.js');
-const { ajouterSection, ecrireContenu } = await import('../services/sections.js');
+const { ajouterSection, ecrireContenu, changerAudience } = await import('../services/sections.js');
 const { creerCampagne } = await import('../services/campagnes.js');
 const { creerCompteRendu } = await import('../services/comptes_rendus.js');
 const { creerScenario } = await import('../services/scenarios.js');
@@ -210,4 +210,27 @@ test('assistant : lire_section rend le Markdown source (jamais du HTML), même p
       assert.equal(r.ok, false);
     }
   }
+});
+
+test('assistant : un lecteur reçoit la vue rendue sans la source, un écrivain la source (AD-112)', () => {
+  const db = openDb(':memory:');
+  migrate(db);
+  const antor = assurerCompte(db, 'antor');
+  const lea = assurerCompte(db, 'lea');
+  const u = creerUnivers(db, antor.id, { nom: 'U' });
+  ajouterMembre(db, antor.id, u.id, 'lea', 'joueur');
+  const f = creerFiche(db, antor.id, u.id, { type: 'lieu', titre: 'L' });
+  const sec = ajouterSection(db, antor.id, u.id, f.id, { titre: 'Apparence', contenu: 'x' });
+  ecrireContenu(db, antor.id, u.id, f.id, sec.id, '## Quartiers\n\nUn homme **robuste**', sec.version);
+  changerAudience(db, antor.id, u.id, f.id, sec.id, { joueursLisent: true });
+  const lire = (id: number) => {
+    const o = catalogueDe(db, id, u.id).outils.find((x) => x.nom === 'lire_section')!;
+    return o.executer({ ficheId: f.id, sectionId: sec.id }) as { ok: boolean; donnees?: { contenu: string } };
+  };
+  const rl = lire(lea.id);
+  assert.equal(rl.ok, true);
+  assert.ok(!rl.donnees!.contenu.includes('## Quartiers'));
+  assert.ok(!rl.donnees!.contenu.includes('**robuste**'));
+  assert.ok(rl.donnees!.contenu.includes('<strong>robuste</strong>'));
+  assert.equal(lire(antor.id).donnees!.contenu, '## Quartiers\n\nUn homme **robuste**');
 });

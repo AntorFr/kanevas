@@ -117,7 +117,7 @@ export function vueSection(role: Role, s: SectionRow, acteur: Acteur): SectionVu
     modifieLe: s.modifie_le,
     peutEcrire,
   };
-  if (peutEcrire || acteur.avecSource) vue.contenu = s.contenu; // the source goes only to who may write it (AD-112)
+  if (peutEcrire) vue.contenu = s.contenu; // the source goes only to who may write it (AD-112)
   if (vueMJ(role, acteur)) vue.audience = audienceDe(s);
   return vue;
 }

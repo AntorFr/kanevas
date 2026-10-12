@@ -62,7 +62,7 @@ function outil<S extends z.ZodObject>(
  */
 export function catalogueDe(db: Db, compteId: number, universId: number): Catalogue {
   const role = exigerRole(db, universId, compteId);
-  const acteur: Acteur = { compteId, avecSource: true }; // reads return the Markdown source (AD-112)
+  const acteur: Acteur = { compteId };
 
   const outils: Outil[] = [
     outil(
@@ -100,7 +100,7 @@ export function catalogueDe(db: Db, compteId: number, universId: number): Catalo
             sections: f.sections.map((s) => ({
               id: s.id,
               titre: s.titre,
-              contenu: s.contenu ?? '',
+              contenu: s.contenu ?? s.html, // source only when the caller may write it, else the reader's rendered view (AD-112)
               version: s.version,
               modifiable: s.peutEcrire,
             })),
@@ -118,7 +118,7 @@ export function catalogueDe(db: Db, compteId: number, universId: number): Catalo
           donnees: {
             id: s.id,
             titre: s.titre,
-            contenu: s.contenu ?? '',
+            contenu: s.contenu ?? s.html, // source only when the caller may write it, else the reader's rendered view (AD-112)
             version: s.version,
             modifiable: s.peutEcrire,
           },
