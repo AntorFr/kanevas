@@ -247,6 +247,34 @@ describe('E-5 panneau « Jeton de l\'assistant » (B-51, P-15)', { skip: raisonS
     }
   });
 
+  // Fails if the code is sent without the connexionId of its own connection: a second tab left on a replaced
+  // connection would then pose the token instead of hearing « expirée » (AD-112).
+  test('second_onglet_reste_sur_une_connexion_remplacee_dit_expiree_puis_lautre_onglet_valide', async () => {
+    const s = await demarrer();
+    try {
+      const { ctx, page } = await connecter(s, 'admin');
+      await ouvrirAdmin(page);
+      const a = panneau(page);
+      await a.getByRole('button', { name: 'Connecter l’abonnement' }).click();
+      await a.getByLabel('Code').waitFor();
+      const page2 = await ctx.newPage();
+      await ouvrirAdmin(page2);
+      const b = panneau(page2);
+      await b.getByRole('button', { name: 'Connecter l’abonnement' }).click();
+      await b.getByLabel('Code').waitFor();
+      await a.getByLabel('Code').fill('bouchon');
+      await a.getByRole('button', { name: 'Valider' }).click();
+      await a.getByText('La connexion a expiré. Recommencez.').waitFor();
+      await a.getByText('Aucun jeton posé.').waitFor();
+      await capture(page, 'second-onglet');
+      await b.getByLabel('Code').fill('bouchon');
+      await b.getByRole('button', { name: 'Valider' }).click();
+      await b.getByText(/^Jeton posé le /).first().waitFor();
+    } finally {
+      s.stop();
+    }
+  });
+
   // Fails if the remaining time never goes down, or at 0 the field is not replaced by the expiry sentence.
   test('temps_restant_descend_et_a_zero_la_phrase_dexpiration_remplace_le_champ', async () => {
     const s = await demarrer();
