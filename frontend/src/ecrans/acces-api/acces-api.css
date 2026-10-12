@@ -46,12 +46,17 @@ li.ouvert .lot-tete .chev { transform: rotate(90deg); }
 .lot-detail { padding: 0 var(--e-4) var(--e-4) calc(var(--e-4) + 16px + var(--e-3)); display: flex; flex-direction: column; gap: var(--e-3); }
 .groupe-pb h3 { font-size: var(--t-12); font-weight: 600; color: var(--texte-2); margin-bottom: var(--e-1); }
 .groupe-pb ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--e-1); }
-.probleme { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--e-2); font-size: var(--t-13); }
-.probleme svg { flex: none; align-self: center; }
+.probleme { display: grid; grid-template-columns: 16px minmax(0, 14.5rem) minmax(0, 1fr); column-gap: 10px; align-items: baseline; font-size: var(--t-13); }
+.probleme svg { align-self: center; }
 .probleme.refus svg { color: var(--danger); }
-.probleme.avert svg { color: var(--mj); }
-.probleme .cle { color: var(--texte); font-size: var(--t-12); flex: none; max-width: 100%; overflow-wrap: anywhere; }
-.probleme .raison { color: var(--texte-2); flex: 1 1 14ch; min-width: 0; }
+.probleme.avert svg { color: var(--texte-2); }
+.probleme .cle { color: var(--texte); font-size: var(--t-12); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.probleme .raison { color: var(--texte-2); }
+@media (max-width: 760px) {
+  .probleme { grid-template-columns: 16px minmax(0, 1fr); row-gap: 2px; }
+  .probleme .raison { grid-column: 2; }
+  .probleme .cle { white-space: normal; overflow-wrap: anywhere; }
+}
 .groupe-pb .autres { font-size: var(--t-12); color: var(--texte-3); }
 
 .boite-jeton { width: min(480px, calc(100vw - 32px)); }
