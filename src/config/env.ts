@@ -33,8 +33,14 @@ const envSchema = z.object({
   OIDC_CLIENT_ID: z.string().min(1).optional(),
   OIDC_CLIENT_SECRET: z.string().min(1).optional(),
   OIDC_REDIRECT_URI: z.string().url().optional(),
-  // LLM transports reused from Antre-du-maitre (AD-10): no route of this
-  // socle calls them yet.
+  // Assistant (AD-54, AD-77): Claude subscription token, set by the operator; empty or absent =
+  // no assistant outside the stub. Read here only, never logged.
+  CLAUDE_CODE_OAUTH_TOKEN: z.string().optional(),
+  // Codex image engine (AD-50, AD-88): directory holding `auth.json` (put there by the operator, never
+  // logged). Empty or absent = `<db dir>/codex`, i.e. `/data/codex` in production.
+  CODEX_HOME: z.string().optional(),
+  // LLM transports reused from Antre-du-maitre (AD-10): no route calls them; only
+  // ANTHROPIC_MODEL is read, by the assistant's claude-agent adapter (AD-73).
   ANTHROPIC_API_KEY: z.string().optional(),
   ANTHROPIC_MODEL: z.string().min(1).default('claude-sonnet-4-6'),
   LLM_PROVIDER: z.enum(['mock', 'anthropic', 'claude-agent']).default('mock'),
@@ -71,3 +77,10 @@ export const dbPath =
 export const attachmentsDir =
   env.ATTACHMENTS_DIR ??
   (dbPath === ':memory:' ? join(tmpdir(), 'kanevas-attachments') : join(dirname(dbPath), 'attachments'));
+
+// Codex credentials and generated images (AD-50, AD-88, AD-90) live on the volume too.
+export const codexHome = env.CODEX_HOME?.trim() || (dbPath === ':memory:' ? join(tmpdir(), 'kanevas-codex') : join(dirname(dbPath), 'codex'));
+
+// Disposable working directories of the image engine: `<racine>/<uuid>` (AD-90).
+export const imagesTmpDir =
+  dbPath === ':memory:' ? join(tmpdir(), 'kanevas-images') : join(dirname(dbPath), 'tmp', 'images');

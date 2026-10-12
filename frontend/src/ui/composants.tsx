@@ -291,14 +291,17 @@ export function PastilleAudience({
   );
 }
 
+/** Two letters: first letters of the first two words, or the first two letters of a single word. */
+export function initialesDe(nom: string): string {
+  const mots = nom.split(/[\s._-]+/).filter(Boolean);
+  if (mots.length === 0) return '';
+  const lettres = mots.length === 1 ? Array.from(mots[0]!).slice(0, 2) : mots.slice(0, 2).map((m) => Array.from(m)[0]!);
+  return lettres.join('').toUpperCase();
+}
+
 /** Round initials, decorative (the name is always written beside it). */
 export function Avatar({ nom, joueur, petit }: { nom: string; joueur?: boolean; petit?: boolean }) {
-  const initiales = nom
-    .split(/[\s._-]+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((m) => m[0]!.toUpperCase())
-    .join('');
+  const initiales = initialesDe(nom);
   return (
     <span className={`avatar${joueur ? ' joueur' : ''}${petit ? ' petit' : ''}`} aria-hidden="true">
       {initiales}
@@ -312,7 +315,7 @@ export function Panneau({ titre, reserveMj, children }: { titre: string; reserve
   return (
     <section className={`panneau${reserveMj ? ' reserve-mj' : ''}`} aria-labelledby={id}>
       <h2 id={id}>
-        {titre} {reserveMj && <Pastille sens="mj">MJ seul</Pastille>}
+        {titre} {reserveMj && <Pastille sens="mj" icone={Lock}>MJ seul</Pastille>}
       </h2>
       {children}
     </section>

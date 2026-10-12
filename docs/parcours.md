@@ -4,9 +4,9 @@
 > construit. Identifiants stables : `B-n` (besoins), `P-n` (parcours), `E-n` (écrans,
 > `docs/ecrans.md`), `AD-n` (décisions, `ARCHITECTURE.md`).
 >
-> **Construit à ce jour** (`kanevas-premiere-fiche`, systèmes, `kanevas-suivi`, `kanevas-fichiers`, `kanevas-relier-chercher`) : P-1 en entier, P-2 étapes 1-2 (sans l'admin),
+> **Construit à ce jour** (`kanevas-premiere-fiche`, systèmes, `kanevas-suivi`, `kanevas-fichiers`, `kanevas-relier-chercher`, `kanevas-recours-admin`) : P-1 en entier, P-2 en entier (étape 3 : l'admin répare les membres, E-5),
 > P-3 étapes 1 à 4, P-4 en entier, P-5 étape 1 (fiches et sections), P-6 étapes 1-2 (recherche dans un type), P-7 étape 1 et l'écriture de
-> l'étape 2, P-8 en entier (B-13, B-14 : E-14 puis E-15). Le reste de ce document est la cible.
+> l'étape 2, P-8 en entier (B-13, B-14 : E-14 puis E-15). Sont aussi construits les cartes et graphes (E-10, E-11), l'illustration d'une fiche, les systèmes hors des univers (E-16), l'assistant (E-12) et la mise à jour du monde depuis un compte-rendu (`kanevas-monde`) : les écrans construits sont listés dans `docs/ecrans.md`, c'est lui qui fait foi pour dire quelle étape de quel parcours existe. Le reste de ce document est la cible.
 
 Kanevas sert à **préparer** des parties de jeu de rôle et à en **garder la mémoire** entre les
 séances : le lore d'un univers, partagé entre le MJ et ses joueurs avec des droits fins par
@@ -146,22 +146,34 @@ demande à son assistant (E-12).
 2. Il ajoute un compte par son identifiant, choisit MJ ou Joueur ; change un rôle ; retire un
    membre.
 3. En recours, l'admin ouvre l'**administration** (E-5), choisit l'univers, fait le même geste.
+   *Exemple* : le seul MJ d'un univers a quitté la table ; l'admin ajoute un MJ qui a déjà ouvert
+   Kanevas. L'admin ne lit toujours rien du contenu ; s'il veut le lire, il s'ajoute lui-même, et
+   l'ajout figure dans la liste des membres que voit le MJ de l'univers.
+4. Une fois membre, il ouvre l'univers depuis E-5 : sa **vue d'ensemble** (E-3).
 *Échec* : identifiant jamais connecté — « ce compte ne s'est jamais connecté » ; retirer le
-dernier MJ — refusé avec la raison.
+dernier MJ — refusé avec la raison ; un compte qui n'est pas admin ouvre l'adresse — « Page
+introuvable. ».
 
 ### P-3 — Préparer la séance du samedi (MJ, dimanche soir, bureau)
 1. **Vue d'ensemble** (E-3) : les campagnes actives, les derniers CR, la préparation en cours.
 2. **Campagne** (E-6) : il crée la campagne (« En préparation ») ou ouvre l'existante et la passe
-   « Active » ; il relit les CR les plus récents, crée ou ouvre un **scénario** (E-7) et l'écrit.
+   « Active » ; il relit les CR les plus récents, crée ou ouvre un **scénario** (E-7) et l'écrit
+   (ou demande à son **assistant** (E-12) de créer la campagne ou le scénario : le bloc d'écriture mène à E-6 ou E-7).
 3. Il coche ou ajoute des tâches de **préparation** (E-6).
 4. **Lore** : depuis la **liste d'un type** (E-8), il crée un PNJ ; sur la **fiche** (E-9), il
    écrit « Apparence » (lue des joueurs) et « Vérité — MJ seul », relie le PNJ à sa faction,
    dépose le plan d'un lieu, et pose le portrait d'Aldric en **illustration** de la fiche (visible
    de qui voit la fiche) ; de retour sur la liste, la carte d'Aldric porte ce portrait.
 5. Il demande à son **assistant** (E-12) « rappelle-moi tout ce qu'on sait d'Aldric » puis
-   « fais un portrait pour Apparence » : l'image est attachée à la section.
+   « fais un portrait pour Apparence » : l'image est attachée à la section, et il suit « Ouvrir la section »
+   dans le fil pour la voir sur la fiche (E-9).
 6. **Cartes** (E-10, E-11) : il place le PNJ sur la carte de la ville, passe en **mode Joueur**
    pour vérifier, puis rend la carte visible.
+*Échec de l'assistant* : une demande de création échoue ou l'assistant est indisponible : le panneau le dit (« Je n'ai pas pu répondre — réessayer » ou « L'assistant n'est pas disponible pour le moment. »), la création a pu avoir lieu avant que la réponse soit perdue (délai, connexion coupée) : avant de réessayer, Antor regarde E-6 ou E-7 pour ne pas créer deux fois, puis crée à la main si besoin (étape 2).
+*Échec de l'image* (étape 5) : la génération échoue ou dépasse le temps, la section porte déjà 50
+pièces jointes, son droit d'écrire a été retiré, la description dépasse 500 caractères ou aucun moteur
+n'est disponible — l'assistant le dit, rien n'est attaché ; Antor
+peut redemander, ou déposer lui-même une image sur E-9 (P-3 étape 4).
 *Moment fort* : la fiche en mode Joueur ne trahit aucun secret.
 *Échec* (illustration, étape 4) : il choisit un PDF ou un fichier vide — « « plan.pdf » n'est pas
 une image… » ou « « portrait.png » est vide. », l'illustration d'avant reste ; l'envoi est coupé —
@@ -179,8 +191,8 @@ pas — le cadre dit « Image indisponible. » et il garde « Remplacer » et «
 
 ### P-5 — Mettre le monde à jour après la partie (MJ)
 1. Il lit les CR (E-13 → E-9).
-2. Depuis un CR, il demande à son **assistant** (E-12) : « mets à jour la section Vérité d'Aldric
-   d'après ce CR ».
+2. Depuis un CR, il demande à son **assistant** (E-12), en nommant ce CR (l'assistant ne sait pas quel
+   écran est ouvert) : « mets à jour la section Vérité d'Aldric d'après le compte-rendu de la séance 3 ».
 3. Le panneau montre l'actuel et le proposé ; il **applique** ou **abandonne** d'un clic.
 4. Sinon, il édite la fiche lui-même (E-9).
 *Échec* : la section a changé depuis la proposition — appliquer est refusé, avec la raison.
@@ -193,6 +205,8 @@ pas — le cadre dit « Image indisponible. » et il garde « Remplacer » et «
    que la table sait.
 3. Il ouvre la **carte** (E-11), touche un token, relit la fiche.
 4. Ou il demande à son **assistant** (E-12) « que sait-on d'Aldric ? ».
+*Échec* : il demande de lire « Vérité » : l'assistant répond « Introuvable. », comme l'interface ;
+l'assistant est indisponible ou en erreur : le panneau le dit, et la fiche reste lisible (E-9).
 *Échec* (illustration, étape 2) : une image ne se charge pas (réseau du téléphone) — la carte
 montre la vignette de repli, jamais une image cassée, et la fiche « Image indisponible. » ; une
 fiche que le MJ a fermée aux joueurs entre-temps disparaît de la grille, et l'adresse de son
@@ -202,6 +216,8 @@ illustration répond comme une adresse inconnue.
 1. Le MJ a créé la fiche de son PJ et lui en a confié une section en auteur (E-9).
 2. Le joueur l'écrit sur la **fiche** (E-9), y dépose un portrait, ou demande à son **assistant**
    (E-12) d'y ajouter un paragraphe.
+*Échec* : il demande d'écrire dans une section qu'il lit sans l'écrire : « Vous ne pouvez pas modifier
+cette section. », rien n'est écrit.
 *Échec* (dépôt) : fichier vide, section déjà à 50 pièces jointes, envoi interrompu ou droit
 d'écriture retiré — le fichier n'est pas attaché, la raison est dite sur la section (E-9), rien n'est
 laissé à moitié.
@@ -237,7 +253,7 @@ cours est gardé ; un univers détaché pendant qu'un joueur lit le système —
   types de fiches dédiés plus tard.
 - **Supprimer** une fiche, un univers, une campagne, un scénario, un CR, une carte, une tâche,
   un système : rien ne se supprime en V1, sauf une pièce jointe, une section, une relation, un
-  membre. *(choix de cadrage, à revoir à l'usage)*
+  membre, et le token ou le nœud d'une carte (on le retire de la carte ; sa fiche reste). *(choix de cadrage, à revoir à l'usage)*
 - **Créer une fiche en joueur** : le MJ crée toute fiche, y compris celle d'un PJ, et en ouvre une
   section à son joueur.
 - **Inviter un compte qui ne s'est jamais connecté**, lien d'invitation.

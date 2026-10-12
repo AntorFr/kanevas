@@ -11,11 +11,14 @@
 .liste-membres .ligne-suivi { min-height: 44px; }
 .liste-membres .avatar { width: 28px; height: 28px; }
 .liste-membres .actions-revelees .bouton.petit { min-height: 28px; height: 28px; }
-/* The role is a pastille that opens a menu (native select underneath), not a bordered field. */
+/* The role is a pastille that opens a menu. The label sizes the pastille to its text (a native select takes the width of its
+   longest option); the select lies over it, transparent text, and keeps the click, the keyboard and the touch menu. */
 .role-pastille { position: relative; display: inline-flex; align-items: center; height: 28px; border-radius: var(--rayon-pastille); }
-.role-pastille .liste-statut { height: 28px; min-height: 28px; padding: 0 var(--e-6) 0 var(--e-3); border: 0; border-radius: var(--rayon-pastille);
-  font-size: var(--t-12); background: var(--surface-2); color: var(--texte-2); }
-.role-pastille.mj .liste-statut { background: var(--mj-fond); color: var(--mj); }
+.role-pastille .role-libelle { position: relative; padding: 0 var(--e-6) 0 var(--e-3); font-size: var(--t-12); font-weight: 500; line-height: 28px;
+  white-space: nowrap; pointer-events: none; color: var(--texte-2); }
+.role-pastille .liste-statut { position: absolute; inset: 0; width: 100%; height: 28px; min-height: 28px; padding: 0; border: 0; border-radius: var(--rayon-pastille);
+  font-size: var(--t-12); background: var(--surface-2); color: transparent; }
+.role-pastille .liste-statut option { color: var(--texte); background: var(--surface); }
 .role-pastille .liste-statut:hover:not(:disabled) { box-shadow: 0 0 0 1px var(--bord-fort); }
 .role-pastille.mj .liste-statut:hover:not(:disabled) { box-shadow: 0 0 0 1px var(--mj-bord); }
 .role-pastille svg { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); pointer-events: none; color: currentColor; }
@@ -26,7 +29,15 @@
 .systeme-courant .nom-systeme { max-width: 24rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .systeme-courant .bouton { text-decoration: none; }
 .erreur-champ { color: var(--danger); font-size: var(--t-13); margin-top: calc(var(--e-1) * -1); }
-.page-liste .panneau form .champ { max-width: 560px; }
+/* E-14 (docs/maquettes/e14): 688 px column, light amber tint and 2 px rule on the three panels (the hatching says the secret, E-9),
+   fields at full width, textareas in the interface font. */
+.page-liste.page-parametres { max-width: 688px; }
+.page-parametres .panneaux-suivi .panneau.reserve-mj { margin: 0; padding: var(--e-4) 0 var(--e-2) var(--e-4); border-radius: var(--rayon-champ);
+  border-top: 1px solid var(--bord); background: linear-gradient(90deg, var(--mj-trame), transparent 40%); box-shadow: inset 2px 0 0 var(--mj-bord); }
+.page-parametres .panneaux-suivi .panneau.reserve-mj::before { content: none; }
+.page-parametres .panneaux-suivi .panneau.reserve-mj + .panneau.reserve-mj { margin-top: var(--e-4); }
+.page-parametres .champ textarea { font-family: var(--police-texte); font-size: var(--t-14); line-height: 1.5; min-height: 0; padding: var(--e-2) var(--e-3); }
+@media (max-width: 760px) { .page-parametres .panneaux-suivi .panneau.reserve-mj { margin-left: 0; margin-right: 0; padding-left: var(--e-3); } }
 
 /* E-15: three tabs as a segmented control, entries as rows that open in place */
 .onglets { display: inline-flex; gap: 2px; padding: 2px; margin: var(--e-5) 0 var(--e-2); background: var(--surface-2);

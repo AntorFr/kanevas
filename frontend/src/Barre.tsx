@@ -19,9 +19,10 @@ export function universDeLAdresse(chemin: string): number | null {
 /**
  * An item is current on its own address and below it; a sheet's address is under no item, so the
  * sheet names its type (`section`, the label of the item it hangs under) and that item is current.
+ * A scenario's address (`/scenarios/<id>`) is likewise under the campaigns item, not an item of its own.
  */
 export function itemCourant(item: Item, id: number, pathname: string, section?: string): boolean {
-  if (section !== undefined && pathname.startsWith(`/univers/${id}/fiche/`)) return item.libelle === section;
+  if (section !== undefined && (pathname.startsWith(`/univers/${id}/fiche/`) || pathname.startsWith(`/univers/${id}/scenarios/`))) return item.libelle === section;
   const chemin = item.chemin(id);
   return pathname === chemin || (chemin !== `/univers/${id}` && pathname.startsWith(`${chemin}/`));
 }
@@ -192,14 +193,18 @@ function Contenu({ onNavigue }: { onNavigue: () => void }) {
   const { pathname } = useLocation();
   const { univers } = useUnivers();
   const { section } = useVue();
+  const moi = useMoi();
   const id = universDeLAdresse(pathname);
   // Inside a universe only if the account has it: an unknown universe, or one without a role,
   // gets the bar of a screen outside (no selector, no name) — the refusal state of docs/ecrans.md.
   const connu = univers.etat !== 'ok' || univers.valeur.some((u) => u.id === id);
   const dedans = id !== null && connu;
   const role = univers.etat === 'ok' ? univers.valeur.find((u) => u.id === id)?.role : undefined;
-  const items = dedans ? ITEMS_UNIVERS.filter((i) => ecranEnregistre(i.chemin(id), undefined) && (!i.role || i.role === role)) : [];
+  const groupes = moi.etat === 'ok' ? moi.valeur.groups : [];
+  const visible = (i: Item, chemin: string) => ecranEnregistre(chemin, undefined) && (!i.groupe || groupes.includes(i.groupe));
+  const items = dedans ? ITEMS_UNIVERS.filter((i) => visible(i, i.chemin(id)) && (!i.role || i.role === role)) : [];
   const sections = [...new Set(items.map((i) => i.section ?? ''))];
+  const horsUnivers = dedans ? [] : ITEMS_UNIVERS.filter((i) => i.horsUnivers && visible(i, i.chemin(0)));
 
   return (
     <>
@@ -226,6 +231,12 @@ function Contenu({ onNavigue }: { onNavigue: () => void }) {
             </Link>
           </div>
         )}
+        {horsUnivers.map((i) => (
+          <Link key={i.libelle} to={i.chemin(0)} className="item" aria-current={pathname === i.chemin(0) || pathname.startsWith(`${i.chemin(0)}/`) ? 'page' : undefined}>
+            <i.icone size={16} strokeWidth={1.75} aria-hidden="true" />
+            {i.libelle}
+          </Link>
+        ))}
         {sections.map((s) => (
           <div key={s} className="groupe">
             {s && <div className="groupe-titre">{s}</div>}

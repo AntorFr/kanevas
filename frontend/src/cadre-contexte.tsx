@@ -43,7 +43,11 @@ export function FournisseurCadre({ children }: { children: ReactNode }) {
   const [bascule, setBascule] = useState(false);
   const [titre, setTitre] = useState<string>();
   const [section, setSection] = useState<string>();
-  const vue = useMemo(() => ({ mode, setMode, bascule, setBascule, titre, setTitre, section, setSection }), [mode, bascule, titre, section]);
+  const [parent, setParent] = useState<Parent>();
+  const vue = useMemo(
+    () => ({ mode, setMode, bascule, setBascule, titre, setTitre, section, setSection, parent, setParent }),
+    [mode, bascule, titre, section, parent],
+  );
   return (
     <Contexte.Provider value={valeur}>
       <ContexteVue.Provider value={vue}>{children}</ContexteVue.Provider>
@@ -53,6 +57,12 @@ export function FournisseurCadre({ children }: { children: ReactNode }) {
 
 /** « Mode MJ » / « Mode Joueur » (AD-39): the GM looks at a sheet as a player would. */
 export type ModeVue = 'mj' | 'joueur';
+
+/** A crumb between the sidebar item and the last crumb (a scenario's campaign). */
+export interface Parent {
+  libelle: string;
+  vers: string;
+}
 
 interface Vue {
   mode: ModeVue;
@@ -66,6 +76,8 @@ interface Vue {
   /** Label of the sidebar item the last crumb hangs under, when the address alone does not say (a sheet's type). */
   section?: string;
   setSection: (s?: string) => void;
+  parent?: Parent;
+  setParent: (p?: Parent) => void;
 }
 
 const ContexteVue = createContext<Vue>({
@@ -75,6 +87,7 @@ const ContexteVue = createContext<Vue>({
   setBascule: () => {},
   setTitre: () => {},
   setSection: () => {},
+  setParent: () => {},
 });
 
 /** What the frame needs to draw the top bar: the mode, whether to offer the toggle, the last crumb. */
@@ -98,16 +111,20 @@ export function useBasculeMode(active: boolean): ModeVue {
 }
 
 /** Gives the breadcrumb its last crumb (the whole text, truncated by the bar if long). */
-export function useTitreAriane(titre: string | undefined, section?: string): void {
-  const { setTitre, setSection } = useVue();
+export function useTitreAriane(titre: string | undefined, section?: string, parent?: Parent): void {
+  const { setTitre, setSection, setParent } = useVue();
+  const parentLibelle = parent?.libelle;
+  const parentVers = parent?.vers;
   useEffect(() => {
     setTitre(titre);
     setSection(titre === undefined ? undefined : section);
+    setParent(titre === undefined || parentLibelle === undefined || parentVers === undefined ? undefined : { libelle: parentLibelle, vers: parentVers });
     return () => {
       setTitre(undefined);
       setSection(undefined);
+      setParent(undefined);
     };
-  }, [titre, section, setTitre, setSection]);
+  }, [titre, section, parentLibelle, parentVers, setTitre, setSection, setParent]);
 }
 
 function useCadre(): Cadre {

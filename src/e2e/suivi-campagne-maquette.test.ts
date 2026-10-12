@@ -82,3 +82,28 @@ for (const nom of ['Nouveau scénario', 'Nouveau compte-rendu']) {
     assert.ok(Math.abs(x - gauche) <= 2, `bouton ${x} vs titre ${gauche}`);
   });
 }
+
+test('E-6 : champ d’ajout de tâche étiqueté « Libellé », « Nouvelle tâche » une seule fois visible', opts, async () => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto(`/univers/${uid}/campagnes/${cid}`);
+  const champ = page.getByRole('textbox', { name: 'Nouvelle tâche' });
+  await champ.waitFor();
+  // the visible label of the field is "Libellé" (maquette e06), accessible name kept
+  const etiquettes = await page.locator('.ajout-tache label, .ajout-tache .lib-champ').evaluateAll((els: Element[]) =>
+    els.filter((e) => (e as HTMLElement).offsetParent !== null && getComputedStyle(e).clip !== 'rect(0px, 0px, 0px, 0px)' && e.getBoundingClientRect().width > 1).map((e) => (e.textContent ?? '').trim()),
+  );
+  assert.ok(etiquettes.some((t: string) => t.startsWith('Libellé')), `étiquettes visibles: ${JSON.stringify(etiquettes)}`);
+  assert.ok(!etiquettes.some((t: string) => t.includes('Nouvelle tâche')), `étiquette dupliquée: ${JSON.stringify(etiquettes)}`);
+  const visibles = await page.locator('.ajout-tache').evaluate((root: Element) => {
+    const w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+    let n = 0;
+    for (let t = w.nextNode(); t; t = w.nextNode()) {
+      const el = t.parentElement!;
+      if (!(t.textContent ?? '').includes('Nouvelle tâche')) continue;
+      const r = el.getBoundingClientRect();
+      if (r.width > 1 && r.height > 1 && getComputedStyle(el).visibility !== 'hidden') n++;
+    }
+    return n;
+  });
+  assert.equal(visibles, 1, 'une seule occurrence visible de « Nouvelle tâche »');
+});

@@ -56,7 +56,8 @@ function CreerUnivers() {
     <div className="creer">
       <form className="formulaire" onSubmit={soumettre} onKeyDown={touche} noValidate aria-labelledby="titre-creer">
         <header className="entete-form">
-          <Sceau nom={nom} taille="grand" />
+          {/* The preview only exists once there is an initial to show: an empty dashed tile explains nothing. */}
+          {nom.trim() && <Sceau nom={nom} taille="grand" />}
           <h1 id="titre-creer">Créer un univers</h1>
           <p className="chapo">
             Vous en serez le <Pastille sens="mj">MJ</Pastille>. Les joueurs s’y ajoutent ensuite, par leur identifiant.

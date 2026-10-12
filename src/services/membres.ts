@@ -32,9 +32,12 @@ function effacerAuteur(db: Db, universId: number, compteId: number): void {
   ).run(compteId, universId);
 }
 
-/** The member list is for the GM; a player gets "not found" (E-4). */
-export function listerMembres(db: Db, acteurId: number, universId: number): Membre[] {
-  if (exigerRole(db, universId, acteurId) !== 'mj') throw introuvable();
+/**
+ * The rules of membership (B-3, B-5) without any role guard: the GM functions
+ * below and the instance ones (`instance.ts`, AD-86) both call them after their
+ * own guard. Never call these from a route.
+ */
+export function listerMembresNoyau(db: Db, universId: number): Membre[] {
   const rows = db
     .prepare(
       `SELECT m.compte_id, c.username, m.role FROM membres m
@@ -45,15 +48,19 @@ export function listerMembres(db: Db, acteurId: number, universId: number): Memb
   return rows.map((r) => ({ compteId: r.compte_id, username: r.username, role: r.role }));
 }
 
+/** The member list is for the GM; a player gets "not found" (E-4). */
+export function listerMembres(db: Db, acteurId: number, universId: number): Membre[] {
+  if (exigerRole(db, universId, acteurId) !== 'mj') throw introuvable();
+  return listerMembresNoyau(db, universId);
+}
+
 /** B-3: add by exact identifier, only an account that has logged in once. */
-export function ajouterMembre(
+export function ajouterMembreNoyau(
   db: Db,
-  acteurId: number,
   universId: number,
   username: string,
   role: Role,
 ): Membre {
-  exigerMJ(db, universId, acteurId);
   verifierRole(role);
   const compte = db.prepare('SELECT id, username FROM comptes WHERE username = ?').get(
     username.trim(),
@@ -74,15 +81,24 @@ export function ajouterMembre(
   return { compteId: compte.id, username: compte.username, role };
 }
 
-/** Changes a member's role; demoting the only GM is refused (B-5). */
-export function changerRole(
+export function ajouterMembre(
   db: Db,
   acteurId: number,
+  universId: number,
+  username: string,
+  role: Role,
+): Membre {
+  exigerMJ(db, universId, acteurId);
+  return ajouterMembreNoyau(db, universId, username, role);
+}
+
+/** Changes a member's role; demoting the only GM is refused (B-5). */
+export function changerRoleNoyau(
+  db: Db,
   universId: number,
   compteId: number,
   role: Role,
 ): Membre {
-  exigerMJ(db, universId, acteurId);
   verifierRole(role);
   return db.transaction(() => {
     const actuel = db
@@ -105,9 +121,19 @@ export function changerRole(
   })();
 }
 
-/** Removes a member; the only GM cannot leave (B-5). Their sections lose their author. */
-export function retirerMembre(db: Db, acteurId: number, universId: number, compteId: number): void {
+export function changerRole(
+  db: Db,
+  acteurId: number,
+  universId: number,
+  compteId: number,
+  role: Role,
+): Membre {
   exigerMJ(db, universId, acteurId);
+  return changerRoleNoyau(db, universId, compteId, role);
+}
+
+/** Removes a member; the only GM cannot leave (B-5). Their sections lose their author. */
+export function retirerMembreNoyau(db: Db, universId: number, compteId: number): void {
   db.transaction(() => {
     const actuel = db
       .prepare('SELECT role FROM membres WHERE univers_id = ? AND compte_id = ?')
@@ -122,4 +148,9 @@ export function retirerMembre(db: Db, acteurId: number, universId: number, compt
       compteId,
     );
   })();
+}
+
+export function retirerMembre(db: Db, acteurId: number, universId: number, compteId: number): void {
+  exigerMJ(db, universId, acteurId);
+  retirerMembreNoyau(db, universId, compteId);
 }

@@ -33,7 +33,7 @@ Source : `frontend/src/ui/tokens.css`, propriétés sur `:root` (sombre) et
 `:root[data-theme="light"]` ; `color-scheme: light dark`. Le choix Clair / Sombre / Système est
 mémorisé (`localStorage`, clé `kanevas-theme`) ; « Système » suit `prefers-color-scheme` et est
 le choix par défaut tant que rien n'est mémorisé ; il est résolu en sombre ou clair par `theme.ts`, si bien que ces deux blocs sont les seuls endroits où
-vivent les couleurs. Les composants ne lisent que ces tokens : un hexadécimal dans un composant
+vivent les couleurs. Trois tokens dérivés des tokens MJ (`--mj-section-fond`, `--mj-section-bord`, `--mj-section-filet`, mélangés par `color-mix`) donnent à une section « MJ seul » son fond, son bord et son filet ambre. Les composants ne lisent que ces tokens : un hexadécimal dans un composant
 est un défaut. La maquette porte les mêmes noms et les mêmes valeurs.
 
 Les neutres sont teintés vers l'encre (bleu froid très léger), jamais un gris pur.
@@ -101,7 +101,7 @@ pastille), `currentColor`. Servies par le produit (`lucide-react`), jamais par u
 étiquette accessible et une infobulle. Jamais d'émoji. Correspondances fixées : Vue d'ensemble
 `layout-grid`, Campagnes `flag`, Comptes-rendus `notebook-pen`, Personnages `users-round`, Lieux
 `map-pin`, Factions `shield`, Objets `gem`, Événements `hourglass`, Quêtes `scroll-text`, Membres
-`contact-round`, Paramètres `settings-2`, Systèmes de jeu `dices`, Mes univers `library`, Relations `waypoints`, Pièces jointes `paperclip`, MJ
+`contact-round`, Paramètres `settings-2`, Systèmes de jeu `dices`, Mes univers `library`, Cartes `map`, Administration `shield-check`, Relations `waypoints`, Pièces jointes `paperclip`, MJ
 seul et secret `lock`, lu des joueurs `eye`, écrit par les joueurs `pen-line`, mode MJ
 `lock-keyhole`, assistant `sparkles`, thème `sun` / `moon` / `monitor`, déconnexion `log-out`,
 menu du téléphone `panel-left`.
@@ -208,6 +208,8 @@ décalé de 2 px) sur `:focus-visible`.
   La section MJ seul déborde de 28 px de chaque côté de la colonne (son texte reste aligné) :
   fond `--mj-fond` à 22 % sous une hachure `--mj-trame` (1 px tous les 8 px, 135°), contour
   `--mj-bord` à 45 %, filet `--mj` de 3 px à gauche, coins droits arrondis `--rayon-panneau`.
+  E-14 (Paramètres) emploie la teinte légère, pas la hachure (qui dit le secret d'une section, E-9) : dégradé `--mj-trame`
+  sur 40 % de la largeur et filet `--mj-bord` de 2 px à gauche, dans la colonne de 688 px.
 - C : purement redondant — la pastille dit la même chose en mots, le filet n'est jamais le seul
   porteur. Il change avec le réglage (une section qu'on ferme aux joueurs devient hachurée sous
   les yeux du MJ). En mode Joueur, aucun filet ni hachure : la section MJ seul n'existe pas.
@@ -283,6 +285,36 @@ décalé de 2 px) sur `:focus-visible`.
   perdue `--danger` sur `--danger-fond` avec `wifi-off` ; mode bouchon `--mj` sur `--mj-fond`.
 - C : `role="status"`, non fermable ; textes exacts dans `docs/ecrans.md`. Connexion perdue : tout
   geste qui écrit est désactivé (`aria-disabled`, 45 %).
+
+**Panneau d'assistant** (E-12, `kanevas-assistant-membre`).
+- V : un bouton flottant « Demander à Kanevas » **inversé** (`--texte` sur `--fond`, voir « Écarts
+  assumés »), rayon pastille, icône `sparkles`, `--ombre-flottant`, en bas à droite ; le panneau en
+  `--fond-lateral`, bord gauche `--bord-champ`, 380 px, plein écran sous 760 px ; message de la
+  personne `--surface-3`, réponse `--surface` avec bord `--bord` ; bloc « Écrit par l'assistant » :
+  `--surface-2`, liseré `--accent`, le mot en `--accent-texte` ; erreur : `--danger-fond` et
+  `--danger`. Le bouton « Envoyer » et les autres sont des **Boutons** ci-dessus.
+- C : le bouton est atteignable à la tabulation et porte `aria-expanded` ; le panneau est un
+  `complementary` titré (`h2`) ; à l'ouverture le focus va au champ, Échap ferme et rend le focus au
+  bouton ; une nouvelle réponse est annoncée (`role="log"`, `aria-live="polite"`) ; « Kanevas
+  réfléchit… » est un `role="status"` ; l'erreur un `role="alert"` ; l'état indisponible désactive
+  le champ **et** dit pourquoi. Le bouton ne masque jamais un champ ou un bouton de l'écran : le
+  contenu garde une marge basse de la hauteur du bouton. Aucun état par la teinte seule.
+- **Proposition de mise à jour** (bloc de E-12, `kanevas-monde`). V : le bloc « Écrit par l'assistant »
+  en plus haut : `--surface-2`, liseré `--accent` ; « Mise à jour proposée » en `--accent-texte` ; deux
+  zones côte à côte, « Actuel » sur `--surface` avec bord `--bord`, « Proposé » sur `--accent-fond` avec
+  bord `--accent` (jamais le rouge et le vert d'un diff : la teinte seule ne dit rien) ; « Appliquer »
+  bouton principal, « Abandonner » bouton secondaire ; périmée : bandeau `--danger-fond` et `--danger`.
+  C : chaque zone est une région étiquetée (`role="region"`, `aria-label` « Actuel » / « Proposé »),
+  `tabindex="0"` pour défiler au clavier ; hauteur maximale de 15 lignes ; « Appliquer » désactivé
+  par `aria-disabled` (il reste dans l'ordre de tabulation, la raison est lue dans le bandeau) ; le
+  résultat (« Appliquée… », « Proposition abandonnée. ») est un `role="status"`, la raison de
+  péremption un `role="alert"` ; après « Appliquer » ou « Abandonner » le focus va au résultat. Sous
+  760 px les zones s'empilent.
+- **Fenêtre** (créer une fiche). V : `--surface` sur voile ; C : `role="dialog"`, le focus y
+  entre et y reste, Échap ferme, le focus revient au bouton qui l'a ouverte.
+- **État d'écran** (vide, chargement, erreur, refus). V : un bloc centré, texte `--texte-2`, un
+  titre, une action. C : chargement `role="status"` ; erreur `role="alert"` avec le bouton
+  « Réessayer ».
 
 **Carte de fiche** (grille de E-8, `kanevas-illustrations`).
 - V : pas de cadre ni d'ombre (les cartes ne sont pas un kit) ; une vignette 4:3, rayon
