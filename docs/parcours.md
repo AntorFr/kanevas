@@ -430,7 +430,7 @@ parent ou sans cette relation, avec un avertissement dans le lot ; un lien `[[�
 encore inconnue — il reste en attente et se résout quand la fiche arrive (au même lot ou au suivant) ;
 le réseau coupe au milieu — le lot reste « ouvert » sur E-18, sans dommage : rejouer reprend là où
 c'était, puisque tout ce qui est déjà écrit sort « inchangé » ; une image de 0 octet — refusée, la
-raison dans le lot ; supprimer l'univers en tapant un autre nom — le bouton reste inactif.
+raison dans le lot ; supprimer l'univers en tapant un autre nom — le bouton reste inactif ; une suppression qui échoue — « L'action n'a pas abouti. Réessayez. » dans la boîte, l'univers est intact (états : E-14).
 
 ### P-11 — Créer et révoquer un jeton d'API (MJ)
 1. **Accès par API** (E-18), depuis « Univers » ▸ « Accès par API » dans la barre (MJ seul).
@@ -497,7 +497,7 @@ E-14 ni les bascules de E-15 (« Lecture seule »).
    E-9) ; le doublon venait de Kanka : Antor le retire aussi de l'export, sinon le prochain import le
    recrée (B-40).
 *Échec* : un déplacement qui ferait un cycle (« Les Sphères » sous l'un de ses enfants) — « Une fiche
-ne peut pas être rangée sous l'un de ses descendants. » ; un Joueur auteur d'une section qui contient
+ne peut pas être rangée sous l'un de ses descendants. » ; un titre vidé — « Erreur : le titre est obligatoire. », le champ reste ; un bilan de suppression qui ne se charge pas — « Impossible de charger le détail. », « Réessayer » (états : E-9) ; un Joueur auteur d'une section qui contient
 un bloc MJ — « Modifier » n'y paraît pas ; un texte qui passe 100 000 caractères — « Erreur : 100 000
 caractères au plus. », le texte reste.
 

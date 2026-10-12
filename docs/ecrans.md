@@ -2170,7 +2170,7 @@ sélectionné ; Entrée enregistre, Échap annule, la perte de focus enregistre.
 rognage ; vide : « Erreur : le titre est obligatoire. » ; au-delà : « Erreur : 120 caractères au plus. » ; le
 champ reste ouvert. Titre inchangé : rien n'est envoyé. Enregistré : toast « Fiche renommée. », le fil
 d'Ariane des descendants et le badge de la liste suivent à la lecture suivante ; les liens `[[…]]` ne bougent pas
-(ils visent l'identifiant, B-33). Échec : « L'action n'a pas abouti. Réessayez. », l'ancien titre revient. Un
+(ils visent l'identifiant, B-33). Échec : « L'action n'a pas abouti. Réessayez. » sous le titre, le champ reste ouvert avec la saisie (Échap rend l'ancien titre). Un
 Joueur ou le mode Joueur : titre en texte, sans curseur d'édition.
 
 **Suppression d'une fiche (E-9).** « Supprimer la fiche… » ouvre la boîte **après** avoir lu son bilan
