@@ -80,7 +80,7 @@ li.ouvert .lot-tete .chev { transform: rotate(90deg); }
 .boite-jeton .segments label:hover { color: var(--texte); }
 .boite-jeton .segments input { position: absolute; opacity: 0; }
 .boite-jeton .segments label:has(input:checked) { background: var(--surface); color: var(--texte);
-  box-shadow: 0 0 0 1px var(--bord-fort), 0 1px 2px rgba(0,0,0,.18); }
+  box-shadow: 0 0 0 1px var(--bord-fort); }
 .boite-jeton .segments label:has(input:focus-visible) { outline: 2px solid var(--focus); outline-offset: -2px; }
 
 .boite-jeton .face-jeton { display: flex; flex-direction: column; gap: var(--e-4); margin-top: var(--e-5); }
