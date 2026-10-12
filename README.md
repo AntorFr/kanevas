@@ -19,7 +19,7 @@ Dockerfile                        Image unique : API Fastify + frontend construi
 src/
   server.ts, app.ts               Démarrage ; assemblage des plugins et des routes
   config/env.ts                   Variables d'environnement (zod)
-  db/                             SQLite (better-sqlite3), migrations/0001 à 0008, runner
+  db/                             SQLite (better-sqlite3), migrations/0001 à 0009, runner
   services/                       comptes, univers, membres, instance, fiches, sections, droits, systemes, relations, campagnes, scenarios, preparation, comptes_rendus, propositions,
                                    pieces-jointes, illustrations, cartes, stockage (octets sur le volume) :
                                    seul code qui lit ou écrit les données ; session, oidc
@@ -104,7 +104,7 @@ Recette de la mise à jour du monde en bouchon (le semis ne contient ni campagne
 4. Modifier la section depuis la fiche avant d'appliquer rend la proposition périmée (« Appliquer » désactivé, raison affichée).
 5. La même demande en `lea` ne crée rien : l'assistant répond « Je ne peux pas le faire : l'outil « proposer_mise_a_jour » ne fait pas partie de ceux dont vous disposez. », sans bloc. Une proposition ne se retrouve pas après un rechargement du fil (AD-79).
 
-Recette du Markdown en bouchon : en `antor`, dans « Apparence » de « Maître Aldric », écrire un intertitre (`## Quartiers`), une liste, un tableau, `**gras**`, `[site](https://exemple.org)`, `[x](javascript:alert(1))` et `<script>alert(1)</script>`, puis « Aperçu » et « Enregistrer ». En `lea`, la fiche montre l'intertitre, la liste, le tableau et le lien web mis en forme ; le lien `javascript:` et la balise restent du texte, aucun script ne s'exécute. Plafond : 100 000 caractères pour tout texte (sections, comptes-rendus, scénarios, entrées de système, propositions), 100 001 est refusé.
+Recette du Markdown en bouchon : dans « Lame d'Ébène », en `antor`, ouvrir la fiche « Maître Aldric », « Modifier » sur la section « Apparence », et écrire un intertitre (`## Quartiers`), une liste, un tableau, `**gras**`, `[site](https://exemple.org)`, `[x](javascript:alert(1))` et `<script>alert(1)</script>`, puis « Aperçu » (il montre ce que lira Léa) et « Enregistrer ». Les intertitres sont décalés d'un cran : `## Quartiers` s'affiche en `<h3>`, sous le titre de la section. En `lea`, la fiche montre l'intertitre, la liste, le tableau et le lien web mis en forme ; le lien `javascript:` et la balise restent du texte, aucun script ne s'exécute. Plafond : 100 000 caractères pour tout texte (sections, comptes-rendus, scénarios, entrées de système, propositions), 100 001 est refusé.
 
 ### Tests de bout en bout
 

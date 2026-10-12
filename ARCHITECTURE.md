@@ -35,7 +35,7 @@ Les cartes et graphes (E-10, E-11) sont construits. `kanevas-monde` ajoute la pr
   adaptateurs `bouchon` et `claude-agent` (AD-73, AD-78), la disponibilité (AD-77) et
   l'orchestration d'une demande (AD-75) ; `src/routes/assistant.ts` : les deux routes. Aucune requête SQL
   dans ce module (AD-2, AD-27).
-- `src/db/` : ouverture du fichier SQLite, `migrations/0001-*.sql`, `0002-systemes.sql`, `0003-suivi.sql`, `0004-pieces-jointes.sql`, `0005-relier-chercher.sql`, `0006-illustrations.sql`, `0007-cartes.sql`, `0008-propositions.sql` (provisoire, AD-51), runner (AD-14).
+- `src/db/` : ouverture du fichier SQLite, `migrations/0001-*.sql`, `0002-systemes.sql`, `0003-suivi.sql`, `0004-pieces-jointes.sql`, `0005-relier-chercher.sql`, `0006-illustrations.sql`, `0007-cartes.sql`, `0008-propositions.sql` (provisoire, AD-51), `0009-plafond-contenu.sql` (plafond à 100 000, AD-106), runner (AD-14).
 - `src/e2e/` : tests d'ensemble, serveur réel en bouchon et navigateur piloté (Playwright, ignoré s'il manque) ; E-5 : `administration*.test.ts`.
 - `src/services/` : `comptes`, `univers`, `membres`, `instance`, `fiches`, `sections`, `droits`, `systemes`, `relations`, `campagnes`, `scenarios`, `preparation`, `comptes_rendus`, `pieces-jointes`, `illustrations`, `cartes`, `propositions`, `stockage` — les seules
   fonctions qui lisent ou écrivent les données (AD-2) ; `src/routes/` : routes `/api` minces ; `univers.ts` et `instance.ts` portent les routes d'univers et d'instance.
@@ -104,7 +104,7 @@ elles remplacent les anciennes routes `GET /api/univers/:id/systeme` et `…/sys
 | `PATCH\|DELETE .../pieces-jointes/:pid` | marquer ou lever « secrète » `{secrete}` (MJ) ; retirer (204) |
 | `GET .../pieces-jointes/:pid/fichier` | les octets, sous les règles de lecture réelles (pas de mode) ; 404 identique à une adresse inconnue |
 | `PUT\|DELETE\|GET .../fiches/:fid/illustration` (`GET` : `?v=<jeton>`) | poser ou remplacer (multipart, une partie `fichier` ; MJ ; 400 `pas_une_image`, `fichier_vide`), retirer (204, MJ), lire (qui voit la fiche ; 404 identique sinon) ; la liste et la fiche rendent `illustration: null` ou `{jeton}` (AD-93) |
-| `PUT .../sections/:sid/contenu` | écrire `{contenu, version}` ; 400 si contenu > 100 000 caractères (contrôlé après les droits, avant la version) ; 409 si `version` périmée |
+| `PUT /api/univers/:id/fiches/:fid/sections/:sid/contenu` | écrire `{contenu, version}` ; 400 si contenu > 100 000 caractères (contrôlé après les droits, avant la version) ; 409 si `version` périmée |
 | `GET\|POST /api/univers/:id/campagnes`, `GET .../campagnes/:cid` | liste (actives, en préparation, terminées, chacune par nom) et lecture (tout membre) ; création `{nom}` (MJ) |
 | `PATCH /api/campagnes/:cid` | `{statut}` (`en_preparation`, `active`, `terminee`) (MJ de l'univers de la campagne) |
 | `GET\|POST /api/campagnes/:cid/scenarios`, `GET\|PUT /api/scenarios/:sid` | scénarios `{titre, contenu?}` ; écriture `{titre, contenu, version}`, 409 `scenario_modifie` si périmée (AD-62). MJ seul, 404 pour tout autre (AD-22, AD-47) |
@@ -144,7 +144,7 @@ base en snake_case (`docs/donnees.md`).
   `OIDC_*` (ou avec une partie seulement), login et callback répondent 404 ; une valeur vide
   ou invalide fait échouer le démarrage.
 - **Quinze tables et deux index de recherche, aucun ORM** : `comptes`, `univers`, `membres`, `fiches`, `sections` (migration
-  0001), `systemes_jeu`, `gabarits` (migration 0002), `campagnes`, `scenarios`, `taches_preparation` (migration 0003), `pieces_jointes` (migration 0004), `relations`, `recherche_fiches` et `recherche_sections` (FTS5, migration 0005) ; trois colonnes d'illustration sur `fiches` (migration 0006), `cartes` et `elements_carte` (migration 0007), `propositions` (migration 0008, `kanevas-monde`) ; les numéros 0001 à 0007 sont définitifs, 0008 est provisoire et les suivants se prennent à la fusion (AD-51 ; `docs/donnees.md`). Aucune requête SQL hors de `src/services/` et `src/db/`.
+  0001), `systemes_jeu`, `gabarits` (migration 0002), `campagnes`, `scenarios`, `taches_preparation` (migration 0003), `pieces_jointes` (migration 0004), `relations`, `recherche_fiches` et `recherche_sections` (FTS5, migration 0005) ; trois colonnes d'illustration sur `fiches` (migration 0006), `cartes` et `elements_carte` (migration 0007), `propositions` (migration 0008, `kanevas-monde`) ; la migration 0009 (`kanevas-import-markdown`) reconstruit `gabarits`, `scenarios` et `propositions` pour relever leur CHECK à 100 000 caractères ; les numéros 0001 à 0007 sont définitifs, 0008 est provisoire et les suivants se prennent à la fusion (AD-51 ; `docs/donnees.md`). Aucune requête SQL hors de `src/services/` et `src/db/`.
 - **Toute route hors `/healthz`, `/api/auth/*` et, en bouchon, `/connexion-bouchon` est gardée par la session** ; sous `/api` un
   défaut de session répond 401, ailleurs il redirige vers la connexion (AD-15).
 - **Une seule route appelle un modèle : l'assistant** (`src/routes/assistant.ts`, par `repondre`, AD-73), avec le jeton de

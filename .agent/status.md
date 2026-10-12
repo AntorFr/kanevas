@@ -1,6 +1,6 @@
 # Status — kanevas
 
-> MàJ : 2026-10-09 (assemblage de kanevas-monde, rattrapée sur epic/kanevas)
+> MàJ : 2026-10-12 (assemblage de kanevas-import-markdown, sur `feature/kanevas-import-markdown` ; le reste décrit `epic/kanevas`)
 
 **État :** `epic/kanevas` porte le socle, la première fiche, les systèmes de jeu, le suivi de la séance
 (campagnes, scénarios, préparation, comptes-rendus ; E-6, E-7, E-13) et les pièces jointes (migration
