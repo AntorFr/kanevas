@@ -57,7 +57,7 @@ bascule existe (fiche, carte et, depuis `kanevas-import`, recherche E-17).
 | **E-2 Créer un univers** | E-1 | nom, description ; le créateur devient MJ | P-1 |
 | **E-3 Vue d'ensemble de l'univers** | E-1 ; sélecteur d'univers ; E-5 (admin devenu membre) | les campagnes actives, les derniers CR, la préparation (MJ), les cartes visibles | P-2, P-3, P-4, P-6 |
 | **E-4 Membres** | nav Univers (MJ) | lister, ajouter par identifiant, changer le rôle, retirer | P-2 |
-| **E-5 Administration** | nav (admin d'instance) | lister les univers de l'instance, en gérer les membres — jamais le contenu | P-2 |
+| **E-5 Administration** | nav (admin d'instance) | lister les univers de l'instance, en gérer les membres — jamais le contenu ; poser le jeton de l'assistant (B-51) | P-2, P-15 |
 | **E-6 Campagne** | nav Campagnes (liste) ; E-3 | liste des campagnes ; pour une campagne : statut, scénarios et « Nouveau scénario » (MJ), préparation (MJ), comptes-rendus, « Nouveau compte-rendu » | P-3, P-4 |
 | **E-7 Scénario** | E-6 (MJ) | écrire et relire un scénario | P-3 |
 | **E-8 Liste de fiches** | nav Lore | les fiches d'un type que le compte peut lire, en grille de cartes illustrées ; chercher dans ce type ; créer (MJ) | P-3, P-6 |
@@ -99,7 +99,7 @@ E-16 vivent hors des univers : leurs cases disent le rôle dans un univers ratta
 | E-2 | créer | créer | créer |
 | E-3 | tout | sans préparation ni scénarios | — |
 | E-4 | tout | — | — (passe par E-5) |
-| E-5 | — | — | lister les univers et leurs membres ; ajouter, changer un rôle, retirer un membre |
+| E-5 | — | — | lister les univers et leurs membres ; ajouter, changer un rôle, retirer un membre ; voir l'état du jeton de l'assistant, connecter ou reconnecter l'abonnement |
 | E-6 | tout | liste, statut, CR, « Nouveau compte-rendu » ; ni scénarios ni préparation (cachés) | — |
 | E-7 | tout | — | — |
 | E-8 | lire, chercher, créer ; la vignette de chaque fiche (son illustration, ou le repli dessiné) | lire, chercher ; la vignette des fiches qu'il voit | — |
@@ -125,7 +125,7 @@ et étiquettes visibles, jamais modifiables (**caché**). **E-14** — MJ : « T
 « Supprimer l'univers ». **E-15** — MJ d'un univers rattaché : « Types de fiche » (bascules) ;
 Joueur : la liste en lecture seule.
 
-Un admin d'instance qui est aussi membre d'un univers, MJ ou Joueur, a dans cet univers la colonne de son rôle et garde E-5 par la section « Instance » de la barre ; hors de cet univers, la colonne Admin.
+Un admin d'instance qui est aussi membre d'un univers, MJ ou Joueur, a dans cet univers la colonne de son rôle et garde E-5 par la section « Instance » de la barre, et y a la colonne Admin (panneau « Jeton de l'assistant » compris : E-5 ne dépend pas de l'univers sélectionné) ; hors de cet univers, la colonne Admin.
 
 Précisions de la matrice : créer une campagne, en changer le statut, créer un scénario sont au
 MJ seul. L'audience d'une section se règle en ligne sur la fiche (MJ). Créer une fiche ouvre une
@@ -411,7 +411,7 @@ Pour tout autre compte, l'entrée n'existe pas.
 ### E-5 Administration
 
 La barre haute porte le fil « Instance / Administration » ; sous le titre et le sous-titre « Les membres se gèrent ici ; le
-contenu (fiches, comptes-rendus, cartes) n'est jamais affiché. », deux zones. À gauche, **Univers de
+contenu (fiches, comptes-rendus, cartes) n'est jamais affiché. », deux zones, puis le panneau « Jeton de l'assistant » (plus bas). À gauche, **Univers de
 l'instance** : tous les univers, par nom (sans casse), chacun avec « N membres » (« 1 membre » au
 singulier), l'univers choisi portant le badge « Sélectionné » ; cent à la fois, puis « Charger la suite ». À droite (sous la liste sur téléphone, après
 un clic sur l'univers), **Membres — <nom de l'univers>** : la liste (identifiant, rôle MJ / Joueur,
@@ -2439,3 +2439,70 @@ l'univers » (`--danger`) ne s'active que si le nom tapé est exact (casse compr
   P-10), E-9 (P-12, P-14, P-16), E-8 (P-12), E-5 (P-15), E-19 (P-16, P-10) — tient.
 - **Chaque rôle a sa colonne** : MJ, Joueur, Admin d'instance pour E-17, E-18 et E-19 (matrice) ; le script
   d'import n'est pas un rôle : il agit comme le MJ du jeton, sur l'API seule — tient.
+
+## Détail de l'écran de `kanevas-import-jeton-assistant`
+
+> **E-5** reçoit un panneau, rien d'autre (B-51, P-15). Maquette finie :
+> `docs/maquettes/e05-administration.html` (les états principaux : vide, posé, connexion en cours, échec, expirée, erreur de lecture ; les autres sont décrits par le tableau ci-dessous). Les textes communs
+> (chargement, erreur, connexion perdue, refus) sont ceux de E-5 ci-dessus.
+
+**Place.** Un panneau pleine largeur « Jeton de l'assistant », **sous** les deux zones (liste des
+univers, membres), visible quelle que soit la sélection d'univers (adresses inchangées :
+`/administration`, `/administration/univers/:id`) ; le jeton est de l'instance, pas d'un univers.
+Une sélection d'univers ne remet pas le panneau à zéro, une connexion en cours survit au changement
+d'univers. Le panneau ne montre **jamais** la valeur du jeton : ni dans une réponse, ni dans le DOM,
+ni dans un message d'erreur.
+
+**Ce qu'on voit.** Le titre ; une ligne d'état, dans cet ordre de priorité : « Jeton posé le 11 octobre
+2026. » (le jeton du fichier du volume, date de sa pose), « Jeton fourni par le déploiement. » (pas de
+fichier, la variable `CLAUDE_CODE_OAUTH_TOKEN` non vide : le panneau ne sait pas depuis quand),
+« Aucun jeton posé. » ; le bouton « Connecter l'abonnement » (« Reconnecter l'abonnement » dès qu'un jeton est posé, du fichier
+ou du déploiement, dans tous les états ci-dessous). Un admin qui est aussi membre d'un univers voit le panneau comme les autres. Un clic démarre la connexion : l'adresse d'autorisation, en lecture seule, avec « Ouvrir »
+(nouvel onglet, `rel="noopener noreferrer"`) et « Copier » (« Copiée. » 2 s) ; un champ « Code » et
+« Valider » ; « Annuler » ; la mention « Cette connexion expire dans 10 minutes. » suivie de « Reste 9 min. »
+(minutes pleines arrondies au-dessus, « Reste moins d'une minute. » sous la minute ; rafraîchi chaque seconde, sans annonce
+vocale ; à 0 la phrase d'expiration remplace le champ). Recharger la page ne rouvre pas la connexion : le panneau repart de l'état lu, sans adresse ni champ « Code » ; la connexion du
+serveur vit jusqu'à son expiration. Quand un admin clique « Connecter » (le même après un rechargement, ou un second admin), le
+serveur en démarre une nouvelle qui remplace la précédente, et le « Valider » de l'ancienne reçoit alors « La connexion a expiré.
+Recommencez. ». « Valider » est désactivé tant que le champ est vide. Le code collé n'est pas conservé : le
+champ est vidé après chaque validation. Le jeton posé prime sur la variable : un jeton du volume se
+remplace par une nouvelle connexion, jamais par un champ de saisie (il n'y en a pas).
+
+| État | Ce qu'on voit | Ce qu'on peut faire |
+|---|---|---|
+| vide (aucun jeton) | « Aucun jeton posé. » ; sous le titre : « L'assistant est indisponible tant qu'aucun jeton n'est posé. » (affichée seulement si l'assistant n'a vraiment aucun moyen de répondre ; sous le bouchon, où l'assistant répond déjà, rien) | « Connecter l'abonnement » |
+| posé | « Jeton posé le 11 octobre 2026. » (ou « Jeton fourni par le déploiement. ») ; « L'assistant est disponible sur tous les univers. » (le jeton est de l'instance : voulu aussi pour le jeton du déploiement) | « Reconnecter l'abonnement » |
+| chargement | « Chargement de l'état du jeton… » (lecture de l'état) ; « Connexion en cours… » pendant le démarrage (le bouton désactivé, `aria-busy`) | — |
+| connexion en cours | l'adresse, « Ouvrir », « Copier », le champ « Code », « Valider », « Annuler », le temps restant | coller le code, valider, annuler |
+| validation en cours | « Validation… », champ et boutons désactivés | — |
+| posé à l'instant | « Jeton posé le 11 octobre 2026. » (région `role="status"`), le champ disparaît ; l'assistant est disponible sans redéploiement ni redémarrage | « Reconnecter l'abonnement » |
+| échec | code refusé : « La connexion n'a pas abouti. Recommencez. » ; l'ancien état (posé ou non) reste affiché, le champ est vidé, la connexion en cours est terminée côté serveur | « Connecter l'abonnement » (« Reconnecter » si un jeton est posé) |
+| échec de validation autre (serveur injoignable, 5xx) | « L'action n'a pas abouti. Réessayez. » ; le champ est vidé, la connexion reste ouverte tant qu'elle n'a pas expiré | coller de nouveau, annuler |
+| expirée | au bout de 10 minutes, ou serveur redémarré : « La connexion a expiré. Recommencez. » ; l'ancien état reste | « Connecter l'abonnement » (« Reconnecter » si un jeton est posé) |
+| erreur de lecture | « Impossible de charger l'état du jeton. » avec « Réessayer » ; le reste de la page reste utilisable | « Réessayer » |
+| erreur de démarrage | « La connexion n'a pas pu démarrer. Réessayez. » (le programme `claude` ou `script` absent, ou aucune adresse rendue en 30 s) ; aucun détail technique | « Connecter l'abonnement » (« Reconnecter » si un jeton est posé) |
+| connexion perdue | le bandeau ; « Connecter l'abonnement » (« Reconnecter » si un jeton est posé), « Valider » et « Annuler » désactivés ; l'état chargé reste | lire |
+| refus | tout compte hors du groupe : la page entière est « Page introuvable. » (E-5 ci-dessus) ; une route du panneau sans le groupe répond 404 comme une adresse inconnue | « Mes univers » |
+| contenu long | l'adresse d'autorisation (plus de 200 caractères) se replie sur plusieurs lignes dans une zone qui défile, sans élargir la page ; le champ « Code » accepte 500 caractères au plus | idem |
+
+**Clavier et lecteur d'écran.** Le panneau est un `section` titré ; l'ouverture de la connexion place
+le focus sur le champ « Code » ; à l'expiration ou à l'échec le focus revient sur le bouton « Connecter
+l'abonnement » ; les messages d'état sont dans une région `aria-live="polite"`, sauf le temps restant.
+
+*Critères.*
+- Étant donné Admin (groupe `parents`) et un bouchon sans jeton, quand il ouvre `/administration`, alors le
+  panneau dit « Aucun jeton posé. » ; quand il clique « Connecter l'abonnement », alors il voit une adresse
+  d'autorisation, un champ « Code » et « Valider » désactivé.
+- Étant donné la connexion ouverte, quand Admin colle `bouchon` et valide, alors il voit « Jeton posé le
+  <date du jour>. » ; la disponibilité de l'assistant, lue **sans** `KANEVAS_STUB` (config injectée),
+  est `claude-agent`, sans redémarrage ; aucune réponse des routes du panneau ne contient la valeur du
+  jeton (le test cherche la valeur factice dans chaque corps et dans le journal).
+- Étant donné la connexion ouverte, quand Admin colle un autre code, alors il voit « La connexion n'a pas
+  abouti. Recommencez. » et l'état d'avant (posé ou non) est inchangé ; un second essai valide s'ouvre.
+- Étant donné la connexion ouverte et l'horloge passée au-delà de 10 minutes, quand Admin valide, alors il
+  voit « La connexion a expiré. Recommencez. » ; le processus est arrêté.
+- Étant donné un jeton posé par le panneau et une variable `CLAUDE_CODE_OAUTH_TOKEN` différente, alors
+  l'assistant utilise celui du fichier ; après suppression du fichier, la variable reprend.
+- Étant donné une connexion ouverte, quand Admin recharge la page, alors le panneau montre l'état lu (« Aucun jeton posé. » ou « Jeton posé… ») sans adresse ni champ « Code » ; quand il clique « Connecter l'abonnement », alors une nouvelle adresse paraît ; et le « Valider » d'un second onglet resté sur l'ancienne connexion dit « La connexion a expiré. Recommencez. ».
+- Étant donné le panneau affiché, quand le réseau est coupé, alors « Connecter l'abonnement » (ou « Reconnecter »), « Valider » et « Annuler » sont désactivés et le bandeau s'affiche ; au retour du réseau ils se réactivent.
+- Étant donné Léa (hors du groupe), quand elle appelle une route du panneau, alors elle reçoit 404.
