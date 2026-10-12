@@ -155,14 +155,26 @@ test('E-18 : lot déplié — les raisons des refus partagent la même abscisse 
   const lignes = antor.locator('.probleme.refus');
   await lignes.first().waitFor();
   const mesures = await lignes.evaluateAll((els: Element[]) => els.map((e) => ({
-    cle: e.querySelector('.cle')!.getBoundingClientRect().right - e.querySelector('.cle')!.getBoundingClientRect().left,
     texte: (e.querySelector('.cle') as HTMLElement).innerText,
     cleLeft: e.querySelector('.cle')!.getBoundingClientRect().left,
     raisonLeft: e.querySelector('.raison')!.getBoundingClientRect().left,
   })));
   assert.ok(mesures.length >= 3, `3 refus attendus, ${mesures.length} lus`);
-  assert.ok(new Set(mesures.map((m: Any) => Math.round(m.texte.length))).size > 1, 'clés de longueurs différentes');
+  assert.ok(new Set(mesures.map((m: Any) => m.texte.length)).size > 1, 'clés de longueurs différentes');
   assert.equal(new Set(mesures.map((m: Any) => Math.round(m.cleLeft))).size, 1, 'clés alignées à gauche');
   assert.equal(new Set(mesures.map((m: Any) => Math.round(m.raisonLeft))).size, 1,
     `raisons non alignées : ${JSON.stringify(mesures.map((m: Any) => m.raisonLeft))}`);
+});
+
+test('E-18 : au téléphone les mentions d’un jeton sont en colonne, sans « · » pendant', opts, async () => {
+  await antor.setViewportSize({ width: 390, height: 800 });
+  await antor.goto(`/univers/${uid}/acces-api`);
+  const meta = antor.locator('.jeton .meta').first();
+  await meta.waitFor();
+  assert.equal(await meta.evaluate((e: Element) => getComputedStyle(e).flexDirection), 'column');
+  const m = await meta.locator('> span').evaluateAll((els: Element[]) => els.map((e) => ({ after: getComputedStyle(e, '::after').content, top: e.getBoundingClientRect().top, left: e.getBoundingClientRect().left })));
+  assert.ok(m.length >= 2, 'au moins deux mentions');
+  assert.ok(m.every((x: Any) => x.after === 'none' || x.after === 'normal'), `séparateur rendu: ${JSON.stringify(m)}`);
+  assert.ok(m.every((x: Any, i: number) => i === 0 || x.top > m[i - 1].top), 'mentions empilées');
+  assert.equal(new Set(m.map((x: Any) => Math.round(x.left))).size, 1, 'mentions alignées à gauche');
 });
