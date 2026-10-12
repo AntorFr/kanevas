@@ -52,7 +52,6 @@ test('E-18 : sections à plat, refusées en rouge, pastille Clos avec icône', o
   const rouge = await refus.evaluate((e: Element) => getComputedStyle(e).color);
   const gris = await antor.locator('.compteurs').first().evaluate((e: Element) => getComputedStyle(e).color);
   assert.notEqual(rouge, gris);
-  const pastille = antor.locator('li', { hasText: 'Clos' }).first().getByText('Clos').first();
   const pastilleClos = antor.locator('.pastille', { hasText: 'Clos' }).first();
   await pastilleClos.waitFor();
   assert.equal(await pastilleClos.locator('svg').count(), 1, 'la pastille Clos porte une icône');
@@ -93,7 +92,7 @@ test('E-9 : la ligne « Importée » du menu ⋯ tient sur une ligne', opts, asy
   assert.ok(h <= lh * 1.2, `ligne sur plusieurs lignes: ${h} > ${lh}`);
 });
 
-test('E-9 : au téléphone la ligne reste dans l’écran, clé insécable', opts, async () => {
+test('E-9 : au téléphone le menu ⋯ garde 12 px de marge de chaque côté', opts, async () => {
   await antor.setViewportSize({ width: 390, height: 800 });
   await antor.goto(`/univers/${uid}/fiche/${ficheId}`);
   await antor.getByRole('button', { name: /^Autres actions sur/ }).first().click();
@@ -101,4 +100,49 @@ test('E-9 : au téléphone la ligne reste dans l’écran, clé insécable', opt
   await menu.waitFor();
   const r = await menu.evaluate((e: Element) => e.getBoundingClientRect().toJSON());
   assert.ok(r.left >= 12 && r.right <= 390 - 12, `menu sans marge de 12 px: ${r.left}..${r.right}`);
+});
+
+test('E-18 : boîte du jeton montré — nom, valeur seule, encadré d’avertissement avec icône, Copier avant « J’ai copié »', opts, async () => {
+  await antor.setViewportSize({ width: 390, height: 800 });
+  await antor.goto(`/univers/${uid}/acces-api`);
+  await antor.getByRole('button', { name: /Nouveau jeton/ }).first().click();
+  const boite = antor.getByRole('dialog');
+  await boite.getByRole('textbox', { name: /Nom/ }).fill('Script boîte');
+  await boite.getByRole('button', { name: 'Créer le jeton' }).click();
+  const face = antor.locator('.face-jeton');
+  await face.waitFor();
+  assert.equal((await face.locator('.lib').innerText()).trim(), 'Script boîte');
+  const valeur = face.locator('code.valeur');
+  const v = await valeur.evaluate((e: Element) => { const r = e.getBoundingClientRect(); return { w: r.width, h: r.height, lh: parseFloat(getComputedStyle(e).lineHeight) }; });
+  assert.ok(v.h <= v.lh * 1.2 + 14, `valeur sur plusieurs lignes: ${v.h}`);
+  assert.equal(await face.locator('.unefois svg').count(), 1, 'encadré avec icône');
+  assert.match(await face.locator('.unefois').innerText(), /Il ne sera plus jamais affiché/);
+  const fond = await face.locator('.unefois').evaluate((e: Element) => getComputedStyle(e).backgroundColor);
+  assert.notEqual(fond, 'rgba(0, 0, 0, 0)', 'encadré avec fond');
+  const noms = await face.locator('.boite-actions button').allInnerTexts();
+  assert.deepEqual(noms.map((n: string) => n.trim()), ['Copier', 'J’ai copié le jeton']);
+  assert.equal(await face.locator('.boite-actions button').first().locator('svg').count(), 1, 'Copier porte son icône');
+  await face.getByRole('button', { name: 'J’ai copié le jeton' }).click();
+});
+
+test('E-18 : « Révoqué » en teinte danger, mentions d’une ligne séparées par « · »', opts, async () => {
+  await antor.setViewportSize({ width: 1280, height: 800 });
+  await antor.goto(`/univers/${uid}/acces-api`);
+  const ligne = antor.locator('li[data-jeton="Script boîte"]');
+  await ligne.waitFor();
+  const sep = await ligne.locator('.meta > span').evaluateAll((els: Element[]) => els.map((e) => getComputedStyle(e, '::after').content));
+  assert.ok(sep.length >= 2);
+  assert.deepEqual(sep.slice(0, -1), sep.slice(0, -1).map(() => '"·"'), 'un « · » après chaque mention sauf la dernière');
+  assert.equal(sep[sep.length - 1], 'none');
+  await ligne.getByRole('button', { name: /Révoquer/ }).click();
+  await antor.getByRole('alertdialog').getByRole('button', { name: 'Révoquer le jeton' }).click();
+  const rev = ligne.locator('.pastille', { hasText: 'Révoqué' });
+  await rev.waitFor();
+  const couleur = (sel: Any) => sel.evaluate((e: Element) => { const c = getComputedStyle(e); return [c.color, c.backgroundColor]; });
+  const [rc, rf] = await couleur(rev);
+  const [nc, nf] = await couleur(antor.locator('.pastille', { hasText: 'Clos' }).first());
+  assert.notEqual(rc, nc, 'texte Révoqué ≠ pastille neutre');
+  assert.notEqual(rf, nf, 'fond Révoqué ≠ pastille neutre');
+  const danger = await antor.evaluate(() => { const d = document.createElement('i'); d.style.color = 'var(--danger)'; document.body.append(d); const c = getComputedStyle(d).color; d.remove(); return c; });
+  assert.equal(rc, danger, 'Révoqué utilise --danger');
 });
