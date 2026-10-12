@@ -25,6 +25,10 @@
 .jeton .nom { font-weight: 500; font-size: var(--t-14); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .jeton .meta { display: flex; flex-wrap: wrap; column-gap: 6px; font-size: var(--t-12); color: var(--texte-3); }
 .jeton .meta > span:not(:last-child)::after { content: "·"; margin-left: 6px; }
+@media (max-width: 760px) {
+  .jeton .meta { flex-direction: column; }
+  .jeton .meta > span:not(:last-child)::after { content: none; }
+}
 .jeton .note-inactif { display: none; font-size: var(--t-12); color: var(--texte-2); }
 @media (hover: none) { .jeton .note-inactif { display: block; } }
 .jeton .revoquer { opacity: 0; }
@@ -47,7 +51,7 @@ li.ouvert .lot-tete .chev { transform: rotate(90deg); }
 .groupe-pb h3 { font-size: var(--t-12); font-weight: 600; color: var(--texte-2); margin-bottom: var(--e-1); }
 .groupe-pb ul { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: 16px minmax(0, 14.5rem) minmax(0, 1fr); column-gap: 10px; row-gap: var(--e-1); }
 .probleme { display: grid; grid-column: 1 / -1; grid-template-columns: subgrid; align-items: baseline; font-size: var(--t-13); }
-.groupe-pb .autres { grid-column: 1 / -1; }
+.groupe-pb .autres { grid-column: 1 / -1; font-size: var(--t-12); color: var(--texte-3); }
 .probleme svg { align-self: center; }
 .probleme.refus svg { color: var(--danger); }
 .probleme.avert svg { color: var(--texte-2); }
@@ -55,11 +59,10 @@ li.ouvert .lot-tete .chev { transform: rotate(90deg); }
 .probleme .raison { color: var(--texte-2); }
 @media (max-width: 760px) {
   .groupe-pb ul { grid-template-columns: 16px minmax(0, 1fr); }
-  .probleme { grid-template-columns: subgrid; row-gap: 2px; }
+  .probleme { row-gap: 2px; }
   .probleme .raison { grid-column: 2; }
   .probleme .cle { white-space: normal; overflow-wrap: anywhere; }
 }
-.groupe-pb .autres { font-size: var(--t-12); color: var(--texte-3); }
 
 .boite-jeton { width: min(480px, calc(100vw - 32px)); }
 .boite-jeton .boite-corps { display: flex; flex-direction: column; gap: var(--e-3); }
