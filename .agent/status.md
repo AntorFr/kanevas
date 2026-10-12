@@ -91,7 +91,7 @@ catalogue MJ (événement `proposition_creee`) et sa règle du bouchon (« Mets 
   La règle « conteneurs uniquement » de `CLAUDE.md` est la voie de référence ; un Node local ≥ 20 (README) est le repli quand
   Docker manque.
 - Migrations : 0001 à 0008 sont sur `epic/kanevas` ; la prochaine prend le numéro suivant à la fusion de sa tranche (AD-51).
-- Seule `kanevas-refonte-visuelle` (PR #9) attend sa recette ; elle n'ajoute aucune migration.
+- `kanevas-refonte-visuelle` (PR #9, vers `epic/kanevas`) attend sa recette, comme les autres tranches dites « PR non fusionnée » ci-dessus ; elle n'ajoute aucune migration.
 - Vocabulaire : « Monsieur » = le commanditaire qui fait la recette ; « tranche » = une feature livrée ; « phase merge » = la
   fusion après recette ; E-n / B-n / P-n = écrans / besoins / parcours, les écrans (E-n) sont dans `docs/ecrans.md`, les besoins (B-n) et les parcours (P-n) dans `docs/parcours.md`.
 - La CI ne pousse d'image que sur `main` et sur un tag `v*` ; sur une PR elle ne fait qu'un build de
