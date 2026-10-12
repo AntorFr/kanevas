@@ -178,3 +178,53 @@ test('E-18 : au téléphone les mentions d’un jeton sont en colonne, sans « �
   assert.ok(m.every((x: Any, i: number) => i === 0 || x.top > m[i - 1].top), 'mentions empilées');
   assert.equal(new Set(m.map((x: Any) => Math.round(x.left))).size, 1, 'mentions alignées à gauche');
 });
+
+test('E-18 : boîte « Nouveau jeton » — tuile de clé, titre sans empattement, champs espacés une fois, bascule de durée sans puce cernée', opts, async () => {
+  await antor.setViewportSize({ width: 1280, height: 800 });
+  await antor.goto(`/univers/${uid}/acces-api`);
+  await antor.getByRole('button', { name: /Nouveau jeton/ }).first().click();
+  const boite = antor.getByRole('dialog');
+  await boite.locator('h2').waitFor();
+  assert.equal(await boite.locator('.tuile-jeton svg').count(), 1, 'tuile avec l’icône clé');
+  const titre = await boite.locator('h2').evaluate((e: Element) => getComputedStyle(e).fontFamily);
+  assert.ok(!/Fraunces|serif/i.test(titre.replace(/sans-serif/gi, '')), `titre en police à empattement : ${titre}`);
+  const g = await boite.locator('form').evaluate((f: Element) => {
+    const champs = [...f.querySelectorAll('.champ')] as HTMLElement[];
+    return { gap: parseFloat(getComputedStyle(f).rowGap), margins: champs.map((c) => parseFloat(getComputedStyle(c).marginBottom) + parseFloat(getComputedStyle(c).marginTop)) };
+  });
+  assert.equal(g.gap, 16, 'écart de 16 px de la maquette');
+  assert.ok(g.margins.every((m: number) => m === 0), `marges de champ en plus du gap : ${g.margins}`);
+  const choisi = boite.locator('.segments label:has(input:checked)');
+  const c = await choisi.evaluate((e: Element) => {
+    const s = getComputedStyle(e);
+    return { fond: s.backgroundColor, ombre: s.boxShadow, rayon: parseFloat(s.borderTopLeftRadius), h: e.getBoundingClientRect().height };
+  });
+  assert.notEqual(c.fond, 'rgba(0, 0, 0, 0)', 'segment choisi plein');
+  assert.ok(c.ombre.includes('1px'), `segment choisi sans cerne : ${c.ombre}`);
+  assert.equal(c.h, 28);
+  assert.ok(c.rayon < 14, `puce arrondie (${c.rayon}px)`);
+  await boite.getByRole('button', { name: /Annuler/ }).click();
+});
+
+test('E-9 : le menu ⋯ est à l’extrémité droite de l’en-tête et ne recouvre pas le titre', opts, async () => {
+  await antor.setViewportSize({ width: 1280, height: 800 });
+  await antor.goto(`/univers/${uid}/fiche/${ficheId}`);
+  const bouton = antor.getByRole('button', { name: /^Autres actions sur/ }).first();
+  await bouton.waitFor();
+  const r = await bouton.evaluate((e: Element) => {
+    const tete = e.closest('.tete-ligne')!.getBoundingClientRect();
+    const b = e.getBoundingClientRect();
+    return { droite: tete.right - b.right, titre: (() => { const h = document.querySelector('h1')!; const rg = document.createRange(); rg.selectNodeContents(h); return rg.getBoundingClientRect().toJSON(); })() };
+  });
+  assert.ok(r.droite >= 0 && r.droite <= 8, `bouton à ${r.droite}px du bord droit de l’en-tête`);
+  await bouton.click();
+  const menu = antor.locator('.menu:has(.info-fiche)');
+  await menu.waitFor();
+  const m = await menu.evaluate((e: Element) => e.getBoundingClientRect().toJSON());
+  const bb = await bouton.evaluate((e: Element) => e.getBoundingClientRect().toJSON());
+  assert.ok(Math.abs(m.right - bb.right) <= 2, `menu non aligné sur le bord droit du bouton : ${m.right} vs ${bb.right}`);
+  const h1 = r.titre;
+  const recouvre = m.left < h1.right && m.right > h1.left && m.top < h1.bottom && m.bottom > h1.top;
+  assert.ok(!recouvre, `le menu recouvre le texte du titre : menu ${m.left}..${m.right}, titre ${h1.left}..${h1.right}`);
+  await antor.keyboard.press('Escape');
+});
