@@ -13,6 +13,8 @@ interface EtatJeton {
 }
 
 interface Connexion {
+  /** Names this session; sent back with the code so another tab's connection is refused (AD-112). */
+  connexionId: string;
   adresse: string;
   expireLe: string;
 }
@@ -128,10 +130,11 @@ export function JetonAssistant() {
   const valider = async () => {
     if (!code.trim() || phase !== 'connexion') return;
     const envoye = code;
+    const id = connexion?.connexionId;
     setPhase('validation');
     setCode('');
     try {
-      const e = await appeler<EtatJeton>('POST', `${BASE}/code`, { code: envoye });
+      const e = await appeler<EtatJeton>('POST', `${BASE}/code`, { connexionId: id, code: envoye });
       setEtat(e);
       terminer({ sorte: 'pose', poseLe: e.poseLe });
     } catch (e) {
