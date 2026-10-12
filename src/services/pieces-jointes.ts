@@ -84,6 +84,35 @@ function exigerPlace(db: Db, sectionId: number): void {
   }
 }
 
+/** Where a deposit would land: the sheet and section titles an event names (AD-89). */
+export interface CibleDepot {
+  ficheId: number;
+  titreFiche: string;
+  titreSection: string;
+}
+
+/**
+ * Checks, without writing anything, that the account may attach a file to this section of this
+ * universe: unknown, foreign or unreadable → not found; readable but not writable → refused;
+ * full → the limit refusal. Lets a caller refuse before spending a costly step (AD-44, AD-89).
+ */
+export function verifierDepot(
+  db: Db,
+  compteId: number,
+  universId: number,
+  sectionId: number,
+): CibleDepot {
+  const { s, role } = contexte(db, compteId, sectionId);
+  const f = db
+    .prepare('SELECT id, titre, univers_id FROM fiches WHERE id = ?')
+    .get(s.fiche_id) as { id: number; titre: string; univers_id: number };
+  if (f.univers_id !== universId) throw introuvable();
+  exigerEcriture(role, s, { compteId });
+  exigerPlace(db, sectionId);
+  return { ficheId: f.id, titreFiche: f.titre, titreSection: s.titre };
+}
+
+
 /**
  * Type of the file from its first bytes, never from what the client says
  * (AD-66): four image formats, everything else is an opaque download.

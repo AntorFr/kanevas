@@ -101,3 +101,11 @@
   moved, else `en_attente`), never stored. `appliquerProposition` writes through `ecrireContenu` with
   `version_origine` in the same transaction as the mark (`section_modifiee`, `proposition_appliquee` as
   `ErreurService.detail`, both `conflit`). Never write a section from here by another path (AD-48).
+- Image engine (`kanevas-images`, `src/services/images/`): `choisirAdaptateur()` (AD-88) picks `bouchon` with
+  `KANEVAS_STUB=1`, else `codex` if an executable `codex` is on the `PATH` and `$CODEX_HOME/auth.json` exists
+  (existence only, never read), else `aucun` — never a silent stub. `CODEX_HOME` and the scratch root are read in
+  `config/env.ts` only. A result must have an inline-served image signature (`typeParSignature`, AD-66) or it is
+  an `ErreurGeneration`, whose message is fixed: engine output and errors may quote `auth.json`, so the child runs
+  with `stdio: 'ignore'` and nothing of it is logged. The `codex` adapter lists `generated_images/` before and
+  after (one engine at a time: `verrou.ts`), deletes the new file(s) and its scratch directory, 150 s deadline
+  (AD-90). The Dockerfile pins `@openai/codex` (`CODEX_VERSION`).
