@@ -256,3 +256,21 @@ test('changement de type à la source : appliqué si intact, protégé sinon', a
   assert.equal(r2.json().avertissements.length, 1);
   assert.equal((app.db.prepare('SELECT type FROM fiches WHERE id = ?').get(id) as { type: string }).type, 'objet');
 });
+
+test('B-47 bords : clé d’origine de 1, 100, 150, 200 caractères acceptée ; 201 → 400 champ cle ; 200 multioctets acceptée', async () => {
+  const { app, put } = await monter();
+  const lieu = { type: 'lieu', titre: 'Clé longue' };
+  for (const n of [1, 100, 101, 150, 200]) {
+    const r = await put('k'.repeat(n), lieu);
+    assert.equal(r.statusCode, 200, `${n} car. : ${r.body}`);
+    assert.equal(r.json().etat, 'creee');
+  }
+  const rejeu = await put('k'.repeat(150), lieu);
+  assert.equal(rejeu.json().etat, 'inchangee');
+  const multi = await put('é'.repeat(200), lieu);
+  assert.equal(multi.statusCode, 200, multi.body);
+  const trop = await put('k'.repeat(201), lieu);
+  assert.equal(trop.statusCode, 400, trop.body);
+  assert.equal(trop.json().champ, 'cle');
+  assert.equal(compte(app, 'SELECT COUNT(*) n FROM fiches WHERE cle_origine IS NOT NULL'), 6);
+});
