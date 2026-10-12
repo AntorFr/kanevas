@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import { spawn, type ChildProcess } from 'node:child_process';
 import { mkdtempSync, rmSync } from 'node:fs';
 import { createRequire } from 'node:module';
@@ -53,6 +54,8 @@ export interface OptionsConnexion {
 }
 
 export interface Connexion {
+  /** Names this session: a code typed for another one is refused (AD-112 3). */
+  connexionId: string;
   adresse: string;
   expireLe: string;
 }
@@ -64,7 +67,7 @@ interface Session {
   home: string;
   expireMs: number;
   minuteur: NodeJS.Timeout;
-  adresse: string;
+  id: string;
   /** A code is being tried: no second one. */
   occupee: boolean;
 }
@@ -197,7 +200,7 @@ export class ConnexionClaude {
     }, DUREE_SESSION_MS);
     minuteur.unref();
     const debut = this.maintenant;
-    const session: Session = { proc, fin, sortie, home, expireMs: debut + DUREE_SESSION_MS, minuteur, adresse: '', occupee: false };
+    const session: Session = { proc, fin, sortie, home, expireMs: debut + DUREE_SESSION_MS, minuteur, id: randomUUID(), occupee: false };
 
     const limite = Date.now() + delai;
     let adresse: string | null = null;
@@ -210,18 +213,20 @@ export class ConnexionClaude {
       await this.arreter(session);
       throw new ErreurConnexion('connexion_impossible');
     }
-    session.adresse = adresse;
     this.session = session;
-    return { adresse, expireLe: new Date(session.expireMs).toISOString() };
+    return { connexionId: session.id, adresse, expireLe: new Date(session.expireMs).toISOString() };
   }
 
   /** Types the code; one try only — the session ends whatever the outcome. */
-  async soumettreCode(code: unknown): Promise<EtatJeton> {
+  async soumettreCode(connexionId: unknown, code: unknown): Promise<EtatJeton> {
+    if (typeof connexionId !== 'string' || !connexionId || connexionId.length > 100) {
+      throw invalide('La connexion est absente.');
+    }
     if (typeof code !== 'string' || !code.trim() || code.length > MAX_CODE || /[\u0000-\u001f\u007f]/.test(code)) {
       throw invalide(`Le code doit faire de 1 à ${MAX_CODE} caractères.`);
     }
     const s = this.session;
-    if (!s || s.occupee) throw new ErreurConnexion('connexion_expiree');
+    if (!s || s.id !== connexionId || s.occupee) throw new ErreurConnexion('connexion_expiree');
     s.occupee = true;
     if (this.maintenant >= s.expireMs) {
       await this.arreter(s);

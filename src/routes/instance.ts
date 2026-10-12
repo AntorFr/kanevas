@@ -1,6 +1,5 @@
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 
-import { env } from '../config/env.js';
 import { ErreurConnexion } from '../services/assistant/connexion-claude.js';
 import { disponibilite } from '../services/assistant/disponibilite.js';
 import { etatJeton } from '../services/assistant/jeton.js';
@@ -37,7 +36,7 @@ export function registerInstanceRoutes(app: FastifyInstance) {
 
   // AD-112: the state of the assistant token, never its value.
   app.get('/api/instance/assistant/jeton', async () => {
-    const config = app.assistantDeps.config ?? env;
+    const config = app.configAssistant();
     return { ...etatJeton(config), assistant: disponibilite(config) };
   });
 
@@ -57,10 +56,10 @@ export function registerInstanceRoutes(app: FastifyInstance) {
   });
 
   app.post('/api/instance/assistant/jeton/code', async (request, reply) => {
-    const code = (request.body as { code?: unknown } | null | undefined)?.code;
+    const b = (request.body ?? {}) as { connexionId?: unknown; code?: unknown };
     try {
-      const etat = await app.connexionClaude.soumettreCode(code);
-      const config = app.assistantDeps.config ?? env;
+      const etat = await app.connexionClaude.soumettreCode(b.connexionId, b.code);
+      const config = app.configAssistant();
       return { ...etat, assistant: disponibilite(config) };
     } catch (e) {
       return refus(reply, e);
