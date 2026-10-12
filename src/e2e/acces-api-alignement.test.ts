@@ -146,3 +146,23 @@ test('E-18 : « Révoqué » en teinte danger, mentions d’une ligne séparées
   const danger = await antor.evaluate(() => { const d = document.createElement('i'); d.style.color = 'var(--danger)'; document.body.append(d); const c = getComputedStyle(d).color; d.remove(); return c; });
   assert.equal(rc, danger, 'Révoqué utilise --danger');
 });
+
+test('E-18 : lot déplié — les raisons des refus partagent la même abscisse (grille de la maquette)', opts, async () => {
+  await antor.setViewportSize({ width: 1280, height: 800 });
+  await antor.goto(`/univers/${uid}/acces-api`);
+  await antor.getByRole('heading', { name: 'Lots d’import' }).waitFor();
+  await antor.locator('.lot-tete').first().click();
+  const lignes = antor.locator('.probleme.refus');
+  await lignes.first().waitFor();
+  const mesures = await lignes.evaluateAll((els: Element[]) => els.map((e) => ({
+    cle: e.querySelector('.cle')!.getBoundingClientRect().right - e.querySelector('.cle')!.getBoundingClientRect().left,
+    texte: (e.querySelector('.cle') as HTMLElement).innerText,
+    cleLeft: e.querySelector('.cle')!.getBoundingClientRect().left,
+    raisonLeft: e.querySelector('.raison')!.getBoundingClientRect().left,
+  })));
+  assert.ok(mesures.length >= 3, `3 refus attendus, ${mesures.length} lus`);
+  assert.ok(new Set(mesures.map((m: Any) => Math.round(m.texte.length))).size > 1, 'clés de longueurs différentes');
+  assert.equal(new Set(mesures.map((m: Any) => Math.round(m.cleLeft))).size, 1, 'clés alignées à gauche');
+  assert.equal(new Set(mesures.map((m: Any) => Math.round(m.raisonLeft))).size, 1,
+    `raisons non alignées : ${JSON.stringify(mesures.map((m: Any) => m.raisonLeft))}`);
+});
