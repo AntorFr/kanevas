@@ -350,8 +350,8 @@ describe('kanevas-suivi, du besoin', { skip: skipBrowser }, () => {
     // 100 001 characters refused.
     await p.getByRole('button', { name: rxExact('Modifier') }).click();
     await p.getByLabel('Contenu').fill('c'.repeat(100001));
-    await p.getByRole('button', { name: rxExact('Enregistrer') }).click();
     await voit(p, 'Erreur : 100 000 caractères au plus.');
+    assert.equal(await p.getByRole('button', { name: rxExact('Enregistrer') }).getAttribute('aria-disabled'), 'true');
     // 100 000 accepted.
     await p.getByLabel('Contenu').fill('c'.repeat(100000));
     await p.getByRole('button', { name: rxExact('Enregistrer') }).click();

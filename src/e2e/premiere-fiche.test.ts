@@ -338,8 +338,8 @@ test('B-8 écrire : le texte s\'affiche en texte brut (le HTML n\'est pas interp
   const s = section(antor, 'Apparence');
   await s.getByRole('button', { name: rxExact('Modifier') }).click();
   await s.getByRole('textbox').fill('x'.repeat(100001));
-  await s.getByRole('button', { name: rxExact('Enregistrer') }).click();
   await voit(antor, 'Erreur : 100 000 caractères au plus.');
+  assert.equal(await s.getByRole('button', { name: rxExact('Enregistrer') }).getAttribute('aria-disabled'), 'true');
   await s.getByRole('textbox').fill('y'.repeat(100000));
   await s.getByRole('button', { name: rxExact('Enregistrer') }).click();
   const plein = s.getByText(/^y{100000}$/);

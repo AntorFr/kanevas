@@ -465,8 +465,8 @@ describe('kanevas-premiere-fiche, du besoin', { skip: skipBrowser }, () => {
     const s = section(p, 'Texte');
     await s.getByRole('button', { name: rxExact('Modifier') }).click();
     await s.getByRole('textbox').fill('a'.repeat(100001));
-    await s.getByRole('button', { name: rxExact('Enregistrer') }).click();
     await voit(p, 'Erreur : 100 000 caractères au plus.');
+    assert.equal(await s.getByRole('button', { name: rxExact('Enregistrer') }).getAttribute('aria-disabled'), 'true');
     await s.getByRole('textbox').fill('a'.repeat(100000));
     await s.getByRole('button', { name: rxExact('Enregistrer') }).click();
     await attendre(p);
