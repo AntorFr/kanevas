@@ -2069,7 +2069,7 @@ séparé, « Supprimer la fiche… » en `--danger`.
   complète sur celles de l'univers ; alias 1 à 120 caractères, 20 au plus ; étiquette 1 à 40
   caractères, 20 au plus par fiche.
 - *Supprimer la fiche* : boîte de dialogue « Supprimer « Port-Sel » ? » qui compte ce qui part —
-  « 3 sections ; 3 relations qui la visent ; 1 place sur une carte. Ses 2 fichiers restent dans la médiathèque. Ses 4 enfants
+  « 3 sections ; 3 relations qui la visent ; 1 place sur une carte. Ses 2 fichiers restent dans la médiathèque. Ses 5 enfants
   remonteront sous « Les Sphères ». Les liens qui la visent deviendront des liens cassés. » — et
   « Supprimer la fiche » (`--danger`) / « Annuler ». Après : retour à la liste du type, toast « Fiche
   supprimée. ». Ces nombres ne sont montrés qu'au MJ, qui lit tout.
@@ -2152,11 +2152,41 @@ d'autre fichier. » au joueur) ; les références dans le texte ne comptent pas.
   Port-Sel ».
 - Étant donné Antor qui déplace « Les Sphères » sous « Port-Sel », son enfant, alors il voit « Une
   fiche ne peut pas être rangée sous l'un de ses descendants. » et rien ne change.
-- Étant donné Antor qui supprime « Port-Sel » (4 enfants, parent « Les Sphères »), alors les 4
+- Étant donné Antor qui supprime « Port-Sel » (5 enfants, dont un illisible de Léa, parent « Les Sphères »), alors les 5
   enfants ont « Les Sphères » pour parent, l'adresse de « Port-Sel » répond « Page introuvable. », et
   un lien vers elle dans « Maître Aldric » est marqué « lien cassé » pour Antor et du texte pour Léa.
 - Étant donné un contenu qui contient `<script>alert(1)</script>` et `<b>gras</b>`, quand la section
   s'affiche, alors ces balises s'affichent comme du texte, et aucun script ne s'exécute.
+
+### Ce que `kanevas-import-tenir` construit (E-9 titre et suppression, E-14 « Supprimer l'univers »)
+
+*Précisions de la tranche, sur le cadre ci-dessus (B-39, B-40, B-41, AD-105, AD-119) ; les maquettes sont
+`e09-fiche-importee.html` (`#etat-supprimer`) et `e14-types-de-fiche.html` (`#etat-supprimer-univers`).*
+
+**Titre en place (E-9, MJ hors mode Joueur).** Un clic sur le titre le rend champ de saisie, texte
+sélectionné ; Entrée enregistre, Échap annule, la perte de focus enregistre. 1 à 120 caractères après
+rognage ; vide : « Erreur : le titre est obligatoire. » ; au-delà : « Erreur : 120 caractères au plus. » ; le
+champ reste ouvert. Titre inchangé : rien n'est envoyé. Enregistré : toast « Fiche renommée. », le fil
+d'Ariane des descendants et le badge de la liste suivent à la lecture suivante ; les liens `[[…]]` ne bougent pas
+(ils visent l'identifiant, B-33). Échec : « L'action n'a pas abouti. Réessayez. », l'ancien titre revient. Un
+Joueur ou le mode Joueur : titre en texte, sans curseur d'édition.
+
+**Suppression d'une fiche (E-9).** « Supprimer la fiche… » ouvre la boîte **après** avoir lu son bilan
+(`GET …/fiches/:fid/suppression`) : « Chargement… » dans la boîte, bouton « Supprimer la fiche » inactif tant que
+le bilan n'est pas là. Le texte est composé des seuls postes non nuls, au singulier ou au pluriel
+(« 1 section », « 1 relation qui la vise », « 1 place sur une carte », « Son fichier reste dans la
+médiathèque », « Son enfant remontera sous… ») ; sans parent, « … remonteront à la racine de la liste du
+type » ; sans enfant, la phrase manque ; la fiche seule : « Cette fiche ne porte rien d'autre. ».
+Les nombres sont ceux du MJ, qui lit tout. Erreur du bilan : « Impossible de charger le détail. » et
+« Réessayer » ; échec de la suppression : le message dans la boîte, qui reste ouverte, la fiche n'a pas
+bougé. Succès : retour à la liste du type, toast « Fiche supprimée. ». Une fiche déjà supprimée par ailleurs :
+« Page introuvable. » à l'ouverture de la boîte. Un compte-rendu se supprime de même (retour à E-13).
+
+**Supprimer l'univers (E-14, tout MJ).** La boîte suit le texte ci-dessus ; le champ compare le nom saisi au
+nom de l'univers à la lettre près, casse et espaces compris (l'espace final saisi par erreur laisse le bouton
+inactif) ; le serveur recompare (`nom`) et refuse un nom différent (400 `nom_different`, « Le nom ne correspond
+pas. »). Pendant la suppression : bouton « Suppression… » inactif. Après : E-1, toast « Univers supprimé. » ;
+les autres membres, à leur prochaine action, voient « Page introuvable. ».
 
 ### E-19 Médiathèque
 
