@@ -19,7 +19,7 @@ interface Gabarit {
   id: number;
   type: Type;
   nom: string;
-  /** Markdown source: only for who may write the templates (AD-112). */
+  /** Markdown source: only for who may write the templates (AD-113). */
   contenu?: string;
   html: string;
   version: number;

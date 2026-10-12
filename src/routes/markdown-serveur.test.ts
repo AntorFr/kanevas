@@ -212,7 +212,7 @@ test('assistant : lire_section rend le Markdown source (jamais du HTML), même p
   }
 });
 
-test('assistant : un lecteur reçoit la vue rendue sans la source, un écrivain la source (AD-112)', () => {
+test('assistant : un lecteur reçoit la vue rendue sans la source, un écrivain la source (AD-113)', () => {
   const db = openDb(':memory:');
   migrate(db);
   const antor = assurerCompte(db, 'antor');

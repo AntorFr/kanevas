@@ -1,7 +1,7 @@
 import MarkdownIt from 'markdown-it';
 
 /**
- * Pure Markdown rendering (AD-112): no database, no side effect. Raw HTML is escaped
+ * Pure Markdown rendering (AD-113): no database, no side effect. Raw HTML is escaped
  * (`html: false`); only `http`, `https` and `mailto` links are links, anything else stays text.
  */
 const md = new MarkdownIt({ html: false, breaks: true, linkify: false, typographer: false });

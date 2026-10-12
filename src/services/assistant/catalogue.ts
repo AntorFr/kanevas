@@ -100,7 +100,7 @@ export function catalogueDe(db: Db, compteId: number, universId: number): Catalo
             sections: f.sections.map((s) => ({
               id: s.id,
               titre: s.titre,
-              contenu: s.contenu ?? s.html, // source only when the caller may write it, else the reader's rendered view (AD-112)
+              contenu: s.contenu ?? s.html, // source only when the caller may write it, else the reader's rendered view (AD-113)
               version: s.version,
               modifiable: s.peutEcrire,
             })),
@@ -118,7 +118,7 @@ export function catalogueDe(db: Db, compteId: number, universId: number): Catalo
           donnees: {
             id: s.id,
             titre: s.titre,
-            contenu: s.contenu ?? s.html, // source only when the caller may write it, else the reader's rendered view (AD-112)
+            contenu: s.contenu ?? s.html, // source only when the caller may write it, else the reader's rendered view (AD-113)
             version: s.version,
             modifiable: s.peutEcrire,
           },

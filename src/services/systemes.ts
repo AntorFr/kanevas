@@ -37,7 +37,7 @@ export interface Gabarit {
   systemeId: number;
   type: TypeGabarit;
   nom: string;
-  /** Markdown source: only for who may write templates (AD-112). */
+  /** Markdown source: only for who may write templates (AD-113). */
   contenu?: string;
   /** The source rendered by `rendreMarkdown`, for every reader. */
   html: string;

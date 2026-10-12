@@ -137,7 +137,7 @@ function registerGuardedRoutes(app: FastifyInstance) {
     };
   });
 
-  // Preview (AD-112): renders what the reading would, reads and writes nothing.
+  // Preview (AD-113): renders what the reading would, reads and writes nothing.
   app.post('/api/apercu', async (request) => {
     const texte = (request.body as { texte?: unknown } | null)?.texte;
     if (typeof texte !== 'string') throw invalide('Le texte doit être une chaîne.');
