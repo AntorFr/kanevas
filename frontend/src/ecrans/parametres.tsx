@@ -224,7 +224,7 @@ function Parametres() {
   };
 
   return (
-    <div className="page-liste">
+    <div className="page-liste page-parametres">
       <header className="tete-liste">
         <span className="glyphe-type" aria-hidden="true">
           <Settings2 size={20} strokeWidth={1.75} />
