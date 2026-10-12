@@ -121,13 +121,12 @@ main.principal { flex: 1; min-width: 0; padding: var(--e-5) 28px; width: 100%; m
   .bandeaux .bandeau { padding-left: var(--e-4); padding-right: var(--e-4); }
   main.principal { padding: var(--e-4); }
 }
-/* In the drawer, whatever the phone height, the whole bar scrolls so the last entry is always reachable. The foot stays
-   anchored at the bottom of the drawer (sticky) and a fade above it shows there is more to scroll; the scroll padding
-   keeps a focused entry out from under it. */
+/* In the drawer, whatever the phone height, the nav scrolls in the room left above the foot, which never overlaps it
+   (flex item, not sticky). A fade at the bottom of the nav shows there is more to scroll. */
 @media (max-width: 760px) {
-  .barre { overflow-y: auto; scroll-padding-bottom: 80px; }
-  .barre nav { flex: none; overflow: visible; padding-bottom: 20px; }
-  .pied { margin-top: auto; position: sticky; bottom: 0; z-index: 1; background: var(--fond-lateral); padding-bottom: var(--e-2); }
+  .barre { overflow: hidden; }
+  .barre nav { flex: 1 1 0; min-height: 0; overflow-y: auto; padding-bottom: 20px; scroll-padding-bottom: 20px; }
+  .pied { flex: none; position: relative; background: var(--fond-lateral); padding-bottom: var(--e-2); }
   .pied::before { content: ""; position: absolute; left: 0; right: 0; bottom: 100%; height: 20px; pointer-events: none;
     background: linear-gradient(to bottom, transparent, var(--fond-lateral)); }
 }

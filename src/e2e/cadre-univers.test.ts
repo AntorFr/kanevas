@@ -237,9 +237,10 @@ test('tiroir : sur un téléphone court (390×526) la dernière entrée « Param
   });
   assert.ok(etat.haut >= 0 && etat.bas <= etat.vh, `Paramètres hors de l’écran : ${JSON.stringify(etat)}`);
   assert.equal(etat.visible, true, `Paramètres masqué par un autre élément : ${JSON.stringify(etat)}`);
-  // no entry is hidden in a small scrolling window above the foot: the navigation shows whole (the bar scrolls as one)
-  const nav = await barre(antor).locator('nav').first().evaluate((el: Any) => ({ defile: el.scrollHeight - el.clientHeight }));
-  assert.ok(nav.defile <= 1, `la navigation défile dans une fenêtre réduite (${nav.defile} px cachés)`);
+  // the nav scrolls alone, above the foot, which is not part of the scrolling (heights matrix: cadre-tiroir-court)
+  const bas = await barre(antor).evaluate((b: Any) => ({ barre: b.scrollHeight - b.clientHeight, nav: b.querySelector('nav').getBoundingClientRect().bottom, pied: b.querySelector('.pied').getBoundingClientRect().top }));
+  assert.ok(bas.barre <= 1, `la barre entière défile : ${JSON.stringify(bas)}`);
+  assert.ok(bas.nav <= bas.pied + 1, `la nav passe sous le pied : ${JSON.stringify(bas)}`);
   // the account button of the foot stays reachable too
   const compte = barre(antor).getByRole('button', { name: /antor/i });
   await compte.scrollIntoViewIfNeeded();
