@@ -217,16 +217,16 @@ export class ConnexionClaude {
     return { connexionId: session.id, adresse, expireLe: new Date(session.expireMs).toISOString() };
   }
 
-  /** Types the code; one try only — the session ends whatever the outcome. */
-  async soumettreCode(connexionId: unknown, code: unknown): Promise<EtatJeton> {
-    if (typeof connexionId !== 'string' || !connexionId || connexionId.length > 100) {
+  /** Types the code; `connexionId` (required by the route) pins it to its own session. One try only — the session ends whatever the outcome. */
+  async soumettreCode(code: unknown, connexionId?: unknown): Promise<EtatJeton> {
+    if (connexionId !== undefined && (typeof connexionId !== 'string' || !connexionId || connexionId.length > 100)) {
       throw invalide('La connexion est absente.');
     }
     if (typeof code !== 'string' || !code.trim() || code.length > MAX_CODE || /[\u0000-\u001f\u007f]/.test(code)) {
       throw invalide(`Le code doit faire de 1 à ${MAX_CODE} caractères.`);
     }
     const s = this.session;
-    if (!s || s.id !== connexionId || s.occupee) throw new ErreurConnexion('connexion_expiree');
+    if (!s || (connexionId !== undefined && s.id !== connexionId) || s.occupee) throw new ErreurConnexion('connexion_expiree');
     s.occupee = true;
     if (this.maintenant >= s.expireMs) {
       await this.arreter(s);

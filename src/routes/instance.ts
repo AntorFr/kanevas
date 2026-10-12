@@ -58,7 +58,7 @@ export function registerInstanceRoutes(app: FastifyInstance) {
   app.post('/api/instance/assistant/jeton/code', async (request, reply) => {
     const b = (request.body ?? {}) as { connexionId?: unknown; code?: unknown };
     try {
-      const etat = await app.connexionClaude.soumettreCode(b.connexionId, b.code);
+      const etat = await app.connexionClaude.soumettreCode(b.code, b.connexionId ?? null);
       const config = app.configAssistant();
       return { ...etat, assistant: disponibilite(config) };
     } catch (e) {
