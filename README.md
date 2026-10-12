@@ -20,7 +20,7 @@ src/
   server.ts, app.ts               Démarrage ; assemblage des plugins et des routes
   config/env.ts                   Variables d'environnement (zod)
   db/                             SQLite (better-sqlite3), migrations/0001 à 0009, runner
-  services/                       comptes, univers, membres, instance, fiches, sections, droits, systemes, relations, campagnes, scenarios, preparation, comptes_rendus, propositions,
+  services/                       comptes, univers, membres, instance, fiches, sections, droits, systemes, relations, campagnes, scenarios, preparation, comptes_rendus, propositions, markdown (rendu unique), types,
                                    pieces-jointes, illustrations, cartes, stockage (octets sur le volume) :
                                    seul code qui lit ou écrit les données ; session, oidc
   routes/                         health, auth (OIDC), session (cookie, garde, /api/moi),
@@ -42,6 +42,8 @@ boîte de dialogue, interrupteur, pastille…) sont communs à tous les écrans.
 Tests sans Docker : `npm run typecheck` puis `npm test` (ils jouent aussi les e2e là où Playwright est installé, ce qui est long : voir « Tests de bout en bout » ; un seul fichier : `node --import tsx --test src/e2e/<fichier>.test.ts`, et jamais deux suites à la fois, les e2e démarrent leurs serveurs et échouent en masse sous concurrence) ; la voie Docker de référence est dans `CLAUDE.md`.
 
 ## Démarrage local
+
+Pour **voir les écrans** : la commande de la section « mode bouchon » plus bas (`npm ci && npm run build && KANEVAS_STUB=1 npm start`). Le bloc ci-dessous ne sert que l'API (`/healthz`).
 
 ```bash
 # écrit node_modules/ et ./data/ (base et session.key) dans le dépôt monté, en root ; les deux sont ignorés par git.
