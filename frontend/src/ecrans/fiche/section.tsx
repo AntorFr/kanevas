@@ -4,15 +4,13 @@ import { useId, useRef, useState } from 'react';
 import { useLimiteContenu } from '../../cadre-contexte';
 import { ErreurApi, appeler, lire, useConnexionPerdue } from '../../api';
 import type { Role } from '../../types';
-import { Bouton, BoiteDialogue, Markdown, Menu, PastilleAudience, etatAudience, useToasts } from '../../ui';
+import { Bouton, BoiteDialogue, EditeurMarkdown, Markdown, depasse, messageTropLong, Menu, PastilleAudience, etatAudience, useToasts } from '../../ui';
 import { ReglageAudience, type Joueur } from './audience';
 import { blocsSectionVisibles } from './registre';
 import type { Audience, FicheVue, SectionVue } from './types';
 
 export type { Joueur };
 
-// Same text whether the screen or the server refuses (docs/ecrans.md, AD-91); the limit itself comes from /api/moi.
-const TROP_LONG = '20 000 caractères au plus.';
 const ECHEC = 'L’action n’a pas abouti. Réessayez.';
 
 interface Props {
@@ -68,7 +66,6 @@ export function PanneauSection(p: Props) {
   const [reglage, setReglage] = useState(false);
   const pastille = useRef<HTMLSpanElement>(null);
   const idTitre = useId();
-  const idErreur = useId();
 
   const mj = role === 'mj';
   const url = `/api/univers/${p.universId}/fiches/${fiche.id}/sections/${section.id}`;
@@ -126,7 +123,7 @@ export function PanneauSection(p: Props) {
   /** « Enregistrer » and Ctrl/⌘+Entrée: the same function, so the same refusals. */
   async function enregistrer() {
     if (enCours || perdue) return;
-    if (maxContenu !== undefined && texte.length > maxContenu) return setErreurTexte(TROP_LONG);
+    if (maxContenu !== undefined && texte.length > maxContenu) return setErreurTexte(messageTropLong(maxContenu));
     setEnCours('enregistrer');
     setEchec(undefined);
     try {
@@ -139,7 +136,7 @@ export function PanneauSection(p: Props) {
       toast(`« ${section.titre} » enregistrée`);
     } catch (e) {
       if (e instanceof ErreurApi && e.code === 'section_modifiee') setPerime(true);
-      else if (e instanceof ErreurApi && e.statut === 400) setErreurTexte(TROP_LONG);
+      else if (e instanceof ErreurApi && e.statut === 400) setErreurTexte(maxContenu !== undefined ? messageTropLong(maxContenu) : e.message);
       else if (e instanceof ErreurApi && e.statut === 403) setEchec('Vous ne pouvez plus modifier cette section.');
       else setEchec(ECHEC);
     } finally {
@@ -193,8 +190,7 @@ export function PanneauSection(p: Props) {
     nbPieces === 0 ? 'Son contenu sera perdu.' : nbPieces === 1 ? 'Son contenu et sa pièce jointe seront perdus.' : `Son contenu et ses ${nbPieces} pièces jointes seront perdus.`;
   const blocs = blocsSectionVisibles(role);
   const inactif = Boolean(enCours) || perdue;
-  const trop = maxContenu !== undefined && texte.length > maxContenu;
-  const erreur = erreurTexte ?? (trop ? TROP_LONG : undefined);
+  const trop = depasse(texte, maxContenu);
   const mac = typeof navigator !== 'undefined' && /Mac|iPhone|iPad/.test(navigator.platform);
 
   return (
@@ -291,40 +287,23 @@ export function PanneauSection(p: Props) {
               {actuel === '' ? 'Rien d’écrit pour l’instant.' : actuel}
             </p>
           )}
-          <div className="edition">
-            <textarea
-              aria-label={`Contenu de « ${section.titre} »`}
-              aria-invalid={erreur ? true : undefined}
-              aria-describedby={erreur ? idErreur : undefined}
-              value={texte}
-              autoFocus
-              onChange={(e) => saisir(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Escape') {
-                  e.preventDefault();
-                  annuler();
-                } else if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
-                  e.preventDefault();
-                  void enregistrer();
-                }
-              }}
-            />
-            <div className="pied-edition">
-              <span className={`compteur${trop ? ' trop' : ''}`}>
-                {texte.length.toLocaleString('fr-FR')} / {(maxContenu ?? 20000).toLocaleString('fr-FR')}
-              </span>
-              <span className="aide">Échap annuler · {mac ? '⌘' : 'Ctrl'} ↵ enregistrer</span>
-              <Bouton onClick={annuler}>Annuler</Bouton>
-              <Bouton variante="principal" ecrit enCours={enCours === 'enregistrer'} onClick={enregistrer}>
-                Enregistrer
-              </Bouton>
-            </div>
-          </div>
-          {erreur && (
-            <div className="erreur-edition" id={idErreur}>
-              Erreur : {erreur}
-            </div>
-          )}
+          <EditeurMarkdown
+            etiquette={`Contenu de « ${section.titre} »`}
+            valeur={texte}
+            onChange={saisir}
+            max={maxContenu}
+            rows={8}
+            autoFocus
+            erreur={erreurTexte}
+            onEnregistrer={() => void enregistrer()}
+            onAnnuler={annuler}
+          >
+            <span className="aide">Échap annuler · {mac ? '⌘' : 'Ctrl'} ↵ enregistrer</span>
+            <Bouton onClick={annuler}>Annuler</Bouton>
+            <Bouton variante="principal" ecrit disabled={trop} enCours={enCours === 'enregistrer'} onClick={enregistrer}>
+              Enregistrer
+            </Bouton>
+          </EditeurMarkdown>
         </>
       ) : (
         section.html.trim() === '' ? (

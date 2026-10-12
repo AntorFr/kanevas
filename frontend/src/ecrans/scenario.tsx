@@ -3,13 +3,11 @@ import { useState, type FormEvent } from 'react';
 import { Link, useParams } from 'react-router-dom';
 
 import { appeler, ErreurApi } from '../api';
-import { useCharge } from '../cadre-contexte';
+import { useCharge, useLimiteContenu } from '../cadre-contexte';
 import type { Ecran } from '../registre';
-import { Bouton, Champ, Chargement, ErreurChargement, Markdown, PageIntrouvable, useToasts } from '../ui';
+import { Bouton, Champ, Chargement, EditeurMarkdown, ErreurChargement, Markdown, PageIntrouvable, depasse, messageTropLong, useToasts } from '../ui';
 import './ecrans.css';
 import { ECHEC, type Campagne, type Scenario } from './suivi/commun';
-
-const MAX_CONTENU = 20000;
 
 function PageScenario() {
   const { id, scenario } = useParams();
@@ -61,6 +59,7 @@ function Vue({ universId, campagne, initial }: { universId: string; campagne: Ca
   const [echec, setEchec] = useState(false);
   const [perime, setPerime] = useState(false);
   const [enCours, setEnCours] = useState(false);
+  const max = useLimiteContenu();
 
   function garder(t: string, c: string) {
     try {
@@ -88,8 +87,8 @@ function Vue({ universId, campagne, initial }: { universId: string; campagne: Ca
     setEchec(false);
   }
 
-  async function enregistrer(e: FormEvent) {
-    e.preventDefault();
+  async function enregistrer(e?: FormEvent) {
+    e?.preventDefault();
     if (enCours) return;
     const t = titre.trim();
     let ok = true;
@@ -100,8 +99,8 @@ function Vue({ universId, campagne, initial }: { universId: string; campagne: Ca
       setErreurTitre('120 caractères au plus.');
       ok = false;
     } else setErreurTitre(undefined);
-    if (contenu.length > MAX_CONTENU) {
-      setErreurContenu('20 000 caractères au plus.');
+    if (depasse(contenu, max)) {
+      setErreurContenu(messageTropLong(max!));
       ok = false;
     } else setErreurContenu(undefined);
     if (!ok) return;
@@ -189,19 +188,22 @@ function Vue({ universId, campagne, initial }: { universId: string; campagne: Ca
               garder(e.target.value, contenu);
             }}
           />
-          <Champ
+          <EditeurMarkdown
             etiquette="Contenu"
-            zone
+            valeur={contenu}
+            max={max}
             rows={16}
-            value={contenu}
             erreur={erreurContenu}
-            onChange={(e: { target: { value: string } }) => {
-              setContenu(e.target.value);
-              garder(titre, e.target.value);
+            onEnregistrer={() => void enregistrer()}
+            onAnnuler={annuler}
+            onChange={(v) => {
+              setContenu(v);
+              setErreurContenu(undefined);
+              garder(titre, v);
             }}
           />
           <div className="actions">
-            <Bouton type="submit" variante="principal" ecrit enCours={enCours}>
+            <Bouton type="submit" variante="principal" ecrit disabled={depasse(contenu, max)} enCours={enCours}>
               Enregistrer
             </Bouton>
             <Bouton onClick={annuler}>Annuler</Bouton>

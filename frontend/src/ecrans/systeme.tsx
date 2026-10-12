@@ -3,10 +3,10 @@ import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react'
 import { useParams, useSearchParams } from 'react-router-dom';
 
 import { ErreurApi, appeler } from '../api';
-import { useTitreAriane } from '../cadre-contexte';
+import { useLimiteContenu, useTitreAriane } from '../cadre-contexte';
 import type { SystemeCompte } from '../types';
 import type { Ecran } from '../registre';
-import { Bouton, Champ, ChargementListe, ErreurChargement, Markdown, PageIntrouvable, Pastille, VideIcone, useToasts } from '../ui';
+import { Bouton, Champ, ChargementListe, EditeurMarkdown, ErreurChargement, Markdown, PageIntrouvable, Pastille, VideIcone, depasse, messageTropLong, useToasts } from '../ui';
 import { PucesUnivers } from './systeme/puces';
 import './ecrans.css';
 import './liste.css';
@@ -31,7 +31,6 @@ interface Page extends SystemeCompte {
 }
 
 const NOM_MAX = 120;
-const CONTENU_MAX = 20000;
 const ECHEC = 'L’action n’a pas abouti. Réessayez.';
 const PLUS_DROIT = 'Vous ne pouvez plus modifier ce système.';
 const PERIME =
@@ -83,10 +82,11 @@ function Formulaire({
 
   const erreurNom =
     nom.length > NOM_MAX ? `${NOM_MAX} caractères au plus.` : nomVide && nom.trim() === '' ? 'le nom est obligatoire.' : undefined;
-  const erreurContenu = contenu.length > CONTENU_MAX ? '20 000 caractères au plus.' : undefined;
+  const max = useLimiteContenu();
+  const erreurContenu = depasse(contenu, max) ? messageTropLong(max!) : undefined;
 
-  async function envoyer(e: FormEvent) {
-    e.preventDefault();
+  async function envoyer(e?: FormEvent) {
+    e?.preventDefault();
     if (enCours) return;
     if (nom.trim() === '') return setNomVide(true);
     if (erreurNom || erreurContenu) return;
@@ -105,16 +105,17 @@ function Formulaire({
         </div>
       )}
       <Champ etiquette="Nom" value={nom} erreur={erreurNom} onChange={(e: { target: { value: string } }) => setNom(e.target.value)} />
-      <Champ
+      <EditeurMarkdown
         etiquette="Contenu"
-        zone
+        valeur={contenu}
+        max={max}
         rows={8}
-        value={contenu}
-        erreur={erreurContenu}
-        onChange={(e: { target: { value: string } }) => setContenu(e.target.value)}
+        onEnregistrer={() => void envoyer()}
+        onAnnuler={onAnnuler}
+        onChange={setContenu}
       />
       <div className="actions">
-        <Bouton type="submit" variante="principal" ecrit icone={Check} enCours={enCours}>
+        <Bouton type="submit" variante="principal" ecrit icone={Check} disabled={Boolean(erreurContenu)} enCours={enCours}>
           {libelle}
         </Bouton>
         <Bouton onClick={onAnnuler}>Annuler</Bouton>

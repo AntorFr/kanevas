@@ -9,3 +9,4 @@ export * from './toast';
 export * from './dialogue';
 export * from './blocs';
 export * from './markdown';
+export * from './editeur';
