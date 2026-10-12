@@ -104,7 +104,7 @@ test('MJ : crée la campagne, la passe Active en place, la page, le scénario, l
     antor.waitForResponse((r: Any) => r.request().method() === 'PUT' && /\/api\/scenarios\/\d+$/.test(r.url())),
     antor.getByRole('button', { name: rxExact('Enregistrer') }).click(),
   ]);
-  await antor.getByText('<b>gras</b> & suite').waitFor(); // plain text (AD-58)
+  await antor.getByText('<b>gras</b> & suite').waitFor(); // raw HTML shows as text (AD-95)
   assert.equal(await antor.locator('main b').count(), 0);
   await antor.reload();
   await antor.getByText('<b>gras</b> & suite').waitFor();

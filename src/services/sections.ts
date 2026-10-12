@@ -15,12 +15,13 @@ import { supprimerFichier } from './stockage.js';
 import type { Acteur, SectionRow, SectionVue } from './types.js';
 
 /** Ceiling of a section's content, in `String.length` units (AD-91); `/api/moi` hands it to the screen. */
-export const MAX_CONTENU_SECTION = 20000;
+export const MAX_CONTENU_SECTION = 100000;
+
+/** The one message of the ceiling, for every long text (sections, reports, scenarios, system entries, proposals). */
+export const MESSAGE_CONTENU_TROP_LONG = 'Contenu trop long : 100 000 caractères au plus.';
 
 export function validerContenu(contenu: string): void {
-  if (contenu.length > MAX_CONTENU_SECTION) {
-    throw invalide('Contenu trop long : 20 000 caractères au plus.');
-  }
+  if (contenu.length > MAX_CONTENU_SECTION) throw invalide(MESSAGE_CONTENU_TROP_LONG);
 }
 
 function chargerSection(db: Db, ficheId: number, sectionId: number): SectionRow {

@@ -3,10 +3,10 @@ import { useEffect, useState, type FormEvent } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 
 import { appeler, lire, useConnexionPerdue } from '../api';
-import { useCharge } from '../cadre-contexte';
+import { useCharge, useLimiteContenu } from '../cadre-contexte';
 import type { Ecran } from '../registre';
 import type { UniversListe } from '../types';
-import { Bouton, Champ, Chargement, ChargementListe, ErreurChargement, Fenetre, PageIntrouvable, Panneau, useToasts } from '../ui';
+import { Bouton, Champ, Chargement, ChargementListe, ErreurChargement, Fenetre, PageIntrouvable, Panneau, messageTropLong, useToasts } from '../ui';
 import './ecrans.css';
 import {
   BadgeStatut,
@@ -399,10 +399,9 @@ function lireBrouillonCr(campagneId: number): { titre: string; texte: string } |
   }
 }
 
-const MAX_TEXTE = 20000;
-
 function FenetreCompteRendu({ universId, campagneId, onFermer }: { universId: string; campagneId: number; onFermer: () => void }) {
   const navigate = useNavigate();
+  const max = useLimiteContenu();
   const { toast } = useToasts();
   const brouillon = lireBrouillonCr(campagneId);
   const [titre, setTitre] = useState(brouillon?.titre ?? '');
@@ -437,8 +436,8 @@ function FenetreCompteRendu({ universId, campagneId, onFermer }: { universId: st
       setErreurTitre('120 caractères au plus.');
       ok = false;
     } else setErreurTitre(undefined);
-    if (texte.length > MAX_TEXTE) {
-      setErreurTexte('20 000 caractères au plus.');
+    if (max !== undefined && texte.length > max) {
+      setErreurTexte(messageTropLong(max));
       ok = false;
     } else setErreurTexte(undefined);
     if (!ok) return;

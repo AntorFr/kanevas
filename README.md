@@ -20,8 +20,8 @@ scripts/faux-setup-token.mjs        Le `claude setup-token` du bouchon (copié d
 src/
   server.ts, app.ts               Démarrage ; assemblage des plugins et des routes
   config/env.ts                   Variables d'environnement (zod)
-  db/                             SQLite (better-sqlite3), migrations/0001 à 0009, runner
-  services/                       comptes, univers, membres, instance, fiches, sections, droits, systemes, relations, campagnes, scenarios, preparation, comptes_rendus, propositions,
+  db/                             SQLite (better-sqlite3), migrations/0001 à 0010, runner
+  services/                       comptes, univers, membres, instance, fiches, sections, droits, systemes, relations, campagnes, scenarios, preparation, comptes_rendus, propositions, markdown (rendu unique), types,
                                    pieces-jointes, illustrations, cartes, jetons, lots, import (contexte du jeton), import-fiches (API d'import), stockage (octets sur le volume) :
                                    seul code qui lit ou écrit les données ; session, oidc
   routes/                         health, auth (OIDC), session (cookie, garde, /api/moi),
@@ -43,6 +43,8 @@ boîte de dialogue, interrupteur, pastille…) sont communs à tous les écrans.
 Tests sans Docker : `npm run typecheck` puis `npm test` (ils jouent aussi les e2e là où Playwright est installé, ce qui est long : voir « Tests de bout en bout » ; un seul fichier : `node --import tsx --test src/e2e/<fichier>.test.ts`, et jamais deux suites à la fois, les e2e démarrent leurs serveurs et échouent en masse sous concurrence) ; la voie Docker de référence est dans `CLAUDE.md`.
 
 ## Démarrage local
+
+Pour **voir les écrans** : la commande de la section « mode bouchon » plus bas (`npm ci && npm run build && KANEVAS_STUB=1 npm start`). Le bloc ci-dessous ne sert que l'API (`/healthz`).
 
 ```bash
 # écrit node_modules/ et ./data/ (base et session.key) dans le dépôt monté, en root ; les deux sont ignorés par git.
@@ -105,7 +107,9 @@ Recette de la mise à jour du monde en bouchon (le semis ne contient ni campagne
 4. Modifier la section depuis la fiche avant d'appliquer rend la proposition périmée (« Appliquer » désactivé, raison affichée).
 5. La même demande en `lea` ne crée rien : l'assistant répond « Je ne peux pas le faire : l'outil « proposer_mise_a_jour » ne fait pas partie de ceux dont vous disposez. », sans bloc. Une proposition ne se retrouve pas après un rechargement du fil (AD-79).
 
-Recette de l'accès par API en bouchon (« Essai Kanka » est semé : Antor MJ, Léa joueuse, et un « Jeton du bouchon » de valeur fixe `JETON_BOUCHON`, `src/bouchon/depart.ts`). En `antor`, « Essai Kanka » ▸ « Accès par API » (E-18) : créer un jeton, qui ne s'affiche qu'une fois. Avec lui (ou le jeton du bouchon), l'API d'import (AD-103, AD-104), sur une base neuve (« Essai Kanka » est le 4ᵉ univers semé, id 4 ; sinon l'id est celui de l'adresse de base copiable sur E-18) :
+Recette du Markdown en bouchon : dans « Lame d'Ébène », en `antor`, ouvrir la fiche « Maître Aldric », « Modifier » sur la section « Apparence », et écrire un intertitre (`## Quartiers`), une liste, un tableau, `**gras**`, `[site](https://exemple.org)`, `[x](javascript:alert(1))` et `<script>alert(1)</script>`, puis « Aperçu » (il montre ce que lira Léa) et « Enregistrer ». Les intertitres sont décalés d'un cran : `## Quartiers` s'affiche en `<h3>`, sous le titre de la section. En `lea`, la fiche montre l'intertitre, la liste, le tableau et le lien web mis en forme ; le lien `javascript:` et la balise restent du texte, aucun script ne s'exécute. Plafond : 100 000 caractères pour tout texte (sections, comptes-rendus, scénarios, entrées de système, propositions), 100 001 est refusé.
+
+Recette de l'accès par API en bouchon (« Essai Kanka » est semé : Antor MJ, Léa joueuse, et un « Jeton du bouchon » de valeur fixe `JETON_BOUCHON`, `src/bouchon/depart.ts`). En `antor`, « Essai Kanka » ▸ « Accès par API » (E-18) : créer un jeton, qui ne s'affiche qu'une fois. Avec lui (ou le jeton du bouchon), l'API d'import (AD-103, AD-104), sur une base neuve (l'univers est celui d'id 4, aussi visible dans l'adresse de E-18 ; `KANEVAS_SANS_SEMIS=1` retire « Essai Kanka » et le jeton du bouchon ; « Essai Kanka » est le 4ᵉ univers semé, id 4 ; sinon l'id est celui de l'adresse de base copiable sur E-18) :
 ```bash
 JETON=kvs_bouchon_essai_Hq7Zr2LmX9cVt4Wd8KpNb3YsJf6Ga0Ue   # le jeton du bouchon, ou celui créé sur E-18
 B=http://localhost:3001/api/import/v1/univers/4          # sans barre finale
@@ -114,7 +118,7 @@ curl -X POST -H "Authorization: Bearer $JETON" $B/lots            # ouvre (ou re
 curl -X PUT -H "Authorization: Bearer $JETON" -H 'content-type: application/json' "$B/fiches/lieu:port-sel?lot=<lotId>" \
   -d '{"type":"lieu","titre":"Port-Sel","sections":[{"cle":"desc","titre":"Description","contenu":"…","joueursLisent":true},{"cle":"verite","titre":"Vérité","contenu":"…"}]}'
 ```
-Une section lue des seuls MJ omet `joueursLisent`. Réponse `creee`, puis `inchangee` au rejeu ; E-18 montre les lots. En `lea`, « Description » se lit et « Vérité » n'existe pas. Sans `?lot=`, l'écriture réussit mais aucun lot ne la compte. Seules ces quatre routes de lots et `PUT /fiches/:cle` existent ici (pas de `/fichiers`, de relations ni de `DELETE`). Un `compte_rendu` (listé inactif par `GET`) est refusé (400, `champ: type`) jusqu'à `kanevas-import-reprise`. Le contenu s'affiche en texte (le Markdown vient avec `kanevas-import-markdown`).
+Une section lue des seuls MJ omet `joueursLisent`. Réponse `creee`, puis `inchangee` au rejeu ; E-18 montre les lots. En `lea`, « Description » se lit et « Vérité » n'existe pas. Sans `?lot=`, l'écriture réussit mais aucun lot ne la compte. Seules `GET /`, les trois routes de lots (ouvrir, lire, clore) et `PUT /fiches/:cle` existent ici (pas de `/fichiers`, de relations ni de `DELETE` : ces adresses répondent un 404 HTML, non du JSON ; les champs que la tranche ne traite pas, comme `alias` ou `parent`, sont ignorés sans avertissement). Un `compte_rendu` (listé inactif par `GET`) est refusé (400, `champ: type`) jusqu'à `kanevas-import-reprise`. Le contenu est rendu en Markdown (AD-95).
 
 ### Tests de bout en bout
 
@@ -123,9 +127,9 @@ Playwright. Le build n'est lancé que si `dist/public/index.html` manque : aprè
 `src/` ou `frontend/`, relancer `npm run build` avant `npm test`, sinon ces tests jouent l'ancien code.
 Les textes de `docs/ecrans.md` sont écrits avec l'apostrophe droite ; l'interface porte l'apostrophe typographique (’).
 Playwright n'est pas une dépendance du dépôt : il doit être installé globalement
-(`/usr/lib/node_modules` ou `/usr/local/lib/node_modules`) avec un Chromium, ce que ne fait ni
-`node:20-bookworm-slim` ni la CI GitHub. Pour savoir s'il est vu : `ls /usr/lib/node_modules/playwright`. Là où il manque, ces tests sont **ignorés avec un message**,
-sans échec ; les autres tests (services, routes HTTP) tournent partout. Compter une dizaine de minutes même sans les e2e, une vingtaine avec Playwright (silencieuse jusqu'à la fin ; un message « ignoré » en tête de sortie dit que Playwright n'est pas vu). La CI ne joue donc pas les e2e.
+(`/usr/lib/node_modules` ou `/usr/local/lib/node_modules`) avec un Chromium, ce que ne fait pas
+`node:20-bookworm-slim` ; la CI GitHub l'installe en local (`npm install --no-save playwright`, `docker-publish.yml`), donc elle joue les e2e. Pour savoir s'il est vu : `ls /usr/lib/node_modules/playwright`. Là où il manque, ces tests sont **ignorés avec un message**,
+sans échec ; les autres tests (services, routes HTTP) tournent partout. Compter une dizaine de minutes même sans les e2e, une vingtaine avec Playwright (silencieuse jusqu'à la fin ; un message « ignoré » en tête de sortie dit que Playwright n'est pas vu). 
 Recette de l'administration en bouchon (le monde de démonstration est semé : « Lame d'Ébène », « Les Landes grises », « Les Cendres de Vaëlis », cinq comptes déjà connus) : se connecter en « Admin », ouvrir `/administration`, choisir « Lame d'Ébène » (où Admin n'a aucun rôle) et ajouter « mira ». Un compte jamais connecté (« nadia ») est refusé. Les e2e `src/e2e/administration*.test.ts` pilotent E-5.
 Recette du jeton de l'assistant en bouchon (P-15) : en « Admin », sur `/administration`, le panneau « Jeton de l'assistant » dit « Aucun jeton posé. » ; « Connecter l'abonnement » montre une adresse (fixe en bouchon) et un champ « Code » ; `bouchon` donne « Jeton posé le … » ; tout autre code, « La connexion n'a pas abouti. Recommencez. » et l'état d'avant reste. La valeur du jeton n'apparaît jamais ; « lea » reçoit « Page introuvable. ». En bouchon l'assistant répond déjà par son script : la disponibilité réelle se joue sur l'URL déployée (premier vrai appel au modèle, geste de Monsieur). Sans navigateur, sur le serveur lancé plus haut avec `PORT=3055` (`curl -c /tmp/j -d compte=admin http://localhost:3055/connexion-bouchon`), puis, avec `-b /tmp/j` : `POST /api/instance/assistant/jeton/connexion` (rend `connexionId`, `adresse`, `expireLe`), `POST …/jeton/code` avec `-H 'Content-Type: application/json' -d '{"connexionId":"…","code":"bouchon"}'` (sans cet en-tête le corps n'est pas lu en JSON et la réponse est 400) et `GET …/jeton` pour l'état. Hors bouchon, la connexion lance `script` (paquet `bsdutils`, présent dans `node:20-bookworm-slim`, base de l'image) : sans lui, `connexion_impossible`. Le jeton posé écrit `claude/oauth-token` à côté de la base (`./data/claude/` en développement).
 Recette des cartes en bouchon (le semis ne contient aucune carte) : en « antor », ouvrir « Cartes » de « Lame d'Ébène », créer « La ville de Brume » (carte illustrée, avec une image en fond), y ajouter une fiche, puis « Rendre visible » ; se reconnecter en « lea » : la carte est dans sa liste, avec les seuls tokens des fiches qu'elle lit. Un graphe se crée de même (forme « Graphe »). Le mode Joueur d'Antor montre ce que voit Léa.

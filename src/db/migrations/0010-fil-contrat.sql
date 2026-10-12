@@ -1,4 +1,4 @@
--- Migration 0009 (kanevas-fil-contrat, number provisional until merge, AD-51):
+-- Migration 0010 (kanevas-fil-contrat, number provisional until merge, AD-51):
 -- API tokens and import batches (AD-103, AD-104), and the origin keys that make an import replayable.
 -- `ADD COLUMN` only: the recreation of `fiches` belongs to the types slice, which copies these columns.
 

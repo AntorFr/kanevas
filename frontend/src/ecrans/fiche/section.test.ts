@@ -26,7 +26,7 @@ const rendre = (role: 'mj' | 'joueur', section: Record<string, unknown>) =>
     createElement(PanneauSection, {
       universId: '1', fiche, role, suffixeMode: '', joueurs: [{ compteId: 2, username: 'lea' }],
       premiere: true, derniere: true, rafraichir: async () => {}, onMonter: async () => {}, onDescendre: async () => {},
-      section: { id: 1, titre: 'Apparence', ordre: 1, contenu: 'Grand.', version: 1, modifieLe: '', peutEcrire: false, ...section },
+      section: { id: 1, titre: 'Apparence', ordre: 1, contenu: 'Grand.', html: '<p>Grand.</p>', version: 1, modifieLe: '', peutEcrire: false, ...section },
     } as never),
   );
 
@@ -74,11 +74,11 @@ test('joueur : aucune pastille, filet, hachure ni menu ⋯, même sur une sectio
 });
 
 test('section vide : « Rien d’écrit pour l’instant. »', () => {
-  assert.match(rendre('joueur', { contenu: '' }), /Rien d’écrit pour l’instant\./);
+  assert.match(rendre('joueur', { contenu: '', html: '' }), /Rien d’écrit pour l’instant\./);
 });
 
 test('contenu de 20 000 caractères affiché en entier', () => {
-  assert.ok(rendre('joueur', { contenu: 'x'.repeat(20000) }).includes('x'.repeat(20000)));
+  assert.ok(rendre('joueur', { contenu: 'x'.repeat(20000), html: `<p>${'x'.repeat(20000)}</p>` }).includes('x'.repeat(20000)));
 });
 
 test('badges : PJ/PNJ pour un personnage, type sinon ; six types avec textes de liste vide', () => {
