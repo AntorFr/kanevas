@@ -19,6 +19,7 @@ export function universDeLAdresse(chemin: string): number | null {
 /**
  * An item is current on its own address and below it; a sheet's address is under no item, so the
  * sheet names its type (`section`, the label of the item it hangs under) and that item is current.
+ * A scenario's address (`/scenarios/<id>`) is likewise under the campaigns item, not an item of its own.
  */
 export function itemCourant(item: Item, id: number, pathname: string, section?: string): boolean {
   if (section !== undefined && (pathname.startsWith(`/univers/${id}/fiche/`) || pathname.startsWith(`/univers/${id}/scenarios/`))) return item.libelle === section;
