@@ -5,7 +5,7 @@ import { Link, useParams } from 'react-router-dom';
 import { appeler, ErreurApi } from '../api';
 import { useCharge, useLimiteContenu } from '../cadre-contexte';
 import type { Ecran } from '../registre';
-import { Bouton, Champ, Chargement, EditeurMarkdown, ErreurChargement, Markdown, PageIntrouvable, depasse, messageTropLong, useToasts } from '../ui';
+import { Bouton, Champ, Chargement, EditeurMarkdown, ErreurChargement, Markdown, PageIntrouvable, depasse, messageTropLong, refusServeur, useToasts } from '../ui';
 import './ecrans.css';
 import { ECHEC, type Campagne, type Scenario } from './suivi/commun';
 
@@ -119,6 +119,7 @@ function Vue({ universId, campagne, initial }: { universId: string; campagne: Ca
       toast(`« ${maj.titre} » enregistré`);
     } catch (err) {
       if (err instanceof ErreurApi && err.statut === 409 && err.code === 'scenario_modifie') setPerime(true);
+      else if (err instanceof ErreurApi && err.statut === 400 && /caractères au plus/.test(err.message)) setErreurContenu(refusServeur(err.message));
       else setEchec(true);
     } finally {
       setEnCours(false);

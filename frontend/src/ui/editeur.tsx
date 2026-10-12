@@ -3,11 +3,11 @@ import { useEffect, useId, useLayoutEffect, useRef, useState, type KeyboardEvent
 
 import { appeler, useConnexionPerdue } from '../api';
 import { Bouton } from './composants';
-import { depasse, entourer, messageTropLong } from './editeur-logique';
+import { depasse, entourer, messageTropLong, refusServeur } from './editeur-logique';
 import { Markdown } from './markdown';
 import './editeur.css';
 
-export { depasse, messageTropLong };
+export { depasse, messageTropLong, refusServeur };
 
 const ECHEC_APERCU = 'L’aperçu n’a pas abouti. Réessayez.';
 

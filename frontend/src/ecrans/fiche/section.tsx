@@ -4,7 +4,7 @@ import { useId, useRef, useState } from 'react';
 import { useLimiteContenu } from '../../cadre-contexte';
 import { ErreurApi, appeler, lire, useConnexionPerdue } from '../../api';
 import type { Role } from '../../types';
-import { Bouton, BoiteDialogue, EditeurMarkdown, Markdown, depasse, messageTropLong, Menu, PastilleAudience, etatAudience, useToasts } from '../../ui';
+import { Bouton, BoiteDialogue, EditeurMarkdown, Markdown, depasse, messageTropLong, refusServeur, Menu, PastilleAudience, etatAudience, useToasts } from '../../ui';
 import { ReglageAudience, type Joueur } from './audience';
 import { blocsSectionVisibles } from './registre';
 import type { Audience, FicheVue, SectionVue } from './types';
@@ -136,7 +136,7 @@ export function PanneauSection(p: Props) {
       toast(`« ${section.titre} » enregistrée`);
     } catch (e) {
       if (e instanceof ErreurApi && e.code === 'section_modifiee') setPerime(true);
-      else if (e instanceof ErreurApi && e.statut === 400) setErreurTexte(maxContenu !== undefined ? messageTropLong(maxContenu) : e.message);
+      else if (e instanceof ErreurApi && e.statut === 400) setErreurTexte(refusServeur(e.message));
       else if (e instanceof ErreurApi && e.statut === 403) setEchec('Vous ne pouvez plus modifier cette section.');
       else setEchec(ECHEC);
     } finally {

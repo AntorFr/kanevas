@@ -6,7 +6,7 @@ import { ErreurApi, appeler } from '../api';
 import { useLimiteContenu, useTitreAriane } from '../cadre-contexte';
 import type { SystemeCompte } from '../types';
 import type { Ecran } from '../registre';
-import { Bouton, Champ, ChargementListe, EditeurMarkdown, ErreurChargement, Markdown, PageIntrouvable, Pastille, VideIcone, depasse, messageTropLong, useToasts } from '../ui';
+import { Bouton, Champ, ChargementListe, EditeurMarkdown, ErreurChargement, Markdown, PageIntrouvable, Pastille, VideIcone, depasse, messageTropLong, refusServeur, useToasts } from '../ui';
 import { PucesUnivers } from './systeme/puces';
 import './ecrans.css';
 import './liste.css';
@@ -57,6 +57,7 @@ function messageEcriture(e: unknown): { perime?: true; perdu?: true; texte: stri
   if (e instanceof ErreurApi) {
     if (e.statut === 409 && e.code === 'gabarit_modifie') return { perime: true, texte: PERIME };
     if (e.statut === 409) return { texte: e.message };
+    if (e.statut === 400 && /caractères au plus/.test(e.message)) return { texte: `Erreur : ${refusServeur(e.message)}` };
     if (e.statut === 403 || e.statut === 404) return { texte: PLUS_DROIT, perdu: true };
   }
   return { texte: ECHEC };

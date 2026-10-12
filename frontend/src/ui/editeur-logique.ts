@@ -25,3 +25,6 @@ export const depasse = (texte: string, max: number | undefined): boolean => max 
 
 /** « 100 000 caractères au plus. » — the words of the interface and of the server's refusal (plain spaces, as the server writes it). */
 export const messageTropLong = (max: number): string => `${String(max).replace(/\B(?=(\d{3})+(?!\d))/g, ' ')} caractères au plus.`;
+
+/** The server's own refusal (« Contenu trop long : 100 000 caractères au plus. ») in the interface's words: its limit wins over the screen's. */
+export const refusServeur = (message: string): string => message.replace(/^Contenu trop long\s*:\s*/, '');
