@@ -1082,7 +1082,7 @@ bas :
 
 - **l'en-tête** : « Kanevas — assistant », la pastille du catalogue (« MJ » ou « Joueur », mot et
   teinte), « Nouvelle conversation », « Fermer » ;
-- **le fil** : les messages de la personne et les réponses de l'assistant, en texte brut (AD-58 — le fil le reste après `kanevas-import`),
+- **le fil** : les messages de la personne et les réponses de l'assistant, en texte brut (le fil le reste après `kanevas-import`),
   du plus ancien au plus récent ; le fil défile et reste calé sur le dernier message ;
 - **sous une réponse, les écritures** : un bloc « Écrit par l'assistant » par événement (AD-76), le
   libellé (« Section « Notes de la table » complétée », « Scénario « Acte III — La crypte » créé

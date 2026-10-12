@@ -79,7 +79,7 @@ catalogue MJ (événement `proposition_creee`) et sa règle du bouchon (« Mets 
 - La suite a été jouée sous Node 22 dans les pods de la chaîne (pas de Docker) ; la CI Node 20 fait foi.
   La règle « conteneurs uniquement » de `CLAUDE.md` est la voie de référence ; un Node local ≥ 20 (README) est le repli quand
   Docker manque.
-- Migrations : 0001 à 0007 sont sur `epic/kanevas` ; 0008 (propositions) sur la branche de `kanevas-monde`, à recaler seulement si une autre tranche fusionne avant (AD-51).
+- Migrations : 0001 à 0007 sont sur `epic/kanevas` ; 0008 (propositions) sur la branche de `kanevas-monde` ; 0009 (plafond 100 000) sur cette feature, à recaler seulement si une autre tranche fusionne avant (AD-51).
 - Les « PR non fusionnée » ci-dessus s'empilent sur `epic/kanevas` ; `recours-admin` est rattrapée dessus et n'ajoute aucune migration.
 - Vocabulaire : « Monsieur » = le commanditaire qui fait la recette ; « tranche » = une feature livrée ; « phase merge » = la
   fusion après recette ; E-n / B-n / P-n = écrans / besoins / parcours, les écrans (E-n) sont dans `docs/ecrans.md`, les besoins (B-n) et les parcours (P-n) dans `docs/parcours.md`.
@@ -107,7 +107,7 @@ catalogue MJ (événement `proposition_creee`) et sa règle du bouchon (« Mets 
   Un refus de lecture répond 404 comme un identifiant inconnu (AD-22) ; 50 pièces au plus par section, pas de
   limite de taille ; ajouter, marquer ou retirer ne change pas la `version` de la section. Pas de route de liste,
   pas de glisser-déposer. `stockage.ts` sert aussi aux fonds de carte (`services/cartes.ts`, AD-69), qui ne passent pas par `deposerPieceJointe`.
-- Rendu du bloc Pièces jointes vérifié par les tests e2e (Playwright) là où il est installé ; la CI ne les joue pas.
+- Rendu du bloc Pièces jointes vérifié par les tests e2e (Playwright) là où il est installé ; la CI l'installe et les joue.
 - « Connexion perdue » (frontend/src/api.ts) : sondé toutes les 3 s sur `/healthz` tant que le bandeau
   est levé ; il disparaît seul au retour du serveur.
 - Tout texte Markdown (section, compte-rendu, scénario, entrée de système, contenu proposé) est plafonné à 100 000 caractères
