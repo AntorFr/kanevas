@@ -37,8 +37,8 @@ Les cartes et graphes (E-10, E-11) sont construits. `kanevas-monde` ajoute la pr
   dans ce module (AD-2, AD-27).
 - `src/db/` : ouverture du fichier SQLite, `migrations/0001-*.sql`, `0002-systemes.sql`, `0003-suivi.sql`, `0004-pieces-jointes.sql`, `0005-relier-chercher.sql`, `0006-illustrations.sql`, `0007-cartes.sql`, `0008-propositions.sql`, `0009-plafond-contenu.sql` (plafond à 100 000, AD-106), `0010-fil-contrat.sql` (jetons, lots, clés d’origine, AD-103), runner (AD-14).
 - `src/e2e/` : tests d'ensemble, serveur réel en bouchon et navigateur piloté (Playwright, ignoré s'il manque) ; E-5 : `administration*.test.ts`.
-- `src/services/` : `comptes`, `univers`, `membres`, `instance`, `fiches`, `sections`, `droits`, `systemes`, `relations`, `campagnes`, `scenarios`, `preparation`, `comptes_rendus`, `pieces-jointes`, `illustrations`, `cartes`, `propositions`, `markdown`, `stockage` — les seules
-  fonctions qui lisent ou écrivent les données (AD-2) ; `src/routes/` : routes `/api` minces ; `univers.ts` et `instance.ts` portent les routes d'univers et d'instance.
+- `src/services/` : `comptes`, `univers`, `membres`, `instance`, `fiches`, `sections`, `droits`, `systemes`, `relations`, `campagnes`, `scenarios`, `preparation`, `comptes_rendus`, `pieces-jointes`, `illustrations`, `cartes`, `propositions`, `markdown`, `jetons`, `lots`, `import-fiches`, `stockage` — les seules
+  fonctions qui lisent ou écrivent les données (AD-2) ; `src/routes/` : routes `/api` minces ; `univers.ts` et `instance.ts` portent les routes d'univers et d'instance ; `import.ts` (API d'import à jeton, `/api/import/v1`) et `acces-api.ts` (E-18, par session : `GET|POST /api/univers/:id/jetons`, `POST …/jetons/:jid/revoquer`, `GET …/lots`).
 - `frontend/` : application React/Vite (AD-57) ; `frontend/src/ui/tokens.css` et
   `frontend/src/ui/` : tokens et composants de `docs/charte.md` ; son build est servi par Fastify. Le cadre
   (`Cadre.tsx`, `Barre.tsx`) est commun à tous les écrans ; `/demo-composants` (bouchon seul, 404 sinon, `routes/session.ts`) montre les composants (AD-92 pour polices et icônes).
@@ -145,9 +145,9 @@ base en snake_case (`docs/donnees.md`).
   (AD-9), il se lit dans la table des membres à chaque requête. Sans les quatre variables
   `OIDC_*` (ou avec une partie seulement), login et callback répondent 404 ; une valeur vide
   ou invalide fait échouer le démarrage.
-- **Quinze tables et deux index de recherche, aucun ORM** : `comptes`, `univers`, `membres`, `fiches`, `sections` (migration
-  0001), `systemes_jeu`, `gabarits` (migration 0002), `campagnes`, `scenarios`, `taches_preparation` (migration 0003), `pieces_jointes` (migration 0004), `relations`, `recherche_fiches` et `recherche_sections` (FTS5, migration 0005) ; trois colonnes d'illustration sur `fiches` (migration 0006), `cartes` et `elements_carte` (migration 0007), `propositions` (migration 0008, `kanevas-monde`) ; la migration 0009 (`kanevas-import-markdown`) reconstruit `gabarits`, `scenarios` et `propositions` pour relever leur CHECK à 100 000 caractères ; les numéros 0001 à 0007 sont définitifs, 0008 est provisoire et les suivants se prennent à la fusion (AD-51 ; `docs/donnees.md`). Aucune requête SQL hors de `src/services/` et `src/db/`.
-- **Toute route hors `/healthz`, `/api/auth/*` et, en bouchon, `/connexion-bouchon` est gardée par la session** ; sous `/api` un
+- **Dix-sept tables et deux index de recherche, aucun ORM** : `comptes`, `univers`, `membres`, `fiches`, `sections` (migration
+  0001), `systemes_jeu`, `gabarits` (migration 0002), `campagnes`, `scenarios`, `taches_preparation` (migration 0003), `pieces_jointes` (migration 0004), `relations`, `recherche_fiches` et `recherche_sections` (FTS5, migration 0005) ; trois colonnes d'illustration sur `fiches` (migration 0006), `cartes` et `elements_carte` (migration 0007), `propositions` (migration 0008, `kanevas-monde`) ; `jetons_api` et `lots_import`, plus les clés d'origine de `fiches` et `sections` (migration 0010, `kanevas-import-fil`) ; la migration 0009 (`kanevas-import-markdown`) reconstruit `gabarits`, `scenarios` et `propositions` pour relever leur CHECK à 100 000 caractères ; les numéros 0001 à 0007 sont définitifs, 0008 à 0010 sont provisoires jusqu'à la fusion de l'epic et les suivants se prennent à la fusion (AD-51 ; `docs/donnees.md`). Aucune requête SQL hors de `src/services/` et `src/db/`.
+- **Toute route hors `/healthz`, `/api/auth/*`, `/api/import/v1/*` (gardée par un jeton Bearer qui ignore le cookie, AD-103) et, en bouchon, `/connexion-bouchon` est gardée par la session** ; sous `/api` un
   défaut de session répond 401, ailleurs il redirige vers la connexion (AD-15).
 - **Une seule route appelle un modèle : l'assistant** (`src/routes/assistant.ts`, par `repondre`, AD-73), avec le jeton de
   l'abonnement `CLAUDE_CODE_OAUTH_TOKEN` ; le transport texte de `services/llm/*` n'est relié à rien. Aucun secret `ANTHROPIC_API_KEY` n'est déployé.
@@ -204,7 +204,7 @@ script d'import (hors du produit, sur le Mac de Monsieur)
   (AD-28).
 - **Backend Fastify** : le seul point d'accès aux données, au disque, au fournisseur LLM et à
   Codex (AD-4). Toute route est gardée par la session (AD-15) : 401 sous `/api`, redirection ailleurs ; seuls `/healthz`,
-  `/api/auth/*` et, en bouchon, `/connexion-bouchon` sont publics.
+  `/api/auth/*`, `/api/import/v1/*` (jeton Bearer, AD-103) et, en bouchon, `/connexion-bouchon` sont publics.
 - **Fonctions de service** : la seule implémentation de chaque lecture et écriture, avec ses
   gardes (`peutLireSection`, `peutEcrireSection`, `peutVoirFiche`, `peutLirePieceJointe`).
   Routes et outils de l'agent les appellent de la même façon (AD-2) : c'est ce qui rend la
@@ -338,14 +338,14 @@ Contrat que consomme le script de Monsieur, et tout autre (AD-103, AD-104). Base
 `https://kanevas.berard.me/api/import/v1/univers/:id`, en-tête `Authorization: Bearer kvs_…`. JSON,
 noms en camelCase, dates ISO 8601. Une **clé d'origine** (`:cle`) : 1 à 200 caractères, sans `|`, `]`
 ni saut de ligne, encodée dans l'adresse ; libre au script (`lieu:port-sel`, un identifiant Kanka…).
-Toute écriture porte `?lot=<id>`. Erreurs : la forme des routes (`{message, code}`) ; 401
+Une écriture porte `?lot=<id>` pour être comptée ; sans lot elle réussit mais rien n'est compté. Erreurs : la forme des routes (`{message, code}`) ; 401
 `jeton_invalide` (corps unique) ; 404 univers autre ou clé inconnue ; 400 `invalide` avec `champ` ;
 413 corps de plus de 8 Mio.
 
 | Route | Rôle |
 |---|---|
 | `GET /` | l'univers, le compte du jeton, les types de la liste du produit et leur activation, les limites (`contenuSection` — 100 000 pour tout texte Markdown —, alias et étiquettes par fiche, fichiers joints par section, entrées de rapport) |
-| `POST /lots`, `GET /lots/:lid`, `POST /lots/:lid/clore` | ouvrir un lot (201 `{lotId}` ; si le même jeton a un lot ouvert, c'est lui qui est rendu : reprise) ; le lire ; le clore (rend le rapport : compteurs, refus, avertissements) |
+| `POST /lots`, `GET /lots/:lid`, `POST /lots/:lid/clore` | ouvrir un lot (201, ou 200 en reprise, avec l'objet lot : `id`, `etat`, compteurs, rapport ; si le même jeton a un lot ouvert, c'est lui qui est rendu : reprise) ; le lire ; le clore (rend le rapport : compteurs, refus, avertissements) |
 | `PUT /fiches/:cle` | assurer une fiche : `{type, sousType?, titre, illustration? (clé de fichier image), pj?, campagne? (clé, pour un compte-rendu), parent? (clé ou null), alias?, etiquettes?, creeLe?, modifieLe?, sections: [{cle, titre, contenu, joueursLisent, joueursEcrivent, fichiers? (clés des fichiers joints)}]}` ; `contenu` en Markdown, avec `[[cle:<clé>\|<texte>]]`, `:::mj` … `:::`, `![légende](fichier:cle:<clé>)` (image) ou `[texte](fichier:cle:<clé>)` (tout fichier). Les sections importées suivent l'ordre de la liste, avant celles nées dans Kanevas. Rend `{id, etat: creee\|mise_a_jour\|inchangee, avertissements: [...]}` |
 | `PUT /fichiers/:cle` | assurer un fichier de la médiathèque, image ou document (multipart : `visibilite` (`joueurs` par défaut \| `mj`), `nom`, puis `fichier`) ; inchangé si l'empreinte, le nom et la visibilité sont les mêmes ; B-48 protège nom et visibilité. **Le script doit envoyer `mj` pour un fichier que la source n'utilise que dans du contenu MJ** (décision de Monsieur du 2026-10-11) ; un fichier que la source n'attache à aucune fiche s'importe ici aussi. Une fiche le référence ensuite par sa clé (texte, `fichiers` d'une section, `illustration`) |
 | *(retirée)* `PUT …/pieces/:pcle` | plus de pièce jointe à part : un fichier s'envoie à la médiathèque (`PUT /fichiers/:cle`), puis la section le référence (AD-111) |

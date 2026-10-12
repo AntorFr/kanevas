@@ -1,6 +1,6 @@
 # Status — kanevas
 
-> MàJ : 2026-10-12 (assemblage de kanevas-import-fil, sur `feature/kanevas-import-fil`, epic/kanevas-import fusionnée ; le reste décrit `epic/kanevas`)
+> MàJ : 2026-10-12 (assemblage de kanevas-import-fil, sur `feature/kanevas-import-fil`, epic/kanevas-import fusionnée dans la branche ; le reste décrit `epic/kanevas`)
 
 **État :** `epic/kanevas` porte le socle, la première fiche, les systèmes de jeu, le suivi de la séance
 (campagnes, scénarios, préparation, comptes-rendus ; E-6, E-7, E-13) et les pièces jointes (migration
@@ -133,7 +133,7 @@ catalogue MJ (événement `proposition_creee`) et sa règle du bouchon (« Mets 
 - Cartes : un graphe n'a ni position stockée ni déplacement de nœud (AD-71) ; la forme d'une carte ne change jamais ; un fond ne se retire pas, il se remplace ; aucune suppression de carte ni d'élément autre que « Retirer de la carte ». La fiche retirée reste.
 - Propositions (AD-79 à AD-82) : lues, appliquées, abandonnées par leur seul demandeur, encore MJ ; tout autre compte reçoit 404. Le fil ne se garde pas (AD-28) : après un rechargement, une proposition en attente n'est plus atteignable (limite écrite, bornée à une par MJ et section ; pas de liste « mes propositions »). Hors tranche : application par un joueur, propositions en lot. L'assistant ne sait pas quel écran est ouvert : le compte-rendu se nomme dans la demande. Le semis du bouchon n'a ni campagne ni compte-rendu : la recette les crée (README).
 
-`feature/kanevas-import-fil` (PR vers `epic/kanevas-import`, non fusionnée) ajoute l'API d'import et E-18 (AD-103, AD-104 ; B-45 à B-50, P-10 étapes 3-5-7-10, P-11) :
+`feature/kanevas-import-fil` (PR vers `epic/kanevas-import`, non fusionnée ; ce paragraphe vaut jusqu'à sa fusion) ajoute l'API d'import et E-18 (AD-103, AD-104 ; B-45 à B-50, P-10 étapes 3-5-7-10, P-11) :
 migration `0010-fil-contrat.sql` (0009 est le plafond de l'epic) (`jetons_api`, `lots_import`, `fiches.cle_origine` / `dernier_import`, `sections.cle_origine` / `version_importee` / `dernier_import`),
 `services/jetons.ts`, `services/lots.ts`, `services/import-fiches.ts` (`assurerFiche`, composition des services existants), scope `routes/import.ts` (`/api/import/v1`, Bearer seul,
 401 `jeton_invalide` unique, 404 autre univers, corps 8 Mio), routes de session `routes/acces-api.ts`, écran `frontend/src/ecrans/acces-api.tsx` (E-18),
