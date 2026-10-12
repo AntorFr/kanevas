@@ -18,11 +18,6 @@ export type TypeFiche = (typeof TYPES_FICHE)[number];
 export interface Acteur {
   compteId: number;
   modeJoueur?: boolean;
-  /**
-   * The view carries the Markdown source even to a reader who cannot write it: set by the
-   * assistant, whose reading tools return Markdown, never HTML (AD-112, AD-96).
-   */
-  avecSource?: boolean;
 }
 
 export interface Compte {
