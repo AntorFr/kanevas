@@ -1,4 +1,4 @@
-import { Ban, Check, ChevronRight, CircleX, Copy, Hourglass, KeyRound, Loader, Plus, TriangleAlert } from 'lucide-react';
+import { Ban, Check, ChevronRight, CircleAlert, CircleX, Copy, Hourglass, KeyRound, Loader, Plus, TriangleAlert } from 'lucide-react';
 import { useEffect, useId, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
 
@@ -65,6 +65,7 @@ function BoiteNouveauJeton({ base, onFini }: { base: string; onFini: (cree: bool
   const [echec, setEchec] = useState<string>();
   const [envoi, setEnvoi] = useState(false);
   const [valeur, setValeur] = useState<string>();
+  const [nomCree, setNomCree] = useState('');
   const { toast } = useToasts();
   const ref = useRef<HTMLDivElement>(null);
   const idTitre = useId();
@@ -123,6 +124,7 @@ function BoiteNouveauJeton({ base, onFini }: { base: string; onFini: (cree: bool
     setEnvoi(true);
     try {
       const r = await appeler<{ valeur: string }>('POST', `${base}/jetons`, { nom: net, dureeJours: duree });
+      setNomCree(net);
       setValeur(r.valeur);
     } catch (e) {
       if (e instanceof ErreurApi && e.statut === 400) setErreurNom(e.message.replace(/^Erreur : /, ''));
@@ -182,12 +184,18 @@ function BoiteNouveauJeton({ base, onFini }: { base: string; onFini: (cree: bool
               </div>
             </form>
           ) : (
-            <div>
-              <p>Voici votre jeton. Il ne sera plus jamais affiché. Rangez-le dans la configuration de votre script.</p>
-              <div className="copie">
+            <div className="face-jeton">
+              <div>
+                <span className="lib">{nomCree}</span>
                 <code className="valeur chasse" aria-label="Jeton">
                   {valeur}
                 </code>
+              </div>
+              <p className="unefois">
+                <CircleAlert size={16} strokeWidth={1.75} aria-hidden="true" />
+                <span>Il ne sera plus jamais affiché. Rangez-le dans la configuration de votre script.</span>
+              </p>
+              <div className="boite-actions">
                 <Bouton
                   icone={Copy}
                   onClick={() => void copier(valeur).then((ok) => ok && toast('Jeton copié.'))}
@@ -195,8 +203,6 @@ function BoiteNouveauJeton({ base, onFini }: { base: string; onFini: (cree: bool
                 >
                   Copier
                 </Bouton>
-              </div>
-              <div className="boite-actions">
                 <Bouton variante="principal" data-fermer-jeton onClick={() => onFini(true)}>
                   J’ai copié le jeton
                 </Bouton>
@@ -237,7 +243,7 @@ function LigneJeton({ jeton, maintenant, onRevoquer }: { jeton: JetonVue; mainte
           </span>
         )}
         {etat === 'revoque' && (
-          <Pastille sens="neutre" icone={Ban}>
+          <Pastille sens="danger" icone={Ban}>
             Révoqué
           </Pastille>
         )}
