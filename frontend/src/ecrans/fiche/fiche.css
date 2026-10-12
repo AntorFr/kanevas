@@ -159,7 +159,7 @@ a.cadre-ill:focus-visible { outline-offset: 2px; border-radius: var(--rayon-pann
 .menu:has(.info-fiche) { width: max-content; max-width: calc(100vw - 24px); }
 .menu .info-fiche span { white-space: nowrap; }
 @media (max-width: 760px) {
-  .menu:has(.info-fiche) { position: fixed; top: auto; left: 12px; right: 12px; width: auto; max-width: none; }
+  .menu-racine.debut .menu:has(.info-fiche), .menu-racine.fin .menu:has(.info-fiche) { position: fixed; top: auto; left: 12px; right: 12px; width: auto; box-sizing: border-box; max-width: none; }
   .menu .info-fiche span { white-space: normal; }
 }
 .menu .info-fiche svg { margin-top: 2px; flex: none; }
