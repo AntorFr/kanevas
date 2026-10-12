@@ -12,6 +12,7 @@ import { ajouterSection, changerAudience } from '../services/sections.js';
 import { creerFiche } from '../services/fiches.js';
 import { assurerCompte } from '../services/comptes.js';
 import { creerEtRattacherSysteme, creerGabarit, rattacherSysteme } from '../services/systemes.js';
+import { creerJetonDeValeur } from '../services/jetons.js';
 import { creerUnivers } from '../services/univers.js';
 
 /**
@@ -43,6 +44,17 @@ export function semerBouchon(db: Db): boolean {
       description: 'Un royaume après la chute de son astre.',
     });
     ajouterMembre(db, id.admin, cendres.id, 'antor', 'joueur');
+    // `kanevas-import`: the universe where the import criteria play, without game system.
+    const essai = creerUnivers(db, id.antor, {
+      nom: 'Essai Kanka',
+      description: "Un univers d'essai pour l'import.",
+    });
+    ajouterMembre(db, id.antor, essai.id, 'lea', 'joueur');
+    creerJetonDeValeur(db, id.antor, essai.id, {
+      nom: 'Jeton du bouchon',
+      dureeJours: 365,
+      valeur: JETON_BOUCHON,
+    });
 
     const cof = creerEtRattacherSysteme(db, id.antor, lame.id, { nom: 'CoF Mini' });
     rattacherSysteme(db, id.mira, landes.id, cof.id);
@@ -98,6 +110,9 @@ export function semerBouchon(db: Db): boolean {
   })();
   return true;
 }
+
+/** The stub token of « Essai Kanka » (docs/ecrans.md): fixed, known to the tests, stub mode only. */
+export const JETON_BOUCHON = 'kvs_bouchon_essai_Hq7Zr2LmX9cVt4Wd8KpNb3YsJf6Ga0Ue';
 
 const DEMO = join(dirname(fileURLToPath(import.meta.url)), 'demo');
 

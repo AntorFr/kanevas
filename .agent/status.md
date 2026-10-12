@@ -70,7 +70,7 @@ catalogue MJ (événement `proposition_creee`) et sa règle du bouchon (« Mets 
 
 **Pièges :**
 - Administration : le groupe est lu à la connexion et vaut 7 jours (AD-86) ; la liste rend tous les univers, pagination par 100 côté client ; un admin sans rôle reste un compte sans rôle (AD-9). Les e2e `administration*` dépendent de Playwright (absent du dépôt) .
-- Assistant : `repondre` est l'unique entrée ; ne jamais passer le compte, l'univers ou le rôle en paramètre d'un outil, ni lire la configuration par
+- Assistant : `repondre` est l'unique entrée ; ne jamais passer le compte, l'univers ou le rôle en paramètre d'un outil, ni lire
   `process.env` hors `config/env.ts` (seule exception : `FRONTEND_DIR`, `routes/frontend.ts`). Une erreur du transport est rendue par un message fixe (jamais la cause, qui pourrait citer le jeton).
   Le verrou « une demande à la fois par compte » est en mémoire du processus (une seule instance). Le panneau se monte dans sa propre racine
   React (`assistant.tsx`) : il lit l'adresse par `assistant/adresse.ts`, pas par le routeur.
@@ -133,13 +133,14 @@ catalogue MJ (événement `proposition_creee`) et sa règle du bouchon (« Mets 
 - Cartes : un graphe n'a ni position stockée ni déplacement de nœud (AD-71) ; la forme d'une carte ne change jamais ; un fond ne se retire pas, il se remplace ; aucune suppression de carte ni d'élément autre que « Retirer de la carte ». La fiche retirée reste.
 - Propositions (AD-79 à AD-82) : lues, appliquées, abandonnées par leur seul demandeur, encore MJ ; tout autre compte reçoit 404. Le fil ne se garde pas (AD-28) : après un rechargement, une proposition en attente n'est plus atteignable (limite écrite, bornée à une par MJ et section ; pas de liste « mes propositions »). Hors tranche : application par un joueur, propositions en lot. L'assistant ne sait pas quel écran est ouvert : le compte-rendu se nomme dans la demande. Le semis du bouchon n'a ni campagne ni compte-rendu : la recette les crée (README).
 
-`feature/kanevas-import-jeton-assistant` (PR vers `epic/kanevas-import`, non fusionnée) ajoute le jeton de l'assistant posé depuis l'administration (P-15, B-51, AD-109, AD-112), sans migration :
-`services/assistant/jeton.ts` (fichier `<dossier de la base>/claude/oauth-token`, 0600, prime sur `CLAUDE_CODE_OAUTH_TOKEN`, seul résolveur lu par `disponibilite` et `repondre`),
-`services/assistant/connexion-claude.ts` (une session `claude setup-token` sous `script`, 10 min, processus tué à chaque issue),
-trois routes `/api/instance/assistant/jeton…` plus le `GET` d'état (404 hors `parents`), `scripts/faux-setup-token.mjs` (bouchon : code `bouchon`, copié dans l'image) et le panneau de E-5
-(`ecrans/administration/jeton-assistant.tsx`, pleine largeur sous les deux zones). Typecheck, build et tests verts (voir PR). Aucune réponse ne porte la valeur du jeton ni le code.
-**Reste (jeton) :** la recette de Monsieur en bouchon (README), la fusion ; puis le premier vrai appel au modèle sur l'URL déployée avec un jeton réellement posé depuis l'écran
-(`script` et le binaire `claude` du SDK n'ont été éprouvés qu'avec le faux `setup-token` ; le vrai flux, jamais).
-**Pièges (jeton) :** ne lire ni la variable ni le fichier hors de `jeton.ts` ; en bouchon l'assistant reste en transport `bouchon` même avec un jeton posé (AD-77), la disponibilité se prouve par une configuration injectée sans `KANEVAS_STUB` ; la session est en mémoire du processus (une instance, un redémarrage la perd : « La connexion a expiré ») ; un jeton `deploiement` n'a pas de date ; le volume `/data` doit être inscriptible pour que la pose réussisse ; sans volume (base en mémoire) le fichier va sous le dossier temporaire et le jeton est perdu au redémarrage.
+`feature/kanevas-import-fil` (PR vers `epic/kanevas-import`, non fusionnée) ajoute l'API d'import et E-18 (AD-103, AD-104 ; B-45 à B-50, P-10 étapes 3-5-7-10, P-11) :
+migration `0009-fil-contrat.sql` (`jetons_api`, `lots_import`, `fiches.cle_origine` / `dernier_import`, `sections.cle_origine` / `version_importee` / `dernier_import`),
+`services/jetons.ts`, `services/lots.ts`, `services/import-fiches.ts` (`assurerFiche`, composition des services existants), scope `routes/import.ts` (`/api/import/v1`, Bearer seul,
+401 `jeton_invalide` unique, 404 autre univers, corps 8 Mio), routes de session `routes/acces-api.ts`, écran `frontend/src/ecrans/acces-api.tsx` (E-18),
+ligne « Importée · clé … » du menu « ⋯ » de E-9 (MJ seul ; `cleOrigine` jamais dans une lecture de joueur). Semis du bouchon : « Essai Kanka » (Antor MJ, Léa joueuse) et `JETON_BOUCHON`.
+- Seule la fiche est importée ici, six types (pas `compte_rendu`, refusé 400 `champ: type`) ; contenu en texte (plafond 20 000 inchangé), pas de bloc MJ, lien, parent, alias, fichier, relation.
+- Un titre de fiche ou de section modifié hors de l'import n'est pas écrasé au rejeu (avertissement au lot) ; une section sans clé n'est jamais touchée ; rien ne se supprime par omission.
+- Un rejeu sans lot (`?lot=` absent) écrit mais ne laisse aucune trace de compteur ; un lot clos répond 409 `lot_clos`.
+- Reste : la recette de Monsieur au navigateur en bouchon (README, « Recette de l'accès par API »), la fusion dans `epic/kanevas-import`. Tranches suivantes : markdown, secrets, liens, types, arbre, recherche, fichiers, reprise. Pas de tag avant la fusion de l'epic.
 
 **Suivant :** les tranches non encore livrées.

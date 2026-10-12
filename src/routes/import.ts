@@ -5,6 +5,7 @@ import { ErreurService, introuvable } from '../services/erreurs.js';
 import { verifierJeton, type Jeton } from '../services/jetons.js';
 import { cloreLot, lireLot, MAX_RAPPORT, ouvrirLot } from '../services/lots.js';
 import { lireContexteImport } from '../services/import.js';
+import { assurerFiche, lotDeRequete } from '../services/import-fiches.js';
 import { TYPES_FICHE } from '../services/types.js';
 import { registerErreurs } from './erreurs.js';
 
@@ -74,8 +75,9 @@ export async function registerImportRoutes(app: FastifyInstance) {
       return {
         univers: ctx.univers,
         compte: ctx.compte,
-        // The product list with its activation; all on until the types slice (B-42).
-        types: TYPES_FICHE.map((type) => ({ type, active: true })),
+        // The product list with its activation; all on, except compte_rendu, until the types slice (B-42).
+        // `compte_rendu` is listed but not accepted by `PUT /fiches` until kanevas-import-reprise.
+        types: TYPES_FICHE.map((type) => ({ type, active: type !== 'compte_rendu' })),
         limites: { contenuSection: MAX_CONTENU_SECTION, entreesRapport: MAX_RAPPORT },
       };
     });
@@ -88,6 +90,12 @@ export async function registerImportRoutes(app: FastifyInstance) {
     scope.get(`${base}/lots/:lid`, async (request) => {
       const { lid } = request.params as { lid: string };
       return lireLot(app.db, jetonDe(request), entier(lid), app.horloge());
+    });
+
+    scope.put(`${base}/fiches/:cle`, async (request) => {
+      const { cle } = request.params as { cle: string };
+      const { lot } = request.query as { lot?: unknown };
+      return assurerFiche(app.db, jetonDe(request), lotDeRequete(lot), cle, request.body, app.horloge());
     });
 
     scope.post(`${base}/lots/:lid/clore`, async (request) => {

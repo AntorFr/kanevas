@@ -1,4 +1,5 @@
 import type { Db } from '../db/db.js';
+import { exigerMJ } from './droits.js';
 import { introuvable } from './erreurs.js';
 import type { Jeton } from './jetons.js';
 
@@ -139,4 +140,47 @@ export function noterDansLot(
     `UPDATE lots_import SET compteurs = ?, rapport = ?, avertissements = avertissements + ?,
        dernier_ecrit_le = ? WHERE id = ?`,
   ).run(JSON.stringify(lot.compteurs), JSON.stringify(rapport), avert, maintenant.toISOString(), lotId);
+}
+
+/** Batches listed on E-18 (B-49). */
+export const MAX_LOTS_LISTES = 20;
+/** Report entries sent per batch to the screen (E-18: 200, then « … et N autres »). */
+export const MAX_ENTREES_ECRAN = 200;
+
+export interface LotListe extends Omit<Lot, 'rapport'> {
+  jeton: string;
+  refus: EntreeRapport[];
+  alertes: EntreeRapport[];
+  /** Entries of the report beyond the 200 sent per group. */
+  refusAutres: number;
+  alertesAutres: number;
+}
+
+/** The 20 latest batches of the universe, newest first, with their counters and report. GM only. */
+export function listerLots(
+  db: Db,
+  compteId: number,
+  universId: number,
+  maintenant: Date = new Date(),
+): LotListe[] {
+  exigerMJ(db, universId, compteId);
+  const rows = db
+    .prepare(
+      `SELECT l.*, j.nom AS jeton FROM lots_import l JOIN jetons_api j ON j.id = l.jeton_id
+       WHERE l.univers_id = ? ORDER BY l.ouvert_le DESC, l.id DESC LIMIT ?`,
+    )
+    .all(universId, MAX_LOTS_LISTES) as (LotRow & { jeton: string })[];
+  return rows.map((r) => {
+    const { rapport, ...lot } = versLot(r, maintenant);
+    const refus = rapport.filter((e) => e.gravite === 'refus');
+    const alertes = rapport.filter((e) => e.gravite === 'avertissement');
+    return {
+      ...lot,
+      jeton: r.jeton,
+      refus: refus.slice(0, MAX_ENTREES_ECRAN),
+      alertes: alertes.slice(0, MAX_ENTREES_ECRAN),
+      refusAutres: Math.max(0, refus.length - MAX_ENTREES_ECRAN),
+      alertesAutres: Math.max(0, alertes.length - MAX_ENTREES_ECRAN),
+    };
+  });
 }

@@ -109,3 +109,7 @@
   `services/lots.ts` are the only readers/writers of `jetons_api` / `lots_import`; write services of later slices count
   through `noterDansLot` (counters per nature, report capped at 1 000).
 - Markdown (AD-95, AD-113): the only renderer is `rendreMarkdown` in `services/markdown.ts` (`html: false`, links limited to http/https/mailto); a view returns `html` to everyone and the source `contenu` only to who may write it — never render elsewhere, never ship the source to a reader. The ceiling is 100 000 characters (`MAX_CONTENU_SECTION`).
+- Import of sheets (`kanevas-fil-fiches`): `PUT /fiches/:cle` calls `assurerFiche` (`services/import-fiches.ts`), which only composes
+  `creerFiche`, `renommerFiche`, `changerTypeFiche` and the section services. Refusals are validated **before** the transaction
+  (`ErreurService.champ`, sent as `champ` with code `invalide`); with `?lot=` they count « 1 refusée » in the batch, without it they leave
+  no trace; a closed batch answers 409 `lot_clos`. The stub token is `JETON_BOUCHON` (`bouchon/depart.ts`), seeded in « Essai Kanka ».

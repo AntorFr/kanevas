@@ -29,6 +29,9 @@ declare module 'fastify' {
 export async function buildApp() {
   const app = Fastify({
     logger: env.NODE_ENV !== 'test',
+    // An origin key may hold 200 characters (B-47), up to 12 bytes each once percent-encoded; the
+    // default (100) would answer 414 before the service could validate the key.
+    routerOptions: { maxParamLength: 2400 },
   });
 
   // The only connection to the SQLite file; migrations are applied at startup (AD-14).

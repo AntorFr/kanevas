@@ -22,10 +22,10 @@ src/
   config/env.ts                   Variables d'environnement (zod)
   db/                             SQLite (better-sqlite3), migrations/0001 à 0010, runner
   services/                       comptes, univers, membres, instance, fiches, sections, droits, systemes, relations, campagnes, scenarios, preparation, comptes_rendus, propositions, markdown (rendu unique), types,
-                                   pieces-jointes, illustrations, cartes, stockage (octets sur le volume) :
+                                   pieces-jointes, illustrations, cartes, jetons, lots, import (contexte du jeton), import-fiches (API d'import), stockage (octets sur le volume) :
                                    seul code qui lit ou écrit les données ; session, oidc
   routes/                         health, auth (OIDC), session (cookie, garde, /api/moi),
-                                   bouchon, univers (+ membres), instance (admin, AD-87), systemes, suivi, cartes, fiches (+ sections), propositions, assistant, frontend
+                                   bouchon, univers (+ membres), instance (admin, AD-87), systemes, suivi, cartes, fiches (+ sections), propositions, assistant, acces-api (E-18, session), import (API d'import à jeton, `/api/import/v1`), frontend
   bouchon/                        Monde de démonstration semé au démarrage en bouchon (depart.ts) et ses fichiers (demo/)
   services/assistant/             L'assistant : catalogues d'outils, port AgentTransport (bouchon, claude-agent), orchestration, jeton et sa session de connexion
   services/llm/                   Transports LLM repris d'Antre-du-maitre, branchés nulle part
@@ -108,6 +108,17 @@ Recette de la mise à jour du monde en bouchon (le semis ne contient ni campagne
 5. La même demande en `lea` ne crée rien : l'assistant répond « Je ne peux pas le faire : l'outil « proposer_mise_a_jour » ne fait pas partie de ceux dont vous disposez. », sans bloc. Une proposition ne se retrouve pas après un rechargement du fil (AD-79).
 
 Recette du Markdown en bouchon : dans « Lame d'Ébène », en `antor`, ouvrir la fiche « Maître Aldric », « Modifier » sur la section « Apparence », et écrire un intertitre (`## Quartiers`), une liste, un tableau, `**gras**`, `[site](https://exemple.org)`, `[x](javascript:alert(1))` et `<script>alert(1)</script>`, puis « Aperçu » (il montre ce que lira Léa) et « Enregistrer ». Les intertitres sont décalés d'un cran : `## Quartiers` s'affiche en `<h3>`, sous le titre de la section. En `lea`, la fiche montre l'intertitre, la liste, le tableau et le lien web mis en forme ; le lien `javascript:` et la balise restent du texte, aucun script ne s'exécute. Plafond : 100 000 caractères pour tout texte (sections, comptes-rendus, scénarios, entrées de système, propositions), 100 001 est refusé.
+
+Recette de l'accès par API en bouchon (« Essai Kanka » est semé : Antor MJ, Léa joueuse, et un « Jeton du bouchon » de valeur fixe `JETON_BOUCHON`, `src/bouchon/depart.ts`). En `antor`, « Essai Kanka » ▸ « Accès par API » (E-18) : créer un jeton, qui ne s'affiche qu'une fois. Avec lui (ou le jeton du bouchon), l'API d'import (AD-103, AD-104), sur une base neuve (« Essai Kanka » est le 4ᵉ univers semé, id 4 ; sinon l'id est celui de l'adresse de base copiable sur E-18) :
+```bash
+JETON=kvs_bouchon_essai_Hq7Zr2LmX9cVt4Wd8KpNb3YsJf6Ga0Ue   # le jeton du bouchon, ou celui créé sur E-18
+B=http://localhost:3001/api/import/v1/univers/4          # sans barre finale
+curl -H "Authorization: Bearer $JETON" $B                        # le contrat : types, limites
+curl -X POST -H "Authorization: Bearer $JETON" $B/lots            # ouvre (ou reprend) un lot ; {lotId}
+curl -X PUT -H "Authorization: Bearer $JETON" -H 'content-type: application/json' "$B/fiches/lieu:port-sel?lot=<lotId>" \
+  -d '{"type":"lieu","titre":"Port-Sel","sections":[{"cle":"desc","titre":"Description","contenu":"…","joueursLisent":true},{"cle":"verite","titre":"Vérité","contenu":"…"}]}'
+```
+Une section lue des seuls MJ omet `joueursLisent`. Réponse `creee`, puis `inchangee` au rejeu ; E-18 montre les lots. En `lea`, « Description » se lit et « Vérité » n'existe pas. Sans `?lot=`, l'écriture réussit mais aucun lot ne la compte. Seules ces quatre routes de lots et `PUT /fiches/:cle` existent ici (pas de `/fichiers`, de relations ni de `DELETE`). Un `compte_rendu` (listé inactif par `GET`) est refusé (400, `champ: type`) jusqu'à `kanevas-import-reprise`. Le contenu est rendu en Markdown (AD-95).
 
 ### Tests de bout en bout
 
