@@ -7,9 +7,9 @@
 //               is inside the viewport and is the topmost element at its centre (not under the foot)
 //   bords     : heights 480 (shorter), 640 (limit of the short-phone rule) and 641 (just above it): « Paramètres »
 //               reachable too; width 390 only
-//   exclusion : no entry of the navigation hides in a small inner scroll window above the foot at 526
+//   exclusion : the whole bar never scrolls (the foot would slide); no entry is covered by the foot, at 480/526/568/664/800
 //   joueur    : a player's bar has no « Paramètres »; its last entry « Quêtes » is reachable at 390×526
-//   panne visée : the nav scrolls alone under a foot that stays put, so the last entry sits under the foot
+//   panne visée : a sticky foot laid over a scrolling list covers the last entry at rest (« Paramètres » at 664)
 import assert from 'node:assert/strict';
 import { after, before, test } from 'node:test';
 import {
@@ -94,13 +94,6 @@ for (const [theme, hauteur] of [['Clair', 526], ['Sombre', 526], ['Sombre', 480]
   });
 }
 
-test('tiroir MJ sombre 390×526 : aucune entrée ne se cache dans une petite fenêtre défilante au-dessus du pied', opts, async () => {
-  await choisirTheme(antor, 'Sombre');
-  await ouvrirTiroir(antor, 526);
-  const caches = await barre(antor).locator('nav').first().evaluate((el: Any) => el.scrollHeight - el.clientHeight);
-  assert.ok(caches <= 1, `${caches} px de navigation cachés dans le nav`);
-});
-
 test('tiroir MJ sombre 390×526 : le compte du pied reste atteignable', opts, async () => {
   await choisirTheme(antor, 'Sombre');
   await ouvrirTiroir(antor, 526);
@@ -116,66 +109,56 @@ test('tiroir Joueur 390×526 : pas de « Paramètres », la dernière entrée «
   assert.ok(r.ok, `Quêtes inatteignable : ${r.info}`);
 });
 
-// Reopening « le pied n'est plus ancré, la liste s'arrête net sans indice de suite » : at the opening of the drawer on
-// a short phone, the foot sits on the bottom edge of the screen, a fade above it hints that the list goes on, and once
-// scrolled to the end « Paramètres » is above the foot, not under it.
+// Reopening « Paramètres (593–633) is covered by the foot (604–644) at 390×664 »: in the drawer the nav is the only thing
+// that scrolls, in the room left above the foot, which is a flex item below it (never sticky over the list).
 async function mesuresPied(p: Any) {
   return barre(p).evaluate((b: Any) => {
-    const pied = b.querySelector('.pied');
-    const r = pied.getBoundingClientRect();
-    const f = getComputedStyle(pied, '::before');
-    return { bas: r.bottom, haut: r.top, vh: window.innerHeight, fondu: f.backgroundImage, hFondu: f.height, defile: b.scrollHeight - b.clientHeight };
+    const pied = b.querySelector('.pied').getBoundingClientRect();
+    const nav = b.querySelector('nav');
+    const n = nav.getBoundingClientRect();
+    const f = getComputedStyle(b.querySelector('.pied'), '::before');
+    const liens = [...nav.querySelectorAll('a')].map((a: Any) => a.getBoundingClientRect());
+    return {
+      piedHaut: pied.top, piedBas: pied.bottom, navBas: n.bottom, vh: window.innerHeight,
+      cache: nav.scrollHeight - nav.clientHeight, fondu: f.backgroundImage, hFondu: f.height,
+      // an entry is "covered" when its box, clipped by the nav window, still dips into the foot
+      chevauche: liens.filter((r: Any) => Math.min(r.bottom, n.bottom) > pied.top + 1 && r.top < pied.bottom && r.bottom > pied.top + 1 && r.top < n.bottom).length,
+      barreDefile: b.scrollHeight - b.clientHeight,
+    };
   });
 }
 
-for (const theme of ['Clair', 'Sombre'] as const) {
-  test(`tiroir MJ ${theme}, 390×526 à l'ouverture : pied ancré en bas de l'écran et fondu qui montre la suite`, opts, async () => {
+for (const [theme, hauteur] of [['Clair', 480], ['Sombre', 526], ['Clair', 568], ['Sombre', 664], ['Clair', 664], ['Sombre', 800]] as const) {
+  test(`tiroir MJ ${theme}, 390×${hauteur} : la nav défile au-dessus du pied, aucune entrée ne le chevauche`, opts, async () => {
     await choisirTheme(antor, theme);
-    await ouvrirTiroir(antor, 526);
+    await ouvrirTiroir(antor, hauteur);
     const m = await mesuresPied(antor);
-    assert.ok(m.defile > 40, `la barre devrait défiler (${m.defile} px) : ce test suppose une liste plus haute que l'écran`);
-    assert.ok(m.vh - m.bas <= 13, `pied non ancré en bas : ${JSON.stringify(m)}`);
-    assert.match(m.fondu, /linear-gradient/, `aucun fondu au-dessus du pied : ${JSON.stringify(m)}`);
-    assert.equal(m.hFondu, '20px');
-    // scrolled to the end: the foot is still on the bottom edge and « Paramètres » ends above its top
-    await barre(antor).evaluate((b: Any) => { b.scrollTop = b.scrollHeight; });
+    assert.ok(m.vh - m.piedBas <= 13, `pied non ancré en bas : ${JSON.stringify(m)}`);
+    assert.ok(m.navBas <= m.piedHaut + 1, `la nav passe sous le pied : ${JSON.stringify(m)}`);
+    assert.ok(m.barreDefile <= 1, `la barre entière défile (le pied glisserait) : ${JSON.stringify(m)}`);
+    assert.equal(m.chevauche, 0, `une entrée est recouverte par le pied à l'ouverture : ${JSON.stringify(m)}`);
+    if (m.cache > 1) {
+      assert.match(m.fondu, /linear-gradient/, `la nav défile sans fondu : ${JSON.stringify(m)}`);
+      assert.equal(m.hFondu, '20px');
+    }
+    // scrolled to the end: « Paramètres » is whole inside the nav window, above the foot, topmost at its centre
+    await barre(antor).locator('nav').first().evaluate((el: Any) => { el.scrollTop = el.scrollHeight; });
     const fin = await mesuresPied(antor);
-    assert.ok(fin.vh - fin.bas <= 13, `pied décroché après défilement : ${JSON.stringify(fin)}`);
-    const bas = await barre(antor).getByRole('link', { name: rxExact('Paramètres') }).evaluate((el: Any) => el.getBoundingClientRect().bottom);
-    assert.ok(bas <= fin.haut + 1, `Paramètres (bas ${bas}) passe sous le pied (haut ${fin.haut})`);
-    // nothing of the list shows through the strip left under the foot (the bar's padding)
-    const dessous = await barre(antor).evaluate((b: Any) => {
-      const t = document.elementFromPoint(150, window.innerHeight - 4);
-      return t && t !== b && !!t.closest('nav') ? t.outerHTML.slice(0, 80) : '';
-    });
-    assert.equal(dessous, '', `la liste se voit sous le pied : ${dessous}`);
-    await antor.waitForTimeout(500); // the slide-in ends
-    await antor.screenshot({ path: `/tmp/tiroir-pied-${theme}.png` });
-  });
-}
-
-test('tiroir MJ 390×900 : quand tout tient, le pied reste en bas du tiroir et la barre ne défile pas', opts, async () => {
-  await ouvrirTiroir(antor, 900);
-  const m = await mesuresPied(antor);
-  assert.ok(m.vh - m.bas <= 13, `pied non ancré : ${JSON.stringify(m)}`);
-  assert.ok(m.defile <= 1, `la barre défile alors que tout tient : ${JSON.stringify(m)}`);
-});
-
-// Reopening « MJ 390×664 : la nav défile de 30 px, Paramètres coupé sous le pied, sans fondu » : the drawer rule must
-// hold at every phone height, not only under 640 px.
-for (const theme of ['Clair', 'Sombre'] as const) {
-  test(`tiroir MJ ${theme}, 390×664 : « Paramètres » atteignable au-dessus du pied, fondu présent tant que la barre défile`, opts, async () => {
-    await choisirTheme(antor, theme);
-    await ouvrirTiroir(antor, 664);
-    const m = await mesuresPied(antor);
-    assert.ok(m.vh - m.bas <= 13, `pied non ancré à l'ouverture : ${JSON.stringify(m)}`);
-    assert.match(m.fondu, /linear-gradient/, `aucun fondu au-dessus du pied : ${JSON.stringify(m)}`);
-    const caches = await barre(antor).locator('nav').first().evaluate((el: Any) => el.scrollHeight - el.clientHeight);
-    assert.ok(caches <= 1, `${caches} px de navigation cachés dans le nav seul, sous le pied`);
+    assert.equal(fin.chevauche, 0, `après défilement : ${JSON.stringify(fin)}`);
     const r = await atteignable(antor, 'Paramètres');
     assert.ok(r.ok, `Paramètres inatteignable : ${r.info}`);
-    const fin = await mesuresPied(antor);
     const bas = await barre(antor).getByRole('link', { name: rxExact('Paramètres') }).evaluate((el: Any) => el.getBoundingClientRect().bottom);
-    assert.ok(bas <= fin.haut + 1, `Paramètres (bas ${bas}) passe sous le pied (haut ${fin.haut})`);
+    assert.ok(bas <= fin.piedHaut + 1, `Paramètres (bas ${bas}) passe sous le pied (haut ${fin.piedHaut})`);
+    // the first entry is reachable again by scrolling back
+    const premier = await barre(antor).locator('nav a').first();
+    await premier.scrollIntoViewIfNeeded();
+    assert.equal(await premier.isVisible(), true);
   });
 }
+
+test('tiroir MJ 390×900 : quand tout tient, le pied reste en bas du tiroir et rien ne défile', opts, async () => {
+  await ouvrirTiroir(antor, 900);
+  const m = await mesuresPied(antor);
+  assert.ok(m.vh - m.piedBas <= 13, `pied non ancré : ${JSON.stringify(m)}`);
+  assert.ok(m.cache <= 1 && m.barreDefile <= 1, `défilement alors que tout tient : ${JSON.stringify(m)}`);
+});
