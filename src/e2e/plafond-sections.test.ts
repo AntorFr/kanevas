@@ -190,10 +190,10 @@ async function moiAvecLimite(ctx: Any, limite: number): Promise<void> {
   );
 }
 
-test('écran : si l\'écran croit la limite plus large (30 000), le refus 400 du serveur à 100 001 donne le même texte et garde le texte', opts, async () => {
+test('écran : si l\'écran croit la limite plus large (200 000), le refus 400 du serveur à 100 001 donne le même texte et garde le texte', opts, async () => {
   const s = await nouvelleSection('base');
   const { ctx, page } = await connecte(browser, srv.base, 'antor');
-  await moiAvecLimite(ctx, 30000);
+  await moiAvecLimite(ctx, 200000);
   const zone = await ouvrirEdition(page, await titreDe(s));
   await zone.getByRole('textbox').fill('i'.repeat(100001));
   await zone.getByRole('button', { name: rxExact('Enregistrer') }).click();

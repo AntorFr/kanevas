@@ -328,7 +328,7 @@ liste des personnages, alors elle n'y voit pas « Maître Aldric ».
 ### E-9 Fiche
 
 Le titre, le badge du type, puis les **sections** dans leur ordre, chacune un panneau : titre,
-contenu en texte brut (AD-58), et un emplacement de **blocs de section** (relations, pièces
+contenu en Markdown rendu (AD-95), et un emplacement de **blocs de section** (relations, pièces
 jointes : les tranches suivantes y inscrivent le leur, comme pour E-3, dans
 `frontend/src/ecrans/fiche/blocs/` et `registre.ts`).
 
@@ -524,7 +524,7 @@ et depuis E-16 ; son adresse est désormais `/systemes/:sid` (*remplacé par le 
 univers » ; trois onglets, **Règles**, **Créatures**, **Objets** (Créatures par défaut) ; sous
 l'onglet, la liste des entrées du type par nom (ordre alphabétique sans casse), cent à la fois, puis
 « Charger la suite ». Chaque ligne (une **entrée** : une règle, une créature ou un objet ; `gabarit` dans les données) : le nom et la première ligne du contenu (tronquée). Un clic ouvre
-l'entrée **sur place** (le nom, le contenu en texte brut, AD-58).
+l'entrée **sur place** (le nom, le contenu en Markdown, AD-95).
 
 *Le MJ d'un univers rattaché* : « Ajouter une règle » / « Ajouter une créature » / « Ajouter un
 objet » ouvre un formulaire sur place : « Nom » (1 à 120 caractères), « Contenu » (20 000 au plus ; 100 000 depuis `kanevas-import`, AD-106 ;
@@ -814,7 +814,7 @@ pour l'instant. »). Une campagne terminée garde ses panneaux et accepte de nou
 ### E-7 Scénario (MJ)
 
 Atteint depuis E-6 (liste des scénarios, « Créer le scénario »). Le titre, un lien « ← La
-Couronne brisée » vers E-6, le contenu en texte brut (AD-58) ; « Modifier » ouvre « Titre » et
+Couronne brisée » vers E-6, le contenu en Markdown rendu (AD-95) ; « Modifier » ouvre « Titre » et
 « Contenu » (20 000 caractères au plus ; 100 000 et Markdown depuis `kanevas-import`, AD-95, AD-106), « Enregistrer », « Annuler ». Enregistrer envoie la version
 lue (AD-62) ; un scénario ne se supprime pas.
 
@@ -1082,7 +1082,7 @@ bas :
 
 - **l'en-tête** : « Kanevas — assistant », la pastille du catalogue (« MJ » ou « Joueur », mot et
   teinte), « Nouvelle conversation », « Fermer » ;
-- **le fil** : les messages de la personne et les réponses de l'assistant, en texte brut (AD-58 — le fil le reste après `kanevas-import`),
+- **le fil** : les messages de la personne et les réponses de l'assistant, en texte brut (le fil le reste après `kanevas-import`),
   du plus ancien au plus récent ; le fil défile et reste calé sur le dernier message ;
 - **sous une réponse, les écritures** : un bloc « Écrit par l'assistant » par événement (AD-76), le
   libellé (« Section « Notes de la table » complétée », « Scénario « Acte III — La crypte » créé

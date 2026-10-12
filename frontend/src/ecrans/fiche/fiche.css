@@ -29,7 +29,7 @@ a.bouton { text-decoration: none; display: inline-flex; }
 .sec:hover .sec-actions, .sec:focus-within .sec-actions, .sec-actions:has([aria-expanded="true"]) { opacity: 1; }
 @media (hover: none) { .sec-actions { opacity: 1; } }
 .sec .texte { margin-top: var(--e-3); max-width: 66ch; font: 400 var(--t-18)/1.68 var(--police-lecture); color: var(--texte);
-  font-variation-settings: "opsz" 18; white-space: pre-wrap; overflow-wrap: anywhere; }
+  font-variation-settings: "opsz" 18; overflow-wrap: anywhere; }
 .sec .texte.vide { color: var(--texte-3); font-style: italic; }
 .sec .actuelle { margin-top: var(--e-3); }
 

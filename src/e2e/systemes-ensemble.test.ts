@@ -339,8 +339,8 @@ describe('B-14 le référentiel commun', opts, () => {
     await voit(antor, 'Erreur : 120 caractères au plus.');
     await antor.getByLabel(NOM).fill('Clé de brume');
     await antor.getByLabel('Contenu').fill('c'.repeat(100001));
-    await antor.getByRole('button', { name: rxExact('Ajouter') }).click();
     await voit(antor, 'Erreur : 100 000 caractères au plus.');
+    assert.equal(await antor.getByRole('button', { name: rxExact('Ajouter') }).getAttribute('aria-disabled'), 'true');
     await antor.getByLabel('Contenu').fill('c'.repeat(100000));
     await antor.getByRole('button', { name: rxExact('Ajouter') }).click();
     await attendre(antor);

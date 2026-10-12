@@ -71,7 +71,7 @@ const zone = (page: Any, nom: string) => page.getByRole('region', { name: nom, e
 /** Text of a zone without its label line. */
 async function contenu(page: Any, nom: string): Promise<string> {
   const t = (await zone(page, nom).innerText()) as string;
-  return t.replace(new RegExp(`^${nom}\\n`), '');
+  return t.replace(new RegExp(`^${nom}\\n+`), '').trimEnd();
 }
 const appliquer = (page: Any) => page.getByRole('button', { name: /^Appliquer$/ });
 const abandonner = (page: Any) => page.getByRole('button', { name: /^Abandonner$/ });

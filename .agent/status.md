@@ -1,6 +1,6 @@
 # Status — kanevas
 
-> MàJ : 2026-10-09 (assemblage de kanevas-monde, rattrapée sur epic/kanevas)
+> MàJ : 2026-10-12 (assemblage de kanevas-import-markdown, sur `feature/kanevas-import-markdown` ; le reste décrit `epic/kanevas`)
 
 **État :** `epic/kanevas` porte le socle, la première fiche, les systèmes de jeu, le suivi de la séance
 (campagnes, scénarios, préparation, comptes-rendus ; E-6, E-7, E-13) et les pièces jointes (migration
@@ -35,6 +35,8 @@ et adaptateurs `bouchon` et `claude-agent` ; disponibilité ; orchestration `rep
 (`GET /api/univers/:id/assistant`, `POST …/assistant/messages` ; formats dans `ARCHITECTURE.md`), et l'écran `frontend/src/ecrans/assistant*` (bouton flottant inversé, panneau, fil en
 mémoire, registre de blocs d'écriture). Outils : chercher, lire_fiche, lire_section, modifier_section, ajouter_a_section,
 lister_campagnes ; le MJ en plus creer_campagne et creer_scenario. Aucun outil de carte, de graphe ni d'image (la proposition vient de `kanevas-monde`, ci-dessous).
+
+`feature/kanevas-import-markdown` (PR vers `epic/kanevas-import`, non fusionnée) : les textes se lisent et s'écrivent en Markdown (AD-95, AD-96, AD-112). `services/markdown.ts` (`rendreMarkdown`, `markdown-it` 15.0.2, `html: false`, liens http/https/mailto seulement, intertitres décalés, images = texte alternatif) ; chaque lecture renvoie `html`, `contenu` (source) seulement à qui peut écrire (l'assistant reçoit toujours la source, `Acteur.avecSource`) ; `POST /api/apercu` ; migration `0009-plafond-contenu.sql` ; lecture rendue sur E-9, E-7, E-15, E-12 (bascule Rendu / Source) ; éditeur partagé `frontend/src/ui/editeur.tsx` (Gras, Italique, Écrire / Aperçu, compteur). Hors tranche : liens `[[…]]`, bloc MJ, fichiers dans le texte. Les textes existants sont relus tels quels. Piège : les tests e2e lisent `dist/` (relancer `npm run build`).
 
 **Reste :** la fusion et le tag `v*` (recette acceptée par Monsieur). Pour l'assistant : le **premier vrai appel** au modèle n'a jamais eu lieu —
 l'adaptateur `claude-agent` n'est exercé que par une `query` factice. Il se joue sur l'URL déployée, après la fusion de `kanevas-am-deploy`
@@ -77,7 +79,7 @@ catalogue MJ (événement `proposition_creee`) et sa règle du bouchon (« Mets 
 - La suite a été jouée sous Node 22 dans les pods de la chaîne (pas de Docker) ; la CI Node 20 fait foi.
   La règle « conteneurs uniquement » de `CLAUDE.md` est la voie de référence ; un Node local ≥ 20 (README) est le repli quand
   Docker manque.
-- Migrations : 0001 à 0007 sont sur `epic/kanevas` ; 0008 (propositions) sur la branche de `kanevas-monde`, à recaler seulement si une autre tranche fusionne avant (AD-51).
+- Migrations : 0001 à 0007 sont sur `epic/kanevas` ; 0008 (propositions) sur la branche de `kanevas-monde` ; 0009 (plafond 100 000) sur cette feature, à recaler seulement si une autre tranche fusionne avant (AD-51).
 - Les « PR non fusionnée » ci-dessus s'empilent sur `epic/kanevas` ; `recours-admin` est rattrapée dessus et n'ajoute aucune migration.
 - Vocabulaire : « Monsieur » = le commanditaire qui fait la recette ; « tranche » = une feature livrée ; « phase merge » = la
   fusion après recette ; E-n / B-n / P-n = écrans / besoins / parcours, les écrans (E-n) sont dans `docs/ecrans.md`, les besoins (B-n) et les parcours (P-n) dans `docs/parcours.md`.
@@ -105,11 +107,11 @@ catalogue MJ (événement `proposition_creee`) et sa règle du bouchon (« Mets 
   Un refus de lecture répond 404 comme un identifiant inconnu (AD-22) ; 50 pièces au plus par section, pas de
   limite de taille ; ajouter, marquer ou retirer ne change pas la `version` de la section. Pas de route de liste,
   pas de glisser-déposer. `stockage.ts` sert aussi aux fonds de carte (`services/cartes.ts`, AD-69), qui ne passent pas par `deposerPieceJointe`.
-- Rendu du bloc Pièces jointes vérifié par les tests e2e (Playwright) là où il est installé ; la CI ne les joue pas.
+- Rendu du bloc Pièces jointes vérifié par les tests e2e (Playwright) là où il est installé ; la CI l'installe et les joue.
 - « Connexion perdue » (frontend/src/api.ts) : sondé toutes les 3 s sur `/healthz` tant que le bandeau
   est levé ; il disparaît seul au retour du serveur.
-- Le contenu d'une section est plafonné à 20 000 caractères par le serveur (`MAX_CONTENU_SECTION`,
-  AD-91), rendu par `GET /api/moi` (`limites.contenuSection`) ; l'écran de fiche lit cette valeur.
+- Tout texte Markdown (section, compte-rendu, scénario, entrée de système, contenu proposé) est plafonné à 100 000 caractères
+  (`MAX_CONTENU_SECTION`, AD-91, AD-106 ; migration 0009 relève les CHECK SQL), rendu par `GET /api/moi` (`limites.contenuSection`).
 - Doublons connus, non traités : `corps(request)` (routes/fiches.ts, univers.ts), message d'échec
   des écrans, texte du bandeau bouchon (pages.ts / Cadre.tsx).
 
