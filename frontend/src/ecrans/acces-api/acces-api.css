@@ -65,15 +65,25 @@ li.ouvert .lot-tete .chev { transform: rotate(90deg); }
 }
 
 .boite-jeton { width: min(480px, calc(100vw - 32px)); }
-.boite-jeton .boite-corps { display: flex; flex-direction: column; gap: var(--e-3); }
-.boite-jeton form { display: flex; flex-direction: column; gap: var(--e-3); }
-.boite-jeton .segments { display: inline-flex; border: 1px solid var(--bord-champ); border-radius: var(--rayon-pastille); overflow: hidden; }
-.boite-jeton .segments label { padding: var(--e-1) var(--e-3); cursor: pointer; color: var(--texte-2); font-size: var(--t-13); }
+.boite-jeton { flex-direction: column; gap: 0; }
+.boite-jeton .tuile-jeton { width: 36px; height: 36px; border-radius: 10px; display: grid; place-items: center; margin-bottom: var(--e-4);
+  background: var(--accent-fond); color: var(--accent-texte); }
+.boite-jeton .boite-corps { display: flex; flex-direction: column; }
+.page-liste .boite-jeton h2 { font: 600 var(--t-16)/1.35 var(--police-texte); letter-spacing: 0; font-variation-settings: normal; }
+.boite-jeton form { display: flex; flex-direction: column; gap: var(--e-4); margin-top: var(--e-5); }
+.boite-jeton form .champ { margin: 0; }
+.boite-jeton .boite-actions { margin-top: var(--e-1); }
+.boite-jeton .segments { display: inline-flex; padding: 2px; gap: 2px; border-radius: var(--rayon-champ); background: var(--surface-2);
+  box-shadow: inset 0 0 0 1px var(--bord); }
+.boite-jeton .segments label { position: relative; display: inline-flex; align-items: center; height: 28px; padding: 0 12px; cursor: pointer;
+  border-radius: var(--rayon-item); color: var(--texte-3); font-size: var(--t-13); transition: background-color var(--duree), color var(--duree); }
+.boite-jeton .segments label:hover { color: var(--texte); }
 .boite-jeton .segments input { position: absolute; opacity: 0; }
-.boite-jeton .segments label:has(input:checked) { background: var(--accent-fond); color: var(--accent-texte); }
+.boite-jeton .segments label:has(input:checked) { background: var(--surface); color: var(--texte);
+  box-shadow: 0 0 0 1px var(--bord-fort), 0 1px 2px rgba(0,0,0,.18); }
 .boite-jeton .segments label:has(input:focus-visible) { outline: 2px solid var(--focus); outline-offset: -2px; }
 
-.boite-jeton .face-jeton { display: flex; flex-direction: column; gap: var(--e-4); }
+.boite-jeton .face-jeton { display: flex; flex-direction: column; gap: var(--e-4); margin-top: var(--e-5); }
 .face-jeton .lib { display: block; margin-bottom: 6px; font-size: var(--t-12); font-weight: 500; color: var(--texte-2); }
 .face-jeton .valeur { display: block; padding: 6px var(--e-3); font-size: var(--t-13); white-space: nowrap; overflow-x: auto; user-select: all;
   background: var(--surface-2); border-radius: var(--rayon-champ); box-shadow: inset 0 0 0 1px var(--bord-fort); }

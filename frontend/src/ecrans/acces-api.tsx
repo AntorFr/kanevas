@@ -142,6 +142,9 @@ function BoiteNouveauJeton({ base, onFini }: { base: string; onFini: (cree: bool
       }}
     >
       <div className="boite boite-jeton" role="dialog" aria-modal="true" aria-labelledby={idTitre} ref={ref}>
+        <span className="tuile-jeton" aria-hidden="true">
+          <KeyRound size={18} strokeWidth={1.75} />
+        </span>
         <div className="boite-corps">
           <h2 id={idTitre}>Nouveau jeton</h2>
           {valeur === undefined ? (

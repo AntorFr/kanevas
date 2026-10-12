@@ -212,7 +212,7 @@ export function EnteteFiche({ universId, fiche, gestion, badge, Icone, message, 
               <Menu
                 etiquette={`Autres actions sur « ${fiche.titre} »`}
                 icone={Ellipsis}
-                aligne="debut"
+                aligne="fin"
                 entrees={[
                   {
                     contenu: (

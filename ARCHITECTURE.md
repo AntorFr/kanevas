@@ -330,7 +330,7 @@ Les numéros sont stables. Une décision retirée garde son numéro, avec ce qui
 
 ## API d'import (`kanevas-import`, cible)
 
-> Construit par `kanevas-import-fil` : `GET /`, les trois routes de lots, `PUT /fiches/:cle` pour six types (titre, `creeLe`, sections avec clé), sans `?lot=` obligatoire (sans lot, rien n'est compté), plafond de contenu encore à 20 000 (`contenuSection` de `GET /`) ; `compte_rendu` y est listé inactif. Le reste de ce tableau (fichiers, relations, `DELETE`, campagnes, 100 000, Markdown) est la cible des tranches suivantes.
+> Construit par `kanevas-import-fil` : `GET /`, les trois routes de lots, `PUT /fiches/:cle` pour six types (titre, `pj`, `creeLe`, `modifieLe`, sections avec clé), sans `?lot=` obligatoire (sans lot, rien n'est compté), plafond de contenu encore à 20 000 (`contenuSection` de `GET /`) ; `compte_rendu` y est listé inactif. Le reste de ce tableau (fichiers, relations, `DELETE`, campagnes, 100 000, Markdown) est la cible des tranches suivantes.
 
 Contrat que consomme le script de Monsieur, et tout autre (AD-103, AD-104). Base :
 `https://kanevas.berard.me/api/import/v1/univers/:id`, en-tête `Authorization: Bearer kvs_…`. JSON,
