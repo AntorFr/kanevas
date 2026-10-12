@@ -37,3 +37,13 @@
 .admin-zones .formulaire-ligne .bouton { flex: none; white-space: nowrap; }
 @media (max-width: 760px) { .admin-zones .formulaire-ligne { flex-wrap: wrap; } }
 .pastille.selectionne { background: var(--accent-fond); color: var(--accent-texte); }
+
+/* Panel « Jeton de l'assistant »: full width under the two zones */
+.jeton-assistant { margin-top: var(--e-4); }
+.jeton-assistant > h2 { font-size: var(--t-12); font-weight: 600; text-transform: uppercase; letter-spacing: .08em; color: var(--texte-3); margin-bottom: var(--e-2); }
+.jeton-assistant .jeton-actions, .jeton-assistant .jeton-ligne { display: flex; align-items: center; flex-wrap: wrap; gap: var(--e-2); margin-top: var(--e-2); }
+.jeton-assistant .jeton-etiquette { display: block; margin-top: var(--e-3); font-size: var(--t-12); font-weight: 600; color: var(--texte-3); }
+.jeton-assistant .jeton-adresse { flex: 1 1 20rem; min-width: 0; max-height: 64px; overflow: auto; overflow-wrap: anywhere; word-break: break-all; font-family: var(--police-texte); font-size: var(--t-13); padding: var(--e-2) var(--e-3); border: 1px solid var(--bord-champ); border-radius: var(--rayon-champ); background: var(--surface-2); }
+.jeton-assistant .jeton-code { flex: 1 1 14rem; min-width: 0; font: inherit; padding: var(--e-2) var(--e-3); border: 1px solid var(--bord-champ); border-radius: var(--rayon-champ); background: var(--surface); color: var(--texte); }
+.jeton-assistant .jeton-copiee { font-size: var(--t-12); color: var(--texte-3); }
+.jeton-assistant a.bouton { text-decoration: none; }

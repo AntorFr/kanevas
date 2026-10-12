@@ -41,10 +41,11 @@
 - `services/llm/*` (transport.ts, anthropic-transport.ts,
   claude-agent-transport.ts) are reprised from `Antre-du-maitre` (AD-10) and
   unused by any route yet — kept compiling, not wired in. The admin
-  setup-token window (`services/claude-token.ts` upstream) was deliberately
-  not reprised: it is a content route, out of scope for a socle that calls no
-  LLM. Reintroduce it only alongside the feature that actually activates this
-  transport.
+  setup-token window (`claude-token.ts` upstream) is rewritten as
+  `services/assistant/connexion-claude.ts` (AD-112); the token is read only
+  through `services/assistant/jeton.ts` (volume file `<data dir>/claude/oauth-token`
+  first, then `CLAUDE_CODE_OAUTH_TOKEN`) — never read either elsewhere, never
+  return, log or relay the token or the pasted code.
 - `routes/auth.ts` authenticates the identity (OIDC login/callback) and opens
   the signed session cookie (`services/session.ts` signs it, `routes/session.ts` guards, AD-56), creating the account
   on first sign-in (AD-13). Universe roles never come from Authelia nor the
@@ -83,7 +84,7 @@
   catalogue's universe (`lireCampagne`) before `creerScenario`, which only guards on the campaign's own.
 - Assistant transport (`kanevas-am-transport`, `src/services/assistant/`): `repondre(db, compteId, universId,
   message, historique, deps?)` is the single entry point. Availability (`disponibilite.ts`, AD-77) is checked
-  **first**: `KANEVAS_STUB=1` → `bouchon`, non-empty `CLAUDE_CODE_OAUTH_TOKEN` → `claude-agent`, else
+  **first**: `KANEVAS_STUB=1` → `bouchon`, a token (`jetonEffectif()`: the posed file, else non-empty `CLAUDE_CODE_OAUTH_TOKEN`) → `claude-agent`, else
   `assistant_indisponible` and no adapter is built (never a silent stub fallback). `AgentTransport` (`transport.ts`)
   is the port; adapters `bouchon.ts` (AD-78 script calling the real catalogue tools) and `claude-agent.ts`
   (in-process MCP server `kanevas`, `tools: []`, `settingSources: []`, token only in the call's `env`).
@@ -101,9 +102,10 @@
   moved, else `en_attente`), never stored. `appliquerProposition` writes through `ecrireContenu` with
   `version_origine` in the same transaction as the mark (`section_modifiee`, `proposition_appliquee` as
   `ErreurService.detail`, both `conflit`). Never write a section from here by another path (AD-48).
-- Import API (`kanevas-import-fil`, migration 0009, AD-103/104): `routes/import.ts` is the scope `/api/import/v1`, beside the
+- Import API (`kanevas-import-fil`, migration 0010, AD-103/104): `routes/import.ts` is the scope `/api/import/v1`, beside the
   session guard — only a `Bearer kvs_…` token opens it (`verifierJeton`: fingerprint, not revoked, not expired, creator still
   GM), the cookie is ignored there and no other route reads `Authorization`. Refusal is always the same 401 `jeton_invalide`
   and opens no batch; another universe is 404. The clock is `app.horloge()` (tests move it). `services/jetons.ts` and
   `services/lots.ts` are the only readers/writers of `jetons_api` / `lots_import`; write services of later slices count
   through `noterDansLot` (counters per nature, report capped at 1 000).
+- Markdown (AD-95, AD-113): the only renderer is `rendreMarkdown` in `services/markdown.ts` (`html: false`, links limited to http/https/mailto); a view returns `html` to everyone and the source `contenu` only to who may write it — never render elsewhere, never ship the source to a reader. The ceiling is 100 000 characters (`MAX_CONTENU_SECTION`).

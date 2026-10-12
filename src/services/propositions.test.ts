@@ -112,8 +112,8 @@ test('refus sans ligne créée : vide, blanc, trop long, CR non CR, autre univer
   const m = monde();
   assert.equal(err(() => cree(m, '')).code, 'invalide');
   assert.equal(err(() => cree(m, '   \n')).code, 'invalide');
-  assert.equal(err(() => cree(m, 'x'.repeat(20001))).code, 'invalide');
-  cree(m, 'x'.repeat(20000)); // boundary accepted
+  assert.equal(err(() => cree(m, 'x'.repeat(100001))).code, 'invalide');
+  cree(m, 'x'.repeat(100000)); // boundary accepted
   m.db.prepare('DELETE FROM propositions').run();
   // not a report
   assert.equal(
@@ -268,7 +268,7 @@ test('contraintes de la table : index unique partiel et contenu vide/long refus�
       .run(m.u.id, m.antor.id, m.sec.id, m.cr.id, c, applied);
   assert.throws(() => ins('autre', null));
   assert.throws(() => ins('', 'x'));
-  assert.throws(() => ins('x'.repeat(20001), 'x'));
+  assert.throws(() => ins('x'.repeat(100001), 'x'));
   ins('appliquée', 'x');
   ins('appliquée 2', 'x');
 });

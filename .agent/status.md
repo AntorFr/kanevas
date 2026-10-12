@@ -1,6 +1,6 @@
 # Status — kanevas
 
-> MàJ : 2026-10-09 (assemblage de kanevas-monde, rattrapée sur epic/kanevas)
+> MàJ : 2026-10-12 (assemblage de kanevas-import-markdown, sur `feature/kanevas-import-markdown` ; le reste décrit `epic/kanevas`)
 
 **État :** `epic/kanevas` porte le socle, la première fiche, les systèmes de jeu, le suivi de la séance
 (campagnes, scénarios, préparation, comptes-rendus ; E-6, E-7, E-13) et les pièces jointes (migration
@@ -36,6 +36,8 @@ et adaptateurs `bouchon` et `claude-agent` ; disponibilité ; orchestration `rep
 mémoire, registre de blocs d'écriture). Outils : chercher, lire_fiche, lire_section, modifier_section, ajouter_a_section,
 lister_campagnes ; le MJ en plus creer_campagne et creer_scenario. Aucun outil de carte, de graphe ni d'image (la proposition vient de `kanevas-monde`, ci-dessous).
 
+`feature/kanevas-import-markdown` (PR vers `epic/kanevas-import`, non fusionnée) : les textes se lisent et s'écrivent en Markdown (AD-95, AD-96, AD-113). `services/markdown.ts` (`rendreMarkdown`, `markdown-it` 15.0.2, `html: false`, liens http/https/mailto seulement, intertitres décalés, images = texte alternatif) ; chaque lecture renvoie `html`, `contenu` (source) seulement à qui peut écrire (l'assistant suit la même règle : vue rendue pour un lecteur, source pour qui peut écrire) ; `POST /api/apercu` ; migration `0009-plafond-contenu.sql` ; lecture rendue sur E-9, E-7, E-15, E-12 (bascule Rendu / Source) ; éditeur partagé `frontend/src/ui/editeur.tsx` (Gras, Italique, Écrire / Aperçu, compteur). Hors tranche : liens `[[…]]`, bloc MJ, fichiers dans le texte. Les textes existants sont relus tels quels. Piège : les tests e2e lisent `dist/` (relancer `npm run build`).
+
 **Reste :** la fusion et le tag `v*` (recette acceptée par Monsieur). Pour l'assistant : le **premier vrai appel** au modèle n'a jamais eu lieu —
 l'adaptateur `claude-agent` n'est exercé que par une `query` factice. Il se joue sur l'URL déployée, après la fusion de `kanevas-am-deploy`
 (`k8s-home-lab`) et la pose du jeton `CLAUDE_CODE_OAUTH_TOKEN` par Monsieur (OpenBao `claude/kanevas`, property `token`) ; si le SDK refuse
@@ -68,7 +70,7 @@ catalogue MJ (événement `proposition_creee`) et sa règle du bouchon (« Mets 
 
 **Pièges :**
 - Administration : le groupe est lu à la connexion et vaut 7 jours (AD-86) ; la liste rend tous les univers, pagination par 100 côté client ; un admin sans rôle reste un compte sans rôle (AD-9). Les e2e `administration*` dépendent de Playwright (absent du dépôt) .
-- Assistant : `repondre` est l'unique entrée ; ne jamais passer le compte, l'univers ou le rôle en paramètre d'un outil, ni lire
+- Assistant : `repondre` est l'unique entrée ; ne jamais passer le compte, l'univers ou le rôle en paramètre d'un outil, ni lire la configuration par
   `process.env` hors `config/env.ts` (seule exception : `FRONTEND_DIR`, `routes/frontend.ts`). Une erreur du transport est rendue par un message fixe (jamais la cause, qui pourrait citer le jeton).
   Le verrou « une demande à la fois par compte » est en mémoire du processus (une seule instance). Le panneau se monte dans sa propre racine
   React (`assistant.tsx`) : il lit l'adresse par `assistant/adresse.ts`, pas par le routeur.
@@ -77,7 +79,7 @@ catalogue MJ (événement `proposition_creee`) et sa règle du bouchon (« Mets 
 - La suite a été jouée sous Node 22 dans les pods de la chaîne (pas de Docker) ; la CI Node 20 fait foi.
   La règle « conteneurs uniquement » de `CLAUDE.md` est la voie de référence ; un Node local ≥ 20 (README) est le repli quand
   Docker manque.
-- Migrations : 0001 à 0007 sont sur `epic/kanevas` ; 0008 (propositions) sur la branche de `kanevas-monde`, à recaler seulement si une autre tranche fusionne avant (AD-51).
+- Migrations : 0001 à 0007 sont sur `epic/kanevas` ; 0008 (propositions) sur la branche de `kanevas-monde` ; 0009 (plafond 100 000) sur cette feature, à recaler seulement si une autre tranche fusionne avant (AD-51).
 - Les « PR non fusionnée » ci-dessus s'empilent sur `epic/kanevas` ; `recours-admin` est rattrapée dessus et n'ajoute aucune migration.
 - Vocabulaire : « Monsieur » = le commanditaire qui fait la recette ; « tranche » = une feature livrée ; « phase merge » = la
   fusion après recette ; E-n / B-n / P-n = écrans / besoins / parcours, les écrans (E-n) sont dans `docs/ecrans.md`, les besoins (B-n) et les parcours (P-n) dans `docs/parcours.md`.
@@ -105,11 +107,11 @@ catalogue MJ (événement `proposition_creee`) et sa règle du bouchon (« Mets 
   Un refus de lecture répond 404 comme un identifiant inconnu (AD-22) ; 50 pièces au plus par section, pas de
   limite de taille ; ajouter, marquer ou retirer ne change pas la `version` de la section. Pas de route de liste,
   pas de glisser-déposer. `stockage.ts` sert aussi aux fonds de carte (`services/cartes.ts`, AD-69), qui ne passent pas par `deposerPieceJointe`.
-- Rendu du bloc Pièces jointes vérifié par les tests e2e (Playwright) là où il est installé ; la CI ne les joue pas.
+- Rendu du bloc Pièces jointes vérifié par les tests e2e (Playwright) là où il est installé ; la CI l'installe et les joue.
 - « Connexion perdue » (frontend/src/api.ts) : sondé toutes les 3 s sur `/healthz` tant que le bandeau
   est levé ; il disparaît seul au retour du serveur.
-- Le contenu d'une section est plafonné à 20 000 caractères par le serveur (`MAX_CONTENU_SECTION`,
-  AD-91), rendu par `GET /api/moi` (`limites.contenuSection`) ; l'écran de fiche lit cette valeur.
+- Tout texte Markdown (section, compte-rendu, scénario, entrée de système, contenu proposé) est plafonné à 100 000 caractères
+  (`MAX_CONTENU_SECTION`, AD-91, AD-106 ; migration 0009 relève les CHECK SQL), rendu par `GET /api/moi` (`limites.contenuSection`).
 - Doublons connus, non traités : `corps(request)` (routes/fiches.ts, univers.ts), message d'échec
   des écrans, texte du bandeau bouchon (pages.ts / Cadre.tsx).
 
@@ -130,5 +132,14 @@ catalogue MJ (événement `proposition_creee`) et sa règle du bouchon (« Mets 
   CoF Mini…) puis `semerIllustrations` ; `KANEVAS_SANS_SEMIS=1` le coupe (utilisé par les e2e). Jamais hors bouchon.
 - Cartes : un graphe n'a ni position stockée ni déplacement de nœud (AD-71) ; la forme d'une carte ne change jamais ; un fond ne se retire pas, il se remplace ; aucune suppression de carte ni d'élément autre que « Retirer de la carte ». La fiche retirée reste.
 - Propositions (AD-79 à AD-82) : lues, appliquées, abandonnées par leur seul demandeur, encore MJ ; tout autre compte reçoit 404. Le fil ne se garde pas (AD-28) : après un rechargement, une proposition en attente n'est plus atteignable (limite écrite, bornée à une par MJ et section ; pas de liste « mes propositions »). Hors tranche : application par un joueur, propositions en lot. L'assistant ne sait pas quel écran est ouvert : le compte-rendu se nomme dans la demande. Le semis du bouchon n'a ni campagne ni compte-rendu : la recette les crée (README).
+
+`feature/kanevas-import-jeton-assistant` (PR vers `epic/kanevas-import`, non fusionnée) ajoute le jeton de l'assistant posé depuis l'administration (P-15, B-51, AD-109, AD-112), sans migration :
+`services/assistant/jeton.ts` (fichier `<dossier de la base>/claude/oauth-token`, 0600, prime sur `CLAUDE_CODE_OAUTH_TOKEN`, seul résolveur lu par `disponibilite` et `repondre`),
+`services/assistant/connexion-claude.ts` (une session `claude setup-token` sous `script`, 10 min, processus tué à chaque issue),
+trois routes `/api/instance/assistant/jeton…` plus le `GET` d'état (404 hors `parents`), `scripts/faux-setup-token.mjs` (bouchon : code `bouchon`, copié dans l'image) et le panneau de E-5
+(`ecrans/administration/jeton-assistant.tsx`, pleine largeur sous les deux zones). Typecheck, build et tests verts (voir PR). Aucune réponse ne porte la valeur du jeton ni le code.
+**Reste (jeton) :** la recette de Monsieur en bouchon (README), la fusion ; puis le premier vrai appel au modèle sur l'URL déployée avec un jeton réellement posé depuis l'écran
+(`script` et le binaire `claude` du SDK n'ont été éprouvés qu'avec le faux `setup-token` ; le vrai flux, jamais).
+**Pièges (jeton) :** ne lire ni la variable ni le fichier hors de `jeton.ts` ; en bouchon l'assistant reste en transport `bouchon` même avec un jeton posé (AD-77), la disponibilité se prouve par une configuration injectée sans `KANEVAS_STUB` ; la session est en mémoire du processus (une instance, un redémarrage la perd : « La connexion a expiré ») ; un jeton `deploiement` n'a pas de date ; le volume `/data` doit être inscriptible pour que la pose réussisse ; sans volume (base en mémoire) le fichier va sous le dossier temporaire et le jeton est perdu au redémarrage.
 
 **Suivant :** les tranches non encore livrées.
