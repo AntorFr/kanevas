@@ -1,6 +1,6 @@
 import { rendreMarkdown } from './markdown.js';
 import type { Db } from '../db/db.js';
-import { exigerMJ, roleDe } from './droits.js';
+import { exigerMJ, resolveurLiens, roleDe } from './droits.js';
 import { ErreurService, introuvable, invalide } from './erreurs.js';
 import { ecrireContenu, validerContenu } from './sections.js';
 import type { SectionRow } from './types.js';
@@ -43,7 +43,11 @@ function etatDe(p: PropositionRow, s: SectionRow): EtatProposition {
   return s.version !== p.version_origine ? 'perimee' : 'en_attente';
 }
 
-function vue(p: PropositionRow, s: SectionRow): PropositionVue {
+function vue(db: Db, p: PropositionRow, s: SectionRow): PropositionVue {
+  // The reader is the requesting GM, outside player mode: links read as they do on the sheet (AD-116).
+  const acteur = { compteId: p.demandeur_id };
+  const html = (source: string) =>
+    rendreMarkdown(source, { nature: 'section', liens: resolveurLiens(db, p.univers_id, 'mj', acteur, source) });
   return {
     id: p.id,
     universId: p.univers_id,
@@ -52,8 +56,8 @@ function vue(p: PropositionRow, s: SectionRow): PropositionVue {
     crId: p.cr_id,
     contenuActuel: s.contenu,
     contenuPropose: p.contenu_propose,
-    htmlActuel: rendreMarkdown(s.contenu, { nature: 'section' }),
-    htmlPropose: rendreMarkdown(p.contenu_propose, { nature: 'section' }),
+    htmlActuel: html(s.contenu),
+    htmlPropose: html(p.contenu_propose),
     versionOrigine: p.version_origine,
     etat: etatDe(p, s),
     creeLe: p.creee_le,
@@ -134,7 +138,7 @@ export function lireProposition(
   id: number,
 ): PropositionVue {
   const { p, s } = charger(db, compteId, universId, id);
-  return vue(p, s);
+  return vue(db, p, s);
 }
 
 /**

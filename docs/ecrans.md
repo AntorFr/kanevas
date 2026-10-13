@@ -828,8 +828,8 @@ plus. ». Session expirée pendant une saisie : le texte est gardé comme sur E-
 |---|---|---|
 | vide | « Rien d'écrit pour l'instant. » | « Modifier » |
 | chargement | « Chargement du scénario… », le titre absent | — |
-| erreur | « Impossible de charger ce scénario. » ; échec d'écriture : « L'action n'a pas abouti. Réessayez. », texte conservé | « Réessayer » |
-| connexion perdue | le bandeau ; « Enregistrer » désactivé, texte en cours conservé | lire |
+| erreur | « Impossible de charger ce scénario. » ; échec d'écriture : « L'action n'a pas abouti. Réessayez. », texte conservé ; *(kanevas-import-liens)* la liste de `[[` : « Impossible de chercher. » et « Réessayer » | « Réessayer » |
+| connexion perdue | le bandeau ; « Enregistrer » désactivé, texte en cours conservé ; *(kanevas-import-liens)* la liste de `[[` ne s'ouvre pas | lire |
 | refus | Joueur, scénario inconnu, d'une autre campagne ou d'un autre univers : « Page introuvable. » ; un Joueur n'a ni l'écran ni de lien vers lui | « Mes univers » |
 | contenu long | 100 000 caractères : passent à la ligne, affichés en entier ; titre de 120 caractères : passe à la ligne | idem |
 
@@ -1648,7 +1648,7 @@ la tranche qui le cite la première ; plan de l'epic) :
 |---|---|---|
 | « Essai Kanka » (univers, sans système) et un jeton d'API | Antor MJ, Léa Joueuse ; le jeton « Jeton du bouchon » d'Antor, valeur fixe connue des tests (`kvs_bouchon_essai…`), un an, semé **en bouchon seulement** comme tout le semis ; c'est là et avec lui que les critères importent (aucun import dans « Lame d'Ébène ») | `kanevas-import-fil` |
 | « Port-Sel » (lieu de Lame d'Ébène) | « Description » lue des joueurs (Markdown : intertitre, liste, tableau des quartiers), « Histoire » lue des joueurs, **Léa pour auteur avec lecture et écriture**, avec un bloc MJ « Le port est tenu en sous-main par la Guilde des Brumes… », « Vérité » MJ seul | `kanevas-import-secrets` |
-| « La Guilde des Brumes » (faction, MJ seul) ; « Rapport secret de l'amirauté » (événement, MJ seul) | la Guilde invisible de Léa ; le rapport porte, dans un bloc MJ, un lien vers « Maître Aldric » ; « Histoire » de Port-Sel lie « Maître Aldric » et « La Guilde des Brumes » ; « Apparence » de « Maître Aldric » lie « Port-Sel » | `kanevas-import-liens` |
+| « La Guilde des Brumes » (faction, MJ seul) ; « Rapport secret de l'amirauté » (événement, MJ seul) | la Guilde invisible de Léa ; le rapport porte, dans un bloc MJ, un lien vers « Maître Aldric » ; « Histoire » de Port-Sel lie « Maître Aldric » et « La Guilde des Brumes » ; « Apparence » de « Maître Aldric » lie « Port-Sel » ; « Description » de « La Guilde des Brumes » lie « Maître Aldric » ; dans « Essai Kanka », le lieu « Anse-aux-Sels » (lu des joueurs) dont « Description » porte `[[cle:faction:repaire|les contrebandiers du Repaire]]` (en attente) et `[[999999|Capitaine Hesk]]` (cassé : aucune fiche ne porte cet identifiant) | `kanevas-import-liens` |
 | « Les Sphères » (lieu, MJ seul) ; « La Taverne du Kraken », « Les Docks », « Le Phare aux Sels », « Quartier des Cordiers » (lieux lus des joueurs) ; « Le Repaire des contrebandiers » (lieu, MJ seul) | Port-Sel sous Les Sphères ; les cinq sous Port-Sel, dont le Repaire, invisible de Léa | `kanevas-import-arbre` |
 | sous-types des lieux existants | « Val-Fortin » · Ville, « Le Pendu Joyeux » · Taverne, « Rue des Cordiers » · Rue | `kanevas-import-types` |
 | alias, étiquettes, un savoir | Port-Sel : alias « Salport », « Port-aux-Sels », étiquette « Côte des Brumes » (aussi sur « Cercle des Cendres », invisible de Léa) ; « Chronique de l'Âge d'Ombre » (savoir, lu des joueurs) | `kanevas-import-recherche` |
@@ -2093,6 +2093,116 @@ pour l'emplacement du rendu (le contenu y devient mis en forme, la mise en page 
   | E-15 (système rattaché) | éditeur au MJ, rendu | rendu seul, ni source ni barre (champ absent) | sans objet | rendu seul |
 - **Plafond** : 100 000 caractères pour une section, un compte-rendu, un scénario, une entrée de système et
   un contenu proposé ; au-delà le serveur répond 400 « Contenu trop long : 100 000 caractères au plus. ».
+
+### Les liens `[[…]]` — ce que `kanevas-import-liens` construit
+
+*Reconnu* (AD-116) : `[[<id>|<texte>]]` (l'identifiant est un entier ≥ 1) et `[[cle:<clé>|<texte>]]`
+(une clé d'origine d'import), et à l'écriture seulement `[[<id>]]`. Le texte fait 1 à 200 caractères, sans
+`]`, `|` ni saut de ligne ; une forme qui ne tient pas ces règles, ou qui se trouve dans un bloc de code
+ou dans un code en ligne, reste du texte. `[[cle:…]]` s'accepte de l'import comme de l'éditeur (même
+résolution). Un `[[<id>]]` écrit sans texte est **réécrit** par le service en `[[<id>|<titre courant>]]`
+avant d'enregistrer, si l'auteur lit la fiche ; sinon l'écriture est refusée (400, code `lien_illisible`,
+« Cette fiche n'existe pas ou vous ne pouvez pas la lire. »), le texte reste dans le champ. Un
+`[[<id>|<texte>]]` dont la cible est absente ou illisible de l'auteur s'enregistre (le texte est celui de
+l'auteur, rien ne fuit) ; il se lira comme un lien cassé ou comme du texte, selon le lecteur.
+
+*Lecture* : le rendu d'un lien dépend du lecteur et se décide **au rendu, par la cible**, pas par la
+table `liens` : cible lisible du lecteur → `<a class="lien-fiche" href="/univers/<u>/fiche/<id>"
+data-type="<type>">` ; cible illisible → le texte seul, sans élément ni marque ; cible supprimée → pour le
+MJ hors mode Joueur `<span class="lien-casse" tabindex="0">` et son infobulle, le texte seul pour tout
+autre lecteur ; clé en attente → pour le MJ hors mode Joueur `<span class="lien-attente" tabindex="0">`
+(infobulle « Lien en attente : aucune fiche n'a encore la clé « <clé> ». »), le texte seul pour tout autre
+lecteur. En mode Joueur le MJ lit comme un joueur. Un lien dans un bloc MJ n'existe, comme le bloc, que
+pour le MJ hors mode Joueur (le bloc est ôté avant le rendu, AD-98). Le rendu résout tous les liens d'un
+texte en **une** requête (jamais une par lien). L'assistant reçoit `[texte](fiche:<id>)` pour une cible
+lisible et `texte` sinon, jamais un identifiant illisible (AD-96).
+
+*Écriture* : le service qui écrit le contenu d'une section (le point d'écriture unique de
+`kanevas-import-secrets`) remplace, dans la même transaction, les lignes de `liens` de la section : une
+par lien trouvé, avec `dans_bloc_mj` d'après la position du lien, jamais par expression régulière hors des
+jetons du moteur Markdown. Les textes déjà enregistrés avant la tranche ne sont pas rejoués : un
+`[[…]]` d'avant n'était pas une syntaxe, et la table se remplit à la première écriture de la section.
+
+*Import* : `[[cle:<clé>|<texte>]]` dont la clé est connue de l'univers s'enregistre en `[[<id>|<texte>]]` ;
+sinon il reste tel quel, ligne de `liens` « en attente » (`cible_cle`). La création de la fiche qui porte
+la clé réécrit, **dans la même transaction**, les contenus qui l'attendent (`contenu`, `contenu_public`,
+lignes de `liens`) sans toucher à `version`, à `version_importee` ni à `modifie_le` de la section. Un
+rejeu compare le texte envoyé **après** y avoir résolu les clés connues : un lien déjà résolu rend
+« inchangée » (AD-104). Le lot compte « liens et références en attente » à sa clôture (`en_attente`).
+
+*Scénario* (E-7) : mêmes formes, résolues à la lecture dans l'univers de la campagne du scénario, sous les
+droits du lecteur (un MJ de l'univers) ; une clé en attente se résout à la lecture par l'index des clés
+d'origine ; aucune ligne de `liens`. L'éditeur d'un scénario a « Lien vers une fiche » et la liste ouverte
+par `[[`. *Entrée de système* (E-15) : `[[…]]` reste du texte, sans bouton ni liste.
+
+*La liste ouverte par `[[`* (et « Lien vers une fiche », Ctrl/⌘+K) : le composant `ListeRecherche`, appelé
+sans `type` ; elle cherche par titre dans toutes les fiches que le compte lit
+(`GET /api/univers/:id/fiches?q=`), 50 au plus, chaque ligne avec l'icône et le libellé du type.
+Taper après `[[` filtre ; ↑ ↓ choisissent, Entrée insère `[[<id>|<titre>]]` et ferme la liste, Échap la
+ferme et laisse `[[`. Vide de résultat : « Aucune fiche. ». Erreur : « Impossible de chercher. » et
+« Réessayer » ; la saisie n'est pas perdue. Connexion perdue : la liste ne s'ouvre pas, le bandeau commun
+parle.
+
+*« Mentionnée dans »* (B-36, AD-100) : la route de la fiche rend `mentions` (50 premières) et `mentionsSuite`
+(booléen) ; `GET /api/univers/:id/fiches/:fid/mentions?apres=<n>` rend les 50 suivantes. Une ligne par fiche
+source : titre (lien vers elle), icône du type, et le pourquoi — « lien dans « Histoire » » (la section
+qui porte le lien), le libellé de la relation (« Amiral de »), ou les deux séparés par « · » si la
+même fiche cite de plusieurs façons. Une source compte si sa fiche est lisible **et** que la section qui
+porte le lien (ou la relation) l'est, **et** que le lien n'est pas dans un bloc MJ pour un non-MJ ; une
+fiche qui se cite elle-même ne s'affiche pas ; l'ordre est le titre puis l'identifiant. Jamais de
+compteur de ce qui est caché ; `mentionsSuite` se calcule sur ce que le lecteur voit seulement.
+
+*États* (B-29). **Liste ouverte par `[[`** : chargement — la ligne « Recherche… » sous la saisie (la liste précédente
+s'efface) ; vide — « Aucune fiche. » ; erreur — « Impossible de chercher. » et « Réessayer » ; connexion perdue
+— la liste ne s'ouvre pas, `[[` reste du texte, « Enregistrer » est désactivé et le texte en cours conservé ; refus — l'éditeur n'est offert qu'à qui écrit la section, il n'y a donc ni
+bouton ni liste pour les autres (**caché**) ; contenu extrême — un titre de 120 caractères tient sur une ligne
+tronquée par « … » (le titre entier en infobulle), plus de 50 résultats : les 50 premiers puis la ligne
+« Affinez la recherche pour voir les autres. ». **Bloc « Mentionnée dans »** : la suite en cours — le bouton « Afficher
+les N suivants » devient « Chargement… » désactivé ; échec — « Impossible de charger la suite. » et « Réessayer » ;
+connexion perdue — le bouton est désactivé ; les 50 premières arrivent avec la fiche (pas d'état propre).
+**Refus d'écriture** `lien_illisible` : le message, en `--danger`, sous le champ de l'éditeur (E-9 comme E-7), le
+texte conservé, l'enregistrement non fait. **E-7** : mêmes états pour la liste (lignes « erreur » et « connexion perdue » du tableau de E-7) ; E-7 est un écran MJ
+seul qui ne connaît pas le mode Joueur : un lien cassé ou en attente y est toujours marqué ; `lien_illisible` y est sans objet
+(un MJ lit toutes les fiches de l'univers). *Maquette* : `e09-fiche-importee.html#etat-liens`.
+
+*Qui fait quoi* (liens) :
+
+| Rôle | Éditeur : `[[` et « Lien vers une fiche » | Lecture d'un lien | « Mentionnée dans » |
+|---|---|---|---|
+| MJ, hors mode Joueur | oui (E-9, E-7) | lien, cassé, en attente marqués | tout ce qu'il lit, blocs MJ compris |
+| MJ en mode Joueur, sur E-9 | **caché** (aucun geste d'écriture en mode Joueur) | comme un Joueur | comme un Joueur |
+| Joueur, sur E-7 | **caché** : « Page introuvable. », ni écran ni lien vers lui | — | — |
+| Joueur, section qu'il écrit sans bloc MJ | oui | lien si la cible est lue ; sinon, cassé et en attente compris, le texte seul (**caché**, sans marque) | sources lisibles, hors blocs MJ ; le reste est **caché**, sans compteur |
+| Joueur, section qu'il n'écrit pas, ou qui contient un bloc MJ (B-34) | **caché** : pas de « Modifier », donc ni bouton ni liste | idem | idem |
+| Joueur qui tape à la main le lien d'une fiche qu'il ne lit pas | **refusé** : `lien_illisible` | — | — |
+| Admin d'instance non membre | **caché** : « Page introuvable. » sur E-9 et E-7 | — | — |
+
+*Critères* (liste et bloc).
+- Étant donné Antor qui édite « Histoire » de « Port-Sel », quand il tape `[[` puis « ald », alors la liste montre
+  « Maître Aldric » avec l'icône et le libellé de son type ; Entrée insère `[[<id>|Maître Aldric]]`, Échap ferme
+  la liste en laissant `[[`.
+- Étant donné la recherche qui échoue, quand Antor tape `[[`, alors « Impossible de chercher. » et « Réessayer »
+  paraissent et son texte reste.
+- Étant donné une recherche sans résultat, alors « Aucune fiche. ».
+- Étant donné 60 fiches qui citent « Maître Aldric » lisibles de Léa, quand elle ouvre sa fiche, alors « Mentionnée dans »
+  en montre 50 et « Afficher les 10 suivants » ; la touche les ajoute ; sans réseau, le bouton est désactivé.
+- Étant donné « Anse-aux-Sels » dans « Essai Kanka », quand Antor la lit, alors « les contrebandiers du Repaire » est
+  souligné en tirets `--texte-3` (« Lien en attente : aucune fiche n'a encore la clé « faction:repaire ». ») et « Capitaine
+  Hesk » en tirets `--danger` ; Léa lit les deux en texte simple.
+- Étant donné Antor qui a accordé l'écriture aux joueurs sur « Description » de « Port-Sel », et Léa qui y tape à la
+  main `[[<id>]]` (l'identifiant d'une adresse de fiche) de « La Guilde des Brumes », quand elle enregistre, alors
+  « Cette fiche n'existe pas ou vous ne pouvez pas la lire. » paraît sous le champ, son texte intact, la section inchangée.
+- Étant donné une recherche lente, quand Antor tape `[[` puis « ald », alors « Recherche… » paraît sous la saisie jusqu'à la
+  réponse ; hors connexion, `[[` reste du texte et le bandeau commun parle.
+- Étant donné 60 fiches qui répondent à « a », alors la liste montre 50 lignes puis « Affinez la recherche pour voir les
+  autres. » ; un titre de 120 caractères tient sur une ligne finissant par « … ».
+- Étant donné Léa sur une section de « Port-Sel » qu'elle n'écrit pas, alors ni « Lien vers une fiche » ni liste n'existent
+  pour elle ; sur une section qui contient un bloc MJ, pas de « Modifier ».
+- Étant donné « Afficher les 10 suivants » dont la requête est lente, alors le bouton dit « Chargement… » désactivé ; si elle
+  échoue, « Impossible de charger la suite. » et « Réessayer » ; sans réseau, le bouton est désactivé.
+- Étant donné Antor dans le scénario « La Couronne brisée » et la recherche qui échoue, quand il tape `[[`, alors
+  « Impossible de chercher. » et « Réessayer » ; hors connexion, `[[` y reste du texte, « Enregistrer » est désactivé et son
+  texte conservé ; un lien cassé du scénario y est marqué.
 
 ### E-9 Fiche — ce que `kanevas-import` change
 

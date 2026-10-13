@@ -165,3 +165,5 @@ a.cadre-ill:focus-visible { outline-offset: 2px; border-radius: var(--rayon-pann
 }
 .menu .info-fiche svg { margin-top: 2px; flex: none; }
 .menu .info-fiche code { font: 500 11.5px/1.3 ui-monospace, "SF Mono", Menlo, Consolas, monospace; color: var(--texte-2); white-space: nowrap; }
+
+.fiche .blocs:empty { display: none; }

@@ -11,12 +11,14 @@ import {
   vueSection,
 } from './droits.js';
 import { introuvable, invalide } from './erreurs.js';
+import { mentionsDe } from './mentions.js';
 import { lireLignes } from './pieces-jointes.js';
 import {
   TYPES_FICHE,
   type Acteur,
   type Fiche,
   type FicheVue,
+  type PageMentions,
   type SectionRow,
   type TypeFiche,
 } from './types.js';
@@ -179,20 +181,48 @@ export function changerTypeFiche(
  * (B-9). A caller who reads none gets "not found", like an unknown id (AD-22);
  * the GM (outside player mode) reads even a sheet without section.
  */
-export function lireFiche(db: Db, acteur: Acteur, universId: number, ficheId: number): FicheVue {
+export function lireFiche(
+  db: Db,
+  acteur: Acteur,
+  universId: number,
+  ficheId: number,
+  formeLiens: 'html' | 'markdown' = 'html',
+): FicheVue {
   const role = exigerRole(db, universId, acteur.compteId);
   const fiche = chargerFiche(db, universId, ficheId);
   const lisibles = sectionsDe(db, ficheId).filter((s) => peutLireSection(role, s, acteur));
   if (lisibles.length === 0 && (role !== 'mj' || acteur.modeJoueur)) throw introuvable();
+  const mentions = mentionsDe(db, role, acteur, universId, ficheId);
   return {
     ...versFiche(fiche),
+    mentions: mentions.mentions,
+    mentionsSuite: mentions.suite,
+    mentionsRestantes: mentions.restantes,
     // The origin key is a GM matter (B-50): a reader's answer has no such field at all.
     ...(vueMJ(role, acteur) && fiche.cle_origine ? { cleOrigine: fiche.cle_origine } : {}),
     sections: lisibles.map((s) => ({
-      ...vueSection(role, s, acteur),
+      ...vueSection(db, universId, role, s, acteur, formeLiens),
       piecesJointes: lireLignes(db, s.id, vueMJ(role, acteur)),
     })),
   };
+}
+
+/**
+ * The next sources of « Mentionnée dans » (AD-100): `apres` sources are already shown. Same refusal as
+ * the sheet itself — a sheet the caller does not read does not exist.
+ */
+export function lireMentions(
+  db: Db,
+  acteur: Acteur,
+  universId: number,
+  ficheId: number,
+  apres: number,
+): PageMentions {
+  const role = exigerRole(db, universId, acteur.compteId);
+  chargerFiche(db, universId, ficheId);
+  const lisible = sectionsDe(db, ficheId).some((s) => peutLireSection(role, s, acteur));
+  if (!lisible && (role !== 'mj' || acteur.modeJoueur)) throw introuvable();
+  return mentionsDe(db, role, acteur, universId, ficheId, apres);
 }
 
 export const LONGUEUR_RECHERCHE = 100;
