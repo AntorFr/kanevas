@@ -24,19 +24,27 @@ jobs:
   attestation:
     runs-on: ubuntu-latest
     steps:
-      - name: La suite complète a été jouée sur ce commit
+      # The parents too: a PR merge makes a new commit, whose content is the attested head's
+      # when that head already contained the target. Same TREE, same content: the proof holds.
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      - name: La suite complète a été jouée sur ce contenu
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          etat=$(gh api "repos/${{ github.repository }}/commits/${{ github.sha }}/status" \
-            --jq '.statuses[] | select(.context == "tests-complets") | .state' | head -1)
-          desc=$(gh api "repos/${{ github.repository }}/commits/${{ github.sha }}/status" \
-            --jq '.statuses[] | select(.context == "tests-complets") | .description' | head -1)
-          if [ "$etat" != success ]; then
-            echo "::error::Pas d'attestation « tests-complets » verte sur ${{ github.sha }} (${etat:-absente}). Jouer la suite : npm run tests:attestes -- --publier, ou le workflow « tests » sur ce tag ; il relance ce build."
-            exit 1
-          fi
-          echo "Attestation : $desc"
+          arbre=$(git rev-parse 'HEAD^{tree}')
+          for c in $(git rev-list --parents -n 1 HEAD); do
+            [ "$(git rev-parse "$c^{tree}")" = "$arbre" ] || continue
+            st=$(gh api "repos/${{ github.repository }}/commits/$c/status" \
+              --jq '.statuses[] | select(.context == "tests-complets") | .state + " " + .description' | head -1)
+            if [ "${st%% *}" = success ]; then
+              echo "Attestation sur $c (arbre ${arbre:0:7}) : ${st#* }"
+              exit 0
+            fi
+          done
+          echo "::error::Pas d'attestation « tests-complets » verte sur ce contenu (arbre ${arbre:0:7}, commit ${{ github.sha }} ni ses parents de même arbre). Jouer la suite : npm run tests:attestes -- --publier, ou le workflow « tests » sur ce tag ; il relance ce build."
+          exit 1
 
   build:
     needs: attestation
