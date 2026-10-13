@@ -294,6 +294,7 @@ export function PanneauSection(p: Props) {
             max={maxContenu}
             rows={8}
             autoFocus
+            liens={{ universId: p.universId }}
             section={{ universId: p.universId, modeJoueur: p.suffixeMode !== '', blocMJ: mj && p.suffixeMode === '' }}
             erreur={erreurTexte}
             onEnregistrer={() => void enregistrer()}

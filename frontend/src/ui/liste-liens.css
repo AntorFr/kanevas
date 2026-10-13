@@ -1,0 +1,13 @@
+/* The list opened by « [[ » (E-9, E-7): colours and sizes only through tokens.css. */
+.liste-liens { margin: 0 var(--e-2) var(--e-2); padding: var(--e-1); border-radius: var(--rayon-panneau); background: var(--surface);
+  box-shadow: var(--ombre-flottant); max-height: 280px; overflow-y: auto; }
+.liste-liens .option { display: flex; align-items: center; gap: 10px; min-height: 34px; padding: 0 10px; border-radius: var(--rayon-item); cursor: pointer;
+  font-size: var(--t-14); color: var(--texte); }
+.liste-liens .option svg { flex: none; color: var(--texte-3); }
+.liste-liens .option .titre-option { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.liste-liens .option .type-option { margin-left: auto; flex: none; font-size: var(--t-12); color: var(--texte-3); }
+.liste-liens .option:hover, .liste-liens .option[aria-selected="true"] { background: var(--surface-2); }
+.liste-liens .option[aria-selected="true"] svg { color: var(--accent-texte); }
+.liste-liens .option.etat { color: var(--texte-3); cursor: default; }
+.liste-liens .option.etat:hover { background: transparent; }
+@media (max-width: 760px) { .liste-liens .option { min-height: 40px; } }

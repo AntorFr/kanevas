@@ -46,7 +46,7 @@ export function mentionsDe(
     )
     .all(...paramsSrc, LIMITE_MENTIONS + 1, pas) as { id: number; titre: string; type: TypeFiche }[];
   const visibles = page.slice(0, LIMITE_MENTIONS);
-  if (visibles.length === 0) return { mentions: [], suite: false };
+  if (visibles.length === 0) return { mentions: [], suite: false, restantes: 0 };
   const raisons = db
     .prepare(
       `${src} SELECT fiche_id, section_titre, genre, libelle FROM src
@@ -73,5 +73,10 @@ export function mentionsDe(
     type: v.type,
     pourquoi: parFiche.get(v.id) ?? [],
   }));
-  return { mentions, suite: page.length > LIMITE_MENTIONS };
+  const suite = page.length > LIMITE_MENTIONS;
+  // « Afficher les N suivants »: N counts what this reader sees, as the page does.
+  const restantes = suite
+    ? (db.prepare(`${src} SELECT COUNT(*) AS n FROM fiches f WHERE f.id IN (SELECT fiche_id FROM src)`).get(...paramsSrc) as { n: number }).n - pas - LIMITE_MENTIONS
+    : 0;
+  return { mentions, suite, restantes };
 }

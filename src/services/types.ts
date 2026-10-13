@@ -122,6 +122,8 @@ export interface PageMentions {
   mentions: Mention[];
   /** More sources exist beyond this page — computed on what the reader sees only. */
   suite: boolean;
+  /** How many sources follow this page, for the reader (0 when `suite` is false). */
+  restantes: number;
 }
 
 export interface FicheVue extends Fiche {
@@ -129,6 +131,8 @@ export interface FicheVue extends Fiche {
   /** « Mentionnée dans »: the first page (AD-100); the rest through `GET …/mentions?apres=`. */
   mentions: Mention[];
   mentionsSuite: boolean;
+  /** The sources beyond the first page, as this reader sees them. */
+  mentionsRestantes: number;
   /** Import origin key (B-50): only in the GM view (outside player mode), never in a reader's answer. */
   cleOrigine?: string;
 }

@@ -197,6 +197,7 @@ export function lireFiche(
     ...versFiche(fiche),
     mentions: mentions.mentions,
     mentionsSuite: mentions.suite,
+    mentionsRestantes: mentions.restantes,
     // The origin key is a GM matter (B-50): a reader's answer has no such field at all.
     ...(vueMJ(role, acteur) && fiche.cle_origine ? { cleOrigine: fiche.cle_origine } : {}),
     sections: lisibles.map((s) => ({
