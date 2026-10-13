@@ -8,6 +8,15 @@ export interface Audience {
   auteurEcrit: boolean;
 }
 
+/** An attachment as the sheet read carries it (AD-67); `secrete` only in a GM view. */
+export interface PieceJointe {
+  id: number;
+  nom: string;
+  taille: number;
+  image: boolean;
+  secrete?: boolean;
+}
+
 export interface SectionVue {
   id: number;
   titre: string;
@@ -16,6 +25,7 @@ export interface SectionVue {
   version: number;
   modifieLe: string;
   peutEcrire: boolean;
+  piecesJointes?: PieceJointe[];
   /** Only in a GM view (never in player mode). */
   audience?: Audience;
 }
@@ -26,6 +36,8 @@ export interface Fiche {
   type: string;
   titre: string;
   charge: { v?: number; pj?: boolean };
+  /** The sheet's illustration (AD-93): `jeton` changes at each replacement and goes in the image address. */
+  illustration?: { jeton: string } | null;
 }
 
 export interface FicheVue extends Fiche {
@@ -43,4 +55,8 @@ export interface PropsBlocSection {
   fiche: FicheVue;
   section: SectionVue;
   role: Role;
+  /** `?mode=joueur` when the GM views as a player, else ''. */
+  suffixeMode?: string;
+  /** Refetches the sheet after a write. */
+  rafraichir: () => Promise<void>;
 }

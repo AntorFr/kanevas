@@ -1,3 +1,5 @@
+import { FileText, Gem, Hourglass, MapPin, ScrollText, Shield, UsersRound, type LucideIcon } from 'lucide-react';
+
 /** The six lore types reachable from the sidebar (the session report has its own screen, E-13). */
 export interface TypeLore {
   slug: string;
@@ -27,3 +29,15 @@ export function badgeFiche(f: { type: string; charge: { pj?: boolean } }): strin
   if (f.type === 'personnage') return f.charge.pj ? 'PJ' : 'PNJ';
   return typeParType(f.type)?.label ?? f.type;
 }
+
+const ICONES: Record<string, LucideIcon> = {
+  personnage: UsersRound,
+  lieu: MapPin,
+  faction: Shield,
+  objet: Gem,
+  evenement: Hourglass,
+  quete: ScrollText,
+};
+
+/** The icon of a sheet type, the same as its sidebar item. */
+export const iconeDuType = (type: string): LucideIcon => ICONES[type] ?? FileText;

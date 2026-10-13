@@ -71,7 +71,9 @@ async function systeme(page: Any, id: number, onglet = 'Créatures'): Promise<vo
   await ongletVers(page, onglet);
 }
 async function ongletVers(page: Any, onglet: string): Promise<void> {
-  await page.getByRole('tab', { name: rxExact(onglet) }).or(page.getByRole('button', { name: rxExact(onglet) })).first().click();
+  // the tab name carries its count since E-15 shows « Règles 3 » (maquette e15)
+  const nom = new RegExp(rxExact(onglet).source.slice(0, -1) + '( \\d+)?$');
+  await page.getByRole('tab', { name: nom }).or(page.getByRole('button', { name: rxExact(onglet) })).first().click();
   await attendre(page);
 }
 async function creerEtRattacher(page: Any, nom: string): Promise<void> {
@@ -97,6 +99,10 @@ async function optionsCatalogue(page: Any): Promise<string[]> {
 async function api(page: Any, methode: 'GET' | 'POST' | 'PUT' | 'PATCH', url: string, corps?: unknown): Promise<{ status: number; body: string }> {
   const r = await page.request.fetch(url, { method: methode, data: corps === undefined ? undefined : JSON.stringify(corps), headers: { 'content-type': 'application/json' } });
   return { status: r.status(), body: await r.text() };
+}
+async function sidDe(page: Any, idUnivers: number): Promise<number> {
+  const r = await api(page, 'GET', `/api/univers/${idUnivers}`);
+  return JSON.parse(r.body).systeme.id;
 }
 async function ouvrirEntree(page: Any, nom: string): Promise<void> {
   await page.getByText(rxExact(nom)).first().click();
@@ -234,11 +240,11 @@ describe('B-13 rattacher un univers à un système', opts, () => {
   test('catalogue : un Joueur sans univers MJ et un compte sans univers n’en lisent aucun nom', opts, async () => {
     // Léa is only a Joueur; Admin has not created any universe yet.
     for (const page of [lea, admin]) {
-      const r = await api(page, 'GET', '/api/systemes');
+      const r = await api(page, 'GET', '/api/systemes/catalogue');
       assert.ok(r.status >= 400 && r.status < 500, `status ${r.status}`);
       assert.ok(!r.body.includes('CoF Mini'));
     }
-    const r = await api(antor, 'GET', '/api/systemes');
+    const r = await api(antor, 'GET', '/api/systemes/catalogue');
     assert.equal(r.status, 200);
     assert.ok(r.body.includes('CoF Mini'));
   });
@@ -250,7 +256,7 @@ describe('B-14 le référentiel commun', opts, () => {
     await attendre(antor);
     await antor.getByRole('link', { name: rx('Ouvrir le système') }).or(antor.getByRole('button', { name: rx('Ouvrir le système') })).first().click();
     await attendre(antor);
-    assert.match(antor.url(), new RegExp(`/univers/${idLame}/systeme$`));
+    assert.match(antor.url(), new RegExp(`/systemes/\\d+$`)); // E-15 has its own address (AD-94)
     await voit(antor, 'CoF Mini');
     await voit(antor, 'Référentiel commun · utilisé par 2 univers');
     await voit(antor, "Aucune créature pour l'instant.");
@@ -303,9 +309,9 @@ describe('B-14 le référentiel commun', opts, () => {
 
   test('écriture par l’API au nom de Léa refusée ; la même écriture par Antor passe', opts, async () => {
     const corps = { type: 'creature', nom: 'Intrus', contenu: '' };
-    const refus = await api(lea, 'POST', `/api/univers/${idLame}/systeme/gabarits`, corps);
+    const refus = await api(lea, 'POST', `/api/systemes/${await sidDe(antor, idLame)}/gabarits`, corps);
     assert.ok(refus.status >= 400 && refus.status < 500, `status ${refus.status}`);
-    const preuve = await api(antor, 'POST', `/api/univers/${idLame}/systeme/gabarits`, { ...corps, nom: 'Intrus MJ' });
+    const preuve = await api(antor, 'POST', `/api/systemes/${await sidDe(antor, idLame)}/gabarits`, { ...corps, nom: 'Intrus MJ' });
     assert.equal(preuve.status, 201, 'the same body is valid for a MJ');
     await systeme(lea, idLame);
     const t = await texte(lea);
@@ -342,7 +348,7 @@ describe('B-14 le référentiel commun', opts, () => {
   });
 
   test('l’ordre des entrées est alphabétique sans tenir compte de la casse', opts, async () => {
-    for (const nom of ['bête', 'Zèbre', 'Aigle']) await api(antor, 'POST', `/api/univers/${idLame}/systeme/gabarits`, { type: 'creature', nom, contenu: '' });
+    for (const nom of ['bête', 'Zèbre', 'Aigle']) await api(antor, 'POST', `/api/systemes/${await sidDe(antor, idLame)}/gabarits`, { type: 'creature', nom, contenu: '' });
     await systeme(antor, idLame);
     const noms: string[] = await antor.locator('main').getByText(/^(Aigle|bête|Garde du sceau|Intrus MJ|Zèbre)$/).allTextContents();
     assert.deepEqual(noms.map((s) => s.trim()), ['Aigle', 'bête', 'Garde du sceau', 'Intrus MJ', 'Zèbre']);
@@ -350,7 +356,7 @@ describe('B-14 le référentiel commun', opts, () => {
 
   test('cent entrées à la fois puis « Charger la suite »', opts, async () => {
     for (let i = 1; i <= 101; i++) {
-      const r = await api(antor, 'POST', `/api/univers/${idLame}/systeme/gabarits`, { type: 'objet', nom: `Objet ${String(i).padStart(3, '0')}`, contenu: '' });
+      const r = await api(antor, 'POST', `/api/systemes/${await sidDe(antor, idLame)}/gabarits`, { type: 'objet', nom: `Objet ${String(i).padStart(3, '0')}`, contenu: '' });
       assert.equal(r.status, 201);
     }
     await systeme(antor, idLame, 'Objets');
@@ -401,7 +407,8 @@ describe('P-8 univers non rattaché, détachement', opts, () => {
     await attendre(admin);
     await voit(admin, 'Page introuvable.');
     assert.ok(!(await texte(admin)).includes('CoF Mini'));
-    const r = await api(admin, 'GET', `/api/univers/${idBrume}/systeme?type=creature`);
+    const sidLame = await sidDe(antor, idLame);
+    const r = await api(admin, 'GET', `/api/systemes/${sidLame}?type=creature`);
     assert.equal(r.status, 404);
     assert.ok(!r.body.includes('Garde du sceau'));
     await admin.screenshot({ path: '/tmp/sys-brume-introuvable.png' });
@@ -463,7 +470,7 @@ describe('B-29 états de E-14 et E-15', opts, () => {
   test('chargement : « Chargement des paramètres… » (E-14), « Chargement du système… » (E-15)', opts, async () => {
     const cas: [() => string, RegExp, string][] = [
       [() => `/univers/${idLame}/parametres`, /\/api\/(systemes$|univers\/\d+$)/, 'Chargement des paramètres…'],
-      [() => `/univers/${idLame}/systeme`, /\/api\/univers\/\d+\/systeme/, 'Chargement du système…'],
+      [() => `/univers/${idLame}/systeme`, /\/api\/(univers\/\d+$|systemes\/\d+)/, 'Chargement du système…'],
     ];
     for (const [url, motif, message] of cas) {
       const page = await antor.context().newPage();
@@ -482,7 +489,7 @@ describe('B-29 états de E-14 et E-15', opts, () => {
   test('erreur : « Impossible de charger cette page. » (E-14) et « Impossible de charger ce système. » (E-15), « Réessayer » rend le contenu', opts, async () => {
     const cas: [string, RegExp, string, string][] = [
       [`/univers/${idLame}/parametres`, /\/api\/(systemes$|univers\/\d+$)/, 'Impossible de charger cette page.', 'Utilisé par'],
-      [`/univers/${idLame}/systeme`, /\/api\/univers\/\d+\/systeme/, 'Impossible de charger ce système.', 'Garde du sceau'],
+      [`/univers/${idLame}/systeme`, /\/api\/(univers\/\d+$|systemes\/\d+)/, 'Impossible de charger ce système.', 'Garde du sceau'],
     ];
     for (const [url, motif, message, apres] of cas) {
       const page = await antor.context().newPage();
@@ -507,7 +514,7 @@ describe('B-29 états de E-14 et E-15', opts, () => {
     await voit(page, "L'action n'a pas abouti. Réessayez.");
     assert.equal(await page.getByLabel('Nom du système').inputValue(), 'Système raté');
     await systeme(page, idLame);
-    await page.route(/\/api\/univers\/\d+\/systeme\/gabarits$/, (route: Any) => route.fulfill({ status: 500, contentType: 'application/json', body: '{"error":"boom"}' }));
+    await page.route(/\/api\/systemes\/\d+\/gabarits$/, (route: Any) => route.fulfill({ status: 500, contentType: 'application/json', body: '{"error":"boom"}' }));
     await page.getByRole('button', { name: rxExact('Ajouter une créature') }).click();
     await page.getByLabel(NOM).fill('Échec');
     await page.getByLabel('Contenu').fill('Texte gardé');

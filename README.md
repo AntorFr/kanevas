@@ -1,13 +1,15 @@
 # kanevas
 
 Système de gestion de JDR (lore, campagnes, comptes-rendus, droits, cartes).
-Ce dépôt porte le socle (santé, OIDC, image, CI) et la **première fonction métier** :
+Ce dépôt porte le socle (santé, OIDC, image, CI), la **première fonction métier** :
 un MJ crée un univers, y réunit ses joueurs et y écrit des fiches dont chaque section a
 son audience ; un joueur ne lit que ce que l'audience lui ouvre. Ce que le produit permet et
-par quels écrans : `docs/parcours.md`, `docs/ecrans.md`, `docs/donnees.md`. Il y ajoute le **système de jeu** : un référentiel (règles, créatures, objets) que plusieurs
-univers se partagent, rattaché depuis les paramètres de l'univers. Ni relations, ni
-recherche, ni pièces jointes, ni campagnes, ni assistant, ni administration d'instance ne sont
-construits (tranches suivantes) : les passages de ces docs qui les décrivent sont la cible.
+par quels écrans : `docs/parcours.md`, `docs/ecrans.md`, `docs/donnees.md`. Les sigles : E-n = un écran (`docs/ecrans.md`), B-n = un besoin, P-n = un parcours, AD-n = une décision d'architecture (`ARCHITECTURE.md`) ; « Monsieur » = le commanditaire qui fait la recette, « tranche » = une feature livrée, « phase merge » = la fusion qui suit la recette.
+
+Au-delà de la première fonction métier, le dépôt porte le **système de jeu** : un référentiel (règles, créatures, objets) que plusieurs
+univers se partagent, rattaché depuis les paramètres de l'univers. Il porte aussi le **suivi de la séance** : campagnes, scénarios (MJ), préparation en cinq catégories (MJ) et comptes-rendus (tout membre). Il porte enfin les **pièces jointes** : sur chaque section, déposer un fichier, voir une image, télécharger
+les autres, marquer secrète (MJ), retirer. Il porte l'**administration d'instance** : un compte du groupe Authelia `parents` voit les univers et leurs membres (jamais le contenu) et les répare (E-5, B-6). Chaque fiche peut porter une **illustration** (posée par le MJ, grille de cartes E-8, en-tête de E-9), et les **systèmes de jeu** ont leur écran hors des univers (E-16, E-15). Il porte aussi les **relations** entre fiches (bloc Relations de la fiche) et la **recherche** dans un type de fiche, les **cartes** (E-10, E-11 : carte illustrée avec fond et tokens, ou graphe des relations ; visibles ou non des joueurs ; bloc « Cartes visibles » de E-3) et l'**assistant** de chaque membre (E-12 : un panneau de conversation qui cherche, lit, écrit et, pour le MJ, crée une campagne ou un scénario et **propose une mise à jour d'une section** d'après un compte-rendu, que seul son geste « Appliquer » écrit, avec exactement les droits de la personne ; l'accès au modèle passe par l'abonnement Claude de l'exploitant, `CLAUDE_CODE_OAUTH_TOKEN`, et en bouchon un script répond). Le MJ peut aussi lui demander un **portrait** : l'assistant génère une image et l'attache à la section (moteur Codex sur l'abonnement de l'exploitant ; en bouchon, une image fixe).
+
 
 ## Structure
 
@@ -16,27 +18,42 @@ Dockerfile                        Image unique : API Fastify + frontend construi
 src/
   server.ts, app.ts               Démarrage ; assemblage des plugins et des routes
   config/env.ts                   Variables d'environnement (zod)
-  db/                             SQLite (better-sqlite3), migrations/0001, 0002, runner
-  services/                       comptes, univers, membres, fiches, sections, droits, systemes :
+  db/                             SQLite (better-sqlite3), migrations/0001 à 0008, runner
+  services/                       comptes, univers, membres, instance, fiches, sections, droits, systemes, relations, campagnes, scenarios, preparation, comptes_rendus, propositions,
+                                   pieces-jointes, illustrations, cartes, stockage (octets sur le volume) :
                                    seul code qui lit ou écrit les données ; session, oidc
   routes/                         health, auth (OIDC), session (cookie, garde, /api/moi),
-                                   bouchon, univers (+ membres), systemes, fiches (+ sections), frontend
+                                   bouchon, univers (+ membres), instance (admin, AD-87), systemes, suivi, cartes, fiches (+ sections), propositions, assistant, frontend
+  bouchon/                        Monde de démonstration semé au démarrage en bouchon (depart.ts) et ses fichiers (demo/)
+  services/assistant/             L'assistant : catalogues d'outils, port AgentTransport (bouchon, claude-agent), orchestration
+  services/images/                Moteur d'images de l'assistant : port GenerateurImage, adaptateurs bouchon, codex, aucun (AD-88, AD-90)
   services/llm/                   Transports LLM repris d'Antre-du-maitre, branchés nulle part
-frontend/                         React + Vite : charte (ui/), écrans (src/ecrans/), barre latérale
+docs/                             Conception retenue, telle que construite : parcours, écrans, données, charte ; maquettes/ = pages HTML à ouvrir dans un navigateur (e09-fiche.html est la référence de la charte)
+frontend/                         React + Vite : charte (ui/), écrans (src/ecrans/, dont E-5 administration.tsx), barre latérale
 .github/workflows/docker-publish.yml   CI : tests, build, image GHCR
 ```
 
 Un écran est un fichier `frontend/src/ecrans/<nom>.tsx` enregistré par le registre
-(`frontend/src/registre.ts`) ; les couleurs ne viennent que de `frontend/src/ui/tokens.css`
-(`docs/charte.md`).
+(`frontend/src/registre.ts`) ; les couleurs du frontend ne viennent que de `frontend/src/ui/tokens.css` (seule exception, le bandeau bouchon des pages rendues par le serveur, `src/routes/pages.ts`)
+(`docs/charte.md`). Le cadre (`Cadre.tsx`, `Barre.tsx` : navigation à icônes, barre haute, tiroir au téléphone,
+menu de l'avatar qui porte le thème et la déconnexion) et les composants partagés (`frontend/src/ui/` : bouton, menu, toast,
+boîte de dialogue, interrupteur, pastille…) sont communs à tous les écrans. Les polices (Fraunces, Newsreader, Inter,
+`@fontsource`) et les icônes (`lucide-react`) sont empaquetées, sans requête vers un hôte tiers (AD-92).
+
+Tests sans Docker : `npm run typecheck` puis `npm test` (ils jouent aussi les e2e là où Playwright est installé — sans lui ils sont sautés — ce qui est long : voir « Tests de bout en bout » ; un seul fichier : `node --import tsx --test src/e2e/<fichier>.test.ts`, et jamais deux suites à la fois, les e2e démarrent leurs serveurs et échouent en masse sous concurrence) ; la voie Docker de référence est dans `CLAUDE.md`.
 
 ## Démarrage local
 
+**Pour voir les écrans, passe à la section « mode bouchon » ci-dessous** (build du frontend, puis `KANEVAS_STUB=1`). Le bloc qui suit ne lance que l'API.
+
 ```bash
 # écrit node_modules/ et ./data/ (base et session.key) dans le dépôt monté, en root ; les deux sont ignorés par git.
-# Sans `npm run build` préalable, cette voie ne sert que l'API : voir plus bas.
+# Sans `npm run build` préalable (fait dans l'hôte, hors de cette commande), cette voie ne sert que l'API : voir plus bas.
+# Pour voir les écrans (dont E-5, `/administration`) : même conteneur, mais `sh -c "npm ci && npm run build && KANEVAS_STUB=1 npm start"`
+# (ou, avec Node ≥ 20 sur l'hôte, `npm ci` puis la commande de la section « mode bouchon »).
 docker run --rm -p 3001:3001 -v "$PWD":/src -w /src node:20-bookworm-slim sh -c "npm ci && npm run dev"
 # puis, depuis l'hôte : curl http://localhost:3001/healthz
+# (sans KANEVAS_STUB=1 ni les quatre OIDC_*, `/` mène à une connexion OIDC qui répond 404 : aucun écran, pour les voir lancer le mode bouchon ci-dessus)
 ```
 
 Ce bloc ne pose pas de `.env` : les valeurs par défaut suffisent pour `/healthz`, OIDC
@@ -45,7 +62,7 @@ reste désactivé (`/api/auth/oidc/login` répond 404). Pour l'activer, créer `
 aussi `node_modules/` dans le dépôt de l'hôte (ignoré par git) ; il appartient à root : à supprimer par
 `docker run --rm -v "$PWD":/src -w /src node:20-bookworm-slim rm -rf node_modules` ou `sudo rm -rf node_modules`.
 
-Ou, avec un Node 20+ installé localement :
+Ou, avec un Node 20+ installé localement (`engines` : `>=20` ; la suite passe aussi sous Node 22, la CI joue Node 20) :
 
 ```bash
 npm install
@@ -61,21 +78,37 @@ ne montre aucun écran). `npm run dev:front` lance Vite seul (port 5173 par déf
 serveur en bouchon (port 3001), s'y connecter sur `http://localhost:3001/`, puis ouvrir
 `http://localhost:5173/` (le cookie de session ne dépend pas du port).
 
-La voie de référence reste le conteneur Node 20 de `CLAUDE.md` (celle de la CI) ; un Node local
-récent suffit pour les mêmes commandes.
+La voie de référence reste le conteneur Node 20 de `CLAUDE.md` (celle de la CI) ; sans Docker, un Node local
+récent suffit pour les mêmes commandes (`npm ci && npm run typecheck && npm test`).
 
 ### Sans Authelia : le mode bouchon
 
 ```bash
-npm run build && KANEVAS_STUB=1 npm start   # (PORT=… DB_PATH=/tmp/k.db en tête pour ne pas écrire dans ./data/) puis ouvrir http://localhost:3001/ : choix d'un compte de test
+npm ci && npm run build && KANEVAS_STUB=1 npm start   # puis ouvrir http://localhost:3001/ : choix d'un compte de test
+# le semis précède l'écoute du port (moins d'une seconde ici) ; sans écrire dans ./data/ ni sur le port 3001 : npm run build && PORT=3055 DB_PATH=/tmp/k.db KANEVAS_STUB=1 npm start
+# (Ctrl-C l'arrête ; lancé en arrière-plan, kill du processus ; supprimer /tmp/k.db pour repartir d'une base vide ; `session.key` et `attachments/` se créent à côté de la base, donc dans /tmp : prendre un dossier dédié, `DB_PATH=/tmp/kanevas-essai/k.db`, et le supprimer en entier)
 ```
 
 `/connexion-bouchon` remplace Authelia (AD-55) sous un bandeau « mode bouchon ». Les comptes de test
 ont pour identifiants `antor`, `lea`, `teo`, `mira` et `admin` (noms affichés Antor, Léa…) : c'est
-l'identifiant qu'on tape pour ajouter un membre. Un compte n'existe qu'après sa première connexion :
-pour ajouter Léa, se connecter d'abord une fois en Léa (sinon « Ce compte ne s'est jamais connecté. »). Kanevas refuse de
+l'identifiant qu'on tape pour ajouter un membre. Sur une base sans univers, le bouchon sème au démarrage un monde de
+démonstration (« Lame d'Ébène » : Antor MJ, Léa joueuse ; « Les Landes grises » : Mira MJ ; le système « CoF Mini » ;
+des fiches, dont certaines illustrées ; « Les Cendres de Vaëlis », Admin MJ et Antor joueur, rattachée à « Chroniques Oubliées Fantasy » ; Teo n'est membre d'aucun univers) ; `KANEVAS_SANS_SEMIS=1` le coupe. En bouchon l'assistant répond par un script de mots-clés qui appelle les vrais outils (AD-78), connecté en `antor` (MJ de « Lame d'Ébène ») : « Crée une campagne « Les Marches rouges » » puis « Crée un scénario « Acte III — La crypte » dans « Les Marches rouges » » (le semis ne contient aucune campagne) ; chez `lea` (joueuse) la création est refusée ; « Lis-moi la section « Vérité » » donne « Introuvable. » à qui ne la lit pas. Un compte créé hors semis n'existe qu'après sa
+première connexion (sinon « Ce compte ne s'est jamais connecté. » à l'ajout). Kanevas refuse de
 démarrer en bouchon si une variable `OIDC_*` est posée. Avec `NODE_ENV=production` (celui de l'image ; `npm start` ne le pose pas) et sans volume `/data`, la base est en
 mémoire (avertissement au démarrage).
+
+En bouchon seulement, `/demo-composants` (session requise) montre les composants de la charte dans tous leurs états ;
+hors bouchon, cette adresse répond 404 une fois connecté (302 vers la connexion sinon).
+
+Recette de E-14 en bouchon : en `antor`, « Lame d'Ébène » puis « Paramètres » (navigation) ; les trois blocs MJ (Identité, Système de jeu, Créer un système) sont des blocs fermés hachurés d'ambre, filet ambre à gauche, comme les sections MJ seul de la fiche (sous 760 px le débord est de 12 px au lieu de 28). Les textes de l'interface portent l'apostrophe typographique (’).
+
+Recette de la mise à jour du monde en bouchon (le semis ne contient ni campagne ni compte-rendu ; « Maître Aldric » a une section « Vérité — MJ seul », que « Vérité » suffit à désigner). Toujours dans « Lame d'Ébène » :
+1. En `antor`, dans le panneau de l'assistant (bouton flottant) : « Crée une campagne « Marches » ».
+2. Se déconnecter (menu de l'avatar) puis `/connexion-bouchon` : en `lea`, depuis la fiche de la campagne ou l'écran des comptes-rendus (E-13, `docs/ecrans.md`), créer le compte-rendu, titre exactement « Séance 3 » (le bouchon cherche ce titre tel quel), dans cette campagne.
+3. En `antor`, dans le panneau : « Mets à jour la section « Vérité » de « Maître Aldric » d'après le compte-rendu « Séance 3 » » ; le fil montre « Mise à jour proposée » (actuel, proposé) et la fiche est inchangée jusqu'à « Appliquer ». « Proposé » = le contenu actuel suivi de « Mise à jour d'après « Séance 3 ». » ; après « Appliquer », le bloc dit « Appliquée : la section « Vérité — MJ seul » est à jour. » et la fiche montre ce contenu.
+4. Modifier la section depuis la fiche avant d'appliquer rend la proposition périmée (« Appliquer » désactivé, raison affichée).
+5. La même demande en `lea` ne crée rien : l'assistant répond « Je ne peux pas le faire : l'outil « proposer_mise_a_jour » ne fait pas partie de ceux dont vous disposez. », sans bloc. Une proposition ne se retrouve pas après un rechargement du fil (AD-79).
 
 ### Tests de bout en bout
 
@@ -83,16 +116,22 @@ mémoire (avertissement au démarrage).
 Playwright. Le build n'est lancé que si `dist/public/index.html` manque : après un changement dans
 `src/` ou `frontend/`, relancer `npm run build` avant `npm test`, sinon ces tests jouent l'ancien code.
 Les textes de `docs/ecrans.md` sont écrits avec l'apostrophe droite ; l'interface porte l'apostrophe typographique (’).
-Playwright n'est pas une dépendance du dépôt : il doit être installé globalement
-(`/usr/lib/node_modules` ou `/usr/local/lib/node_modules`) avec un Chromium, ce que ne fait ni
-`node:20-bookworm-slim` ni la CI GitHub. Là où il manque, ces tests sont **ignorés avec un message**,
-sans échec ; les autres tests (services, routes HTTP) tournent partout. La CI ne joue donc pas les e2e.
+Playwright n'est pas une dépendance du dépôt (`package.json` ne le porte pas) : `src/e2e/harnais.test.ts` le cherche
+dans le répertoire courant, puis dans `/usr/lib/node_modules` et `/usr/local/lib/node_modules`, et il lui faut un Chromium.
+La CI l'installe sans l'enregistrer (`npm install --no-save playwright@1.63.0 && npx playwright install --with-deps chromium`),
+donc elle joue les e2e (environ 8 min). Pour savoir s'il est vu chez soi : lancer `npm test` et lire la tête de la sortie (un message « playwright is not installed … skipped » dit qu'il manque).
+Là où il manque, ces tests sont **ignorés avec un message** en tête de sortie, sans échec ; les autres tests (services, routes HTTP)
+tournent partout. Compter une dizaine de minutes sans les e2e, un quart d'heure avec, sur un pod chargé (silencieuse jusqu'à la fin).
+Sous forte charge, un e2e peut dépasser son délai de 8 s ou, dans la matrice de E-9 (`refonte-besoin`), échouer sur une assertion de présence : le relancer seul (`node --import tsx --test src/e2e/<fichier>.test.ts`) avant d'y voir un défaut.
+Recette de l'administration en bouchon (le monde de démonstration est semé : « Lame d'Ébène », « Les Landes grises », « Les Cendres de Vaëlis », cinq comptes déjà connus) : se connecter en « Admin », ouvrir `/administration`, choisir « Lame d'Ébène » (où Admin n'a aucun rôle) et ajouter « mira ». Un compte jamais connecté (« nadia ») est refusé. Les e2e `src/e2e/administration*.test.ts` pilotent E-5.
+Recette de l'image en bouchon : en « antor », ouvrir le panneau de l'assistant dans « Lame d'Ébène » et demander « Fais un portrait pour « Apparence » d'« Maître Aldric » » (à recopier tel quel, guillemets « » compris : le bouchon les cherche, sans eux il répond « Je ne sais répondre qu'à des demandes de test… ») : le fil montre « Image attachée à la section… » avec une vignette et « Ouvrir la section » ; une demande qui contient « échec » n'attache rien et répond « Je n'ai pas pu générer l'image. » ; en « lea », l'assistant n'a pas l'outil. Le vrai moteur (Codex) ne se joue que sur l'URL déployée, avec l'`auth.json` de l'exploitant.
+
+Recette des cartes en bouchon (le semis ne contient aucune carte) : en « antor », ouvrir « Cartes » de « Lame d'Ébène », créer « La ville de Brume » (carte illustrée, avec une image en fond), y ajouter une fiche, puis « Rendre visible » ; se reconnecter en « lea » : la carte est dans sa liste, avec les seuls tokens des fiches qu'elle lit. Un graphe se crée de même (forme « Graphe »). Le mode Joueur d'Antor montre ce que voit Léa.
 
 ## Réglages
 
-La liste de départ est `.env.example`. En plus : `APP_NAME` (défaut `kanevas`),
-`APP_VERSION` (défaut `0.0.0-dev`, posée par le build-arg en image), `PORT` (3001), `DB_PATH` (fichier SQLite ; défaut `/data/kanevas.db` avec `NODE_ENV=production`, `./data/kanevas.db` en développement), `SESSION_SECRET` (≥ 16 caractères ; à défaut `session.key`, créée à côté de la base : `/data/session.key` en production, `./data/session.key` en développement), `KANEVAS_STUB` (`1`), `LLM_PROVIDER` (`mock` | `anthropic` | `claude-agent`, défaut `mock`,
-inutilisé tant qu'aucune route n'appelle un LLM).
+La liste de départ est `.env.example` (elle porte aussi `NODE_ENV`, `ANTHROPIC_API_KEY` et `ANTHROPIC_MODEL` ; seuls `ANTHROPIC_MODEL` et `CLAUDE_CODE_OAUTH_TOKEN` servent, à l'assistant ; `ANTHROPIC_API_KEY` n'est lue par aucune route). En plus : `APP_NAME` (défaut `kanevas` ; seul le texte de `/healthz` le reprend),
+`APP_VERSION` (défaut `0.0.0-dev`, posée par le build-arg en image), `PORT` (3001), `DB_PATH` (fichier SQLite ; défaut `/data/kanevas.db` avec `NODE_ENV=production`, `./data/kanevas.db` en développement), `ATTACHMENTS_DIR` (pièces jointes ; défaut `attachments/` à côté de la base, donc `/data/attachments` en production), `SESSION_SECRET` (≥ 16 caractères ; à défaut `session.key`, créée à côté de la base : `/data/session.key` en production, `./data/session.key` en développement), `KANEVAS_STUB` (`1`), `KANEVAS_SANS_SEMIS` (`1` : pas de monde de démonstration en bouchon), `FRONTEND_DIR` (dossier du frontend construit ; posé par les tests de routes, inutile à l'exploitation), `LLM_PROVIDER` (`mock` | `anthropic` | `claude-agent`, défaut `mock` ; validée au démarrage mais lue par aucun code : sans effet, le transport texte n'étant branché nulle part), `CLAUDE_CODE_OAUTH_TOKEN` (jeton de l'abonnement Claude, posé par l'exploitant ; vide = l'assistant est indisponible hors bouchon et le dit, il ne retombe jamais sur le bouchon, AD-77), `CODEX_HOME` (dossier de l'`auth.json` de Codex, posé par l'exploitant ; défaut `codex/` à côté de la base, donc `/data/codex` en production ; sans `codex` exécutable ni `auth.json`, l'assistant n'offre pas la génération d'image, AD-88). `codex` (paquet npm `@openai/codex`, version épinglée par `CODEX_VERSION` dans le `Dockerfile`) n'est installé que dans l'image ; hors image, `npm i -g @openai/codex` le met sur le `PATH`. Rien ne dit l'adaptateur choisi : l'outil `generer_image` est présent dans le catalogue du MJ si et seulement si l'adaptateur n'est pas `aucun`.
 
 ## Version de l'application
 
@@ -136,7 +175,6 @@ manifeste `clusters/tantive/games/kanevas-helm-config.yml` et client OIDC
 fusionner `k8s-home-lab`, dont la fusion déploie.
 
 Pour la carte du code, les invariants et les options écartées, voir `ARCHITECTURE.md`, dont le
-tableau liste toutes les décisions `AD-n` de l'epic Kanevas, avec leur numéro stable. Des
-commentaires du code citent encore `plan.md`, `technique.md` ou `socle-projet` : ce sont des
-documents de conception tenus hors de ce dépôt (magasin de pilotage de la chaîne SDLC), dont ce
-qui doit survivre est dans `ARCHITECTURE.md` et `docs/`.
+tableau liste les décisions `AD-n` retenues pour l'epic, construites ou non (« La cible » dit ce qui est construit), avec leur numéro stable ; les numéros absents sont des décisions retirées ou d'autres tranches, aucune n'est cachée ici. Les
+brouillons et la discussion de conception sont tenus hors de ce dépôt (magasin de pilotage de la chaîne SDLC) ; ce
+qui doit survivre est dans `ARCHITECTURE.md` et `docs/`, qui font foi. « Monsieur » est le commanditaire qui fait la recette, « tranche » une feature livrée, « phase merge » la fusion qui suit la recette.

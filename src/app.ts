@@ -3,15 +3,19 @@ import Fastify from 'fastify';
 
 import { dbPath, env } from './config/env.js';
 import { migrate, openDb, type Db } from './db/db.js';
+import { viderTmp } from './services/stockage.js';
 import { registerAuthRoutes } from './routes/auth.js';
 import { registerBouchonRoutes } from './routes/bouchon.js';
 import { registerHealthRoutes } from './routes/health.js';
 import { registerSessionRoutes } from './routes/session.js';
+import type { DepsRepondre } from './services/assistant/repondre.js';
 import { chargerCleSession } from './services/session.js';
 
 declare module 'fastify' {
   interface FastifyInstance {
     db: Db;
+    /** Config/transport/deadline overrides of the assistant; empty in production, set by tests. */
+    assistantDeps: DepsRepondre;
   }
 }
 
@@ -23,10 +27,13 @@ export async function buildApp() {
   // The only connection to the SQLite file; migrations are applied at startup (AD-14).
   const db = openDb(dbPath);
   migrate(db);
+  // Uploads cut short by a restart leave files in tmp/ (AD-65); in memory (tests) the dir is shared, leave it.
+  if (dbPath !== ':memory:') await viderTmp();
   if (dbPath === ':memory:' && env.NODE_ENV !== 'test') {
     app.log.warn('No /data volume: the database lives in memory and is lost at shutdown.');
   }
   app.decorate('db', db);
+  app.decorate('assistantDeps', {});
   app.addHook('onClose', async () => {
     db.close();
   });

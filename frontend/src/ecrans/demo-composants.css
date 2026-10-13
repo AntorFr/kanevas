@@ -1,0 +1,13 @@
+/* Demo page of the shared components (stub only): layout only, no colour of its own. */
+.demo { max-width: 960px; }
+.demo h1 { margin-bottom: var(--e-2); }
+.demo-intro { color: var(--texte-2); margin: 0 0 var(--e-5); }
+.demo-groupe { margin-bottom: var(--e-6); }
+.demo-groupe > h2 { font-size: var(--t-16); font-weight: 600; margin-bottom: var(--e-3); padding-bottom: var(--e-2); border-bottom: 1px solid var(--bord); }
+.demo-grille { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 380px), 1fr)); gap: var(--e-4); align-items: start; }
+.demo-etat { min-width: 0; }
+.demo-etat-titre { font-size: var(--t-12); color: var(--texte-3); margin-bottom: var(--e-2); }
+.demo-ligne { display: flex; flex-wrap: wrap; align-items: center; gap: var(--e-2); }
+.demo-colonne { max-width: 320px; }
+.demo-bandeaux { display: flex; flex-direction: column; gap: var(--e-2); }
+.demo-bandeaux .bandeau { position: static; }

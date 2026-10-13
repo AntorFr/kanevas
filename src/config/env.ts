@@ -1,5 +1,7 @@
 import { config as loadEnv } from 'dotenv';
 import { existsSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { z } from 'zod';
 
@@ -15,8 +17,12 @@ const envSchema = z.object({
   APP_VERSION: z.string().min(1).default('0.0.0-dev'),
   // SQLite file (AD-5). Defaults: the /data volume in production, memory in tests.
   DB_PATH: z.string().min(1).optional(),
+  // Attachment directory (AD-7); defaults to <db dir>/attachments.
+  ATTACHMENTS_DIR: z.string().min(1).optional(),
   // Stub mode (AD-55): sign in by picking a test account, no Authelia. Never in production.
   KANEVAS_STUB: z.enum(['1']).optional(),
+  // Stub mode only: `1` skips the starting-world seeding (e2e servers that build their own world).
+  KANEVAS_SANS_SEMIS: z.enum(['1']).optional(),
   // Session cookie signing secret (AD-56); absent, one is created once in <data dir>/session.key.
   SESSION_SECRET: z.string().min(16).optional(),
   PORT: z.coerce.number().int().positive().default(3001),
@@ -27,8 +33,14 @@ const envSchema = z.object({
   OIDC_CLIENT_ID: z.string().min(1).optional(),
   OIDC_CLIENT_SECRET: z.string().min(1).optional(),
   OIDC_REDIRECT_URI: z.string().url().optional(),
-  // LLM transports reused from Antre-du-maitre (AD-10): no route of this
-  // socle calls them yet.
+  // Assistant (AD-54, AD-77): Claude subscription token, set by the operator; empty or absent =
+  // no assistant outside the stub. Read here only, never logged.
+  CLAUDE_CODE_OAUTH_TOKEN: z.string().optional(),
+  // Codex image engine (AD-50, AD-88): directory holding `auth.json` (put there by the operator, never
+  // logged). Empty or absent = `<db dir>/codex`, i.e. `/data/codex` in production.
+  CODEX_HOME: z.string().optional(),
+  // LLM transports reused from Antre-du-maitre (AD-10): no route calls them; only
+  // ANTHROPIC_MODEL is read, by the assistant's claude-agent adapter (AD-73).
   ANTHROPIC_API_KEY: z.string().optional(),
   ANTHROPIC_MODEL: z.string().min(1).default('claude-sonnet-4-6'),
   LLM_PROVIDER: z.enum(['mock', 'anthropic', 'claude-agent']).default('mock'),
@@ -59,3 +71,16 @@ export const dbPath =
     : env.NODE_ENV === 'test'
       ? ':memory:'
       : './data/kanevas.db');
+
+// Attachment bytes (AD-7) live next to the database, on the same volume. In
+// memory (tests, bare host) they go under the OS temp dir.
+export const attachmentsDir =
+  env.ATTACHMENTS_DIR ??
+  (dbPath === ':memory:' ? join(tmpdir(), 'kanevas-attachments') : join(dirname(dbPath), 'attachments'));
+
+// Codex credentials and generated images (AD-50, AD-88, AD-90) live on the volume too.
+export const codexHome = env.CODEX_HOME?.trim() || (dbPath === ':memory:' ? join(tmpdir(), 'kanevas-codex') : join(dirname(dbPath), 'codex'));
+
+// Disposable working directories of the image engine: `<racine>/<uuid>` (AD-90).
+export const imagesTmpDir =
+  dbPath === ':memory:' ? join(tmpdir(), 'kanevas-images') : join(dirname(dbPath), 'tmp', 'images');

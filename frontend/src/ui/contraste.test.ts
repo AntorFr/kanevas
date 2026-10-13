@@ -82,7 +82,7 @@ test('contraste : le calcul sait échouer (gris tertiaire du cadrage #6b6a72 sur
   assert.ok(r > 3.2 && r < 3.3, String(r)); // charte: 3,24
 });
 
-test('contraste : valeurs de référence de la charte (texte sur surface 15,77 / 17,30)', () => {
-  assert.ok(Math.abs(ratio(couleur(sombre['texte']!), couleur(sombre['surface']!)) - 15.77) < 0.02);
-  assert.ok(Math.abs(ratio(couleur(clair['texte']!), couleur(clair['surface']!)) - 17.3) < 0.02);
+test('contraste : valeurs de référence de la charte (texte sur surface 14,72 / 17,16, charte §5)', () => {
+  assert.ok(Math.abs(ratio(couleur(sombre['texte']!), couleur(sombre['surface']!)) - 14.72) < 0.02);
+  assert.ok(Math.abs(ratio(couleur(clair['texte']!), couleur(clair['surface']!)) - 17.16) < 0.02);
 });

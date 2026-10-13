@@ -10,7 +10,7 @@ export function choixMemorise(): ChoixTheme {
   } catch {
     /* storage blocked: default */
   }
-  return 'sombre'; // charte: dark by default
+  return 'systeme'; // charte §2: follows the system by default
 }
 
 /** "Système" is resolved to dark or light here, so tokens.css has only two colour blocks. */

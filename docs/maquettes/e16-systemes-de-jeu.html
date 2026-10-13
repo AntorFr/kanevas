@@ -1,0 +1,814 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Systèmes de jeu — Kanevas</title>
+<meta name="color-scheme" content="light dark">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&display=swap" rel="stylesheet">
+<script>
+/* Thème avant le premier rendu : choix mémorisé (Clair, Sombre, Système), sinon le système. */
+(function () {
+  var c = 'systeme';
+  try { c = localStorage.getItem('kanevas-theme') || 'systeme'; } catch (e) {}
+  var clair = c === 'clair' || (c === 'systeme' && matchMedia('(prefers-color-scheme: light)').matches);
+  document.documentElement.dataset.theme = clair ? 'light' : 'dark';
+})();
+</script>
+<style>
+/* =====================================================================================
+   MAQUETTE FINIE — E-16 Systèmes de jeu (hors de tout univers), en grille de cartes.
+   Illustre docs/ecrans.md : « Navigation » (barre réduite : Mes univers, Systèmes de jeu),
+   « Inventaire » et « Rôles × écrans × actions » (E-16), et « Détail des écrans de
+   kanevas-illustrations » › « Systèmes de jeu, hors des univers » › « E-16 Systèmes de jeu »
+   (carte de système : en-tête dessiné d'après le nom, nom, usage, entrées, puces de vos univers,
+   « Lecture seule » ; toute la carte mène à E-15), « Qui voit quoi (systèmes) », « Critères
+   (systèmes) ». Décision : AD-94 ; AD-84. Composant : docs/charte.md, « Carte de système ».
+   Le document prime sur la maquette.
+
+   Compte par défaut : antor (MJ de Lame d'Ébène → CoF Mini ; Joueur des Cendres de Vaëlis →
+   Chroniques Oubliées Fantasy, en lecture seule).
+   États à ouvrir par l'adresse (combinables : #etat-joueur,perdue) :
+     #etat-joueur      lea (Joueuse de Lame d'Ébène) : CoF Mini, « Lecture seule »
+     #etat-mira        mira (MJ des Landes grises) : CoF Mini, sa seule puce ; « Lame d'Ébène » absent
+     #etat-vide        teo : aucun système (membre d'aucun univers)
+     #etat-vide-joueur un compte MJ d'aucun univers (lea, ses univers sans système) : « … quand leur MJ en
+                       rattachera un. », sans lien
+     #etat-vide-mj     un MJ dont aucun univers n'a de système : le chemin vers les paramètres
+     #etat-chargement  « Chargement des systèmes… »
+     #etat-erreur      « Impossible de charger les systèmes de jeu. » et « Réessayer »
+     #etat-perdue      connexion perdue : la grille reste
+     #etat-long        nom de 80 caractères, système utilisé par 12 univers du compte
+     #etat-menu        menu du compte ouvert
+     #etat-tiroir      barre latérale ouverte au téléphone
+   Refus : sans objet (E-16 n'a pas de paramètre et ne montre que ce que le compte voit).
+   ===================================================================================== */
+
+/* ---------- Tokens (docs/charte.md) — sombre ---------- */
+:root {
+  color-scheme: dark;
+  --fond: #121317;
+  --fond-lateral: #0e0f12;
+  --surface: #191a1f;
+  --surface-2: #202128;
+  --surface-3: #2a2b33;
+  --bord: rgba(255,255,255,.08);
+  --bord-fort: rgba(255,255,255,.14);
+  --bord-champ: #74757f;
+  --texte: #ebecf0;
+  --texte-2: #a6a7b0;
+  --texte-3: #8b8c97;
+  --accent: #8b9bf0;
+  --sur-accent: #11142b;
+  --accent-texte: #9aa6f5;
+  --accent-fond: rgba(154,166,245,.16);
+  --mj: #f2a33c;
+  --mj-fond: rgba(242,163,60,.14);
+  --mj-bord: rgba(242,163,60,.42);
+  --mj-trame: rgba(242,163,60,.075);
+  --table: #3fc79a;
+  --table-fond: rgba(63,199,154,.14);
+  --table-bord: rgba(63,199,154,.55);
+  --danger: #ec7b6f;
+  --sur-danger: #1a0c0a;
+  --danger-fond: rgba(236,123,111,.14);
+  --focus: #9aa6f5;
+  --voile: rgba(5,6,9,.62);
+  --ombre-flottant: 0 0 0 1px rgba(255,255,255,.06), 0 12px 32px -6px rgba(0,0,0,.6), 0 2px 6px rgba(0,0,0,.35);
+  --squelette: rgba(255,255,255,.06);
+
+  --police-titre: "Fraunces", "Iowan Old Style", Georgia, serif;
+  --police-lecture: "Newsreader", "Iowan Old Style", Georgia, serif;
+  --police-texte: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --t-12: 12px; --t-13: 13px; --t-14: 14px; --t-16: 16px; --t-18: 18px; --t-22: 22px; --t-32: 32px; --t-40: 40px;
+  --e-1: 4px; --e-2: 8px; --e-3: 12px; --e-4: 16px; --e-5: 24px; --e-6: 32px; --e-7: 48px; --e-8: 64px;
+  --rayon-item: 6px;
+  --rayon-champ: 8px;
+  --rayon-panneau: 12px;
+  --rayon-pastille: 999px;
+  --duree: 160ms;
+  --courbe: cubic-bezier(.2,.7,.2,1);
+}
+/* ---------- Tokens — clair ---------- */
+:root[data-theme="light"] {
+  color-scheme: light;
+  --fond: #fcfcfd;
+  --fond-lateral: #f4f5f7;
+  --surface: #ffffff;
+  --surface-2: #f1f2f5;
+  --surface-3: #e8e9ee;
+  --bord: rgba(22,26,44,.09);
+  --bord-fort: rgba(22,26,44,.16);
+  --bord-champ: #808290;
+  --texte: #1a1b22;
+  --texte-2: #4a4c58;
+  --texte-3: #646674;
+  --accent: #3a4cc0;
+  --sur-accent: #ffffff;
+  --accent-texte: #3a4cc0;
+  --accent-fond: rgba(58,76,192,.10);
+  --mj: #8a5300;
+  --mj-fond: rgba(214,140,30,.14);
+  --mj-bord: rgba(176,108,10,.45);
+  --mj-trame: rgba(176,108,10,.09);
+  --table: #08694a;
+  --table-fond: rgba(8,105,74,.12);
+  --table-bord: rgba(8,105,74,.70);
+  --danger: #b4352b;
+  --sur-danger: #ffffff;
+  --danger-fond: rgba(180,53,43,.10);
+  --focus: #3a4cc0;
+  --voile: rgba(20,22,34,.38);
+  --ombre-flottant: 0 0 0 1px rgba(22,26,44,.08), 0 12px 32px -8px rgba(22,26,44,.22), 0 2px 6px rgba(22,26,44,.08);
+  --squelette: rgba(22,26,44,.07);
+}
+@media (prefers-reduced-motion: reduce) { :root { --duree: 0ms; } }
+
+/* ---------- Base ---------- */
+*, *::before, *::after { box-sizing: border-box; }
+html { scroll-padding-top: 72px; -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: var(--fond); color: var(--texte); font: 400 var(--t-14)/1.5 var(--police-texte);
+  -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; font-feature-settings: "cv11", "ss01"; }
+h1, h2, h3, p, ul { margin: 0; }
+[hidden] { display: none !important; }
+ul { padding: 0; list-style: none; }
+a { color: inherit; text-decoration: none; }
+button, input, select, textarea { font: inherit; color: inherit; }
+button { background: none; border: 0; padding: 0; cursor: pointer; }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; border-radius: var(--rayon-item); }
+.i { width: 16px; height: 16px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.75;
+  stroke-linecap: round; stroke-linejoin: round; }
+.i.p { width: 14px; height: 14px; }
+.i.pp { width: 12px; height: 12px; stroke-width: 2; }
+.lecteur { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+kbd { font: 500 11px/1 var(--police-texte); color: var(--texte-3); border: 1px solid var(--bord-fort);
+  border-bottom-width: 2px; border-radius: 4px; padding: 2px 5px; }
+
+/* ---------- Bouton ---------- */
+.bouton { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 30px;
+  padding: 0 var(--e-3); border-radius: var(--rayon-champ); border: 1px solid var(--bord-fort);
+  background: var(--surface-3); color: var(--texte); font-size: var(--t-13); font-weight: 500; white-space: nowrap;
+  transition: background-color var(--duree), border-color var(--duree), color var(--duree); }
+.bouton:hover { border-color: var(--bord-champ); }
+.bouton.principal { background: var(--accent); border-color: transparent; color: var(--sur-accent); }
+.bouton.principal:hover { background: color-mix(in srgb, var(--accent) 88%, var(--texte)); }
+.bouton.danger { background: var(--danger); border-color: transparent; color: var(--sur-danger); }
+.bouton.danger:hover { background: color-mix(in srgb, var(--danger) 88%, var(--texte)); }
+.bouton.fantome { background: transparent; border-color: transparent; color: var(--texte-2); }
+.bouton.fantome:hover { background: var(--surface-2); color: var(--texte); }
+.bouton.petit { min-height: 26px; padding: 0 var(--e-2); font-size: var(--t-12); }
+.bouton[aria-disabled="true"], .bouton:disabled { opacity: .45; cursor: not-allowed; }
+.icone { width: 28px; height: 28px; display: inline-grid; place-items: center; border-radius: var(--rayon-item);
+  color: var(--texte-3); transition: background-color var(--duree), color var(--duree); }
+.icone:hover, .icone[aria-expanded="true"] { background: var(--surface-2); color: var(--texte); }
+.icone.danger:hover { background: var(--danger-fond); color: var(--danger); }
+.icone[aria-disabled="true"] { opacity: .4; cursor: not-allowed; }
+.lien-action { display: inline-flex; align-items: center; gap: 6px; min-height: 26px; padding: 0 6px; margin-left: -6px;
+  border-radius: var(--rayon-item); color: var(--texte-2); font-size: var(--t-13); font-weight: 500;
+  transition: background-color var(--duree), color var(--duree); }
+.lien-action:hover { background: var(--surface-2); color: var(--texte); }
+.lien-action .i { color: var(--texte-3); }
+.lien-action[aria-disabled="true"] { opacity: .45; cursor: not-allowed; }
+
+/* ---------- Pastilles ---------- */
+.pastille { display: inline-flex; align-items: center; gap: 5px; height: 22px; padding: 0 8px;
+  border-radius: var(--rayon-pastille); font: 500 var(--t-12)/1 var(--police-texte); white-space: nowrap;
+  background: var(--surface-2); color: var(--texte-2); }
+.pastille.mj { background: var(--mj-fond); color: var(--mj); }
+.pastille.table { background: var(--table-fond); color: var(--table); }
+.pastille .av { width: 16px; height: 16px; font-size: 9px; margin-left: -4px; }
+button.pastille { cursor: pointer; transition: box-shadow var(--duree); }
+button.pastille:hover, button.pastille[aria-expanded="true"] { box-shadow: inset 0 0 0 1px currentColor; }
+button.pastille .chev { opacity: .7; margin-right: -2px; }
+.type { display: inline-flex; align-items: center; gap: 6px; height: 24px; padding: 0 9px 0 7px;
+  border-radius: var(--rayon-item); background: var(--surface-2); color: var(--texte-2); font-size: var(--t-12); font-weight: 500; }
+.type .i { color: var(--texte-3); }
+
+/* ---------- Avatar ---------- */
+.av { width: 28px; height: 28px; border-radius: 50%; display: inline-grid; place-items: center; flex: none;
+  background: var(--accent-fond); color: var(--accent-texte); font: 600 11px/1 var(--police-texte); letter-spacing: .02em; }
+.av.l { background: var(--table-fond); color: var(--table); }
+
+/* =====================================================================================
+   Cadre
+   ===================================================================================== */
+.app { display: grid; grid-template-columns: 252px minmax(0, 1fr); min-height: 100vh; }
+.colonne-barre { background: var(--fond-lateral); border-right: 1px solid var(--bord); }
+.barre { position: sticky; top: 0; height: 100vh; display: flex; flex-direction: column; padding: var(--e-3) var(--e-3) var(--e-3); }
+
+/* Sélecteur d'univers */
+.ancre { position: relative; }
+.univers { display: flex; align-items: center; gap: 10px; width: 100%; padding: 6px; border-radius: var(--rayon-champ); text-align: left;
+  transition: background-color var(--duree); }
+.univers:hover, .univers[aria-expanded="true"] { background: var(--surface-2); }
+.sceau { width: 30px; height: 30px; border-radius: 8px; flex: none; display: grid; place-items: center;
+  background: var(--surface-3); color: var(--texte); font: 600 15px/1 var(--police-titre); box-shadow: inset 0 0 0 1px var(--bord-fort); }
+.univers .nom { flex: 1; min-width: 0; font-weight: 600; font-size: var(--t-14); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.univers > .i { color: var(--texte-3); }
+.univers { display: grid; grid-template-columns: 30px minmax(0,1fr) auto; grid-template-areas: "s n c" "s r c"; column-gap: 10px; row-gap: 2px; align-items: center; }
+.univers > .sceau { grid-area: s; } .univers > .nom { grid-area: n; } .univers > .pastille { grid-area: r; justify-self: start; font-size: 11px; height: 18px; } .univers > .i { grid-area: c; }
+
+
+/* Navigation */
+.barre nav { flex: 1; overflow-y: auto; margin-top: var(--e-3); padding-right: 2px; }
+.groupe + .groupe { margin-top: var(--e-4); }
+.groupe-titre { padding: 0 10px 4px; font-size: var(--t-12); font-weight: 500; color: var(--texte-3); }
+.item { display: flex; align-items: center; gap: 10px; min-height: 30px; padding: 0 10px; border-radius: var(--rayon-item);
+  color: var(--texte-2); font-size: var(--t-13); font-weight: 500; transition: background-color var(--duree), color var(--duree); }
+.item .i { color: var(--texte-3); transition: color var(--duree); }
+.item:hover { background: var(--surface-2); color: var(--texte); }
+.item:hover .i { color: var(--texte-2); }
+.item[aria-current="page"] { background: var(--accent-fond); color: var(--texte); }
+.item[aria-current="page"] .i { color: var(--accent-texte); }
+
+/* Pied : le compte */
+.pied { padding-top: var(--e-2); border-top: 1px solid var(--bord); }
+.compte { display: flex; align-items: center; gap: 10px; width: 100%; padding: 6px; border-radius: var(--rayon-champ); text-align: left;
+  transition: background-color var(--duree); }
+.compte:hover, .compte[aria-expanded="true"] { background: var(--surface-2); }
+.compte .ident { flex: 1; min-width: 0; font-size: var(--t-13); font-weight: 500; }
+.compte > .i { color: var(--texte-3); }
+
+/* ---------- Menu ---------- */
+.menu { position: absolute; z-index: 40; min-width: 220px; padding: 4px; border-radius: var(--rayon-panneau);
+  background: var(--surface); box-shadow: var(--ombre-flottant);
+  opacity: 0; transform: translateY(4px) scale(.98); pointer-events: none; visibility: hidden;
+  transition: opacity var(--duree) var(--courbe), transform var(--duree) var(--courbe), visibility 0s linear var(--duree); }
+.menu.ouvert { opacity: 1; transform: none; pointer-events: auto; visibility: visible; transition-delay: 0s; }
+.menu .entree { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 32px; padding: 0 10px;
+  border-radius: var(--rayon-item); font-size: var(--t-13); color: var(--texte); text-align: left; }
+.menu .entree .i { color: var(--texte-3); }
+.menu .entree:hover, .menu .entree:focus-visible { background: var(--surface-2); outline: none; }
+.menu .entree.danger { color: var(--danger); }
+.menu .entree.danger .i { color: var(--danger); }
+.menu .entree .fin { margin-left: auto; color: var(--texte-3); font-size: var(--t-12); display: flex; gap: 6px; align-items: center; }
+.menu .entree[aria-disabled="true"] { opacity: .45; cursor: not-allowed; }
+.menu .entree[aria-disabled="true"]:hover { background: none; }
+.menu .sep { height: 1px; background: var(--bord); margin: 4px -4px; }
+.menu .titre-menu { padding: 8px 10px 4px; font-size: var(--t-12); color: var(--texte-3); font-weight: 500; }
+.menu-compte { left: 0; right: 0; bottom: calc(100% + 6px); }
+.menu-compte .qui { display: flex; align-items: center; gap: 10px; padding: 8px 10px 10px; }
+.menu-compte .qui b { display: block; font-weight: 600; font-size: var(--t-13); }
+.menu-compte .qui small { color: var(--texte-3); font-size: var(--t-12); }
+.menu-univers { left: 0; right: 0; top: calc(100% + 6px); }
+.menu-univers .role { margin-left: auto; }
+
+/* Bascule de thème : soleil, lune, écran */
+.themes { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 4px 4px 4px 10px; min-height: 40px; }
+.themes > span { font-size: var(--t-13); }
+.segments { display: inline-flex; padding: 2px; gap: 2px; border-radius: var(--rayon-champ); background: var(--surface-2); }
+.segments button { width: 30px; height: 26px; display: grid; place-items: center; border-radius: var(--rayon-item); color: var(--texte-3);
+  transition: background-color var(--duree), color var(--duree), box-shadow var(--duree); }
+.segments button:hover { color: var(--texte); }
+.segments button[aria-checked="true"] { background: var(--surface); color: var(--texte); box-shadow: 0 0 0 1px var(--bord-fort), 0 1px 2px rgba(0,0,0,.18); }
+
+/* ---------- Barre haute ---------- */
+.zone-principale { min-width: 0; display: flex; flex-direction: column; }
+.haute { position: sticky; top: 0; z-index: 20; height: 52px; display: flex; align-items: center; gap: var(--e-3);
+  padding: 0 var(--e-5); border-bottom: 1px solid var(--bord);
+  background: color-mix(in srgb, var(--fond) 82%, transparent); backdrop-filter: saturate(1.4) blur(12px); -webkit-backdrop-filter: saturate(1.4) blur(12px); }
+.bouton-menu { display: none; }
+.ariane { display: flex; align-items: center; gap: 2px; min-width: 0; flex: 1; font-size: var(--t-13); color: var(--texte-2); }
+.ariane a { display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 6px; border-radius: var(--rayon-item); white-space: nowrap;
+  transition: background-color var(--duree), color var(--duree); }
+.ariane a:hover { background: var(--surface-2); color: var(--texte); }
+.ariane .i.sep-ariane { color: var(--texte-3); opacity: .7; }
+.ariane [aria-current] { padding: 0 6px; color: var(--texte); font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ariane .court { display: none; }
+
+/* Bascule mode MJ / mode Joueur */
+.mode { display: inline-flex; padding: 2px; gap: 2px; border-radius: var(--rayon-champ); background: var(--surface-2); box-shadow: inset 0 0 0 1px var(--bord); }
+.mode button { display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 10px; border-radius: var(--rayon-item);
+  font-size: var(--t-13); font-weight: 500; color: var(--texte-2); transition: background-color var(--duree), color var(--duree); }
+.mode button:hover { color: var(--texte); }
+.mode button[aria-checked="true"].mj { background: var(--mj-fond); color: var(--mj); }
+.mode button[aria-checked="true"].joueur { background: var(--table-fond); color: var(--table); }
+
+/* Bandeaux du cadre */
+.bandeau { display: none; align-items: center; gap: 10px; padding: 8px var(--e-5); font-size: var(--t-13); border-bottom: 1px solid var(--bord); }
+.bandeau.perdue { background: linear-gradient(var(--danger-fond), var(--danger-fond)), var(--fond); color: var(--danger); position: sticky; top: 52px; z-index: 19; }
+.bandeau.joueur { background: linear-gradient(var(--table-fond), var(--table-fond)), var(--fond); color: var(--table); position: sticky; top: 52px; z-index: 19; }
+body.etat-perdue .bandeau.perdue { display: flex; }
+body.mode-joueur .bandeau.joueur { display: flex; }
+body.etat-perdue .bandeau.joueur { top: 89px; }
+
+/* « .principal » (zone principale du cadre) rattrape aussi « .bouton.principal » dans e09 : on rend au bouton sa mise en ligne. */
+.bouton.principal { display: inline-flex; flex-direction: row; min-width: auto; }
+
+/* ---------- Champ (docs/charte.md, « Champ ») ---------- */
+.champ { display: flex; flex-direction: column; gap: 6px; }
+.champ > span:first-child { font-size: var(--t-12); font-weight: 500; color: var(--texte-2); }
+.saisie { width: 100%; height: 34px; padding: 0 10px; border-radius: var(--rayon-champ); border: 1px solid var(--bord-champ);
+  background: var(--surface); color: var(--texte); font-size: var(--t-14); transition: border-color var(--duree), box-shadow var(--duree); }
+.saisie:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-fond); }
+.saisie::placeholder { color: var(--texte-3); }
+
+/* Message dans un panneau (échec d'écriture, erreur de chargement) */
+.alerte { display: flex; align-items: flex-start; gap: 10px; margin-top: var(--e-3); padding: 10px 12px; border-radius: var(--rayon-champ);
+  background: var(--danger-fond); color: var(--texte); font-size: var(--t-13); }
+.alerte > .i { color: var(--danger); margin-top: 2px; }
+.alerte .corps-alerte { flex: 1; display: flex; flex-direction: column; align-items: flex-start; gap: 8px; }
+
+/* ---------- Toast ---------- */
+.toasts { position: fixed; left: 50%; bottom: var(--e-5); transform: translateX(-50%); z-index: 70; display: flex; flex-direction: column; align-items: center; gap: 8px; pointer-events: none; }
+.toast { display: flex; align-items: center; gap: 10px; min-height: 40px; padding: 0 8px 0 12px; border-radius: var(--rayon-champ);
+  background: var(--surface); box-shadow: var(--ombre-flottant); font-size: var(--t-13); pointer-events: auto;
+  opacity: 0; transform: translateY(8px); transition: opacity var(--duree) var(--courbe), transform var(--duree) var(--courbe); }
+.toast.visible { opacity: 1; transform: none; }
+.toast > .i { color: var(--table); }
+.toast .fermer { width: 24px; height: 24px; }
+
+.os { border-radius: 6px; background: var(--squelette); }
+.voile-tiroir { display: none; }
+
+/* =====================================================================================
+   Hors d'un univers : la barre réduite
+   ===================================================================================== */
+/* La marque tient la place du sélecteur d'univers (même hauteur, même gouttière) et mène à E-1. */
+.marque { display: flex; align-items: center; gap: 10px; width: 100%; padding: 6px; border-radius: var(--rayon-champ);
+  transition: background-color var(--duree); }
+.marque:hover { background: var(--surface-2); }
+.marque .sceau { background: var(--texte); color: var(--fond); box-shadow: none; }
+.marque .nom-marque { font: 500 17px/1 var(--police-titre); letter-spacing: -.01em; font-variation-settings: "opsz" 48; }
+.item-admin { display: none; }
+body.etat-admin .item-admin { display: flex; }
+
+/* =====================================================================================
+   E-1 Accueil — « Mes univers »
+   ===================================================================================== */
+.page { width: 100%; max-width: 784px; margin: 0 auto; padding: var(--e-8) var(--e-7) 160px; }
+.entete-liste { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--e-4) var(--e-5); flex-wrap: wrap;
+  padding-bottom: var(--e-5); border-bottom: 1px solid var(--bord); }
+.entete-liste > .bouton { margin-top: 8px; }
+.entete-liste h1, .entete-form h1 { font: 500 var(--t-40)/1.08 var(--police-titre); letter-spacing: -.015em; font-variation-settings: "opsz" 144; }
+.connecte { display: flex; align-items: center; gap: 8px; margin-top: var(--e-3); color: var(--texte-2); font-size: var(--t-14); }
+.connecte .av { width: 20px; height: 20px; font-size: 9px; }
+.connecte b { color: var(--texte); font-weight: 600; }
+
+/* Tête de liste : le compte et la colonne du rôle (proposition) */
+.tete-liste { display: flex; justify-content: space-between; align-items: center; padding: var(--e-5) 12px var(--e-2);
+  font-size: var(--t-12); font-weight: 500; color: var(--texte-3); }
+.tete-liste .col-role { width: 72px; text-align: left; margin-right: 30px; }
+
+/* Ligne d'univers (composant ajouté) */
+.liste-univers { display: flex; flex-direction: column; }
+.liste-univers li + li .ligne-univers::before { content: ""; position: absolute; left: 66px; right: 12px; top: 0; height: 1px; background: var(--bord); }
+.ligne-univers { position: relative; display: grid; grid-template-columns: 40px minmax(0, 1fr) 72px 16px; align-items: center; gap: 0 14px;
+  min-height: 80px; padding: 14px 12px; border-radius: var(--rayon-panneau); transition: background-color var(--duree); }
+.ligne-univers:hover { background: var(--surface-2); }
+.liste-univers li:hover .ligne-univers::before, .liste-univers li:hover + li .ligne-univers::before { background: transparent; }
+.ligne-univers:focus-visible { border-radius: var(--rayon-panneau); outline-offset: 0; }
+.ligne-univers .sceau { width: 40px; height: 40px; border-radius: 10px; font-size: 19px; align-self: start; margin-top: 1px; }
+.ligne-univers .corps { min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.ligne-univers .nom-u { font: 500 var(--t-18)/1.3 var(--police-titre); font-variation-settings: "opsz" 36; letter-spacing: -.005em;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ligne-univers .desc-u { font: 400 15px/1.5 var(--police-lecture); color: var(--texte-2); font-variation-settings: "opsz" 16;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; max-width: 60ch; }
+.ligne-univers .pastille { justify-self: start; align-self: start; margin-top: 2px; }
+.ligne-univers .fleche { align-self: start; margin-top: 5px; }
+.ligne-univers .fleche { color: var(--texte-3); opacity: 0; transform: translateX(-4px);
+  transition: opacity var(--duree), transform var(--duree) var(--courbe); }
+.ligne-univers:hover .fleche, .ligne-univers:focus-visible .fleche { opacity: 1; transform: none; }
+
+/* Chargement */
+.charge-liste { display: none; }
+body.etat-chargement .charge-liste { display: block; }
+body.etat-chargement .liste-univers, body.etat-chargement .tete-liste { display: none; }
+.os-ligne { display: grid; grid-template-columns: 40px minmax(0, 1fr); gap: 14px; padding: 14px 12px; }
+
+/* Erreur */
+.erreur-liste { display: none; }
+body.etat-erreur .erreur-liste { display: flex; margin-top: var(--e-5); }
+body.etat-erreur .liste-univers, body.etat-erreur .tete-liste { display: none; }
+
+/* Vide : compte neuf (composant ajouté : état vide à deux chemins) */
+.accueil-vide { display: none; margin-top: var(--e-6); border-radius: var(--rayon-panneau); box-shadow: inset 0 0 0 1px var(--bord-fort); overflow: hidden; }
+body.etat-vide .accueil-vide { display: block; }
+body.etat-vide .liste-univers, body.etat-vide .tete-liste, body.etat-vide .entete-liste .bouton { display: none; }
+.vide-tete { padding: var(--e-6) var(--e-6) var(--e-5); }
+.vide-tete .ic-vide { width: 40px; height: 40px; border-radius: 10px; display: grid; place-items: center; background: var(--surface-2); color: var(--texte-2); }
+.vide-tete h2 { margin-top: var(--e-4); font: 500 var(--t-22)/1.25 var(--police-titre); font-variation-settings: "opsz" 48; }
+.chemins { display: grid; grid-template-columns: 1fr 1fr; border-top: 1px solid var(--bord); }
+.chemin { display: flex; flex-direction: column; align-items: flex-start; gap: var(--e-3); padding: var(--e-5) var(--e-6) var(--e-6); }
+.chemin + .chemin { border-left: 1px solid var(--bord); }
+.chemin .ic { color: var(--texte-3); }
+.chemin p { font-size: var(--t-14); color: var(--texte-2); line-height: 1.55; }
+.chemin p b { display: block; color: var(--texte); font-weight: 500; }
+.chemin .bouton { margin-top: auto; }
+.identifiant { margin-top: auto; display: inline-flex; align-items: center; gap: 4px; height: 34px; padding: 0 4px 0 12px; border-radius: var(--rayon-champ);
+  background: var(--surface-2); box-shadow: inset 0 0 0 1px var(--bord-fort); font-size: var(--t-14); font-weight: 600; letter-spacing: .01em; }
+.identifiant .icone { width: 28px; height: 28px; }
+
+/* Connexion perdue : les gestes qui écrivent sont désactivés */
+body.etat-perdue [data-ecrit] { opacity: .45; pointer-events: none; }
+
+/* =====================================================================================
+   E-2 Créer un univers (même fichier : #etat-creer)
+   ===================================================================================== */
+.vue-creer, .ariane .vue-creer { display: none; }
+body.etat-creer .ariane .vue-accueil { display: none; }
+body.etat-creer .ariane a.vue-creer { display: inline-flex; }
+body.etat-creer .ariane .vue-creer { display: inline-flex; }
+body.etat-creer .vue-creer { display: block; }
+body.etat-creer .vue-accueil { display: none; }
+.formulaire { max-width: 560px; }
+.entete-form { padding-bottom: var(--e-5); border-bottom: 1px solid var(--bord); }
+.entete-form .sceau { width: 48px; height: 48px; border-radius: 12px; font-size: 24px; margin-bottom: var(--e-5); transition: color var(--duree); }
+.entete-form .sceau.inconnu { color: transparent; background: transparent; box-shadow: none; border: 1px dashed var(--bord-champ); }
+.chapo { margin-top: var(--e-3); color: var(--texte-2); font-size: var(--t-14); }
+.chapo .pastille { vertical-align: 1px; margin: 0 2px; }
+.champs { display: flex; flex-direction: column; gap: var(--e-5); margin-top: var(--e-6); }
+.champ .lib-champ { display: flex; align-items: baseline; gap: 8px; font-size: var(--t-13); font-weight: 500; color: var(--texte); }
+.champ .lib-champ small { font-size: var(--t-12); font-weight: 400; color: var(--texte-3); }
+.saisie.titre { height: 44px; padding: 0 12px; font: 500 var(--t-18)/1 var(--police-titre); font-variation-settings: "opsz" 36; }
+.saisie.zone { height: auto; min-height: 128px; padding: 10px 12px; resize: vertical; font: 400 var(--t-16)/1.6 var(--police-lecture); font-variation-settings: "opsz" 16; }
+.saisie[aria-invalid="true"] { border-color: var(--danger); }
+.saisie[aria-invalid="true"]:focus { box-shadow: 0 0 0 3px var(--danger-fond); }
+.pied-champ { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; min-height: 18px; font-size: var(--t-12); color: var(--texte-3); }
+.pied-champ .erreur { display: inline-flex; align-items: center; gap: 6px; color: var(--danger); font-weight: 500; }
+.pied-champ .compteur { margin-left: auto; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.pied-champ .compteur.trop { color: var(--danger); }
+.actions-form { display: flex; align-items: center; justify-content: flex-end; gap: 8px; margin-top: var(--e-6); padding-top: var(--e-5); border-top: 1px solid var(--bord); }
+.actions-form .aide-clavier { margin-right: auto; display: flex; align-items: center; gap: 4px; font-size: var(--t-12); color: var(--texte-3); }
+.actions-form .bouton { min-height: 34px; padding: 0 var(--e-4); }
+
+/* =====================================================================================
+   Téléphone et petites largeurs (cadre : identique à e09-fiche.html)
+   ===================================================================================== */
+@media (max-width: 1080px) {
+  .page { padding-left: var(--e-6); padding-right: var(--e-5); }
+}
+@media (max-width: 760px) {
+  .app { grid-template-columns: minmax(0, 1fr); }
+  .colonne-barre { position: fixed; z-index: 50; top: 0; bottom: 0; left: 0; width: min(300px, 86vw); border-right: 1px solid var(--bord-fort);
+    transform: translateX(-100%); transition: transform var(--duree) var(--courbe); box-shadow: var(--ombre-flottant); visibility: hidden; }
+  body.tiroir-ouvert .colonne-barre { transform: none; visibility: visible; }
+  .voile-tiroir { display: block; position: fixed; inset: 0; z-index: 45; background: var(--voile); opacity: 0; visibility: hidden; transition: opacity var(--duree); }
+  body.tiroir-ouvert .voile-tiroir { opacity: 1; visibility: visible; }
+  .item, .compte, .marque, .menu .entree { min-height: 40px; }
+  .haute { padding: 0 var(--e-2) 0 6px; gap: 4px; }
+  .bouton-menu { display: inline-grid; width: 40px; height: 40px; }
+  .ariane .long { display: none; }
+  .ariane .court { display: inline-flex; }
+  .ariane > .i.sep-ariane.long { display: none; }
+  .bandeau { padding: 8px var(--e-4); }
+  .page { padding: var(--e-6) var(--e-4) 120px; }
+  .entete-liste > .bouton { margin-top: 8px; }
+.entete-liste h1, .entete-form h1 { font-size: var(--t-32); }
+  .entete-liste { align-items: flex-start; flex-direction: column; }
+  .entete-liste .bouton { min-height: 40px; padding: 0 var(--e-4); }
+  .tete-liste { padding-left: 8px; padding-right: 8px; }
+  .tete-liste .col-role { display: none; }
+  .ligne-univers { grid-template-columns: 36px minmax(0, 1fr) auto; gap: 0 12px; padding: 12px 8px; align-items: start; }
+  .ligne-univers .sceau { width: 36px; height: 36px; font-size: 17px; }
+  .ligne-univers .fleche { display: none; }
+  .ligne-univers .pastille { margin-top: 2px; }
+  .liste-univers li + li .ligne-univers::before { left: 56px; right: 8px; }
+  .ligne-univers .desc-u { font-size: 15px; }
+  .chemins { grid-template-columns: 1fr; }
+  .chemin + .chemin { border-left: 0; border-top: 1px solid var(--bord); }
+  .vide-tete { padding: var(--e-5) var(--e-5) var(--e-4); }
+  .chemin { padding: var(--e-5); }
+  .chemin .bouton { min-height: 40px; }
+  .identifiant { height: 40px; }
+  .identifiant .icone { width: 36px; height: 36px; }
+  .actions-form .aide-clavier { display: none; }
+  .actions-form .bouton { min-height: 40px; flex: 1; }
+  .toasts { left: var(--e-4); right: var(--e-4); bottom: var(--e-4); transform: none; align-items: stretch; }
+}
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition-duration: 0ms !important; } }
+
+/* =====================================================================================
+   Systèmes de jeu, hors des univers (kanevas-illustrations, AD-94) : E-16 et E-15
+   ===================================================================================== */
+.page.sys { max-width: 784px; }
+.entete-liste .sous { margin-top: var(--e-3); color: var(--texte-2); font-size: var(--t-14); }
+.sceau.sys { width: 40px; height: 40px; border-radius: 10px; background: var(--surface-2); color: var(--texte-2); box-shadow: inset 0 0 0 1px var(--bord-fort); }
+.sceau.sys .i { width: 20px; height: 20px; }
+/* Puce d'univers : sceau, nom, rôle — mène à la vue d'ensemble de l'univers. */
+.puces { display: flex; flex-wrap: wrap; gap: 6px; }
+.puce-u { position: relative; z-index: 1; display: inline-flex; align-items: center; gap: 6px; height: 26px; padding: 0 3px 0 3px; border-radius: var(--rayon-champ);
+  background: var(--surface-2); box-shadow: inset 0 0 0 1px var(--bord); font-size: var(--t-12); font-weight: 500; color: var(--texte);
+  transition: box-shadow var(--duree), background-color var(--duree); max-width: 100%; }
+.puce-u:hover { box-shadow: inset 0 0 0 1px var(--bord-fort); background: var(--surface-3); }
+.puce-u .sceau { width: 20px; height: 20px; border-radius: 5px; font-size: 11px; }
+.puce-u .nom-puce { max-width: 24ch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.puce-u .pastille { height: 18px; padding: 0 6px; font-size: 11px; }
+.pastille.lecture .i { width: 12px; height: 12px; }
+.statut { margin-top: var(--e-4); font-size: var(--t-13); color: var(--texte-3); display: flex; align-items: center; gap: 8px; }
+.tourne { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--bord-fort); border-top-color: var(--texte-2); animation: tourne .8s linear infinite; }
+@keyframes tourne { to { transform: rotate(360deg); } }
+.os { display: block; border-radius: 6px; background: var(--squelette); }
+.vide-panneau { margin-top: var(--e-6); padding: var(--e-7) var(--e-5); border-radius: var(--rayon-panneau); text-align: center; box-shadow: inset 0 0 0 1px var(--bord);
+  display: flex; flex-direction: column; align-items: center; }
+.vide-panneau .rond { width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; background: var(--surface-2); color: var(--texte-3); }
+.vide-panneau .rond .i { width: 20px; height: 20px; }
+.vide-panneau h2 { margin-top: var(--e-4); font: 500 var(--t-22)/1.3 var(--police-titre); font-variation-settings: "opsz" 48; }
+.vide-panneau p { margin-top: var(--e-2); color: var(--texte-2); font-size: var(--t-14); max-width: 46ch; }
+.vide-panneau .bouton { margin-top: var(--e-4); }
+[data-vue] { display: none; }
+
+/* Carte de système (E-16) : de la famille de la carte de fiche de E-8 — pas de cadre ni d'ombre,
+   un en-tête visuel dessiné (dérivé du nom), le nom, l'usage, les entrées, les puces de vos univers. */
+.page.sys.grille-page { max-width: 1120px; }
+.grille-sys { display: grid; grid-template-columns: repeat(auto-fill, minmax(288px, 1fr)); gap: var(--e-5); margin-top: var(--e-5); }
+.carte-sys { position: relative; display: flex; flex-direction: column; gap: 12px; height: 100%; padding: 6px 6px 12px; margin: -6px;
+  border-radius: var(--rayon-panneau); transition: background-color var(--duree); }
+.carte-sys:hover { background: var(--surface-2); }
+.carte-sys:has(.lien-sys:focus-visible) { outline: 2px solid var(--focus); outline-offset: 0; }
+.visuel { position: relative; flex: none; aspect-ratio: 2 / 1; border-radius: var(--rayon-champ); overflow: hidden; background: var(--surface-2); }
+.visuel::after { content: ""; position: absolute; inset: 0; border-radius: inherit; box-shadow: inset 0 0 0 1px var(--bord); pointer-events: none; transition: box-shadow var(--duree); }
+.carte-sys:hover .visuel::after { box-shadow: inset 0 0 0 1px var(--bord-fort); }
+.visuel svg { display: block; width: 100%; height: 100%; }
+.visuel .treillis { stroke: var(--bord-fort); stroke-width: 1; fill: none; }
+.visuel .de { fill: var(--accent-fond); stroke: var(--accent-texte); stroke-opacity: .55; stroke-width: 1.5; stroke-linejoin: round; }
+.visuel .de .arete { fill: none; stroke-opacity: .35; }
+.visuel svg { color: var(--accent-texte); }
+.visuel .petit .de { fill: var(--surface); stroke: var(--bord-champ); stroke-opacity: .7; stroke-width: 1.25; }
+.visuel .petit .de .arete { stroke-opacity: .5; }
+.visuel .monogramme { font: 500 46px/1 var(--police-titre); font-variation-settings: "opsz" 144; letter-spacing: -.02em; fill: var(--texte-2); }
+.visuel .lecture { position: absolute; right: 8px; top: 8px; background: var(--surface); box-shadow: inset 0 0 0 1px var(--bord); }
+.pied-sys { display: flex; flex-direction: column; gap: 4px; padding: 0 4px; min-width: 0; }
+.lien-sys { font: 500 var(--t-18)/1.3 var(--police-titre); font-variation-settings: "opsz" 36; letter-spacing: -.005em; color: var(--texte);
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; }
+.lien-sys::after { content: ""; position: absolute; inset: 0; border-radius: var(--rayon-panneau); }
+.lien-sys:focus-visible { outline: none; }
+.meta { font-size: var(--t-13); color: var(--texte-3); }
+.pied-sys .puces { margin-top: 6px; }
+.pied-sys .puce-u { position: static; }
+.puce-u.passive:hover { box-shadow: inset 0 0 0 1px var(--bord); background: var(--surface-2); }
+.carte-sys:hover .puce-u { background: var(--surface-3); }
+.squelette-carte { display: flex; flex-direction: column; gap: 12px; }
+.squelette-carte .os.cadre { aspect-ratio: 2 / 1; border-radius: var(--rayon-champ); }
+@media (max-width: 760px) {
+  .grille-sys { grid-template-columns: minmax(0, 1fr); gap: var(--e-4); margin-top: var(--e-4); }
+  .visuel { aspect-ratio: 5 / 2; }
+  .visuel .monogramme { font-size: 40px; }
+  .puce-u { height: 30px; }
+}
+
+</style>
+</head>
+<body>
+<svg xmlns="http://www.w3.org/2000/svg" width="0" height="0" style="position:absolute" aria-hidden="true"><!-- Lucide (lucide-static, ISC), tracés copiés tels quels --><symbol id="i-chevron-right" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6" /></symbol><symbol id="i-chevrons-up-down" viewBox="0 0 24 24"><path d="m7 15 5 5 5-5" /> <path d="m7 9 5-5 5 5" /></symbol><symbol id="i-circle-alert" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" /> <line x1="12" x2="12" y1="8" y2="12" /> <line x1="12" x2="12.01" y1="16" y2="16" /></symbol><symbol id="i-circle-check" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" /> <path d="m16 9-5.5 5.5L8 12" /></symbol><symbol id="i-copy" viewBox="0 0 24 24"><rect width="14" height="14" x="8" y="8" rx="2" ry="2" /> <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" /></symbol><symbol id="i-feather" viewBox="0 0 24 24"><path d="M14.086 18.412A2 2 0 0112.67 19H5v-7.672a2 2 0 01.586-1.414L11.75 3.75a6 6 0 118.49 8.49z" /> <path d="M16 8 2 22" /> <path d="M17.488 15H9" /></symbol><symbol id="i-library" viewBox="0 0 24 24"><path d="m16 6 4 14" /> <path d="M12 6v14" /> <path d="M8 8v12" /> <path d="M4 4v16" /></symbol><symbol id="i-log-out" viewBox="0 0 24 24"><path d="m16 17 5-5-5-5" /> <path d="M21 12H9" /> <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /></symbol><symbol id="i-monitor" viewBox="0 0 24 24"><rect width="20" height="14" x="2" y="3" rx="2" /> <line x1="8" x2="16" y1="21" y2="21" /> <line x1="12" x2="12" y1="17" y2="21" /></symbol><symbol id="i-moon" viewBox="0 0 24 24"><path d="M20.985 12.486a9 9 0 1 1-9.473-9.472c.405-.022.617.46.402.803a6 6 0 0 0 8.268 8.268c.344-.215.825-.004.803.401" /></symbol><symbol id="i-panel-left" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2" /> <path d="M9 3v18" /></symbol><symbol id="i-plus" viewBox="0 0 24 24"><path d="M5 12h14" /> <path d="M12 5v14" /></symbol><symbol id="i-rotate-ccw" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" /> <path d="M3 3v5h5" /></symbol><symbol id="i-server-cog" viewBox="0 0 24 24"><path d="m10.852 14.772-.383.923" /> <path d="M13.148 14.772a3 3 0 1 0-2.296-5.544l-.383-.923" /> <path d="m13.148 9.228.383-.923" /> <path d="m13.53 15.696-.382-.924a3 3 0 1 1-2.296-5.544" /> <path d="m14.772 10.852.923-.383" /> <path d="m14.772 13.148.923.383" /> <path d="M4.5 10H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2h-.5" /> <path d="M4.5 14H4a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-4a2 2 0 0 0-2-2h-.5" /> <path d="M6 18h.01" /> <path d="M6 6h.01" /> <path d="m9.228 10.852-.923-.383" /> <path d="m9.228 13.148-.923.383" /></symbol><symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4" /> <path d="M12 2v2" /> <path d="M12 20v2" /> <path d="m4.93 4.93 1.41 1.41" /> <path d="m17.66 17.66 1.41 1.41" /> <path d="M2 12h2" /> <path d="M20 12h2" /> <path d="m6.34 17.66-1.41 1.41" /> <path d="m19.07 4.93-1.41 1.41" /></symbol><symbol id="i-users-round" viewBox="0 0 24 24"><path d="M18 21a8 8 0 0 0-16 0" /> <circle cx="10" cy="8" r="5" /> <path d="M22 20c0-3.37-2-6.5-4-8a5 5 0 0 0-.45-8.3" /></symbol><symbol id="i-wifi-off" viewBox="0 0 24 24"><path d="M12 20h.01" /> <path d="M8.5 16.429a5 5 0 0 1 7 0" /> <path d="M5 12.859a10 10 0 0 1 5.17-2.69" /> <path d="M19 12.859a10 10 0 0 0-2.007-1.523" /> <path d="M2 8.82a15 15 0 0 1 4.177-2.643" /> <path d="M22 8.82a15 15 0 0 0-11.288-3.764" /> <path d="m2 2 20 20" /></symbol><symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18" /> <path d="m6 6 12 12" /></symbol><symbol id="i-arrow-down" viewBox="0 0 24 24"><path d="M12 5v14" /> <path d="m19 12-7 7-7-7" /></symbol><symbol id="i-arrow-right" viewBox="0 0 24 24"><path d="M5 12h14" /> <path d="m12 5 7 7-7 7" /></symbol><symbol id="i-arrow-up" viewBox="0 0 24 24"><path d="m5 12 7-7 7 7" /> <path d="M12 19V5" /></symbol><symbol id="i-book-open" viewBox="0 0 24 24"><path d="M12 5v16" /> <path d="M20.001 19A2 2 0 0022 17V5a2 2 0 00-1.999-2L16 3.002A5 5 0 0012 5a5 5 0 00-4-2H4a2 2 0 00-2 2v12a2 2 0 001.999 2H8a5 5 0 014 2 5 5 0 014-2z" /></symbol><symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5" /></symbol><symbol id="i-chevron-down" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6" /></symbol><symbol id="i-contact-round" viewBox="0 0 24 24"><path d="M16 2v2" /> <path d="M17.915 21a6 6 0 10-12 0" /> <path d="M8 2v2" /> <circle cx="12" cy="11" r="4" /> <rect x="3" y="3" width="18" height="18" rx="2" /></symbol><symbol id="i-download" viewBox="0 0 24 24"><path d="M12 15V3" /> <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /> <path d="m7 10 5 5 5-5" /></symbol><symbol id="i-ellipsis" viewBox="0 0 24 24"><circle cx="12" cy="12" r="1" /> <circle cx="19" cy="12" r="1" /> <circle cx="5" cy="12" r="1" /></symbol><symbol id="i-eye" viewBox="0 0 24 24"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0" /> <circle cx="12" cy="12" r="3" /></symbol><symbol id="i-eye-off" viewBox="0 0 24 24"><path d="M10.733 5.076a10.744 10.744 0 0 1 11.205 6.575 1 1 0 0 1 0 .696 10.747 10.747 0 0 1-1.444 2.49" /> <path d="M14.084 14.158a3 3 0 0 1-4.242-4.242" /> <path d="M17.479 17.499a10.75 10.75 0 0 1-15.417-5.151 1 1 0 0 1 0-.696 10.75 10.75 0 0 1 4.446-5.143" /> <path d="m2 2 20 20" /></symbol><symbol id="i-file-text" viewBox="0 0 24 24"><path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z" /> <path d="M14 2v5a1 1 0 0 0 1 1h5" /> <path d="M10 9H8" /> <path d="M16 13H8" /> <path d="M16 17H8" /></symbol><symbol id="i-flag" viewBox="0 0 24 24"><path d="M4 22V4a1 1 0 0 1 .4-.8A6 6 0 0 1 8 2c3 0 5 2 7.333 2q2 0 3.067-.8A1 1 0 0 1 20 4v10a1 1 0 0 1-.4.8A6 6 0 0 1 16 16c-3 0-5-2-8-2a6 6 0 0 0-4 1.528" /></symbol><symbol id="i-gem" viewBox="0 0 24 24"><path d="M10.5 3 8 9l4 13 4-13-2.5-6" /> <path d="M17 3a2 2 0 0 1 1.6.8l3 4a2 2 0 0 1 .013 2.382l-7.99 10.986a2 2 0 0 1-3.247 0l-7.99-10.986A2 2 0 0 1 2.4 7.8l2.998-3.997A2 2 0 0 1 7 3z" /> <path d="M2 9h20" /></symbol><symbol id="i-git-compare-arrows" viewBox="0 0 24 24"><circle cx="5" cy="6" r="3" /> <path d="M12 6h5a2 2 0 0 1 2 2v7" /> <path d="m15 9-3-3 3-3" /> <circle cx="19" cy="18" r="3" /> <path d="M12 18H7a2 2 0 0 1-2-2V9" /> <path d="m9 15 3 3-3 3" /></symbol><symbol id="i-hourglass" viewBox="0 0 24 24"><path d="M5 22h14" /> <path d="M5 2h14" /> <path d="M17 22v-4.172a2 2 0 0 0-.586-1.414L12 12l-4.414 4.414A2 2 0 0 0 7 17.828V22" /> <path d="M7 2v4.172a2 2 0 0 0 .586 1.414L12 12l4.414-4.414A2 2 0 0 0 17 6.172V2" /></symbol><symbol id="i-image" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2" ry="2" /> <circle cx="9" cy="9" r="2" /> <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" /></symbol><symbol id="i-layout-grid" viewBox="0 0 24 24"><rect width="7" height="7" x="3" y="3" rx="1" /> <rect width="7" height="7" x="14" y="3" rx="1" /> <rect width="7" height="7" x="14" y="14" rx="1" /> <rect width="7" height="7" x="3" y="14" rx="1" /></symbol><symbol id="i-lock" viewBox="0 0 24 24"><rect width="18" height="11" x="3" y="11" rx="2" ry="2" /> <path d="M7 11V7a5 5 0 0 1 10 0v4" /></symbol><symbol id="i-lock-keyhole" viewBox="0 0 24 24"><circle cx="12" cy="16" r="1" /> <rect x="3" y="10" width="18" height="12" rx="2" /> <path d="M7 10V7a5 5 0 0 1 10 0v3" /></symbol><symbol id="i-map-pin" viewBox="0 0 24 24"><path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0" /> <circle cx="12" cy="10" r="3" /></symbol><symbol id="i-notebook-pen" viewBox="0 0 24 24"><path d="M13.4 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7.4" /> <path d="M2 6h4" /> <path d="M2 10h4" /> <path d="M2 14h4" /> <path d="M2 18h4" /> <path d="M21.378 5.626a1 1 0 1 0-3.004-3.004l-5.01 5.012a2 2 0 0 0-.506.854l-.837 2.87a.5.5 0 0 0 .62.62l2.87-.837a2 2 0 0 0 .854-.506z" /></symbol><symbol id="i-paperclip" viewBox="0 0 24 24"><path d="m16 6-8.414 8.586a2 2 0 0 0 2.829 2.829l8.414-8.586a4 4 0 1 0-5.657-5.657l-8.379 8.551a6 6 0 1 0 8.485 8.485l8.379-8.551" /></symbol><symbol id="i-pen-line" viewBox="0 0 24 24"><path d="M13 21h8" /> <path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z" /></symbol><symbol id="i-pencil" viewBox="0 0 24 24"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z" /> <path d="m15 5 4 4" /></symbol><symbol id="i-scroll-text" viewBox="0 0 24 24"><path d="M15 12h-5" /> <path d="M15 8h-5" /> <path d="M19 17V5a2 2 0 0 0-2-2H4" /> <path d="M8 21h12a2 2 0 0 0 2-2v-1a1 1 0 0 0-1-1H11a1 1 0 0 0-1 1v1a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v2a1 1 0 0 0 1 1h3" /></symbol><symbol id="i-settings-2" viewBox="0 0 24 24"><path d="M14 17H5" /> <path d="M19 7h-9" /> <circle cx="17" cy="17" r="3" /> <circle cx="7" cy="7" r="3" /></symbol><symbol id="i-shield" viewBox="0 0 24 24"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z" /></symbol><symbol id="i-sparkles" viewBox="0 0 24 24"><path d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z" /> <path d="M20 2v4" /> <path d="M22 4h-4" /> <circle cx="4" cy="20" r="2" /></symbol><symbol id="i-trash-2" viewBox="0 0 24 24"><path d="M10 11v6" /> <path d="M14 11v6" /> <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" /> <path d="M3 6h18" /> <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /></symbol><symbol id="i-upload" viewBox="0 0 24 24"><path d="M12 3v12" /> <path d="m17 8-5-5-5 5" /> <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /></symbol><symbol id="i-user-round" viewBox="0 0 24 24"><circle cx="12" cy="8" r="5" /> <path d="M20 21a8 8 0 0 0-16 0" /></symbol><symbol id="i-waypoints" viewBox="0 0 24 24"><path d="m10.586 5.414-5.172 5.172" /> <path d="m18.586 13.414-5.172 5.172" /> <path d="M6 12h12" /> <circle cx="12" cy="20" r="2" /> <circle cx="12" cy="4" r="2" /> <circle cx="20" cy="12" r="2" /> <circle cx="4" cy="12" r="2" /></symbol><symbol id="i-search" viewBox="0 0 24 24"><path d="m21 21-4.34-4.34" /> <circle cx="11" cy="11" r="8" /></symbol><symbol id="i-search-x" viewBox="0 0 24 24"><path d="m13.5 8.5-5 5" /> <path d="m8.5 8.5 5 5" /> <circle cx="11" cy="11" r="8" /> <path d="m21 21-4.3-4.3" /></symbol><symbol id="i-compass" viewBox="0 0 24 24"><path d="m16.24 7.76-1.804 5.411a2 2 0 0 1-1.265 1.265L7.76 16.24l1.804-5.411a2 2 0 0 1 1.265-1.265z" /> <circle cx="12" cy="12" r="10" /></symbol><symbol id="i-dices" viewBox="0 0 24 24"><rect width="12" height="12" x="2" y="10" rx="2" ry="2" /> <path d="m17.92 14 3.5-3.5a2.24 2.24 0 0 0 0-3l-5-4.92a2.24 2.24 0 0 0-3 0L10 6" /> <path d="M6 18h.01" /> <path d="M10 14h.01" /> <path d="M15 6h.01" /> <path d="M18 9h.01" /></symbol></svg>
+
+<div class="app">
+  <!-- ============================ Barre latérale (réduite : hors d'un univers) ============================ -->
+  <div class="colonne-barre" id="barre">
+    <aside class="barre" aria-label="Barre latérale" tabindex="-1" style="outline:none">
+      <a class="marque" href="e01-accueil.html" aria-label="Kanevas — Mes univers">
+        <span class="sceau" aria-hidden="true">K</span>
+        <span class="nom-marque">Kanevas</span>
+      </a>
+
+      <nav aria-label="Navigation principale">
+        <div class="groupe">
+          <a class="item" href="e01-accueil.html"><svg class="i" aria-hidden="true"><use href="#i-library"/></svg>Mes univers</a>
+          <a class="item" href="e16-systemes-de-jeu.html" aria-current="page"><svg class="i" aria-hidden="true"><use href="#i-dices"/></svg>Systèmes de jeu</a>
+          <a class="item item-admin" href="e05-administration.html"><svg class="i" aria-hidden="true"><use href="#i-server-cog"/></svg>Administration</a>
+        </div>
+      </nav>
+
+      <div class="pied ancre">
+        <div class="menu menu-compte" id="menu-compte" role="menu" aria-label="Compte">
+          <div class="qui"><span class="av" data-initiales>AN</span><span><b data-ident>antor</b><small>Votre identifiant</small></span></div>
+          <div class="sep"></div>
+          <div class="themes">
+            <span id="lib-theme">Thème</span>
+            <div class="segments" role="radiogroup" aria-labelledby="lib-theme">
+              <button role="radio" data-theme-choix="clair" aria-checked="false" aria-label="Clair" title="Clair"><svg class="i p" aria-hidden="true"><use href="#i-sun"/></svg></button>
+              <button role="radio" data-theme-choix="sombre" aria-checked="false" aria-label="Sombre" title="Sombre"><svg class="i p" aria-hidden="true"><use href="#i-moon"/></svg></button>
+              <button role="radio" data-theme-choix="systeme" aria-checked="true" aria-label="Système" title="Système"><svg class="i p" aria-hidden="true"><use href="#i-monitor"/></svg></button>
+            </div>
+          </div>
+          <div class="sep"></div>
+          <button class="entree" role="menuitem" data-toast="Déconnexion : vous seriez mené à la connexion."><svg class="i" aria-hidden="true"><use href="#i-log-out"/></svg>Se déconnecter</button>
+        </div>
+        <button class="compte" id="bouton-compte" aria-haspopup="menu" aria-expanded="false" aria-controls="menu-compte">
+          <span class="av" aria-hidden="true" data-initiales>AN</span>
+          <span class="ident" data-ident>antor</span>
+          <svg class="i p" aria-hidden="true"><use href="#i-chevrons-up-down"/></svg>
+        </button>
+      </div>
+    </aside>
+  </div>
+  <div class="voile-tiroir" id="voile-tiroir"></div>
+
+  <!-- ============================ Zone principale ============================ -->
+  <div class="zone-principale">
+    <header class="haute">
+      <button class="icone bouton-menu" id="bouton-menu" aria-label="Menu" aria-expanded="false" aria-controls="barre"><svg class="i" aria-hidden="true"><use href="#i-panel-left"/></svg></button>
+      <nav class="ariane" aria-label="Fil d'Ariane">
+        <span aria-current="page"><svg class="i p" aria-hidden="true" style="color:var(--texte-3);margin-right:6px;vertical-align:-2px"><use href="#i-dices"/></svg>Systèmes de jeu</span>
+      </nav>
+    </header>
+    <div class="bandeau perdue" role="status"><svg class="i" aria-hidden="true"><use href="#i-wifi-off"/></svg>Connexion perdue. Ce que vous voyez peut être dépassé ; rien n'est enregistré tant qu'elle ne revient pas.</div>
+    <main class="page sys grille-page" id="contenu">
+      <header class="entete-liste">
+        <div>
+          <h1>Systèmes de jeu</h1>
+          <p class="sous">Les référentiels de vos univers.</p>
+        </div>
+      </header>
+      <div data-vue="liste"><ul class="grille-sys" id="liste" aria-label="Vos systèmes de jeu"></ul></div>
+      <div data-vue="chargement" role="status" aria-label="Chargement des systèmes…">
+        <ul class="grille-sys" aria-hidden="true">
+          <li class="squelette-carte"><span class="os cadre"></span><span class="os" style="width:62%;height:18px"></span><span class="os" style="width:44%;height:12px"></span><span class="os" style="width:150px;height:26px;border-radius:8px"></span></li>
+          <li class="squelette-carte"><span class="os cadre"></span><span class="os" style="width:48%;height:18px"></span><span class="os" style="width:52%;height:12px"></span><span class="os" style="width:130px;height:26px;border-radius:8px"></span></li>
+          <li class="squelette-carte"><span class="os cadre"></span><span class="os" style="width:70%;height:18px"></span><span class="os" style="width:40%;height:12px"></span><span class="os" style="width:170px;height:26px;border-radius:8px"></span></li>
+        </ul>
+        <p class="statut"><span class="tourne" aria-hidden="true"></span>Chargement des systèmes…</p>
+      </div>
+      <div class="alerte" data-vue="erreur" role="alert" style="margin-top:var(--e-5)">
+        <svg class="i" aria-hidden="true"><use href="#i-circle-alert"/></svg>
+        <div class="corps-alerte"><span>Impossible de charger les systèmes de jeu.</span><button class="bouton petit" data-reessayer><svg class="i p" aria-hidden="true"><use href="#i-rotate-ccw"/></svg>Réessayer</button></div>
+      </div>
+      <section class="vide-panneau" data-vue="vide" aria-labelledby="titre-vide">
+        <span class="rond"><svg class="i" aria-hidden="true"><use href="#i-dices"/></svg></span>
+        <h2 id="titre-vide">Aucun système de jeu pour l'instant.</h2>
+        <p id="texte-vide">Les systèmes de vos univers apparaîtront ici quand leur MJ en rattachera un.</p>
+        <a class="bouton" href="e01-accueil.html" id="lien-vide" hidden><svg class="i p" aria-hidden="true"><use href="#i-library"/></svg>Mes univers</a>
+      </section>
+    </main>
+  </div>
+</div>
+
+<div class="toasts" id="toasts" role="status" aria-live="polite"></div>
+
+<script>
+(function () {
+  'use strict';
+  var $ = function (s, r) { return (r || document).querySelector(s); };
+  var $$ = function (s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
+
+  /* ---------------- Toast ---------------- */
+  function toast(texte) {
+    var t = document.createElement('div');
+    t.className = 'toast';
+    t.innerHTML = '<svg class="i" aria-hidden="true"><use href="#i-circle-check"/></svg><span></span>' +
+      '<button class="icone fermer" aria-label="Fermer"><svg class="i p" aria-hidden="true"><use href="#i-x"/></svg></button>';
+    t.querySelector('span').textContent = texte;
+    $('#toasts').appendChild(t);
+    requestAnimationFrame(function () { requestAnimationFrame(function () { t.classList.add('visible'); }); });
+    var fin = function () { t.classList.remove('visible'); setTimeout(function () { t.remove(); }, 250); };
+    t.querySelector('.fermer').onclick = fin;
+    setTimeout(fin, 4000);
+  }
+  $$('[data-toast]').forEach(function (b) { b.addEventListener('click', function () { toast(b.dataset.toast); }); });
+  $$('[data-copier]').forEach(function (b) { b.addEventListener('click', function () {
+    try { navigator.clipboard.writeText(b.parentNode.textContent.trim()); } catch (e) {}
+    toast('Identifiant copié');
+  }); });
+
+  /* ---------------- Menu du compte ---------------- */
+  var ouvert = null;
+  function fermerMenu(rendreFocus) {
+    if (!ouvert) return;
+    ouvert.menu.classList.remove('ouvert'); ouvert.bouton.setAttribute('aria-expanded', 'false');
+    if (rendreFocus) ouvert.bouton.focus();
+    ouvert = null;
+  }
+  function ouvrirMenu(menu, bouton, focusPremier) {
+    fermerMenu(false);
+    menu.classList.add('ouvert'); bouton.setAttribute('aria-expanded', 'true');
+    ouvert = { menu: menu, bouton: bouton };
+    if (focusPremier) { var p = menu.querySelector('[role=radio][aria-checked=true],[role=menuitem]'); if (p) p.focus(); }
+  }
+  $('#bouton-compte').onclick = function (e) {
+    e.stopPropagation();
+    if (ouvert) fermerMenu(false); else ouvrirMenu($('#menu-compte'), this, e.detail === 0);
+  };
+  document.addEventListener('click', function (e) { if (ouvert && !ouvert.menu.contains(e.target)) fermerMenu(false); });
+
+  /* ---------------- Thème : soleil, lune, écran ---------------- */
+  function appliquerTheme(c) {
+    var clair = c === 'clair' || (c === 'systeme' && matchMedia('(prefers-color-scheme: light)').matches);
+    document.documentElement.dataset.theme = clair ? 'light' : 'dark';
+    $$('[data-theme-choix]').forEach(function (b) { var on = b.dataset.themeChoix === c; b.setAttribute('aria-checked', on); b.tabIndex = on ? 0 : -1; });
+  }
+  var choixTheme = 'systeme';
+  try { choixTheme = localStorage.getItem('kanevas-theme') || 'systeme'; } catch (e) {}
+  appliquerTheme(choixTheme);
+  $$('[data-theme-choix]').forEach(function (b) {
+    b.onclick = function (e) { e.stopPropagation(); choixTheme = b.dataset.themeChoix; try { localStorage.setItem('kanevas-theme', choixTheme); } catch (er) {} appliquerTheme(choixTheme); };
+  });
+  matchMedia('(prefers-color-scheme: light)').addEventListener('change', function () { if (choixTheme === 'systeme') appliquerTheme('systeme'); });
+
+  /* ---------------- Tiroir (téléphone) ---------------- */
+  function tiroir(o, rendre) {
+    document.body.classList.toggle('tiroir-ouvert', o);
+    $('#bouton-menu').setAttribute('aria-expanded', o);
+    if (o) setTimeout(function () { $('.barre').focus(); }, 50); else if (rendre) $('#bouton-menu').focus();
+  }
+  $('#bouton-menu').onclick = function () { tiroir(!document.body.classList.contains('tiroir-ouvert')); };
+  $('#voile-tiroir').onclick = function () { tiroir(false, true); };
+
+
+  /* ---------------- E-16 : les systèmes du compte, en cartes ---------------- */
+  var CPT = {
+    antor: [
+      { nom: 'Chroniques Oubliées Fantasy', nb: 3, e: [24, 112, 58], u: [{ n: 'Les Cendres de Vaëlis', r: 'Joueur' }] },
+      { nom: 'CoF Mini', nb: 2, e: [3, 4, 2], u: [{ n: 'Lame d\'Ébène', r: 'MJ' }] }
+    ],
+    lea: [ { nom: 'CoF Mini', nb: 2, e: [3, 4, 2], u: [{ n: 'Lame d\'Ébène', r: 'Joueur' }] } ],
+    mira: [ { nom: 'CoF Mini', nb: 2, e: [3, 4, 2], u: [{ n: 'Les Landes grises', r: 'MJ' }] } ]
+  };
+  function nombre(n, un, plusieurs, fem) { return n === 0 ? (fem ? 'aucune ' : 'aucun ') + un : n.toLocaleString('fr-FR') + ' ' + (n > 1 ? plusieurs : un); }
+  function initiale(n) { return n.replace(/^(?:(?:les?|la)\s+|l['’])/i, '').charAt(0).toUpperCase(); }
+  function esc(t) { return t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;'); }
+  /* L'en-tête dessiné : un treillis triangulaire, un d20 et un d6 placés d'après le nom, et le
+     monogramme du système. Aucune donnée : le frontend le calcule du nom, toujours le même. */
+  function graine(t) { var h = 2166136261; for (var i = 0; i < t.length; i++) { h ^= t.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; }
+  function alea(s) { return function () { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; }; }
+  function monogramme(n) {
+    var mots = n.replace(/[’']/g, ' ').split(/\s+/).filter(function (m) { return /^[A-ZÀ-Ý0-9]/.test(m); });
+    return (mots.length > 1 ? mots[0].charAt(0) + mots[1].charAt(0) : n.slice(0, 2)).toUpperCase().replace(/(.)(.)/, function (x, a, b) { return a + b.toLowerCase(); });
+  }
+  /* Les dés dessinés : d20 (hexagone, triangle central), d8 (losange), d12 (pentagone). */
+  function de(type, cx, cy, R, rot) {
+    var P = function (ang, k) { var a = (ang + rot) * Math.PI / 180; return [cx + R * k * Math.cos(a), cy + R * k * Math.sin(a)]; };
+    var pt = function (q) { return q[0].toFixed(1) + ',' + q[1].toFixed(1); };
+    var poly = function (l) { return 'M' + l.map(pt).join(' L') + ' Z'; };
+    var contour, aretes = '';
+    if (type === 'd20') {
+      var hex = [0, 1, 2, 3, 4, 5].map(function (i) { return P(-90 + i * 60, 1); });
+      var tri = [0, 1, 2].map(function (i) { return P(-90 + i * 120, .52); });
+      contour = poly(hex); aretes = poly(tri);
+      [0, 1, 2].forEach(function (i) { var h = i * 2; [h, (h + 1) % 6, (h + 5) % 6].forEach(function (j) { aretes += ' M' + pt(tri[i]) + ' L' + pt(hex[j]); }); });
+    } else if (type === 'd8') {
+      var l = [P(-90, 1), P(0, .78), P(90, 1), P(180, .78)], c = P(0, 0);
+      contour = poly(l); aretes = 'M' + pt(l[1]) + ' L' + pt(l[3]) + ' M' + pt(l[0]) + ' L' + pt([c[0] + R * .12, c[1]]) + ' L' + pt(l[2]);
+    } else {
+      var pen = [0, 1, 2, 3, 4].map(function (i) { return P(-90 + i * 72, 1); });
+      var inn = [0, 1, 2, 3, 4].map(function (i) { return P(-90 + i * 72, .55); });
+      contour = poly(pen); aretes = poly(inn);
+      inn.forEach(function (q, i) { aretes += ' M' + pt(q) + ' L' + pt(pen[i]); });
+    }
+    return '<g class="de"><path d="' + contour + '"/><path class="arete" d="' + aretes + '"/></g>';
+  }
+  function visuel(nom) {
+    var r = alea(graine(nom)), s = '';
+    var pas = 26 + Math.floor(r() * 18), dx = r() * pas, ang = Math.floor(r() * 4) * 15;
+    var t = '';
+    for (var k = -14; k < 28; k++) t += '<path d="M' + (k * pas + dx).toFixed(1) + ',-300 l0,800"/>';
+    s += '<g class="treillis" opacity="' + (.45 + r() * .4).toFixed(2) + '">' + [0, 60, 120].map(function (d) { return '<g transform="rotate(' + (ang + d) + ' 200 100)">' + t + '</g>'; }).join('') + '</g>';
+    var gauche = r() < .35, type = ['d20', 'd8', 'd12'][Math.floor(r() * 3)];
+    var cx = gauche ? 110 + r() * 60 : 250 + r() * 100, cy = 60 + r() * 80, R = 54 + r() * 40;
+    s += '<circle cx="' + cx.toFixed(0) + '" cy="' + cy.toFixed(0) + '" r="' + (R * 1.7).toFixed(0) + '" class="halo"/>';
+    s += de(type, cx, cy, R, Math.floor(r() * 4) * 8 - 12);
+    // un second dé, plus petit, de l'autre côté
+    var x2 = gauche ? 300 + r() * 60 : 50 + r() * 110, y2 = 40 + r() * 40;
+    s += '<g class="petit">' + de(['d8', 'd12', 'd20'][Math.floor(r() * 3)], x2, y2, 20 + r() * 10, r() * 30) + '</g>';
+    s += '<text class="monogramme" x="' + (gauche ? 400 - 22 : 22) + '" y="176" text-anchor="' + (gauche ? 'end' : 'start') + '">' + esc(monogramme(nom)) + '</text>';
+    return '<svg viewBox="0 0 400 200" preserveAspectRatio="xMidYMax slice" aria-hidden="true"><defs><radialGradient id="h' + graine(nom) + '"><stop offset="0" stop-color="currentColor" stop-opacity=".22"/><stop offset="1" stop-color="currentColor" stop-opacity="0"/></radialGradient></defs>' +
+      s.replace('class="halo"', 'class="halo" fill="url(#h' + graine(nom) + ')"') + '</svg>';
+  }
+  function puce(u) {
+    return '<span class="puce-u passive" title="' + esc(u.n) + ' — ' + u.r + '"><span class="sceau" aria-hidden="true">' + initiale(u.n) + '</span><span class="nom-puce">' + esc(u.n) + '</span>' +
+      '<span class="pastille ' + (u.r === 'MJ' ? 'mj">MJ' : 'table">Joueur') + '</span></span>';
+  }
+  function rendre(liste) {
+    var ul = $('#liste'); ul.innerHTML = '';
+    liste.slice().sort(function (a, b) { return a.nom.localeCompare(b.nom, 'fr', { sensitivity: 'base' }); }).forEach(function (s) {
+      var li = document.createElement('li');
+      var ecrit = s.u.some(function (u) { return u.r === 'MJ'; });
+      li.innerHTML = '<article class="carte-sys"><div class="visuel">' + visuel(s.nom) +
+        (ecrit ? '' : '<span class="pastille lecture"><svg class="i" aria-hidden="true"><use href="#i-eye"/></svg>Lecture seule</span>') + '</div>' +
+        '<div class="pied-sys"><a class="lien-sys" href="e15-systeme-de-jeu.html' + (ecrit ? '' : '#etat-lecture') + '" title="' + esc(s.nom) + '">' + esc(s.nom) + '</a>' +
+        '<span class="meta">Utilisé par ' + nombre(s.nb, 'univers', 'univers') + '</span>' +
+        '<span class="meta">' + nombre(s.e[0], 'règle', 'règles', true) + ' · ' + nombre(s.e[1], 'créature', 'créatures', true) + ' · ' + nombre(s.e[2], 'objet', 'objets') + '</span>' +
+        '<div class="puces" aria-label="Vos univers qui l\'utilisent">' + s.u.map(puce).join('') + '</div></div></article>';
+      ul.appendChild(li);
+    });
+    vue(liste.length ? 'liste' : 'vide');
+  }
+  function vue(v) { $$('[data-vue]').forEach(function (x) { x.style.display = x.dataset.vue === v ? (/alerte|vide-panneau/.test(x.className) ? 'flex' : 'block') : 'none'; }); }
+  $$('[data-reessayer]').forEach(function (b) { b.onclick = function () { vue('chargement'); setTimeout(function () { rendre(CPT.antor); }, 600); }; });
+  function compte(ident, initiales) { $$('[data-ident]').forEach(function (x) { x.textContent = ident; }); $$('[data-initiales]').forEach(function (x) { x.textContent = initiales; }); }
+  var liste = CPT.antor;
+  var h = decodeURIComponent(location.hash || ''), et = h.indexOf('#etat-') === 0 ? h.slice(6).split(',') : [];
+  var a = function (x) { return et.indexOf(x) >= 0; };
+  if (a('joueur')) { compte('lea', 'LÉ'); liste = CPT.lea; }
+  if (a('mira')) { compte('mira', 'MI'); liste = CPT.mira; }
+  if (a('vide')) { compte('teo', 'TE'); liste = []; }
+  if (a('vide-joueur')) { compte('lea', 'LÉ'); liste = []; }
+  if (a('vide-mj')) { compte('mira', 'MI'); liste = []; $('#texte-vide').textContent = 'Un système se rattache depuis les paramètres d\'un univers que vous menez.'; $('#lien-vide').hidden = false; }
+  if (a('long')) {
+    var noms = ['Lame d\'Ébène', 'Les Cendres de Vaëlis', 'Les Landes grises', 'Brume', 'Annales véridiques des Baronnies d\'Outre-Marais, de leurs six rois et du roi fou', 'Le Serment de Karst', 'Les Marches de Ravenne', 'La Couronne d\'Aubrelune', 'Le Silence de Tessaly', 'Les Brumes d\'Ulmbre', 'Le Serment de Pellemont', 'Les Quatre Lunes'];
+    liste = liste.concat([{ nom: 'Règles maison des Baronnies d\'Outre-Marais, édition révisée et augmentée de 1347', nb: 14, e: [212, 0, 1], u: noms.map(function (n, i) { return { n: n, r: i % 3 ? 'Joueur' : 'MJ' }; }) },
+      { nom: 'Dés & Dragons (5e)', nb: 1, e: [40, 310, 120], u: [{ n: 'Brume', r: 'MJ' }] }]);
+  }
+  rendre(liste);
+  if (a('chargement')) vue('chargement');
+  if (a('erreur')) vue('erreur');
+  if (a('perdue')) document.body.classList.add('etat-perdue');
+  if (a('menu')) setTimeout(function () { ouvrirMenu($('#menu-compte'), $('#bouton-compte')); }, 60);
+  if (a('tiroir')) tiroir(true);
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') { if (ouvert) fermerMenu(true); else if (document.body.classList.contains('tiroir-ouvert')) tiroir(false, true); } });
+
+})();
+</script>
+</body>
+</html>

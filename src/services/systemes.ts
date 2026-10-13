@@ -1,5 +1,5 @@
 import type { Db } from '../db/db.js';
-import { exigerMJ, roleDe } from './droits.js';
+import { exigerMJ } from './droits.js';
 import { ErreurService, introuvable, invalide, refuse } from './erreurs.js';
 import { LIMITE_LISTE } from './fiches.js';
 import type { Role } from './types.js';
@@ -12,12 +12,21 @@ export interface SystemeCatalogue {
   nom: string;
 }
 
+/** The universe of the caller that uses a system, with the caller's role in it (AD-84, AD-94). */
+export interface UniversDuCompte {
+  id: number;
+  nom: string;
+  role: Role;
+}
+
 /** What a member of an attached universe learns: never another universe's name or id (AD-84). */
 export interface SystemeVue {
   id: number;
   nom: string;
-  universUtilisateurs: number;
-  /** Whether the caller (GM of the passing universe) may write templates. */
+  nbUnivers: number;
+  entrees: { regle: number; creature: number; objet: number };
+  mesUnivers: UniversDuCompte[];
+  /** Whether the caller is GM of at least one universe using the system (AD-94). */
   peutEcrire: boolean;
 }
 
@@ -83,7 +92,7 @@ function insererSysteme(db: Db, nom: string): SystemeCatalogue {
 }
 
 /** The catalogue (id, name only), for an account that is GM of at least one universe (AD-25). */
-export function listerSystemes(db: Db, compteId: number): SystemeCatalogue[] {
+export function listerCatalogue(db: Db, compteId: number): SystemeCatalogue[] {
   if (!estMJQuelquePart(db, compteId)) throw refuse();
   return db
     .prepare('SELECT id, nom FROM systemes_jeu ORDER BY nom COLLATE NOCASE, id')
@@ -128,28 +137,58 @@ export function creerEtRattacherSysteme(
   })();
 }
 
-/**
- * The system of a universe the caller is a member of. No role, or a universe
- * without system: "not found", identical to an unknown id (AD-22, AD-83).
- */
-function systemeDe(db: Db, compteId: number, universId: number): { systemeId: number; role: Role } {
-  const role = roleDe(db, universId, compteId);
-  if (!role) throw introuvable();
-  const row = db.prepare('SELECT systeme_id FROM univers WHERE id = ?').get(universId) as
-    | { systeme_id: number | null }
-    | undefined;
-  if (!row || row.systeme_id === null) throw introuvable();
-  return { systemeId: row.systeme_id, role };
-}
-
-/** The system seen from a universe: its name and the number of universes using it, nothing else (AD-84). */
-export function lireSysteme(db: Db, compteId: number, universId: number): SystemeVue {
-  const { systemeId, role } = systemeDe(db, compteId, universId);
-  const s = db.prepare('SELECT id, nom FROM systemes_jeu WHERE id = ?').get(systemeId) as SystemeCatalogue;
-  const n = db.prepare('SELECT COUNT(*) AS n FROM univers WHERE systeme_id = ?').get(systemeId) as {
+function vueDe(db: Db, compteId: number, systeme: SystemeCatalogue): SystemeVue {
+  const mesUnivers = db
+    .prepare(
+      `SELECT u.id, u.nom, m.role FROM univers u JOIN membres m ON m.univers_id = u.id
+       WHERE u.systeme_id = ? AND m.compte_id = ? ORDER BY u.nom COLLATE NOCASE, u.id`,
+    )
+    .all(systeme.id, compteId) as UniversDuCompte[];
+  const n = db.prepare('SELECT COUNT(*) AS n FROM univers WHERE systeme_id = ?').get(systeme.id) as {
     n: number;
   };
-  return { id: s.id, nom: s.nom, universUtilisateurs: n.n, peutEcrire: role === 'mj' };
+  const entrees = { regle: 0, creature: 0, objet: 0 };
+  const lignes = db
+    .prepare('SELECT type, COUNT(*) AS n FROM gabarits WHERE systeme_id = ? GROUP BY type')
+    .all(systeme.id) as { type: TypeGabarit; n: number }[];
+  for (const l of lignes) entrees[l.type] = l.n;
+  return {
+    id: systeme.id,
+    nom: systeme.nom,
+    nbUnivers: n.n,
+    entrees,
+    mesUnivers,
+    peutEcrire: mesUnivers.some((u) => u.role === 'mj'),
+  };
+}
+
+/** The systems attached to a universe the caller is a member of, by name (AD-94). */
+export function listerSystemes(db: Db, compteId: number): SystemeVue[] {
+  const rows = db
+    .prepare(
+      `SELECT DISTINCT s.id, s.nom FROM systemes_jeu s
+       JOIN univers u ON u.systeme_id = s.id
+       JOIN membres m ON m.univers_id = u.id
+       WHERE m.compte_id = ? ORDER BY s.nom COLLATE NOCASE, s.id`,
+    )
+    .all(compteId) as SystemeCatalogue[];
+  return rows.map((r) => vueDe(db, compteId, r));
+}
+
+/** Unknown system or none of the caller's universes uses it: the same "not found" (AD-22, AD-94). */
+function systemeVisible(db: Db, compteId: number, systemeId: number): SystemeVue {
+  const s = db.prepare('SELECT id, nom FROM systemes_jeu WHERE id = ?').get(systemeId) as
+    | SystemeCatalogue
+    | undefined;
+  if (!s) throw introuvable();
+  const vue = vueDe(db, compteId, s);
+  if (vue.mesUnivers.length === 0) throw introuvable();
+  return vue;
+}
+
+/** The system seen from its own address: name, counts, the caller's universes only (AD-84, AD-94). */
+export function lireSysteme(db: Db, compteId: number, systemeId: number): SystemeVue {
+  return systemeVisible(db, compteId, systemeId);
 }
 
 export interface PageGabarits {
@@ -161,10 +200,10 @@ export interface PageGabarits {
 export function listerGabarits(
   db: Db,
   compteId: number,
-  universId: number,
+  systemeId: number,
   options: { type: string; curseur?: string; limite?: number },
 ): PageGabarits {
-  const { systemeId } = systemeDe(db, compteId, universId);
+  systemeVisible(db, compteId, systemeId);
   if (!(TYPES_GABARIT as readonly string[]).includes(options.type)) {
     throw invalide('Type de gabarit inconnu.');
   }
@@ -201,10 +240,9 @@ function validerGabarit(nom: string, contenu: string): string {
   return n;
 }
 
-/** Write access: member of the passing universe, GM, universe attached. Player → refused. */
-function exigerEcritureGabarits(db: Db, compteId: number, universId: number): number {
-  const { systemeId, role } = systemeDe(db, compteId, universId);
-  if (role !== 'mj') throw refuse();
+/** Write access: GM of at least one universe using the system; a reader only is refused (AD-94). */
+function exigerEcritureGabarits(db: Db, compteId: number, systemeId: number): number {
+  if (!systemeVisible(db, compteId, systemeId).peutEcrire) throw refuse();
   return systemeId;
 }
 
@@ -212,10 +250,10 @@ function exigerEcritureGabarits(db: Db, compteId: number, universId: number): nu
 export function creerGabarit(
   db: Db,
   compteId: number,
-  universId: number,
+  sid: number,
   entree: { type: string; nom: string; contenu?: string },
 ): Gabarit {
-  const systemeId = exigerEcritureGabarits(db, compteId, universId);
+  const systemeId = exigerEcritureGabarits(db, compteId, sid);
   if (!(TYPES_GABARIT as readonly string[]).includes(entree.type)) {
     throw invalide('Type de gabarit inconnu.');
   }
@@ -247,11 +285,11 @@ export function creerGabarit(
 export function modifierGabarit(
   db: Db,
   compteId: number,
-  universId: number,
+  sid: number,
   gabaritId: number,
   entree: { nom: string; contenu: string; version: number },
 ): Gabarit {
-  const systemeId = exigerEcritureGabarits(db, compteId, universId);
+  const systemeId = exigerEcritureGabarits(db, compteId, sid);
   const nom = validerGabarit(entree.nom, entree.contenu);
   return db.transaction(() => {
     const g = db
