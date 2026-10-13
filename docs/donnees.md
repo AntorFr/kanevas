@@ -467,7 +467,7 @@ d'origine se lit par le MJ.
 
 ### Physique
 
-Même base, mêmes réglages (WAL, `foreign_keys`, une connexion d'écriture, AD-5). Index et la requête
+Même base, mêmes réglages (WAL, `foreign_keys`, une connexion d'écriture, AD-5). **Construit à ce jour** (`kanevas-import-types`) : `fiches (parent_id)`, `fiches (univers_id, cle_origine)`, `fiches (univers_id, type, sous_type)` et `recherche_sections (titre, contenu_public, contenu)` ; l'index `recherche_fiches` reste sur `titre` seul. **Cible, non construit** : tout ce qui touche `liens`, `fiche_alias`, `fiche_etiquettes` et l'indexation des alias et du sous-type (features `kanevas-import-liens`, `-recherche`, `-arbre`). Index et la requête
 qu'ils servent : `fiches (parent_id)` — les enfants (bloc « Contient », arbre de E-8) et le
 re-parentage à la suppression ; `fiches (univers_id, cle_origine)` unique — la recherche d'une fiche par
 clé à chaque appel de l'API ; `liens (cible_fiche_id)` et **`relations (cible_fiche_id)`** (absent

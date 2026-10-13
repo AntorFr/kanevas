@@ -19,7 +19,8 @@
   exactly the two-sources bug this socle was built to avoid.
 - Release: `git tag vX.Y.Z && git push origin vX.Y.Z` builds and publishes
   `ghcr.io/antorfr/kanevas:X.Y.Z` (package public). Deploying is a separate
-  change in `k8s-home-lab` (chart version + image tag pinned there).
+  change in `k8s-home-lab` (chart version + image tag pinned there). The image build requires the « tests-complets »
+  status on the tagged commit: `npm run tests:attestes -- --publier` (README, « Version de l'application »).
 - No ORM: SQLite through `better-sqlite3` (Node 20 has no `node:sqlite`),
   numbered SQL migrations in `src/db/migrations/` applied at startup by
   `src/db/db.ts` (AD-14; `npm run build` copies them to `dist/`). Tables are
