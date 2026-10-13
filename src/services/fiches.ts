@@ -175,7 +175,7 @@ export function changerSousType(
 }
 
 /**
- * The GM changes the type of a sheet among the thirteen settable ones (AD-113 (4)): the same row,
+ * The GM changes the type of a sheet among the thirteen settable ones (AD-120 (4)): the same row,
  * so id, sections, relations and map places stay. The payload becomes that of the new type (a
  * character takes `pj`, `false` by default) and the sub-type is cleared unless the caller gives a
  * new one. A disabled target type is allowed. A session report cannot be changed into or out of.

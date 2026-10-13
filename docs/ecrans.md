@@ -209,7 +209,7 @@ Deux sont posés dès le cadrage parce qu'ils traversent tout :
 
 Sur tout écran d'un univers : en tête le **sélecteur d'univers** (nom, badge du rôle, la liste
 des univers du compte, puis « Mes univers » et « Systèmes de jeu » en pied de liste) ; **Vue d'ensemble** ; **Campagnes**, **Comptes-rendus** et **Cartes** ; **Lore** :
-les types activés de l'univers (Personnages, Lieux, Factions, Objets, Événements, Quêtes par défaut ; liste complète en haut de ce document) ; pour un MJ, **Univers ▸ Membres** et **Paramètres** ; en
+les types activés de l'univers (sans décision, tous les types réglables sont activés ; liste complète en haut de ce document) ; pour un MJ, **Univers ▸ Membres** et **Paramètres** ; en
 pied, le compte (avatar et identifiant) qui ouvre le menu du compte : l'identifiant, le thème
 (Clair, Sombre, Système, en trois icônes) et « Se déconnecter ». Hors d'un univers (E-1,
 E-2, E-5, E-15, E-16) : « Mes univers », « Systèmes de jeu », « Administration » pour un compte du groupe `parents` (E-5, plus bas) et le compte en pied. **Un item dont l'écran n'est
@@ -667,7 +667,7 @@ section (AD-39), sans « Relier » ni « Retirer ».
 
 *Le MJ relie.* « Relier à une fiche » ouvre un formulaire sous la liste :
 1. « Type de relation » (texte libre, 1 à 80 caractères, par exemple « membre de ») ;
-2. « Type de fiche » (Personnage, Lieu, Faction, Objet, Événement, Quête ; Personnage par défaut) ;
+2. « Type de fiche » (les types activés de l’univers, au singulier ; Personnage par défaut) ;
 3. un champ « Chercher dans les factions » et la liste des fiches de ce type, cent à la fois avec
    « Charger la suite » : c'est la liste et la recherche de E-8, pas une autre ;
 4. choisir une fiche (une seule), puis « Relier » ; « Annuler » ferme sans rien écrire.
@@ -1010,7 +1010,7 @@ section (AD-39), sans « Relier » ni « Retirer ».
 
 *Le MJ relie.* « Relier à une fiche » ouvre un formulaire sous la liste :
 1. « Type de relation » (texte libre, 1 à 80 caractères, par exemple « membre de ») ;
-2. « Type de fiche » (Personnage, Lieu, Faction, Objet, Événement, Quête ; Personnage par défaut) ;
+2. « Type de fiche » (les types activés de l’univers, au singulier ; Personnage par défaut) ;
 3. un champ « Chercher dans les factions » et la liste des fiches de ce type, cent à la fois avec
    « Charger la suite » : c'est la liste et la recherche de E-8, pas une autre ;
 4. choisir une fiche (une seule), puis « Relier » ; « Annuler » ferme sans rien écrire.

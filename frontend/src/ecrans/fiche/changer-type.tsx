@@ -7,7 +7,7 @@ import { MAX_SOUS_TYPE, useSousTypesEmployes } from './sous-type';
 import type { FicheVue } from './types';
 
 /**
- * E-9 « Changer le type… »: the same row moves to another type (AD-113 (4)). Enabled types first, then
+ * E-9 « Changer le type… »: the same row moves to another type (AD-120 (4)). Enabled types first, then
  * « Autres types » (still choosable); a character asks PJ / PNJ; the old sub-type goes, a new one may be given.
  */
 export function ChangerType({

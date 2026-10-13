@@ -21,7 +21,7 @@ import { matchPath, useLocation } from 'react-router-dom';
 import { lire } from './api';
 import { useUnivers } from './cadre-contexte';
 
-/** A type as `GET /api/univers/:id/types` returns it (AD-113): the server owns the list, nothing is copied here. */
+/** A type as `GET /api/univers/:id/types` returns it (AD-120): the server owns the list, nothing is copied here. */
 export interface TypeVue {
   type: string;
   slug: string;
