@@ -305,6 +305,23 @@ test('bord : un bloc dans un bloc ; le plus extérieur gouverne, le texte après
   assert.ok(lea.includes('AVANT') && lea.includes('APRES'));
 });
 
+test('exclusion : un « ::: » indenté de 4 espaces ou d’une tabulation ne livre à Léa rien de la suite du bloc', opts, async () => {
+  // Panne : fermer le bloc sur une ligne « ::: » indentée (du code pour le moteur), puis livrer la suite du secret.
+  const m = await monde('Secrets indentes');
+  await section(m, 'Quatre', 'AVANTQ\n\n:::mj\nSECRETQUN\n\n    :::\n\nSECRETQDEUX\n:::\n\nAPRESQ');
+  await section(m, 'Tabulation', 'AVANTT\n\n:::mj\nSECRETTUN\n\n\t:::\n\nSECRETTDEUX\n:::\n\nAPREST');
+  for (const [titre, avant, apres, secrets] of [
+    ['Quatre', 'AVANTQ', 'APRESQ', ['SECRETQUN', 'SECRETQDEUX']],
+    ['Tabulation', 'AVANTT', 'APREST', ['SECRETTUN', 'SECRETTDEUX']],
+  ] as const) {
+    const lea = await htmlLea(m, titre);
+    assert.ok(lea.includes(avant) && lea.includes(apres), titre);
+    for (const mot of secrets) assert.ok(!lea.includes(mot), `${titre} ${mot}`);
+    assert.deepEqual(await trouvees(C.lea, m.u, 'personnage', secrets[1]), [], `${titre} recherche`);
+    assert.deepEqual(await trouvees(C.antor, m.u, 'personnage', secrets[1]), ['Maître Aldric'], `${titre} recherche MJ`);
+  }
+});
+
 test('bord : un bloc jamais fermé couvre jusqu’à la fin de la section, même ouvert dans une citation', opts, async () => {
   const m = await monde('Secrets ouverts');
   await section(m, 'Ouvert', 'DEBUT\n\n:::mj\nSECRETOUVERT\n\nSUITEOUVERTE');
