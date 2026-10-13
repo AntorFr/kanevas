@@ -4,7 +4,9 @@ import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 
 import { env } from '../config/env.js';
 import { assurerCompte, lireCompte } from '../services/comptes.js';
-import { MAX_CONTENU_SECTION } from '../services/sections.js';
+import { invalide } from '../services/erreurs.js';
+import { rendreMarkdown } from '../services/markdown.js';
+import { MAX_CONTENU_SECTION, validerContenu } from '../services/sections.js';
 import {
   decoderSession,
   encoderSession,
@@ -21,6 +23,7 @@ import { registerUniversRoutes } from './univers.js';
 import { registerSystemesRoutes } from './systemes.js';
 import { registerSuiviRoutes } from './suivi.js';
 import { registerAssistantRoutes } from './assistant.js';
+import { registerAccesApiRoutes } from './acces-api.js';
 import { registerPropositionsRoutes } from './propositions.js';
 import { chargerFrontend } from './frontend.js';
 import { pageIntrouvable, urlConnexion } from './pages.js';
@@ -122,6 +125,7 @@ export async function registerSessionRoutes(app: FastifyInstance) {
     registerCartesRoutes(garde);
     registerAssistantRoutes(garde);
     registerPropositionsRoutes(garde);
+    registerAccesApiRoutes(garde);
   });
 }
 
@@ -133,5 +137,13 @@ function registerGuardedRoutes(app: FastifyInstance) {
       groups: request.session!.groups,
       limites: { contenuSection: MAX_CONTENU_SECTION },
     };
+  });
+
+  // Preview (AD-113): renders what the reading would, reads and writes nothing.
+  app.post('/api/apercu', async (request) => {
+    const texte = (request.body as { texte?: unknown } | null)?.texte;
+    if (typeof texte !== 'string') throw invalide('Le texte doit être une chaîne.');
+    validerContenu(texte);
+    return { html: rendreMarkdown(texte) };
   });
 }

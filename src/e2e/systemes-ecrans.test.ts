@@ -133,7 +133,8 @@ describe('kanevas-il-systemes-ecrans', { skip: skipBrowser }, () => {
 
   test('E-1 : deux cartes par nom, rôle, système, 2 membres ; Teo vide', opts, async () => {
     await va(antor, '/');
-    const cartes = antor.locator('.carte-dessin');
+    // « Essai Kanka » (kanevas-import) is seeded too: this test is about the two others.
+    const cartes = antor.locator('.carte-dessin').filter({ hasNotText: 'Essai Kanka' });
     assert.equal(await cartes.count(), 2);
     const t0 = await cartes.nth(0).innerText();
     const t1 = await cartes.nth(1).innerText();
@@ -202,7 +203,7 @@ describe('kanevas-il-systemes-ecrans', { skip: skipBrowser }, () => {
     await antor.context().setOffline(true);
     await antor.evaluate(() => window.dispatchEvent(new Event('offline')));
     await antor.getByText(/Connexion perdue/).first().waitFor();
-    assert.equal(await antor.locator('.carte-dessin').count(), 2);
+    assert.equal(await antor.locator('.carte-dessin').count(), 3); // + « Essai Kanka »
     const b = antor.getByRole('button', { name: /Créer un univers/ }).or(antor.getByRole('link', { name: /Créer un univers/ })).first();
     assert.ok((await b.isDisabled()) || (await b.getAttribute('aria-disabled')) === 'true');
     await photo(antor, 'hors-ligne-e1');

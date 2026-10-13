@@ -223,7 +223,7 @@ export function Pastille({
   expanded,
   children,
 }: {
-  sens: 'mj' | 'table' | 'neutre' | 'secrete';
+  sens: 'mj' | 'table' | 'neutre' | 'secrete' | 'danger';
   /** A button that opens a setting: whether it is open (`aria-expanded`). */
   expanded?: boolean;
   icone?: LucideIcon;

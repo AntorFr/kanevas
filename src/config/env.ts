@@ -34,8 +34,10 @@ const envSchema = z.object({
   OIDC_CLIENT_SECRET: z.string().min(1).optional(),
   OIDC_REDIRECT_URI: z.string().url().optional(),
   // Assistant (AD-54, AD-77): Claude subscription token, set by the operator; empty or absent =
-  // no assistant outside the stub. Read here only, never logged.
+  // no assistant outside the stub. Read through services/assistant/jeton.ts only, never logged.
   CLAUDE_CODE_OAUTH_TOKEN: z.string().optional(),
+  // Directory of the token file posed from the administration (AD-112); defaults to <data dir>/claude.
+  CLAUDE_DIR: z.string().min(1).optional(),
   // LLM transports reused from Antre-du-maitre (AD-10): no route calls them; only
   // ANTHROPIC_MODEL is read, by the assistant's claude-agent adapter (AD-73).
   ANTHROPIC_API_KEY: z.string().optional(),

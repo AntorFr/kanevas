@@ -52,7 +52,7 @@ test('migration: base 0001 avec univers → systeme_id NULL partout, seconde ex�
   db.exec("CREATE TABLE migrations (numero INTEGER PRIMARY KEY, nom TEXT NOT NULL, applique_le TEXT NOT NULL)");
   db.exec("INSERT INTO migrations VALUES (1,'0001-premiere-fiche.sql','x')");
   db.prepare("INSERT INTO univers (nom, cree_le) VALUES ('a','x'), ('b','x')").run();
-  assert.deepEqual(migrate(db), [2, 3, 4, 5, 6, 7, 8]);
+  assert.deepEqual(migrate(db), [2, 3, 4, 5, 6, 7, 8, 9, 10]);
   assert.deepEqual(db.prepare('SELECT systeme_id FROM univers').all(), [{ systeme_id: null }, { systeme_id: null }]);
   assert.equal(n(db, 'systemes_jeu'), 0);
   assert.deepEqual(migrate(db), []);
@@ -124,8 +124,8 @@ test('gabarits : création, bornes, doublon même type (casse), autre type accep
   assert.equal(creerGabarit(db, marc.id, s.id, { type: 'objet', nom: 'garde du sceau' }).type, 'objet');
   assert.equal(code(() => creerGabarit(db, marc.id, s.id, { type: 'creature', nom: '' })), 'invalide');
   assert.equal(code(() => creerGabarit(db, marc.id, s.id, { type: 'creature', nom: 'y'.repeat(121) })), 'invalide');
-  creerGabarit(db, marc.id, s.id, { type: 'creature', nom: 'y'.repeat(120), contenu: 'z'.repeat(20000) });
-  assert.equal(code(() => creerGabarit(db, marc.id, s.id, { type: 'creature', nom: 'w', contenu: 'z'.repeat(20001) })), 'invalide');
+  creerGabarit(db, marc.id, s.id, { type: 'creature', nom: 'y'.repeat(120), contenu: 'z'.repeat(100000) });
+  assert.equal(code(() => creerGabarit(db, marc.id, s.id, { type: 'creature', nom: 'w', contenu: 'z'.repeat(100001) })), 'invalide');
   assert.equal(code(() => creerGabarit(db, marc.id, s.id, { type: 'monstre', nom: 'w' })), 'invalide');
   const m = modifierGabarit(db, marc.id, s.id, g.id, { nom: 'Garde', contenu: 'PV 12', version: 1 });
   assert.equal(m.version, 2);
@@ -140,7 +140,7 @@ test('gabarits : création, bornes, doublon même type (casse), autre type accep
   const h = creerGabarit(db, marc.id, s.id, { type: 'creature', nom: 'Autre' });
   assert.equal(code(() => modifierGabarit(db, marc.id, s.id, h.id, { nom: 'GARDE', contenu: '', version: 1 })), 'conflit');
   // content over the limit on modification
-  assert.equal(code(() => modifierGabarit(db, marc.id, s.id, h.id, { nom: 'Autre', contenu: 'z'.repeat(20001), version: 1 })), 'invalide');
+  assert.equal(code(() => modifierGabarit(db, marc.id, s.id, h.id, { nom: 'Autre', contenu: 'z'.repeat(100001), version: 1 })), 'invalide');
 });
 
 test('lecture partagée : le MJ d’un second univers rattaché lit et écrit ; le joueur lit sans écrire', () => {

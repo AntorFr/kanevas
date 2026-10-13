@@ -2,6 +2,7 @@ import {
   Flag,
   Gem,
   Hourglass,
+  KeyRound,
   LayoutGrid,
   Map as Carte,
   MapPin,
@@ -52,6 +53,7 @@ export const ITEMS_UNIVERS: Item[] = [
   { libelle: 'Quêtes', icone: ScrollText, section: 'Lore', chemin: (id) => `/univers/${id}/fiches/quetes` },
   { libelle: 'Membres', icone: ContactRound, section: 'Univers', role: 'mj', chemin: (id) => `/univers/${id}/membres` },
   { libelle: 'Paramètres', icone: Settings2, section: 'Univers', role: 'mj', chemin: (id) => `/univers/${id}/parametres` },
+  { libelle: 'Accès par API', icone: KeyRound, section: 'Univers', role: 'mj', chemin: (id) => `/univers/${id}/acces-api` },
   // « Administration » (E-5): instance admins only, wherever the bar is.
   { libelle: 'Administration', icone: ShieldCheck, section: 'Instance', groupe: GROUPE_ADMIN, horsUnivers: true, chemin: () => '/administration' },
 ];

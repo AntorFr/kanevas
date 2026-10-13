@@ -1,13 +1,19 @@
-import { ImageOff, ImagePlus, ImageUp, Trash2, type LucideIcon } from 'lucide-react';
+import { Ellipsis, Info, ImageOff, ImagePlus, ImageUp, Trash2, type LucideIcon } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
 import { ErreurApi, appeler, envoyerFichier, useConnexionPerdue } from '../../api';
-import { Alerte, Bouton, BoutonIcone, useToasts } from '../../ui';
+import { Alerte, Bouton, BoutonIcone, Menu, useToasts } from '../../ui';
 import type { FicheVue } from './types';
 import { adresseIllustration } from './vignette';
 
 const AIDE = 'Visible de tous ceux qui voient la fiche.';
 const ECHEC = 'L’action n’a pas abouti. Réessayez.';
+/** « 3 mars 2021 » (the creation date of the sheet; empty if the server gave none). */
+function dateLongue(iso?: string): string {
+  const d = iso ? new Date(iso) : null;
+  return d && !Number.isNaN(d.getTime()) ? d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }) : '';
+}
+
 const TYPES_IMAGE = 'image/png, image/jpeg, image/gif, image/webp';
 
 /** An inline failure under the header (never a toast); `reessayer` adds « Réessayer ». */
@@ -196,10 +202,32 @@ export function EnteteFiche({ universId, fiche, gestion, badge, Icone, message, 
               <span className="aide">{AIDE}</span>
             </div>
           )}
-          <span className="type">
-            <Icone size={14} strokeWidth={1.75} aria-hidden="true" />
-            {badge}
-          </span>
+          <div className="tete-ligne">
+            <span className="type">
+              <Icone size={14} strokeWidth={1.75} aria-hidden="true" />
+              {badge}
+            </span>
+            {/* « ⋯ » (E-9): in this slice its only line is the origin of an imported sheet; no key, no menu. */}
+            {gestion && fiche.cleOrigine && (
+              <Menu
+                etiquette={`Autres actions sur « ${fiche.titre} »`}
+                icone={Ellipsis}
+                aligne="fin"
+                entrees={[
+                  {
+                    contenu: (
+                      <div className="info-fiche">
+                        <Info size={14} strokeWidth={1.75} aria-hidden="true" />
+                        <span>
+                          Importée · clé <code>{fiche.cleOrigine}</code> · créée le {dateLongue(fiche.creeLe)}
+                        </span>
+                      </div>
+                    ),
+                  },
+                ]}
+              />
+            )}
+          </div>
           <h1 id="titre-fiche" tabIndex={-1}>
             {fiche.titre}
           </h1>
