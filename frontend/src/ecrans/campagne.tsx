@@ -155,7 +155,9 @@ function PanneauScenarios({ universId, campagneId }: { universId: string; campag
               .map((s) => (
                 <li key={s.id} className="ligne-suivi">
                   <Link className="grand" to={`/univers/${universId}/scenarios/${s.id}`}>
-                    <FileText size={14} strokeWidth={1.75} aria-hidden="true" style={{ flex: "none", color: "var(--texte-3)" }} />
+                    <span className="mono" aria-hidden="true">
+                      <FileText size={14} strokeWidth={1.75} />
+                    </span>
                     <span className="texte-ligne">{s.titre}</span>
                   </Link>
                 </li>

@@ -35,7 +35,7 @@
 .page-parametres .panneaux-suivi .panneau.reserve-mj { margin: 0; padding: var(--e-4) 0 var(--e-2) var(--e-4); border-radius: var(--rayon-champ);
   border-top: 1px solid var(--bord); background: linear-gradient(90deg, var(--mj-trame), transparent 40%); box-shadow: inset 2px 0 0 var(--mj-bord); }
 .page-parametres .panneaux-suivi .panneau.reserve-mj::before { content: none; }
-.page-parametres .panneaux-suivi .panneau.reserve-mj + .panneau.reserve-mj { margin-top: var(--e-4); }
+.page-parametres .panneaux-suivi .panneau.reserve-mj + .panneau.reserve-mj { margin-top: 0; }
 .page-parametres .champ textarea { font-family: var(--police-texte); font-size: var(--t-14); line-height: 1.5; min-height: 0; padding: var(--e-2) var(--e-3); }
 @media (max-width: 760px) { .page-parametres .panneaux-suivi .panneau.reserve-mj { margin-left: 0; margin-right: 0; padding-left: var(--e-3); } }
 
