@@ -119,3 +119,9 @@
   `poserContenu` in `services/sections.ts` write `contenu` of a section — creation, `ecrireContenu`, proposals, reports and the
   import all go through them; never add another `INSERT INTO sections` / `UPDATE sections SET contenu`. `rendreMarkdown(source,
   {nature})` knows the container only for `nature: 'section'`; scenarios and system entries keep `:::mj` as text.
+- Links (`kanevas-liens-ecriture`, migration 0012, AD-116): `src/services/liens.ts` is the only writer of `liens`;
+  `extraireLiens` (`markdown.ts`, pure) reads `[[…]]` from the engine's tokens, never by pattern. `poserContenu`
+  and `insererSection` replace a section's rows; `preparerContenu` (bare `[[<id>]]` → `[[<id>|<titre>]]` or
+  `lien_illisible`, known `[[cle:…]]` → id) runs before each write, the import's replay comparison included
+  (AD-104). `resoudreClesEnAttente` rewrites waiting texts at the creation of a keyed sheet without moving
+  `version` / `modifie_le`.

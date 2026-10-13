@@ -110,8 +110,15 @@ const OUVERTURE_BLOC = /^[\s>]*:::mj\s*$/;
 export function contenuPublic(source: string): string {
   // The engine cuts lines on \r\n, \r and \n: do the same, or its line numbers drift from ours.
   const lignes = source.split(/\r\n|\r|\n/);
+  const retirees = lignesBlocMJ(lignes, mdSection.parse(source, {}));
+  if (retirees.size === 0) return source;
+  return lignes.filter((_, i) => !retirees.has(i)).join('\n');
+}
+
+/** The (0-based) lines covered by the outermost GM blocks of a parsed source, see `contenuPublic`. */
+function lignesBlocMJ(lignes: string[], tokens: ReturnType<typeof mdSection.parse>): Set<number> {
   const retirees = new Set<number>();
-  for (const t of mdSection.parse(source, {})) {
+  for (const t of tokens) {
     if (t.type !== 'container_mj_open' || !t.map) continue;
     // Only the start comes from the token. The block runs to the fence that balances its openings
     // (a `:::mj` line inside opens a nested block, the container itself does not nest); never balanced,
@@ -129,8 +136,124 @@ export function contenuPublic(source: string): string {
     }
     for (let i = t.map[0]; i < fin; i++) retirees.add(i);
   }
-  if (retirees.size === 0) return source;
-  return lignes.filter((_, i) => !retirees.has(i)).join('\n');
+  return retirees;
+}
+
+/** A `[[…]]` link found in a source (AD-116). Offsets are in the source, `fin` excluded. */
+export interface LienExtrait {
+  debut: number;
+  fin: number;
+  /** `id`: `[[<id>…]]`; `cle`: `[[cle:<clé>|…]]`. Exactly one of them is set. */
+  id: number | null;
+  cle: string | null;
+  /** Null for the bare `[[<id>]]`, which only exists as an input. */
+  texte: string | null;
+  dansBlocMJ: boolean;
+}
+
+/** The three forms of the grammar (`docs/ecrans.md`): text and key are 1 to 200 characters, no `]`, `|` nor line break. */
+const LIEN = /\[\[(?:([1-9]\d{0,14})|cle:([^|\]\r\n]{1,200}))(?:\|([^|\]\r\n]{1,200}))?\]\]/y;
+
+function creerMoteurLiens(): InstanceType<typeof MarkdownIt> {
+  const md = creerMoteur(true);
+  md.inline.ruler.before('link', 'lien_fiche', (state, silencieux) => {
+    if (state.src.charCodeAt(state.pos) !== 0x5b) return false;
+    LIEN.lastIndex = state.pos;
+    const m = LIEN.exec(state.src);
+    if (!m) return false;
+    // `[[cle:…]]` without a text is not a form; a bare id is.
+    if (m[2] !== undefined && m[3] === undefined) return false;
+    if (!silencieux) {
+      const t = state.push('lien_fiche', '', 0);
+      t.meta = {
+        debut: state.pos,
+        fin: state.pos + m[0].length,
+        id: m[1] !== undefined ? Number(m[1]) : null,
+        cle: m[2] ?? null,
+        texte: m[3] ?? null,
+      };
+    }
+    state.pos += m[0].length;
+    return true;
+  });
+  return md;
+}
+
+const mdLiens = creerMoteurLiens();
+
+/**
+ * The `[[…]]` links of a source, in order (AD-116). Pure. They are read from the tokens of the
+ * engine, never by pattern over the text: a form inside a code block or a code span is not a link.
+ * `dansBlocMJ` follows the lines `contenuPublic` removes. Offsets are those of `source`.
+ */
+export function extraireLiens(source: string): LienExtrait[] {
+  const lignes = source.split(/\r\n|\r|\n/);
+  const debuts: number[] = [];
+  for (let pos = 0, i = 0; i < lignes.length; i++) {
+    debuts.push(pos);
+    pos += lignes[i]!.length;
+    const saut = /^(\r\n|\r|\n)/.exec(source.slice(pos, pos + 2));
+    pos += saut ? saut[0].length : 0;
+  }
+  const tokens = mdLiens.parse(source, {});
+  const mj = lignesBlocMJ(lignes, tokens);
+  const trouves: LienExtrait[] = [];
+  let curseur = 0;
+  let carte: [number, number] | null = null;
+  for (const t of tokens) {
+    if (t.map) carte = t.map;
+    if (t.type !== 'inline' || !t.children?.some((c) => c.type === 'lien_fiche')) continue;
+    const base = t.map ?? carte;
+    if (!base) continue;
+    // Where each line of the inline content sits in the source: found by search, in order, because
+    // the engine strips quote marks, list markers and indentation from what it hands the inline rules.
+    const segments: { ligne: number; contenu: number; source: number; longueur: number }[] = [];
+    let ok = true;
+    let decalage = 0;
+    t.content.split('\n').forEach((texte, k) => {
+      if (!ok) return;
+      const ligne = Math.min(base[0] + k, lignes.length - 1);
+      const depuis = Math.max(curseur, debuts[ligne]!);
+      const idx = source.indexOf(texte, depuis);
+      if (idx < 0 || idx + texte.length > debuts[ligne]! + lignes[ligne]!.length) ok = false;
+      else {
+        segments.push({ ligne, contenu: decalage, source: idx, longueur: texte.length });
+        curseur = idx + texte.length;
+      }
+      decalage += texte.length + 1;
+    });
+    if (!ok) continue;
+    for (const c of t.children) {
+      if (c.type !== 'lien_fiche') continue;
+      const m = c.meta as { debut: number; fin: number; id: number | null; cle: string | null; texte: string | null };
+      const seg = [...segments].reverse().find((x) => x.contenu <= m.debut);
+      if (!seg) continue;
+      const debut = seg.source + (m.debut - seg.contenu);
+      trouves.push({
+        debut,
+        fin: debut + (m.fin - m.debut),
+        id: m.id,
+        cle: m.cle,
+        texte: m.texte,
+        dansBlocMJ: mj.has(seg.ligne),
+      });
+    }
+  }
+  return trouves;
+}
+
+/** Rewrites links in place: `remplacement` gives the new text of a link, or null to keep it. */
+export function reecrireLiens(
+  source: string,
+  liens: LienExtrait[],
+  remplacement: (l: LienExtrait) => string | null,
+): string {
+  let sortie = source;
+  for (const l of [...liens].sort((a, b) => b.debut - a.debut)) {
+    const neuf = remplacement(l);
+    if (neuf !== null) sortie = sortie.slice(0, l.debut) + neuf + sortie.slice(l.fin);
+  }
+  return sortie;
 }
 
 /**

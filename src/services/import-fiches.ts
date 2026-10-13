@@ -2,6 +2,7 @@ import type { Db } from '../db/db.js';
 import { ErreurService } from './erreurs.js';
 import { changerTypeFiche, creerFiche, renommerFiche } from './fiches.js';
 import type { Jeton } from './jetons.js';
+import { preparerContenu } from './liens.js';
 import { lireLot, noterDansLot, type EntreeRapport, type Issue } from './lots.js';
 import {
   ajouterSection,
@@ -10,6 +11,7 @@ import {
   MAX_CONTENU_SECTION,
   renommerSection,
   reordonnerSections,
+  resoudreClesEnAttente,
 } from './sections.js';
 import type { SectionRow } from './types.js';
 
@@ -216,14 +218,22 @@ export function assurerFiche(
     throw e;
   }
 
-  return db.transaction((): ResultatFiche => {
-    const avert: EntreeRapport[] = [];
-    const prevenir = (objet: string, raison: string) =>
-      avert.push({ cle, objet, raison, gravite: 'avertissement' });
-    const resultat = ecrire(db, jeton, cle, entree, prevenir);
-    if (lotId !== null) noterDansLot(db, lotId, 'fiches', ISSUE[resultat.etat], avert, maintenant);
-    return { ...resultat, avertissements: avert.map((a) => a.raison) };
-  })();
+  try {
+    return db.transaction((): ResultatFiche => {
+      const avert: EntreeRapport[] = [];
+      const prevenir = (objet: string, raison: string) =>
+        avert.push({ cle, objet, raison, gravite: 'avertissement' });
+      const resultat = ecrire(db, jeton, cle, entree, prevenir);
+      if (lotId !== null) noterDansLot(db, lotId, 'fiches', ISSUE[resultat.etat], avert, maintenant);
+      return { ...resultat, avertissements: avert.map((a) => a.raison) };
+    })();
+  } catch (e) {
+    // A bare id that points nowhere: the whole request is refused, nothing of it is written.
+    if (e instanceof ErreurService && e.detail === 'lien_illisible') {
+      return refuser(new Refus('sections', 'section', 'lien [[<id>]] vers une fiche absente ou illisible'));
+    }
+    throw e;
+  }
 }
 
 function ecrire(
@@ -247,6 +257,8 @@ function ecrire(
       charge,
       origine: { cle, creeLe: e.creeLe, modifieLe: e.modifieLe, dernierImport: marque },
     });
+    // The sheets that waited for this key now point at it, in this transaction (AD-116).
+    resoudreClesEnAttente(db, universId, cle, fiche.id);
     for (const s of e.sections) creerSection(db, jeton, fiche.id, s);
     // Adding sections touched the sheet with « now »; a date given by the source is the sheet's.
     if (e.modifieLe) db.prepare('UPDATE fiches SET modifie_le = ? WHERE id = ?').run(e.modifieLe, fiche.id);
@@ -375,9 +387,11 @@ function majSection(
   }
 
   let versionImportee = ligne.version_importee;
-  if (ligne.contenu !== s.contenu) {
+  // The text is compared once the known keys are resolved (AD-104): a link already resolved is « inchangée ».
+  const voulu = preparerContenu(db, universId, compteId, s.contenu);
+  if (ligne.contenu !== voulu) {
     if (ligne.version_importee !== null && ligne.version === ligne.version_importee) {
-      const v = ecrireContenu(db, compteId, universId, ficheId, ligne.id, s.contenu, ligne.version);
+      const v = ecrireContenu(db, compteId, universId, ficheId, ligne.id, voulu, ligne.version);
       versionImportee = v.version;
       ecrit = true;
     } else {

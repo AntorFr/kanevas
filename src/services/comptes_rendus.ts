@@ -3,6 +3,7 @@ import { campagneBrute } from './campagnes.js';
 import { exigerRole } from './droits.js';
 import { introuvable, invalide } from './erreurs.js';
 import { LIMITE_LISTE, lireFiche, validerTitre } from './fiches.js';
+import { preparerContenu } from './liens.js';
 import { exigerSansBloc, insererSection, validerContenu } from './sections.js';
 import type { Acteur, FicheVue } from './types.js';
 
@@ -38,11 +39,13 @@ export function creerCompteRendu(
       .run(universId, titre, JSON.stringify({ v: 1, campagne_id: campagneId }), now, now);
     const id = Number(f.lastInsertRowid);
     const joueur = role === 'joueur';
+    const contenu = preparerContenu(db, universId, compteId, texte);
+    validerContenu(contenu);
     insererSection(db, {
       ficheId: id,
       titre: TITRE_SECTION_COMPTE_RENDU,
       ordre: 1,
-      contenu: texte,
+      contenu,
       modifieLe: now,
       joueursLisent: 1,
       auteurId: joueur ? compteId : null,
