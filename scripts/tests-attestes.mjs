@@ -65,6 +65,9 @@ const playwright = (() => {
 
 const debut = new Date();
 const typecheck = spawnSync('npm', ['run', 'typecheck'], { stdio: 'inherit' });
+// The build too: a screen test checks what the built application serves (fonts, no foreign
+// host), and skips without dist/ — the suite would not be complete.
+const build = typecheck.status === 0 ? spawnSync('npm', ['run', 'build'], { stdio: 'inherit' }) : null;
 
 const tap = join(mkdtempSync(join(tmpdir(), 'tests-attestes-')), 'resultats.tap');
 const commande = [
@@ -74,7 +77,7 @@ const commande = [
   '--test-reporter=tap', `--test-reporter-destination=${tap}`,
   ...fichiers,
 ];
-const suite = typecheck.status === 0 ? spawnSync(process.execPath, commande, { stdio: 'inherit' }) : null;
+const suite = build && build.status === 0 ? spawnSync(process.execPath, commande, { stdio: 'inherit' }) : null;
 
 // Totals from the TAP summary (`# pass 12`…), the last occurrence of each.
 const totaux = { tests: 0, pass: 0, fail: 0, skipped: 0, todo: 0, cancelled: 0 };
@@ -92,6 +95,7 @@ try {
 // the suite.
 const raisons = [];
 if (typecheck.status !== 0) raisons.push('typecheck en échec');
+if (build && build.status !== 0) raisons.push('build en échec');
 if (suite && suite.status !== 0) raisons.push(`suite sortie ${suite.status}`);
 if (totaux.tests === 0) raisons.push('aucun test joué');
 if (totaux.fail > 0) raisons.push(`${totaux.fail} en échec`);
