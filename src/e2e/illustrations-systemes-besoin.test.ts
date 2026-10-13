@@ -299,7 +299,7 @@ describe('kanevas-illustrations, besoin B-30 / B-31 / B-29', { timeout: 300000 }
     await antor.getByRole('heading', { level: 1, name: 'Mes univers' }).waitFor();
     await attendre(antor);
     const t = await texte(antor);
-    assert.match(t, /2 univers/);
+    assert.match(t, /3 univers/); // + « Essai Kanka » (kanevas-import)
     assert.match(t, /Chroniques Oubliées Fantasy/);
     assert.match(t, /2 membres/);
     const lame = antor.getByRole('link', { name: /Lame d.Ébène/ }).first();

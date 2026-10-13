@@ -109,7 +109,7 @@ test('lister_campagnes, lire_fiche et lire_section selon le rôle', () => {
   const inex = outil(lea.id, 'lire_section', { ficheId: aldric.id, sectionId: 99999 });
   assert.deepEqual(cache, { ok: false, erreur: 'Introuvable.' });
   assert.deepEqual(inex, cache);
-  assert.equal(ok(outil(lea.id, 'lire_section', { ficheId: aldric.id, sectionId: app.id })).donnees.contenu, 'Grand.');
+  assert.equal(ok(outil(lea.id, 'lire_section', { ficheId: aldric.id, sectionId: app.id })).donnees.contenu, '<p>Grand.</p>\n');
 });
 
 test('creer_campagne / creer_scenario : événements, visibilité, étanchéité entre univers', () => {
@@ -153,7 +153,7 @@ test('ajouter_a_section de Léa : écrit après l’existant ; lecture seule et 
   assert.deepEqual(vieux, { ok: false, erreur: "La section a changé depuis que vous l'avez lue. Relisez-la." });
   const ro = outil(lea.id, 'ajouter_a_section', { ficheId: aldric.id, sectionId: app.id, texte: 'Z', version: 1 });
   assert.deepEqual(ro, { ok: false, erreur: 'Vous ne pouvez pas modifier cette section.' });
-  assert.equal(ok(outil(lea.id, 'lire_section', { ficheId: aldric.id, sectionId: app.id })).donnees.contenu, 'Grand.');
+  assert.equal(ok(outil(lea.id, 'lire_section', { ficheId: aldric.id, sectionId: app.id })).donnees.contenu, '<p>Grand.</p>\n');
 });
 
 test('paramètres inconnus ou invalides : échec sans effet', () => {

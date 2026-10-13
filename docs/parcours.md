@@ -414,7 +414,7 @@ Il veut d'abord un essai jetable, puis la vraie base, sans doublon ni fuite.*
    Kanka sont dans l'ordre de leurs dates d'origine ; sur une fiche, le menu « ⋯ » montre sa clé
    d'origine (« lieu:port-sel »).
 7. Il corrige le script (il coupe la section trop longue en deux), le relance : le nouveau lot dit
-   « Fiches : 3 créées, 498 inchangées · Fichiers : 1 140 inchangés · … · 0 en attente » — aucun doublon.
+   « Fiches : 3 créées · 498 inchangées · Fichiers : 1 140 inchangés · … · 0 en attente » — aucun doublon.
 8. **Paramètres** (E-14), « Supprimer l'univers », il tape « Essai Kanka » : l'univers disparaît de
    l'accueil.
 9. Il refait 2 à 7 sur l'univers réel ; les jours suivants, Léa écrit dans une section importée et
@@ -428,7 +428,7 @@ nature — rejouer est sans risque.
 et aucun lot n'apparaît ; un parent ou une cible de relation inconnue — la fiche est écrite sans ce
 parent ou sans cette relation, avec un avertissement dans le lot ; un lien `[[…]]` vers une clé
 encore inconnue — il reste en attente et se résout quand la fiche arrive (au même lot ou au suivant) ;
-le réseau coupe au milieu — le lot reste « ouvert » sur E-18, sans dommage : rejouer reprend là où
+le réseau coupe au milieu — le lot reste « En cours » sur E-18, sans dommage : rejouer reprend là où
 c'était, puisque tout ce qui est déjà écrit sort « inchangé » ; une image de 0 octet — refusée, la
 raison dans le lot ; supprimer l'univers en tapant un autre nom — le bouton reste inactif.
 
@@ -440,7 +440,7 @@ raison dans le lot ; supprimer l'univers en tapant un autre nom — le bouton re
 5. Plus tard : « Révoquer » sur la ligne, confirmation « Révoquer « Script Kanka — Mac » ? Le script
    qui l'utilise ne pourra plus rien écrire. » ; la ligne passe en « Révoqué ».
 *Échec* : un autre MJ a retiré son rôle à Antor — ses jetons cessent d'agir (401) et il ne voit plus
-E-18 (« Page introuvable. ») ; un Joueur force l'adresse de E-18 — « Page introuvable. » ; le jeton
+E-18 (« Page introuvable. ») et, pour un autre MJ, la ligne de ses jetons porte la pastille « Inactif » ; un Joueur force l'adresse de E-18 — « Page introuvable. » ; le jeton
 a expiré — la ligne dit « Expiré », le script reçoit 401.
 
 ### P-12 — Lire la base importée (Antor, MJ, puis Léa, Joueuse, au téléphone)
@@ -501,14 +501,17 @@ ne peut pas être rangée sous l'un de ses descendants. » ; un Joueur auteur d'
 un bloc MJ — « Modifier » n'y paraît pas ; un texte qui passe 100 000 caractères — « Erreur : 100 000
 caractères au plus. », le texte reste.
 
-### P-15 — Poser le jeton de l'assistant (admin d'instance) (B-51)
+### P-15 — Poser le jeton de l'assistant (Admin, admin d'instance) (B-51)
+*Admin vient de déployer Kanevas : l'assistant n'a pas encore de jeton, et il ne veut pas passer par un redéploiement.*
 1. **Administration** (E-5), bloc « Jeton de l'assistant » : « Aucun jeton posé » ; « Connecter
    l'abonnement ».
 2. Kanevas montre une adresse ; il l'ouvre, s'authentifie chez Anthropic, copie le code.
 3. Il colle le code, « Valider » : « Jeton posé le 11 octobre 2026. » ; l'assistant est disponible
-   sur tous les univers, sans redéploiement.
-*Échec* : le code est faux ou la fenêtre a expiré (10 minutes) — « La connexion n'a pas abouti.
-Recommencez. », l'ancien jeton reste.
+   sur tous les univers, sans redéploiement. *(Moment fort : « Jeton posé le … » apparaît, sans que la valeur du jeton soit montrée nulle part.)*
+*Échec* : le code est faux — « La connexion n'a pas abouti. Recommencez. » ; la fenêtre a expiré (10 minutes)
+ou le serveur a redémarré — « La connexion a expiré. Recommencez. » ; le programme de connexion ne démarre pas —
+« La connexion n'a pas pu démarrer. Réessayez. » ; dans tous les cas l'ancien état reste. Si le jeton vient du
+déploiement, le panneau dit « Jeton fourni par le déploiement. » et se reconnecte de même.
 
 ### P-16 — Ranger et partager les fichiers (Antor, MJ, puis Léa, Joueuse)
 *Après l'import, la médiathèque de « Lame d'Ébène » porte 1 100 images et 40 documents, dont ceux

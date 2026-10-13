@@ -308,7 +308,8 @@ describe('kanevas-illustrations (A) : illustrations, états et écrans en lectur
     assert.match(noms[1]!, /Joueur/);
     assert.match(noms[1]!, /Chroniques Oubliées Fantasy/);
     assert.match(noms[1]!, /2 membres/);
-    assert.ok(!/Sans système de jeu/.test(await texte(antor)));
+    // « Essai Kanka » (seeded by kanevas-import) has no system: the two cards above carry one.
+    assert.ok(!/Sans système de jeu/.test(noms.join(' ')));
     const box = await cartes.first().boundingBox();
     await antor.mouse.click(box.x + box.width / 2, box.y + box.height - 6);
     await antor.waitForURL(new RegExp(`/univers/${m.U}(/|$)`));

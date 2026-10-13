@@ -57,7 +57,7 @@ bascule existe (fiche, carte et, depuis `kanevas-import`, recherche E-17).
 | **E-2 Créer un univers** | E-1 | nom, description ; le créateur devient MJ | P-1 |
 | **E-3 Vue d'ensemble de l'univers** | E-1 ; sélecteur d'univers ; E-5 (admin devenu membre) | les campagnes actives, les derniers CR, la préparation (MJ), les cartes visibles | P-2, P-3, P-4, P-6 |
 | **E-4 Membres** | nav Univers (MJ) | lister, ajouter par identifiant, changer le rôle, retirer | P-2 |
-| **E-5 Administration** | nav (admin d'instance) | lister les univers de l'instance, en gérer les membres — jamais le contenu | P-2 |
+| **E-5 Administration** | nav (admin d'instance) | lister les univers de l'instance, en gérer les membres — jamais le contenu ; poser le jeton de l'assistant (B-51) | P-2, P-15 |
 | **E-6 Campagne** | nav Campagnes (liste) ; E-3 | liste des campagnes ; pour une campagne : statut, scénarios et « Nouveau scénario » (MJ), préparation (MJ), comptes-rendus, « Nouveau compte-rendu » | P-3, P-4 |
 | **E-7 Scénario** | E-6 (MJ) | écrire et relire un scénario | P-3 |
 | **E-8 Liste de fiches** | nav Lore | les fiches d'un type que le compte peut lire, en grille de cartes illustrées ; chercher dans ce type ; créer (MJ) | P-3, P-6 |
@@ -99,7 +99,7 @@ E-16 vivent hors des univers : leurs cases disent le rôle dans un univers ratta
 | E-2 | créer | créer | créer |
 | E-3 | tout | sans préparation ni scénarios | — |
 | E-4 | tout | — | — (passe par E-5) |
-| E-5 | — | — | lister les univers et leurs membres ; ajouter, changer un rôle, retirer un membre |
+| E-5 | — | — | lister les univers et leurs membres ; ajouter, changer un rôle, retirer un membre ; voir l'état du jeton de l'assistant, connecter ou reconnecter l'abonnement |
 | E-6 | tout | liste, statut, CR, « Nouveau compte-rendu » ; ni scénarios ni préparation (cachés) | — |
 | E-7 | tout | — | — |
 | E-8 | lire, chercher, créer ; la vignette de chaque fiche (son illustration, ou le repli dessiné) | lire, chercher ; la vignette des fiches qu'il voit | — |
@@ -119,13 +119,13 @@ Ce que `kanevas-import` ajoute aux lignes existantes : **E-8** — MJ : la vue e
 dans les seuls types activés ; Joueur : l'arbre des fiches qu'il voit. **E-9** — MJ : écrire le
 Markdown, insérer liens et blocs MJ, renommer, changer le type, déplacer, alias et étiquettes,
 supprimer (menu « ⋯ » de l'en-tête, hors mode Joueur), voir la clé d'origine ; Joueur : lire le
-Markdown, suivre les liens vers ce qu'il voit, « Contient » et « Mentionnée dans » réduits à ce qu'il
+Markdown (clé d'origine cachée), suivre les liens vers ce qu'il voit, « Contient » et « Mentionnée dans » réduits à ce qu'il
 lit ; écrire une section permise **sauf si elle contient un bloc MJ** (« Modifier » **caché**) ; alias
 et étiquettes visibles, jamais modifiables (**caché**). **E-14** — MJ : « Types de fiche »,
 « Supprimer l'univers ». **E-15** — MJ d'un univers rattaché : « Types de fiche » (bascules) ;
 Joueur : la liste en lecture seule.
 
-Un admin d'instance qui est aussi membre d'un univers, MJ ou Joueur, a dans cet univers la colonne de son rôle et garde E-5 par la section « Instance » de la barre ; hors de cet univers, la colonne Admin.
+Un admin d'instance qui est aussi membre d'un univers, MJ ou Joueur, a dans cet univers la colonne de son rôle et garde E-5 par la section « Instance » de la barre, et y a la colonne Admin (panneau « Jeton de l'assistant » compris : E-5 ne dépend pas de l'univers sélectionné) ; hors de cet univers, la colonne Admin.
 
 Précisions de la matrice : créer une campagne, en changer le statut, créer un scénario sont au
 MJ seul. L'audience d'une section se règle en ligne sur la fiche (MJ). Créer une fiche ouvre une
@@ -201,7 +201,7 @@ Deux sont posés dès le cadrage parce qu'ils traversent tout :
   efface la session et mène à la connexion ; en bouchon, c'est ainsi qu'on change de compte.
 - `GET /api/moi` rend `{username, groups, limites}` du compte connecté : c'est ce que la barre latérale
   affiche (l'identifiant) et ce que les tests lisent pour constater les groupes. `limites.contenuSection`
-  (20 000) est la borne d'une section, lue par l'écran de fiche (AD-91).
+  (100 000) est la borne d'une section, lue par l'écran de fiche (AD-91).
 
 ### Barre latérale
 
@@ -328,7 +328,7 @@ liste des personnages, alors elle n'y voit pas « Maître Aldric ».
 ### E-9 Fiche
 
 Le titre, le badge du type, puis les **sections** dans leur ordre, chacune un panneau : titre,
-contenu en texte brut (AD-58), et un emplacement de **blocs de section** (relations, pièces
+contenu en Markdown rendu (AD-95), et un emplacement de **blocs de section** (relations, pièces
 jointes : les tranches suivantes y inscrivent le leur, comme pour E-3, dans
 `frontend/src/ecrans/fiche/blocs/` et `registre.ts`).
 
@@ -343,7 +343,7 @@ voit un Joueur qui n'est l'auteur d'aucune section : plus de réglages, plus de 
 
 *Un Joueur* voit les sections qu'il lit (joueurs, ou auteur si c'est lui), sans titre ni trace des
 autres ; « Modifier » sur celles qu'il peut écrire ; ni audience, ni ordre, ni ajout, ni retrait.
-Pour **modifier** : un champ de texte (20 000 caractères au plus, valeur lue dans `limites.contenuSection` de `/api/moi` ; le serveur la refuse aussi, AD-91), « Enregistrer », « Annuler ».
+Pour **modifier** : un champ de texte (100 000 caractères au plus, valeur lue dans `limites.contenuSection` de `/api/moi` ; le serveur la refuse aussi, AD-91, AD-106 ; 20 000 avant `kanevas-import`), « Enregistrer », « Annuler ».
 Enregistrer envoie la version lue (AD-59).
 
 Textes : section sans contenu : « Rien d'écrit pour l'instant. » ; fiche sans section (MJ) : « Cette
@@ -361,7 +361,7 @@ des pièces jointes : « … Son contenu et ses 3 pièces jointes seront perdus.
 | erreur | « Impossible de charger cette fiche. » ; échec d'écriture : « L'action n'a pas abouti. Réessayez. », texte conservé | « Réessayer » |
 | connexion perdue | le bandeau ; « Enregistrer », audience, ordre, retrait, ajout désactivés ; le texte en cours reste | lire |
 | refus | fiche inconnue ou dont rien n'est lisible : « Page introuvable. » ; section non lisible : absente. Un MJ en mode Joueur sur une fiche dont aucune section n'est lisible des joueurs voit « Aucune section n'est visible des joueurs. » (ce que verrait un joueur : « Page introuvable. ») | passer en mode MJ |
-| contenu long | une section de 20 000 caractères passe à la ligne et s'affiche en entier ; plus au-delà, dès le 20 001e caractère saisi : « Erreur : 20 000 caractères au plus. » (sous le champ ; « Enregistrer » ne part pas ; le texte saisi est gardé, y compris quand c'est le serveur qui refuse, 400, avec le même texte — pas « L'action n'a pas abouti » ; tant que `/api/moi` n'a pas rendu la limite, ou s'il a échoué, l'écran ne contrôle rien et laisse le serveur répondre) ; titre de fiche (120 caractères) et titre de section (80) : passent à la ligne | idem |
+| contenu long | une section de 100 000 caractères passe à la ligne et s'affiche en entier ; plus au-delà, dès le 100 001e caractère saisi : « Erreur : 100 000 caractères au plus. » (sous le champ ; « Enregistrer » ne part pas ; le texte saisi est gardé, y compris quand c'est le serveur qui refuse, 400, avec le même texte — pas « L'action n'a pas abouti » ; tant que `/api/moi` n'a pas rendu la limite, ou s'il a échoué, l'écran ne contrôle rien et laisse le serveur répondre) ; titre de fiche (120 caractères) et titre de section (80) : passent à la ligne | idem |
 
 *Critères.*
 - Étant donné Léa, Joueuse, quand elle ouvre « Maître Aldric » (« Apparence » lue des joueurs,
@@ -374,8 +374,8 @@ des pièces jointes : « … Son contenu et ses 3 pièces jointes seront perdus.
   voit pas tant que « Les joueurs la lisent » est faux.
 - Étant donné deux onglets sur la même section, quand le second enregistre après le premier,
   alors il voit « La section a changé depuis que vous l'avez ouverte… » et son texte reste.
-- Étant donné Antor qui modifie une section, quand il saisit un 20 001e caractère, alors « Erreur :
-  20 000 caractères au plus. » apparaît sous le champ, rien n'est envoyé et son texte reste ;
+- Étant donné Antor qui modifie une section, quand il saisit un 100 001e caractère, alors « Erreur :
+  100 000 caractères au plus. » apparaît sous le champ, rien n'est envoyé et son texte reste ;
   quand le serveur refuse malgré tout (400), il voit le même texte et son texte reste.
 
 ### Clôture de la tranche
@@ -411,7 +411,7 @@ Pour tout autre compte, l'entrée n'existe pas.
 ### E-5 Administration
 
 La barre haute porte le fil « Instance / Administration » ; sous le titre et le sous-titre « Les membres se gèrent ici ; le
-contenu (fiches, comptes-rendus, cartes) n'est jamais affiché. », deux zones. À gauche, **Univers de
+contenu (fiches, comptes-rendus, cartes) n'est jamais affiché. », deux zones, puis le panneau « Jeton de l'assistant » (plus bas). À gauche, **Univers de
 l'instance** : tous les univers, par nom (sans casse), chacun avec « N membres » (« 1 membre » au
 singulier), l'univers choisi portant le badge « Sélectionné » ; cent à la fois, puis « Charger la suite ». À droite (sous la liste sur téléphone, après
 un clic sur l'univers), **Membres — <nom de l'univers>** : la liste (identifiant, rôle MJ / Joueur,
@@ -524,7 +524,7 @@ et depuis E-16 ; son adresse est désormais `/systemes/:sid` (*remplacé par le 
 univers » ; trois onglets, **Règles**, **Créatures**, **Objets** (Créatures par défaut) ; sous
 l'onglet, la liste des entrées du type par nom (ordre alphabétique sans casse), cent à la fois, puis
 « Charger la suite ». Chaque ligne (une **entrée** : une règle, une créature ou un objet ; `gabarit` dans les données) : le nom et la première ligne du contenu (tronquée). Un clic ouvre
-l'entrée **sur place** (le nom, le contenu en texte brut, AD-58).
+l'entrée **sur place** (le nom, le contenu en Markdown, AD-95).
 
 *Le MJ d'un univers rattaché* : « Ajouter une règle » / « Ajouter une créature » / « Ajouter un
 objet » ouvre un formulaire sur place : « Nom » (1 à 120 caractères), « Contenu » (20 000 au plus ; 100 000 depuis `kanevas-import`, AD-106 ;
@@ -548,7 +548,7 @@ nom. » (« Une règle… », « Un objet… ») ; droit retiré entre-temps (r�
 | erreur | « Impossible de charger ce système. » ; échec d'écriture : « L'action n'a pas abouti. Réessayez. », saisie conservée | « Réessayer » |
 | connexion perdue | le bandeau ; « Ajouter », « Enregistrer » désactivés, le texte en cours reste | lire |
 | refus | *remplacé* : voir la matrice d'états de « E-15 hors de l'univers » (`kanevas-illustrations`) — le refus mène à « Systèmes de jeu » | — |
-| contenu long | 100 entrées : « Charger la suite » ; nom tronqué par « … » avec infobulle ; contenu de 20 000 caractères passe à la ligne et s'affiche en entier ; au-delà : « Erreur : 20 000 caractères au plus. » ; nom au-delà de 120 : « Erreur : 120 caractères au plus. » | idem |
+| contenu long | 100 entrées : « Charger la suite » ; nom tronqué par « … » avec infobulle ; contenu de 100 000 caractères passe à la ligne et s'affiche en entier ; au-delà : « Erreur : 100 000 caractères au plus. » ; nom au-delà de 120 : « Erreur : 120 caractères au plus. » | idem |
 
 *Critères.*
 - Étant donné Antor, MJ de Lame d'Ébène rattaché à « CoF Mini », quand il ajoute la créature « Garde
@@ -775,8 +775,8 @@ puis trois panneaux (une campagne n'a ni description ni autre champ que son nom 
 3. **Comptes-rendus** (tous) : les comptes-rendus **lisibles** de cette campagne, du plus
    récemment créé au plus ancien, chacun : titre, auteur (l'identifiant de l'auteur de la section ; un compte-rendu
    créé par le MJ n'a pas d'auteur, AD-61 : rien n'est affiché, pas même le nom du MJ), date de création, lien vers E-9. « Nouveau
-   compte-rendu » ouvre une fenêtre : « Titre » (1 à 120 caractères), « Texte » (facultatif, 20 000
-   au plus ; 100 000 depuis `kanevas-import`, AD-106), « Publier » et « Annuler » ; « Publier » crée le compte-rendu et mène à E-9 (AD-61). Si la
+   compte-rendu » ouvre une fenêtre : « Titre » (1 à 120 caractères), « Texte » (facultatif, 100 000
+   au plus depuis `kanevas-import`, AD-106 ; 20 000 avant), « Publier » et « Annuler » ; « Publier » crée le compte-rendu et mène à E-9 (AD-61). Si la
    création échoue, la fenêtre reste ouverte, la saisie gardée, avec « L'action n'a pas abouti.
    Réessayez. » ; session expirée pendant la saisie : le texte est gardé comme sur E-9. Cent à la fois,
    puis « Charger la suite ».
@@ -784,7 +784,7 @@ puis trois panneaux (une campagne n'a ni description ni autre champ que son nom 
 Erreurs de saisie, sous le champ : « Erreur : le nom est obligatoire. » / « Erreur : 80 caractères
 au plus. » (campagne) ; « Erreur : le titre est obligatoire. » / « Erreur : 120 caractères au plus. »
 (scénario, compte-rendu) ; « Erreur : le libellé est obligatoire. » / « Erreur : 200 caractères au
-plus. » (tâche) ; « Erreur : 20 000 caractères au plus. » (texte du compte-rendu).
+plus. » (tâche) ; « Erreur : 100 000 caractères au plus. » (texte du compte-rendu).
 
 Textes : liste vide, MJ : « Aucune campagne pour l'instant. » et « Nouvelle campagne » ; Joueur :
 « Aucune campagne pour l'instant. » ; scénarios vides : « Aucun scénario pour l'instant. » ;
@@ -814,14 +814,14 @@ pour l'instant. »). Une campagne terminée garde ses panneaux et accepte de nou
 ### E-7 Scénario (MJ)
 
 Atteint depuis E-6 (liste des scénarios, « Créer le scénario »). Le titre, un lien « ← La
-Couronne brisée » vers E-6, le contenu en texte brut (AD-58) ; « Modifier » ouvre « Titre » et
+Couronne brisée » vers E-6, le contenu en Markdown rendu (AD-95) ; « Modifier » ouvre « Titre » et
 « Contenu » (20 000 caractères au plus ; 100 000 et Markdown depuis `kanevas-import`, AD-95, AD-106), « Enregistrer », « Annuler ». Enregistrer envoie la version
 lue (AD-62) ; un scénario ne se supprime pas.
 
 Textes : contenu vide : « Rien d'écrit pour l'instant. » ; écriture périmée : « Ce scénario a changé
 depuis que vous l'avez ouvert. Rechargez-le pour voir la nouvelle version ; votre texte reste
 ci-dessous. » avec « Recharger le scénario » ; titre vide ou trop long : « Erreur : le titre est
-obligatoire. » / « Erreur : 120 caractères au plus. » ; contenu : « Erreur : 20 000 caractères au
+obligatoire. » / « Erreur : 120 caractères au plus. » ; contenu : « Erreur : 100 000 caractères au
 plus. ». Session expirée pendant une saisie : le texte est gardé comme sur E-9.
 
 | État | Ce qu'on voit | Ce qu'on peut faire |
@@ -831,7 +831,7 @@ plus. ». Session expirée pendant une saisie : le texte est gardé comme sur E-
 | erreur | « Impossible de charger ce scénario. » ; échec d'écriture : « L'action n'a pas abouti. Réessayez. », texte conservé | « Réessayer » |
 | connexion perdue | le bandeau ; « Enregistrer » désactivé, texte en cours conservé | lire |
 | refus | Joueur, scénario inconnu, d'une autre campagne ou d'un autre univers : « Page introuvable. » ; un Joueur n'a ni l'écran ni de lien vers lui | « Mes univers » |
-| contenu long | 20 000 caractères : passent à la ligne, affichés en entier ; titre de 120 caractères : passe à la ligne | idem |
+| contenu long | 100 000 caractères : passent à la ligne, affichés en entier ; titre de 120 caractères : passe à la ligne | idem |
 
 *Critère.* Étant donné Léa, Joueuse, quand elle ouvre l'adresse du scénario « Acte II — Le sceau
 brisé » que lui donne Antor, alors elle voit « Page introuvable. », sans le titre.
@@ -1082,7 +1082,7 @@ bas :
 
 - **l'en-tête** : « Kanevas — assistant », la pastille du catalogue (« MJ » ou « Joueur », mot et
   teinte), « Nouvelle conversation », « Fermer » ;
-- **le fil** : les messages de la personne et les réponses de l'assistant, en texte brut (AD-58 — le fil le reste après `kanevas-import`),
+- **le fil** : les messages de la personne et les réponses de l'assistant, en texte brut (le fil le reste après `kanevas-import`),
   du plus ancien au plus récent ; le fil défile et reste calé sur le dernier message ;
 - **sous une réponse, les écritures** : un bloc « Écrit par l'assistant » par événement (AD-76), le
   libellé (« Section « Notes de la table » complétée », « Scénario « Acte III — La crypte » créé
@@ -1174,11 +1174,11 @@ affiche aujourd'hui en ligne devient le texte de son toast (E-14 : « Enregistr�
 - « Modifier » paraît au survol et au focus de la section, et toujours sur un écran sans survol
   (téléphone, tablette : `hover: none`) ;
   « Monter », « Descendre » et « Retirer la section » sont dans son menu « ⋯ » ;
-- en édition : sous le champ, le compteur « n / 20 000 » et l'aide « Échap annuler · Ctrl ↵
+- en édition : sous le champ, le compteur « n / 100 000 » et l'aide « Échap annuler · Ctrl ↵
   enregistrer » ; Échap fait ce que fait « Annuler » (le texte saisi est abandonné, comme
   aujourd'hui) ; Ctrl+Entrée (⌘+Entrée sur Mac) fait exactement ce que fait « Enregistrer » :
   il envoie, et une écriture périmée reçoit « La section a changé depuis que vous l'avez
-  ouverte… » ; au-delà de 20 000 caractères ou connexion perdue, il ne part pas, comme le bouton ;
+  ouverte… » ; au-delà de 100 000 caractères ou connexion perdue, il ne part pas, comme le bouton ;
 - la bascule en tête s'appelle « Mode MJ » et « Mode Joueur » (« MJ » et « Joueur » au
   téléphone) ; en mode Joueur, un bandeau sous la barre haute : « Mode Joueur : vous voyez ce
   que voit un joueur. »
@@ -1495,7 +1495,7 @@ ajouter, modifier pour le MJ ; textes et états de `kanevas-systemes`). Ce qui c
 | erreur | « Impossible de charger ce système. » ; échec d'écriture : « L'action n'a pas abouti. Réessayez. », saisie gardée ; écriture périmée : « Cette entrée a changé depuis que vous l'avez ouverte… » ; nom vide ou déjà pris : sous le champ | « Réessayer », « Recharger » |
 | connexion perdue | le bandeau ; « Ajouter … », « Modifier », « Enregistrer » désactivés, le texte en cours reste ; les puces d'univers restent des liens | lire |
 | refus | système inconnu, ou rattaché à aucun univers du compte (y compris par l'ancienne adresse) : « Page introuvable. » et le lien **« Systèmes de jeu »** (plus « Mes univers ») ; droit perdu pendant une écriture : « Vous ne pouvez plus modifier ce système. », puis la page se recharge en lecture seule ou en « Page introuvable. » ; un Joueur : « Ajouter … » et « Modifier » sont absents | « Systèmes de jeu » |
-| contenu long | 100 entrées : « Charger la suite » ; nom d'entrée de 120 caractères tronqué par « … », infobulle ; contenu de 20 000 caractères en entier ; nom de système de 80 caractères : le titre passe à la ligne | idem |
+| contenu long | 100 entrées : « Charger la suite » ; nom d'entrée de 120 caractères tronqué par « … », infobulle ; contenu de 100 000 caractères en entier ; nom de système de 80 caractères : le titre passe à la ligne | idem |
 
 *Le bloc « Dans vos univers »* (E-15 et chaque ligne de E-16) arrive avec le système : il n'a ni
 chargement ni erreur à lui. Vide : sans objet — un système visible est toujours rattaché à au moins
@@ -1722,7 +1722,7 @@ Toute lecture de la proposition par un autre compte répond comme une adresse in
 | connexion perdue | le bandeau commun (« Connexion perdue. Ce que vous voyez peut être dépassé ; rien n'est enregistré tant qu'elle ne revient pas. », texte de `kanevas-premiere-fiche`) ; zones lisibles ; « Appliquer » et « Abandonner » désactivés ; perdue pendant un geste en cours, la réponse est perdue : le « … » disparaît, les gestes restent désactivés, et au retour de la connexion la proposition est relue — le bloc dit ce que la base dit (appliquée ou en attente), jamais un état supposé | lire ; Ouvrir |
 | refus (adresse inconnue : abandonnée ailleurs, supprimée avec sa section, autre compte, MJ retiré de l'univers) | « Cette proposition n'existe plus. » ; plus de zones ni de geste ; session expirée : la personne est menée à la connexion, le fil est perdu | continuer à écrire dans le fil |
 | déjà appliquée, vue d'un autre onglet | même rendu que « appliquée » (la lecture dit l'état, AD-82) ; un « Appliquer » ou un « Abandonner » en course rend 409 `proposition_appliquee` et le bloc se relit | Ouvrir |
-| contenu long | contenu de 20 000 caractères : chaque zone a une hauteur maximale de 15 lignes et défile (`tabindex="0"`, étiquetée « Actuel » / « Proposé ») ; les paragraphes (lignes vides) sont conservés ; un titre de fiche ou de compte-rendu de 120 caractères passe à la ligne | faire défiler chaque zone |
+| contenu long | contenu de 100 000 caractères : chaque zone a une hauteur maximale de 15 lignes et défile (`tabindex="0"`, étiquetée « Actuel » / « Proposé ») ; les paragraphes (lignes vides) sont conservés ; un titre de fiche ou de compte-rendu de 120 caractères passe à la ligne | faire défiler chaque zone |
 
 La proposition vit en base (AD-79) mais le fil non (AD-28) : au rechargement de la page, au changement d'univers ou
 après « Nouvelle conversation », le bloc disparaît du fil et la proposition devient inatteignable ; elle
@@ -2000,7 +2000,7 @@ et le bloc de E-3 livrent leurs six états (B-29), ci-dessus.
 
 Sections (E-9), scénarios (E-7), entrées d'un système (E-15), comptes-rendus (E-9) : le texte est du
 Markdown (B-32, AD-95). **Ce qui se met en forme** : paragraphes (un saut de ligne simple reste un
-saut de ligne, comme le texte brut d'avant), intertitres `##` à `####` (rendus sous le titre de la
+saut de ligne, comme le texte brut d'avant), intertitres `#` à `####` (`#` et `##` au même niveau, rendus sous le titre de la
 section, jamais au-dessus), gras, italique, barré, listes à puces et numérotées, citations, code,
 filets, tableaux, liens web (`http`, `https`, `mailto` seulement ; ils s'ouvrent dans un nouvel
 onglet), fichiers de la médiathèque (une image `![légende](fichier:…)`, un document `[nom](fichier:…)`, B-44), liens vers une fiche (`[[…]]`, B-33),
@@ -2036,6 +2036,64 @@ section, à sa place dans le texte ; en mode Joueur et pour tout autre lecteur, 
 blanc, pas de filet, le paragraphe suivant suit le précédent. Un tableau large défile dans son cadre
 au téléphone, jamais la page.
 
+### Le Markdown — ce que `kanevas-import-markdown` construit (E-9, E-7, E-15, E-12)
+
+Cette tranche livre le rendu et l'éditeur **sans** lien `[[…]]`, sans fichier et sans bloc MJ (leurs
+tranches les ajoutent à la même barre et au même rendu). Maquette : `e09-fiche-importee.html`,
+`#etat-edition` pour l'éditeur ; `e07-scenario.html`, `e15-systeme-de-jeu.html` et `e12-propositions.html`
+pour l'emplacement du rendu (le contenu y devient mis en forme, la mise en page ne change pas).
+
+- **Parcours** : lire, P-12 étape 2 (E-9, E-7, E-15, E-12) ; écrire et prévisualiser, P-14 étape 1 (E-9, E-7, E-15).
+  Le texte d'un compte-rendu se lit rendu sur E-9 ; la fenêtre « Nouveau compte-rendu » de E-6 garde son
+  champ simple dans cette tranche, avec le plafond de 100 000 (« Erreur : 100 000 caractères au plus. ») et
+  sans barre ni aperçu ; son compteur et son erreur « Erreur : 100 000 caractères au plus. » existent déjà (maquette `e06`) : seul le
+  seuil passe de 20 000 à 100 000 ; ses autres états sont ceux de E-6 et ne changent pas.
+- **Maquettes** : `e09-fiche-importee.html` (`#etat-edition`, `#etat-apercu`) montre la barre **complète**
+  de l'epic (avec « Lien vers une fiche », « Fichier », la liste ouverte par `[[`) ; cette tranche n'en
+  construit que « Gras », « Italique » et la bascule, les autres boutons viennent avec leurs tranches. La
+  bascule est un groupe de deux options (`role="radio"`, `aria-checked`) comme la maquette. Les maquettes de
+  E-7, E-15 et E-12 gardent leur mise en page : l'éditeur y est le même, la bascule « Rendu / Source » de
+  E-12 s'ajoute au-dessus des deux zones, à la façon de la bascule « Écrire / Aperçu ».
+- **Rendu** : un seul composant montre le HTML que le serveur a rendu, partout (sections et
+  comptes-rendus de E-9, scénario de E-7, entrées de E-15, zones de E-12). Les intertitres `#` et `##`
+  s'affichent au niveau « intertitre » le plus haut, `###` et `####` plus bas : jamais au niveau du
+  titre de la section. Un lien web s'ouvre dans un nouvel onglet. Tableau large : il défile dans son
+  cadre. Contenu vide : « Rien d'écrit pour l'instant. » (déjà le texte d'aujourd'hui). Un contenu
+  d'avant (texte brut) se lit comme avant : paragraphes et sauts de ligne.
+- **Éditeur** (E-9, E-7, E-15) : le champ, au-dessus la
+  barre « Gras » (`bold`), « Italique » (`italic`) et la bascule « Écrire / Aperçu » (deux boutons, l'un
+  actif, `role="radio"`) ; sous le champ, le compteur « 12 480 / 100 000 ». Ctrl/⌘+B et Ctrl/⌘+I entourent
+  la sélection (ou posent deux marques et placent le curseur entre elles), Ctrl/⌘+Entrée enregistre,
+  Échap annule. « Aperçu » remplace le champ par le rendu de la même fonction que la lecture ; le texte
+  saisi reste dans le champ et revient avec « Écrire ». Les boutons « Lien vers une fiche », « Fichier » et
+  « Bloc MJ » n'existent pas encore.
+- **États de l'aperçu** : en cours, « Aperçu en cours… » (le champ reste, bascule désactivée) ; texte
+  vide, « Rien à prévisualiser. » ; échec ou hors ligne, « L'aperçu n'a pas abouti. Réessayez. » avec
+  « Réessayer », et le champ intact (message aussi d'une session expirée ou d'un refus du serveur : le texte saisi n'est pas perdu) ; plus de 100 000 caractères, pas d'appel, « Erreur : 100 000
+  caractères au plus. » sous le champ. Au-delà de 100 000, le comportement de E-9 d'aujourd'hui
+  (§ E-9, « contenu long ») tient avec le nouveau seuil.
+- **Qui voit quoi** : la lecture ne montre que le rendu. Le champ d'édition reçoit la **source** :
+  elle n'est envoyée qu'à qui peut écrire la section (le scénario, au MJ qui le lit). Un joueur, ou le MJ
+  en mode Joueur, ne la reçoit pas ; la réponse de lecture de Léa ne contient pas le Markdown.
+- **E-12** : au-dessus des zones « Actuel » et « Proposé », deux boutons « Rendu / Source » (« Rendu »
+  par défaut) ; « Source » montre le Markdown brut des deux zones, côte à côte comme aujourd'hui. Le fil
+  de conversation reste en texte. Après « Appliquer » ou « Abandonner », le choix « Rendu / Source » est
+  conservé ; une proposition périmée garde ses deux zones lisibles dans le mode choisi.
+- **Cas extrêmes** : une zone de E-12 garde sa hauteur de 15 lignes et défile ; un mot ou une adresse sans
+  espace passe à la ligne sans élargir la page à 375 px ; une image d'une autre adresse
+  (`![plan](https://…)`) se lit « plan » (son texte alternatif), sans image.
+- **Rôles** :
+
+  | | MJ | Joueur lecteur | Joueur qui écrit la section | MJ en mode Joueur |
+  |---|---|---|---|---|
+  | Lit le rendu | oui | oui | oui | oui |
+  | Reçoit la source | oui | non (le champ n'est pas dans la réponse) | oui | comme le rôle qu'il imite |
+  | Barre, aperçu, compteur | en édition | caché | en édition | comme le rôle qu'il imite |
+  | E-7, E-12 | éditeur au MJ, rendu pour qui lit | écran absent (404, MJ seul) | écran absent | écran absent |
+  | E-15 (système rattaché) | éditeur au MJ, rendu | rendu seul, ni source ni barre (champ absent) | sans objet | rendu seul |
+- **Plafond** : 100 000 caractères pour une section, un compte-rendu, un scénario, une entrée de système et
+  un contenu proposé ; au-delà le serveur répond 400 « Contenu trop long : 100 000 caractères au plus. ».
+
 ### E-9 Fiche — ce que `kanevas-import` change
 
 *Maquette finie* : `docs/maquettes/e09-fiche-importee.html` (« Port-Sel », états `#etat-fichier`, `#etat-joindre`, `#etat-sous-type`, `#etat-joueur`,
@@ -2056,6 +2114,10 @@ MJ, hors mode Joueur : le titre s'édite en place (clic, Entrée enregistre) ; l
 porte « Changer le type… », « Déplacer sous… », « Alias et étiquettes… », une ligne d'information
 « Importée · clé lieu:port-sel · créée le 3 mars 2021 » (si la fiche a une clé d'origine, B-50) et,
 séparé, « Supprimer la fiche… » en `--danger`.
+*Dans la tranche `kanevas-import-fil`*, la ligne « Importée · clé … » est la seule entrée du menu : pour une
+fiche sans clé d'origine, le menu « ⋯ » n'est pas affiché ; « créée le … » est la date de création de la
+fiche (`creeLe` de l'import s'il l'a donnée, B-50, sinon la date de l'import). La clé d'origine est cachée à
+tout autre rôle que le MJ (hors mode Joueur) : ni le menu, ni la réponse de lecture.
 
 - *Changer le type* : une liste des types de la liste du produit, activés d'abord, puis « Autres
   types » ; pour « Personnage », le choix PJ / PNJ ; et le champ « Sous-type » (vidé au changement de
@@ -2423,26 +2485,33 @@ mode Joueur (« Rechercher », une étiquette).
 *Maquette finie* : `docs/maquettes/e18-acces-api.html` (états `#etat-nouveau`, `#etat-jeton-montre`,
 `#etat-lot`, `#etat-vide`, `#etat-perdue`).
 
-Atteint par « Univers ▸ Accès par API » (`key-round`), MJ seul. Une introduction d'une ligne :
+Atteint par « Univers ▸ Accès par API » (`key-round`), MJ seul. Le bouton « Demander à Kanevas » de la maquette est celui de l'assistant, présent sur tous les écrans (B-26, E-12), sans rien de propre à E-18. Une introduction d'une ligne :
 « Un jeton permet à un script d'écrire dans cet univers avec vos droits, par l'API d'import. » et
 l'**adresse de base** à copier (`https://kanevas.berard.me/api/import/v1/univers/<id>`, « Copier »,
 toast « Adresse copiée. »). Deux panneaux.
 
 1. **Jetons** — « Nouveau jeton » (`plus`). Une ligne par jeton, actifs d'abord puis révoqués et expirés
    (les 20 derniers) : nom, « créé par antor le 11 oct. 2026 », « dernier usage il y a 3 min » ou
-   « jamais », « expire le 10 nov. 2026 » ou la pastille « Révoqué » / « Expiré » ; « Révoquer » au
+   « jamais », « expire le 10 nov. 2026 » ou la pastille « Révoqué » (danger) / « Expiré » (neutre), les infos séparées par « · » au bureau ; « Révoquer » au
    survol (visible au toucher). *Nouveau jeton* : boîte « Nouveau jeton » — « Nom » (1 à 80 caractères,
    obligatoire), « Durée » (bascule segmentée 7 jours, **30 jours**, 90 jours, 1 an), « Créer le
-   jeton », « Annuler » ; puis la même boîte montre le jeton dans un champ en chasse fixe, « Copier » (toast
-   « Jeton copié. »), et « Il ne sera plus jamais affiché. Rangez-le dans la configuration de votre
-   script. », « J'ai copié le jeton » — tant que le jeton est montré, seul ce bouton ferme la boîte
-   (ni Échap ni le voile) ; la ligne du jeton arrive alors en tête de la liste. *Révoquer* : boîte « Révoquer « Script Kanka — Mac » ? Le script
+   jeton », « Annuler » ; puis la même boîte montre le nom du jeton en étiquette et le jeton seul, en chasse fixe, pleine largeur, puis l'encadré (`circle-alert`) « Il ne sera plus jamais affiché. Rangez-le dans la configuration de votre
+   script. », et au pied « Copier » (toast « Jeton copié. ») et « J'ai copié le jeton » — tant que le jeton est montré, seul ce bouton ferme la boîte
+   (ni Échap ni le voile) ; la ligne du jeton arrive alors en tête de la liste. Le jeton d'un MJ qui n'a plus ce rôle (B-46) reste listé, avec la pastille « Inactif »
+   et l'infobulle « Son créateur n'est plus MJ de cet univers. » (au toucher, la même phrase s'écrit sous la ligne) ; il reste parmi les jetons actifs, rangé avec eux par date de création ; « Révoquer » reste possible. Pendant « Créer le
+   jeton » et « Révoquer le jeton » le bouton est désactivé et dit « Création… » / « Révocation… » (pas de double envoi) ; « Annuler » et la fermeture de la boîte sont désactivés aussi jusqu'à la réponse. La maquette ne dessine ni « Inactif » ni ces boutons : le texte d'ici fait foi (pastille neutre, en `--texte-2` ; « Révoqué » est en teinte danger, « Expiré » neutre). *Révoquer* : boîte « Révoquer « Script Kanka — Mac » ? Le script
    qui l'utilise ne pourra plus rien écrire. », « Révoquer le jeton » (`--danger`) / « Annuler » ; toast « Jeton révoqué. ».
 2. **Lots d'import** — les 20 derniers lots, du plus récent : date d'ouverture, jeton, état (« En
    cours », « Clos », « Abandonné » — ouvert depuis plus de 24 h sans écriture), et les compteurs
    **par nature d'objet**, à la suite et séparés par « · », les natures sans objet omises : « Fiches : 498 créées ·
    3 refusées », « Fichiers : 1 140 créés », « Campagnes : 4 créées », « Scénarios : 12 créés »,
-   « Relations : 324 créées », puis « 6 liens et références en attente » et « 1 avertissement ». Une
+   « Relations : 324 créées », puis « 6 liens et références en attente » et « 1 avertissement ». Dans une
+   nature, chaque forme (« créée(s) », « mise(s) à jour », « inchangée(s) », « refusée(s) ») n'est écrite que
+   si elle n'est pas nulle : un rejeu sans rien de neuf lit « Fiches : 1 inchangée » (le rapport de l'API,
+   lui, rend tous les compteurs, `creees: 0`), et un compte nul d'attente ou d'avertissements est omis
+   (la maquette abrège « 6 en attente » ; le texte est celui d'ici). Un `PUT` refusé (400) avec son lot
+   compte « 1 refusée » et ajoute au rapport sa clé et sa raison (« type « compte_rendu » : pas accepté
+   par cette version », « type « monstre » inconnu de Kanevas ») ; sans lot, il ne laisse aucune trace ici. Une
    ligne se déplie :
    les refus et avertissements, chacun avec la clé d'origine, ce qui est en cause et la raison
    (« section « Vérité » : 112 000 caractères, 100 000 au plus » ; « parent lieu:les-docks inconnu :
@@ -2453,7 +2522,7 @@ toast « Adresse copiée. »). Deux panneaux.
 
 | État | Ce qu'on voit | Ce qu'on peut faire |
 |---|---|---|
-| vide | « Aucun jeton. Créez-en un pour qu'un script écrive dans cet univers. » ; « Aucun lot d'import pour l'instant. » | « Nouveau jeton » |
+| vide | « Aucun jeton. Créez-en un pour qu'un script écrive dans cet univers. » (aucun jeton du tout ; avec seulement des jetons révoqués ou expirés, la liste les montre, sans ce texte) ; « Aucun lot d'import pour l'instant. » | « Nouveau jeton » |
 | chargement | squelettes des deux panneaux | — |
 | erreur | « Impossible de charger cette page. » ; nom vide : « Erreur : le nom est obligatoire. » ; création ou révocation qui échoue : « L'action n'a pas abouti. Réessayez. », rien n'a changé (aucun jeton à moitié créé) | « Réessayer » |
 | connexion perdue | le bandeau ; « Nouveau jeton » et « Révoquer » désactivés ; si la boîte montre un jeton, il reste affiché jusqu'à « J'ai copié le jeton » | copier |
@@ -2547,3 +2616,70 @@ l'univers » (`--danger`) ne s'active que si le nom tapé est exact (casse compr
   P-10), E-9 (P-12, P-14, P-16), E-8 (P-12), E-5 (P-15), E-19 (P-16, P-10) — tient.
 - **Chaque rôle a sa colonne** : MJ, Joueur, Admin d'instance pour E-17, E-18 et E-19 (matrice) ; le script
   d'import n'est pas un rôle : il agit comme le MJ du jeton, sur l'API seule — tient.
+
+## Détail de l'écran de `kanevas-import-jeton-assistant`
+
+> **E-5** reçoit un panneau, rien d'autre (B-51, P-15). Maquette finie :
+> `docs/maquettes/e05-administration.html` (les états principaux : vide, posé, connexion en cours, échec, expirée, erreur de lecture ; les autres sont décrits par le tableau ci-dessous). Les textes communs
+> (chargement, erreur, connexion perdue, refus) sont ceux de E-5 ci-dessus.
+
+**Place.** Un panneau pleine largeur « Jeton de l'assistant », **sous** les deux zones (liste des
+univers, membres), visible quelle que soit la sélection d'univers (adresses inchangées :
+`/administration`, `/administration/univers/:id`) ; le jeton est de l'instance, pas d'un univers.
+Une sélection d'univers ne remet pas le panneau à zéro, une connexion en cours survit au changement
+d'univers. Le panneau ne montre **jamais** la valeur du jeton : ni dans une réponse, ni dans le DOM,
+ni dans un message d'erreur.
+
+**Ce qu'on voit.** Le titre ; une ligne d'état, dans cet ordre de priorité : « Jeton posé le 11 octobre
+2026. » (le jeton du fichier du volume, date de sa pose), « Jeton fourni par le déploiement. » (pas de
+fichier, la variable `CLAUDE_CODE_OAUTH_TOKEN` non vide : le panneau ne sait pas depuis quand),
+« Aucun jeton posé. » ; le bouton « Connecter l'abonnement » (« Reconnecter l'abonnement » dès qu'un jeton est posé, du fichier
+ou du déploiement, dans tous les états ci-dessous). Un admin qui est aussi membre d'un univers voit le panneau comme les autres. Un clic démarre la connexion : l'adresse d'autorisation, en lecture seule, avec « Ouvrir »
+(nouvel onglet, `rel="noopener noreferrer"`) et « Copier » (« Copiée. » 2 s) ; un champ « Code » et
+« Valider » ; « Annuler » ; la mention « Cette connexion expire dans 10 minutes. » suivie de « Reste 9 min. »
+(minutes pleines arrondies au-dessus, « Reste moins d'une minute. » sous la minute ; rafraîchi chaque seconde, sans annonce
+vocale ; à 0 la phrase d'expiration remplace le champ). Recharger la page ne rouvre pas la connexion : le panneau repart de l'état lu, sans adresse ni champ « Code » ; la connexion du
+serveur vit jusqu'à son expiration. Quand un admin clique « Connecter » (le même après un rechargement, ou un second admin), le
+serveur en démarre une nouvelle qui remplace la précédente, et le « Valider » de l'ancienne reçoit alors « La connexion a expiré.
+Recommencez. ». « Valider » est désactivé tant que le champ est vide. Le code collé n'est pas conservé : le
+champ est vidé après chaque validation. Le jeton posé prime sur la variable : un jeton du volume se
+remplace par une nouvelle connexion, jamais par un champ de saisie (il n'y en a pas).
+
+| État | Ce qu'on voit | Ce qu'on peut faire |
+|---|---|---|
+| vide (aucun jeton) | « Aucun jeton posé. » ; sous le titre : « L'assistant est indisponible tant qu'aucun jeton n'est posé. » (affichée seulement si l'assistant n'a vraiment aucun moyen de répondre ; sous le bouchon, où l'assistant répond déjà, rien) | « Connecter l'abonnement » |
+| posé | « Jeton posé le 11 octobre 2026. » (ou « Jeton fourni par le déploiement. ») ; « L'assistant est disponible sur tous les univers. » (le jeton est de l'instance : voulu aussi pour le jeton du déploiement) | « Reconnecter l'abonnement » |
+| chargement | « Chargement de l'état du jeton… » (lecture de l'état) ; « Connexion en cours… » pendant le démarrage (le bouton désactivé, `aria-busy`) | — |
+| connexion en cours | l'adresse, « Ouvrir », « Copier », le champ « Code », « Valider », « Annuler », le temps restant | coller le code, valider, annuler |
+| validation en cours | « Validation… », champ et boutons désactivés | — |
+| posé à l'instant | « Jeton posé le 11 octobre 2026. » (région `role="status"`), le champ disparaît ; l'assistant est disponible sans redéploiement ni redémarrage | « Reconnecter l'abonnement » |
+| échec | code refusé : « La connexion n'a pas abouti. Recommencez. » ; l'ancien état (posé ou non) reste affiché, le champ est vidé, la connexion en cours est terminée côté serveur | « Connecter l'abonnement » (« Reconnecter » si un jeton est posé) |
+| échec de validation autre (serveur injoignable, 5xx) | « L'action n'a pas abouti. Réessayez. » ; le champ est vidé, la connexion reste ouverte tant qu'elle n'a pas expiré | coller de nouveau, annuler |
+| expirée | au bout de 10 minutes, ou serveur redémarré : « La connexion a expiré. Recommencez. » ; l'ancien état reste | « Connecter l'abonnement » (« Reconnecter » si un jeton est posé) |
+| erreur de lecture | « Impossible de charger l'état du jeton. » avec « Réessayer » ; le reste de la page reste utilisable | « Réessayer » |
+| erreur de démarrage | « La connexion n'a pas pu démarrer. Réessayez. » (le programme `claude` ou `script` absent, ou aucune adresse rendue en 30 s) ; aucun détail technique | « Connecter l'abonnement » (« Reconnecter » si un jeton est posé) |
+| connexion perdue | le bandeau ; « Connecter l'abonnement » (« Reconnecter » si un jeton est posé), « Valider » et « Annuler » désactivés ; l'état chargé reste | lire |
+| refus | tout compte hors du groupe : la page entière est « Page introuvable. » (E-5 ci-dessus) ; une route du panneau sans le groupe répond 404 comme une adresse inconnue | « Mes univers » |
+| contenu long | l'adresse d'autorisation (plus de 200 caractères) se replie sur plusieurs lignes dans une zone qui défile, sans élargir la page ; le champ « Code » accepte 500 caractères au plus | idem |
+
+**Clavier et lecteur d'écran.** Le panneau est un `section` titré ; l'ouverture de la connexion place
+le focus sur le champ « Code » ; à l'expiration ou à l'échec le focus revient sur le bouton « Connecter
+l'abonnement » ; les messages d'état sont dans une région `aria-live="polite"`, sauf le temps restant.
+
+*Critères.*
+- Étant donné Admin (groupe `parents`) et un bouchon sans jeton, quand il ouvre `/administration`, alors le
+  panneau dit « Aucun jeton posé. » ; quand il clique « Connecter l'abonnement », alors il voit une adresse
+  d'autorisation, un champ « Code » et « Valider » désactivé.
+- Étant donné la connexion ouverte, quand Admin colle `bouchon` et valide, alors il voit « Jeton posé le
+  <date du jour>. » ; la disponibilité de l'assistant, lue **sans** `KANEVAS_STUB` (config injectée),
+  est `claude-agent`, sans redémarrage ; aucune réponse des routes du panneau ne contient la valeur du
+  jeton (le test cherche la valeur factice dans chaque corps et dans le journal).
+- Étant donné la connexion ouverte, quand Admin colle un autre code, alors il voit « La connexion n'a pas
+  abouti. Recommencez. » et l'état d'avant (posé ou non) est inchangé ; un second essai valide s'ouvre.
+- Étant donné la connexion ouverte et l'horloge passée au-delà de 10 minutes, quand Admin valide, alors il
+  voit « La connexion a expiré. Recommencez. » ; le processus est arrêté.
+- Étant donné un jeton posé par le panneau et une variable `CLAUDE_CODE_OAUTH_TOKEN` différente, alors
+  l'assistant utilise celui du fichier ; après suppression du fichier, la variable reprend.
+- Étant donné une connexion ouverte, quand Admin recharge la page, alors le panneau montre l'état lu (« Aucun jeton posé. » ou « Jeton posé… ») sans adresse ni champ « Code » ; quand il clique « Connecter l'abonnement », alors une nouvelle adresse paraît ; et le « Valider » d'un second onglet resté sur l'ancienne connexion dit « La connexion a expiré. Recommencez. ».
+- Étant donné le panneau affiché, quand le réseau est coupé, alors « Connecter l'abonnement » (ou « Reconnecter »), « Valider » et « Annuler » sont désactivés et le bandeau s'affiche ; au retour du réseau ils se réactivent.
+- Étant donné Léa (hors du groupe), quand elle appelle une route du panneau, alors elle reçoit 404.

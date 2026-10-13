@@ -21,7 +21,10 @@ export interface SectionVue {
   id: number;
   titre: string;
   ordre: number;
-  contenu: string;
+  /** Markdown source: only when the caller may write the section (AD-113). */
+  contenu?: string;
+  /** The rendered source (AD-113), for every reader. */
+  html: string;
   version: number;
   modifieLe: string;
   peutEcrire: boolean;
@@ -35,6 +38,7 @@ export interface Fiche {
   universId: number;
   type: string;
   titre: string;
+  creeLe?: string;
   charge: { v?: number; pj?: boolean };
   /** The sheet's illustration (AD-93): `jeton` changes at each replacement and goes in the image address. */
   illustration?: { jeton: string } | null;
@@ -42,6 +46,8 @@ export interface Fiche {
 
 export interface FicheVue extends Fiche {
   sections: SectionVue[];
+  /** Origin key of an imported sheet (B-50): sent to the GM outside player mode only. */
+  cleOrigine?: string;
 }
 
 export interface PageFiches {
