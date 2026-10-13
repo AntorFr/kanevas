@@ -6,7 +6,7 @@ import { verifierJeton, type Jeton } from '../services/jetons.js';
 import { cloreLot, lireLot, MAX_RAPPORT, ouvrirLot } from '../services/lots.js';
 import { lireContexteImport } from '../services/import.js';
 import { assurerFiche, lotDeRequete } from '../services/import-fiches.js';
-import { TYPES_FICHE } from '../services/types.js';
+import { TYPES_FICHE } from '../services/types-fiche.js';
 import { registerErreurs } from './erreurs.js';
 
 /** Body cap of the import API (AD-103/104). */

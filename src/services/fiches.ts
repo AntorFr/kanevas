@@ -1,5 +1,3 @@
-import { z } from 'zod';
-
 import type { Db } from '../db/db.js';
 import {
   exigerMJ,
@@ -12,6 +10,7 @@ import {
 } from './droits.js';
 import { introuvable, invalide } from './erreurs.js';
 import { lireLignes } from './pieces-jointes.js';
+import { CHARGES, estTypeFiche } from './types-fiche.js';
 import {
   TYPES_FICHE,
   type Acteur,
@@ -45,20 +44,6 @@ export const versFiche = (r: FicheRow): Fiche => ({
   modifieLe: r.modifie_le,
   illustration: r.illustration_fichier ? { jeton: r.illustration_fichier } : null,
 });
-
-/**
- * Versioned payload per type (AD-6, AD-17): v1 is empty except for a character
- * (PJ or PNJ) and a session report (its campaign). The content lives in sections.
- */
-const CHARGES: Record<TypeFiche, z.ZodType<Record<string, unknown>>> = {
-  personnage: z.strictObject({ v: z.literal(1), pj: z.boolean() }),
-  compte_rendu: z.strictObject({ v: z.literal(1), campagne_id: z.number().int().positive() }),
-  lieu: z.strictObject({ v: z.literal(1) }),
-  faction: z.strictObject({ v: z.literal(1) }),
-  objet: z.strictObject({ v: z.literal(1) }),
-  evenement: z.strictObject({ v: z.literal(1) }),
-  quete: z.strictObject({ v: z.literal(1) }),
-};
 
 export function validerTitre(titre: string, max: number, quoi: string): string {
   const t = titre.trim();
@@ -99,7 +84,7 @@ export function creerFiche(
   },
 ): Fiche {
   exigerMJ(db, universId, compteId);
-  if (!(TYPES_FICHE as readonly string[]).includes(entree.type)) {
+  if (!estTypeFiche(entree.type)) {
     throw invalide('Type de fiche inconnu.');
   }
   const type = entree.type as TypeFiche;
@@ -160,7 +145,7 @@ export function changerTypeFiche(
 ): Fiche {
   exigerMJ(db, universId, compteId);
   const actuelle = chargerFiche(db, universId, ficheId);
-  if (!(TYPES_FICHE as readonly string[]).includes(type) || type === 'compte_rendu' || actuelle.type === 'compte_rendu') {
+  if (!estTypeFiche(type) || type === 'compte_rendu' || actuelle.type === 'compte_rendu') {
     throw invalide('Type de fiche inconnu.');
   }
   const c = CHARGES[type as TypeFiche].safeParse({ v: 1, ...charge });
@@ -238,7 +223,7 @@ export function listerFiches(
   const where = ['f.univers_id = ?'];
   const params: (string | number)[] = [universId];
   if (options.type !== undefined) {
-    if (!(TYPES_FICHE as readonly string[]).includes(options.type)) {
+    if (!estTypeFiche(options.type)) {
       throw invalide('Type de fiche inconnu.');
     }
     where.push('f.type = ?');

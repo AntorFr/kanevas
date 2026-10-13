@@ -114,3 +114,8 @@
   (`modifie_le`, `dernier_import`, `cle_origine`, `version_importee` — import bookkeeping only; content still goes through the services). Refusals are validated **before** the transaction
   (`ErreurService.champ`, sent as `champ` with code `invalide`); with `?lot=` they count « 1 refusée » in the batch, without it they leave
   no trace; a closed batch answers 409 `lot_clos`. The stub token is `JETON_BOUCHON` (`bouchon/depart.ts`), seeded in « Essai Kanka ».
+
+- Sheet types (`kanevas-import-types`, `src/services/types-fiche.ts`, AD-120 — AD-113 in the feature's plan): the single list of
+  types; `TYPES_FICHE`, `TypeFiche` and the payload schemas (`CHARGES`) derive from it, never copy them. `fiches.type` has no
+  `CHECK` (migration 0011): `creerFiche` is the guard ("Type de fiche inconnu."). A migration whose first line is
+  `-- migrate: sans-cles-etrangeres` runs with foreign keys off and `foreign_key_check` before commit (`db.ts`).
