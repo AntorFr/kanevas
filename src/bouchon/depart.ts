@@ -105,6 +105,43 @@ export function semerBouchon(db: Db): boolean {
     for (const lieu of ['Val-Fortin', 'Le Pendu Joyeux', 'Rue des Cordiers', 'La Fresque effacée']) {
       fiche('lieu', lieu, [{ titre: 'Description', lue: true }]);
     }
+    // « Port-Sel » (kanevas-import-secrets): Léa authors « Histoire », which carries a GM block.
+    const port = creerFiche(db, id.antor, lame.id, { type: 'lieu', titre: 'Port-Sel' });
+    const section = (titre: string, contenu: string, audience: Parameters<typeof changerAudience>[5]) => {
+      const v = ajouterSection(db, id.antor, lame.id, port.id, { titre, contenu });
+      changerAudience(db, id.antor, lame.id, port.id, v.id, audience);
+    };
+    section(
+      'Description',
+      [
+        '## Un port de sel et de brume',
+        '',
+        'Port-Sel ferme la côte des Brumes.',
+        '',
+        '- Quais de sel',
+        '- Criée du matin',
+        '',
+        '| Quartier | Activité |',
+        '| --- | --- |',
+        '| Les Docks | Pêche et fret |',
+        '| Quartier des Cordiers | Cordages et voiles |',
+      ].join('\n'),
+      { joueursLisent: true },
+    );
+    section(
+      'Histoire',
+      [
+        'Le port a été fondé par des sauniers.',
+        '',
+        ':::mj',
+        'Le port est tenu en sous-main par la Guilde des Brumes, qui y fait passer ses cargaisons.',
+        ':::',
+        '',
+        'Les marins en parlent peu.',
+      ].join('\n'),
+      { joueursLisent: true, auteurId: id.lea, auteurLit: true, auteurEcrit: true },
+    );
+    section('Vérité', 'Le port cache un secret réservé au MJ.', {});
     fiche('faction', 'Lames Grises', [{ titre: 'Description', lue: true }]);
     fiche('faction', 'Cercle des Cendres', [{ titre: 'Secret — MJ seul', lue: false }]);
   })();

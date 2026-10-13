@@ -23,4 +23,10 @@
 .compteur-md.trop { color: var(--danger); }
 .pied-md .aide { font-size: var(--t-12); color: var(--texte-3); margin-right: 6px; }
 .erreur-md { margin-top: var(--e-2); font-size: var(--t-12); font-weight: 500; color: var(--danger); }
+/* « Bloc MJ » : after the bold / italic buttons, in the GM amber. */
+.outil-mj { display: inline-flex; align-items: center; gap: 6px; height: 30px; margin-left: 6px; padding: 0 9px; border: 0; border-radius: var(--rayon-item);
+  background: transparent; color: var(--mj); font: inherit; font-size: var(--t-13); font-weight: 500; cursor: pointer; }
+.outil-mj:hover:not(:disabled) { background: var(--mj-fond); }
+.outil-mj:disabled { opacity: .45; cursor: not-allowed; }
+@media (max-width: 760px) { .outil-mj { width: 36px; height: 36px; justify-content: center; padding: 0; margin-left: 2px; } .outil-mj .lib-outil { display: none; } }
 @media (max-width: 760px) { .outil-md { width: 36px; height: 36px; } .bascule-md button { height: 32px; } }

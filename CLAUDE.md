@@ -114,3 +114,8 @@
   (`modifie_le`, `dernier_import`, `cle_origine`, `version_importee` — import bookkeeping only; content still goes through the services). Refusals are validated **before** the transaction
   (`ErreurService.champ`, sent as `champ` with code `invalide`); with `?lot=` they count « 1 refusée » in the batch, without it they leave
   no trace; a closed batch answers 409 `lot_clos`. The stub token is `JETON_BOUCHON` (`bouchon/depart.ts`), seeded in « Essai Kanka ».
+- Public content (feature `kanevas-import-secrets`, migration 0011, AD-114): `sections.contenu_public` is `contenu` without its `:::mj` blocks,
+  computed by the pure `contenuPublic` (`services/markdown.ts`, from the `map` of the container tokens). Only `insererSection` and
+  `poserContenu` in `services/sections.ts` write `contenu` of a section — creation, `ecrireContenu`, proposals, reports and the
+  import all go through them; never add another `INSERT INTO sections` / `UPDATE sections SET contenu`. `rendreMarkdown(source,
+  {nature})` knows the container only for `nature: 'section'`; scenarios and system entries keep `:::mj` as text.
