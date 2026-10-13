@@ -3,7 +3,7 @@
 > Doc du produit. Les tokens que le code lit vivent dans `frontend/src/ui/tokens.css` ; ce
 > document dit ce qu'ils signifient, ce que fait chaque composant et les seuils mesurés. La
 > maquette de référence est `docs/maquettes/e09-fiche.html` : elle porte le cadre de tous les
-> écrans d'un univers et chaque composant ci-dessous, dans les deux thèmes, au bureau et au
+> écrans d'un univers et les composants partagés ci-dessous (le panneau d'assistant, la proposition de mise à jour et la carte de système n'ont que leur description ici et leurs maquettes propres, classées dans `docs/ecrans.md` « Maquettes »), dans les deux thèmes, au bureau et au
 > téléphone. Changer la valeur d'un token existant change tous les écrans : c'est une décision
 > de Monsieur, écrite ici avec sa raison (voir « Écarts assumés »).
 
@@ -209,7 +209,7 @@ décalé de 2 px) sur `:focus-visible`.
   fond `--mj-fond` à 22 % sous une hachure `--mj-trame` (1 px tous les 8 px, 135°), contour
   `--mj-bord` à 45 %, filet `--mj` de 3 px à gauche, coins droits arrondis `--rayon-panneau`.
   E-14 (Paramètres) emploie la teinte légère, pas la hachure (qui dit le secret d'une section, E-9) : dégradé `--mj-trame`
-  sur 40 % de la largeur et filet `--mj-bord` de 2 px à gauche, dans la colonne de 688 px.
+  sur 40 % de la largeur et filet `--mj-bord` de 2 px à gauche, dans la colonne de 784 px marges comprises (688 px de texte, comme la maquette).
 - C : purement redondant — la pastille dit la même chose en mots, le filet n'est jamais le seul
   porteur. Il change avec le réglage (une section qu'on ferme aux joueurs devient hachurée sous
   les yeux du MJ). En mode Joueur, aucun filet ni hachure : la section MJ seul n'existe pas.

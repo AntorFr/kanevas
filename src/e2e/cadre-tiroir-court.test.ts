@@ -162,3 +162,40 @@ test('tiroir MJ 390×900 : quand tout tient, le pied reste en bas du tiroir et r
   assert.ok(m.vh - m.piedBas <= 13, `pied non ancré : ${JSON.stringify(m)}`);
   assert.ok(m.cache <= 1 && m.barreDefile <= 1, `défilement alors que tout tient : ${JSON.stringify(m)}`);
 });
+
+// « More below » cue (arbitrated 13/10: not an acceptance criterion, but it exists and must follow the scroll):
+// the chevron chip is shown (nav[data-plus]) while entries are hidden below, absent once scrolled to the end,
+// and absent when everything fits.
+const plusVisible = (p: Any) =>
+  barre(p).locator('nav').first().evaluate((el: Any) => {
+    const chip = el.querySelector('.plus-bas svg');
+    return { attr: el.hasAttribute('data-plus'), affiche: !!chip && getComputedStyle(el.querySelector('.plus-bas')).display !== 'none' };
+  });
+
+for (const theme of ['Clair', 'Sombre'] as const) {
+  test(`tiroir MJ ${theme}, 390×480 : la pastille « plus bas » suit le défilement`, opts, async () => {
+    await choisirTheme(antor, theme);
+    await ouvrirTiroir(antor, 480);
+    const nav = barre(antor).locator('nav').first();
+    const debut = await plusVisible(antor);
+    assert.deepEqual(debut, { attr: true, affiche: true }, 'des entrées sont cachées : la pastille doit être là');
+    await nav.evaluate((el: Any) => { el.scrollTop = el.scrollHeight; });
+    await antor.waitForFunction(() => !document.querySelector('.barre nav[data-plus]'));
+    assert.deepEqual(await plusVisible(antor), { attr: false, affiche: false }, 'fin de liste : plus de pastille');
+    await nav.evaluate((el: Any) => { el.scrollTop = 0; });
+    await antor.waitForFunction(() => !!document.querySelector('.barre nav[data-plus]'));
+    assert.equal((await plusVisible(antor)).affiche, true, 'retour en haut : la pastille revient');
+  });
+}
+
+test('tiroir MJ 390×900 : tout tient, pas de pastille', opts, async () => {
+  await ouvrirTiroir(antor, 900);
+  assert.deepEqual(await plusVisible(antor), { attr: false, affiche: false });
+});
+
+test('bureau 1440×900 : jamais de pastille', opts, async () => {
+  await antor.setViewportSize({ width: 1440, height: 900 });
+  await antor.goto(FICHE);
+  await attendre(antor);
+  assert.equal((await plusVisible(antor)).affiche, false);
+});
