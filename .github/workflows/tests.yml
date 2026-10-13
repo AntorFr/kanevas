@@ -1,0 +1,56 @@
+name: tests
+
+# The full suite, played on GitHub on demand — one of the places an attestation can come
+# from (scripts/tests-attestes.mjs). Never triggered automatically: the chain plays the same
+# suite in its pods, and a laptop can too. Green, it posts « tests-complets » on the commit
+# and rebuilds the image of every v* tag that points at it.
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: Branche, tag ou commit à tester
+        required: true
+        default: main
+
+permissions:
+  contents: read
+  statuses: write
+  actions: write
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    # About 20 min with the screen tests two at a time on a 4-vCPU runner.
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      # The screen tests look for Playwright in the working directory or the system
+      # node_modules (src/e2e/harnais.test.ts): a local, unsaved install with its Chromium.
+      - name: Playwright pour les tests d'écran
+        run: npm install --no-save playwright@1.63.0 && npx playwright install --with-deps chromium
+      - name: Suite complète attestée
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TESTS_LIEU: github-actions
+          TESTS_LIEN: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: npm run tests:attestes -- --publier --concurrence 2
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: rapport-tests
+          path: rapport-tests.json
+      - name: Construire l'image des tags de ce commit
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          for t in $(git tag --points-at HEAD 'v*'); do
+            gh workflow run docker-publish --ref "$t" && echo "build relancé pour $t"
+          done
