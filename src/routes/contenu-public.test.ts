@@ -153,6 +153,15 @@ test('contenuPublic : un bloc dans un bloc se retire par le plus extérieur, rie
   assert.equal(contenuPublic('> a\n> :::mj\n> s\n\nc'), '> a');
 });
 
+test('contenuPublic : un ":::" indenté de 4+ ne ferme pas le bloc, rien du secret ne fuit', () => {
+  // Panne : fermer sur toute ligne ":::" même indentée, comme le moteur ne le fait pas.
+  assert.equal(contenuPublic(':::mj\nsecret1\n\n    :::\n\nsecret2\n:::'), '');
+  assert.equal(contenuPublic(':::mj\nsecret1\n\n\t:::\n\nsecret2\n:::'), '');
+  assert.equal(contenuPublic('> :::mj\n> a\n>     :::\n> b\n> :::\nc'), 'c');
+  assert.equal(contenuPublic('- :::mj\n  a\n      :::\n  b\n  :::\nc'), 'c');
+  assert.equal(contenuPublic('a\n:::mj\nx\n   :::\npub'), 'a\npub');
+});
+
 test('rendreMarkdown : le conteneur n\'existe que pour la nature section', () => {
   const src = ':::mj\nsecret\n:::';
   assert.ok(rendreMarkdown(src, { nature: 'section' }).includes('secret'));

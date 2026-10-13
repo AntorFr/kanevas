@@ -71,6 +71,27 @@ export function rendreMarkdown(source: string, options: OptionsRendu = {}): stri
   return (options.nature === 'section' ? mdSection : mdTexte).render(source);
 }
 
+/** A closing fence line, possibly behind the quote or indent marks of its parent. */
+const FERMETURE_BLOC = /^[\s>]*:{3,}\s*$/;
+
+/**
+ * Indentation of a line once its quote markers are removed, a tab counting for 4. The engine does not
+ * close a container on a fence indented by 4 or more: neither do we, so nothing after it leaks.
+ */
+function indentation(ligne: string): number {
+  const reste = ligne.replace(/^(?:\s{0,3}>\s?)+/, '');
+  let colonnes = 0;
+  for (const c of reste) {
+    if (c === ' ') colonnes++;
+    else if (c === '\t') colonnes += 4 - (colonnes % 4);
+    else break;
+  }
+  return colonnes;
+}
+
+/** An opening line `:::mj`, possibly behind quote or indent marks. */
+const OUVERTURE_BLOC = /^[\s>]*:::mj\s*$/;
+
 /**
  * The source without the lines covered by the outermost GM blocks (AD-114): read from the
  * start of the `container_mj_open` tokens, never by regular expression for the start of a block. An unclosed block runs
@@ -78,12 +99,6 @@ export function rendreMarkdown(source: string, options: OptionsRendu = {}): stri
  * removed. A `:::` line inside a code block of a GM block still closes it, as it does on screen:
  * what the GM sees hatched is always removed from the public text.
  */
-/** A closing fence line, possibly behind the quote or indent marks of its parent. */
-const FERMETURE_BLOC = /^[\s>]*:{3,}\s*$/;
-
-/** An opening line `:::mj`, possibly behind quote or indent marks. */
-const OUVERTURE_BLOC = /^[\s>]*:::mj\s*$/;
-
 export function contenuPublic(source: string): string {
   const lignes = source.split('\n');
   const retirees = new Set<number>();
@@ -96,7 +111,7 @@ export function contenuPublic(source: string): string {
     let profondeur = 1;
     for (let i = t.map[0] + 1; i < lignes.length; i++) {
       if (OUVERTURE_BLOC.test(lignes[i]!)) profondeur++;
-      else if (FERMETURE_BLOC.test(lignes[i]!) && --profondeur === 0) {
+      else if (FERMETURE_BLOC.test(lignes[i]!) && indentation(lignes[i]!) < 4 && --profondeur === 0) {
         fin = i + 1;
         break;
       }
