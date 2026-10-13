@@ -1,9 +1,9 @@
-import { Bold, Italic } from 'lucide-react';
+import { Bold, Italic, Lock } from 'lucide-react';
 import { useEffect, useId, useLayoutEffect, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
 
 import { appeler, useConnexionPerdue } from '../api';
 import { Bouton } from './composants';
-import { depasse, entourer, messageTropLong, refusServeur } from './editeur-logique';
+import { depasse, entourer, entourerBlocMJ, messageTropLong, refusServeur } from './editeur-logique';
 import { Markdown } from './markdown';
 import './editeur.css';
 
@@ -28,6 +28,11 @@ interface Props {
   onAnnuler?: () => void;
   /** A refusal from the server, shown instead of the length one. */
   erreur?: string;
+  /**
+   * Offers « Bloc MJ » and makes the preview a section's (E-9): the server renders the container for a GM only.
+   * Absent for E-7, E-15 and the report window, whose preview sends nothing of it.
+   */
+  section?: { universId: string; modeJoueur: boolean; blocMJ: boolean };
   /** Beside the counter, at the foot of the frame: help line and buttons of the screen. */
   children?: ReactNode;
 }
@@ -37,7 +42,7 @@ interface Props {
  * switch (the preview is the server's `POST /api/apercu`, the same function as the reading), counter and
  * ceiling from `/api/moi`. The text typed stays in the field while the preview shows.
  */
-export function EditeurMarkdown({ etiquette, valeur, onChange, max, rows = 8, autoFocus, onEnregistrer, onAnnuler, erreur, children }: Props) {
+export function EditeurMarkdown({ etiquette, valeur, onChange, max, rows = 8, autoFocus, onEnregistrer, onAnnuler, erreur, section, children }: Props) {
   const perdue = useConnexionPerdue();
   const champ = useRef<HTMLTextAreaElement>(null);
   const selection = useRef<{ debut: number; fin: number } | undefined>(undefined);
@@ -71,6 +76,14 @@ export function EditeurMarkdown({ etiquette, valeur, onChange, max, rows = 8, au
     onChange(r.texte);
   }
 
+  function blocMJ() {
+    const c = champ.current;
+    if (!c || vue !== 'ecrire') return;
+    const r = entourerBlocMJ(valeur, c.selectionStart, c.selectionEnd);
+    selection.current = { debut: r.debut, fin: r.fin };
+    onChange(r.texte);
+  }
+
   async function previsualiser() {
     if (valeur.trim() === '') {
       setApercu({ etat: 'vide' });
@@ -83,7 +96,10 @@ export function EditeurMarkdown({ etiquette, valeur, onChange, max, rows = 8, au
     setApercu({ etat: 'cours' });
     setVue('apercu');
     try {
-      const r = await appeler<{ html: string }>('POST', '/api/apercu', { texte: valeur });
+      const r = await appeler<{ html: string }>('POST', '/api/apercu', {
+        texte: valeur,
+        ...(section ? { nature: 'section', univers_id: Number(section.universId), mode: section.modeJoueur ? 'joueur' : 'mj' } : {}),
+      });
       if (n === demande.current) setApercu({ etat: 'ok', html: r.html });
     } catch {
       if (n === demande.current) setApercu({ etat: 'echec' });
@@ -144,6 +160,12 @@ export function EditeurMarkdown({ etiquette, valeur, onChange, max, rows = 8, au
           <button type="button" className="outil-md" aria-label="Italique" title={`Italique · ${touche} I`} disabled={vue !== 'ecrire'} onClick={() => marquer('*')}>
             <Italic size={16} strokeWidth={1.75} aria-hidden="true" />
           </button>
+          {section?.blocMJ && (
+            <button type="button" className="outil-mj" title="Bloc MJ · entoure la sélection" aria-label="Bloc MJ" disabled={vue !== 'ecrire'} onClick={blocMJ}>
+              <Lock size={16} strokeWidth={1.75} aria-hidden="true" />
+              <span className="lib-outil">Bloc MJ</span>
+            </button>
+          )}
           <div className="bascule-md" role="radiogroup" aria-label="Écrire ou voir l’aperçu">
             {radio('ecrire', 'Écrire', ecrire)}
             {radio('apercu', 'Aperçu', () => void previsualiser())}

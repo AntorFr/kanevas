@@ -28,3 +28,27 @@ export const messageTropLong = (max: number): string => `${String(max).replace(/
 
 /** The server's own refusal (« Contenu trop long : 100 000 caractères au plus. ») in the interface's words: its limit wins over the screen's. */
 export const refusServeur = (message: string): string => message.replace(/^Contenu trop long\s*:\s*/, '');
+
+/**
+ * « Bloc MJ » (AD-114): wraps the selection in a `:::mj` line and a `:::` line, adding the line breaks that
+ * are missing so both lines stand alone. Without selection, the two lines with an empty one between and the
+ * cursor on it. The selection, when there is one, stays selected between the two lines.
+ */
+export function entourerBlocMJ(texte: string, debut: number, fin: number): Selection {
+  const a = Math.min(debut, fin);
+  const b = Math.max(debut, fin);
+  const avant = texte.slice(0, a);
+  const milieu = texte.slice(a, b);
+  const apres = texte.slice(b);
+  const ouvre = (avant === '' || avant.endsWith('\n') ? '' : '\n') + ':::mj\n';
+  const ferme = (apres === '' || apres.startsWith('\n') ? '' : '\n');
+  if (milieu === '') {
+    const t = avant + ouvre + '\n:::' + ferme + apres;
+    const curseur = avant.length + ouvre.length;
+    return { texte: t, debut: curseur, fin: curseur };
+  }
+  const corps = milieu.endsWith('\n') ? milieu : milieu + '\n';
+  const t = avant + ouvre + corps + ':::' + ferme + apres;
+  const d = avant.length + ouvre.length;
+  return { texte: t, debut: d, fin: d + milieu.length };
+}

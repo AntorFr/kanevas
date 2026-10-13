@@ -27,3 +27,11 @@
 .md table { display: block; max-width: 100%; overflow-x: auto; border-collapse: collapse; font-size: var(--t-16); }
 .md th, .md td { border: 1px solid var(--bord-fort); padding: var(--e-1) var(--e-3); text-align: left; vertical-align: top; overflow-wrap: normal; }
 .md th { background: var(--surface-2); font-weight: 600; }
+/* Bloc MJ (AD-98): the matter of a « MJ seul » section at paragraph scale; the pill is drawn here, the server only sends the container. */
+.md .bloc-mj { position: relative; margin: var(--e-4) 0; padding: var(--e-5) var(--e-4) var(--e-3) var(--e-4); border-radius: var(--rayon-champ);
+  min-width: 0; max-width: 100%; overflow-x: auto;
+  background: repeating-linear-gradient(135deg, var(--mj-trame) 0 1px, transparent 1px 8px), var(--mj-section-fond);
+  box-shadow: inset 0 0 0 1px var(--mj-bord), inset 2px 0 0 var(--mj); }
+.md .bloc-mj::before { content: "MJ seul"; display: block; width: max-content; margin-bottom: var(--e-2); padding: 0 var(--e-2); border-radius: var(--rayon-item);
+  background: var(--mj-fond); color: var(--mj); font-size: var(--t-12); font-weight: 600; line-height: 20px; }
+.md .bloc-mj > :last-child { margin-bottom: 0; }
