@@ -1,10 +1,13 @@
-import { Ellipsis, Info, ImageOff, ImagePlus, ImageUp, Trash2, type LucideIcon } from 'lucide-react';
+import { ArrowRightLeft, Ellipsis, Info, ImageOff, ImagePlus, ImageUp, Trash2, type LucideIcon } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
 import { ErreurApi, appeler, envoyerFichier, useConnexionPerdue } from '../../api';
 import { Alerte, Bouton, BoutonIcone, Menu, useToasts } from '../../ui';
 import type { FicheVue } from './types';
+import { ChangerType } from './changer-type';
+import { SousTypeBadge } from './sous-type';
 import { adresseIllustration } from './vignette';
+import { libelleDuType, useTypes } from '../../types-contexte';
 
 const AIDE = 'Visible de tous ceux qui voient la fiche.';
 const ECHEC = 'L’action n’a pas abouti. Réessayez.';
@@ -47,6 +50,8 @@ export function EnteteFiche({ universId, fiche, gestion, badge, Icone, message, 
   const [confirmer, setConfirmer] = useState(false);
   const [retraitEnCours, setRetraitEnCours] = useState(false);
   const [ko, setKo] = useState<string>();
+  const [changement, setChangement] = useState(false);
+  const { types } = useTypes();
 
   const jeton = fiche.illustration?.jeton;
   const base = `/api/univers/${universId}/fiches/${fiche.id}/illustration`;
@@ -206,24 +211,42 @@ export function EnteteFiche({ universId, fiche, gestion, badge, Icone, message, 
             <span className="type">
               <Icone size={14} strokeWidth={1.75} aria-hidden="true" />
               {badge}
+            <SousTypeBadge
+              universId={universId}
+              ficheId={fiche.id}
+              type={fiche.type}
+              libelleType={libelleDuType(types, fiche.type)}
+              sousType={fiche.sousType}
+              gestion={gestion}
+              rafraichir={rafraichir}
+              onDroitPerdu={onDroitPerdu}
+            />
             </span>
-            {/* « ⋯ » (E-9): in this slice its only line is the origin of an imported sheet; no key, no menu. */}
-            {gestion && fiche.cleOrigine && (
+            {/* « ⋯ » (E-9): « Changer le type… » (not for a report) and, for an imported sheet, its origin. */}
+            {gestion && (fiche.type !== 'compte_rendu' || fiche.cleOrigine) && (
               <Menu
                 etiquette={`Autres actions sur « ${fiche.titre} »`}
                 icone={Ellipsis}
                 aligne="fin"
                 entrees={[
-                  {
-                    contenu: (
-                      <div className="info-fiche">
-                        <Info size={14} strokeWidth={1.75} aria-hidden="true" />
-                        <span>
-                          Importée · clé <code>{fiche.cleOrigine}</code> · créée le {dateLongue(fiche.creeLe)}
-                        </span>
-                      </div>
-                    ),
-                  },
+                  ...(fiche.type !== 'compte_rendu'
+                    ? [{ libelle: 'Changer le type…', icone: ArrowRightLeft, onChoisir: () => setChangement(true) }]
+                    : []),
+                  ...(fiche.type !== 'compte_rendu' && fiche.cleOrigine ? [{ separateur: true as const }] : []),
+                  ...(fiche.cleOrigine
+                    ? [
+                        {
+                          contenu: (
+                            <div className="info-fiche">
+                              <Info size={14} strokeWidth={1.75} aria-hidden="true" />
+                              <span>
+                                Importée · clé <code>{fiche.cleOrigine}</code> · créée le {dateLongue(fiche.creeLe)}
+                              </span>
+                            </div>
+                          ),
+                        },
+                      ]
+                    : []),
                 ]}
               />
             )}
@@ -234,6 +257,9 @@ export function EnteteFiche({ universId, fiche, gestion, badge, Icone, message, 
         </div>
         {gestion && entrees}
       </header>
+      {gestion && changement && (
+        <ChangerType universId={universId} fiche={fiche} onFermer={() => setChangement(false)} rafraichir={rafraichir} onDroitPerdu={onDroitPerdu} />
+      )}
       {gestion && confirmer && (
         <div className="confirmation-ill" role="group" aria-label="Retirer l’illustration">
           <span>Retirer l’illustration de « {fiche.titre} » ? L’image sera perdue.</span>

@@ -165,3 +165,17 @@ a.cadre-ill:focus-visible { outline-offset: 2px; border-radius: var(--rayon-pann
 }
 .menu .info-fiche svg { margin-top: 2px; flex: none; }
 .menu .info-fiche code { font: 500 11.5px/1.3 ui-monospace, "SF Mono", Menlo, Consolas, monospace; color: var(--texte-2); white-space: nowrap; }
+
+/* Sub-type in the badge (B-52): a button for the GM, plain text for a player. */
+.fiche .type .sous-type-bouton { background: none; border: 0; padding: 0; font: inherit; color: inherit; cursor: pointer; border-radius: 3px; }
+.fiche .type .sous-type-bouton:hover { color: var(--texte); text-decoration: underline; }
+.fiche .type .sous-type-bouton.vide { color: var(--texte-3); }
+.fiche .type .sous-type-edition { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.fiche .type .sous-type-edition input { height: 20px; width: 14ch; padding: 0 6px; font: inherit; color: var(--texte); background: var(--fond);
+  border: 1px solid var(--bord-champ); border-radius: 4px; }
+.fiche .type .sous-type-edition small { font-size: var(--t-12); color: var(--texte-3); }
+.fiche .type .sous-type-edition small.erreur { color: var(--danger); }
+.fiche .type:has(.sous-type-edition) { height: auto; min-height: 24px; flex-wrap: wrap; }
+.changer-type .titre-groupe { margin: var(--e-3) 0 var(--e-1); font-size: var(--t-12); color: var(--texte-3); }
+.changer-type .choix-type { display: flex; align-items: center; gap: var(--e-2); padding: 4px 0; }
+.changer-type .retrait { color: var(--texte-2); font-size: var(--t-13); }
