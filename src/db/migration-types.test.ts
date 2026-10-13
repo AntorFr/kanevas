@@ -38,15 +38,15 @@ function comptes(db: Db): Record<string, number> {
   );
 }
 
-function avant10(): Db {
+function avant11(): Db {
   const db = openDb(':memory:');
-  migrate(db, dossierJusqua(10));
+  migrate(db, dossierJusqua(11));
   semerBouchon(db);
   return db;
 }
 
-test('0011: comptes, identifiants, clés étrangères et recherche conservés', () => {
-  const db = avant10();
+test('0012: comptes, identifiants, clés étrangères et recherche conservés', () => {
+  const db = avant11();
   const c0 = comptes(db);
   assert.ok(c0.fiches >= 5, 'le semis du bouchon porte des fiches');
   assert.ok(c0.sections > 0);
@@ -54,7 +54,7 @@ test('0011: comptes, identifiants, clés étrangères et recherche conservés', 
   const titre = (ids0[0] as { titre: string }).titre;
   const mot = titre.split(/\s+/)[0]!.replace(/[^\p{L}\p{N}]/gu, '');
 
-  assert.deepEqual(migrate(db), [11]);
+  assert.deepEqual(migrate(db), [12]);
 
   assert.deepEqual(comptes(db), c0);
   assert.deepEqual(db.prepare('SELECT id, titre, type FROM fiches ORDER BY id').all(), ids0);
@@ -69,11 +69,11 @@ test('0011: comptes, identifiants, clés étrangères et recherche conservés', 
     assert.equal(db.prepare(`SELECT COUNT(*) AS n FROM ${t}`).get()?.n, 0);
   }
   // the migration is recorded
-  assert.equal(db.prepare('SELECT COUNT(*) AS n FROM migrations WHERE numero = 11').get()?.n, 1);
+  assert.equal(db.prepare('SELECT COUNT(*) AS n FROM migrations WHERE numero = 12').get()?.n, 1);
 });
 
-test('0011: les déclencheurs de recherche et les index survivent à la recréation', () => {
-  const db = avant10();
+test('0012: les déclencheurs de recherche et les index survivent à la recréation', () => {
+  const db = avant11();
   migrate(db);
   const marc = assurerCompte(db, 'marc-mig');
   const u = creerUnivers(db, marc.id, { nom: 'Univers de test' });
@@ -93,8 +93,8 @@ test('0011: les déclencheurs de recherche et les index survivent à la recréat
   }
 });
 
-test('0011: une clé orpheline fait échouer migrate, base inchangée, clés rétablies', () => {
-  const db = avant10();
+test('0012: une clé orpheline fait échouer migrate, base inchangée, clés rétablies', () => {
+  const db = avant11();
   // an orphan section: foreign keys off to plant it, as a damaged copy would carry it
   db.pragma('foreign_keys = OFF');
   db.prepare("UPDATE sections SET fiche_id = 999999 WHERE id = (SELECT MIN(id) FROM sections)").run();
@@ -102,15 +102,15 @@ test('0011: une clé orpheline fait échouer migrate, base inchangée, clés ré
   const c0 = comptes(db);
   assert.throws(() => migrate(db), /foreign key/i);
   assert.equal(db.pragma('foreign_keys', { simple: true }), 1);
-  assert.equal(db.prepare('SELECT MAX(numero) AS m FROM migrations').get()?.m, 10);
+  assert.equal(db.prepare('SELECT MAX(numero) AS m FROM migrations').get()?.m, 11);
   assert.deepEqual(comptes(db), c0);
   assert.equal(db.prepare("SELECT COUNT(*) AS n FROM sqlite_master WHERE name IN ('fiches_nouvelle','types_systeme')").get()?.n, 0);
-  // the old table still carries its CHECK: the base really is at 10
+  // the old table still carries its CHECK: the base really is at 11
   assert.throws(() => db.prepare("INSERT INTO fiches (univers_id, type, titre, charge, cree_le, modifie_le) VALUES (1, 'monde', 'x', '{}', 'a', 'a')").run());
 });
 
-test('0011: une relation vers une fiche absente fait aussi échouer migrate', () => {
-  const db = avant10();
+test('0012: une relation vers une fiche absente fait aussi échouer migrate', () => {
+  const db = avant11();
   db.pragma('foreign_keys = OFF');
   db.prepare("INSERT INTO relations (section_id, cible_fiche_id, type, cree_le) VALUES ((SELECT MIN(id) FROM sections), 888888, 'cite', 'a')").run();
   db.pragma('foreign_keys = ON');

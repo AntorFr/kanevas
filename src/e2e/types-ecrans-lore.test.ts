@@ -108,6 +108,33 @@ describe('kanevas-types-ecrans-lore, au navigateur', { skip: skipBrowser }, () =
     await capture(lea, 'filtre');
   });
 
+  for (const [largeur, nom] of [[1440, 'bureau'], [390, 'telephone']] as const) {
+    test(`liste « Lieux » à ${largeur} px : champ, filtre « Sous-type » et « Chercher » sont alignés (pas de ligne rompue)`, async () => {
+      // Fails if the filter label sits above the select again and pushes the row out of line, or if « Chercher » floats beside the select.
+      const page = (await connecte(browser, srv.base, 'Antor')).page;
+      await page.setViewportSize({ width: largeur, height: 900 });
+      await page.goto(`/univers/${lame}/fiches/lieux`);
+      await attendre(page);
+      const filtre = page.getByLabel('Sous-type');
+      await filtre.waitFor();
+      const champ = page.getByRole('textbox').first();
+      const bouton = page.getByRole('button', { name: rxExact('Chercher') });
+      const [c, f, b] = await Promise.all([champ.boundingBox(), filtre.boundingBox(), bouton.boundingBox()]);
+      const centre = (r: { y: number; height: number }) => r.y + r.height / 2;
+      if (largeur >= 1000) {
+        assert.ok(Math.abs(centre(c!) - centre(f!)) <= 4, `filtre désaligné du champ: ${centre(c!)} vs ${centre(f!)}`);
+        assert.ok(Math.abs(centre(b!) - centre(f!)) <= 4, `« Chercher » désaligné du filtre: ${centre(b!)} vs ${centre(f!)}`);
+        assert.ok(f!.height < 60, `filtre trop haut (libellé empilé ?): ${f!.height}`);
+      } else {
+        assert.ok(f!.y >= c!.y + c!.height - 1, 'à 390 px le filtre prend sa propre ligne sous le champ');
+        assert.ok(!(b!.y < f!.y + f!.height && b!.y + b!.height > f!.y), '« Chercher » ne flotte pas à côté du select');
+        assert.ok(f!.x + f!.width <= largeur && b!.x + b!.width <= largeur, 'rien ne déborde');
+      }
+      await capture(page, `alignement-${nom}`);
+      await page.close();
+    });
+  }
+
   test('carte : « Ajouter une fiche » propose Vaisseau, pas Note ; un compte-rendu reste proposé comme avant', async () => {
     await antor.goto(`/univers/${lame}/cartes/${cartes}`);
     await attendre(antor);
