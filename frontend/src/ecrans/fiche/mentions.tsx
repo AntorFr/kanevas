@@ -64,35 +64,41 @@ export function BlocMentions({ universId, ficheId, mentions, suite, restantes, s
   }
 
   return (
-    <section className="bloc-mentions" aria-labelledby="titre-mentions">
-      <h2 id="titre-mentions">
-        <Link2 size={16} strokeWidth={1.75} aria-hidden="true" />
-        Mentionnée dans
-      </h2>
-      <ul className="mentions">
-        {toutes.map((m) => {
-          const Icone = iconeDuType(m.type);
-          return (
-            <li key={m.ficheId} className="mention">
-              <Link className="cible" to={`/univers/${universId}/fiche/${m.ficheId}`}>
-                <Icone size={16} strokeWidth={1.75} aria-hidden="true" />
-                {m.titre}
-              </Link>
-              <span className="pourquoi">{pourquoiDe(m)}</span>
-            </li>
-          );
-        })}
-      </ul>
-      {echec && (
-        <div className="echec" role="alert">
-          Impossible de charger la suite.
+    <div className="blocs">
+      <section className="bloc-section bloc-mentions" aria-labelledby="titre-mentions">
+        <h2 id="titre-mentions" className="bloc-libelle">
+          <Link2 size={14} strokeWidth={1.75} aria-hidden="true" />
+          Mentionnée dans
+        </h2>
+        <div className="bloc-contenu">
+          <ul className="mentions">
+            {toutes.map((m) => {
+              const Icone = iconeDuType(m.type);
+              return (
+                <li key={m.ficheId} className="mention">
+                  <Link className="jeton cible" to={`/univers/${universId}/fiche/${m.ficheId}`}>
+                    <Icone size={14} strokeWidth={1.75} aria-hidden="true" />
+                    <span className="jeton-titre" title={m.titre}>
+                      {m.titre}
+                    </span>
+                  </Link>
+                  <span className="pourquoi">{pourquoiDe(m)}</span>
+                </li>
+              );
+            })}
+          </ul>
+          {echec && (
+            <div className="echec" role="alert">
+              Impossible de charger la suite.
+            </div>
+          )}
+          {reste > 0 && (
+            <Bouton ecrit={false} disabled={enCours || perdue} onClick={() => void suivantes()}>
+              {enCours ? 'Chargement…' : echec ? 'Réessayer' : `Afficher les ${reste} suivants`}
+            </Bouton>
+          )}
         </div>
-      )}
-      {reste > 0 && (
-        <Bouton ecrit={false} disabled={enCours || perdue} onClick={() => void suivantes()}>
-          {enCours ? 'Chargement…' : echec ? 'Réessayer' : `Afficher les ${reste} suivants`}
-        </Bouton>
-      )}
-    </section>
+      </section>
+    </div>
   );
 }

@@ -1,12 +1,8 @@
-/* Block « Mentionnée dans » of E-9: tokens only. */
-.bloc-mentions { margin-top: var(--e-7); padding-top: var(--e-4); border-top: 1px solid var(--bord); display: flex; flex-direction: column; align-items: flex-start; gap: var(--e-2); }
-.bloc-mentions h2 { display: flex; align-items: center; gap: var(--e-2); margin: 0; font: 500 var(--t-14)/1.4 var(--police-texte); color: var(--texte-2); }
-.bloc-mentions h2 svg { color: var(--texte-3); }
+/* Block « Mentionnée dans » of E-9: a row like Relations (BlocSection), tokens only. */
+.bloc-mentions h2.bloc-libelle { margin: 0; font-weight: 400; }
+.bloc-mentions .bloc-contenu { flex-direction: column; align-items: flex-start; flex-wrap: nowrap; }
 .bloc-mentions .mentions { list-style: none; margin: 0; padding: 0; width: 100%; display: flex; flex-direction: column; gap: 2px; }
-.bloc-mentions .mention { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 10px; min-height: 32px; font-size: var(--t-14); }
-.bloc-mentions .cible { display: inline-flex; align-items: center; gap: var(--e-2); color: var(--accent-texte); text-decoration: none; }
-.bloc-mentions .cible:hover { text-decoration: underline; }
-.bloc-mentions .cible:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; border-radius: 2px; }
-.bloc-mentions .cible svg { flex: none; color: var(--texte-3); }
-.bloc-mentions .pourquoi { color: var(--texte-3); }
+.bloc-mentions .mention { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 10px; min-height: 28px; font-size: var(--t-14); }
+.bloc-mentions .cible:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.bloc-mentions .pourquoi { color: var(--texte-3); font-size: var(--t-13); }
 .bloc-mentions .echec { color: var(--danger); font-size: var(--t-14); }

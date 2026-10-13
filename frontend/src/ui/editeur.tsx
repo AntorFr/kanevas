@@ -61,6 +61,12 @@ export function EditeurMarkdown({ etiquette, valeur, onChange, max, rows = 8, au
   const [ouvert, setOuvert] = useState<{ debut: number; requete: string }>();
   const [courant, setCourant] = useState(0);
   const fermeA = useRef(-1);
+  const bloc = useRef<HTMLDivElement>(null);
+  const listeOuverte = ouvert !== undefined;
+  // The floating assistant button sits bottom right: keep the list and the save row clear of it (scroll-margin in editeur.css).
+  useEffect(() => {
+    if (listeOuverte) bloc.current?.scrollIntoView?.({ block: 'nearest' });
+  }, [listeOuverte]);
   const [recherche, reessayer] = useRechercheLiens(liens?.universId ?? '', ouvert?.requete ?? '', ouvert !== undefined);
   const trop = depasse(valeur, max);
   const message = erreur ?? (trop && max !== undefined ? messageTropLong(max) : undefined);
@@ -222,7 +228,7 @@ export function EditeurMarkdown({ etiquette, valeur, onChange, max, rows = 8, au
   );
 
   return (
-    <div className="editeur-bloc">
+    <div className="editeur-bloc" ref={bloc}>
       <div className={`editeur${message ? ' en-erreur' : ''}`} onKeyDown={clavier}>
         <div className="outils-md" role="toolbar" aria-label="Mise en forme">
           <button type="button" className="outil-md" aria-label="Gras" title={`Gras · ${touche} B`} disabled={vue !== 'ecrire'} onClick={() => marquer('**')}>

@@ -30,3 +30,7 @@
 .outil-mj:disabled { opacity: .45; cursor: not-allowed; }
 @media (max-width: 760px) { .outil-mj { width: 36px; height: 36px; justify-content: center; padding: 0; margin-left: 2px; } .outil-mj .lib-outil { display: none; } }
 @media (max-width: 760px) { .outil-md { width: 36px; height: 36px; } .bascule-md button { height: 32px; } }
+
+/* Room under the editor for the floating assistant button while the « [[ » list is open. */
+.editeur-bloc { scroll-margin-bottom: calc(var(--e-5) + 48px + var(--e-4)); }
+.editeur-bloc:has(.liste-liens) { padding-bottom: calc(48px + var(--e-4)); }
