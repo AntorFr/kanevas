@@ -446,7 +446,7 @@ de bloc sur E-3, et l'adresse de E-15 répond « Page introuvable. ».
 
 ### E-14 Paramètres de l'univers (MJ)
 
-Trois panneaux, dans cet ordre.
+Trois panneaux, dans cet ordre, chacun portant la pastille « MJ seul » (cadenas) de la charte ; au téléphone (sous 760 px) leur débord est de 12 px, non 28.
 
 1. **Identité** : « Nom » (obligatoire, 80 caractères au plus), « Description » (500 au plus),
    « Enregistrer ». Après l'enregistrement : toast « Enregistré. ».
