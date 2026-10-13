@@ -1,4 +1,4 @@
-import { Check, ChevronsUpDown, Dices, Library, LogOut, Monitor, Moon, Sun } from 'lucide-react';
+import { Check, ChevronDown, ChevronsUpDown, Dices, Library, LogOut, Monitor, Moon, Sun } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { Link, matchPath, useLocation } from 'react-router-dom';
 
@@ -206,6 +206,25 @@ function Contenu({ onNavigue }: { onNavigue: () => void }) {
   const sections = [...new Set(items.map((i) => i.section ?? ''))];
   const horsUnivers = dedans ? [] : ITEMS_UNIVERS.filter((i) => i.horsUnivers && visible(i, i.chemin(0)));
 
+  // True while the nav has more entries below the visible part (drawer on a short phone): shows a « more below » cue.
+  const nav = useRef<HTMLElement>(null);
+  const [plus, setPlus] = useState(false);
+  useEffect(() => {
+    const el = nav.current;
+    if (!el) return;
+    const mesurer = () => setPlus(el.scrollHeight - el.clientHeight - el.scrollTop > 24);
+    mesurer();
+    el.addEventListener('scroll', mesurer, { passive: true });
+    window.addEventListener('resize', mesurer);
+    const obs = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(mesurer);
+    obs?.observe(el);
+    return () => {
+      el.removeEventListener('scroll', mesurer);
+      window.removeEventListener('resize', mesurer);
+      obs?.disconnect();
+    };
+  }, [items.length, dedans]);
+
   return (
     <>
       {dedans ? (
@@ -218,7 +237,7 @@ function Contenu({ onNavigue }: { onNavigue: () => void }) {
           <span className="nom-marque">Kanevas</span>
         </Link>
       )}
-      <nav aria-label="Navigation principale">
+      <nav aria-label="Navigation principale" ref={nav} data-plus={plus ? 'oui' : undefined}>
         {!dedans && (
           <div className="groupe">
             <Link to="/" className="item" aria-current={pathname === '/' ? 'page' : undefined}>
@@ -250,6 +269,9 @@ function Contenu({ onNavigue }: { onNavigue: () => void }) {
               ))}
           </div>
         ))}
+        <span className="plus-bas" aria-hidden="true">
+          <ChevronDown size={14} strokeWidth={2} />
+        </span>
       </nav>
       <Compte />
     </>
