@@ -4,13 +4,17 @@ import { useSyncExternalStore } from 'react';
 let perdue = typeof navigator !== 'undefined' && navigator.onLine === false;
 const abonnes = new Set<() => void>();
 
+/** Counts the losses declared so far: an answer to a request sent before the last loss proves nothing. */
+let pertes = 0;
+
 let sonde: ReturnType<typeof setInterval> | undefined;
 
 /** While the connection is lost, ping the public /healthz: any answer means the server is back. */
 async function sonder() {
+  const avant = pertes;
   try {
     await fetch('/healthz', { cache: 'no-store' });
-    definirPerdue(false);
+    if (pertes === avant) definirPerdue(false);
   } catch {
     /* still unreachable: the next tick tries again */
   }
@@ -20,6 +24,7 @@ function definirPerdue(valeur: boolean) {
   if (perdue === valeur) return;
   perdue = valeur;
   if (valeur) {
+    pertes++;
     sonde = setInterval(() => void sonder(), 3000);
   } else if (sonde !== undefined) {
     clearInterval(sonde);
@@ -58,6 +63,7 @@ export class ErreurApi extends Error {
 /** JSON call to the backend. 401 means the session ended: go back through the sign-in. */
 export async function appeler<T>(methode: string, chemin: string, corps?: unknown, delaiMs?: number): Promise<T> {
   let reponse: Response;
+  const avant = pertes;
   const signal = delaiMs === undefined ? undefined : AbortSignal.timeout(delaiMs);
   try {
     reponse = await fetch(chemin, {
@@ -73,7 +79,8 @@ export async function appeler<T>(methode: string, chemin: string, corps?: unknow
     definirPerdue(true);
     throw new ErreurApi(0, 'Connexion perdue.');
   }
-  definirPerdue(false);
+  // A reply that left the server before the connection dropped must not clear the loss declared since.
+  if (pertes === avant) definirPerdue(false);
   if (reponse.status === 401) {
     window.location.assign('/'); // the server guard sends us to the sign-in
     throw new ErreurApi(401, 'Non authentifié.');
@@ -102,6 +109,7 @@ export function envoyerFichier<T>(
   surProgres: (pourcent: number) => void,
 ): { promesse: Promise<T>; annuler: () => void } {
   const xhr = new XMLHttpRequest();
+  const avant = pertes;
   const promesse = new Promise<T>((resolve, reject) => {
     xhr.open('PUT', chemin);
     xhr.withCredentials = true;
@@ -114,7 +122,7 @@ export function envoyerFichier<T>(
     };
     xhr.onabort = () => reject(new ErreurApi(-1, 'Envoi annulé.'));
     xhr.onload = () => {
-      definirPerdue(false);
+      if (pertes === avant) definirPerdue(false);
       if (xhr.status === 401) {
         window.location.assign('/');
         return reject(new ErreurApi(401, 'Non authentifié.'));
