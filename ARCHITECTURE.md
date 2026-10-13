@@ -75,7 +75,7 @@ en cours, vidé au démarrage sauf avec une base en mémoire, où le dossier est
 
 ## Routes `/api`
 
-Toutes gardées par la session (401 sans session), sauf `/api/auth/*`. Les erreurs de service sont
+Toutes gardées par la session (401 sans session), sauf `/api/auth/*` et `/api/import/v1/*`, qui n'ouvre qu'avec un jeton Bearer (AD-103) et ignore le cookie. Les erreurs de service sont
 `introuvable` 404, `refuse` 403, `invalide` 400, `conflit` 409 (`section_modifiee`, `nom_pris`, `gabarit_modifie`, `scenario_modifie`, `proposition_appliquee`, `relation_existante`, `limite_relations`, `limite_pieces` : 50 pièces par section — *100 fichiers joints depuis `kanevas-import`, AD-111*, `fiche_deja_placee` et `carte_pleine` des cartes ; 413 `fond_trop_lourd` pour un fond de plus de 25 Mo ; 400 `fichier_vide` pour une pièce vide (un fond de carte vide est un 400 `fond_invalide`) ; `auto_relation` est un 400 `invalide`). Retirer le dernier
 MJ répond `invalide` 400 avec la raison ; un contenu de section de plus de 100 000 caractères aussi (AD-91). Le corps d'une erreur de service est `{message}` (plus `code` quand le service en donne un) ; une adresse `/api/...` qu'aucune route ne porte (par exemple une route retirée par AD-94) répond 404 par la page HTML « Page introuvable. », pas par du JSON. Le serveur écoute sur `0.0.0.0` (`-p 3001:3001` suffit).
 En mode bouchon, `POST /connexion-bouchon` attend un corps form-urlencoded `compte=<identifiant>`.
