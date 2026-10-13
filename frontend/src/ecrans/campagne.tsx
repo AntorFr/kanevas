@@ -2,7 +2,7 @@ import { ArrowDown, Flag, Plus } from 'lucide-react';
 import { useEffect, useState, type FormEvent } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 
-import { appeler, lire, useConnexionPerdue } from '../api';
+import { ErreurApi, appeler, lire, useConnexionPerdue } from '../api';
 import { useCharge, useLimiteContenu } from '../cadre-contexte';
 import type { Ecran } from '../registre';
 import type { UniversListe } from '../types';
@@ -452,8 +452,10 @@ function FenetreCompteRendu({ universId, campagneId, onFermer }: { universId: st
       sessionStorage.removeItem(cleBrouillonCr(campagneId));
       toast(`« ${t} » publié`);
       navigate(`/univers/${universId}/fiche/${f.id}`);
-    } catch {
-      setEchec(true);
+    } catch (e) {
+      // The server's own refusal of a block written by a non-GM (E-6) stays under the field, the text kept.
+      if (e instanceof ErreurApi && e.statut === 400) setErreurTexte(e.message);
+      else setEchec(true);
       setEnCours(false);
     }
   }

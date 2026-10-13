@@ -8,7 +8,7 @@ import { attachmentsDir } from '../config/env.js';
 import { poserIllustration } from '../services/illustrations.js';
 import { supprimerFichier } from '../services/stockage.js';
 import { ajouterMembre } from '../services/membres.js';
-import { ajouterSection, changerAudience } from '../services/sections.js';
+import { ajouterSection, changerAudience, ecrireContenu, lireSection } from '../services/sections.js';
 import { creerFiche } from '../services/fiches.js';
 import { assurerCompte } from '../services/comptes.js';
 import { creerEtRattacherSysteme, creerGabarit, rattacherSysteme } from '../services/systemes.js';
@@ -29,7 +29,7 @@ export function semerBouchon(db: Db): boolean {
   const compte = (u: string) => assurerCompte(db, u).id;
   const id = { antor: compte('antor'), lea: compte('lea'), teo: compte('teo'), mira: compte('mira'), admin: compte('admin') };
 
-  // A base migrated short of 0011 (the migration test) has no sub-type column yet.
+  // A base migrated short of 0013 (the migration test) has no sub-type column yet.
   const sousTypes = (db.prepare('PRAGMA table_info(fiches)').all() as { name: string }[]).some(
     (c) => c.name === 'sous_type',
   );
@@ -91,17 +91,20 @@ export function semerBouchon(db: Db): boolean {
       sousType?: string,
     ) => {
       const f = creerFiche(db, id.antor, lame.id, { type, titre, charge, sousType: sousTypes ? sousType : undefined });
+      const ids: Record<string, number> = {};
       for (const s of sections) {
         const v = ajouterSection(db, id.antor, lame.id, f.id, {
           titre: s.titre,
           contenu: `${s.titre} de ${titre}.`,
         });
+        ids[s.titre] = v.id;
         if (s.lue) changerAudience(db, id.antor, lame.id, f.id, v.id, { joueursLisent: true });
       }
+      return { id: f.id, sections: ids };
     };
     const apparence = { titre: 'Apparence', lue: true };
     const verite = { titre: 'Vérité — MJ seul', lue: false };
-    fiche('personnage', 'Maître Aldric', [apparence, verite], { pj: false });
+    const aldric = fiche('personnage', 'Maître Aldric', [apparence, verite], { pj: false });
     fiche('personnage', 'Bran Corvalis', [apparence], { pj: false });
     fiche('personnage', 'Le Prieur masqué', [{ titre: 'Secret — MJ seul', lue: false }], { pj: false });
     fiche('personnage', 'Léa Brisefer', [apparence], { pj: true });
@@ -117,8 +120,88 @@ export function semerBouchon(db: Db): boolean {
     for (const [lieu, sousType] of lieux) {
       fiche('lieu', lieu, [{ titre: 'Description', lue: true }], undefined, sousType);
     }
+    // « Port-Sel » (kanevas-import-secrets): Léa authors « Histoire », which carries a GM block.
+    const port = creerFiche(db, id.antor, lame.id, { type: 'lieu', titre: 'Port-Sel' });
+    const section = (titre: string, contenu: string, audience: Parameters<typeof changerAudience>[5]) => {
+      const v = ajouterSection(db, id.antor, lame.id, port.id, { titre, contenu });
+      changerAudience(db, id.antor, lame.id, port.id, v.id, audience);
+      return v.id;
+    };
+    section(
+      'Description',
+      [
+        '## Un port de sel et de brume',
+        '',
+        'Port-Sel ferme la côte des Brumes.',
+        '',
+        '- Quais de sel',
+        '- Criée du matin',
+        '',
+        '| Quartier | Activité |',
+        '| --- | --- |',
+        '| Les Docks | Pêche et fret |',
+        '| Quartier des Cordiers | Cordages et voiles |',
+      ].join('\n'),
+      { joueursLisent: true },
+    );
+    const histoire = section(
+      'Histoire',
+      [
+        'Le port a été fondé par des sauniers.',
+        '',
+        ':::mj',
+        'Le port est tenu en sous-main par la Guilde des Brumes, qui y fait passer ses cargaisons.',
+        ':::',
+        '',
+        'Les marins en parlent peu.',
+      ].join('\n'),
+      { joueursLisent: true, auteurId: id.lea, auteurLit: true, auteurEcrit: true },
+    );
+    section('Vérité', 'Le port cache un secret réservé au MJ.', {});
     fiche('faction', 'Lames Grises', [{ titre: 'Description', lue: true }]);
     fiche('faction', 'Cercle des Cendres', [{ titre: 'Secret — MJ seul', lue: false }]);
+
+    // The links of `kanevas-import-liens` (docs/ecrans.md). The Guild and the report are closed to
+    // players; the texts that point at sheets are written once those exist, through the service.
+    const guilde = fiche('faction', 'La Guilde des Brumes', [{ titre: 'Description', lue: false }]);
+    const rapport = fiche('evenement', "Rapport secret de l'amirauté", [{ titre: 'Secret — MJ seul', lue: false }]);
+    const ecrire = (universId: number, ficheId: number, sectionId: number, contenu: string) => {
+      const { version } = lireSection(db, { compteId: id.antor }, universId, ficheId, sectionId);
+      ecrireContenu(db, id.antor, universId, ficheId, sectionId, contenu, version);
+    };
+    const lien = (cible: { id: number }, texte: string) => `[[${cible.id}|${texte}]]`;
+    ecrire(
+      lame.id,
+      port.id,
+      histoire,
+      [
+        'Le port a été fondé par des sauniers.',
+        '',
+        ':::mj',
+        'Le port est tenu en sous-main par la Guilde des Brumes, qui y fait passer ses cargaisons.',
+        ':::',
+        '',
+        'Les marins en parlent peu.',
+        '',
+        `Le maître de port, ${lien(aldric, 'Maître Aldric')}, tient les comptes ; ${lien(guilde, 'La Guilde des Brumes')} y a ses entrées.`,
+      ].join('\n'),
+    );
+    ecrire(lame.id, aldric.id, aldric.sections['Apparence']!, `Grand, voûté. Il règne sur ${lien(port, 'Port-Sel')}.`);
+    ecrire(lame.id, guilde.id, guilde.sections['Description']!, `Une confrérie de contrebandiers dont ${lien(aldric, 'Maître Aldric')} est l'indic.`);
+    ecrire(
+      lame.id,
+      rapport.id,
+      rapport.sections['Secret — MJ seul']!,
+      ['Rapport de l\'amirauté.', '', ':::mj', `Piste : ${lien(aldric, 'Maître Aldric')} vend les horaires des convois.`, ':::'].join('\n'),
+    );
+    // « Essai Kanka »: a place whose text waits for a key and points at a vanished sheet.
+    const anse = creerFiche(db, id.antor, essai.id, { type: 'lieu', titre: 'Anse-aux-Sels' });
+    const descriptionAnse = ajouterSection(db, id.antor, essai.id, anse.id, {
+      titre: 'Description',
+      contenu:
+        'Une crique que fréquentent [[cle:faction:repaire|les contrebandiers du Repaire]] et jadis [[999999|Capitaine Hesk]].',
+    });
+    changerAudience(db, id.antor, essai.id, anse.id, descriptionAnse.id, { joueursLisent: true });
   })();
   return true;
 }

@@ -27,3 +27,26 @@
 .md table { display: block; max-width: 100%; overflow-x: auto; border-collapse: collapse; font-size: var(--t-16); }
 .md th, .md td { border: 1px solid var(--bord-fort); padding: var(--e-1) var(--e-3); text-align: left; vertical-align: top; overflow-wrap: normal; }
 .md th { background: var(--surface-2); font-weight: 600; }
+/* Bloc MJ (AD-98): the matter of a « MJ seul » section at paragraph scale; the pill is drawn here, the server only sends the container. */
+.md .bloc-mj { position: relative; margin: var(--e-4) 0; padding: var(--e-5) var(--e-4) var(--e-3) var(--e-4); border-radius: var(--rayon-champ);
+  min-width: 0; max-width: 100%; overflow-x: auto;
+  background: repeating-linear-gradient(135deg, var(--mj-trame) 0 1px, transparent 1px 8px), var(--mj-section-fond);
+  box-shadow: inset 0 0 0 1px var(--mj-bord), inset 2px 0 0 var(--mj); }
+.md .bloc-mj::before { content: "MJ seul"; display: block; width: max-content; margin-bottom: var(--e-2); padding: 0 var(--e-2) 0 calc(var(--e-2) + 18px); border-radius: var(--rayon-pastille);
+  background: var(--mj-fond); color: var(--mj); font-family: var(--police-texte); font-size: var(--t-12); font-weight: 500; line-height: 22px; height: 22px; }
+/* The padlock is base64 so the built CSS holds no literal namespace URL (fondations.test forbids any foreign-host look-alike). */
+/* The pill's padlock (Lucide « lock »): a CSS mask in the pill's own colour, laid over the pill's left padding. */
+.md .bloc-mj::after { content: ""; position: absolute; top: calc(var(--e-5) + 4px); left: calc(var(--e-4) + var(--e-2)); width: 14px; height: 14px; background: var(--mj);
+  -webkit-mask: var(--icone-lock) center / contain no-repeat; mask: var(--icone-lock) center / contain no-repeat; }
+.md .bloc-mj { --icone-lock: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZpZXdCb3g9JzAgMCAyNCAyNCcgZmlsbD0nbm9uZScgc3Ryb2tlPSdibGFjaycgc3Ryb2tlLXdpZHRoPScyJyBzdHJva2UtbGluZWNhcD0ncm91bmQnIHN0cm9rZS1saW5lam9pbj0ncm91bmQnPjxyZWN0IHdpZHRoPScxOCcgaGVpZ2h0PScxMScgeD0nMycgeT0nMTEnIHJ4PScyJy8+PHBhdGggZD0nTTcgMTFWN2E1IDUgMCAwIDEgMTAgMHY0Jy8+PC9zdmc+"); }
+.md .bloc-mj > :last-child { margin-bottom: 0; }
+
+/* Links to a sheet (AD-116). The server decides who sees what: a reader who cannot follow a link gets plain text, no element.
+   The broken and pending marks reach a GM outside player mode only; the tooltip is the element's own `title`. */
+.md a.lien-fiche { color: var(--accent-texte); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px;
+  text-decoration-color: var(--accent-fond); transition: text-decoration-color var(--duree); }
+.md a.lien-fiche:hover, .md a.lien-fiche:focus-visible { text-decoration-color: var(--accent-texte); }
+.md .lien-casse, .md .lien-attente { color: inherit; text-decoration: underline dashed; text-decoration-thickness: 1.5px; text-underline-offset: 3px; cursor: help; }
+.md .lien-casse { text-decoration-color: var(--danger); }
+.md .lien-attente { text-decoration-color: var(--texte-3); }
+.md .lien-casse:focus-visible, .md .lien-attente:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; border-radius: 3px; }

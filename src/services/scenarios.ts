@@ -1,6 +1,7 @@
 import { rendreMarkdown } from './markdown.js';
 import type { Db } from '../db/db.js';
-import { exigerMJDeCampagne } from './campagnes.js';
+import { campagneBrute, exigerMJDeCampagne } from './campagnes.js';
+import { resolveurLiens } from './droits.js';
 import { ErreurService, introuvable, invalide } from './erreurs.js';
 import { validerTitre } from './fiches.js';
 // A scenario's content has the same ceiling as a section's (AD-91).
@@ -28,12 +29,19 @@ interface ScenarioRow {
   modifie_le: string;
 }
 
-const versScenario = (r: ScenarioRow): Scenario => ({
+/**
+ * A scenario as its GM reads it (AD-97): the links resolve in the universe of its campaign, under the
+ * GM's rights (everything is readable, vanished and waiting targets are marked); `:::mj` stays text.
+ */
+const versScenario = (db: Db, compteId: number, r: ScenarioRow): Scenario => ({
   id: r.id,
   campagneId: r.campagne_id,
   titre: r.titre,
   contenu: r.contenu,
-  html: rendreMarkdown(r.contenu),
+  html: rendreMarkdown(r.contenu, {
+    nature: 'scenario',
+    liens: resolveurLiens(db, campagneBrute(db, r.campagne_id).univers_id, 'mj', { compteId }, r.contenu),
+  }),
   version: r.version,
   creeLe: r.cree_le,
   modifieLe: r.modifie_le,
@@ -66,7 +74,7 @@ export function creerScenario(
       'INSERT INTO scenarios (campagne_id, titre, contenu, cree_le, modifie_le) VALUES (?, ?, ?, ?, ?)',
     )
     .run(campagneId, titre, contenu, now, now);
-  return versScenario(chargerPourMJ(db, compteId, Number(info.lastInsertRowid)));
+  return versScenario(db, compteId, chargerPourMJ(db, compteId, Number(info.lastInsertRowid)));
 }
 
 /** Scenarios of a campaign, oldest first (never carried by the campaign list, AD-30). */
@@ -76,11 +84,11 @@ export function listerScenarios(db: Db, compteId: number, campagneId: number): S
     db
       .prepare('SELECT * FROM scenarios WHERE campagne_id = ? ORDER BY cree_le, id')
       .all(campagneId) as ScenarioRow[]
-  ).map(versScenario);
+  ).map((r) => versScenario(db, compteId, r));
 }
 
 export function lireScenario(db: Db, compteId: number, scenarioId: number): Scenario {
-  return versScenario(chargerPourMJ(db, compteId, scenarioId));
+  return versScenario(db, compteId, chargerPourMJ(db, compteId, scenarioId));
 }
 
 /**
@@ -108,6 +116,6 @@ export function ecrireScenario(
     if (info.changes === 0) {
       throw new ErreurService('conflit', 'Le scénario a changé.', 'scenario_modifie');
     }
-    return versScenario(chargerPourMJ(db, compteId, scenarioId));
+    return versScenario(db, compteId, chargerPourMJ(db, compteId, scenarioId));
   })();
 }

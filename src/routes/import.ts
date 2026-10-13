@@ -75,7 +75,7 @@ export async function registerImportRoutes(app: FastifyInstance) {
       return {
         univers: ctx.univers,
         compte: ctx.compte,
-        // The product list; activation follows the settings (typeActif: no decision means inactive by default), except compte_rendu, never active here.
+        // The product list; activation follows the settings (typeActif: with no decision from the universe nor its system, the type is active, origin `defaut`), except compte_rendu, never active here.
         // `compte_rendu` is listed but not accepted by `PUT /fiches` until kanevas-import-reprise.
         types: TYPES_FICHE.map((type) => ({
           type,
