@@ -1,7 +1,7 @@
-// Tests of E-14 Paramètres template, from docs/maquettes/e14-parametres.html: the three panels carry the
-// light amber tint and a 2 px rule (not the E-9 hatching, which says a section's secret), the column is
-// ~688 px, fields run full width, textareas use the interface font. E-6 (campaign) keeps its hatching.
-// Panne visée : hachure/filet épais d'E-9 sur E-14, colonne de 840 px, Nom plafonné, description en serif,
+// Tests of E-14 Paramètres template: the three GM panels are the closed hatched block of E-6/E-9 (arbitrated
+// 13/10, replaces the open tint + 2 px rule), the column is ~688 px, fields run full width, textareas use the
+// interface font. E-6 (campaign) keeps its hatching.
+// Panne visée : cadre ouvert (dégradé, filet 2 px) sur E-14, colonne de 840 px, Nom plafonné, description en serif,
 // et la correction qui retirerait la hachure de l'autre écran partageant .panneaux-suivi.
 import assert from 'node:assert/strict';
 import { after, before, test } from 'node:test';
@@ -35,7 +35,7 @@ const ouvrirParametres = async (schema: 'light' | 'dark') => {
 };
 
 for (const schema of ['dark', 'light'] as const) {
-  test(`E-14 ${schema} bureau : teinte légère + filet 2 px sur les trois panneaux, sans hachure`, opts, async () => {
+  test(`E-14 ${schema} bureau : bloc fermé hachuré de E-6/E-9 sur les trois panneaux`, opts, async () => {
     await ouvrirParametres(schema);
     const panneaux = await p.locator('.panneau.reserve-mj').evaluateAll((els: HTMLElement[]) => els.map((e) => {
       const s = getComputedStyle(e);
@@ -45,12 +45,12 @@ for (const schema of ['dark', 'light'] as const) {
     await p.screenshot({ path: `/tmp/rv-parametres-gabarit-${schema}.png` });
     assert.equal(panneaux.length, 3);
     for (const x of panneaux) {
-      assert.ok(!x.bg.includes('repeating-linear-gradient'), `pas de hachure : ${x.bg}`);
-      assert.ok(x.bg.includes('linear-gradient'), `teinte en dégradé : ${x.bg}`);
-      assert.ok(x.shadow.includes('inset') && /\b2px 0px 0px 0px\b/.test(x.shadow), `filet 2 px : ${x.shadow}`);
-      assert.equal(x.borderLeft, '0px', 'pas de filet de 3 px de bordure');
-      assert.ok(x.before === 'none' || x.before === 'normal', `pas de filet 3 px en ::before : ${x.before}`);
-      assert.equal(x.ml, '0px', 'pas de débordement latéral de 28 px');
+      assert.ok(x.bg.includes('repeating-linear-gradient'), `hachure : ${x.bg}`);
+      assert.ok(/0px 0px 0px 1px inset/.test(x.shadow), `filet complet de 1 px : ${x.shadow}`);
+      assert.ok(!/(?<![\d.])2px 0px 0px 0px/.test(x.shadow), `pas de filet gauche de 2 px : ${x.shadow}`);
+      assert.equal(x.borderLeft, '0px');
+      assert.equal(x.before, '""', 'barre de 3 px en ::before');
+      assert.equal(x.ml, '-28px', 'même marge que E-6/E-9');
     }
   });
 }
@@ -66,7 +66,7 @@ test('E-14 bureau : colonne ~688 px, champs Nom et description sur toute la colo
     return r.width;
   });
   assert.ok(nom > 560, `Nom ${nom} px : plus plafonné à 560`);
-  assert.ok(nom >= panneau - 40 - 4, `Nom ${nom} px sur panneau ${panneau} px (pleine largeur)`);
+  assert.ok(nom >= panneau - 56 - 4, `Nom ${nom} px sur panneau ${panneau} px (pleine largeur)`);
   assert.ok(Math.abs(desc - nom) <= 2, `description ${desc} px = nom ${nom} px`);
 });
 
