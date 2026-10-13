@@ -261,3 +261,15 @@ test('balayage : aucun INSERT INTO sections / UPDATE sections SET contenu hors d
   assert.equal((src.match(/INSERT\s+INTO\s+sections\b/gi) ?? []).length, 1);
   assert.equal((src.match(/UPDATE\s+sections\s+SET\s+contenu\b/gi) ?? []).length, 1);
 });
+
+test('contenuPublic : un « > ::: » ou « - ::: » dans un bloc de plus haut niveau ne le ferme pas', () => {
+  // The engine keeps the text after a quoted/listed `:::` inside the GM block (it is a quote's content).
+  for (const source of [
+    ':::mj\n> :::\n\nsecret\n:::\nfin',
+    ':::mj\nsecret0\n> :::\nsecret\n:::\nfin',
+    ':::mj\n   > :::\n> :::\nsecret\n:::\nfin',
+  ]) {
+    const public_ = contenuPublic(source);
+    assert.doesNotMatch(public_, /secret/, JSON.stringify(source));
+  }
+});
