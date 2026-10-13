@@ -128,8 +128,8 @@ Deux sont posés dès le cadrage parce qu'ils traversent tout :
 
 > E-1, E-2, E-3, E-4, E-8, E-9, la barre latérale et la session. Vocabulaire des six états, celui
 > de B-29 : **vide**, **chargement**, **erreur**, **connexion perdue**, **refus**, **contenu
-> long**. « Sans objet » dit sa raison. Les maquettes finies sont `docs/maquettes/e01-*.html`, `e02-*.html`,
-> `e03`, `e04`, `e08`, `e09` (thème sombre, gris tertiaire de la charte).
+> long**. « Sans objet » dit sa raison. Les maquettes finies sont `docs/maquettes/e01-*.html`,
+> `e03`, `e04`, `e08`, `e09` ; `e02` est d'avant la charte (thème sombre, gris tertiaire de la charte).
 
 **Textes communs.**
 
@@ -1195,9 +1195,9 @@ rôle n'a pas E-12. Écart au cadrage : aucun.
 
 La refonte ne change ni les droits, ni les données, ni les textes d'un écran : elle change la
 forme, et les gestes ci-dessous, que le testeur vérifie. La direction, les tokens et les
-composants sont dans `docs/charte.md`. E-1, E-3, E-6, E-8 et E-9 ont leur maquette finie ; E-2,
-E-4, E-7, E-13 et E-14 se refont dans le même cadre et avec les mêmes composants, sans
-maquette propre (celle de E-15, `e15-systeme-de-jeu.html`, est finie hors du cadre d'un univers) : leurs maquettes actuelles, faites avant la charte, valent pour le contenu et
+composants sont dans `docs/charte.md`. E-1, E-3, E-4, E-6, E-8, E-9 et E-14 ont leur maquette finie (celle de E-15, `e15-systeme-de-jeu.html`, l'est hors du cadre d'un univers) ; E-2,
+E-7 et E-13 se refont dans le même cadre et avec les mêmes composants, sans
+maquette finie : leurs maquettes actuelles, faites avant la charte, valent pour le contenu et
 le vocabulaire, pas pour la forme (barre, compte, couleurs).
 
 **Partout.** Le cadre de E-9 sur tous les écrans d'un univers ; chaque entrée de navigation et
@@ -1785,7 +1785,7 @@ lot, la reprise d'une proposition après rechargement.
 et quand les deux divergent, la maquette a tort.
 
 **Finies** (direction, tokens et composants de `docs/charte.md`, deux thèmes, bureau et
-téléphone, vrai contenu) : E-1, E-3, E-6, E-8, E-9. Depuis `kanevas-illustrations`, `e08` est la grille de cartes
+téléphone, vrai contenu) : E-1, E-3, E-4, E-6, E-8, E-9, E-14. Depuis `kanevas-illustrations`, `e08` est la grille de cartes
 (types Personnages, Lieux, Factions, `#etat-lieux`, `#etat-factions`) et `e09` porte l'illustration
 de l'en-tête ; leurs images sont des illustrations de démonstration peintes en SVG. E-15 et E-16
 (`e15-systeme-de-jeu.html`, `e16-systemes-de-jeu.html`) sont finies hors du cadre d'un univers ;

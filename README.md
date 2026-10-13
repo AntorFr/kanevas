@@ -28,7 +28,7 @@ src/
   services/assistant/             L'assistant : catalogues d'outils, port AgentTransport (bouchon, claude-agent), orchestration
   services/images/                Moteur d'images de l'assistant : port GenerateurImage, adaptateurs bouchon, codex, aucun (AD-88, AD-90)
   services/llm/                   Transports LLM repris d'Antre-du-maitre, branchés nulle part
-docs/                             Conception : parcours, écrans, données, charte ; maquettes/ = pages HTML à ouvrir dans un navigateur (e09-fiche.html est la référence de la charte)
+docs/                             Conception retenue, telle que construite : parcours, écrans, données, charte ; maquettes/ = pages HTML à ouvrir dans un navigateur (e09-fiche.html est la référence de la charte)
 frontend/                         React + Vite : charte (ui/), écrans (src/ecrans/, dont E-5 administration.tsx), barre latérale
 .github/workflows/docker-publish.yml   CI : tests, build, image GHCR
 ```
@@ -174,5 +174,5 @@ fusionner `k8s-home-lab`, dont la fusion déploie.
 
 Pour la carte du code, les invariants et les options écartées, voir `ARCHITECTURE.md`, dont le
 tableau liste les décisions `AD-n` retenues pour l'epic, construites ou non (« La cible » dit ce qui est construit), avec leur numéro stable ; les numéros absents sont des décisions retirées ou d'autres tranches, aucune n'est cachée ici. Les
-documents de conception sont tenus hors de ce dépôt (magasin de pilotage de la chaîne SDLC) ; ce
-qui doit survivre est dans `ARCHITECTURE.md` et `docs/`. « Monsieur » est le commanditaire qui fait la recette, « tranche » une feature livrée, « phase merge » la fusion qui suit la recette.
+brouillons et la discussion de conception sont tenus hors de ce dépôt (magasin de pilotage de la chaîne SDLC) ; ce
+qui doit survivre est dans `ARCHITECTURE.md` et `docs/`, qui font foi. « Monsieur » est le commanditaire qui fait la recette, « tranche » une feature livrée, « phase merge » la fusion qui suit la recette.
