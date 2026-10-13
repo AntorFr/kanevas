@@ -13,13 +13,21 @@ import { chargerFiche, validerTitre } from './fiches.js';
 import { fichiersDeSections } from './pieces-jointes.js';
 import { contenuPublic } from './markdown.js';
 import { supprimerFichier } from './stockage.js';
-import type { Acteur, SectionRow, SectionVue } from './types.js';
+import type { Acteur, Role, SectionRow, SectionVue } from './types.js';
 
 /** Ceiling of a section's content, in `String.length` units (AD-91); `/api/moi` hands it to the screen. */
 export const MAX_CONTENU_SECTION = 100000;
 
 /** The one message of the ceiling, for every long text (sections, reports, scenarios, system entries, proposals). */
 export const MESSAGE_CONTENU_TROP_LONG = 'Contenu trop long : 100 000 caractères au plus.';
+
+/** The refusal of a GM block written by a non-GM (AD-114 4). */
+export const MESSAGE_BLOC_MJ = 'Un bloc MJ ne peut être écrit que par un MJ.';
+
+/** A non-GM may not write a text that holds a GM block: `contenuPublic` would differ from it. */
+export function exigerSansBloc(role: Role, contenu: string): void {
+  if (role !== 'mj' && contenuPublic(contenu) !== contenu) throw invalide(MESSAGE_BLOC_MJ);
+}
 
 export function validerContenu(contenu: string): void {
   if (contenu.length > MAX_CONTENU_SECTION) throw invalide(MESSAGE_CONTENU_TROP_LONG);
@@ -281,6 +289,7 @@ export function ecrireContenu(
       throw refuse("Vous ne pouvez pas modifier cette section.");
     }
     validerContenu(contenu);
+    exigerSansBloc(role, contenu);
     if (s.version !== version) {
       throw new ErreurService('conflit', 'La section a changé.', 'section_modifiee');
     }

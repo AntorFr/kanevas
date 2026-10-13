@@ -92,3 +92,13 @@ export function contenuPublic(source: string): string {
   if (retirees.size === 0) return source;
   return lignes.filter((_, i) => !retirees.has(i)).join('\n');
 }
+
+/**
+ * Preview of the editor (AD-113, AD-114 6). Without `nature: 'section'` the text is a scenario or
+ * a system entry and `:::mj` stays text; with it, the GM block is rendered only for a GM of the
+ * universe outside player mode, and does not exist for anyone else.
+ */
+export function rendreApercu(source: string, mj: boolean | null): string {
+  if (mj === null) return rendreMarkdown(source);
+  return mj ? rendreMarkdown(source, { nature: 'section' }) : rendreMarkdown(contenuPublic(source));
+}

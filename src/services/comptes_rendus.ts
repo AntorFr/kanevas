@@ -3,7 +3,7 @@ import { campagneBrute } from './campagnes.js';
 import { exigerRole } from './droits.js';
 import { introuvable, invalide } from './erreurs.js';
 import { LIMITE_LISTE, lireFiche, validerTitre } from './fiches.js';
-import { insererSection, validerContenu } from './sections.js';
+import { exigerSansBloc, insererSection, validerContenu } from './sections.js';
 import type { Acteur, FicheVue } from './types.js';
 
 export const TITRE_SECTION_COMPTE_RENDU = 'Compte-rendu';
@@ -27,6 +27,7 @@ export function creerCompteRendu(
   const titre = validerTitre(entree.titre, 120, 'Le titre');
   const texte = entree.texte ?? '';
   validerContenu(texte);
+  exigerSansBloc(role, texte);
   const now = new Date().toISOString();
   const ficheId = db.transaction(() => {
     const f = db

@@ -89,6 +89,8 @@ export function peutVoirFiche(db: Db, role: Role, ficheId: number, acteur: Acteu
 /** Write rights come from the audience (AD-19); the GM always writes (AD-18). */
 export function peutEcrireSection(role: Role, s: SectionRow, compteId: number): boolean {
   if (role === 'mj') return true;
+  // A section that holds a GM block (`contenu_public` differs, AD-114) is never written by a non-GM.
+  if (s.contenu_public !== s.contenu) return false;
   return s.joueurs_ecrivent === 1 || (s.auteur_id === compteId && s.auteur_ecrit === 1);
 }
 
@@ -108,17 +110,22 @@ export function vueSection(role: Role, s: SectionRow, acteur: Acteur): SectionVu
   const peutEcrire = acteur.modeJoueur
     ? peutEcrireSection('joueur', s, -1)
     : peutEcrireSection(role, s, acteur.compteId);
+  const lecteurMJ = vueMJ(role, acteur);
   const vue: SectionVue = {
     id: s.id,
     titre: s.titre,
     ordre: s.ordre,
-    html: rendreMarkdown(s.contenu, { nature: 'section' }),
+    // Reader's view (AD-96, AD-114 5): the GM outside player mode reads the whole source with the
+    // block container, everyone else reads the public text, where no container can exist.
+    html: lecteurMJ
+      ? rendreMarkdown(s.contenu, { nature: 'section' })
+      : rendreMarkdown(s.contenu_public),
     version: s.version,
     modifieLe: s.modifie_le,
     peutEcrire,
   };
-  if (peutEcrire) vue.contenu = s.contenu; // the source goes only to who may write it (AD-113)
-  if (vueMJ(role, acteur)) vue.audience = audienceDe(s);
+  if (peutEcrire) vue.contenu = lecteurMJ ? s.contenu : s.contenu_public; // the source goes only to who may write it (AD-113)
+  if (lecteurMJ) vue.audience = audienceDe(s);
   return vue;
 }
 
