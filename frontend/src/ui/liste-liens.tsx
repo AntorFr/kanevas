@@ -20,6 +20,22 @@ export type RechercheLiens =
   | { etat: 'erreur' }
   | { etat: 'ok'; fiches: FicheLien[]; plus: boolean };
 
+const plier = (t: string) => t.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase();
+
+/** Titles that match the text first (prefix, then inside), the rest after; stable within each rank. */
+export function classerParTitre(fiches: FicheLien[], requete: string): FicheLien[] {
+  const q = plier(requete.trim());
+  if (q === '') return fiches;
+  const rang = (f: FicheLien) => {
+    const i = plier(f.titre).indexOf(q);
+    return i === 0 ? 0 : i > 0 ? 1 : 2;
+  };
+  return fiches
+    .map((f, i) => ({ f, i, r: rang(f) }))
+    .sort((a, b) => a.r - b.r || a.i - b.i)
+    .map((x) => x.f);
+}
+
 /**
  * The search behind the list opened by `[[` (P-14 step 1): the sheets the account reads, any type, by title
  * (`GET /api/univers/:id/fiches?q=`). The previous list is dropped as soon as the text changes; an answer that
@@ -42,7 +58,7 @@ export function useRechercheLiens(universId: string, requete: string, actif: boo
     const minuteur = setTimeout(() => {
       lire<{ fiches: FicheLien[]; suivant: string | null }>(chemin).then(
         (p) => {
-          if (n === demande.current) setEtat({ etat: 'ok', fiches: p.fiches.slice(0, MAX_LIGNES_LIENS), plus: p.suivant !== null || p.fiches.length > MAX_LIGNES_LIENS });
+          if (n === demande.current) setEtat({ etat: 'ok', fiches: classerParTitre(p.fiches, q).slice(0, MAX_LIGNES_LIENS), plus: p.suivant !== null || p.fiches.length > MAX_LIGNES_LIENS });
         },
         () => {
           if (n === demande.current) setEtat({ etat: 'erreur' });

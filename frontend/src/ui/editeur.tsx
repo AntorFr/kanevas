@@ -257,8 +257,7 @@ export function EditeurMarkdown({ etiquette, valeur, onChange, max, rows = 8, au
           value={valeur}
           autoFocus={autoFocus}
           hidden={vue !== 'ecrire'}
-          role={liens ? 'combobox' : undefined}
-          aria-expanded={liens ? ouvert !== undefined : undefined}
+          aria-autocomplete={liens ? 'list' : undefined}
           aria-controls={ouvert ? idListe : undefined}
           aria-activedescendant={ouvert && recherche.etat === 'ok' && recherche.fiches.length > 0 ? `${idListe}-${courant}` : undefined}
           onChange={(e) => {
