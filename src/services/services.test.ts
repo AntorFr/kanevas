@@ -48,14 +48,14 @@ function monde() {
 
 test('migration: tables, sept types, clés étrangères, idempotente', () => {
   const db = openDb(':memory:');
-  assert.deepEqual(migrate(db), [1, 2, 3, 4, 5, 6, 7, 8]);
+  assert.deepEqual(migrate(db), [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]);
   assert.deepEqual(migrate(db), []);
   const tables = (
     db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' AND name != 'migrations' AND name NOT LIKE 'recherche!_%' ESCAPE '!' ORDER BY name").all() as { name: string }[]
   ).map((r) => r.name);
-  assert.deepEqual(tables, ['campagnes', 'cartes', 'comptes', 'elements_carte', 'fiches', 'gabarits', 'membres', 'pieces_jointes', 'propositions', 'relations', 'scenarios', 'sections', 'systemes_jeu', 'taches_preparation', 'univers']);
+  assert.deepEqual(tables, ['campagnes', 'cartes', 'comptes', 'elements_carte', 'fiches', 'gabarits', 'jetons_api', 'lots_import', 'membres', 'pieces_jointes', 'propositions', 'relations', 'scenarios', 'sections', 'systemes_jeu', 'taches_preparation', 'univers']);
   assert.equal(db.pragma('foreign_keys', { simple: true }), 1);
-  assert.equal((db.prepare('SELECT count(*) n FROM migrations').get() as { n: number }).n, 8);
+  assert.equal((db.prepare('SELECT count(*) n FROM migrations').get() as { n: number }).n, 11);
   assert.throws(() => db.prepare("INSERT INTO membres VALUES (99, 99, 'mj')").run());
   db.prepare("INSERT INTO univers (nom, cree_le) VALUES ('u', 'x')").run();
   for (const t of ['personnage', 'lieu', 'faction', 'objet', 'evenement', 'quete', 'compte_rendu']) {
@@ -99,7 +99,9 @@ test('lecture de l’auteur : seul l’auteur lit, pas un autre joueur', () => {
   const jo = assurerCompte(db, 'jo');
   ajouterMembre(db, marc.id, u.id, 'jo', 'joueur');
   changerAudience(db, marc.id, u.id, f.id, sec.id, { auteurId: lea.id, auteurLit: true });
-  assert.equal(lireSection(db, { compteId: lea.id }, u.id, f.id, sec.id).contenu, 'Traître');
+  const lue = lireSection(db, { compteId: lea.id }, u.id, f.id, sec.id);
+  assert.equal(lue.html, '<p>Traître</p>\n');
+  assert.equal(lue.contenu, undefined);
   assert.equal(code(() => lireSection(db, { compteId: jo.id }, u.id, f.id, sec.id)), 'introuvable');
   // Player mode: the GM or the author reads as a non-author
   assert.equal(code(() => lireSection(db, { compteId: lea.id, modeJoueur: true }, u.id, f.id, sec.id)), 'introuvable');
@@ -286,23 +288,23 @@ test('un nouveau compte n’a aucun univers ; le créateur devient MJ', () => {
   assert.equal(u.nom, 'Mon univers');
 });
 
-test('plafond : 20 000 caractères passent, 20 001 refusés à l’ajout et à l’écriture, rien d’écrit', () => {
+test('plafond : 100 000 caractères passent, 100 001 refusés à l’ajout et à l’écriture, rien d’écrit', () => {
   const { db, marc, u, f, pub } = monde();
-  const ouvert = ajouterSection(db, marc.id, u.id, f.id, { titre: 'Pile', contenu: 'a'.repeat(20000) });
-  assert.equal(ouvert.contenu.length, 20000);
+  const ouvert = ajouterSection(db, marc.id, u.id, f.id, { titre: 'Pile', contenu: 'a'.repeat(100000) });
+  assert.equal(ouvert.contenu.length, 100000);
   const avant = (db.prepare('SELECT COUNT(*) AS n FROM sections').get() as { n: number }).n;
   assert.throws(
-    () => ajouterSection(db, marc.id, u.id, f.id, { titre: 'Trop', contenu: 'a'.repeat(20001) }),
-    (e: unknown) => e instanceof ErreurService && e.code === 'invalide' && e.message === 'Contenu trop long : 20 000 caractères au plus.',
+    () => ajouterSection(db, marc.id, u.id, f.id, { titre: 'Trop', contenu: 'a'.repeat(100001) }),
+    (e: unknown) => e instanceof ErreurService && e.code === 'invalide' && e.message === 'Contenu trop long : 100 000 caractères au plus.',
   );
   assert.equal((db.prepare('SELECT COUNT(*) AS n FROM sections').get() as { n: number }).n, avant);
   const v = lireSection(db, { compteId: marc.id }, u.id, f.id, pub.id).version;
-  assert.equal(ecrireContenu(db, marc.id, u.id, f.id, pub.id, 'b'.repeat(20000), v).version, v + 1);
+  assert.equal(ecrireContenu(db, marc.id, u.id, f.id, pub.id, 'b'.repeat(100000), v).version, v + 1);
   assert.throws(
-    () => ecrireContenu(db, marc.id, u.id, f.id, pub.id, 'c'.repeat(20001), v + 1),
-    (e: unknown) => e instanceof ErreurService && e.code === 'invalide' && e.message === 'Contenu trop long : 20 000 caractères au plus.',
+    () => ecrireContenu(db, marc.id, u.id, f.id, pub.id, 'c'.repeat(100001), v + 1),
+    (e: unknown) => e instanceof ErreurService && e.code === 'invalide' && e.message === 'Contenu trop long : 100 000 caractères au plus.',
   );
   const apres = lireSection(db, { compteId: marc.id }, u.id, f.id, pub.id);
-  assert.equal(apres.contenu, 'b'.repeat(20000));
+  assert.equal(apres.contenu, 'b'.repeat(100000));
   assert.equal(apres.version, v + 1);
 });

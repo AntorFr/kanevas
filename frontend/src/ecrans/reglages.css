@@ -38,6 +38,6 @@
 .entree-ligne[aria-expanded="true"] .entree-chevron { transform: rotate(180deg); }
 .entree-detail, .entree-formulaire { padding: var(--e-2) var(--e-2) var(--e-4); }
 .entree-detail h2 { font: 500 var(--t-22)/1.25 var(--police-titre); font-variation-settings: "opsz" 48; margin-bottom: var(--e-2); overflow-wrap: anywhere; }
-.entree-contenu { white-space: pre-wrap; overflow-wrap: anywhere; font: 400 var(--t-18)/1.68 var(--police-lecture); max-width: 70ch; }
+.entree-contenu { max-width: 70ch; }
 .entree-formulaire .champ textarea { max-width: 70ch; }
 @media (max-width: 760px) { .entree-apercu { display: none; } .entree-nom { max-width: none; flex: 1; } }

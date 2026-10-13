@@ -45,6 +45,8 @@ export interface SectionRow {
   titre: string;
   ordre: number;
   contenu: string;
+  /** `contenu` without the GM blocks (AD-114), kept by `sections.ts` at each write. */
+  contenu_public: string;
   version: number;
   modifie_le: string;
   joueurs_lisent: number;
@@ -66,7 +68,10 @@ export interface SectionVue {
   id: number;
   titre: string;
   ordre: number;
-  contenu: string;
+  /** Markdown source: only when the caller may write the section (AD-113). */
+  contenu?: string;
+  /** The source rendered by `rendreMarkdown`, for every reader. */
+  html: string;
   version: number;
   modifieLe: string;
   /** Whether the caller may write the content (as seen in this view). */
@@ -104,4 +109,6 @@ export interface IllustrationVue {
 
 export interface FicheVue extends Fiche {
   sections: SectionVue[];
+  /** Import origin key (B-50): only in the GM view (outside player mode), never in a reader's answer. */
+  cleOrigine?: string;
 }

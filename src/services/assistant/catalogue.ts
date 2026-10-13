@@ -100,7 +100,7 @@ export function catalogueDe(db: Db, compteId: number, universId: number): Catalo
             sections: f.sections.map((s) => ({
               id: s.id,
               titre: s.titre,
-              contenu: s.contenu,
+              contenu: s.contenu ?? s.html, // source only when the caller may write it, else the reader's rendered view (AD-113)
               version: s.version,
               modifiable: s.peutEcrire,
             })),
@@ -118,7 +118,7 @@ export function catalogueDe(db: Db, compteId: number, universId: number): Catalo
           donnees: {
             id: s.id,
             titre: s.titre,
-            contenu: s.contenu,
+            contenu: s.contenu ?? s.html, // source only when the caller may write it, else the reader's rendered view (AD-113)
             version: s.version,
             modifiable: s.peutEcrire,
           },
@@ -148,7 +148,8 @@ export function catalogueDe(db: Db, compteId: number, universId: number): Catalo
       ({ ficheId, sectionId, texte, version }) => {
         const lue = lireSection(db, acteur, universId, ficheId, sectionId);
         if (!lue.peutEcrire) throw new ErreurService('refuse', SECTION_REFUSEE);
-        const contenu = lue.contenu === '' ? texte : `${lue.contenu}\n\n${texte}`;
+        const source = lue.contenu ?? '';
+        const contenu = source === '' ? texte : `${source}\n\n${texte}`;
         const s = ecrireContenu(db, compteId, universId, ficheId, sectionId, contenu, version);
         return {
           donnees: { id: s.id, titre: s.titre, version: s.version },

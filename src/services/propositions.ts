@@ -1,3 +1,4 @@
+import { rendreMarkdown } from './markdown.js';
 import type { Db } from '../db/db.js';
 import { exigerMJ, roleDe } from './droits.js';
 import { ErreurService, introuvable, invalide } from './erreurs.js';
@@ -16,6 +17,9 @@ export interface PropositionVue {
   /** Current content of the section, for the side-by-side view. */
   contenuActuel: string;
   contenuPropose: string;
+  /** Rendered `contenuActuel` and `contenuPropose` (the reader is always the requesting GM, who has the sources). */
+  htmlActuel: string;
+  htmlPropose: string;
   versionOrigine: number;
   etat: EtatProposition;
   creeLe: string;
@@ -48,6 +52,8 @@ function vue(p: PropositionRow, s: SectionRow): PropositionVue {
     crId: p.cr_id,
     contenuActuel: s.contenu,
     contenuPropose: p.contenu_propose,
+    htmlActuel: rendreMarkdown(s.contenu, { nature: 'section' }),
+    htmlPropose: rendreMarkdown(p.contenu_propose, { nature: 'section' }),
     versionOrigine: p.version_origine,
     etat: etatDe(p, s),
     creeLe: p.creee_le,

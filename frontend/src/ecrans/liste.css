@@ -59,7 +59,7 @@
 .entete-suivi h1 { flex: 1 1 auto; overflow-wrap: break-word; font: 500 var(--t-40)/1.08 var(--police-titre); letter-spacing: -.015em; font-variation-settings: "opsz" 144; }
 .categorie-prepa { font-size: var(--t-13); font-weight: 500; color: var(--texte-3); margin: var(--e-4) 0 0; }
 .tache-faite .libelle { text-decoration: line-through; color: var(--texte-3); }
-.contenu-scenario { white-space: pre-wrap; overflow-wrap: anywhere; font: 400 var(--t-18)/1.68 var(--police-lecture); max-width: 70ch; margin-top: var(--e-5); }
+.contenu-scenario { max-width: 70ch; margin-top: var(--e-5); }
 .texte-vide-page { margin-top: var(--e-5); color: var(--texte-3); }
 .titre-long { overflow-wrap: anywhere; }
 
