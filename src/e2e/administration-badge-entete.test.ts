@@ -87,6 +87,11 @@ describe('E-5 revérification : badge « Sélectionné » et en-tête « Rôle �
       it(`entete_role_coiffe_les_pastilles_${univers}_${largeur}px`, async () => {
         const m = await monde();
         await ouvrir(m.admin.page, univers, largeur);
+        // wait for the list to be rendered (header cells and one pill per member) before measuring
+        await m.admin.page.locator('select[aria-label^="Rôle de "]').nth(nb - 1).waitFor();
+        await m.admin.page.getByText('Rôle', { exact: true }).first().waitFor();
+        await m.admin.page.getByText('Identifiant', { exact: true }).first().waitFor();
+        await m.admin.page.getByText('antor', { exact: true }).first().waitFor();
         const mesures = await m.admin.page.evaluate(`(() => {
           const g = (e) => (e ? e.getBoundingClientRect() : null);
           const texteG = (e) => { const r = document.createRange(); r.selectNodeContents(e); return r.getBoundingClientRect(); };
