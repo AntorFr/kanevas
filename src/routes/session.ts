@@ -5,7 +5,8 @@ import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { env } from '../config/env.js';
 import { assurerCompte, lireCompte } from '../services/comptes.js';
 import { invalide } from '../services/erreurs.js';
-import { rendreMarkdown } from '../services/markdown.js';
+import { rendreApercu } from '../services/markdown.js';
+import { exigerRole } from '../services/droits.js';
 import { MAX_CONTENU_SECTION, validerContenu } from '../services/sections.js';
 import {
   decoderSession,
@@ -141,9 +142,18 @@ function registerGuardedRoutes(app: FastifyInstance) {
 
   // Preview (AD-113): renders what the reading would, reads and writes nothing.
   app.post('/api/apercu', async (request) => {
-    const texte = (request.body as { texte?: unknown } | null)?.texte;
+    const corps = (request.body ?? {}) as Record<string, unknown>;
+    const texte = corps.texte;
     if (typeof texte !== 'string') throw invalide('Le texte doit être une chaîne.');
     validerContenu(texte);
-    return { html: rendreMarkdown(texte) };
+    // Optional context, nested under `contexte` or flat in the body: `{nature, univers_id, mode}`.
+    const ctx =
+      corps.contexte !== null && typeof corps.contexte === 'object'
+        ? (corps.contexte as Record<string, unknown>)
+        : corps;
+    if (ctx.nature !== 'section') return { html: rendreApercu(texte, null) };
+    if (!Number.isInteger(ctx.univers_id)) throw invalide("L'univers est requis pour l'aperçu d'une section.");
+    const role = exigerRole(app.db, ctx.univers_id as number, request.session!.id);
+    return { html: rendreApercu(texte, role === 'mj' && ctx.mode !== 'joueur') };
   });
 }

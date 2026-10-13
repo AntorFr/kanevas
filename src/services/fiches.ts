@@ -131,7 +131,7 @@ export function creerFiche(
       o ? JSON.stringify(o.dernierImport) : null,
     );
   const id = Number(info.lastInsertRowid);
-  // A separate write: a base short of 0011 (the migration test seeds one through the services) has no column.
+  // A separate write: a base short of 0012 (the migration test seeds one through the services) has no column.
   if (sousType !== null) db.prepare('UPDATE fiches SET sous_type = ? WHERE id = ?').run(sousType, id);
   return versFiche(chargerFiche(db, universId, id));
 }
@@ -359,7 +359,10 @@ export function listerFiches(
           AND s.id IN (SELECT rowid FROM recherche_sections WHERE recherche_sections MATCH ?)
           ${sectionLue ? `AND ${sectionLue.sql}` : ''}))`,
     );
-    params.push(match, match, ...(sectionLue?.params ?? []));
+    // Column filter (AD-114): a non-GM, or the GM in player mode, searches the public text only.
+    // The whole query goes between parentheses so the filter covers every word.
+    const colonnes = role === 'mj' && !acteur.modeJoueur ? 'titre contenu' : 'titre contenu_public';
+    params.push(match, `{${colonnes}} : (${match})`, ...(sectionLue?.params ?? []));
   }
   if (options.curseur !== undefined) {
     let c: { t: string; i: number };

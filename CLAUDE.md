@@ -117,5 +117,10 @@
 
 - Sheet types (`kanevas-import-types`, `src/services/types-fiche.ts`, AD-120 — AD-113 in the feature's plan): the single list of
   types; `TYPES_FICHE`, `TypeFiche` and the payload schemas (`CHARGES`) derive from it, never copy them. `fiches.type` has no
-  `CHECK` (migration 0011): `creerFiche` is the guard ("Type de fiche inconnu."). A migration whose first line is
+  `CHECK` (migration 0012): `creerFiche` is the guard ("Type de fiche inconnu."). A migration whose first line is
   `-- migrate: sans-cles-etrangeres` runs with foreign keys off and `foreign_key_check` before commit (`db.ts`).
+- Public content (feature `kanevas-import-secrets`, migration 0011, AD-114): `sections.contenu_public` is `contenu` without its `:::mj` blocks,
+  computed by the pure `contenuPublic` (`services/markdown.ts`, from the `map` of the container tokens). Only `insererSection` and
+  `poserContenu` in `services/sections.ts` write `contenu` of a section — creation, `ecrireContenu`, proposals, reports and the
+  import all go through them; never add another `INSERT INTO sections` / `UPDATE sections SET contenu`. `rendreMarkdown(source,
+  {nature})` knows the container only for `nature: 'section'`; scenarios and system entries keep `:::mj` as text.

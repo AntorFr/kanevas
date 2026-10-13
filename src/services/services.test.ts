@@ -61,7 +61,7 @@ test('migration: tables, types sans CHECK, clés étrangères, idempotente', () 
   for (const t of ['personnage', 'lieu', 'faction', 'objet', 'evenement', 'quete', 'compte_rendu']) {
     db.prepare("INSERT INTO fiches (univers_id, type, titre, charge, cree_le, modifie_le) VALUES (1, ?, 't', '{\"v\":1}', 'x', 'x')").run(t);
   }
-  // AD-102: the type is guarded by creerFiche, no longer by a CHECK (0011).
+  // AD-102: the type is guarded by creerFiche, no longer by a CHECK (0012).
   db.prepare("INSERT INTO fiches (univers_id, type, titre, charge, cree_le, modifie_le) VALUES (1, 'carte', 't', '{}', 'x', 'x')").run();
 });
 

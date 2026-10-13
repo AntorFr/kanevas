@@ -101,7 +101,7 @@ interface Decision {
   systeme: boolean | null;
 }
 
-/** A base migrated short of 0011 (the migration test seeds one through the services) has no setting yet. */
+/** A base migrated short of 0012 (the migration test seeds one through the services) has no setting yet. */
 const sansReglages = (db: Db) =>
   !db.prepare("SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = 'types_univers'").get();
 

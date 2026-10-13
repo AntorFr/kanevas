@@ -37,6 +37,8 @@ export interface SectionRow {
   titre: string;
   ordre: number;
   contenu: string;
+  /** `contenu` without the GM blocks (AD-114), kept by `sections.ts` at each write. */
+  contenu_public: string;
   version: number;
   modifie_le: string;
   joueurs_lisent: number;
