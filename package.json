@@ -11,6 +11,7 @@
     "start": "node dist/server.js",
     "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p frontend/tsconfig.json",
     "test": "node --import tsx --test $(find src frontend/src -name '*.test.ts')",
+    "tests:attestes": "node scripts/tests-attestes.mjs",
     "dev:front": "vite --config frontend/vite.config.ts"
   },
   "dependencies": {
