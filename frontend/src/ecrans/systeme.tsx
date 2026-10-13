@@ -8,6 +8,7 @@ import type { SystemeCompte } from '../types';
 import type { Ecran } from '../registre';
 import { Bouton, Champ, ChargementListe, EditeurMarkdown, ErreurChargement, Markdown, PageIntrouvable, Pastille, VideIcone, depasse, messageTropLong, refusServeur, useToasts } from '../ui';
 import { PucesUnivers } from './systeme/puces';
+import { OngletTypesSysteme } from './types-reglage/onglet-systeme';
 import './ecrans.css';
 import './liste.css';
 import './reglages.css';
@@ -26,6 +27,7 @@ interface Gabarit {
 }
 
 interface Page extends SystemeCompte {
+  types: { type: string; active: boolean }[];
   gabarits: Gabarit[];
   suivant: string | null;
 }
@@ -132,6 +134,7 @@ function Systeme() {
   const { sid } = useParams();
   const [params, setParams] = useSearchParams();
   const demande = params.get('type');
+  const surTypes = demande === 'types';
   const type: Type = TYPES.find((t) => t === demande) ?? 'creature';
   const [entete, setEntete] = useState<Omit<Page, 'gabarits' | 'suivant'>>();
   const [entrees, setEntrees] = useState<Gabarit[]>([]);
@@ -150,6 +153,7 @@ function Systeme() {
   const base = `/api/systemes/${sid}`;
   const onglet = ONGLETS.find((o) => o.type === type)!;
   const choisir = (t: Type) => setParams(t === 'creature' ? {} : { type: t }, { replace: true });
+  const choisirTypes = () => setParams({ type: 'types' }, { replace: true });
 
   const charger = useCallback((t: Type) => appeler<Page>('GET', `${base}?type=${t}`), [base]);
 
@@ -286,22 +290,50 @@ function Systeme() {
               key={o.type}
               type="button"
               role="tab"
-              aria-selected={o.type === type}
-              className={o.type === type ? 'actif' : undefined}
+              aria-selected={!surTypes && o.type === type}
+              className={!surTypes && o.type === type ? 'actif' : undefined}
               onClick={() => choisir(o.type)}
             >
               {o.titre}
               <span className="nb">{entete.entrees[o.type]}</span>
             </button>
           ))}
+          <button
+            type="button"
+            role="tab"
+            aria-selected={surTypes}
+            className={surTypes ? 'actif' : undefined}
+            onClick={choisirTypes}
+          >
+            Types de fiche
+          </button>
         </div>
-        {etat === 'ok' && peutEcrire && !ajout && (
+        {!surTypes && etat === 'ok' && peutEcrire && !ajout && (
           <Bouton variante="principal" ecrit icone={Plus} onClick={() => setAjout(true)}>
             {onglet.ajout}
           </Bouton>
         )}
       </div>
-      <div role="tabpanel">
+      {surTypes && (
+        <div role="tabpanel">
+          <OngletTypesSysteme
+            systemeId={sid!}
+            systemeNom={entete.nom}
+            universId={entete.mesUnivers[0]?.id}
+            actifs={entete.types}
+            nbUnivers={entete.nbUnivers}
+            peutEcrire={peutEcrire}
+            onChange={(t, active) =>
+              setEntete((h) => (h ? { ...h, types: h.types.map((x) => (x.type === t ? { ...x, active } : x)) } : h))
+            }
+            onDroitPerdu={() => {
+              setPlusDroit(true);
+              setEssai((n) => n + 1);
+            }}
+          />
+        </div>
+      )}
+      <div role="tabpanel" hidden={surTypes}>
         {etat === 'chargement' && <ChargementListe texte="Chargement du système…" />}
         {etat === 'erreur' && (
           <ErreurChargement texte="Impossible de charger ce système." onReessayer={() => setEssai((n) => n + 1)} />
