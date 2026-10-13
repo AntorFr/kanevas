@@ -5,7 +5,7 @@ import { exigerMJ, exigerRole } from './droits.js';
 import { ErreurService, introuvable, invalide, refuse } from './erreurs.js';
 
 /**
- * The single list of sheet types (AD-113 of the plan, numbered AD-120 in ARCHITECTURE.md).
+ * The single list of sheet types (the plan's AD-113, numbered AD-120 in ARCHITECTURE.md).
  * `TYPES_FICHE`, `TypeFiche` and the payload schemas are derived from `TYPES`, so a type is
  * added here and nowhere else on the server. Below the list: the one computation of "type
  * enabled" (AD-102) and the two settings that write `types_systeme` / `types_univers`.

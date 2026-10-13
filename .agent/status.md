@@ -85,7 +85,7 @@ catalogue MJ (événement `proposition_creee`) et sa règle du bouchon (« Mets 
   fusion après recette ; E-n / B-n / P-n = écrans / besoins / parcours, les écrans (E-n) sont dans `docs/ecrans.md`, les besoins (B-n) et les parcours (P-n) dans `docs/parcours.md`.
 - La CI ne pousse d'image que sur `main` et sur un tag `v*` ; sur une PR elle ne fait qu'un build de
   validation. L'image testable n'existe qu'après le tag, posé à la fusion.
-- **Numéro de migration** : `0005-relier-chercher.sql` est sur `epic/kanevas` (fusionnée) et figée (les suivantes vont jusqu'à 0011) ; la migration de la prochaine tranche prend le numéro suivant à sa fusion (AD-51).
+- **Numéro de migration** : `0005-relier-chercher.sql` est sur `epic/kanevas` (fusionnée) et figée (les suivantes vont jusqu'à 0012) ; la migration de la prochaine tranche prend le numéro suivant à sa fusion (AD-51).
 - Recherche : `listerFiches({recherche})` seule (AD-63) ; les index FTS5 ne livrent que des identifiants
   candidats, tenus par déclencheurs : ne jamais écrire dans `recherche_*` depuis le code. La saisie est
   neutralisée (mots cités en préfixe) ; vide ou > 100 caractères = 400.
@@ -158,6 +158,6 @@ migration `0012-types.sql` (`fiches` recréée sans `CHECK` sur le type, avec `p
 - Le frontend ne tient que la table icône → composant ; la liste vient du serveur (AD-120, numéroté AD-113 dans le plan : AD-113 est pris par le Markdown). Ne pas recréer de liste de types côté navigateur.
 - `parent_id` est posé mais inutilisé (kanevas-import-arbre) ; les colonnes d'illustration sont recopiées telles quelles (kanevas-import-mediatheque). `compte_rendu` n'est accepté par l'API qu'avec kanevas-import-reprise. Le sous-type est vidé quand le type change ; le PJ / PNJ ne se règle pas dans « Changer le type ».
 - Migration : le numéro 0012 est pris à la fusion (AD-51) ; un fichier qui recrée une table doit porter l'en-tête `-- migrate: sans-cles-etrangeres`, sans quoi `DROP TABLE` emporte les lignes liées.
-- Reste : la recette de Monsieur en bouchon (critère de la fiche : désactiver « Vaisseau » et « Note » sur « CoF Mini », forcer « Vaisseau » sur « Lame d'Ébène », Savoir « Les Cristaux d'Ombre » / « Ressource » puis Note, filtre « Taverne » de « Lieux », `PUT /fiches/vaisseau:aube` dans « Essai Kanka »), puis la fusion.
+- Reste : la recette de Monsieur en bouchon (recette dans le README, « Recette des types de fiche » ; désactiver « Vaisseau » et « Note » sur « CoF Mini », forcer « Vaisseau » sur « Lame d'Ébène », Savoir « Les Cristaux d'Ombre » / « Ressource » puis Note, filtre « Taverne » de « Lieux », `PUT /fiches/vaisseau:aube` dans « Essai Kanka »), puis la fusion.
 
 **Suivant :** les tranches non encore livrées.
