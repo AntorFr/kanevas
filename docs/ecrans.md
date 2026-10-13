@@ -128,8 +128,7 @@ Deux sont posés dès le cadrage parce qu'ils traversent tout :
 
 > E-1, E-2, E-3, E-4, E-8, E-9, la barre latérale et la session. Vocabulaire des six états, celui
 > de B-29 : **vide**, **chargement**, **erreur**, **connexion perdue**, **refus**, **contenu
-> long**. « Sans objet » dit sa raison. Les maquettes finies sont `docs/maquettes/e01-*.html`,
-> `e03`, `e04`, `e08`, `e09` ; `e02` est d'avant la charte (thème sombre, gris tertiaire de la charte).
+> long**. « Sans objet » dit sa raison. Les maquettes qui font foi pour la forme sont listées sous « Maquettes » (fin du document) ; `e02` est d'avant la charte (thème sombre, gris tertiaire de la charte).
 
 **Textes communs.**
 
@@ -362,7 +361,7 @@ E-2 ; E-5 lui vient avec cette tranche (plus bas).
 > chargement, connexion perdue, écriture en cours, échec d'une écriture, refus) et les refus de
 > membres (« Ce compte ne s'est jamais connecté. », « Ce compte est déjà membre. », « Impossible :
 > l'univers doit garder au moins un MJ. ») sont ceux de « Détail des écrans de
-> `kanevas-premiere-fiche` ». Maquette finie : `docs/maquettes/e05-administration.html`.
+> `kanevas-premiere-fiche` ». Maquette `docs/maquettes/e05-administration.html` (d'avant la charte : contenu et vocabulaire seulement).
 
 **Qui est admin d'instance.** Le compte dont la session porte le groupe Authelia `parents` (AD-56,
 lu à la connexion ; en bouchon, Admin). Le droit est celui de la session en cours : un compte retiré
@@ -693,7 +692,7 @@ jamais « caché ». Chemin d'échec de relier une section : le refus du service
 > chargement, connexion perdue, écriture en cours, échec d'écriture, refus, session expirée) ; ne
 > sont redits que les textes propres. Vocabulaire : les écrans disent « compte-rendu » en toutes
 > lettres ; « CR » n'est qu'un sigle des documents (B-19, B-20). Dates : « 22 sept. 2026 » (jour, mois
-> abrégé, année), comme sur E-9. Maquettes finies : `docs/maquettes/e06`, `e07`, `e13`, `e03`.
+> abrégé, année), comme sur E-9. Maquettes : `e06` et `e03` sont finies ; `e07` et `e13` sont d'avant la charte (contenu et vocabulaire seulement).
 
 **Ajouts aux écrans déjà construits.**
 
@@ -1031,7 +1030,7 @@ jamais « caché ». Chemin d'échec de relier une section : le refus du service
 
 > E-12 Assistant, et son ajout au shell d'un univers. Mêmes six états et mêmes textes communs que
 > `kanevas-premiere-fiche` (chargement, connexion perdue, session expirée) ; ne sont redits que les
-> textes propres. Maquette finie : `docs/maquettes/e12-assistant.html` (thème sombre ; MJ, Joueur,
+> textes propres. Maquette `docs/maquettes/e12-assistant.html` (d'avant la charte : contenu et états seulement) (thème sombre ; MJ, Joueur,
 > et les états). Composant : `docs/charte.md` « Panneau d'assistant ».
 
 **Ajout au shell.** Un bouton flottant « Demander à Kanevas », en bas à droite, sur **tout écran
@@ -1707,7 +1706,7 @@ nouvelle ; B-13 et B-14 sont inchangés. Les deux besoins viennent des décision
 > Le bloc « proposition de mise à jour » de E-12, et rien d'autre : pas de nouvel écran, pas de
 > nouvelle adresse d'écran. Mêmes six états et mêmes textes communs que `kanevas-premiere-fiche`
 > (chargement, connexion perdue, session expirée) ; ne sont redits que les textes propres.
-> Maquette finie : `docs/maquettes/e12-propositions.html` (thème sombre ; le bloc dans ses états,
+> Maquette `docs/maquettes/e12-propositions.html` (d'avant la charte : contenu et états seulement) (thème sombre ; le bloc dans ses états,
 > sur ordinateur et sur téléphone). Composant : `docs/charte.md` « Proposition de mise à jour ».
 
 **Comment une proposition naît.** Le MJ écrit dans le champ de E-12, en nommant la section et le
@@ -1785,7 +1784,7 @@ lot, la reprise d'une proposition après rechargement.
 et quand les deux divergent, la maquette a tort.
 
 **Finies** (direction, tokens et composants de `docs/charte.md`, deux thèmes, bureau et
-téléphone, vrai contenu) : E-1, E-3, E-4, E-6, E-8, E-9, E-14. Depuis `kanevas-illustrations`, `e08` est la grille de cartes
+téléphone, vrai contenu) : E-1, E-3, E-4, E-6, E-8, E-9, E-14 (liste de référence ; les autres sections y renvoient). Depuis `kanevas-illustrations`, `e08` est la grille de cartes
 (types Personnages, Lieux, Factions, `#etat-lieux`, `#etat-factions`) et `e09` porte l'illustration
 de l'en-tête ; leurs images sont des illustrations de démonstration peintes en SVG. E-15 et E-16
 (`e15-systeme-de-jeu.html`, `e16-systemes-de-jeu.html`) sont finies hors du cadre d'un univers ;
@@ -1797,7 +1796,7 @@ composants partagés. Leurs états s'ouvrent par l'adresse (`#etat-joueur`, `#et
 `#etat-perdue`… ; la liste est en tête de leur style). Le bloc « Cartes visibles » de `e03` et les maquettes `e10` et `e11` appartiennent à
 `kanevas-cartes-graphes` (détail plus bas).
 
-**D'avant la charte** : les autres. Elles valent pour le contenu et le vocabulaire, pas pour la
+**D'avant la charte** : les autres (e02, e05, e07, e10, e11, e12-assistant, e12-propositions, e13). Elles valent pour le contenu et le vocabulaire, pas pour la
 forme ; un écran qui n'a qu'elles se construit dans le cadre et avec les composants de la
 maquette E-9.
 
