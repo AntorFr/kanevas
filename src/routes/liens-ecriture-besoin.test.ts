@@ -75,7 +75,7 @@ test('import : clé inconnue en attente, puis résolue à la création sans touc
   const r1 = await put('lieu:port-sel', PORT, l1);
   assert.equal(r1.json().etat, 'creee', r1.body);
   await clore(l1);
-  assert.equal((await lire(l1)).en_attente ?? (await lire(l1)).enAttente, 1);
+  assert.equal((await lire(l1)).en_attente ?? (await lire(l1)).enAttente, 2); // + the seeded « Anse-aux-Sels » key
   const sid = (app.db.prepare("SELECT id FROM sections WHERE cle_origine = 'desc' AND fiche_id = ?").get(r1.json().id) as { id: number }).id;
   assert.deepEqual(app.db.prepare('SELECT cible_fiche_id c, cible_cle k, texte t FROM liens WHERE section_id = ?').all(sid), [{ c: null, k: 'faction:guilde', t: 'la Guilde' }]);
   const avant = app.db.prepare('SELECT version, modifie_le, contenu FROM sections WHERE id = ?').get(sid) as { version: number; modifie_le: string; contenu: string };
@@ -103,7 +103,7 @@ test('import : le lot qui ne laisse rien en attente dit 0', async () => {
   await put('lieu:port-sel', PORT, l);
   await clore(l);
   const r = await lire(l);
-  assert.equal(r.en_attente ?? r.enAttente, 0);
+  assert.equal(r.en_attente ?? r.enAttente, 1); // the seeded « Anse-aux-Sels » key alone
 });
 
 test('session : [[id]] nu devient [[id|titre]], liens remplacés sans doublon, suppression de la cible -> cible nulle', async () => {
