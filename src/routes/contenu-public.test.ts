@@ -162,6 +162,16 @@ test('contenuPublic : un ":::" indenté de 4+ ne ferme pas le bloc, rien du secr
   assert.equal(contenuPublic('a\n:::mj\nx\n   :::\npub'), 'a\npub');
 });
 
+test('contenuPublic : seuls l\'espace et la tabulation sont des blancs d\'un ferme-bloc', () => {
+  // Panne : \\s dans la fermeture, que le moteur ne reconnaît pas (il garde le bloc ouvert).
+  for (const w of ['\u2003', '\u3000', '\ufeff', '\u2028', '\v', '\f']) {
+    assert.equal(contenuPublic(`:::mj\nS1\n${w}:::\nS2\n:::\npub`), 'pub');
+    assert.equal(contenuPublic(`:::mj\nS1\n:::${w}\nS2\n:::\npub`), 'pub');
+  }
+  // lone CR is a line break for the engine
+  assert.equal(contenuPublic(':::mj\rS1\r:::\rpub'), 'pub');
+});
+
 test('rendreMarkdown : le conteneur n\'existe que pour la nature section', () => {
   const src = ':::mj\nsecret\n:::';
   assert.ok(rendreMarkdown(src, { nature: 'section' }).includes('secret'));

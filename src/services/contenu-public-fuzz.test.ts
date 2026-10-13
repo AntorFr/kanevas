@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { contenuPublic, rendreMarkdown } from './markdown.js';
 
 // Property (AD-114): any word the section render puts inside a GM block must be absent from the public text.
-const BRIQUES = [':::mj', ':::mj', ':::', ':::', '::::', '```', '~~~', '', '', '> :::mj', '> :::', '>> :::', '- :::mj', '- :::', '1. :::', '    :::', '\t:::', '  :::', '> ', '- ', '    code', '> - :::', '> > :::mj', ' :::mj', '::: mj', '>:::', '>     :::'];
+const BRIQUES = [':::mj', ':::mj', ':::', ':::', '::::', '```', '~~~', '', '', '> :::mj', '> :::', '>> :::', '- :::mj', '- :::', '1. :::', '    :::', '\t:::', '  :::', '> ', '- ', '    code', '> - :::', '> > :::mj', ' :::mj', '::: mj', '>:::', '>     :::', '\u2003:::', ':::\u3000', '\ufeff:::', '\f:::', ':::\v'];
 
 test('contenuPublic ne garde jamais un mot que le rendu section place dans un bloc MJ (fuzz à graine fixe)', () => {
   let seed = 424242;

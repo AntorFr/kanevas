@@ -71,8 +71,11 @@ export function rendreMarkdown(source: string, options: OptionsRendu = {}): stri
   return (options.nature === 'section' ? mdSection : mdTexte).render(source);
 }
 
-/** A closing fence line, possibly behind the quote or indent marks of its parent. */
-const FERMETURE_BLOC = /^[\s>]*:{3,}\s*$/;
+/**
+ * A closing fence line, possibly behind the quote or indent marks of its parent. Only space and tab
+ * count as blanks, as in the engine: any other Unicode space keeps the block open on screen.
+ */
+const FERMETURE_BLOC = /^[ \t>]*:{3,}[ \t]*$/;
 
 /**
  * Indentation of a line once its quote markers are removed, a tab counting for 4. The engine does not
@@ -105,7 +108,8 @@ const OUVERTURE_BLOC = /^[\s>]*:::mj\s*$/;
  * what the GM sees hatched is always removed from the public text.
  */
 export function contenuPublic(source: string): string {
-  const lignes = source.split('\n');
+  // The engine cuts lines on \r\n, \r and \n: do the same, or its line numbers drift from ours.
+  const lignes = source.split(/\r\n|\r|\n/);
   const retirees = new Set<number>();
   for (const t of mdSection.parse(source, {})) {
     if (t.type !== 'container_mj_open' || !t.map) continue;
