@@ -108,7 +108,9 @@ test('liste [[ ouverte, « Enregistrer » amené à l’écran (390px) : « Enre
         if (!(top === b || b.contains(top))) out.push(`${t} recouvert par ${top?.tagName}`);
       }
     }
-    [...document.querySelectorAll('[role=listbox] [role=option]')].forEach((o, i) => { const r = o.getBoundingClientRect(); if (r.width > 0 && r.bottom > 0 && r.top < innerHeight && r.left < asst.right && r.right > asst.left && r.top < asst.bottom && r.bottom > asst.top) out.push(`option ${i} sous le bouton de l'assistant`); });
+    const lb = document.querySelector('[role=listbox]')?.getBoundingClientRect();
+    // the list scrolls inside itself: an option scrolled out of it is clipped, so it is not visible under the button
+    [...document.querySelectorAll('[role=listbox] [role=option]')].forEach((o, i) => { const r = o.getBoundingClientRect(); if (lb && (r.bottom > lb.bottom || r.top < lb.top)) return; if (r.width > 0 && r.bottom > 0 && r.top < innerHeight && r.left < asst.right && r.right > asst.left && r.top < asst.bottom && r.bottom > asst.top) out.push(`option ${i} sous le bouton de l'assistant`); });
     return out;
   });
   await page.screenshot({ path: '/tmp/liens-ecran-maquette-bas-390.png' });
