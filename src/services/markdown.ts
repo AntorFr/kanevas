@@ -89,6 +89,11 @@ function indentation(ligne: string): number {
   return colonnes;
 }
 
+/** Number of quote markers (`>`) leading a line: a fence only pairs with fences of its own quote level. */
+function profondeurCitation(ligne: string): number {
+  return (ligne.match(/^(?:\s{0,3}>)+/)?.[0].split('>').length ?? 1) - 1;
+}
+
 /** An opening line `:::mj`, possibly behind quote or indent marks. */
 const OUVERTURE_BLOC = /^[\s>]*:::mj\s*$/;
 
@@ -109,7 +114,9 @@ export function contenuPublic(source: string): string {
     // it runs to the end of the source, even when the container ended with its list or quote.
     let fin = lignes.length;
     let profondeur = 1;
+    const niveau = profondeurCitation(lignes[t.map[0]]!);
     for (let i = t.map[0] + 1; i < lignes.length; i++) {
+      if (profondeurCitation(lignes[i]!) !== niveau) continue;
       if (OUVERTURE_BLOC.test(lignes[i]!)) profondeur++;
       else if (FERMETURE_BLOC.test(lignes[i]!) && indentation(lignes[i]!) < 4 && --profondeur === 0) {
         fin = i + 1;
