@@ -164,7 +164,7 @@ export function ajouterSection(
     toucherFiche(db, ficheId, now);
     return sid;
   })();
-  return vueSection('mj', chargerSection(db, ficheId, id), { compteId });
+  return vueSection(db, universId, 'mj', chargerSection(db, ficheId, id), { compteId });
 }
 
 /** The GM renames a section. */
@@ -181,7 +181,7 @@ export function renommerSection(
   chargerSection(db, ficheId, sectionId);
   const t = validerTitre(titre, 80, 'Le titre');
   db.prepare('UPDATE sections SET titre = ? WHERE id = ?').run(t, sectionId);
-  return vueSection('mj', chargerSection(db, ficheId, sectionId), { compteId });
+  return vueSection(db, universId, 'mj', chargerSection(db, ficheId, sectionId), { compteId });
 }
 
 /** The GM reorders: `ids` must be exactly the sheet's sections; they are renumbered 1..n. */
@@ -280,7 +280,7 @@ export function changerAudience(
     sans ? 0 : bit(changement.auteurEcrit, s.auteur_ecrit),
     sectionId,
   );
-  return vueSection('mj', chargerSection(db, ficheId, sectionId), { compteId });
+  return vueSection(db, universId, 'mj', chargerSection(db, ficheId, sectionId), { compteId });
 }
 
 /** One section, if the caller may read it; otherwise it does not exist for them. */
@@ -290,12 +290,13 @@ export function lireSection(
   universId: number,
   ficheId: number,
   sectionId: number,
+  formeLiens: 'html' | 'markdown' = 'html',
 ): SectionVue {
   const role = exigerRole(db, universId, acteur.compteId);
   chargerFiche(db, universId, ficheId);
   const s = chargerSection(db, ficheId, sectionId);
   if (!peutLireSection(role, s, acteur)) throw introuvable();
-  return vueSection(role, s, acteur);
+  return vueSection(db, universId, role, s, acteur, formeLiens);
 }
 
 /**
@@ -331,6 +332,6 @@ export function ecrireContenu(
     const now = new Date().toISOString();
     poserContenu(db, sectionId, ecrit, now);
     toucherFiche(db, ficheId, now);
-    return vueSection(role, chargerSection(db, ficheId, sectionId), { compteId });
+    return vueSection(db, universId, role, chargerSection(db, ficheId, sectionId), { compteId });
   })();
 }

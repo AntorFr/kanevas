@@ -125,3 +125,8 @@
   `lien_illisible`, known `[[cle:…]]` → id) runs before each write, the import's replay comparison included
   (AD-104). `resoudreClesEnAttente` rewrites waiting texts at the creation of a keyed sheet without moving
   `version` / `modifie_le`.
+- Links on read (`kanevas-liens-lecture`, AD-116, AD-100): `resolveurLiens` (`services/droits.ts`) is the one query that resolves all
+  the `[[…]]` of a text for a reader; the rendering is decided by the target, never by the `liens` table, and `rendreMarkdown` takes the
+  resolver in `options.liens` (without it a `[[…]]` stays as written). `nature: 'scenario'` has the links without the `:::mj` container;
+  a system entry (`texte`) has neither. `vueSection` / `lireFiche` / `lireSection` take the form `'markdown'` for the assistant
+  (`[texte](fiche:<id>)`). « Mentionnée dans » is `services/mentions.ts` (`mentionsDe`), read-only, 50 per page, the page rides with `lireFiche`.

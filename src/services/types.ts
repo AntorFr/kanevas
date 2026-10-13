@@ -107,8 +107,28 @@ export interface IllustrationVue {
   jeton: string;
 }
 
+/** Why a sheet cites another one (AD-100): a link in one of its sections, or a relation. */
+export type Pourquoi = { genre: 'lien'; section: string } | { genre: 'relation'; libelle: string };
+
+/** One line of « Mentionnée dans »: a source sheet the reader may read, once, with all its reasons. */
+export interface Mention {
+  ficheId: number;
+  titre: string;
+  type: TypeFiche;
+  pourquoi: Pourquoi[];
+}
+
+export interface PageMentions {
+  mentions: Mention[];
+  /** More sources exist beyond this page — computed on what the reader sees only. */
+  suite: boolean;
+}
+
 export interface FicheVue extends Fiche {
   sections: SectionVue[];
+  /** « Mentionnée dans »: the first page (AD-100); the rest through `GET …/mentions?apres=`. */
+  mentions: Mention[];
+  mentionsSuite: boolean;
   /** Import origin key (B-50): only in the GM view (outside player mode), never in a reader's answer. */
   cleOrigine?: string;
 }

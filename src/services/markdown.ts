@@ -6,11 +6,39 @@ import type Token from 'markdown-it/lib/token.mjs';
 // (`html: false`); only `http`, `https` and `mailto` links are links, anything else stays text.
 const PROTOCOLES_LIEN = /^(https?|mailto):/i;
 
+/** The three forms of the grammar (`docs/ecrans.md`): text and key are 1 to 200 characters, no `]`, `|` nor line break. */
+const LIEN = /\[\[(?:([1-9]\d{0,14})|cle:([^|\]\r\n]{1,200}))(?:\|([^|\]\r\n]{1,200}))?\]\]/y;
+
+/** The inline rule of a `[[…]]` link: one token whose `meta` carries what the grammar found. */
+type RegleInline = Parameters<InstanceType<typeof MarkdownIt>['inline']['ruler']['before']>[2];
+
+const regleLien: RegleInline = (state, silencieux) => {
+  if (state.src.charCodeAt(state.pos) !== 0x5b) return false;
+  LIEN.lastIndex = state.pos;
+  const m = LIEN.exec(state.src);
+  if (!m) return false;
+  // `[[cle:…]]` without a text is not a form; a bare id is.
+  if (m[2] !== undefined && m[3] === undefined) return false;
+  if (!silencieux) {
+    const t = state.push('lien_fiche', '', 0);
+    t.meta = {
+      debut: state.pos,
+      fin: state.pos + m[0].length,
+      brut: m[0],
+      id: m[1] !== undefined ? Number(m[1]) : null,
+      cle: m[2] ?? null,
+      texte: m[3] ?? null,
+    };
+  }
+  state.pos += m[0].length;
+  return true;
+};
+
 /**
  * Builds one renderer. With `avecBlocMJ` the `:::mj` container exists (AD-114): only the
  * exact opening line `:::mj` (three colons, lower case, nothing after) opens it.
  */
-function creerMoteur(avecBlocMJ: boolean): InstanceType<typeof MarkdownIt> {
+function creerMoteur(avecBlocMJ: boolean, avecLiens: boolean): InstanceType<typeof MarkdownIt> {
   const md = new MarkdownIt({ html: false, breaks: true, linkify: false, typographer: false });
   md.enable(['table', 'strikethrough']);
 
@@ -53,22 +81,71 @@ function creerMoteur(avecBlocMJ: boolean): InstanceType<typeof MarkdownIt> {
           : '</div>\n',
     });
   }
+  if (avecLiens) {
+    md.inline.ruler.before('link', 'lien_fiche', regleLien);
+    md.renderer.rules.lien_fiche = (tokens, idx, _options, env) => rendreLien(tokens[idx]!, (env ?? {}) as EnvRendu);
+  }
   return md;
 }
 
-const mdSection = creerMoteur(true);
-const mdTexte = creerMoteur(false);
+const mdSection = creerMoteur(true, true);
+const mdScenario = creerMoteur(false, true);
+const mdTexte = creerMoteur(false, false);
 
 /**
  * `section`: the text of a section or of a report, where `:::mj` is a GM block (AD-114);
  * `texte` (default): a scenario or a system entry, where `:::mj` stays plain text.
  */
 export interface OptionsRendu {
-  nature?: 'section' | 'texte';
+  /** `scenario`: `[[…]]` links are active but `:::mj` stays text (AD-116). */
+  nature?: 'section' | 'scenario' | 'texte';
+  /** How the links of the text read for the reader (AD-116). Without it a `[[…]]` stays as written. */
+  liens?: ResolveurLiens;
+  /** `markdown`: a readable link comes out as `[texte](fiche:<id>)`, for the assistant (AD-96). */
+  formeLiens?: 'html' | 'markdown';
+}
+
+/** What a link reads as for one reader (AD-116): decided by the target, never by the `liens` table. */
+export type RenduLien =
+  | { genre: 'fiche'; id: number; type: string; href: string }
+  | { genre: 'casse' }
+  | { genre: 'attente'; cle: string }
+  | { genre: 'texte' };
+
+/** Resolves a link found in the text; built by the service for the reader, one query for the whole text. */
+export type ResolveurLiens = (cible: { id: number | null; cle: string | null }) => RenduLien;
+
+interface EnvRendu {
+  liens?: ResolveurLiens;
+  formeLiens?: 'html' | 'markdown';
 }
 
 export function rendreMarkdown(source: string, options: OptionsRendu = {}): string {
-  return (options.nature === 'section' ? mdSection : mdTexte).render(source);
+  const md = options.nature === 'section' ? mdSection : options.nature === 'scenario' ? mdScenario : mdTexte;
+  const env: EnvRendu = { liens: options.liens, formeLiens: options.formeLiens };
+  return md.render(source, env as Record<string, unknown>);
+}
+
+const echapper = (t: string) => mdTexte.utils.escapeHtml(t);
+
+function rendreLien(t: { meta?: unknown }, env: EnvRendu): string {
+  const m = t.meta as { brut: string; id: number | null; cle: string | null; texte: string | null };
+  // No resolver, or the bare input form `[[<id>]]`: the text stays as written.
+  if (!env.liens || m.texte === null) return echapper(m.brut);
+  const r = env.liens({ id: m.id, cle: m.cle });
+  const texte = echapper(m.texte);
+  switch (r.genre) {
+    case 'fiche':
+      return env.formeLiens === 'markdown'
+        ? echapper(`[${m.texte}](fiche:${r.id})`)
+        : `<a class="lien-fiche" href="${r.href}" data-type="${echapper(r.type)}">${texte}</a>`;
+    case 'casse':
+      return `<span class="lien-casse" tabindex="0" title="Lien cassé : cette fiche n'existe plus.">${texte}</span>`;
+    case 'attente':
+      return `<span class="lien-attente" tabindex="0" title="${echapper(`Lien en attente : aucune fiche n'a encore la clé « ${r.cle} ».`)}">${texte}</span>`;
+    default:
+      return texte;
+  }
 }
 
 /**
@@ -151,35 +228,7 @@ export interface LienExtrait {
   dansBlocMJ: boolean;
 }
 
-/** The three forms of the grammar (`docs/ecrans.md`): text and key are 1 to 200 characters, no `]`, `|` nor line break. */
-const LIEN = /\[\[(?:([1-9]\d{0,14})|cle:([^|\]\r\n]{1,200}))(?:\|([^|\]\r\n]{1,200}))?\]\]/y;
-
-function creerMoteurLiens(): InstanceType<typeof MarkdownIt> {
-  const md = creerMoteur(true);
-  md.inline.ruler.before('link', 'lien_fiche', (state, silencieux) => {
-    if (state.src.charCodeAt(state.pos) !== 0x5b) return false;
-    LIEN.lastIndex = state.pos;
-    const m = LIEN.exec(state.src);
-    if (!m) return false;
-    // `[[cle:…]]` without a text is not a form; a bare id is.
-    if (m[2] !== undefined && m[3] === undefined) return false;
-    if (!silencieux) {
-      const t = state.push('lien_fiche', '', 0);
-      t.meta = {
-        debut: state.pos,
-        fin: state.pos + m[0].length,
-        id: m[1] !== undefined ? Number(m[1]) : null,
-        cle: m[2] ?? null,
-        texte: m[3] ?? null,
-      };
-    }
-    state.pos += m[0].length;
-    return true;
-  });
-  return md;
-}
-
-const mdLiens = creerMoteurLiens();
+const mdLiens = mdSection;
 
 /**
  * The `[[…]]` links of a source, in order (AD-116). Pure. They are read from the tokens of the
@@ -261,7 +310,14 @@ export function reecrireLiens(
  * a system entry and `:::mj` stays text; with it, the GM block is rendered only for a GM of the
  * universe outside player mode, and does not exist for anyone else.
  */
-export function rendreApercu(source: string, mj: boolean | null): string {
-  if (mj === null) return rendreMarkdown(source);
-  return mj ? rendreMarkdown(source, { nature: 'section' }) : rendreMarkdown(contenuPublic(source));
+export function rendreApercu(
+  source: string,
+  mj: boolean | null,
+  liens?: ResolveurLiens,
+  nature: 'scenario' | 'texte' = 'texte',
+): string {
+  if (mj === null) return rendreMarkdown(source, { nature, liens });
+  return mj
+    ? rendreMarkdown(source, { nature: 'section', liens })
+    : rendreMarkdown(contenuPublic(source), { nature: 'scenario', liens });
 }
