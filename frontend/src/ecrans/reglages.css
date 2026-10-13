@@ -22,6 +22,9 @@
 .role-pastille .liste-statut:hover:not(:disabled) { box-shadow: 0 0 0 1px var(--bord-fort); }
 .role-pastille.mj .liste-statut:hover:not(:disabled) { box-shadow: 0 0 0 1px var(--mj-bord); }
 .role-pastille svg { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); pointer-events: none; color: currentColor; }
+/* The role pastille sits at the right end of the rule: « Retirer » (hidden until hover) comes before it, not after. */
+.page-liste .liste-membres .role-pastille { order: 2; }
+.page-liste .liste-membres .actions-revelees { order: 1; }
 .page-liste .formulaire-ligne .champ input[placeholder] { min-width: 12rem; }
 
 /* E-14: the current system under the list */
@@ -29,15 +32,10 @@
 .systeme-courant .nom-systeme { max-width: 24rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .systeme-courant .bouton { text-decoration: none; }
 .erreur-champ { color: var(--danger); font-size: var(--t-13); margin-top: calc(var(--e-1) * -1); }
-/* E-14 (docs/maquettes/e14): 688 px column, light amber tint and 2 px rule on the three panels (the hatching says the secret, E-9),
+/* E-14 (docs/maquettes/e14): 688 px column; the three GM panels keep the closed hatched block of E-6/E-9 (liste.css),
    fields at full width, textareas in the interface font. */
 .page-liste.page-parametres { max-width: 688px; }
-.page-parametres .panneaux-suivi .panneau.reserve-mj { margin: 0; padding: var(--e-4) 0 var(--e-2) var(--e-4); border-radius: var(--rayon-champ);
-  border-top: 1px solid var(--bord); background: linear-gradient(90deg, var(--mj-trame), transparent 40%); box-shadow: inset 2px 0 0 var(--mj-bord); }
-.page-parametres .panneaux-suivi .panneau.reserve-mj::before { content: none; }
-.page-parametres .panneaux-suivi .panneau.reserve-mj + .panneau.reserve-mj { margin-top: var(--e-4); }
 .page-parametres .champ textarea { font-family: var(--police-texte); font-size: var(--t-14); line-height: 1.5; min-height: 0; padding: var(--e-2) var(--e-3); }
-@media (max-width: 760px) { .page-parametres .panneaux-suivi .panneau.reserve-mj { margin-left: 0; margin-right: 0; padding-left: var(--e-3); } }
 
 /* E-15: three tabs as a segmented control, entries as rows that open in place */
 .onglets { display: inline-flex; gap: 2px; padding: 2px; margin: var(--e-5) 0 var(--e-2); background: var(--surface-2);
