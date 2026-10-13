@@ -1,6 +1,9 @@
 # Status — kanevas
 
-> MàJ : 2026-10-09 (assemblage de kanevas-images, rattrapée sur epic/kanevas)
+> MàJ : 2026-10-13 (assemblage de kanevas-refonte-visuelle ; E-14 sur sa maquette, tiroir à toute hauteur, toast en haut quand le réglage d'audience est ouvert au téléphone)
+
+**Lecture de ce fichier :** le clone qui le porte contient déjà toutes les tranches nommées ci-dessous (migrations 0001 à 0008, assistant,
+administration, propositions) ; « PR non fusionnée » dit seulement que la tranche n'est pas encore sur `main`, pas qu'elle manque du code.
 
 **État :** `epic/kanevas` porte le socle, la première fiche, les systèmes de jeu, le suivi de la séance
 (campagnes, scénarios, préparation, comptes-rendus ; E-6, E-7, E-13) et les pièces jointes (migration
@@ -11,17 +14,17 @@ déclencheurs, remplissage de l'existant), `services/relations.ts` (relier, reti
 les routes `?q=` et `/relations`, le composant `ListeRecherche` (E-8, réemployé par « Relier ») et le bloc
 Relations de E-9 (AD-63, AD-64). Carte et invariants : `ARCHITECTURE.md`.
 
-`feature/kanevas-cartes-graphes` (PR vers `epic/kanevas`, non fusionnée) ajoute : la migration `0007-cartes.sql` (`cartes`,
+`feature/kanevas-cartes-graphes` (fusionnée dans `epic/kanevas`, PR #12) ajoute : la migration `0007-cartes.sql` (`cartes`,
 `elements_carte`), `services/cartes.ts` (`lireCarte` seule lecture, filtrée pour le lecteur ; fond par `stockage.ts`, 25 Mo, AD-69),
 les routes `/api/univers/:id/cartes…`, E-10 « Cartes », E-11 (carte illustrée à tokens en pourcentage, AD-70 ; graphe dont les liens
 sont les relations lues sous les deux gardes et la disposition calculée dans le navigateur, AD-71) et le bloc « Cartes visibles » de E-3
 (AD-68 à AD-72). Hors tranche : outils de l'agent sur les cartes, calques, échelle, zoom.
 
-`kanevas-refonte-visuelle` (fusionnée) a refait la charte et tous les écrans construits : tokens clair/sombre,
+`feature/kanevas-refonte-visuelle` (PR non fusionnée, rattrapée sur `epic/kanevas` : cartes, administration, propositions) refait la charte et tous les écrans construits : tokens clair/sombre,
 polices et icônes embarquées (AD-92), composants partagés (`frontend/src/ui/`), cadre (navigation à icônes, barre haute,
-tiroir au téléphone, thème et déconnexion dans le menu de l'avatar, seul endroit du thème), E-1 à E-4, E-6 à E-9, E-13 à E-15
+tiroir au téléphone (à toute hauteur de téléphone, la navigation défile, le pied — compte — reste ancré en bas sous un fondu qui dit qu'il y a une suite, et « Paramètres » reste atteignable ; testé à 526 et 664 px), thème et déconnexion dans le menu de l'avatar, seul endroit du thème), E-1 à E-4, E-6 à E-9, E-13 à E-15
 avec leurs états, pastille/filet d'audience, menu « ⋯ » et toasts sur la fiche. Aucun geste, droit ni donnée nouveau.
-Page `/demo-composants` en bouchon seulement. Maquettes de `docs/maquettes/` refaites.
+Page `/demo-composants` en bouchon seulement. Maquettes e01, e03, e04, e06, e08, e09, e14, e15 et e16 refaites ; e02, e05, e07, e10, e11, e12-assistant, e12-propositions et e13 restent d’avant la charte (contenu seulement ; le panneau d’assistant et la proposition de mise à jour n’ont de maquette qu’à l’ancienne forme, leur forme est dans `docs/charte.md`). E-5, E-10, E-11, E-12 et E-16 sont des tranches voisines qui prennent le cadre en passant, hors de cette liste. E-14 suit sa maquette (colonne de 688 px, blocs MJ débordant de 28 px de chaque côté, champs pleine largeur) et ses trois blocs MJ reprennent le bloc fermé et hachuré de E-6/E-9, comme la charte (arbitré à la vérification du 2026-10-13 ; le cadre ouvert à teinte légère est abandonné).
 
 `feature/kanevas-illustrations` (fusionnée dans `epic/kanevas`, PR #10) ajoute : l'illustration d'une fiche (migration `0006-illustrations.sql`, `services/illustrations.ts`, routes
 `PUT|DELETE|GET …/fiches/:fid/illustration`, AD-93), la grille de cartes illustrées (E-8) et l'illustration en tête de E-9 ;
@@ -29,7 +32,7 @@ le système de jeu hors des univers (AD-94) : `GET /api/systemes` (systèmes du 
 `/api/systemes/:sid…`, écrans E-16 « Systèmes de jeu » et E-15 à `/systemes/:sid` (l'ancienne adresse redirige), E-1 en
 cartes ; le semis du bouchon (`src/bouchon/depart.ts`, fichiers dans `src/bouchon/demo/`).
 
-`feature/kanevas-assistant-membre` (PR non fusionnée, part de `epic/kanevas`) ajoute l'assistant de chaque membre (E-12, AD-73 à AD-78),
+`feature/kanevas-assistant-membre` (fusionnée dans `epic/kanevas`, PR #11) ajoute l'assistant de chaque membre (E-12, AD-73 à AD-78),
 sans migration : `src/services/assistant/` (catalogues d'outils MJ et Joueur fermés sur compte, univers et rôle ; port `AgentTransport`
 et adaptateurs `bouchon` et `claude-agent` ; disponibilité ; orchestration `repondre`), `src/routes/assistant.ts`
 (`GET /api/univers/:id/assistant`, `POST …/assistant/messages` ; formats dans `ARCHITECTURE.md`), et l'écran `frontend/src/ecrans/assistant*` (bouton flottant inversé, panneau, fil en
@@ -54,7 +57,7 @@ démarrage ; hors bouchon rien n'est amorcé. Aucune image Docker n'existe avant
 
 `feature/kanevas-recours-admin` (PR non fusionnée, rattrapée sur `epic/kanevas` après la refonte visuelle) ajoute le recours admin : un compte du groupe
 `parents` voit les univers de l'instance et leurs membres, en ajoute, change le rôle, en retire
-(E-5, B-6), sans jamais lire le contenu. L'écran suit la maquette e05 et la charte (panneaux, en-têtes Identifiant/Rôle, « Retirer » discret, fil dans la barre haute ; le formulaire d'ajout passe à la ligne sous 760 px, l'identifiant gardant 12 rem au moins). Typecheck, build et tests verts (dont `src/e2e/administration*.test.ts`, navigateur piloté en bouchon ; ces tests dépendent de Playwright, absent de `package.json`, et sautent sans lui ; sous charge, un `page.goto` peut dépasser son délai de 8 s : relancer avant d'y voir un défaut).
+(E-5, B-6), sans jamais lire le contenu. L'écran suit la maquette e05 et la charte (panneaux, en-têtes Identifiant/Rôle, « Retirer » discret, fil dans la barre haute ; le formulaire d'ajout passe à la ligne sous 760 px, l'identifiant gardant 12 rem au moins). Typecheck, build et tests verts (les e2e jouent sur `dist/public` : relancer `npm run build` avant `npm test` après un changement de CSS ; dont `src/e2e/administration*.test.ts`, navigateur piloté en bouchon ; ces tests dépendent de Playwright, absent de `package.json`, et sautent sans lui ; sous charge, un `page.goto` peut dépasser son délai de 8 s : relancer avant d'y voir un défaut).
 
 - `src/services/instance.ts` : seul module à accepter le drapeau `admin` (AD-86), écrit dans `membres` et lit
   `univers` (id, nom, nombre de membres, AD-87) ; les règles de membres sont le noyau de `services/membres.ts`, partagé avec les
@@ -66,7 +69,7 @@ démarrage ; hors bouchon rien n'est amorcé. Aucune image Docker n'existe avant
   prend un chemin par fichier). Liste de membres partagée avec E-4 : `frontend/src/ListeMembres.tsx` (composants de `ui/`, toasts « ajouté / enregistré / retiré », boîte de dialogue de retrait).
   Entrée « Administration » déclarée dans `items.ts` (champs `groupe` et `horsUnivers`) ; `Barre.tsx` reste générique : elle montre l'entrée si `/api/moi` porte le groupe `parents`.
 
-`feature/kanevas-monde` (PR non fusionnée, rattrapée sur `epic/kanevas`) ajoute la mise à jour du monde depuis un compte-rendu (P-5, B-21, AD-79 à AD-82) :
+`feature/kanevas-monde` (fusionnée dans `epic/kanevas`, PR #13) ajoute la mise à jour du monde depuis un compte-rendu (P-5, B-21, AD-79 à AD-82) :
 migration `0008-propositions.sql` (table `propositions`, index unique partiel « une en attente par demandeur et section »), `services/propositions.ts`
 (créer, lire, appliquer, abandonner ; l'état `en_attente | perimee | appliquee` est calculé à chaque lecture), l'outil `proposer_mise_a_jour` du seul
 catalogue MJ (événement `proposition_creee`) et sa règle du bouchon (« Mets à jour la section « S » de « F » d'après le compte-rendu « C » »),
@@ -87,8 +90,8 @@ catalogue MJ (événement `proposition_creee`) et sa règle du bouchon (« Mets 
 - La suite a été jouée sous Node 22 dans les pods de la chaîne (pas de Docker) ; la CI Node 20 fait foi.
   La règle « conteneurs uniquement » de `CLAUDE.md` est la voie de référence ; un Node local ≥ 20 (README) est le repli quand
   Docker manque.
-- Migrations : 0001 à 0007 sont sur `epic/kanevas` ; 0008 (propositions) sur la branche de `kanevas-monde`, à recaler seulement si une autre tranche fusionne avant (AD-51).
-- Les « PR non fusionnée » ci-dessus s'empilent sur `epic/kanevas` ; `recours-admin` est rattrapée dessus et n'ajoute aucune migration.
+- Migrations : 0001 à 0008 sont sur `epic/kanevas` ; la prochaine prend le numéro suivant à la fusion de sa tranche (AD-51).
+- `kanevas-refonte-visuelle` (PR #9, vers `epic/kanevas`) attend sa recette, comme les autres tranches dites « PR non fusionnée » ci-dessus ; elle n'ajoute aucune migration.
 - Vocabulaire : « Monsieur » = le commanditaire qui fait la recette ; « tranche » = une feature livrée ; « phase merge » = la
   fusion après recette ; E-n / B-n / P-n = écrans / besoins / parcours, les écrans (E-n) sont dans `docs/ecrans.md`, les besoins (B-n) et les parcours (P-n) dans `docs/parcours.md`.
 - La CI ne pousse d'image que sur `main` et sur un tag `v*` ; sur une PR elle ne fait qu'un build de
@@ -108,14 +111,18 @@ catalogue MJ (événement `proposition_creee`) et sa règle du bouchon (« Mets 
   d'univers fourni ; un refus répond 404. Le MJ qui crée un compte-rendu n'en est pas l'auteur affiché ;
   l'auteur Joueur lit et écrit sa section même fermée aux autres joueurs (AD-61). Plusieurs campagnes
   peuvent être actives (AD-60) ; aucune suppression nulle part.
-- Refonte visuelle : le regard sur les maquettes (bureau, téléphone, clair, sombre) est celui de la vérification et de la recette ; aucun écran n'écrit de couleur en dur (tokens seuls) ; un écran neuf prend le cadre et les composants de `ui/`, il ne recrée ni bouton, ni menu, ni champ. E-10 et E-11 sont construits avec le cadre ; E-12 le prend déjà (tokens, `Bouton`, `Chargement`, `PastilleRole`).
+- Refonte visuelle : le regard sur les maquettes (bureau, téléphone, clair, sombre) est celui de la vérification et de la recette ; aucun écran n'écrit de couleur en dur (tokens seuls) ; un écran neuf prend le cadre et les composants de `ui/`, il ne recrée ni bouton, ni menu, ni champ. E-5, E-10 à E-12 prennent le cadre dans leur tranche (déjà posé sur `epic/kanevas`).
+- Pièges visuels (corrigés, tests e2e) : les cartes d'E-1 tiennent à ~325 px à 1440 px (nom du système entier, méta sur deux lignes au plus) ; le chevron de la pastille de rôle reste visible au repos sur E-4 (`.liste-membres`) et caché sur E-5, l'administration (`.admin-zones`). La pastille de rôle de E-4 est ajustée à son texte (libellé dimensionnant, `select` natif transparent superposé : clic, clavier et tactile gardés). En mode Joueur le bandeau paraît avant le rechargement de la fiche : un bref instant la section « MJ seul » reste à l'écran (le test attend sa disparition). Rouge intermittent sur la suite complète (1370 tests au dernier passage entier, ~17 min en local ; la CI sépare les e2e et les joue avec `--test-concurrency=2`, ~20 min ; des échecs de timeout s'y voient parfois sous charge, verts seuls) ; ne pas lancer deux suites ni un `build` dans le même clone en parallèle.
+- Fil d'Ariane : une page qui nomme un objet appelle `useTitreAriane(nom)` (`cadre-contexte`) ; E-9 et E-6 le font, la Vue d'ensemble (E-3) montre « univers › Vue d'ensemble » par `maillons()` (`Cadre.tsx`) ; le dernier maillon reste entier, les précédents cèdent d'abord (`cadre.css`) ; E-7 montre « Campagnes › campagne › scénario » (`useTitreAriane` prend un maillon parent optionnel ; l'item Campagnes est courant sur `/scenarios/`). Le select « Auteur » de la boîte « Qui voit » est désactivé pendant l'enregistrement : un test qui y pose le focus attend d'abord sa réactivation.
+- Écarts connus laissés à la recette (non bloquants) : E-7 garde « ← » en texte et « Modifier » plein accent (sa maquette est ancienne) ; les pastilles « MJ seul » des panneaux portent le cadenas.
+- Suite e2e (Playwright) : sous forte charge, des tests (premiere-fiche B-9, matrice E-9, `administration-badge-entete` dont le `page.goto` dépasse 8 s en CI) échouent par intermittence et passent seuls ; non attribué à un défaut du produit.
 - P-7 : le portrait (pièce jointe) et la demande à l'assistant (E-12) sont livrés.
 - Pièces jointes : le type est déterminé par la signature des octets, jamais par le navigateur ; seules PNG,
   JPEG, GIF, WebP sont servies en ligne, le reste (SVG compris) en `attachment` sous `nosniff` et CSP sandbox.
   Un refus de lecture répond 404 comme un identifiant inconnu (AD-22) ; 50 pièces au plus par section, pas de
   limite de taille ; ajouter, marquer ou retirer ne change pas la `version` de la section. Pas de route de liste,
   pas de glisser-déposer. `stockage.ts` sert aussi aux fonds de carte (`services/cartes.ts`, AD-69), qui ne passent pas par `deposerPieceJointe`.
-- Rendu du bloc Pièces jointes vérifié par les tests e2e (Playwright) là où il est installé ; la CI ne les joue pas.
+- Rendu du bloc Pièces jointes vérifié par les tests e2e (Playwright) là où il est installé ; la CI l'installe et les joue.
 - « Connexion perdue » (frontend/src/api.ts) : sondé toutes les 3 s sur `/healthz` tant que le bandeau
   est levé ; il disparaît seul au retour du serveur.
 - Le contenu d'une section est plafonné à 20 000 caractères par le serveur (`MAX_CONTENU_SECTION`,

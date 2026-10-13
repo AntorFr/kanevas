@@ -30,18 +30,19 @@ Les cartes et graphes (E-10, E-11) sont construits. `kanevas-monde` ajoute la pr
 - `src/routes/health.ts` : `registerHealthRoutes`, `GET /healthz`.
 - `src/routes/auth.ts`, `src/services/oidc.ts` : login et callback OIDC ; le callback ouvre la
   session (`src/services/session.ts`, AD-56) et crée le compte à la première connexion.
+- `src/routes/frontend.ts` : sert le build du frontend (`FRONTEND_DIR`, `dist/public`) derrière la garde de session ; `src/routes/erreurs.ts` : traduit les erreurs de service en réponses HTTP ; `src/routes/pages.ts` : pages HTML du bouchon.
 - `src/routes/bouchon.ts` : mode bouchon (AD-55), absent de la table des routes sans `KANEVAS_STUB`.
 - `src/services/assistant/` : le catalogue d'outils d'un rôle (AD-74), le port `AgentTransport` et ses
   adaptateurs `bouchon` et `claude-agent` (AD-73, AD-78), la disponibilité (AD-77) et
   l'orchestration d'une demande (AD-75) ; `src/routes/assistant.ts` : les deux routes. Aucune requête SQL
   dans ce module (AD-2, AD-27).
-- `src/db/` : ouverture du fichier SQLite, `migrations/0001-*.sql`, `0002-systemes.sql`, `0003-suivi.sql`, `0004-pieces-jointes.sql`, `0005-relier-chercher.sql`, `0006-illustrations.sql`, `0007-cartes.sql`, `0008-propositions.sql` (provisoire, AD-51), runner (AD-14).
+- `src/db/` : ouverture du fichier SQLite, `migrations/0001-*.sql`, `0002-systemes.sql`, `0003-suivi.sql`, `0004-pieces-jointes.sql`, `0005-relier-chercher.sql`, `0006-illustrations.sql`, `0007-cartes.sql`, `0008-propositions.sql` (`kanevas-monde`, fusionnée ; numéro définitif, AD-51), runner (AD-14).
 - `src/e2e/` : tests d'ensemble, serveur réel en bouchon et navigateur piloté (Playwright, ignoré s'il manque) ; E-5 : `administration*.test.ts`.
 - `src/services/` : `comptes`, `univers`, `membres`, `instance`, `fiches`, `sections`, `droits`, `systemes`, `relations`, `campagnes`, `scenarios`, `preparation`, `comptes_rendus`, `pieces-jointes`, `illustrations`, `cartes`, `propositions`, `stockage` — les seules
   fonctions qui lisent ou écrivent les données (AD-2) ; `src/routes/` : routes `/api` minces ; `univers.ts` et `instance.ts` portent les routes d'univers et d'instance.
 - `frontend/` : application React/Vite (AD-57) ; `frontend/src/ui/tokens.css` et
   `frontend/src/ui/` : tokens et composants de `docs/charte.md` ; son build est servi par Fastify. Le cadre
-  (`Cadre.tsx`, `Barre.tsx`) est commun à tous les écrans ; `/demo-composants` (bouchon seul, 404 sinon, `routes/session.ts`) montre les composants (AD-92 pour polices et icônes).
+  (`Cadre.tsx`, `Barre.tsx`) est commun à tous les écrans ; `/demo-composants` (bouchon seul, 404 sinon) montre les composants (AD-92 pour polices et icônes).
 - `src/services/systemes.ts` : catalogue, rattacher, créer et rattacher, gabarits ; la modification
   d'un univers est dans `src/services/univers.ts` ; leurs routes sont `src/routes/systemes.ts`
   (AD-83 à AD-85, AD-94). Écrans : E-14 (Paramètres), E-16 (Systèmes de jeu, `ecrans/systemes.tsx`), E-15 (Système de jeu, `/systemes/:sid`, `ecrans/systeme.tsx` ; l'ancienne adresse `/univers/:id/systeme` redirige par `ecrans/systeme-ancien.tsx`) et le bloc « Système de jeu » de E-3.
@@ -147,7 +148,7 @@ base en snake_case (`docs/donnees.md`).
   `OIDC_*` (ou avec une partie seulement), login et callback répondent 404 ; une valeur vide
   ou invalide fait échouer le démarrage.
 - **Quinze tables et deux index de recherche, aucun ORM** : `comptes`, `univers`, `membres`, `fiches`, `sections` (migration
-  0001), `systemes_jeu`, `gabarits` (migration 0002), `campagnes`, `scenarios`, `taches_preparation` (migration 0003), `pieces_jointes` (migration 0004), `relations`, `recherche_fiches` et `recherche_sections` (FTS5, migration 0005) ; trois colonnes d'illustration sur `fiches` (migration 0006), `cartes` et `elements_carte` (migration 0007), `propositions` (migration 0008, `kanevas-monde`) ; les numéros 0001 à 0007 sont définitifs, 0008 est provisoire et les suivants se prennent à la fusion (AD-51 ; `docs/donnees.md`). Aucune requête SQL hors de `src/services/` et `src/db/`.
+  0001), `systemes_jeu`, `gabarits` (migration 0002), `campagnes`, `scenarios`, `taches_preparation` (migration 0003), `pieces_jointes` (migration 0004), `relations`, `recherche_fiches` et `recherche_sections` (FTS5, migration 0005) ; trois colonnes d'illustration sur `fiches` (migration 0006), `cartes` et `elements_carte` (migration 0007), `propositions` (migration 0008, `kanevas-monde`) ; les numéros 0001 à 0008 sont définitifs et les suivants se prennent à la fusion (AD-51 ; `docs/donnees.md`). Aucune requête SQL hors de `src/services/` et `src/db/`.
 - **Toute route hors `/healthz`, `/api/auth/*` et, en bouchon, `/connexion-bouchon` est gardée par la session** ; sous `/api` un
   défaut de session répond 401, ailleurs il redirige vers la connexion (AD-15).
 - **Une seule route appelle un modèle : l'assistant** (`src/routes/assistant.ts`, par `repondre`, AD-73), avec le jeton de

@@ -3,7 +3,7 @@ import { useState, type FormEvent } from 'react';
 import { Link, useParams } from 'react-router-dom';
 
 import { appeler, ErreurApi } from '../api';
-import { useCharge } from '../cadre-contexte';
+import { useCharge, useTitreAriane } from '../cadre-contexte';
 import type { Ecran } from '../registre';
 import { Bouton, Champ, Chargement, ErreurChargement, PageIntrouvable, useToasts } from '../ui';
 import './ecrans.css';
@@ -61,6 +61,7 @@ function Vue({ universId, campagne, initial }: { universId: string; campagne: Ca
   const [echec, setEchec] = useState(false);
   const [perime, setPerime] = useState(false);
   const [enCours, setEnCours] = useState(false);
+  useTitreAriane(scenario.titre, 'Campagnes', { libelle: campagne.nom, vers: `/univers/${universId}/campagnes/${campagne.id}` });
 
   function garder(t: string, c: string) {
     try {

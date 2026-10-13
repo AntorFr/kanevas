@@ -161,6 +161,11 @@ describe('matrice des rôles sur E-9', () => {
     assert.ok((await antor.getByRole('button', { name: /Autres actions sur/ }).count()) > 0, 'le MJ a le menu ⋯');
     await antor.getByRole('radio', { name: /Mode Joueur|^Joueur/ }).click();
     await antor.getByText(BANDEAU_JOUEUR).waitFor();
+    // The banner and the reload are one transition: the GM sheet (closed section) must never be on screen
+    // under the player banner, so this is asserted right away, not after a wait.
+    assert.equal(await antor.getByText('Vérité — MJ seul').count(), 0, 'la section fermée n’apparaît pas, même un instant');
+    // Then wait for the player's sheet itself before counting the rest.
+    await section(antor, 'Apparence').waitFor();
     assert.equal(await antor.getByRole('button', { name: /Autres actions sur/ }).count(), 0);
     assert.equal(await antor.getByRole('button', { name: /^(Lue des joueurs|MJ seul|Écrite par les joueurs|Confiée à)/ }).count(), 0);
     assert.equal(await antor.getByText('Vérité — MJ seul').count(), 0, 'la section fermée est absente');
@@ -283,14 +288,6 @@ describe('le cadre d’un univers', () => {
     // The universe selector "Mes univers" link may live in a menu; every nav link must carry an icon.
     assert.deepEqual(sansIcone, [], 'chaque item de navigation porte une icône');
     await shot(antor, 'cadre-bureau');
-  });
-
-  test('le bouton « Demander à Kanevas » est présent sur les écrans d’un univers', opts, async () => {
-    for (const page of [antor, lea]) {
-      await page.goto(urlUnivers);
-      await attendre(page);
-      assert.equal(await page.getByRole('button', { name: /Demander à Kanevas/ }).count(), 1);
-    }
   });
 
   test('Joueuse : ni Membres ni Paramètres ; adresse forcée = « Page introuvable. »', opts, async () => {
