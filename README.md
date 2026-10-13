@@ -101,6 +101,8 @@ mémoire (avertissement au démarrage).
 En bouchon seulement, `/demo-composants` (session requise) montre les composants de la charte dans tous leurs états ;
 hors bouchon, cette adresse répond 404 une fois connecté (302 vers la connexion sinon).
 
+Recette de E-14 en bouchon : en `antor`, « Lame d'Ébène » puis « Paramètres » (navigation) ; les trois blocs MJ (Identité, Système de jeu, Créer un système) sont des blocs fermés hachurés d'ambre, filet ambre à gauche, comme les sections MJ seul de la fiche.
+
 Recette de la mise à jour du monde en bouchon (le semis ne contient ni campagne ni compte-rendu ; « Maître Aldric » a une section « Vérité — MJ seul », que « Vérité » suffit à désigner). Toujours dans « Lame d'Ébène » :
 1. En `antor`, dans le panneau de l'assistant (bouton flottant) : « Crée une campagne « Marches » ».
 2. Se déconnecter (menu de l'avatar) puis `/connexion-bouchon` : en `lea`, depuis la fiche de la campagne ou l'écran des comptes-rendus (E-13, `docs/ecrans.md`), créer le compte-rendu, titre exactement « Séance 3 » (le bouchon cherche ce titre tel quel), dans cette campagne.

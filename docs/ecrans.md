@@ -449,16 +449,16 @@ de bloc sur E-3, et l'adresse de E-15 répond « Page introuvable. ».
 Trois panneaux, dans cet ordre.
 
 1. **Identité** : « Nom » (obligatoire, 80 caractères au plus), « Description » (500 au plus),
-   « Enregistrer ». Après l'enregistrement : « Enregistré. » au-dessus du panneau.
+   « Enregistrer ». Après l'enregistrement : toast « Enregistré. ».
 2. **Système de jeu** : une liste « Système du catalogue » (les noms, par ordre alphabétique sans
    casse, et en tête « Aucun système »), « Rattacher » ; si l'univers a un système : son nom, « Utilisé
    par N univers » et « Ouvrir le système » (→ E-15). Choisir « Aucun système » puis « Rattacher »
    **détache** l'univers (rien n'est supprimé : le système et son contenu restent, les autres
-   univers le gardent).
+   univers le gardent). Toasts : « « X » rattaché », « « X » détaché » (« Aucun système rattaché » s'il n'y en avait pas).
 3. **Créer un système** : « Nom du système » (obligatoire, 80 caractères au plus), « Créer et
    rattacher » : le système naît au catalogue et l'univers y est rattaché en un seul geste (si l'un
    échoue, aucun n'a lieu). Un nom déjà pris (sans tenir compte de la casse) : « Un système porte déjà
-   ce nom. » sous le champ.
+   ce nom. » sous le champ. Réussite : toast « « X » créé et rattaché ».
 
 | État | Ce qu'on voit | Ce qu'on peut faire |
 |---|---|---|

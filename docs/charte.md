@@ -208,8 +208,8 @@ décalé de 2 px) sur `:focus-visible`.
   La section MJ seul déborde de 28 px de chaque côté de la colonne (son texte reste aligné) :
   fond `--mj-fond` à 22 % sous une hachure `--mj-trame` (1 px tous les 8 px, 135°), contour
   `--mj-bord` à 45 %, filet `--mj` de 3 px à gauche, coins droits arrondis `--rayon-panneau`.
-  E-14 (Paramètres) emploie la teinte légère, pas la hachure (qui dit le secret d'une section, E-9) : dégradé `--mj-trame`
-  sur 40 % de la largeur et filet `--mj-bord` de 2 px à gauche, dans la colonne de 784 px marges comprises (688 px de texte, comme la maquette).
+  E-14 (Paramètres) reprend ce bloc fermé pour ses trois blocs MJ (Identité, Système de jeu, Créer un système), dans une
+  colonne de 688 px (`max-width` de la page) ; comme en E-6, les blocs débordent de 28 px de chaque côté.
 - C : purement redondant — la pastille dit la même chose en mots, le filet n'est jamais le seul
   porteur. Il change avec le réglage (une section qu'on ferme aux joueurs devient hachurée sous
   les yeux du MJ). En mode Joueur, aucun filet ni hachure : la section MJ seul n'existe pas.
