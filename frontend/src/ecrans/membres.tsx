@@ -16,7 +16,7 @@ function Membres() {
   const navigate = useNavigate();
   const moi = useMoi();
   const { recharger: rechargerUnivers } = useUnivers();
-  const [univers] = useCharge<UniversListe>(`/api/univers/${id}`);
+  const [univers, rechargerCetUnivers] = useCharge<UniversListe>(`/api/univers/${id}`);
   const [membres, recharger] = useCharge<Membre[]>(`/api/univers/${id}/membres`);
 
   if (membres.etat === 'chargement' || univers.etat === 'chargement') return <ChargementListe texte="Chargement des membres…" />;
@@ -24,7 +24,16 @@ function Membres() {
   if (membres.etat === 'erreur' && membres.statut === 404) return <PageIntrouvable />;
   if (univers.etat === 'erreur' && univers.statut === 404) return <PageIntrouvable />;
   if (membres.etat === 'erreur' || univers.etat === 'erreur') {
-    return <ErreurChargement texte="Impossible de charger les membres." onReessayer={recharger} />;
+    return (
+      <ErreurChargement
+        texte="Impossible de charger les membres."
+        onReessayer={() => {
+          // Either request may be the one that failed: retry both.
+          recharger();
+          rechargerCetUnivers();
+        }}
+      />
+    );
   }
   const monIdentifiant = moi.etat === 'ok' ? moi.valeur.username : undefined;
 
