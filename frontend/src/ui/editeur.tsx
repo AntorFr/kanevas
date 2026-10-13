@@ -64,10 +64,12 @@ export function EditeurMarkdown({ etiquette, valeur, onChange, max, rows = 8, au
   const bloc = useRef<HTMLDivElement>(null);
   const listeOuverte = ouvert !== undefined;
   // The floating assistant button sits bottom right: keep the list and the save row clear of it (scroll-margin in editeur.css).
-  useEffect(() => {
-    if (listeOuverte) bloc.current?.scrollIntoView?.({ block: 'nearest' });
-  }, [listeOuverte]);
   const [recherche, reessayer] = useRechercheLiens(liens?.universId ?? '', ouvert?.requete ?? '', ouvert !== undefined);
+  // The list grows when the answer arrives: scroll again then, so the whole list and the save row stay in view.
+  const lignes = recherche.etat === 'ok' ? recherche.fiches.length : -1;
+  useEffect(() => {
+    if (listeOuverte) bloc.current?.querySelector('.pied-md')?.scrollIntoView?.({ block: 'nearest' });
+  }, [listeOuverte, recherche.etat, lignes]);
   const trop = depasse(valeur, max);
   const message = erreur ?? (trop && max !== undefined ? messageTropLong(max) : undefined);
   const mac = typeof navigator !== 'undefined' && /Mac|iPhone|iPad/.test(navigator.platform);
