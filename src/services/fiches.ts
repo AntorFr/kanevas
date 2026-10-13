@@ -8,9 +8,9 @@ import {
   vueMJ,
   vueSection,
 } from './droits.js';
-import { introuvable, invalide } from './erreurs.js';
+import { ErreurService, introuvable, invalide } from './erreurs.js';
 import { lireLignes } from './pieces-jointes.js';
-import { CHARGES, estTypeFiche } from './types-fiche.js';
+import { CHARGES, estTypeFiche, typeActif } from './types-fiche.js';
 import {
   TYPES_FICHE,
   type Acteur,
@@ -88,6 +88,10 @@ export function creerFiche(
     throw invalide('Type de fiche inconnu.');
   }
   const type = entree.type as TypeFiche;
+  // The import accepts a disabled type (the batch warns); every other creation refuses it (AD-102).
+  if (!entree.origine && !typeActif(db, universId, type)) {
+    throw new ErreurService('invalide', 'Ce type est désactivé dans cet univers.', 'type_desactive');
+  }
   const titre = validerTitre(entree.titre, 120, 'Le titre');
   const charge = CHARGES[type].safeParse({ v: 1, ...entree.charge });
   if (!charge.success) throw invalide('Charge utile invalide pour ce type de fiche.');

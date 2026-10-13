@@ -6,7 +6,7 @@ import { verifierJeton, type Jeton } from '../services/jetons.js';
 import { cloreLot, lireLot, MAX_RAPPORT, ouvrirLot } from '../services/lots.js';
 import { lireContexteImport } from '../services/import.js';
 import { assurerFiche, lotDeRequete } from '../services/import-fiches.js';
-import { TYPES_FICHE } from '../services/types-fiche.js';
+import { TYPES_FICHE, typeActif } from '../services/types-fiche.js';
 import { registerErreurs } from './erreurs.js';
 
 /** Body cap of the import API (AD-103/104). */
@@ -77,7 +77,10 @@ export async function registerImportRoutes(app: FastifyInstance) {
         compte: ctx.compte,
         // The product list with its activation; all on, except compte_rendu, until the types slice (B-42).
         // `compte_rendu` is listed but not accepted by `PUT /fiches` until kanevas-import-reprise.
-        types: TYPES_FICHE.map((type) => ({ type, active: type !== 'compte_rendu' })),
+        types: TYPES_FICHE.map((type) => ({
+          type,
+          active: type !== 'compte_rendu' && typeActif(app.db, ctx.univers.id, type),
+        })),
         limites: { contenuSection: MAX_CONTENU_SECTION, entreesRapport: MAX_RAPPORT },
       };
     });
