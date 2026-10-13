@@ -73,20 +73,34 @@ export function rendreMarkdown(source: string, options: OptionsRendu = {}): stri
 
 /**
  * The source without the lines covered by the outermost GM blocks (AD-114): read from the
- * `map` of the `container_mj_open` tokens, never by regular expression. An unclosed block runs
- * to the end of its parent; a `:::mj` line in a code block is not a block. Whole lines are
- * removed, so it can remove more than the block, never less.
+ * start of the `container_mj_open` tokens, never by regular expression for the start of a block. An unclosed block runs
+ * to the end of the source; a `:::mj` line in a code block is not a block. Whole lines are
+ * removed. A `:::` line inside a code block of a GM block still closes it, as it does on screen:
+ * what the GM sees hatched is always removed from the public text.
  */
 /** A closing fence line, possibly behind the quote or indent marks of its parent. */
 const FERMETURE_BLOC = /^[\s>]*:{3,}\s*$/;
+
+/** An opening line `:::mj`, possibly behind quote or indent marks. */
+const OUVERTURE_BLOC = /^[\s>]*:::mj\s*$/;
 
 export function contenuPublic(source: string): string {
   const lignes = source.split('\n');
   const retirees = new Set<number>();
   for (const t of mdSection.parse(source, {})) {
     if (t.type !== 'container_mj_open' || !t.map) continue;
-    // `map` ends on the closing fence (excluded) or, for an unclosed block, on the end of its parent.
-    const fin = t.map[1] < lignes.length && FERMETURE_BLOC.test(lignes[t.map[1]]!) ? t.map[1] + 1 : t.map[1];
+    // Only the start comes from the token. The block runs to the fence that balances its openings
+    // (a `:::mj` line inside opens a nested block, the container itself does not nest); never balanced,
+    // it runs to the end of the source, even when the container ended with its list or quote.
+    let fin = lignes.length;
+    let profondeur = 1;
+    for (let i = t.map[0] + 1; i < lignes.length; i++) {
+      if (OUVERTURE_BLOC.test(lignes[i]!)) profondeur++;
+      else if (FERMETURE_BLOC.test(lignes[i]!) && --profondeur === 0) {
+        fin = i + 1;
+        break;
+      }
+    }
     for (let i = t.map[0]; i < fin; i++) retirees.add(i);
   }
   if (retirees.size === 0) return source;

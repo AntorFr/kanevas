@@ -145,6 +145,14 @@ test('contenuPublic : formes exactes, valeurs en dur', () => {
   assert.equal(contenuPublic('```\n:::mj\ns\n:::\n```'), '```\n:::mj\ns\n:::\n```');
 });
 
+test('contenuPublic : un bloc dans un bloc se retire par le plus extérieur, rien après le premier ::: ne fuit', () => {
+  assert.equal(contenuPublic('a\n:::mj\nx\n:::mj\ny\n:::\nz\n:::\nfin'), 'a\nfin');
+  assert.equal(contenuPublic('a\n:::mj\nx\n:::\nb\n:::mj\ny\n:::\nc'), 'a\nb\nc');
+  // unclosed inside a list or a quote: runs to the end of the source, not to the end of the parent
+  assert.equal(contenuPublic('- a\n  :::mj\n  s\n- b\n\nc'), '- a');
+  assert.equal(contenuPublic('> a\n> :::mj\n> s\n\nc'), '> a');
+});
+
 test('rendreMarkdown : le conteneur n\'existe que pour la nature section', () => {
   const src = ':::mj\nsecret\n:::';
   assert.ok(rendreMarkdown(src, { nature: 'section' }).includes('secret'));

@@ -2065,8 +2065,8 @@ pour l'emplacement du rendu (le contenu y devient mis en forme, la mise en page 
   actif, `role="radio"`) ; sous le champ, le compteur « 12 480 / 100 000 ». Ctrl/⌘+B et Ctrl/⌘+I entourent
   la sélection (ou posent deux marques et placent le curseur entre elles), Ctrl/⌘+Entrée enregistre,
   Échap annule. « Aperçu » remplace le champ par le rendu de la même fonction que la lecture ; le texte
-  saisi reste dans le champ et revient avec « Écrire ». Les boutons « Lien vers une fiche », « Fichier » et
-  « Bloc MJ » n'existent pas encore.
+  saisi reste dans le champ et revient avec « Écrire ». Les boutons « Lien vers une fiche » et « Fichier » n'existent pas encore ;
+  « Bloc MJ » est décrit plus bas (E-9, bloc MJ).
 - **États de l'aperçu** : en cours, « Aperçu en cours… » (le champ reste, bascule désactivée) ; texte
   vide, « Rien à prévisualiser. » ; échec ou hors ligne, « L'aperçu n'a pas abouti. Réessayez. » avec
   « Réessayer », et le champ intact (message aussi d'une session expirée ou d'un refus du serveur : le texte saisi n'est pas perdu) ; plus de 100 000 caractères, pas d'appel, « Erreur : 100 000
@@ -2234,11 +2234,12 @@ sont fermées dès maintenant. Maquette : `e09-fiche-importee.html` (« Port-Sel
 - **La syntaxe** : une ligne `:::mj`, des lignes de texte, une ligne `:::`. Le MJ la tape ou la pose par
   le bouton. Tout ce que le bloc couvre est secret, **quelle que soit la forme** : paragraphes, liste,
   tableau, citation. Un bloc ne s'ouvre pas dans un bloc de code (` ``` `) : là, `:::mj` reste du texte, et
-  n'est donc pas un secret. Un bloc **jamais fermé** couvre le texte jusqu'à la fin de la section
+  n'est donc pas un secret. Un bloc **jamais fermé** couvre le texte jusqu'à la fin de la section, même s'il est ouvert dans une liste ou une citation
   (le doute joue contre l'affichage, jamais contre le secret). Un bloc dans un bloc : le plus extérieur
-  gouverne, tout ce qu'il couvre est retiré. `:::MJ` (autre casse) et `::: mj` suivi de mots ne sont pas
-  des blocs : du texte, visible de tous — une règle de plus que le MJ n'a pas à apprendre.
-- **Le bouton « Bloc MJ »** (MJ seulement, `lock`, après « Fichier » et un filet dans la barre de l'éditeur,
+  gouverne : chaque `:::mj` rencontré dans un bloc ouvre un bloc imbriqué, et le bloc extérieur ne finit qu'à la ligne `:::`
+  qui équilibre les ouvertures (une ligne `:::` dans un bloc de code d'un bloc MJ le ferme, comme à l'écran) ; tout ce qu'il couvre est retiré. `:::MJ` (autre casse), `::: mj` (espace), `::::mj` (quatre deux-points)
+  et `:::mj` suivi de mots ne sont pas des blocs : du texte, visible de tous — une règle de plus que le MJ n'a pas à apprendre.
+- **Le bouton « Bloc MJ »** (MJ seulement, `lock`, après les boutons existants de la barre (« Fichier » n'existe pas encore) de l'éditeur,
   avant la bascule « Écrire / Aperçu » ; libellé « Bloc MJ » visible sur ordinateur, l'icône seule de 36 px sous le
   seuil « téléphone » de la maquette (`@media` de `e09-fiche-importee.html`), sans infobulle au toucher : le libellé accessible la remplace ; infobulle « Bloc MJ · entoure la sélection », libellé accessible « Bloc MJ ») : avec une sélection, il l'entoure d'une ligne `:::mj` avant et d'une
   ligne `:::` après (en ajoutant les sauts de ligne qui manquent, pour que les deux lignes soient seules) ;
@@ -2248,8 +2249,7 @@ sont fermées dès maintenant. Maquette : `e09-fiche-importee.html` (« Port-Sel
 - **Aperçu** (« Écrire / Aperçu ») : ses états sont ceux de `kanevas-import-markdown` — « Aperçu en cours… »,
   « Rien à prévisualiser. », « L'aperçu n'a pas abouti. Réessayez. » avec « Réessayer », « Erreur : 100 000 caractères au plus. » — ;
   l'aperçu d'un scénario (E-7) ou d'une entrée de système (E-15) laisse `:::mj` en texte comme leur lecture (seule l'édition d'une
-  section de E-9 demande la nature « section » avec son univers et son mode, AD-114) ; un contexte d'univers refusé ou inconnu n'est pas une erreur, le bloc n'existe simplement
-  pas dans l'aperçu. Pour le MJ, le bloc paraît comme à la lecture, hachuré ; pour qui n'est
+  section de E-9 demande la nature « section » avec son univers et son mode, AD-114) ; un `nature: 'section'` sans `univers_id` entier est refusé (400), un univers inconnu ou dont le compte n'est pas membre répond 404 comme toute lecture ; un membre non MJ reçoit un aperçu sans bloc. Pour le MJ, le bloc paraît comme à la lecture, hachuré ; pour qui n'est
   pas MJ, ou hors d'un univers, il n'existe pas (l'aperçu applique la même vue que la lecture, AD-114).
 - **Cas extrêmes** : un bloc de 100 000 caractères défile avec la section ; un tableau large dans un bloc
   défile dans le cadre du bloc, jamais la page à 375 px ; plusieurs blocs dans une section sont autant de cadres, séparés par
