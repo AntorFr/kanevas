@@ -107,4 +107,6 @@ export interface IllustrationVue {
 
 export interface FicheVue extends Fiche {
   sections: SectionVue[];
+  /** Import origin key (B-50): only in the GM view (outside player mode), never in a reader's answer. */
+  cleOrigine?: string;
 }

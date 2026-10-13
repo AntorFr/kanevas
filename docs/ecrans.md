@@ -119,7 +119,7 @@ Ce que `kanevas-import` ajoute aux lignes existantes : **E-8** — MJ : la vue e
 dans les seuls types activés ; Joueur : l'arbre des fiches qu'il voit. **E-9** — MJ : écrire le
 Markdown, insérer liens et blocs MJ, renommer, changer le type, déplacer, alias et étiquettes,
 supprimer (menu « ⋯ » de l'en-tête, hors mode Joueur), voir la clé d'origine ; Joueur : lire le
-Markdown, suivre les liens vers ce qu'il voit, « Contient » et « Mentionnée dans » réduits à ce qu'il
+Markdown (clé d'origine cachée), suivre les liens vers ce qu'il voit, « Contient » et « Mentionnée dans » réduits à ce qu'il
 lit ; écrire une section permise **sauf si elle contient un bloc MJ** (« Modifier » **caché**) ; alias
 et étiquettes visibles, jamais modifiables (**caché**). **E-14** — MJ : « Types de fiche »,
 « Supprimer l'univers ». **E-15** — MJ d'un univers rattaché : « Types de fiche » (bascules) ;
@@ -2114,6 +2114,10 @@ MJ, hors mode Joueur : le titre s'édite en place (clic, Entrée enregistre) ; l
 porte « Changer le type… », « Déplacer sous… », « Alias et étiquettes… », une ligne d'information
 « Importée · clé lieu:port-sel · créée le 3 mars 2021 » (si la fiche a une clé d'origine, B-50) et,
 séparé, « Supprimer la fiche… » en `--danger`.
+*Dans la tranche `kanevas-import-fil`*, la ligne « Importée · clé … » est la seule entrée du menu : pour une
+fiche sans clé d'origine, le menu « ⋯ » n'est pas affiché ; « créée le … » est la date de création de la
+fiche (`creeLe` de l'import s'il l'a donnée, B-50, sinon la date de l'import). La clé d'origine est cachée à
+tout autre rôle que le MJ (hors mode Joueur) : ni le menu, ni la réponse de lecture.
 
 - *Changer le type* : une liste des types de la liste du produit, activés d'abord, puis « Autres
   types » ; pour « Personnage », le choix PJ / PNJ ; et le champ « Sous-type » (vidé au changement de
@@ -2373,26 +2377,33 @@ mode Joueur (« Rechercher », une étiquette).
 *Maquette finie* : `docs/maquettes/e18-acces-api.html` (états `#etat-nouveau`, `#etat-jeton-montre`,
 `#etat-lot`, `#etat-vide`, `#etat-perdue`).
 
-Atteint par « Univers ▸ Accès par API » (`key-round`), MJ seul. Une introduction d'une ligne :
+Atteint par « Univers ▸ Accès par API » (`key-round`), MJ seul. Le bouton « Demander à Kanevas » de la maquette est celui de l'assistant, présent sur tous les écrans (B-26, E-12), sans rien de propre à E-18. Une introduction d'une ligne :
 « Un jeton permet à un script d'écrire dans cet univers avec vos droits, par l'API d'import. » et
 l'**adresse de base** à copier (`https://kanevas.berard.me/api/import/v1/univers/<id>`, « Copier »,
 toast « Adresse copiée. »). Deux panneaux.
 
 1. **Jetons** — « Nouveau jeton » (`plus`). Une ligne par jeton, actifs d'abord puis révoqués et expirés
    (les 20 derniers) : nom, « créé par antor le 11 oct. 2026 », « dernier usage il y a 3 min » ou
-   « jamais », « expire le 10 nov. 2026 » ou la pastille « Révoqué » / « Expiré » ; « Révoquer » au
+   « jamais », « expire le 10 nov. 2026 » ou la pastille « Révoqué » (danger) / « Expiré » (neutre), les infos séparées par « · » au bureau ; « Révoquer » au
    survol (visible au toucher). *Nouveau jeton* : boîte « Nouveau jeton » — « Nom » (1 à 80 caractères,
    obligatoire), « Durée » (bascule segmentée 7 jours, **30 jours**, 90 jours, 1 an), « Créer le
-   jeton », « Annuler » ; puis la même boîte montre le jeton dans un champ en chasse fixe, « Copier » (toast
-   « Jeton copié. »), et « Il ne sera plus jamais affiché. Rangez-le dans la configuration de votre
-   script. », « J'ai copié le jeton » — tant que le jeton est montré, seul ce bouton ferme la boîte
-   (ni Échap ni le voile) ; la ligne du jeton arrive alors en tête de la liste. *Révoquer* : boîte « Révoquer « Script Kanka — Mac » ? Le script
+   jeton », « Annuler » ; puis la même boîte montre le nom du jeton en étiquette et le jeton seul, en chasse fixe, pleine largeur, puis l'encadré (`circle-alert`) « Il ne sera plus jamais affiché. Rangez-le dans la configuration de votre
+   script. », et au pied « Copier » (toast « Jeton copié. ») et « J'ai copié le jeton » — tant que le jeton est montré, seul ce bouton ferme la boîte
+   (ni Échap ni le voile) ; la ligne du jeton arrive alors en tête de la liste. Le jeton d'un MJ qui n'a plus ce rôle (B-46) reste listé, avec la pastille « Inactif »
+   et l'infobulle « Son créateur n'est plus MJ de cet univers. » (au toucher, la même phrase s'écrit sous la ligne) ; il reste parmi les jetons actifs, rangé avec eux par date de création ; « Révoquer » reste possible. Pendant « Créer le
+   jeton » et « Révoquer le jeton » le bouton est désactivé et dit « Création… » / « Révocation… » (pas de double envoi) ; « Annuler » et la fermeture de la boîte sont désactivés aussi jusqu'à la réponse. La maquette ne dessine ni « Inactif » ni ces boutons : le texte d'ici fait foi (pastille neutre, en `--texte-2` ; « Révoqué » est en teinte danger, « Expiré » neutre). *Révoquer* : boîte « Révoquer « Script Kanka — Mac » ? Le script
    qui l'utilise ne pourra plus rien écrire. », « Révoquer le jeton » (`--danger`) / « Annuler » ; toast « Jeton révoqué. ».
 2. **Lots d'import** — les 20 derniers lots, du plus récent : date d'ouverture, jeton, état (« En
    cours », « Clos », « Abandonné » — ouvert depuis plus de 24 h sans écriture), et les compteurs
    **par nature d'objet**, à la suite et séparés par « · », les natures sans objet omises : « Fiches : 498 créées ·
    3 refusées », « Fichiers : 1 140 créés », « Campagnes : 4 créées », « Scénarios : 12 créés »,
-   « Relations : 324 créées », puis « 6 liens et références en attente » et « 1 avertissement ». Une
+   « Relations : 324 créées », puis « 6 liens et références en attente » et « 1 avertissement ». Dans une
+   nature, chaque forme (« créée(s) », « mise(s) à jour », « inchangée(s) », « refusée(s) ») n'est écrite que
+   si elle n'est pas nulle : un rejeu sans rien de neuf lit « Fiches : 1 inchangée » (le rapport de l'API,
+   lui, rend tous les compteurs, `creees: 0`), et un compte nul d'attente ou d'avertissements est omis
+   (la maquette abrège « 6 en attente » ; le texte est celui d'ici). Un `PUT` refusé (400) avec son lot
+   compte « 1 refusée » et ajoute au rapport sa clé et sa raison (« type « compte_rendu » : pas accepté
+   par cette version », « type « monstre » inconnu de Kanevas ») ; sans lot, il ne laisse aucune trace ici. Une
    ligne se déplie :
    les refus et avertissements, chacun avec la clé d'origine, ce qui est en cause et la raison
    (« section « Vérité » : 112 000 caractères, 100 000 au plus » ; « parent lieu:les-docks inconnu :
@@ -2403,7 +2414,7 @@ toast « Adresse copiée. »). Deux panneaux.
 
 | État | Ce qu'on voit | Ce qu'on peut faire |
 |---|---|---|
-| vide | « Aucun jeton. Créez-en un pour qu'un script écrive dans cet univers. » ; « Aucun lot d'import pour l'instant. » | « Nouveau jeton » |
+| vide | « Aucun jeton. Créez-en un pour qu'un script écrive dans cet univers. » (aucun jeton du tout ; avec seulement des jetons révoqués ou expirés, la liste les montre, sans ce texte) ; « Aucun lot d'import pour l'instant. » | « Nouveau jeton » |
 | chargement | squelettes des deux panneaux | — |
 | erreur | « Impossible de charger cette page. » ; nom vide : « Erreur : le nom est obligatoire. » ; création ou révocation qui échoue : « L'action n'a pas abouti. Réessayez. », rien n'a changé (aucun jeton à moitié créé) | « Réessayer » |
 | connexion perdue | le bandeau ; « Nouveau jeton » et « Révoquer » désactivés ; si la boîte montre un jeton, il reste affiché jusqu'à « J'ai copié le jeton » | copier |

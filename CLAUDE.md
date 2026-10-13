@@ -102,4 +102,15 @@
   moved, else `en_attente`), never stored. `appliquerProposition` writes through `ecrireContenu` with
   `version_origine` in the same transaction as the mark (`section_modifiee`, `proposition_appliquee` as
   `ErreurService.detail`, both `conflit`). Never write a section from here by another path (AD-48).
+- Import API (`kanevas-import-fil`, migration 0010, AD-103/104): `routes/import.ts` is the scope `/api/import/v1`, beside the
+  session guard — only a `Bearer kvs_…` token opens it (`verifierJeton`: fingerprint, not revoked, not expired, creator still
+  GM), the cookie is ignored there and no other route reads `Authorization`. Refusal is always the same 401 `jeton_invalide`
+  and opens no batch; another universe is 404. The clock is `app.horloge()` (tests move it). `services/jetons.ts` and
+  `services/lots.ts` are the only readers/writers of `jetons_api` / `lots_import`; write services of later slices count
+  through `noterDansLot` (counters per nature, report capped at 1 000).
 - Markdown (AD-95, AD-113): the only renderer is `rendreMarkdown` in `services/markdown.ts` (`html: false`, links limited to http/https/mailto); a view returns `html` to everyone and the source `contenu` only to who may write it — never render elsewhere, never ship the source to a reader. The ceiling is 100 000 characters (`MAX_CONTENU_SECTION`).
+- Import of sheets (`kanevas-fil-fiches`): `PUT /fiches/:cle` calls `assurerFiche` (`services/import-fiches.ts`), which composes
+  `creerFiche`, `renommerFiche`, `changerTypeFiche` and the section services, plus a few direct updates of its own
+  (`modifie_le`, `dernier_import`, `cle_origine`, `version_importee` — import bookkeeping only; content still goes through the services). Refusals are validated **before** the transaction
+  (`ErreurService.champ`, sent as `champ` with code `invalide`); with `?lot=` they count « 1 refusée » in the batch, without it they leave
+  no trace; a closed batch answers 409 `lot_clos`. The stub token is `JETON_BOUCHON` (`bouchon/depart.ts`), seeded in « Essai Kanka ».

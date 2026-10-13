@@ -6,6 +6,7 @@ import { migrate, openDb, type Db } from './db/db.js';
 import { viderTmp } from './services/stockage.js';
 import { registerAuthRoutes } from './routes/auth.js';
 import { registerBouchonRoutes } from './routes/bouchon.js';
+import { registerImportRoutes } from './routes/import.js';
 import { registerHealthRoutes } from './routes/health.js';
 import { registerSessionRoutes } from './routes/session.js';
 import { ConnexionClaude } from './services/assistant/connexion-claude.js';
@@ -28,6 +29,9 @@ declare module 'fastify' {
 export async function buildApp() {
   const app = Fastify({
     logger: env.NODE_ENV !== 'test',
+    // An origin key may hold 200 characters (B-47), up to 12 bytes each once percent-encoded; the
+    // default (100) would answer 414 before the service could validate the key.
+    routerOptions: { maxParamLength: 2400 },
   });
 
   // The only connection to the SQLite file; migrations are applied at startup (AD-14).
@@ -56,6 +60,7 @@ export async function buildApp() {
   await registerHealthRoutes(app);
   await registerAuthRoutes(app);
   await registerBouchonRoutes(app);
+  await registerImportRoutes(app);
   await registerSessionRoutes(app);
 
   return app;

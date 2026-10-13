@@ -76,6 +76,7 @@ a { color: var(--accent-texte); }
 .pastille.mj { background: var(--mj-fond); color: var(--mj); }
 .pastille.table { background: var(--table-fond); color: var(--table); }
 .pastille.neutre { background: var(--surface-2); color: var(--texte-2); }
+.pastille.danger { background: var(--danger-fond); color: var(--danger); }
 .pastille.secrete { background: var(--surface); color: var(--mj); box-shadow: inset 0 0 0 1px var(--mj-bord); }
 .pastille.cliquable { cursor: pointer; transition: box-shadow var(--duree); }
 .pastille.mj.cliquable:hover { box-shadow: 0 0 0 1px var(--mj-bord); }
