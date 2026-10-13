@@ -302,7 +302,7 @@ describe('kanevas-il-systemes-ecrans', { skip: skipBrowser }, () => {
     const e15 = `/systemes/${idS}`;
     await va(pg, e15);
     const tabs = (await pg.getByRole('tab').allInnerTexts()).map((t: string) => t.replace(/\s+/g, ' ').trim());
-    assert.deepEqual(tabs, ['Règles 3', 'Créatures 5', 'Objets 2']);
+    assert.deepEqual(tabs, ['Règles 3', 'Créatures 5', 'Objets 2', 'Types de fiche']);
     const m = await pg.evaluate(() => {
       let bouton: Element | null = null;
       for (const x of Array.from(document.querySelectorAll('button'))) if (/^Ajouter une créature/.test(x.textContent ?? '')) bouton = x;
