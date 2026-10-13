@@ -3,7 +3,7 @@
 > Doc du produit. Les tokens que le code lit vivent dans `frontend/src/ui/tokens.css` ; ce
 > document dit ce qu'ils signifient, ce que fait chaque composant et les seuils mesurés. La
 > maquette de référence est `docs/maquettes/e09-fiche.html` : elle porte le cadre de tous les
-> écrans d'un univers et chaque composant ci-dessous, dans les deux thèmes, au bureau et au
+> écrans d'un univers et les composants partagés ci-dessous (le panneau d'assistant, la proposition de mise à jour et la carte de système n'ont que leur description ici et leurs maquettes propres, classées dans `docs/ecrans.md` « Maquettes »), dans les deux thèmes, au bureau et au
 > téléphone. Changer la valeur d'un token existant change tous les écrans : c'est une décision
 > de Monsieur, écrite ici avec sa raison (voir « Écarts assumés »).
 
