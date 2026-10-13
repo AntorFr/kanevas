@@ -112,7 +112,7 @@ export function vueSection(role: Role, s: SectionRow, acteur: Acteur): SectionVu
     id: s.id,
     titre: s.titre,
     ordre: s.ordre,
-    html: rendreMarkdown(s.contenu),
+    html: rendreMarkdown(s.contenu, { nature: 'section' }),
     version: s.version,
     modifieLe: s.modifie_le,
     peutEcrire,
