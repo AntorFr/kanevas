@@ -252,7 +252,7 @@ function FiltreSousType({
   return (
     <div className="filtre-sous-type">
       <Champ etiquette="Sous-type" liste value={valeur} onChange={(e: { target: { value: string } }) => onChoix(e.target.value)}>
-        <option value="">Tous</option>
+        <option value="">Sous-type : tous</option>
         {inconnu && <option value={valeur}>{valeur}</option>}
         {liste.map((s) => (
           <option key={s.sousType} value={s.sousType} title={s.sousType}>
