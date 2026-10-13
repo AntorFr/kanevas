@@ -1,6 +1,6 @@
 import type { Db } from '../db/db.js';
 import { ErreurService } from './erreurs.js';
-import { changerTypeFiche, creerFiche, renommerFiche } from './fiches.js';
+import { changerSousType, changerTypeFiche, creerFiche, renommerFiche, validerSousType } from './fiches.js';
 import type { Jeton } from './jetons.js';
 import { lireLot, noterDansLot, type EntreeRapport, type Issue } from './lots.js';
 import {
@@ -12,10 +12,11 @@ import {
   reordonnerSections,
 } from './sections.js';
 import type { SectionRow } from './types.js';
+import { TYPES, typeActif } from './types-fiche.js';
 
-/** The six types the import accepts in this version; a session report waits for its campaign. */
-export const TYPES_IMPORT = ['personnage', 'lieu', 'faction', 'objet', 'evenement', 'quete'] as const;
-type TypeImport = (typeof TYPES_IMPORT)[number];
+/** The thirteen settable types the import accepts; a session report waits for its campaign. */
+export const TYPES_IMPORT: readonly string[] = TYPES.filter((t) => t.reglable).map((t) => t.type);
+type TypeImport = string;
 
 export type EtatImport = 'creee' | 'mise_a_jour' | 'inchangee';
 
@@ -36,6 +37,8 @@ interface SectionEntree {
 interface FicheEntree {
   type: TypeImport;
   titre: string;
+  /** `undefined`: the request says nothing (left as is); `null`: no sub-type wanted. */
+  sousType?: string | null;
   pj: boolean;
   creeLe?: string;
   modifieLe?: string;
@@ -91,7 +94,7 @@ function lireCorps(corps: unknown, maintenant: Date): FicheEntree {
   if (type === 'compte_rendu') {
     throw new Refus('type', 'fiche', 'type « compte_rendu » : pas accepté par cette version');
   }
-  if (!(TYPES_IMPORT as readonly string[]).includes(type)) {
+  if (!TYPES_IMPORT.includes(type)) {
     throw new Refus('type', 'fiche', `type « ${type} » inconnu de Kanevas`);
   }
   const titre = texte(c.titre, 'titre', 'fiche', 1, 120, 'titre');
@@ -101,6 +104,14 @@ function lireCorps(corps: unknown, maintenant: Date): FicheEntree {
     throw new Refus('modifieLe', 'fiche', 'modifieLe : antérieure à creeLe');
   }
   const pj = booleen(c.pj, 'pj', 'fiche');
+  let sousType: string | null | undefined;
+  if (c.sousType !== undefined && c.sousType !== null) {
+    try {
+      sousType = validerSousType(c.sousType);
+    } catch {
+      throw new Refus('sousType', 'fiche', 'sousType : de 1 à 60 caractères');
+    }
+  } else sousType = c.sousType;
   const brutes = c.sections ?? [];
   if (!Array.isArray(brutes)) throw new Refus('sections', 'fiche', 'sections : une liste est attendue');
   const vues = new Set<string>();
@@ -135,7 +146,7 @@ function lireCorps(corps: unknown, maintenant: Date): FicheEntree {
       joueursEcrivent: booleen(s.joueursEcrivent, `${ch}.joueursEcrivent`, 'section'),
     };
   });
-  return { type: type as TypeImport, titre, pj, creeLe, modifieLe, sections };
+  return { type, titre, sousType, pj, creeLe, modifieLe, sections };
 }
 
 interface FicheLue {
@@ -143,6 +154,7 @@ interface FicheLue {
   type: string;
   titre: string;
   charge: string;
+  sous_type: string | null;
   dernier_import: string | null;
 }
 
@@ -156,6 +168,7 @@ interface MarqueFiche {
   titre?: string;
   type?: string;
   pj?: boolean | null;
+  sousType?: string | null;
 }
 
 interface MarqueSection {
@@ -163,6 +176,8 @@ interface MarqueSection {
   joueursLisent?: boolean;
   joueursEcrivent?: boolean;
 }
+
+const desactive = (type: string) => `type_desactive : le type « ${type} » est désactivé dans cet univers`;
 
 const lireJson = <T>(brut: string | null): T | null => (brut === null ? null : (JSON.parse(brut) as T));
 const pjDe = (type: string, charge: string): boolean | null =>
@@ -235,15 +250,22 @@ function ecrire(
 ): { id: number; etat: EtatImport } {
   const { universId, compteId } = jeton;
   const existante = db
-    .prepare('SELECT id, type, titre, charge, dernier_import FROM fiches WHERE univers_id = ? AND cle_origine = ?')
+    .prepare('SELECT id, type, titre, charge, sous_type, dernier_import FROM fiches WHERE univers_id = ? AND cle_origine = ?')
     .get(universId, cle) as FicheLue | undefined;
   const charge = e.type === 'personnage' ? { pj: e.pj } : {};
 
   if (!existante) {
-    const marque: MarqueFiche = { titre: e.titre, type: e.type, pj: pjDe(e.type, JSON.stringify(charge)) };
+    const marque: MarqueFiche = {
+      titre: e.titre,
+      type: e.type,
+      pj: pjDe(e.type, JSON.stringify(charge)),
+      sousType: e.sousType ?? null,
+    };
+    if (!typeActif(db, universId, e.type)) prevenir('fiche', desactive(e.type));
     const fiche = creerFiche(db, compteId, universId, {
       type: e.type,
       titre: e.titre,
+      sousType: e.sousType ?? null,
       charge,
       origine: { cle, creeLe: e.creeLe, modifieLe: e.modifieLe, dernierImport: marque },
     });
@@ -272,11 +294,28 @@ function ecrire(
     marque.type = e.type;
     marque.pj = pjVoulu;
   } else if (di && di.type === existante.type && (di.pj ?? null) === pjCourant) {
+    if (!typeActif(db, universId, e.type)) prevenir('fiche', desactive(e.type));
     changerTypeFiche(db, compteId, universId, existante.id, e.type, charge);
     marque.type = e.type;
     marque.pj = pjVoulu;
+    // A type change clears the sub-type of the sheet: the one the import wrote goes with it.
+    if (existante.type !== e.type) marque.sousType = null;
     ecrit = true;
   } else prevenir('fiche', 'type modifié dans Kanevas : non écrasé');
+
+  // Sub-type, with the same protection: what a human changed since the last import is left alone.
+  if (e.sousType !== undefined) {
+    const courant = (
+      db.prepare('SELECT sous_type FROM fiches WHERE id = ?').get(existante.id) as { sous_type: string | null }
+    ).sous_type;
+    const voulu = e.sousType;
+    if (courant === voulu) marque.sousType = voulu;
+    else if ((marque.sousType ?? null) === courant) {
+      changerSousType(db, compteId, universId, existante.id, voulu);
+      marque.sousType = voulu;
+      ecrit = true;
+    } else prevenir('fiche', 'sous-type modifié dans Kanevas : non écrasé');
+  }
 
   // Sections, by origin key.
   const lignes = db

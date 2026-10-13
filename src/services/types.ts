@@ -86,6 +86,8 @@ export interface Fiche {
   universId: number;
   type: TypeFiche;
   titre: string;
+  /** Free sub-type (B-52), null when none. */
+  sousType: string | null;
   charge: Record<string, unknown>;
   creeLe: string;
   modifieLe: string;
