@@ -52,7 +52,8 @@ export const ITEMS_UNIVERS: Item[] = [
  * The bar passes the enabled types; the breadcrumb passes them all, since a disabled type's list still opens.
  */
 export const itemsLore = (types: TypeVue[]): Item[] =>
-  types.map((t) => ({
+  types.filter((t) => t.reglable).map((t) => ({
+    // The compte-rendu is not a settable type: its fixed item « Comptes-rendus » already exists.
     libelle: t.pluriel,
     icone: iconeDeNom(t.icone),
     section: 'Lore',
