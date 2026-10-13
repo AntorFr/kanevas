@@ -1,5 +1,6 @@
 /* E-14 and E-15 « Types de fiche »: rows of types (docs/maquettes/e14-types-de-fiche.html). Tokens only. */
-.types { margin-top: var(--e-3); }
+.types, .types-sys { margin: var(--e-3) 0 0; padding: 0; list-style: none; }
+.onglets button { white-space: nowrap; flex-shrink: 0; }
 .types > li + li { border-top: 1px solid var(--bord); }
 .type-ligne { display: grid; grid-template-columns: 6px 16px minmax(0, 1fr) 76px auto; align-items: center; column-gap: 12px;
   min-height: 44px; padding: 5px 0; }
@@ -36,4 +37,6 @@
   .type-ligne { grid-template-columns: 6px 16px minmax(0, 1fr) auto; row-gap: 8px; }
   .type-ligne .bascule3 { grid-column: 3 / -1; justify-self: start; }
   .bascule3 button:first-child { width: auto; }
+  .bascule3 button { padding: 0 8px; }
+  .page-systeme .barre-outils .onglets { max-width: 100%; overflow-x: auto; }
 }
