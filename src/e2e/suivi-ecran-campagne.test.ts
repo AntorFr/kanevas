@@ -78,6 +78,9 @@ test('MJ : crée la campagne, la passe Active en place, la page, le scénario, l
   await antor.getByRole('heading', { name: NOM, level: 1 }).waitFor();
   urlCampagne = new URL(antor.url()).pathname;
   assert.match(urlCampagne, new RegExp(`/univers/${uid}/campagnes/\\d+$`));
+  // The sections load after the heading: wait for the last empty states before reading the text.
+  for (const vide of ["Aucun scénario pour l'instant.", "Rien à préparer pour l'instant.", "Aucun compte-rendu pour l'instant."])
+    await antor.getByText(rx(vide)).waitFor();
   const t0 = await texte(antor);
   for (const s of ['Scénarios', 'Préparation', 'Comptes-rendus', 'Aucun scénario pour l\'instant.', 'Rien à préparer pour l\'instant.', 'Aucun compte-rendu pour l\'instant.'])
     assert.ok(t0.includes(s), `« ${s} » attendu`);
