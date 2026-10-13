@@ -237,6 +237,9 @@ describe('E-5 Administration : bords, exclusions et contenu long (B-6, B-29)', {
       // The account menu (avatar, foot of the bar) carries « Se déconnecter ».
       await page.getByRole('button', { name: /admin/i }).first().click();
       await page.getByRole('menuitem', { name: 'Se déconnecter' }).click();
+      // The menu posts the logout, then assigns location to loginUrl: wait for that navigation to
+      // land, or the goto below interrupts it (net::ERR_ABORTED).
+      await page.waitForURL(/\/connexion-bouchon/);
       await page.waitForLoadState('networkidle');
       await page.goto('/connexion-bouchon');
       await page.getByRole('button', { name: 'Se connecter en tant que Léa' }).click();
