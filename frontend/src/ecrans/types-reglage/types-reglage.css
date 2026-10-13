@@ -20,7 +20,7 @@
 .bascule3 button:first-child { width: 156px; }
 .bascule3 button .src { color: var(--texte-3); font-weight: 400; }
 .bascule3 button:hover { color: var(--texte); }
-.bascule3 button[aria-checked="true"] { background: var(--surface); color: var(--texte); box-shadow: 0 0 0 1px var(--bord-fort), 0 1px 2px rgba(0,0,0,.18); }
+.bascule3 button[aria-checked="true"] { background: var(--surface); color: var(--texte); box-shadow: 0 0 0 1px var(--bord-fort); }
 .bascule3 button:focus-visible { outline: 2px solid var(--focus); outline-offset: 0; }
 .bascule3 button[aria-disabled="true"] { cursor: default; opacity: .6; }
 
