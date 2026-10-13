@@ -1,8 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 
-import { badgeFiche } from './types-fiche';
-import { iconeDuType } from './types-fiche';
+import { badgeFiche, iconeDuType, useTypes } from '../../types-contexte';
 import type { Fiche } from './types';
 
 /** Address of the illustration of a sheet; the token makes a replaced image reload and a kept one cache. */
@@ -17,7 +16,8 @@ export function initiale(titre: string): string {
 
 /** Fallback thumbnail: dotted flat, the initial, the type icon. Never an empty frame. */
 function Repli({ fiche }: { fiche: Fiche }) {
-  const Icone = iconeDuType(fiche.type);
+  const { types } = useTypes();
+  const Icone = iconeDuType(types, fiche.type);
   return (
     <span className="repli">
       <span className="puce-type" aria-hidden="true">
@@ -32,6 +32,7 @@ function Repli({ fiche }: { fiche: Fiche }) {
 
 /** A card of the grid of E-8: a link to the sheet, thumbnail (or fallback), title, PJ / PNJ for a character. */
 export function CarteFiche({ universId, fiche }: { universId: number | string; fiche: Fiche }) {
+  const { types } = useTypes();
   const jeton = fiche.illustration?.jeton;
   const [ko, setKo] = useState<string>();
   const image = jeton !== undefined && ko !== jeton;
@@ -57,9 +58,14 @@ export function CarteFiche({ universId, fiche }: { universId: number | string; f
           {fiche.titre}
         </span>
         {fiche.type === 'personnage' && (
-          <span className={`badge-type${fiche.charge.pj ? ' pj' : ''}`}>{badgeFiche(fiche)}</span>
+          <span className={`badge-type${fiche.charge.pj ? ' pj' : ''}`}>{badgeFiche(types, fiche)}</span>
         )}
       </span>
+      {fiche.sousType && (
+        <span className="sous-type" title={fiche.sousType}>
+          {fiche.sousType}
+        </span>
+      )}
     </Link>
   );
 }

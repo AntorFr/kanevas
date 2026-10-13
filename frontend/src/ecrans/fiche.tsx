@@ -12,7 +12,7 @@ import './fiche/fiche.css';
 import { PanneauSection, type Joueur } from './fiche/section';
 import type { FicheVue } from './fiche/types';
 import { lignesDuType } from './fiche/lignes/registre';
-import { badgeFiche, iconeDuType, typeParType } from './fiche/types-fiche';
+import { badgeFiche, iconeDuType, typeParType, useTypes } from '../types-contexte';
 import { EnteteFiche, type MessageIllustration } from './fiche/entete';
 
 const ECHEC = 'L’action n’a pas abouti. Réessayez.';
@@ -29,6 +29,7 @@ function PageFiche() {
   const { id, fid } = useParams();
   const perdue = useConnexionPerdue();
   const { toast } = useToasts();
+  const { types } = useTypes();
   const [univers] = useCharge<UniversListe>(`/api/univers/${id}`);
   const [etat, setEtat] = useState<Etat>({ k: 'chargement' });
   const [essai, setEssai] = useState(0);
@@ -51,7 +52,7 @@ function PageFiche() {
   // The GM / player toggle lives in the frame's top bar; it is offered unless the sheet does not exist.
   const mode = useBasculeMode(role === 'mj' && etat.k !== 'introuvable');
   const ficheVue = etat.k === 'ok' || etat.k === 'aucune-visible' ? etat.fiche : undefined;
-  useTitreAriane(ficheVue?.titre, ficheVue && typeParType(ficheVue.type)?.pluriel);
+  useTitreAriane(ficheVue?.titre, ficheVue && typeParType(types, ficheVue.type)?.pluriel);
   const modeEffectif: 'mj' | 'joueur' = role === 'mj' ? mode : 'joueur';
   const suffixe = role === 'mj' && mode === 'joueur' ? '?mode=joueur' : '';
   const base = `/api/univers/${id}/fiches/${fid}`;
@@ -146,7 +147,7 @@ function PageFiche() {
     }
   }
 
-  const Icone = iconeDuType(fiche.type);
+  const Icone = iconeDuType(types, fiche.type);
   const formulaire = gestion && etat.k === 'ok' && ajoutOuvert;
   return (
     <article className="fiche" aria-labelledby="titre-fiche">
@@ -154,7 +155,7 @@ function PageFiche() {
         universId={id!}
         fiche={fiche}
         gestion={gestion && etat.k === 'ok'}
-        badge={badgeFiche(fiche)}
+        badge={badgeFiche(types, fiche)}
         Icone={Icone}
         message={messageIll}
         setMessage={setMessageIll}

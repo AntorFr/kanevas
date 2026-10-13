@@ -6,25 +6,20 @@ import { useCharge } from '../../cadre-contexte';
 import { Bouton, Champ, ChargementListe, ErreurChargement, PageIntrouvable, VideIcone } from '../../ui';
 import '../liste.css';
 import type { Fiche, PageFiches } from './types';
-import type { TypeLore } from './types-fiche';
+import type { TypeVue } from '../../types-contexte';
 import { CarteFiche, ChargementGrille } from './vignette';
 
 /** Longest search the server accepts (B-11). */
 export const LONGUEUR_RECHERCHE = 100;
 
-const articles: Record<string, string> = {
-  personnage: 'les personnages',
-  lieu: 'les lieux',
-  faction: 'les factions',
-  objet: 'les objets',
-  evenement: 'les événements',
-  quete: 'les quêtes',
-};
-const dans = (type: TypeLore) => articles[type.type] ?? type.pluriel.toLowerCase();
+const dans = (type: TypeVue) => `les ${type.pluriel.toLowerCase()}`;
 
 interface Props {
   universId: string;
-  type: TypeLore;
+  type: TypeVue;
+  /** The sub-type filter in force (E-8); with `onSousType` the filter is offered. */
+  sousType?: string;
+  onSousType?: (sousType: string) => void;
   /** The search in force (empty = the whole list). The caller owns it: address, local state… */
   recherche: string;
   onRecherche: (recherche: string) => void;
@@ -37,7 +32,7 @@ interface Props {
 }
 
 /** The list of one lore type with its search field (E-8); reused by the « Relier » form of E-9. */
-export function ListeRecherche({ universId, type, recherche, onRecherche, ligne, action, videListe }: Props) {
+export function ListeRecherche({ universId, type, recherche, onRecherche, sousType = '', onSousType, ligne, action, videListe }: Props) {
   const perdue = useConnexionPerdue();
   const [saisie, setSaisie] = useState(recherche);
   const [erreur, setErreur] = useState<string>();
@@ -69,7 +64,8 @@ export function ListeRecherche({ universId, type, recherche, onRecherche, ligne,
   }
 
   const base = `/api/univers/${universId}/fiches?type=${type.type}`;
-  const chemin = recherche === '' ? base : `${base}&q=${encodeURIComponent(recherche)}`;
+  const avecSousType = sousType === '' ? base : `${base}&sousType=${encodeURIComponent(sousType)}`;
+  const chemin = recherche === '' ? avecSousType : `${avecSousType}&q=${encodeURIComponent(recherche)}`;
   const etiquette = `Chercher dans ${dans(type)}`;
 
   return (
@@ -88,6 +84,7 @@ export function ListeRecherche({ universId, type, recherche, onRecherche, ligne,
             onKeyDown={touche}
           />
         </div>
+        {onSousType && <FiltreSousType universId={universId} type={type} valeur={sousType} onChoix={onSousType} />}
         <div className="actions">
           <Bouton type="submit" disabled={perdue}>
             Chercher
@@ -105,6 +102,8 @@ export function ListeRecherche({ universId, type, recherche, onRecherche, ligne,
         universId={universId}
         type={type}
         recherche={recherche}
+        sousType={sousType}
+        onSousType={onSousType}
         ligne={ligne}
         action={action}
         videListe={videListe}
@@ -119,11 +118,13 @@ function Resultats({
   universId,
   type,
   recherche,
+  sousType = '',
+  onSousType,
   ligne,
   action,
   videListe,
   onEffacer,
-}: Pick<Props, 'universId' | 'type' | 'recherche' | 'ligne' | 'action' | 'videListe'> & {
+}: Pick<Props, 'universId' | 'type' | 'recherche' | 'sousType' | 'onSousType' | 'ligne' | 'action' | 'videListe'> & {
   chemin: string;
   onEffacer: () => void;
 }) {
@@ -166,7 +167,12 @@ function Resultats({
 
   return (
     <>
-      {fiches.length === 0 && !cherche ? (
+      {fiches.length === 0 && !cherche && sousType !== '' ? (
+        <VideIcone icone={SearchX}>
+          <p>Aucune fiche de ce sous-type.</p>
+          <Bouton onClick={() => onSousType?.('')}>Voir tous {dans(type)}</Bouton>
+        </VideIcone>
+      ) : fiches.length === 0 && !cherche ? (
         videListe
       ) : (
         <>
@@ -198,5 +204,62 @@ function Resultats({
         </Bouton>
       )}
     </>
+  );
+}
+
+interface SousTypeCompte {
+  sousType: string;
+  nb: number;
+}
+
+const compte = (n: number) => (n > 9999 ? '9 999+' : String(n));
+
+/** The « Sous-type » filter of E-8: the sub-types of the sheets of the type the reader sees, with their count. */
+function FiltreSousType({
+  universId,
+  type,
+  valeur,
+  onChoix,
+}: {
+  universId: string;
+  type: TypeVue;
+  valeur: string;
+  onChoix: (sousType: string) => void;
+}) {
+  const [etat] = useCharge<{ sousTypes: SousTypeCompte[] }>(`/api/univers/${universId}/sous-types?type=${type.type}`);
+  if (etat.etat === 'chargement') {
+    return (
+      <div className="filtre-sous-type">
+        <Champ etiquette="Sous-type" liste disabled value="" onChange={() => {}}>
+          <option value="">Sous-type : …</option>
+        </Champ>
+      </div>
+    );
+  }
+  if (etat.etat === 'erreur') {
+    return (
+      <div className="filtre-sous-type">
+        <p className="indispo" role="status">
+          Sous-types indisponibles.
+        </p>
+      </div>
+    );
+  }
+  const liste = etat.valeur.sousTypes;
+  // Hidden when no readable sheet carries one — unless one is filtered (it must stay clearable).
+  if (liste.length === 0 && valeur === '') return null;
+  const inconnu = valeur !== '' && !liste.some((s) => s.sousType === valeur);
+  return (
+    <div className="filtre-sous-type">
+      <Champ etiquette="Sous-type" liste value={valeur} onChange={(e: { target: { value: string } }) => onChoix(e.target.value)}>
+        <option value="">Tous</option>
+        {inconnu && <option value={valeur}>{valeur}</option>}
+        {liste.map((s) => (
+          <option key={s.sousType} value={s.sousType} title={s.sousType}>
+            {s.sousType} ({compte(s.nb)})
+          </option>
+        ))}
+      </Champ>
+    </div>
   );
 }
