@@ -101,3 +101,28 @@ for (const [l, h, th] of [[1440, 900, 'light'], [1440, 900, 'dark'], [390, 844, 
     await ctx.close();
   });
 }
+
+for (const th of ['light', 'dark'] as const) {
+  test(`Mentionnée dans (390px, ${th}) : chaque raison est sous sa puce, alignée à gauche, jamais seule`, opts, async () => {
+    const ctx = await browser.newContext({ storageState: await C.antor.ctx.storageState(), colorScheme: th, viewport: { width: 390, height: 844 } });
+    const page = await ctx.newPage();
+    await page.goto(`${srv.base}/univers/${lame}/fiche/${id['Maître Aldric']}`);
+    await page.waitForLoadState('networkidle');
+    const bloc = page.getByRole('region', { name: 'Mentionnée dans' });
+    await bloc.waitFor();
+    await bloc.scrollIntoViewIfNeeded();
+    const rows = await page.evaluate(() => [...document.querySelectorAll('.bloc-mentions .mention')].map((li) => {
+      const j = li.querySelector('a')!.getBoundingClientRect();
+      const p = li.querySelector('.pourquoi')!.getBoundingClientRect();
+      return { jg: Math.round(j.left), pg: Math.round(p.left), jb: Math.round(j.bottom), pt: Math.round(p.top), pd: Math.round(p.right), w: innerWidth };
+    }));
+    assert.ok(rows.length >= 3, `au moins 3 mentions (obtenu ${rows.length})`);
+    for (const r of rows) {
+      assert.ok(Math.abs(r.jg - r.pg) <= 1, `raison alignée sur sa puce ${JSON.stringify(r)}`);
+      assert.ok(r.pt >= r.jb, `raison sous sa puce ${JSON.stringify(r)}`);
+      assert.ok(r.pd <= r.w, `raison dans l'écran ${JSON.stringify(r)}`);
+    }
+    await page.screenshot({ path: `/tmp/liens-ecran-mep-mentions-390-${th}.png` });
+    await ctx.close();
+  });
+}
