@@ -6,3 +6,8 @@
 .bloc-mentions .cible:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
 .bloc-mentions .pourquoi { color: var(--texte-3); font-size: var(--t-13); }
 .bloc-mentions .echec { color: var(--danger); font-size: var(--t-14); }
+/* Narrow screens: the reason always sits under its chip, so every row reads the same. */
+@media (max-width: 760px) {
+  .bloc-mentions .mention { flex-direction: column; align-items: flex-start; gap: 2px; padding: 3px 0; }
+  .bloc-mentions .mention .jeton { max-width: 100%; }
+}
