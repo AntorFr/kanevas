@@ -2,7 +2,7 @@ import type { Readable } from 'node:stream';
 
 import { attachmentsDir } from '../config/env.js';
 import type { Db } from '../db/db.js';
-import { exigerRole, peutEcrireSection, peutLireSection, roleDe, vueMJ } from './droits.js';
+import { exigerRole, peutEcrireSection, peutLireSection, peutVoirFiche, roleDe, vueMJ } from './droits.js';
 import { ErreurService, introuvable, invalide, refuse } from './erreurs.js';
 import {
   abandonner,
@@ -142,6 +142,17 @@ function exigerMJReel(db: Db, universId: number, acteur: Acteur): void {
   if (exigerRole(db, universId, acteur.compteId) !== 'mj') throw refuse();
 }
 
+/**
+ * The GM of the sheet's universe, for an illustration (AD-93): an unknown or invisible sheet is not found
+ * (same answer for both), a visible one is refused to who is not GM. Real rights, never the player mode.
+ */
+function exigerMJDeFiche(db: Db, universId: number, acteur: Acteur, ficheId: number): void {
+  const role = exigerRole(db, universId, acteur.compteId);
+  const f = db.prepare('SELECT 1 AS ok FROM fiches WHERE id = ? AND univers_id = ?').get(ficheId, universId);
+  if (!f || !peutVoirFiche(db, role, ficheId, { compteId: acteur.compteId })) throw introuvable();
+  if (role !== 'mj') throw refuse();
+}
+
 /** The section of this sheet of this universe with the caller's role, or not found. */
 function contexteSection(db: Db, acteur: Acteur, universId: number, ficheId: number | null, sectionId: number) {
   const role = exigerRole(db, universId, acteur.compteId);
@@ -209,11 +220,7 @@ function autoriser(db: Db, acteur: Acteur, universId: number, cible: CibleFichie
       if (role !== 'mj') throw refuse();
       return { visibilite: 'joueurs', role };
     case 'illustration': {
-      if (role !== 'mj') throw refuse();
-      const f = db
-        .prepare('SELECT 1 AS ok FROM fiches WHERE id = ? AND univers_id = ?')
-        .get(cible.ficheId, universId);
-      if (!f) throw introuvable();
+      exigerMJDeFiche(db, universId, acteur, cible.ficheId);
       // Visible of the players when at least one section of the sheet is read by them (AD-111).
       const lue = db
         .prepare('SELECT 1 AS ok FROM sections WHERE fiche_id = ? AND joueurs_lisent = 1 LIMIT 1')
@@ -349,11 +356,7 @@ export function choisirIllustration(
   fichierId: number,
 ): FichierVue {
   return db.transaction(() => {
-    exigerMJReel(db, universId, acteur);
-    const fiche = db
-      .prepare('SELECT 1 AS ok FROM fiches WHERE id = ? AND univers_id = ?')
-      .get(ficheId, universId);
-    if (!fiche) throw introuvable();
+    exigerMJDeFiche(db, universId, acteur, ficheId);
     const f = chargerFichier(db, universId, fichierId);
     if (!estImage(f.type)) {
       throw new ErreurService(
@@ -370,11 +373,7 @@ export function choisirIllustration(
 /** Removes the illustration of a sheet (a no-op when there is none); the file stays in the library. */
 export function retirerIllustration(db: Db, acteur: Acteur, universId: number, ficheId: number): void {
   db.transaction(() => {
-    exigerMJReel(db, universId, acteur);
-    const fiche = db
-      .prepare('SELECT 1 AS ok FROM fiches WHERE id = ? AND univers_id = ?')
-      .get(ficheId, universId);
-    if (!fiche) throw introuvable();
+    exigerMJDeFiche(db, universId, acteur, ficheId);
     db.prepare('UPDATE fiches SET illustration_fichier_id = NULL WHERE id = ?').run(ficheId);
   })();
 }
@@ -524,6 +523,7 @@ export function recalculerFichiersSection(
       .all(...ids, sectionId) as { id: number }[];
     for (const r of rows) existants.add(r.id);
   }
+  db.prepare('DELETE FROM fichiers_sections WHERE section_id = ? AND joint = 0').run(sectionId);
   db.prepare('UPDATE fichiers_sections SET dans_texte = 0, dans_bloc_mj = 0 WHERE section_id = ?').run(sectionId);
   const poser = db.prepare(
     `INSERT INTO fichiers_sections (fichier_id, section_id, joint, dans_texte, dans_bloc_mj)

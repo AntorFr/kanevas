@@ -21,5 +21,5 @@ export const MESSAGES_PIECES = {
   vide: (nom: string) => `« ${nom} » est vide.`,
   envoi: (nom: string) => `« ${nom} » : l’envoi n’a pas abouti.`,
   limite: (role: 'mj' | 'joueur') =>
-    role === 'mj' ? 'Cette section porte déjà 50 pièces jointes.' : 'Cette section ne peut pas recevoir d’autre fichier.',
+    role === 'mj' ? 'Cette section porte déjà 100 fichiers joints.' : 'Cette section ne peut pas recevoir d’autre fichier.',
 };
