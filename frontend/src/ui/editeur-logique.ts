@@ -94,3 +94,55 @@ export function ouvrirLien(texte: string, debut: number, fin: number): Selection
   const f = a + 2 + choisi.length;
   return { texte: texte.slice(0, a) + '[[' + choisi + texte.slice(b), debut: f, fin: f };
 }
+
+/** The name a file reference shows: no `[` `]` nor line break, which would end the label early. */
+export function nomDeReference(nom: string): string {
+  return nom.replace(/[[\]\r\n]+/g, ' ').trim();
+}
+
+/** The reference put in a text for a file (B-44): an image `![nom](fichier:<id>)`, a document `[nom](fichier:<id>)`. */
+export function referenceFichier(nom: string, id: number, image: boolean): string {
+  return `${image ? '!' : ''}[${nomDeReference(nom)}](fichier:${id})`;
+}
+
+/** Puts `insertion` at the selection (replacing it), the caret landing after it. */
+export function insererTexte(texte: string, debut: number, fin: number, insertion: string): Selection {
+  const a = Math.max(0, Math.min(debut, fin, texte.length));
+  const b = Math.min(texte.length, Math.max(debut, fin));
+  const f = a + insertion.length;
+  return { texte: texte.slice(0, a) + insertion + texte.slice(b), debut: f, fin: f };
+}
+
+/** Whether `position` stands between a `:::mj` line and its closing `:::` line (AD-114). */
+export function dansBlocMJ(texte: string, position: number): boolean {
+  let ouvert = false;
+  let decalage = 0;
+  for (const ligne of texte.split('\n')) {
+    if (decalage > position) break;
+    const t = ligne.trim();
+    if (!ouvert && /^:::mj$/.test(t)) ouvert = true;
+    else if (ouvert && t === ':::') ouvert = false;
+    decalage += ligne.length + 1;
+  }
+  return ouvert;
+}
+
+/** The text without its `:::mj` blocks: what the players could read of it. */
+export function sansBlocsMJ(texte: string): string {
+  let ouvert = false;
+  const gardees: string[] = [];
+  for (const ligne of texte.split('\n')) {
+    const t = ligne.trim();
+    if (!ouvert && /^:::mj$/.test(t)) ouvert = true;
+    else if (ouvert && t === ':::') ouvert = false;
+    else if (!ouvert) gardees.push(ligne);
+  }
+  return gardees.join('\n');
+}
+
+/** The ids of the files a text references with `(fichier:<id>)`, in order, without repeats. */
+export function idsFichiers(texte: string): number[] {
+  const ids = new Set<number>();
+  for (const m of texte.matchAll(/\(fichier:(\d+)\)/g)) ids.add(Number(m[1]));
+  return [...ids];
+}

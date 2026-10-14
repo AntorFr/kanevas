@@ -97,6 +97,8 @@ export function envoyerFichier<T>(
   fichier: File,
   surProgres: (pourcent: number) => void,
   methode: 'PUT' | 'POST' = 'PUT',
+  /** Form fields sent before the file: the server reads them before the stream. */
+  champs: Record<string, string> = {},
 ): { promesse: Promise<T>; annuler: () => void } {
   const xhr = new XMLHttpRequest();
   const promesse = new Promise<T>((resolve, reject) => {
@@ -132,6 +134,7 @@ export function envoyerFichier<T>(
       );
     };
     const corps = new FormData();
+    for (const [nom, valeur] of Object.entries(champs)) corps.append(nom, valeur);
     corps.append('fichier', fichier);
     xhr.send(corps);
   });

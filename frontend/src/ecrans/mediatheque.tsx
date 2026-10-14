@@ -10,6 +10,7 @@ import { Bouton, BoiteDialogue, Champ, ErreurChargement, Pastille, PageIntrouvab
 import './ecrans.css';
 import './mediatheque/mediatheque.css';
 import {
+  Apercu,
   extension,
   iconeDe,
   octets,
@@ -31,38 +32,6 @@ interface Envoi {
   fichier: File;
   pct: number;
   echec: boolean;
-}
-
-/** Thumbnail of an image (lazy, `cover`) or the tile of a document; the file is only what the server sent. */
-function Apercu({ universId, f, grand }: { universId: string; f: Fichier; grand?: boolean }) {
-  const [casse, setCasse] = useState(false);
-  useEffect(() => setCasse(false), [f.id, f.jeton]);
-  if (f.image && !casse) {
-    return (
-      <img
-        className={grand ? 'med-grand' : 'med-vignette'}
-        src={octets(universId, f)}
-        alt={grand ? f.nom : ''}
-        loading={grand ? undefined : 'lazy'}
-        onError={() => setCasse(true)}
-      />
-    );
-  }
-  if (f.image) {
-    return (
-      <span className={grand ? 'med-grand med-doc' : 'med-vignette med-doc'}>
-        <ImageOff size={grand ? 40 : 28} strokeWidth={1.75} aria-hidden="true" />
-        <span>Image indisponible.</span>
-      </span>
-    );
-  }
-  const Icone = iconeDe(f);
-  return (
-    <span className={grand ? 'med-grand med-doc' : 'med-vignette med-doc'}>
-      <Icone size={grand ? 48 : 32} strokeWidth={1.75} aria-hidden="true" />
-      {!grand && extension(f.nom) !== '' && <b className="med-ext">{extension(f.nom)}</b>}
-    </span>
-  );
 }
 
 /** The sentence of the « Supprimer » box: the sheets that lose the file, one entry per sheet. */

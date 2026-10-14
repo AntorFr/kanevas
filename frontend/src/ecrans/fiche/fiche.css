@@ -195,3 +195,7 @@ a.cadre-ill:focus-visible { outline-offset: 2px; border-radius: var(--rayon-pann
 .changer-type .retrait { color: var(--texte-2); font-size: var(--t-13); }
 @media (max-width: 760px) { .changer-type .resultat { min-height: 40px; } }
 .fiche .blocs:empty { display: none; }
+
+/* A reserved illustration (B-24): a neutral frame that says so, in the header of a sheet the reader sees. */
+.ill-fermee { color: var(--texte-3); background: var(--surface-2); }
+.pieces-jointes .envoi-fichier { width: 100%; }

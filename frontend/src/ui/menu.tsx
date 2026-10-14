@@ -40,6 +40,7 @@ export function Menu({
   aligne = 'fin',
   ouvre = 'bas',
   large,
+  desactive,
 }: {
   /** Accessible name of the trigger. */
   etiquette: string;
@@ -52,6 +53,8 @@ export function Menu({
   ouvre?: 'bas' | 'haut';
   /** The trigger and the menu take the width of their container. */
   large?: boolean;
+  /** The trigger is inert (connection lost). */
+  desactive?: boolean;
 }) {
   const [ouvert, setOuvert] = useState(false);
   const racine = useRef<HTMLDivElement>(null);
@@ -102,6 +105,7 @@ export function Menu({
         className={declencheur ? 'menu-declencheur' : 'bouton-icone'}
         aria-haspopup="menu"
         aria-expanded={ouvert}
+        disabled={desactive}
         aria-controls={ouvert ? idMenu : undefined}
         aria-label={declencheur ? undefined : etiquette}
         title={declencheur ? undefined : etiquette}

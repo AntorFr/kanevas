@@ -16,7 +16,7 @@ export function formaterTaille(octets: number): string {
 export const MESSAGES_PIECES = {
   echec: 'L’action n’a pas abouti. Réessayez.',
   droit: 'Vous ne pouvez plus ajouter de fichier à cette section.',
-  disparue: 'Cette pièce jointe n’existe plus.',
+  disparue: 'Ce fichier joint n’existe plus.',
   introuvable: 'Page introuvable.',
   vide: (nom: string) => `« ${nom} » est vide.`,
   envoi: (nom: string) => `« ${nom} » : l’envoi n’a pas abouti.`,
