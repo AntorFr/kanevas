@@ -158,6 +158,7 @@ function PageFiche() {
         universId={id!}
         fiche={fiche}
         gestion={gestion && etat.k === 'ok'}
+        modeJoueur={mj && modeEffectif === 'joueur'}
         badge={badgeFiche(types, fiche)}
         Icone={Icone}
         message={messageIll}
