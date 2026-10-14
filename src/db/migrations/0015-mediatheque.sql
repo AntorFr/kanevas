@@ -1,4 +1,4 @@
--- Migration 0014 (kanevas-import-mediatheque, number taken at merge, AD-51): the media library of a
+-- Migration 0015 (kanevas-import-mediatheque, number taken at merge, AD-51): the media library of a
 -- universe (AD-111, AD-117 §4). Expand only: every attachment and every illustration becomes a row of
 -- `fichiers` (same file on the disk, no byte copied); `pieces_jointes` is emptied, not dropped, and the
 -- three illustration columns of AD-93 stay in `fiches`, unused (their removal is a later tightening).

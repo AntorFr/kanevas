@@ -53,7 +53,7 @@ test('migration: tables, types sans CHECK, clés étrangères, idempotente', () 
   const tables = (
     db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' AND name != 'migrations' AND name NOT LIKE 'recherche!_%' ESCAPE '!' ORDER BY name").all() as { name: string }[]
   ).map((r) => r.name);
-  assert.deepEqual(tables, ['campagnes', 'cartes', 'comptes', 'elements_carte', 'fiches', 'fichiers', 'fichiers_attente', 'fichiers_sections', 'gabarits', 'jetons_api', 'liens', 'lots_import', 'membres', 'pieces_jointes', 'propositions', 'relations', 'scenarios', 'sections', 'systemes_jeu', 'taches_preparation', 'types_systeme', 'types_univers', 'univers']);
+  assert.deepEqual(tables, ['campagnes', 'cartes', 'comptes', 'elements_carte', 'etiquettes', 'fiche_alias', 'fiche_etiquettes', 'fiches', 'fichiers', 'fichiers_attente', 'fichiers_sections', 'gabarits', 'jetons_api', 'liens', 'lots_import', 'membres', 'pieces_jointes', 'propositions', 'relations', 'scenarios', 'sections', 'systemes_jeu', 'taches_preparation', 'types_systeme', 'types_univers', 'univers']);
   assert.equal(db.pragma('foreign_keys', { simple: true }), 1);
   assert.equal((db.prepare('SELECT count(*) n FROM migrations').get() as { n: number }).n, 14);
   assert.throws(() => db.prepare("INSERT INTO membres VALUES (99, 99, 'mj')").run());

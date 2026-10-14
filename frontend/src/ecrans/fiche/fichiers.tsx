@@ -70,6 +70,8 @@ export interface ConfigAjout<R> {
 }
 
 /** The trigger menu, its upload lines and messages, and the picker; `deposer` is the drop of files. */
+const repetable = (texte: string) => texte.includes('envoi n’a pas abouti');
+
 export function useAjoutFichier<R>(c: ConfigAjout<R>) {
   const perdue = useConnexionPerdue();
   const { toast } = useToasts();
@@ -117,7 +119,8 @@ export function useAjoutFichier<R>(c: ConfigAjout<R>) {
 
   function montrer(texte: string, fichier: File) {
     const k = courant.current;
-    if (k.surMessage) return k.surMessage(texte, () => void direct([fichier]));
+    // Only an interrupted upload can be retried; a definitive refusal offers « Ignorer » alone.
+    if (k.surMessage) return k.surMessage(texte, repetable(texte) ? () => void direct([fichier]) : undefined);
     setMessages((l) => [...l, { cle: ++suite.current, texte, fichier }]);
   }
 
@@ -186,7 +189,7 @@ export function useAjoutFichier<R>(c: ConfigAjout<R>) {
       {messages.map((m) => (
         <div key={m.cle} className="echec" role="alert">
           {m.texte}{' '}
-          {m.fichier && m.texte.includes('l’envoi n’a pas abouti') && (
+          {m.fichier && repetable(m.texte) && (
             <Bouton
               petit
               ecrit

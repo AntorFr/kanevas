@@ -199,3 +199,15 @@ a.cadre-ill:focus-visible { outline-offset: 2px; border-radius: var(--rayon-pann
 /* A reserved illustration (B-24): a neutral frame that says so, in the header of a sheet the reader sees. */
 .ill-fermee { color: var(--texte-3); background: var(--surface-2); }
 .pieces-jointes .envoi-fichier { width: 100%; }
+
+/* E-9: aliases under the title, label pills, and the « Alias et étiquettes » box */
+.alias-fiche { margin: var(--e-1) 0 0; font-size: var(--t-14); color: var(--texte-2); overflow-wrap: anywhere; }
+.etiquettes-fiche { display: flex; flex-wrap: wrap; gap: var(--e-2); list-style: none; margin: var(--e-2) 0 0; padding: 0; }
+.etiquettes-fiche .pastille { text-decoration: none; max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
+.boite-etiquetage { display: flex; flex-direction: column; gap: var(--e-4); max-height: 70vh; overflow-y: auto; }
+.boite-etiquetage .actions { display: flex; gap: var(--e-2); }
+.pastilles-saisies { display: flex; flex-wrap: wrap; gap: var(--e-2); list-style: none; margin: var(--e-2) 0 0; padding: 0; }
+.pastilles-saisies .pastille { max-width: 100%; padding-right: 4px; }
+.pastilles-saisies .texte-pastille { overflow: hidden; text-overflow: ellipsis; }
+.pastilles-saisies button { display: inline-grid; place-items: center; width: 18px; height: 18px; padding: 0; border: 0; border-radius: 50%; background: transparent; color: inherit; cursor: pointer; }
+.pastilles-saisies button:hover { background: var(--bord); }
