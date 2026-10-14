@@ -97,7 +97,7 @@ export function registerFichesRoutes(app: FastifyInstance) {
     return changerSousType(app.db, request.session!.id, i.univers, i.fiche, b.sousType);
   });
 
-  // Same row, other type (AD-113 (4)); `charge` carries `pj` for a character, `sousType` a new sub-type.
+  // Same row, other type (AD-120 (4)); `charge` carries `pj` for a character, `sousType` a new sub-type.
   app.post(`${base}/:fid/type`, async (request) => {
     const i = ids(request);
     const b = corps(request);

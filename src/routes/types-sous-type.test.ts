@@ -1,4 +1,4 @@
-// Tests of kanevas-types-sous-type, written from the exit criterion only (B-52, B-48, AD-113 (4)).
+// Tests of kanevas-types-sous-type, written from the exit criterion only (B-52, B-48, AD-120 (4)).
 // HTTP in stub mode, real SQLite.
 import assert from 'node:assert/strict';
 import { test } from 'node:test';

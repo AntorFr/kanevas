@@ -1,5 +1,5 @@
 // Browser tests of kanevas-types-ecran-fiche, from its exit criterion: E-9 sub-type edited in place and
-// « Changer le type… » (AD-113). Real server in stub mode WITH the starting world, real Chromium.
+// « Changer le type… » (AD-120). Real server in stub mode WITH the starting world, real Chromium.
 import assert from 'node:assert/strict';
 import { after, before, describe, test } from 'node:test';
 

@@ -1,5 +1,5 @@
 // Browser tests of kanevas-types-ecrans-lore, from its exit criterion: the bar, the lists, the creation
-// and the map window follow the types enabled for the universe (AD-113). Real server in stub mode WITH
+// and the map window follow the types enabled for the universe (AD-120). Real server in stub mode WITH
 // the starting world (Lame d'Ébène, CoF Mini…), real Chromium; settings are laid by the real routes.
 import assert from 'node:assert/strict';
 import { after, before, describe, test } from 'node:test';
