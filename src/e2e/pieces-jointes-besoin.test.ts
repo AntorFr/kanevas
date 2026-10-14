@@ -333,6 +333,7 @@ describe('kanevas-fichiers — besoin B-24', () => {
     await attendre(antor.page);
     // AD-117, third read rule: the GM in Player mode still reads the files he added himself, even reserved;
     // what he must not see is the « MJ seul » mark and the GM controls.
+    await app.getByText('Secrète — MJ seul').waitFor({ state: 'detached' }); // the mode switch reloads the fiche
     assert.equal(await app.getByText('Secrète — MJ seul').count(), 0, 'no mark of the GM');
     assert.equal(await antor.page.getByLabel(rx('Secrète (MJ seul)')).count(), 0, 'case Secrète');
     assert.equal(await antor.page.getByRole('button', { name: rx('Rendre secrète') }).count(), 0, 'Rendre secrète');

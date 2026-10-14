@@ -160,6 +160,9 @@ describe('kanevas-il-illustration-ecrans, E-8 grille et E-9 en-tête', { skip: s
     await fiche(antor, 'Maître Aldric');
     await antor.getByRole('radio', { name: /Mode Joueur|^Joueur$/ }).check();
     await antor.getByRole('img', { name: 'Illustration de « Maître Aldric »' }).waitFor();
+    // The switch reloads the sheet: the gestures of the GM (the semi-seed joins a file to « Maître Aldric ») go away.
+    await attendre(antor);
+    await antor.waitForFunction(() => ![...document.querySelectorAll('button')].some((b) => /Remplacer|Retirer/.test(b.getAttribute('aria-label') ?? b.textContent ?? '')));
     assert.equal(await antor.getByRole('button', { name: /Remplacer|Retirer/ }).count(), 0);
     const put = await lea.request.fetch(`${srv.base}/api/univers/${U}/fiches/${ids['Maître Aldric']}/illustration`, {
       method: 'PUT',
