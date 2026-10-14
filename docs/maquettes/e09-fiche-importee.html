@@ -68,6 +68,7 @@
      #etat-sous-type  le sous-type en édition dans le badge : champ « Port » et la liste des sous-types
                       de lieu déjà employés (Port, Port franc, Quartier, Sphère, Taverne)
      #etat-menu       menu « ⋯ » de l'en-tête ouvert
+     #etat-changer-type boîte « Changer le type de « Port-Sel » » : types activés, « Autres types », choix PJ / PNJ pour un personnage, sous-type retiré
      #etat-deplacer   boîte « Déplacer sous… » : liste de recherche, « Aucun parent », refus du cycle
      #etat-supprimer  boîte « Supprimer « Port-Sel » ? »
      #etat-tiroir     barre latérale ouverte au téléphone
@@ -1237,6 +1238,48 @@ body.mode-joueur .image-section.reservee .image-reservee { display: flex; }
   </div>
 </div>
 
+<!-- Boîte : Changer le type -->
+<div class="voile" id="voile-changer-type" aria-hidden="true">
+  <div class="dialogue large" role="dialog" aria-modal="true" aria-labelledby="ct-titre">
+    <div class="ic-dialogue neutre"><svg class="i" aria-hidden="true"><use href="#i-shapes"/></svg></div>
+    <h3 id="ct-titre">Changer le type de « Port-Sel »</h3>
+    <div class="resultats" role="radiogroup" aria-label="Nouveau type" id="ct-types">
+      <button type="button" class="resultat" role="radio" aria-checked="false" data-type="Personnage"><span class="puce"></span><svg class="i p" aria-hidden="true"><use href="#i-users-round"/></svg>Personnage</button>
+      <button type="button" class="resultat" role="radio" aria-checked="true" data-type="Lieu"><span class="puce"></span><svg class="i p" aria-hidden="true"><use href="#i-map-pin"/></svg>Lieu<span class="type-option">(actuel)</span></button>
+      <button type="button" class="resultat" role="radio" aria-checked="false" data-type="Faction"><span class="puce"></span><svg class="i p" aria-hidden="true"><use href="#i-shield"/></svg>Faction</button>
+      <button type="button" class="resultat" role="radio" aria-checked="false" data-type="Objet"><span class="puce"></span><svg class="i p" aria-hidden="true"><use href="#i-gem"/></svg>Objet</button>
+      <button type="button" class="resultat" role="radio" aria-checked="false" data-type="Événement"><span class="puce"></span><svg class="i p" aria-hidden="true"><use href="#i-hourglass"/></svg>Événement</button>
+      <button type="button" class="resultat" role="radio" aria-checked="false" data-type="Quête"><span class="puce"></span><svg class="i p" aria-hidden="true"><use href="#i-scroll-text"/></svg>Quête</button>
+      <button type="button" class="resultat" role="radio" aria-checked="false" data-type="Créature"><span class="puce"></span><svg class="i p" aria-hidden="true"><use href="#i-paw-print"/></svg>Créature</button>
+      <button type="button" class="resultat" role="radio" aria-checked="false" data-type="Race"><span class="puce"></span><svg class="i p" aria-hidden="true"><use href="#i-dna"/></svg>Race</button>
+      <button type="button" class="resultat" role="radio" aria-checked="false" data-type="Vaisseau"><span class="puce"></span><svg class="i p" aria-hidden="true"><use href="#i-ship"/></svg>Vaisseau</button>
+      <button type="button" class="resultat" role="radio" aria-checked="false" data-type="Savoir"><span class="puce"></span><svg class="i p" aria-hidden="true"><use href="#i-lightbulb"/></svg>Savoir</button>
+      <button type="button" class="resultat" role="radio" aria-checked="false" data-type="Récit"><span class="puce"></span><svg class="i p" aria-hidden="true"><use href="#i-book-open"/></svg>Récit</button>
+      <button type="button" class="resultat" role="radio" aria-checked="false" data-type="Règle"><span class="puce"></span><svg class="i p" aria-hidden="true"><use href="#i-scale"/></svg>Règle</button>
+      <div class="sep-res" role="presentation"></div>
+      <div class="titre-res" style="padding:4px 8px;font-size:var(--t-12);font-weight:500;color:var(--texte-3)">Autres types</div>
+      <button type="button" class="resultat" role="radio" aria-checked="false" data-type="Note"><span class="puce"></span><svg class="i p" aria-hidden="true"><use href="#i-sticky-note"/></svg>Note<span class="type-option">désactivé</span></button>
+    </div>
+    <div class="champ" id="ct-pj" hidden>
+      <span style="font-size:var(--t-12);font-weight:500;color:var(--texte-2)">Personnage</span>
+      <div role="radiogroup" aria-label="PJ ou PNJ" style="display:flex;gap:8px;margin-top:4px">
+        <button type="button" class="bouton" role="radio" aria-checked="false">PJ</button>
+        <button type="button" class="bouton" role="radio" aria-checked="true">PNJ</button>
+      </div>
+    </div>
+    <div class="champ">
+      <label for="ct-sous-type" style="font-size:var(--t-12);font-weight:500;color:var(--texte-2)">Sous-type</label>
+      <input class="saisie" id="ct-sous-type" autocomplete="off" maxlength="60" placeholder="Facultatif">
+    </div>
+    <p id="ct-info" style="font-size:var(--t-13);color:var(--texte-2)">Le sous-type « Port » sera retiré.</p>
+    <div class="alerte" role="alert" id="ct-erreur" hidden><svg class="i" aria-hidden="true"><use href="#i-circle-alert"/></svg><div class="corps-alerte"><span>Le type n'a pas changé. Réessayez.</span></div></div>
+    <div class="actions">
+      <button class="bouton" id="ct-annuler">Annuler</button>
+      <button class="bouton principal" id="ct-confirmer" disabled>Changer le type</button>
+    </div>
+  </div>
+</div>
+
 <!-- Boîte : Supprimer la fiche -->
 <div class="voile" id="voile-supprimer" aria-hidden="true">
   <div class="dialogue large" role="alertdialog" aria-modal="true" aria-labelledby="sup-titre" aria-describedby="sup-texte">
@@ -1851,6 +1894,20 @@ var ILLUS = (function () {
   });
   function ouvrirDeplacer() { choisirParent(null); $('#dep-cherche').value = ''; $$('#dep-resultats .resultat').forEach(function (b) { b.hidden = false; }); ouvrirDialogue($('#voile-deplacer'), $('#dep-cherche')); }
   $('[data-deplacer]').onclick = ouvrirDeplacer;
+  // Changer le type : le type courant reste « (actuel) » ; « Personnage » ouvre PJ / PNJ ; « Changer le type » n'est actif qu'après un autre choix.
+  var ctChoix = null;
+  function choisirType(b) {
+    ctChoix = b;
+    $$('#ct-types .resultat').forEach(function (x) { x.setAttribute('aria-checked', x === b || (!b && x.querySelector('.type-option') && x.querySelector('.type-option').textContent === '(actuel)')); });
+    var autre = b && !(b.querySelector('.type-option') && b.querySelector('.type-option').textContent === '(actuel)');
+    $('#ct-confirmer').disabled = !autre;
+    $('#ct-pj').hidden = !(b && b.dataset.type === 'Personnage');
+  }
+  $$('#ct-types .resultat').forEach(function (b) { b.onclick = function () { choisirType(b); }; });
+  function ouvrirChangerType() { choisirType(null); ouvrirDialogue($('#voile-changer-type'), $('#ct-types .resultat[aria-checked=true]')); }
+  $('[data-changer-type]').onclick = ouvrirChangerType;
+  $('#ct-annuler').onclick = fermerDialogue;
+  $('#ct-confirmer').onclick = function () { if (!ctChoix) return; fermerDialogue(); toast('Type changé : Lieu → ' + ctChoix.dataset.type + '.'); };
   $('#dep-annuler').onclick = fermerDialogue;
   $('#dep-confirmer').onclick = function () {
     if (!depChoix) return;
@@ -2015,6 +2072,7 @@ var ILLUS = (function () {
         choisirParent($('#dep-resultats [data-descendant]'));
         $('#dep-erreur').hidden = false;
       });
+      if (et === 'changer-type') plus_tard(function () { ouvrirChangerType(); choisirType($('#ct-types [data-type="Savoir"]')); });
       if (et === 'supprimer') plus_tard(function () { ouvrirDialogue($('#voile-supprimer'), $('#sup-annuler')); });
       if (et === 'tiroir') tiroir(true);
       if (et === 'liens') { $('#etats-liens').hidden = false; $('#etats-liens').style.display = 'grid'; $('#etats-liens').scrollIntoView(); }

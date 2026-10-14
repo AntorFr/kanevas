@@ -38,7 +38,7 @@
 .ligne-suivi .libelle { flex: 1; min-width: 0; overflow-wrap: anywhere; }
 
 /* Search in a type */
-.recherche { display: flex; flex-wrap: wrap; align-items: flex-start; gap: var(--e-2); margin: var(--e-6) 0 0; }
+.recherche { display: flex; flex-wrap: wrap; align-items: center; gap: var(--e-2); margin: var(--e-6) 0 0; }
 .champ-recherche { position: relative; flex: 1 1 220px; min-width: 0; }
 .champ-recherche > svg { position: absolute; left: 10px; top: 9px; color: var(--texte-3); pointer-events: none; z-index: 1; }
 .champ-recherche .champ { margin: 0; }
@@ -178,3 +178,12 @@ main.principal:has(.page-grille) { max-width: 1080px; }
   .page-systeme .barre-outils { flex-direction: column; align-items: stretch; }
   .page-systeme .barre-outils .onglets { align-self: flex-start; }
 }
+
+/* Sub-type under the title of a card (B-52): quiet, one line, the whole text in the tooltip. */
+.carte .sous-type { margin-top: -6px; padding: 0 2px; font-size: var(--t-13); color: var(--texte-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.filtre-sous-type { position: relative; flex: 0 1 200px; min-width: 140px; }
+@media (max-width: 520px) { .filtre-sous-type { flex: 1 1 100%; } }
+.filtre-sous-type .champ { margin: 0; }
+.filtre-sous-type .champ > .lib-champ { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; margin: 0; }
+.filtre-sous-type .indispo { margin: 0; font-size: var(--t-13); color: var(--texte-3); }
+.note-type { margin: var(--e-3) 0 0; color: var(--texte-3); font-size: var(--t-13); }

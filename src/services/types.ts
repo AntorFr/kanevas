@@ -1,15 +1,7 @@
 export type Role = 'mj' | 'joueur';
 
-export const TYPES_FICHE = [
-  'personnage',
-  'lieu',
-  'faction',
-  'objet',
-  'evenement',
-  'quete',
-  'compte_rendu',
-] as const;
-export type TypeFiche = (typeof TYPES_FICHE)[number];
+export { TYPES_FICHE, type TypeFiche } from './types-fiche.js';
+import type { TypeFiche } from './types-fiche.js';
 
 /**
  * Who is asking. `modeJoueur` (AD-39) only restricts READS: the caller is read
@@ -96,6 +88,8 @@ export interface Fiche {
   universId: number;
   type: TypeFiche;
   titre: string;
+  /** Free sub-type (B-52), null when none. */
+  sousType: string | null;
   charge: Record<string, unknown>;
   creeLe: string;
   modifieLe: string;

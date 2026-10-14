@@ -6,7 +6,7 @@ import { lire, useConnexionPerdue } from '../../api';
 import { Bouton } from '../../ui';
 import './mentions.css';
 import type { Mention } from './types';
-import { iconeDuType } from './types-fiche';
+import { iconeDuType, useTypes } from '../../types-contexte';
 
 /** « lien dans « Histoire » », the relation's label, or both separated by « · » (B-36). */
 export function pourquoiDe(m: Mention): string {
@@ -30,6 +30,7 @@ interface Props {
  * the sheet, the rest by `GET …/mentions?apres=`. No block when there is nothing to show, and never a count of what is hidden.
  */
 export function BlocMentions({ universId, ficheId, mentions, suite, restantes, suffixeMode }: Props) {
+  const { types } = useTypes();
   const perdue = useConnexionPerdue();
   const [ajoutees, setAjoutees] = useState<Mention[]>([]);
   const [reste, setReste] = useState(suite ? restantes : 0);
@@ -73,7 +74,7 @@ export function BlocMentions({ universId, ficheId, mentions, suite, restantes, s
         <div className="bloc-contenu">
           <ul className="mentions">
             {toutes.map((m) => {
-              const Icone = iconeDuType(m.type);
+              const Icone = iconeDuType(types, m.type);
               return (
                 <li key={m.ficheId} className="mention">
                   <Link className="jeton cible" to={`/univers/${universId}/fiche/${m.ficheId}`}>

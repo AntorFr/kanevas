@@ -308,7 +308,7 @@ introuvable. ».
    « Active » ; il relit les CR les plus récents, crée ou ouvre un **scénario** (E-7) et l'écrit
    (ou demande à son **assistant** (E-12) de créer la campagne ou le scénario : le bloc d'écriture mène à E-6 ou E-7).
 3. Il coche ou ajoute des tâches de **préparation** (E-6).
-4. **Lore** : depuis la **liste d'un type** (E-8), il crée un PNJ ; sur la **fiche** (E-9), il
+4. **Lore** : depuis la **liste d'un type** (E-8, parmi les types activés), il crée un PNJ ou un lieu, avec au besoin son **sous-type** ; sur la **fiche** (E-9), il
    écrit « Apparence » (lue des joueurs) et « Vérité — MJ seul », relie le PNJ à sa faction,
    dépose le plan d'un lieu, et pose le portrait d'Aldric en **illustration** de la fiche (visible
    de qui voit la fiche) ; de retour sur la liste, la carte d'Aldric porte ce portrait.
@@ -344,7 +344,8 @@ pas — le cadre dit « Image indisponible. » et il garde « Remplacer » et «
 1. **Accueil** (E-1) → **vue d'ensemble** de l'univers (E-3) : les derniers CR, les cartes
    visibles.
 2. Il parcourt la **liste des personnages** (E-8), une grille de cartes illustrées, et reconnaît
-   Aldric à son portrait — ou le cherche par son nom — puis ouvre la **fiche** (E-9) : seulement ce
+   Aldric à son portrait — ou le cherche par son nom — ; sur la liste des lieux, il peut filtrer par
+   **sous-type** (« Taverne ») parmi ceux des fiches qu'il voit ; puis ouvre la **fiche** (E-9) : seulement ce
    que la table sait.
 3. Il ouvre la **carte** (E-11), touche un token, relit la fiche.
 4. Ou il demande à son **assistant** (E-12) « que sait-on d'Aldric ? ».
@@ -471,16 +472,16 @@ rien depuis le dernier import — absente de l'arbre, de la recherche et des « 
 
 ### P-13 — Choisir les types d'un système et d'un univers (MJ)
 *Antor joue « CoF Mini » dans « Lame d'Ébène », sauf que son univers a des vaisseaux.*
-1. **Système de jeu** (E-15), bloc « Types de fiche » : il désactive « Vaisseau » et « Note » pour
+1. **Système de jeu** (E-15), onglet « Types de fiche » : il désactive « Vaisseau » et « Note » pour
    le système ; Mira, MJ d'un autre univers du système, voit ces types quitter sa barre.
-2. **Paramètres** de « Lame d'Ébène » (E-14), bloc « Types de fiche » : chaque type dit « Système · activé »
+2. **Paramètres** de « Lame d'Ébène » (E-14), panneau « Types de fiche » : chaque type dit « Système · activé »
    ou « Système · désactivé » ; il force « Vaisseau » à **Activé**.
 3. La barre latérale de « Lame d'Ébène » montre « Vaisseaux », pas « Notes ».
-4. Plus tard, le système réactive « Note » : « Lame d'Ébène », qui le suit, le montre aussitôt ;
+4. Plus tard, le système réactive « Note » : « Lame d'Ébène », qui le suit, le montre au chargement suivant ;
    « Vaisseau », forcé, ne bouge pas.
 *Échec* : il désactive « Lieu » alors que l'univers a 201 lieux — la confirmation dit « Les 201 lieux
-restent ; on les atteint par un lien, la recherche ou l'arbre. » ; un Joueur ne voit ni le bloc de
-E-14 ni les bascules de E-15 (« Lecture seule »).
+restent ; on les atteint par un lien, la recherche ou l'arbre. » ; un Joueur ne voit pas le panneau de
+E-14 (« Page introuvable. ») et lit l'onglet de E-15 en « Lecture seule », interrupteurs inertes.
 
 ### P-14 — Tenir la base après l'import (Antor, MJ, au bureau)
 1. Sur « Port-Sel » (**E-9**), « Modifier » la section « Histoire » : il tape `[[`, choisit « Maître

@@ -166,4 +166,32 @@ a.cadre-ill:focus-visible { outline-offset: 2px; border-radius: var(--rayon-pann
 .menu .info-fiche svg { margin-top: 2px; flex: none; }
 .menu .info-fiche code { font: 500 11.5px/1.3 ui-monospace, "SF Mono", Menlo, Consolas, monospace; color: var(--texte-2); white-space: nowrap; }
 
+/* Sub-type in the badge (B-52): a button for the GM, plain text for a player; the list hangs under the badge. */
+.fiche .type .sous-type-bouton { background: none; border: 0; padding: 0 4px; margin: 0 -4px 0 -3px; font: inherit; color: inherit; cursor: pointer; border-radius: 4px; }
+.fiche .type .sous-type-bouton:hover { background: var(--surface-3); }
+.fiche .type .sous-type-bouton.vide { color: var(--texte-3); }
+.fiche .type:has(.sous-type-edition) { position: relative; background: var(--surface); box-shadow: 0 0 0 1px var(--accent), 0 0 0 4px var(--accent-fond); }
+.fiche .type .sous-type-edition { display: inline-flex; align-items: center; }
+.fiche .type .sous-type-edition input { height: 20px; width: 13ch; max-width: 40vw; padding: 0 2px; font: inherit; color: var(--texte); background: transparent; border: 0; border-radius: 3px; }
+.fiche .type .sous-type-edition input:focus { outline: none; }
+.liste-liens.liste-st { position: absolute; z-index: 20; left: -8px; top: calc(100% + 8px); width: 248px; margin: 0; }
+.liste-st .titre-menu { display: block; padding: 7px 10px 5px; font-size: var(--t-12); line-height: 1.3; color: var(--texte-3); }
+.liste-st .option .coche { margin-left: auto; color: var(--accent-texte); }
+.liste-st .pied-st { display: block; margin: 4px -4px -4px; padding: 7px 10px 8px; border-top: 1px solid var(--bord); font-size: var(--t-12); line-height: 1.4; color: var(--texte-3); }
+.liste-st .pied-st.erreur { color: var(--danger); }
+.liste-st .pied-st:first-child { margin-top: -4px; border-top: 0; }
+@media (max-width: 760px) {
+  .liste-liens.liste-st { width: min(248px, calc(100vw - 72px)); }
+  .fiche .type .sous-type-edition input { height: 24px; }
+}
+/* « Changer le type… » (E-9): framed list, one row per type. */
+.changer-type .resultats { max-height: 40vh; overflow-y: auto; padding: var(--e-1); border-radius: var(--rayon-champ); box-shadow: inset 0 0 0 1px var(--bord); }
+.changer-type .resultat { display: flex; align-items: center; gap: 10px; min-height: 34px; padding: 0 10px; border-radius: var(--rayon-item); cursor: pointer; font-size: var(--t-14); }
+.changer-type .resultat:hover, .changer-type .resultat:has(input:checked) { background: var(--surface-2); }
+.changer-type .resultat svg { flex: none; color: var(--texte-3); }
+.changer-type .resultat .type-option { margin-left: auto; font-size: var(--t-12); color: var(--texte-3); }
+.changer-type .sep-res { height: 1px; margin: 4px 0; background: var(--bord); }
+.changer-type .titre-groupe { margin: 0; padding: 4px 10px; font-size: var(--t-12); font-weight: 500; color: var(--texte-3); }
+.changer-type .retrait { color: var(--texte-2); font-size: var(--t-13); }
+@media (max-width: 760px) { .changer-type .resultat { min-height: 40px; } }
 .fiche .blocs:empty { display: none; }

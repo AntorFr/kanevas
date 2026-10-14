@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { lire } from '../api';
-import { iconeDuType, typeParType } from '../ecrans/fiche/types-fiche';
+import { iconeDuType, libelleDuType, useTypes } from '../types-contexte';
 import { Bouton } from './composants';
 import './liste-liens.css';
 
@@ -84,6 +84,7 @@ interface Props {
 
 /** The list of sheets under the field: loading, empty, error and 50+ states of docs/ecrans.md. */
 export function ListeLiens({ id, recherche, courant, onCourant, onChoisir, onReessayer }: Props) {
+  const { types } = useTypes();
   // Keeps the focus in the field: a click on the list must not take it.
   const garder = (e: { preventDefault: () => void }) => e.preventDefault();
   if (recherche.etat === 'cours') {
@@ -115,7 +116,7 @@ export function ListeLiens({ id, recherche, courant, onCourant, onChoisir, onRee
   return (
     <div className="liste-liens" id={id} role="listbox" aria-label="Fiches à lier">
       {recherche.fiches.map((f, i) => {
-        const Icone = iconeDuType(f.type);
+        const Icone = iconeDuType(types, f.type);
         return (
           <div
             key={f.id}
@@ -131,7 +132,7 @@ export function ListeLiens({ id, recherche, courant, onCourant, onChoisir, onRee
             <span className="titre-option" title={f.titre}>
               {f.titre}
             </span>
-            <span className="type-option">{typeParType(f.type)?.label ?? f.type}</span>
+            <span className="type-option">{libelleDuType(types, f.type)}</span>
           </div>
         );
       })}

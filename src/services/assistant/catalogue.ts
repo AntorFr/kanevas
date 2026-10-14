@@ -7,7 +7,7 @@ import { lireFiche, listerFiches } from '../fiches.js';
 import { creerProposition } from '../propositions.js';
 import { creerScenario } from '../scenarios.js';
 import { ecrireContenu, lireSection } from '../sections.js';
-import { TYPES_FICHE } from '../types.js';
+import { TYPES_FICHE } from '../types-fiche.js';
 import type { Acteur } from '../types.js';
 import type { Catalogue, Evenement, Outil, Resultat } from './types.js';
 

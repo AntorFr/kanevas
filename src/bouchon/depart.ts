@@ -29,6 +29,11 @@ export function semerBouchon(db: Db): boolean {
   const compte = (u: string) => assurerCompte(db, u).id;
   const id = { antor: compte('antor'), lea: compte('lea'), teo: compte('teo'), mira: compte('mira'), admin: compte('admin') };
 
+  // A base migrated short of 0013 (the migration test) has no sub-type column yet.
+  const sousTypes = (db.prepare('PRAGMA table_info(fiches)').all() as { name: string }[]).some(
+    (c) => c.name === 'sous_type',
+  );
+
   db.transaction(() => {
     const lame = creerUnivers(db, id.antor, {
       nom: "Lame d'Ébène",
@@ -83,8 +88,9 @@ export function semerBouchon(db: Db): boolean {
       titre: string,
       sections: { titre: string; lue: boolean }[],
       charge?: Record<string, unknown>,
+      sousType?: string,
     ) => {
-      const f = creerFiche(db, id.antor, lame.id, { type, titre, charge });
+      const f = creerFiche(db, id.antor, lame.id, { type, titre, charge, sousType: sousTypes ? sousType : undefined });
       const ids: Record<string, number> = {};
       for (const s of sections) {
         const v = ajouterSection(db, id.antor, lame.id, f.id, {
@@ -105,8 +111,14 @@ export function semerBouchon(db: Db): boolean {
     fiche('personnage', 'Dame Ombeline de Val-Fortin', [apparence], { pj: false });
     fiche('personnage', 'Suie', [apparence], { pj: false });
     fiche('personnage', "Le Portrait de l'échec", [apparence], { pj: false });
-    for (const lieu of ['Val-Fortin', 'Le Pendu Joyeux', 'Rue des Cordiers', 'La Fresque effacée']) {
-      fiche('lieu', lieu, [{ titre: 'Description', lue: true }]);
+    const lieux: [string, string | undefined][] = [
+      ['Val-Fortin', 'Ville'],
+      ['Le Pendu Joyeux', 'Taverne'],
+      ['Rue des Cordiers', 'Rue'],
+      ['La Fresque effacée', undefined],
+    ];
+    for (const [lieu, sousType] of lieux) {
+      fiche('lieu', lieu, [{ titre: 'Description', lue: true }], undefined, sousType);
     }
     // « Port-Sel » (kanevas-import-secrets): Léa authors « Histoire », which carries a GM block.
     const port = creerFiche(db, id.antor, lame.id, { type: 'lieu', titre: 'Port-Sel' });
