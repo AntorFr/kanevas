@@ -1,0 +1,46 @@
+/* E-19 Médiathèque: colours only through tokens.css. */
+.mediatheque { position: relative; }
+.med-tete { display: flex; align-items: center; gap: var(--e-3); flex-wrap: wrap; margin-bottom: var(--e-3); }
+.med-tete h1 { margin: 0; }
+.med-compte { color: var(--texte-3); flex: 1; }
+.med-filtres { display: flex; gap: var(--e-3); align-items: end; flex-wrap: wrap; margin-bottom: var(--e-4); }
+.med-filtres .champ { min-width: 10rem; }
+.med-grille { list-style: none; margin: 0 0 var(--e-4); padding: 0; display: grid; gap: var(--e-3);
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+.med-tuile { position: relative; display: flex; flex-direction: column; gap: var(--e-1); width: 100%; padding: var(--e-2);
+  background: var(--surface); border: 1px solid var(--bord); border-radius: var(--rayon-panneau); color: var(--texte);
+  font: inherit; text-align: left; cursor: pointer; }
+.med-tuile:hover { background: var(--surface-2); }
+.med-tuile.choisie { border-color: var(--accent); }
+.med-tuile:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.med-tuile.squelette { height: 170px; background: var(--squelette); cursor: default; }
+.med-vignette, .med-grand { display: block; width: 100%; border-radius: var(--rayon-champ); background: var(--surface-2); }
+.med-vignette { aspect-ratio: 4 / 3; object-fit: cover; }
+.med-grand { max-height: 60vh; object-fit: contain; }
+.med-doc { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--e-2);
+  color: var(--texte-2); text-align: center; padding: var(--e-3); font-size: var(--t-13); }
+.med-doc.med-grand { min-height: 160px; }
+.med-ext { font-size: var(--t-12); background: var(--surface-3); color: var(--texte-2); border-radius: var(--rayon-pastille); padding: 0 var(--e-2); }
+.med-nom { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--t-14); font-weight: 500; }
+.med-tuile small { color: var(--texte-3); }
+.med-pastille { position: absolute; top: var(--e-3); left: var(--e-3); }
+.med-envois { list-style: none; margin: 0 0 var(--e-3); padding: 0; display: flex; flex-direction: column; gap: var(--e-2); }
+.med-envois li { display: flex; align-items: center; gap: var(--e-2); flex-wrap: wrap; color: var(--texte-2); }
+.med-envoi-nom { color: var(--texte); overflow-wrap: anywhere; }
+.med-vide { color: var(--danger); margin: var(--e-2) 0; }
+.med-depot { position: fixed; inset: 0; z-index: 40; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: var(--e-3); background: var(--voile); color: var(--texte); border: 2px dashed var(--accent); font-size: var(--t-18); pointer-events: none; }
+.med-panneau { position: fixed; top: 0; right: 0; bottom: 0; z-index: 30; width: min(420px, 100%); overflow-y: auto;
+  background: var(--surface); border-left: 1px solid var(--bord-fort); box-shadow: var(--ombre-flottant); padding: var(--e-4); }
+.med-panneau-tete { display: flex; align-items: center; gap: var(--e-2); margin-bottom: var(--e-3); }
+.med-panneau-tete h2 { flex: 1; min-width: 0; margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.med-corps { display: flex; flex-direction: column; gap: var(--e-3); align-items: flex-start; }
+.med-corps > .med-grand, .med-corps .champ { width: 100%; }
+.med-visibilite { border: 0; padding: 0; margin: 0; }
+.med-visibilite legend { color: var(--texte-2); font-size: var(--t-13); margin-bottom: var(--e-1); padding: 0; }
+.med-infos { display: grid; grid-template-columns: auto 1fr; gap: var(--e-1) var(--e-3); margin: 0; }
+.med-infos dt { color: var(--texte-3); }
+.med-infos dd { margin: 0; overflow-wrap: anywhere; }
+.med-usages { margin: 0 0 var(--e-2); padding-left: var(--e-4); }
+.med-usages a { color: var(--accent-texte); overflow-wrap: anywhere; }
+@media (max-width: 760px) { .med-panneau { width: 100%; } .med-grille { grid-template-columns: repeat(2, minmax(0, 1fr)); } }

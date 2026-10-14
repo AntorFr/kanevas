@@ -96,10 +96,11 @@ export function envoyerFichier<T>(
   chemin: string,
   fichier: File,
   surProgres: (pourcent: number) => void,
+  methode: 'PUT' | 'POST' = 'PUT',
 ): { promesse: Promise<T>; annuler: () => void } {
   const xhr = new XMLHttpRequest();
   const promesse = new Promise<T>((resolve, reject) => {
-    xhr.open('PUT', chemin);
+    xhr.open(methode, chemin);
     xhr.withCredentials = true;
     xhr.upload.onprogress = (e) => {
       if (e.lengthComputable && e.total > 0) surProgres(Math.min(99, Math.floor((e.loaded / e.total) * 100)));

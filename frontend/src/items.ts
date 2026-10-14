@@ -1,5 +1,6 @@
 import {
   Flag,
+  Images,
   KeyRound,
   LayoutGrid,
   Map as Carte,
@@ -40,6 +41,7 @@ export const ITEMS_UNIVERS: Item[] = [
   { libelle: 'Campagnes', icone: Flag, chemin: (id) => `/univers/${id}/campagnes` },
   { libelle: 'Comptes-rendus', icone: NotebookPen, chemin: (id) => `/univers/${id}/comptes-rendus` },
   { libelle: 'Cartes', icone: Carte, chemin: (id) => `/univers/${id}/cartes` },
+  { libelle: 'Médiathèque', icone: Images, chemin: (id) => `/univers/${id}/mediatheque` },
   { libelle: 'Membres', icone: ContactRound, section: 'Univers', role: 'mj', chemin: (id) => `/univers/${id}/membres` },
   { libelle: 'Paramètres', icone: Settings2, section: 'Univers', role: 'mj', chemin: (id) => `/univers/${id}/parametres` },
   { libelle: 'Accès par API', icone: KeyRound, section: 'Univers', role: 'mj', chemin: (id) => `/univers/${id}/acces-api` },
