@@ -71,15 +71,22 @@ async function monde(sections: Record<string, Any>): Promise<{ m: Monde; antor: 
 }
 
 const base = (m: Monde, titre: string) => `/api/univers/${m.u}/fiches/${m.f}/sections/${m.s[titre]}`;
-const pj = (m: Monde, pid: number | string, fin = '') => `/api/univers/${m.u}/fiches/${m.f}/pieces-jointes/${pid}${fin}`;
+const pj = (m: Monde, pid: number | string, _fin = '') => `/api/univers/${m.u}/fichiers/${pid}`;
 const fichier = (name: string, buffer: Buffer) => ({ name, mimeType: 'application/octet-stream', buffer });
 
 async function deposer(ctx: Any, m: Monde, titre: string, nom: string, buffer: Buffer, secrete = false): Promise<Any> {
-  const r = await ctx.request.post(`${base(m, titre)}/pieces-jointes`, {
-    multipart: { secrete: String(secrete), fichier: fichier(nom, buffer) },
+  const r = await ctx.request.post(`/api/univers/${m.u}/fichiers`, {
+    multipart: { section: String(m.s[titre]), maniere: 'joint', fichier: fichier(nom, buffer) },
   });
   assert.equal(r.status(), 201, `deposer ${nom}: ${r.status()}`);
-  return r.json();
+  const v = await r.json();
+  if (secrete) {
+    // « Secrète » is the visibility of the file now: the GM reserves it after the upload.
+    const p = await ctx.request.patch(`/api/univers/${m.u}/fichiers/${v.id}`, { data: { visibilite: 'mj' } });
+    assert.equal(p.status(), 200, `reserver ${nom}: ${p.status()}`);
+    v.visibilite = 'mj';
+  }
+  return { ...v, secrete: v.visibilite === 'mj' };
 }
 
 async function ouvrirFiche(page: Any, m: Monde): Promise<void> {

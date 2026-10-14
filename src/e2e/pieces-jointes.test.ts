@@ -43,6 +43,7 @@ let browser: Any;
 const pages: Record<string, Any> = {};
 let urlFiche = '';
 let apiFiche = '';
+let apiUnivers = '';
 
 const PNG = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==', 'base64');
 const png = (name: string) => ({ name, mimeType: 'image/png', buffer: PNG });
@@ -87,6 +88,7 @@ before(async () => {
   urlFiche = new URL(antor.url()).pathname;
   const id = urlFiche.match(/univers\/(\d+)\/fiche\/(\d+)/) ?? urlFiche.match(/(\d+)\D+(\d+)$/);
   apiFiche = `/api/univers/${id![1]}/fiches/${id![2]}`;
+  apiUnivers = `/api/univers/${id![1]}`;
 }, { timeout: 180000 });
 
 after(async () => {
@@ -143,7 +145,7 @@ test('exclusion : Léa ne voit ni vignette ni bloc ; l’adresse du fichier rép
   const antor = await compte('antor');
   const fiche = await (await antor.request.get(apiFiche)).json();
   const secret = fiche.sections.find((s: Any) => s.titre === 'Apparence').piecesJointes[0];
-  assert.equal(secret.secrete, true);
+  assert.equal(secret.secrete, true, 'a GM reads the « MJ seul » flag of the file');
   const lea = await compte('lea', 'Léa');
   await ouvrir(lea);
   assert.equal(await lea.locator('img').count(), 0);
@@ -151,7 +153,7 @@ test('exclusion : Léa ne voit ni vignette ni bloc ; l’adresse du fichier rép
   const t = await section(lea, 'Apparence').innerText();
   assert.ok(!t.includes('Aucune pièce jointe.') && !/apparence\.png|Pièces jointes|\(\d+\)/.test(t), t);
   assert.ok(!(await texte(lea)).includes('portrait.png'), 'the secret piece of the closed section is nowhere');
-  const url = `${apiFiche}/pieces-jointes/${secret.id}/fichier`;
+  const url = `${apiUnivers}/fichiers/${secret.id}`;
   assert.equal((await lea.request.get(url)).status(), 404);
   await lea.goto(url);
   await voit(lea, 'Page introuvable.');
@@ -180,6 +182,16 @@ test('Teo ne voit pas « Notes de la table » avant « Les joueurs la lisent »,
   await regler(antor, 'Notes de la table', 'Les joueurs la lisent', true);
   await antor.waitForTimeout(500);
   await attendre(antor);
+  // The file was added by Léa to a section closed to Teo: its visibility was fixed then (« MJ seul »,
+  // AD-111, AD-117), opening the section does not change it.
+  await ouvrir(teo);
+  await section(teo, 'Notes de la table').waitFor();
+  assert.equal(await teo.locator('img[alt="notes.png"]').count(), 0, 'the file stays reserved to the GM');
+  // The GM makes the file visible of the players: Teo now sees it.
+  const fiche = await (await antor.request.get(apiFiche)).json();
+  const f = fiche.sections.find((x: Any) => x.titre === 'Notes de la table').piecesJointes.find((x: Any) => x.nom === 'notes.png');
+  const m = await antor.request.patch(`${apiUnivers}/fichiers/${f.id}`, { data: { visibilite: 'joueurs' } });
+  assert.equal(m.status(), 200);
   await ouvrir(teo);
   const b = bloc(teo, 'Notes de la table');
   await b.locator('img[alt="notes.png"]').waitFor();
@@ -208,7 +220,7 @@ test('PDF : une ligne avec « Télécharger », nom d’origine ; SVG : jamais a
   assert.equal(await bl.getByRole('button').count(), 0);
   const fiche = await (await lea.request.get(apiFiche)).json();
   const p = fiche.sections.find((s: Any) => s.titre === 'Plan').piecesJointes.find((x: Any) => x.nom === 'image.svg');
-  const r = await lea.request.get(`${apiFiche}/pieces-jointes/${p.id}/fichier`);
+  const r = await lea.request.get(`${apiUnivers}/fichiers/${p.id}`);
   assert.ok(!/image\/svg/.test(r.headers()['content-type'] ?? ''), 'SVG is not served as an image');
   assert.ok(/attachment/.test(r.headers()['content-disposition'] ?? ''));
 });
@@ -218,7 +230,7 @@ test('envoi annulé : la ligne « Envoi… » (role=status) porte « Annuler » 
   await ouvrir(antor);
   let bloque!: () => void;
   const tenu = new Promise<void>((r) => (bloque = r));
-  await antor.route('**/pieces-jointes', async (route: Any) => {
+  await antor.route(/\/api\/univers\/\d+\/fichiers$/, async (route: Any) => {
     if (route.request().method() !== 'POST') return route.continue();
     await tenu;
     await route.abort();
@@ -236,18 +248,18 @@ test('envoi annulé : la ligne « Envoi… » (role=status) porte « Annuler » 
   assert.ok(!noms.includes('annule.png'), JSON.stringify(noms));
   assert.equal(await bloc(antor, 'Apparence').getByText(/annule\.png/).count(), 0);
   bloque();
-  await antor.unroute('**/pieces-jointes', { behavior: 'ignoreErrors' });
+  await antor.unroute(/\/api\/univers\/\d+\/fichiers$/, { behavior: 'ignoreErrors' });
 });
 
 test('échec d’envoi (réseau) : « l’envoi n’a pas abouti. » avec « Réessayer » et « Ignorer »', opts, async () => {
   const antor = await compte('antor');
   await ouvrir(antor);
-  await antor.route('**/pieces-jointes', (route: Any) => (route.request().method() === 'POST' ? route.abort() : route.continue()));
+  await antor.route(/\/api\/univers\/\d+\/fichiers$/, (route: Any) => (route.request().method() === 'POST' ? route.abort() : route.continue()));
   await choisir(antor, 'Apparence', png('panne.png'));
   const b = bloc(antor, 'Apparence');
   await b.getByText(/« panne\.png » : l.envoi n.a pas abouti\./).waitFor();
   await b.getByRole('button', { name: rxExact('Réessayer') }).waitFor();
-  await antor.unroute('**/pieces-jointes');
+  await antor.unroute(/\/api\/univers\/\d+\/fichiers$/);
   await b.getByRole('button', { name: rxExact('Réessayer') }).click();
   await b.locator('img[alt="panne.png"]').waitFor();
   assert.equal(await b.getByText(/l.envoi n.a pas abouti/).count(), 0);
@@ -267,31 +279,31 @@ test('fichier vide : refus en ligne avec « Ignorer » seul, sans arrêter le fi
   assert.equal(await b.getByText('est vide.').count(), 0);
 });
 
-test('limite : 50 pièces, la 51e refusée — texte du MJ « porte déjà 50 », du Joueur sans chiffre', opts, async () => {
+test('limite : 100 fichiers joints, le 101e refusé — texte du MJ « porte déjà 100 », du Joueur sans chiffre', opts, async () => {
   const antor = await compte('antor');
   await antor.goto(urlFiche);
   const lea = await compte('lea', 'Léa');
   const fiche = await (await antor.request.get(apiFiche)).json();
   const sec = fiche.sections.find((s: Any) => s.titre === 'Notes de la table');
   const compteur = sec.piecesJointes.length;
-  for (let i = compteur; i < 50; i++) {
-    const r = await lea.request.post(`${apiFiche}/sections/${sec.id}/pieces-jointes`, {
-      multipart: { secrete: 'false', fichier: { name: `p${i}.txt`, mimeType: 'text/plain', buffer: Buffer.from('x') } },
+  for (let i = compteur; i < 100; i++) {
+    const r = await lea.request.post(`${apiUnivers}/fichiers`, {
+      multipart: { section: String(sec.id), maniere: 'joint', fichier: { name: `p${i}.txt`, mimeType: 'text/plain', buffer: Buffer.from('x') } },
     });
     assert.equal(r.status(), 201, `piece ${i}`);
   }
   await ouvrir(lea);
   await choisir(lea, 'Notes de la table', { name: 'trop.txt', mimeType: 'text/plain', buffer: Buffer.from('x') });
   await bloc(lea, 'Notes de la table').getByText('Cette section ne peut pas recevoir d’autre fichier.').waitFor();
-  assert.ok(!(await texte(lea)).includes('50 pièces'));
+  assert.ok(!(await texte(lea)).includes('100 '));
   await ouvrir(antor);
   await choisir(antor, 'Notes de la table', { name: 'trop.txt', mimeType: 'text/plain', buffer: Buffer.from('x') });
   const b = bloc(antor, 'Notes de la table');
-  await b.getByText('Cette section porte déjà 50 pièces jointes.').waitFor();
+  await b.getByText('Cette section porte déjà 100 fichiers joints.').waitFor();
   await b.locator('.echec').getByRole('button', { name: rxExact('Ignorer') }).click();
-  assert.equal(await b.getByText('50 pièces jointes.').count(), 0);
-  // 50 pieces: the whole list is shown.
-  assert.equal(await b.locator('li.piece').count(), 50);
+  assert.equal(await b.getByText('100 fichiers joints.').count(), 0);
+  // 100 files: the whole list is shown.
+  assert.equal(await b.locator('li.piece').count(), 100);
 });
 
 test('retrait d’une pièce : confirmation « Retirer « portrait.png » ? Le fichier sera perdu. », Annuler garde, confirmer retire', opts, async () => {
@@ -329,7 +341,7 @@ test('retrait d’une section : « … et sa pièce jointe » (une), « … ses 
   await antor.getByRole('alertdialog').getByText('Son contenu et ses 3 pièces jointes seront perdus.').waitFor();
 });
 
-test('mode Joueur : Antor ne voit ni la case « Secrète », ni « Rendre secrète », ni les pièces secrètes', opts, async () => {
+test('mode Joueur : Antor ne voit ni la case « Secrète », ni « Rendre secrète », ni la pastille « MJ seul »', opts, async () => {
   const antor = await compte('antor');
   await ouvrir(antor);
   // « Apparence » carries a secret piece (set earlier).
@@ -338,7 +350,10 @@ test('mode Joueur : Antor ne voit ni la case « Secrète », ni « Rendre secrè
   await antor.getByRole('region', { name: /Vérité/ }).waitFor({ state: 'detached' }); // the player view has been read
   await attendre(antor);
   const t = await texte(antor);
-  assert.ok(!t.includes('Secrète') && !t.includes('apparence.png'), t);
+  // AD-117, third read rule: the GM in Player mode still reads the files he added himself, but sees no
+  // « MJ seul » mark nor any control of the GM.
+  assert.ok(!t.includes('Secrète'), t);
+  assert.ok(!t.includes('Vérité'), 'the closed section is not read in this mode');
   assert.equal(await antor.getByLabel('Secrète (MJ seul)').count(), 0);
   assert.equal(await antor.getByRole('button', { name: /Rendre secrète|Lever le secret/ }).count(), 0);
   // « Plan » is read-only for players in this mode: no add, no remove.
@@ -347,12 +362,12 @@ test('mode Joueur : Antor ne voit ni la case « Secrète », ni « Rendre secrè
 
 test('vignette qui ne se charge pas : « Image indisponible. » avec « Télécharger »', opts, async () => {
   const antor = await compte('antor');
-  await antor.route('**/pieces-jointes/*/fichier', (r: Any) => r.abort());
+  await antor.route(/\/api\/univers\/\d+\/fichiers\/\d+/, (r: Any) => r.abort());
   await ouvrir(antor);
   const b = bloc(antor, 'Notes de la table');
   await b.getByText('Image indisponible.').first().waitFor();
   assert.ok((await b.getByRole('link', { name: rxExact('Télécharger') }).count()) >= 1);
-  await antor.unroute('**/pieces-jointes/*/fichier');
+  await antor.unroute(/\/api\/univers\/\d+\/fichiers\/\d+/);
 });
 
 test('connexion perdue : « Ajouter un fichier », « Retirer » désactivés', opts, async () => {

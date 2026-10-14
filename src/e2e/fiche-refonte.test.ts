@@ -297,7 +297,7 @@ describe('E-9 refaite : toasts', { skip: skipBrowser }, () => {
     const PNG = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==', 'base64');
     let lacher!: () => void;
     const tenu = new Promise<void>((r) => (lacher = r));
-    await antor.route('**/pieces-jointes', async (route: Any) => {
+    await antor.route(/\/api\/univers\/\d+\/fichiers$/, async (route: Any) => {
       if (route.request().method() !== 'POST') return route.continue();
       await tenu;
       await route.abort();
@@ -307,7 +307,7 @@ describe('E-9 refaite : toasts', { skip: skipBrowser }, () => {
     await s.getByRole('status').getByRole('button', { name: rxExact('Annuler') }).click();
     await toastDe(antor, 'Envoi de « lent.png » annulé').waitFor();
     lacher();
-    await antor.unroute('**/pieces-jointes', { behavior: 'ignoreErrors' });
+    await antor.unroute(/\/api\/univers\/\d+\/fichiers$/, { behavior: 'ignoreErrors' });
   });
 
   test('un échec n’est jamais un toast : le PATCH d’audience refusé laisse un message en ligne et aucun toast', async () => {

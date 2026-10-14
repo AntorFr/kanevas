@@ -82,15 +82,22 @@ async function monde(sections: Record<string, Any>): Promise<{ m: Monde; antor: 
 }
 
 const base = (m: Monde, titre: string) => `/api/univers/${m.u}/fiches/${m.f}/sections/${m.s[titre]}`;
-const pj = (m: Monde, pid: number | string, fin = '') => `/api/univers/${m.u}/fiches/${m.f}/pieces-jointes/${pid}${fin}`;
+const pj = (m: Monde, pid: number | string, _fin = '') => `/api/univers/${m.u}/fichiers/${pid}`;
 const fichier = (name: string, buffer: Buffer) => ({ name, mimeType: 'application/octet-stream', buffer });
 
 async function deposer(ctx: Any, m: Monde, titre: string, nom: string, buffer: Buffer, secrete = false): Promise<Any> {
-  const r = await ctx.request.post(`${base(m, titre)}/pieces-jointes`, {
-    multipart: { secrete: String(secrete), fichier: fichier(nom, buffer) },
+  const r = await ctx.request.post(`/api/univers/${m.u}/fichiers`, {
+    multipart: { section: String(m.s[titre]), maniere: 'joint', fichier: fichier(nom, buffer) },
   });
   assert.equal(r.status(), 201, `deposer ${nom}: ${r.status()}`);
-  return r.json();
+  const v = await r.json();
+  if (secrete) {
+    // « Secrète » is the visibility of the file now: the GM reserves it after the upload.
+    const p = await ctx.request.patch(`/api/univers/${m.u}/fichiers/${v.id}`, { data: { visibilite: 'mj' } });
+    assert.equal(p.status(), 200, `reserver ${nom}: ${p.status()}`);
+    v.visibilite = 'mj';
+  }
+  return { ...v, secrete: v.visibilite === 'mj' };
 }
 
 async function ouvrirFiche(page: Any, m: Monde): Promise<void> {
@@ -171,7 +178,8 @@ describe('kanevas-fichiers — compléments', () => {
   });
 
   test('B-24 vignette : nom en texte alternatif, légende « nom · taille », ouverture dans un nouvel onglet', opts, async () => {
-    const { m, antor } = await monde({ Apparence: {} });
+    // Read by players: the file is « joueurs » (a closed section would reserve it to the GM, AD-117).
+    const { m, antor } = await monde({ Apparence: { joueursLisent: true } });
     await deposer(antor.ctx, m, 'Apparence', 'portrait-aldric.png', PNG);
     await ouvrirFiche(antor.page, m);
     const app = section(antor.page, 'Apparence');
@@ -181,7 +189,7 @@ describe('kanevas-fichiers — compléments', () => {
     assert.ok(t.includes(`portrait-aldric.png · ${PNG.length} o`), t);
     const [onglet] = await Promise.all([antor.ctx.waitForEvent('page'), img.click()]);
     await onglet.waitForLoadState();
-    assert.ok(/\/fichier/.test(onglet.url()), onglet.url());
+    assert.ok(/\/fichiers\/\d+/.test(onglet.url()), onglet.url());
   });
 
   test('B-24 une pièce n\'apparaît que sur sa section', opts, async () => {
@@ -194,13 +202,14 @@ describe('kanevas-fichiers — compléments', () => {
     await app.getByText(rx('Aucune pièce jointe.')).waitFor();
   });
 
-  test('B-24 exclusion : un Joueur qui dépose avec « secrète » reçoit 403 et rien n\'est rattaché', opts, async () => {
+  test('B-24 exclusion : la visibilité qu\'un client envoie est ignorée — la place décide (section fermée : MJ seul)', opts, async () => {
     const { m, antor, lea } = await monde({ 'Notes de la table': { auteurId: 'lea', auteurLit: true, auteurEcrit: true } });
-    const r = await lea.ctx.request.post(`${base(m, 'Notes de la table')}/pieces-jointes`, {
-      multipart: { secrete: 'true', fichier: fichier('mien.png', PNG) },
+    const r = await lea.ctx.request.post(`/api/univers/${m.u}/fichiers`, {
+      multipart: { section: String(m.s['Notes de la table']), maniere: 'joint', visibilite: 'joueurs', secrete: 'false', fichier: fichier('mien.png', PNG) },
     });
-    assert.equal(r.status(), 403);
-    assert.deepEqual(await pieces(antor.ctx, m), []);
+    assert.equal(r.status(), 201);
+    assert.equal((await r.json()).visibilite, 'mj');
+    assert.equal((await pieces(antor.ctx, m)).length, 1);
   });
 
   test('B-24 exclusion : la pièce d\'une section cachée ne se lit pas par l\'adresse d\'une fiche que Léa lit', opts, async () => {
@@ -212,7 +221,7 @@ describe('kanevas-fichiers — compléments', () => {
     const sid = ((await ouverte.json()) as Any).id;
     assert.ok((await api(antor.ctx, 'patch', `/api/univers/${m.u}/fiches/${aid}/sections/${sid}`, { joueursLisent: true })).ok());
     assert.equal((await lea.ctx.request.get(`/api/univers/${m.u}/fiches/${aid}`)).status(), 200, 'Léa reads the other fiche');
-    const r = await lea.ctx.request.get(`/api/univers/${m.u}/fiches/${aid}/pieces-jointes/${p.id}/fichier`);
+    const r = await lea.ctx.request.get(`/api/univers/${m.u}/fichiers/${p.id}`);
     assert.equal(r.status(), 404);
     assert.equal((await lea.ctx.request.get(pj(m, p.id, '/fichier'))).status(), 404);
   });
@@ -224,10 +233,10 @@ describe('kanevas-fichiers — compléments', () => {
     const autre = (await (await api(mira.ctx, 'post', '/api/univers', { nom: `Landes ${n}` })).json()) as Any;
     assert.ok(autre.id, 'Mira owns her universe');
     assert.equal((await mira.ctx.request.get(pj(m, p.id, '/fichier'))).status(), 404);
-    assert.equal((await mira.ctx.request.get(`/api/univers/${autre.id}/fiches/${m.f}/pieces-jointes/${p.id}/fichier`)).status(), 404);
+    assert.equal((await mira.ctx.request.get(`/api/univers/${autre.id}/fichiers/${p.id}`)).status(), 404);
   });
 
-  test('B-24 exclusion : retirer la section retire sa pièce secrète, même pour le MJ (404)', opts, async () => {
+  test('B-24 retirer la section retire ses références, pas le fichier de la médiathèque (AD-105, AD-117 §5)', opts, async () => {
     const { m, antor } = await monde({ Plan: {} });
     const p = await deposer(antor.ctx, m, 'Plan', 'secret.pdf', PDF, true);
     assert.equal((await antor.ctx.request.get(pj(m, p.id, '/fichier'))).status(), 200);
@@ -236,8 +245,9 @@ describe('kanevas-fichiers — compléments', () => {
     await antor.page.getByRole('alertdialog').getByText(rx('Son contenu et sa pièce jointe seront perdus.')).waitFor();
     await confirmerRetraitSection(antor.page);
     await attendre(antor.page);
-    for (let i = 0; i < 30 && (await antor.ctx.request.get(pj(m, p.id, '/fichier'))).status() !== 404; i++) await antor.page.waitForTimeout(100);
-    assert.equal((await antor.ctx.request.get(pj(m, p.id, '/fichier'))).status(), 404);
+    assert.equal((await antor.ctx.request.get(pj(m, p.id, '/fichier'))).status(), 200, 'the file stays in the library');
+    const liste = (await (await antor.ctx.request.get(`/api/univers/${m.u}/fichiers`)).json()) as Any;
+    assert.ok(liste.fichiers.some((f: Any) => f.id === p.id));
   });
 
   test('B-24 « Lever le secret » rend la pièce à Léa, sur la fiche et à son adresse', opts, async () => {
@@ -274,7 +284,7 @@ describe('kanevas-fichiers — compléments', () => {
     await ouvrirFiche(antor.page, m);
     const app = section(antor.page, 'Apparence');
     await app.getByRole('img', { name: 'portrait.png' }).waitFor();
-    await antor.page.route('**/pieces-jointes/*', (route: Any) => (route.request().method() === 'PATCH' ? route.abort() : route.continue()));
+    await antor.page.route(/\/api\/univers\/\d+\/fichiers\/\d+$/, (route: Any) => (route.request().method() === 'PATCH' ? route.abort() : route.continue()));
     await app.getByRole('button', { name: rx('Rendre secrète') }).click();
     await antor.page.getByText(rx('L\'action n\'a pas abouti. Réessayez.')).waitFor();
     assert.ok(!(await texte(antor.page)).includes('Secrète — MJ seul'));
