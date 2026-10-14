@@ -33,6 +33,10 @@ export function semerBouchon(db: Db): boolean {
   const sousTypes = (db.prepare('PRAGMA table_info(fiches)').all() as { name: string }[]).some(
     (c) => c.name === 'sous_type',
   );
+  // Same for the parent column: no tree to seed before 0013.
+  const arbre = (db.prepare('PRAGMA table_info(fiches)').all() as { name: string }[]).some(
+    (c) => c.name === 'parent_id',
+  );
 
   db.transaction(() => {
     const lame = creerUnivers(db, id.antor, {
@@ -163,7 +167,7 @@ export function semerBouchon(db: Db): boolean {
     const lue = { titre: 'Description', lue: true };
     const mjSeul = { titre: 'Secret — MJ seul', lue: false };
     const ranger = (enfant: number, parent: number) =>
-      deplacerFiche(db, { compteId: id.antor }, lame.id, enfant, parent);
+      arbre && deplacerFiche(db, { compteId: id.antor }, lame.id, enfant, parent);
     const spheres = fiche('lieu', 'Les Sphères', [mjSeul]);
     ranger(port.id, spheres.id);
     for (const [titre, sections] of [
