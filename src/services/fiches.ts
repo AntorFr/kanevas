@@ -327,14 +327,14 @@ export function listerEnfants(
       throw invalide('Curseur invalide.');
     }
     where.push(
-      `((${RANG_TYPE}) > ? OR ((${RANG_TYPE}) = ? AND (f.titre COLLATE NOCASE > ? OR (f.titre COLLATE NOCASE = ? AND f.id > ?))))`,
+      `((${RANG_TYPE}) > ? OR ((${RANG_TYPE}) = ? AND (plier(f.titre) > plier(?) OR (plier(f.titre) = plier(?) AND f.id > ?))))`,
     );
     params.push(c.r, c.r, c.t, c.t, c.i);
   }
   const rows = db
     .prepare(
       `SELECT f.*, (${RANG_TYPE}) AS rang FROM fiches f WHERE ${where.join(' AND ')}
-       ORDER BY rang, f.titre COLLATE NOCASE, f.id LIMIT ?`,
+       ORDER BY rang, plier(f.titre), f.id LIMIT ?`,
     )
     .all(...params, LIMITE_ENFANTS + 1) as (FicheRow & { rang: number })[];
   const page = rows.slice(0, LIMITE_ENFANTS);
@@ -570,13 +570,13 @@ export function listerFiches(
     } catch {
       throw invalide('Curseur invalide.');
     }
-    where.push('(f.titre COLLATE NOCASE > ? OR (f.titre COLLATE NOCASE = ? AND f.id > ?))');
+    where.push('(plier(f.titre) > plier(?) OR (plier(f.titre) = plier(?) AND f.id > ?))');
     params.push(c.t, c.t, c.i);
   }
   const rows = db
     .prepare(
       `SELECT f.* FROM fiches f WHERE ${where.join(' AND ')}
-       ORDER BY f.titre COLLATE NOCASE, f.id LIMIT ?`,
+       ORDER BY plier(f.titre), f.id LIMIT ?`,
     )
     .all(...params, limite + 1) as FicheRow[];
   const page = rows.slice(0, limite);
