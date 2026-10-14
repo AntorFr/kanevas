@@ -273,7 +273,7 @@ describe('kanevas-import-arbre, la hiérarchie de bout en bout', { skip: skipBro
     for (const n of noms) f.push(await creer('lieu', n));
     for (let i = 1; i < f.length; i++) assert.equal((await patch(antor, f[i]!, f[i - 1]!)).status, 200);
     await ouvrir(antor, U, f[5]!, 'Feuille Z');
-    assert.equal(await filTexte(antor), "Lame d'Ébène › Lieux › Niveau A › … › Niveau E › Feuille Z");
+    assert.equal(await filTexte(antor), "Lame d'Ébène › Lieux › Niveau A › … › Niveau D › Niveau E › Feuille Z");
     await fil(antor).getByText('…', { exact: true }).click();
     const items = await antor.getByRole('menuitem').allInnerTexts();
     assert.equal(items.length, 2, items.join('|'));
