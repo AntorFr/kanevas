@@ -192,7 +192,7 @@ function Compte() {
 function Contenu({ onNavigue }: { onNavigue: () => void }) {
   const { pathname } = useLocation();
   const { univers } = useUnivers();
-  const { section } = useVue();
+  const { section, mode } = useVue();
   const moi = useMoi();
   const id = universDeLAdresse(pathname);
   // Inside a universe only if the account has it: an unknown universe, or one without a role,
@@ -273,7 +273,7 @@ function Contenu({ onNavigue }: { onNavigue: () => void }) {
             )}
             {(s === 'Lore' ? lore : items.filter((i) => (i.section ?? '') === s))
               .map((i) => (
-                <Link key={i.libelle} to={i.chemin(id!)} className="item" aria-current={itemCourant(i, id!, pathname, section) ? 'page' : undefined}>
+                <Link key={i.libelle} to={i.chemin(id!) + (i.garderMode && mode === 'joueur' ? '?mode=joueur' : '')} className="item" aria-current={itemCourant(i, id!, pathname, section) ? 'page' : undefined}>
                   <i.icone size={16} strokeWidth={1.75} aria-hidden="true" />
                   {i.libelle}
                 </Link>

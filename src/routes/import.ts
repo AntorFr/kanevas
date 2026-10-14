@@ -1,5 +1,6 @@
 import type { FastifyInstance, FastifyRequest } from 'fastify';
 
+import { LONGUEUR_ALIAS, LONGUEUR_ETIQUETTE, MAX_ALIAS, MAX_ETIQUETTES } from '../services/etiquettes.js';
 import { MAX_CONTENU_SECTION } from '../services/sections.js';
 import { ErreurService, introuvable } from '../services/erreurs.js';
 import { verifierJeton, type Jeton } from '../services/jetons.js';
@@ -81,7 +82,14 @@ export async function registerImportRoutes(app: FastifyInstance) {
           type,
           active: type !== 'compte_rendu' && typeActif(app.db, ctx.univers.id, type),
         })),
-        limites: { contenuSection: MAX_CONTENU_SECTION, entreesRapport: MAX_RAPPORT },
+        limites: {
+          contenuSection: MAX_CONTENU_SECTION,
+          entreesRapport: MAX_RAPPORT,
+          aliasParFiche: MAX_ALIAS,
+          longueurAlias: LONGUEUR_ALIAS,
+          etiquettesParFiche: MAX_ETIQUETTES,
+          longueurEtiquette: LONGUEUR_ETIQUETTE,
+        },
       };
     });
 

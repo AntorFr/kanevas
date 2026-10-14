@@ -1,11 +1,12 @@
 import { ChevronRight, Dices, Eye, Library, LockKeyhole, PanelLeft } from 'lucide-react';
-import { useRef, useState } from 'react';
-import { Link, Outlet, matchPath, useLocation } from 'react-router-dom';
+import { useEffect, useRef, useState } from 'react';
+import { Link, Outlet, matchPath, useLocation, useNavigate } from 'react-router-dom';
 
 import { useConnexionPerdue } from './api';
 import { Barre, Sceau, universDeLAdresse } from './Barre';
 import { useUnivers, useVue, type ModeVue } from './cadre-contexte';
 import { ITEMS_UNIVERS, itemsLore, type Item } from './items';
+import { ecranEnregistre } from './registre';
 import { useTypes } from './types-contexte';
 import { Bandeau } from './ui';
 import './cadre.css';
@@ -146,10 +147,45 @@ function BasculeMode() {
   );
 }
 
+/** True when the key goes to something the user is typing in, or to an open dialog. */
+export function saisieEnCours(actif: Element | null, doc: Document = document): boolean {
+  if (actif instanceof HTMLElement) {
+    if (['INPUT', 'TEXTAREA', 'SELECT'].includes(actif.tagName) || actif.isContentEditable || actif.closest('[contenteditable]')) return true;
+  }
+  return doc.querySelector('[role="dialog"], [role="alertdialog"], dialog[open], [aria-modal="true"]') !== null;
+}
+
+/**
+ * The `/` key opens the search of the universe in the address (E-17), set once by the frame. It does
+ * nothing in a field, an editor or an open dialog, outside a universe, or with a modifier. In player
+ * mode the GM keeps the mode (`mode=joueur`).
+ */
+export function useRaccourciRecherche() {
+  const navigate = useNavigate();
+  const { pathname } = useLocation();
+  const { mode } = useVue();
+  const id = universDeLAdresse(pathname);
+  useEffect(() => {
+    if (id === null || !ecranEnregistre(`/univers/${id}/recherche`)) return;
+    const touche = (e: KeyboardEvent) => {
+      if (e.key !== '/' || e.ctrlKey || e.metaKey || e.altKey || e.defaultPrevented) return;
+      if (saisieEnCours(document.activeElement)) return;
+      e.preventDefault();
+      const adresse = `/univers/${id}/recherche`;
+      if (pathname !== adresse) navigate(mode === 'joueur' ? `${adresse}?mode=joueur` : adresse);
+      // Already there, or arriving: the field takes the focus.
+      setTimeout(() => document.querySelector<HTMLElement>('[data-champ-recherche]')?.focus(), 0);
+    };
+    document.addEventListener('keydown', touche);
+    return () => document.removeEventListener('keydown', touche);
+  }, [id, pathname, mode, navigate]);
+}
+
 /** The frame around every screen: sidebar, top bar, banners, content (docs/ecrans.md, E-9 mockup). */
 export function Cadre() {
   const perdue = useConnexionPerdue();
   const { mode, bascule } = useVue();
+  useRaccourciRecherche();
   const [tiroir, setTiroir] = useState(false);
   const menu = useRef<HTMLButtonElement>(null);
   const fermer = (rendreFocus: boolean) => {

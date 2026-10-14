@@ -39,7 +39,7 @@ describe('kanevas-import-types : migration sur une base d’avant', () => {
       const avant = join(dir, 'avant');
       cpSync('src/db/migrations', avant, { recursive: true });
       rmSync(join(avant, '0013-types.sql'));
-      for (const f of ['0012', '0013', '0014']) void f;
+      rmSync(join(avant, '0014-alias-etiquettes.sql'));
       const chemin = join(dir, 'k.db');
       const db = openDb(chemin);
       migrate(db, avant + '/');

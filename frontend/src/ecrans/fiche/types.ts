@@ -44,6 +44,11 @@ export interface Fiche {
   charge: { v?: number; pj?: boolean };
   /** The sheet's illustration (AD-93): `jeton` changes at each replacement and goes in the image address. */
   illustration?: { jeton: string } | null;
+  /** Aliases and labels (AD-118), sorted by the server. */
+  alias?: string[];
+  etiquettes?: string[];
+  /** With a search: the alias that answers when the title does not. */
+  aliasTrouve?: string;
 }
 
 /** One line of « Mentionnée dans » (AD-100). */

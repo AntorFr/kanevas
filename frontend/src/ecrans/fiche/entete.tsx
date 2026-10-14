@@ -1,10 +1,12 @@
-import { ArrowRightLeft, Ellipsis, Info, ImageOff, ImagePlus, ImageUp, Trash2, type LucideIcon } from 'lucide-react';
+import { ArrowRightLeft, Ellipsis, Info, ImageOff, ImagePlus, ImageUp, Tags, Trash2, type LucideIcon } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
 
 import { ErreurApi, appeler, envoyerFichier, useConnexionPerdue } from '../../api';
 import { Alerte, Bouton, BoutonIcone, Menu, useToasts } from '../../ui';
 import type { FicheVue } from './types';
 import { ChangerType } from './changer-type';
+import { BoiteEtiquetage } from './etiquetage';
 import { SousTypeBadge } from './sous-type';
 import { adresseIllustration } from './vignette';
 import { libelleDuType, useTypes } from '../../types-contexte';
@@ -30,6 +32,8 @@ interface Props {
   fiche: FicheVue;
   /** The GM in GM mode: the gestures exist (absent, never greyed, for anyone else). */
   gestion: boolean;
+  /** The GM views as a player: the label links keep the mode. */
+  modeJoueur?: boolean;
   badge: string;
   Icone: LucideIcon;
   message: MessageIllustration | undefined;
@@ -41,7 +45,7 @@ interface Props {
 }
 
 /** E-9 header: type badge and title, with the illustration at the left when there is one (AD-93). */
-export function EnteteFiche({ universId, fiche, gestion, badge, Icone, message, setMessage, rafraichir, onDroitPerdu }: Props) {
+export function EnteteFiche({ universId, fiche, gestion, modeJoueur, badge, Icone, message, setMessage, rafraichir, onDroitPerdu }: Props) {
   const perdue = useConnexionPerdue();
   const { toast } = useToasts();
   const saisie = useRef<HTMLInputElement>(null);
@@ -51,6 +55,9 @@ export function EnteteFiche({ universId, fiche, gestion, badge, Icone, message, 
   const [retraitEnCours, setRetraitEnCours] = useState(false);
   const [ko, setKo] = useState<string>();
   const [changement, setChangement] = useState(false);
+  const [etiquetage, setEtiquetage] = useState(false);
+  const alias = fiche.alias ?? [];
+  const etiquettes = fiche.etiquettes ?? [];
   const { types } = useTypes();
 
   const jeton = fiche.illustration?.jeton;
@@ -223,7 +230,8 @@ export function EnteteFiche({ universId, fiche, gestion, badge, Icone, message, 
             />
             </span>
             {/* « ⋯ » (E-9): « Changer le type… » (not for a report) and, for an imported sheet, its origin. */}
-            {gestion && (fiche.type !== 'compte_rendu' || fiche.cleOrigine) && (
+            {gestion && (
+
               <Menu
                 etiquette={`Autres actions sur « ${fiche.titre} »`}
                 icone={Ellipsis}
@@ -232,7 +240,8 @@ export function EnteteFiche({ universId, fiche, gestion, badge, Icone, message, 
                   ...(fiche.type !== 'compte_rendu'
                     ? [{ libelle: 'Changer le type…', icone: ArrowRightLeft, onChoisir: () => setChangement(true) }]
                     : []),
-                  ...(fiche.type !== 'compte_rendu' && fiche.cleOrigine ? [{ separateur: true as const }] : []),
+                  { libelle: 'Alias et étiquettes…', icone: Tags, onChoisir: () => setEtiquetage(true) },
+                  ...(fiche.cleOrigine ? [{ separateur: true as const }] : []),
                   ...(fiche.cleOrigine
                     ? [
                         {
@@ -254,11 +263,30 @@ export function EnteteFiche({ universId, fiche, gestion, badge, Icone, message, 
           <h1 id="titre-fiche" tabIndex={-1}>
             {fiche.titre}
           </h1>
+          {alias.length > 0 && <p className="alias-fiche">Aussi appelée {alias.join(', ')}</p>}
+          {etiquettes.length > 0 && (
+            <ul className="etiquettes-fiche" aria-label="Étiquettes">
+              {etiquettes.map((nom) => (
+                <li key={nom}>
+                  <Link
+                    className="pastille neutre cliquable"
+                    title={nom}
+                    to={`/univers/${universId}/recherche?etiquette=${encodeURIComponent(nom)}${modeJoueur ? '&mode=joueur' : ''}`}
+                  >
+                    {nom}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
         {gestion && entrees}
       </header>
       {gestion && changement && (
         <ChangerType universId={universId} fiche={fiche} onFermer={() => setChangement(false)} rafraichir={rafraichir} onDroitPerdu={onDroitPerdu} />
+      )}
+      {gestion && etiquetage && (
+        <BoiteEtiquetage universId={universId} fiche={fiche} onFermer={() => setEtiquetage(false)} rafraichir={rafraichir} onDroitPerdu={onDroitPerdu} />
       )}
       {gestion && confirmer && (
         <div className="confirmation-ill" role="group" aria-label="Retirer l’illustration">
