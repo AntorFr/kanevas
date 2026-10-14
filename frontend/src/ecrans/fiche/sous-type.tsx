@@ -1,7 +1,9 @@
+import { Check } from 'lucide-react';
 import { useEffect, useId, useRef, useState } from 'react';
 
 import { ErreurApi, appeler, lire } from '../../api';
 import { useToasts } from '../../ui';
+import '../../ui/liste-liens.css';
 
 export const MAX_SOUS_TYPE = 60;
 
@@ -55,8 +57,10 @@ export function SousTypeBadge({
   const champ = useRef<HTMLInputElement>(null);
   const declencheur = useRef<HTMLButtonElement>(null);
   const idListe = useId();
-  const idAide = useId();
-  const deja = useSousTypesEmployes(universId, type, edition);
+  const [actif, setActif] = useState(-1);
+  const tous = useSousTypesEmployes(universId, type, edition);
+  const q = valeur.trim().toLocaleLowerCase('fr');
+  const deja = tous.filter((x) => !q || x.toLocaleLowerCase('fr').includes(q));
 
   useEffect(() => {
     if (edition) champ.current?.focus();
@@ -67,6 +71,7 @@ export function SousTypeBadge({
   function ouvrir() {
     setValeur(sousType ?? '');
     setErreur(undefined);
+    setActif(-1);
     setEdition(true);
   }
   function fermer() {
@@ -74,9 +79,9 @@ export function SousTypeBadge({
     queueMicrotask(() => declencheur.current?.focus());
   }
 
-  async function enregistrer() {
+  async function enregistrer(choix?: string) {
     if (enCours) return;
-    const v = valeur.trim();
+    const v = (choix ?? valeur).trim();
     if (Array.from(v).length > MAX_SOUS_TYPE) return setErreur(`Erreur : ${MAX_SOUS_TYPE} caractères au plus.`);
     if (v === (sousType ?? '')) return fermer();
     setEnCours(true);
@@ -101,7 +106,7 @@ export function SousTypeBadge({
   if (!edition) {
     return (
       <>
-        {' · '}
+        <span className="point-type" aria-hidden="true"> · </span>
         <button
           ref={declencheur}
           type="button"
@@ -114,27 +119,38 @@ export function SousTypeBadge({
       </>
     );
   }
+  const trop = Array.from(valeur.trim()).length > MAX_SOUS_TYPE;
   return (
     <span className="sous-type-edition">
-      {' · '}
+      <span aria-hidden="true"> · </span>
       <input
         ref={champ}
         type="text"
+        role="combobox"
         aria-label="Sous-type"
+        aria-autocomplete="list"
+        aria-expanded="true"
+        aria-controls={idListe}
+        aria-activedescendant={actif >= 0 ? `${idListe}-${actif}` : undefined}
         aria-invalid={erreur ? true : undefined}
-        aria-describedby={idAide}
-        list={deja.length > 0 ? idListe : undefined}
         autoComplete="off"
+        spellCheck={false}
         value={valeur}
         disabled={enCours}
         onChange={(e) => {
           setValeur(e.target.value);
+          setActif(-1);
           setErreur(undefined);
         }}
         onKeyDown={(e) => {
-          if (e.key === 'Enter') {
+          if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
             e.preventDefault();
-            void enregistrer();
+            if (deja.length === 0) return;
+            const pas = e.key === 'ArrowDown' ? 1 : -1;
+            setActif((actif + pas + deja.length) % deja.length);
+          } else if (e.key === 'Enter') {
+            e.preventDefault();
+            void enregistrer(actif >= 0 ? deja[actif] : undefined);
           } else if (e.key === 'Escape') {
             e.preventDefault();
             e.stopPropagation();
@@ -142,16 +158,32 @@ export function SousTypeBadge({
           }
         }}
       />
-      {deja.length > 0 && (
-        <datalist id={idListe} title={`Sous-types de ${libelleType.toLowerCase()} déjà employés`}>
-          {deja.map((d) => (
-            <option key={d} value={d} />
-          ))}
-        </datalist>
-      )}
-      <small id={idAide} className={erreur ? 'erreur' : undefined} role={erreur ? 'alert' : undefined}>
-        {erreur ?? 'Entrée enregistre · Échap annule · Champ vide : plus de sous-type'}
-      </small>
+      <span className="liste-liens liste-st" id={idListe} role="listbox" aria-label={`Sous-types de ${libelleType.toLowerCase()} déjà employés`}>
+        {deja.length > 0 && (
+          <span className="titre-menu" aria-hidden="true">
+            Sous-types de {libelleType.toLowerCase()} déjà employés
+          </span>
+        )}
+        {deja.map((x, i) => (
+          <span
+            key={x}
+            id={`${idListe}-${i}`}
+            role="option"
+            className="option"
+            aria-selected={i === actif}
+            onMouseDown={(e) => {
+              e.preventDefault();
+              void enregistrer(x);
+            }}
+          >
+            {x}
+            {x === sousType && <Check size={14} strokeWidth={1.75} className="coche" aria-label="sous-type actuel" />}
+          </span>
+        ))}
+        <span className={`pied-st${erreur || trop ? ' erreur' : ''}`} role={erreur ? 'alert' : undefined}>
+          {erreur ?? (trop ? `Erreur : ${MAX_SOUS_TYPE} caractères au plus.` : 'Entrée enregistre · Échap annule · Champ vide : plus de sous-type')}
+        </span>
+      </span>
     </span>
   );
 }

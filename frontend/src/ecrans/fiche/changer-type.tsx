@@ -1,7 +1,8 @@
+import { Shapes } from 'lucide-react';
 import { useId, useState, type FormEvent } from 'react';
 
 import { ErreurApi, appeler } from '../../api';
-import { typeParType, useTypes, type TypeVue } from '../../types-contexte';
+import { iconeDeNom, typeParType, useTypes, type TypeVue } from '../../types-contexte';
 import { Bouton, Champ, Fenetre, useToasts } from '../../ui';
 import { MAX_SOUS_TYPE, useSousTypesEmployes } from './sous-type';
 import type { FicheVue } from './types';
@@ -25,19 +26,21 @@ export function ChangerType({
 }) {
   const { etat, types, recharger } = useTypes();
   const { toast } = useToasts();
-  const [choisi, setChoisi] = useState<string>();
+  const [choisi, setChoisi] = useState<string>(fiche.type);
   const [pj, setPj] = useState(false);
   const [sousType, setSousType] = useState('');
   const [erreur, setErreur] = useState<string>();
   const [echec, setEchec] = useState<string>();
   const [enCours, setEnCours] = useState(false);
   const idListe = useId();
-  const deja = useSousTypesEmployes(universId, choisi ?? '', choisi !== undefined);
+  const deja = useSousTypesEmployes(universId, choisi);
 
-  const proposes = types.filter((t) => t.reglable && t.type !== fiche.type);
+  // The current type is listed and marked « (actuel) »; it is not a target.
+  const proposes = types.filter((t) => t.reglable);
   const actifs = proposes.filter((t) => t.active);
   const autres = proposes.filter((t) => !t.active);
-  const cible = choisi ? typeParType(types, choisi) : undefined;
+  const cible = choisi !== fiche.type ? typeParType(types, choisi) : undefined;
+  const selection = typeParType(types, choisi);
   const actuel = typeParType(types, fiche.type)?.singulier ?? fiche.type;
 
   async function changer(e: FormEvent) {
@@ -68,15 +71,30 @@ export function ChangerType({
     }
   }
 
-  const choix = (t: TypeVue) => (
-    <label key={t.type} className="choix-type">
-      <input type="radio" name="type-cible" checked={choisi === t.type} onChange={() => { setChoisi(t.type); setSousType(''); setErreur(undefined); }} />
-      {t.singulier}
-    </label>
-  );
+  const choix = (t: TypeVue) => {
+    const Icone = iconeDeNom(t.icone);
+    const note = t.type === fiche.type ? '(actuel)' : t.active ? '' : 'désactivé';
+    return (
+      <label key={t.type} className="resultat">
+        <input
+          type="radio"
+          name="type-cible"
+          checked={choisi === t.type}
+          onChange={() => {
+            setChoisi(t.type);
+            setSousType('');
+            setErreur(undefined);
+          }}
+        />
+        <Icone size={16} strokeWidth={1.75} aria-hidden="true" />
+        {t.singulier}
+        {note && <span className="type-option">{note}</span>}
+      </label>
+    );
+  };
 
   return (
-    <Fenetre titre={`Changer le type de « ${fiche.titre} »`} onFermer={onFermer}>
+    <Fenetre titre={`Changer le type de « ${fiche.titre} »`} onFermer={onFermer} icone={Shapes}>
       <form className="changer-type" onSubmit={changer} noValidate>
         {echec && (
           <div className="echec" role="alert">
@@ -92,10 +110,11 @@ export function ChangerType({
         {etat === 'ok' && proposes.length === 0 && <p>Aucun autre type n’est disponible.</p>}
         {etat === 'ok' && proposes.length > 0 && (
           <>
-            <div role="radiogroup" aria-label="Nouveau type">
+            <div className="resultats" role="radiogroup" aria-label="Nouveau type">
               {actifs.map(choix)}
               {autres.length > 0 && (
                 <>
+                  <div className="sep-res" role="presentation" />
                   <p className="titre-groupe">Autres types</p>
                   {autres.map(choix)}
                 </>
@@ -111,30 +130,26 @@ export function ChangerType({
                 </label>
               </div>
             )}
-            {fiche.sousType && <p className="retrait">Le sous-type « {fiche.sousType} » sera retiré.</p>}
-            {cible && (
-              <>
-                <Champ
-                  etiquette="Sous-type"
-                  facultatif
-                  value={sousType}
-                  list={deja.length > 0 ? idListe : undefined}
-                  autoComplete="off"
-                  erreur={erreur}
-                  onChange={(e: { target: { value: string } }) => {
-                    setSousType(e.target.value);
-                    setErreur(undefined);
-                  }}
-                />
-                {deja.length > 0 && (
-                  <datalist id={idListe} title={`Sous-types de ${cible.singulier.toLowerCase()} déjà employés`}>
-                    {deja.map((d) => (
-                      <option key={d} value={d} />
-                    ))}
-                  </datalist>
-                )}
-              </>
+            <Champ
+              etiquette="Sous-type"
+              facultatif
+              value={sousType}
+              list={deja.length > 0 ? idListe : undefined}
+              autoComplete="off"
+              erreur={erreur}
+              onChange={(e: { target: { value: string } }) => {
+                setSousType(e.target.value);
+                setErreur(undefined);
+              }}
+            />
+            {deja.length > 0 && (
+              <datalist id={idListe} title={`Sous-types de ${(selection?.singulier ?? '').toLowerCase()} déjà employés`}>
+                {deja.map((d) => (
+                  <option key={d} value={d} />
+                ))}
+              </datalist>
             )}
+            {fiche.sousType && <p className="retrait">Le sous-type « {fiche.sousType} » sera retiré.</p>}
           </>
         )}
         <div className="actions">
