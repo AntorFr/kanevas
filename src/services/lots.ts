@@ -131,7 +131,7 @@ export function cloreLot(db: Db, jeton: Jeton, lotId: number, maintenant: Date =
   // « En attente » is counted once, at the closing (E-18): links still waiting for an origin key.
   db.prepare('UPDATE lots_import SET clos_le = ?, en_attente = ? WHERE id = ? AND clos_le IS NULL').run(
     maintenant.toISOString(),
-    compterEnAttente(db, jeton.universId),
+    compterEnAttente(db, jeton.universId) + compterParentsEnAttente(db, jeton.universId),
     lotId,
   );
   return lireLot(db, jeton, lotId, maintenant);
