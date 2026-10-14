@@ -9,6 +9,7 @@ import {
   vueSection,
 } from './droits.js';
 import { ErreurService, introuvable, invalide } from './erreurs.js';
+import { mentionsDe } from './mentions.js';
 import { lireLignes } from './pieces-jointes.js';
 import { CHARGES, estTypeFiche, typeActif } from './types-fiche.js';
 import {
@@ -16,6 +17,7 @@ import {
   type Acteur,
   type Fiche,
   type FicheVue,
+  type PageMentions,
   type SectionRow,
   type TypeFiche,
 } from './types.js';
@@ -131,7 +133,7 @@ export function creerFiche(
       o ? JSON.stringify(o.dernierImport) : null,
     );
   const id = Number(info.lastInsertRowid);
-  // A separate write: a base short of 0011 (the migration test seeds one through the services) has no column.
+  // A separate write: a base short of 0013 (the migration test seeds one through the services) has no column.
   if (sousType !== null) db.prepare('UPDATE fiches SET sous_type = ? WHERE id = ?').run(sousType, id);
   return versFiche(chargerFiche(db, universId, id));
 }
@@ -275,20 +277,48 @@ export function listerSousTypes(
  * (B-9). A caller who reads none gets "not found", like an unknown id (AD-22);
  * the GM (outside player mode) reads even a sheet without section.
  */
-export function lireFiche(db: Db, acteur: Acteur, universId: number, ficheId: number): FicheVue {
+export function lireFiche(
+  db: Db,
+  acteur: Acteur,
+  universId: number,
+  ficheId: number,
+  formeLiens: 'html' | 'markdown' = 'html',
+): FicheVue {
   const role = exigerRole(db, universId, acteur.compteId);
   const fiche = chargerFiche(db, universId, ficheId);
   const lisibles = sectionsDe(db, ficheId).filter((s) => peutLireSection(role, s, acteur));
   if (lisibles.length === 0 && (role !== 'mj' || acteur.modeJoueur)) throw introuvable();
+  const mentions = mentionsDe(db, role, acteur, universId, ficheId);
   return {
     ...versFiche(fiche),
+    mentions: mentions.mentions,
+    mentionsSuite: mentions.suite,
+    mentionsRestantes: mentions.restantes,
     // The origin key is a GM matter (B-50): a reader's answer has no such field at all.
     ...(vueMJ(role, acteur) && fiche.cle_origine ? { cleOrigine: fiche.cle_origine } : {}),
     sections: lisibles.map((s) => ({
-      ...vueSection(role, s, acteur),
+      ...vueSection(db, universId, role, s, acteur, formeLiens),
       piecesJointes: lireLignes(db, s.id, vueMJ(role, acteur)),
     })),
   };
+}
+
+/**
+ * The next sources of « Mentionnée dans » (AD-100): `apres` sources are already shown. Same refusal as
+ * the sheet itself — a sheet the caller does not read does not exist.
+ */
+export function lireMentions(
+  db: Db,
+  acteur: Acteur,
+  universId: number,
+  ficheId: number,
+  apres: number,
+): PageMentions {
+  const role = exigerRole(db, universId, acteur.compteId);
+  chargerFiche(db, universId, ficheId);
+  const lisible = sectionsDe(db, ficheId).some((s) => peutLireSection(role, s, acteur));
+  if (!lisible && (role !== 'mj' || acteur.modeJoueur)) throw introuvable();
+  return mentionsDe(db, role, acteur, universId, ficheId, apres);
 }
 
 export const LONGUEUR_RECHERCHE = 100;
@@ -359,7 +389,10 @@ export function listerFiches(
           AND s.id IN (SELECT rowid FROM recherche_sections WHERE recherche_sections MATCH ?)
           ${sectionLue ? `AND ${sectionLue.sql}` : ''}))`,
     );
-    params.push(match, match, ...(sectionLue?.params ?? []));
+    // Column filter (AD-114): a non-GM, or the GM in player mode, searches the public text only.
+    // The whole query goes between parentheses so the filter covers every word.
+    const colonnes = role === 'mj' && !acteur.modeJoueur ? 'titre contenu' : 'titre contenu_public';
+    params.push(match, `{${colonnes}} : (${match})`, ...(sectionLue?.params ?? []));
   }
   if (options.curseur !== undefined) {
     let c: { t: string; i: number };

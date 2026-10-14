@@ -191,6 +191,7 @@ function Vue({ universId, campagne, initial }: { universId: string; campagne: Ca
           />
           <EditeurMarkdown
             etiquette="Contenu"
+            liens={{ universId, campagneId: campagne.id }}
             valeur={contenu}
             max={max}
             rows={16}

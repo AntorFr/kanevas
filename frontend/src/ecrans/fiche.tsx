@@ -10,11 +10,14 @@ import { Bouton, Champ, ErreurChargement, PageIntrouvable, SqueletteFiche, useTo
 import './ecrans.css';
 import './fiche/fiche.css';
 import { PanneauSection, type Joueur } from './fiche/section';
-import type { FicheVue } from './fiche/types';
+import type { FicheVue, Mention } from './fiche/types';
 import { lignesDuType } from './fiche/lignes/registre';
 import { badgeFiche, iconeDuType, typeParType, useTypes } from '../types-contexte';
+import { BlocMentions } from './fiche/mentions';
 import { EnteteFiche, type MessageIllustration } from './fiche/entete';
 
+/** Stable empty list: the mentions block resets on a new array. */
+const AUCUNE: Mention[] = [];
 const ECHEC = 'L’action n’a pas abouti. Réessayez.';
 
 type Etat =
@@ -204,6 +207,16 @@ function PageFiche() {
             />
           ))}
         </div>
+      )}
+      {etat.k === 'ok' && (
+        <BlocMentions
+          universId={id!}
+          ficheId={fiche.id}
+          mentions={fiche.mentions ?? AUCUNE}
+          suite={fiche.mentionsSuite ?? false}
+          restantes={fiche.mentionsRestantes ?? 0}
+          suffixeMode={suffixe}
+        />
       )}
       {gestion && etat.k === 'ok' && (
         <div className={`ajout-section${formulaire ? ' ouvert' : ''}`}>

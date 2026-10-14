@@ -18,6 +18,7 @@ import {
   changerTypeFiche,
   creerFiche,
   lireFiche,
+  lireMentions,
   listerFiches,
   listerSousTypes,
 } from '../services/fiches.js';
@@ -141,6 +142,18 @@ export function registerFichesRoutes(app: FastifyInstance) {
   app.get(`${base}/:fid`, async (request) => {
     const i = ids(request);
     return lireFiche(app.db, acteur(request), i.univers, i.fiche);
+  });
+
+  // « Mentionnée dans » (AD-100): the sources after the `apres` first ones, fifty at a time.
+  app.get(`${base}/:fid/mentions`, async (request) => {
+    const i = ids(request);
+    const apres = (request.query as Record<string, unknown>).apres;
+    let n = 0;
+    if (apres !== undefined) {
+      if (typeof apres !== 'string' || !/^\d{1,9}$/.test(apres)) throw invalide('Requête invalide.');
+      n = Number(apres);
+    }
+    return lireMentions(app.db, acteur(request), i.univers, i.fiche, n);
   });
 
   app.post(`${base}/:fid/sections`, async (request, reply) => {

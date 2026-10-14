@@ -46,8 +46,20 @@ export interface Fiche {
   illustration?: { jeton: string } | null;
 }
 
+/** One line of « Mentionnée dans » (AD-100). */
+export interface Mention {
+  ficheId: number;
+  titre: string;
+  type: string;
+  pourquoi: ({ genre: 'lien'; section: string } | { genre: 'relation'; libelle: string })[];
+}
+
 export interface FicheVue extends Fiche {
   sections: SectionVue[];
+  /** « Mentionnée dans »: the first page, what the reader sees only. */
+  mentions?: Mention[];
+  mentionsSuite?: boolean;
+  mentionsRestantes?: number;
   /** Origin key of an imported sheet (B-50): sent to the GM outside player mode only. */
   cleOrigine?: string;
 }
