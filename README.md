@@ -33,6 +33,7 @@ frontend/                         React + Vite : charte (ui/), écrans (src/ecra
 .github/workflows/docker-publish.yml   CI : tests, build, image GHCR
 ```
 
+La liste des types de fiche vient du serveur ; le frontend ne tient que la table icône → composant, dans `frontend/src/types-contexte.tsx` (c'est là qu'on ajoute l'icône d'un nouveau type).
 Un écran est un fichier `frontend/src/ecrans/<nom>.tsx` enregistré par le registre
 (`frontend/src/registre.ts`) ; les couleurs ne viennent que de `frontend/src/ui/tokens.css`
 (`docs/charte.md`). Le cadre (`Cadre.tsx`, `Barre.tsx` : navigation à icônes, barre haute, tiroir au téléphone,
