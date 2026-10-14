@@ -9,6 +9,7 @@ import {
   vueSection,
 } from './droits.js';
 import { ErreurService, introuvable, invalide } from './erreurs.js';
+import { etiquetageDe } from './etiquettes.js';
 import { mentionsDe } from './mentions.js';
 import { lireLignes } from './pieces-jointes.js';
 import { CHARGES, estTypeFiche, typeActif } from './types-fiche.js';
@@ -294,6 +295,7 @@ export function lireFiche(
     mentions: mentions.mentions,
     mentionsSuite: mentions.suite,
     mentionsRestantes: mentions.restantes,
+    ...etiquetageDe(db, ficheId),
     // The origin key is a GM matter (B-50): a reader's answer has no such field at all.
     ...(vueMJ(role, acteur) && fiche.cle_origine ? { cleOrigine: fiche.cle_origine } : {}),
     sections: lisibles.map((s) => ({

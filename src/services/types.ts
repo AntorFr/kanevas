@@ -121,6 +121,9 @@ export interface PageMentions {
 }
 
 export interface FicheVue extends Fiche {
+  /** Other names of the sheet and its labels (AD-118), sorted. */
+  alias: string[];
+  etiquettes: string[];
   sections: SectionVue[];
   /** « Mentionnée dans »: the first page (AD-100); the rest through `GET …/mentions?apres=`. */
   mentions: Mention[];

@@ -32,6 +32,7 @@ import {
   retirerSection,
   type ChangementAudience,
 } from '../services/sections.js';
+import { etiquettesProposees, poserEtiquetage } from '../services/etiquettes.js';
 import { lireRelations, relierSection, retirerRelation } from '../services/relations.js';
 import type { Acteur } from '../services/types.js';
 import { idDeChemin } from './univers.js';
@@ -143,6 +144,18 @@ export function registerFichesRoutes(app: FastifyInstance) {
     const i = ids(request);
     return lireFiche(app.db, acteur(request), i.univers, i.fiche);
   });
+
+  // Aliases and labels replaced as a whole (AD-118 (5)); GM outside player mode.
+  app.put(`${base}/:fid/etiquetage`, async (request) => {
+    const i = ids(request);
+    const b = corps(request);
+    return poserEtiquetage(app.db, acteur(request), i.univers, i.fiche, { alias: b.alias, etiquettes: b.etiquettes });
+  });
+
+  // Labels carried by at least one sheet the caller reads (AD-118 (4)).
+  app.get('/api/univers/:id/etiquettes', async (request) =>
+    etiquettesProposees(app.db, acteur(request), ids(request).univers),
+  );
 
   // « Mentionnée dans » (AD-100): the sources after the `apres` first ones, fifty at a time.
   app.get(`${base}/:fid/mentions`, async (request) => {

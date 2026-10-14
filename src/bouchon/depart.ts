@@ -9,6 +9,7 @@ import { poserIllustration } from '../services/illustrations.js';
 import { supprimerFichier } from '../services/stockage.js';
 import { ajouterMembre } from '../services/membres.js';
 import { ajouterSection, changerAudience, ecrireContenu, lireSection } from '../services/sections.js';
+import { poserEtiquetage } from '../services/etiquettes.js';
 import { creerFiche } from '../services/fiches.js';
 import { assurerCompte } from '../services/comptes.js';
 import { creerEtRattacherSysteme, creerGabarit, rattacherSysteme } from '../services/systemes.js';
@@ -159,7 +160,17 @@ export function semerBouchon(db: Db): boolean {
     );
     section('Vérité', 'Le port cache un secret réservé au MJ.', {});
     fiche('faction', 'Lames Grises', [{ titre: 'Description', lue: true }]);
-    fiche('faction', 'Cercle des Cendres', [{ titre: 'Secret — MJ seul', lue: false }]);
+    const cercle = fiche('faction', 'Cercle des Cendres', [{ titre: 'Secret — MJ seul', lue: false }]);
+    // Aliases, labels and a readable « savoir » (kanevas-recherche-donnees); a base short of 0014 has no table.
+    if (db.prepare("SELECT 1 FROM sqlite_master WHERE name = 'fiche_alias'").get()) {
+      const antor = { compteId: id.antor };
+      poserEtiquetage(db, antor, lame.id, port.id, {
+        alias: ['Salport', 'Port-aux-Sels'],
+        etiquettes: ['Côte des Brumes'],
+      });
+      poserEtiquetage(db, antor, lame.id, cercle.id, { alias: [], etiquettes: ['Côte des Brumes'] });
+      fiche('savoir', "Chronique de l'Âge d'Ombre", [{ titre: 'Récit', lue: true }], undefined, 'Récit');
+    }
 
     // The links of `kanevas-import-liens` (docs/ecrans.md). The Guild and the report are closed to
     // players; the texts that point at sheets are written once those exist, through the service.
