@@ -69,6 +69,12 @@ body.asst-ouvert .zone-principale { margin-right: 380px; }
 .asst-prop-zone:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
 .asst-prop-lib { display: block; font-size: var(--t-12); font-variant-caps: all-small-caps; letter-spacing: .06em; color: var(--texte-2); margin-bottom: var(--e-1); }
 .asst-prop-texte { white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.5; }
+.asst-prop-rendu { font-size: var(--t-14); line-height: 1.5; }
+.asst-prop-rendu h3, .asst-prop-rendu h4, .asst-prop-rendu h5, .asst-prop-rendu h6 { font-size: var(--t-14); margin-top: var(--e-3); }
+.asst-prop-bascule { display: inline-flex; align-self: flex-start; border: 1px solid var(--bord-fort); border-radius: var(--rayon-champ); overflow: hidden; }
+.asst-prop-bascule button { font: inherit; font-size: var(--t-13); color: var(--texte-2); background: transparent; border: 0; padding: var(--e-1) var(--e-3); cursor: pointer; }
+.asst-prop-bascule button[aria-pressed="true"] { background: var(--accent-fond); color: var(--accent-texte); }
+.asst-prop-bascule button:focus-visible { outline: 2px solid var(--focus); outline-offset: -2px; }
 .asst-prop-gestes { display: flex; flex-wrap: wrap; align-items: center; gap: var(--e-2); }
 .asst-prop-ouvrir { text-decoration: none; }
 @media (min-width: 760px) {

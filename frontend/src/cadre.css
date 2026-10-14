@@ -123,3 +123,9 @@ main.principal { flex: 1; min-width: 0; padding: var(--e-5) 28px; width: 100%; m
 @media (prefers-reduced-motion: reduce) {
   .colonne-barre, .voile-tiroir { transition: none; }
 }
+
+/* Lore section built from the types (loading skeleton, error, nothing enabled). */
+.item-squelette { pointer-events: none; }
+.item-squelette .squelette { height: 12px; display: block; }
+.lore-etat { padding: 0 10px; font-size: var(--t-13); color: var(--texte-3); }
+.lore-etat p { margin: 0 0 var(--e-2); }

@@ -4,11 +4,10 @@ import { useState } from 'react';
 import { appeler, ErreurApi } from '../../../api';
 import { useCharge } from '../../../cadre-contexte';
 import { BlocSection as BlocUi, Bouton, BoutonIcone, Champ, Chargement, ErreurChargement, LigneRelation, useToasts } from '../../../ui';
-import { iconeDuType } from '../types-fiche';
+import { badgeFiche, iconeDuType, typesActifs, useTypes } from '../../../types-contexte';
 import type { BlocSection } from '../registre';
 import { ListeRecherche } from '../liste-recherche';
 import type { Fiche, PropsBlocSection } from '../types';
-import { badgeFiche, TYPES_LORE } from '../types-fiche';
 import './relations.css';
 
 const ECHEC = 'L’action n’a pas abouti. Réessayez.';
@@ -29,6 +28,7 @@ const REFUS = new Set(['auto_relation', 'relation_existante', 'limite_relations'
  * gets no block at all. Only the GM relates and removes.
  */
 function BlocRelations({ universId, fiche, section, role, suffixeMode = '' }: PropsBlocSection) {
+  const { types } = useTypes();
   const mj = role === 'mj';
   const base = `/api/univers/${universId}/fiches/${fiche.id}/sections/${section.id}/relations`;
   const [etat, recharger] = useCharge<{ relations: Relation[] }>(`${base}${suffixeMode}`);
@@ -68,9 +68,9 @@ function BlocRelations({ universId, fiche, section, role, suffixeMode = '' }: Pr
               <li key={r.id}>
                 <LigneRelation
                   lien={r.type}
-                  icone={iconeDuType(r.cible.type)}
+                  icone={iconeDuType(types, r.cible.type)}
                   cible={r.cible.titre}
-                  type={badgeFiche(r.cible as Fiche)}
+                  type={badgeFiche(types, r.cible as Fiche)}
                   vers={`/univers/${universId}/fiche/${r.cible.id}`}
                   actions={
                     mj && (
@@ -129,14 +129,18 @@ function FormulaireRelier({
   onRelie: (titre: string) => void;
 }) {
   const [type, setType] = useState('');
-  const [typeFiche, setTypeFiche] = useState(TYPES_LORE[0]!.type);
+  const { types: tous, etat: etatTypes, recharger: rechargerTypes } = useTypes();
+  // The types one can relate to: the enabled ones, the session report (its own screen) aside.
+  const choixTypes = typesActifs(tous).filter((t) => t.reglable);
+  const [typeChoisi, setTypeFiche] = useState('');
   const [recherche, setRecherche] = useState('');
   const [choix, setChoix] = useState<Fiche>();
   const [erreurType, setErreurType] = useState<string>();
   const [erreurChoix, setErreurChoix] = useState<string>();
   const [refus, setRefus] = useState<string>();
   const [enCours, setEnCours] = useState(false);
-  const lore = TYPES_LORE.find((t) => t.type === typeFiche)!;
+  const typeFiche = typeChoisi || choixTypes[0]?.type || '';
+  const lore = choixTypes.find((t) => t.type === typeFiche);
 
   async function relier() {
     if (enCours) return;
@@ -189,13 +193,16 @@ function FormulaireRelier({
             setChoix(undefined);
           }}
         >
-          {TYPES_LORE.map((t) => (
+          {choixTypes.map((t) => (
             <option key={t.type} value={t.type}>
-              {t.label}
+              {t.singulier}
             </option>
           ))}
         </select>
       </label>
+      {!lore && etatTypes === 'erreur' && <ErreurChargement texte="Impossible de charger les types." onReessayer={rechargerTypes} />}
+      {!lore && etatTypes === 'chargement' && <Chargement texte="Chargement des types…" />}
+      {lore && (
       <ListeRecherche
         universId={String(universId)}
         type={lore}
@@ -219,10 +226,11 @@ function FormulaireRelier({
             <span className="titre-fiche" title={f.titre}>
               {f.titre}
             </span>
-            <span className="badge-type">{badgeFiche(f)}</span>
+            <span className="badge-type">{badgeFiche(tous, f)}</span>
           </button>
         )}
       />
+      )}
       {erreurChoix && <div className="erreur">Erreur : {erreurChoix}</div>}
       <div className="actions">
         <Bouton variante="principal" ecrit enCours={enCours} disabled={choix === undefined} onClick={() => void relier()}>

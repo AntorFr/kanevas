@@ -131,3 +131,48 @@ test('instance : l’acteur ne vient jamais du corps ni de la requête', async (
   assert.equal(r2.statusCode, 404);
   await app.close();
 });
+
+test('instance : GET jeton de l’assistant — état sans valeur, assistant selon fichier/variable/bouchon, 404 hors parents', async () => {
+  const { mkdtempSync, readdirSync } = await import('node:fs');
+  const { tmpdir } = await import('node:os');
+  const { join } = await import('node:path');
+  const { ecrireJeton, supprimerJeton } = await import('../services/assistant/jeton.js');
+  const claude = join(mkdtempSync(join(tmpdir(), 'jeton-route-')), 'claude');
+  const app = await buildApp();
+  const admin = await connecter(app, 'admin');
+  const lea = await connecter(app, 'lea');
+  const url = '/api/instance/assistant/jeton';
+  const cfg = { CLAUDE_DIR: claude, CLAUDE_CODE_OAUTH_TOKEN: '' } as any;
+  app.assistantDeps.config = cfg;
+
+  let r = await appel(app, admin, 'GET', url);
+  assert.equal(r.statusCode, 200);
+  assert.deepEqual(r.json(), { pose: false, poseLe: null, source: null, assistant: 'aucune' });
+
+  ecrireJeton('sk-ant-oat01-SECRETFICHIER', cfg);
+  r = await appel(app, admin, 'GET', url);
+  assert.equal(r.statusCode, 200);
+  assert.equal(r.json().assistant, 'claude-agent');
+  assert.equal(r.json().pose, true);
+  assert.equal(r.json().source, 'instance');
+  assert.match(r.json().poseLe, /Z$/);
+  assert.deepEqual(Object.keys(r.json()).sort(), ['assistant', 'pose', 'poseLe', 'source']);
+  assert.ok(!r.body.includes('SECRETFICHIER'));
+
+  const refus = await appel(app, lea, 'GET', url);
+  assert.equal(refus.statusCode, 404);
+  assert.ok(!refus.body.includes('SECRET'));
+  assert.equal((await appel(app, undefined, 'GET', url)).statusCode, 401);
+
+  supprimerJeton(cfg);
+  app.assistantDeps.config = { ...cfg, CLAUDE_CODE_OAUTH_TOKEN: 'sk-DEPLOIEMENT' };
+  r = await appel(app, admin, 'GET', url);
+  assert.deepEqual(r.json(), { pose: true, poseLe: null, source: 'deploiement', assistant: 'claude-agent' });
+  assert.ok(!r.body.includes('DEPLOIEMENT'));
+
+  app.assistantDeps.config = { ...cfg, KANEVAS_STUB: '1' };
+  r = await appel(app, admin, 'GET', url);
+  assert.equal(r.json().assistant, 'bouchon');
+  assert.deepEqual(readdirSync(claude), []);
+  await app.close();
+});

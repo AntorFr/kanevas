@@ -252,7 +252,7 @@ décalé de 2 px) sur `:focus-visible`.
 - V : 34 px, `--surface`, contour `--bord-champ`, rayon `--rayon-champ`, étiquette 12 px
   graisse 500 `--texte-2` au-dessus ; au focus, contour `--accent` et halo 3 px
   `--accent-fond`. La zone de texte d'une section garde la typographie de lecture (Newsreader
-  18 px) sur `--surface`, cernée d'`--accent` avec halo, pied « 313 / 20 000 », aide clavier,
+  18 px) sur `--surface`, cernée d'`--accent` avec halo, pied « 313 / 100 000 », aide clavier,
   « Annuler », « Enregistrer ». Case : 16 px, contour `--bord-champ` ; cochée `--mj` (la seule
   case du produit dit « Secrète (MJ seul) »).
 - C : une étiquette visible liée au champ ; l'erreur s'affiche dessous en `--danger` avec

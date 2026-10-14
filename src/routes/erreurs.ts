@@ -16,8 +16,12 @@ const STATUT: Record<CodeErreur, number> = {
 export function registerErreurs(app: FastifyInstance) {
   app.setErrorHandler((erreur, request, reply) => {
     if (erreur instanceof ErreurService) {
-      const corps: { message: string; code?: string } = { message: erreur.message };
+      const corps: { message: string; code?: string; champ?: string } = { message: erreur.message };
       if (erreur.detail) corps.code = erreur.detail;
+      if (erreur.champ) {
+        corps.champ = erreur.champ;
+        corps.code ??= 'invalide';
+      }
       let statut = STATUT[erreur.code];
       // Attachments: an empty file is a 400, a full section a 409 (B-24); both carry their code.
       if (erreur.detail === 'fichier_vide') corps.code = erreur.detail;
@@ -30,6 +34,7 @@ export function registerErreurs(app: FastifyInstance) {
       return reply.code(statut).send(corps);
     }
     const statut = (erreur as { statusCode?: number }).statusCode;
+    if (statut === 413) return reply.code(413).send({ message: 'Corps de requête trop volumineux.' });
     if (statut && statut >= 400 && statut < 500) {
       return reply.code(statut).send({ message: 'Requête invalide.' });
     }

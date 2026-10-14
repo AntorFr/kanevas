@@ -4,7 +4,7 @@ import { lire, useConnexionPerdue } from '../../api';
 import { useCharge } from '../../cadre-contexte';
 import { Bouton, Champ, Chargement, ErreurChargement, Fenetre } from '../../ui';
 import type { PageFiches } from '../fiche/types';
-import { libelleType, TYPES_CHOIX } from './types';
+import { libelleDuType, typesActifs, useTypes } from '../../types-contexte';
 
 /**
  * « Ajouter une fiche » (E-11), shared by both shapes of map: a type, a search, the sheets of that
@@ -27,7 +27,11 @@ export function AjoutFiche({
   /** Changes when the list must be fetched again (a sheet that no longer exists). */
   rechargeur: number;
 }) {
-  const [type, setType] = useState(TYPES_CHOIX[0]!.type);
+  const { types, etat: etatTypes, recharger: rechargerTypes } = useTypes();
+  // The types of the universe that are enabled, read from the same list as the bar.
+  const choix = typesActifs(types);
+  const [choisi, setType] = useState('');
+  const type = choisi || choix[0]?.type || '';
   const [saisie, setSaisie] = useState('');
   const [recherche, setRecherche] = useState('');
   const [erreurRecherche, setErreurRecherche] = useState<string>();
@@ -49,9 +53,9 @@ export function AjoutFiche({
           value={type}
           onChange={(e: { target: { value: string } }) => setType(e.target.value)}
         >
-          {TYPES_CHOIX.map((t) => (
+          {choix.map((t) => (
             <option key={t.type} value={t.type}>
-              {t.label}
+              {t.singulier}
             </option>
           ))}
         </Champ>
@@ -69,14 +73,22 @@ export function AjoutFiche({
             {erreur}
           </div>
         )}
-        <Liste
-          key={`${type}|${recherche}|${rechargeur}`}
-          universId={universId}
-          type={type}
-          recherche={recherche}
-          dejaPlacees={dejaPlacees}
-          onAjouter={onAjouter}
-        />
+        {type === '' ? (
+          etatTypes === 'erreur' ? (
+            <ErreurChargement texte="Impossible de charger les types." onReessayer={rechargerTypes} />
+          ) : (
+            <Chargement texte="Chargement des types…" />
+          )
+        ) : (
+          <Liste
+            key={`${type}|${recherche}|${rechargeur}`}
+            universId={universId}
+            type={type}
+            recherche={recherche}
+            dejaPlacees={dejaPlacees}
+            onAjouter={onAjouter}
+          />
+        )}
         <div className="actions">
           <Bouton onClick={onFermer}>Fermer</Bouton>
         </div>
@@ -99,6 +111,7 @@ function Liste({
   onAjouter: (ficheId: number) => Promise<void>;
 }) {
   const perdue = useConnexionPerdue();
+  const { types } = useTypes();
   const base = `/api/univers/${universId}/fiches?type=${type}${recherche === '' ? '' : `&q=${encodeURIComponent(recherche)}`}`;
   const [page, recharger] = useCharge<PageFiches>(base);
   const [suite, setSuite] = useState<{ fiches: PageFiches['fiches']; suivant: string | null } | null>(null);
@@ -146,7 +159,7 @@ function Liste({
           {fiches.map((f) => (
             <li key={f.id}>
               <span className="carte-ajout-titre">
-                {f.titre} <small>{libelleType(f.type)}</small>
+                {f.titre} <small>{libelleDuType(types, f.type)}</small>
               </span>
               {dejaPlacees.has(f.id) ? (
                 <span className="carte-deja">Déjà sur la carte</span>

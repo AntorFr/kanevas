@@ -1,6 +1,6 @@
 # Status — kanevas
 
-> MàJ : 2026-10-09 (assemblage de kanevas-monde, rattrapée sur epic/kanevas)
+> MàJ : 2026-10-14 (reprise de l'assemblage de kanevas-import-types, qui porte les liens ; avant : assemblage de kanevas-import-liens, sur `feature/kanevas-import-liens`, qui porte aussi les tranches amont ; avant : assemblage de kanevas-import-secrets, sur `feature/kanevas-import-secrets` ; la branche porte aussi le travail de `kanevas-import-markdown` et `kanevas-import-fil` (PR vers `epic/kanevas-import`, non fusionnées à cette date) ; le reste décrit `epic/kanevas`)
 
 **État :** `epic/kanevas` porte le socle, la première fiche, les systèmes de jeu, le suivi de la séance
 (campagnes, scénarios, préparation, comptes-rendus ; E-6, E-7, E-13) et les pièces jointes (migration
@@ -36,6 +36,8 @@ et adaptateurs `bouchon` et `claude-agent` ; disponibilité ; orchestration `rep
 mémoire, registre de blocs d'écriture). Outils : chercher, lire_fiche, lire_section, modifier_section, ajouter_a_section,
 lister_campagnes ; le MJ en plus creer_campagne et creer_scenario. Aucun outil de carte, de graphe ni d'image (la proposition vient de `kanevas-monde`, ci-dessous).
 
+`feature/kanevas-import-markdown` (PR vers `epic/kanevas-import`, non fusionnée) : les textes se lisent et s'écrivent en Markdown (AD-95, AD-96, AD-113). `services/markdown.ts` (`rendreMarkdown`, `markdown-it` 15.0.2, `html: false`, liens http/https/mailto seulement, intertitres décalés, images = texte alternatif) ; chaque lecture renvoie `html`, `contenu` (source) seulement à qui peut écrire (l'assistant suit la même règle : vue rendue pour un lecteur, source pour qui peut écrire) ; `POST /api/apercu` ; migration `0009-plafond-contenu.sql` ; lecture rendue sur E-9, E-7, E-15, E-12 (bascule Rendu / Source) ; éditeur partagé `frontend/src/ui/editeur.tsx` (Gras, Italique, Écrire / Aperçu, compteur). Hors tranche : liens `[[…]]`, bloc MJ, fichiers dans le texte. Les textes existants sont relus tels quels. Piège : les tests e2e lisent `dist/` (relancer `npm run build`).
+
 **Reste :** la fusion et le tag `v*` (recette acceptée par Monsieur). Pour l'assistant : le **premier vrai appel** au modèle n'a jamais eu lieu —
 l'adaptateur `claude-agent` n'est exercé que par une `query` factice. Il se joue sur l'URL déployée, après la fusion de `kanevas-am-deploy`
 (`k8s-home-lab`) et la pose du jeton `CLAUDE_CODE_OAUTH_TOKEN` par Monsieur (OpenBao `claude/kanevas`, property `token`) ; si le SDK refuse
@@ -69,7 +71,7 @@ catalogue MJ (événement `proposition_creee`) et sa règle du bouchon (« Mets 
 **Pièges :**
 - Administration : le groupe est lu à la connexion et vaut 7 jours (AD-86) ; la liste rend tous les univers, pagination par 100 côté client ; un admin sans rôle reste un compte sans rôle (AD-9). Les e2e `administration*` dépendent de Playwright (absent du dépôt) .
 - Assistant : `repondre` est l'unique entrée ; ne jamais passer le compte, l'univers ou le rôle en paramètre d'un outil, ni lire
-  `process.env` hors `config/env.ts` (seule exception : `FRONTEND_DIR`, `routes/frontend.ts`). Une erreur du transport est rendue par un message fixe (jamais la cause, qui pourrait citer le jeton).
+  `process.env` hors `config/env.ts` (seules exceptions : `FRONTEND_DIR`, `routes/frontend.ts`, et `PATH` transmis au processus de `connexion-claude.ts`). Une erreur du transport est rendue par un message fixe (jamais la cause, qui pourrait citer le jeton).
   Le verrou « une demande à la fois par compte » est en mémoire du processus (une seule instance). Le panneau se monte dans sa propre racine
   React (`assistant.tsx`) : il lit l'adresse par `assistant/adresse.ts`, pas par le routeur.
 - Node 20 est la cible (CI, Dockerfile). `better-sqlite3` est donc épinglé en `^12` : la 13 exige
@@ -77,12 +79,11 @@ catalogue MJ (événement `proposition_creee`) et sa règle du bouchon (« Mets 
 - La suite a été jouée sous Node 22 dans les pods de la chaîne (pas de Docker) ; la CI Node 20 fait foi.
   La règle « conteneurs uniquement » de `CLAUDE.md` est la voie de référence ; un Node local ≥ 20 (README) est le repli quand
   Docker manque.
-- Migrations : 0001 à 0007 sont sur `epic/kanevas` ; 0008 (propositions) sur la branche de `kanevas-monde`, à recaler seulement si une autre tranche fusionne avant (AD-51).
+- Migrations : la plus haute de cette branche est 0013 ; la prochaine tranche prend le numéro suivant libre à sa fusion (AD-51). Historique : 0001 à 0007 sont sur `epic/kanevas` ; 0008 (propositions) sur la branche de `kanevas-monde` ; 0009 (plafond 100 000) sur `epic/kanevas-import` ; 0010 (fil : jetons, lots, clés d'origine) sur `kanevas-import-fil` ; 0011 (`contenu_public`, index des sections) sur `kanevas-import-secrets`, numéro à reprendre à la fusion (AD-51) ; 0012 (liens) sur `kanevas-import-liens` ; 0013 (types : `fiches` recréée, `types_systeme`, `types_univers`) sur `kanevas-import-types`, renumérotée à la reprise de l'epic.
 - Les « PR non fusionnée » ci-dessus s'empilent sur `epic/kanevas` ; `recours-admin` est rattrapée dessus et n'ajoute aucune migration.
 - Vocabulaire : « Monsieur » = le commanditaire qui fait la recette ; « tranche » = une feature livrée ; « phase merge » = la
   fusion après recette ; E-n / B-n / P-n = écrans / besoins / parcours, les écrans (E-n) sont dans `docs/ecrans.md`, les besoins (B-n) et les parcours (P-n) dans `docs/parcours.md`.
-- La CI ne pousse d'image que sur `main` et sur un tag `v*` ; sur une PR elle ne fait qu'un build de
-  validation. L'image testable n'existe qu'après le tag, posé à la fusion.
+- La CI ne construit d'image que sur un tag `v*` dont le commit porte l'attestation « tests-complets » (`npm run tests:attestes -- --publier` ou le workflow manuel `tests.yml`) ; ni `main` ni PR ne la déclenchent. L'image testable n'existe qu'après le tag, posé à la fusion.
 - **Numéro de migration** : `0005-relier-chercher.sql` est sur `epic/kanevas` (fusionnée) et figée ; la migration de la prochaine tranche prend le numéro suivant à sa fusion (AD-51).
 - Recherche : `listerFiches({recherche})` seule (AD-63) ; les index FTS5 ne livrent que des identifiants
   candidats, tenus par déclencheurs : ne jamais écrire dans `recherche_*` depuis le code. La saisie est
@@ -105,11 +106,11 @@ catalogue MJ (événement `proposition_creee`) et sa règle du bouchon (« Mets 
   Un refus de lecture répond 404 comme un identifiant inconnu (AD-22) ; 50 pièces au plus par section, pas de
   limite de taille ; ajouter, marquer ou retirer ne change pas la `version` de la section. Pas de route de liste,
   pas de glisser-déposer. `stockage.ts` sert aussi aux fonds de carte (`services/cartes.ts`, AD-69), qui ne passent pas par `deposerPieceJointe`.
-- Rendu du bloc Pièces jointes vérifié par les tests e2e (Playwright) là où il est installé ; la CI ne les joue pas.
+- Rendu du bloc Pièces jointes vérifié par les tests e2e (Playwright) là où il est installé ; la CI l'installe et les joue.
 - « Connexion perdue » (frontend/src/api.ts) : sondé toutes les 3 s sur `/healthz` tant que le bandeau
   est levé ; il disparaît seul au retour du serveur.
-- Le contenu d'une section est plafonné à 20 000 caractères par le serveur (`MAX_CONTENU_SECTION`,
-  AD-91), rendu par `GET /api/moi` (`limites.contenuSection`) ; l'écran de fiche lit cette valeur.
+- Tout texte Markdown (section, compte-rendu, scénario, entrée de système, contenu proposé) est plafonné à 100 000 caractères
+  (`MAX_CONTENU_SECTION`, AD-91, AD-106 ; migration 0009 relève les CHECK SQL), rendu par `GET /api/moi` (`limites.contenuSection`).
 - Doublons connus, non traités : `corps(request)` (routes/fiches.ts, univers.ts), message d'échec
   des écrans, texte du bandeau bouchon (pages.ts / Cadre.tsx).
 
@@ -130,5 +131,41 @@ catalogue MJ (événement `proposition_creee`) et sa règle du bouchon (« Mets 
   CoF Mini…) puis `semerIllustrations` ; `KANEVAS_SANS_SEMIS=1` le coupe (utilisé par les e2e). Jamais hors bouchon.
 - Cartes : un graphe n'a ni position stockée ni déplacement de nœud (AD-71) ; la forme d'une carte ne change jamais ; un fond ne se retire pas, il se remplace ; aucune suppression de carte ni d'élément autre que « Retirer de la carte ». La fiche retirée reste.
 - Propositions (AD-79 à AD-82) : lues, appliquées, abandonnées par leur seul demandeur, encore MJ ; tout autre compte reçoit 404. Le fil ne se garde pas (AD-28) : après un rechargement, une proposition en attente n'est plus atteignable (limite écrite, bornée à une par MJ et section ; pas de liste « mes propositions »). Hors tranche : application par un joueur, propositions en lot. L'assistant ne sait pas quel écran est ouvert : le compte-rendu se nomme dans la demande. Le semis du bouchon n'a ni campagne ni compte-rendu : la recette les crée (README).
+
+`feature/kanevas-import-fil` (PR vers `epic/kanevas-import`, non fusionnée ; ce paragraphe vaut jusqu'à sa fusion) ajoute l'API d'import et E-18 (AD-103, AD-104 ; B-45 à B-50, P-10 étapes 3-5-7-10, P-11) :
+migration `0010-fil-contrat.sql` (0009 est le plafond de l'epic) (`jetons_api`, `lots_import`, `fiches.cle_origine` / `dernier_import`, `sections.cle_origine` / `version_importee` / `dernier_import`),
+`services/jetons.ts`, `services/lots.ts`, `services/import-fiches.ts` (`assurerFiche`, composition des services existants), scope `routes/import.ts` (`/api/import/v1`, Bearer seul,
+401 `jeton_invalide` unique, 404 autre univers, corps 8 Mio), routes de session `routes/acces-api.ts`, écran `frontend/src/ecrans/acces-api.tsx` (E-18),
+ligne « Importée · clé … » du menu « ⋯ » de E-9 (MJ seul ; `cleOrigine` jamais dans une lecture de joueur). Semis du bouchon : « Essai Kanka » (Antor MJ, Léa joueuse) et `JETON_BOUCHON`.
+- Seule la fiche est importée ici, six types à l'époque de `import-fil`, treize depuis `kanevas-import-types` (pas `compte_rendu`, refusé 400 `champ: type`) ; contenu reçu en texte, plafond 100 000 (AD-106, `contenuSection` de `GET /`), `:::mj` accepté dans un contenu (`kanevas-import-secrets`, même chemin d'écriture), pas de lien, parent, alias, fichier, relation.
+- Un titre de fiche ou de section modifié hors de l'import n'est pas écrasé au rejeu (avertissement au lot) ; une section sans clé n'est jamais touchée ; rien ne se supprime par omission.
+- Un rejeu sans lot (`?lot=` absent) écrit mais ne laisse aucune trace de compteur ; un lot clos répond 409 `lot_clos`.
+- Reste : la recette de Monsieur au navigateur en bouchon (README, « Recette de l'accès par API »), la fusion dans `epic/kanevas-import`. Tranches suivantes : markdown, secrets, liens, types, arbre, recherche, fichiers, reprise. Pas de tag avant la fusion de l'epic.
+
+`feature/kanevas-import-secrets` (PR vers `epic/kanevas-import`, non fusionnée) ajoute le bloc MJ `:::mj` au milieu d'un texte (B-34, AD-98, AD-114) :
+migration `0011-contenu-public.sql` (`sections.contenu_public`, index `recherche_sections (titre, contenu_public, contenu)` recréé), `contenuPublic` et le conteneur `mj`
+(`services/markdown.ts`, `markdown-it-container` 4.0.0), `insererSection` / `poserContenu` (`services/sections.ts`) seuls points d'écriture du contenu d'une section (un test le garde),
+vue du lecteur (`droits.ts` : non-MJ ou mode Joueur lisent `contenu_public`, le MJ la source avec `<div class="bloc-mj">`), recherche filtrée par colonnes FTS5, `POST /api/apercu` avec contexte `{nature, univers_id, mode}`,
+refus d'une section à bloc par un non-MJ (403 « Vous ne pouvez pas modifier cette section. », 400 « Un bloc MJ ne peut être écrit que par un MJ. »), l'assistant par la même vue, le bouton « Bloc MJ » de l'éditeur,
+« Modifier » caché au joueur. Semis du bouchon : « Port-Sel » (Lame d'Ébène, « Histoire » avec un bloc, Léa auteur). Hors tranche : liens et fichiers dans un bloc, recherche tous types.
+- Pièges : `:::mj` reste du texte dans un scénario et une entrée de système (`nature: 'texte'`, sans `contenu_public`) ; un bloc non fermé court jusqu'à la fin ; `contenuPublic` retire des lignes entières (plus, jamais moins) ; un site d'écriture oublié donne une section vide pour un non-MJ, pas une fuite ; ne jamais écrire `contenu` hors de `sections.ts`.
+- Reste : la recette de Monsieur en bouchon (README, « Recette du bloc MJ »), la fusion dans `epic/kanevas-import`. Pas de tag avant la fusion de l'epic.
+
+`feature/kanevas-import-liens` (PR vers `epic/kanevas-import`, non fusionnée) ajoute les liens `[[id|texte]]` entre fiches (B-33, B-36, AD-97, AD-100, AD-116) :
+migration `0012-liens.sql` (table `liens`, index `liens (cible_fiche_id)`, `liens (cible_cle)`, `relations (cible_fiche_id)`), `services/liens.ts` seul écrivain de `liens`,
+`extraireLiens` (jetons du moteur, hors code), `preparerContenu` (`[[<id>]]` nu réécrit ou 400 `lien_illisible`, `[[cle:…]]` connu résolu) avant chaque écriture, `resoudreClesEnAttente`
+à la création d'une fiche à clé (sans bouger `version` ni `modifie_le`), rejeu d'import comparé après résolution (AD-104), `en_attente` au lot. Lecture : `resolveurLiens` (`droits.ts`, une requête par texte),
+rendu décidé par la cible (lien, texte, cassé, en attente), scénarios résolus dans l'univers de la campagne, assistant en `[texte](fiche:<id>)`, « Mentionnée dans » (`services/mentions.ts`,
+`GET …/fiches/:fid/mentions`, 50 par page). Écran : liste ouverte par `[[` et « Lien vers une fiche » (`ui/liste-liens.tsx`), bloc `fiche/mentions.tsx`. Semis du bouchon : la Guilde, le rapport secret, les liens de Port-Sel, « Anse-aux-Sels ».
+- Pièges : le rendu ne lit jamais `liens` (qui ne sert qu'à « Mentionnée dans ») ; pas de rattrapage des textes d'avant (la table se remplit à la première écriture de la section) ; `[[…]]` reste du texte dans une entrée de système ; `liens` n'a qu'un écrivain (un test le garde) ; les e2e navigateur peuvent dépasser 30 s sous charge (`premiere-fiche`, « B-9 Léa, auteur… » ; `pieces-jointes-complements-2` a aussi échoué une fois en suite complète et passe seul) ; lancer `npm run build` avant `npm test` : `liens-ecran-mise-en-page` lit `dist/`, un build périmé le met en échec.
+- Reste : la recette de Monsieur en bouchon (README, « Recette des liens »), la fusion dans `epic/kanevas-import`. Liens vers une fiche supprimée : deviendront cassés avec `kanevas-import-tenir` ; recherche par alias : `kanevas-import-recherche`.
+
+`feature/kanevas-import-types` (PR vers `epic/kanevas-import`, non fusionnée ; ce paragraphe vaut jusqu'à sa fusion) : le MJ choisit les types de son système et de son univers, et donne un sous-type à une fiche (P-13, B-7, B-42, B-52 ; AD-102, AD-110, AD-120) :
+migration `0013-types.sql` (`fiches` recréée sans `CHECK` sur le type, avec `parent_id` et `sous_type`, `cle_origine` / `dernier_import` recopiées ; tables `types_systeme`, `types_univers`), jouée par `migrate()` clés étrangères coupées puis `foreign_key_check` avant validation (`-- migrate: sans-cles-etrangeres`, `src/db/db.ts`) ;
+`services/types-fiche.ts` (la liste unique des 13 types réglables + `compte_rendu`, `typeActif`, `typesDeLUnivers`, réglages), routes de réglage (système et univers) et `GET /api/univers/:id/types`, `GET …/sous-types?type=` ; `changerTypeFiche` ; `PUT` de l'import et `PUT /fiches` portent `sousType`. Écrans : onglet « Types de fiche » de E-15, panneau de E-14 (bascule à trois choix), barre, liste et création qui suivent l'activation, sous-type sur carte / filtre / création / en-tête de E-9, « Changer le type… ». Le bouchon sème les sous-types des lieux. 1476 tests, 0 échec, typecheck et build verts.
+- Le frontend ne tient que la table icône → composant ; la liste vient du serveur (AD-120, numéroté AD-113 dans le plan : AD-113 est pris par le Markdown). Ne pas recréer de liste de types côté navigateur.
+- `parent_id` est posé mais inutilisé (kanevas-import-arbre) ; les colonnes d'illustration sont recopiées telles quelles (kanevas-import-mediatheque). `compte_rendu` n'est accepté par l'API qu'avec kanevas-import-reprise. Le sous-type est vidé quand le type change ; le PJ / PNJ ne se règle pas dans « Changer le type ».
+- Migration : le numéro 0013 est celui de cette branche, provisoire comme 0008 à 0012 jusqu'à la fusion de l'epic ; une tranche fusionnée avant renumérote (AD-51, `rm -rf dist` ensuite) ; un fichier qui recrée une table doit porter l'en-tête `-- migrate: sans-cles-etrangeres`, sans quoi `DROP TABLE` emporte les lignes liées.
+- Reste : la recette de Monsieur en bouchon (recette dans le README, « Recette des types de fiche » ; désactiver « Vaisseau » et « Note » sur « CoF Mini », forcer « Vaisseau » sur « Lame d'Ébène », Savoir « Les Cristaux d'Ombre » / « Ressource » puis Note, filtre « Taverne » de « Lieux », `PUT /fiches/vaisseau:aube` dans « Essai Kanka »), puis la fusion.
 
 **Suivant :** les tranches non encore livrées.

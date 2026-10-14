@@ -5,7 +5,8 @@ import { Link, Outlet, matchPath, useLocation } from 'react-router-dom';
 import { useConnexionPerdue } from './api';
 import { Barre, Sceau, universDeLAdresse } from './Barre';
 import { useUnivers, useVue, type ModeVue } from './cadre-contexte';
-import { ITEMS_UNIVERS } from './items';
+import { ITEMS_UNIVERS, itemsLore, type Item } from './items';
+import { useTypes } from './types-contexte';
 import { Bandeau } from './ui';
 import './cadre.css';
 
@@ -26,7 +27,7 @@ interface Maillon {
  * answers, then the last crumb a screen gave (a sheet's title). Outside a universe: « Mes univers »,
  * then « Créer un univers ».
  */
-export function maillons(pathname: string, nomUnivers: string | undefined, titre: string | undefined, dedans: boolean, section?: string): Maillon[] {
+export function maillons(pathname: string, nomUnivers: string | undefined, titre: string | undefined, dedans: boolean, section?: string, lore: Item[] = []): Maillon[] {
   if (!dedans) {
     // E-5: the instance screen, not a universe's; its crumb says where it sits in the bar.
     if (pathname === '/administration' || pathname.startsWith('/administration/')) {
@@ -44,7 +45,7 @@ export function maillons(pathname: string, nomUnivers: string | undefined, titre
   const id = universDeLAdresse(pathname) ?? matchPath('/univers/:id', pathname)?.params.id;
   const racine = `/univers/${id}`;
   const liste: Maillon[] = [{ libelle: nomUnivers ?? 'Univers', vers: racine, sceau: true }];
-  const item = ITEMS_UNIVERS.filter((i) => i.chemin(Number(id)) !== racine)
+  const item = [...ITEMS_UNIVERS, ...lore].filter((i) => i.chemin(Number(id)) !== racine)
     .filter((i) => section === undefined || i.libelle === section)
     .filter((i) => section !== undefined || pathname === i.chemin(Number(id)) || pathname.startsWith(`${i.chemin(Number(id))}/`))
     .sort((a, b) => b.chemin(Number(id)).length - a.chemin(Number(id)).length)[0];
@@ -64,8 +65,10 @@ function Ariane() {
   const connu = univers.etat !== 'ok' || univers.valeur.some((u) => u.id === id);
   const dedans = id !== null && connu;
   const nom = univers.etat === 'ok' ? univers.valeur.find((u) => u.id === id)?.nom : univers.etat === 'chargement' ? '…' : undefined;
-  const liste = maillons(pathname, nom, titre, dedans, section);
-  const icones = dedans ? new Map(ITEMS_UNIVERS.map((i) => [i.libelle, i.icone])) : new Map();
+  const { types } = useTypes();
+  const lore = itemsLore(types);
+  const liste = maillons(pathname, nom, titre, dedans, section, lore);
+  const icones = dedans ? new Map([...ITEMS_UNIVERS, ...lore].map((i) => [i.libelle, i.icone])) : new Map();
   return (
     <nav className="ariane" aria-label="Fil d’Ariane">
       {liste.map((m, i) => {
