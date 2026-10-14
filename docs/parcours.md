@@ -460,7 +460,7 @@ a expiré — la ligne dit « Expiré », le script reçoit 401.
 4. Léa, sur son téléphone, ouvre la **recherche** (E-17), tape « sous-main », un mot qui n'est que
    dans le bloc MJ : aucun résultat. Elle tape « guilde » : elle trouve « Port-Sel » (le texte du lien
    est écrit dans « Histoire », qu'elle lit) mais jamais la fiche « La Guilde des Brumes » ; elle trouve
-   « Port-Sel » par son alias « Salport » ; elle touche l'étiquette « Côte des Brumes » et voit les fiches qu'elle lit.
+   « Port-Sel » par son alias « Salport » ; elle touche la pastille « Côte des Brumes » (sur E-17, ou sur la fiche « Port-Sel » qui l'ouvre filtrée) et voit les fiches qu'elle lit.
 5. Elle ouvre « Maître Aldric » par un lien, puis revient par le fil d'Ariane.
 6. Elle demande à son **assistant** (E-12) « que sait-on de Port-Sel ? » : il ne cite rien du bloc
    MJ.

@@ -69,7 +69,7 @@ bascule existe (fiche, carte et, depuis `kanevas-import`, recherche E-17).
 | **E-14 Paramètres de l'univers** | nav Univers (MJ) | nom, description, système de jeu (choisir dans le catalogue, en créer un) | P-8 |
 | **E-15 Système de jeu** | E-16 ; lien depuis E-3 et E-14 | le référentiel commun : règles, créatures, objets ; ajouter, modifier (MJ d'un univers rattaché) ; hors du cadre d'un univers | P-8 |
 | **E-16 Systèmes de jeu** | barre réduite ; menu du sélecteur d'univers | les systèmes rattachés aux univers du compte, chacun avec ceux de ses univers qui l'utilisent | P-8 |
-| **E-17 Recherche** *(kanevas-import)* | « Rechercher » de la barre ; `/` ; une étiquette touchée sur E-9 | chercher dans tous les types, titres, alias et sections lisibles ; filtrer par type et par étiquette | P-12 |
+| **E-17 Recherche** *(kanevas-import)* | « Rechercher » de la barre ; `/` ; une étiquette touchée sur E-9 | chercher dans tous les types, titres, alias et sections lisibles ; filtrer par type et par étiquette | P-12, P-10 |
 | **E-19 Médiathèque** *(kanevas-import)* | nav Médiathèque ; « Choisir dans la médiathèque » de l'éditeur et de l'illustration (E-9) | voir les fichiers (images, documents) ouverts au compte et où ils servent ; MJ : ajouter, renommer, régler la visibilité, supprimer | P-16, P-10 |
 | **E-18 Accès par API** *(kanevas-import)* | nav Univers ▸ Accès par API (MJ) | créer, lister, révoquer les jetons d'API de l'univers ; voir les lots d'import et leurs refus | P-10, P-11 |
 
@@ -111,7 +111,7 @@ E-16 vivent hors des univers : leurs cases disent le rôle dans un univers ratta
 | E-14 | tout | — | — |
 | E-15 (hors univers ; les colonnes disent le rôle dans un univers **rattaché au système**) | lire ; « Ajouter … », « Modifier » | lire (« Lecture seule ») ; ni « Ajouter » ni « Modifier » | « Page introuvable. », sauf s'il est lui-même membre d'un univers rattaché : alors la colonne de son rôle là (l'admin MJ d'un univers rattaché lit et modifie) |
 | E-16 (hors univers) | ses systèmes, avec ses univers et son rôle | ses systèmes, « Lecture seule » | la liste de ses propres systèmes (comme MJ ou Joueur s'il est membre d'un univers rattaché) ; vide sinon — l'écran est proposé à tout compte |
-| E-17 *(kanevas-import)* | chercher dans toutes les fiches de l'univers, blocs MJ compris ; en **mode Joueur**, comme un joueur (ni blocs MJ, ni fiches qu'un joueur ne lit pas) ; filtres : les types activés ; les fiches des types désactivés restent des résultats sous « Tous » | chercher dans ce qu'il lit, hors blocs MJ ; filtres par type et par étiquette des seules fiches qu'il voit | — |
+| E-17 *(kanevas-import)* | chercher dans toutes les fiches de l'univers, blocs MJ compris ; en **mode Joueur**, comme un joueur (ni blocs MJ, ni fiches qu'un joueur ne lit pas) ; filtres : les types activés ; les fiches des types désactivés restent des résultats sous « Tous » | chercher dans ce qu'il lit, hors blocs MJ ; filtres par type et par étiquette des seules fiches qu'il voit ; bascule de mode : absente (cachée) ; blocs MJ : hors recherche (jamais lus) ; « Alias et étiquettes… » sur E-9 : cachée | — |
 | E-19 *(kanevas-import)* | tout : ajouter, renommer, visibilité, supprimer ; « Utilisé dans » complet | les fichiers visibles des joueurs et ceux qu'il a ajoutés ; « Utilisé dans » réduit aux fiches qu'il lit ; ni ajout depuis E-19 (**caché** ; il ajoute un fichier par une section qu'il écrit, E-9), ni réglage, ni suppression (**cachés**) | — |
 | E-18 *(kanevas-import)* | créer un jeton ; voir et révoquer tous les jetons de l'univers (y compris ceux d'un autre MJ) ; voir les lots | — (**caché** : absent de la barre, « Page introuvable. » par l'adresse) | — |
 
@@ -139,7 +139,7 @@ Sur E-15, règles, créatures et objets ont le même traitement. Sur E-3, le blo
 
 Un compte **sans rôle** dans l'univers et qui n'est pas admin d'instance (Teo avant son ajout) a, dans
 cet univers, la colonne « Admin » de cette matrice pour les écrans **de cet univers** (E-3, E-4,
-E-6 à E-14) : « — », « Page introuvable. » si l'adresse est forcée. Hors des univers, il garde E-1,
+E-6 à E-14, E-17 à E-19) : « — », « Page introuvable. » si l'adresse est forcée. Hors des univers, il garde E-1,
 E-2 et E-16 (vide s'il n'est membre d'aucun univers rattaché), et E-15 pour les systèmes de ses
 propres univers.
 
@@ -2604,28 +2604,30 @@ bandeau, « Déplacer » désactivé. La boîte n'existe que pour un MJ hors mod
 
 ### E-17 Recherche
 
+*Maquette finie* : `docs/maquettes/e17-recherche.html` (MJ, Joueur, mode Joueur, étiquette, savoir, états).
+
 Adresse `/univers/:id/recherche?q=…&type=…&etiquette=…`. Un champ en tête (focus à l'ouverture,
-1 à 100 caractères), dessous deux rangées de filtres : les **types** (pastilles à icône, « Tous » par
+1 à 100 caractères, sans bouton : la recherche part à la frappe ou à Entrée), dessous deux rangées de filtres : les **types** (pastilles à icône, « Tous » par
 défaut ; **seuls les types activés** ont leur pastille, B-42 — une fiche d'un type désactivé reste un
 résultat sous « Tous ») et les **étiquettes** (une liste à
 compléter, celles des fiches que le compte voit). Les résultats : la ligne de E-8 (vignette, icône du
 type, titre, badge, sous-type) plus, si la fiche a été trouvée par un alias, « alias : Salport » ; ses étiquettes.
-**Ordre** : titre, alphabétique sans casse — pas de pertinence ni d'extrait (AD-63 tient : un extrait
+Le champ cherche dans le titre, les alias, le **sous-type** (B-52) et les sections lisibles. **Ordre** : titre, alphabétique sans casse — pas de pertinence ni d'extrait (AD-63 tient : un extrait
 est du contenu à filtrer, un classement trahit ce qui est caché). 100 puis « Charger la suite ». Une
 étiquette seule, sans mot, liste les fiches qui la portent. **Mode Joueur** (MJ) : la barre haute de
-E-17 porte la bascule « Mode MJ » / « Mode Joueur » ; en mode Joueur, la recherche répond comme pour un
+E-17 porte la bascule du cadre (« Mode MJ » / « Mode Joueur ») ; en mode Joueur, la recherche répond comme pour un
 joueur qui n'est l'auteur d'aucune section (AD-39, AD-101) — sans blocs MJ, sans fiche qu'un joueur ne
 lit pas ; le mode passe par l'adresse (`&mode=joueur`) et suit le MJ qui arrive d'une fiche ouverte en
 mode Joueur (« Rechercher », une étiquette).
 
 | État | Ce qu'on voit | Ce qu'on peut faire |
 |---|---|---|
-| vide | sans saisie ni filtre : « Cherchez un nom, un alias ou un mot. » ; sans résultat : « Aucune fiche ne correspond. » | changer la saisie, retirer un filtre |
-| chargement | « Recherche… » sous le champ, les résultats d'avant restent grisés | — |
-| erreur | « La recherche n'a pas abouti. Réessayez. » ; plus de 100 caractères : « Erreur : 100 caractères au plus. » | « Réessayer » |
-| connexion perdue | le bandeau ; le champ reste, la recherche ne part pas | — |
+| vide | une saisie d'espaces seuls ne part pas : l'état de départ reste ; sans saisie ni filtre : « Cherchez un nom, un alias ou un mot. » ; sans résultat : « Aucune fiche ne correspond. » | changer la saisie, retirer un filtre |
+| chargement | « Recherche… » sous le champ, les résultats d'avant restent grisés ; à l'ouverture, la rangée des étiquettes attend son appel (aucune pastille, le reste de l'écran est utilisable) ; « Charger la suite » en cours : le bouton est grisé et porte « Chargement… » | — |
+| erreur | « La recherche n'a pas abouti. Réessayez. » (le champ et les filtres sont conservés) ; échec de « Charger la suite » : « Impossible de charger la suite. », les résultats restent ; échec de la rangée des étiquettes : elle est absente, sans message ; saisie de plus de 100 caractères (collage, ou adresse `?q=` : le champ ne la bloque pas à la frappe mais refuse l'envoi) : « Erreur : 100 caractères au plus. » | « Réessayer » (pour « La recherche n'a pas abouti. » seulement ; les autres erreurs se corrigent en changeant la saisie, ou disparaissent à la prochaine recherche) |
+| connexion perdue | le bandeau de connexion perdue du cadre (texte de la section « Textes communs ») ; le champ reste, la recherche ne part pas ; les résultats déjà affichés restent lisibles, « Charger la suite » est désactivé | — |
 | refus | compte sans rôle : « Page introuvable. » ; une fiche illisible n'est jamais un résultat, une étiquette qui ne porte que des fiches illisibles n'est pas proposée | — |
-| contenu long | 501 résultats : 100 puis la suite ; titre long tronqué par « … » avec infobulle | idem |
+| contenu long | 501 résultats : 100 puis la suite ; titre long tronqué par « … » avec infobulle ; alias de 120 caractères et étiquette de 40 tronqués par « … » avec infobulle ; plus de 4 étiquettes sur une ligne : « +N » ; les rangées de pastilles passent à la ligne ; sur un téléphone (390 px) la rangée des types défile à l'horizontale à l'intérieur de sa rangée, la page jamais | idem |
 
 *Critères.*
 - Étant donné le mot « sous-main » présent seulement dans le bloc MJ de « Port-Sel », quand Léa
@@ -2633,14 +2635,29 @@ mode Joueur (« Rechercher », une étiquette).
   Quand Antor le cherche en mode Joueur, « Port-Sel » n'est pas un résultat.
 - Étant donné « Savoir » désactivé dans Lame d'Ébène et « Chronique de l'Âge d'Ombre » (un savoir
   lisible de Léa), quand Léa cherche « chronique », alors elle est un résultat sous « Tous », et aucune
-  pastille « Savoir » n'est proposée.
+  pastille « Savoirs » n'est proposée.
+- Étant donné « Le Pendu Joyeux » de sous-type « Taverne », quand Léa cherche « taverne », alors
+  « Le Pendu Joyeux » est un résultat ; sous la pastille « Lieux », seuls des lieux le sont.
 - Étant donné le texte de lien « La Guilde des Brumes » écrit dans « Histoire » (lue de Léa) vers une
   fiche que Léa ne lit pas, quand Léa cherche « guilde », alors « Port-Sel » est un résultat et « La
-  Guilde des Brumes » n'en est pas un.
+  Guilde des Brumes » n'en est pas un (ce lien est semé par `kanevas-import-liens`, livrée avant la recherche dans l'ordre du plan mais pas sa dépendance : le critère se joue à la recette d'ensemble de l'epic, P-12 étape 4).
 - Étant donné « Port-Sel » d'alias « Salport », quand Léa cherche « salport », alors « Port-Sel » est
   un résultat, avec « alias : Salport ».
-- Étant donné l'étiquette « Côte des Brumes » posée sur « Port-Sel » et sur « La Guilde des Brumes »
+- Étant donné l'étiquette « Côte des Brumes » posée sur « Port-Sel » et sur « Cercle des Cendres »
   (illisible de Léa), quand Léa filtre sur elle, alors seul « Port-Sel » est rendu.
+
+### La recherche — ce que `kanevas-import-recherche` construit
+
+- **Fichier et adresse** : `frontend/src/ecrans/recherche.tsx` (un `Ecran` du registre), adresse `/univers/:id/recherche`. L'entrée « Rechercher » (`search`) est la **première** de `items.ts`, avant « Vue d'ensemble », et ne montre qu'avec l'écran enregistré. Le raccourci `/` (hors d'un champ de saisie, d'une boîte ouverte ou de l'éditeur) est posé une fois par le cadre (`useRaccourciRecherche`, appelé dans `Cadre.tsx`) et navigue vers l'adresse ci-dessus ; hors d'un univers il ne fait rien.
+- **Saisie** : la recherche part 300 ms après la dernière frappe ou à Entrée, et à chaque changement de pastille ; une saisie plus courte que 1 caractère utile ne part pas ; l'adresse suit l'état (`?q=&type=&etiquette=&mode=`, remplacement d'entrée d'historique, pas d'empilement). Une seule requête est en vol : la plus récente gagne.
+- **Pastilles de types** : « Tous » puis les types **activés** (ordre de la liste du produit) ; une seule à la fois. Pastilles d'étiquettes : celles que renvoie `GET /api/univers/:id/etiquettes` (nom, ordre alphabétique sans casse), une seule à la fois ; retirer la pastille active la ré-appuie. Une adresse qui nomme un type ou une étiquette inconnus ou non proposés les ignore (pas d'erreur).
+- **Mode Joueur** : la bascule du cadre (`cadre-contexte`), qui reste affichée avec la navigation du MJ ; le mode part en `?mode=joueur` de toute requête de cette tranche (liste, étiquettes proposées, écriture d'étiquetage) ; le MJ qui arrive d'une fiche en mode Joueur garde le mode (`&mode=joueur` posé par le lien « Rechercher » et par les pastilles d'étiquette de E-9). Un non-MJ n'a pas la bascule et l'adresse `mode=joueur` n'y change rien.
+- **Alias et étiquettes de la boîte** : à l'enregistrement, « Enregistrer » est grisé et porte « Enregistrement… » jusqu'à la réponse ; pas d'état de chargement à l'ouverture (la boîte s'ouvre sur les valeurs déjà lues) ; 20 alias de 120 caractères et 20 étiquettes de 40 : les pastilles passent à la ligne et la boîte défile verticalement ; permission : la boîte n'existe pas pour un joueur ni en mode Joueur (menu sans l'entrée, rien à refuser).
+- **Touche `/`** : critère de la tâche E-17 ; elle ne fait rien dans un champ, un éditeur, une boîte ouverte ou hors d'un univers.
+- **Résultat** : lien vers E-9 ; l'alias n'est montré que si le **titre ne correspond pas** aux mots et qu'un alias y correspond (le premier par ordre alphabétique) ; les étiquettes de la fiche suivent, chacune ré-applique le filtre. Les pastilles d'étiquettes proposées et celles d'une fiche ne comptent jamais une fiche illisible.
+- **E-9** : sous le titre « Aussi appelée … » et les pastilles d'étiquettes (liens vers E-17 `?etiquette=`) ; la boîte « Alias et étiquettes… » enregistre les deux listes d'un coup (« Enregistrer » / « Annuler » ; refus : « Erreur : 20 alias au plus. », « Erreur : 20 étiquettes au plus. », « Erreur : 120 caractères au plus. », « Erreur : 40 caractères au plus. » ; un doublon sans tenir compte de la casse est ignoré à la saisie) ; toast « Alias et étiquettes enregistrés. ». Elle est cachée à un joueur et au MJ en mode Joueur.
+- **États de la boîte** : vide (fiche sans alias ni étiquette) : deux champs vides, « Enregistrer » actif (rien à écrire = aucun appel) ; enregistrement refusé par le serveur : « L'action n'a pas abouti. Réessayez. », la saisie reste ; connexion perdue boîte ouverte : le bandeau, « Enregistrer » désactivé, la saisie reste ; « Annuler » ou Échap abandonne la saisie non enregistrée sans demande. La boîte est décrite ici seule (pas de maquette propre : fenêtre de la famille des boîtes de E-9, `e09-fiche-importee.html`).
+- **Semis du bouchon** (`KANEVAS_STUB=1`, univers « Lame d'Ébène ») : alias « Salport » et « Port-aux-Sels » sur « Port-Sel » ; étiquette « Côte des Brumes » sur « Port-Sel » et « Cercle des Cendres » (illisible de Léa) ; savoir lisible « Chronique de l'Âge d'Ombre » (sous-type « Récit ») ; le mot « sous-main » seulement dans le bloc MJ de « Port-Sel » (semé par `kanevas-import-secrets`) ; les sous-types « Taverne » (« Le Pendu Joyeux ») et « Récit » viennent de `kanevas-import-types` et de ce semis.
 
 ### E-18 Accès par API (MJ)
 

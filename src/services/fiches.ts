@@ -10,6 +10,7 @@ import {
   vueSection,
 } from './droits.js';
 import { ErreurService, introuvable, invalide, refuse } from './erreurs.js';
+import { etiquetageDe } from './etiquettes.js';
 import { mentionsDe } from './mentions.js';
 import { lireLignes } from './pieces-jointes.js';
 import { CHARGES, estTypeFiche, typeActif } from './types-fiche.js';
@@ -425,6 +426,7 @@ export function lireFiche(
     mentions: mentions.mentions,
     mentionsSuite: mentions.suite,
     mentionsRestantes: mentions.restantes,
+    ...etiquetageDe(db, ficheId),
     // The origin key is a GM matter (B-50): a reader's answer has no such field at all.
     ...(vueMJ(role, acteur) && fiche.cle_origine ? { cleOrigine: fiche.cle_origine } : {}),
     sections: lisibles.map((s) => ({
@@ -482,7 +484,9 @@ export interface PageFiches {
  * The sheets of a universe (optionally one type) the caller reads at least one
  * section of, by title without case, at most 100 per page (AD-22, B-11).
  * With `recherche`, the same list plus one condition (AD-63): every word starts a
- * word of the title, or all of them a word of one section the caller reads.
+ * word of the title, of an alias or of the sub-type, or all of them a word of one section the caller reads.
+ * `etiquette` is one more optional condition (AD-118). Each sheet carries its `alias` and `etiquettes`,
+ * and, with `recherche`, the `aliasTrouve` when only an alias answers the title.
  */
 export function listerFiches(
   db: Db,
@@ -491,6 +495,7 @@ export function listerFiches(
   options: {
     type?: string;
     sousType?: string;
+    etiquette?: string;
     curseur?: string;
     limite?: number;
     recherche?: string;
@@ -512,6 +517,14 @@ export function listerFiches(
   if (options.sousType !== undefined) {
     where.push('f.sous_type = ? COLLATE NOCASE');
     params.push(options.sousType);
+  }
+  if (options.etiquette !== undefined) {
+    // A label is compared exactly, never through FTS (AD-118 (2)); it only narrows the read filter.
+    where.push(
+      `EXISTS (SELECT 1 FROM fiche_etiquettes fe JOIN etiquettes e ON e.id = fe.etiquette_id
+        WHERE fe.fiche_id = f.id AND e.nom = ? COLLATE NOCASE)`,
+    );
+    params.push(options.etiquette.trim());
   }
   const lisible = sqlFicheLisible(role, acteur, 'f');
   if (lisible) {
@@ -572,12 +585,22 @@ export function listerFiches(
     rows.length > limite && dernier
       ? Buffer.from(JSON.stringify({ t: dernier.titre, i: dernier.id })).toString('base64url')
       : null;
-  if (options.parent === undefined) return { fiches: page.map(versFiche), suivant };
-  return { fiches: page.map((r) => versArbre(db, role, acteur, r)), suivant };
+  const mots = options.recherche === undefined ? null : motsDe(options.recherche);
+  const enrichie = (r: FicheRow): Fiche => {
+    const e = etiquetageDe(db, r.id);
+    const f: Fiche = { ...versFiche(r), alias: e.alias, etiquettes: e.etiquettes };
+    if (mots !== null) {
+      const trouve = mots.length > 0 && !repond(r.titre, mots) ? e.alias.find((a) => repond(a, mots)) : undefined;
+      if (trouve !== undefined) f.aliasTrouve = trouve;
+    }
+    return f;
+  };
+  if (options.parent === undefined) return { fiches: page.map(enrichie), suivant };
+  return { fiches: page.map((r) => versArbre(db, role, acteur, r, enrichie(r))), suivant };
 }
 
 /** A row of the tree: `aDesEnfants` and `dans` are computed under the caller's own reading (AD-115 (3)). */
-function versArbre(db: Db, role: Role, acteur: Acteur, r: FicheRow): FicheArbre {
+function versArbre(db: Db, role: Role, acteur: Acteur, r: FicheRow, base: Fiche): FicheArbre {
   const lisible = sqlFicheLisible(role, acteur, 'c');
   const enfant = db
     .prepare(
@@ -593,5 +616,17 @@ function versArbre(db: Db, role: Role, acteur: Acteur, r: FicheRow): FicheArbre 
     };
     if (p.type !== r.type) dans = { id: p.id, titre: p.titre };
   }
-  return { ...versFiche(r), aDesEnfants: enfant !== undefined, dans };
+  return { ...base, aDesEnfants: enfant !== undefined, dans };
 }
+
+const sansAccents = (s: string) => s.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase();
+const jetons = (s: string) => sansAccents(s).split(/[^\p{L}\p{N}]+/u).filter((t) => t !== '');
+
+/** The search words as tokens (as the index cuts them), accents and case ignored. */
+const motsDe = (saisie: string): string[] => jetons(saisie.replaceAll('\0', ' '));
+
+/** Every search token starts a token of the text. */
+const repond = (texte: string, mots: string[]): boolean => {
+  const t = jetons(texte);
+  return mots.every((m) => t.some((j) => j.startsWith(m)));
+};
