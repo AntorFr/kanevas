@@ -63,7 +63,7 @@ test('chercher Aldric sans type : la fiche, pas une autre', () => {
 
 test('chercher Aldric : un mot présent seulement dans la section fermée ne trouve rien pour Léa', () => {
   const { lea, antor, outil } = monde();
-  assert.deepEqual(ok(outil(lea.id, 'chercher', { mots: 'Traître' })).donnees.fiches, []);
+  assert.deepEqual(outil(lea.id, 'chercher', { mots: 'Traître' }), { ok: false, erreur: 'Introuvable.' });
   assert.equal(ok(outil(antor.id, 'chercher', { mots: 'Traître' })).donnees.fiches.length, 1);
 });
 
