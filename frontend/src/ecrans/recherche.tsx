@@ -9,12 +9,11 @@ import { badgeFiche, iconeDuType, typesActifs, useTypes } from '../types-context
 import type { UniversListe } from '../types';
 import { Bouton, Champ, PageIntrouvable } from '../ui';
 import { adresseIllustration } from './fiche/vignette';
+import { LONGUEUR_RECHERCHE } from './fiche/liste-recherche';
 import type { Fiche, PageFiches } from './fiche/types';
 import './liste.css';
 import './recherche.css';
 
-/** Longest search the server accepts (B-11). */
-const MAX_RECHERCHE = 100;
 const DELAI = 300;
 /** Labels shown on a row before « +N ». */
 const MAX_ETIQUETTES_LIGNE = 4;
@@ -71,7 +70,7 @@ function Corps({ universId, mj }: { universId: string; mj: boolean }) {
   const etiquetteUrl = params.get('etiquette') ?? '';
   const etiquette = etiquettesLues.etat === 'ok' && noms.includes(etiquetteUrl) ? etiquetteUrl : '';
 
-  const trop = q.length > MAX_RECHERCHE;
+  const trop = q.length > LONGUEUR_RECHERCHE;
   const depart = q === '' && etiquette === '';
   // Wait for what turns the address into a request (types, labels) before sending it.
   const attend = etatTypes === 'chargement' || (etiquetteUrl !== '' && etiquettesLues.etat === 'chargement');
@@ -163,7 +162,7 @@ function Corps({ universId, mj }: { universId: string; mj: boolean }) {
           data-champ-recherche=""
           placeholder="Cherchez un nom, un alias ou un mot."
           value={saisie}
-          erreur={saisie.trim().length > MAX_RECHERCHE ? `${MAX_RECHERCHE} caractères au plus.` : undefined}
+          erreur={saisie.trim().length > LONGUEUR_RECHERCHE ? `${LONGUEUR_RECHERCHE} caractères au plus.` : undefined}
           onChange={(e: { target: { value: string } }) => setSaisie(e.target.value)}
           onKeyDown={touche}
         />
@@ -227,7 +226,7 @@ function Corps2({
   onEtiquette: (nom: string) => void;
 }) {
   if (trop) return null;
-  if (depart || resultats.etat === 'depart') return <p className="vide-recherche">Cherchez un nom, un alias ou un mot.</p>;
+  if (depart || resultats.etat === 'depart') return <div className="vide-recherche">Cherchez un nom, un alias ou un mot.</div>;
   const grise = resultats.etat === 'chargement';
   return (
     <>
@@ -241,7 +240,7 @@ function Corps2({
           La recherche n’a pas abouti. Réessayez. <Bouton petit onClick={onReessayer}>Réessayer</Bouton>
         </div>
       )}
-      {resultats.etat === 'ok' && resultats.fiches.length === 0 && <p className="vide-recherche">Aucune fiche ne correspond.</p>}
+      {resultats.etat === 'ok' && resultats.fiches.length === 0 && <div className="vide-recherche">Aucune fiche ne correspond.</div>}
       {resultats.fiches.length > 0 && (
         <ul className={`resultats-recherche${grise ? ' grise' : ''}`}>
           {resultats.fiches.map((f) => (
@@ -287,9 +286,20 @@ function Ligne({ universId, fiche, onEtiquette }: { universId: string; fiche: Fi
             <Icone size={14} strokeWidth={1.75} aria-hidden="true" />
             {fiche.titre}
           </span>
-          {fiche.aliasTrouve !== undefined && (
-            <small className="alias-recherche" title={fiche.aliasTrouve}>
-              alias : {fiche.aliasTrouve}
+          {(fiche.aliasTrouve !== undefined || etiquettes.length > 0) && (
+            <small className="sous-titre-recherche">
+              {fiche.aliasTrouve !== undefined && (
+                <span className="alias-recherche" title={fiche.aliasTrouve}>
+                  alias : {fiche.aliasTrouve}
+                </span>
+              )}
+              {fiche.aliasTrouve !== undefined && etiquettes.length > 0 && <span aria-hidden="true">·</span>}
+              {etiquettes.slice(0, MAX_ETIQUETTES_LIGNE).map((nom) => (
+                <button key={nom} type="button" className="etiquette-ligne" title={nom} onClick={() => onEtiquette(nom)}>
+                  {nom}
+                </button>
+              ))}
+              {etiquettes.length > MAX_ETIQUETTES_LIGNE && <span className="plus-etiquettes">+{etiquettes.length - MAX_ETIQUETTES_LIGNE}</span>}
             </small>
           )}
         </span>
@@ -297,16 +307,6 @@ function Ligne({ universId, fiche, onEtiquette }: { universId: string; fiche: Fi
           {badge}
         </span>
       </Link>
-      {etiquettes.length > 0 && (
-        <div className="etiquettes-ligne">
-          {etiquettes.slice(0, MAX_ETIQUETTES_LIGNE).map((nom) => (
-            <button key={nom} type="button" className="etiquette-ligne" title={nom} onClick={() => onEtiquette(nom)}>
-              {nom}
-            </button>
-          ))}
-          {etiquettes.length > MAX_ETIQUETTES_LIGNE && <span className="plus-etiquettes">+{etiquettes.length - MAX_ETIQUETTES_LIGNE}</span>}
-        </div>
-      )}
     </li>
   );
 }
