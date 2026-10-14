@@ -7,6 +7,7 @@ import { useCharge } from '../cadre-contexte';
 import type { Ecran } from '../registre';
 import type { UniversListe } from '../types';
 import { Bouton, Champ, ErreurChargement, Fenetre, PageIntrouvable, VideIcone, useToasts } from '../ui';
+import { MAX_SOUS_TYPE } from './fiche/sous-type';
 import './ecrans.css';
 import './fiche/fiche.css';
 import './liste.css';
@@ -101,7 +102,6 @@ function Glyphe({ type }: { type: string }) {
   return <Icone size={20} strokeWidth={1.75} />;
 }
 
-const MAX_SOUS_TYPE = 60;
 
 function FenetreCreation({
   universId,

@@ -75,7 +75,7 @@ export async function registerImportRoutes(app: FastifyInstance) {
       return {
         univers: ctx.univers,
         compte: ctx.compte,
-        // The product list with its activation; all on, except compte_rendu, until the types slice (B-42).
+        // The product list with its activation (AD-102): no universe or system decision means active (origin `defaut`).
         // `compte_rendu` is listed but not accepted by `PUT /fiches` until kanevas-import-reprise.
         types: TYPES_FICHE.map((type) => ({
           type,
