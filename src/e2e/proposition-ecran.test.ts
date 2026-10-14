@@ -87,10 +87,10 @@ test('nominal : Actuel / Proposé, section inchangée, Appliquer → Appliquée 
   const b = bloc(antor);
   await b.getByText('Mise à jour proposée').waitFor();
   assert.match(await b.innerText(), /Section « Vérité » de « Maître Aldric » · d’après « Séance 3 »/);
-  assert.equal(await b.getByRole('region', { name: 'Actuel' }).innerText(), 'Actuel\nIl sert la Couronne');
+  assert.equal(await b.getByRole('region', { name: 'Actuel' }).innerText(), 'Actuel\n\nIl sert la Couronne');
   assert.equal(
     await b.getByRole('region', { name: 'Proposé' }).innerText(),
-    "Proposé\nIl sert la Couronne\n\nMise à jour d'après « Séance 3 ».",
+    "Proposé\n\nIl sert la Couronne\n\nMise à jour d'après « Séance 3 ».",
   );
   assert.equal(await lireSection(), 'Il sert la Couronne');
   await appliquer(antor).click();
@@ -119,7 +119,7 @@ test('périmée : la modification de la section est découverte au clic, rien n�
   assert.equal(await appliquer(antor).getAttribute('aria-disabled'), 'true');
   assert.equal(await abandonner(antor).getAttribute('aria-disabled'), null);
   assert.equal(await lireSection(), 'Modifié par Antor');
-  assert.equal(await b.getByRole('region', { name: 'Actuel' }).innerText(), 'Actuel\nModifié par Antor');
+  assert.equal(await b.getByRole('region', { name: 'Actuel' }).innerText(), 'Actuel\n\nModifié par Antor');
   await abandonner(antor).click();
   await b.getByRole('status').filter({ hasText: 'Proposition abandonnée.' }).waitFor();
   assert.equal(await b.getByRole('region', { name: 'Actuel' }).count(), 0);
@@ -231,6 +231,9 @@ test('contenu long : zones de 15 lignes au plus, défilables au clavier, paragra
   await actuel.focus();
   await antor.keyboard.press('PageDown');
   await antor.waitForFunction(() => (document.querySelector('.asst-prop-zone') as Element).scrollTop > 0);
+  // « Rendu » shows paragraphs; « Source » keeps the raw text with its line breaks (pre-wrap).
+  assert.ok((await actuel.locator('.md p').count()) >= 1);
+  await bloc(antor).getByRole('button', { name: 'Source', exact: true }).click();
   assert.equal(await actuel.locator('.asst-prop-texte').evaluate((e: Element) => getComputedStyle(e).whiteSpace), 'pre-wrap');
   await poser('Il sert la Couronne');
 });

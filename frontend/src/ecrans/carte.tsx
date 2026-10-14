@@ -14,7 +14,8 @@ import { adresseFond, FORMES } from './cartes/commun';
 import { AjoutFiche } from './carte/ajout-fiche';
 import { CadreGraphe } from './carte/cadre-graphe';
 import { CadreIllustre } from './carte/cadre-illustre';
-import { adresseFiche, ECHEC, libelleType, type CarteLue, type Element } from './carte/types';
+import { libelleDuType, useTypes } from '../types-contexte';
+import { adresseFiche, ECHEC, type CarteLue, type Element } from './carte/types';
 
 const NON_IMAGE = 'Erreur : ce fichier n’est pas une image (PNG, JPEG, GIF ou WebP).';
 const TROP_LOURD = 'Erreur : l’image dépasse 25 Mo.';
@@ -95,6 +96,7 @@ function Corps({
   onLue: (l: CarteLue) => void;
 }) {
   const perdue = useConnexionPerdue();
+  const { types } = useTypes();
   const { mode } = useVue();
   const { carte, elements } = lue;
   // The server decides what the caller may write; player mode never writes.
@@ -381,7 +383,7 @@ function Corps({
       {gerer && choisi && (
         <div className="carte-panneau mj">
           <strong>
-            {choisi.titre} · {libelleType(choisi.type)}
+            {choisi.titre} · {libelleDuType(types, choisi.type)}
           </strong>
           <Link className="bouton neutre" to={adresseFiche(universId, choisi.ficheId)}>
             <ExternalLink size={14} strokeWidth={1.75} aria-hidden="true" />
@@ -401,7 +403,7 @@ function Corps({
             {elements.map((e) => (
               <li key={e.id}>
                 <Link to={adresseFiche(universId, e.ficheId)}>{e.titre}</Link>
-                <small>{libelleType(e.type)}</small>
+                <small>{libelleDuType(types, e.type)}</small>
                 {gerer && (
                   <Bouton petit ecrit variante="danger" icone={Trash2} onClick={() => setConfirme({ id: e.id, lieu: 'liste' })}>
                     Retirer de la carte

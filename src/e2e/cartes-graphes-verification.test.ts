@@ -133,11 +133,11 @@ describe('kanevas-cartes-graphes, vérification indépendante', { skip: skipBrow
       await capture(m.antor, 'recherche-101');
     });
 
-    // Si la fenêtre propose autre chose que les sept types du produit.
-    test('bord : le choix de type propose les sept types', async () => {
+    // Si la fenêtre ne propose pas les treize types de la liste du serveur plus le compte-rendu (sept avant kanevas-types-ecrans-lore).
+    test('bord : le choix de type propose les types activés (treize par défaut, compte-rendu compris : 14)', async () => {
       const f = await ouvrirFenetre();
       const options = (await f.getByLabel('Type de fiche').locator('option').allInnerTexts()) as string[];
-      assert.equal(options.length, 7);
+      assert.equal(options.length, 14);
     });
 
     // Si « Fermer » ne ferme pas, ou si ajouter ferme la fenêtre sans que le token soit posé.

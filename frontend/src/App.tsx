@@ -2,6 +2,7 @@ import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 
 import { FournisseurCadre } from './cadre-contexte';
 import { Cadre } from './Cadre';
+import { FournisseurTypes } from './types-contexte';
 import { ecrans } from './registre';
 import { FournisseurToasts, PageIntrouvable } from './ui';
 
@@ -10,9 +11,11 @@ const routeur = createBrowserRouter([
   {
     element: (
       <FournisseurCadre>
-        <FournisseurToasts>
-          <Cadre />
-        </FournisseurToasts>
+        <FournisseurTypes>
+          <FournisseurToasts>
+            <Cadre />
+          </FournisseurToasts>
+        </FournisseurTypes>
       </FournisseurCadre>
     ),
     children: [

@@ -1,5 +1,3 @@
-import { z } from 'zod';
-
 import type { Db } from '../db/db.js';
 import {
   exigerMJ,
@@ -10,13 +8,16 @@ import {
   vueMJ,
   vueSection,
 } from './droits.js';
-import { introuvable, invalide } from './erreurs.js';
+import { ErreurService, introuvable, invalide } from './erreurs.js';
+import { mentionsDe } from './mentions.js';
 import { lireLignes } from './pieces-jointes.js';
+import { CHARGES, estTypeFiche, typeActif } from './types-fiche.js';
 import {
   TYPES_FICHE,
   type Acteur,
   type Fiche,
   type FicheVue,
+  type PageMentions,
   type SectionRow,
   type TypeFiche,
 } from './types.js';
@@ -32,6 +33,8 @@ interface FicheRow {
   cree_le: string;
   modifie_le: string;
   illustration_fichier: string | null;
+  cle_origine: string | null;
+  sous_type: string | null;
 }
 
 export const versFiche = (r: FicheRow): Fiche => ({
@@ -39,25 +42,24 @@ export const versFiche = (r: FicheRow): Fiche => ({
   universId: r.univers_id,
   type: r.type,
   titre: r.titre,
+  sousType: r.sous_type,
   charge: JSON.parse(r.charge) as Record<string, unknown>,
   creeLe: r.cree_le,
   modifieLe: r.modifie_le,
   illustration: r.illustration_fichier ? { jeton: r.illustration_fichier } : null,
 });
 
-/**
- * Versioned payload per type (AD-6, AD-17): v1 is empty except for a character
- * (PJ or PNJ) and a session report (its campaign). The content lives in sections.
- */
-const CHARGES: Record<TypeFiche, z.ZodType<Record<string, unknown>>> = {
-  personnage: z.strictObject({ v: z.literal(1), pj: z.boolean() }),
-  compte_rendu: z.strictObject({ v: z.literal(1), campagne_id: z.number().int().positive() }),
-  lieu: z.strictObject({ v: z.literal(1) }),
-  faction: z.strictObject({ v: z.literal(1) }),
-  objet: z.strictObject({ v: z.literal(1) }),
-  evenement: z.strictObject({ v: z.literal(1) }),
-  quete: z.strictObject({ v: z.literal(1) }),
-};
+export const MAX_SOUS_TYPE = 60;
+
+/** A sub-type: 1 to 60 characters once trimmed (`null` is "none", handled by the callers). */
+export function validerSousType(valeur: unknown): string {
+  if (typeof valeur !== 'string') throw invalide(`Le sous-type : de 1 à ${MAX_SOUS_TYPE} caractères.`);
+  const t = valeur.trim();
+  if (t.length < 1 || t.length > MAX_SOUS_TYPE) {
+    throw invalide(`Le sous-type : de 1 à ${MAX_SOUS_TYPE} caractères.`);
+  }
+  return t;
+}
 
 export function validerTitre(titre: string, max: number, quoi: string): string {
   const t = titre.trim();
@@ -89,24 +91,185 @@ export function creerFiche(
   db: Db,
   compteId: number,
   universId: number,
-  entree: { type: string; titre: string; charge?: Record<string, unknown> },
+  entree: {
+    type: string;
+    titre: string;
+    charge?: Record<string, unknown>;
+    /** Optional free sub-type of the sheet (B-52); `null` or absent: none. */
+    sousType?: string | null;
+    /** Import only (B-50, AD-107): the origin key and dates of the sheet, and what the import wrote. */
+    origine?: { cle: string; creeLe?: string; modifieLe?: string; dernierImport: unknown };
+  },
 ): Fiche {
   exigerMJ(db, universId, compteId);
-  if (!(TYPES_FICHE as readonly string[]).includes(entree.type)) {
+  if (!estTypeFiche(entree.type)) {
     throw invalide('Type de fiche inconnu.');
   }
   const type = entree.type as TypeFiche;
+  // The import accepts a disabled type (the batch warns); every other creation refuses it (AD-102).
+  if (!entree.origine && !typeActif(db, universId, type)) {
+    throw new ErreurService('invalide', 'Ce type est désactivé dans cet univers.', 'type_desactive');
+  }
   const titre = validerTitre(entree.titre, 120, 'Le titre');
+  const sousType = entree.sousType == null ? null : validerSousType(entree.sousType);
   const charge = CHARGES[type].safeParse({ v: 1, ...entree.charge });
   if (!charge.success) throw invalide('Charge utile invalide pour ce type de fiche.');
   const now = new Date().toISOString();
+  const o = entree.origine;
+  const cree = o?.creeLe ?? now;
   const info = db
     .prepare(
-      `INSERT INTO fiches (univers_id, type, titre, charge, cree_le, modifie_le)
-       VALUES (?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO fiches (univers_id, type, titre, charge, cree_le, modifie_le, cle_origine, dernier_import)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
     )
-    .run(universId, type, titre, JSON.stringify(charge.data), now, now);
-  return versFiche(chargerFiche(db, universId, Number(info.lastInsertRowid)));
+    .run(
+      universId,
+      type,
+      titre,
+      JSON.stringify(charge.data),
+      cree,
+      o?.modifieLe ?? (cree > now ? cree : now),
+      o?.cle ?? null,
+      o ? JSON.stringify(o.dernierImport) : null,
+    );
+  const id = Number(info.lastInsertRowid);
+  // A separate write: a base short of 0013 (the migration test seeds one through the services) has no column.
+  if (sousType !== null) db.prepare('UPDATE fiches SET sous_type = ? WHERE id = ?').run(sousType, id);
+  return versFiche(chargerFiche(db, universId, id));
+}
+
+/** The GM renames a sheet (the screen to do it comes later; the import already needs it). */
+export function renommerFiche(
+  db: Db,
+  compteId: number,
+  universId: number,
+  ficheId: number,
+  titre: string,
+): Fiche {
+  exigerMJ(db, universId, compteId);
+  chargerFiche(db, universId, ficheId);
+  const t = validerTitre(titre, 120, 'Le titre');
+  db.prepare('UPDATE fiches SET titre = ?, modifie_le = ? WHERE id = ?').run(
+    t,
+    new Date().toISOString(),
+    ficheId,
+  );
+  return versFiche(chargerFiche(db, universId, ficheId));
+}
+
+/** The GM sets, changes or removes (`null`) the sub-type of a sheet. Writes nothing else. */
+export function changerSousType(
+  db: Db,
+  compteId: number,
+  universId: number,
+  ficheId: number,
+  sousType: unknown,
+): Fiche {
+  exigerMJ(db, universId, compteId);
+  chargerFiche(db, universId, ficheId);
+  const valeur = sousType === null ? null : validerSousType(sousType);
+  db.prepare('UPDATE fiches SET sous_type = ?, modifie_le = ? WHERE id = ?').run(
+    valeur,
+    new Date().toISOString(),
+    ficheId,
+  );
+  return versFiche(chargerFiche(db, universId, ficheId));
+}
+
+/**
+ * The GM changes the type of a sheet among the thirteen settable ones (AD-120 (4)): the same row,
+ * so id, sections, relations and map places stay. The payload becomes that of the new type (a
+ * character takes `pj`, `false` by default) and the sub-type is cleared unless the caller gives a
+ * new one. A disabled target type is allowed. A session report cannot be changed into or out of.
+ * The same type is refused (`meme_type`) unless the caller gives a payload (the import flips `pj`).
+ */
+export function changerTypeFiche(
+  db: Db,
+  compteId: number,
+  universId: number,
+  ficheId: number,
+  type: string,
+  charge?: Record<string, unknown>,
+  sousType?: string | null,
+): Fiche {
+  exigerMJ(db, universId, compteId);
+  const actuelle = chargerFiche(db, universId, ficheId);
+  if (!estTypeFiche(type)) throw new ErreurService('invalide', 'Type de fiche inconnu.', 'type_inconnu');
+  if (type === 'compte_rendu' || actuelle.type === 'compte_rendu') {
+    throw new ErreurService('invalide', 'Ce type ne se change pas.', 'type_non_reglable');
+  }
+  if (type === actuelle.type && charge === undefined) {
+    throw new ErreurService('invalide', 'La fiche est déjà de ce type.', 'meme_type');
+  }
+  const voulu = sousType == null ? null : validerSousType(sousType);
+  const base = type === 'personnage' ? { pj: false } : {};
+  const c = CHARGES[type].safeParse({ v: 1, ...base, ...charge });
+  if (!c.success) throw invalide('Charge utile invalide pour ce type de fiche.');
+  const garde = type === actuelle.type ? actuelle.sous_type : null;
+  db.prepare('UPDATE fiches SET type = ?, charge = ?, sous_type = ?, modifie_le = ? WHERE id = ?').run(
+    type,
+    JSON.stringify(c.data),
+    voulu ?? garde,
+    new Date().toISOString(),
+    ficheId,
+  );
+  return versFiche(chargerFiche(db, universId, ficheId));
+}
+
+export interface SousTypeVu {
+  sousType: string;
+  nb: number;
+}
+
+const sansCasse = (s: string) => s.replace(/[A-Z]/g, (c) => c.toLowerCase());
+
+/**
+ * The sub-types of the sheets the caller reads (optionally of one type), grouped without case
+ * (SQLite NOCASE), with their count. The spelling shown is the most used, the oldest on a tie.
+ * Any member; a sheet the caller does not read is neither counted nor spelled.
+ */
+export function listerSousTypes(
+  db: Db,
+  acteur: Acteur,
+  universId: number,
+  options: { type?: string } = {},
+): SousTypeVu[] {
+  const role = exigerRole(db, universId, acteur.compteId);
+  const where = ['f.univers_id = ?', 'f.sous_type IS NOT NULL'];
+  const params: (string | number)[] = [universId];
+  if (options.type !== undefined) {
+    if (!estTypeFiche(options.type)) throw invalide('Type de fiche inconnu.');
+    where.push('f.type = ?');
+    params.push(options.type);
+  }
+  const lisible = sqlFicheLisible(role, acteur, 'f');
+  if (lisible) {
+    where.push(lisible.sql);
+    params.push(...lisible.params);
+  }
+  const lignes = db
+    .prepare(
+      `SELECT f.sous_type AS nom, COUNT(*) AS n, MIN(f.id) AS premier FROM fiches f
+       WHERE ${where.join(' AND ')} GROUP BY f.sous_type`,
+    )
+    .all(...params) as { nom: string; n: number; premier: number }[];
+  const groupes = new Map<string, { nom: string; n: number; max: number; premier: number; total: number }>();
+  for (const l of lignes) {
+    const cle = sansCasse(l.nom);
+    const g = groupes.get(cle);
+    if (!g) groupes.set(cle, { nom: l.nom, n: l.n, max: l.n, premier: l.premier, total: l.n });
+    else {
+      g.total += l.n;
+      if (l.n > g.max || (l.n === g.max && l.premier < g.premier)) {
+        g.nom = l.nom;
+        g.max = l.n;
+        g.premier = l.premier;
+      }
+    }
+  }
+  return [...groupes.values()]
+    .map((g) => ({ sousType: g.nom, nb: g.total }))
+    .sort((a, b) => sansCasse(a.sousType).localeCompare(sansCasse(b.sousType)));
 }
 
 /**
@@ -114,18 +277,48 @@ export function creerFiche(
  * (B-9). A caller who reads none gets "not found", like an unknown id (AD-22);
  * the GM (outside player mode) reads even a sheet without section.
  */
-export function lireFiche(db: Db, acteur: Acteur, universId: number, ficheId: number): FicheVue {
+export function lireFiche(
+  db: Db,
+  acteur: Acteur,
+  universId: number,
+  ficheId: number,
+  formeLiens: 'html' | 'markdown' = 'html',
+): FicheVue {
   const role = exigerRole(db, universId, acteur.compteId);
   const fiche = chargerFiche(db, universId, ficheId);
   const lisibles = sectionsDe(db, ficheId).filter((s) => peutLireSection(role, s, acteur));
   if (lisibles.length === 0 && (role !== 'mj' || acteur.modeJoueur)) throw introuvable();
+  const mentions = mentionsDe(db, role, acteur, universId, ficheId);
   return {
     ...versFiche(fiche),
+    mentions: mentions.mentions,
+    mentionsSuite: mentions.suite,
+    mentionsRestantes: mentions.restantes,
+    // The origin key is a GM matter (B-50): a reader's answer has no such field at all.
+    ...(vueMJ(role, acteur) && fiche.cle_origine ? { cleOrigine: fiche.cle_origine } : {}),
     sections: lisibles.map((s) => ({
-      ...vueSection(role, s, acteur),
+      ...vueSection(db, universId, role, s, acteur, formeLiens),
       piecesJointes: lireLignes(db, s.id, vueMJ(role, acteur)),
     })),
   };
+}
+
+/**
+ * The next sources of « Mentionnée dans » (AD-100): `apres` sources are already shown. Same refusal as
+ * the sheet itself — a sheet the caller does not read does not exist.
+ */
+export function lireMentions(
+  db: Db,
+  acteur: Acteur,
+  universId: number,
+  ficheId: number,
+  apres: number,
+): PageMentions {
+  const role = exigerRole(db, universId, acteur.compteId);
+  chargerFiche(db, universId, ficheId);
+  const lisible = sectionsDe(db, ficheId).some((s) => peutLireSection(role, s, acteur));
+  if (!lisible && (role !== 'mj' || acteur.modeJoueur)) throw introuvable();
+  return mentionsDe(db, role, acteur, universId, ficheId, apres);
 }
 
 export const LONGUEUR_RECHERCHE = 100;
@@ -164,18 +357,22 @@ export function listerFiches(
   db: Db,
   acteur: Acteur,
   universId: number,
-  options: { type?: string; curseur?: string; limite?: number; recherche?: string } = {},
+  options: { type?: string; sousType?: string; curseur?: string; limite?: number; recherche?: string } = {},
 ): PageFiches {
   const role = exigerRole(db, universId, acteur.compteId);
   const limite = Math.min(Math.max(Math.trunc(options.limite ?? LIMITE_LISTE), 1), LIMITE_LISTE);
   const where = ['f.univers_id = ?'];
   const params: (string | number)[] = [universId];
   if (options.type !== undefined) {
-    if (!(TYPES_FICHE as readonly string[]).includes(options.type)) {
+    if (!estTypeFiche(options.type)) {
       throw invalide('Type de fiche inconnu.');
     }
     where.push('f.type = ?');
     params.push(options.type);
+  }
+  if (options.sousType !== undefined) {
+    where.push('f.sous_type = ? COLLATE NOCASE');
+    params.push(options.sousType);
   }
   const lisible = sqlFicheLisible(role, acteur, 'f');
   if (lisible) {
@@ -192,7 +389,10 @@ export function listerFiches(
           AND s.id IN (SELECT rowid FROM recherche_sections WHERE recherche_sections MATCH ?)
           ${sectionLue ? `AND ${sectionLue.sql}` : ''}))`,
     );
-    params.push(match, match, ...(sectionLue?.params ?? []));
+    // Column filter (AD-114): a non-GM, or the GM in player mode, searches the public text only.
+    // The whole query goes between parentheses so the filter covers every word.
+    const colonnes = role === 'mj' && !acteur.modeJoueur ? 'titre contenu' : 'titre contenu_public';
+    params.push(match, `{${colonnes}} : (${match})`, ...(sectionLue?.params ?? []));
   }
   if (options.curseur !== undefined) {
     let c: { t: string; i: number };

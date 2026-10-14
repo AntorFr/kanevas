@@ -3,11 +3,12 @@ import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react'
 import { useParams, useSearchParams } from 'react-router-dom';
 
 import { ErreurApi, appeler } from '../api';
-import { useTitreAriane } from '../cadre-contexte';
+import { useLimiteContenu, useTitreAriane } from '../cadre-contexte';
 import type { SystemeCompte } from '../types';
 import type { Ecran } from '../registre';
-import { Bouton, Champ, ChargementListe, ErreurChargement, PageIntrouvable, Pastille, VideIcone, useToasts } from '../ui';
+import { Bouton, Champ, ChargementListe, EditeurMarkdown, ErreurChargement, Markdown, PageIntrouvable, Pastille, VideIcone, depasse, messageTropLong, refusServeur, useToasts } from '../ui';
 import { PucesUnivers } from './systeme/puces';
+import { OngletTypesSysteme } from './types-reglage/onglet-systeme';
 import './ecrans.css';
 import './liste.css';
 import './reglages.css';
@@ -19,17 +20,19 @@ interface Gabarit {
   id: number;
   type: Type;
   nom: string;
-  contenu: string;
+  /** Markdown source: only for who may write the templates (AD-113). */
+  contenu?: string;
+  html: string;
   version: number;
 }
 
 interface Page extends SystemeCompte {
+  types: { type: string; active: boolean }[];
   gabarits: Gabarit[];
   suivant: string | null;
 }
 
 const NOM_MAX = 120;
-const CONTENU_MAX = 20000;
 const ECHEC = 'L’action n’a pas abouti. Réessayez.';
 const PLUS_DROIT = 'Vous ne pouvez plus modifier ce système.';
 const PERIME =
@@ -42,6 +45,11 @@ const ONGLETS: { type: Type; titre: string; ajout: string; vide: string; videJou
 ];
 
 const premiereLigne = (c: string) => c.split('\n').find((l) => l.trim() !== '') ?? '';
+// A reader has no source: the one-line preview comes from the text of the rendered HTML (parsed inertly, never inserted).
+const apercuDe = (g: Gabarit) =>
+  g.contenu !== undefined
+    ? premiereLigne(g.contenu)
+    : premiereLigne(new DOMParser().parseFromString(g.html, 'text/html').body.firstElementChild?.textContent ?? '');
 const alpha = (a: Gabarit, b: Gabarit) => a.nom.localeCompare(b.nom, 'fr', { sensitivity: 'base' });
 
 type Retour = { perime?: true; perdu?: true; texte: string };
@@ -51,6 +59,7 @@ function messageEcriture(e: unknown): { perime?: true; perdu?: true; texte: stri
   if (e instanceof ErreurApi) {
     if (e.statut === 409 && e.code === 'gabarit_modifie') return { perime: true, texte: PERIME };
     if (e.statut === 409) return { texte: e.message };
+    if (e.statut === 400 && /caractères au plus/.test(e.message)) return { texte: `Erreur : ${refusServeur(e.message)}` };
     if (e.statut === 403 || e.statut === 404) return { texte: PLUS_DROIT, perdu: true };
   }
   return { texte: ECHEC };
@@ -76,10 +85,11 @@ function Formulaire({
 
   const erreurNom =
     nom.length > NOM_MAX ? `${NOM_MAX} caractères au plus.` : nomVide && nom.trim() === '' ? 'le nom est obligatoire.' : undefined;
-  const erreurContenu = contenu.length > CONTENU_MAX ? '20 000 caractères au plus.' : undefined;
+  const max = useLimiteContenu();
+  const erreurContenu = depasse(contenu, max) ? messageTropLong(max!) : undefined;
 
-  async function envoyer(e: FormEvent) {
-    e.preventDefault();
+  async function envoyer(e?: FormEvent) {
+    e?.preventDefault();
     if (enCours) return;
     if (nom.trim() === '') return setNomVide(true);
     if (erreurNom || erreurContenu) return;
@@ -98,16 +108,17 @@ function Formulaire({
         </div>
       )}
       <Champ etiquette="Nom" value={nom} erreur={erreurNom} onChange={(e: { target: { value: string } }) => setNom(e.target.value)} />
-      <Champ
+      <EditeurMarkdown
         etiquette="Contenu"
-        zone
+        valeur={contenu}
+        max={max}
         rows={8}
-        value={contenu}
-        erreur={erreurContenu}
-        onChange={(e: { target: { value: string } }) => setContenu(e.target.value)}
+        onEnregistrer={() => void envoyer()}
+        onAnnuler={onAnnuler}
+        onChange={setContenu}
       />
       <div className="actions">
-        <Bouton type="submit" variante="principal" ecrit icone={Check} enCours={enCours}>
+        <Bouton type="submit" variante="principal" ecrit icone={Check} disabled={Boolean(erreurContenu)} enCours={enCours}>
           {libelle}
         </Bouton>
         <Bouton onClick={onAnnuler}>Annuler</Bouton>
@@ -123,6 +134,7 @@ function Systeme() {
   const { sid } = useParams();
   const [params, setParams] = useSearchParams();
   const demande = params.get('type');
+  const surTypes = demande === 'types';
   const type: Type = TYPES.find((t) => t === demande) ?? 'creature';
   const [entete, setEntete] = useState<Omit<Page, 'gabarits' | 'suivant'>>();
   const [entrees, setEntrees] = useState<Gabarit[]>([]);
@@ -141,6 +153,7 @@ function Systeme() {
   const base = `/api/systemes/${sid}`;
   const onglet = ONGLETS.find((o) => o.type === type)!;
   const choisir = (t: Type) => setParams(t === 'creature' ? {} : { type: t }, { replace: true });
+  const choisirTypes = () => setParams({ type: 'types' }, { replace: true });
 
   const charger = useCallback((t: Type) => appeler<Page>('GET', `${base}?type=${t}`), [base]);
 
@@ -277,22 +290,50 @@ function Systeme() {
               key={o.type}
               type="button"
               role="tab"
-              aria-selected={o.type === type}
-              className={o.type === type ? 'actif' : undefined}
+              aria-selected={!surTypes && o.type === type}
+              className={!surTypes && o.type === type ? 'actif' : undefined}
               onClick={() => choisir(o.type)}
             >
               {o.titre}
               <span className="nb">{entete.entrees[o.type]}</span>
             </button>
           ))}
+          <button
+            type="button"
+            role="tab"
+            aria-selected={surTypes}
+            className={surTypes ? 'actif' : undefined}
+            onClick={choisirTypes}
+          >
+            Types de fiche
+          </button>
         </div>
-        {etat === 'ok' && peutEcrire && !ajout && (
+        {!surTypes && etat === 'ok' && peutEcrire && !ajout && (
           <Bouton variante="principal" ecrit icone={Plus} onClick={() => setAjout(true)}>
             {onglet.ajout}
           </Bouton>
         )}
       </div>
-      <div role="tabpanel">
+      {surTypes && (
+        <div role="tabpanel">
+          <OngletTypesSysteme
+            systemeId={sid!}
+            systemeNom={entete.nom}
+            universId={entete.mesUnivers[0]?.id}
+            actifs={entete.types}
+            nbUnivers={entete.nbUnivers}
+            peutEcrire={peutEcrire}
+            onChange={(t, active) =>
+              setEntete((h) => (h ? { ...h, types: h.types.map((x) => (x.type === t ? { ...x, active } : x)) } : h))
+            }
+            onDroitPerdu={() => {
+              setPlusDroit(true);
+              setEssai((n) => n + 1);
+            }}
+          />
+        </div>
+      )}
+      <div role="tabpanel" hidden={surTypes}>
         {etat === 'chargement' && <ChargementListe texte="Chargement du système…" />}
         {etat === 'erreur' && (
           <ErreurChargement texte="Impossible de charger ce système." onReessayer={() => setEssai((n) => n + 1)} />
@@ -322,7 +363,7 @@ function Systeme() {
                     <strong className="entree-nom" title={g.nom}>
                       {g.nom}
                     </strong>
-                    <span className="entree-apercu">{premiereLigne(g.contenu)}</span>
+                    <span className="entree-apercu">{apercuDe(g)}</span>
                     <ChevronDown size={16} strokeWidth={1.75} aria-hidden="true" className="entree-chevron" />
                   </button>
                   {ouverte === g.id &&
@@ -331,7 +372,7 @@ function Systeme() {
                     ) : (
                       <div className="entree-detail">
                         <h2>{g.nom}</h2>
-                        <p className="entree-contenu">{g.contenu}</p>
+                        <Markdown className="entree-contenu" html={g.html} />
                         {peutEcrire && (
                           <div className="actions">
                             <Bouton ecrit icone={Pencil} onClick={() => setEdition(g.id)}>
@@ -379,9 +420,9 @@ function EditionEntree({
   return (
     <div className="entree-detail">
       <h2>{g.nom}</h2>
-      <p className="entree-contenu">{g.contenu}</p>
+      <Markdown className="entree-contenu" html={g.html} />
       <Formulaire
-        initial={{ nom: g.nom, contenu: g.contenu }}
+        initial={{ nom: g.nom, contenu: g.contenu ?? '' }}
         libelle="Enregistrer"
         onAnnuler={onAnnuler}
         onEnvoi={async (v) => {

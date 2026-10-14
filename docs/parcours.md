@@ -308,7 +308,7 @@ introuvable. ».
    « Active » ; il relit les CR les plus récents, crée ou ouvre un **scénario** (E-7) et l'écrit
    (ou demande à son **assistant** (E-12) de créer la campagne ou le scénario : le bloc d'écriture mène à E-6 ou E-7).
 3. Il coche ou ajoute des tâches de **préparation** (E-6).
-4. **Lore** : depuis la **liste d'un type** (E-8), il crée un PNJ ; sur la **fiche** (E-9), il
+4. **Lore** : depuis la **liste d'un type** (E-8, parmi les types activés), il crée un PNJ ou un lieu, avec au besoin son **sous-type** ; sur la **fiche** (E-9), il
    écrit « Apparence » (lue des joueurs) et « Vérité — MJ seul », relie le PNJ à sa faction,
    dépose le plan d'un lieu, et pose le portrait d'Aldric en **illustration** de la fiche (visible
    de qui voit la fiche) ; de retour sur la liste, la carte d'Aldric porte ce portrait.
@@ -344,7 +344,8 @@ pas — le cadre dit « Image indisponible. » et il garde « Remplacer » et «
 1. **Accueil** (E-1) → **vue d'ensemble** de l'univers (E-3) : les derniers CR, les cartes
    visibles.
 2. Il parcourt la **liste des personnages** (E-8), une grille de cartes illustrées, et reconnaît
-   Aldric à son portrait — ou le cherche par son nom — puis ouvre la **fiche** (E-9) : seulement ce
+   Aldric à son portrait — ou le cherche par son nom — ; sur la liste des lieux, il peut filtrer par
+   **sous-type** (« Taverne ») parmi ceux des fiches qu'il voit ; puis ouvre la **fiche** (E-9) : seulement ce
    que la table sait.
 3. Il ouvre la **carte** (E-11), touche un token, relit la fiche.
 4. Ou il demande à son **assistant** (E-12) « que sait-on d'Aldric ? ».
@@ -414,7 +415,7 @@ Il veut d'abord un essai jetable, puis la vraie base, sans doublon ni fuite.*
    Kanka sont dans l'ordre de leurs dates d'origine ; sur une fiche, le menu « ⋯ » montre sa clé
    d'origine (« lieu:port-sel »).
 7. Il corrige le script (il coupe la section trop longue en deux), le relance : le nouveau lot dit
-   « Fiches : 3 créées, 498 inchangées · Fichiers : 1 140 inchangés · … · 0 en attente » — aucun doublon.
+   « Fiches : 3 créées · 498 inchangées · Fichiers : 1 140 inchangés · … · 0 en attente » — aucun doublon.
 8. **Paramètres** (E-14), « Supprimer l'univers », il tape « Essai Kanka » : l'univers disparaît de
    l'accueil.
 9. Il refait 2 à 7 sur l'univers réel ; les jours suivants, Léa écrit dans une section importée et
@@ -428,7 +429,7 @@ nature — rejouer est sans risque.
 et aucun lot n'apparaît ; un parent ou une cible de relation inconnue — la fiche est écrite sans ce
 parent ou sans cette relation, avec un avertissement dans le lot ; un lien `[[…]]` vers une clé
 encore inconnue — il reste en attente et se résout quand la fiche arrive (au même lot ou au suivant) ;
-le réseau coupe au milieu — le lot reste « ouvert » sur E-18, sans dommage : rejouer reprend là où
+le réseau coupe au milieu — le lot reste « En cours » sur E-18, sans dommage : rejouer reprend là où
 c'était, puisque tout ce qui est déjà écrit sort « inchangé » ; une image de 0 octet — refusée, la
 raison dans le lot ; supprimer l'univers en tapant un autre nom — le bouton reste inactif.
 
@@ -440,7 +441,7 @@ raison dans le lot ; supprimer l'univers en tapant un autre nom — le bouton re
 5. Plus tard : « Révoquer » sur la ligne, confirmation « Révoquer « Script Kanka — Mac » ? Le script
    qui l'utilise ne pourra plus rien écrire. » ; la ligne passe en « Révoqué ».
 *Échec* : un autre MJ a retiré son rôle à Antor — ses jetons cessent d'agir (401) et il ne voit plus
-E-18 (« Page introuvable. ») ; un Joueur force l'adresse de E-18 — « Page introuvable. » ; le jeton
+E-18 (« Page introuvable. ») et, pour un autre MJ, la ligne de ses jetons porte la pastille « Inactif » ; un Joueur force l'adresse de E-18 — « Page introuvable. » ; le jeton
 a expiré — la ligne dit « Expiré », le script reçoit 401.
 
 ### P-12 — Lire la base importée (Antor, MJ, puis Léa, Joueuse, au téléphone)
@@ -471,16 +472,16 @@ rien depuis le dernier import — absente de l'arbre, de la recherche et des « 
 
 ### P-13 — Choisir les types d'un système et d'un univers (MJ)
 *Antor joue « CoF Mini » dans « Lame d'Ébène », sauf que son univers a des vaisseaux.*
-1. **Système de jeu** (E-15), bloc « Types de fiche » : il désactive « Vaisseau » et « Note » pour
+1. **Système de jeu** (E-15), onglet « Types de fiche » : il désactive « Vaisseau » et « Note » pour
    le système ; Mira, MJ d'un autre univers du système, voit ces types quitter sa barre.
-2. **Paramètres** de « Lame d'Ébène » (E-14), bloc « Types de fiche » : chaque type dit « Système · activé »
+2. **Paramètres** de « Lame d'Ébène » (E-14), panneau « Types de fiche » : chaque type dit « Système · activé »
    ou « Système · désactivé » ; il force « Vaisseau » à **Activé**.
 3. La barre latérale de « Lame d'Ébène » montre « Vaisseaux », pas « Notes ».
-4. Plus tard, le système réactive « Note » : « Lame d'Ébène », qui le suit, le montre aussitôt ;
+4. Plus tard, le système réactive « Note » : « Lame d'Ébène », qui le suit, le montre au chargement suivant ;
    « Vaisseau », forcé, ne bouge pas.
 *Échec* : il désactive « Lieu » alors que l'univers a 201 lieux — la confirmation dit « Les 201 lieux
-restent ; on les atteint par un lien, la recherche ou l'arbre. » ; un Joueur ne voit ni le bloc de
-E-14 ni les bascules de E-15 (« Lecture seule »).
+restent ; on les atteint par un lien, la recherche ou l'arbre. » ; un Joueur ne voit pas le panneau de
+E-14 (« Page introuvable. ») et lit l'onglet de E-15 en « Lecture seule », interrupteurs inertes.
 
 ### P-14 — Tenir la base après l'import (Antor, MJ, au bureau)
 1. Sur « Port-Sel » (**E-9**), « Modifier » la section « Histoire » : il tape `[[`, choisit « Maître
@@ -496,19 +497,28 @@ E-14 ni les bascules de E-15 (« Lecture seule »).
    remontent ses enfants et que les liens qui la visent deviendront des liens cassés (texte exact :
    E-9) ; le doublon venait de Kanka : Antor le retire aussi de l'export, sinon le prochain import le
    recrée (B-40).
+4. Dans un **scénario** (E-7), même geste : `[[` ouvre la même liste (les fiches de l'univers de la campagne) et le lien
+   s'ouvre sur la fiche ; dans une entrée de système (E-15), `[[` ne fait rien.
+*Échec liens* : Léa, auteur avec écriture, tape à la main `[[<id>]]` d'une fiche qu'elle ne lit pas (l'identifiant d'une adresse qu'Antor lui a donnée) — « Cette fiche n'existe
+pas ou vous ne pouvez pas la lire. » sous le champ, son texte intact ; la liste ne répond pas — « Impossible de
+chercher. » et « Réessayer » ; un lien vers une fiche qui n'est pas encore importée — « en attente » pour Antor,
+texte pour Léa, jusqu'à l'arrivée de la fiche ; dans un scénario, la liste qui échoue — « Impossible de chercher. ».
 *Échec* : un déplacement qui ferait un cycle (« Les Sphères » sous l'un de ses enfants) — « Une fiche
 ne peut pas être rangée sous l'un de ses descendants. » ; un Joueur auteur d'une section qui contient
 un bloc MJ — « Modifier » n'y paraît pas ; un texte qui passe 100 000 caractères — « Erreur : 100 000
 caractères au plus. », le texte reste.
 
-### P-15 — Poser le jeton de l'assistant (admin d'instance) (B-51)
+### P-15 — Poser le jeton de l'assistant (Admin, admin d'instance) (B-51)
+*Admin vient de déployer Kanevas : l'assistant n'a pas encore de jeton, et il ne veut pas passer par un redéploiement.*
 1. **Administration** (E-5), bloc « Jeton de l'assistant » : « Aucun jeton posé » ; « Connecter
    l'abonnement ».
 2. Kanevas montre une adresse ; il l'ouvre, s'authentifie chez Anthropic, copie le code.
 3. Il colle le code, « Valider » : « Jeton posé le 11 octobre 2026. » ; l'assistant est disponible
-   sur tous les univers, sans redéploiement.
-*Échec* : le code est faux ou la fenêtre a expiré (10 minutes) — « La connexion n'a pas abouti.
-Recommencez. », l'ancien jeton reste.
+   sur tous les univers, sans redéploiement. *(Moment fort : « Jeton posé le … » apparaît, sans que la valeur du jeton soit montrée nulle part.)*
+*Échec* : le code est faux — « La connexion n'a pas abouti. Recommencez. » ; la fenêtre a expiré (10 minutes)
+ou le serveur a redémarré — « La connexion a expiré. Recommencez. » ; le programme de connexion ne démarre pas —
+« La connexion n'a pas pu démarrer. Réessayez. » ; dans tous les cas l'ancien état reste. Si le jeton vient du
+déploiement, le panneau dit « Jeton fourni par le déploiement. » et se reconnecte de même.
 
 ### P-16 — Ranger et partager les fichiers (Antor, MJ, puis Léa, Joueuse)
 *Après l'import, la médiathèque de « Lame d'Ébène » porte 1 100 images et 40 documents, dont ceux

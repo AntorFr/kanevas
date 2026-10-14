@@ -13,7 +13,15 @@ import {
   poserIllustration,
   retirerIllustration,
 } from '../services/illustrations.js';
-import { creerFiche, lireFiche, listerFiches } from '../services/fiches.js';
+import {
+  changerSousType,
+  changerTypeFiche,
+  creerFiche,
+  lireFiche,
+  lireMentions,
+  listerFiches,
+  listerSousTypes,
+} from '../services/fiches.js';
 import {
   ajouterSection,
   changerAudience,
@@ -76,25 +84,76 @@ export function registerFichesRoutes(app: FastifyInstance) {
       type: chaine(b.type, 'Type de fiche inconnu.'),
       titre: chaine(b.titre, 'Le titre : de 1 à 120 caractères.'),
       charge: charge as Record<string, unknown> | undefined,
+      sousType: b.sousType === undefined ? undefined : (b.sousType as string | null),
     });
     return reply.code(201).send(fiche);
   });
 
+  // The sub-type alone (the title comes with kanevas-import-tenir). `null` removes it.
+  app.patch(`${base}/:fid`, async (request) => {
+    const i = ids(request);
+    const b = corps(request);
+    if (b.sousType === undefined) throw invalide('Rien à modifier.');
+    return changerSousType(app.db, request.session!.id, i.univers, i.fiche, b.sousType);
+  });
+
+  // Same row, other type (AD-120 (4)); `charge` carries `pj` for a character, `sousType` a new sub-type.
+  app.post(`${base}/:fid/type`, async (request) => {
+    const i = ids(request);
+    const b = corps(request);
+    if (b.charge !== undefined && (b.charge === null || typeof b.charge !== 'object' || Array.isArray(b.charge))) {
+      throw invalide('Charge utile invalide pour ce type de fiche.');
+    }
+    return changerTypeFiche(
+      app.db,
+      request.session!.id,
+      i.univers,
+      i.fiche,
+      chaine(b.type, 'Type de fiche inconnu.'),
+      b.charge as Record<string, unknown> | undefined,
+      b.sousType === undefined ? undefined : (b.sousType as string | null),
+    );
+  });
+
   app.get(base, async (request) => {
     const q = request.query as Record<string, unknown>;
-    for (const k of ['type', 'curseur', 'q']) {
+    for (const k of ['type', 'sousType', 'curseur', 'q']) {
       if (q[k] !== undefined && typeof q[k] !== 'string') throw invalide('Requête invalide.');
     }
     return listerFiches(app.db, acteur(request), ids(request).univers, {
       type: q.type as string | undefined,
+      sousType: q.sousType as string | undefined,
       curseur: q.curseur as string | undefined,
       recherche: q.q as string | undefined,
     });
   });
 
+  // Sub-types of the sheets the caller reads, grouped without case, with their count.
+  app.get('/api/univers/:id/sous-types', async (request) => {
+    const q = request.query as Record<string, unknown>;
+    if (q.type !== undefined && typeof q.type !== 'string') throw invalide('Requête invalide.');
+    return {
+      sousTypes: listerSousTypes(app.db, acteur(request), ids(request).univers, {
+        type: q.type as string | undefined,
+      }),
+    };
+  });
+
   app.get(`${base}/:fid`, async (request) => {
     const i = ids(request);
     return lireFiche(app.db, acteur(request), i.univers, i.fiche);
+  });
+
+  // « Mentionnée dans » (AD-100): the sources after the `apres` first ones, fifty at a time.
+  app.get(`${base}/:fid/mentions`, async (request) => {
+    const i = ids(request);
+    const apres = (request.query as Record<string, unknown>).apres;
+    let n = 0;
+    if (apres !== undefined) {
+      if (typeof apres !== 'string' || !/^\d{1,9}$/.test(apres)) throw invalide('Requête invalide.');
+      n = Number(apres);
+    }
+    return lireMentions(app.db, acteur(request), i.univers, i.fiche, n);
   });
 
   app.post(`${base}/:fid/sections`, async (request, reply) => {

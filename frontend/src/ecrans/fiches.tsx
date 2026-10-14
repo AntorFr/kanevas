@@ -1,37 +1,37 @@
 import { Plus } from 'lucide-react';
-import { useState, type FormEvent } from 'react';
+import { useEffect, useId, useState, type FormEvent } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
-import { appeler } from '../api';
+import { appeler, ErreurApi, lire } from '../api';
 import { useCharge } from '../cadre-contexte';
 import type { Ecran } from '../registre';
 import type { UniversListe } from '../types';
 import { Bouton, Champ, ErreurChargement, Fenetre, PageIntrouvable, VideIcone, useToasts } from '../ui';
+import { MAX_SOUS_TYPE } from './fiche/sous-type';
 import './ecrans.css';
 import './fiche/fiche.css';
 import './liste.css';
 import { ListeRecherche } from './fiche/liste-recherche';
 import { ChargementGrille } from './fiche/vignette';
 import type { Fiche } from './fiche/types';
-import { iconeDuType, typeParSlug } from './fiche/types-fiche';
+import { iconeDuType, typeParSlug, typesActifs, useTypes, type TypeVue } from '../types-contexte';
 
 const ECHEC = 'L’action n’a pas abouti. Réessayez.';
 
-/** E-8 Liste de fiches: one lore type, 100 at a time; the GM creates. */
+/** E-8 Liste de fiches: one sheet type, 100 at a time; the GM creates. */
 function ListeFiches() {
   const { id, type: slug } = useParams();
-  const typeLore = typeParSlug(slug);
-  if (!typeLore) return <PageIntrouvable />;
-  return <Liste key={`${id}/${slug}`} universId={id!} type={typeLore} />;
+  return <Liste key={`${id}/${slug}`} universId={id!} slug={slug} />;
 }
 
-function Liste({ universId, type }: { universId: string; type: NonNullable<ReturnType<typeof typeParSlug>> }) {
+function Liste({ universId, slug }: { universId: string; slug: string | undefined }) {
   const navigate = useNavigate();
   const [params, setParams] = useSearchParams();
   const [univers] = useCharge<UniversListe>(`/api/univers/${universId}`);
+  const { types, etat: etatTypes, recharger: rechargerTypes } = useTypes();
   const [creation, setCreation] = useState(false);
 
-  if (univers.etat === 'chargement') {
+  if (univers.etat === 'chargement' || (univers.etat === 'ok' && etatTypes === 'chargement')) {
     return (
       <div className="page-liste page-grille">
         <ChargementGrille texte="Chargement des fiches…" />
@@ -42,6 +42,11 @@ function Liste({ universId, type }: { universId: string; type: NonNullable<Retur
   if (univers.etat === 'erreur') {
     return <ErreurChargement texte="Impossible de charger les fiches." onReessayer={() => window.location.reload()} />;
   }
+  if (etatTypes === 'erreur') {
+    return <ErreurChargement texte="Impossible de charger les types." onReessayer={rechargerTypes} />;
+  }
+  const type = typeParSlug(types, slug);
+  if (!type) return <PageIntrouvable />;
   const mj = univers.valeur.role === 'mj';
   const nouveau = (
     <Bouton variante="principal" ecrit icone={Plus} title={type.nouveau} onClick={() => setCreation(true)}>
@@ -56,20 +61,23 @@ function Liste({ universId, type }: { universId: string; type: NonNullable<Retur
           <Glyphe type={type.type} />
         </span>
         <h1>{type.pluriel}</h1>
-        {mj && nouveau}
+        {mj && type.active && nouveau}
       </header>
+      {!type.active && <p className="note-type">Ce type est désactivé dans cet univers.</p>}
       <ListeRecherche
         universId={universId}
         type={type}
         recherche={params.get('q')?.trim() ?? ''}
-        onRecherche={(q) => setParams(q === '' ? {} : { q })}
+        onRecherche={(q) => setParams((p) => majParam(p, 'q', q))}
+        sousType={params.get('sousType') ?? ''}
+        onSousType={(v) => setParams((p) => majParam(p, 'sousType', v))}
         videListe={
-          <VideIcone icone={iconeDuType(type.type)}>
+          <VideIcone icone={iconeDuType(types, type.type)}>
             <p>{type.aucun} {mj ? 'pour l’instant.' : 'à voir pour l’instant.'}</p>
           </VideIcone>
         }
       />
-      {creation && (
+      {creation && type.active && (
         <FenetreCreation
           universId={universId}
           type={type}
@@ -81,48 +89,87 @@ function Liste({ universId, type }: { universId: string; type: NonNullable<Retur
   );
 }
 
+function majParam(p: URLSearchParams, cle: string, valeur: string) {
+  const n = new URLSearchParams(p);
+  if (valeur === '') n.delete(cle);
+  else n.set(cle, valeur);
+  return n;
+}
+
 function Glyphe({ type }: { type: string }) {
-  const Icone = iconeDuType(type);
+  const { types } = useTypes();
+  const Icone = iconeDuType(types, type);
   return <Icone size={20} strokeWidth={1.75} />;
 }
 
+
 function FenetreCreation({
   universId,
-  type,
+  type: depart,
   onFermer,
   onCree,
 }: {
   universId: string;
-  type: NonNullable<ReturnType<typeof typeParSlug>>;
+  type: TypeVue;
   onFermer: () => void;
   onCree: (f: Fiche) => void;
 }) {
+  const { types, recharger: rechargerTypes } = useTypes();
+  const choix = typesActifs(types).filter((t) => t.reglable);
+  const [typeChoisi, setTypeChoisi] = useState(depart.type);
+  const type = choix.find((t) => t.type === typeChoisi) ?? choix[0] ?? depart;
   const [titre, setTitre] = useState('');
+  const [sousType, setSousType] = useState('');
+  const [deja, setDeja] = useState<string[]>([]);
   const [pj, setPj] = useState(false);
   const [erreur, setErreur] = useState<string>();
-  const [echec, setEchec] = useState(false);
+  const [erreurSousType, setErreurSousType] = useState<string>();
+  const [echec, setEchec] = useState<string>();
   const [enCours, setEnCours] = useState(false);
   const { toast } = useToasts();
+  const idListe = useId();
+
+  // The sub-types already used for the chosen type, for the completion; a failure leaves the field free.
+  useEffect(() => {
+    let actif = true;
+    setDeja([]);
+    lire<{ sousTypes: { sousType: string }[] }>(`/api/univers/${universId}/sous-types?type=${type.type}`).then(
+      (r) => actif && setDeja(r.sousTypes.map((s) => s.sousType)),
+      () => {},
+    );
+    return () => {
+      actif = false;
+    };
+  }, [universId, type.type]);
 
   async function creer(e: FormEvent) {
     e.preventDefault();
     if (enCours) return;
     const t = titre.trim();
-    if (t === '') return setErreur('le titre est obligatoire.');
-    if (t.length > 120) return setErreur('120 caractères au plus.');
-    setErreur(undefined);
-    setEchec(false);
+    const st = sousType.trim();
+    const eTitre = t === '' ? 'le titre est obligatoire.' : t.length > 120 ? '120 caractères au plus.' : undefined;
+    const eSousType = Array.from(st).length > MAX_SOUS_TYPE ? `${MAX_SOUS_TYPE} caractères au plus.` : undefined;
+    setErreur(eTitre);
+    setErreurSousType(eSousType);
+    if (eTitre || eSousType) return;
+    setEchec(undefined);
     setEnCours(true);
     try {
       const f = await appeler<Fiche>('POST', `/api/univers/${universId}/fiches`, {
         type: type.type,
         titre: t,
+        ...(st === '' ? {} : { sousType: st }),
         ...(type.type === 'personnage' ? { charge: { pj } } : {}),
       });
       toast(`« ${f.titre} » créée`);
       onCree(f);
-    } catch {
-      setEchec(true);
+    } catch (err) {
+      if (err instanceof ErreurApi && err.code === 'type_desactive') {
+        setEchec('Ce type est désactivé dans cet univers.');
+        rechargerTypes();
+      } else {
+        setEchec(ECHEC);
+      }
       setEnCours(false);
     }
   }
@@ -132,10 +179,26 @@ function FenetreCreation({
       <form onSubmit={creer} noValidate>
         {echec && (
           <div className="echec" role="alert">
-            {ECHEC}
+            {echec}
           </div>
         )}
         <Champ etiquette="Titre" value={titre} erreur={erreur} onChange={(e: { target: { value: string } }) => setTitre(e.target.value)} />
+        <Champ
+          etiquette="Type"
+          liste
+          value={type.type}
+          onChange={(e: { target: { value: string } }) => {
+            setTypeChoisi(e.target.value);
+            setSousType('');
+            setErreurSousType(undefined);
+          }}
+        >
+          {choix.map((t) => (
+            <option key={t.type} value={t.type}>
+              {t.singulier}
+            </option>
+          ))}
+        </Champ>
         {type.type === 'personnage' && (
           <div className="choix" role="radiogroup" aria-label="Nature du personnage">
             <label>
@@ -145,6 +208,25 @@ function FenetreCreation({
               <input type="radio" name="nature" checked={!pj} onChange={() => setPj(false)} /> PNJ
             </label>
           </div>
+        )}
+        <Champ
+          etiquette="Sous-type"
+          facultatif
+          value={sousType}
+          list={deja.length > 0 ? idListe : undefined}
+          autoComplete="off"
+          erreur={erreurSousType}
+          onChange={(e: { target: { value: string } }) => {
+            setSousType(e.target.value);
+            setErreurSousType(undefined);
+          }}
+        />
+        {deja.length > 0 && (
+          <datalist id={idListe} title={`Sous-types de ${type.singulier.toLowerCase()} déjà employés`}>
+            {deja.map((d) => (
+              <option key={d} value={d} />
+            ))}
+          </datalist>
         )}
         <div className="actions">
           <Bouton type="submit" variante="principal" ecrit enCours={enCours}>

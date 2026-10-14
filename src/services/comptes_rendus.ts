@@ -3,7 +3,8 @@ import { campagneBrute } from './campagnes.js';
 import { exigerRole } from './droits.js';
 import { introuvable, invalide } from './erreurs.js';
 import { LIMITE_LISTE, lireFiche, validerTitre } from './fiches.js';
-import { MAX_CONTENU_SECTION } from './sections.js';
+import { preparerContenu } from './liens.js';
+import { exigerSansBloc, insererSection, validerContenu } from './sections.js';
 import type { Acteur, FicheVue } from './types.js';
 
 export const TITRE_SECTION_COMPTE_RENDU = 'Compte-rendu';
@@ -26,9 +27,8 @@ export function creerCompteRendu(
   if (campagne.univers_id !== universId) throw introuvable();
   const titre = validerTitre(entree.titre, 120, 'Le titre');
   const texte = entree.texte ?? '';
-  if (texte.length > MAX_CONTENU_SECTION) {
-    throw invalide('Contenu trop long : 20 000 caractères au plus.');
-  }
+  validerContenu(texte);
+  exigerSansBloc(role, texte);
   const now = new Date().toISOString();
   const ficheId = db.transaction(() => {
     const f = db
@@ -39,11 +39,19 @@ export function creerCompteRendu(
       .run(universId, titre, JSON.stringify({ v: 1, campagne_id: campagneId }), now, now);
     const id = Number(f.lastInsertRowid);
     const joueur = role === 'joueur';
-    db.prepare(
-      `INSERT INTO sections (fiche_id, titre, ordre, contenu, modifie_le,
-         joueurs_lisent, joueurs_ecrivent, auteur_id, auteur_lit, auteur_ecrit)
-       VALUES (?, ?, 1, ?, ?, 1, 0, ?, ?, ?)`,
-    ).run(id, TITRE_SECTION_COMPTE_RENDU, texte, now, joueur ? compteId : null, joueur ? 1 : 0, joueur ? 1 : 0);
+    const contenu = preparerContenu(db, universId, compteId, texte);
+    validerContenu(contenu);
+    insererSection(db, {
+      ficheId: id,
+      titre: TITRE_SECTION_COMPTE_RENDU,
+      ordre: 1,
+      contenu,
+      modifieLe: now,
+      joueursLisent: 1,
+      auteurId: joueur ? compteId : null,
+      auteurLit: joueur ? 1 : 0,
+      auteurEcrit: joueur ? 1 : 0,
+    });
     return id;
   })();
   return lireFiche(db, { compteId }, universId, ficheId);

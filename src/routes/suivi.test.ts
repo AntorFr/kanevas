@@ -200,11 +200,11 @@ test('critère : compte-rendu de Léa lu par Teo sans écriture, en tête des de
 
   const lu = await appel(app, teo, 'GET', `${base}/fiches/${fiche.id}`);
   assert.equal(lu.statusCode, 200);
-  assert.equal(lu.json().sections[0].contenu, 'Ils ont fui.');
+  assert.equal(lu.json().sections[0].html, '<p>Ils ont fui.</p>\n');
   const sid = lu.json().sections[0].id;
   const ecr = await appel(app, teo, 'PUT', `${base}/fiches/${fiche.id}/sections/${sid}/contenu`, { contenu: 'Piraté', version: lu.json().sections[0].version ?? 0 });
   assert.ok(ecr.statusCode >= 400 && ecr.statusCode < 500, String(ecr.statusCode));
-  assert.equal((await appel(app, teo, 'GET', `${base}/fiches/${fiche.id}`)).json().sections[0].contenu, 'Ils ont fui.');
+  assert.equal((await appel(app, teo, 'GET', `${base}/fiches/${fiche.id}`)).json().sections[0].html, '<p>Ils ont fui.</p>\n');
 
   const titres = (r: { json: () => { comptesRendus: { titre: string }[] } }) => r.json().comptesRendus.map((x) => x.titre);
   assert.equal(titres(await appel(app, teo, 'GET', `${base}/comptes-rendus`))[0], 'Séance 1');
