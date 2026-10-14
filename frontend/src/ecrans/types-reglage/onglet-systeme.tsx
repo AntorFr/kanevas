@@ -10,7 +10,7 @@ const PLUS_DROIT = 'Vous ne pouvez plus modifier ce système.';
 
 /**
  * E-15, tab « Types de fiche »: one switch per settable type. The labels come from the list of one
- * of the caller's universes (the server owns the list, AD-113); the on/off state from the system.
+ * of the caller's universes (the server owns the list, AD-120); the on/off state from the system.
  */
 export function OngletTypesSysteme({
   systemeId,

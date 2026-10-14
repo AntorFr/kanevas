@@ -48,7 +48,7 @@ export const ITEMS_UNIVERS: Item[] = [
 ];
 
 /**
- * The « Lore » items, built from the types the server sends (AD-113): the list is never copied here.
+ * The « Lore » items, built from the types the server sends (AD-120): the list is never copied here.
  * The bar passes the enabled types; the breadcrumb passes them all, since a disabled type's list still opens.
  */
 export const itemsLore = (types: TypeVue[]): Item[] =>
