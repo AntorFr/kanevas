@@ -29,8 +29,10 @@ interface Maillon {
 const ANCETRES_VISIBLES = 3;
 
 /** The crumbs of the readable ancestors of a sheet, folded past three. */
-function maillonsAncetres(racine: string, ancetres: AncetreAriane[]): Maillon[] {
+function maillonsAncetres(racine: string, ancetres: AncetreAriane[], telephone: boolean): Maillon[] {
   const lien = (a: AncetreAriane): Maillon => ({ libelle: a.titre, vers: `${racine}/fiche/${a.id}` });
+  // On a phone, two readable ancestors or more all go in the « … » menu; a single one is ellipsed.
+  if (telephone && ancetres.length >= 2) return [{ libelle: '…', autres: ancetres }];
   if (ancetres.length <= ANCETRES_VISIBLES) return ancetres.map(lien);
   return [lien(ancetres[0]!), { libelle: '…', autres: ancetres.slice(1, -2) }, ...ancetres.slice(-2).map(lien)];
 }
@@ -40,7 +42,7 @@ function maillonsAncetres(racine: string, ancetres: AncetreAriane[]): Maillon[] 
  * answers, then the last crumb a screen gave (a sheet's title). Outside a universe: « Mes univers »,
  * then « Créer un univers ».
  */
-export function maillons(pathname: string, nomUnivers: string | undefined, titre: string | undefined, dedans: boolean, section?: string, lore: Item[] = [], ancetres: AncetreAriane[] = []): Maillon[] {
+export function maillons(pathname: string, nomUnivers: string | undefined, titre: string | undefined, dedans: boolean, section?: string, lore: Item[] = [], ancetres: AncetreAriane[] = [], telephone = false): Maillon[] {
   if (!dedans) {
     // E-5: the instance screen, not a universe's; its crumb says where it sits in the bar.
     if (pathname === '/administration' || pathname.startsWith('/administration/')) {
@@ -63,14 +65,30 @@ export function maillons(pathname: string, nomUnivers: string | undefined, titre
     .filter((i) => section !== undefined || pathname === i.chemin(Number(id)) || pathname.startsWith(`${i.chemin(Number(id))}/`))
     .sort((a, b) => b.chemin(Number(id)).length - a.chemin(Number(id)).length)[0];
   if (item) liste.push({ libelle: item.libelle, vers: item.chemin(Number(id)), icone: 'item' });
-  if (titre) liste.push(...maillonsAncetres(racine, ancetres), { libelle: titre });
+  if (titre) liste.push(...maillonsAncetres(racine, ancetres, telephone), { libelle: titre });
   // The last crumb is the page you are on: it is not a link.
   const dernier = liste[liste.length - 1]!;
   liste[liste.length - 1] = { ...dernier, vers: titre || pathname === dernier.vers ? undefined : dernier.vers };
   return liste;
 }
 
+/** Phone width (docs/ecrans.md, E-9 header): the trail folds its ancestors into the « … » menu. */
+const TELEPHONE_ARIANE = '(max-width: 480px)';
+
+function useTelephoneAriane(): boolean {
+  const [oui, setOui] = useState(() => typeof window !== 'undefined' && window.matchMedia(TELEPHONE_ARIANE).matches);
+  useEffect(() => {
+    const mq = window.matchMedia(TELEPHONE_ARIANE);
+    const maj = () => setOui(mq.matches);
+    maj();
+    mq.addEventListener('change', maj);
+    return () => mq.removeEventListener('change', maj);
+  }, []);
+  return oui;
+}
+
 function Ariane() {
+  const telephone = useTelephoneAriane();
   const { pathname } = useLocation();
   const { univers } = useUnivers();
   const { titre, section, ancetres } = useVue();
@@ -81,7 +99,7 @@ function Ariane() {
   const nom = univers.etat === 'ok' ? univers.valeur.find((u) => u.id === id)?.nom : univers.etat === 'chargement' ? '…' : undefined;
   const { types } = useTypes();
   const lore = itemsLore(types);
-  const liste = maillons(pathname, nom, titre, dedans, section, lore, ancetres);
+  const liste = maillons(pathname, nom, titre, dedans, section, lore, ancetres, telephone);
   const typeDe = (t: string) => iconeDuType(types, t);
   const icones = dedans ? new Map([...ITEMS_UNIVERS, ...lore].map((i) => [i.libelle, i.icone])) : new Map();
   return (
@@ -92,7 +110,7 @@ function Ariane() {
         const milieu = !dernier && i > 0 && m.icone === 'item' && Icone !== undefined;
         if (m.autres) {
           return (
-            <span key={i} className="maillon">
+            <span key={i} className="maillon plie">
               <ChevronRight className="sep-ariane" size={14} strokeWidth={1.75} aria-hidden="true" />
               <Menu
                 etiquette="Autres ancêtres"

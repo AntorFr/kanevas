@@ -197,10 +197,10 @@ export function DeplacerSous({
           )}
         </div>
         <div className="actions">
+          <Bouton onClick={onFermer}>Annuler</Bouton>
           <Bouton type="submit" variante="principal" ecrit enCours={enCours} disabled={choisi === undefined || perdue}>
             Déplacer
           </Bouton>
-          <Bouton onClick={onFermer}>Annuler</Bouton>
         </div>
       </form>
     </Fenetre>
