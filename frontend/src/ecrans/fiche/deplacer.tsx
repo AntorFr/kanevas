@@ -145,6 +145,7 @@ export function DeplacerSous({
                 setRefus(undefined);
               }}
             />
+            <span className="puce" aria-hidden="true" />
             Aucun parent
           </label>
           <div className="sep-res" role="presentation" />
@@ -177,6 +178,7 @@ export function DeplacerSous({
                     setRefus(undefined);
                   }}
                 />
+                <span className="puce" aria-hidden="true" />
                 <Icone size={16} strokeWidth={1.75} aria-hidden="true" />
                 {f.titre}
                 <span className="type-option">{detail}</span>

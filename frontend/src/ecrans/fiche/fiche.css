@@ -193,6 +193,13 @@ a.cadre-ill:focus-visible { outline-offset: 2px; border-radius: var(--rayon-pann
 .changer-type .sep-res { height: 1px; margin: 4px 0; background: var(--bord); }
 .changer-type .titre-groupe { margin: 0; padding: 4px 10px; font-size: var(--t-12); font-weight: 500; color: var(--texte-3); }
 .changer-type .retrait { color: var(--texte-2); font-size: var(--t-13); }
+/* « Déplacer sous… »: the native radio stays (role, keyboard) but is hidden behind the mock-up's dot. */
+.deplacer .resultat { position: relative; }
+.deplacer .resultat input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; }
+.deplacer .resultat .puce { width: 14px; height: 14px; flex: none; border-radius: 50%; box-shadow: inset 0 0 0 1.5px var(--bord-champ); }
+.deplacer .resultat:has(input:checked) { background: var(--accent-fond); }
+.deplacer .resultat:has(input:checked) .puce { box-shadow: inset 0 0 0 4px var(--accent); }
+.deplacer .resultat:has(input:focus-visible) { outline: 2px solid var(--accent); outline-offset: -2px; }
 @media (max-width: 760px) { .changer-type .resultat { min-height: 40px; } }
 .fiche .blocs:empty { display: none; }
 
