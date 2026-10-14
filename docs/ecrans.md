@@ -2213,7 +2213,7 @@ seul qui ne connaît pas le mode Joueur : un lien cassé ou en attente y est tou
 
 **En-tête.** Fil d'Ariane : univers › type › ancêtres **lisibles** du plus haut au plus proche ›
 fiche ; un ancêtre illisible est sauté sans marque (B-35) ; plus de trois ancêtres : le premier, « … »
-(menu des autres), les deux derniers. « Poser » ou « Remplacer » l'illustration (MJ) ouvre les deux
+(menu des autres), les deux derniers. **Largeur (AD-99, arbitrage du 2026-10-15)** : le titre de la fiche courante est toujours entier ; un maillon d'ancêtre garde au moins 8 caractères et s'ellipse par « … » au-delà, jamais en dessous ; aucun maillon ne recouvre un chevron. Au téléphone (≤ 480 px), dès qu'il y a deux ancêtres lisibles ou plus, tous passent dans le menu « … » (icône du type › « … » › titre) ; avec un seul, il s'ellipse comme dit. « Poser » ou « Remplacer » l'illustration (MJ) ouvre les deux
 chemins d'ajout (« Fichiers », ci-dessous), limités aux images ; « Retirer » ôte la référence, l'image reste dans la
 médiathèque. Le badge du type porte le **sous-type** : « Lieu · Port » (B-52) ;
 MJ, hors mode Joueur : un clic sur le sous-type l'édite en place, avec la liste des sous-types déjà
