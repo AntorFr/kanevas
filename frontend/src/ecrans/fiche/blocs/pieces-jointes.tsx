@@ -21,11 +21,16 @@ interface Ligne {
 
 type Issue = { ok: true } | { ok: false; statut: number; code?: string };
 
-/** POST one file with progress; the `secrete` field goes first so the server reads it before the stream. */
-function envoyer(url: string, fichier: File, secrete: boolean, progres: (pct: number) => void, xhr: XMLHttpRequest): Promise<Issue> {
+/**
+ * POST one file to the media library with progress, joined to `section`; the fields go first so the
+ * server reads them before the stream. `secrete` becomes « from a GM block »: the place decides the visibility.
+ */
+function envoyer(url: string, section: number, fichier: File, secrete: boolean, progres: (pct: number) => void, xhr: XMLHttpRequest): Promise<Issue> {
   return new Promise((resolve) => {
     const corps = new FormData();
-    corps.append('secrete', secrete ? 'true' : 'false');
+    corps.append('section', String(section));
+    corps.append('maniere', 'joint');
+    corps.append('blocMj', secrete ? 'true' : 'false');
     corps.append('fichier', fichier, fichier.name);
     xhr.open('POST', url);
     xhr.withCredentials = true;
@@ -70,7 +75,7 @@ function BlocPiecesJointes({ universId, fiche, section, role, rafraichir }: Prop
   if (!mj && !ecrit && pieces.length === 0 && lignes.length === 0 && !avertissement) return null;
 
   const base = `/api/univers/${universId}/fiches/${fiche.id}`;
-  const urlFichier = (p: PieceJointe) => `${base}/pieces-jointes/${p.id}/fichier`;
+  const urlFichier = (p: PieceJointe) => `/api/univers/${universId}/fichiers/${p.id}`;
   const changer = (cle: number, m: Partial<Ligne>) => setLignes((ls) => ls.map((l) => (l.cle === cle ? { ...l, ...m } : l)));
   const retirerLigne = (cle: number) => setLignes((ls) => ls.filter((l) => l.cle !== cle));
 
@@ -79,7 +84,7 @@ function BlocPiecesJointes({ universId, fiche, section, role, rafraichir }: Prop
     changer(l.cle, { pct: 0, erreur: undefined, reessayable: undefined });
     const xhr = new XMLHttpRequest();
     xhrs.current.set(l.cle, xhr);
-    const r = await envoyer(`${base}/sections/${section.id}/pieces-jointes`, l.fichier, l.secrete, (pct) => changer(l.cle, { pct }), xhr);
+    const r = await envoyer(`/api/univers/${universId}/fichiers`, section.id, l.fichier, l.secrete, (pct) => changer(l.cle, { pct }), xhr);
     xhrs.current.delete(l.cle);
     if (r.ok) {
       retirerLigne(l.cle);
@@ -163,7 +168,7 @@ function BlocPiecesJointes({ universId, fiche, section, role, rafraichir }: Prop
           onClick={() =>
             agir(
               p.id,
-              () => appeler('PATCH', `${base}/pieces-jointes/${p.id}`, { secrete: !p.secrete }),
+              () => appeler('PATCH', `/api/univers/${universId}/fichiers/${p.id}`, { visibilite: p.secrete ? 'joueurs' : 'mj' }),
               false,
               p.secrete ? `Le secret de « ${p.nom} » est levé` : `« ${p.nom} » est secrète`,
             )
@@ -225,7 +230,7 @@ function BlocPiecesJointes({ universId, fiche, section, role, rafraichir }: Prop
                   <div className="confirmation" role="alertdialog" aria-label="Confirmer le retrait">
                     <p>Retirer « {p.nom} » ? Le fichier sera perdu.</p>
                     <div className="actions">
-                      <Bouton variante="danger" ecrit enCours={enCours === p.id} onClick={() => agir(p.id, () => appeler('DELETE', `${base}/pieces-jointes/${p.id}`), true, `« ${p.nom} » retiré`)}>
+                      <Bouton variante="danger" ecrit enCours={enCours === p.id} onClick={() => agir(p.id, () => appeler('DELETE', `${base}/sections/${section.id}/fichiers/${p.id}`), true, `« ${p.nom} » retiré`)}>
                         Retirer le fichier
                       </Bouton>
                       <Bouton onClick={() => setARetirer(undefined)}>Annuler</Bouton>

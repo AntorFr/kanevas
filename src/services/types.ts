@@ -98,6 +98,8 @@ export interface Fiche {
 }
 
 export interface IllustrationVue {
+  /** The file of the media library (bytes at `GET /fichiers/:id?v=<jeton>`). */
+  id: number;
   jeton: string;
 }
 

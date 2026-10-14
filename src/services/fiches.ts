@@ -10,7 +10,7 @@ import {
 } from './droits.js';
 import { ErreurService, introuvable, invalide } from './erreurs.js';
 import { mentionsDe } from './mentions.js';
-import { lireLignes } from './pieces-jointes.js';
+import { lireLignes } from './fichiers.js';
 import { CHARGES, estTypeFiche, typeActif } from './types-fiche.js';
 import {
   TYPES_FICHE,
@@ -32,7 +32,8 @@ interface FicheRow {
   charge: string;
   cree_le: string;
   modifie_le: string;
-  illustration_fichier: string | null;
+  illustration_fichier_id: number | null;
+  illustration_disque: string | null;
   cle_origine: string | null;
   sous_type: string | null;
 }
@@ -46,7 +47,10 @@ export const versFiche = (r: FicheRow): Fiche => ({
   charge: JSON.parse(r.charge) as Record<string, unknown>,
   creeLe: r.cree_le,
   modifieLe: r.modifie_le,
-  illustration: r.illustration_fichier ? { jeton: r.illustration_fichier } : null,
+  illustration:
+    r.illustration_fichier_id !== null && r.illustration_disque !== null
+      ? { id: r.illustration_fichier_id, jeton: r.illustration_disque }
+      : null,
 });
 
 export const MAX_SOUS_TYPE = 60;
@@ -67,10 +71,14 @@ export function validerTitre(titre: string, max: number, quoi: string): string {
   return t;
 }
 
+/** The name on the disk of the illustration file (the cache token), read with the sheet. */
+const DISQUE_ILLUSTRATION =
+  '(SELECT x.disque FROM fichiers x WHERE x.id = f.illustration_fichier_id) AS illustration_disque';
+
 /** The sheet row of this universe, or not found (a sheet of another universe does not exist here). */
 export function chargerFiche(db: Db, universId: number, ficheId: number): FicheRow {
   const row = db
-    .prepare('SELECT * FROM fiches WHERE id = ? AND univers_id = ?')
+    .prepare(`SELECT f.*, ${DISQUE_ILLUSTRATION} FROM fiches f WHERE f.id = ? AND f.univers_id = ?`)
     .get(ficheId, universId) as FicheRow | undefined;
   if (!row) throw introuvable();
   return row;
@@ -298,7 +306,7 @@ export function lireFiche(
     ...(vueMJ(role, acteur) && fiche.cle_origine ? { cleOrigine: fiche.cle_origine } : {}),
     sections: lisibles.map((s) => ({
       ...vueSection(db, universId, role, s, acteur, formeLiens),
-      piecesJointes: lireLignes(db, s.id, vueMJ(role, acteur)),
+      piecesJointes: lireLignes(db, acteur, universId, role, s.id),
     })),
   };
 }
@@ -407,7 +415,7 @@ export function listerFiches(
   }
   const rows = db
     .prepare(
-      `SELECT f.* FROM fiches f WHERE ${where.join(' AND ')}
+      `SELECT f.*, ${DISQUE_ILLUSTRATION} FROM fiches f WHERE ${where.join(' AND ')}
        ORDER BY f.titre COLLATE NOCASE, f.id LIMIT ?`,
     )
     .all(...params, limite + 1) as FicheRow[];

@@ -5,8 +5,8 @@ import { badgeFiche, iconeDuType, useTypes } from '../../types-contexte';
 import type { Fiche } from './types';
 
 /** Address of the illustration of a sheet; the token makes a replaced image reload and a kept one cache. */
-export const adresseIllustration = (universId: number | string, ficheId: number, jeton: string) =>
-  `/api/univers/${universId}/fiches/${ficheId}/illustration?v=${encodeURIComponent(jeton)}`;
+export const adresseIllustration = (universId: number | string, fichierId: number, jeton: string) =>
+  `/api/univers/${universId}/fichiers/${fichierId}?v=${encodeURIComponent(jeton)}`;
 
 /** The first letter of a title, article set aside (« Le Gué-aux-Saules » → « G »). */
 export function initiale(titre: string): string {
@@ -41,7 +41,7 @@ export function CarteFiche({ universId, fiche }: { universId: number | string; f
       <span className="vue">
         {image ? (
           <img
-            src={adresseIllustration(universId, fiche.id, jeton)}
+            src={adresseIllustration(universId, fiche.illustration!.id, jeton)}
             alt=""
             width={600}
             height={450}

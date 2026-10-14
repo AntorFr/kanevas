@@ -5,11 +5,16 @@ import { fileURLToPath } from 'node:url';
 
 import type { Db } from '../db/db.js';
 import { attachmentsDir } from '../config/env.js';
-import { poserIllustration } from '../services/illustrations.js';
+import {
+  ajouterFichier,
+  choisirIllustration,
+  joindreFichier,
+  modifierFichier,
+} from '../services/fichiers.js';
 import { supprimerFichier } from '../services/stockage.js';
 import { ajouterMembre } from '../services/membres.js';
 import { ajouterSection, changerAudience, ecrireContenu, lireSection } from '../services/sections.js';
-import { creerFiche } from '../services/fiches.js';
+import { creerFiche, lireFiche } from '../services/fiches.js';
 import { assurerCompte } from '../services/comptes.js';
 import { creerEtRattacherSysteme, creerGabarit, rattacherSysteme } from '../services/systemes.js';
 import { creerJetonDeValeur } from '../services/jetons.js';
@@ -235,7 +240,15 @@ export async function semerIllustrations(db: Db, racine: string = attachmentsDir
   };
   const poser = async (titre: string, fichier: string) => {
     const l = trouver(titre);
-    return poserIllustration(db, antor, l.univers_id, l.id, Readable.from([fichierDemo(fichier)]), racine);
+    return ajouterFichier(
+      db,
+      { compteId: antor },
+      l.univers_id,
+      Readable.from([fichierDemo(fichier)]),
+      l.titre,
+      { ou: 'illustration', ficheId: l.id },
+      racine,
+    );
   };
 
   const portraits: [string, string][] = [
@@ -254,4 +267,62 @@ export async function semerIllustrations(db: Db, racine: string = attachmentsDir
   // « La Fresque effacée »: the illustration is recorded but its file is gone from the disk.
   const fresque = await poser('La Fresque effacée', 'fresque.webp');
   supprimerFichier(fresque.jeton, racine);
+
+  await semerFichiers(db, racine);
+}
+
+/**
+ * The files of the media library (AD-111, `docs/ecrans.md` « Semis de `kanevas-import` »), added
+ * by the real functions: « Plan secret de la Guilde » (GM only, unused), « Carte des Sphères »
+ * (illustration of Port-Sel, in the text of « Val-Fortin », joined to « Maître Aldric »),
+ * « port-sel-quais.webp » joined to Port-Sel, and the closed section « Notes de la table » of Léa.
+ */
+async function semerFichiers(db: Db, racine: string): Promise<void> {
+  const antor = { compteId: assurerCompte(db, 'antor').id };
+  const lea = assurerCompte(db, 'lea').id;
+  const fiches = db
+    .prepare('SELECT f.id, f.univers_id, f.titre FROM fiches f JOIN univers u ON u.id = f.univers_id WHERE u.nom = ?')
+    .all("Lame d'Ébène") as { id: number; univers_id: number; titre: string }[];
+  const trouver = (titre: string) => {
+    const l = fiches.find((x) => x.titre === titre);
+    if (!l) throw new Error(`Fiche de démonstration absente : ${titre}`);
+    return l;
+  };
+  const univers = trouver('Port-Sel').univers_id;
+  const section = (titre: string, section: string) => {
+    const f = trouver(titre);
+    const v = lireFiche(db, antor, univers, f.id).sections.find((x) => x.titre === section);
+    if (!v) throw new Error(`Section de démonstration absente : ${titre} / ${section}`);
+    return { fiche: f.id, section: v.id, version: v.version, contenu: v.contenu ?? '' };
+  };
+  const ajouter = (nom: string, demo: string, cible: Parameters<typeof ajouterFichier>[5]) =>
+    ajouterFichier(db, antor, univers, Readable.from([fichierDemo(demo)]), nom, cible, racine);
+
+  const plan = await ajouter('Plan secret de la Guilde', 'plan-guilde.png', { ou: 'mediatheque' });
+  modifierFichier(db, antor, univers, plan.id, { visibilite: 'mj' });
+
+  const carte = await ajouter('Carte des Sphères', 'carte-spheres.png', { ou: 'mediatheque' });
+  choisirIllustration(db, antor, univers, trouver('Port-Sel').id, carte.id);
+  const val = section('Val-Fortin', 'Description');
+  ecrireContenu(db, antor.compteId, univers, val.fiche, val.section, `${val.contenu}\n\n![Carte des Sphères](fichier:${carte.id})`, val.version);
+  const aldric = section('Maître Aldric', 'Apparence');
+  joindreFichier(db, antor, univers, aldric.fiche, aldric.section, carte.id);
+
+  const port = section('Port-Sel', 'Description');
+  await ajouter('port-sel-quais.webp', 'port-sel-quais.webp', {
+    ou: 'section',
+    sectionId: port.section,
+    maniere: 'joint',
+  });
+
+  const lb = trouver('Léa Brisefer');
+  const notes = ajouterSection(db, antor.compteId, univers, lb.id, {
+    titre: 'Notes de la table',
+    contenu: 'Notes de la table de Léa.',
+  });
+  changerAudience(db, antor.compteId, univers, lb.id, notes.id, {
+    auteurId: lea,
+    auteurLit: true,
+    auteurEcrit: true,
+  });
 }

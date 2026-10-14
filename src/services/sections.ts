@@ -1,4 +1,3 @@
-import { attachmentsDir } from '../config/env.js';
 import type { Db } from '../db/db.js';
 import {
   exigerMJ,
@@ -11,9 +10,8 @@ import {
 import { ErreurService, introuvable, invalide, refuse } from './erreurs.js';
 import { chargerFiche, validerTitre } from './fiches.js';
 import { preparerContenu, remplacerLiens, resoudreLiens, sectionsEnAttenteDe } from './liens.js';
-import { fichiersDeSections } from './pieces-jointes.js';
+import { recalculerFichiersSection } from './fichiers.js';
 import { contenuPublic, extraireLiens, reecrireLiens } from './markdown.js';
-import { supprimerFichier } from './stockage.js';
 import type { Acteur, Role, SectionRow, SectionVue } from './types.js';
 
 /** Ceiling of a section's content, in `String.length` units (AD-91); `/api/moi` hands it to the screen. */
@@ -74,6 +72,7 @@ export function insererSection(
     );
   const id = Number(info.lastInsertRowid);
   remplacerLiens(db, id, s.contenu);
+  recalculerFichiersSection(db, id, s.contenu, contenuPublic(s.contenu));
   return id;
 }
 
@@ -88,7 +87,10 @@ export function poserContenu(db: Db, sectionId: number, contenu: string, now: st
     `UPDATE sections SET contenu = ?, contenu_public = ?, version = version + ?,
        modifie_le = COALESCE(?, modifie_le) WHERE id = ?`,
   ).run(contenu, contenuPublic(contenu), now === null ? 0 : 1, now, sectionId);
-  if (now !== null) remplacerLiens(db, sectionId, contenu);
+  if (now !== null) {
+    remplacerLiens(db, sectionId, contenu);
+    recalculerFichiersSection(db, sectionId, contenu, contenuPublic(contenu));
+  }
 }
 
 /**
@@ -218,13 +220,11 @@ export function retirerSection(
   universId: number,
   ficheId: number,
   sectionId: number,
-  racine: string = attachmentsDir,
 ): void {
   exigerMJ(db, universId, compteId);
   chargerFiche(db, universId, ficheId);
   chargerSection(db, ficheId, sectionId);
-  // The CASCADE drops the rows, not the files: collect them first, delete them after the commit.
-  const fichiers = fichiersDeSections(db, [sectionId]);
+  // The CASCADE drops the references; the files stay in the media library (AD-105, AD-111).
   db.transaction(() => {
     db.prepare('DELETE FROM sections WHERE id = ?').run(sectionId);
     const restants = (
@@ -235,7 +235,6 @@ export function retirerSection(
     renumeroter(db, ficheId, restants);
     toucherFiche(db, ficheId, new Date().toISOString());
   })();
-  for (const f of fichiers) supprimerFichier(f, racine);
 }
 
 export interface ChangementAudience {

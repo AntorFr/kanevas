@@ -154,9 +154,9 @@ export function EnteteFiche({ universId, fiche, gestion, badge, Icone, message, 
           <figure className={`illustration${envoi ? ' en-envoi' : ''}`}>
             <div className="boite-ill">
               {jeton !== undefined && !indisponible ? (
-                <a className="cadre-ill" href={adresseIllustration(universId, fiche.id, jeton)} target="_blank" rel="noopener" title="Ouvrir l’image entière">
+                <a className="cadre-ill" href={adresseIllustration(universId, fiche.illustration!.id, jeton)} target="_blank" rel="noopener" title="Ouvrir l’image entière">
                   <img
-                    src={adresseIllustration(universId, fiche.id, jeton)}
+                    src={adresseIllustration(universId, fiche.illustration!.id, jeton)}
                     alt={`Illustration de « ${fiche.titre} »`}
                     width={600}
                     height={750}

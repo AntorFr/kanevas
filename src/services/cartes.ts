@@ -5,7 +5,7 @@ import type { Db } from '../db/db.js';
 import { peutLireSection, peutVoirFiche, roleDe, vueMJ } from './droits.js';
 import { ErreurService, introuvable, invalide, refuse } from './erreurs.js';
 import { chargerFiche, LIMITE_LISTE, validerTitre } from './fiches.js';
-import { typeParSignature } from './pieces-jointes.js';
+import { typeParSignature } from './fichiers.js';
 import { lireRelations } from './relations.js';
 import {
   abandonner,
