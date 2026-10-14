@@ -118,12 +118,13 @@ export function registerFichesRoutes(app: FastifyInstance) {
 
   app.get(base, async (request) => {
     const q = request.query as Record<string, unknown>;
-    for (const k of ['type', 'sousType', 'curseur', 'q']) {
+    for (const k of ['type', 'sousType', 'etiquette', 'curseur', 'q']) {
       if (q[k] !== undefined && typeof q[k] !== 'string') throw invalide('Requête invalide.');
     }
     return listerFiches(app.db, acteur(request), ids(request).univers, {
       type: q.type as string | undefined,
       sousType: q.sousType as string | undefined,
+      etiquette: q.etiquette as string | undefined,
       curseur: q.curseur as string | undefined,
       recherche: q.q as string | undefined,
     });

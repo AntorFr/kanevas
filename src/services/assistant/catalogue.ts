@@ -67,23 +67,13 @@ export function catalogueDe(db: Db, compteId: number, universId: number): Catalo
   const outils: Outil[] = [
     outil(
       'chercher',
-      `Cherche des fiches par un ou plusieurs mots (titre ou section lisible). Sans \`type\`, cherche dans tous les types. Rend au plus ${LIMITE_RECHERCHE} fiches triées par type puis titre, et dit si la liste est tronquée.`,
+      `Cherche des fiches par un ou plusieurs mots (titre ou section lisible). Sans \`type\`, cherche dans tous les types. Rend au plus ${LIMITE_RECHERCHE} fiches triées par titre, et dit si la liste est tronquée.`,
       z.strictObject({ mots: z.string(), type: z.enum(TYPES_FICHE).optional() }),
       ({ mots, type }) => {
-        const types = type ? [type] : TYPES_FICHE;
-        const trouvees: { id: number; type: string; titre: string }[] = [];
-        let tronquee = false;
-        for (const t of types) {
-          const page = listerFiches(db, acteur, universId, {
-            type: t,
-            recherche: mots,
-            limite: LIMITE_RECHERCHE,
-          });
-          if (page.suivant !== null) tronquee = true;
-          for (const f of page.fiches) trouvees.push({ id: f.id, type: f.type, titre: f.titre });
-        }
-        if (trouvees.length > LIMITE_RECHERCHE) tronquee = true;
-        return { donnees: { fiches: trouvees.slice(0, LIMITE_RECHERCHE), tronquee } };
+        // One call, every type unless one is given (AD-74, AD-118 (7)): the list's own order, by title.
+        const page = listerFiches(db, acteur, universId, { type, recherche: mots, limite: LIMITE_RECHERCHE });
+        const fiches = page.fiches.map((f) => ({ id: f.id, type: f.type, titre: f.titre }));
+        return { donnees: { fiches, tronquee: page.suivant !== null } };
       },
     ),
     outil(

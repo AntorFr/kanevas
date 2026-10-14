@@ -95,6 +95,11 @@ export interface Fiche {
   modifieLe: string;
   /** Opaque token of the illustration (AD-93), null when the sheet has none. */
   illustration: IllustrationVue | null;
+  /** Aliases and labels, sorted (AD-118); carried by the sheets of the list. */
+  alias?: string[];
+  etiquettes?: string[];
+  /** With a search: the first alias that answers when the title does not (AD-118 (3)). */
+  aliasTrouve?: string;
 }
 
 export interface IllustrationVue {
