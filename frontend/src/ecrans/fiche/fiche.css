@@ -207,3 +207,6 @@ a.cadre-ill:focus-visible { outline-offset: 2px; border-radius: var(--rayon-pann
 .pastilles-saisies .texte-pastille { overflow: hidden; text-overflow: ellipsis; }
 .pastilles-saisies button { display: inline-grid; place-items: center; width: 18px; height: 18px; padding: 0; border: 0; border-radius: 50%; background: transparent; color: inherit; cursor: pointer; }
 .pastilles-saisies button:hover { background: var(--bord); }
+
+/* « Déplacer sous… »: the changer-type list, a note when it has nothing to show. */
+.deplacer .vide-res { margin: 0; padding: 6px 10px; color: var(--texte-3); font-size: var(--t-14); }

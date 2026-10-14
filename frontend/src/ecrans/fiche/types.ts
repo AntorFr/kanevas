@@ -59,7 +59,29 @@ export interface Mention {
   pourquoi: ({ genre: 'lien'; section: string } | { genre: 'relation'; libelle: string })[];
 }
 
+/** A readable ancestor, highest first (AD-115 (2)). */
+export interface Ancetre {
+  id: number;
+  titre: string;
+  type: string;
+}
+
+/** A child in « Contient » (AD-115 (3)). */
+export interface Enfant {
+  id: number;
+  titre: string;
+  type: string;
+  sousType: string | null;
+}
+
+export interface PageEnfants {
+  enfants: Enfant[];
+  suivant: string | null;
+}
+
 export interface FicheVue extends Fiche {
+  /** Readable ancestors, highest first; the unreadable ones are skipped by the server. */
+  ancetres?: Ancetre[];
   sections: SectionVue[];
   /** « Mentionnée dans »: the first page, what the reader sees only. */
   mentions?: Mention[];
