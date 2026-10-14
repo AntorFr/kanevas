@@ -40,6 +40,7 @@ describe('kanevas-import-types : migration sur une base d’avant', () => {
       cpSync('src/db/migrations', avant, { recursive: true });
       rmSync(join(avant, '0013-types.sql'));
       rmSync(join(avant, '0014-alias-etiquettes.sql'));
+      rmSync(join(avant, '0015-mediatheque.sql'));
       const chemin = join(dir, 'k.db');
       const db = openDb(chemin);
       migrate(db, avant + '/');

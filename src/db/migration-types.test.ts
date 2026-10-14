@@ -41,8 +41,8 @@ function comptes(db: Db): Record<string, number> {
 function avant10(): Db {
   const db = openDb(':memory:');
   migrate(db, dossierJusqua(12));
-  // The seed writes sections through the current code, which keeps `fichiers_sections` (0014) in step:
-  // give it scratch tables for the seed, dropped before 0014 creates the real ones.
+  // The seed writes sections through the current code, which keeps `fichiers_sections` (0015) in step:
+  // give it scratch tables for the seed, dropped before 0015 creates the real ones.
   db.exec('CREATE TABLE fichiers (id, univers_id, nom, type, taille, disque, visibilite, ajoute_par)');
   db.exec('CREATE TABLE fichiers_sections (fichier_id, section_id, joint, dans_texte, dans_bloc_mj, PRIMARY KEY (fichier_id, section_id))');
   db.exec('ALTER TABLE fiches ADD COLUMN illustration_fichier_id INTEGER');
@@ -60,7 +60,7 @@ test('0013: comptes, identifiants, clés étrangères et recherche conservés', 
   const titre = (ids0[0] as { titre: string }).titre;
   const mot = titre.split(/\s+/)[0]!.replace(/[^\p{L}\p{N}]/gu, '');
 
-  assert.deepEqual(migrate(db), [13, 14]);
+  assert.deepEqual(migrate(db), [13, 14, 15]);
 
   assert.deepEqual(comptes(db), c0);
   assert.deepEqual(db.prepare('SELECT id, titre, type FROM fiches ORDER BY id').all(), ids0);

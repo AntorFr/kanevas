@@ -144,7 +144,7 @@ describe('kanevas-il-illustration-ecrans, E-8 grille et E-9 en-tête', { skip: s
     await fiche(antor, 'Maître Aldric');
     await modeMJ(antor);
     await antor.locator('header input[type=file]').setInputFiles(`${DEMO}plan.pdf`);
-    await antor.getByText('« plan.pdf » n’est pas une image.').waitFor();
+    await antor.getByText('« plan.pdf » n’est pas une image. Choisissez un PNG, un JPEG, un GIF ou un WebP.').waitFor();
     await antor.getByRole('img', { name: 'Illustration de « Maître Aldric »' }).waitFor();
     await photo(antor, 'echec-pas-une-image');
     await antor.getByRole('button', { name: 'Ignorer' }).click();
