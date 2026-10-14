@@ -72,6 +72,7 @@ export function catalogueDe(db: Db, compteId: number, universId: number): Catalo
       ({ mots, type }) => {
         // One call, every type unless one is given (AD-74, AD-118 (7)): the list's own order, by title.
         const page = listerFiches(db, acteur, universId, { type, recherche: mots, limite: LIMITE_RECHERCHE });
+        if (page.fiches.length === 0) throw new ErreurService('introuvable', INTROUVABLE); // no result, no event
         const fiches = page.fiches.map((f) => ({ id: f.id, type: f.type, titre: f.titre }));
         return { donnees: { fiches, tronquee: page.suivant !== null } };
       },
