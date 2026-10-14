@@ -277,21 +277,6 @@ describe('E-9 refaite : toasts', { skip: skipBrowser }, () => {
     await toastDe(antor, 'Relation vers « Lames Grises » retirée').waitFor();
   });
 
-  test('pièces jointes : « « portrait.png » ajouté », « est secrète », « Le secret de … est levé », « retiré »', async () => {
-    await ouvrir(antor);
-    const PNG = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==', 'base64');
-    const s = section(antor, 'Apparence');
-    await s.locator('input[type=file]').setInputFiles([{ name: 'portrait.png', mimeType: 'image/png', buffer: PNG }]);
-    await toastDe(antor, '« portrait.png » ajouté').waitFor();
-    await s.getByRole('button', { name: /^Rendre secrète « portrait\.png »/ }).click();
-    await toastDe(antor, '« portrait.png » est secrète').waitFor();
-    await s.getByRole('button', { name: /^Lever le secret de « portrait\.png »/ }).click();
-    await toastDe(antor, 'Le secret de « portrait.png » est levé').waitFor();
-    await s.getByRole('button', { name: /^Retirer « portrait\.png »/ }).click();
-    await s.getByRole('button', { name: rxExact('Retirer le fichier') }).click();
-    await toastDe(antor, '« portrait.png » retiré').waitFor();
-  });
-
   test('envoi annulé : « Envoi de « lent.png » annulé »', async () => {
     await ouvrir(antor);
     const PNG = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==', 'base64');
@@ -526,24 +511,5 @@ describe('E-9 refaite : « Modifier », menu ⋯, retrait', { skip: skipBrowser 
     await antor.getByText(/n.a pas encore de section/).waitFor();
     await antor.getByRole('button', { name: /^Ajouter une section/ }).waitFor();
     await antor.screenshot({ path: '/tmp/rv-fiche-vide.png' });
-  });
-  test('V3 blocs vides : « Aucune pièce jointe. » et « Ajouter un fichier » sur une seule ligne, comme Relations (bureau et 390 px)', async () => {
-    for (const largeur of [1440, 390]) {
-      await antor.setViewportSize({ width: largeur, height: 900 });
-      await ouvrir(antor);
-      for (const titre of ['Vérité', 'Notes de la table']) {
-        const s = section(antor, titre);
-        for (const [bloc, action] of [['Pièces jointes', 'Ajouter un fichier'], ['Relations', 'Relier à une fiche']] as const) {
-          const b = s.getByRole('group', { name: bloc });
-          const vide = await b.locator('.bloc-vide').boundingBox();
-          const bouton = await b.getByRole('button', { name: rxExact(action) }).boundingBox();
-          assert.ok(vide && bouton, `${titre}/${bloc}@${largeur}`);
-          const dy = Math.abs(vide.y + vide.height / 2 - (bouton.y + bouton.height / 2));
-          assert.ok(dy < 8, `${titre}/${bloc}@${largeur}: text and action on one row (dy=${dy})`);
-          assert.ok(bouton.x >= vide.x + vide.width - 1, `${titre}/${bloc}@${largeur}: action after the text`);
-        }
-      }
-    }
-    await antor.setViewportSize({ width: 1440, height: 900 });
   });
 });

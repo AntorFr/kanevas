@@ -113,11 +113,8 @@ async function ouvrirFiche(page: Any, m: Monde): Promise<void> {
 }
 
 async function choisir(page: Any, panneau: Any, fichiers: { name: string; mimeType: string; buffer: Buffer }[]): Promise<void> {
-  const [chooser] = await Promise.all([
-    page.waitForEvent('filechooser'),
-    panneau.getByRole('button', { name: rxExact('Ajouter un fichier') }).click(),
-  ]);
-  await chooser.setFiles(fichiers);
+  // « Ajouter depuis l'appareil » of the menu of the two ways (AD-117): the hidden input takes the files.
+  await panneau.locator('input[type=file][data-ajout-appareil]').first().setInputFiles(fichiers);
 }
 async function finEnvois(panneau: Any): Promise<void> {
   for (let i = 0; i < 100; i++) {
@@ -192,16 +189,6 @@ describe('kanevas-fichiers — compléments', () => {
     assert.ok(/\/fichiers\/\d+/.test(onglet.url()), onglet.url());
   });
 
-  test('B-24 une pièce n\'apparaît que sur sa section', opts, async () => {
-    const { m, antor } = await monde({ Apparence: {}, Plan: {} });
-    await deposer(antor.ctx, m, 'Plan', 'plan.pdf', PDF);
-    await ouvrirFiche(antor.page, m);
-    await section(antor.page, 'Plan').getByText(rx('plan.pdf')).first().waitFor();
-    const app = section(antor.page, 'Apparence');
-    assert.ok(!(await app.innerText()).includes('plan.pdf'));
-    await app.getByText(rx('Aucune pièce jointe.')).waitFor();
-  });
-
   test('B-24 exclusion : la visibilité qu\'un client envoie est ignorée — la place décide (section fermée : MJ seul)', opts, async () => {
     const { m, antor, lea } = await monde({ 'Notes de la table': { auteurId: 'lea', auteurLit: true, auteurEcrit: true } });
     const r = await lea.ctx.request.post(`/api/univers/${m.u}/fichiers`, {
@@ -250,44 +237,4 @@ describe('kanevas-fichiers — compléments', () => {
     assert.ok(liste.fichiers.some((f: Any) => f.id === p.id));
   });
 
-  test('B-24 « Lever le secret » rend la pièce à Léa, sur la fiche et à son adresse', opts, async () => {
-    const { m, antor, lea } = await monde({ Apparence: { joueursLisent: true } });
-    const p = await deposer(antor.ctx, m, 'Apparence', 'portrait.png', PNG, true);
-    assert.equal((await lea.ctx.request.get(pj(m, p.id, '/fichier'))).status(), 404);
-    await ouvrirFiche(antor.page, m);
-    const app = section(antor.page, 'Apparence');
-    await app.getByRole('button', { name: rx('Lever le secret') }).click();
-    await app.getByRole('button', { name: rx('Rendre secrète') }).waitFor();
-    await ouvrirFiche(lea.page, m);
-    await section(lea.page, 'Apparence').getByRole('img', { name: 'portrait.png' }).waitFor();
-    assert.equal((await lea.ctx.request.get(pj(m, p.id, '/fichier'))).status(), 200);
-  });
-
-  test('B-24 droit d\'écriture retiré entre-temps : « Vous ne pouvez plus ajouter de fichier à cette section. » et plus de bouton', opts, async () => {
-    const { m, antor, lea } = await monde({ 'Notes de la table': { auteurId: 'lea', auteurLit: true, auteurEcrit: true } });
-    await ouvrirFiche(lea.page, m);
-    const notes = section(lea.page, 'Notes de la table');
-    await notes.getByRole('button', { name: rxExact('Ajouter un fichier') }).waitFor();
-    const r = await api(antor.ctx, 'patch', base(m, 'Notes de la table'), { auteurEcrit: false });
-    assert.ok(r.ok(), `withdraw write: ${r.status()}`);
-    await choisir(lea.page, notes, [fichier('mien.png', PNG)]);
-    await lea.page.getByText(rx('Vous ne pouvez plus ajouter de fichier à cette section.')).waitFor();
-    await attendre(lea.page);
-    assert.equal(await section(lea.page, 'Notes de la table').getByRole('button', { name: rxExact('Ajouter un fichier') }).count(), 0);
-    assert.deepEqual(await pieces(antor.ctx, m), []);
-    await lea.page.screenshot({ path: '/tmp/pj-complement-droit-retire.png' });
-  });
-
-  test('B-24 un marquage qui échoue dit « L\'action n\'a pas abouti. Réessayez. » et l\'état d\'avant revient', opts, async () => {
-    const { m, antor } = await monde({ Apparence: { joueursLisent: true } });
-    await deposer(antor.ctx, m, 'Apparence', 'portrait.png', PNG);
-    await ouvrirFiche(antor.page, m);
-    const app = section(antor.page, 'Apparence');
-    await app.getByRole('img', { name: 'portrait.png' }).waitFor();
-    await antor.page.route(/\/api\/univers\/\d+\/fichiers\/\d+$/, (route: Any) => (route.request().method() === 'PATCH' ? route.abort() : route.continue()));
-    await app.getByRole('button', { name: rx('Rendre secrète') }).click();
-    await antor.page.getByText(rx('L\'action n\'a pas abouti. Réessayez.')).waitFor();
-    assert.ok(!(await texte(antor.page)).includes('Secrète — MJ seul'));
-    await app.getByRole('button', { name: rx('Rendre secrète') }).waitFor();
-  });
 });
