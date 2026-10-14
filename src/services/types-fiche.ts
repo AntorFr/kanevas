@@ -5,7 +5,7 @@ import { exigerMJ, exigerRole } from './droits.js';
 import { ErreurService, introuvable, invalide, refuse } from './erreurs.js';
 
 /**
- * The single list of sheet types (AD-113 of the plan, numbered AD-120 in ARCHITECTURE.md).
+ * The single list of sheet types (the plan's AD-113, numbered AD-120 in ARCHITECTURE.md).
  * `TYPES_FICHE`, `TypeFiche` and the payload schemas are derived from `TYPES`, so a type is
  * added here and nowhere else on the server. Below the list: the one computation of "type
  * enabled" (AD-102) and the two settings that write `types_systeme` / `types_univers`.
@@ -101,7 +101,7 @@ interface Decision {
   systeme: boolean | null;
 }
 
-/** A base migrated short of 0013 (the migration test seeds one through the services) has no setting yet. */
+/** A base migrated short of 0012 (the migration test seeds one through the services) has no setting yet. */
 const sansReglages = (db: Db) =>
   !db.prepare("SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = 'types_univers'").get();
 

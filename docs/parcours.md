@@ -497,12 +497,6 @@ E-14 (« Page introuvable. ») et lit l'onglet de E-15 en « Lecture seule », i
    remontent ses enfants et que les liens qui la visent deviendront des liens cassés (texte exact :
    E-9) ; le doublon venait de Kanka : Antor le retire aussi de l'export, sinon le prochain import le
    recrée (B-40).
-4. Dans un **scénario** (E-7), même geste : `[[` ouvre la même liste (les fiches de l'univers de la campagne) et le lien
-   s'ouvre sur la fiche ; dans une entrée de système (E-15), `[[` ne fait rien.
-*Échec liens* : Léa, auteur avec écriture, tape à la main `[[<id>]]` d'une fiche qu'elle ne lit pas (l'identifiant d'une adresse qu'Antor lui a donnée) — « Cette fiche n'existe
-pas ou vous ne pouvez pas la lire. » sous le champ, son texte intact ; la liste ne répond pas — « Impossible de
-chercher. » et « Réessayer » ; un lien vers une fiche qui n'est pas encore importée — « en attente » pour Antor,
-texte pour Léa, jusqu'à l'arrivée de la fiche ; dans un scénario, la liste qui échoue — « Impossible de chercher. ».
 *Échec* : un déplacement qui ferait un cycle (« Les Sphères » sous l'un de ses enfants) — « Une fiche
 ne peut pas être rangée sous l'un de ses descendants. » ; un Joueur auteur d'une section qui contient
 un bloc MJ — « Modifier » n'y paraît pas ; un texte qui passe 100 000 caractères — « Erreur : 100 000

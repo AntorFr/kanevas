@@ -450,13 +450,9 @@ describe('kanevas-relier-chercher, du besoin', { skip: skipBrowser }, () => {
 
     test('exclusion : une relation est dirigée — la fiche cible ne montre pas celles qui l’atteignent', async () => {
       await ouvrirFiche(m.antor, m, m.grises);
-      await m.antor.getByRole('heading', { name: 'Mentionnée dans' }).waitFor();
-      // « Mentionnée dans » (B-36) legitimately names the source of a relation; the Relations block must not.
-      const partout = await m.antor.getByRole('listitem').filter({ hasText: 'membre de' }).count();
-      const mentions = await m.antor.getByRole('region', { name: 'Mentionnée dans' }).getByRole('listitem').filter({ hasText: 'membre de' }).count();
-      assert.equal(mentions, 1);
-      assert.equal(partout, mentions);
-      assert.equal(await m.antor.getByRole('button', { name: rx('Retirer la relation') }).count(), 0);
+      const t = await texte(m.antor);
+      assert.ok(!t.includes('membre de'));
+      assert.ok(!t.includes('Maître Aldric'));
     });
 
     test('refus : l’admin d’instance, sans rôle, a « Page introuvable. » sur la fiche', async () => {

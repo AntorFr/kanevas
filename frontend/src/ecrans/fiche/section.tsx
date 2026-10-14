@@ -294,7 +294,6 @@ export function PanneauSection(p: Props) {
             max={maxContenu}
             rows={8}
             autoFocus
-            liens={{ universId: p.universId }}
             section={{ universId: p.universId, modeJoueur: p.suffixeMode !== '', blocMJ: mj && p.suffixeMode === '' }}
             erreur={erreurTexte}
             onEnregistrer={() => void enregistrer()}
@@ -315,13 +314,11 @@ export function PanneauSection(p: Props) {
         )
       )}
 
-      {blocs.length > 0 && (
-        <div className="blocs">
-          {blocs.map((b) => (
-            <b.composant key={b.id} universId={Number(p.universId)} fiche={fiche} section={section} role={role} rafraichir={p.rafraichir} suffixeMode={p.suffixeMode} />
-          ))}
-        </div>
-      )}
+      <div className="blocs">
+        {blocs.map((b) => (
+          <b.composant key={b.id} universId={Number(p.universId)} fiche={fiche} section={section} role={role} rafraichir={p.rafraichir} suffixeMode={p.suffixeMode} />
+        ))}
+      </div>
 
       {aRetirer && (
         <BoiteDialogue

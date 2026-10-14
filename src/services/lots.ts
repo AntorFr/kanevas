@@ -1,7 +1,6 @@
 import type { Db } from '../db/db.js';
 import { exigerMJ } from './droits.js';
 import { introuvable } from './erreurs.js';
-import { compterEnAttente } from './liens.js';
 import type { Jeton } from './jetons.js';
 
 /** Entries kept in a batch report (AD-104); further ones are counted but not listed. */
@@ -111,10 +110,8 @@ export function lireLot(db: Db, jeton: Jeton, lotId: number, maintenant: Date = 
 /** Closes a batch (idempotent: a closed one keeps its date) and returns its report. */
 export function cloreLot(db: Db, jeton: Jeton, lotId: number, maintenant: Date = new Date()): Lot {
   lireLot(db, jeton, lotId, maintenant);
-  // « En attente » is counted once, at the closing (E-18): links still waiting for an origin key.
-  db.prepare('UPDATE lots_import SET clos_le = ?, en_attente = ? WHERE id = ? AND clos_le IS NULL').run(
+  db.prepare('UPDATE lots_import SET clos_le = ? WHERE id = ? AND clos_le IS NULL').run(
     maintenant.toISOString(),
-    compterEnAttente(db, jeton.universId),
     lotId,
   );
   return lireLot(db, jeton, lotId, maintenant);

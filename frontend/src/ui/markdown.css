@@ -40,13 +40,3 @@
   -webkit-mask: var(--icone-lock) center / contain no-repeat; mask: var(--icone-lock) center / contain no-repeat; }
 .md .bloc-mj { --icone-lock: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZpZXdCb3g9JzAgMCAyNCAyNCcgZmlsbD0nbm9uZScgc3Ryb2tlPSdibGFjaycgc3Ryb2tlLXdpZHRoPScyJyBzdHJva2UtbGluZWNhcD0ncm91bmQnIHN0cm9rZS1saW5lam9pbj0ncm91bmQnPjxyZWN0IHdpZHRoPScxOCcgaGVpZ2h0PScxMScgeD0nMycgeT0nMTEnIHJ4PScyJy8+PHBhdGggZD0nTTcgMTFWN2E1IDUgMCAwIDEgMTAgMHY0Jy8+PC9zdmc+"); }
 .md .bloc-mj > :last-child { margin-bottom: 0; }
-
-/* Links to a sheet (AD-116). The server decides who sees what: a reader who cannot follow a link gets plain text, no element.
-   The broken and pending marks reach a GM outside player mode only; the tooltip is the element's own `title`. */
-.md a.lien-fiche { color: var(--accent-texte); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px;
-  text-decoration-color: var(--accent-fond); transition: text-decoration-color var(--duree); }
-.md a.lien-fiche:hover, .md a.lien-fiche:focus-visible { text-decoration-color: var(--accent-texte); }
-.md .lien-casse, .md .lien-attente { color: inherit; text-decoration: underline dashed; text-decoration-thickness: 1.5px; text-underline-offset: 3px; cursor: help; }
-.md .lien-casse { text-decoration-color: var(--danger); }
-.md .lien-attente { text-decoration-color: var(--texte-3); }
-.md .lien-casse:focus-visible, .md .lien-attente:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; border-radius: 3px; }

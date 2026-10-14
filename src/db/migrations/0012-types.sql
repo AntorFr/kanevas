@@ -1,5 +1,5 @@
 -- migrate: sans-cles-etrangeres
--- Migration 0013 (kanevas-import-types, number taken at merge, AD-51): the types of a sheet leave the
+-- Migration 0012 (kanevas-import-types, number provisional until the merge, AD-51): the types of a sheet leave the
 -- database (AD-102, AD-120). `fiches` is recreated without the CHECK on `type` (SQLite cannot drop a
 -- CHECK in place), with `parent_id` and `sous_type`; every other column is copied by name.
 -- The runner plays this file with foreign keys off, outside the transaction pragma, and runs

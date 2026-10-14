@@ -9,7 +9,6 @@ import {
   vueSection,
 } from './droits.js';
 import { ErreurService, introuvable, invalide } from './erreurs.js';
-import { mentionsDe } from './mentions.js';
 import { lireLignes } from './pieces-jointes.js';
 import { CHARGES, estTypeFiche, typeActif } from './types-fiche.js';
 import {
@@ -17,7 +16,6 @@ import {
   type Acteur,
   type Fiche,
   type FicheVue,
-  type PageMentions,
   type SectionRow,
   type TypeFiche,
 } from './types.js';
@@ -133,7 +131,7 @@ export function creerFiche(
       o ? JSON.stringify(o.dernierImport) : null,
     );
   const id = Number(info.lastInsertRowid);
-  // A separate write: a base short of 0013 (the migration test seeds one through the services) has no column.
+  // A separate write: a base short of 0012 (the migration test seeds one through the services) has no column.
   if (sousType !== null) db.prepare('UPDATE fiches SET sous_type = ? WHERE id = ?').run(sousType, id);
   return versFiche(chargerFiche(db, universId, id));
 }
@@ -177,7 +175,7 @@ export function changerSousType(
 }
 
 /**
- * The GM changes the type of a sheet among the thirteen settable ones (AD-113 (4)): the same row,
+ * The GM changes the type of a sheet among the thirteen settable ones (AD-120 (4)): the same row,
  * so id, sections, relations and map places stay. The payload becomes that of the new type (a
  * character takes `pj`, `false` by default) and the sub-type is cleared unless the caller gives a
  * new one. A disabled target type is allowed. A session report cannot be changed into or out of.
@@ -277,48 +275,20 @@ export function listerSousTypes(
  * (B-9). A caller who reads none gets "not found", like an unknown id (AD-22);
  * the GM (outside player mode) reads even a sheet without section.
  */
-export function lireFiche(
-  db: Db,
-  acteur: Acteur,
-  universId: number,
-  ficheId: number,
-  formeLiens: 'html' | 'markdown' = 'html',
-): FicheVue {
+export function lireFiche(db: Db, acteur: Acteur, universId: number, ficheId: number): FicheVue {
   const role = exigerRole(db, universId, acteur.compteId);
   const fiche = chargerFiche(db, universId, ficheId);
   const lisibles = sectionsDe(db, ficheId).filter((s) => peutLireSection(role, s, acteur));
   if (lisibles.length === 0 && (role !== 'mj' || acteur.modeJoueur)) throw introuvable();
-  const mentions = mentionsDe(db, role, acteur, universId, ficheId);
   return {
     ...versFiche(fiche),
-    mentions: mentions.mentions,
-    mentionsSuite: mentions.suite,
-    mentionsRestantes: mentions.restantes,
     // The origin key is a GM matter (B-50): a reader's answer has no such field at all.
     ...(vueMJ(role, acteur) && fiche.cle_origine ? { cleOrigine: fiche.cle_origine } : {}),
     sections: lisibles.map((s) => ({
-      ...vueSection(db, universId, role, s, acteur, formeLiens),
+      ...vueSection(role, s, acteur),
       piecesJointes: lireLignes(db, s.id, vueMJ(role, acteur)),
     })),
   };
-}
-
-/**
- * The next sources of « Mentionnée dans » (AD-100): `apres` sources are already shown. Same refusal as
- * the sheet itself — a sheet the caller does not read does not exist.
- */
-export function lireMentions(
-  db: Db,
-  acteur: Acteur,
-  universId: number,
-  ficheId: number,
-  apres: number,
-): PageMentions {
-  const role = exigerRole(db, universId, acteur.compteId);
-  chargerFiche(db, universId, ficheId);
-  const lisible = sectionsDe(db, ficheId).some((s) => peutLireSection(role, s, acteur));
-  if (!lisible && (role !== 'mj' || acteur.modeJoueur)) throw introuvable();
-  return mentionsDe(db, role, acteur, universId, ficheId, apres);
 }
 
 export const LONGUEUR_RECHERCHE = 100;

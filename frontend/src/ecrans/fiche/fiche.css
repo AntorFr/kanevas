@@ -179,4 +179,3 @@ a.cadre-ill:focus-visible { outline-offset: 2px; border-radius: var(--rayon-pann
 .changer-type .titre-groupe { margin: var(--e-3) 0 var(--e-1); font-size: var(--t-12); color: var(--texte-3); }
 .changer-type .choix-type { display: flex; align-items: center; gap: var(--e-2); padding: 4px 0; }
 .changer-type .retrait { color: var(--texte-2); font-size: var(--t-13); }
-.fiche .blocs:empty { display: none; }

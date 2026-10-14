@@ -114,7 +114,7 @@ test('critère : Léa lit « Histoire » sans un mot du bloc ni trace, et sans �
   await attendre(page);
   const t = await texte(page);
   assert.ok(!t.includes('sous-main'));
-  assert.ok(!t.includes('cargaisons'));
+  assert.ok(!t.includes('Guilde des Brumes'));
   assert.ok(!t.includes(':::'));
   assert.equal(await page.locator('.bloc-mj').count(), 0);
   assert.equal(await page.getByText('MJ seul', { exact: true }).count(), 0);
@@ -129,7 +129,7 @@ test('critère : la réponse de lecture de Léa ne contient ni un mot du bloc ni
   const f = await vue(C.lea, LAME, PORT);
   const h = sec(f, 'Histoire');
   assert.ok(h.html.includes('<p>'));
-  for (const mot of ['sous-main', 'cargaisons', 'bloc-mj', 'Bloc MJ', ':::']) {
+  for (const mot of ['sous-main', 'Guilde', 'cargaisons', 'bloc-mj', 'Bloc MJ', ':::']) {
     assert.ok(!JSON.stringify(f).includes(mot), mot);
   }
   assert.equal('contenu' in h, false);
@@ -209,9 +209,9 @@ test('critère : l’assistant de Léa ne cite rien du bloc (lis-moi la section,
   const l1 = await demande(C.lea, 'Lis-moi la section « Histoire »');
   const s1 = JSON.stringify(l1);
   assert.ok(s1.includes('sauniers'), 'the public text is read: ' + s1);
-  for (const mot of ['sous-main', 'cargaisons', ':::', 'bloc-mj']) assert.ok(!s1.includes(mot), mot);
+  for (const mot of ['sous-main', 'Guilde', 'cargaisons', ':::', 'bloc-mj']) assert.ok(!s1.includes(mot), mot);
   const l2 = await demande(C.lea, 'Que sait-on de Port-Sel ?');
-  for (const mot of ['sous-main', 'cargaisons', ':::']) assert.ok(!JSON.stringify(l2).includes(mot), mot);
+  for (const mot of ['sous-main', 'Guilde', 'cargaisons', ':::']) assert.ok(!JSON.stringify(l2).includes(mot), mot);
   const a = await demande(C.antor, 'Lis-moi la section « Histoire »');
   assert.ok(JSON.stringify(a).includes('sous-main'), 'the GM catalogue keeps the whole source');
   // the GM catalogue is the GM's even on screen in player mode (docs/ecrans.md, « L'assistant »)

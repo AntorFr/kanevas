@@ -6,39 +6,11 @@ import type Token from 'markdown-it/lib/token.mjs';
 // (`html: false`); only `http`, `https` and `mailto` links are links, anything else stays text.
 const PROTOCOLES_LIEN = /^(https?|mailto):/i;
 
-/** The three forms of the grammar (`docs/ecrans.md`): text and key are 1 to 200 characters, no `]`, `|` nor line break. */
-const LIEN = /\[\[(?:([1-9]\d{0,14})|cle:([^|\]\r\n]{1,200}))(?:\|([^|\]\r\n]{1,200}))?\]\]/y;
-
-/** The inline rule of a `[[…]]` link: one token whose `meta` carries what the grammar found. */
-type RegleInline = Parameters<InstanceType<typeof MarkdownIt>['inline']['ruler']['before']>[2];
-
-const regleLien: RegleInline = (state, silencieux) => {
-  if (state.src.charCodeAt(state.pos) !== 0x5b) return false;
-  LIEN.lastIndex = state.pos;
-  const m = LIEN.exec(state.src);
-  if (!m) return false;
-  // `[[cle:…]]` without a text is not a form; a bare id is.
-  if (m[2] !== undefined && m[3] === undefined) return false;
-  if (!silencieux) {
-    const t = state.push('lien_fiche', '', 0);
-    t.meta = {
-      debut: state.pos,
-      fin: state.pos + m[0].length,
-      brut: m[0],
-      id: m[1] !== undefined ? Number(m[1]) : null,
-      cle: m[2] ?? null,
-      texte: m[3] ?? null,
-    };
-  }
-  state.pos += m[0].length;
-  return true;
-};
-
 /**
  * Builds one renderer. With `avecBlocMJ` the `:::mj` container exists (AD-114): only the
  * exact opening line `:::mj` (three colons, lower case, nothing after) opens it.
  */
-function creerMoteur(avecBlocMJ: boolean, avecLiens: boolean): InstanceType<typeof MarkdownIt> {
+function creerMoteur(avecBlocMJ: boolean): InstanceType<typeof MarkdownIt> {
   const md = new MarkdownIt({ html: false, breaks: true, linkify: false, typographer: false });
   md.enable(['table', 'strikethrough']);
 
@@ -81,71 +53,22 @@ function creerMoteur(avecBlocMJ: boolean, avecLiens: boolean): InstanceType<type
           : '</div>\n',
     });
   }
-  if (avecLiens) {
-    md.inline.ruler.before('link', 'lien_fiche', regleLien);
-    md.renderer.rules.lien_fiche = (tokens, idx, _options, env) => rendreLien(tokens[idx]!, (env ?? {}) as EnvRendu);
-  }
   return md;
 }
 
-const mdSection = creerMoteur(true, true);
-const mdScenario = creerMoteur(false, true);
-const mdTexte = creerMoteur(false, false);
+const mdSection = creerMoteur(true);
+const mdTexte = creerMoteur(false);
 
 /**
  * `section`: the text of a section or of a report, where `:::mj` is a GM block (AD-114);
  * `texte` (default): a scenario or a system entry, where `:::mj` stays plain text.
  */
 export interface OptionsRendu {
-  /** `scenario`: `[[…]]` links are active but `:::mj` stays text (AD-116). */
-  nature?: 'section' | 'scenario' | 'texte';
-  /** How the links of the text read for the reader (AD-116). Without it a `[[…]]` stays as written. */
-  liens?: ResolveurLiens;
-  /** `markdown`: a readable link comes out as `[texte](fiche:<id>)`, for the assistant (AD-96). */
-  formeLiens?: 'html' | 'markdown';
-}
-
-/** What a link reads as for one reader (AD-116): decided by the target, never by the `liens` table. */
-export type RenduLien =
-  | { genre: 'fiche'; id: number; type: string; href: string }
-  | { genre: 'casse' }
-  | { genre: 'attente'; cle: string }
-  | { genre: 'texte' };
-
-/** Resolves a link found in the text; built by the service for the reader, one query for the whole text. */
-export type ResolveurLiens = (cible: { id: number | null; cle: string | null }) => RenduLien;
-
-interface EnvRendu {
-  liens?: ResolveurLiens;
-  formeLiens?: 'html' | 'markdown';
+  nature?: 'section' | 'texte';
 }
 
 export function rendreMarkdown(source: string, options: OptionsRendu = {}): string {
-  const md = options.nature === 'section' ? mdSection : options.nature === 'scenario' ? mdScenario : mdTexte;
-  const env: EnvRendu = { liens: options.liens, formeLiens: options.formeLiens };
-  return md.render(source, env as Record<string, unknown>);
-}
-
-const echapper = (t: string) => mdTexte.utils.escapeHtml(t);
-
-function rendreLien(t: { meta?: unknown }, env: EnvRendu): string {
-  const m = t.meta as { brut: string; id: number | null; cle: string | null; texte: string | null };
-  // No resolver, or the bare input form `[[<id>]]`: the text stays as written.
-  if (!env.liens || m.texte === null) return echapper(m.brut);
-  const r = env.liens({ id: m.id, cle: m.cle });
-  const texte = echapper(m.texte);
-  switch (r.genre) {
-    case 'fiche':
-      return env.formeLiens === 'markdown'
-        ? echapper(`[${m.texte}](fiche:${r.id})`)
-        : `<a class="lien-fiche" href="${r.href}" data-type="${echapper(r.type)}">${texte}</a>`;
-    case 'casse':
-      return `<span class="lien-casse" tabindex="0" title="Lien cassé : cette fiche n'existe plus.">${texte}</span>`;
-    case 'attente':
-      return `<span class="lien-attente" tabindex="0" title="${echapper(`Lien en attente : aucune fiche n'a encore la clé « ${r.cle} ».`)}">${texte}</span>`;
-    default:
-      return texte;
-  }
+  return (options.nature === 'section' ? mdSection : mdTexte).render(source);
 }
 
 /**
@@ -187,15 +110,8 @@ const OUVERTURE_BLOC = /^[\s>]*:::mj\s*$/;
 export function contenuPublic(source: string): string {
   // The engine cuts lines on \r\n, \r and \n: do the same, or its line numbers drift from ours.
   const lignes = source.split(/\r\n|\r|\n/);
-  const retirees = lignesBlocMJ(lignes, mdSection.parse(source, {}));
-  if (retirees.size === 0) return source;
-  return lignes.filter((_, i) => !retirees.has(i)).join('\n');
-}
-
-/** The (0-based) lines covered by the outermost GM blocks of a parsed source, see `contenuPublic`. */
-function lignesBlocMJ(lignes: string[], tokens: ReturnType<typeof mdSection.parse>): Set<number> {
   const retirees = new Set<number>();
-  for (const t of tokens) {
+  for (const t of mdSection.parse(source, {})) {
     if (t.type !== 'container_mj_open' || !t.map) continue;
     // Only the start comes from the token. The block runs to the fence that balances its openings
     // (a `:::mj` line inside opens a nested block, the container itself does not nest); never balanced,
@@ -213,96 +129,8 @@ function lignesBlocMJ(lignes: string[], tokens: ReturnType<typeof mdSection.pars
     }
     for (let i = t.map[0]; i < fin; i++) retirees.add(i);
   }
-  return retirees;
-}
-
-/** A `[[…]]` link found in a source (AD-116). Offsets are in the source, `fin` excluded. */
-export interface LienExtrait {
-  debut: number;
-  fin: number;
-  /** `id`: `[[<id>…]]`; `cle`: `[[cle:<clé>|…]]`. Exactly one of them is set. */
-  id: number | null;
-  cle: string | null;
-  /** Null for the bare `[[<id>]]`, which only exists as an input. */
-  texte: string | null;
-  dansBlocMJ: boolean;
-}
-
-const mdLiens = mdSection;
-
-/**
- * The `[[…]]` links of a source, in order (AD-116). Pure. They are read from the tokens of the
- * engine, never by pattern over the text: a form inside a code block or a code span is not a link.
- * `dansBlocMJ` follows the lines `contenuPublic` removes. Offsets are those of `source`.
- */
-export function extraireLiens(source: string): LienExtrait[] {
-  const lignes = source.split(/\r\n|\r|\n/);
-  const debuts: number[] = [];
-  for (let pos = 0, i = 0; i < lignes.length; i++) {
-    debuts.push(pos);
-    pos += lignes[i]!.length;
-    const saut = /^(\r\n|\r|\n)/.exec(source.slice(pos, pos + 2));
-    pos += saut ? saut[0].length : 0;
-  }
-  const tokens = mdLiens.parse(source, {});
-  const mj = lignesBlocMJ(lignes, tokens);
-  const trouves: LienExtrait[] = [];
-  let curseur = 0;
-  let carte: [number, number] | null = null;
-  for (const t of tokens) {
-    if (t.map) carte = t.map;
-    if (t.type !== 'inline' || !t.children?.some((c) => c.type === 'lien_fiche')) continue;
-    const base = t.map ?? carte;
-    if (!base) continue;
-    // Where each line of the inline content sits in the source: found by search, in order, because
-    // the engine strips quote marks, list markers and indentation from what it hands the inline rules.
-    const segments: { ligne: number; contenu: number; source: number; longueur: number }[] = [];
-    let ok = true;
-    let decalage = 0;
-    t.content.split('\n').forEach((texte, k) => {
-      if (!ok) return;
-      const ligne = Math.min(base[0] + k, lignes.length - 1);
-      const depuis = Math.max(curseur, debuts[ligne]!);
-      const idx = source.indexOf(texte, depuis);
-      if (idx < 0 || idx + texte.length > debuts[ligne]! + lignes[ligne]!.length) ok = false;
-      else {
-        segments.push({ ligne, contenu: decalage, source: idx, longueur: texte.length });
-        curseur = idx + texte.length;
-      }
-      decalage += texte.length + 1;
-    });
-    if (!ok) continue;
-    for (const c of t.children) {
-      if (c.type !== 'lien_fiche') continue;
-      const m = c.meta as { debut: number; fin: number; id: number | null; cle: string | null; texte: string | null };
-      const seg = [...segments].reverse().find((x) => x.contenu <= m.debut);
-      if (!seg) continue;
-      const debut = seg.source + (m.debut - seg.contenu);
-      trouves.push({
-        debut,
-        fin: debut + (m.fin - m.debut),
-        id: m.id,
-        cle: m.cle,
-        texte: m.texte,
-        dansBlocMJ: mj.has(seg.ligne),
-      });
-    }
-  }
-  return trouves;
-}
-
-/** Rewrites links in place: `remplacement` gives the new text of a link, or null to keep it. */
-export function reecrireLiens(
-  source: string,
-  liens: LienExtrait[],
-  remplacement: (l: LienExtrait) => string | null,
-): string {
-  let sortie = source;
-  for (const l of [...liens].sort((a, b) => b.debut - a.debut)) {
-    const neuf = remplacement(l);
-    if (neuf !== null) sortie = sortie.slice(0, l.debut) + neuf + sortie.slice(l.fin);
-  }
-  return sortie;
+  if (retirees.size === 0) return source;
+  return lignes.filter((_, i) => !retirees.has(i)).join('\n');
 }
 
 /**
@@ -310,14 +138,7 @@ export function reecrireLiens(
  * a system entry and `:::mj` stays text; with it, the GM block is rendered only for a GM of the
  * universe outside player mode, and does not exist for anyone else.
  */
-export function rendreApercu(
-  source: string,
-  mj: boolean | null,
-  liens?: ResolveurLiens,
-  nature: 'scenario' | 'texte' = 'texte',
-): string {
-  if (mj === null) return rendreMarkdown(source, { nature, liens });
-  return mj
-    ? rendreMarkdown(source, { nature: 'section', liens })
-    : rendreMarkdown(contenuPublic(source), { nature: 'scenario', liens });
+export function rendreApercu(source: string, mj: boolean | null): string {
+  if (mj === null) return rendreMarkdown(source);
+  return mj ? rendreMarkdown(source, { nature: 'section' }) : rendreMarkdown(contenuPublic(source));
 }

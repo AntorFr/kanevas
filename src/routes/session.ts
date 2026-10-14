@@ -5,9 +5,8 @@ import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { env } from '../config/env.js';
 import { assurerCompte, lireCompte } from '../services/comptes.js';
 import { invalide } from '../services/erreurs.js';
-import { contenuPublic, rendreApercu } from '../services/markdown.js';
-import { exigerMJDeCampagne } from '../services/campagnes.js';
-import { exigerRole, resolveurLiens } from '../services/droits.js';
+import { rendreApercu } from '../services/markdown.js';
+import { exigerRole } from '../services/droits.js';
 import { MAX_CONTENU_SECTION, validerContenu } from '../services/sections.js';
 import {
   decoderSession,
@@ -152,19 +151,9 @@ function registerGuardedRoutes(app: FastifyInstance) {
       corps.contexte !== null && typeof corps.contexte === 'object'
         ? (corps.contexte as Record<string, unknown>)
         : corps;
-    if (ctx.nature === 'scenario' && Number.isInteger(ctx.campagne_id)) {
-      // A scenario's links read in the universe of its campaign, for its GM (AD-97).
-      const campagne = exigerMJDeCampagne(app.db, request.session!.id, ctx.campagne_id as number);
-      const liens = resolveurLiens(app.db, campagne.univers_id, 'mj', { compteId: request.session!.id }, texte);
-      return { html: rendreApercu(texte, null, liens, 'scenario') };
-    }
     if (ctx.nature !== 'section') return { html: rendreApercu(texte, null) };
     if (!Number.isInteger(ctx.univers_id)) throw invalide("L'univers est requis pour l'aperçu d'une section.");
     const role = exigerRole(app.db, ctx.univers_id as number, request.session!.id);
-    const acteur = { compteId: request.session!.id, modeJoueur: ctx.mode === 'joueur' };
-    const mj = role === 'mj' && !acteur.modeJoueur;
-    // The links resolve against what the preview shows: the public text for a non-GM.
-    const liens = resolveurLiens(app.db, ctx.univers_id as number, role, acteur, mj ? texte : contenuPublic(texte));
-    return { html: rendreApercu(texte, mj, liens) };
+    return { html: rendreApercu(texte, role === 'mj' && ctx.mode !== 'joueur') };
   });
 }

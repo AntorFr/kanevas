@@ -46,9 +46,8 @@ test('semis : Histoire de Port-Sel garde son texte sans les lignes du bloc', asy
   const row = app.db
     .prepare("SELECT contenu_public AS p, contenu AS c FROM sections WHERE titre = 'Histoire' AND fiche_id = (SELECT id FROM fiches WHERE titre = 'Port-Sel')")
     .get() as { p: string; c: string };
-  assert.match(row.p, /^Le port a été fondé par des sauniers\.\n\n\nLes marins en parlent peu\.\n\nLe maître de port, \[\[\d+\|Maître Aldric\]\], tient les comptes ; \[\[\d+\|La Guilde des Brumes\]\] y a ses entrées\.$/);
-  assert.ok(!row.p.includes('sous-main') && !row.p.includes('cargaisons'));
-  assert.ok(row.c.includes('tenu en sous-main par la Guilde des Brumes'));
+  assert.equal(row.p, 'Le port a été fondé par des sauniers.\n\n\nLes marins en parlent peu.');
+  assert.ok(row.c.includes('Guilde des Brumes'));
 });
 
 test('recherche « sous-main » : Léa non, Antor oui, Antor en mode joueur non ; « sauniers » pour tous', async () => {
@@ -62,9 +61,8 @@ test('recherche « sous-main » : Léa non, Antor oui, Antor en mode joueur non 
   assert.deepEqual(await cherche(antor, 'sous-main'), ['Port-Sel']);
   assert.deepEqual(await cherche(antor, 'sous-main', '&mode=joueur'), []);
   // several words, a prefix: the column filter covers the whole query
-  assert.deepEqual(await cherche(lea, 'Guilde Brumes'), ['Port-Sel']); // public text (the link), not the block
-  assert.deepEqual(await cherche(lea, 'Guil*'), ['Port-Sel']);
-  assert.deepEqual(await cherche(lea, 'cargaisons'), []);
+  assert.deepEqual(await cherche(lea, 'Guilde Brumes'), []);
+  assert.deepEqual(await cherche(lea, 'Guil*'), []);
   assert.deepEqual(await cherche(lea, 'sauniers'), ['Port-Sel']);
   assert.deepEqual(await cherche(antor, 'sauniers', '&mode=joueur'), ['Port-Sel']);
 });
@@ -218,7 +216,7 @@ test('migration 0011 : contenu_public = contenu pour les sections existantes, co
   textes.forEach((t, i) => db.prepare('INSERT INTO sections (fiche_id, titre, ordre, contenu, modifie_le) VALUES (1, ?, ?, ?, ?)').run('S' + i, i + 1, t, 't'));
   const avant = (db.prepare('SELECT COUNT(*) AS n FROM sections').get() as { n: number }).n;
   assert.equal(avant, 4);
-  assert.deepEqual(migrate(db), [11, 12, 13]);
+  assert.deepEqual(migrate(db), [11, 12]);
   const apres = db.prepare('SELECT contenu, contenu_public AS p FROM sections ORDER BY id').all() as { contenu: string; p: string }[];
   assert.equal(apres.length, 4);
   assert.deepEqual(apres.map((r) => r.p), textes);

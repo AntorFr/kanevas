@@ -47,7 +47,7 @@ test('lecture de « Histoire » : Léa sans bloc ni source, Antor avec, Antor en
   const url = `${base}/fiches/${port.id}/sections/${sid('Histoire')}`;
   const l = await app.inject({ method: 'GET', url, headers: lea });
   assert.equal(l.statusCode, 200, l.body);
-  for (const interdit of ['sous-main', 'bloc-mj', ':::mj', 'cargaisons']) assert.ok(!l.body.includes(interdit), interdit);
+  for (const interdit of ['sous-main', 'bloc-mj', ':::mj', 'Guilde']) assert.ok(!l.body.includes(interdit), interdit);
   assert.equal(l.json().peutEcrire, false);
   assert.equal(l.json().contenu, undefined);
   assert.ok(l.json().html.includes('sauniers'));

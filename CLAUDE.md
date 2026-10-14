@@ -19,7 +19,8 @@
   exactly the two-sources bug this socle was built to avoid.
 - Release: `git tag vX.Y.Z && git push origin vX.Y.Z` builds and publishes
   `ghcr.io/antorfr/kanevas:X.Y.Z` (package public). Deploying is a separate
-  change in `k8s-home-lab` (chart version + image tag pinned there).
+  change in `k8s-home-lab` (chart version + image tag pinned there). The image build requires the « tests-complets »
+  status on the tagged commit: `npm run tests:attestes -- --publier` (README, « Version de l'application »).
 - No ORM: SQLite through `better-sqlite3` (Node 20 has no `node:sqlite`),
   numbered SQL migrations in `src/db/migrations/` applied at startup by
   `src/db/db.ts` (AD-14; `npm run build` copies them to `dist/`). Tables are
@@ -117,21 +118,10 @@
 
 - Sheet types (`kanevas-import-types`, `src/services/types-fiche.ts`, AD-120 — AD-113 in the feature's plan): the single list of
   types; `TYPES_FICHE`, `TypeFiche` and the payload schemas (`CHARGES`) derive from it, never copy them. `fiches.type` has no
-  `CHECK` (migration 0011): `creerFiche` is the guard ("Type de fiche inconnu."). A migration whose first line is
+  `CHECK` (migration 0012): `creerFiche` is the guard ("Type de fiche inconnu."). A migration whose first line is
   `-- migrate: sans-cles-etrangeres` runs with foreign keys off and `foreign_key_check` before commit (`db.ts`).
 - Public content (feature `kanevas-import-secrets`, migration 0011, AD-114): `sections.contenu_public` is `contenu` without its `:::mj` blocks,
   computed by the pure `contenuPublic` (`services/markdown.ts`, from the `map` of the container tokens). Only `insererSection` and
   `poserContenu` in `services/sections.ts` write `contenu` of a section — creation, `ecrireContenu`, proposals, reports and the
   import all go through them; never add another `INSERT INTO sections` / `UPDATE sections SET contenu`. `rendreMarkdown(source,
   {nature})` knows the container only for `nature: 'section'`; scenarios and system entries keep `:::mj` as text.
-- Links (`kanevas-liens-ecriture`, migration 0012, AD-116): `src/services/liens.ts` is the only writer of `liens`;
-  `extraireLiens` (`markdown.ts`, pure) reads `[[…]]` from the engine's tokens, never by pattern. `poserContenu`
-  and `insererSection` replace a section's rows; `preparerContenu` (bare `[[<id>]]` → `[[<id>|<titre>]]` or
-  `lien_illisible`, known `[[cle:…]]` → id) runs before each write, the import's replay comparison included
-  (AD-104). `resoudreClesEnAttente` rewrites waiting texts at the creation of a keyed sheet without moving
-  `version` / `modifie_le`.
-- Links on read (`kanevas-liens-lecture`, AD-116, AD-100): `resolveurLiens` (`services/droits.ts`) is the one query that resolves all
-  the `[[…]]` of a text for a reader; the rendering is decided by the target, never by the `liens` table, and `rendreMarkdown` takes the
-  resolver in `options.liens` (without it a `[[…]]` stays as written). `nature: 'scenario'` has the links without the `:::mj` container;
-  a system entry (`texte`) has neither. `vueSection` / `lireFiche` / `lireSection` take the form `'markdown'` for the assistant
-  (`[texte](fiche:<id>)`). « Mentionnée dans » is `services/mentions.ts` (`mentionsDe`), read-only, 50 per page, the page rides with `lireFiche`.
