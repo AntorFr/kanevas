@@ -7,6 +7,7 @@ import { useCharge, useUnivers } from '../cadre-contexte';
 import type { Ecran } from '../registre';
 import type { UniversListe } from '../types';
 import { Bouton, Champ, ChargementListe, ErreurChargement, PageIntrouvable, Panneau, useToasts } from '../ui';
+import { PanneauTypesUnivers } from './types-reglage/panneau-univers';
 import './ecrans.css';
 import './liste.css';
 import './reglages.css';
@@ -301,6 +302,8 @@ function Parametres() {
             </div>
           </form>
         </Panneau>
+
+        <PanneauTypesUnivers universId={id!} universNom={univers.etat === 'ok' ? univers.valeur.nom : ''} avecSysteme={systeme !== null} />
       </div>
     </div>
   );

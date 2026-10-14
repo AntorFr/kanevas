@@ -16,7 +16,7 @@ const { renderToStaticMarkup } = require('react-dom/server') as typeof import('r
 // Vite's SSR loader resolves the CSS and import.meta.glob imports of the screen files.
 const vite = await createServer({ configFile: false, root: import.meta.dirname, server: { middlewareMode: true }, appType: 'custom', logLevel: 'silent' });
 const { PanneauSection } = (await vite.ssrLoadModule('./section.tsx')) as typeof import('./section');
-const { badgeFiche, TYPES_LORE } = (await vite.ssrLoadModule('./types-fiche.ts')) as typeof import('./types-fiche');
+const { badgeFiche } = (await vite.ssrLoadModule('../../types-contexte.tsx')) as typeof import('../../types-contexte');
 test.after(() => vite.close());
 
 const audience = { joueursLisent: false, joueursEcrivent: false, auteurId: null, auteurLit: false, auteurEcrit: false };
@@ -26,7 +26,7 @@ const rendre = (role: 'mj' | 'joueur', section: Record<string, unknown>) =>
     createElement(PanneauSection, {
       universId: '1', fiche, role, suffixeMode: '', joueurs: [{ compteId: 2, username: 'lea' }],
       premiere: true, derniere: true, rafraichir: async () => {}, onMonter: async () => {}, onDescendre: async () => {},
-      section: { id: 1, titre: 'Apparence', ordre: 1, contenu: 'Grand.', version: 1, modifieLe: '', peutEcrire: false, ...section },
+      section: { id: 1, titre: 'Apparence', ordre: 1, contenu: 'Grand.', html: '<p>Grand.</p>', version: 1, modifieLe: '', peutEcrire: false, ...section },
     } as never),
   );
 
@@ -74,17 +74,20 @@ test('joueur : aucune pastille, filet, hachure ni menu ⋯, même sur une sectio
 });
 
 test('section vide : « Rien d’écrit pour l’instant. »', () => {
-  assert.match(rendre('joueur', { contenu: '' }), /Rien d’écrit pour l’instant\./);
+  assert.match(rendre('joueur', { contenu: '', html: '' }), /Rien d’écrit pour l’instant\./);
 });
 
 test('contenu de 20 000 caractères affiché en entier', () => {
-  assert.ok(rendre('joueur', { contenu: 'x'.repeat(20000) }).includes('x'.repeat(20000)));
+  assert.ok(rendre('joueur', { contenu: 'x'.repeat(20000), html: `<p>${'x'.repeat(20000)}</p>` }).includes('x'.repeat(20000)));
 });
 
-test('badges : PJ/PNJ pour un personnage, type sinon ; six types avec textes de liste vide', () => {
-  assert.equal(badgeFiche({ type: 'personnage', charge: { pj: true } }), 'PJ');
-  assert.equal(badgeFiche({ type: 'personnage', charge: {} }), 'PNJ');
-  assert.equal(badgeFiche({ type: 'quete', charge: {} }), 'Quête');
-  assert.deepEqual(TYPES_LORE.map((t) => t.aucun), ['Aucun personnage', 'Aucun lieu', 'Aucune faction', 'Aucun objet', 'Aucun événement', 'Aucune quête']);
-  assert.deepEqual(TYPES_LORE.map((t) => t.nouveau), ['Nouveau personnage', 'Nouveau lieu', 'Nouvelle faction', 'Nouvel objet', 'Nouvel événement', 'Nouvelle quête']);
+const vue = (type: string, singulier: string) => ({ type, slug: type, singulier, pluriel: singulier, nouveau: '', aucun: '', icone: 'file-text', reglable: true, active: true, origine: 'defaut' as const, forcage: null });
+const TYPES = [vue('personnage', 'Personnage'), vue('quete', 'Quête'), vue('savoir', 'Savoir')];
+
+test('badges : PJ/PNJ pour un personnage, singulier du type sinon, identifiant si la liste ne le connaît pas', () => {
+  assert.equal(badgeFiche(TYPES, { type: 'personnage', charge: { pj: true } }), 'PJ');
+  assert.equal(badgeFiche(TYPES, { type: 'personnage', charge: {} }), 'PNJ');
+  assert.equal(badgeFiche(TYPES, { type: 'quete', charge: {} }), 'Quête');
+  assert.equal(badgeFiche(TYPES, { type: 'savoir', charge: {} }), 'Savoir');
+  assert.equal(badgeFiche([], { type: 'savoir', charge: {} }), 'savoir');
 });

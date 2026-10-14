@@ -7,7 +7,7 @@ import { lireFiche, listerFiches } from '../fiches.js';
 import { creerProposition } from '../propositions.js';
 import { creerScenario } from '../scenarios.js';
 import { ecrireContenu, lireSection } from '../sections.js';
-import { TYPES_FICHE } from '../types.js';
+import { TYPES_FICHE } from '../types-fiche.js';
 import type { Acteur } from '../types.js';
 import type { Catalogue, Evenement, Outil, Resultat } from './types.js';
 
@@ -91,7 +91,7 @@ export function catalogueDe(db: Db, compteId: number, universId: number): Catalo
       'Lit une fiche : ses sections lisibles par la personne, avec leur contenu et leur `version`.',
       z.strictObject({ ficheId: id }),
       ({ ficheId }) => {
-        const f = lireFiche(db, acteur, universId, ficheId);
+        const f = lireFiche(db, acteur, universId, ficheId, 'markdown');
         return {
           donnees: {
             id: f.id,
@@ -100,7 +100,7 @@ export function catalogueDe(db: Db, compteId: number, universId: number): Catalo
             sections: f.sections.map((s) => ({
               id: s.id,
               titre: s.titre,
-              contenu: s.contenu,
+              contenu: s.contenu ?? s.html, // source only when the caller may write it, else the reader's rendered view (AD-113)
               version: s.version,
               modifiable: s.peutEcrire,
             })),
@@ -113,12 +113,12 @@ export function catalogueDe(db: Db, compteId: number, universId: number): Catalo
       "Lit une section d'une fiche : son contenu et sa `version`.",
       z.strictObject({ ficheId: id, sectionId: id }),
       ({ ficheId, sectionId }) => {
-        const s = lireSection(db, acteur, universId, ficheId, sectionId);
+        const s = lireSection(db, acteur, universId, ficheId, sectionId, 'markdown');
         return {
           donnees: {
             id: s.id,
             titre: s.titre,
-            contenu: s.contenu,
+            contenu: s.contenu ?? s.html, // source only when the caller may write it, else the reader's rendered view (AD-113)
             version: s.version,
             modifiable: s.peutEcrire,
           },
@@ -146,9 +146,10 @@ export function catalogueDe(db: Db, compteId: number, universId: number): Catalo
       'Ajoute un paragraphe après le contenu existant d’une section que la personne peut écrire, sans recopier le texte existant. `version` est celle lue.',
       z.strictObject({ ficheId: id, sectionId: id, texte: z.string(), version: z.number().int() }),
       ({ ficheId, sectionId, texte, version }) => {
-        const lue = lireSection(db, acteur, universId, ficheId, sectionId);
+        const lue = lireSection(db, acteur, universId, ficheId, sectionId, 'markdown');
         if (!lue.peutEcrire) throw new ErreurService('refuse', SECTION_REFUSEE);
-        const contenu = lue.contenu === '' ? texte : `${lue.contenu}\n\n${texte}`;
+        const source = lue.contenu ?? '';
+        const contenu = source === '' ? texte : `${source}\n\n${texte}`;
         const s = ecrireContenu(db, compteId, universId, ficheId, sectionId, contenu, version);
         return {
           donnees: { id: s.id, titre: s.titre, version: s.version },

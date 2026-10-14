@@ -63,7 +63,7 @@ Une table, `propositions` (migration `0008-propositions.sql`, AD-51) :
 | `demandeur_id` | → `comptes` | non nul ; le seul compte qui la lit, l'applique ou l'abandonne (AD-79) |
 | `section_id` | → `sections` | non nul ; suppression en cascade avec la section |
 | `cr_id` | → `fiches` | non nul ; la fiche de type `compte_rendu` d'où part la proposition ; cascade par précaution (aucune suppression de CR en V1) |
-| `contenu_propose` | texte | non nul, non vide, 20 000 caractères au plus (la limite d'une section ; 100 000 depuis `kanevas-import`, AD-106) |
+| `contenu_propose` | texte | non nul, non vide, 100 000 caractères au plus (la limite d'une section, AD-106 ; migration 0009) |
 | `version_origine` | entier | non nul ; la `version` que la section avait quand l'assistant l'a lue (AD-59, AD-80) |
 | `creee_le` | date | non nul |
 | `appliquee_le` | date | nul tant qu'elle est en attente |
@@ -86,7 +86,7 @@ avec `kanevas-relier-chercher`, qui prend le numéro suivant, AD-51).
 | `univers` | `id`, `nom`, `description`, `cree_le` | `nom` non vide, 1 à 80 caractères |
 | `membres` | `univers_id`, `compte_id`, `role` (`mj` \| `joueur`) | clé primaire (`univers_id`, `compte_id`) ; clés étrangères ; au moins un `mj` par univers garanti par le service (B-5), pas par la base |
 | `fiches` | `id`, `univers_id`, `type` (les sept : `personnage`, `lieu`, `faction`, `objet`, `evenement`, `quete`, `compte_rendu` ; *depuis `kanevas-import`, la liste du produit, sans `CHECK` : AD-102 et « Cadrage `kanevas-import` » plus bas*), `titre`, `charge` (JSON versionné, AD-6 et AD-17 : `{"v":1}` ; personnage `{"v":1,"pj":true\|false}` ; compte-rendu `{"v":1,"campagne_id":…}`), `cree_le`, `modifie_le` | `type` contraint à ces sept valeurs (*contrainte levée par la recréation de `kanevas-import`, AD-102*) ; `titre` non vide, 1 à 120 caractères ; **aucune suppression** (*suppression par le MJ depuis `kanevas-import`, AD-105*) |
-| `sections` | `id`, `fiche_id`, `titre`, `ordre`, `contenu` (texte brut, AD-58 ; 20 000 caractères au plus *(100 000 depuis `kanevas-import`, AD-106 : la même constante pour tout texte Markdown)*, AD-91), `version` (entier, AD-59, 1 à la création), `modifie_le`, `joueurs_lisent`, `joueurs_ecrivent`, `auteur_id` (compte, facultatif), `auteur_lit`, `auteur_ecrit` | quatre bascules booléennes, **toutes à faux à la création** (une section naît fermée aux joueurs) ; `ordre` entier unique par fiche ; `titre` non vide, 1 à 80 caractères ; `contenu` borné par le service seul (`MAX_CONTENU_SECTION`), pas par un `CHECK` ; `auteur_id` doit être un membre Joueur de l'univers de la fiche, vérifié par le service ; retirer un membre efface son `auteur_id` |
+| `sections` | `id`, `fiche_id`, `titre`, `ordre`, `contenu` (source Markdown, AD-95, relue telle quelle pour un ancien texte brut ; 100 000 caractères au plus, AD-106, la même constante pour tout texte Markdown), `version` (entier, AD-59, 1 à la création), `modifie_le`, `joueurs_lisent`, `joueurs_ecrivent`, `auteur_id` (compte, facultatif), `auteur_lit`, `auteur_ecrit` | quatre bascules booléennes, **toutes à faux à la création** (une section naît fermée aux joueurs) ; `ordre` entier unique par fiche ; `titre` non vide, 1 à 80 caractères ; `contenu` borné par le service seul (`MAX_CONTENU_SECTION`), pas par un `CHECK` ; `auteur_id` doit être un membre Joueur de l'univers de la fiche, vérifié par le service ; retirer un membre efface son `auteur_id` |
 
 `modifie_le` de la fiche suit la dernière écriture d'une de ses sections. `ordre` est renuméroté
 de 1 à n à chaque réordonnancement ou retrait. Le mode Joueur est calculé par le service, jamais
@@ -109,7 +109,7 @@ membre (B-6). Il ne lit ni ne modifie jamais la description, les fiches ou rien 
 | Table | Colonnes (hors clés) | Contraintes |
 |---|---|---|
 | `systemes_jeu` | `id`, `nom`, `cree_le` | `nom` 1 à 80 caractères après rognage ; **unique sans tenir compte de la casse** (`COLLATE NOCASE`) |
-| `gabarits` | `id`, `systeme_id`, `type` (`regle` \| `creature` \| `objet`), `nom`, `contenu` (texte brut, AD-58), `version` (entier, 1 à la création, AD-85), `cree_le`, `modifie_le` | `type` contraint à ces trois valeurs, fixé à la création ; `nom` 1 à 120 caractères ; `contenu` 20 000 au plus *(100 000 depuis `kanevas-import`, AD-106 : la même constante pour tout texte Markdown)* ; `nom` unique par (système, type) sans tenir compte de la casse ; **aucune suppression** |
+| `gabarits` | `id`, `systeme_id`, `type` (`regle` \| `creature` \| `objet`), `nom`, `contenu` (source Markdown, AD-95 ; 100 000 caractères au plus, AD-106), `version` (entier, 1 à la création, AD-85), `cree_le`, `modifie_le` | `type` contraint à ces trois valeurs, fixé à la création ; `nom` 1 à 120 caractères ; `contenu` 20 000 au plus *(100 000 depuis `kanevas-import`, AD-106 : la même constante pour tout texte Markdown)* ; `nom` unique par (système, type) sans tenir compte de la casse ; **aucune suppression** |
 | `univers` (ajout) | `systeme_id`, facultatif, → `systemes_jeu` | `NULL` par défaut (aucun univers existant n'est rattaché) |
 
 Un univers a **au plus un** système ; un système peut servir plusieurs univers. Détacher remet
@@ -137,7 +137,7 @@ cadrage). Les comptes-rendus n'ont pas de table : un compte-rendu est une fiche 
 | Table | Colonnes (hors clés) | Contraintes |
 |---|---|---|
 | `campagnes` | `id`, `univers_id`, `nom`, `statut` (`en_preparation` \| `active` \| `terminee`), `cree_le` | `nom` non vide, 1 à 80 caractères ; `statut` contraint à ces trois valeurs, `en_preparation` à la création ; plusieurs `active` permises (AD-60) ; **aucune suppression** |
-| `scenarios` | `id`, `campagne_id`, `titre`, `contenu` (texte brut, AD-58), `version` (entier, 1 à la création, AD-62), `cree_le`, `modifie_le` | `titre` non vide, 1 à 120 caractères ; `contenu` 20 000 caractères au plus *(100 000 depuis `kanevas-import`, AD-106 : la même constante pour tout texte Markdown)* ; **aucune suppression** |
+| `scenarios` | `id`, `campagne_id`, `titre`, `contenu` (source Markdown, AD-95 ; 100 000 caractères au plus, AD-106), `version` (entier, 1 à la création, AD-62), `cree_le`, `modifie_le` | `titre` non vide, 1 à 120 caractères ; `contenu` 20 000 caractères au plus *(100 000 depuis `kanevas-import`, AD-106 : la même constante pour tout texte Markdown)* ; **aucune suppression** |
 | `taches_preparation` | `id`, `campagne_id`, `categorie` (`monstres` \| `pnj` \| `cartes` \| `deroulements` \| `autre`), `libelle`, `faite`, `faite_le` (date de la dernière coche, vide si décochée), `cree_le` | `libelle` non vide, 1 à 200 caractères ; catégorie contrainte à ces cinq valeurs (AD-46) ; **aucune suppression** |
 
 Un compte-rendu se crée en une seule transaction : la fiche (type `compte_rendu`, `campagne_id` de
@@ -439,7 +439,7 @@ tels quels ; les déclencheurs de `recherche_fiches` sont recréés.
 
 | Table | Colonnes | Contrainte |
 |---|---|---|
-| `sections` | `contenu_public` (texte ; le contenu sans blocs MJ), `cle_origine` (nulle : née dans Kanevas), `version_importee` (entier ; nul : jamais écrite par un import), `dernier_import` (JSON : titre, audience et ensemble des fichiers joints (clés) écrits par le dernier import ; nul : jamais) | (12) le contenu est modifié dans Kanevas si `version` ≠ `version_importee`, le titre ou l'audience si la valeur courante ≠ `dernier_import` ; (8) écrit par le service dans la même transaction que `contenu` (AD-98) — une fonction Markdown ne s'écrit pas en SQL ; index unique `(fiche_id, cle_origine)` (2) |
+| `sections` | `contenu_public` (texte `NOT NULL DEFAULT ''` ; le contenu sans blocs MJ ; « la section contient un bloc » est `contenu_public ≠ contenu`, AD-114 ; vide par défaut : un site d'écriture oublié montre une section vide, il ne fuit pas), `cle_origine` (nulle : née dans Kanevas), `version_importee` (entier ; nul : jamais écrite par un import), `dernier_import` (JSON : titre, audience et ensemble des fichiers joints (clés) écrits par le dernier import ; nul : jamais) | (12) le contenu est modifié dans Kanevas si `version` ≠ `version_importee`, le titre ou l'audience si la valeur courante ≠ `dernier_import` ; (8) écrit par le service dans la même transaction que `contenu` (AD-98) — une fonction Markdown ne s'écrit pas en SQL ; index unique `(fiche_id, cle_origine)` (2) |
 | `pieces_jointes` | aucune : la table **n'est plus écrite ni lue** depuis AD-111 ; la migration transforme chaque ligne en un fichier de la médiathèque (`mj` si `secrete`, `joueurs` sinon ; même nom sur disque, sans copie) joint à sa section, puis vide la table ; sa suppression part dans une tranche suivante (resserrer, une fois l'image d'avant hors service) |
 | `campagnes` | `cle_origine`, `dernier_import` (JSON : nom et statut écrits par le dernier import ; nul : jamais) | index unique `(univers_id, cle_origine)` (2) ; (12) même règle, champ par champ |
 | `scenarios` | `cle_origine`, `dernier_import` (JSON : titre écrit ; nul : jamais), `version_importee` (la `version` laissée par le dernier import) | index unique `(campagne_id, cle_origine)` (2) ; (12) le contenu est modifié dans Kanevas si `version` ≠ `version_importee`, le titre si la valeur courante ≠ `dernier_import` |
@@ -500,7 +500,7 @@ pend d'une ligne qui le porte, et toute requête filtre dessus. Un système de j
    vérifier `foreign_key_check` avant de valider. Comptage des lignes avant et après, sur une copie de
    la base de production (`/mnt/data/kanevas/data/kanevas.db`).
 2. **Élargir** (une migration par tranche qui en a besoin) : les tables nouvelles et les colonnes
-   ajoutées, toutes nullables ou avec défaut ; aucune donnée reprise, sauf `contenu_public = contenu`
+   ajoutées, toutes nullables ou avec défaut ; aucune donnée reprise, sauf `contenu_public = contenu` (`UPDATE` de la migration de la tranche du bloc MJ, avant la recréation de l'index, dont le numéro se prend à la fusion, AD-51)
    pour les sections existantes (aucun bloc MJ n'existait : la syntaxe `:::mj` est nouvelle) et le
    remplissage des index de recherche recréés.
 3. **Migrer** : sans objet — aucun ancien lecteur ne survit (frontend et backend partent dans la même

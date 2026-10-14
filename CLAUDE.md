@@ -41,10 +41,11 @@
 - `services/llm/*` (transport.ts, anthropic-transport.ts,
   claude-agent-transport.ts) are reprised from `Antre-du-maitre` (AD-10) and
   unused by any route yet — kept compiling, not wired in. The admin
-  setup-token window (`services/claude-token.ts` upstream) was deliberately
-  not reprised: it is a content route, out of scope for a socle that calls no
-  LLM. Reintroduce it only alongside the feature that actually activates this
-  transport.
+  setup-token window (`claude-token.ts` upstream) is rewritten as
+  `services/assistant/connexion-claude.ts` (AD-112); the token is read only
+  through `services/assistant/jeton.ts` (volume file `<data dir>/claude/oauth-token`
+  first, then `CLAUDE_CODE_OAUTH_TOKEN`) — never read either elsewhere, never
+  return, log or relay the token or the pasted code.
 - `routes/auth.ts` authenticates the identity (OIDC login/callback) and opens
   the signed session cookie (`services/session.ts` signs it, `routes/session.ts` guards, AD-56), creating the account
   on first sign-in (AD-13). Universe roles never come from Authelia nor the
@@ -83,7 +84,7 @@
   catalogue's universe (`lireCampagne`) before `creerScenario`, which only guards on the campaign's own.
 - Assistant transport (`kanevas-am-transport`, `src/services/assistant/`): `repondre(db, compteId, universId,
   message, historique, deps?)` is the single entry point. Availability (`disponibilite.ts`, AD-77) is checked
-  **first**: `KANEVAS_STUB=1` → `bouchon`, non-empty `CLAUDE_CODE_OAUTH_TOKEN` → `claude-agent`, else
+  **first**: `KANEVAS_STUB=1` → `bouchon`, a token (`jetonEffectif()`: the posed file, else non-empty `CLAUDE_CODE_OAUTH_TOKEN`) → `claude-agent`, else
   `assistant_indisponible` and no adapter is built (never a silent stub fallback). `AgentTransport` (`transport.ts`)
   is the port; adapters `bouchon.ts` (AD-78 script calling the real catalogue tools) and `claude-agent.ts`
   (in-process MCP server `kanevas`, `tools: []`, `settingSources: []`, token only in the call's `env`).
@@ -101,3 +102,35 @@
   moved, else `en_attente`), never stored. `appliquerProposition` writes through `ecrireContenu` with
   `version_origine` in the same transaction as the mark (`section_modifiee`, `proposition_appliquee` as
   `ErreurService.detail`, both `conflit`). Never write a section from here by another path (AD-48).
+- Import API (`kanevas-import-fil`, migration 0010, AD-103/104): `routes/import.ts` is the scope `/api/import/v1`, beside the
+  session guard — only a `Bearer kvs_…` token opens it (`verifierJeton`: fingerprint, not revoked, not expired, creator still
+  GM), the cookie is ignored there and no other route reads `Authorization`. Refusal is always the same 401 `jeton_invalide`
+  and opens no batch; another universe is 404. The clock is `app.horloge()` (tests move it). `services/jetons.ts` and
+  `services/lots.ts` are the only readers/writers of `jetons_api` / `lots_import`; write services of later slices count
+  through `noterDansLot` (counters per nature, report capped at 1 000).
+- Markdown (AD-95, AD-113): the only renderer is `rendreMarkdown` in `services/markdown.ts` (`html: false`, links limited to http/https/mailto); a view returns `html` to everyone and the source `contenu` only to who may write it — never render elsewhere, never ship the source to a reader. The ceiling is 100 000 characters (`MAX_CONTENU_SECTION`).
+- Import of sheets (`kanevas-fil-fiches`): `PUT /fiches/:cle` calls `assurerFiche` (`services/import-fiches.ts`), which composes
+  `creerFiche`, `renommerFiche`, `changerTypeFiche` and the section services, plus a few direct updates of its own
+  (`modifie_le`, `dernier_import`, `cle_origine`, `version_importee` — import bookkeeping only; content still goes through the services). Refusals are validated **before** the transaction
+  (`ErreurService.champ`, sent as `champ` with code `invalide`); with `?lot=` they count « 1 refusée » in the batch, without it they leave
+  no trace; a closed batch answers 409 `lot_clos`. The stub token is `JETON_BOUCHON` (`bouchon/depart.ts`), seeded in « Essai Kanka ».
+- Public content (feature `kanevas-import-secrets`, migration 0011, AD-114): `sections.contenu_public` is `contenu` without its `:::mj` blocks,
+  computed by the pure `contenuPublic` (`services/markdown.ts`, from the `map` of the container tokens). Only `insererSection` and
+  `poserContenu` in `services/sections.ts` write `contenu` of a section — creation, `ecrireContenu`, proposals, reports and the
+  import all go through them; never add another `INSERT INTO sections` / `UPDATE sections SET contenu`. `rendreMarkdown(source,
+  {nature})` knows the container only for `nature: 'section'`; scenarios and system entries keep `:::mj` as text.
+- Links (`kanevas-liens-ecriture`, migration 0012, AD-116): `src/services/liens.ts` is the only writer of `liens`;
+  `extraireLiens` (`markdown.ts`, pure) reads `[[…]]` from the engine's tokens, never by pattern. `poserContenu`
+  and `insererSection` replace a section's rows; `preparerContenu` (bare `[[<id>]]` → `[[<id>|<titre>]]` or
+  `lien_illisible`, known `[[cle:…]]` → id) runs before each write, the import's replay comparison included
+  (AD-104). `resoudreClesEnAttente` rewrites waiting texts at the creation of a keyed sheet without moving
+  `version` / `modifie_le`.
+- Links on read (`kanevas-liens-lecture`, AD-116, AD-100): `resolveurLiens` (`services/droits.ts`) is the one query that resolves all
+  the `[[…]]` of a text for a reader; the rendering is decided by the target, never by the `liens` table, and `rendreMarkdown` takes the
+  resolver in `options.liens` (without it a `[[…]]` stays as written). `nature: 'scenario'` has the links without the `:::mj` container;
+  a system entry (`texte`) has neither. `vueSection` / `lireFiche` / `lireSection` take the form `'markdown'` for the assistant
+  (`[texte](fiche:<id>)`). « Mentionnée dans » is `services/mentions.ts` (`mentionsDe`), read-only, 50 per page, the page rides with `lireFiche`.
+- Sheet types (`kanevas-import-types`, `src/services/types-fiche.ts`, AD-120 — AD-113 in the feature's plan): the single list of
+  types; `TYPES_FICHE`, `TypeFiche` and the payload schemas (`CHARGES`) derive from it, never copy them. `fiches.type` has no
+  `CHECK` (migration 0013): `creerFiche` is the guard ("Type de fiche inconnu."). A migration whose first line is
+  `-- migrate: sans-cles-etrangeres` runs with foreign keys off and `foreign_key_check` before commit (`db.ts`).

@@ -1,5 +1,8 @@
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 
+import { ErreurConnexion } from '../services/assistant/connexion-claude.js';
+import { disponibilite } from '../services/assistant/disponibilite.js';
+import { etatJeton } from '../services/assistant/jeton.js';
 import {
   ajouterMembreInstance,
   changerRoleInstance,
@@ -29,6 +32,43 @@ export function registerInstanceRoutes(app: FastifyInstance) {
   app.addHook('preHandler', async (request: FastifyRequest, reply: FastifyReply) => {
     if (!request.url.startsWith('/api/instance')) return;
     if (!acteur(request).admin) return reply.callNotFound();
+  });
+
+  // AD-112: the state of the assistant token, never its value.
+  app.get('/api/instance/assistant/jeton', async () => {
+    const config = app.configAssistant();
+    return { ...etatJeton(config), assistant: disponibilite(config) };
+  });
+
+  // The session refuses with a fixed message and a code, never the cause (AD-112 4).
+  const STATUT_CONNEXION = { connexion_impossible: 502, connexion_echouee: 400, connexion_expiree: 410 } as const;
+  const refus = (reply: FastifyReply, e: unknown) => {
+    if (!(e instanceof ErreurConnexion)) throw e;
+    return reply.code(STATUT_CONNEXION[e.code]).send({ message: e.message, code: e.code });
+  };
+
+  app.post('/api/instance/assistant/jeton/connexion', async (_request, reply) => {
+    try {
+      return reply.code(201).send(await app.connexionClaude.demarrer());
+    } catch (e) {
+      return refus(reply, e);
+    }
+  });
+
+  app.post('/api/instance/assistant/jeton/code', async (request, reply) => {
+    const b = (request.body ?? {}) as { connexionId?: unknown; code?: unknown };
+    try {
+      const etat = await app.connexionClaude.soumettreCode(b.code, b.connexionId ?? null);
+      const config = app.configAssistant();
+      return { ...etat, assistant: disponibilite(config) };
+    } catch (e) {
+      return refus(reply, e);
+    }
+  });
+
+  app.delete('/api/instance/assistant/jeton/connexion', async (_request, reply) => {
+    await app.connexionClaude.annuler();
+    return reply.code(204).send();
   });
 
   app.get('/api/instance/univers', async (request) =>

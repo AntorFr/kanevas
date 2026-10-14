@@ -10,17 +10,106 @@ import {
 } from './droits.js';
 import { ErreurService, introuvable, invalide, refuse } from './erreurs.js';
 import { chargerFiche, validerTitre } from './fiches.js';
+import { preparerContenu, remplacerLiens, resoudreLiens, sectionsEnAttenteDe } from './liens.js';
 import { fichiersDeSections } from './pieces-jointes.js';
+import { contenuPublic, extraireLiens, reecrireLiens } from './markdown.js';
 import { supprimerFichier } from './stockage.js';
-import type { Acteur, SectionRow, SectionVue } from './types.js';
+import type { Acteur, Role, SectionRow, SectionVue } from './types.js';
 
 /** Ceiling of a section's content, in `String.length` units (AD-91); `/api/moi` hands it to the screen. */
-export const MAX_CONTENU_SECTION = 20000;
+export const MAX_CONTENU_SECTION = 100000;
+
+/** The one message of the ceiling, for every long text (sections, reports, scenarios, system entries, proposals). */
+export const MESSAGE_CONTENU_TROP_LONG = 'Contenu trop long : 100 000 caractères au plus.';
+
+/** The refusal of a GM block written by a non-GM (AD-114 4). */
+export const MESSAGE_BLOC_MJ = 'Un bloc MJ ne peut être écrit que par un MJ.';
+
+/** A non-GM may not write a text that holds a GM block: `contenuPublic` would differ from it. */
+export function exigerSansBloc(role: Role, contenu: string): void {
+  if (role !== 'mj' && contenuPublic(contenu) !== contenu) throw invalide(MESSAGE_BLOC_MJ);
+}
 
 export function validerContenu(contenu: string): void {
-  if (contenu.length > MAX_CONTENU_SECTION) {
-    throw invalide('Contenu trop long : 20 000 caractères au plus.');
+  if (contenu.length > MAX_CONTENU_SECTION) throw invalide(MESSAGE_CONTENU_TROP_LONG);
+}
+
+/**
+ * The only place that inserts a section (AD-114): `contenu` and `contenu_public` are written
+ * together. Audience columns default to a closed, authorless section (B-8).
+ */
+export function insererSection(
+  db: Db,
+  s: {
+    ficheId: number;
+    titre: string;
+    ordre: number;
+    contenu: string;
+    modifieLe: string;
+    joueursLisent?: number;
+    joueursEcrivent?: number;
+    auteurId?: number | null;
+    auteurLit?: number;
+    auteurEcrit?: number;
+  },
+): number {
+  const info = db
+    .prepare(
+      `INSERT INTO sections (fiche_id, titre, ordre, contenu, contenu_public, modifie_le,
+         joueurs_lisent, joueurs_ecrivent, auteur_id, auteur_lit, auteur_ecrit)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    )
+    .run(
+      s.ficheId,
+      s.titre,
+      s.ordre,
+      s.contenu,
+      contenuPublic(s.contenu),
+      s.modifieLe,
+      s.joueursLisent ?? 0,
+      s.joueursEcrivent ?? 0,
+      s.auteurId ?? null,
+      s.auteurLit ?? 0,
+      s.auteurEcrit ?? 0,
+    );
+  const id = Number(info.lastInsertRowid);
+  remplacerLiens(db, id, s.contenu);
+  return id;
+}
+
+/**
+ * The only place that rewrites the content of a section (AD-114): keeps both columns in step. With
+ * `now` it is an edit: `version` and `modifie_le` move and the `liens` rows are replaced (AD-116).
+ * Without it (`null`) it is the resolution of a waiting key: neither moves, `resoudreClesEnAttente`
+ * updates the rows.
+ */
+export function poserContenu(db: Db, sectionId: number, contenu: string, now: string | null): void {
+  db.prepare(
+    `UPDATE sections SET contenu = ?, contenu_public = ?, version = version + ?,
+       modifie_le = COALESCE(?, modifie_le) WHERE id = ?`,
+  ).run(contenu, contenuPublic(contenu), now === null ? 0 : 1, now, sectionId);
+  if (now !== null) remplacerLiens(db, sectionId, contenu);
+}
+
+/**
+ * A sheet now carries the origin key `cle` (AD-116): the sections that waited for it get
+ * `[[<id>|<texte>]]` in `contenu` and `contenu_public`, and their `liens` rows point at the sheet.
+ * Neither `version`, nor `version_importee`, nor `modifie_le` moves: the text is not edited, only resolved.
+ */
+export function resoudreClesEnAttente(db: Db, universId: number, cle: string, ficheId: number): void {
+  const attendent = sectionsEnAttenteDe(db, universId, cle);
+  for (const { id, contenu } of attendent) {
+    const neuf = reecrireLiens(contenu, extraireLiens(contenu), (l) =>
+      l.cle === cle ? `[[${ficheId}|${l.texte}]]` : null,
+    );
+    if (neuf !== contenu) poserContenu(db, id, neuf, null);
   }
+  resoudreLiens(
+    db,
+    attendent.map((a) => a.id),
+    cle,
+    ficheId,
+  );
 }
 
 function chargerSection(db: Db, ficheId: number, sectionId: number): SectionRow {
@@ -60,18 +149,22 @@ export function ajouterSection(
   validerContenu(entree.contenu ?? '');
   const now = new Date().toISOString();
   const id = db.transaction(() => {
+    const contenu = preparerContenu(db, universId, compteId, entree.contenu ?? '');
+    validerContenu(contenu);
     const { n } = db
       .prepare('SELECT COALESCE(MAX(ordre), 0) AS n FROM sections WHERE fiche_id = ?')
       .get(ficheId) as { n: number };
-    const info = db
-      .prepare(
-        'INSERT INTO sections (fiche_id, titre, ordre, contenu, modifie_le) VALUES (?, ?, ?, ?, ?)',
-      )
-      .run(ficheId, titre, n + 1, entree.contenu ?? '', now);
+    const sid = insererSection(db, {
+      ficheId,
+      titre,
+      ordre: n + 1,
+      contenu,
+      modifieLe: now,
+    });
     toucherFiche(db, ficheId, now);
-    return Number(info.lastInsertRowid);
+    return sid;
   })();
-  return vueSection('mj', chargerSection(db, ficheId, id), { compteId });
+  return vueSection(db, universId, 'mj', chargerSection(db, ficheId, id), { compteId });
 }
 
 /** The GM renames a section. */
@@ -88,7 +181,7 @@ export function renommerSection(
   chargerSection(db, ficheId, sectionId);
   const t = validerTitre(titre, 80, 'Le titre');
   db.prepare('UPDATE sections SET titre = ? WHERE id = ?').run(t, sectionId);
-  return vueSection('mj', chargerSection(db, ficheId, sectionId), { compteId });
+  return vueSection(db, universId, 'mj', chargerSection(db, ficheId, sectionId), { compteId });
 }
 
 /** The GM reorders: `ids` must be exactly the sheet's sections; they are renumbered 1..n. */
@@ -187,7 +280,7 @@ export function changerAudience(
     sans ? 0 : bit(changement.auteurEcrit, s.auteur_ecrit),
     sectionId,
   );
-  return vueSection('mj', chargerSection(db, ficheId, sectionId), { compteId });
+  return vueSection(db, universId, 'mj', chargerSection(db, ficheId, sectionId), { compteId });
 }
 
 /** One section, if the caller may read it; otherwise it does not exist for them. */
@@ -197,12 +290,13 @@ export function lireSection(
   universId: number,
   ficheId: number,
   sectionId: number,
+  formeLiens: 'html' | 'markdown' = 'html',
 ): SectionVue {
   const role = exigerRole(db, universId, acteur.compteId);
   chargerFiche(db, universId, ficheId);
   const s = chargerSection(db, ficheId, sectionId);
   if (!peutLireSection(role, s, acteur)) throw introuvable();
-  return vueSection(role, s, acteur);
+  return vueSection(db, universId, role, s, acteur, formeLiens);
 }
 
 /**
@@ -229,14 +323,15 @@ export function ecrireContenu(
       throw refuse("Vous ne pouvez pas modifier cette section.");
     }
     validerContenu(contenu);
+    exigerSansBloc(role, contenu);
     if (s.version !== version) {
       throw new ErreurService('conflit', 'La section a changé.', 'section_modifiee');
     }
+    const ecrit = preparerContenu(db, universId, compteId, contenu);
+    validerContenu(ecrit);
     const now = new Date().toISOString();
-    db.prepare(
-      'UPDATE sections SET contenu = ?, version = version + 1, modifie_le = ? WHERE id = ?',
-    ).run(contenu, now, sectionId);
+    poserContenu(db, sectionId, ecrit, now);
     toucherFiche(db, ficheId, now);
-    return vueSection(role, chargerSection(db, ficheId, sectionId), { compteId });
+    return vueSection(db, universId, role, chargerSection(db, ficheId, sectionId), { compteId });
   })();
 }

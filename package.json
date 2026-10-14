@@ -11,6 +11,7 @@
     "start": "node dist/server.js",
     "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p frontend/tsconfig.json",
     "test": "node --import tsx --test $(find src frontend/src -name '*.test.ts')",
+    "tests:attestes": "node scripts/tests-attestes.mjs",
     "dev:front": "vite --config frontend/vite.config.ts"
   },
   "dependencies": {
@@ -26,6 +27,8 @@
     "dotenv": "^16.5.0",
     "fastify": "^5.3.3",
     "lucide-react": "1.52.0",
+    "markdown-it": "15.0.2",
+    "markdown-it-container": "4.0.0",
     "openid-client": "^6.8.4",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
@@ -34,6 +37,7 @@
   },
   "devDependencies": {
     "@types/better-sqlite3": "^9.6.0",
+    "@types/markdown-it": "^14.2.0",
     "@types/node": "^22.15.18",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",

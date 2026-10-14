@@ -1,21 +1,17 @@
 import {
   Flag,
-  Gem,
-  Hourglass,
+  KeyRound,
   LayoutGrid,
   Map as Carte,
-  MapPin,
   NotebookPen,
-  ScrollText,
   Settings2,
-  Shield,
   ShieldCheck,
   ContactRound,
-  UsersRound,
   type LucideIcon,
 } from 'lucide-react';
 
 import type { Role } from './types';
+import { iconeDeNom, type TypeVue } from './types-contexte';
 
 /**
  * The sidebar's items (docs/ecrans.md, « Barre latérale »). They live here, not in the bar: an item
@@ -44,14 +40,22 @@ export const ITEMS_UNIVERS: Item[] = [
   { libelle: 'Campagnes', icone: Flag, chemin: (id) => `/univers/${id}/campagnes` },
   { libelle: 'Comptes-rendus', icone: NotebookPen, chemin: (id) => `/univers/${id}/comptes-rendus` },
   { libelle: 'Cartes', icone: Carte, chemin: (id) => `/univers/${id}/cartes` },
-  { libelle: 'Personnages', icone: UsersRound, section: 'Lore', chemin: (id) => `/univers/${id}/fiches/personnages` },
-  { libelle: 'Lieux', icone: MapPin, section: 'Lore', chemin: (id) => `/univers/${id}/fiches/lieux` },
-  { libelle: 'Factions', icone: Shield, section: 'Lore', chemin: (id) => `/univers/${id}/fiches/factions` },
-  { libelle: 'Objets', icone: Gem, section: 'Lore', chemin: (id) => `/univers/${id}/fiches/objets` },
-  { libelle: 'Événements', icone: Hourglass, section: 'Lore', chemin: (id) => `/univers/${id}/fiches/evenements` },
-  { libelle: 'Quêtes', icone: ScrollText, section: 'Lore', chemin: (id) => `/univers/${id}/fiches/quetes` },
   { libelle: 'Membres', icone: ContactRound, section: 'Univers', role: 'mj', chemin: (id) => `/univers/${id}/membres` },
   { libelle: 'Paramètres', icone: Settings2, section: 'Univers', role: 'mj', chemin: (id) => `/univers/${id}/parametres` },
+  { libelle: 'Accès par API', icone: KeyRound, section: 'Univers', role: 'mj', chemin: (id) => `/univers/${id}/acces-api` },
   // « Administration » (E-5): instance admins only, wherever the bar is.
   { libelle: 'Administration', icone: ShieldCheck, section: 'Instance', groupe: GROUPE_ADMIN, horsUnivers: true, chemin: () => '/administration' },
 ];
+
+/**
+ * The « Lore » items, built from the types the server sends (AD-120): the list is never copied here.
+ * The bar passes the enabled types; the breadcrumb passes them all, since a disabled type's list still opens.
+ */
+export const itemsLore = (types: TypeVue[]): Item[] =>
+  types.filter((t) => t.reglable).map((t) => ({
+    // The compte-rendu is not a settable type: its fixed item « Comptes-rendus » already exists.
+    libelle: t.pluriel,
+    icone: iconeDeNom(t.icone),
+    section: 'Lore',
+    chemin: (id: number) => `/univers/${id}/fiches/${t.slug}`,
+  }));

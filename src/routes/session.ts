@@ -4,7 +4,11 @@ import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 
 import { env } from '../config/env.js';
 import { assurerCompte, lireCompte } from '../services/comptes.js';
-import { MAX_CONTENU_SECTION } from '../services/sections.js';
+import { invalide } from '../services/erreurs.js';
+import { contenuPublic, rendreApercu } from '../services/markdown.js';
+import { exigerMJDeCampagne } from '../services/campagnes.js';
+import { exigerRole, resolveurLiens } from '../services/droits.js';
+import { MAX_CONTENU_SECTION, validerContenu } from '../services/sections.js';
 import {
   decoderSession,
   encoderSession,
@@ -21,6 +25,7 @@ import { registerUniversRoutes } from './univers.js';
 import { registerSystemesRoutes } from './systemes.js';
 import { registerSuiviRoutes } from './suivi.js';
 import { registerAssistantRoutes } from './assistant.js';
+import { registerAccesApiRoutes } from './acces-api.js';
 import { registerPropositionsRoutes } from './propositions.js';
 import { chargerFrontend } from './frontend.js';
 import { pageIntrouvable, urlConnexion } from './pages.js';
@@ -122,6 +127,7 @@ export async function registerSessionRoutes(app: FastifyInstance) {
     registerCartesRoutes(garde);
     registerAssistantRoutes(garde);
     registerPropositionsRoutes(garde);
+    registerAccesApiRoutes(garde);
   });
 }
 
@@ -133,5 +139,32 @@ function registerGuardedRoutes(app: FastifyInstance) {
       groups: request.session!.groups,
       limites: { contenuSection: MAX_CONTENU_SECTION },
     };
+  });
+
+  // Preview (AD-113): renders what the reading would, reads and writes nothing.
+  app.post('/api/apercu', async (request) => {
+    const corps = (request.body ?? {}) as Record<string, unknown>;
+    const texte = corps.texte;
+    if (typeof texte !== 'string') throw invalide('Le texte doit être une chaîne.');
+    validerContenu(texte);
+    // Optional context, nested under `contexte` or flat in the body: `{nature, univers_id, mode}`.
+    const ctx =
+      corps.contexte !== null && typeof corps.contexte === 'object'
+        ? (corps.contexte as Record<string, unknown>)
+        : corps;
+    if (ctx.nature === 'scenario' && Number.isInteger(ctx.campagne_id)) {
+      // A scenario's links read in the universe of its campaign, for its GM (AD-97).
+      const campagne = exigerMJDeCampagne(app.db, request.session!.id, ctx.campagne_id as number);
+      const liens = resolveurLiens(app.db, campagne.univers_id, 'mj', { compteId: request.session!.id }, texte);
+      return { html: rendreApercu(texte, null, liens, 'scenario') };
+    }
+    if (ctx.nature !== 'section') return { html: rendreApercu(texte, null) };
+    if (!Number.isInteger(ctx.univers_id)) throw invalide("L'univers est requis pour l'aperçu d'une section.");
+    const role = exigerRole(app.db, ctx.univers_id as number, request.session!.id);
+    const acteur = { compteId: request.session!.id, modeJoueur: ctx.mode === 'joueur' };
+    const mj = role === 'mj' && !acteur.modeJoueur;
+    // The links resolve against what the preview shows: the public text for a non-GM.
+    const liens = resolveurLiens(app.db, ctx.univers_id as number, role, acteur, mj ? texte : contenuPublic(texte));
+    return { html: rendreApercu(texte, mj, liens) };
   });
 }

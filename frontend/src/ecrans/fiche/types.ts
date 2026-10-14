@@ -21,7 +21,10 @@ export interface SectionVue {
   id: number;
   titre: string;
   ordre: number;
-  contenu: string;
+  /** Markdown source: only when the caller may write the section (AD-113). */
+  contenu?: string;
+  /** The rendered source (AD-113), for every reader. */
+  html: string;
   version: number;
   modifieLe: string;
   peutEcrire: boolean;
@@ -35,13 +38,30 @@ export interface Fiche {
   universId: number;
   type: string;
   titre: string;
+  creeLe?: string;
+  /** Free sub-type under the title (AD-113), absent when the sheet has none. */
+  sousType?: string | null;
   charge: { v?: number; pj?: boolean };
   /** The sheet's illustration (AD-93): `jeton` changes at each replacement and goes in the image address. */
   illustration?: { jeton: string } | null;
 }
 
+/** One line of « Mentionnée dans » (AD-100). */
+export interface Mention {
+  ficheId: number;
+  titre: string;
+  type: string;
+  pourquoi: ({ genre: 'lien'; section: string } | { genre: 'relation'; libelle: string })[];
+}
+
 export interface FicheVue extends Fiche {
   sections: SectionVue[];
+  /** « Mentionnée dans »: the first page, what the reader sees only. */
+  mentions?: Mention[];
+  mentionsSuite?: boolean;
+  mentionsRestantes?: number;
+  /** Origin key of an imported sheet (B-50): sent to the GM outside player mode only. */
+  cleOrigine?: string;
 }
 
 export interface PageFiches {
