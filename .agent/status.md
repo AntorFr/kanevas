@@ -83,8 +83,7 @@ catalogue MJ (événement `proposition_creee`) et sa règle du bouchon (« Mets 
 - Les « PR non fusionnée » ci-dessus s'empilent sur `epic/kanevas` ; `recours-admin` est rattrapée dessus et n'ajoute aucune migration.
 - Vocabulaire : « Monsieur » = le commanditaire qui fait la recette ; « tranche » = une feature livrée ; « phase merge » = la
   fusion après recette ; E-n / B-n / P-n = écrans / besoins / parcours, les écrans (E-n) sont dans `docs/ecrans.md`, les besoins (B-n) et les parcours (P-n) dans `docs/parcours.md`.
-- La CI ne pousse d'image que sur `main` et sur un tag `v*` ; sur une PR elle ne fait qu'un build de
-  validation. L'image testable n'existe qu'après le tag, posé à la fusion.
+- La CI ne construit d'image que sur un tag `v*` dont le commit porte l'attestation « tests-complets » (`npm run tests:attestes -- --publier` ou le workflow manuel `tests.yml`) ; ni `main` ni PR ne la déclenchent. L'image testable n'existe qu'après le tag, posé à la fusion.
 - **Numéro de migration** : `0005-relier-chercher.sql` est sur `epic/kanevas` (fusionnée) et figée ; la migration de la prochaine tranche prend le numéro suivant à sa fusion (AD-51).
 - Recherche : `listerFiches({recherche})` seule (AD-63) ; les index FTS5 ne livrent que des identifiants
   candidats, tenus par déclencheurs : ne jamais écrire dans `recherche_*` depuis le code. La saisie est
