@@ -67,7 +67,7 @@ export function catalogueDe(db: Db, compteId: number, universId: number): Catalo
   const outils: Outil[] = [
     outil(
       'chercher',
-      `Cherche des fiches par un ou plusieurs mots (titre ou section lisible). Sans \`type\`, cherche dans tous les types. Rend au plus ${LIMITE_RECHERCHE} fiches triées par titre, et dit si la liste est tronquée.`,
+      `Cherche des fiches par un ou plusieurs mots (titre, alias, sous-type ou section lisible). Sans \`type\`, cherche dans tous les types. Rend au plus ${LIMITE_RECHERCHE} fiches triées par titre, et dit si la liste est tronquée.`,
       z.strictObject({ mots: z.string(), type: z.enum(TYPES_FICHE).optional() }),
       ({ mots, type }) => {
         // One call, every type unless one is given (AD-74, AD-118 (7)): the list's own order, by title.
