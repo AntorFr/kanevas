@@ -9,7 +9,7 @@ import { poserIllustration } from '../services/illustrations.js';
 import { supprimerFichier } from '../services/stockage.js';
 import { ajouterMembre } from '../services/membres.js';
 import { ajouterSection, changerAudience, ecrireContenu, lireSection } from '../services/sections.js';
-import { creerFiche } from '../services/fiches.js';
+import { creerFiche, deplacerFiche } from '../services/fiches.js';
 import { assurerCompte } from '../services/comptes.js';
 import { creerEtRattacherSysteme, creerGabarit, rattacherSysteme } from '../services/systemes.js';
 import { creerJetonDeValeur } from '../services/jetons.js';
@@ -158,6 +158,23 @@ export function semerBouchon(db: Db): boolean {
       { joueursLisent: true, auteurId: id.lea, auteurLit: true, auteurEcrit: true },
     );
     section('Vérité', 'Le port cache un secret réservé au MJ.', {});
+    // The tree of `kanevas-arbre-service` (AD-115): Port-Sel under « Les Sphères » (GM only), five places under Port-Sel,
+    // one of them (the hideout) GM only too. Placed through `deplacerFiche`, the one write of the parent.
+    const lue = { titre: 'Description', lue: true };
+    const mjSeul = { titre: 'Secret — MJ seul', lue: false };
+    const ranger = (enfant: number, parent: number) =>
+      deplacerFiche(db, { compteId: id.antor }, lame.id, enfant, parent);
+    const spheres = fiche('lieu', 'Les Sphères', [mjSeul]);
+    ranger(port.id, spheres.id);
+    for (const [titre, sections] of [
+      ['La Taverne du Kraken', [lue]],
+      ['Les Docks', [lue]],
+      ['Le Phare aux Sels', [lue]],
+      ['Quartier des Cordiers', [lue]],
+      ['Le Repaire des contrebandiers', [mjSeul]],
+    ] as const) {
+      ranger(fiche('lieu', titre, [...sections]).id, port.id);
+    }
     fiche('faction', 'Lames Grises', [{ titre: 'Description', lue: true }]);
     fiche('faction', 'Cercle des Cendres', [{ titre: 'Secret — MJ seul', lue: false }]);
 
