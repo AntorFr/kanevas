@@ -23,7 +23,7 @@ const cle = (s: string) => s.toLowerCase();
 const trier = (l: string[]) => [...l].sort((a, b) => cle(a).localeCompare(cle(b)) || a.localeCompare(b));
 
 /** Trimmed, empties dropped, duplicates without case merged (first spelling wins). */
-function nettoyer(valeurs: unknown, quoi: string): string[] {
+export function nettoyer(valeurs: unknown, quoi: string): string[] {
   if (!Array.isArray(valeurs) || valeurs.some((v) => typeof v !== 'string')) {
     throw new ErreurService('invalide', `${quoi} : une liste de textes.`);
   }
