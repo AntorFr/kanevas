@@ -97,11 +97,14 @@ export interface Fiche {
   illustration: IllustrationVue | null;
 }
 
-export interface IllustrationVue {
-  /** The file of the media library (bytes at `GET /fichiers/:id?v=<jeton>`). */
-  id: number;
-  jeton: string;
-}
+export type IllustrationVue =
+  | {
+      /** The file of the media library (bytes at `GET /fichiers/:id?v=<jeton>`). */
+      id: number;
+      jeton: string;
+    }
+  /** The reader may not read the file: no address, only the state (AD-117). */
+  | { fermee: true; message: string };
 
 /** Why a sheet cites another one (AD-100): a link in one of its sections, or a relation. */
 export type Pourquoi = { genre: 'lien'; section: string } | { genre: 'relation'; libelle: string };

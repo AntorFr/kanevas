@@ -43,7 +43,7 @@ export interface Fiche {
   sousType?: string | null;
   charge: { v?: number; pj?: boolean };
   /** The sheet's illustration (AD-93): `jeton` changes at each replacement and goes in the image address. */
-  illustration?: { id: number; jeton: string } | null;
+  illustration?: { id: number; jeton: string } | { fermee: true; message: string } | null;
 }
 
 /** One line of « Mentionnée dans » (AD-100). */

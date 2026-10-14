@@ -53,7 +53,8 @@ export function EnteteFiche({ universId, fiche, gestion, badge, Icone, message, 
   const [changement, setChangement] = useState(false);
   const { types } = useTypes();
 
-  const jeton = fiche.illustration?.jeton;
+  const ill = fiche.illustration && 'jeton' in fiche.illustration ? fiche.illustration : null;
+  const jeton = ill?.jeton;
   const base = `/api/univers/${universId}/fiches/${fiche.id}/illustration`;
   const illustree = jeton !== undefined || envoi !== null;
   const indisponible = jeton !== undefined && ko === jeton;
@@ -154,9 +155,9 @@ export function EnteteFiche({ universId, fiche, gestion, badge, Icone, message, 
           <figure className={`illustration${envoi ? ' en-envoi' : ''}`}>
             <div className="boite-ill">
               {jeton !== undefined && !indisponible ? (
-                <a className="cadre-ill" href={adresseIllustration(universId, fiche.illustration!.id, jeton)} target="_blank" rel="noopener" title="Ouvrir l’image entière">
+                <a className="cadre-ill" href={adresseIllustration(universId, ill!.id, jeton)} target="_blank" rel="noopener" title="Ouvrir l’image entière">
                   <img
-                    src={adresseIllustration(universId, fiche.illustration!.id, jeton)}
+                    src={adresseIllustration(universId, ill!.id, jeton)}
                     alt={`Illustration de « ${fiche.titre} »`}
                     width={600}
                     height={750}

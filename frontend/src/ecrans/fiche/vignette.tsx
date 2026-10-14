@@ -33,7 +33,8 @@ function Repli({ fiche }: { fiche: Fiche }) {
 /** A card of the grid of E-8: a link to the sheet, thumbnail (or fallback), title, PJ / PNJ for a character. */
 export function CarteFiche({ universId, fiche }: { universId: number | string; fiche: Fiche }) {
   const { types } = useTypes();
-  const jeton = fiche.illustration?.jeton;
+  const ill = fiche.illustration && 'jeton' in fiche.illustration ? fiche.illustration : null;
+  const jeton = ill?.jeton;
   const [ko, setKo] = useState<string>();
   const image = jeton !== undefined && ko !== jeton;
   return (
@@ -41,7 +42,7 @@ export function CarteFiche({ universId, fiche }: { universId: number | string; f
       <span className="vue">
         {image ? (
           <img
-            src={adresseIllustration(universId, fiche.illustration!.id, jeton)}
+            src={adresseIllustration(universId, ill!.id, jeton)}
             alt=""
             width={600}
             height={450}

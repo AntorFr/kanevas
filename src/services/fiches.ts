@@ -10,13 +10,15 @@ import {
 } from './droits.js';
 import { ErreurService, introuvable, invalide } from './erreurs.js';
 import { mentionsDe } from './mentions.js';
-import { lireLignes } from './fichiers.js';
+import { lireLignes, lisiblePar, type FichierRow } from './fichiers.js';
+import { IMAGE_RESERVEE } from './markdown.js';
 import { CHARGES, estTypeFiche, typeActif } from './types-fiche.js';
 import {
   TYPES_FICHE,
   type Acteur,
   type Fiche,
   type FicheVue,
+  type IllustrationVue,
   type PageMentions,
   type SectionRow,
   type TypeFiche,
@@ -34,11 +36,17 @@ interface FicheRow {
   modifie_le: string;
   illustration_fichier_id: number | null;
   illustration_disque: string | null;
+  illustration_visibilite: 'joueurs' | 'mj' | null;
+  illustration_ajoute_par: number | null;
   cle_origine: string | null;
   sous_type: string | null;
 }
 
-export const versFiche = (r: FicheRow): Fiche => ({
+/**
+ * The sheet as a reader sees it. Without `lecteur` (the GM's own writes) the illustration is the file; with
+ * one, a closed illustration is the « illustration fermée » state (AD-117, E-8, E-9), never its address.
+ */
+export const versFiche = (r: FicheRow, lecteur?: (f: Pick<FichierRow, 'visibilite' | 'ajoute_par'>) => boolean): Fiche => ({
   id: r.id,
   universId: r.univers_id,
   type: r.type,
@@ -47,11 +55,16 @@ export const versFiche = (r: FicheRow): Fiche => ({
   charge: JSON.parse(r.charge) as Record<string, unknown>,
   creeLe: r.cree_le,
   modifieLe: r.modifie_le,
-  illustration:
-    r.illustration_fichier_id !== null && r.illustration_disque !== null
-      ? { id: r.illustration_fichier_id, jeton: r.illustration_disque }
-      : null,
+  illustration: illustrationVue(r, lecteur),
 });
+
+function illustrationVue(r: FicheRow, lecteur?: (f: Pick<FichierRow, 'visibilite' | 'ajoute_par'>) => boolean): IllustrationVue | null {
+  if (r.illustration_fichier_id === null || r.illustration_disque === null) return null;
+  if (lecteur && !lecteur({ visibilite: r.illustration_visibilite!, ajoute_par: r.illustration_ajoute_par! })) {
+    return { fermee: true, message: IMAGE_RESERVEE };
+  }
+  return { id: r.illustration_fichier_id, jeton: r.illustration_disque };
+}
 
 export const MAX_SOUS_TYPE = 60;
 
@@ -73,7 +86,9 @@ export function validerTitre(titre: string, max: number, quoi: string): string {
 
 /** The name on the disk of the illustration file (the cache token), read with the sheet. */
 const DISQUE_ILLUSTRATION =
-  '(SELECT x.disque FROM fichiers x WHERE x.id = f.illustration_fichier_id) AS illustration_disque';
+  `(SELECT x.disque FROM fichiers x WHERE x.id = f.illustration_fichier_id) AS illustration_disque,
+   (SELECT x.visibilite FROM fichiers x WHERE x.id = f.illustration_fichier_id) AS illustration_visibilite,
+   (SELECT x.ajoute_par FROM fichiers x WHERE x.id = f.illustration_fichier_id) AS illustration_ajoute_par`;
 
 /** The sheet row of this universe, or not found (a sheet of another universe does not exist here). */
 export function chargerFiche(db: Db, universId: number, ficheId: number): FicheRow {
@@ -298,7 +313,7 @@ export function lireFiche(
   if (lisibles.length === 0 && (role !== 'mj' || acteur.modeJoueur)) throw introuvable();
   const mentions = mentionsDe(db, role, acteur, universId, ficheId);
   return {
-    ...versFiche(fiche),
+    ...versFiche(fiche, (f) => lisiblePar(role, acteur, f)),
     mentions: mentions.mentions,
     mentionsSuite: mentions.suite,
     mentionsRestantes: mentions.restantes,
@@ -425,5 +440,5 @@ export function listerFiches(
     rows.length > limite && dernier
       ? Buffer.from(JSON.stringify({ t: dernier.titre, i: dernier.id })).toString('base64url')
       : null;
-  return { fiches: page.map(versFiche), suivant };
+  return { fiches: page.map((r) => versFiche(r, (f) => lisiblePar(role, acteur, f))), suivant };
 }
