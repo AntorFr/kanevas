@@ -1,9 +1,9 @@
 import { Eye, EyeOff, Ellipsis, ExternalLink, Paperclip, Trash2 } from 'lucide-react';
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 
 import { ErreurApi, appeler, envoyerFichier, lire, useConnexionPerdue } from '../../../api';
 import { BlocSection as BlocUi, BoiteDialogue, Bouton, LigneFichier, Menu, Vignette, useToasts, type EntreeMenu } from '../../../ui';
+import { aller } from '../../assistant/adresse';
 import { iconeDe, type Usage } from '../../mediatheque/commun';
 import { useAjoutFichier } from '../fichiers';
 import type { BlocSection } from '../registre';
@@ -14,7 +14,6 @@ import type { PieceJointe, PropsBlocSection } from '../types';
 function BlocPiecesJointes({ universId, fiche, section, role, rafraichir, suffixeMode }: PropsBlocSection) {
   const perdue = useConnexionPerdue();
   const { toast } = useToasts();
-  const navigate = useNavigate();
   const mj = role === 'mj';
   const ecrit = mj || section.peutEcrire;
   const pieces = section.piecesJointes ?? [];
@@ -128,7 +127,7 @@ function BlocPiecesJointes({ universId, fiche, section, role, rafraichir, suffix
           : { libelle: 'Réserver au MJ', icone: EyeOff, impossible: perdue, onChoisir: () => void reserver(p) },
       );
     }
-    entrees.push({ libelle: 'Ouvrir dans la médiathèque', icone: ExternalLink, onChoisir: () => navigate(`/univers/${universId}/mediatheque?fichier=${p.id}`) });
+    entrees.push({ libelle: 'Ouvrir dans la médiathèque', icone: ExternalLink, onChoisir: () => aller(`/univers/${universId}/mediatheque?fichier=${p.id}`) });
     return <Menu etiquette={`Actions sur « ${p.nom} »`} icone={Ellipsis} entrees={entrees} />;
   };
 
