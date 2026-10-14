@@ -108,6 +108,23 @@ export function lireLot(db: Db, jeton: Jeton, lotId: number, maintenant: Date = 
   return versLot(row, maintenant);
 }
 
+/**
+ * Sheets whose wanted parent is not the one written (absent target, cycle), still where the import
+ * left them: a hand-moved sheet is not waiting (AD-115 (4)).
+ */
+function compterParentsEnAttente(db: Db, universId: number): number {
+  const { n } = db
+    .prepare(
+      `SELECT COUNT(*) AS n FROM fiches f
+        WHERE f.univers_id = ? AND json_extract(f.dernier_import, '$.parent.demande') IS NOT NULL
+          AND f.parent_id IS json_extract(f.dernier_import, '$.parent.ecrit')
+          AND NOT EXISTS (SELECT 1 FROM fiches p WHERE p.id = f.parent_id
+                            AND p.cle_origine = json_extract(f.dernier_import, '$.parent.demande'))`,
+    )
+    .get(universId) as { n: number };
+  return n;
+}
+
 /** Closes a batch (idempotent: a closed one keeps its date) and returns its report. */
 export function cloreLot(db: Db, jeton: Jeton, lotId: number, maintenant: Date = new Date()): Lot {
   lireLot(db, jeton, lotId, maintenant);
