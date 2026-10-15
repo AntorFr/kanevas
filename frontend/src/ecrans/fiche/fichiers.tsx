@@ -425,7 +425,6 @@ export function SelecteurFichier(p: PropsSelecteur) {
                     <Upload size={20} strokeWidth={1.75} aria-hidden="true" />
                     <span>Ajouter depuis l’appareil</span>
                   </span>
-                  <span className="med-nom">Nouveau fichier</span>
                 </button>
               </li>
             )}
