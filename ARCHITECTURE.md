@@ -191,9 +191,9 @@ base en snake_case (`docs/donnees.md`).
 # La cible
 
 > Construit à ce jour : l'API d'import des fiches et E-18 (`kanevas-import-fil`), le bloc MJ `:::mj` (`kanevas-import-secrets`, AD-114), la session, le mode bouchon, les tables et leurs fonctions de service,
-> les systèmes de jeu et leurs gabarits, les relations et la recherche dans tous les types, par alias et par étiquette (E-17, `kanevas-import-recherche`), le suivi (campagnes, scénarios, préparation, comptes-rendus), les écrans E-1 à E-11, E-13, E-14, E-15 et E-16 (E-9 avec son bloc Pièces jointes), l'illustration des fiches, les cartes et graphes (E-10, E-11, bloc « Cartes visibles » de E-3), le stockage des fichiers sur le volume, et l'assistant du membre (E-12 ; ses outils : chercher, lire, écrire dans une section, créer une campagne ou un scénario), et la proposition de mise à jour d'une section d'après un compte-rendu (`kanevas-monde` : outil `proposer_mise_a_jour`, routes `propositions`, bloc « Mise à jour proposée »). Le reste (images)
+> les systèmes de jeu et leurs gabarits, les relations et la recherche dans tous les types, par alias et par étiquette (E-17, `kanevas-import-recherche`), le suivi (campagnes, scénarios, préparation, comptes-rendus), les écrans E-1 à E-11, E-13, E-14, E-15 et E-16 (E-9 avec son bloc Pièces jointes), l'illustration des fiches, les cartes et graphes (E-10, E-11, bloc « Cartes visibles » de E-3), les types de fiche et l'arbre, les liens `[[…]]`, la médiathèque de l'univers (E-19, fichiers à droits propres, migration 0015), le stockage des fichiers sur le volume, et l'assistant du membre (E-12 ; ses outils : chercher, lire, écrire dans une section, créer une campagne ou un scénario), et la proposition de mise à jour d'une section d'après un compte-rendu (`kanevas-monde` : outil `proposer_mise_a_jour`, routes `propositions`, bloc « Mise à jour proposée »). Le reste (images)
 > est la cible des tranches suivantes. L'epic `kanevas-import` (cadrage proposé le 2026-10-11) ajoute
-> AD-95 à AD-111, l'« API d'import » et ses lignes de sécurité, de déploiement et de bouchons.
+> AD-95 à AD-120, l'« API d'import » et ses lignes de sécurité, de déploiement et de bouchons.
 
 ## Organes, et qui parle à qui
 
