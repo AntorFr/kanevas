@@ -1,4 +1,4 @@
-import { ChevronDown, ChevronRight, Download, FileText, ImageOff, Images, LayoutGrid, Lock, Plus, Search, Trash2, Upload, X } from 'lucide-react';
+import { ArrowDownWideNarrow, ChevronDown, ChevronRight, Download, FileText, ImageOff, Images, LayoutGrid, Lock, Search, Trash2, Upload, X } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
 
@@ -383,7 +383,7 @@ function Mediatheque() {
                 e.target.value = '';
               }}
             />
-            <Bouton variante="principal" icone={Plus} ecrit onClick={() => saisie.current?.click()}>
+            <Bouton variante="principal" icone={Upload} ecrit onClick={() => saisie.current?.click()}>
               Ajouter des fichiers
             </Bouton>
           </>
@@ -419,10 +419,13 @@ function Mediatheque() {
           <option value="utilises">Utilisés</option>
           <option value="non_utilises">Non utilisés</option>
         </Champ>
-        <Champ liste etiquette="Ordre" value={tri} onChange={(e: { target: { value: string } }) => setTri(e.target.value)}>
-          <option value="recent">Plus récents</option>
-          <option value="nom">Nom</option>
-        </Champ>
+        <span className="med-ordre">
+          <ArrowDownWideNarrow size={14} strokeWidth={1.75} aria-hidden="true" />
+          <Champ liste etiquette="Ordre" value={tri} onChange={(e: { target: { value: string } }) => setTri(e.target.value)}>
+            <option value="recent">Plus récents</option>
+            <option value="nom">Nom</option>
+          </Champ>
+        </span>
       </div>
 
       {echec && <div className="echec" role="alert">{echec}</div>}
@@ -464,7 +467,7 @@ function Mediatheque() {
           ) : mj ? (
             <>
               <p>Aucun fichier pour l’instant. Ajoutez-en, ou posez-en un dans une fiche.</p>
-              <Bouton variante="principal" icone={Plus} ecrit onClick={() => saisie.current?.click()}>
+              <Bouton variante="principal" icone={Upload} ecrit onClick={() => saisie.current?.click()}>
                 Ajouter des fichiers
               </Bouton>
             </>
