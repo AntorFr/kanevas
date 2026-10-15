@@ -133,6 +133,36 @@ test('Léa : ni fichier mj des autres, ni ajout, ni bascule, ni Supprimer ; adre
   await lea.screenshot({ path: '/tmp/scr/lea.png' });
 });
 
+test('réouverture 4 : l’en-tête compte la médiathèque lue (filtres à part, jamais la page) ; boîtes MJ / danger', opts, async () => {
+  await ouvrir(antor);
+  const api = await (await antor.request.get(`/api/univers/${uid}/fichiers`)).json();
+  const entete = async () => (await antor.locator('.med-compte').innerText()).trim();
+  assert.equal(await entete(), `${api.total} fichier${api.total > 1 ? 's' : ''}`);
+  // Filters narrow the grid, not the library count (« 1 140 fichiers », docs/maquettes/e19-mediatheque.html).
+  await antor.locator('label', { hasText: /^Images$/ }).click();
+  await antor.getByLabel('Usage').selectOption({ label: 'Non utilisés' });
+  await antor.waitForLoadState('networkidle');
+  assert.equal(await entete(), `${api.total} fichier${api.total > 1 ? 's' : ''}`, 'filtres : le compte de la médiathèque ne bouge pas');
+  await antor.locator('label', { hasText: /^Tout$/ }).click();
+  await antor.getByLabel('Usage').selectOption({ index: 0 });
+  // Reserve box: GM amber badge + primary button; delete button of the panel is a ghost, danger-coloured.
+  await ouvrirFichier(antor, 'Carte des Sphères');
+  const sup = antor.locator('.med-panneau').getByRole('button', { name: 'Supprimer le fichier' });
+  assert.match(await sup.getAttribute('class'), /fantome/);
+  await antor.getByText('Réservé au MJ', { exact: true }).click();
+  const boite = antor.getByRole('alertdialog');
+  await boite.waitFor();
+  assert.equal(await boite.locator('.boite-icone.mj').count(), 1, 'cadenas MJ');
+  assert.match(await boite.getByRole('button', { name: 'Réserver au MJ' }).getAttribute('class'), /principal/);
+  await boite.getByRole('button', { name: 'Annuler' }).click();
+  await sup.click();
+  const b2 = antor.getByRole('alertdialog');
+  await b2.waitFor();
+  assert.equal(await b2.locator('.boite-icone.mj').count(), 0);
+  assert.match(await b2.getByRole('button', { name: 'Supprimer le fichier' }).getAttribute('class'), /danger/);
+  await b2.getByRole('button', { name: 'Annuler' }).click();
+});
+
 test('supprimer « Carte des Sphères » : la boîte liste les trois fiches, toast', opts, async () => {
   await ouvrir(antor);
   await ouvrirFichier(antor, 'Carte des Sphères');
@@ -288,34 +318,4 @@ test('réouverture 3 : libellés « Visibilité » et « Usage » visibles, icô
   const sel = await p.locator('.med-ordre select').evaluate((e: Any) => e.scrollWidth <= e.clientWidth);
   assert.ok(sel, 'libellé d’ordre non coupé');
   await p.setViewportSize({ width: 1280, height: 800 });
-});
-
-test('réouverture 4 : l’en-tête compte la médiathèque lue (filtres à part, jamais la page) ; boîtes MJ / danger', opts, async () => {
-  await ouvrir(antor);
-  const api = await (await antor.request.get(`/api/univers/${uid}/fichiers`)).json();
-  const entete = async () => (await antor.locator('.med-compte').innerText()).trim();
-  assert.equal(await entete(), `${api.total} fichier${api.total > 1 ? 's' : ''}`);
-  // Filters narrow the grid, not the library count (« 1 140 fichiers », docs/maquettes/e19-mediatheque.html).
-  await antor.locator('label', { hasText: /^Images$/ }).click();
-  await antor.getByLabel('Usage').selectOption({ label: 'Non utilisés' });
-  await antor.waitForLoadState('networkidle');
-  assert.equal(await entete(), `${api.total} fichier${api.total > 1 ? 's' : ''}`, 'filtres : le compte de la médiathèque ne bouge pas');
-  await antor.locator('label', { hasText: /^Tout$/ }).click();
-  await antor.getByLabel('Usage').selectOption({ index: 0 });
-  // Reserve box: GM amber badge + primary button; delete button of the panel is a ghost, danger-coloured.
-  await ouvrirFichier(antor, 'Carte des Sphères');
-  const sup = antor.locator('.med-panneau').getByRole('button', { name: 'Supprimer le fichier' });
-  assert.match(await sup.getAttribute('class'), /fantome/);
-  await antor.getByText('Réservé au MJ', { exact: true }).click();
-  const boite = antor.getByRole('alertdialog');
-  await boite.waitFor();
-  assert.equal(await boite.locator('.boite-icone.mj').count(), 1, 'cadenas MJ');
-  assert.match(await boite.getByRole('button', { name: 'Réserver au MJ' }).getAttribute('class'), /principal/);
-  await boite.getByRole('button', { name: 'Annuler' }).click();
-  await sup.click();
-  const b2 = antor.getByRole('alertdialog');
-  await b2.waitFor();
-  assert.equal(await b2.locator('.boite-icone.mj').count(), 0);
-  assert.match(await b2.getByRole('button', { name: 'Supprimer le fichier' }).getAttribute('class'), /danger/);
-  await b2.getByRole('button', { name: 'Annuler' }).click();
 });
