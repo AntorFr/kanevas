@@ -91,8 +91,8 @@ test('types, sous-type, savoir désactivé, illisible', async () => {
   assert.deepEqual(await m.titres('lea', 'q=recit'), ["Chronique de l'Âge d'Ombre"]);
   assert.ok(!(await m.titres('lea', 'q=cendres')).includes('Cercle des Cendres'));
   assert.ok((await m.titres('antor', 'q=cendres')).includes('Cercle des Cendres'));
-  assert.deepEqual(await m.titres('lea', 'q=taverne'), ['Le Pendu Joyeux']);
-  assert.deepEqual(await m.titres('lea', 'q=taverne&type=lieu'), ['Le Pendu Joyeux']);
+  assert.deepEqual(await m.titres('lea', 'q=taverne'), ['La Taverne du Kraken', 'Le Pendu Joyeux']);
+  assert.deepEqual(await m.titres('lea', 'q=taverne&type=lieu'), ['La Taverne du Kraken', 'Le Pendu Joyeux']);
   assert.deepEqual(await m.titres('lea', 'q=taverne&type=personnage'), []);
   const l = (await m.liste('lea', 'q=taverne&type=lieu')).json.fiches;
   assert.ok(l.every((f: Any) => f.type === 'lieu'));

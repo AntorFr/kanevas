@@ -132,7 +132,35 @@ export interface PageMentions {
   restantes: number;
 }
 
+/** An ancestor the reader may read (AD-115 (2)). */
+export interface Ancetre {
+  id: number;
+  titre: string;
+  type: TypeFiche;
+}
+
+/** A child in « Contient » (AD-115 (3)): no count of what is hidden. */
+export interface Enfant {
+  id: number;
+  titre: string;
+  type: TypeFiche;
+  sousType: string | null;
+}
+
+export interface PageEnfants {
+  enfants: Enfant[];
+  suivant: string | null;
+}
+
+/** A sheet of the tree of a type: `dans` is its readable parent of another type. */
+export interface FicheArbre extends Fiche {
+  aDesEnfants: boolean;
+  dans: { id: number; titre: string } | null;
+}
+
 export interface FicheVue extends Fiche {
+  /** Readable ancestors, highest first (AD-115 (2)). */
+  ancetres: Ancetre[];
   /** Other names of the sheet and its labels (AD-118), sorted. */
   alias: string[];
   etiquettes: string[];

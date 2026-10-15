@@ -9,7 +9,14 @@ import {
   nettoyer,
   poserEtiquetage,
 } from './etiquettes.js';
-import { changerSousType, changerTypeFiche, creerFiche, renommerFiche, validerSousType } from './fiches.js';
+import {
+  changerSousType,
+  changerTypeFiche,
+  creerFiche,
+  deplacerFiche,
+  renommerFiche,
+  validerSousType,
+} from './fiches.js';
 import type { Jeton } from './jetons.js';
 import { preparerContenu } from './liens.js';
 import { lireLot, noterDansLot, type EntreeRapport, type Issue } from './lots.js';
@@ -54,6 +61,8 @@ interface FicheEntree {
   /** `undefined`: the request says nothing (left as is). Cleaned, bounds not yet checked. */
   alias?: string[];
   etiquettes?: string[];
+  /** Origin key of the wanted parent; `null`: no parent; `undefined`: the request says nothing. */
+  parent?: string | null;
   creeLe?: string;
   modifieLe?: string;
   sections: SectionEntree[];
@@ -136,6 +145,13 @@ function lireCorps(corps: unknown, maintenant: Date): FicheEntree {
   };
   const alias = ensemble(c.alias, 'alias');
   const etiquettes = ensemble(c.etiquettes, 'etiquettes');
+  let parent: string | null | undefined;
+  if (c.parent !== undefined && c.parent !== null) {
+    if (typeof c.parent !== 'string' || !cleValide(c.parent)) {
+      throw new Refus('parent', 'fiche', "parent : clé d'origine absente ou invalide");
+    }
+    parent = c.parent;
+  } else parent = c.parent;
   const brutes = c.sections ?? [];
   if (!Array.isArray(brutes)) throw new Refus('sections', 'fiche', 'sections : une liste est attendue');
   const vues = new Set<string>();
@@ -170,7 +186,7 @@ function lireCorps(corps: unknown, maintenant: Date): FicheEntree {
       joueursEcrivent: booleen(s.joueursEcrivent, `${ch}.joueursEcrivent`, 'section'),
     };
   });
-  return { type, titre, sousType, pj, alias, etiquettes, creeLe, modifieLe, sections };
+  return { type, titre, sousType, pj, alias, etiquettes, parent, creeLe, modifieLe, sections };
 }
 
 interface FicheLue {
@@ -195,6 +211,8 @@ interface MarqueFiche {
   sousType?: string | null;
   alias?: string[];
   etiquettes?: string[];
+  /** `demande`: the key asked; `ecrit`: id of the parent the import left (null: none). AD-115 (4). */
+  parent?: { demande: string | null; ecrit: number | null };
 }
 
 interface MarqueSection {
@@ -313,6 +331,13 @@ function ecrire(
       poserEtiquetage(db, { compteId }, universId, fiche.id, { alias: alias ?? [], etiquettes: etiquettes ?? [] });
     }
     for (const s of e.sections) creerSection(db, jeton, fiche.id, s);
+    if (e.parent !== undefined) {
+      const m = poserParent(db, jeton, fiche.id, cle, e.parent, null, undefined, prevenir);
+      if (m) {
+        marque.parent = m;
+        db.prepare('UPDATE fiches SET dernier_import = ? WHERE id = ?').run(JSON.stringify(marque), fiche.id);
+      }
+    }
     // Adding sections touched the sheet with « now »; a date given by the source is the sheet's.
     if (e.modifieLe) db.prepare('UPDATE fiches SET modifie_le = ? WHERE id = ?').run(e.modifieLe, fiche.id);
     return { id: fiche.id, etat: 'creee' };
@@ -392,6 +417,18 @@ function ecrire(
     ecrit = true;
   }
 
+  // Parent: written through `deplacerFiche`, protected like the other fields (AD-115 (4)).
+  if (e.parent !== undefined) {
+    const courantParent = (
+      db.prepare('SELECT parent_id FROM fiches WHERE id = ?').get(existante.id) as { parent_id: number | null }
+    ).parent_id;
+    const m = poserParent(db, jeton, existante.id, cle, e.parent, courantParent, di?.parent, prevenir);
+    if (m) {
+      if (m.ecrit !== courantParent) ecrit = true;
+      marque.parent = m;
+    }
+  }
+
   // Sections, by origin key.
   const lignes = db
     .prepare('SELECT * FROM sections WHERE fiche_id = ? ORDER BY ordre')
@@ -424,6 +461,56 @@ function ecrire(
     db.prepare('UPDATE fiches SET dernier_import = ? WHERE id = ?').run(json, existante.id);
   }
   return { id: existante.id, etat: ecrit ? 'mise_a_jour' : 'inchangee' };
+}
+
+/**
+ * Puts the sheet under the parent the request names, unless a human moved it since the import.
+ * Returns the new `dernier_import.parent`, or undefined to leave it as it was.
+ */
+function poserParent(
+  db: Db,
+  jeton: Jeton,
+  ficheId: number,
+  cle: string,
+  voulu: string | null,
+  courant: number | null,
+  avant: { demande: string | null; ecrit: number | null } | undefined,
+  prevenir: (objet: string, raison: string) => void,
+): { demande: string | null; ecrit: number | null } | undefined {
+  const { universId, compteId } = jeton;
+  const cible =
+    voulu === null
+      ? null
+      : ((
+          db.prepare('SELECT id FROM fiches WHERE univers_id = ? AND cle_origine = ?').get(universId, voulu) as
+            | { id: number }
+            | undefined
+        )?.id ?? undefined);
+  // Already where it should be.
+  if (cible !== undefined && cible === courant) return { demande: voulu, ecrit: courant };
+  // What the import left is what is there now, else a human moved it (B-48).
+  if (courant !== (avant?.ecrit ?? null)) {
+    prevenir('fiche', 'parent modifié dans Kanevas : non écrasé');
+    return undefined;
+  }
+  if (cible === undefined) {
+    prevenir('fiche', `parent ${voulu} inconnu : fiche écrite sans parent`);
+    return { demande: voulu, ecrit: courant };
+  }
+  try {
+    deplacerFiche(db, { compteId }, universId, ficheId, cible);
+  } catch (err) {
+    if (err instanceof ErreurService && err.detail === 'cycle') {
+      prevenir('fiche', `parent ${voulu} ferait un cycle : non posé`);
+      return { demande: voulu, ecrit: courant };
+    }
+    if (err instanceof ErreurService && err.detail === 'trop_profond') {
+      prevenir('fiche', `parent ${voulu} : hiérarchie trop profonde : non posé`);
+      return { demande: voulu, ecrit: courant };
+    }
+    throw err;
+  }
+  return { demande: voulu, ecrit: cible };
 }
 
 const cle1 = (x: string) => x.toLowerCase();

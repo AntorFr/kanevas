@@ -1,0 +1,8 @@
+/* Block « Contient » of E-9: a row like « Mentionnée dans », tokens only. */
+.bloc-contient h2.bloc-libelle { margin: 0; font-weight: 400; }
+.bloc-contient .bloc-contenu { flex-direction: column; align-items: flex-start; flex-wrap: nowrap; }
+.bloc-contient .enfants { list-style: none; margin: 0; padding: 0; width: 100%; display: flex; flex-wrap: wrap; gap: 6px; }
+.bloc-contient .enfants small { color: var(--texte-3); font-size: var(--t-12); }
+.bloc-contient .cible:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.bloc-contient .chargement-contient { margin: 0; color: var(--texte-3); font-size: var(--t-14); }
+.bloc-contient .echec { color: var(--danger); font-size: var(--t-14); }

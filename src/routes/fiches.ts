@@ -6,7 +6,9 @@ import {
   changerSousType,
   changerTypeFiche,
   creerFiche,
+  deplacerFiche,
   lireFiche,
+  listerEnfants,
   lireMentions,
   listerFiches,
   listerSousTypes,
@@ -83,8 +85,18 @@ export function registerFichesRoutes(app: FastifyInstance) {
   app.patch(`${base}/:fid`, async (request) => {
     const i = ids(request);
     const b = corps(request);
-    if (b.sousType === undefined) throw invalide('Rien à modifier.');
-    return changerSousType(app.db, request.session!.id, i.univers, i.fiche, b.sousType);
+    if (b.sousType === undefined && b.parent === undefined) throw invalide('Rien à modifier.');
+    if (b.parent !== undefined && b.parent !== null && !Number.isSafeInteger(b.parent)) {
+      throw invalide('Le parent doit être une fiche ou null.');
+    }
+    // `parent` is the one write of `parent_id` (AD-115): it goes through `deplacerFiche`.
+    const a = acteur(request);
+    return app.db.transaction(() => {
+      let fiche;
+      if (b.sousType !== undefined) fiche = changerSousType(app.db, a.compteId, i.univers, i.fiche, b.sousType);
+      if (b.parent !== undefined) fiche = deplacerFiche(app.db, a, i.univers, i.fiche, b.parent as number | null);
+      return fiche;
+    })();
   });
 
   // Same row, other type (AD-120 (4)); `charge` carries `pj` for a character, `sousType` a new sub-type.
@@ -107,8 +119,14 @@ export function registerFichesRoutes(app: FastifyInstance) {
 
   app.get(base, async (request) => {
     const q = request.query as Record<string, unknown>;
-    for (const k of ['type', 'sousType', 'etiquette', 'curseur', 'q']) {
+    for (const k of ['type', 'sousType', 'etiquette', 'curseur', 'q', 'parent']) {
       if (q[k] !== undefined && typeof q[k] !== 'string') throw invalide('Requête invalide.');
+    }
+    let parent: 'racine' | number | undefined;
+    if (q.parent !== undefined) {
+      if (q.parent === 'racine') parent = 'racine';
+      else if (/^\d{1,9}$/.test(q.parent as string)) parent = Number(q.parent);
+      else throw invalide('Requête invalide.');
     }
     return listerFiches(app.db, acteur(request), ids(request).univers, {
       type: q.type as string | undefined,
@@ -116,6 +134,7 @@ export function registerFichesRoutes(app: FastifyInstance) {
       etiquette: q.etiquette as string | undefined,
       curseur: q.curseur as string | undefined,
       recherche: q.q as string | undefined,
+      parent,
     });
   });
 
@@ -133,6 +152,14 @@ export function registerFichesRoutes(app: FastifyInstance) {
   app.get(`${base}/:fid`, async (request) => {
     const i = ids(request);
     return lireFiche(app.db, acteur(request), i.univers, i.fiche);
+  });
+
+  // « Contient » (AD-115): the readable children, fifty at a time, no count.
+  app.get(`${base}/:fid/enfants`, async (request) => {
+    const i = ids(request);
+    const c = (request.query as Record<string, unknown>).curseur;
+    if (c !== undefined && typeof c !== 'string') throw invalide('Requête invalide.');
+    return listerEnfants(app.db, acteur(request), i.univers, i.fiche, c);
   });
 
   // Aliases and labels replaced as a whole (AD-118 (5)); GM outside player mode.

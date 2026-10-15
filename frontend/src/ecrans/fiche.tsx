@@ -14,6 +14,7 @@ import type { FicheVue, Mention } from './fiche/types';
 import { lignesDuType } from './fiche/lignes/registre';
 import { badgeFiche, iconeDuType, typeParType, useTypes } from '../types-contexte';
 import { BlocMentions } from './fiche/mentions';
+import { BlocContient } from './fiche/contient';
 import { EnteteFiche, type MessageIllustration } from './fiche/entete';
 
 /** Stable empty list: the mentions block resets on a new array. */
@@ -55,7 +56,7 @@ function PageFiche() {
   // The GM / player toggle lives in the frame's top bar; it is offered unless the sheet does not exist.
   const mode = useBasculeMode(role === 'mj' && etat.k !== 'introuvable');
   const ficheVue = etat.k === 'ok' || etat.k === 'aucune-visible' ? etat.fiche : undefined;
-  useTitreAriane(ficheVue?.titre, ficheVue && typeParType(types, ficheVue.type)?.pluriel);
+  useTitreAriane(ficheVue?.titre, ficheVue && typeParType(types, ficheVue.type)?.pluriel, ficheVue?.ancetres);
   const modeEffectif: 'mj' | 'joueur' = role === 'mj' ? mode : 'joueur';
   const suffixe = role === 'mj' && mode === 'joueur' ? '?mode=joueur' : '';
   const base = `/api/univers/${id}/fiches/${fid}`;
@@ -221,6 +222,7 @@ function PageFiche() {
           ))}
         </div>
       )}
+      <BlocContient universId={id!} ficheId={fiche.id} suffixeMode={suffixe} />
       {etat.k === 'ok' && (
         <BlocMentions
           universId={id!}

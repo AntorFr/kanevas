@@ -36,7 +36,7 @@ téléphone (moins de 760 px), la barre est un tiroir sous un bouton « Menu »,
 haute.
 
 Au-dessus de chaque écran d'un univers, une **barre haute** : le fil d'Ariane (univers › type ›
-fiche ; depuis `kanevas-import`, univers › type › ancêtres lisibles › fiche, B-35 ; au téléphone, l'icône du type et le titre seul) et, sur les écrans où elle existe, la
+fiche ; depuis `kanevas-import`, univers › type › ancêtres lisibles › fiche, B-35 ; au téléphone (≤ 760 px), le sceau de l'univers et le libellé du type disparaissent, et à 480 px et moins les ancêtres se replient (menu « … » dès deux ancêtres) : voir E-9) et, sur les écrans où elle existe, la
 bascule mode MJ / mode Joueur.
 
 Hors d'un univers (E-1, E-2, E-5, E-15, E-16), une barre réduite : **Mes univers**, **Systèmes de
@@ -2228,7 +2228,7 @@ seul qui ne connaît pas le mode Joueur : un lien cassé ou en attente y est tou
 
 **En-tête.** Fil d'Ariane : univers › type › ancêtres **lisibles** du plus haut au plus proche ›
 fiche ; un ancêtre illisible est sauté sans marque (B-35) ; plus de trois ancêtres : le premier, « … »
-(menu des autres), les deux derniers. « Poser » ou « Remplacer » l'illustration (MJ) ouvre les deux
+(menu des autres), les deux derniers. **Largeur (AD-99, arbitrage du 2026-10-15)** : le titre de la fiche courante cède en dernier (les ancêtres rétrécissent d'abord, jusqu'à leur minimum) ; un maillon d'ancêtre garde au moins 8 caractères (largeur `8ch`) et s'ellipse par « … » au-delà, jamais en dessous ; aucun maillon ne recouvre un chevron. Au téléphone (≤ 480 px), dès qu'il y a deux ancêtres lisibles ou plus, tous passent dans le menu « … » (icône du type › « … » › titre) ; avec un seul, il s'ellipse comme dit, sauf pour un MJ sur une fiche (la bascule MJ / Joueur prend la largeur du fil) : il passe alors lui aussi dans « … ». Entre 481 et 760 px, les ancêtres restent visibles. « Poser » ou « Remplacer » l'illustration (MJ) ouvre les deux
 chemins d'ajout (« Fichiers », ci-dessous), limités aux images ; « Retirer » ôte la référence, l'image reste dans la
 médiathèque. Le badge du type porte le **sous-type** : « Lieu · Port » (B-52) ;
 MJ, hors mode Joueur : un clic sur le sous-type l'édite en place, avec la liste des sous-types déjà
@@ -2251,7 +2251,7 @@ tout autre rôle que le MJ (hors mode Joueur) : ni le menu, ni la réponse de le
   type, puisqu'il est propre au type, avec les sous-types déjà employés pour le nouveau type). Le
   compte-rendu n'y figure pas ; un compte-rendu n'a pas cette entrée.
 - *Déplacer sous…* : boîte « Déplacer « Port-Sel » sous… », champ « Chercher une fiche » et la liste de
-  recherche (tous types, fiches que le MJ lit), plus « Aucun parent » ; « Déplacer » / « Annuler » ;
+  recherche (tous types, fiches que le MJ lit), plus « Aucun parent » ; pied : « Annuler » puis « Déplacer » (à droite au bureau, côte à côte sur toute la largeur, 40 px de haut, au téléphone) ;
   un descendant de la fiche est refusé : « Une fiche ne peut pas être rangée sous l'un de ses
   descendants. ».
 - *Alias et étiquettes* : deux champs à pastilles (Entrée ajoute, × retire) ; une étiquette se
@@ -2315,8 +2315,8 @@ d'autre fichier. » au joueur) ; les références dans le texte ne comptent pas.
 
 | État | Ce qu'on voit | Ce qu'on peut faire |
 |---|---|---|
-| vide | fiche importée sans section : comme avant ; ni « Contient » ni « Mentionnée dans » | MJ : ajouter une section |
-| chargement | squelettes de l'en-tête et de deux sections ; les blocs de fiche arrivent avec la fiche (une seule réponse) | — |
+| vide | fiche importée sans section : comme avant ; ni « Mentionnée dans » ; « Contient » seulement si elle a des enfants lisibles | MJ : ajouter une section |
+| chargement | squelettes de l'en-tête et de deux sections ; la fiche et ses sections arrivent en une réponse, « Contient » dans une seconde (« Chargement… » sous son titre) | — |
 | erreur | « Impossible de charger cette fiche. » ; image insérée qui ne se charge pas : « Image indisponible. » à sa place, sa légende dessous ; déplacement, changement de type, suppression qui échoue : « L'action n'a pas abouti. Réessayez. », rien n'a changé | « Réessayer » |
 | connexion perdue | le bandeau ; « Modifier », le menu « ⋯ », l'édition du titre désactivés ; les liens restent suivables | lire |
 | refus | fiche illisible : « Page introuvable. » ; un lien vers elle n'est que du texte ; supprimée pendant la lecture : « Page introuvable. » à l'action suivante ; Joueur : ni menu « ⋯ », ni édition du titre (**caché**) | « Mes univers » |
@@ -2582,6 +2582,56 @@ facultatif, avec la même complétion que E-9.
 - Étant donné « Port-Sel » et « Havre-Gris » de sous-type « Port », et « Port-Noir » de sous-type
   « Port » que Léa ne lit pas, quand Léa filtre « Lieux » sur « Port », alors elle voit « Port-Sel » et
   « Havre-Gris », et le filtre dit « Port (2) ».
+
+### Ce que `kanevas-import-arbre` construit (E-8 arbre, E-9 fil, « Contient », « Déplacer sous… »)
+
+*Précisions de la tranche, sur le cadre ci-dessus (AD-99, AD-115) ; la maquette de E-9 est `e09-fiche-importee.html`
+(`#etat-deplacer`), l'arbre n'en a pas.*
+
+**Arbre (E-8).** L'adresse ne change pas ; le choix « Grille / Arbre » est gardé par type sous la clé
+`kanevas:vue-liste:<univers>:<type>` du navigateur (`localStorage`, valeurs `grille`, `arbre`) ; absent : la grille.
+La liste est un `role="tree"`, chaque nœud un `role="treeitem"` avec `aria-expanded` quand il a un chevron et
+`aria-level` ; le chevron est un bouton (`aria-label` « Déplier » / « Replier ») distinct du lien vers la fiche ;
+au clavier, flèche droite déplie, flèche gauche replie, Entrée ouvre. Déplier appelle
+`GET …/fiches?type=T&parent=<id>` ; replier garde ce qui est chargé, le déplier de nouveau ne rappelle pas.
+Les racines sont `…&parent=racine` ; « Charger la suite » charge la page suivante d'un nœud ou des racines.
+Un nœud sans enfant lisible du même type n'a pas de chevron (le champ `aDesEnfants`). La ligne d'un nœud :
+icône du type, titre, sous-type (`--texte-3`), et « dans « La Guilde des Brumes » » quand `dans` est rendu.
+Au téléphone, l'indentation vaut 12 px par niveau, plafonnée à 6 niveaux ; la ligne ne passe pas sous 44 px de haut.
+En mode Joueur d'un MJ, la bascule garde son choix et l'arbre se recharge sous le mode. Un filtre de sous-type ou une recherche rend la grille ; vider le filtre ou la recherche rend l'arbre si c'était le choix mémorisé. Un nœud déplié dont la fiche devient illisible entre deux lectures disparaît à la lecture suivante (404 : « Impossible de charger la suite. »). Un parent « en attente » de l'import (AD-104) est compté, avec les liens en attente, dans la ligne « liens et références en attente » de E-18 ; le rejeu qui le pose se voit dans l'arbre.
+
+**Fil d'Ariane (E-9).** `ancetres` vient de la vue de la fiche ; chaque ancêtre est un lien vers sa fiche ; une
+fiche sans ancêtre lisible a le fil de toujours. Plus de trois ancêtres : le premier, « … » (un menu qui liste
+les autres, avec leur type), les deux derniers. Le retour par le fil (P-12 étape 5) est ce lien : aucun état
+particulier. Un ancêtre qui devient illisible entre deux lectures n'est plus dans le fil à la lecture suivante.
+
+**« Contient » (E-9).** Le bloc suit les textes de `Contient` plus haut. Il appelle
+`GET …/fiches/:fid/enfants` une fois la fiche chargée, indépendamment des sections (la fiche et ses sections arrivent en une réponse, « Contient » dans une seconde) : son erreur ne retire pas le
+texte. Ses états : *chargement* « Chargement… » sous le titre du bloc ; *erreur* « Impossible de charger les
+enfants. » avec « Réessayer » ; *vide* le bloc est absent ; *contenu long* 50 puis « Afficher les N suivants »
+(N = ce que la page suivante compte, jamais un total) ; l'échec de cette suite dit « Impossible de charger la suite. » sans retirer ce qui est affiché ; connexion perdue : le bandeau, le bloc chargé reste ; fiche supprimée entre-temps (404) : le bloc disparaît. Une fiche sans section lisible mais avec des enfants lisibles montre quand même « Contient ». Chaque enfant montre l'icône, le titre et le sous-type (« Taverne »). En mode Joueur le bloc se relit sous le mode.
+
+**« Déplacer sous… » (E-9).** La boîte est celle de `#etat-deplacer`. Le champ cherche dans la liste de
+recherche existante (`GET …/fiches?q=`, sans `type`, 300 ms après la frappe, 1 caractère au moins, 100 au plus) ;
+la fiche elle-même est écartée de la liste ; une ligne montre l'icône du type, le titre et le sous-type (« Lieu · Sphère »), et la recherche porte sur le titre seul (le placeholder « Titre ou alias » de la maquette est celui de E-17 : ici le champ dit « Chercher une fiche ») ; « 1 caractère au moins, 100 au plus » vise la saisie, la liste rend 100 lignes au plus puis « Charger la suite », et défile dans la boîte ; avant toute saisie la liste dit « Tapez le début d'un titre. » ; une saisie sans résultat dit « Aucune fiche ne correspond. », la recherche en cours « Recherche… », son échec « Impossible de chercher. » avec « Réessayer » ; « Aucun parent » est la première ligne et met la fiche à la racine.
+« Déplacer » reste inactif tant qu'aucune ligne n'est choisie (la maquette le montre actif parce qu'un choix y est déjà fait) ; le refus s'écrit sous le champ ; il envoie `PATCH …/fiches/:fid` `{parent}`. Réponses :
+succès (200, la fiche en réponse) → la boîte se ferme, le fil se recharge et le toast dit « Fiche déplacée. » ; 400 `cycle` → le texte
+« Une fiche ne peut pas être rangée sous l'un de ses descendants. » sous le champ, la boîte reste ouverte ;
+400 `trop_profond` → « La hiérarchie est trop profonde. » et 404 → « Introuvable. », tous deux sous le champ comme le cycle ; connexion perdue →
+bandeau, « Déplacer » désactivé. La boîte n'existe que pour un MJ hors mode Joueur, et le menu « ⋯ » est absent pour un Joueur. Une fiche de tout type peut être parent ou enfant, un compte-rendu compris (AD-99) : « Déplacer sous… » existe aussi pour lui (MJ seulement : un Joueur, même auteur de son compte-rendu, n'a pas le menu « ⋯ ») ; E-13 ne montre pas la hiérarchie et ne change pas.
+
+*Critères de la tranche* (les données sont celles du semis, `docs/ecrans.md` plus haut) :
+- Étant donné « Les Sphères » (lieu MJ seul) dont « Port-Sel » est l'enfant, quand Léa ouvre « Lieux » en arbre,
+  alors « Port-Sel » est une racine sans « dans … » (son parent est illisible) ; Antor, lui, voit « Les Sphères »
+  racine, et « Port-Sel » dessous.
+- Étant donné « Le Repaire des contrebandiers » (MJ seul) sous « Port-Sel », quand Léa déplie « Port-Sel », alors
+  elle voit « La Taverne du Kraken », « Les Docks », « Le Phare aux Sels » et « Quartier des Cordiers », pas le Repaire,
+  et aucun nombre ne lui dit qu'il existe.
+- Étant donné un enfant d'un autre type sous « Port-Sel » (un événement lu des joueurs ; le semis du bouchon n'en pose pas, il se crée ou s'importe pour ce critère), quand Léa déplie
+  « Port-Sel » dans « Lieux », alors cet enfant n'y est pas ; il est dans « Contient » de « Port-Sel », et dans
+  « Événements » il porte « dans Port-Sel ».
+- Étant donné une réponse de `GET …/fiches?type=lieu&parent=racine` pour Léa, alors aucun champ ne porte le titre,
+  l'identifiant ou le nombre d'une fiche qu'elle ne lit pas (`dans` est `null` si le parent est illisible).
 
 ### E-17 Recherche
 

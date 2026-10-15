@@ -73,8 +73,10 @@
 .bouton-menu { display: none; }
 .ariane { display: flex; align-items: center; gap: 2px; min-width: 0; flex: 1; font-size: var(--t-13); color: var(--texte-2); }
 .ariane .maillon { display: inline-flex; align-items: center; gap: 2px; min-width: 0; }
+/* An ancestor keeps 8 characters (+ link padding and its chevron) then ellipses; it never goes below, nor over a chevron. */
+.ariane .maillon:not(.dernier):not(.long):not(.milieu):not(.plie) { flex-shrink: 1000; min-width: calc(8ch + 12px + 16px); }
 .ariane .maillon.dernier { flex: 0 1 auto; }
-.ariane a { display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 6px; border-radius: var(--rayon-item); color: inherit; text-decoration: none; white-space: nowrap;
+.ariane a { display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 6px; border-radius: var(--rayon-item); color: inherit; text-decoration: none; white-space: nowrap; min-width: 0; overflow: hidden; text-overflow: ellipsis;
   transition: background-color var(--duree), color var(--duree); }
 .ariane a:hover { background: var(--surface-2); color: var(--texte); }
 .ariane .courant { display: inline-flex; align-items: center; gap: 6px; min-width: 0; padding: 0 6px; }

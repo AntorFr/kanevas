@@ -1,4 +1,4 @@
-import { ArrowRightLeft, Ellipsis, Info, ImageOff, ImagePlus, ImageUp, Lock, Tags, Trash2, TriangleAlert, type LucideIcon } from 'lucide-react';
+import { ArrowRightLeft, Ellipsis, FolderInput, Info, ImageOff, ImagePlus, ImageUp, Lock, Tags, Trash2, TriangleAlert, type LucideIcon } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 
@@ -7,6 +7,7 @@ import { Alerte, Bouton, BoutonIcone, Menu, useToasts } from '../../ui';
 import type { FicheVue } from './types';
 import { ChangerType } from './changer-type';
 import { BoiteEtiquetage } from './etiquetage';
+import { DeplacerSous } from './deplacer';
 import { SousTypeBadge } from './sous-type';
 import { adresseIllustration } from './vignette';
 import type { Detail } from '../mediatheque/commun';
@@ -54,6 +55,7 @@ export function EnteteFiche({ universId, fiche, gestion, modeJoueur, badge, Icon
   const [changement, setChangement] = useState(false);
   const [visibilite, setVisibilite] = useState<{ id: number; v: 'joueurs' | 'mj' }>();
   const [etiquetage, setEtiquetage] = useState(false);
+  const [deplacement, setDeplacement] = useState(false);
   const alias = fiche.alias ?? [];
   const etiquettes = fiche.etiquettes ?? [];
   const { types } = useTypes();
@@ -226,6 +228,7 @@ export function EnteteFiche({ universId, fiche, gestion, modeJoueur, badge, Icon
                   ...(fiche.type !== 'compte_rendu'
                     ? [{ libelle: 'Changer le type…', icone: ArrowRightLeft, onChoisir: () => setChangement(true) }]
                     : []),
+                  { libelle: 'Déplacer sous…', icone: FolderInput, onChoisir: () => setDeplacement(true) },
                   { libelle: 'Alias et étiquettes…', icone: Tags, onChoisir: () => setEtiquetage(true) },
                   ...(fiche.cleOrigine ? [{ separateur: true as const }] : []),
                   ...(fiche.cleOrigine
@@ -276,6 +279,9 @@ export function EnteteFiche({ universId, fiche, gestion, modeJoueur, badge, Icon
       )}
       {gestion && changement && (
         <ChangerType universId={universId} fiche={fiche} onFermer={() => setChangement(false)} rafraichir={rafraichir} onDroitPerdu={onDroitPerdu} />
+      )}
+      {gestion && deplacement && (
+        <DeplacerSous universId={universId} fiche={fiche} onFermer={() => setDeplacement(false)} rafraichir={rafraichir} onDroitPerdu={onDroitPerdu} />
       )}
       {gestion && etiquetage && (
         <BoiteEtiquetage universId={universId} fiche={fiche} onFermer={() => setEtiquetage(false)} rafraichir={rafraichir} onDroitPerdu={onDroitPerdu} />

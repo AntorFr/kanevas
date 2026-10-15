@@ -8,6 +8,7 @@ import '../liste.css';
 import type { Fiche, PageFiches } from './types';
 import type { TypeVue } from '../../types-contexte';
 import { CarteFiche, ChargementGrille } from './vignette';
+import { Arbre, type VueListe } from './arbre';
 
 /** Longest search the server accepts (B-11). */
 export const LONGUEUR_RECHERCHE = 100;
@@ -29,10 +30,16 @@ interface Props {
   action?: ReactNode;
   /** The plain list (no search) has no sheet. */
   videListe: ReactNode;
+  /** The remembered view (E-8): the tree shows only with no search and no sub-type filter. */
+  vue?: VueListe;
+  /** Shown beside « Chercher »: the « Grille / Arbre » switch. */
+  bascule?: ReactNode;
+  /** `&mode=joueur` when a GM looks as a player: the tree reloads under it. */
+  suffixeMode?: string;
 }
 
 /** The list of one lore type with its search field (E-8); reused by the « Relier » form of E-9. */
-export function ListeRecherche({ universId, type, recherche, onRecherche, sousType = '', onSousType, ligne, action, videListe }: Props) {
+export function ListeRecherche({ universId, type, recherche, onRecherche, sousType = '', onSousType, ligne, action, videListe, vue = 'grille', bascule, suffixeMode = '' }: Props) {
   const perdue = useConnexionPerdue();
   const [saisie, setSaisie] = useState(recherche);
   const [erreur, setErreur] = useState<string>();
@@ -94,8 +101,12 @@ export function ListeRecherche({ universId, type, recherche, onRecherche, sousTy
               Effacer la recherche
             </Bouton>
           )}
+          {bascule}
         </div>
       </form>
+      {vue === 'arbre' && recherche === '' && sousType === '' ? (
+        <Arbre key={`${type.type}${suffixeMode}`} universId={universId} type={type} suffixeMode={suffixeMode} videListe={videListe} />
+      ) : (
       <Resultats
         key={chemin}
         chemin={chemin}
@@ -109,6 +120,7 @@ export function ListeRecherche({ universId, type, recherche, onRecherche, sousTy
         videListe={videListe}
         onEffacer={effacer}
       />
+      )}
     </>
   );
 }

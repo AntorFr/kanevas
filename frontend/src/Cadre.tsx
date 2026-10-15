@@ -4,11 +4,11 @@ import { Link, Outlet, matchPath, useLocation, useNavigate } from 'react-router-
 
 import { useConnexionPerdue } from './api';
 import { Barre, Sceau, universDeLAdresse } from './Barre';
-import { useUnivers, useVue, type ModeVue } from './cadre-contexte';
+import { useUnivers, useVue, type AncetreAriane, type ModeVue } from './cadre-contexte';
 import { ITEMS_UNIVERS, itemsLore, type Item } from './items';
 import { ecranEnregistre } from './registre';
-import { useTypes } from './types-contexte';
-import { Bandeau } from './ui';
+import { iconeDuType, useTypes } from './types-contexte';
+import { Bandeau, Menu } from './ui';
 import './cadre.css';
 
 const bouchon = typeof document !== 'undefined' && document.querySelector('meta[name="kanevas-bouchon"]') !== null;
@@ -21,6 +21,21 @@ interface Maillon {
   sceau?: boolean;
   /** Dropped on a phone with its separator (the first crumb of a page of a system). */
   long?: boolean;
+  /** The « … » crumb: the ancestors it hides, in a menu (AD-115). */
+  autres?: AncetreAriane[];
+}
+
+/** More ancestors than this fold: the first, « … », the last two. */
+const ANCETRES_VISIBLES = 3;
+
+/** The crumbs of the readable ancestors of a sheet, folded past three. */
+function maillonsAncetres(racine: string, ancetres: AncetreAriane[], telephone: boolean, bascule = false): Maillon[] {
+  const lien = (a: AncetreAriane): Maillon => ({ libelle: a.titre, vers: `${racine}/fiche/${a.id}` });
+  // On a phone, two readable ancestors or more all go in the « … » menu; a single one is ellipsed.
+  // The MJ / Player switch takes the width of the trail there: even one ancestor then folds, so the current title stays whole.
+  if (telephone && (ancetres.length >= 2 || (bascule && ancetres.length >= 1))) return [{ libelle: '…', autres: ancetres }];
+  if (ancetres.length <= ANCETRES_VISIBLES) return ancetres.map(lien);
+  return [lien(ancetres[0]!), { libelle: '…', autres: ancetres.slice(1, -2) }, ...ancetres.slice(-2).map(lien)];
 }
 
 /**
@@ -28,7 +43,7 @@ interface Maillon {
  * answers, then the last crumb a screen gave (a sheet's title). Outside a universe: « Mes univers »,
  * then « Créer un univers ».
  */
-export function maillons(pathname: string, nomUnivers: string | undefined, titre: string | undefined, dedans: boolean, section?: string, lore: Item[] = []): Maillon[] {
+export function maillons(pathname: string, nomUnivers: string | undefined, titre: string | undefined, dedans: boolean, section?: string, lore: Item[] = [], ancetres: AncetreAriane[] = [], telephone = false, bascule = false): Maillon[] {
   if (!dedans) {
     // E-5: the instance screen, not a universe's; its crumb says where it sits in the bar.
     if (pathname === '/administration' || pathname.startsWith('/administration/')) {
@@ -51,24 +66,42 @@ export function maillons(pathname: string, nomUnivers: string | undefined, titre
     .filter((i) => section !== undefined || pathname === i.chemin(Number(id)) || pathname.startsWith(`${i.chemin(Number(id))}/`))
     .sort((a, b) => b.chemin(Number(id)).length - a.chemin(Number(id)).length)[0];
   if (item) liste.push({ libelle: item.libelle, vers: item.chemin(Number(id)), icone: 'item' });
-  if (titre) liste.push({ libelle: titre });
+  if (titre) liste.push(...maillonsAncetres(racine, ancetres, telephone, bascule), { libelle: titre });
   // The last crumb is the page you are on: it is not a link.
   const dernier = liste[liste.length - 1]!;
   liste[liste.length - 1] = { ...dernier, vers: titre || pathname === dernier.vers ? undefined : dernier.vers };
   return liste;
 }
 
+/** Phone width (docs/ecrans.md, E-9 header): the trail folds its ancestors into the « … » menu. */
+const TELEPHONE_ARIANE = '(max-width: 480px)';
+
+function useTelephoneAriane(): boolean {
+  const [oui, setOui] = useState(() => typeof window !== 'undefined' && window.matchMedia(TELEPHONE_ARIANE).matches);
+  useEffect(() => {
+    const mq = window.matchMedia(TELEPHONE_ARIANE);
+    const maj = () => setOui(mq.matches);
+    maj();
+    mq.addEventListener('change', maj);
+    return () => mq.removeEventListener('change', maj);
+  }, []);
+  return oui;
+}
+
 function Ariane() {
+  const telephone = useTelephoneAriane();
   const { pathname } = useLocation();
   const { univers } = useUnivers();
-  const { titre, section } = useVue();
+  const { titre, section, ancetres, bascule } = useVue();
+  const navigate = useNavigate();
   const id = universDeLAdresse(pathname);
   const connu = univers.etat !== 'ok' || univers.valeur.some((u) => u.id === id);
   const dedans = id !== null && connu;
   const nom = univers.etat === 'ok' ? univers.valeur.find((u) => u.id === id)?.nom : univers.etat === 'chargement' ? '…' : undefined;
   const { types } = useTypes();
   const lore = itemsLore(types);
-  const liste = maillons(pathname, nom, titre, dedans, section, lore);
+  const liste = maillons(pathname, nom, titre, dedans, section, lore, ancetres, telephone, bascule);
+  const typeDe = (t: string) => iconeDuType(types, t);
   const icones = dedans ? new Map([...ITEMS_UNIVERS, ...lore].map((i) => [i.libelle, i.icone])) : new Map();
   return (
     <nav className="ariane" aria-label="Fil d’Ariane">
@@ -76,6 +109,19 @@ function Ariane() {
         const dernier = i === liste.length - 1;
         const Icone = m.icone === 'bibliotheque' ? Library : m.icone === 'item' ? icones.get(m.libelle) : m.icone === 'systemes' || m.icone === 'systemes-court' ? Dices : undefined;
         const milieu = !dernier && i > 0 && m.icone === 'item' && Icone !== undefined;
+        if (m.autres) {
+          return (
+            <span key={i} className="maillon plie">
+              <ChevronRight className="sep-ariane" size={14} strokeWidth={1.75} aria-hidden="true" />
+              <Menu
+                etiquette="Autres ancêtres"
+                declencheur={<span>…</span>}
+                aligne="debut"
+                entrees={m.autres.map((a) => ({ libelle: a.titre, icone: typeDe(a.type), onChoisir: () => navigate(`/univers/${id}/fiche/${a.id}`) }))}
+              />
+            </span>
+          );
+        }
         const contenu = (
           <>
             {m.sceau && <Sceau nom={m.libelle} petit />}
