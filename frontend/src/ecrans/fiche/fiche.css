@@ -217,3 +217,7 @@ a.cadre-ill:focus-visible { outline-offset: 2px; border-radius: var(--rayon-pann
 
 /* « Déplacer sous… »: the changer-type list, a note when it has nothing to show. */
 .deplacer .vide-res { margin: 0; padding: 6px 10px; color: var(--texte-3); font-size: var(--t-14); }
+
+/* Foot of « Déplacer sous… » (mockup e09): right-aligned, side by side across the width on a phone. */
+.deplacer .actions { justify-content: flex-end; }
+@media (max-width: 760px) { .deplacer .actions .bouton { flex: 1; min-height: 40px; } }

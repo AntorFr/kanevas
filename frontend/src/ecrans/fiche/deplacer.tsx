@@ -3,7 +3,7 @@ import { useEffect, useState, type FormEvent } from 'react';
 
 import { ErreurApi, appeler, lire, useConnexionPerdue } from '../../api';
 import { badgeFiche, iconeDuType, useTypes } from '../../types-contexte';
-import { Bouton, Champ, Fenetre, useToasts } from '../../ui';
+import { Alerte, Bouton, Champ, Fenetre, useToasts } from '../../ui';
 import { LONGUEUR_RECHERCHE } from './liste-recherche';
 import type { Fiche, FicheVue, PageFiches } from './types';
 
@@ -128,7 +128,7 @@ export function DeplacerSous({
           value={saisie}
           autoFocus
           autoComplete="off"
-          erreur={trop ? `${LONGUEUR_RECHERCHE} caractères au plus.` : refus}
+          erreur={trop ? `${LONGUEUR_RECHERCHE} caractères au plus.` : undefined}
           onChange={(e: { target: { value: string } }) => {
             setSaisie(e.target.value);
             setRefus(undefined);
@@ -196,6 +196,7 @@ export function DeplacerSous({
             </Bouton>
           )}
         </div>
+        {refus && !trop && <Alerte>{refus}</Alerte>}
         <div className="actions">
           <Bouton onClick={onFermer}>Annuler</Bouton>
           <Bouton type="submit" variante="principal" ecrit enCours={enCours} disabled={choisi === undefined || perdue}>

@@ -29,10 +29,11 @@ interface Maillon {
 const ANCETRES_VISIBLES = 3;
 
 /** The crumbs of the readable ancestors of a sheet, folded past three. */
-function maillonsAncetres(racine: string, ancetres: AncetreAriane[], telephone: boolean): Maillon[] {
+function maillonsAncetres(racine: string, ancetres: AncetreAriane[], telephone: boolean, bascule = false): Maillon[] {
   const lien = (a: AncetreAriane): Maillon => ({ libelle: a.titre, vers: `${racine}/fiche/${a.id}` });
   // On a phone, two readable ancestors or more all go in the « … » menu; a single one is ellipsed.
-  if (telephone && ancetres.length >= 2) return [{ libelle: '…', autres: ancetres }];
+  // The MJ / Player switch takes the width of the trail there: even one ancestor then folds, so the current title stays whole.
+  if (telephone && (ancetres.length >= 2 || (bascule && ancetres.length >= 1))) return [{ libelle: '…', autres: ancetres }];
   if (ancetres.length <= ANCETRES_VISIBLES) return ancetres.map(lien);
   return [lien(ancetres[0]!), { libelle: '…', autres: ancetres.slice(1, -2) }, ...ancetres.slice(-2).map(lien)];
 }
@@ -42,7 +43,7 @@ function maillonsAncetres(racine: string, ancetres: AncetreAriane[], telephone: 
  * answers, then the last crumb a screen gave (a sheet's title). Outside a universe: « Mes univers »,
  * then « Créer un univers ».
  */
-export function maillons(pathname: string, nomUnivers: string | undefined, titre: string | undefined, dedans: boolean, section?: string, lore: Item[] = [], ancetres: AncetreAriane[] = [], telephone = false): Maillon[] {
+export function maillons(pathname: string, nomUnivers: string | undefined, titre: string | undefined, dedans: boolean, section?: string, lore: Item[] = [], ancetres: AncetreAriane[] = [], telephone = false, bascule = false): Maillon[] {
   if (!dedans) {
     // E-5: the instance screen, not a universe's; its crumb says where it sits in the bar.
     if (pathname === '/administration' || pathname.startsWith('/administration/')) {
@@ -65,7 +66,7 @@ export function maillons(pathname: string, nomUnivers: string | undefined, titre
     .filter((i) => section !== undefined || pathname === i.chemin(Number(id)) || pathname.startsWith(`${i.chemin(Number(id))}/`))
     .sort((a, b) => b.chemin(Number(id)).length - a.chemin(Number(id)).length)[0];
   if (item) liste.push({ libelle: item.libelle, vers: item.chemin(Number(id)), icone: 'item' });
-  if (titre) liste.push(...maillonsAncetres(racine, ancetres, telephone), { libelle: titre });
+  if (titre) liste.push(...maillonsAncetres(racine, ancetres, telephone, bascule), { libelle: titre });
   // The last crumb is the page you are on: it is not a link.
   const dernier = liste[liste.length - 1]!;
   liste[liste.length - 1] = { ...dernier, vers: titre || pathname === dernier.vers ? undefined : dernier.vers };
@@ -91,7 +92,7 @@ function Ariane() {
   const telephone = useTelephoneAriane();
   const { pathname } = useLocation();
   const { univers } = useUnivers();
-  const { titre, section, ancetres } = useVue();
+  const { titre, section, ancetres, bascule } = useVue();
   const navigate = useNavigate();
   const id = universDeLAdresse(pathname);
   const connu = univers.etat !== 'ok' || univers.valeur.some((u) => u.id === id);
@@ -99,7 +100,7 @@ function Ariane() {
   const nom = univers.etat === 'ok' ? univers.valeur.find((u) => u.id === id)?.nom : univers.etat === 'chargement' ? '…' : undefined;
   const { types } = useTypes();
   const lore = itemsLore(types);
-  const liste = maillons(pathname, nom, titre, dedans, section, lore, ancetres, telephone);
+  const liste = maillons(pathname, nom, titre, dedans, section, lore, ancetres, telephone, bascule);
   const typeDe = (t: string) => iconeDuType(types, t);
   const icones = dedans ? new Map([...ITEMS_UNIVERS, ...lore].map((i) => [i.libelle, i.icone])) : new Map();
   return (
