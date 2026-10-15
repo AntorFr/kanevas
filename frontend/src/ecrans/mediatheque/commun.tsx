@@ -17,6 +17,7 @@ export interface Fichier {
 export interface PageFichiers {
   fichiers: Fichier[];
   suite: number | string | null;
+  total: number;
 }
 
 export interface Usage {

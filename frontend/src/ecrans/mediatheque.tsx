@@ -65,6 +65,8 @@ function Mediatheque() {
 
   const [etat, setEtat] = useState<'chargement' | 'ok' | 'erreur'>('chargement');
   const [fichiers, setFichiers] = useState<Fichier[]>([]);
+  // Every file the reader sees under the filters, all pages together (server count).
+  const [total, setTotal] = useState(0);
   const [suite, setSuite] = useState<number | string | null>(null);
   const [suiteEnCours, setSuiteEnCours] = useState(false);
   const [suiteEchec, setSuiteEchec] = useState(false);
@@ -115,6 +117,7 @@ function Mediatheque() {
       (p) => {
         if (!actif) return;
         setFichiers(p.fichiers);
+        setTotal(p.total);
         setSuite(p.suite);
         setSuiteEchec(false);
         setEtat('ok');
@@ -284,6 +287,7 @@ function Mediatheque() {
       } else {
         await appeler('DELETE', `/api/univers/${id}/fichiers/${detail.fichier.id}`);
         setFichiers((l) => l.filter((x) => x.id !== detail.fichier.id));
+      setTotal((t) => Math.max(0, t - 1));
         ouvrir(null);
         toast('Fichier supprimé.');
       }
@@ -335,7 +339,7 @@ function Mediatheque() {
 
   const f = detail?.fichier;
   const feminin = f?.image ?? false;
-  const compte = `${fichiers.length}${suite !== null ? '+' : ''} fichier${fichiers.length > 1 ? 's' : ''}`;
+  const compte = `${total} fichier${total > 1 ? 's' : ''}`;
 
   return (
     <div
@@ -600,7 +604,7 @@ function Mediatheque() {
               )}
 
               {mj && (
-                <Bouton variante="danger" icone={Trash2} ecrit enCours={enCours && !boite} onClick={() => void demanderSuppression()}>
+                <Bouton variante="fantome" className="med-supprimer" icone={Trash2} ecrit enCours={enCours && !boite} onClick={() => void demanderSuppression()}>
                   Supprimer le fichier
                 </Bouton>
               )}
@@ -623,6 +627,8 @@ function Mediatheque() {
                   })()
           }
           action={boite.action === 'reserver' ? 'Réserver au MJ' : 'Supprimer le fichier'}
+          icone={boite.action === 'reserver' ? Lock : Trash2}
+          variante={boite.action === 'reserver' ? 'mj' : 'danger'}
           enCours={enCours}
           onConfirmer={() => void confirmer()}
           onFermer={() => setBoite(undefined)}
