@@ -11,6 +11,7 @@ import { SousTypeBadge } from './sous-type';
 import { adresseIllustration } from './vignette';
 import type { Detail } from '../mediatheque/commun';
 import { MESSAGE_RESERVE, useAjoutFichier } from './fichiers';
+import { MESSAGES_PIECES } from './pieces';
 import { libelleDuType, useTypes } from '../../types-contexte';
 
 const AIDE = 'Visible de tous ceux qui voient la fiche.';
@@ -96,6 +97,8 @@ export function EnteteFiche({ universId, fiche, gestion, modeJoueur, badge, Icon
       toast(`Illustration de « ${fiche.titre} » ${remplace ? 'remplacée' : 'ajoutée'}`);
     },
     surMessage: (texte, reessayer) => {
+      // A 403 already said « Vous ne pouvez plus modifier… » through droitPerdu: keep that one.
+      if (texte === MESSAGES_PIECES.droit) return;
       setMessage(undefined);
       setMessage({ texte, reessayer });
     },

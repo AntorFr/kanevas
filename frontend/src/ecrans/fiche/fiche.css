@@ -50,6 +50,8 @@ a.bouton { text-decoration: none; display: inline-flex; }
 
 /* Section blocks: Relations, Pièces jointes */
 .fiche .blocs { display: block; gap: 0; margin-top: var(--e-4); border-top: 1px solid var(--bord); }
+/* The last section's blocks end where « Mentionnée dans » starts: one full rule between them, not two. */
+.fiche .sections > .sec:last-child .blocs { border-top: 0; }
 .fiche .blocs .bloc-section + .bloc-section { border-top: 1px dashed var(--bord); }
 .fiche .blocs .bloc-section:first-child { border-top: 0; }
 .fiche .blocs .bloc-contenu { gap: 4px 14px; }

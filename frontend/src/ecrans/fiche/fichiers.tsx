@@ -20,7 +20,7 @@ export const MESSAGE_RESERVE =
 export function texteErreur(e: unknown, nom: string): string {
   if (e instanceof ErreurApi) {
     if (e.code === 'fichier_vide') return T.vide(nom);
-    if (e.code === 'pas_une_image') return `« ${nom} » n’est pas une image.`;
+    if (e.code === 'pas_une_image') return `« ${nom} » n’est pas une image. Choisissez un PNG, un JPEG, un GIF ou un WebP.`;
     if (e.code === 'limite_pieces') return e.message;
     if (e.statut === 403) return T.droit;
     if (e.statut === 404) return T.introuvable;
