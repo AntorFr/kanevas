@@ -12,7 +12,7 @@ import {
   sqlSectionLisible,
   vueMJ,
 } from './droits.js';
-import type { RenduFichier, ResolveurFichiers } from './markdown.js';
+import { extraireReferencesFichier, type RenduFichier, type ResolveurFichiers } from './markdown.js';
 import { ErreurService, introuvable, invalide, refuse } from './erreurs.js';
 import {
   abandonner,
@@ -414,7 +414,7 @@ export function modifierFichier(
 
 /**
  * The GM deletes a file (AD-117 §5): the row, its references and the illustrations that pointed at it
- * go in one transaction, the bytes after the commit. `(fichier:<id>)` in texts stay.
+ * go in one transaction, the bytes after the commit. ``fichier:<id>` references in texts stay.
  */
 export function effacerFichier(
   db: Db,
@@ -461,14 +461,15 @@ function decoderCurseurNom(apres: number | string | undefined): { n: string; i: 
 /**
  * The files of the library the caller reads, 100 per page, newest first or by name. Every file goes
  * through the one read rule; « used » is computed on the usages the caller reads (D1), never on all of
- * them. `suite` is the cursor of the next page, or null at the end.
+ * them. `suite` is the cursor of the next page, or null at the end; `total` is the number of files
+ * the caller reads in the library, whatever the filters.
  */
 export function listerFichiers(
   db: Db,
   acteur: Acteur,
   universId: number,
   filtres: FiltresFichiers = {},
-): { fichiers: FichierVue[]; suite: number | string | null } {
+): { fichiers: FichierVue[]; suite: number | string | null; total: number } {
   const role = exigerRole(db, universId, acteur.compteId);
   const tri = filtres.tri ?? 'recent';
   if (tri !== 'recent' && tri !== 'nom') throw invalide('Le tri est « recent » ou « nom ».');
@@ -533,7 +534,12 @@ export function listerFichiers(
   if (lus.length > LIMITE_FICHIERS && dernier) {
     suite = tri === 'nom' ? Buffer.from(JSON.stringify({ n: dernier.nom, i: dernier.id })).toString('base64url') : dernier.id;
   }
-  return { fichiers: page100.map(vue), suite };
+  // The library the caller reads, filters aside: counted under the one read rule, never a count of what is closed.
+  const total = (db.prepare('SELECT visibilite, ajoute_par FROM fichiers WHERE univers_id = ?').all(universId) as Pick<
+    FichierRow,
+    'visibilite' | 'ajoute_par'
+  >[]).filter((f) => lisiblePar(role, acteur, f)).length;
+  return { fichiers: page100.map(vue), suite, total };
 }
 
 /** One place where a file serves, as the reader may see it (AD-117 §2, D1). */
@@ -588,7 +594,7 @@ function usagesLisibles(db: Db, acteur: Acteur, role: Role, universId: number, f
     .prepare(
       `SELECT s.id AS sid, s.titre AS stitre, s.ordre, fi.id AS fid, fi.titre AS ftitre, fi.type AS ftype,
               fs.joint, fs.dans_texte AS texte,
-              instr(s.contenu_public, '(fichier:' || fs.fichier_id || ')') > 0 AS public
+              s.contenu_public AS public_texte
          FROM fichiers_sections fs
          JOIN sections s ON s.id = fs.section_id
          JOIN fiches fi ON fi.id = s.fiche_id
@@ -603,10 +609,10 @@ function usagesLisibles(db: Db, acteur: Acteur, role: Role, universId: number, f
     ftype: string;
     joint: number;
     texte: number;
-    public: number;
+    public_texte: string;
   }[];
   for (const l of lignes) {
-    const dansTexte = l.texte === 1 && (mj || l.public === 1);
+    const dansTexte = l.texte === 1 && (mj || extraireReferencesFichier(l.public_texte ?? '').has(fichierId));
     if (!dansTexte && l.joint !== 1) continue;
     sorties.push({
       ficheId: l.fid,
@@ -696,7 +702,7 @@ export function resolveurFichiers(
   acteur: Acteur,
   source: string,
 ): ResolveurFichiers | undefined {
-  const ids = [...compterReferences(source).keys()];
+  const ids = [...extraireReferencesFichier(source).keys()];
   if (ids.length === 0) return undefined;
   const rows = db
     .prepare(`SELECT * FROM fichiers WHERE univers_id = ? AND id IN (${ids.map(() => '?').join(',')})`)
@@ -750,21 +756,10 @@ export function lireLignes(db: Db, acteur: Acteur, universId: number, role: Role
     });
 }
 
-const REFERENCE = /\(fichier:(\d+)\)/g;
-
-function compterReferences(source: string): Map<number, number> {
-  const n = new Map<number, number>();
-  for (const m of source.matchAll(REFERENCE)) {
-    const id = Number(m[1]);
-    n.set(id, (n.get(id) ?? 0) + 1);
-  }
-  return n;
-}
-
 /**
  * Recomputes `dans_texte` and `dans_bloc_mj` of a section from its text (AD-117 §1), in the
  * transaction that writes the content — called only by the single content writer of `sections.ts`.
- * A file cited by `(fichier:<id>)` of the same universe is in the text; it is in a GM block when it is
+ * A file cited by a `fichier:<id>` image or link of the same universe is in the text; it is in a GM block when it is
  * cited more in the source than in the public text. A row that is no longer joined nor cited goes.
  */
 export function recalculerFichiersSection(
@@ -773,8 +768,8 @@ export function recalculerFichiersSection(
   contenu: string,
   contenuPublic: string,
 ): void {
-  const total = compterReferences(contenu);
-  const publics = compterReferences(contenuPublic);
+  const total = extraireReferencesFichier(contenu);
+  const publics = extraireReferencesFichier(contenuPublic);
   const existants = new Set<number>();
   if (total.size > 0) {
     const ids = [...total.keys()];
