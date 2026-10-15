@@ -108,10 +108,23 @@
 }
 
 /* « Choisir un fichier » (E-9): the grid of E-19 in a box. */
-.boite.selecteur { display: block; width: min(720px, calc(100vw - 32px)); max-height: 86vh; overflow-y: auto; }
+.boite.selecteur { display: block; width: min(860px, calc(100vw - 32px)); max-height: min(720px, calc(100dvh - 48px)); overflow-y: auto; }
 .selecteur-tete { display: flex; align-items: center; gap: var(--e-2); margin-bottom: var(--e-3); }
 .selecteur-tete h2 { flex: 1; margin: 0; }
 .selecteur-outils { display: flex; align-items: center; flex-wrap: wrap; gap: var(--e-3); margin-bottom: var(--e-3); }
+.selecteur-outils .med-recherche { max-width: 340px; }
+.selecteur .med-grille { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: var(--e-4) var(--e-3); }
+.selecteur .med-feuille { width: 44px; height: 44px; margin-top: 0; border-radius: 11px; }
+.selecteur .med-feuille svg { width: 22px; height: 22px; }
+.selecteur-appareil .med-cadre { width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: var(--e-2); padding: var(--e-2); border: 1px dashed var(--bord-champ); background: var(--surface); text-align: center; font-size: var(--t-13); font-weight: 500; }
+.selecteur-appareil .med-cadre::after { content: none; }
+.selecteur-appareil svg { flex: none; color: var(--accent-texte); }
+.selecteur-appareil:hover .med-cadre { border-color: var(--accent); }
+@media (max-width: 760px) {
+  .selecteur .med-grille { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .selecteur-outils .med-recherche { max-width: none; }
+}
 .selecteur-vide { color: var(--texte-2); margin: var(--e-4) 0; }
 .envoi-fichier { color: var(--texte-2); font-size: var(--t-13); margin: var(--e-1) 0; }
 .boite.selecteur .echec { margin-bottom: var(--e-3); }

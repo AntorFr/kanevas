@@ -1,10 +1,10 @@
-import { ChevronDown, Images, Lock, Upload, X, type LucideIcon } from 'lucide-react';
+import { ChevronDown, Images, Lock, Search, Upload, X, type LucideIcon } from 'lucide-react';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 
 import { ErreurApi, lire, useConnexionPerdue } from '../../api';
 import { Bouton, ErreurChargement, Menu, Pastille, useToasts } from '../../ui';
 import '../mediatheque/mediatheque.css';
-import { Apercu, extension, tailleLisible, type Fichier, type PageFichiers } from '../mediatheque/commun';
+import { Apercu, type Fichier, type PageFichiers } from '../mediatheque/commun';
 import { MESSAGES_PIECES as T } from './pieces';
 
 /**
@@ -247,6 +247,7 @@ interface PropsSelecteur {
 export function SelecteurFichier(p: PropsSelecteur) {
   const perdue = useConnexionPerdue();
   const [nature, setNature] = useState<'' | 'images' | 'documents'>(p.images ? 'images' : '');
+  const [recherche, setRecherche] = useState('');
   const [etat, setEtat] = useState<'chargement' | 'ok' | 'erreur'>('chargement');
   const [fichiers, setFichiers] = useState<Fichier[]>([]);
   const [suite, setSuite] = useState<number | string | null>(null);
@@ -260,6 +261,7 @@ export function SelecteurFichier(p: PropsSelecteur) {
   const requete = (apres?: number | string | null) => {
     const q = new URLSearchParams();
     if (nature) q.set('nature', nature);
+    if (recherche.trim()) q.set('q', recherche.trim());
     if (apres !== undefined && apres !== null) q.set('apres', String(apres));
     if (p.suffixeMode) q.set('mode', 'joueur');
     return q.toString();
@@ -281,7 +283,7 @@ export function SelecteurFichier(p: PropsSelecteur) {
       actif = false;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [p.universId, nature, rev]);
+  }, [p.universId, p.suffixeMode, nature, recherche, rev]);
 
   useEffect(() => fermer.current?.focus(), []);
 
@@ -348,6 +350,18 @@ export function SelecteurFichier(p: PropsSelecteur) {
           </button>
         </div>
         <div className="selecteur-outils">
+          <label className="med-recherche">
+            <Search size={15} strokeWidth={1.75} aria-hidden="true" />
+            <input
+              type="search"
+              aria-label="Chercher par nom"
+              placeholder="Chercher par nom"
+              autoComplete="off"
+              spellCheck={false}
+              value={recherche}
+              onChange={(e) => setRecherche(e.target.value)}
+            />
+          </label>
           {p.peutAjouter && (
             <>
               <input
@@ -363,9 +377,6 @@ export function SelecteurFichier(p: PropsSelecteur) {
                   void depuisAppareil(liste);
                 }}
               />
-              <Bouton icone={Upload} ecrit disabled={perdue || enCours} onClick={() => saisie.current?.click()}>
-                Ajouter depuis l’appareil
-              </Bouton>
             </>
           )}
           {!p.images && (
@@ -400,26 +411,40 @@ export function SelecteurFichier(p: PropsSelecteur) {
         {etat === 'ok' && fichiers.length === 0 && (
           <p className="selecteur-vide">{p.images ? 'Aucune image à choisir.' : 'Aucun fichier à choisir.'}</p>
         )}
-        {etat === 'ok' && fichiers.length > 0 && (
+        {etat === 'ok' && (
           <ul className="med-grille">
+            {p.peutAjouter && (
+              <li>
+                <button
+                  type="button"
+                  className="med-tuile selecteur-appareil"
+                  disabled={perdue || enCours}
+                  onClick={() => saisie.current?.click()}
+                >
+                  <span className="med-cadre">
+                    <Upload size={20} strokeWidth={1.75} aria-hidden="true" />
+                    <span>Ajouter depuis l’appareil</span>
+                  </span>
+                  <span className="med-nom">Nouveau fichier</span>
+                </button>
+              </li>
+            )}
             {fichiers.map((f) => (
               <li key={f.id}>
                 <button type="button" className="med-tuile" aria-label={f.nom} disabled={enCours} onClick={() => void prendre(f)}>
-                  <Apercu universId={p.universId} f={f} />
-                  {p.mj && f.visibilite === 'mj' && (
-                    <span className="med-pastille">
-                      <Pastille sens="mj" icone={Lock}>
-                        MJ seul
-                      </Pastille>
-                    </span>
-                  )}
+                  <span className="med-cadre">
+                    <Apercu universId={p.universId} f={f} />
+                    {p.mj && f.visibilite === 'mj' && (
+                      <span className="med-pastille">
+                        <Pastille sens="secrete" icone={Lock}>
+                          MJ seul
+                        </Pastille>
+                      </span>
+                    )}
+                  </span>
                   <span className="med-nom" title={f.nom}>
                     {f.nom}
                   </span>
-                  <small>
-                    {f.image ? extension(f.nom) || 'Image' : tailleLisible(f.taille)}
-                    {f.image ? ` · ${tailleLisible(f.taille)}` : ''}
-                  </small>
                 </button>
               </li>
             ))}
