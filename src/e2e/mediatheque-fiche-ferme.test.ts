@@ -73,3 +73,36 @@ test('Léa lit une image et un document réservés au MJ en cadres neutres dans 
   assert.doesNotMatch(tout, /secret-image|secret-doc/);
   assert.equal(await bloc.locator('.liste-pieces li:has(.ferme)').getByRole('button').count(), 0, 'pas de menu pour les lignes fermées');
 });
+
+test('menus « Joindre un fichier » et « Fichier » : 220 px au moins, libellés sur une ligne', opts, async () => {
+  await antor.goto(`/univers/${uid}/fiche/${portId}`);
+  await attendre(antor);
+  const zone = antor.getByRole('region', { name: /Description/ });
+  const mesurer = async () => {
+    const menu = antor.getByRole('menu').first();
+    await menu.waitFor();
+    const larg = (await menu.boundingBox()).width;
+    assert.ok(larg >= 219.5, `largeur ${larg}`);
+    for (const item of await menu.getByRole('menuitem').all()) {
+      const h = await item.evaluate((e: Any) => {
+        const tops = new Set<number>();
+        const marche = document.createTreeWalker(e, NodeFilter.SHOW_TEXT);
+        for (let n = marche.nextNode(); n; n = marche.nextNode()) {
+          if (!n.textContent?.trim()) continue;
+          const r = document.createRange();
+          r.selectNodeContents(n);
+          for (const x of r.getClientRects()) tops.add(Math.round(x.top));
+        }
+        return { lignes: tops.size, trop: e.scrollWidth > e.clientWidth + 1 };
+      });
+      assert.equal(h.lignes <= 1, true, `un libellé est replié: ${JSON.stringify(h)} ${await item.innerText()}`);
+      assert.equal(h.trop, false, 'un libellé déborde');
+    }
+    await antor.keyboard.press('Escape');
+  };
+  await zone.getByRole('button', { name: 'Joindre un fichier' }).click();
+  await mesurer();
+  await zone.getByRole('button', { name: 'Modifier', exact: true }).click();
+  await antor.getByRole('button', { name: 'Fichier', exact: true }).click();
+  await mesurer();
+});
