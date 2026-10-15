@@ -3,12 +3,14 @@ import {
   exigerMJ,
   exigerRole,
   peutLireSection,
+  peutVoirFiche,
   sqlFicheLisible,
   sqlSectionLisible,
   vueMJ,
   vueSection,
 } from './droits.js';
-import { ErreurService, introuvable, invalide } from './erreurs.js';
+import { ErreurService, introuvable, invalide, refuse } from './erreurs.js';
+import { etiquetageDe } from './etiquettes.js';
 import { mentionsDe } from './mentions.js';
 import { lireLignes, lisiblePar, type FichierRow } from './fichiers.js';
 import { IMAGE_RESERVEE } from './markdown.js';
@@ -16,7 +18,12 @@ import { CHARGES, estTypeFiche, typeActif } from './types-fiche.js';
 import {
   TYPES_FICHE,
   type Acteur,
+  type Ancetre,
+  type Enfant,
   type Fiche,
+  type Role,
+  type FicheArbre,
+  type PageEnfants,
   type FicheVue,
   type IllustrationVue,
   type PageMentions,
@@ -40,6 +47,7 @@ interface FicheRow {
   illustration_ajoute_par: number | null;
   cle_origine: string | null;
   sous_type: string | null;
+  parent_id: number | null;
 }
 
 /**
@@ -239,6 +247,129 @@ export function changerTypeFiche(
   return versFiche(chargerFiche(db, universId, ficheId));
 }
 
+/** Deepest chain the tree accepts, and the longest climb a read makes (AD-115 (1), (2)). */
+export const PROFONDEUR_MAX = 50;
+
+/**
+ * The GM puts a sheet under another (or at the root with `null`) — the only write of `parent_id`
+ * (AD-115 (1), AD-2). A parent of another universe or unknown is not found; the sheet itself or one of
+ * its descendants as parent is a `cycle`; a chain of more than 50 levels above the parent is
+ * `trop_profond`. Player mode refuses: it only restricts reads, but the move is a GM gesture.
+ * Touches neither a section nor the sheet's `modifie_le`.
+ */
+export function deplacerFiche(
+  db: Db,
+  acteur: Acteur,
+  universId: number,
+  ficheId: number,
+  parentId: number | null,
+): Fiche {
+  exigerMJ(db, universId, acteur.compteId);
+  if (acteur.modeJoueur) throw refuse();
+  chargerFiche(db, universId, ficheId);
+  if (parentId !== null) {
+    chargerFiche(db, universId, parentId);
+    // A loop of reads, one level each (never a recursive query): the climb stops at the root.
+    let courant: number | null = parentId;
+    let niveaux = 0;
+    while (courant !== null) {
+      if (courant === ficheId) {
+        throw new ErreurService(
+          'invalide',
+          "Une fiche ne peut pas être rangée sous l'un de ses descendants.",
+          'cycle',
+        );
+      }
+      niveaux += 1;
+      if (niveaux > PROFONDEUR_MAX) {
+        throw new ErreurService('invalide', 'La hiérarchie est trop profonde.', 'trop_profond');
+      }
+      courant = (
+        db.prepare('SELECT parent_id FROM fiches WHERE id = ?').get(courant) as { parent_id: number | null }
+      ).parent_id;
+    }
+  }
+  db.prepare('UPDATE fiches SET parent_id = ? WHERE id = ?').run(parentId, ficheId);
+  return versFiche(chargerFiche(db, universId, ficheId));
+}
+
+/**
+ * The ancestors of a sheet the caller reads, from the highest to the closest. The climb goes through
+ * an unreadable ancestor without naming it (AD-115 (2)).
+ */
+function ancetresLisibles(db: Db, role: Role, acteur: Acteur, fiche: FicheRow): Ancetre[] {
+  const lisible = sqlFicheLisible(role, acteur, 'f');
+  const lecture = db.prepare(
+    `SELECT f.id, f.titre, f.type, f.parent_id, ${lisible ? `(${lisible.sql})` : '1'} AS lisible
+       FROM fiches f WHERE f.id = ?`,
+  );
+  const vus: Ancetre[] = [];
+  let courant = fiche.parent_id;
+  for (let i = 0; courant !== null && i < PROFONDEUR_MAX + 1; i++) {
+    const r = lecture.get(...(lisible?.params ?? []), courant) as
+      | { id: number; titre: string; type: TypeFiche; parent_id: number | null; lisible: number }
+      | undefined;
+    if (!r) break;
+    if (r.lisible === 1) vus.push({ id: r.id, titre: r.titre, type: r.type });
+    courant = r.parent_id;
+  }
+  return vus.reverse();
+}
+
+const RANG_TYPE = `CASE f.type ${TYPES_FICHE.map((t, i) => `WHEN '${t}' THEN ${i}`).join(' ')} ELSE ${TYPES_FICHE.length} END`;
+const LIMITE_ENFANTS = 50;
+
+/**
+ * « Contient »: the children of a sheet the caller reads, all types, by type (the product's order)
+ * then title, fifty per page. A sheet the caller does not read is not found; no count of what is
+ * hidden (AD-115 (3)).
+ */
+export function listerEnfants(
+  db: Db,
+  acteur: Acteur,
+  universId: number,
+  ficheId: number,
+  curseur?: string,
+): PageEnfants {
+  const role = exigerRole(db, universId, acteur.compteId);
+  chargerFiche(db, universId, ficheId);
+  if (!peutVoirFiche(db, role, ficheId, acteur)) throw introuvable();
+  const where = ['f.parent_id = ?', 'f.univers_id = ?'];
+  const params: (string | number)[] = [ficheId, universId];
+  const lisible = sqlFicheLisible(role, acteur, 'f');
+  if (lisible) {
+    where.push(lisible.sql);
+    params.push(...lisible.params);
+  }
+  if (curseur !== undefined) {
+    let c: { r: number; t: string; i: number };
+    try {
+      c = JSON.parse(Buffer.from(curseur, 'base64url').toString('utf8'));
+      if (!Number.isInteger(c.r) || typeof c.t !== 'string' || !Number.isInteger(c.i)) throw new Error();
+    } catch {
+      throw invalide('Curseur invalide.');
+    }
+    where.push(
+      `((${RANG_TYPE}) > ? OR ((${RANG_TYPE}) = ? AND (plier(f.titre) > plier(?) OR (plier(f.titre) = plier(?) AND f.id > ?))))`,
+    );
+    params.push(c.r, c.r, c.t, c.t, c.i);
+  }
+  const rows = db
+    .prepare(
+      `SELECT f.*, (${RANG_TYPE}) AS rang FROM fiches f WHERE ${where.join(' AND ')}
+       ORDER BY rang, plier(f.titre), f.id LIMIT ?`,
+    )
+    .all(...params, LIMITE_ENFANTS + 1) as (FicheRow & { rang: number })[];
+  const page = rows.slice(0, LIMITE_ENFANTS);
+  const dernier = page[page.length - 1];
+  const suivant =
+    rows.length > LIMITE_ENFANTS && dernier
+      ? Buffer.from(JSON.stringify({ r: dernier.rang, t: dernier.titre, i: dernier.id })).toString('base64url')
+      : null;
+  const enfants: Enfant[] = page.map((r) => ({ id: r.id, titre: r.titre, type: r.type, sousType: r.sous_type }));
+  return { enfants, suivant };
+}
+
 export interface SousTypeVu {
   sousType: string;
   nb: number;
@@ -314,9 +445,11 @@ export function lireFiche(
   const mentions = mentionsDe(db, role, acteur, universId, ficheId);
   return {
     ...versFiche(fiche, (f) => lisiblePar(role, acteur, f)),
+    ancetres: ancetresLisibles(db, role, acteur, fiche),
     mentions: mentions.mentions,
     mentionsSuite: mentions.suite,
     mentionsRestantes: mentions.restantes,
+    ...etiquetageDe(db, ficheId),
     // The origin key is a GM matter (B-50): a reader's answer has no such field at all.
     ...(vueMJ(role, acteur) && fiche.cle_origine ? { cleOrigine: fiche.cle_origine } : {}),
     sections: lisibles.map((s) => ({
@@ -374,13 +507,24 @@ export interface PageFiches {
  * The sheets of a universe (optionally one type) the caller reads at least one
  * section of, by title without case, at most 100 per page (AD-22, B-11).
  * With `recherche`, the same list plus one condition (AD-63): every word starts a
- * word of the title, or all of them a word of one section the caller reads.
+ * word of the title, of an alias or of the sub-type, or all of them a word of one section the caller reads.
+ * `etiquette` is one more optional condition (AD-118). Each sheet carries its `alias` and `etiquettes`,
+ * and, with `recherche`, the `aliasTrouve` when only an alias answers the title.
  */
 export function listerFiches(
   db: Db,
   acteur: Acteur,
   universId: number,
-  options: { type?: string; sousType?: string; curseur?: string; limite?: number; recherche?: string } = {},
+  options: {
+    type?: string;
+    sousType?: string;
+    etiquette?: string;
+    curseur?: string;
+    limite?: number;
+    recherche?: string;
+    /** The tree of a type (AD-115): `racine` or a sheet id. Needs `type`. */
+    parent?: 'racine' | number;
+  } = {},
 ): PageFiches {
   const role = exigerRole(db, universId, acteur.compteId);
   const limite = Math.min(Math.max(Math.trunc(options.limite ?? LIMITE_LISTE), 1), LIMITE_LISTE);
@@ -397,10 +541,34 @@ export function listerFiches(
     where.push('f.sous_type = ? COLLATE NOCASE');
     params.push(options.sousType);
   }
+  if (options.etiquette !== undefined) {
+    // A label is compared exactly, never through FTS (AD-118 (2)); it only narrows the read filter.
+    where.push(
+      `EXISTS (SELECT 1 FROM fiche_etiquettes fe JOIN etiquettes e ON e.id = fe.etiquette_id
+        WHERE fe.fiche_id = f.id AND e.nom = ? COLLATE NOCASE)`,
+    );
+    params.push(options.etiquette.trim());
+  }
   const lisible = sqlFicheLisible(role, acteur, 'f');
   if (lisible) {
     where.push(lisible.sql);
     params.push(...lisible.params);
+  }
+  if (options.parent !== undefined) {
+    if (options.type === undefined) throw invalide('Le type est obligatoire avec le parent.');
+    if (options.parent === 'racine') {
+      // A root: no parent, or one the caller does not read, or one of another type.
+      const lisibleP = sqlFicheLisible(role, acteur, 'p');
+      where.push(
+        `NOT EXISTS (SELECT 1 FROM fiches p WHERE p.id = f.parent_id AND p.type = f.type${lisibleP ? ` AND ${lisibleP.sql}` : ''})`,
+      );
+      params.push(...(lisibleP?.params ?? []));
+    } else {
+      chargerFiche(db, universId, options.parent);
+      if (!peutVoirFiche(db, role, options.parent, acteur)) throw introuvable();
+      where.push('f.parent_id = ?');
+      params.push(options.parent);
+    }
   }
   if (options.recherche !== undefined) {
     const match = motsRecherche(options.recherche);
@@ -425,13 +593,13 @@ export function listerFiches(
     } catch {
       throw invalide('Curseur invalide.');
     }
-    where.push('(f.titre COLLATE NOCASE > ? OR (f.titre COLLATE NOCASE = ? AND f.id > ?))');
+    where.push('(plier(f.titre) > plier(?) OR (plier(f.titre) = plier(?) AND f.id > ?))');
     params.push(c.t, c.t, c.i);
   }
   const rows = db
     .prepare(
       `SELECT f.*, ${DISQUE_ILLUSTRATION} FROM fiches f WHERE ${where.join(' AND ')}
-       ORDER BY f.titre COLLATE NOCASE, f.id LIMIT ?`,
+       ORDER BY plier(f.titre), f.id LIMIT ?`,
     )
     .all(...params, limite + 1) as FicheRow[];
   const page = rows.slice(0, limite);
@@ -440,5 +608,48 @@ export function listerFiches(
     rows.length > limite && dernier
       ? Buffer.from(JSON.stringify({ t: dernier.titre, i: dernier.id })).toString('base64url')
       : null;
-  return { fiches: page.map((r) => versFiche(r, (f) => lisiblePar(role, acteur, f))), suivant };
+  const mots = options.recherche === undefined ? null : motsDe(options.recherche);
+  const enrichie = (r: FicheRow): Fiche => {
+    const e = etiquetageDe(db, r.id);
+    const f: Fiche = { ...versFiche(r, (f) => lisiblePar(role, acteur, f)), alias: e.alias, etiquettes: e.etiquettes };
+    if (mots !== null) {
+      const trouve = mots.length > 0 && !repond(r.titre, mots) ? e.alias.find((a) => repond(a, mots)) : undefined;
+      if (trouve !== undefined) f.aliasTrouve = trouve;
+    }
+    return f;
+  };
+  if (options.parent === undefined) return { fiches: page.map(enrichie), suivant };
+  return { fiches: page.map((r) => versArbre(db, role, acteur, r, enrichie(r))), suivant };
 }
+
+/** A row of the tree: `aDesEnfants` and `dans` are computed under the caller's own reading (AD-115 (3)). */
+function versArbre(db: Db, role: Role, acteur: Acteur, r: FicheRow, base: Fiche): FicheArbre {
+  const lisible = sqlFicheLisible(role, acteur, 'c');
+  const enfant = db
+    .prepare(
+      `SELECT 1 AS ok FROM fiches c WHERE c.parent_id = ? AND c.type = ?${lisible ? ` AND ${lisible.sql}` : ''} LIMIT 1`,
+    )
+    .get(r.id, r.type, ...(lisible?.params ?? []));
+  let dans: FicheArbre['dans'] = null;
+  if (r.parent_id !== null && peutVoirFiche(db, role, r.parent_id, acteur)) {
+    const p = db.prepare('SELECT id, titre, type FROM fiches WHERE id = ?').get(r.parent_id) as {
+      id: number;
+      titre: string;
+      type: string;
+    };
+    if (p.type !== r.type) dans = { id: p.id, titre: p.titre };
+  }
+  return { ...base, aDesEnfants: enfant !== undefined, dans };
+}
+
+const sansAccents = (s: string) => s.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase();
+const jetons = (s: string) => sansAccents(s).split(/[^\p{L}\p{N}]+/u).filter((t) => t !== '');
+
+/** The search words as tokens (as the index cuts them), accents and case ignored. */
+const motsDe = (saisie: string): string[] => jetons(saisie.replaceAll('\0', ' '));
+
+/** Every search token starts a token of the text. */
+const repond = (texte: string, mots: string[]): boolean => {
+  const t = jetons(texte);
+  return mots.every((m) => t.some((j) => j.startsWith(m)));
+};

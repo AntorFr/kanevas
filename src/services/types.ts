@@ -81,6 +81,8 @@ export interface PieceJointeVue {
   image: boolean;
   /** Only rendered to the GM outside player mode. */
   secrete?: boolean;
+  /** The file is closed to this reader: `nom` is the sentence, nothing else of the file. */
+  ferme?: boolean;
 }
 
 export interface Fiche {
@@ -95,6 +97,11 @@ export interface Fiche {
   modifieLe: string;
   /** Opaque token of the illustration (AD-93), null when the sheet has none. */
   illustration: IllustrationVue | null;
+  /** Aliases and labels, sorted (AD-118); carried by the sheets of the list. */
+  alias?: string[];
+  etiquettes?: string[];
+  /** With a search: the first alias that answers when the title does not (AD-118 (3)). */
+  aliasTrouve?: string;
 }
 
 export type IllustrationVue =
@@ -125,7 +132,38 @@ export interface PageMentions {
   restantes: number;
 }
 
+/** An ancestor the reader may read (AD-115 (2)). */
+export interface Ancetre {
+  id: number;
+  titre: string;
+  type: TypeFiche;
+}
+
+/** A child in « Contient » (AD-115 (3)): no count of what is hidden. */
+export interface Enfant {
+  id: number;
+  titre: string;
+  type: TypeFiche;
+  sousType: string | null;
+}
+
+export interface PageEnfants {
+  enfants: Enfant[];
+  suivant: string | null;
+}
+
+/** A sheet of the tree of a type: `dans` is its readable parent of another type. */
+export interface FicheArbre extends Fiche {
+  aDesEnfants: boolean;
+  dans: { id: number; titre: string } | null;
+}
+
 export interface FicheVue extends Fiche {
+  /** Readable ancestors, highest first (AD-115 (2)). */
+  ancetres: Ancetre[];
+  /** Other names of the sheet and its labels (AD-118), sorted. */
+  alias: string[];
+  etiquettes: string[];
   sections: SectionVue[];
   /** « Mentionnée dans »: the first page (AD-100); the rest through `GET …/mentions?apres=`. */
   mentions: Mention[];

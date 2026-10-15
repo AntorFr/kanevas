@@ -15,6 +15,8 @@ export interface PieceJointe {
   taille: number;
   image: boolean;
   secrete?: boolean;
+  /** Closed to this reader: `nom` is the sentence « … réservé au MJ. ». */
+  ferme?: boolean;
 }
 
 export interface SectionVue {
@@ -44,6 +46,11 @@ export interface Fiche {
   charge: { v?: number; pj?: boolean };
   /** The sheet's illustration (AD-93): `jeton` changes at each replacement and goes in the image address. */
   illustration?: { id: number; jeton: string } | { fermee: true; message: string } | null;
+  /** Aliases and labels (AD-118), sorted by the server. */
+  alias?: string[];
+  etiquettes?: string[];
+  /** With a search: the alias that answers when the title does not. */
+  aliasTrouve?: string;
 }
 
 /** One line of « Mentionnée dans » (AD-100). */
@@ -54,7 +61,29 @@ export interface Mention {
   pourquoi: ({ genre: 'lien'; section: string } | { genre: 'relation'; libelle: string })[];
 }
 
+/** A readable ancestor, highest first (AD-115 (2)). */
+export interface Ancetre {
+  id: number;
+  titre: string;
+  type: string;
+}
+
+/** A child in « Contient » (AD-115 (3)). */
+export interface Enfant {
+  id: number;
+  titre: string;
+  type: string;
+  sousType: string | null;
+}
+
+export interface PageEnfants {
+  enfants: Enfant[];
+  suivant: string | null;
+}
+
 export interface FicheVue extends Fiche {
+  /** Readable ancestors, highest first; the unreadable ones are skipped by the server. */
+  ancetres?: Ancetre[];
   sections: SectionVue[];
   /** « Mentionnée dans »: the first page, what the reader sees only. */
   mentions?: Mention[];

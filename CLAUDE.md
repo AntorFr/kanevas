@@ -1,6 +1,12 @@
 # kanevas — agent instructions
 
-- Code and doc comments in English; `.agent/*` stays French.
+- Language (public repository): code, comments, README, `docs/` (the product's design docs
+  included), ADRs and release notes in **English**; `.agent/*` stays French. Existing French
+  docs are translated by a feature of their own, not rewritten in passing: new text is English.
+- Attested tests: `npm run tests:attestes` plays the whole suite (typecheck, build, every test,
+  none skipped) on the committed tree and writes `rapport-tests.json`; `-- --publier` posts the
+  `tests-complets` commit status when green. The image build and the `main` rule require it; the
+  CI runs no test by itself.
 - Commit messages in French: subject, then the *why*. Explicit paths
   (`git add <path>...`, never `git add -A`/`.`), no AI attribution trailers —
   same convention as `k8s-home-lab`.
@@ -18,8 +24,9 @@
   reintroduce a version in `package.json` to "keep it in sync" — that is
   exactly the two-sources bug this socle was built to avoid.
 - Release: `git tag vX.Y.Z && git push origin vX.Y.Z` builds and publishes
-  `ghcr.io/antorfr/kanevas:X.Y.Z` (package public). Deploying is a separate
-  change in `k8s-home-lab` (chart version + image tag pinned there).
+  `ghcr.io/antorfr/kanevas:X.Y.Z` (package public, `:latest` follows the highest version) once
+  its content is attested; a GitHub Release carries the notes (`gh release create`). Deploying
+  is a separate change in `k8s-home-lab` (chart version + image tag pinned there).
 - No ORM: SQLite through `better-sqlite3` (Node 20 has no `node:sqlite`),
   numbered SQL migrations in `src/db/migrations/` applied at startup by
   `src/db/db.ts` (AD-14; `npm run build` copies them to `dist/`). Tables are
@@ -55,6 +62,7 @@
   needing a session are registered in the guarded scope of
   `registerSessionRoutes` (AD-15). `KANEVAS_STUB=1` (AD-55) swaps Authelia for
   `/connexion-bouchon` and refuses to start if any `OIDC_*` variable is set.
+- Hierarchy (AD-99, AD-115): `parent_id` is written only by `deplacerFiche` in `services/fiches.ts` (the `PATCH {parent}` route and the import both call it); ancestors, « Contient » and the tree return readable fiches only and never a count of hidden ones.
 - Update `.agent/status.md` in the same commit as the work it reflects — except in a task of a chain feature, which leaves it alone: the feature's assembly writes it once (two tasks both adding to it conflict at integration).
 - `src/services/{campagnes,scenarios,preparation,comptes_rendus}.ts` (`kanevas-suivi`): scenarios and
   preparation tasks take a **campaign id and no universe id** — the GM guard is evaluated on the
@@ -121,6 +129,7 @@
   `poserContenu` in `services/sections.ts` write `contenu` of a section — creation, `ecrireContenu`, proposals, reports and the
   import all go through them; never add another `INSERT INTO sections` / `UPDATE sections SET contenu`. `rendreMarkdown(source,
   {nature})` knows the container only for `nature: 'section'`; scenarios and system entries keep `:::mj` as text.
+- Aliases and labels (`kanevas-import-recherche`, migration 0014, AD-118): `src/services/etiquettes.ts` is the only reader/writer of `fiche_alias`, `etiquettes` and `fiche_etiquettes`; `recherche_fiches.alias` is kept by triggers, never written by hand. The all-types search is `listerFiches` (no second search function); the assistant's `chercher` calls it.
 - Links (`kanevas-liens-ecriture`, migration 0012, AD-116): `src/services/liens.ts` is the only writer of `liens`;
   `extraireLiens` (`markdown.ts`, pure) reads `[[…]]` from the engine's tokens, never by pattern. `poserContenu`
   and `insererSection` replace a section's rows; `preparerContenu` (bare `[[<id>]]` → `[[<id>|<titre>]]` or

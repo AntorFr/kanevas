@@ -75,8 +75,7 @@ function creerMoteur(avecBlocMJ: boolean, avecLiens: boolean): InstanceType<type
     return md.utils.escapeHtml(md.renderer.renderInlineAsText(token.children ?? [], options, env));
   };
   md.core.ruler.after('inline', 'fichiers', (state) => {
-    // A pure read of the references (`extraireReferencesFichier`) wants the tokens as written.
-    if ((state.env as EnvRendu).brut) return;
+    if ((state.env as EnvRendu).lectureSeule) return;
     for (const bloc of state.tokens) {
       if (bloc.type === 'inline' && bloc.children) bloc.children = decider(bloc.children as unknown as Token[], state.env as EnvRendu, md, state.Token as unknown as new (t: string, tag: string, n: number) => Token) as unknown as typeof bloc.children;
     }
@@ -145,8 +144,8 @@ interface EnvRendu {
   fichiers?: ResolveurFichiers;
   liens?: ResolveurLiens;
   formeLiens?: 'html' | 'markdown';
-  /** Parse only: leave the `fichier:<id>` tokens undecided. */
-  brut?: boolean;
+  /** Reading only (`extraireReferencesFichier`): the `fichiers` rule leaves the tokens as the engine made them. */
+  lectureSeule?: boolean;
 }
 
 export function rendreMarkdown(source: string, options: OptionsRendu = {}): string {
@@ -354,20 +353,22 @@ export interface LienExtrait {
 const mdLiens = mdSection;
 
 /**
- * The `fichier:<id>` references of a source, counted per file id (AD-117). Pure. Same grammar as the
- * rendering: read from the tokens of the engine (image `src`, link `href`), never by pattern, so a
- * title (`![x](fichier:3 "t")`) is ignored and a form inside a code block or span is not a reference.
+ * The ids of the files a text references with `![…](fichier:<id>)` or `[…](fichier:<id>)`, in order, one entry
+ * per occurrence (AD-117). Pure. Read from the tokens of the engine with the very grammar the rendering uses
+ * (`REFERENCE_FICHIER`), never by pattern over the text: a form in a code block or a code span is not a reference.
  */
-export function extraireReferencesFichier(source: string): Map<number, number> {
-  const n = new Map<number, number>();
-  for (const bloc of mdLiens.parse(source, { brut: true } satisfies EnvRendu)) {
-    for (const t of bloc.children ?? []) {
+export function extraireReferencesFichier(source: string): number[] {
+  const ids: number[] = [];
+  const voir = (tokens: ReturnType<typeof mdSection.parse>) => {
+    for (const t of tokens) {
       const adresse = t.type === 'image' ? t.attrGet('src') : t.type === 'link_open' ? t.attrGet('href') : null;
-      const m = REFERENCE_FICHIER.exec(String(adresse ?? ''));
-      if (m) n.set(Number(m[1]), (n.get(Number(m[1])) ?? 0) + 1);
+      const m = adresse === null ? null : REFERENCE_FICHIER.exec(String(adresse));
+      if (m) ids.push(Number(m[1]));
+      if (t.children) voir(t.children);
     }
-  }
-  return n;
+  };
+  voir(mdSection.parse(source, { lectureSeule: true } satisfies EnvRendu));
+  return ids;
 }
 
 /**

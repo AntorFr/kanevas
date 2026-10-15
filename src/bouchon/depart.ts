@@ -14,7 +14,8 @@ import {
 import { supprimerFichier } from '../services/stockage.js';
 import { ajouterMembre } from '../services/membres.js';
 import { ajouterSection, changerAudience, ecrireContenu, lireSection } from '../services/sections.js';
-import { creerFiche, lireFiche } from '../services/fiches.js';
+import { poserEtiquetage } from '../services/etiquettes.js';
+import { creerFiche, deplacerFiche, lireFiche } from '../services/fiches.js';
 import { assurerCompte } from '../services/comptes.js';
 import { creerEtRattacherSysteme, creerGabarit, rattacherSysteme } from '../services/systemes.js';
 import { creerJetonDeValeur } from '../services/jetons.js';
@@ -37,6 +38,10 @@ export function semerBouchon(db: Db): boolean {
   // A base migrated short of 0013 (the migration test) has no sub-type column yet.
   const sousTypes = (db.prepare('PRAGMA table_info(fiches)').all() as { name: string }[]).some(
     (c) => c.name === 'sous_type',
+  );
+  // Same for the parent column: no tree to seed before 0013.
+  const arbre = (db.prepare('PRAGMA table_info(fiches)').all() as { name: string }[]).some(
+    (c) => c.name === 'parent_id',
   );
 
   db.transaction(() => {
@@ -163,8 +168,35 @@ export function semerBouchon(db: Db): boolean {
       { joueursLisent: true, auteurId: id.lea, auteurLit: true, auteurEcrit: true },
     );
     section('Vérité', 'Le port cache un secret réservé au MJ.', {});
+    // The tree of `kanevas-arbre-service` (AD-115): Port-Sel under « Les Sphères » (GM only), five places under Port-Sel,
+    // one of them (the hideout) GM only too. Placed through `deplacerFiche`, the one write of the parent.
+    const lue = { titre: 'Description', lue: true };
+    const mjSeul = { titre: 'Secret — MJ seul', lue: false };
+    const ranger = (enfant: number, parent: number) =>
+      arbre && deplacerFiche(db, { compteId: id.antor }, lame.id, enfant, parent);
+    const spheres = fiche('lieu', 'Les Sphères', [mjSeul]);
+    ranger(port.id, spheres.id);
+    for (const [titre, sections] of [
+      ['La Taverne du Kraken', [lue]],
+      ['Les Docks', [lue]],
+      ['Le Phare aux Sels', [lue]],
+      ['Quartier des Cordiers', [lue]],
+      ['Le Repaire des contrebandiers', [mjSeul]],
+    ] as const) {
+      ranger(fiche('lieu', titre, [...sections]).id, port.id);
+    }
     fiche('faction', 'Lames Grises', [{ titre: 'Description', lue: true }]);
-    fiche('faction', 'Cercle des Cendres', [{ titre: 'Secret — MJ seul', lue: false }]);
+    const cercle = fiche('faction', 'Cercle des Cendres', [{ titre: 'Secret — MJ seul', lue: false }]);
+    // Aliases, labels and a readable « savoir » (kanevas-recherche-donnees); a base short of 0014 (aliases) has no table.
+    if (db.prepare("SELECT 1 FROM sqlite_master WHERE name = 'fiche_alias'").get()) {
+      const antor = { compteId: id.antor };
+      poserEtiquetage(db, antor, lame.id, port.id, {
+        alias: ['Salport', 'Port-aux-Sels'],
+        etiquettes: ['Côte des Brumes'],
+      });
+      poserEtiquetage(db, antor, lame.id, cercle.id, { alias: [], etiquettes: ['Côte des Brumes'] });
+      fiche('savoir', "Chronique de l'Âge d'Ombre", [{ titre: 'Récit', lue: true }], undefined, 'Récit');
+    }
 
     // The links of `kanevas-import-liens` (docs/ecrans.md). The Guild and the report are closed to
     // players; the texts that point at sheets are written once those exist, through the service.
@@ -303,8 +335,9 @@ async function semerFichiers(db: Db, racine: string): Promise<void> {
 
   const carte = await ajouter('Carte des Sphères', 'carte-spheres.png', { ou: 'mediatheque' });
   choisirIllustration(db, antor, univers, trouver('Port-Sel').id, carte.id);
+  // The alt text must not repeat « Sphères »: the search of the tree tests (B-35) look for a hidden sheet by that word.
   const val = section('Val-Fortin', 'Description');
-  ecrireContenu(db, antor.compteId, univers, val.fiche, val.section, `${val.contenu}\n\n![Carte des Sphères](fichier:${carte.id})`, val.version);
+  ecrireContenu(db, antor.compteId, univers, val.fiche, val.section, `${val.contenu}\n\n![Carte du royaume](fichier:${carte.id})`, val.version);
   const aldric = section('Maître Aldric', 'Apparence');
   joindreFichier(db, antor, univers, aldric.fiche, aldric.section, carte.id);
 

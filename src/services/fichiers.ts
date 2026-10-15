@@ -12,7 +12,8 @@ import {
   sqlSectionLisible,
   vueMJ,
 } from './droits.js';
-import { extraireReferencesFichier, type RenduFichier, type ResolveurFichiers } from './markdown.js';
+import { FICHIER_RESERVE, IMAGE_RESERVEE, extraireReferencesFichier } from './markdown.js';
+import type { RenduFichier, ResolveurFichiers } from './markdown.js';
 import { ErreurService, introuvable, invalide, refuse } from './erreurs.js';
 import {
   abandonner,
@@ -612,7 +613,7 @@ function usagesLisibles(db: Db, acteur: Acteur, role: Role, universId: number, f
     public_texte: string;
   }[];
   for (const l of lignes) {
-    const dansTexte = l.texte === 1 && (mj || extraireReferencesFichier(l.public_texte ?? '').has(fichierId));
+    const dansTexte = l.texte === 1 && (mj || extraireReferencesFichier(l.public_texte ?? '').includes(fichierId));
     if (!dansTexte && l.joint !== 1) continue;
     sorties.push({
       ficheId: l.fid,
@@ -702,7 +703,7 @@ export function resolveurFichiers(
   acteur: Acteur,
   source: string,
 ): ResolveurFichiers | undefined {
-  const ids = [...extraireReferencesFichier(source).keys()];
+  const ids = [...compterReferences(source).keys()];
   if (ids.length === 0) return undefined;
   const rows = db
     .prepare(`SELECT * FROM fichiers WHERE univers_id = ? AND id IN (${ids.map(() => '?').join(',')})`)
@@ -738,7 +739,7 @@ export async function ouvrirFichier(
   return { flux: o.flux, nom: f.nom, type: f.type, taille: o.taille, courant: jeton === f.disque };
 }
 
-/** The files joined to a section the caller already reads, those they may read, oldest first. */
+/** The files joined to a section the caller already reads, oldest first; one closed to the caller comes back as a closed line. */
 export function lireLignes(db: Db, acteur: Acteur, universId: number, role: Role, sectionId: number): PieceJointeVue[] {
   const rows = db
     .prepare(
@@ -747,13 +748,21 @@ export function lireLignes(db: Db, acteur: Acteur, universId: number, role: Role
     )
     .all(sectionId, universId) as FichierRow[];
   const mj = vueMJ(role, acteur);
-  return rows
-    .filter((f) => lisiblePar(role, acteur, f))
-    .map((f) => {
-      const p: PieceJointeVue = { id: f.id, nom: f.nom, taille: f.taille, image: estImage(f.type) };
-      if (mj) p.secrete = f.visibilite === 'mj';
-      return p;
-    });
+  return rows.map((f) => {
+    if (!lisiblePar(role, acteur, f)) {
+      // Closed to this reader: the line stays, with the sentence only — no name, size or address.
+      return { id: f.id, nom: estImage(f.type) ? IMAGE_RESERVEE : FICHIER_RESERVE, taille: 0, image: false, ferme: true };
+    }
+    const p: PieceJointeVue = { id: f.id, nom: f.nom, taille: f.taille, image: estImage(f.type) };
+    if (mj) p.secrete = f.visibilite === 'mj';
+    return p;
+  });
+}
+
+function compterReferences(source: string): Map<number, number> {
+  const n = new Map<number, number>();
+  for (const id of extraireReferencesFichier(source)) n.set(id, (n.get(id) ?? 0) + 1);
+  return n;
 }
 
 /**
@@ -768,8 +777,8 @@ export function recalculerFichiersSection(
   contenu: string,
   contenuPublic: string,
 ): void {
-  const total = extraireReferencesFichier(contenu);
-  const publics = extraireReferencesFichier(contenuPublic);
+  const total = compterReferences(contenu);
+  const publics = compterReferences(contenuPublic);
   const existants = new Set<number>();
   if (total.size > 0) {
     const ids = [...total.keys()];

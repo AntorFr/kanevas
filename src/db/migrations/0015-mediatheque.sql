@@ -1,4 +1,4 @@
--- Migration 0014 (kanevas-import-mediatheque, number taken at merge, AD-51): the media library of a
+-- Migration 0015 (kanevas-import-mediatheque, number taken at merge, AD-51): the media library of a
 -- universe (AD-111, AD-117 §4). Expand only: every attachment and every illustration becomes a row of
 -- `fichiers` (same file on the disk, no byte copied); `pieces_jointes` is emptied, not dropped, and the
 -- three illustration columns of AD-93 stay in `fiches`, unused (their removal is a later tightening).
@@ -54,12 +54,13 @@ CREATE INDEX fiches_par_illustration ON fiches (illustration_fichier_id);
 
 -- The account that "added" a file of before: the GM of the smallest account id of the universe,
 -- else the member of the smallest account id; without a member the row is not migrated.
--- Attachments: secret → `mj`, else `joueurs`; joined to their section.
+-- Attachments: secret, or in a section the players do not read → `mj`, else `joueurs`; joined to their section.
 INSERT INTO fichiers (univers_id, nom, type, taille, disque, visibilite, ajoute_par, ajoute_le)
 SELECT univers_id, nom, type, taille, fichier, visibilite, par, cree_le
   FROM (
     SELECT f.univers_id AS univers_id, p.nom AS nom, p.type AS type, p.taille AS taille,
-           p.fichier AS fichier, CASE p.secrete WHEN 1 THEN 'mj' ELSE 'joueurs' END AS visibilite,
+           p.fichier AS fichier,
+           CASE WHEN p.secrete = 1 OR s.joueurs_lisent = 0 THEN 'mj' ELSE 'joueurs' END AS visibilite,
            COALESCE(
              (SELECT m.compte_id FROM membres m WHERE m.univers_id = f.univers_id AND m.role = 'mj'
                ORDER BY m.compte_id LIMIT 1),
@@ -80,13 +81,16 @@ SELECT x.id, p.section_id, 1
   FROM pieces_jointes p
   JOIN fichiers x ON x.disque = p.fichier;
 
--- Illustrations: a `joueurs` file named after the sheet, set back on the sheet.
+-- Illustrations: a file named after the sheet, set back on the sheet; `mj` when the sheet has no section
+-- read by the players (the file must not open what its sheet keeps closed), else `joueurs`.
 INSERT INTO fichiers (univers_id, nom, type, taille, disque, visibilite, ajoute_par, ajoute_le)
-SELECT univers_id, nom, type, taille, chemin, 'joueurs', par, ajoute_le
+SELECT univers_id, nom, type, taille, chemin, visibilite, par, ajoute_le
   FROM (
     SELECT f.univers_id AS univers_id, substr(trim(f.titre), 1, 200) AS nom,
            f.illustration_type AS type, f.illustration_taille AS taille,
            f.illustration_fichier AS chemin,
+           CASE WHEN EXISTS (SELECT 1 FROM sections s WHERE s.fiche_id = f.id AND s.joueurs_lisent = 1)
+                THEN 'joueurs' ELSE 'mj' END AS visibilite,
            COALESCE(
              (SELECT m.compte_id FROM membres m WHERE m.univers_id = f.univers_id AND m.role = 'mj'
                ORDER BY m.compte_id LIMIT 1),

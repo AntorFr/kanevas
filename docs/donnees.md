@@ -221,7 +221,7 @@ se fusionne, pas avant (AD-51).
 
 > Provisoire comme celle des systèmes ci-dessus. Fichier : `src/db/migrations/0004-pieces-jointes.sql` — **numéro provisoire** (0004), recalé à la
 > fusion si une autre tranche est entrée avant (AD-51). Code : `src/services/stockage.ts` (octets,
-> sans notion de section) et `src/services/pieces-jointes.ts` ; dossier réglable par `ATTACHMENTS_DIR`
+> sans notion de section) et, depuis `kanevas-import-mediatheque`, `src/services/fichiers.ts` (la table `pieces_jointes` est vidée par la migration 0015, plus lue) ; dossier réglable par `ATTACHMENTS_DIR`
 > (défaut : `attachments/` à côté de la base).
 
 Une table ; aucune entité nouvelle (la pièce jointe est celle du cadrage). Les octets ne sont pas
@@ -440,7 +440,7 @@ tels quels ; les déclencheurs de `recherche_fiches` sont recréés.
 | Table | Colonnes | Contrainte |
 |---|---|---|
 | `sections` | `contenu_public` (texte `NOT NULL DEFAULT ''` ; le contenu sans blocs MJ ; « la section contient un bloc » est `contenu_public ≠ contenu`, AD-114 ; vide par défaut : un site d'écriture oublié montre une section vide, il ne fuit pas), `cle_origine` (nulle : née dans Kanevas), `version_importee` (entier ; nul : jamais écrite par un import), `dernier_import` (JSON : titre, audience et ensemble des fichiers joints (clés) écrits par le dernier import ; nul : jamais) | (12) le contenu est modifié dans Kanevas si `version` ≠ `version_importee`, le titre ou l'audience si la valeur courante ≠ `dernier_import` ; (8) écrit par le service dans la même transaction que `contenu` (AD-98) — une fonction Markdown ne s'écrit pas en SQL ; index unique `(fiche_id, cle_origine)` (2) |
-| `pieces_jointes` | aucune : la table **n'est plus écrite ni lue** depuis AD-111 ; la migration transforme chaque ligne en un fichier de la médiathèque (`mj` si `secrete`, `joueurs` sinon ; même nom sur disque, sans copie) joint à sa section, puis vide la table ; sa suppression part dans une tranche suivante (resserrer, une fois l'image d'avant hors service) |
+| `pieces_jointes` | aucune : la table **n'est plus écrite ni lue** depuis AD-111 ; la migration transforme chaque ligne en un fichier de la médiathèque (`mj` si `secrete` ou si la section n'est pas lue des joueurs, `joueurs` sinon ; une illustration est `mj` si la fiche n'a aucune section lue des joueurs, `joueurs` sinon ; même nom sur disque, sans copie) joint à sa section, puis vide la table ; sa suppression part dans une tranche suivante (resserrer, une fois l'image d'avant hors service) |
 | `campagnes` | `cle_origine`, `dernier_import` (JSON : nom et statut écrits par le dernier import ; nul : jamais) | index unique `(univers_id, cle_origine)` (2) ; (12) même règle, champ par champ |
 | `scenarios` | `cle_origine`, `dernier_import` (JSON : titre écrit ; nul : jamais), `version_importee` (la `version` laissée par le dernier import) | index unique `(campagne_id, cle_origine)` (2) ; (12) le contenu est modifié dans Kanevas si `version` ≠ `version_importee`, le titre si la valeur courante ≠ `dernier_import` |
 

@@ -1,9 +1,9 @@
-import { Plus } from 'lucide-react';
+import { LayoutGrid, ListTree, Plus } from 'lucide-react';
 import { useEffect, useId, useState, type FormEvent } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
 import { appeler, ErreurApi, lire } from '../api';
-import { useCharge } from '../cadre-contexte';
+import { useCharge, useVue } from '../cadre-contexte';
 import type { Ecran } from '../registre';
 import type { UniversListe } from '../types';
 import { Bouton, Champ, ErreurChargement, Fenetre, PageIntrouvable, VideIcone, useToasts } from '../ui';
@@ -11,6 +11,7 @@ import { MAX_SOUS_TYPE } from './fiche/sous-type';
 import './ecrans.css';
 import './fiche/fiche.css';
 import './liste.css';
+import { lireVue, memoriserVue, type VueListe } from './fiche/arbre';
 import { ListeRecherche } from './fiche/liste-recherche';
 import { ChargementGrille } from './fiche/vignette';
 import type { Fiche } from './fiche/types';
@@ -30,6 +31,8 @@ function Liste({ universId, slug }: { universId: string; slug: string | undefine
   const [univers] = useCharge<UniversListe>(`/api/univers/${universId}`);
   const { types, etat: etatTypes, recharger: rechargerTypes } = useTypes();
   const [creation, setCreation] = useState(false);
+  const { mode } = useVue();
+  const [vues, setVues] = useState<Record<string, VueListe>>({});
 
   if (univers.etat === 'chargement' || (univers.etat === 'ok' && etatTypes === 'chargement')) {
     return (
@@ -48,6 +51,11 @@ function Liste({ universId, slug }: { universId: string; slug: string | undefine
   const type = typeParSlug(types, slug);
   if (!type) return <PageIntrouvable />;
   const mj = univers.valeur.role === 'mj';
+  const vue = vues[type.type] ?? lireVue(universId, type.type);
+  const choisirVue = (v: VueListe) => {
+    memoriserVue(universId, type.type, v);
+    setVues((m) => ({ ...m, [type.type]: v }));
+  };
   const nouveau = (
     <Bouton variante="principal" ecrit icone={Plus} title={type.nouveau} onClick={() => setCreation(true)}>
       <span className="lib-creer">{type.nouveau}</span>
@@ -67,6 +75,9 @@ function Liste({ universId, slug }: { universId: string; slug: string | undefine
       <ListeRecherche
         universId={universId}
         type={type}
+        vue={vue}
+        suffixeMode={mj && mode === 'joueur' ? '&mode=joueur' : ''}
+        bascule={<BasculeVue vue={vue} onChoix={choisirVue} />}
         recherche={params.get('q')?.trim() ?? ''}
         onRecherche={(q) => setParams((p) => majParam(p, 'q', q))}
         sousType={params.get('sousType') ?? ''}
@@ -85,6 +96,22 @@ function Liste({ universId, slug }: { universId: string; slug: string | undefine
           onCree={(f) => navigate(`/univers/${universId}/fiche/${f.id}`)}
         />
       )}
+    </div>
+  );
+}
+
+/** « Grille / Arbre » (E-8), kept per type in the browser. */
+function BasculeVue({ vue, onChoix }: { vue: VueListe; onChoix: (v: VueListe) => void }) {
+  return (
+    <div className="bascule-vue" role="group" aria-label="Affichage">
+      <button type="button" aria-pressed={vue === 'grille'} onClick={() => onChoix('grille')}>
+        <LayoutGrid size={16} strokeWidth={1.75} aria-hidden="true" />
+        Grille
+      </button>
+      <button type="button" aria-pressed={vue === 'arbre'} onClick={() => onChoix('arbre')}>
+        <ListTree size={16} strokeWidth={1.75} aria-hidden="true" />
+        Arbre
+      </button>
     </div>
   );
 }

@@ -218,7 +218,7 @@ test('migration 0011 : contenu_public = contenu pour les sections existantes, co
   textes.forEach((t, i) => db.prepare('INSERT INTO sections (fiche_id, titre, ordre, contenu, modifie_le) VALUES (1, ?, ?, ?, ?)').run('S' + i, i + 1, t, 't'));
   const avant = (db.prepare('SELECT COUNT(*) AS n FROM sections').get() as { n: number }).n;
   assert.equal(avant, 4);
-  assert.deepEqual(migrate(db), [11, 12, 13, 14]);
+  assert.deepEqual(migrate(db), [11, 12, 13, 14, 15]);
   const apres = db.prepare('SELECT contenu, contenu_public AS p FROM sections ORDER BY id').all() as { contenu: string; p: string }[];
   assert.equal(apres.length, 4);
   assert.deepEqual(apres.map((r) => r.p), textes);

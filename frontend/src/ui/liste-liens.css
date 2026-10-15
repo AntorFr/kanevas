@@ -12,3 +12,4 @@
 .liste-liens .option.etat { color: var(--texte-3); cursor: default; }
 .liste-liens .option.etat:hover { background: transparent; }
 @media (max-width: 760px) { .liste-liens .option { min-height: 40px; } }
+@media (max-width: 760px) { .liste-liens { max-height: 70vh; } }
