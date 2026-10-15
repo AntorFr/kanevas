@@ -141,7 +141,7 @@ test('B-24 « Rendre secrète » sur une pièce publique, puis « Lever le secre
   await b.getByText('Secrète — MJ seul').waitFor();
 });
 
-test('exclusion : Léa ne voit ni vignette ni bloc ; l’adresse du fichier répond « Page introuvable. »', opts, async () => {
+test('exclusion : Léa ne voit ni vignette ni nom, seulement la ligne fermée ; l’adresse du fichier répond « Page introuvable. »', opts, async () => {
   const antor = await compte('antor');
   const fiche = await (await antor.request.get(apiFiche)).json();
   const secret = fiche.sections.find((s: Any) => s.titre === 'Apparence').piecesJointes[0];
@@ -149,9 +149,9 @@ test('exclusion : Léa ne voit ni vignette ni bloc ; l’adresse du fichier rép
   const lea = await compte('lea', 'Léa');
   await ouvrir(lea);
   assert.equal(await lea.locator('img').count(), 0);
-  assert.equal(await bloc(lea, 'Apparence').count(), 0);
   const t = await section(lea, 'Apparence').innerText();
-  assert.ok(!t.includes('Aucune pièce jointe.') && !/apparence\.png|Pièces jointes|\(\d+\)/.test(t), t);
+  // arbitrage: the line stays, closed — the sentence only, never the name
+  assert.ok(t.includes('Image réservée au MJ.') && !t.includes('Aucune pièce jointe.') && !/apparence\.png/.test(t), t);
   assert.ok(!(await texte(lea)).includes('portrait.png'), 'the secret piece of the closed section is nowhere');
   const url = `${apiUnivers}/fichiers/${secret.id}`;
   assert.equal((await lea.request.get(url)).status(), 404);

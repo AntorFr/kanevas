@@ -30,7 +30,7 @@ function avant() {
   db.prepare('INSERT INTO univers (id, nom, cree_le) VALUES (1, ?, ?)').run('Lame', t);
   db.prepare("INSERT INTO membres (univers_id, compte_id, role) VALUES (1, 1, 'joueur'), (1, 2, 'mj'), (1, 3, 'mj')").run();
   db.prepare("INSERT INTO fiches (id, univers_id, type, titre, charge, cree_le, modifie_le, illustration_fichier, illustration_type, illustration_taille) VALUES (1, 1, 'lieu', 'Port-Sel', '{}', ?, '2026-02-02T00:00:00.000Z', 'ill-disque', 'image/png', 12)").run(t);
-  db.prepare("INSERT INTO sections (id, fiche_id, titre, ordre, modifie_le) VALUES (1, 1, 'Description', 1, ?)").run(t);
+  db.prepare("INSERT INTO sections (id, fiche_id, titre, ordre, modifie_le, joueurs_lisent) VALUES (1, 1, 'Description', 1, ?, 1)").run(t);
   const pj = db.prepare('INSERT INTO pieces_jointes (section_id, nom, type, taille, fichier, secrete, cree_le) VALUES (1, ?, ?, ?, ?, ?, ?)');
   pj.run('secret.pdf', 'application/octet-stream', 5, 'disque-secret', 1, '2026-03-03T00:00:00.000Z');
   pj.run('public.png', 'image/png', 7, 'disque-public', 0, '2026-03-04T00:00:00.000Z');
@@ -89,4 +89,31 @@ test('migration 0014 : sans membre, la pièce n’est pas migrée et la table de
   db.prepare("INSERT INTO pieces_jointes (section_id, nom, type, taille, fichier, secrete, cree_le) VALUES (1, 'a.pdf', 'application/octet-stream', 3, 'd', 0, ?)").run(t);
   assert.deepEqual(migrate(db), [14]);
   assert.equal((db.prepare('SELECT COUNT(*) AS n FROM fichiers').get() as { n: number }).n, 0);
+});
+
+test('migration 0014 : une pièce d’une section fermée aux joueurs devient mj, même non secrète (MJ seul, ou section d’auteur fermée à Teo)', () => {
+  const db = avant();
+  const t = '2026-01-01T00:00:00.000Z';
+  db.prepare("INSERT INTO sections (id, fiche_id, titre, ordre, modifie_le, joueurs_lisent) VALUES (2, 1, 'Secret MJ', 2, ?, 0)").run(t);
+  db.prepare("INSERT INTO sections (id, fiche_id, titre, ordre, modifie_le, joueurs_lisent, auteur_id, auteur_lit, auteur_ecrit) VALUES (3, 1, 'Notes', 3, ?, 0, 1, 1, 1)").run(t);
+  const pj = db.prepare('INSERT INTO pieces_jointes (section_id, nom, type, taille, fichier, secrete, cree_le) VALUES (?, ?, ?, ?, ?, 0, ?)');
+  pj.run(2, 'ferme-mj.png', 'image/png', 4, 'd-mj', t);
+  pj.run(3, 'ferme-auteur.png', 'image/png', 4, 'd-auteur', t);
+  migrate(db);
+  assert.deepEqual(
+    db.prepare("SELECT nom, visibilite FROM fichiers WHERE nom IN ('ferme-mj.png','ferme-auteur.png','public.png') ORDER BY id").all(),
+    [
+      { nom: 'public.png', visibilite: 'joueurs' },
+      { nom: 'ferme-mj.png', visibilite: 'mj' },
+      { nom: 'ferme-auteur.png', visibilite: 'mj' },
+    ],
+  );
+});
+
+test('migration 0014 : l’illustration d’une fiche sans aucune section lue des joueurs devient mj', () => {
+  const db = avant();
+  db.prepare('UPDATE sections SET joueurs_lisent = 0').run();
+  migrate(db);
+  assert.deepEqual(db.prepare("SELECT visibilite FROM fichiers WHERE nom = 'Port-Sel'").all(), [{ visibilite: 'mj' }]);
+  assert.deepEqual(db.prepare("SELECT visibilite FROM fichiers WHERE nom = 'public.png'").all(), [{ visibilite: 'mj' }]);
 });

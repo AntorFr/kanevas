@@ -9,7 +9,7 @@ import { test } from 'node:test';
 
 import { semerBouchon } from '../bouchon/depart.js';
 import { migrate, openDb } from '../db/db.js';
-import { ajouterFichier, effacerFichier, fichierLisible } from './fichiers.js';
+import { ajouterFichier, effacerFichier, fichierLisible, lireLignes, modifierFichier } from './fichiers.js';
 import { ecrireContenu, lireSection } from './sections.js';
 
 const PNG = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 1, 2, 3, 4]);
@@ -143,4 +143,22 @@ test('réenregistrer un texte qui cite un fichier non joint ne plante pas (deuxi
   const v2 = lireSection(db, antor, univers, s.ficheId, s.id).version;
   ecrireContenu(db, antor.compteId, univers, s.ficheId, s.id, 'Retiré', v2);
   assert.deepEqual(lignes(db, s.id), []);
+});
+
+test('une pièce réservée au MJ reste une ligne fermée pour Léa : la phrase seule, ni nom, ni taille', async () => {
+  const { db, antor, lea, univers, section, racine } = base();
+  const s = section('Port-Sel', 'Description');
+  const img = await ajouterFichier(db, antor, univers, Readable.from([PNG]), 'secret-reel.png', { ou: 'section', sectionId: s.id, maniere: 'joint' }, racine);
+  const pdf = await ajouterFichier(db, antor, univers, Readable.from([Buffer.from('%PDF-1.4 x')]), 'budget-reel.pdf', { ou: 'section', sectionId: s.id, maniere: 'joint' }, racine);
+  modifierFichier(db, antor, univers, img.id, { visibilite: 'mj' });
+  modifierFichier(db, antor, univers, pdf.id, { visibilite: 'mj' });
+  const vue = lireLignes(db, lea, univers, 'joueur', s.id).filter((l) => l.id === img.id || l.id === pdf.id);
+  assert.deepEqual(vue, [
+    { id: img.id, nom: 'Image réservée au MJ.', taille: 0, image: false, ferme: true },
+    { id: pdf.id, nom: 'Fichier réservé au MJ.', taille: 0, image: false, ferme: true },
+  ]);
+  assert.ok(!JSON.stringify(vue).includes('reel'));
+  const mj = lireLignes(db, antor, univers, 'mj', s.id).filter((l) => l.id === img.id);
+  assert.equal(mj[0].nom, 'secret-reel.png');
+  assert.equal(mj[0].ferme, undefined);
 });

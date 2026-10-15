@@ -182,7 +182,7 @@ describe('kanevas-fichiers — besoin B-24', () => {
     assert.deepEqual(Buffer.from(await rm.body()), PNG);
   });
 
-  test('B-24 sur « Apparence » (lue des joueurs) un portrait rendu secret ne laisse aucune trace chez Léa, adresse 404 identique à une inconnue', opts, async () => {
+  test('B-24 sur « Apparence » (lue des joueurs) un portrait rendu secret n’est plus qu’une ligne fermée chez Léa (ni nom, ni vignette), adresse 404 identique à une inconnue', opts, async () => {
     const { m, antor, lea } = await monde({ Apparence: { joueursLisent: true } });
     const piece = (await deposer(antor.ctx, m, 'Apparence', 'portrait-secret.png', PNG)) as Any;
     await ouvrirFiche(lea.page, m);
@@ -195,7 +195,8 @@ describe('kanevas-fichiers — besoin B-24', () => {
     const t = await texte(lea.page);
     assert.ok(!t.includes('portrait-secret.png'), t);
     assert.ok(!t.includes('Aucune pièce jointe'), t);
-    assert.ok(!/pièces? jointes?/i.test(t), t);
+    // arbitrage: the line stays, closed — the sentence only, no thumbnail, no name
+    assert.ok(t.includes('Image réservée au MJ.'), t);
     assert.equal(await lea.page.locator('img').count(), 0);
     await lea.page.screenshot({ path: '/tmp/pj-besoin-lea-apparence.png' });
     const r = await lea.ctx.request.get(`${pj(m, piece.id, '/fichier')}`);
