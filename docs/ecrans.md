@@ -1288,7 +1288,7 @@ au secret (la section « MJ seul »).
 1 080 px). Au téléphone (moins de 760 px), **deux colonnes** (12 px entre elles, 16 px entre deux rangées),
 titre 13 px, la pastille sous le titre. Les images
 se chargent **à l'approche** (`loading="lazy"`) dans un cadre déjà à sa taille (la grille ne saute
-pas) ; leur adresse porte le jeton de l'illustration (`…/illustration?v=<jeton>`, AD-93), si bien
+pas) ; leur adresse porte le jeton de l'illustration (`/fichiers/<id>?v=<jeton>`, AD-93), si bien
 qu'une image remplacée se recharge et qu'une image inchangée vient du cache.
 
 *Survol et focus.* La carte se soulève d'un plan (`--surface-2` derrière la carte, contour

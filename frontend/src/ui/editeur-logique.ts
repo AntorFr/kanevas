@@ -143,6 +143,6 @@ export function sansBlocsMJ(texte: string): string {
 /** The ids of the files a text references with `(fichier:<id>)`, in order, without repeats. */
 export function idsFichiers(texte: string): number[] {
   const ids = new Set<number>();
-  for (const m of texte.matchAll(/\(fichier:(\d+)\)/g)) ids.add(Number(m[1]));
+  for (const m of texte.matchAll(/\(fichier:([1-9]\d{0,14})\)/g)) ids.add(Number(m[1]));
   return [...ids];
 }

@@ -12,7 +12,7 @@ import {
   sqlSectionLisible,
   vueMJ,
 } from './droits.js';
-import { FICHIER_RESERVE, IMAGE_RESERVEE } from './markdown.js';
+import { FICHIER_RESERVE, IMAGE_RESERVEE, extraireReferencesFichier } from './markdown.js';
 import type { RenduFichier, ResolveurFichiers } from './markdown.js';
 import { ErreurService, introuvable, invalide, refuse } from './erreurs.js';
 import {
@@ -753,14 +753,9 @@ export function lireLignes(db: Db, acteur: Acteur, universId: number, role: Role
   });
 }
 
-const REFERENCE = /\(fichier:(\d+)\)/g;
-
 function compterReferences(source: string): Map<number, number> {
   const n = new Map<number, number>();
-  for (const m of source.matchAll(REFERENCE)) {
-    const id = Number(m[1]);
-    n.set(id, (n.get(id) ?? 0) + 1);
-  }
+  for (const id of extraireReferencesFichier(source)) n.set(id, (n.get(id) ?? 0) + 1);
   return n;
 }
 

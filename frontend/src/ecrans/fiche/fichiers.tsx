@@ -155,6 +155,7 @@ export function useAjoutFichier<R>(c: ConfigAjout<R>) {
         icone={c.icone}
         declencheur={c.declencheur}
         aligne="debut"
+        classe="menu-ajout-fichier"
         desactive={perdue}
         entrees={entrees}
       />
