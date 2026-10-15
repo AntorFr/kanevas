@@ -128,8 +128,8 @@ Ceux que Kanevas suit :
   univers du compte et « Mes univers ») ; des items à icône groupés, les groupes titrés en casse
   normale (« Lore », « Univers »), l'item courant sur `--accent-fond` avec son icône en
   `--accent-texte` ; un tiroir sous un bouton « Menu » au téléphone.
-- **La barre haute** : le fil d'Ariane (univers › type › fiche ; au téléphone, l'icône du type et
-  le titre seul) et, sur les écrans qui l'ont, la bascule mode MJ / mode Joueur.
+- **La barre haute** : le fil d'Ariane (univers › type › ancêtres lisibles › fiche ; au téléphone, l'icône du type et
+  le titre, les ancêtres repliés dans « … » en dessous de 480 px) et, sur les écrans qui l'ont, la bascule mode MJ / mode Joueur.
 - **L'édition en place** : « Modifier » transforme la section en champ à la même typographie, au
   même endroit ; Échap annule, Ctrl/⌘ + Entrée enregistre ; le compteur de caractères est visible.
 - **Les réglages rares sont repliés** : l'audience d'une section se lit dans sa pastille et se
