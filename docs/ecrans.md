@@ -36,7 +36,7 @@ téléphone (moins de 760 px), la barre est un tiroir sous un bouton « Menu »,
 haute.
 
 Au-dessus de chaque écran d'un univers, une **barre haute** : le fil d'Ariane (univers › type ›
-fiche ; depuis `kanevas-import`, univers › type › ancêtres lisibles › fiche, B-35 ; au téléphone (≤ 760 px), le sceau de l'univers et le libellé du type disparaissent, et à 480 px et moins les ancêtres passent dans « … » : voir E-9) et, sur les écrans où elle existe, la
+fiche ; depuis `kanevas-import`, univers › type › ancêtres lisibles › fiche, B-35 ; au téléphone (≤ 760 px), le sceau de l'univers et le libellé du type disparaissent, et à 480 px et moins les ancêtres se replient (menu « … » dès deux ancêtres) : voir E-9) et, sur les écrans où elle existe, la
 bascule mode MJ / mode Joueur.
 
 Hors d'un univers (E-1, E-2, E-5, E-15, E-16), une barre réduite : **Mes univers**, **Systèmes de
