@@ -447,7 +447,7 @@ a expiré — la ligne dit « Expiré », le script reçoit 401.
 ### P-12 — Lire la base importée (Antor, MJ, puis Léa, Joueuse, au téléphone)
 1. Antor ouvre **Lieux** (E-8), passe la liste **en arbre** : « Les Sphères » (Lieu · Sphère)
    déplié montre « Port-Sel » (Lieu · Port), qui déplié montre « La Taverne du Kraken » et « Les
-   Docks » ; il filtre sur le sous-type « Port » : « Port-Sel » et « Havre-Gris ».
+   Docks » ; il filtre sur le sous-type « Port » : « Port-Sel » et « Havre-Gris » (après un import qui porte ces sous-types : le semis du bouchon pose « Les Sphères » et « Port-Sel » sans sous-type, et pas « Havre-Gris »).
 2. Il ouvre « Port-Sel » (**E-9**) : le fil d'Ariane « Lame d'Ébène › Lieux › Les Sphères ›
    Port-Sel » ; le texte en Markdown (intertitres, un tableau des quartiers, une image insérée) ; des
    liens vers « Maître Aldric » et « La Guilde des Brumes » ; au milieu de « Histoire », un **bloc MJ**

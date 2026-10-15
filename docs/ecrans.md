@@ -2596,7 +2596,7 @@ bandeau, « Déplacer » désactivé. La boîte n'existe que pour un MJ hors mod
 - Étant donné « Le Repaire des contrebandiers » (MJ seul) sous « Port-Sel », quand Léa déplie « Port-Sel », alors
   elle voit « La Taverne du Kraken », « Les Docks », « Le Phare aux Sels » et « Quartier des Cordiers », pas le Repaire,
   et aucun nombre ne lui dit qu'il existe.
-- Étant donné un enfant d'un autre type sous « Port-Sel » (un événement lu des joueurs), quand Léa déplie
+- Étant donné un enfant d'un autre type sous « Port-Sel » (un événement lu des joueurs ; le semis du bouchon n'en pose pas, il se crée ou s'importe pour ce critère), quand Léa déplie
   « Port-Sel » dans « Lieux », alors cet enfant n'y est pas ; il est dans « Contient » de « Port-Sel », et dans
   « Événements » il porte « dans Port-Sel ».
 - Étant donné une réponse de `GET …/fiches?type=lieu&parent=racine` pour Léa, alors aucun champ ne porte le titre,
