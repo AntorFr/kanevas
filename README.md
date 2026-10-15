@@ -85,7 +85,7 @@ récent suffit pour les mêmes commandes (`npm ci && npm run typecheck && npm te
 ```bash
 npm ci && npm run build && KANEVAS_STUB=1 npm start   # puis ouvrir http://localhost:3001/ : choix d'un compte de test
 # le semis précède l'écoute du port (moins d'une seconde ici) ; sans écrire dans ./data/ ni sur le port 3001 : npm run build && PORT=3055 DB_PATH=/tmp/k.db KANEVAS_STUB=1 npm start
-# (Ctrl-C l'arrête ; lancé en arrière-plan, kill du processus ; supprimer /tmp/k.db pour repartir d'une base vide ; `session.key` et `attachments/` se créent à côté de la base, donc dans /tmp : prendre un dossier dédié, `DB_PATH=/tmp/kanevas-essai/k.db`, et le supprimer en entier)
+# (Ctrl-C l’arrête ; lancé en arrière-plan avec `&`, `kill $!` ; supprimer /tmp/k.db pour repartir d'une base vide ; `session.key` et `attachments/` se créent à côté de la base, donc dans /tmp : prendre un dossier dédié, `DB_PATH=/tmp/kanevas-essai/k.db`, et le supprimer en entier)
 ```
 
 `/connexion-bouchon` remplace Authelia (AD-55) sous un bandeau « mode bouchon ». Les comptes de test
@@ -106,6 +106,13 @@ En bouchon seulement, `/demo-composants` (session requise) montre les composants
 hors bouchon, cette adresse répond 404.
 
 **Recette de la médiathèque** (`kanevas-import-mediatheque`, en bouchon : `npm run build && PORT=3055 DB_PATH=/tmp/k.db KANEVAS_STUB=1 npm start`, base neuve semée ; « Lame d'Ébène »). En `antor` : « Médiathèque » de la barre (E-19) liste, entre autres (les illustrations semées y sont aussi), « Carte des Sphères », « Plan secret de la Guilde » (réservé au MJ) et « port-sel-quais.webp » ; ouvrir « Carte des Sphères » donne ses usages (« Val-Fortin », « Maître Aldric », illustration de « Port-Sel »). Sur « Port-Sel », « Description » : « Joindre un fichier » ajoute un document, visible des joueurs ; « Fichier » de l'éditeur, dans un bloc MJ, ajoute un fichier réservé au MJ. En `lea` : « Plan secret de la Guilde » n'est pas dans la médiathèque, et une image réservée au MJ (insérée dans un texte par `![plan](fichier:<id>)`, ici « Plan secret de la Guilde », inutilisé au semis, dont l'`<id>` se lit par `GET /api/univers/1/fichiers` avec le cookie d'Antor (`curl -c /tmp/j -d compte=antor http://localhost:3055/connexion-bouchon`, puis `-b /tmp/j`) : 11 sur une base neuve ; « Lame d'Ébène » est l'univers 1) lue dans un texte devient « Image réservée au MJ. ». Réserver « Carte des Sphères » au MJ (E-19) liste d'abord ce que les joueurs perdent.
+
+Without a browser (English, as `CLAUDE.md` asks; same stub server, same cookie jar `-b /tmp/j`; « Lame d'Ébène » is universe 1, « Port-Sel » is fiche 12 and its « Description » section 13 on a fresh base):
+```bash
+curl -b /tmp/j http://localhost:3055/api/univers/1/fichiers   # {"fichiers":[{"id","nom",…}],"suite","total"} : read the id by "nom"
+curl -b /tmp/j -F section=13 -F maniere=joint -F fichier=@tarifs-du-port.pdf http://localhost:3055/api/univers/1/fichiers   # « Joindre un fichier »; add -F blocMj=true for the GM-block path (fields before the file)
+curl -b /tmp/j -X PUT -H 'Content-Type: application/json' -d '{"contenu":"![plan](fichier:11)","version":1}' http://localhost:3055/api/univers/1/fiches/12/sections/13/contenu   # version: read it from the section first
+```
 
 Recette de la mise à jour du monde en bouchon (le semis ne contient ni campagne ni compte-rendu ; « Maître Aldric » a une section « Vérité — MJ seul », que « Vérité » suffit à désigner). Toujours dans « Lame d'Ébène » :
 1. En `antor`, dans le panneau de l'assistant (bouton flottant) : « Crée une campagne « Marches » ».

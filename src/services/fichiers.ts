@@ -415,7 +415,7 @@ export function modifierFichier(
 
 /**
  * The GM deletes a file (AD-117 §5): the row, its references and the illustrations that pointed at it
- * go in one transaction, the bytes after the commit. ``fichier:<id>` references in texts stay.
+ * go in one transaction, the bytes after the commit. `fichier:<id>` references in texts stay.
  */
 export function effacerFichier(
   db: Db,
