@@ -96,8 +96,15 @@ export function Apercu({ universId, f, grand }: { universId: string; f: Fichier;
   const Icone = iconeDe(f);
   return (
     <span className={grand ? 'med-grand med-doc' : 'med-vignette med-doc'}>
-      <Icone size={grand ? 48 : 32} strokeWidth={1.75} aria-hidden="true" />
-      {!grand && extension(f.nom) !== '' && <b className="med-ext">{extension(f.nom)}</b>}
+      <span className="med-feuille">
+        <Icone size={grand ? 42 : 30} strokeWidth={1.5} aria-hidden="true" />
+      </span>
+      {!grand && (
+        <span className="med-pied-doc">
+          {extension(f.nom) !== '' ? <b className="med-ext">{extension(f.nom)}</b> : <span />}
+          <span className="med-poids">{tailleLisible(f.taille)}</span>
+        </span>
+      )}
     </span>
   );
 }

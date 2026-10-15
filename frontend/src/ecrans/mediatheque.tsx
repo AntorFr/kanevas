@@ -1,9 +1,9 @@
-import { ChevronDown, Download, ImageOff, Images, Lock, Plus, Trash2, Upload, X } from 'lucide-react';
+import { ChevronDown, ChevronRight, Download, FileText, ImageOff, Images, LayoutGrid, Lock, Plus, Search, Trash2, Upload, X } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
 
 import { appeler, envoyerFichier, ErreurApi, lire, useConnexionPerdue } from '../api';
-import { useCharge, useTitreAriane } from '../cadre-contexte';
+import { useCharge } from '../cadre-contexte';
 import type { Ecran } from '../registre';
 import type { UniversListe } from '../types';
 import { Bouton, BoiteDialogue, Champ, ErreurChargement, Pastille, PageIntrouvable, useToasts, VideIcone } from '../ui';
@@ -54,7 +54,6 @@ function Mediatheque() {
   const perdue = useConnexionPerdue();
   const { toast } = useToasts();
   const [univers] = useCharge<UniversListe>(`/api/univers/${id}`);
-  useTitreAriane('Médiathèque');
 
   const [nature, setNature] = useState<Nature>('');
   const [recherche, setRecherche] = useState('');
@@ -369,6 +368,7 @@ function Mediatheque() {
         </div>
       )}
       <div className="med-tete">
+        <span className="med-glyphe" aria-hidden="true"><Images size={20} strokeWidth={1.75} /></span>
         <h1>Médiathèque</h1>
         {etat === 'ok' && <span className="med-compte">{compte}</span>}
         {mj && (
@@ -390,17 +390,22 @@ function Mediatheque() {
         )}
       </div>
 
+      <div className="bascule med-bascule" role="radiogroup" aria-label="Nature">
+        {([['', 'Tout', LayoutGrid], ['images', 'Images', Images], ['documents', 'Documents', FileText]] as const).map(([v, l, Ic]) => (
+          <label key={v}>
+            <input type="radio" name="nature" checked={nature === v} onChange={() => setNature(v)} />
+            <Ic size={14} strokeWidth={1.75} aria-hidden="true" />
+            {l}
+          </label>
+        ))}
+      </div>
+
       <div className="med-filtres">
-        <div className="bascule" role="radiogroup" aria-label="Nature">
-          {([['', 'Tout'], ['images', 'Images'], ['documents', 'Documents']] as const).map(([v, l]) => (
-            <label key={v}>
-              <input type="radio" name="nature" checked={nature === v} onChange={() => setNature(v)} />
-              {l}
-            </label>
-          ))}
-        </div>
-        <Champ etiquette="Chercher par nom" type="search" value={recherche} maxLength={200}
-          onChange={(e: { target: { value: string } }) => setRecherche(e.target.value)} />
+        <label className="med-recherche">
+          <Search size={14} strokeWidth={1.75} aria-hidden="true" />
+          <input type="search" aria-label="Chercher par nom" placeholder="Chercher par nom" value={recherche} maxLength={200}
+            onChange={(e) => setRecherche(e.target.value)} />
+        </label>
         {mj && (
           <Champ liste etiquette="Visibilité" value={visibilite}
             onChange={(e: { target: { value: string } }) => setVisibilite(e.target.value)}>
@@ -479,12 +484,13 @@ function Mediatheque() {
                 aria-label={x.nom}
                 aria-pressed={String(x.id) === fid}
               >
-                <Apercu universId={id!} f={x} />
-                {mj && x.visibilite === 'mj' && (
-                  <span className="med-pastille"><Pastille sens="mj" icone={Lock}>MJ seul</Pastille></span>
-                )}
+                <span className="med-cadre">
+                  <Apercu universId={id!} f={x} />
+                  {mj && x.visibilite === 'mj' && (
+                    <span className="med-pastille"><Pastille sens="secrete" icone={Lock}>MJ seul</Pastille></span>
+                  )}
+                </span>
                 <span className="med-nom" title={x.nom}>{x.nom}</span>
-                <small>{x.image ? extension(x.nom) || 'Image' : tailleLisible(x.taille)}{x.image ? ` · ${tailleLisible(x.taille)}` : ''}</small>
               </button>
             </li>
           ))}
@@ -547,11 +553,11 @@ function Mediatheque() {
                   <legend>Visibilité</legend>
                   <div className="bascule" role="radiogroup" aria-label="Visibilité">
                     <label>
-                      <input type="radio" name="visibilite" checked={f.visibilite === 'joueurs'} onChange={() => void reglerVisibilite('joueurs')} />
+                      <input type="radio" name="visibilite" value="joueurs" checked={f.visibilite === 'joueurs'} onChange={() => void reglerVisibilite('joueurs')} />
                       Visible des joueurs
                     </label>
                     <label>
-                      <input type="radio" name="visibilite" checked={f.visibilite === 'mj'} onChange={() => void reglerVisibilite('mj')} />
+                      <input type="radio" name="visibilite" value="mj" checked={f.visibilite === 'mj'} onChange={() => void reglerVisibilite('mj')} />
                       Réservé au MJ
                     </label>
                   </div>
@@ -572,7 +578,13 @@ function Mediatheque() {
                   <ul className="med-usages">
                     {detail!.usages.map((u, i) => (
                       <li key={i}>
-                        <Link to={`/univers/${id}/fiche/${u.ficheId}`}>{u.libelle}</Link>
+                        <Link className="med-usage" to={`/univers/${id}/fiche/${u.ficheId}`}>
+                          <span className="med-mono" aria-hidden="true">
+                            {u.illustration ? <Images size={14} strokeWidth={1.75} /> : <FileText size={14} strokeWidth={1.75} />}
+                          </span>
+                          <span className="med-usage-texte">{u.libelle}</span>
+                          <ChevronRight size={14} strokeWidth={1.75} aria-hidden="true" />
+                        </Link>
                       </li>
                     ))}
                   </ul>
