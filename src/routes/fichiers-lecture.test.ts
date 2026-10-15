@@ -326,3 +326,41 @@ test('impact : « reserver » ne compte que ce que les joueurs lisent, « suppri
   assert.deepEqual(await lib('reserver'), ['Port-Sel — « Description » (jointe)']);
   assert.equal((await lib('supprimer')).length, 2);
 });
+
+test('total : les fichiers que le lecteur lit, hors filtres, sans compter les fermés', async () => {
+  const m = await monter();
+  const avant = (await m.liste(m.lea)) as Vue & { total: number };
+  assert.equal(typeof avant.total, 'number');
+  assert.equal(avant.total, avant.fichiers.length, 'bibliothèque lisible, tenue sur une page');
+  assert.equal(((await m.liste(m.lea, '?q=Carte')) as Vue & { total: number }).total, avant.total, 'hors filtres');
+  const sec = m.section('Maître Aldric', 'Vérité — MJ seul');
+  const r = await m.envoyer(m.antor, 'ferme-a-lea.png', PNG, { section: String(sec), maniere: 'joint' });
+  assert.equal(r.json().visibilite, 'mj');
+  const lea = (await m.liste(m.lea)) as Vue & { total: number };
+  assert.equal(lea.total, avant.total, 'un fichier mj de plus ne bouge pas le total de Léa');
+  const antor = (await m.liste(m.antor)) as Vue & { total: number };
+  assert.equal(antor.total, antor.fichiers.length);
+  assert.ok(antor.total > lea.total);
+  assert.ok(!JSON.stringify(lea).includes('ferme-a-lea'));
+});
+
+test('usages : image avec titre comptée, citation en code ou dans un bloc MJ ignorée', async () => {
+  const m = await monter();
+  const f = await m.id('port-sel-quais.webp');
+  m.app.db.prepare('DELETE FROM fichiers_sections WHERE fichier_id = ?').run(f);
+  assert.equal((await m.detail(m.lea, f)).usages.length, 0);
+  // Cited in code only (span and block): not a reference, no usage.
+  await m.ecrire('Port-Sel', 'Description', `Syntaxe : \`![x](fichier:${f})\`\n\n\`\`\`\n![x](fichier:${f})\n\`\`\`\n`);
+  assert.equal((await m.detail(m.lea, f)).usages.length, 0);
+  assert.equal((await m.detail(m.antor, f)).usages.length, 0);
+  // Cited in a GM block with a title: a usage for the GM, none for Léa.
+  await m.ecrire('Port-Sel', 'Description', `Texte.\n\n:::mj\n![x](fichier:${f} "secret")\n:::\n`);
+  assert.equal((await m.detail(m.lea, f)).usages.length, 0);
+  assert.equal((await m.detail(m.antor, f)).usages.length, 1);
+  // Cited with a title in public text: a usage for Léa.
+  await m.ecrire('Port-Sel', 'Description', `Texte.\n\n![x](fichier:${f} "titre")\n`);
+  assert.deepEqual((await m.detail(m.lea, f)).usages.map((u) => u.libelle), ['Port-Sel — « Description »']);
+  // Public once, GM block once: still one usage for Léa.
+  await m.ecrire('Port-Sel', 'Description', `![x](fichier:${f} "a")\n\n:::mj\n![x](fichier:${f} "b")\n:::\n`);
+  assert.equal((await m.detail(m.lea, f)).usages.length, 1);
+});
