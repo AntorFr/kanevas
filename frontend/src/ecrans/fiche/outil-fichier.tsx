@@ -2,9 +2,9 @@ import { Paperclip } from 'lucide-react';
 import { useEffect } from 'react';
 import { createPortal } from 'react-dom';
 
-import { envoyerFichier } from '../../api';
+import { envoyerFichier, lire } from '../../api';
 import { referenceFichier, useToasts, type ApiEditeurFichier } from '../../ui';
-import type { Fichier } from '../mediatheque/commun';
+import type { Detail, Fichier } from '../mediatheque/commun';
 import { useAjoutFichier } from './fichiers';
 
 interface Props {
@@ -47,7 +47,11 @@ export function OutilFichier({ api, universId, sectionId, suffixeMode, mj, surFi
       poser(f);
       toast(`« ${f.nom} » ajouté`);
     },
-    choisir: async (f) => poser(f),
+    choisir: async (f) => {
+      // The grid is a snapshot: a file may have been deleted or become unreadable since it opened.
+      const detail = await lire<Detail>(`/api/univers/${universId}/fichiers/${f.id}/detail${suffixeMode}`);
+      poser(detail.fichier);
+    },
   });
   useEffect(() => {
     api.depot.current = ajout.deposer;
