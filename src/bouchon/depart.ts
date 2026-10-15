@@ -314,8 +314,9 @@ async function semerFichiers(db: Db, racine: string): Promise<void> {
 
   const carte = await ajouter('Carte des Sphères', 'carte-spheres.png', { ou: 'mediatheque' });
   choisirIllustration(db, antor, univers, trouver('Port-Sel').id, carte.id);
+  // The alt text must not repeat « Sphères »: the search of the tree tests (B-35) look for a hidden sheet by that word.
   const val = section('Val-Fortin', 'Description');
-  ecrireContenu(db, antor.compteId, univers, val.fiche, val.section, `${val.contenu}\n\n![Carte des Sphères](fichier:${carte.id})`, val.version);
+  ecrireContenu(db, antor.compteId, univers, val.fiche, val.section, `${val.contenu}\n\n![Carte du royaume](fichier:${carte.id})`, val.version);
   const aldric = section('Maître Aldric', 'Apparence');
   joindreFichier(db, antor, univers, aldric.fiche, aldric.section, carte.id);
 
