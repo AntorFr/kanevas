@@ -221,7 +221,7 @@ se fusionne, pas avant (AD-51).
 
 > Provisoire comme celle des systèmes ci-dessus. Fichier : `src/db/migrations/0004-pieces-jointes.sql` — **numéro provisoire** (0004), recalé à la
 > fusion si une autre tranche est entrée avant (AD-51). Code : `src/services/stockage.ts` (octets,
-> sans notion de section) et `src/services/pieces-jointes.ts` ; dossier réglable par `ATTACHMENTS_DIR`
+> sans notion de section) et, depuis `kanevas-import-mediatheque`, `src/services/fichiers.ts` (la table `pieces_jointes` est vidée par la migration 0015, plus lue) ; dossier réglable par `ATTACHMENTS_DIR`
 > (défaut : `attachments/` à côté de la base).
 
 Une table ; aucune entité nouvelle (la pièce jointe est celle du cadrage). Les octets ne sont pas

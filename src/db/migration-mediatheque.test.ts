@@ -11,7 +11,7 @@ import { migrate, openDb } from './db.js';
 const SRC = new URL('./migrations/', import.meta.url).pathname;
 
 function dossierJusqua(max: number): string {
-  const dir = join(mkdtempSync(join(tmpdir(), 'mig14-')), 'm') + '/';
+  const dir = join(mkdtempSync(join(tmpdir(), 'mig15-')), 'm') + '/';
   mkdirSync(dir);
   for (const f of readdirSync(SRC)) {
     if (/^\d{4}-.+\.sql$/.test(f) && Number(f.slice(0, 4)) <= max) copyFileSync(SRC + f, dir + f);
@@ -21,7 +21,7 @@ function dossierJusqua(max: number): string {
 
 function avant() {
   const db = openDb(':memory:');
-  migrate(db, dossierJusqua(13));
+  migrate(db, dossierJusqua(14));
   const t = '2026-01-01T00:00:00.000Z';
   // Accounts 1 (Zed), 2 (Amy): the GM of smallest id is account 2 (Amy), the player is account 1.
   db.prepare('INSERT INTO comptes (id, username, cree_le) VALUES (1, ?, ?), (2, ?, ?), (3, ?, ?)').run(
@@ -37,9 +37,9 @@ function avant() {
   return db;
 }
 
-test('migration 0014 : trois fichiers (mj, joueurs, joueurs), ajoute_par le MJ de plus petit compte, empreinte nulle', () => {
+test('migration 0015 : trois fichiers (mj, joueurs, joueurs), ajoute_par le MJ de plus petit compte, empreinte nulle', () => {
   const db = avant();
-  assert.deepEqual(migrate(db), [14]);
+  assert.deepEqual(migrate(db), [15]);
   const l = db
     .prepare('SELECT nom, disque, visibilite, ajoute_par, empreinte, taille, type, ajoute_le FROM fichiers ORDER BY id')
     .all();
@@ -62,7 +62,7 @@ test('migration 0014 : trois fichiers (mj, joueurs, joueurs), ajoute_par le MJ d
   assert.equal((db.prepare('SELECT illustration_fichier AS d FROM fiches WHERE id = 1').get() as { d: string }).d, 'ill-disque');
 });
 
-test('migration 0014 rejouée : rien ne change', () => {
+test('migration 0015 rejouée : rien ne change', () => {
   const db = avant();
   migrate(db);
   const avantRejeu = JSON.stringify([
@@ -79,15 +79,15 @@ test('migration 0014 rejouée : rien ne change', () => {
   assert.equal(apres, avantRejeu);
 });
 
-test('migration 0014 : sans membre, la pièce n’est pas migrée et la table des pièces est tout de même vidée sans erreur', () => {
+test('migration 0015 : sans membre, la pièce n’est pas migrée et la table des pièces est tout de même vidée sans erreur', () => {
   const db = openDb(':memory:');
-  migrate(db, dossierJusqua(13));
+  migrate(db, dossierJusqua(14));
   const t = '2026-01-01T00:00:00.000Z';
   db.prepare('INSERT INTO univers (id, nom, cree_le) VALUES (1, ?, ?)').run('Vide', t);
   db.prepare("INSERT INTO fiches (id, univers_id, type, titre, charge, cree_le, modifie_le) VALUES (1, 1, 'lieu', 'F', '{}', ?, ?)").run(t, t);
   db.prepare("INSERT INTO sections (id, fiche_id, titre, ordre, modifie_le) VALUES (1, 1, 'S', 1, ?)").run(t);
   db.prepare("INSERT INTO pieces_jointes (section_id, nom, type, taille, fichier, secrete, cree_le) VALUES (1, 'a.pdf', 'application/octet-stream', 3, 'd', 0, ?)").run(t);
-  assert.deepEqual(migrate(db), [14]);
+  assert.deepEqual(migrate(db), [15]);
   assert.equal((db.prepare('SELECT COUNT(*) AS n FROM fichiers').get() as { n: number }).n, 0);
 });
 

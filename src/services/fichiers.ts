@@ -2,7 +2,18 @@ import type { Readable } from 'node:stream';
 
 import { attachmentsDir } from '../config/env.js';
 import type { Db } from '../db/db.js';
-import { exigerRole, peutEcrireSection, peutLireSection, peutVoirFiche, roleDe, vueMJ } from './droits.js';
+import {
+  exigerRole,
+  peutEcrireSection,
+  peutLireSection,
+  peutVoirFiche,
+  roleDe,
+  sqlFicheLisible,
+  sqlSectionLisible,
+  vueMJ,
+} from './droits.js';
+import { FICHIER_RESERVE, IMAGE_RESERVEE } from './markdown.js';
+import type { RenduFichier, ResolveurFichiers } from './markdown.js';
 import { ErreurService, introuvable, invalide, refuse } from './erreurs.js';
 import {
   abandonner,
@@ -103,7 +114,7 @@ function vue(f: FichierRow): FichierVue {
 }
 
 /** The role-aware core of the one read rule; `fichierLisible` is its public door. */
-function lisiblePar(role: Role | null, acteur: Acteur, f: Pick<FichierRow, 'visibilite' | 'ajoute_par'>): boolean {
+export function lisiblePar(role: Role | null, acteur: Acteur, f: Pick<FichierRow, 'visibilite' | 'ajoute_par'>): boolean {
   if (role === null) return false;
   if (vueMJ(role, acteur)) return true;
   return f.visibilite === 'joueurs' || f.ajoute_par === acteur.compteId;
@@ -424,33 +435,287 @@ export function effacerFichier(
   supprimerFichier(disque, racine);
 }
 
+export type TriFichiers = 'recent' | 'nom';
+
+export interface FiltresFichiers {
+  nature?: 'images' | 'documents';
+  visibilite?: Visibilite;
+  usage?: 'utilises' | 'non_utilises';
+  /** Part of the name, without case. */
+  q?: string;
+  tri?: TriFichiers;
+  /** Cursor returned as `suite` by the previous page. */
+  apres?: number | string;
+}
+
+function decoderCurseurNom(apres: number | string | undefined): { n: string; i: number } | null {
+  if (apres === undefined) return null;
+  try {
+    const c = JSON.parse(Buffer.from(String(apres), 'base64url').toString('utf8')) as { n: string; i: number };
+    if (typeof c.n !== 'string' || !Number.isInteger(c.i)) throw new Error();
+    return c;
+  } catch {
+    throw invalide('Le curseur est invalide.');
+  }
+}
+
 /**
- * The files of the library the caller reads, newest first, 100 per page. `apres` is the id of the
- * last file of the previous page; `suite` is the cursor of the next page, or null at the end.
+ * The files of the library the caller reads, 100 per page, newest first or by name. Every file goes
+ * through the one read rule; « used » is computed on the usages the caller reads (D1), never on all of
+ * them. `suite` is the cursor of the next page, or null at the end.
  */
 export function listerFichiers(
   db: Db,
   acteur: Acteur,
   universId: number,
-  page: { apres?: number } = {},
-): { fichiers: FichierVue[]; suite: number | null } {
+  filtres: FiltresFichiers = {},
+): { fichiers: FichierVue[]; suite: number | string | null } {
   const role = exigerRole(db, universId, acteur.compteId);
+  const tri = filtres.tri ?? 'recent';
+  if (tri !== 'recent' && tri !== 'nom') throw invalide('Le tri est « recent » ou « nom ».');
+  const where = ['univers_id = ?'];
+  const params: (string | number)[] = [universId];
+  if (filtres.nature !== undefined) {
+    if (filtres.nature !== 'images' && filtres.nature !== 'documents') throw invalide('La nature est « images » ou « documents ».');
+    where.push(
+      `type ${filtres.nature === 'images' ? 'IN' : 'NOT IN'} (${TYPES_IMAGE.map(() => '?').join(',')})`,
+    );
+    params.push(...TYPES_IMAGE);
+  }
+  if (filtres.visibilite !== undefined) {
+    if (filtres.visibilite !== 'joueurs' && filtres.visibilite !== 'mj') throw invalide('La visibilité est « joueurs » ou « mj ».');
+    where.push('visibilite = ?');
+    params.push(filtres.visibilite);
+  }
+  if (filtres.usage !== undefined && filtres.usage !== 'utilises' && filtres.usage !== 'non_utilises') {
+    throw invalide('L’usage est « utilises » ou « non_utilises ».');
+  }
+  const q = filtres.q?.trim().toLocaleLowerCase();
+  let curseur: { n: string; i: number } | number | null = null;
+  if (tri === 'nom') curseur = decoderCurseurNom(filtres.apres);
+  else if (filtres.apres !== undefined) {
+    const n = Number(filtres.apres);
+    if (!Number.isSafeInteger(n) || n < 1) throw invalide('Le curseur est invalide.');
+    curseur = n;
+  }
   const lus: FichierRow[] = [];
-  let curseur = page.apres ?? Number.MAX_SAFE_INTEGER;
-  const requete = db.prepare('SELECT * FROM fichiers WHERE univers_id = ? AND id < ? ORDER BY id DESC LIMIT ?');
+  const requete = (c: typeof curseur) => {
+    const w = [...where];
+    const p = [...params];
+    if (c !== null && typeof c === 'object') {
+      w.push('(nom COLLATE NOCASE > ? OR (nom COLLATE NOCASE = ? AND id > ?))');
+      p.push(c.n, c.n, c.i);
+    } else if (c !== null) {
+      w.push('id < ?');
+      p.push(c);
+    }
+    const ordre = tri === 'nom' ? 'nom COLLATE NOCASE, id' : 'id DESC';
+    return db.prepare(`SELECT * FROM fichiers WHERE ${w.join(' AND ')} ORDER BY ${ordre} LIMIT 200`).all(...p) as FichierRow[];
+  };
   let fini = false;
   while (!fini && lus.length <= LIMITE_FICHIERS) {
-    const lot = requete.all(universId, curseur, 200) as FichierRow[];
+    const lot = requete(curseur);
     for (const f of lot) {
-      curseur = f.id;
-      if (lisiblePar(role, acteur, f)) lus.push(f);
+      curseur = tri === 'nom' ? { n: f.nom, i: f.id } : f.id;
+      if (!lisiblePar(role, acteur, f)) continue;
+      if (q && !f.nom.toLocaleLowerCase().includes(q)) continue;
+      if (filtres.usage !== undefined) {
+        const employe = usagesLisibles(db, acteur, role, universId, f.id).length > 0;
+        if (employe !== (filtres.usage === 'utilises')) continue;
+      }
+      lus.push(f);
       if (lus.length > LIMITE_FICHIERS) break;
     }
     if (lot.length < 200) fini = true;
   }
   const page100 = lus.slice(0, LIMITE_FICHIERS);
-  const suite = lus.length > LIMITE_FICHIERS ? page100[page100.length - 1]!.id : null;
+  const dernier = page100[page100.length - 1];
+  let suite: number | string | null = null;
+  if (lus.length > LIMITE_FICHIERS && dernier) {
+    suite = tri === 'nom' ? Buffer.from(JSON.stringify({ n: dernier.nom, i: dernier.id })).toString('base64url') : dernier.id;
+  }
   return { fichiers: page100.map(vue), suite };
+}
+
+/** One place where a file serves, as the reader may see it (AD-117 §2, D1). */
+export interface UsageFichier {
+  ficheId: number;
+  ficheTitre: string;
+  ficheType: string;
+  /** The file is the illustration of the sheet. */
+  illustration: boolean;
+  sectionId: number | null;
+  sectionTitre: string | null;
+  dansTexte: boolean;
+  joint: boolean;
+  /** The line the interface prints: « Sheet — « Section » » (+ « (jointe) »). */
+  libelle: string;
+}
+
+function libelleUsage(u: Omit<UsageFichier, 'libelle'>): string {
+  if (u.illustration) return `${u.ficheTitre} (illustration)`;
+  return `${u.ficheTitre} — « ${u.sectionTitre} »${u.joint && !u.dansTexte ? ' (jointe)' : ''}`;
+}
+
+/**
+ * The usages of a file the reader may read, computed per request under both guards: the sheet
+ * (illustration) or the section read, and for anyone but the GM no use inside a `:::mj` block. A file
+ * only cited in a GM block has no usage for a player.
+ */
+function usagesLisibles(db: Db, acteur: Acteur, role: Role, universId: number, fichierId: number): UsageFichier[] {
+  const sorties: Omit<UsageFichier, 'libelle'>[] = [];
+  const ficheLue = sqlFicheLisible(role, acteur, 'f');
+  const illustrations = db
+    .prepare(
+      `SELECT f.id, f.titre, f.type FROM fiches f
+        WHERE f.univers_id = ? AND f.illustration_fichier_id = ?${ficheLue ? ` AND ${ficheLue.sql}` : ''}`,
+    )
+    .all(universId, fichierId, ...(ficheLue?.params ?? [])) as { id: number; titre: string; type: string }[];
+  for (const f of illustrations) {
+    sorties.push({
+      ficheId: f.id,
+      ficheTitre: f.titre,
+      ficheType: f.type,
+      illustration: true,
+      sectionId: null,
+      sectionTitre: null,
+      dansTexte: false,
+      joint: false,
+    });
+  }
+  const sectionLue = sqlSectionLisible(role, acteur, 's');
+  const mj = vueMJ(role, acteur);
+  const lignes = db
+    .prepare(
+      `SELECT s.id AS sid, s.titre AS stitre, s.ordre, fi.id AS fid, fi.titre AS ftitre, fi.type AS ftype,
+              fs.joint, fs.dans_texte AS texte,
+              instr(s.contenu_public, '(fichier:' || fs.fichier_id || ')') > 0 AS public
+         FROM fichiers_sections fs
+         JOIN sections s ON s.id = fs.section_id
+         JOIN fiches fi ON fi.id = s.fiche_id
+        WHERE fs.fichier_id = ? AND fi.univers_id = ?${sectionLue ? ` AND ${sectionLue.sql}` : ''}
+        ORDER BY s.ordre`,
+    )
+    .all(fichierId, universId, ...(sectionLue?.params ?? [])) as {
+    sid: number;
+    stitre: string;
+    fid: number;
+    ftitre: string;
+    ftype: string;
+    joint: number;
+    texte: number;
+    public: number;
+  }[];
+  for (const l of lignes) {
+    const dansTexte = l.texte === 1 && (mj || l.public === 1);
+    if (!dansTexte && l.joint !== 1) continue;
+    sorties.push({
+      ficheId: l.fid,
+      ficheTitre: l.ftitre,
+      ficheType: l.ftype,
+      illustration: false,
+      sectionId: l.sid,
+      sectionTitre: l.stitre,
+      dansTexte,
+      joint: l.joint === 1,
+    });
+  }
+  return sorties
+    .map((u, i) => ({ u, i }))
+    .sort(
+      (a, b) =>
+        a.u.ficheTitre.localeCompare(b.u.ficheTitre, 'fr', { sensitivity: 'base' }) ||
+        a.u.ficheId - b.u.ficheId ||
+        Number(b.u.illustration) - Number(a.u.illustration) ||
+        a.i - b.i,
+    )
+    .map(({ u }) => ({ ...u, libelle: libelleUsage(u) }));
+}
+
+export const USAGES_PAR_PAGE = 10;
+
+export interface DetailFichier {
+  fichier: FichierVue & { ajouteParNom: string; cleOrigine?: string };
+  usages: UsageFichier[];
+  /** Usages that follow this page, for this reader. */
+  restantes: number;
+}
+
+/**
+ * The panel of a file (E-19): the file under the read rule, then its usages the reader reads — 10, and
+ * with `apresUsage` all those after the first ones. No count of what is hidden, ever.
+ */
+export function detailFichier(
+  db: Db,
+  acteur: Acteur,
+  universId: number,
+  fichierId: number,
+  apresUsage = 0,
+): DetailFichier {
+  const f = fichierVisible(db, acteur, universId, fichierId);
+  const role = exigerRole(db, universId, acteur.compteId);
+  const tous = usagesLisibles(db, acteur, role, universId, f.id);
+  const debut = Math.max(0, Math.trunc(apresUsage));
+  const usages = debut === 0 ? tous.slice(0, USAGES_PAR_PAGE) : tous.slice(debut);
+  const par = db.prepare('SELECT username FROM comptes WHERE id = ?').get(f.ajoute_par) as { username: string } | undefined;
+  const fichier: DetailFichier['fichier'] = { ...vue(f), ajouteParNom: par?.username ?? '' };
+  if (vueMJ(role, acteur) && f.cle_origine) fichier.cleOrigine = f.cle_origine;
+  return { fichier, usages, restantes: Math.max(0, tous.length - debut - usages.length) };
+}
+
+/**
+ * What the GM would take from the readers by closing or deleting a file (E-19). `reserver`: the usages
+ * the players read today; `supprimer`: every usage. The caller's real GM rights, never player mode; a
+ * file they cannot read does not exist, a reader who is not GM is refused.
+ */
+export function impactFichier(
+  db: Db,
+  acteur: Acteur,
+  universId: number,
+  fichierId: number,
+  action: string,
+): { usages: UsageFichier[] } {
+  if (action !== 'reserver' && action !== 'supprimer') throw invalide('L’action est « reserver » ou « supprimer ».');
+  const reel: Acteur = { compteId: acteur.compteId };
+  const f = fichierVisible(db, reel, universId, fichierId);
+  exigerMJReel(db, universId, reel);
+  if (action === 'supprimer') return { usages: usagesLisibles(db, reel, 'mj', universId, f.id) };
+  // Seen as a player who authors nothing: what the players of the table read.
+  if (f.visibilite === 'mj') return { usages: [] };
+  return { usages: usagesLisibles(db, { compteId: acteur.compteId, modeJoueur: true }, 'mj', universId, f.id) };
+}
+
+/**
+ * The resolver of the `fichier:<id>` references of a text for one reader (AD-117, AD-96): one query for
+ * all the files of the text, the rendering decided by the file and the one read rule. A closed file reads as
+ * reserved, a vanished one as removed for the GM outside player mode and as nothing for anyone else.
+ */
+export function resolveurFichiers(
+  db: Db,
+  universId: number,
+  role: Role,
+  acteur: Acteur,
+  source: string,
+): ResolveurFichiers | undefined {
+  const ids = [...compterReferences(source).keys()];
+  if (ids.length === 0) return undefined;
+  const rows = db
+    .prepare(`SELECT * FROM fichiers WHERE univers_id = ? AND id IN (${ids.map(() => '?').join(',')})`)
+    .all(universId, ...ids) as FichierRow[];
+  const parId = new Map(rows.map((r) => [r.id, r]));
+  const marque = vueMJ(role, acteur);
+  return (id): RenduFichier => {
+    const f = parId.get(id);
+    if (!f) return marque ? { genre: 'supprime' } : { genre: 'rien' };
+    if (!lisiblePar(role, acteur, f)) return { genre: 'ferme' };
+    return {
+      genre: 'fichier',
+      id: f.id,
+      nom: f.nom,
+      image: estImage(f.type),
+      adresse: `/api/univers/${universId}/fichiers/${f.id}?v=${encodeURIComponent(f.disque)}`,
+    };
+  };
 }
 
 /** Opens the bytes of a file under the one read rule; the caller's real rights, no player mode (AD-37). */
@@ -467,9 +732,6 @@ export async function ouvrirFichier(
   if (!o) throw introuvable();
   return { flux: o.flux, nom: f.nom, type: f.type, taille: o.taille, courant: jeton === f.disque };
 }
-
-export const IMAGE_RESERVEE = 'Image réservée au MJ.';
-export const FICHIER_RESERVE = 'Fichier réservé au MJ.';
 
 /** The files joined to a section the caller already reads, oldest first; one closed to the caller comes back as a closed line. */
 export function lireLignes(db: Db, acteur: Acteur, universId: number, role: Role, sectionId: number): PieceJointeVue[] {

@@ -4,6 +4,8 @@ import type { FastifyInstance, FastifyReply } from 'fastify';
 import {
   ajouterFichier,
   choisirIllustration,
+  detailFichier,
+  impactFichier,
   effacerFichier,
   joindreFichier,
   listerFichiers,
@@ -100,8 +102,30 @@ export function registerFichiersRoutes(app: FastifyInstance) {
 
   app.get(base, async (request) => {
     const q = request.query as Record<string, unknown>;
-    const apres = q.apres === undefined ? undefined : entier(q.apres, 'Le curseur est invalide.');
-    return listerFichiers(app.db, acteur(request), univers(request), { apres });
+    const texte = (k: string) => (typeof q[k] === 'string' && q[k] !== '' ? (q[k] as string) : undefined);
+    const tri = texte('tri');
+    return listerFichiers(app.db, acteur(request), univers(request), {
+      nature: texte('nature') as 'images' | 'documents' | undefined,
+      visibilite: texte('visibilite') as 'joueurs' | 'mj' | undefined,
+      usage: texte('usage') as 'utilises' | 'non_utilises' | undefined,
+      q: texte('q'),
+      tri: tri as 'recent' | 'nom' | undefined,
+      apres: texte('apres'),
+    });
+  });
+
+  // The panel of a file: its usages the caller reads, 10 then the rest (`apresUsage`).
+  app.get(`${base}/:fid/detail`, async (request) => {
+    const q = request.query as Record<string, unknown>;
+    const apres = q.apresUsage === undefined ? 0 : Number(q.apresUsage);
+    if (!Number.isSafeInteger(apres) || apres < 0) throw invalide('Le curseur est invalide.');
+    return detailFichier(app.db, acteur(request), univers(request), fichier(request), apres);
+  });
+
+  // What the GM loses by closing or deleting a file; the caller's real rights (AD-117 §3).
+  app.get(`${base}/:fid/impact`, async (request) => {
+    const action = (request.query as Record<string, unknown>).action;
+    return impactFichier(app.db, acteur(request), univers(request), fichier(request), String(action ?? ''));
   });
 
   // The only route of the bytes of a file. Real rights: no player mode on a direct read (AD-37).

@@ -50,6 +50,8 @@ a.bouton { text-decoration: none; display: inline-flex; }
 
 /* Section blocks: Relations, Pièces jointes */
 .fiche .blocs { display: block; gap: 0; margin-top: var(--e-4); border-top: 1px solid var(--bord); }
+/* The last section's blocks end where « Mentionnée dans » starts: one full rule between them, not two. */
+.fiche .sections > .sec:last-child .blocs { border-top: 0; }
 .fiche .blocs .bloc-section + .bloc-section { border-top: 1px dashed var(--bord); }
 .fiche .blocs .bloc-section:first-child { border-top: 0; }
 .fiche .blocs .bloc-contenu { gap: 4px 14px; }
@@ -195,3 +197,19 @@ a.cadre-ill:focus-visible { outline-offset: 2px; border-radius: var(--rayon-pann
 .changer-type .retrait { color: var(--texte-2); font-size: var(--t-13); }
 @media (max-width: 760px) { .changer-type .resultat { min-height: 40px; } }
 .fiche .blocs:empty { display: none; }
+
+/* A reserved illustration (B-24): a neutral frame that says so, in the header of a sheet the reader sees. */
+.ill-fermee { color: var(--texte-3); background: var(--surface-2); }
+.pieces-jointes .envoi-fichier { width: 100%; }
+
+/* E-9: aliases under the title, label pills, and the « Alias et étiquettes » box */
+.alias-fiche { margin: var(--e-1) 0 0; font-size: var(--t-14); color: var(--texte-2); overflow-wrap: anywhere; }
+.etiquettes-fiche { display: flex; flex-wrap: wrap; gap: var(--e-2); list-style: none; margin: var(--e-2) 0 0; padding: 0; }
+.etiquettes-fiche .pastille { text-decoration: none; max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
+.boite-etiquetage { display: flex; flex-direction: column; gap: var(--e-4); max-height: 70vh; overflow-y: auto; }
+.boite-etiquetage .actions { display: flex; gap: var(--e-2); }
+.pastilles-saisies { display: flex; flex-wrap: wrap; gap: var(--e-2); list-style: none; margin: var(--e-2) 0 0; padding: 0; }
+.pastilles-saisies .pastille { max-width: 100%; padding-right: 4px; }
+.pastilles-saisies .texte-pastille { overflow: hidden; text-overflow: ellipsis; }
+.pastilles-saisies button { display: inline-grid; place-items: center; width: 18px; height: 18px; padding: 0; border: 0; border-radius: 50%; background: transparent; color: inherit; cursor: pointer; }
+.pastilles-saisies button:hover { background: var(--bord); }

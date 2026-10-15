@@ -1,8 +1,10 @@
 import {
   Flag,
+  Images,
   KeyRound,
   LayoutGrid,
   Map as Carte,
+  Search,
   NotebookPen,
   Settings2,
   ShieldCheck,
@@ -30,16 +32,20 @@ export interface Item {
   groupe?: string;
   /** Also shown, without its section heading, below « Mes univers » outside a universe. */
   horsUnivers?: boolean;
+  /** The link carries the player-mode view of the GM (`?mode=joueur`) when it is on. */
+  garderMode?: boolean;
 }
 
 /** Authelia group carried by `GET /api/moi` that makes an instance admin (B-6). */
 export const GROUPE_ADMIN = 'parents';
 
 export const ITEMS_UNIVERS: Item[] = [
+  { libelle: 'Rechercher', icone: Search, garderMode: true, chemin: (id) => `/univers/${id}/recherche` },
   { libelle: 'Vue d’ensemble', icone: LayoutGrid, chemin: (id) => `/univers/${id}` },
   { libelle: 'Campagnes', icone: Flag, chemin: (id) => `/univers/${id}/campagnes` },
   { libelle: 'Comptes-rendus', icone: NotebookPen, chemin: (id) => `/univers/${id}/comptes-rendus` },
   { libelle: 'Cartes', icone: Carte, chemin: (id) => `/univers/${id}/cartes` },
+  { libelle: 'Médiathèque', icone: Images, chemin: (id) => `/univers/${id}/mediatheque` },
   { libelle: 'Membres', icone: ContactRound, section: 'Univers', role: 'mj', chemin: (id) => `/univers/${id}/membres` },
   { libelle: 'Paramètres', icone: Settings2, section: 'Univers', role: 'mj', chemin: (id) => `/univers/${id}/parametres` },
   { libelle: 'Accès par API', icone: KeyRound, section: 'Univers', role: 'mj', chemin: (id) => `/univers/${id}/acces-api` },

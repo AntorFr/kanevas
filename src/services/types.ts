@@ -97,13 +97,21 @@ export interface Fiche {
   modifieLe: string;
   /** Opaque token of the illustration (AD-93), null when the sheet has none. */
   illustration: IllustrationVue | null;
+  /** Aliases and labels, sorted (AD-118); carried by the sheets of the list. */
+  alias?: string[];
+  etiquettes?: string[];
+  /** With a search: the first alias that answers when the title does not (AD-118 (3)). */
+  aliasTrouve?: string;
 }
 
-export interface IllustrationVue {
-  /** The file of the media library (bytes at `GET /fichiers/:id?v=<jeton>`). */
-  id: number;
-  jeton: string;
-}
+export type IllustrationVue =
+  | {
+      /** The file of the media library (bytes at `GET /fichiers/:id?v=<jeton>`). */
+      id: number;
+      jeton: string;
+    }
+  /** The reader may not read the file: no address, only the state (AD-117). */
+  | { fermee: true; message: string };
 
 /** Why a sheet cites another one (AD-100): a link in one of its sections, or a relation. */
 export type Pourquoi = { genre: 'lien'; section: string } | { genre: 'relation'; libelle: string };
@@ -125,6 +133,9 @@ export interface PageMentions {
 }
 
 export interface FicheVue extends Fiche {
+  /** Other names of the sheet and its labels (AD-118), sorted. */
+  alias: string[];
+  etiquettes: string[];
   sections: SectionVue[];
   /** « Mentionnée dans »: the first page (AD-100); the rest through `GET …/mentions?apres=`. */
   mentions: Mention[];
