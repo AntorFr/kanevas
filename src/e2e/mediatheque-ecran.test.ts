@@ -273,3 +273,19 @@ test('réouverture : pas de « Médiathèque › Médiathèque », panneau avec 
   const chevauche = sup.x < flot.x + flot.width && sup.x + sup.width > flot.x && sup.y < flot.y + flot.height && sup.y + sup.height > flot.y;
   assert.ok(!chevauche, `Supprimer ${JSON.stringify(sup)} sous le bouton ${JSON.stringify(flot)}`);
 });
+
+test('réouverture 3 : libellés « Visibilité » et « Usage » visibles, icône de tri et d’envoi, rien ne déborde à 390 px', opts, async () => {
+  const p = antor;
+  await p.setViewportSize({ width: 390, height: 844 });
+  await ouvrir(p);
+  for (const lib of ['Visibilité', 'Usage']) {
+    const b = await p.locator('.med-filtres .lib-champ', { hasText: new RegExp(`^${lib}$`) }).boundingBox();
+    assert.ok(b && b.width > 20 && b.height > 8, `${lib} visible : ${JSON.stringify(b)}`);
+  }
+  assert.equal(await p.locator('.med-ordre > svg').count(), 1, 'icône de tri');
+  assert.equal(await p.getByRole('button', { name: 'Ajouter des fichiers' }).locator('svg').count(), 1, 'icône d’envoi');
+  assert.ok(await p.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), 'pas de défilement horizontal');
+  const sel = await p.locator('.med-ordre select').evaluate((e: Any) => e.scrollWidth <= e.clientWidth);
+  assert.ok(sel, 'libellé d’ordre non coupé');
+  await p.setViewportSize({ width: 1280, height: 800 });
+});
