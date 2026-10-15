@@ -15,6 +15,10 @@ const MIGRATIONS_DIR = fileURLToPath(new URL('./migrations/', import.meta.url));
 export function openDb(path: string): Db {
   if (path !== ':memory:') mkdirSync(dirname(path), { recursive: true });
   const db = new Database(path);
+  // Title order key, accent- and case-insensitive (« Léa » sorts with « Lea », before « Les »); better-sqlite3 has no collations.
+  db.function('plier', { deterministic: true }, (t: unknown) =>
+    typeof t === 'string' ? t.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase() : t,
+  );
   db.pragma('foreign_keys = ON');
   db.pragma('busy_timeout = 5000');
   if (path !== ':memory:') db.pragma('journal_mode = WAL');
