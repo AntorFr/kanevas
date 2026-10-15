@@ -256,3 +256,20 @@ test('médiathèque vide (univers neuf) : les textes de la table d’états', op
   await antor.getByRole('searchbox').fill('zzz');
   await antor.getByText('Aucun fichier ne correspond.').waitFor();
 });
+
+test('réouverture : pas de « Médiathèque › Médiathèque », panneau avec réserve basse, pastille opaque', opts, async () => {
+  await ouvrir(antor);
+  const entete: string = await antor.locator('header, nav[aria-label*="riane" i]').allInnerTexts().then((a: string[]) => a.join(' '));
+  assert.ok(!/Médiathèque\s*›\s*Médiathèque/.test(entete), entete);
+  const fond = await tuile(antor, 'Plan secret de la Guilde').locator('.med-pastille .pastille').evaluate((e: Element) => getComputedStyle(e).backgroundColor);
+  assert.ok(!/rgba\(.*,\s*0(\.\d+)?\)$/.test(fond) && fond !== 'transparent', fond);
+  await ouvrirFichier(antor, 'Plan secret de la Guilde');
+  const bas = await antor.locator('.med-panneau').evaluate((e: Element) => parseFloat(getComputedStyle(e).paddingBottom));
+  assert.ok(bas >= 48, `padding-bottom ${bas}`);
+  // Scrolled to the end, « Supprimer le fichier » must not sit under the floating assistant button.
+  await antor.locator('.med-panneau').evaluate((e: Element) => { e.scrollTop = e.scrollHeight; });
+  const sup = await antor.getByRole('button', { name: 'Supprimer le fichier' }).boundingBox();
+  const flot = await antor.locator('button', { hasText: 'Demander à Kanevas' }).boundingBox();
+  const chevauche = sup.x < flot.x + flot.width && sup.x + sup.width > flot.x && sup.y < flot.y + flot.height && sup.y + sup.height > flot.y;
+  assert.ok(!chevauche, `Supprimer ${JSON.stringify(sup)} sous le bouton ${JSON.stringify(flot)}`);
+});
