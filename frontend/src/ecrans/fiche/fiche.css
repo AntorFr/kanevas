@@ -66,6 +66,7 @@ a.bouton { text-decoration: none; display: inline-flex; }
 .liste-pieces { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 12px; width: 100%; }
 .liste-pieces .piece { min-width: 0; }
 .liste-pieces .piece:not(.image) { flex: 1 0 100%; }
+.liste-pieces .ferme { display: flex; align-items: center; gap: var(--e-2); margin: 0; padding: var(--e-3) var(--e-4); border: 1px solid var(--bord); border-radius: var(--rayon-champ); background: var(--surface-2); color: var(--texte-3); font-size: var(--t-14); }
 .liste-pieces .confirmation { margin-top: var(--e-2); }
 .liste-pieces .legende, .liste-pieces .confirmation { overflow-wrap: anywhere; }
 .vignette.indisponible { color: var(--texte-3); font-size: var(--t-13); padding: var(--e-2) 0; }

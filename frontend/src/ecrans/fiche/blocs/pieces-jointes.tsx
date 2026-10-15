@@ -1,4 +1,4 @@
-import { Eye, EyeOff, Ellipsis, ExternalLink, Paperclip, Trash2 } from 'lucide-react';
+import { Eye, EyeOff, Ellipsis, ExternalLink, Lock, Paperclip, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 
 import { ErreurApi, appeler, envoyerFichier, lire, useConnexionPerdue } from '../../../api';
@@ -159,7 +159,10 @@ function BlocPiecesJointes({ universId, fiche, section, role, rafraichir, suffix
               if (p.ferme) {
                 return (
                   <li key={p.id} className="piece">
-                    <p className="ferme">{p.nom}</p>
+                    <p className="ferme">
+                      <Lock size={16} strokeWidth={1.75} aria-hidden="true" />
+                      {p.nom}
+                    </p>
                   </li>
                 );
               }
