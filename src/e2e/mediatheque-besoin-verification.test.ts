@@ -98,6 +98,8 @@ test('B-53 · Antor filtre « Réservées au MJ » : les réservés seuls ; « N
   await mediatheque(antor);
   await antor.getByLabel('Visibilité', { exact: true }).selectOption({ label: 'Réservées au MJ' });
   await antor.getByRole('button', { name: /Lames Grises/ }).first().waitFor({ state: 'detached' });
+  // Detached also holds before the grid has loaded: wait for a reserved file to be there.
+  await antor.getByRole('button', { name: /Plan secret de la Guilde/ }).first().waitFor({ state: 'visible' });
   const reserves = await grille(antor);
   assert.match(reserves, /Plan secret de la Guilde/);
   assert.match(reserves, /Cercle des Cendres/);
