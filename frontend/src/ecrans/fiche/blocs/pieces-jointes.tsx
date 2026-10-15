@@ -192,6 +192,13 @@ function BlocPiecesJointes({ universId, fiche, section, role, rafraichir }: Prop
         {pieces.length > 0 && (
         <ul className="liste-pieces">
           {pieces.map((p) => {
+            if (p.ferme) {
+              return (
+                <li key={p.id} className="piece">
+                  <p className="ferme">{p.nom}</p>
+                </li>
+              );
+            }
             const vignette = p.image && !indisponibles.includes(p.id);
             return (
               <li key={p.id} className={`piece${p.image ? ' image' : ''}${p.secrete ? ' reserve-mj' : ''}`}>

@@ -15,6 +15,8 @@ export interface PieceJointe {
   taille: number;
   image: boolean;
   secrete?: boolean;
+  /** Closed to this reader: `nom` is the sentence « … réservé au MJ. ». */
+  ferme?: boolean;
 }
 
 export interface SectionVue {

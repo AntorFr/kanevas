@@ -81,6 +81,8 @@ export interface PieceJointeVue {
   image: boolean;
   /** Only rendered to the GM outside player mode. */
   secrete?: boolean;
+  /** The file is closed to this reader: `nom` is the sentence, nothing else of the file. */
+  ferme?: boolean;
 }
 
 export interface Fiche {

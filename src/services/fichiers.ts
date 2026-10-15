@@ -468,7 +468,10 @@ export async function ouvrirFichier(
   return { flux: o.flux, nom: f.nom, type: f.type, taille: o.taille, courant: jeton === f.disque };
 }
 
-/** The files joined to a section the caller already reads, those they may read, oldest first. */
+export const IMAGE_RESERVEE = 'Image réservée au MJ.';
+export const FICHIER_RESERVE = 'Fichier réservé au MJ.';
+
+/** The files joined to a section the caller already reads, oldest first; one closed to the caller comes back as a closed line. */
 export function lireLignes(db: Db, acteur: Acteur, universId: number, role: Role, sectionId: number): PieceJointeVue[] {
   const rows = db
     .prepare(
@@ -477,13 +480,15 @@ export function lireLignes(db: Db, acteur: Acteur, universId: number, role: Role
     )
     .all(sectionId, universId) as FichierRow[];
   const mj = vueMJ(role, acteur);
-  return rows
-    .filter((f) => lisiblePar(role, acteur, f))
-    .map((f) => {
-      const p: PieceJointeVue = { id: f.id, nom: f.nom, taille: f.taille, image: estImage(f.type) };
-      if (mj) p.secrete = f.visibilite === 'mj';
-      return p;
-    });
+  return rows.map((f) => {
+    if (!lisiblePar(role, acteur, f)) {
+      // Closed to this reader: the line stays, with the sentence only — no name, size or address.
+      return { id: f.id, nom: estImage(f.type) ? IMAGE_RESERVEE : FICHIER_RESERVE, taille: 0, image: false, ferme: true };
+    }
+    const p: PieceJointeVue = { id: f.id, nom: f.nom, taille: f.taille, image: estImage(f.type) };
+    if (mj) p.secrete = f.visibilite === 'mj';
+    return p;
+  });
 }
 
 const REFERENCE = /\(fichier:(\d+)\)/g;
