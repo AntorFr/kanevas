@@ -338,7 +338,7 @@ test('filtres : Visibilité, Usage et tri sur une rangée à 449 et 1440 px (pan
   await ouvrir(p);
   await p.setViewportSize({ width: 1440, height: 900 });
   await rangee(1440);
-  await ouvrirFichier(p, 'port-sel-quais.webp');
+  await ouvrirFichier(p, 'Plan secret de la Guilde');
   await rangee(1440);
   await p.keyboard.press('Escape');
   await p.setViewportSize({ width: 449, height: 900 });
