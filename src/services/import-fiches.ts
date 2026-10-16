@@ -1,4 +1,5 @@
 import type { Db } from '../db/db.js';
+import { cleValide } from './import.js';
 import { ErreurService } from './erreurs.js';
 import {
   etiquetageDe,
@@ -81,10 +82,7 @@ class Refus extends Error {
 
 const milliers = (n: number) => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
 
-/** An origin key: 1 to 200 characters, no `|`, `]` nor line break (contract of the import API). */
-export function cleValide(cle: string): boolean {
-  return cle.length >= 1 && cle.length <= 200 && !/[|\]\r\n]/.test(cle);
-}
+export { cleValide } from './import.js';
 
 function texte(v: unknown, champ: string, objet: string, min: number, max: number, quoi: string): string {
   if (typeof v !== 'string') throw new Refus(champ, objet, `${quoi} manquant`);

@@ -2,6 +2,9 @@ import type { Readable } from 'node:stream';
 
 import { attachmentsDir } from '../config/env.js';
 import type { Db } from '../db/db.js';
+import { cleValide } from './import.js';
+import type { Jeton } from './jetons.js';
+import { lireLot, noterDansLot, type EntreeRapport, type Issue } from './lots.js';
 import {
   exigerRole,
   peutEcrireSection,
@@ -76,6 +79,130 @@ export type CibleFichier =
   | { ou: 'illustration'; ficheId: number };
 
 export type FluxEntrant = Readable | AsyncIterable<Buffer | Uint8Array>;
+
+export interface ResultatFichierImport {
+  id: number;
+  etat: 'creee' | 'mise_a_jour' | 'inchangee';
+  avertissements: string[];
+}
+
+/**
+ * Ensures an imported library file (AD-104, B-48). Unlike an interactive upload, the import
+ * explicitly chooses its visibility. The origin key, never the name, identifies the file.
+ * Bytes, metadata and batch outcome are committed together; an unchanged upload keeps its disk token.
+ */
+export async function assurerFichier(
+  db: Db,
+  jeton: Jeton,
+  lotId: number | null,
+  cle: string,
+  entree: { nom: unknown; visibilite?: unknown; flux: FluxEntrant | null },
+  maintenant: Date = new Date(),
+  racine: string = attachmentsDir,
+): Promise<ResultatFichierImport> {
+  const acteur = { compteId: jeton.compteId };
+  const autoriserImport = () => {
+    exigerMJReel(db, jeton.universId, acteur);
+    if (lotId !== null && lireLot(db, jeton, lotId, maintenant).closLe !== null) {
+      throw new ErreurService('conflit', 'Le lot est clos.', 'lot_clos');
+    }
+  };
+  autoriserImport();
+  const invalider = (champ: string, raison: string): never => {
+    throw new ErreurService('invalide', raison, undefined, champ);
+  };
+  let temporaire: string | null = null;
+  let nouveauDisque: string | null = null;
+  let ancienDisque: string | null = null;
+  let valide = false;
+  try {
+    if (!cleValide(cle)) invalider('cle', "Clé d'origine invalide.");
+    if (typeof entree.nom !== 'string') invalider('nom', 'Nom du fichier manquant.');
+    const nom = nomPropre(entree.nom as string);
+    const visibilite = entree.visibilite ?? 'joueurs';
+    if (visibilite !== 'joueurs' && visibilite !== 'mj') {
+      invalider('visibilite', 'La visibilité doit être « joueurs » ou « mj ».');
+    }
+    if (!entree.flux) invalider('fichier', 'Champ « fichier » manquant.');
+    const ecrit = await ecrireFlux(entree.flux!, racine);
+    temporaire = ecrit.temporaire;
+    if (ecrit.taille === 0) invalider('fichier', 'Le fichier est vide.');
+    const type = typeParSignature(ecrit.debut);
+    const resultat = db.transaction((): ResultatFichierImport => {
+      // Uploading yields to other requests: check the role and the batch again before writing.
+      autoriserImport();
+      const courant = db.prepare('SELECT * FROM fichiers WHERE univers_id = ? AND cle_origine = ?')
+        .get(jeton.universId, cle) as (FichierRow & { dernier_import: string | null }) | undefined;
+      const avertissements: string[] = [];
+      let id: number;
+      let etat: ResultatFichierImport['etat'];
+      if (!courant) {
+        nouveauDisque = promouvoir(ecrit.temporaire, racine);
+        const info = db.prepare(
+          `INSERT INTO fichiers (univers_id, nom, type, taille, disque, empreinte, visibilite,
+             cle_origine, ajoute_par, ajoute_le, dernier_import) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        ).run(jeton.universId, nom, type, ecrit.taille, nouveauDisque, ecrit.empreinte, visibilite,
+          cle, jeton.compteId, maintenant.toISOString(), JSON.stringify({ nom, visibilite }));
+        id = Number(info.lastInsertRowid);
+        etat = 'creee';
+      } else {
+        id = courant.id;
+        const marque = courant.dernier_import
+          ? JSON.parse(courant.dernier_import) as { nom?: string; visibilite?: Visibilite }
+          : {};
+        const noms = courant.nom === nom || marque.nom === courant.nom;
+        const visibilites = courant.visibilite === visibilite || marque.visibilite === courant.visibilite;
+        const nomEcrit = noms ? nom : courant.nom;
+        const visibiliteEcrite = visibilites ? visibilite as Visibilite : courant.visibilite;
+        if (noms) marque.nom = nom;
+        else avertissements.push('nom modifié dans Kanevas : non écrasé');
+        if (visibilites) marque.visibilite = visibilite as Visibilite;
+        else avertissements.push('visibilité modifiée dans Kanevas : non écrasée');
+        const octetsChanges = courant.empreinte !== ecrit.empreinte;
+        if (octetsChanges) {
+          nouveauDisque = promouvoir(ecrit.temporaire, racine);
+          ancienDisque = courant.disque;
+        }
+        const change = octetsChanges || nomEcrit !== courant.nom || visibiliteEcrite !== courant.visibilite;
+        const json = JSON.stringify(marque);
+        if (change || json !== courant.dernier_import) {
+          db.prepare(`UPDATE fichiers SET nom = ?, visibilite = ?, type = ?, taille = ?, disque = ?,
+            empreinte = ?, dernier_import = ? WHERE id = ?`)
+            .run(nomEcrit, visibiliteEcrite, type, ecrit.taille, nouveauDisque ?? courant.disque,
+              ecrit.empreinte, json, id);
+        }
+        etat = change ? 'mise_a_jour' : 'inchangee';
+      }
+      if (lotId !== null) {
+        const issues: Record<ResultatFichierImport['etat'], Issue> = {
+          creee: 'creees', mise_a_jour: 'mises_a_jour', inchangee: 'inchangees',
+        };
+        const rapport: EntreeRapport[] = avertissements.map((raison) => ({
+          cle, objet: 'fichier', raison, gravite: 'avertissement',
+        }));
+        noterDansLot(db, lotId, 'fichiers', issues[etat], rapport, maintenant);
+      }
+      return { id, etat, avertissements };
+    })();
+    valide = true;
+    if (ancienDisque) supprimerFichier(ancienDisque, racine);
+    return resultat;
+  } catch (e) {
+    if (e instanceof ErreurService && e.code === 'invalide') {
+      const erreur = e.champ ? e : new ErreurService('invalide', e.message, undefined, 'nom');
+      if (lotId !== null) {
+        noterDansLot(db, lotId, 'fichiers', 'refusees', [
+          { cle, objet: 'fichier', raison: erreur.message, gravite: 'refus' },
+        ], maintenant);
+      }
+      throw erreur;
+    }
+    throw e;
+  } finally {
+    if (temporaire) await abandonner(temporaire, racine);
+    if (!valide && nouveauDisque) supprimerFichier(nouveauDisque, racine);
+  }
+}
 
 /**
  * Type of the file from its first bytes, never from what the client says
