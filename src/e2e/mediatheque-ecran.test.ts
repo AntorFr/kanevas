@@ -319,3 +319,36 @@ test('réouverture 3 : libellés « Visibilité » et « Usage » visibles, icô
   assert.ok(sel, 'libellé d’ordre non coupé');
   await p.setViewportSize({ width: 1280, height: 800 });
 });
+
+test('filtres : Visibilité, Usage et tri sur une rangée à 449 et 1440 px (panneau ouvert), tri au clavier à 390 px', opts, async () => {
+  const p = antor;
+  const rangee = async (largeur: number) => {
+    await p.setViewportSize({ width: largeur, height: 900 });
+    const ys: number[] = [];
+    for (const nom of ['Visibilité', 'Usage']) {
+      const b = await p.locator('.med-filtres select').and(p.getByLabel(nom)).boundingBox();
+      ys.push(Math.round(b.y));
+    }
+    const o = await p.locator('.med-ordre select').boundingBox();
+    ys.push(Math.round(o.y));
+    assert.ok(Math.max(...ys) - Math.min(...ys) <= 2, `${largeur}px : ${JSON.stringify(ys)}`);
+    const sw = await p.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+    assert.ok(sw <= 0, `${largeur}px : débordement ${sw}`);
+  };
+  await ouvrir(p);
+  await p.setViewportSize({ width: 1440, height: 900 });
+  await rangee(1440);
+  await ouvrirFichier(p, 'port-sel-quais.webp');
+  await rangee(1440);
+  await p.keyboard.press('Escape');
+  await p.setViewportSize({ width: 449, height: 900 });
+  await rangee(449);
+  await p.setViewportSize({ width: 390, height: 844 });
+  const tri = p.locator('.med-ordre select');
+  await tri.focus();
+  const avant = await tri.inputValue();
+  await p.keyboard.press('ArrowDown');
+  await p.waitForLoadState('networkidle');
+  assert.notEqual(await tri.inputValue(), avant);
+  await p.setViewportSize({ width: 1280, height: 720 });
+});

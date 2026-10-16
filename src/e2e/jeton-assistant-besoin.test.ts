@@ -32,7 +32,7 @@ interface Monde {
 
 async function monde(env: Record<string, string> = {}): Promise<Monde> {
   const dir = mkdtempSync(join(tmpdir(), 'kanevas-jeton-'));
-  const s = await startServer({ CLAUDE_DIR: dir, ...env });
+  const s = await startServer({ CLAUDE_DIR: dir, CLAUDE_CODE_OAUTH_TOKEN: '', ...env });
   const browser = await launch();
   aFermer.push(async () => {
     await browser.close();
