@@ -353,7 +353,7 @@ fiche n'a pas encore de section. » ; écriture périmée : « La section a chan
 l'avez ouverte. Rechargez-la pour voir la nouvelle version ; votre texte reste ci-dessous. » avec
 « Recharger la section » ; droit retiré entre-temps : « Vous ne pouvez plus modifier cette section. » ;
 confirmation de retrait : « Retirer la section « Vérité — MJ seul » ? Son contenu sera perdu. » (si elle porte
-des pièces jointes : « … Son contenu et ses 3 pièces jointes seront perdus. ») avec
+des fichiers joints : « … Son contenu et ses 3 fichiers joints seront retirés. ») avec
 « Retirer la section » et « Annuler ».
 
 | État | Ce qu'on voit | Ce qu'on peut faire |
@@ -913,8 +913,9 @@ l'image entière dans un nouvel onglet.
 
 Un fichier joint **a sa propre visibilité**, celle du fichier (« Visible des joueurs » ou « Réservé
 au MJ », AD-111) : qui ne lit pas la section ne voit pas le bloc ; qui lit la section ne voit un
-fichier réservé au MJ que s'il l'a lui-même ajouté (troisième règle de lecture) ; sinon le fichier est
-**absent** du bloc et son adresse répond « Page introuvable. ». Le MJ règle la visibilité **du
+fichier réservé au MJ que s'il l'a lui-même ajouté (troisième règle de lecture) ; sinon un cadre neutre
+(« Image réservée au MJ. » ou « Fichier réservé au MJ. ») tient sa place dans le bloc, et l'adresse du
+fichier répond « Page introuvable. ». Le MJ règle la visibilité **du
 fichier** (« Réserver au MJ » / « Rendre visible des joueurs »).
 
 | Rôle | Voir | Joindre | Régler la visibilité | Retirer la référence | Refus |
@@ -983,8 +984,7 @@ section, même vide.
 - Étant donné « Maître Aldric » dont Antor, MJ, joint à « Vérité — MJ seul » un portrait, alors Léa,
   Joueuse, ne voit ni le portrait, ni le bloc de cette section (qu'elle ne lit pas) ; et sur
   « Apparence » (lue des joueurs), où Antor a joint un autre portrait puis l'a réservé au MJ sur E-19,
-  Léa ne voit aucune trace du fichier : ni vignette, ni « Aucun fichier joint. », ni compteur ;
-  l'adresse directe du portrait réservé lui répond « Page introuvable. », comme une adresse qui n'a
+  Léa lit « Image réservée au MJ. » à la place de la vignette ; l'adresse directe du portrait réservé lui répond « Page introuvable. », comme une adresse qui n'a
   jamais existé.
 - Étant donné Léa auteur de « Notes de la table » avec écriture, quand elle choisit un portrait, alors
   il s'envoie sans autre geste et apparaît en vignette ; Teo, Joueur de l'univers (ajouté d'abord par
