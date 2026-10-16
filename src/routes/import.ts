@@ -6,7 +6,7 @@ import { ErreurService, introuvable } from '../services/erreurs.js';
 import { verifierJeton, type Jeton } from '../services/jetons.js';
 import { cloreLot, lireLot, MAX_RAPPORT, ouvrirLot } from '../services/lots.js';
 import { lireContexteImport } from '../services/import.js';
-import { assurerFiche, lotDeRequete } from '../services/import-fiches.js';
+import { assurerFiche, lotDeRequete, supprimerFicheImport } from '../services/import-fiches.js';
 import { TYPES_FICHE, typeActif } from '../services/types-fiche.js';
 import { registerErreurs } from './erreurs.js';
 
@@ -107,6 +107,13 @@ export async function registerImportRoutes(app: FastifyInstance) {
       const { cle } = request.params as { cle: string };
       const { lot } = request.query as { lot?: unknown };
       return assurerFiche(app.db, jetonDe(request), lotDeRequete(lot), cle, request.body, app.horloge());
+    });
+
+    scope.delete(`${base}/fiches/:cle`, async (request, reply) => {
+      const { cle } = request.params as { cle: string };
+      const { lot } = request.query as { lot?: unknown };
+      supprimerFicheImport(app.db, jetonDe(request), lotDeRequete(lot), cle, app.horloge());
+      return reply.code(204).send();
     });
 
     scope.post(`${base}/lots/:lid/clore`, async (request) => {
