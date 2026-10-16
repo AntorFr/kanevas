@@ -170,7 +170,7 @@ function Mediatheque() {
     async (fichier: File, cle: number) => {
       if (fichier.size === 0) {
         setEnvois((l) => l.filter((e) => e.cle !== cle));
-        setVides((l) => [...l, `« ${fichier.name} » est vide.`]);
+        setVides((l) => [...l, `« ${fichier.name} » est vide.`]);
         return;
       }
       setEnvois((l) => l.map((e) => (e.cle === cle ? { ...e, echec: false, pct: 0 } : e)));
@@ -189,7 +189,7 @@ function Mediatheque() {
         if (e instanceof ErreurApi && e.statut === -1) return setEnvois((l) => l.filter((x) => x.cle !== cle));
         if (e instanceof ErreurApi && e.code === 'fichier_vide') {
           setEnvois((l) => l.filter((x) => x.cle !== cle));
-          return setVides((l) => [...l, `« ${fichier.name} » est vide.`]);
+          return setVides((l) => [...l, `« ${fichier.name} » est vide.`]);
         }
         setEnvois((l) => l.map((x) => (x.cle === cle ? { ...x, echec: true } : x)));
       } finally {
