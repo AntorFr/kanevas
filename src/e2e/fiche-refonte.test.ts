@@ -512,4 +512,26 @@ describe('E-9 refaite : « Modifier », menu ⋯, retrait', { skip: skipBrowser 
     await antor.getByRole('button', { name: /^Ajouter une section/ }).waitFor();
     await antor.screenshot({ path: '/tmp/rv-fiche-vide.png' });
   });
+
+  test('V3 blocs vides : « Aucun fichier joint. » et « Joindre un fichier » sur une seule ligne, comme Relations (bureau et 390 px)', async () => {
+    for (const largeur of [1440, 390]) {
+      await antor.setViewportSize({ width: largeur, height: 900 });
+      await ouvrir(antor);
+      for (const titre of ['Vérité', 'Notes de la table']) {
+        const s = section(antor, titre);
+        for (const [bloc, action] of [['Pièces jointes', 'Joindre un fichier'], ['Relations', 'Relier à une fiche']] as const) {
+          const b = s.getByRole('group', { name: bloc });
+          const vide = b.locator('.bloc-vide');
+          if (bloc === 'Pièces jointes') assert.equal(await vide.innerText(), 'Aucun fichier joint.');
+          const texteVide = await vide.boundingBox();
+          const bouton = await b.getByRole('button', { name: rxExact(action) }).boundingBox();
+          assert.ok(texteVide && bouton, `${titre}/${bloc}@${largeur}`);
+          const dy = Math.abs(texteVide.y + texteVide.height / 2 - (bouton.y + bouton.height / 2));
+          assert.ok(dy < 8, `${titre}/${bloc}@${largeur}: text and action on one row (dy=${dy})`);
+          assert.ok(bouton.x >= texteVide.x + texteVide.width - 1, `${titre}/${bloc}@${largeur}: action after the text`);
+        }
+      }
+    }
+    await antor.setViewportSize({ width: 1440, height: 900 });
+  });
 });
