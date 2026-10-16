@@ -16,7 +16,7 @@ a.bouton { text-decoration: none; display: inline-flex; }
 /* Title editing keeps the document typography and wraps long names. */
 .titre-modifiable, .titre-edition { display: block; width: 100%; padding: 0; border: 0; border-radius: var(--rayon-item);
   background: transparent; color: var(--texte); font: inherit; letter-spacing: inherit; text-align: left; overflow-wrap: anywhere; }
-.titre-modifiable { cursor: text; }
+.titre-modifiable { width: fit-content; max-width: 100%; cursor: text; }
 .titre-modifiable:hover { background: var(--surface-2); }
 .titre-edition { resize: none; overflow: hidden; box-shadow: 0 0 0 1px var(--accent); }
 .titre-modifiable:focus-visible, .titre-edition:focus { outline: 2px solid var(--focus); outline-offset: 4px; }
