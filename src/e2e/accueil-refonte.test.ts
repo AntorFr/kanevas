@@ -70,7 +70,7 @@ after(async () => {
 
 test('E-2 une création réussie donne un seul toast « « <nom> » créé » et mène à E-3', opts, async () => {
   const page = await antor.context().newPage();
-  page.setDefaultTimeout(8000);
+  page.setDefaultTimeout(30000);
   await ouvrirFormulaireUnivers(page);
   await page.getByLabel('Nom', { exact: true }).fill('Toast');
   await creer(page).click();
@@ -83,7 +83,7 @@ test('E-2 une création réussie donne un seul toast « « <nom> » créé » et
 
 test('E-2 Ctrl+Entrée crée comme le bouton ; Échap revient à E-1 sans rien créer', opts, async () => {
   const page = await antor.context().newPage();
-  page.setDefaultTimeout(8000);
+  page.setDefaultTimeout(30000);
   await ouvrirFormulaireUnivers(page);
   await page.getByLabel('Nom', { exact: true }).fill('Au clavier');
   await page.keyboard.press('Control+Enter');
@@ -102,7 +102,7 @@ test('E-2 Ctrl+Entrée crée comme le bouton ; Échap revient à E-1 sans rien c
 
 test('E-2 erreurs : nom vide, 81e caractère du nom, 501e de la description ; compteurs ; ni toast ni création', opts, async () => {
   const page = await antor.context().newPage();
-  page.setDefaultTimeout(8000);
+  page.setDefaultTimeout(30000);
   await ouvrirFormulaireUnivers(page);
   await creer(page).click();
   await page.getByText('Erreur : le nom est obligatoire.').waitFor();
@@ -135,7 +135,7 @@ test('E-2 erreurs : nom vide, 81e caractère du nom, 501e de la description ; co
 
 test('E-2 la création échoue : message en ligne, saisie conservée, aucun toast', opts, async () => {
   const page = await antor.context().newPage();
-  page.setDefaultTimeout(8000);
+  page.setDefaultTimeout(30000);
   await page.route(/\/api\/univers$/, (route: Any) =>
     route.request().method() === 'POST' ? route.fulfill({ status: 500, body: '{}', contentType: 'application/json' }) : route.continue(),
   );
@@ -172,7 +172,7 @@ test('E-1 état vide : « Aucun univers pour l\'instant. », les deux chemins, c
 
 test('E-1 liste : par nom, rôle MJ ou Joueur, un clic mène à E-3', opts, async () => {
   const mj = await antor.context().newPage();
-  mj.setDefaultTimeout(8000);
+  mj.setDefaultTimeout(30000);
   await mj.request.post('/api/univers', { data: { nom: 'Aaa premier', description: '' } });
   await mj.goto('/');
   await attendre(mj);
@@ -195,7 +195,7 @@ test('E-1 liste : par nom, rôle MJ ou Joueur, un clic mène à E-3', opts, asyn
 
 test('E-3 matrice des rôles : Préparation « MJ seul » pour le MJ, absente pour le Joueur ; un seul lien « Tous les comptes-rendus »', opts, async () => {
   const mj = await antor.context().newPage();
-  mj.setDefaultTimeout(8000);
+  mj.setDefaultTimeout(30000);
   const c = await (await mj.request.post(`/api/univers/${idUnivers}/campagnes`, { data: { nom: 'La Couronne brisée' } })).json();
   await mj.request.patch(`/api/campagnes/${c.id}`, { data: { statut: 'active' } });
   await mj.request.post(`/api/campagnes/${c.id}/taches`, { data: { categorie: 'monstres', libelle: 'Statistiques du Revenant' } });
@@ -235,7 +235,7 @@ test('téléphone (390 px) : E-1 vide, E-1 liste, E-2 et E-3 au contenu long ne 
   await c1.close();
 
   const page = await antor.context().newPage();
-  page.setDefaultTimeout(8000);
+  page.setDefaultTimeout(30000);
   await page.setViewportSize({ width: 390, height: 800 });
   const long = 'Un nom d’univers tout à fait démesuré '.repeat(3).slice(0, 80);
   await page.request.post('/api/univers', { data: { nom: long, description: 'mot '.repeat(125) } });

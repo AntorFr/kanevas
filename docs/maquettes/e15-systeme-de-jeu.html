@@ -828,7 +828,7 @@ body.etat-refus .fiche-sys { display: none; }
       '<label class="champ"><span>Contenu <small style="color:var(--texte-3);font-weight:400">facultatif</small></span><textarea class="saisie" name="contenu"></textarea></label>' +
       '<div class="pied"><span class="compteur"></span><button class="bouton" type="button" data-annuler>Annuler</button><button class="bouton principal" type="submit" data-ecrit></button></div>';
     f.querySelector('h3').textContent = titre; f.nom.value = nom; f.contenu.value = contenu; f.querySelector('[type=submit]').textContent = libOk;
-    var cpt = function () { f.querySelector('.compteur').textContent = f.contenu.value.length.toLocaleString('fr-FR') + ' / 20 000'; };
+    var cpt = function () { f.querySelector('.compteur').textContent = f.contenu.value.length.toLocaleString('fr-FR') + ' / 100 000'; };
     f.contenu.oninput = cpt; cpt();
     return f;
   }

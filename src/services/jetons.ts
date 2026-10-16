@@ -70,9 +70,35 @@ export function creerJeton(
   if (!(DUREES_JETON as readonly unknown[]).includes(duree)) {
     throw invalide('Erreur : la durée est invalide.');
   }
-  const valeur = `kvs_${randomBytes(32).toString('base64url')}`;
+  return inserer(db, compteId, universId, nom, duree as number, `kvs_${randomBytes(32).toString('base64url')}`, maintenant);
+}
+
+/**
+ * Stub starting world only (AD-55): a token of a fixed, well-known value. Same insertion as
+ * `creerJeton`; the value is the one the tests and the recipe use.
+ */
+export function creerJetonDeValeur(
+  db: Db,
+  compteId: number,
+  universId: number,
+  entree: { nom: string; dureeJours: (typeof DUREES_JETON)[number]; valeur: string },
+  maintenant: Date = new Date(),
+): Jeton {
+  exigerMJ(db, universId, compteId);
+  return inserer(db, compteId, universId, entree.nom, entree.dureeJours, entree.valeur, maintenant).jeton;
+}
+
+function inserer(
+  db: Db,
+  compteId: number,
+  universId: number,
+  nom: string,
+  duree: number,
+  valeur: string,
+  maintenant: Date,
+): { jeton: Jeton; valeur: string } {
   const creeLe = maintenant.toISOString();
-  const expireLe = new Date(maintenant.getTime() + (duree as number) * JOUR_MS).toISOString();
+  const expireLe = new Date(maintenant.getTime() + duree * JOUR_MS).toISOString();
   const { lastInsertRowid } = db
     .prepare(
       `INSERT INTO jetons_api (univers_id, compte_id, nom, empreinte, cree_le, expire_le)
@@ -83,8 +109,19 @@ export function creerJeton(
   return { jeton: versJeton(row), valeur };
 }
 
-/** Every token of the universe, any GM's, newest first. GM only; the value is never part of it. */
-export function listerJetons(db: Db, compteId: number, universId: number): JetonListe[] {
+/** Tokens listed on E-18: the 20 latest, the active ones always all (B-46). */
+export const MAX_JETONS_LISTES = 20;
+
+/**
+ * The tokens of the universe, any GM's. GM only; the value is never part of it. Active ones first
+ * (all of them, newest first, even past 20), then revoked and expired ones up to 20 in all.
+ */
+export function listerJetons(
+  db: Db,
+  compteId: number,
+  universId: number,
+  maintenant: Date = new Date(),
+): JetonListe[] {
   exigerMJ(db, universId, compteId);
   const rows = db
     .prepare(
@@ -92,11 +129,16 @@ export function listerJetons(db: Db, compteId: number, universId: number): Jeton
        WHERE j.univers_id = ? ORDER BY j.cree_le DESC, j.id DESC`,
     )
     .all(universId) as (JetonRow & { createur: string })[];
-  return rows.map((r) => ({
+  const iso = maintenant.toISOString();
+  const liste = rows.map((r) => ({
     ...versJeton(r),
     createur: r.createur,
     actif: roleDe(db, universId, r.compte_id) === 'mj',
   }));
+  const vivant = (j: JetonListe) => j.revoqueLe === null && j.expireLe > iso;
+  const vivants = liste.filter(vivant);
+  const autres = liste.filter((j) => !vivant(j)).slice(0, Math.max(0, MAX_JETONS_LISTES - vivants.length));
+  return [...vivants, ...autres];
 }
 
 /** Any GM of the universe revokes any of its tokens. Revoking twice keeps the first date. */

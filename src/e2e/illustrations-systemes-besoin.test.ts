@@ -24,6 +24,11 @@ async function json(page: Any, url: string): Promise<Any> {
   const r = await api(page, 'GET', url);
   return JSON.parse(r.corps);
 }
+/** The bytes of the illustration of a sheet: its file in the library (AD-117), the one route of the bytes. */
+async function octetsIllustration(page: Any, ficheId: number | string, v?: string, fichierId?: number): Promise<Any> {
+  const id = fichierId ?? (await json(antor, `/api/univers/${U}/fiches/${ficheId}`)).illustration?.id;
+  return api(page, 'GET', `/api/univers/${U}/fichiers/${id ?? 999999}${v ? `?v=${v}` : ''}`);
+}
 const carte = (page: Any, titre: string) => page.getByRole('link', { name: new RegExp(titre.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')) }).first();
 async function grille(page: Any, type: string) {
   await page.goto(`/univers/${U}/fiches/${type}`);
@@ -110,12 +115,12 @@ describe('kanevas-illustrations, besoin B-30 / B-31 / B-29', { timeout: 300000 }
   test('B-30 exclusion : fiche invisible de Léa → 404 de corps identique à un identifiant inconnu', opts, async () => {
     const prieur = (await json(antor, `/api/univers/${U}/fiches?type=personnage`));
     const id = (prieur.fiches ?? prieur).find((f: Any) => f.titre === 'Le Prieur masqué').id;
-    const lue = await api(lea, 'GET', `/api/univers/${U}/fiches/${id}/illustration`);
-    const inconnue = await api(lea, 'GET', `/api/univers/${U}/fiches/999999/illustration`);
+    const lue = await octetsIllustration(lea, id);
+    const inconnue = await api(lea, 'GET', `/api/univers/${U}/fichiers/999999`);
     assert.equal(lue.statut, 404);
     assert.equal(lue.corps, inconnue.corps);
     // and the MJ does see it
-    assert.equal((await api(antor, 'GET', `/api/univers/${U}/fiches/${id}/illustration`)).statut, 200);
+    assert.equal((await octetsIllustration(antor, id)).statut, 200);
     // not in her grid
     await grille(lea, 'personnages');
     assert.equal(await lea.getByRole('link', { name: /Le Prieur masqué/ }).count(), 0);
@@ -130,8 +135,8 @@ describe('kanevas-illustrations, besoin B-30 / B-31 / B-29', { timeout: 300000 }
     assert.equal((await api(lea, 'PUT', `/api/univers/${U}/fiches/${aldric}/illustration`, { nom: 'a.png', buf: PNG, mime: 'image/png' })).statut, 403);
     assert.equal((await api(lea, 'DELETE', `/api/univers/${U}/fiches/${aldric}/illustration`)).statut, 403);
     assert.equal((await json(antor, `/api/univers/${U}/fiches/${aldric}`)).illustration.jeton, avant);
-    assert.equal((await api(teo, 'GET', `/api/univers/${U}/fiches/${aldric}/illustration`)).statut, 404);
-    assert.equal((await api(mira, 'GET', `/api/univers/${U}/fiches/${aldric}/illustration`)).statut, 404);
+    assert.equal((await octetsIllustration(teo, aldric)).statut, 404);
+    assert.equal((await octetsIllustration(mira, aldric)).statut, 404);
   });
 
   test('B-30 remplacer : le jeton change, la grille de Léa pointe vers la nouvelle adresse', opts, async () => {
@@ -145,14 +150,14 @@ describe('kanevas-illustrations, besoin B-30 / B-31 / B-29', { timeout: 300000 }
     const src = await carte(lea, 'Maître Aldric').locator('img').getAttribute('src');
     assert.ok(src?.endsWith(`?v=${apres}`), `src ${src}`);
     // old token = no longer cacheable as current
-    const vieux = await api(lea, 'GET', `/api/univers/${U}/fiches/${aldric}/illustration?v=${avant}`);
+    const vieux = await octetsIllustration(lea, aldric, avant);
     assert.match(vieux.entetes['cache-control'] ?? '', /no-store/);
-    const frais = await api(lea, 'GET', `/api/univers/${U}/fiches/${aldric}/illustration?v=${apres}`);
+    const frais = await octetsIllustration(lea, aldric, apres);
     assert.match(frais.entetes['cache-control'] ?? '', /immutable/);
     assert.equal(frais.entetes['content-type'], 'image/png');
   });
 
-  test('B-30 retirer : en-tête d’avant, repli en grille, ancienne adresse 404', opts, async () => {
+  test('B-30 retirer : en-tête d’avant, repli en grille, plus d’illustration sur la fiche', opts, async () => {
     const aldric = fiches['Maître Aldric'];
     await antor.goto(`/univers/${U}/fiche/${aldric}`);
     await antor.getByRole('heading', { level: 1, name: 'Maître Aldric' }).waitFor();
@@ -162,7 +167,8 @@ describe('kanevas-illustrations, besoin B-30 / B-31 / B-29', { timeout: 300000 }
     await antor.getByRole('button', { name: /^Retirer l.illustration$/ }).last().click();
     await antor.getByText('Illustration de « Maître Aldric » retirée').first().waitFor();
     assert.equal(await antor.getByRole('img', { name: 'Illustration de « Maître Aldric »' }).count(), 0);
-    assert.equal((await api(lea, 'GET', `/api/univers/${U}/fiches/${aldric}/illustration`)).statut, 404);
+    // The reference goes, the file stays in the library (AD-117 §5): Léa's sheet shows no illustration.
+    assert.equal((await json(lea, `/api/univers/${U}/fiches/${aldric}`)).illustration, null);
     await grille(lea, 'personnages');
     assert.equal(await carte(lea, 'Maître Aldric').locator('img').count(), 0);
     // DELETE again is idempotent
@@ -174,7 +180,7 @@ describe('kanevas-illustrations, besoin B-30 / B-31 / B-29', { timeout: 300000 }
     const gif = Buffer.from('R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7', 'base64');
     const r = await api(antor, 'PUT', `/api/univers/${U}/fiches/${bran}/illustration`, { nom: 'x.png', buf: gif, mime: 'image/png' });
     assert.equal(r.statut, 200);
-    const g = await api(lea, 'GET', `/api/univers/${U}/fiches/${bran}/illustration`);
+    const g = await octetsIllustration(lea, bran);
     assert.equal(g.entetes['content-type'], 'image/gif');
     await api(antor, 'DELETE', `/api/univers/${U}/fiches/${bran}/illustration`);
   });
@@ -299,7 +305,7 @@ describe('kanevas-illustrations, besoin B-30 / B-31 / B-29', { timeout: 300000 }
     await antor.getByRole('heading', { level: 1, name: 'Mes univers' }).waitFor();
     await attendre(antor);
     const t = await texte(antor);
-    assert.match(t, /2 univers/);
+    assert.match(t, /3 univers/); // + « Essai Kanka » (kanevas-import)
     assert.match(t, /Chroniques Oubliées Fantasy/);
     assert.match(t, /2 membres/);
     const lame = antor.getByRole('link', { name: /Lame d.Ébène/ }).first();

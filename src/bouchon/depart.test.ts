@@ -19,10 +19,11 @@ test('semis : univers, rôles et systèmes des critères ; Teo n’a rien ; Mira
   const id = (u: string) => assurerCompte(db, u).id;
   const rolesAntor = listerUnivers(db, id('antor')).map((u) => [u.nom, u.role, u.systeme?.nom]);
   assert.deepEqual(rolesAntor, [
+    ['Essai Kanka', 'mj', undefined],
     ["Lame d'Ébène", 'mj', 'CoF Mini'],
     ['Les Cendres de Vaëlis', 'joueur', 'Chroniques Oubliées Fantasy'],
   ]);
-  assert.deepEqual(listerUnivers(db, id('lea')).map((u) => [u.nom, u.role]), [["Lame d'Ébène", 'joueur']]);
+  assert.deepEqual(listerUnivers(db, id('lea')).map((u) => [u.nom, u.role]), [['Essai Kanka', 'joueur'], ["Lame d'Ébène", 'joueur']]);
   assert.deepEqual(listerUnivers(db, id('teo')), []);
   assert.deepEqual(listerSystemes(db, id('teo')), []);
   const mira = listerSystemes(db, id('mira'));
@@ -42,5 +43,5 @@ test('semis : fiches sans illustration, une seule fois, jamais sur une base qui 
   }
   assert.equal((db.prepare('SELECT COUNT(*) n FROM pieces_jointes').get() as { n: number }).n, 0);
   assert.equal(semerBouchon(db), false);
-  assert.equal((db.prepare('SELECT COUNT(*) n FROM univers').get() as { n: number }).n, 3);
+  assert.equal((db.prepare('SELECT COUNT(*) n FROM univers').get() as { n: number }).n, 4);
 });

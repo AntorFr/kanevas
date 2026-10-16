@@ -2,7 +2,7 @@ import { CircleAlert } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { ErreurApi, appeler, lire, useConnexionPerdue } from '../../../api';
-import { Bouton } from '../../../ui';
+import { Bouton, Markdown } from '../../../ui';
 import { aller } from '../adresse';
 import type { PropsBloc } from './registre';
 
@@ -14,6 +14,8 @@ interface PropositionLue {
   sectionId: number;
   contenuActuel: string;
   contenuPropose: string;
+  htmlActuel: string;
+  htmlPropose: string;
   etat: 'en_attente' | 'perimee' | 'appliquee';
 }
 
@@ -30,8 +32,8 @@ const TEXTE_PERDUE =
 
 /**
  * « Mise à jour proposée » (E-12, AD-58, AD-82): the proposal is read from the server at display and
- * after each gesture — the block says what the database says, never what it remembers. The text
- * is shown raw (React text nodes, never HTML).
+ * after each gesture — the block says what the database says, never what it remembers. The zones
+ * show the server's rendering (`Markdown`) or, on « Source », the raw text as React text nodes.
  */
 export function Proposition({ evenement, universId, surOuverture }: PropsBloc) {
   const propositionId = Number(evenement.cible.propositionId);
@@ -41,6 +43,7 @@ export function Proposition({ evenement, universId, surOuverture }: PropsBloc) {
   const [phase, setPhase] = useState<Phase>('chargement');
   const [prop, setProp] = useState<PropositionLue | null>(null);
   const [titres, setTitres] = useState<Titres | null>(null);
+  const [vueSource, setVueSource] = useState(false);
   const [relecture, setRelecture] = useState(false);
   const [geste, setGeste] = useState<'appliquer' | 'abandonner' | null>(null);
   const [erreurGeste, setErreurGeste] = useState(false);
@@ -251,15 +254,33 @@ export function Proposition({ evenement, universId, surOuverture }: PropsBloc) {
           <CircleAlert size={14} strokeWidth={1.75} aria-hidden="true" /> La section a changé depuis la proposition. Demandez-en une nouvelle.
         </p>
       )}
+      <div className="asst-prop-bascule" role="group" aria-label="Affichage du texte">
+        <button type="button" aria-pressed={!vueSource} onClick={() => setVueSource(false)}>
+          Rendu
+        </button>
+        <button type="button" aria-pressed={vueSource} onClick={() => setVueSource(true)}>
+          Source
+        </button>
+      </div>
       <div className="asst-prop-zones">
         <div className="asst-prop-zone" role="region" aria-label="Actuel" tabIndex={0}>
           <span className="asst-prop-lib">Actuel</span>
-          <div className="asst-prop-texte">{prop.contenuActuel === '' ? vide : prop.contenuActuel}</div>
+          {prop.contenuActuel.trim() === '' ? (
+            <div className="asst-prop-texte">{vide}</div>
+          ) : vueSource ? (
+            <div className="asst-prop-texte">{prop.contenuActuel}</div>
+          ) : (
+            <Markdown className="asst-prop-rendu" html={prop.htmlActuel} />
+          )}
         </div>
         {!appliquee && (
           <div className="asst-prop-zone propose" role="region" aria-label="Proposé" tabIndex={0}>
             <span className="asst-prop-lib">Proposé</span>
-            <div className="asst-prop-texte">{prop.contenuPropose}</div>
+            {vueSource ? (
+              <div className="asst-prop-texte">{prop.contenuPropose}</div>
+            ) : (
+              <Markdown className="asst-prop-rendu" html={prop.htmlPropose} />
+            )}
           </div>
         )}
       </div>

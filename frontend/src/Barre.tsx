@@ -4,9 +4,10 @@ import { Link, matchPath, useLocation } from 'react-router-dom';
 
 import { appeler } from './api';
 import { useMoi, useUnivers, useVue } from './cadre-contexte';
-import { ITEMS_UNIVERS, type Item } from './items';
+import { ITEMS_UNIVERS, itemsLore, type Item } from './items';
 import { ecranEnregistre } from './registre';
 import { type ChoixTheme, useTheme } from './theme';
+import { typesActifs, useTypes } from './types-contexte';
 import { Avatar, Bouton, initialeUnivers, Menu, PastilleRole, type EntreeMenu } from './ui';
 
 /** Id of the universe in the address, or null outside a universe. */
@@ -191,7 +192,7 @@ function Compte() {
 function Contenu({ onNavigue }: { onNavigue: () => void }) {
   const { pathname } = useLocation();
   const { univers } = useUnivers();
-  const { section } = useVue();
+  const { section, mode } = useVue();
   const moi = useMoi();
   const id = universDeLAdresse(pathname);
   // Inside a universe only if the account has it: an unknown universe, or one without a role,
@@ -202,7 +203,11 @@ function Contenu({ onNavigue }: { onNavigue: () => void }) {
   const groupes = moi.etat === 'ok' ? moi.valeur.groups : [];
   const visible = (i: Item, chemin: string) => ecranEnregistre(chemin, undefined) && (!i.groupe || groupes.includes(i.groupe));
   const items = dedans ? ITEMS_UNIVERS.filter((i) => visible(i, i.chemin(id)) && (!i.role || i.role === role)) : [];
+  // « Lore » comes from the types the server sends, between the first group and « Univers ».
+  const typesLu = useTypes();
+  const lore = dedans ? itemsLore(typesActifs(typesLu.types)) : [];
   const sections = [...new Set(items.map((i) => i.section ?? ''))];
+  if (dedans) sections.splice(Math.min(1, sections.length), 0, 'Lore');
   const horsUnivers = dedans ? [] : ITEMS_UNIVERS.filter((i) => i.horsUnivers && visible(i, i.chemin(0)));
 
   return (
@@ -239,10 +244,36 @@ function Contenu({ onNavigue }: { onNavigue: () => void }) {
         {sections.map((s) => (
           <div key={s} className="groupe">
             {s && <div className="groupe-titre">{s}</div>}
-            {items
-              .filter((i) => (i.section ?? '') === s)
+            {s === 'Lore' && typesLu.etat === 'chargement' && (
+              <div role="status" aria-label="Chargement des types">
+                {[62, 48, 56].map((l) => (
+                  <span key={l} className="item item-squelette" aria-hidden="true">
+                    <span className="squelette" style={{ width: `${l}%` }} />
+                  </span>
+                ))}
+              </div>
+            )}
+            {s === 'Lore' && typesLu.etat === 'erreur' && (
+              <div className="lore-etat">
+                <p role="alert">Impossible de charger les types.</p>
+                <Bouton petit onClick={typesLu.recharger}>
+                  Réessayer
+                </Bouton>
+              </div>
+            )}
+            {s === 'Lore' && typesLu.etat === 'ok' && lore.length === 0 && (
+              <div className="lore-etat">
+                <p>Aucun type de fiche activé.</p>
+                {role === 'mj' && (
+                  <Link to={`/univers/${id}/parametres`} className="item">
+                    Régler les types
+                  </Link>
+                )}
+              </div>
+            )}
+            {(s === 'Lore' ? lore : items.filter((i) => (i.section ?? '') === s))
               .map((i) => (
-                <Link key={i.libelle} to={i.chemin(id!)} className="item" aria-current={itemCourant(i, id!, pathname, section) ? 'page' : undefined}>
+                <Link key={i.libelle} to={i.chemin(id!) + (i.garderMode && mode === 'joueur' ? '?mode=joueur' : '')} className="item" aria-current={itemCourant(i, id!, pathname, section) ? 'page' : undefined}>
                   <i.icone size={16} strokeWidth={1.75} aria-hidden="true" />
                   {i.libelle}
                 </Link>

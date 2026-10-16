@@ -5,7 +5,6 @@ import { disponibilite } from '../services/assistant/disponibilite.js';
 import { ErreurAssistant } from '../services/assistant/erreurs.js';
 import { MAX_HISTORIQUE, MAX_MESSAGE, repondre } from '../services/assistant/repondre.js';
 import type { MessageFil } from '../services/assistant/transport.js';
-import { env } from '../config/env.js';
 import { invalide } from '../services/erreurs.js';
 import { corps } from './fiches.js';
 import { idDeChemin } from './univers.js';
@@ -47,7 +46,7 @@ export function registerAssistantRoutes(app: FastifyInstance) {
 
   app.get('/api/univers/:id/assistant', async (request) => {
     const role = exigerRole(app.db, idUnivers(request), request.session!.id);
-    const config = app.assistantDeps.config ?? env;
+    const config = app.configAssistant();
     return { disponible: disponibilite(config) !== 'aucune', catalogue: role };
   });
 

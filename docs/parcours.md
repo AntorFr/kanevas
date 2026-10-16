@@ -308,7 +308,7 @@ introuvable. ».
    « Active » ; il relit les CR les plus récents, crée ou ouvre un **scénario** (E-7) et l'écrit
    (ou demande à son **assistant** (E-12) de créer la campagne ou le scénario : le bloc d'écriture mène à E-6 ou E-7).
 3. Il coche ou ajoute des tâches de **préparation** (E-6).
-4. **Lore** : depuis la **liste d'un type** (E-8), il crée un PNJ ; sur la **fiche** (E-9), il
+4. **Lore** : depuis la **liste d'un type** (E-8, parmi les types activés), il crée un PNJ ou un lieu, avec au besoin son **sous-type** ; sur la **fiche** (E-9), il
    écrit « Apparence » (lue des joueurs) et « Vérité — MJ seul », relie le PNJ à sa faction,
    dépose le plan d'un lieu, et pose le portrait d'Aldric en **illustration** de la fiche (visible
    de qui voit la fiche) ; de retour sur la liste, la carte d'Aldric porte ce portrait.
@@ -344,7 +344,8 @@ pas — le cadre dit « Image indisponible. » et il garde « Remplacer » et «
 1. **Accueil** (E-1) → **vue d'ensemble** de l'univers (E-3) : les derniers CR, les cartes
    visibles.
 2. Il parcourt la **liste des personnages** (E-8), une grille de cartes illustrées, et reconnaît
-   Aldric à son portrait — ou le cherche par son nom — puis ouvre la **fiche** (E-9) : seulement ce
+   Aldric à son portrait — ou le cherche par son nom — ; sur la liste des lieux, il peut filtrer par
+   **sous-type** (« Taverne ») parmi ceux des fiches qu'il voit ; puis ouvre la **fiche** (E-9) : seulement ce
    que la table sait.
 3. Il ouvre la **carte** (E-11), touche un token, relit la fiche.
 4. Ou il demande à son **assistant** (E-12) « que sait-on d'Aldric ? ».
@@ -361,10 +362,9 @@ illustration répond comme une adresse inconnue.
    (E-12) d'y ajouter un paragraphe.
 *Échec* : il demande d'écrire dans une section qu'il lit sans l'écrire : « Vous ne pouvez pas modifier
 cette section. », rien n'est écrit.
-*Échec* (dépôt) : fichier vide, section déjà à son maximum de fichiers joints (50 avant
-`kanevas-import`, 100 depuis, AD-111), envoi interrompu ou droit
-d'écriture retiré — le fichier n'est pas attaché, la raison est dite sur la section (E-9), rien n'est
-laissé à moitié.
+*Upload failure*: empty file, section already at its attachment limit (50 before
+`kanevas-import`, 100 since, AD-111), interrupted upload or lost write permission — the file
+is not attached; the section (E-9) explains why; no partial operation remains.
 
 ### P-8 — Monter un univers sur un système partagé (MJ)
 *Antor, MJ de « Lame d'Ébène », le dimanche soir ; Mira, MJ des « Landes grises », qui joue le même
@@ -450,7 +450,7 @@ a expiré — la ligne dit « Expiré », le script reçoit 401.
 ### P-12 — Lire la base importée (Antor, MJ, puis Léa, Joueuse, au téléphone)
 1. Antor ouvre **Lieux** (E-8), passe la liste **en arbre** : « Les Sphères » (Lieu · Sphère)
    déplié montre « Port-Sel » (Lieu · Port), qui déplié montre « La Taverne du Kraken » et « Les
-   Docks » ; il filtre sur le sous-type « Port » : « Port-Sel » et « Havre-Gris ».
+   Docks » ; il filtre sur le sous-type « Port » : « Port-Sel » et « Havre-Gris » (après un import qui porte ces sous-types : le semis du bouchon pose « Les Sphères » et « Port-Sel » sans sous-type, et pas « Havre-Gris »).
 2. Il ouvre « Port-Sel » (**E-9**) : le fil d'Ariane « Lame d'Ébène › Lieux › Les Sphères ›
    Port-Sel » ; le texte en Markdown (intertitres, un tableau des quartiers, une image insérée) ; des
    liens vers « Maître Aldric » et « La Guilde des Brumes » ; au milieu de « Histoire », un **bloc MJ**
@@ -463,7 +463,7 @@ a expiré — la ligne dit « Expiré », le script reçoit 401.
 4. Léa, sur son téléphone, ouvre la **recherche** (E-17), tape « sous-main », un mot qui n'est que
    dans le bloc MJ : aucun résultat. Elle tape « guilde » : elle trouve « Port-Sel » (le texte du lien
    est écrit dans « Histoire », qu'elle lit) mais jamais la fiche « La Guilde des Brumes » ; elle trouve
-   « Port-Sel » par son alias « Salport » ; elle touche l'étiquette « Côte des Brumes » et voit les fiches qu'elle lit.
+   « Port-Sel » par son alias « Salport » ; elle touche la pastille « Côte des Brumes » (sur E-17, ou sur la fiche « Port-Sel » qui l'ouvre filtrée) et voit les fiches qu'elle lit.
 5. Elle ouvre « Maître Aldric » par un lien, puis revient par le fil d'Ariane.
 6. Elle demande à son **assistant** (E-12) « que sait-on de Port-Sel ? » : il ne cite rien du bloc
    MJ.
@@ -475,16 +475,16 @@ rien depuis le dernier import — absente de l'arbre, de la recherche et des « 
 
 ### P-13 — Choisir les types d'un système et d'un univers (MJ)
 *Antor joue « CoF Mini » dans « Lame d'Ébène », sauf que son univers a des vaisseaux.*
-1. **Système de jeu** (E-15), bloc « Types de fiche » : il désactive « Vaisseau » et « Note » pour
+1. **Système de jeu** (E-15), onglet « Types de fiche » : il désactive « Vaisseau » et « Note » pour
    le système ; Mira, MJ d'un autre univers du système, voit ces types quitter sa barre.
-2. **Paramètres** de « Lame d'Ébène » (E-14), bloc « Types de fiche » : chaque type dit « Système · activé »
+2. **Paramètres** de « Lame d'Ébène » (E-14), panneau « Types de fiche » : chaque type dit « Système · activé »
    ou « Système · désactivé » ; il force « Vaisseau » à **Activé**.
 3. La barre latérale de « Lame d'Ébène » montre « Vaisseaux », pas « Notes ».
-4. Plus tard, le système réactive « Note » : « Lame d'Ébène », qui le suit, le montre aussitôt ;
+4. Plus tard, le système réactive « Note » : « Lame d'Ébène », qui le suit, le montre au chargement suivant ;
    « Vaisseau », forcé, ne bouge pas.
 *Échec* : il désactive « Lieu » alors que l'univers a 201 lieux — la confirmation dit « Les 201 lieux
-restent ; on les atteint par un lien, la recherche ou l'arbre. » ; un Joueur ne voit ni le bloc de
-E-14 ni les bascules de E-15 (« Lecture seule »).
+restent ; on les atteint par un lien, la recherche ou l'arbre. » ; un Joueur ne voit pas le panneau de
+E-14 (« Page introuvable. ») et lit l'onglet de E-15 en « Lecture seule », interrupteurs inertes.
 
 ### P-14 — Tenir la base après l'import (Antor, MJ, au bureau)
 1. Sur « Port-Sel » (**E-9**), « Modifier » la section « Histoire » : il tape `[[`, choisit « Maître
@@ -500,26 +500,35 @@ E-14 ni les bascules de E-15 (« Lecture seule »).
    remontent ses enfants et que les liens qui la visent deviendront des liens cassés (texte exact :
    E-9) ; le doublon venait de Kanka : Antor le retire aussi de l'export, sinon le prochain import le
    recrée (B-40).
+4. Dans un **scénario** (E-7), même geste : `[[` ouvre la même liste (les fiches de l'univers de la campagne) et le lien
+   s'ouvre sur la fiche ; dans une entrée de système (E-15), `[[` ne fait rien.
+*Échec liens* : Léa, auteur avec écriture, tape à la main `[[<id>]]` d'une fiche qu'elle ne lit pas (l'identifiant d'une adresse qu'Antor lui a donnée) — « Cette fiche n'existe
+pas ou vous ne pouvez pas la lire. » sous le champ, son texte intact ; la liste ne répond pas — « Impossible de
+chercher. » et « Réessayer » ; un lien vers une fiche qui n'est pas encore importée — « en attente » pour Antor,
+texte pour Léa, jusqu'à l'arrivée de la fiche ; dans un scénario, la liste qui échoue — « Impossible de chercher. ».
 *Échec* : un déplacement qui ferait un cycle (« Les Sphères » sous l'un de ses enfants) — « Une fiche
 ne peut pas être rangée sous l'un de ses descendants. » ; un Joueur auteur d'une section qui contient
 un bloc MJ — « Modifier » n'y paraît pas ; un texte qui passe 100 000 caractères — « Erreur : 100 000
 caractères au plus. », le texte reste.
 
-### P-15 — Poser le jeton de l'assistant (admin d'instance) (B-51)
+### P-15 — Poser le jeton de l'assistant (Admin, admin d'instance) (B-51)
+*Admin vient de déployer Kanevas : l'assistant n'a pas encore de jeton, et il ne veut pas passer par un redéploiement.*
 1. **Administration** (E-5), bloc « Jeton de l'assistant » : « Aucun jeton posé » ; « Connecter
    l'abonnement ».
 2. Kanevas montre une adresse ; il l'ouvre, s'authentifie chez Anthropic, copie le code.
 3. Il colle le code, « Valider » : « Jeton posé le 11 octobre 2026. » ; l'assistant est disponible
-   sur tous les univers, sans redéploiement.
-*Échec* : le code est faux ou la fenêtre a expiré (10 minutes) — « La connexion n'a pas abouti.
-Recommencez. », l'ancien jeton reste.
+   sur tous les univers, sans redéploiement. *(Moment fort : « Jeton posé le … » apparaît, sans que la valeur du jeton soit montrée nulle part.)*
+*Échec* : le code est faux — « La connexion n'a pas abouti. Recommencez. » ; la fenêtre a expiré (10 minutes)
+ou le serveur a redémarré — « La connexion a expiré. Recommencez. » ; le programme de connexion ne démarre pas —
+« La connexion n'a pas pu démarrer. Réessayez. » ; dans tous les cas l'ancien état reste. Si le jeton vient du
+déploiement, le panneau dit « Jeton fourni par le déploiement. » et se reconnecte de même.
 
 ### P-16 — Ranger et partager les fichiers (Antor, MJ, puis Léa, Joueuse)
 *Après l'import, la médiathèque de « Lame d'Ébène » porte 1 100 images et 40 documents, dont ceux
 qu'aucune fiche n'utilisait dans Kanka.*
-1. **Médiathèque** (E-19), depuis la barre : Antor filtre « Images » puis cherche par le nom,
-   retrouve « carte-des-sphères.png » (utilisée dans trois fiches), la renomme « Carte des Sphères » ; il passe à « Documents » : « Règles
-   de la Guilde.pdf » (PDF, 2,4 Mo).
+1. From the sidebar, Antor opens **« Médiathèque »** (E-19), filters « Images », then searches by name
+   for « carte-des-sphères.png » (used in three sheets) and renames it « Carte des Sphères ».
+   He switches to « Documents »: « Règles de la Guilde.pdf » (PDF, 2,4 Mo).
 2. Il ouvre « plan-du-repaire.png » (« Visible des joueurs », insérée dans « Histoire » des « Docks »
    et jointe à « Description » de « Port-Sel », deux sections lues des joueurs) et la passe à
    « Réservée au MJ » : Kanevas liste ces deux endroits, où les joueurs ne la verront plus ; il
@@ -530,13 +539,13 @@ qu'aucune fiche n'utilisait dans Kanka.*
    déplace dans un bloc MJ, l'avertissement disparaît. Puis « Fichier » ▸ « Ajouter depuis l'appareil »
    « tarifs-du-port.pdf » : le document entre dans la médiathèque, visible des joueurs, et se joint à la
    section ; il enregistre.
-4. Léa ouvre « Les Docks » : à la place de l'image du plan du repaire, dans « Histoire », elle lit
-   « Image réservée au MJ. » ; elle ouvre « Port-Sel » et télécharge « tarifs-du-port.pdf » depuis les
-   fichiers joints de « Description » ; sa
-   **Médiathèque** (E-19) ne lui montre que les fichiers visibles des joueurs, et pour « Carte des
-   Sphères » les seules fiches qu'elle lit.
-5. Antor supprime un doublon d'image : la confirmation liste « Val-Fortin — « Description » »,
-   « Maître Aldric — « Apparence » (jointe) » et « Port-Sel (illustration) » ; il remplace d'abord l'illustration, puis supprime.
+4. Léa opens « Les Docks »: instead of the lair map image in « Histoire », she reads
+   « Image réservée au MJ. ». She opens « Port-Sel » and downloads « tarifs-du-port.pdf » from
+   the attachments of « Description ». Her **« Médiathèque »** (E-19) only shows player-visible
+   files; for « Carte des Sphères », it only lists sheets she can read.
+5. Antor deletes a duplicate image: the confirmation lists « Val-Fortin — « Description » »,
+   « Maître Aldric — « Apparence » (jointe) » and « Port-Sel (illustration) ». He first replaces
+   the illustration, then deletes the file.
 *Moment fort* : un même fichier, utilisé dans trois fiches, change de droits en un geste, et Kanevas
 dit exactement où les joueurs le perdent.
 *Échec* : un fichier vide — « « notes.txt » est vide. », rien n'est ajouté ; un envoi coupé —

@@ -1,5 +1,7 @@
 import type { Db } from '../db/db.js';
+import { exigerMJ } from './droits.js';
 import { introuvable } from './erreurs.js';
+import { compterEnAttente } from './liens.js';
 import type { Jeton } from './jetons.js';
 
 /** Entries kept in a batch report (AD-104); further ones are counted but not listed. */
@@ -106,11 +108,30 @@ export function lireLot(db: Db, jeton: Jeton, lotId: number, maintenant: Date = 
   return versLot(row, maintenant);
 }
 
+/**
+ * Sheets whose wanted parent is not the one written (absent target, cycle), still where the import
+ * left them: a hand-moved sheet is not waiting (AD-115 (4)).
+ */
+function compterParentsEnAttente(db: Db, universId: number): number {
+  const { n } = db
+    .prepare(
+      `SELECT COUNT(*) AS n FROM fiches f
+        WHERE f.univers_id = ? AND json_extract(f.dernier_import, '$.parent.demande') IS NOT NULL
+          AND f.parent_id IS json_extract(f.dernier_import, '$.parent.ecrit')
+          AND NOT EXISTS (SELECT 1 FROM fiches p WHERE p.id = f.parent_id
+                            AND p.cle_origine = json_extract(f.dernier_import, '$.parent.demande'))`,
+    )
+    .get(universId) as { n: number };
+  return n;
+}
+
 /** Closes a batch (idempotent: a closed one keeps its date) and returns its report. */
 export function cloreLot(db: Db, jeton: Jeton, lotId: number, maintenant: Date = new Date()): Lot {
   lireLot(db, jeton, lotId, maintenant);
-  db.prepare('UPDATE lots_import SET clos_le = ? WHERE id = ? AND clos_le IS NULL').run(
+  // « En attente » is counted once, at the closing (E-18): links still waiting for an origin key.
+  db.prepare('UPDATE lots_import SET clos_le = ?, en_attente = ? WHERE id = ? AND clos_le IS NULL').run(
     maintenant.toISOString(),
+    compterEnAttente(db, jeton.universId) + compterParentsEnAttente(db, jeton.universId),
     lotId,
   );
   return lireLot(db, jeton, lotId, maintenant);
@@ -139,4 +160,47 @@ export function noterDansLot(
     `UPDATE lots_import SET compteurs = ?, rapport = ?, avertissements = avertissements + ?,
        dernier_ecrit_le = ? WHERE id = ?`,
   ).run(JSON.stringify(lot.compteurs), JSON.stringify(rapport), avert, maintenant.toISOString(), lotId);
+}
+
+/** Batches listed on E-18 (B-49). */
+export const MAX_LOTS_LISTES = 20;
+/** Report entries sent per batch to the screen (E-18: 200, then « … et N autres »). */
+export const MAX_ENTREES_ECRAN = 200;
+
+export interface LotListe extends Omit<Lot, 'rapport'> {
+  jeton: string;
+  refus: EntreeRapport[];
+  alertes: EntreeRapport[];
+  /** Entries of the report beyond the 200 sent per group. */
+  refusAutres: number;
+  alertesAutres: number;
+}
+
+/** The 20 latest batches of the universe, newest first, with their counters and report. GM only. */
+export function listerLots(
+  db: Db,
+  compteId: number,
+  universId: number,
+  maintenant: Date = new Date(),
+): LotListe[] {
+  exigerMJ(db, universId, compteId);
+  const rows = db
+    .prepare(
+      `SELECT l.*, j.nom AS jeton FROM lots_import l JOIN jetons_api j ON j.id = l.jeton_id
+       WHERE l.univers_id = ? ORDER BY l.ouvert_le DESC, l.id DESC LIMIT ?`,
+    )
+    .all(universId, MAX_LOTS_LISTES) as (LotRow & { jeton: string })[];
+  return rows.map((r) => {
+    const { rapport, ...lot } = versLot(r, maintenant);
+    const refus = rapport.filter((e) => e.gravite === 'refus');
+    const alertes = rapport.filter((e) => e.gravite === 'avertissement');
+    return {
+      ...lot,
+      jeton: r.jeton,
+      refus: refus.slice(0, MAX_ENTREES_ECRAN),
+      alertes: alertes.slice(0, MAX_ENTREES_ECRAN),
+      refusAutres: Math.max(0, refus.length - MAX_ENTREES_ECRAN),
+      alertesAutres: Math.max(0, alertes.length - MAX_ENTREES_ECRAN),
+    };
+  });
 }

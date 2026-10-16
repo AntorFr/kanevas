@@ -12,6 +12,7 @@ import {
   modifierGabarit,
   rattacherSysteme,
 } from '../services/systemes.js';
+import { reglerTypeSysteme, reglerTypeUnivers, typesDeLUnivers, typesDuSysteme } from '../services/types-fiche.js';
 import { modifierUnivers } from '../services/univers.js';
 import { idDeChemin } from './univers.js';
 
@@ -76,8 +77,34 @@ export function registerSystemesRoutes(app: FastifyInstance) {
     const id = sid(request);
     const systeme = lireSysteme(app.db, compte, id);
     const page = listerGabarits(app.db, compte, id, { type: q.type ?? 'regle', curseur: q.curseur });
-    return { ...systeme, gabarits: page.gabarits, suivant: page.suivant };
+    return { ...systeme, gabarits: page.gabarits, suivant: page.suivant, types: typesDuSysteme(app.db, id) };
   });
+
+  app.get('/api/univers/:id/types', async (request) =>
+    typesDeLUnivers(app.db, request.session!.id, idUnivers(request)),
+  );
+
+  app.put('/api/univers/:id/types/:type', async (request) => {
+    const etat = corps(request).etat;
+    if (typeof etat !== 'string') throw invalide('État inconnu.');
+    return reglerTypeUnivers(
+      app.db,
+      request.session!.id,
+      idUnivers(request),
+      (request.params as { type: string }).type,
+      etat,
+    );
+  });
+
+  app.put('/api/systemes/:sid/types/:type', async (request) =>
+    reglerTypeSysteme(
+      app.db,
+      request.session!.id,
+      sid(request),
+      (request.params as { type: string }).type,
+      corps(request).active,
+    ),
+  );
 
   app.post('/api/systemes/:sid/gabarits', async (request, reply) => {
     const b = corps(request);

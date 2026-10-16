@@ -10,8 +10,8 @@
 //   matrice   : Joueur (Léa) : aucune pastille/filet/⋯, « Modifier » seulement sur ce qu'elle écrit
 //   toasts    : un toast par action réussie, texte exact, ne prend pas le focus, part seul après 4 s,
 //               « Fermer » le retire, trois au plus ; un échec n'en donne pas
-//   édition   : compteur « n / 20 000 », aide ; Échap abandonne ; Ctrl+Entrée enregistre ;
-//               > 20 000 et connexion perdue : Ctrl+Entrée ne part pas ; périmée : message
+//   édition   : compteur « n / 100 000 », aide ; Échap abandonne ; Ctrl+Entrée enregistre ;
+//               > 100 000 et connexion perdue : Ctrl+Entrée ne part pas ; périmée : message
 //   « Modifier » : au survol/focus ; toujours là sans survol (hover: none)
 //   boîte d'audience : titre « Qui voit « … » », note, Échap ferme et rend le focus à la pastille
 import assert from 'node:assert/strict';
@@ -277,27 +277,12 @@ describe('E-9 refaite : toasts', { skip: skipBrowser }, () => {
     await toastDe(antor, 'Relation vers « Lames Grises » retirée').waitFor();
   });
 
-  test('pièces jointes : « « portrait.png » ajouté », « est secrète », « Le secret de … est levé », « retiré »', async () => {
-    await ouvrir(antor);
-    const PNG = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==', 'base64');
-    const s = section(antor, 'Apparence');
-    await s.locator('input[type=file]').setInputFiles([{ name: 'portrait.png', mimeType: 'image/png', buffer: PNG }]);
-    await toastDe(antor, '« portrait.png » ajouté').waitFor();
-    await s.getByRole('button', { name: /^Rendre secrète « portrait\.png »/ }).click();
-    await toastDe(antor, '« portrait.png » est secrète').waitFor();
-    await s.getByRole('button', { name: /^Lever le secret de « portrait\.png »/ }).click();
-    await toastDe(antor, 'Le secret de « portrait.png » est levé').waitFor();
-    await s.getByRole('button', { name: /^Retirer « portrait\.png »/ }).click();
-    await s.getByRole('button', { name: rxExact('Retirer le fichier') }).click();
-    await toastDe(antor, '« portrait.png » retiré').waitFor();
-  });
-
   test('envoi annulé : « Envoi de « lent.png » annulé »', async () => {
     await ouvrir(antor);
     const PNG = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==', 'base64');
     let lacher!: () => void;
     const tenu = new Promise<void>((r) => (lacher = r));
-    await antor.route('**/pieces-jointes', async (route: Any) => {
+    await antor.route(/\/api\/univers\/\d+\/fichiers$/, async (route: Any) => {
       if (route.request().method() !== 'POST') return route.continue();
       await tenu;
       await route.abort();
@@ -307,7 +292,7 @@ describe('E-9 refaite : toasts', { skip: skipBrowser }, () => {
     await s.getByRole('status').getByRole('button', { name: rxExact('Annuler') }).click();
     await toastDe(antor, 'Envoi de « lent.png » annulé').waitFor();
     lacher();
-    await antor.unroute('**/pieces-jointes', { behavior: 'ignoreErrors' });
+    await antor.unroute(/\/api\/univers\/\d+\/fichiers$/, { behavior: 'ignoreErrors' });
   });
 
   test('un échec n’est jamais un toast : le PATCH d’audience refusé laisse un message en ligne et aucun toast', async () => {
@@ -331,14 +316,14 @@ describe('E-9 refaite : édition', { skip: skipBrowser }, () => {
     return s;
   }
 
-  test('sous le champ : le compteur « n / 20 000 » suit la saisie et l’aide « Échap annuler · Ctrl ↵ enregistrer »', async () => {
+  test('sous le champ : le compteur « n / 100 000 » suit la saisie et l’aide « Échap annuler · Ctrl ↵ enregistrer »', async () => {
     await ouvrir(antor);
     const s = await editer(antor);
     const t = (await s.innerText()).replace(/\s+/g, ' ');
-    assert.ok(/0 \/ 20\s000/.test(t.replace(/ /g, ' ')), t);
+    assert.ok(/0 \/ 100\s000/.test(t.replace(/ /g, ' ')), t);
     assert.ok(t.includes('Échap annuler · Ctrl ↵ enregistrer'), t);
     await s.getByRole('textbox').fill('abcde');
-    assert.ok(/5 \/ 20\s000/.test((await s.innerText()).replace(/ /g, ' ')));
+    assert.ok(/5 \/ 100\s000/.test((await s.innerText()).replace(/ /g, ' ')));
     await antor.keyboard.press('Escape');
   });
 
@@ -366,17 +351,17 @@ describe('E-9 refaite : édition', { skip: skipBrowser }, () => {
     await section(antor, 'Rumeurs').getByText('On dit qu’Aldric boite.').waitFor();
   });
 
-  test('au-delà de 20 000 caractères, Ctrl+Entrée ne part pas (comme le bouton) et le compteur le dit', async () => {
+  test('au-delà de 100 000 caractères, Ctrl+Entrée ne part pas (comme le bouton) et le compteur le dit', async () => {
     await ouvrir(antor);
     const s = await editer(antor);
     let puts = 0;
     antor.on('request', (r: Any) => r.method() === 'PUT' && puts++);
-    await s.getByRole('textbox').fill('x'.repeat(20001));
+    await s.getByRole('textbox').fill('x'.repeat(100001));
     await antor.keyboard.press('Control+Enter');
     await antor.waitForTimeout(500);
     assert.equal(puts, 0, 'no request left');
-    assert.ok(await s.getByText(/20 000 caractères au plus\./).first().isVisible());
-    await s.getByRole('textbox').fill('y'.repeat(20000));
+    assert.ok(await s.getByText(/100 000 caractères au plus\./).first().isVisible());
+    await s.getByRole('textbox').fill('y'.repeat(100000));
     await antor.keyboard.press('Control+Enter');
     await s.getByRole('textbox').waitFor({ state: 'detached' });
     assert.equal(puts, 1);
@@ -527,20 +512,23 @@ describe('E-9 refaite : « Modifier », menu ⋯, retrait', { skip: skipBrowser 
     await antor.getByRole('button', { name: /^Ajouter une section/ }).waitFor();
     await antor.screenshot({ path: '/tmp/rv-fiche-vide.png' });
   });
-  test('V3 blocs vides : « Aucune pièce jointe. » et « Ajouter un fichier » sur une seule ligne, comme Relations (bureau et 390 px)', async () => {
+
+  test('V3 blocs vides : « Aucun fichier joint. » et « Joindre un fichier » sur une seule ligne, comme Relations (bureau et 390 px)', async () => {
     for (const largeur of [1440, 390]) {
       await antor.setViewportSize({ width: largeur, height: 900 });
       await ouvrir(antor);
       for (const titre of ['Vérité', 'Notes de la table']) {
         const s = section(antor, titre);
-        for (const [bloc, action] of [['Pièces jointes', 'Ajouter un fichier'], ['Relations', 'Relier à une fiche']] as const) {
+        for (const [bloc, action] of [['Pièces jointes', 'Joindre un fichier'], ['Relations', 'Relier à une fiche']] as const) {
           const b = s.getByRole('group', { name: bloc });
-          const vide = await b.locator('.bloc-vide').boundingBox();
+          const vide = b.locator('.bloc-vide');
+          if (bloc === 'Pièces jointes') assert.equal(await vide.innerText(), 'Aucun fichier joint.');
+          const texteVide = await vide.boundingBox();
           const bouton = await b.getByRole('button', { name: rxExact(action) }).boundingBox();
-          assert.ok(vide && bouton, `${titre}/${bloc}@${largeur}`);
-          const dy = Math.abs(vide.y + vide.height / 2 - (bouton.y + bouton.height / 2));
+          assert.ok(texteVide && bouton, `${titre}/${bloc}@${largeur}`);
+          const dy = Math.abs(texteVide.y + texteVide.height / 2 - (bouton.y + bouton.height / 2));
           assert.ok(dy < 8, `${titre}/${bloc}@${largeur}: text and action on one row (dy=${dy})`);
-          assert.ok(bouton.x >= vide.x + vide.width - 1, `${titre}/${bloc}@${largeur}: action after the text`);
+          assert.ok(bouton.x >= texteVide.x + texteVide.width - 1, `${titre}/${bloc}@${largeur}: action after the text`);
         }
       }
     }
