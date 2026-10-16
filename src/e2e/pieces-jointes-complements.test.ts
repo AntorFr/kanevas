@@ -229,7 +229,7 @@ describe('kanevas-fichiers — compléments', () => {
     assert.equal((await antor.ctx.request.get(pj(m, p.id, '/fichier'))).status(), 200);
     await ouvrirFiche(antor.page, m);
     await choisirDansMenuSection(antor.page, 'Plan', 'Retirer la section');
-    await antor.page.getByRole('alertdialog').getByText(rx('Son contenu et sa pièce jointe seront perdus.')).waitFor();
+    await antor.page.getByRole('alertdialog').getByText(rx('Son contenu et son fichier joint seront retirés.')).waitFor();
     await confirmerRetraitSection(antor.page);
     await attendre(antor.page);
     assert.equal((await antor.ctx.request.get(pj(m, p.id, '/fichier'))).status(), 200, 'the file stays in the library');

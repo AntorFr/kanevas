@@ -330,13 +330,13 @@ describe('kanevas-fichiers — besoin B-24', () => {
     assert.equal(r.headers()['x-content-type-options'], 'nosniff');
   });
 
-  test('B-24 retirer une section portant un portrait : « Son contenu et sa pièce jointe seront perdus. », le fichier reste en médiathèque', opts, async () => {
+  test('B-24 retirer une section portant un portrait : « Son contenu et son fichier joint seront retirés. », le fichier reste en médiathèque', opts, async () => {
     const { m, antor } = await monde({ Apparence: { joueursLisent: true } });
     const piece = (await deposer(antor.ctx, m, 'Apparence', 'portrait.png', PNG)) as Any;
     await ouvrirFiche(antor.page, m);
     const app = section(antor.page, 'Apparence');
     await choisirDansMenuSection(antor.page, 'Apparence', 'Retirer la section');
-    await antor.page.getByRole('alertdialog').getByText(rx('Son contenu et sa pièce jointe seront perdus.')).waitFor();
+    await antor.page.getByRole('alertdialog').getByText(rx('Son contenu et son fichier joint seront retirés.')).waitFor();
     await confirmerRetraitSection(antor.page);
     await attendre(antor.page);
     // AD-105/AD-117: removing the section removes its references, not the files of the library.

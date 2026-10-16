@@ -165,12 +165,12 @@ test('retrait d’une section : « … et sa pièce jointe » (une), « … ses 
   await choisir(antor, 'Éphémère', png('a.png'));
   await bloc(antor, 'Éphémère').locator('img').waitFor();
   await choisirDansMenuSection(antor, 'Éphémère', 'Retirer la section');
-  await antor.getByRole('alertdialog').getByText('Son contenu et sa pièce jointe seront perdus.').waitFor();
+  await antor.getByRole('alertdialog').getByText('Son contenu et son fichier joint seront retirés.').waitFor();
   await antor.getByRole('alertdialog').getByRole('button', { name: rxExact('Annuler') }).click();
   await choisir(antor, 'Éphémère', png('b.png'), png('c.png'));
   await bloc(antor, 'Éphémère').locator('li.piece').nth(2).waitFor();
   await choisirDansMenuSection(antor, 'Éphémère', 'Retirer la section');
-  await antor.getByRole('alertdialog').getByText('Son contenu et ses 3 pièces jointes seront perdus.').waitFor();
+  await antor.getByRole('alertdialog').getByText('Son contenu et ses 3 fichiers joints seront retirés.').waitFor();
 });
 
 test('vignette qui ne se charge pas : « Image indisponible. » avec « Télécharger »', opts, async () => {
