@@ -183,4 +183,6 @@ outil `chercher` de l'assistant sans `type` = même fonction, « Introuvable. »
 - Hors tranche : remonter les enfants à la suppression d'une fiche (`kanevas-import-tenir`) ; l'arbre n'est chargé que nœud par nœud (à revoir si un lot de 500 fiches le ralentit à la recette).
 - Reste : la recette de Monsieur en bouchon (README, « Recette de l'arbre »), la fusion dans `epic/kanevas-import`. Pas de tag avant la fusion de l'epic.
 
+`epic/kanevas-outils` (cadrage proposé le 2026-10-16, doc seule, aucun code) : outils spécialisés par système de jeu — cadre commun (modules, activation et réglages système → univers, droits à deux niveaux, API `/outils/<module>/…`, sections gérées, import de catalogue) et deux outils SWN (carte de la galaxie, concepteur de vaisseaux). B-57 à B-79, P-17 à P-21, E-20 à E-22 (maquettes `e20` à `e22`), AD-121 à AD-137 ; données : `docs/donnees.md`, « Cadrage `kanevas-outils` ». Rien n'est construit ; aucune tranche ne démarre avant la livraison de `kanevas-import` et de la tranche de la doc en anglais.
+
 **Suivant :** les tranches non encore livrées.

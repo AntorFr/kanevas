@@ -72,6 +72,15 @@ bascule existe (fiche, carte et, depuis `kanevas-import`, recherche E-17).
 | **E-17 Recherche** *(kanevas-import)* | « Rechercher » de la barre ; `/` ; une étiquette touchée sur E-9 | chercher dans tous les types, titres, alias et sections lisibles ; filtrer par type et par étiquette | P-12, P-10 |
 | **E-19 Médiathèque** *(kanevas-import)* | nav Médiathèque ; « Choisir dans la médiathèque » de l'éditeur et de l'illustration (E-9) | voir les fichiers (images, documents) ouverts au compte et où ils servent ; MJ : ajouter, renommer, régler la visibilité, supprimer | P-16, P-10 |
 | **E-18 Accès par API** *(kanevas-import)* | nav Univers ▸ Accès par API (MJ) | créer, lister, révoquer les jetons d'API de l'univers ; voir les lots d'import et leurs refus | P-10, P-11 |
+| **E-20 Outils** *(kanevas-outils)* | onglet « Outils » de E-15 (système) et de E-14 (univers) | activer un outil, régler sa visibilité par rôle et ses réglages (valeur du système, de l'univers), importer un catalogue (aperçu puis confirmation), voir les dépendances, désactiver, supprimer les données ; le responsable du système | P-17, P-21 |
+| **E-21 Carte de la galaxie** *(kanevas-outils)* | E-10 (une carte d'outil) ; E-3 ; un lien partageable | explorer la grille, mesurer, calculer un trajet ; MJ : placer, promouvoir, tracer, dessiner, mode Joueur, document MJ | P-18, P-20 |
+| **E-22 Concepteur de vaisseaux** *(kanevas-outils)* | barre « Outils » ; la section gérée d'une fiche de vaisseau (E-9) ; un lien partageable | la liste des conceptions lisibles et l'atelier d'une conception : choix, budgets, alertes, enregistrer, recalculer | P-19 |
+
+Écrans **modifiés** par `kanevas-outils` : **E-9** (section gérée : bandeau « Générée par … », mise en forme
+de son composant ou de sa version texte, « Outil désactivé » ; aucun éditeur sur une section gérée),
+**E-10** (les cartes d'outil activé et visible s'ajoutent à la liste, avec leur visibilité ; « Nouvelle carte » ▸ « Carte de la galaxie » si l'outil est activé, MJ), **E-14** et **E-15** (l'onglet « Outils », et sur E-15 le responsable du système), **E-18**
+(la portée par outil d'un jeton ; les lots d'outil), **E-12** (les outils de l'assistant), la barre latérale
+(une section « Outils », ci-dessous).
 
 Écrans **modifiés** par `kanevas-import` : **E-8** (types activés, vue en arbre, sous-type sur la
 carte, filtre « Sous-type », champ « Sous-type » de la création, illustration sous double garde),
@@ -114,6 +123,16 @@ E-16 vivent hors des univers : leurs cases disent le rôle dans un univers ratta
 | E-17 *(kanevas-import)* | chercher dans toutes les fiches de l'univers, blocs MJ compris ; en **mode Joueur**, comme un joueur (ni blocs MJ, ni fiches qu'un joueur ne lit pas) ; filtres : les types activés ; les fiches des types désactivés restent des résultats sous « Tous » | chercher dans ce qu'il lit, hors blocs MJ ; filtres par type et par étiquette des seules fiches qu'il voit ; bascule de mode : absente (cachée) ; blocs MJ : hors recherche (jamais lus) ; « Alias et étiquettes… » sur E-9 : cachée | — |
 | E-19 *(kanevas-import)* | tout : ajouter, renommer, visibilité, supprimer ; « Utilisé dans » complet | les fichiers visibles des joueurs et ceux qu'il a ajoutés ; « Utilisé dans » réduit aux fiches qu'il lit ; ni ajout depuis E-19 (**caché** ; il ajoute un fichier par une section qu'il écrit, E-9), ni réglage, ni suppression (**cachés**) | — |
 | E-18 *(kanevas-import)* | créer un jeton ; voir et révoquer tous les jetons de l'univers (y compris ceux d'un autre MJ) ; voir les lots | — (**caché** : absent de la barre, « Page introuvable. » par l'adresse) | — |
+| E-20 *(kanevas-outils)* | **sur l'univers** : activer, forcer, désactiver ; visibilité par rôle ; réglages ; importer le catalogue de l'univers ; supprimer les données de l'univers. **sur le système** : lire seulement (**cachés** : « Activer », « Importer », « Supprimer les données ») sauf le **responsable**, qui agit aussi sur le système | — (**caché** : « Page introuvable. ») | — |
+| E-21 *(kanevas-outils)* | tout (placer, promouvoir, tracer, dessiner, réglages protégés) ; mode Joueur : comme un joueur ; document MJ | explorer, mesurer, trajet, lien ; seulement les systèmes, routes et zones qu'il peut lire ; aucun geste d'écriture (**cachés**) | — |
+| E-22 *(kanevas-outils)* | toutes les conceptions de l'univers ; en créer, les modifier, recalculer ; régler l'auteur de la section | les conceptions dont il lit la fiche et la section ; modifier et recalculer **celles dont il est l'auteur de la section « Caractéristiques »** ; « Nouvelle conception » **absent** (le MJ crée la fiche) | — |
+
+Ce que `kanevas-outils` ajoute : **barre latérale** — une section **« Outils »**, après « Cartes » et avant « Lore »,
+qui liste les points d'entrée des outils **activés et visibles pour le rôle** (« Concepteur de vaisseaux ») ; la
+galaxie est atteinte par « Cartes » ; un outil désactivé ou invisible n'a ni entrée ni adresse (« Page
+introuvable. »). **E-9** — tous : une section gérée se lit comme les autres, sans éditeur ; MJ et auteur :
+« Ouvrir dans le concepteur ». **E-10** — MJ : « Nouvelle carte » ▸ « Carte de la galaxie » ; Joueur : la
+carte d'outil, si elle est visible et l'outil visible pour son rôle.
 
 Ce que `kanevas-import` ajoute aux lignes existantes : **barre latérale** — tous : la section « Lore »
 ne montre que les types activés ; **E-8** — MJ : la vue en arbre, la création dans les seuls types activés,
@@ -2946,3 +2965,104 @@ l'abonnement » ; les messages d'état sont dans une région `aria-live="polite"
 - Étant donné une connexion ouverte, quand Admin recharge la page, alors le panneau montre l'état lu (« Aucun jeton posé. » ou « Jeton posé… ») sans adresse ni champ « Code » ; quand il clique « Connecter l'abonnement », alors une nouvelle adresse paraît ; et le « Valider » d'un second onglet resté sur l'ancienne connexion dit « La connexion a expiré. Recommencez. ».
 - Étant donné le panneau affiché, quand le réseau est coupé, alors « Connecter l'abonnement » (ou « Reconnecter »), « Valider » et « Annuler » sont désactivés et le bandeau s'affiche ; au retour du réseau ils se réactivent.
 - Étant donné Léa (hors du groupe), quand elle appelle une route du panneau, alors elle reçoit 404.
+
+## Détail des écrans de `kanevas-outils` (cadrage)
+
+> Cadrage proposé le 2026-10-16 (`epic/kanevas-outils`). Besoins B-57 à B-79, parcours P-17 à P-21,
+> décisions AD-121 à AD-137. Écrans structurants, avec maquette finie : **E-20** (`docs/maquettes/e20-outils.html`,
+> moment fort de P-17), **E-21** (`e21-carte-galaxie.html`, P-18), **E-22** (`e22-concepteur-vaisseaux.html`, P-19,
+> avec la section gérée de E-9). Les textes communs (chargement, erreur, connexion perdue, refus) sont ceux de
+> `kanevas-premiere-fiche`. **Format** : les deux outils se jouent au téléphone et à la tablette comme au
+> bureau (B-70) : sous 760 px, une colonne, les panneaux sous la carte, les gestes de survol deviennent un appui.
+
+### Ce qu'un outil apporte à l'interface
+
+Trois points d'entrée, selon le contrat du type d'outil (AD-122) : une **carte dynamique** vit dans la section
+Cartes (E-10) et s'ouvre sur son écran ; un **générateur** a un écran à lui (E-22) et des **sections gérées** sur
+les fiches ; une **aide de jeu** aurait sa propre entrée de barre (aucune ici). Le code d'un outil ne se charge
+qu'à l'ouverture de son écran ou quand une fiche montre l'une de ses sections (AD-133). Aucun écran n'est
+ajouté ou modifié à la main dans le routeur : un module déclare son point d'entrée.
+
+### E-20 — Outils (onglet de E-14 et de E-15)
+
+**Contenu** : une carte par outil applicable (nom, une ligne, « Système · activé/désactivé », « Univers · suit /
+forcé »), ses **dépendances**, sa **visibilité** (deux cases, MJ et Joueurs), ses **réglages** (chacun : valeur
+en vigueur, d'où elle vient, « Remplacer pour l'univers »), son **catalogue** (version, nombre d'éléments par
+nature, « Importer un catalogue… »), et en pied « Supprimer les données de l'outil… ». En tête, sur E-15, le
+**responsable** du système et « Transférer la responsabilité ».
+
+| État | Ce que voit l'utilisateur | Texte |
+|---|---|---|
+| vide | le système n'a aucun outil applicable | « Aucun outil ne s'applique à ce système de jeu. » |
+| chargement | squelettes de cartes | « Chargement des outils… » |
+| erreur | la liste ne vient pas | « Impossible de charger les outils. » + « Réessayer » |
+| hors-ligne | bandeau ; tous les gestes d'écriture désactivés | « Connexion perdue. » |
+| refus | un joueur : « Page introuvable. » ; un MJ non responsable sur le système : lecture seule, gestes **cachés** | — |
+| contenu long | 6 outils : liste défilante ; un rapport d'import de 300 lignes : tronqué à 50 refus avec « Voir tout » | « 237 autres refus… » |
+
+Critères :
+- Étant donné un outil d'essai qui dépend d'un autre outil désactivé, quand Antor, MJ responsable, tente de l'activer,
+  alors il reste désactivé et l'écran dit « <Outil> demande <autre outil> : activez-le d'abord. » (aucun outil SWN n'a de dépendance).
+- Étant donné Mira, MJ non responsable d'un univers rattaché, quand elle ouvre E-20 sur le système, alors elle voit
+  les outils et leurs valeurs et ni « Activer », ni « Importer », ni « Supprimer les données ».
+- Étant donné un fichier de catalogue où une arme n'a pas de masse, quand Antor l'importe, alors l'aperçu liste
+  « 1 refusée » avec la clé et le champ `masse`, le reste est proposé à l'application, et rien n'est écrit avant « Appliquer ».
+- Étant donné Léa, Joueuse, quand elle force l'adresse de E-20, alors elle lit « Page introuvable. ».
+
+### E-21 — Carte de la galaxie
+
+**Contenu** : un canevas hexagonal (déplacement, zoom, pincement), la légende, un panneau du système sélectionné
+(nom, taille, notes lisibles, routes, lien partageable), la mesure au survol (au toucher : appui), l'outil
+« Trajet » (départ, arrivée, routes : toutes / publiques, moteur → distance et durée), la recherche d'un système
+(parmi ceux qu'on lit). MJ : « Placer un système », « Promouvoir », « Tracer une route », « Dessiner une zone »,
+« Renommer », « Supprimer la galaxie… » (confirmation : « Les 214 systèmes, 49 routes et 6 zones de cette galaxie seront effacés. »), « Graine… », « Document MJ… » (choisir la fiche, ou en créer une de type Savoir ; l'outil y écrit la section gérée « Document MJ », MJ seul), le mode Joueur. La vue ne demande que les blocs qu'elle montre.
+
+| État | Texte |
+|---|---|
+| vide | MJ : « Aucun système défini. Placez-en un ou promouvez un système généré. » ; Joueur : « Rien à voir sur cette carte pour l'instant. » |
+| chargement | « Chargement de la carte… » (blocs qui arrivent au fil) |
+| erreur | bloc qui ne vient pas : le bloc reste vide, « Impossible de charger une partie de la carte. » + « Réessayer » |
+| hors-ligne | la vue affichée reste, bandeau « Connexion perdue. », écritures désactivées |
+| refus | carte non visible pour le rôle, ou outil invisible : « Page introuvable. » (MJ en mode Joueur sur carte cachée : l'avis de E-11) |
+| contenu long | 500 systèmes définis, 49 routes : l'étiquette des noms se replie au dézoom ; noms de 80 caractères tronqués |
+| conflit | « Ce système a changé depuis que vous l'avez ouvert. » + « Recharger » |
+
+Critères :
+- Étant donné Léa, Joueuse, quand elle cherche « Station fantôme » (un système fantôme du MJ), alors la recherche ne
+  trouve rien, sans trace d'un masquage, et aucune route ni zone n'y mène sur sa carte.
+- Étant donné Léa à 390 px de large, quand elle appuie sur « Vael », alors le panneau s'ouvre sous la carte avec
+  nom, distance et « Trajet depuis ici ».
+- Étant donné le trajet « Port-Sel » → « Vael » de 7 cases au moteur 2, quand Léa le calcule, alors elle lit « 4,5 jours ».
+- Étant donné Antor, MJ, qui passe en mode Joueur, alors la route privée et le territoire secret disparaissent de la
+  carte, du trajet et de la recherche.
+- Étant donné deux visites de la même case anonyme, alors le même système est généré ; changer la graine demande la
+  confirmation qui dit que tous les systèmes non définis changent de place.
+
+### E-22 — Concepteur de vaisseaux
+
+**Contenu** : la **liste** des conceptions lisibles (nom, coque, classe, prix, alertes) et l'**atelier** d'une conception : à
+gauche les choix par nature (coque, moteur, aménagements, défenses, armes, modifications) pris dans le catalogue
+du système complété par celui de l'univers (un élément local est marqué « Univers »), à droite les résultats
+(prix, PV, CA, puissance et masse libres, chantier, entretien) et les **alertes** (« Bloquante » / « À surveiller »),
+« Enregistrer », « Recalculer » quand la conception est « calculée avec d'anciens réglages » ; MJ : « Générer les fiches de règles… » (crée les fiches de règles absentes, une par nature, et celle des exemples ; met à jour les autres, sections gérées). Sur E-9, la section
+gérée montre son bandeau et un lien « Ouvrir dans le concepteur ».
+
+| État | Texte |
+|---|---|
+| vide | liste : « Aucune conception. » (MJ : « Créez une fiche de vaisseau, puis ouvrez-la ici. ») ; catalogue sans éléments : « Le catalogue du système est vide. Importez-en un (Outils). » |
+| chargement | « Chargement du concepteur… » |
+| erreur | « Impossible de calculer ce vaisseau. » + « Réessayer » (jamais un résultat partiel) |
+| hors-ligne | choix verrouillés, « Connexion perdue. » |
+| refus | conception illisible : « Page introuvable. » ; non-auteur : lecture seule, « Modifier » absent |
+| contenu long | 40 aménagements : liste filtrable par nature ; une conception à 30 alertes : bloquantes d'abord |
+| conflit | « Cette conception a changé depuis que vous l'avez ouverte. » + « Recharger » |
+| périmé | « Calculée avec d'anciens réglages. » + « Recalculer » (rien n'est recalculé sans le geste) |
+
+Critères :
+- Étant donné Léa, autrice de « Caractéristiques » du « Vent d'Orak », quand elle ajoute une arme qui dépasse la puissance,
+  alors une alerte bloquante « Puissance insuffisante » s'affiche et « Enregistrer » est refusé avec le motif.
+- Étant donné Léa sur la fiche E-9, alors « Caractéristiques » montre « Générée par le concepteur de vaisseaux » et aucun éditeur.
+- Étant donné Antor qui change la portée de saut d'un réglage d'univers, alors la conception de Léa montre « Calculée avec d'anciens
+  réglages » et son texte n'a pas changé tant que personne n'a recalculé.
+- Étant donné le concepteur désactivé, alors la fiche montre « Caractéristiques » en version texte avec « Outil désactivé ».
+- Étant donné Teo, sans rôle dans l'univers, quand il force l'adresse d'une conception, alors « Page introuvable. ».

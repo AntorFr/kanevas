@@ -512,3 +512,95 @@ Retour arrière : une image d'avant la recréation de `fiches` relit la table (m
 les types ajoutés lui seraient inconnus — une fiche d'un type nouveau ne s'afficherait pas dans
 l'ancienne image, et les illustrations et pièces jointes, passées dans la médiathèque (AD-111), n'y
 paraîtraient plus. Restaurer la sauvegarde du volume d'avant la mise à jour reste le retour complet.
+
+## Cadrage `kanevas-outils` : le modèle
+
+> Proposé le 2026-10-16 (`epic/kanevas-outils`). Décisions : AD-121 à AD-137. Le **cœur** ajoute trois
+> entités génériques — réglage d'outil (système, univers), portée de jeton et le rattachement d'une section à son outil — et
+> des attributs ; **chaque module** possède ses tables, préfixées (`swn_*`), jamais lues hors de ses fonctions.
+> Les tranches ajouteront des attributs, jamais une entité du cœur. Numéros de migration : pris à la fusion
+> (AD-51) ; les noms ci-dessous sont provisoires.
+
+### Conceptuel
+
+```mermaid
+erDiagram
+  SYSTEME ||--o{ OUTIL_SYSTEME : "active / règle"
+  UNIVERS ||--o{ OUTIL_UNIVERS : "force / règle"
+  SYSTEME }o--|| COMPTE : "responsable"
+  SECTION }o--o| OUTIL_SECTION : "gérée par"
+  JETON }o--o{ OUTIL : "portée"
+  SYSTEME ||--o{ CATALOGUE_SYSTEME : "possède"
+  UNIVERS ||--o{ CATALOGUE_UNIVERS : "complète / remplace"
+  UNIVERS ||--o{ GALAXIE : "a (supprimée par un geste à part)"
+  GALAXIE ||--o{ SYSTEME_PLACE : "place"
+  SYSTEME_PLACE ||--o{ ROUTE : "relie"
+  GALAXIE ||--o{ ZONE : "dessine"
+  GALAXIE }o--o| FICHE : "document MJ"
+  FICHE ||--o| CONCEPTION : "porte"
+  CONCEPTION }o--|| CATALOGUE_SYSTEME : "calculée avec"
+```
+
+Invariants, en phrases :
+1. Un système de jeu a **au plus un responsable**, un compte. Il compte comme responsable tant qu'il est MJ d'un univers rattaché, ou tant qu'aucun univers n'est rattaché (le créateur prépare son système avant de le rattacher) ; sinon — nul, ou plus MJ d'un univers rattaché (état calculé à la lecture, rien n'est écrit) — tout MJ d'un univers rattaché agit comme responsable, la règle d'aujourd'hui, jusqu'à ce qu'un responsable soit nommé (les systèmes d'avant l'epic n'en ont pas : `systemes_jeu` ne garde pas son créateur).
+2. Un outil est identifié par `(module, outil)` dans une **liste du code** ; un réglage d'outil n'existe que pour
+   un outil de cette liste, au plus un par (système, outil) et par (univers, outil).
+3. L'absence de ligne : le système a l'outil **désactivé** (défaut déclaré par l'outil) ; l'univers **suit** son système.
+4. Une valeur de réglage respecte la forme **déclarée par l'outil** (validée par le service ; la base ne peut pas la porter).
+5. Une donnée d'outil a une **clé** (unique par niveau et par nature), un **niveau** (système ou univers) et une **version** ;
+   une donnée d'univers de même clé **remplace** celle du système pour cet univers seul.
+6. Une section est gérée par au plus un outil ; seule la fonction d'écriture de cet outil change son contenu (AD-127) ; elle porte
+   la version de la source qui l'a produite et toujours sa version texte.
+7. Une conception est rattachée à **une fiche** du même univers et à **une section gérée** de cette fiche.
+8. Un système placé, une route, une zone, une conception appartiennent à **un univers** ; supprimer l'univers les supprime.
+9. Une route relie deux systèmes **placés** du même univers ; sa longueur sur la grille est celle des coordonnées.
+10. Un jeton d'outil porte une **portée** : l'ensemble des outils qu'il peut écrire ; sans portée, il n'écrit aucun outil.
+11. Désactiver ne supprime aucune ligne ; seul le geste de suppression le fait, dans une transaction.
+
+### Logique
+
+**Cœur (tables génériques)** :
+
+| Table | Colonnes (hors clés) | Contraintes |
+|---|---|---|
+| `outils_systeme` | `systeme_id`, `outil` (`module/outil`, ou `module` seul pour les réglages communs aux outils d'un module, qui n'a ni activation ni catalogue), `active`, `visibilite_mj`, `visibilite_joueur` (booléens), `reglages` (JSON des valeurs de base), `version_reglages` (entier, +1 à chaque écriture des réglages), `version_catalogue` (texte, posé par l'import ; nul : aucun catalogue) | clé primaire `(systeme_id, outil)` (2) ; → `systemes_jeu` ; `outil` validé par le service contre le registre (2) ; une valeur hors forme est refusée par le service (4) |
+| `outils_univers` | `univers_id`, `outil`, `active` (nul : suit), `visibilite_mj`, `visibilite_joueur` (nuls : suivent), `reglages` (JSON des seules valeurs remplacées), `version_reglages`, `version_catalogue` (comme ci-dessus, pour le catalogue de l'univers) | clé primaire `(univers_id, outil)` ; → `univers` ; nul = suit (3) |
+| `systemes_jeu` | colonne ajoutée `responsable_id` | → `comptes` ON DELETE SET NULL ; nul : pas de responsable (1) ; renseignée à la création d'un système (son créateur) ; MJ d'un univers rattaché : service (1) |
+| `sections` | colonnes ajoutées `gere_par` (`module/outil/type`, nul : libre), `source_version` (texte) | (6) la fonction de service refuse une écriture d'un autre appelant ; `contenu` est toujours la version texte |
+| `jetons_api` | table fille `jetons_outils` `(jeton_id, outil)` | → `jetons_api` ON DELETE CASCADE ; (10) ; un jeton est celui d'un univers : il écrit le catalogue **du système** seulement si son compte en est le responsable (ou, sans responsable, un MJ d'un univers rattaché) **à chaque usage**, comme le rôle MJ d'un jeton d'import |
+| `lots_import` | colonne ajoutée `outil` (nul : lot de fiches) | l'import d'un outil a son lot, compteurs par nature d'élément du module |
+
+**Module SWN (tables du module, `swn_*`)**, rangées en tables typées parce que le calcul lit des champs précis (AD-123) :
+
+| Table | Colonnes (hors clés) | Contraintes |
+|---|---|---|
+| `swn_catalogue_<nature>` (une par nature : `coques`, `moteurs`, `amenagements`, `defenses`, `armes`, `modifications`) | `niveau` (`systeme`/`univers`), `systeme_id` ou `univers_id`, `cle`, `nom`, `nom_en`, `description`, `source`, champs de calcul de la nature, `version`, `version_catalogue` | `UNIQUE (niveau, proprietaire, cle)` (5) ; `CHECK` sur les valeurs numériques ; l'univers remplace par la même `cle` |
+| `swn_galaxies` | `univers_id`, `titre`, `visible` (booléen, défaut faux), `graine` (texte, réglage protégé), `fiche_id`, `section_id` (nuls : pas de document MJ), `version` | → `univers`, → `fiches`, → `sections` ON DELETE SET NULL ; E-10 liste ces cartes avec celles de `cartes` (AD-122) ; `CHECK (fiche_id IS NULL) = (section_id IS NULL)` |
+| `swn_systemes` | `galaxie_id`, `univers_id`, `cle`, `nom`, `q`, `r` (coordonnées hexagonales), `taille`, `couleur`, `notes`, `secret` (booléen), `promu` (booléen), `version` | `UNIQUE (galaxie_id, q, r)` ; `UNIQUE (galaxie_id, cle)` ; droits ligne à ligne |
+| `swn_routes` | `galaxie_id`, `univers_id`, `depuis_id`, `vers_id`, `publique` (booléen), `longueur`, `version` | → `swn_systemes` ON DELETE CASCADE ; `CHECK (depuis_id <> vers_id)` ; `UNIQUE (depuis_id, vers_id)` (9) |
+| `swn_zones` | `galaxie_id`, `univers_id`, `cle`, `nom`, `contour` (JSON), `couleur`, `secret`, `version` | `UNIQUE (galaxie_id, cle)` |
+| `swn_fiches_generees` | `univers_id`, `cle` (`regles-armes`, `exemples`…), `fiche_id`, `section_id`, `source_version` | `UNIQUE (univers_id, cle)` ; → `fiches`, `sections` ON DELETE CASCADE (supprimer la fiche l'oublie ; le geste « Générer » la recrée) ; fiches de règles et d'exemples de B-77 |
+| `swn_conceptions` | `univers_id`, `fiche_id`, `section_id`, `coque_cle`, `choix` (JSON : lignes de choix), `version_catalogue`, `version_reglages` (texte : les `version_reglages` du système et de l'univers pour la ligne `module` et pour la ligne `module/outil`, au calcul ; périmée si l'une diffère de la courante), `version_catalogue` (texte : celle du système puis celle de l'univers), `resultat` (JSON : valeurs calculées), `version` | → `fiches` ON DELETE CASCADE ; `UNIQUE (fiche_id)` (7) ; → `sections` |
+
+**Ce que la base ne dit pas, et que le service porte** : le responsable est un MJ d'un univers rattaché (croise deux tables) ;
+la forme des réglages et des catalogues (déclarée par le module) ; la clé de remplacement d'un catalogue d'univers
+(le même `cle` que celui du système) ; la **cohérence d'une route avec la grille** (calculée du coup) ; les droits de chaque ligne.
+**Droits, une phrase chacun** : un **catalogue** (système et univers) se lit par tout membre pour qui l'outil est visible — c'est une règle de jeu, sans secret ; un outil se lit si activé, visible pour le rôle et si le compte y a l'usage ; un réglage se lit par les membres, s'écrit par le
+responsable (base du système) ou par tout MJ de l'univers (surcharge d'univers) ; un système placé, une route ou une zone secrète se lit par le
+MJ seul, les autres par qui lit la carte ; une conception se lit par qui lit sa fiche, s'écrit par l'auteur de la section et le MJ.
+
+### Physique
+
+Même base, mêmes réglages (WAL, `foreign_keys`, une connexion d'écriture, AD-5). Index : `swn_systemes (univers_id, q, r)` — le chargement d'un bloc de 5×5 ;
+`swn_routes (depuis_id)` et `(vers_id)` — les routes d'un système et le plus court chemin ; `swn_catalogue_* (systeme_id, cle)` et `(univers_id, cle)` — la
+résolution « univers puis système » ; `swn_conceptions (fiche_id)` unique — E-9 et E-22. Le **cache des blocs** générés est en mémoire (perdu
+au redémarrage sans dommage, AD-132). Aucune donnée générée n'est stockée.
+**Multi-tenant** : inchangé — tout est dans un univers ; un catalogue de niveau système porte `systeme_id` (un système reste hors des univers).
+
+### Plan de migration
+
+1. **Élargir** : `outils_systeme`, `outils_univers`, `jetons_outils`, colonnes ajoutées à `sections`, `lots_import` ; `systemes_jeu.responsable_id` nullable.
+2. **Migrer** : `responsable_id` reste nul pour les systèmes existants (pas de créateur stocké) ; les tables du module arrivent avec leurs migrations de module (même exécuteur, AD-14, numérotation au
+   fusion, AD-51 ; un module = des migrations qui ne créent que ses tables préfixées).
+3. **Resserrer** : rien — `responsable_id` reste nullable (1).
+Retour arrière : une image d'avant ignore les nouvelles tables ; les sections gérées gardent leur texte (version texte) et se lisent normalement.

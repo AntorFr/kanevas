@@ -269,6 +269,122 @@ Forme de la skill `exigences` ; chaque besoin cite les parcours qui le réalisen
 - **B-27** — L'assistant d'un MJ peut aussi créer une campagne ou un scénario, proposer une mise à
   jour du monde et générer une image ; celui d'un joueur ne le peut pas. *(P-3, P-5)*
 
+### Outils spécialisés (`kanevas-outils`)
+
+> Epic `kanevas-outils` (cadrage proposé le 2026-10-16). Un **outil** est du code, des règles, des
+> données et un point d'entrée dans l'interface, propre à un système de jeu (AD-121). Les deux
+> premiers sont ceux de Stars Without Number révisé (« SWN ») : la **carte de la galaxie** et le
+> **concepteur de vaisseaux**. Les décisions de Monsieur (discussion de l'epic, 2026-10-15 et 16)
+> sont reprises telles quelles ; le cadrage les met en forme.
+
+**Le cadre commun** (indépendant de SWN) :
+- **B-57** — Un système de jeu a un **responsable** : son créateur par défaut, rôle transmissible à un
+  autre MJ d'un univers rattaché (un système créé avant cette epic n'en a pas : tout MJ d'un univers
+  rattaché agit comme responsable, la règle d'aujourd'hui, jusqu'à ce qu'on en nomme un). Lui seul, au niveau du système, active ou désactive un outil, importe
+  ou modifie le catalogue du système, fixe les réglages de base et supprime des données du système ;
+  tout autre MJ d'un univers rattaché lit tout cela, sans le modifier. Au niveau de son univers, tout MJ
+  garde la liberté complète (B-58, B-60, B-62). L'admin d'instance n'intervient pas (pas d'accès au
+  contenu). *(P-17)*
+- **B-58** — Un onglet **« Outils »** (E-20) existe à côté de « Types de fiche » sur la page du système
+  (E-15) et sur les paramètres de l'univers (E-14). Il liste les outils qui s'appliquent au système
+  (un système de jeu précis, ou tous) ; le système active ou non chacun, l'univers suit le système ou
+  force « Activé » ou « Désactivé ». Un outil déclare ses dépendances : l'écran refuse d'activer l'un
+  sans l'autre et dit pourquoi (aucun outil de cette epic n'en déclare ; le mécanisme se joue avec le
+  module d'essai des tests). *(P-17, P-21)*
+- **B-59** — Chaque outil a une **visibilité par rôle** (MJ, joueur), dont il déclare le défaut et que
+  E-20 règle, au système puis à l'univers. Les joueurs ne voient que les points d'entrée des outils
+  activés **et** visibles pour eux, et ce que leurs droits ouvrent ; un outil qu'un compte ne peut pas
+  utiliser est **introuvable** pour lui (adresse inconnue, absent de la barre, de la recherche et de
+  l'assistant). Chaque outil déclare en plus ses **usages** (consulter, concevoir, proposer… : qui peut
+  créer, qui peut seulement lire), qu'il applique lui-même, jusqu'à la ligne de données. *(P-17, P-18)*
+- **B-60** — Chaque outil déclare ses **réglages** et leur forme ; E-20 les affiche sans écran propre à
+  l'outil. Le système fixe la valeur de base, l'univers la remplace (c'est la place des règles maison :
+  portée de saut d'Éneria, pas de charges de carburant). Un réglage trop riche pour un formulaire reste
+  dans l'outil. Un réglage **protégé** (la graine d'une galaxie, réglée sur E-21) demande une confirmation qui dit ce qu'il
+  déplace. *(P-17)*
+- **B-61** — Le responsable importe un **catalogue** (un fichier JSON, une section par nature
+  d'élément) depuis E-20 : Kanevas vérifie le fichier, montre un **aperçu** (ajouté, modifié, refusé,
+  chaque refus avec son champ), puis applique sur confirmation. Chaque élément a une **clé** : réimporter
+  met à jour sans doublon ; un élément retiré du fichier n'est **pas** supprimé en silence ; le catalogue
+  porte une version. Un MJ le fait de même pour le catalogue de son univers. *(P-17)*
+- **B-62** — Les données d'un outil ont **deux niveaux** : celui du système (partagé par ses univers :
+  coques, armes, modifications SWN) et celui de l'univers (une campagne : coque personnalisée, cristaux
+  d'Orak'Ziel, toute la carte d'Éneria). Un univers voit les données de son système plus les siennes ; une
+  donnée d'univers ajoute un élément ou en remplace un par la même clé. *(P-17, P-19)*
+- **B-63** — **Désactiver** un outil garde ses données et les cache ; **supprimer** des données est un
+  geste à part, explicite, réservé, dont la confirmation dit ce qui sera effacé ; supprimer celles du
+  système dit quels univers, éléments locaux et vaisseaux s'en servent encore. Désactivé, un outil laisse
+  ses sections lisibles en texte, avec un bandeau « outil désactivé » ; supprimer un univers efface les
+  données de ses outils. *(P-21)*
+- **B-64** — Une écriture sur une donnée d'outil modifiable (conception, système placé, route, zone…)
+  partie d'une version périmée est **refusée** avec la même réponse qu'une section, et l'écran le dit
+  avec de quoi recharger. Pas d'édition à plusieurs en direct. *(P-18, P-19)*
+- **B-65** — Un jeton d'API a une **portée par outil** ; l'API d'import accepte les données d'un outil
+  (catalogue, systèmes placés, routes, zones, conceptions) : une clé par élément, rejeu sans doublon,
+  rapport de lot, forme vérifiée par le module (ce qui contrôle aussi la conversion). *(P-20)*
+- **B-66** — Une **section gérée par un outil** n'est écrite que par lui (l'éditeur et l'API la refusent
+  à tout autre) ; tout le reste de Kanevas la lit normalement. Elle porte la version de la source qui l'a
+  produite, un bandeau « Générée par <outil> » avec un lien vers l'outil, et une **version texte**
+  (Markdown) pour la recherche, l'assistant et l'affichage outil désactivé. Une même fiche mêle sections
+  gérées et libres. L'outil écrit **au nom du compte**, après avoir vérifié son usage et son rôle
+  d'auteur de la section. *(P-19)*
+- **B-67** — Un réglage ou un catalogue qui change **ne réécrit rien en silence** : un vaisseau signale
+  « calculé avec d'anciens réglages » et propose de recalculer ; une section gérée se régénère d'elle-même
+  ou sur proposition, selon ce que l'outil déclare. *(P-19)*
+- **B-68** — Un **lien partageable** mène à ce qui est stocké (un système de la carte, la fiche d'un
+  vaisseau) et se lit selon les droits de qui l'ouvre ; aucun contenu n'est encodé dans l'adresse. *(P-18, P-19)*
+- **B-69** — Chaque outil peut exposer ses **capacités à l'assistant** (calculer un trajet, calculer un
+  vaisseau) : il les reçoit quand l'outil est activé et visible pour le rôle du compte, avec les mêmes
+  droits que lui. *(P-18, P-19)*
+- **B-70** — Chaque outil est utilisable au **téléphone et à la tablette** dès sa première version
+  (critère de recette de chaque outil) ; son code ne se charge qu'à son usage, et jamais pour un compte
+  sans accès. *(P-18, P-19)*
+
+**La carte de la galaxie (SWN)** :
+- **B-71** — La carte de la galaxie est une carte de la section Cartes (E-10 la liste avec les cartes illustrées et les graphes, puis E-21 ; elle a sa propre visibilité « Visible des joueurs » ; un MJ la crée, la renomme et la supprime, la suppression étant un geste à part avec confirmation) : une grille
+  hexagonale infinie, avec des systèmes définis, des routes, des zones et territoires. Les systèmes non
+  définis ne sont pas stockés : ils se génèrent par blocs de 5×5 hexagones à partir des coordonnées et
+  de la graine de la galaxie, **côté serveur**, toujours identiques au même emplacement. La vue ne reçoit que ce
+  qu'elle demande et que les droits autorisent. *(P-18)*
+- **B-72** — Un compte mesure une distance au survol et calcule un **trajet** (plus court chemin par
+  toutes les routes ou par les seules routes publiques) avec sa durée selon le **moteur qu'il choisit** dans l'outil et la
+  portée de saut réglée ; une route est exacte sur la grille. *(P-18)*
+- **B-73** — Le MJ **place** un système, **promeut** un système anonyme (nom, notes, taille, couleur : il
+  garde son emplacement et devient une donnée de l'univers avec ses droits), **trace** une route, **dessine**
+  une zone ; un système fantôme, une route privée, un territoire secret sont absents pour un joueur et pour
+  le MJ en mode Joueur, y compris de la recherche, des trajets et de la densité des systèmes générés. *(P-18)*
+- **B-74** — Le **document MJ** dérivé de la carte (la liste des systèmes et routes à lire en préparation)
+  est une section gérée par l'outil, sur une fiche que le MJ choisit (ou que l'outil crée, de type Savoir) depuis E-21, MJ seul. *(P-18)*
+
+**Le concepteur de vaisseaux (SWN)** :
+- **B-75** — Le concepteur calcule un vaisseau à partir des choix de construction (coque, moteur,
+  aménagements, défenses, armes, modifications) pris dans le catalogue du système complété par celui de
+  l'univers : budgets de puissance et de masse, multiplicateurs par classe, munitions, prix, points de
+  vie, classe d'armure, durée et coût de chantier, entretien, et des **alertes à deux niveaux**
+  (bloquante, à surveiller). Ce que l'outil calcule n'est modifiable à la main nulle part ailleurs. *(P-19)*
+- **B-76** — Une conception est rattachée à une **fiche** de vaisseau : sa section « Caractéristiques »
+  est gérée par le concepteur (B-66), l'histoire et les notes MJ restent libres ; les choix de
+  construction sont des données de l'outil, avec la version du catalogue et des réglages qui les ont
+  calculés. Le MJ crée la fiche ; le concepteur de la section est l'**auteur** de la section (un joueur à
+  qui le MJ l'a confiée) ou un MJ. *(P-19)*
+- **B-77** — Les **fiches de règles** (une par nature d'élément) et la fiche des **exemples** du concepteur sont
+  des sections gérées, générées depuis les données du catalogue par un geste du MJ (« Générer les fiches de règles… », E-22) qui crée les fiches absentes et met à jour les
+  autres, régénérées ensuite sur proposition quand le catalogue change, en lecture seule ailleurs ; ce que
+  le catalogue ne contient pas n'y est pas. Les exemples sont une nature du catalogue (importés avec lui). *(P-19)*
+
+**La reprise et l'exactitude** :
+- **B-78** — L'exactitude se prouve par des **cas de référence** : les 11 vaisseaux d'exemple (prix, PV,
+  CA, puissance et masse libres, chantier, entretien, alertes) et les corrections nommées face au livre
+  (construction du livre : 949 000 cr et 38 jours, pas 954 000 et 39 ; cuirassé constructible : un seul
+  laser, une seule soute) ; les 49 routes exactes, la stabilité des systèmes générés, des durées
+  calculées à la main (7 cases au moteur 2 = 4,5 jours). Le dépôt public joue les mêmes tests sur son
+  jeu d'essai **inventé**, en CI ; les valeurs attendues réelles viennent des outils actuels de Monsieur, calculées une
+  fois et figées côté privé, jouées dans les pods. *(P-20, P-18, P-19)*
+- **B-79** — Les données actuelles d'Éneria (carte, catalogues, vaisseaux) sont converties dans le
+  format des modules par un script du dépôt privé `AntorFr/eneria` (rejouable), et importées par l'API
+  (B-65) ; les outils actuels restent utilisables jusqu'au basculement. Rien de ces données — catalogues
+  SWN, fiches de règles, valeurs attendues calculées dessus — n'entre dans le dépôt public. *(P-20)*
+
 ### Transverse
 - **B-28** — Toute page demande une connexion ; rien du contenu n'est servi sans compte, et
   `/healthz` ne dit que le nom et la version. *(P-1)*
@@ -549,8 +665,94 @@ dit exactement où les joueurs le perdent.
 « « regles.pdf » n'est pas une image. » ; un joueur force l'adresse d'un fichier réservé au MJ — « Page
 introuvable. ».
 
+### P-17 — Activer et régler les outils d'un système (Antor, MJ responsable du système « SWN », puis de l'univers « Éneria »)
+*Antor a créé le système « Stars Without Number révisé » ; il veut la carte et le concepteur pour
+Éneria, avec ses règles maison.*
+1. Page du système (**E-15**), onglet « Outils » (**E-20**) : la carte de la galaxie et le concepteur
+   de vaisseaux sont listés, « Désactivé ». Il active les deux. Visibilité : le concepteur « MJ et
+   joueurs », la carte « MJ et joueurs ».
+2. Il fixe les réglages de base du système (portée de saut : 1 hexagone), puis importe un **catalogue** : « Importer un catalogue », fichier JSON ; l'aperçu dit « 12 coques ajoutées,
+   0 modifiée, 1 refusée : arme « Laser lourd », champ `masse` : nombre attendu » ; il confirme.
+3. Paramètres de « Éneria » (**E-14**), onglet « Outils » : les deux outils suivent le système ; il force le
+   concepteur à « Activé », règle « Charges de carburant » à « Non » (règle maison) et ajoute au catalogue
+   de l'univers les cristaux d'Orak'Ziel (un élément nouveau) en important un fichier.
+4. Sur la galaxie (E-21), il change la graine : la confirmation dit « Tous les systèmes non définis changent de
+   place ; les systèmes définis et promus ne bougent pas. ».
+*Moment fort* : l'onglet « Outils » montre pour chaque réglage « Système · 1 » puis « Univers · 2 » : d'où
+vient la valeur est lisible.
+*Échec* : il active un outil qui dépend d'un autre désactivé — « <Outil> demande <autre outil> : activez-le
+d'abord. » (aucun outil SWN n'a de dépendance : le texte se joue avec le module d'essai) ; Mira, MJ d'un autre univers du système,
+voit les outils et leurs valeurs mais ni « Activer » ni « Importer » au niveau du système (cachés, lecture
+seule) ; un fichier de catalogue illisible — « Ce fichier n'est pas un catalogue valide. » ; connexion
+perdue pendant l'application — rien n'est appliqué à moitié.
+
+### P-18 — Explorer la galaxie, puis la tenir (Léa, Joueuse, au téléphone ; Antor, MJ, au bureau)
+*Mercredi soir, Léa prépare le prochain saut de son vaisseau ; dimanche, Antor ajoute un système avant la
+séance.*
+1. Léa : **Cartes** (**E-10**), « Galaxie d'Éneria » ▸ **E-21**. La carte s'ouvre sur les systèmes qu'elle
+   peut lire (tous ceux qui ne sont pas secrets) ; elle glisse, pince, survole (au toucher : appui) un système : nom, et sa distance au système qu'elle a
+   choisi comme départ.
+2. Elle choisit départ et arrivée : « Port-Sel » → « Vael », et le moteur (2). Le trajet par les routes publiques
+   s'affiche avec sa durée (« 7 cases · 4,5 jours »).
+3. Elle copie le lien de « Vael » (adresse stable) ; l'assistant, sur demande, calcule le même trajet.
+4. Antor (E-21, mode MJ) : il **place** un système dans un hexagone anonyme (le promeut : nom, notes, taille,
+   couleur), **trace** une route vers « Vael » (longueur exacte), **dessine** un territoire marqué secret, puis
+   passe en **mode Joueur** : le système fantôme, la route privée et le territoire n'existent plus.
+5. « Document MJ… » : il choisit la fiche « Galaxie — notes MJ » (ou en crée une) ; l'outil y écrit la section gérée « Document MJ », visible du MJ seul, et la met à jour à chaque demande.
+*Moment fort* : le même trajet, vu par Léa puis par Antor, ne passe pas par la même route : celle de la
+contrebande n'existe pas pour elle.
+*Échec* : Léa cherche « Station fantôme » — aucun résultat, jamais « masqué » ; Antor enregistre un système depuis une
+version périmée (modifié entre-temps par l'autre MJ) — « Ce système a changé depuis que vous l'avez ouvert. »
+et « Recharger » ; connexion perdue — la carte garde la vue affichée, les gestes d'écriture sont désactivés ;
+la densité des systèmes générés ne change jamais selon un territoire qu'elle ne voit pas.
+
+### P-19 — Concevoir un vaisseau (Antor, MJ ; Léa, Joueuse, autrice de la section)
+*Léa veut le « Vent d'Orak » ; Antor crée sa fiche et lui confie la conception.*
+1. Antor crée la fiche **Vaisseau** « Vent d'Orak » (E-8/E-9) : sections libres « Histoire » et « Notes MJ » ;
+   dans **E-22**, « Nouvelle conception » sur cette fiche, coque choisie ; la section « Caractéristiques »
+   est créée, gérée par le concepteur, et il en fait **Léa** l'autrice.
+2. Léa ouvre le **concepteur** (E-22) depuis la fiche ou la barre « Outils » : elle choisit un moteur, quatre
+   aménagements, deux armes ; la puissance et la masse libres, le prix, les PV, la CA se recalculent à chaque choix ;
+   une alerte bloquante apparaît (« Puissance insuffisante : −2 »), puis disparaît.
+3. Elle enregistre : la fiche (**E-9**) montre « Caractéristiques » sous le bandeau « Générée par le concepteur de
+   vaisseaux » avec le lien vers l'outil ; Léa ne peut pas retoucher le texte à la main.
+4. Plus tard, Antor change la portée de saut ou le catalogue de l'univers : E-22 et E-9 signalent « Calculé avec
+   d'anciens réglages » et proposent « Recalculer » ; Léa ne perd rien tant qu'elle ne confirme pas.
+5. Les fiches de règles (« Moteurs », « Défenses ») et les 11 exemples sont des sections gérées, lisibles et non
+   modifiables ; Léa partage le lien du vaisseau à un autre joueur, qui le lit selon ses droits.
+*Moment fort* : les budgets se recalculent sous les yeux, et la section de la fiche reste cohérente avec ce qui
+est calculé.
+*Échec* : le concepteur est désactivé par Antor — la fiche montre « Caractéristiques » en texte avec « Outil
+désactivé », sans modification ; Léa ouvre la conception de Roxane, qu'elle ne peut pas lire — « Page introuvable. » ;
+deux écritures concurrentes — la seconde refusée avec « Recharger » ; le calcul d'une conception invalide —
+alertes bloquantes, « Enregistrer » refuse et dit pourquoi ; sur un téléphone, le catalogue se parcourt en une colonne.
+
+### P-20 — Reprendre les outils actuels d'Éneria (Monsieur, un samedi, Mac et dépôt privé)
+*Les fichiers actuels (carte, vaisseaux) restent utilisables ; Monsieur veut basculer.*
+1. Dans `AntorFr/eneria` (privé), un script convertit les fichiers dans le format des modules (dossier
+   `_outils/kanevas/`) ; le résultat converti et les valeurs de référence sont versionnés à côté.
+2. Avec un jeton d'API à la portée « galaxie » puis « vaisseaux » (**E-18**), il pousse les lots ; **E-18**
+   montre créés, mis à jour, refusés, chaque refus avec son champ.
+3. Il rejoue : aucun doublon. Les tests sur données réelles (49 routes, les 11 vaisseaux) se jouent **dans les
+   pods**, qui lisent `eneria` ; la CI de `kanevas` reste synthétique (décision de Monsieur, 2026-10-16).
+*Échec* : un élément mal formé — refusé avec son champ, le reste passe ; un jeton sans la portée de l'outil —
+refus (401/403 selon l'API d'import) et rien d'écrit.
+
+### P-21 — Retirer un outil (Antor, MJ, au bureau)
+1. **E-20** de « Éneria » : il désactive le concepteur. Les fiches de vaisseaux montrent « Caractéristiques » en
+   texte avec « Outil désactivé » ; l'entrée de la barre et les adresses de l'outil disparaissent pour tous.
+2. Plus tard il le réactive : tout est là. Ou « Supprimer les données de l'outil… » : la boîte dit « 14
+   conceptions, 3 éléments locaux de catalogue seront effacés » ; au niveau du système, elle ajoute les univers
+   qui s'en servent encore.
+*Échec* : un MJ qui n'est pas responsable du système ne voit pas la suppression des données du système.
+
 ## Hors périmètre
 
+- **Outils de `kanevas-outils`** *(décisions de Monsieur, 2026-10-15 et 16)* : le **gestionnaire de tours de faction** (epic `kanevas-factions`, avec
+  la superposition des factions par tour sur la carte), le **journal et les dés communs** (epic suivante), l'**impression** (fonction du cœur, plus tard),
+  l'**export ou l'import JSON d'une conception** par l'utilisateur, le **podcast**, la **carte hors connexion**, un **chargement à chaud** de code tiers, un
+  **moteur générique** d'outils, et le **lien avec la campagne** (chronologie, partie publique) reporté aux tours de faction. Un joueur ne crée pas de fiche
+  (règle existante) : le MJ crée la fiche de vaisseau, le joueur conçoit en en étant l'auteur de la section.
 - **Jeu en direct** : pas d'initiative, de combat animé, de brouillard de guerre ; la table reste
   physique.
 - **Caractéristiques structurées** (fiche de combat, statistiques) : une pièce jointe en V1 ; des
@@ -598,3 +800,15 @@ cartes hors de l'API, jeton de l'assistant inclus), et après AD-111 (tous les f
 | Chaque écran a ses données | E-17 : fiches, alias, étiquettes, sous-type, index (titre, alias, sous-type, `contenu_public`) · E-18 : jetons d'API, lots d'import · E-14 / E-15 : réglages de type · E-9 : liens, parent, sous-type, alias, étiquettes, clé d'origine, références de fichier (texte, jointes), illustration (un fichier image) · E-8 : sous-type, illustration · E-19 : fichiers (images et documents), références de fichier, illustrations · E-13 : `cree_le` (date d'origine) · E-5 : un fichier du volume, pas une entité (B-51) — **tient**. |
 | Chaque entité sert un parcours | lien P-12, P-14 · alias et étiquette P-12, P-14 · réglage de type P-13 · jeton d'API P-11 · lot d'import P-10 · fichier et référence de fichier P-16, P-12, P-10, P-7 (le joueur qui dépose un portrait passe par le premier chemin d'ajout) — **tient**. |
 | Trous comblés par un choix écrit | l'import n'a pas d'écran de déclenchement (le script) : décision de Monsieur ; « vider un univers d'essai » remplacé par « supprimer l'univers » (AD-105) ; une fiche supprimée revient au rejeu si l'export l'envoie (décision de Monsieur) ; les cartes hors de l'API, une carte Kanka est une fiche (décision de Monsieur) ; E-17 prend la bascule de mode ; liens d'un scénario et d'une entrée de système réglés (AD-97) ; l'image générée par l'assistant entre dans la médiathèque (AD-44 amendée) ; poser une illustration passe par les deux chemins d'ajout (E-9) ; pièces jointes et médiathèque : tous les fichiers dans la médiathèque (AD-111, décision de Monsieur), les deux chemins d'ajout explicites sur E-9 et E-19. Aucun `[À TRANCHER]` ne reste. |
+
+## Contrôle croisé du cadrage `kanevas-outils`
+
+Fait le 2026-10-16 sur la proposition (skill `cadrage`, étape 6).
+
+| Croisement | Résultat |
+|---|---|
+| Chaque besoin a un parcours | B-57 P-17 · B-58 P-17, P-21 · B-59 P-17, P-18 · B-60 P-17 · B-61 P-17 · B-62 P-17, P-19 · B-63 P-21 · B-64 P-18, P-19 · B-65 P-20 · B-66 P-19 · B-67 P-19 · B-68 P-18, P-19 · B-69 P-18, P-19 · B-70 P-18, P-19 · B-71 P-18 · B-72 P-18 · B-73 P-18 · B-74 P-18 · B-75 P-19 · B-76 P-19 · B-77 P-19 · B-78 P-18, P-19, P-20 · B-79 P-20 — **tient**. |
+| Chaque geste humain d'un parcours a un écran | P-17 : E-15, E-20, E-14 · P-18 : E-10, E-21, E-9 (document MJ) · P-19 : E-8/E-9, E-22 · P-20 : le script (hors produit, comme l'import Kanka) ; son résultat se lit sur E-18 ; les tests réels sont dans le dépôt privé · P-21 : E-20 — **tient**, avec un geste sans écran : la conversion et le rejeu (décision de Monsieur). |
+| Chaque écran a ses données | E-20 : `outils_systeme`, `outils_univers`, responsable, catalogues (version, comptes) · E-21 : `swn_systemes`, `swn_routes`, `swn_zones`, blocs générés (non stockés), graine · E-22 : `swn_conceptions`, catalogues, `sections.gere_par` · E-9 : `gere_par`, `source_version` — **tient**. |
+| Chaque entité sert un parcours | réglage d'outil P-17, P-21 · responsable P-17 · section gérée P-19 · portée de jeton P-20 · catalogues P-17, P-19 · systèmes placés, routes, zones P-18 · conception P-19 — **tient**. |
+| Trous comblés par un choix écrit | un module `swn` à deux outils (AD-121) ; la carte de la galaxie est une table du module (`swn_galaxies`) que E-10 ajoute à sa liste, `cartes` ne change pas (AD-122) ; le responsable d'un système créé avant l'epic : tout MJ rattaché, faute de créateur stocké ; pas de dépendance réelle entre les deux outils (le mécanisme se joue avec un module d'essai) ; le document MJ : une fiche choisie ou créée depuis E-21 ; un joueur voit tous les systèmes non secrets (pas de « systèmes connus » par joueur) ; le moteur d'un trajet se choisit dans l'outil ; qui crée un vaisseau (le MJ crée la fiche, le joueur conçoit s'il est l'auteur : règle « un joueur ne crée pas de fiche » conservée) ; E-22 en deux états (liste, atelier) ; le cache d'un bloc selon le niveau de lecture ([À VÉRIFIER], AD-132) . Les tests sur données réelles se jouent dans les pods, jamais en CI (décision de Monsieur, 2026-10-16). |

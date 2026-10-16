@@ -440,3 +440,171 @@ Monsieur sur l'URL de production reste réelle.
 - *(kanevas-import)* Corbeille, annulation d'un lot — rouvertes à la première suppression regrettée.
 - Suppression de contenu, historique, export — à rouvrir à l'usage.
 - Types de fiches dédiés avec caractéristiques structurées.
+
+# Outils spécialisés (`kanevas-outils`, cible)
+
+> Cadrage proposé le 2026-10-16 (`epic/kanevas-outils`). Décisions AD-121 à AD-137. Elles s'ajoutent à celles
+> ci-dessus ; aucune n'en amende une, sauf mention. Les décisions de Monsieur de la discussion de l'epic sont
+> **[ADOPTÉ]** : elles sont écrites pour être liées, pas rediscutées.
+
+## Dépôts cibles
+
+| Dépôt | État | Ce qu'il porte dans cette epic | Rang de fusion |
+|---|---|---|---|
+| `AntorFr/kanevas` (public) | existant | le cadre des modules, la configuration, l'API, le module SWN (code, règles, format, **catalogue d'essai inventé**), la doc en anglais | 1 |
+| `AntorFr/eneria` (**privé**) | existant | uniquement le dossier `_outils/kanevas/` : script de conversion, données converties, valeurs de référence figées, tests sur données réelles ; jamais `base-de-connaissance/`, les sources des outils actuels, ni le reste | 2 (après le code qui lit le format) |
+| `AntorFr/k8s-home-lab` | existant | une PR **préparée** (tag de l'image et version de chart), ouverte, que Monsieur fusionne ; aucun secret ni volume nouveau | 3 (toujours dernier) |
+
+La CI de `kanevas` tourne sur des **données synthétiques** et n'a aucun accès à `AntorFr/eneria` (décision de Monsieur, 2026-10-16) ; les tests sur données réelles se jouent dans les pods, qui lisent `eneria` avec l'accès qu'ils ont déjà. Aucun secret, clé ou jeton n'est ajouté à une CI.
+
+## Organes et état
+
+```
+navigateur ──▶ Fastify ─┬─ cadre des modules (registre, activation, réglages, droits d'outil, import, routes communes)
+                         │      └─▶ module `swn` : fonctions ─▶ tables swn_* (SQLite, même base)
+                         ├─ routes `/api/univers/:id/outils/<module>/…` et `/api/systemes/:id/outils/<module>/…`
+                         ├─ outils de l'assistant (neutres) composés par le catalogue d'un rôle
+                         └─ fonctions de service du cœur (droits, sections, recherche) appelées par les modules
+script de conversion (dépôt privé) ──jeton à portée d'outil──▶ API d'import étendue
+```
+
+L'état durable est en base (cœur + tables du module) ; sont **éphémères** : le cache des blocs générés de la carte (mémoire, perdu au
+redémarrage sans dommage) et le calcul d'un trajet. Aucun état n'est dans le navigateur.
+
+## Décisions
+
+**AD-121 — Un module s'inscrit par une seule déclaration.** [ADOPTÉ, décision (e)]
+Lie : tous les modules, B-57 à B-70. Empêche : un module qui s'accroche au routeur, à la barre, à l'assistant et à l'écran de réglages chacun à sa manière.
+Règle : un module déclare, en un point unique, son nom, ses réglages communs (stockés sous le seul nom du module), les outils qu'il apporte (chacun : type, portée — un système de jeu ou tous —, dépendances, visibilité
+par défaut, usages), ses réglages et leur forme, la forme de ses catalogues, ses routes, ses outils d'assistant et son point d'entrée d'interface (chargé à l'ouverture,
+AD-133). Le cœur ne connaît aucun module par son nom. Un module regroupe un ou plusieurs outils (le module `swn` porte `galaxie` et `vaisseaux`, qui partagent le
+réglage de portée de saut) ; l'activation et la visibilité se règlent **par outil**. *Rejeté* : un fichier de configuration par outil — les types de fiche n'en ont pas et
+la déclaration doit se tester ; *un chargement à chaud de code tiers* — décision de Monsieur (5).
+
+**AD-122 — Un contrat d'interface par type d'outil.** [ADOPTÉ, décision (3)]
+Lie : B-59, B-66, B-71, B-75. Empêche : un générateur qui tient sa donnée à part, une carte qui écrit dans des sections.
+Règle : trois types, chacun un contrat testé par un module d'essai : **carte dynamique** (rendue par son module dans la section Cartes, données à part ; le module liste ses cartes — titre, visibilité — et E-10 les ajoute à celles de `cartes`, dont les formes ne changent pas), **générateur** (le
+résultat est une section gérée d'une fiche, les choix de construction sont les données de l'outil rattachées à la fiche, avec la version des règles et des réglages), **aide
+de jeu** (ses données et son entrée ; aucune dans cette epic). Chaque contrat dit comment il traite un réglage qui change (AD-128). Un type est ajouté quand un deuxième
+besoin ressemble au premier, pas avant. *Rejeté* : un moteur générique unique — il aurait les abstractions de SWN (décision (1)).
+
+**AD-123 — Les données d'un outil sont en base, dans les tables de son module, à deux niveaux.** [ADOPTÉ, décisions (4), (d), point 6]
+Lie : tout module. Empêche : un fichier ou une table JSON générique qui perd liens et requêtes ; un accès hors du module.
+Règle : tables préfixées, créées par les migrations du module, une ligne rattachée à un univers (ou à un système pour son catalogue), les références de fiche par identifiant,
+aucun SQL hors des fonctions du module ; le rangement (tables typées, documents à forme déclarée, ou les deux) est le choix du module. Le niveau **système** (le jeu) et le niveau
+**univers** (la campagne) : un univers voit les deux, une donnée d'univers de même clé remplace celle du système. Le contrat impose : clé, version, rattachement, forme déclarée
+et vérifiée à l'import. *Rejeté* : fichiers sur le volume ; table générique JSON.
+
+**AD-124 — Un cadre d'API commun, des routes propres à chaque module.** [ADOPTÉ, décision (e)]
+Lie : B-58, B-65, B-61. Empêche : des conventions d'erreur et d'activation différentes par module.
+Règle : les routes d'un module vivent sous `/api/univers/:id/outils/<module>/…` et `/api/systemes/:id/outils/<module>/…` ; l'**activation est vérifiée à l'entrée** (outil
+désactivé ou invisible pour le rôle = adresse inconnue, même réponse qu'une route absente) ; mêmes identités (session pour l'écran, jeton à portée d'outil pour les scripts), mêmes
+conventions (erreur `code` + champ, pagination, version contre l'écriture concurrente, mise à jour par clé) ; le module reçoit l'acteur, son rôle et le mode joueur. Deux routes
+sont communes à tout module : la **description** de l'outil (réglages et leur forme, dépendances, activation : E-20 la lit) et l'**import d'un catalogue** (aperçu puis application,
+rapport ajouté / modifié / refusé). Écran, API et assistant passent par les **mêmes fonctions** du module (routes minces, AD-2).
+
+**AD-125 — Activation, visibilité et réglages se résolvent système → univers.** [ADOPTÉ, décisions (6), point 3, point 10]
+Lie : B-57 à B-60. Empêche : trois lieux pour décider qui voit un outil, et des réglages lus à des endroits différents.
+Règle : une seule fonction résout, pour (univers, outil), l'état *activé*, la visibilité par rôle et la valeur de chaque réglage : la ligne d'univers s'il y en a une, sinon celle du système,
+sinon le défaut déclaré. Le **responsable** du système (créateur par défaut, rôle transmissible) est le seul à écrire au niveau du système ; tout MJ écrit au niveau de son univers ; l'admin
+d'instance n'a aucun accès. Désactiver au système cache l'outil aux univers qui le suivent ; un univers qui l'a forcé garde l'accès, données du système comprises. *Rejeté* : « tout MJ d'un univers
+rattaché règle le système » (le geste touche tous les univers) ; *l'admin d'instance responsable* — il n'a pas accès au contenu (AD-9). Les gabarits gardent leur règle actuelle.
+
+**AD-126 — Les droits d'un outil sont à deux niveaux, appliqués dans les services.** [ADOPTÉ, décision point 3]
+Lie : B-59, B-73. Empêche : un outil qui laisse fuir un secret en vue joueur (recherche, route, zone, menu).
+Règle : (1) le cœur décide si l'outil est **visible** (activé, visible pour le rôle) ; hors de là il est introuvable. (2) L'outil déclare ses **usages** et applique ses droits internes jusqu'à la ligne,
+avec les fonctions de droits de Kanevas et leur vocabulaire (MJ seul, joueurs, auteur, mode Joueur). « Ce que le compte ne peut pas lire n'existe pas pour lui » vaut pour la carte (élément par élément),
+la recherche, les trajets, la génération des blocs (AD-132), l'assistant et les liens. L'acteur n'a jamais plus de droits que le compte ; le mode Joueur d'un MJ le ramène à ceux d'un joueur.
+
+**AD-127 — Une section « gérée par un outil » est un verrou sur le contenu, distinct de l'auteur.** [ADOPTÉ, décisions (g), (h), (i), (j)]
+Lie : B-66, B-67, B-74, B-77. Empêche : deux écrivains d'une même section ; un joueur qui écrit plus que ses droits ; une section illisible sans l'outil.
+Règle : la section porte `gere_par` ; seule la fonction d'écriture de cet outil, qui **passe par le chemin d'écriture de section existant** (`ecrireContenu`, avec version lue ; AD-48), change son contenu ;
+l'éditeur et l'API des sections la refusent à tout autre. L'outil vérifie l'usage et le rôle d'auteur du compte (« l'auteur écrit ») et écrit **au nom du compte**. Chaque section d'outil a un **contenu structuré**
+au format déclaré, un composant d'affichage fourni par le module (chargé seulement quand une fiche en contient une), et une **version texte (Markdown) obligatoire**, produite avec le contenu et mise dans
+`contenu` : c'est elle que lisent la recherche, l'assistant, l'export, et la fiche quand l'outil est désactivé. Mêmes interrupteurs d'audience que toute section. Kanevas n'a pas de propriétaire de fiche :
+l'auteur est par section. *Rejeté* : la fiche comme unité générée (la fiche mêle sections gérées et libres).
+
+**AD-128 — Un changement de source ne réécrit rien en silence.** [ADOPTÉ, décision (7)]
+Lie : B-67, tout générateur. Empêche : un vaisseau dont les chiffres changent sous le joueur après un réglage.
+Règle : un résultat calculé garde la version du catalogue et des réglages qui l'ont produit ; quand ils diffèrent des courants, il est dit **périmé** (état calculé à la lecture, jamais stocké) et se
+recalcule sur un geste explicite, ou sur proposition (même mécanique que la proposition de mise à jour, AD-79), selon ce que l'outil déclare. Un tour validé (plus tard) est figé.
+
+**AD-129 — Une donnée d'outil modifiable est protégée comme une section.** [ADOPTÉ, décision point 11]
+Lie : B-64. Empêche : un écrasement muet entre deux MJ.
+Règle : toute donnée d'outil modifiable porte `version` ; l'écriture donne la version lue ; une version périmée est refusée avec la même réponse qu'une section (`conflit`, code `donnee_modifiee`), l'écran
+dit et offre de recharger. Une section gérée est déjà protégée. Pas de verrou ni d'édition en direct.
+
+**AD-130 — Un catalogue est un fichier JSON de transport, la base le stocke.** [ADOPTÉ, décision (b)]
+Lie : B-61, B-65, B-79. Empêche : un import qui écrase, qui duplique ou qui supprime sans le dire.
+Règle : un fichier par module, une section par nature d'élément, chaque élément une **clé** ; le fichier est vérifié par le schéma du module **avant** d'être appliqué (élément fautif refusé avec son champ, le
+reste passe) ; réimport = mise à jour par clé sans doublon ; un élément retiré du fichier n'est pas supprimé ; le catalogue a une version, qu'un résultat garde (AD-128). Deux voies, mêmes fonctions : l'onglet « Outils »
+(aperçu puis application) et l'API d'import étendue avec un jeton **à portée d'outil** (rapport de lot par nature). Comme B-48, un import n'écrase pas ce qu'un humain a modifié dans Kanevas depuis. Un jeton est celui d'un univers : il n'écrit le catalogue **du système** que si son compte en est le responsable à cet instant (le rôle se relit à chaque usage, comme le rôle MJ d'un jeton d'import).
+
+**AD-131 — Rien d'Éneria n'entre dans le dépôt public, tests compris.** [ADOPTÉ, lettre de mandat]
+Lie : B-78, B-79. Empêche : un catalogue du livre, une fiche de règles traduite, une valeur calculée sur les données réelles, une capture, dans `kanevas` ou ses journaux publics.
+Règle : le dépôt public ne contient que le **format**, le code qui le lit et un petit catalogue d'essai **inventé** (avec ses propres valeurs attendues, calculées à la main ou par les règles du module) ; la suite
+attestée et la CI de `kanevas` tournent sur ces données synthétiques seules (décision de Monsieur, 2026-10-16). Les tests sur données réelles, leurs valeurs de référence (calculées une fois avec les outils actuels de Monsieur, figées) et le script de conversion vivent dans `AntorFr/eneria`, dossier
+`_outils/kanevas/`, et se jouent **dans les pods**, qui lisent `eneria` avec l'accès qu'ils ont : ils exercent le code de `kanevas` à une révision épinglée, hors de la suite attestée. Un écart est un bug du portage ou une correction de règle décidée et notée. *Rejeté* : un workflow « tests » de `kanevas` avec un secret du dépôt privé — décision de Monsieur du 2026-10-16 : la CI est publique, ses journaux aussi ; *des données réelles anonymisées* — la valeur du test est dans la donnée exacte.
+
+**AD-132 — La carte est infinie : les systèmes anonymes se calculent, côté serveur, par blocs.** [ADOPTÉ, point 9]
+Lie : B-71, B-73. Empêche : un client qui reçoit toute la carte ; un territoire secret qu'on devine à la densité générée.
+Règle : un bloc de 5×5 hexagones se génère à partir des coordonnées et d'une graine (même emplacement, même résultat, testé) **côté serveur**, sous les droits de l'appelant : la densité tient compte
+des seuls territoires que ce compte lit ; le résultat se met en cache (mémoire). Sont stockés seulement les systèmes définis, les routes, les zones et les systèmes anonymes **promus** (qui gardent leur emplacement et deviennent
+des données de l'univers avec leurs droits). La **graine** (propre à chaque galaxie, protégée) : la changer exige une confirmation qui dit que tous les systèmes non définis changent de place. La vue ne reçoit que les blocs qu'elle montre. *Hors périmètre* : la carte hors connexion.
+[À VÉRIFIER] : le cache d'un bloc dépend des territoires lisibles par l'appelant — la clé de cache doit porter le niveau de lecture (MJ / joueur / mode Joueur) ; vérifier à la conception de la tranche.
+
+**AD-133 — Le code d'un outil se charge à son usage.** [ADOPTÉ, point 9]
+Lie : B-70. Empêche : un bundle qui embarque la carte et le concepteur pour tous les comptes ; un data.js envoyé en bloc.
+Règle : le point d'entrée d'un module et le composant d'une section sont chargés par un import dynamique, à l'ouverture de l'écran ou quand une fiche contient la section ; un compte sans accès ne le charge jamais ; les données
+suivent la vue (AD-132). Un composant respecte l'existant (tokens de `frontend/src/ui/tokens.css`, `docs/charte.md`) et se joue à 360 px de large. Critère de recette de chaque outil : téléphone et tablette.
+
+**AD-134 — Un lien partageable mène à une ressource stockée.** [ADOPTÉ, point 8]
+Lie : B-68. Empêche : un contenu encodé dans l'adresse qui contourne les droits et la version du catalogue.
+Règle : l'adresse d'un système de la carte ou d'une fiche de vaisseau est un identifiant stocké ; elle se lit selon les droits de qui l'ouvre (illisible = introuvable). Aucun contenu n'est encodé dans l'adresse.
+L'impression est une fonction ultérieure du cœur pour toute fiche (hors epic).
+
+**AD-135 — Désactiver cache, supprimer est un geste à part.** [ADOPTÉ, point 6]
+Lie : B-63. Empêche : une donnée perdue par un clic sur une bascule.
+Règle : désactiver un outil ne touche aucune ligne ; il cache l'entrée, les adresses, les données et la vue des données du système pour l'univers ; ses sections gérées restent lisibles en version texte avec un bandeau
+« outil désactivé », sans régénération ni modification. Supprimer des données est une fonction à part, réservée (responsable pour le système, MJ pour l'univers), dont la confirmation compte ce qui part et, pour le système,
+ce qui s'en sert encore (univers, éléments locaux, conceptions). Supprimer un univers efface les données de ses outils (une transaction, tables du module comprises).
+
+**AD-136 — Les capacités d'un outil à l'assistant sont des outils neutres du module.** [ADOPTÉ, modèle (8)]
+Lie : B-69. Empêche : un assistant plus permissif que l'écran ; un outil visible pour un rôle qui ne l'a pas.
+Règle : un module déclare des outils d'assistant de la forme de `catalogue` (`{nom, description, schéma, executer}`), qui ne composent que des fonctions du module (AD-27) ; `catalogueDe` les ajoute quand l'outil est activé et visible
+pour le rôle lu en base ; compte, univers et rôle sont fermés, jamais un paramètre ; un refus revient `{ok:false}` sans événement.
+
+**AD-137 — Deux modules se parlent par leurs fonctions, sur une dépendance déclarée.** [ADOPTÉ, décision (e)]
+Lie : tout module. Empêche : un module qui lit les tables d'un autre ou l'appelle par HTTP.
+Règle : une dépendance se déclare dans la déclaration (AD-121), l'écran d'activation la fait respecter (B-58) ; l'appel se fait par la fonction exportée de l'autre module, sous les mêmes droits. Dans cette epic, aucune dépendance entre outils n'existe : `vaisseaux` lit la portée de saut réglée au niveau du module `swn`, pas la carte. Le mécanisme se teste avec le module d'essai.
+
+## Interfaces
+
+Conventions de `kanevas-import` conservées (erreurs `code` + champ, pagination, version). Les identifiants d'élément de catalogue sont des **clés** stables en texte, jamais l'identifiant de ligne. Les dates en ISO 8601 UTC. Un réglage a une
+forme déclarée avec un schéma (zod côté serveur).
+
+## Déploiement et exploitation
+
+Aucun nouveau service, secret ni volume. Les migrations du module s'appliquent au démarrage par l'exécuteur existant (AD-14). L'image publiée par la CI (tag semver) est épinglée dans `k8s-home-lab` par une PR préparée, que Monsieur fusionne.
+On sait que ça marche par `/healthz` (version) et la recette en bouchon. Sauvegarde : la base existante porte tout ; les données d'un outil en font partie.
+
+## Sécurité
+
+La menace : un secret de MJ (système fantôme, route privée, territoire, conception cachée) qui arrive à un joueur par la carte, la recherche, un trajet, la densité générée, un lien, l'API ou l'assistant. Contre :
+droits élément par élément dans les fonctions du module (AD-126), génération côté serveur sous droits (AD-132), outil invisible = introuvable (AD-124), jeton à portée d'outil, section gérée verrouillée (AD-127). Aucun secret d'Éneria dans le dépôt public ni ses journaux (AD-131).
+
+## Bouchons
+
+Aucune dépendance nouvelle qui exige un jeton, un compte ou une authentification : les modules ne font aucun appel externe. L'assistant garde son bouchon (`KANEVAS_STUB=1`, AD-78), dont le script peut appeler les outils d'assistant des modules.
+La recette se joue en bouchon, sur le catalogue d'essai inventé.
+
+## Différé
+
+| Point | Ce qui le rouvrira |
+|---|---|
+| Journal et dés communs | l'epic des tours de faction (`kanevas-factions`), premier utilisateur |
+| Type d'outil « aide de jeu » | le gestionnaire de tours de faction |
+| Impression d'une fiche (rendu d'une section d'outil, à défaut sa version texte) | une fonction du cœur, plus tard |
+| Carte hors connexion | un besoin d'usage sans réseau |
+| Extraction des parties communes entre modules | un deuxième module (D&D) qui ressemble au premier |
+| Export / import JSON d'une conception par l'utilisateur | non voulu (l'API d'import couvre le transport) |
