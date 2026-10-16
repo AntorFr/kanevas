@@ -25,6 +25,8 @@ import {
 } from './markdown.js';
 import type { RenduFichier, ResolveurFichiers, ResolveurFichiersEnAttente } from './markdown.js';
 import { poserContenu } from './sections.js';
+import { TYPES_IMAGE, compterReferences, estImage, lisiblePar } from './fichiers-lecture.js';
+export { lisiblePar, resolveurFichiers, resolveurFichiersEnAttente } from './fichiers-lecture.js';
 import { ErreurService, introuvable, invalide, refuse } from './erreurs.js';
 import {
   abandonner,
@@ -47,7 +49,6 @@ export const MAX_FICHIERS_JOINTS = 100;
 export const LIMITE_FICHIERS = 100;
 const MAX_NOM = 200;
 
-const TYPES_IMAGE = ['image/png', 'image/jpeg', 'image/gif', 'image/webp'];
 
 export type Visibilite = 'joueurs' | 'mj';
 
@@ -234,7 +235,6 @@ export function typeParSignature(debut: Buffer): string {
   return 'application/octet-stream';
 }
 
-const estImage = (type: string) => TYPES_IMAGE.includes(type);
 
 function vue(f: FichierRow): FichierVue {
   return {
@@ -248,13 +248,6 @@ function vue(f: FichierRow): FichierVue {
     ajouteLe: f.ajoute_le,
     jeton: f.disque,
   };
-}
-
-/** The role-aware core of the one read rule; `fichierLisible` is its public door. */
-export function lisiblePar(role: Role | null, acteur: Acteur, f: Pick<FichierRow, 'visibilite' | 'ajoute_par'>): boolean {
-  if (role === null) return false;
-  if (vueMJ(role, acteur)) return true;
-  return f.visibilite === 'joueurs' || f.ajoute_par === acteur.compteId;
 }
 
 /**
@@ -827,39 +820,6 @@ export function impactFichier(
   return { usages: usagesLisibles(db, { compteId: acteur.compteId, modeJoueur: true }, 'mj', universId, f.id) };
 }
 
-/**
- * The resolver of the `fichier:<id>` references of a text for one reader (AD-117, AD-96): one query for
- * all the files of the text, the rendering decided by the file and the one read rule. A closed file reads as
- * reserved, a vanished one as removed for the GM outside player mode and as nothing for anyone else.
- */
-export function resolveurFichiers(
-  db: Db,
-  universId: number,
-  role: Role,
-  acteur: Acteur,
-  source: string,
-): ResolveurFichiers | undefined {
-  const ids = [...compterReferences(source).keys()];
-  if (ids.length === 0) return undefined;
-  const rows = db
-    .prepare(`SELECT * FROM fichiers WHERE univers_id = ? AND id IN (${ids.map(() => '?').join(',')})`)
-    .all(universId, ...ids) as FichierRow[];
-  const parId = new Map(rows.map((r) => [r.id, r]));
-  const marque = vueMJ(role, acteur);
-  return (id): RenduFichier => {
-    const f = parId.get(id);
-    if (!f) return marque ? { genre: 'supprime' } : { genre: 'rien' };
-    if (!lisiblePar(role, acteur, f)) return { genre: 'ferme' };
-    return {
-      genre: 'fichier',
-      id: f.id,
-      nom: f.nom,
-      image: estImage(f.type),
-      adresse: `/api/univers/${universId}/fichiers/${f.id}?v=${encodeURIComponent(f.disque)}`,
-    };
-  };
-}
-
 /** Opens the bytes of a file under the one read rule; the caller's real rights, no player mode (AD-37). */
 export async function ouvrirFichier(
   db: Db,
@@ -902,12 +862,6 @@ export function lireLignes(db: Db, acteur: Acteur, universId: number, role: Role
     lignes.push({ id: -(i + 1), nom: `Fichier en attente d'import : « ${a.cle} ».`, taille: 0, image: false, attente: a.cle }),
   );
   return lignes;
-}
-
-function compterReferences(source: string): Map<number, number> {
-  const n = new Map<number, number>();
-  for (const id of extraireReferencesFichier(source)) n.set(id, (n.get(id) ?? 0) + 1);
-  return n;
 }
 
 /**
@@ -1095,8 +1049,3 @@ export function illustrationEnAttente(db: Db, ficheId: number): string | null {
   return r?.cle ?? null;
 }
 
-/** The `fichier:cle:` references of a text read as a tile for a GM outside player mode, as nothing for anyone else. */
-export function resolveurFichiersEnAttente(role: Role, acteur: Acteur): ResolveurFichiersEnAttente {
-  const marque = vueMJ(role, acteur);
-  return (cle): RenduFichier => (marque ? { genre: 'attente', cle } : { genre: 'rien' });
-}
