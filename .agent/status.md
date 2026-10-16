@@ -102,7 +102,7 @@ catalogue MJ (événement `proposition_creee`) et sa règle du bouchon (« Mets 
 - Suivi : scénarios et tâches se gardent sur l'univers de la **campagne** (AD-47), jamais sur un identifiant
   d'univers fourni ; un refus répond 404. Le MJ qui crée un compte-rendu n'en est pas l'auteur affiché ;
   l'auteur Joueur lit et écrit sa section même fermée aux autres joueurs (AD-61). Plusieurs campagnes
-  peuvent être actives (AD-60) ; aucune suppression nulle part.
+  peuvent être actives (AD-60) ; la suppression d'une fiche et d'un univers est livrée par `kanevas-import-tenir` (ci-dessus).
 - Refonte visuelle : le regard sur les maquettes (bureau, téléphone, clair, sombre) est celui de la vérification et de la recette ; aucun écran n'écrit de couleur en dur (tokens seuls) ; un écran neuf prend le cadre et les composants de `ui/`, il ne recrée ni bouton, ni menu, ni champ. E-10 et E-11 sont construits avec le cadre ; E-12 le prend déjà (tokens, `Bouton`, `Chargement`, `PastilleRole`).
 - P-7 : le portrait (pièce jointe) et la demande à l'assistant (E-12) sont livrés.
 - Pièces jointes : le type est déterminé par la signature des octets, jamais par le navigateur ; seules PNG,
@@ -122,8 +122,7 @@ catalogue MJ (événement `proposition_creee`) et sa règle du bouchon (« Mets 
   vient de `SESSION_SECRET`, sinon de `<data>/session.key`.
 - Le callback OIDC ne rend la page « Connexion refusée/indisponible » que si `Accept` contient
   `text/html`, sinon 401 JSON.
-- Code mort ou sans appelant, non traité : `export { ErreurService }` (droits.ts), `renommerSection`
-  et la branche titre du PATCH d'une section (renommer est hors tranche), option `limite` de
+- Code mort ou sans appelant, non traité : `export { ErreurService }` (droits.ts), (périmé : `renommerSection` est appelé, `renommerFiche` existe) la branche titre du PATCH d'une section, option `limite` de
   `listerFiches`, `blocsVisibles`/`blocsSectionVisibles` jumeaux ; le parseur form-urlencoded du
   bouchon vaut aussi pour `/api`.
 

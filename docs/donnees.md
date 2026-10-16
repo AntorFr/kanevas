@@ -62,7 +62,7 @@ Une table, `propositions` (migration `0008-propositions.sql`, AD-51) :
 | `univers_id` | → `univers` | non nul ; sert à refuser une proposition lue sous un autre univers |
 | `demandeur_id` | → `comptes` | non nul ; le seul compte qui la lit, l'applique ou l'abandonne (AD-79) |
 | `section_id` | → `sections` | non nul ; suppression en cascade avec la section |
-| `cr_id` | → `fiches` | non nul ; la fiche de type `compte_rendu` d'où part la proposition ; cascade par précaution (aucune suppression de CR en V1) |
+| `cr_id` | → `fiches` | non nul ; la fiche de type `compte_rendu` d'où part la proposition ; cascade par précaution (un CR se supprime comme une fiche, AD-119 ; la proposition part alors avec lui) |
 | `contenu_propose` | texte | non nul, non vide, 100 000 caractères au plus (la limite d'une section, AD-106 ; migration 0009) |
 | `version_origine` | entier | non nul ; la `version` que la section avait quand l'assistant l'a lue (AD-59, AD-80) |
 | `creee_le` | date | non nul |
@@ -187,7 +187,7 @@ Une table et deux index de recherche ; aucune entité nouvelle (la relation est 
 
 | Objet | Colonnes (hors clés) | Contraintes |
 |---|---|---|
-| `relations` | `id`, `section_id` (la porteuse), `cible_fiche_id`, `type` (texte libre), `cree_le` | `section_id` → `sections` **ON DELETE CASCADE** (retirer une section retire ses relations) ; `cible_fiche_id` → `fiches` **ON DELETE RESTRICT** (une fiche ne se supprime pas) ; `type` 1 à 80 caractères après rognage ; `UNIQUE (section_id, cible_fiche_id, type)` |
+| `relations` | `id`, `section_id` (la porteuse), `cible_fiche_id`, `type` (texte libre), `cree_le` | `section_id` → `sections` **ON DELETE CASCADE** (retirer une section retire ses relations) ; `cible_fiche_id` → `fiches` **ON DELETE RESTRICT** (filet : `supprimerFiche` retire d'abord les places de la fiche, AD-119) ; `type` 1 à 80 caractères après rognage ; `UNIQUE (section_id, cible_fiche_id, type)` |
 | `recherche_fiches` (FTS5) | `titre` ; `rowid` = `fiches.id` | tokenizer `unicode61 remove_diacritics 2` |
 | `recherche_sections` (FTS5) | `titre`, `contenu` ; `rowid` = `sections.id` | idem |
 
@@ -304,7 +304,7 @@ une entité que le cadrage n'a pas (« une tranche ajoute des attributs, jamais 
 Vérifié sur SQLite 3.46 : `ADD COLUMN` accepte ces `CHECK` (qui peuvent nommer une colonne déjà
 présente), les lignes existantes (toutes `NULL`) les passent, un triplet incomplet ou un type
 `image/svg+xml` est refusé. Pas de clé étrangère (rien n'est référencé), donc pas d'`ON DELETE` ;
-les fiches ne se suppriment pas (migration 0001).
+les clés RESTRICT sont un filet : `supprimerFiche` (AD-119) retire d'abord ce qui vise la fiche (migration 0001).
 
 **Physique.** Même base, mêmes réglages (WAL, `foreign_keys`). Les octets vont sur le disque, par
 le module de stockage d'AD-65, dans le même dossier que les pièces jointes

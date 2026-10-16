@@ -68,7 +68,7 @@
   preparation tasks take a **campaign id and no universe id** — the GM guard is evaluated on the
   campaign's own universe (`exigerMJDeCampagne`, AD-47), and a player, a foreign GM or an unknown id
   all get `introuvable`. Never add a `universId` parameter there. `creerCompteRendu` is the only
-  non-GM creation of a sheet (AD-61); no function deletes anything.
+  non-GM creation of a sheet (AD-61); only `supprimerFiche` and `supprimerUnivers` delete (AD-119); a compte-rendu is deleted as a sheet.
 - Search and relations (`kanevas-relier-chercher`): search is `listerFiches({recherche})`, never a second
   function (AD-63). The FTS5 indexes (migration 0005) only deliver candidate ids and are kept by SQL
   triggers (AD-21) — never write to `recherche_*` from code. A relation is read under both guards
