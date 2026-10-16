@@ -93,6 +93,13 @@ function Mediatheque() {
   const [enCours, setEnCours] = useState(false);
   const [imageCassee, setImageCassee] = useState(false);
 
+  // Reflect the accepted server name (including trimmed whitespace) in the editable title.
+  useEffect(() => {
+    if (detailEtat === 'ok' && detail && titreEditable.current) {
+      titreEditable.current.textContent = detail.fichier.nom;
+    }
+  }, [detail?.fichier.id, detail?.fichier.nom, detailEtat]);
+
   const mj = univers.etat === 'ok' && univers.valeur.role === 'mj';
   const filtre = nature !== '' || q !== '' || visibilite !== '' || usage !== '';
 
