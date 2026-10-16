@@ -70,6 +70,8 @@ npm run dev            # ou, sans rechargement : npm run build && npm start (`np
 curl http://localhost:3001/healthz   # -> "kanevas 0.0.0-dev"
 ```
 
+The attested run (`npm run tests:attestes`, no test skipped) needs `KANEVAS_BASE_DIST`: a `dist/` built from `epic/kanevas-import` (the migration test skips without it).
+
 This block serves `/healthz` and the API only; to log in and see the screens, use the stub-mode command under « Sans Authelia : le mode bouchon » (`KANEVAS_STUB=1`).
 
 `npm run dev` sert l'API, et le frontend seulement s'il a été construit : lancer d'abord
