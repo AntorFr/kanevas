@@ -221,7 +221,6 @@ function nomPropre(nom: string): string {
 /** What a target allows, checked before the stream is read and again in the writing transaction. */
 interface Decision {
   visibilite: Visibilite;
-  role: Role;
 }
 
 function autoriser(db: Db, acteur: Acteur, universId: number, cible: CibleFichier): Decision {
@@ -229,14 +228,14 @@ function autoriser(db: Db, acteur: Acteur, universId: number, cible: CibleFichie
   switch (cible.ou) {
     case 'mediatheque':
       if (role !== 'mj') throw refuse();
-      return { visibilite: 'joueurs', role };
+      return { visibilite: 'joueurs' };
     case 'illustration': {
       exigerMJDeFiche(db, universId, acteur, cible.ficheId);
       // Visible of the players when at least one section of the sheet is read by them (AD-111).
       const lue = db
         .prepare('SELECT 1 AS ok FROM sections WHERE fiche_id = ? AND joueurs_lisent = 1 LIMIT 1')
         .get(cible.ficheId);
-      return { visibilite: lue ? 'joueurs' : 'mj', role };
+      return { visibilite: lue ? 'joueurs' : 'mj' };
     }
     case 'section': {
       const { s } = contexteSection(db, acteur, universId, null, cible.sectionId);
@@ -246,7 +245,7 @@ function autoriser(db: Db, acteur: Acteur, universId: number, cible: CibleFichie
       }
       if (cible.maniere === 'joint') exigerPlace(db, role, acteur, s.id);
       // The place decides, never the client: a GM block, or a section the players do not all read.
-      return { visibilite: cible.dansBlocMj || s.joueurs_lisent !== 1 ? 'mj' : 'joueurs', role };
+      return { visibilite: cible.dansBlocMj || s.joueurs_lisent !== 1 ? 'mj' : 'joueurs' };
     }
   }
 }
