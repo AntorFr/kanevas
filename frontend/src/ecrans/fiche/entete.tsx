@@ -14,6 +14,8 @@ import type { Detail } from '../mediatheque/commun';
 import { MESSAGE_RESERVE, useAjoutFichier } from './fichiers';
 import { MESSAGES_PIECES } from './pieces';
 import { libelleDuType, useTypes } from '../../types-contexte';
+import { TitreFiche } from './titre';
+import { SupprimerFiche } from './supprimer';
 
 const AIDE = 'Visible de tous ceux qui voient la fiche.';
 const ECHEC = 'L’action n’a pas abouti. Réessayez.';
@@ -44,10 +46,11 @@ interface Props {
   rafraichir: () => Promise<void>;
   /** The server said 403: the account is no longer GM. */
   onDroitPerdu: () => void;
+  onIntrouvable: () => void;
 }
 
 /** E-9 header: type badge and title, with the illustration at the left when there is one (AD-93). */
-export function EnteteFiche({ universId, fiche, gestion, modeJoueur, badge, Icone, message, setMessage, rafraichir, onDroitPerdu }: Props) {
+export function EnteteFiche({ universId, fiche, gestion, modeJoueur, badge, Icone, message, setMessage, rafraichir, onDroitPerdu, onIntrouvable }: Props) {
   const { toast } = useToasts();
   const [confirmer, setConfirmer] = useState(false);
   const [retraitEnCours, setRetraitEnCours] = useState(false);
@@ -56,6 +59,7 @@ export function EnteteFiche({ universId, fiche, gestion, modeJoueur, badge, Icon
   const [visibilite, setVisibilite] = useState<{ id: number; v: 'joueurs' | 'mj' }>();
   const [etiquetage, setEtiquetage] = useState(false);
   const [deplacement, setDeplacement] = useState(false);
+  const [suppression, setSuppression] = useState(false);
   const alias = fiche.alias ?? [];
   const etiquettes = fiche.etiquettes ?? [];
   const { types } = useTypes();
@@ -69,6 +73,11 @@ export function EnteteFiche({ universId, fiche, gestion, modeJoueur, badge, Icon
   function droitPerdu() {
     setConfirmer(false);
     setMessage({ texte: 'Vous ne pouvez plus modifier l’illustration de cette fiche.' });
+    onDroitPerdu();
+  }
+
+  function droitFichePerdu() {
+    setMessage({ texte: 'Vous ne pouvez plus modifier cette fiche.' });
     onDroitPerdu();
   }
 
@@ -245,13 +254,14 @@ export function EnteteFiche({ universId, fiche, gestion, modeJoueur, badge, Icon
                         },
                       ]
                     : []),
+                  { separateur: true },
+                  { libelle: 'Supprimer la fiche…', icone: Trash2, danger: true, onChoisir: () => setSuppression(true) },
                 ]}
               />
             )}
           </div>
-          <h1 id="titre-fiche" tabIndex={-1}>
-            {fiche.titre}
-          </h1>
+          <TitreFiche universId={universId} fiche={fiche} gestion={gestion} rafraichir={rafraichir}
+            onDroitPerdu={droitFichePerdu} onIntrouvable={onIntrouvable} />
           {alias.length > 0 && <p className="alias-fiche">Aussi appelée {alias.join(', ')}</p>}
           {etiquettes.length > 0 && (
             <ul className="etiquettes-fiche" aria-label="Étiquettes">
@@ -279,6 +289,10 @@ export function EnteteFiche({ universId, fiche, gestion, modeJoueur, badge, Icon
       )}
       {gestion && changement && (
         <ChangerType universId={universId} fiche={fiche} onFermer={() => setChangement(false)} rafraichir={rafraichir} onDroitPerdu={onDroitPerdu} />
+      )}
+      {gestion && suppression && (
+        <SupprimerFiche universId={universId} fiche={fiche} onFermer={() => setSuppression(false)}
+          onDroitPerdu={droitFichePerdu} onIntrouvable={onIntrouvable} />
       )}
       {gestion && deplacement && (
         <DeplacerSous universId={universId} fiche={fiche} onFermer={() => setDeplacement(false)} rafraichir={rafraichir} onDroitPerdu={onDroitPerdu} />

@@ -13,6 +13,19 @@ a.bouton { text-decoration: none; display: inline-flex; }
 .fiche .entete h1 { margin-top: var(--e-4); font: 500 var(--t-40)/1.08 var(--police-titre); letter-spacing: -.015em;
   font-variation-settings: "opsz" 144; overflow-wrap: anywhere; }
 .fiche .entete h1:focus-visible { outline: none; }
+/* Title editing keeps the document typography and wraps long names. */
+.titre-modifiable, .titre-edition { display: block; width: 100%; padding: 0; border: 0; border-radius: var(--rayon-item);
+  background: transparent; color: var(--texte); font: inherit; letter-spacing: inherit; text-align: left; overflow-wrap: anywhere; }
+.titre-modifiable { cursor: text; }
+.titre-modifiable:hover { background: var(--surface-2); }
+.titre-edition { resize: none; overflow: hidden; box-shadow: 0 0 0 1px var(--accent); }
+.titre-modifiable:focus-visible, .titre-edition:focus { outline: 2px solid var(--focus); outline-offset: 4px; }
+@media (max-width: 760px) {
+  .titre-modifiable, .titre-edition { min-height: 44px; }
+  .fiche .entete .menu-racine > button { min-width: 44px; min-height: 44px; }
+  .fiche .voile .boite-actions { flex-wrap: wrap; }
+  .fiche .voile .boite-actions button { min-height: 44px; }
+}
 .vide-fiche { display: flex; flex-direction: column; align-items: center; gap: var(--e-3); color: var(--texte-2); }
 
 .sections { margin-top: var(--e-2); }
