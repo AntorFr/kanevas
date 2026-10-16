@@ -65,7 +65,7 @@ function Mediatheque() {
 
   const [etat, setEtat] = useState<'chargement' | 'ok' | 'erreur'>('chargement');
   const [fichiers, setFichiers] = useState<Fichier[]>([]);
-  // Every file the reader sees under the filters, all pages together (server count).
+  // Server count of all files the reader can read in the library, independent of the filters.
   const [total, setTotal] = useState(0);
   const [suite, setSuite] = useState<number | string | null>(null);
   const [suiteEnCours, setSuiteEnCours] = useState(false);
@@ -287,7 +287,7 @@ function Mediatheque() {
       } else {
         await appeler('DELETE', `/api/univers/${id}/fichiers/${detail.fichier.id}`);
         setFichiers((l) => l.filter((x) => x.id !== detail.fichier.id));
-      setTotal((t) => Math.max(0, t - 1));
+        setTotal((t) => Math.max(0, t - 1));
         ouvrir(null);
         toast('Fichier supprimé.');
       }
