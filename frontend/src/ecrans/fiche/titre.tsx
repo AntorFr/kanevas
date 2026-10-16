@@ -39,6 +39,20 @@ export function TitreFiche({ universId, fiche, gestion, rafraichir, onDroitPerdu
     c.style.height = `${c.scrollHeight}px`;
   }, [edition, valeur]);
 
+  useEffect(() => {
+    const c = champ.current;
+    if (!c) return;
+    let largeur = c.clientWidth;
+    const observation = new ResizeObserver(() => {
+      if (largeur === c.clientWidth) return;
+      largeur = c.clientWidth;
+      c.style.height = 'auto';
+      c.style.height = `${c.scrollHeight}px`;
+    });
+    observation.observe(c);
+    return () => observation.disconnect();
+  }, [edition]);
+
   function fermer(focus: boolean) {
     annule.current = true;
     setEdition(false);
