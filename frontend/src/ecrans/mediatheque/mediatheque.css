@@ -1,3 +1,6 @@
+/* Reserve the file panel's column in the shell, including the floating assistant. */
+.zone-principale:has(.med-panneau-ouvert) { margin-right: 400px; }
+body:has(.med-panneau-ouvert) .asst-bouton { right: calc(400px + var(--e-5)); }
 /* E-19 Médiathèque: colours only through tokens.css. */
 .mediatheque { position: relative; }
 .med-tete { display: flex; align-items: center; gap: var(--e-4); flex-wrap: wrap; margin-bottom: var(--e-4); }
@@ -69,17 +72,29 @@
 .med-vide { color: var(--danger); margin: var(--e-2) 0; }
 .med-depot { position: fixed; inset: 0; z-index: 40; display: flex; flex-direction: column; align-items: center; justify-content: center;
   gap: var(--e-3); background: var(--voile); color: var(--texte); border: 2px dashed var(--accent); font-size: var(--t-18); pointer-events: none; }
-.med-panneau { position: fixed; top: 0; right: 0; bottom: 0; z-index: 30; width: min(420px, 100%); overflow-y: auto;
+.med-panneau { position: fixed; top: 0; right: 0; bottom: 0; z-index: 30; width: min(400px, 100%); overflow-y: auto;
   background: var(--surface); border-left: 1px solid var(--bord-fort); box-shadow: var(--ombre-flottant); padding: var(--e-4) var(--e-4) 96px; }  /* room below for the floating assistant button */
 .med-panneau-tete { display: flex; align-items: center; gap: var(--e-2); margin-bottom: var(--e-3); }
-.med-panneau-tete h2 { flex: 1; min-width: 0; margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.med-panneau-libelle { flex: 1; display: flex; align-items: center; gap: var(--e-2); color: var(--texte-3); font-size: var(--t-13); }
+/* The file name is the editable title itself, with a field outline only while editing. */
+.med-titre-fichier { width: 100%; display: flex; flex-wrap: wrap; align-items: flex-start; gap: var(--e-2); }
+.med-nom-en-place { flex: 1; min-width: 0; margin: 0; padding: var(--e-1); border-radius: var(--rayon-item);
+  font: 500 var(--t-22)/1.25 var(--police-titre); overflow-wrap: anywhere; }
+.med-nom-en-place[contenteditable="plaintext-only"] { cursor: text; }
+.med-nom-en-place[contenteditable="plaintext-only"]:hover { background: var(--surface-2); }
+.med-nom-en-place:focus { outline: 2px solid var(--focus); outline-offset: 2px; background: var(--surface); }
+.med-titre-fichier .erreur-champ { flex-basis: 100%; margin: 0; color: var(--danger); }
 .med-corps { display: flex; flex-direction: column; gap: var(--e-3); align-items: flex-start; }
+.med-corps > .med-grand { height: 248px; max-height: 40vh; object-fit: contain; }
 .med-corps > .med-grand, .med-corps .champ { width: 100%; }
-.med-visibilite { border: 0; padding: 0; margin: 0; }
+.med-visibilite { width: 100%; min-width: 0; border: 0; padding: 0; margin: 0; }
 .med-visibilite legend { color: var(--texte-2); font-size: var(--t-13); margin-bottom: var(--e-1); padding: 0; }
-.med-infos { display: grid; grid-template-columns: auto 1fr; gap: var(--e-1) var(--e-3); margin: 0; }
-.med-infos dt { color: var(--texte-3); }
-.med-infos dd { margin: 0; overflow-wrap: anywhere; }
+.med-infos { display: flex; flex-direction: column; gap: var(--e-1); font-size: var(--t-13); color: var(--texte-2); overflow-wrap: anywhere; }
+.med-meta-ligne { display: flex; flex-wrap: wrap; gap: 6px; }
+.med-meta-ligne > span + span::before { content: "·"; margin-right: 6px; color: var(--texte-3); }
+.med-cle { display: flex; align-items: baseline; flex-wrap: wrap; gap: var(--e-2); margin-top: var(--e-1); color: var(--texte-3); }
+.med-cle code { padding: 2px 6px; border-radius: var(--rayon-item); background: var(--surface-2); color: var(--texte-2); }
+.med-utilisations { width: 100%; border-top: 1px solid var(--bord); padding-top: var(--e-4); }
 .med-usages { list-style: none; margin: 0 0 var(--e-2); padding: 0; display: flex; flex-direction: column; gap: 2px; }
 .med-usage { display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 6px 8px; margin: 0 -8px; border-radius: var(--rayon-champ);
   color: var(--texte); text-decoration: none; }
@@ -88,12 +103,18 @@
   background: var(--surface-2); box-shadow: inset 0 0 0 1px var(--bord); color: var(--texte-2); }
 .med-usage:hover .med-mono { background: var(--surface-3); }
 .med-usage-texte { flex: 1; min-width: 0; font-size: var(--t-13); font-weight: 500; overflow-wrap: anywhere; }
+.med-usage-ou { display: block; margin-top: 2px; font-size: var(--t-12); font-weight: 400; color: var(--texte-3); }
 .med-usage > svg:last-child { color: var(--texte-3); opacity: 0; }
 .med-usage:hover > svg:last-child, .med-usage:focus-visible > svg:last-child { opacity: 1; }
+.med-visibilite .bascule { display: flex; width: 100%; padding: 2px; gap: 2px; border: 0; border-radius: var(--rayon-champ); background: var(--surface-2); box-shadow: inset 0 0 0 1px var(--bord); }
+.med-visibilite .bascule label { display: inline-flex; align-items: center; flex: 1; justify-content: center; gap: 6px; min-height: 30px; border-radius: var(--rayon-item); padding: 0 8px; font-size: var(--t-13); white-space: nowrap; }
+.med-visibilite label:has(input[value="mj"]:checked) { background: var(--mj-fond); color: var(--mj); }
 .med-visibilite label:has(input[value="joueurs"]:checked) { background: var(--table-fond); color: var(--table); }
 .med-corps h3 { font-size: var(--t-12); font-weight: 500; color: var(--texte-3); margin: 0 0 var(--e-2); }
 @media (max-width: 760px) {
-  .med-panneau { width: 100%; }
+  .zone-principale:has(.med-panneau-ouvert) { margin-right: 0; }
+  .med-panneau { width: 100%; z-index: 35; }
+  body:has(.med-panneau-ouvert) .asst-bouton { visibility: hidden; }
   .med-grille { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--e-4) var(--e-3); }
   .med-glyphe { width: 36px; height: 36px; }
   .med-bascule { display: flex; }

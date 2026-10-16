@@ -23,6 +23,7 @@ export interface PageFichiers {
 export interface Usage {
   ficheId: number;
   ficheTitre: string;
+  ficheType: string;
   illustration: boolean;
   sectionTitre: string | null;
   dansTexte: boolean;

@@ -1,4 +1,4 @@
-import { ArrowDownWideNarrow, ChevronDown, ChevronRight, Download, FileText, ImageOff, Images, LayoutGrid, Lock, Search, Trash2, Upload, X } from 'lucide-react';
+import { ArrowDownWideNarrow, ChevronDown, ChevronRight, Download, Eye, FileText, ImageOff, Images, LayoutGrid, Lock, Pencil, Search, Trash2, Upload, X } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
 
@@ -6,6 +6,7 @@ import { appeler, envoyerFichier, ErreurApi, lire, useConnexionPerdue } from '..
 import { useCharge } from '../cadre-contexte';
 import type { Ecran } from '../registre';
 import type { UniversListe } from '../types';
+import { iconeDuType, useTypes } from '../types-contexte';
 import { Bouton, BoiteDialogue, Champ, ErreurChargement, Pastille, PageIntrouvable, useToasts, VideIcone } from '../ui';
 import './ecrans.css';
 import './mediatheque/mediatheque.css';
@@ -52,6 +53,8 @@ function Mediatheque() {
   const { id } = useParams();
   const [params, setParams] = useSearchParams();
   const perdue = useConnexionPerdue();
+  const { types } = useTypes();
+  const titreEditable = useRef<HTMLHeadingElement>(null);
   const { toast } = useToasts();
   const [univers] = useCharge<UniversListe>(`/api/univers/${id}`);
 
@@ -343,7 +346,7 @@ function Mediatheque() {
 
   return (
     <div
-      className="mediatheque"
+      className={`mediatheque${fid ? ' med-panneau-ouvert' : ''}`}
       onDragEnter={(e) => {
         if (!mj || !glisse(e)) return;
         compteurSurvol.current += 1;
@@ -516,7 +519,7 @@ function Mediatheque() {
       {fid && (
         <aside className="med-panneau" aria-label="Fichier" onKeyDown={(e) => e.key === 'Escape' && !boite && ouvrir(null)}>
           <div className="med-panneau-tete">
-            <h2 title={f?.nom}>{f?.nom ?? 'Fichier'}</h2>
+            <span className="med-panneau-libelle"><Images size={14} strokeWidth={1.75} aria-hidden="true" />Fichier</span>
             <button type="button" className="bouton-icone" aria-label="Fermer" title="Fermer" onClick={() => ouvrir(null)}>
               <X size={14} strokeWidth={1.75} aria-hidden="true" />
             </button>
@@ -546,14 +549,38 @@ function Mediatheque() {
                 Télécharger
               </a>
 
-              {mj ? (
-                <Champ etiquette="Nom" value={nom} erreur={erreurNom} maxLength={MAX_NOM + 50}
-                  onChange={(e: { target: { value: string } }) => setNom(e.target.value)}
-                  onBlur={() => void renommer()}
-                  onKeyDown={(e: React.KeyboardEvent) => e.key === 'Enter' && (e.target as HTMLInputElement).blur()} />
-              ) : (
-                <p className="med-nom-lu">{f.nom}</p>
-              )}
+              <div className="med-titre-fichier">
+                <h2
+                  key={f.id}
+                  ref={titreEditable}
+                  className="med-nom-en-place"
+                  contentEditable={mj && !perdue ? 'plaintext-only' : false}
+                  suppressContentEditableWarning
+                  role={mj ? 'textbox' : undefined}
+                  aria-label={mj ? 'Nom' : undefined}
+                  aria-readonly={mj ? perdue : undefined}
+                  aria-invalid={erreurNom ? true : undefined}
+                  aria-describedby={erreurNom ? 'med-erreur-nom' : undefined}
+                  tabIndex={mj ? 0 : undefined}
+                  onInput={(e) => setNom(e.currentTarget.textContent ?? '')}
+                  onBlur={() => mj && !perdue && void renommer()}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      e.currentTarget.blur();
+                    }
+                    if (e.key === 'Escape') {
+                      e.stopPropagation();
+                      e.currentTarget.textContent = f.nom;
+                      setNom(f.nom);
+                      setErreurNom(undefined);
+                    }
+                  }}
+                >{f.nom}</h2>
+                {mj && <Bouton petit icone={Pencil} ecrit aria-label="Renommer le fichier"
+                  onClick={() => titreEditable.current?.focus()} />}
+                {erreurNom && <p id="med-erreur-nom" className="erreur-champ" role="alert">Erreur : {erreurNom}</p>}
+              </div>
 
               {mj && (
                 <fieldset className="med-visibilite" disabled={perdue}>
@@ -561,39 +588,45 @@ function Mediatheque() {
                   <div className="bascule" role="radiogroup" aria-label="Visibilité">
                     <label>
                       <input type="radio" name="visibilite" value="joueurs" checked={f.visibilite === 'joueurs'} onChange={() => void reglerVisibilite('joueurs')} />
+                      <Eye size={14} strokeWidth={1.75} aria-hidden="true" />
                       Visible des joueurs
                     </label>
                     <label>
                       <input type="radio" name="visibilite" value="mj" checked={f.visibilite === 'mj'} onChange={() => void reglerVisibilite('mj')} />
+                      <Lock size={14} strokeWidth={1.75} aria-hidden="true" />
                       Réservé au MJ
                     </label>
                   </div>
                 </fieldset>
               )}
 
-              <dl className="med-infos">
-                <dt>Type</dt><dd>{typeLisible(f)}</dd>
-                <dt>Taille</dt><dd>{tailleLisible(f.taille)}</dd>
-                <dt>Ajouté</dt>
-                <dd>par {f.ajouteParNom} le {new Date(f.ajouteLe).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' })}</dd>
-                {f.cleOrigine && (<><dt>Clé d’origine</dt><dd>{f.cleOrigine}</dd></>)}
-              </dl>
+              <div className="med-infos">
+                <div className="med-meta-ligne"><span>{f.type.split('/')[1]?.toUpperCase() || extension(f.nom) || typeLisible(f)}</span><span>{tailleLisible(f.taille)}</span></div>
+                <div>ajouté par {f.ajouteParNom} le {new Date(f.ajouteLe).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' })}</div>
+                {mj && f.cleOrigine && <div className="med-cle">Clé d’origine <code>{f.cleOrigine}</code></div>}
+              </div>
 
               {detail!.usages.length > 0 && (
-                <section aria-labelledby="med-utilise">
+                <section className="med-utilisations" aria-labelledby="med-utilise">
                   <h3 id="med-utilise">Utilisé dans</h3>
                   <ul className="med-usages">
-                    {detail!.usages.map((u, i) => (
-                      <li key={i}>
-                        <Link className="med-usage" to={`/univers/${id}/fiche/${u.ficheId}`}>
-                          <span className="med-mono" aria-hidden="true">
-                            {u.illustration ? <Images size={14} strokeWidth={1.75} /> : <FileText size={14} strokeWidth={1.75} />}
-                          </span>
-                          <span className="med-usage-texte">{u.libelle}</span>
-                          <ChevronRight size={14} strokeWidth={1.75} aria-hidden="true" />
-                        </Link>
-                      </li>
-                    ))}
+                    {detail!.usages.map((u, i) => {
+                      const Icone = iconeDuType(types, u.ficheType);
+                      return (
+                        <li key={i}>
+                          <Link className="med-usage" to={`/univers/${id}/fiche/${u.ficheId}`}>
+                            <span className="med-mono" aria-hidden="true">
+                              <Icone size={14} strokeWidth={1.75} />
+                            </span>
+                            <span className="med-usage-texte">
+                              <span>{u.ficheTitre}</span>{' '}
+                              <span className="med-usage-ou">{u.illustration ? '(illustration)' : `— « ${u.sectionTitre} »${u.joint && !u.dansTexte ? ' (jointe)' : ''}`}</span>
+                            </span>
+                            <ChevronRight size={14} strokeWidth={1.75} aria-hidden="true" />
+                          </Link>
+                        </li>
+                      );
+                    })}
                   </ul>
                   {detail!.restantes > 0 && (
                     <Bouton petit icone={ChevronDown} enCours={usagesEnCours} onClick={() => void plusDUsages()}>
