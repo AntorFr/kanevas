@@ -17,6 +17,8 @@ async function sonder() {
 }
 
 function definirPerdue(valeur: boolean) {
+  // An in-flight response can arrive after `offline`; it cannot restore the connection.
+  valeur = valeur || (typeof navigator !== 'undefined' && navigator.onLine === false);
   if (perdue === valeur) return;
   perdue = valeur;
   if (valeur) {
