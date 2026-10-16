@@ -157,6 +157,7 @@ a { color: var(--accent-texte); }
 .boite { display: flex; gap: var(--e-3); background: var(--surface); color: var(--texte); border-radius: var(--rayon-panneau); padding: var(--e-5);
   width: min(440px, calc(100vw - 48px)); box-shadow: var(--ombre-flottant); animation: apparition var(--duree) var(--courbe); }
 .boite-icone { display: grid; place-content: center; width: 36px; height: 36px; flex: none; border-radius: 50%; background: var(--danger-fond); color: var(--danger); }
+.boite-icone.mj { background: var(--mj-fond); color: var(--mj); }
 .boite h2 { font-size: var(--t-16); font-weight: 600; }
 .boite p { margin: var(--e-1) 0 0; color: var(--texte-2); font-size: var(--t-14); }
 .boite-actions { display: flex; justify-content: flex-end; gap: var(--e-2); margin-top: var(--e-5); }

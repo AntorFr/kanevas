@@ -61,6 +61,11 @@ function PageFiche() {
   const suffixe = role === 'mj' && mode === 'joueur' ? '?mode=joueur' : '';
   const base = `/api/univers/${id}/fiches/${fid}`;
 
+  // The mode the payload in `etat` was read in: after a switch the old sections (GM-only ones included)
+  // must not be drawn for even one frame, so a stale payload counts as loading.
+  const [chargeAvec, setChargeAvec] = useState(suffixe);
+  const perime = chargeAvec !== suffixe;
+
   const charger = useCallback(async (): Promise<Etat> => {
     try {
       return { k: 'ok', fiche: await lire<FicheVue>(`${base}${suffixe}`) };
@@ -79,11 +84,15 @@ function PageFiche() {
   useEffect(() => {
     let actif = true;
     setEtat({ k: 'chargement' });
-    charger().then((e) => actif && setEtat(e));
+    charger().then((e) => {
+      if (!actif) return;
+      setEtat(e);
+      setChargeAvec(suffixe);
+    });
     return () => {
       actif = false;
     };
-  }, [charger, essai]);
+  }, [charger, essai, suffixe]);
 
   // The authors a GM may pick: the players of the universe.
   useEffect(() => {
@@ -101,12 +110,15 @@ function PageFiche() {
   /** Silent refetch after a write: the sections stay mounted, edits in progress are kept. */
   const rafraichir = useCallback(async () => {
     const e = await charger();
-    if (e.k === 'ok' || e.k === 'aucune-visible') setEtat(e);
-  }, [charger]);
+    if (e.k === 'ok' || e.k === 'aucune-visible') {
+      setEtat(e);
+      setChargeAvec(suffixe);
+    }
+  }, [charger, suffixe]);
 
   if (univers.etat === 'erreur' && univers.statut === 404) return <PageIntrouvable />;
   if (etat.k === 'introuvable') return <PageIntrouvable />;
-  if (etat.k === 'chargement' || univers.etat === 'chargement') return <SqueletteFiche cadre />;
+  if (etat.k === 'chargement' || perime || univers.etat === 'chargement') return <SqueletteFiche cadre />;
   if (etat.k === 'erreur' || univers.etat === 'erreur') {
     return <ErreurChargement texte="Impossible de charger cette fiche." onReessayer={() => setEssai((n) => n + 1)} />;
   }

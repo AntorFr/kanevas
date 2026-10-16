@@ -1,8 +1,8 @@
-import { ArrowRightLeft, Ellipsis, FolderInput, Info, ImageOff, ImagePlus, ImageUp, Tags, Trash2, type LucideIcon } from 'lucide-react';
+import { ArrowRightLeft, Ellipsis, FolderInput, Info, ImageOff, ImagePlus, ImageUp, Lock, Tags, Trash2, TriangleAlert, type LucideIcon } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 
-import { ErreurApi, appeler, envoyerFichier, useConnexionPerdue } from '../../api';
+import { ErreurApi, appeler, envoyerFichier, lire } from '../../api';
 import { Alerte, Bouton, BoutonIcone, Menu, useToasts } from '../../ui';
 import type { FicheVue } from './types';
 import { ChangerType } from './changer-type';
@@ -10,6 +10,9 @@ import { BoiteEtiquetage } from './etiquetage';
 import { DeplacerSous } from './deplacer';
 import { SousTypeBadge } from './sous-type';
 import { adresseIllustration } from './vignette';
+import type { Detail } from '../mediatheque/commun';
+import { MESSAGE_RESERVE, useAjoutFichier } from './fichiers';
+import { MESSAGES_PIECES } from './pieces';
 import { libelleDuType, useTypes } from '../../types-contexte';
 
 const AIDE = 'Visible de tous ceux qui voient la fiche.';
@@ -19,8 +22,6 @@ function dateLongue(iso?: string): string {
   const d = iso ? new Date(iso) : null;
   return d && !Number.isNaN(d.getTime()) ? d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }) : '';
 }
-
-const TYPES_IMAGE = 'image/png, image/jpeg, image/gif, image/webp';
 
 /** An inline failure under the header (never a toast); `reessayer` adds « Réessayer ». */
 export interface MessageIllustration {
@@ -47,33 +48,23 @@ interface Props {
 
 /** E-9 header: type badge and title, with the illustration at the left when there is one (AD-93). */
 export function EnteteFiche({ universId, fiche, gestion, modeJoueur, badge, Icone, message, setMessage, rafraichir, onDroitPerdu }: Props) {
-  const perdue = useConnexionPerdue();
   const { toast } = useToasts();
-  const saisie = useRef<HTMLInputElement>(null);
-  const annulation = useRef<{ annuler: () => void; raison?: 'utilisateur' | 'perdue' } | null>(null);
-  const [envoi, setEnvoi] = useState<{ nom: string; pct: number } | null>(null);
   const [confirmer, setConfirmer] = useState(false);
   const [retraitEnCours, setRetraitEnCours] = useState(false);
   const [ko, setKo] = useState<string>();
   const [changement, setChangement] = useState(false);
+  const [visibilite, setVisibilite] = useState<{ id: number; v: 'joueurs' | 'mj' }>();
   const [etiquetage, setEtiquetage] = useState(false);
   const [deplacement, setDeplacement] = useState(false);
   const alias = fiche.alias ?? [];
   const etiquettes = fiche.etiquettes ?? [];
   const { types } = useTypes();
 
-  const jeton = fiche.illustration?.jeton;
+  const ill = fiche.illustration && 'jeton' in fiche.illustration ? fiche.illustration : null;
+  const fermee = fiche.illustration && 'fermee' in fiche.illustration ? fiche.illustration : null;
+  const jeton = ill?.jeton;
   const base = `/api/univers/${universId}/fiches/${fiche.id}/illustration`;
-  const illustree = jeton !== undefined || envoi !== null;
   const indisponible = jeton !== undefined && ko === jeton;
-
-  // The connection fell while sending: the upload is cut and says so.
-  useEffect(() => {
-    if (perdue && annulation.current && !annulation.current.raison) {
-      annulation.current.raison = 'perdue';
-      annulation.current.annuler();
-    }
-  }, [perdue]);
 
   function droitPerdu() {
     setConfirmer(false);
@@ -81,38 +72,57 @@ export function EnteteFiche({ universId, fiche, gestion, modeJoueur, badge, Icon
     onDroitPerdu();
   }
 
-  async function envoyer(fichier: File) {
-    if (envoi) return;
-    const remplace = jeton !== undefined;
-    setMessage(undefined);
-    setConfirmer(false);
-    setEnvoi({ nom: fichier.name, pct: 0 });
-    const { promesse, annuler } = envoyerFichier(base, fichier, (pct) => setEnvoi({ nom: fichier.name, pct }));
-    const etat: { annuler: () => void; raison?: 'utilisateur' | 'perdue' } = { annuler };
-    annulation.current = etat;
-    try {
-      await promesse;
-      annulation.current = null;
+  // The two ways to set the illustration (B-55): an image from the device, or one picked in the library.
+  const remplace = jeton !== undefined;
+  const ajout = useAjoutFichier<unknown>({
+    universId,
+    images: true,
+    peutAjouter: true,
+    mj: true,
+    etiquette: remplace ? 'Remplacer l’illustration' : 'Ajouter une illustration',
+    icone: remplace ? ImageUp : undefined,
+    declencheur: remplace ? undefined : (
+      <>
+        <ImagePlus size={14} strokeWidth={1.75} aria-hidden="true" />
+        Ajouter une illustration
+      </>
+    ),
+    envoyer: (fichier, progres) => envoyerFichier(base, fichier, progres),
+    apres: async () => {
       await rafraichir();
-      setEnvoi(null);
       toast(`Illustration de « ${fiche.titre} » ${remplace ? 'remplacée' : 'ajoutée'}`);
-    } catch (e) {
-      annulation.current = null;
-      setEnvoi(null);
-      const nom = fichier.name;
-      if (e instanceof ErreurApi && e.statut === -1 && etat.raison === 'utilisateur') {
-        toast(`Envoi de « ${nom} » annulé`);
-      } else if (e instanceof ErreurApi && e.statut === 403) {
-        droitPerdu();
-      } else if (e instanceof ErreurApi && e.statut === 400 && e.code === 'pas_une_image') {
-        setMessage({ texte: `« ${nom} » n’est pas une image. Choisissez un PNG, un JPEG, un GIF ou un WebP.` });
-      } else if (e instanceof ErreurApi && e.statut === 400 && e.code === 'fichier_vide') {
-        setMessage({ texte: `« ${nom} » est vide.` });
-      } else {
-        setMessage({ texte: `« ${nom} » : l’envoi n’a pas abouti.`, reessayer: () => void envoyer(fichier) });
-      }
-    }
-  }
+    },
+    choisir: async (f) => {
+      await appeler('PUT', base, { fichierId: f.id });
+      setVisibilite({ id: f.id, v: f.visibilite });
+      await rafraichir();
+      toast(`Illustration de « ${fiche.titre} » ${remplace ? 'remplacée' : 'ajoutée'}`);
+    },
+    surMessage: (texte, reessayer) => {
+      // A 403 already said « Vous ne pouvez plus modifier… » through droitPerdu: keep that one.
+      if (texte === MESSAGES_PIECES.droit) return;
+      setMessage(undefined);
+      setMessage({ texte, reessayer });
+    },
+    surDroitPerdu: droitPerdu,
+  });
+  const envoi = ajout.envois[0] ?? null;
+  const illustree = jeton !== undefined || envoi !== null || fermee !== null;
+
+  // B-55: a file reserved to the GM as the illustration of a sheet the players see.
+  const idIll = ill?.id;
+  useEffect(() => {
+    if (!gestion || idIll === undefined) return;
+    let actif = true;
+    lire<Detail>(`/api/univers/${universId}/fichiers/${idIll}/detail`).then(
+      (d) => actif && setVisibilite({ id: idIll, v: d.fichier.visibilite }),
+      () => undefined,
+    );
+    return () => {
+      actif = false;
+    };
+  }, [gestion, universId, idIll, jeton]);
+  const reservee = gestion && idIll !== undefined && visibilite?.id === idIll && visibilite.v === 'mj';
 
   async function retirer() {
     if (retraitEnCours) return;
@@ -134,28 +144,6 @@ export function EnteteFiche({ universId, fiche, gestion, modeJoueur, badge, Icon
     }
   }
 
-  function choisi(fichier: File | undefined) {
-    if (saisie.current) saisie.current.value = '';
-    if (fichier) void envoyer(fichier);
-  }
-
-  function annulerEnvoi() {
-    if (!annulation.current) return;
-    annulation.current.raison = 'utilisateur';
-    annulation.current.annuler();
-  }
-
-  const entrees = (
-    <input
-      ref={saisie}
-      type="file"
-      accept={TYPES_IMAGE}
-      hidden
-      tabIndex={-1}
-      onChange={(e) => choisi(e.target.files?.[0])}
-    />
-  );
-
   return (
     <>
       <header className={`entete${illustree ? ' illustree' : ''}`}>
@@ -163,9 +151,9 @@ export function EnteteFiche({ universId, fiche, gestion, modeJoueur, badge, Icon
           <figure className={`illustration${envoi ? ' en-envoi' : ''}`}>
             <div className="boite-ill">
               {jeton !== undefined && !indisponible ? (
-                <a className="cadre-ill" href={adresseIllustration(universId, fiche.id, jeton)} target="_blank" rel="noopener" title="Ouvrir l’image entière">
+                <a className="cadre-ill" href={adresseIllustration(universId, ill!.id, jeton)} target="_blank" rel="noopener" title="Ouvrir l’image entière">
                   <img
-                    src={adresseIllustration(universId, fiche.id, jeton)}
+                    src={adresseIllustration(universId, ill!.id, jeton)}
                     alt={`Illustration de « ${fiche.titre} »`}
                     width={600}
                     height={750}
@@ -175,6 +163,12 @@ export function EnteteFiche({ universId, fiche, gestion, modeJoueur, badge, Icon
                 </a>
               ) : (
                 <div className="cadre-ill">
+                  {fermee && (
+                    <span className="ko-ill ill-fermee">
+                      <Lock size={22} strokeWidth={1.75} aria-hidden="true" />
+                      {fermee.message}
+                    </span>
+                  )}
                   {indisponible && (
                     <span className="ko-ill">
                       <ImageOff size={22} strokeWidth={1.75} aria-hidden="true" />
@@ -185,20 +179,14 @@ export function EnteteFiche({ universId, fiche, gestion, modeJoueur, badge, Icon
               )}
               {gestion && !envoi && jeton !== undefined && (
                 <div className="gestes-ill">
-                  <BoutonIcone
-                    etiquette="Remplacer l’illustration"
-                    infobulle={AIDE}
-                    icone={ImageUp}
-                    ecrit
-                    onClick={() => saisie.current?.click()}
-                  />
+                  {ajout.menu}
                   <BoutonIcone etiquette="Retirer l’illustration" infobulle="Retirer" icone={Trash2} danger ecrit onClick={() => setConfirmer(true)} />
                 </div>
               )}
               {envoi && (
                 <div className="envoi-ill" role="status" style={{ ['--progres' as string]: `${envoi.pct}%` }}>
                   <span>Envoi… {envoi.pct} %</span>
-                  <Bouton variante="fantome" petit onClick={annulerEnvoi}>
+                  <Bouton variante="fantome" petit onClick={() => ajout.annulerEnvoi(envoi.cle)}>
                     Annuler
                   </Bouton>
                 </div>
@@ -210,9 +198,7 @@ export function EnteteFiche({ universId, fiche, gestion, modeJoueur, badge, Icon
         <div className="tete-texte">
           {gestion && !illustree && (
             <div className="ajout-ill">
-              <Bouton variante="fantome" petit ecrit icone={ImagePlus} onClick={() => saisie.current?.click()}>
-                Ajouter une illustration
-              </Bouton>
+              {ajout.menu}
               <span className="aide">{AIDE}</span>
             </div>
           )}
@@ -283,8 +269,14 @@ export function EnteteFiche({ universId, fiche, gestion, modeJoueur, badge, Icon
             </ul>
           )}
         </div>
-        {gestion && entrees}
       </header>
+      {gestion && ajout.etat}
+      {reservee && (
+        <div className="avert-mj" role="status">
+          <TriangleAlert size={16} strokeWidth={1.75} aria-hidden="true" />
+          <span>{MESSAGE_RESERVE}</span>
+        </div>
+      )}
       {gestion && changement && (
         <ChangerType universId={universId} fiche={fiche} onFermer={() => setChangement(false)} rafraichir={rafraichir} onDroitPerdu={onDroitPerdu} />
       )}

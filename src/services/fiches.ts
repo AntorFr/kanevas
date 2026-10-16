@@ -12,7 +12,8 @@ import {
 import { ErreurService, introuvable, invalide, refuse } from './erreurs.js';
 import { etiquetageDe } from './etiquettes.js';
 import { mentionsDe } from './mentions.js';
-import { lireLignes } from './pieces-jointes.js';
+import { lireLignes, lisiblePar, type FichierRow } from './fichiers.js';
+import { IMAGE_RESERVEE } from './markdown.js';
 import { CHARGES, estTypeFiche, typeActif } from './types-fiche.js';
 import {
   TYPES_FICHE,
@@ -24,6 +25,7 @@ import {
   type FicheArbre,
   type PageEnfants,
   type FicheVue,
+  type IllustrationVue,
   type PageMentions,
   type SectionRow,
   type TypeFiche,
@@ -39,13 +41,20 @@ interface FicheRow {
   charge: string;
   cree_le: string;
   modifie_le: string;
-  illustration_fichier: string | null;
+  illustration_fichier_id: number | null;
+  illustration_disque: string | null;
+  illustration_visibilite: 'joueurs' | 'mj' | null;
+  illustration_ajoute_par: number | null;
   cle_origine: string | null;
   sous_type: string | null;
   parent_id: number | null;
 }
 
-export const versFiche = (r: FicheRow): Fiche => ({
+/**
+ * The sheet as a reader sees it. Without `lecteur` (the GM's own writes) the illustration is the file; with
+ * one, a closed illustration is the « illustration fermée » state (AD-117, E-8, E-9), never its address.
+ */
+export const versFiche = (r: FicheRow, lecteur?: (f: Pick<FichierRow, 'visibilite' | 'ajoute_par'>) => boolean): Fiche => ({
   id: r.id,
   universId: r.univers_id,
   type: r.type,
@@ -54,8 +63,16 @@ export const versFiche = (r: FicheRow): Fiche => ({
   charge: JSON.parse(r.charge) as Record<string, unknown>,
   creeLe: r.cree_le,
   modifieLe: r.modifie_le,
-  illustration: r.illustration_fichier ? { jeton: r.illustration_fichier } : null,
+  illustration: illustrationVue(r, lecteur),
 });
+
+function illustrationVue(r: FicheRow, lecteur?: (f: Pick<FichierRow, 'visibilite' | 'ajoute_par'>) => boolean): IllustrationVue | null {
+  if (r.illustration_fichier_id === null || r.illustration_disque === null) return null;
+  if (lecteur && !lecteur({ visibilite: r.illustration_visibilite!, ajoute_par: r.illustration_ajoute_par! })) {
+    return { fermee: true, message: IMAGE_RESERVEE };
+  }
+  return { id: r.illustration_fichier_id, jeton: r.illustration_disque };
+}
 
 export const MAX_SOUS_TYPE = 60;
 
@@ -75,10 +92,16 @@ export function validerTitre(titre: string, max: number, quoi: string): string {
   return t;
 }
 
+/** The name on the disk of the illustration file (the cache token), read with the sheet. */
+const DISQUE_ILLUSTRATION =
+  `(SELECT x.disque FROM fichiers x WHERE x.id = f.illustration_fichier_id) AS illustration_disque,
+   (SELECT x.visibilite FROM fichiers x WHERE x.id = f.illustration_fichier_id) AS illustration_visibilite,
+   (SELECT x.ajoute_par FROM fichiers x WHERE x.id = f.illustration_fichier_id) AS illustration_ajoute_par`;
+
 /** The sheet row of this universe, or not found (a sheet of another universe does not exist here). */
 export function chargerFiche(db: Db, universId: number, ficheId: number): FicheRow {
   const row = db
-    .prepare('SELECT * FROM fiches WHERE id = ? AND univers_id = ?')
+    .prepare(`SELECT f.*, ${DISQUE_ILLUSTRATION} FROM fiches f WHERE f.id = ? AND f.univers_id = ?`)
     .get(ficheId, universId) as FicheRow | undefined;
   if (!row) throw introuvable();
   return row;
@@ -421,7 +444,7 @@ export function lireFiche(
   if (lisibles.length === 0 && (role !== 'mj' || acteur.modeJoueur)) throw introuvable();
   const mentions = mentionsDe(db, role, acteur, universId, ficheId);
   return {
-    ...versFiche(fiche),
+    ...versFiche(fiche, (f) => lisiblePar(role, acteur, f)),
     ancetres: ancetresLisibles(db, role, acteur, fiche),
     mentions: mentions.mentions,
     mentionsSuite: mentions.suite,
@@ -431,7 +454,7 @@ export function lireFiche(
     ...(vueMJ(role, acteur) && fiche.cle_origine ? { cleOrigine: fiche.cle_origine } : {}),
     sections: lisibles.map((s) => ({
       ...vueSection(db, universId, role, s, acteur, formeLiens),
-      piecesJointes: lireLignes(db, s.id, vueMJ(role, acteur)),
+      piecesJointes: lireLignes(db, acteur, universId, role, s.id),
     })),
   };
 }
@@ -575,7 +598,7 @@ export function listerFiches(
   }
   const rows = db
     .prepare(
-      `SELECT f.* FROM fiches f WHERE ${where.join(' AND ')}
+      `SELECT f.*, ${DISQUE_ILLUSTRATION} FROM fiches f WHERE ${where.join(' AND ')}
        ORDER BY plier(f.titre), f.id LIMIT ?`,
     )
     .all(...params, limite + 1) as FicheRow[];
@@ -588,7 +611,7 @@ export function listerFiches(
   const mots = options.recherche === undefined ? null : motsDe(options.recherche);
   const enrichie = (r: FicheRow): Fiche => {
     const e = etiquetageDe(db, r.id);
-    const f: Fiche = { ...versFiche(r), alias: e.alias, etiquettes: e.etiquettes };
+    const f: Fiche = { ...versFiche(r, (f) => lisiblePar(role, acteur, f)), alias: e.alias, etiquettes: e.etiquettes };
     if (mots !== null) {
       const trouve = mots.length > 0 && !repond(r.titre, mots) ? e.alias.find((a) => repond(a, mots)) : undefined;
       if (trouve !== undefined) f.aliasTrouve = trouve;

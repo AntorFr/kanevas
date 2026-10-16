@@ -34,8 +34,10 @@
   (AD-2) — routes and agent tools never carry SQL. A migration takes the next
   number when its slice merges (AD-51).
 - Attachments (AD-7, AD-65): bytes under `<db dir>/attachments/` (`ATTACHMENTS_DIR`), written only through
-  `services/stockage.ts` (tmp/ then rename; `tmp/` emptied at startup). `deposerPieceJointe` in
-  `services/pieces-jointes.ts` is the upload function of section attachments; images and map backgrounds
+  `services/stockage.ts` (tmp/ then rename; `tmp/` emptied at startup). `ajouterFichier` in
+  `services/fichiers.ts` is the one upload function of the media library (AD-117: every file is a row of `fichiers`, its
+  visibility deduced from where it is added, never sent by the client; `fichierLisible` is the one read rule; only
+  `services/` writes `fichiers*`); map backgrounds
   (`services/cartes.ts`, AD-69) go through `stockage.ts` directly, never write the volume themselves. The type is sniffed from the bytes, never trusted.
 - `frontend/` (React, Vite, `react-router`; AD-16, AD-57): `npm run build` also builds it into
   `dist/public`, located by `routes/frontend.ts` and served by `routes/session.ts` behind the session guard (`@fastify/static` for

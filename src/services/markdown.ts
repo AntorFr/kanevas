@@ -5,6 +5,8 @@ import type Token from 'markdown-it/lib/token.mjs';
 // Pure Markdown rendering (AD-113): no database, no side effect. Raw HTML is escaped
 // (`html: false`); only `http`, `https` and `mailto` links are links, anything else stays text.
 const PROTOCOLES_LIEN = /^(https?|mailto):/i;
+/** The reference of a file of the media library in an image or a link (AD-117): `fichier:<id>`. */
+const REFERENCE_FICHIER = /^fichier:([1-9]\d{0,14})$/;
 
 /** The three forms of the grammar (`docs/ecrans.md`): text and key are 1 to 200 characters, no `]`, `|` nor line break. */
 const LIEN = /\[\[(?:([1-9]\d{0,14})|cle:([^|\]\r\n]{1,200}))(?:\|([^|\]\r\n]{1,200}))?\]\]/y;
@@ -43,7 +45,8 @@ function creerMoteur(avecBlocMJ: boolean, avecLiens: boolean): InstanceType<type
   md.enable(['table', 'strikethrough']);
 
   const validerParDefaut = md.validateLink.bind(md);
-  md.validateLink = (url: string): boolean => validerParDefaut(url) && PROTOCOLES_LIEN.test(url.trim());
+  md.validateLink = (url: string): boolean =>
+    REFERENCE_FICHIER.test(url.trim()) || (validerParDefaut(url) && PROTOCOLES_LIEN.test(url.trim()));
 
   // Headings never go above the section title: `#` and `##` become h3, then h4, h5, h6 at most.
   md.renderer.rules.heading_open = (tokens, idx, options, _env, self) => {
@@ -66,11 +69,17 @@ function creerMoteur(avecBlocMJ: boolean, avecLiens: boolean): InstanceType<type
     return self.renderToken(tokens, idx, options);
   };
 
-  // Until the media library exists (AD-111) an image is its alternative text.
+  // An image is its alternative text; a `fichier:<id>` one is decided by the `fichiers` core rule below.
   md.renderer.rules.image = (tokens, idx, options, env) => {
     const token = tokens[idx]!;
     return md.utils.escapeHtml(md.renderer.renderInlineAsText(token.children ?? [], options, env));
   };
+  md.core.ruler.after('inline', 'fichiers', (state) => {
+    if ((state.env as EnvRendu).lectureSeule) return;
+    for (const bloc of state.tokens) {
+      if (bloc.type === 'inline' && bloc.children) bloc.children = decider(bloc.children as unknown as Token[], state.env as EnvRendu, md, state.Token as unknown as new (t: string, tag: string, n: number) => Token) as unknown as typeof bloc.children;
+    }
+  });
 
   if (avecBlocMJ) {
     md.use(container, 'mj', {
@@ -103,6 +112,8 @@ export interface OptionsRendu {
   liens?: ResolveurLiens;
   /** `markdown`: a readable link comes out as `[texte](fiche:<id>)`, for the assistant (AD-96). */
   formeLiens?: 'html' | 'markdown';
+  /** How the `fichier:<id>` references read for the reader (AD-117). Without it an image is its alternative text. */
+  fichiers?: ResolveurFichiers;
 }
 
 /** What a link reads as for one reader (AD-116): decided by the target, never by the `liens` table. */
@@ -115,15 +126,126 @@ export type RenduLien =
 /** Resolves a link found in the text; built by the service for the reader, one query for the whole text. */
 export type ResolveurLiens = (cible: { id: number | null; cle: string | null }) => RenduLien;
 
+/** What a `fichier:<id>` reference reads as for one reader (AD-117, AD-96). */
+export type RenduFichier =
+  | { genre: 'fichier'; id: number; nom: string; image: boolean; adresse: string }
+  | { genre: 'ferme' }
+  | { genre: 'supprime' }
+  | { genre: 'rien' };
+
+/** Resolves a file reference of the text; built by the service for the reader, one query for the whole text. */
+export type ResolveurFichiers = (id: number) => RenduFichier;
+
+export const IMAGE_RESERVEE = 'Image réservée au MJ.';
+export const FICHIER_RESERVE = 'Fichier réservé au MJ.';
+export const FICHIER_SUPPRIME = 'Fichier supprimé de la médiathèque.';
+
 interface EnvRendu {
+  fichiers?: ResolveurFichiers;
   liens?: ResolveurLiens;
   formeLiens?: 'html' | 'markdown';
+  /** Reading only (`extraireReferencesFichier`): the `fichiers` rule leaves the tokens as the engine made them. */
+  lectureSeule?: boolean;
 }
 
 export function rendreMarkdown(source: string, options: OptionsRendu = {}): string {
   const md = options.nature === 'section' ? mdSection : options.nature === 'scenario' ? mdScenario : mdTexte;
-  const env: EnvRendu = { liens: options.liens, formeLiens: options.formeLiens };
+  const env: EnvRendu = { liens: options.liens, formeLiens: options.formeLiens, fichiers: options.fichiers };
   return md.render(source, env as Record<string, unknown>);
+}
+
+type Jeton = Token;
+
+/** The `html_inline` token that stands for a whole reference: the engine prints its content as is. */
+function brutDe(contenu: string, Fabrique: new (type: string, tag: string, nesting: number) => Token): Jeton {
+  const t = new Fabrique('html_inline', '', 0);
+  t.content = contenu;
+  return t;
+}
+
+function remplacement(r: RenduFichier | null, image: boolean, md: InstanceType<typeof MarkdownIt>): string | null {
+  if (r === null) return null;
+  switch (r.genre) {
+    case 'ferme':
+      return `<span class="fichier-reserve">${image ? IMAGE_RESERVEE : FICHIER_RESERVE}</span>`;
+    case 'supprime':
+      return `<span class="fichier-supprime">${FICHIER_SUPPRIME}</span>`;
+    case 'rien':
+      return '';
+    default:
+      return '';
+  }
+}
+
+/**
+ * Decides every `fichier:<id>` image and link of one inline run (AD-117): a readable file is an image or a
+ * link to the bytes route, a closed one the reserved sentence, a vanished one the removed sentence for the GM
+ * and nothing for a player. Without a resolver an image stays its alternative text and a link its text.
+ */
+function decider(
+  enfants: Jeton[],
+  env: EnvRendu,
+  md: InstanceType<typeof MarkdownIt>,
+  Fabrique: new (type: string, tag: string, nesting: number) => Token,
+): Jeton[] {
+  const brut = (contenu: string) => brutDe(contenu, Fabrique);
+  const sortie: Jeton[] = [];
+  for (let i = 0; i < enfants.length; i++) {
+    const t = enfants[i]!;
+    if (t.type === 'image') {
+      const m = REFERENCE_FICHIER.exec(String(t.attrGet('src') ?? ''));
+      if (!m || !env.fichiers) {
+        sortie.push(t);
+        continue;
+      }
+      const r = env.fichiers(Number(m[1]));
+      const alt = md.renderer.renderInlineAsText(t.children ?? [], md.options, {});
+      if (r.genre === 'fichier') {
+        if (env.formeLiens === 'markdown') sortie.push(brut(md.utils.escapeHtml(`![${alt}](fichier:${r.id})`)));
+        else if (r.image) {
+          sortie.push(
+            brut(`<img src="${md.utils.escapeHtml(r.adresse)}" alt="${md.utils.escapeHtml(alt)}" loading="lazy">`),
+          );
+        } else {
+          sortie.push(
+            brut(
+              `<a class="fichier-joint" href="${md.utils.escapeHtml(r.adresse)}" target="_blank" rel="noopener noreferrer">${md.utils.escapeHtml(alt || r.nom)}</a>`,
+            ),
+          );
+        }
+      } else sortie.push(brut(remplacement(r, true, md) ?? ''));
+      continue;
+    }
+    if (t.type === 'link_open') {
+      const m = REFERENCE_FICHIER.exec(String(t.attrGet('href') ?? ''));
+      if (!m) {
+        sortie.push(t);
+        continue;
+      }
+      let fin = i + 1;
+      while (fin < enfants.length && !(enfants[fin]!.type === 'link_close' && enfants[fin]!.level === t.level)) fin++;
+      const dedans = enfants.slice(i + 1, fin);
+      const fermeture = enfants[fin];
+      i = fermeture ? fin : enfants.length;
+      if (!env.fichiers) {
+        // No reader to decide for: the label stays, never a link nobody checked.
+        sortie.push(...dedans);
+        continue;
+      }
+      const r = env.fichiers(Number(m[1]));
+      if (r.genre === 'fichier' && env.formeLiens !== 'markdown') {
+        t.attrSet('href', r.adresse);
+        sortie.push(t, ...dedans);
+        if (fermeture) sortie.push(fermeture);
+      } else if (r.genre === 'fichier') {
+        const texte = md.renderer.renderInlineAsText(dedans, md.options, {});
+        sortie.push(brut(md.utils.escapeHtml(`[${texte}](fichier:${r.id})`)));
+      } else sortie.push(brut(remplacement(r, false, md) ?? ''));
+      continue;
+    }
+    sortie.push(t);
+  }
+  return sortie;
 }
 
 const echapper = (t: string) => mdTexte.utils.escapeHtml(t);
@@ -229,6 +351,25 @@ export interface LienExtrait {
 }
 
 const mdLiens = mdSection;
+
+/**
+ * The ids of the files a text references with `![…](fichier:<id>)` or `[…](fichier:<id>)`, in order, one entry
+ * per occurrence (AD-117). Pure. Read from the tokens of the engine with the very grammar the rendering uses
+ * (`REFERENCE_FICHIER`), never by pattern over the text: a form in a code block or a code span is not a reference.
+ */
+export function extraireReferencesFichier(source: string): number[] {
+  const ids: number[] = [];
+  const voir = (tokens: ReturnType<typeof mdSection.parse>) => {
+    for (const t of tokens) {
+      const adresse = t.type === 'image' ? t.attrGet('src') : t.type === 'link_open' ? t.attrGet('href') : null;
+      const m = adresse === null ? null : REFERENCE_FICHIER.exec(String(adresse));
+      if (m) ids.push(Number(m[1]));
+      if (t.children) voir(t.children);
+    }
+  };
+  voir(mdSection.parse(source, { lectureSeule: true } satisfies EnvRendu));
+  return ids;
+}
 
 /**
  * The `[[…]]` links of a source, in order (AD-116). Pure. They are read from the tokens of the

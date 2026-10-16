@@ -1,5 +1,6 @@
 import type { Db } from '../db/db.js';
 import { ErreurService, introuvable, refuse } from './erreurs.js';
+import { resolveurFichiers } from './fichiers.js';
 import { extraireLiens, rendreMarkdown, type ResolveurLiens } from './markdown.js';
 import type { Acteur, Audience, Role, SectionRow, SectionVue } from './types.js';
 
@@ -169,6 +170,7 @@ export function rendreSection(
   return rendreMarkdown(source, {
     nature: lecteurMJ ? 'section' : 'scenario',
     liens: resolveurLiens(db, universId, role, acteur, source),
+    fichiers: resolveurFichiers(db, universId, role, acteur, source),
     formeLiens,
   });
 }

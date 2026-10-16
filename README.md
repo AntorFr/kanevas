@@ -7,8 +7,7 @@ son audience ; un joueur ne lit que ce que l'audience lui ouvre. Ce que le produ
 par quels écrans : `docs/parcours.md`, `docs/ecrans.md`, `docs/donnees.md`. Les sigles : E-n = un écran (`docs/ecrans.md`), B-n = un besoin, P-n = un parcours, AD-n = une décision d'architecture (`ARCHITECTURE.md`).
 
 Au-delà de la première fonction métier, le dépôt porte le **système de jeu** : un référentiel (règles, créatures, objets) que plusieurs
-univers se partagent, rattaché depuis les paramètres de l'univers. Il porte aussi le **suivi de la séance** : campagnes, scénarios (MJ), préparation en cinq catégories (MJ) et comptes-rendus (tout membre). Il porte enfin les **pièces jointes** : sur chaque section, déposer un fichier, voir une image, télécharger
-les autres, marquer secrète (MJ), retirer. Il porte l'**administration d'instance** : un compte du groupe Authelia `parents` voit les univers et leurs membres (jamais le contenu) et les répare (E-5, B-6). Chaque fiche peut porter une **illustration** (posée par le MJ, grille de cartes E-8, en-tête de E-9), et les **systèmes de jeu** ont leur écran hors des univers (E-16, E-15). Il porte aussi les **relations** entre fiches (bloc Relations de la fiche) et la **recherche** dans tous les types de fiche, par alias et par étiquette (E-17), les **cartes** (E-10, E-11 : carte illustrée avec fond et tokens, ou graphe des relations ; visibles ou non des joueurs ; bloc « Cartes visibles » de E-3) et l'**assistant** de chaque membre (E-12 : un panneau de conversation qui cherche, lit, écrit et, pour le MJ, crée une campagne ou un scénario et **propose une mise à jour d'une section** d'après un compte-rendu, que seul son geste « Appliquer » écrit, avec exactement les droits de la personne ; l'accès au modèle passe par l'abonnement Claude de l'exploitant, `CLAUDE_CODE_OAUTH_TOKEN` ou, sans redéploiement, le jeton que l'admin d'instance pose depuis l'administration, et en bouchon un script répond). La
+univers se partagent, rattaché depuis les paramètres de l'univers. Il porte aussi le **suivi de la séance** : campagnes, scénarios (MJ), préparation en cinq catégories (MJ) et comptes-rendus (tout membre). The universe's **media library** (E-19) stores each image or document as a row in `fichiers` with its own visibility (player-visible or GM-only), determined by where it is added; a section attaches it (up to 100) or embeds it in its text, and a sheet can use it as its illustration. Il porte l'**administration d'instance** : un compte du groupe Authelia `parents` voit les univers et leurs membres (jamais le contenu) et les répare (E-5, B-6). Chaque fiche peut porter une **illustration** (an image from the media library, set by the GM, in the E-8 card grid and E-9 header), et les **systèmes de jeu** ont leur écran hors des univers (E-16, E-15). Il porte aussi les **relations** entre fiches (bloc Relations de la fiche) et la **recherche** dans tous les types de fiche, par alias et par étiquette (E-17), les **cartes** (E-10, E-11 : carte illustrée avec fond et tokens, ou graphe des relations ; visibles ou non des joueurs ; bloc « Cartes visibles » de E-3) et l'**assistant** de chaque membre (E-12 : un panneau de conversation qui cherche, lit, écrit et, pour le MJ, crée une campagne ou un scénario et **propose une mise à jour d'une section** d'après un compte-rendu, que seul son geste « Appliquer » écrit, avec exactement les droits de la personne ; l'accès au modèle passe par l'abonnement Claude de l'exploitant, `CLAUDE_CODE_OAUTH_TOKEN` ou, sans redéploiement, le jeton que l'admin d'instance pose depuis l'administration, et en bouchon un script répond). La
 génération d'images n'est pas
 construite (tranches suivantes) : les passages de ces docs qui les décrivent sont la cible.
 
@@ -20,12 +19,12 @@ scripts/faux-setup-token.mjs        Le `claude setup-token` du bouchon (copié d
 src/
   server.ts, app.ts               Démarrage ; assemblage des plugins et des routes
   config/env.ts                   Variables d'environnement (zod)
-  db/                             SQLite (better-sqlite3), migrations/0001 à 0014, runner
+  db/                             SQLite (better-sqlite3), migrations/0001 to 0015, runner
   services/                       comptes, univers, membres, instance, fiches, sections, droits, systemes, relations, campagnes, scenarios, preparation, comptes_rendus, propositions, markdown (rendu unique), liens (table liens, seul écrivain), etiquettes (alias et étiquettes, seul écrivain), mentions (« Mentionnée dans »), types, types-fiche (la liste des types et leur activation),
-                                   pieces-jointes, illustrations, cartes, jetons, lots, import (contexte du jeton), import-fiches (API d'import), stockage (octets sur le volume) :
+                                   fichiers (media library, sole writer of `fichiers*`), cartes, jetons, lots, import (contexte du jeton), import-fiches (API d'import), stockage (octets sur le volume) :
                                    seul code qui lit ou écrit les données ; session, oidc
   routes/                         health, auth (OIDC), session (cookie, garde, /api/moi),
-                                   bouchon, univers (+ membres), instance (admin, AD-87), systemes, suivi, cartes, fiches (+ sections), propositions, assistant, acces-api (E-18, session), import (API d'import à jeton, `/api/import/v1`), frontend
+                                   bouchon, univers (+ membres), instance (admin, AD-87), systemes, suivi, cartes, fiches (+ sections), fichiers (E-19 media library, bytes, attachments, illustration), propositions, assistant, acces-api (E-18, session), import (API d'import à jeton, `/api/import/v1`), frontend
   bouchon/                        Monde de démonstration semé au démarrage en bouchon (depart.ts) et ses fichiers (demo/)
   services/assistant/             L'assistant : catalogues d'outils, port AgentTransport (bouchon, claude-agent), orchestration, jeton et sa session de connexion
   services/llm/                   Transports LLM repris d'Antre-du-maitre, branchés nulle part
@@ -45,7 +44,7 @@ Tests sans Docker : `npm run typecheck` puis `npm test` (ils jouent aussi les e2
 
 ## Démarrage local
 
-Pour **voir les écrans** : la commande de la section « mode bouchon » plus bas (`npm ci && npm run build && KANEVAS_STUB=1 npm start`). Le bloc ci-dessous ne sert que l'API (`/healthz`).
+To **view the screens**, use the command under « Sans Authelia : le mode bouchon » below (`npm ci && npm run build && KANEVAS_STUB=1 npm start`). The block below only serves the API (`/healthz`). `npm run build` writes to the repository's `dist/`: after renumbering a migration, run `rm -rf dist` first.
 
 ```bash
 # écrit node_modules/ et ./data/ (base et session.key) dans le dépôt monté, en root ; les deux sont ignorés par git.
@@ -71,6 +70,10 @@ npm run dev            # ou, sans rechargement : npm run build && npm start (`np
 curl http://localhost:3001/healthz   # -> "kanevas 0.0.0-dev"
 ```
 
+The attested run (`npm run tests:attestes`, no test skipped) needs `KANEVAS_BASE_DIST`: a `dist/` built from `epic/kanevas-import` (the migration test skips without it): `git worktree add /tmp/base origin/epic/kanevas-import && (cd /tmp/base && npm ci && npm run build)`, then `KANEVAS_BASE_DIST=/tmp/base/dist npm run tests:attestes`. The script refuses a dirty tree (exit 2): commit first.
+
+This block serves `/healthz` and the API only; to log in and see the screens, use the stub-mode command under « Sans Authelia : le mode bouchon » (`KANEVAS_STUB=1`).
+
 `npm run dev` sert l'API, et le frontend seulement s'il a été construit : lancer d'abord
 `npm run build` (il construit `dist/public`, servi par Fastify derrière la session ; sans lui, `/`
 ne montre aucun écran). `npm run dev:front` lance Vite seul (port 5173 par défaut) et ne relaie que
@@ -86,7 +89,9 @@ récent suffit pour les mêmes commandes (`npm ci && npm run typecheck && npm te
 ```bash
 npm ci && npm run build && KANEVAS_STUB=1 npm start   # puis ouvrir http://localhost:3001/ : choix d'un compte de test
 # le semis précède l'écoute du port (moins d'une seconde ici) ; sans écrire dans ./data/ ni sur le port 3001 : npm run build && PORT=3055 DB_PATH=/tmp/k.db KANEVAS_STUB=1 npm start
-# (Ctrl-C l'arrête ; lancé en arrière-plan, kill du processus ; supprimer /tmp/k.db pour repartir d'une base vide ; `session.key` et `attachments/` se créent à côté de la base, donc dans /tmp : prendre un dossier dédié, `DB_PATH=/tmp/kanevas-essai/k.db`, et le supprimer en entier)
+# Stop with Ctrl-C, or `kill $!` if started in the background with `&`. Delete /tmp/k.db to reset the database.
+# `session.key` and `attachments/` are created beside the database: use a dedicated directory,
+# e.g. `DB_PATH=/tmp/kanevas-essai/k.db`, and delete that entire directory to reset everything.
 ```
 
 `/connexion-bouchon` remplace Authelia (AD-55) sous un bandeau « mode bouchon ». Les comptes de test
@@ -105,6 +110,16 @@ En édition, « Bloc MJ » entoure la sélection de `:::mj` et `:::`.
 
 En bouchon seulement, `/demo-composants` (session requise) montre les composants de la charte dans tous leurs états ;
 hors bouchon, cette adresse répond 404.
+
+**Media library recipe** (`kanevas-import-mediatheque`, in stub mode: `npm run build && PORT=3055 DB_PATH=/tmp/k.db KANEVAS_STUB=1 npm start`, fresh seeded database; « Lame d'Ébène »). As `antor`: « Médiathèque » in the sidebar (E-19) lists, among others (the seeded illustrations are there too), « Carte des Sphères », « Plan secret de la Guilde » (GM-only) and « port-sel-quais.webp »; opening « Carte des Sphères » gives its usages (« Val-Fortin », « Maître Aldric », the illustration of « Port-Sel »). On « Port-Sel », « Description »: « Joindre un fichier » adds a document, visible to players; « Fichier » in the editor, inside a GM block, adds a GM-only file. As `lea`: « Plan secret de la Guilde » is not in the library, and a GM-only image (inserted in a text with `![plan](fichier:<id>)`, here « Plan secret de la Guilde », unused in the seed; read its `<id>` from `GET /api/univers/1/fichiers` with Antor's cookie (log in first, see the block below): 11 on a fresh database; « Lame d'Ébène » is universe 1) read in a text becomes « Image réservée au MJ. ». Reserving « Carte des Sphères » for the GM (E-19) first lists what players lose.
+
+Without a browser (English, as `CLAUDE.md` asks; same stub server, same cookie jar `-b /tmp/j`; « Lame d'Ébène » is universe 1, « Port-Sel » is fiche 12 and its « Description » section 13 on a fresh base):
+```bash
+curl -c /tmp/j -d compte=antor http://localhost:3055/connexion-bouchon   # log in as Antor (stub mode, no password); every curl below sends this cookie jar
+curl -b /tmp/j http://localhost:3055/api/univers/1/fichiers   # {"fichiers":[{"id","nom",…}],"suite","total"} : read the id by "nom"
+curl -b /tmp/j -F section=13 -F maniere=joint -F fichier=@tarifs-du-port.pdf http://localhost:3055/api/univers/1/fichiers   # « Joindre un fichier »; add -F blocMj=true for the GM-block path (fields before the file)
+curl -b /tmp/j -X PUT -H 'Content-Type: application/json' -d '{"contenu":"![plan](fichier:11)","version":1}' http://localhost:3055/api/univers/1/fiches/12/sections/13/contenu   # version: read it from the section first
+```
 
 Recette de la mise à jour du monde en bouchon (le semis ne contient ni campagne ni compte-rendu ; « Maître Aldric » a une section « Vérité — MJ seul », que « Vérité » suffit à désigner). Toujours dans « Lame d'Ébène » :
 1. En `antor`, dans le panneau de l'assistant (bouton flottant) : « Crée une campagne « Marches » ».
@@ -151,7 +166,7 @@ Recette des cartes en bouchon (le semis ne contient aucune carte) : en « antor 
 ## Réglages
 
 La liste de départ est `.env.example` (elle porte aussi `NODE_ENV`, `ANTHROPIC_API_KEY` et `ANTHROPIC_MODEL` ; seuls `ANTHROPIC_MODEL`, `CLAUDE_CODE_OAUTH_TOKEN` et `CLAUDE_DIR` servent, à l'assistant ; `ANTHROPIC_API_KEY` n'est lue par aucune route). En plus : `APP_NAME` (défaut `kanevas` ; seul le texte de `/healthz` le reprend),
-`APP_VERSION` (défaut `0.0.0-dev`, posée par le build-arg en image), `PORT` (3001), `DB_PATH` (fichier SQLite ; défaut `/data/kanevas.db` avec `NODE_ENV=production`, `./data/kanevas.db` en développement), `ATTACHMENTS_DIR` (pièces jointes ; défaut `attachments/` à côté de la base, donc `/data/attachments` en production), `SESSION_SECRET` (≥ 16 caractères ; à défaut `session.key`, créée à côté de la base : `/data/session.key` en production, `./data/session.key` en développement), `KANEVAS_STUB` (`1`), `KANEVAS_SANS_SEMIS` (`1` : pas de monde de démonstration en bouchon), `FRONTEND_DIR` (dossier du frontend construit ; posé par les tests de routes, inutile à l'exploitation), `LLM_PROVIDER` (`mock` | `anthropic` | `claude-agent`, défaut `mock` ; lu par le seul transport texte, que l'assistant n'emploie pas), `CLAUDE_CODE_OAUTH_TOKEN` (jeton de l'abonnement Claude, posé par l'exploitant ; vide et sans jeton posé depuis l'administration = l'assistant est indisponible hors bouchon et le dit, il ne retombe jamais sur le bouchon, AD-77), `CLAUDE_DIR` (dossier du fichier `oauth-token` posé depuis l'administration ; défaut `claude/` à côté de la base, donc `/data/claude` en production, sous le dossier temporaire et perdu au redémarrage si la base est en mémoire, c'est-à-dire sans volume ; ce fichier prime sur la variable, AD-109).
+`APP_VERSION` (défaut `0.0.0-dev`, posée par le build-arg en image), `PORT` (3001), `DB_PATH` (fichier SQLite ; défaut `/data/kanevas.db` avec `NODE_ENV=production`, `./data/kanevas.db` en développement), `ATTACHMENTS_DIR` (media library files; defaults to `attachments/` beside the database, hence `/data/attachments` in production), `SESSION_SECRET` (≥ 16 caractères ; à défaut `session.key`, créée à côté de la base : `/data/session.key` en production, `./data/session.key` en développement), `KANEVAS_STUB` (`1`), `KANEVAS_SANS_SEMIS` (`1` : pas de monde de démonstration en bouchon), `FRONTEND_DIR` (dossier du frontend construit ; posé par les tests de routes, inutile à l'exploitation), `LLM_PROVIDER` (`mock` | `anthropic` | `claude-agent`, défaut `mock` ; lu par le seul transport texte, que l'assistant n'emploie pas), `CLAUDE_CODE_OAUTH_TOKEN` (jeton de l'abonnement Claude, posé par l'exploitant ; vide et sans jeton posé depuis l'administration = l'assistant est indisponible hors bouchon et le dit, il ne retombe jamais sur le bouchon, AD-77), `CLAUDE_DIR` (dossier du fichier `oauth-token` posé depuis l'administration ; défaut `claude/` à côté de la base, donc `/data/claude` en production, sous le dossier temporaire et perdu au redémarrage si la base est en mémoire, c'est-à-dire sans volume ; ce fichier prime sur la variable, AD-109).
 
 ## Version de l'application
 

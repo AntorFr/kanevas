@@ -1,16 +1,30 @@
-import { Bold, Italic, Link2, Lock } from 'lucide-react';
-import { useEffect, useId, useLayoutEffect, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
+import { Bold, Italic, Link2, Lock, TriangleAlert } from 'lucide-react';
+import { useEffect, useId, useLayoutEffect, useRef, useState, type KeyboardEvent, type MutableRefObject, type ReactNode } from 'react';
 
 import { appeler, useConnexionPerdue } from '../api';
 import { Bouton } from './composants';
-import { depasse, entourer, entourerBlocMJ, estLienIllisible, insererLien, messageTropLong, ouvertureLien, ouvrirLien, refusServeur } from './editeur-logique';
+import { dansBlocMJ, depasse, entourer, entourerBlocMJ, estLienIllisible, idsFichiers, insererLien, insererTexte, referenceFichier, sansBlocsMJ, messageTropLong, ouvertureLien, ouvrirLien, refusServeur } from './editeur-logique';
 import { ListeLiens, useRechercheLiens, type FicheLien } from './liste-liens';
 import { Markdown } from './markdown';
 import './editeur.css';
 
-export { depasse, messageTropLong, refusServeur };
+export { depasse, idsFichiers, messageTropLong, referenceFichier, refusServeur, sansBlocsMJ };
 
 const ECHEC_APERCU = 'L’aperçu n’a pas abouti. Réessayez.';
+
+/** What the editor hands to the file tool of E-9 (« Fichier » of the toolbar): insertion, place, drop. */
+export interface ApiEditeurFichier {
+  /** Puts a reference at the caret as it is when the call comes (the upload may have been long). */
+  inserer: (texte: string) => void;
+  /** Whether the caret stands in a `:::mj` block now. */
+  dansBlocMJ: () => boolean;
+  /** Where the tool shows its upload lines and messages, under the field. */
+  sous: HTMLElement | null;
+  /** The tool registers here what a drop of files on the editor does. */
+  depot: MutableRefObject<((fichiers: File[]) => void) | null>;
+  /** The Écrire view is shown (the tool is inert in the preview). */
+  ecriture: boolean;
+}
 
 type Apercu = { etat: 'cours' } | { etat: 'vide' } | { etat: 'echec' } | { etat: 'ok'; html: string };
 
@@ -39,6 +53,10 @@ interface Props {
    * where `[[…]]` stays text. `campagneId` makes the preview a scenario's (links read in its campaign's universe).
    */
   liens?: { universId: string; campagneId?: number };
+  /** « Fichier » (`paperclip`) of the toolbar and the drop of files (B-55): the screen supplies the tool. Absent where a text holds no file. */
+  fichier?: (api: ApiEditeurFichier) => ReactNode;
+  /** A warning under the field that blocks nothing (B-55). */
+  avertissement?: ReactNode;
   /** Beside the counter, at the foot of the frame: help line and buttons of the screen. */
   children?: ReactNode;
 }
@@ -48,13 +66,19 @@ interface Props {
  * switch (the preview is the server's `POST /api/apercu`, the same function as the reading), counter and
  * ceiling from `/api/moi`. The text typed stays in the field while the preview shows.
  */
-export function EditeurMarkdown({ etiquette, valeur, onChange, max, rows = 8, autoFocus, onEnregistrer, onAnnuler, erreur, section, liens, children }: Props) {
+export function EditeurMarkdown({ etiquette, valeur, onChange, max, rows = 8, autoFocus, onEnregistrer, onAnnuler, erreur, section, liens, fichier, avertissement, children }: Props) {
   const perdue = useConnexionPerdue();
   const champ = useRef<HTMLTextAreaElement>(null);
   const selection = useRef<{ debut: number; fin: number } | undefined>(undefined);
   const demande = useRef(0);
   const [vue, setVue] = useState<'ecrire' | 'apercu'>('ecrire');
   const [apercu, setApercu] = useState<Apercu>({ etat: 'vide' });
+  const valeurRef = useRef(valeur);
+  valeurRef.current = valeur;
+  const changeRef = useRef(onChange);
+  changeRef.current = onChange;
+  const depot = useRef<((fichiers: File[]) => void) | null>(null);
+  const [sous, setSous] = useState<HTMLDivElement | null>(null);
   const idErreur = useId();
   const idListe = useId();
   // The `[[` the caret is in (start of the brackets, text typed after them) and the highlighted row.
@@ -151,6 +175,16 @@ export function EditeurMarkdown({ etiquette, valeur, onChange, max, rows = 8, au
     }
   }
 
+  function inserer(insertion: string) {
+    const c = champ.current;
+    const texte = valeurRef.current;
+    const debut = c ? c.selectionStart : texte.length;
+    const fin = c ? c.selectionEnd : texte.length;
+    const r = insererTexte(texte, debut, fin, insertion);
+    selection.current = { debut: r.debut, fin: r.fin };
+    changeRef.current(r.texte);
+  }
+
   function blocMJ() {
     const c = champ.current;
     if (!c || vue !== 'ecrire') return;
@@ -229,8 +263,19 @@ export function EditeurMarkdown({ etiquette, valeur, onChange, max, rows = 8, au
     </button>
   );
 
+  const glisse = (e: React.DragEvent) => Boolean(depot.current) && Array.from(e.dataTransfer?.types ?? []).includes('Files');
+
   return (
-    <div className="editeur-bloc" ref={bloc}>
+    <div
+      className="editeur-bloc"
+      ref={bloc}
+      onDragOver={(e) => glisse(e) && e.preventDefault()}
+      onDrop={(e) => {
+        if (!glisse(e)) return;
+        e.preventDefault();
+        depot.current?.(Array.from(e.dataTransfer.files));
+      }}
+    >
       <div className={`editeur${message ? ' en-erreur' : ''}`} onKeyDown={clavier}>
         <div className="outils-md" role="toolbar" aria-label="Mise en forme">
           <button type="button" className="outil-md" aria-label="Gras" title={`Gras · ${touche} B`} disabled={vue !== 'ecrire'} onClick={() => marquer('**')}>
@@ -244,6 +289,7 @@ export function EditeurMarkdown({ etiquette, valeur, onChange, max, rows = 8, au
               <Link2 size={16} strokeWidth={1.75} aria-hidden="true" />
             </button>
           )}
+          {fichier?.({ inserer, dansBlocMJ: () => dansBlocMJ(valeurRef.current, champ.current?.selectionStart ?? valeurRef.current.length), sous, depot, ecriture: vue === 'ecrire' })}
           {section?.blocMJ && (
             <button type="button" className="outil-mj" title="Bloc MJ · entoure la sélection" aria-label="Bloc MJ" disabled={vue !== 'ecrire'} onClick={blocMJ}>
               <Lock size={16} strokeWidth={1.75} aria-hidden="true" />
@@ -296,6 +342,7 @@ export function EditeurMarkdown({ etiquette, valeur, onChange, max, rows = 8, au
             {apercu.etat === 'ok' && <Markdown className="texte" html={apercu.html} />}
           </div>
         )}
+        <div ref={setSous} className="sous-md" />
         <div className="pied-md">
           <span className={`compteur-md${trop ? ' trop' : ''}`} aria-live="polite">
             {valeur.length.toLocaleString('fr-FR')}
@@ -304,6 +351,12 @@ export function EditeurMarkdown({ etiquette, valeur, onChange, max, rows = 8, au
           {children}
         </div>
       </div>
+      {avertissement && (
+        <div className="avert-mj" role="status">
+          <TriangleAlert size={16} strokeWidth={1.75} aria-hidden="true" />
+          <span>{avertissement}</span>
+        </div>
+      )}
       {message && (
         <div className="erreur-md" id={idErreur}>
           {estLienIllisible(message) ? message : `Erreur : ${message}`}

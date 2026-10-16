@@ -268,7 +268,7 @@ function Ligne({ universId, fiche, onEtiquette }: { universId: string; fiche: Fi
   const { types } = useTypes();
   const Icone = iconeDuType(types, fiche.type);
   const [ko, setKo] = useState(false);
-  const jeton = fiche.illustration?.jeton;
+  const jeton = fiche.illustration && 'jeton' in fiche.illustration ? fiche.illustration.jeton : undefined;
   const etiquettes = fiche.etiquettes ?? [];
   const badge = fiche.sousType ? `${badgeFiche(types, fiche)} · ${fiche.sousType}` : badgeFiche(types, fiche);
   return (

@@ -1,10 +1,13 @@
 import { ArrowDown, ArrowUp, Ellipsis, GitCompareArrows, Pencil, RotateCcw, Trash2 } from 'lucide-react';
-import { useId, useRef, useState } from 'react';
+import { useEffect, useId, useMemo, useRef, useState } from 'react';
 
 import { useLimiteContenu } from '../../cadre-contexte';
 import { ErreurApi, appeler, lire, useConnexionPerdue } from '../../api';
 import type { Role } from '../../types';
-import { Bouton, BoiteDialogue, EditeurMarkdown, Markdown, depasse, messageTropLong, refusServeur, Menu, PastilleAudience, etatAudience, useToasts } from '../../ui';
+import { Bouton, BoiteDialogue, EditeurMarkdown, Markdown, depasse, idsFichiers, messageTropLong, refusServeur, sansBlocsMJ, Menu, PastilleAudience, etatAudience, useToasts } from '../../ui';
+import type { Detail } from '../mediatheque/commun';
+import { MESSAGE_RESERVE } from './fichiers';
+import { OutilFichier } from './outil-fichier';
 import { ReglageAudience, type Joueur } from './audience';
 import { blocsSectionVisibles } from './registre';
 import type { Audience, FicheVue, SectionVue } from './types';
@@ -66,6 +69,9 @@ export function PanneauSection(p: Props) {
   const [reglage, setReglage] = useState(false);
   const pastille = useRef<HTMLSpanElement>(null);
   const idTitre = useId();
+  // What is known of the visibility of the files the text cites (B-55): fetched once each, or told by the tool.
+  const [visibilites, setVisibilites] = useState<Record<number, 'joueurs' | 'mj'>>({});
+  const demandes = useRef(new Set<number>());
 
   const mj = role === 'mj';
   const url = `/api/univers/${p.universId}/fiches/${fiche.id}/sections/${section.id}`;
@@ -185,9 +191,24 @@ export function PanneauSection(p: Props) {
     if (!ok) setARetirer(false);
   }
 
+  // The warning of B-55: a file reserved to the GM outside a GM block of a section the players read.
+  const lueDesJoueurs = mj && section.audience?.joueursLisent === true;
+  const citees = useMemo(() => (edition && lueDesJoueurs ? idsFichiers(sansBlocsMJ(texte)) : []), [edition, lueDesJoueurs, texte]);
+  useEffect(() => {
+    for (const fid of citees) {
+      if (demandes.current.has(fid)) continue;
+      demandes.current.add(fid);
+      lire<Detail>(`/api/univers/${p.universId}/fichiers/${fid}/detail`).then(
+        (d) => setVisibilites((v) => ({ ...v, [fid]: d.fichier.visibilite })),
+        () => undefined,
+      );
+    }
+  }, [citees, p.universId]);
+  const reserve = citees.some((fid) => visibilites[fid] === 'mj');
+
   const nbPieces = section.piecesJointes?.length ?? 0;
   const perte =
-    nbPieces === 0 ? 'Son contenu sera perdu.' : nbPieces === 1 ? 'Son contenu et sa pièce jointe seront perdus.' : `Son contenu et ses ${nbPieces} pièces jointes seront perdus.`;
+    nbPieces === 0 ? 'Son contenu sera perdu.' : nbPieces === 1 ? 'Son contenu et son fichier joint seront retirés.' : `Son contenu et ses ${nbPieces} fichiers joints seront retirés.`;
   const blocs = blocsSectionVisibles(role);
   const inactif = Boolean(enCours) || perdue;
   const trop = depasse(texte, maxContenu);
@@ -297,6 +318,20 @@ export function PanneauSection(p: Props) {
             liens={{ universId: p.universId }}
             section={{ universId: p.universId, modeJoueur: p.suffixeMode !== '', blocMJ: mj && p.suffixeMode === '' }}
             erreur={erreurTexte}
+            avertissement={reserve ? MESSAGE_RESERVE : undefined}
+            fichier={(api) => (
+              <OutilFichier
+                api={api}
+                universId={p.universId}
+                sectionId={section.id}
+                suffixeMode={p.suffixeMode}
+                mj={mj}
+                surFichier={(f) => {
+                  demandes.current.add(f.id);
+                  setVisibilites((v) => ({ ...v, [f.id]: f.visibilite }));
+                }}
+              />
+            )}
             onEnregistrer={() => void enregistrer()}
             onAnnuler={annuler}
           >

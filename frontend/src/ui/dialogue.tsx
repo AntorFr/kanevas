@@ -1,4 +1,4 @@
-import { Trash2 } from 'lucide-react';
+import { Trash2, type LucideIcon } from 'lucide-react';
 import { useEffect, useId, useRef, type ReactNode } from 'react';
 
 import { Bouton } from './composants';
@@ -20,6 +20,8 @@ export function BoiteDialogue({
   onFermer,
   enCours,
   reperage,
+  icone: Icone = Trash2,
+  variante = 'danger',
   children,
 }: {
   titre: string;
@@ -31,6 +33,10 @@ export function BoiteDialogue({
   enCours?: boolean;
   /** Where the focus goes if the opener is gone when the dialog closes. */
   reperage?: () => HTMLElement | null;
+  /** Glyph of the round badge (the bin by default). */
+  icone?: LucideIcon;
+  /** `danger` (red bin, danger button) or `mj` (GM amber badge, primary button): a reversible GM closing. */
+  variante?: 'danger' | 'mj';
   children?: ReactNode;
 }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -94,8 +100,8 @@ export function BoiteDialogue({
         aria-describedby={idTexte}
         ref={ref}
       >
-        <span className="boite-icone" aria-hidden="true">
-          <Trash2 size={16} strokeWidth={1.75} />
+        <span className={`boite-icone${variante === 'mj' ? ' mj' : ''}`} aria-hidden="true">
+          <Icone size={16} strokeWidth={1.75} />
         </span>
         <div className="boite-corps">
           <h2 id={idTitre}>{titre}</h2>
@@ -105,7 +111,7 @@ export function BoiteDialogue({
             <button type="button" className="bouton neutre" ref={annuler} onClick={onFermer}>
               Annuler
             </button>
-            <Bouton variante="danger" enCours={enCours} ecrit onClick={onConfirmer}>
+            <Bouton variante={variante === 'mj' ? 'principal' : 'danger'} enCours={enCours} ecrit onClick={onConfirmer}>
               {action}
             </Bouton>
           </div>

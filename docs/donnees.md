@@ -219,10 +219,11 @@ se fusionne, pas avant (AD-51).
 
 ## Migration `kanevas-fichiers` (numéro pris à la fusion, AD-51 : le suivant de 0003)
 
-> Provisoire comme celle des systèmes ci-dessus. Fichier : `src/db/migrations/0004-pieces-jointes.sql` — **numéro provisoire** (0004), recalé à la
-> fusion si une autre tranche est entrée avant (AD-51). Code : `src/services/stockage.ts` (octets,
-> sans notion de section) et `src/services/pieces-jointes.ts` ; dossier réglable par `ATTACHMENTS_DIR`
-> (défaut : `attachments/` à côté de la base).
+> Provisional, like the systems migration above. File: `src/db/migrations/0004-pieces-jointes.sql` —
+> **provisional number** (0004), adjusted at merge if another slice arrives first (AD-51). Code:
+> `src/services/stockage.ts` (bytes, with no section concept) and, since `kanevas-import-mediatheque`,
+> `src/services/fichiers.ts` (`pieces_jointes` is emptied by migration 0015 and is no longer read).
+> Directory configured through `ATTACHMENTS_DIR` (default: `attachments/` beside the database).
 
 Une table ; aucune entité nouvelle (la pièce jointe est celle du cadrage). Les octets ne sont pas
 en base (AD-7) : ils vivent sous `/data/attachments/`.
@@ -238,7 +239,7 @@ de ligne sans fichier, et un fichier sans ligne n'est pas atteignable (nom aléa
 statique).
 
 Ce que la base ne dit pas, et que le service porte, avec sa raison (la règle croise la section, le
-rôle et le mode) : **50 pièces jointes** au plus par section (*100 fichiers joints depuis `kanevas-import`, AD-111*) ; ajouter ou retirer demande
+rôle et le mode) : **100 fichiers joints** au plus par section (AD-111; 50 pièces before `kanevas-import`) ; ajouter ou retirer demande
 d'**écrire** la section ; `secrete` ne se pose et ne se lève que par un MJ ; une pièce se **lit** si
 la section est lisible et, si elle est secrète, par un MJ hors mode Joueur ; un fichier vide est refusé.
 Ajouter ou retirer une pièce ne change ni la `version` ni `modifie_le` de la section (ce n'est
@@ -413,7 +414,7 @@ resserrement d'une tranche suivante, hors de cette epic. Le tableau dit l'état 
 | `sous_type` | nouvelle, texte 1 à 60 après rognage ; nulle : pas de sous-type (B-52, décision de Monsieur du 2026-10-11) | `CHECK (sous_type IS NULL OR length(trim(sous_type)) BETWEEN 1 AND 60)` ; propre au type : le service le vide quand le type change ; index `fiches (univers_id, type, sous_type)` — le filtre de E-8 et la complétion de E-9 (les sous-types distincts d'un type dans l'univers, sans tenir compte de la casse) |
 | `dernier_import` | nouvelle, JSON : les valeurs que le dernier import a écrites — titre, type (et PJ), sous-type, alias, étiquettes ; l'illustration (clé) ; pour le parent, la clé **demandée** et le parent **écrit** ; nulle : jamais écrite par un import | (12) écrit par le service à chaque écriture d'import ; un champ dont la valeur courante diffère de la valeur **écrite** a été modifié dans Kanevas ; un champ laissé par B-48 garde la valeur écrite d'avant (il reste « modifié ») ; tant que le parent écrit diffère du parent demandé (cible absente, cycle), la fiche est **parent en attente** : chaque rejeu retente de poser le parent demandé, et ce n'est jamais pris pour une modification humaine |
 | `cree_le`, `modifie_le` | inchangées ; `cree_le` peut venir de l'import (B-50) | — |
-| `illustration_fichier_id` | nouvelle (ajoutée par la tranche de la médiathèque, `ADD COLUMN`), → `fichiers` **ON DELETE SET NULL** ; nulle : pas d'illustration | remplace les trois colonnes d'illustration d'AD-93 (`illustration_fichier`, `_type`, `_taille`), qui restent **inutilisées** jusqu'à leur retrait (resserrement hors epic) : la migration de cette tranche fait de chaque illustration existante un fichier de la médiathèque (`joueurs`) et pose cette référence (AD-111) ; même univers que la fiche, et un fichier image : service |
+| `illustration_fichier_id` | New (`ADD COLUMN` in the media library slice), → `fichiers` **ON DELETE SET NULL**; null: no illustration | Replaces the three AD-93 illustration columns (`illustration_fichier`, `_type`, `_taille`), left **unused** until removal in a later tightening slice outside this epic. Migration turns each existing illustration into a media library file (`mj` if the sheet has no section readable by players, `joueurs` otherwise) and sets this reference (AD-111). Same universe as the sheet, image files only: enforced by the service. |
 | `id` | `AUTOINCREMENT` gardé | (3) — vérifié dans `0001-premiere-fiche.sql` : SQLite ne réemploie pas un identifiant `AUTOINCREMENT` |
 
 Les autres colonnes et index (illustration, AD-93, et les colonnes ajoutées par le fil) sont recopiés
@@ -423,7 +424,7 @@ tels quels ; les déclencheurs de `recherche_fiches` sont recréés.
 
 | Table | Colonnes (hors clés) | Contraintes |
 |---|---|---|
-| `fichiers` | `id`, `univers_id`, `nom`, `type` (MIME déterminé par le serveur), `taille`, `disque` (nom sur disque, UUID), `empreinte`, `visibilite`, `cle_origine`, `ajoute_par` (le compte qui l'a ajouté, non nul ; l'import : le MJ du jeton), `ajoute_le`, `dernier_import` (JSON : nom et visibilité écrits par le dernier import ; nul : jamais) | → `univers` ; → `comptes` ; `taille > 0` ; `disque` unique ; `visibilite` `CHECK IN ('joueurs','mj')`, défaut `joueurs` (décision de Monsieur du 2026-10-11) ; `nom` 1 à 200 ; la nature (image si `type` est l'un des quatre types d'image, document sinon) n'est pas stockée ; index unique `(univers_id, cle_origine)` ; index `(univers_id, ajoute_le)` — la grille de E-19 |
+| `fichiers` | `id`, `univers_id`, `nom`, `type` (server-detected MIME), `taille`, `disque` (UUID filename on disk), `empreinte` (null for files predating the library, AD-117), `visibilite`, `cle_origine`, `ajoute_par` (non-null account that added it; for imports: the token’s GM), `ajoute_le`, `dernier_import` (JSON: name and visibility written by the last import; null: never imported) | → `univers`; → `comptes`; `taille > 0`; unique `disque`; `visibilite` `CHECK IN ('joueurs','mj')`, default `joueurs` (decision of 2026-10-11); `nom` 1–200 characters; nature (image for one of the four supported image MIME types, document otherwise) is not stored; unique index `(univers_id, cle_origine)`; index `(univers_id, ajoute_le)` for the E-19 grid. |
 | `fichiers_sections` | `fichier_id`, `section_id`, `joint` (booléen), `dans_texte` (booléen), `dans_bloc_mj` (booléen) | clé primaire `(fichier_id, section_id)` ; → `fichiers` ON DELETE CASCADE ; → `sections` ON DELETE CASCADE ; `CHECK (joint OR dans_texte)` ; même univers : service ; 100 `joint` au plus par section : service ; `dans_texte` et `dans_bloc_mj` recalculés à chaque écriture du contenu (comme `liens`) ; index `(section_id)` — le rendu, et `(fichier_id)` — « Utilisé dans » et la suppression |
 | `fichiers_attente` | `id`, `univers_id`, `cle`, `section_id` (nul pour une illustration), `fiche_id` (nul sauf illustration), `maniere` (`texte` \| `joint` \| `illustration`) | → `univers` ; → `sections` et → `fiches` ON DELETE CASCADE ; `CHECK ((section_id IS NULL) = (maniere = 'illustration'))` et `CHECK ((fiche_id IS NULL) <> (maniere = 'illustration'))` ; `UNIQUE (univers_id, cle, section_id, fiche_id, maniere)` ; index `(univers_id, cle)` — l'arrivée d'un fichier par l'API retrouve ce qui l'attend (C1 : comme `liens (cible_cle)`) ; les lignes se suppriment à la résolution |
 | `fiche_alias` | `fiche_id`, `alias` | → `fiches` ON DELETE CASCADE ; `alias` 1 à 120 ; `UNIQUE (fiche_id, alias COLLATE NOCASE)` (6) ; 20 au plus par fiche : service |
@@ -440,7 +441,7 @@ tels quels ; les déclencheurs de `recherche_fiches` sont recréés.
 | Table | Colonnes | Contrainte |
 |---|---|---|
 | `sections` | `contenu_public` (texte `NOT NULL DEFAULT ''` ; le contenu sans blocs MJ ; « la section contient un bloc » est `contenu_public ≠ contenu`, AD-114 ; vide par défaut : un site d'écriture oublié montre une section vide, il ne fuit pas), `cle_origine` (nulle : née dans Kanevas), `version_importee` (entier ; nul : jamais écrite par un import), `dernier_import` (JSON : titre, audience et ensemble des fichiers joints (clés) écrits par le dernier import ; nul : jamais) | (12) le contenu est modifié dans Kanevas si `version` ≠ `version_importee`, le titre ou l'audience si la valeur courante ≠ `dernier_import` ; (8) écrit par le service dans la même transaction que `contenu` (AD-98) — une fonction Markdown ne s'écrit pas en SQL ; index unique `(fiche_id, cle_origine)` (2) |
-| `pieces_jointes` | aucune : la table **n'est plus écrite ni lue** depuis AD-111 ; la migration transforme chaque ligne en un fichier de la médiathèque (`mj` si `secrete`, `joueurs` sinon ; même nom sur disque, sans copie) joint à sa section, puis vide la table ; sa suppression part dans une tranche suivante (resserrer, une fois l'image d'avant hors service) |
+| `pieces_jointes` | No new columns: **neither written nor read** since AD-111. Migration turns each row into a media library file (`mj` if `secrete` or if the section is not readable by players, `joueurs` otherwise), attached to its section, then empties the table. Illustrations become `mj` if their sheet has no section readable by players, `joueurs` otherwise. Disk filenames stay unchanged; no byte copying. The table will be removed in a later tightening slice, once the previous image is no longer running. |
 | `campagnes` | `cle_origine`, `dernier_import` (JSON : nom et statut écrits par le dernier import ; nul : jamais) | index unique `(univers_id, cle_origine)` (2) ; (12) même règle, champ par champ |
 | `scenarios` | `cle_origine`, `dernier_import` (JSON : titre écrit ; nul : jamais), `version_importee` (la `version` laissée par le dernier import) | index unique `(campagne_id, cle_origine)` (2) ; (12) le contenu est modifié dans Kanevas si `version` ≠ `version_importee`, le titre si la valeur courante ≠ `dernier_import` |
 
