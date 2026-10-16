@@ -192,7 +192,7 @@ base en snake_case (`docs/donnees.md`).
 
 # La cible
 
-> Construit à ce jour : l'API d'import des fiches et E-18 (`kanevas-import-fil`), le bloc MJ `:::mj` (`kanevas-import-secrets`, AD-114), la session, le mode bouchon, les tables et leurs fonctions de service,
+> Construit à ce jour : renommer et supprimer une fiche, supprimer un univers (`kanevas-import-tenir`, AD-119), l'API d'import des fiches et E-18 (`kanevas-import-fil`), le bloc MJ `:::mj` (`kanevas-import-secrets`, AD-114), la session, le mode bouchon, les tables et leurs fonctions de service,
 > les systèmes de jeu et leurs gabarits, les relations et la recherche dans tous les types, par alias et par étiquette (E-17, `kanevas-import-recherche`), le suivi (campagnes, scénarios, préparation, comptes-rendus), les écrans E-1 à E-11, E-13, E-14, E-15 et E-16 (E-9 avec son bloc Pièces jointes), l'illustration des fiches, les cartes et graphes (E-10, E-11, bloc « Cartes visibles » de E-3), les types de fiche et l'arbre, les liens `[[…]]`, la médiathèque de l'univers (E-19, fichiers à droits propres, migration 0015), le stockage des fichiers sur le volume, et l'assistant du membre (E-12 ; ses outils : chercher, lire, écrire dans une section, créer une campagne ou un scénario), et la proposition de mise à jour d'une section d'après un compte-rendu (`kanevas-monde` : outil `proposer_mise_a_jour`, routes `propositions`, bloc « Mise à jour proposée »). Le reste (images)
 > est la cible des tranches suivantes. L'epic `kanevas-import` (cadrage proposé le 2026-10-11) ajoute
 > AD-95 à AD-120, l'« API d'import » et ses lignes de sécurité, de déploiement et de bouchons.
@@ -359,7 +359,7 @@ Contrat que consomme le script de Monsieur, et tout autre (AD-103, AD-104). Base
 noms en camelCase, dates ISO 8601. Une **clé d'origine** (`:cle`) : 1 à 200 caractères, sans `|`, `]`
 ni saut de ligne, encodée dans l'adresse ; libre au script (`lieu:port-sel`, un identifiant Kanka…).
 Une écriture porte `?lot=<id>` pour être comptée ; sans lot elle réussit mais rien n'est compté. Erreurs : la forme des routes (`{message, code}`) ; 401
-`jeton_invalide` (corps unique) ; 404 univers autre ou clé inconnue ; 400 `invalide` avec `champ` ;
+`jeton_invalide` (corps unique) ; 404 univers autre ou clé inconnue (sauf `DELETE /fiches/:cle`, 204 même inconnue) ; 400 `invalide` avec `champ` ;
 413 corps de plus de 8 Mio.
 
 | Route | Rôle |

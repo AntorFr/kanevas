@@ -122,7 +122,7 @@ catalogue MJ (événement `proposition_creee`) et sa règle du bouchon (« Mets 
   vient de `SESSION_SECRET`, sinon de `<data>/session.key`.
 - Le callback OIDC ne rend la page « Connexion refusée/indisponible » que si `Accept` contient
   `text/html`, sinon 401 JSON.
-- Code mort ou sans appelant, non traité : `export { ErreurService }` (droits.ts), (périmé : `renommerSection` est appelé, `renommerFiche` existe) la branche titre du PATCH d'une section, option `limite` de
+- Code mort ou sans appelant, non traité : `export { ErreurService }` (droits.ts), option `limite` de
   `listerFiches`, `blocsVisibles`/`blocsSectionVisibles` jumeaux ; le parseur form-urlencoded du
   bouchon vaut aussi pour `/api`.
 
@@ -132,7 +132,7 @@ catalogue MJ (événement `proposition_creee`) et sa règle du bouchon (« Mets 
   relations/cartes/recherche, outil d'assistant.
 - Bouchon : au démarrage, sur une base sans univers, `semerBouchon` pose le monde de recette (Lame d'Ébène, Landes grises,
   CoF Mini…) puis `semerIllustrations` ; `KANEVAS_SANS_SEMIS=1` le coupe (utilisé par les e2e). Jamais hors bouchon.
-- Cartes : un graphe n'a ni position stockée ni déplacement de nœud (AD-71) ; la forme d'une carte ne change jamais ; un fond ne se retire pas, il se remplace ; aucune suppression de carte ni d'élément autre que « Retirer de la carte ». La fiche retirée reste.
+- Cartes : un graphe n'a ni position stockée ni déplacement de nœud (AD-71) ; la forme d'une carte ne change jamais ; un fond ne se retire pas, il se remplace ; aucune suppression de carte ni d'élément (hors suppression de l'univers ou de la fiche posée, AD-119) autre que « Retirer de la carte ». La fiche retirée reste.
 - Propositions (AD-79 à AD-82) : lues, appliquées, abandonnées par leur seul demandeur, encore MJ ; tout autre compte reçoit 404. Le fil ne se garde pas (AD-28) : après un rechargement, une proposition en attente n'est plus atteignable (limite écrite, bornée à une par MJ et section ; pas de liste « mes propositions »). Hors tranche : application par un joueur, propositions en lot. L'assistant ne sait pas quel écran est ouvert : le compte-rendu se nomme dans la demande. Le semis du bouchon n'a ni campagne ni compte-rendu : la recette les crée (README).
 
 `feature/kanevas-import-fil` (PR vers `epic/kanevas-import`, non fusionnée ; ce paragraphe vaut jusqu'à sa fusion) ajoute l'API d'import et E-18 (AD-103, AD-104 ; B-45 à B-50, P-10 étapes 3-5-7-10, P-11) :
