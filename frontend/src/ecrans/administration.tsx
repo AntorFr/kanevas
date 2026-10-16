@@ -6,6 +6,7 @@ import { useCharge, useMoi, useUnivers } from '../cadre-contexte';
 import { GROUPE_ADMIN } from '../items';
 import { ListeMembres, type Membre } from '../ListeMembres';
 import type { Ecran } from '../registre';
+import { JetonAssistant } from './administration/jeton-assistant';
 import { Bouton, Chargement, EtatVide, ErreurChargement, PageIntrouvable } from '../ui';
 import './ecrans.css';
 import './liste.css';
@@ -80,15 +81,15 @@ function Administration() {
     </>
   );
 
-  if (univers.etat === 'chargement') return <>{entete}<Chargement texte="Chargement des univers…" /></>;
+  if (univers.etat === 'chargement') return <>{entete}<Chargement texte="Chargement des univers…" /><JetonAssistant /></>;
   if (univers.etat === 'erreur') {
-    return <>{entete}<ErreurChargement texte="Impossible de charger les univers." onReessayer={recharger} /></>;
+    return <>{entete}<ErreurChargement texte="Impossible de charger les univers." onReessayer={recharger} /><JetonAssistant /></>;
   }
   const liste = frais ?? univers.valeur;
   const choisi = selection === null ? undefined : liste.find((u) => u.id === selection);
   if (selection !== null && !choisi) return <PageIntrouvable />;
   if (liste.length === 0) {
-    return <>{entete}<div className="vide-pointille"><EtatVide titre="Aucun univers sur l’instance pour l’instant." /></div></>;
+    return <>{entete}<div className="vide-pointille"><EtatVide titre="Aucun univers sur l’instance pour l’instant." /></div><JetonAssistant /></>;
   }
   // The selected universe stays visible even beyond the first page.
   const rang = choisi ? liste.indexOf(choisi) + 1 : 0;
@@ -128,6 +129,7 @@ function Administration() {
           )}
         </section>
       </div>
+      <JetonAssistant />
     </>
   );
 }

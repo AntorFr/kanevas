@@ -20,6 +20,7 @@ FROM deps AS build
 COPY tsconfig.json ./
 COPY src ./src
 COPY frontend ./frontend
+COPY scripts ./scripts
 
 RUN npm run build
 
@@ -42,6 +43,8 @@ RUN apt-get update \
 COPY --from=build /app/node_modules ./node_modules
 COPY --from=build /app/package.json ./package.json
 COPY --from=build /app/dist ./dist
+# Stand-in for `claude setup-token`, run only under KANEVAS_STUB=1 (AD-112 5).
+COPY scripts ./scripts
 
 # Run as the non-root "node" user (uid 1000) shipped by the base image.
 # /data is a mounted volume (AD-5, empty for now). Under uid 1000 its

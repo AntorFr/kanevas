@@ -42,8 +42,20 @@ export function ReglageAudience({
       const cible = e.target as Element;
       if (!racine.current?.contains(cible) && !racine.current?.parentElement?.contains(cible)) fermer.current();
     };
+    const clavier = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape') return;
+      // Saving disables the focused control and can leave focus on the badge or body.
+      // Escape must still close the open panel, including during that save.
+      e.preventDefault();
+      e.stopPropagation();
+      fermer.current();
+    };
     document.addEventListener('pointerdown', dehors);
-    return () => document.removeEventListener('pointerdown', dehors);
+    document.addEventListener('keydown', clavier, true);
+    return () => {
+      document.removeEventListener('pointerdown', dehors);
+      document.removeEventListener('keydown', clavier, true);
+    };
   }, []);
 
   const a = audience;
@@ -53,13 +65,6 @@ export function ReglageAudience({
       role="dialog"
       aria-labelledby={idTitre}
       ref={racine}
-      onKeyDown={(e) => {
-        if (e.key === 'Escape') {
-          e.preventDefault();
-          e.stopPropagation();
-          onFermer();
-        }
-      }}
     >
       <div className="menu-titre" id={idTitre}>
         Qui voit « {section} »
