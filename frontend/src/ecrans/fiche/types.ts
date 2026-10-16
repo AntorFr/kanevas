@@ -17,6 +17,8 @@ export interface PieceJointe {
   secrete?: boolean;
   /** Closed to this reader: `nom` is the sentence « … réservé au MJ. ». */
   ferme?: boolean;
+  /** Origin key of a file the import has not delivered yet (GM only): `nom` is the sentence (E-9). */
+  attente?: string;
 }
 
 export interface SectionVue {
@@ -45,7 +47,7 @@ export interface Fiche {
   sousType?: string | null;
   charge: { v?: number; pj?: boolean };
   /** The sheet's illustration (AD-93): `jeton` changes at each replacement and goes in the image address. */
-  illustration?: { id: number; jeton: string } | { fermee: true; message: string } | null;
+  illustration?: { id: number; jeton: string } | { fermee: true; message: string } | { attente: true; cle: string } | null;
   /** Aliases and labels (AD-118), sorted by the server. */
   alias?: string[];
   etiquettes?: string[];

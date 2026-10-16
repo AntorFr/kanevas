@@ -15,8 +15,16 @@ import {
   sqlSectionLisible,
   vueMJ,
 } from './droits.js';
-import { FICHIER_RESERVE, IMAGE_RESERVEE, extraireReferencesFichier } from './markdown.js';
-import type { RenduFichier, ResolveurFichiers } from './markdown.js';
+import {
+  FICHIER_RESERVE,
+  IMAGE_RESERVEE,
+  contenuPublic,
+  extraireClesFichier,
+  extraireReferencesFichier,
+  reecrireClesFichier,
+} from './markdown.js';
+import type { RenduFichier, ResolveurFichiers, ResolveurFichiersEnAttente } from './markdown.js';
+import { poserContenu } from './sections.js';
 import { ErreurService, introuvable, invalide, refuse } from './erreurs.js';
 import {
   abandonner,
@@ -145,6 +153,8 @@ export async function assurerFichier(
           cle, jeton.compteId, maintenant.toISOString(), JSON.stringify({ nom, visibilite }));
         id = Number(info.lastInsertRowid);
         etat = 'creee';
+        // The sheets that waited for this key now point at the file, in this transaction (AD-111).
+        avertissements.push(...resoudreFichierEnAttente(db, jeton.universId, cle, { id, type }));
       } else {
         id = courant.id;
         const marque = courant.dernier_import
@@ -874,7 +884,7 @@ export function lireLignes(db: Db, acteur: Acteur, universId: number, role: Role
     )
     .all(sectionId, universId) as FichierRow[];
   const mj = vueMJ(role, acteur);
-  return rows.map((f) => {
+  const lignes = rows.map((f) => {
     if (!lisiblePar(role, acteur, f)) {
       // Closed to this reader: the line stays, with the sentence only — no name, size or address.
       return { id: f.id, nom: estImage(f.type) ? IMAGE_RESERVEE : FICHIER_RESERVE, taille: 0, image: false, ferme: true };
@@ -883,6 +893,15 @@ export function lireLignes(db: Db, acteur: Acteur, universId: number, role: Role
     if (mj) p.secrete = f.visibilite === 'mj';
     return p;
   });
+  if (!mj) return lignes;
+  // The files the import named and has not delivered yet: a line for the GM only, never counted (E-9).
+  const attente = db
+    .prepare("SELECT cle FROM fichiers_attente WHERE section_id = ? AND maniere = 'joint' ORDER BY id")
+    .all(sectionId) as { cle: string }[];
+  attente.forEach((a, i) =>
+    lignes.push({ id: -(i + 1), nom: `Fichier en attente d'import : « ${a.cle} ».`, taille: 0, image: false, attente: a.cle }),
+  );
+  return lignes;
 }
 
 function compterReferences(source: string): Map<number, number> {
@@ -928,4 +947,156 @@ export function recalculerFichiersSection(
     poser.run(id, sectionId, (total.get(id) ?? 0) > (publics.get(id) ?? 0) ? 1 : 0);
   }
   db.prepare('DELETE FROM fichiers_sections WHERE section_id = ? AND joint = 0 AND dans_texte = 0').run(sectionId);
+  // The keys the text still carries wait for their file (AD-111): one row per section and key.
+  db.prepare("DELETE FROM fichiers_attente WHERE section_id = ? AND maniere = 'texte'").run(sectionId);
+  const cles = new Set(extraireClesFichier(contenu));
+  if (cles.size > 0) {
+    const { univers_id: universId } = db
+      .prepare('SELECT fi.univers_id FROM sections s JOIN fiches fi ON fi.id = s.fiche_id WHERE s.id = ?')
+      .get(sectionId) as { univers_id: number };
+    for (const cle of cles) if (!fichierDeCle(db, universId, cle)) noterAttente(db, universId, cle, { sectionId, maniere: 'texte' });
+  }
+}
+
+/** The file of an origin key in a universe, if the import has delivered it. */
+export function fichierDeCle(db: Db, universId: number, cle: string): FichierRow | undefined {
+  return db.prepare('SELECT * FROM fichiers WHERE univers_id = ? AND cle_origine = ?').get(universId, cle) as
+    | FichierRow
+    | undefined;
+}
+
+/**
+ * The text as it is stored (AD-111): `fichier:cle:<clé>` whose file the universe knows, and the author reads,
+ * becomes `fichier:<id>`; an unknown key stays as written, waiting. Pure of any write.
+ */
+export function preparerFichiers(db: Db, universId: number, compteId: number, contenu: string): string {
+  if (!contenu.includes('fichier:cle:')) return contenu;
+  const role = roleDe(db, universId, compteId);
+  return reecrireClesFichier(contenu, (cle) => {
+    const f = fichierDeCle(db, universId, cle);
+    return f && role !== null && lisiblePar(role, { compteId }, f) ? f.id : null;
+  });
+}
+
+type CibleAttente = { sectionId: number; maniere: 'texte' | 'joint' } | { ficheId: number; maniere: 'illustration' };
+
+/** Records that a section or a sheet waits for the file of `cle`; once per place (the UNIQUE ignores NULLs). */
+export function noterAttente(db: Db, universId: number, cle: string, cible: CibleAttente): void {
+  const section = 'sectionId' in cible ? cible.sectionId : null;
+  const fiche = 'ficheId' in cible ? cible.ficheId : null;
+  const deja = db
+    .prepare(
+      `SELECT 1 AS ok FROM fichiers_attente WHERE univers_id = ? AND cle = ? AND maniere = ?
+         AND section_id IS ? AND fiche_id IS ?`,
+    )
+    .get(universId, cle, cible.maniere, section, fiche);
+  if (deja) return;
+  db.prepare(
+    'INSERT INTO fichiers_attente (univers_id, cle, section_id, fiche_id, maniere) VALUES (?, ?, ?, ?, ?)',
+  ).run(universId, cle, section, fiche, cible.maniere);
+}
+
+/** The sheet no longer waits for any illustration (it has one, or none is wanted). */
+export function oublierAttenteIllustration(db: Db, ficheId: number): void {
+  db.prepare("DELETE FROM fichiers_attente WHERE fiche_id = ? AND maniere = 'illustration'").run(ficheId);
+}
+
+/** References still waiting for their file in a universe: what a batch reports at its closing. */
+export function compterFichiersEnAttente(db: Db, universId: number): number {
+  return (db.prepare('SELECT COUNT(*) AS n FROM fichiers_attente WHERE univers_id = ?').get(universId) as { n: number }).n;
+}
+
+/** The ids of the files joined to a section. */
+export function jointsDe(db: Db, sectionId: number): number[] {
+  return (
+    db.prepare('SELECT fichier_id AS id FROM fichiers_sections WHERE section_id = ? AND joint = 1').all(sectionId) as {
+      id: number;
+    }[]
+  ).map((r) => r.id);
+}
+
+/** The import joins a file to a section, within the 100 files limit; false when the section is full. */
+export function joindreParImport(db: Db, sectionId: number, fichierId: number): boolean {
+  if (nombreJoints(db, sectionId) >= MAX_FICHIERS_JOINTS) return false;
+  poserJointure(db, fichierId, sectionId);
+  return true;
+}
+
+const lireJsonObjet = (brut: string | null): Record<string, unknown> =>
+  brut === null ? {} : (JSON.parse(brut) as Record<string, unknown>);
+
+/**
+ * The file of `cle` has just arrived (AD-111, AD-104): the texts that carried its key get `fichier:<id>`, the
+ * joined references and the illustration that waited are set, and the rows go — all in the caller's
+ * transaction, with neither `version`, nor `version_importee`, nor `modifie_le` moving. Returns the warnings.
+ */
+export function resoudreFichierEnAttente(
+  db: Db,
+  universId: number,
+  cle: string,
+  fichier: { id: number; type: string },
+): string[] {
+  const lignes = db
+    .prepare('SELECT id, section_id, fiche_id, maniere FROM fichiers_attente WHERE univers_id = ? AND cle = ? ORDER BY id')
+    .all(universId, cle) as { id: number; section_id: number | null; fiche_id: number | null; maniere: string }[];
+  const avertissements: string[] = [];
+  const supprimer = db.prepare('DELETE FROM fichiers_attente WHERE id = ?');
+  const textes = new Set(lignes.filter((l) => l.maniere === 'texte').map((l) => l.section_id!));
+  for (const sid of textes) {
+    const { contenu } = db.prepare('SELECT contenu FROM sections WHERE id = ?').get(sid) as { contenu: string };
+    const neuf = reecrireClesFichier(contenu, (k) => (k === cle ? fichier.id : null));
+    if (neuf !== contenu) poserContenu(db, sid, neuf, null);
+    recalculerFichiersSection(db, sid, neuf, contenuPublic(neuf));
+  }
+  for (const l of lignes) {
+    if (l.maniere === 'texte') {
+      supprimer.run(l.id);
+    } else if (l.maniere === 'joint') {
+      const s = db.prepare('SELECT titre, dernier_import FROM sections WHERE id = ?').get(l.section_id) as
+        | { titre: string; dernier_import: string | null }
+        | undefined;
+      if (!s) continue;
+      if (!joindreParImport(db, l.section_id!, fichier.id)) {
+        avertissements.push(`section « ${s.titre} » : ${MAX_FICHIERS_JOINTS} fichiers joints au plus, « ${cle} » reste en attente`);
+        continue;
+      }
+      const marque = lireJsonObjet(s.dernier_import);
+      const fichiers = (marque.fichiers ?? { ecrits: [] }) as { ecrits: number[] };
+      if (!fichiers.ecrits.includes(fichier.id)) fichiers.ecrits.push(fichier.id);
+      marque.fichiers = fichiers;
+      db.prepare('UPDATE sections SET dernier_import = ? WHERE id = ?').run(JSON.stringify(marque), l.section_id);
+      supprimer.run(l.id);
+    } else {
+      supprimer.run(l.id);
+      const f = db.prepare('SELECT illustration_fichier_id AS ill, dernier_import FROM fiches WHERE id = ?').get(l.fiche_id) as
+        | { ill: number | null; dernier_import: string | null }
+        | undefined;
+      if (!f) continue;
+      if (!estImage(fichier.type)) {
+        avertissements.push(`« ${cle} » n'est pas une image : illustration non posée`);
+      } else if (f.ill !== null) {
+        avertissements.push(`illustration modifiée dans Kanevas : « ${cle} » non posée`);
+      } else {
+        db.prepare('UPDATE fiches SET illustration_fichier_id = ? WHERE id = ?').run(fichier.id, l.fiche_id);
+        const marque = lireJsonObjet(f.dernier_import);
+        marque.illustration = { demande: cle, ecrit: fichier.id };
+        db.prepare('UPDATE fiches SET dernier_import = ? WHERE id = ?').run(JSON.stringify(marque), l.fiche_id);
+      }
+    }
+  }
+  return avertissements;
+}
+
+/** The key an illustration waits for, shown to a GM outside player mode only (E-9); null when none. */
+export function illustrationEnAttente(db: Db, ficheId: number): string | null {
+  const r = db
+    .prepare("SELECT cle FROM fichiers_attente WHERE fiche_id = ? AND maniere = 'illustration'")
+    .get(ficheId) as { cle: string } | undefined;
+  return r?.cle ?? null;
+}
+
+/** The `fichier:cle:` references of a text read as a tile for a GM outside player mode, as nothing for anyone else. */
+export function resolveurFichiersEnAttente(role: Role, acteur: Acteur): ResolveurFichiersEnAttente {
+  const marque = vueMJ(role, acteur);
+  return (cle): RenduFichier => (marque ? { genre: 'attente', cle } : { genre: 'rien' });
 }

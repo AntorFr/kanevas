@@ -62,6 +62,7 @@ export function EnteteFiche({ universId, fiche, gestion, modeJoueur, badge, Icon
 
   const ill = fiche.illustration && 'jeton' in fiche.illustration ? fiche.illustration : null;
   const fermee = fiche.illustration && 'fermee' in fiche.illustration ? fiche.illustration : null;
+  const enAttente = fiche.illustration && 'attente' in fiche.illustration ? fiche.illustration : null;
   const jeton = ill?.jeton;
   const base = `/api/univers/${universId}/fiches/${fiche.id}/illustration`;
   const indisponible = jeton !== undefined && ko === jeton;
@@ -107,7 +108,7 @@ export function EnteteFiche({ universId, fiche, gestion, modeJoueur, badge, Icon
     surDroitPerdu: droitPerdu,
   });
   const envoi = ajout.envois[0] ?? null;
-  const illustree = jeton !== undefined || envoi !== null || fermee !== null;
+  const illustree = jeton !== undefined || envoi !== null || fermee !== null || enAttente !== null;
 
   // B-55: a file reserved to the GM as the illustration of a sheet the players see.
   const idIll = ill?.id;
@@ -167,6 +168,11 @@ export function EnteteFiche({ universId, fiche, gestion, modeJoueur, badge, Icon
                     <span className="ko-ill ill-fermee">
                       <Lock size={22} strokeWidth={1.75} aria-hidden="true" />
                       {fermee.message}
+                    </span>
+                  )}
+                  {enAttente && (
+                    <span className="ko-ill ill-attente" title={`Fichier en attente d'import : « ${enAttente.cle} ».`}>
+                      Fichier en attente d'import : « {enAttente.cle.length > 60 ? `${enAttente.cle.slice(0, 59)}…` : enAttente.cle} ».
                     </span>
                   )}
                   {indisponible && (
