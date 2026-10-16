@@ -2458,7 +2458,7 @@ and the empty picker are not drawn: **this document takes precedence over the mo
 of 2026-10-11 (B-53 to B-56, AD-111): all universe files, images and documents.
 
 Atteint par « Médiathèque » (`images`) dans la barre de l'univers, sous « Cartes », pour tout membre.
-En tête : le titre, « 1 140 fichiers » (ceux que le lecteur voit) et, pour un MJ, « Ajouter des
+En tête : le titre, « 1140 fichiers » (ceux que le lecteur voit) et, pour un MJ, « Ajouter des
 fichiers » (plusieurs à la fois, ou un glisser-déposer sur la page : voile « Déposez les fichiers pour
 les ajouter. »). Une bascule segmentée **Tout · Images · Documents** ; une rangée de filtres : la
 recherche par nom (« Chercher par nom ») ; pour un MJ, « Visibilité » (Toutes, Visibles des joueurs,
@@ -2511,7 +2511,7 @@ The generating assistant tool belongs to `kanevas-images`; this slice only deliv
 |---|---|---|
 | vide | MJ : « Aucun fichier pour l'instant. Ajoutez-en, ou posez-en un dans une fiche. » et « Ajouter des fichiers » ; joueur : « Aucun fichier à voir pour l'instant. » ; un filtre sans résultat : « Aucun fichier ne correspond. » | MJ : ajouter |
 | chargement | tuiles en squelette ; une vignette qui charge garde son cadre | — |
-| Error | « Impossible de charger la médiathèque. »; failed thumbnail or preview: « Image indisponible. » with « Télécharger »; failed download: « L'action n'a pas abouti. Réessayez. »; an empty file in a multiple upload: « « notes.txt » est vide. » below the grid, other files are added; interrupted upload: « L'envoi n'a pas abouti. » with « Réessayer »; failed deletion or change: « L'action n'a pas abouti. Réessayez. », nothing changed | « Réessayer » |
+| Error | « Impossible de charger la médiathèque. »; failed thumbnail or preview: « Image indisponible. » with « Télécharger »; failed download: « L'action n'a pas abouti. Réessayez. »; an empty file in a multiple upload: « « notes.txt » est vide. » below the grid, other files are added; interrupted upload: « L'envoi n'a pas abouti. » with « Réessayer » and « Abandonner » (E-9 calls the latter « Ignorer »); failed deletion or change: « L'action n'a pas abouti. Réessayez. », nothing changed | « Réessayer » |
 | connexion perdue | le bandeau ; « Ajouter des fichiers », la bascule de visibilité, « Supprimer » désactivés | regarder ce qui est chargé |
 | Refused | A GM-only file the player did not add does not exist for them (absent, direct address: « Page introuvable. »); players have no visibility settings, deletion or add action on E-19 (**hidden**; they add through a writable section on E-9); role removed while viewing: « Vous ne pouvez plus modifier ce fichier. »; instance admin without a universe role forcing the address: « Page introuvable. » | « Mes univers » |
 | contenu long | 1 140 fichiers : 100 puis la suite ; nom de 200 caractères tronqué par « … » avec infobulle ; un fichier utilisé dans 40 fiches : 10 puis « Afficher les 30 autres » ; image de 30 Mo : l'aperçu se charge, rien n'est redimensionné (AD-93) ; document de 300 Mo : la tuile et « Télécharger », rien n'est chargé d'avance | idem |
