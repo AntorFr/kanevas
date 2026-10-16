@@ -82,6 +82,27 @@ test('sélecteur : première tuile « Ajouter depuis l’appareil », champ « C
   await antor.setViewportSize({ width: 1440, height: 900 });
 });
 
+test('sélecteur : la bascule Tout · Images · Documents est un segment neutre à icônes (jamais l’ambre MJ), comme E-19', opts, async () => {
+  await ouvrirEdition(antor);
+  const d = await ouvrirSelecteur(antor);
+  const groupe = d.getByRole('radiogroup', { name: 'Nature' });
+  await groupe.waitFor();
+  assert.match((await groupe.getAttribute('class')) ?? '', /med-bascule/);
+  assert.equal(await groupe.locator('label svg').count(), 3, 'trois icônes');
+  const mj = await antor.evaluate(() => {
+    const t = document.createElement('i');
+    t.style.color = 'var(--mj)';
+    document.body.appendChild(t);
+    const c = getComputedStyle(t).color;
+    t.remove();
+    return c;
+  });
+  const couleurs: string[] = await groupe.locator('label').evaluateAll((els: Element[]) =>
+    els.flatMap((e) => [getComputedStyle(e).color, getComputedStyle(e).backgroundColor]),
+  );
+  for (const c of couleurs) assert.notEqual(c, mj, 'jamais --mj');
+});
+
 test('recherche par nom : envoyée au serveur (q), la tuile appareil reste, « aucun résultat » vide la grille', opts, async () => {
   await ouvrirEdition(antor);
   const d = await ouvrirSelecteur(antor);
