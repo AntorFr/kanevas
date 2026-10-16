@@ -208,7 +208,7 @@ export function PanneauSection(p: Props) {
 
   const nbPieces = section.piecesJointes?.length ?? 0;
   const perte =
-    nbPieces === 0 ? 'Son contenu sera perdu.' : nbPieces === 1 ? 'Son contenu et sa pièce jointe seront perdus.' : `Son contenu et ses ${nbPieces} pièces jointes seront perdus.`;
+    nbPieces === 0 ? 'Son contenu sera perdu.' : nbPieces === 1 ? 'Son contenu et son fichier joint seront retirés.' : `Son contenu et ses ${nbPieces} fichiers joints seront retirés.`;
   const blocs = blocsSectionVisibles(role);
   const inactif = Boolean(enCours) || perdue;
   const trop = depasse(texte, maxContenu);
