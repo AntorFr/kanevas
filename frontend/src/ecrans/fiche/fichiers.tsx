@@ -409,7 +409,7 @@ export function SelecteurFichier(p: PropsSelecteur) {
           </div>
         )}
         {etat === 'erreur' && <ErreurChargement texte="Impossible de charger la médiathèque." onReessayer={() => setRev((n) => n + 1)} />}
-        {etat === 'ok' && fichiers.length === 0 && !p.peutAjouter && (
+        {etat === 'ok' && fichiers.length === 0 && (
           <p className="selecteur-vide">{p.images ? 'Aucune image à choisir.' : 'Aucun fichier à choisir.'}</p>
         )}
         {etat === 'ok' && (
