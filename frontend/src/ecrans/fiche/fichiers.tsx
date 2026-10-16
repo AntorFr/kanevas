@@ -1,4 +1,4 @@
-import { ChevronDown, Images, Lock, Search, Upload, X, type LucideIcon } from 'lucide-react';
+import { ChevronDown, FileText, Images, LayoutGrid, Lock, Search, Upload, X, type LucideIcon } from 'lucide-react';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 
 import { ErreurApi, lire, useConnexionPerdue } from '../../api';
@@ -380,10 +380,11 @@ export function SelecteurFichier(p: PropsSelecteur) {
             </>
           )}
           {!p.images && (
-            <div className="bascule" role="radiogroup" aria-label="Nature">
-              {([['', 'Tout'], ['images', 'Images'], ['documents', 'Documents']] as const).map(([v, l]) => (
+            <div className="bascule med-bascule" role="radiogroup" aria-label="Nature">
+              {([['', 'Tout', LayoutGrid], ['images', 'Images', Images], ['documents', 'Documents', FileText]] as const).map(([v, l, Ic]) => (
                 <label key={v}>
                   <input type="radio" name="nature-selecteur" checked={nature === v} onChange={() => setNature(v)} />
+                  <Ic size={14} strokeWidth={1.75} aria-hidden="true" />
                   {l}
                 </label>
               ))}
@@ -408,7 +409,7 @@ export function SelecteurFichier(p: PropsSelecteur) {
           </div>
         )}
         {etat === 'erreur' && <ErreurChargement texte="Impossible de charger la médiathèque." onReessayer={() => setRev((n) => n + 1)} />}
-        {etat === 'ok' && fichiers.length === 0 && (
+        {etat === 'ok' && fichiers.length === 0 && !p.peutAjouter && (
           <p className="selecteur-vide">{p.images ? 'Aucune image à choisir.' : 'Aucun fichier à choisir.'}</p>
         )}
         {etat === 'ok' && (
