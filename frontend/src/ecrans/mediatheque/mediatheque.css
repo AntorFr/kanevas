@@ -19,7 +19,7 @@ body:has(.med-panneau-ouvert) .asst-bouton { right: calc(400px + var(--e-5)); }
 .med-bascule label:has(input:checked) svg { color: var(--texte-2); }
 /* The filter row: a search field then pills (the select keeps its hidden label); the order sits at the right. */
 .med-filtres { display: flex; gap: var(--e-2); align-items: center; flex-wrap: wrap; margin-bottom: var(--e-4); }
-.med-recherche { flex: 1 1 180px; max-width: 300px; min-width: 0; display: flex; align-items: center; gap: var(--e-2); height: 32px;
+.med-recherche { flex: 1 1 120px; max-width: 300px; min-width: 0; display: flex; align-items: center; gap: var(--e-2); height: 32px;
   padding: 0 10px; border-radius: var(--rayon-champ); border: 1px solid var(--bord-champ); background: var(--surface); color: var(--texte-3); cursor: text; }
 .med-recherche:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-fond); }
 .med-recherche input { flex: 1; min-width: 0; height: 30px; padding: 0; border: 0; background: transparent; color: var(--texte); font: inherit; font-size: var(--t-13); }
@@ -29,7 +29,8 @@ body:has(.med-panneau-ouvert) .asst-bouton { right: calc(400px + var(--e-5)); }
   border: 1px solid var(--bord-fort); border-radius: var(--rayon-champ); background: transparent; color: var(--texte-2); }
 .med-filtres .champ:hover { background: var(--surface-2); }
 .med-filtres .champ > .lib-champ { margin: 0; padding: 0; font-size: var(--t-13); font-weight: 500; color: var(--texte-2); white-space: nowrap; }
-.med-filtres .champ select { height: 30px; min-height: 30px; width: auto; padding-top: 0; padding-bottom: 0; border: 0;
+/* Size pills from the selected value, not the longest option in their menu. */
+.med-filtres .champ select { height: 30px; min-height: 30px; width: auto; field-sizing: content; padding-top: 0; padding-bottom: 0; border: 0;
   background: transparent; color: var(--texte); font-size: var(--t-13); }
 .med-filtres .champ select:focus-visible { outline: 2px solid var(--focus); }
 /* The order selector: sort icon, label hidden (the value says it). */
@@ -126,6 +127,17 @@ body:has(.med-panneau-ouvert) .asst-bouton { right: calc(400px + var(--e-5)); }
   .med-filtres .champ { min-width: 0; }
   .med-filtres .champ select { min-width: 0; text-overflow: clip; }
   .med-ordre { margin-left: 0; }
+}
+@media (max-width: 640px) {
+  .med-filtres { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) 44px; }
+  .med-filtres > .med-recherche { grid-column: 1 / -1; }
+  .med-filtres .champ-liste { flex: 1; min-width: 0; }
+  .med-filtres .champ select { width: 100%; }
+  /* Keep the native, labelled selector operable while showing only its sort icon and chevron. */
+  .med-ordre, .med-ordre .champ { width: 44px; }
+  .med-ordre .champ { gap: 0; }
+  .med-ordre .champ select { padding-left: 18px; padding-right: 24px; font-size: 0; }
+  .med-ordre .champ select option { font-size: var(--t-13); }
 }
 
 /* « Choisir un fichier » (E-9): the grid of E-19 in a box. */
