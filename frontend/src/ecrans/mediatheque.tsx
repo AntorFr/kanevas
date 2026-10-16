@@ -41,8 +41,8 @@ function fichesPerdues(usages: Usage[]): string[] {
   for (const u of usages) {
     const e = parFiche.get(u.ficheId) ?? { titre: u.ficheTitre, parts: [] };
     if (u.illustration) e.parts.push('illustration');
-    else if (u.dansTexte) e.parts.push(`« ${u.sectionTitre} »`);
-    else e.parts.push(`pièces jointes de « ${u.sectionTitre} »`);
+    else if (u.dansTexte) e.parts.push(`« ${u.sectionTitre} »`);
+    else e.parts.push(`pièces jointes de « ${u.sectionTitre} »`);
     parFiche.set(u.ficheId, e);
   }
   return [...parFiche.values()].map((e) => `${e.titre} (${e.parts.join(', ')})`);
@@ -170,7 +170,7 @@ function Mediatheque() {
     async (fichier: File, cle: number) => {
       if (fichier.size === 0) {
         setEnvois((l) => l.filter((e) => e.cle !== cle));
-        setVides((l) => [...l, `« ${fichier.name} » est vide.`]);
+        setVides((l) => [...l, `« ${fichier.name} » est vide.`]);
         return;
       }
       setEnvois((l) => l.map((e) => (e.cle === cle ? { ...e, echec: false, pct: 0 } : e)));
@@ -189,7 +189,7 @@ function Mediatheque() {
         if (e instanceof ErreurApi && e.statut === -1) return setEnvois((l) => l.filter((x) => x.cle !== cle));
         if (e instanceof ErreurApi && e.code === 'fichier_vide') {
           setEnvois((l) => l.filter((x) => x.cle !== cle));
-          return setVides((l) => [...l, `« ${fichier.name} » est vide.`]);
+          return setVides((l) => [...l, `« ${fichier.name} » est vide.`]);
         }
         setEnvois((l) => l.map((x) => (x.cle === cle ? { ...x, echec: true } : x)));
       } finally {
@@ -627,7 +627,7 @@ function Mediatheque() {
                             </span>
                             <span className="med-usage-texte">
                               <span>{u.ficheTitre}</span>{' '}
-                              <span className="med-usage-ou">{u.illustration ? '(illustration)' : `— « ${u.sectionTitre} »${u.joint && !u.dansTexte ? ' (jointe)' : ''}`}</span>
+                              <span className="med-usage-ou">{u.illustration ? '(illustration)' : `— « ${u.sectionTitre} »${u.joint && !u.dansTexte ? ' (jointe)' : ''}`}</span>
                             </span>
                             <ChevronRight size={14} strokeWidth={1.75} aria-hidden="true" />
                           </Link>
@@ -655,10 +655,10 @@ function Mediatheque() {
 
       {boite && f && (
         <BoiteDialogue
-          titre={boite.action === 'reserver' ? `Réserver « ${f.nom} » au MJ ?` : `Supprimer « ${f.nom} » ?`}
+          titre={boite.action === 'reserver' ? `Réserver « ${f.nom} » au MJ ?` : `Supprimer « ${f.nom} » ?`}
           texte={
             boite.action === 'reserver'
-              ? `Les joueurs ne le verront plus dans : ${boite.usages.map((u) => u.libelle).join(' ; ')}.`
+              ? `Les joueurs ne le verront plus dans : ${boite.usages.map((u) => u.libelle.replace(/« /g, '«\u202f').replace(/ »/g, '\u202f»')).join(' ; ')}.`
               : boite.usages.length === 0
                 ? ''
                 : (() => {
