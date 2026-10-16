@@ -352,9 +352,9 @@ Textes : section sans contenu : « Rien d'écrit pour l'instant. » ; fiche sans
 fiche n'a pas encore de section. » ; écriture périmée : « La section a changé depuis que vous
 l'avez ouverte. Rechargez-la pour voir la nouvelle version ; votre texte reste ci-dessous. » avec
 « Recharger la section » ; droit retiré entre-temps : « Vous ne pouvez plus modifier cette section. » ;
-confirmation de retrait : « Retirer la section « Vérité — MJ seul » ? Son contenu sera perdu. » (si elle porte
-des fichiers joints : « … Son contenu et ses 3 fichiers joints seront retirés. ») avec
-« Retirer la section » et « Annuler ».
+Removal confirmation: « Retirer la section « Vérité — MJ seul » ? Son contenu sera perdu. »
+(with attached files: « … Son contenu et ses 3 fichiers joints seront retirés. »), with
+« Retirer la section » and « Annuler ».
 
 | État | Ce qu'on voit | Ce qu'on peut faire |
 |---|---|---|
@@ -900,107 +900,101 @@ l'assistant est construit (E-12, `kanevas-assistant-membre`).
 > écriture en cours, échec d'une écriture). Maquette : `e09` (bloc Pièces jointes : MJ, Joueuse,
 > envoi, échecs). Le document prime sur la maquette.
 
-### E-9 — le bloc Pièces jointes
+### E-9 — the « Pièces jointes » block
 
-> *Amendé par `kanevas-import` (AD-111, décisions de Monsieur du 2026-10-11) : une pièce jointe est désormais un fichier de la médiathèque, référencé par la section ; « secrète » devient « Réservée au MJ », la visibilité du fichier ; 100 fichiers joints par section. Voir « E-9 Fiche — ce que `kanevas-import` change », « Fichiers ».*
+> *Amended by `kanevas-import` (AD-111, decisions of 2026-10-11): an attachment is now a media
+> library file referenced by the section; “secret” becomes « Réservé au MJ », the file's own
+> visibility; up to 100 attached files per section. See « E-9 Fiche — ce que `kanevas-import`
+> change », « Fichiers ».*
 
-Dans chaque section, sous son contenu (et sous le bloc Relations s'il existe) : un bloc **Pièces
-jointes**, inscrit au registre des blocs de section. Il montre les **fichiers joints** à cette section
-(références vers la médiathèque, voir « Fichiers » plus bas) : une **image** (PNG, JPEG, GIF, WebP,
-reconnue à son contenu, pas à son nom) en vignette ; tout autre fichier (PDF, texte, archive…, et
-une image SVG) comme une ligne : nom, taille, « Télécharger ». Un clic sur une vignette ouvre
-l'image entière dans un nouvel onglet.
+Each section has a **« Pièces jointes »** block below its content (and below Relations, if present),
+registered in the section block registry. It shows **files attached to that section** (references
+into the media library, see « Fichiers » below): an **image** (PNG, JPEG, GIF, WebP, identified by its
+bytes, not its name) as a thumbnail; any other file (PDF, text, archive…, including SVG images) as
+a row with name, size and « Télécharger ». Clicking a thumbnail opens the full image in a new tab.
 
-Un fichier joint **a sa propre visibilité**, celle du fichier (« Visible des joueurs » ou « Réservé
-au MJ », AD-111) : qui ne lit pas la section ne voit pas le bloc ; qui lit la section ne voit un
-fichier réservé au MJ que s'il l'a lui-même ajouté (troisième règle de lecture) ; sinon un cadre neutre
-(« Image réservée au MJ. » ou « Fichier réservé au MJ. ») tient sa place dans le bloc, et l'adresse du
-fichier répond « Page introuvable. ». Le MJ règle la visibilité **du
-fichier** (« Réserver au MJ » / « Rendre visible des joueurs »).
+An attached file **has its own visibility**, « Visible des joueurs » or « Réservé au MJ » (AD-111).
+Readers without access to the section do not see its block. A section reader can only see a GM-only
+file if they added it themselves (third read rule); otherwise a neutral placeholder (« Image
+réservée au MJ. » or « Fichier réservé au MJ. ») replaces it, and the file address answers « Page
+introuvable. ». The GM sets the **file's** visibility (« Réserver au MJ » / « Rendre visible des joueurs »).
 
-| Rôle | Voir | Joindre | Régler la visibilité | Retirer la référence | Refus |
+| Role | See | Attach | Set visibility | Remove reference | Refusal |
 |---|---|---|---|---|---|
-| MJ | tous les fichiers joints de ses sections, réservés compris | oui, sur toute section | oui | oui | sans objet |
-| Joueur | les fichiers joints des sections qu'il lit, hors réservés au MJ **sauf ceux qu'il a ajoutés** | sur une section qu'il **écrit** (la sienne, ou ouverte en écriture aux joueurs) ; sur une section qu'il ne fait que lire, « Joindre un fichier » est absent | non : **absent** | sur une section qu'il écrit, un fichier qu'il voit | un fichier réservé au MJ qu'il n'a pas ajouté est **absent** et son adresse répond « Page introuvable. » |
-| MJ en mode Joueur | comme un Joueur ; plus les fichiers qu'il a lui-même ajoutés (AD-117) | seulement où les joueurs écrivent | absent | seulement où les joueurs écrivent | idem |
-| Admin d'instance | aucun | non | non | non | « Page introuvable. » |
+| GM | All attachments of their sections, including GM-only files | Yes, on any section | Yes | Yes | Not applicable |
+| Player | Attachments of readable sections, excluding GM-only files **unless they added them** | On a section they **can write** (their own, or open to player writes); « Joindre un fichier » is absent on read-only sections | No: **absent** | A readable file on a section they can write | A GM-only file they did not add is **absent**; its address answers « Page introuvable. » |
+| GM in player mode | Like a player, plus files they added themselves (AD-117) | Only where players can write | Absent | Only where players can write | Same |
+| Instance admin | None | No | No | No | « Page introuvable. » |
 
-Un geste qu'un rôle n'a pas est **absent** de l'écran (jamais grisé, sauf hors connexion) : sur une
-section qu'on lit sans l'écrire, ni « Joindre un fichier » ni « Retirer » ; pour un Joueur (et le MJ en
-mode Joueur), ni « Réserver au MJ » ni « Rendre visible des joueurs ». Par l'API, un geste d'écriture sur
-une section qu'on lit sans l'écrire est refusé **403**, un réglage de visibilité par un non-MJ aussi
-(403) ; ce qu'on ne lit pas répond 404. L'Admin d'instance n'a pas de bloc (« Page introuvable. »).
-Le texte de limite d'un MJ en mode Joueur est celui d'un Joueur.
+Actions unavailable to a role are **absent** (never disabled, except offline): a read-only section
+has neither « Joindre un fichier » nor « Retirer »; players and GMs in player mode have neither
+« Réserver au MJ » nor « Rendre visible des joueurs ». The API refuses writes on a read-only
+section with **403**, and visibility changes by non-GMs with 403; unreadable resources answer 404.
+Instance admins have no block (« Page introuvable. »). A GM in player mode gets the player limit message.
 
-*Joindre.* « Joindre un fichier » ouvre le menu des deux chemins d'ajout (« Fichiers » plus bas) ;
-« Ajouter depuis l'appareil » ouvre le sélecteur de fichiers du système : **choisir le fichier
-suffit**, l'envoi part aussitôt, un fichier après l'autre si l'on en choisit plusieurs (il n'y a pas de
-limite de taille). Pendant l'envoi, une ligne « portrait.png — Envoi… 42 % » (`role="status"`) avec
-« Annuler » ; l'envoi annulé n'écrit rien, ni dans la médiathèque ni dans la fiche. À la fin, le fichier
-rejoint la liste. Une section porte **100 fichiers joints** au plus (50 pièces avant
-`kanevas-import`, AD-111) ; la limite compte les références du bloc, pas celles du texte. Un fichier
-vide est refusé. Si l'on en choisit plusieurs, chacun est jugé seul : un refus n'arrête pas les
-suivants, et chaque refus devient une ligne d'erreur qui reste, avec « Ignorer » seul (« Réessayer »
-n'aurait pas de sens pour un refus).
+*Attach.* « Joindre un fichier » opens the two-path add menu (see « Fichiers » below).
+« Ajouter depuis l'appareil » opens the system file picker: **choosing a file is enough**; upload
+starts immediately, one file after another for multiple selections (no size limit). During upload,
+a « portrait.png — Envoi… 42 % » row (`role="status"`) has « Annuler »; cancellation writes nothing
+to either the library or the sheet. Completed files join the list. A section has **at most 100
+attached files** (50 before `kanevas-import`, AD-111); this counts block references, not text references.
+Empty files are refused. Each selected file is judged separately: one refusal does not stop later
+files; each refusal leaves an error row with only « Ignorer » (retrying a refusal would not help).
 
-*Régler, retirer.* Sur chaque ligne, le MJ a « Réserver au MJ » (ou « Rendre visible des joueurs »
-quand il l'est) et « Retirer « portrait.png » » ; qui écrit la section n'a que « Retirer ». Retirer
-**ôte la référence, jamais le fichier de la médiathèque** : confirmation sur place « Retirer
-« portrait.png » de cette section ? Le fichier reste dans la médiathèque. » avec « Retirer » et
-« Annuler ». Retirer une section retire ses références ; la confirmation de la première fiche gagne
-alors « … Son contenu et son fichier joint seront retirés. » (un) ou « … Son contenu et ses 3 fichiers
-joints seront retirés. » (plusieurs) ; sans fichier joint, son texte ne change pas. Un fichier réservé
-au MJ porte la pastille ambre « MJ seul » et le liseré du panneau MJ. Un fichier n'est jamais modifié
-sur place : pour le remplacer, on en joint un autre et l'on retire l'ancien.
+*Set visibility, remove.* Each row offers the GM « Réserver au MJ » (or « Rendre visible des joueurs »
+for a GM-only file) and « Retirer « portrait.png » »; section writers only have « Retirer ».
+Removal **only removes the reference, never the library file**. Inline confirmation: « Retirer
+« portrait.png » de cette section ? Le fichier reste dans la médiathèque. » with « Retirer » and
+« Annuler ». Removing a section removes its references; the first-sheet confirmation adds
+« … Son contenu et son fichier joint seront retirés. » (one file) or « … Son contenu et ses 3 fichiers
+joints seront retirés. » (several). Without attachments, the text is unchanged. GM-only files have
+an amber « MJ seul » badge and the GM panel border. Files are never changed in place: attach another
+file and remove the old one to replace it.
 
-*Textes.* Aucun fichier joint : « Aucun fichier joint. » ; taille : « 842 o », « 4,2 Ko », « 3,1 Mo »,
-« 1,2 Go » (base 1024) ; nom : celui du fichier d'origine, sans dossier, 200 caractères au plus ; une
-vignette dit son nom en texte alternatif et porte en légende, dessous, son nom et sa taille
-(« portrait-aldric.png · 3,1 Mo »), puis ses boutons ; échec d'envoi : « « portrait.png » : l'envoi
-n'a pas abouti. » avec « Réessayer » et « Ignorer » ; fichier vide : « « notes.txt » est vide. » ;
-limite : « Cette section porte déjà 100 fichiers joints. » pour le MJ, « Cette section ne peut pas
-recevoir d'autre fichier. » pour un Joueur (qui ne voit pas les fichiers réservés au MJ : le chiffre
-dirait ce qu'il ne doit pas savoir) ; droit retiré entre-temps (à l'ajout ou au retrait) : « Vous ne
-pouvez plus ajouter de fichier à cette section. », la fiche se recharge et « Joindre un fichier »
-comme « Retirer » disparaissent ; fichier déjà retiré, supprimé ou devenu illisible : « Ce fichier
-joint n'existe plus. » (la liste se recharge) ; vignette qui ne se charge pas : « Image indisponible. »
-avec « Télécharger » ; échec d'un réglage ou d'un retrait : « L'action n'a pas abouti. Réessayez. »,
-l'état d'avant revient.
+*Texts.* No attachments: « Aucun fichier joint. »; size: « 842 o », « 4,2 Ko », « 3,1 Mo », « 1,2 Go »
+(base 1024); name: original filename without directories, up to 200 characters. A thumbnail has the
+filename as alternative text, a caption below with name and size (« portrait-aldric.png · 3,1 Mo »),
+then its buttons. Failed upload: « « portrait.png » : l'envoi n'a pas abouti. » with « Réessayer »
+and « Ignorer ». Empty file: « « notes.txt » est vide. ». Limit: « Cette section porte déjà 100
+fichiers joints. » for the GM, « Cette section ne peut pas recevoir d'autre fichier. » for a player
+(who cannot see GM-only files: a count would disclose hidden information). Lost write permission
+when adding or removing: « Vous ne pouvez plus ajouter de fichier à cette section. »; reload the
+sheet, hiding « Joindre un fichier » and « Retirer ». Attachment already removed, deleted or no
+longer readable: « Ce fichier joint n'existe plus. » (reload the list). Failed thumbnail: « Image
+indisponible. » with « Télécharger ». Failed visibility change or removal: « L'action n'a pas
+abouti. Réessayez. »; restore the previous state.
 
-*Pas de bloc quand il n'a rien à dire.* Un Joueur qui ne peut rien voir ni joindre dans une section
-n'a pas de bloc : ni titre, ni compteur, ni « Aucun fichier joint. ». Le MJ voit le bloc de chaque
-section, même vide.
+*No block when there is nothing to show.* A player who can neither see nor attach anything in a
+section has no block: no title, count or « Aucun fichier joint. ». The GM sees every section's
+block, even when empty.
 
-| État | Ce qu'on voit | Ce qu'on peut faire |
+| State | What is shown | Available actions |
 |---|---|---|
-| vide | MJ, ou qui écrit la section : « Aucun fichier joint. » et « Joindre un fichier » ; un lecteur seul : pas de bloc | joindre |
-| chargement | les fichiers viennent avec la fiche : « Chargement de la fiche… » (E-9) ; une vignette en cours de chargement occupe sa place (cadre à la taille fixe) ; un envoi : la ligne « Envoi… 42 % » | annuler l'envoi |
-| erreur | envoi : « « portrait.png » : l'envoi n'a pas abouti. » et la ligne reste ; fichier vide ou limite atteinte : le refus des textes, en ligne qui reste, avec « Ignorer » ; réglage ou retrait : « L'action n'a pas abouti. Réessayez. » ; vignette : « Image indisponible. » ; choix dans la médiathèque dont le fichier a disparu entre-temps : « Ce fichier n'existe plus. » | « Réessayer », « Ignorer », « Télécharger » |
-| connexion perdue | le bandeau ; « Joindre un fichier », « Réserver au MJ », « Rendre visible des joueurs », « Retirer » désactivés ; un envoi en cours qui échoue devient l'erreur ci-dessus ; les vignettes déjà chargées restent | voir, télécharger |
-| refus | droit d'écriture retiré : « Vous ne pouvez plus ajouter de fichier à cette section. » ; fichier retiré entre-temps : « Ce fichier joint n'existe plus. » ; section ou fiche illisible : « Page introuvable. » ; fichier réservé au MJ pour un Joueur qui ne l'a pas ajouté : absent | recharger |
-| contenu long | un nom de 200 caractères passe à la ligne ; 100 fichiers joints : la liste entière, puis le refus de limite (texte selon le rôle) à l'ajout ; un fichier de plusieurs Go : la progression en pourcentage, la taille en « Go » ; une vignette tient dans un cadre de 160 × 120 px | idem |
+| Empty | GM or section writer: « Aucun fichier joint. » and « Joindre un fichier »; read-only reader: no block | Attach |
+| Loading | Files come with the sheet: « Chargement de la fiche… » (E-9); loading thumbnails keep their fixed frame; upload: « Envoi… 42 % » row | Cancel upload |
+| Error | Upload: « « portrait.png » : l'envoi n'a pas abouti. », row remains; empty file or limit reached: the refusal above, persistent row with « Ignorer »; visibility change or removal: « L'action n'a pas abouti. Réessayez. »; thumbnail: « Image indisponible. »; library choice deleted in the meantime: « Ce fichier n'existe plus. » | « Réessayer », « Ignorer », « Télécharger » |
+| Offline | Banner; « Joindre un fichier », « Réserver au MJ », « Rendre visible des joueurs », « Retirer » disabled; an interrupted upload becomes the error above; loaded thumbnails stay | View, download |
+| Refused | Lost write permission: « Vous ne pouvez plus ajouter de fichier à cette section. »; attachment removed in the meantime: « Ce fichier joint n'existe plus. »; unreadable section or sheet: « Page introuvable. »; GM-only file a player did not add: absent | Reload |
+| Long content | A 200-character name wraps; 100 attachments: full list, then role-specific limit refusal on add; multi-GB file: percentage progress and size in « Go »; thumbnail fits a 160 × 120 px frame | Same |
 
-*Critères.*
-- Étant donné « Maître Aldric » dont Antor, MJ, joint à « Vérité — MJ seul » un portrait, alors Léa,
-  Joueuse, ne voit ni le portrait, ni le bloc de cette section (qu'elle ne lit pas) ; et sur
-  « Apparence » (lue des joueurs), où Antor a joint un autre portrait puis l'a réservé au MJ sur E-19,
-  Léa lit « Image réservée au MJ. » à la place de la vignette ; l'adresse directe du portrait réservé lui répond « Page introuvable. », comme une adresse qui n'a
-  jamais existé.
-- Étant donné Léa auteur de « Notes de la table » avec écriture, quand elle choisit un portrait, alors
-  il s'envoie sans autre geste et apparaît en vignette ; Teo, Joueur de l'univers (ajouté d'abord par
-  Antor), ne le voit pas : la visibilité d'un fichier est fixée à son ajout (AD-111), ouvrir ensuite la
-  section aux joueurs ne la change pas ; il ne peut ni le joindre ni le retirer.
-- Étant donné Antor qui joint le plan d'un lieu en PDF, alors la ligne propose « Télécharger » et
-  le fichier se télécharge sous son nom d'origine ; un fichier « image.svg » n'est jamais affiché dans la
-  page.
-- Étant donné Antor en mode Joueur sur la fiche, alors il ne voit ni « Réserver au MJ » ni « Rendre
-  visible des joueurs », ni les fichiers réservés au MJ qu'il n'a pas lui-même ajoutés, et ne peut
-  joindre que sur les sections que les joueurs écrivent.
-- Étant donné un envoi de 2 Go en cours, quand Antor clique « Annuler », alors la ligne disparaît et
-  aucun fichier n'est ajouté.
-- Étant donné Antor qui retire la section « Apparence » portant un portrait joint, alors la
-  confirmation dit « … Son contenu et son fichier joint seront retirés. » et, après confirmation, le
-  portrait n'est plus dans la fiche mais reste dans la médiathèque.
+*Acceptance criteria.*
+- Given « Maître Aldric », when Antor, the GM, attaches a portrait to « Vérité — MJ seul », Léa,
+  a player, sees neither the portrait nor that section's block (she cannot read the section).
+  On « Apparence » (readable by players), when Antor attaches another portrait then reserves it
+  for the GM on E-19, Léa reads « Image réservée au MJ. » instead of the thumbnail. The reserved
+  portrait's direct address answers « Page introuvable. », just like an address that never existed.
+- Given Léa as author with write access to « Notes de la table », choosing a portrait starts upload
+  immediately and shows a thumbnail. Teo, added to the universe as a player by Antor, cannot see it:
+  visibility is set on upload (AD-111); opening the section to players later does not change it.
+  He can neither attach nor remove it.
+- Given Antor attaching a location map as PDF, the row offers « Télécharger » and downloads under
+  the original name; « image.svg » is never rendered in the page.
+- Given Antor in player mode on the sheet, he sees neither « Réserver au MJ » nor « Rendre visible
+  des joueurs », nor GM-only files he did not add himself; he can only attach where players can write.
+- Given an ongoing 2 GB upload, when Antor clicks « Annuler », the row disappears and no file is added.
+- Given Antor removing « Apparence » with an attached portrait, the confirmation says « … Son contenu
+  et son fichier joint seront retirés. »; after confirmation, the portrait is gone from the sheet
+  but remains in the media library.
 
 ### Clôture de `kanevas-fichiers`
 
@@ -1288,8 +1282,8 @@ au secret (la section « MJ seul »).
 1 080 px). Au téléphone (moins de 760 px), **deux colonnes** (12 px entre elles, 16 px entre deux rangées),
 titre 13 px, la pastille sous le titre. Les images
 se chargent **à l'approche** (`loading="lazy"`) dans un cadre déjà à sa taille (la grille ne saute
-pas) ; leur adresse porte le jeton de l'illustration (`/fichiers/<id>?v=<jeton>`, AD-93), si bien
-qu'une image remplacée se recharge et qu'une image inchangée vient du cache.
+pas). The illustration address includes its token (`/fichiers/<id>?v=<jeton>`, AD-93), so a replaced
+image reloads while an unchanged image comes from the cache.
 
 *Survol et focus.* La carte se soulève d'un plan (`--surface-2` derrière la carte, contour
 `--bord-fort` autour de la vignette) ; au clavier, l'anneau de focus entoure la carte entière.
@@ -2274,7 +2268,7 @@ section qu'il lit, un cadre neutre (`lock`, `--texte-3`) dit « Image réservée
 légende s'il y en a une) ou « Fichier réservé au MJ. » pour un document ; dans un bloc MJ, rien.
 L'illustration réservée au MJ d'une fiche qu'un joueur voit : la même mention dans l'en-tête, la
 vignette de repli dans la grille de E-8 (sans mention). Fichier supprimé : « Fichier supprimé de la
-médiathèque. » pour un MJ, rien pour un joueur. En mode Joueur, le MJ voit ce que voit un joueur, plus les fichiers qu'il a lui-même ajoutés (troisième règle, AD-117).
+médiathèque. » pour un MJ, rien pour un joueur. In player mode, the GM sees what a player sees, plus files they added themselves (third rule, AD-117).
 
 **Deux chemins d'ajout** : le bouton « Fichier » (`paperclip`) de la barre d'outils, en édition, et
 « Joindre un fichier » en pied du bloc Pièces jointes — présent hors édition pour qui écrit la section,
@@ -2366,7 +2360,7 @@ sont fermées dès maintenant. Maquette : `e09-fiche-importee.html` (« Port-Sel
   gouverne : chaque `:::mj` rencontré dans un bloc ouvre un bloc imbriqué, et le bloc extérieur ne finit qu'à la ligne `:::`
   qui équilibre les ouvertures (une ligne `:::` dans un bloc de code d'un bloc MJ le ferme, comme à l'écran) ; tout ce qu'il couvre est retiré. `:::MJ` (autre casse), `::: mj` (espace), `::::mj` (quatre deux-points)
   et `:::mj` suivi de mots ne sont pas des blocs : du texte, visible de tous — une règle de plus que le MJ n'a pas à apprendre.
-- **Le bouton « Bloc MJ »** (MJ seulement, `lock`, après les boutons existants de la barre (« Fichier » est ajouté par `kanevas-import-mediatheque`) de l'éditeur,
+- **« Bloc MJ » button** (GM only, `lock`, after the existing editor toolbar buttons; « Fichier » is added by `kanevas-import-mediatheque`,
   avant la bascule « Écrire / Aperçu » ; libellé « Bloc MJ » visible sur ordinateur, l'icône seule de 36 px sous le
   seuil « téléphone » de la maquette (`@media` de `e09-fiche-importee.html`), sans infobulle au toucher : le libellé accessible la remplace ; infobulle « Bloc MJ · entoure la sélection », libellé accessible « Bloc MJ ») : avec une sélection, il l'entoure d'une ligne `:::mj` avant et d'une
   ligne `:::` après (en ajoutant les sauts de ligne qui manquent, pour que les deux lignes soient seules) ;
@@ -2459,9 +2453,9 @@ sont fermées dès maintenant. Maquette : `e09-fiche-importee.html` (« Port-Sel
 
 *Maquette finie* : `docs/maquettes/e19-mediatheque.html` (états `#etat-joueur`, `#etat-image`,
 `#etat-document`, `#etat-documents`, `#etat-supprimer`, `#etat-reserver`, `#etat-choisir`,
-`#etat-averti`, `#etat-vide`, `#etat-perdue`). Le voile de dépôt, les erreurs, l'envoi en cours, « Afficher les N autres »
-et le sélecteur vide ne sont pas dessinés : **le document prime sur la maquette**. Décisions de Monsieur du 2026-10-11 (B-53 à B-56,
-AD-111) : tous les fichiers de l'univers, images et documents.
+`#etat-averti`, `#etat-vide`, `#etat-perdue`). The drop overlay, errors, upload progress, « Afficher les N autres »
+and the empty picker are not drawn: **this document takes precedence over the mockup**. Decisions
+of 2026-10-11 (B-53 to B-56, AD-111): all universe files, images and documents.
 
 Atteint par « Médiathèque » (`images`) dans la barre de l'univers, sous « Cartes », pour tout membre.
 En tête : le titre, « 1 140 fichiers » (ceux que le lecteur voit) et, pour un MJ, « Ajouter des
@@ -2487,39 +2481,39 @@ place, 1 à 200 caractères) ; la **visibilité** en bascule segmentée « Visib
   usage : pas de boîte, le même toast. Rendre visible, renommer : sans toast. Nom vide : « Erreur : le
   nom est obligatoire. » ; au-delà de 200 : « Erreur : 200 caractères au plus. ». « Utilisé dans »
   n'apparaît pas pour un fichier qu'aucune fiche visible du lecteur n'utilise.
-- *Supprimer* : boîte « Supprimer « Carte des Sphères » ? Elle est utilisée dans 3 fiches : Port-Sel
+- *Delete*: dialog « Supprimer « Carte des Sphères » ? Elle est utilisée dans 3 fiches : Port-Sel
   (illustration), Val-Fortin (« Description »), Maître Aldric (pièces jointes de « Apparence »). Elle
-  disparaîtra de ces fiches. » (« Il est utilisé… Il disparaîtra… » pour un document) ; sans usage :
-  « Supprimer « Carte des Sphères » ? » ; « Supprimer le fichier » (`--danger`) / « Annuler » ; toast
+  disparaîtra de ces fiches. » (« Il est utilisé… Il disparaîtra… » for a document); without usages:
+  « Supprimer « Carte des Sphères » ? »; « Supprimer le fichier » (`--danger`) / « Annuler »; toast
   « Fichier supprimé. ».
 
-**Le sélecteur** (« Choisir dans la médiathèque », depuis E-9) : la même grille dans une boîte
-« Choisir un fichier », avec « Ajouter depuis l'appareil » en tête (le premier chemin, B-55), filtrée
-sur ce que le compte voit, sur « Images » quand on pose l'illustration ; choisir intègre la référence
-(E-9, « Fichiers ») ; l'avertissement de B-55 suit, sous le champ. Ses états propres : *vide* — « Aucune image à choisir. »
-(illustration) ou « Aucun fichier à choisir. » (un Joueur sans fichier visible), avec « Ajouter depuis
-l'appareil » pour qui peut ajouter ; *erreur* — « Impossible de charger la médiathèque. » avec
-« Réessayer » ; un ajout depuis l'appareil qui échoue : « « notes.txt » : l'envoi n'a pas abouti. » dans la
-boîte, qui reste ouverte ; *connexion perdue* — le bandeau, « Ajouter depuis l'appareil » désactivé, la
-grille chargée reste choisissable ; un fichier supprimé ou devenu illisible entre l'ouverture et le choix :
-« Ce fichier n'existe plus. » et la grille se recharge.
+**The picker** (« Choisir dans la médiathèque », from E-9): the same grid in a « Choisir un fichier »
+dialog, with « Ajouter depuis l'appareil » at the top (first path, B-55), filtered to readable files
+and to « Images » when setting an illustration. Choosing inserts the reference (E-9, « Fichiers »);
+the B-55 warning follows below the field. Picker states: *empty* — « Aucune image à choisir. »
+(illustration) or « Aucun fichier à choisir. » (player with no readable files), with « Ajouter depuis
+l'appareil » for users allowed to add; *error* — « Impossible de charger la médiathèque. » with
+« Réessayer »; a failed device upload shows « « notes.txt » : l'envoi n'a pas abouti. » inside the
+dialog, which stays open; *offline* — banner, « Ajouter depuis l'appareil » disabled, loaded grid
+still selectable; file deleted or no longer readable between opening and choosing: « Ce fichier
+n'existe plus. » and reload the grid.
 
-**Envoi long** (E-19, « Ajouter des fichiers » ou glisser-déposer) : une ligne par fichier en cours,
-« plan.png — Envoi… 42 % » (`role="status"`) avec « Annuler » ; un envoi annulé n'écrit rien ; la
-grille garde sa place, le fichier la rejoint à la fin de son envoi.
+**Long upload** (E-19, « Ajouter des fichiers » or drag and drop): one row per uploading file,
+« plan.png — Envoi… 42 % » (`role="status"`) with « Annuler »; cancellation writes nothing. The
+grid keeps its place; the file joins it when its upload completes.
 
-**Fichier ajouté par l'assistant** (B-25, AD-44 amendée) : une image générée entre dans la médiathèque comme
-tout ajout, « ajoutée par » le compte du MJ qui l'a demandée, avec la visibilité de l'endroit d'ajout
-(illustration : « Visible des joueurs » si la fiche a une section lue des joueurs) ; l'outil de
-l'assistant qui la produit est celui de `kanevas-images`, cette tranche n'en livre que l'ajout.
+**Assistant-added file** (B-25, amended AD-44): a generated image enters the media library like
+any upload, attributed to the requesting GM's account, with visibility determined by where it is
+added (illustration: « Visible des joueurs » if the sheet has a section readable by players).
+The generating assistant tool belongs to `kanevas-images`; this slice only delivers the add path.
 
 | État | Ce qu'on voit | Ce qu'on peut faire |
 |---|---|---|
 | vide | MJ : « Aucun fichier pour l'instant. Ajoutez-en, ou posez-en un dans une fiche. » et « Ajouter des fichiers » ; joueur : « Aucun fichier à voir pour l'instant. » ; un filtre sans résultat : « Aucun fichier ne correspond. » | MJ : ajouter |
 | chargement | tuiles en squelette ; une vignette qui charge garde son cadre | — |
-| erreur | « Impossible de charger la médiathèque. » ; une vignette ou un aperçu qui ne se charge pas : « Image indisponible. » avec « Télécharger » ; « Télécharger » qui échoue : « L'action n'a pas abouti. Réessayez. » ; un fichier vide dans un envoi multiple : « « notes.txt » est vide. » sous la grille, les autres sont ajoutés ; envoi coupé : « L'envoi n'a pas abouti. », avec « Réessayer » ; suppression ou changement qui échoue : « L'action n'a pas abouti. Réessayez. », rien n'a changé | « Réessayer » |
+| Error | « Impossible de charger la médiathèque. »; failed thumbnail or preview: « Image indisponible. » with « Télécharger »; failed download: « L'action n'a pas abouti. Réessayez. »; an empty file in a multiple upload: « « notes.txt » est vide. » below the grid, other files are added; interrupted upload: « L'envoi n'a pas abouti. » with « Réessayer »; failed deletion or change: « L'action n'a pas abouti. Réessayez. », nothing changed | « Réessayer » |
 | connexion perdue | le bandeau ; « Ajouter des fichiers », la bascule de visibilité, « Supprimer » désactivés | regarder ce qui est chargé |
-| refus | un fichier réservé au MJ, qu'il n'a pas ajouté, n'existe pas pour un joueur (absent, son adresse : « Page introuvable. ») ; ni réglage de visibilité, ni suppression, ni ajout depuis E-19 pour un joueur (**caché** ; il ajoute un fichier par une section qu'il écrit, E-9) ; rôle retiré pendant la page : « Vous ne pouvez plus modifier ce fichier. » ; Admin d'instance sans rôle dans l'univers, adresse forcée : « Page introuvable. » | « Mes univers » |
+| Refused | A GM-only file the player did not add does not exist for them (absent, direct address: « Page introuvable. »); players have no visibility settings, deletion or add action on E-19 (**hidden**; they add through a writable section on E-9); role removed while viewing: « Vous ne pouvez plus modifier ce fichier. »; instance admin without a universe role forcing the address: « Page introuvable. » | « Mes univers » |
 | contenu long | 1 140 fichiers : 100 puis la suite ; nom de 200 caractères tronqué par « … » avec infobulle ; un fichier utilisé dans 40 fiches : 10 puis « Afficher les 30 autres » ; image de 30 Mo : l'aperçu se charge, rien n'est redimensionné (AD-93) ; document de 300 Mo : la tuile et « Télécharger », rien n'est chargé d'avance | idem |
 
 *Critères.*
@@ -2538,9 +2532,9 @@ l'assistant qui la produit est celui de `kanevas-images`, cette tranche n'en liv
 - Étant donné Antor qui ajoute « plan.png » depuis un bloc MJ de « Port-Sel », alors le fichier entre
   « Réservé au MJ » ; ajouté depuis « Description », lue des joueurs, il entre « Visible des joueurs » ;
   choisi ensuite dans la médiathèque pour un bloc MJ, sa visibilité ne change pas.
-- Étant donné « Carte des Sphères » utilisée par trois fiches, quand Antor la supprime, alors la boîte
-  liste les trois fiches ; après, Antor voit « Fichier supprimé de la médiathèque. » à sa place dans
-  « Val-Fortin », et Léa ne voit rien.
+- Given « Carte des Sphères » used by three sheets, when Antor deletes it, the dialog lists all
+  three sheets. Afterwards, Antor sees « Fichier supprimé de la médiathèque. » in its place in
+  « Val-Fortin »; Léa sees nothing.
 - Étant donné un fichier visible des joueurs utilisé par « Port-Sel » (lisible de Léa) et par « Rapport
   secret de l'amirauté » (MJ seul), quand Léa ouvre le fichier, alors « Utilisé dans » ne nomme que
   « Port-Sel ».
