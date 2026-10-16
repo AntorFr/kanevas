@@ -187,3 +187,7 @@ main.principal:has(.page-grille) { max-width: 1080px; }
 .filtre-sous-type .champ > .lib-champ { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; margin: 0; }
 .filtre-sous-type .indispo { margin: 0; font-size: var(--t-13); color: var(--texte-3); }
 .note-type { margin: var(--e-3) 0 0; color: var(--texte-3); font-size: var(--t-13); }
+
+/* Closing panel of E-14 « Supprimer l'univers »: a --danger rule above it instead of the GM bar. */
+.panneaux-suivi .panneau.zone-danger { margin-top: var(--e-4); }
+.panneaux-suivi .panneau.zone-danger::before { left: 28px; right: 28px; bottom: auto; width: auto; height: 1px; background: var(--danger); }

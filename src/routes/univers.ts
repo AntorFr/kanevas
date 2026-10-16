@@ -7,7 +7,8 @@ import {
   listerMembres,
   retirerMembre,
 } from '../services/membres.js';
-import { creerUnivers, lireUnivers, listerUnivers } from '../services/univers.js';
+import { creerUnivers, lireUnivers, listerUnivers, supprimerUnivers } from '../services/univers.js';
+import { acteur } from './fiches.js';
 import type { Role } from '../services/types.js';
 
 /** A path identifier that is not a positive integer names nothing: not found. */
@@ -59,6 +60,13 @@ export function registerUniversRoutes(app: FastifyInstance) {
   app.get('/api/univers/:id', async (request) =>
     lireUnivers(app.db, request.session!.id, idDeChemin((request.params as { id: string }).id)),
   );
+
+  // The name is re-compared by the service (AD-119 (5)); 204 when the universe is gone.
+  app.delete('/api/univers/:id', async (request, reply) => {
+    const id = idDeChemin((request.params as { id: string }).id);
+    supprimerUnivers(app.db, acteur(request), id, corps(request).nom);
+    return reply.code(204).send();
+  });
 
   app.get('/api/univers/:id/membres', async (request) =>
     listerMembres(app.db, request.session!.id, idDeChemin((request.params as { id: string }).id)),
