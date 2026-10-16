@@ -1147,7 +1147,7 @@ E-12, l'admin d'instance sans rôle ne l'a pas. Aucune migration, aucune entité
 stocké. Reste aux autres tranches : les propositions de mise à jour (`kanevas-monde`), les images
 (`kanevas-images`).
 B-24 → le bloc Pièces jointes de E-9 (ajouter en un geste, voir une image, télécharger un autre
-fichier, marquer secrète, retirer). Atteint par P-3 étape 4 (le plan d'un lieu) et P-7 étape 2 (le
+fichier, retirer; its visibility follows where it was added, see the amendment below). Atteint par P-3 étape 4 (le plan d'un lieu) et P-7 étape 2 (le
 portrait de son personnage). Le bloc livre ses six états (B-29), ci-dessus.
 
 ## Détail de `kanevas-refonte-visuelle`
@@ -1254,7 +1254,7 @@ dans la matrice ci-dessus.
 
 **L'illustration, en une phrase par règle.** Une fiche a **zéro ou une** illustration, une image
 PNG, JPEG, GIF ou WebP (reconnue à son contenu, pas à son nom). Elle se voit **partout où la
-fiche se voit** — comme son titre, elle n'est jamais secrète. **Le MJ seul** la pose, la remplace
+fiche et le fichier se voient** (amended: a GM-only image shows « Image réservée au MJ. » to players). **Le MJ seul** la pose, la remplace
 ou la retire, en mode MJ, depuis l'en-tête de E-9. Ce n'est pas une pièce jointe : elle n'est
 dans aucune section, et une image jointe à une section ne devient jamais l'illustration d'elle-même.
 
