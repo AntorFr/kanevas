@@ -73,7 +73,7 @@ export function TitreFiche({ universId, fiche, gestion, rafraichir, onDroitPerdu
 
   return (
     <>
-      <h1 id="titre-fiche" tabIndex={-1}>
+      <h1 id="titre-fiche" tabIndex={-1} aria-label={fiche.titre}>
         {gestion && edition ? (
           <textarea
             className="titre-edition"
