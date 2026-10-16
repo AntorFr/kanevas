@@ -129,12 +129,12 @@ body:has(.med-panneau-ouvert) .asst-bouton { right: calc(400px + var(--e-5)); }
   .med-ordre { margin-left: 0; }
 }
 @media (max-width: 640px) {
-  .med-filtres { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) 44px; }
+  .med-filtres { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) 56px; }
   .med-filtres > .med-recherche { grid-column: 1 / -1; }
   .med-filtres .champ-liste { flex: 1; min-width: 0; }
   .med-filtres .champ select { width: 100%; }
   /* Keep the native, labelled selector operable while showing only its sort icon and chevron. */
-  .med-ordre, .med-ordre .champ { width: 44px; }
+  .med-ordre, .med-ordre .champ { width: 56px; }
   .med-ordre .champ { gap: 0; }
   .med-ordre .champ select { padding-left: 18px; padding-right: 24px; font-size: 0; }
   .med-ordre .champ select option { font-size: var(--t-13); }
