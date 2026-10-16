@@ -244,7 +244,7 @@ describe('médiathèque — réserver et supprimer « Carte des Sphères »', { 
     await p.getByText('Réservé au MJ', { exact: true }).first().click();
     const boite = p.getByRole('alertdialog').or(p.getByRole('dialog'));
     await boite.waitFor();
-    const t = (await boite.innerText()).replace(/’/g, "'");
+    const t = (await boite.innerText()).replace(/’/g, "'").replace(/[\u00a0\u202f]/g, ' ');
     assert.match(t, /Val-Fortin — « Description »/);
     assert.match(t, /Maître Aldric — « Apparence » \(jointe\)/);
     assert.match(t, /Port-Sel/);
@@ -281,7 +281,7 @@ describe('médiathèque — réserver et supprimer « Carte des Sphères »', { 
     await p.getByRole('button', { name: /Supprimer le fichier/ }).click();
     const boite = p.getByRole('alertdialog').or(p.getByRole('dialog'));
     await boite.waitFor();
-    const t = (await boite.innerText()).replace(/’/g, "'");
+    const t = (await boite.innerText()).replace(/’/g, "'").replace(/[\u00a0\u202f]/g, ' ');
     assert.match(t, /Elle est utilisée dans 3 fiches/);
     assert.match(t, /Port-Sel \(illustration\)/);
     assert.match(t, /Val-Fortin \(« Description »\)/);

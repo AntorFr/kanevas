@@ -67,7 +67,7 @@ test('B3 · image citée avec un titre : « Utilisé dans » et la boîte « Ré
   await p.getByText('Réservé au MJ', { exact: true }).click();
   const boite = antor.getByRole('alertdialog');
   await boite.waitFor();
-  assert.match((await boite.innerText()).replace(/[’]/g, "'"), /Port-Sel — « Description »/);
+  assert.match((await boite.innerText()).replace(/[’]/g, "'").replace(/[\u00a0\u202f]/g, ' '), /Port-Sel — « Description »/);
   await antor.screenshot({ path: '/tmp/scr/rev-b3-image.png' });
   await boite.getByRole('button', { name: 'Annuler' }).click();
 });

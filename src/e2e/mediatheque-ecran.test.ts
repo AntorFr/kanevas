@@ -90,7 +90,7 @@ test('réserver « Carte des Sphères » : la boîte liste les trois usages ; An
   await antor.getByText('Réservé au MJ', { exact: true }).click();
   const boite = antor.getByRole('alertdialog');
   await boite.waitFor();
-  const t = (await boite.innerText()).replace(/[’]/g, "'");
+  const t = (await boite.innerText()).replace(/[’]/g, "'").replace(/[\u00a0\u202f]/g, ' ');
   assert.match(t, /Val-Fortin — « ?Description ?»/);
   assert.match(t, /Maître Aldric — « ?Apparence ?» \(jointe\)/);
   assert.match(t, /Port-Sel/);
@@ -168,7 +168,7 @@ test('supprimer « Carte des Sphères » : la boîte liste les trois fiches, toa
   await ouvrirFichier(antor, 'Carte des Sphères');
   await antor.getByRole('button', { name: 'Supprimer le fichier' }).click();
   const boite = antor.getByRole('alertdialog');
-  const t = (await boite.innerText()).replace(/[’]/g, "'");
+  const t = (await boite.innerText()).replace(/[’]/g, "'").replace(/[\u00a0\u202f]/g, ' ');
   assert.match(t, /3 fiches/);
   for (const m of [/Port-Sel/, /Val-Fortin/, /Maître Aldric/]) assert.match(t, m);
   await antor.screenshot({ path: '/tmp/scr/supprimer.png' });
