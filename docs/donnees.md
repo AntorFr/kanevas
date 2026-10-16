@@ -85,7 +85,7 @@ avec `kanevas-relier-chercher`, qui prend le numéro suivant, AD-51).
 | `comptes` | `id`, `username` (identifiant Authelia, `preferred_username`), `cree_le` | `username` unique ; jamais de rôle ni de groupe (les groupes vivent dans la session) |
 | `univers` | `id`, `nom`, `description`, `cree_le` | `nom` non vide, 1 à 80 caractères |
 | `membres` | `univers_id`, `compte_id`, `role` (`mj` \| `joueur`) | clé primaire (`univers_id`, `compte_id`) ; clés étrangères ; au moins un `mj` par univers garanti par le service (B-5), pas par la base |
-| `fiches` | `id`, `univers_id`, `type` (les sept : `personnage`, `lieu`, `faction`, `objet`, `evenement`, `quete`, `compte_rendu` ; *depuis `kanevas-import`, la liste du produit, sans `CHECK` : AD-102 et « Cadrage `kanevas-import` » plus bas*), `titre`, `charge` (JSON versionné, AD-6 et AD-17 : `{"v":1}` ; personnage `{"v":1,"pj":true\|false}` ; compte-rendu `{"v":1,"campagne_id":…}`), `cree_le`, `modifie_le` | `type` contraint à ces sept valeurs (*contrainte levée par la recréation de `kanevas-import`, AD-102*) ; `titre` non vide, 1 à 120 caractères ; **aucune suppression** (*suppression par le MJ depuis `kanevas-import`, AD-105*) |
+| `fiches` | `id`, `univers_id`, `type` (les sept : `personnage`, `lieu`, `faction`, `objet`, `evenement`, `quete`, `compte_rendu` ; *depuis `kanevas-import`, la liste du produit, sans `CHECK` : AD-102 et « Cadrage `kanevas-import` » plus bas*), `titre`, `charge` (JSON versionné, AD-6 et AD-17 : `{"v":1}` ; personnage `{"v":1,"pj":true\|false}` ; compte-rendu `{"v":1,"campagne_id":…}`), `cree_le`, `modifie_le` | `type` contraint à ces sept valeurs (*contrainte levée par la recréation de `kanevas-import`, AD-102*) ; `titre` non vide, 1 à 120 caractères ; **aucune suppression de carte** (sauf avec l'univers ; les places d'une fiche supprimée partent, AD-119) (*suppression par le MJ depuis `kanevas-import`, AD-105*) |
 | `sections` | `id`, `fiche_id`, `titre`, `ordre`, `contenu` (source Markdown, AD-95, relue telle quelle pour un ancien texte brut ; 100 000 caractères au plus, AD-106, la même constante pour tout texte Markdown), `version` (entier, AD-59, 1 à la création), `modifie_le`, `joueurs_lisent`, `joueurs_ecrivent`, `auteur_id` (compte, facultatif), `auteur_lit`, `auteur_ecrit` | quatre bascules booléennes, **toutes à faux à la création** (une section naît fermée aux joueurs) ; `ordre` entier unique par fiche ; `titre` non vide, 1 à 80 caractères ; `contenu` borné par le service seul (`MAX_CONTENU_SECTION`), pas par un `CHECK` ; `auteur_id` doit être un membre Joueur de l'univers de la fiche, vérifié par le service ; retirer un membre efface son `auteur_id` |
 
 `modifie_le` de la fiche suit la dernière écriture d'une de ses sections. `ordre` est renuméroté
@@ -205,7 +205,7 @@ cette fiche elle-même ; une section porte **100 relations** au plus ; seul un M
 Lecture, évaluée pour **le compte et le mode** de l'appelant : une relation est rendue si la section
 porteuse est lisible **et** si la fiche cible l'est (au moins une section lisible ; le MJ, hors
 mode Joueur, lit toute fiche de son univers). Sinon elle est absente de la réponse, sans compteur.
-Recherche : la liste d'un type avec une condition de plus (AD-63), saisie de 1 à 100 caractères (le service refuse au-delà) ; l'API accepte `q` sans `type` (toutes les fiches lisibles), mais aucun écran ne l'emploie : la recherche tous types reste hors tranche ; l'index ne livre que des
+Recherche : la liste d'un type avec une condition de plus (AD-63), saisie de 1 à 100 caractères (le service refuse au-delà) ; l'API accepte `q` sans `type` (toutes les fiches lisibles), et E-17 l'emploie (recherche tous types) ; l'index ne livre que des
 identifiants de candidats, jamais un résultat.
 
 ## Évolution
@@ -257,7 +257,7 @@ octets d'un fond ne sont pas en base (AD-7) : ils vivent sous `/data/attachments
 | Table | Colonnes (hors clés) | Contraintes |
 |---|---|---|
 | `cartes` | `id`, `univers_id`, `titre`, `forme` (`illustree` \| `graphe`), `visible` (booléen), `fond` (nom sur disque, UUID, facultatif), `fond_type` (type MIME déterminé par le serveur), `cree_le` | `univers_id` → `univers` ; `titre` non vide, 1 à 80 caractères ; `forme` contrainte à ces deux valeurs et **jamais modifiée** ; `visible` **faux à la création** ; `fond` et `fond_type` ensemble ou ensemble absents, et absents d'un graphe (`CHECK`) ; `fond` unique ; index `cartes (univers_id)` ; **aucune suppression** |
-| `elements_carte` | `id`, `carte_id`, `fiche_id`, `x`, `y` (réels, pourcentage, AD-70), `cree_le` | `carte_id` → `cartes` ; `fiche_id` → `fiches` **ON DELETE RESTRICT** (une fiche ne se supprime pas) ; `UNIQUE (carte_id, fiche_id)` ; `x` et `y` ensemble nuls ou ensemble entre 0 et 100 (`CHECK`) |
+| `elements_carte` | `id`, `carte_id`, `fiche_id`, `x`, `y` (réels, pourcentage, AD-70), `cree_le` | `carte_id` → `cartes` ; `fiche_id` → `fiches` **ON DELETE RESTRICT** (filet : `supprimerFiche` retire d'abord les places de la fiche, AD-119) ; `UNIQUE (carte_id, fiche_id)` ; `x` et `y` ensemble nuls ou ensemble entre 0 et 100 (`CHECK`) |
 
 Ce que la base ne dit pas, et que le service porte, avec sa raison (la règle croise la carte, la
 fiche et le rôle) : la fiche d'un élément est **du même univers** que la carte ; une carte

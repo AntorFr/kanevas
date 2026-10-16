@@ -117,6 +117,7 @@ Without a browser (English, as `CLAUDE.md` asks; same stub server, same cookie j
 ```bash
 curl -c /tmp/j -d compte=antor http://localhost:3055/connexion-bouchon   # log in as Antor (stub mode, no password); every curl below sends this cookie jar
 curl -b /tmp/j http://localhost:3055/api/univers/1/fichiers   # {"fichiers":[{"id","nom",…}],"suite","total"} : read the id by "nom"
+printf '%%PDF-1.4\n' > tarifs-du-port.pdf   # any small file named so will do
 curl -b /tmp/j -F section=13 -F maniere=joint -F fichier=@tarifs-du-port.pdf http://localhost:3055/api/univers/1/fichiers   # « Joindre un fichier »; add -F blocMj=true for the GM-block path (fields before the file)
 curl -b /tmp/j -X PUT -H 'Content-Type: application/json' -d '{"contenu":"![plan](fichier:11)","version":1}' http://localhost:3055/api/univers/1/fiches/12/sections/13/contenu   # version: read it from the section first
 ```

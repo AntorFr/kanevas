@@ -5,7 +5,7 @@
 > finie se détaillent dans la tranche qui le construit.
 
 > **Construit à ce jour** : E-1, E-2, E-3 (nom, navigation et blocs : système de jeu, campagnes actives, derniers comptes-rendus, préparation pour le MJ, cartes visibles), E-4, E-5 (Administration), E-6, E-7, E-13, E-8 (avec la
-> recherche dans un type, en grille de cartes illustrées), E-9 (avec les blocs Relations et Pièces jointes et l'illustration en tête), E-10 et E-11 (cartes et graphes), E-12 (Assistant), E-14 (Paramètres), E-15 (Système de jeu, à `/systemes/:sid`), E-16 (Systèmes de jeu), la ligne « Campagne » de E-9, la session
+> recherche dans un type, en grille de cartes illustrées), E-9 (avec les blocs Relations et Pièces jointes, l'illustration en tête, le titre en place et « Supprimer la fiche… »), E-10 et E-11 (cartes et graphes), E-12 (Assistant), E-14 (Paramètres, avec « Supprimer l'univers »), E-15 (Système de jeu, à `/systemes/:sid`), E-16 (Systèmes de jeu), la ligne « Campagne » de E-9, la session
 > et la barre latérale.
 
 ## Format
@@ -2373,7 +2373,7 @@ bougé. Succès : retour à la liste du type, toast « Fiche supprimée. ». Une
 **Supprimer l'univers (E-14, tout MJ).** La boîte suit le texte ci-dessus ; le champ compare le nom saisi au
 nom de l'univers à la lettre près, casse et espaces compris (l'espace final saisi par erreur laisse le bouton
 inactif) ; le serveur recompare (`nom`) et refuse un nom différent (400 `nom_different`, « Le nom ne correspond
-pas. »). Pendant la suppression : bouton « Suppression… » inactif. Après : E-1, toast « Univers supprimé. » ;
+pas à celui de l'univers. » ; l'écran affiche « Le nom ne correspond pas. »). Pendant la suppression : bouton « Suppression… » inactif. Après : E-1, toast « Univers supprimé. » ;
 les autres membres, à leur prochaine action, voient « Page introuvable. ». Échec de la suppression : « L'action n'a pas
 abouti. Réessayez. » dans la boîte, qui reste ouverte, l'univers est intact ; une suppression longue garde
 « Suppression… » tant que le serveur n'a pas répondu (pas de délai au-delà duquel la boîte se ferme).
@@ -2848,7 +2848,7 @@ l'univers » (`--danger`) ne s'active que si le nom tapé est exact (casse compr
 
 #### Les types — ce que `kanevas-import-types` construit
 
-Le panneau « Supprimer l'univers » de E-14 n'est pas de cette tranche (il est à `kanevas-import-tenir`) ;
+Le panneau « Supprimer l'univers » de E-14 est à `kanevas-import-tenir` ;
 celle-ci construit le panneau et l'onglet « Types de fiche » ci-dessus, et ce qui suit.
 La liste des types (identifiant, adresse, libellés, icône) est celle du serveur (AD-120) : les écrans
 la lisent par `GET /api/univers/:id/types`, ils n'en tiennent aucune copie. Icônes (Lucide) :
