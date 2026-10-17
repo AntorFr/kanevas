@@ -310,7 +310,12 @@ Forme de la skill `exigences` ; chaque besoin cite les parcours qui le réalisen
 - **B-62** — Les données d'un outil ont **deux niveaux** : celui du système (partagé par ses univers :
   coques, armes, modifications SWN) et celui de l'univers (une campagne : coque personnalisée, cristaux
   d'Orak'Ziel, toute la carte d'Éneria). Un univers voit les données de son système plus les siennes ; une
-  donnée d'univers ajoute un élément ou en remplace un par la même clé. *(P-17, P-19)*
+  donnée d'univers ajoute un élément, en **remplace** un par la même clé, ou le **retire** (l'élément du
+  système n'existe pas dans cet univers ; le rétablir le fait revenir). **Visibilité d'un catalogue** : tout
+  élément du système est lisible par qui voit l'outil, sans exception ; un élément d'univers aussi par
+  défaut, et le MJ peut le **masquer aux joueurs** (lisible du MJ seul, absent pour un joueur sans trace
+  d'un masquage, comme un système secret de la carte) puis le rendre visible. *(P-17, P-19 ; décision de
+  Monsieur, 2026-10-17)*
 - **B-63** — **Désactiver** un outil garde ses données et les cache ; **supprimer** des données est un
   geste à part, explicite, réservé, dont la confirmation dit ce qui sera effacé ; supprimer celles du
   système dit quels univers, éléments locaux et vaisseaux s'en servent encore. Désactivé, un outil laisse

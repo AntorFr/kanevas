@@ -2988,7 +2988,7 @@ ajouté ou modifié à la main dans le routeur : un module déclare son point d'
 **Contenu** : une carte par outil applicable (nom, une ligne, « Système · activé/désactivé », « Univers · suit /
 forcé »), ses **dépendances**, sa **visibilité** (deux cases, MJ et Joueurs), ses **réglages** (chacun : valeur
 en vigueur, d'où elle vient, « Remplacer pour l'univers »), son **catalogue** (version, nombre d'éléments par
-nature, « Importer un catalogue… »), et en pied « Supprimer les données de l'outil… ». En tête, sur E-15, le
+nature, « Importer un catalogue… », « Voir les éléments »), et en pied « Supprimer les données de l'outil… ». En tête, sur E-15, le
 **responsable** du système et « Transférer la responsabilité ».
 
 | État | Ce que voit l'utilisateur | Texte |
@@ -3008,6 +3008,16 @@ Critères :
 - Étant donné un fichier de catalogue où une arme n'a pas de masse, quand Antor l'importe, alors l'aperçu liste
   « 1 refusée » avec la clé et le champ `masse`, le reste est proposé à l'application, et rien n'est écrit avant « Appliquer ».
 - Étant donné Léa, Joueuse, quand elle force l'adresse de E-20, alors elle lit « Page introuvable. ».
+
+**Les éléments du catalogue** (« Voir les éléments », sur E-14 ; décision de Monsieur du 2026-10-17) : la liste par
+nature, chaque élément avec son origine (« Système », « Univers », « Remplacé pour l'univers », « Retiré de
+l'univers ») et, pour un élément d'univers, « Visible des joueurs » / « MJ seul ». Gestes d'un MJ de l'univers :
+« Masquer aux joueurs » et « Rendre visible » sur un élément d'univers ; « Retirer de cet univers » et
+« Rétablir » sur un élément du système. Sur E-15 (système), la liste se lit sans aucun de ces gestes.
+- Étant donné l'arme d'univers « Lance d'Orak'Ziel » masquée par Antor, quand Léa ouvre le concepteur, alors
+  elle n'est dans aucune liste, et rien ne dit qu'un élément manque ; Antor la voit, marquée « MJ seul ».
+- Étant donné la coque du système « Corvette » retirée d'« Éneria d'essai », alors aucun compte de cet univers
+  ne la voit dans le concepteur ; l'autre univers du système la voit ; « Rétablir » la fait revenir.
 
 ### E-21 — Carte de la galaxie
 

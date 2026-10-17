@@ -574,7 +574,8 @@ Invariants, en phrases :
 
 | Table | Colonnes (hors clés) | Contraintes |
 |---|---|---|
-| `swn_catalogue_<nature>` (une par nature : `coques`, `moteurs`, `amenagements`, `defenses`, `armes`, `modifications`) | `niveau` (`systeme`/`univers`), `systeme_id` ou `univers_id`, `cle`, `nom`, `nom_en`, `description`, `source`, champs de calcul de la nature, `version`, `version_catalogue` | `UNIQUE (niveau, proprietaire, cle)` (5) ; `CHECK` sur les valeurs numériques ; l'univers remplace par la même `cle` |
+| `swn_catalogue_<nature>` (une par nature : `coques`, `moteurs`, `amenagements`, `defenses`, `armes`, `modifications`) | `niveau` (`systeme`/`univers`), `systeme_id` ou `univers_id`, `cle`, `nom`, `nom_en`, `description`, `source`, champs de calcul de la nature, `masque` (booléen, défaut faux), `version`, `version_catalogue` | `UNIQUE (niveau, proprietaire, cle)` (5) ; `CHECK` sur les valeurs numériques ; l'univers remplace par la même `cle` ; `CHECK (niveau = 'univers' OR NOT masque)` — un élément du système n'est jamais masqué |
+| `swn_catalogue_retraits` | `univers_id`, `nature`, `cle` (celle d'un élément du système), `version` | clé primaire `(univers_id, nature, cle)` ; → `univers` ON DELETE CASCADE ; un retrait vaut pour l'univers seul ; le supprimer rétablit l'élément |
 | `swn_galaxies` | `univers_id`, `titre`, `visible` (booléen, défaut faux), `graine` (texte, réglage protégé), `fiche_id`, `section_id` (nuls : pas de document MJ), `version` | → `univers`, → `fiches`, → `sections` ON DELETE SET NULL ; E-10 liste ces cartes avec celles de `cartes` (AD-122) ; `CHECK (fiche_id IS NULL) = (section_id IS NULL)` |
 | `swn_systemes` | `galaxie_id`, `univers_id`, `cle`, `nom`, `q`, `r` (coordonnées hexagonales), `taille`, `couleur`, `notes`, `secret` (booléen), `promu` (booléen), `version` | `UNIQUE (galaxie_id, q, r)` ; `UNIQUE (galaxie_id, cle)` ; droits ligne à ligne |
 | `swn_routes` | `galaxie_id`, `univers_id`, `depuis_id`, `vers_id`, `publique` (booléen), `longueur`, `version` | → `swn_systemes` ON DELETE CASCADE ; `CHECK (depuis_id <> vers_id)` ; `UNIQUE (depuis_id, vers_id)` (9) |
@@ -585,7 +586,7 @@ Invariants, en phrases :
 **Ce que la base ne dit pas, et que le service porte** : le responsable est un MJ d'un univers rattaché (croise deux tables) ;
 la forme des réglages et des catalogues (déclarée par le module) ; la clé de remplacement d'un catalogue d'univers
 (le même `cle` que celui du système) ; la **cohérence d'une route avec la grille** (calculée du coup) ; les droits de chaque ligne.
-**Droits, une phrase chacun** : un **catalogue** (système et univers) se lit par tout membre pour qui l'outil est visible — c'est une règle de jeu, sans secret ; un outil se lit si activé, visible pour le rôle et si le compte y a l'usage ; un réglage se lit par les membres, s'écrit par le
+**Droits, une phrase chacun** : un **catalogue** se lit par tout membre pour qui l'outil est visible — tout le catalogue du système, et celui de l'univers sauf ses éléments `masque`, lus par le MJ seul ; un élément retiré n'est lu par personne dans cet univers ; masquer, rendre visible, retirer et rétablir sont des gestes d'un MJ de l'univers ; un outil se lit si activé, visible pour le rôle et si le compte y a l'usage ; un réglage se lit par les membres, s'écrit par le
 responsable (base du système) ou par tout MJ de l'univers (surcharge d'univers) ; un système placé, une route ou une zone secrète se lit par le
 MJ seul, les autres par qui lit la carte ; une conception se lit par qui lit sa fiche, s'écrit par l'auteur de la section et le MJ.
 

@@ -492,7 +492,10 @@ besoin ressemble au premier, pas avant. *Rejeté* : un moteur générique unique
 Lie : tout module. Empêche : un fichier ou une table JSON générique qui perd liens et requêtes ; un accès hors du module.
 Règle : tables préfixées, créées par les migrations du module, une ligne rattachée à un univers (ou à un système pour son catalogue), les références de fiche par identifiant,
 aucun SQL hors des fonctions du module ; le rangement (tables typées, documents à forme déclarée, ou les deux) est le choix du module. Le niveau **système** (le jeu) et le niveau
-**univers** (la campagne) : un univers voit les deux, une donnée d'univers de même clé remplace celle du système. Le contrat impose : clé, version, rattachement, forme déclarée
+**univers** (la campagne) : un univers voit les deux, une donnée d'univers de même clé remplace celle du système, et un **retrait** d'univers (une clé du système
+marquée absente pour cet univers) l'efface de sa vue sans toucher au système. Un catalogue de système n'a aucun élément caché ; un élément d'univers porte
+`masque` (MJ seul), posé et ôté par un MJ de l'univers, et la lecture le filtre pour un joueur comme un système secret (B-62, décision de Monsieur du 2026-10-17).
+*Rejeté* : masquer un élément du système (le système est le jeu, commun à ses univers : pour qu'il n'existe pas dans une campagne, on le retire). Le contrat impose : clé, version, rattachement, forme déclarée
 et vérifiée à l'import. *Rejeté* : fichiers sur le volume ; table générique JSON.
 
 **AD-124 — Un cadre d'API commun, des routes propres à chaque module.** [ADOPTÉ, décision (e)]
