@@ -18,7 +18,6 @@
 //   B-53 filtres/nom    : Documents shows only documents; empty name / 201 characters refused
 //   échecs              : empty file, non-image illustration
 //   AD-111 limite       : the 100th joined file is accepted, the 101st refused with the two sentences
-//   migration           : stub of before the migration (pieces jointes, illustrations) still displays, secret piece reserved
 import assert from 'node:assert/strict';
 import { Buffer } from 'node:buffer';
 import { readFileSync } from 'node:fs';
