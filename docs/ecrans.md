@@ -3016,6 +3016,8 @@ l'univers ») et, pour un élément d'univers, « Visible des joueurs » / « MJ
 « Rétablir » sur un élément du système. Sur E-15 (système), la liste se lit sans aucun de ces gestes.
 - Étant donné l'arme d'univers « Lance d'Orak'Ziel » masquée par Antor, quand Léa ouvre le concepteur, alors
   elle n'est dans aucune liste, et rien ne dit qu'un élément manque ; Antor la voit, marquée « MJ seul ».
+- Étant donné la conception de Léa qui porte déjà la « Lance d'Orak'Ziel », quand Antor la masque, alors Léa la voit
+  toujours sur son vaisseau et le réenregistre sans alerte ; elle ne peut plus l'ajouter ailleurs.
 - Étant donné la coque du système « Corvette » retirée d'« Éneria d'essai », alors aucun compte de cet univers
   ne la voit dans le concepteur ; l'autre univers du système la voit ; « Rétablir » la fait revenir.
 

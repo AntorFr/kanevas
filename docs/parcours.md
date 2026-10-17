@@ -317,8 +317,8 @@ Forme de la skill `exigences` ; chaque besoin cite les parcours qui le réalisen
   d'un masquage, comme un système secret de la carte) puis le rendre visible. Une conception qui contient un
   élément **retiré** garde son texte ; rouverte dans le concepteur, elle porte l'alerte bloquante « Élément
   retiré de cet univers » et ne se réenregistre pas tant qu'il n'est pas remplacé ; rien ne se recalcule sans
-  geste. [À TRANCHER] une conception qui contient un élément **masqué** : son joueur le voit-il encore sur son
-  vaisseau (recommandation : oui, il disparaît seulement de la liste des choix) ? *(P-17, P-19 ; décisions de
+  geste. Un élément **masqué** disparaît seulement de la liste des choix d'un joueur : une conception qui le
+  contient déjà le garde, le montre à qui la lit et se réenregistre sans alerte. *(P-17, P-19 ; décisions de
   Monsieur, 2026-10-17)*
 - **B-63** — **Désactiver** un outil garde ses données et les cache ; **supprimer** des données est un
   geste à part, explicite, réservé, dont la confirmation dit ce qui sera effacé ; supprimer celles du
