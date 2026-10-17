@@ -210,8 +210,13 @@ a.cadre-ill:focus-visible { outline-offset: 2px; border-radius: var(--rayon-pann
 /* A reserved illustration (B-24): a neutral frame that says so, in the header of a sheet the reader sees. */
 .ill-fermee { color: var(--texte-3); background: var(--surface-2); }
 /* A pending illustration (E-9, import): the same dashed tile as a pending file in a text. */
-.fin-cle-attente { white-space: nowrap; }
-.ill-attente { gap: 0; overflow-wrap: anywhere; color: var(--texte-3); border: 1.5px dashed var(--texte-3); border-radius: var(--rayon-champ); padding: var(--e-3) var(--e-4); }
+/* Give the pending label a full row instead of the portrait's narrow image slot. */
+.entete.illustree:has(.ill-attente) { grid-template-columns: minmax(0, 1fr); row-gap: var(--e-4); }
+.illustration:has(.ill-attente) { width: 100%; min-width: 0; }
+.cadre-ill:has(.ill-attente) { aspect-ratio: auto; }
+.fin-cle-attente { display: inline-block; max-width: 100%; white-space: nowrap; }
+.cle-attente { display: inline-block; max-width: calc(100% - 2em); overflow: hidden; text-overflow: ellipsis; vertical-align: bottom; }
+.ill-attente { position: relative; display: block; font-size: var(--t-14); line-height: 1.5; text-align: left; gap: 0; color: var(--texte-3); border: 1.5px dashed var(--texte-3); border-radius: var(--rayon-champ); padding: var(--e-3) var(--e-4); }
 .pieces-jointes .envoi-fichier { width: 100%; }
 
 /* E-9: aliases under the title, label pills, and the « Alias et étiquettes » box */

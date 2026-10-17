@@ -2316,8 +2316,8 @@ section whose only attachments are pending shows their tiles rather than « Aucu
 joint. »; **error** and **connection lost** — the tile is sheet text and follows the sheet's
 states; **refusal** — hidden for non-GM readers; **extreme content** — a 200-character key is
 shortened with « … », with the full key in a tooltip; 100 tiles scroll within their frame.
-The illustration label wraps on a phone without leaving its closing quotation mark and
-period alone on a line. **When the file arrives**: an already open GM page does not update
+The pending illustration occupies a full header row. Its key stays on one line, shortened
+when needed, with its closing quotation mark and period kept together. **When the file arrives**: an already open GM page does not update
 itself; reloading replaces the tile with the file. **Beyond 100**: a `PUT /fiches` whose
 section names more than 100 `fichiers` keys is refused (400 `invalide`, `champ: fichiers`,
 counted as refused in the batch). If resolution would exceed 100 attachments, the extra
