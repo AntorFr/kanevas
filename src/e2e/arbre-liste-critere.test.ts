@@ -162,6 +162,7 @@ describe('kanevas-arbre-liste, E-8 arbre', { skip: skipBrowser }, () => {
     await arbre(lea).waitFor({ state: 'detached' });
     await attendre(lea);
     assert.equal(await arbre(lea).count(), 0);
+    await lea.locator('main').getByText('Les Docks').first().waitFor();
     assert.ok((await lea.locator('main').innerText()).includes('Les Docks'));
     await lea.screenshot({ path: `${SHOTS}/lea-recherche.png` });
     await lea.getByRole('button', { name: 'Effacer la recherche' }).click();

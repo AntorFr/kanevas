@@ -402,6 +402,7 @@ describe('médiathèque — bords, refus et exclusions', { skip: skipBrowser }, 
     await q.getByRole('button', { name: 'Fermer' }).click();
     await q.locator('select').filter({ hasText: 'Non utilisés' }).selectOption({ label: 'Non utilisés' });
     await attendre(q);
+    await q.getByText('barème.pdf').first().waitFor();
     assert.match(await texte(q), /barème\.pdf/);
   });
 
