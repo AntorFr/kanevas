@@ -2,6 +2,9 @@ import type { Readable } from 'node:stream';
 
 import { attachmentsDir } from '../config/env.js';
 import type { Db } from '../db/db.js';
+import { cleValide } from './import.js';
+import type { Jeton } from './jetons.js';
+import { lireLot, noterDansLot, type EntreeRapport, type Issue } from './lots.js';
 import {
   exigerRole,
   peutEcrireSection,
@@ -12,8 +15,18 @@ import {
   sqlSectionLisible,
   vueMJ,
 } from './droits.js';
-import { FICHIER_RESERVE, IMAGE_RESERVEE, extraireReferencesFichier } from './markdown.js';
-import type { RenduFichier, ResolveurFichiers } from './markdown.js';
+import {
+  FICHIER_RESERVE,
+  IMAGE_RESERVEE,
+  contenuPublic,
+  extraireClesFichier,
+  extraireReferencesFichier,
+  reecrireClesFichier,
+} from './markdown.js';
+import type { RenduFichier, ResolveurFichiers, ResolveurFichiersEnAttente } from './markdown.js';
+import { poserContenu } from './sections.js';
+import { TYPES_IMAGE, compterReferences, estImage, lisiblePar } from './fichiers-lecture.js';
+export { lisiblePar, resolveurFichiers, resolveurFichiersEnAttente } from './fichiers-lecture.js';
 import { ErreurService, introuvable, invalide, refuse } from './erreurs.js';
 import {
   abandonner,
@@ -36,7 +49,6 @@ export const MAX_FICHIERS_JOINTS = 100;
 export const LIMITE_FICHIERS = 100;
 const MAX_NOM = 200;
 
-const TYPES_IMAGE = ['image/png', 'image/jpeg', 'image/gif', 'image/webp'];
 
 export type Visibilite = 'joueurs' | 'mj';
 
@@ -77,6 +89,132 @@ export type CibleFichier =
 
 export type FluxEntrant = Readable | AsyncIterable<Buffer | Uint8Array>;
 
+export interface ResultatFichierImport {
+  id: number;
+  etat: 'creee' | 'mise_a_jour' | 'inchangee';
+  avertissements: string[];
+}
+
+/**
+ * Ensures an imported library file (AD-104, B-48). Unlike an interactive upload, the import
+ * explicitly chooses its visibility. The origin key, never the name, identifies the file.
+ * Bytes, metadata and batch outcome are committed together; an unchanged upload keeps its disk token.
+ */
+export async function assurerFichier(
+  db: Db,
+  jeton: Jeton,
+  lotId: number | null,
+  cle: string,
+  entree: { nom: unknown; visibilite?: unknown; flux: FluxEntrant | null },
+  maintenant: Date = new Date(),
+  racine: string = attachmentsDir,
+): Promise<ResultatFichierImport> {
+  const acteur = { compteId: jeton.compteId };
+  const autoriserImport = () => {
+    exigerMJReel(db, jeton.universId, acteur);
+    if (lotId !== null && lireLot(db, jeton, lotId, maintenant).closLe !== null) {
+      throw new ErreurService('conflit', 'Le lot est clos.', 'lot_clos');
+    }
+  };
+  autoriserImport();
+  const invalider = (champ: string, raison: string): never => {
+    throw new ErreurService('invalide', raison, undefined, champ);
+  };
+  let temporaire: string | null = null;
+  let nouveauDisque: string | null = null;
+  let ancienDisque: string | null = null;
+  let valide = false;
+  try {
+    if (!cleValide(cle)) invalider('cle', "Clé d'origine invalide.");
+    if (typeof entree.nom !== 'string') invalider('nom', 'Nom du fichier manquant.');
+    const nom = nomPropre(entree.nom as string);
+    const visibilite = entree.visibilite ?? 'joueurs';
+    if (visibilite !== 'joueurs' && visibilite !== 'mj') {
+      invalider('visibilite', 'La visibilité doit être « joueurs » ou « mj ».');
+    }
+    if (!entree.flux) invalider('fichier', 'Champ « fichier » manquant.');
+    const ecrit = await ecrireFlux(entree.flux!, racine);
+    temporaire = ecrit.temporaire;
+    if (ecrit.taille === 0) invalider('fichier', 'fichier vide : 0 octet, refusé');
+    const type = typeParSignature(ecrit.debut);
+    const resultat = db.transaction((): ResultatFichierImport => {
+      // Uploading yields to other requests: check the role and the batch again before writing.
+      autoriserImport();
+      const courant = db.prepare('SELECT * FROM fichiers WHERE univers_id = ? AND cle_origine = ?')
+        .get(jeton.universId, cle) as (FichierRow & { dernier_import: string | null }) | undefined;
+      const avertissements: string[] = [];
+      let id: number;
+      let etat: ResultatFichierImport['etat'];
+      if (!courant) {
+        nouveauDisque = promouvoir(ecrit.temporaire, racine);
+        const info = db.prepare(
+          `INSERT INTO fichiers (univers_id, nom, type, taille, disque, empreinte, visibilite,
+             cle_origine, ajoute_par, ajoute_le, dernier_import) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        ).run(jeton.universId, nom, type, ecrit.taille, nouveauDisque, ecrit.empreinte, visibilite,
+          cle, jeton.compteId, maintenant.toISOString(), JSON.stringify({ nom, visibilite }));
+        id = Number(info.lastInsertRowid);
+        etat = 'creee';
+        // The sheets that waited for this key now point at the file, in this transaction (AD-111).
+        avertissements.push(...resoudreFichierEnAttente(db, jeton.universId, cle, { id, type }));
+      } else {
+        id = courant.id;
+        const marque = courant.dernier_import
+          ? JSON.parse(courant.dernier_import) as { nom?: string; visibilite?: Visibilite }
+          : {};
+        const noms = courant.nom === nom || marque.nom === courant.nom;
+        const visibilites = courant.visibilite === visibilite || marque.visibilite === courant.visibilite;
+        const nomEcrit = noms ? nom : courant.nom;
+        const visibiliteEcrite = visibilites ? visibilite as Visibilite : courant.visibilite;
+        if (noms) marque.nom = nom;
+        else avertissements.push('nom modifié dans Kanevas : non écrasé');
+        if (visibilites) marque.visibilite = visibilite as Visibilite;
+        else avertissements.push('visibilité modifiée dans Kanevas : non écrasée');
+        const octetsChanges = courant.empreinte !== ecrit.empreinte;
+        if (octetsChanges) {
+          nouveauDisque = promouvoir(ecrit.temporaire, racine);
+          ancienDisque = courant.disque;
+        }
+        const change = octetsChanges || nomEcrit !== courant.nom || visibiliteEcrite !== courant.visibilite;
+        const json = JSON.stringify(marque);
+        if (change || json !== courant.dernier_import) {
+          db.prepare(`UPDATE fichiers SET nom = ?, visibilite = ?, type = ?, taille = ?, disque = ?,
+            empreinte = ?, dernier_import = ? WHERE id = ?`)
+            .run(nomEcrit, visibiliteEcrite, type, ecrit.taille, nouveauDisque ?? courant.disque,
+              ecrit.empreinte, json, id);
+        }
+        etat = change ? 'mise_a_jour' : 'inchangee';
+      }
+      if (lotId !== null) {
+        const issues: Record<ResultatFichierImport['etat'], Issue> = {
+          creee: 'creees', mise_a_jour: 'mises_a_jour', inchangee: 'inchangees',
+        };
+        const rapport: EntreeRapport[] = avertissements.map((raison) => ({
+          cle, objet: 'fichier', raison, gravite: 'avertissement',
+        }));
+        noterDansLot(db, lotId, 'fichiers', issues[etat], rapport, maintenant);
+      }
+      return { id, etat, avertissements };
+    })();
+    valide = true;
+    if (ancienDisque) supprimerFichier(ancienDisque, racine);
+    return resultat;
+  } catch (e) {
+    if (e instanceof ErreurService && e.code === 'invalide') {
+      const erreur = e.champ ? e : new ErreurService('invalide', e.message, undefined, 'nom');
+      if (lotId !== null) {
+        noterDansLot(db, lotId, 'fichiers', 'refusees', [
+          { cle, objet: 'fichier', raison: erreur.message, gravite: 'refus' },
+        ], maintenant);
+      }
+      throw erreur;
+    }
+    throw e;
+  } finally {
+    if (temporaire) await abandonner(temporaire, racine);
+    if (!valide && nouveauDisque) supprimerFichier(nouveauDisque, racine);
+  }
+}
+
 /**
  * Type of the file from its first bytes, never from what the client says
  * (AD-66): four image formats, everything else is an opaque download.
@@ -97,7 +235,6 @@ export function typeParSignature(debut: Buffer): string {
   return 'application/octet-stream';
 }
 
-const estImage = (type: string) => TYPES_IMAGE.includes(type);
 
 function vue(f: FichierRow): FichierVue {
   return {
@@ -111,13 +248,6 @@ function vue(f: FichierRow): FichierVue {
     ajouteLe: f.ajoute_le,
     jeton: f.disque,
   };
-}
-
-/** The role-aware core of the one read rule; `fichierLisible` is its public door. */
-export function lisiblePar(role: Role | null, acteur: Acteur, f: Pick<FichierRow, 'visibilite' | 'ajoute_par'>): boolean {
-  if (role === null) return false;
-  if (vueMJ(role, acteur)) return true;
-  return f.visibilite === 'joueurs' || f.ajoute_par === acteur.compteId;
 }
 
 /**
@@ -690,39 +820,6 @@ export function impactFichier(
   return { usages: usagesLisibles(db, { compteId: acteur.compteId, modeJoueur: true }, 'mj', universId, f.id) };
 }
 
-/**
- * The resolver of the `fichier:<id>` references of a text for one reader (AD-117, AD-96): one query for
- * all the files of the text, the rendering decided by the file and the one read rule. A closed file reads as
- * reserved, a vanished one as removed for the GM outside player mode and as nothing for anyone else.
- */
-export function resolveurFichiers(
-  db: Db,
-  universId: number,
-  role: Role,
-  acteur: Acteur,
-  source: string,
-): ResolveurFichiers | undefined {
-  const ids = [...compterReferences(source).keys()];
-  if (ids.length === 0) return undefined;
-  const rows = db
-    .prepare(`SELECT * FROM fichiers WHERE univers_id = ? AND id IN (${ids.map(() => '?').join(',')})`)
-    .all(universId, ...ids) as FichierRow[];
-  const parId = new Map(rows.map((r) => [r.id, r]));
-  const marque = vueMJ(role, acteur);
-  return (id): RenduFichier => {
-    const f = parId.get(id);
-    if (!f) return marque ? { genre: 'supprime' } : { genre: 'rien' };
-    if (!lisiblePar(role, acteur, f)) return { genre: 'ferme' };
-    return {
-      genre: 'fichier',
-      id: f.id,
-      nom: f.nom,
-      image: estImage(f.type),
-      adresse: `/api/univers/${universId}/fichiers/${f.id}?v=${encodeURIComponent(f.disque)}`,
-    };
-  };
-}
-
 /** Opens the bytes of a file under the one read rule; the caller's real rights, no player mode (AD-37). */
 export async function ouvrirFichier(
   db: Db,
@@ -747,7 +844,7 @@ export function lireLignes(db: Db, acteur: Acteur, universId: number, role: Role
     )
     .all(sectionId, universId) as FichierRow[];
   const mj = vueMJ(role, acteur);
-  return rows.map((f) => {
+  const lignes = rows.map((f) => {
     if (!lisiblePar(role, acteur, f)) {
       // Closed to this reader: the line stays, with the sentence only — no name, size or address.
       return { id: f.id, nom: estImage(f.type) ? IMAGE_RESERVEE : FICHIER_RESERVE, taille: 0, image: false, ferme: true };
@@ -756,12 +853,15 @@ export function lireLignes(db: Db, acteur: Acteur, universId: number, role: Role
     if (mj) p.secrete = f.visibilite === 'mj';
     return p;
   });
-}
-
-function compterReferences(source: string): Map<number, number> {
-  const n = new Map<number, number>();
-  for (const id of extraireReferencesFichier(source)) n.set(id, (n.get(id) ?? 0) + 1);
-  return n;
+  if (!mj) return lignes;
+  // The files the import named and has not delivered yet: a line for the GM only, never counted (E-9).
+  const attente = db
+    .prepare("SELECT cle FROM fichiers_attente WHERE section_id = ? AND maniere = 'joint' ORDER BY id")
+    .all(sectionId) as { cle: string }[];
+  attente.forEach((a, i) =>
+    lignes.push({ id: -(i + 1), nom: `Fichier en attente d'import : « ${a.cle} ».`, taille: 0, image: false, attente: a.cle }),
+  );
+  return lignes;
 }
 
 /**
@@ -801,4 +901,151 @@ export function recalculerFichiersSection(
     poser.run(id, sectionId, (total.get(id) ?? 0) > (publics.get(id) ?? 0) ? 1 : 0);
   }
   db.prepare('DELETE FROM fichiers_sections WHERE section_id = ? AND joint = 0 AND dans_texte = 0').run(sectionId);
+  // The keys the text still carries wait for their file (AD-111): one row per section and key.
+  db.prepare("DELETE FROM fichiers_attente WHERE section_id = ? AND maniere = 'texte'").run(sectionId);
+  const cles = new Set(extraireClesFichier(contenu));
+  if (cles.size > 0) {
+    const { univers_id: universId } = db
+      .prepare('SELECT fi.univers_id FROM sections s JOIN fiches fi ON fi.id = s.fiche_id WHERE s.id = ?')
+      .get(sectionId) as { univers_id: number };
+    for (const cle of cles) if (!fichierDeCle(db, universId, cle)) noterAttente(db, universId, cle, { sectionId, maniere: 'texte' });
+  }
 }
+
+/** The file of an origin key in a universe, if the import has delivered it. */
+export function fichierDeCle(db: Db, universId: number, cle: string): FichierRow | undefined {
+  return db.prepare('SELECT * FROM fichiers WHERE univers_id = ? AND cle_origine = ?').get(universId, cle) as
+    | FichierRow
+    | undefined;
+}
+
+/**
+ * The text as it is stored (AD-111): `fichier:cle:<clé>` whose file the universe knows, and the author reads,
+ * becomes `fichier:<id>`; an unknown key stays as written, waiting. Pure of any write.
+ */
+export function preparerFichiers(db: Db, universId: number, compteId: number, contenu: string): string {
+  if (!contenu.includes('fichier:cle:')) return contenu;
+  const role = roleDe(db, universId, compteId);
+  return reecrireClesFichier(contenu, (cle) => {
+    const f = fichierDeCle(db, universId, cle);
+    return f && role !== null && lisiblePar(role, { compteId }, f) ? f.id : null;
+  });
+}
+
+type CibleAttente = { sectionId: number; maniere: 'texte' | 'joint' } | { ficheId: number; maniere: 'illustration' };
+
+/** Records that a section or a sheet waits for the file of `cle`; once per place (the UNIQUE ignores NULLs). */
+export function noterAttente(db: Db, universId: number, cle: string, cible: CibleAttente): void {
+  const section = 'sectionId' in cible ? cible.sectionId : null;
+  const fiche = 'ficheId' in cible ? cible.ficheId : null;
+  const deja = db
+    .prepare(
+      `SELECT 1 AS ok FROM fichiers_attente WHERE univers_id = ? AND cle = ? AND maniere = ?
+         AND section_id IS ? AND fiche_id IS ?`,
+    )
+    .get(universId, cle, cible.maniere, section, fiche);
+  if (deja) return;
+  db.prepare(
+    'INSERT INTO fichiers_attente (univers_id, cle, section_id, fiche_id, maniere) VALUES (?, ?, ?, ?, ?)',
+  ).run(universId, cle, section, fiche, cible.maniere);
+}
+
+/** The sheet no longer waits for any illustration (it has one, or none is wanted). */
+export function oublierAttenteIllustration(db: Db, ficheId: number): void {
+  db.prepare("DELETE FROM fichiers_attente WHERE fiche_id = ? AND maniere = 'illustration'").run(ficheId);
+}
+
+/** References still waiting for their file in a universe: what a batch reports at its closing. */
+export function compterFichiersEnAttente(db: Db, universId: number): number {
+  return (db.prepare('SELECT COUNT(*) AS n FROM fichiers_attente WHERE univers_id = ?').get(universId) as { n: number }).n;
+}
+
+/** The ids of the files joined to a section. */
+export function jointsDe(db: Db, sectionId: number): number[] {
+  return (
+    db.prepare('SELECT fichier_id AS id FROM fichiers_sections WHERE section_id = ? AND joint = 1').all(sectionId) as {
+      id: number;
+    }[]
+  ).map((r) => r.id);
+}
+
+/** The import joins a file to a section, within the 100 files limit; false when the section is full. */
+export function joindreParImport(db: Db, sectionId: number, fichierId: number): boolean {
+  if (nombreJoints(db, sectionId) >= MAX_FICHIERS_JOINTS) return false;
+  poserJointure(db, fichierId, sectionId);
+  return true;
+}
+
+const lireJsonObjet = (brut: string | null): Record<string, unknown> =>
+  brut === null ? {} : (JSON.parse(brut) as Record<string, unknown>);
+
+/**
+ * The file of `cle` has just arrived (AD-111, AD-104): the texts that carried its key get `fichier:<id>`, the
+ * joined references and the illustration that waited are set, and the rows go — all in the caller's
+ * transaction, with neither `version`, nor `version_importee`, nor `modifie_le` moving. Returns the warnings.
+ */
+export function resoudreFichierEnAttente(
+  db: Db,
+  universId: number,
+  cle: string,
+  fichier: { id: number; type: string },
+): string[] {
+  const lignes = db
+    .prepare('SELECT id, section_id, fiche_id, maniere FROM fichiers_attente WHERE univers_id = ? AND cle = ? ORDER BY id')
+    .all(universId, cle) as { id: number; section_id: number | null; fiche_id: number | null; maniere: string }[];
+  const avertissements: string[] = [];
+  const supprimer = db.prepare('DELETE FROM fichiers_attente WHERE id = ?');
+  const textes = new Set(lignes.filter((l) => l.maniere === 'texte').map((l) => l.section_id!));
+  for (const sid of textes) {
+    const { contenu } = db.prepare('SELECT contenu FROM sections WHERE id = ?').get(sid) as { contenu: string };
+    const neuf = reecrireClesFichier(contenu, (k) => (k === cle ? fichier.id : null));
+    if (neuf !== contenu) poserContenu(db, sid, neuf, null);
+    recalculerFichiersSection(db, sid, neuf, contenuPublic(neuf));
+  }
+  for (const l of lignes) {
+    if (l.maniere === 'texte') {
+      supprimer.run(l.id);
+    } else if (l.maniere === 'joint') {
+      const s = db.prepare('SELECT titre, dernier_import FROM sections WHERE id = ?').get(l.section_id) as
+        | { titre: string; dernier_import: string | null }
+        | undefined;
+      if (!s) continue;
+      if (!joindreParImport(db, l.section_id!, fichier.id)) {
+        avertissements.push(`section « ${s.titre} » : ${MAX_FICHIERS_JOINTS} fichiers joints au plus, « ${cle} » reste en attente`);
+        continue;
+      }
+      const marque = lireJsonObjet(s.dernier_import);
+      const fichiers = (marque.fichiers ?? { ecrits: [] }) as { ecrits: number[] };
+      if (!fichiers.ecrits.includes(fichier.id)) fichiers.ecrits.push(fichier.id);
+      marque.fichiers = fichiers;
+      db.prepare('UPDATE sections SET dernier_import = ? WHERE id = ?').run(JSON.stringify(marque), l.section_id);
+      supprimer.run(l.id);
+    } else {
+      supprimer.run(l.id);
+      const f = db.prepare('SELECT illustration_fichier_id AS ill, dernier_import FROM fiches WHERE id = ?').get(l.fiche_id) as
+        | { ill: number | null; dernier_import: string | null }
+        | undefined;
+      if (!f) continue;
+      if (!estImage(fichier.type)) {
+        avertissements.push(`« ${cle} » n'est pas une image : illustration non posée`);
+      } else if (f.ill !== null) {
+        avertissements.push(`illustration modifiée dans Kanevas : « ${cle} » non posée`);
+      } else {
+        db.prepare('UPDATE fiches SET illustration_fichier_id = ? WHERE id = ?').run(fichier.id, l.fiche_id);
+        const marque = lireJsonObjet(f.dernier_import);
+        marque.illustration = { demande: cle, ecrit: fichier.id };
+        db.prepare('UPDATE fiches SET dernier_import = ? WHERE id = ?').run(JSON.stringify(marque), l.fiche_id);
+      }
+    }
+  }
+  return avertissements;
+}
+
+/** The key an illustration waits for, shown to a GM outside player mode only (E-9); null when none. */
+export function illustrationEnAttente(db: Db, ficheId: number): string | null {
+  const r = db
+    .prepare("SELECT cle FROM fichiers_attente WHERE fiche_id = ? AND maniere = 'illustration'")
+    .get(ficheId) as { cle: string } | undefined;
+  return r?.cle ?? null;
+}
+

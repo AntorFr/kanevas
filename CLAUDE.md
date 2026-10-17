@@ -35,8 +35,8 @@
   number when its slice merges (AD-51).
 - Attachments (AD-7, AD-65): bytes under `<db dir>/attachments/` (`ATTACHMENTS_DIR`), written only through
   `services/stockage.ts` (tmp/ then rename; `tmp/` emptied at startup). `ajouterFichier` in
-  `services/fichiers.ts` is the one upload function of the media library (AD-117: every file is a row of `fichiers`, its
-  visibility deduced from where it is added, never sent by the client; `fichierLisible` is the one read rule; only
+  `services/fichiers.ts` is the one upload function of the media library for the screens (AD-117: every file is a row of `fichiers`, its
+  visibility deduced from where it is added, never sent by the client); the import API's `assurerFichier` (same service, `PUT /fichiers/:cle`, AD-104) is the only other writer: its visibility comes from the script (`joueurs` or `mj`, B-48 protects it), and it resolves `fichiers_attente`; `fichierLisible` is the one read rule; only
   `services/` writes `fichiers*`); map backgrounds
   (`services/cartes.ts`, AD-69) go through `stockage.ts` directly, never write the volume themselves. The type is sniffed from the bytes, never trusted.
 - `frontend/` (React, Vite, `react-router`; AD-16, AD-57): `npm run build` also builds it into

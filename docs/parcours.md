@@ -413,16 +413,22 @@ Il veut d'abord un essai jetable, puis la vraie base, sans doublon ni fuite.*
    vérifier qu'aucun bloc MJ ne paraît, ni sur la fiche ni dans la recherche — P-12 ; dans **Comptes-rendus** (E-13), les 36 journaux de
    Kanka sont dans l'ordre de leurs dates d'origine ; sur une fiche, le menu « ⋯ » montre sa clé
    d'origine (« lieu:port-sel »).
+   A sheet sent before its files shows the GM « Fichier en attente d'import :
+   « img:quais ». » instead of the image until the file arrives (Léa sees nothing).
 7. Il corrige le script (il coupe la section trop longue en deux), le relance : le nouveau lot dit
    « Fiches : 3 créées · 498 inchangées · Fichiers : 1 140 inchangés · … · 0 en attente » — aucun doublon.
+   Pending file references are counted with links as « liens et références en attente »;
+   when nothing is pending, that count is omitted from the batch report.
 8. **Paramètres** (E-14), « Supprimer l'univers », il tape « Essai Kanka » : l'univers disparaît de
    l'accueil.
 9. Il refait 2 à 7 sur l'univers réel ; les jours suivants, Léa écrit dans une section importée et
    Antor renomme « Port-Sel » en « Port-Sel-sur-Brume » (P-14) ; un import rejoué n'écrase ni l'un ni
    l'autre et le lot le dit : « section « Notes » de personnage:lea-pj modifiée dans Kanevas : non
-   écrasée » ; « lieu:port-sel : titre modifié dans Kanevas : non écrasé ».
+   écrasée » ; « lieu:port-sel : titre modifié dans Kanevas : non écrasé » ; de même un fichier que
+   Antor a passé « Visible des joueurs » (E-19) n'est pas rétabli « Réservé au MJ » : « visibilité
+   modifiée dans Kanevas : non écrasée ».
 10. **Accès par API** (E-18) : il révoque le jeton (P-11).
-*Moment fort* : le second lot « Fiches : 0 créée, 501 inchangées » et rien de créé dans aucune autre
+*Moment fort* : le second lot « Fiches : 501 inchangées » et rien de créé dans aucune autre
 nature — rejouer est sans risque.
 *Échec* : jeton mal copié ou révoqué — le script reçoit 401 « Jeton invalide. », rien n'est écrit,
 et aucun lot n'apparaît ; un parent ou une cible de relation inconnue — la fiche est écrite sans ce

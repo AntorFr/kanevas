@@ -83,6 +83,8 @@ export interface PieceJointeVue {
   secrete?: boolean;
   /** The file is closed to this reader: `nom` is the sentence, nothing else of the file. */
   ferme?: boolean;
+  /** The origin key of a file the import has not delivered yet (GM only, E-9); `id` is negative, `nom` the sentence. */
+  attente?: string;
 }
 
 export interface Fiche {
@@ -111,7 +113,9 @@ export type IllustrationVue =
       jeton: string;
     }
   /** The reader may not read the file: no address, only the state (AD-117). */
-  | { fermee: true; message: string };
+  | { fermee: true; message: string }
+  /** The file of this origin key is not delivered yet (GM outside player mode only, E-9). */
+  | { attente: true; cle: string };
 
 /** Why a sheet cites another one (AD-100): a link in one of its sections, or a relation. */
 export type Pourquoi = { genre: 'lien'; section: string } | { genre: 'relation'; libelle: string };

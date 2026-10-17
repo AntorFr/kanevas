@@ -7,6 +7,19 @@ import type Token from 'markdown-it/lib/token.mjs';
 const PROTOCOLES_LIEN = /^(https?|mailto):/i;
 /** The reference of a file of the media library in an image or a link (AD-117): `fichier:<id>`. */
 const REFERENCE_FICHIER = /^fichier:([1-9]\d{0,14})$/;
+/** The import's form, waiting for the file of that origin key (AD-111): `fichier:cle:<clé>`, 1 to 200 characters. */
+const REFERENCE_CLE_FICHIER = /^fichier:cle:([^\r\n]{1,200})$/;
+
+/** The key of a `fichier:cle:` address as the author wrote it (the engine percent-encodes what it hands back). */
+function cleDeAdresse(adresse: unknown): string | null {
+  const m = REFERENCE_CLE_FICHIER.exec(String(adresse ?? ''));
+  if (!m) return null;
+  try {
+    return decodeURIComponent(m[1]!);
+  } catch {
+    return m[1]!;
+  }
+}
 
 /** The three forms of the grammar (`docs/ecrans.md`): text and key are 1 to 200 characters, no `]`, `|` nor line break. */
 const LIEN = /\[\[(?:([1-9]\d{0,14})|cle:([^|\]\r\n]{1,200}))(?:\|([^|\]\r\n]{1,200}))?\]\]/y;
@@ -46,7 +59,7 @@ function creerMoteur(avecBlocMJ: boolean, avecLiens: boolean): InstanceType<type
 
   const validerParDefaut = md.validateLink.bind(md);
   md.validateLink = (url: string): boolean =>
-    REFERENCE_FICHIER.test(url.trim()) || (validerParDefaut(url) && PROTOCOLES_LIEN.test(url.trim()));
+    REFERENCE_FICHIER.test(url.trim()) || REFERENCE_CLE_FICHIER.test(url.trim()) || (validerParDefaut(url) && PROTOCOLES_LIEN.test(url.trim()));
 
   // Headings never go above the section title: `#` and `##` become h3, then h4, h5, h6 at most.
   md.renderer.rules.heading_open = (tokens, idx, options, _env, self) => {
@@ -114,6 +127,8 @@ export interface OptionsRendu {
   formeLiens?: 'html' | 'markdown';
   /** How the `fichier:<id>` references read for the reader (AD-117). Without it an image is its alternative text. */
   fichiers?: ResolveurFichiers;
+  /** How a `fichier:cle:<clé>` reference (a file the import has not delivered yet) reads for the reader (E-9). */
+  fichiersEnAttente?: ResolveurFichiersEnAttente;
 }
 
 /** What a link reads as for one reader (AD-116): decided by the target, never by the `liens` table. */
@@ -131,7 +146,11 @@ export type RenduFichier =
   | { genre: 'fichier'; id: number; nom: string; image: boolean; adresse: string }
   | { genre: 'ferme' }
   | { genre: 'supprime' }
+  | { genre: 'attente'; cle: string }
   | { genre: 'rien' };
+
+/** Decides a `fichier:cle:<clé>` reference: the tile for a GM outside player mode, nothing for anyone else. */
+export type ResolveurFichiersEnAttente = (cle: string) => RenduFichier;
 
 /** Resolves a file reference of the text; built by the service for the reader, one query for the whole text. */
 export type ResolveurFichiers = (id: number) => RenduFichier;
@@ -142,6 +161,7 @@ export const FICHIER_SUPPRIME = 'Fichier supprimé de la médiathèque.';
 
 interface EnvRendu {
   fichiers?: ResolveurFichiers;
+  fichiersEnAttente?: ResolveurFichiersEnAttente;
   liens?: ResolveurLiens;
   formeLiens?: 'html' | 'markdown';
   /** Reading only (`extraireReferencesFichier`): the `fichiers` rule leaves the tokens as the engine made them. */
@@ -150,7 +170,7 @@ interface EnvRendu {
 
 export function rendreMarkdown(source: string, options: OptionsRendu = {}): string {
   const md = options.nature === 'section' ? mdSection : options.nature === 'scenario' ? mdScenario : mdTexte;
-  const env: EnvRendu = { liens: options.liens, formeLiens: options.formeLiens, fichiers: options.fichiers };
+  const env: EnvRendu = { liens: options.liens, formeLiens: options.formeLiens, fichiers: options.fichiers, fichiersEnAttente: options.fichiersEnAttente };
   return md.render(source, env as Record<string, unknown>);
 }
 
@@ -172,6 +192,12 @@ function remplacement(r: RenduFichier | null, image: boolean, md: InstanceType<t
       return `<span class="fichier-supprime">${FICHIER_SUPPRIME}</span>`;
     case 'rien':
       return '';
+    case 'attente': {
+      const phrase = `Fichier en attente d'import : « ${r.cle} ».`;
+      if (!image) return null;
+      const affiche = r.cle.length > 60 ? `${r.cle.slice(0, 59)}…` : r.cle;
+      return `<span class="fichier-attente" title="${md.utils.escapeHtml(phrase)}">Fichier en attente d'import : « ${md.utils.escapeHtml(affiche)} ».</span>`;
+    }
     default:
       return '';
   }
@@ -192,6 +218,34 @@ function decider(
   const sortie: Jeton[] = [];
   for (let i = 0; i < enfants.length; i++) {
     const t = enfants[i]!;
+    if (t.type === 'image' && cleDeAdresse(t.attrGet('src')) !== null) {
+      const cle = cleDeAdresse(t.attrGet('src'))!;
+      const alt = md.renderer.renderInlineAsText(t.children ?? [], md.options, {});
+      if (env.formeLiens === 'markdown') sortie.push(brut(md.utils.escapeHtml(`![${alt}](fichier:cle:${cle})`)));
+      else if (!env.fichiersEnAttente) sortie.push(t);
+      else sortie.push(brut(remplacement(env.fichiersEnAttente(cle), true, md) ?? ''));
+      continue;
+    }
+    if (t.type === 'link_open' && cleDeAdresse(t.attrGet('href')) !== null) {
+      const cle = cleDeAdresse(t.attrGet('href'))!;
+      let fin = i + 1;
+      while (fin < enfants.length && !(enfants[fin]!.type === 'link_close' && enfants[fin]!.level === t.level)) fin++;
+      const dedans = enfants.slice(i + 1, fin);
+      i = enfants[fin] ? fin : enfants.length;
+      if (env.formeLiens === 'markdown') {
+        const texte = md.renderer.renderInlineAsText(dedans, md.options, {});
+        sortie.push(brut(md.utils.escapeHtml(`[${texte}](fichier:cle:${cle})`)));
+      } else if (!env.fichiersEnAttente) sortie.push(...dedans);
+      else if (env.fichiersEnAttente(cle).genre === 'attente') {
+        const phrase = `Fichier en attente d'import : « ${cle} ».`;
+        sortie.push(
+          brut(`<span class="fichier-attente-lien" tabindex="0" title="${md.utils.escapeHtml(phrase)}">`),
+          ...dedans,
+          brut('</span>'),
+        );
+      } else sortie.push(...dedans);
+      continue;
+    }
     if (t.type === 'image') {
       const m = REFERENCE_FICHIER.exec(String(t.attrGet('src') ?? ''));
       if (!m || !env.fichiers) {
@@ -369,6 +423,56 @@ export function extraireReferencesFichier(source: string): number[] {
   };
   voir(mdSection.parse(source, { lectureSeule: true } satisfies EnvRendu));
   return ids;
+}
+
+/**
+ * The origin keys of the files a text references with `![…](fichier:cle:<clé>)` or `[…](fichier:cle:<clé>)`,
+ * in order, one entry per occurrence. Pure; read from the tokens like `extraireReferencesFichier`.
+ */
+export function extraireClesFichier(source: string): string[] {
+  const cles: string[] = [];
+  const voir = (tokens: ReturnType<typeof mdSection.parse>) => {
+    for (const t of tokens) {
+      const adresse = t.type === 'image' ? t.attrGet('src') : t.type === 'link_open' ? t.attrGet('href') : null;
+      const cle = adresse === null ? null : cleDeAdresse(adresse);
+      if (cle !== null) cles.push(cle);
+      if (t.children) voir(t.children);
+    }
+  };
+  voir(mdSection.parse(source, { lectureSeule: true } satisfies EnvRendu));
+  return cles;
+}
+
+/**
+ * Rewrites `](fichier:cle:<clé>)` into `](fichier:<id>)` for the keys `resoudre` knows (null: keep). Only the
+ * keys the tokens found are touched, and never a line of a code block. Pure.
+ */
+export function reecrireClesFichier(source: string, resoudre: (cle: string) => number | null): string {
+  const connues = new Map<string, number>();
+  for (const cle of new Set(extraireClesFichier(source))) {
+    const id = resoudre(cle);
+    if (id !== null) connues.set(cle, id);
+  }
+  if (connues.size === 0) return source;
+  const codes = new Set<number>();
+  for (const t of mdSection.parse(source, { lectureSeule: true } satisfies EnvRendu)) {
+    if ((t.type === 'fence' || t.type === 'code_block') && t.map) {
+      for (let l = t.map[0]; l < t.map[1]; l++) codes.add(l);
+    }
+  }
+  const morceaux = source.split(/(\r\n|\r|\n)/);
+  for (let i = 0, ligne = 0; i < morceaux.length; i += 2, ligne++) {
+    if (codes.has(ligne)) continue;
+    let texte = morceaux[i]!;
+    for (const [cle, id] of connues) {
+      for (const ecrite of new Set([cle, encodeURI(cle)])) {
+        texte = texte.split(`](fichier:cle:${ecrite})`).join(`](fichier:${id})`);
+        texte = texte.split(`](fichier:cle:${ecrite} `).join(`](fichier:${id} `);
+      }
+    }
+    morceaux[i] = texte;
+  }
+  return morceaux.join('');
 }
 
 /**

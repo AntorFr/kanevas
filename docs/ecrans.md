@@ -5,7 +5,7 @@
 > finie se détaillent dans la tranche qui le construit.
 
 > **Construit à ce jour** : E-1, E-2, E-3 (nom, navigation et blocs : système de jeu, campagnes actives, derniers comptes-rendus, préparation pour le MJ, cartes visibles), E-4, E-5 (Administration), E-6, E-7, E-13, E-8 (avec la
-> recherche dans un type, en grille de cartes illustrées), E-9 (avec les blocs Relations et Pièces jointes et l'illustration en tête), E-10 et E-11 (cartes et graphes), E-12 (Assistant), E-14 (Paramètres), E-15 (Système de jeu, à `/systemes/:sid`), E-16 (Systèmes de jeu), la ligne « Campagne » de E-9, la session
+> recherche dans un type, en grille de cartes illustrées), E-9 (avec les blocs Relations et Pièces jointes et l'illustration en tête), E-10 et E-11 (cartes et graphes), E-12 (Assistant), E-14 (Paramètres), E-15 (Système de jeu, à `/systemes/:sid`), E-16 (Systèmes de jeu), E-17 (Recherche), E-18 (Accès par API), E-19 (Médiathèque), la ligne « Campagne » de E-9, la session
 > et la barre latérale.
 
 ## Format
@@ -103,7 +103,7 @@ E-16 vivent hors des univers : leurs cases disent le rôle dans un univers ratta
 | E-6 | tout | liste, statut, CR, « Nouveau compte-rendu » ; ni scénarios ni préparation (cachés) | — |
 | E-7 | tout | — | — |
 | E-8 | lire, chercher, créer ; la vignette de chaque fiche (son illustration, ou le repli dessiné) | lire, chercher ; la vignette des fiches qu'il voit | — |
-| E-9 | tout ; mode Joueur ; relier et retirer des relations ; poser, remplacer, retirer l'illustration (hors mode Joueur) ; *(kanevas-import)* sous-type, réserver un fichier au MJ | sections lisibles ; écrire celles permises ; relations lisibles (section et cible) ; pièces jointes de celles-ci ; voir l'illustration, jamais la poser ; *(kanevas-import)* dans une section qu'il écrit, ajouter un fichier ou en choisir un qu'il voit (les deux chemins de B-55) et retirer une référence ; fichiers sous double garde ; jamais régler une visibilité (**caché**) | — |
+| E-9 | tout ; mode Joueur ; relier et retirer des relations ; poser, remplacer, retirer l'illustration (hors mode Joueur) ; *(kanevas-import)* sous-type, réserver un fichier au MJ, voir un fichier en attente d'import (tuile) | sections lisibles ; écrire celles permises ; relations lisibles (section et cible) ; pièces jointes de celles-ci ; voir l'illustration, jamais la poser ; *(kanevas-import)* dans une section qu'il écrit, ajouter un fichier ou en choisir un qu'il voit (les deux chemins de B-55) et retirer une référence ; fichiers sous double garde ; jamais régler une visibilité (**caché**) ; un fichier en attente d'import : rien (**caché**) | — |
 | E-10 | tout | cartes visibles | — |
 | E-11 | tout ; mode Joueur | lire une carte visible, ouvrir une fiche | — |
 | E-12 | catalogue MJ ; propositions : le MJ demandeur seul les voit, les applique, les abandonne | catalogue Joueur ; propositions : **caché** (ni outil ni bloc ; ce qu'on vérifie est l'absence de proposition et de bloc, pas le texte libre de l'assistant) | — |
@@ -2300,6 +2300,33 @@ E-19 s'il est lu ailleurs par des joueurs) ; « Ouvrir dans la médiathèque ».
 section (« Cette section porte déjà 100 fichiers joints. » au MJ, « Cette section ne peut pas recevoir
 d'autre fichier. » au joueur) ; les références dans le texte ne comptent pas.
 
+**Pending file reference** (import, `fichiers_attente`, AD-111): a file key not yet known in
+this universe. For a GM outside player mode, an inline image, an attachment row and the
+illustration slot show the same dashed `--texte-3` tile with the text
+« Fichier en attente d'import : « img:quais ». » (the key as sent). The inline image tile uses
+14 px Inter with 12/16 px padding, like the attachment tile. A document link such as
+`[tarifs](fichier:cle:doc:tarifs)` has a dashed `--texte-3` underline and that sentence as its
+tooltip. Other readers, including a GM in player mode, see only the document link's text,
+without a link, underline or tooltip; pending images, attachments and illustrations leave
+no tile, gap or row. The server never sends them the key.
+A pending attachment does not count towards the 100-file limit until resolved, cannot be
+removed (no menu: it disappears when the file arrives) and appears in no media library list.
+*States*: **loading** — nothing before the sheet arrives, so no flashing tile; **empty** — a
+section whose only attachments are pending shows their tiles rather than « Aucun fichier
+joint. »; **error** and **connection lost** — the tile is sheet text and follows the sheet's
+states; **refusal** — hidden for non-GM readers; **extreme content** — a 200-character key is
+shortened with « … », with the full key in a tooltip; 100 tiles scroll within their frame.
+The pending illustration occupies a full header row. Its key stays on one line, shortened
+when needed, with its closing quotation mark and period kept together. **When the file arrives**: an already open GM page does not update
+itself; reloading replaces the tile with the file. **Beyond 100**: a `PUT /fiches` whose
+section names more than 100 `fichiers` keys is refused (400 `invalide`, `champ: fichiers`,
+counted as refused in the batch). If resolution would exceed 100 attachments, the extra
+join stays pending and the batch warns « section « Notes » : 100 fichiers joints au plus,
+« K » reste en attente ». In editing and « Aperçu », the source keeps the key as written
+(`fichier:cle:K`): the preview shows the tile, the editor the source. The user-facing term is
+« fichier en attente » (never « référence » on E-9; E-18 counts « liens et références en
+attente » for the batch).
+
 **Blocs de fiche** (après les sections, hors de toute section) :
 - **Contient** (`folder-tree`) — les enfants lisibles, par type puis titre, chacun avec son icône ; 50
   puis « Afficher les N suivants » (N compté sur ce que le lecteur voit). Absent s'il n'y en a aucun.
@@ -2723,6 +2750,10 @@ toast « Adresse copiée. »). Deux panneaux.
    écrasée » ; « titre modifié dans Kanevas : non écrasé »), en deux groupes titrés par leur compte (« 3 refusées », « 2 avertissements »), 200 au
    plus puis « … et 37 autres ». Un lot sans refus ni avertissement ne se déplie pas. Le jeton,
    l'adresse et les clés d'origine sont en chasse fixe (pile système `ui-monospace`, charte).
+   File warnings also include « fichier vide : 0 octet, refusé », « visibilité modifiée
+   dans Kanevas : non écrasée » and « nom modifié dans Kanevas : non écrasé ». A pending
+   reference warns « fichier « img:quais » inconnu : référence en attente ».
+
 
 | État | Ce qu'on voit | Ce qu'on peut faire |
 |---|---|---|
