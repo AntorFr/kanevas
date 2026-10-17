@@ -243,7 +243,7 @@ function decider(
           ...dedans,
           brut('</span>'),
         );
-      }
+      } else sortie.push(...dedans);
       continue;
     }
     if (t.type === 'image') {

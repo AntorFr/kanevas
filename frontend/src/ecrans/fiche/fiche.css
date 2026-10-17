@@ -210,7 +210,8 @@ a.cadre-ill:focus-visible { outline-offset: 2px; border-radius: var(--rayon-pann
 /* A reserved illustration (B-24): a neutral frame that says so, in the header of a sheet the reader sees. */
 .ill-fermee { color: var(--texte-3); background: var(--surface-2); }
 /* A pending illustration (E-9, import): the same dashed tile as a pending file in a text. */
-.ill-attente { color: var(--texte-3); border: 1.5px dashed var(--texte-3); border-radius: var(--rayon-champ); padding: var(--e-3) var(--e-4); }
+.fin-cle-attente { white-space: nowrap; }
+.ill-attente { gap: 0; overflow-wrap: anywhere; color: var(--texte-3); border: 1.5px dashed var(--texte-3); border-radius: var(--rayon-champ); padding: var(--e-3) var(--e-4); }
 .pieces-jointes .envoi-fichier { width: 100%; }
 
 /* E-9: aliases under the title, label pills, and the « Alias et étiquettes » box */

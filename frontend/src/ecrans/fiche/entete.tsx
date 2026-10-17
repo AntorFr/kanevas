@@ -63,6 +63,7 @@ export function EnteteFiche({ universId, fiche, gestion, modeJoueur, badge, Icon
   const ill = fiche.illustration && 'jeton' in fiche.illustration ? fiche.illustration : null;
   const fermee = fiche.illustration && 'fermee' in fiche.illustration ? fiche.illustration : null;
   const enAttente = fiche.illustration && 'attente' in fiche.illustration ? fiche.illustration : null;
+  const cleAttente = enAttente ? (enAttente.cle.length > 60 ? `${enAttente.cle.slice(0, 59)}…` : enAttente.cle) : '';
   const jeton = ill?.jeton;
   const base = `/api/univers/${universId}/fiches/${fiche.id}/illustration`;
   const indisponible = jeton !== undefined && ko === jeton;
@@ -172,7 +173,8 @@ export function EnteteFiche({ universId, fiche, gestion, modeJoueur, badge, Icon
                   )}
                   {enAttente && (
                     <span className="ko-ill ill-attente" title={`Fichier en attente d'import : « ${enAttente.cle} ».`}>
-                      Fichier en attente d'import : « {enAttente.cle.length > 60 ? `${enAttente.cle.slice(0, 59)}…` : enAttente.cle} ».
+                      <span>Fichier en attente d'import :</span>
+                      <span>« {cleAttente.slice(0, -1)}<span className="fin-cle-attente">{cleAttente.slice(-1)} ».</span></span>
                     </span>
                   )}
                   {indisponible && (

@@ -2300,25 +2300,32 @@ E-19 s'il est lu ailleurs par des joueurs) ; « Ouvrir dans la médiathèque ».
 section (« Cette section porte déjà 100 fichiers joints. » au MJ, « Cette section ne peut pas recevoir
 d'autre fichier. » au joueur) ; les références dans le texte ne comptent pas.
 
-**Référence de fichier en attente** (import, `fichiers_attente`, AD-111) : le fichier d'une clé que
-l'univers ne connaît pas encore. Pour un MJ hors mode Joueur, une image du texte, une ligne du bloc
-Pièces jointes et l'emplacement de l'illustration montrent la même tuile, en tirets `--texte-3`,
-texte « Fichier en attente d'import : « img:quais ». » (la clé telle qu'envoyée) ; un lien de
-document `[tarifs](fichier:cle:doc:tarifs)` est souligné en tirets `--texte-3`, avec cette phrase en
-infobulle. Pour tout autre lecteur, et pour le MJ en mode Joueur : rien, ni tuile, ni blanc, ni ligne.
-Elle ne compte pas parmi les 100 fichiers joints tant que la clé n'est pas résolue, ne se retire pas
-(pas de menu : elle disparaît à l'arrivée du fichier) et n'est dans aucune liste de la médiathèque. *États* : **chargement** — rien avant l'arrivée de la
-fiche, donc pas de tuile qui clignote ; **vide** — une section dont les seules jointes sont en attente
-montre ses tuiles, pas « Aucun fichier joint. » ; **erreur** et **connexion perdue** — sans objet, la
-tuile est du texte de la fiche (ceux de la fiche valent) ; **refus** — « caché » : le lecteur non MJ ne
-reçoit pas même la clé ; **contenu extrême** — une clé de 200 caractères se coupe en « … » avec la clé
-entière en infobulle, 100 tuiles dans un bloc défilent dans leur cadre. **À l'arrivée du fichier** : la
-page déjà ouverte du MJ ne change pas seule ; au rechargement, la tuile est remplacée par le fichier.
-**Au-delà de 100** : un `PUT /fiches` dont une section nomme plus de 100 clés de `fichiers` est refusé
-(400 `invalide`, `champ: fichiers`, compté « refusée » au lot) ; si, à l'arrivée des fichiers, la
-section atteindrait 100, la jointure en trop reste en attente et le lot avertit « section « Notes » :
-100 fichiers joints au plus, « K » reste en attente ». En édition et en « Aperçu », le texte garde la clé telle qu'écrite (`fichier:cle:K`) : l'aperçu montre la tuile, l'éditeur la source. Le mot de l'utilisateur est « fichier en attente » (jamais « référence » sur E-9 ; E-18 compte
-« liens et références en attente » pour le lot).
+**Pending file reference** (import, `fichiers_attente`, AD-111): a file key not yet known in
+this universe. For a GM outside player mode, an inline image, an attachment row and the
+illustration slot show the same dashed `--texte-3` tile with the text
+« Fichier en attente d'import : « img:quais ». » (the key as sent). The inline image tile uses
+14 px Inter with 12/16 px padding, like the attachment tile. A document link such as
+`[tarifs](fichier:cle:doc:tarifs)` has a dashed `--texte-3` underline and that sentence as its
+tooltip. Other readers, including a GM in player mode, see only the document link's text,
+without a link, underline or tooltip; pending images, attachments and illustrations leave
+no tile, gap or row. The server never sends them the key.
+A pending attachment does not count towards the 100-file limit until resolved, cannot be
+removed (no menu: it disappears when the file arrives) and appears in no media library list.
+*States*: **loading** — nothing before the sheet arrives, so no flashing tile; **empty** — a
+section whose only attachments are pending shows their tiles rather than « Aucun fichier
+joint. »; **error** and **connection lost** — the tile is sheet text and follows the sheet's
+states; **refusal** — hidden for non-GM readers; **extreme content** — a 200-character key is
+shortened with « … », with the full key in a tooltip; 100 tiles scroll within their frame.
+The illustration label wraps on a phone without leaving its closing quotation mark and
+period alone on a line. **When the file arrives**: an already open GM page does not update
+itself; reloading replaces the tile with the file. **Beyond 100**: a `PUT /fiches` whose
+section names more than 100 `fichiers` keys is refused (400 `invalide`, `champ: fichiers`,
+counted as refused in the batch). If resolution would exceed 100 attachments, the extra
+join stays pending and the batch warns « section « Notes » : 100 fichiers joints au plus,
+« K » reste en attente ». In editing and « Aperçu », the source keeps the key as written
+(`fichier:cle:K`): the preview shows the tile, the editor the source. The user-facing term is
+« fichier en attente » (never « référence » on E-9; E-18 counts « liens et références en
+attente » for the batch).
 
 **Blocs de fiche** (après les sections, hors de toute section) :
 - **Contient** (`folder-tree`) — les enfants lisibles, par type puis titre, chacun avec son icône ; 50
@@ -2725,26 +2732,27 @@ toast « Adresse copiée. »). Deux panneaux.
    et l'infobulle « Son créateur n'est plus MJ de cet univers. » (au toucher, la même phrase s'écrit sous la ligne) ; il reste parmi les jetons actifs, rangé avec eux par date de création ; « Révoquer » reste possible. Pendant « Créer le
    jeton » et « Révoquer le jeton » le bouton est désactivé et dit « Création… » / « Révocation… » (pas de double envoi) ; « Annuler » et la fermeture de la boîte sont désactivés aussi jusqu'à la réponse. La maquette ne dessine ni « Inactif » ni ces boutons : le texte d'ici fait foi (pastille neutre, en `--texte-2` ; « Révoqué » est en teinte danger, « Expiré » neutre). *Révoquer* : boîte « Révoquer « Script Kanka — Mac » ? Le script
    qui l'utilise ne pourra plus rien écrire. », « Révoquer le jeton » (`--danger`) / « Annuler » ; toast « Jeton révoqué. ».
-2. **Lots d'import** — les 20 derniers lots, du plus récent : date d'ouverture, jeton, état (« En
-   cours », « Clos », « Abandonné » — ouvert depuis plus de 24 h sans écriture), et les compteurs
-   **par nature d'objet**, à la suite et séparés par « · », les natures sans objet omises : « Fiches : 498 créées ·
+2. **Import batches** — the latest 20, newest first: opening date, token, state (« En
+   cours », « Clos », « Abandonné » — open for more than 24 hours without a write), and counters
+   **by object kind**, separated by « · », omitting unused kinds: « Fiches : 498 créées ·
    3 refusées », « Fichiers : 1 140 créés », « Campagnes : 4 créées », « Scénarios : 12 créés »,
-   « Relations : 324 créées », puis « 6 liens et références en attente » et « 1 avertissement ». Dans une
-   nature, chaque forme (« créée(s) », « mise(s) à jour », « inchangée(s) », « refusée(s) ») n'est écrite que
-   si elle n'est pas nulle : un rejeu sans rien de neuf lit « Fiches : 1 inchangée » (le rapport de l'API,
-   lui, rend tous les compteurs, `creees: 0`), et un compte nul d'attente ou d'avertissements est omis
-   (la maquette abrège « 6 en attente » ; le texte est celui d'ici). Un `PUT` refusé (400) avec son lot
-   compte « 1 refusée » et ajoute au rapport sa clé et sa raison (« type « compte_rendu » : pas accepté
-   par cette version », « type « monstre » inconnu de Kanevas ») ; sans lot, il ne laisse aucune trace ici. Une
-   ligne se déplie :
-   les refus et avertissements, chacun avec la clé d'origine, ce qui est en cause et la raison
-   (« section « Vérité » : 112 000 caractères, 100 000 au plus » ; « parent lieu:les-docks inconnu :
-   fiche écrite sans parent » ; « section « Notes » modifiée dans Kanevas depuis le dernier import : non
-   écrasée » ; « titre modifié dans Kanevas : non écrasé » ; pour un fichier, « fichier vide : 0 octet, refusé »,
-  « visibilité modifiée dans Kanevas : non écrasée », « nom modifié dans Kanevas : non écrasé » ; pour
-  une référence, « fichier « img:quais » inconnu : référence en attente »), en deux groupes titrés par leur compte (« 3 refusées », « 2 avertissements »), 200 au
-   plus puis « … et 37 autres ». Un lot sans refus ni avertissement ne se déplie pas. Le jeton,
-   l'adresse et les clés d'origine sont en chasse fixe (pile système `ui-monospace`, charte).
+   « Relations : 324 créées », then « 6 liens et références en attente » and « 1 avertissement ».
+   Within a kind, each form (« créée(s) », « mise(s) à jour », « inchangée(s) », « refusée(s) »)
+   appears only when nonzero: a replay with nothing new reads « Fiches : 1 inchangée » (the API
+   report returns every counter, including `creees: 0`). Zero pending and warning counts are
+   omitted (the mockup shortens this to « 6 en attente »; this specification gives the full
+   wording). A refused `PUT` (400) with a batch counts as « 1 refusée » and adds its key and reason
+   to the report (« type « compte_rendu » : pas accepté par cette version », « type « monstre »
+   inconnu de Kanevas »); without a batch, it leaves no trace here. Expanding a row shows refusals
+   and warnings, each with the origin key, the affected field and the reason (« section « Vérité » :
+   112 000 caractères, 100 000 au plus »; « parent lieu:les-docks inconnu : fiche écrite sans
+   parent »; « section « Notes » modifiée dans Kanevas depuis le dernier import : non écrasée »;
+   « titre modifié dans Kanevas : non écrasé »; for a file, « fichier vide : 0 octet, refusé »,
+   « visibilité modifiée dans Kanevas : non écrasée », « nom modifié dans Kanevas : non écrasé »;
+   for a reference, « fichier « img:quais » inconnu : référence en attente »). Two groups are titled
+   with their counts (« 3 refusées », « 2 avertissements »), up to 200 entries then « … et 37
+   autres ». A batch without refusals or warnings cannot expand. Tokens, addresses and origin
+   keys use the system monospace stack (`ui-monospace`, see the visual charter).
 
 | État | Ce qu'on voit | Ce qu'on peut faire |
 |---|---|---|
