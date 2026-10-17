@@ -258,7 +258,7 @@ function Parametres() {
   };
 
   return (
-    <div className="page-liste">
+    <div className="page-liste parametres-univers">
       <header className="tete-liste">
         <span className="glyphe-type" aria-hidden="true">
           <Settings size={20} strokeWidth={1.75} />
@@ -351,6 +351,7 @@ function Parametres() {
           titre={`Supprimer « ${nomUnivers} » ?`}
           texte="Tout son contenu — fiches, sections, fichiers de la médiathèque, campagnes, cartes, jetons — sera effacé, pour tous ses membres. Le système de jeu reste."
           action="Supprimer l’univers"
+          iconeAction={Trash2}
           libelleEnCours="Suppression…"
           enCours={suppressionEnCours}
           desactive={nomConfirme !== nomUnivers}

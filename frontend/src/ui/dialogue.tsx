@@ -23,6 +23,7 @@ export function BoiteDialogue({
   libelleEnCours,
   reperage,
   icone: Icone = Trash2,
+  iconeAction,
   variante = 'danger',
   children,
 }: {
@@ -41,6 +42,8 @@ export function BoiteDialogue({
   reperage?: () => HTMLElement | null;
   /** Glyph of the round badge (the bin by default). */
   icone?: LucideIcon;
+  /** Optional glyph before the confirmation label. */
+  iconeAction?: LucideIcon;
   /** `danger` (red bin, danger button) or `mj` (GM amber badge, primary button): a reversible GM closing. */
   variante?: 'danger' | 'mj';
   children?: ReactNode;
@@ -118,6 +121,7 @@ export function BoiteDialogue({
               Annuler
             </button>
             <Bouton
+              icone={iconeAction}
               variante={variante === 'mj' ? 'principal' : 'danger'}
               enCours={libelleEnCours ? undefined : enCours}
               disabled={desactive || (libelleEnCours ? enCours : undefined)}
