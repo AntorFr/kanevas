@@ -173,8 +173,7 @@ export function EnteteFiche({ universId, fiche, gestion, modeJoueur, badge, Icon
                   )}
                   {enAttente && (
                     <span className="ko-ill ill-attente" title={`Fichier en attente d'import : « ${enAttente.cle} ».`}>
-                      <span>Fichier en attente d'import :</span>
-                      <span>« {cleAttente.slice(0, -1)}<span className="fin-cle-attente">{cleAttente.slice(-1)} ».</span></span>
+                      <span>Fichier en attente d'import : « {cleAttente.slice(0, -1)}<span className="fin-cle-attente">{cleAttente.slice(-1)} ».</span></span>
                     </span>
                   )}
                   {indisponible && (
