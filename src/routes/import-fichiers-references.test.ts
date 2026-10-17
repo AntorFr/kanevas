@@ -275,3 +275,19 @@ test('fichier mj joint dans une section lue des joueurs : Léa lit « Fichier r�
   assert.ok(v.body.includes('Fichier réservé au MJ.'), v.body);
   assert.ok(!v.body.includes('plan-secret') && !v.body.includes('doc:secret'), v.body);
 });
+
+test('lien de document en attente dans un texte : Antor voit le repère, Léa et Antor en mode Joueur le texte seul, sans clé ni lien', async () => {
+  const { putFiche, lea, antor, voir } = await monter();
+  const corps = { type: 'lieu', titre: 'Quais', sections: [{ cle: 'd', titre: 'D', contenu: 'Voir [les tarifs du port](fichier:cle:doc:tarifs) ici.', joueursLisent: true }] };
+  const r = await putFiche('lieu:quais', corps);
+  assert.equal(r.statusCode, 200, r.body);
+  const id = r.json().id as number;
+  const vA = await voir(antor, id);
+  assert.ok(vA.body.includes('fichier-attente-lien'), vA.body);
+  assert.ok(vA.body.includes('les tarifs du port'), vA.body);
+  for (const v of [await voir(lea, id), await voir(antor, id, '?mode=joueur')]) {
+    assert.ok(v.body.includes('les tarifs du port'), v.body);
+    assert.ok(!v.body.includes('doc:tarifs') && !v.body.includes('fichier-attente') && !v.body.includes('en attente'), v.body);
+    assert.ok(!v.body.includes('fichier:cle'), v.body);
+  }
+});
