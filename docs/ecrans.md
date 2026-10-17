@@ -3067,6 +3067,7 @@ gérée montre son bandeau et un lien « Ouvrir dans le concepteur ».
 | contenu long | 40 aménagements : liste filtrable par nature ; une conception à 30 alertes : bloquantes d'abord |
 | conflit | « Cette conception a changé depuis que vous l'avez ouverte. » + « Recharger » |
 | périmé | « Calculée avec d'anciens réglages. » + « Recalculer » (rien n'est recalculé sans le geste) |
+| élément retiré | alerte « Bloquante » « Élément retiré de cet univers » sur la ligne de choix ; « Enregistrer » refusé tant qu'il n'est pas remplacé ; le texte de la section ne change pas (B-62, décision de Monsieur du 2026-10-17) |
 
 Critères :
 - Étant donné Léa, autrice de « Caractéristiques » du « Vent d'Orak », quand elle ajoute une arme qui dépasse la puissance,
