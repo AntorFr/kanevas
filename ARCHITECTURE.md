@@ -495,6 +495,8 @@ aucun SQL hors des fonctions du module ; le rangement (tables typées, documents
 **univers** (la campagne) : un univers voit les deux, une donnée d'univers de même clé remplace celle du système, et un **retrait** d'univers (une clé du système
 marquée absente pour cet univers) l'efface de sa vue sans toucher au système. Un catalogue de système n'a aucun élément caché ; un élément d'univers porte
 `masque` (MJ seul), posé et ôté par un MJ de l'univers, et la lecture le filtre pour un joueur comme un système secret (B-62, décision de Monsieur du 2026-10-17).
+La résolution se fait **par clé, une fois** : l'élément d'univers s'il existe (masqué ou non), sinon celui du système s'il n'est pas retiré ; un remplacement masqué
+ne laisse jamais reparaître l'élément du système, et le calcul n'emploie que l'élément résolu.
 *Rejeté* : masquer un élément du système (le système est le jeu, commun à ses univers : pour qu'il n'existe pas dans une campagne, on le retire). Le contrat impose : clé, version, rattachement, forme déclarée
 et vérifiée à l'import. *Rejeté* : fichiers sur le volume ; table générique JSON.
 
