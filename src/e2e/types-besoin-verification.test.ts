@@ -319,6 +319,7 @@ describe('kanevas-import-types : écrans', { skip: skipBrowser }, () => {
     await lea.page.getByLabel('Sous-type').selectOption({ label: 'Port (2)' });
     await lea.page.getByText('Havre-Gris').first().waitFor();
     await attendre(lea.page);
+    await lea.page.waitForFunction(() => !document.body.innerText.includes('Chargement des fiches'));
     const t = await texte(lea.page);
     assert.match(t, /Port-Sel/);
     assert.match(t, /Havre-Gris/);

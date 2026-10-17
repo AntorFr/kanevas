@@ -307,6 +307,7 @@ describe('kanevas-relier-chercher, du besoin', { skip: skipBrowser }, () => {
       await m.lea.getByRole('heading', { name: 'Maître Aldric', level: 1 }).waitFor();
       await m.lea.goBack();
       await attendre(m.lea);
+      await m.lea.getByRole('link', { name: rx('Maître Aldric') }).first().waitFor();
       assert.equal(await champ(m.lea).inputValue(), 'Aldric');
       assert.ok((await liens(m.lea)).some((t) => t.includes('Maître Aldric')));
       // la même adresse rouverte donne la même recherche
