@@ -6,7 +6,7 @@
 >
 > **Construit à ce jour** (`kanevas-premiere-fiche`, systèmes, `kanevas-suivi`, `kanevas-fichiers`, `kanevas-relier-chercher`, `kanevas-recours-admin`) : P-1 en entier, P-2 en entier (étape 3 : l'admin répare les membres, E-5),
 > P-3 étapes 1 à 4, P-4 en entier, P-5 étape 1 (fiches et sections), P-6 étapes 1-2 (recherche dans un type), P-7 étape 1 et l'écriture de
-> l'étape 2, P-8 en entier (B-13, B-14 : E-14 puis E-15). Le reste de ce document est la cible.
+> l'étape 2, P-8 en entier (B-13, B-14 : E-14 puis E-15), P-14 étapes 2-3 et P-10 étape 8 (`kanevas-import-tenir` : renommer, supprimer une fiche, supprimer un univers). Le reste de ce document est la cible.
 >
 > **Epic `kanevas-import`** (cadrage proposé le 2026-10-11, sur `epic/kanevas-import`) : ouvrir
 > Kanevas à une base existante — d'abord la base Kanka de Monsieur (501 fiches), poussée par un script
@@ -436,7 +436,7 @@ parent ou sans cette relation, avec un avertissement dans le lot ; un lien `[[�
 encore inconnue — il reste en attente et se résout quand la fiche arrive (au même lot ou au suivant) ;
 le réseau coupe au milieu — le lot reste « En cours » sur E-18, sans dommage : rejouer reprend là où
 c'était, puisque tout ce qui est déjà écrit sort « inchangé » ; une image de 0 octet — refusée, la
-raison dans le lot ; supprimer l'univers en tapant un autre nom — le bouton reste inactif.
+raison dans le lot ; supprimer l'univers en tapant un autre nom — le bouton reste inactif ; une suppression qui échoue — « L'action n'a pas abouti. Réessayez. » dans la boîte, l'univers est intact (états : E-14).
 
 ### P-11 — Créer et révoquer un jeton d'API (MJ)
 1. **Accès par API** (E-18), depuis « Univers » ▸ « Accès par API » dans la barre (MJ seul).
@@ -509,7 +509,7 @@ pas ou vous ne pouvez pas la lire. » sous le champ, son texte intact ; la liste
 chercher. » et « Réessayer » ; un lien vers une fiche qui n'est pas encore importée — « en attente » pour Antor,
 texte pour Léa, jusqu'à l'arrivée de la fiche ; dans un scénario, la liste qui échoue — « Impossible de chercher. ».
 *Échec* : un déplacement qui ferait un cycle (« Les Sphères » sous l'un de ses enfants) — « Une fiche
-ne peut pas être rangée sous l'un de ses descendants. » ; un Joueur auteur d'une section qui contient
+ne peut pas être rangée sous l'un de ses descendants. » ; un titre vidé — « Erreur : le titre est obligatoire. », le champ reste ; un bilan de suppression qui ne se charge pas — « Impossible de charger le détail. », « Réessayer » (états : E-9) ; un Joueur auteur d'une section qui contient
 un bloc MJ — « Modifier » n'y paraît pas ; un texte qui passe 100 000 caractères — « Erreur : 100 000
 caractères au plus. », le texte reste.
 

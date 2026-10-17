@@ -5,7 +5,7 @@
 > finie se détaillent dans la tranche qui le construit.
 
 > **Construit à ce jour** : E-1, E-2, E-3 (nom, navigation et blocs : système de jeu, campagnes actives, derniers comptes-rendus, préparation pour le MJ, cartes visibles), E-4, E-5 (Administration), E-6, E-7, E-13, E-8 (avec la
-> recherche dans un type, en grille de cartes illustrées), E-9 (avec les blocs Relations et Pièces jointes et l'illustration en tête), E-10 et E-11 (cartes et graphes), E-12 (Assistant), E-14 (Paramètres), E-15 (Système de jeu, à `/systemes/:sid`), E-16 (Systèmes de jeu), E-17 (Recherche), E-18 (Accès par API), E-19 (Médiathèque), la ligne « Campagne » de E-9, la session
+> recherche dans un type, en grille de cartes illustrées), E-9 (avec les blocs Relations et Pièces jointes, l'illustration en tête, le titre en place et « Supprimer la fiche… »), E-10 et E-11 (cartes et graphes), E-12 (Assistant), E-14 (Paramètres, avec « Supprimer l'univers »), E-15 (Système de jeu, à `/systemes/:sid`), E-16 (Systèmes de jeu), E-17 (Recherche), E-18 (Accès par API), E-19 (Médiathèque), la ligne « Campagne » de E-9, la session
 > et la barre latérale.
 
 ## Format
@@ -108,7 +108,7 @@ E-16 vivent hors des univers : leurs cases disent le rôle dans un univers ratta
 | E-11 | tout ; mode Joueur | lire une carte visible, ouvrir une fiche | — |
 | E-12 | catalogue MJ ; propositions : le MJ demandeur seul les voit, les applique, les abandonne | catalogue Joueur ; propositions : **caché** (ni outil ni bloc ; ce qu'on vérifie est l'absence de proposition et de bloc, pas le texte libre de l'assistant) | — |
 | E-13 | tous les CR | les CR lisibles | — |
-| E-14 | tout | — | — |
+| E-14 | tout ; « Supprimer l'univers » (*kanevas-import*) | — (« Page introuvable. ») | « Page introuvable. » |
 | E-15 (hors univers ; les colonnes disent le rôle dans un univers **rattaché au système**) | lire ; « Ajouter … », « Modifier » | lire (« Lecture seule ») ; ni « Ajouter » ni « Modifier » | « Page introuvable. », sauf s'il est lui-même membre d'un univers rattaché : alors la colonne de son rôle là (l'admin MJ d'un univers rattaché lit et modifie) |
 | E-16 (hors univers) | ses systèmes, avec ses univers et son rôle | ses systèmes, « Lecture seule » | la liste de ses propres systèmes (comme MJ ou Joueur s'il est membre d'un univers rattaché) ; vide sinon — l'écran est proposé à tout compte |
 | E-17 *(kanevas-import)* | chercher dans toutes les fiches de l'univers, blocs MJ compris ; en **mode Joueur**, comme un joueur (ni blocs MJ, ni fiches qu'un joueur ne lit pas) ; filtres : les types activés ; les fiches des types désactivés restent des résultats sous « Tous » | chercher dans ce qu'il lit, hors blocs MJ ; filtres par type et par étiquette des seules fiches qu'il voit ; bascule de mode : absente (cachée) ; blocs MJ : hors recherche (jamais lus) ; « Alias et étiquettes… » sur E-9 : cachée | — |
@@ -120,8 +120,8 @@ ne montre que les types activés ; **E-8** — MJ : la vue en arbre, la créatio
 avec son champ « Sous-type », le filtre « Sous-type » ; Joueur : l'arbre des fiches qu'il voit, le filtre
 « Sous-type » sur ce qu'il voit ; la création et son champ « Sous-type » sont **absents** (non offerts). **E-9** — MJ : écrire le
 Markdown, insérer liens et blocs MJ, renommer, changer le type, déplacer, alias et étiquettes,
-supprimer (menu « ⋯ » de l'en-tête, hors mode Joueur), voir la clé d'origine ; Joueur : lire le
-Markdown (clé d'origine cachée), suivre les liens vers ce qu'il voit, « Contient » et « Mentionnée dans » réduits à ce qu'il
+supprimer (menu « ⋯ » de l'en-tête, hors mode Joueur), voir la clé d'origine ; Joueur : titre en texte, ni menu « ⋯ » ni suppression (**caché**), clé d'origine cachée ; un admin d'instance sans rôle : « Page introuvable. » ; lire le
+Markdown, suivre les liens vers ce qu'il voit, « Contient » et « Mentionnée dans » réduits à ce qu'il
 lit ; écrire une section permise **sauf si elle contient un bloc MJ** (« Modifier » **caché**) ; alias
 et étiquettes visibles, jamais modifiables (**caché**). **E-14** — MJ : « Types de fiche »,
 « Supprimer l'univers ». **E-15** — MJ d'un univers rattaché : « Types de fiche » (bascules) ;
@@ -2252,7 +2252,7 @@ tout autre rôle que le MJ (hors mode Joueur) : ni le menu, ni la réponse de le
   complète sur celles de l'univers ; alias 1 à 120 caractères, 20 au plus ; étiquette 1 à 40
   caractères, 20 au plus par fiche.
 - *Supprimer la fiche* : boîte de dialogue « Supprimer « Port-Sel » ? » qui compte ce qui part —
-  « 3 sections ; 3 relations qui la visent ; 1 place sur une carte. Ses 2 fichiers restent dans la médiathèque. Ses 4 enfants
+  « 3 sections ; 3 relations qui la visent ; 1 place sur une carte. Ses 2 fichiers restent dans la médiathèque. Ses 5 enfants
   remonteront sous « Les Sphères ». Les liens qui la visent deviendront des liens cassés. » — et
   « Supprimer la fiche » (`--danger`) / « Annuler ». Après : retour à la liste du type, toast « Fiche
   supprimée. ». Ces nombres ne sont montrés qu'au MJ, qui lit tout.
@@ -2362,12 +2362,64 @@ attente » for the batch).
   Port-Sel ».
 - Étant donné Antor qui déplace « Les Sphères » sous « Port-Sel », son enfant, alors il voit « Une
   fiche ne peut pas être rangée sous l'un de ses descendants. » et rien ne change.
-- Étant donné Antor qui supprime « Port-Sel » (4 enfants, parent « Les Sphères »), alors les 4
+- Étant donné Antor qui supprime « Port-Sel » (5 enfants, dont un illisible de Léa, parent « Les Sphères »), alors les 5
   enfants ont « Les Sphères » pour parent, l'adresse de « Port-Sel » répond « Page introuvable. », et
   un lien vers elle dans « Maître Aldric » est marqué « lien cassé » pour Antor et du texte pour Léa.
 - Étant donné un contenu qui contient `<script>alert(1)</script>` et `<b>gras</b>`, quand la section
   s'affiche, alors ces balises s'affichent comme du texte, et aucun script ne s'exécute.
 
+### Ce que `kanevas-import-tenir` construit (E-9 titre et suppression, E-14 « Supprimer l'univers »)
+
+*Précisions de la tranche, sur le cadre ci-dessus (B-39, B-40, B-41, AD-105, AD-119) ; les maquettes sont
+`e09-fiche-importee.html` (`#etat-supprimer`) et `e14-types-de-fiche.html` (`#etat-supprimer-univers`).*
+
+*La maquette `#etat-supprimer` ne dessine que l'état nominal de la boîte et celle de l'en-tête que le titre au repos : les états ci-dessous (titre vidé ou trop long, toast, bilan en chargement ou en erreur) sont décrits ici, et ce texte fait foi.*
+
+**Titre en place (E-9, MJ hors mode Joueur).** Un clic sur le titre le rend champ de saisie, texte
+sélectionné ; Entrée enregistre, Échap annule, la perte de focus enregistre. 1 à 120 caractères après
+rognage ; vide : « Erreur : le titre est obligatoire. » ; au-delà : « Erreur : 120 caractères au plus. » ; le
+champ reste ouvert. Titre inchangé : rien n'est envoyé. Enregistré : toast « Fiche renommée. », le fil
+d'Ariane des descendants et le badge de la liste suivent à la lecture suivante ; les liens `[[…]]` ne bougent pas
+(ils visent l'identifiant, B-33). Échec : « L'action n'a pas abouti. Réessayez. » sous le titre, le champ reste ouvert avec la saisie (Échap rend l'ancien titre). Un
+Joueur ou le mode Joueur : titre en texte, sans curseur d'édition.
+
+**Suppression d'une fiche (E-9).** « Supprimer la fiche… » ouvre la boîte **après** avoir lu son bilan
+(`GET …/fiches/:fid/suppression`) : « Chargement… » dans la boîte, bouton « Supprimer la fiche » inactif tant que
+le bilan n'est pas là. Le texte est composé des seuls postes non nuls, au singulier ou au pluriel
+(« 1 section », « 1 relation qui la vise », « 1 place sur une carte », « Son fichier reste dans la
+médiathèque », « Son enfant remontera sous… ») ; sans parent, « … remonteront à la racine de la liste du
+type » ; sans enfant, la phrase manque ; la fiche seule : « Cette fiche ne porte rien d'autre. ».
+Les nombres sont ceux du MJ, qui lit tout. Erreur du bilan : « Impossible de charger le détail. » et
+« Réessayer » ; échec de la suppression : le message dans la boîte, qui reste ouverte, la fiche n'a pas
+bougé. Succès : retour à la liste du type, toast « Fiche supprimée. ». Une fiche déjà supprimée par ailleurs :
+« Page introuvable. » à l'ouverture de la boîte. Un compte-rendu se supprime de même (retour à E-13).
+
+**Import (E-18).** Un `DELETE` d'import ajoute au bilan du lot le compteur « Fiches : 1 supprimée »
+(« supprimées » au pluriel), sans refus possible ; clé inconnue : rien n'est compté.
+
+**Supprimer l'univers (E-14, tout MJ).** La boîte suit le texte ci-dessus ; le champ compare le nom saisi au
+nom de l'univers à la lettre près, casse et espaces compris (l'espace final saisi par erreur laisse le bouton
+inactif) ; le serveur recompare (`nom`) et refuse un nom différent (400 `nom_different`, « Le nom ne correspond
+pas à celui de l'univers. » ; l'écran affiche « Le nom ne correspond pas. »). Pendant la suppression : bouton « Suppression… » inactif. Après : E-1, toast « Univers supprimé. » ;
+les autres membres, à leur prochaine action, voient « Page introuvable. ». Échec de la suppression : « L'action n'a pas
+abouti. Réessayez. » dans la boîte, qui reste ouverte, l'univers est intact ; une suppression longue garde
+« Suppression… » tant que le serveur n'a pas répondu (pas de délai au-delà duquel la boîte se ferme).
+
+**États propres à la tranche** (en plus du tableau de E-9 et de E-14).
+
+| Écran | État | Ce qu'on voit | Ce qu'on peut faire |
+|---|---|---|---|
+| E-9, boîte | chargement du bilan | « Chargement… », « Supprimer la fiche » inactif | « Annuler » |
+| E-9, boîte | erreur du bilan | « Impossible de charger le détail. » | « Réessayer », « Annuler » |
+| E-9, boîte | échec de la suppression | « L'action n'a pas abouti. Réessayez. » dans la boîte, la fiche n'a pas bougé | « Supprimer la fiche », « Annuler » |
+| E-9, boîte | connexion perdue | le bandeau ; « Supprimer la fiche » inactif, le bilan chargé reste | « Annuler » |
+| E-9, titre | échec de l'enregistrement | « L'action n'a pas abouti. Réessayez. » sous le titre, le champ reste ouvert avec la saisie | Entrée pour réessayer, Échap |
+| E-9, titre | connexion perdue pendant l'édition | le bandeau ; Entrée n'envoie rien, la saisie est gardée | Échap |
+| E-14, boîte | connexion perdue | le bandeau ; « Supprimer l'univers » inactif | « Annuler » |
+
+Un compte-rendu s'appelle « fiche » dans ces textes (« Supprimer la fiche… ») : c'est une fiche (B-40), et sa boîte
+compte ses sections, ses propositions de l'assistant incluses ; retour à E-13 au lieu de la liste du type.
+Les chemins d'échec de P-14 et de P-10 renvoient à ce tableau.
 ### Le bloc MJ — ce que `kanevas-import-secrets` construit (E-9, E-12, import)
 
 Cette tranche livre le bloc `:::mj` (B-34, AD-98, AD-114) sur le rendu et l'éditeur que
@@ -2827,7 +2879,7 @@ l'univers » (`--danger`) ne s'active que si le nom tapé est exact (casse compr
 
 #### Les types — ce que `kanevas-import-types` construit
 
-Le panneau « Supprimer l'univers » de E-14 n'est pas de cette tranche (il est à `kanevas-import-tenir`) ;
+Le panneau « Supprimer l'univers » de E-14 est à `kanevas-import-tenir` ;
 celle-ci construit le panneau et l'onglet « Types de fiche » ci-dessus, et ce qui suit.
 La liste des types (identifiant, adresse, libellés, icône) est celle du serveur (AD-120) : les écrans
 la lisent par `GET /api/univers/:id/types`, ils n'en tiennent aucune copie. Icônes (Lucide) :

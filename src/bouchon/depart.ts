@@ -15,6 +15,8 @@ import { supprimerFichier } from '../services/stockage.js';
 import { ajouterMembre } from '../services/membres.js';
 import { ajouterSection, changerAudience, ecrireContenu, lireSection } from '../services/sections.js';
 import { poserEtiquetage } from '../services/etiquettes.js';
+import { relierSection } from '../services/relations.js';
+import { creerCarte, ajouterElement } from '../services/cartes.js';
 import { creerFiche, deplacerFiche, lireFiche } from '../services/fiches.js';
 import { assurerCompte } from '../services/comptes.js';
 import { creerEtRattacherSysteme, creerGabarit, rattacherSysteme } from '../services/systemes.js';
@@ -231,6 +233,13 @@ export function semerBouchon(db: Db): boolean {
       rapport.sections['Secret — MJ seul']!,
       ['Rapport de l\'amirauté.', '', ':::mj', `Piste : ${lien(aldric, 'Maître Aldric')} vend les horaires des convois.`, ':::'].join('\n'),
     );
+    // `kanevas-import-tenir`: three relations that target Port-Sel (the criteria of its deletion); its place on
+    // a map comes with the files (`semerFichiers`, a map is created asynchronously). A base short of 0005 has no table.
+    if (db.prepare("SELECT 1 FROM sqlite_master WHERE name = 'relations'").get()) {
+      relierSection(db, id.antor, lame.id, aldric.id, aldric.sections['Apparence']!, { cibleFicheId: port.id, type: 'maître de port' });
+      relierSection(db, id.antor, lame.id, guilde.id, guilde.sections['Description']!, { cibleFicheId: port.id, type: 'y fait passer ses cargaisons' });
+      relierSection(db, id.antor, lame.id, rapport.id, rapport.sections['Secret — MJ seul']!, { cibleFicheId: port.id, type: 'surveille' });
+    }
     // « Essai Kanka »: a place whose text waits for a key and points at a vanished sheet.
     const anse = creerFiche(db, id.antor, essai.id, { type: 'lieu', titre: 'Anse-aux-Sels' });
     const descriptionAnse = ajouterSection(db, id.antor, essai.id, anse.id, {
@@ -347,6 +356,10 @@ async function semerFichiers(db: Db, racine: string): Promise<void> {
     sectionId: port.section,
     maniere: 'joint',
   });
+
+  // A graph map holds Port-Sel (its place goes with it when the sheet is deleted).
+  const graphe = await creerCarte(db, antor.compteId, false, univers, { titre: 'Carte de la côte', forme: 'graphe' });
+  ajouterElement(db, antor.compteId, false, graphe.id, { ficheId: trouver('Port-Sel').id });
 
   const lb = trouver('Léa Brisefer');
   const notes = ajouterSection(db, antor.compteId, univers, lb.id, {

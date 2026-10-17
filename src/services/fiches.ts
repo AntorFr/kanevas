@@ -13,6 +13,7 @@ import { ErreurService, introuvable, invalide, refuse } from './erreurs.js';
 import { etiquetageDe } from './etiquettes.js';
 import { mentionsDe } from './mentions.js';
 import { illustrationEnAttente, lireLignes, lisiblePar, type FichierRow } from './fichiers.js';
+import { supprimerFichier } from './stockage.js';
 import { IMAGE_RESERVEE } from './markdown.js';
 import { CHARGES, estTypeFiche, typeActif } from './types-fiche.js';
 import {
@@ -169,15 +170,21 @@ export function creerFiche(
   return versFiche(chargerFiche(db, universId, id));
 }
 
-/** The GM renames a sheet (the screen to do it comes later; the import already needs it). */
+/**
+ * The GM renames a sheet, a session report included (AD-119 (1)): the one write of the title from the
+ * screen. `dernier_import` is left alone, so a title that now differs from the one the import wrote is
+ * protected at the next replay (B-48). A bare account id (the import) is a GM outside player mode.
+ */
 export function renommerFiche(
   db: Db,
-  compteId: number,
+  acteur: Acteur | number,
   universId: number,
   ficheId: number,
   titre: string,
 ): Fiche {
-  exigerMJ(db, universId, compteId);
+  const a: Acteur = typeof acteur === 'number' ? { compteId: acteur } : acteur;
+  exigerMJ(db, universId, a.compteId);
+  if (a.modeJoueur) throw refuse();
   chargerFiche(db, universId, ficheId);
   const t = validerTitre(titre, 120, 'Le titre');
   db.prepare('UPDATE fiches SET titre = ?, modifie_le = ? WHERE id = ?').run(
@@ -245,6 +252,91 @@ export function changerTypeFiche(
     ficheId,
   );
   return versFiche(chargerFiche(db, universId, ficheId));
+}
+
+export interface BilanSuppression {
+  sections: number;
+  relations: number;
+  places: number;
+  fichiers: number;
+  enfants: number;
+  parent: { id: number; titre: string } | null;
+}
+
+/**
+ * What deleting a sheet takes with it, counted once for the box of E-9 and for the deletion itself
+ * (AD-119 (2)): the same queries, so the figures announced are the ones removed. `disques` are the
+ * files that only a section of the sheet owned (historical attachments), which leave the disk afterwards.
+ */
+function recenser(db: Db, f: FicheRow): BilanSuppression & { disques: string[] } {
+  const n = (sql: string, ...p: number[]) => (db.prepare(sql).get(...p) as { n: number }).n;
+  const fichiers = n(
+    `SELECT COUNT(*) AS n FROM (
+       SELECT fs.fichier_id AS id FROM fichiers_sections fs JOIN sections s ON s.id = fs.section_id WHERE s.fiche_id = ?
+       UNION SELECT illustration_fichier_id FROM fiches WHERE id = ? AND illustration_fichier_id IS NOT NULL)`,
+    f.id,
+    f.id,
+  );
+  const parent =
+    f.parent_id === null
+      ? null
+      : (db.prepare('SELECT id, titre FROM fiches WHERE id = ?').get(f.parent_id) as { id: number; titre: string });
+  const disques = (
+    db
+      .prepare(
+        `SELECT p.fichier FROM pieces_jointes p JOIN sections s ON s.id = p.section_id
+          WHERE s.fiche_id = ? AND NOT EXISTS (SELECT 1 FROM fichiers x WHERE x.disque = p.fichier)`,
+      )
+      .all(f.id) as { fichier: string }[]
+  ).map((r) => r.fichier);
+  return {
+    sections: n('SELECT COUNT(*) AS n FROM sections WHERE fiche_id = ?', f.id),
+    relations: n('SELECT COUNT(*) AS n FROM relations WHERE cible_fiche_id = ?', f.id),
+    places: n('SELECT COUNT(*) AS n FROM elements_carte WHERE fiche_id = ?', f.id),
+    fichiers,
+    enfants: n('SELECT COUNT(*) AS n FROM fiches WHERE parent_id = ?', f.id),
+    parent,
+    disques,
+  };
+}
+
+/**
+ * Only a GM outside player mode deletes or counts a deletion. Anyone else: a sheet they cannot read
+ * is not found; one they read is refused.
+ */
+function porteSuppression(db: Db, acteur: Acteur, universId: number, ficheId: number, refusSiLisible: boolean): FicheRow {
+  const role = exigerRole(db, universId, acteur.compteId);
+  const f = chargerFiche(db, universId, ficheId);
+  if (role === 'mj' && !acteur.modeJoueur) return f;
+  if (refusSiLisible && peutVoirFiche(db, role, ficheId, acteur)) throw refuse();
+  throw introuvable();
+}
+
+/** The figures the deletion box of E-9 announces, read when it opens (AD-119 (2)). */
+export function bilanSuppressionFiche(db: Db, acteur: Acteur, universId: number, ficheId: number): BilanSuppression {
+  const { disques: _disques, ...bilan } = recenser(db, porteSuppression(db, acteur, universId, ficheId, false));
+  return bilan;
+}
+
+/**
+ * The GM deletes a sheet (AD-105, AD-119 (3)), one transaction, in this order: the children go up to the
+ * sheet's parent (or the root); the relations and map places that target it; its sections (the cascades
+ * take their relations, links, file references, proposals); the sheet (links aimed at it become broken,
+ * `ON DELETE SET NULL`). An omission here fails on a `RESTRICT`, never leaves an orphan row. Only after
+ * the commit do the files that the sheet's sections alone owned leave the disk; the media library never.
+ */
+export function supprimerFiche(db: Db, acteur: Acteur, universId: number, ficheId: number): void {
+  const f = porteSuppression(db, acteur, universId, ficheId, true);
+  const { disques } = db.transaction(() => {
+    const bilan = recenser(db, f);
+    db.prepare('UPDATE fiches SET parent_id = ? WHERE parent_id = ?').run(f.parent_id, f.id);
+    db.prepare('DELETE FROM relations WHERE cible_fiche_id = ?').run(f.id);
+    db.prepare('DELETE FROM elements_carte WHERE fiche_id = ?').run(f.id);
+    db.prepare('DELETE FROM sections WHERE fiche_id = ?').run(f.id);
+    db.prepare('DELETE FROM fiches WHERE id = ?').run(f.id);
+    return bilan;
+  })();
+  for (const d of disques) supprimerFichier(d);
 }
 
 /** Deepest chain the tree accepts, and the longest climb a read makes (AD-115 (1), (2)). */

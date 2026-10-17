@@ -18,15 +18,12 @@
 //   B-53 filtres/nom    : Documents shows only documents; empty name / 201 characters refused
 //   échecs              : empty file, non-image illustration
 //   AD-111 limite       : the 100th joined file is accepted, the 101st refused with the two sentences
-//   migration           : stub of before the migration (pieces jointes, illustrations) still displays, secret piece reserved
 import assert from 'node:assert/strict';
 import { Buffer } from 'node:buffer';
-import { spawn } from 'node:child_process';
-import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
-import { tmpdir } from 'node:os';
+import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { after, before, test } from 'node:test';
-import { type Any, allerMembres, ajouterMembre, attendre, connecte, freePort, launch, skipBrowser, startServer, texte } from './harnais.test.js';
+import { type Any, allerMembres, ajouterMembre, attendre, connecte, launch, skipBrowser, startServer, texte } from './harnais.test.js';
 
 const opts = { skip: skipBrowser };
 let srv: Awaited<ReturnType<typeof startServer>>;
@@ -487,87 +484,4 @@ test('une section qui porte 100 fichiers joints refuse le 101e : phrase d’Anto
   await mediatheque(antor);
   await antor.getByLabel('Chercher par nom').fill('cent-un');
   await antor.getByText('Aucun fichier ne correspond.').waitFor();
-});
-
-// --- migration: a database written by the stub of BEFORE the slice must still display ---
-// Needs a build of the epic base (`git worktree add /tmp/base origin/epic/kanevas-import`, `npm run build` there):
-// KANEVAS_BASE_DIST=/tmp/base/dist. Without it the test is skipped (the base no longer exists once the slice is merged).
-
-const baseDist = process.env.KANEVAS_BASE_DIST;
-test('migration : pièces jointes et illustrations d’avant la médiathèque s’affichent toujours, la pièce secrète est réservée au MJ', { skip: skipBrowser || (baseDist ? false : 'KANEVAS_BASE_DIST (a dist/ built from the epic base) is not set') }, async () => {
-  const dir = mkdtempSync(join(tmpdir(), 'kanevas-mig-'));
-  const lancer = async (dist: string) => {
-    const port = await freePort();
-    const env: NodeJS.ProcessEnv = { ...process.env, PORT: String(port), NODE_ENV: 'production', KANEVAS_STUB: '1', DB_PATH: join(dir, 'k.db'), SESSION_SECRET: 'e2e-secret-e2e-secret-e2e' };
-    for (const k of Object.keys(env)) if (k.startsWith('OIDC_') || k === 'KANEVAS_SANS_SEMIS') delete env[k];
-    const child = spawn('node', [join(dist, 'server.js')], { cwd: join(dist, '..'), env, stdio: 'ignore' });
-    const base = `http://127.0.0.1:${port}`;
-    for (let i = 0; i < 100; i++) {
-      try {
-        await fetch(`${base}/healthz`);
-        return { base, stop: () => child.kill('SIGKILL') };
-      } catch {
-        await new Promise((r) => setTimeout(r, 100));
-      }
-    }
-    child.kill('SIGKILL');
-    throw new Error('server did not start');
-  };
-  try {
-    // 1. the old build seeds its stub database: record what Antor (MJ) sees as pieces and illustrations.
-    const ancien = await lancer(baseDist!);
-    const a0 = (await connecte(browser, ancien.base, 'Antor')).page;
-    const u0 = (await (await a0.request.get('/api/univers')).json()).find((x: Any) => x.nom === "Lame d'Ébène").id;
-    // the old stub carries illustrations but no piece: the old API (before the slice) adds one open, one secret.
-    const lieux0 = await (await a0.request.get(`/api/univers/${u0}/fiches?type=lieu`)).json();
-    const port0 = (Array.isArray(lieux0) ? lieux0 : lieux0.fiches).find((f: Any) => f.titre === 'Port-Sel');
-    const sec0 = (await (await a0.request.get(`/api/univers/${u0}/fiches/${port0.id}`)).json()).sections.find((s: Any) => s.titre === 'Description').id;
-    const pieces = [
-      { nom: 'ancienne-ouverte.pdf', secrete: false, fiche: 'Port-Sel' },
-      { nom: 'ancienne-secrete.pdf', secrete: true, fiche: 'Port-Sel' },
-    ];
-    for (const p of pieces) {
-      const r = await a0.request.post(`/api/univers/${u0}/fiches/${port0.id}/sections/${sec0}/pieces-jointes`, {
-        multipart: { secrete: String(p.secrete), fichier: pdf(p.nom, `\n%${p.nom}`) },
-      });
-      assert.equal(r.status(), 201, `old API accepts ${p.nom}`);
-    }
-    const illustrees: string[] = [];
-    for (const f of Array.isArray(lieux0) ? lieux0 : lieux0.fiches) if (f.illustration) illustrees.push(f.titre);
-    ancien.stop();
-    await new Promise((r) => setTimeout(r, 300));
-    assert.ok(illustrees.length > 0, 'the old stub must carry illustrations');
-
-    // 2. the new build opens the same database and volume.
-    const nouveau = await lancer(join(process.cwd(), 'dist'));
-    const a = (await connecte(browser, nouveau.base, 'Antor')).page;
-    const l = (await connecte(browser, nouveau.base, 'Léa')).page;
-    const u = (await (await a.request.get('/api/univers')).json()).find((x: Any) => x.nom === "Lame d'Ébène").id;
-    const lm = (await (await a.request.get(`/api/univers/${u}/fichiers`)).json()).fichiers as Any[];
-    const lLea = (await (await l.request.get(`/api/univers/${u}/fichiers`)).json()).fichiers as Any[];
-    for (const p of pieces) {
-      const f = lm.find((x) => x.nom === p.nom);
-      assert.ok(f, `« ${p.nom} » (piece of ${p.fiche}) must be in the library`);
-      assert.equal(f.visibilite, p.secrete ? 'mj' : 'joueurs', `visibility of « ${p.nom} »`);
-      assert.equal(lLea.some((x) => x.nom === p.nom), !p.secrete, `« ${p.nom} » in Léa's library`);
-      const octets = await a.request.get(`/api/univers/${u}/fichiers/${f.id}`);
-      assert.equal(octets.status(), 200, `bytes of « ${p.nom} » still served`);
-    }
-    // the illustrations are still there for the GM, the open pieces still show on their sheet for Léa
-    const lieu = (await (await a.request.get(`/api/univers/${u}/fiches?type=lieu`)).json()) as Any;
-    for (const f of Array.isArray(lieu) ? lieu : lieu.fiches) {
-      if (illustrees.includes(f.titre)) assert.ok(f.illustration, `illustration of « ${f.titre} » kept`);
-    }
-    const ouverte = pieces.find((p) => !p.secrete)!;
-    const cherche = await (await l.request.get(`/api/univers/${u}/fiches?type=lieu`)).json();
-    const cible = (Array.isArray(cherche) ? cherche : cherche.fiches).find((f: Any) => f.titre === ouverte.fiche) ?? null;
-    if (cible) {
-      await l.goto(`/univers/${u}/fiche/${cible.id}`);
-      await attendre(l);
-      assert.match(await texte(l), new RegExp(ouverte.nom.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
-    }
-    nouveau.stop();
-  } finally {
-    rmSync(dir, { recursive: true, force: true });
-  }
 });

@@ -75,7 +75,7 @@ test('critère : Savoir « Ressource » → note : même id, sousType nul, secti
   ajouterElement(w.app.db, antor, false, carte.id, { ficheId: id });
   const compte = () => ({
     sections: (w.app.db.prepare('SELECT COUNT(*) n FROM sections WHERE fiche_id = ?').get(id) as Any).n,
-    relations: (w.app.db.prepare('SELECT COUNT(*) n FROM relations').get() as Any).n,
+    relations: (w.app.db.prepare('SELECT COUNT(*) n FROM relations r JOIN sections s ON s.id = r.section_id WHERE s.fiche_id = ?').get(id) as Any).n,
     places: (w.app.db.prepare('SELECT COUNT(*) n FROM elements_carte WHERE fiche_id = ?').get(id) as Any).n,
   });
   const avant = compte();

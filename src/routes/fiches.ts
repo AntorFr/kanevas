@@ -7,7 +7,10 @@ import {
   changerTypeFiche,
   creerFiche,
   deplacerFiche,
+  bilanSuppressionFiche,
   lireFiche,
+  renommerFiche,
+  supprimerFiche,
   listerEnfants,
   lireMentions,
   listerFiches,
@@ -81,11 +84,14 @@ export function registerFichesRoutes(app: FastifyInstance) {
     return reply.code(201).send(fiche);
   });
 
-  // The sub-type alone (the title comes with kanevas-import-tenir). `null` removes it.
+  // Title, sub-type (`null` removes it) and parent, in one transaction (AD-119 (1), AD-115).
   app.patch(`${base}/:fid`, async (request) => {
     const i = ids(request);
     const b = corps(request);
-    if (b.sousType === undefined && b.parent === undefined) throw invalide('Rien à modifier.');
+    if (b.titre === undefined && b.sousType === undefined && b.parent === undefined) {
+      throw invalide('Rien à modifier.');
+    }
+    if (b.titre !== undefined && typeof b.titre !== 'string') throw invalide('Le titre : de 1 à 120 caractères.');
     if (b.parent !== undefined && b.parent !== null && !Number.isSafeInteger(b.parent)) {
       throw invalide('Le parent doit être une fiche ou null.');
     }
@@ -93,10 +99,23 @@ export function registerFichesRoutes(app: FastifyInstance) {
     const a = acteur(request);
     return app.db.transaction(() => {
       let fiche;
+      if (b.titre !== undefined) fiche = renommerFiche(app.db, a, i.univers, i.fiche, b.titre as string);
       if (b.sousType !== undefined) fiche = changerSousType(app.db, a.compteId, i.univers, i.fiche, b.sousType);
       if (b.parent !== undefined) fiche = deplacerFiche(app.db, a, i.univers, i.fiche, b.parent as number | null);
       return fiche;
     })();
+  });
+
+  // What the deletion would take, counted when the box of E-9 opens (AD-119 (2)).
+  app.get(`${base}/:fid/suppression`, async (request) => {
+    const i = ids(request);
+    return bilanSuppressionFiche(app.db, acteur(request), i.univers, i.fiche);
+  });
+
+  app.delete(`${base}/:fid`, async (request, reply) => {
+    const i = ids(request);
+    supprimerFiche(app.db, acteur(request), i.univers, i.fiche);
+    return reply.code(204).send();
   });
 
   // Same row, other type (AD-120 (4)); `charge` carries `pj` for a character, `sousType` a new sub-type.
