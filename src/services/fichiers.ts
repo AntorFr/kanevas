@@ -135,7 +135,7 @@ export async function assurerFichier(
     if (!entree.flux) invalider('fichier', 'Champ « fichier » manquant.');
     const ecrit = await ecrireFlux(entree.flux!, racine);
     temporaire = ecrit.temporaire;
-    if (ecrit.taille === 0) invalider('fichier', 'Le fichier est vide.');
+    if (ecrit.taille === 0) invalider('fichier', 'fichier vide : 0 octet, refusé');
     const type = typeParSignature(ecrit.debut);
     const resultat = db.transaction((): ResultatFichierImport => {
       // Uploading yields to other requests: check the role and the batch again before writing.
