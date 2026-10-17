@@ -382,7 +382,7 @@ Forme de la skill `exigences` ; chaque besoin cite les parcours qui le réalisen
 - **B-77** — Les **fiches de règles** (une par nature d'élément) et la fiche des **exemples** du concepteur sont
   des sections gérées, générées depuis les données du catalogue par un geste du MJ (« Générer les fiches de règles… », E-22) qui crée les fiches absentes et met à jour les
   autres, régénérées ensuite sur proposition quand le catalogue change, en lecture seule ailleurs ; ce que
-  le catalogue ne contient pas n'y est pas. Les exemples sont une nature du catalogue (importés avec lui). *(P-19)*
+  le catalogue ne contient pas n'y est pas. Les exemples sont une septième nature du catalogue (`exemples`, importés avec lui). *(P-19)*
 
 **La reprise et l'exactitude** :
 - **B-78** — L'exactitude se prouve par des **cas de référence** : les 11 vaisseaux d'exemple (prix, PV,
