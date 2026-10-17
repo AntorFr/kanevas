@@ -15,6 +15,7 @@ import {
   creerFiche,
   deplacerFiche,
   renommerFiche,
+  supprimerFiche,
   validerSousType,
 } from './fiches.js';
 import type { Jeton } from './jetons.js';
@@ -619,6 +620,32 @@ function majSection(
     );
   }
   return ecrit;
+}
+
+/**
+ * `DELETE /fiches/:cle` (AD-119 (4)): the same service function as the screen, with the token's actor,
+ * found by origin key. An unknown key writes nothing and counts nothing. Counted « supprimée » in the batch.
+ */
+export function supprimerFicheImport(
+  db: Db,
+  jeton: Jeton,
+  lotId: number | null,
+  cle: string,
+  maintenant: Date = new Date(),
+): void {
+  if (lotId !== null) {
+    const lot = lireLot(db, jeton, lotId, maintenant);
+    if (lot.closLe !== null) throw new ErreurService('conflit', 'Le lot est clos.', 'lot_clos');
+  }
+  if (!cleValide(cle)) return;
+  db.transaction(() => {
+    const f = db
+      .prepare('SELECT id FROM fiches WHERE univers_id = ? AND cle_origine = ?')
+      .get(jeton.universId, cle) as { id: number } | undefined;
+    if (!f) return;
+    supprimerFiche(db, { compteId: jeton.compteId }, jeton.universId, f.id);
+    if (lotId !== null) noterDansLot(db, lotId, 'fiches', 'supprimees', [], maintenant);
+  })();
 }
 
 /** Reads the `?lot=` of a write: absent → no batch; otherwise an id. */

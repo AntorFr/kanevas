@@ -62,7 +62,7 @@ Une table, `propositions` (migration `0008-propositions.sql`, AD-51) :
 | `univers_id` | → `univers` | non nul ; sert à refuser une proposition lue sous un autre univers |
 | `demandeur_id` | → `comptes` | non nul ; le seul compte qui la lit, l'applique ou l'abandonne (AD-79) |
 | `section_id` | → `sections` | non nul ; suppression en cascade avec la section |
-| `cr_id` | → `fiches` | non nul ; la fiche de type `compte_rendu` d'où part la proposition ; cascade par précaution (aucune suppression de CR en V1) |
+| `cr_id` | → `fiches` | non nul ; la fiche de type `compte_rendu` d'où part la proposition ; cascade par précaution (un CR se supprime comme une fiche, AD-119 ; la proposition part alors avec lui) |
 | `contenu_propose` | texte | non nul, non vide, 100 000 caractères au plus (la limite d'une section, AD-106 ; migration 0009) |
 | `version_origine` | entier | non nul ; la `version` que la section avait quand l'assistant l'a lue (AD-59, AD-80) |
 | `creee_le` | date | non nul |
@@ -85,7 +85,7 @@ avec `kanevas-relier-chercher`, qui prend le numéro suivant, AD-51).
 | `comptes` | `id`, `username` (identifiant Authelia, `preferred_username`), `cree_le` | `username` unique ; jamais de rôle ni de groupe (les groupes vivent dans la session) |
 | `univers` | `id`, `nom`, `description`, `cree_le` | `nom` non vide, 1 à 80 caractères |
 | `membres` | `univers_id`, `compte_id`, `role` (`mj` \| `joueur`) | clé primaire (`univers_id`, `compte_id`) ; clés étrangères ; au moins un `mj` par univers garanti par le service (B-5), pas par la base |
-| `fiches` | `id`, `univers_id`, `type` (les sept : `personnage`, `lieu`, `faction`, `objet`, `evenement`, `quete`, `compte_rendu` ; *depuis `kanevas-import`, la liste du produit, sans `CHECK` : AD-102 et « Cadrage `kanevas-import` » plus bas*), `titre`, `charge` (JSON versionné, AD-6 et AD-17 : `{"v":1}` ; personnage `{"v":1,"pj":true\|false}` ; compte-rendu `{"v":1,"campagne_id":…}`), `cree_le`, `modifie_le` | `type` contraint à ces sept valeurs (*contrainte levée par la recréation de `kanevas-import`, AD-102*) ; `titre` non vide, 1 à 120 caractères ; **aucune suppression** (*suppression par le MJ depuis `kanevas-import`, AD-105*) |
+| `fiches` | `id`, `univers_id`, `type` (les sept : `personnage`, `lieu`, `faction`, `objet`, `evenement`, `quete`, `compte_rendu` ; *depuis `kanevas-import`, la liste du produit, sans `CHECK` : AD-102 et « Cadrage `kanevas-import` » plus bas*), `titre`, `charge` (JSON versionné, AD-6 et AD-17 : `{"v":1}` ; personnage `{"v":1,"pj":true\|false}` ; compte-rendu `{"v":1,"campagne_id":…}`), `cree_le`, `modifie_le` | `type` contraint à ces sept valeurs (*contrainte levée par la recréation de `kanevas-import`, AD-102*) ; `titre` non vide, 1 à 120 caractères ; **aucune suppression de carte** (sauf avec l'univers ; les places d'une fiche supprimée partent, AD-119) (*suppression par le MJ depuis `kanevas-import`, AD-105*) |
 | `sections` | `id`, `fiche_id`, `titre`, `ordre`, `contenu` (source Markdown, AD-95, relue telle quelle pour un ancien texte brut ; 100 000 caractères au plus, AD-106, la même constante pour tout texte Markdown), `version` (entier, AD-59, 1 à la création), `modifie_le`, `joueurs_lisent`, `joueurs_ecrivent`, `auteur_id` (compte, facultatif), `auteur_lit`, `auteur_ecrit` | quatre bascules booléennes, **toutes à faux à la création** (une section naît fermée aux joueurs) ; `ordre` entier unique par fiche ; `titre` non vide, 1 à 80 caractères ; `contenu` borné par le service seul (`MAX_CONTENU_SECTION`), pas par un `CHECK` ; `auteur_id` doit être un membre Joueur de l'univers de la fiche, vérifié par le service ; retirer un membre efface son `auteur_id` |
 
 `modifie_le` de la fiche suit la dernière écriture d'une de ses sections. `ordre` est renuméroté
@@ -187,7 +187,7 @@ Une table et deux index de recherche ; aucune entité nouvelle (la relation est 
 
 | Objet | Colonnes (hors clés) | Contraintes |
 |---|---|---|
-| `relations` | `id`, `section_id` (la porteuse), `cible_fiche_id`, `type` (texte libre), `cree_le` | `section_id` → `sections` **ON DELETE CASCADE** (retirer une section retire ses relations) ; `cible_fiche_id` → `fiches` **ON DELETE RESTRICT** (une fiche ne se supprime pas) ; `type` 1 à 80 caractères après rognage ; `UNIQUE (section_id, cible_fiche_id, type)` |
+| `relations` | `id`, `section_id` (la porteuse), `cible_fiche_id`, `type` (texte libre), `cree_le` | `section_id` → `sections` **ON DELETE CASCADE** (retirer une section retire ses relations) ; `cible_fiche_id` → `fiches` **ON DELETE RESTRICT** (filet : `supprimerFiche` retire d'abord les places de la fiche, AD-119) ; `type` 1 à 80 caractères après rognage ; `UNIQUE (section_id, cible_fiche_id, type)` |
 | `recherche_fiches` (FTS5) | `titre` ; `rowid` = `fiches.id` | tokenizer `unicode61 remove_diacritics 2` |
 | `recherche_sections` (FTS5) | `titre`, `contenu` ; `rowid` = `sections.id` | idem |
 
@@ -205,7 +205,7 @@ cette fiche elle-même ; une section porte **100 relations** au plus ; seul un M
 Lecture, évaluée pour **le compte et le mode** de l'appelant : une relation est rendue si la section
 porteuse est lisible **et** si la fiche cible l'est (au moins une section lisible ; le MJ, hors
 mode Joueur, lit toute fiche de son univers). Sinon elle est absente de la réponse, sans compteur.
-Recherche : la liste d'un type avec une condition de plus (AD-63), saisie de 1 à 100 caractères (le service refuse au-delà) ; l'API accepte `q` sans `type` (toutes les fiches lisibles), mais aucun écran ne l'emploie : la recherche tous types reste hors tranche ; l'index ne livre que des
+Recherche : la liste d'un type avec une condition de plus (AD-63), saisie de 1 à 100 caractères (le service refuse au-delà) ; l'API accepte `q` sans `type` (toutes les fiches lisibles), et E-17 l'emploie (recherche tous types) ; l'index ne livre que des
 identifiants de candidats, jamais un résultat.
 
 ## Évolution
@@ -257,7 +257,7 @@ octets d'un fond ne sont pas en base (AD-7) : ils vivent sous `/data/attachments
 | Table | Colonnes (hors clés) | Contraintes |
 |---|---|---|
 | `cartes` | `id`, `univers_id`, `titre`, `forme` (`illustree` \| `graphe`), `visible` (booléen), `fond` (nom sur disque, UUID, facultatif), `fond_type` (type MIME déterminé par le serveur), `cree_le` | `univers_id` → `univers` ; `titre` non vide, 1 à 80 caractères ; `forme` contrainte à ces deux valeurs et **jamais modifiée** ; `visible` **faux à la création** ; `fond` et `fond_type` ensemble ou ensemble absents, et absents d'un graphe (`CHECK`) ; `fond` unique ; index `cartes (univers_id)` ; **aucune suppression** |
-| `elements_carte` | `id`, `carte_id`, `fiche_id`, `x`, `y` (réels, pourcentage, AD-70), `cree_le` | `carte_id` → `cartes` ; `fiche_id` → `fiches` **ON DELETE RESTRICT** (une fiche ne se supprime pas) ; `UNIQUE (carte_id, fiche_id)` ; `x` et `y` ensemble nuls ou ensemble entre 0 et 100 (`CHECK`) |
+| `elements_carte` | `id`, `carte_id`, `fiche_id`, `x`, `y` (réels, pourcentage, AD-70), `cree_le` | `carte_id` → `cartes` ; `fiche_id` → `fiches` **ON DELETE RESTRICT** (filet : `supprimerFiche` retire d'abord les places de la fiche, AD-119) ; `UNIQUE (carte_id, fiche_id)` ; `x` et `y` ensemble nuls ou ensemble entre 0 et 100 (`CHECK`) |
 
 Ce que la base ne dit pas, et que le service porte, avec sa raison (la règle croise la carte, la
 fiche et le rôle) : la fiche d'un élément est **du même univers** que la carte ; une carte
@@ -304,7 +304,7 @@ une entité que le cadrage n'a pas (« une tranche ajoute des attributs, jamais 
 Vérifié sur SQLite 3.46 : `ADD COLUMN` accepte ces `CHECK` (qui peuvent nommer une colonne déjà
 présente), les lignes existantes (toutes `NULL`) les passent, un triplet incomplet ou un type
 `image/svg+xml` est refusé. Pas de clé étrangère (rien n'est référencé), donc pas d'`ON DELETE` ;
-les fiches ne se suppriment pas (migration 0001).
+les clés RESTRICT sont un filet : `supprimerFiche` (AD-119) retire d'abord ce qui vise la fiche (migration 0001).
 
 **Physique.** Même base, mêmes réglages (WAL, `foreign_keys`). Les octets vont sur le disque, par
 le module de stockage d'AD-65, dans le même dossier que les pièces jointes
@@ -434,7 +434,7 @@ tels quels ; les déclencheurs de `recherche_fiches` sont recréés.
 | `types_systeme` | `systeme_id`, `type`, `active` (booléen) | clé primaire `(systeme_id, type)` (5) ; → `systemes_jeu` ; l'absence d'une ligne : le défaut du produit (activé) |
 | `types_univers` | `univers_id`, `type`, `active` (booléen) | clé primaire `(univers_id, type)` (5) ; → `univers` ; l'absence d'une ligne : l'univers suit son système |
 | `jetons_api` | `id`, `univers_id`, `compte_id`, `nom`, `empreinte`, `cree_le`, `expire_le`, `revoque_le` (nul : actif), `dernier_usage_le` (nul : jamais) | → `univers`, → `comptes` ; `empreinte` unique (7) ; `nom` 1 à 80 ; `CHECK (expire_le > cree_le)` ; un an au plus : service |
-| `lots_import` | `id`, `univers_id`, `jeton_id`, `ouvert_le`, `clos_le` (nul : en cours), `dernier_ecrit_le`, `compteurs` (JSON : par nature — `fiches`, `fichiers`, `campagnes`, `scenarios`, `relations` — `{creees, mises_a_jour, inchangees, refusees}`, entiers ≥ 0), `avertissements`, `en_attente` (entiers ≥ 0 ; liens et références en attente à la clôture), `rapport` (JSON : 1 000 entrées au plus, `{cle, objet, raison, gravite}`) | → `univers`, → `jetons_api` ; « abandonné » n'est pas stocké : ouvert et `dernier_ecrit_le` de plus de 24 h |
+| `lots_import` | `id`, `univers_id`, `jeton_id`, `ouvert_le`, `clos_le` (nul : en cours), `dernier_ecrit_le`, `compteurs` (JSON : par nature — `fiches`, `fichiers`, `campagnes`, `scenarios`, `relations` — `{creees, mises_a_jour, inchangees, refusees}`, entiers ≥ 0 ; la nature `fiches` y ajoute `supprimees`, écrit par `DELETE /fiches/:cle`, `kanevas-import-tenir`), `avertissements`, `en_attente` (entiers ≥ 0 ; liens et références en attente à la clôture), `rapport` (JSON : 1 000 entrées au plus, `{cle, objet, raison, gravite}`) | → `univers`, → `jetons_api` ; « abandonné » n'est pas stocké : ouvert et `dernier_ecrit_le` de plus de 24 h |
 
 **Colonnes ajoutées** (`ALTER TABLE … ADD COLUMN`, comme 0002 et 0006) :
 

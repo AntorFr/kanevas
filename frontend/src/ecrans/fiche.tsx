@@ -46,6 +46,7 @@ function PageFiche() {
   const [messageIll, setMessageIll] = useState<MessageIllustration>();
   // The server refused an illustration write (403): the account is no longer GM of this universe.
   const [roleRetire, setRoleRetire] = useState(false);
+  const introuvable = useCallback(() => setEtat({ k: 'introuvable' }), []);
 
   useEffect(() => {
     setMessageIll(undefined);
@@ -168,6 +169,7 @@ function PageFiche() {
   return (
     <article className="fiche" aria-labelledby="titre-fiche">
       <EnteteFiche
+        key={`${id}/${fid}/${gestion}`}
         universId={id!}
         fiche={fiche}
         gestion={gestion && etat.k === 'ok'}
@@ -177,6 +179,7 @@ function PageFiche() {
         message={messageIll}
         setMessage={setMessageIll}
         rafraichir={rafraichir}
+        onIntrouvable={introuvable}
         onDroitPerdu={() => {
           setRoleRetire(true);
           void rafraichir();

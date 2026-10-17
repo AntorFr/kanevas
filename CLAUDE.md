@@ -62,13 +62,13 @@
   needing a session are registered in the guarded scope of
   `registerSessionRoutes` (AD-15). `KANEVAS_STUB=1` (AD-55) swaps Authelia for
   `/connexion-bouchon` and refuses to start if any `OIDC_*` variable is set.
-- Hierarchy (AD-99, AD-115): `parent_id` is written only by `deplacerFiche` in `services/fiches.ts` (the `PATCH {parent}` route and the import both call it); ancestors, « Contient » and the tree return readable fiches only and never a count of hidden ones.
+- Hierarchy (AD-99, AD-115): `parent_id` is written only by `deplacerFiche` in `services/fiches.ts` (the `PATCH {parent}` route and the import both call it), except the lifting of children when their parent goes (`supprimerFiche`, `supprimerUnivers`, AD-119); ancestors, « Contient » and the tree return readable fiches only and never a count of hidden ones.
 - Update `.agent/status.md` in the same commit as the work it reflects — except in a task of a chain feature, which leaves it alone: the feature's assembly writes it once (two tasks both adding to it conflict at integration).
 - `src/services/{campagnes,scenarios,preparation,comptes_rendus}.ts` (`kanevas-suivi`): scenarios and
   preparation tasks take a **campaign id and no universe id** — the GM guard is evaluated on the
   campaign's own universe (`exigerMJDeCampagne`, AD-47), and a player, a foreign GM or an unknown id
   all get `introuvable`. Never add a `universId` parameter there. `creerCompteRendu` is the only
-  non-GM creation of a sheet (AD-61); no function deletes anything.
+  non-GM creation of a sheet (AD-61); a sheet's title is written only by `renommerFiche` (it leaves `dernier_import` alone, AD-119); sheets and universes are deleted only by `supprimerFiche` and `supprimerUnivers` (AD-119); a compte-rendu is deleted as a sheet.
 - Search and relations (`kanevas-relier-chercher`): search is `listerFiches({recherche})`, never a second
   function (AD-63). The FTS5 indexes (migration 0005) only deliver candidate ids and are kept by SQL
   triggers (AD-21) — never write to `recherche_*` from code. A relation is read under both guards

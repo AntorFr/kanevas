@@ -1,8 +1,9 @@
 /** Pure wording of E-18 (docs/ecrans.md): dates, counters of a batch, state of a token. */
 
-export type Issue = 'creees' | 'mises_a_jour' | 'inchangees' | 'refusees';
+export type Issue = 'creees' | 'mises_a_jour' | 'inchangees' | 'refusees' | 'supprimees';
 export type Nature = 'fiches' | 'fichiers' | 'campagnes' | 'scenarios' | 'relations';
-export type Compteurs = Record<Nature, Record<Issue, number>>;
+/** `supprimees` exists on the `fiches` nature only (AD-119 (4)); absent elsewhere and in older batches. */
+export type Compteurs = Record<Nature, Partial<Record<Issue, number>>>;
 
 export interface JetonVue {
   id: number;
@@ -90,15 +91,17 @@ function forme(issue: Issue, n: number, feminin: boolean): string {
       return `inchangé${e}${s}`;
     case 'refusees':
       return `refusé${e}${s}`;
+    case 'supprimees':
+      return `supprimé${e}${s}`;
   }
 }
 
 /** « Fiches : 498 créées · 3 refusées » per nature with something in it; null natures omitted. */
 export function ligneNature(c: Compteurs, nature: Nature): string | null {
   const def = NATURES.find((n) => n.cle === nature)!;
-  const parts = (['creees', 'mises_a_jour', 'inchangees', 'refusees'] as Issue[])
-    .filter((i) => c[nature][i] > 0)
-    .map((i) => `${nombre(c[nature][i])} ${forme(i, c[nature][i], def.feminin)}`);
+  const parts = (['creees', 'mises_a_jour', 'inchangees', 'refusees', 'supprimees'] as Issue[])
+    .filter((i) => (c[nature][i] ?? 0) > 0)
+    .map((i) => `${nombre(c[nature][i]!)} ${forme(i, c[nature][i]!, def.feminin)}`);
   return parts.length ? `${def.libelle} : ${parts.join(' · ')}` : null;
 }
 

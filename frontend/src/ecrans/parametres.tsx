@@ -1,12 +1,12 @@
-import { ArrowRight, Check, Link2, Plus, Settings } from 'lucide-react';
+import { ArrowRight, Check, Link2, Plus, Settings, Trash2 } from 'lucide-react';
 import { useEffect, useMemo, useState, type FormEvent } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 
 import { ErreurApi, appeler } from '../api';
 import { useCharge, useUnivers } from '../cadre-contexte';
 import type { Ecran } from '../registre';
 import type { UniversListe } from '../types';
-import { Bouton, Champ, ChargementListe, ErreurChargement, PageIntrouvable, Panneau, useToasts } from '../ui';
+import { BoiteDialogue, Bouton, Champ, ChargementListe, ErreurChargement, PageIntrouvable, Panneau, useToasts } from '../ui';
 import { PanneauTypesUnivers } from './types-reglage/panneau-univers';
 import './ecrans.css';
 import './liste.css';
@@ -37,6 +37,7 @@ function Parametres() {
   const { id } = useParams();
   const { recharger: rechargerUnivers } = useUnivers();
   const { toast } = useToasts();
+  const navigate = useNavigate();
   const [univers, rechargerUniv] = useCharge<UniversListe>(`/api/univers/${id}`);
   const [catalogue, rechargerCat] = useCharge<SystemeCatalogue[]>('/api/systemes/catalogue');
   const [mes, rechargerMes] = useCharge<SystemeUnivers[]>('/api/systemes');
@@ -77,6 +78,10 @@ function Parametres() {
   const [echecRattache, setEchecRattache] = useState<string>();
   const [echecCreation, setEchecCreation] = useState<string>();
   const [enCours, setEnCours] = useState<string>();
+  const [boiteSuppression, setBoiteSuppression] = useState(false);
+  const [nomConfirme, setNomConfirme] = useState('');
+  const [suppressionEnCours, setSuppressionEnCours] = useState(false);
+  const [echecSuppression, setEchecSuppression] = useState<string>();
 
   useEffect(() => {
     if (univers.etat === 'ok') {
@@ -211,6 +216,34 @@ function Parametres() {
     }
   }
 
+  const nomUnivers = univers.etat === 'ok' ? univers.valeur.nom : '';
+
+  function fermerSuppression() {
+    if (suppressionEnCours) return;
+    setBoiteSuppression(false);
+    setNomConfirme('');
+    setEchecSuppression(undefined);
+  }
+
+  // The server compares the name again (AD-119 (5)); the field only keeps the button inactive until it matches.
+  async function supprimer() {
+    if (suppressionEnCours || nomConfirme !== nomUnivers) return;
+    setSuppressionEnCours(true);
+    setEchecSuppression(undefined);
+    try {
+      await appeler('DELETE', base, { nom: nomConfirme });
+    } catch (e) {
+      setSuppressionEnCours(false);
+      setEchecSuppression(
+        e instanceof ErreurApi && e.code === 'nom_different' ? 'Le nom ne correspond pas.' : ECHEC,
+      );
+      return;
+    }
+    rechargerUnivers();
+    navigate('/');
+    toast('Univers supprimé.');
+  }
+
   const erreurNom = nom.length > NOM_MAX ? `${NOM_MAX} caractères au plus.` : nomVide && nom.trim() === '' ? 'le nom est obligatoire.' : undefined;
   const erreurDescription = description.length > DESCRIPTION_MAX ? `${DESCRIPTION_MAX} caractères au plus.` : undefined;
   const erreurNomSysteme =
@@ -225,7 +258,7 @@ function Parametres() {
   };
 
   return (
-    <div className="page-liste">
+    <div className="page-liste parametres-univers">
       <header className="tete-liste">
         <span className="glyphe-type" aria-hidden="true">
           <Settings size={20} strokeWidth={1.75} />
@@ -303,8 +336,41 @@ function Parametres() {
           </form>
         </Panneau>
 
-        <PanneauTypesUnivers universId={id!} universNom={univers.etat === 'ok' ? univers.valeur.nom : ''} avecSysteme={systeme !== null} />
+        <PanneauTypesUnivers universId={id!} universNom={nomUnivers} avecSysteme={systeme !== null} />
+
+        <Panneau titre="Supprimer l’univers" reserveMj danger>
+          <div className="actions">
+            <Bouton variante="danger" icone={Trash2} aria-haspopup="dialog" onClick={() => setBoiteSuppression(true)}>
+              Supprimer l’univers
+            </Bouton>
+          </div>
+        </Panneau>
       </div>
+      {boiteSuppression && (
+        <BoiteDialogue
+          titre={`Supprimer « ${nomUnivers} » ?`}
+          texte="Tout son contenu — fiches, sections, fichiers de la médiathèque, campagnes, cartes, jetons — sera effacé, pour tous ses membres. Le système de jeu reste."
+          action="Supprimer l’univers"
+          iconeAction={Trash2}
+          libelleEnCours="Suppression…"
+          enCours={suppressionEnCours}
+          desactive={nomConfirme !== nomUnivers}
+          onConfirmer={() => void supprimer()}
+          onFermer={fermerSuppression}
+        >
+          {echecSuppression && (
+            <div className="echec" role="alert">
+              {echecSuppression}
+            </div>
+          )}
+          <Champ
+            etiquette="Tapez le nom de l’univers pour confirmer"
+            value={nomConfirme}
+            autoComplete="off"
+            onChange={(e: { target: { value: string } }) => setNomConfirme(e.target.value)}
+          />
+        </BoiteDialogue>
+      )}
     </div>
   );
 }
