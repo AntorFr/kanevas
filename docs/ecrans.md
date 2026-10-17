@@ -2732,27 +2732,28 @@ toast « Adresse copiée. »). Deux panneaux.
    et l'infobulle « Son créateur n'est plus MJ de cet univers. » (au toucher, la même phrase s'écrit sous la ligne) ; il reste parmi les jetons actifs, rangé avec eux par date de création ; « Révoquer » reste possible. Pendant « Créer le
    jeton » et « Révoquer le jeton » le bouton est désactivé et dit « Création… » / « Révocation… » (pas de double envoi) ; « Annuler » et la fermeture de la boîte sont désactivés aussi jusqu'à la réponse. La maquette ne dessine ni « Inactif » ni ces boutons : le texte d'ici fait foi (pastille neutre, en `--texte-2` ; « Révoqué » est en teinte danger, « Expiré » neutre). *Révoquer* : boîte « Révoquer « Script Kanka — Mac » ? Le script
    qui l'utilise ne pourra plus rien écrire. », « Révoquer le jeton » (`--danger`) / « Annuler » ; toast « Jeton révoqué. ».
-2. **Import batches** — the latest 20, newest first: opening date, token, state (« En
-   cours », « Clos », « Abandonné » — open for more than 24 hours without a write), and counters
-   **by object kind**, separated by « · », omitting unused kinds: « Fiches : 498 créées ·
+2. **Lots d'import** — les 20 derniers lots, du plus récent : date d'ouverture, jeton, état (« En
+   cours », « Clos », « Abandonné » — ouvert depuis plus de 24 h sans écriture), et les compteurs
+   **par nature d'objet**, à la suite et séparés par « · », les natures sans objet omises : « Fiches : 498 créées ·
    3 refusées », « Fichiers : 1 140 créés », « Campagnes : 4 créées », « Scénarios : 12 créés »,
-   « Relations : 324 créées », then « 6 liens et références en attente » and « 1 avertissement ».
-   Within a kind, each form (« créée(s) », « mise(s) à jour », « inchangée(s) », « refusée(s) »)
-   appears only when nonzero: a replay with nothing new reads « Fiches : 1 inchangée » (the API
-   report returns every counter, including `creees: 0`). Zero pending and warning counts are
-   omitted (the mockup shortens this to « 6 en attente »; this specification gives the full
-   wording). A refused `PUT` (400) with a batch counts as « 1 refusée » and adds its key and reason
-   to the report (« type « compte_rendu » : pas accepté par cette version », « type « monstre »
-   inconnu de Kanevas »); without a batch, it leaves no trace here. Expanding a row shows refusals
-   and warnings, each with the origin key, the affected field and the reason (« section « Vérité » :
-   112 000 caractères, 100 000 au plus »; « parent lieu:les-docks inconnu : fiche écrite sans
-   parent »; « section « Notes » modifiée dans Kanevas depuis le dernier import : non écrasée »;
-   « titre modifié dans Kanevas : non écrasé »; for a file, « fichier vide : 0 octet, refusé »,
-   « visibilité modifiée dans Kanevas : non écrasée », « nom modifié dans Kanevas : non écrasé »;
-   for a reference, « fichier « img:quais » inconnu : référence en attente »). Two groups are titled
-   with their counts (« 3 refusées », « 2 avertissements »), up to 200 entries then « … et 37
-   autres ». A batch without refusals or warnings cannot expand. Tokens, addresses and origin
-   keys use the system monospace stack (`ui-monospace`, see the visual charter).
+   « Relations : 324 créées », puis « 6 liens et références en attente » et « 1 avertissement ». Dans une
+   nature, chaque forme (« créée(s) », « mise(s) à jour », « inchangée(s) », « refusée(s) ») n'est écrite que
+   si elle n'est pas nulle : un rejeu sans rien de neuf lit « Fiches : 1 inchangée » (le rapport de l'API,
+   lui, rend tous les compteurs, `creees: 0`), et un compte nul d'attente ou d'avertissements est omis
+   (la maquette abrège « 6 en attente » ; le texte est celui d'ici). Un `PUT` refusé (400) avec son lot
+   compte « 1 refusée » et ajoute au rapport sa clé et sa raison (« type « compte_rendu » : pas accepté
+   par cette version », « type « monstre » inconnu de Kanevas ») ; sans lot, il ne laisse aucune trace ici. Une
+   ligne se déplie :
+   les refus et avertissements, chacun avec la clé d'origine, ce qui est en cause et la raison
+   (« section « Vérité » : 112 000 caractères, 100 000 au plus » ; « parent lieu:les-docks inconnu :
+   fiche écrite sans parent » ; « section « Notes » modifiée dans Kanevas depuis le dernier import : non
+   écrasée » ; « titre modifié dans Kanevas : non écrasé »), en deux groupes titrés par leur compte (« 3 refusées », « 2 avertissements »), 200 au
+   plus puis « … et 37 autres ». Un lot sans refus ni avertissement ne se déplie pas. Le jeton,
+   l'adresse et les clés d'origine sont en chasse fixe (pile système `ui-monospace`, charte).
+   File warnings also include « fichier vide : 0 octet, refusé », « visibilité modifiée
+   dans Kanevas : non écrasée » and « nom modifié dans Kanevas : non écrasé ». A pending
+   reference warns « fichier « img:quais » inconnu : référence en attente ».
+
 
 | État | Ce qu'on voit | Ce qu'on peut faire |
 |---|---|---|

@@ -397,25 +397,28 @@ Il veut d'abord un essai jetable, puis la vraie base, sans doublon ni fuite.*
    « Vaisseau » à activé (le système le désactive) — P-13.
 3. **Accès par API** (E-18) : « Nouveau jeton », nom « Script Kanka — Mac », durée 30 jours ;
    Kanevas montre le jeton une fois ; il le copie dans la configuration du script.
-4. *Outside Kanevas*: he runs the script, which opens a **batch**, sends **campaigns** first,
-   then sheets with parents first (origin key, type, title, parent, aliases, labels, Markdown
-   sections with their `[[…]]` links, GM blocks, images and audience) — reports include their
-   campaign key — then relations, and closes the batch (AD-104 order).
-   Files, both images and documents, go into the **media library** (E-19) first, each with its
-   visibility: « Réservé au MJ » for files Kanka uses only in GM content, « Visible des joueurs »
-   otherwise. This includes the unused 385 MB; sheets reference the files.
-5. **Accès par API** (E-18), « Lots d'import »: « Fiches : 498 créées, 3 refusées · Fichiers :
-   1 140 créés · Campagnes : 4 créées · Scénarios : 12 créés · Relations : 324 créées · 6 liens et
-   références en attente ». He expands refusals: « personnage:aldric-le-gris — section « Vérité » :
-   112 000 caractères, 100 000 au plus ».
-6. He opens a few sheets (**E-8** tree, **E-9**, **E-17**) and switches to **player mode** to check
-   that no GM block appears, on the sheet or in search — P-12. A sheet sent before its files shows
-   the GM « Fichier en attente d'import : « img:quais ». » instead of the image until the file
-   arrives (Léa sees nothing). In **Comptes-rendus** (E-13), the 36 Kanka journals follow their
-   original dates; a sheet's « ⋯ » menu shows its origin key (« lieu:port-sel »).
-7. He fixes the script (splits the oversized section in two) and runs it again: the new batch
-   reads « Fiches : 3 créées · 498 inchangées · Fichiers : 1 140 inchangés · … » (nothing pending:
-   that line is omitted) — no duplicates.
+4. *Hors de Kanevas* : il lance le script ; le script ouvre un **lot**, pousse d'abord les
+   **campagnes**, puis les fiches, parents d'abord (clé d'origine, type, titre, parent, alias,
+   étiquettes, sections en Markdown avec leurs liens `[[…]]`, leurs blocs MJ, leurs images, leur
+   audience) — les comptes-rendus avec la clé de leur campagne —, puis les relations, et clôt le lot
+   (l'ordre d'AD-104).
+   Les fichiers, images et documents, vont d'abord dans la **médiathèque** (E-19), chacun avec ses
+   droits — « Réservée au MJ » pour ceux que Kanka n'affiche que dans du contenu MJ, « Visible des
+   joueurs » sinon —, y compris les 385 Mo qu'aucune fiche n'utilise ; les fiches les référencent.
+5. **Accès par API** (E-18), bloc « Lots d'import » : « Fiches : 498 créées, 3 refusées · Fichiers :
+   1 140 créés · Campagnes : 4 créées · Scénarios : 12 créés · Relations : 324 créées · 6 en attente » ; il
+   déplie les refus : « personnage:aldric-le-gris — section « Vérité » : 112 000 caractères, 100 000
+   au plus ».
+6. Il ouvre quelques fiches (**E-8** en arbre, **E-9**, **E-17**) et passe en **mode Joueur** pour
+   vérifier qu'aucun bloc MJ ne paraît, ni sur la fiche ni dans la recherche — P-12 ; dans **Comptes-rendus** (E-13), les 36 journaux de
+   Kanka sont dans l'ordre de leurs dates d'origine ; sur une fiche, le menu « ⋯ » montre sa clé
+   d'origine (« lieu:port-sel »).
+   A sheet sent before its files shows the GM « Fichier en attente d'import :
+   « img:quais ». » instead of the image until the file arrives (Léa sees nothing).
+7. Il corrige le script (il coupe la section trop longue en deux), le relance : le nouveau lot dit
+   « Fiches : 3 créées · 498 inchangées · Fichiers : 1 140 inchangés · … · 0 en attente » — aucun doublon.
+   Pending file references are counted with links as « liens et références en attente »;
+   when nothing is pending, that count is omitted from the batch report.
 8. **Paramètres** (E-14), « Supprimer l'univers », il tape « Essai Kanka » : l'univers disparaît de
    l'accueil.
 9. Il refait 2 à 7 sur l'univers réel ; les jours suivants, Léa écrit dans une section importée et
