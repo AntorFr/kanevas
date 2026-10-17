@@ -70,7 +70,7 @@ npm run dev            # ou, sans rechargement : npm run build && npm start (`np
 curl http://localhost:3001/healthz   # -> "kanevas 0.0.0-dev"
 ```
 
-The attested run (`npm run tests:attestes`, no test skipped) needs `KANEVAS_BASE_DIST`: a `dist/` built from `epic/kanevas-import` (the migration test, `src/e2e/mediatheque-ensemble.test.ts`, skips without it): `git worktree add /tmp/base origin/epic/kanevas-import && (cd /tmp/base && npm ci && npm run build)`, then `KANEVAS_BASE_DIST=/tmp/base/dist npm run tests:attestes`. The script refuses a dirty tree (exit 2): commit first.
+The attested run (`npm run tests:attestes`, no test skipped) needs `KANEVAS_BASE_DIST`: a `dist/` built from `epic/kanevas-import` (the migration test, `src/e2e/mediatheque-ensemble.test.ts`, skips without it): `git worktree add /tmp/base origin/epic/kanevas-import && (cd /tmp/base && npm ci && npm run build)`, then `KANEVAS_BASE_DIST=/tmp/base/dist npm run tests:attestes`. A plain `npm test` skips that one test, so « 1 skipped » is its normal result there, never an attestation; `tests:attestes -- --concurrence N` sets how many test files run at once. The script refuses a dirty tree (exit 2): commit first.
 
 This block serves `/healthz` and the API only; to log in and see the screens, use the stub-mode command under « Sans Authelia : le mode bouchon » (`KANEVAS_STUB=1`).
 
