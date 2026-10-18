@@ -22,7 +22,7 @@ src/
   config/env.ts                   Variables d'environnement (zod)
   db/                             SQLite (better-sqlite3), migrations/0001 to 0016, runner
   services/                       comptes, univers, membres, instance, fiches, sections, droits, systemes, relations, campagnes, scenarios, preparation, comptes_rendus, propositions, markdown (rendu unique), liens (table liens, seul écrivain), etiquettes (alias et étiquettes, seul écrivain), mentions (« Mentionnée dans »), types, types-fiche (la liste des types et leur activation),
-                                   fichiers (media library, sole writer of `fichiers*`), fichiers-lecture (read of the files a text or sheet references by key, waiting render), cartes, jetons, lots, import (contexte du jeton), import-fiches (API d'import), import-suivi (campaigns and scenarios by origin key), import-relations (relations by origin key),  stockage (octets sur le volume) :
+                                   fichiers (media library, sole writer of `fichiers*`, except that deleting a universe in `univers.ts` erases its rows), fichiers-lecture (read of the files a text or sheet references by key, waiting render), cartes, jetons, lots, import (contexte du jeton), import-fiches (API d'import), import-suivi (campaigns and scenarios by origin key), import-relations (relations by origin key),  stockage (octets sur le volume)
                                    seul code qui lit ou écrit les données ; session, oidc
   routes/                         health, auth (OIDC), session (cookie, garde, /api/moi),
                                    bouchon, univers (+ membres), instance (admin, AD-87), systemes, suivi, cartes, fiches (+ sections), fichiers (E-19 media library, bytes, attachments, illustration), propositions, assistant, acces-api (E-18, session), import (API d'import à jeton, `/api/import/v1`), frontend
@@ -253,7 +253,6 @@ manifeste `clusters/tantive/games/kanevas-helm-config.yml` et client OIDC
 fusionner `k8s-home-lab`, dont la fusion déploie.
 
 Pour la carte du code, les invariants et les options écartées, voir `ARCHITECTURE.md`, dont le
-tableau liste les décisions `AD-n` retenues pour l'epic, construites ou non (« La cible » dit ce qui est construit), avec leur numéro stable ; les numéros absents sont des décisions retirées ou d'autres tranches, aucune n'est cachée ici. Des
-commentaires du code citent encore `plan.md`, `technique.md` ou `socle-projet` : ce sont des
-documents de conception (« Monsieur » est le commanditaire qui fait la recette, « tranche » une feature livrée, « phase merge » la fusion qui suit la recette) tenus hors de ce dépôt (magasin de pilotage de la chaîne SDLC), dont ce
+tableau liste les décisions `AD-n` retenues pour l'epic, construites ou non (« La cible » dit ce qui est construit), avec leur numéro stable ; les numéros absents sont des décisions retirées ou d'autres tranches, aucune n'est cachée ici. Les
+documents de conception (`plan.md`, `technique.md`, `socle-projet`) sont tenus hors de ce dépôt, dans le magasin de pilotage de la chaîne SDLC (« Monsieur » est le commanditaire qui fait la recette, « tranche » une feature livrée, « phase merge » la fusion qui suit la recette) ; dont ce
 qui doit survivre est dans `ARCHITECTURE.md` et `docs/`.
