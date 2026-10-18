@@ -200,7 +200,6 @@ a { color: var(--accent-texte); }
 .vignette-pastille { position: absolute; left: var(--e-2); bottom: var(--e-2); }
 .vignette-bloc figcaption { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--e-1); margin-top: var(--e-1); font-size: var(--t-12); color: var(--texte-2); }
 .vignette-bloc figcaption > span:first-child { flex: 1; min-width: 0; overflow-wrap: anywhere; }
-.vignette-bloc figcaption small { display: block; font-size: inherit; color: var(--texte-3); }
 .vignette-bloc figcaption > .actions-revelees { flex: none; }
 @media (max-width: 760px) { .bloc-section { grid-template-columns: 1fr; gap: var(--e-1); } }
 
