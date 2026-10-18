@@ -2279,7 +2279,7 @@ comme le dépôt d'avant (`kanevas-fichiers`) — ouvrent le même menu —
    fichier le dit par sa pastille « MJ seul » — ; ailleurs, « Visible des joueurs » ; une illustration :
    « Visible des joueurs » si la fiche a une section lue des joueurs) **et** s'intègre à la
    fiche — depuis la barre d'outils, une image s'insère dans le texte au point d'insertion
-   (`![nom](fichier:<id>)`) et un document y met un lien (`[nom](fichier:<id>)`) ; depuis le bloc, le
+   (`![nom](fichier:<id>)`) et un document y met un lien (`[nom](fichier:<id>)`), chaque référence sur **sa propre ligne** (saut de ligne ajouté avant et après si le point d'insertion touche du texte, une barrière `:::` ou une ligne de tableau : elle ne se colle jamais à une barrière fermante, donc ne tombe pas dans le bloc MJ) ; depuis le bloc, le
    fichier est joint à la section ; depuis l'en-tête (« Poser » ou « Remplacer » l'illustration, MJ),
    une image devient l'illustration. Un échec n'ajoute rien à la médiathèque ni à la fiche.
 2. **« Choisir dans la médiathèque »** : le sélecteur de E-19 (« Choisir un fichier »), filtré sur ce
