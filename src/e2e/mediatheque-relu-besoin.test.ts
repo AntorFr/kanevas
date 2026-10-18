@@ -178,6 +178,7 @@ describe('médiathèque — le parcours du critère de sortie (bouchon, monde se
     await tuile(q, 'Carte des Sphères').click();
     await q.getByRole('button', { name: 'Fermer' }).waitFor();
     await attendre(q);
+    await q.getByText(/Utilisé dans/).first().waitFor();
     const t = await texte(q);
     assert.match(t, /Utilisé dans/);
     assert.match(t, /Val-Fortin/);
