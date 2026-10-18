@@ -15,7 +15,7 @@
 //                               bords     : 6 d 23 h valid, 7 d 1 h expired (« Expiré »); no / unknown / malformed token → the same 401
 //                               échec     : MJ demoted → 401 + « Inactif »; another MJ revokes
 //   B-47 idempotence nominal  : creee, then inchangee, one sheet; every one of the six types; changed content → mise_a_jour
-//                               échec     : compte_rendu and unknown type → 400 champ type, nothing written; bad title / key → 400
+//                               échec     : compte_rendu without campaign → 400 champ campagne, unknown type → 400 champ type, nothing written; bad title / key → 400
 //   B-48 protection nominal   : section title, section content, section audience, sheet title changed in Kanevas → not overwritten
 //                               and named in the batch; the rest is written
 //   B-49 lots       nominal   : two batches on E-18, counters per nature, refusals unfolded with key and reason
@@ -550,7 +550,7 @@ test('B-47 · le script change un contenu : mise_a_jour, le texte change, rejeu 
   await m.app.close();
 });
 
-test('B-47 échec · un compte_rendu reçoit 400 (champ type), un type inconnu aussi, et rien n’est écrit', async () => {
+test('B-47 échec · un compte_rendu sans campagne reçoit 400 (champ campagne), un type inconnu 400 (champ type), et rien n’est écrit', async () => {
   const m = await monde();
   const jeton = await jetonPar(m, 'antor');
   const c = await cookieDe(m, 'antor');
@@ -558,7 +558,7 @@ test('B-47 échec · un compte_rendu reçoit 400 (champ type), un type inconnu a
   for (const [cle, type] of [['cr:seance-1', 'compte_rendu'], ['monstre:k', 'monstre']]) {
     const r = await pousser(m, jeton, cle, { type, titre: 'Séance 1', sections: [] });
     assert.equal(r.statut, 400, `${type}: ${r.txt}`);
-    assert.equal(r.json.champ, 'type');
+    assert.equal(r.json.champ, type === 'compte_rendu' ? 'campagne' : 'type');
     assert.equal(r.json.code, 'invalide');
   }
   assert.equal((await rest(m, c, 'GET', `/api/univers/${m.essai}/fiches`)).txt, avant, 'nothing written');
@@ -749,7 +749,7 @@ test('B-49 · un lot avec un refus : « Fiches : 1 créée · 1 refusée », dé
     const d = await lire(page);
     assert.match(d, /1 refusée/);
     assert.match(d, /cr:seance-1/);
-    assert.match(d, /type « compte_rendu » : pas accepté par cette version/);
+    assert.match(d, /campagne inconnue/);
     await capture(page, 'b49-refus-deplie');
   } finally {
     await ctx.close();
