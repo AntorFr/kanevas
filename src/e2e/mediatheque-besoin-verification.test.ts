@@ -108,6 +108,7 @@ test('B-53 · Antor filtre « Réservées au MJ » : les réservés seuls ; « N
   await antor.getByLabel('Visibilité', { exact: true }).selectOption({ label: 'Toutes' });
   await antor.getByLabel('Usage', { exact: true }).selectOption({ label: 'Non utilisés' });
   await antor.getByRole('button', { name: /Carte des Sphères/ }).first().waitFor({ state: 'detached' });
+  await antor.getByRole('button', { name: /Plan secret de la Guilde/ }).first().waitFor({ state: 'visible' });
   const inutilises = await grille(antor);
   assert.match(inutilises, /Plan secret de la Guilde/);
   assert.doesNotMatch(inutilises, /Carte des Sphères/);
