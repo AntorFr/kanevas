@@ -1,3 +1,5 @@
+import { assurerRelations } from '../services/import-relations.js';
+import { LIMITE_RELATIONS } from '../services/relations.js';
 import multipart from '@fastify/multipart';
 import type { FastifyInstance, FastifyRequest } from 'fastify';
 
@@ -86,12 +88,12 @@ export async function registerImportRoutes(app: FastifyInstance) {
         univers: ctx.univers,
         compte: ctx.compte,
         // The product list with its activation (AD-102): no universe or system decision means active (origin `defaut`).
-        // `compte_rendu` is listed but not accepted by `PUT /fiches` until kanevas-import-reprise.
         types: TYPES_FICHE.map((type) => ({
           type,
-          active: type !== 'compte_rendu' && typeActif(app.db, ctx.univers.id, type),
+          active: typeActif(app.db, ctx.univers.id, type),
         })),
         limites: {
+          relationsParSection: LIMITE_RELATIONS,
           contenuSection: MAX_CONTENU_SECTION,
           contenuScenario: MAX_CONTENU_SECTION,
           nomCampagne: MAX_NOM_CAMPAGNE,
@@ -132,6 +134,12 @@ export async function registerImportRoutes(app: FastifyInstance) {
       const { cle } = request.params as { cle: string };
       const { lot } = request.query as { lot?: unknown };
       return assurerFiche(app.db, jetonDe(request), lotDeRequete(lot), cle, request.body, app.horloge());
+    });
+
+    scope.post(`${base}/fiches/:cle/relations`, async (request) => {
+      const { cle } = request.params as { cle: string };
+      const { lot } = request.query as { lot?: unknown };
+      return assurerRelations(app.db, jetonDe(request), lotDeRequete(lot), cle, request.body, app.horloge());
     });
 
     // The script sends `nom` and optional `visibilite` before the streamed `fichier` part.

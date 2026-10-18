@@ -22,6 +22,8 @@ export interface EntreeRapport {
   objet: string;
   raison: string;
   gravite: 'refus' | 'avertissement';
+  /** Machine-readable refusal, when an import entry has a domain code. */
+  code?: string;
 }
 
 export interface Lot {
@@ -151,14 +153,15 @@ export function noterDansLot(
   db: Db,
   lotId: number,
   nature: Nature,
-  issue: Issue | 'supprimees',
+  issue: Issue | 'supprimees' | null,
   entrees: EntreeRapport[] = [],
   maintenant: Date = new Date(),
 ): void {
   const row = ligne(db, lotId);
   if (!row) throw introuvable();
   const lot = versLot(row, maintenant);
-  (lot.compteurs[nature] as Record<string, number>)[issue]! += 1;
+  // A skipped entry warns without counting as a created, unchanged or refused object.
+  if (issue !== null) (lot.compteurs[nature] as Record<string, number>)[issue]! += 1;
   const rapport = [...lot.rapport, ...entrees].slice(0, MAX_RAPPORT);
   const avert = entrees.filter((e) => e.gravite === 'avertissement').length;
   db.prepare(

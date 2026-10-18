@@ -354,7 +354,10 @@ Les numéros sont stables. Une décision retirée garde son numéro, avec ce qui
 
 ## API d'import (`kanevas-import`, cible)
 
-> Construit par `kanevas-import-fil` : `GET /`, les trois routes de lots, `PUT /fiches/:cle` pour six types à l'époque de `import-fil`, treize depuis `kanevas-import-types` (titre, `pj`, `creeLe`, `modifieLe`, sections avec clé), sans `?lot=` obligatoire (sans lot, rien n'est compté), plafond de contenu à 100 000 (`contenuSection` de `GET /`, AD-106) ; `compte_rendu` y est listé inactif. Les fichiers (`PUT /fichiers/:cle`, puis `illustration`, `fichiers` et `fichier:cle:` des fiches ; `kanevas-import-fichiers`) sont construits. `DELETE /fiches/:cle` est construit par `kanevas-import-tenir`. Le reste de ce tableau (relations, campagnes) est la cible des tranches suivantes. Aujourd'hui, `alias` et `etiquettes` sont traités depuis la tâche `kanevas-recherche-api` de la feature `kanevas-import-recherche` (AD-118 6 ; `GET /` rend `aliasParFiche`, `longueurAlias`, `etiquettesParFiche`, `longueurEtiquette`) ; `parent` et `sousType` sont traités (`kanevas-import-types`, `kanevas-import-arbre`) ; un champ que la tranche ne traite pas (`campagne`) est ignoré sans refus ni avertissement : il n'est pas importé ; `GET /` rend `contenuSection`, `entreesRapport` et les quatre limites d'étiquetage ; une route qui n'existe pas encore (relations) répond le 404 HTML de l'application, non du JSON.
+> Implemented: context and limits (`GET /`), batches, keyed sheets of every product type,
+> file uploads and references, sheet deletion, campaigns, scenarios and relations. Sheet imports
+> accept title, PJ, origin dates, keyed sections, aliases, labels, parent, subtype and illustration.
+> `compte_rendu` additionally requires a known campaign key. Without `?lot=`, writes leave no batch trace.
 
 **File import** (`kanevas-fichiers-put`): `assurerFichier` in `services/fichiers.ts` implements `PUT /fichiers/:cle` (same `{id, etat: creee|mise_a_jour|inchangee, avertissements}` result as sheets). Send `nom` (1–200 characters) and optional `visibilite` (`joueurs` by default, or `mj`) before the multipart `fichier`. SHA-256 is computed while `stockage.ts` streams the upload; unchanged bytes keep their disk token, changed bytes replace it. `dernier_import` protects the name and visibility independently; each protected field warns in the response and batch. An empty file is a 400 `invalide`, `champ: fichier`, counted as refused with its key and reason, without a stored file. `GET /` adds `limites.fichiersJointsParSection` (100). Files are counted under the batch’s `fichiers` nature.
 
@@ -371,6 +374,19 @@ scenarios keep their version and modification date. An unknown campaign is a cou
 409 `lot_clos`. `GET /` also exposes `nomCampagne: 80`, `titreScenario: 120` and
 `contenuScenario: 100000` in `limites`. Scenario Markdown and origin-key links use the existing
 reader in `scenarios.ts` (AD-97), resolving keys on read.
+
+**Report and relation imports** (`kanevas-reprise-cr-relations`, AD-121):
+`assurerFiche` creates reports through `creerCompteRendu`, without an author, reusing its initial
+“Compte-rendu” section for the first imported section. Additional sections use ordinary section
+services. A missing or unknown campaign is a counted 400 `invalide`, `champ: campagne`, before any
+sheet write. Replay keeps the campaign and creation date, warning when either differs. E-13 uses
+that creation date for both display and ordering, under the existing section visibility guard.
+`assurerRelations` in `services/import-relations.ts` handles each array entry in its own transaction
+through `relierSection`. The response is an array of `{section, cible, type, etat, avertissements}`
+with `id` on creation and `code`/`raison` on refusal. States are `creee`, `inchangee`, `ignoree`
+(unknown section or target, warning only) and `refusee`. Domain refusals `auto_relation` and
+`limite_relations` also appear as `code` in the batch report. E-18 already displays the `relations`
+counters; `GET /` exposes `relationsParSection: 100`.
 
 Contrat que consomme le script de Monsieur, et tout autre (AD-103, AD-104). Base :
 `https://kanevas.berard.me/api/import/v1/univers/:id`, en-tête `Authorization: Bearer kvs_…`. JSON,
