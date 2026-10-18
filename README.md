@@ -94,14 +94,14 @@ seed; the client needs no browser session, only that id and a token. In another 
 npm run import:echantillon -- http://localhost:3001 4 <token>
 ```
 
-Use the public `JETON_BOUCHON` value from `src/bouchon/depart.ts` or create a token in
+Use the public stub token `kvs_bouchon_essai_Hq7Zr2LmX9cVt4Wd8KpNb3YsJf6Ga0Ue` (`JETON_BOUCHON` in `src/bouchon/depart.ts`) or create a token in
 « Accès par API » (E-18). The standalone client sends files, campaigns, parent-first sheets,
 relations and scenarios in a batch, closes it, and prints the counters and warning reasons.
 Tokens are passed as arguments and never written to disk. The sample comes from Éneria;
 its source mapping and neutral JSON format are documented in `src/bouchon/echantillon/README.md`.
 
-First run: 11 sheets, 3 files, 2 campaigns, 2 scenarios and 3 relations created, one unknown-target
-warning, zero refusals. Rerun the command: no creations, 11 unchanged sheets. In E-13, check
+The database must be fresh (delete the file first) and the port free (`EADDRINUSE` shows only in the server log, and the client then talks to whatever else listens there): on a used base the first run reads like a replay. First run: 11 sheets, 3 files, 2 campaigns, 2 scenarios and 3 relations created, one unknown-target
+warning (the relation probe from `personnage:tenny-balla` to `lieu:absent`), zero refusals. The summary line « liens et références en attente : 2 » counts the whole universe: Nyx, plus the link already waiting in the stub seed. Rerun the command: no creations, 11 unchanged sheets. In E-13, check
 April 18, March 3, February 10, 2021, newest first. In Éneria Prime, Base Éneria-1 resolves
 and Nyx stays « en attente »; player mode hides the GM paragraph and image, the base and
 Obscura, including in search. In E-7, open the 60,000-character scenario and follow its
