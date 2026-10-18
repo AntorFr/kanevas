@@ -110,8 +110,10 @@ async function main() {
   console.log(`Lot ${batch.lotId}`);
   let refused = 0;
   for (const [nature, c] of Object.entries(report.compteurs)) {
-    const ending = ['fichiers', 'scenarios'].includes(nature) ? 's' : 'es';
-    console.log(`${names[nature] ?? nature} : ${c.creees} créé${ending}, ${c.mises_a_jour} mis${ending} à jour, ${c.inchangees} inchangé${ending}, ${c.refusees} refusé${ending}`);
+    const feminine = !['fichiers', 'scenarios'].includes(nature);
+    const agreement = (word: string, n: number) => word + (feminine ? 'e' : '') + (n > 1 ? 's' : '');
+    const updated = feminine ? (c.mises_a_jour > 1 ? 'mises' : 'mise') : 'mis';
+    console.log(`${names[nature] ?? nature} : ${c.creees} ${agreement('créé', c.creees)}, ${c.mises_a_jour} ${updated} à jour, ${c.inchangees} ${agreement('inchangé', c.inchangees)}, ${c.refusees} ${agreement('refusé', c.refusees)}`);
     refused += c.refusees;
   }
   console.log(`Avertissements : ${report.avertissements} ; liens et références en attente : ${report.enAttente}`);
