@@ -7,7 +7,7 @@ import { useCharge } from '../cadre-contexte';
 import type { Ecran } from '../registre';
 import type { UniversListe } from '../types';
 import { iconeDuType, useTypes } from '../types-contexte';
-import { Bouton, BoiteDialogue, Champ, ErreurChargement, Pastille, PageIntrouvable, useToasts, VideIcone } from '../ui';
+import { Bouton, BoutonIcone, BoiteDialogue, Champ, ErreurChargement, Pastille, PageIntrouvable, useToasts, VideIcone } from '../ui';
 import './ecrans.css';
 import './mediatheque/mediatheque.css';
 import {
@@ -555,10 +555,6 @@ function Mediatheque() {
                   </a>
                 </div>
               )}
-              {f.image && <a className="bouton neutre" href={octets(id!, f)} download={f.nom}>
-                <Download size={14} strokeWidth={1.75} aria-hidden="true" />
-                Télécharger
-              </a>}
 
               <div className="med-titre-fichier">
                 <h2
@@ -588,7 +584,7 @@ function Mediatheque() {
                     }
                   }}
                 >{f.nom}</h2>
-                {mj && <Bouton petit icone={Pencil} ecrit aria-label="Renommer le fichier"
+                {mj && <BoutonIcone icone={Pencil} ecrit etiquette="Renommer le fichier"
                   onClick={() => titreEditable.current?.focus()} />}
                 {erreurNom && <p id="med-erreur-nom" className="erreur-champ" role="alert">Erreur : {erreurNom}</p>}
               </div>
@@ -612,7 +608,7 @@ function Mediatheque() {
               )}
 
               <div className="med-infos">
-                <div className="med-meta-ligne"><span>{f.type.split('/')[1]?.toUpperCase() || extension(f.nom) || typeLisible(f)}</span><span>{tailleLisible(f.taille)}</span></div>
+                <div className="med-meta-ligne"><span>{extension(f.nom) || f.type.split('/')[1]?.toUpperCase() || typeLisible(f)}</span><span>{tailleLisible(f.taille)}</span></div>
                 <div>ajouté par {f.ajouteParNom} le {new Date(f.ajouteLe).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' })}</div>
                 {mj && f.cleOrigine && <div className="med-cle">Clé d’origine <code>{f.cleOrigine}</code></div>}
               </div>

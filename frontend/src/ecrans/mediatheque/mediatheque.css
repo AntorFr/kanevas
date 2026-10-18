@@ -79,7 +79,7 @@ body:has(.med-panneau-ouvert) .asst-bouton { right: calc(400px + var(--e-5)); }
 .med-panneau-libelle { flex: 1; display: flex; align-items: center; gap: var(--e-2); color: var(--texte-3); font-size: var(--t-13); }
 /* The file name is the editable title itself, with a field outline only while editing. */
 .med-titre-fichier { width: 100%; display: flex; flex-wrap: wrap; align-items: flex-start; gap: var(--e-2); }
-.med-nom-en-place { flex: 1; min-width: 0; margin: 0; padding: var(--e-1); border-radius: var(--rayon-item);
+.med-nom-en-place { flex: 1; min-width: 0; margin: 0; padding: 0; border-radius: var(--rayon-item);
   font: 500 var(--t-22)/1.25 var(--police-titre); overflow-wrap: anywhere; }
 .med-nom-en-place[contenteditable="plaintext-only"] { cursor: text; }
 .med-nom-en-place[contenteditable="plaintext-only"]:hover { background: var(--surface-2); }
