@@ -6,6 +6,9 @@ import { ErreurService, introuvable, invalide } from './erreurs.js';
 import { validerTitre } from './fiches.js';
 // A scenario's content has the same ceiling as a section's (AD-91).
 import { validerContenu } from './sections.js';
+import type { ResultatSuiviImport } from './import.js';
+
+export const MAX_TITRE_SCENARIO = 120;
 
 export interface Scenario {
   id: number;
@@ -27,6 +30,9 @@ interface ScenarioRow {
   version: number;
   cree_le: string;
   modifie_le: string;
+  cle_origine: string | null;
+  dernier_import: string | null;
+  version_importee: number | null;
 }
 
 /**
@@ -65,7 +71,7 @@ export function creerScenario(
   entree: { titre: string; contenu?: string },
 ): Scenario {
   exigerMJDeCampagne(db, compteId, campagneId);
-  const titre = validerTitre(entree.titre, 120, 'Le titre');
+  const titre = validerTitre(entree.titre, MAX_TITRE_SCENARIO, 'Le titre');
   const contenu = entree.contenu ?? '';
   validerContenu(contenu);
   const now = new Date().toISOString();
@@ -105,7 +111,7 @@ export function ecrireScenario(
 ): Scenario {
   return db.transaction(() => {
     chargerPourMJ(db, compteId, scenarioId);
-    const titre = validerTitre(entree.titre, 120, 'Le titre');
+    const titre = validerTitre(entree.titre, MAX_TITRE_SCENARIO, 'Le titre');
     validerContenu(entree.contenu);
     const info = db
       .prepare(
@@ -117,5 +123,52 @@ export function ecrireScenario(
       throw new ErreurService('conflit', 'Le scénario a changé.', 'scenario_modifie');
     }
     return versScenario(db, compteId, chargerPourMJ(db, compteId, scenarioId));
+  })();
+}
+
+/** AD-121: scenario keys are scoped to THEIR campaign; no caller-supplied universe (AD-47). */
+export function assurerScenario(
+  db: Db,
+  compteId: number,
+  campagneId: number,
+  cle: string,
+  entree: { titre: string; contenu: string },
+): ResultatSuiviImport {
+  exigerMJDeCampagne(db, compteId, campagneId);
+  return db.transaction((): ResultatSuiviImport => {
+    const row = db.prepare('SELECT * FROM scenarios WHERE campagne_id = ? AND cle_origine = ?')
+      .get(campagneId, cle) as ScenarioRow | undefined;
+    if (!row) {
+      const s = creerScenario(db, compteId, campagneId, entree);
+      db.prepare('UPDATE scenarios SET cle_origine = ?, dernier_import = ?, version_importee = ? WHERE id = ?')
+        .run(cle, JSON.stringify({ titre: s.titre }), s.version, s.id);
+      return { id: s.id, etat: 'creee', avertissements: [] };
+    }
+    const marque = JSON.parse(row.dernier_import ?? '{}') as { titre?: string };
+    const avertissements: string[] = [];
+    let titre = row.titre;
+    let contenu = row.contenu;
+    if (titre === entree.titre) marque.titre = titre;
+    else if (titre === marque.titre) titre = marque.titre = entree.titre;
+    else avertissements.push('titre modifié dans Kanevas : non écrasé');
+
+    const contenuImporte = row.version_importee !== null && row.version === row.version_importee;
+    if (contenu !== entree.contenu) {
+      if (contenuImporte) contenu = entree.contenu;
+      else avertissements.push('contenu modifié dans Kanevas : non écrasé');
+    }
+    const change = titre !== row.titre || contenu !== row.contenu;
+    let versionImportee = row.version_importee;
+    if (change) {
+      const s = ecrireScenario(db, compteId, row.id, { titre, contenu }, row.version);
+      // Updating an imported title must not adopt a hand-edited content as ours (B-48).
+      if (contenuImporte) versionImportee = s.version;
+    }
+    const json = JSON.stringify(marque);
+    if (json !== row.dernier_import || versionImportee !== row.version_importee) {
+      db.prepare('UPDATE scenarios SET dernier_import = ?, version_importee = ? WHERE id = ?')
+        .run(json, versionImportee, row.id);
+    }
+    return { id: row.id, etat: change ? 'mise_a_jour' : 'inchangee', avertissements };
   })();
 }

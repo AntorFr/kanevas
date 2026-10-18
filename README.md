@@ -20,13 +20,13 @@ scripts/tests-attestes.mjs           `npm run tests:attestes` : joue toute la su
 src/
   server.ts, app.ts               Démarrage ; assemblage des plugins et des routes
   config/env.ts                   Variables d'environnement (zod)
-  db/                             SQLite (better-sqlite3), migrations/0001 to 0015, runner
+  db/                             SQLite (better-sqlite3), migrations/0001 to 0016, runner
   services/                       comptes, univers, membres, instance, fiches, sections, droits, systemes, relations, campagnes, scenarios, preparation, comptes_rendus, propositions, markdown (rendu unique), liens (table liens, seul écrivain), etiquettes (alias et étiquettes, seul écrivain), mentions (« Mentionnée dans »), types, types-fiche (la liste des types et leur activation),
-                                   fichiers (media library, sole writer of `fichiers*`), fichiers-lecture (read of the files a text or sheet references by key, waiting render), cartes, jetons, lots, import (contexte du jeton), import-fiches (API d'import), stockage (octets sur le volume) :
+                                   fichiers (media library, sole writer of `fichiers*`), fichiers-lecture (read of the files a text or sheet references by key, waiting render), cartes, jetons, lots, import (contexte du jeton), import-fiches (API d'import), import-suivi (campaigns and scenarios by origin key), import-relations (relations by origin key),  stockage (octets sur le volume) :
                                    seul code qui lit ou écrit les données ; session, oidc
   routes/                         health, auth (OIDC), session (cookie, garde, /api/moi),
                                    bouchon, univers (+ membres), instance (admin, AD-87), systemes, suivi, cartes, fiches (+ sections), fichiers (E-19 media library, bytes, attachments, illustration), propositions, assistant, acces-api (E-18, session), import (API d'import à jeton, `/api/import/v1`), frontend
-  bouchon/                        Monde de démonstration semé au démarrage en bouchon (depart.ts) et ses fichiers (demo/)
+  bouchon/                        Monde de démonstration semé au démarrage en bouchon (depart.ts), client-import.ts et echantillon/ (recette de reprise) et ses fichiers (demo/)
   services/assistant/             L'assistant : catalogues d'outils, port AgentTransport (bouchon, claude-agent), orchestration, jeton et sa session de connexion
   services/llm/                   Transports LLM repris d'Antre-du-maitre, branchés nulle part
 frontend/                         React + Vite : charte (ui/), écrans (src/ecrans/, dont E-5 administration.tsx), barre latérale
@@ -84,6 +84,41 @@ serveur en bouchon (port 3001), s'y connecter sur `http://localhost:3001/`, puis
 
 La voie de référence reste le conteneur Node 20 de `CLAUDE.md` (celle de la CI) ; sans Docker, un Node local
 récent suffit pour les mêmes commandes (`npm ci && npm run typecheck && npm test`).
+
+### Import sample acceptance
+
+Start the stub application on a fresh database (see below). « Essai Kanka » is universe 4 on a fresh
+seed; the client needs no browser session, only that id and a token. In another terminal:
+
+```bash
+npm run import:echantillon -- http://localhost:3001 4 <token>
+```
+
+Use the public stub token `kvs_bouchon_essai_Hq7Zr2LmX9cVt4Wd8KpNb3YsJf6Ga0Ue` (`JETON_BOUCHON` in `src/bouchon/depart.ts`) or create a token in
+« Accès par API » (E-18). The standalone client sends files, campaigns, parent-first sheets,
+relations and scenarios in a batch, closes it, and prints the counters and warning reasons.
+Tokens are passed as arguments and never written to disk. The sample comes from Éneria;
+its source mapping and neutral JSON format are documented in `src/bouchon/echantillon/README.md`.
+
+The database must be fresh (delete the file first) and the port free (`EADDRINUSE` shows only in the server log, and the client then talks to whatever else listens there): on a used base the first run reads like a replay. First run: 11 sheets, 3 files, 2 campaigns, 2 scenarios and 3 relations created, one unknown-target
+warning (the relation probe from `personnage:tenny-balla` to `lieu:absent`), zero refusals. The summary line « liens et références en attente : 2 » counts the whole universe: Nyx, plus the link already waiting in the stub seed. Rerun the command: no creations, 11 unchanged sheets. In E-13, check
+April 18, March 3, February 10, 2021, newest first. In Éneria Prime, Base Éneria-1 resolves
+and Nyx stays « en attente »; player mode hides the GM paragraph and image, the base and
+Obscura, including in search. In E-7, open the 60,000-character scenario and follow its
+Éneria Prime link. Change the campaign status in E-6 and rerun: it stays changed, with a warning.
+
+To exercise incremental replay, copy the sample JSON **within its directory** (file paths are
+relative to it), append a sheet with a fresh `cle`, then pass that JSON path as a fourth argument:
+one created sheet and eleven unchanged. Use the original file again for the baseline replay.
+For the refusal case (one refusal, reason names the missing campaign, exit status 1):
+
+```bash
+npm run import:echantillon -- http://localhost:3001 4 <token> src/bouchon/echantillon/refus.json
+```
+
+Finally delete « Essai Kanka » in E-14, create a fresh universe and a token in E-18, and run
+the original command with their id and token: the first-run counts must match. The stub
+token belongs to the deleted universe and cannot be reused for the new one.
 
 ### Sans Authelia : le mode bouchon
 
@@ -145,7 +180,7 @@ curl -X POST -H "Authorization: Bearer $JETON" $B/lots            # ouvre (ou re
 curl -X PUT -H "Authorization: Bearer $JETON" -H 'content-type: application/json' "$B/fiches/lieu:port-sel?lot=<lotId>" \
   -d '{"type":"lieu","titre":"Port-Sel","sections":[{"cle":"desc","titre":"Description","contenu":"Un port.\n\n:::mj\nTenu en sous-main.\n:::","joueursLisent":true},{"cle":"verite","titre":"Vérité","contenu":"…"}]}'
 ```
-Une section lue des seuls MJ omet `joueursLisent`. Réponse `creee`, puis `inchangee` au rejeu ; E-18 montre les lots. En `lea` (même serveur, même port que `B` ; `curl -c /tmp/j -d compte=lea http://localhost:3001/connexion-bouchon`, puis `GET /api/univers/<id de l'univers>/fiches/<id rendu par le PUT>` avec `-b /tmp/j`), « Description » se lit sans « sous-main » (le bloc MJ) et « Vérité » n'existe pas. Sans `?lot=`, l'écriture réussit mais aucun lot ne la compte. A field the endpoint does not handle is ignored without a warning, e.g. `fichiers` sent on the sheet instead of inside a section: nothing is attached, so put it in the section. Available routes: `GET /`, the three batch routes, `PUT /fiches/:cle` `PUT /fichiers/:cle` and `DELETE /fiches/:cle` (see « Deletion recipe »); relations still return an HTML 404. Unhandled fields (`campagne`) are ignored without a warning ( `parent` (clé d'origine) est traité, voir « Recette de l'arbre » ; `alias` et `etiquettes` sont écrits, voir « Recette de la recherche »). Un `compte_rendu` (listé inactif par `GET`) est refusé (400, `champ: type`) jusqu'à `kanevas-import-reprise`. Le contenu est rendu en Markdown (AD-95) ; un contenu qui porte `:::mj … :::` produit le même bloc MJ que l'écran (AD-114).
+Une section lue des seuls MJ omet `joueursLisent`. Réponse `creee`, puis `inchangee` au rejeu ; E-18 montre les lots. En `lea` (même serveur, même port que `B` ; `curl -c /tmp/j -d compte=lea http://localhost:3001/connexion-bouchon`, puis `GET /api/univers/<id de l'univers>/fiches/<id rendu par le PUT>` avec `-b /tmp/j`), « Description » se lit sans « sous-main » (le bloc MJ) et « Vérité » n'existe pas. Sans `?lot=`, l'écriture réussit mais aucun lot ne la compte. A field the endpoint does not handle is ignored without a warning, e.g. `fichiers` sent on the sheet instead of inside a section: nothing is attached, so put it in the section. Available routes: `GET /`, the three batch routes, `PUT /fiches/:cle`, `PUT /fichiers/:cle`, `DELETE /fiches/:cle` (see « Deletion recipe »), `PUT /campagnes/:cle`, `PUT /campagnes/:cle/scenarios/:scle` and `POST /fiches/:cle/relations` (see « Import sample acceptance »). Unhandled fields are ignored without a warning ( `parent` (clé d'origine) est traité, voir « Recette de l'arbre » ; `alias` et `etiquettes` sont écrits, voir « Recette de la recherche »). Un `compte_rendu` est accepté avec une `campagne` connue (clé d'origine) ; sans elle, ou avec une clé inconnue, il est refusé (400, `champ: campagne`). Le contenu est rendu en Markdown (AD-95) ; un contenu qui porte `:::mj … :::` produit le même bloc MJ que l'écran (AD-114).
 
 **File import recipe** (`kanevas-fichiers-put`; « the script » is the external import script that calls this API, kept outside this repository): with `$JETON` and `$B` from the import recipe above (redefine `B` with the port the server was started on, e.g. `B=http://localhost:3055/api/import/v1/univers/4` for the 3055 of the other recipes; close any open batch first, or `POST $B/lots` resumes it), open a batch (`LOT=$(curl -s -X POST -H "Authorization: Bearer $JETON" $B/lots | node -pe 'JSON.parse(require("fs").readFileSync(0)).lotId')`; or copy the `lotId` by hand), make a small PDF (`printf '%PDF-1.4\n' > tarifs.pdf` is enough; any real PDF works), then send `curl -X PUT -H "Authorization: Bearer $JETON" -F "nom=Tarifs du port" -F "fichier=@tarifs.pdf" "$B/fichiers/doc:tarifs?lot=$LOT"` (`nom` is required, a missing one is a 400). A closed batch refuses any further `PUT` (409 `lot_clos`). The response is `creee`; close the batch with `POST $B/lots/<lotId>/clore`. Replaying in a new batch returns `inchangee`; replacing the bytes returns `mise_a_jour`. Add `-F "visibilite=mj"` before `fichier` for GM-only files. Change the name or visibility on E-19, then replay: the manual change stays and the batch warns. An empty file returns 400 with `champ: fichier`, counted as refused; a revoked token returns 401. `GET $B` exposes `limites.fichiersJointsParSection: 100`.
 

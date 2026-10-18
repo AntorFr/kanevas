@@ -2793,8 +2793,8 @@ toast « Adresse copiée. »). Deux panneaux.
    si elle n'est pas nulle : un rejeu sans rien de neuf lit « Fiches : 1 inchangée » (le rapport de l'API,
    lui, rend tous les compteurs, `creees: 0`), et un compte nul d'attente ou d'avertissements est omis
    (la maquette abrège « 6 en attente » ; le texte est celui d'ici). Un `PUT` refusé (400) avec son lot
-   compte « 1 refusée » et ajoute au rapport sa clé et sa raison (« type « compte_rendu » : pas accepté
-   par cette version », « type « monstre » inconnu de Kanevas ») ; sans lot, il ne laisse aucune trace ici. Une
+   counts one refusal and records its origin key and reason (for example, « campagne inconnue : c:absente »
+   or « type « monstre » inconnu de Kanevas »); without a batch it leaves no trace here. A
    ligne se déplie :
    les refus et avertissements, chacun avec la clé d'origine, ce qui est en cause et la raison
    (« section « Vérité » : 112 000 caractères, 100 000 au plus » ; « parent lieu:les-docks inconnu :

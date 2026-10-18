@@ -6,7 +6,7 @@
 >
 > **Construit à ce jour** (`kanevas-premiere-fiche`, systèmes, `kanevas-suivi`, `kanevas-fichiers`, `kanevas-relier-chercher`, `kanevas-recours-admin`) : P-1 en entier, P-2 en entier (étape 3 : l'admin répare les membres, E-5),
 > P-3 étapes 1 à 4, P-4 en entier, P-5 étape 1 (fiches et sections), P-6 étapes 1-2 (recherche dans un type), P-7 étape 1 et l'écriture de
-> l'étape 2, P-8 en entier (B-13, B-14 : E-14 puis E-15), P-14 étapes 2-3 et P-10 étape 8 (`kanevas-import-tenir` : renommer, supprimer une fiche, supprimer un univers). Le reste de ce document est la cible.
+> l'étape 2, P-8 en entier (B-13, B-14 : E-14 puis E-15), P-14 étapes 2-3 et P-10 étape 8 (`kanevas-import-tenir` : renommer, supprimer une fiche, supprimer un univers). P-10 en entier avec `kanevas-import-reprise` (campagnes, scénarios, comptes-rendus datés et relations par l'API d'import ; échantillon rejoué sans doublon par le client de test, B-47 à B-50). Le reste de ce document est la cible.
 >
 > **Epic `kanevas-import`** (cadrage proposé le 2026-10-11, sur `epic/kanevas-import`) : ouvrir
 > Kanevas à une base existante — d'abord la base Kanka de Monsieur (501 fiches), poussée par un script

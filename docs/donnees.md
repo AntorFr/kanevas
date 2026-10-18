@@ -485,6 +485,12 @@ FTS5, AD-101). Les déclencheurs restent la seule source des index (AD-21) ; le 
 **Multi-tenant** : inchangé — tout est dans un univers ; chaque table nouvelle porte `univers_id` ou
 pend d'une ligne qui le porte, et toute requête filtre dessus. Un système de jeu reste hors des univers.
 
+Campaign/scenario import bookkeeping is applied by migration `0016-import-suivi.sql`.
+Existing rows keep their values and receive null origin keys and import markers (not imported).
+Unique `(univers_id, cle_origine)` and `(campagne_id, cle_origine)` indexes serve the import
+lookups; SQLite permits multiple null keys. JSON markers are checked with `json_valid`; a non-null
+`version_importee` must be positive. No content or rights are copied or changed.
+
 ### Plan de migration
 
 0. **Élargir** (la tranche du fil) : `ALTER TABLE fiches ADD COLUMN cle_origine`, son index unique

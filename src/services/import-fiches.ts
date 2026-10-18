@@ -1,3 +1,5 @@
+import { campagneDeCle } from './campagnes.js';
+import { creerCompteRendu, TITRE_SECTION_COMPTE_RENDU } from './comptes_rendus.js';
 import type { Db } from '../db/db.js';
 import { cleValide } from './import.js';
 import { ErreurService } from './erreurs.js';
@@ -45,8 +47,8 @@ import {
 import type { SectionRow } from './types.js';
 import { TYPES, typeActif } from './types-fiche.js';
 
-/** The thirteen settable types the import accepts; a session report waits for its campaign. */
-export const TYPES_IMPORT: readonly string[] = TYPES.filter((t) => t.reglable).map((t) => t.type);
+/** Every product sheet type is accepted by the import. */
+export const TYPES_IMPORT: readonly string[] = TYPES.map((t) => t.type);
 type TypeImport = string;
 
 export type EtatImport = 'creee' | 'mise_a_jour' | 'inchangee';
@@ -73,6 +75,8 @@ interface FicheEntree {
   /** `undefined`: the request says nothing (left as is); `null`: no sub-type wanted. */
   sousType?: string | null;
   pj: boolean;
+  campagne?: string;
+  campagneId?: number;
   /** `undefined`: the request says nothing (left as is). Cleaned, bounds not yet checked. */
   alias?: string[];
   etiquettes?: string[];
@@ -129,11 +133,15 @@ function lireCorps(corps: unknown, maintenant: Date): FicheEntree {
   const c = corps as Record<string, unknown>;
   const type = c.type;
   if (typeof type !== 'string') throw new Refus('type', 'fiche', 'type manquant');
-  if (type === 'compte_rendu') {
-    throw new Refus('type', 'fiche', 'type « compte_rendu » : pas accepté par cette version');
-  }
   if (!TYPES_IMPORT.includes(type)) {
     throw new Refus('type', 'fiche', `type « ${type} » inconnu de Kanevas`);
+  }
+  let campagne: string | undefined;
+  if (type === 'compte_rendu') {
+    if (typeof c.campagne !== 'string' || !cleValide(c.campagne)) {
+      throw new Refus('campagne', 'fiche', `campagne inconnue : ${typeof c.campagne === 'string' ? c.campagne : ''}`);
+    }
+    campagne = c.campagne;
   }
   const titre = texte(c.titre, 'titre', 'fiche', 1, 120, 'titre');
   const creeLe = date(c.creeLe, 'creeLe', maintenant);
@@ -226,11 +234,13 @@ function lireCorps(corps: unknown, maintenant: Date): FicheEntree {
       joueursEcrivent: booleen(s.joueursEcrivent, `${ch}.joueursEcrivent`, 'section'),
     };
   });
-  return { type, titre, sousType, pj, alias, etiquettes, parent, illustration, creeLe, modifieLe, sections };
+  if (type === 'compte_rendu' && sections[0]) sections[0].titre = TITRE_SECTION_COMPTE_RENDU;
+  return { type, titre, sousType, pj, campagne, alias, etiquettes, parent, illustration, creeLe, modifieLe, sections };
 }
 
 interface FicheLue {
   id: number;
+  cree_le: string;
   type: string;
   titre: string;
   charge: string;
@@ -314,6 +324,11 @@ export function assurerFiche(
   try {
     if (!cleValide(cle)) throw new Refus('cle', 'fiche', "clé d'origine invalide");
     entree = lireCorps(corps, maintenant);
+    if (entree.campagne !== undefined) {
+      const campagne = campagneDeCle(db, jeton.compteId, jeton.universId, entree.campagne);
+      if (!campagne) throw new Refus('campagne', 'fiche', `campagne inconnue : ${entree.campagne}`);
+      entree.campagneId = campagne.id;
+    }
   } catch (e) {
     if (e instanceof Refus) return refuser(e);
     throw e;
@@ -355,7 +370,7 @@ function ecrire(
 ): { id: number; etat: EtatImport } {
   const { universId, compteId } = jeton;
   const existante = db
-    .prepare('SELECT id, type, titre, charge, sous_type, dernier_import FROM fiches WHERE univers_id = ? AND cle_origine = ?')
+    .prepare('SELECT id, type, titre, charge, sous_type, dernier_import, cree_le FROM fiches WHERE univers_id = ? AND cle_origine = ?')
     .get(universId, cle) as FicheLue | undefined;
   const charge = e.type === 'personnage' ? { pj: e.pj } : {};
 
@@ -371,19 +386,28 @@ function ecrire(
     const etiquettes = ensembleVoulu(e.etiquettes, MAX_ETIQUETTES, LONGUEUR_ETIQUETTE, 'étiquettes', prevenir);
     if (alias) marque.alias = alias;
     if (etiquettes) marque.etiquettes = etiquettes;
-    const fiche = creerFiche(db, compteId, universId, {
+    const origine = { cle, creeLe: e.creeLe, modifieLe: e.modifieLe, dernierImport: marque };
+    const fiche = e.type === 'compte_rendu'
+      ? creerCompteRendu(db, compteId, universId, e.campagneId!, {
+          titre: e.titre, texte: e.sections[0]?.contenu, origine,
+        })
+      : creerFiche(db, compteId, universId, {
       type: e.type,
       titre: e.titre,
       sousType: e.sousType ?? null,
       charge,
-      origine: { cle, creeLe: e.creeLe, modifieLe: e.modifieLe, dernierImport: marque },
+      origine,
     });
+    if (e.type === 'compte_rendu' && e.sousType) changerSousType(db, compteId, universId, fiche.id, e.sousType);
     // The sheets that waited for this key now point at it, in this transaction (AD-116).
     resoudreClesEnAttente(db, universId, cle, fiche.id);
     if (alias?.length || etiquettes?.length) {
       poserEtiquetage(db, { compteId }, universId, fiche.id, { alias: alias ?? [], etiquettes: etiquettes ?? [] });
     }
-    for (const s of e.sections) creerSection(db, jeton, fiche.id, s, prevenir);
+    const premiere = e.type === 'compte_rendu'
+      ? db.prepare('SELECT id, version FROM sections WHERE fiche_id = ? ORDER BY ordre LIMIT 1').get(fiche.id) as { id: number; version: number }
+      : undefined;
+    e.sections.forEach((s, i) => creerSection(db, jeton, fiche.id, s, prevenir, i === 0 ? premiere : undefined));
     if (e.parent !== undefined) {
       const m = poserParent(db, jeton, fiche.id, cle, e.parent, null, undefined, prevenir);
       if (m) {
@@ -403,6 +427,10 @@ function ecrire(
     return { id: fiche.id, etat: 'creee' };
   }
 
+  if (e.creeLe && e.creeLe !== existante.cree_le) prevenir('fiche', 'creeLe non modifiable, ignorée');
+  if (e.type === 'compte_rendu' && e.campagneId !== (JSON.parse(existante.charge) as { campagne_id?: number }).campagne_id) {
+    prevenir('fiche', 'campagne non modifiable, ignorée');
+  }
   let ecrit = false;
   const di = lireJson<MarqueFiche>(existante.dernier_import);
   const marque: MarqueFiche = { ...(di ?? {}) };
@@ -421,7 +449,8 @@ function ecrire(
   if (existante.type === e.type && pjCourant === pjVoulu) {
     marque.type = e.type;
     marque.pj = pjVoulu;
-  } else if (di && di.type === existante.type && (di.pj ?? null) === pjCourant) {
+  } else if (di && di.type === existante.type && (di.pj ?? null) === pjCourant
+    && e.type !== 'compte_rendu' && existante.type !== 'compte_rendu') {
     if (!typeActif(db, universId, e.type)) prevenir('fiche', desactive(e.type));
     changerTypeFiche(db, compteId, universId, existante.id, e.type, charge);
     marque.type = e.type;
@@ -699,10 +728,11 @@ function creerSection(
   ficheId: number,
   s: SectionEntree,
   prevenir: (objet: string, raison: string) => void,
+  existante?: { id: number; version: number },
 ): number {
   const { universId, compteId } = jeton;
-  const v = ajouterSection(db, compteId, universId, ficheId, { titre: s.titre, contenu: s.contenu });
-  if (s.joueursLisent || s.joueursEcrivent) {
+  const v = existante ?? ajouterSection(db, compteId, universId, ficheId, { titre: s.titre, contenu: s.contenu });
+  if (existante || s.joueursLisent || s.joueursEcrivent) {
     changerAudience(db, compteId, universId, ficheId, v.id, {
       joueursLisent: s.joueursLisent,
       joueursEcrivent: s.joueursEcrivent,

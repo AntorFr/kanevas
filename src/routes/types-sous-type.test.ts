@@ -182,12 +182,12 @@ test('import : vaisseau + Frégate creee, rejeu inchangee, sous-type changé par
   assert.ok(l.json.avertissements >= 1);
 });
 
-test('import : compte_rendu et monde → 400 champ type ; sousType invalide → 400', async () => {
+test('import : compte_rendu sans campagne → 400 champ campagne, monde → 400 champ type ; sousType invalide → 400', async () => {
   const w = await monde();
   for (const type of ['compte_rendu', 'monde']) {
     const r = await w.api('PUT', 'fiches/x%3A1', { type, titre: 'T', sections: [] });
     assert.equal(r.status, 400, type);
-    assert.equal(r.json.champ, 'type');
+    assert.equal(r.json.champ, type === 'compte_rendu' ? 'campagne' : 'type');
   }
   const r = await w.api('PUT', 'fiches/x%3A2', { type: 'lieu', titre: 'T', sousType: '', sections: [] });
   assert.equal(r.status, 400);

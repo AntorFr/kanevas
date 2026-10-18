@@ -2,6 +2,12 @@ import type { Db } from '../db/db.js';
 import { introuvable } from './erreurs.js';
 import type { Jeton } from './jetons.js';
 
+export interface ResultatSuiviImport {
+  id: number;
+  etat: 'creee' | 'mise_a_jour' | 'inchangee';
+  avertissements: string[];
+}
+
 /** An origin key: 1 to 200 characters, no `|`, `]` nor line break (import API contract). */
 export function cleValide(cle: string): boolean {
   return cle.length >= 1 && cle.length <= 200 && !/[|\]\r\n]/.test(cle);
