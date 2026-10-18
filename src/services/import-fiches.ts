@@ -597,7 +597,7 @@ function poserJoints(
     const f = fichierDeCle(db, universId, cle);
     if (!f) {
       noterAttente(db, universId, cle, { sectionId: section.id, maniere: 'joint' });
-      prevenir('section', `section « ${section.titre} » : fichier « ${cle} » inconnu : joint en attente`);
+      prevenir('section', `section « ${section.titre} » : fichier « ${cle} » inconnu : référence en attente`);
     } else if (actuel.has(f.id)) {
       ecrits.add(f.id);
     } else if (ecrits.has(f.id)) {
