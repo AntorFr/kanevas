@@ -22,11 +22,11 @@ src/
   config/env.ts                   Variables d'environnement (zod)
   db/                             SQLite (better-sqlite3), migrations/0001 to 0016, runner
   services/                       comptes, univers, membres, instance, fiches, sections, droits, systemes, relations, campagnes, scenarios, preparation, comptes_rendus, propositions, markdown (rendu unique), liens (table liens, seul écrivain), etiquettes (alias et étiquettes, seul écrivain), mentions (« Mentionnée dans »), types, types-fiche (la liste des types et leur activation),
-                                   fichiers (media library, sole writer of `fichiers*`), fichiers-lecture (read of the files a text or sheet references by key, waiting render), cartes, jetons, lots, import (contexte du jeton), import-fiches (API d'import), stockage (octets sur le volume) :
+                                   fichiers (media library, sole writer of `fichiers*`), fichiers-lecture (read of the files a text or sheet references by key, waiting render), cartes, jetons, lots, import (contexte du jeton), import-fiches (API d'import), import-suivi (campaigns and scenarios by origin key), import-relations (relations by origin key),  stockage (octets sur le volume) :
                                    seul code qui lit ou écrit les données ; session, oidc
   routes/                         health, auth (OIDC), session (cookie, garde, /api/moi),
                                    bouchon, univers (+ membres), instance (admin, AD-87), systemes, suivi, cartes, fiches (+ sections), fichiers (E-19 media library, bytes, attachments, illustration), propositions, assistant, acces-api (E-18, session), import (API d'import à jeton, `/api/import/v1`), frontend
-  bouchon/                        Monde de démonstration semé au démarrage en bouchon (depart.ts) et ses fichiers (demo/)
+  bouchon/                        Monde de démonstration semé au démarrage en bouchon (depart.ts), client-import.ts et echantillon/ (recette de reprise) et ses fichiers (demo/)
   services/assistant/             L'assistant : catalogues d'outils, port AgentTransport (bouchon, claude-agent), orchestration, jeton et sa session de connexion
   services/llm/                   Transports LLM repris d'Antre-du-maitre, branchés nulle part
 frontend/                         React + Vite : charte (ui/), écrans (src/ecrans/, dont E-5 administration.tsx), barre latérale
