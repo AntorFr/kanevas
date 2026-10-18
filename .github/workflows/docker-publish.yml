@@ -1,15 +1,16 @@
 name: docker-publish
 
+# The image is built only from a commit whose full suite was played and attested (status
+# « tests-complets », posted by `npm run tests:attestes -- --publier` from a laptop, a pod
+# of the chain, or the manual « tests » workflow). This workflow runs no test: it checks the
+# proof. Decision of 2026-10-13: tests wherever they run best, one proof, and a commit pushed
+# by hand without tests never becomes an image. No more automatic run on main or on PRs.
 on:
   push:
-    branches: [main]        # → tag :main (dev image)
-    tags: ['v*']            # → SemVer tags :X.Y.Z :X.Y :X
-  release:
-    types: [published]      # → also tag :latest
-  pull_request:
-    branches: [main, 'epic/**']   # validation build, no push ; epic/** : la fusion d'une
-                                  # tranche dans sa branche d'epic exige ces bancs (2026-10-11)
-  workflow_dispatch:
+    tags: ['v*']            # → SemVer tags :X.Y.Z :X.Y :X, and :latest for the highest
+                            #   (metadata-action's default flavor). A GitHub Release only
+                            #   carries the notes: it builds nothing a second time.
+  workflow_dispatch:        # a tag attested after it was pushed: rebuild it from here
 
 permissions:
   contents: read
@@ -20,28 +21,33 @@ env:
   IMAGE_NAME: ${{ github.repository }}   # metadata-action lowercases it
 
 jobs:
-  test:
+  attestation:
     runs-on: ubuntu-latest
-    # The full suite takes about 8 min with a browser. A test that leaves its server open
-    # once hung the job until GitHub's 6 h limit: no image from v0.7.0 to v0.10.0.
-    timeout-minutes: 30
     steps:
+      # The parents too: a PR merge makes a new commit, whose content is the attested head's
+      # when that head already contained the target. Same TREE, same content: the proof holds.
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
         with:
-          node-version: 20
-          cache: npm
-      - run: npm ci
-      # The screen tests look for Playwright in the working directory or the system
-      # node_modules (src/e2e/harnais.test.ts), never in setup-node's global prefix: a
-      # local, unsaved install, with the Chromium it drives, so they run instead of skipping.
-      - name: Playwright pour les tests d'écran
-        run: npm install --no-save playwright@1.63.0 && npx playwright install --with-deps chromium
-      - run: npm run typecheck
-      - run: npm test
+          fetch-depth: 2
+      - name: La suite complète a été jouée sur ce contenu
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          arbre=$(git rev-parse 'HEAD^{tree}')
+          for c in $(git rev-list --parents -n 1 HEAD); do
+            [ "$(git rev-parse "$c^{tree}")" = "$arbre" ] || continue
+            st=$(gh api "repos/${{ github.repository }}/commits/$c/status" \
+              --jq '.statuses[] | select(.context == "tests-complets") | .state + " " + .description' | head -1)
+            if [ "${st%% *}" = success ]; then
+              echo "Attestation sur $c (arbre ${arbre:0:7}) : ${st#* }"
+              exit 0
+            fi
+          done
+          echo "::error::Pas d'attestation « tests-complets » verte sur ce contenu (arbre ${arbre:0:7}, commit ${{ github.sha }} ni ses parents de même arbre). Jouer la suite : npm run tests:attestes -- --publier, ou le workflow « tests » sur ce tag ; il relance ce build."
+          exit 1
 
   build:
-    needs: test
+    needs: attestation
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -63,11 +69,9 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
-            type=ref,event=branch                       # :main
             type=semver,pattern={{version}}             # :X.Y.Z
             type=semver,pattern={{major}}.{{minor}}     # :X.Y
             type=semver,pattern={{major}}               # :X
-            type=raw,value=latest,enable=${{ github.event_name == 'release' }}
             type=sha,prefix=sha-                        # :sha-abc1234
 
       - name: Build & push
@@ -80,7 +84,7 @@ jobs:
           build-args: |
             APP_VERSION=${{ steps.meta.outputs.version }}
           # Multi-arch only on a clean stable tag (vX.Y.Z without suffix);
-          # main / pre-releases stay amd64-only for fast builds.
+          # pre-releases stay amd64-only for fast builds.
           platforms: >-
             ${{ (startsWith(github.ref, 'refs/tags/v') && !contains(github.ref, '-'))
                 && 'linux/amd64,linux/arm64' || 'linux/amd64' }}

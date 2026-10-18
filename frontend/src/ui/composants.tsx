@@ -223,7 +223,7 @@ export function Pastille({
   expanded,
   children,
 }: {
-  sens: 'mj' | 'table' | 'neutre' | 'secrete';
+  sens: 'mj' | 'table' | 'neutre' | 'secrete' | 'danger';
   /** A button that opens a setting: whether it is open (`aria-expanded`). */
   expanded?: boolean;
   icone?: LucideIcon;
@@ -307,10 +307,10 @@ export function Avatar({ nom, joueur, petit }: { nom: string; joueur?: boolean; 
 }
 
 /** A titled `section`; `reserveMj` adds the amber rule and the words « MJ seul ». */
-export function Panneau({ titre, reserveMj, children }: { titre: string; reserveMj?: boolean; children: ReactNode }) {
+export function Panneau({ titre, reserveMj, danger, children }: { titre: string; reserveMj?: boolean; danger?: boolean; children: ReactNode }) {
   const id = useId();
   return (
-    <section className={`panneau${reserveMj ? ' reserve-mj' : ''}`} aria-labelledby={id}>
+    <section className={`panneau${reserveMj ? ' reserve-mj' : ''}${danger ? ' zone-danger' : ''}`} aria-labelledby={id}>
       <h2 id={id}>
         {titre} {reserveMj && <Pastille sens="mj">MJ seul</Pastille>}
       </h2>
@@ -351,7 +351,7 @@ export function BasculeMjJoueur({ mode, onChange }: { mode: 'mj' | 'joueur'; onC
 }
 
 /** Modal dialog: focus enters and stays, Escape closes, focus returns to the opener. */
-export function Fenetre({ titre, onFermer, children }: { titre: string; onFermer: () => void; children: ReactNode }) {
+export function Fenetre({ titre, onFermer, icone: Icone, children }: { titre: string; onFermer: () => void; icone?: LucideIcon; children: ReactNode }) {
   const ref = useRef<HTMLDivElement>(null);
   const id = useId();
   useEffect(() => {
@@ -385,6 +385,11 @@ export function Fenetre({ titre, onFermer, children }: { titre: string; onFermer
   return (
     <div className="voile">
       <div className="fenetre" role="dialog" aria-modal="true" aria-labelledby={id} ref={ref} tabIndex={-1}>
+        {Icone && (
+          <div className="ic-fenetre">
+            <Icone size={18} strokeWidth={1.75} aria-hidden="true" />
+          </div>
+        )}
         <h2 id={id}>{titre}</h2>
         {children}
       </div>

@@ -15,13 +15,20 @@ export interface PieceJointe {
   taille: number;
   image: boolean;
   secrete?: boolean;
+  /** Closed to this reader: `nom` is the sentence « … réservé au MJ. ». */
+  ferme?: boolean;
+  /** Origin key of a file the import has not delivered yet (GM only): `nom` is the sentence (E-9). */
+  attente?: string;
 }
 
 export interface SectionVue {
   id: number;
   titre: string;
   ordre: number;
-  contenu: string;
+  /** Markdown source: only when the caller may write the section (AD-113). */
+  contenu?: string;
+  /** The rendered source (AD-113), for every reader. */
+  html: string;
   version: number;
   modifieLe: string;
   peutEcrire: boolean;
@@ -35,13 +42,57 @@ export interface Fiche {
   universId: number;
   type: string;
   titre: string;
+  creeLe?: string;
+  /** Free sub-type under the title (AD-113), absent when the sheet has none. */
+  sousType?: string | null;
   charge: { v?: number; pj?: boolean };
   /** The sheet's illustration (AD-93): `jeton` changes at each replacement and goes in the image address. */
-  illustration?: { jeton: string } | null;
+  illustration?: { id: number; jeton: string } | { fermee: true; message: string } | { attente: true; cle: string } | null;
+  /** Aliases and labels (AD-118), sorted by the server. */
+  alias?: string[];
+  etiquettes?: string[];
+  /** With a search: the alias that answers when the title does not. */
+  aliasTrouve?: string;
+}
+
+/** One line of « Mentionnée dans » (AD-100). */
+export interface Mention {
+  ficheId: number;
+  titre: string;
+  type: string;
+  pourquoi: ({ genre: 'lien'; section: string } | { genre: 'relation'; libelle: string })[];
+}
+
+/** A readable ancestor, highest first (AD-115 (2)). */
+export interface Ancetre {
+  id: number;
+  titre: string;
+  type: string;
+}
+
+/** A child in « Contient » (AD-115 (3)). */
+export interface Enfant {
+  id: number;
+  titre: string;
+  type: string;
+  sousType: string | null;
+}
+
+export interface PageEnfants {
+  enfants: Enfant[];
+  suivant: string | null;
 }
 
 export interface FicheVue extends Fiche {
+  /** Readable ancestors, highest first; the unreadable ones are skipped by the server. */
+  ancetres?: Ancetre[];
   sections: SectionVue[];
+  /** « Mentionnée dans »: the first page, what the reader sees only. */
+  mentions?: Mention[];
+  mentionsSuite?: boolean;
+  mentionsRestantes?: number;
+  /** Origin key of an imported sheet (B-50): sent to the GM outside player mode only. */
+  cleOrigine?: string;
 }
 
 export interface PageFiches {

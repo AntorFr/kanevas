@@ -13,3 +13,4 @@ logs
 *.db-wal
 *.db-shm
 data/
+rapport-tests.json

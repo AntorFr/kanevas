@@ -19,6 +19,8 @@
 </script>
 <style>
 /* =====================================================================================
+   NON DESSINÉ : la tuile « Fichier en attente d'import », le lien de document souligné en tirets et son
+   infobulle (docs/ecrans.md, E-9, « Référence de fichier en attente »), en tirets --texte-3 ; le document prime.
    MAQUETTE FINIE — E-9 Fiche importée (kanevas-import) : « Port-Sel », un Lieu de « Lame d'Ébène ».
    Illustre docs/ecrans.md, « Détail des écrans de kanevas-import (cadrage) » :
      · « Le Markdown, partout où l'on écrit un texte long » — rendu (intertitre ##, gras, italique,
@@ -68,6 +70,7 @@
      #etat-sous-type  le sous-type en édition dans le badge : champ « Port » et la liste des sous-types
                       de lieu déjà employés (Port, Port franc, Quartier, Sphère, Taverne)
      #etat-menu       menu « ⋯ » de l'en-tête ouvert
+     #etat-changer-type boîte « Changer le type de « Port-Sel » » : types activés, « Autres types », choix PJ / PNJ pour un personnage, sous-type retiré
      #etat-deplacer   boîte « Déplacer sous… » : liste de recherche, « Aucun parent », refus du cycle
      #etat-supprimer  boîte « Supprimer « Port-Sel » ? »
      #etat-tiroir     barre latérale ouverte au téléphone
@@ -750,10 +753,17 @@ a.pastille.etiquette:hover { color: var(--texte); box-shadow: inset 0 0 0 1px va
 .lien-casse:focus-visible { border-radius: 3px; }
 .lien-casse .bulle { color: var(--texte); }
 .lien-casse .bulle .i { color: var(--danger); }
+/* Lien en attente d'import (MJ seul) : comme le cassé, des tirets --texte-3 (la fiche n'est pas encore arrivée). */
+.lien-attente { position: relative; color: inherit; text-decoration: underline dashed; text-decoration-color: var(--texte-3);
+  text-decoration-thickness: 1.5px; text-underline-offset: 3px; cursor: help; }
+.lien-attente:focus-visible { border-radius: 3px; }
+.lien-attente .bulle { color: var(--texte); }
+.lien-attente .bulle .i { color: var(--texte-3); }
+.lien-attente:hover .bulle, .lien-attente:focus-visible .bulle { opacity: 1; visibility: visible; transform: translate(-50%, 0); transition-delay: 0s; }
 /* Pour qui ne lit pas la cible (et en mode Joueur) : le texte, sans aucune marque. */
-body.mode-joueur .lien-fiche[data-illisible], body.mode-joueur .lien-casse {
+body.mode-joueur .lien-fiche[data-illisible], body.mode-joueur .lien-casse, body.mode-joueur .lien-attente {
   color: inherit; text-decoration: none; cursor: auto; pointer-events: none; }
-body.mode-joueur .lien-fiche[data-illisible] .bulle, body.mode-joueur .lien-casse .bulle { display: none; }
+body.mode-joueur .lien-fiche[data-illisible] .bulle, body.mode-joueur .lien-casse .bulle, body.mode-joueur .lien-attente .bulle { display: none; }
 
 /* Bloc MJ : la matière de la section MJ seul, à l'échelle d'un paragraphe, dans la colonne. */
 .bloc-mj { position: relative; margin-top: 1.1em !important; padding: 12px 16px 14px 18px; border-radius: var(--rayon-champ);
@@ -1110,7 +1120,7 @@ body.mode-joueur .image-section.reservee .image-reservee { display: flex; }
                 <span class="pastille mj"><svg class="i pp" aria-hidden="true"><use href="#i-lock"/></svg>MJ seul</span>
                 <p>Le port est tenu en sous-main par la Guilde des Brumes : le maître de port lui doit sa charge, et la cloche de brume sonne quand elle le décide. Les joueurs ne doivent l'apprendre qu'en suivant l'argent du sel.</p>
               </div>
-              <p>En l'an 1312, une tempête emporta la moitié des Docks et la flotte du <span class="lien-casse" tabindex="0" aria-describedby="bulle-casse">Capitaine Hesk<span class="bulle" role="tooltip" id="bulle-casse"><svg class="i p" aria-hidden="true"><use href="#i-link-2-off"/></svg>Lien cassé : cette fiche n'existe plus.</span></span>. Depuis, l'Amirauté y entretient une garnison de vingt hommes que personne ne prend au sérieux, et chaque saleur garde une barque prête derrière sa maison.</p>
+              <p>En l'an 1312, une tempête emporta la moitié des Docks et la flotte du <span class="lien-casse" tabindex="0" aria-describedby="bulle-casse">Capitaine Hesk<span class="bulle" role="tooltip" id="bulle-casse"><svg class="i p" aria-hidden="true"><use href="#i-link-2-off"/></svg>Lien cassé : cette fiche n'existe plus.</span></span> et les <span class="lien-attente" tabindex="0" aria-describedby="bulle-attente">contrebandiers du Repaire<span class="bulle" role="tooltip" id="bulle-attente"><svg class="i p" aria-hidden="true"><use href="#i-link-2-off"/></svg>Lien en attente : aucune fiche n'a encore la clé « faction:repaire ».</span></span>. Depuis, l'Amirauté y entretient une garnison de vingt hommes que personne ne prend au sérieux, et chaque saleur garde une barque prête derrière sa maison.</p>
             </div>
           </section>
 
@@ -1155,6 +1165,30 @@ body.mode-joueur .image-section.reservee .image-reservee { display: flex; }
     </main>
   </div>
 </div>
+
+<!-- États des liens (#etat-liens) : planche statique, jamais montrée sans l'adresse. -->
+<section id="etats-liens" hidden style="max-width: 640px; margin: 24px auto; padding: 0 16px; display: grid; gap: 20px;">
+  <div><div class="bloc-lib">Liste de « [[ » — recherche en cours</div>
+    <p style="font-family: var(--police-lecture, inherit);">…le sel attira les marchands, comme [[ald<span class="curseur" aria-hidden="true"></span></p>
+    <div class="liste-liens" style="position: static; width: auto;" role="listbox" aria-busy="true"><div class="option" style="color: var(--texte-3);">Recherche…</div></div></div>
+  <div><div class="bloc-lib">Liste de « [[ » — aucun résultat</div>
+    <div class="liste-liens" style="position: static; width: auto;"><div class="option" style="color: var(--texte-3);">Aucune fiche.</div></div></div>
+  <div><div class="bloc-lib">Liste de « [[ » — erreur</div>
+    <div class="liste-liens" style="position: static; width: auto;" role="alert"><div class="option">Impossible de chercher.</div><div class="option"><button type="button" class="bouton">Réessayer</button></div></div></div>
+  <div><div class="bloc-lib">Liste de « [[ » — plus de 50 résultats, titre de 120 caractères</div>
+    <div class="liste-liens" style="position: static; width: auto;"><div class="option"><svg class="i p" aria-hidden="true"><use href="#i-map-pin"/></svg><span title="Le très long nom d'un port de la côte des Brumes où saleurs et contrebandiers se disputent le droit d'amarrer depuis toujours" style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 12em;">Le très long nom d'un port de la côte des Brumes où saleurs et contrebandiers se disputent le droit d'amarrer depuis toujours</span><span class="type-option">Lieu</span></div><div class="option" style="color: var(--texte-3);">Affinez la recherche pour voir les autres.</div></div></div>
+  <div><div class="bloc-lib">Liste de « [[ » — connexion perdue</div>
+    <p style="font-family: var(--police-lecture, inherit);">…le sel attira les marchands, comme [[ald</p>
+    <p style="color: var(--texte-3); font-size: var(--t-14);">La liste ne s'ouvre pas : « [[ » reste du texte ; « Enregistrer » est désactivé, le bandeau commun de la page parle.</p></div>
+  <div><div class="bloc-lib">Enregistrer un lien vers une fiche illisible (sous le champ de l'éditeur)</div>
+    <div style="border: 1px solid var(--bord-champ); border-radius: var(--rayon-item); padding: 10px 12px; min-height: 56px;">…voir [[4301]]</div>
+    <p role="alert" style="color: var(--danger); font-size: var(--t-14); margin-top: 6px;">Cette fiche n'existe pas ou vous ne pouvez pas la lire.</p></div>
+  <div><div class="bloc-lib">Mentionnée dans — la suite</div>
+    <button type="button" class="bouton">Afficher les 10 suivants</button>
+    <button type="button" class="bouton" disabled aria-busy="true">Chargement…</button>
+    <button type="button" class="bouton" disabled>Afficher les 10 suivants</button> <small style="color: var(--texte-3);">(sans réseau)</small>
+    <p role="alert" style="color: var(--danger); font-size: var(--t-14);">Impossible de charger la suite. <button type="button" class="bouton">Réessayer</button></p></div>
+</section>
 
 <!-- Assistant -->
 <button class="assistant" aria-label="Demander à Kanevas"><svg class="i" aria-hidden="true"><use href="#i-sparkles"/></svg><span class="lib-assistant">Demander à Kanevas</span></button>
@@ -1206,12 +1240,54 @@ body.mode-joueur .image-section.reservee .image-reservee { display: flex; }
   </div>
 </div>
 
+<!-- Boîte : Changer le type -->
+<div class="voile" id="voile-changer-type" aria-hidden="true">
+  <div class="dialogue large" role="dialog" aria-modal="true" aria-labelledby="ct-titre">
+    <div class="ic-dialogue neutre"><svg class="i" aria-hidden="true"><use href="#i-shapes"/></svg></div>
+    <h3 id="ct-titre">Changer le type de « Port-Sel »</h3>
+    <div class="resultats" role="radiogroup" aria-label="Nouveau type" id="ct-types">
+      <button type="button" class="resultat" role="radio" aria-checked="false" data-type="Personnage"><span class="puce"></span><svg class="i p" aria-hidden="true"><use href="#i-users-round"/></svg>Personnage</button>
+      <button type="button" class="resultat" role="radio" aria-checked="true" data-type="Lieu"><span class="puce"></span><svg class="i p" aria-hidden="true"><use href="#i-map-pin"/></svg>Lieu<span class="type-option">(actuel)</span></button>
+      <button type="button" class="resultat" role="radio" aria-checked="false" data-type="Faction"><span class="puce"></span><svg class="i p" aria-hidden="true"><use href="#i-shield"/></svg>Faction</button>
+      <button type="button" class="resultat" role="radio" aria-checked="false" data-type="Objet"><span class="puce"></span><svg class="i p" aria-hidden="true"><use href="#i-gem"/></svg>Objet</button>
+      <button type="button" class="resultat" role="radio" aria-checked="false" data-type="Événement"><span class="puce"></span><svg class="i p" aria-hidden="true"><use href="#i-hourglass"/></svg>Événement</button>
+      <button type="button" class="resultat" role="radio" aria-checked="false" data-type="Quête"><span class="puce"></span><svg class="i p" aria-hidden="true"><use href="#i-scroll-text"/></svg>Quête</button>
+      <button type="button" class="resultat" role="radio" aria-checked="false" data-type="Créature"><span class="puce"></span><svg class="i p" aria-hidden="true"><use href="#i-paw-print"/></svg>Créature</button>
+      <button type="button" class="resultat" role="radio" aria-checked="false" data-type="Race"><span class="puce"></span><svg class="i p" aria-hidden="true"><use href="#i-dna"/></svg>Race</button>
+      <button type="button" class="resultat" role="radio" aria-checked="false" data-type="Vaisseau"><span class="puce"></span><svg class="i p" aria-hidden="true"><use href="#i-ship"/></svg>Vaisseau</button>
+      <button type="button" class="resultat" role="radio" aria-checked="false" data-type="Savoir"><span class="puce"></span><svg class="i p" aria-hidden="true"><use href="#i-lightbulb"/></svg>Savoir</button>
+      <button type="button" class="resultat" role="radio" aria-checked="false" data-type="Récit"><span class="puce"></span><svg class="i p" aria-hidden="true"><use href="#i-book-open"/></svg>Récit</button>
+      <button type="button" class="resultat" role="radio" aria-checked="false" data-type="Règle"><span class="puce"></span><svg class="i p" aria-hidden="true"><use href="#i-scale"/></svg>Règle</button>
+      <div class="sep-res" role="presentation"></div>
+      <div class="titre-res" style="padding:4px 8px;font-size:var(--t-12);font-weight:500;color:var(--texte-3)">Autres types</div>
+      <button type="button" class="resultat" role="radio" aria-checked="false" data-type="Note"><span class="puce"></span><svg class="i p" aria-hidden="true"><use href="#i-sticky-note"/></svg>Note<span class="type-option">désactivé</span></button>
+    </div>
+    <div class="champ" id="ct-pj" hidden>
+      <span style="font-size:var(--t-12);font-weight:500;color:var(--texte-2)">Personnage</span>
+      <div role="radiogroup" aria-label="PJ ou PNJ" style="display:flex;gap:8px;margin-top:4px">
+        <button type="button" class="bouton" role="radio" aria-checked="false">PJ</button>
+        <button type="button" class="bouton" role="radio" aria-checked="true">PNJ</button>
+      </div>
+    </div>
+    <div class="champ">
+      <label for="ct-sous-type" style="font-size:var(--t-12);font-weight:500;color:var(--texte-2)">Sous-type</label>
+      <input class="saisie" id="ct-sous-type" autocomplete="off" maxlength="60" placeholder="Facultatif">
+    </div>
+    <p id="ct-info" style="font-size:var(--t-13);color:var(--texte-2)">Le sous-type « Port » sera retiré.</p>
+    <div class="alerte" role="alert" id="ct-erreur" hidden><svg class="i" aria-hidden="true"><use href="#i-circle-alert"/></svg><div class="corps-alerte"><span>Le type n'a pas changé. Réessayez.</span></div></div>
+    <div class="actions">
+      <button class="bouton" id="ct-annuler">Annuler</button>
+      <button class="bouton principal" id="ct-confirmer" disabled>Changer le type</button>
+    </div>
+  </div>
+</div>
+
 <!-- Boîte : Supprimer la fiche -->
 <div class="voile" id="voile-supprimer" aria-hidden="true">
   <div class="dialogue large" role="alertdialog" aria-modal="true" aria-labelledby="sup-titre" aria-describedby="sup-texte">
     <div class="ic-dialogue"><svg class="i" aria-hidden="true"><use href="#i-trash-2"/></svg></div>
     <h3 id="sup-titre">Supprimer « Port-Sel » ?</h3>
-    <p id="sup-texte">2 sections et 1 pièce jointe ; 3 relations qui la visent ; 1 place sur une carte. Ses 4 enfants remonteront sous « Les Sphères ». Les liens qui la visent deviendront des liens cassés.</p>
+    <p id="sup-texte">3 sections ; 3 relations qui la visent ; 1 place sur une carte. Ses 2 fichiers restent dans la médiathèque. Ses 5 enfants remonteront sous « Les Sphères ». Les liens qui la visent deviendront des liens cassés.</p>
     <div class="actions">
       <button class="bouton" id="sup-annuler">Annuler</button>
       <button class="bouton danger" id="sup-confirmer">Supprimer la fiche</button>
@@ -1686,6 +1762,7 @@ var ILLUS = (function () {
       else if (a.dataset.href) a.setAttribute('href', a.dataset.href);
     });
     $$('.lien-casse').forEach(function (s) { s.tabIndex = joueur ? -1 : 0; if (joueur) s.removeAttribute('aria-describedby'); else s.setAttribute('aria-describedby', 'bulle-casse'); });
+    $$('.lien-attente').forEach(function (s) { s.tabIndex = joueur ? -1 : 0; if (joueur) s.removeAttribute('aria-describedby'); else s.setAttribute('aria-describedby', 'bulle-attente'); });
     var h1 = $('#titre-fiche'); h1.tabIndex = joueur ? -1 : 0; if (joueur) h1.removeAttribute('title'); else h1.title = 'Cliquer pour renommer';
     var st = $('#sous-type'); st.tabIndex = joueur ? -1 : 0; if (joueur) { st.removeAttribute('title'); st.setAttribute('aria-disabled', 'true'); } else { st.title = 'Modifier le sous-type'; st.removeAttribute('aria-disabled'); }
     if (joueur && !$('#st-edition').hidden) $('#st-saisie').blur();
@@ -1819,6 +1896,20 @@ var ILLUS = (function () {
   });
   function ouvrirDeplacer() { choisirParent(null); $('#dep-cherche').value = ''; $$('#dep-resultats .resultat').forEach(function (b) { b.hidden = false; }); ouvrirDialogue($('#voile-deplacer'), $('#dep-cherche')); }
   $('[data-deplacer]').onclick = ouvrirDeplacer;
+  // Changer le type : le type courant reste « (actuel) » ; « Personnage » ouvre PJ / PNJ ; « Changer le type » n'est actif qu'après un autre choix.
+  var ctChoix = null;
+  function choisirType(b) {
+    ctChoix = b;
+    $$('#ct-types .resultat').forEach(function (x) { x.setAttribute('aria-checked', x === b || (!b && x.querySelector('.type-option') && x.querySelector('.type-option').textContent === '(actuel)')); });
+    var autre = b && !(b.querySelector('.type-option') && b.querySelector('.type-option').textContent === '(actuel)');
+    $('#ct-confirmer').disabled = !autre;
+    $('#ct-pj').hidden = !(b && b.dataset.type === 'Personnage');
+  }
+  $$('#ct-types .resultat').forEach(function (b) { b.onclick = function () { choisirType(b); }; });
+  function ouvrirChangerType() { choisirType(null); ouvrirDialogue($('#voile-changer-type'), $('#ct-types .resultat[aria-checked=true]')); }
+  $('[data-changer-type]').onclick = ouvrirChangerType;
+  $('#ct-annuler').onclick = fermerDialogue;
+  $('#ct-confirmer').onclick = function () { if (!ctChoix) return; fermerDialogue(); toast('Type changé : Lieu → ' + ctChoix.dataset.type + '.'); };
   $('#dep-annuler').onclick = fermerDialogue;
   $('#dep-confirmer').onclick = function () {
     if (!depChoix) return;
@@ -1983,8 +2074,10 @@ var ILLUS = (function () {
         choisirParent($('#dep-resultats [data-descendant]'));
         $('#dep-erreur').hidden = false;
       });
+      if (et === 'changer-type') plus_tard(function () { ouvrirChangerType(); choisirType($('#ct-types [data-type="Savoir"]')); });
       if (et === 'supprimer') plus_tard(function () { ouvrirDialogue($('#voile-supprimer'), $('#sup-annuler')); });
       if (et === 'tiroir') tiroir(true);
+      if (et === 'liens') { $('#etats-liens').hidden = false; $('#etats-liens').style.display = 'grid'; $('#etats-liens').scrollIntoView(); }
     });
   }
 })();

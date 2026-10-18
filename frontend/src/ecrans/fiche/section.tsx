@@ -1,18 +1,19 @@
 import { ArrowDown, ArrowUp, Ellipsis, GitCompareArrows, Pencil, RotateCcw, Trash2 } from 'lucide-react';
-import { useId, useRef, useState } from 'react';
+import { useEffect, useId, useMemo, useRef, useState } from 'react';
 
 import { useLimiteContenu } from '../../cadre-contexte';
 import { ErreurApi, appeler, lire, useConnexionPerdue } from '../../api';
 import type { Role } from '../../types';
-import { Bouton, BoiteDialogue, Menu, PastilleAudience, etatAudience, useToasts } from '../../ui';
+import { Bouton, BoiteDialogue, EditeurMarkdown, Markdown, depasse, idsFichiers, messageTropLong, refusServeur, sansBlocsMJ, Menu, PastilleAudience, etatAudience, useToasts } from '../../ui';
+import type { Detail } from '../mediatheque/commun';
+import { MESSAGE_RESERVE } from './fichiers';
+import { OutilFichier } from './outil-fichier';
 import { ReglageAudience, type Joueur } from './audience';
 import { blocsSectionVisibles } from './registre';
 import type { Audience, FicheVue, SectionVue } from './types';
 
 export type { Joueur };
 
-// Same text whether the screen or the server refuses (docs/ecrans.md, AD-91); the limit itself comes from /api/moi.
-const TROP_LONG = '20 000 caractères au plus.';
 const ECHEC = 'L’action n’a pas abouti. Réessayez.';
 
 interface Props {
@@ -68,7 +69,9 @@ export function PanneauSection(p: Props) {
   const [reglage, setReglage] = useState(false);
   const pastille = useRef<HTMLSpanElement>(null);
   const idTitre = useId();
-  const idErreur = useId();
+  // What is known of the visibility of the files the text cites (B-55): fetched once each, or told by the tool.
+  const [visibilites, setVisibilites] = useState<Record<number, 'joueurs' | 'mj'>>({});
+  const demandes = useRef(new Set<number>());
 
   const mj = role === 'mj';
   const url = `/api/univers/${p.universId}/fiches/${fiche.id}/sections/${section.id}`;
@@ -95,7 +98,7 @@ export function PanneauSection(p: Props) {
   }
 
   function modifier() {
-    setTexte(section.contenu);
+    setTexte(section.contenu ?? '');
     setVersionLue(section.version);
     setPerime(false);
     setActuel(undefined);
@@ -126,7 +129,7 @@ export function PanneauSection(p: Props) {
   /** « Enregistrer » and Ctrl/⌘+Entrée: the same function, so the same refusals. */
   async function enregistrer() {
     if (enCours || perdue) return;
-    if (maxContenu !== undefined && texte.length > maxContenu) return setErreurTexte(TROP_LONG);
+    if (maxContenu !== undefined && texte.length > maxContenu) return setErreurTexte(messageTropLong(maxContenu));
     setEnCours('enregistrer');
     setEchec(undefined);
     try {
@@ -139,7 +142,7 @@ export function PanneauSection(p: Props) {
       toast(`« ${section.titre} » enregistrée`);
     } catch (e) {
       if (e instanceof ErreurApi && e.code === 'section_modifiee') setPerime(true);
-      else if (e instanceof ErreurApi && e.statut === 400) setErreurTexte(TROP_LONG);
+      else if (e instanceof ErreurApi && e.statut === 400) setErreurTexte(refusServeur(e.message));
       else if (e instanceof ErreurApi && e.statut === 403) setEchec('Vous ne pouvez plus modifier cette section.');
       else setEchec(ECHEC);
     } finally {
@@ -151,7 +154,7 @@ export function PanneauSection(p: Props) {
     await ecrire('recharger', async () => {
       const s = await lire<SectionVue>(`${url}${p.suffixeMode}`);
       setVersionLue(s.version);
-      setActuel(s.contenu);
+      setActuel(s.contenu ?? '');
       setPerime(false);
       try {
         sessionStorage.setItem(cle, JSON.stringify({ texte, version: s.version }));
@@ -188,13 +191,27 @@ export function PanneauSection(p: Props) {
     if (!ok) setARetirer(false);
   }
 
+  // The warning of B-55: a file reserved to the GM outside a GM block of a section the players read.
+  const lueDesJoueurs = mj && section.audience?.joueursLisent === true;
+  const citees = useMemo(() => (edition && lueDesJoueurs ? idsFichiers(sansBlocsMJ(texte)) : []), [edition, lueDesJoueurs, texte]);
+  useEffect(() => {
+    for (const fid of citees) {
+      if (demandes.current.has(fid)) continue;
+      demandes.current.add(fid);
+      lire<Detail>(`/api/univers/${p.universId}/fichiers/${fid}/detail`).then(
+        (d) => setVisibilites((v) => ({ ...v, [fid]: d.fichier.visibilite })),
+        () => undefined,
+      );
+    }
+  }, [citees, p.universId]);
+  const reserve = citees.some((fid) => visibilites[fid] === 'mj');
+
   const nbPieces = section.piecesJointes?.length ?? 0;
   const perte =
-    nbPieces === 0 ? 'Son contenu sera perdu.' : nbPieces === 1 ? 'Son contenu et sa pièce jointe seront perdus.' : `Son contenu et ses ${nbPieces} pièces jointes seront perdus.`;
+    nbPieces === 0 ? 'Son contenu sera perdu.' : nbPieces === 1 ? 'Son contenu et son fichier joint seront retirés.' : `Son contenu et ses ${nbPieces} fichiers joints seront retirés.`;
   const blocs = blocsSectionVisibles(role);
   const inactif = Boolean(enCours) || perdue;
-  const trop = maxContenu !== undefined && texte.length > maxContenu;
-  const erreur = erreurTexte ?? (trop ? TROP_LONG : undefined);
+  const trop = depasse(texte, maxContenu);
   const mac = typeof navigator !== 'undefined' && /Mac|iPhone|iPad/.test(navigator.platform);
 
   return (
@@ -291,52 +308,55 @@ export function PanneauSection(p: Props) {
               {actuel === '' ? 'Rien d’écrit pour l’instant.' : actuel}
             </p>
           )}
-          <div className="edition">
-            <textarea
-              aria-label={`Contenu de « ${section.titre} »`}
-              aria-invalid={erreur ? true : undefined}
-              aria-describedby={erreur ? idErreur : undefined}
-              value={texte}
-              autoFocus
-              onChange={(e) => saisir(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Escape') {
-                  e.preventDefault();
-                  annuler();
-                } else if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
-                  e.preventDefault();
-                  void enregistrer();
-                }
-              }}
-            />
-            <div className="pied-edition">
-              <span className={`compteur${trop ? ' trop' : ''}`}>
-                {texte.length.toLocaleString('fr-FR')} / {(maxContenu ?? 20000).toLocaleString('fr-FR')}
-              </span>
-              <span className="aide">Échap annuler · {mac ? '⌘' : 'Ctrl'} ↵ enregistrer</span>
-              <Bouton onClick={annuler}>Annuler</Bouton>
-              <Bouton variante="principal" ecrit enCours={enCours === 'enregistrer'} onClick={enregistrer}>
-                Enregistrer
-              </Bouton>
-            </div>
-          </div>
-          {erreur && (
-            <div className="erreur-edition" id={idErreur}>
-              Erreur : {erreur}
-            </div>
-          )}
+          <EditeurMarkdown
+            etiquette={`Contenu de « ${section.titre} »`}
+            valeur={texte}
+            onChange={saisir}
+            max={maxContenu}
+            rows={8}
+            autoFocus
+            liens={{ universId: p.universId }}
+            section={{ universId: p.universId, modeJoueur: p.suffixeMode !== '', blocMJ: mj && p.suffixeMode === '' }}
+            erreur={erreurTexte}
+            avertissement={reserve ? MESSAGE_RESERVE : undefined}
+            fichier={(api) => (
+              <OutilFichier
+                api={api}
+                universId={p.universId}
+                sectionId={section.id}
+                suffixeMode={p.suffixeMode}
+                mj={mj}
+                surFichier={(f) => {
+                  demandes.current.add(f.id);
+                  setVisibilites((v) => ({ ...v, [f.id]: f.visibilite }));
+                }}
+              />
+            )}
+            onEnregistrer={() => void enregistrer()}
+            onAnnuler={annuler}
+          >
+            <span className="aide">Échap annuler · {mac ? '⌘' : 'Ctrl'} ↵ enregistrer</span>
+            <Bouton onClick={annuler}>Annuler</Bouton>
+            <Bouton variante="principal" ecrit disabled={trop} enCours={enCours === 'enregistrer'} onClick={enregistrer}>
+              Enregistrer
+            </Bouton>
+          </EditeurMarkdown>
         </>
       ) : (
-        <p className={`texte${section.contenu === '' ? ' vide' : ''}`}>
-          {section.contenu === '' ? 'Rien d’écrit pour l’instant.' : section.contenu}
-        </p>
+        section.html.trim() === '' ? (
+          <p className="texte vide">Rien d’écrit pour l’instant.</p>
+        ) : (
+          <Markdown className="texte" html={section.html} />
+        )
       )}
 
-      <div className="blocs">
-        {blocs.map((b) => (
-          <b.composant key={b.id} universId={Number(p.universId)} fiche={fiche} section={section} role={role} rafraichir={p.rafraichir} suffixeMode={p.suffixeMode} />
-        ))}
-      </div>
+      {blocs.length > 0 && (
+        <div className="blocs">
+          {blocs.map((b) => (
+            <b.composant key={b.id} universId={Number(p.universId)} fiche={fiche} section={section} role={role} rafraichir={p.rafraichir} suffixeMode={p.suffixeMode} />
+          ))}
+        </div>
+      )}
 
       {aRetirer && (
         <BoiteDialogue

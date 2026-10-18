@@ -1,13 +1,12 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 
-import { badgeFiche } from './types-fiche';
-import { iconeDuType } from './types-fiche';
+import { badgeFiche, iconeDuType, useTypes } from '../../types-contexte';
 import type { Fiche } from './types';
 
 /** Address of the illustration of a sheet; the token makes a replaced image reload and a kept one cache. */
-export const adresseIllustration = (universId: number | string, ficheId: number, jeton: string) =>
-  `/api/univers/${universId}/fiches/${ficheId}/illustration?v=${encodeURIComponent(jeton)}`;
+export const adresseIllustration = (universId: number | string, fichierId: number, jeton: string) =>
+  `/api/univers/${universId}/fichiers/${fichierId}?v=${encodeURIComponent(jeton)}`;
 
 /** The first letter of a title, article set aside (« Le Gué-aux-Saules » → « G »). */
 export function initiale(titre: string): string {
@@ -17,7 +16,8 @@ export function initiale(titre: string): string {
 
 /** Fallback thumbnail: dotted flat, the initial, the type icon. Never an empty frame. */
 function Repli({ fiche }: { fiche: Fiche }) {
-  const Icone = iconeDuType(fiche.type);
+  const { types } = useTypes();
+  const Icone = iconeDuType(types, fiche.type);
   return (
     <span className="repli">
       <span className="puce-type" aria-hidden="true">
@@ -32,7 +32,9 @@ function Repli({ fiche }: { fiche: Fiche }) {
 
 /** A card of the grid of E-8: a link to the sheet, thumbnail (or fallback), title, PJ / PNJ for a character. */
 export function CarteFiche({ universId, fiche }: { universId: number | string; fiche: Fiche }) {
-  const jeton = fiche.illustration?.jeton;
+  const { types } = useTypes();
+  const ill = fiche.illustration && 'jeton' in fiche.illustration ? fiche.illustration : null;
+  const jeton = ill?.jeton;
   const [ko, setKo] = useState<string>();
   const image = jeton !== undefined && ko !== jeton;
   return (
@@ -40,7 +42,7 @@ export function CarteFiche({ universId, fiche }: { universId: number | string; f
       <span className="vue">
         {image ? (
           <img
-            src={adresseIllustration(universId, fiche.id, jeton)}
+            src={adresseIllustration(universId, ill!.id, jeton)}
             alt=""
             width={600}
             height={450}
@@ -57,9 +59,14 @@ export function CarteFiche({ universId, fiche }: { universId: number | string; f
           {fiche.titre}
         </span>
         {fiche.type === 'personnage' && (
-          <span className={`badge-type${fiche.charge.pj ? ' pj' : ''}`}>{badgeFiche(fiche)}</span>
+          <span className={`badge-type${fiche.charge.pj ? ' pj' : ''}`}>{badgeFiche(types, fiche)}</span>
         )}
       </span>
+      {fiche.sousType && (
+        <span className="sous-type" title={fiche.sousType}>
+          {fiche.sousType}
+        </span>
+      )}
     </Link>
   );
 }

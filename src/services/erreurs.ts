@@ -15,6 +15,8 @@ export class ErreurService extends Error {
     readonly code: CodeErreur,
     message: string,
     readonly detail?: string,
+    /** The request field a refusal is about (import API, `invalide` with `champ`). */
+    readonly champ?: string,
   ) {
     super(message);
     this.name = 'ErreurService';

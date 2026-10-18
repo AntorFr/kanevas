@@ -10,11 +10,15 @@ import { Bouton, Champ, ErreurChargement, PageIntrouvable, SqueletteFiche, useTo
 import './ecrans.css';
 import './fiche/fiche.css';
 import { PanneauSection, type Joueur } from './fiche/section';
-import type { FicheVue } from './fiche/types';
+import type { FicheVue, Mention } from './fiche/types';
 import { lignesDuType } from './fiche/lignes/registre';
-import { badgeFiche, iconeDuType, typeParType } from './fiche/types-fiche';
+import { badgeFiche, iconeDuType, typeParType, useTypes } from '../types-contexte';
+import { BlocMentions } from './fiche/mentions';
+import { BlocContient } from './fiche/contient';
 import { EnteteFiche, type MessageIllustration } from './fiche/entete';
 
+/** Stable empty list: the mentions block resets on a new array. */
+const AUCUNE: Mention[] = [];
 const ECHEC = 'L’action n’a pas abouti. Réessayez.';
 
 type Etat =
@@ -29,6 +33,7 @@ function PageFiche() {
   const { id, fid } = useParams();
   const perdue = useConnexionPerdue();
   const { toast } = useToasts();
+  const { types } = useTypes();
   const [univers] = useCharge<UniversListe>(`/api/univers/${id}`);
   const [etat, setEtat] = useState<Etat>({ k: 'chargement' });
   const [essai, setEssai] = useState(0);
@@ -41,6 +46,7 @@ function PageFiche() {
   const [messageIll, setMessageIll] = useState<MessageIllustration>();
   // The server refused an illustration write (403): the account is no longer GM of this universe.
   const [roleRetire, setRoleRetire] = useState(false);
+  const introuvable = useCallback(() => setEtat({ k: 'introuvable' }), []);
 
   useEffect(() => {
     setMessageIll(undefined);
@@ -51,10 +57,15 @@ function PageFiche() {
   // The GM / player toggle lives in the frame's top bar; it is offered unless the sheet does not exist.
   const mode = useBasculeMode(role === 'mj' && etat.k !== 'introuvable');
   const ficheVue = etat.k === 'ok' || etat.k === 'aucune-visible' ? etat.fiche : undefined;
-  useTitreAriane(ficheVue?.titre, ficheVue && typeParType(ficheVue.type)?.pluriel);
+  useTitreAriane(ficheVue?.titre, ficheVue && typeParType(types, ficheVue.type)?.pluriel, ficheVue?.ancetres);
   const modeEffectif: 'mj' | 'joueur' = role === 'mj' ? mode : 'joueur';
   const suffixe = role === 'mj' && mode === 'joueur' ? '?mode=joueur' : '';
   const base = `/api/univers/${id}/fiches/${fid}`;
+
+  // The mode the payload in `etat` was read in: after a switch the old sections (GM-only ones included)
+  // must not be drawn for even one frame, so a stale payload counts as loading.
+  const [chargeAvec, setChargeAvec] = useState(suffixe);
+  const perime = chargeAvec !== suffixe;
 
   const charger = useCallback(async (): Promise<Etat> => {
     try {
@@ -74,11 +85,15 @@ function PageFiche() {
   useEffect(() => {
     let actif = true;
     setEtat({ k: 'chargement' });
-    charger().then((e) => actif && setEtat(e));
+    charger().then((e) => {
+      if (!actif) return;
+      setEtat(e);
+      setChargeAvec(suffixe);
+    });
     return () => {
       actif = false;
     };
-  }, [charger, essai]);
+  }, [charger, essai, suffixe]);
 
   // The authors a GM may pick: the players of the universe.
   useEffect(() => {
@@ -96,12 +111,15 @@ function PageFiche() {
   /** Silent refetch after a write: the sections stay mounted, edits in progress are kept. */
   const rafraichir = useCallback(async () => {
     const e = await charger();
-    if (e.k === 'ok' || e.k === 'aucune-visible') setEtat(e);
-  }, [charger]);
+    if (e.k === 'ok' || e.k === 'aucune-visible') {
+      setEtat(e);
+      setChargeAvec(suffixe);
+    }
+  }, [charger, suffixe]);
 
   if (univers.etat === 'erreur' && univers.statut === 404) return <PageIntrouvable />;
   if (etat.k === 'introuvable') return <PageIntrouvable />;
-  if (etat.k === 'chargement' || univers.etat === 'chargement') return <SqueletteFiche cadre />;
+  if (etat.k === 'chargement' || perime || univers.etat === 'chargement') return <SqueletteFiche cadre />;
   if (etat.k === 'erreur' || univers.etat === 'erreur') {
     return <ErreurChargement texte="Impossible de charger cette fiche." onReessayer={() => setEssai((n) => n + 1)} />;
   }
@@ -146,19 +164,22 @@ function PageFiche() {
     }
   }
 
-  const Icone = iconeDuType(fiche.type);
+  const Icone = iconeDuType(types, fiche.type);
   const formulaire = gestion && etat.k === 'ok' && ajoutOuvert;
   return (
     <article className="fiche" aria-labelledby="titre-fiche">
       <EnteteFiche
+        key={`${id}/${fid}/${gestion}`}
         universId={id!}
         fiche={fiche}
         gestion={gestion && etat.k === 'ok'}
-        badge={badgeFiche(fiche)}
+        modeJoueur={mj && modeEffectif === 'joueur'}
+        badge={badgeFiche(types, fiche)}
         Icone={Icone}
         message={messageIll}
         setMessage={setMessageIll}
         rafraichir={rafraichir}
+        onIntrouvable={introuvable}
         onDroitPerdu={() => {
           setRoleRetire(true);
           void rafraichir();
@@ -203,6 +224,17 @@ function PageFiche() {
             />
           ))}
         </div>
+      )}
+      <BlocContient universId={id!} ficheId={fiche.id} suffixeMode={suffixe} />
+      {etat.k === 'ok' && (
+        <BlocMentions
+          universId={id!}
+          ficheId={fiche.id}
+          mentions={fiche.mentions ?? AUCUNE}
+          suite={fiche.mentionsSuite ?? false}
+          restantes={fiche.mentionsRestantes ?? 0}
+          suffixeMode={suffixe}
+        />
       )}
       {gestion && etat.k === 'ok' && (
         <div className={`ajout-section${formulaire ? ' ouvert' : ''}`}>

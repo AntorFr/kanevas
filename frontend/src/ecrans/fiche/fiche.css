@@ -13,6 +13,19 @@ a.bouton { text-decoration: none; display: inline-flex; }
 .fiche .entete h1 { margin-top: var(--e-4); font: 500 var(--t-40)/1.08 var(--police-titre); letter-spacing: -.015em;
   font-variation-settings: "opsz" 144; overflow-wrap: anywhere; }
 .fiche .entete h1:focus-visible { outline: none; }
+/* Title editing keeps the document typography and wraps long names. */
+.titre-modifiable, .titre-edition { display: block; width: 100%; padding: 0; border: 0; border-radius: var(--rayon-item);
+  background: transparent; color: var(--texte); font: inherit; letter-spacing: inherit; text-align: left; overflow-wrap: anywhere; }
+.titre-modifiable { width: fit-content; max-width: 100%; cursor: text; }
+.titre-modifiable:hover { background: var(--surface-2); }
+.titre-edition { resize: none; overflow: hidden; box-shadow: 0 0 0 1px var(--accent); }
+.titre-modifiable:focus-visible, .titre-edition:focus { outline: 2px solid var(--focus); outline-offset: 4px; }
+@media (max-width: 760px) {
+  .titre-modifiable, .titre-edition { min-height: 44px; }
+  .fiche .entete .menu-racine > button { min-width: 44px; min-height: 44px; }
+  .fiche .voile .boite-actions { flex-wrap: wrap; }
+  .fiche .voile .boite-actions button { min-height: 44px; }
+}
 .vide-fiche { display: flex; flex-direction: column; align-items: center; gap: var(--e-3); color: var(--texte-2); }
 
 .sections { margin-top: var(--e-2); }
@@ -29,7 +42,7 @@ a.bouton { text-decoration: none; display: inline-flex; }
 .sec:hover .sec-actions, .sec:focus-within .sec-actions, .sec-actions:has([aria-expanded="true"]) { opacity: 1; }
 @media (hover: none) { .sec-actions { opacity: 1; } }
 .sec .texte { margin-top: var(--e-3); max-width: 66ch; font: 400 var(--t-18)/1.68 var(--police-lecture); color: var(--texte);
-  font-variation-settings: "opsz" 18; white-space: pre-wrap; overflow-wrap: anywhere; }
+  font-variation-settings: "opsz" 18; overflow-wrap: anywhere; }
 .sec .texte.vide { color: var(--texte-3); font-style: italic; }
 .sec .actuelle { margin-top: var(--e-3); }
 
@@ -50,6 +63,8 @@ a.bouton { text-decoration: none; display: inline-flex; }
 
 /* Section blocks: Relations, Pièces jointes */
 .fiche .blocs { display: block; gap: 0; margin-top: var(--e-4); border-top: 1px solid var(--bord); }
+/* The last section's blocks end where « Mentionnée dans » starts: one full rule between them, not two. */
+.fiche .sections > .sec:last-child .blocs { border-top: 0; }
 .fiche .blocs .bloc-section + .bloc-section { border-top: 1px dashed var(--bord); }
 .fiche .blocs .bloc-section:first-child { border-top: 0; }
 .fiche .blocs .bloc-contenu { gap: 4px 14px; }
@@ -64,6 +79,8 @@ a.bouton { text-decoration: none; display: inline-flex; }
 .liste-pieces { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 12px; width: 100%; }
 .liste-pieces .piece { min-width: 0; }
 .liste-pieces .piece:not(.image) { flex: 1 0 100%; }
+.liste-pieces .ferme { display: flex; align-items: center; gap: var(--e-2); margin: 0; padding: var(--e-3) var(--e-4); border: 1px solid var(--bord); border-radius: var(--rayon-champ); background: var(--surface-2); color: var(--texte-3); font-size: var(--t-14); }
+.liste-pieces .attente { margin: 0; padding: var(--e-3) var(--e-4); border: 1.5px dashed var(--texte-3); border-radius: var(--rayon-champ); color: var(--texte-3); font-size: var(--t-14); overflow-wrap: anywhere; }
 .liste-pieces .confirmation { margin-top: var(--e-2); }
 .liste-pieces .legende, .liste-pieces .confirmation { overflow-wrap: anywhere; }
 .vignette.indisponible { color: var(--texte-3); font-size: var(--t-13); padding: var(--e-2) 0; }
@@ -152,3 +169,89 @@ a.cadre-ill:focus-visible { outline-offset: 2px; border-radius: var(--rayon-pann
   .gestes-ill .bouton-icone { width: 36px; height: 36px; }
   .ajout-ill .bouton { min-height: 36px; }
 }
+
+/* « ⋯ » of the header (E-9): beside the type badge; its only line here is the origin of an imported sheet. */
+.tete-ligne { display: flex; align-items: center; gap: var(--e-2); }
+.tete-ligne > .menu-racine { margin-left: auto; }
+.menu .info-fiche { display: flex; align-items: flex-start; gap: var(--e-2); padding: 7px 10px 8px; font-size: var(--t-12); line-height: 1.45; color: var(--texte-3); white-space: normal; }
+.menu:has(.info-fiche) { width: max-content; max-width: calc(100vw - 24px); }
+.menu .info-fiche span { white-space: nowrap; }
+@media (max-width: 760px) {
+  .menu-racine.debut .menu:has(.info-fiche), .menu-racine.fin .menu:has(.info-fiche) { position: fixed; top: auto; left: 12px; right: 12px; width: auto; box-sizing: border-box; max-width: none; }
+  .menu .info-fiche span { white-space: normal; }
+}
+.menu .info-fiche svg { margin-top: 2px; flex: none; }
+.menu .info-fiche code { font: 500 11.5px/1.3 ui-monospace, "SF Mono", Menlo, Consolas, monospace; color: var(--texte-2); white-space: nowrap; }
+
+/* Sub-type in the badge (B-52): a button for the GM, plain text for a player; the list hangs under the badge. */
+.fiche .type .sous-type-bouton { background: none; border: 0; padding: 0 4px; margin: 0 -4px 0 -3px; font: inherit; color: inherit; cursor: pointer; border-radius: 4px; }
+.fiche .type .sous-type-bouton:hover { background: var(--surface-3); }
+.fiche .type .sous-type-bouton.vide { color: var(--texte-3); }
+.fiche .type:has(.sous-type-edition) { position: relative; background: var(--surface); box-shadow: 0 0 0 1px var(--accent), 0 0 0 4px var(--accent-fond); }
+.fiche .type .sous-type-edition { display: inline-flex; align-items: center; }
+.fiche .type .sous-type-edition input { height: 20px; width: 13ch; max-width: 40vw; padding: 0 2px; font: inherit; color: var(--texte); background: transparent; border: 0; border-radius: 3px; }
+.fiche .type .sous-type-edition input:focus { outline: none; }
+.liste-liens.liste-st { position: absolute; z-index: 20; left: -8px; top: calc(100% + 8px); width: 248px; margin: 0; }
+.liste-st .titre-menu { display: block; padding: 7px 10px 5px; font-size: var(--t-12); line-height: 1.3; color: var(--texte-3); }
+.liste-st .option .coche { margin-left: auto; color: var(--accent-texte); }
+.liste-st .pied-st { display: block; margin: 4px -4px -4px; padding: 7px 10px 8px; border-top: 1px solid var(--bord); font-size: var(--t-12); line-height: 1.4; color: var(--texte-3); }
+.liste-st .pied-st.erreur { color: var(--danger); }
+.liste-st .pied-st:first-child { margin-top: -4px; border-top: 0; }
+@media (max-width: 760px) {
+  .liste-liens.liste-st { width: min(248px, calc(100vw - 72px)); }
+  .fiche .type .sous-type-edition input { height: 24px; }
+}
+/* « Changer le type… » (E-9): framed list, one row per type. */
+.changer-type .resultats { max-height: 40vh; overflow-y: auto; padding: var(--e-1); border-radius: var(--rayon-champ); box-shadow: inset 0 0 0 1px var(--bord); }
+.changer-type .resultat { display: flex; align-items: center; gap: 10px; min-height: 34px; padding: 0 10px; border-radius: var(--rayon-item); cursor: pointer; font-size: var(--t-14); }
+.changer-type .resultat:hover, .changer-type .resultat:has(input:checked) { background: var(--surface-2); }
+.changer-type .resultat svg { flex: none; color: var(--texte-3); }
+.changer-type .resultat .type-option { margin-left: auto; font-size: var(--t-12); color: var(--texte-3); }
+.changer-type .sep-res { height: 1px; margin: 4px 0; background: var(--bord); }
+.changer-type .titre-groupe { margin: 0; padding: 4px 10px; font-size: var(--t-12); font-weight: 500; color: var(--texte-3); }
+.changer-type .retrait { color: var(--texte-2); font-size: var(--t-13); }
+/* « Déplacer sous… »: the native radio stays (role, keyboard) but is hidden behind the mock-up's dot. */
+.deplacer .resultat { position: relative; }
+.deplacer .resultat input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; }
+.deplacer .resultat .puce { width: 14px; height: 14px; flex: none; border-radius: 50%; box-shadow: inset 0 0 0 1.5px var(--bord-champ); }
+.deplacer .resultat:has(input:checked) { background: var(--accent-fond); }
+.deplacer .resultat:has(input:checked) .puce { box-shadow: inset 0 0 0 4px var(--accent); }
+.deplacer .resultat:has(input:focus-visible) { outline: 2px solid var(--accent); outline-offset: -2px; }
+@media (max-width: 760px) { .changer-type .resultat { min-height: 40px; } }
+.fiche .blocs:empty { display: none; }
+
+/* A reserved illustration (B-24): a neutral frame that says so, in the header of a sheet the reader sees. */
+.ill-fermee { color: var(--texte-3); background: var(--surface-2); }
+/* A pending illustration (E-9, import): the same dashed tile as a pending file in a text. */
+/* Give the pending label a full row instead of the portrait's narrow image slot. */
+.entete.illustree:has(.ill-attente) { grid-template-columns: minmax(0, 1fr); row-gap: var(--e-4); }
+.illustration:has(.ill-attente) { width: 100%; min-width: 0; }
+.cadre-ill:has(.ill-attente) { aspect-ratio: auto; }
+.fin-cle-attente { display: inline-block; max-width: 100%; white-space: nowrap; }
+.cle-attente { display: inline-block; max-width: calc(100% - 2em); overflow: hidden; text-overflow: ellipsis; vertical-align: bottom; }
+.ill-attente { position: relative; display: block; font-size: var(--t-14); line-height: 1.5; text-align: left; gap: 0; color: var(--texte-3); border: 1.5px dashed var(--texte-3); border-radius: var(--rayon-champ); padding: var(--e-3) var(--e-4); }
+.pieces-jointes .envoi-fichier { width: 100%; }
+
+/* E-9: aliases under the title, label pills, and the « Alias et étiquettes » box */
+.alias-fiche { margin: var(--e-1) 0 0; font-size: var(--t-14); color: var(--texte-2); overflow-wrap: anywhere; }
+.etiquettes-fiche { display: flex; flex-wrap: wrap; gap: var(--e-2); list-style: none; margin: var(--e-2) 0 0; padding: 0; }
+.etiquettes-fiche .pastille { text-decoration: none; max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
+.boite-etiquetage { display: flex; flex-direction: column; gap: var(--e-4); max-height: 70vh; overflow-y: auto; }
+.boite-etiquetage .actions { display: flex; gap: var(--e-2); }
+.pastilles-saisies { display: flex; flex-wrap: wrap; gap: var(--e-2); list-style: none; margin: var(--e-2) 0 0; padding: 0; }
+.pastilles-saisies .pastille { max-width: 100%; padding-right: 4px; }
+.pastilles-saisies .texte-pastille { overflow: hidden; text-overflow: ellipsis; }
+.pastilles-saisies button { display: inline-grid; place-items: center; width: 18px; height: 18px; padding: 0; border: 0; border-radius: 50%; background: transparent; color: inherit; cursor: pointer; }
+.pastilles-saisies button:hover { background: var(--bord); }
+
+/* « Déplacer sous… »: the changer-type list, a note when it has nothing to show. */
+.deplacer .vide-res { margin: 0; padding: 6px 10px; color: var(--texte-3); font-size: var(--t-14); }
+
+/* Foot of « Déplacer sous… » (mockup e09): right-aligned, side by side across the width on a phone. */
+.deplacer .actions { justify-content: flex-end; }
+@media (max-width: 760px) { .deplacer .actions .bouton { flex: 1; min-height: 40px; } }
+
+/* The two add-a-file menus (« Fichier », « Joindre un fichier »): 220 px at least as the mock-up
+   (e09), the labels never wrap. */
+.menu-ajout-fichier .menu { min-width: 220px; }
+.menu-ajout-fichier .menu-entree { white-space: nowrap; }

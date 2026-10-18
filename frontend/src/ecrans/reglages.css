@@ -10,6 +10,12 @@
 .page-liste .formulaire-ligne .champ input[placeholder] { min-width: 12rem; }
 
 /* E-14: the current system under the list */
+.parametres-univers .boite h2 { font: 600 var(--t-16)/1.35 var(--police-texte); letter-spacing: 0; font-variation-settings: normal; }
+.parametres-univers .boite-actions button { white-space: nowrap; }
+@media (max-width: 600px) {
+  .parametres-univers .boite-actions { flex-direction: column-reverse; align-items: stretch; }
+  .parametres-univers .boite-actions button { justify-content: center; min-height: 44px; }
+}
 .systeme-courant { display: flex; align-items: center; gap: var(--e-3); margin-top: var(--e-3); flex-wrap: wrap; }
 .systeme-courant .nom-systeme { max-width: 24rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .systeme-courant .bouton { text-decoration: none; }
@@ -38,6 +44,6 @@
 .entree-ligne[aria-expanded="true"] .entree-chevron { transform: rotate(180deg); }
 .entree-detail, .entree-formulaire { padding: var(--e-2) var(--e-2) var(--e-4); }
 .entree-detail h2 { font: 500 var(--t-22)/1.25 var(--police-titre); font-variation-settings: "opsz" 48; margin-bottom: var(--e-2); overflow-wrap: anywhere; }
-.entree-contenu { white-space: pre-wrap; overflow-wrap: anywhere; font: 400 var(--t-18)/1.68 var(--police-lecture); max-width: 70ch; }
+.entree-contenu { max-width: 70ch; }
 .entree-formulaire .champ textarea { max-width: 70ch; }
 @media (max-width: 760px) { .entree-apercu { display: none; } .entree-nom { max-width: none; flex: 1; } }
