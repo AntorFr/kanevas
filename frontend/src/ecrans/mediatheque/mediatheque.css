@@ -88,6 +88,11 @@ body:has(.med-panneau-ouvert) .asst-bouton { right: calc(400px + var(--e-5)); }
 .med-corps { display: flex; flex-direction: column; gap: var(--e-3); align-items: flex-start; }
 .med-corps > .med-grand { height: 248px; max-height: 40vh; object-fit: contain; }
 .med-corps > .med-grand, .med-corps .champ { width: 100%; }
+.med-apercu-document { gap: 10px; box-shadow: inset 0 0 0 1px var(--bord); }
+.med-apercu-document .med-feuille { width: 88px; height: 88px; margin-top: 0; border-radius: 18px;
+  background: var(--surface); }
+.med-type-document { margin-top: 2px; }
+.med-apercu-document .bouton { margin-top: var(--e-1); }
 .med-visibilite { width: 100%; min-width: 0; border: 0; padding: 0; margin: 0; }
 .med-visibilite legend { color: var(--texte-2); font-size: var(--t-13); margin-bottom: var(--e-1); padding: 0; }
 .med-infos { display: flex; flex-direction: column; gap: var(--e-1); font-size: var(--t-13); color: var(--texte-2); overflow-wrap: anywhere; }
@@ -115,6 +120,8 @@ body:has(.med-panneau-ouvert) .asst-bouton { right: calc(400px + var(--e-5)); }
 @media (max-width: 760px) {
   .zone-principale:has(.med-panneau-ouvert) { margin-right: 0; }
   .med-panneau { width: 100%; z-index: 35; }
+  .med-corps > .med-apercu-document { height: 260px; }
+  .med-apercu-document .bouton { min-height: 40px; }
   body:has(.med-panneau-ouvert) .asst-bouton { visibility: hidden; }
   .med-grille { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--e-4) var(--e-3); }
   .med-glyphe { width: 36px; height: 36px; }

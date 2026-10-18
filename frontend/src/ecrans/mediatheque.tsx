@@ -543,18 +543,22 @@ function Mediatheque() {
               ) : f.image ? (
                 <img className="med-grand" src={octets(id!, f)} alt={f.nom} onError={() => setImageCassee(true)} />
               ) : (
-                <div className="med-grand med-doc">
+                <div className="med-grand med-doc med-apercu-document">
                   {(() => {
                     const Icone = iconeDe(f);
-                    return <Icone size={56} strokeWidth={1.75} aria-hidden="true" />;
+                    return <span className="med-feuille"><Icone size={42} strokeWidth={1.4} aria-hidden="true" /></span>;
                   })()}
-                  <b>{typeLisible(f)}</b>
+                  <span className="med-type-document">{typeLisible(f)}</span>
+                  <a className="bouton neutre" href={octets(id!, f)} download={f.nom}>
+                    <Download size={14} strokeWidth={1.75} aria-hidden="true" />
+                    Télécharger
+                  </a>
                 </div>
               )}
-              <a className="bouton neutre" href={octets(id!, f)} download={f.nom}>
+              {f.image && <a className="bouton neutre" href={octets(id!, f)} download={f.nom}>
                 <Download size={14} strokeWidth={1.75} aria-hidden="true" />
                 Télécharger
-              </a>
+              </a>}
 
               <div className="med-titre-fichier">
                 <h2
@@ -626,8 +630,9 @@ function Mediatheque() {
                               <Icone size={14} strokeWidth={1.75} />
                             </span>
                             <span className="med-usage-texte">
-                              <span>{u.ficheTitre}</span>{' '}
-                              <span className="med-usage-ou">{u.illustration ? '(illustration)' : `— « ${u.sectionTitre} »${u.joint && !u.dansTexte ? ' (jointe)' : ''}`}</span>
+                              <span>{u.ficheTitre}{u.illustration && ' (illustration)'}</span>
+                              {!u.illustration && u.dansTexte && <span className="med-usage-ou">« {u.sectionTitre} » (dans le texte)</span>}
+                              {!u.illustration && u.joint && <span className="med-usage-ou">Pièces jointes de « {u.sectionTitre} »</span>}
                             </span>
                             <ChevronRight size={14} strokeWidth={1.75} aria-hidden="true" />
                           </Link>
