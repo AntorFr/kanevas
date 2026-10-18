@@ -130,7 +130,7 @@ a.bouton { text-decoration: none; display: inline-flex; }
 /* ---------- L'illustration dans l'en-tête (kanevas-illustrations) ---------- */
 .entete.illustree { display: grid; grid-template-columns: 176px minmax(0, 1fr); column-gap: 28px; align-items: end; }
 .illustration { margin: 0; width: 176px; }
-.boite-ill { position: relative; border-radius: var(--rayon-panneau); overflow: hidden; }
+.boite-ill { position: relative; border-radius: var(--rayon-panneau); }
 .cadre-ill { position: relative; display: block; aspect-ratio: 4 / 5; border-radius: var(--rayon-panneau); overflow: hidden; background: var(--squelette); }
 .cadre-ill::after { content: ""; position: absolute; inset: 0; border-radius: inherit; box-shadow: inset 0 0 0 1px var(--bord); pointer-events: none; }
 .cadre-ill img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: 50% 30%; }
@@ -163,7 +163,6 @@ a.cadre-ill:focus-visible { outline-offset: 2px; border-radius: var(--rayon-pann
   .entete.illustree { grid-template-columns: 96px minmax(0, 1fr); column-gap: var(--e-4); }
   .illustration { width: 96px; }
   .gestes-ill { right: 4px; bottom: 4px; }
-  .boite-ill { overflow: visible; }
   .envoi-ill { position: relative; flex-wrap: wrap; gap: 0 6px; margin-top: 6px; padding: 6px 0 0; background: none; }
   .envoi-ill .bouton { min-height: 36px; margin-left: -8px; }
   .gestes-ill .bouton-icone { width: 36px; height: 36px; }

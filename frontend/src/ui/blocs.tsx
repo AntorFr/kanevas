@@ -130,6 +130,7 @@ export function Vignette({
   href,
   onErreur,
   legende,
+  taille,
   secrete,
   actions,
 }: {
@@ -140,6 +141,7 @@ export function Vignette({
   href?: string;
   onErreur?: () => void;
   legende: string;
+  taille?: string;
   secrete?: boolean;
   actions?: ReactNode;
 }) {
@@ -162,7 +164,7 @@ export function Vignette({
         )}
       </div>
       <figcaption>
-        <span title={legende}>{legende}</span>
+        <span title={legende}>{legende}{taille && <small>{taille}</small>}</span>
         {actions && <span className="actions-revelees">{actions}</span>}
       </figcaption>
     </figure>

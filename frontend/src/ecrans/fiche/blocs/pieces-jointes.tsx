@@ -184,7 +184,8 @@ function BlocPiecesJointes({ universId, fiche, section, role, rafraichir, suffix
                       alt={p.nom}
                       href={urlFichier(p)}
                       onErreur={() => setIndisponibles((i) => [...i, p.id])}
-                      legende={`${p.nom} · ${formaterTaille(p.taille)}`}
+                      legende={p.nom}
+                      taille={formaterTaille(p.taille)}
                       secrete={p.secrete}
                       actions={menuDe(p)}
                     />
