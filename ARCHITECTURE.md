@@ -360,6 +360,18 @@ Les numéros sont stables. Une décision retirée garde son numéro, avec ce qui
 
 **File references** (`kanevas-fichiers-references`): `PUT /fiches/:cle` takes `illustration` (image key; a document is a 400 `pas_une_image`), `fichiers` per section (at most 100 keys, else 400 `invalide`, `champ: fichiers`, counted as refused) and `fichier:cle:K` in a text. A known key is rewritten to `fichier:<id>`; an unknown one stays as sent, waits in `fichiers_attente` and warns the batch (never a refusal). When the file arrives (`PUT /fichiers/:cle`), one transaction rewrites the texts and sets the joins and the illustration, then deletes the waiting rows, without touching `version`, `version_importee` or `modifie_le`; a 101st join stays waiting with a warning. The replay compares after resolving known keys; the illustration and the joined files are protected by B-48 (keys in `dernier_import`). The batch closing counts the waiting references with the waiting links (E-18); the GM sees « Fichier en attente d’import » on E-9 (server-side view, AD-96: a reader never receives the key).
 
+**Campaign and scenario imports** (`kanevas-reprise-suivi`, AD-121, migration 0016):
+`services/import-suivi.ts` validates requests and counts outcomes through `noterDansLot`;
+`assurerCampagne` and `assurerScenario` live beside the ordinary writes they call in
+`services/campagnes.ts` and `services/scenarios.ts`. Campaign keys belong to the token's universe;
+scenario keys belong to that campaign. `PUT` returns `{id, etat, avertissements}` like sheets.
+Replay protects the campaign's name/status and the scenario's title/content separately; unchanged
+scenarios keep their version and modification date. An unknown campaign is a counted 404
+`campagne_inconnue`; an invalid body is a counted 400 `invalide` with `champ`; a closed batch is
+409 `lot_clos`. `GET /` also exposes `nomCampagne: 80`, `titreScenario: 120` and
+`contenuScenario: 100000` in `limites`. Scenario Markdown and origin-key links use the existing
+reader in `scenarios.ts` (AD-97), resolving keys on read.
+
 Contrat que consomme le script de Monsieur, et tout autre (AD-103, AD-104). Base :
 `https://kanevas.berard.me/api/import/v1/univers/:id`, en-tête `Authorization: Bearer kvs_…`. JSON,
 noms en camelCase, dates ISO 8601. Une **clé d'origine** (`:cle`) : 1 à 200 caractères, sans `|`, `]`
