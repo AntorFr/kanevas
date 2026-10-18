@@ -85,6 +85,41 @@ serveur en bouchon (port 3001), s'y connecter sur `http://localhost:3001/`, puis
 La voie de référence reste le conteneur Node 20 de `CLAUDE.md` (celle de la CI) ; sans Docker, un Node local
 récent suffit pour les mêmes commandes (`npm ci && npm run typecheck && npm test`).
 
+### Import sample acceptance
+
+Start the stub application on a fresh database (see below), sign in as `antor`, and select
+« Essai Kanka » (id 4 on a fresh seed). In another terminal:
+
+```bash
+npm run import:echantillon -- http://localhost:3001 4 <token>
+```
+
+Use the public `JETON_BOUCHON` value from `src/bouchon/depart.ts` or create a token in
+« Accès par API » (E-18). The standalone client sends files, campaigns, parent-first sheets,
+relations and scenarios in a batch, closes it, and prints the counters and warning reasons.
+Tokens are passed as arguments and never written to disk. The sample comes from Éneria;
+its source mapping and neutral JSON format are documented in `src/bouchon/echantillon/README.md`.
+
+First run: 11 sheets, 3 files, 2 campaigns, 2 scenarios and 3 relations created, one unknown-target
+warning, zero refusals. Rerun the command: no creations, 11 unchanged sheets. In E-13, check
+April 18, March 3, February 10, 2021, newest first. In Éneria Prime, Base Éneria-1 resolves
+and Nyx stays « en attente »; player mode hides the GM paragraph and image, the base and
+Obscura, including in search. In E-7, open the 60,000-character scenario and follow its
+Éneria Prime link. Change the campaign status in E-6 and rerun: it stays changed, with a warning.
+
+To exercise incremental replay, copy the sample JSON **within its directory** (file paths are
+relative to it), append a sheet with a fresh `cle`, then pass that JSON path as a fourth argument:
+one created sheet and eleven unchanged. Use the original file again for the baseline replay.
+For the refusal case (one refusal, reason names the missing campaign, exit status 1):
+
+```bash
+npm run import:echantillon -- http://localhost:3001 4 <token> src/bouchon/echantillon/refus.json
+```
+
+Finally delete « Essai Kanka » in E-14, create a fresh universe and a token in E-18, and run
+the original command with their id and token: the first-run counts must match. The stub
+token belongs to the deleted universe and cannot be reused for the new one.
+
 ### Sans Authelia : le mode bouchon
 
 ```bash

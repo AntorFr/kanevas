@@ -1,0 +1,20 @@
+{
+  "fiches": [
+    {
+      "cle": "cr:campagne-absente",
+      "type": "compte_rendu",
+      "titre": "Compte-rendu refusé",
+      "campagne": "c:absente",
+      "creeLe": "2021-03-03T12:00:00.000Z",
+      "sections": [
+        {
+          "cle": "description",
+          "titre": "Description",
+          "contenu": "Une campagne absente.",
+          "joueursLisent": true,
+          "joueursEcrivent": false
+        }
+      ]
+    }
+  ]
+}
