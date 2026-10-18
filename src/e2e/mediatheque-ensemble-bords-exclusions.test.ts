@@ -124,7 +124,9 @@ test('Léa force l\'adresse d\'un fichier réservé : « Page introuvable. », o
 test('Antor ajoute un PDF depuis E-19 : « Visible des joueurs », 14 fichiers, listé en Documents seulement, « Document PDF »', opts, async () => {
   await mediatheque(antor);
   await antor.locator('input[type=file]').first().setInputFiles(PDF('regles-guilde.pdf'));
-  await antor.getByText('regles-guilde.pdf').first().waitFor();
+  // the name first shows in the upload row: wait for the saved tile and the loaded count
+  await antor.locator('.med-tuile').filter({ has: antor.locator('[title="regles-guilde.pdf"]') }).waitFor();
+  await antor.locator('.med-compte').filter({ hasText: '14 fichiers' }).waitFor();
   await attendre(antor);
   const f = await parNom(antor, 'regles-guilde.pdf');
   assert.equal(f.visibilite, 'joueurs');
