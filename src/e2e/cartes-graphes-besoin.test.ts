@@ -416,6 +416,7 @@ describe('kanevas-cartes-graphes, du besoin', { skip: skipBrowser }, () => {
       await m.antor.getByRole('button', { name: rxExact('Créer') }).click();
       await m.antor.waitForURL(new RegExp(`/univers/${m.U}/cartes/\\d+$`));
       await m.antor.getByRole('heading', { level: 1 }).waitFor();
+      await m.antor.getByText('y'.repeat(80)).first().waitFor();
       assert.ok((await texte(m.antor)).includes('y'.repeat(80)));
     });
 

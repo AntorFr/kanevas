@@ -1,6 +1,7 @@
 import type { Db } from '../db/db.js';
 import { peutVoirFiche, roleDe } from './droits.js';
 import { ErreurService } from './erreurs.js';
+import { preparerFichiers } from './fichiers.js';
 import { extraireLiens, reecrireLiens } from './markdown.js';
 
 // The `[[…]]` links of a section (AD-116). This file is the only writer of the `liens` table
@@ -24,6 +25,10 @@ function texteDeLien(titre: string, id: number): string {
  * resolving it would tell a player that the sheet exists. Pure of any write.
  */
 export function preparerContenu(db: Db, universId: number, compteId: number, contenu: string): string {
+  return preparerLiens(db, universId, compteId, preparerFichiers(db, universId, compteId, contenu));
+}
+
+function preparerLiens(db: Db, universId: number, compteId: number, contenu: string): string {
   if (!contenu.includes('[[')) return contenu;
   const liens = extraireLiens(contenu);
   if (liens.length === 0) return contenu;

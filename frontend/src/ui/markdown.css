@@ -49,4 +49,11 @@
 .md .lien-casse, .md .lien-attente { color: inherit; text-decoration: underline dashed; text-decoration-thickness: 1.5px; text-underline-offset: 3px; cursor: help; }
 .md .lien-casse { text-decoration-color: var(--danger); }
 .md .lien-attente { text-decoration-color: var(--texte-3); }
+/* Files the import has not delivered yet (E-9): a dashed tile for an image, a dashed underline for a document link.
+   Only a GM outside player mode receives these elements; other readers keep document link text only. */
+.md .fichier-attente { display: inline-block; padding: var(--e-3) var(--e-4); border: 1.5px dashed var(--texte-3); border-radius: var(--rayon-champ);
+  color: var(--texte-3); font: 400 var(--t-14)/1.5 var(--police-texte); max-width: 100%; overflow-wrap: anywhere; }
+.md .fichier-attente-lien { color: inherit; text-decoration: underline dashed; text-decoration-thickness: 1.5px; text-underline-offset: 3px;
+  text-decoration-color: var(--texte-3); cursor: help; }
+.md .fichier-attente-lien:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; border-radius: 3px; }
 .md .lien-casse:focus-visible, .md .lien-attente:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; border-radius: 3px; }

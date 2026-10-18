@@ -1,3 +1,4 @@
+import multipart from '@fastify/multipart';
 import type { FastifyInstance, FastifyRequest } from 'fastify';
 
 import { LONGUEUR_ALIAS, LONGUEUR_ETIQUETTE, MAX_ALIAS, MAX_ETIQUETTES } from '../services/etiquettes.js';
@@ -7,6 +8,7 @@ import { verifierJeton, type Jeton } from '../services/jetons.js';
 import { cloreLot, lireLot, MAX_RAPPORT, ouvrirLot } from '../services/lots.js';
 import { lireContexteImport } from '../services/import.js';
 import { assurerFiche, lotDeRequete, supprimerFicheImport } from '../services/import-fiches.js';
+import { assurerFichier, MAX_FICHIERS_JOINTS } from '../services/fichiers.js';
 import { TYPES_FICHE, typeActif } from '../services/types-fiche.js';
 import { registerErreurs } from './erreurs.js';
 
@@ -36,7 +38,11 @@ export async function registerImportRoutes(app: FastifyInstance) {
 
   await app.register(async (scope) => {
     registerErreurs(scope);
-    // Every route of this scope (including those of later slices) takes up to 8 MiB.
+    // The JSON cap does not cap streamed files (AD-7, AD-65).
+    await scope.register(multipart, {
+      limits: { fileSize: Number.MAX_SAFE_INTEGER, files: 1, fields: 2, parts: 3 },
+    });
+    // JSON routes of this scope (including those of later slices) take up to 8 MiB.
     scope.addHook('onRoute', (route) => {
       route.bodyLimit = MAX_CORPS_IMPORT;
     });
@@ -89,6 +95,7 @@ export async function registerImportRoutes(app: FastifyInstance) {
           longueurAlias: LONGUEUR_ALIAS,
           etiquettesParFiche: MAX_ETIQUETTES,
           longueurEtiquette: LONGUEUR_ETIQUETTE,
+          fichiersJointsParSection: MAX_FICHIERS_JOINTS,
         },
       };
     });
@@ -107,6 +114,28 @@ export async function registerImportRoutes(app: FastifyInstance) {
       const { cle } = request.params as { cle: string };
       const { lot } = request.query as { lot?: unknown };
       return assurerFiche(app.db, jetonDe(request), lotDeRequete(lot), cle, request.body, app.horloge());
+    });
+
+    // The script sends `nom` and optional `visibilite` before the streamed `fichier` part.
+    scope.put(`${base}/fichiers/:cle`, async (request) => {
+      const { cle } = request.params as { cle: string };
+      const lot = lotDeRequete((request.query as { lot?: unknown }).lot);
+      const part = request.isMultipart() ? await request.file() : undefined;
+      const champ = (nom: string): unknown => {
+        const field = part?.fields[nom];
+        return field && !Array.isArray(field) && field.type === 'field' ? field.value : undefined;
+      };
+      async function* flux() {
+        for await (const morceau of part!.file) yield morceau as Buffer;
+        if (part!.file.truncated) {
+          throw new ErreurService('invalide', 'Envoi interrompu.', undefined, 'fichier');
+        }
+      }
+      return assurerFichier(app.db, jetonDe(request), lot, cle, {
+        nom: champ('nom'),
+        visibilite: champ('visibilite'),
+        flux: part?.fieldname === 'fichier' ? flux() : null,
+      }, app.horloge());
     });
 
     scope.delete(`${base}/fiches/:cle`, async (request, reply) => {

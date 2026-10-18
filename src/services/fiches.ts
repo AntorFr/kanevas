@@ -12,7 +12,7 @@ import {
 import { ErreurService, introuvable, invalide, refuse } from './erreurs.js';
 import { etiquetageDe } from './etiquettes.js';
 import { mentionsDe } from './mentions.js';
-import { lireLignes, lisiblePar, type FichierRow } from './fichiers.js';
+import { illustrationEnAttente, lireLignes, lisiblePar, type FichierRow } from './fichiers.js';
 import { supprimerFichier } from './stockage.js';
 import { IMAGE_RESERVEE } from './markdown.js';
 import { CHARGES, estTypeFiche, typeActif } from './types-fiche.js';
@@ -535,8 +535,12 @@ export function lireFiche(
   const lisibles = sectionsDe(db, ficheId).filter((s) => peutLireSection(role, s, acteur));
   if (lisibles.length === 0 && (role !== 'mj' || acteur.modeJoueur)) throw introuvable();
   const mentions = mentionsDe(db, role, acteur, universId, ficheId);
+  const vueFiche = versFiche(fiche, (f) => lisiblePar(role, acteur, f));
+  // An illustration the import has not delivered yet: a tile for the GM outside player mode, nothing for anyone else.
+  const attendue = vueFiche.illustration === null && vueMJ(role, acteur) ? illustrationEnAttente(db, ficheId) : null;
   return {
-    ...versFiche(fiche, (f) => lisiblePar(role, acteur, f)),
+    ...vueFiche,
+    ...(attendue !== null ? { illustration: { attente: true as const, cle: attendue } } : {}),
     ancetres: ancetresLisibles(db, role, acteur, fiche),
     mentions: mentions.mentions,
     mentionsSuite: mentions.suite,

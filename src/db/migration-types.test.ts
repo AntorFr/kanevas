@@ -45,9 +45,10 @@ function avant10(): Db {
   // give it scratch tables for the seed, dropped before 0015 creates the real ones.
   db.exec('CREATE TABLE fichiers (id, univers_id, nom, type, taille, disque, visibilite, ajoute_par)');
   db.exec('CREATE TABLE fichiers_sections (fichier_id, section_id, joint, dans_texte, dans_bloc_mj, PRIMARY KEY (fichier_id, section_id))');
+  db.exec('CREATE TABLE fichiers_attente (id INTEGER PRIMARY KEY, univers_id, cle, section_id, fiche_id, maniere)');
   db.exec('ALTER TABLE fiches ADD COLUMN illustration_fichier_id INTEGER');
   semerBouchon(db);
-  db.exec('DROP TABLE fichiers_sections; DROP TABLE fichiers');
+  db.exec('DROP TABLE fichiers_attente; DROP TABLE fichiers_sections; DROP TABLE fichiers');
   return db;
 }
 

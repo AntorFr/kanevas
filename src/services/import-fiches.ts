@@ -1,4 +1,5 @@
 import type { Db } from '../db/db.js';
+import { cleValide } from './import.js';
 import { ErreurService } from './erreurs.js';
 import {
   etiquetageDe,
@@ -19,7 +20,18 @@ import {
   validerSousType,
 } from './fiches.js';
 import type { Jeton } from './jetons.js';
+import {
+  choisirIllustration,
+  fichierDeCle,
+  jointsDe,
+  joindreParImport,
+  MAX_FICHIERS_JOINTS,
+  noterAttente,
+  oublierAttenteIllustration,
+  retirerIllustration,
+} from './fichiers.js';
 import { preparerContenu } from './liens.js';
+import { extraireClesFichier } from './markdown.js';
 import { lireLot, noterDansLot, type EntreeRapport, type Issue } from './lots.js';
 import {
   ajouterSection,
@@ -51,6 +63,8 @@ interface SectionEntree {
   contenu: string;
   joueursLisent: boolean;
   joueursEcrivent: boolean;
+  /** Origin keys of the files joined to the section; `undefined`: the request says nothing. */
+  fichiers?: string[];
 }
 
 interface FicheEntree {
@@ -64,6 +78,8 @@ interface FicheEntree {
   etiquettes?: string[];
   /** Origin key of the wanted parent; `null`: no parent; `undefined`: the request says nothing. */
   parent?: string | null;
+  /** Origin key of the image that illustrates the sheet; `null`: none; `undefined`: the request says nothing. */
+  illustration?: string | null;
   creeLe?: string;
   modifieLe?: string;
   sections: SectionEntree[];
@@ -75,6 +91,7 @@ class Refus extends Error {
     readonly champ: string,
     readonly objet: string,
     readonly raison: string,
+    readonly code?: string,
   ) {
     super(raison);
   }
@@ -82,10 +99,7 @@ class Refus extends Error {
 
 const milliers = (n: number) => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
 
-/** An origin key: 1 to 200 characters, no `|`, `]` nor line break (contract of the import API). */
-export function cleValide(cle: string): boolean {
-  return cle.length >= 1 && cle.length <= 200 && !/[|\]\r\n]/.test(cle);
-}
+export { cleValide } from './import.js';
 
 function texte(v: unknown, champ: string, objet: string, min: number, max: number, quoi: string): string {
   if (typeof v !== 'string') throw new Refus(champ, objet, `${quoi} manquant`);
@@ -153,6 +167,13 @@ function lireCorps(corps: unknown, maintenant: Date): FicheEntree {
     }
     parent = c.parent;
   } else parent = c.parent;
+  let illustration: string | null | undefined;
+  if (c.illustration !== undefined && c.illustration !== null) {
+    if (typeof c.illustration !== 'string' || !cleValide(c.illustration)) {
+      throw new Refus('illustration', 'fiche', "illustration : clé d'origine absente ou invalide");
+    }
+    illustration = c.illustration;
+  } else illustration = c.illustration;
   const brutes = c.sections ?? [];
   if (!Array.isArray(brutes)) throw new Refus('sections', 'fiche', 'sections : une liste est attendue');
   const vues = new Set<string>();
@@ -179,15 +200,33 @@ function lireCorps(corps: unknown, maintenant: Date): FicheEntree {
         `section « ${titreS} » : ${milliers(contenu.length)} caractères, ${milliers(MAX_CONTENU_SECTION)} au plus`,
       );
     }
+    let fichiers: string[] | undefined;
+    if (s.fichiers !== undefined && s.fichiers !== null) {
+      if (!Array.isArray(s.fichiers)) {
+        throw new Refus(`${ch}.fichiers`, 'section', `section « ${titreS} » : fichiers : une liste de clés est attendue`);
+      }
+      if (s.fichiers.length > MAX_FICHIERS_JOINTS) {
+        throw new Refus(
+          'fichiers',
+          'section',
+          `section « ${titreS} » : ${s.fichiers.length} fichiers joints, ${MAX_FICHIERS_JOINTS} au plus`,
+        );
+      }
+      if (s.fichiers.some((k) => typeof k !== 'string' || !cleValide(k))) {
+        throw new Refus(`${ch}.fichiers`, 'section', `section « ${titreS} » : fichiers : clé d'origine absente ou invalide`);
+      }
+      fichiers = [...new Set(s.fichiers as string[])];
+    }
     return {
       cle: s.cle,
       titre: titreS,
       contenu,
+      fichiers,
       joueursLisent: booleen(s.joueursLisent, `${ch}.joueursLisent`, 'section'),
       joueursEcrivent: booleen(s.joueursEcrivent, `${ch}.joueursEcrivent`, 'section'),
     };
   });
-  return { type, titre, sousType, pj, alias, etiquettes, parent, creeLe, modifieLe, sections };
+  return { type, titre, sousType, pj, alias, etiquettes, parent, illustration, creeLe, modifieLe, sections };
 }
 
 interface FicheLue {
@@ -214,12 +253,16 @@ interface MarqueFiche {
   etiquettes?: string[];
   /** `demande`: the key asked; `ecrit`: id of the parent the import left (null: none). AD-115 (4). */
   parent?: { demande: string | null; ecrit: number | null };
+  /** `demande`: the key asked; `ecrit`: id of the illustration the import left (null: none). B-48. */
+  illustration?: { demande: string | null; ecrit: number | null };
 }
 
 interface MarqueSection {
   titre?: string;
   joueursLisent?: boolean;
   joueursEcrivent?: boolean;
+  /** Ids of the files the import has joined (B-48): one a human unjoined since is not joined again. */
+  fichiers?: { ecrits: number[] };
 }
 
 const desactive = (type: string) => `type_desactive : le type « ${type} » est désactivé dans cet univers`;
@@ -264,7 +307,7 @@ export function assurerFiche(
         maintenant,
       );
     }
-    throw new ErreurService('invalide', r.raison, undefined, r.champ);
+    throw new ErreurService('invalide', r.raison, r.code, r.champ);
   };
 
   let entree: FicheEntree;
@@ -274,6 +317,15 @@ export function assurerFiche(
   } catch (e) {
     if (e instanceof Refus) return refuser(e);
     throw e;
+  }
+  // A known document cannot be an illustration: refused before anything of the sheet is written.
+  if (typeof entree.illustration === 'string') {
+    const f = fichierDeCle(db, jeton.universId, entree.illustration);
+    if (f && !f.type.startsWith('image/')) {
+      return refuser(
+        new Refus('illustration', 'fiche', `illustration : « ${entree.illustration} » n'est pas une image`, 'pas_une_image'),
+      );
+    }
   }
 
   try {
@@ -331,11 +383,18 @@ function ecrire(
     if (alias?.length || etiquettes?.length) {
       poserEtiquetage(db, { compteId }, universId, fiche.id, { alias: alias ?? [], etiquettes: etiquettes ?? [] });
     }
-    for (const s of e.sections) creerSection(db, jeton, fiche.id, s);
+    for (const s of e.sections) creerSection(db, jeton, fiche.id, s, prevenir);
     if (e.parent !== undefined) {
       const m = poserParent(db, jeton, fiche.id, cle, e.parent, null, undefined, prevenir);
       if (m) {
         marque.parent = m;
+        db.prepare('UPDATE fiches SET dernier_import = ? WHERE id = ?').run(JSON.stringify(marque), fiche.id);
+      }
+    }
+    if (e.illustration !== undefined) {
+      const m = poserIllustration(db, jeton, fiche.id, e.illustration, undefined, prevenir);
+      if (m) {
+        marque.illustration = m;
         db.prepare('UPDATE fiches SET dernier_import = ? WHERE id = ?').run(JSON.stringify(marque), fiche.id);
       }
     }
@@ -430,6 +489,18 @@ function ecrire(
     }
   }
 
+  // Illustration: protected like the parent, an image set by a human is not replaced (B-48).
+  if (e.illustration !== undefined) {
+    const courantIll = (
+      db.prepare('SELECT illustration_fichier_id AS id FROM fiches WHERE id = ?').get(existante.id) as { id: number | null }
+    ).id;
+    const m = poserIllustration(db, jeton, existante.id, e.illustration, di?.illustration, prevenir);
+    if (m) {
+      if (m.ecrit !== courantIll) ecrit = true;
+      marque.illustration = m;
+    }
+  }
+
   // Sections, by origin key.
   const lignes = db
     .prepare('SELECT * FROM sections WHERE fiche_id = ? ORDER BY ordre')
@@ -440,7 +511,7 @@ function ecrire(
   for (const s of e.sections) {
     const ligne = parCle.get(s.cle);
     if (!ligne) {
-      demandes.push(creerSection(db, jeton, existante.id, s));
+      demandes.push(creerSection(db, jeton, existante.id, s, prevenir));
       nouvelle = true;
       ecrit = true;
       continue;
@@ -462,6 +533,91 @@ function ecrire(
     db.prepare('UPDATE fiches SET dernier_import = ? WHERE id = ?').run(json, existante.id);
   }
   return { id: existante.id, etat: ecrit ? 'mise_a_jour' : 'inchangee' };
+}
+
+/**
+ * Sets the illustration the request names, unless a human changed it since the import (B-48). A key the universe
+ * does not know yet waits (`fichiers_attente`) and warns the batch. Returns the new `dernier_import.illustration`,
+ * or undefined to leave it as it was.
+ */
+function poserIllustration(
+  db: Db,
+  jeton: Jeton,
+  ficheId: number,
+  voulu: string | null,
+  avant: { demande: string | null; ecrit: number | null } | undefined,
+  prevenir: (objet: string, raison: string) => void,
+): { demande: string | null; ecrit: number | null } | undefined {
+  const { universId, compteId } = jeton;
+  const courant = (
+    db.prepare('SELECT illustration_fichier_id AS id FROM fiches WHERE id = ?').get(ficheId) as { id: number | null }
+  ).id;
+  const fichier = voulu === null ? undefined : fichierDeCle(db, universId, voulu);
+  if (fichier && fichier.id === courant) {
+    oublierAttenteIllustration(db, ficheId);
+    return { demande: voulu, ecrit: courant };
+  }
+  if (courant !== (avant?.ecrit ?? null)) {
+    prevenir('fiche', 'illustration modifiée dans Kanevas : non écrasée');
+    return undefined;
+  }
+  oublierAttenteIllustration(db, ficheId);
+  if (voulu === null) {
+    if (courant !== null) retirerIllustration(db, { compteId }, universId, ficheId);
+    return { demande: null, ecrit: null };
+  }
+  if (!fichier) {
+    noterAttente(db, universId, voulu, { ficheId, maniere: 'illustration' });
+    prevenir('fiche', `fichier « ${voulu} » inconnu : illustration en attente`);
+    return { demande: voulu, ecrit: courant };
+  }
+  choisirIllustration(db, { compteId }, universId, ficheId, fichier.id);
+  return { demande: voulu, ecrit: fichier.id };
+}
+
+/**
+ * Joins the files the request names to a section, by origin key (B-48): a key the universe does not know
+ * waits; a file a human unjoined since is not joined again; the 101st is not joined. Returns the new
+ * `dernier_import.fichiers`, or undefined when the request says nothing.
+ */
+function poserJoints(
+  db: Db,
+  universId: number,
+  section: { id: number; titre: string },
+  voulu: string[] | undefined,
+  avant: number[] | undefined,
+  prevenir: (objet: string, raison: string) => void,
+): { marque: { ecrits: number[] }; ecrit: boolean } | undefined {
+  if (voulu === undefined) return undefined;
+  const actuel = new Set(jointsDe(db, section.id));
+  const ecrits = new Set(avant ?? []);
+  let ecrit = false;
+  let retire = false;
+  for (const cle of voulu) {
+    const f = fichierDeCle(db, universId, cle);
+    if (!f) {
+      noterAttente(db, universId, cle, { sectionId: section.id, maniere: 'joint' });
+      prevenir('section', `section « ${section.titre} » : fichier « ${cle} » inconnu : référence en attente`);
+    } else if (actuel.has(f.id)) {
+      ecrits.add(f.id);
+    } else if (ecrits.has(f.id)) {
+      retire = true;
+    } else if (joindreParImport(db, section.id, f.id)) {
+      ecrits.add(f.id);
+      ecrit = true;
+    } else {
+      prevenir('section', `section « ${section.titre} » : ${MAX_FICHIERS_JOINTS} fichiers joints au plus, « ${cle} » non joint`);
+    }
+  }
+  if (retire) prevenir('section', `section « ${section.titre} » : fichiers joints modifiés dans Kanevas : non rétablis`);
+  return { marque: { ecrits: [...ecrits].sort((a, b) => a - b) }, ecrit };
+}
+
+/** Warns, once per key, of the `fichier:cle:` references a stored text still carries (they wait for their file). */
+function prevenirTexte(contenu: string, titre: string, prevenir: (objet: string, raison: string) => void): void {
+  for (const cle of new Set(extraireClesFichier(contenu))) {
+    prevenir('section', `section « ${titre} » : fichier « ${cle} » inconnu : référence en attente`);
+  }
 }
 
 /**
@@ -537,7 +693,13 @@ function ensembleVoulu(
 }
 
 /** Appends an imported section; returns its id. */
-function creerSection(db: Db, jeton: Jeton, ficheId: number, s: SectionEntree): number {
+function creerSection(
+  db: Db,
+  jeton: Jeton,
+  ficheId: number,
+  s: SectionEntree,
+  prevenir: (objet: string, raison: string) => void,
+): number {
   const { universId, compteId } = jeton;
   const v = ajouterSection(db, compteId, universId, ficheId, { titre: s.titre, contenu: s.contenu });
   if (s.joueursLisent || s.joueursEcrivent) {
@@ -551,6 +713,9 @@ function creerSection(db: Db, jeton: Jeton, ficheId: number, s: SectionEntree): 
     joueursLisent: s.joueursLisent,
     joueursEcrivent: s.joueursEcrivent,
   };
+  prevenirTexte(preparerContenu(db, universId, compteId, s.contenu), s.titre, prevenir);
+  const joints = poserJoints(db, universId, { id: v.id, titre: s.titre }, s.fichiers, undefined, prevenir);
+  if (joints) marque.fichiers = joints.marque;
   db.prepare('UPDATE sections SET cle_origine = ?, version_importee = ?, dernier_import = ? WHERE id = ?').run(
     s.cle,
     v.version,
@@ -598,14 +763,22 @@ function majSection(
     prevenir('section', `section « ${ligne.titre} » : audience modifiée dans Kanevas : non écrasée`);
   }
 
+  const joints = poserJoints(db, universId, ligne, s.fichiers, di?.fichiers?.ecrits, prevenir);
+  if (joints) {
+    marque.fichiers = joints.marque;
+    if (joints.ecrit) ecrit = true;
+  }
+
   let versionImportee = ligne.version_importee;
   // The text is compared once the known keys are resolved (AD-104): a link already resolved is « inchangée ».
   const voulu = preparerContenu(db, universId, compteId, s.contenu);
-  if (ligne.contenu !== voulu) {
+  if (ligne.contenu === voulu) prevenirTexte(voulu, ligne.titre, prevenir);
+  else {
     if (ligne.version_importee !== null && ligne.version === ligne.version_importee) {
       const v = ecrireContenu(db, compteId, universId, ficheId, ligne.id, voulu, ligne.version);
       versionImportee = v.version;
       ecrit = true;
+      prevenirTexte(voulu, ligne.titre, prevenir);
     } else {
       prevenir('section', `section « ${ligne.titre} » modifiée dans Kanevas depuis le dernier import : non écrasée`);
     }

@@ -156,6 +156,15 @@ function BlocPiecesJointes({ universId, fiche, section, role, rafraichir, suffix
         {pieces.length > 0 && (
           <ul className="liste-pieces">
             {pieces.map((p) => {
+              if (p.attente !== undefined) {
+                return (
+                  <li key={p.id} className="piece">
+                    <p className="attente" title={p.nom}>
+                      {p.attente.length > 60 ? `Fichier en attente d'import : « ${p.attente.slice(0, 59)}… ».` : p.nom}
+                    </p>
+                  </li>
+                );
+              }
               if (p.ferme) {
                 return (
                   <li key={p.id} className="piece">
