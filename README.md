@@ -174,7 +174,7 @@ Recette des liens en bouchon. Dans « Lame d'Ébène », en `antor`, fiche « Po
 Recette de l'accès par API en bouchon (« Essai Kanka » est semé : Antor MJ, Léa joueuse, et un « Jeton du bouchon » de valeur fixe `JETON_BOUCHON`, `src/bouchon/depart.ts`). En `antor`, « Essai Kanka » ▸ « Accès par API » (E-18) : créer un jeton, qui ne s'affiche qu'une fois. Avec lui (ou le jeton du bouchon), l'API d'import (AD-103, AD-104), sur une base neuve (« Essai Kanka » est le 4ᵉ univers semé, id 4 ; avec `KANEVAS_SANS_SEMIS=1` il n'existe pas, ni le jeton du bouchon : créer un univers et un jeton, l'id est celui de l'adresse de base copiable sur E-18) :
 ```bash
 JETON=kvs_bouchon_essai_Hq7Zr2LmX9cVt4Wd8KpNb3YsJf6Ga0Ue   # le jeton du bouchon, ou celui créé sur E-18
-B=http://localhost:3001/api/import/v1/univers/4          # sans barre finale
+B=http://localhost:3055/api/import/v1/univers/4          # sans barre finale ; port 3055 comme la commande du bouchon ci-dessus (3001 pour `npm start` sans PORT)
 curl -H "Authorization: Bearer $JETON" $B                        # le contrat : types, limites
 curl -X POST -H "Authorization: Bearer $JETON" $B/lots            # ouvre (ou reprend) un lot ; copier le champ `lotId` de la réponse JSON
 curl -X PUT -H "Authorization: Bearer $JETON" -H 'content-type: application/json' "$B/fiches/lieu:port-sel?lot=<lotId>" \
