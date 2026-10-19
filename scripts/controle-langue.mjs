@@ -91,8 +91,8 @@ function total(sections) {
   return result;
 }
 
-function links(prose) {
-  const definitions = new Map([...prose.matchAll(/^ {0,3}\[([^\]]+)\]:\s*<?([^\s>]+)>?/gm)]
+function links(prose, document = prose) {
+  const definitions = new Map([...document.matchAll(/^ {0,3}\[([^\]]+)\]:\s*<?([^\s>]+)>?/gm)]
     .map((m) => [m[1].toLowerCase(), m[2]]));
   const found = [...prose.matchAll(/!?\[[^\]\n]*\]\(\s*(?:<([^>]+)>|([^\s)]+))(?:\s+[^\n]*?)?\)/g)]
     .map((m) => m[1] || m[2]);
@@ -206,6 +206,8 @@ function main() {
         continue;
       }
       const before = parse(oldText(normalized(file)));
+      const oldProse = before.map((s) => s.prose).join('\n');
+      const currentProse = current.map((s) => s.prose).join('\n');
       const range = ranges.get(file) || [0, Math.max(before.length, current.length) - 1];
       if (ranges.has(file) && range[1] >= before.length) throw new Error(`Section outside reference: ${file}:${range[1]}`);
       const sections = [];
@@ -216,8 +218,8 @@ function main() {
         const ecarts = differences(a?.faits, b?.faits);
         if (Boolean(a) !== Boolean(b)) ecarts.push({ fait: 'section', avant: Boolean(a), apres: Boolean(b) });
         if (checkLinks && b) {
-          const oldLinks = new Set(links(a?.prose || ''));
-          for (const href of links(b.prose)) {
+          const oldLinks = new Set(links(a?.prose || '', oldProse));
+          for (const href of links(b.prose, currentProse)) {
             if (!resolves(normalized(file), href, false) && (!oldLinks.has(href) || resolves(normalized(file), href, true))) {
               broken.push({ section: i, lien: href });
             }
