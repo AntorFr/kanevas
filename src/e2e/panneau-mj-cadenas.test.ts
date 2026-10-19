@@ -35,7 +35,7 @@ for (const theme of ['clair', 'sombre'] as const) {
     await page.addInitScript((c: string) => localStorage.setItem('kanevas-theme', c), theme);
     const cas: Array<[string, string[]]> = [
       [`/univers/${uid}/campagnes/${cid}`, ['Scénarios', 'Préparation']],
-      [`/univers/${uid}/parametres`, ['Identité', 'Système de jeu', 'Créer un système']],
+      [`/univers/${uid}/parametres`, ['Identité', 'Système de jeu', 'Créer un système', 'Types de fiche', 'Supprimer l’univers']],
     ];
     for (const [url, titres] of cas) {
       await page.goto(url);

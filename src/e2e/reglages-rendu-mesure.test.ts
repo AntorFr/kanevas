@@ -50,7 +50,7 @@ test('E-4 : les pastilles de rôle finissent au bout du filet, au repos comme au
   assert.deepEqual(await mesure('lea'), repos, 'la pastille ne bouge pas au survol');
 });
 
-test('E-14 : les trois blocs MJ reprennent le bloc fermé de E-6/E-9 (trame, filet complet, barre de 3 px)', opts, async () => {
+test('E-14 : les cinq blocs MJ reprennent le bloc fermé de E-6/E-9 (trame, filet complet, barre de 3 px)', opts, async () => {
   await p.setViewportSize({ width: 1440, height: 900 });
   await p.getByRole('link', { name: 'Paramètres', exact: true }).click();
   await p.getByRole('heading', { name: 'Paramètres', level: 1 }).waitFor();
@@ -59,11 +59,11 @@ test('E-14 : les trois blocs MJ reprennent le bloc fermé de E-6/E-9 (trame, fil
     const s = getComputedStyle(e);
     const b = getComputedStyle(e, '::before');
     return {
-      titre: e.querySelector('h2')?.textContent ?? '', fond: s.backgroundImage, ombre: s.boxShadow, bord: s.borderLeftWidth,
+      titre: e.querySelector('h2')?.textContent ?? '', danger: e.classList.contains('zone-danger'), fond: s.backgroundImage, ombre: s.boxShadow, bord: s.borderLeftWidth,
       margeG: s.marginLeft, padD: s.paddingRight, avant: b.content, avantL: b.width, haut: e.getBoundingClientRect().top, bas: e.getBoundingClientRect().bottom,
     };
   }));
-  assert.equal(blocs.length, 3);
+  assert.equal(blocs.length, 5); // + « Types de fiche » et « Supprimer l’univers » (kanevas-import)
   for (const b of blocs) {
     assert.match(b.fond, /repeating-linear-gradient/, `${b.titre} : trame`);
     assert.doesNotMatch(b.fond, /transparent 40%/, `${b.titre} : plus de dégradé ouvert`);
@@ -73,7 +73,8 @@ test('E-14 : les trois blocs MJ reprennent le bloc fermé de E-6/E-9 (trame, fil
     assert.equal(b.margeG, '-28px', `${b.titre} : même marge que E-6/E-9`);
     assert.equal(b.padD, '28px');
     assert.equal(b.avant, '""', `${b.titre} : barre ::before`);
-    assert.equal(b.avantL, '3px');
+    // The closing panel « Supprimer l’univers » carries a --danger rule above it instead of the 3 px bar.
+    if (!b.danger) assert.equal(b.avantL, '3px');
   }
   assert.ok(blocs[1].haut - blocs[0].bas <= 12, 'blocs voisins resserrés comme E-6/E-9');
   await p.screenshot({ path: '/tmp/rv-reglages-e14-mesure.png' });

@@ -157,8 +157,9 @@ un Joueur.
 
 ## `kanevas-images` : aucune migration
 
-Aucune table, aucune colonne : une image générée est une **pièce jointe** ordinaire (`pieces_jointes`,
-`kanevas-fichiers`), créée par la fonction d'envoi unique (AD-65). La description demandée n'est
+Aucune table, aucune colonne : une image générée est un **fichier de la médiathèque** ordinaire (`fichiers`,
+joint à la section par `fichiers_sections`, migration 0015), créé par la fonction d'ajout unique
+`ajouterFichier` (AD-117 §6), sa visibilité déduite de la section. La description demandée n'est
 stockée nulle part (AD-28) ; seul le fichier l'est. Les identifiants du moteur d'images vivent dans
 `CODEX_HOME` sur le volume, hors base (AD-50).
 

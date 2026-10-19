@@ -1158,10 +1158,10 @@ portrait de son personnage). Le bloc livre ses six états (B-29), ci-dessus.
 
 **Ce que l'assistant fait de plus.** Le catalogue du **MJ** reçoit un outil, `generer_image` (AD-89) ;
 celui du Joueur n'en reçoit pas. Le MJ demande « Fais un portrait pour Apparence d'Aldric » : l'assistant
-décrit l'image, la fait générer, l'attache à la section (comme si le MJ l'avait déposée sur E-9, AD-65)
-et le dit. Une demande n'attache **qu'une** image ; l'image est une pièce jointe ordinaire de la
-section, avec sa visibilité (non secrète ; elle suit la section, B-24), que le MJ peut marquer secrète,
-retirer ou remplacer depuis E-9. Un Joueur qui demande une image n'a pas l'outil : l'assistant répond
+décrit l'image, la fait générer, l'attache à la section (comme si le MJ l'avait ajoutée par « Joindre un fichier » de E-9, AD-117 §6)
+et le dit. Une demande n'attache **qu'une** image ; l'image est un fichier de la médiathèque (E-19),
+joint à la section, avec la visibilité que donne l'endroit d'ajout (« Visible des joueurs » si les joueurs lisent la section,
+« Réservé au MJ » sinon, B-24, AD-111), que le MJ peut réserver, retirer ou remplacer depuis E-9 ou E-19. Un Joueur qui demande une image n'a pas l'outil : l'assistant répond
 qu'il ne peut pas, sans événement et sans rien attacher (le texte est celui du modèle ; on vérifie
 l'absence d'écriture). Sans moteur d'images disponible (ni bouchon, ni Codex), l'outil n'est pas dans
 le catalogue du MJ non plus, et l'assistant le dit de même.
@@ -1172,7 +1172,7 @@ Sous la réponse, comme les autres écritures (AD-76), un événement `image_att
 l'assistant » dont le libellé est « Image attachée à la section « Apparence » de « Maître Aldric » »,
 **la vignette de l'image** (au plus 240 px de large, rapport conservé, texte alternatif : la
 description demandée) et un lien « Ouvrir la section » vers E-9, à la section. La vignette est lue par la
-route authentifiée des pièces jointes (AD-67) : aucune adresse publique.
+route authentifiée des fichiers (AD-67, AD-111) : aucune adresse publique.
 
 | État | Ce qu'on voit | Ce qu'on peut faire |
 |---|---|---|
@@ -1190,8 +1190,8 @@ Fermer le panneau ne l'arrête pas ; recharger la page ou quitter l'univers l'ab
 attaché.
 
 **Les échecs, dits par l'assistant** (réponse sans événement, rien n'est attaché) : génération en
-échec ou trop longue — « Je n'ai pas pu générer l'image. » ; section pleine (50 pièces) — « Cette section
-porte déjà 50 pièces jointes. » ; droit d'écrire retiré entre-temps — « Vous ne pouvez pas modifier cette
+échec ou trop longue — « Je n'ai pas pu générer l'image. » ; section pleine (100 fichiers joints) — « Cette section
+porte déjà 100 fichiers joints. » ; droit d'écrire retiré entre-temps — « Vous ne pouvez pas modifier cette
 section. » ; seconde image dans la même demande — « Une seule image par demande. » ; description de plus de 500 caractères — « La description est limitée à 500 caractères. » (l'assistant en propose une plus courte) ; aucun moteur d'images — l'assistant répond qu'il ne peut pas générer d'image (l'outil est absent). Dans le bouchon, une
 demande dont la description contient « échec » donne le premier cas.
 
@@ -1199,13 +1199,13 @@ demande dont la description contient « échec » donne le premier cas.
 - Étant donné Antor, MJ, et « Apparence » de « Maître Aldric », quand il demande « Fais un portrait pour
   « Apparence » d'« Maître Aldric » », alors le fil montre « Image attachée à la section « Apparence » de
   « Maître Aldric » » avec la vignette et « Ouvrir la section », et la section d'Aldric, ouverte sur E-9,
-  porte une pièce jointe image de plus.
+  porte un fichier joint image de plus, qui figure aussi dans E-19.
 - Étant donné Léa, Joueuse, quand elle fait la même demande, alors l'assistant répond qu'il ne peut pas
-  et la section ne gagne aucune pièce jointe.
+  et la section ne gagne aucun fichier joint.
 - Étant donné Antor, en bouchon, quand sa demande contient « échec », alors le fil dit « Je n'ai pas pu
-  générer l'image. », sans bloc « Image attachée », et la section n'a pas de pièce de plus.
-- Étant donné Antor et une section qui porte déjà 50 pièces jointes, quand il demande une image, alors
-  l'assistant dit « Cette section porte déjà 50 pièces jointes. » et rien n'est attaché.
+  générer l'image. », sans bloc « Image attachée », et la section n'a pas de fichier de plus.
+- Étant donné Antor et une section qui porte déjà 100 fichiers joints, quand il demande une image, alors
+  l'assistant dit « Cette section porte déjà 100 fichiers joints. » et rien n'est attaché.
 - Étant donné une image attachée puis retirée de E-9, quand Antor ferme puis rouvre le panneau (le fil
   survit, AD-28, et la vignette est relue à la réouverture), alors le cadre dit « Image indisponible. » avec « Recharger l'image », et « Ouvrir la
   section » mène toujours à E-9 ; « Recharger l'image » relit la vignette et, l'image étant toujours
@@ -1225,7 +1225,7 @@ demande dont la description contient « échec » donne le premier cas.
   le rôle d'Antor dans l'univers est retiré, alors la lecture de la vignette répond « Page introuvable. » et le
   cadre dit « Image indisponible. ».
 - Étant donné une instance sans moteur d'images, quand Antor demande un portrait, alors l'assistant
-  répond qu'il ne peut pas générer d'image, sans événement et sans pièce jointe.
+  répond qu'il ne peut pas générer d'image, sans événement et sans fichier joint.
 
 ### Clôture de `kanevas-images`
 

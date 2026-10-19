@@ -75,7 +75,7 @@
 .ariane .maillon { display: inline-flex; align-items: center; gap: 2px; min-width: 0; }
 /* An ancestor keeps 8 characters (+ link padding and its chevron) then ellipses; it never goes below, nor over a chevron. */
 .ariane .maillon:not(.dernier):not(.long):not(.milieu):not(.plie) { flex-shrink: 1000; min-width: calc(8ch + 12px + 16px); }
-.ariane .maillon.dernier { flex: 0 1 auto; }
+.ariane .maillon.dernier { flex: 0 0 auto; max-width: 100%; } /* the last crumb stays whole; the ones before give way first */
 .ariane a { display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 6px; border-radius: var(--rayon-item); color: inherit; text-decoration: none; white-space: nowrap; min-width: 0; overflow: hidden; text-overflow: ellipsis;
   transition: background-color var(--duree), color var(--duree); }
 .ariane a:focus-visible { outline-offset: -2px; } /* overflow:hidden would clip an outer outline */

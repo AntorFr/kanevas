@@ -156,8 +156,9 @@ for (const [theme, hauteur] of [['Clair', 480], ['Sombre', 526], ['Clair', 568],
   });
 }
 
-test('tiroir MJ 390×900 : quand tout tient, le pied reste en bas du tiroir et rien ne défile', opts, async () => {
-  await ouvrirTiroir(antor, 900);
+test('tiroir MJ 390×1200 : quand tout tient, le pied reste en bas du tiroir et rien ne défile', opts, async () => {
+  // 1200 px: the bar now carries the media library and the lore types of kanevas-import, so 900 no longer holds it all.
+  await ouvrirTiroir(antor, 1200);
   const m = await mesuresPied(antor);
   assert.ok(m.vh - m.piedBas <= 13, `pied non ancré : ${JSON.stringify(m)}`);
   assert.ok(m.cache <= 1 && m.barreDefile <= 1, `défilement alors que tout tient : ${JSON.stringify(m)}`);
@@ -188,8 +189,9 @@ for (const theme of ['Clair', 'Sombre'] as const) {
   });
 }
 
-test('tiroir MJ 390×900 : tout tient, pas de pastille', opts, async () => {
-  await ouvrirTiroir(antor, 900);
+test('tiroir MJ 390×1200 : tout tient, pas de pastille', opts, async () => {
+  // 1200 px: the bar now carries the media library and the lore types of kanevas-import, so 900 no longer holds it all.
+  await ouvrirTiroir(antor, 1200);
   assert.deepEqual(await plusVisible(antor), { attr: false, affiche: false });
 });
 

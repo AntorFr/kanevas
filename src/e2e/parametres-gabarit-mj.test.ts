@@ -35,7 +35,7 @@ const ouvrirParametres = async (schema: 'light' | 'dark') => {
 };
 
 for (const schema of ['dark', 'light'] as const) {
-  test(`E-14 ${schema} bureau : bloc fermé hachuré de E-6/E-9 sur les trois panneaux`, opts, async () => {
+  test(`E-14 ${schema} bureau : bloc fermé hachuré de E-6/E-9 sur les cinq panneaux`, opts, async () => {
     await ouvrirParametres(schema);
     const panneaux = await p.locator('.panneau.reserve-mj').evaluateAll((els: HTMLElement[]) => els.map((e) => {
       const s = getComputedStyle(e);
@@ -43,7 +43,7 @@ for (const schema of ['dark', 'light'] as const) {
       return { bg: s.backgroundImage, shadow: s.boxShadow, borderLeft: s.borderLeftWidth, before: before.content, ml: s.marginLeft };
     }));
     await p.screenshot({ path: `/tmp/rv-parametres-gabarit-${schema}.png` });
-    assert.equal(panneaux.length, 3);
+    assert.equal(panneaux.length, 5); // Identité, Système de jeu, Créer un système, Types de fiche, Supprimer l’univers
     for (const x of panneaux) {
       assert.ok(x.bg.includes('repeating-linear-gradient'), `hachure : ${x.bg}`);
       assert.ok(/0px 0px 0px 1px inset/.test(x.shadow), `filet complet de 1 px : ${x.shadow}`);
