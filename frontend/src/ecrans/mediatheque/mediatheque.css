@@ -49,10 +49,11 @@ body:has(.med-panneau-ouvert) .asst-bouton { right: calc(400px + var(--e-5)); }
 .med-tuile.choisie .med-cadre::after { box-shadow: inset 0 0 0 2px var(--accent), inset 0 0 0 4px var(--fond); }
 .med-tuile:focus-visible { outline: 2px solid var(--focus); outline-offset: 0; }
 .med-tuile.squelette { height: 170px; background: var(--squelette); cursor: default; }
-.med-cadre { position: relative; display: block; aspect-ratio: 4 / 3; border-radius: var(--rayon-champ); overflow: hidden; background: var(--squelette); }
-/* Document tiles reserve separate rows for the visibility badge, icon and metadata. */
-.med-cadre:has(.med-feuille) { min-height: 144px; }
-.med-cadre > .med-doc:has(.med-feuille) { padding-top: 36px; padding-bottom: 36px; }
+.med-cadre { position: relative; display: block; width: 100%; aspect-ratio: 4 / 3; border-radius: var(--rayon-champ); overflow: hidden; background: var(--squelette); }
+/* Fit the document inside the shared frame, keeping space above and below its icon. */
+.med-cadre > .med-doc:has(.med-feuille) { position: absolute; inset: 0; padding-top: 36px; padding-bottom: 36px; }
+.med-cadre .med-feuille { width: auto; height: 100%; max-height: 64px; aspect-ratio: 1; }
+.med-cadre .med-feuille svg { width: 50%; height: 50%; }
 .med-cadre::after { content: ""; position: absolute; inset: 0; border-radius: inherit; box-shadow: inset 0 0 0 1px var(--bord); pointer-events: none; }
 .med-vignette, .med-grand { display: block; width: 100%; border-radius: var(--rayon-champ); background: var(--surface-2); }
 .med-cadre > .med-vignette { height: 100%; border-radius: 0; object-fit: cover; object-position: 50% 40%; }
@@ -158,9 +159,7 @@ body:has(.med-panneau-ouvert) .asst-bouton { right: calc(400px + var(--e-5)); }
 .selecteur-outils { display: flex; align-items: center; flex-wrap: wrap; gap: var(--e-3); margin-bottom: var(--e-3); }
 .selecteur-outils .med-recherche { max-width: 340px; }
 .selecteur .med-grille { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: var(--e-4) var(--e-3); }
-.selecteur .med-cadre:has(.med-feuille) { min-height: 124px; }
-.selecteur .med-feuille { width: 44px; height: 44px; margin-top: 0; border-radius: 11px; }
-.selecteur .med-feuille svg { width: 22px; height: 22px; }
+.selecteur .med-feuille { max-height: 44px; margin-top: 0; border-radius: 11px; }
 .selecteur-appareil .med-cadre { width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center;
   gap: var(--e-2); padding: var(--e-2); border: 1px dashed var(--bord-champ); background: var(--surface); text-align: center; font-size: var(--t-13); font-weight: 500; }
 .selecteur-appareil .med-cadre::after { content: none; }
@@ -173,5 +172,5 @@ body:has(.med-panneau-ouvert) .asst-bouton { right: calc(400px + var(--e-5)); }
 .selecteur-vide { color: var(--texte-2); margin: var(--e-4) 0; }
 .envoi-fichier { color: var(--texte-2); font-size: var(--t-13); margin: var(--e-1) 0; }
 .boite.selecteur .echec { margin-bottom: var(--e-3); }
-.bouton.fantome.med-supprimer { color: var(--danger); align-self: flex-start; }
+.bouton.fantome.med-supprimer { color: var(--danger); align-self: flex-start; margin-left: -8px; padding: 0 8px; border: 0; }
 .bouton.fantome.med-supprimer:hover { background: var(--danger-fond); color: var(--danger); }
