@@ -111,7 +111,10 @@ export function insererTexte(texte: string, debut: number, fin: number, insertio
   const b = Math.min(texte.length, Math.max(debut, fin));
   const avant = texte.slice(0, a);
   const apres = texte.slice(b);
-  const prefixe = avant !== '' && !avant.endsWith('\n') ? '\n' : '';
+  // A table consumes subsequent non-empty lines as rows, even without pipes.
+  const apresTableau = /(?:^|\n)[ \t]*\|[^\n]*\n?$/.test(avant);
+  const prefixe = apresTableau ? (avant.endsWith('\n') ? '\n' : '\n\n')
+    : avant !== '' && !avant.endsWith('\n') ? '\n' : '';
   const suffixe = apres !== '' && !apres.startsWith('\n') ? '\n' : '';
   const f = a + prefixe.length + insertion.length;
   return { texte: avant + prefixe + insertion + suffixe + apres, debut: f, fin: f };

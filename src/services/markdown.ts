@@ -187,7 +187,7 @@ function remplacement(r: RenduFichier | null, image: boolean, md: InstanceType<t
   if (r === null) return null;
   switch (r.genre) {
     case 'ferme':
-      return `<span class="fichier-reserve">${image ? IMAGE_RESERVEE : FICHIER_RESERVE}</span>`;
+      return `<span class="fichier-reserve${image ? ' image-reservee' : ''}">${image ? IMAGE_RESERVEE : FICHIER_RESERVE}</span>`;
     case 'supprime':
       return `<span class="fichier-supprime">${FICHIER_SUPPRIME}</span>`;
     case 'rien':

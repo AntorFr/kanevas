@@ -252,7 +252,10 @@ manifeste `clusters/tantive/games/kanevas-helm-config.yml` et client OIDC
 `k8s-home-lab`. Ordre : publier l'image (tag `vX.Y.Z`), publier le chart, puis
 fusionner `k8s-home-lab`, dont la fusion déploie.
 
-Pour la carte du code, les invariants et les options écartées, voir `ARCHITECTURE.md`, dont le
-tableau liste les décisions `AD-n` retenues pour l'epic, construites ou non (« La cible » dit ce qui est construit), avec leur numéro stable ; les numéros absents sont des décisions retirées ou d'autres tranches, aucune n'est cachée ici. Les
-documents de conception (`plan.md`, `technique.md`, `socle-projet`) sont tenus hors de ce dépôt, dans le magasin de pilotage de la chaîne SDLC (« Monsieur » est le commanditaire qui fait la recette, « tranche » une feature livrée, « phase merge » la fusion qui suit la recette) ; dont ce
-qui doit survivre est dans `ARCHITECTURE.md` et `docs/`.
+See `ARCHITECTURE.md` for the code map, invariants and rejected options. Its table lists the epic's
+retained `AD-n` decisions, including those still awaiting implementation; “La cible” identifies what
+is built. Decision numbers are stable; gaps correspond to withdrawn decisions or other slices.
+Design documents (`plan.md`, `technique.md`, `socle-projet`) live outside this repository, in the
+SDLC tracking store. There, “Monsieur” is the stakeholder who performs acceptance checks, “tranche”
+is a delivered feature and “phase merge” is the merge after acceptance. Material that must outlive
+those design documents is kept in `ARCHITECTURE.md` and `docs/`.
