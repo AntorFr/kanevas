@@ -119,7 +119,7 @@ test('E-19 · un fichier utilisé dans 40 fiches : « Utilisé dans » en montre
   await antor.getByRole('heading', { name: 'Médiathèque', level: 1 }).waitFor();
   await attendre(antor);
   await antor.getByRole('button', { name: /affiche-des-quarante\.png/ }).first().click();
-  await antor.getByRole('link', { name: 'Télécharger' }).first().waitFor();
+  await antor.locator('.med-panneau').waitFor();
   const bloc = antor.getByRole('complementary').or(antor.getByRole('dialog')).last();
   await antor.getByText('Utilisé dans').first().waitFor();
   const plus = antor.getByRole('button', { name: /Afficher les 30 autres/ });
@@ -149,7 +149,7 @@ test('E-19 · au téléphone (390 px) : la grille et le panneau d’un fichier t
   assert.ok((await large()) <= 0, 'no sideways scroll on the grid');
   await p.screenshot({ path: '/tmp/scr/rep-mediatheque-390-grille.png' });
   await p.getByRole('button', { name: /Carte des Sphères/ }).first().click();
-  await p.getByRole('link', { name: 'Télécharger' }).first().waitFor();
+  await p.locator('.med-panneau').waitFor();
   assert.ok((await large()) <= 0, 'no sideways scroll with the panel open');
   assert.match(await texte(p), /Carte des Sphères/);
   await p.screenshot({ path: '/tmp/scr/rep-mediatheque-390-panneau.png' });

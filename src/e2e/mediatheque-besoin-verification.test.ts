@@ -89,7 +89,7 @@ const mediatheque = async (p: Any, base = '') => {
 const grille = async (p: Any): Promise<string> => (await p.locator('main').innerText()) as string;
 const ouvrir = async (p: Any, nom: string) => {
   await p.getByRole('button', { name: nom, exact: false }).filter({ hasText: nom }).first().click();
-  await p.getByRole('link', { name: 'Télécharger' }).first().waitFor();
+  await p.locator('.med-panneau').waitFor();
 };
 const depot = async (p: Any, nom: string, mime: string, contenu: Buffer, extra: Record<string, string> = {}) =>
   p.request.post(`/api/univers/${uid}/fichiers`, { multipart: { ...extra, fichier: { name: nom, mimeType: mime, buffer: contenu } } });

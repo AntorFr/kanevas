@@ -2,7 +2,7 @@
 //
 // TEST PLAN
 //   document : the preview holds the type label « Document PDF » AND the « Télécharger » link (inside the
-//              dotted preview, not below it); an image keeps its link below the image, once
+//              dotted preview, not below it); an image has no « Télécharger » (maquette #etat-image)
 //   usages   : a file both in the text and attached to the same section gives two lines
 //              « « Section » (dans le texte) » and « Pièces jointes de « Section » »; an illustration says
 //              « (illustration) »; an attached-only file never says « (dans le texte) »
@@ -50,7 +50,7 @@ const ouvrirPanneau = async (nom: string) => {
   await antor.waitForLoadState('networkidle');
 };
 
-test('document : « Document PDF » et « Télécharger » dans l’aperçu ; image : un seul « Télécharger », hors aperçu', opts, async () => {
+test('document : « Document PDF » et « Télécharger » dans l’aperçu ; image : aucun « Télécharger »', opts, async () => {
   const r = await antor.request.post(api('/fichiers'), { multipart: { fichier: PDF('tarifs-rev.pdf') } });
   assert.ok(r.ok(), await r.text());
   await ouvrirPanneau('tarifs-rev.pdf');
@@ -66,8 +66,38 @@ test('document : « Document PDF » et « Télécharger » dans l’aperçu ; im
 
   await ouvrirPanneau('Carte des Sphères');
   assert.equal(await antor.locator('.med-panneau .med-apercu-document').count(), 0);
-  assert.equal(await antor.locator('.med-panneau').getByRole('link', { name: 'Télécharger' }).count(), 1);
+  // maquette #etat-image: an image panel has no « Télécharger » at all
+  assert.equal(await antor.locator('.med-panneau').getByRole('link', { name: 'Télécharger' }).count(), 0);
   assert.equal(await antor.locator('.med-panneau .med-apercu-document a').count(), 0);
+});
+
+test('image : le nom n’est pas décalé par un retrait et le crayon de renommage est un bouton icône sans contour', opts, async () => {
+  await ouvrirPanneau('Carte des Sphères');
+  const nom = antor.locator('.med-panneau .med-nom-en-place');
+  assert.equal(await nom.evaluate((e: Element) => getComputedStyle(e).paddingLeft), '0px');
+  const crayon = antor.locator('.med-panneau').getByRole('button', { name: 'Renommer le fichier' });
+  assert.equal(await crayon.count(), 1);
+  assert.equal(await crayon.evaluate((e: Element) => getComputedStyle(e).borderTopWidth), '0px');
+  await crayon.click();
+  assert.equal(await nom.evaluate((e: Element) => document.activeElement === e), true, 'le crayon met le nom en saisie');
+});
+
+test('document : la ligne de métadonnées dit PDF (extension du nom), jamais OCTET-STREAM', opts, async () => {
+  const r = await antor.request.post(api('/fichiers'), { multipart: { fichier: PDF('meta-ext.pdf') } });
+  assert.ok(r.ok(), await r.text());
+  await ouvrirPanneau('meta-ext.pdf');
+  const meta = norm(await antor.locator('.med-panneau .med-meta-ligne').innerText());
+  assert.match(meta, /^PDF \d/, meta);
+  assert.doesNotMatch(meta, /OCTET/i);
+});
+
+test('image sans extension : la ligne de métadonnées retombe sur le type MIME', opts, async () => {
+  const png = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR4nGP4z8DwHwAFAAH/q842iQAAAABJRU5ErkJggg==', 'base64');
+  const r = await antor.request.post(api('/fichiers'), { multipart: { fichier: { name: 'sans-ext', mimeType: 'image/png', buffer: png } } });
+  assert.ok(r.ok(), await r.text());
+  await ouvrirPanneau('sans-ext');
+  const meta = norm(await antor.locator('.med-panneau .med-meta-ligne').innerText());
+  assert.match(meta, /^PNG \d/, meta);
 });
 
 test('« Utilisé dans » : texte + joint dans la même section = deux lignes ; joint seul ne dit pas « dans le texte » ; illustration', opts, async () => {
