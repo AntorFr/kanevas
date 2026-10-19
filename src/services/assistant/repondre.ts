@@ -4,6 +4,7 @@ import { BouchonTransport } from './bouchon.js';
 import { catalogueDe } from './catalogue.js';
 import { ClaudeAgentTransport } from './claude-agent.js';
 import { disponibilite, type ConfigAssistant } from './disponibilite.js';
+import { jetonEffectif } from './jeton.js';
 import { ErreurAssistant } from './erreurs.js';
 import { INSTRUCTION_SYSTEME } from './instruction.js';
 import type { AgentTransport, MessageFil } from './transport.js';
@@ -82,7 +83,7 @@ class Echeance {
 function transportDe(config: ConfigAssistant): AgentTransport {
   if (disponibilite(config) === 'bouchon') return new BouchonTransport();
   return new ClaudeAgentTransport({
-    jeton: config.CLAUDE_CODE_OAUTH_TOKEN!.trim(),
+    jeton: jetonEffectif(config)!,
     modele: config.ANTHROPIC_MODEL ?? env.ANTHROPIC_MODEL,
   });
 }

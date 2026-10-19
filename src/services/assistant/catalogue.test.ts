@@ -63,11 +63,11 @@ test('chercher Aldric sans type : la fiche, pas une autre', () => {
 
 test('chercher Aldric : un mot présent seulement dans la section fermée ne trouve rien pour Léa', () => {
   const { lea, antor, outil } = monde();
-  assert.deepEqual(ok(outil(lea.id, 'chercher', { mots: 'Traître' })).donnees.fiches, []);
+  assert.deepEqual(outil(lea.id, 'chercher', { mots: 'Traître' }), { ok: false, erreur: 'Introuvable.' });
   assert.equal(ok(outil(antor.id, 'chercher', { mots: 'Traître' })).donnees.fiches.length, 1);
 });
 
-test('chercher Garde sans type : 20 fiches triées par type puis titre, tronquée', () => {
+test('chercher Garde sans type : 20 fiches triées par titre (AD-118), tronquée', () => {
   const { db, antor, lea, u, outil } = monde();
   const mk = (type: string, n: number, pre: string) => {
     for (let i = 0; i < n; i++) {
@@ -82,17 +82,9 @@ test('chercher Garde sans type : 20 fiches triées par type puis titre, tronqué
   const r = ok(outil(lea.id, 'chercher', { mots: 'Garde' })).donnees;
   assert.equal(r.fiches.length, 20);
   assert.equal(r.tronquee, true);
-  // Order BETWEEN types is a gap (not pinned): types stay grouped, titles ascend inside a type.
-  const types = r.fiches.map((f: any) => f.type);
-  assert.deepEqual(types, [...types].sort((x, y) => types.indexOf(x) - types.indexOf(y)));
-  for (const t of new Set(types)) {
-    const titres = r.fiches.filter((f: any) => f.type === t).map((f: any) => f.titre);
-    assert.deepEqual(titres, [...titres].sort());
-  }
-  assert.deepEqual(
-    r.fiches.filter((f: any) => f.type === 'personnage').map((f: any) => f.titre),
-    Array.from({ length: 8 }, (_, i) => `Garde-perso 0${i}`),
-  );
+  // One call to listerFiches, every type: the list's order, by title without case.
+  const titres = r.fiches.map((f: any) => f.titre);
+  assert.deepEqual(titres, [...titres].sort((x: string, y: string) => x.toLowerCase().localeCompare(y.toLowerCase())));
   // exactly 20 → not truncated; with type → only that type
   const t = ok(outil(lea.id, 'chercher', { mots: 'Garde', type: 'lieu' })).donnees;
   assert.equal(t.fiches.length, 10);
@@ -109,7 +101,7 @@ test('lister_campagnes, lire_fiche et lire_section selon le rôle', () => {
   const inex = outil(lea.id, 'lire_section', { ficheId: aldric.id, sectionId: 99999 });
   assert.deepEqual(cache, { ok: false, erreur: 'Introuvable.' });
   assert.deepEqual(inex, cache);
-  assert.equal(ok(outil(lea.id, 'lire_section', { ficheId: aldric.id, sectionId: app.id })).donnees.contenu, 'Grand.');
+  assert.equal(ok(outil(lea.id, 'lire_section', { ficheId: aldric.id, sectionId: app.id })).donnees.contenu, '<p>Grand.</p>\n');
 });
 
 test('creer_campagne / creer_scenario : événements, visibilité, étanchéité entre univers', () => {
@@ -153,11 +145,29 @@ test('ajouter_a_section de Léa : écrit après l’existant ; lecture seule et 
   assert.deepEqual(vieux, { ok: false, erreur: "La section a changé depuis que vous l'avez lue. Relisez-la." });
   const ro = outil(lea.id, 'ajouter_a_section', { ficheId: aldric.id, sectionId: app.id, texte: 'Z', version: 1 });
   assert.deepEqual(ro, { ok: false, erreur: 'Vous ne pouvez pas modifier cette section.' });
-  assert.equal(ok(outil(lea.id, 'lire_section', { ficheId: aldric.id, sectionId: app.id })).donnees.contenu, 'Grand.');
+  assert.equal(ok(outil(lea.id, 'lire_section', { ficheId: aldric.id, sectionId: app.id })).donnees.contenu, '<p>Grand.</p>\n');
 });
 
 test('paramètres inconnus ou invalides : échec sans effet', () => {
   const { lea, outil, aldric, antor } = monde();
   assert.equal(outil(lea.id, 'lire_fiche', { ficheId: aldric.id, compteId: antor.id }).ok, false);
   assert.equal(outil(antor.id, 'creer_campagne', { nom: '' }).ok, false);
+});
+
+test('bouchon : chercher salport (Antor, sans type) rend Port-Sel ; sous-main (Léa) : Introuvable., aucun événement', async () => {
+  const { semerBouchon } = await import('../../bouchon/depart.js');
+  const db: Db = openDb(':memory:');
+  migrate(db);
+  semerBouchon(db);
+  const lame = (db.prepare('SELECT id FROM univers WHERE nom = ?').get("Lame d'Ébène") as any).id;
+  const cpt = (n: string) => assurerCompte(db, n).id;
+  const run = (n: string, mots: string) =>
+    catalogueDe(db, cpt(n), lame).outils.find((o) => o.nom === 'chercher')!.executer({ mots });
+  const a: any = run('antor', 'salport');
+  assert.equal(a.ok, true);
+  assert.deepEqual(a.donnees.fiches.map((f: any) => f.titre), ['Port-Sel']);
+  const l: any = run('lea', 'sous-main');
+  assert.equal(l.ok, false, JSON.stringify(l));
+  assert.equal(l.erreur, 'Introuvable.');
+  assert.equal(l.evenement, undefined);
 });

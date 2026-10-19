@@ -60,8 +60,9 @@ describe('kanevas-il-illustration-ecrans, E-8 grille et E-9 en-tête', { skip: s
   });
 
   test('Léa : fiche invisible → illustration 404 au corps d’un inconnu, absente de sa grille', opts, async () => {
-    const lue = await api(lea, 'GET', `/api/univers/${U}/fiches/${ids['Le Prieur masqué']}/illustration`);
-    const inconnue = await api(lea, 'GET', `/api/univers/${U}/fiches/999999/illustration`);
+    const fichier = JSON.parse((await api(antor, 'GET', `/api/univers/${U}/fiches/${ids['Le Prieur masqué']}`)).corps).illustration.id;
+    const lue = await api(lea, 'GET', `/api/univers/${U}/fichiers/${fichier}`);
+    const inconnue = await api(lea, 'GET', `/api/univers/${U}/fichiers/999999`);
     assert.equal(lue.statut, 404);
     assert.equal(lue.corps, inconnue.corps);
     await grille(lea, 'personnages');
@@ -75,7 +76,7 @@ describe('kanevas-il-illustration-ecrans, E-8 grille et E-9 en-tête', { skip: s
     assert.equal(await img.count(), 1);
     assert.equal(await img.getAttribute('alt'), '');
     assert.equal(await img.getAttribute('loading'), 'lazy');
-    assert.match((await img.getAttribute('src')) ?? '', /\/illustration\?v=.+/);
+    assert.match((await img.getAttribute('src')) ?? '', /\/fichiers\/\d+\?v=.+/);
     const bran = carte(lea, 'Bran Corvalis');
     assert.equal(await bran.locator('img').count(), 0);
     assert.equal((await bran.locator('.initiale').innerText()).trim(), 'B');
@@ -143,7 +144,7 @@ describe('kanevas-il-illustration-ecrans, E-8 grille et E-9 en-tête', { skip: s
     await fiche(antor, 'Maître Aldric');
     await modeMJ(antor);
     await antor.locator('header input[type=file]').setInputFiles(`${DEMO}plan.pdf`);
-    await antor.getByText('« plan.pdf » n’est pas une image. Choisissez un PNG, un JPEG, un GIF ou un WebP.'.replace(/’/g, '’')).waitFor();
+    await antor.getByText('« plan.pdf » n’est pas une image. Choisissez un PNG, un JPEG, un GIF ou un WebP.').waitFor();
     await antor.getByRole('img', { name: 'Illustration de « Maître Aldric »' }).waitFor();
     await photo(antor, 'echec-pas-une-image');
     await antor.getByRole('button', { name: 'Ignorer' }).click();
@@ -159,6 +160,9 @@ describe('kanevas-il-illustration-ecrans, E-8 grille et E-9 en-tête', { skip: s
     await fiche(antor, 'Maître Aldric');
     await antor.getByRole('radio', { name: /Mode Joueur|^Joueur$/ }).check();
     await antor.getByRole('img', { name: 'Illustration de « Maître Aldric »' }).waitFor();
+    // The switch reloads the sheet: the gestures of the GM (the semi-seed joins a file to « Maître Aldric ») go away.
+    await attendre(antor);
+    await antor.waitForFunction(() => ![...document.querySelectorAll('button')].some((b) => /Remplacer|Retirer/.test(b.getAttribute('aria-label') ?? b.textContent ?? '')));
     assert.equal(await antor.getByRole('button', { name: /Remplacer|Retirer/ }).count(), 0);
     const put = await lea.request.fetch(`${srv.base}/api/univers/${U}/fiches/${ids['Maître Aldric']}/illustration`, {
       method: 'PUT',
@@ -187,7 +191,7 @@ describe('kanevas-il-illustration-ecrans, E-8 grille et E-9 en-tête', { skip: s
     assert.equal(await carte(lea, "Le Portrait de l'échec").locator('img').count(), 1);
   });
 
-  test('retrait confirmé : en-tête d’avant, carte au repli, ancienne adresse 404', opts, async () => {
+  test('retrait confirmé : en-tête d’avant, carte au repli, le fichier reste en médiathèque', opts, async () => {
     await fiche(antor, 'Maître Aldric');
     await modeMJ(antor);
     const src = await antor.getByRole('img', { name: 'Illustration de « Maître Aldric »' }).getAttribute('src');
@@ -199,7 +203,8 @@ describe('kanevas-il-illustration-ecrans, E-8 grille et E-9 en-tête', { skip: s
     await toast(antor, 'Illustration de « Maître Aldric » retirée');
     assert.equal(await antor.getByRole('img', { name: /Illustration de/ }).count(), 0);
     await antor.getByRole('button', { name: 'Ajouter une illustration' }).waitFor();
-    assert.equal((await api(antor, 'GET', src)).statut, 404);
+    // The reference goes, the file stays in the library (AD-117 §5).
+    assert.equal((await api(antor, 'GET', src)).statut, 200);
     await grille(lea, 'personnages');
     assert.equal((await carte(lea, 'Maître Aldric').locator('.initiale').innerText()).trim(), 'M');
   });

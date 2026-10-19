@@ -55,9 +55,9 @@ Les neutres sont teintés vers l'encre (bleu froid très léger), jamais un gris
 | `--sur-accent` | `#11142b` | `#ffffff` | texte sur `--accent` |
 | `--accent-texte` | `#9aa6f5` | `#3a4cc0` | icône ou texte d'accent (item courant, avatar) |
 | `--accent-fond` | `rgba(154,166,245,.16)` | `rgba(58,76,192,.10)` | item courant de la navigation, halo d'un champ en édition |
-| `--mj` | `#f2a33c` | `#8a5300` | **réservé au MJ** : texte, icône, filet de la section MJ seul, cadre d'une pièce secrète |
+| `--mj` | `#f2a33c` | `#8a5300` | **réservé au MJ** : texte, icône, filet de la section MJ seul, cadre d'une pièce secrète (depuis `kanevas-import` : d'un fichier réservé au MJ) |
 | `--mj-fond` | `rgba(242,163,60,.14)` | `rgba(214,140,30,.14)` | fond de la pastille « MJ seul », segment « Mode MJ » |
-| `--mj-bord` *(nouveau)* | `rgba(242,163,60,.42)` | `rgba(176,108,10,.45)` | contour d'une section MJ seul, d'une pièce secrète |
+| `--mj-bord` *(nouveau)* | `rgba(242,163,60,.42)` | `rgba(176,108,10,.45)` | contour d'une section MJ seul, d'une pièce secrète (d'un fichier réservé au MJ) |
 | `--mj-trame` *(nouveau)* | `rgba(242,163,60,.075)` | `rgba(176,108,10,.09)` | hachure de la section MJ seul (1 px tous les 8 px, à 135°) |
 | `--table` | `#3fc79a` | `#08694a` | **lu par la table** : texte, icône |
 | `--table-fond` | `rgba(63,199,154,.14)` | `rgba(8,105,74,.12)` | pastille « Lue des joueurs », segment « Mode Joueur », bandeau du mode Joueur |
@@ -80,7 +80,9 @@ boutons, blocs) · `--t-14` corps d'interface · `--t-16` titre de boîte de dia
 *(nouveau)* texte à lire (17 px au téléphone), interligne 1,68, 66 caractères au plus par ligne ·
 `--t-22` titre de section · `--t-32` *(nouveau)* titre de fiche au téléphone · `--t-40`
 *(nouveau)* titre de fiche au bureau, interligne 1,08, approche −1,5 %. Graisses : 400 lecture,
-500 interface et titres, 600 nom d'univers et titres de boîte.
+500 interface et titres, 600 nom d'univers et titres de boîte. *(kanevas-import)* `--police-code` : pile système
+`ui-monospace, "SF Mono", Menlo, Consolas, monospace`, pour ce qui se copie à l'identique (un jeton
+d'API, une adresse, une clé d'origine, du code dans un texte) ; aucune fonte de plus n'est servie.
 
 **Espace.** Grille de 4 px : `--e-1` 4 · `--e-2` 8 · `--e-3` 12 · `--e-4` 16 · `--e-5` 24 ·
 `--e-6` 32 *(nouveau)* · `--e-7` 48 *(nouveau)* · `--e-8` 64 *(nouveau)*. Colonne de lecture :
@@ -105,6 +107,10 @@ pastille), `currentColor`. Servies par le produit (`lucide-react`), jamais par u
 seul et secret `lock`, lu des joueurs `eye`, écrit par les joueurs `pen-line`, mode MJ
 `lock-keyhole`, assistant `sparkles`, thème `sun` / `moon` / `monitor`, déconnexion `log-out`,
 menu du téléphone `panel-left`.
+Depuis `kanevas-import` (types et écrans nouveaux, même jeu, mêmes règles) : Créatures `paw-print`,
+Races `dna`, Vaisseaux `ship`, Savoirs `lightbulb` (savoir général : histoire, phénomènes, ressources, chronologie), Récits `book-open`, Règles `scale`, Notes
+`sticky-note`, Rechercher `search`, Accès par API `key-round`, Médiathèque `images`, document `file-text` (PDF), `file-spreadsheet` (tableur), `file-archive` (archive), `file` (autre), « Fichier » de l'éditeur `paperclip`, Cartes `map` (la barre l'avait sans icône fixée), image réservée au MJ `lock` (cadre neutre, `--texte-3`), étiquette `tag`, Contient
+`folder-tree`, Mentionnée dans `link-2`, vue en arbre `list-tree`, lien cassé `link-2-off`.
 
 **Mouvement.** `--duree` 160 ms, `--courbe` *(nouveau)* `cubic-bezier(.2,.7,.2,1)`. Seuls
 bougent : l'apparition d'un menu, d'un réglage ou d'une boîte (opacité et 4 px), le tiroir, le
@@ -122,8 +128,7 @@ Ceux que Kanevas suit :
   univers du compte et « Mes univers ») ; des items à icône groupés, les groupes titrés en casse
   normale (« Lore », « Univers »), l'item courant sur `--accent-fond` avec son icône en
   `--accent-texte` ; un tiroir sous un bouton « Menu » au téléphone.
-- **La barre haute** : le fil d'Ariane (univers › type › fiche ; au téléphone, l'icône du type et
-  le titre seul) et, sur les écrans qui l'ont, la bascule mode MJ / mode Joueur.
+- **La barre haute** : le fil d'Ariane (univers › type › ancêtres lisibles › fiche ; au téléphone (≤ 760 px), le sceau de l'univers et le libellé du type disparaissent, et à 480 px et moins les ancêtres se replient (menu « … » dès deux ancêtres) ; E-9 détaille) et, sur les écrans qui l'ont, la bascule mode MJ / mode Joueur.
 - **L'édition en place** : « Modifier » transforme la section en champ à la même typographie, au
   même endroit ; Échap annule, Ctrl/⌘ + Entrée enregistre ; le compteur de caractères est visible.
 - **Les réglages rares sont repliés** : l'audience d'une section se lit dans sa pastille et se
@@ -144,6 +149,15 @@ Ceux que Kanevas suit :
   dans E-8. Elle est proposée, pas dessinée.
 - **Le bouton de l'assistant est sombre sur clair (inversé), pas en accent** : il flotte sur
   toute page et ne doit pas se confondre avec l'action principale de l'écran.
+
+**Le secret dans le texte** (`kanevas-import`, aucun token nouveau). Un **bloc MJ** au milieu
+d'une section prend la matière de la section MJ seul, à l'échelle d'un paragraphe : trame
+`--mj-trame`, filet gauche `--mj` de 2 px, contour `--mj-bord`, `--rayon-champ`, pastille « MJ seul »
+(`lock`) en tête ; il ne déborde pas de la colonne (seule la section entière déborde). Un **lien vers
+une fiche** est en `--accent-texte`, souligné à 1 px à 30 % d'opacité, plein au survol ; un **lien
+cassé** (MJ seul) garde la couleur du texte, souligné en tirets `--danger` ; un **lien en attente**
+(MJ seul), en tirets `--texte-3`. Un lien vers une fiche illisible n'a **aucune** marque : il est du
+texte. L'état est porté par le soulignement **et** l'infobulle, jamais par la seule couleur.
 
 ## 4. Composants
 
@@ -188,7 +202,7 @@ décalé de 2 px) sur `:focus-visible`.
   d'une section : **Lue des joueurs** (`eye`, `--table` sur `--table-fond`) ; **Écrite par les
   joueurs** (`pen-line`, mêmes teintes) ; **Confiée à Léa** (avatar de l'auteur, neutre
   `--texte-2` sur `--surface-2`) ; **MJ seul** (`lock`, `--mj` sur `--mj-fond`). Rôle dans le
-  sélecteur : « MJ » ambre, « Joueur » vert. Pièce secrète : « Secrète — MJ seul » (`lock`,
+  sélecteur : « MJ » ambre, « Joueur » vert. Pièce secrète : « Secrète — MJ seul » (`lock`, *depuis `kanevas-import`, un fichier réservé au MJ porte la pastille « MJ seul », même rendu ; AD-111*,
   `--mj` sur `--surface` cerné de `--mj-bord`), posée sur la vignette. Sur une fiche du MJ, la
   pastille est un bouton (chevron 12 px) : au survol, un anneau de sa propre teinte. Elle se
   place **juste après le titre** de la section, jamais poussée par les actions.
@@ -241,7 +255,7 @@ décalé de 2 px) sur `:focus-visible`.
 - V : 34 px, `--surface`, contour `--bord-champ`, rayon `--rayon-champ`, étiquette 12 px
   graisse 500 `--texte-2` au-dessus ; au focus, contour `--accent` et halo 3 px
   `--accent-fond`. La zone de texte d'une section garde la typographie de lecture (Newsreader
-  18 px) sur `--surface`, cernée d'`--accent` avec halo, pied « 313 / 20 000 », aide clavier,
+  18 px) sur `--surface`, cernée d'`--accent` avec halo, pied « 313 / 100 000 », aide clavier,
   « Annuler », « Enregistrer ». Case : 16 px, contour `--bord-champ` ; cochée `--mj` (la seule
   case du produit dit « Secrète (MJ seul) »).
 - C : une étiquette visible liée au champ ; l'erreur s'affiche dessous en `--danger` avec
@@ -275,7 +289,7 @@ décalé de 2 px) sur `:focus-visible`.
   `--texte-3`), contenu à droite ; au téléphone, l'un sous l'autre. Relation : « membre de »
   `--texte-2`, flèche, puis la cible en jeton (`--surface-2`, icône du type, titre, type en
   `--texte-3`). Vignette 160 × 120, rayon `--rayon-champ`, légende 12 px dessous puis ses
-  boutons-icônes ; une pièce secrète est cernée de 2 px `--mj` et porte sa pastille. Fichier :
+  boutons-icônes ; une pièce secrète (un fichier réservé au MJ, depuis `kanevas-import`) est cernée de 2 px `--mj` et porte sa pastille. Fichier :
   une ligne de 40 px cernée de `--bord` (secret : `--mj-bord` et filet `--mj`), icône, nom,
   taille, boutons-icônes. Envoi : la même ligne avec « Envoi… 42 % » et une barre de 2 px
   `--accent`. Vide : « Aucune relation pour l'instant. » en `--texte-3` suivi de l'action.

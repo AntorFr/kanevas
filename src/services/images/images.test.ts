@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
 
-import { typeParSignature } from '../pieces-jointes.js';
+import { typeParSignature } from '../fichiers.js';
 import { ErreurGeneration, choisirAdaptateur } from './index.js';
 
 const PNG_B64 = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR4nGNIzvj/HwAFAAKAbqjb7QAAAABJRU5ErkJggg==';

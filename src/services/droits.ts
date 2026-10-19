@@ -1,5 +1,7 @@
 import type { Db } from '../db/db.js';
 import { ErreurService, introuvable, refuse } from './erreurs.js';
+import { resolveurFichiers, resolveurFichiersEnAttente } from './fichiers-lecture.js';
+import { extraireLiens, rendreMarkdown, type ResolveurLiens } from './markdown.js';
 import type { Acteur, Audience, Role, SectionRow, SectionVue } from './types.js';
 
 /** The caller's role in a universe, read from `membres` on every call (AD-9). */
@@ -88,6 +90,8 @@ export function peutVoirFiche(db: Db, role: Role, ficheId: number, acteur: Acteu
 /** Write rights come from the audience (AD-19); the GM always writes (AD-18). */
 export function peutEcrireSection(role: Role, s: SectionRow, compteId: number): boolean {
   if (role === 'mj') return true;
+  // A section that holds a GM block (`contenu_public` differs, AD-114) is never written by a non-GM.
+  if (s.contenu_public !== s.contenu) return false;
   return s.joueurs_ecrivent === 1 || (s.auteur_id === compteId && s.auteur_ecrit === 1);
 }
 
@@ -101,21 +105,104 @@ export function audienceDe(s: SectionRow): Audience {
   };
 }
 
+/**
+ * The resolver of the `[[…]]` links of a text for one reader (AD-116, AD-96): one query for all the
+ * links, the rendering decided by the target — a readable sheet is a link, an unreadable one is text,
+ * a vanished one (`casse`) or a waiting key (`attente`) is marked for the GM outside player mode only.
+ * Undefined when the text holds no link (the renderer then has nothing to ask).
+ */
+export function resolveurLiens(
+  db: Db,
+  universId: number,
+  role: Role,
+  acteur: Acteur,
+  source: string,
+): ResolveurLiens | undefined {
+  if (!source.includes('[[')) return undefined;
+  const trouves = extraireLiens(source).filter((l) => l.texte !== null);
+  if (trouves.length === 0) return undefined;
+  const ids = [...new Set(trouves.flatMap((l) => (l.id !== null ? [l.id] : [])))];
+  const cles = [...new Set(trouves.flatMap((l) => (l.cle !== null ? [l.cle] : [])))];
+  const lisible = sqlFicheLisible(role, acteur, 'f');
+  const lignes = db
+    .prepare(
+      `SELECT f.id, f.type, f.cle_origine, ${lisible ? `(${lisible.sql})` : '1'} AS lisible
+         FROM fiches f
+        WHERE f.univers_id = ?
+          AND (f.id IN (${ids.map(() => '?').join(',')}) OR f.cle_origine IN (${cles.map(() => '?').join(',')}))`,
+    )
+    .all(...(lisible?.params ?? []), universId, ...ids, ...cles) as {
+    id: number;
+    type: string;
+    cle_origine: string | null;
+    lisible: number;
+  }[];
+  const parId = new Map(lignes.map((l) => [l.id, l]));
+  const parCle = new Map(lignes.flatMap((l) => (l.cle_origine !== null ? [[l.cle_origine, l] as const] : [])));
+  const marques = vueMJ(role, acteur);
+  return (cible) => {
+    const f = cible.id !== null ? parId.get(cible.id) : parCle.get(cible.cle ?? '');
+    if (f) {
+      return f.lisible === 1
+        ? { genre: 'fiche', id: f.id, type: f.type, href: `/univers/${universId}/fiche/${f.id}` }
+        : { genre: 'texte' };
+    }
+    if (!marques) return { genre: 'texte' };
+    return cible.id !== null ? { genre: 'casse' } : { genre: 'attente', cle: cible.cle ?? '' };
+  };
+}
+
+/**
+ * The rendered text of a section for a reader (AD-96, AD-114 5): the GM outside player mode reads the
+ * whole source with the block container, everyone else the public text, links resolved for them.
+ * `markdown` is the form the assistant receives for a readable link.
+ */
+export function rendreSection(
+  db: Db,
+  universId: number,
+  role: Role,
+  s: SectionRow,
+  acteur: Acteur,
+  formeLiens: 'html' | 'markdown' = 'html',
+): string {
+  const lecteurMJ = vueMJ(role, acteur);
+  const source = lecteurMJ ? s.contenu : s.contenu_public;
+  return rendreMarkdown(source, {
+    nature: lecteurMJ ? 'section' : 'scenario',
+    liens: resolveurLiens(db, universId, role, acteur, source),
+    fichiers: resolveurFichiers(db, universId, role, acteur, source),
+    fichiersEnAttente: resolveurFichiersEnAttente(role, acteur),
+    formeLiens,
+  });
+}
+
 /** The view of a section for a caller who may read it. */
-export function vueSection(role: Role, s: SectionRow, acteur: Acteur): SectionVue {
+export function vueSection(
+  db: Db,
+  universId: number,
+  role: Role,
+  s: SectionRow,
+  acteur: Acteur,
+  formeLiens: 'html' | 'markdown' = 'html',
+): SectionVue {
+  // Player mode is a read view: it never shows a write right the player lacks as a non-author.
+  const peutEcrire = acteur.modeJoueur
+    ? peutEcrireSection('joueur', s, -1)
+    : peutEcrireSection(role, s, acteur.compteId);
+  const lecteurMJ = vueMJ(role, acteur);
   const vue: SectionVue = {
     id: s.id,
     titre: s.titre,
     ordre: s.ordre,
-    contenu: s.contenu,
+    // Reader's view (AD-96, AD-114 5): the GM outside player mode reads the whole source with the
+    // block container, everyone else reads the public text, where no container can exist.
+    html: rendreSection(db, universId, role, s, acteur, formeLiens),
     version: s.version,
     modifieLe: s.modifie_le,
-    // Player mode is a read view: it never shows a write right the player lacks as a non-author.
-    peutEcrire: acteur.modeJoueur
-      ? peutEcrireSection('joueur', s, -1)
-      : peutEcrireSection(role, s, acteur.compteId),
+    peutEcrire,
   };
-  if (vueMJ(role, acteur)) vue.audience = audienceDe(s);
+  if (peutEcrire) vue.contenu = lecteurMJ ? s.contenu : s.contenu_public; // the source goes only to who may write it (AD-113)
+  if (lecteurMJ) vue.audience = audienceDe(s);
   return vue;
 }
 

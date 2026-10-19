@@ -12,12 +12,12 @@ type Etat = 'chargement' | 'charge' | 'indisponible';
 let compteurMontages = 0;
 
 /**
- * « Image attachée » (E-12, AD-76): the label, the thumbnail read by the authenticated attachment
+ * « Image attachée » (E-12, AD-76): the label, the thumbnail read by the authenticated file
  * route (AD-67, no public address) and a link to the section. A thumbnail that fails stays inside
  * its own block: the rest of the thread is untouched.
  */
 export function ImageAttachee({ evenement, universId, surOuverture }: PropsBloc) {
-  const { ficheId, sectionId, pieceId, description } = evenement.cible;
+  const { ficheId, sectionId, fichierId, description } = evenement.cible;
   const perdue = useConnexionPerdue();
   const [etat, setEtat] = useState<Etat>('chargement');
   const montage = useRef('');
@@ -33,7 +33,7 @@ export function ImageAttachee({ evenement, universId, surOuverture }: PropsBloc)
   }, [etat]);
 
   const lien = `/univers/${universId}/fiche/${ficheId}#section-${sectionId}`;
-  const source = `/api/univers/${universId}/fiches/${ficheId}/pieces-jointes/${pieceId}/fichier?essai=${montage.current}-${essai}`;
+  const source = `/api/univers/${universId}/fichiers/${fichierId}?essai=${montage.current}-${essai}`;
 
   return (
     <div className="asst-ecriture" ref={racine}>

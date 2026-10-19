@@ -26,18 +26,6 @@ export interface CarteLue {
 
 export const ECHEC = 'L’action n’a pas abouti. Réessayez.';
 
-const TYPES: Record<string, string> = {
-  personnage: 'Personnage',
-  lieu: 'Lieu',
-  faction: 'Faction',
-  objet: 'Objet',
-  evenement: 'Événement',
-  quete: 'Quête',
-  compte_rendu: 'Compte-rendu',
-};
-export const TYPES_CHOIX = Object.entries(TYPES).map(([type, label]) => ({ type, label }));
-export const libelleType = (type: string) => TYPES[type] ?? type;
-
 /** Title as a token or a node shows it: 24 characters, then « … ». */
 export const titreCourt = (t: string) => (Array.from(t).length > 24 ? `${Array.from(t).slice(0, 24).join('')}…` : t);
 

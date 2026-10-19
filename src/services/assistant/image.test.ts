@@ -9,7 +9,7 @@ import { generateurBouchon, PNG_BOUCHON } from '../images/bouchon.js';
 import { generateurAucun } from '../images/aucun.js';
 import type { AdaptateurChoisi, GenerateurImage } from '../images/index.js';
 import { ajouterMembre, changerRoleNoyau } from '../membres.js';
-import { deposerPieceJointe, MAX_PIECES_PAR_SECTION } from '../pieces-jointes.js';
+import { ajouterFichier, MAX_FICHIERS_JOINTS } from '../fichiers.js';
 import { ajouterSection, changerAudience } from '../sections.js';
 import { creerUnivers } from '../univers.js';
 import { catalogueDe } from './catalogue.js';
@@ -49,12 +49,12 @@ function monde() {
   const etrangere = creerFiche(db, antor.id, autre.id, { type: 'personnage', titre: 'Ailleurs', charge: { pj: false } });
   const secEtr = ajouterSection(db, antor.id, autre.id, etrangere.id, { titre: 'Autre', contenu: 'x' });
   const pieces = () =>
-    db.prepare('SELECT nom, type, secrete, section_id FROM pieces_jointes').all() as {
-      nom: string;
-      type: string;
-      secrete: number;
-      section_id: number;
-    }[];
+    db
+      .prepare(
+        `SELECT f.nom, f.type, f.visibilite, fs.section_id FROM fichiers f
+           JOIN fichiers_sections fs ON fs.fichier_id = f.id AND fs.joint = 1`,
+      )
+      .all() as { nom: string; type: string; visibilite: string; section_id: number }[];
   const dit = (compte: number, m: string, deps: any = {}) =>
     repondre(db, compte, u.id, m, [], { config: STUB, images: BOUCHON, ...deps });
   const outil = (compte: number, images: AdaptateurChoisi = BOUCHON) =>
@@ -62,14 +62,14 @@ function monde() {
   return { db, antor, lea, u, aldric, app, secEtr, pieces, dit, outil };
 }
 
-test('portrait : Antor, pièce image non secrète « image-….png » et événement image_attachee', async () => {
+test('portrait : Antor, fichier image joint, visible des joueurs, « image-….png » et événement image_attachee', async () => {
   const { antor, app, aldric, dit, pieces } = monde();
   const r = await dit(antor.id, PORTRAIT);
   const p = pieces();
   assert.equal(p.length, 1);
   assert.match(p[0]!.nom, /^image-.+\.png$/);
   assert.equal(p[0]!.type, 'image/png');
-  assert.equal(p[0]!.secrete, 0);
+  assert.equal(p[0]!.visibilite, 'joueurs');
   assert.equal(p[0]!.section_id, app.id);
   assert.equal(r.evenements.length, 1);
   const e = r.evenements[0]!;
@@ -78,7 +78,7 @@ test('portrait : Antor, pièce image non secrète « image-….png » et événe
   const c = e.cible as any;
   assert.equal(c.ficheId, aldric.id);
   assert.equal(c.sectionId, app.id);
-  assert.ok(Number.isInteger(c.pieceId));
+  assert.ok(Number.isInteger(c.fichierId));
 });
 
 test('portrait avec « échec » : rien attaché, aucun événement, « Je n\'ai pas pu générer l\'image. »', async () => {
@@ -103,18 +103,18 @@ test('adaptateur aucun : l’outil n’est pas dans le catalogue du MJ', () => {
   assert.ok(!catalogueDe(db, antor.id, u.id, AUCUN).outils.some((o) => o.nom === 'generer_image'));
 });
 
-test('section pleine (50 pièces) : erreur de la fonction d’envoi, sans événement ni moteur', async () => {
-  const { db, antor, app, outil, pieces } = monde();
+test('section pleine (100 fichiers joints) : erreur de la fonction d’ajout, sans événement ni moteur', async () => {
+  const { db, antor, u, app, outil, pieces } = monde();
   const dir = (await import('node:fs')).mkdtempSync((await import('node:path')).join((await import('node:os')).tmpdir(), 'im-'));
-  for (let i = 0; i < MAX_PIECES_PAR_SECTION; i++) {
-    await deposerPieceJointe(db, antor.id, false, app.id, Readable.from([PNG_BOUCHON]), `p${i}.png`, false, dir);
+  for (let i = 0; i < MAX_FICHIERS_JOINTS; i++) {
+    await ajouterFichier(db, { compteId: antor.id }, u.id, Readable.from([PNG_BOUCHON]), `p${i}.png`, { ou: 'section', sectionId: app.id, maniere: 'joint' }, dir);
   }
   const { etat, images } = moteurEspion();
   const r: any = await outil(antor.id, images).executer({ sectionId: app.id, description: 'x' });
   assert.equal(r.ok, false);
   assert.equal(r.evenement, undefined);
   assert.equal(etat.appels, 0);
-  assert.equal(pieces().length, MAX_PIECES_PAR_SECTION);
+  assert.equal(pieces().length, MAX_FICHIERS_JOINTS);
 });
 
 test('droit d’écriture perdu : refus sans événement, moteur non appelé', async () => {
@@ -253,20 +253,20 @@ test('le délai ne repart qu’avec ce qui restait : modèle lent après l’out
   );
 });
 
-test('section pleine : le texte MJ « Cette section porte déjà 50 pièces jointes. » (outil et bouchon)', async () => {
-  const { db, antor, app, outil, dit, pieces } = monde();
+test('section pleine : le texte MJ « Cette section porte déjà 100 fichiers joints. » (outil et bouchon)', async () => {
+  const { db, antor, u, app, outil, dit, pieces } = monde();
   const dir = (await import('node:fs')).mkdtempSync((await import('node:path')).join((await import('node:os')).tmpdir(), 'im-'));
-  for (let i = 0; i < MAX_PIECES_PAR_SECTION; i++) {
-    await deposerPieceJointe(db, antor.id, false, app.id, Readable.from([PNG_BOUCHON]), `p${i}.png`, false, dir);
+  for (let i = 0; i < MAX_FICHIERS_JOINTS; i++) {
+    await ajouterFichier(db, { compteId: antor.id }, u.id, Readable.from([PNG_BOUCHON]), `p${i}.png`, { ou: 'section', sectionId: app.id, maniere: 'joint' }, dir);
   }
   const { etat, images } = moteurEspion();
   const r: any = await outil(antor.id, images).executer({ sectionId: app.id, description: 'x' });
-  assert.deepEqual(r, { ok: false, erreur: 'Cette section porte déjà 50 pièces jointes.' });
+  assert.deepEqual(r, { ok: false, erreur: 'Cette section porte déjà 100 fichiers joints.' });
   assert.equal(etat.appels, 0);
   const b = await dit(antor.id, PORTRAIT);
-  assert.equal(b.reponse, 'Cette section porte déjà 50 pièces jointes.');
+  assert.equal(b.reponse, 'Cette section porte déjà 100 fichiers joints.');
   assert.deepEqual(b.evenements, []);
-  assert.equal(pieces().length, MAX_PIECES_PAR_SECTION);
+  assert.equal(pieces().length, MAX_FICHIERS_JOINTS);
 });
 
 test('portrait hors forme contenant « échec » : message d’échec d’image, pas d’erreur de transport', async () => {

@@ -1,0 +1,82 @@
+import type { Db } from '../db/db.js';
+import { exigerMJ } from './droits.js';
+import { ErreurService, introuvable } from './erreurs.js';
+import { cleValide } from './import.js';
+import type { Jeton } from './jetons.js';
+import { lireLot, noterDansLot, type EntreeRapport, type Issue } from './lots.js';
+import { relierSection } from './relations.js';
+
+export interface ResultatRelationImport {
+  section?: string;
+  cible?: string;
+  type?: string;
+  id?: number;
+  etat: 'creee' | 'inchangee' | 'ignoree' | 'refusee';
+  code?: string;
+  avertissements: string[];
+  raison?: string;
+}
+
+/** Each entry commits independently: a refused neighbour cannot undo a successful relation (AD-121). */
+export function assurerRelations(
+  db: Db, jeton: Jeton, lotId: number | null, cle: string, corps: unknown, maintenant: Date = new Date(),
+): ResultatRelationImport[] {
+  const { universId, compteId } = jeton;
+  exigerMJ(db, universId, compteId);
+  if (lotId !== null && lireLot(db, jeton, lotId, maintenant).closLe !== null) {
+    throw new ErreurService('conflit', 'Le lot est clos.', 'lot_clos');
+  }
+  if (!cleValide(cle)) throw new ErreurService('invalide', "clé d'origine invalide", undefined, 'cle');
+  if (!Array.isArray(corps)) throw new ErreurService('invalide', 'relations : une liste est attendue', undefined, 'corps');
+  const source = db.prepare('SELECT id FROM fiches WHERE univers_id = ? AND cle_origine = ?')
+    .get(universId, cle) as { id: number } | undefined;
+  if (!source) throw introuvable();
+
+  return corps.map((brut: unknown) => db.transaction((): ResultatRelationImport => {
+    const b = typeof brut === 'object' && brut !== null && !Array.isArray(brut)
+      ? brut as Record<string, unknown> : {};
+    const entree = {
+      section: typeof b.section === 'string' ? b.section : undefined,
+      cible: typeof b.cible === 'string' ? b.cible : undefined,
+      type: typeof b.type === 'string' ? b.type.trim() : undefined,
+    };
+    const noter = (issue: Issue | null, raison?: string, code?: string) => {
+      const rapport: EntreeRapport[] = raison ? [{
+        cle, objet: 'relation', raison, ...(code ? { code } : {}),
+        gravite: issue === 'refusees' ? 'refus' : 'avertissement',
+      }] : [];
+      if (lotId !== null) noterDansLot(db, lotId, 'relations', issue, rapport, maintenant);
+    };
+    const refuser = (raison: string, code = 'invalide'): ResultatRelationImport => {
+      noter('refusees', raison, code);
+      return { ...entree, etat: 'refusee', code, raison, avertissements: [] };
+    };
+    if (!entree.section || !cleValide(entree.section) || !entree.cible || !cleValide(entree.cible)
+      || !entree.type || entree.type.length > 80) {
+      return refuser('relation : clés de section et cible valides et type de 1 à 80 caractères attendus');
+    }
+    const section = db.prepare('SELECT id FROM sections WHERE fiche_id = ? AND cle_origine = ?')
+      .get(source.id, entree.section) as { id: number } | undefined;
+    const cible = db.prepare('SELECT id FROM fiches WHERE univers_id = ? AND cle_origine = ?')
+      .get(universId, entree.cible) as { id: number } | undefined;
+    if (!section || !cible) {
+      const raison = !section ? `section inconnue : ${entree.section}` : `cible inconnue : ${entree.cible}`;
+      noter(null, raison);
+      return { ...entree, etat: 'ignoree', avertissements: [raison] };
+    }
+    try {
+      const relation = relierSection(db, compteId, universId, source.id, section.id,
+        { cibleFicheId: cible.id, type: entree.type });
+      noter('creees');
+      return { ...entree, id: relation.id, etat: 'creee', avertissements: [] };
+    } catch (e) {
+      if (!(e instanceof ErreurService)) throw e;
+      if (e.detail === 'relation_existante') {
+        noter('inchangees');
+        return { ...entree, etat: 'inchangee', avertissements: [] };
+      }
+      if (e.detail === 'auto_relation' || e.detail === 'limite_relations') return refuser(e.message, e.detail);
+      throw e;
+    }
+  })());
+}

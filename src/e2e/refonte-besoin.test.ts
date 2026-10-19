@@ -10,7 +10,7 @@
 //   cadre       : navigation à icônes, items par rôle, barre haute, tiroir au téléphone
 //   matrice     : Joueur et MJ en mode Joueur : ni pastille, ni filet, ni hachure, ni « ⋯ »
 //   toasts      : 4 s, « Fermer », sans focus, trois au plus, aucun pour un échec
-//   édition     : compteur, aide, Échap, Ctrl+Entrée, au-delà de 20 000
+//   édition     : compteur, aide, Échap, Ctrl+Entrée, au-delà de 100 000
 //   B-29        : états des écrans refaits (E-1, E-2, E-3, E-4, E-8, E-9, E-6, E-13, E-14, E-15)
 //   charte      : tokens des deux thèmes, polices servies par le produit
 import assert from 'node:assert/strict';
@@ -411,7 +411,7 @@ describe('menu « ⋯ » et édition d’une section', () => {
     await s.getByRole('button', { name: rxExact('Modifier') }).click();
     const champ = s.getByRole('textbox');
     await champ.fill('Grand, voûté.');
-    assert.match(await s.innerText(), /13\s\/\s20\s000/);
+    assert.match(await s.innerText(), /13\s\/\s100\s000/);
     assert.match((await s.innerText()).replace(/\s+/g, ' '), /Échap annuler · Ctrl ↵ enregistrer/);
     await shot(antor, 'edition');
     await antor.keyboard.press('Escape');
@@ -424,7 +424,7 @@ describe('menu « ⋯ » et édition d’une section', () => {
     assert.ok((await s.innerText()).includes('Grand, voûté.'));
   });
 
-  test('édition : au-delà de 20 000, Ctrl+Entrée n’envoie rien et le texte reste', opts, async () => {
+  test('édition : au-delà de 100 000, Ctrl+Entrée n’envoie rien et le texte reste', opts, async () => {
     await antor.goto(urlAldric);
     await attendre(antor);
     const s = section(antor, 'Vérité — MJ seul');
@@ -433,12 +433,12 @@ describe('menu « ⋯ » et édition d’une section', () => {
     antor.on('request', (r: Any) => {
       if (r.method() !== 'GET' && /sections/.test(r.url())) envois++;
     });
-    await s.getByRole('textbox').fill('x'.repeat(20001));
-    await antor.getByText('Erreur : 20 000 caractères au plus.').waitFor();
+    await s.getByRole('textbox').fill('x'.repeat(100001));
+    await antor.getByText('Erreur : 100 000 caractères au plus.').waitFor();
     await antor.keyboard.press('Control+Enter');
     await antor.waitForTimeout(500);
     assert.equal(envois, 0);
-    assert.equal((await s.getByRole('textbox').inputValue()).length, 20001);
+    assert.equal((await s.getByRole('textbox').inputValue()).length, 100001);
     await antor.keyboard.press('Escape');
   });
 
@@ -686,7 +686,7 @@ describe('B-29 : les états des écrans refaits', () => {
     await antor.keyboard.press('Escape');
   });
 
-  test('E-9 : section de 20 000 caractères affichée en entier, sans débordement', opts, async () => {
+  test('E-9 : section de 100 000 caractères affichée en entier, sans débordement', opts, async () => {
     await antor.goto(urlAldric);
     await attendre(antor);
     const s = section(antor, 'Vérité — MJ seul');

@@ -69,6 +69,8 @@ test('MJ : crée la campagne, la passe Active en place, la page, le scénario, l
   await antor.screenshot({ path: '/tmp/e6-liste.png' });
 
   await changerStatut(antor, 'Active', NOM);
+  // Explicit wait on the pill, then on the idle network: a reload right after the click could cut the request.
+  await declencheurStatut(antor, NOM).first().filter({ hasText: /^Active/ }).waitFor();
   await attendre(antor);
   await antor.reload();
   await antor.getByRole('link', { name: rx(NOM) }).waitFor();
@@ -78,6 +80,9 @@ test('MJ : crée la campagne, la passe Active en place, la page, le scénario, l
   await antor.getByRole('heading', { name: NOM, level: 1 }).waitFor();
   urlCampagne = new URL(antor.url()).pathname;
   assert.match(urlCampagne, new RegExp(`/univers/${uid}/campagnes/\\d+$`));
+  // Each panel loads on its own: wait for the three empty states before reading the text.
+  for (const vide of ['Aucun scénario pour l\'instant.', 'Rien à préparer pour l\'instant.', 'Aucun compte-rendu pour l\'instant.'])
+    await antor.getByText(rx(vide)).first().waitFor();
   const t0 = await texte(antor);
   for (const s of ['Scénarios', 'Préparation', 'Comptes-rendus', 'Aucun scénario pour l\'instant.', 'Rien à préparer pour l\'instant.', 'Aucun compte-rendu pour l\'instant.'])
     assert.ok(t0.includes(s), `« ${s} » attendu`);
@@ -94,8 +99,12 @@ test('MJ : crée la campagne, la passe Active en place, la page, le scénario, l
   assert.ok(await antor.getByRole('link', { name: rx(`← ${NOM}`) }).count());
   await antor.getByRole('button', { name: rxExact('Modifier') }).click();
   await antor.getByLabel('Contenu').fill('<b>gras</b> & suite');
-  await antor.getByRole('button', { name: rxExact('Enregistrer') }).click();
-  await antor.getByText('<b>gras</b> & suite').waitFor(); // plain text (AD-58)
+  // Wait for the PUT itself: the textarea already shows the text, so a reload right after the click could cut the request.
+  await Promise.all([
+    antor.waitForResponse((r: Any) => r.request().method() === 'PUT' && /\/api\/scenarios\/\d+$/.test(r.url())),
+    antor.getByRole('button', { name: rxExact('Enregistrer') }).click(),
+  ]);
+  await antor.getByText('<b>gras</b> & suite').waitFor(); // raw HTML shows as text (AD-95)
   assert.equal(await antor.locator('main b').count(), 0);
   // wait for the edit to be left (PUT answered, draft removed) before cutting the page
   await antor.getByRole('button', { name: rxExact('Modifier') }).waitFor();
@@ -190,7 +199,10 @@ test('écriture de scénario périmée : message, texte conservé, rechargement'
   await antor.getByRole('button', { name: rxExact('Modifier') }).click();
   await onglet2.getByRole('button', { name: rxExact('Modifier') }).click();
   await antor.getByLabel('Contenu').fill('version A');
-  await antor.getByRole('button', { name: rxExact('Enregistrer') }).click();
+  await Promise.all([
+    antor.waitForResponse((r: Any) => r.request().method() === 'PUT' && /\/api\/scenarios\/\d+$/.test(r.url())),
+    antor.getByRole('button', { name: rxExact('Enregistrer') }).click(),
+  ]);
   await antor.getByText('version A').waitFor();
   await onglet2.getByLabel('Contenu').fill('version B périmée');
   await onglet2.getByRole('button', { name: rxExact('Enregistrer') }).click();

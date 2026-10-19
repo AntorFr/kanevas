@@ -43,10 +43,11 @@ export function FournisseurCadre({ children }: { children: ReactNode }) {
   const [bascule, setBascule] = useState(false);
   const [titre, setTitre] = useState<string>();
   const [section, setSection] = useState<string>();
+  const [ancetres, setAncetres] = useState<AncetreAriane[]>();
   const [parent, setParent] = useState<Parent>();
   const vue = useMemo(
-    () => ({ mode, setMode, bascule, setBascule, titre, setTitre, section, setSection, parent, setParent }),
-    [mode, bascule, titre, section, parent],
+    () => ({ mode, setMode, bascule, setBascule, titre, setTitre, section, setSection, ancetres, setAncetres, parent, setParent }),
+    [mode, bascule, titre, section, ancetres, parent],
   );
   return (
     <Contexte.Provider value={valeur}>
@@ -76,8 +77,19 @@ interface Vue {
   /** Label of the sidebar item the last crumb hangs under, when the address alone does not say (a sheet's type). */
   section?: string;
   setSection: (s?: string) => void;
+  /** Readable ancestors of the sheet shown, between the section and the last crumb (AD-115). */
+  ancetres?: AncetreAriane[];
+  setAncetres: (a?: AncetreAriane[]) => void;
+  /** A crumb between the sidebar item and the last crumb (a scenario's campaign). */
   parent?: Parent;
   setParent: (p?: Parent) => void;
+}
+
+/** An ancestor crumb: the sheet it links to and its type (the menu of « … » shows it). */
+export interface AncetreAriane {
+  id: number;
+  titre: string;
+  type: string;
 }
 
 const ContexteVue = createContext<Vue>({
@@ -87,6 +99,7 @@ const ContexteVue = createContext<Vue>({
   setBascule: () => {},
   setTitre: () => {},
   setSection: () => {},
+  setAncetres: () => {},
   setParent: () => {},
 });
 
@@ -111,20 +124,24 @@ export function useBasculeMode(active: boolean): ModeVue {
 }
 
 /** Gives the breadcrumb its last crumb (the whole text, truncated by the bar if long). */
-export function useTitreAriane(titre: string | undefined, section?: string, parent?: Parent): void {
-  const { setTitre, setSection, setParent } = useVue();
+export function useTitreAriane(titre: string | undefined, section?: string, ancetres?: AncetreAriane[], parent?: Parent): void {
+  const { setTitre, setSection, setAncetres, setParent } = useVue();
+  // Compared by content: a refetch of the sheet gives a new array that says the same thing.
+  const cle = JSON.stringify(ancetres ?? []);
   const parentLibelle = parent?.libelle;
   const parentVers = parent?.vers;
   useEffect(() => {
     setTitre(titre);
     setSection(titre === undefined ? undefined : section);
+    setAncetres(titre === undefined ? undefined : (JSON.parse(cle) as AncetreAriane[]));
     setParent(titre === undefined || parentLibelle === undefined || parentVers === undefined ? undefined : { libelle: parentLibelle, vers: parentVers });
     return () => {
       setTitre(undefined);
       setSection(undefined);
+      setAncetres(undefined);
       setParent(undefined);
     };
-  }, [titre, section, parentLibelle, parentVers, setTitre, setSection, setParent]);
+  }, [titre, section, cle, parentLibelle, parentVers, setTitre, setSection, setAncetres, setParent]);
 }
 
 function useCadre(): Cadre {

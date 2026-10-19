@@ -1,0 +1,1962 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Médiathèque — Lame d'Ébène — Kanevas</title>
+<meta name="color-scheme" content="light dark">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&display=swap" rel="stylesheet">
+<script>
+/* Thème avant le premier rendu : choix mémorisé (Clair, Sombre, Système), sinon le système. */
+(function () {
+  var c = 'systeme';
+  try { c = localStorage.getItem('kanevas-theme') || 'systeme'; } catch (e) {}
+  var clair = c === 'clair' || (c === 'systeme' && matchMedia('(prefers-color-scheme: light)').matches);
+  document.documentElement.dataset.theme = clair ? 'light' : 'dark';
+})();
+</script>
+<style>
+/* =====================================================================================
+   MAQUETTE FINIE — E-19 Médiathèque, kanevas-import.
+   Illustre docs/ecrans.md, « E-19 Médiathèque » (décisions de Monsieur du 2026-10-11 : la médiathèque
+   porte TOUS les fichiers de l'univers, images et documents) :
+     · la tête (titre, « 1 140 fichiers », « Ajouter des fichiers » pour un MJ) ; la bascule segmentée
+       « Tout · Images · Documents » ; la rangée de filtres (recherche par nom, « Visibilité » pour un MJ,
+       « Usage », l'ordre) ; la grille : une image en vignette (cadrage cover, chargement à l'approche),
+       un document en tuile de même taille (l'icône de son type, l'extension en pastille, la taille),
+       le nom dessous, la pastille « MJ seul » d'un fichier réservé ; puis « Charger la suite » ;
+     · le panneau du fichier (à droite au bureau, plein écran au téléphone) : l'image en grand, ou pour
+       un document sa grande icône, son type et « Télécharger » (aucun aperçu intégré, AD-66) ; le nom
+       éditable en place, la bascule « Visible des joueurs » / « Réservé au MJ », type, taille,
+       « ajouté par … le … », la clé d'origine, « Utilisé dans », « Supprimer le fichier » ;
+     · les boîtes « Réserver … au MJ ? » et « Supprimer … ? » (textes exacts, « Elle »/« Il » selon le
+       fichier) ;
+     · le sélecteur « Choisir un fichier » ouvert depuis l'éditeur de E-9 (« Fichier » ▸ « Choisir dans
+       la médiathèque ») : la même grille dans une boîte, « Ajouter depuis l'appareil » en tête ; puis
+       l'avertissement de B-55 sous le champ ;
+     · et, de « E-9 Fiche — ce que kanevas-import change », le paragraphe « Fichiers » (une image
+       s'insère par `![nom](fichier:<id>)`, un document par `[nom](fichier:<id>)`).
+   Parcours P-16 (docs/parcours.md). Cadre, tokens et composants : e09-fiche.html, e18-acces-api.html
+   et docs/charte.md (icônes `images`, `lock`, `file-text` PDF, `file-spreadsheet` tableur,
+   `file-archive` archive, `file` autre, « Fichier » de l'éditeur `paperclip`). Le document prime.
+   Les images sont des peintures de démonstration en SVG (portraits, paysages, blasons : celles de
+   e08-liste-fiches.html ; cartes, plans, carte céleste : dessinées ici), dans de vraies <img>.
+
+   États à ouvrir par l'adresse (combinables : #etat-image,perdue ; tous atteignables aussi au clic) :
+     (aucun)            canonique : Antor (MJ), « Tout », 31 fichiers (24 images, 7 documents), dont
+                        8 « MJ seul »
+     #etat-documents    la bascule sur « Documents » : les 7 documents seuls
+     #etat-document     panneau de « Règles de la Guilde.pdf » (grande icône, type, « Télécharger »,
+                        visibilité, « Utilisé dans », « Supprimer le fichier »)
+     #etat-image        panneau de « plan-du-repaire.png » (visible des joueurs, utilisée dans 2 fiches)
+     #etat-reserver     le même panneau et la boîte « Réserver « plan-du-repaire.png » au MJ ? »
+     #etat-supprimer    panneau de « Carte des Sphères » et la boîte « Supprimer « Carte des Sphères » ? »
+     #etat-choisir      E-9 « Port-Sel », « Description » en édition : la boîte « Choisir un fichier »
+     #etat-averti       la même édition après le choix de « Plan secret de la Guilde » (réservée au
+                        MJ) : l'avertissement de B-55 sous le champ (au clic depuis #etat-choisir)
+     #etat-joueur       Léa (Joueuse) : seuls les fichiers visibles des joueurs, sans ajout ni filtre
+                        « Visibilité » ; panneau de « Carte des Sphères » sans bascule ni suppression,
+                        « Utilisé dans » réduit aux fiches qu'elle lit
+     #etat-vide         aucun fichier (texte du MJ ; #etat-vide,joueur : celui du joueur)
+     #etat-perdue       bandeau « Connexion perdue » ; ajout, bascule, suppression désactivés
+   Et ceux du cadre : #etat-menu, #etat-univers, #etat-tiroir.
+   ===================================================================================== */
+
+/* ---------- Tokens (docs/charte.md) — sombre ---------- */
+:root {
+  color-scheme: dark;
+  --fond: #121317;
+  --fond-lateral: #0e0f12;
+  --surface: #191a1f;
+  --surface-2: #202128;
+  --surface-3: #2a2b33;
+  --bord: rgba(255,255,255,.08);
+  --bord-fort: rgba(255,255,255,.14);
+  --bord-champ: #74757f;
+  --texte: #ebecf0;
+  --texte-2: #a6a7b0;
+  --texte-3: #8b8c97;
+  --accent: #8b9bf0;
+  --sur-accent: #11142b;
+  --accent-texte: #9aa6f5;
+  --accent-fond: rgba(154,166,245,.16);
+  --mj: #f2a33c;
+  --mj-fond: rgba(242,163,60,.14);
+  --mj-bord: rgba(242,163,60,.42);
+  --mj-trame: rgba(242,163,60,.075);
+  --table: #3fc79a;
+  --table-fond: rgba(63,199,154,.14);
+  --table-bord: rgba(63,199,154,.55);
+  --danger: #ec7b6f;
+  --sur-danger: #1a0c0a;
+  --danger-fond: rgba(236,123,111,.14);
+  --focus: #9aa6f5;
+  --voile: rgba(5,6,9,.62);
+  --ombre-flottant: 0 0 0 1px rgba(255,255,255,.06), 0 12px 32px -6px rgba(0,0,0,.6), 0 2px 6px rgba(0,0,0,.35);
+  --squelette: rgba(255,255,255,.06);
+
+  --police-titre: "Fraunces", "Iowan Old Style", Georgia, serif;
+  --police-lecture: "Newsreader", "Iowan Old Style", Georgia, serif;
+  --police-texte: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --t-12: 12px; --t-13: 13px; --t-14: 14px; --t-16: 16px; --t-18: 18px; --t-22: 22px; --t-32: 32px; --t-40: 40px;
+  --e-1: 4px; --e-2: 8px; --e-3: 12px; --e-4: 16px; --e-5: 24px; --e-6: 32px; --e-7: 48px; --e-8: 64px;
+  --rayon-item: 6px;
+  --rayon-champ: 8px;
+  --rayon-panneau: 12px;
+  --rayon-pastille: 999px;
+  --duree: 160ms;
+  --courbe: cubic-bezier(.2,.7,.2,1);
+}
+/* ---------- Tokens — clair ---------- */
+:root[data-theme="light"] {
+  color-scheme: light;
+  --fond: #fcfcfd;
+  --fond-lateral: #f4f5f7;
+  --surface: #ffffff;
+  --surface-2: #f1f2f5;
+  --surface-3: #e8e9ee;
+  --bord: rgba(22,26,44,.09);
+  --bord-fort: rgba(22,26,44,.16);
+  --bord-champ: #808290;
+  --texte: #1a1b22;
+  --texte-2: #4a4c58;
+  --texte-3: #646674;
+  --accent: #3a4cc0;
+  --sur-accent: #ffffff;
+  --accent-texte: #3a4cc0;
+  --accent-fond: rgba(58,76,192,.10);
+  --mj: #8a5300;
+  --mj-fond: rgba(214,140,30,.14);
+  --mj-bord: rgba(176,108,10,.45);
+  --mj-trame: rgba(176,108,10,.09);
+  --table: #08694a;
+  --table-fond: rgba(8,105,74,.12);
+  --table-bord: rgba(8,105,74,.70);
+  --danger: #b4352b;
+  --sur-danger: #ffffff;
+  --danger-fond: rgba(180,53,43,.10);
+  --focus: #3a4cc0;
+  --voile: rgba(20,22,34,.38);
+  --ombre-flottant: 0 0 0 1px rgba(22,26,44,.08), 0 12px 32px -8px rgba(22,26,44,.22), 0 2px 6px rgba(22,26,44,.08);
+  --squelette: rgba(22,26,44,.07);
+}
+@media (prefers-reduced-motion: reduce) { :root { --duree: 0ms; } }
+
+/* ---------- Base ---------- */
+*, *::before, *::after { box-sizing: border-box; }
+html { scroll-padding-top: 72px; -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: var(--fond); color: var(--texte); font: 400 var(--t-14)/1.5 var(--police-texte);
+  -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; font-feature-settings: "cv11", "ss01"; }
+h1, h2, h3, p, ul { margin: 0; }
+[hidden] { display: none !important; }
+ul { padding: 0; list-style: none; }
+a { color: inherit; text-decoration: none; }
+button, input, select, textarea { font: inherit; color: inherit; }
+button { background: none; border: 0; padding: 0; cursor: pointer; }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; border-radius: var(--rayon-item); }
+.i { width: 16px; height: 16px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.75;
+  stroke-linecap: round; stroke-linejoin: round; }
+.i.p { width: 14px; height: 14px; }
+.i.pp { width: 12px; height: 12px; stroke-width: 2; }
+.lecteur { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+kbd { font: 500 11px/1 var(--police-texte); color: var(--texte-3); border: 1px solid var(--bord-fort);
+  border-bottom-width: 2px; border-radius: 4px; padding: 2px 5px; }
+
+/* ---------- Bouton ---------- */
+.bouton { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 30px;
+  padding: 0 var(--e-3); border-radius: var(--rayon-champ); border: 1px solid var(--bord-fort);
+  background: var(--surface-3); color: var(--texte); font-size: var(--t-13); font-weight: 500; white-space: nowrap;
+  transition: background-color var(--duree), border-color var(--duree), color var(--duree); }
+.bouton:hover { border-color: var(--bord-champ); }
+.bouton.principal { background: var(--accent); border-color: transparent; color: var(--sur-accent); }
+.bouton.principal:hover { background: color-mix(in srgb, var(--accent) 88%, var(--texte)); }
+.bouton.danger { background: var(--danger); border-color: transparent; color: var(--sur-danger); }
+.bouton.danger:hover { background: color-mix(in srgb, var(--danger) 88%, var(--texte)); }
+.bouton.fantome { background: transparent; border-color: transparent; color: var(--texte-2); }
+.bouton.fantome:hover { background: var(--surface-2); color: var(--texte); }
+.bouton.petit { min-height: 26px; padding: 0 var(--e-2); font-size: var(--t-12); }
+.bouton[aria-disabled="true"], .bouton:disabled { opacity: .45; cursor: not-allowed; }
+.icone { width: 28px; height: 28px; display: inline-grid; place-items: center; border-radius: var(--rayon-item);
+  color: var(--texte-3); transition: background-color var(--duree), color var(--duree); }
+.icone:hover, .icone[aria-expanded="true"] { background: var(--surface-2); color: var(--texte); }
+.icone.danger:hover { background: var(--danger-fond); color: var(--danger); }
+.icone[aria-disabled="true"] { opacity: .4; cursor: not-allowed; }
+.lien-action { display: inline-flex; align-items: center; gap: 6px; min-height: 26px; padding: 0 6px; margin-left: -6px;
+  border-radius: var(--rayon-item); color: var(--texte-2); font-size: var(--t-13); font-weight: 500;
+  transition: background-color var(--duree), color var(--duree); }
+.lien-action:hover { background: var(--surface-2); color: var(--texte); }
+.lien-action .i { color: var(--texte-3); }
+.lien-action[aria-disabled="true"] { opacity: .45; cursor: not-allowed; }
+
+/* ---------- Pastilles ---------- */
+.pastille { display: inline-flex; align-items: center; gap: 5px; height: 22px; padding: 0 8px;
+  border-radius: var(--rayon-pastille); font: 500 var(--t-12)/1 var(--police-texte); white-space: nowrap;
+  background: var(--surface-2); color: var(--texte-2); }
+.pastille.mj { background: var(--mj-fond); color: var(--mj); }
+.pastille.table { background: var(--table-fond); color: var(--table); }
+.pastille .av { width: 16px; height: 16px; font-size: 9px; margin-left: -4px; }
+button.pastille { cursor: pointer; transition: box-shadow var(--duree); }
+button.pastille:hover, button.pastille[aria-expanded="true"] { box-shadow: inset 0 0 0 1px currentColor; }
+button.pastille .chev { opacity: .7; margin-right: -2px; }
+.type { display: inline-flex; align-items: center; gap: 6px; height: 24px; padding: 0 9px 0 7px;
+  border-radius: var(--rayon-item); background: var(--surface-2); color: var(--texte-2); font-size: var(--t-12); font-weight: 500; }
+.type .i { color: var(--texte-3); }
+
+/* ---------- Avatar ---------- */
+.av { width: 28px; height: 28px; border-radius: 50%; display: inline-grid; place-items: center; flex: none;
+  background: var(--accent-fond); color: var(--accent-texte); font: 600 11px/1 var(--police-texte); letter-spacing: .02em; }
+.av.l { background: var(--table-fond); color: var(--table); }
+
+/* =====================================================================================
+   Cadre
+   ===================================================================================== */
+.app { display: grid; grid-template-columns: 252px minmax(0, 1fr); min-height: 100vh; }
+.colonne-barre { background: var(--fond-lateral); border-right: 1px solid var(--bord); }
+.barre { position: sticky; top: 0; height: 100vh; display: flex; flex-direction: column; padding: var(--e-3) var(--e-3) var(--e-3); }
+
+/* Sélecteur d'univers */
+.ancre { position: relative; }
+.univers { display: flex; align-items: center; gap: 10px; width: 100%; padding: 6px; border-radius: var(--rayon-champ); text-align: left;
+  transition: background-color var(--duree); }
+.univers:hover, .univers[aria-expanded="true"] { background: var(--surface-2); }
+.sceau { width: 30px; height: 30px; border-radius: 8px; flex: none; display: grid; place-items: center;
+  background: var(--surface-3); color: var(--texte); font: 600 15px/1 var(--police-titre); box-shadow: inset 0 0 0 1px var(--bord-fort); }
+.univers .nom { flex: 1; min-width: 0; font-weight: 600; font-size: var(--t-14); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.univers > .i { color: var(--texte-3); }
+.univers { display: grid; grid-template-columns: 30px minmax(0,1fr) auto; grid-template-areas: "s n c" "s r c"; column-gap: 10px; row-gap: 2px; align-items: center; }
+.univers > .sceau { grid-area: s; } .univers > .nom { grid-area: n; } .univers > .pastille { grid-area: r; justify-self: start; font-size: 11px; height: 18px; } .univers > .i { grid-area: c; }
+
+
+/* Navigation */
+.barre nav { flex: 1; overflow-y: auto; margin-top: var(--e-3); padding-right: 2px; }
+.groupe + .groupe { margin-top: var(--e-4); }
+.groupe-titre { padding: 0 10px 4px; font-size: var(--t-12); font-weight: 500; color: var(--texte-3); }
+.item { display: flex; align-items: center; gap: 10px; min-height: 30px; padding: 0 10px; border-radius: var(--rayon-item);
+  color: var(--texte-2); font-size: var(--t-13); font-weight: 500; transition: background-color var(--duree), color var(--duree); }
+.item .i { color: var(--texte-3); transition: color var(--duree); }
+.item:hover { background: var(--surface-2); color: var(--texte); }
+.item:hover .i { color: var(--texte-2); }
+.item[aria-current="page"] { background: var(--accent-fond); color: var(--texte); }
+.item[aria-current="page"] .i { color: var(--accent-texte); }
+
+/* Pied : le compte */
+.pied { padding-top: var(--e-2); border-top: 1px solid var(--bord); }
+.compte { display: flex; align-items: center; gap: 10px; width: 100%; padding: 6px; border-radius: var(--rayon-champ); text-align: left;
+  transition: background-color var(--duree); }
+.compte:hover, .compte[aria-expanded="true"] { background: var(--surface-2); }
+.compte .ident { flex: 1; min-width: 0; font-size: var(--t-13); font-weight: 500; }
+.compte > .i { color: var(--texte-3); }
+
+/* ---------- Menu ---------- */
+.menu { position: absolute; z-index: 40; min-width: 220px; padding: 4px; border-radius: var(--rayon-panneau);
+  background: var(--surface); box-shadow: var(--ombre-flottant);
+  opacity: 0; transform: translateY(4px) scale(.98); pointer-events: none; visibility: hidden;
+  transition: opacity var(--duree) var(--courbe), transform var(--duree) var(--courbe), visibility 0s linear var(--duree); }
+.menu.ouvert { opacity: 1; transform: none; pointer-events: auto; visibility: visible; transition-delay: 0s; }
+.menu .entree { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 32px; padding: 0 10px;
+  border-radius: var(--rayon-item); font-size: var(--t-13); color: var(--texte); text-align: left; }
+.menu .entree .i { color: var(--texte-3); }
+.menu .entree:hover, .menu .entree:focus-visible { background: var(--surface-2); outline: none; }
+.menu .entree.danger { color: var(--danger); }
+.menu .entree.danger .i { color: var(--danger); }
+.menu .entree .fin { margin-left: auto; color: var(--texte-3); font-size: var(--t-12); display: flex; gap: 6px; align-items: center; }
+.menu .entree[aria-disabled="true"] { opacity: .45; cursor: not-allowed; }
+.menu .entree[aria-disabled="true"]:hover { background: none; }
+.menu .sep { height: 1px; background: var(--bord); margin: 4px -4px; }
+.menu .titre-menu { padding: 8px 10px 4px; font-size: var(--t-12); color: var(--texte-3); font-weight: 500; }
+.menu-compte { left: 0; right: 0; bottom: calc(100% + 6px); }
+.menu-compte .qui { display: flex; align-items: center; gap: 10px; padding: 8px 10px 10px; }
+.menu-compte .qui b { display: block; font-weight: 600; font-size: var(--t-13); }
+.menu-compte .qui small { color: var(--texte-3); font-size: var(--t-12); }
+.menu-univers { left: 0; right: 0; top: calc(100% + 6px); }
+.menu-univers .role { margin-left: auto; }
+
+/* Bascule de thème : soleil, lune, écran */
+.themes { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 4px 4px 4px 10px; min-height: 40px; }
+.themes > span { font-size: var(--t-13); }
+.segments { display: inline-flex; padding: 2px; gap: 2px; border-radius: var(--rayon-champ); background: var(--surface-2); }
+.segments button { width: 30px; height: 26px; display: grid; place-items: center; border-radius: var(--rayon-item); color: var(--texte-3);
+  transition: background-color var(--duree), color var(--duree), box-shadow var(--duree); }
+.segments button:hover { color: var(--texte); }
+.segments button[aria-checked="true"] { background: var(--surface); color: var(--texte); box-shadow: 0 0 0 1px var(--bord-fort), 0 1px 2px rgba(0,0,0,.18); }
+
+/* ---------- Barre haute ---------- */
+.zone-principale { min-width: 0; display: flex; flex-direction: column; }
+.haute { position: sticky; top: 0; z-index: 20; height: 52px; display: flex; align-items: center; gap: var(--e-3);
+  padding: 0 var(--e-5); border-bottom: 1px solid var(--bord);
+  background: color-mix(in srgb, var(--fond) 82%, transparent); backdrop-filter: saturate(1.4) blur(12px); -webkit-backdrop-filter: saturate(1.4) blur(12px); }
+.bouton-menu { display: none; }
+.ariane { display: flex; align-items: center; gap: 2px; min-width: 0; flex: 1; font-size: var(--t-13); color: var(--texte-2); }
+.ariane a { display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 6px; border-radius: var(--rayon-item); white-space: nowrap;
+  transition: background-color var(--duree), color var(--duree); }
+.ariane a:hover { background: var(--surface-2); color: var(--texte); }
+.ariane .i.sep-ariane { color: var(--texte-3); opacity: .7; }
+.ariane [aria-current] { padding: 0 6px; color: var(--texte); font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ariane .court { display: none; }
+
+/* Bascule mode MJ / mode Joueur */
+.mode { display: inline-flex; padding: 2px; gap: 2px; border-radius: var(--rayon-champ); background: var(--surface-2); box-shadow: inset 0 0 0 1px var(--bord); }
+.mode button { display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 10px; border-radius: var(--rayon-item);
+  font-size: var(--t-13); font-weight: 500; color: var(--texte-2); transition: background-color var(--duree), color var(--duree); }
+.mode button:hover { color: var(--texte); }
+.mode button[aria-checked="true"].mj { background: var(--mj-fond); color: var(--mj); }
+.mode button[aria-checked="true"].joueur { background: var(--table-fond); color: var(--table); }
+
+/* Bandeaux du cadre */
+.bandeau { display: none; align-items: center; gap: 10px; padding: 8px var(--e-5); font-size: var(--t-13); border-bottom: 1px solid var(--bord); }
+.bandeau.perdue { background: linear-gradient(var(--danger-fond), var(--danger-fond)), var(--fond); color: var(--danger); position: sticky; top: 52px; z-index: 19; }
+.bandeau.joueur { background: linear-gradient(var(--table-fond), var(--table-fond)), var(--fond); color: var(--table); position: sticky; top: 52px; z-index: 19; }
+body.etat-perdue .bandeau.perdue { display: flex; }
+body.mode-joueur .bandeau.joueur { display: flex; }
+body.etat-perdue .bandeau.joueur { top: 89px; }
+
+/* ---------- Champ, édition en place ---------- */
+.champ { display: flex; flex-direction: column; gap: 6px; }
+.champ > span { font-size: var(--t-12); font-weight: 500; color: var(--texte-2); }
+.saisie { width: 100%; height: 34px; padding: 0 10px; border-radius: var(--rayon-champ); border: 1px solid var(--bord-champ);
+  background: var(--surface); color: var(--texte); font-size: var(--t-14); transition: border-color var(--duree), box-shadow var(--duree); }
+.saisie:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-fond); }
+.saisie::placeholder { color: var(--texte-3); }
+.champ .erreur { font-size: var(--t-12); color: var(--danger); }
+
+/* Message dans un panneau (échec d'écriture, écriture périmée, refus) */
+.alerte { display: flex; align-items: flex-start; gap: 10px; margin-top: var(--e-3); padding: 10px 12px; border-radius: var(--rayon-champ);
+  background: var(--danger-fond); color: var(--texte); font-size: var(--t-13); }
+.alerte > .i { color: var(--danger); margin-top: 2px; }
+.alerte .corps-alerte { flex: 1; display: flex; flex-direction: column; align-items: flex-start; gap: 8px; }
+
+/* ---------- Boîte de dialogue ---------- */
+.voile { position: fixed; inset: 0; z-index: 60; display: grid; place-items: center; padding: var(--e-4); background: var(--voile);
+  opacity: 0; visibility: hidden; transition: opacity var(--duree), visibility 0s linear var(--duree); }
+.voile.ouvert { opacity: 1; visibility: visible; transition-delay: 0s; }
+.dialogue { width: min(440px, 100%); padding: var(--e-5); border-radius: var(--rayon-panneau); background: var(--surface); box-shadow: var(--ombre-flottant);
+  transform: translateY(6px) scale(.98); transition: transform var(--duree) var(--courbe); }
+.voile.ouvert .dialogue { transform: none; }
+.dialogue .ic-dialogue { width: 36px; height: 36px; border-radius: 10px; display: grid; place-items: center; background: var(--danger-fond); color: var(--danger); margin-bottom: var(--e-4); }
+.dialogue h3 { font: 600 var(--t-16)/1.35 var(--police-texte); }
+.dialogue p { margin-top: 6px; color: var(--texte-2); font-size: var(--t-14); }
+.dialogue .actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: var(--e-5); }
+
+/* ---------- Toast ---------- */
+.toasts { position: fixed; left: 50%; bottom: var(--e-5); transform: translateX(-50%); z-index: 70; display: flex; flex-direction: column; align-items: center; gap: 8px; pointer-events: none; }
+.toast { display: flex; align-items: center; gap: 10px; min-height: 40px; padding: 0 8px 0 12px; border-radius: var(--rayon-champ);
+  background: var(--surface); box-shadow: var(--ombre-flottant); font-size: var(--t-13); pointer-events: auto;
+  opacity: 0; transform: translateY(8px); transition: opacity var(--duree) var(--courbe), transform var(--duree) var(--courbe); }
+.toast.visible { opacity: 1; transform: none; }
+.toast > .i { color: var(--table); }
+.toast .fermer { width: 24px; height: 24px; }
+
+/* ---------- Demander à Kanevas ---------- */
+.assistant { position: fixed; right: var(--e-5); bottom: var(--e-5); z-index: 30; display: inline-flex; align-items: center; gap: 8px;
+  height: 40px; padding: 0 16px 0 13px; border-radius: 999px; background: var(--texte); color: var(--fond); font-weight: 500; font-size: var(--t-13);
+  box-shadow: 0 8px 24px -6px rgba(0,0,0,.45); transition: transform var(--duree) var(--courbe); }
+.assistant:hover { transform: translateY(-1px); }
+.assistant kbd { color: color-mix(in srgb, var(--fond) 65%, var(--texte)); border-color: color-mix(in srgb, var(--fond) 30%, var(--texte)); margin-left: 4px; }
+
+.os { border-radius: 6px; background: var(--squelette); }
+/* ---------- Connexion perdue : les gestes qui écrivent sont désactivés ---------- */
+body.etat-perdue [data-ecrit] { opacity: .45; pointer-events: none; }
+body.etat-perdue [data-ecrit-recherche] { opacity: .45; pointer-events: none; }
+/* ---------- Tiroir (téléphone) ---------- */
+.voile-tiroir { display: none; }
+
+
+
+/* ---------- Téléphone : le cadre, comme e09-fiche.html ---------- */
+@media (max-width: 760px) {
+  .app { grid-template-columns: minmax(0, 1fr); }
+  .colonne-barre { position: fixed; z-index: 50; top: 0; bottom: 0; left: 0; width: min(300px, 86vw); border-right: 1px solid var(--bord-fort);
+    transform: translateX(-100%); transition: transform var(--duree) var(--courbe); box-shadow: var(--ombre-flottant); visibility: hidden; }
+  body.tiroir-ouvert .colonne-barre { transform: none; visibility: visible; }
+  .voile-tiroir { display: block; position: fixed; inset: 0; z-index: 45; background: var(--voile); opacity: 0; visibility: hidden; transition: opacity var(--duree); }
+  body.tiroir-ouvert .voile-tiroir { opacity: 1; visibility: visible; }
+  .item, .compte, .univers, .menu .entree { min-height: 40px; }
+  .haute { padding: 0 var(--e-2) 0 6px; gap: 4px; }
+  .bouton-menu { display: inline-grid; width: 40px; height: 40px; }
+  .ariane > a:first-child, .ariane > a:first-child + .sep-ariane { display: none; }
+  .bandeau { padding: 8px var(--e-4); }
+  .lien-action, .bouton.petit { min-height: 36px; }
+  .assistant { right: var(--e-4); bottom: var(--e-4); width: 48px; height: 48px; padding: 0; justify-content: center; }
+  .assistant .lib-assistant, .assistant kbd { display: none; }
+  .assistant .i { width: 20px; height: 20px; }
+  .toasts { left: var(--e-4); right: 80px; bottom: var(--e-4); transform: none; align-items: stretch; }
+}
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition-duration: 0ms !important; } }
+
+
+
+/* =====================================================================================
+   E-19 — Médiathèque. Rien que des composants du cadre et des tokens de la charte ;
+   aucune couleur en dur (hors des peintures de démonstration).
+   ===================================================================================== */
+.bouton.principal { flex-direction: row; display: inline-flex; }
+.page.liste { width: 100%; max-width: 1120px; margin: 0 auto; padding: var(--e-8) var(--e-7) 160px; }
+.chasse { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-variant-ligatures: none; letter-spacing: 0; }
+
+/* Tête : glyphe, titre, compte, action principale */
+.tete-liste { display: flex; align-items: center; gap: var(--e-4); flex-wrap: wrap; }
+.glyphe-type { width: 40px; height: 40px; flex: none; display: grid; place-items: center; border-radius: 10px;
+  background: var(--surface-2); color: var(--texte-2); box-shadow: inset 0 0 0 1px var(--bord); }
+.glyphe-type .i { width: 20px; height: 20px; }
+.tete-liste h1 { font: 500 var(--t-40)/1.08 var(--police-titre); letter-spacing: -.015em; font-variation-settings: "opsz" 144; }
+.tete-liste .nombre { flex: 1; min-width: 0; align-self: flex-end; padding-bottom: 5px; font-size: var(--t-14); color: var(--texte-3);
+  font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+/* Rangée de filtres */
+.filtres { display: flex; flex-wrap: wrap; align-items: center; gap: var(--e-2); margin-top: var(--e-6); }
+.champ-recherche { position: relative; flex: 1 1 180px; max-width: 300px; min-width: 0; display: flex; align-items: center; gap: 8px; height: 32px;
+  padding: 0 10px; border-radius: var(--rayon-champ); border: 1px solid var(--bord-champ); background: var(--surface);
+  transition: border-color var(--duree), box-shadow var(--duree); cursor: text; }
+.champ-recherche:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-fond); }
+.champ-recherche > .i { color: var(--texte-3); }
+.champ-recherche input { flex: 1; min-width: 0; height: 30px; padding: 0; border: 0; background: transparent; font-size: var(--t-13); }
+.champ-recherche input:focus { outline: none; }
+.champ-recherche input::placeholder { color: var(--texte-3); }
+.filtre { display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 8px 0 10px; border-radius: var(--rayon-champ);
+  border: 1px solid var(--bord-fort); background: transparent; font-size: var(--t-13); color: var(--texte-2); white-space: nowrap;
+  transition: background-color var(--duree), border-color var(--duree), color var(--duree); }
+.filtre:hover, .filtre[aria-expanded="true"] { background: var(--surface-2); color: var(--texte); }
+.filtre .val { color: var(--texte); font-weight: 500; }
+.filtre .chev { color: var(--texte-3); margin-left: -1px; }
+.filtre.actif { border-color: var(--accent); background: var(--accent-fond); }
+.filtre > .i:first-child { color: var(--texte-3); }
+.filtres .pousse { margin-left: auto; }
+.ancre-filtre { position: relative; }
+.menu-filtre { top: calc(100% + 6px); left: 0; min-width: 200px; }
+.ancre-filtre.droite .menu-filtre { left: auto; right: 0; }
+.menu .entree .coche { margin-left: auto; color: var(--accent-texte); visibility: hidden; }
+.menu .entree[aria-checked="true"] .coche { visibility: visible; }
+
+/* ---------- La grille de vignettes ---------- */
+.grille > li { min-width: 0; }
+.grille { display: grid; grid-template-columns: repeat(auto-fill, minmax(176px, 1fr)); gap: var(--e-5) var(--e-4); margin-top: var(--e-5); }
+.vignette { position: relative; display: flex; flex-direction: column; gap: 8px; width: 100%; padding: 6px 6px 8px; margin: -6px; width: calc(100% + 12px);
+  border-radius: var(--rayon-panneau); text-align: left; transition: background-color var(--duree); }
+.vignette:hover { background: var(--surface-2); }
+.vignette:focus-visible { outline-offset: 0; border-radius: var(--rayon-panneau); }
+.vue { position: relative; display: block; flex: none; aspect-ratio: 4 / 3; border-radius: var(--rayon-champ); overflow: hidden; background: var(--squelette); }
+.vue::after { content: ""; position: absolute; inset: 0; border-radius: inherit; box-shadow: inset 0 0 0 1px var(--bord); pointer-events: none;
+  transition: box-shadow var(--duree); }
+.vignette:hover .vue::after { box-shadow: inset 0 0 0 1px var(--bord-fort); }
+.vue img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: 50% 40%; }
+/* Le fichier ouvert dans le panneau : un anneau d'encre, décalé de 2 px (non-texte, 3:1 sur --fond). */
+.vignette[aria-current="true"] .vue::after { box-shadow: inset 0 0 0 2px var(--accent), inset 0 0 0 4px var(--fond); }
+.nom-img { display: block; min-width: 0; max-width: 100%; padding: 0 2px; font-size: var(--t-13); font-weight: 500; line-height: 1.35; color: var(--texte);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* « MJ seul » posée sur la vignette : opaque, pour ne jamais dépendre de l'image dessous. */
+.pastille.sur-image { position: absolute; left: 8px; top: 8px; z-index: 1; height: 22px; background: var(--surface); color: var(--mj);
+  box-shadow: inset 0 0 0 1px var(--mj-bord), 0 1px 3px rgba(0,0,0,.25); }
+.suite { display: flex; flex-direction: column; align-items: center; gap: 8px; margin-top: var(--e-6); }
+.suite .note { font-size: var(--t-12); color: var(--texte-3); font-variant-numeric: tabular-nums; }
+
+/* La tuile d'un document : même cadre 4:3 que la vignette ; l'icône du type au centre, l'extension
+   en pastille et la taille au pied. Une feuille posée sur le fond, sans teinte par type : l'icône dit
+   le type, la pastille le confirme en toutes lettres. */
+.vue.doc { display: flex; flex-direction: column; align-items: center; justify-content: center;
+  background: radial-gradient(var(--bord) 1px, transparent 1.4px) 0 0 / 12px 12px, var(--surface-2); }
+.vue.doc .feuille { width: 64px; height: 64px; display: grid; place-items: center; border-radius: 14px; margin-top: -14px;
+  background: var(--surface); color: var(--texte-2); box-shadow: inset 0 0 0 1px var(--bord-fort), 0 1px 2px rgba(0,0,0,.12);
+  transition: color var(--duree), transform var(--duree) var(--courbe); }
+.vue.doc .feuille .i { width: 30px; height: 30px; stroke-width: 1.5; }
+.vignette:hover .vue.doc .feuille { color: var(--texte); transform: translateY(-1px); }
+.vue.doc .pied-doc { position: absolute; left: 8px; right: 8px; bottom: 8px; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.ext { display: inline-flex; align-items: center; height: 20px; padding: 0 7px; border-radius: 5px; background: var(--surface);
+  color: var(--texte-2); box-shadow: inset 0 0 0 1px var(--bord-fort); font: 600 11px/1 var(--police-texte); letter-spacing: .04em; }
+.poids { font-size: var(--t-12); color: var(--texte-2); font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+/* La bascule « Tout · Images · Documents » : au-dessus des filtres, segments neutres (ceux du thème) */
+.bascule-type { display: inline-flex; margin-top: var(--e-6); padding: 2px; gap: 2px; border-radius: var(--rayon-champ);
+  background: var(--surface-2); box-shadow: inset 0 0 0 1px var(--bord); }
+.bascule-type button { display: inline-flex; align-items: center; gap: 6px; height: 30px; padding: 0 12px; border-radius: var(--rayon-item);
+  font-size: var(--t-13); font-weight: 500; color: var(--texte-2); transition: background-color var(--duree), color var(--duree), box-shadow var(--duree); }
+.bascule-type button .i { color: var(--texte-3); }
+.bascule-type button:hover { color: var(--texte); }
+.bascule-type button[aria-checked="true"] { background: var(--surface); color: var(--texte); box-shadow: 0 0 0 1px var(--bord-fort), 0 1px 2px rgba(0,0,0,.18); }
+.bascule-type button[aria-checked="true"] .i { color: var(--texte-2); }
+.bascule-type + .filtres { margin-top: var(--e-3); }
+/* Sombre : la feuille et la pastille d'extension montent d'un cran (--surface-3), pour se poser sur le fond
+   au lieu de s'y creuser. */
+:root:not([data-theme="light"]) .feuille, :root:not([data-theme="light"]) .vue.doc .ext { background: var(--surface-3); }
+.ch-outils .bascule-type { margin-top: 0; }
+
+/* Vide, aucun résultat */
+.vide-liste { margin-top: var(--e-5); padding: var(--e-7) var(--e-5); border-radius: var(--rayon-panneau); text-align: center;
+  box-shadow: inset 0 0 0 1px var(--bord); display: flex; flex-direction: column; align-items: center; }
+.vide-liste .rond { width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; background: var(--surface-2); color: var(--texte-3); }
+.vide-liste .rond .i { width: 20px; height: 20px; }
+.vide-liste p { margin: var(--e-3) 0 0; color: var(--texte-2); font-size: var(--t-14); max-width: 44ch; }
+.vide-liste .bouton { margin-top: var(--e-4); }
+
+/* Rôle : ce que le joueur n'a pas est caché, pas désactivé */
+body.role-joueur [data-mj] { display: none !important; }
+body.etat-vide [data-plein] { display: none !important; }
+body:not(.etat-vide) [data-vide] { display: none !important; }
+body.role-joueur [data-vide-mj], body:not(.role-joueur) [data-vide-joueur] { display: none; }
+
+/* ---------- Le panneau du fichier ---------- */
+.zone-principale { transition: margin-right var(--duree) var(--courbe); }
+body.panneau-ouvert .zone-principale { margin-right: 400px; }
+body.panneau-ouvert .assistant { right: calc(400px + var(--e-5)); }
+.panneau-image { position: fixed; z-index: 25; top: 0; right: 0; bottom: 0; width: 400px; display: flex; flex-direction: column;
+  background: var(--fond-lateral); border-left: 1px solid var(--bord-champ);
+  transform: translateX(16px); opacity: 0; visibility: hidden;
+  transition: transform var(--duree) var(--courbe), opacity var(--duree), visibility 0s linear var(--duree); }
+body.panneau-ouvert .panneau-image { transform: none; opacity: 1; visibility: visible; transition-delay: 0s; }
+.pi-barre { flex: none; height: 52px; display: flex; align-items: center; gap: 8px; padding: 0 12px 0 20px; border-bottom: 1px solid var(--bord); }
+.pi-barre .lib { flex: 1; font-size: var(--t-13); color: var(--texte-3); font-weight: 500; display: flex; align-items: center; gap: 8px; }
+.pi-barre .lib .i { color: var(--texte-3); }
+.pi-corps { flex: 1; overflow-y: auto; padding: 20px 20px 28px; }
+.apercu-image { display: grid; place-items: center; height: 248px; border-radius: var(--rayon-champ); overflow: hidden; position: relative;
+  background: radial-gradient(var(--bord-fort) 1px, transparent 1.4px) 0 0 / 12px 12px, var(--surface-2); box-shadow: inset 0 0 0 1px var(--bord); }
+.apercu-image img { display: block; max-width: 100%; max-height: 100%; object-fit: contain; }
+/* Un document : pas d'aperçu intégré (AD-66) — sa grande icône, son type, « Télécharger ». */
+.apercu-doc { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; height: 248px;
+  border-radius: var(--rayon-champ); background: radial-gradient(var(--bord) 1px, transparent 1.4px) 0 0 / 12px 12px, var(--surface-2);
+  box-shadow: inset 0 0 0 1px var(--bord); }
+.apercu-doc .feuille { width: 88px; height: 88px; display: grid; place-items: center; border-radius: 18px; background: var(--surface);
+  color: var(--texte-2); box-shadow: inset 0 0 0 1px var(--bord-fort), 0 2px 6px rgba(0,0,0,.14); }
+.apercu-doc .feuille .i { width: 42px; height: 42px; stroke-width: 1.4; }
+.apercu-doc .type-doc { margin-top: 2px; font-size: var(--t-13); color: var(--texte-2); }
+.apercu-doc .bouton { margin-top: 4px; }
+.pi-nom { display: flex; align-items: flex-start; gap: 6px; margin-top: var(--e-4); }
+.pi-nom h2 { flex: 1; min-width: 0; font: 500 var(--t-22)/1.25 var(--police-titre); letter-spacing: -.005em; font-variation-settings: "opsz" 48;
+  overflow-wrap: anywhere; border-radius: var(--rayon-item); }
+body:not(.role-joueur) .pi-nom h2 { cursor: text; }
+body:not(.role-joueur) .pi-nom h2:hover { box-shadow: 0 0 0 4px var(--surface-2); background: var(--surface-2); }
+.pi-nom .saisie { font: 500 var(--t-22)/1.25 var(--police-titre); font-variation-settings: "opsz" 48; height: 40px; padding: 0 8px; margin: -4px -9px; }
+.pi-nom .icone { margin-top: 1px; }
+.pi-nom .aide-nom { display: none; }
+/* Bascule segmentée de la visibilité (les teintes de la bascule de mode) */
+.visibilite { display: grid; grid-template-columns: 1fr 1fr; margin-top: var(--e-4); padding: 2px; gap: 2px; border-radius: var(--rayon-champ);
+  background: var(--surface-2); box-shadow: inset 0 0 0 1px var(--bord); }
+.visibilite button { display: inline-flex; align-items: center; justify-content: center; gap: 6px; height: 30px; padding: 0 10px; border-radius: var(--rayon-item);
+  font-size: var(--t-13); font-weight: 500; color: var(--texte-2); white-space: nowrap; transition: background-color var(--duree), color var(--duree); }
+.visibilite button:hover { color: var(--texte); }
+.visibilite button[aria-checked="true"].joueurs { background: var(--table-fond); color: var(--table); }
+.visibilite button[aria-checked="true"].mj { background: var(--mj-fond); color: var(--mj); }
+.visibilite[aria-disabled="true"] { opacity: .45; pointer-events: none; }
+.pi-meta { margin-top: var(--e-4); display: flex; flex-direction: column; gap: 4px; font-size: var(--t-13); color: var(--texte-2); }
+.pi-meta .ligne-meta { display: flex; flex-wrap: wrap; column-gap: 6px; }
+.pi-meta .ligne-meta > span:not(:last-child)::after { content: "·"; margin-left: 6px; color: var(--texte-3); }
+.pi-meta .cle { display: flex; align-items: center; gap: 8px; margin-top: 4px; color: var(--texte-3); }
+.pi-meta .cle code { font-size: 12px; color: var(--texte-2); padding: 2px 6px; border-radius: 4px; background: var(--surface-2); box-shadow: inset 0 0 0 1px var(--bord);
+  overflow-wrap: anywhere; }
+.pi-bloc { margin-top: var(--e-5); padding-top: var(--e-4); border-top: 1px solid var(--bord); }
+.pi-bloc h3 { display: flex; align-items: center; gap: 6px; font-size: var(--t-12); font-weight: 500; color: var(--texte-3); margin-bottom: 6px; }
+.usages li + li { margin-top: 2px; }
+.usage { display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 6px 8px; margin: 0 -8px; border-radius: var(--rayon-champ);
+  transition: background-color var(--duree); }
+.usage:hover { background: var(--surface-2); }
+.usage .mono { width: 28px; height: 28px; flex: none; display: grid; place-items: center; border-radius: var(--rayon-item);
+  background: var(--surface-2); box-shadow: inset 0 0 0 1px var(--bord); color: var(--texte-2); }
+.usage:hover .mono { background: var(--surface-3); }
+.usage .corps { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.usage .fiche { font-size: var(--t-13); font-weight: 500; color: var(--texte); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.usage .ou { font-size: var(--t-12); color: var(--texte-3); }
+.usage > .i { color: var(--texte-3); opacity: 0; transition: opacity var(--duree); }
+.usage:hover > .i, .usage:focus-visible > .i { opacity: 1; }
+.pi-pied { margin-top: var(--e-5); padding-top: var(--e-4); border-top: 1px solid var(--bord); }
+.bouton.fantome.danger-texte { color: var(--danger); margin-left: -8px; padding: 0 8px; }
+.bouton.fantome.danger-texte:hover { background: var(--danger-fond); color: var(--danger); }
+body.etat-perdue [data-ecrit] { opacity: .45; pointer-events: none; }
+
+/* ---------- Boîtes ---------- */
+.dialogue .ic-dialogue.mj { background: var(--mj-fond); color: var(--mj); }
+.dialogue .ic-dialogue .i { width: 18px; height: 18px; }
+.dialogue .liste-fiches { margin-top: 10px; padding: 4px 0; border-radius: var(--rayon-champ); box-shadow: inset 0 0 0 1px var(--bord); }
+.dialogue .liste-fiches li { display: flex; align-items: center; gap: 10px; min-height: 36px; padding: 0 12px; font-size: var(--t-13); color: var(--texte); }
+.dialogue .liste-fiches li + li { border-top: 1px solid var(--bord); }
+.dialogue .liste-fiches .i { color: var(--texte-3); }
+.dialogue .liste-fiches .ou { color: var(--texte-3); }
+.dialogue .liste-fiches + p { margin-top: 10px; }
+
+/* Le sélecteur « Choisir un fichier » : la même grille, plus petite */
+.dialogue.choisir { width: min(860px, 100%); max-height: min(720px, calc(100vh - 48px)); display: flex; flex-direction: column; padding: 0; }
+.ch-tete { display: flex; align-items: center; gap: 12px; padding: 18px 16px 0 24px; }
+.ch-tete h3 { flex: 1; }
+.ch-outils { display: flex; align-items: center; gap: 8px; padding: 14px 24px 14px; border-bottom: 1px solid var(--bord); }
+.ch-outils .champ-recherche { flex: 1 1 auto; max-width: 340px; }
+.ch-outils .note { margin-left: auto; font-size: var(--t-12); color: var(--texte-3); white-space: nowrap; }
+.ch-grille { flex: 1; overflow-y: auto; padding: 18px 24px 24px; }
+.ch-grille .grille { margin-top: 0; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: var(--e-4) var(--e-3); }
+.depuis-appareil { display: flex; flex-direction: column; gap: 8px; width: calc(100% + 12px); margin: -6px; padding: 6px 6px 8px; border-radius: var(--rayon-panneau);
+  text-align: left; transition: background-color var(--duree); }
+.depuis-appareil .cadre { width: 100%; aspect-ratio: 4 / 3; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;
+  border-radius: var(--rayon-champ); border: 1px dashed var(--bord-champ); color: var(--texte-2); background: var(--surface); }
+.depuis-appareil .cadre .i { width: 20px; height: 20px; color: var(--accent-texte); }
+.depuis-appareil:hover { background: var(--surface-2); }
+.depuis-appareil:hover .cadre { border-color: var(--accent); }
+.depuis-appareil .nom-img { color: var(--texte); }
+.depuis-appareil .cadre .lib-appareil { padding: 0 10px; font-size: var(--t-13); font-weight: 500; line-height: 1.3; color: var(--texte); text-align: center; }
+.ch-grille .vue.doc .feuille { width: 44px; height: 44px; border-radius: 11px; margin-top: 0; }
+.ch-grille .vue.doc .feuille .i { width: 22px; height: 22px; }
+.dialogue.choisir .vignette:hover { background: var(--surface-2); }
+
+/* ---------- E-9 derrière la boîte du choix (fiche « Port-Sel », « Description » en édition) ---------- */
+[data-vue="fiche"] .page.fiche { max-width: 784px; margin: 0 auto; padding: var(--e-8) var(--e-7) 160px; }
+body:not(.vue-fiche) [data-vue="fiche"], body.vue-fiche [data-vue="mediatheque"] { display: none !important; }
+.fiche .type { height: 24px; }
+.fiche h1 { margin-top: var(--e-3); font: 500 var(--t-40)/1.08 var(--police-titre); letter-spacing: -.015em; font-variation-settings: "opsz" 144; }
+.fiche .sec { position: relative; margin-top: var(--e-6); }
+.fiche .sec::before { content: ""; position: absolute; left: -28px; top: 4px; bottom: 4px; width: 2px; border-radius: 2px; background: var(--table-bord); }
+.tete-sec { display: flex; align-items: center; gap: 10px; }
+.tete-sec h2 { font: 500 var(--t-22)/1.25 var(--police-titre); font-variation-settings: "opsz" 48; }
+.edition { margin-top: var(--e-3); margin-left: -14px; margin-right: -14px; border-radius: var(--rayon-panneau);
+  background: var(--surface); box-shadow: 0 0 0 1px var(--accent), 0 0 0 4px var(--accent-fond); }
+.outils { display: flex; align-items: center; flex-wrap: wrap; gap: 2px; padding: 6px 8px; border-bottom: 1px solid var(--bord); }
+.outils .icone { width: 30px; height: 30px; }
+.outils .filet-outils { width: 1px; height: 18px; margin: 0 6px; background: var(--bord-fort); }
+.menu-fichier { top: calc(100% + 6px); left: -4px; min-width: 248px; }
+.outil-mj { display: inline-flex; align-items: center; gap: 6px; height: 30px; padding: 0 9px; border-radius: var(--rayon-item);
+  color: var(--mj); font-size: var(--t-13); font-weight: 500; }
+.outil-mj:hover { background: var(--mj-fond); }
+.bascule-apercu { margin-left: auto; }
+.bascule-apercu button { width: auto; padding: 0 10px; font-size: var(--t-12); font-weight: 500; }
+.source { min-height: 200px; padding: 14px 14px 18px; white-space: pre-wrap; overflow-wrap: anywhere; font: 400 17px/1.68 var(--police-lecture);
+  font-variation-settings: "opsz" 18; color: var(--texte); }
+.source .md-img { color: var(--accent-texte); }
+.source .md-gras { font-weight: 600; }
+.curseur { display: inline-block; width: 1.5px; height: 1.15em; margin-left: 1px; vertical-align: -.2em; background: var(--accent); animation: clignote 1.1s steps(1) infinite; }
+@keyframes clignote { 50% { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .curseur { animation: none; } }
+.pied-edition { display: flex; align-items: center; gap: 8px; padding: 8px 8px 8px 14px; border-top: 1px solid var(--bord); }
+.pied-edition .compteur { margin-right: auto; font-size: var(--t-12); color: var(--texte-3); font-variant-numeric: tabular-nums; }
+.pied-edition .aide { display: flex; align-items: center; gap: 4px; font-size: var(--t-12); color: var(--texte-3); margin-right: 6px; }
+/* L'avertissement de B-55 : sous le champ, tant que la condition tient ; il n'empêche rien. */
+.avert-mj { display: flex; align-items: flex-start; gap: 10px; margin: 14px -14px 0; padding: 10px 12px; border-radius: var(--rayon-champ);
+  background: var(--mj-fond); box-shadow: inset 0 0 0 1px var(--mj-bord); color: var(--texte); font-size: var(--t-13); }
+.avert-mj .i { color: var(--mj); margin-top: 2px; }
+
+/* ---------- Téléphone ---------- */
+@media (max-width: 1080px) {
+  .page.liste { padding-left: var(--e-6); padding-right: var(--e-6); }
+  body.panneau-ouvert .zone-principale { margin-right: 360px; }
+  .panneau-image { width: 360px; }
+  body.panneau-ouvert .assistant { right: calc(360px + var(--e-5)); }
+}
+@media (max-width: 760px) {
+  .page.liste, [data-vue="fiche"] .page.fiche { padding: var(--e-6) var(--e-4) 120px; }
+  .tete-liste { gap: var(--e-3); }
+  .glyphe-type { width: 36px; height: 36px; }
+  .tete-liste h1 { font-size: var(--t-32); }
+  .tete-liste .nombre { padding-bottom: 3px; }
+  .tete-liste [data-ajouter] { flex-basis: 100%; min-height: 40px; }
+  .filtres { margin-top: var(--e-5); gap: 6px; }
+  .bascule-type { display: flex; margin-top: var(--e-5); }
+  .bascule-type button { flex: 1; justify-content: center; height: 36px; padding: 0 8px; }
+  .vue.doc .feuille { width: 52px; height: 52px; border-radius: 12px; margin-top: -12px; }
+  .vue.doc .feuille .i { width: 26px; height: 26px; }
+  .vue.doc .pied-doc { left: 6px; right: 6px; bottom: 6px; }
+  .apercu-doc { height: 260px; }
+  .apercu-doc .bouton { min-height: 40px; }
+  .champ-recherche { flex: 1 1 100%; max-width: none; height: 40px; }
+  .champ-recherche input { height: 38px; font-size: 16px; }
+  .filtre { height: 36px; }
+  .filtres .pousse { margin-left: 0; }
+  #f-ordre .val { display: none; }
+  .grille { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--e-4) var(--e-3); margin-top: var(--e-4); }
+  .vignette { padding: 4px 4px 6px; margin: -4px; width: calc(100% + 8px); gap: 6px; }
+  .pastille.sur-image { left: 6px; top: 6px; }
+  body.panneau-ouvert .zone-principale { margin-right: 0; }
+  .panneau-image { width: auto; left: 0; z-index: 55; border-left: 0; transform: translateY(12px); }
+  body.panneau-ouvert .assistant { display: none; }
+  .pi-barre { padding: 0 8px 0 16px; }
+  .pi-barre .icone { width: 40px; height: 40px; }
+  .pi-corps { padding: 16px 16px 32px; }
+  .apercu-image { height: 260px; }
+  .visibilite button { height: 38px; }
+  .usage { min-height: 48px; }
+  .bouton.fantome.danger-texte { min-height: 40px; }
+  .dialogue.choisir { width: 100%; max-height: none; height: 100%; border-radius: 0; }
+  #voile-choisir { padding: 0; }
+  .ch-tete { padding: 12px 8px 0 16px; }
+  .ch-tete .icone { width: 40px; height: 40px; }
+  .ch-outils { padding: 12px 16px; flex-wrap: wrap; }
+  .ch-outils .champ-recherche { max-width: none; }
+  .ch-outils .note { margin-left: 0; }
+  .ch-grille { padding: 14px 16px 24px; }
+  .ch-grille .grille { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .edition { margin-left: -8px; margin-right: -8px; }
+  .fiche .sec::before { left: -10px; }
+  .outils { gap: 0; padding: 4px; }
+  .outils .icone, .outil-mj { width: 36px; height: 36px; }
+  .outil-mj { justify-content: center; padding: 0; }
+  .outil-mj .lib-outil, .pied-edition .aide { display: none; }
+  .outils .filet-outils { margin: 0 2px; }
+  .avert-mj { margin: 12px -8px 0; }
+  .fiche h1 { font-size: var(--t-32); }
+  .mode .lib-long { display: none; }
+  .dialogue .actions .bouton { min-height: 40px; }
+}
+</style>
+</head>
+<body>
+<svg xmlns="http://www.w3.org/2000/svg" width="0" height="0" style="position:absolute" aria-hidden="true"><!-- Lucide (lucide-static, ISC), tracés copiés tels quels --><symbol id="i-arrow-down" viewBox="0 0 24 24"><path d="M12 5v14" /> <path d="m19 12-7 7-7-7" /></symbol><symbol id="i-arrow-down-wide-narrow" viewBox="0 0 24 24"><path d="m3 16 4 4 4-4" /> <path d="M7 20V4" /> <path d="M11 4h10" /> <path d="M11 8h7" /> <path d="M11 12h4" /></symbol><symbol id="i-arrow-up-right" viewBox="0 0 24 24"><path d="M7 7h10v10" /> <path d="M7 17 17 7" /></symbol><symbol id="i-bold" viewBox="0 0 24 24"><path d="M6 12h9a4 4 0 0 1 0 8H7a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h7a4 4 0 0 1 0 8" /></symbol><symbol id="i-book-open" viewBox="0 0 24 24"><path d="M12 5v16" /> <path d="M20.001 19A2 2 0 0022 17V5a2 2 0 00-1.999-2L16 3.002A5 5 0 0012 5a5 5 0 00-4-2H4a2 2 0 00-2 2v12a2 2 0 001.999 2H8a5 5 0 014 2 5 5 0 014-2z" /></symbol><symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5" /></symbol><symbol id="i-chevron-down" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6" /></symbol><symbol id="i-chevron-right" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6" /></symbol><symbol id="i-chevrons-up-down" viewBox="0 0 24 24"><path d="m7 15 5 5 5-5" /> <path d="m7 9 5-5 5 5" /></symbol><symbol id="i-circle-check" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" /> <path d="m16 9-5.5 5.5L8 12" /></symbol><symbol id="i-contact-round" viewBox="0 0 24 24"><path d="M16 2v2" /> <path d="M17.915 21a6 6 0 10-12 0" /> <path d="M8 2v2" /> <circle cx="12" cy="11" r="4" /> <rect x="3" y="3" width="18" height="18" rx="2" /></symbol><symbol id="i-dices" viewBox="0 0 24 24"><rect width="12" height="12" x="2" y="10" rx="2" ry="2" /> <path d="m17.92 14 3.5-3.5a2.24 2.24 0 0 0 0-3l-5-4.92a2.24 2.24 0 0 0-3 0L10 6" /> <path d="M6 18h.01" /> <path d="M10 14h.01" /> <path d="M15 6h.01" /> <path d="M18 9h.01" /></symbol><symbol id="i-dna" viewBox="0 0 24 24"><path d="m10 16 1.5 1.5" /> <path d="m14 8-1.5-1.5" /> <path d="M15 2c-1.798 1.998-2.518 3.995-2.807 5.993" /> <path d="m16.5 10.5 1 1" /> <path d="m17 6-2.891-2.891" /> <path d="M2 15c6.667-6 13.333 0 20-6" /> <path d="m20 9 .891.891" /> <path d="M3.109 14.109 4 15" /> <path d="m6.5 12.5 1 1" /> <path d="m7 18 2.891 2.891" /> <path d="M9 22c1.798-1.998 2.518-3.995 2.807-5.993" /></symbol><symbol id="i-eye" viewBox="0 0 24 24"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0" /> <circle cx="12" cy="12" r="3" /></symbol><symbol id="i-download" viewBox="0 0 24 24"><path d="M12 15V3" /> <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /> <path d="m7 10 5 5 5-5" /></symbol><symbol id="i-file" viewBox="0 0 24 24"><path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z" /> <path d="M14 2v5a1 1 0 0 0 1 1h5" /></symbol><symbol id="i-file-archive" viewBox="0 0 24 24"><path d="M13.659 22H18a2 2 0 0 0 2-2V8a2.4 2.4 0 0 0-.706-1.706l-3.588-3.588A2.4 2.4 0 0 0 14 2H6a2 2 0 0 0-2 2v11.5" /> <path d="M14 2v5a1 1 0 0 0 1 1h5" /> <path d="M8 12v-1" /> <path d="M8 18v-2" /> <path d="M8 7V6" /> <circle cx="8" cy="20" r="2" /></symbol><symbol id="i-file-spreadsheet" viewBox="0 0 24 24"><path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z" /> <path d="M14 2v5a1 1 0 0 0 1 1h5" /> <path d="M8 13h2" /> <path d="M14 13h2" /> <path d="M8 17h2" /> <path d="M14 17h2" /></symbol><symbol id="i-file-text" viewBox="0 0 24 24"><path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z" /> <path d="M14 2v5a1 1 0 0 0 1 1h5" /> <path d="M10 9H8" /> <path d="M16 13H8" /> <path d="M16 17H8" /></symbol><symbol id="i-paperclip" viewBox="0 0 24 24"><path d="m16 6-8.414 8.586a2 2 0 0 0 2.829 2.829l8.414-8.586a4 4 0 1 0-5.657-5.657l-8.379 8.551a6 6 0 1 0 8.485 8.485l8.379-8.551" /></symbol><symbol id="i-flag" viewBox="0 0 24 24"><path d="M4 22V4a1 1 0 0 1 .4-.8A6 6 0 0 1 8 2c3 0 5 2 7.333 2q2 0 3.067-.8A1 1 0 0 1 20 4v10a1 1 0 0 1-.4.8A6 6 0 0 1 16 16c-3 0-5-2-8-2a6 6 0 0 0-4 1.528" /></symbol><symbol id="i-gem" viewBox="0 0 24 24"><path d="M10.5 3 8 9l4 13 4-13-2.5-6" /> <path d="M17 3a2 2 0 0 1 1.6.8l3 4a2 2 0 0 1 .013 2.382l-7.99 10.986a2 2 0 0 1-3.247 0l-7.99-10.986A2 2 0 0 1 2.4 7.8l2.998-3.997A2 2 0 0 1 7 3z" /> <path d="M2 9h20" /></symbol><symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" /> <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20" /> <path d="M2 12h20" /></symbol><symbol id="i-hourglass" viewBox="0 0 24 24"><path d="M5 22h14" /> <path d="M5 2h14" /> <path d="M17 22v-4.172a2 2 0 0 0-.586-1.414L12 12l-4.414 4.414A2 2 0 0 0 7 17.828V22" /> <path d="M7 2v4.172a2 2 0 0 0 .586 1.414L12 12l4.414-4.414A2 2 0 0 0 17 6.172V2" /></symbol><symbol id="i-image" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2" ry="2" /> <circle cx="9" cy="9" r="2" /> <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" /></symbol><symbol id="i-image-plus" viewBox="0 0 24 24"><path d="M16 5h6" /> <path d="M19 2v6" /> <path d="M21 11.5V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7.5" /> <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" /> <circle cx="9" cy="9" r="2" /></symbol><symbol id="i-images" viewBox="0 0 24 24"><path d="m22 11-1.296-1.296a2.4 2.4 0 0 0-3.408 0L11 16" /> <path d="M4 8a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2" /> <circle cx="13" cy="7" r="1" fill="currentColor" /> <rect x="8" y="2" width="14" height="14" rx="2" /></symbol><symbol id="i-italic" viewBox="0 0 24 24"><line x1="19" x2="10" y1="4" y2="4" /> <line x1="14" x2="5" y1="20" y2="20" /> <line x1="15" x2="9" y1="4" y2="20" /></symbol><symbol id="i-key-round" viewBox="0 0 24 24"><path d="M2.586 17.414A2 2 0 0 0 2 18.828V21a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h1a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h.172a2 2 0 0 0 1.414-.586l.814-.814a6.5 6.5 0 1 0-4-4z" /> <circle cx="16.5" cy="7.5" r=".5" fill="currentColor" /></symbol><symbol id="i-layout-grid" viewBox="0 0 24 24"><rect width="7" height="7" x="3" y="3" rx="1" /> <rect width="7" height="7" x="14" y="3" rx="1" /> <rect width="7" height="7" x="14" y="14" rx="1" /> <rect width="7" height="7" x="3" y="14" rx="1" /></symbol><symbol id="i-library" viewBox="0 0 24 24"><path d="m16 6 4 14" /> <path d="M12 6v14" /> <path d="M8 8v12" /> <path d="M4 4v16" /></symbol><symbol id="i-lightbulb" viewBox="0 0 24 24"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5" /> <path d="M9 18h6" /> <path d="M10 22h4" /></symbol><symbol id="i-link" viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" /> <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" /></symbol><symbol id="i-lock" viewBox="0 0 24 24"><rect width="18" height="11" x="3" y="11" rx="2" ry="2" /> <path d="M7 11V7a5 5 0 0 1 10 0v4" /></symbol><symbol id="i-lock-keyhole" viewBox="0 0 24 24"><circle cx="12" cy="16" r="1" /> <rect x="3" y="10" width="18" height="12" rx="2" /> <path d="M7 10V7a5 5 0 0 1 10 0v3" /></symbol><symbol id="i-log-out" viewBox="0 0 24 24"><path d="m16 17 5-5-5-5" /> <path d="M21 12H9" /> <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /></symbol><symbol id="i-map" viewBox="0 0 24 24"><path d="M14.106 5.553a2 2 0 0 0 1.788 0l3.659-1.83A1 1 0 0 1 21 4.619v12.764a1 1 0 0 1-.553.894l-4.553 2.277a2 2 0 0 1-1.788 0l-4.212-2.106a2 2 0 0 0-1.788 0l-3.659 1.83A1 1 0 0 1 3 19.381V6.618a1 1 0 0 1 .553-.894l4.553-2.277a2 2 0 0 1 1.788 0z" /> <path d="M15 5.764v15" /> <path d="M9 3.236v15" /></symbol><symbol id="i-map-pin" viewBox="0 0 24 24"><path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0" /> <circle cx="12" cy="10" r="3" /></symbol><symbol id="i-monitor" viewBox="0 0 24 24"><rect width="20" height="14" x="2" y="3" rx="2" /> <line x1="8" x2="16" y1="21" y2="21" /> <line x1="12" x2="12" y1="17" y2="21" /></symbol><symbol id="i-moon" viewBox="0 0 24 24"><path d="M20.985 12.486a9 9 0 1 1-9.473-9.472c.405-.022.617.46.402.803a6 6 0 0 0 8.268 8.268c.344-.215.825-.004.803.401" /></symbol><symbol id="i-notebook-pen" viewBox="0 0 24 24"><path d="M13.4 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7.4" /> <path d="M2 6h4" /> <path d="M2 10h4" /> <path d="M2 14h4" /> <path d="M2 18h4" /> <path d="M21.378 5.626a1 1 0 1 0-3.004-3.004l-5.01 5.012a2 2 0 0 0-.506.854l-.837 2.87a.5.5 0 0 0 .62.62l2.87-.837a2 2 0 0 0 .854-.506z" /></symbol><symbol id="i-panel-left" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2" /> <path d="M9 3v18" /></symbol><symbol id="i-paw-print" viewBox="0 0 24 24"><circle cx="11" cy="4" r="2" /> <circle cx="18" cy="8" r="2" /> <circle cx="20" cy="16" r="2" /> <path d="M9 10a5 5 0 0 1 5 5v3.5a3.5 3.5 0 0 1-6.84 1.045Q6.52 17.48 4.46 16.84A3.5 3.5 0 0 1 5.5 10Z" /></symbol><symbol id="i-pencil" viewBox="0 0 24 24"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z" /> <path d="m15 5 4 4" /></symbol><symbol id="i-scale" viewBox="0 0 24 24"><path d="M12 3v18" /> <path d="m19 8 3 8a5 5 0 0 1-6 0zV7" /> <path d="M3 7h1a17 17 0 0 0 8-2 17 17 0 0 0 8 2h1" /> <path d="m5 8 3 8a5 5 0 0 1-6 0zV7" /> <path d="M7 21h10" /></symbol><symbol id="i-scroll-text" viewBox="0 0 24 24"><path d="M15 12h-5" /> <path d="M15 8h-5" /> <path d="M19 17V5a2 2 0 0 0-2-2H4" /> <path d="M8 21h12a2 2 0 0 0 2-2v-1a1 1 0 0 0-1-1H11a1 1 0 0 0-1 1v1a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v2a1 1 0 0 0 1 1h3" /></symbol><symbol id="i-search" viewBox="0 0 24 24"><path d="m21 21-4.34-4.34" /> <circle cx="11" cy="11" r="8" /></symbol><symbol id="i-settings-2" viewBox="0 0 24 24"><path d="M14 17H5" /> <path d="M19 7h-9" /> <circle cx="17" cy="17" r="3" /> <circle cx="7" cy="7" r="3" /></symbol><symbol id="i-shield" viewBox="0 0 24 24"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z" /></symbol><symbol id="i-ship" viewBox="0 0 24 24"><path d="M12 2v2" /> <path d="M12 9.189V13" /> <path d="M19 12V6a2 2 0 00-2-2H7a2 2 0 00-2 2v6" /> <path d="M19.38 19A11.6 11.6 0 0021 13l-8.188-3.639a2 2 0 00-1.624 0L3 13.001a11.6 11.6 0 002.81 7.76" /> <path d="M2 20c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1s1.2 1 2.5 1c2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1" /></symbol><symbol id="i-sparkles" viewBox="0 0 24 24"><path d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z" /> <path d="M20 2v4" /> <path d="M22 4h-4" /> <circle cx="4" cy="20" r="2" /></symbol><symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4" /> <path d="M12 2v2" /> <path d="M12 20v2" /> <path d="m4.93 4.93 1.41 1.41" /> <path d="m17.66 17.66 1.41 1.41" /> <path d="M2 12h2" /> <path d="M20 12h2" /> <path d="m6.34 17.66-1.41 1.41" /> <path d="m19.07 4.93-1.41 1.41" /></symbol><symbol id="i-trash-2" viewBox="0 0 24 24"><path d="M10 11v6" /> <path d="M14 11v6" /> <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" /> <path d="M3 6h18" /> <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /></symbol><symbol id="i-upload" viewBox="0 0 24 24"><path d="M12 3v12" /> <path d="m17 8-5-5-5 5" /> <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /></symbol><symbol id="i-users-round" viewBox="0 0 24 24"><path d="M18 21a8 8 0 0 0-16 0" /> <circle cx="10" cy="8" r="5" /> <path d="M22 20c0-3.37-2-6.5-4-8a5 5 0 0 0-.45-8.3" /></symbol><symbol id="i-wifi-off" viewBox="0 0 24 24"><path d="M12 20h.01" /> <path d="M8.5 16.429a5 5 0 0 1 7 0" /> <path d="M5 12.859a10 10 0 0 1 5.17-2.69" /> <path d="M19 12.859a10 10 0 0 0-2.007-1.523" /> <path d="M2 8.82a15 15 0 0 1 4.177-2.643" /> <path d="M22 8.82a15 15 0 0 0-11.288-3.764" /> <path d="m2 2 20 20" /></symbol><symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18" /> <path d="m6 6 12 12" /></symbol></svg>
+
+<div class="app">
+  <!-- ============================ Barre latérale (cadre de e09-fiche.html, à jour de kanevas-import) ============================ -->
+  <div class="colonne-barre" id="barre">
+    <aside class="barre" aria-label="Barre latérale" tabindex="-1" style="outline:none">
+      <div class="ancre">
+        <button class="univers" id="bouton-univers" aria-haspopup="menu" aria-expanded="false" aria-controls="menu-univers" title="Lame d'Ébène — changer d'univers">
+          <span class="sceau" aria-hidden="true">L</span>
+          <span class="nom">Lame d'Ébène</span>
+          <span class="pastille mj" data-role>MJ</span>
+          <svg class="i p" aria-hidden="true"><use href="#i-chevrons-up-down"/></svg>
+        </button>
+        <div class="menu menu-univers" id="menu-univers" role="menu" aria-label="Vos univers">
+          <div class="titre-menu">Vos univers</div>
+          <a class="entree" role="menuitem" href="#" aria-current="true"><span class="sceau" style="width:22px;height:22px;font-size:12px;border-radius:6px">L</span>Lame d'Ébène<span class="fin"><span class="pastille mj" data-role>MJ</span><svg class="i p" aria-hidden="true"><use href="#i-check"/></svg></span></a>
+          <a class="entree" role="menuitem" href="#"><span class="sceau" style="width:22px;height:22px;font-size:12px;border-radius:6px">C</span>Les Cendres de Vaëlis<span class="fin"><span class="pastille table">Joueur</span></span></a>
+          <div class="sep"></div>
+          <a class="entree" role="menuitem" href="e01-accueil.html"><svg class="i" aria-hidden="true"><use href="#i-library"/></svg>Mes univers</a>
+          <a class="entree" role="menuitem" href="e16-systemes-de-jeu.html"><svg class="i" aria-hidden="true"><use href="#i-dices"/></svg>Systèmes de jeu</a>
+        </div>
+      </div>
+
+      <nav aria-label="Navigation principale">
+        <div class="groupe">
+          <a class="item" href="e17-recherche.html"><svg class="i" aria-hidden="true"><use href="#i-search"/></svg>Rechercher</a>
+        </div>
+        <div class="groupe">
+          <a class="item" href="e03-vue-ensemble.html"><svg class="i" aria-hidden="true"><use href="#i-layout-grid"/></svg>Vue d'ensemble</a>
+          <a class="item" href="e06-campagne.html"><svg class="i" aria-hidden="true"><use href="#i-flag"/></svg>Campagnes</a>
+          <a class="item" href="e13-comptes-rendus.html"><svg class="i" aria-hidden="true"><use href="#i-notebook-pen"/></svg>Comptes-rendus</a>
+          <a class="item" href="e10-cartes.html"><svg class="i" aria-hidden="true"><use href="#i-map"/></svg>Cartes</a>
+          <a class="item" href="#" id="item-mediatheque" aria-current="page"><svg class="i" aria-hidden="true"><use href="#i-images"/></svg>Médiathèque</a>
+        </div>
+        <div class="groupe">
+          <div class="groupe-titre">Lore</div>
+          <a class="item" href="e08-liste-fiches.html"><svg class="i" aria-hidden="true"><use href="#i-users-round"/></svg>Personnages</a>
+          <a class="item" href="e08-liste-fiches.html" id="item-lieux"><svg class="i" aria-hidden="true"><use href="#i-map-pin"/></svg>Lieux</a>
+          <a class="item" href="e08-liste-fiches.html"><svg class="i" aria-hidden="true"><use href="#i-shield"/></svg>Factions</a>
+          <a class="item" href="e08-liste-fiches.html"><svg class="i" aria-hidden="true"><use href="#i-gem"/></svg>Objets</a>
+          <a class="item" href="e08-liste-fiches.html"><svg class="i" aria-hidden="true"><use href="#i-hourglass"/></svg>Événements</a>
+          <a class="item" href="e08-liste-fiches.html"><svg class="i" aria-hidden="true"><use href="#i-scroll-text"/></svg>Quêtes</a>
+          <a class="item" href="e08-liste-fiches.html"><svg class="i" aria-hidden="true"><use href="#i-paw-print"/></svg>Créatures</a>
+          <a class="item" href="e08-liste-fiches.html"><svg class="i" aria-hidden="true"><use href="#i-dna"/></svg>Races</a>
+          <a class="item" href="e08-liste-fiches.html"><svg class="i" aria-hidden="true"><use href="#i-ship"/></svg>Vaisseaux</a>
+          <a class="item" href="e08-liste-fiches.html"><svg class="i" aria-hidden="true"><use href="#i-lightbulb"/></svg>Savoirs</a>
+          <a class="item" href="e08-liste-fiches.html"><svg class="i" aria-hidden="true"><use href="#i-book-open"/></svg>Récits</a>
+          <a class="item" href="e08-liste-fiches.html"><svg class="i" aria-hidden="true"><use href="#i-scale"/></svg>Règles</a>
+        </div>
+        <div class="groupe" data-mj>
+          <div class="groupe-titre">Univers</div>
+          <a class="item" href="e04-membres.html"><svg class="i" aria-hidden="true"><use href="#i-contact-round"/></svg>Membres</a>
+          <a class="item" href="e14-parametres.html"><svg class="i" aria-hidden="true"><use href="#i-settings-2"/></svg>Paramètres</a>
+          <a class="item" href="e18-acces-api.html"><svg class="i" aria-hidden="true"><use href="#i-key-round"/></svg>Accès par API</a>
+        </div>
+      </nav>
+
+      <div class="pied ancre">
+        <div class="menu menu-compte" id="menu-compte" role="menu" aria-label="Compte">
+          <div class="qui"><span class="av" data-av>AN</span><span><b data-ident>antor</b><small>Votre identifiant</small></span></div>
+          <div class="sep"></div>
+          <div class="themes">
+            <span id="lib-theme">Thème</span>
+            <div class="segments" role="radiogroup" aria-labelledby="lib-theme">
+              <button role="radio" data-theme-choix="clair" aria-checked="false" aria-label="Clair" title="Clair"><svg class="i p" aria-hidden="true"><use href="#i-sun"/></svg></button>
+              <button role="radio" data-theme-choix="sombre" aria-checked="false" aria-label="Sombre" title="Sombre"><svg class="i p" aria-hidden="true"><use href="#i-moon"/></svg></button>
+              <button role="radio" data-theme-choix="systeme" aria-checked="true" aria-label="Système" title="Système"><svg class="i p" aria-hidden="true"><use href="#i-monitor"/></svg></button>
+            </div>
+          </div>
+          <div class="sep"></div>
+          <button class="entree" role="menuitem" data-toast="Déconnexion : vous seriez mené à la connexion."><svg class="i" aria-hidden="true"><use href="#i-log-out"/></svg>Se déconnecter</button>
+        </div>
+        <button class="compte" id="bouton-compte" aria-haspopup="menu" aria-expanded="false" aria-controls="menu-compte">
+          <span class="av" aria-hidden="true" data-av>AN</span>
+          <span class="ident" data-ident>antor</span>
+          <svg class="i p" aria-hidden="true"><use href="#i-chevrons-up-down"/></svg>
+        </button>
+      </div>
+    </aside>
+  </div>
+  <div class="voile-tiroir" id="voile-tiroir"></div>
+
+  <!-- ============================ Zone principale ============================ -->
+  <div class="zone-principale">
+    <header class="haute">
+      <button class="icone bouton-menu" id="bouton-menu" aria-label="Menu" aria-expanded="false" aria-controls="barre"><svg class="i" aria-hidden="true"><use href="#i-panel-left"/></svg></button>
+      <nav class="ariane" aria-label="Fil d'Ariane" data-vue="mediatheque">
+        <a href="e03-vue-ensemble.html"><span class="sceau" style="width:18px;height:18px;font-size:10px;border-radius:5px" aria-hidden="true">L</span>Lame d'Ébène</a>
+        <svg class="i p sep-ariane" aria-hidden="true"><use href="#i-chevron-right"/></svg>
+        <span aria-current="page">Médiathèque</span>
+      </nav>
+      <nav class="ariane" aria-label="Fil d'Ariane" data-vue="fiche">
+        <a href="e03-vue-ensemble.html"><span class="sceau" style="width:18px;height:18px;font-size:10px;border-radius:5px" aria-hidden="true">L</span>Lame d'Ébène</a>
+        <svg class="i p sep-ariane" aria-hidden="true"><use href="#i-chevron-right"/></svg>
+        <a href="e08-liste-fiches.html"><svg class="i p" aria-hidden="true"><use href="#i-map-pin"/></svg>Lieux</a>
+        <svg class="i p sep-ariane" aria-hidden="true"><use href="#i-chevron-right"/></svg>
+        <span aria-current="page">Port-Sel</span>
+      </nav>
+      <div class="mode" role="radiogroup" aria-label="Mode de lecture" data-vue="fiche">
+        <button role="radio" aria-checked="true" class="mj"><svg class="i p" aria-hidden="true"><use href="#i-lock-keyhole"/></svg><span><span class="lib-long">Mode </span>MJ</span></button>
+        <button role="radio" aria-checked="false" tabindex="-1" class="joueur"><svg class="i p" aria-hidden="true"><use href="#i-eye"/></svg><span><span class="lib-long">Mode </span>Joueur</span></button>
+      </div>
+    </header>
+    <div class="bandeau perdue" role="status"><svg class="i" aria-hidden="true"><use href="#i-wifi-off"/></svg>Connexion perdue. Ce que vous voyez peut être dépassé ; rien n'est enregistré tant qu'elle ne revient pas.</div>
+
+<!-- ===================== E-19 Médiathèque ===================== -->
+<main class="page liste" id="contenu" data-vue="mediatheque">
+  <header class="tete-liste">
+    <span class="glyphe-type" aria-hidden="true"><svg class="i"><use href="#i-images"/></svg></span>
+    <h1 id="titre-mediatheque">Médiathèque</h1>
+    <span class="nombre" id="nombre" data-plein>1 140 fichiers</span>
+    <button class="bouton principal" data-mj data-ecrit data-ajouter data-plein data-toast="Le sélecteur de fichiers s'ouvrirait ici (plusieurs fichiers à la fois)."><svg class="i p" aria-hidden="true"><use href="#i-upload"/></svg>Ajouter des fichiers</button>
+  </header>
+
+  <div class="bascule-type" role="radiogroup" aria-label="Fichiers à montrer" id="bascule-type" data-plein>
+    <button role="radio" aria-checked="true" data-t="tout"><svg class="i p" aria-hidden="true"><use href="#i-layout-grid"/></svg>Tout</button>
+    <button role="radio" aria-checked="false" tabindex="-1" data-t="image"><svg class="i p" aria-hidden="true"><use href="#i-image"/></svg>Images</button>
+    <button role="radio" aria-checked="false" tabindex="-1" data-t="doc"><svg class="i p" aria-hidden="true"><use href="#i-file-text"/></svg>Documents</button>
+  </div>
+
+  <div class="filtres" role="search" aria-label="Filtrer la médiathèque" data-plein>
+    <label class="champ-recherche">
+      <svg class="i" aria-hidden="true"><use href="#i-search"/></svg>
+      <input id="q" type="search" placeholder="Chercher par nom" aria-label="Chercher par nom" autocomplete="off" spellcheck="false">
+    </label>
+    <div class="ancre-filtre" data-mj>
+      <button class="filtre" id="f-visibilite" aria-haspopup="menu" aria-expanded="false" aria-controls="m-visibilite">Visibilité<span class="val">Toutes</span><svg class="i p chev" aria-hidden="true"><use href="#i-chevron-down"/></svg></button>
+      <div class="menu menu-filtre" id="m-visibilite" role="menu" aria-label="Visibilité" data-filtre="vis">
+        <button class="entree" role="menuitemradio" aria-checked="true" data-v="toutes">Toutes<svg class="i p coche" aria-hidden="true"><use href="#i-check"/></svg></button>
+        <button class="entree" role="menuitemradio" aria-checked="false" data-v="joueurs"><svg class="i" aria-hidden="true"><use href="#i-eye"/></svg>Visibles des joueurs<svg class="i p coche" aria-hidden="true"><use href="#i-check"/></svg></button>
+        <button class="entree" role="menuitemradio" aria-checked="false" data-v="mj"><svg class="i" aria-hidden="true"><use href="#i-lock"/></svg>Réservées au MJ<svg class="i p coche" aria-hidden="true"><use href="#i-check"/></svg></button>
+      </div>
+    </div>
+    <div class="ancre-filtre">
+      <button class="filtre" id="f-usage" aria-haspopup="menu" aria-expanded="false" aria-controls="m-usage">Usage<span class="val">Tous</span><svg class="i p chev" aria-hidden="true"><use href="#i-chevron-down"/></svg></button>
+      <div class="menu menu-filtre" id="m-usage" role="menu" aria-label="Usage" data-filtre="usage">
+        <button class="entree" role="menuitemradio" aria-checked="true" data-v="toutes">Tous<svg class="i p coche" aria-hidden="true"><use href="#i-check"/></svg></button>
+        <button class="entree" role="menuitemradio" aria-checked="false" data-v="utilisees">Utilisés<svg class="i p coche" aria-hidden="true"><use href="#i-check"/></svg></button>
+        <button class="entree" role="menuitemradio" aria-checked="false" data-v="non">Non utilisés<svg class="i p coche" aria-hidden="true"><use href="#i-check"/></svg></button>
+      </div>
+    </div>
+    <div class="ancre-filtre droite pousse">
+      <button class="filtre" id="f-ordre" aria-haspopup="menu" aria-expanded="false" aria-controls="m-ordre" aria-label="Ordre : Plus récents"><svg class="i p" aria-hidden="true"><use href="#i-arrow-down-wide-narrow"/></svg><span class="val">Plus récents</span><svg class="i p chev" aria-hidden="true"><use href="#i-chevron-down"/></svg></button>
+      <div class="menu menu-filtre" id="m-ordre" role="menu" aria-label="Ordre" data-filtre="ordre">
+        <button class="entree" role="menuitemradio" aria-checked="true" data-v="recentes">Plus récents<svg class="i p coche" aria-hidden="true"><use href="#i-check"/></svg></button>
+        <button class="entree" role="menuitemradio" aria-checked="false" data-v="nom">Nom<svg class="i p coche" aria-hidden="true"><use href="#i-check"/></svg></button>
+      </div>
+    </div>
+  </div>
+
+  <ul class="grille" id="grille" aria-labelledby="titre-mediatheque" data-plein></ul>
+  <div class="vide-liste" id="aucune" hidden><span class="rond" aria-hidden="true"><svg class="i"><use href="#i-search"/></svg></span><p>Aucun fichier ne correspond.</p></div>
+  <div class="suite" id="suite" data-plein><button class="bouton" data-toast="Les 100 fichiers suivants se chargeraient ici."><svg class="i p" aria-hidden="true"><use href="#i-arrow-down"/></svg>Charger la suite</button></div>
+
+  <div class="vide-liste" data-vide>
+    <span class="rond" aria-hidden="true"><svg class="i"><use href="#i-images"/></svg></span>
+    <p data-vide-mj>Aucun fichier pour l'instant. Ajoutez-en, ou posez-en un dans une fiche.</p>
+    <button class="bouton principal" data-vide-mj data-ecrit data-toast="Le sélecteur de fichiers s'ouvrirait ici (plusieurs fichiers à la fois)."><svg class="i p" aria-hidden="true"><use href="#i-upload"/></svg>Ajouter des fichiers</button>
+    <p data-vide-joueur>Aucun fichier à voir pour l'instant.</p>
+  </div>
+</main>
+
+<!-- ===================== E-9 « Port-Sel », derrière le sélecteur « Choisir un fichier » ===================== -->
+<div data-vue="fiche">
+<main class="page fiche">
+  <span class="type"><svg class="i p" aria-hidden="true"><use href="#i-map-pin"/></svg>Lieu · Port</span>
+  <h1>Port-Sel</h1>
+  <section class="sec" aria-labelledby="h-description">
+    <div class="tete-sec"><h2 id="h-description">Description</h2><span class="pastille table"><svg class="i pp" aria-hidden="true"><use href="#i-eye"/></svg>Lue des joueurs</span></div>
+    <div class="edition">
+      <div class="outils" role="toolbar" aria-label="Mise en forme">
+        <button class="icone" title="Gras · Ctrl B" aria-label="Gras"><svg class="i" aria-hidden="true"><use href="#i-bold"/></svg></button>
+        <button class="icone" title="Italique · Ctrl I" aria-label="Italique"><svg class="i" aria-hidden="true"><use href="#i-italic"/></svg></button>
+        <span class="filet-outils" aria-hidden="true"></span>
+        <button class="icone" title="Lien vers une fiche · Ctrl K" aria-label="Lien vers une fiche"><svg class="i" aria-hidden="true"><use href="#i-link"/></svg></button>
+        <span class="ancre">
+          <button class="icone" id="outil-image" title="Fichier" aria-label="Fichier" aria-haspopup="menu" aria-expanded="false" aria-controls="menu-fichier"><svg class="i" aria-hidden="true"><use href="#i-paperclip"/></svg></button>
+          <div class="menu menu-fichier" id="menu-fichier" role="menu" aria-label="Fichier">
+            <button class="entree" role="menuitem" id="fichier-appareil" data-ecrit><svg class="i" aria-hidden="true"><use href="#i-upload"/></svg>Ajouter depuis l'appareil</button>
+            <button class="entree" role="menuitem" id="fichier-mediatheque"><svg class="i" aria-hidden="true"><use href="#i-images"/></svg>Choisir dans la médiathèque</button>
+          </div>
+        </span>
+        <span class="filet-outils" aria-hidden="true"></span>
+        <button class="outil-mj" title="Bloc MJ · entoure la sélection" aria-label="Bloc MJ"><svg class="i p" aria-hidden="true"><use href="#i-lock"/></svg><span class="lib-outil">Bloc MJ</span></button>
+        <div class="segments bascule-apercu" role="radiogroup" aria-label="Écrire ou voir l'aperçu">
+          <button role="radio" aria-checked="true">Écrire</button><button role="radio" aria-checked="false" tabindex="-1">Aperçu</button>
+        </div>
+      </div>
+      <div class="source" id="source" contenteditable="true" role="textbox" aria-multiline="true" aria-label="Contenu de « Description »" spellcheck="false">Port-Sel s'accroche à la falaise comme un nid de goélands. Ses quais sentent le sel, le goudron et la saumure ; on y décharge les barges du Fleuve-Gris à toute heure.
+
+<span class="md-img">![Les toits de la Ville-Haute](fichier:2207)</span>
+
+Au pied du Phare aux Sels, la <span class="md-gras">**Ville-Basse**</span> se serre contre les entrepôts. Sous la halle aux poissons, une porte basse mène aux caves de la Guilde.
+
+<span id="point-insertion"><span class="curseur" aria-hidden="true"></span></span></div>
+      <div class="pied-edition"><span class="compteur">2 418 / 100 000</span>
+        <span class="aide"><kbd>Échap</kbd> annuler · <kbd>Ctrl</kbd><kbd>↵</kbd> enregistrer</span>
+        <button class="bouton fantome">Annuler</button><button class="bouton principal">Enregistrer</button></div>
+    </div>
+    <p class="avert-mj" id="avert-mj" role="status" hidden><svg class="i p" aria-hidden="true"><use href="#i-lock"/></svg><span>Ce fichier est réservé au MJ : les joueurs qui lisent cette section ne le verront pas.</span></p>
+  </section>
+</main>
+</div>
+
+<button class="assistant" aria-label="Demander à Kanevas" data-toast="L'assistant (E-12) s'ouvre ici."><svg class="i" aria-hidden="true"><use href="#i-sparkles"/></svg><span class="lib-assistant">Demander à Kanevas</span></button>
+  </div>
+</div>
+
+<!-- ===================== Le panneau du fichier ===================== -->
+<aside class="panneau-image" id="panneau" aria-labelledby="pi-titre" aria-hidden="true">
+  <div class="pi-barre">
+    <span class="lib"></span>
+    <button class="icone" id="pi-fermer" aria-label="Fermer le panneau du fichier" title="Fermer · Échap"><svg class="i" aria-hidden="true"><use href="#i-x"/></svg></button>
+  </div>
+  <div class="pi-corps">
+    <a class="apercu-image" id="pi-apercu" href="#" target="_blank" rel="noopener" title="Ouvrir l'image entière"><img id="pi-img" alt="" decoding="async"></a>
+    <div class="apercu-doc" id="pi-doc" hidden>
+      <span class="feuille" aria-hidden="true"><svg class="i"><use id="pi-doc-ic" href="#i-file-text"/></svg></span>
+      <span class="type-doc" id="pi-doc-type">Document PDF</span>
+      <button class="bouton" id="pi-telecharger"><svg class="i p" aria-hidden="true"><use href="#i-download"/></svg>Télécharger</button>
+    </div>
+    <div class="pi-nom">
+      <h2 id="pi-titre" tabindex="-1">plan-du-repaire.png</h2>
+      <button class="icone" id="pi-renommer" data-mj data-ecrit aria-label="Renommer le fichier" title="Renommer"><svg class="i p" aria-hidden="true"><use href="#i-pencil"/></svg></button>
+    </div>
+    <div class="visibilite" role="radiogroup" aria-label="Visibilité" id="pi-visibilite" data-mj>
+      <button role="radio" class="joueurs" aria-checked="true" data-vis="joueurs"><svg class="i p" aria-hidden="true"><use href="#i-eye"/></svg>Visible des joueurs</button>
+      <button role="radio" class="mj" aria-checked="false" tabindex="-1" data-vis="mj"><svg class="i p" aria-hidden="true"><use href="#i-lock"/></svg>Réservé au MJ</button>
+    </div>
+    <div class="pi-meta">
+      <div class="ligne-meta"><span id="pi-type">PNG</span><span id="pi-taille">1,2 Mo</span></div>
+      <div id="pi-ajout">ajouté par lea le 12 oct. 2026</div>
+      <div class="cle" id="pi-cle" data-mj>Clé d'origine <code class="chasse" id="pi-cle-val">image:plan-du-repaire</code></div>
+    </div>
+    <div class="pi-bloc" id="pi-usages-bloc">
+      <h3>Utilisé dans</h3>
+      <ul class="usages" id="pi-usages"></ul>
+    </div>
+    <div class="pi-pied" data-mj>
+      <button class="bouton fantome danger-texte" id="pi-supprimer" data-ecrit><svg class="i p" aria-hidden="true"><use href="#i-trash-2"/></svg>Supprimer le fichier</button>
+    </div>
+  </div>
+</aside>
+
+<!-- Boîte « Réserver … au MJ ? » -->
+<div class="voile" id="voile-reserver" aria-hidden="true">
+  <div class="dialogue" role="alertdialog" aria-modal="true" aria-labelledby="dlg-res-titre" aria-describedby="dlg-res-texte">
+    <div class="ic-dialogue mj"><svg class="i" aria-hidden="true"><use href="#i-lock"/></svg></div>
+    <h3 id="dlg-res-titre">Réserver « plan-du-repaire.png » au MJ ?</h3>
+    <p id="dlg-res-texte">Les joueurs ne le verront plus dans : Les Docks — « Histoire » ; Port-Sel — « Description » (jointe).</p>
+    <div class="actions">
+      <button class="bouton" id="res-annuler">Annuler</button>
+      <button class="bouton principal" id="res-confirmer" data-ecrit>Réserver au MJ</button>
+    </div>
+  </div>
+</div>
+
+<!-- Boîte « Supprimer … ? » -->
+<div class="voile" id="voile-supprimer" aria-hidden="true">
+  <div class="dialogue" role="alertdialog" aria-modal="true" aria-labelledby="dlg-sup-titre" aria-describedby="dlg-sup-texte">
+    <div class="ic-dialogue"><svg class="i" aria-hidden="true"><use href="#i-trash-2"/></svg></div>
+    <h3 id="dlg-sup-titre">Supprimer « Carte des Sphères » ?</h3>
+    <div id="dlg-sup-texte"></div>
+    <div class="actions">
+      <button class="bouton" id="sup-annuler">Annuler</button>
+      <button class="bouton danger" id="sup-confirmer" data-ecrit>Supprimer le fichier</button>
+    </div>
+  </div>
+</div>
+
+<!-- Le sélecteur « Choisir un fichier » (depuis « Fichier » ▸ « Choisir dans la médiathèque » de l'éditeur de E-9) -->
+<div class="voile" id="voile-choisir" aria-hidden="true">
+  <div class="dialogue choisir" role="dialog" aria-modal="true" aria-labelledby="ch-titre">
+    <div class="ch-tete">
+      <h3 id="ch-titre">Choisir un fichier</h3>
+      <button class="icone" id="ch-fermer" aria-label="Fermer"><svg class="i" aria-hidden="true"><use href="#i-x"/></svg></button>
+    </div>
+    <div class="ch-outils">
+      <label class="champ-recherche">
+        <svg class="i" aria-hidden="true"><use href="#i-search"/></svg>
+        <input id="ch-q" type="search" placeholder="Chercher par nom" aria-label="Chercher par nom" autocomplete="off" spellcheck="false">
+      </label>
+    </div>
+    <div class="ch-grille">
+      <ul class="grille" id="ch-liste" aria-labelledby="ch-titre"></ul>
+    </div>
+  </div>
+</div>
+
+<div class="toasts" id="toasts" role="status" aria-live="polite"></div>
+
+<script>
+/* Illustrations de démonstration, peintes en SVG (portraits, lieux, blasons) : rendues en data URI
+   et posées dans de vraies balises <img>, comme le seraient les illustrations servies par Kanevas. */
+var ILLUS = (function () {
+  'use strict';
+  function rng(seed) { var s = seed % 2147483647; if (s <= 0) s += 2147483646; return function () { s = s * 16807 % 2147483647; return (s - 1) / 2147483646; }; }
+  function uri(svg) { return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg); }
+  // Grain et bords peints : une turbulence qui déplace légèrement les formes, puis un grain fin.
+  function filtres(id, echelle) {
+    return '<filter id="peint' + id + '" x="-5%" y="-5%" width="110%" height="110%">' +
+      '<feTurbulence type="fractalNoise" baseFrequency="0.035" numOctaves="3" seed="' + (id.length * 7 + 3) + '" result="b"/>' +
+      '<feDisplacementMap in="SourceGraphic" in2="b" scale="' + (echelle || 9) + '" xChannelSelector="R" yChannelSelector="G"/></filter>' +
+      '<filter id="grain' + id + '"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" stitchTiles="stitch"/>' +
+      '<feColorMatrix values="0 0 0 0 0.5  0 0 0 0 0.45  0 0 0 0 0.4  0 0 0 0.55 0"/></filter>' +
+      '<filter id="flou' + id + '"><feGaussianBlur stdDeviation="18"/></filter>' +
+      '<filter id="flou2' + id + '"><feGaussianBlur stdDeviation="5"/></filter>';
+  }
+  function finition(id, w, h, op) {
+    return '<rect width="' + w + '" height="' + h + '" filter="url(#grain' + id + ')" opacity="' + (op || 0.28) + '" style="mix-blend-mode:overlay"/>' +
+      '<rect width="' + w + '" height="' + h + '" fill="url(#vign' + id + ')"/>';
+  }
+  function vignette(id, force) {
+    return '<radialGradient id="vign' + id + '" cx="50%" cy="45%" r="75%"><stop offset="55%" stop-color="#000" stop-opacity="0"/><stop offset="100%" stop-color="#000" stop-opacity="' + (force || 0.55) + '"/></radialGradient>';
+  }
+
+  /* ------------------------------------------------------------------ Portraits (600 × 800) */
+  function portrait(c) {
+    var id = c.id, W = 600, H = 800;
+    var d = '<defs>' + filtres(id, 4) + vignette(id, 0.6) +
+      '<linearGradient id="fond' + id + '" x1="0" y1="0" x2="0.3" y2="1"><stop offset="0" stop-color="' + c.fond[0] + '"/><stop offset="1" stop-color="' + c.fond[1] + '"/></linearGradient>' +
+      '<radialGradient id="lum' + id + '" cx="' + (c.lumX || 0.28) + '" cy="0.22" r="0.6"><stop offset="0" stop-color="' + c.lumiere + '" stop-opacity=".75"/><stop offset="1" stop-color="' + c.lumiere + '" stop-opacity="0"/></radialGradient>' +
+      '<radialGradient id="peau' + id + '" cx="0.38" cy="0.36" r="0.75"><stop offset="0" stop-color="' + c.peau[0] + '"/><stop offset="0.55" stop-color="' + c.peau[1] + '"/><stop offset="1" stop-color="' + c.peau[2] + '"/></radialGradient>' +
+      '<linearGradient id="cou' + id + '" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="' + c.peau[2] + '"/><stop offset="1" stop-color="' + c.peau[1] + '"/></linearGradient>' +
+      '<linearGradient id="habit' + id + '" x1="0.1" y1="0" x2="0.9" y2="1"><stop offset="0" stop-color="' + c.habit[0] + '"/><stop offset="1" stop-color="' + c.habit[1] + '"/></linearGradient>' +
+      '<linearGradient id="chev' + id + '" x1="0.2" y1="0" x2="0.8" y2="1"><stop offset="0" stop-color="' + c.cheveux[0] + '"/><stop offset="1" stop-color="' + c.cheveux[1] + '"/></linearGradient>' +
+      '<linearGradient id="bord' + id + '" x1="1" y1="0" x2="0" y2="0"><stop offset="0" stop-color="' + c.contre + '" stop-opacity=".9"/><stop offset="0.35" stop-color="' + c.contre + '" stop-opacity="0"/></linearGradient>' +
+      '</defs>';
+    var s = '<rect width="600" height="800" fill="url(#fond' + id + ')"/>';
+    s += decor(c, id);
+    s += '<rect width="600" height="800" fill="url(#lum' + id + ')"/>';
+    var g = '';
+    // Capuche ou cape derrière la tête
+    if (c.capuche) g += '<path d="M150,1100 L150,800 C150,560 170,300 300,236 C430,300 450,560 450,800 L450,1100 Z" fill="' + c.capuche + '"/>';
+    // Cheveux longs derrière
+    if (c.coiffure === 'long' || c.coiffure === 'tresse') g += '<path d="M196,360 C188,250 240,232 300,230 C372,232 414,262 406,370 C420,470 430,560 452,640 L150,640 C172,560 184,470 196,360 Z" fill="url(#chev' + id + ')"/>';
+    // Buste
+    g += '<path d="M40,1100 L40,800 C52,650 150,592 300,584 C450,592 548,650 560,800 L560,1100 Z" fill="url(#habit' + id + ')"/>';
+    g += habit(c, id);
+    // Cou
+    g += '<path d="M258,458 C258,520 252,560 244,600 C280,622 322,622 356,600 C348,560 342,520 342,458 Z" fill="url(#cou' + id + ')"/>';
+    g += '<path d="M244,600 C280,622 322,622 356,600 C340,610 300,640 244,600 Z" fill="#000" opacity=".25"/>';
+    // Oreilles, tête
+    g += '<ellipse cx="208" cy="398" rx="16" ry="28" fill="' + c.peau[1] + '"/><ellipse cx="392" cy="398" rx="16" ry="28" fill="' + c.peau[2] + '"/>';
+    g += '<path d="M300,262 C362,262 396,310 396,380 C396,452 352,512 300,514 C248,512 204,452 204,380 C204,310 238,262 300,262 Z" fill="url(#peau' + id + ')"/>';
+    // Ombre de mâchoire et joue côté ombre
+    g += '<path d="M396,380 C396,452 352,512 300,514 C340,500 372,452 378,392 Z" fill="#000" opacity=".16"/>';
+    g += '<ellipse cx="258" cy="430" rx="22" ry="12" fill="' + (c.joues || '#d9826a') + '" opacity=".22"/><ellipse cx="344" cy="430" rx="20" ry="11" fill="' + (c.joues || '#d9826a') + '" opacity=".14"/>';
+    g += visage(c, id);
+    g += barbe(c, id);
+    g += coiffure(c, id);
+    g += accessoires(c, id);
+    // Contre-jour sur le profil droit
+    g += '<path d="M300,262 C362,262 396,310 396,380 C396,452 352,512 300,514" fill="none" stroke="url(#bord' + id + ')" stroke-width="5" opacity=".7"/>';
+    // La figure est réduite et descendue : un buste, pas un gros plan (le cadre 4:3 de la grille garde la tête et les épaules).
+    s += '<g transform="translate(45,-50) scale(0.85)"><g filter="url(#peint' + id + ')">' + g + '</g>' + (c.corbeau ? corbeau(450, 560, 0.9, id) : '') + '</g>';
+    s += finition(id, W, H);
+    return uri('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 800" width="600" height="800">' + d + s + '</svg>');
+  }
+  function decor(c, id) {
+    var r = rng(c.graine || 7), s = '';
+    if (c.decor === 'boutique') {
+      for (var y = 120; y < 560; y += 120) {
+        s += '<rect x="0" y="' + (y + 54) + '" width="600" height="10" fill="#000" opacity=".28"/>';
+        for (var x = 10; x < 600; x += 34 + r() * 30) {
+          var h = 30 + r() * 46, w = 16 + r() * 18;
+          s += '<rect x="' + x + '" y="' + (y + 54 - h) + '" width="' + w + '" height="' + h + '" rx="' + (w / 3) + '" fill="' + ['#3c5c4a', '#6b4a2a', '#2f4058', '#7a6a3a'][Math.floor(r() * 4)] + '" opacity=".55"/>';
+        }
+      }
+      s += '<rect width="600" height="800" fill="' + c.fond[1] + '" opacity=".35" filter="url(#flou' + id + ')"/>';
+    } else if (c.decor === 'fenetre') {
+      s += '<path d="M380,40 L560,40 L560,420 L380,420 Z" fill="' + c.lumiere + '" opacity=".35" filter="url(#flou' + id + ')"/>';
+      s += '<path d="M400,60 L540,60 L540,400 L400,400 Z M466,60 L474,60 L474,400 L466,400 Z M400,226 L540,226 L540,234 L400,234 Z" fill="#000" opacity=".25"/>';
+    } else if (c.decor === 'flammes') {
+      for (var i = 0; i < 14; i++) s += '<circle cx="' + (r() * 600) + '" cy="' + (500 + r() * 300) + '" r="' + (20 + r() * 60) + '" fill="' + ['#f2a33c', '#e0612f', '#ffd27a'][i % 3] + '" opacity="' + (0.15 + r() * 0.3) + '" filter="url(#flou' + id + ')"/>';
+    } else if (c.decor === 'quai') {
+      for (var m = 0; m < 6; m++) { var mx = 30 + r() * 540; s += '<rect x="' + mx + '" y="' + (40 + r() * 120) + '" width="5" height="520" fill="#0b1018" opacity=".55"/><path d="M' + mx + ',' + (120 + r() * 60) + ' l' + (60 + r() * 50) + ',90 l-' + (60 + r() * 30) + ',10 Z" fill="#0b1018" opacity=".3"/>'; }
+      s += '<rect y="520" width="600" height="280" fill="#0b1018" opacity=".35" filter="url(#flou' + id + ')"/>';
+    } else if (c.decor === 'brume') {
+      for (var k = 0; k < 8; k++) s += '<ellipse cx="' + (r() * 600) + '" cy="' + (r() * 800) + '" rx="' + (120 + r() * 160) + '" ry="' + (40 + r() * 60) + '" fill="#fff" opacity="' + (0.04 + r() * 0.08) + '" filter="url(#flou' + id + ')"/>';
+    } else if (c.decor === 'taverne') {
+      for (var t = 0; t < 10; t++) s += '<circle cx="' + (r() * 600) + '" cy="' + (r() * 520) + '" r="' + (10 + r() * 26) + '" fill="#ffc46b" opacity="' + (0.15 + r() * 0.35) + '" filter="url(#flou2' + id + ')"/>';
+      s += '<rect x="0" y="560" width="600" height="40" fill="#2a160a" opacity=".5"/>';
+    }
+    return s;
+  }
+  function habit(c, id) {
+    var s = '';
+    if (c.vetement === 'robe') {
+      s += '<path d="M232,590 L300,700 L368,590 C350,600 320,606 300,606 C280,606 250,600 232,590 Z" fill="#000" opacity=".35"/>';
+      s += '<path d="M220,592 L300,712 L380,592" fill="none" stroke="' + c.liseré + '" stroke-width="7" opacity=".85"/>';
+    } else if (c.vetement === 'armure') {
+      s += '<ellipse cx="150" cy="680" rx="110" ry="70" fill="' + c.habit[0] + '"/><ellipse cx="450" cy="680" rx="110" ry="70" fill="' + c.habit[1] + '"/>';
+      s += '<path d="M90,660 C120,630 180,626 220,650" fill="none" stroke="#fff" stroke-opacity=".35" stroke-width="5"/><path d="M380,650 C420,626 480,630 510,660" fill="none" stroke="#fff" stroke-opacity=".18" stroke-width="5"/>';
+      s += '<path d="M236,600 L300,640 L364,600 L364,800 L236,800 Z" fill="#000" opacity=".22"/>';
+    } else if (c.vetement === 'cuir') {
+      s += '<path d="M250,596 L300,800 L350,596 C330,606 270,606 250,596 Z" fill="' + c.liseré + '" opacity=".8"/>';
+      s += '<path d="M180,640 L250,610 L262,800 L190,800 Z" fill="#000" opacity=".2"/><path d="M420,640 L350,610 L338,800 L410,800 Z" fill="#000" opacity=".3"/>';
+      for (var i = 0; i < 4; i++) s += '<circle cx="' + (300 + (i % 2 ? 22 : -22)) + '" cy="' + (650 + i * 32) + '" r="4" fill="#d9b25a"/>';
+    } else if (c.vetement === 'tablier') {
+      s += '<path d="M220,620 C260,640 340,640 380,620 L400,800 L200,800 Z" fill="' + c.liseré + '" opacity=".9"/>';
+      s += '<path d="M240,604 C270,616 330,616 360,604" fill="none" stroke="#fff" stroke-opacity=".5" stroke-width="6"/>';
+    } else if (c.vetement === 'bure') {
+      s += '<path d="M190,610 C230,660 370,660 410,610 C390,680 210,680 190,610 Z" fill="#000" opacity=".25"/>';
+      s += '<path d="M296,660 L304,660 L304,800 L296,800 Z" fill="#d8c79a" opacity=".6"/>';
+    }
+    if (c.col) s += '<path d="M236,584 C260,612 340,612 364,584 C350,630 250,630 236,584 Z" fill="' + c.col + '"/>';
+    return s;
+  }
+  function visage(c, id) {
+    var s = '', yE = 392, ec = c.ecart || 40;
+    var oeil = function (x, ombre) {
+      return '<path d="M' + (x - 17) + ',' + yE + ' Q' + x + ',' + (yE - (c.vieux ? 7 : 11)) + ' ' + (x + 17) + ',' + yE + ' Q' + x + ',' + (yE + 8) + ' ' + (x - 17) + ',' + yE + ' Z" fill="#f2e8dc" opacity="' + (ombre ? 0.75 : 0.9) + '"/>' +
+        '<circle cx="' + (x + 1) + '" cy="' + (yE - 1) + '" r="7" fill="' + (c.yeux || '#3a2a1c') + '"/><circle cx="' + (x + 1) + '" cy="' + (yE - 1) + '" r="3.4" fill="#0c0806"/>' +
+        '<circle cx="' + (x - 2) + '" cy="' + (yE - 4) + '" r="2" fill="#fff" opacity=".9"/>' +
+        '<path d="M' + (x - 19) + ',' + (yE - 1) + ' Q' + x + ',' + (yE - (c.vieux ? 12 : 15)) + ' ' + (x + 19) + ',' + (yE - 1) + '" fill="none" stroke="#1a0f08" stroke-width="3" opacity=".75"/>' +
+        (c.vieux ? '<path d="M' + (x - 14) + ',' + (yE + 10) + ' Q' + x + ',' + (yE + 16) + ' ' + (x + 14) + ',' + (yE + 10) + '" fill="none" stroke="#5a3a28" stroke-width="2" opacity=".35"/>' : '');
+    };
+    s += '<ellipse cx="' + (300 - ec) + '" cy="' + (yE + 2) + '" rx="26" ry="16" fill="' + c.peau[2] + '" opacity=".35"/><ellipse cx="' + (300 + ec) + '" cy="' + (yE + 2) + '" rx="26" ry="16" fill="' + c.peau[2] + '" opacity=".5"/>';
+    s += oeil(300 - ec, false) + oeil(300 + ec, true);
+    var sour = c.sourcils || c.cheveux[0];
+    s += '<path d="M' + (300 - ec - 24) + ',' + (yE - 22) + ' Q' + (300 - ec) + ',' + (yE - (c.froncé ? 26 : 34)) + ' ' + (300 - ec + 22) + ',' + (yE - (c.froncé ? 18 : 24)) + '" fill="none" stroke="' + sour + '" stroke-width="' + (c.vieux ? 8 : 6) + '" stroke-linecap="round"/>';
+    s += '<path d="M' + (300 + ec - 22) + ',' + (yE - (c.froncé ? 18 : 24)) + ' Q' + (300 + ec) + ',' + (yE - (c.froncé ? 26 : 34)) + ' ' + (300 + ec + 24) + ',' + (yE - 22) + '" fill="none" stroke="' + sour + '" stroke-width="' + (c.vieux ? 8 : 6) + '" stroke-linecap="round"/>';
+    // Nez
+    s += '<path d="M302,400 C298,420 290,440 292,448 C298,456 312,456 318,448" fill="none" stroke="#3a2016" stroke-width="3" opacity=".35"/>';
+    s += '<path d="M300,404 C296,424 294,438 296,446" fill="none" stroke="#fff" stroke-width="3" opacity=".18"/>';
+    // Bouche
+    if (!c.barbe || c.barbe === 'courte' || c.barbe === 'moustache') {
+      s += '<path d="M276,474 Q300,' + (c.sourire ? 488 : 480) + ' 324,474" fill="none" stroke="#5a2a20" stroke-width="4" stroke-linecap="round" opacity=".8"/>';
+      s += '<path d="M282,482 Q300,494 318,482" fill="' + (c.levres || '#b0605a') + '" opacity=".45"/>';
+      if (c.dentOr) s += '<rect x="304" y="477" width="6" height="6" rx="1" fill="#e8c35a"/>';
+    }
+    if (c.cicatrice) s += '<path d="M232,346 L276,410" stroke="#8a3a34" stroke-width="3" opacity=".7"/><path d="M234,344 L278,408" stroke="#f0c0b0" stroke-width="1.5" opacity=".5"/>';
+    if (c.encre) s += '<circle cx="356" cy="452" r="5" fill="#1a2240" opacity=".5"/><circle cx="364" cy="460" r="2.5" fill="#1a2240" opacity=".5"/>';
+    if (c.rides) s += '<path d="M262,330 Q300,322 338,330 M268,344 Q300,338 332,344" fill="none" stroke="#5a3a28" stroke-width="2" opacity=".25"/>';
+    return s;
+  }
+  function barbe(c, id) {
+    var col = c.cheveux, s = '';
+    if (c.barbe === 'tressee') {
+      s += '<path d="M214,420 C220,500 250,540 300,548 C350,540 380,500 386,420 C392,520 370,640 336,740 C320,770 280,770 264,740 C230,640 208,520 214,420 Z" fill="url(#chev' + id + ')"/>';
+      s += '<path d="M262,470 Q300,450 338,470 Q300,486 262,470 Z" fill="' + col[0] + '"/>';
+      s += '<path d="M276,482 Q300,490 324,482" fill="none" stroke="#4a3028" stroke-width="3" opacity=".6"/>';
+      for (var y = 560; y < 750; y += 22) s += '<path d="M284,' + y + ' Q300,' + (y + 14) + ' 316,' + y + '" fill="none" stroke="#7d7f8a" stroke-width="3" opacity=".55"/>';
+      s += '<path d="M296,560 L300,760 L304,560" fill="none" stroke="#e6e9f2" stroke-width="2" opacity=".9"/>';
+      s += '<path d="M240,520 C250,600 262,650 270,700 M360,520 C350,600 338,650 330,700" fill="none" stroke="#fff" stroke-width="2" opacity=".25"/>';
+    } else if (c.barbe === 'pleine') {
+      s += '<path d="M210,410 C214,500 248,560 300,566 C352,560 386,500 390,410 C392,490 380,560 340,600 C320,612 280,612 260,600 C220,560 208,490 210,410 Z" fill="url(#chev' + id + ')"/>';
+      s += '<path d="M266,468 Q300,452 334,468 Q300,480 266,468 Z" fill="' + col[0] + '"/><path d="M280,484 Q300,492 320,484" fill="none" stroke="#3a2018" stroke-width="3" opacity=".6"/>';
+    } else if (c.barbe === 'courte') {
+      s += '<path d="M214,430 C222,500 256,520 300,524 C344,520 378,500 386,430 C380,494 350,512 300,516 C250,512 220,494 214,430 Z" fill="' + col[1] + '" opacity=".55"/>';
+    } else if (c.barbe === 'moustache') {
+      s += '<path d="M268,466 Q300,450 332,466 Q318,470 300,464 Q282,470 268,466 Z" fill="' + col[0] + '"/>';
+    }
+    return s;
+  }
+  function coiffure(c, id) {
+    var f = 'url(#chev' + id + ')', s = '';
+    switch (c.coiffure) {
+      case 'vieux': s += '<path d="M206,380 C196,320 214,300 232,296 C220,330 222,360 224,392 Z M394,380 C404,320 386,300 368,296 C380,330 378,360 376,392 Z" fill="' + f + '"/><path d="M226,300 C250,264 350,264 374,300 C350,284 250,284 226,300 Z" fill="' + c.cheveux[0] + '" opacity=".6"/>'; break;
+      case 'court': s += '<path d="M204,370 C196,290 240,250 300,248 C364,250 404,290 396,370 C384,320 360,298 300,296 C250,296 220,316 204,370 Z" fill="' + f + '"/>'; break;
+      case 'ras': s += '<path d="M210,350 C206,290 246,256 300,254 C356,256 394,290 390,350 C372,306 344,290 300,288 C258,290 226,306 210,350 Z" fill="' + f + '" opacity=".9"/>'; break;
+      case 'long': s += '<path d="M200,380 C190,280 240,240 300,240 C364,240 410,282 400,384 C390,330 376,306 340,296 C300,330 250,320 230,300 C214,320 206,350 200,380 Z" fill="' + f + '"/>'; break;
+      case 'tresse': s += '<path d="M200,380 C190,280 240,240 300,240 C364,240 410,282 400,384 C390,330 370,300 300,296 C240,300 210,330 200,380 Z" fill="' + f + '"/>'; break;
+      case 'chignon': s += '<circle cx="300" cy="236" r="44" fill="' + f + '"/><path d="M204,374 C196,290 240,254 300,252 C364,254 404,290 396,374 C384,320 356,296 300,294 C246,296 216,320 204,374 Z" fill="' + f + '"/><path d="M276,214 L340,250" stroke="#d9b25a" stroke-width="5"/>'; break;
+      case 'tonsure': s += '<path d="M206,380 C198,320 210,290 240,276 C226,316 226,350 224,392 Z M394,380 C402,320 390,290 360,276 C374,316 374,350 376,392 Z" fill="' + f + '"/>'; break;
+      case 'capuche': s += '<path d="M180,520 C160,360 200,220 300,214 C400,220 440,360 420,520 C410,420 390,320 300,304 C210,320 190,420 180,520 Z" fill="' + c.capuche + '"/><path d="M300,214 C400,220 440,360 420,520 C430,400 400,250 300,214 Z" fill="#000" opacity=".3"/>'; break;
+    }
+    return s;
+  }
+  function accessoires(c, id) {
+    var s = '';
+    if (c.masque) s += '<path d="M214,330 C214,300 386,300 386,330 L386,440 C386,500 340,520 300,520 C260,520 214,500 214,440 Z" fill="#d9d2c4"/><path d="M386,330 L386,440 C386,500 340,520 300,520 C340,500 370,470 372,420 Z" fill="#000" opacity=".2"/><ellipse cx="262" cy="392" rx="20" ry="9" fill="#0a0806"/><ellipse cx="338" cy="392" rx="20" ry="9" fill="#0a0806"/><path d="M300,300 L300,520" stroke="#8a6a3a" stroke-width="2" opacity=".5"/>';
+    if (c.plume) s += '<path d="M400,300 C440,240 470,200 520,170 C490,220 460,262 410,320 Z" fill="#efe6d2"/><path d="M404,312 L512,178" stroke="#8a7a5a" stroke-width="2"/>';
+    if (c.boucles) s += '<circle cx="206" cy="430" r="7" fill="#e8c35a"/><circle cx="394" cy="430" r="7" fill="#c9a23e"/>';
+    if (c.couronne) s += '<path d="M232,286 L246,236 L270,272 L300,226 L330,272 L354,236 L368,286 Z" fill="#d9b25a"/><path d="M232,286 L368,286 L364,300 L236,300 Z" fill="#b08a2e"/><circle cx="300" cy="262" r="7" fill="#8a1d2a"/>';
+    if (c.voile) s += '<path d="M196,330 C190,250 240,214 300,212 C362,214 412,250 404,330 C430,450 440,600 470,700 L130,700 C162,600 172,450 196,330 Z" fill="' + c.voile + '" opacity=".85"/><path d="M220,330 C226,280 260,262 300,262 C342,262 374,280 380,330 C360,300 330,292 300,292 C270,292 240,300 220,330 Z" fill="#000" opacity=".15"/>';
+    return s;
+  }
+  function corbeau(x, y, k, id) {
+    return '<g transform="translate(' + x + ',' + y + ') scale(' + k + ')" filter="url(#peint' + id + ')">' +
+      '<path d="M-60,40 C-70,-10 -40,-60 0,-70 C30,-76 52,-60 60,-40 L96,-34 L62,-22 C70,0 66,40 50,70 L80,140 L30,96 C0,110 -40,90 -60,40 Z" fill="#0d0f14"/>' +
+      '<path d="M-40,30 C-20,60 20,70 46,60 C30,40 0,20 -40,30 Z" fill="#2a3346" opacity=".7"/>' +
+      '<path d="M0,-70 C30,-76 52,-60 60,-40 C40,-56 20,-60 0,-70 Z" fill="#5a6a8a" opacity=".5"/>' +
+      '<circle cx="34" cy="-44" r="5" fill="#e8c35a"/><circle cx="35" cy="-45" r="1.6" fill="#000"/></g>';
+  }
+  function suie(c) {
+    var id = c.id;
+    var d = '<defs>' + filtres(id, 6) + vignette(id, 0.65) +
+      '<radialGradient id="fond' + id + '" cx="0.4" cy="0.35" r="0.8"><stop offset="0" stop-color="#5a6a78"/><stop offset="1" stop-color="#141a22"/></radialGradient></defs>';
+    var s = '<rect width="600" height="800" fill="url(#fond' + id + ')"/>' + decor({ decor: 'brume', graine: 11, fond: ['#000', '#000'] }, id);
+    s += '<path d="M0,690 C120,660 300,700 600,670 L600,800 L0,800 Z" fill="#2a1e14"/><path d="M0,690 C120,660 300,700 600,670" fill="none" stroke="#6a5038" stroke-width="6"/>';
+    s += corbeau(300, 470, 3.2, id);
+    s += finition(id, 600, 800);
+    return uri('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 800" width="600" height="800">' + d + s + '</svg>');
+  }
+
+  /* ------------------------------------------------------------------ Lieux (800 × 600) */
+  function lieu(c) {
+    var id = c.id, r = rng(c.graine || 3);
+    var d = '<defs>' + filtres(id, 6) + vignette(id, 0.5) +
+      '<linearGradient id="ciel' + id + '" x1="0" y1="0" x2="0" y2="1">' + c.ciel.map(function (x, i) { return '<stop offset="' + (i / (c.ciel.length - 1)) + '" stop-color="' + x + '"/>'; }).join('') + '</linearGradient>' +
+      '<radialGradient id="astre' + id + '"><stop offset="0" stop-color="' + c.astre + '" stop-opacity="1"/><stop offset=".25" stop-color="' + c.astre + '" stop-opacity=".6"/><stop offset="1" stop-color="' + c.astre + '" stop-opacity="0"/></radialGradient>' +
+      '<linearGradient id="eau' + id + '" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="' + (c.eau || '#203040') + '"/><stop offset="1" stop-color="#05080c"/></linearGradient>' +
+      '</defs>';
+    var s = '<rect width="800" height="600" fill="url(#ciel' + id + ')"/>';
+    if (c.astre) s += '<circle cx="' + c.astreX + '" cy="' + c.astreY + '" r="220" fill="url(#astre' + id + ')"/><circle cx="' + c.astreX + '" cy="' + c.astreY + '" r="' + (c.astreR || 26) + '" fill="' + c.astre + '"/>';
+    for (var n = 0; n < (c.nuages || 0); n++) s += '<ellipse cx="' + (r() * 800) + '" cy="' + (40 + r() * 220) + '" rx="' + (90 + r() * 160) + '" ry="' + (12 + r() * 20) + '" fill="' + (c.nuage || '#fff') + '" opacity="' + (0.12 + r() * 0.2) + '" filter="url(#flou2' + id + ')"/>';
+    var g = '';
+    (c.collines || []).forEach(function (col, i) {
+      var y0 = col.y, p = 'M0,' + y0;
+      for (var x = 0; x <= 800; x += 80) p += ' Q' + (x + 40) + ',' + (y0 - col.h * r()) + ' ' + (x + 80) + ',' + (y0 - col.h * 0.5 * r());
+      g += '<path d="' + p + ' L800,600 L0,600 Z" fill="' + col.c + '"/>';
+    });
+    if (c.scene) g += SCENES[c.scene](c, r, id);
+    s += '<g filter="url(#peint' + id + ')">' + g + '</g>';
+    if (c.brume) for (var b = 0; b < 7; b++) s += '<ellipse cx="' + (r() * 800) + '" cy="' + (c.brume + r() * 120) + '" rx="' + (200 + r() * 200) + '" ry="' + (30 + r() * 30) + '" fill="' + (c.brumeC || '#cfe0e8') + '" opacity="' + (0.12 + r() * 0.16) + '" filter="url(#flou' + id + ')"/>';
+    s += finition(id, 800, 600, 0.22);
+    return uri('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="800" height="600">' + d + s + '</svg>');
+  }
+  function tour(x, base, w, h, col, toit, fen, r) {
+    var s = '<rect x="' + x + '" y="' + (base - h) + '" width="' + w + '" height="' + h + '" fill="' + col + '"/>';
+    if (toit === 'cone') s += '<path d="M' + (x - 4) + ',' + (base - h) + ' L' + (x + w / 2) + ',' + (base - h - w * 1.3) + ' L' + (x + w + 4) + ',' + (base - h) + ' Z" fill="' + col + '"/>';
+    else if (toit === 'creneau') for (var i = 0; i < w; i += 8) s += '<rect x="' + (x + i) + '" y="' + (base - h - 7) + '" width="5" height="7" fill="' + col + '"/>';
+    else if (toit === 'pignon') s += '<path d="M' + (x - 3) + ',' + (base - h) + ' L' + (x + w / 2) + ',' + (base - h - w * 0.55) + ' L' + (x + w + 3) + ',' + (base - h) + ' Z" fill="' + col + '"/>';
+    if (fen) for (var k = 0; k < Math.floor(h / 22); k++) if (r() < 0.45) s += '<rect x="' + (x + w / 2 - 2 + (r() - 0.5) * w * 0.5) + '" y="' + (base - h + 10 + k * 22) + '" width="4" height="7" fill="' + fen + '" opacity="' + (0.6 + r() * 0.4) + '"/>';
+    return s;
+  }
+  var SCENES = {
+    ville: function (c, r) {
+      var s = '<path d="M140,600 C220,420 300,360 420,350 C540,360 600,420 680,600 Z" fill="#2a2030"/>';
+      var x = 250;
+      while (x < 580) { var w = 18 + r() * 26, h = 40 + r() * 90 + (x > 360 && x < 460 ? 80 : 0); s += tour(x, 420 + Math.abs(x - 420) * 0.35, w, h, '#1c1524', r() < 0.5 ? 'cone' : (r() < 0.5 ? 'creneau' : 'pignon'), '#ffcf7a', r); x += w + 2; }
+      s += '<path d="M230,470 C330,430 510,430 610,470 L610,490 C510,452 330,452 230,490 Z" fill="#140f1a"/>';
+      for (var i = 0; i < 8; i++) s += '<rect x="' + (240 + i * 46) + '" y="' + (452 - Math.sin(i / 7 * Math.PI) * 18) + '" width="8" height="10" fill="#140f1a"/>';
+      s += '<path d="M0,520 C200,500 600,540 800,510 L800,600 L0,600 Z" fill="#120d16"/>';
+      return s;
+    },
+    taverne: function (c, r) {
+      var s = '<path d="M150,600 L150,250 L400,120 L650,250 L650,600 Z" fill="#2a1a14"/>';
+      s += '<path d="M130,256 L400,110 L670,256 L650,262 L400,128 L150,262 Z" fill="#1a0f0a"/>';
+      for (var y = 280; y < 600; y += 36) s += '<rect x="150" y="' + y + '" width="500" height="2" fill="#000" opacity=".35"/>';
+      [[210, 330], [520, 330], [210, 450], [520, 450]].forEach(function (p) { s += '<rect x="' + (p[0] - 10) + '" y="' + (p[1] - 10) + '" width="90" height="80" fill="#ffb54a" opacity=".25" filter="url(#flou2' + c.id + ')"/><rect x="' + p[0] + '" y="' + p[1] + '" width="70" height="60" fill="#ffbe5c"/><path d="M' + (p[0] + 35) + ',' + p[1] + ' v60 M' + p[0] + ',' + (p[1] + 30) + ' h70" stroke="#3a200e" stroke-width="5"/>'; });
+      s += '<path d="M360,600 L360,470 C360,440 440,440 440,470 L440,600 Z" fill="#160c08"/><path d="M372,600 L372,476 C372,456 428,456 428,476 L428,600 Z" fill="#ff9f3a" opacity=".55"/>';
+      s += '<rect x="400" y="200" width="150" height="6" fill="#1a0f0a"/><path d="M470,206 L470,222 M530,206 L530,222" stroke="#1a0f0a" stroke-width="3"/><rect x="450" y="222" width="100" height="62" rx="4" fill="#6a3a1c"/><path d="M500,232 L500,250 M492,250 Q500,272 508,250" stroke="#e8c35a" stroke-width="4" fill="none"/>';
+      s += '<path d="M0,560 C200,550 600,570 800,556 L800,600 L0,600 Z" fill="#100806"/>';
+      return s;
+    },
+    prieure: function (c, r) {
+      var s = '<path d="M0,470 C200,440 600,460 800,430 L800,600 L0,600 Z" fill="#1d2a2c"/>';
+      s += '<rect x="250" y="300" width="300" height="180" fill="#2a3a3c"/><path d="M240,300 L400,220 L560,300 Z" fill="#223032"/>';
+      s += tour(480, 480, 60, 260, '#26363a', 'cone', null, r);
+      for (var i = 0; i < 5; i++) s += '<path d="M' + (270 + i * 42) + ',420 v-46 a12,12 0 0 1 24,0 v46 Z" fill="#0e1618"/>';
+      s += '<path d="M500,270 a10,10 0 0 1 20,0 v20 h-20 Z" fill="#e8d7a0" opacity=".85"/>';
+      for (var t = 0; t < 14; t++) { var x = r() * 800, h = 60 + r() * 90; if (x > 230 && x < 570) continue; s += '<path d="M' + x + ',' + (480 - h) + ' L' + (x - 18) + ',490 L' + (x + 18) + ',490 Z" fill="#132022"/>'; }
+      return s;
+    },
+    quais: function (c, r) {
+      var s = '<rect x="0" y="380" width="800" height="220" fill="url(#eau' + c.id + ')"/>';
+      for (var i = 0; i < 40; i++) s += '<rect x="' + (r() * 800) + '" y="' + (390 + r() * 200) + '" width="' + (20 + r() * 80) + '" height="2" fill="' + c.astre + '" opacity="' + (0.15 + r() * 0.4) + '"/>';
+      s += '<path d="M0,380 L0,300 L60,300 L60,280 L120,280 L120,320 L200,320 L200,270 L240,240 L280,270 L280,330 L330,330 L330,380 Z" fill="#141a22"/>';
+      [[420, 1], [560, 1.3], [680, 0.9]].forEach(function (b) {
+        var x = b[0], k = b[1];
+        s += '<path d="M' + (x - 60 * k) + ',' + (390) + ' L' + (x + 70 * k) + ',390 L' + (x + 50 * k) + ',' + (414) + ' L' + (x - 46 * k) + ',414 Z" fill="#10141a"/>';
+        s += '<rect x="' + x + '" y="' + (390 - 170 * k) + '" width="4" height="' + (170 * k) + '" fill="#10141a"/><path d="M' + (x + 4) + ',' + (400 - 160 * k) + ' L' + (x + 60 * k) + ',' + (380 - 30 * k) + ' L' + (x + 4) + ',' + (384 - 20 * k) + ' Z" fill="#d8cdb4" opacity=".75"/>';
+      });
+      return s;
+    },
+    egouts: function (c, r) {
+      var s = '<rect width="800" height="600" fill="#0e1410"/>';
+      for (var k = 0; k < 6; k++) { var m = k * 50; s += '<path d="M' + (120 + m) + ',600 L' + (120 + m) + ',' + (260 + m * 0.6) + ' A' + (280 - m) + ',' + (230 - m * 0.8) + ' 0 0 1 ' + (680 - m) + ',' + (260 + m * 0.6) + ' L' + (680 - m) + ',600" fill="none" stroke="#2c3a2c" stroke-width="' + (26 - k * 3) + '" opacity="' + (1 - k * 0.12) + '"/>'; }
+      s += '<ellipse cx="400" cy="400" rx="70" ry="90" fill="#c8e0a0" opacity=".35" filter="url(#flou' + c.id + ')"/>';
+      s += '<path d="M120,600 L340,470 L460,470 L680,600 Z" fill="#2a4a2a"/><path d="M200,600 L370,480 L430,480 L600,600 Z" fill="#4a7a3a" opacity=".5"/>';
+      for (var i = 0; i < 12; i++) s += '<rect x="' + (300 + r() * 200) + '" y="' + (500 + r() * 90) + '" width="' + (10 + r() * 40) + '" height="2" fill="#c8e0a0" opacity=".35"/>';
+      return s;
+    },
+    foret: function (c, r) {
+      var s = '';
+      for (var l = 0; l < 3; l++) for (var t = 0; t < 22; t++) {
+        var x = r() * 820 - 10, h = 160 + r() * 200 + l * 60, b = 470 + l * 50, col = ['#24302c', '#18221f', '#0d1412'][l];
+        s += '<path d="M' + x + ',' + (b - h) + ' L' + (x - h * 0.22) + ',' + b + ' L' + (x + h * 0.22) + ',' + b + ' Z" fill="' + col + '"/>';
+      }
+      return s;
+    }
+  };
+
+  /* ------------------------------------------------------------------ Blasons (800 × 600) */
+  function blason(c) {
+    var id = c.id;
+    var d = '<defs>' + filtres(id, 4) + vignette(id, 0.6) +
+      '<linearGradient id="drap' + id + '" x1="0" y1="0" x2="1" y2="0">' + [0, 0.18, 0.32, 0.5, 0.66, 0.82, 1].map(function (o, i) { return '<stop offset="' + o + '" stop-color="' + c.drap + '" stop-opacity="' + (i % 2 ? 0.75 : 1) + '"/>'; }).join('') + '</linearGradient>' +
+      '<linearGradient id="champ' + id + '" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="' + c.champ[0] + '"/><stop offset="1" stop-color="' + c.champ[1] + '"/></linearGradient>' +
+      '<linearGradient id="lustre' + id + '" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".28"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/></linearGradient>' +
+      '<clipPath id="ecu' + id + '"><path d="' + ECU + '"/></clipPath></defs>';
+    var s = '<rect width="800" height="600" fill="' + c.fondDrap + '"/><rect width="800" height="600" fill="url(#drap' + id + ')" opacity=".55"/>';
+    var g = '<path d="' + ECU + '" fill="url(#champ' + id + ')"/>';
+    g += '<g clip-path="url(#ecu' + id + ')">' + (c.piece || '') + '</g>' + (c.meuble || '');
+    g += '<path d="' + ECU + '" fill="url(#lustre' + id + ')"/>';
+    g += '<path d="' + ECU + '" fill="none" stroke="' + c.metal + '" stroke-width="10"/><path d="' + ECU + '" fill="none" stroke="#000" stroke-opacity=".35" stroke-width="2" transform="translate(0,3)"/>';
+    s += '<g filter="url(#peint' + id + ')">' + g + '</g>';
+    if (c.devise) s += '<path d="M230,520 Q400,560 570,520 L590,548 Q400,592 210,548 Z" fill="#e9dfc6"/><text x="400" y="556" font-family="Georgia, serif" font-style="italic" font-size="22" text-anchor="middle" fill="#3a2a1a">' + c.devise + '</text>';
+    s += finition(id, 800, 600, 0.25);
+    return uri('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="800" height="600">' + d + s + '</svg>');
+  }
+  var ECU = 'M260,90 L540,90 L540,300 C540,410 470,470 400,500 C330,470 260,410 260,300 Z';
+  var MEUBLES = {
+    epees: function (m) { var e = function (rot) { return '<g transform="rotate(' + rot + ' 400 290)"><rect x="394" y="140" width="12" height="230" fill="' + m + '"/><path d="M394,140 L400,118 L406,140 Z" fill="' + m + '"/><rect x="360" y="368" width="80" height="12" rx="4" fill="#c9a23e"/><rect x="394" y="380" width="12" height="44" fill="#4a2e1a"/><circle cx="400" cy="430" r="10" fill="#c9a23e"/></g>'; }; return e(-38) + e(38); },
+    cercle: function (m) { var s = '<circle cx="400" cy="290" r="96" fill="none" stroke="' + m + '" stroke-width="16"/>'; for (var i = 0; i < 12; i++) { var a = i / 12 * Math.PI * 2; s += '<path d="M' + (400 + Math.cos(a) * 104) + ',' + (290 + Math.sin(a) * 104) + ' q' + (Math.cos(a) * 26 - Math.sin(a) * 8) + ',' + (Math.sin(a) * 26 + Math.cos(a) * 8) + ' ' + (Math.cos(a) * 40) + ',' + (Math.sin(a) * 40) + '" fill="none" stroke="' + m + '" stroke-width="7" stroke-linecap="round"/>'; } return s + '<circle cx="400" cy="290" r="20" fill="' + m + '"/>'; },
+    tour: function (m) { return '<path d="M340,420 L350,220 L330,220 L330,180 L350,180 L350,196 L370,196 L370,180 L390,180 L390,196 L410,196 L410,180 L430,180 L430,196 L450,196 L450,180 L470,180 L470,220 L450,220 L460,420 Z" fill="' + m + '"/><path d="M386,420 L386,350 A14,14 0 0 1 414,350 L414,420 Z" fill="#1a2440"/><rect x="394" y="260" width="12" height="26" rx="6" fill="#1a2440"/>'; },
+    rose: function (m) { var s = '<circle cx="400" cy="290" r="110" fill="none" stroke="' + m + '" stroke-width="5"/>'; for (var i = 0; i < 8; i++) { var a = i / 8 * Math.PI * 2, L = i % 2 ? 80 : 130; s += '<path d="M400,290 L' + (400 + Math.cos(a - 0.2) * 22) + ',' + (290 + Math.sin(a - 0.2) * 22) + ' L' + (400 + Math.cos(a) * L) + ',' + (290 + Math.sin(a) * L) + ' L' + (400 + Math.cos(a + 0.2) * 22) + ',' + (290 + Math.sin(a + 0.2) * 22) + ' Z" fill="' + m + '" opacity="' + (i % 2 ? 0.75 : 1) + '"/>'; } return s; },
+    clef: function (m) { return '<g transform="rotate(-30 400 290)"><circle cx="400" cy="180" r="44" fill="none" stroke="' + m + '" stroke-width="18"/><rect x="391" y="220" width="18" height="200" fill="' + m + '"/><rect x="409" y="370" width="34" height="16" fill="' + m + '"/><rect x="409" y="400" width="26" height="16" fill="' + m + '"/></g>'; }
+  };
+  return { portrait: portrait, suie: suie, lieu: lieu, blason: blason, MEUBLES: MEUBLES };
+})();
+
+/* Les illustrations de Lame d'Ébène (démonstration). */
+var IMAGES = (function () {
+  var P = ILLUS.portrait, L = ILLUS.lieu, B = ILLUS.blason, M = ILLUS.MEUBLES;
+  var peauClaire = ['#f3d2bb', '#d9a888', '#9a6a52'], peauHalee = ['#e6b48e', '#c08560', '#7a4a34'], peauMate = ['#c98e64', '#9a6040', '#5a3422'], peauSombre = ['#a06a48', '#6e4430', '#3a2216'];
+  return {
+    'Maître Aldric': function () { return P({ id: 'ald', fond: ['#3a4a3e', '#141a16'], lumiere: '#ffd79a', contre: '#9fc6ff', peau: peauClaire, cheveux: ['#f1f1ee', '#9fa2ab'], habit: ['#3b2f4a', '#16121c'], liseré: '#c9a23e', vetement: 'robe', coiffure: 'vieux', barbe: 'tressee', vieux: true, rides: true, froncé: true, decor: 'boutique', corbeau: true, graine: 5, yeux: '#4a5a6a' }); },
+    'Léa Brisefer': function () { return P({ id: 'lea', fond: ['#5a3a3a', '#1a1012'], lumiere: '#ffb27a', contre: '#ffd0a0', peau: peauHalee, cheveux: ['#2a1a14', '#120a08'], habit: ['#5a4a3a', '#1e1812'], liseré: '#7a2a24', vetement: 'cuir', coiffure: 'ras', cicatrice: true, froncé: true, decor: 'flammes', graine: 9, col: '#2a1e16' }); },
+    'Corvin Tisse-Brume': function () { return P({ id: 'cor', fond: ['#3a5260', '#0f1820'], lumiere: '#b8d8ff', contre: '#cfe4ff', peau: peauClaire, cheveux: ['#8a5a30', '#4a2a14'], habit: ['#2f4a4a', '#101c1e'], vetement: 'cuir', liseré: '#3a2a1a', coiffure: 'court', barbe: 'pleine', decor: 'quai', graine: 3, capuche: '#22343a' }); },
+    'Dame Ombeline de Val-Fortin': function () { return P({ id: 'omb', fond: ['#4a3a5a', '#140f1c'], lumiere: '#e8d0ff', contre: '#ffe6c0', peau: ['#f6e0d0', '#dcb4a0', '#9a7464'], cheveux: ['#c89a5a', '#7a5428'], habit: ['#5a1a2a', '#200a10'], liseré: '#d9b25a', vetement: 'robe', coiffure: 'chignon', couronne: true, decor: 'fenetre', lumX: 0.8, graine: 4, levres: '#a04a50', col: '#e9dfc6' }); },
+    'Garance, tavernière du Pendu Joyeux': function () { return P({ id: 'gar', fond: ['#5a3a1e', '#1c100a'], lumiere: '#ffc46b', contre: '#ffd9a0', peau: peauHalee, cheveux: ['#b0452a', '#5a1e10'], habit: ['#4a3a2a', '#1e140c'], liseré: '#e9dfc6', vetement: 'tablier', coiffure: 'tresse', sourire: true, decor: 'taverne', graine: 8, boucles: true }); },
+    'Isaure Marchelune': function () { return P({ id: 'isa', fond: ['#2a3a5a', '#0c1220'], lumiere: '#a8c0ff', contre: '#ffe0b0', peau: peauMate, cheveux: ['#1a1414', '#050404'], habit: ['#1e3a5a', '#0a1422'], liseré: '#c9a23e', vetement: 'robe', coiffure: 'long', plume: true, encre: true, decor: 'fenetre', lumX: 0.75, graine: 6 }); },
+    'Jorik Main-Grise': function () { return P({ id: 'jor', fond: ['#3a3a3e', '#101012'], lumiere: '#c8ccd8', contre: '#e0e6ff', peau: peauMate, cheveux: ['#5a5a5e', '#2a2a2e'], habit: ['#4a4e58', '#1a1c22'], vetement: 'armure', coiffure: 'ras', barbe: 'pleine', froncé: true, decor: 'brume', graine: 12 }); },
+    'Osric Vautrin, receleur des quais': function () { return P({ id: 'osr', fond: ['#2a3a3a', '#0a1212'], lumiere: '#ffd79a', contre: '#9fe0d0', peau: peauSombre, cheveux: ['#1a1210', '#0a0606'], habit: ['#5a2a4a', '#1e0e1a'], liseré: '#d9b25a', vetement: 'robe', coiffure: 'court', barbe: 'moustache', sourire: true, dentOr: true, boucles: true, decor: 'quai', graine: 14, col: '#d9b25a' }); },
+    'Suie': function () { return ILLUS.suie({ id: 'sui' }); },
+    'Le Prieur masqué': function () { return P({ id: 'pri', fond: ['#3a1e1e', '#0e0808'], lumiere: '#ff8a4a', contre: '#ffb070', peau: peauClaire, cheveux: ['#1a1010', '#080404'], habit: ['#2a1414', '#0a0404'], vetement: 'bure', coiffure: 'capuche', capuche: '#1e0e0e', masque: true, decor: 'flammes', graine: 2 }); },
+    'Dame Ombeline (long)': null,
+    /* Lieux */
+    'Val-Fortin': function () { return L({ id: 'vf', ciel: ['#2a2a5a', '#a0507a', '#f0a060'], astre: '#ffd8a0', astreX: 600, astreY: 380, astreR: 30, nuages: 6, nuage: '#ffc8a0', collines: [{ y: 470, h: 60, c: '#3a2a4a' }, { y: 540, h: 40, c: '#20182a' }], scene: 'ville', graine: 21 }); },
+    'Le Pendu Joyeux': function () { return L({ id: 'pj', ciel: ['#0a0e1e', '#1e2440', '#3a3050'], astre: '#e8e6ff', astreX: 140, astreY: 110, astreR: 22, nuages: 3, nuage: '#8090c0', scene: 'taverne', graine: 22 }); },
+    'Le Prieuré de Val-Fortin': function () { return L({ id: 'pv', ciel: ['#8aa8a8', '#c8d8d0', '#e8eee6'], nuages: 2, collines: [{ y: 420, h: 50, c: '#6a8484' }], scene: 'prieure', brume: 380, brumeC: '#e0ece8', graine: 23 }); },
+    'Les quais du Fleuve-Gris': function () { return L({ id: 'qu', ciel: ['#3a4a6a', '#c88a6a', '#f0c890'], astre: '#ffe0a0', astreX: 300, astreY: 340, astreR: 24, nuages: 5, nuage: '#ffd0b0', eau: '#4a4a5a', scene: 'quais', graine: 24 }); },
+    'Les égouts de la rue des Cordiers': function () { return L({ id: 'eg', ciel: ['#0e1410', '#0e1410'], scene: 'egouts', graine: 25 }); },
+    'Forêt de Brumecendre': function () { return L({ id: 'fo', ciel: ['#4a5a58', '#8a9a90', '#b8c4b8'], astre: '#f0f0e0', astreX: 560, astreY: 140, astreR: 18, collines: [{ y: 430, h: 60, c: '#3a4a46' }], scene: 'foret', brume: 360, brumeC: '#d8e4dc', graine: 26 }); },
+    /* Factions */
+    'Lames Grises': function () { return B({ id: 'lg', fondDrap: '#2a2c34', drap: '#3a3e4a', champ: ['#24262c', '#0e0f12'], metal: '#c8ccd6', meuble: M.epees('#d8dce6'), devise: 'Le fil, jamais la main' }); },
+    'Cercle des Cendres': function () { return B({ id: 'cc', fondDrap: '#2a0e0e', drap: '#4a1414', champ: ['#6a1a1a', '#2a0808'], metal: '#d9b25a', meuble: M.cercle('#e8c35a') }); },
+    'Garde de Val-Fortin': function () { return B({ id: 'gv', fondDrap: '#16203a', drap: '#24345a', champ: ['#2a4a8a', '#132548'], metal: '#e9dfc6', piece: '<rect x="250" y="80" width="300" height="70" fill="#d9b25a"/>', meuble: M.tour('#eef0f4'), devise: 'Veille et tiens' }); },
+    'Guilde des Cartographes': function () { return B({ id: 'gc', fondDrap: '#0e2a20', drap: '#1a4030', champ: ['#1e5a40', '#0a2a1c'], metal: '#d9b25a', meuble: M.rose('#e8c35a') }); },
+    'Le Prieuré': function () { return B({ id: 'pr', fondDrap: '#2a2620', drap: '#4a4234', champ: ['#e9e3d4', '#bdb5a0'], metal: '#3a3428', piece: '<rect x="400" y="80" width="150" height="440" fill="#1e1c18"/>', meuble: M.clef('#8a6a2a') }); }
+  };
+})();
+
+/* Cartes, plans et carte céleste de démonstration, peints en SVG (propres à E-19) : même procédé que
+   ILLUS (bords peints par turbulence, grain, vignettage), rendus en data URI dans de vraies <img>. */
+var CARTO = (function () {
+  'use strict';
+  function rng(seed) { var s = seed % 2147483647; if (s <= 0) s += 2147483646; return function () { s = s * 16807 % 2147483647; return (s - 1) / 2147483646; }; }
+  function uri(svg) { return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg); }
+  function f2(n) { return Math.round(n * 10) / 10; }
+  function filtres(id, echelle, graine) {
+    return '<filter id="pe' + id + '" x="-5%" y="-5%" width="110%" height="110%"><feTurbulence type="fractalNoise" baseFrequency="0.03" numOctaves="3" seed="' + graine + '" result="b"/>' +
+      '<feDisplacementMap in="SourceGraphic" in2="b" scale="' + echelle + '" xChannelSelector="R" yChannelSelector="G"/></filter>' +
+      '<filter id="gr' + id + '"><feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" stitchTiles="stitch"/><feColorMatrix values="0 0 0 0 0.45  0 0 0 0 0.38  0 0 0 0 0.28  0 0 0 0.6 0"/></filter>' +
+      '<filter id="fl' + id + '"><feGaussianBlur stdDeviation="22"/></filter>' +
+      '<radialGradient id="vg' + id + '" cx="50%" cy="50%" r="72%"><stop offset="58%" stop-color="#2a1a08" stop-opacity="0"/><stop offset="100%" stop-color="#2a1a08" stop-opacity=".55"/></radialGradient>';
+  }
+  function grain(id, op) { return '<rect width="800" height="600" filter="url(#gr' + id + ')" opacity="' + (op || 0.35) + '" style="mix-blend-mode:multiply"/>'; }
+  // Un contour de terre : un polygone polaire bruité, lissé en courbes.
+  function ile(cx, cy, rx, ry, n, r, irr) {
+    var ph = [r() * 6, r() * 6, r() * 6], pts = [];
+    for (var i = 0; i < n; i++) {
+      var a = i / n * Math.PI * 2;
+      var k = 1 + irr * (0.55 * Math.sin(a * 3 + ph[0]) + 0.3 * Math.sin(a * 7 + ph[1]) + 0.18 * Math.sin(a * 13 + ph[2])) + (r() - 0.5) * irr * 0.35;
+      pts.push([cx + Math.cos(a) * rx * k, cy + Math.sin(a) * ry * k]);
+    }
+    var d = 'M' + f2((pts[0][0] + pts[n - 1][0]) / 2) + ',' + f2((pts[0][1] + pts[n - 1][1]) / 2);
+    for (var j = 0; j < n; j++) { var p = pts[j], q = pts[(j + 1) % n]; d += ' Q' + f2(p[0]) + ',' + f2(p[1]) + ' ' + f2((p[0] + q[0]) / 2) + ',' + f2((p[1] + q[1]) / 2); }
+    return d + ' Z';
+  }
+  function rose(x, y, k, encre, accent) {
+    var s = '<g transform="translate(' + x + ',' + y + ') scale(' + k + ')"><circle r="46" fill="none" stroke="' + encre + '" stroke-width="1.5" opacity=".7"/><circle r="40" fill="none" stroke="' + encre + '" stroke-width=".8" opacity=".6"/>';
+    for (var i = 0; i < 8; i++) {
+      var a = i / 8 * Math.PI * 2 - Math.PI / 2, L = i % 2 ? 30 : 56, w = i % 2 ? 6 : 9;
+      var ax = Math.cos(a), ay = Math.sin(a), px = -ay, py = ax;
+      s += '<path d="M0,0 L' + f2(px * w) + ',' + f2(py * w) + ' L' + f2(ax * L) + ',' + f2(ay * L) + ' Z" fill="' + (i === 0 ? accent : encre) + '"/>';
+      s += '<path d="M0,0 L' + f2(-px * w) + ',' + f2(-py * w) + ' L' + f2(ax * L) + ',' + f2(ay * L) + ' Z" fill="' + encre + '" opacity=".35"/>';
+    }
+    return s + '<text y="-62" text-anchor="middle" font-family="Georgia,serif" font-size="16" fill="' + encre + '">N</text></g>';
+  }
+  function cartouche(x, y, w, titre, encre, papier) {
+    return '<g transform="translate(' + x + ',' + y + ')"><rect x="0" y="0" width="' + w + '" height="44" fill="' + papier + '" stroke="' + encre + '" stroke-width="1.6"/>' +
+      '<rect x="4" y="4" width="' + (w - 8) + '" height="36" fill="none" stroke="' + encre + '" stroke-width=".7"/>' +
+      '<text x="' + (w / 2) + '" y="29" text-anchor="middle" font-family="Georgia,serif" font-style="italic" font-size="19" fill="' + encre + '">' + titre + '</text></g>';
+  }
+
+  /* ------------------------------------------------ Carte sur parchemin (800 × 600) */
+  function carte(c) {
+    var id = c.id, r = rng(c.graine || 5), encre = c.encre || '#4a2f17', papier = c.papier || ['#f1e3bf', '#d6bb83'];
+    var d = '<defs>' + filtres(id, 5, c.graine || 5) +
+      '<radialGradient id="pa' + id + '" cx="48%" cy="45%" r="70%"><stop offset="0" stop-color="' + papier[0] + '"/><stop offset="1" stop-color="' + papier[1] + '"/></radialGradient>' +
+      '<pattern id="mer' + id + '" width="14" height="14" patternUnits="userSpaceOnUse" patternTransform="rotate(-20)"><path d="M0,7 Q3.5,4 7,7 T14,7" fill="none" stroke="' + (c.merEncre || '#5a6e7a') + '" stroke-width=".8" opacity=".45"/></pattern></defs>';
+    var s = '<rect width="800" height="600" fill="url(#pa' + id + ')"/>';
+    for (var t = 0; t < 7; t++) s += '<ellipse cx="' + f2(r() * 800) + '" cy="' + f2(r() * 600) + '" rx="' + f2(40 + r() * 110) + '" ry="' + f2(30 + r() * 80) + '" fill="#8a5a1e" opacity="' + f2(0.05 + r() * 0.07) + '" filter="url(#fl' + id + ')"/>';
+    var g = '';
+    if (c.mer) g += '<rect x="30" y="30" width="740" height="540" fill="url(#mer' + id + ')"/>';
+    var terres = (c.terres || []).map(function (T) { return ile(T[0], T[1], T[2], T[3], 26, r, T[4] || 0.25); });
+    terres.forEach(function (p, i) {
+      var T = c.terres[i];
+      for (var e = 3; e >= 1; e--) g += '<path d="' + p + '" fill="none" stroke="' + (c.merEncre || '#5a6e7a') + '" stroke-width="1" opacity="' + (0.16 * (4 - e)) + '" transform="translate(' + T[0] + ',' + T[1] + ') scale(' + (1 + e * 0.055) + ') translate(' + (-T[0]) + ',' + (-T[1]) + ')"/>';
+      g += '<path d="' + p + '" fill="' + (c.terre || '#ead39d') + '" stroke="' + encre + '" stroke-width="2.4"/>';
+    });
+    // Montagnes, forêts
+    (c.monts || []).forEach(function (M) {
+      for (var m = 0; m < M[2]; m++) {
+        var x = M[0] + (r() - 0.5) * M[3], y = M[1] + (r() - 0.5) * M[3] * 0.6, h = 10 + r() * 10;
+        g += '<path d="M' + f2(x - h) + ',' + f2(y) + ' L' + f2(x) + ',' + f2(y - h * 1.3) + ' L' + f2(x + h) + ',' + f2(y) + '" fill="none" stroke="' + encre + '" stroke-width="1.6"/><path d="M' + f2(x) + ',' + f2(y - h * 1.3) + ' L' + f2(x + h) + ',' + f2(y) + ' L' + f2(x + 2) + ',' + f2(y) + ' Z" fill="' + encre + '" opacity=".35"/>';
+      }
+    });
+    (c.forets || []).forEach(function (F) {
+      for (var k = 0; k < F[2]; k++) { var x = F[0] + (r() - 0.5) * F[3], y = F[1] + (r() - 0.5) * F[3] * 0.6; g += '<circle cx="' + f2(x) + '" cy="' + f2(y) + '" r="' + f2(4 + r() * 3) + '" fill="#6a7a3a" opacity=".55" stroke="' + encre + '" stroke-width=".8"/>'; }
+    });
+    (c.fleuves || []).forEach(function (P) { g += '<path d="' + P + '" fill="none" stroke="#3e6276" stroke-width="2.6" stroke-linecap="round" opacity=".8"/>'; });
+    (c.routes || []).forEach(function (P) { g += '<path d="' + P + '" fill="none" stroke="#8a2a1a" stroke-width="2" stroke-dasharray="7 6" opacity=".8"/>'; });
+    (c.villes || []).forEach(function (V) {
+      g += '<circle cx="' + V[0] + '" cy="' + V[1] + '" r="6" fill="' + papier[0] + '" stroke="' + encre + '" stroke-width="2"/><circle cx="' + V[0] + '" cy="' + V[1] + '" r="2.2" fill="' + encre + '"/>';
+      if (V[2]) g += '<text x="' + (V[0] + 10) + '" y="' + (V[1] - 8) + '" font-family="Georgia,serif" font-style="italic" font-size="14" fill="' + encre + '">' + V[2] + '</text>';
+    });
+    s += '<g filter="url(#pe' + id + ')">' + g + '</g>';
+    if (c.rose) s += rose(c.rose[0], c.rose[1], c.rose[2] || 1, encre, '#8a2a1a');
+    if (c.titre) s += cartouche(c.cart ? c.cart[0] : 40, c.cart ? c.cart[1] : 520, c.cart ? c.cart[2] : 300, c.titre, encre, papier[0]);
+    s += '<rect x="14" y="14" width="772" height="572" fill="none" stroke="' + encre + '" stroke-width="3"/><rect x="22" y="22" width="756" height="556" fill="none" stroke="' + encre + '" stroke-width="1"/>';
+    s += grain(id, 0.4) + '<rect width="800" height="600" fill="url(#vg' + id + ')"/>';
+    return uri('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="800" height="600">' + d + s + '</svg>');
+  }
+
+  /* ------------------------------------------------ Plan de bâtiment (800 × 600) */
+  function plan(c) {
+    var id = c.id, r = rng(c.graine || 7), bleu = c.style === 'bleu';
+    var fond = bleu ? ['#1f4f86', '#123257'] : ['#efe6cf', '#cdbb92'], trait = bleu ? '#e6f0ff' : '#2e2216', grille = bleu ? '#9cc0ee' : '#8a7550';
+    var d = '<defs>' + filtres(id, bleu ? 2 : 3, c.graine || 7) +
+      '<radialGradient id="pf' + id + '" cx="45%" cy="40%" r="75%"><stop offset="0" stop-color="' + fond[0] + '"/><stop offset="1" stop-color="' + fond[1] + '"/></radialGradient>' +
+      '<pattern id="pg' + id + '" width="20" height="20" patternUnits="userSpaceOnUse"><path d="M20,0 L0,0 0,20" fill="none" stroke="' + grille + '" stroke-width=".6" opacity="' + (bleu ? 0.35 : 0.3) + '"/></pattern>' +
+      '<pattern id="ph' + id + '" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><path d="M0,0 L0,8" stroke="' + trait + '" stroke-width="1.2" opacity=".45"/></pattern></defs>';
+    var s = '<rect width="800" height="600" fill="url(#pf' + id + ')"/><rect width="800" height="600" fill="url(#pg' + id + ')"/>';
+    var g = '';
+    // Pièces : [x, y, l, h, libellé]
+    (c.pieces || []).forEach(function (P) {
+      g += '<rect x="' + P[0] + '" y="' + P[1] + '" width="' + P[2] + '" height="' + P[3] + '" fill="' + (bleu ? '#ffffff' : '#fff8e6') + '" fill-opacity="' + (bleu ? 0.05 : 0.35) + '" stroke="' + trait + '" stroke-width="7"/>';
+      if (P[4]) g += '<text x="' + (P[0] + P[2] / 2) + '" y="' + (P[1] + P[3] / 2 + 5) + '" text-anchor="middle" font-family="' + (bleu ? 'Helvetica,Arial,sans-serif' : 'Georgia,serif') + '" font-size="13" letter-spacing="' + (bleu ? 1.5 : 0) + '" ' + (bleu ? '' : 'font-style="italic" ') + 'fill="' + trait + '" opacity=".85">' + P[4] + '</text>';
+    });
+    // Portes : [x, y, sens] — une ouverture et l'arc de battant
+    (c.portes || []).forEach(function (P) {
+      var x = P[0], y = P[1], h = P[2] === 'h';
+      g += h ? '<rect x="' + (x - 2) + '" y="' + (y - 6) + '" width="30" height="12" fill="' + fond[0] + '"/><path d="M' + x + ',' + y + ' L' + x + ',' + (y - 26) + ' A26,26 0 0 1 ' + (x + 26) + ',' + y + '" fill="none" stroke="' + trait + '" stroke-width="1.4"/>'
+             : '<rect x="' + (x - 6) + '" y="' + (y - 2) + '" width="12" height="30" fill="' + fond[0] + '"/><path d="M' + x + ',' + y + ' L' + (x + 26) + ',' + y + ' A26,26 0 0 1 ' + x + ',' + (y + 26) + '" fill="none" stroke="' + trait + '" stroke-width="1.4"/>';
+    });
+    // Escaliers : [x, y, l, h]
+    (c.escaliers || []).forEach(function (E) { for (var k = 0; k <= E[2]; k += 10) g += '<path d="M' + (E[0] + k) + ',' + E[1] + ' v' + E[3] + '" stroke="' + trait + '" stroke-width="1.4"/>'; g += '<path d="M' + E[0] + ',' + (E[1] + E[3] / 2) + ' h' + E[2] + '" stroke="' + trait + '" stroke-width="1.4" marker-end=""/>'; });
+    // Zones hachurées (puits, éboulis)
+    (c.hachures || []).forEach(function (H) { g += '<rect x="' + H[0] + '" y="' + H[1] + '" width="' + H[2] + '" height="' + H[3] + '" fill="url(#ph' + id + ')"/>'; });
+    // Colonnes
+    (c.colonnes || []).forEach(function (C) { g += '<circle cx="' + C[0] + '" cy="' + C[1] + '" r="7" fill="' + trait + '"/>'; });
+    s += '<g filter="url(#pe' + id + ')">' + g + '</g>';
+    // Passage secret et la croix
+    if (c.passage) s += '<path d="' + c.passage + '" fill="none" stroke="#c0392b" stroke-width="3" stroke-dasharray="2 8" stroke-linecap="round"/>';
+    if (c.croix) s += '<g transform="translate(' + c.croix[0] + ',' + c.croix[1] + ')" stroke="#c0392b" stroke-width="5" stroke-linecap="round"><path d="M-12,-12 L12,12 M12,-12 L-12,12"/><circle r="22" fill="none" stroke-width="2"/></g>';
+    if (c.titre) s += '<text x="40" y="' + (bleu ? 568 : 566) + '" font-family="' + (bleu ? 'Helvetica,Arial,sans-serif' : 'Georgia,serif') + '" font-size="' + (bleu ? 15 : 20) + '" ' + (bleu ? 'letter-spacing="3" ' : 'font-style="italic" ') + 'fill="' + trait + '">' + c.titre + '</text>';
+    if (bleu) s += '<g stroke="' + trait + '" stroke-width="1.2" opacity=".8"><path d="M600,560 h140 M600,554 v12 M670,556 v8 M740,554 v12"/></g><text x="670" y="548" text-anchor="middle" font-family="Helvetica,Arial,sans-serif" font-size="11" letter-spacing="2" fill="' + trait + '">10 TOISES</text>';
+    s += grain(id, bleu ? 0.18 : 0.38) + '<rect width="800" height="600" fill="url(#vg' + id + ')" opacity="' + (bleu ? 0.6 : 1) + '"/>';
+    return uri('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="800" height="600">' + d + s + '</svg>');
+  }
+
+  /* ------------------------------------------------ Carte céleste « des Sphères » (800 × 600) */
+  function spheres(c) {
+    var id = c.id, r = rng(c.graine || 9), or_ = '#e2b85a';
+    var d = '<defs>' + filtres(id, 3, 9) +
+      '<radialGradient id="sf' + id + '" cx="50%" cy="50%" r="65%"><stop offset="0" stop-color="#1f2546"/><stop offset=".6" stop-color="#11142a"/><stop offset="1" stop-color="#07080f"/></radialGradient>' +
+      '<radialGradient id="so' + id + '"><stop offset="0" stop-color="#fff2c8"/><stop offset=".35" stop-color="#f2b450"/><stop offset="1" stop-color="#f2b450" stop-opacity="0"/></radialGradient>' +
+      '<radialGradient id="pl' + id + '" cx="35%" cy="35%" r="70%"><stop offset="0" stop-color="#ffffff" stop-opacity=".7"/><stop offset=".4" stop-color="#ffffff" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".55"/></radialGradient></defs>';
+    var s = '<rect width="800" height="600" fill="url(#sf' + id + ')"/>';
+    for (var i = 0; i < 260; i++) s += '<circle cx="' + f2(r() * 800) + '" cy="' + f2(r() * 600) + '" r="' + f2(0.4 + r() * r() * 1.8) + '" fill="#fff" opacity="' + f2(0.25 + r() * 0.7) + '"/>';
+    s += '<ellipse cx="400" cy="300" rx="420" ry="90" fill="#8fa4ff" opacity=".07" filter="url(#fl' + id + ')" transform="rotate(-18 400 300)"/>';
+    var g = '';
+    var orbites = [[70, 1], [120, 2], [178, 3], [236, 4], [300, 5]];
+    orbites.forEach(function (o, k) {
+      g += '<ellipse cx="400" cy="300" rx="' + o[0] * 1.25 + '" ry="' + o[0] * 0.78 + '" fill="none" stroke="' + or_ + '" stroke-width="' + (k === 2 ? 1.6 : 1) + '" opacity="' + (0.75 - k * 0.08) + '"' + (k % 2 ? ' stroke-dasharray="3 5"' : '') + '/>';
+      var a = r() * Math.PI * 2, x = 400 + Math.cos(a) * o[0] * 1.25, y = 300 + Math.sin(a) * o[0] * 0.78, R = [8, 12, 10, 16, 7][k], col = ['#b8c4d8', '#7aa3c8', '#c86a4a', '#d8b878', '#8ac0a8'][k];
+      g += '<circle cx="' + f2(x) + '" cy="' + f2(y) + '" r="' + R + '" fill="' + col + '"/><circle cx="' + f2(x) + '" cy="' + f2(y) + '" r="' + R + '" fill="url(#pl' + id + ')"/>';
+      if (k === 3) g += '<ellipse cx="' + f2(x) + '" cy="' + f2(y) + '" rx="' + (R * 2) + '" ry="' + (R * 0.5) + '" fill="none" stroke="#e8d8a8" stroke-width="1.5" opacity=".8" transform="rotate(-20 ' + f2(x) + ' ' + f2(y) + ')"/>';
+    });
+    // Rayons du zodiaque
+    for (var z = 0; z < 12; z++) { var a2 = z / 12 * Math.PI * 2; g += '<path d="M' + f2(400 + Math.cos(a2) * 392) + ',' + f2(300 + Math.sin(a2) * 245) + ' L' + f2(400 + Math.cos(a2) * 420) + ',' + f2(300 + Math.sin(a2) * 262) + '" stroke="' + or_ + '" stroke-width="1.4" opacity=".6"/>'; }
+    g += '<ellipse cx="400" cy="300" rx="392" ry="245" fill="none" stroke="' + or_ + '" stroke-width="2.2" opacity=".85"/><ellipse cx="400" cy="300" rx="420" ry="262" fill="none" stroke="' + or_ + '" stroke-width=".8" opacity=".6"/>';
+    s += '<g filter="url(#pe' + id + ')">' + g + '</g>';
+    s += '<circle cx="400" cy="300" r="60" fill="url(#so' + id + ')"/><circle cx="400" cy="300" r="13" fill="#fff6d8"/>';
+    s += '<text x="400" y="40" text-anchor="middle" font-family="Georgia,serif" font-style="italic" font-size="22" letter-spacing="1" fill="' + or_ + '">Les Sphères</text>';
+    s += grain(id, 0.22);
+    return uri('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="800" height="600">' + d + s + '</svg>');
+  }
+  return { carte: carte, plan: plan, spheres: spheres };
+})();
+
+</script>
+
+<script>
+(function () {
+  'use strict';
+  var $ = function (s, r) { return (r || document).querySelector(s); };
+  var $$ = function (s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
+  var perdue = function () { return document.body.classList.contains('etat-perdue'); };
+  var joueur = function () { return document.body.classList.contains('role-joueur'); };
+
+  /* ---------------- Les fichiers de « Lame d'Ébène » (les 31 plus récents des 1 140 : 24 images, 7 documents) ----------------
+     doc : le type d'un document ('pdf', 'tableur', 'archive', 'autre' — l'icône de la charte) ; absent pour une image.
+     vis : 'joueurs' ou 'mj'. Chaque usage : la fiche, son icône, l'endroit, si Léa lit la fiche (lu),
+     et si l'endroit est lu des joueurs (table) — ce qui déclenche l'avertissement de « Réserver ». */
+  var C = CARTO, I = IMAGES;
+  var IMG = [
+    { id: 'repaire', nom: 'plan-du-repaire.png', vis: 'joueurs', type: 'PNG', taille: '1,2 Mo', par: 'lea', le: '12 oct. 2026', cle: 'image:plan-du-repaire',
+      peint: function () { return C.plan({ id: 'rep', graine: 31, pieces: [[90, 80, 300, 200, 'Salle commune'], [390, 80, 180, 120, 'Dortoir'], [390, 200, 180, 80, 'Réserve'], [570, 80, 150, 200, ''], [90, 280, 200, 200, 'Caveau'], [290, 280, 430, 200, 'Entrepôt']],
+        portes: [[380, 130, 'v'], [470, 200, 'h'], [180, 280, 'h'], [570, 150, 'v'], [400, 280, 'h']], escaliers: [[600, 110, 100, 60]], colonnes: [[400, 360], [500, 360], [600, 360], [400, 420], [500, 420], [600, 420]], hachures: [[110, 300, 70, 60]], titre: 'Le repaire — niveau des caves' }); },
+      usages: [{ f: 'Les Docks', ic: 'map-pin', ou: '« Histoire » (dans le texte)', lu: true, table: true }, { f: 'Port-Sel', ic: 'map-pin', ou: 'Pièces jointes de Description', lu: true }] },
+    { id: 'guilde', nom: 'Plan secret de la Guilde', vis: 'mj', type: 'PNG', taille: '2,6 Mo', par: 'antor', le: '11 oct. 2026',
+      peint: function () { return C.plan({ id: 'gui', style: 'bleu', graine: 37, pieces: [[80, 70, 240, 170, 'HALLE'], [320, 70, 220, 110, 'COMPTOIR'], [540, 70, 180, 260, 'ARCHIVES'], [80, 240, 160, 230, 'CAVE'], [240, 240, 300, 230, 'SALLE DES BRUMES']],
+        portes: [[310, 120, 'v'], [180, 240, 'h'], [400, 180, 'h'], [530, 280, 'v']], escaliers: [[100, 400, 110, 50]], colonnes: [[330, 320], [450, 320], [330, 400], [450, 400]], passage: 'M160,440 C160,520 420,520 480,470 C540,420 640,420 660,330', croix: [660, 300], titre: 'GUILDE DES BRUMES · CAVES' }); },
+      usages: [{ f: 'La Guilde des Brumes', ic: 'shield', ou: 'Illustration', lu: false }] },
+    { id: 'tarifs', nom: 'tarifs-du-port.pdf', doc: 'pdf', vis: 'joueurs', type: 'PDF', taille: '186 Ko', par: 'antor', le: '11 oct. 2026',
+      usages: [{ f: 'Port-Sel', ic: 'map-pin', ou: 'Pièces jointes de Description', lu: true, table: true }] },
+    { id: 'spheres', nom: 'Carte des Sphères', vis: 'joueurs', type: 'PNG', taille: '3,8 Mo', par: 'antor', le: '10 oct. 2026', cle: 'image:carte-des-spheres',
+      peint: function () { return C.spheres({ id: 'sph' }); },
+      usages: [{ f: 'Port-Sel', ic: 'map-pin', ou: 'Illustration', lu: true, table: true }, { f: 'Les Sphères', ic: 'globe', ou: '« Histoire » (dans le texte)', lu: false }, { f: 'Maître Aldric', ic: 'users-round', ou: 'Pièces jointes de « Apparence »', lu: true, table: true }] },
+    { id: 'quais', nom: 'port-sel-quais.webp', vis: 'joueurs', type: 'WebP', taille: '640 Ko', par: 'antor', le: '10 oct. 2026', cle: 'image:port-sel-quais',
+      peint: I['Les quais du Fleuve-Gris'], usages: [{ f: 'Port-Sel', ic: 'map-pin', ou: '« Histoire » (dans le texte)', lu: true, table: true }] },
+    { id: 'aldric', nom: 'portrait-aldric.jpg', vis: 'joueurs', type: 'JPEG', taille: '412 Ko', par: 'antor', le: '10 oct. 2026', cle: 'image:portrait-aldric', pos: '50% 28%',
+      peint: I['Maître Aldric'], usages: [{ f: 'Maître Aldric', ic: 'users-round', ou: 'Illustration', lu: true, table: true }] },
+    { id: 'prieur', nom: 'le-prieur-masque.png', vis: 'mj', type: 'PNG', taille: '980 Ko', par: 'antor', le: '10 oct. 2026', cle: 'image:le-prieur-masque', pos: '50% 28%',
+      peint: I['Le Prieur masqué'], usages: [{ f: 'Le Prieur masqué', ic: 'users-round', ou: 'Illustration', lu: false }] },
+    { id: 'regles', nom: 'Règles de la Guilde.pdf', doc: 'pdf', vis: 'joueurs', type: 'PDF', taille: '2,4 Mo', par: 'antor', le: '10 oct. 2026', cle: 'fichier:regles-de-la-guilde',
+      usages: [{ f: 'Guilde des Cartographes', ic: 'shield', ou: 'Pièces jointes de « Statuts »', lu: true, table: true }, { f: 'La Guilde des Brumes', ic: 'shield', ou: '« Histoire » (dans le texte)', lu: false }] },
+    { id: 'fleuve', nom: 'carte-du-fleuve-gris.png', vis: 'joueurs', type: 'PNG', taille: '2,1 Mo', par: 'antor', le: '10 oct. 2026', cle: 'image:carte-du-fleuve-gris',
+      peint: function () { return C.carte({ id: 'flv', graine: 41, fleuves: ['M40,120 C180,160 220,260 330,280 C450,300 470,420 600,450 C680,470 720,520 770,560', 'M330,280 C360,200 420,150 520,90'], monts: [[600, 150, 14, 160], [180, 420, 9, 120]], forets: [[200, 240, 26, 120], [520, 300, 18, 100]], routes: ['M140,180 C260,200 320,330 470,380', 'M470,380 C560,360 640,300 680,220'],
+        villes: [[140, 180, 'Val-Fortin'], [470, 380, 'Port-Sel'], [330, 280, 'Gué-aux-Saules'], [680, 220, '']], rose: [690, 470, 0.9], titre: 'Le Fleuve-Gris', cart: [40, 516, 260] }); },
+      usages: [{ f: 'Le Fleuve-Gris', ic: 'map-pin', ou: 'Illustration', lu: true, table: true }] },
+    { id: 'garance', nom: 'portrait-garance.jpg', vis: 'joueurs', type: 'JPEG', taille: '388 Ko', par: 'mira', le: '9 oct. 2026', cle: 'image:portrait-garance', pos: '50% 28%',
+      peint: I['Garance, tavernière du Pendu Joyeux'], usages: [{ f: 'Garance, tavernière du Pendu Joyeux', ic: 'users-round', ou: 'Illustration', lu: true, table: true }] },
+    { id: 'ville', nom: 'val-fortin-crepuscule.jpg', vis: 'joueurs', type: 'JPEG', taille: '1,4 Mo', par: 'antor', le: '9 oct. 2026', cle: 'image:val-fortin-crepuscule',
+      peint: I['Val-Fortin'], usages: [{ f: 'Val-Fortin', ic: 'map-pin', ou: 'Illustration', lu: true, table: true }] },
+    { id: 'lames', nom: 'blason-lames-grises.png', vis: 'joueurs', type: 'PNG', taille: '220 Ko', par: 'antor', le: '9 oct. 2026', cle: 'image:blason-lames-grises',
+      peint: I['Lames Grises'], usages: [{ f: 'Lames Grises', ic: 'shield', ou: 'Illustration', lu: true, table: true }] },
+    { id: 'registre', nom: 'registre-des-navires.xlsx', doc: 'tableur', vis: 'mj', type: 'XLSX', taille: '96 Ko', par: 'antor', le: '9 oct. 2026', cle: 'fichier:registre-des-navires',
+      usages: [{ f: 'Port-Sel', ic: 'map-pin', ou: 'Pièces jointes de Description', lu: true }, { f: 'La Guilde des Brumes', ic: 'shield', ou: 'Pièces jointes de « Commerce »', lu: false }] },
+    { id: 'archipel', nom: "Carte de l'archipel des Sels", vis: 'joueurs', type: 'PNG', taille: '2,9 Mo', par: 'antor', le: '9 oct. 2026', cle: 'image:archipel-des-sels',
+      peint: function () { return C.carte({ id: 'arc', graine: 53, mer: true, terre: '#e8cf96', terres: [[250, 230, 150, 105, 0.3], [520, 180, 80, 60, 0.35], [600, 380, 120, 80, 0.3], [380, 430, 50, 36, 0.4], [700, 150, 36, 28, 0.4]], monts: [[230, 210, 7, 80], [610, 370, 6, 70]], forets: [[300, 260, 12, 70]],
+        villes: [[320, 300, 'Port-Sel'], [520, 190, 'Salport'], [560, 410, '']], routes: ['M320,300 C400,260 460,220 520,190', 'M320,300 C420,360 500,400 560,410'], rose: [100, 110, 0.8], titre: "L'Archipel des Sels", cart: [470, 520, 290] }); },
+      usages: [] },
+    { id: 'egouts', nom: 'egouts-cordiers.jpg', vis: 'mj', type: 'JPEG', taille: '760 Ko', par: 'antor', le: '8 oct. 2026', cle: 'image:egouts-cordiers',
+      peint: I['Les égouts de la rue des Cordiers'], usages: [{ f: 'Les égouts de la rue des Cordiers', ic: 'map-pin', ou: '« Plan » (dans le texte)', lu: false }] },
+    { id: 'isaure', nom: 'portrait-isaure.webp', vis: 'joueurs', type: 'WebP', taille: '296 Ko', par: 'isaure', le: '8 oct. 2026', pos: '50% 28%',
+      peint: I['Isaure Marchelune'], usages: [{ f: 'Isaure Marchelune', ic: 'users-round', ou: 'Illustration', lu: true, table: true }] },
+    { id: 'carnet', nom: 'carnet.pdf', doc: 'pdf', vis: 'joueurs', type: 'PDF', taille: '1,8 Mo', par: 'lea', le: '8 oct. 2026',
+      usages: [{ f: 'Léa Brisefer', ic: 'users-round', ou: 'Pièces jointes de « Notes de la table »', lu: true, table: true }] },
+    { id: 'foret', nom: 'foret-brumecendre.jpg', vis: 'joueurs', type: 'JPEG', taille: '1,1 Mo', par: 'antor', le: '8 oct. 2026', cle: 'image:foret-brumecendre',
+      peint: I['Forêt de Brumecendre'], usages: [] },
+    { id: 'cendres', nom: 'sceau-cercle-des-cendres.png', vis: 'mj', type: 'PNG', taille: '184 Ko', par: 'antor', le: '7 oct. 2026', cle: 'image:sceau-cercle-des-cendres',
+      peint: I['Cercle des Cendres'], usages: [{ f: 'Cercle des Cendres', ic: 'shield', ou: 'Illustration', lu: false }] },
+    { id: 'osric', nom: 'portrait-osric.jpg', vis: 'joueurs', type: 'JPEG', taille: '344 Ko', par: 'antor', le: '7 oct. 2026', cle: 'image:portrait-osric', pos: '50% 28%',
+      peint: I['Osric Vautrin, receleur des quais'], usages: [{ f: 'Osric Vautrin, receleur des quais', ic: 'users-round', ou: 'Illustration', lu: true, table: true }] },
+    { id: 'archives', nom: 'archives-kanka.zip', doc: 'archive', vis: 'mj', type: 'ZIP', taille: '148 Mo', par: 'antor', le: '7 oct. 2026', cle: 'fichier:archives-kanka',
+      usages: [] },
+    { id: 'prieure', nom: 'prieure-val-fortin.jpg', vis: 'joueurs', type: 'JPEG', taille: '1,3 Mo', par: 'antor', le: '7 oct. 2026', cle: 'image:prieure-val-fortin',
+      peint: I['Le Prieuré de Val-Fortin'], usages: [{ f: 'Le Prieuré de Val-Fortin', ic: 'map-pin', ou: 'Illustration', lu: true, table: true }] },
+    { id: 'phare', nom: 'plan-phare-aux-sels.png', vis: 'joueurs', type: 'PNG', taille: '870 Ko', par: 'antor', le: '6 oct. 2026', cle: 'image:plan-phare-aux-sels',
+      peint: function () { return C.plan({ id: 'pha', graine: 43, pieces: [[250, 70, 300, 300, 'La lanterne'], [150, 370, 500, 140, 'Logis du gardien'], [550, 140, 150, 160, 'Huilerie']], portes: [[400, 370, 'h'], [550, 200, 'v'], [300, 510, 'h']], escaliers: [[280, 300, 120, 50]], colonnes: [[330, 150], [470, 150]], titre: 'Le Phare aux Sels' }); },
+      usages: [{ f: 'Le Phare aux Sels', ic: 'map-pin', ou: 'Pièces jointes de Description', lu: true, table: true }] },
+    { id: 'chrono', nom: 'chronologie.odt', doc: 'autre', vis: 'joueurs', type: 'ODT', taille: '64 Ko', par: 'antor', le: '6 oct. 2026', cle: 'fichier:chronologie',
+      usages: [{ f: 'Les Sphères', ic: 'globe', ou: '« Histoire » (dans le texte)', lu: false }] },
+    { id: 'suie', nom: 'suie-corbeau.png', vis: 'joueurs', type: 'PNG', taille: '502 Ko', par: 'antor', le: '6 oct. 2026', cle: 'image:suie-corbeau', pos: '50% 50%',
+      peint: I['Suie'], usages: [{ f: 'Suie', ic: 'users-round', ou: 'Illustration', lu: true, table: true }] },
+    { id: 'routes', nom: 'carte-routes-commerciales.png', vis: 'mj', type: 'PNG', taille: '3,1 Mo', par: 'antor', le: '5 oct. 2026', cle: 'image:routes-commerciales',
+      peint: function () { return C.carte({ id: 'rou', graine: 61, mer: true, papier: ['#ecdcb4', '#c8a86c'], terre: '#e2c78a', terres: [[200, 300, 210, 230, 0.22], [640, 260, 120, 160, 0.28]], monts: [[170, 220, 12, 140], [660, 230, 8, 90]], forets: [[260, 400, 22, 120]],
+        villes: [[300, 200, 'Val-Fortin'], [380, 380, 'Port-Sel'], [600, 300, 'Kesh'], [680, 160, '']], routes: ['M380,380 C470,420 540,360 600,300', 'M380,380 C460,300 560,180 680,160', 'M300,200 C330,280 360,330 380,380', 'M600,300 C660,360 720,420 760,520'], rose: [520, 110, 0.8], titre: 'Routes de la Guilde', cart: [470, 520, 290] }); },
+      usages: [{ f: 'La Guilde des Brumes', ic: 'shield', ou: 'Pièces jointes de « Commerce »', lu: false }] },
+    { id: 'rapport', nom: 'rapport-amiraute.pdf', doc: 'pdf', vis: 'mj', type: 'PDF', taille: '3,2 Mo', par: 'antor', le: '5 oct. 2026', cle: 'fichier:rapport-amiraute',
+      usages: [{ f: "Rapport secret de l'amirauté", ic: 'scroll-text', ou: 'Pièces jointes de Description', lu: false }] },
+    { id: 'garde', nom: 'blason-garde.png', vis: 'joueurs', type: 'PNG', taille: '205 Ko', par: 'antor', le: '5 oct. 2026', cle: 'image:blason-garde',
+      peint: I['Garde de Val-Fortin'], usages: [{ f: 'Garde de Val-Fortin', ic: 'shield', ou: 'Illustration', lu: true, table: true }] },
+    { id: 'ombeline', nom: 'portrait-ombeline.jpg', vis: 'joueurs', type: 'JPEG', taille: '430 Ko', par: 'antor', le: '4 oct. 2026', cle: 'image:portrait-ombeline', pos: '50% 26%',
+      peint: I['Dame Ombeline de Val-Fortin'], usages: [{ f: 'Dame Ombeline de Val-Fortin', ic: 'users-round', ou: 'Illustration', lu: true, table: true }] },
+    { id: 'taverne', nom: 'taverne-du-pendu-joyeux.jpg', vis: 'joueurs', type: 'JPEG', taille: '980 Ko', par: 'mira', le: '4 oct. 2026', cle: 'image:taverne-du-pendu-joyeux',
+      peint: I['Le Pendu Joyeux'], usages: [{ f: 'Le Pendu Joyeux', ic: 'map-pin', ou: 'Illustration', lu: true, table: true }] },
+    { id: 'jorik', nom: 'portrait-jorik.jpg', vis: 'joueurs', type: 'JPEG', taille: '366 Ko', par: 'antor', le: '3 oct. 2026', cle: 'image:portrait-jorik', pos: '50% 28%',
+      peint: I['Jorik Main-Grise'], usages: [{ f: 'Jorik Main-Grise', ic: 'users-round', ou: 'Illustration', lu: true, table: true }] }
+  ];
+  var cache = {};
+  function src(im) { return cache[im.id] || (cache[im.id] = im.peint()); }
+  // Un document : l'icône de son type (docs/charte.md) et son type en toutes lettres dans le panneau.
+  var DOC = { pdf: { ic: 'file-text', lib: 'Document PDF' }, tableur: { ic: 'file-spreadsheet', lib: 'Tableur' },
+    archive: { ic: 'file-archive', lib: 'Archive' }, autre: { ic: 'file', lib: 'Document' } };
+  function libType(im) { return DOC[im.doc].lib + (im.doc === 'pdf' ? '' : ' ' + im.type); }
+  var parId = {}; IMG.forEach(function (im, i) { im.rang = i; parId[im.id] = im; });
+
+  /* ---------------- Toast (e09) ---------------- */
+  function toast(texte) {
+    var t = document.createElement('div');
+    t.className = 'toast';
+    t.innerHTML = '<svg class="i" aria-hidden="true"><use href="#i-circle-check"/></svg><span></span>' +
+      '<button class="icone fermer" aria-label="Fermer"><svg class="i p" aria-hidden="true"><use href="#i-x"/></svg></button>';
+    t.querySelector('span').textContent = texte;
+    $('#toasts').appendChild(t);
+    requestAnimationFrame(function () { requestAnimationFrame(function () { t.classList.add('visible'); }); });
+    var fin = function () { t.classList.remove('visible'); setTimeout(function () { t.remove(); }, 250); };
+    t.querySelector('.fermer').onclick = fin;
+    setTimeout(fin, 4000);
+  }
+  $$('[data-toast]').forEach(function (b) { b.addEventListener('click', function () { if (!perdue() || !b.hasAttribute('data-ecrit')) toast(b.dataset.toast); }); });
+
+  /* ---------------- Menus (cadre et filtres) ---------------- */
+  var ouvert = null;
+  function fermerMenu(rendreFocus) {
+    if (!ouvert) return;
+    ouvert.menu.classList.remove('ouvert'); ouvert.bouton.setAttribute('aria-expanded', 'false');
+    if (rendreFocus) ouvert.bouton.focus();
+    ouvert = null;
+  }
+  function ouvrirMenu(menu, bouton, focusPremier) {
+    fermerMenu(false);
+    menu.classList.add('ouvert'); bouton.setAttribute('aria-expanded', 'true');
+    ouvert = { menu: menu, bouton: bouton };
+    if (focusPremier) { var p = menu.querySelector('[aria-checked=true],[role=menuitem]'); if (p) p.focus(); }
+  }
+  function basculer(menu, bouton, e) {
+    e.stopPropagation();
+    if (ouvert && ouvert.menu === menu) fermerMenu(false); else ouvrirMenu(menu, bouton, e.detail === 0);
+  }
+  $('#bouton-compte').onclick = function (e) { basculer($('#menu-compte'), this, e); };
+  $('#bouton-univers').onclick = function (e) { basculer($('#menu-univers'), this, e); };
+  document.addEventListener('click', function (e) { if (ouvert && !ouvert.menu.contains(e.target)) fermerMenu(false); });
+  document.addEventListener('keydown', function (e) {
+    if (!ouvert || (e.key !== 'ArrowDown' && e.key !== 'ArrowUp')) return;
+    var it = $$('[role^=menuitem]', ouvert.menu), i = it.indexOf(document.activeElement);
+    i = (i + (e.key === 'ArrowDown' ? 1 : it.length - 1)) % it.length; it[i].focus(); e.preventDefault();
+  });
+
+  /* ---------------- Thème (e09) ---------------- */
+  function appliquerTheme(c) {
+    var clair = c === 'clair' || (c === 'systeme' && matchMedia('(prefers-color-scheme: light)').matches);
+    document.documentElement.dataset.theme = clair ? 'light' : 'dark';
+    $$('[data-theme-choix]').forEach(function (b) { var on = b.dataset.themeChoix === c; b.setAttribute('aria-checked', on); b.tabIndex = on ? 0 : -1; });
+  }
+  var choixTheme = 'systeme';
+  try { choixTheme = localStorage.getItem('kanevas-theme') || 'systeme'; } catch (e) {}
+  appliquerTheme(choixTheme);
+  $$('[data-theme-choix]').forEach(function (b) {
+    b.onclick = function (e) {
+      e.stopPropagation(); choixTheme = b.dataset.themeChoix;
+      try { localStorage.setItem('kanevas-theme', choixTheme); } catch (er) {}
+      appliquerTheme(choixTheme);
+    };
+  });
+  matchMedia('(prefers-color-scheme: light)').addEventListener('change', function () { if (choixTheme === 'systeme') appliquerTheme('systeme'); });
+
+  /* ---------------- Tiroir (téléphone) ---------------- */
+  function tiroir(o, rendre) {
+    document.body.classList.toggle('tiroir-ouvert', o);
+    $('#bouton-menu').setAttribute('aria-expanded', o);
+    if (o) setTimeout(function () { $('.barre').focus(); }, 50); else if (rendre) $('#bouton-menu').focus();
+  }
+  $('#bouton-menu').onclick = function () { tiroir(!document.body.classList.contains('tiroir-ouvert')); };
+  $('#voile-tiroir').onclick = function () { tiroir(false, true); };
+
+  /* ---------------- Filtres et grille ---------------- */
+  var filtre = { t: 'tout', q: '', vis: 'toutes', usage: 'toutes', ordre: 'recentes' };
+  var norm = function (s) { return s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase(); };
+  function visibles() { return IMG.filter(function (im) { return !joueur() || im.vis === 'joueurs'; }); }
+  function usagesLus(im) { return joueur() ? im.usages.filter(function (u) { return u.lu; }) : im.usages; }
+  function filtrees(q, avecFiltres) {
+    var l = visibles().filter(function (im) {
+      if (q && norm(im.nom).indexOf(norm(q)) < 0) return false;
+      if (!avecFiltres) return true;
+      if (filtre.t === 'image' && im.doc) return false;
+      if (filtre.t === 'doc' && !im.doc) return false;
+      if (filtre.vis !== 'toutes' && im.vis !== filtre.vis) return false;
+      if (filtre.usage === 'utilisees' && !usagesLus(im).length) return false;
+      if (filtre.usage === 'non' && usagesLus(im).length) return false;
+      return true;
+    });
+    if (avecFiltres && filtre.ordre === 'nom') l.sort(function (a, b) { return a.nom.localeCompare(b.nom, 'fr', { sensitivity: 'base' }); });
+    return l;
+  }
+  function vignette(im, auChoix) {
+    var li = document.createElement('li');
+    if (im.doc) {
+      li.innerHTML = '<button class="vignette" type="button"><span class="vue doc"><span class="feuille" aria-hidden="true"><svg class="i"><use href="#i-' + DOC[im.doc].ic + '"/></svg></span>' +
+        '<span class="pied-doc"><span class="ext"></span><span class="poids"></span></span></span><span class="nom-img"></span></button>';
+      $('.ext', li).textContent = im.type; $('.poids', li).textContent = im.taille;
+    } else {
+      li.innerHTML = '<button class="vignette" type="button"><span class="vue"><img alt="" width="800" height="600" loading="lazy" decoding="async"></span><span class="nom-img"></span></button>';
+      var img = $('img', li);
+      img.src = src(im); if (im.pos) img.style.objectPosition = im.pos;
+    }
+    var b = $('.vignette', li);
+    $('.nom-img', li).textContent = im.nom; $('.nom-img', li).title = im.nom;
+    b.dataset.id = im.id;
+    var mj = im.vis === 'mj' && !joueur();
+    if (mj) {
+      var p = document.createElement('span'); p.className = 'pastille sur-image';
+      p.innerHTML = '<svg class="i pp" aria-hidden="true"><use href="#i-lock"/></svg>MJ seul';
+      $('.vue', li).appendChild(p);
+    }
+    b.setAttribute('aria-label', im.nom + (im.doc ? ', ' + im.type + ', ' + im.taille : '') + (mj ? ' — MJ seul' : '') + (auChoix ? ' — insérer' : ''));
+    if (!auChoix) { b.setAttribute('aria-controls', 'panneau'); if (courante === im.id) b.setAttribute('aria-current', 'true'); }
+    return li;
+  }
+  function rendre() {
+    var ul = $('#grille'); ul.innerHTML = '';
+    var l = filtrees(filtre.q, true);
+    l.forEach(function (im) { ul.appendChild(vignette(im)); });
+    $('#aucune').hidden = !!l.length || document.body.classList.contains('etat-vide');
+    $('#suite').hidden = !l.length || filtre.q !== '' || filtre.vis !== 'toutes' || filtre.usage !== 'toutes';
+    $('#nombre').textContent = joueur() ? '1 093 fichiers' : '1 140 fichiers';
+  }
+  // La bascule « Tout · Images · Documents » (flèches gauche et droite entre les segments).
+  function poserType(t) {
+    filtre.t = t;
+    $$('#bascule-type [role=radio]').forEach(function (b) { var on = b.dataset.t === t; b.setAttribute('aria-checked', on); b.tabIndex = on ? 0 : -1; });
+    rendre();
+  }
+  $$('#bascule-type [role=radio]').forEach(function (b) { b.onclick = function () { poserType(b.dataset.t); }; });
+  $('#bascule-type').addEventListener('keydown', function (e) {
+    if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+    e.preventDefault(); var r = $$('#bascule-type [role=radio]'), i = r.indexOf(document.activeElement);
+    var n = r[(i + (e.key === 'ArrowRight' ? 1 : r.length - 1)) % r.length]; n.focus(); poserType(n.dataset.t);
+  });
+  $('#q').addEventListener('input', function () { filtre.q = this.value.trim(); rendre(); });
+  $$('.ancre-filtre').forEach(function (a) {
+    var b = $('.filtre', a), m = $('.menu', a);
+    b.onclick = function (e) { basculer(m, b, e); };
+    $$('[role=menuitemradio]', m).forEach(function (it) {
+      it.onclick = function (e) {
+        e.stopPropagation();
+        $$('[role=menuitemradio]', m).forEach(function (x) { x.setAttribute('aria-checked', x === it); });
+        filtre[m.dataset.filtre] = it.dataset.v;
+        var lib = it.textContent.trim();
+        $('.val', b).textContent = lib;
+        if (m.dataset.filtre === 'ordre') b.setAttribute('aria-label', 'Ordre : ' + lib);
+        else b.classList.toggle('actif', it.dataset.v !== 'toutes');
+        fermerMenu(true); rendre();
+      };
+    });
+  });
+
+  /* ---------------- Le panneau du fichier ---------------- */
+  var courante = null, depuis = null;
+  function usageLi(u) {
+    var li = document.createElement('li');
+    li.innerHTML = '<a class="usage" href="e09-fiche-importee.html"><span class="mono" aria-hidden="true"><svg class="i p"><use href="#i-' + u.ic + '"/></svg></span>' +
+      '<span class="corps"><span class="fiche"></span><span class="ou"></span></span><svg class="i p" aria-hidden="true"><use href="#i-arrow-up-right"/></svg></a>';
+    $('.fiche', li).textContent = u.f; $('.fiche', li).title = u.f; $('.ou', li).textContent = u.ou;
+    return li;
+  }
+  function majVisibilite(im) {
+    $$('#pi-visibilite [role=radio]').forEach(function (b) { var on = b.dataset.vis === im.vis; b.setAttribute('aria-checked', on); b.tabIndex = on ? 0 : -1; });
+  }
+  function ouvrirPanneau(id, rendreA) {
+    var im = parId[id]; if (!im) return;
+    courante = id; depuis = rendreA || depuis;
+    $('#pi-apercu').hidden = !!im.doc; $('#pi-doc').hidden = !im.doc;
+    if (im.doc) { $('#pi-doc-ic').setAttribute('href', '#i-' + DOC[im.doc].ic); $('#pi-doc-type').textContent = libType(im); }
+    else { $('#pi-img').src = src(im); $('#pi-apercu').href = src(im); $('#pi-img').alt = im.nom; }
+    $('#pi-titre').textContent = im.nom;
+    $('#pi-type').textContent = im.type; $('#pi-taille').textContent = im.taille;
+    $('#pi-ajout').textContent = 'ajouté par ' + im.par + ' le ' + im.le;
+    $('#pi-cle').hidden = !im.cle; if (im.cle) $('#pi-cle-val').textContent = im.cle;
+    majVisibilite(im);
+    var u = usagesLus(im), ul = $('#pi-usages'); ul.innerHTML = '';
+    u.forEach(function (x) { ul.appendChild(usageLi(x)); });
+    $('#pi-usages-bloc').hidden = !u.length;
+    document.body.classList.add('panneau-ouvert'); $('#panneau').setAttribute('aria-hidden', 'false');
+    $$('#grille .vignette').forEach(function (b) { if (b.dataset.id === id) b.setAttribute('aria-current', 'true'); else b.removeAttribute('aria-current'); b.setAttribute('aria-expanded', b.dataset.id === id); });
+    $('.pi-corps').scrollTop = 0;
+  }
+  function fermerPanneau() {
+    courante = null; document.body.classList.remove('panneau-ouvert'); $('#panneau').setAttribute('aria-hidden', 'true');
+    $$('#grille .vignette').forEach(function (b) { b.removeAttribute('aria-current'); b.setAttribute('aria-expanded', 'false'); });
+    if (depuis && document.contains(depuis)) depuis.focus();
+  }
+  $('#grille').addEventListener('click', function (e) {
+    var b = e.target.closest('.vignette'); if (!b) return;
+    ouvrirPanneau(b.dataset.id, b); setTimeout(function () { $('#pi-titre').focus({ preventScroll: true }); }, 30);
+  });
+  $('#pi-fermer').onclick = fermerPanneau;
+  $('#pi-telecharger').onclick = function () { toast('« ' + parId[courante].nom + ' » se téléchargerait ici.'); };
+
+  // Le nom, éditable en place (MJ) : 1 à 200 caractères ; Entrée enregistre, Échap annule.
+  function renommer() {
+    if (joueur() || perdue() || !courante) return;
+    var h = $('#pi-titre'), im = parId[courante], s = document.createElement('input');
+    s.className = 'saisie'; s.value = im.nom; s.maxLength = 200; s.setAttribute('aria-label', 'Nom du fichier');
+    h.hidden = true; $('#pi-renommer').hidden = true; h.after(s); s.focus(); s.select();
+    var fini = false;
+    function fin(garder) {
+      if (fini) return; fini = true;
+      var v = s.value.trim();
+      if (garder && v && v.length <= 200 && v !== im.nom) { im.nom = v; rendre(); }
+      s.remove(); h.hidden = false; $('#pi-renommer').hidden = false; ouvrirPanneau(im.id); h.focus();
+    }
+    s.onkeydown = function (e) { if (e.key === 'Enter') { e.preventDefault(); fin(true); } if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); fin(false); } };
+    s.onblur = function () { fin(true); };
+  }
+  $('#pi-titre').onclick = renommer; $('#pi-renommer').onclick = renommer;
+
+  // La visibilité : « Réservé au MJ » demande confirmation si des joueurs perdent le fichier quelque part.
+  function poserVis(v) {
+    var im = parId[courante]; if (!im || perdue() || im.vis === v) return;
+    if (v === 'mj') {
+      var perdus = im.usages.filter(function (u) { return u.table; });
+      if (perdus.length) {
+        $('#dlg-res-titre').textContent = 'Réserver « ' + im.nom + ' » au MJ ?';
+        $('#dlg-res-texte').textContent = 'Les joueurs ne le verront plus dans : ' + perdus.map(function (u) { return u.f + ' — ' + u.ou.replace(' (dans le texte)', ''); }).join(' ; ') + '.';
+        if (im.id === 'repaire') $('#dlg-res-texte').textContent = 'Les joueurs ne le verront plus dans : Les Docks — « Histoire » ; Port-Sel — « Description » (jointe).';
+        ouvrir($('#voile-reserver'), $('#pi-visibilite [data-vis=mj]'), $('#res-annuler'));
+        return;
+      }
+      im.vis = 'mj'; majVisibilite(im); rendre(); toast('Fichier réservé au MJ.');
+      return;
+    }
+    im.vis = v; majVisibilite(im); rendre();
+  }
+  $$('#pi-visibilite [role=radio]').forEach(function (b) { b.onclick = function () { poserVis(b.dataset.vis); }; });
+  $('#pi-visibilite').addEventListener('keydown', function (e) {
+    if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+    e.preventDefault(); var r = $$('#pi-visibilite [role=radio]'), cur = r.filter(function (x) { return x.getAttribute('aria-checked') === 'true'; })[0];
+    var autre = r[0] === cur ? r[1] : r[0]; autre.focus(); poserVis(autre.dataset.vis);
+  });
+
+  /* ---------------- Boîtes de dialogue ---------------- */
+  var dlgOuvert = null, retour = null;
+  function ouvrir(voile, de, focus) {
+    dlgOuvert = voile; retour = de;
+    voile.classList.add('ouvert'); voile.setAttribute('aria-hidden', 'false');
+    setTimeout(function () { if (focus) focus.focus(); }, 30);
+  }
+  function fermer() {
+    if (!dlgOuvert) return;
+    dlgOuvert.classList.remove('ouvert'); dlgOuvert.setAttribute('aria-hidden', 'true');
+    dlgOuvert = null;
+    if (retour && document.contains(retour)) retour.focus();
+  }
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') {
+      if (dlgOuvert) return fermer();
+      if (ouvert) return fermerMenu(true);
+      if (document.body.classList.contains('tiroir-ouvert')) return tiroir(false, true);
+      if (courante) return fermerPanneau();
+    }
+    if (e.key === 'Tab' && dlgOuvert) {
+      var f = $$('button, input', dlgOuvert).filter(function (x) { return x.offsetParent !== null && x.tabIndex >= 0; });
+      var i = f.indexOf(document.activeElement);
+      if (e.shiftKey && i <= 0) { f[f.length - 1].focus(); e.preventDefault(); }
+      else if (!e.shiftKey && i === f.length - 1) { f[0].focus(); e.preventDefault(); }
+    }
+  });
+  $$('.voile').forEach(function (v) { v.addEventListener('click', function (e) { if (e.target === v) fermer(); }); });
+
+  /* Réserver au MJ */
+  $('#res-annuler').onclick = fermer;
+  $('#res-confirmer').onclick = function () {
+    if (perdue()) return;
+    var im = parId[courante]; im.vis = 'mj'; majVisibilite(im); rendre(); fermer(); toast('Fichier réservé au MJ.');
+  };
+
+  /* Supprimer le fichier */
+  function ouvrirSupprimer() {
+    var im = parId[courante]; if (!im || perdue()) return;
+    $('#dlg-sup-titre').textContent = 'Supprimer « ' + im.nom + ' » ?';
+    var t = $('#dlg-sup-texte'); t.innerHTML = '';
+    if (im.usages.length) {
+      // Texte de docs/ecrans.md : « Elle est utilisée dans 3 fiches : Port-Sel (illustration), … Elle disparaîtra de ces fiches. »
+      // (« Il est utilisé… Il disparaîtra… » pour un document)
+      var p1 = document.createElement('p'); p1.textContent = (im.doc ? 'Il est utilisé dans ' : 'Elle est utilisée dans ') + im.usages.length + (im.usages.length > 1 ? ' fiches :' : ' fiche :');
+      var ul = document.createElement('ul'); ul.className = 'liste-fiches';
+      var COURT = { spheres: ['Port-Sel (illustration)', 'Les Sphères (« Histoire »)', 'Maître Aldric (pièces jointes de « Apparence »)'] };
+      im.usages.forEach(function (u, i) {
+        var li = document.createElement('li');
+        li.innerHTML = '<svg class="i p" aria-hidden="true"><use href="#i-' + u.ic + '"/></svg><span></span>';
+        li.children[1].textContent = COURT[im.id] ? COURT[im.id][i] : u.f + ' (' + u.ou.replace(' (dans le texte)', '').replace(/^Illustration$/, 'illustration').replace(/^Pièces jointes/, 'pièces jointes') + ')';
+        ul.appendChild(li);
+      });
+      var p2 = document.createElement('p'); p2.textContent = (im.doc ? 'Il' : 'Elle') + ' disparaîtra de ' + (im.usages.length > 1 ? 'ces fiches.' : 'cette fiche.');
+      t.appendChild(p1); t.appendChild(ul); t.appendChild(p2);
+    }
+    ouvrir($('#voile-supprimer'), $('#pi-supprimer'), $('#sup-annuler'));
+  }
+  $('#pi-supprimer').onclick = ouvrirSupprimer;
+  $('#sup-annuler').onclick = fermer;
+  $('#sup-confirmer').onclick = function () {
+    if (perdue()) return;
+    var id = courante; IMG = IMG.filter(function (x) { return x.id !== id; }); delete parId[id];
+    retour = null; fermer(); depuis = null; fermerPanneau(); rendre(); toast('Fichier supprimé.');
+    var premiere = $('#grille .vignette'); if (premiere) premiere.focus();
+  };
+
+  /* ---------------- Le sélecteur « Choisir un fichier » (depuis l'éditeur de E-9) ---------------- */
+  function rendreChoix() {
+    var ul = $('#ch-liste'); ul.innerHTML = '';
+    var tete = document.createElement('li');
+    tete.innerHTML = '<button class="depuis-appareil" type="button" data-ecrit><span class="cadre"><svg class="i" aria-hidden="true"><use href="#i-upload"/></svg><span class="lib-appareil">Ajouter depuis l\'appareil</span></span></button>';
+    $('button', tete).onclick = function () { toast('Le sélecteur de fichiers de l\'appareil s\'ouvrirait ici ; le fichier entrerait dans la médiathèque et dans la fiche.'); };
+    ul.appendChild(tete);
+    filtrees($('#ch-q').value.trim(), false).forEach(function (im) { ul.appendChild(vignette(im, true)); });
+  }
+  $('#ch-q').addEventListener('input', rendreChoix);
+  function ouvrirChoix() {
+    rendreChoix();
+    ouvrir($('#voile-choisir'), $('#outil-image'), $('#ch-q'));
+  }
+  // « Fichier » (paperclip) ouvre le menu des deux chemins d'ajout (E-9, « Fichiers »).
+  $('#outil-image').onclick = function (e) { basculer($('#menu-fichier'), this, e); };
+  $('#fichier-appareil').onclick = function () { fermerMenu(false); if (!perdue()) toast('Le sélecteur de fichiers de l\'appareil s\'ouvrirait ici ; le fichier entrerait dans la médiathèque et dans la fiche.'); };
+  $('#fichier-mediatheque').onclick = function () { fermerMenu(false); ouvrirChoix(); };
+  $('#ch-fermer').onclick = fermer;
+  function inserer(im) {
+    var pi = $('#point-insertion');
+    // Une image s'insère par ![nom](fichier:<id>), un document y met un lien [nom](fichier:<id>).
+    var md = document.createElement('span'); md.className = 'md-img'; md.textContent = (im.doc ? '[' : '![') + im.nom + '](fichier:' + (im.id === 'guilde' ? '8812' : '7' + im.rang + '04') + ')';
+    pi.parentNode.insertBefore(md, pi);
+    // L'avertissement de B-55 : la section est lue des joueurs et le fichier leur est réservé.
+    $('#avert-mj').hidden = im.vis !== 'mj';
+  }
+  $('#ch-liste').addEventListener('click', function (e) {
+    var b = e.target.closest('.vignette'); if (!b) return;
+    inserer(parId[b.dataset.id]); retour = null; fermer(); $('#source').focus({ preventScroll: true }); if (!$('#avert-mj').hidden) $('#avert-mj').scrollIntoView({ block: 'nearest' });
+  });
+  function vueFiche() {
+    document.body.classList.add('vue-fiche');
+    $('#item-mediatheque').removeAttribute('aria-current'); $('#item-lieux').setAttribute('aria-current', 'page');
+    document.title = 'Port-Sel — Lame d\'Ébène — Kanevas';
+  }
+
+  /* ---------------- Rôle : Léa, Joueuse ---------------- */
+  function enJoueur() {
+    document.body.classList.add('role-joueur');
+    $$('[data-role]').forEach(function (p) { p.className = 'pastille table'; p.textContent = 'Joueur'; });
+    $$('[data-av]').forEach(function (a) { a.textContent = 'LE'; a.classList.add('l'); });
+    $$('[data-ident]').forEach(function (a) { a.textContent = 'lea'; });
+    filtre.vis = 'toutes';
+  }
+
+  /* ---------------- États par l'adresse : #etat-image,perdue ---------------- */
+  window.addEventListener('hashchange', function () { location.reload(); });
+  var h = decodeURIComponent(location.hash || ''), etats = h.indexOf('#etat-') === 0 ? h.slice(6).split(',') : [];
+  if (etats.indexOf('joueur') >= 0) enJoueur();
+  if (etats.indexOf('perdue') >= 0) { document.body.classList.add('etat-perdue'); $$('[data-ecrit]').forEach(function (b) { b.setAttribute('aria-disabled', 'true'); b.tabIndex = -1; }); $('#pi-visibilite').setAttribute('aria-disabled', 'true'); }
+  if (etats.indexOf('vide') >= 0) { document.body.classList.add('etat-vide'); IMG = []; }
+  rendre();
+  etats.forEach(function (et) {
+    if (et === 'image') ouvrirPanneau('repaire');
+    if (et === 'documents') poserType('doc');
+    if (et === 'document') ouvrirPanneau('regles');
+    if (et === 'reserver') { ouvrirPanneau('repaire'); setTimeout(function () { poserVis('mj'); }, 40); }
+    if (et === 'supprimer') { ouvrirPanneau('spheres'); setTimeout(ouvrirSupprimer, 40); }
+    if (et === 'joueur' && etats.indexOf('vide') < 0 && etats.indexOf('image') < 0) ouvrirPanneau('spheres');
+    if (et === 'choisir') { vueFiche(); setTimeout(ouvrirChoix, 40); }
+    if (et === 'averti') { vueFiche(); inserer(parId.guilde); setTimeout(function () { $('#avert-mj').scrollIntoView({ block: 'center' }); }, 60); }
+    if (et === 'menu') setTimeout(function () { ouvrirMenu($('#menu-compte'), $('#bouton-compte')); }, 60);
+    if (et === 'univers') setTimeout(function () { ouvrirMenu($('#menu-univers'), $('#bouton-univers')); }, 60);
+    if (et === 'tiroir') tiroir(true);
+  });
+})();
+</script>
+</body>
+</html>

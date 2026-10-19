@@ -52,7 +52,7 @@ describe('kanevas-images : l’échec de génération est un message normal (B-2
       assert.equal(await antor.getByText(/Image attachée à la section/).count(), 0);
       await antor.reload();
       await attendre(antor);
-      assert.equal(await antor.locator('main img[src*="pieces-jointes"]').count(), 0);
+      assert.equal(await antor.locator('main img[src*="/fichiers/"]').count(), 0);
     });
   }
 });

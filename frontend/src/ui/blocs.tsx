@@ -80,7 +80,10 @@ export function LigneFichier({
   secret,
   progression,
   actions,
+  Icone,
 }: {
+  /** Icon of the file's type (default: a document). */
+  Icone?: LucideIcon;
   nom: string;
   taille?: string;
   secret?: boolean;
@@ -93,11 +96,15 @@ export function LigneFichier({
       {secret ? (
         <Lock size={14} strokeWidth={1.75} aria-hidden="true" />
       ) : (
-        <FileText size={14} strokeWidth={1.75} aria-hidden="true" />
+        (() => {
+          const I = Icone ?? FileText;
+          return <I size={14} strokeWidth={1.75} aria-hidden="true" />;
+        })()
       )}
       <span className="fichier-nom" title={nom}>
         {nom}
       </span>
+      {secret && <Pastille sens="mj">MJ seul</Pastille>}
       <span className="fichier-taille">{envoi ? `Envoi… ${progression} %` : taille}</span>
       {actions && <span className="actions-revelees">{actions}</span>}
       {envoi && (
@@ -149,7 +156,7 @@ export function Vignette({
         {secrete && (
           <span className="vignette-pastille">
             <Pastille sens="secrete" icone={Lock}>
-              Secrète — MJ seul
+              MJ seul
             </Pastille>
           </span>
         )}
