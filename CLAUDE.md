@@ -141,7 +141,15 @@
   resolver in `options.liens` (without it a `[[…]]` stays as written). `nature: 'scenario'` has the links without the `:::mj` container;
   a system entry (`texte`) has neither. `vueSection` / `lireFiche` / `lireSection` take the form `'markdown'` for the assistant
   (`[texte](fiche:<id>)`). « Mentionnée dans » is `services/mentions.ts` (`mentionsDe`), read-only, 50 per page, the page rides with `lireFiche`.
-- Sheet types (`kanevas-import-types`, `src/services/types-fiche.ts`, AD-120 — AD-113 in the feature's plan): the single list of
+- Sheet types (`kanevas-import-types`, `src/services/types-fiche.ts`, AD-120; the feature's plan numbered it AD-113, which `ARCHITECTURE.md` gives to the Markdown renderer): the single list of
   types; `TYPES_FICHE`, `TypeFiche` and the payload schemas (`CHARGES`) derive from it, never copy them. `fiches.type` has no
   `CHECK` (migration 0013): `creerFiche` is the guard ("Type de fiche inconnu."). A migration whose first line is
   `-- migrate: sans-cles-etrangeres` runs with foreign keys off and `foreign_key_check` before commit (`db.ts`).
+- Image engine (`kanevas-images`, `src/services/images/`): `choisirAdaptateur()` (AD-88) picks `bouchon` with
+  `KANEVAS_STUB=1`, else `codex` if an executable `codex` is on the `PATH` and `$CODEX_HOME/auth.json` exists
+  (existence only, never read), else `aucun` — never a silent stub. `CODEX_HOME` and the scratch root are read in
+  `config/env.ts` only. A result must have an inline-served image signature (`typeParSignature`, AD-66) or it is
+  an `ErreurGeneration`, whose message is fixed: engine output and errors may quote `auth.json`, so the child runs
+  with `stdio: 'ignore'` and nothing of it is logged. The `codex` adapter lists `generated_images/` before and
+  after (one engine at a time: `verrou.ts`), deletes the new file(s) and its scratch directory, 150 s deadline
+  (AD-90). The Dockerfile pins `@openai/codex` (`CODEX_VERSION`).

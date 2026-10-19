@@ -19,16 +19,18 @@
 .admin-zones .liste-membres .liste-statut { width: 100%; }
 .admin-zones .liste-membres { margin-top: var(--e-1); max-height: 50vh; }
 .liste-membres .identifiant-membre { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--texte); }
-.liste-membres .liste-statut-champ svg { opacity: 0; transition: opacity var(--duree); }
-.liste-membres .ligne-suivi:hover .liste-statut-champ svg, .liste-membres .liste-statut-champ:focus-within svg { opacity: 1; }
-.liste-membres .liste-statut { border-color: transparent; border-radius: var(--rayon-pastille); font-size: var(--t-12); padding: 0 var(--e-5) 0 var(--e-3); min-height: 24px; }
-.liste-membres .liste-statut-champ svg { right: var(--e-2); }
-.liste-membres .liste-statut-champ.mj .liste-statut { background: var(--mj-fond); color: var(--mj); }
-.liste-membres .liste-statut-champ.table .liste-statut { background: var(--table-fond); color: var(--table); }
+.admin-zones .liste-membres .liste-statut-champ svg { opacity: 0; transition: opacity var(--duree); }
+.admin-zones .liste-membres .ligne-suivi:hover .liste-statut-champ svg, .admin-zones .liste-membres .liste-statut-champ:focus-within svg { opacity: 1; }
+.admin-zones .liste-membres .liste-statut { border-color: transparent; border-radius: var(--rayon-pastille); font-size: var(--t-12); padding: 0 var(--e-5) 0 var(--e-3); min-height: 24px; }
+.admin-zones .liste-membres .liste-statut-champ svg { right: var(--e-2); }
+.liste-membres .liste-statut-champ.mj .liste-statut { background: var(--mj-fond); color: transparent; }
+.liste-membres .liste-statut-champ.mj .role-libelle { color: var(--mj); }
+.liste-membres .liste-statut-champ.table .liste-statut { background: var(--table-fond); color: transparent; }
+.liste-membres .liste-statut-champ.table .role-libelle { color: var(--table); }
 .liste-membres .retirer-membre { color: var(--texte-3); opacity: 0; transition: opacity var(--duree), color var(--duree), background-color var(--duree); }
 .liste-membres .ligne-suivi:hover .retirer-membre, .liste-membres .ligne-suivi:focus-within .retirer-membre, .liste-membres .retirer-membre:focus-visible { opacity: 1; }
 .liste-membres .retirer-membre:hover { color: var(--danger); background: var(--danger-fond); }
-@media (hover: none) { .liste-membres .retirer-membre, .liste-membres .liste-statut-champ svg { opacity: 1; } }
+@media (hover: none) { .liste-membres .retirer-membre, .admin-zones .liste-membres .liste-statut-champ svg { opacity: 1; } }
 
 /* The add form on one line: the identifier takes the room, the role and the button their content */
 .admin-zones .formulaire-ligne { flex-wrap: nowrap; }

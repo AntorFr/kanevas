@@ -7,7 +7,7 @@ import { useCharge } from '../cadre-contexte';
 import type { Ecran } from '../registre';
 import type { UniversListe } from '../types';
 import { iconeDuType, useTypes } from '../types-contexte';
-import { Bouton, BoiteDialogue, Champ, ErreurChargement, Pastille, PageIntrouvable, useToasts, VideIcone } from '../ui';
+import { Bouton, BoutonIcone, BoiteDialogue, Champ, ErreurChargement, Pastille, PageIntrouvable, useToasts, VideIcone } from '../ui';
 import './ecrans.css';
 import './mediatheque/mediatheque.css';
 import {
@@ -543,18 +543,18 @@ function Mediatheque() {
               ) : f.image ? (
                 <img className="med-grand" src={octets(id!, f)} alt={f.nom} onError={() => setImageCassee(true)} />
               ) : (
-                <div className="med-grand med-doc">
+                <div className="med-grand med-doc med-apercu-document">
                   {(() => {
                     const Icone = iconeDe(f);
-                    return <Icone size={56} strokeWidth={1.75} aria-hidden="true" />;
+                    return <span className="med-feuille"><Icone size={42} strokeWidth={1.4} aria-hidden="true" /></span>;
                   })()}
-                  <b>{typeLisible(f)}</b>
+                  <span className="med-type-document">{typeLisible(f)}</span>
+                  <a className="bouton neutre" href={octets(id!, f)} download={f.nom}>
+                    <Download size={14} strokeWidth={1.75} aria-hidden="true" />
+                    Télécharger
+                  </a>
                 </div>
               )}
-              <a className="bouton neutre" href={octets(id!, f)} download={f.nom}>
-                <Download size={14} strokeWidth={1.75} aria-hidden="true" />
-                Télécharger
-              </a>
 
               <div className="med-titre-fichier">
                 <h2
@@ -584,7 +584,7 @@ function Mediatheque() {
                     }
                   }}
                 >{f.nom}</h2>
-                {mj && <Bouton petit icone={Pencil} ecrit aria-label="Renommer le fichier"
+                {mj && <BoutonIcone icone={Pencil} ecrit etiquette="Renommer le fichier"
                   onClick={() => titreEditable.current?.focus()} />}
                 {erreurNom && <p id="med-erreur-nom" className="erreur-champ" role="alert">Erreur : {erreurNom}</p>}
               </div>
@@ -608,7 +608,7 @@ function Mediatheque() {
               )}
 
               <div className="med-infos">
-                <div className="med-meta-ligne"><span>{f.type.split('/')[1]?.toUpperCase() || extension(f.nom) || typeLisible(f)}</span><span>{tailleLisible(f.taille)}</span></div>
+                <div className="med-meta-ligne"><span>{extension(f.nom) || f.type.split('/')[1]?.toUpperCase() || typeLisible(f)}</span><span>{tailleLisible(f.taille)}</span></div>
                 <div>ajouté par {f.ajouteParNom} le {new Date(f.ajouteLe).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' })}</div>
                 {mj && f.cleOrigine && <div className="med-cle">Clé d’origine <code>{f.cleOrigine}</code></div>}
               </div>
@@ -626,8 +626,9 @@ function Mediatheque() {
                               <Icone size={14} strokeWidth={1.75} />
                             </span>
                             <span className="med-usage-texte">
-                              <span>{u.ficheTitre}</span>{' '}
-                              <span className="med-usage-ou">{u.illustration ? '(illustration)' : `— « ${u.sectionTitre} »${u.joint && !u.dansTexte ? ' (jointe)' : ''}`}</span>
+                              <span>{u.ficheTitre}{u.illustration && ' (illustration)'}</span>
+                              {!u.illustration && u.dansTexte && <span className="med-usage-ou">« {u.sectionTitre} » (dans le texte)</span>}
+                              {!u.illustration && u.joint && <span className="med-usage-ou">Pièces jointes de « {u.sectionTitre} »</span>}
                             </span>
                             <ChevronRight size={14} strokeWidth={1.75} aria-hidden="true" />
                           </Link>

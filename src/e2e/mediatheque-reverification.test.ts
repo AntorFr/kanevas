@@ -54,7 +54,7 @@ const panneau = async (nom: string) => {
   await antor.goto(`/univers/${uid}/mediatheque`);
   await attendre(antor);
   await antor.getByRole('button', { name: nom, exact: false }).filter({ hasText: nom }).first().click();
-  await antor.getByRole('link', { name: 'Télécharger' }).first().waitFor();
+  await antor.locator('.med-panneau').waitFor();
 };
 
 test('B3 · image citée avec un titre : « Utilisé dans » et la boîte « Réserver au MJ » nomment « Port-Sel — « Description » »', opts, async () => {

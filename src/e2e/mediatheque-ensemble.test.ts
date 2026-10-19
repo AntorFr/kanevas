@@ -70,7 +70,7 @@ const tuile = (p: Any, nom: string) => p.getByRole('button', { name: nom, exact:
 const tuilesNoms = async (p: Any): Promise<string> => (await p.locator('main').innerText()) as string;
 const ouvrirFichier = async (p: Any, nom: string) => {
   await tuile(p, nom).first().click();
-  await p.getByRole('link', { name: 'Télécharger' }).first().waitFor();
+  await p.locator('.med-panneau').waitFor();
 };
 const nbFichiers = async (p: Any): Promise<string> => {
   const t = await texte(p);

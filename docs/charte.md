@@ -3,7 +3,7 @@
 > Doc du produit. Les tokens que le code lit vivent dans `frontend/src/ui/tokens.css` ; ce
 > document dit ce qu'ils signifient, ce que fait chaque composant et les seuils mesurés. La
 > maquette de référence est `docs/maquettes/e09-fiche.html` : elle porte le cadre de tous les
-> écrans d'un univers et chaque composant ci-dessous, dans les deux thèmes, au bureau et au
+> écrans d'un univers et les composants partagés ci-dessous (le panneau d'assistant, la proposition de mise à jour et la carte de système n'ont que leur description ici et leurs maquettes propres, classées dans `docs/ecrans.md` « Maquettes »), dans les deux thèmes, au bureau et au
 > téléphone. Changer la valeur d'un token existant change tous les écrans : c'est une décision
 > de Monsieur, écrite ici avec sa raison (voir « Écarts assumés »).
 
@@ -33,7 +33,7 @@ Source : `frontend/src/ui/tokens.css`, propriétés sur `:root` (sombre) et
 `:root[data-theme="light"]` ; `color-scheme: light dark`. Le choix Clair / Sombre / Système est
 mémorisé (`localStorage`, clé `kanevas-theme`) ; « Système » suit `prefers-color-scheme` et est
 le choix par défaut tant que rien n'est mémorisé ; il est résolu en sombre ou clair par `theme.ts`, si bien que ces deux blocs sont les seuls endroits où
-vivent les couleurs. Les composants ne lisent que ces tokens : un hexadécimal dans un composant
+vivent les couleurs. Trois tokens dérivés des tokens MJ (`--mj-section-fond`, `--mj-section-bord`, `--mj-section-filet`, mélangés par `color-mix`) donnent à une section « MJ seul » son fond, son bord et son filet ambre. Les composants ne lisent que ces tokens : un hexadécimal dans un composant
 est un défaut. La maquette porte les mêmes noms et les mêmes valeurs.
 
 Les neutres sont teintés vers l'encre (bleu froid très léger), jamais un gris pur.
@@ -103,7 +103,7 @@ pastille), `currentColor`. Servies par le produit (`lucide-react`), jamais par u
 étiquette accessible et une infobulle. Jamais d'émoji. Correspondances fixées : Vue d'ensemble
 `layout-grid`, Campagnes `flag`, Comptes-rendus `notebook-pen`, Personnages `users-round`, Lieux
 `map-pin`, Factions `shield`, Objets `gem`, Événements `hourglass`, Quêtes `scroll-text`, Membres
-`contact-round`, Paramètres `settings-2`, Systèmes de jeu `dices`, Mes univers `library`, Relations `waypoints`, Pièces jointes `paperclip`, MJ
+`contact-round`, Paramètres `settings-2`, Systèmes de jeu `dices`, Mes univers `library`, Cartes `map`, Administration `shield-check`, Relations `waypoints`, Pièces jointes `paperclip`, MJ
 seul et secret `lock`, lu des joueurs `eye`, écrit par les joueurs `pen-line`, mode MJ
 `lock-keyhole`, assistant `sparkles`, thème `sun` / `moon` / `monitor`, déconnexion `log-out`,
 menu du téléphone `panel-left`.
@@ -222,6 +222,8 @@ décalé de 2 px) sur `:focus-visible`.
   La section MJ seul déborde de 28 px de chaque côté de la colonne (son texte reste aligné) :
   fond `--mj-fond` à 22 % sous une hachure `--mj-trame` (1 px tous les 8 px, 135°), contour
   `--mj-bord` à 45 %, filet `--mj` de 3 px à gauche, coins droits arrondis `--rayon-panneau`.
+  E-14 (Paramètres) reprend ce bloc fermé pour ses trois blocs MJ (Identité, Système de jeu, Créer un système), dans une
+  colonne de 688 px (`max-width` de la page) ; comme en E-6, les blocs débordent de 28 px de chaque côté.
 - C : purement redondant — la pastille dit la même chose en mots, le filet n'est jamais le seul
   porteur. Il change avec le réglage (une section qu'on ferme aux joueurs devient hachurée sous
   les yeux du MJ). En mode Joueur, aucun filet ni hachure : la section MJ seul n'existe pas.
@@ -229,7 +231,9 @@ décalé de 2 px) sur `:focus-visible`.
 **Toast.**
 - V : `--surface`, `--ombre-flottant`, rayon `--rayon-champ`, 40 px de haut ; icône
   `circle-check` en `--table`, texte 13 px, bouton-icône « Fermer ». Centré en bas au bureau ;
-  au téléphone, pleine largeur moins la place du bouton de l'assistant.
+  au téléphone, pleine largeur moins la place du bouton de l'assistant ; tant que le réglage
+  d'audience (feuille en bas au téléphone) est ouvert, les toasts passent en haut de l'écran
+  pour ne pas en couvrir une ligne.
 - C : un toast par action réussie (« « Rumeurs entendues » enregistrée », « Audience de
   « Apparence » enregistrée », « Section « … » retirée »), dans une région `role="status"`
   `aria-live="polite"` ; il part seul après 4 s, ou à « Fermer » ; il ne prend jamais le focus.

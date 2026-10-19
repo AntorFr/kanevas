@@ -767,6 +767,7 @@ test('E-9 · le MJ voit la tuile en attente à la place de l’illustration, du 
     await aller(antor.page, `/univers/${m.essai}/fiche/${fid}`);
     await antor.page.getByRole('radio', { name: 'Mode Joueur' }).check();
     await attendre(antor.page);
+    await antor.page.getByText('Les Docks Oubliés').first().waitFor(); // the sheet is reloaded in Mode Joueur: read it once drawn
     const tj = await lire(antor.page);
     await capture(antor.page, 'e9-attente-mode-joueur');
     assert.ok(tj.includes('Les Docks Oubliés'));

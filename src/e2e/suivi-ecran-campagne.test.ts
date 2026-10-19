@@ -106,6 +106,8 @@ test('MJ : crée la campagne, la passe Active en place, la page, le scénario, l
   ]);
   await antor.getByText('<b>gras</b> & suite').waitFor(); // raw HTML shows as text (AD-95)
   assert.equal(await antor.locator('main b').count(), 0);
+  // wait for the edit to be left (PUT answered, draft removed) before cutting the page
+  await antor.getByRole('button', { name: rxExact('Modifier') }).waitFor();
   await antor.reload();
   await antor.getByText('<b>gras</b> & suite').waitFor();
   await antor.screenshot({ path: '/tmp/e7-ecrit.png' });

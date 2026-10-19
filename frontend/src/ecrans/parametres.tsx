@@ -1,4 +1,4 @@
-import { ArrowRight, Check, Link2, Plus, Settings, Trash2 } from 'lucide-react';
+import { ArrowRight, Check, Link2, Plus, Settings2, Trash2 } from 'lucide-react';
 import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 
@@ -258,10 +258,10 @@ function Parametres() {
   };
 
   return (
-    <div className="page-liste parametres-univers">
+    <div className="page-liste page-parametres parametres-univers">
       <header className="tete-liste">
         <span className="glyphe-type" aria-hidden="true">
-          <Settings size={20} strokeWidth={1.75} />
+          <Settings2 size={20} strokeWidth={1.75} />
         </span>
         <h1>Paramètres de l’univers</h1>
       </header>

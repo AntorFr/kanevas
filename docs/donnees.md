@@ -1,8 +1,9 @@
 # Kanevas — données
 
 > Doc du produit (voir `docs/parcours.md`, `docs/ecrans.md`). Toutes les entités du produit,
-> leurs relations et qui lit ou écrit quoi. **Une tranche ajoute des attributs, jamais une
-> entité** : une entité de plus est une question pour le cadrage.
+> leurs relations et qui lit ou écrit quoi. **Une tranche ajoute des attributs ; une entité
+> de plus est une décision de cadrage**, prise avant la tranche (c'est ainsi que sont venues les cartes, les propositions et
+> les pièces jointes) et jamais en cours de route.
 
 Un seul fichier SQLite sur le volume (`/data/kanevas.db`, AD-5) ; clés étrangères actives, WAL,
 une seule connexion d'écriture. Les octets des pièces jointes vont sur le disque du même volume
@@ -100,11 +101,9 @@ des membres d'un univers (identifiant, rôle) ; son seul geste : ajouter, change
 membre (B-6). Il ne lit ni ne modifie jamais la description, les fiches ou rien d'autre.
 ## Migration `kanevas-systemes`
 
-> Fichier : `src/db/migrations/0002-systemes.sql` — **numéro provisoire** (0002).
+> Fichier : `src/db/migrations/0002-systemes.sql` — numéro **définitif** (0002).
 >
-> Pendant le build, le fichier prend le numéro qui suit le dernier présent sur la branche : **numéro
-> provisoire**. Il n'est définitif qu'à la fusion : la phase merge (l'étape de la chaîne qui fusionne les PR après la recette) le recale sur le dernier fusionné si
-> une autre tranche est entrée avant (AD-51), et corrige alors cette note. Deux tables, une colonne : aucune entité de plus que le cadrage.
+> Un numéro est posé à la fusion de sa tranche (AD-51) et ne bouge plus. Deux tables, une colonne : aucune entité de plus que le cadrage.
 
 | Table | Colonnes (hors clés) | Contraintes |
 |---|---|---|
@@ -128,7 +127,7 @@ colonne ni table de plus.
 
 ## Migration `kanevas-suivi` (numéro pris à la fusion, AD-51 : le suivant de 0002)
 
-> Fichier : `src/db/migrations/0003-suivi.sql` — **numéro provisoire** (0003), recalé à la fusion si une autre tranche entre avant (AD-51).
+> Fichier : `src/db/migrations/0003-suivi.sql` — numéro **définitif** (0003).
 
 Trois tables, aucune entité nouvelle (campagne, scénario, tâche de préparation sont celles du
 cadrage). Les comptes-rendus n'ont pas de table : un compte-rendu est une fiche de type
@@ -155,6 +154,14 @@ et statut, MJ. `scenarios` et `taches_preparation` — MJ de l'univers **de la c
 autre univers n'atteint aucun scénario ni aucune tâche, un Joueur non plus (réponse comme pour un
 identifiant inconnu, AD-22), et leur nombre ni leur existence ne sortent jamais d'une réponse à
 un Joueur.
+
+## `kanevas-images` : aucune migration
+
+Aucune table, aucune colonne : une image générée est un **fichier de la médiathèque** ordinaire (`fichiers`,
+joint à la section par `fichiers_sections`, migration 0015), créé par la fonction d'ajout unique
+`ajouterFichier` (AD-117 §6), sa visibilité déduite de la section. La description demandée n'est
+stockée nulle part (AD-28) ; seul le fichier l'est. Les identifiants du moteur d'images vivent dans
+`CODEX_HOME` sur le volume, hors base (AD-50).
 
 ## Règles de droits, en une phrase chacune
 
@@ -197,6 +204,8 @@ provoque. La migration **remplit** les index depuis les lignes déjà présentes
 première fiche garde ses fiches cherchables). Index SQL : `relations (section_id)` sert la lecture
 des relations d'une section ; aucun index sur `cible_fiche_id` (aucune requête de cette tranche n'en
 a besoin ; le graphe des cartes ajoutera le sien si sa requête l'exige).
+
+> **Since `kanevas-import-mediatheque` this describes the history, not the rules in force:** the table above is emptied and unread; `fichiers.visibilite` and `fichierLisible` (`src/services/fichiers.ts`) govern who reads a file, and the limit is 100 joined files per section. `pieces_jointes.secrete` and the 50-piece ceiling below no longer apply.
 
 Ce que la base ne dit pas, et que le service porte, avec sa raison (la règle croise plusieurs
 tables) : la fiche cible est **du même univers** que la fiche de la section ; elle n'est **pas**
@@ -249,7 +258,7 @@ Retirer une pièce, ou une section, supprime la ligne **puis** le fichier du dis
 suppression du fichier échoue, la ligne est déjà partie et l'orphelin est inatteignable (risque
 accepté : il n'y a pas de balayage des orphelins en V1).
 
-## Migration `kanevas-cartes-graphes` (`0007-cartes.sql`, numéro provisoire recalé à la fusion si une autre tranche entre avant, AD-51)
+## Migration `kanevas-cartes-graphes` (`0007-cartes.sql`, numéro définitif, AD-51)
 
 Deux tables ; aucune entité nouvelle (la carte et l'élément de carte sont ceux du cadrage). Les
 octets d'un fond ne sont pas en base (AD-7) : ils vivent sous `/data/attachments/` (AD-69).
@@ -279,8 +288,7 @@ visibles ; un MJ en mode Joueur voit la même.
 
 ## Migration `kanevas-illustrations` (numéro pris à la fusion, AD-51)
 
-> Fichier : `src/db/migrations/0006-illustrations.sql` — **numéro provisoire**, celui qui suit le dernier
-> présent sur la branche, recalé à la fusion si une autre tranche
+> Fichier : `src/db/migrations/0006-illustrations.sql` — numéro **définitif** (0006) ; il a été recalé à la fusion si une autre tranche
 > est entrée avant (AD-51). Décision : AD-93.
 
 **Conceptuel.** Une fiche a **zéro ou une** illustration : une image (PNG, JPEG, GIF ou WebP)
@@ -441,7 +449,7 @@ tels quels ; les déclencheurs de `recherche_fiches` sont recréés.
 | Table | Colonnes | Contrainte |
 |---|---|---|
 | `sections` | `contenu_public` (texte `NOT NULL DEFAULT ''` ; le contenu sans blocs MJ ; « la section contient un bloc » est `contenu_public ≠ contenu`, AD-114 ; vide par défaut : un site d'écriture oublié montre une section vide, il ne fuit pas), `cle_origine` (nulle : née dans Kanevas), `version_importee` (entier ; nul : jamais écrite par un import), `dernier_import` (JSON : titre, audience et ensemble des fichiers joints (clés) écrits par le dernier import ; nul : jamais) | (12) le contenu est modifié dans Kanevas si `version` ≠ `version_importee`, le titre ou l'audience si la valeur courante ≠ `dernier_import` ; (8) écrit par le service dans la même transaction que `contenu` (AD-98) — une fonction Markdown ne s'écrit pas en SQL ; index unique `(fiche_id, cle_origine)` (2) |
-| `pieces_jointes` | No new columns: **neither written nor read** since AD-111. Migration turns each row into a media library file (`mj` if `secrete` or if the section is not readable by players, `joueurs` otherwise), attached to its section, then empties the table. Illustrations become `mj` if their sheet has no section readable by players, `joueurs` otherwise. Disk filenames stay unchanged; no byte copying. The table will be removed in a later tightening slice, once the previous image is no longer running. |
+| `pieces_jointes` | No new columns: **neither written nor read** since AD-111. Migration turns each row into a media library file (`mj` if `secrete` or if the section is not readable by players, `joueurs` otherwise), attached to its section, then empties the table. Only rows of a universe with at least one member are converted (the uploader is taken from the members); rows of a member-less universe are dropped and their bytes stay on disk, orphaned (`src/db/migration-mediatheque.test.ts`). Illustrations become `mj` if their sheet has no section readable by players, `joueurs` otherwise. Disk filenames stay unchanged; no byte copying. The table will be removed in a later tightening slice, once the previous image is no longer running. |
 | `campagnes` | `cle_origine`, `dernier_import` (JSON : nom et statut écrits par le dernier import ; nul : jamais) | index unique `(univers_id, cle_origine)` (2) ; (12) même règle, champ par champ |
 | `scenarios` | `cle_origine`, `dernier_import` (JSON : titre écrit ; nul : jamais), `version_importee` (la `version` laissée par le dernier import) | index unique `(campagne_id, cle_origine)` (2) ; (12) le contenu est modifié dans Kanevas si `version` ≠ `version_importee`, le titre si la valeur courante ≠ `dernier_import` |
 
