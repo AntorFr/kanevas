@@ -50,6 +50,9 @@ body:has(.med-panneau-ouvert) .asst-bouton { right: calc(400px + var(--e-5)); }
 .med-tuile:focus-visible { outline: 2px solid var(--focus); outline-offset: 0; }
 .med-tuile.squelette { height: 170px; background: var(--squelette); cursor: default; }
 .med-cadre { position: relative; display: block; aspect-ratio: 4 / 3; border-radius: var(--rayon-champ); overflow: hidden; background: var(--squelette); }
+/* Document tiles reserve separate rows for the visibility badge, icon and metadata. */
+.med-cadre:has(.med-feuille) { min-height: 144px; }
+.med-cadre > .med-doc:has(.med-feuille) { padding-top: 36px; padding-bottom: 36px; }
 .med-cadre::after { content: ""; position: absolute; inset: 0; border-radius: inherit; box-shadow: inset 0 0 0 1px var(--bord); pointer-events: none; }
 .med-vignette, .med-grand { display: block; width: 100%; border-radius: var(--rayon-champ); background: var(--surface-2); }
 .med-cadre > .med-vignette { height: 100%; border-radius: 0; object-fit: cover; object-position: 50% 40%; }
@@ -58,7 +61,7 @@ body:has(.med-panneau-ouvert) .asst-bouton { right: calc(400px + var(--e-5)); }
   color: var(--texte-2); text-align: center; padding: var(--e-3); font-size: var(--t-13);
   background: radial-gradient(var(--bord) 1px, transparent 1.4px) 0 0 / 12px 12px, var(--surface-2); }
 .med-doc.med-grand { min-height: 160px; }
-.med-feuille { width: 64px; height: 64px; display: grid; place-items: center; border-radius: 14px; margin-top: -14px;
+.med-feuille { width: 64px; height: 64px; flex: none; display: grid; place-items: center; border-radius: 14px;
   background: var(--surface-3); color: var(--texte-2); box-shadow: inset 0 0 0 1px var(--bord-fort); }
 .med-pied-doc { position: absolute; left: 8px; right: 8px; bottom: 8px; display: flex; align-items: center; justify-content: space-between; gap: var(--e-2); }
 .med-ext { display: inline-flex; align-items: center; height: 20px; padding: 0 7px; border-radius: 5px; background: var(--surface-3);
@@ -125,6 +128,7 @@ body:has(.med-panneau-ouvert) .asst-bouton { right: calc(400px + var(--e-5)); }
   body:has(.med-panneau-ouvert) .asst-bouton { visibility: hidden; }
   .med-grille { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--e-4) var(--e-3); }
   .med-glyphe { width: 36px; height: 36px; }
+  .med-tete > .bouton { flex-basis: 100%; min-height: 40px; }
   .med-bascule { display: flex; }
   .med-bascule label { flex: 1; justify-content: center; height: 36px; padding: 0 var(--e-2); }
   .med-recherche { flex: 1 1 100%; max-width: none; height: 40px; }
@@ -154,6 +158,7 @@ body:has(.med-panneau-ouvert) .asst-bouton { right: calc(400px + var(--e-5)); }
 .selecteur-outils { display: flex; align-items: center; flex-wrap: wrap; gap: var(--e-3); margin-bottom: var(--e-3); }
 .selecteur-outils .med-recherche { max-width: 340px; }
 .selecteur .med-grille { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: var(--e-4) var(--e-3); }
+.selecteur .med-cadre:has(.med-feuille) { min-height: 124px; }
 .selecteur .med-feuille { width: 44px; height: 44px; margin-top: 0; border-radius: 11px; }
 .selecteur .med-feuille svg { width: 22px; height: 22px; }
 .selecteur-appareil .med-cadre { width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center;

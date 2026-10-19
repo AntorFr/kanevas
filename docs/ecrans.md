@@ -2549,7 +2549,7 @@ la pastille « MJ seul » (`lock`) sur un fichier réservé. 100 puis « Charger
 
 Un clic ouvre le **panneau du fichier** (à droite au bureau, plein écran au téléphone) : l'image en
 grand, ou pour un document sa grande icône, son type (« Document PDF », « Tableur XLSX », « Archive
-ZIP », « Document ODT » : la nature et l'extension) et, pour un document seulement, « Télécharger » (une image n'a pas ce bouton) ; le nom (MJ : éditable en
+ZIP », « Document ODT » : la nature et l'extension) and, for documents only, « Télécharger » (images have no such button) ; le nom (MJ : éditable en
 place, 1 à 200 caractères) ; la **visibilité** en bascule segmentée « Visible des joueurs » /
 « Réservé au MJ » (MJ ; un joueur ne voit pas ce réglage) ; type, taille, « ajouté par lea le 12 oct.
 2026 », la clé d'origine (MJ, si importé) ; **Utilisé dans** — les usages **que le lecteur peut lire** : pour chaque fiche qu'il voit, l'illustration (si la fiche lui est visible) et les seules sections qu'il lit, avec leur titre (« Histoire » (dans le texte), « Pièces jointes de Description ») et un lien ; pour un non-MJ (E-19 n'a pas de mode Joueur), jamais un usage dans une section qu'il ne lit pas ni dans un bloc MJ — un fichier dont aucun usage ne lui est lisible n'a pas de bloc « Utilisé dans » (D1) — ; pour un MJ « Supprimer le fichier » (`--danger`). Aucun aperçu intégré d'un PDF (AD-66).
