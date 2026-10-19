@@ -57,6 +57,7 @@ export interface ConfigAjout<R> {
   etiquette: string;
   icone?: LucideIcon;
   declencheur?: ReactNode;
+  varianteDeclencheur?: 'fantome-petit';
   /** Sends one file where the screen wants it (with progress); the result goes to `apres`. */
   envoyer: (fichier: File, progres: (pct: number) => void) => { promesse: Promise<R>; annuler: () => void };
   /** What a sent file becomes (insert, refresh…). A throw is a failed add. */
@@ -154,6 +155,7 @@ export function useAjoutFichier<R>(c: ConfigAjout<R>) {
         etiquette={c.etiquette}
         icone={c.icone}
         declencheur={c.declencheur}
+        varianteDeclencheur={c.varianteDeclencheur}
         aligne="debut"
         classe="menu-ajout-fichier"
         desactive={perdue}

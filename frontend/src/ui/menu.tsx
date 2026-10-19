@@ -35,6 +35,7 @@ export function indexSuivant(n: number, courant: number, touche: string): number
 export function Menu({
   etiquette,
   declencheur,
+  varianteDeclencheur,
   icone,
   entrees,
   aligne = 'fin',
@@ -47,6 +48,8 @@ export function Menu({
   etiquette: string;
   /** Content of the trigger (an avatar and a name, for instance); absent: an icon-only trigger. */
   declencheur?: ReactNode;
+  /** A quiet add action, using the same style as a small ghost button. */
+  varianteDeclencheur?: 'fantome-petit';
   icone?: LucideIcon;
   entrees: EntreeMenu[];
   aligne?: 'debut' | 'fin';
@@ -105,10 +108,11 @@ export function Menu({
       <button
         ref={bouton}
         type="button"
-        className={declencheur ? 'menu-declencheur' : 'bouton-icone'}
+        className={varianteDeclencheur === 'fantome-petit' ? 'bouton fantome petit' : declencheur ? 'menu-declencheur' : 'bouton-icone'}
         aria-haspopup="menu"
         aria-expanded={ouvert}
         disabled={desactive}
+        aria-disabled={desactive || undefined}
         aria-controls={ouvert ? idMenu : undefined}
         aria-label={declencheur ? undefined : etiquette}
         title={declencheur ? undefined : etiquette}

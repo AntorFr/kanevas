@@ -1,4 +1,4 @@
-import { Eye, EyeOff, Ellipsis, ExternalLink, Lock, Paperclip, Trash2 } from 'lucide-react';
+import { Eye, EyeOff, Ellipsis, ExternalLink, Lock, Paperclip, Plus, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 
 import { ErreurApi, appeler, envoyerFichier, lire, useConnexionPerdue } from '../../../api';
@@ -34,9 +34,10 @@ function BlocPiecesJointes({ universId, fiche, section, role, rafraichir, suffix
     peutAjouter: ecrit,
     mj,
     etiquette: 'Joindre un fichier',
+    varianteDeclencheur: 'fantome-petit',
     declencheur: (
       <>
-        <Paperclip size={14} strokeWidth={1.75} aria-hidden="true" />
+        <Plus size={14} strokeWidth={1.75} aria-hidden="true" />
         Joindre un fichier
       </>
     ),
