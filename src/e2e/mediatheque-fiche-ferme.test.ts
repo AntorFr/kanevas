@@ -44,9 +44,14 @@ test('Léa lit une image et un document réservés au MJ en cadres neutres dans 
   await zone.getByText('secret-image.png').first().waitFor();
   await entree.setInputFiles({ name: 'secret-doc.pdf', mimeType: 'application/pdf', buffer: Buffer.from('%PDF-1.4\n1 0 obj<<>>endobj\ntrailer<<>>\n%%EOF\n') });
   await zone.getByText('secret-doc.pdf').first().waitFor();
-  const liste = await (await antor.request.get(`/api/univers/${uid}/fichiers`)).json();
   for (const nom of ['secret-image.png', 'secret-doc.pdf']) {
-    const f = (liste.fichiers ?? liste).find((x: Any) => x.nom === nom);
+    // the name shows during the upload already: poll the server until the file really exists
+    let f: Any;
+    for (let i = 0; i < 50 && !f; i++) {
+      const liste = await (await antor.request.get(`/api/univers/${uid}/fichiers`)).json();
+      f = (liste.fichiers ?? liste).find((x: Any) => x.nom === nom);
+      if (!f) await antor.waitForTimeout(200);
+    }
     const r = await antor.request.patch(`/api/univers/${uid}/fichiers/${f.id}`, { data: { visibilite: 'mj' } });
     assert.equal(r.status(), 200);
   }
@@ -105,4 +110,39 @@ test('menus « Joindre un fichier » et « Fichier » : 220 px au moins, libell�
   await zone.getByRole('button', { name: 'Modifier', exact: true }).click();
   await antor.getByRole('button', { name: 'Fichier', exact: true }).click();
   await mesurer();
+});
+
+test('Léa lit dans le texte une image et un document réservés en cadres neutres avec cadenas, sans fuite', opts, async () => {
+  const lister = async () => (await (await antor.request.get(`/api/univers/${uid}/fichiers`)).json());
+  const fichiers = (await lister()).fichiers ?? [];
+  const img = fichiers.find((x: Any) => x.nom === 'secret-image.png');
+  const doc = fichiers.find((x: Any) => x.nom === 'secret-doc.pdf');
+  assert.ok(img && doc, 'les deux fichiers réservés du test précédent');
+  const fiche = await (await antor.request.get(`/api/univers/${uid}/fiches/${portId}`)).json();
+  const section = fiche.sections.find((s: Any) => s.titre === 'Description');
+  const r = await antor.request.put(`/api/univers/${uid}/fiches/${portId}/sections/${section.id}/contenu`, {
+    data: { contenu: `Avant\n\n![zzz-alt](fichier:${img.id})\n\n[zzz-lien](fichier:${doc.id})`, version: section.version },
+  });
+  assert.equal(r.status(), 200);
+
+  await lea.goto(`/univers/${uid}/fiche/${portId}`);
+  await attendre(lea);
+  const md = lea.getByRole('region', { name: /Description/ }).locator('.md');
+  const image = md.locator('.fichier-reserve.image-reservee');
+  const document = md.locator('.fichier-reserve:not(.image-reservee)');
+  await image.waitFor();
+  assert.equal((await image.innerText()).trim(), 'Image réservée au MJ.');
+  assert.equal((await document.innerText()).trim(), 'Fichier réservé au MJ.');
+  const mesure = await image.evaluate((e: Element) => {
+    const s = getComputedStyle(e);
+    const av = getComputedStyle(e, '::before');
+    return { h: e.getBoundingClientRect().height, fond: s.backgroundColor, ombre: s.boxShadow, masque: av.maskImage || av.webkitMaskImage, w: av.width };
+  });
+  assert.ok(mesure.h >= 96, `hauteur ${mesure.h}`);
+  assert.notEqual(mesure.fond, 'rgba(0, 0, 0, 0)');
+  assert.notEqual(mesure.ombre, 'none', 'cadre');
+  assert.match(String(mesure.masque), /url\(/, 'cadenas');
+  assert.equal(mesure.w, '16px');
+  const html = await md.innerHTML();
+  assert.doesNotMatch(html, /zzz-alt|zzz-lien|secret-image|secret-doc|<img|<a /);
 });

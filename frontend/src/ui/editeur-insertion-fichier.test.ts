@@ -18,10 +18,25 @@ test('curseur juste après une fermeture ::: : la référence passe à la ligne 
   assert.ok(!sansBlocsMJ(r.texte).includes('secret'));
 });
 
-test('après une ligne de tableau : pas de collage à la dernière cellule', () => {
+test('après une ligne de tableau : une ligne vide, sinon le tableau absorbe la référence', () => {
   const t = '| a | b |\n|---|---|\n| Cordages et voiles | x |';
   const r = insererTexte(t, t.length, t.length, '![Plan](fichier:11)');
-  assert.equal(r.texte, `${t}\n![Plan](fichier:11)`);
+  assert.equal(r.texte, `${t}\n\n![Plan](fichier:11)`);
+  assert.equal(r.debut, r.texte.length);
+});
+
+test('après une ligne de tableau terminée par un saut : une seule ligne vide ajoutée', () => {
+  const t = '| a |\n|---|\n| x |\n';
+  assert.equal(insererTexte(t, t.length, t.length, REF).texte, `${t}\n${REF}`);
+});
+
+test('après une ligne de tableau déjà suivie d’une ligne vide : rien d’ajouté', () => {
+  const t = '| a |\n|---|\n| x |\n\n';
+  assert.equal(insererTexte(t, t.length, t.length, REF).texte, `${t}${REF}`);
+});
+
+test('après un paragraphe sans barre verticale : un seul saut, pas de ligne vide', () => {
+  assert.equal(insererTexte('Texte simple', 12, 12, REF).texte, `Texte simple\n${REF}`);
 });
 
 test('au milieu d’une ligne : saut avant et après, curseur après la référence', () => {
