@@ -380,6 +380,26 @@ function autoriser(db: Db, acteur: Acteur, universId: number, cible: CibleFichie
   }
 }
 
+/** Where a deposit would land: the sheet and section titles an event names (AD-89). */
+export interface CibleDepot {
+  ficheId: number;
+  titreFiche: string;
+  titreSection: string;
+}
+
+/**
+ * Checks, without writing anything, that the caller may join a file to this section of this universe:
+ * unknown or unreadable → not found; readable but not writable → refused; full → the limit refusal.
+ * Lets the assistant refuse before spending the image engine (AD-44, AD-89).
+ */
+export function verifierDepot(db: Db, acteur: Acteur, universId: number, sectionId: number): CibleDepot {
+  const { role, s } = contexteSection(db, acteur, universId, null, sectionId);
+  exigerEcritureSection(role, s, acteur);
+  exigerPlace(db, role, acteur, s.id);
+  const f = db.prepare('SELECT id, titre FROM fiches WHERE id = ?').get(s.fiche_id) as { id: number; titre: string };
+  return { ficheId: f.id, titreFiche: f.titre, titreSection: s.titre };
+}
+
 /**
  * The one function that adds a file to the library (AD-117 §1): the file and its reference (joined,
  * for a text, or as the illustration) in a single transaction. Rights are checked before the stream

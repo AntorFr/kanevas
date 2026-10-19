@@ -145,3 +145,11 @@
   types; `TYPES_FICHE`, `TypeFiche` and the payload schemas (`CHARGES`) derive from it, never copy them. `fiches.type` has no
   `CHECK` (migration 0013): `creerFiche` is the guard ("Type de fiche inconnu."). A migration whose first line is
   `-- migrate: sans-cles-etrangeres` runs with foreign keys off and `foreign_key_check` before commit (`db.ts`).
+- Image engine (`kanevas-images`, `src/services/images/`): `choisirAdaptateur()` (AD-88) picks `bouchon` with
+  `KANEVAS_STUB=1`, else `codex` if an executable `codex` is on the `PATH` and `$CODEX_HOME/auth.json` exists
+  (existence only, never read), else `aucun` — never a silent stub. `CODEX_HOME` and the scratch root are read in
+  `config/env.ts` only. A result must have an inline-served image signature (`typeParSignature`, AD-66) or it is
+  an `ErreurGeneration`, whose message is fixed: engine output and errors may quote `auth.json`, so the child runs
+  with `stdio: 'ignore'` and nothing of it is logged. The `codex` adapter lists `generated_images/` before and
+  after (one engine at a time: `verrou.ts`), deletes the new file(s) and its scratch directory, 150 s deadline
+  (AD-90). The Dockerfile pins `@openai/codex` (`CODEX_VERSION`).

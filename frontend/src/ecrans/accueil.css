@@ -96,5 +96,7 @@ kbd { font: 500 11px/1 var(--police-texte); color: var(--texte-3); border: 1px s
 
 /* E-1 as a grid of cards (kanevas-illustrations): the column widens to the grid's */
 .accueil.accueil-cartes { max-width: 1120px; }
+/* E-1 (maquette): 1024px of content, three cards of 325px; the cadre column (1000px) would squeeze them to ~299px. */
+main.principal:has(.accueil-cartes) { max-width: calc(1024px + 2 * 28px); }
 .accueil-cartes .tete-colonnes { padding-left: 0; padding-right: 0; }
 .accueil-cartes .grille-cartes { margin-top: var(--e-2); }

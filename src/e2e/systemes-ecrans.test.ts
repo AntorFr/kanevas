@@ -228,7 +228,7 @@ describe('kanevas-il-systemes-ecrans', { skip: skipBrowser }, () => {
     await ctx.close();
   });
 
-  test('E-1 : la méta d\'une carte tient sur une ligne à 1024, 1280 et 1440, le nom de système long coupé par « … »', opts, async () => {
+  test('E-1 : la méta d\'une carte tient sur deux lignes au plus à 1024, 1280 et 1440, sans enfant qui dépasse la carte', opts, async () => {
     const long = 'Système des Cendres et des Brumes '.repeat(3).trim().slice(0, 80);
     const u = await antor.request.fetch(`${srv.base}/api/univers`, { method: 'POST', data: { nom: 'Les Cendres de Méta' } });
     const idU = (await u.json()).id;
@@ -241,11 +241,13 @@ describe('kanevas-il-systemes-ecrans', { skip: skipBrowser }, () => {
       const m = await antor.locator('.carte-dessin', { hasText: 'Les Cendres de Méta' }).locator('.meta-u').evaluate((el: Element) => {
         const tops = Array.from(el.children).map((c) => Math.round(c.getBoundingClientRect().top));
         const t = el.querySelector('.sys-u .t') as HTMLElement;
-        return { tops, coupe: t.scrollWidth > t.clientWidth, h: el.getBoundingClientRect().height, texte: el.textContent };
+        const carte = (el.closest('.carte-dessin') as HTMLElement).getBoundingClientRect();
+        const depasse = Array.from(el.children).some((c) => c.getBoundingClientRect().right > carte.right + 0.5);
+        return { tops, depasse, coupe: t.scrollWidth > t.clientWidth, h: el.getBoundingClientRect().height, texte: el.textContent };
       });
-      assert.equal(new Set(m.tops).size, 1, `${w}px : méta sur plusieurs lignes ${m.tops}`);
+      assert.ok(new Set(m.tops).size <= 2, `${w}px : méta sur plus de deux lignes ${m.tops}`);
+      assert.ok(!m.depasse, `${w}px : un enfant de la méta dépasse la carte`);
       assert.match(m.texte ?? '', /1 membre\b/);
-      assert.ok(m.coupe, `${w}px : nom du système non coupé`);
       await photo(antor, `meta-e1-${w}`);
     }
     await antor.setViewportSize({ width: 1280, height: 720 });

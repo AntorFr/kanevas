@@ -3,7 +3,7 @@ import { useState, type FormEvent } from 'react';
 import { Link, useParams } from 'react-router-dom';
 
 import { appeler, ErreurApi } from '../api';
-import { useCharge, useLimiteContenu } from '../cadre-contexte';
+import { useCharge, useLimiteContenu, useTitreAriane } from '../cadre-contexte';
 import type { Ecran } from '../registre';
 import { Bouton, Champ, Chargement, EditeurMarkdown, ErreurChargement, Markdown, PageIntrouvable, depasse, messageTropLong, refusServeur, useToasts } from '../ui';
 import './ecrans.css';
@@ -60,6 +60,7 @@ function Vue({ universId, campagne, initial }: { universId: string; campagne: Ca
   const [perime, setPerime] = useState(false);
   const [enCours, setEnCours] = useState(false);
   const max = useLimiteContenu();
+  useTitreAriane(scenario.titre, 'Campagnes', undefined, { libelle: campagne.nom, vers: `/univers/${universId}/campagnes/${campagne.id}` });
 
   function garder(t: string, c: string) {
     try {

@@ -64,7 +64,7 @@ bascule existe (fiche, carte et, depuis `kanevas-import`, recherche E-17).
 | **E-9 Fiche** | E-8 ; un token ; un lien ; E-13 | lire et écrire les sections permises ; ajouter, réordonner, retirer une section, régler son audience, relier (MJ) ; joindre un fichier (les deux chemins d'ajout, AD-111), réserver un fichier au MJ (MJ), retirer une référence ; régler le sous-type (MJ) ; poser, remplacer, retirer l'illustration (MJ) ; bascule mode Joueur (MJ). Un compte-rendu s'ouvre ici. | P-3 à P-7 |
 | **E-10 Cartes** | nav Cartes | les cartes lisibles ; créer une carte illustrée (avec son image de fond) ou un graphe (MJ) | P-3, P-9 |
 | **E-11 Carte** | E-10 ; E-3 | carte illustrée : fond, tokens ; graphe : nœuds et liens. MJ : déposer ou changer le fond, placer, rendre visible, mode Joueur. Joueur : ouvrir la fiche d'un token. | P-3, P-6, P-9 |
-| **E-12 Assistant** | bouton flottant, sur tout écran d'univers | converser ; voir ce que l'assistant a écrit, avec un lien ; MJ : propositions de mise à jour (actuel/proposé, **Appliquer**, **Abandonner**), images générées | P-3, P-5, P-6, P-7 |
+| **E-12 Assistant** | bouton flottant, sur tout écran d'univers | converser ; voir ce que l'assistant a écrit, avec un lien ; MJ : propositions de mise à jour (actuel/proposé, **Appliquer**, **Abandonner**) | P-3, P-5, P-6, P-7 |
 | **E-13 Comptes-rendus** | nav Comptes-rendus ; E-3 | tous les CR lisibles de l'univers, du plus récent, avec leur campagne | P-4, P-5 |
 | **E-14 Paramètres de l'univers** | nav Univers (MJ) | nom, description, système de jeu (choisir dans le catalogue, en créer un) | P-8 |
 | **E-15 Système de jeu** | E-16 ; lien depuis E-3 et E-14 | le référentiel commun : règles, créatures, objets ; ajouter, modifier (MJ d'un univers rattaché) ; hors du cadre d'un univers | P-8 |
@@ -90,7 +90,7 @@ bouchon » — sans `E-n` ni six états, ils n'existent pas en production.
 
 ## Rôles × écrans × actions
 
-« — » : l'écran n'est pas proposé (absent de la navigation, et 404 si on force l'adresse). E-15 et
+« — » : l'écran n'est pas proposé (absent de la navigation ; si on force l'adresse, l'écran affiche « Page introuvable. » et l'API répond 404). E-15 et
 E-16 vivent hors des univers : leurs cases disent le rôle dans un univers rattaché au système.
 
 | Écran | MJ | Joueur | Admin d'instance (sans rôle dans l'univers) |
@@ -106,7 +106,7 @@ E-16 vivent hors des univers : leurs cases disent le rôle dans un univers ratta
 | E-9 | tout ; mode Joueur ; relier et retirer des relations ; poser, remplacer, retirer l'illustration (hors mode Joueur) ; *(kanevas-import)* sous-type, réserver un fichier au MJ, voir un fichier en attente d'import (tuile) | sections lisibles ; écrire celles permises ; relations lisibles (section et cible) ; pièces jointes de celles-ci ; voir l'illustration, jamais la poser ; *(kanevas-import)* dans une section qu'il écrit, ajouter un fichier ou en choisir un qu'il voit (les deux chemins de B-55) et retirer une référence ; fichiers sous double garde ; jamais régler une visibilité (**caché**) ; un fichier en attente d'import : rien (**caché**) | — |
 | E-10 | tout | cartes visibles | — |
 | E-11 | tout ; mode Joueur | lire une carte visible, ouvrir une fiche | — |
-| E-12 | catalogue MJ ; propositions : le MJ demandeur seul les voit, les applique, les abandonne | catalogue Joueur ; propositions : **caché** (ni outil ni bloc ; ce qu'on vérifie est l'absence de proposition et de bloc, pas le texte libre de l'assistant) | — |
+| E-12 | catalogue MJ (dont générer une image, si un moteur d'images est disponible) ; propositions : le MJ demandeur seul les voit, les applique, les abandonne | catalogue Joueur (sans image : l'outil est absent, l'assistant répond qu'il ne peut pas) ; propositions : **caché** (ni outil ni bloc ; ce qu'on vérifie est l'absence de proposition et de bloc, pas le texte libre de l'assistant) | — |
 | E-13 | tous les CR | les CR lisibles | — |
 | E-14 | tout ; « Supprimer l'univers » (*kanevas-import*) | — (« Page introuvable. ») | « Page introuvable. » |
 | E-15 (hors univers ; les colonnes disent le rôle dans un univers **rattaché au système**) | lire ; « Ajouter … », « Modifier » | lire (« Lecture seule ») ; ni « Ajouter » ni « Modifier » | « Page introuvable. », sauf s'il est lui-même membre d'un univers rattaché : alors la colonne de son rôle là (l'admin MJ d'un univers rattaché lit et modifie) |
@@ -160,8 +160,7 @@ Deux sont posés dès le cadrage parce qu'ils traversent tout :
 
 > E-1, E-2, E-3, E-4, E-8, E-9, la barre latérale et la session. Vocabulaire des six états, celui
 > de B-29 : **vide**, **chargement**, **erreur**, **connexion perdue**, **refus**, **contenu
-> long**. « Sans objet » dit sa raison. Les maquettes finies sont `docs/maquettes/e01-*.html`, `e02-*.html`,
-> `e03`, `e04`, `e08`, `e09` (thème sombre, gris tertiaire de la charte).
+> long**. « Sans objet » dit sa raison. Les maquettes qui font foi pour la forme sont listées sous « Maquettes » (fin du document) ; `e02` est d'avant la charte (thème sombre, gris tertiaire de la charte).
 
 **Textes communs.**
 
@@ -248,11 +247,11 @@ cartes**, comme E-8 et E-16 (« E-1 en cartes », plus bas).* Bouton « Créer u
 
 Un formulaire : « Nom » (obligatoire, 80 caractères au plus), « Description » (facultative, 500
 au plus), « Créer l'univers » et « Annuler » (→ E-1). Créer mène à E-3 de l'univers, le créateur
-en MJ (B-2).
+en MJ (B-2). Dès que le nom est saisi, le sceau de l'univers (son initiale) s'affiche en aperçu au-dessus du titre ; tant que le nom est vide, rien.
 
 | État | Ce qu'on voit | Ce qu'on peut faire |
 |---|---|---|
-| vide | le formulaire vierge | remplir |
+| vide | le formulaire vierge, sans aperçu | remplir |
 | chargement (écriture en cours) | le bouton affiche « … », désactivé | — |
 | erreur | « Erreur : le nom est obligatoire. » sous le champ ; ou, si la création échoue, « L'action n'a pas abouti. Réessayez. » au-dessus du formulaire, saisie conservée | corriger, réessayer |
 | connexion perdue | le bandeau ; « Créer l'univers » désactivé, saisie conservée | attendre |
@@ -394,7 +393,7 @@ E-2 ; E-5 lui vient avec cette tranche (plus bas).
 > chargement, connexion perdue, écriture en cours, échec d'une écriture, refus) et les refus de
 > membres (« Ce compte ne s'est jamais connecté. », « Ce compte est déjà membre. », « Impossible :
 > l'univers doit garder au moins un MJ. ») sont ceux de « Détail des écrans de
-> `kanevas-premiere-fiche` ». Maquette finie : `docs/maquettes/e05-administration.html`.
+> `kanevas-premiere-fiche` ». Maquette `docs/maquettes/e05-administration.html` (d'avant la charte : contenu et vocabulaire seulement).
 
 **Qui est admin d'instance.** Le compte dont la session porte le groupe Authelia `parents` (AD-56,
 lu à la connexion ; en bouchon, Admin). Le droit est celui de la session en cours : un compte retiré
@@ -479,19 +478,19 @@ de bloc sur E-3, et l'adresse de E-15 répond « Page introuvable. ».
 
 ### E-14 Paramètres de l'univers (MJ)
 
-Trois panneaux, dans cet ordre.
+Trois panneaux, dans cet ordre, chacun portant la pastille « MJ seul » (cadenas) de la charte ; au téléphone (sous 760 px) leur débord est de 12 px, non 28.
 
 1. **Identité** : « Nom » (obligatoire, 80 caractères au plus), « Description » (500 au plus),
-   « Enregistrer ». Après l'enregistrement : « Enregistré. » au-dessus du panneau.
+   « Enregistrer ». Après l'enregistrement : toast « Enregistré. ».
 2. **Système de jeu** : une liste « Système du catalogue » (les noms, par ordre alphabétique sans
    casse, et en tête « Aucun système »), « Rattacher » ; si l'univers a un système : son nom, « Utilisé
    par N univers » et « Ouvrir le système » (→ E-15). Choisir « Aucun système » puis « Rattacher »
    **détache** l'univers (rien n'est supprimé : le système et son contenu restent, les autres
-   univers le gardent).
+   univers le gardent). Toasts : « « X » rattaché », « « X » détaché » (« Aucun système rattaché » s'il n'y en avait pas).
 3. **Créer un système** : « Nom du système » (obligatoire, 80 caractères au plus), « Créer et
    rattacher » : le système naît au catalogue et l'univers y est rattaché en un seul geste (si l'un
    échoue, aucun n'a lieu). Un nom déjà pris (sans tenir compte de la casse) : « Un système porte déjà
-   ce nom. » sous le champ.
+   ce nom. » sous le champ. Réussite : toast « « X » créé et rattaché ».
 
 | État | Ce qu'on voit | Ce qu'on peut faire |
 |---|---|---|
@@ -725,7 +724,7 @@ jamais « caché ». Chemin d'échec de relier une section : le refus du service
 > chargement, connexion perdue, écriture en cours, échec d'écriture, refus, session expirée) ; ne
 > sont redits que les textes propres. Vocabulaire : les écrans disent « compte-rendu » en toutes
 > lettres ; « CR » n'est qu'un sigle des documents (B-19, B-20). Dates : « 22 sept. 2026 » (jour, mois
-> abrégé, année), comme sur E-9. Maquettes finies : `docs/maquettes/e06`, `e07`, `e13`, `e03`.
+> abrégé, année), comme sur E-9. Maquettes : `e06` et `e03` sont finies ; `e07` et `e13` sont d'avant la charte (contenu et vocabulaire seulement).
 
 **Ajouts aux écrans déjà construits.**
 
@@ -1074,7 +1073,7 @@ jamais « caché ». Chemin d'échec de relier une section : le refus du service
 
 > E-12 Assistant, et son ajout au shell d'un univers. Mêmes six états et mêmes textes communs que
 > `kanevas-premiere-fiche` (chargement, connexion perdue, session expirée) ; ne sont redits que les
-> textes propres. Maquette finie : `docs/maquettes/e12-assistant.html` (thème sombre ; MJ, Joueur,
+> textes propres. Maquette `docs/maquettes/e12-assistant.html` (d'avant la charte : contenu et états seulement) (thème sombre ; MJ, Joueur,
 > et les états). Composant : `docs/charte.md` « Panneau d'assistant ».
 
 **Ajout au shell.** Un bouton flottant « Demander à Kanevas », en bas à droite, sur **tout écran
@@ -1113,21 +1112,21 @@ messages du fil (AD-75).
 
 **Ce que chaque rôle y voit.** Le Joueur : chercher, lire une fiche, lire une section, modifier une
 section, ajouter un paragraphe à une section, lister les campagnes. Le MJ : les mêmes, plus créer
-une campagne et créer un scénario. Un Joueur qui demande de créer un scénario n'a pas l'outil :
+une campagne, créer un scénario et générer une image (`kanevas-images`). Un Joueur qui demande de créer un scénario ou de générer une image n'a pas l'outil :
 l'assistant répond qu'il ne peut pas, sans événement et sans rien créer (le texte est celui du
 modèle, il n'est pas fixé ; ce qu'on vérifie est l'absence d'écriture). Dans les deux cas
 l'assistant ne lit et n'écrit que ce que la personne lit et écrit : une section fermée est
 « Introuvable. », une section lisible mais non écrite « Vous ne pouvez pas modifier cette
-section. » (AD-74). Cette tranche **ne donne aucun outil sur les cartes ni les graphes** (écarté, AD-74). Elle **ne dessine ni proposition de mise à jour ni image** : elles
-s'inscrivent au registre de blocs (`kanevas-monde`, `kanevas-images`).
+section. » (AD-74). Cette tranche **ne donne aucun outil sur les cartes ni les graphes** (écarté, AD-74). Elle **ne dessine pas** la proposition de mise à jour (`kanevas-monde`) ; l'image est le bloc de
+`kanevas-images`, décrit plus bas : l'un et l'autre s'inscrivent au registre de blocs.
 
 | État | Ce qu'on voit | Ce qu'on peut faire |
 |---|---|---|
 | vide (fil sans message) | « Demandez-moi de chercher, de résumer ou d'écrire dans ce que vous pouvez lire et écrire. Exemple : « Que sait-on d'Aldric ? » » | écrire ; fermer ; « Nouvelle conversation » (sans effet sur un fil vide) |
 | chargement (disponibilité) | le bouton est présent ; dans le panneau, « Chargement… » à la place du champ et de « Envoyer » (absents, pas désactivés) ; aucun « Réessayer » tant que l'appel n'a pas répondu | fermer ; nouvelle conversation |
 | disponibilité en échec (serveur muet, erreur) | « Je n'ai pas pu répondre — réessayer » avec un bouton « Réessayer » qui relit la disponibilité ; le champ et « Envoyer » sont présents mais désactivés (`aria-disabled`) | réessayer ; fermer ; nouvelle conversation |
-| réponse en cours | le message envoyé apparaît ; « Kanevas réfléchit… » (`role="status"`) ; « Envoyer » affiche « … » et est désactivé ; le champ reste lisible | fermer (la réponse arrive dans le fil) ; « Nouvelle conversation » est désactivée tant que la réponse n'est pas arrivée |
-| erreur | « Je n'ai pas pu répondre — réessayer » (`role="alert"`), sans événement, pour toutes les causes (délai de 120 s, erreur de transport) : la personne ne les distingue pas ; demande déjà en cours (429) : « Une demande est déjà en cours. Patientez. » ; la saisie n'est jamais perdue : à l'envoi le champ se vide, la question reste dans le fil, une seule fois ; « Réessayer » (offert pour toutes les erreurs, le 429 compris) la renvoie telle quelle : le message d'erreur disparaît, « Kanevas réfléchit… » prend sa place, et la question n'est pas affichée une seconde fois | « Réessayer » renvoie la même question ; saisir autre chose ; fermer ; nouvelle conversation |
+| réponse en cours | le message envoyé apparaît ; « Kanevas réfléchit… » (`role="status"`) ; « Envoyer » affiche « … » et est désactivé ; le champ reste lisible ; pour un MJ seulement, au bout de 20 secondes d'attente **quelle que soit la demande** (le client ne sait pas ce que fait l'assistant), « Kanevas travaille toujours… Une image peut prendre jusqu'à trois minutes. » (`kanevas-images`) ; le Joueur garde « Kanevas réfléchit… » | fermer (la réponse arrive dans le fil) ; « Nouvelle conversation » est désactivée tant que la réponse n'est pas arrivée |
+| erreur | « Je n'ai pas pu répondre — réessayer » (`role="alert"`), sans événement, pour toutes les causes (délai de 120 s, erreur de transport) : la personne ne les distingue pas ; demande déjà en cours (429) : « Une demande est déjà en cours. Patientez. » ; la saisie n'est jamais perdue : à l'envoi le champ se vide, la question reste dans le fil, une seule fois ; « Réessayer » (offert pour toutes les erreurs, le 429 compris) la renvoie telle quelle : le message d'erreur disparaît, « Kanevas réfléchit… » prend sa place, et la question n'est pas affichée une seconde fois ; une demande avec image dure 270 secondes au plus (AD-90) : au-delà, le même texte | « Réessayer » renvoie la même question ; saisir autre chose ; fermer ; nouvelle conversation |
 | indisponible (sans jeton, hors bouchon, AD-77) | « L'assistant n'est pas disponible pour le moment. » ; champ et « Envoyer » désactivés (`aria-disabled`) | lire le fil ; fermer ; nouvelle conversation |
 | connexion perdue | le bandeau commun ; le fil reste lisible ; champ et « Envoyer » désactivés. Perdue pendant « Kanevas réfléchit… » : la réponse est perdue, l'état passe à l'erreur ci-dessus avec « Réessayer » (désactivé tant que la connexion n'est pas revenue) ; au retour de la connexion, le bandeau disparaît et le champ est réactivé | lire, ouvrir les liens ; fermer ; nouvelle conversation |
 | refus | le compte sans rôle n'a pas le bouton (rien à décrire ici) ; un refus d'outil est une réponse de l'assistant, pas un écran d'erreur — « Introuvable. », « Vous ne pouvez pas modifier cette section. », « La section a changé depuis que vous l'avez lue. Relisez-la. » —, sans événement ; la réponse commence par ce texte, la suite est du texte libre du modèle ; session expirée : la personne est menée à la connexion, le fil est perdu | refus d'outil : le fil reste, on écrit à nouveau ; fermer ; nouvelle conversation |
@@ -1150,13 +1149,97 @@ B-24 → le bloc Pièces jointes de E-9 (ajouter en un geste, voir une image, t�
 fichier, retirer; its visibility follows where it was added, see the amendment below). Atteint par P-3 étape 4 (le plan d'un lieu) et P-7 étape 2 (le
 portrait de son personnage). Le bloc livre ses six états (B-29), ci-dessus.
 
+## Détail des écrans de `kanevas-images`
+
+> Un seul ajout, aucun écran neuf : le **bloc « Image attachée »** de E-12 (le panneau de
+> l'assistant). Mêmes textes communs et mêmes six états que « Détail des écrans de
+> `kanevas-premiere-fiche` » et « Détail des écrans de `kanevas-assistant-membre` ». Maquette :
+> `e12-assistant.html` (bloc Image attachée, échec de génération).
+
+**Ce que l'assistant fait de plus.** Le catalogue du **MJ** reçoit un outil, `generer_image` (AD-89) ;
+celui du Joueur n'en reçoit pas. Le MJ demande « Fais un portrait pour Apparence d'Aldric » : l'assistant
+décrit l'image, la fait générer, l'attache à la section (comme si le MJ l'avait déposée sur E-9, AD-65)
+et le dit. Une demande n'attache **qu'une** image ; l'image est une pièce jointe ordinaire de la
+section, avec sa visibilité (non secrète ; elle suit la section, B-24), que le MJ peut marquer secrète,
+retirer ou remplacer depuis E-9. Un Joueur qui demande une image n'a pas l'outil : l'assistant répond
+qu'il ne peut pas, sans événement et sans rien attacher (le texte est celui du modèle ; on vérifie
+l'absence d'écriture). Sans moteur d'images disponible (ni bouchon, ni Codex), l'outil n'est pas dans
+le catalogue du MJ non plus, et l'assistant le dit de même.
+
+### Bloc « Image attachée » (E-12)
+
+Sous la réponse, comme les autres écritures (AD-76), un événement `image_attachee` : un bloc « Écrit par
+l'assistant » dont le libellé est « Image attachée à la section « Apparence » de « Maître Aldric » »,
+**la vignette de l'image** (au plus 240 px de large, rapport conservé, texte alternatif : la
+description demandée) et un lien « Ouvrir la section » vers E-9, à la section. La vignette est lue par la
+route authentifiée des pièces jointes (AD-67) : aucune adresse publique.
+
+| État | Ce qu'on voit | Ce qu'on peut faire |
+|---|---|---|
+| vide | sans objet : le bloc n'existe que si une image a été attachée | — |
+| chargement | la vignette est un cadre gris « Chargement de l'image… » (`role="status"`) ; le libellé et le lien sont déjà là | « Ouvrir la section » |
+| erreur | image retirée depuis, ou illisible : le cadre dit « Image indisponible. » avec « Recharger l'image » ; le libellé et le lien restent | « Recharger l'image » (rend la même réponse si l'image est retirée) ; « Ouvrir la section » |
+| connexion perdue | le bandeau commun ; une vignette déjà chargée reste ; sinon « Image indisponible. » avec « Recharger l'image » (désactivé tant que la connexion n'est pas revenue) | lire, ouvrir |
+| refus | rôle ou droit retiré après coup : la lecture de la vignette et le lien répondent « Page introuvable. » comme toute section illisible (le cadre dit « Image indisponible. », sans « Recharger l'image » utile) ; sinon sans objet, l'événement n'existe que pour un MJ qui vient d'écrire dans cette section | — |
+| contenu long | un titre de fiche de 120 caractères et un titre de section de 80 passent à la ligne dans le libellé ; une image très haute est contenue dans 240 px de large et 320 px de haut | idem |
+
+**Pendant la génération.** L'assistant ne répond qu'à la fin (AD-75) : « Kanevas réfléchit… » reste
+affiché ; au bout de 20 secondes, **pour un MJ seulement** (pastille « MJ » ; le Joueur n'a pas l'outil et garde « Kanevas réfléchit… »), il devient « Kanevas travaille toujours… Une image peut prendre
+jusqu'à trois minutes. » (`role="status"`). Le client n'abandonne pas la requête avant 300 secondes.
+Fermer le panneau ne l'arrête pas ; recharger la page ou quitter l'univers l'abandonne : rien n'est alors
+attaché.
+
+**Les échecs, dits par l'assistant** (réponse sans événement, rien n'est attaché) : génération en
+échec ou trop longue — « Je n'ai pas pu générer l'image. » ; section pleine (50 pièces) — « Cette section
+porte déjà 50 pièces jointes. » ; droit d'écrire retiré entre-temps — « Vous ne pouvez pas modifier cette
+section. » ; seconde image dans la même demande — « Une seule image par demande. » ; description de plus de 500 caractères — « La description est limitée à 500 caractères. » (l'assistant en propose une plus courte) ; aucun moteur d'images — l'assistant répond qu'il ne peut pas générer d'image (l'outil est absent). Dans le bouchon, une
+demande dont la description contient « échec » donne le premier cas.
+
+*Critères.*
+- Étant donné Antor, MJ, et « Apparence » de « Maître Aldric », quand il demande « Fais un portrait pour
+  « Apparence » d'« Maître Aldric » », alors le fil montre « Image attachée à la section « Apparence » de
+  « Maître Aldric » » avec la vignette et « Ouvrir la section », et la section d'Aldric, ouverte sur E-9,
+  porte une pièce jointe image de plus.
+- Étant donné Léa, Joueuse, quand elle fait la même demande, alors l'assistant répond qu'il ne peut pas
+  et la section ne gagne aucune pièce jointe.
+- Étant donné Antor, en bouchon, quand sa demande contient « échec », alors le fil dit « Je n'ai pas pu
+  générer l'image. », sans bloc « Image attachée », et la section n'a pas de pièce de plus.
+- Étant donné Antor et une section qui porte déjà 50 pièces jointes, quand il demande une image, alors
+  l'assistant dit « Cette section porte déjà 50 pièces jointes. » et rien n'est attaché.
+- Étant donné une image attachée puis retirée de E-9, quand Antor ferme puis rouvre le panneau (le fil
+  survit, AD-28, et la vignette est relue à la réouverture), alors le cadre dit « Image indisponible. » avec « Recharger l'image », et « Ouvrir la
+  section » mène toujours à E-9 ; « Recharger l'image » relit la vignette et, l'image étant toujours
+  retirée, rend le même texte.
+- Étant donné une image attachée, quand sa vignette charge, alors le cadre gris « Chargement de l'image… »
+  précède l'image ; et quand la connexion est perdue avant la lecture, alors le bandeau commun s'affiche et
+  le cadre dit « Image indisponible. » avec « Recharger l'image » désactivé jusqu'au retour de la connexion.
+- Étant donné Léa, Joueuse, quand l'assistant tarde plus de 20 secondes, alors elle voit toujours « Kanevas
+  réfléchit… » et jamais le texte sur l'image ; Antor, MJ, le voit dès 20 secondes, même pour une demande qui
+  n'a rien à voir avec une image.
+- Étant donné une demande d'image qui dure plus de 20 secondes, alors le panneau affiche « Kanevas
+  travaille toujours… Une image peut prendre jusqu'à trois minutes. » ; et si la demande passe 270 secondes,
+  « Je n'ai pas pu répondre — réessayer ».
+- Étant donné un titre de fiche de 120 caractères et un titre de section de 80, alors le libellé passe à la
+  ligne et la vignette, même d'une image très haute, reste dans ses bornes (240 px de large, 320 px de haut).
+- Étant donné une vignette déjà chargée, quand la connexion est perdue, alors elle reste affichée ; et quand
+  le rôle d'Antor dans l'univers est retiré, alors la lecture de la vignette répond « Page introuvable. » et le
+  cadre dit « Image indisponible. ».
+- Étant donné une instance sans moteur d'images, quand Antor demande un portrait, alors l'assistant
+  répond qu'il ne peut pas générer d'image, sans événement et sans pièce jointe.
+
+### Clôture de `kanevas-images`
+
+B-25 → le bloc ci-dessus (générer, attacher en un geste, un échec n'attache rien) ; B-27 (générer) →
+l'outil `generer_image` du catalogue MJ ; P-3 étape 5 → E-12 et E-9 ; B-29 → les six états du bloc. Le
+bloc est atteint par P-3 (étape 5). Les rôles : le MJ a l'outil, le Joueur non ; l'admin d'instance sans
+rôle n'a pas E-12. Écart au cadrage : aucun.
 ## Détail de `kanevas-refonte-visuelle`
 
 La refonte ne change ni les droits, ni les données, ni les textes d'un écran : elle change la
 forme, et les gestes ci-dessous, que le testeur vérifie. La direction, les tokens et les
-composants sont dans `docs/charte.md`. E-1, E-3, E-6, E-8 et E-9 ont leur maquette finie ; E-2,
-E-4, E-7, E-13, E-14 et E-15 se refont dans le même cadre et avec les mêmes composants, sans
-maquette propre : leurs maquettes actuelles, faites avant la charte, valent pour le contenu et
+composants sont dans `docs/charte.md`. E-1, E-3, E-4, E-6, E-8, E-9 et E-14 ont leur maquette finie (celle de E-15, `e15-systeme-de-jeu.html`, l'est hors du cadre d'un univers) ; E-2,
+E-7 et E-13 se refont dans le même cadre et avec les mêmes composants, sans
+maquette finie : leurs maquettes actuelles, faites avant la charte, valent pour le contenu et
 le vocabulaire, pas pour la forme (barre, compte, couleurs).
 
 **Partout.** Le cadre de E-9 sur tous les écrans d'un univers ; chaque entrée de navigation et
@@ -1684,7 +1767,7 @@ nouvelle ; B-13 et B-14 sont inchangés. Les deux besoins viennent des décision
 > Le bloc « proposition de mise à jour » de E-12, et rien d'autre : pas de nouvel écran, pas de
 > nouvelle adresse d'écran. Mêmes six états et mêmes textes communs que `kanevas-premiere-fiche`
 > (chargement, connexion perdue, session expirée) ; ne sont redits que les textes propres.
-> Maquette finie : `docs/maquettes/e12-propositions.html` (thème sombre ; le bloc dans ses états,
+> Maquette `docs/maquettes/e12-propositions.html` (d'avant la charte : contenu et états seulement) (thème sombre ; le bloc dans ses états,
 > sur ordinateur et sur téléphone). Composant : `docs/charte.md` « Proposition de mise à jour ».
 
 **Comment une proposition naît.** Le MJ écrit dans le champ de E-12, en nommant la section et le
@@ -1762,7 +1845,7 @@ lot, la reprise d'une proposition après rechargement.
 et quand les deux divergent, la maquette a tort.
 
 **Finies** (direction, tokens et composants de `docs/charte.md`, deux thèmes, bureau et
-téléphone, vrai contenu) : E-1, E-3, E-6, E-8, E-9. Depuis `kanevas-illustrations`, `e08` est la grille de cartes
+téléphone, vrai contenu) : E-1, E-3, E-4, E-6, E-8, E-9, E-14 (liste de référence ; les autres sections y renvoient). Depuis `kanevas-illustrations`, `e08` est la grille de cartes
 (types Personnages, Lieux, Factions, `#etat-lieux`, `#etat-factions`) et `e09` porte l'illustration
 de l'en-tête ; leurs images sont des illustrations de démonstration peintes en SVG. E-15 et E-16
 (`e15-systeme-de-jeu.html`, `e16-systemes-de-jeu.html`) sont finies hors du cadre d'un univers ;
@@ -1780,7 +1863,7 @@ bloc MJ, fil d'ancêtres, « Contient », « Mentionnée dans », menu de la fic
 univers) et `e19-mediatheque.html` (E-19 : images et documents, le sélecteur), dans le cadre et avec les composants
 de `e09-fiche.html`.
 
-**D'avant la charte** : les autres. Elles valent pour le contenu et le vocabulaire, pas pour la
+**D'avant la charte** : les autres (e02, e05, e07, e10, e11, e12-assistant, e12-propositions, e13). Elles valent pour le contenu et le vocabulaire, pas pour la
 forme ; un écran qui n'a qu'elles se construit dans le cadre et avec les composants de la
 maquette E-9.
 

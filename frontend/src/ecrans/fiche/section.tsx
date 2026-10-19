@@ -215,7 +215,7 @@ export function PanneauSection(p: Props) {
   const mac = typeof navigator !== 'undefined' && /Mac|iPhone|iPad/.test(navigator.platform);
 
   return (
-    <section className="sec" data-aud={reserveMj ? 'mj' : filet} aria-labelledby={idTitre}>
+    <section className="sec" id={`section-${section.id}`} data-aud={reserveMj ? 'mj' : filet} aria-labelledby={idTitre}>
       <div className="sec-tete">
         <h2 id={idTitre}>{section.titre}</h2>
         {mj && a && etat && (
@@ -247,8 +247,8 @@ export function PanneauSection(p: Props) {
       {(section.peutEcrire && !edition) || mj ? (
         <div className="sec-actions">
           {section.peutEcrire && !edition && (
-            <Bouton variante="fantome" petit ecrit icone={Pencil} onClick={modifier}>
-              Modifier
+            <Bouton variante="fantome" petit ecrit icone={Pencil} aria-label="Modifier" onClick={modifier}>
+              <span className="lib-modifier">Modifier</span>
             </Bouton>
           )}
           {mj && (

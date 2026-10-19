@@ -1,8 +1,9 @@
 # Kanevas — données
 
 > Doc du produit (voir `docs/parcours.md`, `docs/ecrans.md`). Toutes les entités du produit,
-> leurs relations et qui lit ou écrit quoi. **Une tranche ajoute des attributs, jamais une
-> entité** : une entité de plus est une question pour le cadrage.
+> leurs relations et qui lit ou écrit quoi. **Une tranche ajoute des attributs ; une entité
+> de plus est une décision de cadrage**, prise avant la tranche (c'est ainsi que sont venues les cartes, les propositions et
+> les pièces jointes) et jamais en cours de route.
 
 Un seul fichier SQLite sur le volume (`/data/kanevas.db`, AD-5) ; clés étrangères actives, WAL,
 une seule connexion d'écriture. Les octets des pièces jointes vont sur le disque du même volume
@@ -100,11 +101,9 @@ des membres d'un univers (identifiant, rôle) ; son seul geste : ajouter, change
 membre (B-6). Il ne lit ni ne modifie jamais la description, les fiches ou rien d'autre.
 ## Migration `kanevas-systemes`
 
-> Fichier : `src/db/migrations/0002-systemes.sql` — **numéro provisoire** (0002).
+> Fichier : `src/db/migrations/0002-systemes.sql` — numéro **définitif** (0002).
 >
-> Pendant le build, le fichier prend le numéro qui suit le dernier présent sur la branche : **numéro
-> provisoire**. Il n'est définitif qu'à la fusion : la phase merge (l'étape de la chaîne qui fusionne les PR après la recette) le recale sur le dernier fusionné si
-> une autre tranche est entrée avant (AD-51), et corrige alors cette note. Deux tables, une colonne : aucune entité de plus que le cadrage.
+> Un numéro est posé à la fusion de sa tranche (AD-51) et ne bouge plus. Deux tables, une colonne : aucune entité de plus que le cadrage.
 
 | Table | Colonnes (hors clés) | Contraintes |
 |---|---|---|
@@ -128,7 +127,7 @@ colonne ni table de plus.
 
 ## Migration `kanevas-suivi` (numéro pris à la fusion, AD-51 : le suivant de 0002)
 
-> Fichier : `src/db/migrations/0003-suivi.sql` — **numéro provisoire** (0003), recalé à la fusion si une autre tranche entre avant (AD-51).
+> Fichier : `src/db/migrations/0003-suivi.sql` — numéro **définitif** (0003).
 
 Trois tables, aucune entité nouvelle (campagne, scénario, tâche de préparation sont celles du
 cadrage). Les comptes-rendus n'ont pas de table : un compte-rendu est une fiche de type
@@ -155,6 +154,13 @@ et statut, MJ. `scenarios` et `taches_preparation` — MJ de l'univers **de la c
 autre univers n'atteint aucun scénario ni aucune tâche, un Joueur non plus (réponse comme pour un
 identifiant inconnu, AD-22), et leur nombre ni leur existence ne sortent jamais d'une réponse à
 un Joueur.
+
+## `kanevas-images` : aucune migration
+
+Aucune table, aucune colonne : une image générée est une **pièce jointe** ordinaire (`pieces_jointes`,
+`kanevas-fichiers`), créée par la fonction d'envoi unique (AD-65). La description demandée n'est
+stockée nulle part (AD-28) ; seul le fichier l'est. Les identifiants du moteur d'images vivent dans
+`CODEX_HOME` sur le volume, hors base (AD-50).
 
 ## Règles de droits, en une phrase chacune
 
@@ -251,7 +257,7 @@ Retirer une pièce, ou une section, supprime la ligne **puis** le fichier du dis
 suppression du fichier échoue, la ligne est déjà partie et l'orphelin est inatteignable (risque
 accepté : il n'y a pas de balayage des orphelins en V1).
 
-## Migration `kanevas-cartes-graphes` (`0007-cartes.sql`, numéro provisoire recalé à la fusion si une autre tranche entre avant, AD-51)
+## Migration `kanevas-cartes-graphes` (`0007-cartes.sql`, numéro définitif, AD-51)
 
 Deux tables ; aucune entité nouvelle (la carte et l'élément de carte sont ceux du cadrage). Les
 octets d'un fond ne sont pas en base (AD-7) : ils vivent sous `/data/attachments/` (AD-69).
@@ -281,8 +287,7 @@ visibles ; un MJ en mode Joueur voit la même.
 
 ## Migration `kanevas-illustrations` (numéro pris à la fusion, AD-51)
 
-> Fichier : `src/db/migrations/0006-illustrations.sql` — **numéro provisoire**, celui qui suit le dernier
-> présent sur la branche, recalé à la fusion si une autre tranche
+> Fichier : `src/db/migrations/0006-illustrations.sql` — numéro **définitif** (0006) ; il a été recalé à la fusion si une autre tranche
 > est entrée avant (AD-51). Décision : AD-93.
 
 **Conceptuel.** Une fiche a **zéro ou une** illustration : une image (PNG, JPEG, GIF ou WebP)
