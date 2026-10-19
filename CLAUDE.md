@@ -141,7 +141,7 @@
   resolver in `options.liens` (without it a `[[…]]` stays as written). `nature: 'scenario'` has the links without the `:::mj` container;
   a system entry (`texte`) has neither. `vueSection` / `lireFiche` / `lireSection` take the form `'markdown'` for the assistant
   (`[texte](fiche:<id>)`). « Mentionnée dans » is `services/mentions.ts` (`mentionsDe`), read-only, 50 per page, the page rides with `lireFiche`.
-- Sheet types (`kanevas-import-types`, `src/services/types-fiche.ts`, AD-120 — AD-113 in the feature's plan): the single list of
+- Sheet types (`kanevas-import-types`, `src/services/types-fiche.ts`, AD-120; the feature's plan numbered it AD-113, which `ARCHITECTURE.md` gives to the Markdown renderer): the single list of
   types; `TYPES_FICHE`, `TypeFiche` and the payload schemas (`CHARGES`) derive from it, never copy them. `fiches.type` has no
   `CHECK` (migration 0013): `creerFiche` is the guard ("Type de fiche inconnu."). A migration whose first line is
   `-- migrate: sans-cles-etrangeres` runs with foreign keys off and `foreign_key_check` before commit (`db.ts`).

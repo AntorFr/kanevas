@@ -1,5 +1,5 @@
 import { ChevronRight, Dices, Eye, Library, LockKeyhole, PanelLeft } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { Link, Outlet, matchPath, useLocation, useNavigate } from 'react-router-dom';
 
 import { useConnexionPerdue } from './api';
@@ -108,7 +108,7 @@ function Ariane() {
   const typeDe = (t: string) => iconeDuType(types, t);
   const icones = dedans ? new Map([...ITEMS_UNIVERS, ...lore].map((i) => [i.libelle, i.icone])) : new Map();
   return (
-    <nav className="ariane" aria-label="Fil d’Ariane">
+    <nav className="ariane" aria-label="Fil d’Ariane" style={{ '--avant': liste.filter((m, i) => i < liste.length - 1 && !m.sceau && !m.long && !m.autres && !(i > 0 && m.icone === 'item' && icones.get(m.libelle) !== undefined)).length } as CSSProperties}>
       {liste.map((m, i) => {
         const dernier = i === liste.length - 1;
         const Icone = m.icone === 'bibliotheque' ? Library : m.icone === 'item' ? icones.get(m.libelle) : m.icone === 'systemes' || m.icone === 'systemes-court' ? Dices : undefined;
