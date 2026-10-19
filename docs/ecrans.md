@@ -2667,7 +2667,7 @@ grid keeps its place; the file joins it when its upload completes.
 **Assistant-added file** (B-25, amended AD-44): a generated image enters the media library like
 any upload, attributed to the requesting GM's account, with visibility determined by where it is
 added (illustration: « Visible des joueurs » if the sheet has a section readable by players).
-The generating assistant tool belongs to `kanevas-images`; this slice only delivers the add path.
+The generating assistant tool (`generer_image`, `kanevas-images`) calls that same add path, joining the image to the section.
 
 | État | Ce qu'on voit | Ce qu'on peut faire |
 |---|---|---|
