@@ -12,6 +12,7 @@
     "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p frontend/tsconfig.json",
     "test": "node --import tsx --test $(find src frontend/src -name '*.test.ts')",
     "tests:attestes": "node scripts/tests-attestes.mjs",
+    "controle-langue": "node scripts/controle-langue.mjs",
     "dev:front": "vite --config frontend/vite.config.ts"
   },
   "dependencies": {
