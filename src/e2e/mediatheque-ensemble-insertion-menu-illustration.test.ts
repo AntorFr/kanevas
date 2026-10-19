@@ -54,8 +54,8 @@ const sectionDe = async (p: Any, fiche: number, titre: string): Promise<Any> =>
   (await (await p.request.get(`/api/univers/${uid}/fiches/${fiche}`)).json()).sections.find((s: Any) => s.titre === titre);
 async function ouvre(p: Any, titre: string): Promise<void> {
   await p.goto(`/univers/${uid}/fiche/${ids[titre]}`);
-  // a draft left by an earlier edit would reopen the editor by itself: this check starts from the saved text
-  await p.evaluate(() => Object.keys(localStorage).filter((k) => k.startsWith('kanevas:brouillon')).forEach((k) => localStorage.removeItem(k)));
+  // a draft (kept in sessionStorage by the section editor) left by an earlier edit would reopen the editor by itself: this check starts from the saved text
+  await p.evaluate(() => [localStorage, sessionStorage].forEach((m) => Object.keys(m).filter((k) => k.startsWith('kanevas:brouillon')).forEach((k) => m.removeItem(k))));
   await p.goto(`/univers/${uid}/fiche/${ids[titre]}`);
   await attendre(p);
   await p.getByRole('heading', { name: titre, level: 1 }).first().waitFor();
