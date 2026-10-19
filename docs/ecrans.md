@@ -2536,7 +2536,7 @@ sont fermées dès maintenant. Maquette : `e09-fiche-importee.html` (« Port-Sel
 and the empty picker are not drawn: **this document takes precedence over the mockup**. Decisions
 of 2026-10-11 (B-53 to B-56, AD-111): all universe files, images and documents.
 
-Atteint par « Médiathèque » (`images`) dans la barre de l'univers, sous « Cartes », pour tout membre.
+Atteint (adresse `/univers/<id>/mediatheque`) par « Médiathèque » (`images`) dans la barre de l'univers, sous « Cartes », pour tout membre.
 En tête : le titre, « 1140 fichiers » (ceux que le lecteur voit) et, pour un MJ, « Ajouter des
 fichiers » (plusieurs à la fois, ou un glisser-déposer sur la page : voile « Déposez les fichiers pour
 les ajouter. »). Une bascule segmentée **Tout · Images · Documents** ; une rangée de filtres : la

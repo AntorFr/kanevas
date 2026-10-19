@@ -198,6 +198,8 @@ première fiche garde ses fiches cherchables). Index SQL : `relations (section_i
 des relations d'une section ; aucun index sur `cible_fiche_id` (aucune requête de cette tranche n'en
 a besoin ; le graphe des cartes ajoutera le sien si sa requête l'exige).
 
+> **Since `kanevas-import-mediatheque` this describes the history, not the rules in force:** the table above is emptied and unread; `fichiers.visibilite` and `fichierLisible` (`src/services/fichiers.ts`) govern who reads a file, and the limit is 100 joined files per section. `pieces_jointes.secrete` and the 50-piece ceiling below no longer apply.
+
 Ce que la base ne dit pas, et que le service porte, avec sa raison (la règle croise plusieurs
 tables) : la fiche cible est **du même univers** que la fiche de la section ; elle n'est **pas**
 cette fiche elle-même ; une section porte **100 relations** au plus ; seul un MJ crée ou retire.

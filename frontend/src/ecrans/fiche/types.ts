@@ -43,7 +43,7 @@ export interface Fiche {
   type: string;
   titre: string;
   creeLe?: string;
-  /** Free sub-type under the title (AD-113), absent when the sheet has none. */
+  /** Free sub-type under the title (AD-120), absent when the sheet has none. */
   sousType?: string | null;
   charge: { v?: number; pj?: boolean };
   /** The sheet's illustration (AD-93): `jeton` changes at each replacement and goes in the image address. */

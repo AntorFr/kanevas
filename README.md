@@ -125,7 +125,7 @@ token belongs to the deleted universe and cannot be reused for the new one.
 ```bash
 npm ci && npm run build && KANEVAS_STUB=1 npm start   # puis ouvrir http://localhost:3001/ : choix d'un compte de test
 # le semis précède l'écoute du port (moins d'une seconde ici) ; sans écrire dans ./data/ ni sur le port 3001 : npm run build && PORT=3055 DB_PATH=/tmp/k.db KANEVAS_STUB=1 npm start
-# Stop with Ctrl-C. In the background, `kill $!` stops only `npm`, not the server: kill the `node dist/server.js` process that listens on the port (a server left running keeps the port, the database and `session.key`). Delete /tmp/k.db to reset the database. Every recipe below assumes a fresh seeded database (ids such as universe 4 are those of a fresh seed; the deletion recipe destroys « Port-Sel » and the universe it is run on): delete /tmp/k.db before each.
+# The recipes below that name `http://localhost:3001` assume `npm start` without `PORT`; with the `PORT=3055` command, replace 3001 by 3055. Stop with Ctrl-C. In the background, `kill $!` stops only `npm`, not the server: kill the `node dist/server.js` process that listens on the port (find its pid with `ss -ltnp`, or `ps -eo pid,args | grep dist/server`, then `kill <pid>`) (a server left running keeps the port, the database and `session.key`). Delete /tmp/k.db to reset the database. Every recipe below assumes a fresh seeded database (ids such as universe 4 are those of a fresh seed; the deletion recipe destroys « Port-Sel » and the universe it is run on): delete /tmp/k.db before each.
 # `session.key` and `attachments/` are created beside the database: use a dedicated directory,
 # e.g. `DB_PATH=/tmp/kanevas-essai/k.db`, and delete that entire directory to reset everything.
 ```
