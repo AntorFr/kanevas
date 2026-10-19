@@ -85,9 +85,12 @@ test('B-25 · le portrait demandé à l’assistant entre dans E-19 selon la sec
 
   await ouvrir(antor, U);
   assert.match(await antor.locator('main').innerText(), /2 fichiers/);
-  assert.match(await tuile(antor, reserves[0].nom).innerText(), /MJ seul/);
-  assert.doesNotMatch(await tuile(antor, visibles[0].nom).innerText(), /MJ seul/);
-  await tuile(antor, visibles[0].nom).click();
+  // Two generations in the same second share a name: tell the tiles apart by their badge, not by name.
+  const tuileMJ = tuile(antor, reserves[0].nom).filter({ hasText: /MJ seul/ });
+  const tuileJoueurs = tuile(antor, visibles[0].nom).filter({ hasNotText: /MJ seul/ });
+  assert.equal(await tuileMJ.count(), 1);
+  assert.equal(await tuileJoueurs.count(), 1);
+  await tuileJoueurs.click();
   await antor.getByText(/ajouté par antor/).waitFor();
   assert.match(await antor.getByText(/Utilisé dans/).first().locator('xpath=..').innerText(), /Maître Aldric/);
   await antor.screenshot({ path: '/tmp/scr-med-assistant.png' });
@@ -95,7 +98,7 @@ test('B-25 · le portrait demandé à l’assistant entre dans E-19 selon la sec
   await ouvrir(lea, U);
   assert.match(await lea.locator('main').innerText(), /1 fichier\b/);
   assert.equal(await tuile(lea, visibles[0].nom).count(), 1);
-  assert.equal(await tuile(lea, reserves[0].nom).count(), 0);
+  assert.doesNotMatch(await tuile(lea, visibles[0].nom).innerText(), /MJ seul/);
 });
 
 async function mondeSimple(nom: string): Promise<{ U: number; antor: Any }> {
