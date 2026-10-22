@@ -212,10 +212,9 @@ outil `chercher` de l'assistant sans `type` = même fonction, « Introuvable. »
 **Suivant :** les tranches non encore livrées.
 
 
-`feature/kanevas-e2e-stables` (correctif, PR non fusionnée, depuis `main` v0.16.0) rend déterministes les tests d'écran rouges en CI. Sept commits, chacun avec sa cause :
-six **courses de test** (attente d'un état au lieu d'un délai ou d'une lecture immédiate : navigation de déconnexion avant le `goto` suivant, en-tête « Rôle » mesuré une fois la liste rendue,
-erreur d'E-2 disparue avant comptage, section de Léa rendue avant lecture des titres, titre créé attendu par son nom, états vides de la page de campagne) et une **régression du code**,
+`feature/kanevas-e2e-stables` (correctif, PR non fusionnée, depuis `main` v0.16.0) rend déterministes les tests d'écran rouges (main a entre-temps réparé à sa façon la déconnexion, `goBack`, E-10 et la page de campagne : ses versions sont gardées). Reste de la branche, chacun avec sa cause :
+**courses de test** (attente d'un état au lieu d'une lecture immédiate : en-tête « Rôle » mesuré une fois la liste rendue, erreur d'E-2 disparue avant comptage, section de Léa rendue avant lecture des titres) et une **régression du code**,
 `frontend/src/api.ts` : une réponse partie avant la coupure n'efface plus la « connexion perdue » déclarée depuis (compteur `pertes` ; la sonde `/healthz` et l'envoi de fichier suivent la même règle).
 Aucun test supprimé, sauté ni affaibli. Preuve : `src/e2e` joué sous `taskset -c 0-3 … --test-concurrency=2` (conditions de la CI), vert plusieurs fois, dont avec une seconde suite en parallèle.
-**Reste :** la CI verte trois fois de suite sur la PR (constat de la vérification), puis la fusion ; la mise en production de 0.16.x est une PR GitOps à part (Monsieur).
+**Reste :** la suite verte trois fois de suite (constat de la vérification ; aucune CI ne tourne sur une PR : workflow manuel `tests.yml` ou `npm run tests:attestes`), puis la fusion ; la mise en production de 0.16.x est une PR GitOps à part (Monsieur).
 Piège encore vrai : un e2e qui lit le DOM juste après une navigation ou un `fill` sans attendre l'état visé se révèle sous charge — attendre l'élément ou sa disparition, jamais un délai.
