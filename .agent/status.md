@@ -149,3 +149,12 @@ catalogue MJ (événement `proposition_creee`) et sa règle du bouchon (« Mets 
 - Propositions (AD-79 à AD-82) : lues, appliquées, abandonnées par leur seul demandeur, encore MJ ; tout autre compte reçoit 404. Le fil ne se garde pas (AD-28) : après un rechargement, une proposition en attente n'est plus atteignable (limite écrite, bornée à une par MJ et section ; pas de liste « mes propositions »). Hors tranche : application par un joueur, propositions en lot. L'assistant ne sait pas quel écran est ouvert : le compte-rendu se nomme dans la demande. Le semis du bouchon n'a ni campagne ni compte-rendu : la recette les crée (README).
 
 **Suivant :** les tranches non encore livrées.
+
+
+`feature/kanevas-e2e-stables` (correctif, PR non fusionnée, depuis `main` v0.16.0) rend déterministes les tests d'écran rouges en CI. Sept commits, chacun avec sa cause :
+six **courses de test** (attente d'un état au lieu d'un délai ou d'une lecture immédiate : navigation de déconnexion avant le `goto` suivant, en-tête « Rôle » mesuré une fois la liste rendue,
+erreur d'E-2 disparue avant comptage, section de Léa rendue avant lecture des titres, titre créé attendu par son nom, états vides de la page de campagne) et une **régression du code**,
+`frontend/src/api.ts` : une réponse partie avant la coupure n'efface plus la « connexion perdue » déclarée depuis (compteur `pertes` ; la sonde `/healthz` et l'envoi de fichier suivent la même règle).
+Aucun test supprimé, sauté ni affaibli. Preuve : `src/e2e` joué sous `taskset -c 0-3 … --test-concurrency=2` (conditions de la CI), vert plusieurs fois, dont avec une seconde suite en parallèle.
+**Reste :** la CI verte trois fois de suite sur la PR (constat de la vérification), puis la fusion ; la mise en production de 0.16.x est une PR GitOps à part (Monsieur).
+Piège encore vrai : un e2e qui lit le DOM juste après une navigation ou un `fill` sans attendre l'état visé se révèle sous charge — attendre l'élément ou sa disparition, jamais un délai.
