@@ -457,22 +457,22 @@ describe('kanevas-premiere-fiche, du besoin', { skip: skipBrowser }, () => {
     await voit(p, 'Erreur : 80 caractères au plus.');
   });
 
-  test('B-8 contenu : 20 000 caractères acceptés, 20 001 refusés', async () => {
+  test('B-8 contenu : 100 000 caractères acceptés, 100 001 refusés', async () => {
     const { antor } = await table(UNIVERS + ' B8c', []);
     const p = antor.page;
     await creerFiche(p, 'lieu', 'Grimoire');
     await ajouterSection(p, 'Texte');
     const s = section(p, 'Texte');
     await s.getByRole('button', { name: rxExact('Modifier') }).click();
-    await s.getByRole('textbox').fill('a'.repeat(20001));
-    await s.getByRole('button', { name: rxExact('Enregistrer') }).click();
-    await voit(p, 'Erreur : 20 000 caractères au plus.');
-    await s.getByRole('textbox').fill('a'.repeat(20000));
+    await s.getByRole('textbox').fill('a'.repeat(100001));
+    await voit(p, 'Erreur : 100 000 caractères au plus.');
+    assert.equal(await s.getByRole('button', { name: rxExact('Enregistrer') }).getAttribute('aria-disabled'), 'true');
+    await s.getByRole('textbox').fill('a'.repeat(100000));
     await s.getByRole('button', { name: rxExact('Enregistrer') }).click();
     await attendre(p);
     await p.reload();
     await attendre(p);
-    assert.equal(((await section(p, 'Texte').innerText()).match(/a/g) ?? []).length >= 20000, true);
+    assert.equal(((await section(p, 'Texte').innerText()).match(/a/g) ?? []).length >= 100000, true);
   });
 
   test('B-9 Léa ouvre « Maître Aldric » : « Apparence » seule, sans trace de la Vérité, ni réglage', async () => {
@@ -680,7 +680,7 @@ describe('kanevas-premiere-fiche, du besoin', { skip: skipBrowser }, () => {
     await p.getByRole('button', { name: /^Se connecter en tant que Admin$/i }).click();
     await attendre(p);
     const moi = await p.evaluate(async () => (await fetch('/api/moi')).json());
-    assert.deepEqual(moi, { username: 'admin', groups: ['parents'], limites: { contenuSection: 20000 } });
+    assert.deepEqual(moi, { username: 'admin', groups: ['parents'], limites: { contenuSection: 100000 } });
     assert.ok((await texte(p)).includes(bandeau));
     await p.goto('/creer-un-univers');
     await attendre(p);
@@ -696,7 +696,7 @@ describe('kanevas-premiere-fiche, du besoin', { skip: skipBrowser }, () => {
   test('Bouchon : un compte ordinaire n’a aucun groupe', async () => {
     const lea = await compte('lea');
     const moi = await lea.page.evaluate(async () => (await fetch('/api/moi')).json());
-    assert.deepEqual(moi, { username: 'lea', groups: [], limites: { contenuSection: 20000 } });
+    assert.deepEqual(moi, { username: 'lea', groups: [], limites: { contenuSection: 100000 } });
   });
 
   test('Bouchon : l’admin d’instance sans rôle n’a pas accès au contenu d’un univers', async () => {

@@ -19,6 +19,7 @@ export interface Scenario {
   campagneId: number;
   titre: string;
   contenu: string;
+  html: string;
   version: number;
 }
 

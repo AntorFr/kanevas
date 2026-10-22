@@ -1,0 +1,40 @@
+/* E-17 Recherche: field, two rows of filters, rows of results. */
+.page-recherche { width: 100%; max-width: 784px; margin: 0 auto; padding: var(--e-4) 0 120px; min-width: 0; }
+.page-recherche h1 { font: 500 var(--t-40)/1.08 var(--police-titre); letter-spacing: -.015em; font-variation-settings: "opsz" 144; margin-bottom: var(--e-4); }
+.saisie-recherche { position: relative; }
+.saisie-recherche > svg { position: absolute; left: 10px; top: 9px; color: var(--texte-3); pointer-events: none; z-index: 1; }
+.saisie-recherche .champ { margin: 0; }
+.saisie-recherche .champ > .lib-champ { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; margin: 0; }
+.saisie-recherche input { padding-left: 34px; min-height: 34px; }
+.filtres-recherche { display: flex; flex-wrap: wrap; gap: var(--e-2); margin-top: var(--e-3); }
+.pastille-filtre { display: inline-flex; align-items: center; gap: 6px; min-height: 30px; max-width: 100%; padding: 0 var(--e-3); font: inherit; font-size: var(--t-13);
+  color: var(--texte-2); background: var(--surface); border: 1px solid var(--bord-fort); border-radius: var(--rayon-pastille); cursor: pointer; }
+.pastille-filtre > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pastille-filtre.tirets { border-style: dashed; }
+.pastille-filtre.actif { color: var(--accent-texte); background: var(--accent-fond); border-color: var(--accent); }
+.pastille-filtre:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+/* On a phone the row of types scrolls inside itself, never the page. */
+@media (max-width: 760px) {
+  .filtres-recherche:not(.etiquettes) { flex-wrap: nowrap; overflow-x: auto; }
+  .filtres-recherche:not(.etiquettes) .pastille-filtre { flex: none; }
+}
+.note-recherche { margin-top: var(--e-5); color: var(--texte-3); }
+.vide-recherche { margin-top: 14px; padding: 28px; text-align: center; color: var(--texte-2); border: 1px dashed var(--bord-fort); border-radius: 12px; }
+.resultats-recherche { list-style: none; margin: var(--e-4) 0 0; padding: 0; transition: opacity var(--duree); }
+.resultats-recherche.grise { opacity: .45; }
+.ligne-recherche { border-bottom: 1px solid var(--bord); padding: var(--e-2) 0; min-width: 0; }
+.ligne-recherche:last-child { border: 0; }
+.lien-recherche { display: flex; align-items: center; gap: 12px; min-width: 0; color: var(--texte); text-decoration: none; }
+.vignette-recherche { width: 40px; height: 40px; flex: none; display: grid; place-items: center; overflow: hidden; border-radius: 8px; background: var(--surface-2); color: var(--texte-3); }
+.vignette-recherche img { width: 100%; height: 100%; object-fit: cover; }
+.texte-recherche { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.titre-recherche { font-size: var(--t-14); font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.titre-recherche > svg { vertical-align: -2px; margin-right: 6px; color: var(--texte-3); }
+.sous-titre-recherche { display: flex; align-items: center; gap: 6px; min-width: 0; overflow: hidden; color: var(--texte-2); font-size: var(--t-12); white-space: nowrap; }
+.alias-recherche { overflow: hidden; text-overflow: ellipsis; min-width: 0; flex: 0 1 auto; }
+.lien-recherche .badge-type { max-width: 40%; overflow: hidden; text-overflow: ellipsis; }
+.etiquette-ligne { max-width: 100%; height: 22px; padding: 0 8px; font: inherit; font-size: var(--t-12); color: var(--texte-2); background: var(--surface-2);
+  border: 0; border-radius: var(--rayon-pastille); cursor: pointer; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.etiquette-ligne:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.plus-etiquettes { font-size: var(--t-12); color: var(--texte-3); line-height: 22px; }
+.suite-recherche { display: flex; justify-content: center; margin-top: var(--e-4); }

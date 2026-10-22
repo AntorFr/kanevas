@@ -95,7 +95,7 @@ test('nominal : portrait → libellé, vignette <= 240 px, « Ouvrir la section 
   await img.waitFor({ state: 'visible' });
   assert.ok((await img.boundingBox()).width <= 240);
   assert.equal(await img.getAttribute('alt'), DEMANDE);
-  assert.match(await img.getAttribute('src'), /^\/api\/univers\/1\/fiches\/1\/pieces-jointes\/\d+\/fichier/);
+  assert.match(await img.getAttribute('src'), /^\/api\/univers\/1\/fichiers\/\d+/);
   assert.equal((await pieces(antor)).length, avant + 1);
   await b.getByRole('link', { name: /Ouvrir la section/ }).click();
   await antor.waitForURL(/\/univers\/1\/fiche\/1(#.*)?$/);
@@ -186,7 +186,7 @@ test('états : chargement, image retirée → « Image indisponible. », recharg
   assert.equal(await bloc(antor).count(), 2);
   const ps = (await pieces(antor)).filter((x: Any) => /image/.test(x.type ?? x.mime ?? 'image'));
   const dernier = ps[ps.length - 1];
-  const brute = await antor.request.delete(`/api/univers/1/fiches/1/pieces-jointes/${dernier.id}`);
+  const brute = await antor.request.delete(`/api/univers/1/fichiers/${dernier.id}`);
   assert.ok(brute.ok(), 'removal ' + brute.status());
   // close / reopen
   await panneau(antor).getByRole('button', { name: /Fermer/ }).click();
@@ -208,7 +208,7 @@ test('états : chargement, image retirée → « Image indisponible. », recharg
 test('chargement : cadre « Chargement de l’image… » (role=status) précède l’image', opts, async () => {
   await ouvrir(antor);
   await nouvelle(antor);
-  await antor.route('**/pieces-jointes/*/fichier*', async (route: Any) => {
+  await antor.route('**/fichiers/*', async (route: Any) => {
     await new Promise((r) => setTimeout(r, 1200));
     await route.continue();
   });
@@ -218,7 +218,7 @@ test('chargement : cadre « Chargement de l’image… » (role=status) précèd
   assert.equal(await b.getByRole('link', { name: /Ouvrir la section/ }).count(), 1);
   await b.locator('img').waitFor({ state: 'visible' });
   assert.equal(await b.getByText('Chargement de l’image…').count(), 0);
-  await antor.unroute('**/pieces-jointes/*/fichier*');
+  await antor.unroute('**/fichiers/*');
 });
 
 test('connexion perdue : vignette chargée reste ; sinon « Recharger l’image » désactivé', opts, async () => {
@@ -232,17 +232,17 @@ test('connexion perdue : vignette chargée reste ; sinon « Recharger l’image 
   assert.equal(await b.locator('img').isVisible(), true);
   await antor.context().setOffline(false);
   // an unreadable thumbnail while offline
-  await antor.route('**/pieces-jointes/*/fichier*', (route: Any) => route.abort());
+  await antor.route('**/fichiers/*', (route: Any) => route.abort());
   await demander(antor, DEMANDE);
   const b2 = bloc(antor).nth(1);
   await b2.getByText('Image indisponible.').waitFor();
-  await antor.unroute('**/pieces-jointes/*/fichier*');
+  await antor.unroute('**/fichiers/*');
 });
 
 test('bornes : titres de 120 et 80 caractères passent à la ligne, image très haute contenue', opts, async () => {
   assert.equal(TITRE_LONG.length, 120);
   assert.equal(SECTION_LONGUE.length, 80);
-  await antor.route('**/pieces-jointes/*/fichier*', (route: Any) =>
+  await antor.route('**/fichiers/*', (route: Any) =>
     route.fulfill({
       status: 200,
       contentType: 'image/svg+xml',
@@ -260,7 +260,7 @@ test('bornes : titres de 120 et 80 caractères passent à la ligne, image très 
           {
             type: 'image_attachee',
             libelle: `Image attachée à la section « ${SECTION_LONGUE} » de « ${TITRE_LONG} »`,
-            cible: { type: 'fiche', ficheId: 1, sectionId: 1, pieceId: 1, description: 'Un portrait très haut' },
+            cible: { type: 'fiche', ficheId: 1, sectionId: 1, fichierId: 1, description: 'Un portrait très haut' },
           },
         ],
       }),
@@ -281,7 +281,7 @@ test('bornes : titres de 120 et 80 caractères passent à la ligne, image très 
   const pp = await panneau(antor).boundingBox();
   assert.ok(bp.x + bp.width <= pp.x + pp.width + 1, 'no horizontal overflow');
   assert.equal(await panneau(antor).evaluate((e: Any) => e.scrollWidth <= e.clientWidth + 1), true);
-  await antor.unroute('**/pieces-jointes/*/fichier*');
+  await antor.unroute('**/fichiers/*');
   await antor.unroute('**/assistant/messages');
 });
 
@@ -312,7 +312,7 @@ test('existant : un bloc d’écriture de texte reste intact', opts, async () =>
 test('défilement à 390 px : « Ouvrir la section » et « Recharger l’image » restent au-dessus de la saisie', opts, async () => {
   await antor.setViewportSize({ width: 390, height: 844 });
   // The image arrives (or fails) after the answer is laid out, as on a real network.
-  await antor.route('**/pieces-jointes/*/fichier*', async (route: Any) => {
+  await antor.route('**/fichiers/*', async (route: Any) => {
     await new Promise((r) => setTimeout(r, 400));
     return route.fulfill({
       status: 200,
@@ -333,8 +333,8 @@ test('défilement à 390 px : « Ouvrir la section » et « Recharger l’image 
     };
     assert.ok(await dessus(b.getByRole('link', { name: /Ouvrir la section/ })), 'link visible once loaded');
     // Reopened: the same pieces now answer 404 (the URL carries a nonce, so `indispo` is added by the route below).
-    await antor.unroute('**/pieces-jointes/*/fichier*');
-    await antor.route('**/pieces-jointes/*/fichier*', async (route: Any) => {
+    await antor.unroute('**/fichiers/*');
+    await antor.route('**/fichiers/*', async (route: Any) => {
       await new Promise((r) => setTimeout(r, 400));
       return route.fulfill({ status: 404, body: '' });
     });
@@ -347,7 +347,7 @@ test('défilement à 390 px : « Ouvrir la section » et « Recharger l’image 
     assert.ok(await dessus(t.getByRole('button', { name: 'Recharger l’image' })), 'button visible when unavailable');
     assert.ok(await dessus(t.getByRole('link', { name: /Ouvrir la section/ })), 'link visible when unavailable');
   } finally {
-    await antor.unroute('**/pieces-jointes/*/fichier*');
+    await antor.unroute('**/fichiers/*');
     await antor.setViewportSize({ width: 1280, height: 720 });
   }
 });

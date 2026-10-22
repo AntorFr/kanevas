@@ -1,3 +1,5 @@
+import { rendreMarkdown } from './markdown.js';
+import { validerContenu } from './sections.js';
 import type { Db } from '../db/db.js';
 import { exigerMJ } from './droits.js';
 import { ErreurService, introuvable, invalide, refuse } from './erreurs.js';
@@ -35,7 +37,10 @@ export interface Gabarit {
   systemeId: number;
   type: TypeGabarit;
   nom: string;
-  contenu: string;
+  /** Markdown source: only for who may write templates (AD-113). */
+  contenu?: string;
+  /** The source rendered by `rendreMarkdown`, for every reader. */
+  html: string;
   version: number;
   creeLe: string;
   modifieLe: string;
@@ -52,12 +57,13 @@ interface GabaritRow {
   modifie_le: string;
 }
 
-const versGabarit = (r: GabaritRow): Gabarit => ({
+const versGabarit = (r: GabaritRow, avecSource = true): Gabarit => ({
   id: r.id,
   systemeId: r.systeme_id,
   type: r.type,
   nom: r.nom,
-  contenu: r.contenu,
+  ...(avecSource ? { contenu: r.contenu } : {}),
+  html: rendreMarkdown(r.contenu),
   version: r.version,
   creeLe: r.cree_le,
   modifieLe: r.modifie_le,
@@ -203,7 +209,7 @@ export function listerGabarits(
   systemeId: number,
   options: { type: string; curseur?: string; limite?: number },
 ): PageGabarits {
-  systemeVisible(db, compteId, systemeId);
+  const peutEcrire = systemeVisible(db, compteId, systemeId).peutEcrire;
   if (!(TYPES_GABARIT as readonly string[]).includes(options.type)) {
     throw invalide('Type de gabarit inconnu.');
   }
@@ -230,13 +236,13 @@ export function listerGabarits(
     rows.length > limite && dernier
       ? Buffer.from(JSON.stringify({ t: dernier.nom, i: dernier.id })).toString('base64url')
       : null;
-  return { gabarits: page.map(versGabarit), suivant };
+  return { gabarits: page.map((g) => versGabarit(g, peutEcrire)), suivant };
 }
 
 function validerGabarit(nom: string, contenu: string): string {
   const n = nom.trim();
   if (n.length < 1 || n.length > 120) throw invalide('Le nom doit faire de 1 à 120 caractères.');
-  if (contenu.length > 20000) throw invalide('Le contenu doit faire 20 000 caractères au plus.');
+  validerContenu(contenu);
   return n;
 }
 

@@ -307,7 +307,6 @@ describe('kanevas-relier-chercher, du besoin', { skip: skipBrowser }, () => {
       await m.lea.getByRole('heading', { name: 'Maître Aldric', level: 1 }).waitFor();
       await m.lea.goBack();
       await attendre(m.lea);
-      // The list is re-fetched after goBack: wait for the result before reading the links.
       await m.lea.getByRole('link', { name: rx('Maître Aldric') }).first().waitFor();
       assert.equal(await champ(m.lea).inputValue(), 'Aldric');
       assert.ok((await liens(m.lea)).some((t) => t.includes('Maître Aldric')));
@@ -443,6 +442,7 @@ describe('kanevas-relier-chercher, du besoin', { skip: skipBrowser }, () => {
 
     test('mode Joueur : Antor voit la même chose que Léa, sans « Relier » ni « Retirer »', async () => {
       await ouvrirFiche(m.antor, m, m.aldric, 'joueur');
+      await ligneRelation(m.antor, 'membre de', 'Lames Grises').waitFor();
       const t = await texte(m.antor);
       assert.equal(await ligneRelation(m.antor, 'membre de', 'Lames Grises').count(), 1);
       assert.ok(!t.includes('Cercle des Cendres'));
@@ -452,9 +452,13 @@ describe('kanevas-relier-chercher, du besoin', { skip: skipBrowser }, () => {
 
     test('exclusion : une relation est dirigée — la fiche cible ne montre pas celles qui l’atteignent', async () => {
       await ouvrirFiche(m.antor, m, m.grises);
-      const t = await texte(m.antor);
-      assert.ok(!t.includes('membre de'));
-      assert.ok(!t.includes('Maître Aldric'));
+      await m.antor.getByRole('heading', { name: 'Mentionnée dans' }).waitFor();
+      // « Mentionnée dans » (B-36) legitimately names the source of a relation; the Relations block must not.
+      const partout = await m.antor.getByRole('listitem').filter({ hasText: 'membre de' }).count();
+      const mentions = await m.antor.getByRole('region', { name: 'Mentionnée dans' }).getByRole('listitem').filter({ hasText: 'membre de' }).count();
+      assert.equal(mentions, 1);
+      assert.equal(partout, mentions);
+      assert.equal(await m.antor.getByRole('button', { name: rx('Retirer la relation') }).count(), 0);
     });
 
     test('refus : l’admin d’instance, sans rôle, a « Page introuvable. » sur la fiche', async () => {

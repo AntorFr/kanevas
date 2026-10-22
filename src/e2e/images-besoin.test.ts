@@ -94,11 +94,13 @@ async function demander(page: Any, message: string): Promise<void> {
 /** Number of image attachments displayed by the sheet (E-9), read after a fresh load. */
 async function nbImages(page: Any, m: Monde): Promise<number> {
   await ouvrirFiche(page, m);
-  return page.locator('main img[src*="pieces-jointes"]').count();
+  return page.locator('main img[src*="/fichiers/"]').count();
 }
 async function remplir(page: Any, m: Monde, n: number): Promise<void> {
   for (let i = 0; i < n; i++) {
-    const r = await api(page, 'POST', `/api/univers/${m.U}/fiches/${m.aldric}/sections/${m.apparence}/pieces-jointes`, undefined, {
+    const r = await api(page, 'POST', `/api/univers/${m.U}/fichiers`, undefined, {
+      section: String(m.apparence),
+      maniere: 'joint',
       fichier: { name: `p${i}.png`, mimeType: 'image/png', buffer: PNG_1X1 },
     });
     assert.equal(r.status(), 201);
@@ -136,8 +138,8 @@ describe('kanevas-images : générer un portrait (B-25, B-27, P-3 étape 5)', { 
     await m.antor.waitForURL(new RegExp(`/univers/${m.U}/fiche/${m.aldric}#section-${m.apparence}$`));
     await attendre(m.antor);
     await m.antor.screenshot({ path: '/tmp/images-nominal-fiche.png' });
-    await m.antor.locator('main img[src*="pieces-jointes"]').first().waitFor({ timeout: 3000 });
-    assert.equal(await m.antor.locator('main img[src*="pieces-jointes"]').count(), 1);
+    await m.antor.locator('main img[src*="/fichiers/"]').first().waitFor({ timeout: 3000 });
+    assert.equal(await m.antor.locator('main img[src*="/fichiers/"]').count(), 1);
   });
 
   test('demande_faite_sur_la_fiche_elle_meme_montre_l_image_en_suivant_ouvrir_la_section', async () => {
@@ -150,7 +152,7 @@ describe('kanevas-images : générer un portrait (B-25, B-27, P-3 étape 5)', { 
     await bloc(m.antor).getByRole('link', { name: 'Ouvrir la section' }).click();
     await attendre(m.antor);
     await m.antor.waitForTimeout(500);
-    assert.equal(await m.antor.locator('main img[src*="pieces-jointes"]').count(), 1);
+    assert.equal(await m.antor.locator('main img[src*="/fichiers/"]').count(), 1);
   });
 
   test('une_demande_attache_une_seule_image_et_deux_demandes_en_attachent_deux', async () => {
@@ -179,21 +181,21 @@ describe('kanevas-images : générer un portrait (B-25, B-27, P-3 étape 5)', { 
     assert.equal(await nbImages(m.antor, m), 0);
   });
 
-  test('section_a_49_pieces_accepte_la_cinquantieme_et_a_50_refuse_sans_rien_attacher', async () => {
-    // Fails if the 50-attachment limit is off by one in either direction or if a refusal still attaches.
+  test('section_a_99_fichiers_accepte_le_centieme_et_a_100_refuse_sans_rien_attacher', async () => {
+    // Fails if the 100-file limit is off by one in either direction or if a refusal still attaches.
     const m = await monde('Images plafond');
-    await remplir(m.antor, m, 49);
+    await remplir(m.antor, m, 99);
     await ouvrirFiche(m.antor, m);
     await ouvrirPanneau(m.antor);
     await demander(m.antor, DEMANDE);
     const accepte = (await texte(m.antor)).includes(LIBELLE);
-    assert.equal(await nbImages(m.antor, m), 50);
-    assert.ok(accepte, '49 -> 50 is accepted');
+    assert.equal(await nbImages(m.antor, m), 100);
+    assert.ok(accepte, '99 -> 100 is accepted');
     await ouvrirPanneau(m.antor).catch(() => undefined);
     await demander(m.antor, DEMANDE);
     const t = await texte(m.antor);
-    assert.equal(await nbImages(m.antor, m), 50);
-    assert.match(t, /Cette section porte déjà 50 pièces jointes\./);
+    assert.equal(await nbImages(m.antor, m), 100);
+    assert.match(t, /Cette section porte déjà 100 fichiers joints\./);
   });
 
   test('description_de_plus_de_500_caracteres_est_refusee_et_rien_n_est_attache', async () => {
@@ -220,7 +222,7 @@ describe('kanevas-images : générer un portrait (B-25, B-27, P-3 étape 5)', { 
     assert.doesNotMatch(t, /Écrit par l'assistant/);
     await m.lea.screenshot({ path: '/tmp/images-lea.png' });
     assert.equal(await nbImages(m.antor, m), 0);
-    assert.equal(await m.lea.locator('main img[src*="pieces-jointes"]').count(), 0);
+    assert.equal(await m.lea.locator('main img[src*="/fichiers/"]').count(), 0);
   });
 
   test('joueuse_qui_peut_ecrire_la_section_n_obtient_pas_d_image_non_plus', async () => {
@@ -258,11 +260,11 @@ describe('kanevas-images : générer un portrait (B-25, B-27, P-3 étape 5)', { 
     await demander(m.antor, "Fais un portrait pour « Vérité — MJ seul » d'« Maître Aldric »");
     assert.ok((await texte(m.antor)).includes("Image attachée à la section « Vérité — MJ seul » de « Maître Aldric »"));
     await ouvrirFiche(m.antor, m);
-    const srcs: string[] = await m.antor.locator('main img[src*="pieces-jointes"]').evaluateAll((l: Any[]) => l.map((i) => i.getAttribute('src')));
+    const srcs: string[] = await m.antor.locator('main img[src*="/fichiers/"]').evaluateAll((l: Any[]) => l.map((i) => i.getAttribute('src')));
     assert.equal(srcs.length, 2);
     // Léa sees exactly one: the one of « Apparence ».
     await ouvrirFiche(m.lea, m);
-    const vues: string[] = await m.lea.locator('main img[src*="pieces-jointes"]').evaluateAll((l: Any[]) => l.map((i) => i.getAttribute('src')));
+    const vues: string[] = await m.lea.locator('main img[src*="/fichiers/"]').evaluateAll((l: Any[]) => l.map((i) => i.getAttribute('src')));
     assert.equal(vues.length, 1);
     const cachee = srcs.find((s) => !vues.includes(s))!;
     assert.equal((await api(m.lea, 'GET', cachee)).status(), 404);
@@ -284,7 +286,7 @@ describe('kanevas-images : états du bloc « Image attachée » (B-29)', { skip:
   test('vignette_en_chargement_montre_le_cadre_gris_puis_l_image', async () => {
     // Fails if the loading frame is missing or the link/label are not there while the image loads.
     const m = await monde('Images chargement');
-    await m.antor.route('**/pieces-jointes/*/fichier*', async (route: Any) => {
+    await m.antor.route('**/fichiers/*', async (route: Any) => {
       await new Promise((r) => setTimeout(r, 2500));
       await route.continue();
     });
@@ -307,8 +309,8 @@ describe('kanevas-images : états du bloc « Image attachée » (B-29)', { skip:
     await ouvrirPanneau(m.antor);
     await demander(m.antor, DEMANDE);
     const src: string = await bloc(m.antor).locator('img').getAttribute('src');
-    const pid = /pieces-jointes\/(\d+)\/fichier/.exec(src)![1];
-    const r = await api(m.antor, 'DELETE', `/api/univers/${m.U}/fiches/${m.aldric}/pieces-jointes/${pid}`);
+    const pid = /\/fichiers\/(\d+)/.exec(src)![1];
+    const r = await api(m.antor, 'DELETE', `/api/univers/${m.U}/fichiers/${pid}`);
     assert.ok(r.status() < 300, `delete ${r.status()}`);
     await m.antor.getByRole('button', { name: 'Fermer' }).click();
     await ouvrirPanneau(m.antor);

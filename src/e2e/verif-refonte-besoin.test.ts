@@ -127,7 +127,10 @@ for (const [nom, adresse] of [['E-1', '/'], ...ECRANS_UNIVERS] as Array<[string,
     const avant = await texte(page);
     assert.doesNotMatch(avant, /Se déconnecter/, 'déconnexion étalée hors du menu');
     for (const mot of ['Clair', 'Sombre', 'Système']) {
-      assert.equal(await page.getByRole('radio', { name: mot }).count() + (await page.getByRole('button', { name: rxExact(mot) }).count()), 0, `${mot} étalé hors du menu`);
+      // The content of a screen may have its own « Système » buttons (E-14, « Types de fiche »): only the frame is checked.
+      const total = (await page.getByRole('radio', { name: mot }).count()) + (await page.getByRole('button', { name: rxExact(mot) }).count());
+      const dansMain = (await page.locator('main').getByRole('radio', { name: mot }).count()) + (await page.locator('main').getByRole('button', { name: rxExact(mot) }).count());
+      assert.equal(total - dansMain, 0, `${mot} étalé hors du menu`);
     }
     const compte = page.locator('[aria-haspopup="menu"]').filter({ hasText: 'antor' });
     await compte.click();
@@ -301,7 +304,7 @@ test('E-9 : Antor en mode Joueur voit le bandeau et ni pastille, ni hachure, ni 
   const { ctx, page } = await session('antor');
   await ouvrirAldric(page);
   assert.equal(await page.getByRole('button', { name: /régler l['’]audience/ }).count(), 2, 'le MJ voit ses pastilles');
-  assert.equal(await page.getByRole('button', { name: /Autres actions sur/ }).count(), 2, 'et ses menus ⋯');
+  assert.equal(await page.getByRole('button', { name: /Autres actions sur/ }).count(), 3, 'et ses menus ⋯ (deux sections, plus celui de la fiche : renommer, supprimer)');
   const bascule = page.getByRole('radiogroup');
   assert.equal(await bascule.getByRole('radio').count(), 2);
   await bascule.getByRole('radio', { name: /Mode Joueur/ }).click();
@@ -342,6 +345,7 @@ test('E-9 : « Modifier » et « ⋯ » se révèlent au survol et au focus ; to
   // effective opacity: the product along the ancestors (the actions may be hidden by a wrapper)
   const opacite = (loc: Any) => loc.evaluate((e: Element) => { let o = 1; for (let n: Element | null = e; n; n = n.parentElement) o *= Number(getComputedStyle(n).opacity); return String(Math.round(o * 100) / 100); });
   await page.mouse.move(5, 5);
+  await page.waitForTimeout(300); // the fade (var(--duree)) must be over: the pointer may have been over the section when the sheet loaded
   assert.equal(await opacite(modifier), '0', 'caché au repos');
   await sectionApparence(page).hover();
   await page.waitForTimeout(300);
@@ -363,7 +367,7 @@ test('E-9 : « Modifier » et « ⋯ » se révèlent au survol et au focus ; to
   await tactile.close();
 });
 
-test('E-9 : édition en place, compteur « n / 20 000 », Échap annule, Ctrl+Entrée enregistre avec un toast', opts, async () => surServeurNeuf(async (base) => {
+test('E-9 : édition en place, compteur « n / 100 000 », Échap annule, Ctrl+Entrée enregistre avec un toast', opts, async () => surServeurNeuf(async (base) => {
   // Fails if the shortcuts do not do what "Annuler"/"Enregistrer" do, or the counter/hint are missing.
   const { ctx, page } = await session('antor', undefined, base);
   await ouvrirAldric(page);
@@ -372,13 +376,13 @@ test('E-9 : édition en place, compteur « n / 20 000 », Échap annule, Ctrl+En
   await apparence.getByRole('button', { name: 'Modifier' }).click();
   const champ = apparence.getByRole('textbox');
   await champ.waitFor();
-  assert.match(await apparence.innerText(), /\d+\s\/\s20\s000/);
+  assert.match(await apparence.innerText(), /\d+\s\/\s100\s000/);
   assert.match((await apparence.innerText()).replace(/\s+/g, ' '), /Échap annuler · Ctrl ↵ enregistrer/);
   await champ.fill('Texte abandonné');
-  assert.match(await apparence.innerText(), /15\s\/\s20\s000/);
+  assert.match(await apparence.innerText(), /15\s\/\s100\s000/);
   await page.keyboard.press('Escape');
   await champ.waitFor({ state: 'hidden' });
-  assert.match(await apparence.innerText(), /Apparence de Maître Aldric\./, 'Échap abandonne le texte saisi');
+  assert.match(await apparence.innerText(), /Grand, voûté\. Il règne sur Port-Sel\./, 'Échap abandonne le texte saisi');
   assert.doesNotMatch(await apparence.innerText(), /Texte abandonné/);
   await apparence.hover();
   await apparence.getByRole('button', { name: 'Modifier' }).click();
@@ -392,7 +396,7 @@ test('E-9 : édition en place, compteur « n / 20 000 », Échap annule, Ctrl+En
   await ctx.close();
 }));
 
-test('E-9 : le 20 001e caractère : « Erreur : 20 000 caractères au plus. », Ctrl+Entrée ne part pas', opts, async () => {
+test('E-9 : le 100 001e caractère : « Erreur : 100 000 caractères au plus. », Ctrl+Entrée ne part pas', opts, async () => {
   // Fails if the shortcut bypasses the size guard of the button.
   const { ctx, page } = await session('antor');
   await ouvrirAldric(page);
@@ -401,12 +405,12 @@ test('E-9 : le 20 001e caractère : « Erreur : 20 000 caractères au plus. », 
   await apparence.getByRole('button', { name: 'Modifier' }).click();
   const requetes: string[] = [];
   page.on('request', (r: Any) => { if (r.method() !== 'GET') requetes.push(r.url()); });
-  await apparence.getByRole('textbox').fill('x'.repeat(20001));
-  await apparence.getByText('Erreur : 20 000 caractères au plus.').waitFor();
+  await apparence.getByRole('textbox').fill('x'.repeat(100001));
+  await apparence.getByText('Erreur : 100 000 caractères au plus.').waitFor();
   await page.keyboard.press('Control+Enter');
   await page.waitForTimeout(500);
   assert.deepEqual(requetes, []);
-  assert.equal(await apparence.getByRole('textbox').inputValue().then((v: string) => v.length), 20001, 'la saisie est gardée');
+  assert.equal(await apparence.getByRole('textbox').inputValue().then((v: string) => v.length), 100001, 'la saisie est gardée');
   await ctx.close();
 });
 
@@ -548,7 +552,7 @@ for (const [nom, adresse, message, point] of [
     await page.getByRole('button', { name: 'Réessayer' }).first().click();
     await attendre(page);
     assert.equal(await page.getByText(message).count(), 0);
-    assert.match(await texte(page), nom === 'E-4' ? /lea/ : /Apparence de Maître Aldric\./);
+    assert.match(await texte(page), nom === 'E-4' ? /lea/ : /Grand, voûté\. Il règne sur Port-Sel\./);
     await ctx.close();
   });
 }
@@ -733,7 +737,7 @@ for (const [theme, attendus] of Object.entries(TOKENS)) {
 
 const typo = (page: Any) => page.evaluate(`(() => {
   const css = (s) => { const c = getComputedStyle(document.querySelector(s)); return { f: c.fontFamily, s: c.fontSize }; };
-  const p = [...document.querySelectorAll('main p')].find((e) => /Apparence de Maître Aldric/.test(e.textContent || ''));
+  const p = [...document.querySelectorAll('main p')].find((e) => /Grand, voûté\. Il règne/.test(e.textContent || ''));
   const cp = getComputedStyle(p);
   return { h1: css('main h1'), lecture: { f: cp.fontFamily, s: cp.fontSize }, nav: css('nav a') };
 })()`);

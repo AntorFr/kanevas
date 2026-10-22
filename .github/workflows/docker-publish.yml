@@ -7,9 +7,9 @@ name: docker-publish
 # by hand without tests never becomes an image. No more automatic run on main or on PRs.
 on:
   push:
-    tags: ['v*']            # → SemVer tags :X.Y.Z :X.Y :X
-  release:
-    types: [published]      # → also tag :latest
+    tags: ['v*']            # → SemVer tags :X.Y.Z :X.Y :X, and :latest for the highest
+                            #   (metadata-action's default flavor). A GitHub Release only
+                            #   carries the notes: it builds nothing a second time.
   workflow_dispatch:        # a tag attested after it was pushed: rebuild it from here
 
 permissions:
@@ -72,7 +72,6 @@ jobs:
             type=semver,pattern={{version}}             # :X.Y.Z
             type=semver,pattern={{major}}.{{minor}}     # :X.Y
             type=semver,pattern={{major}}               # :X
-            type=raw,value=latest,enable=${{ github.event_name == 'release' }}
             type=sha,prefix=sha-                        # :sha-abc1234
 
       - name: Build & push

@@ -1,4 +1,4 @@
-import { randomUUID } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 import { createReadStream, createWriteStream } from 'node:fs';
 import { mkdir, readdir, rm, stat } from 'node:fs/promises';
 import { renameSync, rmSync } from 'node:fs';
@@ -22,6 +22,8 @@ export interface Ecrit {
   taille: number;
   /** The first bytes (up to 16), for the caller to sniff the real type. */
   debut: Buffer;
+  /** SHA-256 of the complete stream, computed without buffering it. */
+  empreinte: string;
 }
 
 /** Writes a stream to `tmp/`. On any failure (interrupted stream) leaves nothing behind. */
@@ -34,11 +36,13 @@ export async function ecrireFlux(
   const temporaire = randomUUID();
   const chemin = join(tmp, temporaire);
   let taille = 0;
+  const hash = createHash('sha256');
   const debut: Buffer[] = [];
   let gardes = 0;
   const compteur = new Transform({
     transform(chunk: Buffer, _enc, cb) {
       taille += chunk.length;
+      hash.update(chunk);
       if (gardes < 16) {
         const part = chunk.subarray(0, 16 - gardes);
         debut.push(part);
@@ -53,7 +57,7 @@ export async function ecrireFlux(
     await rm(chemin, { force: true });
     throw e;
   }
-  return { temporaire, taille, debut: Buffer.concat(debut) };
+  return { temporaire, taille, debut: Buffer.concat(debut), empreinte: hash.digest('hex') };
 }
 
 /** Drops a temporary file (a refused upload). Never throws. */

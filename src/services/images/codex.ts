@@ -3,7 +3,7 @@ import { randomUUID } from 'node:crypto';
 import { mkdir, readFile, readdir, rm, rmdir, stat } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 
-import { typeParSignature } from '../pieces-jointes.js';
+import { typeParSignature } from '../fichiers.js';
 import { ErreurGeneration, type GenerateurImage } from './types.js';
 import { sousVerrou } from './verrou.js';
 

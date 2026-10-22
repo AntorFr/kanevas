@@ -4,13 +4,13 @@ import type { Db } from '../../db/db.js';
 import { creerCampagne, lireCampagne, listerCampagnes } from '../campagnes.js';
 import { exigerRole } from '../droits.js';
 import { ErreurService } from '../erreurs.js';
+import { ajouterFichier, MAX_FICHIERS_JOINTS, verifierDepot } from '../fichiers.js';
 import { lireFiche, listerFiches } from '../fiches.js';
 import { choisirAdaptateur, type AdaptateurChoisi } from '../images/index.js';
-import { deposerPieceJointe, MAX_PIECES_PAR_SECTION, verifierDepot } from '../pieces-jointes.js';
 import { creerProposition } from '../propositions.js';
 import { creerScenario } from '../scenarios.js';
 import { ecrireContenu, lireSection } from '../sections.js';
-import { TYPES_FICHE } from '../types.js';
+import { TYPES_FICHE } from '../types-fiche.js';
 import type { Acteur } from '../types.js';
 import type { Catalogue, ContexteDemande, Evenement, Outil, Resultat } from './types.js';
 
@@ -24,7 +24,7 @@ const SECTION_PERIMEE = "La section a changé depuis que vous l'avez lue. Relise
 /** Longest description handed to the image engine (AD-89). */
 export const MAX_DESCRIPTION_IMAGE = 500;
 export const ECHEC_IMAGE = "Je n'ai pas pu générer l'image.";
-const SECTION_PLEINE = `Cette section porte déjà ${MAX_PIECES_PAR_SECTION} pièces jointes.`;
+const SECTION_PLEINE = `Cette section porte déjà ${MAX_FICHIERS_JOINTS} fichiers joints.`;
 const UNE_IMAGE = 'Une seule image par demande.';
 const DESCRIPTION_LONGUE = `La description est limitée à ${MAX_DESCRIPTION_IMAGE} caractères.`;
 
@@ -86,23 +86,14 @@ export function catalogueDe(
   const outils: Outil[] = [
     outil(
       'chercher',
-      `Cherche des fiches par un ou plusieurs mots (titre ou section lisible). Sans \`type\`, cherche dans tous les types. Rend au plus ${LIMITE_RECHERCHE} fiches triées par type puis titre, et dit si la liste est tronquée.`,
+      `Cherche des fiches par un ou plusieurs mots (titre, alias, sous-type ou section lisible). Sans \`type\`, cherche dans tous les types. Rend au plus ${LIMITE_RECHERCHE} fiches triées par titre, et dit si la liste est tronquée.`,
       z.strictObject({ mots: z.string(), type: z.enum(TYPES_FICHE).optional() }),
       ({ mots, type }) => {
-        const types = type ? [type] : TYPES_FICHE;
-        const trouvees: { id: number; type: string; titre: string }[] = [];
-        let tronquee = false;
-        for (const t of types) {
-          const page = listerFiches(db, acteur, universId, {
-            type: t,
-            recherche: mots,
-            limite: LIMITE_RECHERCHE,
-          });
-          if (page.suivant !== null) tronquee = true;
-          for (const f of page.fiches) trouvees.push({ id: f.id, type: f.type, titre: f.titre });
-        }
-        if (trouvees.length > LIMITE_RECHERCHE) tronquee = true;
-        return { donnees: { fiches: trouvees.slice(0, LIMITE_RECHERCHE), tronquee } };
+        // One call, every type unless one is given (AD-74, AD-118 (7)): the list's own order, by title.
+        const page = listerFiches(db, acteur, universId, { type, recherche: mots, limite: LIMITE_RECHERCHE });
+        if (page.fiches.length === 0) throw new ErreurService('introuvable', INTROUVABLE); // no result, no event
+        const fiches = page.fiches.map((f) => ({ id: f.id, type: f.type, titre: f.titre }));
+        return { donnees: { fiches, tronquee: page.suivant !== null } };
       },
     ),
     outil(
@@ -110,7 +101,7 @@ export function catalogueDe(
       'Lit une fiche : ses sections lisibles par la personne, avec leur contenu et leur `version`.',
       z.strictObject({ ficheId: id }),
       ({ ficheId }) => {
-        const f = lireFiche(db, acteur, universId, ficheId);
+        const f = lireFiche(db, acteur, universId, ficheId, 'markdown');
         return {
           donnees: {
             id: f.id,
@@ -119,7 +110,7 @@ export function catalogueDe(
             sections: f.sections.map((s) => ({
               id: s.id,
               titre: s.titre,
-              contenu: s.contenu,
+              contenu: s.contenu ?? s.html, // source only when the caller may write it, else the reader's rendered view (AD-113)
               version: s.version,
               modifiable: s.peutEcrire,
             })),
@@ -132,12 +123,12 @@ export function catalogueDe(
       "Lit une section d'une fiche : son contenu et sa `version`.",
       z.strictObject({ ficheId: id, sectionId: id }),
       ({ ficheId, sectionId }) => {
-        const s = lireSection(db, acteur, universId, ficheId, sectionId);
+        const s = lireSection(db, acteur, universId, ficheId, sectionId, 'markdown');
         return {
           donnees: {
             id: s.id,
             titre: s.titre,
-            contenu: s.contenu,
+            contenu: s.contenu ?? s.html, // source only when the caller may write it, else the reader's rendered view (AD-113)
             version: s.version,
             modifiable: s.peutEcrire,
           },
@@ -165,9 +156,10 @@ export function catalogueDe(
       'Ajoute un paragraphe après le contenu existant d’une section que la personne peut écrire, sans recopier le texte existant. `version` est celle lue.',
       z.strictObject({ ficheId: id, sectionId: id, texte: z.string(), version: z.number().int() }),
       ({ ficheId, sectionId, texte, version }) => {
-        const lue = lireSection(db, acteur, universId, ficheId, sectionId);
+        const lue = lireSection(db, acteur, universId, ficheId, sectionId, 'markdown');
         if (!lue.peutEcrire) throw new ErreurService('refuse', SECTION_REFUSEE);
-        const contenu = lue.contenu === '' ? texte : `${lue.contenu}\n\n${texte}`;
+        const source = lue.contenu ?? '';
+        const contenu = source === '' ? texte : `${source}\n\n${texte}`;
         const s = ecrireContenu(db, compteId, universId, ficheId, sectionId, contenu, version);
         return {
           donnees: { id: s.id, titre: s.titre, version: s.version },
@@ -276,7 +268,7 @@ function nomImage(maintenant = new Date()): string {
 
 /**
  * `generer_image` (AD-89), in this order: the right to write first (the engine is not spent for a
- * refusal), the limits, the generation, the attachment by `deposerPieceJointe` (AD-65), the event.
+ * refusal), the limits, the generation, the attachment by `ajouterFichier` (AD-117 §6), the event.
  * Every failure is a result, never an exception, and carries no event.
  */
 function outilImage(db: Db, compteId: number, universId: number, images: AdaptateurChoisi): Outil {
@@ -291,7 +283,7 @@ function outilImage(db: Db, compteId: number, universId: number, images: Adaptat
       if (!p.success) return { ok: false, erreur: 'Paramètres invalides.' };
       const { sectionId, description } = p.data;
       try {
-        const cible = verifierDepot(db, compteId, universId, sectionId);
+        const cible = verifierDepot(db, { compteId }, universId, sectionId);
         if (description.length > MAX_DESCRIPTION_IMAGE) {
           return { ok: false, erreur: DESCRIPTION_LONGUE };
         }
@@ -305,18 +297,18 @@ function outilImage(db: Db, compteId: number, universId: number, images: Adaptat
         contexte.imageGeneree = true;
         // A request abandoned during the generation attaches nothing.
         if (contexte.signal?.aborted) return { ok: false, erreur: ECHEC_IMAGE };
-        const piece = await deposerPieceJointe(
+        // The media library's one upload function (AD-117 §6): the visibility follows the section.
+        const fichier = await ajouterFichier(
           db,
-          compteId,
-          false,
-          sectionId,
+          { compteId },
+          universId,
           Readable.from([octets]),
           nomImage(),
-          false,
+          { ou: 'section', sectionId, maniere: 'joint' },
         );
         return {
           ok: true,
-          donnees: { pieceId: piece.id, nom: piece.nom },
+          donnees: { fichierId: fichier.id, nom: fichier.nom },
           evenement: {
             type: 'image_attachee',
             libelle: `Image attachée à la section « ${cible.titreSection} » de « ${cible.titreFiche} »`,
@@ -324,7 +316,7 @@ function outilImage(db: Db, compteId: number, universId: number, images: Adaptat
               type: 'fiche',
               ficheId: cible.ficheId,
               sectionId,
-              pieceId: piece.id,
+              fichierId: fichier.id,
               description,
             },
           },
