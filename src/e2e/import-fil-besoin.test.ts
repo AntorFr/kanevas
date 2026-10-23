@@ -448,7 +448,10 @@ test('B-46 échec · Mira, ajoutée MJ puis passée Joueuse par Antor : son jeto
     await attendre(antor.page);
     const jetonMira = await creerJetonEcran(mira.page, m, 'Jeton de Mira');
     assert.equal((await imp(m, jetonMira, 'GET', '')).statut, 200, 'while she is GM');
+    // Arm the wait for the role change's response before the gesture: the API call below must see it saved.
+    const roleEnregistre = antor.page.waitForResponse((r: Any) => r.request().method() === 'PATCH' && r.url().includes('/membres/'));
     await antor.page.getByLabel('Rôle de mira').selectOption({ label: 'Joueur' });
+    assert.equal((await roleEnregistre).status(), 200);
     await attendre(antor.page);
     const r = await imp(m, jetonMira, 'POST', '/lots');
     assert.equal(r.statut, 401);

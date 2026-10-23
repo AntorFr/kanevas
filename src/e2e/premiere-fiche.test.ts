@@ -531,7 +531,10 @@ test('B-12 Antor en mode Joueur voit « Apparence » seule, comme Léa, et plus 
   const antor = await compte('antor');
   await antor.goto(urlFiche);
   await section(antor, 'Vérité').waitFor();
+  // Arm the wait for the Mode Joueur response before the switch: the GM view already drawn proves nothing.
+  const reponseJoueur = antor.waitForResponse((r: Any) => r.url().includes('/fiches/') && r.url().includes('mode=joueur'));
   await antor.getByLabel('Mode Joueur').check();
+  await reponseJoueur;
   // the switch goes through the loading skeleton: « Vérité » is gone there too, and Apparence's text may
   // still be the one of the GM view. Wait for the loaded player view: banner shown, Vérité gone and
   // Apparence's text present at the same time.
