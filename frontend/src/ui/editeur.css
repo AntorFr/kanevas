@@ -34,3 +34,10 @@
 /* Room under the editor for the floating assistant button while the « [[ » list is open. */
 .pied-md { scroll-margin-bottom: calc(var(--e-5) + 48px + var(--e-4)); }
 .editeur-bloc:has(.liste-liens) { padding-bottom: calc(48px + var(--e-4)); }
+
+/* Files (B-55): upload lines under the field, and the warning that blocks nothing. */
+.sous-md:empty { display: none; }
+.sous-md { padding: 4px 14px; border-top: 1px solid var(--bord); }
+.avert-mj { display: flex; align-items: flex-start; gap: var(--e-2); margin-top: var(--e-3); padding: var(--e-2) var(--e-3); border-radius: var(--rayon-champ);
+  background: var(--mj-fond); box-shadow: inset 0 0 0 1px var(--mj-bord); color: var(--texte); font-size: var(--t-13); }
+.avert-mj svg { color: var(--mj); margin-top: 2px; flex: none; }

@@ -6,7 +6,7 @@
 >
 > **Construit à ce jour** (`kanevas-premiere-fiche`, systèmes, `kanevas-suivi`, `kanevas-fichiers`, `kanevas-relier-chercher`, `kanevas-recours-admin`) : P-1 en entier, P-2 en entier (étape 3 : l'admin répare les membres, E-5),
 > P-3 étapes 1 à 4, P-4 en entier, P-5 étape 1 (fiches et sections), P-6 étapes 1-2 (recherche dans un type), P-7 étape 1 et l'écriture de
-> l'étape 2, P-8 en entier (B-13, B-14 : E-14 puis E-15). Le reste de ce document est la cible.
+> l'étape 2, P-8 en entier (B-13, B-14 : E-14 puis E-15), P-14 étapes 2-3 et P-10 étape 8 (`kanevas-import-tenir` : renommer, supprimer une fiche, supprimer un univers). P-10 en entier avec `kanevas-import-reprise` (campagnes, scénarios, comptes-rendus datés et relations par l'API d'import ; échantillon rejoué sans doublon par le client de test, B-47 à B-50). P-16 en entier avec `kanevas-import-mediatheque` (la médiathèque de l'univers, E-19 ; ajouter un fichier depuis une fiche, « Fichier » de l'éditeur et « Joindre un fichier » : B-24, B-25, B-44, B-53 à B-56), donc P-3 étape 4 et P-7 étape 2 par ce chemin. Sont aussi construits les cartes et graphes (E-10, E-11), l'illustration d'une fiche, les systèmes hors des univers (E-16), l'assistant (E-12) et la mise à jour du monde depuis un compte-rendu (`kanevas-monde`) : les écrans construits sont listés dans `docs/ecrans.md`, c'est lui qui fait foi pour dire quelle étape de quel parcours existe. Le reste de ce document est la cible.
 >
 > **Epic `kanevas-import`** (cadrage proposé le 2026-10-11, sur `epic/kanevas-import`) : ouvrir
 > Kanevas à une base existante — d'abord la base Kanka de Monsieur (501 fiches), poussée par un script
@@ -441,10 +441,15 @@ introuvable. ».
    dépose le plan d'un lieu, et pose le portrait d'Aldric en **illustration** de la fiche (visible
    de qui voit la fiche) ; de retour sur la liste, la carte d'Aldric porte ce portrait.
 5. Il demande à son **assistant** (E-12) « rappelle-moi tout ce qu'on sait d'Aldric » puis
-   « fais un portrait pour Apparence » : l'image est attachée à la section.
+   « fais un portrait pour Apparence » : l'image est attachée à la section, et il suit « Ouvrir la section »
+   dans le fil pour la voir sur la fiche (E-9).
 6. **Cartes** (E-10, E-11) : il place le PNJ sur la carte de la ville, passe en **mode Joueur**
    pour vérifier, puis rend la carte visible.
 *Échec de l'assistant* : une demande de création échoue ou l'assistant est indisponible : le panneau le dit (« Je n'ai pas pu répondre — réessayer » ou « L'assistant n'est pas disponible pour le moment. »), la création a pu avoir lieu avant que la réponse soit perdue (délai, connexion coupée) : avant de réessayer, Antor regarde E-6 ou E-7 pour ne pas créer deux fois, puis crée à la main si besoin (étape 2).
+*Échec de l'image* (étape 5) : la génération échoue ou dépasse le temps, la section porte déjà 50
+pièces jointes, son droit d'écrire a été retiré, la description dépasse 500 caractères ou aucun moteur
+n'est disponible — l'assistant le dit, rien n'est attaché ; Antor
+peut redemander, ou déposer lui-même une image sur E-9 (P-3 étape 4).
 *Moment fort* : la fiche en mode Joueur ne trahit aucun secret.
 *Échec* (illustration, étape 4) : il choisit un PDF ou un fichier vide — « « plan.pdf » n'est pas
 une image… » ou « « portrait.png » est vide. », l'illustration d'avant reste ; l'envoi est coupé —
@@ -490,10 +495,9 @@ illustration répond comme une adresse inconnue.
    (E-12) d'y ajouter un paragraphe.
 *Échec* : il demande d'écrire dans une section qu'il lit sans l'écrire : « Vous ne pouvez pas modifier
 cette section. », rien n'est écrit.
-*Échec* (dépôt) : fichier vide, section déjà à 50 pièces jointes (100 fichiers joints depuis
-`kanevas-import`, AD-111), envoi interrompu ou droit
-d'écriture retiré — le fichier n'est pas attaché, la raison est dite sur la section (E-9), rien n'est
-laissé à moitié.
+*Upload failure*: empty file, section already at its attachment limit (50 before
+`kanevas-import`, 100 since, AD-111), interrupted upload or lost write permission — the file
+is not attached; the section (E-9) explains why; no partial operation remains.
 
 ### P-8 — Monter un univers sur un système partagé (MJ)
 *Antor, MJ de « Lame d'Ébène », le dimanche soir ; Mira, MJ des « Landes grises », qui joue le même
@@ -542,16 +546,22 @@ Il veut d'abord un essai jetable, puis la vraie base, sans doublon ni fuite.*
    vérifier qu'aucun bloc MJ ne paraît, ni sur la fiche ni dans la recherche — P-12 ; dans **Comptes-rendus** (E-13), les 36 journaux de
    Kanka sont dans l'ordre de leurs dates d'origine ; sur une fiche, le menu « ⋯ » montre sa clé
    d'origine (« lieu:port-sel »).
+   A sheet sent before its files shows the GM « Fichier en attente d'import :
+   « img:quais ». » instead of the image until the file arrives (Léa sees nothing).
 7. Il corrige le script (il coupe la section trop longue en deux), le relance : le nouveau lot dit
    « Fiches : 3 créées · 498 inchangées · Fichiers : 1 140 inchangés · … · 0 en attente » — aucun doublon.
+   Pending file references are counted with links as « liens et références en attente »;
+   when nothing is pending, that count is omitted from the batch report.
 8. **Paramètres** (E-14), « Supprimer l'univers », il tape « Essai Kanka » : l'univers disparaît de
    l'accueil.
 9. Il refait 2 à 7 sur l'univers réel ; les jours suivants, Léa écrit dans une section importée et
    Antor renomme « Port-Sel » en « Port-Sel-sur-Brume » (P-14) ; un import rejoué n'écrase ni l'un ni
    l'autre et le lot le dit : « section « Notes » de personnage:lea-pj modifiée dans Kanevas : non
-   écrasée » ; « lieu:port-sel : titre modifié dans Kanevas : non écrasé ».
+   écrasée » ; « lieu:port-sel : titre modifié dans Kanevas : non écrasé » ; de même un fichier que
+   Antor a passé « Visible des joueurs » (E-19) n'est pas rétabli « Réservé au MJ » : « visibilité
+   modifiée dans Kanevas : non écrasée ».
 10. **Accès par API** (E-18) : il révoque le jeton (P-11).
-*Moment fort* : le second lot « Fiches : 0 créée, 501 inchangées » et rien de créé dans aucune autre
+*Moment fort* : le second lot « Fiches : 501 inchangées » et rien de créé dans aucune autre
 nature — rejouer est sans risque.
 *Échec* : jeton mal copié ou révoqué — le script reçoit 401 « Jeton invalide. », rien n'est écrit,
 et aucun lot n'apparaît ; un parent ou une cible de relation inconnue — la fiche est écrite sans ce
@@ -559,7 +569,7 @@ parent ou sans cette relation, avec un avertissement dans le lot ; un lien `[[�
 encore inconnue — il reste en attente et se résout quand la fiche arrive (au même lot ou au suivant) ;
 le réseau coupe au milieu — le lot reste « En cours » sur E-18, sans dommage : rejouer reprend là où
 c'était, puisque tout ce qui est déjà écrit sort « inchangé » ; une image de 0 octet — refusée, la
-raison dans le lot ; supprimer l'univers en tapant un autre nom — le bouton reste inactif.
+raison dans le lot ; supprimer l'univers en tapant un autre nom — le bouton reste inactif ; une suppression qui échoue — « L'action n'a pas abouti. Réessayez. » dans la boîte, l'univers est intact (états : E-14).
 
 ### P-11 — Créer et révoquer un jeton d'API (MJ)
 1. **Accès par API** (E-18), depuis « Univers » ▸ « Accès par API » dans la barre (MJ seul).
@@ -632,7 +642,7 @@ pas ou vous ne pouvez pas la lire. » sous le champ, son texte intact ; la liste
 chercher. » et « Réessayer » ; un lien vers une fiche qui n'est pas encore importée — « en attente » pour Antor,
 texte pour Léa, jusqu'à l'arrivée de la fiche ; dans un scénario, la liste qui échoue — « Impossible de chercher. ».
 *Échec* : un déplacement qui ferait un cycle (« Les Sphères » sous l'un de ses enfants) — « Une fiche
-ne peut pas être rangée sous l'un de ses descendants. » ; un Joueur auteur d'une section qui contient
+ne peut pas être rangée sous l'un de ses descendants. » ; un titre vidé — « Erreur : le titre est obligatoire. », le champ reste ; un bilan de suppression qui ne se charge pas — « Impossible de charger le détail. », « Réessayer » (états : E-9) ; un Joueur auteur d'une section qui contient
 un bloc MJ — « Modifier » n'y paraît pas ; un texte qui passe 100 000 caractères — « Erreur : 100 000
 caractères au plus. », le texte reste.
 
@@ -651,9 +661,9 @@ déploiement, le panneau dit « Jeton fourni par le déploiement. » et se recon
 ### P-16 — Ranger et partager les fichiers (Antor, MJ, puis Léa, Joueuse)
 *Après l'import, la médiathèque de « Lame d'Ébène » porte 1 100 images et 40 documents, dont ceux
 qu'aucune fiche n'utilisait dans Kanka.*
-1. **Médiathèque** (E-19), depuis la barre : Antor filtre « Images » et « Non utilisés », retrouve
-   « carte-des-sphères.png », la renomme « Carte des Sphères » ; il passe à « Documents » : « Règles
-   de la Guilde.pdf » (PDF, 2,4 Mo).
+1. From the sidebar, Antor opens **« Médiathèque »** (E-19), filters « Images », then searches by name
+   for « carte-des-sphères.png » (used in three sheets) and renames it « Carte des Sphères ».
+   He switches to « Documents »: « Règles de la Guilde.pdf » (PDF, 2,4 Mo).
 2. Il ouvre « plan-du-repaire.png » (« Visible des joueurs », insérée dans « Histoire » des « Docks »
    et jointe à « Description » de « Port-Sel », deux sections lues des joueurs) et la passe à
    « Réservée au MJ » : Kanevas liste ces deux endroits, où les joueurs ne la verront plus ; il
@@ -664,12 +674,13 @@ qu'aucune fiche n'utilisait dans Kanka.*
    déplace dans un bloc MJ, l'avertissement disparaît. Puis « Fichier » ▸ « Ajouter depuis l'appareil »
    « tarifs-du-port.pdf » : le document entre dans la médiathèque, visible des joueurs, et se joint à la
    section ; il enregistre.
-4. Léa ouvre « Port-Sel » : à la place de l'image du plan du repaire, dans « Les Docks », elle lit
-   « Image réservée au MJ. » ; elle télécharge « tarifs-du-port.pdf » depuis les pièces jointes ; sa
-   **Médiathèque** (E-19) ne lui montre que les fichiers visibles des joueurs, et pour « Carte des
-   Sphères » les seules fiches qu'elle lit.
-5. Antor supprime un doublon d'image : la confirmation liste « Port-Sel (illustration) » et « Maître
-   Aldric — « Apparence » (jointe) » ; il remplace d'abord l'illustration, puis supprime.
+4. Léa opens « Les Docks »: instead of the lair map image in « Histoire », she reads
+   « Image réservée au MJ. ». She opens « Port-Sel » and downloads « tarifs-du-port.pdf » from
+   the attachments of « Description ». Her **« Médiathèque »** (E-19) only shows player-visible
+   files; for « Carte des Sphères », it only lists sheets she can read.
+5. Antor deletes a duplicate image: the confirmation lists « Val-Fortin — « Description » »,
+   « Maître Aldric — « Apparence » (jointe) » and « Port-Sel (illustration) ». He first replaces
+   the illustration, then deletes the file.
 *Moment fort* : un même fichier, utilisé dans trois fiches, change de droits en un geste, et Kanevas
 dit exactement où les joueurs le perdent.
 *Échec* : un fichier vide — « « notes.txt » est vide. », rien n'est ajouté ; un envoi coupé —

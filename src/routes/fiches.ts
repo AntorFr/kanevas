@@ -3,22 +3,14 @@ import type { FastifyInstance } from 'fastify';
 
 import { invalide } from '../services/erreurs.js';
 import {
-  deposerPieceJointe,
-  marquerSecrete,
-  ouvrirPieceJointe,
-  retirerPieceJointe,
-} from '../services/pieces-jointes.js';
-import {
-  ouvrirIllustration,
-  poserIllustration,
-  retirerIllustration,
-} from '../services/illustrations.js';
-import {
   changerSousType,
   changerTypeFiche,
   creerFiche,
   deplacerFiche,
+  bilanSuppressionFiche,
   lireFiche,
+  renommerFiche,
+  supprimerFiche,
   listerEnfants,
   lireMentions,
   listerFiches,
@@ -92,11 +84,14 @@ export function registerFichesRoutes(app: FastifyInstance) {
     return reply.code(201).send(fiche);
   });
 
-  // The sub-type alone (the title comes with kanevas-import-tenir). `null` removes it.
+  // Title, sub-type (`null` removes it) and parent, in one transaction (AD-119 (1), AD-115).
   app.patch(`${base}/:fid`, async (request) => {
     const i = ids(request);
     const b = corps(request);
-    if (b.sousType === undefined && b.parent === undefined) throw invalide('Rien à modifier.');
+    if (b.titre === undefined && b.sousType === undefined && b.parent === undefined) {
+      throw invalide('Rien à modifier.');
+    }
+    if (b.titre !== undefined && typeof b.titre !== 'string') throw invalide('Le titre : de 1 à 120 caractères.');
     if (b.parent !== undefined && b.parent !== null && !Number.isSafeInteger(b.parent)) {
       throw invalide('Le parent doit être une fiche ou null.');
     }
@@ -104,10 +99,23 @@ export function registerFichesRoutes(app: FastifyInstance) {
     const a = acteur(request);
     return app.db.transaction(() => {
       let fiche;
+      if (b.titre !== undefined) fiche = renommerFiche(app.db, a, i.univers, i.fiche, b.titre as string);
       if (b.sousType !== undefined) fiche = changerSousType(app.db, a.compteId, i.univers, i.fiche, b.sousType);
       if (b.parent !== undefined) fiche = deplacerFiche(app.db, a, i.univers, i.fiche, b.parent as number | null);
       return fiche;
     })();
+  });
+
+  // What the deletion would take, counted when the box of E-9 opens (AD-119 (2)).
+  app.get(`${base}/:fid/suppression`, async (request) => {
+    const i = ids(request);
+    return bilanSuppressionFiche(app.db, acteur(request), i.univers, i.fiche);
+  });
+
+  app.delete(`${base}/:fid`, async (request, reply) => {
+    const i = ids(request);
+    supprimerFiche(app.db, acteur(request), i.univers, i.fiche);
+    return reply.code(204).send();
   });
 
   // Same row, other type (AD-120 (4)); `charge` carries `pj` for a character, `sousType` a new sub-type.
@@ -301,137 +309,4 @@ export function registerFichesRoutes(app: FastifyInstance) {
     return reply.code(204).send();
   });
 
-  registerIllustrationRoutes(app, base);
-  registerPiecesJointesRoutes(app, base);
-}
-
-/** `secrete` as a form field or JSON boolean; anything else is a bad request. */
-function booleen(valeur: unknown): boolean {
-  if (valeur === undefined || valeur === '' || valeur === 'false' || valeur === false) return false;
-  if (valeur === 'true' || valeur === true) return true;
-  throw invalide('Le réglage « secrète » doit être vrai ou faux.');
-}
-
-function secreteDuCorps(valeur: unknown): boolean {
-  if (typeof valeur !== 'boolean') throw invalide('Le réglage « secrète » doit être vrai ou faux.');
-  return valeur;
-}
-
-/** Content-Disposition for a download: ASCII fallback plus the RFC 5987 UTF-8 name. */
-function dispositionAttachement(nom: string): string {
-  const ascii = nom.replace(/[^\x20-\x7e]|["\\%;]/g, '_');
-  return `attachment; filename="${ascii}"; filename*=UTF-8''${encodeURIComponent(nom).replace(/['()*]/g, (c) => `%${c.charCodeAt(0).toString(16).toUpperCase()}`)}`;
-}
-
-/** Attachments of a section: thin routes, the services own every rule (AD-2, AD-67). No list route, no static serving. */
-function registerPiecesJointesRoutes(app: FastifyInstance, base: string) {
-  const idPiece = (request: { params: unknown }) =>
-    idDeChemin((request.params as { pid: string }).pid);
-
-  // One file per request, streamed to the service. Field `secrete` must precede `fichier`.
-  app.post(`${base}/:fid/sections/:sid/pieces-jointes`, async (request, reply) => {
-    const a = acteur(request);
-    const section = idDeChemin((request.params as { sid: string }).sid);
-    if (!request.isMultipart()) throw invalide('Envoi multipart attendu (champ « fichier »).');
-    const premiere = await request.file();
-    if (!premiere || premiere.fieldname !== 'fichier') throw invalide('Champ « fichier » manquant.');
-    const part = premiere;
-    const secrete = booleen((part.fields.secrete as { value?: unknown } | undefined)?.value);
-    const nom = part.filename.split(/[\\/]/).pop() ?? '';
-    // An interrupted or truncated body must not look like a complete file.
-    async function* flux() {
-      for await (const morceau of part.file) yield morceau as Buffer;
-      if (part.file.truncated) throw invalide('Envoi interrompu.');
-    }
-    const vue = await deposerPieceJointe(app.db, a.compteId, !!a.modeJoueur, section, flux(), nom, secrete);
-    return reply.code(201).send(vue);
-  });
-
-  app.patch(`${base}/:fid/pieces-jointes/:pid`, async (request) => {
-    const a = acteur(request);
-    return marquerSecrete(
-      app.db,
-      a.compteId,
-      !!a.modeJoueur,
-      idPiece(request),
-      secreteDuCorps(corps(request).secrete),
-    );
-  });
-
-  app.delete(`${base}/:fid/pieces-jointes/:pid`, async (request, reply) => {
-    const a = acteur(request);
-    await retirerPieceJointe(app.db, a.compteId, !!a.modeJoueur, idPiece(request));
-    return reply.code(204).send();
-  });
-
-  // No player mode on a direct read (AD-37): the actor is the account alone.
-  app.get(`${base}/:fid/pieces-jointes/:pid/fichier`, async (request, reply) => {
-    const f = await ouvrirPieceJointe(
-      app.db,
-      { compteId: request.session!.id, modeJoueur: false },
-      idPiece(request),
-    );
-    reply
-      .header('X-Content-Type-Options', 'nosniff')
-      .header('Content-Security-Policy', "default-src 'none'; sandbox")
-      .header('Cache-Control', 'private, no-store')
-      .header('Content-Length', f.taille);
-    if (f.type.startsWith('image/')) return reply.type(f.type).send(f.flux);
-    return reply
-      .type('application/octet-stream')
-      .header('Content-Disposition', dispositionAttachement(f.nom))
-      .send(f.flux);
-  });
-}
-
-/** The illustration of a sheet (AD-93): thin routes, the service owns the rules. */
-function registerIllustrationRoutes(app: FastifyInstance, base: string) {
-  const adresse = `${base}/:fid/illustration`;
-  const cible = (request: { params: unknown }) => {
-    const p = request.params as { id: string; fid: string };
-    return { univers: idDeChemin(p.id), fiche: idDeChemin(p.fid) };
-  };
-
-  app.put(adresse, async (request) => {
-    const c = cible(request);
-    if (!request.isMultipart()) throw invalide('Envoi multipart attendu (champ « fichier »).');
-    const part = await request.file();
-    if (!part || part.fieldname !== 'fichier') throw invalide('Champ « fichier » manquant.');
-    async function* flux() {
-      for await (const morceau of part!.file) yield morceau as Buffer;
-      if (part!.file.truncated) throw invalide('Envoi interrompu.');
-    }
-    const r = await poserIllustration(app.db, request.session!.id, c.univers, c.fiche, flux());
-    return { illustration: r };
-  });
-
-  app.delete(adresse, async (request, reply) => {
-    const c = cible(request);
-    retirerIllustration(app.db, request.session!.id, c.univers, c.fiche);
-    return reply.code(204).send();
-  });
-
-  // Real rights, no player mode on a direct read (AD-37).
-  app.get(adresse, async (request, reply) => {
-    const c = cible(request);
-    const v = (request.query as Record<string, unknown>).v;
-    const f = await ouvrirIllustration(
-      app.db,
-      { compteId: request.session!.id, modeJoueur: false },
-      c.univers,
-      c.fiche,
-      typeof v === 'string' ? v : undefined,
-    );
-    return reply
-      .type(f.type)
-      .header('Content-Disposition', 'inline')
-      .header('X-Content-Type-Options', 'nosniff')
-      .header('Content-Security-Policy', "default-src 'none'; sandbox")
-      .header(
-        'Cache-Control',
-        f.courant ? 'private, max-age=31536000, immutable' : 'private, no-store',
-      )
-      .header('Content-Length', f.taille)
-      .send(f.flux);
-  });
 }

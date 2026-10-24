@@ -1,7 +1,8 @@
 import type { Db } from '../db/db.js';
 import { exigerMJ, exigerRole } from './droits.js';
-import { invalide } from './erreurs.js';
-import type { Role, Univers } from './types.js';
+import { ErreurService, invalide, refuse } from './erreurs.js';
+import { supprimerFichier } from './stockage.js';
+import type { Acteur, Role, Univers } from './types.js';
 
 interface UniversRow {
   id: number;
@@ -98,4 +99,55 @@ export function lireUnivers(
   const role = exigerRole(db, universId, compteId);
   const row = db.prepare('SELECT * FROM univers WHERE id = ?').get(universId) as UniversRow;
   return { ...versUnivers(row), role, systeme: systemeRef(db, universId) };
+}
+
+/**
+ * The GM deletes the universe (AD-105, AD-119 (5)). Only a GM outside player mode (no role: not found;
+ * a player: refused); the name is compared to the letter **here**, never by the browser alone
+ * (`invalide`, `detail: 'nom_different'`). One transaction removes everything that hangs from the
+ * universe, children before parents so that an omission fails on a `RESTRICT` rather than leaving an
+ * orphan row; the game system stays. The files of the library, the map backgrounds and the historical
+ * attachments are listed **before** and leave the disk only **after** the commit (a failed erasure is
+ * logged, never undoes).
+ */
+export function supprimerUnivers(db: Db, acteur: Acteur, universId: number, nom: unknown): void {
+  const role = exigerRole(db, universId, acteur.compteId);
+  if (role !== 'mj' || acteur.modeJoueur) throw refuse();
+  const u = db.prepare('SELECT nom FROM univers WHERE id = ?').get(universId) as { nom: string };
+  if (typeof nom !== 'string' || nom !== u.nom) {
+    throw new ErreurService('invalide', "Le nom ne correspond pas à celui de l'univers.", 'nom_different');
+  }
+  const disques = db.transaction(() => {
+    const colonne = (sql: string) => (db.prepare(sql).all(universId) as { d: string }[]).map((r) => r.d);
+    const aEffacer = [
+      ...colonne('SELECT disque AS d FROM fichiers WHERE univers_id = ?'),
+      ...colonne('SELECT fond AS d FROM cartes WHERE univers_id = ? AND fond IS NOT NULL'),
+      ...colonne(
+        `SELECT p.fichier AS d FROM pieces_jointes p JOIN sections s ON s.id = p.section_id
+           JOIN fiches f ON f.id = s.fiche_id WHERE f.univers_id = ?`,
+      ),
+    ];
+    const run = (sql: string) => db.prepare(sql).run(universId);
+    run('DELETE FROM lots_import WHERE univers_id = ?');
+    run('DELETE FROM jetons_api WHERE univers_id = ?');
+    run('DELETE FROM taches_preparation WHERE campagne_id IN (SELECT id FROM campagnes WHERE univers_id = ?)');
+    run('DELETE FROM scenarios WHERE campagne_id IN (SELECT id FROM campagnes WHERE univers_id = ?)');
+    run('DELETE FROM campagnes WHERE univers_id = ?');
+    run('DELETE FROM elements_carte WHERE carte_id IN (SELECT id FROM cartes WHERE univers_id = ?)');
+    run('DELETE FROM cartes WHERE univers_id = ?');
+    run('DELETE FROM propositions WHERE univers_id = ?');
+    run('DELETE FROM fichiers_attente WHERE univers_id = ?');
+    run('DELETE FROM relations WHERE cible_fiche_id IN (SELECT id FROM fiches WHERE univers_id = ?)');
+    run('UPDATE fiches SET parent_id = NULL WHERE univers_id = ?');
+    // Sections take with them their links, file references, proposals, waiting keys, relations.
+    run('DELETE FROM sections WHERE fiche_id IN (SELECT id FROM fiches WHERE univers_id = ?)');
+    run('DELETE FROM fiches WHERE univers_id = ?'); // aliases and label links cascade
+    run('DELETE FROM etiquettes WHERE univers_id = ?');
+    run('DELETE FROM types_univers WHERE univers_id = ?');
+    run('DELETE FROM fichiers WHERE univers_id = ?');
+    run('DELETE FROM membres WHERE univers_id = ?');
+    run('DELETE FROM univers WHERE id = ?');
+    return aEffacer;
+  })();
+  for (const d of disques) supprimerFichier(d);
 }

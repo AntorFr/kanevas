@@ -1,6 +1,7 @@
 import type { Db } from '../db/db.js';
 import { exigerMJ } from './droits.js';
 import { introuvable } from './erreurs.js';
+import { compterFichiersEnAttente } from './fichiers.js';
 import { compterEnAttente } from './liens.js';
 import type { Jeton } from './jetons.js';
 
@@ -11,13 +12,18 @@ export const NATURES = ['fiches', 'fichiers', 'campagnes', 'scenarios', 'relatio
 export type Nature = (typeof NATURES)[number];
 export type Issue = 'creees' | 'mises_a_jour' | 'inchangees' | 'refusees';
 
-export type Compteurs = Record<Nature, Record<Issue, number>>;
+/** Only the sheets can be deleted by the import (`DELETE /fiches/:cle`, AD-119 (4)): `supprimees` is theirs. */
+export type Compteurs = Record<Exclude<Nature, 'fiches'>, Record<Issue, number>> & {
+  fiches: Record<Issue | 'supprimees', number>;
+};
 
 export interface EntreeRapport {
   cle: string;
   objet: string;
   raison: string;
   gravite: 'refus' | 'avertissement';
+  /** Machine-readable refusal, when an import entry has a domain code. */
+  code?: string;
 }
 
 export interface Lot {
@@ -52,7 +58,8 @@ const JOUR_MS = 24 * 3600 * 1000;
 
 function compteursVides(): Compteurs {
   const c = {} as Compteurs;
-  for (const n of NATURES) c[n] = { creees: 0, mises_a_jour: 0, inchangees: 0, refusees: 0 };
+  for (const n of NATURES) c[n] = { creees: 0, mises_a_jour: 0, inchangees: 0, refusees: 0 } as never;
+  c.fiches.supprimees = 0;
   return c;
 }
 
@@ -131,7 +138,7 @@ export function cloreLot(db: Db, jeton: Jeton, lotId: number, maintenant: Date =
   // « En attente » is counted once, at the closing (E-18): links still waiting for an origin key.
   db.prepare('UPDATE lots_import SET clos_le = ?, en_attente = ? WHERE id = ? AND clos_le IS NULL').run(
     maintenant.toISOString(),
-    compterEnAttente(db, jeton.universId) + compterParentsEnAttente(db, jeton.universId),
+    compterEnAttente(db, jeton.universId) + compterFichiersEnAttente(db, jeton.universId) + compterParentsEnAttente(db, jeton.universId),
     lotId,
   );
   return lireLot(db, jeton, lotId, maintenant);
@@ -146,14 +153,15 @@ export function noterDansLot(
   db: Db,
   lotId: number,
   nature: Nature,
-  issue: Issue,
+  issue: Issue | 'supprimees' | null,
   entrees: EntreeRapport[] = [],
   maintenant: Date = new Date(),
 ): void {
   const row = ligne(db, lotId);
   if (!row) throw introuvable();
   const lot = versLot(row, maintenant);
-  lot.compteurs[nature][issue] += 1;
+  // A skipped entry warns without counting as a created, unchanged or refused object.
+  if (issue !== null) (lot.compteurs[nature] as Record<string, number>)[issue]! += 1;
   const rapport = [...lot.rapport, ...entrees].slice(0, MAX_RAPPORT);
   const avert = entrees.filter((e) => e.gravite === 'avertissement').length;
   db.prepare(

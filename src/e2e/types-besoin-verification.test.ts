@@ -40,6 +40,7 @@ describe('kanevas-import-types : migration sur une base d’avant', () => {
       cpSync('src/db/migrations', avant, { recursive: true });
       rmSync(join(avant, '0013-types.sql'));
       rmSync(join(avant, '0014-alias-etiquettes.sql'));
+      rmSync(join(avant, '0015-mediatheque.sql'));
       const chemin = join(dir, 'k.db');
       const db = openDb(chemin);
       migrate(db, avant + '/');
@@ -129,13 +130,13 @@ describe('kanevas-import-types : API d’import', () => {
     assert.equal(ko.corps.champ, 'sousType');
   });
 
-  test('échec : un type inconnu et un compte_rendu sont refusés (400, champ type), rien n’est créé', async () => {
+  test('échec : un type inconnu et un compte_rendu sans campagne sont refusés (400, champs type et campagne), rien n’est créé', async () => {
     const inconnu = await put('dragon:x', { type: 'dragon', titre: 'Dragon' });
     assert.equal(inconnu.status, 400);
     assert.equal(inconnu.corps.champ, 'type');
     const cr = await put('compte_rendu:x', { type: 'compte_rendu', titre: 'CR' });
     assert.equal(cr.status, 400);
-    assert.equal(cr.corps.champ, 'type');
+    assert.equal(cr.corps.champ, 'campagne');
   });
 
   test('exclusion : sans jeton valide, PUT avec un sous-type est refusé 401 jeton_invalide', async () => {
@@ -318,6 +319,7 @@ describe('kanevas-import-types : écrans', { skip: skipBrowser }, () => {
     await lea.page.getByLabel('Sous-type').selectOption({ label: 'Port (2)' });
     await lea.page.getByText('Havre-Gris').first().waitFor();
     await attendre(lea.page);
+    await lea.page.waitForFunction(() => !document.body.innerText.includes('Chargement des fiches'));
     const t = await texte(lea.page);
     assert.match(t, /Port-Sel/);
     assert.match(t, /Havre-Gris/);

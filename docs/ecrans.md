@@ -5,7 +5,7 @@
 > finie se détaillent dans la tranche qui le construit.
 
 > **Construit à ce jour** : E-1, E-2, E-3 (nom, navigation et blocs : système de jeu, campagnes actives, derniers comptes-rendus, préparation pour le MJ, cartes visibles), E-4, E-5 (Administration), E-6, E-7, E-13, E-8 (avec la
-> recherche dans un type, en grille de cartes illustrées), E-9 (avec les blocs Relations et Pièces jointes et l'illustration en tête), E-10 et E-11 (cartes et graphes), E-12 (Assistant), E-14 (Paramètres), E-15 (Système de jeu, à `/systemes/:sid`), E-16 (Systèmes de jeu), la ligne « Campagne » de E-9, la session
+> recherche dans un type, en grille de cartes illustrées), E-9 (avec les blocs Relations et Pièces jointes, l'illustration en tête, le titre en place et « Supprimer la fiche… »), E-10 et E-11 (cartes et graphes), E-12 (Assistant), E-14 (Paramètres, avec « Supprimer l'univers »), E-15 (Système de jeu, à `/systemes/:sid`), E-16 (Systèmes de jeu), E-17 (Recherche), E-18 (Accès par API), E-19 (Médiathèque), la ligne « Campagne » de E-9, la session
 > et la barre latérale.
 
 ## Format
@@ -64,7 +64,7 @@ bascule existe (fiche, carte et, depuis `kanevas-import`, recherche E-17).
 | **E-9 Fiche** | E-8 ; un token ; un lien ; E-13 | lire et écrire les sections permises ; ajouter, réordonner, retirer une section, régler son audience, relier (MJ) ; joindre un fichier (les deux chemins d'ajout, AD-111), réserver un fichier au MJ (MJ), retirer une référence ; régler le sous-type (MJ) ; poser, remplacer, retirer l'illustration (MJ) ; bascule mode Joueur (MJ). Un compte-rendu s'ouvre ici. | P-3 à P-7 |
 | **E-10 Cartes** | nav Cartes | les cartes lisibles ; créer une carte illustrée (avec son image de fond) ou un graphe (MJ) | P-3, P-9 |
 | **E-11 Carte** | E-10 ; E-3 | carte illustrée : fond, tokens ; graphe : nœuds et liens. MJ : déposer ou changer le fond, placer, rendre visible, mode Joueur. Joueur : ouvrir la fiche d'un token. | P-3, P-6, P-9 |
-| **E-12 Assistant** | bouton flottant, sur tout écran d'univers | converser ; voir ce que l'assistant a écrit, avec un lien ; MJ : propositions de mise à jour (actuel/proposé, **Appliquer**, **Abandonner**), images générées | P-3, P-5, P-6, P-7 |
+| **E-12 Assistant** | bouton flottant, sur tout écran d'univers | converser ; voir ce que l'assistant a écrit, avec un lien ; MJ : propositions de mise à jour (actuel/proposé, **Appliquer**, **Abandonner**) | P-3, P-5, P-6, P-7 |
 | **E-13 Comptes-rendus** | nav Comptes-rendus ; E-3 | tous les CR lisibles de l'univers, du plus récent, avec leur campagne | P-4, P-5 |
 | **E-14 Paramètres de l'univers** | nav Univers (MJ) | nom, description, système de jeu (choisir dans le catalogue, en créer un) | P-8 |
 | **E-15 Système de jeu** | E-16 ; lien depuis E-3 et E-14 | le référentiel commun : règles, créatures, objets ; ajouter, modifier (MJ d'un univers rattaché) ; hors du cadre d'un univers | P-8 |
@@ -99,7 +99,7 @@ bouchon » — sans `E-n` ni six états, ils n'existent pas en production.
 
 ## Rôles × écrans × actions
 
-« — » : l'écran n'est pas proposé (absent de la navigation, et 404 si on force l'adresse). E-15 et
+« — » : l'écran n'est pas proposé (absent de la navigation ; si on force l'adresse, l'écran affiche « Page introuvable. » et l'API répond 404). E-15 et
 E-16 vivent hors des univers : leurs cases disent le rôle dans un univers rattaché au système.
 
 | Écran | MJ | Joueur | Admin d'instance (sans rôle dans l'univers) |
@@ -112,12 +112,12 @@ E-16 vivent hors des univers : leurs cases disent le rôle dans un univers ratta
 | E-6 | tout | liste, statut, CR, « Nouveau compte-rendu » ; ni scénarios ni préparation (cachés) | — |
 | E-7 | tout | — | — |
 | E-8 | lire, chercher, créer ; la vignette de chaque fiche (son illustration, ou le repli dessiné) | lire, chercher ; la vignette des fiches qu'il voit | — |
-| E-9 | tout ; mode Joueur ; relier et retirer des relations ; poser, remplacer, retirer l'illustration (hors mode Joueur) ; *(kanevas-import)* sous-type, réserver un fichier au MJ | sections lisibles ; écrire celles permises ; relations lisibles (section et cible) ; pièces jointes de celles-ci ; voir l'illustration, jamais la poser ; *(kanevas-import)* dans une section qu'il écrit, ajouter un fichier ou en choisir un qu'il voit (les deux chemins de B-55) et retirer une référence ; fichiers sous double garde ; jamais régler une visibilité (**caché**) | — |
+| E-9 | tout ; mode Joueur ; relier et retirer des relations ; poser, remplacer, retirer l'illustration (hors mode Joueur) ; *(kanevas-import)* sous-type, réserver un fichier au MJ, voir un fichier en attente d'import (tuile) | sections lisibles ; écrire celles permises ; relations lisibles (section et cible) ; pièces jointes de celles-ci ; voir l'illustration, jamais la poser ; *(kanevas-import)* dans une section qu'il écrit, ajouter un fichier ou en choisir un qu'il voit (les deux chemins de B-55) et retirer une référence ; fichiers sous double garde ; jamais régler une visibilité (**caché**) ; un fichier en attente d'import : rien (**caché**) | — |
 | E-10 | tout | cartes visibles | — |
 | E-11 | tout ; mode Joueur | lire une carte visible, ouvrir une fiche | — |
-| E-12 | catalogue MJ ; propositions : le MJ demandeur seul les voit, les applique, les abandonne | catalogue Joueur ; propositions : **caché** (ni outil ni bloc ; ce qu'on vérifie est l'absence de proposition et de bloc, pas le texte libre de l'assistant) | — |
+| E-12 | catalogue MJ (dont générer une image, si un moteur d'images est disponible) ; propositions : le MJ demandeur seul les voit, les applique, les abandonne | catalogue Joueur (sans image : l'outil est absent, l'assistant répond qu'il ne peut pas) ; propositions : **caché** (ni outil ni bloc ; ce qu'on vérifie est l'absence de proposition et de bloc, pas le texte libre de l'assistant) | — |
 | E-13 | tous les CR | les CR lisibles | — |
-| E-14 | tout | — | — |
+| E-14 | tout ; « Supprimer l'univers » (*kanevas-import*) | — (« Page introuvable. ») | « Page introuvable. » |
 | E-15 (hors univers ; les colonnes disent le rôle dans un univers **rattaché au système**) | lire ; « Ajouter … », « Modifier » | lire (« Lecture seule ») ; ni « Ajouter » ni « Modifier » | « Page introuvable. », sauf s'il est lui-même membre d'un univers rattaché : alors la colonne de son rôle là (l'admin MJ d'un univers rattaché lit et modifie) |
 | E-16 (hors univers) | ses systèmes, avec ses univers et son rôle | ses systèmes, « Lecture seule » | la liste de ses propres systèmes (comme MJ ou Joueur s'il est membre d'un univers rattaché) ; vide sinon — l'écran est proposé à tout compte |
 | E-17 *(kanevas-import)* | chercher dans toutes les fiches de l'univers, blocs MJ compris ; en **mode Joueur**, comme un joueur (ni blocs MJ, ni fiches qu'un joueur ne lit pas) ; filtres : les types activés ; les fiches des types désactivés restent des résultats sous « Tous » | chercher dans ce qu'il lit, hors blocs MJ ; filtres par type et par étiquette des seules fiches qu'il voit ; bascule de mode : absente (cachée) ; blocs MJ : hors recherche (jamais lus) ; « Alias et étiquettes… » sur E-9 : cachée | — |
@@ -139,8 +139,8 @@ ne montre que les types activés ; **E-8** — MJ : la vue en arbre, la créatio
 avec son champ « Sous-type », le filtre « Sous-type » ; Joueur : l'arbre des fiches qu'il voit, le filtre
 « Sous-type » sur ce qu'il voit ; la création et son champ « Sous-type » sont **absents** (non offerts). **E-9** — MJ : écrire le
 Markdown, insérer liens et blocs MJ, renommer, changer le type, déplacer, alias et étiquettes,
-supprimer (menu « ⋯ » de l'en-tête, hors mode Joueur), voir la clé d'origine ; Joueur : lire le
-Markdown (clé d'origine cachée), suivre les liens vers ce qu'il voit, « Contient » et « Mentionnée dans » réduits à ce qu'il
+supprimer (menu « ⋯ » de l'en-tête, hors mode Joueur), voir la clé d'origine ; Joueur : titre en texte, ni menu « ⋯ » ni suppression (**caché**), clé d'origine cachée ; un admin d'instance sans rôle : « Page introuvable. » ; lire le
+Markdown, suivre les liens vers ce qu'il voit, « Contient » et « Mentionnée dans » réduits à ce qu'il
 lit ; écrire une section permise **sauf si elle contient un bloc MJ** (« Modifier » **caché**) ; alias
 et étiquettes visibles, jamais modifiables (**caché**). **E-14** — MJ : « Types de fiche »,
 « Supprimer l'univers ». **E-15** — MJ d'un univers rattaché : « Types de fiche » (bascules) ;
@@ -179,8 +179,7 @@ Deux sont posés dès le cadrage parce qu'ils traversent tout :
 
 > E-1, E-2, E-3, E-4, E-8, E-9, la barre latérale et la session. Vocabulaire des six états, celui
 > de B-29 : **vide**, **chargement**, **erreur**, **connexion perdue**, **refus**, **contenu
-> long**. « Sans objet » dit sa raison. Les maquettes finies sont `docs/maquettes/e01-*.html`, `e02-*.html`,
-> `e03`, `e04`, `e08`, `e09` (thème sombre, gris tertiaire de la charte).
+> long**. « Sans objet » dit sa raison. Les maquettes qui font foi pour la forme sont listées sous « Maquettes » (fin du document) ; `e02` est d'avant la charte (thème sombre, gris tertiaire de la charte).
 
 **Textes communs.**
 
@@ -267,11 +266,11 @@ cartes**, comme E-8 et E-16 (« E-1 en cartes », plus bas).* Bouton « Créer u
 
 Un formulaire : « Nom » (obligatoire, 80 caractères au plus), « Description » (facultative, 500
 au plus), « Créer l'univers » et « Annuler » (→ E-1). Créer mène à E-3 de l'univers, le créateur
-en MJ (B-2).
+en MJ (B-2). Dès que le nom est saisi, le sceau de l'univers (son initiale) s'affiche en aperçu au-dessus du titre ; tant que le nom est vide, rien.
 
 | État | Ce qu'on voit | Ce qu'on peut faire |
 |---|---|---|
-| vide | le formulaire vierge | remplir |
+| vide | le formulaire vierge, sans aperçu | remplir |
 | chargement (écriture en cours) | le bouton affiche « … », désactivé | — |
 | erreur | « Erreur : le nom est obligatoire. » sous le champ ; ou, si la création échoue, « L'action n'a pas abouti. Réessayez. » au-dessus du formulaire, saisie conservée | corriger, réessayer |
 | connexion perdue | le bandeau ; « Créer l'univers » désactivé, saisie conservée | attendre |
@@ -371,9 +370,9 @@ Textes : section sans contenu : « Rien d'écrit pour l'instant. » ; fiche sans
 fiche n'a pas encore de section. » ; écriture périmée : « La section a changé depuis que vous
 l'avez ouverte. Rechargez-la pour voir la nouvelle version ; votre texte reste ci-dessous. » avec
 « Recharger la section » ; droit retiré entre-temps : « Vous ne pouvez plus modifier cette section. » ;
-confirmation de retrait : « Retirer la section « Vérité — MJ seul » ? Son contenu sera perdu. » (si elle porte
-des pièces jointes : « … Son contenu et ses 3 pièces jointes seront perdus. ») avec
-« Retirer la section » et « Annuler ».
+Removal confirmation: « Retirer la section « Vérité — MJ seul » ? Son contenu sera perdu. »
+(with attached files: « … Son contenu et ses 3 fichiers joints seront retirés. »), with
+« Retirer la section » and « Annuler ».
 
 | État | Ce qu'on voit | Ce qu'on peut faire |
 |---|---|---|
@@ -413,7 +412,7 @@ E-2 ; E-5 lui vient avec cette tranche (plus bas).
 > chargement, connexion perdue, écriture en cours, échec d'une écriture, refus) et les refus de
 > membres (« Ce compte ne s'est jamais connecté. », « Ce compte est déjà membre. », « Impossible :
 > l'univers doit garder au moins un MJ. ») sont ceux de « Détail des écrans de
-> `kanevas-premiere-fiche` ». Maquette finie : `docs/maquettes/e05-administration.html`.
+> `kanevas-premiere-fiche` ». Maquette `docs/maquettes/e05-administration.html` (d'avant la charte : contenu et vocabulaire seulement).
 
 **Qui est admin d'instance.** Le compte dont la session porte le groupe Authelia `parents` (AD-56,
 lu à la connexion ; en bouchon, Admin). Le droit est celui de la session en cours : un compte retiré
@@ -498,19 +497,19 @@ de bloc sur E-3, et l'adresse de E-15 répond « Page introuvable. ».
 
 ### E-14 Paramètres de l'univers (MJ)
 
-Trois panneaux, dans cet ordre.
+Trois panneaux, dans cet ordre, chacun portant la pastille « MJ seul » (cadenas) de la charte ; au téléphone (sous 760 px) leur débord est de 12 px, non 28.
 
 1. **Identité** : « Nom » (obligatoire, 80 caractères au plus), « Description » (500 au plus),
-   « Enregistrer ». Après l'enregistrement : « Enregistré. » au-dessus du panneau.
+   « Enregistrer ». Après l'enregistrement : toast « Enregistré. ».
 2. **Système de jeu** : une liste « Système du catalogue » (les noms, par ordre alphabétique sans
    casse, et en tête « Aucun système »), « Rattacher » ; si l'univers a un système : son nom, « Utilisé
    par N univers » et « Ouvrir le système » (→ E-15). Choisir « Aucun système » puis « Rattacher »
    **détache** l'univers (rien n'est supprimé : le système et son contenu restent, les autres
-   univers le gardent).
+   univers le gardent). Toasts : « « X » rattaché », « « X » détaché » (« Aucun système rattaché » s'il n'y en avait pas).
 3. **Créer un système** : « Nom du système » (obligatoire, 80 caractères au plus), « Créer et
    rattacher » : le système naît au catalogue et l'univers y est rattaché en un seul geste (si l'un
    échoue, aucun n'a lieu). Un nom déjà pris (sans tenir compte de la casse) : « Un système porte déjà
-   ce nom. » sous le champ.
+   ce nom. » sous le champ. Réussite : toast « « X » créé et rattaché ».
 
 | État | Ce qu'on voit | Ce qu'on peut faire |
 |---|---|---|
@@ -744,7 +743,7 @@ jamais « caché ». Chemin d'échec de relier une section : le refus du service
 > chargement, connexion perdue, écriture en cours, échec d'écriture, refus, session expirée) ; ne
 > sont redits que les textes propres. Vocabulaire : les écrans disent « compte-rendu » en toutes
 > lettres ; « CR » n'est qu'un sigle des documents (B-19, B-20). Dates : « 22 sept. 2026 » (jour, mois
-> abrégé, année), comme sur E-9. Maquettes finies : `docs/maquettes/e06`, `e07`, `e13`, `e03`.
+> abrégé, année), comme sur E-9. Maquettes : `e06` et `e03` sont finies ; `e07` et `e13` sont d'avant la charte (contenu et vocabulaire seulement).
 
 **Ajouts aux écrans déjà construits.**
 
@@ -919,92 +918,101 @@ l'assistant est construit (E-12, `kanevas-assistant-membre`).
 > écriture en cours, échec d'une écriture). Maquette : `e09` (bloc Pièces jointes : MJ, Joueuse,
 > envoi, échecs). Le document prime sur la maquette.
 
-### E-9 — le bloc Pièces jointes
+### E-9 — the « Pièces jointes » block
 
-> *Amendé par `kanevas-import` (AD-111, décisions de Monsieur du 2026-10-11) : une pièce jointe est désormais un fichier de la médiathèque, référencé par la section ; « secrète » devient « Réservée au MJ », la visibilité du fichier ; 100 fichiers joints par section. Voir « E-9 Fiche — ce que `kanevas-import` change », « Fichiers ».*
+> *Amended by `kanevas-import` (AD-111, decisions of 2026-10-11): an attachment is now a media
+> library file referenced by the section; “secret” becomes « Réservé au MJ », the file's own
+> visibility; up to 100 attached files per section. See « E-9 Fiche — ce que `kanevas-import`
+> change », « Fichiers ».*
 
-Dans chaque section, sous son contenu (et sous le bloc Relations s'il existe) : un bloc **Pièces
-jointes**, inscrit au registre des blocs de section (un fichier, sans modifier un bloc existant).
-Il montre les fichiers rattachés **à cette section** : une **image** (PNG, JPEG, GIF, WebP,
-reconnue à son contenu, pas à son nom) en vignette ; tout autre fichier (PDF, texte, archive…, et
-une image SVG) comme une ligne : nom, taille, « Télécharger ». Un clic sur une vignette ouvre
-l'image entière dans un nouvel onglet.
+Each section has a **« Pièces jointes »** block below its content (and below Relations, if present),
+registered in the section block registry. It shows **files attached to that section** (references
+into the media library, see « Fichiers » below): an **image** (PNG, JPEG, GIF, WebP, identified by its
+bytes, not its name) as a thumbnail; any other file (PDF, text, archive…, including SVG images) as
+a row with name, size and « Télécharger ». Clicking a thumbnail opens the full image in a new tab.
 
-Une pièce jointe **prend la visibilité de sa section** : qui ne lit plus la section ne voit plus
-ses fichiers, et l'adresse directe répond « Page introuvable. ». Le MJ peut en plus la marquer
-**secrète** : seul le MJ la voit, sur la fiche comme à son adresse.
+An attached file **has its own visibility**, « Visible des joueurs » or « Réservé au MJ » (AD-111).
+Readers without access to the section do not see its block. A section reader can only see a GM-only
+file if they added it themselves (third read rule); otherwise a neutral placeholder (« Image
+réservée au MJ. » or « Fichier réservé au MJ. ») replaces it, and the file address answers « Page
+introuvable. ». The GM sets the **file's** visibility (« Réserver au MJ » / « Rendre visible des joueurs »).
 
-| Rôle | Voir | Ajouter | Marquer / lever « secrète » | Retirer | Refus |
+| Role | See | Attach | Set visibility | Remove reference | Refusal |
 |---|---|---|---|---|---|
-| MJ | toutes celles de ses sections, secrètes comprises | oui, sur toute section | oui | oui | sans objet |
-| Joueur | celles des sections qu'il lit, hors secrètes | sur une section qu'il **écrit** (la sienne, ou ouverte en écriture aux joueurs) | non : **absent** ; sur une section qu'il ne fait que lire, « Ajouter un fichier » est absent aussi | sur une section qu'il écrit, une pièce qu'il voit | une pièce secrète est **absente** et son adresse répond « Page introuvable. » |
-| MJ en mode Joueur | comme un Joueur qui n'est l'auteur d'aucune section (AD-39) | seulement où les joueurs écrivent | absent | seulement où les joueurs écrivent | idem |
-| Admin d'instance | aucune | non | non | non | « Page introuvable. » |
+| GM | All attachments of their sections, including GM-only files | Yes, on any section | Yes | Yes | Not applicable |
+| Player | Attachments of readable sections, excluding GM-only files **unless they added them** | On a section they **can write** (their own, or open to player writes); « Joindre un fichier » is absent on read-only sections | No: **absent** | A readable file on a section they can write | A GM-only file they did not add is **absent**; its address answers « Page introuvable. » |
+| GM in player mode | Like a player, plus files they added themselves (AD-117) | Only where players can write | Absent | Only where players can write | Same |
+| Instance admin | None | No | No | No | « Page introuvable. » |
 
-Un geste qu'un rôle n'a pas est **absent** de l'écran (jamais grisé, sauf hors connexion) : sur une
-section qu'on lit sans l'écrire, ni « Ajouter un fichier » ni « Retirer » ; pour un Joueur (et le MJ en mode Joueur), ni la case
-« Secrète » ni « Rendre secrète ». Par l'API, un geste d'écriture sur une section qu'on lit sans
-l'écrire est refusé **403**, un marquage par un non-MJ aussi (403) ; ce qu'on ne lit pas répond 404.
-L'Admin d'instance n'a pas de bloc (« Page introuvable. »). Le geste « marquer / lever « secrète » » du besoin B-24 s'affiche « Rendre secrète » / « Lever le secret ».
-Le texte de limite d'un MJ en mode Joueur est celui d'un Joueur.
+Actions unavailable to a role are **absent** (never disabled, except offline): a read-only section
+has neither « Joindre un fichier » nor « Retirer »; players and GMs in player mode have neither
+« Réserver au MJ » nor « Rendre visible des joueurs ». The API refuses writes on a read-only
+section with **403**, and visibility changes by non-GMs with 403; unreadable resources answer 404.
+Instance admins have no block (« Page introuvable. »). A GM in player mode gets the player limit message.
 
-*Ajouter.* Un bouton « Ajouter un fichier » ouvre le sélecteur de fichiers du système ; **choisir
-le fichier suffit** : l'envoi part aussitôt, un fichier après l'autre si l'on en choisit
-plusieurs (il n'y a pas de limite de taille). Le MJ (mode MJ) voit à côté du bouton une case
-« Secrète (MJ seul) », décochée, qui s'applique aux fichiers choisis ensuite : un fichier destiné à
-rester secret ne passe donc jamais, même un instant, par la table. Pendant l'envoi, une ligne
-« portrait.png — Envoi… 42 % » (`role="status"`) avec « Annuler » ; l'envoi annulé n'écrit rien. À la
-fin, la pièce rejoint la liste. Une section porte **100 fichiers joints** au plus (50 pièces avant `kanevas-import`, AD-111). Un fichier vide est refusé. Si l'on en choisit plusieurs, chacun est jugé seul : un refus n'arrête pas les suivants, et chaque refus devient une ligne d'erreur qui reste, avec « Ignorer » seul (« Réessayer » n'aurait pas de sens).
+*Attach.* « Joindre un fichier » opens the two-path add menu (see « Fichiers » below).
+« Ajouter depuis l'appareil » opens the system file picker: **choosing a file is enough**; upload
+starts immediately, one file after another for multiple selections (no size limit). During upload,
+a « portrait.png — Envoi… 42 % » row (`role="status"`) has « Annuler »; cancellation writes nothing
+to either the library or the sheet. Completed files join the list. A section has **at most 100
+attached files** (50 before `kanevas-import`, AD-111); this counts block references, not text references.
+Empty files are refused. Each selected file is judged separately: one refusal does not stop later
+files; each refusal leaves an error row with only « Ignorer » (retrying a refusal would not help).
 
-*Marquer, retirer.* Sur chaque pièce, le MJ a « Rendre secrète » (ou « Lever le secret » quand elle
-l'est) et « Retirer « portrait.png » » ; qui écrit la section n'a que « Retirer ». Retirer demande
-confirmation sur place : « Retirer « portrait.png » ? Le fichier sera perdu. » avec « Retirer le
-fichier » et « Annuler ». Retirer une section retire ses pièces jointes ; la confirmation de la première fiche gagne alors « … Son contenu et sa pièce jointe seront perdus. » (une) ou « … Son contenu et ses 3 pièces jointes seront perdus. » (plusieurs) ; sans pièce, son texte ne change pas. Une pièce secrète porte la
-pastille ambre « Secrète — MJ seul » et le liseré du panneau MJ. Un fichier n'est jamais modifié
-sur place : pour le remplacer, on en ajoute un autre et l'on retire l'ancien.
+*Set visibility, remove.* Each row offers the GM « Réserver au MJ » (or « Rendre visible des joueurs »
+for a GM-only file) and « Retirer « portrait.png » »; section writers only have « Retirer ».
+Removal **only removes the reference, never the library file**. Inline confirmation: « Retirer
+« portrait.png » de cette section ? Le fichier reste dans la médiathèque. » with « Retirer » and
+« Annuler ». Removing a section removes its references; the first-sheet confirmation adds
+« … Son contenu et son fichier joint seront retirés. » (one file) or « … Son contenu et ses 3 fichiers
+joints seront retirés. » (several). Without attachments, the text is unchanged. GM-only files have
+an amber « MJ seul » badge and the GM panel border. Files are never changed in place: attach another
+file and remove the old one to replace it.
 
-*Textes.* Aucune pièce : « Aucune pièce jointe. » ; taille : « 842 o », « 4,2 Ko », « 3,1 Mo »,
-« 1,2 Go » (base 1024) ; nom : celui du fichier d'origine, sans dossier, 200 caractères au plus ; une vignette dit son nom en texte alternatif et porte en légende, dessous, son nom et sa taille (« portrait-aldric.png · 3,1 Mo »), puis ses boutons ; échec d'envoi : « « portrait.png » : l'envoi n'a pas
-abouti. » avec « Réessayer » et « Ignorer » ; fichier vide : « « notes.txt » est vide. » ; limite :
-« Cette section porte déjà 100 fichiers joints. » pour le MJ, « Cette section ne peut pas recevoir d'autre fichier. » pour un Joueur (qui ne voit pas les pièces secrètes : le chiffre dirait ce qu'il ne doit pas savoir) ; droit retiré entre-temps (à l'ajout ou au retrait) : « Vous ne pouvez plus ajouter de fichier à cette section. », la fiche se recharge et « Ajouter un fichier » comme « Retirer » disparaissent ; pièce déjà retirée ou devenue illisible : « Cette pièce
-jointe n'existe plus. » (la liste se recharge) ; vignette qui ne se charge pas : « Image
-indisponible. » avec « Télécharger » ; échec d'un marquage ou d'un retrait : « L'action n'a pas
-abouti. Réessayez. », l'état d'avant revient.
+*Texts.* No attachments: « Aucun fichier joint. »; size: « 842 o », « 4,2 Ko », « 3,1 Mo », « 1,2 Go »
+(base 1024); name: original filename without directories, up to 200 characters. A thumbnail has the
+filename as alternative text, a caption below with name and size (« portrait-aldric.png · 3,1 Mo »),
+then its buttons. Failed upload: « « portrait.png » : l'envoi n'a pas abouti. » with « Réessayer »
+and « Ignorer ». Empty file: « « notes.txt » est vide. ». Limit: « Cette section porte déjà 100
+fichiers joints. » for the GM, « Cette section ne peut pas recevoir d'autre fichier. » for a player
+(who cannot see GM-only files: a count would disclose hidden information). Lost write permission
+when adding or removing: « Vous ne pouvez plus ajouter de fichier à cette section. »; reload the
+sheet, hiding « Joindre un fichier » and « Retirer ». Attachment already removed, deleted or no
+longer readable: « Ce fichier joint n'existe plus. » (reload the list). Failed thumbnail: « Image
+indisponible. » with « Télécharger ». Failed visibility change or removal: « L'action n'a pas
+abouti. Réessayez. »; restore the previous state.
 
-*Pas de bloc quand il n'a rien à dire.* Un Joueur qui ne peut rien voir ni ajouter dans une section
-n'a pas de bloc : ni titre, ni compteur, ni « Aucune pièce jointe. ». Le MJ voit le bloc de chaque
-section, même vide.
+*No block when there is nothing to show.* A player who can neither see nor attach anything in a
+section has no block: no title, count or « Aucun fichier joint. ». The GM sees every section's
+block, even when empty.
 
-| État | Ce qu'on voit | Ce qu'on peut faire |
+| State | What is shown | Available actions |
 |---|---|---|
-| vide | MJ, ou qui écrit la section : « Aucune pièce jointe. » et « Ajouter un fichier » ; un lecteur seul : pas de bloc | ajouter |
-| chargement | les pièces viennent avec la fiche : « Chargement de la fiche… » (E-9) ; une vignette en cours de chargement occupe sa place (cadre à la taille fixe) ; un envoi : la ligne « Envoi… 42 % » | annuler l'envoi |
-| erreur | envoi : « « portrait.png » : l'envoi n'a pas abouti. » et la ligne reste ; fichier vide ou limite atteinte : le refus des textes, en ligne qui reste, avec « Ignorer » ; marquage ou retrait : « L'action n'a pas abouti. Réessayez. » ; vignette : « Image indisponible. » | « Réessayer », « Ignorer », « Télécharger » |
-| connexion perdue | le bandeau ; « Ajouter un fichier », « Rendre secrète », « Lever le secret », « Retirer » désactivés ; un envoi en cours qui échoue devient l'erreur ci-dessus ; les vignettes déjà chargées restent | voir, télécharger |
-| refus | droit d'écriture retiré : « Vous ne pouvez plus ajouter de fichier à cette section. » ; pièce retirée entre-temps : « Cette pièce jointe n'existe plus. » ; section ou fiche illisible : « Page introuvable. » ; pièce secrète pour un Joueur : absente | recharger |
-| contenu long | un nom de 200 caractères passe à la ligne ; 100 fichiers joints : la liste entière, puis le refus de limite (texte selon le rôle) à l'ajout ; un fichier de plusieurs Go : la progression en pourcentage, la taille en « Go » ; une vignette tient dans un cadre de 160 × 120 px | idem |
+| Empty | GM or section writer: « Aucun fichier joint. » and « Joindre un fichier »; read-only reader: no block | Attach |
+| Loading | Files come with the sheet: « Chargement de la fiche… » (E-9); loading thumbnails keep their fixed frame; upload: « Envoi… 42 % » row | Cancel upload |
+| Error | Upload: « « portrait.png » : l'envoi n'a pas abouti. », row remains; empty file or limit reached: the refusal above, persistent row with « Ignorer »; visibility change or removal: « L'action n'a pas abouti. Réessayez. »; thumbnail: « Image indisponible. »; library choice deleted in the meantime: « Ce fichier n'existe plus. » | « Réessayer », « Ignorer », « Télécharger » |
+| Offline | Banner; « Joindre un fichier », « Réserver au MJ », « Rendre visible des joueurs », « Retirer » disabled; an interrupted upload becomes the error above; loaded thumbnails stay | View, download |
+| Refused | Lost write permission: « Vous ne pouvez plus ajouter de fichier à cette section. »; attachment removed in the meantime: « Ce fichier joint n'existe plus. »; unreadable section or sheet: « Page introuvable. »; GM-only file a player did not add: absent | Reload |
+| Long content | A 200-character name wraps; 100 attachments: full list, then role-specific limit refusal on add; multi-GB file: percentage progress and size in « Go »; thumbnail fits a 160 × 120 px frame | Same |
 
-*Critères.*
-- Étant donné « Maître Aldric » dont Antor, MJ, dépose sur « Vérité — MJ seul » un portrait avec
-  « Secrète (MJ seul) » cochée, alors Léa, Joueuse, ne voit ni le portrait, ni le bloc de cette
-  section (qu'elle ne lit pas) ; et sur « Apparence » (lue des joueurs), où Antor a déposé un
-  autre portrait puis l'a rendu secret, Léa ne voit aucune trace du fichier : ni vignette, ni
-  « Aucune pièce jointe. », ni compteur ; l'adresse directe du portrait secret lui répond « Page
-  introuvable. », comme une adresse qui n'a jamais existé.
-- Étant donné Léa auteur de « Notes de la table » avec écriture, quand elle choisit un portrait, alors
-  il s'envoie sans autre geste et apparaît en vignette ; Teo, Joueur de l'univers, ne le voit pas
-  tant que « Les joueurs la lisent » est faux, puis le voit et ne peut ni l'ajouter ni le retirer.
-- Étant donné Antor qui dépose le plan d'un lieu en PDF, alors la ligne propose « Télécharger » et
-  le fichier se télécharge sous son nom d'origine ; un fichier « image.svg » n'est jamais affiché dans la
-  page.
-- Étant donné Antor en mode Joueur sur la fiche, alors il ne voit ni la case « Secrète », ni
-  « Rendre secrète », ni les pièces secrètes, et ne peut ajouter que sur les sections que les
-  joueurs écrivent.
-- Étant donné un envoi de 2 Go en cours, quand Antor clique « Annuler », alors la ligne disparaît et
-  aucune pièce n'est ajoutée.
-- Étant donné Antor qui retire la section « Apparence » portant un portrait, alors la confirmation
-  dit « … Son contenu et sa pièce jointe seront perdus. » et, après confirmation, l'adresse du
-  portrait répond « Page introuvable. ».
+*Acceptance criteria.*
+- Given « Maître Aldric », when Antor, the GM, attaches a portrait to « Vérité — MJ seul », Léa,
+  a player, sees neither the portrait nor that section's block (she cannot read the section).
+  On « Apparence » (readable by players), when Antor attaches another portrait then reserves it
+  for the GM on E-19, Léa reads « Image réservée au MJ. » instead of the thumbnail. The reserved
+  portrait's direct address answers « Page introuvable. », just like an address that never existed.
+- Given Léa as author with write access to « Notes de la table », choosing a portrait starts upload
+  immediately and shows a thumbnail. Teo, added to the universe as a player by Antor, cannot see it:
+  visibility is set on upload (AD-111); opening the section to players later does not change it.
+  He can neither attach nor remove it.
+- Given Antor attaching a location map as PDF, the row offers « Télécharger » and downloads under
+  the original name; « image.svg » is never rendered in the page.
+- Given Antor in player mode on the sheet, he sees neither « Réserver au MJ » nor « Rendre visible
+  des joueurs », nor GM-only files he did not add himself; he can only attach where players can write.
+- Given an ongoing 2 GB upload, when Antor clicks « Annuler », the row disappears and no file is added.
+- Given Antor removing « Apparence » with an attached portrait, the confirmation says « … Son contenu
+  et son fichier joint seront retirés. »; after confirmation, the portrait is gone from the sheet
+  but remains in the media library.
 
 ### Clôture de `kanevas-fichiers`
 
@@ -1084,7 +1092,7 @@ jamais « caché ». Chemin d'échec de relier une section : le refus du service
 
 > E-12 Assistant, et son ajout au shell d'un univers. Mêmes six états et mêmes textes communs que
 > `kanevas-premiere-fiche` (chargement, connexion perdue, session expirée) ; ne sont redits que les
-> textes propres. Maquette finie : `docs/maquettes/e12-assistant.html` (thème sombre ; MJ, Joueur,
+> textes propres. Maquette `docs/maquettes/e12-assistant.html` (d'avant la charte : contenu et états seulement) (thème sombre ; MJ, Joueur,
 > et les états). Composant : `docs/charte.md` « Panneau d'assistant ».
 
 **Ajout au shell.** Un bouton flottant « Demander à Kanevas », en bas à droite, sur **tout écran
@@ -1123,21 +1131,21 @@ messages du fil (AD-75).
 
 **Ce que chaque rôle y voit.** Le Joueur : chercher, lire une fiche, lire une section, modifier une
 section, ajouter un paragraphe à une section, lister les campagnes. Le MJ : les mêmes, plus créer
-une campagne et créer un scénario. Un Joueur qui demande de créer un scénario n'a pas l'outil :
+une campagne, créer un scénario et générer une image (`kanevas-images`). Un Joueur qui demande de créer un scénario ou de générer une image n'a pas l'outil :
 l'assistant répond qu'il ne peut pas, sans événement et sans rien créer (le texte est celui du
 modèle, il n'est pas fixé ; ce qu'on vérifie est l'absence d'écriture). Dans les deux cas
 l'assistant ne lit et n'écrit que ce que la personne lit et écrit : une section fermée est
 « Introuvable. », une section lisible mais non écrite « Vous ne pouvez pas modifier cette
-section. » (AD-74). Cette tranche **ne donne aucun outil sur les cartes ni les graphes** (écarté, AD-74). Elle **ne dessine ni proposition de mise à jour ni image** : elles
-s'inscrivent au registre de blocs (`kanevas-monde`, `kanevas-images`).
+section. » (AD-74). Cette tranche **ne donne aucun outil sur les cartes ni les graphes** (écarté, AD-74). Elle **ne dessine pas** la proposition de mise à jour (`kanevas-monde`) ; l'image est le bloc de
+`kanevas-images`, décrit plus bas : l'un et l'autre s'inscrivent au registre de blocs.
 
 | État | Ce qu'on voit | Ce qu'on peut faire |
 |---|---|---|
 | vide (fil sans message) | « Demandez-moi de chercher, de résumer ou d'écrire dans ce que vous pouvez lire et écrire. Exemple : « Que sait-on d'Aldric ? » » | écrire ; fermer ; « Nouvelle conversation » (sans effet sur un fil vide) |
 | chargement (disponibilité) | le bouton est présent ; dans le panneau, « Chargement… » à la place du champ et de « Envoyer » (absents, pas désactivés) ; aucun « Réessayer » tant que l'appel n'a pas répondu | fermer ; nouvelle conversation |
 | disponibilité en échec (serveur muet, erreur) | « Je n'ai pas pu répondre — réessayer » avec un bouton « Réessayer » qui relit la disponibilité ; le champ et « Envoyer » sont présents mais désactivés (`aria-disabled`) | réessayer ; fermer ; nouvelle conversation |
-| réponse en cours | le message envoyé apparaît ; « Kanevas réfléchit… » (`role="status"`) ; « Envoyer » affiche « … » et est désactivé ; le champ reste lisible | fermer (la réponse arrive dans le fil) ; « Nouvelle conversation » est désactivée tant que la réponse n'est pas arrivée |
-| erreur | « Je n'ai pas pu répondre — réessayer » (`role="alert"`), sans événement, pour toutes les causes (délai de 120 s, erreur de transport) : la personne ne les distingue pas ; demande déjà en cours (429) : « Une demande est déjà en cours. Patientez. » ; la saisie n'est jamais perdue : à l'envoi le champ se vide, la question reste dans le fil, une seule fois ; « Réessayer » (offert pour toutes les erreurs, le 429 compris) la renvoie telle quelle : le message d'erreur disparaît, « Kanevas réfléchit… » prend sa place, et la question n'est pas affichée une seconde fois | « Réessayer » renvoie la même question ; saisir autre chose ; fermer ; nouvelle conversation |
+| réponse en cours | le message envoyé apparaît ; « Kanevas réfléchit… » (`role="status"`) ; « Envoyer » affiche « … » et est désactivé ; le champ reste lisible ; pour un MJ seulement, au bout de 20 secondes d'attente **quelle que soit la demande** (le client ne sait pas ce que fait l'assistant), « Kanevas travaille toujours… Une image peut prendre jusqu'à trois minutes. » (`kanevas-images`) ; le Joueur garde « Kanevas réfléchit… » | fermer (la réponse arrive dans le fil) ; « Nouvelle conversation » est désactivée tant que la réponse n'est pas arrivée |
+| erreur | « Je n'ai pas pu répondre — réessayer » (`role="alert"`), sans événement, pour toutes les causes (délai de 120 s, erreur de transport) : la personne ne les distingue pas ; demande déjà en cours (429) : « Une demande est déjà en cours. Patientez. » ; la saisie n'est jamais perdue : à l'envoi le champ se vide, la question reste dans le fil, une seule fois ; « Réessayer » (offert pour toutes les erreurs, le 429 compris) la renvoie telle quelle : le message d'erreur disparaît, « Kanevas réfléchit… » prend sa place, et la question n'est pas affichée une seconde fois ; une demande avec image dure 270 secondes au plus (AD-90) : au-delà, le même texte | « Réessayer » renvoie la même question ; saisir autre chose ; fermer ; nouvelle conversation |
 | indisponible (sans jeton, hors bouchon, AD-77) | « L'assistant n'est pas disponible pour le moment. » ; champ et « Envoyer » désactivés (`aria-disabled`) | lire le fil ; fermer ; nouvelle conversation |
 | connexion perdue | le bandeau commun ; le fil reste lisible ; champ et « Envoyer » désactivés. Perdue pendant « Kanevas réfléchit… » : la réponse est perdue, l'état passe à l'erreur ci-dessus avec « Réessayer » (désactivé tant que la connexion n'est pas revenue) ; au retour de la connexion, le bandeau disparaît et le champ est réactivé | lire, ouvrir les liens ; fermer ; nouvelle conversation |
 | refus | le compte sans rôle n'a pas le bouton (rien à décrire ici) ; un refus d'outil est une réponse de l'assistant, pas un écran d'erreur — « Introuvable. », « Vous ne pouvez pas modifier cette section. », « La section a changé depuis que vous l'avez lue. Relisez-la. » —, sans événement ; la réponse commence par ce texte, la suite est du texte libre du modèle ; session expirée : la personne est menée à la connexion, le fil est perdu | refus d'outil : le fil reste, on écrit à nouveau ; fermer ; nouvelle conversation |
@@ -1157,16 +1165,100 @@ E-12, l'admin d'instance sans rôle ne l'a pas. Aucune migration, aucune entité
 stocké. Reste aux autres tranches : les propositions de mise à jour (`kanevas-monde`), les images
 (`kanevas-images`).
 B-24 → le bloc Pièces jointes de E-9 (ajouter en un geste, voir une image, télécharger un autre
-fichier, marquer secrète, retirer). Atteint par P-3 étape 4 (le plan d'un lieu) et P-7 étape 2 (le
+fichier, retirer; its visibility follows where it was added, see the amendment below). Atteint par P-3 étape 4 (le plan d'un lieu) et P-7 étape 2 (le
 portrait de son personnage). Le bloc livre ses six états (B-29), ci-dessus.
 
+## Détail des écrans de `kanevas-images`
+
+> Un seul ajout, aucun écran neuf : le **bloc « Image attachée »** de E-12 (le panneau de
+> l'assistant). Mêmes textes communs et mêmes six états que « Détail des écrans de
+> `kanevas-premiere-fiche` » et « Détail des écrans de `kanevas-assistant-membre` ». Maquette :
+> `e12-assistant.html` (bloc Image attachée, échec de génération).
+
+**Ce que l'assistant fait de plus.** Le catalogue du **MJ** reçoit un outil, `generer_image` (AD-89) ;
+celui du Joueur n'en reçoit pas. Le MJ demande « Fais un portrait pour Apparence d'Aldric » : l'assistant
+décrit l'image, la fait générer, l'attache à la section (comme si le MJ l'avait ajoutée par « Joindre un fichier » de E-9, AD-117 §6)
+et le dit. Une demande n'attache **qu'une** image ; l'image est un fichier de la médiathèque (E-19),
+joint à la section, avec la visibilité que donne l'endroit d'ajout (« Visible des joueurs » si les joueurs lisent la section,
+« Réservé au MJ » sinon, B-24, AD-111), que le MJ peut réserver, retirer ou remplacer depuis E-9 ou E-19. Un Joueur qui demande une image n'a pas l'outil : l'assistant répond
+qu'il ne peut pas, sans événement et sans rien attacher (le texte est celui du modèle ; on vérifie
+l'absence d'écriture). Sans moteur d'images disponible (ni bouchon, ni Codex), l'outil n'est pas dans
+le catalogue du MJ non plus, et l'assistant le dit de même.
+
+### Bloc « Image attachée » (E-12)
+
+Sous la réponse, comme les autres écritures (AD-76), un événement `image_attachee` : un bloc « Écrit par
+l'assistant » dont le libellé est « Image attachée à la section « Apparence » de « Maître Aldric » »,
+**la vignette de l'image** (au plus 240 px de large, rapport conservé, texte alternatif : la
+description demandée) et un lien « Ouvrir la section » vers E-9, à la section. La vignette est lue par la
+route authentifiée des fichiers (AD-67, AD-111) : aucune adresse publique.
+
+| État | Ce qu'on voit | Ce qu'on peut faire |
+|---|---|---|
+| vide | sans objet : le bloc n'existe que si une image a été attachée | — |
+| chargement | la vignette est un cadre gris « Chargement de l'image… » (`role="status"`) ; le libellé et le lien sont déjà là | « Ouvrir la section » |
+| erreur | image retirée depuis, ou illisible : le cadre dit « Image indisponible. » avec « Recharger l'image » ; le libellé et le lien restent | « Recharger l'image » (rend la même réponse si l'image est retirée) ; « Ouvrir la section » |
+| connexion perdue | le bandeau commun ; une vignette déjà chargée reste ; sinon « Image indisponible. » avec « Recharger l'image » (désactivé tant que la connexion n'est pas revenue) | lire, ouvrir |
+| refus | rôle ou droit retiré après coup : la lecture de la vignette et le lien répondent « Page introuvable. » comme toute section illisible (le cadre dit « Image indisponible. », sans « Recharger l'image » utile) ; sinon sans objet, l'événement n'existe que pour un MJ qui vient d'écrire dans cette section | — |
+| contenu long | un titre de fiche de 120 caractères et un titre de section de 80 passent à la ligne dans le libellé ; une image très haute est contenue dans 240 px de large et 320 px de haut | idem |
+
+**Pendant la génération.** L'assistant ne répond qu'à la fin (AD-75) : « Kanevas réfléchit… » reste
+affiché ; au bout de 20 secondes, **pour un MJ seulement** (pastille « MJ » ; le Joueur n'a pas l'outil et garde « Kanevas réfléchit… »), il devient « Kanevas travaille toujours… Une image peut prendre
+jusqu'à trois minutes. » (`role="status"`). Le client n'abandonne pas la requête avant 300 secondes.
+Fermer le panneau ne l'arrête pas ; recharger la page ou quitter l'univers l'abandonne : rien n'est alors
+attaché.
+
+**Les échecs, dits par l'assistant** (réponse sans événement, rien n'est attaché) : génération en
+échec ou trop longue — « Je n'ai pas pu générer l'image. » ; section pleine (100 fichiers joints) — « Cette section
+porte déjà 100 fichiers joints. » ; droit d'écrire retiré entre-temps — « Vous ne pouvez pas modifier cette
+section. » ; seconde image dans la même demande — « Une seule image par demande. » ; description de plus de 500 caractères — « La description est limitée à 500 caractères. » (l'assistant en propose une plus courte) ; aucun moteur d'images — l'assistant répond qu'il ne peut pas générer d'image (l'outil est absent). Dans le bouchon, une
+demande dont la description contient « échec » donne le premier cas.
+
+*Critères.*
+- Étant donné Antor, MJ, et « Apparence » de « Maître Aldric », quand il demande « Fais un portrait pour
+  « Apparence » d'« Maître Aldric » », alors le fil montre « Image attachée à la section « Apparence » de
+  « Maître Aldric » » avec la vignette et « Ouvrir la section », et la section d'Aldric, ouverte sur E-9,
+  porte un fichier joint image de plus, qui figure aussi dans E-19.
+- Étant donné Léa, Joueuse, quand elle fait la même demande, alors l'assistant répond qu'il ne peut pas
+  et la section ne gagne aucun fichier joint.
+- Étant donné Antor, en bouchon, quand sa demande contient « échec », alors le fil dit « Je n'ai pas pu
+  générer l'image. », sans bloc « Image attachée », et la section n'a pas de fichier de plus.
+- Étant donné Antor et une section qui porte déjà 100 fichiers joints, quand il demande une image, alors
+  l'assistant dit « Cette section porte déjà 100 fichiers joints. » et rien n'est attaché.
+- Étant donné une image attachée puis retirée de E-9, quand Antor ferme puis rouvre le panneau (le fil
+  survit, AD-28, et la vignette est relue à la réouverture), alors le cadre dit « Image indisponible. » avec « Recharger l'image », et « Ouvrir la
+  section » mène toujours à E-9 ; « Recharger l'image » relit la vignette et, l'image étant toujours
+  retirée, rend le même texte.
+- Étant donné une image attachée, quand sa vignette charge, alors le cadre gris « Chargement de l'image… »
+  précède l'image ; et quand la connexion est perdue avant la lecture, alors le bandeau commun s'affiche et
+  le cadre dit « Image indisponible. » avec « Recharger l'image » désactivé jusqu'au retour de la connexion.
+- Étant donné Léa, Joueuse, quand l'assistant tarde plus de 20 secondes, alors elle voit toujours « Kanevas
+  réfléchit… » et jamais le texte sur l'image ; Antor, MJ, le voit dès 20 secondes, même pour une demande qui
+  n'a rien à voir avec une image.
+- Étant donné une demande d'image qui dure plus de 20 secondes, alors le panneau affiche « Kanevas
+  travaille toujours… Une image peut prendre jusqu'à trois minutes. » ; et si la demande passe 270 secondes,
+  « Je n'ai pas pu répondre — réessayer ».
+- Étant donné un titre de fiche de 120 caractères et un titre de section de 80, alors le libellé passe à la
+  ligne et la vignette, même d'une image très haute, reste dans ses bornes (240 px de large, 320 px de haut).
+- Étant donné une vignette déjà chargée, quand la connexion est perdue, alors elle reste affichée ; et quand
+  le rôle d'Antor dans l'univers est retiré, alors la lecture de la vignette répond « Page introuvable. » et le
+  cadre dit « Image indisponible. ».
+- Étant donné une instance sans moteur d'images, quand Antor demande un portrait, alors l'assistant
+  répond qu'il ne peut pas générer d'image, sans événement et sans fichier joint.
+
+### Clôture de `kanevas-images`
+
+B-25 → le bloc ci-dessus (générer, attacher en un geste, un échec n'attache rien) ; B-27 (générer) →
+l'outil `generer_image` du catalogue MJ ; P-3 étape 5 → E-12 et E-9 ; B-29 → les six états du bloc. Le
+bloc est atteint par P-3 (étape 5). Les rôles : le MJ a l'outil, le Joueur non ; l'admin d'instance sans
+rôle n'a pas E-12. Écart au cadrage : aucun.
 ## Détail de `kanevas-refonte-visuelle`
 
 La refonte ne change ni les droits, ni les données, ni les textes d'un écran : elle change la
 forme, et les gestes ci-dessous, que le testeur vérifie. La direction, les tokens et les
-composants sont dans `docs/charte.md`. E-1, E-3, E-6, E-8 et E-9 ont leur maquette finie ; E-2,
-E-4, E-7, E-13, E-14 et E-15 se refont dans le même cadre et avec les mêmes composants, sans
-maquette propre : leurs maquettes actuelles, faites avant la charte, valent pour le contenu et
+composants sont dans `docs/charte.md`. E-1, E-3, E-4, E-6, E-8, E-9 et E-14 ont leur maquette finie (celle de E-15, `e15-systeme-de-jeu.html`, l'est hors du cadre d'un univers) ; E-2,
+E-7 et E-13 se refont dans le même cadre et avec les mêmes composants, sans
+maquette finie : leurs maquettes actuelles, faites avant la charte, valent pour le contenu et
 le vocabulaire, pas pour la forme (barre, compte, couleurs).
 
 **Partout.** Le cadre de E-9 sur tous les écrans d'un univers ; chaque entrée de navigation et
@@ -1264,7 +1356,7 @@ dans la matrice ci-dessus.
 
 **L'illustration, en une phrase par règle.** Une fiche a **zéro ou une** illustration, une image
 PNG, JPEG, GIF ou WebP (reconnue à son contenu, pas à son nom). Elle se voit **partout où la
-fiche se voit** — comme son titre, elle n'est jamais secrète. **Le MJ seul** la pose, la remplace
+fiche et le fichier se voient** (amended: a GM-only image shows « Image réservée au MJ. » to players). **Le MJ seul** la pose, la remplace
 ou la retire, en mode MJ, depuis l'en-tête de E-9. Ce n'est pas une pièce jointe : elle n'est
 dans aucune section, et une image jointe à une section ne devient jamais l'illustration d'elle-même.
 
@@ -1292,8 +1384,8 @@ au secret (la section « MJ seul »).
 1 080 px). Au téléphone (moins de 760 px), **deux colonnes** (12 px entre elles, 16 px entre deux rangées),
 titre 13 px, la pastille sous le titre. Les images
 se chargent **à l'approche** (`loading="lazy"`) dans un cadre déjà à sa taille (la grille ne saute
-pas) ; leur adresse porte le jeton de l'illustration (`…/illustration?v=<jeton>`, AD-93), si bien
-qu'une image remplacée se recharge et qu'une image inchangée vient du cache.
+pas). The illustration address includes its token (`/fichiers/<id>?v=<jeton>`, AD-93), so a replaced
+image reloads while an unchanged image comes from the cache.
 
 *Survol et focus.* La carte se soulève d'un plan (`--surface-2` derrière la carte, contour
 `--bord-fort` autour de la vignette) ; au clavier, l'anneau de focus entoure la carte entière.
@@ -1694,7 +1786,7 @@ nouvelle ; B-13 et B-14 sont inchangés. Les deux besoins viennent des décision
 > Le bloc « proposition de mise à jour » de E-12, et rien d'autre : pas de nouvel écran, pas de
 > nouvelle adresse d'écran. Mêmes six états et mêmes textes communs que `kanevas-premiere-fiche`
 > (chargement, connexion perdue, session expirée) ; ne sont redits que les textes propres.
-> Maquette finie : `docs/maquettes/e12-propositions.html` (thème sombre ; le bloc dans ses états,
+> Maquette `docs/maquettes/e12-propositions.html` (d'avant la charte : contenu et états seulement) (thème sombre ; le bloc dans ses états,
 > sur ordinateur et sur téléphone). Composant : `docs/charte.md` « Proposition de mise à jour ».
 
 **Comment une proposition naît.** Le MJ écrit dans le champ de E-12, en nommant la section et le
@@ -1772,7 +1864,7 @@ lot, la reprise d'une proposition après rechargement.
 et quand les deux divergent, la maquette a tort.
 
 **Finies** (direction, tokens et composants de `docs/charte.md`, deux thèmes, bureau et
-téléphone, vrai contenu) : E-1, E-3, E-6, E-8, E-9. Depuis `kanevas-illustrations`, `e08` est la grille de cartes
+téléphone, vrai contenu) : E-1, E-3, E-4, E-6, E-8, E-9, E-14 (liste de référence ; les autres sections y renvoient). Depuis `kanevas-illustrations`, `e08` est la grille de cartes
 (types Personnages, Lieux, Factions, `#etat-lieux`, `#etat-factions`) et `e09` porte l'illustration
 de l'en-tête ; leurs images sont des illustrations de démonstration peintes en SVG. E-15 et E-16
 (`e15-systeme-de-jeu.html`, `e16-systemes-de-jeu.html`) sont finies hors du cadre d'un univers ;
@@ -1790,7 +1882,7 @@ bloc MJ, fil d'ancêtres, « Contient », « Mentionnée dans », menu de la fic
 univers) et `e19-mediatheque.html` (E-19 : images et documents, le sélecteur), dans le cadre et avec les composants
 de `e09-fiche.html`.
 
-**D'avant la charte** : les autres. Elles valent pour le contenu et le vocabulaire, pas pour la
+**D'avant la charte** : les autres (e02, e05, e07, e10, e11, e12-assistant, e12-propositions, e13). Elles valent pour le contenu et le vocabulaire, pas pour la
 forme ; un écran qui n'a qu'elles se construit dans le cadre et avec les composants de la
 maquette E-9.
 
@@ -2262,7 +2354,7 @@ tout autre rôle que le MJ (hors mode Joueur) : ni le menu, ni la réponse de le
   complète sur celles de l'univers ; alias 1 à 120 caractères, 20 au plus ; étiquette 1 à 40
   caractères, 20 au plus par fiche.
 - *Supprimer la fiche* : boîte de dialogue « Supprimer « Port-Sel » ? » qui compte ce qui part —
-  « 3 sections ; 3 relations qui la visent ; 1 place sur une carte. Ses 2 fichiers restent dans la médiathèque. Ses 4 enfants
+  « 3 sections ; 3 relations qui la visent ; 1 place sur une carte. Ses 2 fichiers restent dans la médiathèque. Ses 5 enfants
   remonteront sous « Les Sphères ». Les liens qui la visent deviendront des liens cassés. » — et
   « Supprimer la fiche » (`--danger`) / « Annuler ». Après : retour à la liste du type, toast « Fiche
   supprimée. ». Ces nombres ne sont montrés qu'au MJ, qui lit tout.
@@ -2278,7 +2370,7 @@ section qu'il lit, un cadre neutre (`lock`, `--texte-3`) dit « Image réservée
 légende s'il y en a une) ou « Fichier réservé au MJ. » pour un document ; dans un bloc MJ, rien.
 L'illustration réservée au MJ d'une fiche qu'un joueur voit : la même mention dans l'en-tête, la
 vignette de repli dans la grille de E-8 (sans mention). Fichier supprimé : « Fichier supprimé de la
-médiathèque. » pour un MJ, rien pour un joueur. En mode Joueur, le MJ voit ce que voit un joueur.
+médiathèque. » pour un MJ, rien pour un joueur. In player mode, the GM sees what a player sees, plus files they added themselves (third rule, AD-117).
 
 **Deux chemins d'ajout** : le bouton « Fichier » (`paperclip`) de la barre d'outils, en édition, et
 « Joindre un fichier » en pied du bloc Pièces jointes — présent hors édition pour qui écrit la section,
@@ -2289,7 +2381,7 @@ comme le dépôt d'avant (`kanevas-fichiers`) — ouvrent le même menu —
    fichier le dit par sa pastille « MJ seul » — ; ailleurs, « Visible des joueurs » ; une illustration :
    « Visible des joueurs » si la fiche a une section lue des joueurs) **et** s'intègre à la
    fiche — depuis la barre d'outils, une image s'insère dans le texte au point d'insertion
-   (`![nom](fichier:<id>)`) et un document y met un lien (`[nom](fichier:<id>)`) ; depuis le bloc, le
+   (`![nom](fichier:<id>)`) et un document y met un lien (`[nom](fichier:<id>)`), each reference on **its own line** (a newline is added before and after when the insertion point touches text or a `:::` fence; after a table row, a blank line separates the reference from the table so it cannot become another row; it never sticks to a closing fence and therefore never falls into the GM block) ; depuis le bloc, le
    fichier est joint à la section ; depuis l'en-tête (« Poser » ou « Remplacer » l'illustration, MJ),
    une image devient l'illustration. Un échec n'ajoute rien à la médiathèque ni à la fiche.
 2. **« Choisir dans la médiathèque »** : le sélecteur de E-19 (« Choisir un fichier »), filtré sur ce
@@ -2309,6 +2401,33 @@ E-19 s'il est lu ailleurs par des joueurs) ; « Ouvrir dans la médiathèque ».
 `kanevas-fichiers` disparaît : c'est la visibilité du fichier. **100 fichiers joints** au plus par
 section (« Cette section porte déjà 100 fichiers joints. » au MJ, « Cette section ne peut pas recevoir
 d'autre fichier. » au joueur) ; les références dans le texte ne comptent pas.
+
+**Pending file reference** (import, `fichiers_attente`, AD-111): a file key not yet known in
+this universe. For a GM outside player mode, an inline image, an attachment row and the
+illustration slot show the same dashed `--texte-3` tile with the text
+« Fichier en attente d'import : « img:quais ». » (the key as sent). The inline image tile uses
+14 px Inter with 12/16 px padding, like the attachment tile. A document link such as
+`[tarifs](fichier:cle:doc:tarifs)` has a dashed `--texte-3` underline and that sentence as its
+tooltip. Other readers, including a GM in player mode, see only the document link's text,
+without a link, underline or tooltip; pending images, attachments and illustrations leave
+no tile, gap or row. The server never sends them the key.
+A pending attachment does not count towards the 100-file limit until resolved, cannot be
+removed (no menu: it disappears when the file arrives) and appears in no media library list.
+*States*: **loading** — nothing before the sheet arrives, so no flashing tile; **empty** — a
+section whose only attachments are pending shows their tiles rather than « Aucun fichier
+joint. »; **error** and **connection lost** — the tile is sheet text and follows the sheet's
+states; **refusal** — hidden for non-GM readers; **extreme content** — a 200-character key is
+shortened with « … », with the full key in a tooltip; 100 tiles scroll within their frame.
+The pending illustration occupies a full header row. Its key stays on one line, shortened
+when needed, with its closing quotation mark and period kept together. **When the file arrives**: an already open GM page does not update
+itself; reloading replaces the tile with the file. **Beyond 100**: a `PUT /fiches` whose
+section names more than 100 `fichiers` keys is refused (400 `invalide`, `champ: fichiers`,
+counted as refused in the batch). If resolution would exceed 100 attachments, the extra
+join stays pending and the batch warns « section « Notes » : 100 fichiers joints au plus,
+« K » reste en attente ». In editing and « Aperçu », the source keeps the key as written
+(`fichier:cle:K`): the preview shows the tile, the editor the source. The user-facing term is
+« fichier en attente » (never « référence » on E-9; E-18 counts « liens et références en
+attente » for the batch).
 
 **Blocs de fiche** (après les sections, hors de toute section) :
 - **Contient** (`folder-tree`) — les enfants lisibles, par type puis titre, chacun avec son icône ; 50
@@ -2345,12 +2464,64 @@ d'autre fichier. » au joueur) ; les références dans le texte ne comptent pas.
   Port-Sel ».
 - Étant donné Antor qui déplace « Les Sphères » sous « Port-Sel », son enfant, alors il voit « Une
   fiche ne peut pas être rangée sous l'un de ses descendants. » et rien ne change.
-- Étant donné Antor qui supprime « Port-Sel » (4 enfants, parent « Les Sphères »), alors les 4
+- Étant donné Antor qui supprime « Port-Sel » (5 enfants, dont un illisible de Léa, parent « Les Sphères »), alors les 5
   enfants ont « Les Sphères » pour parent, l'adresse de « Port-Sel » répond « Page introuvable. », et
   un lien vers elle dans « Maître Aldric » est marqué « lien cassé » pour Antor et du texte pour Léa.
 - Étant donné un contenu qui contient `<script>alert(1)</script>` et `<b>gras</b>`, quand la section
   s'affiche, alors ces balises s'affichent comme du texte, et aucun script ne s'exécute.
 
+### Ce que `kanevas-import-tenir` construit (E-9 titre et suppression, E-14 « Supprimer l'univers »)
+
+*Précisions de la tranche, sur le cadre ci-dessus (B-39, B-40, B-41, AD-105, AD-119) ; les maquettes sont
+`e09-fiche-importee.html` (`#etat-supprimer`) et `e14-types-de-fiche.html` (`#etat-supprimer-univers`).*
+
+*La maquette `#etat-supprimer` ne dessine que l'état nominal de la boîte et celle de l'en-tête que le titre au repos : les états ci-dessous (titre vidé ou trop long, toast, bilan en chargement ou en erreur) sont décrits ici, et ce texte fait foi.*
+
+**Titre en place (E-9, MJ hors mode Joueur).** Un clic sur le titre le rend champ de saisie, texte
+sélectionné ; Entrée enregistre, Échap annule, la perte de focus enregistre. 1 à 120 caractères après
+rognage ; vide : « Erreur : le titre est obligatoire. » ; au-delà : « Erreur : 120 caractères au plus. » ; le
+champ reste ouvert. Titre inchangé : rien n'est envoyé. Enregistré : toast « Fiche renommée. », le fil
+d'Ariane des descendants et le badge de la liste suivent à la lecture suivante ; les liens `[[…]]` ne bougent pas
+(ils visent l'identifiant, B-33). Échec : « L'action n'a pas abouti. Réessayez. » sous le titre, le champ reste ouvert avec la saisie (Échap rend l'ancien titre). Un
+Joueur ou le mode Joueur : titre en texte, sans curseur d'édition.
+
+**Suppression d'une fiche (E-9).** « Supprimer la fiche… » ouvre la boîte **après** avoir lu son bilan
+(`GET …/fiches/:fid/suppression`) : « Chargement… » dans la boîte, bouton « Supprimer la fiche » inactif tant que
+le bilan n'est pas là. Le texte est composé des seuls postes non nuls, au singulier ou au pluriel
+(« 1 section », « 1 relation qui la vise », « 1 place sur une carte », « Son fichier reste dans la
+médiathèque », « Son enfant remontera sous… ») ; sans parent, « … remonteront à la racine de la liste du
+type » ; sans enfant, la phrase manque ; la fiche seule : « Cette fiche ne porte rien d'autre. ».
+Les nombres sont ceux du MJ, qui lit tout. Erreur du bilan : « Impossible de charger le détail. » et
+« Réessayer » ; échec de la suppression : le message dans la boîte, qui reste ouverte, la fiche n'a pas
+bougé. Succès : retour à la liste du type, toast « Fiche supprimée. ». Une fiche déjà supprimée par ailleurs :
+« Page introuvable. » à l'ouverture de la boîte. Un compte-rendu se supprime de même (retour à E-13).
+
+**Import (E-18).** Un `DELETE` d'import ajoute au bilan du lot le compteur « Fiches : 1 supprimée »
+(« supprimées » au pluriel), sans refus possible ; clé inconnue : rien n'est compté.
+
+**Supprimer l'univers (E-14, tout MJ).** La boîte suit le texte ci-dessus ; le champ compare le nom saisi au
+nom de l'univers à la lettre près, casse et espaces compris (l'espace final saisi par erreur laisse le bouton
+inactif) ; le serveur recompare (`nom`) et refuse un nom différent (400 `nom_different`, « Le nom ne correspond
+pas à celui de l'univers. » ; l'écran affiche « Le nom ne correspond pas. »). Pendant la suppression : bouton « Suppression… » inactif. Après : E-1, toast « Univers supprimé. » ;
+les autres membres, à leur prochaine action, voient « Page introuvable. ». Échec de la suppression : « L'action n'a pas
+abouti. Réessayez. » dans la boîte, qui reste ouverte, l'univers est intact ; une suppression longue garde
+« Suppression… » tant que le serveur n'a pas répondu (pas de délai au-delà duquel la boîte se ferme).
+
+**États propres à la tranche** (en plus du tableau de E-9 et de E-14).
+
+| Écran | État | Ce qu'on voit | Ce qu'on peut faire |
+|---|---|---|---|
+| E-9, boîte | chargement du bilan | « Chargement… », « Supprimer la fiche » inactif | « Annuler » |
+| E-9, boîte | erreur du bilan | « Impossible de charger le détail. » | « Réessayer », « Annuler » |
+| E-9, boîte | échec de la suppression | « L'action n'a pas abouti. Réessayez. » dans la boîte, la fiche n'a pas bougé | « Supprimer la fiche », « Annuler » |
+| E-9, boîte | connexion perdue | le bandeau ; « Supprimer la fiche » inactif, le bilan chargé reste | « Annuler » |
+| E-9, titre | échec de l'enregistrement | « L'action n'a pas abouti. Réessayez. » sous le titre, le champ reste ouvert avec la saisie | Entrée pour réessayer, Échap |
+| E-9, titre | connexion perdue pendant l'édition | le bandeau ; Entrée n'envoie rien, la saisie est gardée | Échap |
+| E-14, boîte | connexion perdue | le bandeau ; « Supprimer l'univers » inactif | « Annuler » |
+
+Un compte-rendu s'appelle « fiche » dans ces textes (« Supprimer la fiche… ») : c'est une fiche (B-40), et sa boîte
+compte ses sections, ses propositions de l'assistant incluses ; retour à E-13 au lieu de la liste du type.
+Les chemins d'échec de P-14 et de P-10 renvoient à ce tableau.
 ### Le bloc MJ — ce que `kanevas-import-secrets` construit (E-9, E-12, import)
 
 Cette tranche livre le bloc `:::mj` (B-34, AD-98, AD-114) sur le rendu et l'éditeur que
@@ -2370,7 +2541,7 @@ sont fermées dès maintenant. Maquette : `e09-fiche-importee.html` (« Port-Sel
   gouverne : chaque `:::mj` rencontré dans un bloc ouvre un bloc imbriqué, et le bloc extérieur ne finit qu'à la ligne `:::`
   qui équilibre les ouvertures (une ligne `:::` dans un bloc de code d'un bloc MJ le ferme, comme à l'écran) ; tout ce qu'il couvre est retiré. `:::MJ` (autre casse), `::: mj` (espace), `::::mj` (quatre deux-points)
   et `:::mj` suivi de mots ne sont pas des blocs : du texte, visible de tous — une règle de plus que le MJ n'a pas à apprendre.
-- **Le bouton « Bloc MJ »** (MJ seulement, `lock`, après les boutons existants de la barre (« Fichier » n'existe pas encore) de l'éditeur,
+- **« Bloc MJ » button** (GM only, `lock`, after the existing editor toolbar buttons; « Fichier » is added by `kanevas-import-mediatheque`,
   avant la bascule « Écrire / Aperçu » ; libellé « Bloc MJ » visible sur ordinateur, l'icône seule de 36 px sous le
   seuil « téléphone » de la maquette (`@media` de `e09-fiche-importee.html`), sans infobulle au toucher : le libellé accessible la remplace ; infobulle « Bloc MJ · entoure la sélection », libellé accessible « Bloc MJ ») : avec une sélection, il l'entoure d'une ligne `:::mj` avant et d'une
   ligne `:::` après (en ajoutant les sauts de ligne qui manquent, pour que les deux lignes soient seules) ;
@@ -2463,11 +2634,12 @@ sont fermées dès maintenant. Maquette : `e09-fiche-importee.html` (« Port-Sel
 
 *Maquette finie* : `docs/maquettes/e19-mediatheque.html` (états `#etat-joueur`, `#etat-image`,
 `#etat-document`, `#etat-documents`, `#etat-supprimer`, `#etat-reserver`, `#etat-choisir`,
-`#etat-averti`, `#etat-vide`, `#etat-perdue`). Décisions de Monsieur du 2026-10-11 (B-53 à B-56,
-AD-111) : tous les fichiers de l'univers, images et documents.
+`#etat-averti`, `#etat-vide`, `#etat-perdue`). The drop overlay, errors, upload progress, « Afficher les N autres »
+and the empty picker are not drawn: **this document takes precedence over the mockup**. Decisions
+of 2026-10-11 (B-53 to B-56, AD-111): all universe files, images and documents.
 
-Atteint par « Médiathèque » (`images`) dans la barre de l'univers, sous « Cartes », pour tout membre.
-En tête : le titre, « 1 140 fichiers » (ceux que le lecteur voit) et, pour un MJ, « Ajouter des
+Atteint (adresse `/univers/<id>/mediatheque`) par « Médiathèque » (`images`) dans la barre de l'univers, sous « Cartes », pour tout membre.
+En tête : le titre, « 1140 fichiers » (ceux que le lecteur voit) et, pour un MJ, « Ajouter des
 fichiers » (plusieurs à la fois, ou un glisser-déposer sur la page : voile « Déposez les fichiers pour
 les ajouter. »). Une bascule segmentée **Tout · Images · Documents** ; une rangée de filtres : la
 recherche par nom (« Chercher par nom ») ; pour un MJ, « Visibilité » (Toutes, Visibles des joueurs,
@@ -2479,7 +2651,7 @@ la pastille « MJ seul » (`lock`) sur un fichier réservé. 100 puis « Charger
 
 Un clic ouvre le **panneau du fichier** (à droite au bureau, plein écran au téléphone) : l'image en
 grand, ou pour un document sa grande icône, son type (« Document PDF », « Tableur XLSX », « Archive
-ZIP », « Document ODT » : la nature et l'extension) et « Télécharger » ; le nom (MJ : éditable en
+ZIP », « Document ODT » : la nature et l'extension) and, for documents only, « Télécharger » (images have no such button) ; le nom (MJ : éditable en
 place, 1 à 200 caractères) ; la **visibilité** en bascule segmentée « Visible des joueurs » /
 « Réservé au MJ » (MJ ; un joueur ne voit pas ce réglage) ; type, taille, « ajouté par lea le 12 oct.
 2026 », la clé d'origine (MJ, si importé) ; **Utilisé dans** — les usages **que le lecteur peut lire** : pour chaque fiche qu'il voit, l'illustration (si la fiche lui est visible) et les seules sections qu'il lit, avec leur titre (« Histoire » (dans le texte), « Pièces jointes de Description ») et un lien ; pour un non-MJ (E-19 n'a pas de mode Joueur), jamais un usage dans une section qu'il ne lit pas ni dans un bloc MJ — un fichier dont aucun usage ne lui est lisible n'a pas de bloc « Utilisé dans » (D1) — ; pour un MJ « Supprimer le fichier » (`--danger`). Aucun aperçu intégré d'un PDF (AD-66).
@@ -2490,24 +2662,39 @@ place, 1 à 200 caractères) ; la **visibilité** en bascule segmentée « Visib
   usage : pas de boîte, le même toast. Rendre visible, renommer : sans toast. Nom vide : « Erreur : le
   nom est obligatoire. » ; au-delà de 200 : « Erreur : 200 caractères au plus. ». « Utilisé dans »
   n'apparaît pas pour un fichier qu'aucune fiche visible du lecteur n'utilise.
-- *Supprimer* : boîte « Supprimer « Carte des Sphères » ? Elle est utilisée dans 3 fiches : Port-Sel
-  (illustration), Les Sphères (« Histoire »), Maître Aldric (pièces jointes de « Apparence »). Elle
-  disparaîtra de ces fiches. » (« Il est utilisé… Il disparaîtra… » pour un document) ; sans usage :
-  « Supprimer « Carte des Sphères » ? » ; « Supprimer le fichier » (`--danger`) / « Annuler » ; toast
+- *Delete*: dialog « Supprimer « Carte des Sphères » ? Elle est utilisée dans 3 fiches : Port-Sel
+  (illustration), Val-Fortin (« Description »), Maître Aldric (pièces jointes de « Apparence »). Elle
+  disparaîtra de ces fiches. » (« Il est utilisé… Il disparaîtra… » for a document); without usages:
+  « Supprimer « Carte des Sphères » ? »; « Supprimer le fichier » (`--danger`) / « Annuler »; toast
   « Fichier supprimé. ».
 
-**Le sélecteur** (« Choisir dans la médiathèque », depuis E-9) : la même grille dans une boîte
-« Choisir un fichier », avec « Ajouter depuis l'appareil » en tête (le premier chemin, B-55), filtrée
-sur ce que le compte voit, sur « Images » quand on pose l'illustration ; choisir intègre la référence
-(E-9, « Fichiers ») ; l'avertissement de B-55 suit, sous le champ.
+**The picker** (« Choisir dans la médiathèque », from E-9): the same grid in a « Choisir un fichier »
+dialog, with « Ajouter depuis l'appareil » at the top (first path, B-55), filtered to readable files
+and to « Images » when setting an illustration. Choosing inserts the reference (E-9, « Fichiers »);
+the B-55 warning follows below the field. Picker states: *empty* — « Aucune image à choisir. »
+(illustration) or « Aucun fichier à choisir. » (player with no readable files), with « Ajouter depuis
+l'appareil » for users allowed to add; *error* — « Impossible de charger la médiathèque. » with
+« Réessayer »; a failed device upload shows « « notes.txt » : l'envoi n'a pas abouti. » inside the
+dialog, which stays open; *offline* — banner, « Ajouter depuis l'appareil » disabled, loaded grid
+still selectable; file deleted or no longer readable between opening and choosing: « Ce fichier
+n'existe plus. » and reload the grid.
+
+**Long upload** (E-19, « Ajouter des fichiers » or drag and drop): one row per uploading file,
+« plan.png — Envoi… 42 % » (`role="status"`) with « Annuler »; cancellation writes nothing. The
+grid keeps its place; the file joins it when its upload completes.
+
+**Assistant-added file** (B-25, amended AD-44): a generated image enters the media library like
+any upload, attributed to the requesting GM's account, with visibility determined by where it is
+added (illustration: « Visible des joueurs » if the sheet has a section readable by players).
+The generating assistant tool (`generer_image`, `kanevas-images`) calls that same add path, joining the image to the section.
 
 | État | Ce qu'on voit | Ce qu'on peut faire |
 |---|---|---|
 | vide | MJ : « Aucun fichier pour l'instant. Ajoutez-en, ou posez-en un dans une fiche. » et « Ajouter des fichiers » ; joueur : « Aucun fichier à voir pour l'instant. » ; un filtre sans résultat : « Aucun fichier ne correspond. » | MJ : ajouter |
 | chargement | tuiles en squelette ; une vignette qui charge garde son cadre | — |
-| erreur | « Impossible de charger la médiathèque. » ; un fichier vide dans un envoi multiple : « « notes.txt » est vide. » sous la grille, les autres sont ajoutés ; envoi coupé : « L'envoi n'a pas abouti. », avec « Réessayer » ; suppression ou changement qui échoue : « L'action n'a pas abouti. Réessayez. », rien n'a changé | « Réessayer » |
+| Error | « Impossible de charger la médiathèque. »; failed thumbnail or preview: « Image indisponible. » (icon and text only, no button); failed download: « L'action n'a pas abouti. Réessayez. »; an empty file in a multiple upload: « « notes.txt » est vide. » below the grid, other files are added; interrupted upload: « L'envoi n'a pas abouti. » with « Réessayer » and « Abandonner » (E-9 calls the latter « Ignorer »); failed deletion or change: « L'action n'a pas abouti. Réessayez. », nothing changed | « Réessayer » |
 | connexion perdue | le bandeau ; « Ajouter des fichiers », la bascule de visibilité, « Supprimer » désactivés | regarder ce qui est chargé |
-| refus | un fichier réservé au MJ, qu'il n'a pas ajouté, n'existe pas pour un joueur (absent, son adresse : « Page introuvable. ») ; ni réglage de visibilité, ni suppression, ni ajout depuis E-19 pour un joueur (**caché** ; il ajoute un fichier par une section qu'il écrit, E-9) ; rôle retiré pendant la page : « Vous ne pouvez plus modifier ce fichier. » | « Mes univers » |
+| Refused | A GM-only file the player did not add does not exist for them (absent, direct address: « Page introuvable. »); players have no visibility settings, deletion or add action on E-19 (**hidden**; they add through a writable section on E-9); role removed while viewing: « Vous ne pouvez plus modifier ce fichier. »; instance admin without a universe role forcing the address: « Page introuvable. » | « Mes univers » |
 | contenu long | 1 140 fichiers : 100 puis la suite ; nom de 200 caractères tronqué par « … » avec infobulle ; un fichier utilisé dans 40 fiches : 10 puis « Afficher les 30 autres » ; image de 30 Mo : l'aperçu se charge, rien n'est redimensionné (AD-93) ; document de 300 Mo : la tuile et « Télécharger », rien n'est chargé d'avance | idem |
 
 *Critères.*
@@ -2526,9 +2713,9 @@ sur ce que le compte voit, sur « Images » quand on pose l'illustration ; chois
 - Étant donné Antor qui ajoute « plan.png » depuis un bloc MJ de « Port-Sel », alors le fichier entre
   « Réservé au MJ » ; ajouté depuis « Description », lue des joueurs, il entre « Visible des joueurs » ;
   choisi ensuite dans la médiathèque pour un bloc MJ, sa visibilité ne change pas.
-- Étant donné « Carte des Sphères » utilisée par trois fiches, quand Antor la supprime, alors la boîte
-  liste les trois fiches ; après, Antor voit « Fichier supprimé de la médiathèque. » à sa place dans
-  « Les Sphères », et Léa ne voit rien.
+- Given « Carte des Sphères » used by three sheets, when Antor deletes it, the dialog lists all
+  three sheets. Afterwards, Antor sees « Fichier supprimé de la médiathèque. » in its place in
+  « Val-Fortin »; Léa sees nothing.
 - Étant donné un fichier visible des joueurs utilisé par « Port-Sel » (lisible de Léa) et par « Rapport
   secret de l'amirauté » (MJ seul), quand Léa ouvre le fichier, alors « Utilisé dans » ne nomme que
   « Port-Sel ».
@@ -2708,8 +2895,8 @@ toast « Adresse copiée. »). Deux panneaux.
    si elle n'est pas nulle : un rejeu sans rien de neuf lit « Fiches : 1 inchangée » (le rapport de l'API,
    lui, rend tous les compteurs, `creees: 0`), et un compte nul d'attente ou d'avertissements est omis
    (la maquette abrège « 6 en attente » ; le texte est celui d'ici). Un `PUT` refusé (400) avec son lot
-   compte « 1 refusée » et ajoute au rapport sa clé et sa raison (« type « compte_rendu » : pas accepté
-   par cette version », « type « monstre » inconnu de Kanevas ») ; sans lot, il ne laisse aucune trace ici. Une
+   counts one refusal and records its origin key and reason (for example, « campagne inconnue : c:absente »
+   or « type « monstre » inconnu de Kanevas »); without a batch it leaves no trace here. A
    ligne se déplie :
    les refus et avertissements, chacun avec la clé d'origine, ce qui est en cause et la raison
    (« section « Vérité » : 112 000 caractères, 100 000 au plus » ; « parent lieu:les-docks inconnu :
@@ -2717,6 +2904,10 @@ toast « Adresse copiée. »). Deux panneaux.
    écrasée » ; « titre modifié dans Kanevas : non écrasé »), en deux groupes titrés par leur compte (« 3 refusées », « 2 avertissements »), 200 au
    plus puis « … et 37 autres ». Un lot sans refus ni avertissement ne se déplie pas. Le jeton,
    l'adresse et les clés d'origine sont en chasse fixe (pile système `ui-monospace`, charte).
+   File warnings also include « fichier vide : 0 octet, refusé », « visibilité modifiée
+   dans Kanevas : non écrasée » and « nom modifié dans Kanevas : non écrasé ». A pending
+   reference warns « fichier « img:quais » inconnu : référence en attente ».
+
 
 | État | Ce qu'on voit | Ce qu'on peut faire |
 |---|---|---|
@@ -2790,7 +2981,7 @@ l'univers » (`--danger`) ne s'active que si le nom tapé est exact (casse compr
 
 #### Les types — ce que `kanevas-import-types` construit
 
-Le panneau « Supprimer l'univers » de E-14 n'est pas de cette tranche (il est à `kanevas-import-tenir`) ;
+Le panneau « Supprimer l'univers » de E-14 est à `kanevas-import-tenir` ;
 celle-ci construit le panneau et l'onglet « Types de fiche » ci-dessus, et ce qui suit.
 La liste des types (identifiant, adresse, libellés, icône) est celle du serveur (AD-120) : les écrans
 la lisent par `GET /api/univers/:id/types`, ils n'en tiennent aucune copie. Icônes (Lucide) :

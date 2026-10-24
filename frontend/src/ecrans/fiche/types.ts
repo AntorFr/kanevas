@@ -15,6 +15,10 @@ export interface PieceJointe {
   taille: number;
   image: boolean;
   secrete?: boolean;
+  /** Closed to this reader: `nom` is the sentence « … réservé au MJ. ». */
+  ferme?: boolean;
+  /** Origin key of a file the import has not delivered yet (GM only): `nom` is the sentence (E-9). */
+  attente?: string;
 }
 
 export interface SectionVue {
@@ -39,11 +43,11 @@ export interface Fiche {
   type: string;
   titre: string;
   creeLe?: string;
-  /** Free sub-type under the title (AD-113), absent when the sheet has none. */
+  /** Free sub-type under the title (AD-120), absent when the sheet has none. */
   sousType?: string | null;
   charge: { v?: number; pj?: boolean };
   /** The sheet's illustration (AD-93): `jeton` changes at each replacement and goes in the image address. */
-  illustration?: { jeton: string } | null;
+  illustration?: { id: number; jeton: string } | { fermee: true; message: string } | { attente: true; cle: string } | null;
   /** Aliases and labels (AD-118), sorted by the server. */
   alias?: string[];
   etiquettes?: string[];

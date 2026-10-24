@@ -38,7 +38,7 @@
 /* The pill's padlock (Lucide « lock »): a CSS mask in the pill's own colour, laid over the pill's left padding. */
 .md .bloc-mj::after { content: ""; position: absolute; top: calc(var(--e-5) + 4px); left: calc(var(--e-4) + var(--e-2)); width: 14px; height: 14px; background: var(--mj);
   -webkit-mask: var(--icone-lock) center / contain no-repeat; mask: var(--icone-lock) center / contain no-repeat; }
-.md .bloc-mj { --icone-lock: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZpZXdCb3g9JzAgMCAyNCAyNCcgZmlsbD0nbm9uZScgc3Ryb2tlPSdibGFjaycgc3Ryb2tlLXdpZHRoPScyJyBzdHJva2UtbGluZWNhcD0ncm91bmQnIHN0cm9rZS1saW5lam9pbj0ncm91bmQnPjxyZWN0IHdpZHRoPScxOCcgaGVpZ2h0PScxMScgeD0nMycgeT0nMTEnIHJ4PScyJy8+PHBhdGggZD0nTTcgMTFWN2E1IDUgMCAwIDEgMTAgMHY0Jy8+PC9zdmc+"); }
+.md .bloc-mj, .md .fichier-reserve { --icone-lock: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZpZXdCb3g9JzAgMCAyNCAyNCcgZmlsbD0nbm9uZScgc3Ryb2tlPSdibGFjaycgc3Ryb2tlLXdpZHRoPScyJyBzdHJva2UtbGluZWNhcD0ncm91bmQnIHN0cm9rZS1saW5lam9pbj0ncm91bmQnPjxyZWN0IHdpZHRoPScxOCcgaGVpZ2h0PScxMScgeD0nMycgeT0nMTEnIHJ4PScyJy8+PHBhdGggZD0nTTcgMTFWN2E1IDUgMCAwIDEgMTAgMHY0Jy8+PC9zdmc+"); }
 .md .bloc-mj > :last-child { margin-bottom: 0; }
 
 /* Links to a sheet (AD-116). The server decides who sees what: a reader who cannot follow a link gets plain text, no element.
@@ -49,4 +49,23 @@
 .md .lien-casse, .md .lien-attente { color: inherit; text-decoration: underline dashed; text-decoration-thickness: 1.5px; text-underline-offset: 3px; cursor: help; }
 .md .lien-casse { text-decoration-color: var(--danger); }
 .md .lien-attente { text-decoration-color: var(--texte-3); }
+/* Files the import has not delivered yet (E-9): a dashed tile for an image, a dashed underline for a document link.
+   Only a GM outside player mode receives these elements; other readers keep document link text only. */
+.md .fichier-attente { display: inline-block; padding: var(--e-3) var(--e-4); border: 1.5px dashed var(--texte-3); border-radius: var(--rayon-champ);
+  color: var(--texte-3); font: 400 var(--t-14)/1.5 var(--police-texte); max-width: 100%; overflow-wrap: anywhere; }
+.md .fichier-attente-lien { color: inherit; text-decoration: underline dashed; text-decoration-thickness: 1.5px; text-underline-offset: 3px;
+  text-decoration-color: var(--texte-3); cursor: help; }
+.md .fichier-attente-lien:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; border-radius: 3px; }
 .md .lien-casse:focus-visible, .md .lien-attente:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; border-radius: 3px; }
+
+/* Closed references carry no file metadata; the same Lucide lock marks both neutral frames. */
+.md .fichier-reserve { display: inline-flex; align-items: center; justify-content: center; gap: var(--e-2);
+  min-height: 40px; max-width: 100%; padding: var(--e-2) var(--e-4); border-radius: var(--rayon-champ);
+  background: var(--surface-2); box-shadow: inset 0 0 0 1px var(--bord); color: var(--texte-3);
+  font: 500 var(--t-13)/1.4 var(--police-texte); text-align: center; }
+.md .fichier-reserve::before { content: ""; flex: 0 0 16px; width: 16px; height: 16px; background: currentColor;
+  -webkit-mask: var(--icone-lock) center / contain no-repeat; mask: var(--icone-lock) center / contain no-repeat; }
+.md .image-reservee { display: flex; min-height: 112px; padding: var(--e-4); }
+@media (max-width: 760px) {
+  .md .image-reservee { min-height: 96px; }
+}

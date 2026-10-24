@@ -15,6 +15,17 @@ async function api(page: Any, method: string, url: string, base: string, multipa
   const r = await page.request.fetch(base + url, multipart ? { method, multipart: { fichier: { name: multipart.nom, mimeType: multipart.mime, buffer: multipart.buf } } } : data !== undefined ? { method, data } : { method });
   return { statut: r.status() as number, corps: (await r.text()) as string };
 }
+
+/** The illustration of a sheet as `lecteur` reads it, or null. */
+async function illustrationDe(m: { U: number; get: (c: string, u: string) => Promise<{ statut: number; corps: string }> }, lecteur: string, ficheId: number): Promise<{ id: number; jeton: string } | null> {
+  const r = await m.get(lecteur, `/api/univers/${m.U}/fiches/${ficheId}`);
+  return r.statut === 200 ? (JSON.parse(r.corps).illustration ?? null) : null;
+}
+/** The bytes of the illustration of a sheet, through the one route of the bytes (AD-117): the file, by `lecteur`. */
+async function octetsIllustration(m: { U: number; get: (c: string, u: string) => Promise<{ statut: number; corps: string }> }, lecteur: string, ficheId: number, via = lecteur): Promise<{ statut: number; corps: string }> {
+  const ill = await illustrationDe(m, via, ficheId);
+  return m.get(lecteur, `/api/univers/${m.U}/fichiers/${ill?.id ?? 999999}`);
+}
 const carte = (page: Any, titre: string) => page.getByRole('link', { name: rx(titre) }).first();
 async function aller(page: Any, url: string, titre?: string | RegExp) {
   await page.goto(url);
@@ -83,7 +94,7 @@ describe('kanevas-illustrations (A) : illustrations, états et écrans en lectur
     await antor.getByRole('button', { name: 'Réessayer' }).waitFor();
     await antor.getByRole('button', { name: 'Ignorer' }).waitFor();
     assert.equal(await antor.getByRole('img', { name: /Illustration de/ }).count(), 1);
-    assert.equal((await m.get('Léa', `/api/univers/${m.U}/fiches/${id}/illustration`)).statut, 200);
+    assert.equal((await octetsIllustration(m, 'Léa', id)).statut, 200);
     await grille(m.comptes.Léa, m.U, 'personnages');
     assert.equal(await carte(m.comptes.Léa, "Le Portrait de l'échec").locator('img').count(), 1);
   });
@@ -159,13 +170,13 @@ describe('kanevas-illustrations (A) : illustrations, états et écrans en lectur
   test('B-30 exclusion : Admin (membre d’un autre univers seulement) reçoit 404 à GET, PUT et DELETE de l’illustration', opts, async () => {
     const id = m.fiches['Suie'];
     const u = `/api/univers/${m.U}/fiches/${id}/illustration`;
-    const inconnu = await m.get('Admin', `/api/univers/${m.U}/fiches/999999/illustration`);
-    const lu = await m.get('Admin', u);
+    const inconnu = await m.get('Admin', `/api/univers/${m.U}/fichiers/999999`);
+    const lu = await octetsIllustration(m, 'Admin', id, 'Antor');
     assert.equal(lu.statut, 404);
     assert.equal(lu.corps, inconnu.corps);
     assert.equal((await api(m.comptes.Admin, 'PUT', u, m.srv.base, { nom: 'a.png', buf: PNG, mime: 'image/png' })).statut, 404);
     assert.equal((await api(m.comptes.Admin, 'DELETE', u, m.srv.base)).statut, 404);
-    assert.equal((await m.get('Antor', u)).statut, 200);
+    assert.equal((await octetsIllustration(m, 'Antor', id)).statut, 200);
   });
 
   test('B-30 exclusion : Antor en mode Joueur voit l’illustration et aucun geste ; en mode MJ, « Ajouter » avec l’aide', opts, async () => {
@@ -193,11 +204,11 @@ describe('kanevas-illustrations (A) : illustrations, états et écrans en lectur
     await antor.locator('input[type=file]').first().setInputFiles({ name: 'portrait.png', mimeType: 'image/png', buffer: PNG });
     await antor.getByText(rx('« portrait.png » : l’envoi n’a pas abouti.')).first().waitFor();
     await antor.getByRole('button', { name: 'Réessayer' }).waitFor();
-    assert.equal((await m.get('Antor', `/api/univers/${m.U}/fiches/${id}/illustration`)).statut, 404);
+    assert.equal(await illustrationDe(m, 'Antor', id), null, 'nothing written');
     await antor.unroute('**/illustration');
     await antor.getByRole('button', { name: 'Réessayer' }).click();
     await antor.getByText(rx('Illustration de « Rue des Cordiers » ajoutée')).first().waitFor();
-    assert.equal((await m.get('Léa', `/api/univers/${m.U}/fiches/${id}/illustration`)).statut, 200);
+    assert.equal((await octetsIllustration(m, 'Léa', id)).statut, 200);
   });
 
   test('B-29 connexion perdue : bandeau, gestes d’illustration désactivés, l’image reste ; la grille garde ses cartes, « Chercher » désactivé', opts, async () => {
@@ -429,6 +440,6 @@ describe('kanevas-illustrations (B) : tests qui changent le monde', { timeout: 6
     await antor.getByText('Vous ne pouvez plus modifier l’illustration de cette fiche.').first().waitFor();
     await attendre(antor);
     assert.equal(await geste(antor, 'Ajouter une illustration').count(), 0);
-    assert.equal((await m.get('Léa', `/api/univers/${m.U}/fiches/${bran}/illustration`)).statut, 404, 'rien n’a été écrit');
+    assert.equal(await illustrationDe(m, 'Léa', bran), null, 'rien n’a été écrit');
   });
 });

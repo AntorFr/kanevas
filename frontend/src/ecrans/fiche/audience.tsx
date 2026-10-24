@@ -1,4 +1,4 @@
-import { BookOpen, Eye, Pencil, PenLine, UserRound } from 'lucide-react';
+import { BookOpen, ChevronDown, Eye, Pencil, PenLine, UserRound } from 'lucide-react';
 import { useEffect, useId, useRef } from 'react';
 
 import { Interrupteur } from '../../ui';
@@ -42,8 +42,20 @@ export function ReglageAudience({
       const cible = e.target as Element;
       if (!racine.current?.contains(cible) && !racine.current?.parentElement?.contains(cible)) fermer.current();
     };
+    const clavier = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape') return;
+      // Saving disables the focused control and can leave focus on the badge or body.
+      // Escape must still close the open panel, including during that save.
+      e.preventDefault();
+      e.stopPropagation();
+      fermer.current();
+    };
     document.addEventListener('pointerdown', dehors);
-    return () => document.removeEventListener('pointerdown', dehors);
+    document.addEventListener('keydown', clavier, true);
+    return () => {
+      document.removeEventListener('pointerdown', dehors);
+      document.removeEventListener('keydown', clavier, true);
+    };
   }, []);
 
   const a = audience;
@@ -53,13 +65,6 @@ export function ReglageAudience({
       role="dialog"
       aria-labelledby={idTitre}
       ref={racine}
-      onKeyDown={(e) => {
-        if (e.key === 'Escape') {
-          e.preventDefault();
-          e.stopPropagation();
-          onFermer();
-        }
-      }}
     >
       <div className="menu-titre" id={idTitre}>
         Qui voit « {section} »
@@ -72,19 +77,22 @@ export function ReglageAudience({
           <UserRound size={14} strokeWidth={1.75} aria-hidden="true" />
           Auteur
         </span>
-        <select
-          className="choix"
-          value={a.auteurId ?? ''}
-          disabled={inactif}
-          onChange={(e) => onChange({ auteurId: e.target.value === '' ? null : Number(e.target.value) })}
-        >
-          <option value="">aucun</option>
-          {joueurs.map((j) => (
-            <option key={j.compteId} value={j.compteId}>
-              {j.username}
-            </option>
-          ))}
-        </select>
+        <span className="champ-liste">
+          <select
+            className="choix"
+            value={a.auteurId ?? ''}
+            disabled={inactif}
+            onChange={(e) => onChange({ auteurId: e.target.value === '' ? null : Number(e.target.value) })}
+          >
+            <option value="">aucun</option>
+            {joueurs.map((j) => (
+              <option key={j.compteId} value={j.compteId}>
+                {j.username}
+              </option>
+            ))}
+          </select>
+          <ChevronDown size={16} strokeWidth={1.75} aria-hidden="true" />
+        </span>
       </label>
       <Interrupteur etiquette="L’auteur la lit" icone={BookOpen} coche={a.auteurLit} disabled={inactif || a.auteurId === null} onChange={(v) => onChange({ auteurLit: v })} />
       <Interrupteur etiquette="L’auteur l’écrit" icone={Pencil} coche={a.auteurEcrit} disabled={inactif || a.auteurId === null} onChange={(v) => onChange({ auteurEcrit: v })} />

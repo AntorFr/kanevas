@@ -5,12 +5,19 @@ import { fileURLToPath } from 'node:url';
 
 import type { Db } from '../db/db.js';
 import { attachmentsDir } from '../config/env.js';
-import { poserIllustration } from '../services/illustrations.js';
+import {
+  ajouterFichier,
+  choisirIllustration,
+  joindreFichier,
+  modifierFichier,
+} from '../services/fichiers.js';
 import { supprimerFichier } from '../services/stockage.js';
 import { ajouterMembre } from '../services/membres.js';
 import { ajouterSection, changerAudience, ecrireContenu, lireSection } from '../services/sections.js';
 import { poserEtiquetage } from '../services/etiquettes.js';
-import { creerFiche, deplacerFiche } from '../services/fiches.js';
+import { relierSection } from '../services/relations.js';
+import { creerCarte, ajouterElement } from '../services/cartes.js';
+import { creerFiche, deplacerFiche, lireFiche } from '../services/fiches.js';
 import { assurerCompte } from '../services/comptes.js';
 import { creerEtRattacherSysteme, creerGabarit, rattacherSysteme } from '../services/systemes.js';
 import { creerJetonDeValeur } from '../services/jetons.js';
@@ -182,7 +189,7 @@ export function semerBouchon(db: Db): boolean {
     }
     fiche('faction', 'Lames Grises', [{ titre: 'Description', lue: true }]);
     const cercle = fiche('faction', 'Cercle des Cendres', [{ titre: 'Secret — MJ seul', lue: false }]);
-    // Aliases, labels and a readable « savoir » (kanevas-recherche-donnees); a base short of 0014 has no table.
+    // Aliases, labels and a readable « savoir » (kanevas-recherche-donnees); a base short of 0014 (aliases) has no table.
     if (db.prepare("SELECT 1 FROM sqlite_master WHERE name = 'fiche_alias'").get()) {
       const antor = { compteId: id.antor };
       poserEtiquetage(db, antor, lame.id, port.id, {
@@ -226,6 +233,13 @@ export function semerBouchon(db: Db): boolean {
       rapport.sections['Secret — MJ seul']!,
       ['Rapport de l\'amirauté.', '', ':::mj', `Piste : ${lien(aldric, 'Maître Aldric')} vend les horaires des convois.`, ':::'].join('\n'),
     );
+    // `kanevas-import-tenir`: three relations that target Port-Sel (the criteria of its deletion); its place on
+    // a map comes with the files (`semerFichiers`, a map is created asynchronously). A base short of 0005 has no table.
+    if (db.prepare("SELECT 1 FROM sqlite_master WHERE name = 'relations'").get()) {
+      relierSection(db, id.antor, lame.id, aldric.id, aldric.sections['Apparence']!, { cibleFicheId: port.id, type: 'maître de port' });
+      relierSection(db, id.antor, lame.id, guilde.id, guilde.sections['Description']!, { cibleFicheId: port.id, type: 'y fait passer ses cargaisons' });
+      relierSection(db, id.antor, lame.id, rapport.id, rapport.sections['Secret — MJ seul']!, { cibleFicheId: port.id, type: 'surveille' });
+    }
     // « Essai Kanka »: a place whose text waits for a key and points at a vanished sheet.
     const anse = creerFiche(db, id.antor, essai.id, { type: 'lieu', titre: 'Anse-aux-Sels' });
     const descriptionAnse = ajouterSection(db, id.antor, essai.id, anse.id, {
@@ -267,7 +281,15 @@ export async function semerIllustrations(db: Db, racine: string = attachmentsDir
   };
   const poser = async (titre: string, fichier: string) => {
     const l = trouver(titre);
-    return poserIllustration(db, antor, l.univers_id, l.id, Readable.from([fichierDemo(fichier)]), racine);
+    return ajouterFichier(
+      db,
+      { compteId: antor },
+      l.univers_id,
+      Readable.from([fichierDemo(fichier)]),
+      l.titre,
+      { ou: 'illustration', ficheId: l.id },
+      racine,
+    );
   };
 
   const portraits: [string, string][] = [
@@ -286,4 +308,67 @@ export async function semerIllustrations(db: Db, racine: string = attachmentsDir
   // « La Fresque effacée »: the illustration is recorded but its file is gone from the disk.
   const fresque = await poser('La Fresque effacée', 'fresque.webp');
   supprimerFichier(fresque.jeton, racine);
+
+  await semerFichiers(db, racine);
+}
+
+/**
+ * The files of the media library (AD-111, `docs/ecrans.md` « Semis de `kanevas-import` »), added
+ * by the real functions: « Plan secret de la Guilde » (GM only, unused), « Carte des Sphères »
+ * (illustration of Port-Sel, in the text of « Val-Fortin », joined to « Maître Aldric »),
+ * « port-sel-quais.webp » joined to Port-Sel, and the closed section « Notes de la table » of Léa.
+ */
+async function semerFichiers(db: Db, racine: string): Promise<void> {
+  const antor = { compteId: assurerCompte(db, 'antor').id };
+  const lea = assurerCompte(db, 'lea').id;
+  const fiches = db
+    .prepare('SELECT f.id, f.univers_id, f.titre FROM fiches f JOIN univers u ON u.id = f.univers_id WHERE u.nom = ?')
+    .all("Lame d'Ébène") as { id: number; univers_id: number; titre: string }[];
+  const trouver = (titre: string) => {
+    const l = fiches.find((x) => x.titre === titre);
+    if (!l) throw new Error(`Fiche de démonstration absente : ${titre}`);
+    return l;
+  };
+  const univers = trouver('Port-Sel').univers_id;
+  const section = (titre: string, section: string) => {
+    const f = trouver(titre);
+    const v = lireFiche(db, antor, univers, f.id).sections.find((x) => x.titre === section);
+    if (!v) throw new Error(`Section de démonstration absente : ${titre} / ${section}`);
+    return { fiche: f.id, section: v.id, version: v.version, contenu: v.contenu ?? '' };
+  };
+  const ajouter = (nom: string, demo: string, cible: Parameters<typeof ajouterFichier>[5]) =>
+    ajouterFichier(db, antor, univers, Readable.from([fichierDemo(demo)]), nom, cible, racine);
+
+  const plan = await ajouter('Plan secret de la Guilde', 'plan-guilde.png', { ou: 'mediatheque' });
+  modifierFichier(db, antor, univers, plan.id, { visibilite: 'mj' });
+
+  const carte = await ajouter('Carte des Sphères', 'carte-spheres.png', { ou: 'mediatheque' });
+  choisirIllustration(db, antor, univers, trouver('Port-Sel').id, carte.id);
+  // The alt text must not repeat « Sphères »: the search of the tree tests (B-35) look for a hidden sheet by that word.
+  const val = section('Val-Fortin', 'Description');
+  ecrireContenu(db, antor.compteId, univers, val.fiche, val.section, `${val.contenu}\n\n![Carte du royaume](fichier:${carte.id})`, val.version);
+  const aldric = section('Maître Aldric', 'Apparence');
+  joindreFichier(db, antor, univers, aldric.fiche, aldric.section, carte.id);
+
+  const port = section('Port-Sel', 'Description');
+  await ajouter('port-sel-quais.webp', 'port-sel-quais.webp', {
+    ou: 'section',
+    sectionId: port.section,
+    maniere: 'joint',
+  });
+
+  // A graph map holds Port-Sel (its place goes with it when the sheet is deleted).
+  const graphe = await creerCarte(db, antor.compteId, false, univers, { titre: 'Carte de la côte', forme: 'graphe' });
+  ajouterElement(db, antor.compteId, false, graphe.id, { ficheId: trouver('Port-Sel').id });
+
+  const lb = trouver('Léa Brisefer');
+  const notes = ajouterSection(db, antor.compteId, univers, lb.id, {
+    titre: 'Notes de la table',
+    contenu: 'Notes de la table de Léa.',
+  });
+  changerAudience(db, antor.compteId, univers, lb.id, notes.id, {
+    auteurId: lea,
+    auteurLit: true,
+    auteurEcrit: true,
+  });
 }
