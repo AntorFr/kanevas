@@ -606,135 +606,135 @@ Deviation from scoping: none. Clarification: scoping says “name, description�
 therefore also builds **editing** a universe's name and description, which no previous
 slice delivers.
 
-## Détail des écrans de `kanevas-relier-chercher`
+## Screen details for `kanevas-relier-chercher`
 
-> Deux ajouts, aucun écran neuf : la **recherche** dans E-8 et le **bloc Relations** de E-9.
-> Mêmes six états et mêmes textes communs que la première fiche (chargement, erreur, connexion
-> perdue, refus « Page introuvable. », écriture en cours, échec d'écriture). Maquettes : `e08` (états
-> de la recherche) et `e09` (bloc Relations) sont complétées. Le document prime sur la maquette.
+> Two additions, no new screen: **search** in E-8 and the **« Relations » block** of E-9.
+> Same six states and shared text as the first sheet (loading, error, connection
+> lost, refusal « Page introuvable. », write in progress, write failure). Mockups: `e08` (search
+> states) and `e09` (« Relations » block) are completed. The document takes precedence over the mockup.
 
-### E-8 — la recherche dans un type
+### E-8 — search within a type
 
-Au-dessus de la liste d'un type : un champ « Chercher dans les personnages » (« …dans les lieux »,
+Above a type's list: a « Chercher dans les personnages » field (« …dans les lieux »,
 « …dans les factions », « …dans les objets », « …dans les événements », « …dans les quêtes »),
-un bouton « Chercher », et, quand une recherche est en cours, « Effacer la recherche ». La
-recherche part à « Chercher » ou à la touche Entrée, jamais à la frappe. Elle est gardée dans
-l'adresse (`…/personnages?q=Aldric`) : revenir d'une fiche ramène aux résultats.
+a « Chercher » button and, when a search is active, « Effacer la recherche ». The
+search starts on « Chercher » or Enter, never while typing. It is kept in
+the address (`…/personnages?q=Aldric`): returning from a sheet restores the results.
 
-*Ce qu'elle trouve.* Les mots saisis sont cherchés par début de mot, sans tenir compte des
-majuscules ni des accents (« verite » trouve « Vérité »), et **tous** doivent se trouver dans le
-**titre** de la fiche, ou **tous** dans **une même section que le compte peut lire** (titre ou
-contenu de la section). Les résultats sont les fiches de la liste du type, dans le même ordre
-alphabétique, cent à la fois avec « Charger la suite ». Un résultat s'affiche comme une ligne de la
-liste (titre, badge) : pas d'extrait, pas de compteur, pas de classement. Le texte d'une section
-que le compte ne lit pas ne trouve rien, même s'il contient les mots : la fiche est absente des
-résultats, comme elle est absente de la liste.
+*What it finds.* Entered words are matched by word prefix, ignoring
+case and accents (« verite » finds « Vérité »), and **all** must occur in the
+sheet's **title**, or **all** in **one section the account can read** (section title or
+content). Results are sheets from the type's list, in the same
+alphabetical order, one hundred at a time with « Charger la suite ». A result appears as a list
+row (title, badge): no snippet, counter or ranking. The text of a section
+the account cannot read finds nothing, even if it contains the words: the sheet is absent from
+the results, just as it is absent from the list.
 
-*Saisie.* 1 à 100 caractères ; une saisie blanche équivaut à « Effacer la recherche ». Au-delà de
-100 : « Erreur : 100 caractères au plus. » sous le champ, rien n'est envoyé. Les signes sans lettre
-ni chiffre (« - », « " », « * ») ne comptent pas comme des mots ; une saisie qui n'en contient aucun
-se comporte comme une recherche sans résultat.
+*Input.* 1 to 100 characters; blank input is equivalent to « Effacer la recherche ». Beyond
+100: « Erreur : 100 caractères au plus. » below the field, nothing is sent. Symbols without letters
+or digits (« - », « " », « * ») do not count as words; input containing none
+behaves like a search with no results.
 
-*Rôles.* Le MJ cherche dans toutes les fiches de l'univers, y compris une fiche sans section ; un
-Joueur cherche parmi celles qu'il peut lire. « Nouveau personnage » reste visible du MJ pendant une
-recherche.
+*Roles.* The GM searches all sheets in the universe, including a sheet without a section; a
+Player searches readable sheets. « Nouveau personnage » remains visible to the GM during a
+search.
 
-| État | Ce qu'on voit | Ce qu'on peut faire |
+| State | What is shown | Available actions |
 |---|---|---|
-| vide | « Aucun résultat pour « Vérité » dans les personnages. » — **le même texte** que la fiche existe ou non, lisible ou non | « Effacer la recherche » |
-| chargement | « Recherche… » (`role="status"`) ; l'ancienne liste n'est pas montrée | — |
-| erreur | « Impossible de lancer la recherche. » ; le champ garde sa saisie | « Réessayer » |
-| connexion perdue | le bandeau ; « Chercher » désactivé ; les résultats déjà affichés restent | ouvrir un résultat |
-| refus | sans objet pour la recherche : un type inconnu répond « Page introuvable. » comme la liste | — |
-| contenu long | plus de 100 résultats : « Charger la suite » ; un titre trop long est tronqué par « … » avec infobulle ; une saisie de 100 caractères passe à la ligne dans le champ | idem |
+| vide | « Aucun résultat pour « Vérité » dans les personnages. » — **the same text** whether or not the sheet exists or is readable | « Effacer la recherche » |
+| chargement | « Recherche… » (`role="status"`); the old list is not shown | — |
+| erreur | « Impossible de lancer la recherche. »; the field keeps its input | « Réessayer » |
+| connexion perdue | the banner; « Chercher » disabled; already displayed results remain | open a result |
+| refus | not applicable to search: an unknown type responds « Page introuvable. », as for the list | — |
+| contenu long | more than 100 results: « Charger la suite »; an overlong title is truncated with « … » and a tooltip; 100-character input wraps in the field | same |
 
-*Critères.*
-- Étant donné la fiche « Maître Aldric » dont la section « Vérité — MJ seul » est fermée aux
-  joueurs, quand Léa cherche « Vérité » dans les personnages, alors elle voit « Aucun résultat
-  pour « Vérité » dans les personnages. » ; quand Antor fait la même recherche, il voit
+*Criteria.*
+- Given the « Maître Aldric » sheet whose « Vérité — MJ seul » section is closed to
+  players, when Léa searches for « Vérité » among characters, she sees « Aucun résultat
+  pour « Vérité » dans les personnages. »; when Antor performs the same search, he sees
   « Maître Aldric ».
-- Étant donné Léa, quand elle cherche « aldric » dans les personnages, alors elle voit
-  « Maître Aldric » (le titre se trouve) ; et quand elle cherche « apparence », elle le voit aussi
-  (la section « Apparence » est lue des joueurs).
-- Étant donné une recherche qui n'a pas de résultat, quand Léa cherche un mot qui n'existe nulle
-  part, alors le texte affiché est le même que pour « Vérité » (aucune différence ne trahit la
-  fiche cachée).
-- Étant donné Léa devant les résultats de « Aldric », quand elle ouvre la fiche puis revient, alors
-  elle retrouve la même recherche et les mêmes résultats.
+- Given Léa, when she searches for « aldric » among characters, she sees
+  « Maître Aldric » (the title matches); and when she searches for « apparence », she also sees it
+  (the « Apparence » section is readable by players).
+- Given a search with no results, when Léa searches for a word that exists nowhere,
+  the displayed text is the same as for « Vérité » (no difference reveals the
+  hidden sheet).
+- Given Léa viewing the results for « Aldric », when she opens the sheet then returns,
+  she finds the same search and results.
 
-### E-9 — le bloc Relations
+### E-9 — the « Relations » block
 
-Dans chaque section, sous son contenu : un bloc **Relations**, inscrit au registre des blocs de
-section (un fichier, sans modifier un bloc existant). Il liste les relations **portées par cette
-section** : chacune dit son type et nomme sa cible — « membre de → Lames Grises », avec le badge du
-type de la cible — et mène à la fiche de la cible (E-9). Une relation est dirigée : elle va de la
-section vers la cible ; la fiche cible ne montre pas les relations qui l'atteignent.
+In each section, below its content: a **« Relations »** block, registered in the section block
+registry (one file, without modifying an existing block). It lists relations **carried by that
+section**: each states its type and names its target — « membre de → Lames Grises », with the target's
+type badge — and leads to the target sheet (E-9). A relation is directed: it goes from the
+section to the target; the target sheet does not show incoming relations.
 
-| Rôle | Lire les relations d'une section | Relier, retirer | Refus |
+| Role | Read a section's relations | Relate, remove | Refusal |
 |---|---|---|---|
-| MJ | toutes celles de ses sections | oui | sans objet |
-| Joueur | celles dont il lit la section et la cible | non : boutons **absents** | une relation à cible illisible est **absente**, pas refusée |
-| MJ en mode Joueur | comme un Joueur qui n'est l'auteur d'aucune section | non : boutons absents | idem |
-| Admin d'instance | aucune | non | « Page introuvable. » |
+| GM | all those of their sections | yes | not applicable |
+| Player | those whose section and target they read | no: buttons **absent** | a relation to an unreadable target is **absent**, not refused |
+| GM in Player mode | as a Player who authors no section | no: buttons absent | same |
+| Instance admin | none | no | « Page introuvable. » |
 
-*Ce que voit chacun.* Une relation n'est montrée que si le compte lit la section **et** la fiche
-cible. Sinon elle est **absente** : ni ligne, ni espace, ni compteur, ni mot « cachée ». Le bloc
-d'un Joueur qui n'a aucune relation à voir n'apparaît pas du tout. Le MJ voit le bloc de chaque
-section, même vide. En mode Joueur, le MJ voit le bloc comme un Joueur qui n'est l'auteur d'aucune
-section (AD-39), sans « Relier » ni « Retirer ».
+*What each person sees.* A relation is shown only if the account reads the section **and** the target
+sheet. Otherwise it is **absent**: no row, space, counter or « cachée » word. The block
+does not appear at all for a Player with no visible relation. The GM sees every section's
+block, even empty. In Player mode, the GM sees the block as a Player who authors no
+section (AD-39), without « Relier » or « Retirer ».
 
-*Le MJ relie.* « Relier à une fiche » ouvre un formulaire sous la liste :
-1. « Type de relation » (texte libre, 1 à 80 caractères, par exemple « membre de ») ;
-2. « Type de fiche » (Personnage, Lieu, Faction, Objet, Événement, Quête ; Personnage par défaut) ;
-3. un champ « Chercher dans les factions » et la liste des fiches de ce type, cent à la fois avec
-   « Charger la suite » : c'est la liste et la recherche de E-8, pas une autre ;
-4. choisir une fiche (une seule), puis « Relier » ; « Annuler » ferme sans rien écrire.
+*The GM creates a relation.* « Relier à une fiche » opens a form below the list:
+1. « Type de relation » (free text, 1 to 80 characters, for example « membre de »);
+2. « Type de fiche » (« Personnage », « Lieu », « Faction », « Objet », « Événement », « Quête »; « Personnage » by default);
+3. a « Chercher dans les factions » field and the list of sheets of that type, one hundred at a time with
+   « Charger la suite »: this is E-8's list and search, not another one;
+4. choose one sheet (only one), then « Relier »; « Annuler » closes without writing anything.
 
-*Le sélecteur de fiche* (étape 3) est la liste et la recherche de E-8 telles quelles : la recherche part à « Chercher » ou à Entrée, avec les mêmes états et les mêmes textes (« Recherche… », « Impossible de lancer la recherche. » et « Réessayer », « Aucun résultat pour « lames » dans les factions. », bandeau de connexion perdue avec « Chercher » et « Relier » désactivés, « Charger la suite » au-delà de 100) ; à l'ouverture du formulaire la liste du type se charge (« Chargement des fiches… », ou « Impossible de charger les fiches. » et « Réessayer ») et « Chercher » reste actif (hors connexion perdue) ; « Relier » reste désactivé tant qu'aucune fiche n'est choisie, pendant le chargement et sur erreur ; « Effacer la recherche » rend la liste du type ; le choix se voit (puce pleine) et disparaît si l'on change le type de fiche ou la recherche.
+*The sheet selector* (step 3) is E-8's list and search unchanged: search starts on « Chercher » or Enter, with the same states and text (« Recherche… », « Impossible de lancer la recherche. » and « Réessayer », « Aucun résultat pour « lames » dans les factions. », connection lost banner with « Chercher » and « Relier » disabled, « Charger la suite » beyond 100); when the form opens, the type's list loads (« Chargement des fiches… », or « Impossible de charger les fiches. » and « Réessayer ») and « Chercher » stays active (unless the connection is lost); « Relier » stays disabled until a sheet is selected, during loading and on error; « Effacer la recherche » restores the type's list; the selection is visible (filled dot) and disappears if the sheet type or search changes.
 
-Le formulaire n'est pas gardé en cas de session expirée. Une fiche se relie à toute fiche de son
-univers, **sauf à elle-même**. Une section porte au plus 100 relations ; deux relations de même
-type vers la même fiche ne coexistent pas. « Retirer » sur une ligne supprime la relation sans
-confirmation (elle se refait en trois gestes) ; retirer une section retire ses relations avec elle.
+The form is not kept if the session expires. A sheet can be related to any sheet in its
+universe, **except itself**. A section carries at most 100 relations; two relations of the same
+type to the same sheet cannot coexist. « Retirer » on a row deletes the relation without
+confirmation (it can be recreated in three actions); removing a section removes its relations with it.
 
-Textes : bloc sans relation (MJ) : « Aucune relation pour l'instant. » ; erreurs sous les champs :
+Text: block without a relation (GM): « Aucune relation pour l'instant. »; errors below fields:
 « Erreur : le type de relation est obligatoire. », « Erreur : 80 caractères au plus. », « Erreur :
-choisissez une fiche. » ; refus du service, au-dessus du formulaire : « Cette relation existe
-déjà. », « Une fiche ne se relie pas à elle-même. », « Cette section porte déjà 100 relations. » ;
-liste de choix vide : « Aucune faction à relier. » (autres types : « Aucun personnage… ») ;
-chaque bouton « Retirer » porte l'étiquette accessible « Retirer la relation membre de → Lames Grises ».
+choisissez une fiche. »; service refusals, above the form: « Cette relation existe
+déjà. », « Une fiche ne se relie pas à elle-même. », « Cette section porte déjà 100 relations. »;
+empty selection list: « Aucune faction à relier. » (other types: « Aucun personnage… »);
+each « Retirer » button has the accessible label « Retirer la relation membre de → Lames Grises ».
 
-| État | Ce qu'on voit | Ce qu'on peut faire |
+| State | What is shown | Available actions |
 |---|---|---|
-| vide | MJ : « Aucune relation pour l'instant. » et « Relier à une fiche » ; Joueur : le bloc n'est pas là | MJ : relier |
-| chargement | « Chargement des relations… » dans le bloc seul ; le reste de la fiche reste affiché | — |
-| erreur | « Impossible de charger les relations. » dans le bloc seul, les autres sections intactes ; échec d'écriture : « L'action n'a pas abouti. Réessayez. », saisie conservée | « Réessayer » |
-| connexion perdue | le bandeau ; « Relier », « Retirer » désactivés ; la liste affichée reste | suivre un lien |
-| refus | le bloc d'une section illisible n'existe pas (la section est absente, B-9) ; une relation vers une fiche illisible est absente ; « Relier » et « Retirer » n'existent pas pour un Joueur ni en mode Joueur | — |
-| contenu long | 100 relations : la liste défile avec la section ; un type de 80 caractères et un titre de fiche de 120 passent à la ligne | idem |
+| vide | GM: « Aucune relation pour l'instant. » and « Relier à une fiche »; Player: the block is not there | GM: relate |
+| chargement | « Chargement des relations… » in the block alone; the rest of the sheet stays displayed | — |
+| erreur | « Impossible de charger les relations. » in the block alone, other sections intact; write failure: « L'action n'a pas abouti. Réessayez. », input kept | « Réessayer » |
+| connexion perdue | the banner; « Relier », « Retirer » disabled; the displayed list remains | follow a link |
+| refus | an unreadable section's block does not exist (the section is absent, B-9); a relation to an unreadable sheet is absent; « Relier » and « Retirer » do not exist for a Player or in Player mode | — |
+| contenu long | 100 relations: the list scrolls with the section; an 80-character type and a 120-character sheet title wrap | same |
 
-*Critères.*
-- Étant donné Antor, MJ, qui a relié la section « Apparence » de « Maître Aldric » à la faction
-  « Lames Grises » (« membre de ») et à la faction « Cercle des Cendres » dont aucune section n'est
-  lue des joueurs, quand Léa ouvre « Maître Aldric », alors elle voit « membre de → Lames Grises »,
-  et rien d'autre dans le bloc : ni « Cercle des Cendres », ni compteur, ni ligne vide.
-- Étant donné la même fiche, quand Antor passe en mode Joueur, alors il voit la même chose que Léa
-  et ni « Relier » ni « Retirer ».
-- Étant donné Léa, quand « Lames Grises » n'a plus de section lue des joueurs, alors la relation
-  disparaît de la fiche d'Aldric sans autre trace.
-- Étant donné Antor sur « Maître Aldric », quand il relie « Apparence » à « Maître Aldric », alors il
-  voit « Une fiche ne se relie pas à elle-même. » et rien n'est écrit.
-- Étant donné Antor, quand il retire la section « Apparence », alors ses relations disparaissent
-  avec elle et ne remontent nulle part.
+*Criteria.*
+- Given Antor, a GM, who has related the « Apparence » section of « Maître Aldric » to the
+  « Lames Grises » faction (« membre de ») and to the « Cercle des Cendres » faction, none of whose sections
+  are readable by players, when Léa opens « Maître Aldric », she sees « membre de → Lames Grises »,
+  and nothing else in the block: no « Cercle des Cendres », counter or empty row.
+- Given the same sheet, when Antor switches to Player mode, he sees the same thing as Léa,
+  with neither « Relier » nor « Retirer ».
+- Given Léa, when « Lames Grises » no longer has a section readable by players, the relation
+  disappears from Aldric's sheet without any other trace.
+- Given Antor on « Maître Aldric », when he relates « Apparence » to « Maître Aldric », he
+  sees « Une fiche ne se relie pas à elle-même. » and nothing is written.
+- Given Antor, when he removes the « Apparence » section, its relations disappear
+  with it and do not appear anywhere else.
 
-### Clôture de `kanevas-relier-chercher`
+### Completion of `kanevas-relier-chercher`
 
-B-10 → bloc Relations de E-9 ; B-11 → recherche de E-8 ; B-29 → six états de la recherche et du
-bloc ci-dessus. Atteints par P-3 étape 4 (relier le PNJ à sa faction : relier une section du PNJ, bloc de E-9) et P-6 étape 2
-(chercher « Aldric », E-8). Les deux rôles ont leur colonne : le MJ cherche et relie, le Joueur
-cherche et lit ce qu'il peut ; l'admin d'instance n'atteint ni l'un ni l'autre (« Page
-introuvable. »). Chemin d'échec propre à cette tranche (`docs/parcours.md` n'en porte pas pour P-3 et P-6) : une recherche sans résultat dit « Aucun résultat pour … »,
-jamais « caché ». Chemin d'échec de relier une section : le refus du service s'écrit au-dessus du formulaire (« Cette relation existe déjà. », « Une fiche ne se relie pas à elle-même. », « Cette section porte déjà 100 relations. »), la saisie et le choix sont conservés ; un échec d'écriture générique et une session expirée suivent les textes communs (« L'action n'a pas abouti. Réessayez. » ; connexion, formulaire non gardé).
+B-10 → E-9's « Relations » block; B-11 → E-8 search; B-29 → six states of search and the
+block above. Reached through P-3 step 4 (relate the NPC to its faction: relate an NPC section, E-9 block) and P-6 step 2
+(search for « Aldric », E-8). Both roles have their column: the GM searches and relates, the Player
+searches and reads what they can; the instance admin reaches neither (« Page
+introuvable. »). Failure path specific to this slice (`docs/parcours.md` has none for P-3 and P-6): a search without results says « Aucun résultat pour … »,
+never « caché ». Failure path for relating a section: the service refusal appears above the form (« Cette relation existe déjà. », « Une fiche ne se relie pas à elle-même. », « Cette section porte déjà 100 relations. »), input and selection are kept; a generic write failure and an expired session follow the shared text (« L'action n'a pas abouti. Réessayez. »; sign-in, form not kept).
 
 ## Détail des écrans de `kanevas-suivi`
 
