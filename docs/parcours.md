@@ -402,277 +402,277 @@ Format from the `exigences` skill; each need cites the journeys that fulfill it.
 - **B-29** — Each screen has its states: empty, loading, error, lost connection, refusal (hidden
   or explained), long content. *(all)*
 
-## Parcours
+## Journeys
 
-Chaque étape : qui agit, par quel geste, sur quel écran. « Agent » veut dire : la personne le
-demande à son assistant (E-12).
+Each step: who acts, through which action, on which screen. “Agent” means the person
+asks their assistant (E-12).
 
-### P-1 — Démarrer (tout nouveau compte, première visite)
-1. La personne ouvre Kanevas ; Authelia l'authentifie ; elle arrive sur l'**accueil** (E-1) :
+### P-1 — Get started (any new account, first visit)
+1. The person opens Kanevas; Authelia authenticates them; they arrive on the **home page** (E-1):
    « aucun univers ».
-2. Si elle veut mener une partie : **Créer un univers** (E-2) — nom, description ; elle arrive
-   sur sa **vue d'ensemble** (E-3), en MJ.
-3. Si elle est joueuse : l'accueil lui montre son identifiant et lui dit de le donner à son MJ ;
-   après son ajout, l'univers apparaît dans l'accueil.
-*Échec* : Authelia refuse — Kanevas ne montre que « La connexion a été refusée. » (et un lien « Réessayer »), aucun contenu ; Authelia injoignable — « Authelia ne répond pas pour l'instant. Réessayez dans un moment. » ; chaque page a un lien « Réessayer » qui relance la connexion.
+2. If they want to run a game: **« Créer un univers »** (E-2) — name, description; they arrive
+   on its **overview** (E-3) as GM.
+3. If they are a player: the home page shows their identifier and tells them to give it to their GM;
+   after being added, the universe appears on the home page.
+*Failure*: Authelia refuses — Kanevas only shows « La connexion a été refusée. » (and a « Réessayer » link), no content; Authelia unreachable — « Authelia ne répond pas pour l'instant. Réessayez dans un moment. »; each page has a « Réessayer » link that restarts sign-in.
 
-### P-2 — Réunir sa table (MJ ; admin en recours)
-1. Le MJ ouvre **Membres** (E-4) depuis la navigation de l'univers.
-2. Il ajoute un compte par son identifiant, choisit MJ ou Joueur ; change un rôle ; retire un
-   membre.
-3. En recours, l'admin ouvre l'**administration** (E-5), choisit l'univers, fait le même geste.
-   *Exemple* : le seul MJ d'un univers a quitté la table ; l'admin ajoute un MJ qui a déjà ouvert
-   Kanevas. L'admin ne lit toujours rien du contenu ; s'il veut le lire, il s'ajoute lui-même, et
-   l'ajout figure dans la liste des membres que voit le MJ de l'univers.
-4. Une fois membre, il ouvre l'univers depuis E-5 : sa **vue d'ensemble** (E-3).
-*Échec* : identifiant jamais connecté — « ce compte ne s'est jamais connecté » ; retirer le
-dernier MJ — refusé avec la raison ; un compte qui n'est pas admin ouvre l'adresse — « Page
+### P-2 — Gather the table (GM; admin as last resort)
+1. The GM opens **« Membres »** (E-4) from universe navigation.
+2. They add an account by identifier, choose GM or Player; change a role; remove a
+   member.
+3. As a last resort, the admin opens **administration** (E-5), chooses the universe, performs the same action.
+   *Example*: a universe's only GM has left the table; the admin adds a GM who has already opened
+   Kanevas. The admin still reads none of the content; to read it, they add themselves, and
+   that addition appears in the member list seen by the universe's GM.
+4. Once a member, they open the universe from E-5: its **overview** (E-3).
+*Failure*: identifier that has never signed in — « ce compte ne s'est jamais connecté »; removing the
+last GM — refused with the reason; a non-admin account opens the address — « Page
 introuvable. ».
 
-### P-3 — Préparer la séance du samedi (MJ, dimanche soir, bureau)
-1. **Vue d'ensemble** (E-3) : les campagnes actives, les derniers CR, la préparation en cours.
-2. **Campagne** (E-6) : il crée la campagne (« En préparation ») ou ouvre l'existante et la passe
-   « Active » ; il relit les CR les plus récents, crée ou ouvre un **scénario** (E-7) et l'écrit
-   (ou demande à son **assistant** (E-12) de créer la campagne ou le scénario : le bloc d'écriture mène à E-6 ou E-7).
-3. Il coche ou ajoute des tâches de **préparation** (E-6).
-4. **Lore** : depuis la **liste d'un type** (E-8, parmi les types activés), il crée un PNJ ou un lieu, avec au besoin son **sous-type** ; sur la **fiche** (E-9), il
-   écrit « Apparence » (lue des joueurs) et « Vérité — MJ seul », relie le PNJ à sa faction,
-   dépose le plan d'un lieu, et pose le portrait d'Aldric en **illustration** de la fiche (visible
-   de qui voit la fiche) ; de retour sur la liste, la carte d'Aldric porte ce portrait.
-5. Il demande à son **assistant** (E-12) « rappelle-moi tout ce qu'on sait d'Aldric » puis
-   « fais un portrait pour Apparence » : l'image est attachée à la section, et il suit « Ouvrir la section »
-   dans le fil pour la voir sur la fiche (E-9).
-6. **Cartes** (E-10, E-11) : il place le PNJ sur la carte de la ville, passe en **mode Joueur**
-   pour vérifier, puis rend la carte visible.
-*Échec de l'assistant* : une demande de création échoue ou l'assistant est indisponible : le panneau le dit (« Je n'ai pas pu répondre — réessayer » ou « L'assistant n'est pas disponible pour le moment. »), la création a pu avoir lieu avant que la réponse soit perdue (délai, connexion coupée) : avant de réessayer, Antor regarde E-6 ou E-7 pour ne pas créer deux fois, puis crée à la main si besoin (étape 2).
-*Échec de l'image* (étape 5) : la génération échoue ou dépasse le temps, la section porte déjà 50
-pièces jointes, son droit d'écrire a été retiré, la description dépasse 500 caractères ou aucun moteur
-n'est disponible — l'assistant le dit, rien n'est attaché ; Antor
-peut redemander, ou déposer lui-même une image sur E-9 (P-3 étape 4).
-*Moment fort* : la fiche en mode Joueur ne trahit aucun secret.
-*Échec* (illustration, étape 4) : il choisit un PDF ou un fichier vide — « « plan.pdf » n'est pas
-une image… » ou « « portrait.png » est vide. », l'illustration d'avant reste ; l'envoi est coupé —
-« l'envoi n'a pas abouti », avec « Réessayer » ; un autre MJ l'a rétrogradé Joueur entre-temps —
-« Vous ne pouvez plus modifier l'illustration de cette fiche. » et les gestes disparaissent ; le
-retrait échoue — « L'action n'a pas abouti. Réessayez. », l'illustration reste ; l'image ne se charge
-pas — le cadre dit « Image indisponible. » et il garde « Remplacer » et « Retirer ».
+### P-3 — Prepare Saturday's session (GM, Sunday evening, at a desk)
+1. **Overview** (E-3): active campaigns, latest reports, ongoing preparation.
+2. **Campaign** (E-6): they create the campaign (« En préparation ») or open an existing one and set it
+   to « Active »; reread the latest reports, create or open a **scenario** (E-7) and write it
+   (or ask their **assistant** (E-12) to create the campaign or scenario: the write block leads to E-6 or E-7).
+3. They check off or add **preparation** tasks (E-6).
+4. **Lore**: from a **type's list** (E-8, among enabled types), they create an NPC or place, with a **subtype** if needed; on the **sheet** (E-9), they
+   write « Apparence » (player-readable) and « Vérité — MJ seul », link the NPC to their faction,
+   upload a place's plan, and set Aldric's portrait as the sheet's **illustration** (visible
+   to anyone seeing the sheet); back on the list, Aldric's card carries that portrait.
+5. They ask their **assistant** (E-12) « rappelle-moi tout ce qu'on sait d'Aldric » then
+   « fais un portrait pour Apparence »: the image is attached to the section, and they follow « Ouvrir la section »
+   in the thread to see it on the sheet (E-9).
+6. **Maps** (E-10, E-11): they place the NPC on the city map, switch to **Player mode**
+   to check, then make the map visible.
+*Assistant failure*: a creation request fails or the assistant is unavailable: the panel says so (« Je n'ai pas pu répondre — réessayer » or « L'assistant n'est pas disponible pour le moment. »); creation may have occurred before the response was lost (timeout, broken connection): before retrying, Antor checks E-6 or E-7 to avoid creating twice, then creates manually if needed (step 2).
+*Image failure* (step 5): generation fails or times out, the section already has 50
+attachments, write permission has been removed, the description exceeds 500 characters or no engine
+is available — the assistant says so, nothing is attached; Antor
+can ask again, or upload an image himself on E-9 (P-3 step 4).
+*Highlight*: the sheet in Player mode betrays no secret.
+*Failure* (illustration, step 4): they choose a PDF or an empty file — « « plan.pdf » n'est pas
+une image… » or « « portrait.png » est vide. », the previous illustration remains; upload is interrupted —
+« l'envoi n'a pas abouti », with « Réessayer »; another GM has meanwhile demoted them to Player —
+« Vous ne pouvez plus modifier l'illustration de cette fiche. » and the actions disappear; removal
+fails — « L'action n'a pas abouti. Réessayez. », the illustration remains; the image does not load —
+the frame says « Image indisponible. » and keeps « Remplacer » and « Retirer ».
 
-### P-4 — Écrire le compte-rendu (joueur ou MJ, le lendemain de la partie)
-1. Depuis la **vue d'ensemble** (E-3) ou la **liste des campagnes** (E-6), il ouvre la campagne.
-2. **Nouveau compte-rendu** : titre, texte ; il le publie — il s'ouvre comme une **fiche** (E-9)
-   de type compte-rendu.
-3. Il le retouche plus tard ; les autres le lisent depuis la campagne ou la **liste des CR**
+### P-4 — Write the session report (player or GM, the day after the game)
+1. From the **overview** (E-3) or **campaign list** (E-6), they open the campaign.
+2. **« Nouveau compte-rendu »**: title, text; they publish it — it opens as a **sheet** (E-9)
+   of type session report.
+3. They edit it later; others read it from the campaign or **report list**
    (E-13).
 
-### P-5 — Mettre le monde à jour après la partie (MJ)
-1. Il lit les CR (E-13 → E-9).
-2. Depuis un CR, il demande à son **assistant** (E-12), en nommant ce CR (l'assistant ne sait pas quel
-   écran est ouvert) : « mets à jour la section Vérité d'Aldric d'après le compte-rendu de la séance 3 ».
-3. Le panneau montre l'actuel et le proposé ; il **applique** ou **abandonne** d'un clic.
-4. Sinon, il édite la fiche lui-même (E-9).
-*Échec* : la section a changé depuis la proposition — appliquer est refusé, avec la raison.
+### P-5 — Update the world after the game (GM)
+1. They read reports (E-13 → E-9).
+2. From a report, they ask their **assistant** (E-12), naming that report (the assistant does not know which
+   screen is open): « mets à jour la section Vérité d'Aldric d'après le compte-rendu de la séance 3 ».
+3. The panel shows current and proposed content; they **apply** or **abandon** with one click.
+4. Otherwise, they edit the sheet themselves (E-9).
+*Failure*: the section has changed since the proposal — applying is refused, with the reason.
 
-### P-6 — Se resituer avant la séance (joueur, mercredi soir, téléphone)
-1. **Accueil** (E-1) → **vue d'ensemble** de l'univers (E-3) : les derniers CR, les cartes
-   visibles.
-2. Il parcourt la **liste des personnages** (E-8), une grille de cartes illustrées, et reconnaît
-   Aldric à son portrait — ou le cherche par son nom — ; sur la liste des lieux, il peut filtrer par
-   **sous-type** (« Taverne ») parmi ceux des fiches qu'il voit ; puis ouvre la **fiche** (E-9) : seulement ce
-   que la table sait.
-3. Il ouvre la **carte** (E-11), touche un token, relit la fiche.
-4. Ou il demande à son **assistant** (E-12) « que sait-on d'Aldric ? ».
-*Échec* : il demande de lire « Vérité » : l'assistant répond « Introuvable. », comme l'interface ;
-l'assistant est indisponible ou en erreur : le panneau le dit, et la fiche reste lisible (E-9).
-*Échec* (illustration, étape 2) : une image ne se charge pas (réseau du téléphone) — la carte
-montre la vignette de repli, jamais une image cassée, et la fiche « Image indisponible. » ; une
-fiche que le MJ a fermée aux joueurs entre-temps disparaît de la grille, et l'adresse de son
-illustration répond comme une adresse inconnue.
+### P-6 — Catch up before the session (player, Wednesday evening, phone)
+1. **Home** (E-1) → universe **overview** (E-3): latest reports, visible
+   maps.
+2. They browse the **character list** (E-8), a grid of illustrated cards, and recognize
+   Aldric by his portrait — or search for his name —; on the place list, they can filter by
+   **subtype** (« Taverne ») among those of sheets they see; then open the **sheet** (E-9): only what
+   the table knows.
+3. They open the **map** (E-11), tap a token, reread the sheet.
+4. Or ask their **assistant** (E-12) « que sait-on d'Aldric ? ».
+*Failure*: they ask to read « Vérité »: the assistant answers « Introuvable. », like the interface;
+the assistant is unavailable or fails: the panel says so, and the sheet remains readable (E-9).
+*Failure* (illustration, step 2): an image does not load (phone network) — the card
+shows the fallback thumbnail, never a broken image, and the sheet « Image indisponible. »; a
+sheet the GM has since closed to players disappears from the grid, and its illustration's
+address responds like an unknown address.
 
-### P-7 — Tenir l'histoire de son personnage (joueur)
-1. Le MJ a créé la fiche de son PJ et lui en a confié une section en auteur (E-9).
-2. Le joueur l'écrit sur la **fiche** (E-9), y dépose un portrait, ou demande à son **assistant**
-   (E-12) d'y ajouter un paragraphe.
-*Échec* : il demande d'écrire dans une section qu'il lit sans l'écrire : « Vous ne pouvez pas modifier
-cette section. », rien n'est écrit.
+### P-7 — Maintain a character's story (player)
+1. The GM has created the PC's sheet and entrusted a section to the player as author (E-9).
+2. The player writes it on the **sheet** (E-9), uploads a portrait, or asks their **assistant**
+   (E-12) to add a paragraph.
+*Failure*: they ask to write in a section they can read but cannot write: « Vous ne pouvez pas modifier
+cette section. », nothing is written.
 *Upload failure*: empty file, section already at its attachment limit (50 before
 `kanevas-import`, 100 since, AD-111), interrupted upload or lost write permission — the file
 is not attached; the section (E-9) explains why; no partial operation remains.
 
-### P-8 — Monter un univers sur un système partagé (MJ)
-*Antor, MJ de « Lame d'Ébène », le dimanche soir ; Mira, MJ des « Landes grises », qui joue le même
-système.*
-1. **Paramètres de l'univers** (E-14) : il choisit un système du catalogue, ou en crée un
-   (« Créer et rattacher ») ; il peut aussi détacher l'univers (« Aucun système ») et, dans le même écran, corriger le nom et la description de son univers.
-2. **Système de jeu** (E-15), qu'il ouvre depuis « Systèmes de jeu » (E-16, hors de ses univers) ou
-   par « Ouvrir le système » (E-14) : il retrouve le bestiaire commun et y ajoute une créature, que les
-   autres univers du système voient aussitôt ; Mira, rattachée au même système, la lit.
-   *Moment fort* : la créature ajoutée par Antor apparaît chez Mira, sans que Mira voie un mot du
-   lore d'Antor — ni même le nom de son univers : sa liste « Systèmes de jeu » ne lui montre que
+### P-8 — Build a universe on a shared system (GM)
+*Antor, GM of « Lame d'Ébène », on Sunday evening; Mira, GM of « Landes grises », playing the same
+system.*
+1. **Universe settings** (E-14): he chooses a system from the catalogue or creates one
+   (« Créer et rattacher »); he can also detach the universe (« Aucun système ») and, on the same screen, correct its name and description.
+2. **Game system** (E-15), opened from « Systèmes de jeu » (E-16, outside his universes) or
+   through « Ouvrir le système » (E-14): he finds the shared bestiary and adds a creature, which the
+   system's other universes see immediately; Mira, attached to the same system, reads it.
+   *Highlight*: the creature added by Antor appears for Mira without her seeing a word of
+   Antor's lore — not even his universe's name: her « Systèmes de jeu » list only shows
    « Les Landes grises ».
-   *Variante joueur* : Léa, Joueuse de « Lame d'Ébène », ouvre le bloc « Système de jeu » de la vue d'ensemble
-   (E-3) et lit la même créature, sans pouvoir la modifier.
-*Échec* : un nom de système déjà pris — « Un système porte déjà ce nom. » ; une créature modifiée
-entre-temps par l'autre MJ — « Cette entrée a changé depuis que vous l'avez ouverte. », le texte en
-cours est gardé ; un univers détaché pendant qu'un joueur lit le système — la page du joueur répond
-« Page introuvable. » au prochain chargement.
+   *Player variant*: Léa, Player in « Lame d'Ébène », opens the overview's « Système de jeu » block
+   (E-3) and reads the same creature, without being able to edit it.
+*Failure*: system name already taken — « Un système porte déjà ce nom. »; creature modified
+in the meantime by the other GM — « Cette entrée a changé depuis que vous l'avez ouverte. », the current
+text is kept; universe detached while a player reads the system — the player's page answers
+« Page introuvable. » on the next load.
 
-### P-9 — Voir qui est lié à qui (MJ, puis la table)
-1. **Cartes** (E-10) → nouveau **graphe** (E-11) : il choisit les factions ; les liens viennent
-   de leurs relations.
-2. Il le rend visible ; un joueur n'y voit que ce qu'il peut lire.
+### P-9 — See who is connected to whom (GM, then the table)
+1. **Maps** (E-10) → new **graph** (E-11): they choose factions; links come
+   from their relations.
+2. They make it visible; a player only sees what they may read.
 
-### P-10 — Préparer puis rejouer l'import de sa base Kanka (Monsieur, MJ, un samedi, Mac et navigateur)
-*Antor (Monsieur) a rapatrié sa base Kanka sur son Mac ; son script la lit et la pousse dans Kanevas.
-Il veut d'abord un essai jetable, puis la vraie base, sans doublon ni fuite.*
-1. **Accueil** (E-1) → **Créer un univers** (E-2) « Essai Kanka » ; il en est MJ.
-2. **Paramètres** (E-14) : il rattache l'univers à son système, puis dans « Types de fiche » force
-   « Vaisseau » à activé (le système le désactive) — P-13.
-3. **Accès par API** (E-18) : « Nouveau jeton », nom « Script Kanka — Mac », durée 30 jours ;
-   Kanevas montre le jeton une fois ; il le copie dans la configuration du script.
-4. *Hors de Kanevas* : il lance le script ; le script ouvre un **lot**, pousse d'abord les
-   **campagnes**, puis les fiches, parents d'abord (clé d'origine, type, titre, parent, alias,
-   étiquettes, sections en Markdown avec leurs liens `[[…]]`, leurs blocs MJ, leurs images, leur
-   audience) — les comptes-rendus avec la clé de leur campagne —, puis les relations, et clôt le lot
-   (l'ordre d'AD-104).
-   Les fichiers, images et documents, vont d'abord dans la **médiathèque** (E-19), chacun avec ses
-   droits — « Réservée au MJ » pour ceux que Kanka n'affiche que dans du contenu MJ, « Visible des
-   joueurs » sinon —, y compris les 385 Mo qu'aucune fiche n'utilise ; les fiches les référencent.
-5. **Accès par API** (E-18), bloc « Lots d'import » : « Fiches : 498 créées, 3 refusées · Fichiers :
-   1 140 créés · Campagnes : 4 créées · Scénarios : 12 créés · Relations : 324 créées · 6 en attente » ; il
-   déplie les refus : « personnage:aldric-le-gris — section « Vérité » : 112 000 caractères, 100 000
+### P-10 — Prepare then replay the Kanka collection import (Monsieur, GM, Saturday, Mac and browser)
+*Antor (Monsieur) has brought his Kanka collection onto his Mac; his script reads it and pushes it into Kanevas.
+He first wants a disposable trial, then the real collection, without duplicates or leaks.*
+1. **Home** (E-1) → **« Créer un univers »** (E-2) « Essai Kanka »; he is its GM.
+2. **Settings** (E-14): he attaches the universe to his system, then in « Types de fiche » overrides
+   « Vaisseau » to enabled (the system disables it) — P-13.
+3. **« Accès par API »** (E-18): « Nouveau jeton », name « Script Kanka — Mac », lifetime 30 days;
+   Kanevas shows the token once; he copies it into the script's configuration.
+4. *Outside Kanevas*: he runs the script; the script opens a **batch**, pushes
+   **campaigns** first, then sheets, parents first (origin key, type, title, parent, aliases,
+   labels, Markdown sections with their `[[…]]` links, GM blocks, images,
+   audience) — session reports with their campaign key —, then relations, and closes the batch
+   (the order from AD-104).
+   Files, images and documents, first go into the **media library** (E-19), each with its
+   permissions — « Réservée au MJ » for those Kanka only displays in GM content, « Visible des
+   joueurs » otherwise —, including the 385 MB unused by any sheet; sheets reference them.
+5. **« Accès par API »** (E-18), « Lots d'import » block: « Fiches : 498 créées, 3 refusées · Fichiers :
+   1 140 créés · Campagnes : 4 créées · Scénarios : 12 créés · Relations : 324 créées · 6 en attente »; he
+   expands refusals: « personnage:aldric-le-gris — section « Vérité » : 112 000 caractères, 100 000
    au plus ».
-6. Il ouvre quelques fiches (**E-8** en arbre, **E-9**, **E-17**) et passe en **mode Joueur** pour
-   vérifier qu'aucun bloc MJ ne paraît, ni sur la fiche ni dans la recherche — P-12 ; dans **Comptes-rendus** (E-13), les 36 journaux de
-   Kanka sont dans l'ordre de leurs dates d'origine ; sur une fiche, le menu « ⋯ » montre sa clé
-   d'origine (« lieu:port-sel »).
+6. He opens a few sheets (**E-8** as a tree, **E-9**, **E-17**) and switches to **Player mode** to
+   check that no GM block appears, on sheets or in search — P-12; in **« Comptes-rendus »** (E-13), the 36 Kanka
+   journals follow their original dates; on a sheet, the « ⋯ » menu shows its origin
+   key (« lieu:port-sel »).
    A sheet sent before its files shows the GM « Fichier en attente d'import :
    « img:quais ». » instead of the image until the file arrives (Léa sees nothing).
-7. Il corrige le script (il coupe la section trop longue en deux), le relance : le nouveau lot dit
-   « Fiches : 3 créées · 498 inchangées · Fichiers : 1 140 inchangés · … · 0 en attente » — aucun doublon.
+7. He corrects the script (splits the overlong section in two), runs it again: the new batch says
+   « Fiches : 3 créées · 498 inchangées · Fichiers : 1 140 inchangés · … · 0 en attente » — no duplicates.
    Pending file references are counted with links as « liens et références en attente »;
    when nothing is pending, that count is omitted from the batch report.
-8. **Paramètres** (E-14), « Supprimer l'univers », il tape « Essai Kanka » : l'univers disparaît de
-   l'accueil.
-9. Il refait 2 à 7 sur l'univers réel ; les jours suivants, Léa écrit dans une section importée et
-   Antor renomme « Port-Sel » en « Port-Sel-sur-Brume » (P-14) ; un import rejoué n'écrase ni l'un ni
-   l'autre et le lot le dit : « section « Notes » de personnage:lea-pj modifiée dans Kanevas : non
-   écrasée » ; « lieu:port-sel : titre modifié dans Kanevas : non écrasé » ; de même un fichier que
-   Antor a passé « Visible des joueurs » (E-19) n'est pas rétabli « Réservé au MJ » : « visibilité
+8. **Settings** (E-14), « Supprimer l'univers », he types « Essai Kanka »: the universe disappears from
+   the home page.
+9. He repeats 2 to 7 on the real universe; in the following days, Léa writes in an imported section and
+   Antor renames « Port-Sel » to « Port-Sel-sur-Brume » (P-14); a replayed import overwrites neither
+   and the batch says so: « section « Notes » de personnage:lea-pj modifiée dans Kanevas : non
+   écrasée »; « lieu:port-sel : titre modifié dans Kanevas : non écrasé »; likewise a file
+   Antor changed to « Visible des joueurs » (E-19) is not restored to « Réservé au MJ »: « visibilité
    modifiée dans Kanevas : non écrasée ».
-10. **Accès par API** (E-18) : il révoque le jeton (P-11).
-*Moment fort* : le second lot « Fiches : 501 inchangées » et rien de créé dans aucune autre
-nature — rejouer est sans risque.
-*Échec* : jeton mal copié ou révoqué — le script reçoit 401 « Jeton invalide. », rien n'est écrit,
-et aucun lot n'apparaît ; un parent ou une cible de relation inconnue — la fiche est écrite sans ce
-parent ou sans cette relation, avec un avertissement dans le lot ; un lien `[[…]]` vers une clé
-encore inconnue — il reste en attente et se résout quand la fiche arrive (au même lot ou au suivant) ;
-le réseau coupe au milieu — le lot reste « En cours » sur E-18, sans dommage : rejouer reprend là où
-c'était, puisque tout ce qui est déjà écrit sort « inchangé » ; une image de 0 octet — refusée, la
-raison dans le lot ; supprimer l'univers en tapant un autre nom — le bouton reste inactif ; une suppression qui échoue — « L'action n'a pas abouti. Réessayez. » dans la boîte, l'univers est intact (états : E-14).
+10. **« Accès par API »** (E-18): he revokes the token (P-11).
+*Highlight*: the second batch « Fiches : 501 inchangées » and nothing created in any other
+kind — replay is safe.
+*Failure*: token copied incorrectly or revoked — the script receives 401 « Jeton invalide. », nothing is written,
+and no batch appears; unknown parent or relation target — the sheet is written without that
+parent or relation, with a warning in the batch; a `[[…]]` link to a still-unknown
+key — it remains pending and resolves when the sheet arrives (in the same batch or the next);
+the network breaks midway — the batch remains « En cours » on E-18, without damage: replay resumes where
+it left off, since everything already written comes back « inchangé »; a zero-byte image — refused, the
+reason in the batch; deleting the universe while typing a different name — the button remains inactive; failed deletion — « L'action n'a pas abouti. Réessayez. » in the dialog, the universe is intact (states: E-14).
 
-### P-11 — Créer et révoquer un jeton d'API (MJ)
-1. **Accès par API** (E-18), depuis « Univers » ▸ « Accès par API » dans la barre (MJ seul).
-2. « Nouveau jeton » : un nom, une durée (7, 30, 90 jours ou un an) ; « Créer le jeton ».
-3. La fenêtre montre le jeton, « Copier », et « Il ne sera plus jamais affiché. » ; il la ferme.
-4. La liste montre le jeton : nom, créé par, créé le, dernier usage (« jamais »), expire le.
-5. Plus tard : « Révoquer » sur la ligne, confirmation « Révoquer « Script Kanka — Mac » ? Le script
-   qui l'utilise ne pourra plus rien écrire. » ; la ligne passe en « Révoqué ».
-*Échec* : un autre MJ a retiré son rôle à Antor — ses jetons cessent d'agir (401) et il ne voit plus
-E-18 (« Page introuvable. ») et, pour un autre MJ, la ligne de ses jetons porte la pastille « Inactif » ; un Joueur force l'adresse de E-18 — « Page introuvable. » ; le jeton
-a expiré — la ligne dit « Expiré », le script reçoit 401.
+### P-11 — Create and revoke an API token (GM)
+1. **« Accès par API »** (E-18), from « Univers » ▸ « Accès par API » in the bar (GM-only).
+2. « Nouveau jeton »: a name, a lifetime (7, 30, 90 days or one year); « Créer le jeton ».
+3. The window shows the token, « Copier », and « Il ne sera plus jamais affiché. »; he closes it.
+4. The list shows the token: name, created by, created on, last use (« jamais »), expires on.
+5. Later: « Révoquer » on the row, confirmation « Révoquer « Script Kanka — Mac » ? Le script
+   qui l'utilise ne pourra plus rien écrire. »; the row changes to « Révoqué ».
+*Failure*: another GM has removed Antor's role — his tokens stop working (401) and he no longer sees
+E-18 (« Page introuvable. ») and, for another GM, his token rows carry the « Inactif » badge; a Player forces E-18's address — « Page introuvable. »; the token
+has expired — the row says « Expiré », the script receives 401.
 
-### P-12 — Lire la base importée (Antor, MJ, puis Léa, Joueuse, au téléphone)
-1. Antor ouvre **Lieux** (E-8), passe la liste **en arbre** : « Les Sphères » (Lieu · Sphère)
-   déplié montre « Port-Sel » (Lieu · Port), qui déplié montre « La Taverne du Kraken » et « Les
-   Docks » ; il filtre sur le sous-type « Port » : « Port-Sel » et « Havre-Gris » (après un import qui porte ces sous-types : le semis du bouchon pose « Les Sphères » et « Port-Sel » sans sous-type, et pas « Havre-Gris »).
-2. Il ouvre « Port-Sel » (**E-9**) : le fil d'Ariane « Lame d'Ébène › Lieux › Les Sphères ›
-   Port-Sel » ; le texte en Markdown (intertitres, un tableau des quartiers, une image insérée) ; des
-   liens vers « Maître Aldric » et « La Guilde des Brumes » ; au milieu de « Histoire », un **bloc MJ**
-   hachuré d'ambre (« Le port est tenu par la Guilde… ») ; en bas, « Contient » (ses enfants) et
-   « Mentionnée dans » (les fiches qui la citent) ; à côté du type, son sous-type « Lieu · Port » ;
-   sous le titre, ses alias et ses étiquettes.
-3. Il passe en **mode Joueur** : le bloc MJ a disparu sans laisser de trou ; le lien vers « La
-   Guilde des Brumes », fiche MJ seul, est devenu du texte ; « Mentionnée dans » a perdu « Rapport
-   secret de l'amirauté » et « La Guilde des Brumes », qu'un joueur ne lit pas.
-4. Léa, sur son téléphone, ouvre la **recherche** (E-17), tape « sous-main », un mot qui n'est que
-   dans le bloc MJ : aucun résultat. Elle tape « guilde » : elle trouve « Port-Sel » (le texte du lien
-   est écrit dans « Histoire », qu'elle lit) mais jamais la fiche « La Guilde des Brumes » ; elle trouve
-   « Port-Sel » par son alias « Salport » ; elle touche la pastille « Côte des Brumes » (sur E-17, ou sur la fiche « Port-Sel » qui l'ouvre filtrée) et voit les fiches qu'elle lit.
-5. Elle ouvre « Maître Aldric » par un lien, puis revient par le fil d'Ariane.
-6. Elle demande à son **assistant** (E-12) « que sait-on de Port-Sel ? » : il ne cite rien du bloc
-   MJ.
-*Moment fort* : la même fiche, lue par Antor puis par Léa — le secret n'est ni montré, ni trouvable,
-ni deviné.
-*Échec* : une image insérée ne se charge pas — « Image indisponible. » à sa place ; un lien vers une
-fiche supprimée — texte simple pour Léa, « lien cassé » pour Antor ; une fiche dont Léa ne lit plus
-rien depuis le dernier import — absente de l'arbre, de la recherche et des « Mentionnée dans ».
+### P-12 — Read the imported collection (Antor, GM, then Léa, Player, on a phone)
+1. Antor opens **« Lieux »** (E-8), switches the list **to a tree**: « Les Sphères » (« Lieu · Sphère »)
+   expanded shows « Port-Sel » (« Lieu · Port »), which expanded shows « La Taverne du Kraken » and « Les
+   Docks »; he filters by subtype « Port »: « Port-Sel » and « Havre-Gris » (after an import carrying those subtypes: the stub seed sets « Les Sphères » and « Port-Sel » without subtypes, and no « Havre-Gris »).
+2. He opens « Port-Sel » (**E-9**): the breadcrumb « Lame d'Ébène › Lieux › Les Sphères ›
+   Port-Sel »; Markdown text (subheadings, a district table, an inserted image); links
+   to « Maître Aldric » and « La Guilde des Brumes »; amid « Histoire », a **GM block**
+   hatched in amber (« Le port est tenu par la Guilde… »); at the bottom, « Contient » (its children) and
+   « Mentionnée dans » (sheets citing it); beside the type, its subtype « Lieu · Port »;
+   below the title, its aliases and labels.
+3. He switches to **Player mode**: the GM block has disappeared without leaving a gap; the link to « La
+   Guilde des Brumes », a GM-only sheet, has become text; « Mentionnée dans » has lost « Rapport
+   secret de l'amirauté » and « La Guilde des Brumes », which a player cannot read.
+4. Léa, on her phone, opens **search** (E-17), types « sous-main », a word found only
+   in the GM block: no result. She types « guilde »: she finds « Port-Sel » (the link text
+   is written in « Histoire », which she reads) but never the « La Guilde des Brumes » sheet; she finds
+   « Port-Sel » by its alias « Salport »; she taps the « Côte des Brumes » badge (on E-17, or on the « Port-Sel » sheet which opens it filtered) and sees sheets she reads.
+5. She opens « Maître Aldric » through a link, then returns through the breadcrumb.
+6. She asks her **assistant** (E-12) « que sait-on de Port-Sel ? »: it cites nothing from the GM
+   block.
+*Highlight*: the same sheet, read by Antor then Léa — the secret is neither shown, findable,
+nor hinted at.
+*Failure*: an inserted image does not load — « Image indisponible. » in its place; a link to a
+removed sheet — plain text for Léa, « lien cassé » for Antor; a sheet with nothing readable by Léa
+since the last import — absent from the tree, search and « Mentionnée dans ».
 
-### P-13 — Choisir les types d'un système et d'un univers (MJ)
-*Antor joue « CoF Mini » dans « Lame d'Ébène », sauf que son univers a des vaisseaux.*
-1. **Système de jeu** (E-15), onglet « Types de fiche » : il désactive « Vaisseau » et « Note » pour
-   le système ; Mira, MJ d'un autre univers du système, voit ces types quitter sa barre.
-2. **Paramètres** de « Lame d'Ébène » (E-14), panneau « Types de fiche » : chaque type dit « Système · activé »
-   ou « Système · désactivé » ; il force « Vaisseau » à **Activé**.
-3. La barre latérale de « Lame d'Ébène » montre « Vaisseaux », pas « Notes ».
-4. Plus tard, le système réactive « Note » : « Lame d'Ébène », qui le suit, le montre au chargement suivant ;
-   « Vaisseau », forcé, ne bouge pas.
-*Échec* : il désactive « Lieu » alors que l'univers a 201 lieux — la confirmation dit « Les 201 lieux
-restent ; on les atteint par un lien, la recherche ou l'arbre. » ; un Joueur ne voit pas le panneau de
-E-14 (« Page introuvable. ») et lit l'onglet de E-15 en « Lecture seule », interrupteurs inertes.
+### P-13 — Choose a system's and universe's types (GM)
+*Antor plays « CoF Mini » in « Lame d'Ébène », except his universe has ships.*
+1. **Game system** (E-15), « Types de fiche » tab: he disables « Vaisseau » and « Note » for
+   the system; Mira, GM of another universe using the system, sees those types leave her bar.
+2. **Settings** of « Lame d'Ébène » (E-14), « Types de fiche » panel: each type says « Système · activé »
+   or « Système · désactivé »; he overrides « Vaisseau » to **« Activé »**.
+3. The sidebar of « Lame d'Ébène » shows « Vaisseaux », not « Notes ».
+4. Later, the system re-enables « Note »: « Lame d'Ébène », which follows it, shows it on the next load;
+   « Vaisseau », overridden, does not change.
+*Failure*: he disables « Lieu » while the universe has 201 places — confirmation says « Les 201 lieux
+restent ; on les atteint par un lien, la recherche ou l'arbre. »; a Player does not see the E-14
+panel (« Page introuvable. ») and reads E-15's tab as « Lecture seule », switches inert.
 
-### P-14 — Tenir la base après l'import (Antor, MJ, au bureau)
-1. Sur « Port-Sel » (**E-9**), « Modifier » la section « Histoire » : il tape `[[`, choisit « Maître
-   Aldric » dans la liste qui s'ouvre ; il sélectionne une phrase et la met en **bloc MJ** ; « Aperçu »,
-   puis « Enregistrer ».
-2. Dans l'en-tête, il renomme la fiche « Port-Sel-sur-Brume » ; il change son sous-type « Port » en
-   « Port franc » (la liste lui propose les sous-types de lieu déjà employés : Sphère, Port, Taverne…) ;
-   menu « ⋯ » : « Déplacer sous… » « Les Sphères » ; « Alias et étiquettes ». Sur « Les Cristaux
-   d'Ombre », importée en Note, « Changer le type » : Note → Savoir, sous-type « Ressource ».
-3. Menu « ⋯ » d'un doublon : « Supprimer la fiche… » ; la boîte compte ce qui part avec elle
-   (sections, relations qui la visent, places sur une carte ; ses fichiers restent dans la médiathèque),
-   dit sous quelle fiche
-   remontent ses enfants et que les liens qui la visent deviendront des liens cassés (texte exact :
-   E-9) ; le doublon venait de Kanka : Antor le retire aussi de l'export, sinon le prochain import le
-   recrée (B-40).
-4. Dans un **scénario** (E-7), même geste : `[[` ouvre la même liste (les fiches de l'univers de la campagne) et le lien
-   s'ouvre sur la fiche ; dans une entrée de système (E-15), `[[` ne fait rien.
-*Échec liens* : Léa, auteur avec écriture, tape à la main `[[<id>]]` d'une fiche qu'elle ne lit pas (l'identifiant d'une adresse qu'Antor lui a donnée) — « Cette fiche n'existe
-pas ou vous ne pouvez pas la lire. » sous le champ, son texte intact ; la liste ne répond pas — « Impossible de
-chercher. » et « Réessayer » ; un lien vers une fiche qui n'est pas encore importée — « en attente » pour Antor,
-texte pour Léa, jusqu'à l'arrivée de la fiche ; dans un scénario, la liste qui échoue — « Impossible de chercher. ».
-*Échec* : un déplacement qui ferait un cycle (« Les Sphères » sous l'un de ses enfants) — « Une fiche
-ne peut pas être rangée sous l'un de ses descendants. » ; un titre vidé — « Erreur : le titre est obligatoire. », le champ reste ; un bilan de suppression qui ne se charge pas — « Impossible de charger le détail. », « Réessayer » (états : E-9) ; un Joueur auteur d'une section qui contient
-un bloc MJ — « Modifier » n'y paraît pas ; un texte qui passe 100 000 caractères — « Erreur : 100 000
-caractères au plus. », le texte reste.
+### P-14 — Maintain the collection after import (Antor, GM, at a desk)
+1. On « Port-Sel » (**E-9**), « Modifier » the « Histoire » section: he types `[[`, chooses « Maître
+   Aldric » from the list that opens; he selects a sentence and makes it a **GM block**; « Aperçu »,
+   then « Enregistrer ».
+2. In the header, he renames the sheet « Port-Sel-sur-Brume »; changes its subtype « Port » to
+   « Port franc » (the list suggests place subtypes already used: « Sphère », « Port », « Taverne »…);
+   « ⋯ » menu: « Déplacer sous… » « Les Sphères »; « Alias et étiquettes ». On « Les Cristaux
+   d'Ombre », imported as Note, « Changer le type »: « Note » → « Savoir », subtype « Ressource ».
+3. A duplicate's « ⋯ » menu: « Supprimer la fiche… »; the dialog counts what goes with it
+   (sections, relations targeting it, placements on a map; its files remain in the media library),
+   says under which sheet
+   its children move up and that links targeting it will become broken links (exact wording:
+   E-9); the duplicate came from Kanka: Antor also removes it from the export, otherwise the next import
+   recreates it (B-40).
+4. In a **scenario** (E-7), the same action: `[[` opens the same list (sheets in the campaign's universe) and the link
+   opens the sheet; in a system entry (E-15), `[[` does nothing.
+*Link failure*: Léa, an author with write permission, manually types `[[<id>]]` of a sheet she cannot read (the identifier from an address Antor gave her) — « Cette fiche n'existe
+pas ou vous ne pouvez pas la lire. » below the field, her text intact; the list does not respond — « Impossible de
+chercher. » and « Réessayer »; a link to a sheet not imported yet — « en attente » for Antor,
+text for Léa until the sheet arrives; in a scenario, a failed list — « Impossible de chercher. ».
+*Failure*: a move that would form a cycle (« Les Sphères » under one of its children) — « Une fiche
+ne peut pas être rangée sous l'un de ses descendants. »; an emptied title — « Erreur : le titre est obligatoire. », the field remains; a deletion summary that fails to load — « Impossible de charger le détail. », « Réessayer » (states: E-9); a Player authoring a section containing
+a GM block — « Modifier » does not appear; text exceeding 100,000 characters — « Erreur : 100 000
+caractères au plus. », the text remains.
 
-### P-15 — Poser le jeton de l'assistant (Admin, admin d'instance) (B-51)
-*Admin vient de déployer Kanevas : l'assistant n'a pas encore de jeton, et il ne veut pas passer par un redéploiement.*
-1. **Administration** (E-5), bloc « Jeton de l'assistant » : « Aucun jeton posé » ; « Connecter
+### P-15 — Set the assistant's token (Admin, instance admin) (B-51)
+*Admin has just deployed Kanevas: the assistant has no token yet, and they do not want to redeploy.*
+1. **Administration** (E-5), « Jeton de l'assistant » block: « Aucun jeton posé »; « Connecter
    l'abonnement ».
-2. Kanevas montre une adresse ; il l'ouvre, s'authentifie chez Anthropic, copie le code.
-3. Il colle le code, « Valider » : « Jeton posé le 11 octobre 2026. » ; l'assistant est disponible
-   sur tous les univers, sans redéploiement. *(Moment fort : « Jeton posé le … » apparaît, sans que la valeur du jeton soit montrée nulle part.)*
-*Échec* : le code est faux — « La connexion n'a pas abouti. Recommencez. » ; la fenêtre a expiré (10 minutes)
-ou le serveur a redémarré — « La connexion a expiré. Recommencez. » ; le programme de connexion ne démarre pas —
-« La connexion n'a pas pu démarrer. Réessayez. » ; dans tous les cas l'ancien état reste. Si le jeton vient du
-déploiement, le panneau dit « Jeton fourni par le déploiement. » et se reconnecte de même.
+2. Kanevas shows an address; they open it, authenticate with Anthropic, copy the code.
+3. They paste the code, « Valider »: « Jeton posé le 11 octobre 2026. »; the assistant is available
+   in every universe, without redeployment. *(Highlight: « Jeton posé le … » appears, without the token value being shown anywhere.)*
+*Failure*: incorrect code — « La connexion n'a pas abouti. Recommencez. »; the window has expired (10 minutes)
+or the server has restarted — « La connexion a expiré. Recommencez. »; the connection program does not start —
+« La connexion n'a pas pu démarrer. Réessayez. »; in every case the previous state remains. If the token comes from
+the deployment, the panel says « Jeton fourni par le déploiement. » and reconnects in the same way.
 
-### P-16 — Ranger et partager les fichiers (Antor, MJ, puis Léa, Joueuse)
-*Après l'import, la médiathèque de « Lame d'Ébène » porte 1 100 images et 40 documents, dont ceux
-qu'aucune fiche n'utilisait dans Kanka.*
+### P-16 — Organize and share files (Antor, GM, then Léa, Player)
+*After import, the media library of « Lame d'Ébène » holds 1,100 images and 40 documents, including those
+unused by any sheet in Kanka.*
 1. From the sidebar, Antor opens **« Médiathèque »** (E-19), filters « Images », then searches by name
    for « carte-des-sphères.png » (used in three sheets) and renames it « Carte des Sphères ».
    He switches to « Documents »: « Règles de la Guilde.pdf » (PDF, 2,4 Mo).
-2. Il ouvre « plan-du-repaire.png » (« Visible des joueurs », insérée dans « Histoire » des « Docks »
-   et jointe à « Description » de « Port-Sel », deux sections lues des joueurs) et la passe à
-   « Réservée au MJ » : Kanevas liste ces deux endroits, où les joueurs ne la verront plus ; il
-   confirme.
-3. Sur « Port-Sel » (**E-9**), il modifie « Description » (lue des joueurs) : « Fichier » ▸ « Choisir
-   dans la médiathèque », il choisit « Plan secret de la Guilde » (réservée au MJ) : l'éditeur avertit
-   « Ce fichier est réservé au MJ : les joueurs qui lisent cette section ne le verront pas. » ; il la
-   déplace dans un bloc MJ, l'avertissement disparaît. Puis « Fichier » ▸ « Ajouter depuis l'appareil »
-   « tarifs-du-port.pdf » : le document entre dans la médiathèque, visible des joueurs, et se joint à la
-   section ; il enregistre.
+2. He opens « plan-du-repaire.png » (« Visible des joueurs », inserted in « Histoire » of « Docks »
+   and attached to « Description » of « Port-Sel », two player-readable sections) and changes it to
+   « Réservée au MJ »: Kanevas lists both places, where players will no longer see it; he
+   confirms.
+3. On « Port-Sel » (**E-9**), he edits « Description » (player-readable): « Fichier » ▸ « Choisir
+   dans la médiathèque », he chooses « Plan secret de la Guilde » (GM-only): the editor warns
+   « Ce fichier est réservé au MJ : les joueurs qui lisent cette section ne le verront pas. »; he moves it
+   into a GM block, the warning disappears. Then « Fichier » ▸ « Ajouter depuis l'appareil »
+   « tarifs-du-port.pdf »: the document enters the media library, player-visible, and attaches to the
+   section; he saves.
 4. Léa opens « Les Docks »: instead of the lair map image in « Histoire », she reads
    « Image réservée au MJ. ». She opens « Port-Sel » and downloads « tarifs-du-port.pdf » from
    the attachments of « Description ». Her **« Médiathèque »** (E-19) only shows player-visible
@@ -680,93 +680,93 @@ qu'aucune fiche n'utilisait dans Kanka.*
 5. Antor deletes a duplicate image: the confirmation lists « Val-Fortin — « Description » »,
    « Maître Aldric — « Apparence » (jointe) » and « Port-Sel (illustration) ». He first replaces
    the illustration, then deletes the file.
-*Moment fort* : un même fichier, utilisé dans trois fiches, change de droits en un geste, et Kanevas
-dit exactement où les joueurs le perdent.
-*Échec* : un fichier vide — « « notes.txt » est vide. », rien n'est ajouté ; un envoi coupé —
-« L'envoi n'a pas abouti. », rien n'est ajouté ni joint ; une illustration qui n'est pas une image —
-« « regles.pdf » n'est pas une image. » ; un joueur force l'adresse d'un fichier réservé au MJ — « Page
+*Highlight*: the same file, used in three sheets, changes permissions in one action, and Kanevas
+states exactly where players lose it.
+*Failure*: an empty file — « « notes.txt » est vide. », nothing is added; interrupted upload —
+« L'envoi n'a pas abouti. », nothing is added or attached; an illustration that is not an image —
+« « regles.pdf » n'est pas une image. »; a player forces the address of a GM-only file — « Page
 introuvable. ».
 
-### P-17 — Activer et régler les outils d'un système (Antor, MJ responsable du système « SWN », puis de l'univers « Éneria »)
-*Antor a créé le système « Stars Without Number révisé » ; il veut la carte et le concepteur pour
-Éneria, avec ses règles maison.*
-1. Page du système (**E-15**), onglet « Outils » (**E-20**) : la carte de la galaxie et le concepteur
-   de vaisseaux sont listés, « Désactivé ». Il active les deux. Visibilité : le concepteur « MJ et
-   joueurs », la carte « MJ et joueurs ».
-2. Il fixe les réglages de base du système (portée de saut : 1 hexagone), puis importe un **catalogue** : « Importer un catalogue », fichier JSON ; l'aperçu dit « 12 coques ajoutées,
-   0 modifiée, 1 refusée : arme « Laser lourd », champ `masse` : nombre attendu » ; il confirme.
-3. Paramètres de « Éneria » (**E-14**), onglet « Outils » : les deux outils suivent le système ; il force le
-   concepteur à « Activé », règle « Charges de carburant » à « Non » (règle maison) et ajoute au catalogue
-   de l'univers les cristaux d'Orak'Ziel (un élément nouveau) en important un fichier.
-4. Sur la galaxie (E-21), il change la graine : la confirmation dit « Tous les systèmes non définis changent de
+### P-17 — Enable and configure a system's tools (Antor, GM owning the « SWN » system, then the « Éneria » universe)
+*Antor has created the « Stars Without Number révisé » system; he wants the map and designer for
+Éneria, with his house rules.*
+1. System page (**E-15**), « Outils » tab (**E-20**): the galaxy map and ship designer
+   are listed as « Désactivé ». He enables both. Visibility: designer « MJ et
+   joueurs », map « MJ et joueurs ».
+2. He sets the system's base settings (jump range: 1 hex), then imports a **catalogue**: « Importer un catalogue », JSON file; the preview says « 12 coques ajoutées,
+   0 modifiée, 1 refusée : arme « Laser lourd », champ `masse` : nombre attendu »; he confirms.
+3. Settings of « Éneria » (**E-14**), « Outils » tab: both tools follow the system; he overrides the
+   designer to « Activé », sets « Charges de carburant » to « Non » (house rule) and adds Orak'Ziel
+   crystals (a new element) to the universe catalogue by importing a file.
+4. On the galaxy (E-21), he changes the seed: confirmation says « Tous les systèmes non définis changent de
    place ; les systèmes définis et promus ne bougent pas. ».
-*Moment fort* : l'onglet « Outils » montre pour chaque réglage « Système · 1 » puis « Univers · 2 » : d'où
-vient la valeur est lisible.
-*Échec* : il active un outil qui dépend d'un autre désactivé — « <Outil> demande <autre outil> : activez-le
-d'abord. » (aucun outil SWN n'a de dépendance : le texte se joue avec le module d'essai) ; Mira, MJ d'un autre univers du système,
-voit les outils et leurs valeurs mais ni « Activer » ni « Importer » au niveau du système (cachés, lecture
-seule) ; un fichier de catalogue illisible — « Ce fichier n'est pas un catalogue valide. » ; connexion
-perdue pendant l'application — rien n'est appliqué à moitié.
+*Highlight*: the « Outils » tab shows « Système · 1 » then « Univers · 2 » for each setting: the value's
+origin is readable.
+*Failure*: he enables a tool depending on a disabled one — « <Outil> demande <autre outil> : activez-le
+d'abord. » (no SWN tool has dependencies: the text is exercised with the trial module); Mira, GM of another universe using the system,
+sees tools and values but neither « Activer » nor « Importer » at system level (hidden, read-only);
+unreadable catalogue file — « Ce fichier n'est pas un catalogue valide. »; connection lost
+during application — nothing is partially applied.
 
-### P-18 — Explorer la galaxie, puis la tenir (Léa, Joueuse, au téléphone ; Antor, MJ, au bureau)
-*Mercredi soir, Léa prépare le prochain saut de son vaisseau ; dimanche, Antor ajoute un système avant la
-séance.*
-1. Léa : **Cartes** (**E-10**), « Galaxie d'Éneria » ▸ **E-21**. La carte s'ouvre sur les systèmes qu'elle
-   peut lire (tous ceux qui ne sont pas secrets) ; elle glisse, pince, survole (au toucher : appui) un système : nom, et sa distance au système qu'elle a
-   choisi comme départ.
-2. Elle choisit départ et arrivée : « Port-Sel » → « Vael », et le moteur (2). Le trajet par les routes publiques
-   s'affiche avec sa durée (« 7 cases · 4,5 jours »).
-3. Elle copie le lien de « Vael » (adresse stable) ; l'assistant, sur demande, calcule le même trajet.
-4. Antor (E-21, mode MJ) : il **place** un système dans un hexagone anonyme (le promeut : nom, notes, taille,
-   couleur), **trace** une route vers « Vael » (longueur exacte), **dessine** un territoire marqué secret, puis
-   passe en **mode Joueur** : le système fantôme, la route privée et le territoire n'existent plus.
-5. « Document MJ… » : il choisit la fiche « Galaxie — notes MJ » (ou en crée une) ; l'outil y écrit la section gérée « Document MJ », visible du MJ seul, et la met à jour à chaque demande.
-*Moment fort* : le même trajet, vu par Léa puis par Antor, ne passe pas par la même route : celle de la
-contrebande n'existe pas pour elle.
-*Échec* : Léa cherche « Station fantôme » — aucun résultat, jamais « masqué » ; Antor enregistre un système depuis une
-version périmée (modifié entre-temps par l'autre MJ) — « Ce système a changé depuis que vous l'avez ouvert. »
-et « Recharger » ; connexion perdue — la carte garde la vue affichée, les gestes d'écriture sont désactivés ;
-la densité des systèmes générés ne change jamais selon un territoire qu'elle ne voit pas.
+### P-18 — Explore the galaxy, then maintain it (Léa, Player, on a phone; Antor, GM, at a desk)
+*Wednesday evening, Léa prepares her ship's next jump; on Sunday, Antor adds a system before the
+session.*
+1. Léa: **Maps** (**E-10**), « Galaxie d'Éneria » ▸ **E-21**. The map opens on systems she
+   may read (all non-secret ones); she drags, pinches, hovers over (on touch: presses) a system: name and distance from the system she
+   chose as departure.
+2. She chooses departure and arrival: « Port-Sel » → « Vael », and engine (2). The path along public
+   routes appears with its duration (« 7 cases · 4,5 jours »).
+3. She copies the « Vael » link (stable address); the assistant, on request, calculates the same path.
+4. Antor (E-21, GM mode): he **places** a system in an anonymous hex (promotes it: name, notes, size,
+   colour), **draws** a route to « Vael » (exact length), **draws** a territory marked secret, then
+   switches to **Player mode**: the ghost system, private route and territory no longer exist.
+5. « Document MJ… »: he chooses the « Galaxie — notes MJ » sheet (or creates one); the tool writes the managed « Document MJ » section there, GM-only, and updates it on each request.
+*Highlight*: the same journey, seen by Léa then Antor, does not follow the same route: the smuggling
+route does not exist for her.
+*Failure*: Léa searches for « Station fantôme » — no result, never « masqué »; Antor saves a system from a
+stale version (modified meanwhile by the other GM) — « Ce système a changé depuis que vous l'avez ouvert. »
+and « Recharger »; connection lost — the map keeps the displayed view, writing actions are disabled;
+the density of generated systems never changes based on a territory she cannot see.
 
-### P-19 — Concevoir un vaisseau (Antor, MJ ; Léa, Joueuse, autrice de la section)
-*Léa veut le « Vent d'Orak » ; Antor crée sa fiche et lui confie la conception.*
-1. Antor crée la fiche **Vaisseau** « Vent d'Orak » (E-8/E-9) : sections libres « Histoire » et « Notes MJ » ;
-   dans **E-22**, « Nouvelle conception » sur cette fiche, coque choisie ; la section « Caractéristiques »
-   est créée, gérée par le concepteur, et il en fait **Léa** l'autrice.
-2. Léa ouvre le **concepteur** (E-22) depuis la fiche ou la barre « Outils » : elle choisit un moteur, quatre
-   aménagements, deux armes ; la puissance et la masse libres, le prix, les PV, la CA se recalculent à chaque choix ;
-   une alerte bloquante apparaît (« Puissance insuffisante : −2 »), puis disparaît.
-3. Elle enregistre : la fiche (**E-9**) montre « Caractéristiques » sous le bandeau « Générée par le concepteur de
-   vaisseaux » avec le lien vers l'outil ; Léa ne peut pas retoucher le texte à la main.
-4. Plus tard, Antor change la portée de saut ou le catalogue de l'univers : E-22 et E-9 signalent « Calculé avec
-   d'anciens réglages » et proposent « Recalculer » ; Léa ne perd rien tant qu'elle ne confirme pas.
-5. Les fiches de règles (« Moteurs », « Défenses ») et les 11 exemples sont des sections gérées, lisibles et non
-   modifiables ; Léa partage le lien du vaisseau à un autre joueur, qui le lit selon ses droits.
-*Moment fort* : les budgets se recalculent sous les yeux, et la section de la fiche reste cohérente avec ce qui
-est calculé.
-*Échec* : le concepteur est désactivé par Antor — la fiche montre « Caractéristiques » en texte avec « Outil
-désactivé », sans modification ; Léa ouvre la conception de Roxane, qu'elle ne peut pas lire — « Page introuvable. » ;
-deux écritures concurrentes — la seconde refusée avec « Recharger » ; le calcul d'une conception invalide —
-alertes bloquantes, « Enregistrer » refuse et dit pourquoi ; sur un téléphone, le catalogue se parcourt en une colonne.
+### P-19 — Design a ship (Antor, GM; Léa, Player, section author)
+*Léa wants the « Vent d'Orak »; Antor creates its sheet and entrusts her with the design.*
+1. Antor creates the **« Vaisseau »** sheet « Vent d'Orak » (E-8/E-9): free sections « Histoire » and « Notes MJ »;
+   in **E-22**, « Nouvelle conception » on that sheet, hull chosen; the « Caractéristiques » section
+   is created, managed by the designer, and he makes **Léa** its author.
+2. Léa opens the **designer** (E-22) from the sheet or the « Outils » bar: she chooses an engine, four
+   fittings, two weapons; free power and mass, price, HP and AC recalculate with each choice;
+   a blocking alert appears (« Puissance insuffisante : −2 »), then disappears.
+3. She saves: the sheet (**E-9**) shows « Caractéristiques » under the « Générée par le concepteur de
+   vaisseaux » banner linking to the tool; Léa cannot manually edit the text.
+4. Later, Antor changes the jump range or universe catalogue: E-22 and E-9 signal « Calculé avec
+   d'anciens réglages » and offer « Recalculer »; Léa loses nothing until she confirms.
+5. Rule sheets (« Moteurs », « Défenses ») and the 11 examples are managed sections, readable and
+   uneditable; Léa shares the ship link with another player, who reads it according to their permissions.
+*Highlight*: budgets recalculate before their eyes, and the sheet's section stays consistent with what
+is calculated.
+*Failure*: Antor disables the designer — the sheet shows « Caractéristiques » as text with « Outil
+désactivé », without editing; Léa opens Roxane's design, which she cannot read — « Page introuvable. »;
+two concurrent writes — the second refused with « Recharger »; calculating an invalid design —
+blocking alerts, « Enregistrer » refuses and explains why; on a phone, the catalogue is browsed in one column.
 
-### P-20 — Reprendre les outils actuels d'Éneria (Monsieur, un samedi, Mac et dépôt privé)
-*Les fichiers actuels (carte, vaisseaux) restent utilisables ; Monsieur veut basculer.*
-1. Dans `AntorFr/eneria` (privé), un script convertit les fichiers dans le format des modules (dossier
-   `_outils/kanevas/`) ; le résultat converti et les valeurs de référence sont versionnés à côté.
-2. Avec un jeton d'API à la portée « galaxie » puis « vaisseaux » (**E-18**), il pousse les lots ; **E-18**
-   montre créés, mis à jour, refusés, chaque refus avec son champ.
-3. Il rejoue : aucun doublon. Les tests sur données réelles (49 routes, les 11 vaisseaux) se jouent **dans les
-   pods**, qui lisent `eneria` ; la CI de `kanevas` reste synthétique (décision de Monsieur, 2026-10-16).
-*Échec* : un élément mal formé — refusé avec son champ, le reste passe ; un jeton sans la portée de l'outil —
-refus (401/403 selon l'API d'import) et rien d'écrit.
+### P-20 — Migrate Éneria's current tools (Monsieur, Saturday, Mac and private repository)
+*Current files (map, ships) remain usable; Monsieur wants to switch over.*
+1. In `AntorFr/eneria` (private), a script converts files to the module format (`_outils/kanevas/`
+   folder); converted output and reference values are versioned alongside.
+2. With an API token scoped to « galaxie » then « vaisseaux » (**E-18**), he pushes batches; **E-18**
+   shows created, updated, refused, each refusal with its field.
+3. He replays: no duplicates. Tests on real data (49 routes, the 11 ships) run **in
+   pods**, which read `eneria`; `kanevas` CI remains synthetic (Monsieur's decision, 2026-10-16).
+*Failure*: malformed element — refused with its field, the rest goes through; a token lacking the tool's scope —
+refused (401/403 depending on the import API) and nothing written.
 
-### P-21 — Retirer un outil (Antor, MJ, au bureau)
-1. **E-20** de « Éneria » : il désactive le concepteur. Les fiches de vaisseaux montrent « Caractéristiques » en
-   texte avec « Outil désactivé » ; l'entrée de la barre et les adresses de l'outil disparaissent pour tous.
-2. Plus tard il le réactive : tout est là. Ou « Supprimer les données de l'outil… » : la boîte dit « 14
-   conceptions, 3 éléments locaux de catalogue seront effacés » ; au niveau du système, elle ajoute les univers
-   qui s'en servent encore.
-*Échec* : un MJ qui n'est pas responsable du système ne voit pas la suppression des données du système.
+### P-21 — Remove a tool (Antor, GM, at a desk)
+1. **E-20** of « Éneria »: he disables the designer. Ship sheets show « Caractéristiques » as
+   text with « Outil désactivé »; the bar entry and tool addresses disappear for everyone.
+2. Later he re-enables it: everything is there. Or « Supprimer les données de l'outil… »: the dialog says « 14
+   conceptions, 3 éléments locaux de catalogue seront effacés »; at system level, it adds universes
+   still using them.
+*Failure*: a GM who is not the system owner does not see system data deletion.
 
 ## Hors périmètre
 
