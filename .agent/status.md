@@ -1,6 +1,6 @@
 # Status — kanevas
 
-> MàJ : 2026-10-19 (assemblage de kanevas-import-mediatheque, repris après l'arbitrage de la recette : `epic/kanevas` fusionnée dans la feature, l'image générée par l'assistant entre dans la médiathèque par `ajouterFichier` ; l'historique des reprises précédentes est dans `git log`)
+> MàJ : 2026-10-24 (correctif `kanevas-e2e-stables`, dernier paragraphe ; avant : assemblage de kanevas-import-mediatheque, repris après l'arbitrage de la recette : `epic/kanevas` fusionnée dans la feature, l'image générée par l'assistant entre dans la médiathèque par `ajouterFichier` ; l'historique des reprises précédentes est dans `git log`)
 
 **Lecture de ce fichier :** le clone qui le porte contient déjà toutes les tranches nommées ci-dessous ; « PR non fusionnée » dit seulement que la tranche n'est pas encore sur `main`, pas qu'elle manque du code.
 
@@ -212,8 +212,8 @@ outil `chercher` de l'assistant sans `type` = même fonction, « Introuvable. »
 **Suivant :** les tranches non encore livrées.
 
 
-`feature/kanevas-e2e-stables` (correctif, PR non fusionnée, depuis `main` v0.16.0) rend déterministes les tests d'écran rouges (main a entre-temps réparé à sa façon la déconnexion, `goBack`, E-10 et la page de campagne : ses versions sont gardées). Reste de la branche, chacun avec sa cause :
-**courses de test** (attente d'un état au lieu d'une lecture immédiate : en-tête « Rôle » mesuré une fois la liste rendue, erreur d'E-2 disparue avant comptage, section de Léa rendue avant lecture des titres) et une **régression du code**,
+`feature/kanevas-e2e-stables` (correctif, PR #32 non fusionnée : ce clone la porte, `main` ne l'a pas encore ; branché sur `main` v0.16.x) rend déterministes les tests d'écran rouges (main a entre-temps réparé à sa façon la déconnexion, `goBack`, E-10 et la page de campagne : ses versions sont gardées). Reste de la branche, chacun avec sa cause :
+**courses de test** (attente d'un état au lieu d'une lecture immédiate : en-tête « Rôle » mesuré une fois la liste rendue, erreur d'E-2 disparue avant comptage, section de Léa rendue avant lecture des titres ; puis, rejoués sous charge, E-9 Mode Joueur, B-12, B-46 (besoin et révocation), E-9 alias et le détail de la médiathèque : réponse attendue ou état rendu avant lecture) et une **régression du code**,
 `frontend/src/api.ts` : une réponse partie avant la coupure n'efface plus la « connexion perdue » déclarée depuis (compteur `pertes` ; la sonde `/healthz` et l'envoi de fichier suivent la même règle).
 Aucun test supprimé, sauté ni affaibli. Preuve : `src/e2e` joué sous `taskset -c 0-3 … --test-concurrency=2` (conditions de la CI), vert plusieurs fois, dont avec une seconde suite en parallèle.
 **Reste :** la suite verte trois fois de suite (constat de la vérification ; aucune CI ne tourne sur une PR : workflow manuel `tests.yml` ou `npm run tests:attestes`), puis la fusion ; la mise en production de 0.16.x est une PR GitOps à part (Monsieur).
