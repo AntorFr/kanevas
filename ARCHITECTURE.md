@@ -359,7 +359,7 @@ Numbers are stable. A withdrawn decision keeps its number, with what replaces it
 | AD-118 | **The contract for all-types search, aliases and labels** (`kanevas-import-recherche`; details AD-101, AD-63, AD-74). *Binds*: `services/fiches.ts` (`listerFiches`), `services/etiquettes.ts` (new, sole reader/writer of `fiche_alias`, `etiquettes`, `fiche_etiquettes`, AD-2), E-17, E-9, `chercher` tool, import API's `PUT /fiches/:cle`. *Prevents*: a second search function; an alias or label revealing an unreadable sheet; two label lists (screen and service). *Rule*: (1) **a single function**: `listerFiches(db, acteur, universId, {type?, etiquette?, recherche?, curseur?, limite?})`; `type` and `etiquette` are two optional conditions added to the read filter, never replacing it; Player mode is `acteur.modeJoueur` (already carried by the maps' actor), removing GM-only text from the `recherche_sections` column filter (columns `{titre contenu_public}` for a non-GM or GM in Player mode, `{titre contenu}` for a GM, AD-101; the column-selection function is provided by `kanevas-import-secrets`, search calls rather than copies it). (2) `recherche_fiches (titre, alias, sous_type)` is queried without a column filter (none of the three is secret); input is neutralised as in AD-63 (`motsRecherche`); labels are filtered through `EXISTS (… fiche_etiquettes … nom = ? COLLATE NOCASE)`, never FTS. (3) **Matched alias**: the `Fiche` returned by the list carries `alias`, `etiquettes` (names, alphabetical order) and, only if `recherche` is supplied, `aliasTrouve` (the first alphabetical alias whose words all match word prefixes, when the title does not match; computed in TypeScript on the already-read sheet's aliases, never through a second index). (4) **Suggested labels**: `GET /api/univers/:id/etiquettes` returns `[{nom}]` for labels carried by at least one sheet **the actor reads** (same read filter, Player mode included); 404 « Introuvable. » without a role; a label without a readable sheet is neither suggested nor counted. (5) **Writing**: `PUT /api/univers/:id/fiches/:fid/etiquetage?mode=joueur` (Player mode is an address parameter on every request in the slice, as with maps, AD-68; `GET /etiquettes` too) body `{alias: string[], etiquettes: string[]}` replaces both sets at once (GM outside Player mode; otherwise `introuvable` if the sheet is unreadable, `refuse` otherwise): trimming, empty values discarded, case-insensitive duplicates merged, aliases 1 to 120 characters and at most 20, labels 1 to 40 and at most 20 (`invalide`, `detail` `alias_trop_nombreux`, `etiquettes_trop_nombreuses`, `alias_trop_long`, `etiquette_trop_longue`); an unknown label is created in the universe, a label with no remaining sheet is deleted in the same transaction (a label without a sheet does not exist); a sheet's `GET` returns `alias` and `etiquettes` to whoever reads it. (6) **Import API**: `PUT /fiches/:cle` accepts `alias` and `etiquettes` (same bounds, field refusal without refusing the sheet: the field is left alone and the batch warns) through the same service function as (5); B-48 comparison is **by set**, ignoring case and order, against `dernier_import`; a set equal to what was written is replaced, a set modified in Kanevas is left alone and reported (« alias modifiés dans Kanevas : non écrasés »); sending the same values returns « inchangée ». (7) **The `chercher` tool** without `type` calls `listerFiches` without a type condition and returns sheets by title, with their type; with `type`, the same function; it has no `etiquette` parameter (B-26 does not promise one). (8) **Migration** `00NN-alias-etiquettes.sql` (number assigned at merge, AD-51): the three tables, their indexes, `recherche_fiches` rebuilt with `alias`, triggers concatenating aliases (ordered `group_concat`) on every insertion, deletion or change to `fiche_alias` and `fiches.titre`/`sous_type`, then rebuilding the existing sheets' index (`INSERT INTO recherche_fiches(recherche_fiches) VALUES('rebuild')`). *Rejected*: an alias as the secondary title of a second sheet row — two rows per sheet to deduplicate; searching the label in the FTS index — a label is compared exactly; a per-sheet label table (free text) — no list to suggest; a label badge counting sheets — a count reveals the existence of hidden data if computed without the filter, and its usefulness does not justify the risk. |
 
 
-## API d'import (`kanevas-import`, cible)
+## Import API (`kanevas-import`, target)
 
 > Implemented: context and limits (`GET /`), batches, keyed sheets of every product type,
 > file uploads and references, sheet deletion, campaigns, scenarios and relations. Sheet imports
@@ -384,7 +384,7 @@ reader in `scenarios.ts` (AD-97), resolving keys on read.
 
 **Report and relation imports** (`kanevas-reprise-cr-relations`, AD-121):
 `assurerFiche` creates reports through `creerCompteRendu`, without an author, reusing its initial
-“Compte-rendu” section for the first imported section. Additional sections use ordinary section
+« Compte-rendu » section for the first imported section. Additional sections use ordinary section
 services. A missing or unknown campaign is a counted 400 `invalide`, `champ: campagne`, before any
 sheet write. Replay keeps the campaign and creation date, warning when either differs. E-13 uses
 that creation date for both display and ordering, under the existing section visibility guard.
@@ -395,132 +395,132 @@ with `id` on creation and `code`/`raison` on refusal. States are `creee`, `incha
 `limite_relations` also appear as `code` in the batch report. E-18 already displays the `relations`
 counters; `GET /` exposes `relationsParSection: 100`.
 
-Contrat que consomme le script de Monsieur, et tout autre (AD-103, AD-104). Base :
-`https://kanevas.berard.me/api/import/v1/univers/:id`, en-tête `Authorization: Bearer kvs_…`. JSON,
-noms en camelCase, dates ISO 8601. Une **clé d'origine** (`:cle`) : 1 à 200 caractères, sans `|`, `]`
-ni saut de ligne, encodée dans l'adresse ; libre au script (`lieu:port-sel`, un identifiant Kanka…).
-Une écriture porte `?lot=<id>` pour être comptée ; sans lot elle réussit mais rien n'est compté. Erreurs : la forme des routes (`{message, code}`) ; 401
-`jeton_invalide` (corps unique) ; 404 univers autre ou clé inconnue (sauf `DELETE /fiches/:cle`, 204 même inconnue) ; 400 `invalide` avec `champ` ;
-413 corps de plus de 8 Mio.
+Contract consumed by Monsieur's script, and any other (AD-103, AD-104). Base:
+`https://kanevas.berard.me/api/import/v1/univers/:id`, header `Authorization: Bearer kvs_…`. JSON,
+camelCase names, ISO 8601 dates. An **origin key** (`:cle`): 1 to 200 characters, without `|`, `]`
+or a newline, encoded in the address; chosen freely by the script (`lieu:port-sel`, a Kanka identifier…).
+A write carries `?lot=<id>` to be counted; without a batch it succeeds but nothing is counted. Errors: the routes' format (`{message, code}`); 401
+`jeton_invalide` (single body); 404 for another universe or an unknown key (except `DELETE /fiches/:cle`, 204 even if unknown); 400 `invalide` with `champ`;
+413 for a body over 8 MiB.
 
-| Route | Rôle |
+| Route | Role |
 |---|---|
-| `GET /` | l'univers, le compte du jeton, les types de la liste du produit et leur activation, les limites (`contenuSection` — 100 000 pour tout texte Markdown —, alias et étiquettes par fiche, entrées de rapport) |
-| `POST /lots`, `GET /lots/:lid`, `POST /lots/:lid/clore` | ouvrir un lot (201, ou 200 en reprise, avec l'objet lot : `lotId`, `etat`, compteurs, rapport, `avertissements` ; si le même jeton a un lot ouvert, c'est lui qui est rendu : reprise) ; le lire ; le clore (rend le rapport : compteurs, refus, avertissements) |
-| `PUT /fiches/:cle` | assurer une fiche : `{type, sousType?, titre, illustration? (clé de fichier image), pj?, campagne? (clé, pour un compte-rendu), parent? (clé ou null), alias?, etiquettes?, creeLe?, modifieLe?, sections: [{cle, titre, contenu, joueursLisent, joueursEcrivent, fichiers? (clés des fichiers joints)}]}` ; `contenu` en Markdown, avec `[[cle:<clé>\|<texte>]]`, `:::mj` … `:::`, `![légende](fichier:cle:<clé>)` (image) ou `[texte](fichier:cle:<clé>)` (tout fichier). Les sections importées suivent l'ordre de la liste, avant celles nées dans Kanevas. Rend `{id, etat: creee\|mise_a_jour\|inchangee, avertissements: [...]}` |
-| `PUT /fichiers/:cle` | assurer un fichier de la médiathèque, image ou document (multipart : `visibilite` (`joueurs` par défaut \| `mj`), `nom`, puis `fichier`) ; inchangé si l'empreinte, le nom et la visibilité sont les mêmes ; B-48 protège nom et visibilité. **Le script doit envoyer `mj` pour un fichier que la source n'utilise que dans du contenu MJ** (décision de Monsieur du 2026-10-11) ; un fichier que la source n'attache à aucune fiche s'importe ici aussi. Une fiche le référence ensuite par sa clé (texte, `fichiers` d'une section, `illustration`) |
-| *(retirée)* `PUT …/pieces/:pcle` | plus de pièce jointe à part : un fichier s'envoie à la médiathèque (`PUT /fichiers/:cle`), puis la section le référence (AD-111) |
-| *(retirée)* `PUT …/illustration` | l'illustration est le champ `illustration` (clé d'un fichier image ; un document : 400 `pas_une_image`) de `PUT /fiches/:cle` (AD-111) |
-| `POST /fiches/:cle/relations` | `[{section: <clé de section>, cible: <clé>, type}]` : assurer chaque relation (unicité existante section, cible, type) ; une relation absente n'est pas retirée |
-| `DELETE /fiches/:cle` | supprimer la fiche (AD-105, AD-119 (4)) ; 204, aussi si la clé est inconnue ; porte `?lot=` comme toute écriture |
-| `PUT /campagnes/:cle`, `PUT /campagnes/:cle/scenarios/:scle` | assurer une campagne `{nom, statut}`, un scénario `{titre, contenu}` |
+| `GET /` | the universe, the token's account, the types from the product's list and their activation, the limits (`contenuSection` — 100,000 for any Markdown text —, aliases and labels per sheet, report entries) |
+| `POST /lots`, `GET /lots/:lid`, `POST /lots/:lid/clore` | open a batch (201, or 200 on resumption, with the batch object: `lotId`, `etat`, counters, report, `avertissements`; if the same token has an open batch, that one is returned: resumption); read it; close it (returns the report: counters, refusals, warnings) |
+| `PUT /fiches/:cle` | ensure a sheet: `{type, sousType?, titre, illustration? (image file key), pj?, campagne? (key, for a session report), parent? (key or null), alias?, etiquettes?, creeLe?, modifieLe?, sections: [{cle, titre, contenu, joueursLisent, joueursEcrivent, fichiers? (attached file keys)}]}`; `contenu` in Markdown, with `[[cle:<clé>\|<texte>]]`, `:::mj` … `:::`, `![légende](fichier:cle:<clé>)` (image) or `[texte](fichier:cle:<clé>)` (any file). Imported sections follow the list's order, before those created in Kanevas. Returns `{id, etat: creee\|mise_a_jour\|inchangee, avertissements: [...]}` |
+| `PUT /fichiers/:cle` | ensure a media library file, image or document (multipart: `visibilite` (`joueurs` by default \| `mj`), `nom`, then `fichier`); unchanged if fingerprint, name and visibility are the same; B-48 protects name and visibility. **The script must send `mj` for a file that the source uses only in GM content** (Monsieur's decision of 2026-10-11); a file that the source attaches to no sheet is also imported here. A sheet then references it by its key (text, a section's `fichiers`, `illustration`) |
+| *(removed)* `PUT …/pieces/:pcle` | no separate attachment anymore: a file is sent to the media library (`PUT /fichiers/:cle`), then the section references it (AD-111) |
+| *(removed)* `PUT …/illustration` | the illustration is the `illustration` field (image file key; a document: 400 `pas_une_image`) of `PUT /fiches/:cle` (AD-111) |
+| `POST /fiches/:cle/relations` | `[{section: <section key>, cible: <key>, type}]`: ensure each relation (existing uniqueness on section, target, type); an absent relation is not removed |
+| `DELETE /fiches/:cle` | delete the sheet (AD-105, AD-119 (4)); 204, even if the key is unknown; carries `?lot=` like any write |
+| `PUT /campagnes/:cle`, `PUT /campagnes/:cle/scenarios/:scle` | ensure a campaign `{nom, statut}`, a scenario `{titre, contenu}` |
 
-Ordre conseillé au script, non exigé : lot ; fichiers (médiathèque) ; campagnes ; fiches, parents d'abord ; relations ; scénarios ; clore. Rejouer tout est sûr (B-47).
+Suggested script order, not required: batch; files (media library); campaigns; sheets, parents first; relations; scenarios; close. Replaying everything is safe (B-47).
 
-## Déploiement et exploitation
+## Deployment and operations
 
-| Dépôt | Ce qu'il porte | Rang de fusion |
+| Repository | What it carries | Merge order |
 |---|---|---|
-| `AntorFr/kanevas` (référence) | backend, frontend, migrations, CI de l'image, toute la doc du produit | 1 |
-| `AntorFr/smart-home-charts` | `charts/kanevas`, sur `common` | 2 |
-| `AntorFr/k8s-home-lab` | HelmChart (`clusters/tantive/games/`), client OIDC dans Authelia | 3 — y fusionner, c'est déployer |
+| `AntorFr/kanevas` (reference) | backend, frontend, migrations, image CI, all product documentation | 1 |
+| `AntorFr/smart-home-charts` | `charts/kanevas`, on `common` | 2 |
+| `AntorFr/k8s-home-lab` | HelmChart (`clusters/tantive/games/`), OIDC client in Authelia | 3 — merging there deploys |
 
-- **Image** `ghcr.io/antorfr/kanevas:<x.y.z>`, publique, construite par la CI sur un tag semver ;
-  la version n'a qu'une source, le tag.
-- **URL** `https://kanevas.berard.me` (wildcard, rien à créer).
-- **Volume** `hostPath /mnt/data/kanevas/data` monté sur `/data` : la base, les pièces jointes,
-  `CODEX_HOME`. Le jeu de données répliqué du nœud est la sauvegarde ; restaurer, c'est
-  remettre ce dossier.
-- **Secrets** (OpenBao, `openbao-tantive`) : le secret du client OIDC ; le jeton de l'abonnement
-  Claude (AD-54, facultatif : l'admin peut le poser depuis l'écran, AD-109) et le jeton Codex, que Monsieur pose lui-même.
-- *(kanevas-import)* **Aucun secret ni réglage de déploiement nouveau** : les jetons d'API vivent
-  dans la base (leur empreinte). **Volume** : l'import ajoute ~1,1 Go de fichiers (tous, les 385 Mo non
-  rattachés compris, qui vont dans la médiathèque), plus une copie par univers d'essai tant qu'il n'est pas supprimé
-  (`[À VÉRIFIER]` : la place libre sous `/mnt/data` sur `tantive`). **Ingress** : Traefik, sans
-  middleware d'authentification devant Kanevas (vérifié : `k8s-home-lab/clusters/tantive/games/kanevas-helm-config.yml`),
-  donc l'en-tête `Authorization` arrive au pod et le corps n'est pas plafonné par Traefik (aucun
-  middleware `buffering`). **Sauvegarde** : inchangée ; avant le premier import réel, Monsieur copie
-  `/mnt/data/kanevas/data` (la recréation de `fiches`, `docs/donnees.md`, se joue au démarrage de
-  l'image qui la porte).
-- *(kanevas-import)* **Dépôts cibles** : `AntorFr/kanevas` seul (rang 1). `smart-home-charts` : rien.
-  `k8s-home-lab` : le bump de version de l'image à la mise en production (rang 3, Monsieur fusionne),
-  rien d'autre. Le **script d'import** n'est dans aucun dépôt de la chaîne : il vit sur le Mac de
-  Monsieur (décision de Monsieur) ; s'il devait être versionné, ce serait un dépôt à lui, hors de
-  l'epic.
+- **Image** `ghcr.io/antorfr/kanevas:<x.y.z>`, public, built by CI on a semver tag;
+  the version has a single source, the tag.
+- **URL** `https://kanevas.berard.me` (wildcard, nothing to create).
+- **Volume** `hostPath /mnt/data/kanevas/data` mounted at `/data`: the database, attachments,
+  `CODEX_HOME`. The node's replicated dataset is the backup; restoring means
+  putting this directory back.
+- **Secrets** (OpenBao, `openbao-tantive`): the OIDC client secret; the Claude subscription
+  token (AD-54, optional: the admin can set it from the screen, AD-109) and the Codex token, which Monsieur sets himself.
+- *(kanevas-import)* **No new deployment secret or setting**: API tokens live
+  in the database (their fingerprint). **Volume**: the import adds ~1.1 GB of files (all of them, including the 385 MB
+  not attached to anything, which go into the media library), plus one copy per trial universe until it is deleted
+  (`[TO VERIFY]`: free space under `/mnt/data` on `tantive`). **Ingress**: Traefik, without
+  authentication middleware in front of Kanevas (verified: `k8s-home-lab/clusters/tantive/games/kanevas-helm-config.yml`),
+  so the `Authorization` header reaches the pod and Traefik does not cap the body (no
+  `buffering` middleware). **Backup**: unchanged; before the first real import, Monsieur copies
+  `/mnt/data/kanevas/data` (the recreation of `fiches`, `docs/donnees.md`, runs at startup of
+  the image carrying it).
+- *(kanevas-import)* **Target repositories**: `AntorFr/kanevas` only (order 1). `smart-home-charts`: nothing.
+  `k8s-home-lab`: the image version bump for production deployment (order 3, Monsieur merges),
+  nothing else. The **import script** is in no repository of the chain: it lives on Monsieur's
+  Mac (Monsieur's decision); if it were to be versioned, it would have its own repository, outside
+  the epic.
 
-## Bouchons
+## Stubs
 
-| Dépendance | Ce que le bouchon rend | Qui le construit |
+| Dependency | What the stub returns | Who builds it |
 |---|---|---|
-| Authelia (OIDC) | un écran de connexion qui liste les comptes de test (Antor, Léa, Teo, Mira, Admin ; identifiants `antor`, `lea`, `teo`, `mira`, `admin`) ; la session est la même qu'après Authelia, groupes compris (Admin porte `parents`, que `kanevas-recours-admin` lit comme ceux d'Authelia) | `kanevas-premiere-fiche` |
-| Modèle de l'assistant (AD-54) | transport `bouchon` : des réponses scriptées, choisies par mots-clés, qui appellent les vrais outils avec les droits de la personne | `kanevas-assistant-membre` ; la règle de proposition (AD-80) : `kanevas-monde` |
-| Données de départ (recette, critères) | au démarrage en bouchon, sur une base sans univers : univers, membres, systèmes, fiches et illustrations de démonstration, semés par les fonctions de service (`docs/ecrans.md`, « Données de départ du bouchon ») ; jamais hors bouchon, jamais dans les tests qui ne l'appellent pas | `kanevas-illustrations` : `kanevas-il-systemes-serveur` (mécanisme, monde sans illustration), puis `kanevas-il-illustration-ecrans` (illustrations, fichiers d'échec) |
-| Moteur d'images (AD-50) | adaptateur `bouchon` : une image fixe, attachée par le vrai chemin (AD-44) ; une demande qui contient « échec » échoue, pour tester ce cas | `kanevas-images` |
-| *(kanevas-import)* Le script d'import (hors produit) | aucun secret n'est en jeu : le jeton se crée sur E-18 en bouchon comme en production. Pour la recette, un **échantillon** — une dizaine de fiches représentatives de la base de Monsieur (Markdown, tableau, liens, bloc MJ, parent, alias, étiquettes, image, compte-rendu daté), demandé à Monsieur (discussion du 2026-10-11), converti en appels de l'API par un petit client de test du dépôt, rejoué deux fois (le second lot : tout « inchangée ») | `kanevas-import-reprise` (voir « Échantillon de reprise ») |
-| *(kanevas-import, B-51)* `claude setup-token` | `scripts/faux-setup-token.mjs`, lancé à la place de `script` quand `KANEVAS_STUB=1` : une adresse fixe, le code `bouchon` accepté (un autre code échoue), un jeton factice écrit au même fichier ; l'assistant reste en transport `bouchon` (AD-55) | `jeton-assistant-connexion` |
+| Authelia (OIDC) | a login screen listing the test accounts (Antor, Léa, Teo, Mira, Admin; identifiers `antor`, `lea`, `teo`, `mira`, `admin`); the session is the same as after Authelia, including groups (Admin carries `parents`, which `kanevas-recours-admin` reads like those from Authelia) | `kanevas-premiere-fiche` |
+| Assistant model (AD-54) | `bouchon` transport: scripted responses, selected by keywords, that call the real tools with the person's permissions | `kanevas-assistant-membre`; the proposal rule (AD-80): `kanevas-monde` |
+| Seed data (acceptance, criteria) | on startup in stub mode, on a database without universes: demonstration universes, members, systems, sheets and illustrations, seeded through service functions (`docs/ecrans.md`, « Données de départ du bouchon »); never outside stub mode, never in tests that do not call it | `kanevas-illustrations`: `kanevas-il-systemes-serveur` (mechanism, world without illustrations), then `kanevas-il-illustration-ecrans` (illustrations, failure files) |
+| Image engine (AD-50) | `bouchon` adapter: a fixed image, attached through the real path (AD-44); a request containing « échec » fails, to test this case | `kanevas-images` |
+| *(kanevas-import)* The import script (outside the product) | no secret is involved: the token is created on E-18 in stub mode as in production. For acceptance, a **sample** — about ten sheets representative of Monsieur's database (Markdown, table, links, GM block, parent, aliases, labels, image, dated session report), requested from Monsieur (discussion of 2026-10-11), converted into API calls by a small test client in the repository, replayed twice (second batch: everything « inchangée ») | `kanevas-import-reprise` (see “Import sample”) |
+| *(kanevas-import, B-51)* `claude setup-token` | `scripts/faux-setup-token.mjs`, run instead of `script` when `KANEVAS_STUB=1`: a fixed address, the code `bouchon` accepted (another code fails), a fake token written to the same file; the assistant stays on `bouchon` transport (AD-55) | `jeton-assistant-connexion` |
 
-**Échantillon de reprise** (`kanevas-import-reprise`). L'échantillon est tiré de la base réelle de Monsieur (dépôt privé `AntorFr/eneria`, précision du 2026-10-15) : des extraits, pas un convertisseur Kanka. Il vit dans `src/bouchon/echantillon/` (`echantillon.json` au format neutre, `provenance` et correspondances dans son `README.md`, deux images et un document). Le **client de test** `src/bouchon/client-import.ts` (`npm run import:echantillon -- <url> <universId> <jeton> [json]`) le lit et appelle l'API d'import dans l'ordre d'AD-104 (lot ; fichiers ; campagnes ; fiches, parents d'abord ; relations ; scénarios ; clore) ; il ne connaît pas Kanka, n'écrit jamais le jeton et reprend un lot ouvert après une coupure. Contenu : deux campagnes ; huit fiches (Eneria → Éneria Prime → Base Éneria-1 en arbre, un personnage avec alias, étiquettes et illustration, une faction et un événement tout en MJ, une quête, un objet avec un document joint, un tableau Markdown et un bloc MJ, un lien vers une clé envoyée plus tard et un vers une clé qui n'arrive jamais, « Nyx ») ; trois comptes-rendus datés (2021-03-03, 2021-02-10, 2021-04-18, poussés dans le désordre) ; deux scénarios dont un de 60 000 caractères qui porte un lien vers Éneria Prime ; quatre relations dont une vers une cible inconnue ; trois fichiers. Total du premier lot : 11 fiches (8 + 3 comptes-rendus), 3 fichiers, 2 campagnes, 2 scénarios, 3 relations créées, 1 avertissement, 0 refus. Le Jeton du bouchon est lié à « Essai Kanka » ; pour rejouer sur un univers neuf, on crée l'univers puis un jeton sur E-18 et on les passe au client. `refus.json`, poussé à part, porte un compte-rendu d'une campagne absente : refusé, sortie non nulle. Le client sert la recette en bouchon seulement ; ni lancé au démarrage ni importé par le serveur.
+**Import sample** (`kanevas-import-reprise`). The sample is drawn from Monsieur's real database (private repository `AntorFr/eneria`, clarification of 2026-10-15): excerpts, not a Kanka converter. It lives in `src/bouchon/echantillon/` (`echantillon.json` in a neutral format, `provenance` and mappings in its `README.md`, two images and a document). The **test client** `src/bouchon/client-import.ts` (`npm run import:echantillon -- <url> <universId> <jeton> [json]`) reads it and calls the import API in AD-104's order (batch; files; campaigns; sheets, parents first; relations; scenarios; close); it knows nothing of Kanka, never writes the token and resumes an open batch after an interruption. Contents: two campaigns; eight sheets (Eneria → Éneria Prime → Base Éneria-1 in a tree, a character with aliases, labels and an illustration, a faction and an event entirely GM-only, a quest, an item with an attached document, a Markdown table and a GM block, a link to a key sent later and one to a key that never arrives, « Nyx »); three dated session reports (2021-03-03, 2021-02-10, 2021-04-18, pushed out of order); two scenarios, one of 60,000 characters carrying a link to Éneria Prime; four relations, one to an unknown target; three files. First batch total: 11 sheets (8 + 3 session reports), 3 files, 2 campaigns, 2 scenarios, 3 relations created, 1 warning, 0 refusals. The stub token is tied to « Essai Kanka »; to replay on a new universe, create the universe then a token on E-18 and pass them to the client. `refus.json`, pushed separately, carries a session report for an absent campaign: refused, nonzero exit. The client serves acceptance in stub mode only; neither run at startup nor imported by the server.
 
 
-Activation : `KANEVAS_STUB=1` (AD-55), jamais posée dans `k8s-home-lab`. La recette de
-Monsieur sur l'URL de production reste réelle.
+Activation: `KANEVAS_STUB=1` (AD-55), never set in `k8s-home-lab`. Monsieur's acceptance on
+the production URL remains real.
 
-## Sécurité
+## Security
 
-| Menace | Réponse |
+| Threat | Response |
 |---|---|
-| Un joueur apprend qu'une chose existe (fiche, section, carte, titre) | Elle est absente partout ; son adresse répond comme une adresse inconnue (AD-22, AD-38). |
-| Un fichier secret récupéré en devinant son adresse | Nom sur disque aléatoire ; aucune route statique ; garde revérifiée à chaque octet servi (AD-7, AD-35, AD-36). |
-| L'agent comme porte dérobée | Mêmes fonctions et mêmes gardes que les routes (AD-2) ; catalogue choisi par le serveur (AD-26). |
-| Un joueur écrit dans une section que l'agent du MJ lira (injection d'instructions) | L'agent du MJ peut modifier des sections : chaque écriture est listée dans le fil avec un lien (B-26), et une mise à jour du monde n'est jamais appliquée par l'agent (AD-48). **Risque accepté** en V1, pas de confirmation par écriture. Une proposition issue d'un compte-rendu qu'un joueur a écrit est lue par le MJ, côte à côte avec l'actuel, avant tout geste (AD-48, AD-81). |
-| Une illustration reste dans le cache d'un navigateur après qu'il a perdu le droit de voir la fiche | **Risque accepté** (AD-93) : cache `private` du seul navigateur qui l'a déjà vue ; la fiche disparaît de ses listes, plus rien ne la redemande, et le serveur revérifie à chaque requête. *Depuis `kanevas-import`, l'illustration est un fichier de la médiathèque : le même risque vaut pour tout fichier dont la visibilité passe à « Réservé au MJ » (AD-111) ; elle n'est plus « jamais secrète ».* |
-| Codex s'exécute sans bac à sable, dans un pod root ; son jeton est sur le volume sauvegardé | **Risque accepté** (décision de Monsieur sur le moteur) : le pod est le bac à sable, le jeton est en 0600, un processus par demande, un répertoire jetable. |
-| *(kanevas-import)* Un jeton d'API volé (Mac, historique de terminal, dépôt du script) | Portée d'un univers, de l'API d'import seule, des droits d'un MJ ; expiration (30 jours par défaut) ; révocation par tout MJ ; base qui ne garde que l'empreinte ; « dernier usage » visible sur E-18 (AD-103). **Risque accepté** : pendant sa validité, le jeton écrit et supprime des fiches de l'univers comme le MJ. |
-| *(kanevas-import)* Un fichier fermé à un joueur vu par une fiche, ou un fichier vu hors de ses droits | Double garde dans la vue par lecteur (conteneur et fichier), route de fichier gardée par sa visibilité, « Utilisé dans » réduit aux fiches lisibles (AD-111). **Risque accepté** (décision de Monsieur) : la mention « Image réservée au MJ. » / « Fichier réservé au MJ. » dit qu'un fichier est là ; un fichier ajouté depuis une fiche prend la visibilité de l'endroit d'ajout (bloc MJ ou section que les joueurs ne lisent pas tous : `mj`), ce qui ferme le cas d'un fichier ajouté au fil de l'écriture ; reste ouvert par la médiathèque un fichier `joueurs` **choisi** ensuite dans du seul contenu MJ (l'avertissement ne couvre que le sens inverse), ou envoyé `joueurs` par un import — le contrat d'API impose au script de marquer `mj` ce que la source n'utilise que dans du contenu MJ ; celui qui a ajouté un fichier le voit toujours (un joueur qui dépose un fichier dans sa section réservée le garde). Cache : celui d'AD-93, même risque accepté. |
-| *(kanevas-import)* Du code qui s'exécute chez un lecteur, venu d'un texte ou d'un import (HTML, `javascript:`, image externe) | `html: false`, schémas de liens bornés, images et liens de fichier limités à la médiathèque de l'univers, rendu par une seule fonction serveur (AD-95, AD-111) ; une suite de vecteurs XSS dans les tests de cette fonction. |
-| *(kanevas-import)* Un secret fuit hors de la fiche : recherche plein texte, lien, lien entrant, image, assistant, fil d'Ariane, arbre | Une seule vue par lecteur (AD-96) ; `contenu_public` pour l'index des non-MJ (AD-98, AD-101) ; deux gardes pour liens et liens entrants (AD-97, AD-100) ; ancêtre et enfant illisibles sautés (AD-99). Chaque voie a son critère dans `docs/ecrans.md`. |
-| *(kanevas-import)* Un joueur efface un bloc MJ en réécrivant la section | Une section à bloc MJ ne s'écrit que par un MJ ; un non-MJ ne peut pas en écrire un (AD-98). |
-| *(kanevas-import)* Un clic égaré supprime un univers | MJ seul, saisie exacte du nom ; la sauvegarde du volume reste le seul retour (AD-105). **Risque accepté** : tout MJ d'un univers peut le supprimer (les MJ sont égaux). |
-| Usurpation d'identité | Authelia seul authentifie ; aucune base d'utilisateurs maison. Seule dérogation : le mode bouchon, hors production (ligne suivante). |
-| Le mode bouchon ouvert en production (n'importe qui choisit son compte) | Kanevas refuse de démarrer en bouchon dès qu'une variable `OIDC_*` est posée ; la variable n'est jamais posée dans `k8s-home-lab` ; un bandeau visible sur chaque page (AD-55). |
+| A player learns that something exists (sheet, section, map, title) | It is absent everywhere; its address answers like an unknown address (AD-22, AD-38). |
+| A secret file retrieved by guessing its address | Random disk name; no static route; guard rechecked for every byte served (AD-7, AD-35, AD-36). |
+| The agent as a backdoor | Same functions and guards as the routes (AD-2); catalogue selected by the server (AD-26). |
+| A player writes in a section that the GM's agent will read (prompt injection) | The GM's agent can modify sections: each write is listed in the thread with a link (B-26), and a world update is never applied by the agent (AD-48). **Accepted risk** in V1, no per-write confirmation. A proposal based on a session report written by a player is read by the GM, alongside the current content, before any action (AD-48, AD-81). |
+| An illustration stays in a browser's cache after it loses the right to see the sheet | **Accepted risk** (AD-93): `private` cache of the sole browser that already saw it; the sheet disappears from its lists, nothing requests it again, and the server rechecks on every request. *Since `kanevas-import`, the illustration is a media library file: the same risk applies to any file whose visibility changes to « Réservé au MJ » (AD-111); it is no longer “never secret”.* |
+| Codex runs without a sandbox, in a root pod; its token is on the backed-up volume | **Accepted risk** (Monsieur's engine decision): the pod is the sandbox, the token is 0600, one process per request, a disposable directory. |
+| *(kanevas-import)* A stolen API token (Mac, terminal history, script repository) | Scope of one universe, the import API alone, a GM's permissions; expiration (30 days by default); revocation by any GM; database keeps only the fingerprint; “last used” visible on E-18 (AD-103). **Accepted risk**: while valid, the token writes and deletes universe sheets like the GM. |
+| *(kanevas-import)* A file closed to a player seen through a sheet, or a file seen outside its permissions | Double guard in the per-reader view (container and file), file route guarded by its visibility, « Utilisé dans » limited to readable sheets (AD-111). **Accepted risk** (Monsieur's decision): the mention « Image réservée au MJ. » / « Fichier réservé au MJ. » reveals that a file is there; a file added from a sheet takes the visibility of the place where it is added (GM block or section not readable by all players: `mj`), which closes the case of a file added while writing; the media library still leaves open a `joueurs` file **chosen** later in GM-only content (the warning covers only the reverse), or sent as `joueurs` by an import — the API contract requires the script to mark as `mj` what the source uses only in GM content; whoever added a file always sees it (a player uploading a file into their restricted section keeps access to it). Cache: AD-93's, same accepted risk. |
+| *(kanevas-import)* Code executing in a reader's browser, from text or an import (HTML, `javascript:`, external image) | `html: false`, bounded link schemes, images and file links limited to the universe's media library, rendering through a single server function (AD-95, AD-111); a suite of XSS vectors in that function's tests. |
+| *(kanevas-import)* A secret leaks outside the sheet: full-text search, link, incoming link, image, assistant, breadcrumb, tree | A single per-reader view (AD-96); `contenu_public` for the non-GM index (AD-98, AD-101); two guards for links and incoming links (AD-97, AD-100); unreadable ancestors and children skipped (AD-99). Each path has its criterion in `docs/ecrans.md`. |
+| *(kanevas-import)* A player erases a GM block by rewriting the section | A section with a GM block can only be written by a GM; a non-GM cannot write one (AD-98). |
+| *(kanevas-import)* A stray click deletes a universe | GM only, exact name entry; the volume backup remains the only way back (AD-105). **Accepted risk**: any GM of a universe can delete it (GMs are equal). |
+| Identity spoofing | Only Authelia authenticates; no homemade user database. Sole exception: stub mode, outside production (next row). |
+| Stub mode enabled in production (anyone can choose their account) | Kanevas refuses to start in stub mode as soon as an `OIDC_*` variable is set; the variable is never set in `k8s-home-lab`; a visible banner on every page (AD-55). |
 
-## Différé
+## Deferred
 
-- ~~Import depuis Kanka — epic à part.~~ Cadré par `kanevas-import` (l'API d'import ; le script reste hors du produit).
-- *(kanevas-import)* Créatures et vaisseaux structurés — rouverts au besoin de trier ou filtrer par caractéristique.
-- *(kanevas-import)* Corbeille, annulation d'un lot — rouvertes à la première suppression regrettée.
-- Corbeille et annulation d'une suppression, historique, export — à rouvrir à l'usage.
-- Types de fiches dédiés avec caractéristiques structurées.
+- ~~Import from Kanka — separate epic.~~ Scoped by `kanevas-import` (the import API; the script stays outside the product).
+- *(kanevas-import)* Structured creatures and ships — reopened when sorting or filtering by characteristic is needed.
+- *(kanevas-import)* Trash, batch undo — reopened at the first regretted deletion.
+- Trash and deletion undo, history, export — to reopen through use.
+- Dedicated sheet types with structured characteristics.
 
-# Outils spécialisés (`kanevas-outils`, cible)
+# Specialized tools (`kanevas-outils`, target)
 
-> Cadrage proposé le 2026-10-16 (`epic/kanevas-outils`). Décisions AD-121 à AD-137. Elles s'ajoutent à celles
-> ci-dessus ; aucune n'en amende une, sauf mention. Les décisions de Monsieur de la discussion de l'epic sont
-> **[ADOPTÉ]** : elles sont écrites pour être liées, pas rediscutées.
+> Scoping proposed on 2026-10-16 (`epic/kanevas-outils`). Decisions AD-121 to AD-137. They add to those
+> above; none amends one unless stated. Monsieur's decisions from the epic's discussion are
+> **[ADOPTED]**: they are written to be binding, not reopened for discussion.
 
-## Dépôts cibles
+## Target repositories
 
-| Dépôt | État | Ce qu'il porte dans cette epic | Rang de fusion |
+| Repository | State | What it carries in this epic | Merge order |
 |---|---|---|---|
-| `AntorFr/kanevas` (public) | existant | le cadre des modules, la configuration, l'API, le module SWN (code, règles, format, **catalogue d'essai inventé**), la doc en anglais | 1 |
-| `AntorFr/eneria` (**privé**) | existant | uniquement le dossier `_outils/kanevas/` : script de conversion, données converties, valeurs de référence figées, tests sur données réelles ; jamais `base-de-connaissance/`, les sources des outils actuels, ni le reste | 2 (après le code qui lit le format) |
-| `AntorFr/k8s-home-lab` | existant | une PR **préparée** (tag de l'image et version de chart), ouverte, que Monsieur fusionne ; aucun secret ni volume nouveau | 3 (toujours dernier) |
+| `AntorFr/kanevas` (public) | existing | module framework, configuration, API, SWN module (code, rules, format, **invented trial catalogue**), documentation in English | 1 |
+| `AntorFr/eneria` (**private**) | existing | only the `_outils/kanevas/` directory: conversion script, converted data, frozen reference values, tests on real data; never `base-de-connaissance/`, the current tools' sources, or the rest | 2 (after the code reading the format) |
+| `AntorFr/k8s-home-lab` | existing | a **prepared** PR (image tag and chart version), opened, which Monsieur merges; no new secret or volume | 3 (always last) |
 
-La CI de `kanevas` tourne sur des **données synthétiques** et n'a aucun accès à `AntorFr/eneria` (décision de Monsieur, 2026-10-16) ; les tests sur données réelles se jouent dans les pods, qui lisent `eneria` avec l'accès qu'ils ont déjà. Aucun secret, clé ou jeton n'est ajouté à une CI.
+`kanevas` CI runs on **synthetic data** and has no access to `AntorFr/eneria` (Monsieur's decision, 2026-10-16); tests on real data run in pods, which read `eneria` with their existing access. No secret, key or token is added to CI.
 
-## Organes et état
+## Components and state
 
 ```
-navigateur ──▶ Fastify ─┬─ cadre des modules (registre, activation, réglages, droits d'outil, import, routes communes)
-                         │      └─▶ module `swn` : fonctions ─▶ tables swn_* (SQLite, même base)
-                         ├─ routes `/api/univers/:id/outils/<module>/…` et `/api/systemes/:id/outils/<module>/…`
-                         ├─ outils de l'assistant (neutres) composés par le catalogue d'un rôle
-                         └─ fonctions de service du cœur (droits, sections, recherche) appelées par les modules
-script de conversion (dépôt privé) ──jeton à portée d'outil──▶ API d'import étendue
+browser ──▶ Fastify ─┬─ module framework (registry, activation, settings, tool permissions, import, common routes)
+                      │      └─▶ module `swn`: functions ─▶ swn_* tables (SQLite, same database)
+                      ├─ routes `/api/univers/:id/outils/<module>/…` and `/api/systemes/:id/outils/<module>/…`
+                      ├─ assistant tools (neutral) composed by a role's catalogue
+                      └─ core service functions (permissions, sections, search) called by modules
+conversion script (private repository) ──tool-scoped token──▶ extended import API
 ```
 
-L'état durable est en base (cœur + tables du module) ; sont **éphémères** : le cache des blocs générés de la carte (mémoire, perdu au
-redémarrage sans dommage) et le calcul d'un trajet. Aucun état n'est dans le navigateur.
+Durable state lives in the database (core + module tables); **ephemeral** state consists of the cache of generated map blocks (memory, lost on
+restart without harm) and journey calculation. No state lives in the browser.
 
 ## Décisions
 
