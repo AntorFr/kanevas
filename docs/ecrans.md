@@ -406,78 +406,78 @@ through P-1 (E-1, E-2, E-3), P-2 (E-4), P-3 step 4 and P-6 (E-8, E-9), P-7 (E-9)
 their column in the scoping matrix; before `kanevas-recours-admin`, the instance admin had only E-1 and
 E-2; E-5 comes with that slice (below).
 
-## Détail des écrans de `kanevas-recours-admin`
+## Screen details for `kanevas-recours-admin`
 
-> E-5 et l'entrée « Administration » de la barre latérale. Les textes communs (chargement, erreur de
-> chargement, connexion perdue, écriture en cours, échec d'une écriture, refus) et les refus de
-> membres (« Ce compte ne s'est jamais connecté. », « Ce compte est déjà membre. », « Impossible :
-> l'univers doit garder au moins un MJ. ») sont ceux de « Détail des écrans de
-> `kanevas-premiere-fiche` ». Maquette `docs/maquettes/e05-administration.html` (d'avant la charte : contenu et vocabulaire seulement).
+> E-5 and the sidebar's « Administration » entry. Shared text (loading, loading error,
+> connection lost, write in progress, write failure, refusal) and membership
+> refusals (« Ce compte ne s'est jamais connecté. », « Ce compte est déjà membre. », « Impossible :
+> l'univers doit garder au moins un MJ. ») are those of “Screen details for
+> `kanevas-premiere-fiche`”. Mockup `docs/maquettes/e05-administration.html` (predates the style guide: content and vocabulary only).
 
-**Qui est admin d'instance.** Le compte dont la session porte le groupe Authelia `parents` (AD-56,
-lu à la connexion ; en bouchon, Admin). Le droit est celui de la session en cours : un compte retiré
-du groupe le garde jusqu'à l'expiration de sa session (7 jours) — risque accepté (AD-86).
-**Ce que l'admin voit** : le nom de chaque univers, le nombre de ses membres, et ses membres
-(identifiant, rôle). **Ce qu'il ne voit jamais** : la description, une fiche, une section, un
-compte-rendu, une carte, une pièce jointe, un système de jeu — pour tout cela, il est un compte sans
-rôle (« Page introuvable. »), tant qu'il ne s'est pas ajouté lui-même comme membre.
+**Who is an instance admin.** The account whose session carries the Authelia `parents` group (AD-56,
+read at sign-in; in stub mode, Admin). Permission comes from the current session: an account removed
+from the group keeps it until its session expires (7 days) — accepted risk (AD-86).
+**What the admin sees**: each universe's name, member count and members
+(username, role). **What they never see**: the description, a sheet, a section, a
+session report, a map, an attachment, a game system — for all of this, they are an account without a
+role (« Page introuvable. »), until they add themselves as a member.
 
-### Barre latérale : l'entrée « Administration »
+### Sidebar: the « Administration » entry
 
-Pour un admin d'instance seulement : hors d'un univers, **Administration** sous « Mes univers » ; dans un
-univers dont il est membre, **Administration** sous une section « Instance », en pied de la barre.
-Pour tout autre compte, l'entrée n'existe pas.
+For an instance admin only: outside a universe, **« Administration »** below « Mes univers »; within a
+universe they belong to, **« Administration »** under an « Instance » section at the bottom of the sidebar.
+For any other account, the entry does not exist.
 
 ### E-5 Administration
 
-La barre haute porte le fil « Instance / Administration » ; sous le titre et le sous-titre « Les membres se gèrent ici ; le
-contenu (fiches, comptes-rendus, cartes) n'est jamais affiché. », deux zones, puis le panneau « Jeton de l'assistant » (plus bas). À gauche, **Univers de
-l'instance** : tous les univers, par nom (sans casse), chacun avec « N membres » (« 1 membre » au
-singulier), l'univers choisi portant le badge « Sélectionné » ; cent à la fois, puis « Charger la suite ». À droite (sous la liste sur téléphone, après
-un clic sur l'univers), **Membres — <nom de l'univers>** : la liste (identifiant, rôle MJ / Joueur,
-« Retirer <identifiant> » sur chaque ligne, révélé au survol et au focus au bureau, toujours visible sans survol), puis, sous la liste, un champ « Identifiant du compte », le rôle (Joueur par défaut) et « Ajouter » : le même
-geste, les mêmes refus et la même confirmation de retrait qu'E-4. Ajouter son propre identifiant, en
-MJ, est le moyen de lire le contenu : l'ajout apparaît dans la liste des membres que voit le MJ de
-l'univers ; une note sous le champ le dit : « Pour lire le contenu, l'admin s'ajoute lui-même comme
-membre : l'ajout apparaît dans la liste des membres que voit le MJ de l'univers. » Un admin membre
-qui se retire lui-même reste sur E-5 ; l'univers reste sélectionné, sa liste se met à jour sans lui, et il disparaît de l'accueil (E-1) de l'admin ; le lien « Ouvrir » disparaît avec son rôle. Rien d'autre n'est montré de l'univers : pas de lien vers sa vue d'ensemble tant que
-l'admin n'en est pas membre ; une fois membre, un lien « Ouvrir » à côté du nom mène à E-3 (un clic sur le
-nom sélectionne seulement l'univers). Aucune action sur l'univers lui-même
-(nom, description) : elles sont au MJ.
+The top bar carries the « Instance / Administration » breadcrumb; below the title and subtitle « Les membres se gèrent ici ; le
+contenu (fiches, comptes-rendus, cartes) n'est jamais affiché. », two areas, then the « Jeton de l'assistant » panel (below). On the left, **« Univers de
+l'instance »**: all universes, by name (case-insensitive), each with « N membres » (« 1 membre » in the
+singular), the selected universe bearing the « Sélectionné » badge; one hundred at a time, then « Charger la suite ». On the right (below the list on phones, after
+clicking the universe), **« Membres — <nom de l'univers> »**: the list (username, « MJ » / « Joueur » role,
+« Retirer <identifiant> » on each row, revealed on hover and focus on desktop, always visible without hover), then, below the list, an « Identifiant du compte » field, role (Player by default) and « Ajouter »: the same
+action, refusals and removal confirmation as E-4. Adding their own username as
+GM is how the admin reads content: the addition appears in the member list seen by the universe's
+GM; a note below the field says so: « Pour lire le contenu, l'admin s'ajoute lui-même comme
+membre : l'ajout apparaît dans la liste des membres que voit le MJ de l'univers. » An admin member
+who removes themselves stays on E-5; the universe remains selected, its list updates without them, and it disappears from the admin's home (E-1); the « Ouvrir » link disappears with their role. Nothing else about the universe is shown: no link to its overview until
+the admin is a member; once a member, an « Ouvrir » link beside the name leads to E-3 (clicking the
+name only selects the universe). No action on the universe itself
+(name, description): those belong to the GM.
 
-Adresses : `/administration` (aucune sélection : « Choisissez un univers pour voir ses membres. »)
-et `/administration/univers/:id`.
+Addresses: `/administration` (no selection: « Choisissez un univers pour voir ses membres. »)
+and `/administration/univers/:id`.
 
-| État | Ce qu'on voit | Ce qu'on peut faire |
+| State | What is shown | Available actions |
 |---|---|---|
-| vide | liste des membres : sans objet, un univers a toujours un MJ (B-5) ; aucun univers dans l'instance : « Aucun univers sur l'instance pour l'instant. » ; aucune sélection : « Choisissez un univers pour voir ses membres. » | — |
-| chargement | « Chargement des univers… » ; pour les membres : « Chargement des membres… » | — |
-| erreur | « Impossible de charger les univers. » ou « Impossible de charger les membres. », avec « Réessayer » ; une écriture échouée : « L'action n'a pas abouti. Réessayez. » au-dessus de la liste des membres | « Réessayer » |
-| connexion perdue | le bandeau ; « Ajouter », le changement de rôle et « Retirer » désactivés ; les listes chargées restent | lire |
-| refus | tout compte hors du groupe : « Page introuvable. » (l'entrée n'existe pas dans sa barre) ; un univers qui n'existe pas : « Page introuvable. » ; groupe retiré à l'expiration de la session : « Page introuvable. » | « Mes univers » |
-| contenu long | 300 univers : « Charger la suite » ; 200 membres : la liste défile ; un nom de 80 caractères et un identifiant long sont tronqués par « … » avec infobulle | idem |
+| vide | member list: not applicable, a universe always has a GM (B-5); no universe in the instance: « Aucun univers sur l'instance pour l'instant. »; no selection: « Choisissez un univers pour voir ses membres. » | — |
+| chargement | « Chargement des univers… »; for members: « Chargement des membres… » | — |
+| erreur | « Impossible de charger les univers. » or « Impossible de charger les membres. », with « Réessayer »; failed write: « L'action n'a pas abouti. Réessayez. » above the member list | « Réessayer » |
+| connexion perdue | the banner; « Ajouter », role change and « Retirer » disabled; loaded lists remain | read |
+| refus | any account outside the group: « Page introuvable. » (the entry does not exist in its sidebar); a nonexistent universe: « Page introuvable. »; group removed when the session expires: « Page introuvable. » | « Mes univers » |
+| contenu long | 300 universes: « Charger la suite »; 200 members: the list scrolls; an 80-character name and a long username are truncated with « … » and a tooltip | same |
 
-*Critères.*
-- Étant donné « Admin » (groupe `parents`), sans rôle dans « Lame d'Ébène », quand il ouvre
-  l'administration et choisit « Lame d'Ébène », alors il voit « 2 membres », la liste antor (MJ) et lea (Joueur), et ni la description, ni aucune fiche.
-- Étant donné le même Admin, quand il ajoute « mira » en MJ (elle apparaît dans la liste) puis ouvre l'adresse de la vue d'ensemble
-  de « Lame d'Ébène », alors il voit « Page introuvable. » ; quand il s'ajoute lui-même en MJ, alors
-  la vue d'ensemble s'ouvre et Antor, sur E-4, voit « admin » dans la liste des membres.
-- Étant donné Léa, Joueuse, quand elle ouvre `/administration`, alors elle voit « Page introuvable. » et
-  n'a pas d'entrée « Administration » dans sa barre.
-- Étant donné Admin et l'univers « Les Landes grises », dont « mira » est la seule MJ, quand Admin tente de
-  la retirer, alors il voit « Impossible : l'univers doit garder au moins un MJ. » et la liste est inchangée.
-- Étant donné Admin, membre MJ de « Brume » (univers que le test crée ; le monde semé du bouchon n'a pas « Brume » : y jouer « Les Cendres de Vaëlis », où Admin est MJ), quand il ouvre l'administration, alors « Brume » porte un lien « Ouvrir » qui mène à sa vue d'ensemble, et « Lame d'Ébène » n'en porte pas ; s'il se retire de « Brume » (seul membre : refusé avec la raison du dernier MJ), le lien reste.
-- Étant donné Admin et un compte « nadia » qui ne s'est jamais connecté, quand il tente de
-  l'ajouter, alors il voit « Ce compte ne s'est jamais connecté. ».
+*Criteria.*
+- Given « Admin » (`parents` group), without a role in « Lame d'Ébène », when they open
+  administration and select « Lame d'Ébène », they see « 2 membres », the antor (GM) and lea (Player) list, and neither the description nor any sheet.
+- Given the same Admin, when they add « mira » as GM (she appears in the list) then open the overview address
+  of « Lame d'Ébène », they see « Page introuvable. »; when they add themselves as GM,
+  the overview opens and Antor, on E-4, sees « admin » in the member list.
+- Given Léa, a Player, when she opens `/administration`, she sees « Page introuvable. » and
+  has no « Administration » entry in her sidebar.
+- Given Admin and the « Les Landes grises » universe, whose sole GM is « mira », when Admin tries to
+  remove her, they see « Impossible : l'univers doit garder au moins un MJ. » and the list is unchanged.
+- Given Admin, a GM member of « Brume » (a universe the test creates; the seeded stub world has no « Brume »: use « Les Cendres de Vaëlis » there, where Admin is GM), when they open administration, « Brume » has an « Ouvrir » link leading to its overview, and « Lame d'Ébène » has none; if they remove themselves from « Brume » (sole member: refused for the last-GM reason), the link remains.
+- Given Admin and an account « nadia » that has never signed in, when they try to
+  add it, they see « Ce compte ne s'est jamais connecté. ».
 
-### Clôture de `kanevas-recours-admin`
+### Completion of `kanevas-recours-admin`
 
-B-6 → E-5 (voir les univers et leurs membres, les gérer) ; P-2 étape 3 → E-5 ; B-29 → les six états
-d'E-5 ; la lecture du groupe `parents` est posée par la première fiche (session, AD-56) et consommée
-ici. E-5 est atteint par P-2 (étape 3) et par la barre (admin). Les trois rôles ont leur colonne : le
-MJ et le Joueur n'ont pas E-5 ; l'admin n'a, hors des univers dont il est membre, que E-1, E-2 et E-5.
-Écart au cadrage : aucun.
+B-6 → E-5 (see universes and their members, manage them); P-2 step 3 → E-5; B-29 → the six states
+of E-5; reading the `parents` group is established by the first sheet (session, AD-56) and consumed
+here. E-5 is reached through P-2 (step 3) and the sidebar (admin). The three roles have their column:
+GM and Player have no E-5; outside universes they belong to, the admin has only E-1, E-2 and E-5.
+Deviation from scoping: none.
 
 ## Détail des écrans de `kanevas-systemes`
 
