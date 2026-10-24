@@ -3,7 +3,7 @@
 > Product documentation. Tokens read by the code live in `frontend/src/ui/tokens.css`; this
 > document explains their meaning, each component's behaviour and the measured thresholds. The
 > reference mockup is `docs/maquettes/e09-fiche.html`: it includes the shell of all
-> universe screens and the shared components below (the assistant panel, update proposal and system card have only their description here and their own mockups, listed under “Mockups” in `docs/ecrans.md`), in both themes, on desktop and
+> universe screens and the shared components below (the assistant panel, update proposal and system card have only their description here and their own mockups, listed in the mockups section of `docs/ecrans.md`), in both themes, on desktop and
 > phone. Changing an existing token's value changes every screen: it is a decision
 > for Monsieur, recorded here with its reason (see “Deliberate deviations”).
 
