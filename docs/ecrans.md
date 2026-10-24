@@ -1,12 +1,12 @@
-# Kanevas — écrans
+# Kanevas — screens
 
-> Doc du produit (voir `docs/parcours.md`). Au cadrage, à grosses mailles : chaque écran, d'où on
-> y arrive, à quoi il sert, ce que chaque rôle y fait. Les états de chaque écran et la maquette
-> finie se détaillent dans la tranche qui le construit.
+> Product documentation (see `docs/parcours.md`). At scoping time, a broad outline: each screen, how
+> it is reached, what it is for, what each role does there. Each screen's states and finished
+> mockup are detailed in the slice that builds it.
 
-> **Construit à ce jour** : E-1, E-2, E-3 (nom, navigation et blocs : système de jeu, campagnes actives, derniers comptes-rendus, préparation pour le MJ, cartes visibles), E-4, E-5 (Administration), E-6, E-7, E-13, E-8 (avec la
-> recherche dans un type, en grille de cartes illustrées), E-9 (avec les blocs Relations et Pièces jointes, l'illustration en tête, le titre en place et « Supprimer la fiche… »), E-10 et E-11 (cartes et graphes), E-12 (Assistant), E-14 (Paramètres, avec « Supprimer l'univers »), E-15 (Système de jeu, à `/systemes/:sid`), E-16 (Systèmes de jeu), E-17 (Recherche), E-18 (Accès par API), E-19 (Médiathèque), la ligne « Campagne » de E-9, la session
-> et la barre latérale.
+> **Built so far**: E-1, E-2, E-3 (name, navigation and blocks: game system, active campaigns, latest session reports, preparation for the GM, visible maps), E-4, E-5 (Administration), E-6, E-7, E-13, E-8 (with
+> search within a type, in a grid of illustrated cards), E-9 (with the « Relations » and « Pièces jointes » blocks, the header illustration, inline title and « Supprimer la fiche… »), E-10 and E-11 (maps and graphs), E-12 (Assistant), E-14 (Settings, with « Supprimer l'univers »), E-15 (Game system, at `/systemes/:sid`), E-16 (Game systems), E-17 (Search), E-18 (API access), E-19 (Media library), the « Campagne » line of E-9, the session
+> and sidebar.
 
 ## Format
 
