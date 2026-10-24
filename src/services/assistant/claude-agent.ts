@@ -31,7 +31,7 @@ function serveur(outils: Outil[]) {
     version: '1.0.0',
     tools: outils.map((o) =>
       tool(o.nom, o.description, o.schema.shape, async (args) => {
-        const r = o.executer(args);
+        const r = await o.executer(args);
         return r.ok
           ? { content: [{ type: 'text' as const, text: texte(r.donnees) }] }
           : { content: [{ type: 'text' as const, text: r.erreur }], isError: true };

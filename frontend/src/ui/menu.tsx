@@ -35,16 +35,21 @@ export function indexSuivant(n: number, courant: number, touche: string): number
 export function Menu({
   etiquette,
   declencheur,
+  varianteDeclencheur,
   icone,
   entrees,
   aligne = 'fin',
   ouvre = 'bas',
   large,
+  classe,
+  desactive,
 }: {
   /** Accessible name of the trigger. */
   etiquette: string;
   /** Content of the trigger (an avatar and a name, for instance); absent: an icon-only trigger. */
   declencheur?: ReactNode;
+  /** A quiet add action, using the same style as a small ghost button. */
+  varianteDeclencheur?: 'fantome-petit';
   icone?: LucideIcon;
   entrees: EntreeMenu[];
   aligne?: 'debut' | 'fin';
@@ -52,6 +57,10 @@ export function Menu({
   ouvre?: 'bas' | 'haut';
   /** The trigger and the menu take the width of their container. */
   large?: boolean;
+  /** An extra class on the root, for a menu that needs its own width. */
+  classe?: string;
+  /** The trigger is inert (connection lost). */
+  desactive?: boolean;
 }) {
   const [ouvert, setOuvert] = useState(false);
   const racine = useRef<HTMLDivElement>(null);
@@ -95,13 +104,15 @@ export function Menu({
   };
 
   return (
-    <div className={`menu-racine ${aligne} ${ouvre}${large ? ' large' : ''}`} ref={racine}>
+    <div className={`menu-racine ${aligne} ${ouvre}${large ? ' large' : ''}${classe ? ` ${classe}` : ''}`} ref={racine}>
       <button
         ref={bouton}
         type="button"
-        className={declencheur ? 'menu-declencheur' : 'bouton-icone'}
+        className={varianteDeclencheur === 'fantome-petit' ? 'bouton fantome petit' : declencheur ? 'menu-declencheur' : 'bouton-icone'}
         aria-haspopup="menu"
         aria-expanded={ouvert}
+        disabled={desactive}
+        aria-disabled={desactive || undefined}
         aria-controls={ouvert ? idMenu : undefined}
         aria-label={declencheur ? undefined : etiquette}
         title={declencheur ? undefined : etiquette}

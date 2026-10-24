@@ -155,13 +155,13 @@ test('section sans clé jamais touchée ; rien ne se supprime par omission', asy
   assert.deepEqual(ordre, ['Description', 'Vérité', 'Histoire', 'Notes MJ']);
 });
 
-test('refus : compte_rendu et type hors liste → 400 champ type, rien d’écrit, 1 refusée au lot', async () => {
+test('refus : compte_rendu sans campagne (champ campagne) et type hors liste (champ type) → 400, rien d’écrit, 1 refusée au lot', async () => {
   const { app, put, lot, lire } = await monter();
   const l = await lot();
   for (const type of ['compte_rendu', 'monstre']) {
     const r = await put(`x:${type}`, { type, titre: 'T', sections: [{ cle: 'a', titre: 'A' }] }, l);
     assert.equal(r.statusCode, 400, r.body);
-    assert.equal(r.json().champ, 'type');
+    assert.equal(r.json().champ, type === 'compte_rendu' ? 'campagne' : 'type');
     assert.equal(r.json().code, 'invalide');
   }
   assert.equal(compte(app, 'SELECT COUNT(*) n FROM fiches WHERE cle_origine IS NOT NULL'), 0);

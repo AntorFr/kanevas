@@ -170,10 +170,16 @@ test('migration depuis 0013 : la recherche du titre existant trouve toujours la 
   for (const f of readdirSync(src)) if (/^\d{4}-.+\.sql$/.test(f) && Number(f.slice(0, 4)) <= 13) copyFileSync(src + f, dir + f);
   const db = openDb(':memory:');
   migrate(db, dir);
+  // The seed keeps `fichiers_sections` (0015) in step: scratch tables for it, dropped before 0015 creates the real ones.
+  db.exec('CREATE TABLE fichiers (id, univers_id, nom, type, taille, disque, visibilite, ajoute_par)');
+  db.exec('CREATE TABLE fichiers_sections (fichier_id, section_id, joint, dans_texte, dans_bloc_mj, PRIMARY KEY (fichier_id, section_id))');
+  db.exec('CREATE TABLE fichiers_attente (id INTEGER PRIMARY KEY, univers_id, cle, section_id, fiche_id, maniere)');
+  db.exec('ALTER TABLE fiches ADD COLUMN illustration_fichier_id INTEGER');
   semerBouchon(db);
+  db.exec('DROP TABLE fichiers_attente; DROP TABLE fichiers_sections; DROP TABLE fichiers; ALTER TABLE fiches DROP COLUMN illustration_fichier_id');
   const avant = db.prepare('SELECT id, titre FROM fiches ORDER BY id').all() as { id: number; titre: string }[];
   assert.ok(avant.length >= 5);
-  assert.deepEqual(migrate(db), [14]);
+  assert.deepEqual(migrate(db), [14, 15, 16]);
   for (const f of avant) {
     const mot = f.titre.split(/[^\p{L}\p{N}]+/u)[0]!;
     const ids = (db.prepare('SELECT rowid FROM recherche_fiches WHERE recherche_fiches MATCH ?').all(`titre:${mot}*`) as Any[]).map((r) => r.rowid);

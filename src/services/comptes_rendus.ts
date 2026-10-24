@@ -1,6 +1,6 @@
 import type { Db } from '../db/db.js';
 import { campagneBrute } from './campagnes.js';
-import { exigerRole } from './droits.js';
+import { exigerMJ, exigerRole } from './droits.js';
 import { introuvable, invalide } from './erreurs.js';
 import { LIMITE_LISTE, lireFiche, validerTitre } from './fiches.js';
 import { preparerContenu } from './liens.js';
@@ -20,9 +20,15 @@ export function creerCompteRendu(
   compteId: number,
   universId: number,
   campagneId: number,
-  entree: { titre: string; texte?: string },
+  entree: {
+    titre: string;
+    texte?: string;
+    /** Import only: origin metadata, validated by the import service before creation. */
+    origine?: { cle: string; creeLe?: string; modifieLe?: string; dernierImport: unknown };
+  },
 ): FicheVue {
   const role = exigerRole(db, universId, compteId);
+  if (entree.origine) exigerMJ(db, universId, compteId);
   const campagne = campagneBrute(db, campagneId);
   if (campagne.univers_id !== universId) throw introuvable();
   const titre = validerTitre(entree.titre, 120, 'Le titre');
@@ -30,13 +36,16 @@ export function creerCompteRendu(
   validerContenu(texte);
   exigerSansBloc(role, texte);
   const now = new Date().toISOString();
+  const o = entree.origine;
   const ficheId = db.transaction(() => {
     const f = db
       .prepare(
-        `INSERT INTO fiches (univers_id, type, titre, charge, cree_le, modifie_le)
-         VALUES (?, 'compte_rendu', ?, ?, ?, ?)`,
+        `INSERT INTO fiches (univers_id, type, titre, charge, cree_le, modifie_le, cle_origine, dernier_import)
+         VALUES (?, 'compte_rendu', ?, ?, ?, ?, ?, ?)`,
       )
-      .run(universId, titre, JSON.stringify({ v: 1, campagne_id: campagneId }), now, now);
+      .run(universId, titre, JSON.stringify({ v: 1, campagne_id: campagneId }),
+        o?.creeLe ?? now, o?.modifieLe ?? now, o?.cle ?? null,
+        o ? JSON.stringify(o.dernierImport) : null);
     const id = Number(f.lastInsertRowid);
     const joueur = role === 'joueur';
     const contenu = preparerContenu(db, universId, compteId, texte);

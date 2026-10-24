@@ -34,8 +34,10 @@
   (AD-2) — routes and agent tools never carry SQL. A migration takes the next
   number when its slice merges (AD-51).
 - Attachments (AD-7, AD-65): bytes under `<db dir>/attachments/` (`ATTACHMENTS_DIR`), written only through
-  `services/stockage.ts` (tmp/ then rename; `tmp/` emptied at startup). `deposerPieceJointe` in
-  `services/pieces-jointes.ts` is the upload function of section attachments; images and map backgrounds
+  `services/stockage.ts` (tmp/ then rename; `tmp/` emptied at startup). `ajouterFichier` in
+  `services/fichiers.ts` is the one upload function of the media library for the screens (AD-117: every file is a row of `fichiers`, its
+  visibility deduced from where it is added, never sent by the client); the import API's `assurerFichier` (same service, `PUT /fichiers/:cle`, AD-104) is the only other writer: its visibility comes from the script (`joueurs` or `mj`, B-48 protects it), and it resolves `fichiers_attente`; `fichierLisible` is the one read rule; only
+  `services/` writes `fichiers*`); map backgrounds
   (`services/cartes.ts`, AD-69) go through `stockage.ts` directly, never write the volume themselves. The type is sniffed from the bytes, never trusted.
 - `frontend/` (React, Vite, `react-router`; AD-16, AD-57): `npm run build` also builds it into
   `dist/public`, located by `routes/frontend.ts` and served by `routes/session.ts` behind the session guard (`@fastify/static` for
@@ -60,13 +62,13 @@
   needing a session are registered in the guarded scope of
   `registerSessionRoutes` (AD-15). `KANEVAS_STUB=1` (AD-55) swaps Authelia for
   `/connexion-bouchon` and refuses to start if any `OIDC_*` variable is set.
-- Hierarchy (AD-99, AD-115): `parent_id` is written only by `deplacerFiche` in `services/fiches.ts` (the `PATCH {parent}` route and the import both call it); ancestors, « Contient » and the tree return readable fiches only and never a count of hidden ones.
+- Hierarchy (AD-99, AD-115): `parent_id` is written only by `deplacerFiche` in `services/fiches.ts` (the `PATCH {parent}` route and the import both call it), except the lifting of children when their parent goes (`supprimerFiche`, `supprimerUnivers`, AD-119); ancestors, « Contient » and the tree return readable fiches only and never a count of hidden ones.
 - Update `.agent/status.md` in the same commit as the work it reflects — except in a task of a chain feature, which leaves it alone: the feature's assembly writes it once (two tasks both adding to it conflict at integration).
 - `src/services/{campagnes,scenarios,preparation,comptes_rendus}.ts` (`kanevas-suivi`): scenarios and
   preparation tasks take a **campaign id and no universe id** — the GM guard is evaluated on the
   campaign's own universe (`exigerMJDeCampagne`, AD-47), and a player, a foreign GM or an unknown id
   all get `introuvable`. Never add a `universId` parameter there. `creerCompteRendu` is the only
-  non-GM creation of a sheet (AD-61); no function deletes anything.
+  non-GM creation of a sheet (AD-61); a sheet's title is written only by `renommerFiche` (it leaves `dernier_import` alone, AD-119); sheets and universes are deleted only by `supprimerFiche` and `supprimerUnivers` (AD-119); a compte-rendu is deleted as a sheet.
 - Search and relations (`kanevas-relier-chercher`): search is `listerFiches({recherche})`, never a second
   function (AD-63). The FTS5 indexes (migration 0005) only deliver candidate ids and are kept by SQL
   triggers (AD-21) — never write to `recherche_*` from code. A relation is read under both guards
@@ -139,7 +141,15 @@
   resolver in `options.liens` (without it a `[[…]]` stays as written). `nature: 'scenario'` has the links without the `:::mj` container;
   a system entry (`texte`) has neither. `vueSection` / `lireFiche` / `lireSection` take the form `'markdown'` for the assistant
   (`[texte](fiche:<id>)`). « Mentionnée dans » is `services/mentions.ts` (`mentionsDe`), read-only, 50 per page, the page rides with `lireFiche`.
-- Sheet types (`kanevas-import-types`, `src/services/types-fiche.ts`, AD-120 — AD-113 in the feature's plan): the single list of
+- Sheet types (`kanevas-import-types`, `src/services/types-fiche.ts`, AD-120; the feature's plan numbered it AD-113, which `ARCHITECTURE.md` gives to the Markdown renderer): the single list of
   types; `TYPES_FICHE`, `TypeFiche` and the payload schemas (`CHARGES`) derive from it, never copy them. `fiches.type` has no
   `CHECK` (migration 0013): `creerFiche` is the guard ("Type de fiche inconnu."). A migration whose first line is
   `-- migrate: sans-cles-etrangeres` runs with foreign keys off and `foreign_key_check` before commit (`db.ts`).
+- Image engine (`kanevas-images`, `src/services/images/`): `choisirAdaptateur()` (AD-88) picks `bouchon` with
+  `KANEVAS_STUB=1`, else `codex` if an executable `codex` is on the `PATH` and `$CODEX_HOME/auth.json` exists
+  (existence only, never read), else `aucun` — never a silent stub. `CODEX_HOME` and the scratch root are read in
+  `config/env.ts` only. A result must have an inline-served image signature (`typeParSignature`, AD-66) or it is
+  an `ErreurGeneration`, whose message is fixed: engine output and errors may quote `auth.json`, so the child runs
+  with `stdio: 'ignore'` and nothing of it is logged. The `codex` adapter lists `generated_images/` before and
+  after (one engine at a time: `verrou.ts`), deletes the new file(s) and its scratch directory, 150 s deadline
+  (AD-90). The Dockerfile pins `@openai/codex` (`CODEX_VERSION`).

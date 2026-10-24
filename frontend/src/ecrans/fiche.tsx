@@ -34,8 +34,8 @@ function PageFiche() {
   const perdue = useConnexionPerdue();
   const { toast } = useToasts();
   const { types } = useTypes();
-  const [univers] = useCharge<UniversListe>(`/api/univers/${id}`);
-  const [etat, setEtat] = useState<Etat>({ k: 'chargement' });
+  const [univers, rechargerUnivers] = useCharge<UniversListe>(`/api/univers/${id}`);
+  const [etatLu, setEtatLu] = useState<{ cle: string; etat: Etat }>({ cle: '', etat: { k: 'chargement' } });
   const [essai, setEssai] = useState(0);
   const [joueurs, setJoueurs] = useState<Joueur[]>([]);
   const [echec, setEchec] = useState<string>();
@@ -54,12 +54,23 @@ function PageFiche() {
 
   const role: Role | undefined = univers.etat === 'ok' ? (roleRetire ? 'joueur' : univers.valeur.role) : undefined;
   // The GM / player toggle lives in the frame's top bar; it is offered unless the sheet does not exist.
-  const mode = useBasculeMode(role === 'mj' && etat.k !== 'introuvable');
-  const ficheVue = etat.k === 'ok' || etat.k === 'aucune-visible' ? etat.fiche : undefined;
-  useTitreAriane(ficheVue?.titre, ficheVue && typeParType(types, ficheVue.type)?.pluriel, ficheVue?.ancetres);
+  const mode = useBasculeMode(role === 'mj' && etatLu.etat.k !== 'introuvable');
   const modeEffectif: 'mj' | 'joueur' = role === 'mj' ? mode : 'joueur';
   const suffixe = role === 'mj' && mode === 'joueur' ? '?mode=joueur' : '';
   const base = `/api/univers/${id}/fiches/${fid}`;
+  // A sheet read for another mode (or another sheet) is never shown: on the render where the mode flips,
+  // before the effect reloads, the GM view with its closed sections must not flash under the player banner.
+  const cle = `${base}${suffixe}`;
+  const etat: Etat = etatLu.cle === cle ? etatLu.etat : { k: 'chargement' };
+  const setEtat = useCallback((e: Etat) => setEtatLu({ cle, etat: e }), [cle]);
+  const ficheVue = etat.k === 'ok' || etat.k === 'aucune-visible' ? etat.fiche : undefined;
+  useTitreAriane(ficheVue?.titre, ficheVue && typeParType(types, ficheVue.type)?.pluriel, ficheVue?.ancetres);
+  const introuvable = useCallback(() => setEtat({ k: 'introuvable' }), [setEtat]);
+
+  // The mode the payload in `etat` was read in: after a switch the old sections (GM-only ones included)
+  // must not be drawn for even one frame, so a stale payload counts as loading.
+  const [chargeAvec, setChargeAvec] = useState(suffixe);
+  const perime = chargeAvec !== suffixe;
 
   const charger = useCallback(async (): Promise<Etat> => {
     try {
@@ -79,11 +90,15 @@ function PageFiche() {
   useEffect(() => {
     let actif = true;
     setEtat({ k: 'chargement' });
-    charger().then((e) => actif && setEtat(e));
+    charger().then((e) => {
+      if (!actif) return;
+      setEtat(e);
+      setChargeAvec(suffixe);
+    });
     return () => {
       actif = false;
     };
-  }, [charger, essai]);
+  }, [charger, essai, suffixe]);
 
   // The authors a GM may pick: the players of the universe.
   useEffect(() => {
@@ -101,14 +116,27 @@ function PageFiche() {
   /** Silent refetch after a write: the sections stay mounted, edits in progress are kept. */
   const rafraichir = useCallback(async () => {
     const e = await charger();
-    if (e.k === 'ok' || e.k === 'aucune-visible') setEtat(e);
-  }, [charger]);
+    if (e.k === 'ok' || e.k === 'aucune-visible') {
+      setEtat(e);
+      setChargeAvec(suffixe);
+    }
+  }, [charger, suffixe]);
+
+  // The assistant wrote into this sheet (« Ouvrir la section » from its panel): read it again.
+  useEffect(() => {
+    const relire = () => void rafraichir();
+    window.addEventListener('kanevas:fiche-ecrite', relire);
+    return () => window.removeEventListener('kanevas:fiche-ecrite', relire);
+  }, [rafraichir]);
 
   if (univers.etat === 'erreur' && univers.statut === 404) return <PageIntrouvable />;
   if (etat.k === 'introuvable') return <PageIntrouvable />;
-  if (etat.k === 'chargement' || univers.etat === 'chargement') return <SqueletteFiche cadre />;
+  if (etat.k === 'chargement' || perime || univers.etat === 'chargement') return <SqueletteFiche cadre />;
   if (etat.k === 'erreur' || univers.etat === 'erreur') {
-    return <ErreurChargement texte="Impossible de charger cette fiche." onReessayer={() => setEssai((n) => n + 1)} />;
+    return <ErreurChargement texte="Impossible de charger cette fiche." onReessayer={() => {
+      setEssai((n) => n + 1);
+      if (univers.etat === 'erreur') rechargerUnivers();
+    }} />;
   }
 
   const mj = role === 'mj';
@@ -156,6 +184,7 @@ function PageFiche() {
   return (
     <article className="fiche" aria-labelledby="titre-fiche">
       <EnteteFiche
+        key={`${id}/${fid}/${gestion}`}
         universId={id!}
         fiche={fiche}
         gestion={gestion && etat.k === 'ok'}
@@ -165,6 +194,7 @@ function PageFiche() {
         message={messageIll}
         setMessage={setMessageIll}
         rafraichir={rafraichir}
+        onIntrouvable={introuvable}
         onDroitPerdu={() => {
           setRoleRetire(true);
           void rafraichir();

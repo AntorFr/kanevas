@@ -1,4 +1,4 @@
-import { Users } from 'lucide-react';
+import { ContactRound } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 
 import { useCharge, useMoi, useUnivers } from '../cadre-contexte';
@@ -16,7 +16,7 @@ function Membres() {
   const navigate = useNavigate();
   const moi = useMoi();
   const { recharger: rechargerUnivers } = useUnivers();
-  const [univers] = useCharge<UniversListe>(`/api/univers/${id}`);
+  const [univers, rechargerCetUnivers] = useCharge<UniversListe>(`/api/univers/${id}`);
   const [membres, recharger] = useCharge<Membre[]>(`/api/univers/${id}/membres`);
 
   if (membres.etat === 'chargement' || univers.etat === 'chargement') return <ChargementListe texte="Chargement des membres…" />;
@@ -24,7 +24,16 @@ function Membres() {
   if (membres.etat === 'erreur' && membres.statut === 404) return <PageIntrouvable />;
   if (univers.etat === 'erreur' && univers.statut === 404) return <PageIntrouvable />;
   if (membres.etat === 'erreur' || univers.etat === 'erreur') {
-    return <ErreurChargement texte="Impossible de charger les membres." onReessayer={recharger} />;
+    return (
+      <ErreurChargement
+        texte="Impossible de charger les membres."
+        onReessayer={() => {
+          // Either request may be the one that failed: retry both.
+          recharger();
+          rechargerCetUnivers();
+        }}
+      />
+    );
   }
   const monIdentifiant = moi.etat === 'ok' ? moi.valeur.username : undefined;
 
@@ -32,7 +41,7 @@ function Membres() {
     <div className="page-liste">
       <header className="tete-liste">
         <span className="glyphe-type" aria-hidden="true">
-          <Users size={20} strokeWidth={1.75} />
+          <ContactRound size={20} strokeWidth={1.75} />
         </span>
         <h1>Membres</h1>
       </header>

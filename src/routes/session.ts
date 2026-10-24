@@ -21,6 +21,7 @@ import { registerErreurs } from './erreurs.js';
 import { registerCartesRoutes } from './cartes.js';
 import { registerInstanceRoutes } from './instance.js';
 import { registerFichesRoutes } from './fiches.js';
+import { registerFichiersRoutes } from './fichiers.js';
 import { registerUniversRoutes } from './univers.js';
 import { registerSystemesRoutes } from './systemes.js';
 import { registerSuiviRoutes } from './suivi.js';
@@ -107,7 +108,7 @@ export async function registerSessionRoutes(app: FastifyInstance) {
     // Uploads are streamed to the service, never buffered: no size cap on the file (AD-65),
     // one file and a couple of small fields per request.
     await garde.register(multipart, {
-      limits: { fileSize: Number.MAX_SAFE_INTEGER, files: 1, fields: 4, parts: 6 },
+      limits: { fileSize: Number.MAX_SAFE_INTEGER, files: 1, fields: 6, parts: 8 },
     });
     // Build assets (Vite's `assets/`) sit behind the session guard; every other address falls
     // through to the not-found handler, which serves `index.html`.
@@ -122,6 +123,7 @@ export async function registerSessionRoutes(app: FastifyInstance) {
     registerUniversRoutes(garde);
     registerInstanceRoutes(garde);
     registerFichesRoutes(garde);
+    registerFichiersRoutes(garde);
     registerSystemesRoutes(garde);
     registerSuiviRoutes(garde);
     registerCartesRoutes(garde);

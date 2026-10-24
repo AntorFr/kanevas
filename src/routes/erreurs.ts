@@ -23,12 +23,10 @@ export function registerErreurs(app: FastifyInstance) {
         corps.code ??= 'invalide';
       }
       let statut = STATUT[erreur.code];
-      // Attachments: an empty file is a 400, a full section a 409 (B-24); both carry their code.
+      // Attachments: an empty file is a 400, a full section a 409 or 403 (B-24, AD-117); both carry their code.
       if (erreur.detail === 'fichier_vide') corps.code = erreur.detail;
-      if (erreur.detail === 'limite_pieces') {
-        corps.code = erreur.detail;
-        statut = 409;
-      }
+      // The 101st joined file keeps its code; the status is the error's own (409 for the GM, 403 for a player).
+      if (erreur.detail === 'limite_pieces') corps.code = erreur.detail;
       // A background over 25 MB (AD-69).
       if (erreur.detail === 'fond_trop_lourd') statut = 413;
       return reply.code(statut).send(corps);

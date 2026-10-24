@@ -4,22 +4,29 @@ import { useSyncExternalStore } from 'react';
 let perdue = typeof navigator !== 'undefined' && navigator.onLine === false;
 const abonnes = new Set<() => void>();
 
+/** Counts the losses declared so far: an answer to a request sent before the last loss proves nothing. */
+let pertes = 0;
+
 let sonde: ReturnType<typeof setInterval> | undefined;
 
 /** While the connection is lost, ping the public /healthz: any answer means the server is back. */
 async function sonder() {
+  const avant = pertes;
   try {
     await fetch('/healthz', { cache: 'no-store' });
-    definirPerdue(false);
+    if (pertes === avant) definirPerdue(false);
   } catch {
     /* still unreachable: the next tick tries again */
   }
 }
 
 function definirPerdue(valeur: boolean) {
+  // An in-flight response can arrive after `offline`; it cannot restore the connection.
+  valeur = valeur || (typeof navigator !== 'undefined' && navigator.onLine === false);
   if (perdue === valeur) return;
   perdue = valeur;
   if (valeur) {
+    pertes++;
     sonde = setInterval(() => void sonder(), 3000);
   } else if (sonde !== undefined) {
     clearInterval(sonde);
@@ -56,20 +63,26 @@ export class ErreurApi extends Error {
 }
 
 /** JSON call to the backend. 401 means the session ended: go back through the sign-in. */
-export async function appeler<T>(methode: string, chemin: string, corps?: unknown): Promise<T> {
+export async function appeler<T>(methode: string, chemin: string, corps?: unknown, delaiMs?: number): Promise<T> {
   let reponse: Response;
+  const avant = pertes;
+  const signal = delaiMs === undefined ? undefined : AbortSignal.timeout(delaiMs);
   try {
     reponse = await fetch(chemin, {
       method: methode,
       headers: corps === undefined ? undefined : { 'content-type': 'application/json' },
       body: corps === undefined ? undefined : JSON.stringify(corps),
       credentials: 'same-origin',
+      signal,
     });
   } catch {
+    // A deadline we set ourselves is not a lost connection.
+    if (signal?.aborted) throw new ErreurApi(0, 'Délai dépassé.');
     definirPerdue(true);
     throw new ErreurApi(0, 'Connexion perdue.');
   }
-  definirPerdue(false);
+  // A reply that left the server before the connection dropped must not clear the loss declared since.
+  if (pertes === avant) definirPerdue(false);
   if (reponse.status === 401) {
     window.location.assign('/'); // the server guard sends us to the sign-in
     throw new ErreurApi(401, 'Non authentifié.');
@@ -96,10 +109,14 @@ export function envoyerFichier<T>(
   chemin: string,
   fichier: File,
   surProgres: (pourcent: number) => void,
+  methode: 'PUT' | 'POST' = 'PUT',
+  /** Form fields sent before the file: the server reads them before the stream. */
+  champs: Record<string, string> = {},
 ): { promesse: Promise<T>; annuler: () => void } {
   const xhr = new XMLHttpRequest();
+  const avant = pertes;
   const promesse = new Promise<T>((resolve, reject) => {
-    xhr.open('PUT', chemin);
+    xhr.open(methode, chemin);
     xhr.withCredentials = true;
     xhr.upload.onprogress = (e) => {
       if (e.lengthComputable && e.total > 0) surProgres(Math.min(99, Math.floor((e.loaded / e.total) * 100)));
@@ -110,7 +127,7 @@ export function envoyerFichier<T>(
     };
     xhr.onabort = () => reject(new ErreurApi(-1, 'Envoi annulé.'));
     xhr.onload = () => {
-      definirPerdue(false);
+      if (pertes === avant) definirPerdue(false);
       if (xhr.status === 401) {
         window.location.assign('/');
         return reject(new ErreurApi(401, 'Non authentifié.'));
@@ -131,6 +148,7 @@ export function envoyerFichier<T>(
       );
     };
     const corps = new FormData();
+    for (const [nom, valeur] of Object.entries(champs)) corps.append(nom, valeur);
     corps.append('fichier', fichier);
     xhr.send(corps);
   });

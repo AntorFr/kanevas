@@ -537,6 +537,8 @@ describe('kanevas-premiere-fiche, du besoin', { skip: skipBrowser }, () => {
     const lea = await compte('lea');
     await lea.page.goto(new URL(url).pathname);
     await attendre(lea.page);
+    // wait for the section to be rendered: titresSections reads the DOM once, without waiting
+    await lea.page.locator('main section h2').first().waitFor();
     assert.deepEqual(await titresSections(lea.page), ['Journal']);
     const teo = await compte('teo');
     await teo.page.goto(new URL(url).pathname);

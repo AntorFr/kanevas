@@ -13,6 +13,19 @@ a.bouton { text-decoration: none; display: inline-flex; }
 .fiche .entete h1 { margin-top: var(--e-4); font: 500 var(--t-40)/1.08 var(--police-titre); letter-spacing: -.015em;
   font-variation-settings: "opsz" 144; overflow-wrap: anywhere; }
 .fiche .entete h1:focus-visible { outline: none; }
+/* Title editing keeps the document typography and wraps long names. */
+.titre-modifiable, .titre-edition { display: block; width: 100%; padding: 0; border: 0; border-radius: var(--rayon-item);
+  background: transparent; color: var(--texte); font: inherit; letter-spacing: inherit; text-align: left; overflow-wrap: anywhere; }
+.titre-modifiable { width: fit-content; max-width: 100%; cursor: text; }
+.titre-modifiable:hover { background: var(--surface-2); }
+.titre-edition { resize: none; overflow: hidden; box-shadow: 0 0 0 1px var(--accent); }
+.titre-modifiable:focus-visible, .titre-edition:focus { outline: 2px solid var(--focus); outline-offset: 4px; }
+@media (max-width: 760px) {
+  .titre-modifiable, .titre-edition { min-height: 44px; }
+  .fiche .entete .menu-racine > button { min-width: 44px; min-height: 44px; }
+  .fiche .voile .boite-actions { flex-wrap: wrap; }
+  .fiche .voile .boite-actions button { min-height: 44px; }
+}
 .vide-fiche { display: flex; flex-direction: column; align-items: center; gap: var(--e-3); color: var(--texte-2); }
 
 .sections { margin-top: var(--e-2); }
@@ -39,17 +52,28 @@ a.bouton { text-decoration: none; display: inline-flex; }
   box-shadow: inset 0 0 0 1px var(--mj-section-bord); }
 .sec[data-aud="mj"]::before { left: 0; top: 0; bottom: 0; width: 3px; border-radius: 0; background: var(--mj); }
 .sec[data-aud="mj"] .sec-actions { top: calc(var(--e-5) - 1px); right: 22px; }
-.sec[data-aud="mj"] + .sec[data-aud="mj"] { margin-top: var(--e-3); }
+/* Two secret sections in a row: the charte's 32 px between sections, the amber frame's padding included. */
+.sec[data-aud="mj"] + .sec[data-aud="mj"] { margin-top: var(--e-6); }
 .sec[data-aud="mj"] .blocs { border-top-color: var(--mj-section-filet); }
 @media (max-width: 760px) {
+  .fiche .entete h1 { font-size: var(--t-32); }
+  .sec .texte { font-size: 17px; }
   .sec::before { left: -12px; }
   .sec[data-aud="mj"] { margin-left: -12px; margin-right: -12px; padding-left: 12px; padding-right: 12px; }
-  .sec-tete { padding-right: 0; }
-  .sec-actions, .sec[data-aud="mj"] .sec-actions { position: static; justify-content: flex-end; margin-top: var(--e-1); }
+  .sec-tete { padding-right: 64px; }
+  .sec[data-aud="mj"] .sec-tete { padding-right: 72px; }
+  /* Actions stay on the title row, icons only (maquette e09). */
+  .sec-actions { top: calc(var(--e-5) - 2px); right: -8px; }
+  .sec[data-aud="mj"] .sec-actions { right: 8px; }
+  .sec-actions .lib-modifier { display: none; }
+  .sec-actions .bouton.fantome { width: 36px; padding: 0; min-height: 36px; justify-content: center; }
+  .sec-actions .bouton-icone { width: 36px; height: 36px; }
 }
 
 /* Section blocks: Relations, Pièces jointes */
 .fiche .blocs { display: block; gap: 0; margin-top: var(--e-4); border-top: 1px solid var(--bord); }
+/* The last section's blocks end where « Mentionnée dans » starts: one full rule between them, not two. */
+.fiche .sections > .sec:last-child .blocs { border-top: 0; }
 .fiche .blocs .bloc-section + .bloc-section { border-top: 1px dashed var(--bord); }
 .fiche .blocs .bloc-section:first-child { border-top: 0; }
 .fiche .blocs .bloc-contenu { gap: 4px 14px; }
@@ -64,6 +88,8 @@ a.bouton { text-decoration: none; display: inline-flex; }
 .liste-pieces { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 12px; width: 100%; }
 .liste-pieces .piece { min-width: 0; }
 .liste-pieces .piece:not(.image) { flex: 1 0 100%; }
+.liste-pieces .ferme { display: flex; align-items: center; gap: var(--e-2); margin: 0; padding: var(--e-3) var(--e-4); border: 1px solid var(--bord); border-radius: var(--rayon-champ); background: var(--surface-2); color: var(--texte-3); font-size: var(--t-14); }
+.liste-pieces .attente { margin: 0; padding: var(--e-3) var(--e-4); border: 1.5px dashed var(--texte-3); border-radius: var(--rayon-champ); color: var(--texte-3); font-size: var(--t-14); overflow-wrap: anywhere; }
 .liste-pieces .confirmation { margin-top: var(--e-2); }
 .liste-pieces .legende, .liste-pieces .confirmation { overflow-wrap: anywhere; }
 .vignette.indisponible { color: var(--texte-3); font-size: var(--t-13); padding: var(--e-2) 0; }
@@ -96,7 +122,15 @@ a.bouton { text-decoration: none; display: inline-flex; }
   background: var(--surface-2); color: var(--texte); font: inherit; font-size: var(--t-13); }
 .audience .reglage-echec { margin: 4px 4px 0; padding: 6px 10px; border-radius: var(--rayon-item); background: var(--danger-fond); color: var(--texte); font-size: var(--t-12); }
 .audience .reglage-note { padding: 6px 10px; font-size: var(--t-12); color: var(--texte-3); border-top: 1px solid var(--bord); margin: 4px 0 0; }
-@media (max-width: 760px) { .menu.audience { width: min(320px, calc(100vw - 32px)); } }
+.audience .champ-liste select { padding-right: var(--e-6); }
+.audience .champ-liste svg { right: var(--e-2); }
+/* Phone: the open setting is a sheet pinned to the bottom, and toasts move to the top meanwhile, so
+   a toast never covers a row of the setting (charte, 2.4.11: no element overlaps another). */
+@media (max-width: 760px) {
+  .menu.audience { position: fixed; top: auto; bottom: 0; left: 0; right: 0; max-width: none; max-height: 70vh; overflow-y: auto;
+    border-radius: var(--rayon-panneau) var(--rayon-panneau) 0 0; padding-bottom: calc(6px + env(safe-area-inset-bottom)); z-index: 65; }
+  body:has(.menu.audience) .toasts { bottom: auto; top: var(--e-4); }
+}
 
 /* Adding a section */
 .ajout-section { margin-top: var(--e-6); }
@@ -113,7 +147,7 @@ a.bouton { text-decoration: none; display: inline-flex; }
 /* ---------- L'illustration dans l'en-tête (kanevas-illustrations) ---------- */
 .entete.illustree { display: grid; grid-template-columns: 176px minmax(0, 1fr); column-gap: 28px; align-items: end; }
 .illustration { margin: 0; width: 176px; }
-.boite-ill { position: relative; border-radius: var(--rayon-panneau); overflow: hidden; }
+.boite-ill { position: relative; border-radius: var(--rayon-panneau); }
 .cadre-ill { position: relative; display: block; aspect-ratio: 4 / 5; border-radius: var(--rayon-panneau); overflow: hidden; background: var(--squelette); }
 .cadre-ill::after { content: ""; position: absolute; inset: 0; border-radius: inherit; box-shadow: inset 0 0 0 1px var(--bord); pointer-events: none; }
 .cadre-ill img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: 50% 30%; }
@@ -146,7 +180,6 @@ a.cadre-ill:focus-visible { outline-offset: 2px; border-radius: var(--rayon-pann
   .entete.illustree { grid-template-columns: 96px minmax(0, 1fr); column-gap: var(--e-4); }
   .illustration { width: 96px; }
   .gestes-ill { right: 4px; bottom: 4px; }
-  .boite-ill { overflow: visible; }
   .envoi-ill { position: relative; flex-wrap: wrap; gap: 0 6px; margin-top: 6px; padding: 6px 0 0; background: none; }
   .envoi-ill .bouton { min-height: 36px; margin-left: -8px; }
   .gestes-ill .bouton-icone { width: 36px; height: 36px; }
@@ -203,6 +236,18 @@ a.cadre-ill:focus-visible { outline-offset: 2px; border-radius: var(--rayon-pann
 @media (max-width: 760px) { .changer-type .resultat { min-height: 40px; } }
 .fiche .blocs:empty { display: none; }
 
+/* A reserved illustration (B-24): a neutral frame that says so, in the header of a sheet the reader sees. */
+.ill-fermee { color: var(--texte-3); background: var(--surface-2); }
+/* A pending illustration (E-9, import): the same dashed tile as a pending file in a text. */
+/* Give the pending label a full row instead of the portrait's narrow image slot. */
+.entete.illustree:has(.ill-attente) { grid-template-columns: minmax(0, 1fr); row-gap: var(--e-4); }
+.illustration:has(.ill-attente) { width: 100%; min-width: 0; }
+.cadre-ill:has(.ill-attente) { aspect-ratio: auto; }
+.fin-cle-attente { display: inline-block; max-width: 100%; white-space: nowrap; }
+.cle-attente { display: inline-block; max-width: calc(100% - 2em); overflow: hidden; text-overflow: ellipsis; vertical-align: bottom; }
+.ill-attente { position: relative; display: block; font-size: var(--t-14); line-height: 1.5; text-align: left; gap: 0; color: var(--texte-3); border: 1.5px dashed var(--texte-3); border-radius: var(--rayon-champ); padding: var(--e-3) var(--e-4); }
+.pieces-jointes .envoi-fichier { width: 100%; }
+
 /* E-9: aliases under the title, label pills, and the « Alias et étiquettes » box */
 .alias-fiche { margin: var(--e-1) 0 0; font-size: var(--t-14); color: var(--texte-2); overflow-wrap: anywhere; }
 .etiquettes-fiche { display: flex; flex-wrap: wrap; gap: var(--e-2); list-style: none; margin: var(--e-2) 0 0; padding: 0; }
@@ -221,3 +266,8 @@ a.cadre-ill:focus-visible { outline-offset: 2px; border-radius: var(--rayon-pann
 /* Foot of « Déplacer sous… » (mockup e09): right-aligned, side by side across the width on a phone. */
 .deplacer .actions { justify-content: flex-end; }
 @media (max-width: 760px) { .deplacer .actions .bouton { flex: 1; min-height: 40px; } }
+
+/* The two add-a-file menus (« Fichier », « Joindre un fichier »): 220 px at least as the mock-up
+   (e09), the labels never wrap. */
+.menu-ajout-fichier .menu { min-width: 220px; }
+.menu-ajout-fichier .menu-entree { white-space: nowrap; }

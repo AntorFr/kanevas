@@ -53,6 +53,17 @@ body.asst-ouvert .zone-principale { margin-right: 380px; }
   body.asst-ouvert .asst-bouton { right: var(--e-5); }
 }
 
+/* Block « Image attachée » (kanevas-images). */
+.asst-image-cadre { margin: var(--e-2) 0; max-width: 240px; }
+.asst-image-cadre img { display: block; max-width: 240px; max-height: 320px; width: auto; height: auto; border-radius: var(--rayon-champ); border: 1px solid var(--bord); }
+/* A loaded thumbnail keeps the 240x160 frame of the mockup, whatever its natural size (a tiny image must not shrink it). */
+.asst-image-cadre-charge { box-sizing: border-box; width: 240px; min-height: 160px; display: flex; align-items: center; justify-content: center; background: var(--surface-3); border-radius: var(--rayon-champ); overflow: hidden; }
+.asst-image-cadre-charge img { max-width: 100%; border: 0; border-radius: 0; }
+.asst-image-cadre img[hidden] { display: none; }
+.asst-image-vide { box-sizing: border-box; width: 240px; height: 160px; display: flex; align-items: center; justify-content: center; text-align: center; background: var(--surface-2); border: 1px dashed var(--bord-fort); color: var(--texte-3); border-radius: var(--rayon-champ); font-size: var(--t-13); }
+.asst-image-vide[role="status"] { height: 60px; background: var(--surface-2); border-style: solid; border-color: transparent; }
+.asst-image-vide p { margin: 0; }
+.asst-image-recharger { margin: var(--e-2) 0; }
 /* Bloc « Mise à jour proposée » (docs/charte.md, « Proposition de mise à jour »). */
 .asst-prop { margin-top: var(--e-2); padding: var(--e-3); background: var(--surface-2); border: 1px solid var(--bord); border-left: 3px solid var(--accent); border-radius: var(--rayon-champ); font-size: var(--t-13); display: flex; flex-direction: column; gap: var(--e-2); }
 .asst-prop p, .asst-prop h3 { margin: 0; }

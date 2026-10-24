@@ -307,6 +307,7 @@ describe('kanevas-relier-chercher, du besoin', { skip: skipBrowser }, () => {
       await m.lea.getByRole('heading', { name: 'Maître Aldric', level: 1 }).waitFor();
       await m.lea.goBack();
       await attendre(m.lea);
+      await m.lea.getByRole('link', { name: rx('Maître Aldric') }).first().waitFor();
       assert.equal(await champ(m.lea).inputValue(), 'Aldric');
       assert.ok((await liens(m.lea)).some((t) => t.includes('Maître Aldric')));
       // la même adresse rouverte donne la même recherche
@@ -441,6 +442,7 @@ describe('kanevas-relier-chercher, du besoin', { skip: skipBrowser }, () => {
 
     test('mode Joueur : Antor voit la même chose que Léa, sans « Relier » ni « Retirer »', async () => {
       await ouvrirFiche(m.antor, m, m.aldric, 'joueur');
+      await ligneRelation(m.antor, 'membre de', 'Lames Grises').waitFor();
       const t = await texte(m.antor);
       assert.equal(await ligneRelation(m.antor, 'membre de', 'Lames Grises').count(), 1);
       assert.ok(!t.includes('Cercle des Cendres'));

@@ -376,6 +376,7 @@ describe('kanevas-recours-admin : B-6 / P-2 étape 3 / E-5 (navigateur)', { skip
     await p.getByRole('button', { name: /^Se connecter en tant que Admin$/ }).click();
     await attendre(p);
     await ouvrirAdmin(p, LAME);
+    await ligne(p, 'lea').waitFor({ state: 'visible' });
     assert.ok(await ligne(p, 'lea').isVisible());
     await p.screenshot({ path: '/tmp/recours-admin-e5-mobile.png' });
   });

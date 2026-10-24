@@ -5,8 +5,8 @@ import { badgeFiche, iconeDuType, useTypes } from '../../types-contexte';
 import type { Fiche } from './types';
 
 /** Address of the illustration of a sheet; the token makes a replaced image reload and a kept one cache. */
-export const adresseIllustration = (universId: number | string, ficheId: number, jeton: string) =>
-  `/api/univers/${universId}/fiches/${ficheId}/illustration?v=${encodeURIComponent(jeton)}`;
+export const adresseIllustration = (universId: number | string, fichierId: number, jeton: string) =>
+  `/api/univers/${universId}/fichiers/${fichierId}?v=${encodeURIComponent(jeton)}`;
 
 /** The first letter of a title, article set aside (« Le Gué-aux-Saules » → « G »). */
 export function initiale(titre: string): string {
@@ -33,7 +33,8 @@ function Repli({ fiche }: { fiche: Fiche }) {
 /** A card of the grid of E-8: a link to the sheet, thumbnail (or fallback), title, PJ / PNJ for a character. */
 export function CarteFiche({ universId, fiche }: { universId: number | string; fiche: Fiche }) {
   const { types } = useTypes();
-  const jeton = fiche.illustration?.jeton;
+  const ill = fiche.illustration && 'jeton' in fiche.illustration ? fiche.illustration : null;
+  const jeton = ill?.jeton;
   const [ko, setKo] = useState<string>();
   const image = jeton !== undefined && ko !== jeton;
   return (
@@ -41,7 +42,7 @@ export function CarteFiche({ universId, fiche }: { universId: number | string; f
       <span className="vue">
         {image ? (
           <img
-            src={adresseIllustration(universId, fiche.id, jeton)}
+            src={adresseIllustration(universId, ill!.id, jeton)}
             alt=""
             width={600}
             height={450}

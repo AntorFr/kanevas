@@ -1,4 +1,4 @@
-import { Trash2 } from 'lucide-react';
+import { Trash2, type LucideIcon } from 'lucide-react';
 import { useEffect, useId, useRef, type ReactNode } from 'react';
 
 import { Bouton } from './composants';
@@ -19,7 +19,12 @@ export function BoiteDialogue({
   onConfirmer,
   onFermer,
   enCours,
+  desactive,
+  libelleEnCours,
   reperage,
+  icone: Icone = Trash2,
+  iconeAction,
+  variante = 'danger',
   children,
 }: {
   titre: string;
@@ -29,8 +34,18 @@ export function BoiteDialogue({
   onConfirmer: () => void;
   onFermer: () => void;
   enCours?: boolean;
+  /** The action stays unavailable (a confirmation not yet given) without being in flight. */
+  desactive?: boolean;
+  /** Label of the action while in flight (« Suppression… »); the default is the button's « … ». */
+  libelleEnCours?: string;
   /** Where the focus goes if the opener is gone when the dialog closes. */
   reperage?: () => HTMLElement | null;
+  /** Glyph of the round badge (the bin by default). */
+  icone?: LucideIcon;
+  /** Optional glyph before the confirmation label. */
+  iconeAction?: LucideIcon;
+  /** `danger` (red bin, danger button) or `mj` (GM amber badge, primary button): a reversible GM closing. */
+  variante?: 'danger' | 'mj';
   children?: ReactNode;
 }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -94,8 +109,8 @@ export function BoiteDialogue({
         aria-describedby={idTexte}
         ref={ref}
       >
-        <span className="boite-icone" aria-hidden="true">
-          <Trash2 size={16} strokeWidth={1.75} />
+        <span className={`boite-icone${variante === 'mj' ? ' mj' : ''}`} aria-hidden="true">
+          <Icone size={16} strokeWidth={1.75} />
         </span>
         <div className="boite-corps">
           <h2 id={idTitre}>{titre}</h2>
@@ -105,8 +120,15 @@ export function BoiteDialogue({
             <button type="button" className="bouton neutre" ref={annuler} onClick={onFermer}>
               Annuler
             </button>
-            <Bouton variante="danger" enCours={enCours} ecrit onClick={onConfirmer}>
-              {action}
+            <Bouton
+              icone={iconeAction}
+              variante={variante === 'mj' ? 'principal' : 'danger'}
+              enCours={libelleEnCours ? undefined : enCours}
+              disabled={desactive || (libelleEnCours ? enCours : undefined)}
+              ecrit
+              onClick={onConfirmer}
+            >
+              {enCours && libelleEnCours ? libelleEnCours : action}
             </Bouton>
           </div>
         </div>

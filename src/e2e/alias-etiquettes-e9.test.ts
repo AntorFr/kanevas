@@ -86,8 +86,11 @@ describe('kanevas-recherche-e9, E-9 alias et étiquettes', { skip: skipBrowser }
     await antor.getByRole('button', { name: 'Retirer « Salport »' }).click();
     await ajoute(antor, 'Alias', 'SALPORT-SUR-MER');
     assert.equal(await antor.getByRole('dialog').getByRole('button', { name: /^Retirer « /i }).count(), 3); // 2 alias + 1 label
+    // The first save's toast may still be on screen: wait for this save's own response, then for a toast (the last one).
+    const enregistre = antor.waitForResponse((r: Any) => r.request().method() === 'PUT' && r.url().includes('/etiquetage'));
     await antor.getByRole('button', { name: rxExact('Enregistrer') }).click();
-    await antor.getByText('Alias et étiquettes enregistrés.').waitFor();
+    assert.equal((await enregistre).status(), 200);
+    await antor.getByText('Alias et étiquettes enregistrés.').last().waitFor();
     await attendre(antor);
     await antor.waitForFunction(() => !document.body.innerText.includes('Aussi appelée Port-aux-Sels, Salport, '));
     const t2 = await entete(antor).innerText();

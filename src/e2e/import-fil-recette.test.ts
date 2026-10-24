@@ -15,7 +15,7 @@
 //                 -> 401 « Jeton invalide. », same body, no batch opened; another universe -> 404.
 //  B-46 E-18      « Révoquer » dialog and toast, row « Révoqué »; Mira row « Inactif » once Joueuse.
 //  B-47 nominal   PUT lieu:port-sel -> creee; replay -> inchangee; one single fiche; six types accepted; changed title -> mise_a_jour.
-//  B-47 échec     compte_rendu and unknown type -> 400 champ type, nothing written.
+//  B-47 échec     compte_rendu without campaign -> 400 champ campagne, unknown type -> 400 champ type, nothing written.
 //  B-48           section title / section content / section audience / fiche title changed in Kanevas then replay ->
 //                 not overwritten, batch warns; the rest of the payload is written.
 //  B-49           E-18 batches: « Fiches : 1 créée », « Fiches : 1 inchangée », refusals and warnings unfold with key and reason;
@@ -333,11 +333,11 @@ describe('B-47 / P-10 une fiche par clé d’origine, sans doublon', () => {
     }
   });
 
-  test('échec : compte_rendu (champ type), type inconnu, type absent : 400 et rien d’écrit', async () => {
+  test('échec : compte_rendu sans campagne (champ campagne), type inconnu, type absent : 400 et rien d’écrit', async () => {
     const avant = (await fichesDe(m, 'antor')).length;
     const cr = await put(m, jeton, 'cr:seance-1', { type: 'compte_rendu', titre: 'Séance 1', sections: [] });
     assert.equal(cr.status, 400);
-    assert.equal(cr.json.champ, 'type');
+    assert.equal(cr.json.champ, 'campagne');
     assert.equal(cr.json.code, 'invalide');
     const monstre = await put(m, jeton, 'monstre:x', { type: 'monstre', titre: 'Gobelin', sections: [] });
     assert.equal(monstre.status, 400);
@@ -534,7 +534,7 @@ describe('B-50 clé et date d’origine', () => {
       await menu.waitFor();
       const t = ((await menu.innerText()) as string).replace(/\s+/g, ' ').trim();
       // kanevas-types-ecran-fiche adds « Changer le type… », kanevas-recherche-e9 « Alias et étiquettes… »; the origin line stays.
-      assert.equal(t, 'Changer le type… Déplacer sous… Alias et étiquettes… Importée · clé lieu:port-sel · créée le 3 mars 2021');
+      assert.equal(t, 'Changer le type… Déplacer sous… Alias et étiquettes… Importée · clé lieu:port-sel · créée le 3 mars 2021 Supprimer la fiche…');
       await page.waitForTimeout(600);
       await page.screenshot({ path: join(SHOTS, 'antor-menu-importee.png') });
       // a fiche without origin key: no « ⋯ » menu at all (this slice)
@@ -694,7 +694,7 @@ describe('E-18 Accès par API au navigateur', { skip: skipBrowser }, () => {
     const t = await texte(page);
     assert.match(t, /2 refusées/);
     assert.match(t, /cr:seance-1/);
-    assert.match(t, /type « compte_rendu » : pas accepté par cette version/);
+    assert.match(t, /campagne inconnue/);
     assert.match(t, /monstre:gob/);
     assert.match(t, /type « monstre » inconnu de Kanevas/);
     await page.screenshot({ path: join(SHOTS, 'e18-refus.png'), fullPage: true });
@@ -767,7 +767,7 @@ describe('E-18 Accès par API au navigateur', { skip: skipBrowser }, () => {
     await boite.waitFor();
     await boite.getByRole('button', { name: 'Révoquer le jeton' }).click();
     await page.getByText('Jeton révoqué.').first().waitFor();
-    await attendre(page);
+    await ligne(page, 'À couper').first().filter({ hasText: /Révoqué/ }).waitFor();
     assert.match(((await ligne(page, 'À couper').first().innerText()) as string), /Révoqué/);
     await page.screenshot({ path: join(SHOTS, 'e18-revoque.png') });
     const avant = await nbLots(m);

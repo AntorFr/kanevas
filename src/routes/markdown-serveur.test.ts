@@ -234,3 +234,12 @@ test('assistant : un lecteur reçoit la vue rendue sans la source, un écrivain 
   assert.ok(rl.donnees!.contenu.includes('<strong>robuste</strong>'));
   assert.equal(lire(antor.id).donnees!.contenu, '## Quartiers\n\nUn homme **robuste**');
 });
+
+// kanevas-mediatheque-fiche (B-55, E-9): a closed reference renders a neutral frame that leaks nothing of the file.
+test('référence fermée : cadre neutre, image distinguée, aucun nom ni adresse du fichier', () => {
+  const fichiers = (id: number) => (id === 7 ? { genre: 'ferme' as const } : { genre: 'rien' as const });
+  const html = rendreMarkdown('![plan-secret-de-la-guilde.png](fichier:7)\n\n[regles-secretes.pdf](fichier:7)', { nature: 'section', fichiers });
+  assert.ok(html.includes('<span class="fichier-reserve image-reservee">Image réservée au MJ.</span>'), html);
+  assert.ok(html.includes('<span class="fichier-reserve">Fichier réservé au MJ.</span>'), html);
+  assert.doesNotMatch(html, /plan-secret|regles-secretes|fichier:7|<img|<a /);
+});
