@@ -479,132 +479,132 @@ here. E-5 is reached through P-2 (step 3) and the sidebar (admin). The three rol
 GM and Player have no E-5; outside universes they belong to, the admin has only E-1, E-2 and E-5.
 Deviation from scoping: none.
 
-## Détail des écrans de `kanevas-systemes`
+## Screen details for `kanevas-systemes`
 
-> E-14, E-15, le lien de E-3 vers le système, l'item « Paramètres » de la barre latérale. Les
-> textes communs (chargement, erreur, connexion perdue, écriture en cours, échec d'une écriture,
-> refus) sont ceux de « Détail des écrans de `kanevas-premiere-fiche` ». Maquettes finies :
+> E-14, E-15, the link from E-3 to the system, the sidebar's « Paramètres » item. Shared
+> text (loading, error, connection lost, write in progress, write failure,
+> refusal) is that of “Screen details for `kanevas-premiere-fiche`”. Finished mockups:
 > `docs/maquettes/e14-parametres.html`, `e15-systeme-de-jeu.html`.
 
-**Ce que voit chacun du catalogue.** Le catalogue ne porte que des **noms** de systèmes, lus par tout
-compte qui est MJ d'au moins un univers (c'est ce qui permet à Mira de trouver « CoF Mini »). Le contenu
-d'un système (E-15) n'est lu que par les membres d'un univers qui lui est rattaché. **Aucun écran ne
-nomme un autre univers** : un système dit seulement « utilisé par N univers » (N compte l'univers
-courant), jamais lesquels. Depuis `kanevas-illustrations`, E-16 et E-15 nomment **les seuls univers
-du compte** qui utilisent le système (« Dans vos univers », avec son rôle) ; un univers dont le compte
-n'est pas membre n'est jamais nommé, sur aucun écran ni dans aucune réponse (AD-84, AD-94). Un système « n'est pas vu » d'un univers qui n'y est pas rattaché : pas
-de bloc sur E-3, et l'adresse de E-15 répond « Page introuvable. ».
+**What each person sees of the catalogue.** The catalogue carries only system **names**, readable by any
+account that is GM of at least one universe (this lets Mira find « CoF Mini »). A system's
+content (E-15) is readable only by members of a universe attached to it. **No screen
+names another universe**: a system says only « utilisé par N univers » (N counts the current
+universe), never which ones. Since `kanevas-illustrations`, E-16 and E-15 name **only the account's
+universes** that use the system (« Dans vos univers », with its role); a universe the account
+does not belong to is never named, on any screen or in any response (AD-84, AD-94). A system “is not seen” from a universe not attached to it: no
+block on E-3, and the E-15 address responds « Page introuvable. ».
 
-### E-14 Paramètres de l'univers (MJ)
+### E-14 Universe settings (GM)
 
-Trois panneaux, dans cet ordre, chacun portant la pastille « MJ seul » (cadenas) de la charte ; au téléphone (sous 760 px) leur débord est de 12 px, non 28.
+Three panels, in this order, each bearing the style guide's « MJ seul » badge (padlock); on phones (below 760 px) their bleed is 12 px, not 28.
 
-1. **Identité** : « Nom » (obligatoire, 80 caractères au plus), « Description » (500 au plus),
-   « Enregistrer ». Après l'enregistrement : toast « Enregistré. ».
-2. **Système de jeu** : une liste « Système du catalogue » (les noms, par ordre alphabétique sans
-   casse, et en tête « Aucun système »), « Rattacher » ; si l'univers a un système : son nom, « Utilisé
-   par N univers » et « Ouvrir le système » (→ E-15). Choisir « Aucun système » puis « Rattacher »
-   **détache** l'univers (rien n'est supprimé : le système et son contenu restent, les autres
-   univers le gardent). Toasts : « « X » rattaché », « « X » détaché » (« Aucun système rattaché » s'il n'y en avait pas).
-3. **Créer un système** : « Nom du système » (obligatoire, 80 caractères au plus), « Créer et
-   rattacher » : le système naît au catalogue et l'univers y est rattaché en un seul geste (si l'un
-   échoue, aucun n'a lieu). Un nom déjà pris (sans tenir compte de la casse) : « Un système porte déjà
-   ce nom. » sous le champ. Réussite : toast « « X » créé et rattaché ».
+1. **« Identité »**: « Nom » (required, at most 80 characters), « Description » (at most 500),
+   « Enregistrer ». After saving: toast « Enregistré. ».
+2. **« Système de jeu »**: a « Système du catalogue » list (names in case-insensitive alphabetical
+   order, with « Aucun système » first), « Rattacher »; if the universe has a system: its name, « Utilisé
+   par N univers » and « Ouvrir le système » (→ E-15). Choosing « Aucun système » then « Rattacher »
+   **detaches** the universe (nothing is deleted: the system and its content remain, other
+   universes keep it). Toasts: « « X » rattaché », « « X » détaché » (« Aucun système rattaché » if there was none).
+3. **« Créer un système »**: « Nom du système » (required, at most 80 characters), « Créer et
+   rattacher »: the system enters the catalogue and the universe is attached to it in one action (if either
+   fails, neither happens). A name already taken (case-insensitive): « Un système porte déjà
+   ce nom. » below the field. Success: toast « « X » créé et rattaché ».
 
-| État | Ce qu'on voit | Ce qu'on peut faire |
+| State | What is shown | Available actions |
 |---|---|---|
-| vide | catalogue sans système : la liste ne propose que « Aucun système » et le panneau dit « Le catalogue est vide. Créez le premier système ci-dessous. » ; univers sans système : « Cet univers n'est rattaché à aucun système de jeu. » | créer un système |
+| vide | catalogue without a system: the list offers only « Aucun système » and the panel says « Le catalogue est vide. Créez le premier système ci-dessous. »; universe without a system: « Cet univers n'est rattaché à aucun système de jeu. » | create a system |
 | chargement | « Chargement des paramètres… » | — |
-| erreur | « Impossible de charger cette page. » ; nom vide (univers ou système) : « Erreur : le nom est obligatoire. » sous le champ ; une écriture qui échoue : « L'action n'a pas abouti. Réessayez. » au-dessus du panneau concerné, saisie conservée | « Réessayer » |
-| connexion perdue | le bandeau ; « Enregistrer », « Rattacher », « Créer et rattacher » désactivés, saisie conservée | lire |
-| refus | Joueur : l'item « Paramètres » est absent et l'adresse montre « Page introuvable. » ; compte sans rôle, admin d'instance sans rôle dans l'univers : de même ; rôle retiré pendant que la page est ouverte : « Vous ne pouvez plus modifier ces paramètres. » à l'écriture suivante | « Mes univers » |
-| contenu long | 200 systèmes au catalogue : la liste défile ; un nom de 80 caractères est tronqué par « … » avec infobulle ; « Erreur : 80 caractères au plus. » dès le 81e (500 pour la description) | corriger |
+| erreur | « Impossible de charger cette page. »; empty name (universe or system): « Erreur : le nom est obligatoire. » below the field; failed write: « L'action n'a pas abouti. Réessayez. » above the affected panel, input kept | « Réessayer » |
+| connexion perdue | the banner; « Enregistrer », « Rattacher », « Créer et rattacher » disabled, input kept | read |
+| refus | Player: the « Paramètres » item is absent and the address shows « Page introuvable. »; account without a role, instance admin without a role in the universe: likewise; role removed while the page is open: « Vous ne pouvez plus modifier ces paramètres. » on the next write | « Mes univers » |
+| contenu long | 200 systems in the catalogue: the list scrolls; an 80-character name is truncated with « … » and a tooltip; « Erreur : 80 caractères au plus. » from the 81st character (500 for the description) | correct |
 
-*Critères.*
-- Étant donné Antor, MJ de Lame d'Ébène, et un catalogue qui contient « CoF Mini », quand il choisit
-  « CoF Mini » et « Rattacher », alors le panneau montre « CoF Mini », « Utilisé par 1 univers » et
+*Criteria.*
+- Given Antor, GM of Lame d'Ébène, and a catalogue containing « CoF Mini », when he chooses
+  « CoF Mini » and « Rattacher », the panel shows « CoF Mini », « Utilisé par 1 univers » and
   « Ouvrir le système ».
-- Étant donné Léa, Joueuse de Lame d'Ébène, quand elle ouvre l'adresse des paramètres, alors elle
-  voit « Page introuvable. » et l'item « Paramètres » n'est pas dans sa barre.
-- Étant donné un système « CoF Mini » existant, quand Antor en crée un autre nommé « cof mini »,
-  alors il voit « Un système porte déjà ce nom. » et rien n'est créé.
-- Étant donné Antor, univers rattaché à « CoF Mini », quand il choisit « Aucun système » et
-  « Rattacher », alors le panneau dit « Cet univers n'est rattaché à aucun système de jeu. », le bloc
-  « Système de jeu » a disparu de E-3, et « CoF Mini » est toujours dans la liste du catalogue.
+- Given Léa, a Player in Lame d'Ébène, when she opens the settings address, she
+  sees « Page introuvable. » and the « Paramètres » item is not in her sidebar.
+- Given an existing « CoF Mini » system, when Antor creates another named « cof mini »,
+  he sees « Un système porte déjà ce nom. » and nothing is created.
+- Given Antor, with the universe attached to « CoF Mini », when he chooses « Aucun système » and
+  « Rattacher », the panel says « Cet univers n'est rattaché à aucun système de jeu. », the
+  « Système de jeu » block has disappeared from E-3, and « CoF Mini » is still in the catalogue list.
 
-### E-15 Système de jeu
+### E-15 Game system
 
-> Depuis `kanevas-illustrations`, E-15 vit **hors du cadre d'un univers**, à l'adresse
-> `/systemes/:sid` (voir « Systèmes de jeu, hors des univers » plus bas, AD-94) ; ce qui suit vaut
-> toujours pour son contenu, ses gestes et ses textes.
+> Since `kanevas-illustrations`, E-15 lives **outside a universe's frame**, at
+> `/systemes/:sid` (see “Game systems, outside universes” below, AD-94); what follows still applies
+> to its content, actions and text.
 
-Atteint depuis E-14 (« Ouvrir le système ») et depuis E-3 (bloc « Système de jeu », ci-dessous) —
-et depuis E-16 ; son adresse est désormais `/systemes/:sid` (*remplacé par le § de
-`kanevas-illustrations`*). Le nom du système en titre, « Référentiel commun · utilisé par N
-univers » ; quatre onglets, **Règles**, **Créatures**, **Objets** (Créatures par défaut) et **Types de fiche** (kanevas-import-types, décrit plus bas) ; sous
-l'onglet, la liste des entrées du type par nom (ordre alphabétique sans casse), cent à la fois, puis
-« Charger la suite ». Chaque ligne (une **entrée** : une règle, une créature ou un objet ; `gabarit` dans les données) : le nom et la première ligne du contenu (tronquée). Un clic ouvre
-l'entrée **sur place** (le nom, le contenu en Markdown, AD-95).
+Reached from E-14 (« Ouvrir le système ») and E-3 (« Système de jeu » block, below) —
+and from E-16; its address is now `/systemes/:sid` (*superseded by the
+`kanevas-illustrations` section*). The system's name as title, « Référentiel commun · utilisé par N
+univers »; four tabs, **« Règles »**, **« Créatures »**, **« Objets »** (« Créatures » by default) and **« Types de fiche »** (kanevas-import-types, described below); under
+the tab, the list of entries of that type by name (case-insensitive alphabetical order), one hundred at a time, then
+« Charger la suite ». Each row (an **entry**: a rule, creature or item; `gabarit` in the data): the name and first line of content (truncated). A click opens
+the entry **inline** (name, Markdown content, AD-95).
 
-*Le MJ d'un univers rattaché* : « Ajouter une règle » / « Ajouter une créature » / « Ajouter un
-objet » ouvre un formulaire sur place : « Nom » (1 à 120 caractères), « Contenu » (20 000 au plus ; 100 000 depuis `kanevas-import`, AD-106 ;
-facultatif), « Ajouter » et « Annuler » ; sur une entrée ouverte, « Modifier » (nom et contenu),
-« Enregistrer », « Annuler ». Le type d'une entrée ne change jamais ; rien ne se supprime. Enregistrer
-envoie la version lue (AD-85).
-*Un Joueur d'un univers rattaché* : la même page, lecture seule, sans bouton d'ajout ni de
-modification.
+*The GM of an attached universe*: « Ajouter une règle » / « Ajouter une créature » / « Ajouter un
+objet » opens an inline form: « Nom » (1 to 120 characters), « Contenu » (at most 20,000; 100,000 since `kanevas-import`, AD-106;
+optional), « Ajouter » and « Annuler »; on an open entry, « Modifier » (name and content),
+« Enregistrer », « Annuler ». An entry's type never changes; nothing can be deleted. Saving
+sends the version read (AD-85).
+*A Player of an attached universe*: the same page, read-only, with no add or
+edit button.
 
-Textes : onglet vide, MJ : « Aucune créature pour l'instant. » (« Aucune règle », « Aucun objet ») et
-le bouton d'ajout ; Joueur : « Aucune créature à voir pour l'instant. » ; écriture périmée : « Cette
+Text: empty tab, GM: « Aucune créature pour l'instant. » (« Aucune règle », « Aucun objet ») and
+the add button; Player: « Aucune créature à voir pour l'instant. »; stale write: « Cette
 entrée a changé depuis que vous l'avez ouverte. Rechargez-la pour voir la nouvelle version ; votre texte
-reste ci-dessous. » avec « Recharger » (une entrée : une règle, une créature ou un objet) ; nom vide : « Erreur : le nom est obligatoire. » sous le champ ; nom déjà pris dans le même type : « Une créature porte déjà ce
-nom. » (« Une règle… », « Un objet… ») ; droit retiré entre-temps (rôle changé, univers détaché) :
+reste ci-dessous. » with « Recharger » (an entry: a rule, creature or item); empty name: « Erreur : le nom est obligatoire. » below the field; name already taken within the same type: « Une créature porte déjà ce
+nom. » (« Une règle… », « Un objet… »); permission removed in the meantime (role changed, universe detached):
 « Vous ne pouvez plus modifier ce système. ».
 
-| État | Ce qu'on voit | Ce qu'on peut faire |
+| State | What is shown | Available actions |
 |---|---|---|
-| vide | l'onglet sans entrée : texte ci-dessus | MJ : ajouter |
-| chargement | le titre absent, « Chargement du système… » | — |
-| erreur | « Impossible de charger ce système. » ; échec d'écriture : « L'action n'a pas abouti. Réessayez. », saisie conservée | « Réessayer » |
-| connexion perdue | le bandeau ; « Ajouter », « Enregistrer » désactivés, le texte en cours reste | lire |
-| refus | *remplacé* : voir la matrice d'états de « E-15 hors de l'univers » (`kanevas-illustrations`) — le refus mène à « Systèmes de jeu » | — |
-| contenu long | 100 entrées : « Charger la suite » ; nom tronqué par « … » avec infobulle ; contenu de 100 000 caractères passe à la ligne et s'affiche en entier ; au-delà : « Erreur : 100 000 caractères au plus. » ; nom au-delà de 120 : « Erreur : 120 caractères au plus. » | idem |
+| vide | tab without an entry: text above | GM: add |
+| chargement | no title, « Chargement du système… » | — |
+| erreur | « Impossible de charger ce système. »; write failure: « L'action n'a pas abouti. Réessayez. », input kept | « Réessayer » |
+| connexion perdue | the banner; « Ajouter », « Enregistrer » disabled, text in progress remains | read |
+| refus | *superseded*: see the state matrix in “E-15 outside the universe” (`kanevas-illustrations`) — refusal leads to « Systèmes de jeu » | — |
+| contenu long | 100 entries: « Charger la suite »; name truncated with « … » and a tooltip; 100,000-character content wraps and is displayed in full; beyond that: « Erreur : 100 000 caractères au plus. »; name beyond 120: « Erreur : 120 caractères au plus. » | same |
 
-*Critères.*
-- Étant donné Antor, MJ de Lame d'Ébène rattaché à « CoF Mini », quand il ajoute la créature « Garde
-  du sceau » avec son contenu, alors elle apparaît sous « Créatures ».
-- *Remplacé par le critère de Mira du § de `kanevas-illustrations` (la seule puce « Les Landes
-  grises · MJ ») :* étant donné Mira, MJ des « Landes grises » rattachée au même système, quand
-  elle ouvre « Créatures », alors elle voit « Garde du sceau » et « Utilisé par 2 univers », et aucun
-  nom d'univers.
-- Étant donné Léa, Joueuse de Lame d'Ébène, quand elle ouvre le système, alors elle voit « Garde du
-  sceau » sans « Ajouter » ni « Modifier » ; si le MJ envoie une écriture à sa place par l'adresse de
-  l'API, elle est refusée.
-- *Remplacé par le § de `kanevas-illustrations` (critère de Teo, et l'ancienne adresse) :* étant
-  donné « Admin » (groupe `parents`, MJ de l'univers « Brume » qu'il vient de créer, non rattaché),
-  quand il ouvre `/univers/<Brume>/systeme`, alors il voit « Page introuvable. » ; et sur la vue
-  d'ensemble de « Brume » il n'y a pas de bloc « Système de jeu ».
-- Étant donné deux onglets sur la même créature, quand le second enregistre après le premier, alors
-  il voit « Cette entrée a changé depuis que vous l'avez ouverte. » et son texte reste.
+*Criteria.*
+- Given Antor, GM of Lame d'Ébène attached to « CoF Mini », when he adds the « Garde
+  du sceau » creature with its content, it appears under « Créatures ».
+- *Superseded by Mira's criterion in the `kanevas-illustrations` section (the sole « Les Landes
+  grises · MJ » bullet):* given Mira, GM of « Landes grises » attached to the same system, when
+  she opens « Créatures », she sees « Garde du sceau » and « Utilisé par 2 univers », and no
+  universe name.
+- Given Léa, a Player in Lame d'Ébène, when she opens the system, she sees « Garde du
+  sceau » without « Ajouter » or « Modifier »; if the GM sends a write on her behalf through the
+  API address, it is refused.
+- *Superseded by the `kanevas-illustrations` section (Teo's criterion, and the old address):* given
+  « Admin » (`parents` group, GM of the newly created, unattached « Brume » universe),
+  when they open `/univers/<Brume>/systeme`, they see « Page introuvable. »; and the
+  « Brume » overview has no « Système de jeu » block.
+- Given two tabs on the same creature, when the second saves after the first,
+  it sees « Cette entrée a changé depuis que vous l'avez ouverte. » and its text remains.
 
-### Bloc « Système de jeu » de E-3
+### E-3's « Système de jeu » block
 
-Un bloc de la vue d'ensemble (déposé dans `frontend/src/ecrans/vue-ensemble/blocs/`, rang bas,
-visible des MJ et des Joueurs) : le nom du système et un lien « Ouvrir le système » (→ E-15). **Sans
-système, le bloc n'existe pas** : ni message, ni lien mort. Ses états : chargement — le bloc est
-absent ; erreur — le bloc est absent (la vue d'ensemble n'échoue pas pour lui) ; refus et vide —
-sans objet : un univers sans système n'a pas de bloc ; connexion perdue — le bloc reste tel qu'il a été chargé ; contenu long — le nom (80 caractères) est
-tronqué avec infobulle.
+An overview block (placed in `frontend/src/ecrans/vue-ensemble/blocs/`, low rank,
+visible to GMs and Players): the system's name and an « Ouvrir le système » link (→ E-15). **Without a
+system, the block does not exist**: no message or dead link. Its states: loading — the block is
+absent; error — the block is absent (the overview does not fail because of it); refusal and empty —
+not applicable: a universe without a system has no block; connection lost — the block stays as loaded; long content — the name (80 characters) is
+truncated with a tooltip.
 
-### Clôture de `kanevas-systemes`
+### Completion of `kanevas-systemes`
 
-B-13 → E-14 (rattacher, créer et rattacher) ; B-14 → E-15 ; P-8 étape 1 → E-14, étape 2 → E-15 ; le
-lien de E-3 → bloc ci-dessus ; B-29 → les six états de E-14 et E-15. E-14 est atteint par P-8 et par
-la barre (MJ) ; E-15 par P-8 et par E-3. Les trois rôles ont leur colonne : l'admin d'instance sans
-rôle n'a ni E-14 ni E-15 ; l'admin MJ de son propre univers a ceux d'un MJ.
-Écart au cadrage : aucun. Précision : le cadrage dit « nom, description » pour E-14 ; la tranche
-construit donc aussi la **modification** du nom et de la description d'un univers, qu'aucune
-tranche précédente ne livre.
+B-13 → E-14 (attach, create and attach); B-14 → E-15; P-8 step 1 → E-14, step 2 → E-15; the
+E-3 link → block above; B-29 → the six states of E-14 and E-15. E-14 is reached through P-8 and the
+sidebar (GM); E-15 through P-8 and E-3. The three roles have their column: an instance admin without a
+role has neither E-14 nor E-15; an admin who is GM of their own universe has the GM's screens.
+Deviation from scoping: none. Clarification: scoping says “name, description” for E-14; the slice
+therefore also builds **editing** a universe's name and description, which no previous
+slice delivers.
 
 ## Détail des écrans de `kanevas-relier-chercher`
 
