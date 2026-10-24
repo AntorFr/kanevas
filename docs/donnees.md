@@ -1,232 +1,232 @@
-# Kanevas — données
+# Kanevas — data
 
-> Doc du produit (voir `docs/parcours.md`, `docs/ecrans.md`). Toutes les entités du produit,
-> leurs relations et qui lit ou écrit quoi. **Une tranche ajoute des attributs ; une entité
-> de plus est une décision de cadrage**, prise avant la tranche (c'est ainsi que sont venues les cartes, les propositions et
-> les pièces jointes) et jamais en cours de route.
+> Product documentation (see `docs/parcours.md`, `docs/ecrans.md`). All product entities,
+> their relationships and who reads or writes what. **A slice adds attributes; an extra
+> entity is a scoping decision**, made before the slice (this is how maps, proposals and
+> attachments came about), never along the way.
 
-Un seul fichier SQLite sur le volume (`/data/kanevas.db`, AD-5) ; clés étrangères actives, WAL,
-une seule connexion d'écriture. Les octets des pièces jointes vont sur le disque du même volume
-(`/data/attachments/`), jamais en base (AD-7). Toute lecture et toute écriture passent par les
-fonctions de service du backend, que les routes et les outils de l'agent appellent de la même
-façon (AD-2).
+A single SQLite file on the volume (`/data/kanevas.db`, AD-5); foreign keys enabled, WAL,
+a single write connection. Attachment bytes live on disk on the same volume
+(`/data/attachments/`), never in the database (AD-7). Every read and write goes through the
+backend service functions, called in the same way by routes and agent tools
+(AD-2).
 
-## Entités
+## Entities
 
-| Entité | Porte | Relations | Qui lit | Qui écrit |
+| Entity | Holds | Relationships | Who reads | Who writes |
 |---|---|---|---|---|
-| **compte** | identifiant Authelia (`username`, unique), date de création ; aucun rôle | — | lui-même ; les membres d'un univers commun (son identifiant) ; un MJ qui tape un identifiant exact pour l'ajouter apprend seulement s'il existe ; l'admin d'instance | créé à la première connexion (B-1) |
-| **univers** | nom, description, date de création | → système de jeu (facultatif) | ses membres ; son nom : l'admin d'instance | création : tout compte (B-2) ; modification : MJ |
-| **membre** | (univers, compte, rôle MJ \| Joueur) | univers, compte | les membres de l'univers ; l'admin d'instance | MJ de l'univers ; admin d'instance (cette table seulement, AD-9) ; au moins un MJ par univers (B-5) |
-| **système de jeu** | nom | ← univers ; → gabarits | tout MJ d'un univers (nom seul) ; le contenu : membres d'un univers rattaché | création : tout MJ ; référentiel : MJ d'un univers rattaché |
-| **gabarit** | type (règle, créature, objet), nom, contenu | système de jeu | membres d'un univers rattaché | MJ d'un univers rattaché (B-14) |
-| **fiche** | type (la liste du produit, AD-102 : personnage, lieu, faction, objet, événement, quête, compte-rendu, et depuis `kanevas-import` créature, race, vaisseau, savoir, récit, règle, note), **sous-type** libre (B-52), titre, créée le (date d'origine si l'import la donne, B-50), modifiée le, charge utile versionnée par type (AD-6) — personnage : PJ \| PNJ ; compte-rendu : sa campagne ; **illustration** facultative (une image au plus, AD-93) ; *(kanevas-import)* **parent** facultatif (une fiche du même univers, AD-99), **alias**, **étiquettes**, **clé d'origine** facultative | univers ; → sections ; → parent ; ← enfants | qui lit au moins une de ses sections ; sinon elle n'existe pas (B-9) ; son illustration, ses alias, ses étiquettes : qui voit la fiche ; sa clé d'origine : le MJ | création : MJ ; un compte-rendu : tout membre (B-19) ; l'illustration, le titre, le type, le sous-type, le parent, les alias, les étiquettes, la suppression : MJ (B-38 à B-40, B-52) |
-| **section** | titre, ordre, contenu (Markdown depuis `kanevas-import`, AD-95, avec ses **blocs MJ**, AD-98), modifiée le ; lecture et écriture des joueurs ; auteur (un compte) avec sa lecture et son écriture ; *(kanevas-import)* clé d'origine, version du dernier import | fiche ; → relations, pièces jointes, liens | le MJ ; un joueur selon les bascules (AD-19), **sans ses blocs MJ** | contenu : qui a l'écriture, **un MJ seul si elle contient un bloc MJ** ; structure et audience : MJ |
-| **relation** | type (texte libre), dirigée | section porteuse → fiche cible | qui lit la section **et** la fiche cible (sinon la cible n'est pas nommée) | MJ |
-| **fichier** *(kanevas-import, médiathèque, AD-111)* | nom, type (déterminé à la signature ; image si PNG, JPEG, GIF, WebP, document sinon), taille, nom sur disque (UUID), empreinte, **visibilité** (`joueurs` par défaut \| `mj`), ajouté par, ajouté le, clé d'origine | univers ; ← références (sections, illustrations) | le MJ : tous ; un joueur : ceux `joueurs`, **et ceux qu'il a ajoutés** (troisième règle de lecture, pas un niveau : `ajoute_par`) ; **dans une fiche** : si le conteneur **et** le fichier sont lisibles (double garde) | MJ : tout ; qui écrit une section : en ajouter un depuis la fiche, en un geste avec sa référence (visibilité selon l'endroit d'ajout, AD-111) ; l'import |
-| **référence de fichier** *(kanevas-import)* | un fichier joint à une section, ou cité dans son texte (et alors, dans un bloc MJ ou non) ; l'illustration est une référence portée par la fiche | section → fichier ; fiche → fichier (illustration) | comme le fichier, sous double garde | déduite du texte à chaque écriture ; jointe ou retirée par qui écrit la section ; l'illustration : MJ |
-| **pièce jointe** | *depuis `kanevas-import` (AD-111) : une référence de fichier jointe à une section ; « secrète » est la visibilité du fichier ; ci-dessous, le modèle d'avant, que la migration reprend* — nom d'origine, type MIME, taille, nom sur disque (UUID), secrète | section | qui lit la section, et le MJ seul si secrète | qui écrit la section ; « secrète » : MJ |
-| **campagne** | nom, statut (en préparation, active, terminée) | univers ; → scénarios, tâches, CR | tout membre (nom, statut) | MJ |
-| **scénario** | titre, contenu | campagne | MJ | MJ |
-| **tâche de préparation** | catégorie (monstres, PNJ, cartes, déroulements, autre), libellé, faite | campagne | MJ | MJ |
-| **carte** | titre, forme (illustrée \| graphe, fixée à la création), visible des joueurs, fond : une image déposée sur la carte elle-même, rangée sur le disque comme une pièce jointe (AD-40) | univers ; → éléments | MJ ; les joueurs si visible | MJ |
-| **élément de carte** | position en % (carte illustrée) ou rien (graphe) | carte, fiche | comme la fiche de l'élément | MJ |
-| **lien** *(kanevas-import)* | texte affiché, cible (une fiche, ou une clé d'origine en attente, ou rien : cassé), dans un bloc MJ ou non | section porteuse → fiche cible | comme une relation (AD-64) : la section, hors bloc MJ pour un non-MJ, **et** la cible ; sinon le texte seul | déduit du contenu à chaque écriture de la section (AD-97) ; personne ne l'écrit à part |
-| **alias** *(kanevas-import)* | un autre nom de la fiche | fiche | qui voit la fiche | MJ ; l'import |
-| **étiquette** *(kanevas-import)* | nom, unique dans l'univers | univers ; ↔ fiches | ses fiches qu'un compte voit ; une étiquette sans fiche visible n'existe pas pour lui | MJ ; l'import (créée au premier usage) |
-| **réglage de type** *(kanevas-import)* | un type, activé ou non — au système ; forcé activé ou désactivé — à l'univers ; l'absence veut dire « suit » (AD-102) | système de jeu ou univers | membres d'un univers rattaché (système) ; membres de l'univers (univers) | MJ d'un univers rattaché (système, B-42) ; MJ de l'univers (univers) |
-| **jeton d'API** *(kanevas-import)* | nom, empreinte (jamais la valeur), créé le, expire le, révoqué le, dernier usage | univers, compte du MJ qui l'a créé (l'acteur) | les MJ de l'univers (sans la valeur) | création : MJ ; révocation : tout MJ de l'univers (B-45, B-46) |
-| **lot d'import** *(kanevas-import)* | ouvert le, clos le, état, compteurs (créées, mises à jour, inchangées, refusées, avertissements), rapport des refus et avertissements | univers, jeton | les MJ de l'univers | le serveur, pour un script qui présente un jeton (B-49) |
-| **proposition** | contenu proposé, empreinte du contenu d'origine (la `version` de la section, AD-59), créée le, appliquée le | univers, compte demandeur, section, CR source | son seul demandeur | créée par l'agent du MJ ; appliquée une fois par son demandeur, si la section n'a pas changé (B-21) |
+| **account** | Authelia identifier (`username`, unique), creation date; no role | — | the account itself; members of a shared universe (its identifier); a GM entering an exact identifier to add it learns only whether it exists; the instance admin | created at first sign-in (B-1) |
+| **universe** | name, description, creation date | → game system (optional) | its members; its name: the instance admin | creation: any account (B-2); update: GM |
+| **member** | (universe, account, GM \| Player role) | universe, account | universe members; the instance admin | universe GM; instance admin (this table only, AD-9); at least one GM per universe (B-5) |
+| **game system** | name | ← universes; → templates | any universe GM (name only); content: members of an attached universe | creation: any GM; reference content: GM of an attached universe |
+| **template** | type (rule, creature, item), name, content | game system | members of an attached universe | GM of an attached universe (B-14) |
+| **sheet** | type (the product list, AD-102: character, location, faction, item, event, quest, session report, and since `kanevas-import` creature, race, ship, lore, story, rule, note), free-form **subtype** (B-52), title, creation date (original date if provided by the import, B-50), update date, payload versioned by type (AD-6) — character: PC \| NPC; session report: its campaign; optional **illustration** (at most one image, AD-93); *(kanevas-import)* optional **parent** (a sheet in the same universe, AD-99), **aliases**, **labels**, optional **origin key** | universe; → sections; → parent; ← children | anyone who reads at least one of its sections; otherwise it does not exist (B-9); its illustration, aliases, labels: anyone who sees the sheet; its origin key: the GM | creation: GM; a session report: any member (B-19); illustration, title, type, subtype, parent, aliases, labels, deletion: GM (B-38 to B-40, B-52) |
+| **section** | title, order, content (Markdown since `kanevas-import`, AD-95, with its **GM blocks**, AD-98), update date; player read and write permissions; author (an account) with their read and write permissions; *(kanevas-import)* origin key, last import version | sheet; → relations, attachments, links | the GM; a player according to the toggles (AD-19), **without its GM blocks** | content: anyone with write permission, **a GM only if it contains a GM block**; structure and audience: GM |
+| **relation** | type (free text), directed | carrying section → target sheet | anyone who reads the section **and** the target sheet (otherwise the target is not named) | GM |
+| **file** *(kanevas-import, media library, AD-111)* | name, type (detected by signature; image if PNG, JPEG, GIF, WebP, document otherwise), size, disk filename (UUID), fingerprint, **visibility** (`joueurs` by default \| `mj`), added by, added on, origin key | universe; ← references (sections, illustrations) | the GM: all; a player: those marked `joueurs`, **and those they added** (third read rule, not a level: `ajoute_par`); **in a sheet**: if the container **and** the file are readable (double guard) | GM: everything; anyone who writes a section: add one from the sheet, together with its reference in one action (visibility based on where it is added, AD-111); the import |
+| **file reference** *(kanevas-import)* | a file attached to a section, or cited in its text (and then either in a GM block or outside it); the illustration is a reference carried by the sheet | section → file; sheet → file (illustration) | same as the file, under the double guard | derived from the text at each write; attached or removed by anyone who writes the section; illustration: GM |
+| **attachment** | *since `kanevas-import` (AD-111): a file reference attached to a section; « secrète » is the file visibility; below, the previous model, carried over by the migration* — original name, MIME type, size, disk filename (UUID), secret | section | anyone who reads the section, and the GM only if secret | anyone who writes the section; « secrète »: GM |
+| **campaign** | name, status (in preparation, active, finished) | universe; → scenarios, tasks, reports | any member (name, status) | GM |
+| **scenario** | title, content | campaign | GM | GM |
+| **preparation task** | category (monsters, NPCs, maps, sequences, other), label, done | campaign | GM | GM |
+| **map** | title, form (illustrated \| graph, fixed at creation), visible to players, background: an image uploaded to the map itself, stored on disk like an attachment (AD-40) | universe; → elements | GM; players if visible | GM |
+| **map element** | position in % (illustrated map) or none (graph) | map, sheet | same as the element's sheet | GM |
+| **link** *(kanevas-import)* | display text, target (a sheet, or a pending origin key, or none: broken), inside a GM block or outside it | carrying section → target sheet | same as a relation (AD-64): the section, outside GM blocks for a non-GM, **and** the target; otherwise text only | derived from the content at each section write (AD-97); nobody writes it separately |
+| **alias** *(kanevas-import)* | another name for the sheet | sheet | anyone who sees the sheet | GM; the import |
+| **label** *(kanevas-import)* | name, unique in the universe | universe; ↔ sheets | its sheets that an account sees; a label with no visible sheet does not exist for that account | GM; the import (created on first use) |
+| **type setting** *(kanevas-import)* | a type, enabled or disabled — at system level; forced enabled or disabled — at universe level; absence means « suit » (inherit, AD-102) | game system or universe | members of an attached universe (system); universe members (universe) | GM of an attached universe (system, B-42); universe GM (universe) |
+| **API token** *(kanevas-import)* | name, fingerprint (never the value), creation date, expiry date, revocation date, last use | universe, account of the GM who created it (the actor) | universe GMs (without the value) | creation: GM; revocation: any universe GM (B-45, B-46) |
+| **import batch** *(kanevas-import)* | opening date, closing date, state, counters (created, updated, unchanged, refused, warnings), report of refusals and warnings | universe, token | universe GMs | the server, for a script presenting a token (B-49) |
+| **proposal** | proposed content, original content fingerprint (the section's `version`, AD-59), creation date, application date | universe, requesting account, section, source report | its requester only | created by the GM's agent; applied once by its requester, if the section has not changed (B-21) |
 
-**Index de recherche** : deux index plein texte (FTS5), l'un sur les titres de fiches, l'autre sur les titres et contenus de sections, tenus
-à jour par la base (déclencheurs) ; aucune réponse n'en sort sans repasser par le filtre de
-droits (AD-8, AD-21).
+**Search indexes**: two full-text indexes (FTS5), one on sheet titles, the other on section titles and content, kept
+up to date by the database (triggers); no answer comes out without going through the
+permissions filter again (AD-8, AD-21).
 
-**Pas de table** pour : les sessions (cookie signé), les conversations avec l'assistant (le fil
-vit dans le navigateur, AD-28), la disposition d'un graphe (calculée dans le navigateur, AD-42),
-ses liens (déduits des relations, AD-41).
+**No table** for: sessions (signed cookie), assistant conversations (the thread
+lives in the browser, AD-28), graph layout (computed in the browser, AD-42),
+its links (derived from relations, AD-41).
 
 ## Assistant (`kanevas-assistant-membre`)
 
-Aucune migration, aucune table, aucun attribut : l'assistant lit et écrit par les fonctions de
-service existantes (AD-2, AD-74), et le fil de la conversation n'est stocké nulle part (AD-28,
-AD-75). La table `propositions` du cadrage est posée par `kanevas-monde` (ci-dessous).
+No migration, no table, no attribute: the assistant reads and writes through existing service
+functions (AD-2, AD-74), and the conversation thread is not stored anywhere (AD-28,
+AD-75). The scoped `propositions` table is introduced by `kanevas-monde` (below).
 
-## Propositions de mise à jour (`kanevas-monde`)
+## Update proposals (`kanevas-monde`)
 
-Une table, `propositions` (migration `0008-propositions.sql`, AD-51) :
+One table, `propositions` (migration `0008-propositions.sql`, AD-51):
 
-| Colonne | Type | Contrainte |
+| Column | Type | Constraint |
 |---|---|---|
-| `id` | entier | clé |
-| `univers_id` | → `univers` | non nul ; sert à refuser une proposition lue sous un autre univers |
-| `demandeur_id` | → `comptes` | non nul ; le seul compte qui la lit, l'applique ou l'abandonne (AD-79) |
-| `section_id` | → `sections` | non nul ; suppression en cascade avec la section |
-| `cr_id` | → `fiches` | non nul ; la fiche de type `compte_rendu` d'où part la proposition ; cascade par précaution (un CR se supprime comme une fiche, AD-119 ; la proposition part alors avec lui) |
-| `contenu_propose` | texte | non nul, non vide, 100 000 caractères au plus (la limite d'une section, AD-106 ; migration 0009) |
-| `version_origine` | entier | non nul ; la `version` que la section avait quand l'assistant l'a lue (AD-59, AD-80) |
-| `creee_le` | date | non nul |
-| `appliquee_le` | date | nul tant qu'elle est en attente |
+| `id` | integer | key |
+| `univers_id` | → `univers` | non-null; used to refuse a proposal read under another universe |
+| `demandeur_id` | → `comptes` | non-null; the only account that reads, applies or abandons it (AD-79) |
+| `section_id` | → `sections` | non-null; cascade deletion with the section |
+| `cr_id` | → `fiches` | non-null; the `compte_rendu` sheet from which the proposal starts; cascade as a precaution (a report is deleted as a sheet, AD-119; the proposal then goes with it) |
+| `contenu_propose` | text | non-null, non-empty, at most 100,000 characters (the section limit, AD-106; migration 0009) |
+| `version_origine` | integer | non-null; the `version` the section had when the assistant read it (AD-59, AD-80) |
+| `creee_le` | date | non-null |
+| `appliquee_le` | date | null while pending |
 
-Invariants, tenus par la base ou la fonction de service : **une seule proposition en attente par
-(demandeur, section)** (index unique partiel sur `appliquee_le IS NULL` ; la nouvelle remplace
-l'ancienne dans la même transaction) ; une proposition appliquée ne se réapplique pas ni ne
-s'abandonne ; abandonner supprime la ligne ; elle n'est lue que par son demandeur, encore MJ de
-l'univers. Aucun autre attribut sur `sections` : la `version` d'AD-59 suffit. Lecture : « périmée »
-n'est pas stocké, c'est `version` courante ≠ `version_origine` **tant que la proposition n'est pas appliquée**, calculé à chaque lecture ; une proposition appliquée est toujours « appliquée » (appliquer augmente la `version`).
+Invariants enforced by the database or service function: **only one pending proposal per
+(requester, section)** (partial unique index on `appliquee_le IS NULL`; the new one replaces
+the old one in the same transaction); an applied proposal cannot be applied again or
+abandoned; abandoning deletes the row; it is read only by its requester, still a GM of
+the universe. No additional attribute on `sections`: AD-59's `version` suffices. On read: « périmée » (stale)
+is not stored; it means current `version` ≠ `version_origine` **while the proposal has not been applied**, computed on each read; an applied proposal is always « appliquée » (applied; applying increases `version`).
 
 ## Migration 0001 (`kanevas-premiere-fiche`)
 
-Cinq tables : `comptes`, `univers`, `membres`, `fiches`, `sections`. Pas de recherche (FTS5 vient
-avec `kanevas-relier-chercher`, qui prend le numéro suivant, AD-51).
+Five tables: `comptes`, `univers`, `membres`, `fiches`, `sections`. No search (FTS5 comes
+with `kanevas-relier-chercher`, which takes the next number, AD-51).
 
-| Table | Colonnes (hors clés) | Contraintes |
+| Table | Columns (excluding keys) | Constraints |
 |---|---|---|
-| `comptes` | `id`, `username` (identifiant Authelia, `preferred_username`), `cree_le` | `username` unique ; jamais de rôle ni de groupe (les groupes vivent dans la session) |
-| `univers` | `id`, `nom`, `description`, `cree_le` | `nom` non vide, 1 à 80 caractères |
-| `membres` | `univers_id`, `compte_id`, `role` (`mj` \| `joueur`) | clé primaire (`univers_id`, `compte_id`) ; clés étrangères ; au moins un `mj` par univers garanti par le service (B-5), pas par la base |
-| `fiches` | `id`, `univers_id`, `type` (les sept : `personnage`, `lieu`, `faction`, `objet`, `evenement`, `quete`, `compte_rendu` ; *depuis `kanevas-import`, la liste du produit, sans `CHECK` : AD-102 et « Cadrage `kanevas-import` » plus bas*), `titre`, `charge` (JSON versionné, AD-6 et AD-17 : `{"v":1}` ; personnage `{"v":1,"pj":true\|false}` ; compte-rendu `{"v":1,"campagne_id":…}`), `cree_le`, `modifie_le` | `type` contraint à ces sept valeurs (*contrainte levée par la recréation de `kanevas-import`, AD-102*) ; `titre` non vide, 1 à 120 caractères ; **aucune suppression de carte** (sauf avec l'univers ; les places d'une fiche supprimée partent, AD-119) (*suppression par le MJ depuis `kanevas-import`, AD-105*) |
-| `sections` | `id`, `fiche_id`, `titre`, `ordre`, `contenu` (source Markdown, AD-95, relue telle quelle pour un ancien texte brut ; 100 000 caractères au plus, AD-106, la même constante pour tout texte Markdown), `version` (entier, AD-59, 1 à la création), `modifie_le`, `joueurs_lisent`, `joueurs_ecrivent`, `auteur_id` (compte, facultatif), `auteur_lit`, `auteur_ecrit` | quatre bascules booléennes, **toutes à faux à la création** (une section naît fermée aux joueurs) ; `ordre` entier unique par fiche ; `titre` non vide, 1 à 80 caractères ; `contenu` borné par le service seul (`MAX_CONTENU_SECTION`), pas par un `CHECK` ; `auteur_id` doit être un membre Joueur de l'univers de la fiche, vérifié par le service ; retirer un membre efface son `auteur_id` |
+| `comptes` | `id`, `username` (Authelia identifier, `preferred_username`), `cree_le` | unique `username`; never a role or group (groups live in the session) |
+| `univers` | `id`, `nom`, `description`, `cree_le` | non-empty `nom`, 1 to 80 characters |
+| `membres` | `univers_id`, `compte_id`, `role` (`mj` \| `joueur`) | primary key (`univers_id`, `compte_id`); foreign keys; at least one `mj` per universe enforced by the service (B-5), not the database |
+| `fiches` | `id`, `univers_id`, `type` (the seven: `personnage`, `lieu`, `faction`, `objet`, `evenement`, `quete`, `compte_rendu`; *since `kanevas-import`, the product list, without a `CHECK`: AD-102 and “`kanevas-import` scope” below*), `titre`, `charge` (versioned JSON, AD-6 and AD-17: `{"v":1}`; character `{"v":1,"pj":true\|false}`; session report `{"v":1,"campagne_id":…}`), `cree_le`, `modifie_le` | `type` constrained to these seven values (*constraint removed by the `kanevas-import` rebuild, AD-102*); non-empty `titre`, 1 to 120 characters; **no map deletion** (except with the universe; a deleted sheet's placements are removed, AD-119) (*deletion by the GM since `kanevas-import`, AD-105*) |
+| `sections` | `id`, `fiche_id`, `titre`, `ordre`, `contenu` (Markdown source, AD-95, read as is for former plain text; at most 100,000 characters, AD-106, the same constant for all Markdown text), `version` (integer, AD-59, 1 at creation), `modifie_le`, `joueurs_lisent`, `joueurs_ecrivent`, `auteur_id` (account, optional), `auteur_lit`, `auteur_ecrit` | four boolean toggles, **all false at creation** (a section starts closed to players); integer `ordre` unique per sheet; non-empty `titre`, 1 to 80 characters; `contenu` bounded by the service alone (`MAX_CONTENU_SECTION`), not by a `CHECK`; `auteur_id` must be a Player member of the sheet's universe, checked by the service; removing a member clears their `auteur_id` |
 
-`modifie_le` de la fiche suit la dernière écriture d'une de ses sections. `ordre` est renuméroté
-de 1 à n à chaque réordonnancement ou retrait. Le mode Joueur est calculé par le service, jamais
-par le client : il lit comme un Joueur **qui n'est l'auteur d'aucune section** (AD-39).
+The sheet's `modifie_le` follows the latest write to one of its sections. `ordre` is renumbered
+from 1 to n on each reorder or removal. Player mode is computed by the service, never
+by the client: it reads as a Player **who is not the author of any section** (AD-39).
 
-## `kanevas-recours-admin` : aucune migration
+## `kanevas-recours-admin`: no migration
 
-Aucune table, aucune colonne : l'admin d'instance n'est pas une donnée (AD-9). Sa seule lecture hors
-des univers dont il est membre : le nom de chaque univers et le nombre de ses membres, puis la liste
-des membres d'un univers (identifiant, rôle) ; son seul geste : ajouter, changer le rôle, retirer un
-membre (B-6). Il ne lit ni ne modifie jamais la description, les fiches ou rien d'autre.
+No table, no column: the instance admin is not data (AD-9). Their only read outside
+the universes they belong to: each universe's name and member count, then the list
+of a universe's members (identifier, role); their only action: add, change the role of, remove a
+member (B-6). They never read or change the description, sheets or anything else.
 ## Migration `kanevas-systemes`
 
-> Fichier : `src/db/migrations/0002-systemes.sql` — numéro **définitif** (0002).
+> File: `src/db/migrations/0002-systemes.sql` — **final** number (0002).
 >
-> Un numéro est posé à la fusion de sa tranche (AD-51) et ne bouge plus. Deux tables, une colonne : aucune entité de plus que le cadrage.
+> A number is assigned when its slice merges (AD-51) and never changes. Two tables, one column: no entity beyond the scope.
 
-| Table | Colonnes (hors clés) | Contraintes |
+| Table | Columns (excluding keys) | Constraints |
 |---|---|---|
-| `systemes_jeu` | `id`, `nom`, `cree_le` | `nom` 1 à 80 caractères après rognage ; **unique sans tenir compte de la casse** (`COLLATE NOCASE`) |
-| `gabarits` | `id`, `systeme_id`, `type` (`regle` \| `creature` \| `objet`), `nom`, `contenu` (source Markdown, AD-95 ; 100 000 caractères au plus, AD-106), `version` (entier, 1 à la création, AD-85), `cree_le`, `modifie_le` | `type` contraint à ces trois valeurs, fixé à la création ; `nom` 1 à 120 caractères ; `contenu` 20 000 au plus *(100 000 depuis `kanevas-import`, AD-106 : la même constante pour tout texte Markdown)* ; `nom` unique par (système, type) sans tenir compte de la casse ; **aucune suppression** |
-| `univers` (ajout) | `systeme_id`, facultatif, → `systemes_jeu` | `NULL` par défaut (aucun univers existant n'est rattaché) |
+| `systemes_jeu` | `id`, `nom`, `cree_le` | `nom` 1 to 80 characters after trimming; **case-insensitively unique** (`COLLATE NOCASE`) |
+| `gabarits` | `id`, `systeme_id`, `type` (`regle` \| `creature` \| `objet`), `nom`, `contenu` (Markdown source, AD-95; at most 100,000 characters, AD-106), `version` (integer, 1 at creation, AD-85), `cree_le`, `modifie_le` | `type` constrained to these three values, fixed at creation; `nom` 1 to 120 characters; `contenu` at most 20,000 *(100,000 since `kanevas-import`, AD-106: the same constant for all Markdown text)*; `nom` case-insensitively unique per (system, type); **no deletion** |
+| `univers` (addition) | `systeme_id`, optional, → `systemes_jeu` | `NULL` by default (no existing universe is attached) |
 
-Un univers a **au plus un** système ; un système peut servir plusieurs univers. Détacher remet
-`systeme_id` à `NULL` et ne touche à aucun gabarit. Rien n'est amorcé hors bouchon : le catalogue naît vide, les
-systèmes sont créés par les MJ. En bouchon seulement, le semis de démonstration crée « CoF Mini » et
+A universe has **at most one** system; a system can serve several universes. Detaching resets
+`systeme_id` to `NULL` without touching any template. Nothing is seeded outside stub mode: the catalogue starts empty,
+systems are created by GMs. In stub mode only, the demo seed creates « CoF Mini » and
 « Chroniques Oubliées Fantasy » (`src/bouchon/depart.ts`).
 
-**Droits** (AD-25) : le catalogue (`id`, `nom`) se lit par tout compte qui est MJ d'au moins un univers ;
-un système, ses gabarits et le nombre d'univers qui l'utilisent se lisent par les membres d'un
-univers rattaché ; les gabarits s'écrivent par ses MJ. **Le nombre N est le seul renseignement sur les
-autres univers** : ni leur nom, ni leurs membres (règle 3). Créer un système : tout MJ d'un univers,
-au catalogue, avec ou sans rattachement dans le même geste. Modifier le nom et la description d'un
-univers : MJ. Depuis `kanevas-illustrations` (AD-94), un système se lit à sa propre adresse, sous la même
-garde (rattaché à un univers dont le compte est membre ; écrire : MJ d'un de ces univers) : aucune
-colonne ni table de plus.
+**Permissions** (AD-25): the catalogue (`id`, `nom`) can be read by any account that is a GM of at least one universe;
+a system, its templates and the number of universes using it can be read by members of an
+attached universe; templates can be written by its GMs. **The number N is the only information about
+other universes**: neither their names nor their members (rule 3). Creating a system: any universe GM,
+from the catalogue, with or without attaching it in the same action. Changing a universe's name and description:
+GM. Since `kanevas-illustrations` (AD-94), a system is read at its own address, under the same
+guard (attached to a universe the account belongs to; writing: GM of one of those universes): no
+additional column or table.
 
-## Migration `kanevas-suivi` (numéro pris à la fusion, AD-51 : le suivant de 0002)
+## Migration `kanevas-suivi` (number assigned at merge, AD-51: the next after 0002)
 
-> Fichier : `src/db/migrations/0003-suivi.sql` — numéro **définitif** (0003).
+> File: `src/db/migrations/0003-suivi.sql` — **final** number (0003).
 
-Trois tables, aucune entité nouvelle (campagne, scénario, tâche de préparation sont celles du
-cadrage). Les comptes-rendus n'ont pas de table : un compte-rendu est une fiche de type
-`compte_rendu` (charge `{"v":1,"campagne_id":…}`, déjà posée par 0001, AD-52).
+Three tables, no new entity (campaign, scenario, preparation task are those in the
+scope). Session reports have no table: a session report is a sheet of type
+`compte_rendu` (payload `{"v":1,"campagne_id":…}`, already introduced by 0001, AD-52).
 
-| Table | Colonnes (hors clés) | Contraintes |
+| Table | Columns (excluding keys) | Constraints |
 |---|---|---|
-| `campagnes` | `id`, `univers_id`, `nom`, `statut` (`en_preparation` \| `active` \| `terminee`), `cree_le` | `nom` non vide, 1 à 80 caractères ; `statut` contraint à ces trois valeurs, `en_preparation` à la création ; plusieurs `active` permises (AD-60) ; **aucune suppression** |
-| `scenarios` | `id`, `campagne_id`, `titre`, `contenu` (source Markdown, AD-95 ; 100 000 caractères au plus, AD-106), `version` (entier, 1 à la création, AD-62), `cree_le`, `modifie_le` | `titre` non vide, 1 à 120 caractères ; `contenu` 20 000 caractères au plus *(100 000 depuis `kanevas-import`, AD-106 : la même constante pour tout texte Markdown)* ; **aucune suppression** |
-| `taches_preparation` | `id`, `campagne_id`, `categorie` (`monstres` \| `pnj` \| `cartes` \| `deroulements` \| `autre`), `libelle`, `faite`, `faite_le` (date de la dernière coche, vide si décochée), `cree_le` | `libelle` non vide, 1 à 200 caractères ; catégorie contrainte à ces cinq valeurs (AD-46) ; **aucune suppression** |
+| `campagnes` | `id`, `univers_id`, `nom`, `statut` (`en_preparation` \| `active` \| `terminee`), `cree_le` | non-empty `nom`, 1 to 80 characters; `statut` constrained to these three values, `en_preparation` at creation; several `active` allowed (AD-60); **no deletion** |
+| `scenarios` | `id`, `campagne_id`, `titre`, `contenu` (Markdown source, AD-95; at most 100,000 characters, AD-106), `version` (integer, 1 at creation, AD-62), `cree_le`, `modifie_le` | non-empty `titre`, 1 to 120 characters; `contenu` at most 20,000 characters *(100,000 since `kanevas-import`, AD-106: the same constant for all Markdown text)*; **no deletion** |
+| `taches_preparation` | `id`, `campagne_id`, `categorie` (`monstres` \| `pnj` \| `cartes` \| `deroulements` \| `autre`), `libelle`, `faite`, `faite_le` (date of the last check, empty if unchecked), `cree_le` | non-empty `libelle`, 1 to 200 characters; category constrained to these five values (AD-46); **no deletion** |
 
-Un compte-rendu se crée en une seule transaction : la fiche (type `compte_rendu`, `campagne_id` de
-la campagne de l'univers) et **une** section « Compte-rendu » portant le texte, lisible des
-joueurs, non écrivable par eux ; si le créateur est un Joueur, il en est l'auteur, qui la lit et
-l'écrit ; si c'est un MJ, la section n'a pas d'auteur (AD-61). La campagne cible doit appartenir à
-l'univers du créateur, sinon la création échoue comme pour une campagne inconnue. Rien n'est écrit
-si l'une des deux écritures échoue. L'ordre des comptes-rendus est `cree_le` décroissant, `id`
-décroissant en cas d'égalité. Le nom de la campagne et l'auteur d'un compte-rendu se lisent à
-travers les droits de la fiche : l'auteur n'est montré que si la section est lisible du compte.
+A session report is created in a single transaction: the sheet (type `compte_rendu`, `campagne_id` of
+the universe's campaign) and **one** « Compte-rendu » section carrying the text, readable by
+players, not writable by them; if the creator is a Player, they are its author, who reads and
+writes it; if a GM, the section has no author (AD-61). The target campaign must belong to
+the creator's universe, otherwise creation fails as for an unknown campaign. Nothing is written
+if either write fails. Session reports are ordered by descending `cree_le`, then descending `id`
+on a tie. The campaign name and a report's author are read
+through the sheet's permissions: the author is shown only if the section is readable by the account.
 
-Droits (en plus de ceux de 0001) : `campagnes` — nom et statut, tout membre de l'univers ; création
-et statut, MJ. `scenarios` et `taches_preparation` — MJ de l'univers **de la campagne** seul (AD-47),
-évalué sur l'univers de la campagne, jamais sur un identifiant fourni par l'appelant : un MJ d'un
-autre univers n'atteint aucun scénario ni aucune tâche, un Joueur non plus (réponse comme pour un
-identifiant inconnu, AD-22), et leur nombre ni leur existence ne sortent jamais d'une réponse à
-un Joueur.
+Permissions (in addition to those of 0001): `campagnes` — name and status, any universe member; creation
+and status, GM. `scenarios` and `taches_preparation` — GM of **the campaign's universe** only (AD-47),
+evaluated on the campaign's universe, never on an identifier provided by the caller: a GM of
+another universe cannot reach any scenario or task, neither can a Player (same response as for an
+unknown identifier, AD-22), and neither their number nor their existence ever appears in an answer to
+a Player.
 
-## `kanevas-images` : aucune migration
+## `kanevas-images`: no migration
 
-Aucune table, aucune colonne : une image générée est un **fichier de la médiathèque** ordinaire (`fichiers`,
-joint à la section par `fichiers_sections`, migration 0015), créé par la fonction d'ajout unique
-`ajouterFichier` (AD-117 §6), sa visibilité déduite de la section. La description demandée n'est
-stockée nulle part (AD-28) ; seul le fichier l'est. Les identifiants du moteur d'images vivent dans
-`CODEX_HOME` sur le volume, hors base (AD-50).
+No table, no column: a generated image is an ordinary **media library file** (`fichiers`,
+attached to the section through `fichiers_sections`, migration 0015), created by the single add function
+`ajouterFichier` (AD-117 §6), its visibility derived from the section. The requested description is
+not stored anywhere (AD-28); only the file is. Image engine credentials live in
+`CODEX_HOME` on the volume, outside the database (AD-50).
 
-## Règles de droits, en une phrase chacune
+## Permission rules, one sentence each
 
-1. Les droits sur le contenu viennent de **membre**, jamais d'Authelia (AD-9). Authelia ne
-   donne qu'une chose : le rôle d'admin d'instance (groupe `parents`), qui lit les noms des
-   univers et les membres, et n'écrit que la table des membres.
-2. Le **MJ** lit et écrit tout dans son univers (AD-18) ; un **joueur** suit les bascules de
-   chaque section (AD-19).
-3. Ce qu'un compte ne peut pas lire **n'existe pas** pour lui : absent des listes, des
-   recherches, des cartes, des liens ; son adresse répond 404 (AD-22).
-4. Une **pièce jointe** n'est servie que par la route qui revérifie ces droits (AD-7, AD-36). *Depuis `kanevas-import`, voir la règle 10 : tout fichier est servi par la route des fichiers, sous sa visibilité, et montré dans une fiche sous double garde.*
-5. L'**agent** a exactement les droits de la personne qui lui parle (AD-2, AD-26).
-6. L'**illustration** d'une fiche se voit par qui voit la fiche et se pose par le MJ seul ; elle
-   n'est jamais secrète (AD-93). *Depuis `kanevas-import` : l'illustration est une image de la
-   médiathèque ; elle se voit si la fiche **et** l'image sont lisibles (AD-111, décision de Monsieur du 2026-10-11).*
-10. *(kanevas-import)* Un **fichier de la médiathèque** (image ou document) porte ses propres droits ;
-   dans une fiche, il ne se montre que si son conteneur **et** lui-même sont lisibles ; sinon, dans un
-   conteneur lisible, « Image réservée au MJ. » ou « Fichier réservé au MJ. » (AD-111).
-7. *(kanevas-import)* Un **bloc MJ** n'existe que pour un MJ hors mode Joueur : ni sur la fiche, ni dans
-   l'index qu'un non-MJ interroge, ni dans un lien entrant, ni dans une image (AD-98) ; un fichier
-   ajouté depuis un bloc MJ entre « Réservé au MJ » (AD-111, décision de Monsieur du 2026-10-11).
-8. *(kanevas-import)* Un **lien** ou un **lien entrant** se lit sous les deux gardes d'une relation :
-   la section qui le porte, la fiche qu'il vise ; sinon seul le texte de l'auteur reste (AD-97, AD-100).
-9. *(kanevas-import)* Un **jeton d'API** agit avec les droits du MJ qui l'a créé, dans son seul
-   univers, sur la seule API d'import ; perdre le rôle, c'est perdre le jeton (AD-103).
+1. Content permissions come from **membership**, never from Authelia (AD-9). Authelia
+   provides only one thing: the instance admin role (`parents` group), which reads universe
+   names and members, and writes only the members table.
+2. The **GM** reads and writes everything in their universe (AD-18); a **player** follows each
+   section's toggles (AD-19).
+3. What an account cannot read **does not exist** for it: absent from lists,
+   searches, maps, links; its address returns 404 (AD-22).
+4. An **attachment** is served only by the route that rechecks these permissions (AD-7, AD-36). *Since `kanevas-import`, see rule 10: every file is served by the files route, under its visibility, and shown in a sheet under the double guard.*
+5. The **agent** has exactly the permissions of the person speaking to it (AD-2, AD-26).
+6. A sheet's **illustration** is seen by anyone who sees the sheet and is set by the GM only; it
+   is never secret (AD-93). *Since `kanevas-import`: the illustration is a media library
+   image; it is seen if the sheet **and** the image are readable (AD-111, decision by Monsieur on 2026-10-11).*
+10. *(kanevas-import)* A **media library file** (image or document) carries its own permissions;
+   in a sheet, it is shown only if its container **and** the file itself are readable; otherwise, in a
+   readable container, « Image réservée au MJ. » or « Fichier réservé au MJ. » (AD-111).
+7. *(kanevas-import)* A **GM block** exists only for a GM outside Player mode: neither on the sheet, nor in
+   the index queried by a non-GM, nor in an incoming link, nor in an image (AD-98); a file
+   added from a GM block starts as « Réservé au MJ » (AD-111, decision by Monsieur on 2026-10-11).
+8. *(kanevas-import)* A **link** or an **incoming link** is read under both guards of a relation:
+   the section carrying it, the sheet it targets; otherwise only the author's text remains (AD-97, AD-100).
+9. *(kanevas-import)* An **API token** acts with the permissions of the GM who created it, in their sole
+   universe, on the import API alone; losing the role means losing the token (AD-103).
 
-## Migration `kanevas-relier-chercher` (`0005-relier-chercher.sql`, recalée à la fusion après 0004, AD-51)
+## Migration `kanevas-relier-chercher` (`0005-relier-chercher.sql`, reassigned at merge after 0004, AD-51)
 
-Une table et deux index de recherche ; aucune entité nouvelle (la relation est celle du cadrage).
+One table and two search indexes; no new entity (the relation is the one in the scope).
 
-| Objet | Colonnes (hors clés) | Contraintes |
+| Object | Columns (excluding keys) | Constraints |
 |---|---|---|
-| `relations` | `id`, `section_id` (la porteuse), `cible_fiche_id`, `type` (texte libre), `cree_le` | `section_id` → `sections` **ON DELETE CASCADE** (retirer une section retire ses relations) ; `cible_fiche_id` → `fiches` **ON DELETE RESTRICT** (filet : `supprimerFiche` retire d'abord les places de la fiche, AD-119) ; `type` 1 à 80 caractères après rognage ; `UNIQUE (section_id, cible_fiche_id, type)` |
-| `recherche_fiches` (FTS5) | `titre` ; `rowid` = `fiches.id` | tokenizer `unicode61 remove_diacritics 2` |
-| `recherche_sections` (FTS5) | `titre`, `contenu` ; `rowid` = `sections.id` | idem |
+| `relations` | `id`, `section_id` (the carrying section), `cible_fiche_id`, `type` (free text), `cree_le` | `section_id` → `sections` **ON DELETE CASCADE** (removing a section removes its relations); `cible_fiche_id` → `fiches` **ON DELETE RESTRICT** (safety net: `supprimerFiche` first removes the sheet's placements, AD-119); `type` 1 to 80 characters after trimming; `UNIQUE (section_id, cible_fiche_id, type)` |
+| `recherche_fiches` (FTS5) | `titre`; `rowid` = `fiches.id` | tokenizer `unicode61 remove_diacritics 2` |
+| `recherche_sections` (FTS5) | `titre`, `contenu`; `rowid` = `sections.id` | same |
 
-Les index sont tenus par des **déclencheurs** (AD-21) : à l'insertion, à la modification du titre
-(fiche) ou du titre et du contenu (section), à la suppression, y compris celle qu'une cascade
-provoque. La migration **remplit** les index depuis les lignes déjà présentes (une base de la
-première fiche garde ses fiches cherchables). Index SQL : `relations (section_id)` sert la lecture
-des relations d'une section ; aucun index sur `cible_fiche_id` (aucune requête de cette tranche n'en
-a besoin ; le graphe des cartes ajoutera le sien si sa requête l'exige).
+Indexes are maintained by **triggers** (AD-21): on insertion, on changes to the title
+(sheet) or title and content (section), on deletion, including deletions caused by a
+cascade. The migration **fills** the indexes from existing rows (a first-sheet database
+keeps its sheets searchable). SQL index: `relations (section_id)` serves reading
+a section's relations; no index on `cible_fiche_id` (no query in this slice
+needs it; the map graph will add its own if its query requires it).
 
 > **Since `kanevas-import-mediatheque` this describes the history, not the rules in force:** the table above is emptied and unread; `fichiers.visibilite` and `fichierLisible` (`src/services/fichiers.ts`) govern who reads a file, and the limit is 100 joined files per section. `pieces_jointes.secrete` and the 50-piece ceiling below no longer apply.
 
-Ce que la base ne dit pas, et que le service porte, avec sa raison (la règle croise plusieurs
-tables) : la fiche cible est **du même univers** que la fiche de la section ; elle n'est **pas**
-cette fiche elle-même ; une section porte **100 relations** au plus ; seul un MJ crée ou retire.
+What the database does not express, and the service enforces, with the reason (the rule spans several
+tables): the target sheet is **in the same universe** as the section's sheet; it is **not**
+that sheet itself; a section carries **at most 100 relations**; only a GM creates or removes them.
 
-Lecture, évaluée pour **le compte et le mode** de l'appelant : une relation est rendue si la section
-porteuse est lisible **et** si la fiche cible l'est (au moins une section lisible ; le MJ, hors
-mode Joueur, lit toute fiche de son univers). Sinon elle est absente de la réponse, sans compteur.
-Recherche : la liste d'un type avec une condition de plus (AD-63), saisie de 1 à 100 caractères (le service refuse au-delà) ; l'API accepte `q` sans `type` (toutes les fiches lisibles), et E-17 l'emploie (recherche tous types) ; l'index ne livre que des
-identifiants de candidats, jamais un résultat.
+Reading, evaluated for **the caller's account and mode**: a relation is returned if the carrying
+section is readable **and** the target sheet is too (at least one readable section; the GM, outside
+Player mode, reads every sheet in their universe). Otherwise it is absent from the response, with no count.
+Search: the list for a type with one additional condition (AD-63), input of 1 to 100 characters (the service refuses more); the API accepts `q` without `type` (all readable sheets), and E-17 uses it (search across all types); the index delivers only
+candidate identifiers, never a result.
 
-## Évolution
+## Evolution
 
-Migrations SQL numérotées, appliquées au démarrage, sans ORM (AD-14). *Remplacé par `kanevas-import`
-(AD-102) :* ~~**La table des fiches connaît ses sept types dès sa création** : aucune tranche ne la
-recrée.~~ La table des fiches est **recréée une fois**, par `kanevas-import`, pour lever la contrainte
-sur le type ; ensuite un type s'ajoute dans le code seul (voir plus bas). L'ordre des migrations
-suit l'ordre de fusion des tranches, et chaque tranche prend le numéro suivant au moment où elle
-se fusionne, pas avant (AD-51).
+Numbered SQL migrations, applied at startup, without an ORM (AD-14). *Superseded by `kanevas-import`
+(AD-102):* ~~**The sheets table knows its seven types from creation**: no slice
+rebuilds it.~~ The sheets table is **rebuilt once**, by `kanevas-import`, to remove the constraint
+on the type; afterwards a type is added in code alone (see below). Migration order
+follows slice merge order, and each slice takes the next number when it
+merges, not beforehand (AD-51).
 
-## Migration `kanevas-fichiers` (numéro pris à la fusion, AD-51 : le suivant de 0003)
+## Migration `kanevas-fichiers` (number assigned at merge, AD-51: the next after 0003)
 
 > Provisional, like the systems migration above. File: `src/db/migrations/0004-pieces-jointes.sql` —
 > **provisional number** (0004), adjusted at merge if another slice arrives first (AD-51). Code:
@@ -234,116 +234,116 @@ se fusionne, pas avant (AD-51).
 > `src/services/fichiers.ts` (`pieces_jointes` is emptied by migration 0015 and is no longer read).
 > Directory configured through `ATTACHMENTS_DIR` (default: `attachments/` beside the database).
 
-Une table ; aucune entité nouvelle (la pièce jointe est celle du cadrage). Les octets ne sont pas
-en base (AD-7) : ils vivent sous `/data/attachments/`.
+One table; no new entity (the attachment is the one in the scope). Bytes are not
+in the database (AD-7): they live under `/data/attachments/`.
 
-| Objet | Colonnes (hors clés) | Contraintes |
+| Object | Columns (excluding keys) | Constraints |
 |---|---|---|
-| `pieces_jointes` | `id`, `section_id`, `nom` (nom d'origine), `type` (type MIME **déterminé par le serveur**, AD-66), `taille` (octets), `fichier` (nom sur disque, UUID, AD-35), `secrete` (booléen), `cree_le` | `section_id` → `sections` **ON DELETE CASCADE** (retirer une section retire ses lignes) ; `fichier` unique ; `nom` 1 à 200 caractères ; `taille` > 0 ; `secrete` faux à la création sauf demande du MJ ; index `pieces_jointes (section_id)` |
+| `pieces_jointes` | `id`, `section_id`, `nom` (original name), `type` (MIME type **detected by the server**, AD-66), `taille` (bytes), `fichier` (disk filename, UUID, AD-35), `secrete` (boolean), `cree_le` | `section_id` → `sections` **ON DELETE CASCADE** (removing a section removes its rows); unique `fichier`; `nom` 1 to 200 characters; `taille` > 0; `secrete` false at creation unless requested by the GM; index `pieces_jointes (section_id)` |
 
-**Sur le disque** : `/data/attachments/<fichier>` (un fichier plat par pièce, nom = UUID) ; les envois
-en cours s'écrivent dans `/data/attachments/tmp/` puis passent d'un coup à leur nom définitif
-(AD-65) ; le dossier `tmp/` est vidé au démarrage (sauf base en mémoire). Une ligne et son fichier vont ensemble : jamais
-de ligne sans fichier, et un fichier sans ligne n'est pas atteignable (nom aléatoire, aucune route
-statique).
+**On disk**: `/data/attachments/<fichier>` (one flat file per attachment, name = UUID); ongoing
+uploads are written to `/data/attachments/tmp/` then moved at once to their final names
+(AD-65); the `tmp/` directory is emptied at startup (except for an in-memory database). A row and its file go together: never
+a row without a file, and a file without a row cannot be reached (random name, no static
+route).
 
-Ce que la base ne dit pas, et que le service porte, avec sa raison (la règle croise la section, le
-rôle et le mode) : **100 fichiers joints** au plus par section (AD-111; 50 pièces before `kanevas-import`) ; ajouter ou retirer demande
-d'**écrire** la section ; `secrete` ne se pose et ne se lève que par un MJ ; une pièce se **lit** si
-la section est lisible et, si elle est secrète, par un MJ hors mode Joueur ; un fichier vide est refusé.
-Ajouter ou retirer une pièce ne change ni la `version` ni `modifie_le` de la section (ce n'est
-pas une écriture de son contenu, AD-59).
+What the database does not express, and the service enforces, with the reason (the rule spans section,
+role and mode): at most **100 attached files** per section (AD-111; 50 attachments before `kanevas-import`); adding or removing requires
+**write** permission on the section; `secrete` can be set and cleared only by a GM; an attachment can be **read** if
+the section is readable and, if secret, by a GM outside Player mode; an empty file is refused.
+Adding or removing an attachment changes neither the section's `version` nor its `modifie_le` (it is
+not a write to its content, AD-59).
 
-Retirer une pièce, ou une section, supprime la ligne **puis** le fichier du disque ; si la
-suppression du fichier échoue, la ligne est déjà partie et l'orphelin est inatteignable (risque
-accepté : il n'y a pas de balayage des orphelins en V1).
+Removing an attachment or a section deletes the row **then** the file from disk; if deleting
+the file fails, the row is already gone and the orphan is unreachable (accepted
+risk: there is no orphan sweep in V1).
 
-## Migration `kanevas-cartes-graphes` (`0007-cartes.sql`, numéro définitif, AD-51)
+## Migration `kanevas-cartes-graphes` (`0007-cartes.sql`, final number, AD-51)
 
-Deux tables ; aucune entité nouvelle (la carte et l'élément de carte sont ceux du cadrage). Les
-octets d'un fond ne sont pas en base (AD-7) : ils vivent sous `/data/attachments/` (AD-69).
+Two tables; no new entity (the map and map element are those in the scope). Background
+bytes are not in the database (AD-7): they live under `/data/attachments/` (AD-69).
 
-| Table | Colonnes (hors clés) | Contraintes |
+| Table | Columns (excluding keys) | Constraints |
 |---|---|---|
-| `cartes` | `id`, `univers_id`, `titre`, `forme` (`illustree` \| `graphe`), `visible` (booléen), `fond` (nom sur disque, UUID, facultatif), `fond_type` (type MIME déterminé par le serveur), `cree_le` | `univers_id` → `univers` ; `titre` non vide, 1 à 80 caractères ; `forme` contrainte à ces deux valeurs et **jamais modifiée** ; `visible` **faux à la création** ; `fond` et `fond_type` ensemble ou ensemble absents, et absents d'un graphe (`CHECK`) ; `fond` unique ; index `cartes (univers_id)` ; **aucune suppression** |
-| `elements_carte` | `id`, `carte_id`, `fiche_id`, `x`, `y` (réels, pourcentage, AD-70), `cree_le` | `carte_id` → `cartes` ; `fiche_id` → `fiches` **ON DELETE RESTRICT** (filet : `supprimerFiche` retire d'abord les places de la fiche, AD-119) ; `UNIQUE (carte_id, fiche_id)` ; `x` et `y` ensemble nuls ou ensemble entre 0 et 100 (`CHECK`) |
+| `cartes` | `id`, `univers_id`, `titre`, `forme` (`illustree` \| `graphe`), `visible` (boolean), `fond` (disk filename, UUID, optional), `fond_type` (MIME type detected by the server), `cree_le` | `univers_id` → `univers`; non-empty `titre`, 1 to 80 characters; `forme` constrained to these two values and **never changed**; `visible` **false at creation**; `fond` and `fond_type` present together or absent together, and absent from a graph (`CHECK`); unique `fond`; index `cartes (univers_id)`; **no deletion** |
+| `elements_carte` | `id`, `carte_id`, `fiche_id`, `x`, `y` (real numbers, percentage, AD-70), `cree_le` | `carte_id` → `cartes`; `fiche_id` → `fiches` **ON DELETE RESTRICT** (safety net: `supprimerFiche` first removes the sheet's placements, AD-119); `UNIQUE (carte_id, fiche_id)`; `x` and `y` both null or both between 0 and 100 (`CHECK`) |
 
-Ce que la base ne dit pas, et que le service porte, avec sa raison (la règle croise la carte, la
-fiche et le rôle) : la fiche d'un élément est **du même univers** que la carte ; une carte
-**illustrée** porte des éléments avec position, un **graphe** des éléments sans position ; **100
-éléments** au plus par carte (AD-72) ; seul un MJ hors mode Joueur crée une carte, la règle (titre,
-visibilité), change son fond, place, déplace ou retire un élément ; un fond n'est qu'une image de
-25 Mo au plus (AD-69). Retirer un élément supprime sa ligne, jamais la fiche.
+What the database does not express, and the service enforces, with the reason (the rule spans map,
+sheet and role): an element's sheet is **in the same universe** as the map; an
+**illustrated** map carries elements with positions, a **graph** elements without positions; at most **100
+elements** per map (AD-72); only a GM outside Player mode creates a map, configures it (title,
+visibility), changes its background, places, moves or removes an element; a background is only an image of
+at most 25 MB (AD-69). Removing an element deletes its row, never the sheet.
 
-Lecture, évaluée pour **le compte et le mode** de l'appelant (AD-68) : une carte se lit si le
-compte est MJ hors mode Joueur, ou si elle est visible. Un élément est rendu si sa fiche est lisible
-(au moins une section lisible ; le MJ hors mode Joueur lit toute fiche de son univers, AD-38). Les
-liens d'un graphe ne sont pas stockés (AD-41) : pour deux éléments rendus A et B, un lien « A → B,
-type » existe pour chaque relation de `relations` portée par une section de A que le lecteur lit, qui
-vise B et qui se lit sous les deux gardes d'AD-64 (par la même fonction de lecture des relations que
-la fiche). Un lien n'est rendu que si ses deux bouts le sont. Aucune réponse ne dit combien
-d'éléments ou de liens ont été écartés. La liste des cartes d'un joueur ne contient que les cartes
-visibles ; un MJ en mode Joueur voit la même.
+Reading, evaluated for **the caller's account and mode** (AD-68): a map is readable if the
+account is a GM outside Player mode, or if it is visible. An element is returned if its sheet is readable
+(at least one readable section; the GM outside Player mode reads every sheet in their universe, AD-38). Graph
+links are not stored (AD-41): for two returned elements A and B, an “A → B,
+type” link exists for each relation in `relations` carried by a section of A that the reader reads, that
+targets B and is readable under both guards of AD-64 (through the same relation-reading function as
+the sheet). A link is returned only if both its ends are. No response says how many
+elements or links were filtered out. A player's map list contains only visible
+maps; a GM in Player mode sees the same list.
 
 
-## Migration `kanevas-illustrations` (numéro pris à la fusion, AD-51)
+## Migration `kanevas-illustrations` (number assigned at merge, AD-51)
 
-> Fichier : `src/db/migrations/0006-illustrations.sql` — numéro **définitif** (0006) ; il a été recalé à la fusion si une autre tranche
-> est entrée avant (AD-51). Décision : AD-93.
+> File: `src/db/migrations/0006-illustrations.sql` — **final** number (0006); it was reassigned at merge if another slice
+> arrived first (AD-51). Decision: AD-93.
 
-**Conceptuel.** Une fiche a **zéro ou une** illustration : une image (PNG, JPEG, GIF ou WebP)
-choisie par le MJ pour la représenter dans la liste (E-8) et en tête de la fiche (E-9). Ce n'est
-pas une pièce jointe : elle n'appartient à aucune section, n'en prend pas la visibilité et n'a
-pas de nom d'origine à montrer. Invariants : (1) une fiche a au plus une illustration ; (2) une
-illustration est entière ou absente — son fichier, son type et sa taille vont ensemble ; (3) son
-type est l'un des quatre types d'image servis en ligne (AD-66) ; (4) un fichier sur le disque
-n'appartient qu'à une illustration.
+**Conceptual.** A sheet has **zero or one** illustration: an image (PNG, JPEG, GIF or WebP)
+chosen by the GM to represent it in the list (E-8) and at the top of the sheet (E-9). It is
+not an attachment: it belongs to no section, does not take a section's visibility and has
+no original name to display. Invariants: (1) a sheet has at most one illustration; (2) an
+illustration is complete or absent — its file, type and size go together; (3) its
+type is one of the four image types served inline (AD-66); (4) a file on disk
+belongs to only one illustration.
 
-**Logique : trois colonnes sur `fiches`, pas de table.** La cardinalité « au plus une » est celle
-d'une colonne : une table liée devrait la reconstruire par un `UNIQUE (fiche_id)` et ajouterait
-une entité que le cadrage n'a pas (« une tranche ajoute des attributs, jamais une entité »).
+**Logical: three columns on `fiches`, no table.** “At most one” is the cardinality
+of a column: a linked table would have to reconstruct it with a `UNIQUE (fiche_id)` and would add
+an entity absent from the scope (“a slice adds attributes, never an entity”).
 
-| Colonne (ajout à `fiches`) | Type | Absence (`NULL`) | Contrainte (invariant) |
+| Column (added to `fiches`) | Type | Absence (`NULL`) | Constraint (invariant) |
 |---|---|---|---|
-| `illustration_fichier` | texte : nom sur disque, un UUID (AD-35) | la fiche n'a pas d'illustration | index unique `fiches_illustration_fichier` (4) — `ALTER TABLE … ADD COLUMN` ne peut pas porter `UNIQUE`, d'où l'index ; plusieurs `NULL` y sont permis |
-| `illustration_type` | texte : type MIME **déterminé par le serveur** à la signature (AD-66) | idem | `CHECK (illustration_type IN ('image/png','image/jpeg','image/gif','image/webp'))` (3) |
-| `illustration_taille` | entier : octets | idem | `CHECK (illustration_taille > 0 AND (illustration_fichier IS NULL) = (illustration_type IS NULL) AND (illustration_type IS NULL) = (illustration_taille IS NULL))` (2) ; (1) tient par construction |
+| `illustration_fichier` | text: disk filename, a UUID (AD-35) | the sheet has no illustration | unique index `fiches_illustration_fichier` (4) — `ALTER TABLE … ADD COLUMN` cannot carry `UNIQUE`, hence the index; multiple `NULL` values are allowed |
+| `illustration_type` | text: MIME type **detected by the server** from the signature (AD-66) | same | `CHECK (illustration_type IN ('image/png','image/jpeg','image/gif','image/webp'))` (3) |
+| `illustration_taille` | integer: bytes | same | `CHECK (illustration_taille > 0 AND (illustration_fichier IS NULL) = (illustration_type IS NULL) AND (illustration_type IS NULL) = (illustration_taille IS NULL))` (2); (1) holds by construction |
 
-Vérifié sur SQLite 3.46 : `ADD COLUMN` accepte ces `CHECK` (qui peuvent nommer une colonne déjà
-présente), les lignes existantes (toutes `NULL`) les passent, un triplet incomplet ou un type
-`image/svg+xml` est refusé. Pas de clé étrangère (rien n'est référencé), donc pas d'`ON DELETE` ;
-les clés RESTRICT sont un filet : `supprimerFiche` (AD-119) retire d'abord ce qui vise la fiche (migration 0001).
+Verified on SQLite 3.46: `ADD COLUMN` accepts these `CHECK` constraints (which can name an already
+present column), existing rows (all `NULL`) pass them, an incomplete triplet or an
+`image/svg+xml` type is refused. No foreign key (nothing is referenced), hence no `ON DELETE`;
+RESTRICT keys are a safety net: `supprimerFiche` (AD-119) first removes what targets the sheet (migration 0001).
 
-**Physique.** Même base, mêmes réglages (WAL, `foreign_keys`). Les octets vont sur le disque, par
-le module de stockage d'AD-65, dans le même dossier que les pièces jointes
-(`/data/attachments/<illustration_fichier>`), jamais en base (AD-7). Index : seulement l'index
-unique ci-dessus, qui porte l'invariant (4) ; aucune requête ne cherche une fiche par son
-illustration. La liste E-8 lit les colonnes avec la ligne de la fiche qu'elle lit déjà.
+**Physical.** Same database, same settings (WAL, `foreign_keys`). Bytes go to disk through
+the AD-65 storage module, in the same directory as attachments
+(`/data/attachments/<illustration_fichier>`), never in the database (AD-7). Index: only the unique
+index above, which enforces invariant (4); no query looks up a sheet by its
+illustration. The E-8 list reads the columns with the sheet row it already reads.
 
-**Plan de migration.** Un seul temps, **élargir** : trois colonnes nullables et un index, aucune
-donnée reprise, aucune colonne lue par l'ancien code. Le code de la tranche part avec elle ; un
-retour arrière laisse des colonnes ignorées. Rien à resserrer. Multi-tenant : inchangé (la fiche
-est déjà dans son univers).
+**Migration plan.** One step, **expand**: three nullable columns and one index, no
+data migrated, no column read by the old code. The slice's code ships with it; a
+rollback leaves ignored columns. Nothing to contract. Multi-tenant: unchanged (the sheet
+is already in its universe).
 
-**Écrire.** Poser et remplacer : le serveur écrit le flux dans `tmp/`, lit sa signature, le
-déplace à son nom définitif, puis **dans une transaction** revérifie que le compte est MJ de
-l'univers de la fiche et écrit les trois colonnes ; **après** la validation, il supprime le
-fichier remplacé. Retirer : remet les trois colonnes à `NULL`, puis supprime le fichier. Un échec
-ou une annulation n'écrit ni colonne ni fichier ; un fichier remplacé ou retiré dont la
-suppression échoue reste orphelin et inatteignable (même risque accepté que les pièces jointes).
-Poser, remplacer ou retirer ne change pas `modifie_le` de la fiche (ce n'est pas une écriture de
-ses sections). Le dossier `tmp/` est vidé au démarrage, comme pour les pièces jointes.
+**Writing.** Set and replace: the server writes the stream to `tmp/`, reads its signature,
+moves it to its final name, then **in a transaction** rechecks that the account is a GM of
+the sheet's universe and writes the three columns; **after** commit, it deletes the
+replaced file. Remove: resets the three columns to `NULL`, then deletes the file. A failure
+or cancellation writes neither column nor file; a replaced or removed file whose
+deletion fails remains orphaned and unreachable (same accepted risk as attachments).
+Setting, replacing or removing does not change the sheet's `modifie_le` (it is not a write to
+its sections). The `tmp/` directory is emptied at startup, as for attachments.
 
-**Droits, une phrase chacun.**
-- **Voir** l'illustration : qui voit la fiche (au moins une section lisible ; le MJ, toute fiche de
-  son univers), selon ses droits réels — le mode Joueur d'un MJ ne change que ce que l'écran montre.
-- **Poser, remplacer, retirer** : un MJ de l'univers de la fiche ; un Joueur ne le peut pas, même
-  auteur ou rédacteur d'une section.
-- **Jamais secrète** : elle est au niveau de la fiche, comme son titre ; qui voit le titre voit
-  l'illustration. *Tombe avec `kanevas-import` (AD-111, décision de Monsieur du 2026-10-11) : l'illustration est un fichier de
-  la médiathèque ; elle se voit si la fiche **et** le fichier sont lisibles.*
-- **Fiche invisible** : son illustration n'existe pas pour le compte (réponse identique à un
-  identifiant inconnu, AD-22, AD-67).
+**Permissions, one sentence each.**
+- **View** the illustration: anyone who sees the sheet (at least one readable section; the GM, every sheet in
+  their universe), according to their actual permissions — a GM's Player mode changes only what the screen shows.
+- **Set, replace, remove**: a GM of the sheet's universe; a Player cannot, even
+  as a section's author or writer.
+- **Never secret**: it is at sheet level, like its title; anyone who sees the title sees
+  the illustration. *Superseded by `kanevas-import` (AD-111, decision by Monsieur on 2026-10-11): the illustration is a
+  media library file; it is seen if the sheet **and** the file are readable.*
+- **Invisible sheet**: its illustration does not exist for the account (same response as for an
+  unknown identifier, AD-22, AD-67).
 
 ## Cadrage `kanevas-import` : le modèle
 
