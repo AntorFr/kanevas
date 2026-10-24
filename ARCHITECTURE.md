@@ -475,7 +475,7 @@ the production URL remains real.
 | A player writes in a section that the GM's agent will read (prompt injection) | The GM's agent can modify sections: each write is listed in the thread with a link (B-26), and a world update is never applied by the agent (AD-48). **Accepted risk** in V1, no per-write confirmation. A proposal based on a session report written by a player is read by the GM, alongside the current content, before any action (AD-48, AD-81). |
 | An illustration stays in a browser's cache after it loses the right to see the sheet | **Accepted risk** (AD-93): `private` cache of the sole browser that already saw it; the sheet disappears from its lists, nothing requests it again, and the server rechecks on every request. *Since `kanevas-import`, the illustration is a media library file: the same risk applies to any file whose visibility changes to « Réservé au MJ » (AD-111); it is no longer “never secret”.* |
 | Codex runs without a sandbox, in a root pod; its token is on the backed-up volume | **Accepted risk** (Monsieur's engine decision): the pod is the sandbox, the token is 0600, one process per request, a disposable directory. |
-| *(kanevas-import)* A stolen API token (Mac, terminal history, script repository) | Scope of one universe, the import API alone, a GM's permissions; expiration (30 days by default); revocation by any GM; database keeps only the fingerprint; “last used” visible on E-18 (AD-103). **Accepted risk**: while valid, the token writes and deletes universe sheets like the GM. |
+| *(kanevas-import)* A stolen API token (Mac, terminal history, script repository) | Scope of one universe, the import API alone, a GM's permissions; expiration (30 days by default); revocation by any GM; database keeps only the fingerprint; « dernier usage » visible on E-18 (AD-103). **Accepted risk**: while valid, the token writes and deletes universe sheets like the GM. |
 | *(kanevas-import)* A file closed to a player seen through a sheet, or a file seen outside its permissions | Double guard in the per-reader view (container and file), file route guarded by its visibility, « Utilisé dans » limited to readable sheets (AD-111). **Accepted risk** (Monsieur's decision): the mention « Image réservée au MJ. » / « Fichier réservé au MJ. » reveals that a file is there; a file added from a sheet takes the visibility of the place where it is added (GM block or section not readable by all players: `mj`), which closes the case of a file added while writing; the media library still leaves open a `joueurs` file **chosen** later in GM-only content (the warning covers only the reverse), or sent as `joueurs` by an import — the API contract requires the script to mark as `mj` what the source uses only in GM content; whoever added a file always sees it (a player uploading a file into their restricted section keeps access to it). Cache: AD-93's, same accepted risk. |
 | *(kanevas-import)* Code executing in a reader's browser, from text or an import (HTML, `javascript:`, external image) | `html: false`, bounded link schemes, images and file links limited to the universe's media library, rendering through a single server function (AD-95, AD-111); a suite of XSS vectors in that function's tests. |
 | *(kanevas-import)* A secret leaks outside the sheet: full-text search, link, incoming link, image, assistant, breadcrumb, tree | A single per-reader view (AD-96); `contenu_public` for the non-GM index (AD-98, AD-101); two guards for links and incoming links (AD-97, AD-100); unreadable ancestors and children skipped (AD-99). Each path has its criterion in `docs/ecrans.md`. |
@@ -522,145 +522,145 @@ conversion script (private repository) ──tool-scoped token──▶ extended
 Durable state lives in the database (core + module tables); **ephemeral** state consists of the cache of generated map blocks (memory, lost on
 restart without harm) and journey calculation. No state lives in the browser.
 
-## Décisions
+## Decisions
 
-**AD-121 — Un module s'inscrit par une seule déclaration.** [ADOPTÉ, décision (e)]
-Lie : tous les modules, B-57 à B-70. Empêche : un module qui s'accroche au routeur, à la barre, à l'assistant et à l'écran de réglages chacun à sa manière.
-Règle : un module déclare, en un point unique, son nom, ses réglages communs (stockés sous le seul nom du module), les outils qu'il apporte (chacun : type, portée — un système de jeu ou tous —, dépendances, visibilité
-par défaut, usages), ses réglages et leur forme, la forme de ses catalogues, ses routes, ses outils d'assistant et son point d'entrée d'interface (chargé à l'ouverture,
-AD-133). Le cœur ne connaît aucun module par son nom. Un module regroupe un ou plusieurs outils (le module `swn` porte `galaxie` et `vaisseaux`, qui partagent le
-réglage de portée de saut) ; l'activation et la visibilité se règlent **par outil**. *Rejeté* : un fichier de configuration par outil — les types de fiche n'en ont pas et
-la déclaration doit se tester ; *un chargement à chaud de code tiers* — décision de Monsieur (5).
+**AD-121 — A module registers through a single declaration.** [ADOPTED, decision (e)]
+Binds: all modules, B-57 to B-70. Prevents: a module hooking into the router, sidebar, assistant and settings screen in its own way for each.
+Rule: a module declares, in a single place, its name, its common settings (stored under the module's name alone), the tools it provides (each: type, scope — one game system or all —, dependencies, default
+visibility, uses), its settings and their shape, the shape of its catalogues, its routes, its assistant tools and its interface entry point (loaded on opening,
+AD-133). The core knows no module by name. A module groups one or more tools (the `swn` module carries `galaxie` and `vaisseaux`, which share the
+jump range setting); activation and visibility are configured **per tool**. *Rejected*: a configuration file per tool — sheet types have none and
+the declaration must be testable; *hot loading of third-party code* — Monsieur's decision (5).
 
-**AD-122 — Un contrat d'interface par type d'outil.** [ADOPTÉ, décision (3)]
-Lie : B-59, B-66, B-71, B-75. Empêche : un générateur qui tient sa donnée à part, une carte qui écrit dans des sections.
-Règle : trois types, chacun un contrat testé par un module d'essai : **carte dynamique** (rendue par son module dans la section Cartes, données à part ; le module liste ses cartes — titre, visibilité — et E-10 les ajoute à celles de `cartes`, dont les formes ne changent pas), **générateur** (le
-résultat est une section gérée d'une fiche, les choix de construction sont les données de l'outil rattachées à la fiche, avec la version des règles et des réglages), **aide
-de jeu** (ses données et son entrée ; aucune dans cette epic). Chaque contrat dit comment il traite un réglage qui change (AD-128). Un type est ajouté quand un deuxième
-besoin ressemble au premier, pas avant. *Rejeté* : un moteur générique unique — il aurait les abstractions de SWN (décision (1)).
+**AD-122 — One interface contract per tool type.** [ADOPTED, decision (3)]
+Binds: B-59, B-66, B-71, B-75. Prevents: a generator keeping its data separately, a map writing into sections.
+Rule: three types, each with a contract tested by a trial module: **dynamic map** (rendered by its module in the « Cartes » section, separate data; the module lists its maps — title, visibility — and E-10 adds them to those in `cartes`, whose shapes do not change), **generator** (the
+result is a sheet's managed section, construction choices are tool data attached to the sheet, with the version of the rules and settings), **game
+aid** (its own data and entry point; none in this epic). Each contract says how it handles a changed setting (AD-128). A type is added when a second
+need resembles the first, not before. *Rejected*: a single generic engine — it would carry SWN's abstractions (decision (1)).
 
-**AD-123 — Les données d'un outil sont en base, dans les tables de son module, à deux niveaux.** [ADOPTÉ, décisions (4), (d), point 6]
-Lie : tout module. Empêche : un fichier ou une table JSON générique qui perd liens et requêtes ; un accès hors du module.
-Règle : tables préfixées, créées par les migrations du module, une ligne rattachée à un univers (ou à un système pour son catalogue), les références de fiche par identifiant,
-aucun SQL hors des fonctions du module ; le rangement (tables typées, documents à forme déclarée, ou les deux) est le choix du module. Le niveau **système** (le jeu) et le niveau
-**univers** (la campagne) : un univers voit les deux, une donnée d'univers de même clé remplace celle du système, et un **retrait** d'univers (une clé du système
-marquée absente pour cet univers) l'efface de sa vue sans toucher au système. Un catalogue de système n'a aucun élément caché ; un élément d'univers porte
-`masque` (MJ seul), posé et ôté par un MJ de l'univers, et la lecture le filtre pour un joueur comme un système secret (B-62, décision de Monsieur du 2026-10-17).
-La résolution se fait **par clé, une fois** : l'élément d'univers s'il existe (masqué ou non), sinon celui du système s'il n'est pas retiré ; un remplacement masqué
-ne laisse jamais reparaître l'élément du système, et le calcul n'emploie que l'élément résolu.
-*Rejeté* : masquer un élément du système (le système est le jeu, commun à ses univers : pour qu'il n'existe pas dans une campagne, on le retire). Le contrat impose : clé, version, rattachement, forme déclarée
-et vérifiée à l'import. *Rejeté* : fichiers sur le volume ; table générique JSON.
+**AD-123 — Tool data lives in the database, in its module's tables, at two levels.** [ADOPTED, decisions (4), (d), point 6]
+Binds: every module. Prevents: a file or generic JSON table losing links and queries; access from outside the module.
+Rule: prefixed tables, created by the module's migrations, a row attached to a universe (or to a system for its catalogue), sheet references by identifier,
+no SQL outside the module's functions; storage organization (typed tables, documents with a declared shape, or both) is the module's choice. The **system** level (the game) and the
+**universe** level (the campaign): a universe sees both, universe data with the same key replaces system data, and a universe **removal** (a system key
+marked absent for that universe) erases it from its view without touching the system. A system catalogue has no hidden items; a universe item carries
+`masque` (GM only), set and cleared by a GM of the universe, and reads filter it for a player like a secret system (B-62, Monsieur's decision of 2026-10-17).
+Resolution is **by key, once**: the universe item if it exists (hidden or not), otherwise the system item if not removed; a hidden replacement
+never lets the system item reappear, and computation uses only the resolved item.
+*Rejected*: hiding a system item (the system is the game, shared by its universes: to make it absent from a campaign, remove it). The contract requires: key, version, attachment, shape declared
+and checked on import. *Rejected*: files on the volume; generic JSON table.
 
-**AD-124 — Un cadre d'API commun, des routes propres à chaque module.** [ADOPTÉ, décision (e)]
-Lie : B-58, B-65, B-61. Empêche : des conventions d'erreur et d'activation différentes par module.
-Règle : les routes d'un module vivent sous `/api/univers/:id/outils/<module>/…` et `/api/systemes/:id/outils/<module>/…` ; l'**activation est vérifiée à l'entrée** (outil
-désactivé ou invisible pour le rôle = adresse inconnue, même réponse qu'une route absente) ; mêmes identités (session pour l'écran, jeton à portée d'outil pour les scripts), mêmes
-conventions (erreur `code` + champ, pagination, version contre l'écriture concurrente, mise à jour par clé) ; le module reçoit l'acteur, son rôle et le mode joueur. Deux routes
-sont communes à tout module : la **description** de l'outil (réglages et leur forme, dépendances, activation : E-20 la lit) et l'**import d'un catalogue** (aperçu puis application,
-rapport ajouté / modifié / refusé). Écran, API et assistant passent par les **mêmes fonctions** du module (routes minces, AD-2).
+**AD-124 — A common API framework, routes specific to each module.** [ADOPTED, decision (e)]
+Binds: B-58, B-65, B-61. Prevents: different error and activation conventions per module.
+Rule: a module's routes live under `/api/univers/:id/outils/<module>/…` and `/api/systemes/:id/outils/<module>/…`; **activation is checked on entry** (tool
+disabled or invisible to the role = unknown address, same response as an absent route); same identities (session for the screen, tool-scoped token for scripts), same
+conventions (error `code` + field, pagination, version against concurrent writes, update by key); the module receives the actor, their role and player mode. Two routes
+are common to every module: the tool's **description** (settings and their shape, dependencies, activation: E-20 reads it) and **catalogue import** (preview then application,
+added / modified / refused report). Screen, API and assistant go through the **same functions** of the module (thin routes, AD-2).
 
-**AD-125 — Activation, visibilité et réglages se résolvent système → univers.** [ADOPTÉ, décisions (6), point 3, point 10]
-Lie : B-57 à B-60. Empêche : trois lieux pour décider qui voit un outil, et des réglages lus à des endroits différents.
-Règle : une seule fonction résout, pour (univers, outil), l'état *activé*, la visibilité par rôle et la valeur de chaque réglage : la ligne d'univers s'il y en a une, sinon celle du système,
-sinon le défaut déclaré. Le **responsable** du système (créateur par défaut, rôle transmissible) est le seul à écrire au niveau du système ; tout MJ écrit au niveau de son univers ; l'admin
-d'instance n'a aucun accès. Désactiver au système cache l'outil aux univers qui le suivent ; un univers qui l'a forcé garde l'accès, données du système comprises. *Rejeté* : « tout MJ d'un univers
-rattaché règle le système » (le geste touche tous les univers) ; *l'admin d'instance responsable* — il n'a pas accès au contenu (AD-9). Les gabarits gardent leur règle actuelle.
+**AD-125 — Activation, visibility and settings resolve system → universe.** [ADOPTED, decisions (6), point 3, point 10]
+Binds: B-57 to B-60. Prevents: three places deciding who sees a tool, and settings read in different places.
+Rule: a single function resolves, for (universe, tool), the *enabled* state, visibility by role and each setting's value: the universe row if there is one, otherwise the system row,
+otherwise the declared default. The system's **maintainer** (creator by default, transferable role) alone writes at system level; any GM writes at their universe's level; the instance
+admin has no access. Disabling at system level hides the tool from universes following it; a universe that forced it keeps access, including system data. *Rejected*: “any GM of an attached
+universe configures the system” (the action affects all universes); *the instance admin as maintainer* — they have no content access (AD-9). Templates keep their current rule.
 
-**AD-126 — Les droits d'un outil sont à deux niveaux, appliqués dans les services.** [ADOPTÉ, décision point 3]
-Lie : B-59, B-73. Empêche : un outil qui laisse fuir un secret en vue joueur (recherche, route, zone, menu).
-Règle : (1) le cœur décide si l'outil est **visible** (activé, visible pour le rôle) ; hors de là il est introuvable. (2) L'outil déclare ses **usages** et applique ses droits internes jusqu'à la ligne,
-avec les fonctions de droits de Kanevas et leur vocabulaire (MJ seul, joueurs, auteur, mode Joueur). « Ce que le compte ne peut pas lire n'existe pas pour lui » vaut pour la carte (élément par élément),
-la recherche, les trajets, la génération des blocs (AD-132), l'assistant et les liens. L'acteur n'a jamais plus de droits que le compte ; le mode Joueur d'un MJ le ramène à ceux d'un joueur.
+**AD-126 — Tool permissions have two levels, enforced in services.** [ADOPTED, decision point 3]
+Binds: B-59, B-73. Prevents: a tool leaking a secret in player view (search, route, zone, menu).
+Rule: (1) the core decides whether the tool is **visible** (enabled, visible to the role); otherwise it is not found. (2) The tool declares its **uses** and enforces its internal permissions down to the row,
+with Kanevas's permission functions and vocabulary (GM only, players, author, Player mode). “What the account cannot read does not exist for it” applies to the map (item by item),
+search, journeys, block generation (AD-132), the assistant and links. The actor never has more permissions than the account; a GM's Player mode reduces them to a player's.
 
-**AD-127 — Une section « gérée par un outil » est un verrou sur le contenu, distinct de l'auteur.** [ADOPTÉ, décisions (g), (h), (i), (j)]
-Lie : B-66, B-67, B-74, B-77. Empêche : deux écrivains d'une même section ; un joueur qui écrit plus que ses droits ; une section illisible sans l'outil.
-Règle : la section porte `gere_par` ; seule la fonction d'écriture de cet outil, qui **passe par le chemin d'écriture de section existant** (`ecrireContenu`, avec version lue ; AD-48), change son contenu ;
-l'éditeur et l'API des sections la refusent à tout autre. L'outil vérifie l'usage et le rôle d'auteur du compte (« l'auteur écrit ») et écrit **au nom du compte**. Chaque section d'outil a un **contenu structuré**
-au format déclaré, un composant d'affichage fourni par le module (chargé seulement quand une fiche en contient une), et une **version texte (Markdown) obligatoire**, produite avec le contenu et mise dans
-`contenu` : c'est elle que lisent la recherche, l'assistant, l'export, et la fiche quand l'outil est désactivé. Mêmes interrupteurs d'audience que toute section. Kanevas n'a pas de propriétaire de fiche :
-l'auteur est par section. *Rejeté* : la fiche comme unité générée (la fiche mêle sections gérées et libres).
+**AD-127 — A section “managed by a tool” is a content lock, separate from the author.** [ADOPTED, decisions (g), (h), (i), (j)]
+Binds: B-66, B-67, B-74, B-77. Prevents: two writers of the same section; a player writing beyond their permissions; a section unreadable without the tool.
+Rule: the section carries `gere_par`; only that tool's write function, which **goes through the existing section write path** (`ecrireContenu`, with the read version; AD-48), changes its content;
+the editor and section API refuse it to anyone else. The tool checks the use and the account's author role (“the author writes”) and writes **on behalf of the account**. Each tool section has **structured content**
+in the declared format, a display component supplied by the module (loaded only when a sheet contains one), and a **mandatory text version (Markdown)**, produced with the content and placed in
+`contenu`: this is what search, the assistant, export and the sheet read when the tool is disabled. Same audience switches as any section. Kanevas has no sheet owner:
+authorship is per section. *Rejected*: the sheet as the generated unit (a sheet mixes managed and free sections).
 
-**AD-128 — Un changement de source ne réécrit rien en silence.** [ADOPTÉ, décision (7)]
-Lie : B-67, tout générateur. Empêche : un vaisseau dont les chiffres changent sous le joueur après un réglage.
-Règle : un résultat calculé garde la version du catalogue et des réglages qui l'ont produit ; quand ils diffèrent des courants, il est dit **périmé** (état calculé à la lecture, jamais stocké) et se
-recalcule sur un geste explicite, ou sur proposition (même mécanique que la proposition de mise à jour, AD-79), selon ce que l'outil déclare. Un tour validé (plus tard) est figé.
+**AD-128 — A source change rewrites nothing silently.** [ADOPTED, decision (7)]
+Binds: B-67, every generator. Prevents: a ship whose numbers change under the player after a setting changes.
+Rule: a computed result keeps the version of the catalogue and settings that produced it; when they differ from the current ones, it is marked **stale** (state computed on read, never stored) and is
+recalculated on an explicit action, or on a proposal (same mechanism as the update proposal, AD-79), according to what the tool declares. A validated turn (later) is frozen.
 
-**AD-129 — Une donnée d'outil modifiable est protégée comme une section.** [ADOPTÉ, décision point 11]
-Lie : B-64. Empêche : un écrasement muet entre deux MJ.
-Règle : toute donnée d'outil modifiable porte `version` ; l'écriture donne la version lue ; une version périmée est refusée avec la même réponse qu'une section (`conflit`, code `donnee_modifiee`), l'écran
-dit et offre de recharger. Une section gérée est déjà protégée. Pas de verrou ni d'édition en direct.
+**AD-129 — Editable tool data is protected like a section.** [ADOPTED, decision point 11]
+Binds: B-64. Prevents: a silent overwrite between two GMs.
+Rule: all editable tool data carries `version`; a write supplies the read version; a stale version is refused with the same response as a section (`conflit`, code `donnee_modifiee`), the screen
+explains and offers to reload. A managed section is already protected. No lock or live editing.
 
-**AD-130 — Un catalogue est un fichier JSON de transport, la base le stocke.** [ADOPTÉ, décision (b)]
-Lie : B-61, B-65, B-79. Empêche : un import qui écrase, qui duplique ou qui supprime sans le dire.
-Règle : un fichier par module, une section par nature d'élément, chaque élément une **clé** ; le fichier est vérifié par le schéma du module **avant** d'être appliqué (élément fautif refusé avec son champ, le
-reste passe) ; réimport = mise à jour par clé sans doublon ; un élément retiré du fichier n'est pas supprimé ; le catalogue a une version, qu'un résultat garde (AD-128). Deux voies, mêmes fonctions : l'onglet « Outils »
-(aperçu puis application) et l'API d'import étendue avec un jeton **à portée d'outil** (rapport de lot par nature). Comme B-48, un import n'écrase pas ce qu'un humain a modifié dans Kanevas depuis. Un jeton est celui d'un univers : il n'écrit le catalogue **du système** que si son compte en est le responsable à cet instant (le rôle se relit à chaque usage, comme le rôle MJ d'un jeton d'import).
+**AD-130 — A catalogue is a transport JSON file; the database stores it.** [ADOPTED, decision (b)]
+Binds: B-61, B-65, B-79. Prevents: an import overwriting, duplicating or deleting without saying so.
+Rule: one file per module, one section per item kind, each item a **key**; the file is checked against the module's schema **before** being applied (invalid item refused with its field, the
+rest goes through); reimport = update by key without duplicates; an item removed from the file is not deleted; the catalogue has a version, which a result keeps (AD-128). Two paths, same functions: the « Outils » tab
+(preview then application) and the extended import API with a **tool-scoped** token (batch report by kind). Like B-48, an import does not overwrite what a human has since modified in Kanevas. A token belongs to a universe: it writes the **system's** catalogue only if its account is its maintainer at that moment (the role is reread on every use, like an import token's GM role).
 
-**AD-131 — Rien d'Éneria n'entre dans le dépôt public, tests compris.** [ADOPTÉ, lettre de mandat]
-Lie : B-78, B-79. Empêche : un catalogue du livre, une fiche de règles traduite, une valeur calculée sur les données réelles, une capture, dans `kanevas` ou ses journaux publics.
-Règle : le dépôt public ne contient que le **format**, le code qui le lit et un petit catalogue d'essai **inventé** (avec ses propres valeurs attendues, calculées à la main ou par les règles du module) ; la suite
-attestée et la CI de `kanevas` tournent sur ces données synthétiques seules (décision de Monsieur, 2026-10-16). Les tests sur données réelles, leurs valeurs de référence (calculées une fois avec les outils actuels de Monsieur, figées) et le script de conversion vivent dans `AntorFr/eneria`, dossier
-`_outils/kanevas/`, et se jouent **dans les pods**, qui lisent `eneria` avec l'accès qu'ils ont : ils exercent le code de `kanevas` à une révision épinglée, hors de la suite attestée. Un écart est un bug du portage ou une correction de règle décidée et notée. *Rejeté* : un workflow « tests » de `kanevas` avec un secret du dépôt privé — décision de Monsieur du 2026-10-16 : la CI est publique, ses journaux aussi ; *des données réelles anonymisées* — la valeur du test est dans la donnée exacte.
+**AD-131 — Nothing from Éneria enters the public repository, including tests.** [ADOPTED, mandate letter]
+Binds: B-78, B-79. Prevents: a catalogue from the book, a translated rules sheet, a value computed from real data, a screenshot, entering `kanevas` or its public logs.
+Rule: the public repository contains only the **format**, the code reading it and a small **invented** trial catalogue (with its own expected values, computed by hand or by the module's rules); the attested
+suite and `kanevas` CI run on this synthetic data alone (Monsieur's decision, 2026-10-16). Tests on real data, their reference values (computed once with Monsieur's current tools, frozen) and the conversion script live in `AntorFr/eneria`, directory
+`_outils/kanevas/`, and run **in the pods**, which read `eneria` with their existing access: they exercise `kanevas` code at a pinned revision, outside the attested suite. A discrepancy is a porting bug or a decided and recorded rule correction. *Rejected*: a `kanevas` “tests” workflow with a private repository secret — Monsieur's decision of 2026-10-16: CI is public, as are its logs; *anonymized real data* — the test's value lies in the exact data.
 
-**AD-132 — La carte est infinie : les systèmes anonymes se calculent, côté serveur, par blocs.** [ADOPTÉ, point 9]
-Lie : B-71, B-73. Empêche : un client qui reçoit toute la carte ; un territoire secret qu'on devine à la densité générée.
-Règle : un bloc de 5×5 hexagones se génère à partir des coordonnées et d'une graine (même emplacement, même résultat, testé) **côté serveur**, sous les droits de l'appelant : la densité tient compte
-des seuls territoires que ce compte lit ; le résultat se met en cache (mémoire). Sont stockés seulement les systèmes définis, les routes, les zones et les systèmes anonymes **promus** (qui gardent leur emplacement et deviennent
-des données de l'univers avec leurs droits). La **graine** (propre à chaque galaxie, protégée) : la changer exige une confirmation qui dit que tous les systèmes non définis changent de place. La vue ne reçoit que les blocs qu'elle montre. *Hors périmètre* : la carte hors connexion.
-[À VÉRIFIER] : le cache d'un bloc dépend des territoires lisibles par l'appelant — la clé de cache doit porter le niveau de lecture (MJ / joueur / mode Joueur) ; vérifier à la conception de la tranche.
+**AD-132 — The map is infinite: anonymous systems are computed server-side, in blocks.** [ADOPTED, point 9]
+Binds: B-71, B-73. Prevents: a client receiving the whole map; a secret territory inferred from the generated density.
+Rule: a block of 5×5 hexagons is generated from coordinates and a seed (same location, same result, tested) **server-side**, under the caller's permissions: density takes into account
+only territories this account can read; the result is cached (memory). Only defined systems, routes, zones and **promoted** anonymous systems are stored (they keep their location and become
+universe data with its permissions). The **seed** (specific to each galaxy, protected): changing it requires confirmation explaining that all undefined systems change location. The view receives only the blocks it displays. *Outside scope*: the offline map.
+[TO VERIFY] : a block's cache depends on territories readable by the caller — the cache key must carry the reading level (GM / player / Player mode); verify when designing the slice.
 
-**AD-133 — Le code d'un outil se charge à son usage.** [ADOPTÉ, point 9]
-Lie : B-70. Empêche : un bundle qui embarque la carte et le concepteur pour tous les comptes ; un data.js envoyé en bloc.
-Règle : le point d'entrée d'un module et le composant d'une section sont chargés par un import dynamique, à l'ouverture de l'écran ou quand une fiche contient la section ; un compte sans accès ne le charge jamais ; les données
-suivent la vue (AD-132). Un composant respecte l'existant (tokens de `frontend/src/ui/tokens.css`, `docs/charte.md`) et se joue à 360 px de large. Critère de recette de chaque outil : téléphone et tablette.
+**AD-133 — Tool code loads when used.** [ADOPTED, point 9]
+Binds: B-70. Prevents: a bundle carrying the map and designer for all accounts; a data.js sent in full.
+Rule: a module's entry point and a section's component are loaded through a dynamic import, on opening the screen or when a sheet contains the section; an account without access never loads it; data
+follows the view (AD-132). A component respects the existing conventions (tokens in `frontend/src/ui/tokens.css`, `docs/charte.md`) and is exercised at 360 px width. Each tool's acceptance criterion: phone and tablet.
 
-**AD-134 — Un lien partageable mène à une ressource stockée.** [ADOPTÉ, point 8]
-Lie : B-68. Empêche : un contenu encodé dans l'adresse qui contourne les droits et la version du catalogue.
-Règle : l'adresse d'un système de la carte ou d'une fiche de vaisseau est un identifiant stocké ; elle se lit selon les droits de qui l'ouvre (illisible = introuvable). Aucun contenu n'est encodé dans l'adresse.
-L'impression est une fonction ultérieure du cœur pour toute fiche (hors epic).
+**AD-134 — A shareable link leads to a stored resource.** [ADOPTED, point 8]
+Binds: B-68. Prevents: content encoded in the address bypassing permissions and the catalogue version.
+Rule: the address of a map system or ship sheet is a stored identifier; it is read according to the opener's permissions (unreadable = not found). No content is encoded in the address.
+Printing is a later core function for any sheet (outside the epic).
 
-**AD-135 — Désactiver cache, supprimer est un geste à part.** [ADOPTÉ, point 6]
-Lie : B-63. Empêche : une donnée perdue par un clic sur une bascule.
-Règle : désactiver un outil ne touche aucune ligne ; il cache l'entrée, les adresses, les données et la vue des données du système pour l'univers ; ses sections gérées restent lisibles en version texte avec un bandeau
-« outil désactivé », sans régénération ni modification. Supprimer des données est une fonction à part, réservée (responsable pour le système, MJ pour l'univers), dont la confirmation compte ce qui part et, pour le système,
-ce qui s'en sert encore (univers, éléments locaux, conceptions). Supprimer un univers efface les données de ses outils (une transaction, tables du module comprises).
+**AD-135 — Disabling hides; deleting is a separate action.** [ADOPTED, point 6]
+Binds: B-63. Prevents: data lost by clicking a toggle.
+Rule: disabling a tool touches no row; it hides the entry point, addresses, data and the view of system data for the universe; its managed sections remain readable in text form with an
+« outil désactivé » banner, without regeneration or modification. Deleting data is a separate, restricted function (maintainer for the system, GM for the universe), whose confirmation counts what goes and, for the system,
+what still uses it (universes, local items, designs). Deleting a universe erases its tools' data (one transaction, including the module's tables).
 
-**AD-136 — Les capacités d'un outil à l'assistant sont des outils neutres du module.** [ADOPTÉ, modèle (8)]
-Lie : B-69. Empêche : un assistant plus permissif que l'écran ; un outil visible pour un rôle qui ne l'a pas.
-Règle : un module déclare des outils d'assistant de la forme de `catalogue` (`{nom, description, schéma, executer}`), qui ne composent que des fonctions du module (AD-27) ; `catalogueDe` les ajoute quand l'outil est activé et visible
-pour le rôle lu en base ; compte, univers et rôle sont fermés, jamais un paramètre ; un refus revient `{ok:false}` sans événement.
+**AD-136 — A tool's capabilities for the assistant are neutral module tools.** [ADOPTED, model (8)]
+Binds: B-69. Prevents: an assistant more permissive than the screen; a tool visible to a role that does not have it.
+Rule: a module declares assistant tools in `catalogue`'s shape (`{nom, description, schéma, executer}`), composing only module functions (AD-27); `catalogueDe` adds them when the tool is enabled and visible
+to the role read from the database; account, universe and role are closed over, never a parameter; a refusal returns `{ok:false}` without an event.
 
-**AD-137 — Deux modules se parlent par leurs fonctions, sur une dépendance déclarée.** [ADOPTÉ, décision (e)]
-Lie : tout module. Empêche : un module qui lit les tables d'un autre ou l'appelle par HTTP.
-Règle : une dépendance se déclare dans la déclaration (AD-121), l'écran d'activation la fait respecter (B-58) ; l'appel se fait par la fonction exportée de l'autre module, sous les mêmes droits. Dans cette epic, aucune dépendance entre outils n'existe : `vaisseaux` lit la portée de saut réglée au niveau du module `swn`, pas la carte. Le mécanisme se teste avec le module d'essai.
+**AD-137 — Two modules talk through their functions, on a declared dependency.** [ADOPTED, decision (e)]
+Binds: every module. Prevents: a module reading another's tables or calling it over HTTP.
+Rule: a dependency is declared in the declaration (AD-121), the activation screen enforces it (B-58); the call goes through the other module's exported function, under the same permissions. In this epic, there is no dependency between tools: `vaisseaux` reads the jump range configured at `swn` module level, not the map. The mechanism is tested with the trial module.
 
 ## Interfaces
 
-Conventions de `kanevas-import` conservées (erreurs `code` + champ, pagination, version). Les identifiants d'élément de catalogue sont des **clés** stables en texte, jamais l'identifiant de ligne. Les dates en ISO 8601 UTC. Un réglage a une
-forme déclarée avec un schéma (zod côté serveur).
+`kanevas-import` conventions retained (errors `code` + field, pagination, version). Catalogue item identifiers are stable text **keys**, never row identifiers. Dates are ISO 8601 UTC. A setting has a
+declared shape with a schema (zod on the server).
 
-## Déploiement et exploitation
+## Deployment and operations
 
-Aucun nouveau service, secret ni volume. Les migrations du module s'appliquent au démarrage par l'exécuteur existant (AD-14). L'image publiée par la CI (tag semver) est épinglée dans `k8s-home-lab` par une PR préparée, que Monsieur fusionne.
-On sait que ça marche par `/healthz` (version) et la recette en bouchon. Sauvegarde : la base existante porte tout ; les données d'un outil en font partie.
+No new service, secret or volume. Module migrations run at startup through the existing runner (AD-14). The CI-published image (semver tag) is pinned in `k8s-home-lab` through a prepared PR, which Monsieur merges.
+We know it works through `/healthz` (version) and acceptance in stub mode. Backup: the existing database carries everything; tool data is part of it.
 
-## Sécurité
+## Security
 
-La menace : un secret de MJ (système fantôme, route privée, territoire, conception cachée) qui arrive à un joueur par la carte, la recherche, un trajet, la densité générée, un lien, l'API ou l'assistant. Contre :
-droits élément par élément dans les fonctions du module (AD-126), génération côté serveur sous droits (AD-132), outil invisible = introuvable (AD-124), jeton à portée d'outil, section gérée verrouillée (AD-127). Aucun secret d'Éneria dans le dépôt public ni ses journaux (AD-131).
+The threat: a GM secret (hidden system, private route, territory, hidden design) reaching a player through the map, search, a journey, generated density, a link, the API or the assistant. Countermeasures:
+item-by-item permissions in module functions (AD-126), server-side generation under permissions (AD-132), invisible tool = not found (AD-124), tool-scoped token, locked managed section (AD-127). No Éneria secret in the public repository or its logs (AD-131).
 
-## Bouchons
+## Stubs
 
-Aucune dépendance nouvelle qui exige un jeton, un compte ou une authentification : les modules ne font aucun appel externe. L'assistant garde son bouchon (`KANEVAS_STUB=1`, AD-78), dont le script peut appeler les outils d'assistant des modules.
-La recette se joue en bouchon, sur le catalogue d'essai inventé.
+No new dependency requiring a token, account or authentication: modules make no external call. The assistant keeps its stub (`KANEVAS_STUB=1`, AD-78), whose script can call modules' assistant tools.
+Acceptance runs in stub mode, on the invented trial catalogue.
 
-## Différé
+## Deferred
 
-| Point | Ce qui le rouvrira |
+| Item | What will reopen it |
 |---|---|
-| Journal et dés communs | l'epic des tours de faction (`kanevas-factions`), premier utilisateur |
-| Type d'outil « aide de jeu » | le gestionnaire de tours de faction |
-| Impression d'une fiche (rendu d'une section d'outil, à défaut sa version texte) | une fonction du cœur, plus tard |
-| Carte hors connexion | un besoin d'usage sans réseau |
-| Extraction des parties communes entre modules | un deuxième module (D&D) qui ressemble au premier |
-| Export / import JSON d'une conception par l'utilisateur | non voulu (l'API d'import couvre le transport) |
+| Shared journal and dice | the faction turn epic (`kanevas-factions`), first user |
+| “Game aid” tool type | the faction turn manager |
+| Printing a sheet (rendering a tool section, otherwise its text version) | a core function, later |
+| Offline map | a need for use without a network |
+| Extracting common parts between modules | a second module (D&D) resembling the first |
+| User JSON export / import of a design | not wanted (the import API covers transport) |
