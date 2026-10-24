@@ -165,15 +165,15 @@ own universes' systems.
 A refusal never reveals that something exists: an unreadable sheet, section or map
 is absent, and its address responds like an unknown address.
 
-## États
+## States
 
-Chaque écran structurant a les six états de la skill `ux` (vide, chargement, erreur, hors-ligne —
-la connexion est perdue et l'écran le dit, sans mode hors-ligne —, refus, contenu long) : ils se décrivent avec sa maquette finie, dans la tranche qui le construit.
-Deux sont posés dès le cadrage parce qu'ils traversent tout :
+Each structural screen has the six states of the `ux` skill (empty, loading, error, offline —
+the connection is lost and the screen says so, without an offline mode —, refusal, long content): they are described with its finished mockup in the slice that builds it.
+Two are set at scoping time because they apply everywhere:
 
-- **vide** d'un compte neuf (E-1) : dit quoi faire — créer un univers, ou donner son identifiant,
-  affiché, à son MJ ;
-- **refus** d'une ressource illisible : toujours comme une ressource inconnue.
+- **empty** for a new account (E-1): says what to do — create a universe, or give its displayed
+  username to its GM;
+- **refusal** for an unreadable resource: always like an unknown resource.
 
 ## Détail des écrans de `kanevas-premiere-fiche`
 
