@@ -97,73 +97,73 @@ from P-1) and the stub mode banner are described under “Session and sign-in”
 Outside the product: in stub mode only (AD-55), the test account selection screen and the « mode
 bouchon » banner — without `E-n` or six states, they do not exist in production.
 
-## Rôles × écrans × actions
+## Roles × screens × actions
 
-« — » : l'écran n'est pas proposé (absent de la navigation ; si on force l'adresse, l'écran affiche « Page introuvable. » et l'API répond 404). E-15 et
-E-16 vivent hors des univers : leurs cases disent le rôle dans un univers rattaché au système.
+« — »: the screen is not offered (absent from navigation; forcing the address displays « Page introuvable. » and the API returns 404). E-15 and
+E-16 live outside universes: their cells describe the role in a universe attached to the system.
 
-| Écran | MJ | Joueur | Admin d'instance (sans rôle dans l'univers) |
+| Screen | GM | Player | Instance admin (no role in the universe) |
 |---|---|---|---|
-| E-1 | ses univers, créer | ses univers, créer | ses univers, créer |
-| E-2 | créer | créer | créer |
-| E-3 | tout | sans préparation ni scénarios | — |
-| E-4 | tout | — | — (passe par E-5) |
-| E-5 | — | — | lister les univers et leurs membres ; ajouter, changer un rôle, retirer un membre ; voir l'état du jeton de l'assistant, connecter ou reconnecter l'abonnement |
-| E-6 | tout | liste, statut, CR, « Nouveau compte-rendu » ; ni scénarios ni préparation (cachés) | — |
-| E-7 | tout | — | — |
-| E-8 | lire, chercher, créer ; la vignette de chaque fiche (son illustration, ou le repli dessiné) | lire, chercher ; la vignette des fiches qu'il voit | — |
-| E-9 | tout ; mode Joueur ; relier et retirer des relations ; poser, remplacer, retirer l'illustration (hors mode Joueur) ; *(kanevas-import)* sous-type, réserver un fichier au MJ, voir un fichier en attente d'import (tuile) | sections lisibles ; écrire celles permises ; relations lisibles (section et cible) ; pièces jointes de celles-ci ; voir l'illustration, jamais la poser ; *(kanevas-import)* dans une section qu'il écrit, ajouter un fichier ou en choisir un qu'il voit (les deux chemins de B-55) et retirer une référence ; fichiers sous double garde ; jamais régler une visibilité (**caché**) ; un fichier en attente d'import : rien (**caché**) | — |
-| E-10 | tout | cartes visibles | — |
-| E-11 | tout ; mode Joueur | lire une carte visible, ouvrir une fiche | — |
-| E-12 | catalogue MJ (dont générer une image, si un moteur d'images est disponible) ; propositions : le MJ demandeur seul les voit, les applique, les abandonne | catalogue Joueur (sans image : l'outil est absent, l'assistant répond qu'il ne peut pas) ; propositions : **caché** (ni outil ni bloc ; ce qu'on vérifie est l'absence de proposition et de bloc, pas le texte libre de l'assistant) | — |
-| E-13 | tous les CR | les CR lisibles | — |
-| E-14 | tout ; « Supprimer l'univers » (*kanevas-import*) | — (« Page introuvable. ») | « Page introuvable. » |
-| E-15 (hors univers ; les colonnes disent le rôle dans un univers **rattaché au système**) | lire ; « Ajouter … », « Modifier » | lire (« Lecture seule ») ; ni « Ajouter » ni « Modifier » | « Page introuvable. », sauf s'il est lui-même membre d'un univers rattaché : alors la colonne de son rôle là (l'admin MJ d'un univers rattaché lit et modifie) |
-| E-16 (hors univers) | ses systèmes, avec ses univers et son rôle | ses systèmes, « Lecture seule » | la liste de ses propres systèmes (comme MJ ou Joueur s'il est membre d'un univers rattaché) ; vide sinon — l'écran est proposé à tout compte |
-| E-17 *(kanevas-import)* | chercher dans toutes les fiches de l'univers, blocs MJ compris ; en **mode Joueur**, comme un joueur (ni blocs MJ, ni fiches qu'un joueur ne lit pas) ; filtres : les types activés ; les fiches des types désactivés restent des résultats sous « Tous » | chercher dans ce qu'il lit, hors blocs MJ ; filtres par type et par étiquette des seules fiches qu'il voit ; bascule de mode : absente (cachée) ; blocs MJ : hors recherche (jamais lus) ; « Alias et étiquettes… » sur E-9 : cachée | — |
-| E-19 *(kanevas-import)* | tout : ajouter, renommer, visibilité, supprimer ; « Utilisé dans » complet | les fichiers visibles des joueurs et ceux qu'il a ajoutés ; « Utilisé dans » réduit aux fiches qu'il lit ; ni ajout depuis E-19 (**caché** ; il ajoute un fichier par une section qu'il écrit, E-9), ni réglage, ni suppression (**cachés**) | — |
-| E-18 *(kanevas-import)* | créer un jeton ; voir et révoquer tous les jetons de l'univers (y compris ceux d'un autre MJ) ; voir les lots | — (**caché** : absent de la barre, « Page introuvable. » par l'adresse) | — |
-| E-20 *(kanevas-outils)* | **sur l'univers** : activer, forcer, désactiver ; visibilité par rôle ; réglages ; importer le catalogue de l'univers ; supprimer les données de l'univers. **sur le système** : lire seulement (**cachés** : « Activer », « Importer », « Supprimer les données ») sauf le **responsable**, qui agit aussi sur le système | — (**caché** : « Page introuvable. ») | — |
-| E-21 *(kanevas-outils)* | tout (placer, promouvoir, tracer, dessiner, réglages protégés) ; mode Joueur : comme un joueur ; document MJ | explorer, mesurer, trajet, lien ; seulement les systèmes, routes et zones qu'il peut lire ; aucun geste d'écriture (**cachés**) | — |
-| E-22 *(kanevas-outils)* | toutes les conceptions de l'univers ; en créer, les modifier, recalculer ; régler l'auteur de la section | les conceptions dont il lit la fiche et la section ; modifier et recalculer **celles dont il est l'auteur de la section « Caractéristiques »** ; « Nouvelle conception » **absent** (le MJ crée la fiche) | — |
+| E-1 | own universes, create | own universes, create | own universes, create |
+| E-2 | create | create | create |
+| E-3 | everything | no preparation or scenarios | — |
+| E-4 | everything | — | — (through E-5) |
+| E-5 | — | — | list universes and their members; add, change a role, remove a member; see assistant token status, connect or reconnect the subscription |
+| E-6 | everything | list, status, session reports, « Nouveau compte-rendu »; no scenarios or preparation (hidden) | — |
+| E-7 | everything | — | — |
+| E-8 | read, search, create; each sheet's thumbnail (its illustration, or the drawn fallback) | read, search; thumbnails of visible sheets | — |
+| E-9 | everything; Player mode; relate and remove relations; set, replace, remove the illustration (outside Player mode); *(kanevas-import)* subtype, restrict a file to the GM, see a file awaiting import (tile) | readable sections; write permitted ones; readable relations (section and target); their attachments; see the illustration, never set it; *(kanevas-import)* in a section they write, add a file or choose a visible one (both paths of B-55) and remove a reference; files under both guards; never set visibility (**hidden**); a file awaiting import: nothing (**hidden**) | — |
+| E-10 | everything | visible maps | — |
+| E-11 | everything; Player mode | read a visible map, open a sheet | — |
+| E-12 | GM catalogue (including image generation, if an image engine is available); proposals: only the requesting GM sees, applies, abandons them | Player catalogue (no image: the tool is absent, the assistant answers that it cannot); proposals: **hidden** (neither tool nor block; what is checked is the absence of a proposal and block, not the assistant's free text) | — |
+| E-13 | all session reports | readable session reports | — |
+| E-14 | everything; « Supprimer l'univers » (*kanevas-import*) | — (« Page introuvable. ») | « Page introuvable. » |
+| E-15 (outside a universe; columns describe the role in a universe **attached to the system**) | read; « Ajouter … », « Modifier » | read (« Lecture seule »); neither « Ajouter » nor « Modifier » | « Page introuvable. », unless also a member of an attached universe: then the column for that role applies (an admin who is GM of an attached universe reads and edits) |
+| E-16 (outside a universe) | own systems, with own universes and role | own systems, « Lecture seule » | list of own systems (as GM or Player if a member of an attached universe); otherwise empty — the screen is offered to every account |
+| E-17 *(kanevas-import)* | search all sheets in the universe, including GM blocks; in **Player mode**, as a player (no GM blocks or sheets unreadable by a player); filters: enabled types; sheets of disabled types remain results under « Tous » | search readable content, excluding GM blocks; type and label filters from visible sheets only; mode toggle: absent (hidden); GM blocks: excluded from search (never read); « Alias et étiquettes… » on E-9: hidden | — |
+| E-19 *(kanevas-import)* | everything: add, rename, visibility, delete; complete « Utilisé dans » | files visible to players and files they added; « Utilisé dans » restricted to readable sheets; no adding from E-19 (**hidden**; they add a file through a section they write, E-9), no settings or deletion (**hidden**) | — |
+| E-18 *(kanevas-import)* | create a token; see and revoke all the universe's tokens (including another GM's); see batches | — (**hidden**: absent from the sidebar, « Page introuvable. » by address) | — |
+| E-20 *(kanevas-outils)* | **on the universe**: enable, override, disable; visibility per role; settings; import the universe catalogue; delete universe data. **on the system**: read only (**hidden**: « Activer », « Importer », « Supprimer les données ») except the **maintainer**, who also acts on the system | — (**hidden**: « Page introuvable. ») | — |
+| E-21 *(kanevas-outils)* | everything (place, promote, plot, draw, protected settings); Player mode: as a player; GM document | explore, measure, route, link; only readable systems, routes and zones; no write actions (**hidden**) | — |
+| E-22 *(kanevas-outils)* | all the universe's designs; create, edit, recalculate; set the section's author | designs whose sheet and section they read; edit and recalculate **those whose « Caractéristiques » section they author**; « Nouvelle conception » **absent** (the GM creates the sheet) | — |
 
-Ce que `kanevas-outils` ajoute : **barre latérale** — une section **« Outils »**, après « Cartes » et avant « Lore »,
-qui liste les points d'entrée des outils **activés et visibles pour le rôle** (« Concepteur de vaisseaux ») ; la
-galaxie est atteinte par « Cartes » ; un outil désactivé ou invisible n'a ni entrée ni adresse (« Page
-introuvable. »). **E-9** — tous : une section gérée se lit comme les autres, sans éditeur ; MJ et auteur :
-« Ouvrir dans le concepteur ». **E-10** — MJ : « Nouvelle carte » ▸ « Carte de la galaxie » ; Joueur : la
-carte d'outil, si elle est visible et l'outil visible pour son rôle.
+What `kanevas-outils` adds: **sidebar** — an **« Outils »** section, after « Cartes » and before « Lore »,
+listing entry points for tools **enabled and visible to the role** (« Concepteur de vaisseaux »); the
+galaxy is reached through « Cartes »; a disabled or invisible tool has neither an entry nor an address (« Page
+introuvable. »). **E-9** — everyone: a managed section is read like any other, without an editor; GM and author:
+« Ouvrir dans le concepteur ». **E-10** — GM: « Nouvelle carte » ▸ « Carte de la galaxie »; Player: the
+tool map, if it is visible and the tool is visible to their role.
 
-Ce que `kanevas-import` ajoute aux lignes existantes : **barre latérale** — tous : la section « Lore »
-ne montre que les types activés ; **E-8** — MJ : la vue en arbre, la création dans les seuls types activés,
-avec son champ « Sous-type », le filtre « Sous-type » ; Joueur : l'arbre des fiches qu'il voit, le filtre
-« Sous-type » sur ce qu'il voit ; la création et son champ « Sous-type » sont **absents** (non offerts). **E-9** — MJ : écrire le
-Markdown, insérer liens et blocs MJ, renommer, changer le type, déplacer, alias et étiquettes,
-supprimer (menu « ⋯ » de l'en-tête, hors mode Joueur), voir la clé d'origine ; Joueur : titre en texte, ni menu « ⋯ » ni suppression (**caché**), clé d'origine cachée ; un admin d'instance sans rôle : « Page introuvable. » ; lire le
-Markdown, suivre les liens vers ce qu'il voit, « Contient » et « Mentionnée dans » réduits à ce qu'il
-lit ; écrire une section permise **sauf si elle contient un bloc MJ** (« Modifier » **caché**) ; alias
-et étiquettes visibles, jamais modifiables (**caché**). **E-14** — MJ : « Types de fiche »,
-« Supprimer l'univers ». **E-15** — MJ d'un univers rattaché : « Types de fiche » (bascules) ;
-Joueur : la liste en lecture seule.
+What `kanevas-import` adds to existing rows: **sidebar** — everyone: the « Lore » section
+shows only enabled types; **E-8** — GM: tree view, creation only in enabled types,
+with its « Sous-type » field, the « Sous-type » filter; Player: tree of visible sheets, the
+« Sous-type » filter on visible content; creation and its « Sous-type » field are **absent** (not offered). **E-9** — GM: write
+Markdown, insert links and GM blocks, rename, change type, move, aliases and labels,
+delete (header « ⋯ » menu, outside Player mode), see the source key; Player: plain text title, no « ⋯ » menu or deletion (**hidden**), source key hidden; an instance admin without a role: « Page introuvable. »; read
+Markdown, follow links to visible content, « Contient » and « Mentionnée dans » restricted to readable
+content; write a permitted section **unless it contains a GM block** (« Modifier » **hidden**); aliases
+and labels visible, never editable (**hidden**). **E-14** — GM: « Types de fiche »,
+« Supprimer l'univers ». **E-15** — GM of an attached universe: « Types de fiche » (toggles);
+Player: read-only list.
 
-Un admin d'instance qui est aussi membre d'un univers, MJ ou Joueur, a dans cet univers la colonne de son rôle et garde E-5 par la section « Instance » de la barre, et y a la colonne Admin (panneau « Jeton de l'assistant » compris : E-5 ne dépend pas de l'univers sélectionné) ; hors de cet univers, la colonne Admin.
+An instance admin who is also a universe member, GM or Player, has that role's column within the universe and keeps E-5 through the sidebar's « Instance » section, with the Admin column there (including the « Jeton de l'assistant » panel: E-5 does not depend on the selected universe); outside that universe, the Admin column.
 
-Précisions de la matrice : créer une campagne, en changer le statut, créer un scénario sont au
-MJ seul. L'audience d'une section se règle en ligne sur la fiche (MJ). Créer une fiche ouvre une
-fenêtre (type déjà choisi, titre) qui mène à la fiche ; créer une carte se fait en ligne sur
-E-10. « Rendre visible » une carte se trouve sur la carte (E-11) et dans la liste (E-10). Le fond d'une carte illustrée se dépose à sa création (E-10) et se change sur la carte (E-11) ;
-une carte sans fond montre ses tokens sur un fond neutre. Une
-tâche de préparation s'ajoute avec sa catégorie, se coche, se décoche ; elle ne se supprime pas.
-Sur E-15, règles, créatures et objets ont le même traitement. Sur E-3, le bloc « Système de jeu » n'existe que si l'univers est rattaché à un système (MJ et Joueur).
+Matrix details: creating a campaign, changing its status and creating a scenario are
+GM-only. A section's audience is set inline on the sheet (GM). Creating a sheet opens a
+dialog (type already chosen, title) leading to the sheet; creating a map is done inline on
+E-10. Making a map visible is available on the map (E-11) and in the list (E-10). An illustrated map's background is uploaded at creation (E-10) and changed on the map (E-11);
+a map without a background shows its tokens on a neutral background. A
+preparation task is added with its category, checked, unchecked; it cannot be deleted.
+On E-15, rules, creatures and items receive the same treatment. On E-3, the « Système de jeu » block exists only if the universe is attached to a system (GM and Player).
 
-Un compte **sans rôle** dans l'univers et qui n'est pas admin d'instance (Teo avant son ajout) a, dans
-cet univers, la colonne « Admin » de cette matrice pour les écrans **de cet univers** (E-3, E-4,
-E-6 à E-14, E-17 à E-19) : « — », « Page introuvable. » si l'adresse est forcée. Hors des univers, il garde E-1,
-E-2 et E-16 (vide s'il n'est membre d'aucun univers rattaché), et E-15 pour les systèmes de ses
-propres univers.
+An account **without a role** in the universe that is not an instance admin (Teo before being added) has, within
+that universe, the “Admin” column of this matrix for **that universe's** screens (E-3, E-4,
+E-6 to E-14, E-17 to E-19): « — », « Page introuvable. » if the address is forced. Outside universes it keeps E-1,
+E-2 and E-16 (empty if it is not a member of any attached universe), and E-15 for its
+own universes' systems.
 
-Un refus ne dit jamais qu'une chose existe : une fiche, une section, une carte qu'on ne peut pas
-lire sont absentes, et leur adresse répond comme une adresse inconnue.
+A refusal never reveals that something exists: an unreadable sheet, section or map
+is absent, and its address responds like an unknown address.
 
 ## États
 
