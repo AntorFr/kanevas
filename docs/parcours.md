@@ -1,407 +1,406 @@
-# Kanevas — pour qui, besoins, parcours
+# Kanevas — audience, needs, journeys
 
-> Doc du produit. Sur `epic/kanevas`, la cible du cadrage ; sur `main`, exactement ce qui est
-> construit. Identifiants stables : `B-n` (besoins), `P-n` (parcours), `E-n` (écrans,
-> `docs/ecrans.md`), `AD-n` (décisions, `ARCHITECTURE.md`).
+> Product documentation. On `epic/kanevas`, the scoping target; on `main`, exactly what has
+> been built. Stable identifiers: `B-n` (needs), `P-n` (journeys), `E-n` (screens,
+> `docs/ecrans.md`), `AD-n` (decisions, `ARCHITECTURE.md`).
 >
-> **Construit à ce jour** (`kanevas-premiere-fiche`, systèmes, `kanevas-suivi`, `kanevas-fichiers`, `kanevas-relier-chercher`, `kanevas-recours-admin`) : P-1 en entier, P-2 en entier (étape 3 : l'admin répare les membres, E-5),
-> P-3 étapes 1 à 4, P-4 en entier, P-5 étape 1 (fiches et sections), P-6 étapes 1-2 (recherche dans un type), P-7 étape 1 et l'écriture de
-> l'étape 2, P-8 en entier (B-13, B-14 : E-14 puis E-15), P-14 étapes 2-3 et P-10 étape 8 (`kanevas-import-tenir` : renommer, supprimer une fiche, supprimer un univers). P-10 en entier avec `kanevas-import-reprise` (campagnes, scénarios, comptes-rendus datés et relations par l'API d'import ; échantillon rejoué sans doublon par le client de test, B-47 à B-50). P-16 en entier avec `kanevas-import-mediatheque` (la médiathèque de l'univers, E-19 ; ajouter un fichier depuis une fiche, « Fichier » de l'éditeur et « Joindre un fichier » : B-24, B-25, B-44, B-53 à B-56), donc P-3 étape 4 et P-7 étape 2 par ce chemin. Sont aussi construits les cartes et graphes (E-10, E-11), l'illustration d'une fiche, les systèmes hors des univers (E-16), l'assistant (E-12) et la mise à jour du monde depuis un compte-rendu (`kanevas-monde`) : les écrans construits sont listés dans `docs/ecrans.md`, c'est lui qui fait foi pour dire quelle étape de quel parcours existe. Le reste de ce document est la cible.
+> **Built so far** (`kanevas-premiere-fiche`, systems, `kanevas-suivi`, `kanevas-fichiers`, `kanevas-relier-chercher`, `kanevas-recours-admin`): all of P-1, all of P-2 (step 3: the admin repairs membership, E-5),
+> P-3 steps 1 to 4, all of P-4, P-5 step 1 (sheets and sections), P-6 steps 1-2 (search within a type), P-7 step 1 and the writing part of
+> step 2, all of P-8 (B-13, B-14: E-14 then E-15), P-14 steps 2-3 and P-10 step 8 (`kanevas-import-tenir`: rename, delete a sheet, delete a universe). All of P-10 with `kanevas-import-reprise` (campaigns, scenarios, dated session reports and relations through the import API; sample replayed without duplicates by the test client, B-47 to B-50). All of P-16 with `kanevas-import-mediatheque` (the universe media library, E-19; add a file from a sheet, « Fichier » in the editor and « Joindre un fichier »: B-24, B-25, B-44, B-53 to B-56), hence P-3 step 4 and P-7 step 2 through this path. Also built: maps and graphs (E-10, E-11), sheet illustrations, systems outside universes (E-16), the assistant (E-12) and world updates from a session report (`kanevas-monde`): built screens are listed in `docs/ecrans.md`, which is authoritative for deciding which step of which journey exists. The rest of this document is the target.
 >
-> **Epic `kanevas-import`** (cadrage proposé le 2026-10-11, sur `epic/kanevas-import`) : ouvrir
-> Kanevas à une base existante — d'abord la base Kanka de Monsieur (501 fiches), poussée par un script
-> qui tourne sur son Mac — et lui donner ce qu'il faut pour y vivre : Markdown, liens `[[…]]`, blocs MJ
-> dans un texte, arbre des fiches, liens entrants, recherche tous types, alias et étiquettes, types de
-> fiche plus nombreux et choisis par système et par univers, suppression, jeton d'API, sous-type, médiathèque. B-32 à B-56,
-> P-10 à P-16, E-17 à E-19, AD-95 à AD-111. Les `[À TRANCHER]` du cadrage ont été tranchés par Monsieur le 2026-10-11 ; ce qui reste ouvert est marqué `[À TRANCHER]` à sa place.
+> **Epic `kanevas-import`** (scoping proposed on 2026-10-11, on `epic/kanevas-import`): open
+> Kanevas to an existing collection — first Monsieur's Kanka collection (501 sheets), pushed by a script
+> running on his Mac — and provide what it needs to live there: Markdown, `[[…]]` links, GM blocks
+> within text, sheet tree, incoming links, search across all types, aliases and labels, more sheet
+> types chosen per system and universe, deletion, API token, subtype, media library. B-32 to B-56,
+> P-10 to P-16, E-17 to E-19, AD-95 to AD-111. Monsieur resolved the scoping's `[À TRANCHER]` items on 2026-10-11; anything still open is marked `[À TRANCHER]` in place.
 
-Kanevas sert à **préparer** des parties de jeu de rôle et à en **garder la mémoire** entre les
-séances : le lore d'un univers, partagé entre le MJ et ses joueurs avec des droits fins par
-section, les campagnes, les comptes-rendus, les cartes, et un assistant qui travaille avec les
-mêmes droits que la personne qui lui parle. La table, elle, reste physique : Kanevas n'est pas un
-outil de jeu en direct.
+Kanevas is for **preparing** tabletop roleplaying sessions and **keeping their memory** between
+sessions: universe lore shared between the GM and players with fine-grained section permissions,
+campaigns, session reports, maps, and an assistant working with the same permissions as the
+person talking to it. The table remains physical: Kanevas is not a live play tool.
 
-## Pour qui
+## Audience
 
-| Rôle | Qui, quand, où | Support |
+| Role | Who, when, where | Device |
 |---|---|---|
-| **MJ** | prépare ses séances le soir ou le dimanche, à son bureau ; met le monde à jour après une partie. Plusieurs MJ peuvent tenir un même univers, tous égaux. | ordinateur, souris et clavier |
-| **Joueur** | relit ce qu'il sait entre deux séances, souvent dans le bus ou le canapé ; écrit un compte-rendu le lendemain ; tient l'histoire de son personnage. | téléphone pour lire, ordinateur pour écrire |
-| **Admin d'instance** | dernier recours quand un univers n'a plus de MJ joignable ; corrige les membres, ne lit pas le contenu. | ordinateur |
-| **Agent** | l'assistant d'un MJ ou d'un joueur : jamais un rôle à lui, toujours les droits de la personne qui lui parle. | — |
-| **Script d'import** | un programme qui tourne **hors de Kanevas** (le premier : sur le Mac de Monsieur, il lit son export Kanka) et pousse par l'API d'import ; jamais un rôle à lui : il agit avec le jeton d'API d'un MJ, donc avec les droits de ce MJ dans un seul univers. Kanevas ne connaît pas Kanka : le script traduit. | le Mac de Monsieur, par le réseau |
+| **GM** | prepares sessions in the evening or on Sundays at a desk; updates the world after a game. Several GMs can manage the same universe, all equal. | computer, mouse and keyboard |
+| **Player** | rereads what they know between sessions, often on the bus or couch; writes a session report the next day; maintains their character's story. | phone for reading, computer for writing |
+| **Instance admin** | last resort when a universe has no reachable GM; corrects membership without reading content. | computer |
+| **Agent** | a GM's or player's assistant: never a role of its own, always the permissions of the person talking to it. | — |
+| **Import script** | a program running **outside Kanevas** (the first: on Monsieur's Mac, reading his Kanka export) and pushing through the import API; never a role of its own: it uses a GM's API token, hence that GM's permissions in a single universe. Kanevas does not know Kanka: the script translates. | Monsieur's Mac, over the network |
 
-Le rôle se porte **par univers** : un même compte est MJ d'un univers et Joueur d'un autre. Sans
-ligne de membre, un compte ne voit rien de l'univers, pas même son existence.
+Roles apply **per universe**: the same account can be a GM in one universe and a Player in another.
+Without a membership row, an account sees nothing of the universe, not even its existence.
 
-## Besoins
+## Needs
 
-Forme de la skill `exigences` ; chaque besoin cite les parcours qui le réalisent.
+Format from the `exigences` skill; each need cites the journeys that fulfill it.
 
-### Comptes, univers, membres
-- **B-1** — Quand une personne se connecte pour la première fois (Authelia), Kanevas lui crée un
-  compte sans accès à aucun univers. *(P-1)*
-- **B-2** — Quand un compte crée un univers depuis l'accueil (E-2), il en devient MJ. *(P-1)*
-- **B-3** — Quand un MJ ajoute un compte à son univers depuis la page des membres (E-4), en MJ ou
-  Joueur, en tapant son identifiant exact, ce compte voit l'univers ; le MJ change ou retire ce
-  rôle au même endroit. Un compte ne s'ajoute que s'il s'est déjà connecté une fois ; aucune liste
-  des comptes de l'instance n'est montrée. *(P-2)*
-- **B-4** — Si un compte perd son dernier rôle sur un univers, Kanevas lui répond comme si
-  l'univers n'existait pas. *(P-2)*
-- **B-5** — Tant qu'un univers a un MJ, il en garde au moins un : retirer le dernier est refusé.
+### Accounts, universes, members
+- **B-1** — When a person signs in for the first time (Authelia), Kanevas creates an account
+  with access to no universe. *(P-1)*
+- **B-2** — When an account creates a universe from the home page (E-2), it becomes its GM. *(P-1)*
+- **B-3** — When a GM adds an account to their universe from the members page (E-4), as GM or
+  Player, by typing its exact identifier, that account sees the universe; the GM changes or removes
+  the role there too. An account can only be added if it has signed in at least once; no list
+  of instance accounts is shown. *(P-2)*
+- **B-4** — If an account loses its last role in a universe, Kanevas responds as though
+  the universe did not exist. *(P-2)*
+- **B-5** — As long as a universe has a GM, it keeps at least one: removing the last is refused.
   *(P-2)*
-- **B-6** — L'admin d'instance voit le nom de tous les univers et leurs membres, et les gère
-  depuis l'administration (E-5), sans jamais en lire le contenu ; pour le lire, il s'ajoute lui-même, et cela se voit. *(P-2)*
+- **B-6** — The instance admin sees every universe's name and members and manages them
+  from administration (E-5), without ever reading content; to read it, the admin adds themselves, visibly. *(P-2)*
 
-### Lore et visibilité
-- **B-7** — Un MJ crée des fiches typées — personnage (PJ ou PNJ), lieu, faction, objet,
-  événement, quête, et depuis `kanevas-import` créature, vaisseau, race, savoir, récit, règle, note
-  (la liste du produit, B-42), parmi les types activés pour son univers — depuis la liste d'un type (E-8). *(P-3, P-4, P-13)*
-- **B-8** — Une fiche est faite de sections, que le MJ ajoute, réordonne et retire sur la fiche
-  (E-9) ; pour chacune, il choisit si
-  les joueurs la lisent, l'écrivent, et quel joueur en est l'auteur avec ses propres droits. Le MJ
-  lit et écrit tout. *(P-3, P-7)*
-- **B-9** — Quand un compte ouvre une fiche, il n'en voit que les sections qu'il peut lire, sans
-  titre ni trace des autres ; une fiche dont il ne lit rien n'existe pas pour lui. *(P-6)*
-- **B-10** — Un MJ relie une fiche à une autre par une relation typée en texte libre, portée par
-  une section : elle a la visibilité de sa section, et une cible illisible n'est pas nommée.
+### Lore and visibility
+- **B-7** — A GM creates typed sheets — character (PC or NPC), place, faction, item,
+  event, quest, and since `kanevas-import`, creature, ship, race, knowledge, story, rule, note
+  (the product's list, B-42), among the types enabled for their universe — from a type's list (E-8). *(P-3, P-4, P-13)*
+- **B-8** — A sheet consists of sections that the GM adds, reorders and removes on the sheet
+  (E-9); for each, the GM chooses whether
+  players may read or write it, and which player is its author with their own permissions. The GM
+  reads and writes everything. *(P-3, P-7)*
+- **B-9** — When an account opens a sheet, it only sees sections it may read, without
+  titles or traces of others; a sheet with nothing readable does not exist for it. *(P-6)*
+- **B-10** — A GM connects one sheet to another with a relation whose type is free text, carried by
+  a section: it has that section's visibility, and an unreadable target is not named.
   *(P-3, P-9)*
-- **B-11** — Quand un compte cherche dans la liste d'un type (E-8), Kanevas ne rend que les fiches
-  qu'il peut lire, titres compris. *(P-6)*
-- **B-12** — Un MJ bascule sa lecture en mode Joueur, sur une fiche ou une carte, pour voir ce que
-  verra un joueur de sa table qui n'est l'auteur d'aucune section. *(P-3)*
-- **B-30** — Un MJ pose, remplace ou retire l'**illustration** d'une fiche (une image PNG, JPEG,
-  GIF ou WebP au plus, depuis son en-tête, E-9) ; quiconque voit la fiche la voit, en tête de la
-  fiche et en vignette dans la liste du type (E-8), où une fiche sans illustration porte une
-  vignette de repli dessinée ; un Joueur ne la pose pas, et qui ne voit pas la fiche n'en obtient
-  rien (son adresse répond comme une adresse inconnue). *(P-3, P-6)*
+- **B-11** — When an account searches a type's list (E-8), Kanevas only returns sheets
+  it may read, including titles. *(P-6)*
+- **B-12** — A GM switches their reading to Player mode on a sheet or map to see what
+  a player at their table who authors no section would see. *(P-3)*
+- **B-30** — A GM sets, replaces or removes a sheet's **illustration** (a PNG, JPEG,
+  GIF or WebP image only, from its header, E-9); anyone who sees the sheet sees it at the top
+  and as a thumbnail in the type's list (E-8), where a sheet without an illustration has a
+  drawn fallback thumbnail; a Player cannot set it, and anyone who cannot see the sheet gets
+  nothing from it (its address responds like an unknown address). *(P-3, P-6)*
 
-### Écrire, lier, ranger (`kanevas-import`)
-- **B-32** — Le contenu d'une section, d'un scénario et d'une entrée de système est du **Markdown** :
-  quand un compte l'enregistre (E-9, E-7, E-15), Kanevas l'affiche mis en forme — titres, gras,
-  italique, listes, citations, tableaux, liens, images de la section — et jamais du HTML écrit dans le
-  texte, qui s'affiche tel quel ; l'éditeur a un **aperçu**. *(P-12, P-14)*
-- **B-33** — Quand un compte qui écrit une section tape `[[`, E-9 lui propose les fiches qu'il peut
-  lire et insère un **lien** vers celle qu'il choisit ; à la lecture, un lien vers une fiche que le
-  lecteur voit s'ouvre sur cette fiche ; un lien vers une fiche qu'il ne voit pas s'affiche comme le
-  texte autour, sans soulignement ni trace ; un lien dont la cible n'existe pas (supprimée, jamais
-  importée) s'affiche en texte pour un joueur et marqué « lien cassé » pour un MJ. Dans un scénario,
-  un lien vise une fiche de l'univers de sa campagne, sous les mêmes droits ; dans une entrée de
-  système de jeu, partagée entre univers, `[[…]]` reste du texte. *(P-12, P-14)*
-- **B-34** — Un MJ pose dans une section un **bloc MJ** (E-9, « Bloc MJ » de l'éditeur, ou
-  l'import) ; tant que le lecteur n'est pas MJ hors mode Joueur, Kanevas ne lui en livre rien : ni
-  sur la fiche, ni par l'assistant, ni par la recherche (un mot qui n'est que dans un bloc MJ ne fait
-  pas trouver la fiche), ni par les liens entrants (un lien écrit dans un bloc MJ ne compte pas), ni
-  par les images qu'il contient. Une section qui contient un bloc MJ ne s'écrit que par un MJ. Un
-  fichier **ajouté depuis un bloc MJ** entre dans la médiathèque « Réservé au MJ » (B-55). *(P-12, P-14 ;
-  décision de Monsieur du 2026-10-11)*
-- **B-35** — Un MJ range une fiche **sous une autre** du même univers (E-9, « Déplacer sous… », ou
-  l'import) ; la fiche montre alors ses ancêtres dans le fil d'Ariane et ses **enfants** dans un bloc ;
-  la liste d'un type (E-8) se lit aussi **en arbre**. Un lecteur n'y voit que les fiches qu'il peut
-  lire : un ancêtre illisible est sauté, un enfant illisible absent, sans compteur. *(P-12, P-14)*
-- **B-36** — Quand un compte ouvre une fiche (E-9), il voit les fiches qui la **mentionnent** — par
-  un lien dans une section qu'il lit (hors bloc MJ s'il n'est pas MJ) ou par une relation qu'il lit —,
-  et rien de celles qu'il ne lit pas. *(P-12)*
-- **B-37** — Quand un compte cherche depuis la **recherche** (E-17), Kanevas cherche dans tous les
-  types à la fois, dans les titres, les **alias** et les sections qu'il lit, filtre par type et par
-  **étiquette**, et ne rend que les fiches qu'il peut lire (B-11, B-34). *(P-12)*
-- **B-38** — Un MJ donne à une fiche des **alias** (autres noms) et des **étiquettes** (E-9) ; quiconque
-  voit la fiche les voit, comme son titre ; une étiquette touchée ouvre la recherche filtrée sur elle
-  (E-17). Un alias ou une étiquette n'est jamais secret. *(P-12, P-14)*
-- **B-39** — Un MJ change le **titre**, le **type** et le **parent** d'une fiche après sa création,
-  depuis son en-tête (E-9). Le type d'un compte-rendu ne change pas, et une fiche ne devient pas un
-  compte-rendu. *(P-14)*
-- **B-40** — Un MJ **supprime une fiche** depuis son en-tête (E-9), après confirmation qui nomme ce
-  qui part avec elle (sections et leurs références de fichier, relations qui la visent, places sur les
-  cartes ; les fichiers eux-mêmes restent dans la médiathèque) ; ses
-  enfants remontent sous son parent ; les liens qui la visaient deviennent des liens cassés (B-33).
-  *(P-14)* Une fiche importée supprimée **revient** au rejeu suivant si le script l'envoie encore :
-  pour qu'elle ne revienne pas, on la supprime dans l'export. Aucune trace de la suppression n'est
-  gardée (décision de Monsieur du 2026-10-11).
-- **B-41** — Un MJ **supprime un univers** depuis ses paramètres (E-14), en tapant son nom pour
-  confirmer ; tout son contenu et ses jetons partent, ses membres n'y ont plus accès, et son adresse
-  répond comme une adresse inconnue. Un système de jeu rattaché reste. *(P-10)*
-- **B-42** — Les **types de fiche** sont une liste fixe du produit, enrichie par une version de
-  Kanevas, jamais créée par un utilisateur. Un MJ d'un univers rattaché **active ou désactive** chaque
-  type pour le système (E-15) ; un MJ **force** un type à activé ou désactivé pour son univers, ou le
-  laisse **suivre le système** (E-14) ; un univers sans système suit le défaut du produit (tout
-  activé). Un type désactivé quitte la barre latérale, la création (E-8) et les filtres de la
-  recherche (E-17) ; ses fiches restent, atteintes par un lien, la recherche ou l'arbre. Le
-  compte-rendu n'est pas réglable. *(P-13)*
-- **B-52** — Un MJ donne à une fiche un **sous-type** libre, propre à son type (Savoir · Ressource,
-  Lieu · Planète, Vaisseau · Frégate), à la création (E-8) ou depuis son en-tête (E-9), en le tapant ;
-  E-9 lui propose les sous-types déjà employés pour ce type dans l'univers. Quiconque voit la fiche voit
-  son sous-type, sur sa carte (E-8), dans son en-tête (E-9) et dans la recherche (E-17), qui le trouve ;
-  la liste d'un type (E-8) se **filtre par sous-type** parmi ceux des fiches que le lecteur voit. Les
-  étiquettes restent, transversales (B-38). *(P-12, P-14 ; décision de Monsieur du 2026-10-11)*
-- **B-43** — Tout texte Markdown — le contenu d'une section (et le texte d'un compte-rendu), d'un
-  scénario, d'une entrée de système — tient jusqu'à **100 000 caractères** (au lieu de 20 000) ;
-  au-delà, l'écriture est refusée comme aujourd'hui (AD-91, AD-106). *(P-10, P-14)*
-- **B-44** — Tout fichier d'une fiche — son illustration (une image), un fichier joint à une section
-  (image ou document), une image ou un lien de fichier dans un texte — est un fichier de la
-  **médiathèque** de l'univers (B-53), **référencé**, jamais copié. Quand un compte lit une section qui
-  en montre un, il le voit si la section (et, dans un bloc MJ, le bloc) **et** le fichier lui sont
-  ouverts ; si la section l'est et le fichier non, la mention « Image réservée au MJ. » (ou « Fichier
-  réservé au MJ. » pour un document) tient sa place ; un fichier dans un bloc MJ disparaît avec le bloc.
-  L'illustration suit la même double garde (la fiche et l'image). *(P-12, P-16 ; décisions de Monsieur
-  du 2026-10-11)*
+### Write, link, organize (`kanevas-import`)
+- **B-32** — The content of a section, scenario and system entry is **Markdown**:
+  when an account saves it (E-9, E-7, E-15), Kanevas displays it formatted — headings, bold,
+  italics, lists, quotes, tables, links, section images — and never interprets HTML written in
+  the text, which is displayed as is; the editor has a **preview**. *(P-12, P-14)*
+- **B-33** — When an account writing a section types `[[`, E-9 suggests sheets it may
+  read and inserts a **link** to the chosen one; when reading, a link to a sheet the reader
+  sees opens that sheet; a link to a sheet they cannot see appears like surrounding
+  text, without underlining or any trace; a link whose target does not exist (deleted, never
+  imported) appears as text for a player and marked « lien cassé » for a GM. In a scenario,
+  a link targets a sheet in its campaign's universe under the same permissions; in a game
+  system entry, shared across universes, `[[…]]` remains text. *(P-12, P-14)*
+- **B-34** — A GM places a **GM block** in a section (E-9, « Bloc MJ » in the editor, or
+  the import); unless the reader is a GM outside Player mode, Kanevas delivers none of it:
+  on the sheet, through the assistant, through search (a word found only in a GM block does not
+  find the sheet), through incoming links (a link written in a GM block does not count), or
+  through the images it contains. A section containing a GM block may only be written by a GM. A
+  file **added from a GM block** enters the media library as « Réservé au MJ » (B-55). *(P-12, P-14;
+  Monsieur's decision of 2026-10-11)*
+- **B-35** — A GM places a sheet **under another** in the same universe (E-9, « Déplacer sous… », or
+  the import); the sheet then shows its ancestors in the breadcrumb and its **children** in a block;
+  a type's list (E-8) can also be read **as a tree**. A reader only sees sheets they may
+  read: unreadable ancestors are skipped, unreadable children absent, without a count. *(P-12, P-14)*
+- **B-36** — When an account opens a sheet (E-9), it sees sheets that **mention** it — through
+  a link in a section it reads (outside GM blocks unless it is a GM) or a relation it reads —,
+  and nothing from sheets it cannot read. *(P-12)*
+- **B-37** — When an account uses **search** (E-17), Kanevas searches all
+  types at once, in titles, **aliases** and readable sections, filters by type and
+  **label**, and only returns sheets the account may read (B-11, B-34). *(P-12)*
+- **B-38** — A GM gives a sheet **aliases** (other names) and **labels** (E-9); anyone
+  who sees the sheet sees them, like its title; tapping a label opens search filtered by it
+  (E-17). An alias or label is never secret. *(P-12, P-14)*
+- **B-39** — A GM changes a sheet's **title**, **type** and **parent** after creation,
+  from its header (E-9). A session report's type cannot change, and a sheet cannot become a
+  session report. *(P-14)*
+- **B-40** — A GM **deletes a sheet** from its header (E-9), after a confirmation naming what
+  goes with it (sections and their file references, relations targeting it, placements on
+  maps; files themselves remain in the media library); its
+  children move up under its parent; links targeting it become broken links (B-33).
+  *(P-14)* A deleted imported sheet **returns** on the next replay if the script still sends it:
+  to prevent its return, delete it from the export. No trace of deletion is
+  kept (Monsieur's decision of 2026-10-11).
+- **B-41** — A GM **deletes a universe** from its settings (E-14), typing its name to
+  confirm; all its content and tokens go, its members lose access, and its address
+  responds like an unknown address. An attached game system remains. *(P-10)*
+- **B-42** — **Sheet types** are a fixed product list, extended by a Kanevas release,
+  never created by a user. A GM of an attached universe **enables or disables** each
+  type for the system (E-15); a GM **overrides** a type to enabled or disabled for their universe, or
+  lets it **follow the system** (E-14); a universe without a system follows the product default (all
+  enabled). A disabled type leaves the sidebar, creation (E-8) and
+  search filters (E-17); its sheets remain reachable through links, search or the tree. The
+  session report type is not configurable. *(P-13)*
+- **B-52** — A GM gives a sheet a free-text **subtype**, specific to its type (« Savoir · Ressource »,
+  « Lieu · Planète », « Vaisseau · Frégate »), at creation (E-8) or from its header (E-9), by typing it;
+  E-9 suggests subtypes already used for that type in the universe. Anyone who sees the sheet sees
+  its subtype on its card (E-8), in its header (E-9) and in search (E-17), which finds it;
+  a type's list (E-8) **filters by subtype** among those of sheets the reader sees. Labels
+  remain cross-cutting (B-38). *(P-12, P-14; Monsieur's decision of 2026-10-11)*
+- **B-43** — Any Markdown text — section content (and a session report's text), a
+  scenario, a system entry — holds up to **100,000 characters** (instead of 20,000);
+  beyond that, writing is refused as today (AD-91, AD-106). *(P-10, P-14)*
+- **B-44** — Every file on a sheet — its illustration (an image), a section attachment
+  (image or document), an image or file link in text — is a file in the universe's
+  **media library** (B-53), **referenced**, never copied. When an account reads a section
+  showing one, it sees it if both the section (and, within a GM block, the block) **and** the file
+  are accessible; if the section is accessible but the file is not, « Image réservée au MJ. » (or « Fichier
+  réservé au MJ. » for a document) takes its place; a file within a GM block disappears with the block.
+  The illustration follows the same double guard (sheet and image). *(P-12, P-16; Monsieur's decisions
+  of 2026-10-11)*
 
-### Import et accès par API (`kanevas-import`)
-- **B-45** — Un MJ crée un **jeton d'API** pour son univers depuis « Accès par API » (E-18) : un nom,
-  une durée (30 jours par défaut, un an au plus) ; Kanevas le montre **une seule fois** ; le jeton agit
-  avec les droits de ce MJ dans ce seul univers, et seulement sur l'API d'import. *(P-11, P-10)*
-- **B-46** — Un MJ voit les jetons de son univers (nom, créé par, dernier usage, expiration) et en
-  **révoque** un depuis E-18 ; si le jeton est révoqué, expiré, ou si son MJ a perdu ce rôle, alors
-  toute requête qui le présente est refusée (401) et rien n'est écrit. *(P-11)*
-- **B-47** — Quand un script pousse une fiche par l'API d'import avec une **clé d'origine**, Kanevas
-  la crée si la clé est inconnue dans l'univers, la met à jour si elle est connue, et ne change rien si
-  rien n'a changé — fiche, sections, relations, alias, étiquettes, parent, pièces jointes, illustration,
-  campagnes et scénarios ; rejouer le même import ne crée aucun doublon. *(P-10)*
-- **B-48** — Si ce qu'un import a écrit a été **modifié dans Kanevas** depuis (par un humain ou son
-  assistant) — le titre, le type, le sous-type, le parent, les alias, les étiquettes d'une fiche ; le titre, le
-  contenu, l'audience, les fichiers joints d'une section ; l'illustration d'une fiche ; le nom et le
-  statut d'une campagne ; le titre et le contenu d'un scénario ; le nom et la **visibilité** d'un
-  fichier de la médiathèque —, alors un nouvel import n'écrase pas ce qui a été modifié,
-  écrit le reste, et le rapport du lot nomme chaque champ laissé. *(P-10, P-14)*
-- **B-49** — Un MJ voit sur E-18 les **lots d'import** de son univers : quand, par quel jeton, combien
-  d'objets créés, mis à jour, inchangés, refusés, **par nature** (fiches, fichiers, campagnes,
-  scénarios, relations), combien de liens et références restent en attente, et pour chaque refus la
-  clé d'origine et la raison. *(P-10)*
-- **B-50** — Une fiche importée garde sa **clé d'origine** (visible du MJ seul, E-9) et peut porter sa
-  **date d'origine** de création, qui ordonne les comptes-rendus (E-13) comme une date de Kanevas.
+### Import and API access (`kanevas-import`)
+- **B-45** — A GM creates an **API token** for their universe from « Accès par API » (E-18): a name,
+  a lifetime (30 days by default, one year at most); Kanevas shows it **once only**; the token acts
+  with that GM's permissions in that universe only, and only on the import API. *(P-11, P-10)*
+- **B-46** — A GM sees their universe's tokens (name, created by, last use, expiry) and
+  **revokes** one from E-18; if the token is revoked, expired, or its GM has lost that role, then
+  every request presenting it is refused (401) and nothing is written. *(P-11)*
+- **B-47** — When a script pushes a sheet through the import API with an **origin key**, Kanevas
+  creates it if the key is unknown in the universe, updates it if known, and changes nothing if
+  nothing has changed — sheet, sections, relations, aliases, labels, parent, attachments, illustration,
+  campaigns and scenarios; replaying the same import creates no duplicates. *(P-10)*
+- **B-48** — If anything an import wrote has since been **modified in Kanevas** (by a human or their
+  assistant) — a sheet's title, type, subtype, parent, aliases, labels; a section's title,
+  content, audience, attachments; a sheet's illustration; a campaign's name and
+  status; a scenario's title and content; a media library file's name and **visibility** —,
+  then a new import does not overwrite what was modified,
+  writes the rest, and the batch report names each field left untouched. *(P-10, P-14)*
+- **B-49** — A GM sees their universe's **import batches** on E-18: when, through which token, how many
+  objects were created, updated, unchanged, refused, **by kind** (sheets, files, campaigns,
+  scenarios, relations), how many links and references remain pending, and each refusal's
+  origin key and reason. *(P-10)*
+- **B-50** — An imported sheet keeps its **origin key** (visible only to the GM, E-9) and may carry its
+  **original creation date**, which orders session reports (E-13) like a Kanevas date.
   *(P-10, P-12)*
 
-### Médiathèque (`kanevas-import`, décisions de Monsieur du 2026-10-11)
-- **B-53** — Chaque univers a une **médiathèque** (E-19) qui porte **tous** ses fichiers, images
-  (PNG, JPEG, GIF, WebP) et documents (PDF et tout autre fichier), chacun avec sa **visibilité** —
-  « Visible des joueurs » (le défaut) ou « Réservée au MJ ». Un MJ y ajoute des fichiers, en change le
-  nom et la visibilité, en supprime un ; quiconque est membre y voit ceux qui lui sont ouverts (un
-  joueur : ceux visibles des joueurs), filtrés en **Images** ou **Documents** (un document se montre par
-  l'icône de son type, son nom et sa taille), et pour chacun les fiches **qu'il lit** qui l'utilisent.
+### Media library (`kanevas-import`, Monsieur's decisions of 2026-10-11)
+- **B-53** — Each universe has a **media library** (E-19) holding **all** its files, images
+  (PNG, JPEG, GIF, WebP) and documents (PDF and any other file), each with its **visibility** —
+  « Visible des joueurs » (the default) or « Réservée au MJ ». A GM adds files, changes their
+  names and visibility, deletes them; any member sees accessible files there (a
+  player: player-visible ones), filtered into **« Images »** or **« Documents »** (a document shows as
+  its type icon, name and size), and for each the sheets **they read** that use it.
   *(P-16, P-10)*
-- **B-54** — Quand un MJ supprime un fichier utilisé (E-19), Kanevas demande confirmation en listant les
-  fiches qui l'utilisent ; après, ces fiches ne le montrent plus (« Fichier supprimé de la
-  médiathèque. » pour un MJ, rien pour un joueur). Quand un MJ réserve au MJ un fichier utilisé dans une
-  section lue des joueurs (E-19, ou le menu du fichier joint sur E-9), Kanevas le prévient de même, en
-  listant ces sections. *(P-16)*
-- **B-55** — Un compte qui écrit une section y met un fichier par **deux chemins**, sur E-9 (en édition
-  depuis la barre d'outils, ou par « Joindre un fichier » du bloc Pièces jointes) :
-  (1) **ajouter un fichier** depuis son appareil — en un seul geste, le fichier entre dans la
-  médiathèque **et** s'intègre à la fiche : image dans le texte, fichier joint à la section, ou
-  illustration (MJ) ; sa visibilité **suit l'endroit d'ajout** : dans un bloc MJ, ou dans une section
-  que les joueurs ne lisent pas tous, « Réservé au MJ » ; ailleurs, « Visible des joueurs » ; (2)
-  **choisir dans la médiathèque** un fichier qu'il voit, par le sélecteur — sa visibilité ne change
-  pas. Celui qui a ajouté un fichier le **voit toujours**, dans la médiathèque et dans la fiche. Si le
-  fichier posé est réservé au MJ alors que la section (ou la fiche, pour une
-  illustration) est lue des joueurs, l'éditeur l'avertit : « Ce fichier est réservé au MJ : les joueurs
-  qui lisent cette section ne le verront pas. » *(P-16, P-3, P-7 ; décision de Monsieur du 2026-10-11 : le défaut « Visible
-  des joueurs » ne vaut plus que pour un ajout direct dans la médiathèque et pour l'import)*
-- **B-56** — L'API d'import pousse des fichiers dans la médiathèque, images et documents, avec une clé
-  d'origine et des droits explicites (« Visible des joueurs » par défaut), puis les fiches les
-  référencent ; les fichiers de l'export qu'aucune fiche n'utilise y entrent aussi. Le script **doit**
-  envoyer « Réservée au MJ » pour un fichier que la source n'utilise que dans du contenu MJ. *(P-10 ;
-  décision de Monsieur du 2026-10-11)*
+- **B-54** — When a GM deletes a file in use (E-19), Kanevas asks for confirmation listing the
+  sheets using it; afterward those sheets no longer show it (« Fichier supprimé de la
+  médiathèque. » for a GM, nothing for a player). When a GM makes a file GM-only while it is used in a
+  player-readable section (E-19, or the attachment menu on E-9), Kanevas likewise warns them,
+  listing those sections. *(P-16)*
+- **B-55** — An account writing a section puts a file there through **two paths**, on E-9 (when editing,
+  from the toolbar, or through « Joindre un fichier » in the « Pièces jointes » block):
+  (1) **add a file** from their device — in one action, the file enters the
+  media library **and** integrates into the sheet: image in text, section attachment, or
+  illustration (GM); its visibility **follows where it is added**: in a GM block, or in a section
+  not readable by all players, « Réservé au MJ »; elsewhere, « Visible des joueurs »; (2)
+  **choose from the media library** a file they see, through the picker — its visibility does not
+  change. Whoever added a file **always sees it**, in the library and on the sheet. If the
+  inserted file is GM-only while the section (or the sheet, for an
+  illustration) is player-readable, the editor warns: « Ce fichier est réservé au MJ : les joueurs
+  qui lisent cette section ne le verront pas. » *(P-16, P-3, P-7; Monsieur's decision of 2026-10-11: the « Visible
+  des joueurs » default now only applies to direct additions to the media library and to imports)*
+- **B-56** — The import API pushes files into the media library, images and documents, with an origin
+  key and explicit permissions (« Visible des joueurs » by default), then sheets
+  reference them; exported files unused by any sheet enter it too. The script **must**
+  send « Réservée au MJ » for a file that the source only uses in GM content. *(P-10;
+  Monsieur's decision of 2026-10-11)*
 
-### Assistant : son jeton posé depuis l'administration (`kanevas-import`)
-- **B-51** — Quand l'admin d'instance
-  ouvre « Jeton de l'assistant » dans l'administration (E-5), il lance la connexion à l'abonnement
-  Claude (`claude setup-token`), ouvre l'adresse que Kanevas lui montre, colle le code rendu, et
-  l'assistant devient disponible sans redéploiement ; l'écran dit si un jeton est posé et depuis
-  quand, jamais sa valeur. *(P-15)* — **Inclus, en dernière tranche indépendante** (décision de Monsieur du 2026-10-11).
-  Le code existe dans Antre-du-maitre (une fenêtre et trois routes, le binaire
-  `claude` est celui que l'Agent SDK, déjà dépendance de Kanevas, embarque ; `script` pour le
-  pseudo-terminal), E-5 existe, et aujourd'hui poser ou renouveler le jeton passe par OpenBao et un
-  redémarrage. La tranche n'a aucun lien avec l'import : elle part seule, la dernière.
+### Assistant: its token set from administration (`kanevas-import`)
+- **B-51** — When the instance admin
+  opens « Jeton de l'assistant » in administration (E-5), they start the Claude subscription
+  connection (`claude setup-token`), open the address Kanevas shows, paste the returned code, and
+  the assistant becomes available without redeployment; the screen says whether a token is set and since
+  when, never its value. *(P-15)* — **Included, as the last independent slice** (Monsieur's decision of 2026-10-11).
+  The code exists in Antre-du-maitre (a window and three routes; the
+  `claude` binary is bundled by the Agent SDK, already a Kanevas dependency; `script` for the
+  pseudo-terminal), E-5 exists, and currently setting or renewing the token goes through OpenBao and a
+  restart. This slice has no link to import: it runs independently, last.
 
-### Système de jeu
-- **B-13** — Un MJ rattache son univers à un système de jeu partagé, ou en crée un, depuis les
-  paramètres de l'univers (E-14). *(P-8)*
-- **B-14** — Les MJ des univers d'un même système en enrichissent le référentiel commun (règles,
-  créatures, objets) depuis la page du système (E-15) ; les membres de ces univers le lisent, les
-  autres ne le voient pas. *(P-8)*
-- **B-31** — Un compte retrouve, **hors de tout univers**, les systèmes de jeu rattachés à ses
-  univers (E-16), chacun avec ceux de ses univers qui l'utilisent et jamais les autres, et ouvre la
-  page d'un système (E-15) à sa propre adresse, sans passer par un univers ; il le lit s'il est
-  membre d'un univers rattaché, le modifie s'il est MJ de l'un d'eux, et l'adresse d'un système
-  qu'il ne voit pas répond comme une adresse inconnue. *(P-8)*
+### Game system
+- **B-13** — A GM attaches their universe to a shared game system, or creates one, from
+  universe settings (E-14). *(P-8)*
+- **B-14** — GMs of universes sharing a system enrich its common reference material (rules,
+  creatures, items) from the system page (E-15); members of those universes read it,
+  others do not see it. *(P-8)*
+- **B-31** — An account finds, **outside any universe**, the game systems attached to its
+  universes (E-16), each with those of its universes using it and never others, and opens a
+  system page (E-15) at its own address, without going through a universe; it reads it if it is
+  a member of an attached universe, edits it if it is a GM of one, and the address of a system
+  it cannot see responds like an unknown address. *(P-8)*
 
-### Campagnes, scénarios, préparation
-- **B-15** — Un MJ crée les campagnes d'un univers et en change le statut — en préparation,
-  active, terminée — depuis la liste et la page de campagne (E-6). *(P-3)*
-- **B-16** — Un MJ crée les scénarios d'une campagne depuis sa page (E-6) et les écrit (E-7) ; les
-  joueurs ne les voient jamais.
+### Campaigns, scenarios, preparation
+- **B-15** — A GM creates a universe's campaigns and changes their status — in preparation,
+  active, completed — from the campaign list and page (E-6). *(P-3)*
+- **B-16** — A GM creates a campaign's scenarios from its page (E-6) and writes them (E-7); players
+  never see them.
   *(P-3)*
-- **B-17** — Un MJ tient la liste de préparation d'une campagne sur sa page (E-6) : des tâches en
-  cinq catégories (monstres, PNJ, cartes, déroulements, autre) qu'il coche ; une tâche cochée
-  quitte la liste active sans disparaître. Les joueurs n'en voient rien. *(P-3)*
-- **B-18** — Un joueur voit la liste des campagnes de l'univers, nom et statut. *(P-4, P-6)*
+- **B-17** — A GM maintains a campaign's preparation list on its page (E-6): tasks in
+  five categories (monsters, NPCs, maps, sequences, other) to check off; a checked task
+  leaves the active list without disappearing. Players see none of it. *(P-3)*
+- **B-18** — A player sees the universe's campaign list, names and statuses. *(P-4, P-6)*
 
-### Comptes-rendus et mise à jour du monde
-- **B-19** — Quand un membre écrit un compte-rendu depuis la page d'une campagne (E-6), le CR est
-  lisible par toute la table et modifiable par son auteur ; le MJ lit et écrit tout CR. Plusieurs
-  CR coexistent pour une même séance. *(P-4)*
-- **B-20** — Les comptes-rendus d'un univers se lisent ensemble, du plus récemment créé au plus
-  ancien (un CR retouché ne remonte pas), dans la liste des CR (E-13). *(P-4, P-6)*
-- **B-21** — Quand un MJ demande à son assistant (E-12) une mise à jour du monde à partir d'un CR,
-  l'assistant propose un nouveau contenu de section sans rien écrire ; le MJ voit l'actuel et le
-  proposé, puis l'applique ou l'abandonne d'un geste. Rien ne s'applique tout seul. *(P-5)*
+### Session reports and world updates
+- **B-19** — When a member writes a session report from a campaign page (E-6), the report is
+  readable by the whole table and editable by its author; the GM reads and writes every report. Several
+  reports can coexist for the same session. *(P-4)*
+- **B-20** — A universe's session reports are read together, from newest creation to oldest
+  (editing a report does not move it up), in the report list (E-13). *(P-4, P-6)*
+- **B-21** — When a GM asks their assistant (E-12) to update the world from a report,
+  the assistant proposes new section content without writing anything; the GM sees the current and
+  proposed content, then applies or abandons it in one action. Nothing applies itself. *(P-5)*
 
-### Cartes
-- **B-22** — Un MJ pose une carte illustrée (une image de fond qu'il dépose sur la carte, des
-  tokens liés à des fiches, placés librement) ou un graphe (des fiches choisies, reliées par leurs relations) depuis
-  la liste des cartes (E-10). *(P-3, P-9)*
-- **B-23** — Un MJ rend une carte visible des joueurs ; un joueur n'y voit que les tokens et liens
-  dont il peut lire la fiche, et ouvre la fiche d'un token. *(P-3, P-6)*
+### Maps
+- **B-22** — A GM creates an illustrated map (a background image dropped onto the map, freely
+  placed tokens linked to sheets) or a graph (chosen sheets connected by their relations) from
+  the map list (E-10). *(P-3, P-9)*
+- **B-23** — A GM makes a map player-visible; a player only sees tokens and links
+  whose sheets they may read, and opens a token's sheet. *(P-3, P-6)*
 
-### Pièces jointes et images
-- **B-24** — Quand un compte qui écrit une section y dépose un fichier (E-9), en un geste, il
-  devient une pièce jointe de la section, avec sa visibilité ; le MJ peut la marquer secrète. *Depuis
-  `kanevas-import` (B-44, B-55) : le fichier entre dans la médiathèque et la section le référence ;
-  « secrète » devient « Réservée au MJ », la visibilité du fichier lui-même.* Une
-  pièce jointe n'est servie que par une route qui revérifie les droits. *(P-3, P-7)*
-- **B-25** — Quand un MJ demande une image à son assistant (E-12) pour une section, l'image est
-  générée et attachée en un seul geste ; un échec n'attache rien. *(P-3)*
+### Attachments and images
+- **B-24** — When an account writing a section drops a file onto it (E-9), in one action it
+  becomes a section attachment with its visibility; the GM may mark it secret. *Since
+  `kanevas-import` (B-44, B-55): the file enters the media library and the section references it;
+  « secrète » becomes « Réservée au MJ », the file's own visibility.* An
+  attachment is served only through a route that rechecks permissions. *(P-3, P-7)*
+- **B-25** — When a GM asks their assistant (E-12) for a section image, the image is
+  generated and attached in one action; a failure attaches nothing. *(P-3)*
 
 ### Assistant
-- **B-26** — Chaque membre a un assistant, ouvert depuis un bouton présent sur tous les écrans
-  d'un univers (E-12) : il cherche, résume et modifie ce que la personne peut lire et écrire, ni
-  plus ni moins ; un refus est le même que par l'interface. *(P-3, P-6, P-7)*
-- **B-27** — L'assistant d'un MJ peut aussi créer une campagne ou un scénario, proposer une mise à
-  jour du monde et générer une image ; celui d'un joueur ne le peut pas. *(P-3, P-5)*
+- **B-26** — Each member has an assistant opened from a button present on every screen
+  of a universe (E-12): it searches, summarizes and edits what the person may read and write, no
+  more and no less; a refusal is the same as through the interface. *(P-3, P-6, P-7)*
+- **B-27** — A GM's assistant may also create a campaign or scenario, propose a world
+  update and generate an image; a player's cannot. *(P-3, P-5)*
 
-### Outils spécialisés (`kanevas-outils`)
+### Specialized tools (`kanevas-outils`)
 
-> Epic `kanevas-outils` (cadrage proposé le 2026-10-16). Un **outil** est du code, des règles, des
-> données et un point d'entrée dans l'interface, propre à un système de jeu (AD-121). Les deux
-> premiers sont ceux de Stars Without Number révisé (« SWN ») : la **carte de la galaxie** et le
-> **concepteur de vaisseaux**. Les décisions de Monsieur (discussion de l'epic, 2026-10-15 et 16)
-> sont reprises telles quelles ; le cadrage les met en forme.
+> Epic `kanevas-outils` (scoping proposed on 2026-10-16). A **tool** is code, rules,
+> data and an interface entry point, specific to a game system (AD-121). The first two
+> are for Stars Without Number Revised (« SWN »): the **galaxy map** and the
+> **ship designer**. Monsieur's decisions (epic discussion, 2026-10-15 and 16)
+> are reproduced as is; the scoping gives them structure.
 
-**Le cadre commun** (indépendant de SWN) :
-- **B-57** — Un système de jeu a un **responsable** : son créateur par défaut, rôle transmissible à un
-  autre MJ d'un univers rattaché (un système créé avant cette epic n'en a pas : tout MJ d'un univers
-  rattaché agit comme responsable, la règle d'aujourd'hui, jusqu'à ce qu'on en nomme un). Lui seul, au niveau du système, active ou désactive un outil, importe
-  ou modifie le catalogue du système, fixe les réglages de base et supprime des données du système ;
-  tout autre MJ d'un univers rattaché lit tout cela, sans le modifier. Au niveau de son univers, tout MJ
-  garde la liberté complète (B-58, B-60, B-62). L'admin d'instance n'intervient pas (pas d'accès au
-  contenu). *(P-17)*
-- **B-58** — Un onglet **« Outils »** (E-20) existe à côté de « Types de fiche » sur la page du système
-  (E-15) et sur les paramètres de l'univers (E-14). Il liste les outils qui s'appliquent au système
-  (un système de jeu précis, ou tous) ; le système active ou non chacun, l'univers suit le système ou
-  force « Activé » ou « Désactivé ». Un outil déclare ses dépendances : l'écran refuse d'activer l'un
-  sans l'autre et dit pourquoi (aucun outil de cette epic n'en déclare ; le mécanisme se joue avec le
-  module d'essai des tests). *(P-17, P-21)*
-- **B-59** — Chaque outil a une **visibilité par rôle** (MJ, joueur), dont il déclare le défaut et que
-  E-20 règle, au système puis à l'univers. Les joueurs ne voient que les points d'entrée des outils
-  activés **et** visibles pour eux, et ce que leurs droits ouvrent ; un outil qu'un compte ne peut pas
-  utiliser est **introuvable** pour lui (adresse inconnue, absent de la barre, de la recherche et de
-  l'assistant). Chaque outil déclare en plus ses **usages** (consulter, concevoir, proposer… : qui peut
-  créer, qui peut seulement lire), qu'il applique lui-même, jusqu'à la ligne de données. *(P-17, P-18)*
-- **B-60** — Chaque outil déclare ses **réglages** et leur forme ; E-20 les affiche sans écran propre à
-  l'outil. Le système fixe la valeur de base, l'univers la remplace (c'est la place des règles maison :
-  portée de saut d'Éneria, pas de charges de carburant). Un réglage trop riche pour un formulaire reste
-  dans l'outil. Un réglage **protégé** (la graine d'une galaxie, réglée sur E-21) demande une confirmation qui dit ce qu'il
-  déplace. *(P-17)*
-- **B-61** — Le responsable importe un **catalogue** (un fichier JSON, une section par nature
-  d'élément) depuis E-20 : Kanevas vérifie le fichier, montre un **aperçu** (ajouté, modifié, refusé,
-  chaque refus avec son champ), puis applique sur confirmation. Chaque élément a une **clé** : réimporter
-  met à jour sans doublon ; un élément retiré du fichier n'est **pas** supprimé en silence ; le catalogue
-  porte une version. Un MJ le fait de même pour le catalogue de son univers. *(P-17)*
-- **B-62** — Les données d'un outil ont **deux niveaux** : celui du système (partagé par ses univers :
-  coques, armes, modifications SWN) et celui de l'univers (une campagne : coque personnalisée, cristaux
-  d'Orak'Ziel, toute la carte d'Éneria). Un univers voit les données de son système plus les siennes ; une
-  donnée d'univers ajoute un élément, en **remplace** un par la même clé, ou le **retire** (l'élément du
-  système n'existe pas dans cet univers ; le rétablir le fait revenir). **Visibilité d'un catalogue** : tout
-  élément du système est lisible par qui voit l'outil, sans exception ; un élément d'univers aussi par
-  défaut, et le MJ peut le **masquer aux joueurs** (lisible du MJ seul, absent pour un joueur sans trace
-  d'un masquage, comme un système secret de la carte) puis le rendre visible. Une conception qui contient un
-  élément **retiré** garde son texte ; rouverte dans le concepteur, elle porte l'alerte bloquante « Élément
-  retiré de cet univers » et ne se réenregistre pas tant qu'il n'est pas remplacé ; rien ne se recalcule sans
-  geste. Un élément **masqué** disparaît seulement de la liste des choix d'un joueur : une conception qui le
-  contient déjà le garde, le montre à qui la lit et se réenregistre sans alerte. Un élément d'univers qui en
-  **remplace** un du système le remplace entièrement : l'élément du système ne s'applique plus jamais dans cet
-  univers, ni à l'affichage ni au calcul ; masqué, le remplacement suit la règle du masquage, et l'élément du
-  système ne reparaît pas pour le joueur. *(P-17, P-19 ; décisions de
-  Monsieur, 2026-10-17)*
-- **B-63** — **Désactiver** un outil garde ses données et les cache ; **supprimer** des données est un
-  geste à part, explicite, réservé, dont la confirmation dit ce qui sera effacé ; supprimer celles du
-  système dit quels univers, éléments locaux et vaisseaux s'en servent encore. Désactivé, un outil laisse
-  ses sections lisibles en texte, avec un bandeau « outil désactivé » ; supprimer un univers efface les
-  données de ses outils. *(P-21)*
-- **B-64** — Une écriture sur une donnée d'outil modifiable (conception, système placé, route, zone…)
-  partie d'une version périmée est **refusée** avec la même réponse qu'une section, et l'écran le dit
-  avec de quoi recharger. Pas d'édition à plusieurs en direct. *(P-18, P-19)*
-- **B-65** — Un jeton d'API a une **portée par outil** ; l'API d'import accepte les données d'un outil
-  (catalogue, systèmes placés, routes, zones, conceptions) : une clé par élément, rejeu sans doublon,
-  rapport de lot, forme vérifiée par le module (ce qui contrôle aussi la conversion). *(P-20)*
-- **B-66** — Une **section gérée par un outil** n'est écrite que par lui (l'éditeur et l'API la refusent
-  à tout autre) ; tout le reste de Kanevas la lit normalement. Elle porte la version de la source qui l'a
-  produite, un bandeau « Générée par <outil> » avec un lien vers l'outil, et une **version texte**
-  (Markdown) pour la recherche, l'assistant et l'affichage outil désactivé. Une même fiche mêle sections
-  gérées et libres. L'outil écrit **au nom du compte**, après avoir vérifié son usage et son rôle
-  d'auteur de la section. *(P-19)*
-- **B-67** — Un réglage ou un catalogue qui change **ne réécrit rien en silence** : un vaisseau signale
-  « calculé avec d'anciens réglages » et propose de recalculer ; une section gérée se régénère d'elle-même
-  ou sur proposition, selon ce que l'outil déclare. *(P-19)*
-- **B-68** — Un **lien partageable** mène à ce qui est stocké (un système de la carte, la fiche d'un
-  vaisseau) et se lit selon les droits de qui l'ouvre ; aucun contenu n'est encodé dans l'adresse. *(P-18, P-19)*
-- **B-69** — Chaque outil peut exposer ses **capacités à l'assistant** (calculer un trajet, calculer un
-  vaisseau) : il les reçoit quand l'outil est activé et visible pour le rôle du compte, avec les mêmes
-  droits que lui. *(P-18, P-19)*
-- **B-70** — Chaque outil est utilisable au **téléphone et à la tablette** dès sa première version
-  (critère de recette de chaque outil) ; son code ne se charge qu'à son usage, et jamais pour un compte
-  sans accès. *(P-18, P-19)*
+**The common framework** (independent of SWN):
+- **B-57** — A game system has an **owner**: its creator by default, a role transferable to another
+  GM of an attached universe (a system created before this epic has none: any GM of an attached
+  universe acts as owner, today's rule, until one is appointed). Only the owner, at system level, enables or disables a tool, imports
+  or edits the system catalogue, sets base settings and deletes system data;
+  any other GM of an attached universe reads all this without editing it. Within their universe, every GM
+  retains full freedom (B-58, B-60, B-62). The instance admin does not intervene (no content
+  access). *(P-17)*
+- **B-58** — An **« Outils »** tab (E-20) sits beside « Types de fiche » on the system page
+  (E-15) and in universe settings (E-14). It lists tools applicable to the system
+  (a specific game system, or all); the system enables each or not, the universe follows the system or
+  overrides to « Activé » or « Désactivé ». A tool declares its dependencies: the screen refuses to enable one
+  without the other and explains why (no tool in this epic declares any; the mechanism is exercised with the
+  tests' trial module). *(P-17, P-21)*
+- **B-59** — Each tool has **visibility by role** (GM, player), declaring its default, which
+  E-20 configures at system then universe level. Players only see entry points for tools
+  that are enabled **and** visible to them, and what their permissions allow; a tool an account cannot
+  use is **not found** for it (unknown address, absent from the bar, search and
+  assistant). Each tool also declares its **uses** (view, design, propose…: who may
+  create, who may only read), which it enforces itself, down to the data row. *(P-17, P-18)*
+- **B-60** — Each tool declares its **settings** and their shape; E-20 displays them without a screen specific
+  to the tool. The system sets the base value, the universe overrides it (this is where house rules belong:
+  Éneria's jump range, no fuel charges). A setting too rich for a form remains
+  in the tool. A **protected** setting (a galaxy's seed, set on E-21) requires confirmation stating what it
+  moves. *(P-17)*
+- **B-61** — The owner imports a **catalogue** (a JSON file, one section per kind
+  of element) from E-20: Kanevas checks the file, shows a **preview** (added, modified, refused,
+  each refusal with its field), then applies on confirmation. Each element has a **key**: reimporting
+  updates without duplicates; an element removed from the file is **not** silently deleted; the catalogue
+  carries a version. A GM does the same for their universe's catalogue. *(P-17)*
+- **B-62** — Tool data has **two levels**: system (shared by its universes:
+  SWN hulls, weapons, modifications) and universe (a campaign: custom hull, Orak'Ziel
+  crystals, all of Éneria's map). A universe sees its system's data plus its own; a
+  universe entry adds an element, **replaces** one using the same key, or **removes** it (the system
+  element does not exist in that universe; restoring it brings it back). **Catalogue visibility**: every
+  system element is readable by anyone who sees the tool, without exception; a universe element is too by
+  default, and the GM may **hide it from players** (GM-readable only, absent for a player without a trace
+  of hiding, like a secret map system) then make it visible. A design containing a
+  **removed** element keeps its text; reopened in the designer, it carries the blocking alert « Élément
+  retiré de cet univers » and cannot be saved again until it is replaced; nothing recalculates without
+  action. A **hidden** element disappears only from a player's choice list: a design already
+  containing it keeps it, shows it to its readers and saves again without an alert. A universe element
+  **replacing** a system element replaces it entirely: the system element never applies again in that
+  universe, in display or calculation; when hidden, the replacement follows the hiding rule, and the system
+  element does not reappear for the player. *(P-17, P-19; Monsieur's decisions,
+  2026-10-17)*
+- **B-63** — **Disabling** a tool keeps and hides its data; **deleting** data is a
+  separate, explicit, restricted action whose confirmation states what will be erased; deleting system
+  data states which universes, local elements and ships still use it. Disabled tools leave
+  their sections readable as text with an « outil désactivé » banner; deleting a universe erases
+  its tools' data. *(P-21)*
+- **B-64** — A write to editable tool data (design, placed system, route, zone…)
+  based on a stale version is **refused** with the same response as a section, and the screen explains it
+  with a way to reload. No live collaborative editing. *(P-18, P-19)*
+- **B-65** — An API token has a **scope per tool**; the import API accepts a tool's data
+  (catalogue, placed systems, routes, zones, designs): one key per element, replay without duplicates,
+  batch report, shape checked by the module (which also checks conversion). *(P-20)*
+- **B-66** — A **tool-managed section** is written only by that tool (the editor and API refuse
+  anyone else); all the rest of Kanevas reads it normally. It carries the version of the source that
+  produced it, a « Générée par <outil> » banner linking to the tool, and a **text version**
+  (Markdown) for search, the assistant and display when the tool is disabled. A sheet mixes
+  managed and free sections. The tool writes **on behalf of the account**, after checking its usage permissions and its
+  authorship of the section. *(P-19)*
+- **B-67** — Changing a setting or catalogue **silently rewrites nothing**: a ship signals
+  « calculé avec d'anciens réglages » and offers recalculation; a managed section regenerates itself
+  or on proposal, according to what the tool declares. *(P-19)*
+- **B-68** — A **shareable link** leads to stored content (a map system, a ship's
+  sheet) and is read according to the opener's permissions; no content is encoded in the address. *(P-18, P-19)*
+- **B-69** — Each tool may expose its **capabilities to the assistant** (calculate a route, calculate a
+  ship): the assistant receives them when the tool is enabled and visible to the account's role, with the same
+  permissions as that account. *(P-18, P-19)*
+- **B-70** — Each tool works on **phones and tablets** from its first version
+  (acceptance criterion for each tool); its code loads only when used, never for an account
+  without access. *(P-18, P-19)*
 
-**La carte de la galaxie (SWN)** :
-- **B-71** — La carte de la galaxie est une carte de la section Cartes (E-10 la liste avec les cartes illustrées et les graphes, puis E-21 ; elle a sa propre visibilité « Visible des joueurs » ; un MJ la crée, la renomme et la supprime, la suppression étant un geste à part avec confirmation) : une grille
-  hexagonale infinie, avec des systèmes définis, des routes, des zones et territoires. Les systèmes non
-  définis ne sont pas stockés : ils se génèrent par blocs de 5×5 hexagones à partir des coordonnées et
-  de la graine de la galaxie, **côté serveur**, toujours identiques au même emplacement. La vue ne reçoit que ce
-  qu'elle demande et que les droits autorisent. *(P-18)*
-- **B-72** — Un compte mesure une distance au survol et calcule un **trajet** (plus court chemin par
-  toutes les routes ou par les seules routes publiques) avec sa durée selon le **moteur qu'il choisit** dans l'outil et la
-  portée de saut réglée ; une route est exacte sur la grille. *(P-18)*
-- **B-73** — Le MJ **place** un système, **promeut** un système anonyme (nom, notes, taille, couleur : il
-  garde son emplacement et devient une donnée de l'univers avec ses droits), **trace** une route, **dessine**
-  une zone ; un système fantôme, une route privée, un territoire secret sont absents pour un joueur et pour
-  le MJ en mode Joueur, y compris de la recherche, des trajets et de la densité des systèmes générés. *(P-18)*
-- **B-74** — Le **document MJ** dérivé de la carte (la liste des systèmes et routes à lire en préparation)
-  est une section gérée par l'outil, sur une fiche que le MJ choisit (ou que l'outil crée, de type Savoir) depuis E-21, MJ seul. *(P-18)*
+**The galaxy map (SWN)**:
+- **B-71** — The galaxy map is a map in the Maps section (E-10 lists it with illustrated maps and graphs, then E-21; it has its own « Visible des joueurs » visibility; a GM creates, renames and deletes it, deletion being a separate action with confirmation): an infinite
+  hexagonal grid, with defined systems, routes, zones and territories. Undefined systems
+  are not stored: they are generated in 5×5 hexagon blocks from coordinates and
+  the galaxy seed, **on the server**, always identical at the same location. The view receives only what
+  it requests and permissions allow. *(P-18)*
+- **B-72** — An account measures distance on hover and calculates a **route** (shortest path using
+  all routes or public routes only) with its duration according to the **engine it chooses** in the tool and the
+  configured jump range; a route is exact on the grid. *(P-18)*
+- **B-73** — The GM **places** a system, **promotes** an anonymous system (name, notes, size, colour: it
+  keeps its location and becomes universe data with its permissions), **draws** a route, **draws**
+  a zone; a ghost system, private route or secret territory is absent for a player and for
+  the GM in Player mode, including from search, routing and generated system density. *(P-18)*
+- **B-74** — The **GM document** derived from the map (the system and route list to read during preparation)
+  is a tool-managed section on a sheet the GM chooses (or the tool creates, of type Knowledge) from E-21, GM-only. *(P-18)*
 
-**Le concepteur de vaisseaux (SWN)** :
-- **B-75** — Le concepteur calcule un vaisseau à partir des choix de construction (coque, moteur,
-  aménagements, défenses, armes, modifications) pris dans le catalogue du système complété par celui de
-  l'univers : budgets de puissance et de masse, multiplicateurs par classe, munitions, prix, points de
-  vie, classe d'armure, durée et coût de chantier, entretien, et des **alertes à deux niveaux**
-  (bloquante, à surveiller). Ce que l'outil calcule n'est modifiable à la main nulle part ailleurs. *(P-19)*
-- **B-76** — Une conception est rattachée à une **fiche** de vaisseau : sa section « Caractéristiques »
-  est gérée par le concepteur (B-66), l'histoire et les notes MJ restent libres ; les choix de
-  construction sont des données de l'outil, avec la version du catalogue et des réglages qui les ont
-  calculés. Le MJ crée la fiche ; le concepteur de la section est l'**auteur** de la section (un joueur à
-  qui le MJ l'a confiée) ou un MJ. *(P-19)*
-- **B-77** — Les **fiches de règles** (une par nature d'élément) et la fiche des **exemples** du concepteur sont
-  des sections gérées, générées depuis les données du catalogue par un geste du MJ (« Générer les fiches de règles… », E-22) qui crée les fiches absentes et met à jour les
-  autres, régénérées ensuite sur proposition quand le catalogue change, en lecture seule ailleurs ; ce que
-  le catalogue ne contient pas n'y est pas. Les exemples sont une septième nature du catalogue (`exemples`, importés avec lui). *(P-19)*
+**The ship designer (SWN)**:
+- **B-75** — The designer calculates a ship from construction choices (hull, engine,
+  fittings, defences, weapons, modifications) taken from the system catalogue supplemented by the
+  universe catalogue: power and mass budgets, class multipliers, ammunition, price, hit
+  points, armour class, construction time and cost, maintenance, and **two levels of alerts**
+  (blocking, watch). What the tool calculates cannot be manually edited anywhere else. *(P-19)*
+- **B-76** — A design is attached to a ship **sheet**: its « Caractéristiques » section
+  is managed by the designer (B-66), history and GM notes remain free; construction
+  choices are tool data, with the version of the catalogue and settings that
+  calculated them. The GM creates the sheet; the section's designer is its **author** (a player
+  entrusted with it by the GM) or a GM. *(P-19)*
+- **B-77** — The designer's **rule sheets** (one per kind of element) and **examples** sheet are
+  managed sections generated from catalogue data by a GM action (« Générer les fiches de règles… », E-22) that creates missing sheets and updates
+  the others, then regenerated on proposal when the catalogue changes, read-only elsewhere; anything
+  absent from the catalogue is absent there too. Examples are a seventh kind in the catalogue (`exemples`, imported with it). *(P-19)*
 
-**La reprise et l'exactitude** :
-- **B-78** — L'exactitude se prouve par des **cas de référence** : les 11 vaisseaux d'exemple (prix, PV,
-  CA, puissance et masse libres, chantier, entretien, alertes) et les corrections nommées face au livre
-  (construction du livre : 949 000 cr et 38 jours, pas 954 000 et 39 ; cuirassé constructible : un seul
-  laser, une seule soute) ; les 49 routes exactes, la stabilité des systèmes générés, des durées
-  calculées à la main (7 cases au moteur 2 = 4,5 jours). Le dépôt public joue les mêmes tests sur son
-  jeu d'essai **inventé**, en CI ; les valeurs attendues réelles viennent des outils actuels de Monsieur, calculées une
-  fois et figées côté privé, jouées dans les pods. *(P-20, P-18, P-19)*
-- **B-79** — Les données actuelles d'Éneria (carte, catalogues, vaisseaux) sont converties dans le
-  format des modules par un script du dépôt privé `AntorFr/eneria` (rejouable), et importées par l'API
-  (B-65) ; les outils actuels restent utilisables jusqu'au basculement. Rien de ces données — catalogues
-  SWN, fiches de règles, valeurs attendues calculées dessus — n'entre dans le dépôt public. *(P-20)*
+**Migration and accuracy**:
+- **B-78** — Accuracy is proven through **reference cases**: the 11 example ships (price, HP,
+  AC, free power and mass, construction, maintenance, alerts) and named corrections against the book
+  (the book's construction: 949,000 cr and 38 days, not 954,000 and 39; buildable battleship: a single
+  laser, a single cargo hold); the 49 exact routes, stability of generated systems, manually
+  calculated durations (7 hexes with engine 2 = 4.5 days). The public repository runs the same tests on its
+  **invented** fixture in CI; real expected values come from Monsieur's current tools, calculated
+  once and frozen on the private side, run in pods. *(P-20, P-18, P-19)*
+- **B-79** — Éneria's current data (map, catalogues, ships) is converted to the
+  module format by a script in the private `AntorFr/eneria` repository (replayable), and imported through the API
+  (B-65); current tools remain usable until switchover. None of that data — SWN
+  catalogues, rule sheets, expected values calculated from them — enters the public repository. *(P-20)*
 
-### Transverse
-- **B-28** — Toute page demande une connexion ; rien du contenu n'est servi sans compte, et
-  `/healthz` ne dit que le nom et la version. *(P-1)*
-- **B-29** — Chaque écran a ses états : vide, chargement, erreur, connexion perdue, refus (caché
-  ou expliqué), contenu long. *(tous)*
+### Cross-cutting
+- **B-28** — Every page requires sign-in; no content is served without an account, and
+  `/healthz` only states the name and version. *(P-1)*
+- **B-29** — Each screen has its states: empty, loading, error, lost connection, refusal (hidden
+  or explained), long content. *(all)*
 
 ## Parcours
 
