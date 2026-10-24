@@ -15,39 +15,39 @@ Web. Desktop first for writing (mouse, keyboard, dragging tokens); phone for rea
 
 ## Navigation
 
-Une barre latérale unique, sur tous les écrans d'un univers :
+A single sidebar on every screen within a universe:
 
-- en tête, le **sélecteur d'univers** (les univers du compte, son rôle en badge) ;
-- **Vue d'ensemble** · **Campagnes** · **Comptes-rendus** · **Cartes** · depuis `kanevas-import`, **Médiathèque** (E-19) ;
-- **Lore** : Personnages, Lieux, Factions, Objets, Événements, Quêtes — depuis `kanevas-import`,
-  les **types activés pour l'univers** (B-42), dans l'ordre de la liste du produit : Personnages,
-  Lieux, Factions, Objets, Événements, Quêtes, Créatures, Races, Vaisseaux, Savoirs, Récits, Règles,
-  Notes ;
-- depuis `kanevas-import`, en tête de la barre sous le sélecteur d'univers : **Rechercher** (E-17 ;
-  raccourci `/` hors d'un champ) ;
-- pour un MJ : **Univers** ▸ Membres, Paramètres, et depuis `kanevas-import` **Accès par API** (E-18) ;
-- pour un admin d'instance : **Administration** ;
-- en pied, le **compte** : l'avatar et l'identifiant, qui ouvrent un menu — l'identifiant, le
-  **thème** (bascule à trois icônes : Clair, Sombre, Système) et « Se déconnecter ». Le thème et
-  la déconnexion ne sont pas étalés dans la barre.
+- at the top, the **universe selector** (the account's universes, with its role as a badge);
+- **« Vue d'ensemble »** · **« Campagnes »** · **« Comptes-rendus »** · **« Cartes »** · since `kanevas-import`, **« Médiathèque »** (E-19);
+- **« Lore »**: « Personnages », « Lieux », « Factions », « Objets », « Événements », « Quêtes » — since `kanevas-import`,
+  the **types enabled for the universe** (B-42), in the order of the product's list: « Personnages »,
+  « Lieux », « Factions », « Objets », « Événements », « Quêtes », « Créatures », « Races », « Vaisseaux », « Savoirs », « Récits », « Règles »,
+  « Notes »;
+- since `kanevas-import`, at the top of the sidebar below the universe selector: **« Rechercher »** (E-17;
+  shortcut `/` outside a field);
+- for a GM: **« Univers »** ▸ « Membres », « Paramètres », and since `kanevas-import` **« Accès par API »** (E-18);
+- for an instance admin: **« Administration »**;
+- at the bottom, the **account**: the avatar and username, opening a menu — the username, the
+  **theme** (three-icon toggle: « Clair », « Sombre », « Système ») and « Se déconnecter ». Theme and
+  sign-out controls are not spread across the sidebar.
 
-Chaque item porte son icône (`docs/charte.md`, « Icônes ») ; l'item courant est marqué. Sur
-téléphone (moins de 760 px), la barre est un tiroir sous un bouton « Menu », en tête de la barre
-haute.
+Each item has its icon (`docs/charte.md`, “Icons”); the current item is marked. On
+phones (below 760 px), the sidebar is a drawer under a « Menu » button at the start of the
+top bar.
 
-Au-dessus de chaque écran d'un univers, une **barre haute** : le fil d'Ariane (univers › type ›
-fiche ; depuis `kanevas-import`, univers › type › ancêtres lisibles › fiche, B-35 ; au téléphone (≤ 760 px), le sceau de l'univers et le libellé du type disparaissent, et à 480 px et moins les ancêtres se replient (menu « … » dès deux ancêtres) : voir E-9) et, sur les écrans où elle existe, la
-bascule mode MJ / mode Joueur.
+Above each screen within a universe, a **top bar**: the breadcrumb trail (universe › type ›
+sheet; since `kanevas-import`, universe › type › readable ancestors › sheet, B-35; on phones (≤ 760 px), the universe seal and type label disappear, and at 480 px and below ancestors collapse (a « … » menu from two ancestors): see E-9) and, on screens that have it, the
+GM mode / Player mode toggle.
 
-Hors d'un univers (E-1, E-2, E-5, E-15, E-16), une barre réduite : **Mes univers**, **Systèmes de
-jeu**, **Administration** pour un admin d'instance, et le compte en pied. Depuis un univers, le menu
-du sélecteur d'univers mène à **Mes univers** et à **Systèmes de jeu** ; le lien du système de E-3 et
-de E-14 mène à sa page (E-15), hors de l'univers (décision du 2026-10-06, AD-94). Un admin qui est aussi membre d'un univers garde le lien
-**Administration** dans la barre de l'univers, sous une section « Instance ».
+Outside a universe (E-1, E-2, E-5, E-15, E-16), a reduced sidebar: **« Mes univers »**, **« Systèmes de
+jeu »**, **« Administration »** for an instance admin, and the account at the bottom. From a universe, the
+universe selector menu leads to **« Mes univers »** and **« Systèmes de jeu »**; the system link on E-3 and
+E-14 leads to its page (E-15), outside the universe (decision of 2026-10-06, AD-94). An admin who is also a member of a universe keeps the
+**« Administration »** link in the universe sidebar, under an « Instance » section.
 
-L'**assistant** est un bouton flottant « Demander à Kanevas », sur tous les écrans d'un univers,
-hors de la barre ; il n'existe pas hors d'un univers. Un MJ voit la bascule **« Mode MJ » / « Mode Joueur »** dans la barre haute des écrans où la
-bascule existe (fiche, carte et, depuis `kanevas-import`, recherche E-17).
+The **assistant** is a floating « Demander à Kanevas » button on every screen within a universe,
+outside the sidebar; it does not exist outside a universe. A GM sees the **« Mode MJ » / « Mode Joueur »** toggle in the top bar of screens that
+have it (sheet, map and, since `kanevas-import`, search E-17).
 
 ## Inventaire
 
