@@ -149,86 +149,86 @@ snake_case (`docs/donnees.md`).
 
 ## Invariants
 
-- **La version a une seule source** : le build-arg Docker `APP_VERSION`, dérivé
-  par la CI du tag semver poussé (hors tag, la valeur n'est pas un semver : seule une image de
-  tag en porte un). `/healthz` et le tag d'image publié ne
-  peuvent donc pas diverger. `package.json` ne porte volontairement aucun
+- **The version has a single source**: the Docker build-arg `APP_VERSION`, derived
+  by CI from the pushed semver tag (outside a tag, the value is not a semver: only an image built
+  from a tag carries one). `/healthz` and the published image tag therefore
+  cannot diverge. `package.json` deliberately has no
   `version`.
-- **`/healthz` est public** (avec `/api/auth/*` et les pages de connexion, AD-15), en texte brut `kanevas <version>`, sans donnée.
-  `GET /api/auth/config` (`{oidcEnabled}`) l'est aussi ; aucune autre route
-  publique n'expose de contenu.
-- **Le callback OIDC authentifie une identité, rien de plus** : il ouvre une session portant
-  l'identifiant et les groupes, et crée le compte ; **aucun rôle d'univers ne vient d'Authelia**
-  (AD-9), il se lit dans la table des membres à chaque requête. Sans les quatre variables
-  `OIDC_*` (ou avec une partie seulement), login et callback répondent 404 ; une valeur vide
-  ou invalide fait échouer le démarrage.
-- **Vingt-six tables et deux index de recherche, aucun ORM** : `comptes`, `univers`, `membres`, `fiches`, `sections` (migration
-  0001), `systemes_jeu`, `gabarits` (migration 0002), `campagnes`, `scenarios`, `taches_preparation` (migration 0003), `pieces_jointes` (migration 0004, vidée par la 0015 et plus lue), `relations`, `recherche_fiches` et `recherche_sections` (FTS5, migration 0005) ; trois colonnes d'illustration sur `fiches` (migration 0006), `cartes` et `elements_carte` (migration 0007), `propositions` (migration 0008, `kanevas-monde`) ; `jetons_api` et `lots_import`, plus les clés d'origine de `fiches` et `sections` (migration 0010, `kanevas-import-fil`) ; `sections.contenu_public` et l'index `recherche_sections` recréé (migration 0011, `kanevas-import-secrets`, AD-114) ; `liens` (migration 0012, `kanevas-import-liens`, AD-116) ; `types_systeme` et `types_univers`, et `fiches` recréée sans `CHECK` sur le type (migration 0013, `kanevas-import-types`, AD-120) ; `fiche_alias`, `etiquettes` et `fiche_etiquettes`, et `recherche_fiches` recréée en `(titre, alias, sous_type)` (migration 0014, `kanevas-import-recherche`, AD-118) ; `fichiers`, `fichiers_sections` et `fiches.illustration_fichier_id` (migration 0015, `kanevas-import-mediatheque`, AD-117 ; `fichiers_attente`, créée par la même migration, écrite par `assurerFichier` et l'import des fiches, `kanevas-import-fichiers` ; les colonnes d'illustration d'AD-93 restent, inutilisées) ; la migration 0009 (`kanevas-import-markdown`) reconstruit `gabarits`, `scenarios` et `propositions` pour relever leur CHECK à 100 000 caractères ; les numéros 0001 à 0007 sont définitifs, 0008 à 0016 sont provisoires jusqu'à la fusion de l'epic dans `main` et les suivants se prennent à la fusion (AD-51 ; `docs/donnees.md`). Aucune requête SQL hors de `src/services/` et `src/db/` (le semis du bouchon, `src/bouchon/`, lit par `db.prepare` pour retrouver les identifiants qu'il vient de créer).
-- **Toute route hors `/healthz`, `/api/auth/*`, `/api/import/v1/*` (gardée par un jeton Bearer qui ignore le cookie, AD-103) et, en bouchon, `/connexion-bouchon` est gardée par la session** ; sous `/api` un
-  défaut de session répond 401, ailleurs il redirige vers la connexion (AD-15).
-- **Une seule route appelle un modèle : l'assistant** (`src/routes/assistant.ts`, par `repondre`, AD-73), avec le jeton de
-  l'abonnement `CLAUDE_CODE_OAUTH_TOKEN` ; le transport texte de `services/llm/*` n'est relié à rien. Aucun secret `ANTHROPIC_API_KEY` n'est déployé.
-  Les deux routes (sous la garde de session, AD-15) : `GET /api/univers/:id/assistant` rend `{disponible, catalogue: 'mj'|'joueur'}` ;
-  `POST /api/univers/:id/assistant/messages`, corps `{message, historique: [{role: 'user'|'assistant', content}]}`, rend
-  `{reponse, evenements: [{type, libelle, cible}]}` ; une erreur rend `{message, code}` (codes d'AD-75 et d'AD-77).
-- Client OIDC : `client_id` `kanevas`, callback
-  `https://kanevas.berard.me/api/auth/oidc/callback`, émetteur
-  `https://auth.berard.me`. Ces valeurs sont partagées avec la déclaration du
-  client dans `k8s-home-lab` : les changer ici impose de changer là-bas.
+- **`/healthz` is public** (alongside `/api/auth/*` and login pages, AD-15), as plain text `kanevas <version>`, without data.
+  `GET /api/auth/config` (`{oidcEnabled}`) is public too; no other public
+  route exposes content.
+- **The OIDC callback authenticates an identity, nothing more**: it opens a session carrying
+  the identifier and groups, and creates the account; **no universe role comes from Authelia**
+  (AD-9), it is read from the members table on every request. Without the four
+  `OIDC_*` variables (or with only some of them), login and callback return 404; an empty
+  or invalid value causes startup to fail.
+- **Twenty-six tables and two search indexes, no ORM**: `comptes`, `univers`, `membres`, `fiches`, `sections` (migration
+  0001), `systemes_jeu`, `gabarits` (migration 0002), `campagnes`, `scenarios`, `taches_preparation` (migration 0003), `pieces_jointes` (migration 0004, emptied by 0015 and no longer read), `relations`, `recherche_fiches` and `recherche_sections` (FTS5, migration 0005); three illustration columns on `fiches` (migration 0006), `cartes` and `elements_carte` (migration 0007), `propositions` (migration 0008, `kanevas-monde`); `jetons_api` and `lots_import`, plus source keys on `fiches` and `sections` (migration 0010, `kanevas-import-fil`); `sections.contenu_public` and the rebuilt `recherche_sections` index (migration 0011, `kanevas-import-secrets`, AD-114); `liens` (migration 0012, `kanevas-import-liens`, AD-116); `types_systeme` and `types_univers`, and `fiches` rebuilt without a type `CHECK` (migration 0013, `kanevas-import-types`, AD-120); `fiche_alias`, `etiquettes` and `fiche_etiquettes`, and `recherche_fiches` rebuilt as `(titre, alias, sous_type)` (migration 0014, `kanevas-import-recherche`, AD-118); `fichiers`, `fichiers_sections` and `fiches.illustration_fichier_id` (migration 0015, `kanevas-import-mediatheque`, AD-117; `fichiers_attente`, created by the same migration, written by `assurerFichier` and sheet imports, `kanevas-import-fichiers`; the AD-93 illustration columns remain, unused); migration 0009 (`kanevas-import-markdown`) rebuilds `gabarits`, `scenarios` and `propositions` to raise their CHECK to 100,000 characters; numbers 0001 to 0007 are final, 0008 to 0016 are provisional until the epic merges into `main` and subsequent numbers are assigned at merge time (AD-51; `docs/donnees.md`). No SQL queries outside `src/services/` and `src/db/` (the stub seed, `src/bouchon/`, reads through `db.prepare` to find the identifiers it has just created).
+- **Every route except `/healthz`, `/api/auth/*`, `/api/import/v1/*` (guarded by a Bearer token that ignores the cookie, AD-103) and, in stub mode, `/connexion-bouchon` is guarded by the session**; under `/api`, a
+  missing session returns 401, elsewhere it redirects to login (AD-15).
+- **Only one route calls a model: the assistant** (`src/routes/assistant.ts`, through `repondre`, AD-73), with the subscription
+  token `CLAUDE_CODE_OAUTH_TOKEN`; the `services/llm/*` text transport is wired to nothing. No `ANTHROPIC_API_KEY` secret is deployed.
+  The two routes (under the session guard, AD-15): `GET /api/univers/:id/assistant` returns `{disponible, catalogue: 'mj'|'joueur'}`;
+  `POST /api/univers/:id/assistant/messages`, body `{message, historique: [{role: 'user'|'assistant', content}]}`, returns
+  `{reponse, evenements: [{type, libelle, cible}]}`; an error returns `{message, code}` (codes from AD-75 and AD-77).
+- OIDC client: `client_id` `kanevas`, callback
+  `https://kanevas.berard.me/api/auth/oidc/callback`, issuer
+  `https://auth.berard.me`. These values are shared with the client
+  declaration in `k8s-home-lab`: changing them here requires changing them there.
 
-## Décisions et options écartées
+## Decisions and rejected options
 
-- **Dépôt neuf, reprise sélective d'Antre-du-maitre (AD-10)** : bootstrap
-  Fastify, OIDC, transports LLM, patron Dockerfile et CI, sans Prisma ni le
-  domaine métier. Écarté : forker Antre-du-maitre.
-- **OIDC câblé dès le socle**, pas différé : AD-10 le range parmi ce qui est
-  repris au socle. `claude-token.ts` (fenêtre admin de setup-token) n'a pas été repris au
-  socle ; il l'est par `kanevas-import-jeton-assistant` (AD-109, AD-112).
-- **Pas de page canari** : le frontend naît avec la première page métier (AD-57).
-- **Dépôt public, licence MIT** : le package GHCR public évite pull-secret et
-  auto-bump Renovate ; MIT faute de politique de licence commune dans le parc.
-  Renversé seulement si le code devait devenir confidentiel.
-- **Version lue depuis `package.json`** : écarté, deux sources non synchronisées.
-- Au cluster (`tantive` ; Authelia est sur `homenode`) le pod tourne en `runAsUser: 0` (convention des apps `games` pour
-  un hostPath inscriptible) : l'utilisateur `node` (uid 1000) de l'image est
-  toléré, pas requis. Sous uid 1000 il faudrait un hostPath inscriptible par lui.
+- **New repository, selective reuse from Antre-du-maitre (AD-10)**: Fastify
+  bootstrap, OIDC, LLM transports, Dockerfile pattern and CI, without Prisma or the
+  business domain. Rejected: forking Antre-du-maitre.
+- **OIDC wired from the foundation**, rather than deferred: AD-10 includes it among what
+  is reused in the foundation. `claude-token.ts` (admin setup-token window) was not reused in the
+  foundation; it is reused by `kanevas-import-jeton-assistant` (AD-109, AD-112).
+- **No canary page**: the frontend starts with the first business page (AD-57).
+- **Public repository, MIT licence**: the public GHCR package avoids a pull-secret and
+  Renovate auto-bump; MIT in the absence of a shared licence policy across the fleet.
+  Reversed only if the code must become confidential.
+- **Version read from `package.json`**: rejected, two unsynchronised sources.
+- In the cluster (`tantive`; Authelia is on `homenode`) the pod runs as `runAsUser: 0` (the `games` apps' convention for
+  a writable hostPath): the image's `node` user (uid 1000) is
+  tolerated, not required. Under uid 1000 it would need a hostPath writable by that user.
 
 
-# La cible
+# The target
 
-> Construit à ce jour : renommer et supprimer une fiche, supprimer un univers (`kanevas-import-tenir`, AD-119), l'API d'import des fiches et E-18 (`kanevas-import-fil`), les fichiers par clé et leurs références en attente (`kanevas-import-fichiers`), le bloc MJ `:::mj` (`kanevas-import-secrets`, AD-114), la session, le mode bouchon, les tables et leurs fonctions de service,
-> les systèmes de jeu et leurs gabarits, les relations et la recherche dans tous les types, par alias et par étiquette (E-17, `kanevas-import-recherche`), le suivi (campagnes, scénarios, préparation, comptes-rendus), les écrans E-1 à E-11, E-13, E-14, E-15 et E-16 (E-9 avec son bloc Pièces jointes), l'illustration des fiches, les cartes et graphes (E-10, E-11, bloc « Cartes visibles » de E-3), les types de fiche et l'arbre, les liens `[[…]]`, la médiathèque de l'univers (E-19, fichiers à droits propres, migration 0015), le stockage des fichiers sur le volume, et l'assistant du membre (E-12 ; ses outils : chercher, lire, écrire dans une section, créer une campagne ou un scénario, et pour le MJ générer une image qui entre dans la médiathèque et se joint à une section), et la proposition de mise à jour d'une section d'après un compte-rendu (`kanevas-monde` : outil `proposer_mise_a_jour`, routes `propositions`, bloc « Mise à jour proposée »). Le reste
-> est la cible des tranches suivantes. L'epic `kanevas-import` (cadrage proposé le 2026-10-11) ajoute
-> AD-95 à AD-120, l'« API d'import » et ses lignes de sécurité, de déploiement et de bouchons.
+> Built to date: renaming and deleting a sheet, deleting a universe (`kanevas-import-tenir`, AD-119), the sheet import API and E-18 (`kanevas-import-fil`), files by key and their pending references (`kanevas-import-fichiers`), the GM block `:::mj` (`kanevas-import-secrets`, AD-114), sessions, stub mode, tables and their service functions,
+> game systems and their templates, relations and search across all types, by alias and label (E-17, `kanevas-import-recherche`), tracking (campaigns, scenarios, preparation, session reports), screens E-1 to E-11, E-13, E-14, E-15 and E-16 (E-9 with its « Pièces jointes » block), sheet illustrations, maps and graphs (E-10, E-11, « Cartes visibles » block of E-3), sheet types and the tree, `[[…]]` links, the universe's media library (E-19, files with their own permissions, migration 0015), file storage on the volume, and the member's assistant (E-12; its tools: search, read, write in a section, create a campaign or scenario, and for the GM generate an image that enters the media library and is attached to a section), and proposed section updates based on a session report (`kanevas-monde`: `proposer_mise_a_jour` tool, `propositions` routes, « Mise à jour proposée » block). The rest
+> is the target of subsequent slices. The `kanevas-import` epic (scope proposed on 2026-10-11) adds
+> AD-95 to AD-120, the import API and its security, deployment and stub entries.
 
-## Organes, et qui parle à qui
+## Components, and who talks to whom
 
 ```
-navigateur (React, une SPA)  ──HTTP──▶  backend Fastify (une seule application)
-                                         ├─ routes HTTP ─┐
-                                         ├─ outils de l'agent (MJ | Joueur) ─┤─▶ fonctions de service ─▶ SQLite + /data/attachments
-                                         ├─ fournisseur LLM (assistant)
-                                         └─ codex exec (images), en sous-processus
-Authelia (OIDC) : identité seulement.
+browser (React, one SPA)  ──HTTP──▶  Fastify backend (one application)
+                                         ├─ HTTP routes ─┐
+                                         ├─ agent tools (GM | Player) ─┤─▶ service functions ─▶ SQLite + /data/attachments
+                                         ├─ LLM provider (assistant)
+                                         └─ codex exec (images), as a subprocess
+Authelia (OIDC): identity only.
 
-script d'import (hors du produit, sur le Mac de Monsieur)
-      ──HTTPS, Bearer──▶  /api/import/v1/univers/:id  (scope à part : jeton, jamais de cookie)
-                                         └─▶ les mêmes fonctions de service (AD-2, AD-104)
+import script (outside the product, on Monsieur's Mac)
+      ──HTTPS, Bearer──▶  /api/import/v1/univers/:id  (separate scope: token, never a cookie)
+                                         └─▶ the same service functions (AD-2, AD-104)
 ```
 
-- **Navigateur** : une application React (`react-router`, AD-16), servie par le backend ; elle
-  ne parle qu'au backend, jamais à la base ni au disque. Le fil de l'assistant vit dans la page
+- **Browser**: one React application (`react-router`, AD-16), served by the backend; it
+  talks only to the backend, never to the database or disk. The assistant thread lives in the page
   (AD-28).
-- **Backend Fastify** : le seul point d'accès aux données, au disque, au fournisseur LLM et à
-  Codex (AD-4). Toute route est gardée par la session (AD-15) : 401 sous `/api`, redirection ailleurs ; seuls `/healthz`,
-  `/api/auth/*`, `/api/import/v1/*` (jeton Bearer, AD-103) et, en bouchon, `/connexion-bouchon` sont publics.
-- **Fonctions de service** : la seule implémentation de chaque lecture et écriture, avec ses
-  gardes (`peutLireSection`, `peutEcrireSection`, `peutVoirFiche`, `fichierLisible` de `services/fichiers.ts`).
-  Routes et outils de l'agent les appellent de la même façon (AD-2) : c'est ce qui rend la
-  symétrie humain / agent vérifiable.
-- **Agents** : deux catalogues d'outils, MJ et Joueur, choisis côté serveur selon le rôle du
-  compte dans l'univers courant (AD-26, AD-74), derrière le port `AgentTransport` (AD-73).
-- **Images** : un port `GenerateurImage`, adaptateurs `bouchon`, `aucun`, `codex` (AD-88 à AD-90 ; AD-45, AD-50, AD-55).
+- **Fastify backend**: the only access point to data, disk, the LLM provider and
+  Codex (AD-4). Every route is guarded by the session (AD-15): 401 under `/api`, redirection elsewhere; only `/healthz`,
+  `/api/auth/*`, `/api/import/v1/*` (Bearer token, AD-103) and, in stub mode, `/connexion-bouchon` are public.
+- **Service functions**: the sole implementation of each read and write, with its
+  guards (`peutLireSection`, `peutEcrireSection`, `peutVoirFiche`, `fichierLisible` from `services/fichiers.ts`).
+  Routes and agent tools call them in the same way (AD-2): this makes human / agent
+  symmetry verifiable.
+- **Agents**: two tool catalogues, GM and Player, selected on the server according to the
+  account's role in the current universe (AD-26, AD-74), behind the `AgentTransport` port (AD-73).
+- **Images**: a `GenerateurImage` port, `bouchon`, `aucun`, `codex` adapters (AD-88 to AD-90; AD-45, AD-50, AD-55).
 
 ## Décisions
 
