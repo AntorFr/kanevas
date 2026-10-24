@@ -13,7 +13,7 @@
 > running on his Mac — and provide what it needs to live there: Markdown, `[[…]]` links, GM blocks
 > within text, sheet tree, incoming links, search across all types, aliases and labels, more sheet
 > types chosen per system and universe, deletion, API token, subtype, media library. B-32 to B-56,
-> P-10 to P-16, E-17 to E-19, AD-95 to AD-111. Monsieur resolved the scoping's `[À TRANCHER]` items on 2026-10-11; anything still open is marked `[À TRANCHER]` in place.
+> P-10 to P-16, E-17 to E-19, AD-95 to AD-111. Monsieur resolved the scoping's `[TO DECIDE]` items on 2026-10-11; anything still open is marked `[TO DECIDE]` in place.
 
 Kanevas is for **preparing** tabletop roleplaying sessions and **keeping their memory** between
 sessions: universe lore shared between the GM and players with fine-grained section permissions,
@@ -768,69 +768,69 @@ refused (401/403 depending on the import API) and nothing written.
    still using them.
 *Failure*: a GM who is not the system owner does not see system data deletion.
 
-## Hors périmètre
+## Out of scope
 
-- **Outils de `kanevas-outils`** *(décisions de Monsieur, 2026-10-15 et 16)* : le **gestionnaire de tours de faction** (epic `kanevas-factions`, avec
-  la superposition des factions par tour sur la carte), le **journal et les dés communs** (epic suivante), l'**impression** (fonction du cœur, plus tard),
-  l'**export ou l'import JSON d'une conception** par l'utilisateur, le **podcast**, la **carte hors connexion**, un **chargement à chaud** de code tiers, un
-  **moteur générique** d'outils, et le **lien avec la campagne** (chronologie, partie publique) reporté aux tours de faction. Un joueur ne crée pas de fiche
-  (règle existante) : le MJ crée la fiche de vaisseau, le joueur conçoit en en étant l'auteur de la section.
-- **Jeu en direct** : pas d'initiative, de combat animé, de brouillard de guerre ; la table reste
-  physique.
-- **Caractéristiques structurées** (fiche de combat, statistiques) : une pièce jointe en V1 ; des
-  types de fiches dédiés plus tard.
-- **Supprimer** une campagne, un scénario, un CR, une carte, une tâche, un système : rien de cela
-  ne se supprime, sauf une pièce jointe, une section, une relation, un membre, et le token ou le nœud
-  d'une carte (on le retire de la carte ; sa fiche reste). *(choix de cadrage, à revoir à l'usage)*
-  Depuis `kanevas-import`, une **fiche**, un **univers** et un **fichier de la médiathèque** se suppriment (B-40, B-41, B-54) ; un CR, qui
-  est une fiche, se supprime avec l'univers et, par un MJ, comme une fiche.
-- **Créer une fiche en joueur** : le MJ crée toute fiche, y compris celle d'un PJ, et en ouvre une
-  section à son joueur.
-- **Inviter un compte qui ne s'est jamais connecté**, lien d'invitation.
-- ~~Recherche dans tous les types à la fois~~ : entre dans le produit avec `kanevas-import` (B-37, E-17).
-- **Lire un export Kanka** : Kanevas ne connaît pas le format Kanka. Le script qui le lit vit sur le
-  Mac de Monsieur, hors du produit et de ses dépôts ; Kanevas offre une API d'import générique (B-47,
-  AD-104) que tout script peut consommer. *(décision de Monsieur, 2026-10-11)*
-- **Types de fiche créés par un utilisateur** : la liste est celle du produit, enrichie par une
-  version (B-42). *(décision de Monsieur, 2026-10-11)*
-- **Choix des types par campagne** : le choix vit au système et à l'univers. *(décision de Monsieur,
+- **Tools in `kanevas-outils`** *(Monsieur's decisions, 2026-10-15 and 16)*: the **faction turn manager** (epic `kanevas-factions`, with
+  per-turn faction overlays on the map), the **shared journal and dice** (next epic), **printing** (a core feature, later),
+  user **JSON export or import of a design**, **podcasts**, **offline maps**, **hot-loading** third-party code, a
+  **generic tool engine**, and the **campaign link** (timeline, public part) deferred to faction turns. A player does not create a sheet
+  (existing rule): the GM creates the ship sheet, the player designs as the section author.
+- **Live play**: no initiative, animated combat or fog of war; the table remains
+  physical.
+- **Structured characteristics** (combat sheet, statistics): an attachment in V1; dedicated
+  sheet types later.
+- **Deleting** a campaign, scenario, report, map, task, system: none of these can be deleted, except an
+  attachment, section, relation, member, and a map token or node
+  (removed from the map; its sheet remains). *(scoping choice, to revisit with use)*
+  Since `kanevas-import`, a **sheet**, **universe** and **media library file** can be deleted (B-40, B-41, B-54); a report, being
+  a sheet, is deleted with the universe and, by a GM, as a sheet.
+- **Creating a sheet as a player**: the GM creates every sheet, including a PC's, and opens a
+  section to its player.
+- **Inviting an account that has never signed in**, invitation link.
+- ~~Search across all types at once~~: enters the product with `kanevas-import` (B-37, E-17).
+- **Reading a Kanka export**: Kanevas does not know the Kanka format. The script reading it lives on
+  Monsieur's Mac, outside the product and its repositories; Kanevas offers a generic import API (B-47,
+  AD-104) that any script can consume. *(Monsieur's decision, 2026-10-11)*
+- **User-created sheet types**: the list belongs to the product, extended by a
+  release (B-42). *(Monsieur's decision, 2026-10-11)*
+- **Choosing types per campaign**: the choice lives at system and universe level. *(Monsieur's decision,
   2026-10-11)*
-- **Créatures et vaisseaux structurés** (caractéristiques en champs par système) : une autre epic ;
-  ici, leurs fiches importées sont des sections en Markdown, tableaux compris. *(décision de Monsieur du 2026-10-11)*
-- **Cartes dans l'API d'import** : une autre epic, « plus évoluée » ; ici, une carte Kanka s'importe
-  comme une fiche ordinaire avec son image. *(décision de Monsieur du 2026-10-11)*
-- **Chronologie comme type à part** (une frise) : une epic plus évoluée, comme les cartes ; ici, une
-  chronologie est une fiche « Savoir ». *(décision de Monsieur du 2026-10-11)*
-- **Blocs secrets par joueur** dans un texte : le bloc MJ n'a qu'une audience, le MJ ; un secret
-  pour un seul joueur reste une section à auteur (AD-19).
-- **Historique d'un import, annulation d'un lot** : un lot se rejoue, il ne se défait pas ; on
-  supprime l'univers d'essai.
-- **Export vers Kanka ou un autre outil** : non trié.
-- **Calendrier ou chronologie, lanceur de dés, usage sans connexion (PWA)** : non triés.
-- **Historique des modifications, export, partage public.**
+- **Structured creatures and ships** (characteristics in fields per system): another epic;
+  here, their imported sheets are Markdown sections, including tables. *(Monsieur's decision of 2026-10-11)*
+- **Maps in the import API**: another, “more advanced” epic; here, a Kanka map is imported
+  as an ordinary sheet with its image. *(Monsieur's decision of 2026-10-11)*
+- **Timeline as a separate type** (a visual timeline): a more advanced epic, like maps; here, a
+  timeline is a « Savoir » sheet. *(Monsieur's decision of 2026-10-11)*
+- **Per-player secret blocks** in text: the GM block has a single audience, the GM; a secret
+  for one player remains an authored section (AD-19).
+- **Import history, undoing a batch**: a batch can be replayed, not undone; delete
+  the trial universe.
+- **Export to Kanka or another tool**: untriaged.
+- **Calendar or timeline, dice roller, offline use (PWA)**: untriaged.
+- **Edit history, export, public sharing.**
 
-## Contrôle croisé du cadrage `kanevas-import`
+## Cross-check of the `kanevas-import` scoping
 
-Fait le 2026-10-11 sur la proposition (skill `cadrage`, étape 6), refait après la relecture 1, puis
-après les décisions de Monsieur du 2026-10-11 (Savoir, sous-type, médiathèque, pas de pierre tombale,
-cartes hors de l'API, jeton de l'assistant inclus), et après AD-111 (tous les fichiers dans la médiathèque).
+Done on 2026-10-11 on the proposal (`cadrage` skill, step 6), repeated after review 1, then
+after Monsieur's decisions of 2026-10-11 (Knowledge, subtype, media library, no tombstone,
+maps outside the API, assistant token included), and after AD-111 (all files in the media library).
 
-| Croisement | Résultat |
+| Cross-check | Result |
 |---|---|
-| Chaque besoin a un parcours | B-32 P-12, P-14 · B-33 P-12, P-14 · B-34 P-12, P-14 · B-35 P-12, P-14 · B-36 P-12 · B-37 P-12 · B-38 P-12, P-14 · B-39 P-14 · B-40 P-14 · B-41 P-10 · B-42 P-13, P-10 · B-43 P-10, P-14 · B-44 P-12, P-16 · B-45 P-11, P-10 · B-46 P-11 · B-47 P-10 · B-48 P-10, P-14 · B-49 P-10 · B-50 P-10 · B-51 P-15 · B-52 P-12, P-14 · B-53 P-16, P-10 · B-54 P-16 · B-55 P-16 · B-56 P-10 — **tient**. |
-| Chaque geste humain d'un parcours a un écran | P-10 : E-1, E-2, E-14, E-18, E-8, E-9, E-17, E-13, E-19 ; l'étape 4 n'est pas un geste dans Kanevas (le script, hors produit, décision de Monsieur), son résultat se lit sur E-18 et E-19 · P-11 : E-18 · P-12 : E-8, E-9, E-17, E-12 · P-13 : E-15, E-14, barre · P-14 : E-9 · P-15 : E-5 · P-16 : E-19, E-9 — **tient**. |
-| Chaque écran a ses données | E-17 : fiches, alias, étiquettes, sous-type, index (titre, alias, sous-type, `contenu_public`) · E-18 : jetons d'API, lots d'import · E-14 / E-15 : réglages de type · E-9 : liens, parent, sous-type, alias, étiquettes, clé d'origine, références de fichier (texte, jointes), illustration (un fichier image) · E-8 : sous-type, illustration · E-19 : fichiers (images et documents), références de fichier, illustrations · E-13 : `cree_le` (date d'origine) · E-5 : un fichier du volume, pas une entité (B-51) — **tient**. |
-| Chaque entité sert un parcours | lien P-12, P-14 · alias et étiquette P-12, P-14 · réglage de type P-13 · jeton d'API P-11 · lot d'import P-10 · fichier et référence de fichier P-16, P-12, P-10, P-7 (le joueur qui dépose un portrait passe par le premier chemin d'ajout) — **tient**. |
-| Trous comblés par un choix écrit | l'import n'a pas d'écran de déclenchement (le script) : décision de Monsieur ; « vider un univers d'essai » remplacé par « supprimer l'univers » (AD-105) ; une fiche supprimée revient au rejeu si l'export l'envoie (décision de Monsieur) ; les cartes hors de l'API, une carte Kanka est une fiche (décision de Monsieur) ; E-17 prend la bascule de mode ; liens d'un scénario et d'une entrée de système réglés (AD-97) ; l'image générée par l'assistant entre dans la médiathèque (AD-44 amendée) ; poser une illustration passe par les deux chemins d'ajout (E-9) ; pièces jointes et médiathèque : tous les fichiers dans la médiathèque (AD-111, décision de Monsieur), les deux chemins d'ajout explicites sur E-9 et E-19. Aucun `[À TRANCHER]` ne reste. |
+| Each need has a journey | B-32 P-12, P-14 · B-33 P-12, P-14 · B-34 P-12, P-14 · B-35 P-12, P-14 · B-36 P-12 · B-37 P-12 · B-38 P-12, P-14 · B-39 P-14 · B-40 P-14 · B-41 P-10 · B-42 P-13, P-10 · B-43 P-10, P-14 · B-44 P-12, P-16 · B-45 P-11, P-10 · B-46 P-11 · B-47 P-10 · B-48 P-10, P-14 · B-49 P-10 · B-50 P-10 · B-51 P-15 · B-52 P-12, P-14 · B-53 P-16, P-10 · B-54 P-16 · B-55 P-16 · B-56 P-10 — **holds**. |
+| Each human action in a journey has a screen | P-10: E-1, E-2, E-14, E-18, E-8, E-9, E-17, E-13, E-19; step 4 is not an action in Kanevas (the script, outside the product, Monsieur's decision), its result is read on E-18 and E-19 · P-11: E-18 · P-12: E-8, E-9, E-17, E-12 · P-13: E-15, E-14, bar · P-14: E-9 · P-15: E-5 · P-16: E-19, E-9 — **holds**. |
+| Each screen has its data | E-17: sheets, aliases, labels, subtype, index (title, aliases, subtype, `contenu_public`) · E-18: API tokens, import batches · E-14 / E-15: type settings · E-9: links, parent, subtype, aliases, labels, origin key, file references (text, attachments), illustration (an image file) · E-8: subtype, illustration · E-19: files (images and documents), file references, illustrations · E-13: `cree_le` (original date) · E-5: a volume file, not an entity (B-51) — **holds**. |
+| Each entity serves a journey | link P-12, P-14 · alias and label P-12, P-14 · type setting P-13 · API token P-11 · import batch P-10 · file and file reference P-16, P-12, P-10, P-7 (the player uploading a portrait takes the first addition path) — **holds**. |
+| Gaps filled by a written choice | import has no trigger screen (the script): Monsieur's decision; “empty a trial universe” replaced by “delete the universe” (AD-105); a deleted sheet returns on replay if the export sends it (Monsieur's decision); maps outside the API, a Kanka map is a sheet (Monsieur's decision); E-17 gets the mode switch; scenario and system entry links resolved (AD-97); the assistant-generated image enters the media library (AD-44 amended); setting an illustration goes through the two addition paths (E-9); attachments and media library: all files in the media library (AD-111, Monsieur's decision), both addition paths explicit on E-9 and E-19. No `[TO DECIDE]` remains. |
 
-## Contrôle croisé du cadrage `kanevas-outils`
+## Cross-check of the `kanevas-outils` scoping
 
-Fait le 2026-10-16 sur la proposition (skill `cadrage`, étape 6).
+Done on 2026-10-16 on the proposal (`cadrage` skill, step 6).
 
-| Croisement | Résultat |
+| Cross-check | Result |
 |---|---|
-| Chaque besoin a un parcours | B-57 P-17 · B-58 P-17, P-21 · B-59 P-17, P-18 · B-60 P-17 · B-61 P-17 · B-62 P-17, P-19 · B-63 P-21 · B-64 P-18, P-19 · B-65 P-20 · B-66 P-19 · B-67 P-19 · B-68 P-18, P-19 · B-69 P-18, P-19 · B-70 P-18, P-19 · B-71 P-18 · B-72 P-18 · B-73 P-18 · B-74 P-18 · B-75 P-19 · B-76 P-19 · B-77 P-19 · B-78 P-18, P-19, P-20 · B-79 P-20 — **tient**. |
-| Chaque geste humain d'un parcours a un écran | P-17 : E-15, E-20, E-14 · P-18 : E-10, E-21, E-9 (document MJ) · P-19 : E-8/E-9, E-22 · P-20 : le script (hors produit, comme l'import Kanka) ; son résultat se lit sur E-18 ; les tests réels sont dans le dépôt privé · P-21 : E-20 — **tient**, avec un geste sans écran : la conversion et le rejeu (décision de Monsieur). |
-| Chaque écran a ses données | E-20 : `outils_systeme`, `outils_univers`, responsable, catalogues (version, comptes) · E-21 : `swn_systemes`, `swn_routes`, `swn_zones`, blocs générés (non stockés), graine · E-22 : `swn_conceptions`, catalogues, `sections.gere_par` · E-9 : `gere_par`, `source_version` — **tient**. |
-| Chaque entité sert un parcours | réglage d'outil P-17, P-21 · responsable P-17 · section gérée P-19 · portée de jeton P-20 · catalogues P-17, P-19 · systèmes placés, routes, zones P-18 · conception P-19 — **tient**. |
-| Trous comblés par un choix écrit | un module `swn` à deux outils (AD-121) ; la carte de la galaxie est une table du module (`swn_galaxies`) que E-10 ajoute à sa liste, `cartes` ne change pas (AD-122) ; le responsable d'un système créé avant l'epic : tout MJ rattaché, faute de créateur stocké ; pas de dépendance réelle entre les deux outils (le mécanisme se joue avec un module d'essai) ; le document MJ : une fiche choisie ou créée depuis E-21 ; un joueur voit tous les systèmes non secrets (pas de « systèmes connus » par joueur) ; le moteur d'un trajet se choisit dans l'outil ; qui crée un vaisseau (le MJ crée la fiche, le joueur conçoit s'il est l'auteur : règle « un joueur ne crée pas de fiche » conservée) ; E-22 en deux états (liste, atelier) ; le cache d'un bloc selon le niveau de lecture ([À VÉRIFIER], AD-132) . Les tests sur données réelles se jouent dans les pods, jamais en CI (décision de Monsieur, 2026-10-16). |
+| Each need has a journey | B-57 P-17 · B-58 P-17, P-21 · B-59 P-17, P-18 · B-60 P-17 · B-61 P-17 · B-62 P-17, P-19 · B-63 P-21 · B-64 P-18, P-19 · B-65 P-20 · B-66 P-19 · B-67 P-19 · B-68 P-18, P-19 · B-69 P-18, P-19 · B-70 P-18, P-19 · B-71 P-18 · B-72 P-18 · B-73 P-18 · B-74 P-18 · B-75 P-19 · B-76 P-19 · B-77 P-19 · B-78 P-18, P-19, P-20 · B-79 P-20 — **holds**. |
+| Each human action in a journey has a screen | P-17: E-15, E-20, E-14 · P-18: E-10, E-21, E-9 (GM document) · P-19: E-8/E-9, E-22 · P-20: the script (outside the product, like Kanka import); its result is read on E-18; real tests are in the private repository · P-21: E-20 — **holds**, with one action without a screen: conversion and replay (Monsieur's decision). |
+| Each screen has its data | E-20: `outils_systeme`, `outils_univers`, owner, catalogues (version, counts) · E-21: `swn_systemes`, `swn_routes`, `swn_zones`, generated blocks (not stored), seed · E-22: `swn_conceptions`, catalogues, `sections.gere_par` · E-9: `gere_par`, `source_version` — **holds**. |
+| Each entity serves a journey | tool setting P-17, P-21 · owner P-17 · managed section P-19 · token scope P-20 · catalogues P-17, P-19 · placed systems, routes, zones P-18 · design P-19 — **holds**. |
+| Gaps filled by a written choice | one `swn` module with two tools (AD-121); the galaxy map is a module table (`swn_galaxies`) that E-10 adds to its list, `cartes` does not change (AD-122); owner of a system created before the epic: any attached GM, since the creator is not stored; no real dependency between the two tools (the mechanism is exercised with a trial module); the GM document: a sheet chosen or created from E-21; a player sees all non-secret systems (no per-player “known systems”); the engine for a journey is chosen in the tool; who creates a ship (the GM creates the sheet, the player designs if they are its author: “a player does not create a sheet” rule retained); E-22 in two states (list, workshop); caching a block according to reading level ([TO VERIFY], AD-132). Tests on real data run in pods, never in CI (Monsieur's decision, 2026-10-16). |
