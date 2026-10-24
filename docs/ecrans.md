@@ -10,8 +10,8 @@
 
 ## Format
 
-Web. Ordinateur d'abord pour écrire (souris, clavier, glisser des tokens) ; téléphone pour lire
-(tactile, une colonne). Thème sombre et clair.
+Web. Desktop first for writing (mouse, keyboard, dragging tokens); phone for reading
+(touch, one column). Dark and light themes.
 
 ## Navigation
 
