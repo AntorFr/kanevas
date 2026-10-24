@@ -528,96 +528,96 @@ added types would be unknown to it — a sheet of a new type would not appear in
 the old image, and illustrations and attachments, moved into the media library (AD-111), would no
 longer appear there. Restoring the volume backup from before the update remains the full rollback.
 
-## Cadrage `kanevas-outils` : le modèle
+## `kanevas-outils` scope: the model
 
-> Proposé le 2026-10-16 (`epic/kanevas-outils`). Décisions : AD-121 à AD-137. Le **cœur** ajoute trois
-> entités génériques — réglage d'outil (système, univers), portée de jeton et le rattachement d'une section à son outil — et
-> des attributs ; **chaque module** possède ses tables, préfixées (`swn_*`), jamais lues hors de ses fonctions.
-> Les tranches ajouteront des attributs, jamais une entité du cœur. Numéros de migration : pris à la fusion
-> (AD-51) ; les noms ci-dessous sont provisoires.
+> Proposed on 2026-10-16 (`epic/kanevas-outils`). Decisions: AD-121 to AD-137. The **core** adds three
+> generic entities — tool setting (system, universe), token scope and a section's attachment to its tool — and
+> attributes; **each module** owns its prefixed tables (`swn_*`), never read outside its functions.
+> Slices will add attributes, never a core entity. Migration numbers: assigned at merge
+> (AD-51); names below are provisional.
 
-### Conceptuel
+### Conceptual
 
 ```mermaid
 erDiagram
-  SYSTEME ||--o{ OUTIL_SYSTEME : "active / règle"
-  UNIVERS ||--o{ OUTIL_UNIVERS : "force / règle"
-  SYSTEME }o--|| COMPTE : "responsable"
-  SECTION }o--o| OUTIL_SECTION : "gérée par"
-  JETON }o--o{ OUTIL : "portée"
-  SYSTEME ||--o{ CATALOGUE_SYSTEME : "possède"
-  UNIVERS ||--o{ CATALOGUE_UNIVERS : "complète / remplace"
-  UNIVERS ||--o{ GALAXIE : "a (supprimée par un geste à part)"
-  GALAXIE ||--o{ SYSTEME_PLACE : "place"
-  SYSTEME_PLACE ||--o{ ROUTE : "relie"
-  GALAXIE ||--o{ ZONE : "dessine"
-  GALAXIE }o--o| FICHE : "document MJ"
-  FICHE ||--o| CONCEPTION : "porte"
-  CONCEPTION }o--|| CATALOGUE_SYSTEME : "calculée avec"
+  SYSTEME ||--o{ OUTIL_SYSTEME : "enables / configures"
+  UNIVERS ||--o{ OUTIL_UNIVERS : "overrides / configures"
+  SYSTEME }o--|| COMPTE : "maintainer"
+  SECTION }o--o| OUTIL_SECTION : "managed by"
+  JETON }o--o{ OUTIL : "scope"
+  SYSTEME ||--o{ CATALOGUE_SYSTEME : "owns"
+  UNIVERS ||--o{ CATALOGUE_UNIVERS : "extends / replaces"
+  UNIVERS ||--o{ GALAXIE : "has (deleted by a separate action)"
+  GALAXIE ||--o{ SYSTEME_PLACE : "places"
+  SYSTEME_PLACE ||--o{ ROUTE : "connects"
+  GALAXIE ||--o{ ZONE : "draws"
+  GALAXIE }o--o| FICHE : "GM document"
+  FICHE ||--o| CONCEPTION : "carries"
+  CONCEPTION }o--|| CATALOGUE_SYSTEME : "computed with"
 ```
 
-Invariants, en phrases :
-1. Un système de jeu a **au plus un responsable**, un compte. Il compte comme responsable tant qu'il est MJ d'un univers rattaché, ou tant qu'aucun univers n'est rattaché (le créateur prépare son système avant de le rattacher) ; sinon — nul, ou plus MJ d'un univers rattaché (état calculé à la lecture, rien n'est écrit) — tout MJ d'un univers rattaché agit comme responsable, la règle d'aujourd'hui, jusqu'à ce qu'un responsable soit nommé (les systèmes d'avant l'epic n'en ont pas : `systemes_jeu` ne garde pas son créateur).
-2. Un outil est identifié par `(module, outil)` dans une **liste du code** ; un réglage d'outil n'existe que pour
-   un outil de cette liste, au plus un par (système, outil) et par (univers, outil).
-3. L'absence de ligne : le système a l'outil **désactivé** (défaut déclaré par l'outil) ; l'univers **suit** son système.
-4. Une valeur de réglage respecte la forme **déclarée par l'outil** (validée par le service ; la base ne peut pas la porter).
-5. Une donnée d'outil a une **clé** (unique par niveau et par nature), un **niveau** (système ou univers) et une **version** ;
-   une donnée d'univers de même clé **remplace** celle du système pour cet univers seul.
-6. Une section est gérée par au plus un outil ; seule la fonction d'écriture de cet outil change son contenu (AD-127) ; elle porte
-   la version de la source qui l'a produite et toujours sa version texte.
-7. Une conception est rattachée à **une fiche** du même univers et à **une section gérée** de cette fiche.
-8. Un système placé, une route, une zone, une conception appartiennent à **un univers** ; supprimer l'univers les supprime.
-9. Une route relie deux systèmes **placés** du même univers ; sa longueur sur la grille est celle des coordonnées.
-10. Un jeton d'outil porte une **portée** : l'ensemble des outils qu'il peut écrire ; sans portée, il n'écrit aucun outil.
-11. Désactiver ne supprime aucune ligne ; seul le geste de suppression le fait, dans une transaction.
+Invariants, in sentences:
+1. A game system has **at most one maintainer**, an account. They count as maintainer while they are a GM of an attached universe, or while no universe is attached (the creator prepares their system before attaching it); otherwise — null, or no longer a GM of an attached universe (state computed on read, nothing written) — any GM of an attached universe acts as maintainer, today's rule, until a maintainer is named (systems predating the epic have none: `systemes_jeu` does not retain its creator).
+2. A tool is identified by `(module, outil)` in a **code list**; a tool setting exists only for
+   a tool on that list, at most one per (system, tool) and per (universe, tool).
+3. No row: the system has the tool **disabled** (default declared by the tool); the universe **inherits** from its system.
+4. A setting value follows the shape **declared by the tool** (validated by the service; the database cannot enforce it).
+5. Tool data has a **key** (unique per level and nature), a **level** (system or universe) and a **version**;
+   universe data with the same key **replaces** system data for that universe alone.
+6. A section is managed by at most one tool; only that tool's write function changes its content (AD-127); it carries
+   the version of the source that produced it and always its text version.
+7. A design is attached to **one sheet** in the same universe and to **one managed section** of that sheet.
+8. A placed system, a route, a zone, a design belong to **one universe**; deleting the universe deletes them.
+9. A route connects two **placed** systems in the same universe; its grid length is that of the coordinates.
+10. A tool token carries a **scope**: the set of tools it can write; without a scope, it writes no tool.
+11. Disabling deletes no row; only the delete action does, in a transaction.
 
-### Logique
+### Logical
 
-**Cœur (tables génériques)** :
+**Core (generic tables)**:
 
-| Table | Colonnes (hors clés) | Contraintes |
+| Table | Columns (excluding keys) | Constraints |
 |---|---|---|
-| `outils_systeme` | `systeme_id`, `outil` (`module/outil`, ou `module` seul pour les réglages communs aux outils d'un module, qui n'a ni activation ni catalogue), `active`, `visibilite_mj`, `visibilite_joueur` (booléens), `reglages` (JSON des valeurs de base), `version_reglages` (entier, +1 à chaque écriture des réglages), `version_catalogue` (texte, posé par l'import ; nul : aucun catalogue) | clé primaire `(systeme_id, outil)` (2) ; → `systemes_jeu` ; `outil` validé par le service contre le registre (2) ; une valeur hors forme est refusée par le service (4) |
-| `outils_univers` | `univers_id`, `outil`, `active` (nul : suit), `visibilite_mj`, `visibilite_joueur` (nuls : suivent), `reglages` (JSON des seules valeurs remplacées), `version_reglages`, `version_catalogue` (comme ci-dessus, pour le catalogue de l'univers) | clé primaire `(univers_id, outil)` ; → `univers` ; nul = suit (3) |
-| `systemes_jeu` | colonne ajoutée `responsable_id` | → `comptes` ON DELETE SET NULL ; nul : pas de responsable (1) ; renseignée à la création d'un système (son créateur) ; MJ d'un univers rattaché : service (1) |
-| `sections` | colonnes ajoutées `gere_par` (`module/outil/type`, nul : libre), `source_version` (texte) | (6) la fonction de service refuse une écriture d'un autre appelant ; `contenu` est toujours la version texte |
-| `jetons_api` | table fille `jetons_outils` `(jeton_id, outil)` | → `jetons_api` ON DELETE CASCADE ; (10) ; un jeton est celui d'un univers : il écrit le catalogue **du système** seulement si son compte en est le responsable (ou, sans responsable, un MJ d'un univers rattaché) **à chaque usage**, comme le rôle MJ d'un jeton d'import |
-| `lots_import` | colonne ajoutée `outil` (nul : lot de fiches) | l'import d'un outil a son lot, compteurs par nature d'élément du module |
+| `outils_systeme` | `systeme_id`, `outil` (`module/outil`, or `module` alone for settings shared by a module's tools, which has neither activation nor catalogue), `active`, `visibilite_mj`, `visibilite_joueur` (booleans), `reglages` (JSON of base values), `version_reglages` (integer, +1 on each settings write), `version_catalogue` (text, set by the import; null: no catalogue) | primary key `(systeme_id, outil)` (2); → `systemes_jeu`; `outil` validated by the service against the registry (2); a value outside the shape is refused by the service (4) |
+| `outils_univers` | `univers_id`, `outil`, `active` (null: inherits), `visibilite_mj`, `visibilite_joueur` (null: inherit), `reglages` (JSON of overridden values only), `version_reglages`, `version_catalogue` (as above, for the universe's catalogue) | primary key `(univers_id, outil)`; → `univers`; null = inherits (3) |
+| `systemes_jeu` | added column `responsable_id` | → `comptes` ON DELETE SET NULL; null: no maintainer (1); set at system creation (its creator); GM of an attached universe: service (1) |
+| `sections` | added columns `gere_par` (`module/outil/type`, null: free), `source_version` (text) | (6) the service function refuses a write from another caller; `contenu` is always the text version |
+| `jetons_api` | child table `jetons_outils` `(jeton_id, outil)` | → `jetons_api` ON DELETE CASCADE; (10); a token belongs to a universe: it writes the **system's** catalogue only if its account is its maintainer (or, without a maintainer, a GM of an attached universe) **at each use**, like an import token's GM role |
+| `lots_import` | added column `outil` (null: sheet batch) | a tool import has its own batch, counters per module element nature |
 
-**Module SWN (tables du module, `swn_*`)**, rangées en tables typées parce que le calcul lit des champs précis (AD-123) :
+**SWN module (module tables, `swn_*`)**, organized into typed tables because computation reads specific fields (AD-123):
 
-| Table | Colonnes (hors clés) | Contraintes |
+| Table | Columns (excluding keys) | Constraints |
 |---|---|---|
-| `swn_catalogue_<nature>` (une par nature : `coques`, `moteurs`, `amenagements`, `defenses`, `armes`, `modifications`) | `niveau` (`systeme`/`univers`), `systeme_id` ou `univers_id`, `cle`, `nom`, `nom_en`, `description`, `source`, champs de calcul de la nature, `masque` (booléen, défaut faux), `version`, `version_catalogue` | `UNIQUE (niveau, proprietaire, cle)` (5) ; `CHECK` sur les valeurs numériques ; l'univers remplace par la même `cle` ; `CHECK (niveau = 'univers' OR NOT masque)` — un élément du système n'est jamais masqué |
-| `swn_catalogue_exemples` (septième nature du catalogue, B-77) | mêmes colonnes de socle que les autres natures, `masque` compris ; `coque` (`cle` d'une coque), `choix` (liste de `(nature, cle)` d'éléments du catalogue) | `UNIQUE (niveau, proprietaire, cle)` ; chaque `(nature, cle)` de `choix` doit exister dans le catalogue visible de l'univers à l'import (sinon l'exemple est refusé avec son champ) ; un exemple n'a pas de calcul propre : il se rejoue par le calcul des conceptions |
-| `swn_catalogue_retraits` | `univers_id`, `nature`, `cle` (celle d'un élément du système), `version` | clé primaire `(univers_id, nature, cle)` ; → `univers` ON DELETE CASCADE ; un retrait vaut pour l'univers seul ; le supprimer rétablit l'élément |
-| `swn_galaxies` | `univers_id`, `titre`, `visible` (booléen, défaut faux), `graine` (texte, réglage protégé), `fiche_id`, `section_id` (nuls : pas de document MJ), `version` | → `univers`, → `fiches`, → `sections` ON DELETE SET NULL ; E-10 liste ces cartes avec celles de `cartes` (AD-122) ; `CHECK (fiche_id IS NULL) = (section_id IS NULL)` |
-| `swn_systemes` | `galaxie_id`, `univers_id`, `cle`, `nom`, `q`, `r` (coordonnées hexagonales), `taille`, `couleur`, `notes`, `secret` (booléen), `promu` (booléen), `version` | `UNIQUE (galaxie_id, q, r)` ; `UNIQUE (galaxie_id, cle)` ; droits ligne à ligne |
-| `swn_routes` | `galaxie_id`, `univers_id`, `depuis_id`, `vers_id`, `publique` (booléen), `longueur`, `version` | → `swn_systemes` ON DELETE CASCADE ; `CHECK (depuis_id <> vers_id)` ; `UNIQUE (depuis_id, vers_id)` (9) |
+| `swn_catalogue_<nature>` (one per nature: `coques`, `moteurs`, `amenagements`, `defenses`, `armes`, `modifications`) | `niveau` (`systeme`/`univers`), `systeme_id` or `univers_id`, `cle`, `nom`, `nom_en`, `description`, `source`, computation fields for the nature, `masque` (boolean, default false), `version`, `version_catalogue` | `UNIQUE (niveau, proprietaire, cle)` (5); `CHECK` on numeric values; the universe overrides using the same `cle`; `CHECK (niveau = 'univers' OR NOT masque)` — a system element is never masked |
+| `swn_catalogue_exemples` (seventh catalogue nature, B-77) | same foundation columns as other natures, including `masque`; `coque` (`cle` of a hull), `choix` (list of `(nature, cle)` catalogue elements) | `UNIQUE (niveau, proprietaire, cle)`; each `(nature, cle)` in `choix` must exist in the universe's visible catalogue on import (otherwise the example is refused with its field); an example has no computation of its own: it is replayed through the design computation |
+| `swn_catalogue_retraits` | `univers_id`, `nature`, `cle` (of a system element), `version` | primary key `(univers_id, nature, cle)`; → `univers` ON DELETE CASCADE; a withdrawal applies to the universe alone; deleting it restores the element |
+| `swn_galaxies` | `univers_id`, `titre`, `visible` (boolean, default false), `graine` (text, protected setting), `fiche_id`, `section_id` (null: no GM document), `version` | → `univers`, → `fiches`, → `sections` ON DELETE SET NULL; E-10 lists these maps alongside those in `cartes` (AD-122); `CHECK (fiche_id IS NULL) = (section_id IS NULL)` |
+| `swn_systemes` | `galaxie_id`, `univers_id`, `cle`, `nom`, `q`, `r` (hex coordinates), `taille`, `couleur`, `notes`, `secret` (boolean), `promu` (boolean), `version` | `UNIQUE (galaxie_id, q, r)`; `UNIQUE (galaxie_id, cle)`; per-row permissions |
+| `swn_routes` | `galaxie_id`, `univers_id`, `depuis_id`, `vers_id`, `publique` (boolean), `longueur`, `version` | → `swn_systemes` ON DELETE CASCADE; `CHECK (depuis_id <> vers_id)`; `UNIQUE (depuis_id, vers_id)` (9) |
 | `swn_zones` | `galaxie_id`, `univers_id`, `cle`, `nom`, `contour` (JSON), `couleur`, `secret`, `version` | `UNIQUE (galaxie_id, cle)` |
-| `swn_fiches_generees` | `univers_id`, `cle` (`regles-armes`, `exemples`…), `fiche_id`, `section_id`, `source_version` | `UNIQUE (univers_id, cle)` ; → `fiches`, `sections` ON DELETE CASCADE (supprimer la fiche l'oublie ; le geste « Générer » la recrée) ; fiches de règles et d'exemples de B-77 |
-| `swn_conceptions` | `univers_id`, `fiche_id`, `section_id`, `coque_cle`, `choix` (JSON : lignes de choix), `version_reglages` (texte : les `version_reglages` du système et de l'univers pour la ligne `module` et pour la ligne `module/outil`, au calcul ; périmée si l'une diffère de la courante), `version_catalogue` (texte : celle du système puis celle de l'univers), `resultat` (JSON : valeurs calculées), `version` | → `fiches` ON DELETE CASCADE ; `UNIQUE (fiche_id)` (7) ; → `sections` |
+| `swn_fiches_generees` | `univers_id`, `cle` (`regles-armes`, `exemples`…), `fiche_id`, `section_id`, `source_version` | `UNIQUE (univers_id, cle)`; → `fiches`, `sections` ON DELETE CASCADE (deleting the sheet forgets it; the « Générer » action recreates it); rule and example sheets of B-77 |
+| `swn_conceptions` | `univers_id`, `fiche_id`, `section_id`, `coque_cle`, `choix` (JSON: choice rows), `version_reglages` (text: the system's and universe's `version_reglages` for the `module` row and for the `module/outil` row, at computation time; stale if any differs from the current one), `version_catalogue` (text: the system's then the universe's), `resultat` (JSON: computed values), `version` | → `fiches` ON DELETE CASCADE; `UNIQUE (fiche_id)` (7); → `sections` |
 
-**Ce que la base ne dit pas, et que le service porte** : le responsable est un MJ d'un univers rattaché (croise deux tables) ;
-la forme des réglages et des catalogues (déclarée par le module) ; la clé de remplacement d'un catalogue d'univers
-(le même `cle` que celui du système) ; la **cohérence d'une route avec la grille** (calculée du coup) ; les droits de chaque ligne.
-**Droits, une phrase chacun** : un **catalogue** se lit par tout membre pour qui l'outil est visible — tout le catalogue du système, et celui de l'univers sauf ses éléments `masque`, lus par le MJ seul ; un élément retiré n'est lu par personne dans cet univers ; masquer, rendre visible, retirer et rétablir sont des gestes d'un MJ de l'univers ; un outil se lit si activé, visible pour le rôle et si le compte y a l'usage ; un réglage se lit par les membres, s'écrit par le
-responsable (base du système) ou par tout MJ de l'univers (surcharge d'univers) ; un système placé, une route ou une zone secrète se lit par le
-MJ seul, les autres par qui lit la carte ; une conception se lit par qui lit sa fiche, s'écrit par l'auteur de la section et le MJ.
+**What the database does not express, and the service enforces**: the maintainer is a GM of an attached universe (spans two tables);
+the shape of settings and catalogues (declared by the module); the override key of a universe catalogue
+(the same `cle` as the system's); **a route's consistency with the grid** (computed on the spot); each row's permissions.
+**Permissions, one sentence each**: a **catalogue** is read by any member for whom the tool is visible — the entire system catalogue, and the universe catalogue except its `masque` elements, read by the GM only; a withdrawn element is read by nobody in that universe; masking, making visible, withdrawing and restoring are actions of a universe GM; a tool is read if enabled, visible to the role and if the account can use it; a setting is read by members, written by the
+maintainer (system base) or by any universe GM (universe override); a secret placed system, route or zone is read by the
+GM only, the others by anyone who reads the map; a design is read by anyone who reads its sheet, written by the section's author and the GM.
 
-### Physique
+### Physical
 
-Même base, mêmes réglages (WAL, `foreign_keys`, une connexion d'écriture, AD-5). Index : `swn_systemes (univers_id, q, r)` — le chargement d'un bloc de 5×5 ;
-`swn_routes (depuis_id)` et `(vers_id)` — les routes d'un système et le plus court chemin ; `swn_catalogue_* (systeme_id, cle)` et `(univers_id, cle)` — la
-résolution « univers puis système » ; `swn_conceptions (fiche_id)` unique — E-9 et E-22. Le **cache des blocs** générés est en mémoire (perdu
-au redémarrage sans dommage, AD-132). Aucune donnée générée n'est stockée.
-**Multi-tenant** : inchangé — tout est dans un univers ; un catalogue de niveau système porte `systeme_id` (un système reste hors des univers).
+Same database, same settings (WAL, `foreign_keys`, one write connection, AD-5). Indexes: `swn_systemes (univers_id, q, r)` — loading a 5×5 block;
+`swn_routes (depuis_id)` and `(vers_id)` — a system's routes and the shortest path; `swn_catalogue_* (systeme_id, cle)` and `(univers_id, cle)` —
+“universe then system” resolution; unique `swn_conceptions (fiche_id)` — E-9 and E-22. The generated **block cache** is in memory (lost
+on restart without harm, AD-132). No generated data is stored.
+**Multi-tenant**: unchanged — everything is in a universe; a system-level catalogue carries `systeme_id` (a system remains outside universes).
 
-### Plan de migration
+### Migration plan
 
-1. **Élargir** : `outils_systeme`, `outils_univers`, `jetons_outils`, colonnes ajoutées à `sections`, `lots_import` ; `systemes_jeu.responsable_id` nullable.
-2. **Migrer** : `responsable_id` reste nul pour les systèmes existants (pas de créateur stocké) ; les tables du module arrivent avec leurs migrations de module (même exécuteur, AD-14, numérotation au
-   fusion, AD-51 ; un module = des migrations qui ne créent que ses tables préfixées).
-3. **Resserrer** : rien — `responsable_id` reste nullable (1).
-Retour arrière : une image d'avant ignore les nouvelles tables ; les sections gérées gardent leur texte (version texte) et se lisent normalement.
+1. **Expand**: `outils_systeme`, `outils_univers`, `jetons_outils`, columns added to `sections`, `lots_import`; nullable `systemes_jeu.responsable_id`.
+2. **Migrate**: `responsable_id` remains null for existing systems (no stored creator); module tables arrive with their module migrations (same runner, AD-14, numbering at
+   merge, AD-51; one module = migrations creating only its prefixed tables).
+3. **Contract**: nothing — `responsable_id` remains nullable (1).
+Rollback: an earlier image ignores the new tables; managed sections keep their text (text version) and are read normally.
