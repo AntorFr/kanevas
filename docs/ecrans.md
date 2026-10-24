@@ -151,13 +151,13 @@ An instance admin who is also a universe member, GM or Player, has that role's c
 Matrix details: creating a campaign, changing its status and creating a scenario are
 GM-only. A section's audience is set inline on the sheet (GM). Creating a sheet opens a
 dialog (type already chosen, title) leading to the sheet; creating a map is done inline on
-E-10. Making a map visible is available on the map (E-11) and in the list (E-10). An illustrated map's background is uploaded at creation (E-10) and changed on the map (E-11);
+E-10. « Rendre visible » for a map is available on the map (E-11) and in the list (E-10). An illustrated map's background is uploaded at creation (E-10) and changed on the map (E-11);
 a map without a background shows its tokens on a neutral background. A
 preparation task is added with its category, checked, unchecked; it cannot be deleted.
 On E-15, rules, creatures and items receive the same treatment. On E-3, the « Système de jeu » block exists only if the universe is attached to a system (GM and Player).
 
 An account **without a role** in the universe that is not an instance admin (Teo before being added) has, within
-that universe, the “Admin” column of this matrix for **that universe's** screens (E-3, E-4,
+that universe, the « Admin » column of this matrix for **that universe's** screens (E-3, E-4,
 E-6 to E-14, E-17 to E-19): « — », « Page introuvable. » if the address is forced. Outside universes it keeps E-1,
 E-2 and E-16 (empty if it is not a member of any attached universe), and E-15 for its
 own universes' systems.
