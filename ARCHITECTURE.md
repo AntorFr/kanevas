@@ -230,71 +230,71 @@ import script (outside the product, on Monsieur's Mac)
   account's role in the current universe (AD-26, AD-74), behind the `AgentTransport` port (AD-73).
 - **Images**: a `GenerateurImage` port, `bouchon`, `aucun`, `codex` adapters (AD-88 to AD-90; AD-45, AD-50, AD-55).
 
-## Décisions
+## Decisions
 
-Les numéros sont stables. Une décision retirée garde son numéro, avec ce qui la remplace.
+Numbers are stable. A withdrawn decision keeps its number, with what replaces it.
 
-| AD | Décision |
+| AD | Decision |
 |---|---|
-| AD-1 | Rien du moteur d'Adestia pour stocker ou servir les données : il n'a pas d'ACL par ressource. |
-| AD-2 | Un seul chemin vers les données : un outil de l'agent n'appelle que des fonctions de service qu'une route appelle aussi. |
-| AD-3 | Tout en TypeScript sur Node. |
-| AD-4 | Toute route HTTP dans l'unique application Fastify. |
-| AD-5 | Toute donnée structurée dans l'unique fichier SQLite du volume. |
-| AD-6 | Un type de fiche est un contrat de charge utile versionné, validé en code, jamais une table ou des colonnes neuves. |
-| AD-7 | *Amendée par AD-111 (`kanevas-import`, décisions de Monsieur du 2026-10-11) : une pièce jointe est un fichier de la médiathèque, référencé par la section ; « secrète » est la visibilité du fichier.* Pièces jointes : octets sur le disque du volume, jamais en base ni par un chemin statique ; une route qui revérifie les droits ; pas de limite de taille. |
-| AD-8 | Recherche plein texte (FTS5) sur titres et sections, tenue à jour par la base (AD-21) ; aucun résultat sans le filtre de droits. |
-| AD-9 | Authelia dit qui ; `membre` dit ce qu'on peut. L'admin d'instance (groupe Authelia `parents`) n'écrit que la table des membres. |
-| AD-10 | Dépôt neuf ; reprise sélective d'Antre-du-maitre : bootstrap Fastify, OIDC, transports LLM, Dockerfile et CI. |
-| AD-11 | Système de jeu : entité partagée entre univers ; le lore reste propre à chaque univers. |
-| AD-12 | *Remplacée par AD-18 et AD-19.* |
-| AD-13 | Compte créé à la première authentification (`preferred_username`). |
-| AD-14 | Migrations : fichiers SQL numérotés, appliqués au démarrage, sans ORM. |
-| AD-15 | Toute route gardée par la session (cookie signé), sinon 401 sous `/api` et redirection vers Authelia — en mode bouchon, vers le choix d'un compte de test (AD-55). |
-| AD-16 | Un seul routeur frontend, `react-router` ; chaque tranche y enregistre ses écrans. |
-| AD-17 | Charge utile v1 vide pour tous les types, sauf personnage (PJ \| PNJ) et compte-rendu (sa campagne) ; le contenu est dans les sections. |
-| AD-18 | Le MJ lit et écrit toute section de son univers. |
-| AD-19 | Audience d'une section : lecture et écriture des joueurs, lecture et écriture de l'auteur, quatre bascules indépendantes. |
-| AD-20 | Une relation est portée par une section et en prend la visibilité ; sa cible doit aussi être lisible. |
-| AD-21 | L'index de recherche est tenu par des déclencheurs SQLite, jamais par le code. |
-| AD-22 | Une fiche sans section lisible répond 404, comme un identifiant inconnu. |
-| AD-23 | `systeme_jeu` sans univers ; un univers le référence. |
-| AD-24 | Gabarits : une table générique typée. |
-| AD-25 | Référentiel : lu par les membres d'un univers rattaché, écrit par ses MJ. |
-| AD-26 | Le catalogue d'outils de l'agent est choisi par le serveur selon le rôle, jamais par le client. |
-| AD-27 | Les outils de l'agent composent les fonctions de service en processus, sans HTTP interne ni SQL à eux. |
-| AD-28 | Aucune conversation stockée : le fil vit dans le navigateur. |
-| AD-29 | Campagnes et scénarios : tables propres, hors fiches. |
-| AD-30 | La liste des campagnes ne porte jamais les scénarios. |
-| AD-31 | Créer une campagne ou un scénario par l'agent MJ : les mêmes fonctions que les routes. |
-| AD-32 | *Retirée : remplacée par AD-52.* |
-| AD-33 | Un compte-rendu se crée par une route propre, ouverte à tout membre, qui compose la création de fiche et de section. |
-| AD-34 | La liste des CR d'une campagne revérifie chaque CR section par section. |
-| AD-35 | Nom de fichier sur disque : UUID ; le nom d'origine n'est qu'une métadonnée. |
-| AD-36 | *Amendée par AD-111 (`kanevas-import`, décisions de Monsieur du 2026-10-11) : une pièce jointe est un fichier de la médiathèque, référencé par la section ; « secrète » est la visibilité du fichier.* Garde d'une pièce jointe : celle de sa section, et le MJ seul si secrète. |
-| AD-37 | *Amendée par AD-111 (`kanevas-import`, décisions de Monsieur du 2026-10-11) : une pièce jointe est un fichier de la médiathèque, référencé par la section ; « secrète » est la visibilité du fichier.* Pièces jointes en flux ; `nosniff` ; image en ligne, le reste en téléchargement. |
-| AD-38 | Un élément de carte n'est rendu que si sa fiche est lisible (`peutVoirFiche`). |
-| AD-39 | Le mode Joueur d'un MJ ne peut que restreindre : il montre ce que voit un joueur qui n'est l'auteur d'aucune section. |
-| AD-40 | Le fond d'une carte est une image déposée sur la carte, rangée sur le disque comme une pièce jointe et servie par une route qui revérifie la lecture de la carte. |
-| AD-41 | Les liens d'un graphe se déduisent des relations à la lecture. |
-| AD-42 | La disposition d'un graphe se calcule dans le navigateur. |
-| AD-43 | Token et nœud : une seule table d'éléments, de forme imposée par le type de carte. |
-| AD-44 | *Amendée par AD-111 (`kanevas-import`) : l'image générée entre dans la médiathèque (visible des joueurs, le défaut) et est jointe à la section par la fonction d'ajout du premier chemin (AD-111), plus par la fonction d'envoi des pièces jointes.* L'outil image vérifie le droit d'écriture avant de générer, et attache par la fonction d'envoi des pièces jointes ; une image par demande. |
-| AD-45 | Génération d'image derrière un port ; l'adaptateur se choisit par configuration (`codex`, ou `bouchon` en mode bouchon, AD-55) ; sans adaptateur, l'outil disparaît du catalogue. |
-| AD-46 | Tâches de préparation : table propre rattachée à la campagne, catégories fermées. |
-| AD-47 | Garde MJ des tâches évaluée sur l'univers de la campagne. |
-| AD-48 | L'agent propose une mise à jour, jamais ne l'écrit ; appliquer est un geste humain, dans l'interface. |
-| AD-49 | Une proposition appartient à son demandeur, s'applique une fois, et seulement si la section n'a pas changé. |
-| AD-50 | Adaptateur `codex` : `codex exec` en sous-processus, `danger-full-access` (le pod est le bac à sable), identifiants dans `CODEX_HOME` sur le volume. |
-| AD-51 | Une migration prend son numéro au moment où sa tranche se fusionne ; l'ordre des migrations est l'ordre de fusion. |
-| AD-52 | *Remplacée par AD-102 (`kanevas-import`) : la table des fiches est recréée une fois, sans contrainte sur le type.* La table des fiches connaît ses sept types dès sa création ; aucune tranche ne la recrée. |
-| AD-53 | **Toute action qu'un humain déclenche a un écran.** L'agent est un second chemin, jamais le seul ; ce que l'agent propose, un humain l'applique depuis un écran. |
-| AD-54 | L'assistant accède au modèle par l'abonnement Claude de Monsieur, via le transport `claude-agent` (décision de Monsieur, confirmée le 2026-10-03 en connaissance du fait suivant). Risque connu et accepté par Monsieur : la doc de l'Agent SDK n'autorise pas, sauf accord d'Anthropic, l'usage du login claude.ai ou de ses limites dans un produit tiers ; Kanevas sert d'autres comptes que le sien. Les identifiants sont posés par Monsieur. |
-| AD-55 | **Mode bouchon** (décision de Monsieur, 2026-10-03) : `KANEVAS_STUB=1` lance Kanevas sans aucun secret. La connexion se fait en choisissant un compte de test au lieu de passer par Authelia, l'assistant répond par un transport `bouchon` scripté qui appelle les mêmes outils, l'image vient d'un adaptateur `bouchon` qui rend une image fixe. Tout le reste est réel : base, droits, routes, outils. Un bandeau le dit sur chaque page ; l'application refuse de démarrer en bouchon dès qu'une seule variable `OIDC_*` est posée. Les tests et les pods de la chaîne tournent en bouchon. |
-| AD-56 | **Session** : un cookie signé (`HttpOnly`, `SameSite=Lax`, `Secure` hors bouchon et hors test) porte l'identifiant et les groupes du compte, valable 7 jours ; le secret de signature est lu dans `SESSION_SECRET` s'il est posé, sinon créé une fois dans `session.key` à côté de la base (`/data/session.key` en production, 0600) — la session survit à un redémarrage sans nouveau secret à déployer. Pas de session révocable en V1 : retirer un membre prend effet à la requête suivante parce que les rôles ne sont pas dans la session (AD-9). |
-| AD-57 | **Frontend** : React et Vite dans `frontend/`, un seul build servi par l'application Fastify (`@fastify/static`, repli sur `index.html` pour toute adresse d'écran, derrière la garde de session) ; l'image Docker construit les deux. Pas de rendu serveur, sauf les pages que la session ne peut pas précéder : choix du compte de test (AD-55), « Connexion refusée », « Connexion indisponible ». |
-| AD-58 | *Remplacée par AD-95 (`kanevas-import`) : le contenu est du Markdown, rendu au serveur.* **Contenu de section en texte brut** : des paragraphes séparés par des lignes vides, affichés comme tels ; ni Markdown ni HTML. Écarté : Markdown (rendu à assainir, choix d'éditeur) — rouvrable sans migration, le contenu est déjà du texte. |
-| AD-59 | **Écritures de section concurrentes** : chaque section porte un entier `version`, augmenté à chaque écriture de son contenu ; l'écriture envoie la version qu'elle a lue ; si elle n'est plus la courante, elle est refusée (HTTP 409, code `section_modifiee`) et rien n'est écrit. Même mécanisme que le « la section a changé » de B-21 pour les propositions (AD-49). |
+| AD-1 | Nothing from Adestia's engine to store or serve data: it has no per-resource ACLs. |
+| AD-2 | A single path to data: an agent tool calls only service functions that a route also calls. |
+| AD-3 | Everything in TypeScript on Node. |
+| AD-4 | Every HTTP route in the single Fastify application. |
+| AD-5 | All structured data in the single SQLite file on the volume. |
+| AD-6 | A sheet type is a versioned payload contract, validated in code, never a new table or new columns. |
+| AD-7 | *Amended by AD-111 (`kanevas-import`, Monsieur's decisions of 2026-10-11): an attachment is a media library file, referenced by the section; secret denotes the file's visibility.* Attachments: bytes on the volume's disk, never in the database or through a static path; a route that rechecks permissions; no size limit. |
+| AD-8 | Full-text search (FTS5) on titles and sections, maintained by the database (AD-21); no result without the permission filter. |
+| AD-9 | Authelia says who; `membre` says what they can do. The instance admin (Authelia `parents` group) writes only the members table. |
+| AD-10 | New repository; selective reuse from Antre-du-maitre: Fastify bootstrap, OIDC, LLM transports, Dockerfile and CI. |
+| AD-11 | Game system: entity shared across universes; lore remains specific to each universe. |
+| AD-12 | *Replaced by AD-18 and AD-19.* |
+| AD-13 | Account created on first authentication (`preferred_username`). |
+| AD-14 | Migrations: numbered SQL files, applied at startup, without an ORM. |
+| AD-15 | Every route guarded by the session (signed cookie), otherwise 401 under `/api` and redirect to Authelia — in stub mode, to test account selection (AD-55). |
+| AD-16 | A single frontend router, `react-router`; each slice registers its screens there. |
+| AD-17 | Empty v1 payload for all types, except character (PC \| NPC) and session report (its campaign); content is in sections. |
+| AD-18 | The GM reads and writes every section of their universe. |
+| AD-19 | Section audience: player read and write, author read and write, four independent toggles. |
+| AD-20 | A relation is carried by a section and inherits its visibility; its target must also be readable. |
+| AD-21 | The search index is maintained by SQLite triggers, never by code. |
+| AD-22 | A sheet with no readable section returns 404, like an unknown id. |
+| AD-23 | `systeme_jeu` without a universe; a universe references it. |
+| AD-24 | Templates: a generic typed table. |
+| AD-25 | Reference data: read by members of an attached universe, written by its GMs. |
+| AD-26 | The agent's tool catalogue is selected by the server according to role, never by the client. |
+| AD-27 | Agent tools compose service functions in-process, without internal HTTP or their own SQL. |
+| AD-28 | No conversation stored: the thread lives in the browser. |
+| AD-29 | Campaigns and scenarios: their own tables, outside sheets. |
+| AD-30 | The campaign list never carries scenarios. |
+| AD-31 | Creating a campaign or scenario through the GM agent: the same functions as the routes. |
+| AD-32 | *Withdrawn: replaced by AD-52.* |
+| AD-33 | A session report is created through a dedicated route, open to any member, which composes sheet and section creation. |
+| AD-34 | A campaign's report list rechecks each report section by section. |
+| AD-35 | Filename on disk: UUID; the original name is only metadata. |
+| AD-36 | *Amended by AD-111 (`kanevas-import`, Monsieur's decisions of 2026-10-11): an attachment is a media library file, referenced by the section; secret denotes the file's visibility.* Attachment guard: its section's guard, and GM only if secret. |
+| AD-37 | *Amended by AD-111 (`kanevas-import`, Monsieur's decisions of 2026-10-11): an attachment is a media library file, referenced by the section; secret denotes the file's visibility.* Streamed attachments; `nosniff`; images inline, everything else as downloads. |
+| AD-38 | A map element is returned only if its sheet is readable (`peutVoirFiche`). |
+| AD-39 | A GM's Player mode can only restrict: it shows what a player who authored no section sees. |
+| AD-40 | A map background is an image uploaded to the map, stored on disk like an attachment and served by a route that rechecks map readability. |
+| AD-41 | Graph links are derived from relations on read. |
+| AD-42 | Graph layout is computed in the browser. |
+| AD-43 | Token and node: a single elements table, with shape imposed by the map type. |
+| AD-44 | *Amended by AD-111 (`kanevas-import`): the generated image enters the media library (visible to players, the default) and is attached to the section by the first path's add function (AD-111), no longer by the attachment upload function.* The image tool checks write permission before generation, and attaches through the attachment upload function; one image per request. |
+| AD-45 | Image generation behind a port; the adapter is selected by configuration (`codex`, or `bouchon` in stub mode, AD-55); without an adapter, the tool disappears from the catalogue. |
+| AD-46 | Preparation tasks: dedicated table attached to the campaign, closed set of categories. |
+| AD-47 | Tasks' GM guard evaluated on the campaign's universe. |
+| AD-48 | The agent proposes an update, never writes it; applying is a human action in the interface. |
+| AD-49 | A proposal belongs to its requester, is applied once, and only if the section has not changed. |
+| AD-50 | `codex` adapter: `codex exec` as a subprocess, `danger-full-access` (the pod is the sandbox), credentials in `CODEX_HOME` on the volume. |
+| AD-51 | A migration gets its number when its slice merges; migration order is merge order. |
+| AD-52 | *Replaced by AD-102 (`kanevas-import`): the sheets table is rebuilt once, without a type constraint.* The sheets table knows its seven types from creation; no slice rebuilds it. |
+| AD-53 | **Every action a human initiates has a screen.** The agent is a second path, never the only one; what the agent proposes, a human applies from a screen. |
+| AD-54 | The assistant accesses the model through Monsieur's Claude subscription, via the `claude-agent` transport (Monsieur's decision, confirmed on 2026-10-03 with knowledge of the following fact). Risk known and accepted by Monsieur: the Agent SDK documentation does not allow using the claude.ai login or its limits in a third-party product without Anthropic's agreement; Kanevas serves accounts other than his own. Credentials are set by Monsieur. |
+| AD-55 | **Stub mode** (Monsieur's decision, 2026-10-03): `KANEVAS_STUB=1` starts Kanevas without any secret. Login uses test account selection instead of Authelia, the assistant answers through a scripted `bouchon` transport that calls the same tools, the image comes from a `bouchon` adapter that returns a fixed image. Everything else is real: database, permissions, routes, tools. A banner says so on every page; the application refuses to start in stub mode if even one `OIDC_*` variable is set. Tests and chain pods run in stub mode. |
+| AD-56 | **Session**: a signed cookie (`HttpOnly`, `SameSite=Lax`, `Secure` outside stub mode and tests) carries the account id and groups, valid for 7 days; the signing secret is read from `SESSION_SECRET` if set, otherwise created once in `session.key` beside the database (`/data/session.key` in production, 0600) — sessions survive a restart without deploying a new secret. No revocable session in V1: removing a member takes effect on the next request because roles are not in the session (AD-9). |
+| AD-57 | **Frontend**: React and Vite in `frontend/`, a single build served by the Fastify application (`@fastify/static`, fallback to `index.html` for any screen address, behind the session guard); the Docker image builds both. No server rendering, except pages that cannot follow the session: test account selection (AD-55), « Connexion refusée », « Connexion indisponible ». |
+| AD-58 | *Replaced by AD-95 (`kanevas-import`): content is Markdown, rendered on the server.* **Section content as plain text**: paragraphs separated by blank lines, displayed as such; neither Markdown nor HTML. Rejected: Markdown (rendering to sanitise, editor choice) — can be reopened without a migration, the content is already text. |
+| AD-59 | **Concurrent section writes**: each section carries an integer `version`, incremented on every content write; the write sends the version it read; if it is no longer current, it is refused (HTTP 409, code `section_modifiee`) and nothing is written. Same mechanism as B-21's section-changed check for proposals (AD-49). |
 | AD-83 | *La règle d'accès « toujours par un univers » est remplacée par AD-94 (routes `/api/systemes/:sid`, catalogue à `GET /api/systemes/catalogue`) ; le reste tient.* **Système de jeu et rattachement** : `systemes_jeu` (sans univers) et `gabarits` ; l'univers porte un `systeme_id` facultatif (AD-23, AD-24). Dans cette décision d'origine, l'accès à un système passait **toujours par un univers dont le compte est membre** (`/api/univers/:id/systeme`) ; le catalogue ne donnait que des noms. « Créer et rattacher » est une seule transaction. Écarté : une adresse `/api/systemes/:id` gardée par « rattaché à l'un des univers du compte » (une requête par lecture, aucun gain). |
 | AD-84 | **Un système n'apprend rien sur les univers voisins** : il rend le nombre d'univers qui l'utilisent et jamais leurs noms ni leurs membres (AD-22). Précise AD-11 : « le lore reste propre à chaque univers ». Écarté : nommer les univers partenaires (maquette du cadrage), qui divulguerait l'existence d'univers dont le compte n'est pas membre. |
 | AD-85 | **Gabarits** : contenu en Markdown (AD-95) ; écriture concurrente refusée par un entier `version`, comme AD-59 (HTTP 409, code `gabarit_modifie`) ; le type est fixé à la création ; pas de suppression (cadrage). Les fonctions de service prennent l'acteur et vérifient le rôle dans l'univers de **passage** ; elles sont les seules écritures, pour les routes comme pour l'agent (AD-2). Écarté : champs structurés (niveau, DEF, PV) — hors périmètre du cadrage (caractéristiques structurées). |
