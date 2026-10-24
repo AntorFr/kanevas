@@ -1,151 +1,151 @@
 # Architecture — kanevas
 
-Système de gestion de JDR (lore, campagnes, comptes-rendus, droits, cartes). Ce qu'il permet, à
-qui et par quels écrans : `docs/parcours.md`, `docs/ecrans.md` ; ses données : `docs/donnees.md`.
+RPG management system (lore, campaigns, session reports, permissions, maps). What it enables,
+for whom and through which screens: `docs/parcours.md`, `docs/ecrans.md`; its data: `docs/donnees.md`.
 
-Ce document a deux parties : **aujourd'hui**, la carte du code tel qu'il est ; **la cible**,
-l'architecture du produit entier, posée par le cadrage de l'epic et réalisée tranche par
-tranche (sur `main`, la cible ne décrit que ce qui est construit).
+This document has two parts: **today**, the map of the code as it stands; **the target**,
+the architecture of the whole product, set by the epic's scope and implemented slice by
+slice (on `main`, the target describes only what has been built).
 
-# Aujourd'hui
+# Today
 
-Le socle (une application Fastify, Node 20, TypeScript, `GET /healthz`, une mécanique OIDC,
-une image publiée par la CI) porte, depuis `kanevas-premiere-fiche`, la **première
-fonction métier** : comptes, univers, membres, fiches et sections, avec leurs droits ; la session
-et le mode bouchon ; le frontend React qui les montre (accueil, univers, membres, lore, fiche).
-S'y ajoutent le système de jeu et, avec `kanevas-suivi`, le suivi de la séance : campagnes, scénarios,
-préparation, comptes-rendus ; `kanevas-relier-chercher`, les relations entre fiches et la recherche (dans un type, puis dans tous les types depuis `kanevas-import-recherche` ; index FTS5, AD-63, AD-64, AD-118) ; les pièces jointes (stockage sur le volume, bloc de E-9) ;
-`kanevas-assistant-membre`, l'assistant de chaque membre : un panneau de conversation dont les outils
-appellent les mêmes fonctions de service que les routes, avec les droits de la personne (AD-73 à AD-78).
-Les cartes et graphes (E-10, E-11) sont construits. `kanevas-monde` ajoute la proposition de mise à jour d'une section d'après un compte-rendu, que le MJ applique ou abandonne d'un geste (AD-79 à AD-82) ; `kanevas-images` lui ajoute la génération d'un portrait attaché à une section (AD-88 à AD-90).
-`kanevas-recours-admin` y ajoute l'administration d'instance (E-5, AD-86, AD-87).
+Since `kanevas-premiere-fiche`, the foundation (one Fastify application, Node 20, TypeScript,
+`GET /healthz`, an OIDC mechanism, an image published by CI) carries the **first business
+function**: accounts, universes, members, sheets and sections, with their permissions; sessions
+and stub mode; the React frontend that displays them (home, universes, members, lore, sheet).
+It also includes the game system and, with `kanevas-suivi`, session tracking: campaigns, scenarios,
+preparation, session reports; `kanevas-relier-chercher`, relations between sheets and search (within a type, then across all types since `kanevas-import-recherche`; FTS5 indexes, AD-63, AD-64, AD-118); attachments (storage on the volume, E-9 block);
+`kanevas-assistant-membre`, each member's assistant: a conversation panel whose tools
+call the same service functions as the routes, with the person's permissions (AD-73 to AD-78).
+Maps and graphs (E-10, E-11) are built. `kanevas-monde` adds a proposed section update based on a session report, which the GM applies or abandons with one action (AD-79 to AD-82); `kanevas-images` adds generation of a portrait attached to a section (AD-88 to AD-90).
+`kanevas-recours-admin` adds instance administration (E-5, AD-86, AD-87).
 
-## Carte
+## Map
 
-- `src/server.ts`, `src/app.ts` : démarrage et assemblage de l'app Fastify
-  (`buildApp`), seule application du dépôt ; toutes les routes futures s'y
-  enregistrent.
-- `src/config/env.ts` : lecture de l'environnement (zod) ; seule exception, `FRONTEND_DIR`, lu par `src/routes/frontend.ts` (réglage des tests).
-- `src/routes/health.ts` : `registerHealthRoutes`, `GET /healthz`.
-- `src/routes/auth.ts`, `src/services/oidc.ts` : login et callback OIDC ; le callback ouvre la
-  session (`src/services/session.ts`, AD-56) et crée le compte à la première connexion.
-- `src/routes/frontend.ts` : sert le build du frontend (`FRONTEND_DIR`, `dist/public`) derrière la garde de session ; `src/routes/erreurs.ts` : traduit les erreurs de service en réponses HTTP ; `src/routes/pages.ts` : pages HTML du bouchon.
-- `src/routes/bouchon.ts` : mode bouchon (AD-55), absent de la table des routes sans `KANEVAS_STUB`.
-- `src/services/assistant/` : le catalogue d'outils d'un rôle (AD-74), le port `AgentTransport` et ses
-  adaptateurs `bouchon` et `claude-agent` (AD-73, AD-78), la disponibilité (AD-77) et
-  l'orchestration d'une demande (AD-75), le jeton (`jeton.ts`) et sa session de connexion (`connexion-claude.ts`, AD-112 ; `scripts/faux-setup-token.mjs` en bouchon) ; `src/routes/assistant.ts` : les deux routes. Aucune requête SQL
-  dans ce module (AD-2, AD-27).
-- `src/db/` : ouverture du fichier SQLite, `migrations/0001-*.sql`, `0002-systemes.sql`, `0003-suivi.sql`, `0004-pieces-jointes.sql`, `0005-relier-chercher.sql`, `0006-illustrations.sql`, `0007-cartes.sql`, `0008-propositions.sql`, `0009-plafond-contenu.sql` (plafond à 100 000, AD-106), `0010-fil-contrat.sql` (jetons, lots, clés d’origine, AD-103), `0011-contenu-public.sql` (`sections.contenu_public`, index des sections recréé, AD-114), `0012-liens.sql` (table `liens`, index des cibles et `relations (cible_fiche_id)`, AD-116), `0013-types.sql` *(`kanevas-import-types`, AD-120 ; numéro 0013 posé à la reprise de l'epic, repris si une autre tranche passe avant (AD-51) ; recréation de `fiches`)*, `0014-alias-etiquettes.sql` *(`kanevas-import-recherche`, AD-118 ; alias, étiquettes, index des titres recréé)*, `0015-mediatheque.sql` *(`kanevas-import-mediatheque`, AD-117 ; `fichiers`, `fichiers_sections`, `fiches.illustration_fichier_id`, migration des pièces jointes et des illustrations)*, `0016-import-suivi.sql` *(`kanevas-import-reprise`, AD-121 ; `cle_origine`, `dernier_import`, `version_importee` sur campagnes et scénarios)*, runner (AD-14).
-- `src/e2e/` : tests d'ensemble, serveur réel en bouchon et navigateur piloté (Playwright, ignoré s'il manque) ; E-5 : `administration*.test.ts`.
-- `src/services/` : `comptes`, `univers`, `membres`, `instance`, `fiches`, `sections`, `droits`, `systemes`, `relations`, `campagnes`, `scenarios`, `preparation`, `comptes_rendus`, `fichiers` (la médiathèque : seul écrivain de `fichiers*`, à la suppression d'un univers près : `univers.ts` en efface les lignes), `fichiers-lecture` (lecture des fichiers référencés par clé, rendu en attente), `cartes`, `propositions`, `types-fiche` *(AD-120)*, `markdown`, `liens`, `mentions`, `jetons`, `lots`, `import` (contexte du jeton), `import-suivi` *(AD-121 : campagnes et scénarios importés)*, `import-relations` *(AD-121 : relations importées)*, `types` *(AD-120)*, `etiquettes` *(AD-118)*, `import-fiches`, `stockage` — les seules
-  fonctions qui lisent ou écrivent les données (AD-2) ; `src/routes/` : routes `/api` minces ; `univers.ts` et `instance.ts` portent les routes d'univers et d'instance ; `import.ts` (API d'import à jeton, `/api/import/v1`) et `acces-api.ts` (E-18, par session : `GET|POST /api/univers/:id/jetons`, `POST …/jetons/:jid/revoquer`, `GET …/lots`).
-- `frontend/` : application React/Vite (AD-57) ; `frontend/src/ui/tokens.css` et
-  `frontend/src/ui/` : tokens et composants de `docs/charte.md` ; son build est servi par Fastify. Le cadre
-  (`Cadre.tsx`, `Barre.tsx`) est commun à tous les écrans ; `/demo-composants` (bouchon seul, 404 sinon) montre les composants (AD-92 pour polices et icônes).
-- `src/services/systemes.ts` : catalogue, rattacher, créer et rattacher, gabarits ; la modification
-  d'un univers est dans `src/services/univers.ts` ; leurs routes sont `src/routes/systemes.ts`
-  (AD-83 à AD-85, AD-94). Écrans : E-14 (Paramètres), E-16 (Systèmes de jeu, `ecrans/systemes.tsx`), E-15 (Système de jeu, `/systemes/:sid`, `ecrans/systeme.tsx` ; l'ancienne adresse `/univers/:id/systeme` redirige par `ecrans/systeme-ancien.tsx`) et le bloc « Système de jeu » de E-3.
-- Administration d'instance : `src/services/instance.ts`, ses routes `src/routes/instance.ts`
-  (`/api/instance`, AD-86, AD-87) et l'écran E-5 (`frontend/src/ecrans/administration.tsx`).
+- `src/server.ts`, `src/app.ts`: startup and assembly of the Fastify app
+  (`buildApp`), the repository's only application; all future routes register
+  there.
+- `src/config/env.ts`: environment reading (zod); the only exception is `FRONTEND_DIR`, read by `src/routes/frontend.ts` (test setting).
+- `src/routes/health.ts`: `registerHealthRoutes`, `GET /healthz`.
+- `src/routes/auth.ts`, `src/services/oidc.ts`: OIDC login and callback; the callback opens the
+  session (`src/services/session.ts`, AD-56) and creates the account on first sign-in.
+- `src/routes/frontend.ts`: serves the frontend build (`FRONTEND_DIR`, `dist/public`) behind the session guard; `src/routes/erreurs.ts`: translates service errors into HTTP responses; `src/routes/pages.ts`: stub HTML pages.
+- `src/routes/bouchon.ts`: stub mode (AD-55), absent from the route table without `KANEVAS_STUB`.
+- `src/services/assistant/`: a role's tool catalogue (AD-74), the `AgentTransport` port and its
+  `bouchon` and `claude-agent` adapters (AD-73, AD-78), availability (AD-77) and
+  request orchestration (AD-75), the token (`jeton.ts`) and its connection session (`connexion-claude.ts`, AD-112; `scripts/faux-setup-token.mjs` in stub mode); `src/routes/assistant.ts`: the two routes. No SQL queries
+  in this module (AD-2, AD-27).
+- `src/db/`: opening the SQLite file, `migrations/0001-*.sql`, `0002-systemes.sql`, `0003-suivi.sql`, `0004-pieces-jointes.sql`, `0005-relier-chercher.sql`, `0006-illustrations.sql`, `0007-cartes.sql`, `0008-propositions.sql`, `0009-plafond-contenu.sql` (100,000 ceiling, AD-106), `0010-fil-contrat.sql` (tokens, batches, source keys, AD-103), `0011-contenu-public.sql` (`sections.contenu_public`, section index rebuilt, AD-114), `0012-liens.sql` (`liens` table, target indexes and `relations (cible_fiche_id)`, AD-116), `0013-types.sql` *(`kanevas-import-types`, AD-120; number 0013 assigned when the epic resumed, reassigned if another slice goes first (AD-51); rebuilding `fiches`)*, `0014-alias-etiquettes.sql` *(`kanevas-import-recherche`, AD-118; aliases, labels, title index rebuilt)*, `0015-mediatheque.sql` *(`kanevas-import-mediatheque`, AD-117; `fichiers`, `fichiers_sections`, `fiches.illustration_fichier_id`, migration of attachments and illustrations)*, `0016-import-suivi.sql` *(`kanevas-import-reprise`, AD-121; `cle_origine`, `dernier_import`, `version_importee` on campaigns and scenarios)*, runner (AD-14).
+- `src/e2e/`: end-to-end tests, real server in stub mode and driven browser (Playwright, skipped if missing); E-5: `administration*.test.ts`.
+- `src/services/`: `comptes`, `univers`, `membres`, `instance`, `fiches`, `sections`, `droits`, `systemes`, `relations`, `campagnes`, `scenarios`, `preparation`, `comptes_rendus`, `fichiers` (the media library: sole writer of `fichiers*`, except when deleting a universe: `univers.ts` deletes its rows), `fichiers-lecture` (reading files referenced by key, pending rendering), `cartes`, `propositions`, `types-fiche` *(AD-120)*, `markdown`, `liens`, `mentions`, `jetons`, `lots`, `import` (token context), `import-suivi` *(AD-121: imported campaigns and scenarios)*, `import-relations` *(AD-121: imported relations)*, `types` *(AD-120)*, `etiquettes` *(AD-118)*, `import-fiches`, `stockage` — the only
+  functions that read or write data (AD-2); `src/routes/`: thin `/api` routes; `univers.ts` and `instance.ts` carry universe and instance routes; `import.ts` (token-based import API, `/api/import/v1`) and `acces-api.ts` (E-18, session-based: `GET|POST /api/univers/:id/jetons`, `POST …/jetons/:jid/revoquer`, `GET …/lots`).
+- `frontend/`: React/Vite application (AD-57); `frontend/src/ui/tokens.css` and
+  `frontend/src/ui/`: tokens and components from `docs/charte.md`; its build is served by Fastify. The shell
+  (`Cadre.tsx`, `Barre.tsx`) is shared by all screens; `/demo-composants` (stub mode only, 404 otherwise) shows the components (AD-92 for fonts and icons).
+- `src/services/systemes.ts`: catalogue, attach, create and attach, templates; editing
+  a universe is in `src/services/univers.ts`; their routes are `src/routes/systemes.ts`
+  (AD-83 to AD-85, AD-94). Screens: E-14 (« Paramètres »), E-16 (« Systèmes de jeu », `ecrans/systemes.tsx`), E-15 (« Système de jeu », `/systemes/:sid`, `ecrans/systeme.tsx`; the old `/univers/:id/systeme` address redirects through `ecrans/systeme-ancien.tsx`) and the « Système de jeu » block of E-3.
+- Instance administration: `src/services/instance.ts`, its routes `src/routes/instance.ts`
+  (`/api/instance`, AD-86, AD-87) and screen E-5 (`frontend/src/ecrans/administration.tsx`).
 
-- `src/services/{campagnes,scenarios,preparation,comptes_rendus}.ts` et `src/routes/suivi.ts` : le suivi
-  (AD-29, AD-30, AD-33, AD-34, AD-46, AD-47, AD-60 à AD-62). Un compte-rendu est une fiche de type
-  `compte_rendu` ; scénarios et tâches se garde sur l'univers de la campagne, jamais sur un identifiant
-  d'univers fourni. Écrans : E-6 Campagne (+ liste), E-7 Scénario, E-13 Comptes-rendus, trois blocs de E-3
-  (campagnes actives, derniers comptes-rendus, préparation pour le MJ) et la ligne « Campagne » de E-9
-  (registre `fiche/lignes/`).
+- `src/services/{campagnes,scenarios,preparation,comptes_rendus}.ts` and `src/routes/suivi.ts`: tracking
+  (AD-29, AD-30, AD-33, AD-34, AD-46, AD-47, AD-60 to AD-62). A session report is a sheet of type
+  `compte_rendu`; scenarios and tasks are guarded on the campaign's universe, never on a supplied
+  universe id. Screens: E-6 « Campagne » (+ list), E-7 « Scénario », E-13 « Comptes-rendus », three E-3 blocks
+  (active campaigns, latest session reports, preparation for the GM) and the « Campagne » row of E-9
+  (`fiche/lignes/` registry).
 
-- Médiathèque (`kanevas-import-mediatheque`, AD-111, AD-117) : `src/services/stockage.ts` (écrire, lire, supprimer un fichier du volume),
-  `src/services/fichiers.ts` (`ajouterFichier`, `fichierLisible`, liste, panneau, impact, jointures, illustration ; seul écrivain de `fichiers*`)
-  et `src/routes/fichiers.ts`. Elle remplace `pieces-jointes.ts` et `illustrations.ts` (AD-65 à AD-67, AD-93 amendées). Écrans : E-19 `frontend/src/ecrans/mediatheque.tsx`,
-  bloc Pièces jointes, « Fichier » de l'éditeur et illustration de E-9, grille de E-8.
-- `src/bouchon/depart.ts` et `src/bouchon/demo/` : monde de démonstration semé en bouchon sur une base sans univers (par les fonctions de service) ; `KANEVAS_SANS_SEMIS=1` le coupe.
-- `kanevas-images` y ajoute `src/services/images/` (le port `GenerateurImage` et ses adaptateurs,
-  AD-88, AD-90), l'outil `generer_image` du catalogue MJ (AD-89) et le bloc « Image attachée » de E-12 ;
-  l'image Docker embarque `codex`.
-- `src/services/llm/` : transports LLM (`transport.ts`, `anthropic-transport.ts`,
-  `claude-agent-transport.ts`), repris d'Antre-du-maitre, branchés nulle part.
-- `kanevas-cartes-graphes` y ajoute `src/services/cartes.ts` (créer, lire sous les droits du lecteur, régler,
-  placer, retirer ; fond de carte par `stockage.ts`), ses routes `/api` (`src/routes/cartes.ts`) et les écrans E-10 et E-11
-  (`frontend/src/ecrans/cartes.tsx` et `carte.tsx` ; leurs composants et la disposition d'un graphe sont dans les dossiers
-  `ecrans/cartes/` et `ecrans/carte/`) ; AD-68 à AD-72.
-- `Dockerfile` (multi-stage, utilisateur `node`) et
-  `.github/workflows/docker-publish.yml` (vérifie l'attestation `tests-complets`, puis image GHCR : la CI ne joue aucun test).
+- Media library (`kanevas-import-mediatheque`, AD-111, AD-117): `src/services/stockage.ts` (write, read, delete a file on the volume),
+  `src/services/fichiers.ts` (`ajouterFichier`, `fichierLisible`, list, panel, impact, joins, illustration; sole writer of `fichiers*`)
+  and `src/routes/fichiers.ts`. It replaces `pieces-jointes.ts` and `illustrations.ts` (AD-65 to AD-67, AD-93 amended). Screens: E-19 `frontend/src/ecrans/mediatheque.tsx`,
+  « Pièces jointes » block, editor's « Fichier » and illustration of E-9, E-8 grid.
+- `src/bouchon/depart.ts` and `src/bouchon/demo/`: demonstration world seeded in stub mode into a database without universes (through service functions); `KANEVAS_SANS_SEMIS=1` disables it.
+- `kanevas-images` adds `src/services/images/` (the `GenerateurImage` port and its adapters,
+  AD-88, AD-90), the GM catalogue's `generer_image` tool (AD-89) and the « Image attachée » block of E-12;
+  the Docker image bundles `codex`.
+- `src/services/llm/`: LLM transports (`transport.ts`, `anthropic-transport.ts`,
+  `claude-agent-transport.ts`), reused from Antre-du-maitre, wired nowhere.
+- `kanevas-cartes-graphes` adds `src/services/cartes.ts` (create, read under the reader's permissions, configure,
+  place, remove; map background through `stockage.ts`), its `/api` routes (`src/routes/cartes.ts`) and screens E-10 and E-11
+  (`frontend/src/ecrans/cartes.tsx` and `carte.tsx`; their components and graph layout are in the
+  `ecrans/cartes/` and `ecrans/carte/` directories); AD-68 to AD-72.
+- `Dockerfile` (multi-stage, `node` user) and
+  `.github/workflows/docker-publish.yml` (checks the `tests-complets` attestation, then GHCR image: CI runs no tests).
 
-Volume `/data` : `kanevas.db` (SQLite, WAL), `session.key` (secret de session, 0600), `claude/oauth-token` (jeton de l'assistant posé depuis l'administration, 0600, AD-112 ; avec une base en mémoire, donc sans volume, il va sous le dossier temporaire et ne survit pas au redémarrage) et
-`attachments/` (les fichiers de la médiathèque, un par UUID, AD-65 ; `attachments/tmp/` pour les envois
-en cours, vidé au démarrage sauf avec une base en mémoire, où le dossier est partagé).
+Volume `/data`: `kanevas.db` (SQLite, WAL), `session.key` (session secret, 0600), `claude/oauth-token` (assistant token set through administration, 0600, AD-112; with an in-memory database, hence no volume, it goes under the temporary directory and does not survive a restart) and
+`attachments/` (media library files, one per UUID, AD-65; `attachments/tmp/` for uploads
+in progress, emptied at startup except with an in-memory database, where the directory is shared).
 
 ## Routes `/api`
 
-Toutes gardées par la session (401 sans session), sauf `/api/auth/*` et `/api/import/v1/*`, qui n'ouvre qu'avec un jeton Bearer (AD-103) et ignore le cookie. Les erreurs de service sont
-`introuvable` 404, `refuse` 403, `invalide` 400, `conflit` 409 (`section_modifiee`, `nom_pris`, `gabarit_modifie`, `scenario_modifie`, `proposition_appliquee`, `relation_existante`, `limite_relations`, `limite_pieces` : 100 fichiers joints par section (AD-111) — 409 pour un MJ, 403 `refuse` pour un autre membre (AD-117), `fiche_deja_placee` et `carte_pleine` des cartes ; 413 `fond_trop_lourd` pour un fond de plus de 25 Mo ; 400 `fichier_vide` pour une pièce vide (un fond de carte vide est un 400 `fond_invalide`) ; `auto_relation` est un 400 `invalide`). Retirer le dernier
-MJ répond `invalide` 400 avec la raison ; un contenu de section de plus de 100 000 caractères aussi (AD-91). Le corps d'une erreur de service est `{message}` (plus `code` quand le service en donne un) ; une adresse `/api/...` qu'aucune route ne porte (par exemple une route retirée par AD-94) répond 404 par la page HTML « Page introuvable. », pas par du JSON. Le serveur écoute sur `0.0.0.0` (`-p 3001:3001` suffit).
-En mode bouchon, `POST /connexion-bouchon` attend un corps form-urlencoded `compte=<identifiant>`.
-Les lignes qui citent AD-93 ou AD-94 sont celles de `kanevas-illustrations`, construites par elle ;
-elles remplacent les anciennes routes `GET /api/univers/:id/systeme` et `…/systeme/gabarits*`.
+All guarded by the session (401 without a session), except `/api/auth/*` and `/api/import/v1/*`, which opens only with a Bearer token (AD-103) and ignores the cookie. Service errors are
+`introuvable` 404, `refuse` 403, `invalide` 400, `conflit` 409 (`section_modifiee`, `nom_pris`, `gabarit_modifie`, `scenario_modifie`, `proposition_appliquee`, `relation_existante`, `limite_relations`, `limite_pieces`: 100 attached files per section (AD-111) — 409 for a GM, 403 `refuse` for another member (AD-117), `fiche_deja_placee` and `carte_pleine` for maps; 413 `fond_trop_lourd` for a background over 25 MB; 400 `fichier_vide` for an empty attachment (an empty map background is a 400 `fond_invalide`); `auto_relation` is a 400 `invalide`). Removing the last
+GM returns `invalide` 400 with the reason; so does section content over 100,000 characters (AD-91). A service error body is `{message}` (plus `code` when the service supplies one); an `/api/...` address with no matching route (for example a route removed by AD-94) returns 404 with the « Page introuvable. » HTML page, rather than JSON. The server listens on `0.0.0.0` (`-p 3001:3001` suffices).
+In stub mode, `POST /connexion-bouchon` expects a form-urlencoded body `compte=<identifiant>`.
+The rows citing AD-93 or AD-94 belong to `kanevas-illustrations`, built by that slice;
+they replace the old `GET /api/univers/:id/systeme` and `…/systeme/gabarits*` routes.
 
-| Route | Rôle |
+| Route | Role |
 |---|---|
-| `POST /api/apercu` | `{texte}` → `{html}` : le rendu Markdown d'un texte, sans rien lire ni écrire ; 400 au-delà de 100 000 caractères (AD-113). Contexte facultatif, à plat dans le corps ou sous `contexte` : `{nature: 'section', univers_id, mode}` (`mode` : `joueur` ou absent) ; avec `nature: 'section'`, `univers_id` entier requis (400 sinon), univers inconnu ou compte non membre : 404, et le bloc MJ n'est rendu qu'à un MJ hors `mode: 'joueur'` (AD-114) |
-| `GET /api/moi`, `POST /api/auth/logout` | identité, groupes et limites (`limites.contenuSection`, AD-91) du compte ; fin de session |
-| `GET /api/auth/config`, `GET /api/auth/oidc/login`, `.../callback` | OIDC (publiques) |
-| `GET\|POST /api/univers`, `GET /api/univers/:id` | univers du compte (avec son rôle, `systeme: {id, nom}` ou `null` (AD-94) et, dans la liste, `nbMembres` pour les cartes de E-1) ; création |
-| `PATCH /api/univers/:id` | nom et description (MJ) |
-| `DELETE /api/univers/:id` | *(AD-119, `kanevas-import-tenir`)* supprimer l'univers (MJ, hors mode Joueur) : corps `{nom}` à la lettre près, sinon 400 `nom_different` ; 204 |
-| `GET /api/univers/:id/types` | *(`kanevas-import-types`, AD-120)* la liste du produit lue pour cet univers, dans l'ordre de la liste, `compte_rendu` compris : `[{type, slug, singulier, pluriel, nouveau, aucun, icone, reglable, active, origine, forcage}]` (`origine` : `univers`, `systeme` ou `defaut` — qui a décidé ; `forcage` : `active`, `desactive` ou `null`) ; le MJ y trouve aussi `systeme` (`true` ou `false` : la décision du système ; `null` : pas de système, ou le système n'a aucune ligne pour ce type — ne pas s'en servir pour savoir si l'univers a un système) et `nbFiches` (toutes les fiches du type, qu'il lit toutes) ; tout membre |
-| `PUT /api/univers/:id/types/:type` | *(AD-120)* `{etat}` : `active`, `desactive` ou `suivre` ; rend la ligne comme ci-dessus (MJ ; 400 `type_inconnu` ou `type_non_reglable` pour `compte_rendu`) |
-| `GET /api/univers/:id/sous-types?type=` | *(AD-110, AD-120)* `[{sousType, nb}]`, par ordre alphabétique sans casse : les sous-types des fiches **du type que l'appelant lit** (le MJ, hors mode Joueur, les lit toutes) ; sert le filtre de E-8 et la complétion de E-9 (`?mode=joueur` lit en Joueur) ; tout membre |
-| `GET /api/systemes` | les systèmes rattachés à un univers dont le compte est membre, par nom : `[{id, nom, nbUnivers, entrees: {regle, creature, objet}, mesUnivers: [{id, nom, role}], peutEcrire}]` — jamais un univers dont le compte n'est pas membre (AD-84, AD-94) |
-| `GET /api/systemes/catalogue`, `POST /api/systemes` | catalogue (couples id, nom), lu par un MJ d'au moins un univers (E-14) ; création d'un système |
-| `GET /api/systemes/:sid` (`:sid` entier ; `?type` = `regle` (défaut de l'API ; l'écran demande `creature`), `creature` ou `objet`, sinon 400 ; `?curseur`) | le système, `nbUnivers`, `mesUnivers`, `peutEcrire`, et `gabarits` (les entrées du type, 100 à la fois) avec `suivant` (curseur de la page suivante ou null) ; 404 identique à un identifiant inconnu s'il n'est rattaché à aucun univers du compte (AD-94) |
-| `POST /api/systemes/:sid/gabarits`, `PUT /api/systemes/:sid/gabarits/:gabaritId` | ajouter, modifier avec la version lue (AD-85) : MJ d'au moins un univers rattaché ; 403 pour qui lit sans être MJ ; 404 pour qui ne le voit pas |
-| `PUT /api/systemes/:sid/types/:type` | *(AD-120)* `{active}` : active ou désactive le type pour le système ; même droit que les gabarits (MJ d'au moins un univers rattaché ; 403 pour qui lit sans être MJ ; 404 pour qui ne le voit pas) ; `GET /api/systemes/:sid` porte en plus `types: [{type, active}]` |
-| `PUT /api/univers/:id/systeme`, `POST /api/univers/:id/systeme-nouveau` | rattacher (`{systemeId}` ou `null` pour détacher ; 204 sans corps), créer et rattacher (201) (MJ) |
-| `GET\|POST /api/univers/:id/membres`, `PATCH\|DELETE .../membres/:compteId` | membres (MJ) |
-| `GET /api/instance/univers`, `GET\|POST /api/instance/univers/:id/membres`, `PATCH\|DELETE .../membres/:compteId` | admin d'instance (groupe `parents`, AD-86, AD-87) : `{id, nom, nbMembres}` ; membres d'un univers, ajout (201), rôle, retrait (204) ; hors du groupe, 404 comme une adresse inconnue |
-| `GET /api/instance/assistant/jeton`, `POST /api/instance/assistant/jeton/connexion`, `POST …/jeton/code`, `DELETE …/jeton/connexion` | *(kanevas-import, AD-112)* admin d'instance seul (404 sinon) : état du jeton de l'assistant (`pose`, `poseLe`, `source`, `assistant` = la disponibilité d'AD-77, jamais la valeur), ouverture de la connexion (`connexionId`, adresse, `expireLe`), code (`{connexionId, code}` ; 200, 400 `connexion_echouee`, 410 `connexion_expiree`), annulation (204) |
-| `GET\|POST /api/univers/:id/fiches` (`?type`, `?q`, `?curseur`) | liste paginée (100), `q` (vide ou plus de 100 caractères : 400 ; sans lettre ni chiffre : liste vide) cherche dans le type, ou dans tous les types sans `?type` (AD-63, AD-101) ; `?etiquette=` filtre par étiquette, `?mode=joueur` lit en Joueur (AD-118) ; création (MJ) |
-| `PUT .../fiches/:fid/etiquetage`, `GET /api/univers/:id/etiquettes` | alias et étiquettes d'une fiche remplacés d'un bloc `{alias, etiquettes}` (MJ hors mode Joueur) ; étiquettes proposées `[{nom}]` (fiches lisibles seulement), `?mode=joueur` aux deux (AD-118) |
-| `GET .../fiches/:fid` | fiche et sections lisibles ; `?mode=joueur` lit en Joueur ; 404 si aucune section n'est lisible (l'écran le traduit en « Aucune section n'est visible des joueurs. ») |
-| `GET .../fiches?type=T&parent=racine\|<fid>` | *(AD-115, `kanevas-import-arbre`)* l'arbre d'un type : `type` est obligatoire avec `parent` ; `racine` rend les fiches du type que le compte lit dont le parent est nul, illisible ou d'un autre type, `<fid>` les enfants **du même type** de cette fiche que le compte lit (404 si `<fid>` est illisible) ; même page de 100 et même curseur que la liste ; chaque fiche porte en plus `aDesEnfants` (un enfant du même type lisible existe) et `dans: {id, titre}` ou `null` (son parent, quand il est lisible et d'un autre type) ; sans `parent`, ces deux champs ne sont pas rendus |
-| `GET .../fiches/:fid/enfants` (`?curseur`) | *(AD-115)* « Contient » : les enfants que le compte lit, tous types, par type (ordre de la liste du produit) puis titre ; 50 par page, `{enfants: [{id, titre, type, sousType}], suivant}` ; 404 si la fiche est illisible ; jamais de compteur de ce qui est caché |
-| `PATCH .../fiches/:fid`, `POST .../fiches/:fid/type` | *(AD-120)* `PATCH` `{titre}` (1 à 120 caractères, AD-119 ; MJ hors mode Joueur), `{sousType}` (texte de 1 à 60 caractères, ou `null` pour l'ôter) et/ou `{parent}` (id d'une fiche ou `null`, AD-115 ; 200 avec la fiche) ; une clé inconnue, ou aucune des trois : 400) ; `POST …/type` `{type, pj?, sousType?}` change le type (MJ ; 400 `meme_type`, `type_inconnu`, `type_non_reglable` — un compte-rendu ne change ni ne devient pas de type) |
-| `GET .../fiches/:fid/mentions?apres=<n>` | *(kanevas-import-liens, AD-100, AD-116)* les 50 fiches suivantes qui citent la fiche, lisibles du lecteur : `{mentions: [{ficheId, titre, type, pourquoi: [{genre: 'lien', section} \| {genre: 'relation', libelle}]}], suite, restantes}` ; la première page voyage avec `GET .../fiches/:fid` (`mentions`, `mentionsSuite`, `mentionsRestantes` : le N de « Afficher les N suivants ») ; `?mode=joueur` lit en Joueur ; 404 comme la fiche |
-| `POST .../fiches/:fid/sections`, `PUT .../fiches/:fid/ordre` | ajouter, ordonner (MJ) |
-| `DELETE .../fiches/:fid`, `GET .../fiches/:fid/suppression` | *(AD-119)* supprimer la fiche (MJ hors mode Joueur ; 204) ; le bilan que la boîte de E-9 compte avant de supprimer |
-| `GET\|PATCH\|DELETE .../sections/:sid` | lire ; titre et audience (MJ) ; retirer (MJ) |
-| `GET\|POST .../sections/:sid/relations`, `DELETE /api/univers/:id/fiches/relations/:rid` (sans `:fid`) | relations lisibles de la section `{relations: [{id, type, cible: {id, titre, type}}]}` (AD-64) ; relier `{cibleFicheId, type}` (201 ; `type` est le libellé libre de la relation, 1 à 80 caractères, `cible.type` est le type de fiche) et retirer (204), MJ seul, 404 pour un joueur |
-| `POST .../fichiers` | *(AD-117)* ajouter à la médiathèque (multipart, un fichier ; les champs `section`, `maniere` (`joint`\|`texte`), `blocMj`, `fiche` **avant** le champ `fichier`) ; la visibilité n'est jamais lue du client, elle se déduit de l'endroit ; 201 |
-| `GET .../fichiers` | liste lisible de l'appelant ; `nature`, `visibilite`, `usage`, `q`, `tri`, `apres` |
-| `GET .../fichiers/:fid/detail`, `GET .../fichiers/:fid/impact?action=reserver` ou `…=supprimer` (400 sinon) | panneau (usages lisibles, `apresUsage`) ; ce que le MJ perd en réservant ou supprimant, sous les droits réels |
-| `GET .../fichiers/:fid` (`?v=`) | les octets, seule route des octets, droits réels (pas de mode) ; 404 identique à une adresse inconnue |
-| `PATCH\|DELETE .../fichiers/:fid` | renommer ou changer la visibilité `{nom, visibilite}` (MJ) ; supprimer (204, MJ) |
-| `POST .../sections/:sid/fichiers`, `DELETE .../sections/:sid/fichiers/:fichierId` | joindre `{fichierId}` (201 ; 100 au plus, `limite_pieces`), ôter la référence (204) |
-| `PUT\|DELETE .../fiches/:fid/illustration` | poser (MJ) : soit `{fichierId}` (une image de la médiathèque ; 400 `pas_une_image`), soit multipart (une partie `fichier`, ajoutée à la médiathèque, `fichier_vide`) ; retirer (204). Les octets se lisent par `GET .../fichiers/:fid?v=<jeton>` ; la liste et la fiche rendent `illustration: null` ou `{id, jeton}` (`type` et `taille` ne sortent que dans la réponse du `PUT`) (AD-93 amendée, AD-117) |
-| `PUT /api/univers/:id/fiches/:fid/sections/:sid/contenu` | écrire `{contenu, version}` ; 400 si contenu > 100 000 caractères (contrôlé après les droits, avant la version) ; 409 si `version` périmée |
-| `GET\|POST /api/univers/:id/campagnes`, `GET .../campagnes/:cid` | liste (actives, en préparation, terminées, chacune par nom) et lecture (tout membre) ; création `{nom}` (MJ) |
-| `PATCH /api/campagnes/:cid` | `{statut}` (`en_preparation`, `active`, `terminee`) (MJ de l'univers de la campagne) |
-| `GET\|POST /api/campagnes/:cid/scenarios`, `GET\|PUT /api/scenarios/:sid` | scénarios `{titre, contenu?}` ; écriture `{titre, contenu, version}`, 409 `scenario_modifie` si périmée (AD-62). MJ seul, 404 pour tout autre (AD-22, AD-47) |
-| `GET\|POST /api/campagnes/:cid/taches`, `PUT /api/taches/:tid` | préparation `{categorie, libelle}` ; cocher `{faite}`. MJ seul, 404 pour tout autre |
-| `GET /api/univers/:id/propositions/:pid` | la proposition de l'appelant : `{id, universId, sectionId, ficheId, crId, contenuActuel, contenuPropose, versionOrigine, etat, creeLe, appliqueeLe}` ; `etat` : `en_attente`, `perimee` ou `appliquee` (AD-81). Demandeur MJ seul, 404 pour tout autre (AD-79) |
-| `POST /api/univers/:id/propositions/:pid/appliquer`, `.../abandonner` | appliquer rend la même vue que le `GET` (200) ; 409 `section_modifiee` ou `proposition_appliquee`, rien n'est écrit. Abandonner rend 204 (409 si appliquée). Aucune route de création : la proposition naît de l'outil de l'assistant (AD-48) |
-| `GET /api/univers/:id/assistant`, `POST .../assistant/messages` | disponibilité et envoi d'un message (détail ci-dessous, AD-73 à AD-78) |
-| `POST /api/univers/:id/comptes-rendus` | `{campagneId, titre, texte?}` ; tout membre (AD-61) ; rend la fiche |
-| `GET .../comptes-rendus` (`?campagne`, `?curseur`), `GET .../campagnes/:cid/comptes-rendus` | comptes-rendus lisibles, du plus récent, 100 au plus par page et `suivant` ; `?mode=joueur` |
-| `GET\|POST /api/univers/:id/cartes` | liste des cartes lisibles (`?curseur`) ; création `{titre, forme}` (`forme` obligatoire en JSON ; le défaut « illustrée » est celui du formulaire et de la voie multipart ; `illustree` \| `graphe`), ou multipart avec `titre` et `forme` **avant** `fichier` (fond d'une carte illustrée). MJ hors mode Joueur seul (AD-72) |
-| `GET\|PATCH /api/univers/:id/cartes/:cid` | `lireCarte` : carte, éléments et liens déjà filtrés (AD-68) ; `?mode=joueur` lit en Joueur (403 `mode_joueur` pour le MJ si la carte n'est pas visible) ; règle `{titre?, visible?}` |
-| `PUT\|GET /api/univers/:id/cartes/:cid/fond` | remplacer le fond (multipart, champ `fichier`, image de 25 Mo au plus, AD-69) ; le lire (droit réel du compte, sans mode) |
-| `POST /api/univers/:id/cartes/:cid/elements`, `PATCH\|DELETE …/elements/:eid` | placer `{ficheId, x, y}` (`x` et `y` obligatoires sur une carte illustrée, de 0 à 100 — hors bornes, ramenés au bord —, interdits sur un graphe : `{ficheId}` seul) ; déplacer `{x, y}` ; retirer (204, la fiche reste) |
+| `POST /api/apercu` | `{texte}` → `{html}`: Markdown rendering of a text, without reading or writing anything; 400 above 100,000 characters (AD-113). Optional context, flat in the body or under `contexte`: `{nature: 'section', univers_id, mode}` (`mode`: `joueur` or absent); with `nature: 'section'`, integer `univers_id` required (400 otherwise), unknown universe or non-member account: 404, and the GM block is rendered only for a GM outside `mode: 'joueur'` (AD-114) |
+| `GET /api/moi`, `POST /api/auth/logout` | account identity, groups and limits (`limites.contenuSection`, AD-91); end session |
+| `GET /api/auth/config`, `GET /api/auth/oidc/login`, `.../callback` | OIDC (public) |
+| `GET\|POST /api/univers`, `GET /api/univers/:id` | account's universes (with its role, `systeme: {id, nom}` or `null` (AD-94) and, in the list, `nbMembres` for the E-1 cards); creation |
+| `PATCH /api/univers/:id` | name and description (GM) |
+| `DELETE /api/univers/:id` | *(AD-119, `kanevas-import-tenir`)* delete the universe (GM, outside Player mode): body `{nom}` matched exactly, otherwise 400 `nom_different`; 204 |
+| `GET /api/univers/:id/types` | *(`kanevas-import-types`, AD-120)* product list read for this universe, in list order, including `compte_rendu`: `[{type, slug, singulier, pluriel, nouveau, aucun, icone, reglable, active, origine, forcage}]` (`origine`: `univers`, `systeme` or `defaut` — who decided; `forcage`: `active`, `desactive` or `null`); the GM also gets `systeme` (`true` or `false`: the system's decision; `null`: no system, or the system has no row for this type — do not use it to tell whether the universe has a system) and `nbFiches` (all sheets of the type, which the GM can all read); any member |
+| `PUT /api/univers/:id/types/:type` | *(AD-120)* `{etat}`: `active`, `desactive` or `suivre`; returns the row as above (GM; 400 `type_inconnu` or `type_non_reglable` for `compte_rendu`) |
+| `GET /api/univers/:id/sous-types?type=` | *(AD-110, AD-120)* `[{sousType, nb}]`, case-insensitive alphabetical order: subtypes of sheets **of the type that the caller reads** (the GM, outside Player mode, reads them all); serves the E-8 filter and E-9 completion (`?mode=joueur` reads as a Player); any member |
+| `GET /api/systemes` | systems attached to a universe of which the account is a member, by name: `[{id, nom, nbUnivers, entrees: {regle, creature, objet}, mesUnivers: [{id, nom, role}], peutEcrire}]` — never a universe of which the account is not a member (AD-84, AD-94) |
+| `GET /api/systemes/catalogue`, `POST /api/systemes` | catalogue (id, name pairs), read by a GM of at least one universe (E-14); system creation |
+| `GET /api/systemes/:sid` (`:sid` integer; `?type` = `regle` (API default; the screen requests `creature`), `creature` or `objet`, otherwise 400; `?curseur`) | the system, `nbUnivers`, `mesUnivers`, `peutEcrire`, and `gabarits` (entries of the type, 100 at a time) with `suivant` (next-page cursor or null); same 404 as an unknown id if not attached to any of the account's universes (AD-94) |
+| `POST /api/systemes/:sid/gabarits`, `PUT /api/systemes/:sid/gabarits/:gabaritId` | add, edit with the version read (AD-85): GM of at least one attached universe; 403 for a reader who is not a GM; 404 for someone who cannot see it |
+| `PUT /api/systemes/:sid/types/:type` | *(AD-120)* `{active}`: enables or disables the type for the system; same permission as templates (GM of at least one attached universe; 403 for a reader who is not a GM; 404 for someone who cannot see it); `GET /api/systemes/:sid` additionally carries `types: [{type, active}]` |
+| `PUT /api/univers/:id/systeme`, `POST /api/univers/:id/systeme-nouveau` | attach (`{systemeId}` or `null` to detach; 204 without a body), create and attach (201) (GM) |
+| `GET\|POST /api/univers/:id/membres`, `PATCH\|DELETE .../membres/:compteId` | members (GM) |
+| `GET /api/instance/univers`, `GET\|POST /api/instance/univers/:id/membres`, `PATCH\|DELETE .../membres/:compteId` | instance admin (`parents` group, AD-86, AD-87): `{id, nom, nbMembres}`; universe members, add (201), role, remove (204); outside the group, 404 like an unknown address |
+| `GET /api/instance/assistant/jeton`, `POST /api/instance/assistant/jeton/connexion`, `POST …/jeton/code`, `DELETE …/jeton/connexion` | *(kanevas-import, AD-112)* instance admin only (404 otherwise): assistant token state (`pose`, `poseLe`, `source`, `assistant` = AD-77 availability, never the value), start connection (`connexionId`, address, `expireLe`), code (`{connexionId, code}`; 200, 400 `connexion_echouee`, 410 `connexion_expiree`), cancel (204) |
+| `GET\|POST /api/univers/:id/fiches` (`?type`, `?q`, `?curseur`) | paginated list (100), `q` (empty or over 100 characters: 400; without letters or digits: empty list) searches within the type, or across all types without `?type` (AD-63, AD-101); `?etiquette=` filters by label, `?mode=joueur` reads as a Player (AD-118); creation (GM) |
+| `PUT .../fiches/:fid/etiquetage`, `GET /api/univers/:id/etiquettes` | a sheet's aliases and labels replaced together `{alias, etiquettes}` (GM outside Player mode); suggested labels `[{nom}]` (readable sheets only), `?mode=joueur` on both (AD-118) |
+| `GET .../fiches/:fid` | readable sheet and sections; `?mode=joueur` reads as a Player; 404 if no section is readable (the screen translates it to « Aucune section n'est visible des joueurs. ») |
+| `GET .../fiches?type=T&parent=racine\|<fid>` | *(AD-115, `kanevas-import-arbre`)* tree of a type: `type` is required with `parent`; `racine` returns sheets of the type the account reads whose parent is null, unreadable or of another type, `<fid>` the **same-type** children of that sheet the account reads (404 if `<fid>` is unreadable); same page of 100 and same cursor as the list; each sheet additionally carries `aDesEnfants` (a readable same-type child exists) and « `dans: {id, titre}` » or `null` (its parent, when readable and of another type); without `parent`, these two fields are not returned |
+| `GET .../fiches/:fid/enfants` (`?curseur`) | *(AD-115)* « Contient »: children the account reads, all types, by type (product list order) then title; 50 per page, `{enfants: [{id, titre, type, sousType}], suivant}`; 404 if the sheet is unreadable; never a count of what is hidden |
+| `PATCH .../fiches/:fid`, `POST .../fiches/:fid/type` | *(AD-120)* `PATCH` `{titre}` (1 to 120 characters, AD-119; GM outside Player mode), `{sousType}` (text of 1 to 60 characters, or `null` to remove it) and/or `{parent}` (sheet id or `null`, AD-115; 200 with the sheet); an unknown key, or none of the three: 400); `POST …/type` `{type, pj?, sousType?}` changes the type (GM; 400 `meme_type`, `type_inconnu`, `type_non_reglable` — a session report neither changes type nor becomes the destination type) |
+| `GET .../fiches/:fid/mentions?apres=<n>` | *(kanevas-import-liens, AD-100, AD-116)* next 50 sheets mentioning the sheet, readable by the reader: `{mentions: [{ficheId, titre, type, pourquoi: [{genre: 'lien', section} \| {genre: 'relation', libelle}]}], suite, restantes}`; the first page travels with `GET .../fiches/:fid` (`mentions`, `mentionsSuite`, `mentionsRestantes`: the N in « Afficher les N suivants »); `?mode=joueur` reads as a Player; same 404 as the sheet |
+| `POST .../fiches/:fid/sections`, `PUT .../fiches/:fid/ordre` | add, order (GM) |
+| `DELETE .../fiches/:fid`, `GET .../fiches/:fid/suppression` | *(AD-119)* delete the sheet (GM outside Player mode; 204); impact summary counted by the E-9 dialog before deletion |
+| `GET\|PATCH\|DELETE .../sections/:sid` | read; title and audience (GM); remove (GM) |
+| `GET\|POST .../sections/:sid/relations`, `DELETE /api/univers/:id/fiches/relations/:rid` (without `:fid`) | readable relations of the section `{relations: [{id, type, cible: {id, titre, type}}]}` (AD-64); link `{cibleFicheId, type}` (201; `type` is the relation's free-text label, 1 to 80 characters, `cible.type` is the sheet type) and remove (204), GM only, 404 for a player |
+| `POST .../fichiers` | *(AD-117)* add to the media library (multipart, one file; fields `section`, `maniere` (`joint`\|`texte`), `blocMj`, `fiche` **before** the `fichier` field); visibility is never read from the client, it is deduced from the location; 201 |
+| `GET .../fichiers` | caller's readable list; `nature`, `visibilite`, `usage`, `q`, `tri`, `apres` |
+| `GET .../fichiers/:fid/detail`, `GET .../fichiers/:fid/impact?action=reserver` or `…=supprimer` (400 otherwise) | panel (readable usages, `apresUsage`); what the GM loses by reserving or deleting, under actual permissions |
+| `GET .../fichiers/:fid` (`?v=`) | bytes, sole bytes route, actual permissions (no mode); same 404 as an unknown address |
+| `PATCH\|DELETE .../fichiers/:fid` | rename or change visibility `{nom, visibilite}` (GM); delete (204, GM) |
+| `POST .../sections/:sid/fichiers`, `DELETE .../sections/:sid/fichiers/:fichierId` | attach `{fichierId}` (201; at most 100, `limite_pieces`), remove reference (204) |
+| `PUT\|DELETE .../fiches/:fid/illustration` | set (GM): either `{fichierId}` (a media library image; 400 `pas_une_image`), or multipart (one `fichier` part, added to the media library, `fichier_vide`); remove (204). Bytes are read through `GET .../fichiers/:fid?v=<jeton>`; the list and sheet return `illustration: null` or `{id, jeton}` (`type` and `taille` appear only in the `PUT` response) (AD-93 amended, AD-117) |
+| `PUT /api/univers/:id/fiches/:fid/sections/:sid/contenu` | write `{contenu, version}`; 400 if content > 100,000 characters (checked after permissions, before version); 409 if `version` is stale |
+| `GET\|POST /api/univers/:id/campagnes`, `GET .../campagnes/:cid` | list (active, in preparation, finished, each by name) and read (any member); create `{nom}` (GM) |
+| `PATCH /api/campagnes/:cid` | `{statut}` (`en_preparation`, `active`, `terminee`) (GM of the campaign's universe) |
+| `GET\|POST /api/campagnes/:cid/scenarios`, `GET\|PUT /api/scenarios/:sid` | scenarios `{titre, contenu?}`; write `{titre, contenu, version}`, 409 `scenario_modifie` if stale (AD-62). GM only, 404 for anyone else (AD-22, AD-47) |
+| `GET\|POST /api/campagnes/:cid/taches`, `PUT /api/taches/:tid` | preparation `{categorie, libelle}`; check `{faite}`. GM only, 404 for anyone else |
+| `GET /api/univers/:id/propositions/:pid` | caller's proposal: `{id, universId, sectionId, ficheId, crId, contenuActuel, contenuPropose, versionOrigine, etat, creeLe, appliqueeLe}`; `etat`: `en_attente`, `perimee` or `appliquee` (AD-81). Requesting GM only, 404 for anyone else (AD-79) |
+| `POST /api/univers/:id/propositions/:pid/appliquer`, `.../abandonner` | apply returns the same view as `GET` (200); 409 `section_modifiee` or `proposition_appliquee`, nothing written. Abandon returns 204 (409 if applied). No creation route: the proposal originates from the assistant tool (AD-48) |
+| `GET /api/univers/:id/assistant`, `POST .../assistant/messages` | availability and message submission (details below, AD-73 to AD-78) |
+| `POST /api/univers/:id/comptes-rendus` | `{campagneId, titre, texte?}`; any member (AD-61); returns the sheet |
+| `GET .../comptes-rendus` (`?campagne`, `?curseur`), `GET .../campagnes/:cid/comptes-rendus` | readable session reports, newest first, at most 100 per page and `suivant`; `?mode=joueur` |
+| `GET\|POST /api/univers/:id/cartes` | list of readable maps (`?curseur`); create `{titre, forme}` (`forme` required in JSON; the « illustrée » default belongs to the form and multipart path; `illustree` \| `graphe`), or multipart with `titre` and `forme` **before** `fichier` (background of an illustrated map). GM outside Player mode only (AD-72) |
+| `GET\|PATCH /api/univers/:id/cartes/:cid` | `lireCarte`: map, elements and links already filtered (AD-68); `?mode=joueur` reads as a Player (403 `mode_joueur` for the GM if the map is not visible); configure `{titre?, visible?}` |
+| `PUT\|GET /api/univers/:id/cartes/:cid/fond` | replace background (multipart, `fichier` field, image of at most 25 MB, AD-69); read it (account's actual permission, no mode) |
+| `POST /api/univers/:id/cartes/:cid/elements`, `PATCH\|DELETE …/elements/:eid` | place `{ficheId, x, y}` (`x` and `y` required on an illustrated map, from 0 to 100 — out-of-bounds values clamped to the edge —, forbidden on a graph: `{ficheId}` only); move `{x, y}`; remove (204, the sheet stays) |
 
-Corps de requête (JSON) : `POST /api/univers` `{nom, description?}` ; `POST .../membres`
-`{username, role}` (`role` : `mj` \| `joueur` ; `username` est l'identifiant exact) ; `PATCH
-.../membres/:compteId` `{role}` ; `POST .../fiches` `{type, titre, charge?}` (`charge` : objet, optionnel sauf si le type l'exige — `personnage` veut `{"pj": bool}`, `compte_rendu` un `campagne_id` ; formes dans `docs/donnees.md`) ;
-`POST .../sections` `{titre, contenu?}` (`contenu` : texte, même plafond ; l'écran n'envoie que `titre`) ; `PUT .../ordre` `{ids}` (tous les identifiants de section de la fiche) ;
+Request bodies (JSON): `POST /api/univers` `{nom, description?}`; `POST .../membres`
+`{username, role}` (`role`: `mj` \| `joueur`; `username` is the exact identifier); `PATCH
+.../membres/:compteId` `{role}`; `POST .../fiches` `{type, titre, charge?}` (`charge`: object, optional unless the type requires it — `personnage` needs `{"pj": bool}`, `compte_rendu` a `campagne_id`; shapes in `docs/donnees.md`);
+`POST .../sections` `{titre, contenu?}` (`contenu`: text, same ceiling; the screen sends only `titre`); `PUT .../ordre` `{ids}` (all the sheet's section ids);
 `PATCH .../sections/:sid` `{titre?, joueursLisent?, joueursEcrivent?, auteurLit?, auteurEcrit?,
-auteurId?}` — `auteurId` est l'**identifiant numérique du compte** (`compteId` des membres), `null` pour
-aucun auteur ; `PUT .../contenu` `{contenu, version}`. Les noms de l'API sont en camelCase, ceux de la
-base en snake_case (`docs/donnees.md`).
+auteurId?}` — `auteurId` is the **numeric account id** (members' `compteId`), `null` for
+no author; `PUT .../contenu` `{contenu, version}`. API names use camelCase, database names
+snake_case (`docs/donnees.md`).
 
 ## Invariants
 
