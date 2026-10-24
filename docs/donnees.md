@@ -345,153 +345,153 @@ its sections). The `tmp/` directory is emptied at startup, as for attachments.
 - **Invisible sheet**: its illustration does not exist for the account (same response as for an
   unknown identifier, AD-22, AD-67).
 
-## Cadrage `kanevas-import` : le modèle
+## `kanevas-import` scope: the model
 
-> Proposé le 2026-10-11 (`epic/kanevas-import`). Décisions : AD-95 à AD-111. Huit entités nouvelles —
-> lien, alias, étiquette, réglage de type, jeton d'API, lot d'import, fichier (médiathèque) et référence
-> de fichier — et des attributs sur fiche,
-> section, campagne, scénario (la pièce jointe devient une référence de fichier) ; la médiathèque est une décision de Monsieur du 2026-10-11. Les tranches de l'epic ajouteront des attributs,
-> jamais une entité. Numéros de migration : pris à la fusion (AD-51) ; les noms ci-dessous sont
-> provisoires.
+> Proposed on 2026-10-11 (`epic/kanevas-import`). Decisions: AD-95 to AD-111. Eight new entities —
+> link, alias, label, type setting, API token, import batch, file (media library) and file
+> reference — and attributes on sheet,
+> section, campaign, scenario (the attachment becomes a file reference); the media library is a decision by Monsieur on 2026-10-11. The epic's slices will add attributes,
+> never an entity. Migration numbers: assigned at merge (AD-51); names below are
+> provisional.
 
-### Conceptuel
+### Conceptual
 
 ```mermaid
 erDiagram
-  UNIVERS ||--o{ FICHE : "contient"
-  FICHE |o--o{ FICHE : "parent de"
-  FICHE ||--o{ ALIAS : "porte"
-  UNIVERS ||--o{ ETIQUETTE : "a"
-  FICHE }o--o{ ETIQUETTE : "porte"
-  FICHE ||--o{ SECTION : "a"
-  SECTION ||--o{ LIEN : "contient"
-  LIEN }o--o| FICHE : "vise"
-  SYSTEME ||--o{ REGLAGE_TYPE_SYSTEME : "active"
-  UNIVERS ||--o{ REGLAGE_TYPE_UNIVERS : "force"
-  UNIVERS ||--o{ JETON : "a"
-  COMPTE ||--o{ JETON : "agit par"
-  JETON ||--o{ LOT : "ouvre"
-  UNIVERS ||--o{ FICHIER : "médiathèque"
-  SECTION }o--o{ FICHIER : "référence (texte, joint)"
+  UNIVERS ||--o{ FICHE : "contains"
+  FICHE |o--o{ FICHE : "parent of"
+  FICHE ||--o{ ALIAS : "carries"
+  UNIVERS ||--o{ ETIQUETTE : "has"
+  FICHE }o--o{ ETIQUETTE : "carries"
+  FICHE ||--o{ SECTION : "has"
+  SECTION ||--o{ LIEN : "contains"
+  LIEN }o--o| FICHE : "targets"
+  SYSTEME ||--o{ REGLAGE_TYPE_SYSTEME : "enables"
+  UNIVERS ||--o{ REGLAGE_TYPE_UNIVERS : "overrides"
+  UNIVERS ||--o{ JETON : "has"
+  COMPTE ||--o{ JETON : "acts through"
+  JETON ||--o{ LOT : "opens"
+  UNIVERS ||--o{ FICHIER : "media library"
+  SECTION }o--o{ FICHIER : "references (text, attached)"
   FICHE }o--o| FICHIER : "illustration"
 ```
 
-Invariants, en phrases :
-1. Le parent d'une fiche est une autre fiche **du même univers**, et une fiche n'est jamais son
-   propre ancêtre (pas de cycle).
-2. Une **clé d'origine** désigne au plus une fiche par univers, au plus une section par fiche, au plus
-   un fichier par univers, une campagne par univers, un scénario par campagne.
-3. Un identifiant de fiche n'est **jamais réemployé** : un lien `[[42|…]]` vers une fiche supprimée
-   reste cassé, il ne vise jamais une autre fiche.
-4. Un lien vise une fiche, ou attend une clé d'origine, ou est cassé — jamais deux à la fois.
-5. Un type de fiche appartient à la liste du produit ; un réglage de type n'existe que pour un type
-   de cette liste, au plus un par (système, type) et par (univers, type).
-6. Une étiquette porte un nom unique dans son univers, sans tenir compte de la casse ; un alias est
-   unique par fiche, de même.
-7. Un jeton appartient à un univers et à un compte qui y était MJ à sa création ; sa valeur n'est
-   jamais stockée, seule son empreinte, unique.
-8. Le contenu public d'une section est son contenu **sans ses blocs MJ** ; il est toujours celui du
-   contenu courant.
-9. Une section qui contient un bloc MJ n'est écrite que par un MJ.
-10. Supprimer une fiche ne laisse aucune ligne qui la vise : ses sections (et ce qu'elles portent),
-    les relations et éléments de carte qui la visent partent ; ses enfants remontent sous son parent ;
-    les liens qui la visent deviennent cassés.
-11. Supprimer un univers ne laisse aucune ligne qui le vise (le système de jeu n'est pas à lui).
-12. Un import n'écrase jamais un champ qu'un humain a modifié dans Kanevas depuis le dernier import :
-    la fiche, la section, la campagne, le scénario et le fichier savent ce que le dernier import a écrit
-    (B-48) ; une visibilité de fichier changée dans Kanevas n'est jamais rétablie par un rejeu.
-    Un champ que l'import n'a pas pu écrire (parent absent ou qui ferait un cycle, fichier pas encore
-    envoyé) est **en attente**, jamais une modification humaine.
+Invariants, in sentences:
+1. A sheet's parent is another sheet **in the same universe**, and a sheet is never its
+   own ancestor (no cycle).
+2. An **origin key** identifies at most one sheet per universe, at most one section per sheet, at most
+   one file per universe, one campaign per universe, one scenario per campaign.
+3. A sheet identifier is **never reused**: a `[[42|…]]` link to a deleted sheet
+   stays broken; it never targets another sheet.
+4. A link targets a sheet, or waits for an origin key, or is broken — never two at once.
+5. A sheet type belongs to the product list; a type setting exists only for a type
+   on that list, at most one per (system, type) and per (universe, type).
+6. A label has a case-insensitively unique name in its universe; an alias is
+   likewise unique per sheet.
+7. A token belongs to a universe and to an account that was a GM there at creation; its value is
+   never stored, only its unique fingerprint.
+8. A section's public content is its content **without its GM blocks**; it always reflects the
+   current content.
+9. A section containing a GM block can be written only by a GM.
+10. Deleting a sheet leaves no row targeting it: its sections (and what they carry),
+    the relations and map elements targeting it are removed; its children move up under its parent;
+    links targeting it become broken.
+11. Deleting a universe leaves no row targeting it (the game system does not belong to it).
+12. An import never overwrites a field that a human has changed in Kanevas since the last import:
+    the sheet, section, campaign, scenario and file know what the last import wrote
+    (B-48); a file visibility changed in Kanevas is never restored by a replay.
+    A field the import could not write (missing parent or one that would cause a cycle, file not yet
+    uploaded) is **pending**, never a human change.
 
-### Logique
+### Logical
 
-**`fiches` : deux colonnes ajoutées d'abord, puis recréée une fois** (la seule recréation de table du
-produit, AD-102). Ordre du plan de l'epic : la tranche `kanevas-import-fil` ajoute `cle_origine` (avec
-son index unique) et `dernier_import` par `ALTER TABLE … ADD COLUMN`, sans recréation ; la tranche
-`kanevas-import-types` recrée la table — `CHECK` levé, `parent_id` et `sous_type` ajoutés, toutes les
-autres colonnes recopiées, `cle_origine`, `dernier_import` et les trois colonnes d'illustration d'AD-93
-comprises ; la tranche `kanevas-import-mediatheque` ajoute `illustration_fichier_id` par `ADD COLUMN`,
-y migre les illustrations, et laisse les trois colonnes d'AD-93 **inutilisées** — leur retrait est un
-resserrement d'une tranche suivante, hors de cette epic. Le tableau dit l'état final de l'epic :
+**`fiches`: two columns added first, then rebuilt once** (the product's only table
+rebuild, AD-102). Epic plan order: the `kanevas-import-fil` slice adds `cle_origine` (with
+its unique index) and `dernier_import` through `ALTER TABLE … ADD COLUMN`, without rebuilding; the
+`kanevas-import-types` slice rebuilds the table — `CHECK` removed, `parent_id` and `sous_type` added, all
+other columns copied, including `cle_origine`, `dernier_import` and AD-93's three illustration
+columns; the `kanevas-import-mediatheque` slice adds `illustration_fichier_id` through `ADD COLUMN`,
+migrates illustrations to it, and leaves AD-93's three columns **unused** — removing them is a
+contraction in a later slice, outside this epic. The table describes the epic's final state:
 
-| Colonne | Changement | Contrainte (invariant) |
+| Column | Change | Constraint (invariant) |
 |---|---|---|
-| `type` | le `CHECK` des sept valeurs est **levé** | validé par le service contre la liste du code (5) — la base ne peut plus le garantir : c'est le prix d'un type sans migration, choisi par Monsieur |
-| `parent_id` | nouvelle, → `fiches`, **ON DELETE SET NULL** ; nul : la fiche est à la racine | (1) même univers et pas de cycle : **service** (la règle traverse la table ; un déclencheur récursif est rejeté, AD-99) ; `CHECK (parent_id <> id)` |
-| `cle_origine` | nouvelle, texte 1 à 200 ; nulle : fiche née dans Kanevas | (2) index unique `(univers_id, cle_origine)` (plusieurs `NULL` permis) |
-| `sous_type` | nouvelle, texte 1 à 60 après rognage ; nulle : pas de sous-type (B-52, décision de Monsieur du 2026-10-11) | `CHECK (sous_type IS NULL OR length(trim(sous_type)) BETWEEN 1 AND 60)` ; propre au type : le service le vide quand le type change ; index `fiches (univers_id, type, sous_type)` — le filtre de E-8 et la complétion de E-9 (les sous-types distincts d'un type dans l'univers, sans tenir compte de la casse) |
-| `dernier_import` | nouvelle, JSON : les valeurs que le dernier import a écrites — titre, type (et PJ), sous-type, alias, étiquettes ; l'illustration (clé) ; pour le parent, la clé **demandée** et le parent **écrit** ; nulle : jamais écrite par un import | (12) écrit par le service à chaque écriture d'import ; un champ dont la valeur courante diffère de la valeur **écrite** a été modifié dans Kanevas ; un champ laissé par B-48 garde la valeur écrite d'avant (il reste « modifié ») ; tant que le parent écrit diffère du parent demandé (cible absente, cycle), la fiche est **parent en attente** : chaque rejeu retente de poser le parent demandé, et ce n'est jamais pris pour une modification humaine |
-| `cree_le`, `modifie_le` | inchangées ; `cree_le` peut venir de l'import (B-50) | — |
+| `type` | the seven-value `CHECK` is **removed** | validated by the service against the code list (5) — the database can no longer guarantee it: this is the cost of a type without a migration, chosen by Monsieur |
+| `parent_id` | new, → `fiches`, **ON DELETE SET NULL**; null: the sheet is at the root | (1) same universe and no cycle: **service** (the rule spans the table; a recursive trigger is rejected, AD-99); `CHECK (parent_id <> id)` |
+| `cle_origine` | new, text 1 to 200; null: sheet created in Kanevas | (2) unique index `(univers_id, cle_origine)` (multiple `NULL` values allowed) |
+| `sous_type` | new, text 1 to 60 after trimming; null: no subtype (B-52, decision by Monsieur on 2026-10-11) | `CHECK (sous_type IS NULL OR length(trim(sous_type)) BETWEEN 1 AND 60)`; specific to the type: the service clears it when the type changes; index `fiches (univers_id, type, sous_type)` — the E-8 filter and E-9 completion (case-insensitively distinct subtypes for a type in the universe) |
+| `dernier_import` | new, JSON: values written by the last import — title, type (and PC), subtype, aliases, labels; illustration (key); for the parent, the **requested** key and the **written** parent; null: never written by an import | (12) written by the service on each import write; a field whose current value differs from the **written** value has been changed in Kanevas; a field left alone by B-48 keeps its previous written value (it remains changed); while the written parent differs from the requested parent (missing target, cycle), the sheet has a **pending parent**: each replay retries setting the requested parent, and this is never treated as a human change |
+| `cree_le`, `modifie_le` | unchanged; `cree_le` can come from the import (B-50) | — |
 | `illustration_fichier_id` | New (`ADD COLUMN` in the media library slice), → `fichiers` **ON DELETE SET NULL**; null: no illustration | Replaces the three AD-93 illustration columns (`illustration_fichier`, `_type`, `_taille`), left **unused** until removal in a later tightening slice outside this epic. Migration turns each existing illustration into a media library file (`mj` if the sheet has no section readable by players, `joueurs` otherwise) and sets this reference (AD-111). Same universe as the sheet, image files only: enforced by the service. |
-| `id` | `AUTOINCREMENT` gardé | (3) — vérifié dans `0001-premiere-fiche.sql` : SQLite ne réemploie pas un identifiant `AUTOINCREMENT` |
+| `id` | `AUTOINCREMENT` retained | (3) — checked in `0001-premiere-fiche.sql`: SQLite does not reuse an `AUTOINCREMENT` identifier |
 
-Les autres colonnes et index (illustration, AD-93, et les colonnes ajoutées par le fil) sont recopiés
-tels quels ; les déclencheurs de `recherche_fiches` sont recréés.
+Other columns and indexes (illustration, AD-93, and columns added by the import foundation) are copied
+as is; `recherche_fiches` triggers are recreated.
 
-**Tables nouvelles :**
+**New tables:**
 
-| Table | Colonnes (hors clés) | Contraintes |
+| Table | Columns (excluding keys) | Constraints |
 |---|---|---|
 | `fichiers` | `id`, `univers_id`, `nom`, `type` (server-detected MIME), `taille`, `disque` (UUID filename on disk), `empreinte` (null for files predating the library, AD-117), `visibilite`, `cle_origine`, `ajoute_par` (non-null account that added it; for imports: the token’s GM), `ajoute_le`, `dernier_import` (JSON: name and visibility written by the last import; null: never imported) | → `univers`; → `comptes`; `taille > 0`; unique `disque`; `visibilite` `CHECK IN ('joueurs','mj')`, default `joueurs` (decision of 2026-10-11); `nom` 1–200 characters; nature (image for one of the four supported image MIME types, document otherwise) is not stored; unique index `(univers_id, cle_origine)`; index `(univers_id, ajoute_le)` for the E-19 grid. |
-| `fichiers_sections` | `fichier_id`, `section_id`, `joint` (booléen), `dans_texte` (booléen), `dans_bloc_mj` (booléen) | clé primaire `(fichier_id, section_id)` ; → `fichiers` ON DELETE CASCADE ; → `sections` ON DELETE CASCADE ; `CHECK (joint OR dans_texte)` ; même univers : service ; 100 `joint` au plus par section : service ; `dans_texte` et `dans_bloc_mj` recalculés à chaque écriture du contenu (comme `liens`) ; index `(section_id)` — le rendu, et `(fichier_id)` — « Utilisé dans » et la suppression |
-| `fichiers_attente` | `id`, `univers_id`, `cle`, `section_id` (nul pour une illustration), `fiche_id` (nul sauf illustration), `maniere` (`texte` \| `joint` \| `illustration`) | → `univers` ; → `sections` et → `fiches` ON DELETE CASCADE ; `CHECK ((section_id IS NULL) = (maniere = 'illustration'))` et `CHECK ((fiche_id IS NULL) <> (maniere = 'illustration'))` ; `UNIQUE (univers_id, cle, section_id, fiche_id, maniere)` ; index `(univers_id, cle)` — l'arrivée d'un fichier par l'API retrouve ce qui l'attend (C1 : comme `liens (cible_cle)`) ; les lignes se suppriment à la résolution |
-| `fiche_alias` | `fiche_id`, `alias` | → `fiches` ON DELETE CASCADE ; `alias` 1 à 120 ; `UNIQUE (fiche_id, alias COLLATE NOCASE)` (6) ; 20 au plus par fiche : service |
-| `etiquettes` | `id`, `univers_id`, `nom`, `cree_le` | → `univers` ; `nom` 1 à 40 ; `UNIQUE (univers_id, nom COLLATE NOCASE)` (6) |
-| `fiche_etiquettes` | `fiche_id`, `etiquette_id` | clé primaire des deux ; → `fiches` et → `etiquettes` ON DELETE CASCADE ; même univers : service ; 20 au plus par fiche : service |
-| `liens` | `id`, `section_id`, `cible_fiche_id` (nul si en attente ou cassé), `cible_cle` (nulle sauf en attente), `texte`, `dans_bloc_mj` (booléen) | → `sections` ON DELETE CASCADE ; `cible_fiche_id` → `fiches` **ON DELETE SET NULL** (la fiche supprimée laisse un lien cassé, 10) ; `CHECK (cible_fiche_id IS NULL OR cible_cle IS NULL)` (4) ; index `liens (cible_fiche_id)` et `liens (cible_cle)` |
-| `types_systeme` | `systeme_id`, `type`, `active` (booléen) | clé primaire `(systeme_id, type)` (5) ; → `systemes_jeu` ; l'absence d'une ligne : le défaut du produit (activé) |
-| `types_univers` | `univers_id`, `type`, `active` (booléen) | clé primaire `(univers_id, type)` (5) ; → `univers` ; l'absence d'une ligne : l'univers suit son système |
-| `jetons_api` | `id`, `univers_id`, `compte_id`, `nom`, `empreinte`, `cree_le`, `expire_le`, `revoque_le` (nul : actif), `dernier_usage_le` (nul : jamais) | → `univers`, → `comptes` ; `empreinte` unique (7) ; `nom` 1 à 80 ; `CHECK (expire_le > cree_le)` ; un an au plus : service |
-| `lots_import` | `id`, `univers_id`, `jeton_id`, `ouvert_le`, `clos_le` (nul : en cours), `dernier_ecrit_le`, `compteurs` (JSON : par nature — `fiches`, `fichiers`, `campagnes`, `scenarios`, `relations` — `{creees, mises_a_jour, inchangees, refusees}`, entiers ≥ 0 ; la nature `fiches` y ajoute `supprimees`, écrit par `DELETE /fiches/:cle`, `kanevas-import-tenir`), `avertissements`, `en_attente` (entiers ≥ 0 ; liens et références en attente à la clôture), `rapport` (JSON : 1 000 entrées au plus, `{cle, objet, raison, gravite}`) | → `univers`, → `jetons_api` ; « abandonné » n'est pas stocké : ouvert et `dernier_ecrit_le` de plus de 24 h |
+| `fichiers_sections` | `fichier_id`, `section_id`, `joint` (boolean), `dans_texte` (boolean), `dans_bloc_mj` (boolean) | primary key `(fichier_id, section_id)`; → `fichiers` ON DELETE CASCADE; → `sections` ON DELETE CASCADE; `CHECK (joint OR dans_texte)`; same universe: service; at most 100 `joint` per section: service; `dans_texte` and `dans_bloc_mj` recomputed on each content write (like `liens`); index `(section_id)` — rendering, and `(fichier_id)` — « Utilisé dans » and deletion |
+| `fichiers_attente` | `id`, `univers_id`, `cle`, `section_id` (null for an illustration), `fiche_id` (null except for an illustration), `maniere` (`texte` \| `joint` \| `illustration`) | → `univers`; → `sections` and → `fiches` ON DELETE CASCADE; `CHECK ((section_id IS NULL) = (maniere = 'illustration'))` and `CHECK ((fiche_id IS NULL) <> (maniere = 'illustration'))`; `UNIQUE (univers_id, cle, section_id, fiche_id, maniere)`; index `(univers_id, cle)` — a file arriving through the API finds what is waiting for it (C1: like `liens (cible_cle)`); rows are deleted on resolution |
+| `fiche_alias` | `fiche_id`, `alias` | → `fiches` ON DELETE CASCADE; `alias` 1 to 120; `UNIQUE (fiche_id, alias COLLATE NOCASE)` (6); at most 20 per sheet: service |
+| `etiquettes` | `id`, `univers_id`, `nom`, `cree_le` | → `univers`; `nom` 1 to 40; `UNIQUE (univers_id, nom COLLATE NOCASE)` (6) |
+| `fiche_etiquettes` | `fiche_id`, `etiquette_id` | primary key on both; → `fiches` and → `etiquettes` ON DELETE CASCADE; same universe: service; at most 20 per sheet: service |
+| `liens` | `id`, `section_id`, `cible_fiche_id` (null if pending or broken), `cible_cle` (null unless pending), `texte`, `dans_bloc_mj` (boolean) | → `sections` ON DELETE CASCADE; `cible_fiche_id` → `fiches` **ON DELETE SET NULL** (the deleted sheet leaves a broken link, 10); `CHECK (cible_fiche_id IS NULL OR cible_cle IS NULL)` (4); indexes `liens (cible_fiche_id)` and `liens (cible_cle)` |
+| `types_systeme` | `systeme_id`, `type`, `active` (boolean) | primary key `(systeme_id, type)` (5); → `systemes_jeu`; no row: the product default (enabled) |
+| `types_univers` | `univers_id`, `type`, `active` (boolean) | primary key `(univers_id, type)` (5); → `univers`; no row: the universe inherits from its system |
+| `jetons_api` | `id`, `univers_id`, `compte_id`, `nom`, `empreinte`, `cree_le`, `expire_le`, `revoque_le` (null: active), `dernier_usage_le` (null: never) | → `univers`, → `comptes`; unique `empreinte` (7); `nom` 1 to 80; `CHECK (expire_le > cree_le)`; at most one year: service |
+| `lots_import` | `id`, `univers_id`, `jeton_id`, `ouvert_le`, `clos_le` (null: in progress), `dernier_ecrit_le`, `compteurs` (JSON: per nature — `fiches`, `fichiers`, `campagnes`, `scenarios`, `relations` — `{creees, mises_a_jour, inchangees, refusees}`, integers ≥ 0; nature `fiches` adds `supprimees`, written by `DELETE /fiches/:cle`, `kanevas-import-tenir`), `avertissements`, `en_attente` (integers ≥ 0; pending links and references at closure), `rapport` (JSON: at most 1,000 entries, `{cle, objet, raison, gravite}`) | → `univers`, → `jetons_api`; « abandonné » (abandoned) is not stored: open with `dernier_ecrit_le` older than 24 h |
 
-**Colonnes ajoutées** (`ALTER TABLE … ADD COLUMN`, comme 0002 et 0006) :
+**Added columns** (`ALTER TABLE … ADD COLUMN`, as in 0002 and 0006):
 
-| Table | Colonnes | Contrainte |
+| Table | Columns | Constraint |
 |---|---|---|
-| `sections` | `contenu_public` (texte `NOT NULL DEFAULT ''` ; le contenu sans blocs MJ ; « la section contient un bloc » est `contenu_public ≠ contenu`, AD-114 ; vide par défaut : un site d'écriture oublié montre une section vide, il ne fuit pas), `cle_origine` (nulle : née dans Kanevas), `version_importee` (entier ; nul : jamais écrite par un import), `dernier_import` (JSON : titre, audience et ensemble des fichiers joints (clés) écrits par le dernier import ; nul : jamais) | (12) le contenu est modifié dans Kanevas si `version` ≠ `version_importee`, le titre ou l'audience si la valeur courante ≠ `dernier_import` ; (8) écrit par le service dans la même transaction que `contenu` (AD-98) — une fonction Markdown ne s'écrit pas en SQL ; index unique `(fiche_id, cle_origine)` (2) |
+| `sections` | `contenu_public` (text `NOT NULL DEFAULT ''`; content without GM blocks; “the section contains a block” is `contenu_public ≠ contenu`, AD-114; empty by default: a missed write site shows an empty section, it does not leak), `cle_origine` (null: created in Kanevas), `version_importee` (integer; null: never written by an import), `dernier_import` (JSON: title, audience and set of attached files (keys) written by the last import; null: never) | (12) content has been changed in Kanevas if `version` ≠ `version_importee`, title or audience if the current value ≠ `dernier_import`; (8) written by the service in the same transaction as `contenu` (AD-98) — a Markdown function cannot be written in SQL; unique index `(fiche_id, cle_origine)` (2) |
 | `pieces_jointes` | No new columns: **neither written nor read** since AD-111. Migration turns each row into a media library file (`mj` if `secrete` or if the section is not readable by players, `joueurs` otherwise), attached to its section, then empties the table. Only rows of a universe with at least one member are converted (the uploader is taken from the members); rows of a member-less universe are dropped and their bytes stay on disk, orphaned (`src/db/migration-mediatheque.test.ts`). Illustrations become `mj` if their sheet has no section readable by players, `joueurs` otherwise. Disk filenames stay unchanged; no byte copying. The table will be removed in a later tightening slice, once the previous image is no longer running. |
-| `campagnes` | `cle_origine`, `dernier_import` (JSON : nom et statut écrits par le dernier import ; nul : jamais) | index unique `(univers_id, cle_origine)` (2) ; (12) même règle, champ par champ |
-| `scenarios` | `cle_origine`, `dernier_import` (JSON : titre écrit ; nul : jamais), `version_importee` (la `version` laissée par le dernier import) | index unique `(campagne_id, cle_origine)` (2) ; (12) le contenu est modifié dans Kanevas si `version` ≠ `version_importee`, le titre si la valeur courante ≠ `dernier_import` |
+| `campagnes` | `cle_origine`, `dernier_import` (JSON: name and status written by the last import; null: never) | unique index `(univers_id, cle_origine)` (2); (12) same rule, field by field |
+| `scenarios` | `cle_origine`, `dernier_import` (JSON: written title; null: never), `version_importee` (the `version` left by the last import) | unique index `(campagne_id, cle_origine)` (2); (12) content has been changed in Kanevas if `version` ≠ `version_importee`, title if the current value ≠ `dernier_import` |
 
-**Ce que la base ne dit pas, et que le service porte**, avec sa raison : même univers pour parent,
-étiquette, cible de lien et de relation (la règle croise deux tables) ; pas de cycle (récursif) ; le
-type dans la liste du code (choix de Monsieur, ci-dessus) ; l'écriture d'une section à bloc MJ par un
-MJ seul (croise le contenu et le rôle, 9) ; le contenu public (Markdown) ; un jeton créé par un MJ, et
-encore MJ à chaque usage (le rôle change sans toucher au jeton). **Supprimer** (10, 11) : une
-fonction de service par geste, une transaction, qui supprime dans l'ordre ce qui vise la fiche ou
-l'univers ; les clés étrangères existantes, sans `ON DELETE` ou en `RESTRICT` (`relations.cible_fiche_id`,
-`elements_carte.fiche_id`, tout `univers_id`), **restent** : un oubli du service fait échouer la
-transaction au lieu de laisser une ligne orpheline. Supprimer une fiche **ne supprime aucun fichier
-de la médiathèque** : ses références partent avec elle, les fichiers restent (« Non utilisés » s'ils ne
-servent plus ailleurs, AD-111). Supprimer un univers supprime sa médiathèque : les fichiers (et les fonds
-de carte) se suppriment du disque **après** la validation ; un échec laisse un orphelin inatteignable (risque déjà
-accepté, `kanevas-fichiers`).
+**What the database does not express, and the service enforces**, with the reason: same universe for parent,
+label, link and relation target (the rule spans two tables); no cycle (recursive); the
+type in the code list (Monsieur's choice, above); only a GM writing a section with a GM block
+(spans content and role, 9); public content (Markdown); a token created by a GM, still a
+GM at each use (the role changes without touching the token). **Deletion** (10, 11): one
+service function per action, one transaction, deleting in order what targets the sheet or
+the universe; existing foreign keys, without `ON DELETE` or with `RESTRICT` (`relations.cible_fiche_id`,
+`elements_carte.fiche_id`, every `univers_id`), **remain**: a service omission fails the
+transaction instead of leaving an orphan row. Deleting a sheet **deletes no media library
+file**: its references go with it, files remain (« Non utilisés » if no longer used
+elsewhere, AD-111). Deleting a universe deletes its media library: files (and map
+backgrounds) are deleted from disk **after** commit; a failure leaves an unreachable orphan (risk already
+accepted, `kanevas-fichiers`).
 
-**Droits, une phrase chacun** (en plus des règles ci-dessus) : alias et étiquettes se voient par qui
-voit la fiche, s'écrivent par le MJ ; une étiquette est proposée à un compte si elle porte au moins une
-fiche qu'il voit ; un réglage de type de système s'écrit par un MJ d'un univers rattaché, se lit par
-les membres des univers rattachés ; un réglage d'univers s'écrit par un MJ de l'univers ; un jeton et
-un lot se lisent par les MJ de l'univers, un jeton se révoque par tout MJ de l'univers ; la clé
-d'origine se lit par le MJ.
+**Permissions, one sentence each** (in addition to the rules above): aliases and labels are seen by anyone who
+sees the sheet, written by the GM; a label is suggested to an account if it carries at least one
+sheet they see; a system type setting is written by a GM of an attached universe, read by
+members of attached universes; a universe setting is written by a universe GM; a token and
+a batch are read by universe GMs, a token is revoked by any universe GM; the origin
+key is read by the GM.
 
-### Physique
+### Physical
 
-Même base, mêmes réglages (WAL, `foreign_keys`, une connexion d'écriture, AD-5). Index et la requête
-qu'ils servent : `fiches (parent_id)` — les enfants (bloc « Contient », arbre de E-8) et le
-re-parentage à la suppression ; `fiches (univers_id, cle_origine)` unique — la recherche d'une fiche par
-clé à chaque appel de l'API ; `liens (cible_fiche_id)` et **`relations (cible_fiche_id)`** (absent
-jusqu'ici) — « Mentionnée dans » (AD-100) et la suppression ; `liens (cible_cle)` — la résolution des
-liens en attente à la création d'une fiche ; `fiche_etiquettes (etiquette_id)` — le filtre par étiquette
-de E-17 ; `jetons_api (empreinte)` unique — l'authentification de chaque requête de l'API ;
-`lots_import (univers_id, ouvert_le)` — la liste de E-18. **Index de recherche** recréés :
-`recherche_fiches (titre, alias, sous_type)` (les alias concaténés, tenus par des déclencheurs sur
-`fiches` et `fiche_alias`) et `recherche_sections (titre, contenu_public, contenu)` : un non-MJ (ou un MJ en mode
-Joueur) cherche dans `titre` et `contenu_public`, un MJ dans `titre` et `contenu` (filtre de colonnes
-FTS5, AD-101). Les déclencheurs restent la seule source des index (AD-21) ; le service n'écrit que
-`contenu_public`, que les déclencheurs indexent.
+Same database, same settings (WAL, `foreign_keys`, one write connection, AD-5). Indexes and the queries
+they serve: `fiches (parent_id)` — children (« Contient » block, E-8 tree) and
+reparenting on deletion; unique `fiches (univers_id, cle_origine)` — sheet lookup by
+key at each API call; `liens (cible_fiche_id)` and **`relations (cible_fiche_id)`** (absent
+until now) — « Mentionnée dans » (AD-100) and deletion; `liens (cible_cle)` — resolution of
+pending links when a sheet is created; `fiche_etiquettes (etiquette_id)` — the E-17 label
+filter; unique `jetons_api (empreinte)` — authentication of each API request;
+`lots_import (univers_id, ouvert_le)` — the E-18 list. Rebuilt **search indexes**:
+`recherche_fiches (titre, alias, sous_type)` (concatenated aliases, maintained by triggers on
+`fiches` and `fiche_alias`) and `recherche_sections (titre, contenu_public, contenu)`: a non-GM (or a GM in
+Player mode) searches `titre` and `contenu_public`, a GM `titre` and `contenu` (FTS5 column
+filter, AD-101). Triggers remain the sole source of the indexes (AD-21); the service writes only
+`contenu_public`, which triggers index.
 
-**Multi-tenant** : inchangé — tout est dans un univers ; chaque table nouvelle porte `univers_id` ou
-pend d'une ligne qui le porte, et toute requête filtre dessus. Un système de jeu reste hors des univers.
+**Multi-tenant**: unchanged — everything is in a universe; each new table carries `univers_id` or
+hangs off a row carrying it, and every query filters on it. A game system remains outside universes.
 
 Campaign/scenario import bookkeeping is applied by migration `0016-import-suivi.sql`.
 Existing rows keep their values and receive null origin keys and import markers (not imported).
@@ -499,34 +499,34 @@ Unique `(univers_id, cle_origine)` and `(campagne_id, cle_origine)` indexes serv
 lookups; SQLite permits multiple null keys. JSON markers are checked with `json_valid`; a non-null
 `version_importee` must be positive. No content or rights are copied or changed.
 
-### Plan de migration
+### Migration plan
 
-0. **Élargir** (la tranche du fil) : `ALTER TABLE fiches ADD COLUMN cle_origine`, son index unique
-   `(univers_id, cle_origine)`, et `ADD COLUMN dernier_import` ; les colonnes ajoutées à `sections`
-   (`contenu_public` vient avec le bloc MJ, `cle_origine`, `version_importee`, `dernier_import` avec le
-   fil).
-1. **Élargir** (une migration, la tranche des types) : recréer `fiches` sans `CHECK` sur le type, avec
-   `parent_id` et `sous_type`, en recopiant `cle_origine` et `dernier_import` — procédure SQLite de recréation (nouvelle table, copie, suppression,
-   renommage, index et déclencheurs recréés, `PRAGMA foreign_key_check` vide). **Fait porteur** :
-   l'exécuteur de migrations ouvre une transaction par fichier avec `foreign_keys` actif
-   (`src/db/db.ts:18` et `:50`), et SQLite ignore `PRAGMA foreign_keys` dans une transaction ; supprimer
-   `fiches` sous clés actives échouerait (sections, relations, éléments de carte, propositions la
-   visent). La tranche doit donc apprendre à l'exécuteur à jouer **ce** fichier clés coupées, puis à
-   vérifier `foreign_key_check` avant de valider. Comptage des lignes avant et après, sur une copie de
-   la base de production (`/mnt/data/kanevas/data/kanevas.db`).
-2. **Élargir** (une migration par tranche qui en a besoin) : les tables nouvelles et les colonnes
-   ajoutées, toutes nullables ou avec défaut ; aucune donnée reprise, sauf `contenu_public = contenu` (`UPDATE` de la migration de la tranche du bloc MJ, avant la recréation de l'index, dont le numéro se prend à la fusion, AD-51)
-   pour les sections existantes (aucun bloc MJ n'existait : la syntaxe `:::mj` est nouvelle) et le
-   remplissage des index de recherche recréés.
-3. **Migrer** : sans objet — aucun ancien lecteur ne survit (frontend et backend partent dans la même
-   image). Les contenus en texte brut sont **relus tels quels comme du Markdown**, sans colonne de
-   format (AD-95 ; décision de Monsieur du 2026-10-11 : la base de production est vide).
-4. **Resserrer** : rien à resserrer ; aucune colonne n'est retirée.
+0. **Expand** (the import foundation slice): `ALTER TABLE fiches ADD COLUMN cle_origine`, its unique index
+   `(univers_id, cle_origine)`, and `ADD COLUMN dernier_import`; columns added to `sections`
+   (`contenu_public` comes with GM blocks, `cle_origine`, `version_importee`, `dernier_import` with the
+   foundation).
+1. **Expand** (one migration, the types slice): rebuild `fiches` without a `CHECK` on the type, with
+   `parent_id` and `sous_type`, copying `cle_origine` and `dernier_import` — SQLite rebuild procedure (new table, copy, drop,
+   rename, indexes and triggers recreated, empty `PRAGMA foreign_key_check`). **Key fact**:
+   the migration runner opens one transaction per file with `foreign_keys` enabled
+   (`src/db/db.ts:18` and `:50`), and SQLite ignores `PRAGMA foreign_keys` inside a transaction; dropping
+   `fiches` with keys enabled would fail (sections, relations, map elements, proposals target
+   it). The slice must therefore teach the runner to play **this** file with keys disabled, then
+   check `foreign_key_check` before committing. Row counts before and after, on a copy of
+   the production database (`/mnt/data/kanevas/data/kanevas.db`).
+2. **Expand** (one migration per slice that needs it): new tables and added
+   columns, all nullable or with defaults; no data migrated, except `contenu_public = contenu` (`UPDATE` in the GM block slice's migration, before rebuilding the index, whose number is assigned at merge, AD-51)
+   for existing sections (there were no GM blocks: the `:::mj` syntax is new) and
+   filling the rebuilt search indexes.
+3. **Migrate**: not applicable — no old reader survives (frontend and backend ship in the same
+   image). Plain text content is **read as is as Markdown**, without a format
+   column (AD-95; decision by Monsieur on 2026-10-11: the production database is empty).
+4. **Contract**: nothing to contract; no column is removed.
 
-Retour arrière : une image d'avant la recréation de `fiches` relit la table (mêmes colonnes et plus) ;
-les types ajoutés lui seraient inconnus — une fiche d'un type nouveau ne s'afficherait pas dans
-l'ancienne image, et les illustrations et pièces jointes, passées dans la médiathèque (AD-111), n'y
-paraîtraient plus. Restaurer la sauvegarde du volume d'avant la mise à jour reste le retour complet.
+Rollback: an image from before the `fiches` rebuild reads the table (same columns and more);
+added types would be unknown to it — a sheet of a new type would not appear in
+the old image, and illustrations and attachments, moved into the media library (AD-111), would no
+longer appear there. Restoring the volume backup from before the update remains the full rollback.
 
 ## Cadrage `kanevas-outils` : le modèle
 
