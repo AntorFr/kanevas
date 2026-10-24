@@ -49,53 +49,53 @@ The **assistant** is a floating « Demander à Kanevas » button on every screen
 outside the sidebar; it does not exist outside a universe. A GM sees the **« Mode MJ » / « Mode Joueur »** toggle in the top bar of screens that
 have it (sheet, map and, since `kanevas-import`, search E-17).
 
-## Inventaire
+## Inventory
 
-| Écran | Atteint depuis | Sert à | Parcours |
+| Screen | Reached from | Purpose | Journeys |
 |---|---|---|---|
-| **E-1 Accueil** | connexion ; logo | voir ses univers et son rôle dans chacun ; en créer un ; voir son identifiant | P-1, P-6 |
-| **E-2 Créer un univers** | E-1 | nom, description ; le créateur devient MJ | P-1 |
-| **E-3 Vue d'ensemble de l'univers** | E-1 ; sélecteur d'univers ; E-5 (admin devenu membre) | les campagnes actives, les derniers CR, la préparation (MJ), les cartes visibles | P-2, P-3, P-4, P-6 |
-| **E-4 Membres** | nav Univers (MJ) | lister, ajouter par identifiant, changer le rôle, retirer | P-2 |
-| **E-5 Administration** | nav (admin d'instance) | lister les univers de l'instance, en gérer les membres — jamais le contenu ; poser le jeton de l'assistant (B-51) | P-2, P-15 |
-| **E-6 Campagne** | nav Campagnes (liste) ; E-3 | liste des campagnes ; pour une campagne : statut, scénarios et « Nouveau scénario » (MJ), préparation (MJ), comptes-rendus, « Nouveau compte-rendu » | P-3, P-4 |
-| **E-7 Scénario** | E-6 (MJ) | écrire et relire un scénario | P-3 |
-| **E-8 Liste de fiches** | nav Lore | les fiches d'un type que le compte peut lire, en grille de cartes illustrées ; chercher dans ce type ; créer (MJ) | P-3, P-6 |
-| **E-9 Fiche** | E-8 ; un token ; un lien ; E-13 | lire et écrire les sections permises ; ajouter, réordonner, retirer une section, régler son audience, relier (MJ) ; joindre un fichier (les deux chemins d'ajout, AD-111), réserver un fichier au MJ (MJ), retirer une référence ; régler le sous-type (MJ) ; poser, remplacer, retirer l'illustration (MJ) ; bascule mode Joueur (MJ). Un compte-rendu s'ouvre ici. | P-3 à P-7 |
-| **E-10 Cartes** | nav Cartes | les cartes lisibles ; créer une carte illustrée (avec son image de fond) ou un graphe (MJ) | P-3, P-9 |
-| **E-11 Carte** | E-10 ; E-3 | carte illustrée : fond, tokens ; graphe : nœuds et liens. MJ : déposer ou changer le fond, placer, rendre visible, mode Joueur. Joueur : ouvrir la fiche d'un token. | P-3, P-6, P-9 |
-| **E-12 Assistant** | bouton flottant, sur tout écran d'univers | converser ; voir ce que l'assistant a écrit, avec un lien ; MJ : propositions de mise à jour (actuel/proposé, **Appliquer**, **Abandonner**) | P-3, P-5, P-6, P-7 |
-| **E-13 Comptes-rendus** | nav Comptes-rendus ; E-3 | tous les CR lisibles de l'univers, du plus récent, avec leur campagne | P-4, P-5 |
-| **E-14 Paramètres de l'univers** | nav Univers (MJ) | nom, description, système de jeu (choisir dans le catalogue, en créer un) | P-8 |
-| **E-15 Système de jeu** | E-16 ; lien depuis E-3 et E-14 | le référentiel commun : règles, créatures, objets ; ajouter, modifier (MJ d'un univers rattaché) ; hors du cadre d'un univers | P-8 |
-| **E-16 Systèmes de jeu** | barre réduite ; menu du sélecteur d'univers | les systèmes rattachés aux univers du compte, chacun avec ceux de ses univers qui l'utilisent | P-8 |
-| **E-17 Recherche** *(kanevas-import)* | « Rechercher » de la barre ; `/` ; une étiquette touchée sur E-9 | chercher dans tous les types, titres, alias et sections lisibles ; filtrer par type et par étiquette | P-12, P-10 |
-| **E-19 Médiathèque** *(kanevas-import)* | nav Médiathèque ; « Choisir dans la médiathèque » de l'éditeur et de l'illustration (E-9) | voir les fichiers (images, documents) ouverts au compte et où ils servent ; MJ : ajouter, renommer, régler la visibilité, supprimer | P-16, P-10 |
-| **E-18 Accès par API** *(kanevas-import)* | nav Univers ▸ Accès par API (MJ) | créer, lister, révoquer les jetons d'API de l'univers ; voir les lots d'import et leurs refus | P-10, P-11 |
-| **E-20 Outils** *(kanevas-outils)* | onglet « Outils » de E-15 (système) et de E-14 (univers) | activer un outil, régler sa visibilité par rôle et ses réglages (valeur du système, de l'univers), importer un catalogue (aperçu puis confirmation), voir les dépendances, désactiver, supprimer les données ; le responsable du système | P-17, P-21 |
-| **E-21 Carte de la galaxie** *(kanevas-outils)* | E-10 (une carte d'outil) ; E-3 ; un lien partageable | explorer la grille, mesurer, calculer un trajet ; MJ : placer, promouvoir, tracer, dessiner, mode Joueur, document MJ | P-18, P-20 |
-| **E-22 Concepteur de vaisseaux** *(kanevas-outils)* | barre « Outils » ; la section gérée d'une fiche de vaisseau (E-9) ; un lien partageable | la liste des conceptions lisibles et l'atelier d'une conception : choix, budgets, alertes, enregistrer, recalculer | P-19 |
+| **E-1 Home** | sign-in; logo | see the account's universes and role in each; create one; see its username | P-1, P-6 |
+| **E-2 Create a universe** | E-1 | name, description; the creator becomes GM | P-1 |
+| **E-3 Universe overview** | E-1; universe selector; E-5 (admin who has become a member) | active campaigns, latest session reports, preparation (GM), visible maps | P-2, P-3, P-4, P-6 |
+| **E-4 Members** | « Univers » navigation (GM) | list, add by username, change role, remove | P-2 |
+| **E-5 Administration** | navigation (instance admin) | list the instance's universes, manage their members — never their content; set the assistant token (B-51) | P-2, P-15 |
+| **E-6 Campaign** | « Campagnes » navigation (list); E-3 | campaign list; for a campaign: status, scenarios and « Nouveau scénario » (GM), preparation (GM), session reports, « Nouveau compte-rendu » | P-3, P-4 |
+| **E-7 Scenario** | E-6 (GM) | write and reread a scenario | P-3 |
+| **E-8 Sheet list** | « Lore » navigation | sheets of one type that the account can read, in a grid of illustrated cards; search within that type; create (GM) | P-3, P-6 |
+| **E-9 Sheet** | E-8; a token; a link; E-13 | read and write permitted sections; add, reorder, remove a section, set its audience, relate (GM); attach a file (both addition paths, AD-111), restrict a file to the GM (GM), remove a reference; set the subtype (GM); set, replace, remove the illustration (GM); Player mode toggle (GM). A session report opens here. | P-3 to P-7 |
+| **E-10 Maps** | « Cartes » navigation | readable maps; create an illustrated map (with its background image) or a graph (GM) | P-3, P-9 |
+| **E-11 Map** | E-10; E-3 | illustrated map: background, tokens; graph: nodes and links. GM: upload or change the background, place elements, make visible, Player mode. Player: open a token's sheet. | P-3, P-6, P-9 |
+| **E-12 Assistant** | floating button, on every universe screen | converse; see what the assistant has written, with a link; GM: update proposals (current/proposed, **« Appliquer »**, **« Abandonner »**) | P-3, P-5, P-6, P-7 |
+| **E-13 Session reports** | « Comptes-rendus » navigation; E-3 | all readable session reports in the universe, newest first, with their campaign | P-4, P-5 |
+| **E-14 Universe settings** | « Univers » navigation (GM) | name, description, game system (choose from the catalogue, create one) | P-8 |
+| **E-15 Game system** | E-16; link from E-3 and E-14 | shared reference: rules, creatures, items; add, edit (GM of an attached universe); outside a universe's frame | P-8 |
+| **E-16 Game systems** | reduced sidebar; universe selector menu | systems attached to the account's universes, each with those of its universes using it | P-8 |
+| **E-17 Search** *(kanevas-import)* | « Rechercher » in the sidebar; `/`; a label tapped on E-9 | search across all types, titles, aliases and readable sections; filter by type and label | P-12, P-10 |
+| **E-19 Media library** *(kanevas-import)* | « Médiathèque » navigation; « Choisir dans la médiathèque » in the editor and illustration (E-9) | see files (images, documents) accessible to the account and where they are used; GM: add, rename, set visibility, delete | P-16, P-10 |
+| **E-18 API access** *(kanevas-import)* | « Univers » ▸ « Accès par API » navigation (GM) | create, list, revoke the universe's API tokens; see import batches and their refusals | P-10, P-11 |
+| **E-20 Tools** *(kanevas-outils)* | « Outils » tab of E-15 (system) and E-14 (universe) | enable a tool, set its visibility per role and its settings (system value, universe value), import a catalogue (preview then confirmation), see dependencies, disable, delete data; the system's maintainer | P-17, P-21 |
+| **E-21 Galaxy map** *(kanevas-outils)* | E-10 (a tool map); E-3; a shareable link | explore the grid, measure, calculate a route; GM: place, promote, plot, draw, Player mode, GM document | P-18, P-20 |
+| **E-22 Ship designer** *(kanevas-outils)* | « Outils » sidebar; a ship sheet's managed section (E-9); a shareable link | readable designs list and a design's workshop: choices, budgets, warnings, save, recalculate | P-19 |
 
-Écrans **modifiés** par `kanevas-outils` : **E-9** (section gérée : bandeau « Générée par … », mise en forme
-de son composant ou de sa version texte, « Outil désactivé » ; aucun éditeur sur une section gérée),
-**E-10** (les cartes d'outil activé et visible s'ajoutent à la liste, avec leur visibilité ; « Nouvelle carte » ▸ « Carte de la galaxie » si l'outil est activé, MJ), **E-14** et **E-15** (l'onglet « Outils », et sur E-15 le responsable du système), **E-18**
-(la portée par outil d'un jeton ; les lots d'outil), **E-12** (les outils de l'assistant), la barre latérale
-(une section « Outils », ci-dessous).
+Screens **modified** by `kanevas-outils`: **E-9** (managed section: « Générée par … » banner, rendering
+by its component or its text version, « Outil désactivé »; no editor on a managed section),
+**E-10** (maps from an enabled, visible tool join the list, with their visibility; « Nouvelle carte » ▸ « Carte de la galaxie » if the tool is enabled, GM), **E-14** and **E-15** (the « Outils » tab, and the system's maintainer on E-15), **E-18**
+(a token's scope per tool; tool batches), **E-12** (assistant tools), the sidebar
+(an « Outils » section, below).
 
-Écrans **modifiés** par `kanevas-import` : **E-8** (types activés, vue en arbre, sous-type sur la
-carte, filtre « Sous-type », champ « Sous-type » de la création, illustration sous double garde),
-**E-9** (Markdown, liens, blocs MJ, fil d'ancêtres, blocs « Contient » et « Mentionnée dans », alias et
-étiquettes, sous-type éditable, fichiers de la médiathèque — les deux chemins d'ajout, le bloc Pièces
-jointes de références, l'illustration, les mentions « réservé au MJ » —, menu de la fiche : renommer,
-changer le type, déplacer, supprimer, clé d'origine), **E-7** et **E-15**
-(contenu en Markdown), **E-14** (« Types de fiche », « Supprimer l'univers »), **E-15** (« Types de
-fiche » du système), **E-13** (ordre par date d'origine), la barre latérale ; **E-5** (« Jeton de l'assistant », B-51).
+Screens **modified** by `kanevas-import`: **E-8** (enabled types, tree view, subtype on the
+card, « Sous-type » filter, « Sous-type » creation field, illustration under both guards),
+**E-9** (Markdown, links, GM blocks, ancestor trail, « Contient » and « Mentionnée dans » blocks, aliases and
+labels, editable subtype, media library files — both addition paths, the « Pièces
+jointes » reference block, illustration, « réservé au MJ » notices —, sheet menu: rename,
+change type, move, delete, source key), **E-7** and **E-15**
+(Markdown content), **E-14** (« Types de fiche », « Supprimer l'univers »), **E-15** (system's « Types de
+fiche »), **E-13** (ordered by original date), the sidebar; **E-5** (« Jeton de l'assistant », B-51).
 
-Les pages de connexion du serveur (« Connexion refusée », « Connexion indisponible », atteintes
-depuis P-1) et le bandeau du mode bouchon sont décrits sous « Session et connexion ».
+The server's sign-in pages (« Connexion refusée », « Connexion indisponible », reached
+from P-1) and the stub mode banner are described under “Session and sign-in”.
 
-Hors produit : en mode bouchon seulement (AD-55), l'écran de choix d'un compte de test et le bandeau « mode
-bouchon » — sans `E-n` ni six états, ils n'existent pas en production.
+Outside the product: in stub mode only (AD-55), the test account selection screen and the « mode
+bouchon » banner — without `E-n` or six states, they do not exist in production.
 
 ## Rôles × écrans × actions
 
