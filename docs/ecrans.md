@@ -175,236 +175,236 @@ Two are set at scoping time because they apply everywhere:
   username to its GM;
 - **refusal** for an unreadable resource: always like an unknown resource.
 
-## Détail des écrans de `kanevas-premiere-fiche`
+## Screen details for `kanevas-premiere-fiche`
 
-> E-1, E-2, E-3, E-4, E-8, E-9, la barre latérale et la session. Vocabulaire des six états, celui
-> de B-29 : **vide**, **chargement**, **erreur**, **connexion perdue**, **refus**, **contenu
-> long**. « Sans objet » dit sa raison. Les maquettes qui font foi pour la forme sont listées sous « Maquettes » (fin du document) ; `e02` est d'avant la charte (thème sombre, gris tertiaire de la charte).
+> E-1, E-2, E-3, E-4, E-8, E-9, the sidebar and session. The six states use
+> B-29's vocabulary: **vide**, **chargement**, **erreur**, **connexion perdue**, **refus**, **contenu
+> long**. “Not applicable” includes its reason. The mockups authoritative for appearance are listed under “Mockups” (end of document); `e02` predates the style guide (dark theme, the guide's tertiary grey).
 
-**Textes communs.**
+**Shared text.**
 
-- *Chargement* : « Chargement… » (`role="status"`).
-- *Erreur de chargement* : « Impossible de charger cette page. » et le bouton « Réessayer ».
-- *Connexion perdue* : bandeau « Connexion perdue. Ce que vous voyez peut être dépassé ; rien
-  n'est enregistré tant qu'elle ne revient pas. » ; les boutons qui écrivent sont désactivés ; il
-  disparaît seul au retour de la connexion.
-- *Écriture en cours* (tout envoi : ajouter, changer un rôle, retirer, créer, enregistrer, régler,
-  monter, descendre, charger la suite) : le bouton qui a déclenché affiche « … » (partout, E-2 compris) et est désactivé
-  jusqu'à la réponse (un double clic ne part qu'une fois) ; le reste de l'écran reste lisible.
-- *Échec d'une écriture* : « L'action n'a pas abouti. Réessayez. » au-dessus de la liste ou du panneau
-  concerné ; la valeur affichée revient à celle d'avant (réglage d'audience, rôle, ordre) ; une
-  saisie en cours est conservée. Échec de « Charger la suite » : « Impossible de charger la suite. »
-  et le bouton reste.
-- *Titre vide ou trop long* (fiche, section) : « Erreur : le titre est obligatoire. » ou « Erreur : 120
-  caractères au plus. » (80 pour une section), sous le champ.
-- *Session expirée pendant une saisie* : la personne est menée à la connexion ; le texte en cours
-  d'une section (E-9) est gardé dans le navigateur (`sessionStorage`) et rendu au retour sur cette
-  section, tant qu'il n'est pas enregistré ou annulé. Les formulaires E-2, E-4 et E-8 ne sont pas gardés.
-- *Refus* : toujours « Page introuvable. » et un lien « Mes univers » — pour un univers inconnu,
-  un univers sans rôle, une fiche illisible, une adresse inconnue. Jamais « accès refusé ».
-- *Session expirée ou absente* : la page n'est pas montrée ; la personne est menée à la connexion
-  (Authelia, ou le choix du compte de test en bouchon).
-- *Bandeau du mode bouchon* (seulement avec `KANEVAS_STUB=1`, sur chaque page, non fermable) :
+- *Loading*: « Chargement… » (`role="status"`).
+- *Loading error*: « Impossible de charger cette page. » and the « Réessayer » button.
+- *Connection lost*: banner « Connexion perdue. Ce que vous voyez peut être dépassé ; rien
+  n'est enregistré tant qu'elle ne revient pas. »; write buttons are disabled; it
+  disappears automatically when the connection returns.
+- *Write in progress* (any submission: add, change a role, remove, create, save, set,
+  move up, move down, load more): the triggering button displays « … » (everywhere, including E-2) and is disabled
+  until the response (a double click sends only once); the rest of the screen remains readable.
+- *Write failure*: « L'action n'a pas abouti. Réessayez. » above the affected list or panel;
+  the displayed value reverts to its previous value (audience setting, role, order); input
+  in progress is kept. Failure of « Charger la suite »: « Impossible de charger la suite. »
+  and the button remains.
+- *Empty or overlong title* (sheet, section): « Erreur : le titre est obligatoire. » or « Erreur : 120
+  caractères au plus. » (80 for a section), below the field.
+- *Session expired during input*: the person is taken to sign-in; a section's text in progress
+  (E-9) is kept in the browser (`sessionStorage`) and restored on returning to that
+  section, until saved or cancelled. E-2, E-4 and E-8 forms are not kept.
+- *Refusal*: always « Page introuvable. » and a « Mes univers » link — for an unknown universe,
+  a universe without a role, an unreadable sheet, an unknown address. Never « accès refusé ».
+- *Expired or missing session*: the page is not shown; the person is taken to sign-in
+  (Authelia, or test account selection in stub mode).
+- *Stub mode banner* (only with `KANEVAS_STUB=1`, on every page, cannot be dismissed):
   « Mode bouchon — les comptes sont fictifs. Ne jamais l'ouvrir en production. »
 
-### Session et connexion
+### Session and sign-in
 
-- **Écran de choix du compte de test** (bouchon seulement, `/connexion-bouchon`, rendu par le
-  serveur) : une ligne par compte — Antor, Léa, Teo, Mira, Admin — avec ses groupes (Admin :
-  « groupes : parents ») et un bouton « Se connecter en tant que … ». Sans `KANEVAS_STUB`, cette
-  adresse répond « Page introuvable. ».
-- **« Connexion refusée »** (Authelia a refusé ou le retour est invalide) : « La connexion a été
-  refusée. » et un lien « Réessayer » qui relance la connexion (même adresse). Aucun autre contenu.
-- **« Connexion indisponible »** (Authelia injoignable) : « Authelia ne répond pas pour
-  l'instant. Réessayez dans un moment. » et un lien « Réessayer » qui relance la connexion (retour à l'adresse de connexion)
-- La session expire au bout de 7 jours (AD-56). **Se déconnecter** (menu du compte, en pied de la barre latérale)
-  efface la session et mène à la connexion ; en bouchon, c'est ainsi qu'on change de compte.
-- `GET /api/moi` rend `{username, groups, limites}` du compte connecté : c'est ce que la barre latérale
-  affiche (l'identifiant) et ce que les tests lisent pour constater les groupes. `limites.contenuSection`
-  (100 000) est la borne d'une section, lue par l'écran de fiche (AD-91).
+- **Test account selection screen** (stub only, `/connexion-bouchon`, rendered by the
+  server): one row per account — Antor, Léa, Teo, Mira, Admin — with its groups (Admin:
+  « groupes : parents ») and a « Se connecter en tant que … » button. Without `KANEVAS_STUB`, this
+  address responds « Page introuvable. ».
+- **« Connexion refusée »** (Authelia refused or the callback is invalid): « La connexion a été
+  refusée. » and a « Réessayer » link restarting sign-in (same address). No other content.
+- **« Connexion indisponible »** (Authelia unreachable): « Authelia ne répond pas pour
+  l'instant. Réessayez dans un moment. » and a « Réessayer » link restarting sign-in (return to the sign-in address)
+- The session expires after 7 days (AD-56). **« Se déconnecter »** (account menu, sidebar bottom)
+  clears the session and leads to sign-in; in stub mode, this is how accounts are switched.
+- `GET /api/moi` returns `{username, groups, limites}` for the signed-in account: this is what the sidebar
+  displays (the username) and what tests read to check groups. `limites.contenuSection`
+  (100,000) is a section's limit, read by the sheet screen (AD-91).
 
-### Barre latérale
+### Sidebar
 
-Sur tout écran d'un univers : en tête le **sélecteur d'univers** (nom, badge du rôle, la liste
-des univers du compte, puis « Mes univers » et « Systèmes de jeu » en pied de liste) ; **Vue d'ensemble** ; **Campagnes**, **Comptes-rendus** et **Cartes** ; **Lore** :
-les types activés de l'univers (Personnages, Lieux, Factions, Objets, Événements, Quêtes par défaut ; liste complète en haut de ce document) ; pour un MJ, **Univers ▸ Membres** et **Paramètres** ; en
-pied, le compte (avatar et identifiant) qui ouvre le menu du compte : l'identifiant, le thème
-(Clair, Sombre, Système, en trois icônes) et « Se déconnecter ». Hors d'un univers (E-1,
-E-2, E-5, E-15, E-16) : « Mes univers », « Systèmes de jeu », « Administration » pour un compte du groupe `parents` (E-5, plus bas) et le compte en pied. **Un item dont l'écran n'est
-pas construit n'est pas affiché** (Campagnes, Comptes-rendus et Cartes sont affichés). « Paramètres » (E-14) n'est affiché qu'au MJ. Sur téléphone (moins de 760 px), la barre est un tiroir sous un
-bouton « Menu ».
+On every screen within a universe: at the top, the **universe selector** (name, role badge, list
+of the account's universes, then « Mes univers » and « Systèmes de jeu » at the bottom of the list); **« Vue d'ensemble »**; **« Campagnes »**, **« Comptes-rendus »** and **« Cartes »**; **« Lore »**:
+the universe's enabled types (« Personnages », « Lieux », « Factions », « Objets », « Événements », « Quêtes » by default; full list at the top of this document); for a GM, **« Univers ▸ Membres »** and **« Paramètres »**; at the
+bottom, the account (avatar and username), opening the account menu: username, theme
+(« Clair », « Sombre », « Système », as three icons) and « Se déconnecter ». Outside a universe (E-1,
+E-2, E-5, E-15, E-16): « Mes univers », « Systèmes de jeu », « Administration » for an account in the `parents` group (E-5, below) and the account at the bottom. **An item whose screen is not
+built is not displayed** (« Campagnes », « Comptes-rendus » and « Cartes » are displayed). « Paramètres » (E-14) is displayed only for the GM. On phones (below 760 px), the sidebar is a drawer under a
+« Menu » button.
 
-| État | Ce qu'on voit |
+| State | What is shown |
 |---|---|
-| vide | sans objet pour le sélecteur : l'univers courant y est toujours ; la section « Lore » peut être vide si tous ses types sont désactivés (texte plus bas, « Barre latérale ») ; hors univers, « Mes univers » et « Systèmes de jeu » |
-| chargement | le sélecteur affiche « … » ; les items fixes sont déjà là |
-| erreur | le sélecteur affiche « Univers », sans liste (le nom n'est connu que de la liste qui n'a pas chargé) ; « Impossible de charger vos univers. » dans la liste dépliée, avec « Réessayer » |
-| connexion perdue | le bandeau ; navigation inchangée |
-| refus | sur « Page introuvable. » la barre est celle d'un écran hors univers : **pas de sélecteur**, aucun nom d'univers, seulement « Mes univers », « Systèmes de jeu » et le compte en pied ; dans un univers, le sélecteur ne liste que les univers du compte |
-| contenu long | 100 univers : la liste du sélecteur défile ; un nom de 80 caractères est tronqué par « … » avec infobulle |
+| vide | not applicable to the selector: the current universe is always there; the « Lore » section can be empty if all its types are disabled (text below, “Sidebar”); outside a universe, « Mes univers » and « Systèmes de jeu » |
+| chargement | the selector displays « … »; fixed items are already present |
+| erreur | the selector displays « Univers », without a list (the name is known only from the list that failed to load); « Impossible de charger vos univers. » in the expanded list, with « Réessayer » |
+| connexion perdue | the banner; navigation unchanged |
+| refus | on « Page introuvable. », the sidebar is that of a screen outside a universe: **no selector**, no universe name, only « Mes univers », « Systèmes de jeu » and the account at the bottom; within a universe, the selector lists only the account's universes |
+| contenu long | 100 universes: the selector list scrolls; an 80-character name is truncated with « … » and a tooltip |
 
-### E-1 Accueil
+### E-1 Home
 
-Liste des univers du compte : nom, début de la description, badge du rôle (MJ, Joueur) ; un clic
-mène à E-3. *Depuis `kanevas-illustrations` (décision de Monsieur du 2026-10-06), une **grille de
-cartes**, comme E-8 et E-16 (« E-1 en cartes », plus bas).* Bouton « Créer un univers » (→ E-2). L'identifiant du compte est affiché en tête :
-« Connecté en tant que lea ». Ordre : par nom.
+List of the account's universes: name, start of the description, role badge (« MJ », « Joueur »); a click
+leads to E-3. *Since `kanevas-illustrations` (Monsieur's decision of 2026-10-06), a **card
+grid**, like E-8 and E-16 (“E-1 as cards”, below).* « Créer un univers » button (→ E-2). The account's username is displayed at the top:
+« Connecté en tant que lea ». Order: by name.
 
-| État | Ce qu'on voit | Ce qu'on peut faire |
+| State | What is shown | Available actions |
 |---|---|---|
-| vide | « Aucun univers pour l'instant. » ; « Vous menez une partie ? Créez un univers. » ; « Vous êtes joueur ? Donnez votre identifiant à votre MJ : **lea** » | « Créer un univers » |
+| vide | « Aucun univers pour l'instant. »; « Vous menez une partie ? Créez un univers. »; « Vous êtes joueur ? Donnez votre identifiant à votre MJ : **lea** » | « Créer un univers » |
 | chargement | « Chargement de vos univers… » | — |
 | erreur | « Impossible de charger vos univers. » | « Réessayer » |
-| connexion perdue | le bandeau ; la liste déjà chargée reste affichée | ouvrir un univers déjà listé ; « Créer un univers » désactivé |
-| refus | sans objet : la page ne montre que les univers du compte | — |
-| contenu long | 100 univers : la liste défile ; un nom de 80 caractères est tronqué par « … » avec le nom complet en infobulle ; la description tient sur deux lignes | idem |
+| connexion perdue | the banner; the already loaded list stays visible | open an already listed universe; « Créer un univers » disabled |
+| refus | not applicable: the page shows only the account's universes | — |
+| contenu long | 100 universes: the list scrolls; an 80-character name is truncated with « … », with the full name in a tooltip; the description fits on two lines | same |
 
-*Critère.* Étant donné un compte neuf (Teo, jamais ajouté), quand il ouvre l'accueil, alors il voit
-« Aucun univers pour l'instant. » et son identifiant « teo » affiché, et aucun nom d'univers.
+*Criterion.* Given a new account (Teo, never added), when it opens home, it sees
+« Aucun univers pour l'instant. » and its username « teo » displayed, and no universe name.
 
-### E-2 Créer un univers
+### E-2 Create a universe
 
-Un formulaire : « Nom » (obligatoire, 80 caractères au plus), « Description » (facultative, 500
-au plus), « Créer l'univers » et « Annuler » (→ E-1). Créer mène à E-3 de l'univers, le créateur
-en MJ (B-2). Dès que le nom est saisi, le sceau de l'univers (son initiale) s'affiche en aperçu au-dessus du titre ; tant que le nom est vide, rien.
+A form: « Nom » (required, at most 80 characters), « Description » (optional, at most 500),
+« Créer l'univers » and « Annuler » (→ E-1). Creating leads to the universe's E-3, with the creator
+as GM (B-2). As soon as a name is entered, the universe seal (its initial) appears as a preview above the title; while the name is empty, nothing appears.
 
-| État | Ce qu'on voit | Ce qu'on peut faire |
+| State | What is shown | Available actions |
 |---|---|---|
-| vide | le formulaire vierge, sans aperçu | remplir |
-| chargement (écriture en cours) | le bouton affiche « … », désactivé | — |
-| erreur | « Erreur : le nom est obligatoire. » sous le champ ; ou, si la création échoue, « L'action n'a pas abouti. Réessayez. » au-dessus du formulaire, saisie conservée | corriger, réessayer |
-| connexion perdue | le bandeau ; « Créer l'univers » désactivé, saisie conservée | attendre |
-| refus | sans objet : tout compte peut créer un univers (B-2) | — |
-| contenu long | « Erreur : 80 caractères au plus. » dès le 81e (même texte pour la description avec 500) | corriger |
+| vide | blank form, no preview | fill in |
+| chargement (écriture en cours) | the button displays « … », disabled | — |
+| erreur | « Erreur : le nom est obligatoire. » below the field; or, if creation fails, « L'action n'a pas abouti. Réessayez. » above the form, input kept | correct, retry |
+| connexion perdue | the banner; « Créer l'univers » disabled, input kept | wait |
+| refus | not applicable: every account can create a universe (B-2) | — |
+| contenu long | « Erreur : 80 caractères au plus. » from the 81st character (same text for the description with 500) | correct |
 
-### E-3 Vue d'ensemble de l'univers
+### E-3 Universe overview
 
-Le nom de l'univers (titre), sa description, le badge du rôle, puis une **région de blocs**. Quand
-aucun bloc ne rend rien, la région montre « Rien à afficher pour l'instant. Les
-campagnes, les comptes-rendus et les cartes s'afficheront ici. » ; ni compteur ni lien mort.
-**Les blocs sont indépendants** : chaque tranche ajoute le sien en déposant un fichier dans
-`frontend/src/ecrans/vue-ensemble/blocs/` dont l'export par défaut est un `Bloc` (identifiant,
-rôles qui le voient, rang, composant) ; le registre `frontend/src/ecrans/vue-ensemble/registre.ts`
-le trouve seul (un seul fichier, comme pour les écrans) ; elle ne modifie aucun bloc existant.
+The universe's name (title), its description, the role badge, then a **block region**. When
+no block renders anything, the region shows « Rien à afficher pour l'instant. Les
+campagnes, les comptes-rendus et les cartes s'afficheront ici. »; no counter or dead link.
+**Blocks are independent**: each slice adds its own by placing a file in
+`frontend/src/ecrans/vue-ensemble/blocs/` whose default export is a `Bloc` (identifier,
+roles that see it, rank, component); the registry `frontend/src/ecrans/vue-ensemble/registre.ts`
+finds it automatically (a single file, as for screens); it modifies no existing block.
 
-| État | Ce qu'on voit | Ce qu'on peut faire |
+| State | What is shown | Available actions |
 |---|---|---|
-| vide | le message de la région de blocs (ci-dessus) | naviguer par la barre |
-| chargement | le nom absent, « Chargement… » | — |
+| vide | the block region's message (above) | navigate through the sidebar |
+| chargement | no name, « Chargement… » | — |
 | erreur | « Impossible de charger cette page. » | « Réessayer » |
-| connexion perdue | le bandeau, le contenu déjà chargé | naviguer |
-| refus | univers inconnu ou sans rôle du compte : « Page introuvable. » | « Mes univers » |
-| contenu long | une description de 500 caractères passe à la ligne ; un nom de 80 caractères passe à la ligne en titre | — |
+| connexion perdue | the banner, already loaded content | navigate |
+| refus | unknown universe or no role for the account: « Page introuvable. » | « Mes univers » |
+| contenu long | a 500-character description wraps; an 80-character name wraps in the title | — |
 
-*Critère.* Étant donné Teo, sans rôle dans Lame d'Ébène, quand il ouvre l'adresse de l'univers,
-alors il voit « Page introuvable. », sans le nom de l'univers.
+*Criterion.* Given Teo, without a role in Lame d'Ébène, when he opens the universe's address,
+he sees « Page introuvable. », without the universe's name.
 
-### E-4 Membres (MJ)
+### E-4 Members (GM)
 
-Une liste : identifiant, rôle (liste MJ / Joueur), « Retirer ». En haut, un champ « Identifiant du
-compte », le rôle (Joueur par défaut) et « Ajouter ». **Retirer** demande une confirmation sur
-place : « Retirer lea de Lame d'Ébène ? Elle ne verra plus l'univers. » avec « Retirer lea » et
-« Annuler ». Un MJ qui se retire lui-même alors qu'un autre MJ reste revient à E-1.
+A list: username, role (« MJ » / « Joueur » list), « Retirer ». At the top, an « Identifiant du
+compte » field, the role (Player by default) and « Ajouter ». **« Retirer »** asks for inline
+confirmation: « Retirer lea de Lame d'Ébène ? Elle ne verra plus l'univers. » with « Retirer lea » and
+« Annuler ». A GM who removes themselves while another GM remains returns to E-1.
 
-Refus de la tranche, textes exacts : « Ce compte ne s'est jamais connecté. » ; « Ce compte est déjà
-membre. » ; « Impossible : l'univers doit garder au moins un MJ. » (retirer ou rétrograder le seul
-MJ).
+Slice refusals, exact wording: « Ce compte ne s'est jamais connecté. »; « Ce compte est déjà
+membre. »; « Impossible : l'univers doit garder au moins un MJ. » (removing or demoting the only
+GM).
 
-| État | Ce qu'on voit | Ce qu'on peut faire |
+| State | What is shown | Available actions |
 |---|---|---|
-| vide | sans objet : il y a toujours au moins un MJ | — |
+| vide | not applicable: there is always at least one GM | — |
 | chargement | « Chargement des membres… » | — |
-| erreur | « Impossible de charger les membres. » ; une erreur d'écriture s'écrit au-dessus de la liste, la liste reste | « Réessayer » |
-| connexion perdue | le bandeau ; « Ajouter », changer, « Retirer » désactivés | — |
-| refus | pour un Joueur : l'item « Membres » est absent et son adresse montre « Page introuvable. » | « Mes univers » |
-| contenu long | 200 membres : la liste défile ; l'identifiant est tronqué par « … » avec l'infobulle | idem |
+| erreur | « Impossible de charger les membres. »; a write error appears above the list, which remains | « Réessayer » |
+| connexion perdue | the banner; « Ajouter », role change, « Retirer » disabled | — |
+| refus | for a Player: the « Membres » item is absent and its address shows « Page introuvable. » | « Mes univers » |
+| contenu long | 200 members: the list scrolls; the username is truncated with « … » and a tooltip | same |
 
-*Critère.* Étant donné Antor, seul MJ de Lame d'Ébène, quand il tente de retirer Antor, alors il
-voit « Impossible : l'univers doit garder au moins un MJ. » et la liste est inchangée.
+*Criterion.* Given Antor, sole GM of Lame d'Ébène, when he tries to remove Antor, he
+sees « Impossible : l'univers doit garder au moins un MJ. » and the list is unchanged.
 
-### E-8 Liste de fiches
+### E-8 Sheet list
 
-Pour un type de la barre (Personnages, Lieux…) : les fiches **que le compte peut lire**, par
-titre (ordre alphabétique sans casse), chacune avec son badge (pour un personnage : PJ ou PNJ).
-Cent fiches à la fois, puis « Charger la suite ». Pour un MJ, « Nouveau personnage » (« Nouveau
-lieu »…) ouvre une fenêtre : « Titre » (1 à 120 caractères) et, pour un personnage, « PJ » ou
-« PNJ » (PNJ par défaut) ; « Créer la fiche » mène à E-9 de la fiche, sans section. Textes par type : « Aucun personnage », « Aucun lieu », « Aucune faction », « Aucun objet », « Aucun
-événement », « Aucune quête », suivis de « pour l'instant. » (MJ) ou « à voir pour l'instant. »
-(Joueur) ; bouton « Nouveau personnage », « Nouveau lieu », « Nouvelle faction », « Nouvel objet »,
-« Nouvel événement », « Nouvelle quête ». La recherche dans le type s'ajoute au-dessus de la liste (voir « Détail des écrans de `kanevas-relier-chercher` »). Le type compte-rendu n'a pas d'entrée ici (E-13).
+For a type in the sidebar (« Personnages », « Lieux »…): sheets **the account can read**, by
+title (case-insensitive alphabetical order), each with its badge (for a character: « PJ » or « PNJ »).
+One hundred sheets at a time, then « Charger la suite ». For a GM, « Nouveau personnage » (« Nouveau
+lieu »…) opens a dialog: « Titre » (1 to 120 characters) and, for a character, « PJ » or
+« PNJ » (« PNJ » by default); « Créer la fiche » leads to the sheet's E-9, with no section. Text per type: « Aucun personnage », « Aucun lieu », « Aucune faction », « Aucun objet », « Aucun
+événement », « Aucune quête », followed by « pour l'instant. » (GM) or « à voir pour l'instant. »
+(Player); button « Nouveau personnage », « Nouveau lieu », « Nouvelle faction », « Nouvel objet »,
+« Nouvel événement », « Nouvelle quête ». Search within the type is added above the list (see “Screen details for `kanevas-relier-chercher`”). The session report type has no entry here (E-13).
 
-| État | Ce qu'on voit | Ce qu'on peut faire |
+| State | What is shown | Available actions |
 |---|---|---|
-| vide | MJ : « Aucun personnage pour l'instant. » et « Nouveau personnage » ; Joueur : « Aucun personnage à voir pour l'instant. » (autres types : voir ci-dessus) | MJ : créer |
+| vide | GM: « Aucun personnage pour l'instant. » and « Nouveau personnage »; Player: « Aucun personnage à voir pour l'instant. » (other types: see above) | GM: create |
 | chargement | « Chargement des fiches… » | — |
-| erreur | « Impossible de charger les fiches. » ; création échouée : « L'action n'a pas abouti. Réessayez. », titre conservé | « Réessayer » |
-| connexion perdue | le bandeau ; « Nouveau … » et « Créer la fiche » désactivés | ouvrir une fiche listée |
-| refus | un type inconnu : « Page introuvable. » ; une fiche illisible est absente de la liste | — |
-| contenu long | plus de 100 fiches : « Charger la suite » ; titre trop long tronqué par « … » avec infobulle | idem |
+| erreur | « Impossible de charger les fiches. »; creation failed: « L'action n'a pas abouti. Réessayez. », title kept | « Réessayer » |
+| connexion perdue | the banner; « Nouveau … » and « Créer la fiche » disabled | open a listed sheet |
+| refus | unknown type: « Page introuvable. »; an unreadable sheet is absent from the list | — |
+| contenu long | more than 100 sheets: « Charger la suite »; overlong title truncated with « … » and a tooltip | same |
 
-*Critère.* Étant donné la fiche « Maître Aldric », dont Léa ne lit aucune section, quand Léa ouvre la
-liste des personnages, alors elle n'y voit pas « Maître Aldric ».
+*Criterion.* Given the « Maître Aldric » sheet, none of whose sections Léa can read, when Léa opens the
+character list, she does not see « Maître Aldric ».
 
-### E-9 Fiche
+### E-9 Sheet
 
-Le titre, le badge du type, puis les **sections** dans leur ordre, chacune un panneau : titre,
-contenu en Markdown rendu (AD-95), et un emplacement de **blocs de section** (relations, pièces
-jointes : les tranches suivantes y inscrivent le leur, comme pour E-3, dans
-`frontend/src/ecrans/fiche/blocs/` et `registre.ts`).
+The title, type badge, then **sections** in their order, each a panel: title,
+rendered Markdown content (AD-95), and a slot for **section blocks** (relations, attachments:
+subsequent slices register their own, as for E-3, in
+`frontend/src/ecrans/fiche/blocs/` and `registre.ts`).
 
-*Le MJ* voit toutes les sections. Sur chacune : « Modifier » ; l'**audience**, cinq réglages —
-« Les joueurs la lisent », « Les joueurs l'écrivent », « Auteur » (liste des Joueurs de l'univers,
-ou « aucun »), « L'auteur la lit », « L'auteur l'écrit » — enregistrés au changement ; « Monter »,
-« Descendre » ; « Retirer la section ». En pied : « Ajouter une section » (titre, 1 à 80
-caractères ; la section naît vide et fermée aux joueurs). Une section réservée au MJ porte le
-mot « MJ seul » (pastille ambre). Le **mode Joueur** (bascule en tête) montre la fiche telle que la
-voit un Joueur qui n'est l'auteur d'aucune section : plus de réglages, plus de section fermée, et
-« Modifier » seulement sur celles que les joueurs écrivent (AD-39).
+*The GM* sees every section. On each: « Modifier »; the **audience**, five settings —
+« Les joueurs la lisent », « Les joueurs l'écrivent », « Auteur » (list of the universe's Players,
+or « aucun »), « L'auteur la lit », « L'auteur l'écrit » — saved on change; « Monter »,
+« Descendre »; « Retirer la section ». At the bottom: « Ajouter une section » (title, 1 to 80
+characters; the section starts empty and closed to players). A GM-only section bears the
+words « MJ seul » (amber badge). **Player mode** (toggle at the top) shows the sheet as seen
+by a Player who authors no section: no settings, no closed section, and
+« Modifier » only on those players can write (AD-39).
 
-*Un Joueur* voit les sections qu'il lit (joueurs, ou auteur si c'est lui), sans titre ni trace des
-autres ; « Modifier » sur celles qu'il peut écrire ; ni audience, ni ordre, ni ajout, ni retrait.
-Pour **modifier** : un champ de texte (100 000 caractères au plus, valeur lue dans `limites.contenuSection` de `/api/moi` ; le serveur la refuse aussi, AD-91, AD-106 ; 20 000 avant `kanevas-import`), « Enregistrer », « Annuler ».
-Enregistrer envoie la version lue (AD-59).
+*A Player* sees readable sections (players, or author if it is them), without the titles or any trace of
+the others; « Modifier » on writable ones; no audience, order, addition or removal.
+To **edit**: a text field (at most 100,000 characters, value read from `limites.contenuSection` in `/api/moi`; the server also enforces it, AD-91, AD-106; 20,000 before `kanevas-import`), « Enregistrer », « Annuler ».
+Saving sends the version read (AD-59).
 
-Textes : section sans contenu : « Rien d'écrit pour l'instant. » ; fiche sans section (MJ) : « Cette
-fiche n'a pas encore de section. » ; écriture périmée : « La section a changé depuis que vous
-l'avez ouverte. Rechargez-la pour voir la nouvelle version ; votre texte reste ci-dessous. » avec
-« Recharger la section » ; droit retiré entre-temps : « Vous ne pouvez plus modifier cette section. » ;
+Text: section without content: « Rien d'écrit pour l'instant. »; sheet without a section (GM): « Cette
+fiche n'a pas encore de section. »; stale write: « La section a changé depuis que vous
+l'avez ouverte. Rechargez-la pour voir la nouvelle version ; votre texte reste ci-dessous. » with
+« Recharger la section »; permission removed in the meantime: « Vous ne pouvez plus modifier cette section. »;
 Removal confirmation: « Retirer la section « Vérité — MJ seul » ? Son contenu sera perdu. »
 (with attached files: « … Son contenu et ses 3 fichiers joints seront retirés. »), with
 « Retirer la section » and « Annuler ».
 
-| État | Ce qu'on voit | Ce qu'on peut faire |
+| State | What is shown | Available actions |
 |---|---|---|
-| vide | MJ : « Cette fiche n'a pas encore de section. » et « Ajouter une section » ; section vide : « Rien d'écrit pour l'instant. » | MJ : ajouter ; qui écrit : « Modifier » |
-| chargement | le titre absent, « Chargement de la fiche… » | — |
-| erreur | « Impossible de charger cette fiche. » ; échec d'écriture : « L'action n'a pas abouti. Réessayez. », texte conservé | « Réessayer » |
-| connexion perdue | le bandeau ; « Enregistrer », audience, ordre, retrait, ajout désactivés ; le texte en cours reste | lire |
-| refus | fiche inconnue ou dont rien n'est lisible : « Page introuvable. » ; section non lisible : absente. Un MJ en mode Joueur sur une fiche dont aucune section n'est lisible des joueurs voit « Aucune section n'est visible des joueurs. » (ce que verrait un joueur : « Page introuvable. ») | passer en mode MJ |
-| contenu long | une section de 100 000 caractères passe à la ligne et s'affiche en entier ; plus au-delà, dès le 100 001e caractère saisi : « Erreur : 100 000 caractères au plus. » (sous le champ ; « Enregistrer » ne part pas ; le texte saisi est gardé, y compris quand c'est le serveur qui refuse, 400, avec le même texte — pas « L'action n'a pas abouti » ; tant que `/api/moi` n'a pas rendu la limite, ou s'il a échoué, l'écran ne contrôle rien et laisse le serveur répondre) ; titre de fiche (120 caractères) et titre de section (80) : passent à la ligne | idem |
+| vide | GM: « Cette fiche n'a pas encore de section. » and « Ajouter une section »; empty section: « Rien d'écrit pour l'instant. » | GM: add; anyone with write permission: « Modifier » |
+| chargement | no title, « Chargement de la fiche… » | — |
+| erreur | « Impossible de charger cette fiche. »; write failure: « L'action n'a pas abouti. Réessayez. », text kept | « Réessayer » |
+| connexion perdue | the banner; « Enregistrer », audience, order, removal, addition disabled; text in progress remains | read |
+| refus | unknown sheet or nothing readable: « Page introuvable. »; unreadable section: absent. A GM in Player mode on a sheet with no section readable by players sees « Aucune section n'est visible des joueurs. » (what a player would see: « Page introuvable. ») | switch to GM mode |
+| contenu long | a 100,000-character section wraps and is displayed in full; beyond that, from the 100,001st character entered: « Erreur : 100 000 caractères au plus. » (below the field; « Enregistrer » does not submit; input is kept, including when the server refuses, 400, with the same text — not « L'action n'a pas abouti »; until `/api/moi` has returned the limit, or if it failed, the screen performs no check and lets the server respond); sheet title (120 characters) and section title (80): wrap | same |
 
-*Critères.*
-- Étant donné Léa, Joueuse, quand elle ouvre « Maître Aldric » (« Apparence » lue des joueurs,
-  « Vérité — MJ seul » fermée), alors elle voit « Apparence » et rien d'autre : ni le titre
-  « Vérité — MJ seul », ni un compteur, ni un bouton de réglage.
-- Étant donné Antor, MJ, quand il passe en mode Joueur sur la même fiche, alors il voit la même
-  chose que Léa et plus aucun réglage.
-- Étant donné Antor qui a confié « Notes de la table » à Léa en auteur avec écriture, quand Léa
-  modifie le texte et enregistre, alors la section montre son texte ; Teo, ajouté en Joueur, ne la
-  voit pas tant que « Les joueurs la lisent » est faux.
-- Étant donné deux onglets sur la même section, quand le second enregistre après le premier,
-  alors il voit « La section a changé depuis que vous l'avez ouverte… » et son texte reste.
-- Étant donné Antor qui modifie une section, quand il saisit un 100 001e caractère, alors « Erreur :
-  100 000 caractères au plus. » apparaît sous le champ, rien n'est envoyé et son texte reste ;
-  quand le serveur refuse malgré tout (400), il voit le même texte et son texte reste.
+*Criteria.*
+- Given Léa, a Player, when she opens « Maître Aldric » (« Apparence » readable by players,
+  « Vérité — MJ seul » closed), she sees « Apparence » and nothing else: neither the title
+  « Vérité — MJ seul », a counter, nor a settings button.
+- Given Antor, a GM, when he switches to Player mode on the same sheet, he sees the same
+  thing as Léa and no settings.
+- Given Antor, who assigned « Notes de la table » to Léa as author with write permission, when Léa
+  edits the text and saves, the section shows her text; Teo, added as a Player, does not
+  see it while « Les joueurs la lisent » is false.
+- Given two tabs on the same section, when the second saves after the first,
+  it sees « La section a changé depuis que vous l'avez ouverte… » and its text remains.
+- Given Antor editing a section, when he enters a 100,001st character, « Erreur :
+  100 000 caractères au plus. » appears below the field, nothing is sent and his text remains;
+  when the server refuses anyway (400), he sees the same text and his text remains.
 
-### Clôture de la tranche
+### Slice completion
 
-Chaque besoin livré par la tranche (fiche de la feature, `## Livre`, hors de ce dépôt) a son écran : B-2 → E-2 ; B-3 à B-5 → E-4 ; B-7 → E-8 ; B-8 et B-9 →
-E-9 ; B-1 et B-28 → session ; B-29 → six états de chaque écran ci-dessus. Chaque écran est atteint
-par P-1 (E-1, E-2, E-3), P-2 (E-4), P-3 étape 4 et P-6 (E-8, E-9), P-7 (E-9). Les trois rôles ont
-leur colonne dans la matrice du cadrage ; l'admin d'instance n'avait, avant `kanevas-recours-admin`, que E-1 et
-E-2 ; E-5 lui vient avec cette tranche (plus bas).
+Each requirement delivered by the slice (feature card, `## Livre`, outside this repository) has its screen: B-2 → E-2; B-3 to B-5 → E-4; B-7 → E-8; B-8 and B-9 →
+E-9; B-1 and B-28 → session; B-29 → six states of each screen above. Each screen is reached
+through P-1 (E-1, E-2, E-3), P-2 (E-4), P-3 step 4 and P-6 (E-8, E-9), P-7 (E-9). The three roles have
+their column in the scoping matrix; before `kanevas-recours-admin`, the instance admin had only E-1 and
+E-2; E-5 comes with that slice (below).
 
 ## Détail des écrans de `kanevas-recours-admin`
 
