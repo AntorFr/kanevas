@@ -597,6 +597,8 @@ describe('B-29 : les états des écrans refaits', () => {
     await page.getByText('Erreur : 80 caractères au plus.').waitFor();
     await shot(page, 'e02-erreur');
     await page.getByLabel('Nom', { exact: true }).fill('n'.repeat(80));
+    // the error clears on the next render: wait for it instead of counting right after the fill
+    await page.getByText('Erreur : 80 caractères au plus.').waitFor({ state: 'detached' });
     assert.equal(await page.getByText('Erreur : 80 caractères au plus.').count(), 0);
     await page.getByRole('button', { name: /Annuler/ }).first().click();
     await attendre(page);

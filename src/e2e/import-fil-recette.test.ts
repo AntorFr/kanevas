@@ -767,7 +767,7 @@ describe('E-18 Accès par API au navigateur', { skip: skipBrowser }, () => {
     await boite.waitFor();
     await boite.getByRole('button', { name: 'Révoquer le jeton' }).click();
     await page.getByText('Jeton révoqué.').first().waitFor();
-    await attendre(page);
+    await ligne(page, 'À couper').first().filter({ hasText: /Révoqué/ }).waitFor();
     assert.match(((await ligne(page, 'À couper').first().innerText()) as string), /Révoqué/);
     await page.screenshot({ path: join(SHOTS, 'e18-revoque.png') });
     const avant = await nbLots(m);

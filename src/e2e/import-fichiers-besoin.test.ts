@@ -765,9 +765,14 @@ test('E-9 · le MJ voit la tuile en attente à la place de l’illustration, du 
     assert.ok(!biblio.includes('img:blason') && !biblio.includes('doc:seule'), 'no waiting file in the library');
     // Mode Joueur: nothing.
     await aller(antor.page, `/univers/${m.essai}/fiche/${fid}`);
+    // The sheet is already drawn (GM view): the title alone proves nothing. Arm the wait for the Mode Joueur
+    // response before the switch, then wait for the tiles of the GM view to be gone, then for the title.
+    const reponseJoueur = antor.page.waitForResponse((r: Any) => r.url().includes(`/fiches/${fid}`) && r.url().includes('mode=joueur'));
     await antor.page.getByRole('radio', { name: 'Mode Joueur' }).check();
+    await reponseJoueur;
+    await antor.page.waitForFunction(() => !document.body.innerText.replace(/[  ]/g, ' ').includes("en attente d'import"));
+    await antor.page.getByText('Les Docks Oubliés').first().waitFor();
     await attendre(antor.page);
-    await antor.page.getByText('Les Docks Oubliés').first().waitFor(); // the sheet is reloaded in Mode Joueur: read it once drawn
     const tj = await lire(antor.page);
     await capture(antor.page, 'e9-attente-mode-joueur');
     assert.ok(tj.includes('Les Docks Oubliés'));

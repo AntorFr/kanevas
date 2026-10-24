@@ -91,6 +91,8 @@ describe('médiathèque — le parcours du critère de sortie (bouchon, monde se
     assert.match(t, /tarifs-du-port\.pdf/);
     await tuile(p, 'tarifs-du-port.pdf').click();
     await p.getByRole('button', { name: 'Fermer' }).waitFor();
+    // The panel opens on « Chargement… »: read it once the file's detail is drawn (what only the loaded detail shows).
+    await p.getByText('Utilisé dans').first().waitFor();
     await attendre(p);
     assert.match(await texte(p), /Visible des joueurs/);
     assert.match(await texte(p), /Utilisé dans/);
