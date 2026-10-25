@@ -97,7 +97,7 @@ E-16 vivent hors des univers : leurs cases disent le rôle dans un univers ratta
 |---|---|---|---|
 | E-1 | ses univers, créer | ses univers, créer | ses univers, créer |
 | E-2 | créer | créer | créer |
-| E-3 | tout | sans préparation ni scénarios | — |
+| E-3 | tout | sans préparation ni scénarios ; *(kanevas-scenarios)* « Campagnes en cours » : celles qu'il lit, avec leur statut | — |
 | E-4 | tout | — | — (passe par E-5) |
 | E-5 | — | — | lister les univers et leurs membres ; ajouter, changer un rôle, retirer un membre ; voir l'état du jeton de l'assistant, connecter ou reconnecter l'abonnement |
 | E-6 | *retired (`kanevas-scenarios`)* | — | — |
@@ -862,6 +862,8 @@ date de création, lien vers E-9. Cent à la fois, puis « Charger la suite ». 
 Léa ouvre E-13, alors elle ne voit pas « Session 11 » et la liste ne laisse aucun trou ni compteur.
 
 ### Blocs de E-3 (`kanevas-suivi`)
+
+> *Amended by `kanevas-scenarios`: « Campagnes actives » reads « Campagnes en cours » and lists adventures (E-8/E-9, E-6 being retired); « Derniers comptes-rendus » names a CR's adventure only to a reader who reads it; see « Détail des écrans de `kanevas-scenarios` ».*
 
 Trois blocs indépendants, dans cet ordre. Chacun a un titre, un état vide, et ne montre jamais un
 compteur ni un nom que le compte ne peut pas lire.
@@ -3262,7 +3264,8 @@ n'est visible des joueurs. » et aucun bloc « Préparation ».
 
 - **E-3**: « Campagnes actives » becomes « **Campagnes en cours** »: the adventures of sub-type
   « Campagne » with status « En cours » that the reader reads, by title, each with its status
-  badge; empty: « Aucune campagne en cours. ». « Derniers comptes-rendus » unchanged. « Préparation »
+  badge; empty: « Aucune campagne en cours. ». « Derniers comptes-rendus » unchanged, except that
+  the adventure of a CR is named only to a reader who reads it (the same guard as E-13). « Préparation »
   (GM): the open tasks of the adventures « En cours », grouped by adventure, five per adventure,
   as before; empty: « Rien à préparer pour l'instant. ».
 - **E-13**: the column « campagne » shows the adventure the CR names (campaign or scenario), as
@@ -3271,12 +3274,11 @@ n'est visible des joueurs. » et aucun bloc « Préparation ».
   closed to the players never leaks through a CR (rule 3 of `docs/donnees.md`), the CR itself stays
   readable. The filter by adventure of the route stays (`?campagne=<fiche id>`), for an adventure
   the caller reads (404 otherwise, like the sheet).
-- **Type deactivated** (E-14/E-15, AD-122): the « Aventures » entry leaves the bar, creating an
-  adventure is refused, existing adventures stay readable by their address and in the search like
-  any sheet of a deactivated type; the E-3 blocks show their empty texts; « Nouveau compte-rendu »
-  is absent (a CR needs an adventure); the import accepts an adventure with the `type_desactive`
-  warning, as any type; `creer_fiche` refuses the type. Nothing else to decide: the suivi sleeps
-  with the type.
+- **Type deactivated** (E-14/E-15, AD-122): exactly what deactivating any type does, nothing
+  more — the « Aventures » entry leaves the bar, creating an adventure is refused (E-8, `creer_fiche`,
+  the import warns `type_desactive`); existing adventures stay readable and writable by their
+  address and in the search, with their blocks « Préparation » and « Comptes-rendus » and their
+  status menu (no data is hidden); the E-3 blocks keep listing the adventures « En cours ».
 - **E-12**: the GM's assistant has one tool « créer une fiche » (type among the activated ones,
   title, sub-type, parent); the writing block of the conversation leads to the new sheet; « crée
   une campagne « X » » and « crée un scénario « X » dans « Y » » go through it (the stub keeps the
