@@ -2628,38 +2628,38 @@ closed to it from now on. Mockup: `e09-fiche-importee.html` (« Port-Sel », « 
 - Given an import of `contenu` with a GM block, replayed identically, the response says `inchangee`
   the second time and Léa reads nothing from the block.
 
-### E-19 Médiathèque
+### E-19 Media library
 
-*Maquette finie* : `docs/maquettes/e19-mediatheque.html` (états `#etat-joueur`, `#etat-image`,
+*Finished mockup*: `docs/maquettes/e19-mediatheque.html` (states `#etat-joueur`, `#etat-image`,
 `#etat-document`, `#etat-documents`, `#etat-supprimer`, `#etat-reserver`, `#etat-choisir`,
 `#etat-averti`, `#etat-vide`, `#etat-perdue`). The drop overlay, errors, upload progress, « Afficher les N autres »
 and the empty picker are not drawn: **this document takes precedence over the mockup**. Decisions
 of 2026-10-11 (B-53 to B-56, AD-111): all universe files, images and documents.
 
-Atteint (adresse `/univers/<id>/mediatheque`) par « Médiathèque » (`images`) dans la barre de l'univers, sous « Cartes », pour tout membre.
-En tête : le titre, « 1140 fichiers » (ceux que le lecteur voit) et, pour un MJ, « Ajouter des
-fichiers » (plusieurs à la fois, ou un glisser-déposer sur la page : voile « Déposez les fichiers pour
-les ajouter. »). Une bascule segmentée **Tout · Images · Documents** ; une rangée de filtres : la
-recherche par nom (« Chercher par nom ») ; pour un MJ, « Visibilité » (Toutes, Visibles des joueurs,
-Réservées au MJ) ; « Usage » (Tous, Utilisés, Non utilisés — calculé sur les usages que le lecteur peut lire : pour un joueur, « Non utilisés » veut dire « utilisé nulle part où il lit », jamais « utilisé dans une fiche fermée » ; D1) ; l'ordre (Plus récents, Nom). Une
-**grille** : une image en vignette (cadrage `cover`, chargement à l'approche) ; un **document** en
-tuile de même taille — l'icône de son type (`file-text` PDF, `file-spreadsheet` tableur, `file-archive`
-archive, `file` sinon), l'extension en pastille, la taille (« 2,4 Mo ») ; le nom dessous ; pour un MJ,
-la pastille « MJ seul » (`lock`) sur un fichier réservé. 100 puis « Charger la suite ».
+Reached (address `/univers/<id>/mediatheque`) through « Médiathèque » (`images`) in the universe sidebar, below « Cartes », for any member.
+At the top: title, « 1140 fichiers » (those the reader sees) and, for a GM, « Ajouter des
+fichiers » (several at once, or drag and drop onto the page: overlay « Déposez les fichiers pour
+les ajouter. »). A segmented **« Tout · Images · Documents »** toggle; a filter row:
+name search (« Chercher par nom »); for a GM, « Visibilité » (« Toutes », « Visibles des joueurs »,
+« Réservées au MJ »); « Usage » (« Tous », « Utilisés », « Non utilisés » — computed from usages the reader can read: for a player, « Non utilisés » means used nowhere they read, never used in a closed sheet; D1); order (« Plus récents », « Nom »). A
+**grid**: an image as a thumbnail (`cover` crop, loaded on approach); a **document** in a
+same-size tile — its type icon (`file-text` PDF, `file-spreadsheet` spreadsheet, `file-archive`
+archive, `file` otherwise), extension chip, size (« 2,4 Mo »); name below; for a GM,
+the « MJ seul » (`lock`) chip on a reserved file. 100 then « Charger la suite ».
 
-Un clic ouvre le **panneau du fichier** (à droite au bureau, plein écran au téléphone) : l'image en
-grand, ou pour un document sa grande icône, son type (« Document PDF », « Tableur XLSX », « Archive
-ZIP », « Document ODT » : la nature et l'extension) and, for documents only, « Télécharger » (images have no such button) ; le nom (MJ : éditable en
-place, 1 à 200 caractères) ; la **visibilité** en bascule segmentée « Visible des joueurs » /
-« Réservé au MJ » (MJ ; un joueur ne voit pas ce réglage) ; type, taille, « ajouté par lea le 12 oct.
-2026 », la clé d'origine (MJ, si importé) ; **Utilisé dans** — les usages **que le lecteur peut lire** : pour chaque fiche qu'il voit, l'illustration (si la fiche lui est visible) et les seules sections qu'il lit, avec leur titre (« Histoire » (dans le texte), « Pièces jointes de Description ») et un lien ; pour un non-MJ (E-19 n'a pas de mode Joueur), jamais un usage dans une section qu'il ne lit pas ni dans un bloc MJ — un fichier dont aucun usage ne lui est lisible n'a pas de bloc « Utilisé dans » (D1) — ; pour un MJ « Supprimer le fichier » (`--danger`). Aucun aperçu intégré d'un PDF (AD-66).
+Clicking opens the **file panel** (right on desktop, full screen on a phone): the large image,
+or for a document its large icon, type (« Document PDF », « Tableur XLSX », « Archive
+ZIP », « Document ODT »: nature and extension) and, for documents only, « Télécharger » (images have no such button); name (GM: editable
+inline, 1 to 200 characters); **visibility** as a segmented « Visible des joueurs » /
+« Réservé au MJ » toggle (GM; a player does not see this setting); type, size, « ajouté par lea le 12 oct.
+2026 », origin key (GM, if imported); **« Utilisé dans »** — usages **the reader can read**: for each sheet they see, the illustration (if the sheet is visible to them) and only sections they read, with their title (« Histoire » (in text), « Pièces jointes de Description ») and a link; for a non-GM (E-19 has no Player mode), never a usage in a section they cannot read or inside a GM block — a file with no readable usage has no « Utilisé dans » block (D1) —; for a GM « Supprimer le fichier » (`--danger`). No embedded PDF preview (AD-66).
 
-- *Réserver au MJ* un fichier lu des joueurs ailleurs : boîte « Réserver « plan-du-repaire.png » au
+- *Reserve for the GM* a file read by players elsewhere: dialog « Réserver « plan-du-repaire.png » au
   MJ ? Les joueurs ne le verront plus dans : Les Docks — « Histoire » ; Port-Sel — « Description »
-  (jointe). » ; « Réserver au MJ » / « Annuler », puis le toast « Fichier réservé au MJ. ». Sans tel
-  usage : pas de boîte, le même toast. Rendre visible, renommer : sans toast. Nom vide : « Erreur : le
-  nom est obligatoire. » ; au-delà de 200 : « Erreur : 200 caractères au plus. ». « Utilisé dans »
-  n'apparaît pas pour un fichier qu'aucune fiche visible du lecteur n'utilise.
+  (jointe). »; « Réserver au MJ » / « Annuler », then toast « Fichier réservé au MJ. ». Without such
+  usage: no dialog, same toast. Making visible, renaming: no toast. Empty name: « Erreur : le
+  nom est obligatoire. »; beyond 200: « Erreur : 200 caractères au plus. ». « Utilisé dans »
+  does not appear for a file used by no sheet visible to the reader.
 - *Delete*: dialog « Supprimer « Carte des Sphères » ? Elle est utilisée dans 3 fiches : Port-Sel
   (illustration), Val-Fortin (« Description »), Maître Aldric (pièces jointes de « Apparence »). Elle
   disparaîtra de ces fiches. » (« Il est utilisé… Il disparaîtra… » for a document); without usages:
@@ -2686,42 +2686,42 @@ any upload, attributed to the requesting GM's account, with visibility determine
 added (illustration: « Visible des joueurs » if the sheet has a section readable by players).
 The generating assistant tool (`generer_image`, `kanevas-images`) calls that same add path, joining the image to the section.
 
-| État | Ce qu'on voit | Ce qu'on peut faire |
+| State | What is seen | Available actions |
 |---|---|---|
-| vide | MJ : « Aucun fichier pour l'instant. Ajoutez-en, ou posez-en un dans une fiche. » et « Ajouter des fichiers » ; joueur : « Aucun fichier à voir pour l'instant. » ; un filtre sans résultat : « Aucun fichier ne correspond. » | MJ : ajouter |
-| chargement | tuiles en squelette ; une vignette qui charge garde son cadre | — |
+| empty | GM: « Aucun fichier pour l'instant. Ajoutez-en, ou posez-en un dans une fiche. » and « Ajouter des fichiers »; player: « Aucun fichier à voir pour l'instant. »; filter without results: « Aucun fichier ne correspond. » | GM: add |
+| loading | skeleton tiles; a loading thumbnail keeps its frame | — |
 | Error | « Impossible de charger la médiathèque. »; failed thumbnail or preview: « Image indisponible. » (icon and text only, no button); failed download: « L'action n'a pas abouti. Réessayez. »; an empty file in a multiple upload: « « notes.txt » est vide. » below the grid, other files are added; interrupted upload: « L'envoi n'a pas abouti. » with « Réessayer » and « Abandonner » (E-9 calls the latter « Ignorer »); failed deletion or change: « L'action n'a pas abouti. Réessayez. », nothing changed | « Réessayer » |
-| connexion perdue | le bandeau ; « Ajouter des fichiers », la bascule de visibilité, « Supprimer » désactivés | regarder ce qui est chargé |
+| connection lost | banner; « Ajouter des fichiers », visibility toggle, « Supprimer » disabled | view what is loaded |
 | Refused | A GM-only file the player did not add does not exist for them (absent, direct address: « Page introuvable. »); players have no visibility settings, deletion or add action on E-19 (**hidden**; they add through a writable section on E-9); role removed while viewing: « Vous ne pouvez plus modifier ce fichier. »; instance admin without a universe role forcing the address: « Page introuvable. » | « Mes univers » |
-| contenu long | 1 140 fichiers : 100 puis la suite ; nom de 200 caractères tronqué par « … » avec infobulle ; un fichier utilisé dans 40 fiches : 10 puis « Afficher les 30 autres » ; image de 30 Mo : l'aperçu se charge, rien n'est redimensionné (AD-93) ; document de 300 Mo : la tuile et « Télécharger », rien n'est chargé d'avance | idem |
+| long content | 1,140 files: 100 then more; 200-character name truncated with « … » and tooltip; file used in 40 sheets: 10 then « Afficher les 30 autres »; 30 MB image: preview loads, nothing is resized (AD-93); 300 MB document: tile and « Télécharger », nothing is loaded ahead | same |
 
-*Critères.*
-- Étant donné « plan-du-repaire.png » réservée au MJ et insérée dans « Histoire » des « Docks », lue
-  des joueurs, quand Léa lit « Les Docks », alors elle voit « Image réservée au MJ. » à sa place ; et
-  sa médiathèque ne montre pas ce fichier.
-- Étant donné le même fichier inséré dans un bloc MJ, quand Léa lit la section, alors rien ne paraît.
-- Étant donné Antor qui, en modifiant une section lue des joueurs, choisit dans la médiathèque un
-  fichier réservé au MJ, alors l'éditeur affiche l'avertissement de B-55 ; dans une section MJ seul,
-  non.
-- Étant donné Teo ajouté en Joueur de « Lame d'Ébène » par Antor, et Léa, auteur avec écriture de
-  « Notes de la table » (que les autres joueurs ne lisent pas),
-  quand elle ajoute « carnet.pdf » depuis son appareil, alors le document est joint à la section **et**
-  figure dans la médiathèque, « Réservé au MJ », « ajouté par lea » ; Léa le voit dans la section et
-  dans sa médiathèque, Teo ne le voit nulle part.
-- Étant donné Antor qui ajoute « plan.png » depuis un bloc MJ de « Port-Sel », alors le fichier entre
-  « Réservé au MJ » ; ajouté depuis « Description », lue des joueurs, il entre « Visible des joueurs » ;
-  choisi ensuite dans la médiathèque pour un bloc MJ, sa visibilité ne change pas.
+*Criteria.*
+- Given « plan-du-repaire.png » reserved for the GM and inserted into « Histoire » of « Les Docks », read
+  by players, when Léa reads « Les Docks », she sees « Image réservée au MJ. » in its place; and
+  her media library does not show this file.
+- Given the same file inserted inside a GM block, when Léa reads the section, nothing appears.
+- Given Antor editing a section read by players and choosing a GM-only file from the media
+  library, the editor displays the B-55 warning; in a GM-only section,
+  it does not.
+- Given Teo added as a Player of « Lame d'Ébène » by Antor, and Léa, author with write access to
+  « Notes de la table » (which other players do not read),
+  when she adds « carnet.pdf » from her device, the document is attached to the section **and**
+  appears in the media library, « Réservé au MJ », « ajouté par lea »; Léa sees it in the section and
+  her media library, Teo sees it nowhere.
+- Given Antor adding « plan.png » from a GM block of « Port-Sel », the file enters as
+  « Réservé au MJ »; added from « Description », read by players, it enters as « Visible des joueurs »;
+  later chosen from the media library for a GM block, its visibility does not change.
 - Given « Carte des Sphères » used by three sheets, when Antor deletes it, the dialog lists all
   three sheets. Afterwards, Antor sees « Fichier supprimé de la médiathèque. » in its place in
   « Val-Fortin »; Léa sees nothing.
-- Étant donné un fichier visible des joueurs utilisé par « Port-Sel » (lisible de Léa) et par « Rapport
-  secret de l'amirauté » (MJ seul), quand Léa ouvre le fichier, alors « Utilisé dans » ne nomme que
+- Given a player-visible file used by « Port-Sel » (readable by Léa) and by « Rapport
+  secret de l'amirauté » (GM only), when Léa opens the file, « Utilisé dans » names only
   « Port-Sel ».
-- Étant donné un fichier visible des joueurs joint à « Vérité — MJ seul » de « Maître Aldric » (fiche
-  que Léa voit par « Apparence ») et inséré dans un bloc MJ de « Port-Sel », quand Léa ouvre le fichier,
-  alors il n'a pas de bloc « Utilisé dans », et il paraît sous le filtre « Non utilisés ».
-- Étant donné la bascule sur « Documents », alors seuls les documents paraissent, chacun avec l'icône
-  de son type, son nom et sa taille.
+- Given a player-visible file attached to « Vérité — MJ seul » of « Maître Aldric » (a sheet
+  Léa sees through « Apparence ») and inserted inside a GM block of « Port-Sel », when Léa opens the file,
+  it has no « Utilisé dans » block, and appears under the « Non utilisés » filter.
+- Given the toggle on « Documents », only documents appear, each with its type
+  icon, name and size.
 
 ### E-8 Liste de fiches — l'arbre
 
