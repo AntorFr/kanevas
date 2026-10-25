@@ -94,6 +94,8 @@ export interface Fiche {
   titre: string;
   /** Free sub-type (B-52), null when none. */
   sousType: string | null;
+  /** Derived from player-readable sections (B-57); GM outside player mode only. */
+  visibleJoueurs?: boolean;
   charge: Record<string, unknown>;
   creeLe: string;
   modifieLe: string;
@@ -149,6 +151,8 @@ export interface Enfant {
   titre: string;
   type: TypeFiche;
   sousType: string | null;
+  /** Derived from player-readable sections (B-57); GM outside player mode only. */
+  visibleJoueurs?: boolean;
 }
 
 export interface PageEnfants {
