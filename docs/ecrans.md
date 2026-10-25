@@ -3391,8 +3391,8 @@ avec les deux cartes ; quand il coche « sous-lieux compris », alors « Suie »
 dans Port-Sel) s'ajoute avec « — Les Docks ». Étant donné Léa, Joueuse, quand elle ouvre
 « Port-Sel », alors elle lit « Personnages (1) » : Maître Aldric ; « Le Prieur masqué », dont la relation est
 dans « Secret — MJ seul », n'y est ni nommé ni compté. Étant donné Antor sur « La Guilde des
-Brumes », quand il ouvre la fiche, alors « Membres : Personnages (1) » montre « Maître Aldric —
-trésorier » ; « Dirige » n'est pas une nature : Aldric « membre de » la Guilde avec le qualificatif « trésorier », Ombeline « membre de » avec « capitaine ». Étant donné la famille « Les Corvalis »
+Brumes », quand il ouvre la fiche, alors « Membres : Personnages (2) » montre « Maître Aldric —
+trésorier » et « Dame Ombeline de Val-Fortin — dirige » ; « Dirige » n'est pas une nature : Aldric « membre de » la Guilde avec le qualificatif « trésorier », Ombeline « membre de » avec « dirige ». Étant donné la famille « Les Corvalis »
 (type Famille), quand Antor ouvre sa fiche, alors « Membres : Personnages (2) » montre « Bran
 Corvalis — aîné » et « Dame Ombeline de Val-Fortin — veuve » (Bran porte la marque « mort » une fois
 le geste de « Marquer mort » joué, pas avant).
@@ -3404,7 +3404,7 @@ address carries one of its parameters): **« Lié à »** (a sheet picker, the E
 « Relier » ; a chip « Port-Sel ✕ » once chosen), **« Par »** (the natures whose target types include
 the chosen sheet's type, read backwards: « s'y trouvent », « membres », « détenu par »…, the symmetric ones
 whichever side holds them, plus « toute relation » by default), **« sous-lieux compris »** (shown when the chosen sheet is a place), and the « gone » filter of the type (« Vivants / Morts / Tous » for Personnage or Créature, « Intacts / Détruits / Tous » for a lieu…, shown when the type filter is one that carries the mark). Address :
-`&lie=<id>&nature=<key>&descendants=1&etat=vivants|morts`. The results are the E-17 list, same
+`&lie=<id>&nature=<key>&descendants=1&etat=la|disparu`. The results are the E-17 list, same
 order, same rights (a relation counts only if its section and its source are readable by the
 searcher; in player mode, as a player). With « Lié à » set, the words become optional (« Chercher »
 starts with the filters alone, as a label does today). « Chercher parmi » from a « Fiches liées »
