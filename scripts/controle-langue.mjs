@@ -77,6 +77,22 @@ function referenceSections(file, before, current) {
   return [...before.slice(0, 14), null, ...before.slice(14)];
 }
 
+// f6e82682bba70e90b4150f9a0252ec6ac43a6256 corrected the finished-mockups
+// list after the frozen baseline: E-4 0 -> 1, E-14 1 -> 2. Amend only that
+// section's exact old counts; compare every current count normally, totals too.
+function referenceAmendment(file, sections) {
+  if (file !== 'docs/ecrans.md') return sections;
+  const index = sections[14]?.titre.includes('`kanevas-images`') ? 18 : 17;
+  const section = sections[index];
+  if (!section || !['Maquettes', 'Mockups'].includes(section.titre)
+      || (section.faits.identifiants['E-4'] || 0) !== 0
+      || section.faits.identifiants['E-14'] !== 1) return sections;
+  return sections.map((s, i) => i !== index ? s : {
+    ...s,
+    faits: { ...s.faits, identifiants: { ...s.faits.identifiants, 'E-4': 1, 'E-14': 2 } },
+  });
+}
+
 function differences(before, after) {
   const findings = [];
   for (const key of ['titres', 'blocs', 'tableaux']) {
@@ -216,7 +232,8 @@ function main() {
         continue;
       }
       const original = parse(oldText(normalized(file)));
-      const before = referenceSections(normalized(file), original, current);
+      const amended = referenceAmendment(normalized(file), original);
+      const before = referenceSections(normalized(file), amended, current);
       const oldProse = original.map((s) => s.prose).join('\n');
       const currentProse = current.map((s) => s.prose).join('\n');
       const range = ranges.get(file) || [0, Math.max(before.length, current.length) - 1];
@@ -240,7 +257,7 @@ function main() {
         sections.push({ numero: i, titre: b?.titre ?? a?.titre, francais: b?.francais || 0, mots: b?.mots || {}, faits: b?.faits, ecarts });
       }
       const francais = sections.reduce((n, s) => n + s.francais, 0);
-      const ecarts = ranges.has(file) ? sections.flatMap((s) => s.ecarts) : differences(total(original), total(current.filter((_, i) => before[i] !== null)));
+      const ecarts = ranges.has(file) ? sections.flatMap((s) => s.ecarts) : differences(total(amended), total(current.filter((_, i) => before[i] !== null)));
       failed ||= francais > 0 || broken.length > 0 || ecarts.length > 0 || sections.some((s) => s.ecarts.length);
       output.fichiers.push({ fichier: file, francais, faits: total(current), ecarts, liens: broken, sections });
     }

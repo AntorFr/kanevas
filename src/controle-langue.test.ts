@@ -274,3 +274,59 @@ test('screen baseline: inserted images checked for words, following facts still 
     assert.equal(audit('a.md').code, 1);
   } finally { rmSync(dir, { recursive: true, force: true }); }
 });
+
+test('mockups amendment: only the two exact baseline counts, in their own section', () => {
+  const headings = Array.from({ length: 13 }, (_, i) => `## Section ${i + 1}\nText.`).join('\n');
+  const base = `${headings}\n## Details for \`kanevas-refonte-visuelle\`\nText.\n`
+    + '## Illustrations\nText.\n## World\nText.\n## Maquettes\nSee E-14 and E-9.\n'
+    + '| Mockup |\n|---|\n| Finished |\n## Maps\nSee E-4 and E-14.\n';
+  const corrected = base.replace('## Maquettes\nSee E-14 and E-9.', '## Mockups\nSee E-14 and E-9, E-4 and E-14.');
+  const dir = depot(base);
+  try {
+    mkdirSync(join(dir, 'docs'));
+    writeFileSync(join(dir, 'docs/ecrans.md'), base);
+    execFileSync('git', ['add', 'docs/ecrans.md'], { cwd: dir });
+    execFileSync('git', ['commit', '-qm', 'mockups baseline'], { cwd: dir });
+    const audit = (...args: string[]) => lancer(dir, ['--base', 'HEAD', ...args]);
+    for (const images of [false, true]) {
+      const current = images
+        ? corrected.replace('## Details for', '## Details for `kanevas-images`\nSee AD-88.\n## Details for')
+        : corrected;
+      const section = images ? 18 : 17;
+      const range = `docs/ecrans.md:${section}-${section}`;
+      writeFileSync(join(dir, 'docs/ecrans.md'), current);
+      assert.equal(audit('docs/ecrans.md').code, 0);
+      assert.equal(audit('--sections', range).code, 0);
+      // Missing or extra occurrences of either amended identifier still fail.
+      for (const [from, to] of [
+        ['E-9, E-4 and E-14.', 'E-9 and E-14.'],
+        ['E-9, E-4 and E-14.', 'E-9, E-4, E-4 and E-14.'],
+        ['E-9, E-4 and E-14.', 'E-9 and E-4.'],
+        ['E-9, E-4 and E-14.', 'E-9, E-4, E-14 and E-14.'],
+        ['E-9, E-4 and E-14.', 'E-4 and E-14.'],
+        ['| Finished |\n', ''],
+      ] as const) {
+        writeFileSync(join(dir, 'docs/ecrans.md'), current.replace(from, to));
+        assert.equal(audit('--sections', range).code, 1);
+        assert.equal(audit('docs/ecrans.md').code, 1);
+      }
+      // Other sections cannot borrow the amendment, even if totals cancel out.
+      writeFileSync(join(dir, 'docs/ecrans.md'), current
+        .replace('E-9, E-4 and E-14.', 'E-9, E-4, E-4 and E-14.')
+        .replace('## Maps\nSee E-4 and E-14.', '## Maps\nSee E-14.'));
+      const misplaced = audit('docs/ecrans.md');
+      assert.equal(misplaced.code, 1);
+      assert.deepEqual(misplaced.json.fichiers[0].ecarts, []);
+      writeFileSync(join(dir, 'a.md'), current);
+      assert.equal(audit('a.md').code, 1);
+    }
+    // A different baseline count must not activate this historical amendment.
+    writeFileSync(join(dir, 'docs/ecrans.md'), base.replace('E-14 and E-9.', 'E-14, E-14 and E-9.'));
+    execFileSync('git', ['add', 'docs/ecrans.md'], { cwd: dir });
+    execFileSync('git', ['commit', '-qm', 'different baseline counts'], { cwd: dir });
+    writeFileSync(join(dir, 'docs/ecrans.md'), corrected);
+    const otherBase = audit('--sections', 'docs/ecrans.md:17-17');
+    assert.equal(otherBase.code, 1);
+    assert.deepEqual(otherBase.json.fichiers[0].ecarts, [{ fait: 'E-4', avant: 0, apres: 1 }]);
+  } finally { rmSync(dir, { recursive: true, force: true }); }
+});
