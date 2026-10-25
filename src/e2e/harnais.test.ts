@@ -317,10 +317,10 @@ export async function ecrireSection(page: Any, titre: string, contenu: string): 
   await s.getByRole('button', { name: rxExact('Enregistrer') }).click();
 }
 
-/** Sections of the open fiche, in display order (title text only, without the "MJ seul" pill). */
+/** Sections of the open fiche, in display order (content sections only, not the « Contient » block; title text without the "MJ seul" pill). */
 export async function titresSections(page: Any): Promise<string[]> {
   const hs: string[] = await page
-    .locator('main section h2')
+    .locator('main section.sec h2')
     .evaluateAll((els: Element[]) => els.map((e) => e.firstChild?.textContent ?? ''));
   return hs.map((h) => h.replace(/’/g, "'").trim());
 }
