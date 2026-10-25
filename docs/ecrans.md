@@ -2927,55 +2927,55 @@ toast « Adresse copiée. »). Two panels.
 - Given Léa, Player, when she opens E-18's address, she sees « Page introuvable. »
   and the item is absent from her sidebar.
 
-### E-14 et E-15 — « Types de fiche »
+### E-14 and E-15 — « Types de fiche »
 
-*Maquette finie* : `docs/maquettes/e14-types-de-fiche.html` (le panneau de E-14, le panneau de E-15,
-états `#etat-sans-systeme`, `#etat-confirmer`, `#etat-joueur`, `#etat-supprimer-univers`).
+*Finished mockup*: `docs/maquettes/e14-types-de-fiche.html` (E-14 panel, E-15 panel,
+states `#etat-sans-systeme`, `#etat-confirmer`, `#etat-joueur`, `#etat-supprimer-univers`).
 
-**E-15 (système)** : un quatrième onglet « Types de fiche » après Règles, Créatures, Objets. Une ligne
-par type de la liste du produit (sauf compte-rendu) : icône, nom, et un **interrupteur** « Activé »
-(colonne titrée « Système »).
-Sous la liste : « Utilisé par N univers. Un univers peut forcer un type à activé ou désactivé dans ses
-paramètres. » Basculer enregistre aussitôt (toast « Vaisseau désactivé pour CoF Mini. » ou « Vaisseau activé pour CoF Mini. ») ; tout univers
-qui suit le système le voit au chargement suivant. Joueur : la liste, interrupteurs en lecture seule
+**E-15 (system)**: a fourth « Types de fiche » tab after « Règles », « Créatures », « Objets ». One row
+per type in the product list (except session report): icon, name, and an **« Activé » switch**
+(column titled « Système »).
+Below the list: « Utilisé par N univers. Un univers peut forcer un type à activé ou désactivé dans ses
+paramètres. » Toggling saves immediately (toast « Vaisseau désactivé pour CoF Mini. » or « Vaisseau activé pour CoF Mini. »); any universe
+following the system sees it on the next load. Player: list, read-only switches
 (« Lecture seule »).
 
-**E-14 (univers)** : un quatrième panneau « Types de fiche », après « Créer un système ». Une ligne par
-type : icône, nom, le nombre de fiches de l'univers de ce type (« Aucune fiche », « 1 fiche », « 201 fiches »), et une **bascule
-segmentée à trois choix** : « Système · activé » (ou « Système · désactivé » ; « Par défaut · activé »
-pour un univers sans système), « Activé », « Désactivé ». Un choix forcé porte un point d'accent à
-gauche du nom ; la ligne dit, si le forçage contredit le système, « Le système le désactive. » (ou « Le système
-l'active. »). Enregistré au changement, toast « Vaisseau : activé dans Lame d'Ébène. » (« désactivé »,
-« suit le système »). Désactiver (par forçage ou en suivant) un type qui a des fiches demande
-confirmation : « Désactiver « Lieu » dans Lame d'Ébène ? Les 201 lieux restent ; on les atteint par un
-lien, la recherche ou l'arbre. » (au singulier : « Le seul événement reste ; … »), boutons
-« Désactiver » / « Annuler ». Le panneau « Supprimer l'univers » ferme la page, séparé par un filet
-`--danger` : « Supprimer l'univers » ouvre une boîte « Supprimer « Lame d'Ébène » ? Tout son contenu —
+**E-14 (universe)**: a fourth « Types de fiche » panel, after « Créer un système ». One row per
+type: icon, name, number of sheets of this type in the universe (« Aucune fiche », « 1 fiche », « 201 fiches »), and a **three-option
+segmented toggle**: « Système · activé » (or « Système · désactivé »; « Par défaut · activé »
+for a universe without a system), « Activé », « Désactivé ». An override carries an accent dot to the
+left of the name; if the override contradicts the system, the row says « Le système le désactive. » (or « Le système
+l'active. »). Saved on change, toast « Vaisseau : activé dans Lame d'Ébène. » (« désactivé »,
+« suit le système »). Disabling (by override or inheritance) a type with sheets asks for
+confirmation: « Désactiver « Lieu » dans Lame d'Ébène ? Les 201 lieux restent ; on les atteint par un
+lien, la recherche ou l'arbre. » (singular: « Le seul événement reste ; … »), buttons
+« Désactiver » / « Annuler ». The « Supprimer l'univers » panel ends the page, separated by a
+`--danger` rule: « Supprimer l'univers » opens a dialog « Supprimer « Lame d'Ébène » ? Tout son contenu —
 fiches, sections, fichiers de la médiathèque, campagnes, cartes, jetons — sera effacé, pour tous ses membres. Le
-système de jeu reste. » ; un champ « Tapez le nom de l'univers pour confirmer » ; « Supprimer
-l'univers » (`--danger`) ne s'active que si le nom tapé est exact (casse comprise). Après : E-1, toast
+système de jeu reste. »; a « Tapez le nom de l'univers pour confirmer » field; « Supprimer
+l'univers » (`--danger`) activates only if the typed name matches exactly (including case). Afterwards: E-1, toast
 « Univers supprimé. ».
 
-| État | Ce qu'on voit | Ce qu'on peut faire |
+| State | What is seen | Available actions |
 |---|---|---|
-| vide | sans objet : la liste du produit n'est jamais vide ; univers sans système : la colonne « Par défaut · activé » | forcer |
-| chargement | squelette du panneau ; les autres panneaux se chargent seuls | — |
-| erreur | un changement qui échoue : « L'action n'a pas abouti. Réessayez. » au-dessus du panneau, la bascule revient ; suppression qui échoue : le message dans la boîte, l'univers reste | « Réessayer » |
-| connexion perdue | le bandeau ; bascules, interrupteurs, « Supprimer l'univers » désactivés | lire |
-| refus | E-14 : Joueur — page introuvable (inchangé) ; E-15 : Joueur — lecture seule ; un MJ qui n'a plus de rôle : « Vous ne pouvez plus modifier ces paramètres. » | — |
-| contenu long | E-15 : les mêmes états que ceux de cette ligne et des lignes précédentes de ce tableau (squelette de l'onglet, « L'action n'a pas abouti. Réessayez. », bandeau de connexion perdue qui désactive les interrupteurs, une colonne au téléphone) ; 13 types réglables : la liste tient sans défiler au bureau, une colonne au téléphone (la bascule passe sous le nom) ; nom d'univers de 80 caractères dans la boîte : passe à la ligne | idem |
+| empty | not applicable: product list is never empty; universe without a system: « Par défaut · activé » column | override |
+| loading | panel skeleton; other panels load independently | — |
+| error | failed change: « L'action n'a pas abouti. Réessayez. » above the panel, toggle reverts; failed deletion: message in dialog, universe stays | « Réessayer » |
+| connection lost | banner; toggles, switches, « Supprimer l'univers » disabled | read |
+| refusal | E-14: Player — page not found (unchanged); E-15: Player — read only; GM who no longer has a role: « Vous ne pouvez plus modifier ces paramètres. » | — |
+| long content | E-15: same states as this row and previous rows of this table (tab skeleton, « L'action n'a pas abouti. Réessayez. », connection-lost banner disabling switches, one column on a phone); 13 configurable types: list fits without scrolling on desktop, one column on a phone (toggle moves below name); 80-character universe name in dialog: wraps | same |
 
-*Critères.*
-- Étant donné « CoF Mini » qui désactive « Vaisseau » et « Lame d'Ébène » qui le force à « Activé »,
-  quand Antor ouvre « Lame d'Ébène », alors « Vaisseaux » est dans sa barre ; quand Mira ouvre « Les
-  Landes grises » (qui suit le système), il n'y est pas.
-- Étant donné « Lame d'Ébène » qui suit le système pour « Note », quand le système réactive « Note »,
-  alors « Notes » apparaît dans la barre de « Lame d'Ébène » au chargement suivant.
-- Étant donné un univers dont le MJ désactive « Lieu », alors « Lieux » quitte la barre et la création,
-  et un lien vers un lieu ouvre toujours sa fiche.
-- Étant donné Antor qui tape « lame d'ébène » dans la boîte de suppression de « Lame d'Ébène », alors
-  « Supprimer l'univers » reste inactif ; avec le nom exact, l'univers est supprimé, et Léa qui en
-  ouvre une adresse voit « Page introuvable. ».
+*Criteria.*
+- Given « CoF Mini » disabling « Vaisseau » and « Lame d'Ébène » overriding it to « Activé »,
+  when Antor opens « Lame d'Ébène », « Vaisseaux » is in his sidebar; when Mira opens « Les
+  Landes grises » (following the system), it is absent.
+- Given « Lame d'Ébène » following the system for « Note », when the system enables « Note » again,
+  « Notes » appears in « Lame d'Ébène »'s sidebar on the next load.
+- Given a universe whose GM disables « Lieu », « Lieux » leaves the sidebar and creation,
+  and a link to a location still opens its sheet.
+- Given Antor typing « lame d'ébène » in « Lame d'Ébène »'s deletion dialog,
+  « Supprimer l'univers » stays inactive; with the exact name, the universe is deleted, and Léa opening
+  one of its addresses sees « Page introuvable. ».
 
 #### Les types — ce que `kanevas-import-types` construit
 
