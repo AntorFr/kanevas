@@ -102,7 +102,7 @@ E-16 vivent hors des univers : leurs cases disent le rôle dans un univers ratta
 | E-5 | — | — | lister les univers et leurs membres ; ajouter, changer un rôle, retirer un membre ; voir l'état du jeton de l'assistant, connecter ou reconnecter l'abonnement |
 | E-6 | *retired (`kanevas-scenarios`)* | — | — |
 | E-7 | *retired (`kanevas-scenarios`)* | — | — |
-| E-8 | lire, chercher, créer ; la vignette de chaque fiche (son illustration, ou le repli dessiné) ; *(kanevas-fiches-liees)* la marque « disparu » sur la vignette (mort, détruit, éteinte selon le type), le filtre du type (Vivants / Morts, Intacts / Détruits…) ; *(kanevas-scenarios)* for the « Aventure » type: the status badge, the « Statut » filter, the status menu on a card or a tree line, the creation form with sub-type suggestions and « Visible des joueurs » | lire, chercher ; la vignette des fiches qu'il voit ; *(kanevas-fiches-liees)* the « gone » mark and its filter as the GM, never the « Marquer … » entry (**caché**) | — |
+| E-8 | lire, chercher, créer ; la vignette de chaque fiche (son illustration, ou le repli dessiné) ; *(kanevas-fiches-liees)* la marque sur la vignette (Mort, Morte, Détruit, Détruite, Éteinte selon le type), le filtre du type (Vivants / Morts, Intacts / Détruits…) ; *(kanevas-scenarios)* for the « Aventure » type: the status badge, the « Statut » filter, the status menu on a card or a tree line, the creation form with sub-type suggestions and « Visible des joueurs » | lire, chercher ; la vignette des fiches qu'il voit ; *(kanevas-fiches-liees)* the « gone » mark and its filter, the same as the GM sees them (the « Marquer … » entry is on E-9 only, hidden from a player) | — |
 | E-9 | tout ; mode Joueur ; *(kanevas-fiches-liees)* relier avec une nature et un qualificatif, le bloc « Fiches liées » avec « sous-lieux compris », « Marquer mort / détruit / éteinte… » dans l'en-tête ; *(kanevas-scenarios)* on an adventure: the status menu in the header, the blocks « Préparation » (GM) and « Comptes-rendus » (« Nouveau compte-rendu ») ; relier et retirer des relations ; poser, remplacer, retirer l'illustration (hors mode Joueur) ; *(kanevas-import)* sous-type, réserver un fichier au MJ, voir un fichier en attente d'import (tuile) | sections lisibles ; écrire celles permises ; relations lisibles (section et cible) ; pièces jointes de celles-ci ; voir l'illustration, jamais la poser ; *(kanevas-import)* dans une section qu'il écrit, ajouter un fichier ou en choisir un qu'il voit (les deux chemins de B-55) et retirer une référence ; fichiers sous double garde ; jamais régler une visibilité (**caché**) ; un fichier en attente d'import : rien (**caché**) ; *(kanevas-fiches-liees)* « Fiches liées » réduit aux relations qu'il lit (comptes compris) ; la marque « disparu » ; « Marquer mort / détruit… » et la nature au relier : **cachés** | — |
 | E-10 | tout | cartes visibles | — |
 | E-11 | tout ; mode Joueur | lire une carte visible, ouvrir une fiche | — |
@@ -111,7 +111,7 @@ E-16 vivent hors des univers : leurs cases disent le rôle dans un univers ratta
 | E-14 | tout ; « Supprimer l'univers » (*kanevas-import*) | — (« Page introuvable. ») | « Page introuvable. » |
 | E-15 (hors univers ; les colonnes disent le rôle dans un univers **rattaché au système**) | lire ; « Ajouter … », « Modifier » | lire (« Lecture seule ») ; ni « Ajouter » ni « Modifier » | « Page introuvable. », sauf s'il est lui-même membre d'un univers rattaché : alors la colonne de son rôle là (l'admin MJ d'un univers rattaché lit et modifie) |
 | E-16 (hors univers) | ses systèmes, avec ses univers et son rôle | ses systèmes, « Lecture seule » | la liste de ses propres systèmes (comme MJ ou Joueur s'il est membre d'un univers rattaché) ; vide sinon — l'écran est proposé à tout compte |
-| E-17 *(kanevas-import)* | *(kanevas-fiches-liees)* recherche avancée (lié à, nature, sous-lieux, vivants/morts) sur ce qu'il lit ; chercher dans toutes les fiches de l'univers, blocs MJ compris ; en **mode Joueur**, comme un joueur (ni blocs MJ, ni fiches qu'un joueur ne lit pas) ; filtres : les types activés ; les fiches des types désactivés restent des résultats sous « Tous » | chercher dans ce qu'il lit, hors blocs MJ ; filtres par type et par étiquette des seules fiches qu'il voit ; bascule de mode : absente (cachée) ; blocs MJ : hors recherche (jamais lus) ; « Alias et étiquettes… » sur E-9 : cachée ; *(kanevas-fiches-liees)* la recherche avancée sur ce qu'il lit, « Lié à » ne propose que les fiches qu'il voit | — |
+| E-17 *(kanevas-import)* | *(kanevas-fiches-liees)* recherche avancée (lié à, nature, sous-lieux, vivants/morts, intacts/détruits… selon le type) sur ce qu'il lit ; chercher dans toutes les fiches de l'univers, blocs MJ compris ; en **mode Joueur**, comme un joueur (ni blocs MJ, ni fiches qu'un joueur ne lit pas) ; filtres : les types activés ; les fiches des types désactivés restent des résultats sous « Tous » | chercher dans ce qu'il lit, hors blocs MJ ; filtres par type et par étiquette des seules fiches qu'il voit ; bascule de mode : absente (cachée) ; blocs MJ : hors recherche (jamais lus) ; « Alias et étiquettes… » sur E-9 : cachée ; *(kanevas-fiches-liees)* la recherche avancée sur ce qu'il lit, « Lié à » ne propose que les fiches qu'il voit | — |
 | E-19 *(kanevas-import)* | tout : ajouter, renommer, visibilité, supprimer ; « Utilisé dans » complet | les fichiers visibles des joueurs et ceux qu'il a ajoutés ; « Utilisé dans » réduit aux fiches qu'il lit ; ni ajout depuis E-19 (**caché** ; il ajoute un fichier par une section qu'il écrit, E-9), ni réglage, ni suppression (**cachés**) | — |
 | E-18 *(kanevas-import)* | créer un jeton ; voir et révoquer tous les jetons de l'univers (y compris ceux d'un autre MJ) ; voir les lots | — (**caché** : absent de la barre, « Page introuvable. » par l'adresse) | — |
 
@@ -3403,7 +3403,7 @@ Under the field and the two filter rows, a disclosure **« Recherche avancée »
 address carries one of its parameters): **« Lié à »** (a sheet picker, the E-8 list as in
 « Relier » ; a chip « Port-Sel ✕ » once chosen), **« Par »** (the natures whose target types include
 the chosen sheet's type, read backwards: « s'y trouvent », « membres », « détenu par »…, the symmetric ones
-whichever side holds them, plus « toute relation » by default), **« sous-lieux compris »** (shown when the chosen sheet is a place), and the « gone » filter of the type (« Vivants / Morts / Tous » for Personnage or Créature, « Intacts / Détruits / Tous » for a lieu…, shown when the type filter is one that carries the mark). Address :
+whichever side holds them, plus « toute relation » by default), **« sous-lieux compris »** (shown when the chosen sheet is a place), and the « gone » filter of the type (the three words of the type's row in the table below — « Vivants / Morts / Tous » for Personnage, « Vivantes / Mortes / Toutes » for Créature, « Intacts / Détruits / Tous » for a lieu…, shown when the type filter is one that carries the mark). Address :
 `&lie=<id>&nature=<key>&descendants=1&etat=la|disparu`. The results are the E-17 list, same
 order, same rights (a relation counts only if its section and its source are readable by the
 searcher; in player mode, as a player). With « Lié à » set, the words become optional (« Chercher »
@@ -3431,9 +3431,10 @@ Monsieur, 2026-10-25) :
 
 | Type | Word (badge) | Menu entry | Filter | Glyph |
 |---|---|---|---|---|
-| personnage, créature | Mort / Morte | Marquer mort · Marquer vivant | Vivants / Morts / Tous | `skull` |
-| famille | Éteinte | Marquer éteinte · Marquer vivante | Vivantes / Éteintes / Tous | `skull` |
-| faction | Détruite | Marquer détruite · Marquer active | Actives / Détruites / Tous | `shield-off` |
+| personnage | Mort | Marquer mort · Marquer vivant | Vivants / Morts / Tous | `skull` |
+| créature | Morte | Marquer morte · Marquer vivante | Vivantes / Mortes / Toutes | `skull` |
+| famille | Éteinte | Marquer éteinte · Marquer vivante | Vivantes / Éteintes / Toutes | `skull` |
+| faction | Détruite | Marquer détruite · Marquer active | Actives / Détruites / Toutes | `shield-off` |
 | lieu, objet, vaisseau | Détruit | Marquer détruit · Marquer intact | Intacts / Détruits / Tous | `flame` |
 
 The other types (événement, quête, savoir, récit, règle, note, compte-rendu, aventure) carry no
@@ -3455,13 +3456,46 @@ mark. The grammatical gender of the word follows the type's label (« Détruite 
 - **Import**: `disparu: true|false` on a sheet of a type that carries the mark (default false,
   protected by B-48 like `pj`); refused with `champ_inconnu` on another type.
 
+**Values and words.** `?etat=la|disparu` : `la` is « there » (alive, intact, active : the mark absent), `disparu`
+is the mark set ; the words of the table are what is shown, never the key. The filter is offered, for the seven
+types, on E-8 (the grid of the type) and in the advanced volet of E-17 once the chosen type carries the mark.
+Without a type, E-17 offers no filter. The mark is public : the filter and the badge are the same for a player.
+
+**States** (the gesture and the filter) :
+
+| State | What is shown |
+|---|---|
+| marking, waiting | the entry is disabled while the write is in flight, the header stays as it was ; no optimistic badge |
+| marking, done | the badge, the mark on the illustration and the reverse entry appear together, with the toast « Fiche marquée : Mort. » (the word of the type, capitalised ; « Marque retirée. » for the reverse) |
+| marking, failed | not a toast : an inline message under the header, « Impossible de modifier la fiche. Réessayez. », the sheet unchanged ; the message is `role="alert"`, stays until the next attempt or a reload, and the « ⋯ » menu is closed on click (the header shows the entry disabled while waiting) ; a network cut mid-gesture reads the same sentence (« Connexion perdue » is only shown when the browser is offline before the gesture) ; if the sheet was deleted meanwhile, « Fiche introuvable. » and the screen leaves for E-8 ; if the caller lost the GM role meanwhile, the same sentence (the write is refused, the sheet is re-read and the entry is gone) |
+| GM in player mode | the entry is absent (the mode reads the sheet as a player) |
+| offline | « ⋯ » is disabled as for every write of E-9 (« Connexion perdue ») ; a filtered list shows the generic offline state of its screen |
+| filter, loading | the grid keeps its skeleton cards under the control, which stays usable |
+| filter, no sheet of the type | the control stays (it is the type's, not the list's) and the list shows the type's usual empty state |
+| filter, load error | the control stays, the grid is replaced by the screen's generic error line with « Réessayer » ; the filter chosen is kept |
+| extreme content | a title of 120 characters is cut with an ellipsis on the card, whole in its tooltip ; the chip never covers more than the frame's corner ; the header badge keeps the word on one line (the words are short) ; a grid wholly marked is a grid of marked cards, nothing more |
+| filter, empty | « Aucun personnage mort. », « Aucune créature morte. », « Aucune faction détruite. », « Aucune famille éteinte. », « Aucun lieu détruit. », « Aucun objet détruit. », « Aucun vaisseau détruit. » (the other state reads « Aucun personnage vivant. », « Aucune créature vivante. », « Aucune faction active. », « Aucune famille vivante. », « Aucun lieu intact. », « Aucun objet intact. », « Aucun vaisseau intact. » ; on E-17, with a type and a state and nothing found, the screen's own « Aucune fiche pour ces critères. »), with « Voir tous les <pluriel du type>. » that clears `etat` |
+| mark, accessibility | the chip carries `aria-label` = the word (« Mort ») and a `title` ; the badge is text, the mark never the only carrier of the meaning |
+| mark on a fallback | the glyph of the type's mark replaces the chip : a gone character shows the skull where the live one shows the initial and the type icon ; the badge or the card's word tells which |
+
 *Critères.* Étant donné Antor sur « Bran Corvalis » (vivant dans le semis, « Apparence » lue des
 joueurs), quand il choisit « Marquer mort », alors l'en-tête porte « Mort », le portrait prend la
 marque, et sa carte de la grille aussi à la prochaine lecture de la liste ; « Vivants » ne le liste
 plus ; Léa voit la marque sur sa fiche et sa carte, et pas l'entrée du menu. Étant donné Antor sur
 « Le Phare aux Sels » (lieu), quand il choisit « Marquer détruit », alors l'en-tête porte
 « Détruit » avec la flamme, et « Intacts » ne le liste plus ; sur une quête, le menu n'a pas
-d'entrée.
+d'entrée. Étant donné Bran marqué mort, quand
+Antor choisit « Marquer vivant », alors le badge et la marque disparaissent et « Vivants » le liste de nouveau ;
+« Morts » liste les morts seuls ; sur « La Guilde des Brumes » (faction), l'entrée est « Marquer détruite » et le
+badge « Détruite » avec `shield-off` ; sur « Les Corvalis » (famille), « Marquer éteinte » et « Éteinte ». La marque se
+voit sur la ligne du Prieur (mort au semis) dans une recherche E-17 « Morts » (type Personnage) ; dans « Contient » et
+dans « Fiches liées », elle vient avec `-bloc`, qui rend ses lignes par le même composant. Étant donné Antor
+en mode Joueur, quand il ouvre Bran, alors l'entrée du menu est absente. Étant donné que le PATCH échoue,
+quand Antor choisit « Marquer mort », alors le message « Impossible de modifier la fiche. Réessayez. » apparaît sous
+l'en-tête et la fiche n'a ni badge ni marque. Étant donné la grille des lieux sans lieu détruit, quand Antor choisit
+« Détruits », alors la liste dit « Aucun lieu détruit. » avec « Voir tous les lieux. » ; quand une lecture du filtre échoue,
+le contrôle reste et la grille montre la ligne d'erreur avec « Réessayer ». Un titre de 120 caractères est coupé sur la
+carte marquée, entier dans l'infobulle.
 
 ### E-11 and « Mentionnée dans » (B-69)
 
@@ -3475,8 +3509,8 @@ natured relations (they are in « Fiches liées ») and keeps the links and the 
 « S'y trouvent » folded, « sous-lieux compris », a dead mark on a line; `#etat-volet` shows the
 side-panel alternative; `#etat-joueur` what Léa sees. `docs/maquettes/e17-recherche-avancee.html`
 — E-17 with the disclosure open, « Port-Sel » chosen, « s'y trouvent », sous-lieux compris,
-« Vivants ». The E-9 « Relier » form and the dead mark in the header reuse `e09-fiche.html`; this
-text is authoritative.
+« Vivants ». The E-9 « Relier » form reuses `e09-fiche.html`; the mark itself (header badge, « ⋯ » entry, desaturated
+illustration, E-8 filter, the states below) is `e09-marque-disparu.html`; this text is authoritative.
 
 ### Clôture
 

@@ -644,7 +644,7 @@ introuvable. ».
   reads (the section and the source sheet, AD-64). *(P-17, P-6)*
 - **B-65** — The **advanced search** (E-17) finds the sheets linked to a given sheet by a given
   nature (or by any relation), « sous-lieux compris » when that sheet is a place, combined with the
-  type, the label, the words and — for characters and creatures — « vivants / morts »; the result
+  type, the label, the words and — for the seven types that can be gone — the state filter (« vivants / morts », « intacts / détruits »…); the result
   is the list of E-17, under the same rights. *(P-17)*
 - **B-66** — « **Famille** » is a type of the product's list (reglable, activated by default,
   icon `users`): a family is a sheet like a faction, members are characters linked to it by the
@@ -682,9 +682,11 @@ introuvable. ».
    Ombeline par « membre de » (« aîné », « veuve ») ; sur la fiche des Corvalis, « Membres :
    Personnages (2) ».
 4. Un PNJ est mort à la séance 12 : sur sa fiche, **« Marquer mort »** ; sa carte porte la marque
-   dans la grille et dans « S'y trouvent », et « Vivants » ne le liste plus.
+   dans la grille et dans « S'y trouvent », et « Vivants » ne le liste plus. Dans la grille des
+   personnages (E-8), le filtre « Vivants / Morts / Tous » (gardé dans l'adresse) liste les morts
+   seuls ; s'il s'est trompé de PNJ, **« Marquer vivant »** défait le geste.
 *Moment fort* : l'étape 1, le lieu qui montre d'un coup qui s'y trouve, sous-lieux compris.
-*Échec* : il relie « se situe à » un **objet** : la nature n'est pas proposée pour ce couple de
+*Échec* : si « Marquer mort » échoue, la fiche reste comme elle était et un message le dit (E-9) ; il relie « se situe à » un **objet** : la nature n'est pas proposée pour ce couple de
 types, le formulaire ne montre que les natures du couple (ou « sans nature ») ; une relation dont
 la section est fermée aux joueurs n'apparaît pas dans « Fiches liées » pour Léa, ni dans sa
 recherche, ni dans le compte.

@@ -578,3 +578,44 @@ Val-Fortin » (veuve) as members — every one of these relations from the chara
 read by the players, so that Léa's criteria (E-9, E-17) hold ; the Prieur's alone from « Secret — MJ
 seul » ; the
 three former free relations of Port-Sel keep their text as qualifier.
+
+### Slice `kanevas-fiches-liees-disparu` — design notes (2026-10-25)
+
+The cadrage (AD-131, B-67, the « gone mark » section of `docs/ecrans.md`) fixes the key, the words and the
+screens ; these notes close what the code leaves open.
+
+1. **The words live in the type list.** `DefinitionType` (`src/services/types-fiche.ts`) gains an optional
+   `disparu: {oui, non, menuOui, menuNon, filtre: {la, disparu, tous}, vide: {la, disparu}, icone}` (`filtre` the three words of the
+   control, « Tous » agreeing with the type : « Toutes » for créature, faction, famille ; `vide` the two empty sentences,
+   complete, « Aucun personnage mort. »…, the screen adds « Voir tous les <pluriel du type>. ») with the values of the table of `docs/ecrans.md` « the gone mark » : personnage
+   Mort · Marquer mort / vivant · Vivants / Morts ; créature Morte · Marquer morte / vivante · Vivantes / Mortes ;
+   famille Éteinte ; faction Détruite ; lieu, objet, vaisseau Détruit — the grammatical gender follows the type's
+   label. The seven types carry it, their strict
+   charge schema gains `disparu: z.boolean().optional()` (absent = there). The API sends the words in the
+   `TypeVue` of `GET …/types` (the frontend never copies the table) ; the glyph is a Lucide name resolved in
+   `frontend/src/types-contexte`, next to the type icon.
+2. **One writer.** `marquerDisparu(db, acteur, universId, ficheId, disparu)` in `services/fiches.ts` : GM out of
+   player mode (`exigerMJ`, else `introuvable`), `invalide` « Cette fiche ne peut pas être marquée disparue. » on
+   a type without the key, rewrites `charge` whole, moves `modifie_le`, and (like a title) leaves
+   `dernier_import` alone — a replayed import then does not overwrite the GM's gesture only because `disparu`
+   is protected by B-48 : the import writes the key through this function and skips it on a sheet whose
+   `dernier_import` differs from its last write, exactly as for `pj`. `changerTypeFiche` drops the key when the
+   new type does not carry it and keeps it when it does (a character turned creature stays gone).
+3. **The route.** `PATCH …/fiches/:fid` accepts `{disparu: boolean}` alone or beside the existing keys, in the
+   same transaction ; any other type of value is 400 « Requête invalide. ».
+4. **The list.** `listerFiches` gains `etat: 'la' | 'disparu'` : one condition on
+   `json_extract(charge, '$.disparu')` (`'la'` = absent or false). It is one more intersected condition (AD-63),
+   with `etat` set and no `type`, a sheet of a type without the mark is **not** listed (it is neither
+   there nor gone) ; with `etat` absent nothing changes. Anything else than `la|disparu` is 400. The charge already rides on each line, so no new field.
+5. **The mark is one component.** `MarqueDisparu` (`frontend/src/ecrans/fiche/marque.tsx`) wraps an image frame :
+   `filter: saturate(.4)` on the image (60 % desaturated), the type's glyph in a 20 px round chip bottom-left, an
+   `aria-label` of the word ; on the drawn fallback the glyph alone, no chip. `vignette.tsx` uses it for
+   `CarteFiche` and for the line variant that `-recherche` and `-bloc` share ; E-9's illustration uses it too. Colours
+   only through `tokens.css` (a neutral surface, never a red). The badge of the header is a `Pastille` neutral.
+6. **Menu and filter.** The « ⋯ » entry is built from the type's words (nothing for a type without the mark, nothing
+   for a player or in player mode), calls the PATCH and refreshes the sheet ; the filter on E-8 is a segmented
+   control of three (« Vivants / Morts / Tous »…) shown only for a type that carries the mark, kept in `?etat=` ;
+   the volet of E-17 gets the same control once `type` is a type that carries it. The words come from point 1.
+7. **The import.** `lireCorps` of `services/import-fiches.ts` reads `disparu` (boolean), `champ_inconnu` on a type
+   without the key ; it counts in the batch like `pj`.
+8. **The seed.** « Le Prieur masqué » is created gone ; « Bran Corvalis » and « Le Phare aux Sels » stay there.
