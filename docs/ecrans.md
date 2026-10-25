@@ -3404,20 +3404,20 @@ address carries one of its parameters): **« Lié à »** (a sheet picker, the E
 « Relier » ; a chip « Port-Sel ✕ » once chosen), **« Par »** (the natures whose target types include
 the chosen sheet's type, read backwards: « s'y trouvent », « membres », « détenu par »…, the symmetric ones
 whichever side holds them, plus « toute relation » by default), **« sous-lieux compris »** (shown when the chosen sheet is a place), and the « gone » filter of the type (« Vivants / Morts / Tous » for Personnage or Créature, « Intacts / Détruits / Tous » for a lieu…, shown when the type filter is one that carries the mark). Address :
-`&lie=<id>&nature=<key>&descendants=1&etat=la|disparu`. The results are the E-17 list, same
+`&lie=<id>&nature=<key>&descendants=1&etat=la|disparu`. The results are the E-17 list (the row of E-8 with its aliases and labels), same
 order, same rights (a relation counts only if its section and its source are readable by the
-searcher; in player mode, as a player). With « Lié à » set, the words become optional (« Chercher »
-starts with the filters alone, as a label does today). « Chercher parmi » from a « Fiches liées »
+searcher; in player mode, as a player). With « Lié à » set, the words become optional (the search starts with the filters alone, as a label does today ; the field reads « Cherchez un nom, un alias ou un mot — facultatif avec « Lié à ». » and E-17 has no « Chercher » button). With « sous-lieux compris », a row found through a sub-place says it in grey under the title (« Les Docks » for Suie): its `via`, the place the relation points to — never an intermediate place. The mockup is authoritative for the layout ; the « gone » filter it draws (« Vivants / Morts », `etat=`) is delivered by `kanevas-fiches-liees-disparu`, not by the slice that builds this volet, and its address line is the browser's, not a component. « Chercher parmi » from a « Fiches liées »
 group opens E-17 so pre-filled.
 
 | État | Ce qu'on voit | Ce qu'on peut faire |
 |---|---|---|
-| vide | « Aucune fiche liée à « Port-Sel » pour ces critères. » ; without « Lié à » and without words: E-17 asks for a word, as today | retirer un filtre |
-| chargement | as E-17 | — |
-| erreur | as E-17 | « Réessayer » |
+| vide | « Aucune fiche liée à « Port-Sel » pour ces critères. » — with « Lié à » set this text wins over « Aucune fiche ne correspond. », words or not ; without « Lié à » and without words: E-17 asks for a word, as today | retirer un filtre |
+| chargement | as E-17 (the previous results stay, dimmed, until the new ones arrive) ; the picker shows « Chargement… » | — |
+| erreur | as E-17 ; a failed picker call reads « Impossible de charger les fiches. » inside the picker | « Réessayer » |
 | connexion perdue | as E-17 ; the picker disabled | lire |
-| refus | a player or player mode: the sheet picker lists what he reads ; `?lie=` on a sheet he does not read: the chip reads « Fiche introuvable » (✕ kept) and the search still runs with it: the API answers an empty page, the list reads « Aucune fiche liée pour ces critères. » | — |
-| contenu long | the filters wrap on two rows under 760 px ; a picked title of 120 characters is cut with an ellipsis in the chip, whole in its tooltip | idem |
+| sélecteur vide | « Aucune fiche. » under the field when the typed words match no sheet the caller reads | modifier la saisie |
+| refus | a player or player mode: the sheet picker lists what he reads ; `?lie=` on a sheet the caller does not read (a player, **or the GM** on a deleted sheet or one of another universe): the chip reads « Fiche introuvable » (✕ kept) and the search still runs with it: the API answers an empty page, the list reads « Aucune fiche liée pour ces critères. » ; « Par » then offers « toute relation » only and « sous-lieux compris » is hidden | — |
+| contenu long | a tree deeper than 50 levels is searched down to the 50th, without a word about it ; « Par » holds five natures at most ; the filters wrap on two rows under 760 px ; a picked title of 120 characters is cut with an ellipsis in the chip, whole in its tooltip | idem |
 
 *Critères.* Étant donné Antor, quand il cherche « lié à Port-Sel », « s'y trouvent », sous-lieux
 compris, type Personnage, alors la liste porte Aldric, le Prieur et Suie ; avec « Vivants », le
