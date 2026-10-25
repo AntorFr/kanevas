@@ -4,7 +4,7 @@ RPG management system (lore, campaigns, session reports, permissions, maps).
 This repository provides the foundation (health, OIDC, image, CI) and the **first business feature**:
 a GM creates a universe, gathers its players and writes sheets whose sections each have
 their own audience; a player reads only what that audience allows. What the product enables and
-through which screens: `docs/parcours.md`, `docs/ecrans.md`, `docs/donnees.md`. Abbreviations: E-n = a screen (`docs/ecrans.md`), B-n = a need, P-n = a journey, AD-n = an architecture decision (`ARCHITECTURE.md`); “Monsieur” = the stakeholder who performs acceptance checks, “tranche” = a delivered feature, “phase merge” = the merge after acceptance.
+through which screens: `docs/parcours.md`, `docs/ecrans.md`, `docs/donnees.md`. Abbreviations: E-n = a screen (`docs/ecrans.md`), B-n = a need, P-n = a journey, AD-n = an architecture decision (`ARCHITECTURE.md`); “bouchon” = stub mode (`KANEVAS_STUB=1`; the code, folders and recipes keep the French name), “Monsieur” = the stakeholder who performs acceptance checks, “tranche” = a delivered feature, “phase merge” = the merge after acceptance.
 
 Beyond the first business feature, the repository includes the **game system**: a reference collection (rules, creatures, items) shared by several
 universes and linked from the universe settings. It also includes **session tracking**: campaigns, scenarios (GM), preparation in five categories (GM) and session reports (any member). The universe's **media library** (E-19) stores each image or document as a row in `fichiers` with its own visibility (player-visible or GM-only), determined by where it is added; a section attaches it (up to 100) or embeds it in its text, and a sheet can use it as its illustration. It includes **instance administration**: an account in the Authelia `parents` group sees universes and their members (never their content) and repairs them (E-5, B-6). Each sheet can have an **illustration** (an image from the media library, set by the GM, in the E-8 card grid and E-9 header), and **game systems** have their screen outside universes (E-16, E-15). It also includes **relations** between sheets (the sheet's « Relations » block) and **search** across all sheet types, by alias and label (E-17), **maps** (E-10, E-11: illustrated map with background and tokens, or relation graph; visible to players or hidden; E-3's « Cartes visibles » block) and each member's **assistant** (E-12: a conversation panel that searches, reads, writes and, for the GM, creates a campaign or scenario and **proposes a section update** from a session report, written only by their « Appliquer » action, with exactly that person's permissions; model access uses the operator's Claude subscription, `CLAUDE_CODE_OAUTH_TOKEN` or, without redeployment, the token the instance admin sets from administration; in stub mode, a script responds). The GM can also request a **portrait**: the assistant generates an image and attaches it to the section, where it enters the media library (Codex engine using the operator's subscription; in stub mode, a fixed image).
@@ -12,25 +12,25 @@ universes and linked from the universe settings. It also includes **session trac
 ## Structure
 
 ```txt
-Dockerfile                        Image unique : API Fastify + frontend construit
-scripts/faux-setup-token.mjs        Le `claude setup-token` du bouchon (copié dans l'image)
-scripts/tests-attestes.mjs           `npm run tests:attestes` : joue toute la suite sur l'arbre commité (refuse un arbre sale, code 2) et écrit `rapport-tests.json` (ignoré par git, local à l’exécution : un rouge ancien se périme en rejouant la commande)
+Dockerfile                        Single image: Fastify API + built frontend
+scripts/faux-setup-token.mjs        The stub's `claude setup-token` (copied into the image)
+scripts/tests-attestes.mjs           `npm run tests:attestes`: plays the whole suite on the committed tree (refuses a dirty tree, exit code 2) and writes `rapport-tests.json` (ignored by git, local to the run: an old red expires when the command is replayed)
 src/
-  server.ts, app.ts               Démarrage ; assemblage des plugins et des routes
-  config/env.ts                   Variables d'environnement (zod)
+  server.ts, app.ts               Startup; assembly of plugins and routes
+  config/env.ts                   Environment variables (zod)
   db/                             SQLite (better-sqlite3), migrations/0001 to 0016, runner
-  services/                       comptes, univers, membres, instance, fiches, sections, droits, systemes, relations, campagnes, scenarios, preparation, comptes_rendus, propositions, markdown (rendu unique), liens (table liens, seul écrivain), etiquettes (alias et étiquettes, seul écrivain), mentions (« Mentionnée dans »), types, types-fiche (la liste des types et leur activation),
-                                   fichiers (media library, sole writer of `fichiers*`, except that deleting a universe in `univers.ts` erases its rows), fichiers-lecture (read of the files a text or sheet references by key, waiting render), cartes, jetons, lots, import (contexte du jeton), import-fiches (API d'import), import-suivi (campaigns and scenarios by origin key), import-relations (relations by origin key),  stockage (octets sur le volume)
-                                   seul code qui lit ou écrit les données ; session, oidc
-  routes/                         health, auth (OIDC), session (cookie, garde, /api/moi),
-                                   bouchon, univers (+ membres), instance (admin, AD-87), systemes, suivi, cartes, fiches (+ sections), fichiers (E-19 media library, bytes, attachments, illustration), propositions, assistant, acces-api (E-18, session), import (API d'import à jeton, `/api/import/v1`), frontend
-  bouchon/                        Monde de démonstration semé au démarrage en bouchon (depart.ts), client-import.ts et echantillon/ (recette de reprise) et ses fichiers (demo/)
-  services/assistant/             L'assistant : catalogues d'outils, port AgentTransport (bouchon, claude-agent), orchestration, jeton et sa session de connexion
-  services/images/                Moteur d'images de l'assistant : port GenerateurImage, adaptateurs bouchon, codex, aucun (AD-88, AD-90)
-  services/llm/                   Transports LLM repris d'Antre-du-maitre, branchés nulle part
-docs/                             Conception retenue, telle que construite : parcours, écrans, données, charte ; maquettes/ = pages HTML à ouvrir dans un navigateur (e09-fiche.html est la référence de la charte)
-frontend/                         React + Vite : charte (ui/), écrans (src/ecrans/, dont E-5 administration.tsx), barre latérale
-.github/workflows/docker-publish.yml   CI : image GHCR sur un tag attesté (aucun test joué) ; tests.yml : suite complète manuelle
+  services/                       comptes, univers, membres, instance, fiches, sections, droits, systemes, relations, campagnes, scenarios, preparation, comptes_rendus, propositions, markdown (single renderer), liens (`liens` table, sole writer), etiquettes (aliases and labels, sole writer), mentions (“Mentioned in”), types, types-fiche (the list of types and their activation),
+                                   fichiers (media library, sole writer of `fichiers*`, except that deleting a universe in `univers.ts` erases its rows), fichiers-lecture (read of the files a text or sheet references by key, waiting render), cartes, jetons, lots, import (token context), import-fiches (import API), import-suivi (campaigns and scenarios by origin key), import-relations (relations by origin key),  stockage (bytes on the volume)
+                                   the only code that reads or writes the data; session, oidc
+  routes/                         health, auth (OIDC), session (cookie, guard, /api/moi),
+                                   bouchon, univers (+ membres), instance (admin, AD-87), systemes, suivi, cartes, fiches (+ sections), fichiers (E-19 media library, bytes, attachments, illustration), propositions, assistant, acces-api (E-18, session), import (token-based import API, `/api/import/v1`), frontend
+  bouchon/                        Demonstration world seeded at startup in stub mode (depart.ts), client-import.ts and echantillon/ (resume recipe) and its files (demo/)
+  services/assistant/             The assistant: tool catalogues, AgentTransport port (stub, claude-agent), orchestration, token and its sign-in session
+  services/images/                The assistant's image engine: GenerateurImage port, adapters stub, codex, none (AD-88, AD-90)
+  services/llm/                   LLM transports taken from Antre-du-maitre, wired nowhere
+docs/                             Retained design, as built: journeys, screens, data, charter; maquettes/ = HTML pages to open in a browser (e09-fiche.html is the charter's reference)
+frontend/                         React + Vite: charter (ui/), screens (src/ecrans/, including E-5 administration.tsx), sidebar
+.github/workflows/docker-publish.yml   CI: GHCR image on an attested tag (no test played); tests.yml: manual full suite
 ```
 
 The sheet type list comes from the server; the frontend holds only the icon → component table, in `frontend/src/types-contexte.tsx` (where a new type's icon is added).
@@ -41,6 +41,8 @@ avatar menu with theme and sign-out) and shared components (`frontend/src/ui/`: 
 dialog, switch, badge…) are common to all screens. Fonts (Fraunces, Newsreader, Inter,
 `@fontsource`) and icons (`lucide-react`) are bundled, with no request to a third-party host (AD-92).
 
+Docs: `npm run controle-langue -- --liens README.md docs/*.md ARCHITECTURE.md` counts the French words left outside « … » quotations and code blocks and the facts (B-n/P-n/E-n/AD-n, headings, code blocks, table rows) that differ from the reference in `scripts/controle-langue.base`; point that file at the commit to compare against. New text is written in English directly. Code-block contents (command comments, the tree above) are exempt from the count.
+
 Tests without Docker: `npm run typecheck` then `npm test` (they also run e2e tests wherever Playwright is installed, which takes time: see “End-to-end tests”; a single file, e2e or otherwise (`src/db/migration-types.test.ts`: less than a second): `node --import tsx --test <fichier>.test.ts`, and never two suites at once, since e2e tests start their servers and fail en masse under concurrency; after renumbering a migration, `rm -rf dist` before `npm run build`, otherwise the old copied file stays in `dist/db/migrations` and the server no longer starts); the reference Docker path is in `CLAUDE.md`.
 
 ## Local startup
@@ -48,13 +50,13 @@ Tests without Docker: `npm run typecheck` then `npm test` (they also run e2e tes
 To **view the screens**, use the command under “Without Authelia: stub mode” below (`npm ci && npm run build && KANEVAS_STUB=1 npm start`). The block below only serves the API (`/healthz`). `npm run build` writes to the repository's `dist/`: after renumbering a migration, run `rm -rf dist` first.
 
 ```bash
-# écrit node_modules/ et ./data/ (base et session.key) dans le dépôt monté, en root ; les deux sont ignorés par git.
-# Sans `npm run build` préalable (fait dans l'hôte, hors de cette commande), cette voie ne sert que l'API : voir plus bas.
-# Pour voir les écrans (dont E-5, `/administration`) : même conteneur, mais `sh -c "npm ci && npm run build && KANEVAS_STUB=1 npm start"`
-# (ou, avec Node ≥ 20 sur l'hôte, `npm ci` puis la commande de la section « mode bouchon »).
+# writes node_modules/ and ./data/ (database and session.key) into the mounted repository, as root; both are ignored by git.
+# Without a prior `npm run build` (done on the host, outside this command), this route serves only the API: see below.
+# To see the screens (E-5, `/administration`, included): same container, but `sh -c "npm ci && npm run build && KANEVAS_STUB=1 npm start"`
+# (or, with Node ≥ 20 on the host, `npm ci` then the command of the “stub mode” section).
 docker run --rm -p 3001:3001 -v "$PWD":/src -w /src node:20-bookworm-slim sh -c "npm ci && npm run dev"
-# puis, depuis l'hôte : curl http://localhost:3001/healthz
-# (sans KANEVAS_STUB=1 ni les quatre OIDC_*, `/` mène à une connexion OIDC qui répond 404 : aucun écran, pour les voir lancer le mode bouchon ci-dessus)
+# then, from the host: curl http://localhost:3001/healthz
+# (without KANEVAS_STUB=1 or the four OIDC_*, `/` leads to an OIDC sign-in that answers 404: no screen; to see them, start the stub mode above)
 ```
 
 This block does not create a `.env`: defaults suffice for `/healthz`; OIDC
@@ -68,7 +70,7 @@ Or, with Node 20+ installed locally (`engines`: `>=20`; the suite also passes on
 ```bash
 npm install
 cp .env.example .env
-npm run dev            # ou, sans rechargement : npm run build && npm start (`npm start` seul échoue sans `dist/`, ignoré par git)
+npm run dev            # or, without reload: npm run build && npm start (`npm start` alone fails without `dist/`, ignored by git)
 curl http://localhost:3001/healthz   # -> "kanevas 0.0.0-dev"
 ```
 
@@ -125,8 +127,8 @@ token belongs to the deleted universe and cannot be reused for the new one.
 
 ```bash
 npm ci && npm run build && KANEVAS_STUB=1 npm start   # puis ouvrir http://localhost:3001/ : choix d'un compte de test
-# le semis précède l'écoute du port (moins d'une seconde ici) ; sans écrire dans ./data/ ni sur le port 3001 : npm run build && PORT=3055 DB_PATH=/tmp/k.db KANEVAS_STUB=1 npm start
-# The recipes below that name `http://localhost:3001` assume `npm start` without `PORT`; with the `PORT=3055` command, replace 3001 by 3055. Stop with Ctrl-C. In the background, `kill $!` stops only `npm`, not the server: kill the `node dist/server.js` process that listens on the port (simplest: start it with `PORT=3055 DB_PATH=/tmp/k.db KANEVAS_STUB=1 node dist/server.js &` instead of `npm start`, then `kill $!` stops it; `ss`, `ps` and `pgrep` may be missing in a pod) (a server left running keeps the port, the database and `session.key`). Delete /tmp/k.db to reset the database. Every recipe below assumes a fresh seeded database (ids such as universe 4 are those of a fresh seed; the deletion recipe destroys « Port-Sel » and the universe it is run on): delete /tmp/k.db before each.
+# seeding precedes listening on the port (under a second here); without writing to ./data/ or using port 3001: npm run build && PORT=3055 DB_PATH=/tmp/k.db KANEVAS_STUB=1 npm start
+# The recipes below that name `http://localhost:3001` assume `npm start` without `PORT`; with the `PORT=3055` command, replace 3001 by 3055. Stop with Ctrl-C. In the background, `kill $!` stops only `npm`, not the server: kill the `node dist/server.js` process that listens on the port (simplest: start it with `PORT=3055 DB_PATH=/tmp/k.db KANEVAS_STUB=1 node dist/server.js &` instead of `npm start`, then `kill $!` stops it (keep the PID: `echo $!`); `ss`, `ps` and `pgrep` may be missing in a pod) (a server left running keeps the port, the database and `session.key`). Delete /tmp/k.db to reset the database. Every recipe below assumes a fresh seeded database (ids such as universe 4 are those of a fresh seed; the deletion recipe destroys « Port-Sel » and the universe it is run on): delete /tmp/k.db before each.
 # `session.key` and `attachments/` are created beside the database: use a dedicated directory,
 # e.g. `DB_PATH=/tmp/kanevas-essai/k.db`, and delete that entire directory to reset everything.
 ```
@@ -176,10 +178,10 @@ Links recipe in stub mode. In « Lame d'Ébène », as `antor`, sheet « Port-Se
 
 API access recipe in stub mode (« Essai Kanka » is seeded: Antor GM, Léa player, and a « Jeton du bouchon » with fixed value `JETON_BOUCHON`, `src/bouchon/depart.ts`). As `antor`, « Essai Kanka » ▸ « Accès par API » (E-18): create a token, displayed only once. With it (or the stub token), the import API (AD-103, AD-104), on a fresh database (« Essai Kanka » is the 4th seeded universe, id 4; with `KANEVAS_SANS_SEMIS=1` neither it nor the stub token exists: create a universe and a token, the id is in the base address copyable on E-18):
 ```bash
-JETON=kvs_bouchon_essai_Hq7Zr2LmX9cVt4Wd8KpNb3YsJf6Ga0Ue   # le jeton du bouchon, ou celui créé sur E-18
-B=http://localhost:3055/api/import/v1/univers/4          # sans barre finale ; port 3055 comme la commande du bouchon ci-dessus (3001 pour `npm start` sans PORT)
-curl -H "Authorization: Bearer $JETON" $B                        # le contrat : types, limites
-curl -X POST -H "Authorization: Bearer $JETON" $B/lots            # ouvre (ou reprend) un lot ; copier le champ `lotId` de la réponse JSON
+JETON=kvs_bouchon_essai_Hq7Zr2LmX9cVt4Wd8KpNb3YsJf6Ga0Ue   # the stub token, or the one created on E-18
+B=http://localhost:3055/api/import/v1/univers/4          # no trailing slash; port 3055 as in the stub command above (3001 for `npm start` without PORT)
+curl -H "Authorization: Bearer $JETON" $B                        # the contract: types, limits
+curl -X POST -H "Authorization: Bearer $JETON" $B/lots            # opens (or resumes) a batch; copy the `lotId` field of the JSON response
 curl -X PUT -H "Authorization: Bearer $JETON" -H 'content-type: application/json' "$B/fiches/lieu:port-sel?lot=<lotId>" \
   -d '{"type":"lieu","titre":"Port-Sel","sections":[{"cle":"desc","titre":"Description","contenu":"Un port.\n\n:::mj\nTenu en sous-main.\n:::","joueursLisent":true},{"cle":"verite","titre":"Vérité","contenu":"…"}]}'
 ```
@@ -204,7 +206,7 @@ Text in `docs/ecrans.md` uses the straight apostrophe; the interface uses the ty
 Playwright is not a repository dependency: it must be installed globally
 (`/usr/lib/node_modules` or `/usr/local/lib/node_modules`) or in the current directory (`npm install --no-save playwright@1.63.0`) with Chromium, which
 `node:20-bookworm-slim` does not do; the manual `tests.yml` workflow installs it locally, so it runs e2e tests. To check whether it is found: `ls /usr/lib/node_modules/playwright` (this only proves the package: Chromium must be installed too, possibly under `PLAYWRIGHT_BROWSERS_PATH`). Where it is missing, these tests are **skipped with a message**,
-without failing; the other tests (services, HTTP routes) run everywhere. Allow about ten minutes even without e2e tests, about thirty with Playwright (2386 tests, silent until the end; a “skipped” message at the start of the output means Playwright was not found).
+without failing; the other tests (services, HTTP routes) run everywhere. Allow about ten minutes even without e2e tests, about thirty with Playwright (2406 tests, silent until the end; a “skipped” message at the start of the output means Playwright was not found).
 An e2e test must wait for the state it reads (an element appearing or disappearing, navigation completing), never a fixed delay: under load, a test that reads the DOM too early fails at random. To reproduce the conditions of `tests.yml` (4 cores, two files at a time), run from the repository root (about 28 minutes for `src/e2e` in a pod), after `npm run build` (a stale `dist/` silently plays the old code: rebuild after any change to `src/` or `frontend/`) and without rerunning typecheck or build: `taskset -c 0-3 node --import tsx --test --test-concurrency=2 $(find src/e2e -name '*.test.ts')`. If an e2e test times out under heavy load (8 s in files that set it, Playwright's default of 30 s elsewhere), rerun it alone (`node --import tsx --test src/e2e/<fichier>.test.ts`) before treating it as a defect.
 Administration recipe in stub mode (the demonstration world is seeded: « Lame d'Ébène », « Les Landes grises », « Les Cendres de Vaëlis », five already known accounts): sign in as « Admin », open `/administration`, choose « Lame d'Ébène » (where Admin has no role) and add « mira ». An account that never signed in (« nadia ») is refused. The `src/e2e/administration*.test.ts` e2e tests drive E-5.
 Assistant token recipe in stub mode (P-15): as « Admin », on `/administration`, the « Jeton de l'assistant » panel says « Aucun jeton posé. »; « Connecter l'abonnement » shows an address (fixed in stub mode) and a « Code » field; `bouchon` gives « Jeton posé le … »; any other code, « La connexion n'a pas abouti. Recommencez. » and the previous state remains. The token value never appears; « lea » receives « Page introuvable. ». In stub mode the assistant already responds through its script: real availability is checked on the deployed URL (first real model call, an action for Monsieur). Without a browser, on the server started above with `PORT=3055` (`curl -c /tmp/j -d compte=admin http://localhost:3055/connexion-bouchon`), then with `-b /tmp/j`: `POST /api/instance/assistant/jeton/connexion` (returns `connexionId`, `adresse`, `expireLe`), `POST …/jeton/code` with `-H 'Content-Type: application/json' -d '{"connexionId":"…","code":"bouchon"}'` (without this header the body is not read as JSON and the response is 400) and `GET …/jeton` for the state. Outside stub mode, connecting launches `script` (`bsdutils` package, present in `node:20-bookworm-slim`, the image's base): without it, `connexion_impossible`. Setting the token writes `claude/oauth-token` beside the database (`./data/claude/` in development).
@@ -224,7 +226,7 @@ from the Docker build-arg `APP_VERSION`, never from `package.json` (which delibe
 no version):
 
 ```bash
-# sans --build-arg, la version vaut 0.0.0-dev
+# without --build-arg, the version is 0.0.0-dev
 docker build --build-arg APP_VERSION=0.1.0 -t kanevas:0.1.0 .
 docker run --rm -p 3001:3001 kanevas:0.1.0
 curl http://localhost:3001/healthz   # -> "kanevas 0.1.0"
