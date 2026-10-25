@@ -102,7 +102,7 @@ function Liste({ universId, slug }: { universId: string; slug: string | undefine
           </VideIcone>
         }
       />
-      {creation && gestion && type.active && (
+      {creation && gestion && (
         <FenetreCreation
           universId={universId}
           type={type}
