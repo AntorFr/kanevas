@@ -665,7 +665,7 @@ section, même vide. En mode Joueur, le MJ voit le bloc comme un Joueur qui n'es
 section (AD-39), sans « Relier » ni « Retirer ».
 
 *Le MJ relie.* « Relier à une fiche » ouvre un formulaire sous la liste :
-1. « Type de relation » (texte libre, 1 à 80 caractères, par exemple « membre de ») ; *(`kanevas-fiches-liees`: replaced by « Nature » (the list of the pair, or « Sans nature ») and « Qualificatif » (free, optional) — see « Détail des écrans de `kanevas-fiches-liees` »)*
+1. « Type de relation » (texte libre, 1 à 80 caractères, par exemple « membre de ») ; *(`kanevas-fiches-liees`: replaced by « Nature » (the list of the pair, or « Sans nature ») and « Qualificatif » (free, 1 to 80; optional with a nature, required without one) — see « Détail des écrans de `kanevas-fiches-liees` »)*
 2. « Type de fiche » (Personnage, Lieu, Faction, Objet, Événement, Quête ; Personnage par défaut) ;
 3. un champ « Chercher dans les factions » et la liste des fiches de ce type, cent à la fois avec
    « Charger la suite » : c'est la liste et la recherche de E-8, pas une autre ;
@@ -1024,7 +1024,7 @@ section, même vide. En mode Joueur, le MJ voit le bloc comme un Joueur qui n'es
 section (AD-39), sans « Relier » ni « Retirer ».
 
 *Le MJ relie.* « Relier à une fiche » ouvre un formulaire sous la liste :
-1. « Type de relation » (texte libre, 1 à 80 caractères, par exemple « membre de ») ; *(`kanevas-fiches-liees`: replaced by « Nature » (the list of the pair, or « Sans nature ») and « Qualificatif » (free, optional) — see « Détail des écrans de `kanevas-fiches-liees` »)*
+1. « Type de relation » (texte libre, 1 à 80 caractères, par exemple « membre de ») ; *(`kanevas-fiches-liees`: replaced by « Nature » (the list of the pair, or « Sans nature ») and « Qualificatif » (free, 1 to 80; optional with a nature, required without one) — see « Détail des écrans de `kanevas-fiches-liees` »)*
 2. « Type de fiche » (Personnage, Lieu, Faction, Objet, Événement, Quête ; Personnage par défaut) ;
 3. un champ « Chercher dans les factions » et la liste des fiches de ce type, cent à la fois avec
    « Charger la suite » : c'est la liste et la recherche de E-8, pas une autre ;
@@ -3338,7 +3338,7 @@ side that holds it (AD-128 (3)).
 
 A relation without nature is « sans nature » (free, as today). The place-in-place relation is the
 tree, never a nature (« se situe » is not offered for lieu → lieu). Aventures (`kanevas-scenarios`)
-take no nature in this epic (reopened with the first need).
+take no nature in this epic (reopened with the first need): their « Relier » form has « Qualificatif » alone, required.
 
 ### E-9 — « Relier à une fiche », with a nature
 
@@ -3363,7 +3363,8 @@ section.
 | erreur | « Impossible de charger les natures. » with « Réessayer »; the form stays usable with « Sans nature » alone | « Réessayer », relier sans nature |
 | vide | a sheet whose type is the source of no nature (objet, événement, quête…): the « Nature » field is not shown, the form is the former one (qualifier required) | relier sans nature |
 | connexion perdue | le bandeau; « Relier » disabled, the entries stay | lire |
-| refus | « Relier » refused by the server (`relation_existante`, `limite_relations`, `nature_incompatible`): « Cette relation existe déjà. », « Cette section porte déjà 100 relations. », « Cette nature ne relie pas ces deux types de fiches. », the entries stay | corriger |
+| refus | « Le qualificatif est obligatoire sans nature. » (checked by the screen before sending, and by the server: 400 `invalide`; more than 80 characters: « Le qualificatif : 80 caractères au plus. »); « Relier » refused by the server (`relation_existante`, `limite_relations`, `nature_incompatible`): « Cette relation existe déjà. », « Cette section porte déjà 100 relations. », « Cette nature ne relie pas ces deux types de fiches. », the entries stay | corriger |
+| vide de recherche | the sheet picker without a result: « Aucune fiche de ce type. », « Relier » stays disabled | changer de type ou de recherche |
 | contenu long | a 80-character qualifier wraps in the line; on the graph the label is cut at 40 characters with an ellipsis, whole in the tooltip | idem |
 
 Changing the nature after a sheet was picked keeps the pick if its type still fits, else empties it.
@@ -3372,7 +3373,7 @@ The error texts and the accessible names of the block say « qualificatif » and
 « membre de → Lames Grises » (the older criteria are read that way). A symmetric nature (« allié de »)
 entered on one sheet is listed by that sheet's section only until `kanevas-fiches-liees-bloc` shows the
 other side; the same fact entered from the other side with the same qualifier is refused as
-`relation_existante`. Roles: the GM outside player mode relates; a player, and the GM in player mode,
+`relation_existante` (« Cette relation existe déjà. », the other side holding it, even though this side does not list it yet). Roles: the GM outside player mode relates; a player, and the GM in player mode,
 never see « Relier », the « Nature » field or « Nouvelle famille » (hidden); the list « Familles »
 is read like any list of E-8, empty state « Aucune famille. » with « Nouvelle famille » for the GM.
 
