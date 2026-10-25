@@ -2977,89 +2977,89 @@ l'univers » (`--danger`) activates only if the typed name matches exactly (incl
   « Supprimer l'univers » stays inactive; with the exact name, the universe is deleted, and Léa opening
   one of its addresses sees « Page introuvable. ».
 
-#### Les types — ce que `kanevas-import-types` construit
+#### Types — what `kanevas-import-types` builds
 
-Le panneau « Supprimer l'univers » de E-14 est à `kanevas-import-tenir` ;
-celle-ci construit le panneau et l'onglet « Types de fiche » ci-dessus, et ce qui suit.
-La liste des types (identifiant, adresse, libellés, icône) est celle du serveur (AD-120) : les écrans
-la lisent par `GET /api/univers/:id/types`, ils n'en tiennent aucune copie. Icônes (Lucide) :
-Personnage `users-round`, Lieu `map-pin`, Faction `shield`, Objet `gem`, Événement `hourglass`, Quête
-`scroll-text`, Créature `paw-print`, Race `dna`, Vaisseau `ship`, Savoir `lightbulb`, Récit `book-open`,
-Règle `scale`, Note `sticky-note` ; adresses de E-8 : `/univers/:id/fiches/<pluriel>` (`creatures`,
+E-14's « Supprimer l'univers » panel belongs to `kanevas-import-tenir`;
+this slice builds the « Types de fiche » panel and tab above, and the following.
+The type list (identifier, address, labels, icon) is the server's (AD-120): screens
+read it through `GET /api/univers/:id/types`, keeping no copy. Icons (Lucide):
+character `users-round`, location `map-pin`, faction `shield`, item `gem`, event `hourglass`, quest
+`scroll-text`, creature `paw-print`, race `dna`, ship `ship`, lore `lightbulb`, story `book-open`,
+rule `scale`, note `sticky-note`; E-8 addresses: `/univers/:id/fiches/<pluriel>` (`creatures`,
 `races`, `vaisseaux`, `savoirs`, `recits`, `regles`, `notes`).
 
-**Barre latérale.** La section « Lore » se construit de la réponse : les types activés, dans l'ordre de la
-liste. Pendant le chargement, trois lignes de squelette sous le titre « Lore » ; en erreur, la ligne
-« Impossible de charger les types. » et « Réessayer » à sa place — le reste de la barre ne bouge pas.
-Si aucun type n'est activé (tous désactivés), la section montre « Aucun type de fiche activé. » (et, au MJ,
-le lien « Régler les types » vers E-14). Connexion perdue : la barre garde la dernière liste lue ; sans liste
-déjà lue, c'est l'état d'erreur.
-Après un réglage (E-14, E-15) sur un autre onglet, la barre se met à jour au retour sur l'onglet ou au
-prochain chargement, jamais au milieu d'une saisie.
+**Sidebar.** The « Lore » section is built from the response: enabled types, in list
+order. During loading, three skeleton rows below the « Lore » title; on error, the
+« Impossible de charger les types. » row and « Réessayer » instead — the rest of the sidebar stays unchanged.
+If no type is enabled (all disabled), the section shows « Aucun type de fiche activé. » (and, to the GM,
+the « Régler les types » link to E-14). Connection lost: sidebar keeps the last read list; without a
+previously read list, this is the error state.
+After a setting change (E-14, E-15) in another tab, the sidebar updates on return to the tab or on the
+next load, never in the middle of input.
 
-**E-8 — création et sous-type.** La liste « Type » de la fenêtre de création ne propose que les types
-activés ; le champ « Sous-type » (facultatif, 60 caractères au plus, « Erreur : 60 caractères au plus. »)
-propose, en tapant, les sous-types déjà employés pour le type choisi (titre « Sous-types de lieu déjà
-employés ») ; changer le type dans la fenêtre vide le champ. Si le type vient d'être désactivé par un
-autre MJ, « Créer » répond « Ce type est désactivé dans cet univers. » dans la fenêtre, rien n'est créé. Le
-filtre « Sous-type » n'apparaît que si au moins une fiche lisible du type en porte un ; pendant son
-chargement il est désactivé (« Sous-type : … ») ; s'il échoue, « Sous-types indisponibles. » à sa place
-et la grille reste utilisable. Si « Créer » échoue : « L'action n'a pas abouti. Réessayez. » dans la fenêtre, la saisie gardée. Contenu long : 40
-sous-types distincts : la liste du filtre défile ; un sous-type de 60 caractères est tronqué par une ellipse, entier
-dans son infobulle. Un sous-type filtré qui n'a plus de fiche (renommée entre-temps) rend
-« Aucune fiche de ce sous-type. » avec « Voir tous les lieux ».
+**E-8 — creation and subtype.** The creation dialog's « Type » list offers only enabled
+types; the « Sous-type » field (optional, at most 60 characters, « Erreur : 60 caractères au plus. »)
+suggests, while typing, subtypes already used for the chosen type (title « Sous-types de lieu déjà
+employés »); changing type in the dialog clears the field. If another GM just disabled the
+type, « Créer » answers « Ce type est désactivé dans cet univers. » in the dialog, nothing is created. The
+« Sous-type » filter appears only if at least one readable sheet of this type has one; while
+loading it is disabled (« Sous-type : … »); on failure, « Sous-types indisponibles. » replaces it
+and the grid stays usable. If « Créer » fails: « L'action n'a pas abouti. Réessayez. » in the dialog, input kept. Long content: 40
+distinct subtypes: filter list scrolls; a 60-character subtype is truncated with an ellipsis, full text
+in its tooltip. A filtered subtype with no remaining sheet (renamed meanwhile) returns
+« Aucune fiche de ce sous-type. » with « Voir tous les lieux ».
 
-**E-9 — sous-type en place.** Le MJ (hors mode Joueur) clique le sous-type du badge : champ, liste de
-complétion, Entrée enregistre, Échap annule (maquette `#etat-sous-type`). Enregistrement en cours : champ
-désactivé, « Enregistrement… ». Échec : « L'action n'a pas abouti. Réessayez. » sous le champ, la valeur
-tapée est gardée. Un champ vidé retire le sous-type (« Sous-type retiré. »). Connexion perdue : l'édition est désactivée (le sous-type reste lisible). Contenu long : 60 caractères, tronqués par
-une ellipse dans le badge, entiers dans l'infobulle. Un joueur lit le sous-type en
-simple texte ; une fiche sans sous-type ne montre rien à un joueur.
+**E-9 — inline subtype.** The GM (outside Player mode) clicks the badge's subtype: field, completion
+list, Enter saves, Escape cancels (mockup `#etat-sous-type`). Saving: field
+disabled, « Enregistrement… ». Failure: « L'action n'a pas abouti. Réessayez. » below the field, typed value
+kept. An emptied field removes the subtype (« Sous-type retiré. »). Connection lost: editing disabled (subtype stays readable). Long content: 60 characters, truncated with
+an ellipsis in the badge, full text in the tooltip. A player reads the subtype as
+plain text; a sheet without a subtype shows nothing to a player.
 
-**E-9 — « Changer le type… »** (MJ, hors mode Joueur ; absent pour un compte-rendu) : maquette
-`e09-fiche-importee.html#etat-changer-type`. Boîte « Changer le type de « Port-Sel » » : une
-liste à choix unique des types, les types activés d'abord, puis le titre « Autres types » avec les
-désactivés (« désactivé » en `--texte-3`), le type courant coché et indiqué « (actuel) » ; choisir
-« Personnage » ouvre le choix « PJ / PNJ » (PNJ par défaut) ; le champ « Sous-type » (vide d'office pour un
-autre type, avec les sous-types déjà employés pour le type choisi). Si la fiche a un sous-type, la boîte dit :
-« Le sous-type « Port » sera retiré. » tant que le champ n'est pas rempli. Boutons « Changer le
-type » (désactivé tant que le type reste l'actuel) et « Annuler ». Après : la fiche se recharge sous son
-nouveau type, toast « Type changé : Note → Savoir. », le fil d'Ariane et la barre suivent ; ses sections,
-relations, places sur une carte et propositions sont intactes.
-Le choix PJ / PNJ n'apparaît que pour **devenir** un personnage ; le PJ / PNJ d'un personnage existant ne se
-change pas ici. Chargement : tant que la liste des types n'est pas lue, la liste de la boîte dit « Chargement des
-types… » et « Changer le type » reste désactivé. Contenu long : un titre de 120 caractères passe à la ligne dans
-le titre de la boîte ; un sous-type de 60 caractères est tronqué par une ellipse dans le badge, entier dans son
-infobulle et dans le champ. Échecs : « Le type n'a pas changé. Réessayez. » dans la boîte (elle reste ouverte) ; un MJ qui n'a plus de
-rôle : « Vous ne pouvez plus modifier cette fiche. » ; connexion perdue : bandeau, bouton désactivé.
-Enregistrement en cours : le bouton passe à « Enregistrement… » et la boîte est figée. Échec de lecture de la
-liste des types : « Impossible de charger les types. » et « Réessayer » à la place de la liste, bouton désactivé.
-La liste des 13 types défile dans la boîte (hauteur bornée) au bureau comme au téléphone, où la boîte occupe
-l'écran. Un sous-type de plus de 60 caractères saisi dans le champ : « Erreur : 60 caractères au plus. ». Le
-cas « vide » est sans objet : la liste des types n'est jamais vide (treize types réglables).
-**E-9 — sous-type en place.** La liste de complétion défile au-delà de huit entrées ; sans sous-type déjà
-employé pour ce type, elle n'apparaît pas et le champ reste libre.
-**E-8 — compte du filtre.** Le compte de « Port (N) » reste toujours visible, jusqu'à 9 999 ; au-delà la
-pastille dit « Port (9 999+) ».
-**E-14 — bascule d'un type.** Toast, comme celui de E-15 (même composant, maquette `e14` : `.toast`) :
+**E-9 — « Changer le type… »** (GM, outside Player mode; absent for a session report): mockup
+`e09-fiche-importee.html#etat-changer-type`. « Changer le type de « Port-Sel » » dialog: a
+single-choice type list, enabled types first, then the « Autres types » title with
+disabled ones (« désactivé » in `--texte-3`), current type checked and marked « (actuel) »; choosing
+« Personnage » opens the « PJ / PNJ » choice (NPC by default); the « Sous-type » field (empty by default for a
+different type, with subtypes already used for the chosen type). If the sheet has a subtype, the dialog says:
+« Le sous-type « Port » sera retiré. » until the field is filled. Buttons « Changer le
+type » (disabled while the type stays current) and « Annuler ». Afterwards: sheet reloads under its
+new type, toast « Type changé : Note → Savoir. », breadcrumb and sidebar follow; its sections,
+relations, map placements and proposals stay intact.
+The PC / NPC choice appears only when **becoming** a character; an existing character's PC / NPC status
+cannot be changed here. Loading: until the type list is read, the dialog's list says « Chargement des
+types… » and « Changer le type » stays disabled. Long content: a 120-character title wraps in
+the dialog title; a 60-character subtype is truncated with an ellipsis in the badge, full text in its
+tooltip and field. Failures: « Le type n'a pas changé. Réessayez. » in the dialog (it stays open); a GM who no longer has a
+role: « Vous ne pouvez plus modifier cette fiche. »; connection lost: banner, button disabled.
+Saving: button becomes « Enregistrement… » and dialog is frozen. Type-list read failure:
+« Impossible de charger les types. » and « Réessayer » replace the list, button disabled.
+The 13-type list scrolls within the dialog (bounded height) on desktop and on a phone, where the dialog fills
+the screen. A subtype exceeding 60 characters entered in the field: « Erreur : 60 caractères au plus. ». The
+empty case is not applicable: the type list is never empty (thirteen configurable types).
+**E-9 — inline subtype.** The completion list scrolls beyond eight entries; with no subtype already
+used for this type, it does not appear and the field stays free-form.
+**E-8 — filter count.** The « Port (N) » count stays visible, up to 9,999; beyond that the
+chip says « Port (9 999+) ».
+**E-14 — type toggle.** Toast, like E-15's (same component, mockup `e14`: `.toast`):
 « Vaisseau : activé dans Lame d'Ébène. » / « … : désactivé dans … » / « … : suit le système. ».
-**E-15 — « Types de fiche ».** « Utilisé par 0 univers » et « Utilisé par 1 univers » (singulier) sous la liste ;
-un nom de système de 80 caractères passe à la ligne dans l'en-tête.
-**Rôles (kanevas-import-types).** Joueur : E-9 montre le sous-type en lecture seule ; « Changer le type… » est
-**caché** ; le champ « Sous-type » de la création est **absent** (la création n'est pas offerte) ; le lien
-« Régler les types » de la barre est **caché**. Admin d'instance sans rôle dans l'univers : il n'a pas la section
-« Lore » (la barre n'est celle d'aucun univers pour lui).
+**E-15 — « Types de fiche ».** « Utilisé par 0 univers » and « Utilisé par 1 univers » (singular) below the list;
+an 80-character system name wraps in the header.
+**Roles (kanevas-import-types).** Player: E-9 shows the subtype read only; « Changer le type… » is
+**hidden**; creation's « Sous-type » field is **absent** (creation is not offered); the sidebar's
+« Régler les types » link is **hidden**. Instance admin without a role in the universe: no
+« Lore » section (the sidebar belongs to no universe for them).
 
-La maquette `e08-liste-fiches.html` n'est pas redessinée pour le sous-type : le texte ci-dessus dit où il se pose
-(sous le titre de la carte, `--texte-3` ; filtre à côté de la recherche).
+The `e08-liste-fiches.html` mockup is not redrawn for subtype: the text above says where it goes
+(below the card title, `--texte-3`; filter beside search).
 
-*Critères de la tranche* (les critères d'écran ci-dessus restent les siens).
-- Étant donné « Les Cristaux d'Ombre » (Savoir · Ressource), quand Antor la passe en Note, alors elle est
-  dans « Notes » sans sous-type, et la boîte l'avait annoncé.
-- Étant donné « Lame d'Ébène » où « Note » est désactivé, quand Antor ouvre « Changer le type… » d'une
-  fiche, alors « Note » est sous « Autres types » et le choisir fonctionne.
-- Étant donné un type désactivé, quand Antor ouvre l'adresse de sa liste, alors elle s'ouvre avec « Ce type
-  est désactivé dans cet univers. » et sans bouton de création.
+*Slice criteria* (the screen criteria above still apply).
+- Given « Les Cristaux d'Ombre » (« Savoir · Ressource »), when Antor changes it to « Note », it is
+  in « Notes » without a subtype, and the dialog had announced this.
+- Given « Lame d'Ébène » where « Note » is disabled, when Antor opens « Changer le type… » on a
+  sheet, « Note » is under « Autres types » and choosing it works.
+- Given a disabled type, when Antor opens its list address, it opens with « Ce type
+  est désactivé dans cet univers. » and no creation button.
 
 ### E-7, E-13, E-5
 
