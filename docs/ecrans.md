@@ -3190,9 +3190,10 @@ The list of the type, as for any type, with these specifics:
   status is « En préparation » at birth, never asked here.
 - **Card and tree line**: the status badge (`Pastille`, neutral for « En préparation », the
   charte's accent for « Prête », success for « En cours », muted for « Terminée »; label the
-  status itself), next to the sub-type; on a card, for the GM in GM mode, the badge is a menu
-  that sets the status in place (the four values; the card redraws; « L'action n'a pas abouti.
-  Réessayez. » on failure, status unchanged). A player sees the badge, never the menu.
+  status itself), next to the sub-type; on a card **and on a tree line**, for the GM in GM mode,
+  the badge is a menu that sets the status in place (the four values; the card or the line
+  redraws; « L'action n'a pas abouti. Réessayez. » on failure, status unchanged). A player sees
+  the badge, never the menu.
 - **« Statut » filter**, next to « Sous-type », for every reader: « Tous », then the four
   statuses; kept in the address (`?statut=en_cours`), combined with the sub-type, the search and
   the visibility filter (B-57); a filtered status renders the grid; empty: « Aucune aventure avec
