@@ -7,7 +7,7 @@ import { join, resolve } from 'node:path';
 
 const SCRIPT = resolve('scripts/controle-langue.mjs');
 
-const ANGLAIS = [
+const ENGLISH = [
   'Intro text.',
   '',
   '## First',
@@ -29,183 +29,183 @@ const ANGLAIS = [
   '',
 ].join('\n');
 
-function depot(contenu: string) {
+function makeRepo(content: string) {
   const dir = mkdtempSync(join(tmpdir(), 'cl-'));
   const git = (...a: string[]) => execFileSync('git', a, { cwd: dir, stdio: 'ignore' });
   git('init', '-q');
   git('config', 'user.email', 't@t');
   git('config', 'user.name', 't');
-  writeFileSync(join(dir, 'a.md'), contenu);
+  writeFileSync(join(dir, 'a.md'), content);
   git('add', 'a.md');
   git('commit', '-q', '-m', 'base');
   return dir;
 }
-function lancer(dir: string, args: string[], env: NodeJS.ProcessEnv = process.env) {
+function run(dir: string, args: string[], env: NodeJS.ProcessEnv = process.env) {
   const r = spawnSync('node', [SCRIPT, ...args], { cwd: dir, encoding: 'utf8', env });
   let json: any = null;
   try { json = JSON.parse(r.stdout); } catch { /* none */ }
   return { code: r.status, json, err: r.stderr };
 }
-const avec = (contenu: string, args: string[], f: (r: ReturnType<typeof lancer>, d: string) => void) => {
-  const dir = depot(ANGLAIS);
-  try { writeFileSync(join(dir, 'a.md'), contenu); f(lancer(dir, ['--base', 'HEAD', ...args, 'a.md']), dir); }
+const withFile = (content: string, args: string[], f: (r: ReturnType<typeof run>, d: string) => void) => {
+  const dir = makeRepo(ENGLISH);
+  try { writeFileSync(join(dir, 'a.md'), content); f(run(dir, ['--base', 'HEAD', ...args, 'a.md']), dir); }
   finally { rmSync(dir, { recursive: true, force: true }); }
 };
 
-test('anglais avec citation française et bloc de code : zéro, code 0', () => {
-  avec(ANGLAIS, ['--liens'], (r) => {
+test('English with a French quotation and code block: zero, exit 0', () => {
+  withFile(ENGLISH, ['--liens'], (r) => {
     assert.equal(r.code, 0);
-    assert.equal(r.json.fichiers[0].francais, 0);
-    assert.deepEqual(r.json.fichiers[0].ecarts, []);
-    assert.deepEqual(r.json.fichiers[0].liens, []);
+    assert.equal(r.json.files[0].french, 0);
+    assert.deepEqual(r.json.files[0].differences, []);
+    assert.deepEqual(r.json.files[0].links, []);
   });
 });
 
-test('une phrase française hors guillemets : un par mot fautif, par section', () => {
-  // le, la, les, des, est, pour, avec, une, dans -> 9 mots ; « Le » compte (casse)
+test('a French sentence outside quotes: one per offending word, per section', () => {
+  // le, la, les, des, est, pour, avec, une, dans -> 9 words; « Le » counts (case)
   const phrase = 'Le chat est dans la maison pour les amis avec une table des';
-  avec(ANGLAIS.replace('Intro text.', phrase), [], (r) => {
+  withFile(ENGLISH.replace('Intro text.', phrase), [], (r) => {
     assert.equal(r.code, 1);
-    assert.equal(r.json.fichiers[0].francais, 9);
-    assert.equal(r.json.fichiers[0].sections[0].francais, 9);
-    assert.equal(r.json.fichiers[0].sections[1].francais, 0);
+    assert.equal(r.json.files[0].french, 9);
+    assert.equal(r.json.files[0].sections[0].french, 9);
+    assert.equal(r.json.files[0].sections[1].french, 0);
   });
 });
 
-test('mots entiers seulement : "lemon", "island", "dansant" ne comptent pas', () => {
-  avec(ANGLAIS.replace('Intro text.', 'lemon island dansant pourquoi laser'), [], (r) => {
+test('whole words only: "lemon", "island", "dansant" do not count', () => {
+  withFile(ENGLISH.replace('Intro text.', 'lemon island dansant pourquoi laser'), [], (r) => {
     assert.equal(r.code, 0);
-    assert.equal(r.json.fichiers[0].francais, 0);
+    assert.equal(r.json.files[0].french, 0);
   });
 });
 
-test('un mot français dans le code ou entre guillemets ne compte pas, mais hors guillemets après la citation oui', () => {
-  avec(ANGLAIS.replace('« le titre est dans la liste ».', '« le titre » est ici'), [], (r) => {
-    assert.equal(r.json.fichiers[0].francais, 1);
+test('a French word in code or inside quotes does not count, but one after the quotation does', () => {
+  withFile(ENGLISH.replace('« le titre est dans la liste ».', '« le titre » est ici'), [], (r) => {
+    assert.equal(r.json.files[0].french, 1);
   });
 });
 
-test('citation sur plusieurs lignes : exemptée', () => {
-  avec(ANGLAIS.replace('Intro text.', 'Say « le\nchat est dans\nla maison » now.'), [], (r) => {
+test('multi-line quotation: exempt', () => {
+  withFile(ENGLISH.replace('Intro text.', 'Say « le\nchat est dans\nla maison » now.'), [], (r) => {
     assert.equal(r.code, 0);
   });
 });
 
-test('guillemets imbriqués : le français reste exempté jusqu\'au « » extérieur', () => {
-  avec(ANGLAIS.replace('Intro text.', 'Say « le « chat » est dans la » now.'), [], (r) => assert.equal(r.code, 0));
+test('nested quotes: French stays exempt until the outer « » closes', () => {
+  withFile(ENGLISH.replace('Intro text.', 'Say « le « chat » est dans la » now.'), [], (r) => assert.equal(r.code, 0));
 });
 
-test('AD-12 supprimé : signalé dans sa section', () => {
-  avec(ANGLAIS.replace('See AD-12 and B-3.', 'See B-3.'), [], (r) => {
+test('AD-12 removed: reported in its section', () => {
+  withFile(ENGLISH.replace('See AD-12 and B-3.', 'See B-3.'), [], (r) => {
     assert.equal(r.code, 1);
-    const s = r.json.fichiers[0].sections[1];
-    assert.deepEqual(s.ecarts, [{ fait: 'AD-12', avant: 1, apres: 0 }]);
-    assert.deepEqual(r.json.fichiers[0].sections[2].ecarts, []);
+    const s = r.json.files[0].sections[1];
+    assert.deepEqual(s.differences, [{ fact: 'AD-12', before: 1, after: 0 }]);
+    assert.deepEqual(r.json.files[0].sections[2].differences, []);
   });
 });
 
-test('un identifiant ajouté est aussi un écart', () => {
-  avec(ANGLAIS.replace('See AD-12', 'See P-7 AD-12'), [], (r) => {
+test('an added identifier is also a difference', () => {
+  withFile(ENGLISH.replace('See AD-12', 'See P-7 AD-12'), [], (r) => {
     assert.equal(r.code, 1);
-    assert.deepEqual(r.json.fichiers[0].sections[1].ecarts, [{ fait: 'P-7', avant: 0, apres: 1 }]);
+    assert.deepEqual(r.json.files[0].sections[1].differences, [{ fact: 'P-7', before: 0, after: 1 }]);
   });
 });
 
-test('titre ajouté : signalé', () => {
-  avec(ANGLAIS.replace('See AD-12', '### Sub\nSee AD-12'), [], (r) => {
+test('added heading: reported', () => {
+  withFile(ENGLISH.replace('See AD-12', '### Sub\nSee AD-12'), [], (r) => {
     assert.equal(r.code, 1);
-    assert.deepEqual(r.json.fichiers[0].sections[1].ecarts, [{ fait: 'titres', avant: 1, apres: 2 }]);
+    assert.deepEqual(r.json.files[0].sections[1].differences, [{ fact: 'headings', before: 1, after: 2 }]);
   });
 });
 
-test('ligne de tableau perdue (séparateur exclu) : signalée', () => {
-  avec(ANGLAIS.replace('| 3 | 4 |\n', ''), [], (r) => {
+test('lost table row (separator excluded): reported', () => {
+  withFile(ENGLISH.replace('| 3 | 4 |\n', ''), [], (r) => {
     assert.equal(r.code, 1);
-    assert.deepEqual(r.json.fichiers[0].sections[1].ecarts, [{ fait: 'tableaux', avant: 3, apres: 2 }]);
+    assert.deepEqual(r.json.files[0].sections[1].differences, [{ fact: 'tableRows', before: 3, after: 2 }]);
   });
 });
 
-test('bloc de code perdu : signalé, et le titre factice dans un bloc ne compte pas', () => {
-  avec(ANGLAIS.replace(/```[\s\S]*?```\n/, ''), [], (r) => {
+test('lost code block: reported, and a fake heading inside a block does not count', () => {
+  withFile(ENGLISH.replace(/```[\s\S]*?```\n/, ''), [], (r) => {
     assert.equal(r.code, 1);
-    assert.deepEqual(r.json.fichiers[0].sections[1].ecarts, [
-      { fait: 'blocs', avant: 1, apres: 0 }, { fait: 'AD-99', avant: 1, apres: 0 },
+    assert.deepEqual(r.json.files[0].sections[1].differences, [
+      { fact: 'blocks', before: 1, after: 0 }, { fact: 'AD-99', before: 1, after: 0 },
     ]);
   });
-  const avecFaux = ANGLAIS.replace('le code est', '## Fake\nle code est');
-  avec(avecFaux, [], (r) => { assert.equal(r.code, 0); assert.equal(r.json.fichiers[0].sections.length, 3); });
+  const withFake = ENGLISH.replace('le code est', '## Fake\nle code est');
+  withFile(withFake, [], (r) => { assert.equal(r.code, 0); assert.equal(r.json.files[0].sections.length, 3); });
 });
 
-test('numérotation : 0 avant le premier ##, texte de la section 0 séparé', () => {
-  avec(ANGLAIS, [], (r) => {
-    assert.deepEqual(r.json.fichiers[0].sections.map((s: any) => [s.numero, s.titre]),
+test('numbering: 0 before the first ##, section 0 text kept apart', () => {
+  withFile(ENGLISH, [], (r) => {
+    assert.deepEqual(r.json.files[0].sections.map((s: any) => [s.number, s.title]),
       [[0, ''], [1, 'First'], [2, 'Second']]);
   });
-  const dir = depot(ANGLAIS);
+  const dir = makeRepo(ENGLISH);
   try {
-    const t = lancer(dir, ['--titres', 'a.md']);
+    const t = run(dir, ['--titres', 'a.md']);
     assert.equal(t.code, 0);
-    assert.deepEqual(t.json.fichiers[0].sections,
-      [{ numero: 0, titre: '' }, { numero: 1, titre: 'First' }, { numero: 2, titre: 'Second' }]);
-    const s = lancer(dir, ['--base', 'HEAD', '--sections', 'a.md:2-2']);
-    assert.deepEqual(s.json.fichiers[0].sections.map((x: any) => x.numero), [2]);
-    const hors = lancer(dir, ['--base', 'HEAD', '--sections', 'a.md:0-9']);
-    assert.equal(hors.code, 2);
+    assert.deepEqual(t.json.files[0].sections,
+      [{ number: 0, title: '' }, { number: 1, title: 'First' }, { number: 2, title: 'Second' }]);
+    const s = run(dir, ['--base', 'HEAD', '--sections', 'a.md:2-2']);
+    assert.deepEqual(s.json.files[0].sections.map((x: any) => x.number), [2]);
+    const outside = run(dir, ['--base', 'HEAD', '--sections', 'a.md:0-9']);
+    assert.equal(outside.code, 2);
   } finally { rmSync(dir, { recursive: true, force: true }); }
 });
 
-test('le français d\'une section hors de --sections n\'est pas compté', () => {
-  const dir = depot(ANGLAIS);
+test('French in a section outside --sections is not counted', () => {
+  const dir = makeRepo(ENGLISH);
   try {
-    writeFileSync(join(dir, 'a.md'), ANGLAIS.replace('Plain', 'Le chat est la'));
-    assert.equal(lancer(dir, ['--base', 'HEAD', '--sections', 'a.md:1-1']).code, 0);
-    const r = lancer(dir, ['--base', 'HEAD', '--sections', 'a.md:2-2']);
+    writeFileSync(join(dir, 'a.md'), ENGLISH.replace('Plain', 'Le chat est la'));
+    assert.equal(run(dir, ['--base', 'HEAD', '--sections', 'a.md:1-1']).code, 0);
+    const r = run(dir, ['--base', 'HEAD', '--sections', 'a.md:2-2']);
     assert.equal(r.code, 1);
-    assert.equal(r.json.fichiers[0].francais, 3);
+    assert.equal(r.json.files[0].french, 3);
   } finally { rmSync(dir, { recursive: true, force: true }); }
 });
 
-test('--liens : ancre traduite qui ne se résout plus ; lien déjà cassé au départ toléré', () => {
-  avec(ANGLAIS.replace('## First', '## Premier'), ['--liens'], (r) => {
+test('--liens: a translated anchor that no longer resolves; a link already broken at the base is tolerated', () => {
+  withFile(ENGLISH.replace('## First', '## Premier'), ['--liens'], (r) => {
     assert.equal(r.code, 1);
-    assert.deepEqual(r.json.fichiers[0].liens, [{ section: 2, lien: '#first' }]);
+    assert.deepEqual(r.json.files[0].links, [{ section: 2, link: '#first' }]);
   });
-  avec(ANGLAIS.replace('(#first)', '(#nowhere)'), ['--liens'], (r) => {
+  withFile(ENGLISH.replace('(#first)', '(#nowhere)'), ['--liens'], (r) => {
     assert.equal(r.code, 1);
-    assert.deepEqual(r.json.fichiers[0].liens, [{ section: 2, lien: '#nowhere' }]);
+    assert.deepEqual(r.json.files[0].links, [{ section: 2, link: '#nowhere' }]);
   });
-  avec(ANGLAIS.replace('(#first)', '(autre.md)'), ['--liens'], (r) => {
-    assert.deepEqual(r.json.fichiers[0].liens, [{ section: 2, lien: 'autre.md' }]);
+  withFile(ENGLISH.replace('(#first)', '(other.md)'), ['--liens'], (r) => {
+    assert.deepEqual(r.json.files[0].links, [{ section: 2, link: 'other.md' }]);
   });
-  avec(ANGLAIS.replace('(#first)', '(https://x.org/#a)'), ['--liens'], (r) => assert.equal(r.code, 0));
-  const dir = depot(ANGLAIS.replace('(#first)', '(#nowhere)'));
-  try { assert.equal(lancer(dir, ['--base', 'HEAD', '--liens', 'a.md']).code, 0); }
+  withFile(ENGLISH.replace('(#first)', '(https://x.org/#a)'), ['--liens'], (r) => assert.equal(r.code, 0));
+  const dir = makeRepo(ENGLISH.replace('(#first)', '(#nowhere)'));
+  try { assert.equal(run(dir, ['--base', 'HEAD', '--liens', 'a.md']).code, 0); }
   finally { rmSync(dir, { recursive: true, force: true }); }
-  // sans --liens : les liens ne sont pas regardés
-  avec(ANGLAIS.replace('(#first)', '(#nowhere)'), [], (r) => assert.equal(r.code, 0));
+  // without --liens: links are not looked at
+  withFile(ENGLISH.replace('(#first)', '(#nowhere)'), [], (r) => assert.equal(r.code, 0));
 });
 
-test('arrêt sur l\'arbre de départ : zéro écart de faits, français positif', () => {
-  const dir = depot(ANGLAIS.replace('Intro text.', 'Le chat est dans la maison.'));
+test('starting tree: zero fact differences, positive French count', () => {
+  const dir = makeRepo(ENGLISH.replace('Intro text.', 'Le chat est dans la maison.'));
   try {
-    const r = lancer(dir, ['--base', 'HEAD', '--liens', 'a.md']);
-    assert.equal(r.json.fichiers[0].francais, 4);
-    assert.deepEqual(r.json.fichiers[0].ecarts, []);
-    assert.equal(r.json.fichiers[0].sections.every((s: any) => s.ecarts.length === 0), true);
+    const r = run(dir, ['--base', 'HEAD', '--liens', 'a.md']);
+    assert.equal(r.json.files[0].french, 4);
+    assert.deepEqual(r.json.files[0].differences, []);
+    assert.equal(r.json.files[0].sections.every((s: any) => s.differences.length === 0), true);
   } finally { rmSync(dir, { recursive: true, force: true }); }
 });
 
-test('invocation invalide ou entrée absente : code 2', () => {
-  const dir = depot(ANGLAIS);
+test('invalid invocation or missing input: exit 2', () => {
+  const dir = makeRepo(ENGLISH);
   try {
-    assert.equal(lancer(dir, ['--nope']).code, 2);
-    assert.equal(lancer(dir, ['--attendu', 'v1:titres=1,puces=1,liens=1', 'a.md']).code, 2);
-    assert.equal(lancer(dir, ['--base', 'HEAD', 'absent.md']).code, 2);
-    assert.equal(lancer(dir, ['--base', 'HEAD', '--sections', 'a.md:3-1']).code, 2);
+    assert.equal(run(dir, ['--nope']).code, 2);
+    assert.equal(run(dir, ['--attendu', 'v1:titres=1,puces=1,liens=1', 'a.md']).code, 2);
+    assert.equal(run(dir, ['--base', 'HEAD', 'absent.md']).code, 2);
+    assert.equal(run(dir, ['--base', 'HEAD', '--sections', 'a.md:3-1']).code, 2);
   } finally { rmSync(dir, { recursive: true, force: true }); }
 });
 
-function avecGh(releases: Record<string, string>, f: (env: NodeJS.ProcessEnv, dir: string) => void) {
+function withGh(releases: Record<string, string>, f: (env: NodeJS.ProcessEnv, dir: string) => void) {
   const dir = mkdtempSync(join(tmpdir(), 'cl-gh-'));
   try {
     mkdirSync(join(dir, 'bin'));
@@ -221,23 +221,23 @@ else console.log(JSON.stringify({ body: r[a[2]] }));
   } finally { rmSync(dir, { recursive: true, force: true }); }
 }
 
-test('--releases : corps anglais zéro ; français signalé ; --attendu compare titres, puces, liens', () => {
-  const corps = '## Added\n- one [a](https://x.org)\n- two\n';
-  avecGh({ 'v1.0.0': corps, 'v0.9.0': '## Added\n- Le chat est ici\n' }, (env, dir) => {
-    const r = lancer(dir, ['--releases'], env);
+test('--releases: English body zero; French reported; --attendu compares headings, bullets, links', () => {
+  const body = '## Added\n- one [a](https://x.org)\n- two\n';
+  withGh({ 'v1.0.0': body, 'v0.9.0': '## Added\n- Le chat est ici\n' }, (env, dir) => {
+    const r = run(dir, ['--releases'], env);
     assert.equal(r.code, 1);
-    const par = Object.fromEntries(r.json.releases.map((x: any) => [x.tag, x]));
-    assert.equal(par['v1.0.0'].francais, 0);
-    assert.equal(par['v0.9.0'].francais, 2);
-    assert.deepEqual(par['v1.0.0'].comptes, { titres: 1, puces: 2, liens: 1 });
+    const byTag = Object.fromEntries(r.json.releases.map((x: any) => [x.tag, x]));
+    assert.equal(byTag['v1.0.0'].french, 0);
+    assert.equal(byTag['v0.9.0'].french, 2);
+    assert.deepEqual(byTag['v1.0.0'].counts, { headings: 1, bullets: 2, links: 1 });
   });
-  avecGh({ 'v1.0.0': corps }, (env, dir) => {
-    const ok = lancer(dir, ['--releases', '--attendu', 'v1.0.0:titres=1,puces=2,liens=1'], env);
+  withGh({ 'v1.0.0': body }, (env, dir) => {
+    const ok = run(dir, ['--releases', '--attendu', 'v1.0.0:titres=1,puces=2,liens=1'], env);
     assert.equal(ok.code, 0);
-    const ko = lancer(dir, ['--releases', '--attendu', 'v1.0.0:titres=1,puces=3,liens=0'], env);
+    const ko = run(dir, ['--releases', '--attendu', 'v1.0.0:titres=1,puces=3,liens=0'], env);
     assert.equal(ko.code, 1);
-    assert.deepEqual(ko.json.releases[0].ecarts, [{ fait: 'puces', avant: 3, apres: 2 }, { fait: 'liens', avant: 0, apres: 1 }]);
-    assert.equal(lancer(dir, ['--releases', '--attendu', 'v2:titres=1,puces=1,liens=1'], env).code, 2);
+    assert.deepEqual(ko.json.releases[0].differences, [{ fact: 'bullets', before: 3, after: 2 }, { fact: 'links', before: 0, after: 1 }]);
+    assert.equal(run(dir, ['--releases', '--attendu', 'v2:titres=1,puces=1,liens=1'], env).code, 2);
   });
 });
 
@@ -245,14 +245,14 @@ test('--releases : corps anglais zéro ; français signalé ; --attendu compare 
 test('screen baseline: inserted images checked for words, following facts still checked', () => {
   const headings = Array.from({ length: 13 }, (_, i) => `## Section ${i + 1}\nText.`).join('\n');
   const base = `${headings}\n## Details for \`kanevas-refonte-visuelle\`\nSee AD-12.\n## Following\nSee E-9.\n`;
-  const dir = depot(base);
+  const dir = makeRepo(base);
   try {
     mkdirSync(join(dir, 'docs'));
     writeFileSync(join(dir, 'docs/ecrans.md'), base);
     execFileSync('git', ['add', 'docs/ecrans.md'], { cwd: dir });
     execFileSync('git', ['commit', '-qm', 'screen baseline'], { cwd: dir });
     const current = base.replace('## Details for', '## Details for `kanevas-images`\nSee AD-88.\n## Details for');
-    const audit = (...args: string[]) => lancer(dir, ['--base', 'HEAD', ...args]);
+    const audit = (...args: string[]) => run(dir, ['--base', 'HEAD', ...args]);
     writeFileSync(join(dir, 'docs/ecrans.md'), current);
     assert.equal(audit('docs/ecrans.md').code, 0);
     assert.equal(audit('--sections', 'docs/ecrans.md:15-16').code, 0);
@@ -260,12 +260,12 @@ test('screen baseline: inserted images checked for words, following facts still 
     writeFileSync(join(dir, 'docs/ecrans.md'), current.replace('See AD-88.', 'Le texte est ici.'));
     const words = audit('--sections', 'docs/ecrans.md:14-14');
     assert.equal(words.code, 1);
-    assert.equal(words.json.fichiers[0].francais, 2);
-    assert.deepEqual(words.json.fichiers[0].ecarts, []);
+    assert.equal(words.json.files[0].french, 2);
+    assert.deepEqual(words.json.files[0].differences, []);
     writeFileSync(join(dir, 'docs/ecrans.md'), current.replace('See AD-12.', 'Text.'));
     const facts = audit('--sections', 'docs/ecrans.md:15-15');
     assert.equal(facts.code, 1);
-    assert.deepEqual(facts.json.fichiers[0].ecarts, [{ fait: 'AD-12', avant: 1, apres: 0 }]);
+    assert.deepEqual(facts.json.files[0].differences, [{ fact: 'AD-12', before: 1, after: 0 }]);
     // An unrelated inserted heading must still fail the facts audit.
     writeFileSync(join(dir, 'docs/ecrans.md'), current.replace('## Following', '## Extra\nText.\n## Following'));
     assert.equal(audit('docs/ecrans.md').code, 1);
@@ -281,13 +281,13 @@ test('mockups amendment: only the two exact baseline counts, in their own sectio
     + '## Illustrations\nText.\n## World\nText.\n## Maquettes\nSee E-14 and E-9.\n'
     + '| Mockup |\n|---|\n| Finished |\n## Maps\nSee E-4 and E-14.\n';
   const corrected = base.replace('## Maquettes\nSee E-14 and E-9.', '## Mockups\nSee E-14 and E-9, E-4 and E-14.');
-  const dir = depot(base);
+  const dir = makeRepo(base);
   try {
     mkdirSync(join(dir, 'docs'));
     writeFileSync(join(dir, 'docs/ecrans.md'), base);
     execFileSync('git', ['add', 'docs/ecrans.md'], { cwd: dir });
     execFileSync('git', ['commit', '-qm', 'mockups baseline'], { cwd: dir });
-    const audit = (...args: string[]) => lancer(dir, ['--base', 'HEAD', ...args]);
+    const audit = (...args: string[]) => run(dir, ['--base', 'HEAD', ...args]);
     for (const images of [false, true]) {
       const current = images
         ? corrected.replace('## Details for', '## Details for `kanevas-images`\nSee AD-88.\n## Details for')
@@ -316,7 +316,7 @@ test('mockups amendment: only the two exact baseline counts, in their own sectio
         .replace('## Maps\nSee E-4 and E-14.', '## Maps\nSee E-14.'));
       const misplaced = audit('docs/ecrans.md');
       assert.equal(misplaced.code, 1);
-      assert.deepEqual(misplaced.json.fichiers[0].ecarts, []);
+      assert.deepEqual(misplaced.json.files[0].differences, []);
       writeFileSync(join(dir, 'a.md'), current);
       assert.equal(audit('a.md').code, 1);
     }
@@ -327,7 +327,7 @@ test('mockups amendment: only the two exact baseline counts, in their own sectio
     writeFileSync(join(dir, 'docs/ecrans.md'), corrected);
     const otherBase = audit('--sections', 'docs/ecrans.md:17-17');
     assert.equal(otherBase.code, 1);
-    assert.deepEqual(otherBase.json.fichiers[0].ecarts, [{ fait: 'E-4', avant: 0, apres: 1 }]);
+    assert.deepEqual(otherBase.json.files[0].differences, [{ fact: 'E-4', before: 0, after: 1 }]);
   } finally { rmSync(dir, { recursive: true, force: true }); }
 });
 
@@ -335,13 +335,13 @@ test('product evolution amendment: only the exact old count, in its own section 
   // Same shape as the frozen baseline: a preamble and 21 numbered sections.
   const headings = Array.from({ length: 20 }, (_, i) => `## Section ${i + 1}\nText.`).join('\n');
   const base = `${headings}\n## Section 21\nSee E-9.\n`;
-  const dir = depot(base);
+  const dir = makeRepo(base);
   try {
     mkdirSync(join(dir, 'docs'));
     writeFileSync(join(dir, 'docs/ecrans.md'), base);
     execFileSync('git', ['add', 'docs/ecrans.md'], { cwd: dir });
     execFileSync('git', ['commit', '-qm', 'evolution baseline'], { cwd: dir });
-    const audit = (...args: string[]) => lancer(dir, ['--base', 'HEAD', ...args]);
+    const audit = (...args: string[]) => run(dir, ['--base', 'HEAD', ...args]);
     const preamble = 'Preamble: E-17, E-18, E-19.\n';
     const evolved = preamble + base.replace('## Section 13\nText.', '## Section 13\nSee AD-90.');
     writeFileSync(join(dir, 'docs/ecrans.md'), evolved);
@@ -352,7 +352,7 @@ test('product evolution amendment: only the exact old count, in its own section 
     writeFileSync(join(dir, 'docs/ecrans.md'), evolved.replace('See AD-90.', 'See AD-90 and AD-90.'));
     const twice = audit('--sections', 'docs/ecrans.md:13-13');
     assert.equal(twice.code, 1);
-    assert.deepEqual(twice.json.fichiers[0].ecarts, [{ fait: 'AD-90', avant: 1, apres: 2 }]);
+    assert.deepEqual(twice.json.files[0].differences, [{ fact: 'AD-90', before: 1, after: 2 }]);
     writeFileSync(join(dir, 'docs/ecrans.md'), evolved.replace('See E-9.', 'Text.'));
     assert.equal(audit('docs/ecrans.md').code, 1);
     // The amendment does not lend its allowance to the neighbouring section.
