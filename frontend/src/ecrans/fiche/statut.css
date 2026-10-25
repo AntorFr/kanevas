@@ -16,10 +16,12 @@
 .carte-aventure .details-aventure { display: flex; flex-wrap: wrap; align-items: center; gap: var(--e-2); padding-bottom: var(--e-3); }
 .details-aventure .sous-type { min-width: 0; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--texte-3); font-size: var(--t-13); }
 .details-aventure .statut-aventure-controle { z-index: 1; }
+.details-aventure .statut-aventure-controle:has(.menu) { z-index: 2; }
 .arbre .ligne-aventure { flex-wrap: wrap; }
 .arbre .ligne-aventure .titre-fiche { white-space: normal; overflow-wrap: anywhere; }
 .arbre .ligne-aventure .details-aventure { display: flex; flex-wrap: wrap; align-items: center; gap: var(--e-2); flex: 0 0 100%; padding: 0 0 var(--e-2) 32px; }
 .ligne-recherche:has(.statut-aventure) .lien-recherche { flex-wrap: wrap; }
 @media (max-width: 760px) {
   .statut-aventure-controle .menu-declencheur { min-height: 36px; }
+  .carte-aventure .details-aventure .sous-type { flex: 1 1 100%; }
 }

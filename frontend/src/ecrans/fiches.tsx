@@ -98,7 +98,7 @@ function Liste({ universId, slug }: { universId: string; slug: string | undefine
         })}
         videListe={
           <VideIcone icone={iconeDuType(types, type.type)}>
-            <p>{type.aucun} {mj ? 'pour l’instant.' : 'à voir pour l’instant.'}</p>
+            <p>{type.aucun} {gestion ? 'pour l’instant.' : 'à voir pour l’instant.'}</p>
           </VideIcone>
         }
       />

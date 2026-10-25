@@ -46,6 +46,7 @@ export function StatutAventure({ universId, fiche, gestion = false, onChange }: 
   const [statut, setStatut] = useState(statutValide(fiche.charge.statut));
   const [enCours, setEnCours] = useState(false);
   const [echec, setEchec] = useState(false);
+  const [alignement, setAlignement] = useState<'debut' | 'fin'>('fin');
 
   useEffect(() => {
     setStatut(statutValide(fiche.charge.statut));
@@ -72,9 +73,12 @@ export function StatutAventure({ universId, fiche, gestion = false, onChange }: 
 
   if (!gestion) return <BadgeStatutAventure statut={statut} />;
   return (
-    <div className="statut-aventure-controle" aria-busy={enCours || undefined} onKeyDown={(e) => e.stopPropagation()}>
+    <div className="statut-aventure-controle" aria-busy={enCours || undefined} onKeyDown={(e) => e.stopPropagation()}
+      onFocusCapture={(e) => setAlignement(e.currentTarget.getBoundingClientRect().right < 216 ? 'debut' : 'fin')}
+      onPointerDownCapture={(e) => setAlignement(e.currentTarget.getBoundingClientRect().right < 216 ? 'debut' : 'fin')}>
       <Menu
         etiquette={`Statut de ${fiche.titre}`}
+        aligne={alignement}
         desactive={perdue || enCours}
         declencheur={<>
           <BadgeStatutAventure statut={statut} chevron />

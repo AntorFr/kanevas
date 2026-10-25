@@ -344,6 +344,21 @@ décalé de 2 px) sur `:focus-visible`.
   (`alt=""`) car le titre suit ; elle se charge à l'approche ; une image qui échoue laisse la place
   au repli, sans message.
 
+**Adventure status** (`fiche/statut.tsx`, E-8 and E-17; reusable by E-9).
+- Visual: a 24 px pill, icon and label; preparation uses `--texte-2` on `--surface-2`,
+  ready uses `--accent-texte` on `--accent-fond`, in progress uses `--table` on
+  `--table-fond`, finished uses `--texte-3` on `--surface-2`. No new colour tokens.
+  Sub-type and status wrap below the title; on phone cards they each take a line.
+- Behaviour: `StatutAventure` is read-only by default. Only a GM outside player mode gets
+  the standard keyboard menu, disabled offline and during PATCH. The old label stays until
+  the response succeeds; failure stays inline. A card's menu is a sibling of its link,
+  and opens toward the available space. The search result carries a passive badge only.
+
+**Adventure creation** (the shared E-8 window).
+- The optional parent is a searchable radio list, twenty adventures at a time, with a
+  bounded scroll area and full-title tooltips. The visibility checkbox starts unchecked.
+  The fields stay in the window on failure; they are disabled during creation.
+
 **Carte de système** (E-16) et **carte d'univers** (E-1) : la carte de fiche, avec un en-tête
 dessiné au lieu d'une image.
 - V : mêmes règles que la carte de fiche — pas de cadre ni d'ombre, survol `--surface-2` derrière la
@@ -387,6 +402,9 @@ teinte translucide est composée sur ce qui est dessous.
 | `--texte-3` | `--fond-lateral` | sombre / clair | 5,75 / 5,21 | 4,5 | ok |
 | `--texte-3` | `--surface` | sombre / clair | 5,21 / 5,68 | 4,5 | ok |
 | `--texte-3` | `--surface-2` | sombre / clair | 4,81 / 5,08 | 4,5 | ok |
+| `--texte-2` (adventure preparation) | `--surface-2` | dark / light | 6.70 / 7.61 | 4.5 | ok |
+| `--accent-texte` (adventure ready) | `--accent-fond` on `--surface-2` | dark / light | 5.15 / 5.43 | 4.5 | ok |
+| `--table` (adventure in progress) | `--table-fond` on `--surface-2` | dark / light | 5.77 / 5.02 | 4.5 | ok |
 | `--sur-accent` | `--accent` | sombre / clair | 6,94 / 7,06 | 4,5 | ok |
 | `--accent-texte` | `--fond` | sombre / clair | 8,09 / 6,88 | 4,5 | ok |
 | `--texte` (item courant) | `--accent-fond` sur `--fond-lateral` | sombre / clair | 12,48 / 13,52 | 4,5 | ok |
