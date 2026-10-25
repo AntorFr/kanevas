@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 // Translation audit, without npm dependencies. JSON on stdout; 0 = clean, 1 = findings,
 // 2 = invalid invocation or unavailable input. Section 0 precedes the first ## heading.
-// node scripts/controle-langue.mjs [--base ref] [--sections file:i-j] [--liens] [file…]
-// node scripts/controle-langue.mjs --titres file
-// node scripts/controle-langue.mjs --releases [--attendu tag:titres=n,puces=n,liens=n]…
+// node scripts/controle-langue.mjs [--base ref] [--sections file:i-j] [--links] [file…]
+// node scripts/controle-langue.mjs --headings file
+// node scripts/controle-langue.mjs --releases [--expected tag:headings=n,bullets=n,links=n]…
 import { execFileSync } from 'node:child_process';
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { dirname, relative, resolve, sep } from 'node:path';
@@ -185,7 +185,7 @@ function main() {
   let releases = false;
   for (let i = 0; i < args.length; i++) {
     const arg = args[i];
-    if (['--base', '--sections', '--attendu'].includes(arg)) {
+    if (['--base', '--sections', '--expected'].includes(arg)) {
       const value = args[++i];
       if (!value || value.startsWith('--')) throw new Error(`Missing value for ${arg}`);
       if (arg === '--base') base = value;
@@ -194,18 +194,18 @@ function main() {
         if (!m || +m[2] > +m[3]) throw new Error(`Invalid section range: ${value}`);
         ranges.set(m[1], [+m[2], +m[3]]);
       }
-      if (arg === '--attendu') {
-        const m = /^(.+):titres=(\d+),puces=(\d+),liens=(\d+)$/.exec(value);
+      if (arg === '--expected') {
+        const m = /^(.+):headings=(\d+),bullets=(\d+),links=(\d+)$/.exec(value);
         if (!m || expected.has(m[1])) throw new Error(`Invalid or duplicate release expectation: ${value}`);
         expected.set(m[1], { headings: +m[2], bullets: +m[3], links: +m[4] });
       }
-    } else if (arg === '--titres') titles = true;
-    else if (arg === '--liens') checkLinks = true;
+    } else if (arg === '--headings') titles = true;
+    else if (arg === '--links') checkLinks = true;
     else if (arg === '--releases') releases = true;
     else if (arg.startsWith('-')) throw new Error(`Unknown option: ${arg}`);
     else files.push(arg);
   }
-  if (expected.size && !releases) throw new Error('--attendu requires --releases');
+  if (expected.size && !releases) throw new Error('--expected requires --releases');
   if (releases && (titles || checkLinks || ranges.size || files.length || base)) throw new Error('Release mode cannot audit local files');
   let failed = false;
   const output = { files: [], releases: [] };
