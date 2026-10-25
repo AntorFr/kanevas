@@ -788,7 +788,7 @@ then three panels (a campaign has no description or fields other than name and s
 2. **« Préparation »** (GM only, likewise): **unchecked** tasks, grouped under the five
    categories in this order — « Monstres », « PNJ », « Cartes », « Déroulements », « Autre » — empty categories
    are not shown; each task: a checkbox and its label. Checking moves it to the
-   « Cochées (n) » group below the list, with its category badge, an « Décocher » link and a
+   « Cochées (n) » group below the list, with its category badge, a « Décocher » link and a
    struck-through label; checked tasks sort from most recently checked to oldest. At the bottom, « Nouvelle
    tâche »: label (1 to 200 characters), category (required, « Autre » by default),
    « Ajouter ». **No task can be deleted** (scope matrix).
@@ -1099,7 +1099,7 @@ never « caché ». Failure path for linking a section: the service refusal appe
 of a universe** for a member (GM or player); it exists neither outside a universe nor for an account
 without a role in that universe (the instance admin without a role, Teo before being added): the screen then has no
 button, the assistant has no page of its own (the `/univers/:id/assistant` address answers « Page introuvable. »), and its API route answers 404 (AD-75). It mounts through a single file, without
-changing an existing shell component. A sheet's player-mode toggle has no effect on
+changing an existing shell component. A sheet's « mode Joueur » toggle has no effect on
 the assistant, which keeps the real role's catalogue (AD-74); the panel states this through its badge.
 
 ### E-12 Assistant
