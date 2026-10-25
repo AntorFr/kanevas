@@ -352,7 +352,7 @@ introuvable. ».
    to the players, now that the campaign starts; under it he creates the
    scenario « Acte II — Le sceau brisé » (sub-type Scénario, parent the campaign, sections closed
    to the players), writes it in E-9 like any sheet — links to Aldric and Port-Sel, the plan of the
-   crypt from the media library, a relation to the Guilde —, and sets it « Prête » when it is; or
+   crypt from the media library, a relation to the Guilde —, and sets it « Prête » when it is — from the status line of its sheet, or in place from its tree line or its card in E-8, where he can also filter by « Statut »; when a status change or a creation fails, « L'action n'a pas abouti. Réessayez. » and nothing changes —; or
    he asks his **assistant** (E-12) to create it: the writing block leads to its sheet.
 3. On the campaign's sheet (E-9), block « Préparation »: he ticks or adds tasks.
    *Échec*: the campaign's page is open in two tabs; a status set in one is shown stale in the

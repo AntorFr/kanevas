@@ -3211,9 +3211,9 @@ The list of the type, as for any type, with these specifics:
 | GM en mode Joueur | the player's column: no status menu on a card or a tree line, no « Nouvelle aventure » | lire |
 | aucun résultat | a search or a sub-type combined with a status that matches nothing: « Aucune aventure ne correspond. » with « Voir toutes les aventures » | idem |
 
-*Creation window, states.* « Titre » empty or over 120 characters: « Donnez un titre de 1 à 120 caractères. », « Créer l'aventure » disabled. « Dans » lists the adventures the GM reads (a title of 120 characters is cut with an ellipsis, the full title in its tooltip; an universe with none: the field reads « Aucune aventure » and stays empty, optional). Creation failed (server or lost connection): « L'action n'a pas abouti. Réessayez. », the window stays open with its input, nothing created (AD-128); while lost, « Créer l'aventure » is disabled. A scenario readable by a player whose campaign is not: the tree shows it at the root, as for any sheet whose parent is unreadable (the tree rule of E-8), never its parent's title.
+*Creation window, states.* « Titre » empty or over 120 characters: « Donnez un titre de 1 à 120 caractères. », « Créer l'aventure » disabled. While the creation is sent: « Créer l'aventure » disabled, the input kept. « Dans » lists the adventures the GM reads (a title of 120 characters is cut with an ellipsis, the full title in its tooltip; an universe with none: the field reads « Aucune aventure » and stays empty, optional). Creation failed (server or lost connection): « L'action n'a pas abouti. Réessayez. », the window stays open with its input, nothing created (AD-128); while lost, « Créer l'aventure » is disabled. A scenario readable by a player whose campaign is not: the tree shows it at the root, as for any sheet whose parent is unreadable (the tree rule of E-8), never its parent's title.
 
-*Coexistence.* Until `kanevas-scenarios-suivi` lands, E-6 and E-7 and the « Campagnes » entry still work as before, and the blocks « Préparation » and « Comptes-rendus » below are not yet there: the retirements and the blocks described in this part are delivered by that slice. The mock-up `e09-aventure.html` shows them too; the document prevails.
+*Coexistence.* Until `kanevas-scenarios-suivi` lands, E-6 and E-7 and the « Campagnes » entry still work as before, and the blocks « Préparation » and « Comptes-rendus » below are not yet there: the retirements and the blocks described in this part are delivered by that slice. The mock-up `e09-aventure.html` shows them too, and a status badge, a « MJ seul » marker and a count in « Contient »; the document prevails. In this slice an old campaign (E-6) and an adventure of sub-type « Campagne » are two unrelated objects.
 
 *Critères.* Étant donné Antor, MJ, quand il crée « La Couronne brisée » (Campagne, « Visible des
 joueurs » laissé décoché), alors E-9 s'ouvre sur une fiche « En préparation » dont la section
@@ -3258,6 +3258,9 @@ The sheet of any type, with:
 | erreur | the sheet's ; a block that fails: « Impossible de charger ce bloc. » with « Réessayer », the rest of the sheet readable ; status change failed: « L'action n'a pas abouti. Réessayez. » | « Réessayer » |
 | connexion perdue | le bandeau ; status menu, « Ajouter », ticks and « Nouveau compte-rendu » disabled | lire |
 | refus | a player on a scenario with no open section: « Page introuvable. » (the sheet's rule) ; « Préparation » absent for a player and in player mode (**caché**) ; the status menu absent for a player (**caché**) | — |
+| en écriture | the status menu between the choice and the answer: disabled, the old status kept | — |
+| GM en mode Joueur | the player's view: the status as a badge, no menu, no « Préparation » | lire |
+| type désactivé | an existing adventure keeps its status line, its menu and its blocks; the type's entry is out of the bar and « Nouvelle aventure » does not exist (as for any deactivated type) | idem |
 | contenu long | a 120-character title with the status line: the line wraps under the title ; 300 tasks: « Cochées (n) » stays folded ; a CR list of 1 000: pages | idem |
 
 *Critères.* Étant donné Antor sur « La Couronne brisée », quand il ajoute « Plan de la crypte »
