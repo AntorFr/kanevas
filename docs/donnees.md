@@ -26,9 +26,8 @@ façon (AD-2).
 | **fichier** *(kanevas-import, médiathèque, AD-111)* | nom, type (déterminé à la signature ; image si PNG, JPEG, GIF, WebP, document sinon), taille, nom sur disque (UUID), empreinte, **visibilité** (`joueurs` par défaut \| `mj`), ajouté par, ajouté le, clé d'origine | univers ; ← références (sections, illustrations) | le MJ : tous ; un joueur : ceux `joueurs`, **et ceux qu'il a ajoutés** (troisième règle de lecture, pas un niveau : `ajoute_par`) ; **dans une fiche** : si le conteneur **et** le fichier sont lisibles (double garde) | MJ : tout ; qui écrit une section : en ajouter un depuis la fiche, en un geste avec sa référence (visibilité selon l'endroit d'ajout, AD-111) ; l'import |
 | **référence de fichier** *(kanevas-import)* | un fichier joint à une section, ou cité dans son texte (et alors, dans un bloc MJ ou non) ; l'illustration est une référence portée par la fiche | section → fichier ; fiche → fichier (illustration) | comme le fichier, sous double garde | déduite du texte à chaque écriture ; jointe ou retirée par qui écrit la section ; l'illustration : MJ |
 | **pièce jointe** | *depuis `kanevas-import` (AD-111) : une référence de fichier jointe à une section ; « secrète » est la visibilité du fichier ; ci-dessous, le modèle d'avant, que la migration reprend* — nom d'origine, type MIME, taille, nom sur disque (UUID), secrète | section | qui lit la section, et le MJ seul si secrète | qui écrit la section ; « secrète » : MJ |
-| **campagne** | nom, statut (en préparation, active, terminée) | univers ; → scénarios, tâches, CR | tout membre (nom, statut) | MJ |
-| **scénario** | titre, contenu | campagne | MJ | MJ |
-| **tâche de préparation** | catégorie (monstres, PNJ, cartes, déroulements, autre), libellé, faite | campagne | MJ | MJ |
+| **aventure** *(kanevas-scenarios ; replaces campagne and scénario)* | a **fiche** of type `aventure` : titre, sous-type (« Campagne », « Scénario », free), charge `{v:1, statut}` — `en_preparation` \| `prete` \| `en_cours` \| `terminee` —, sections, parent (a scenario under its campaign) | univers ; → enfants (tree), tâches, CR | the sheets' rule : who reads one of its sections ; the status with the sheet | MJ (status included) |
+| **tâche de préparation** | catégorie (monstres, PNJ, cartes, déroulements, autre), libellé, faite | aventure (fiche) *(kanevas-scenarios)* | MJ | MJ |
 | **carte** | titre, forme (illustrée \| graphe, fixée à la création), visible des joueurs, fond : une image déposée sur la carte elle-même, rangée sur le disque comme une pièce jointe (AD-40) | univers ; → éléments | MJ ; les joueurs si visible | MJ |
 | **élément de carte** | position en % (carte illustrée) ou rien (graphe) | carte, fiche | comme la fiche de l'élément | MJ |
 | **lien** *(kanevas-import)* | texte affiché, cible (une fiche, ou une clé d'origine en attente, ou rien : cassé), dans un bloc MJ ou non | section porteuse → fiche cible | comme une relation (AD-64) : la section, hors bloc MJ pour un non-MJ, **et** la cible ; sinon le texte seul | déduit du contenu à chaque écriture de la section (AD-97) ; personne ne l'écrit à part |
@@ -180,6 +179,14 @@ stockée nulle part (AD-28) ; seul le fichier l'est. Les identifiants du moteur 
 10. *(kanevas-import)* Un **fichier de la médiathèque** (image ou document) porte ses propres droits ;
    dans une fiche, il ne se montre que si son conteneur **et** lui-même sont lisibles ; sinon, dans un
    conteneur lisible, « Image réservée au MJ. » ou « Fichier réservé au MJ. » (AD-111).
+12. *(kanevas-scenarios)* An **adventure** is a sheet: rules 2, 3, 6, 7 and 10 apply to it
+   without exception. Its **status** lives in `fiches.charge` (`{v:1, statut}`) and is read by
+   whoever reads the sheet (a player sees « En cours »), written by the GM alone. The
+   **preparation tasks** hang on the adventure (`taches_preparation.fiche_id`), GM of the
+   adventure's universe alone, evaluated on that universe (AD-47 kept); a **compte-rendu** names
+   an adventure in its charge (`campagne_id`, the key is kept, it references a sheet of type
+   `aventure`); a CR whose adventure was deleted keeps its charge and reads « Aventure
+   supprimée ». No other row knows campaigns or scenarios.
 7. *(kanevas-import)* Un **bloc MJ** n'existe que pour un MJ hors mode Joueur : ni sur la fiche, ni dans
    l'index qu'un non-MJ interroge, ni dans un lien entrant, ni dans une image (AD-98) ; un fichier
    ajouté depuis un bloc MJ entre « Réservé au MJ » (AD-111, décision de Monsieur du 2026-10-11).
@@ -527,3 +534,54 @@ Retour arrière : une image d'avant la recréation de `fiches` relit la table (m
 les types ajoutés lui seraient inconnus — une fiche d'un type nouveau ne s'afficherait pas dans
 l'ancienne image, et les illustrations et pièces jointes, passées dans la médiathèque (AD-111), n'y
 paraîtraient plus. Restaurer la sauvegarde du volume d'avant la mise à jour reste le retour complet.
+
+## Cadrage `kanevas-scenarios` : le modèle
+
+No new entity: an adventure is a row of `fiches`. What changes, at the three levels:
+
+**Conceptual.** « An adventure is a sheet » ; « a scenario belongs to at most one campaign, by the
+tree » ; « an adventure has exactly one status among four » ; « a task belongs to one adventure » ;
+« a compte-rendu names one adventure ».
+
+**Logical.**
+- `fiches.type = 'aventure'` (no `CHECK`, AD-102) ; `fiches.charge` validated by the type's schema
+  `{v:1, statut ∈ en_preparation|prete|en_cours|terminee}` at creation, at the status change and
+  at the import — the base only checks valid JSON, the schema is the application's (AD-123) ; the
+  default at creation is `en_preparation`.
+- `parent_id` as today (`ON DELETE SET NULL`, no cycle, depth 50) : a campaign's deletion sends
+  its scenarios to the root.
+- `taches_preparation` : the column `campagne_id` becomes `fiche_id REFERENCES fiches(id) ON DELETE
+  CASCADE` (a deleted adventure takes its tasks) ; the `CHECK` on category and `faite ⇔ faite_le`
+  stay ; index `(fiche_id, faite)` for the block and the E-3 block.
+- Comptes-rendus : `charge.campagne_id` keeps its name and references `fiches.id` of an adventure ;
+  not a foreign key (JSON), as today — the deletion of the adventure leaves it dangling on purpose
+  (« Aventure supprimée »).
+- `campagnes` and `scenarios` are **dropped** ; `cle_origine`, `dernier_import`, `version_importee`
+  of a scenario move to the sheet (same columns on `fiches`, same unique `(univers_id, cle_origine)`).
+
+**Physical.** SQLite, unchanged. The status filter reads `json_extract(charge, '$.statut')` : no
+index — a universe counts tens of adventures, hundreds at most ; reopened above ten thousand.
+
+**Migration `kanevas-scenarios`** (one script, number taken at the merge, AD-51 ; played at
+start-up after backup, as every migration) :
+1. For each row of `campagnes` : a `fiches` row (`type='aventure'`, `sous_type='Campagne'`,
+   `titre=nom`, `charge={"v":1,"statut":s}` with `en_preparation→en_preparation`,
+   `active→en_cours`, `terminee→terminee`, `cree_le`, `cle_origine`, `dernier_import`) and one
+   section « Présentation », empty, `joueurs_lisent=1` (B-18 : a campaign stays visible to the
+   players) ; a `cle_origine` already used by a sheet of the universe takes the prefix
+   `campagne:` — `[À VÉRIFIER]` : none in the stub seed (`src/bouchon/`), the production has no
+   campaign.
+2. For each row of `scenarios` : a `fiches` row (`sous_type='Scénario'`, `titre`, `statut
+   en_preparation`, `parent_id` = its campaign's sheet, `cree_le`, `cle_origine` prefixed
+   `scenario:` on collision, `version_importee`) and one section « Scénario » closed to the
+   players with `contenu` (its `version` becomes the section's).
+3. `taches_preparation.campagne_id` → `fiche_id` (table rebuilt, SQLite) ; the CR charges
+   rewritten (`campagne_id` : old campaign id → its sheet id).
+4. `DROP TABLE scenarios`, `DROP TABLE campagnes`.
+5. Checks : as many adventures as campaigns + scenarios ; every task has a sheet ; every CR charge
+   points to an existing adventure ; `PRAGMA foreign_key_check` empty.
+
+Test : the stub's base at the previous schema (two campaigns, two scenarios, tasks, CR) committed
+as the example base ; after start-up the campaign « La Couronne brisée » is a sheet « En cours »
+with its « Présentation » open, « Acte II » is under it with its content in a closed section, the
+tasks are on the campaign, the CR shows « Campagne : La Couronne brisée ».

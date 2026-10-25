@@ -226,20 +226,61 @@ Forme de la skill `exigences` ; chaque besoin cite les parcours qui le réalisen
   qu'il ne voit pas répond comme une adresse inconnue. *(P-8)*
 
 ### Campagnes, scénarios, préparation
-- **B-15** — Un MJ crée les campagnes d'un univers et en change le statut — en préparation,
+
+> *Amended by `kanevas-scenarios` (decision of Monsieur, 2026-10-25): campaigns and scenarios
+> become sheets of the « Aventure » type. B-58 to B-62 replace B-15, B-16 and B-17 and amend
+> B-18 and B-19; E-6 Campagne and E-7 Scénario are retired. The reason: a scenario kept apart
+> received no incoming link, no image, no relation and no tree — the import of a real campaign
+> (ten documents cited by thirty sheets, fourteen table handouts) showed what that cost.*
+
+- **B-15** — *(replaced by B-58 and B-59)* Un MJ crée les campagnes d'un univers et en change le statut — en préparation,
   active, terminée — depuis la liste et la page de campagne (E-6). *(P-3)*
-- **B-16** — Un MJ crée les scénarios d'une campagne depuis sa page (E-6) et les écrit (E-7) ; les
+- **B-16** — *(replaced by B-58; a scenario's sections are born closed to the players, and the
+  GM may open one — a handout — which B-16 forbade)* Un MJ crée les scénarios d'une campagne depuis sa page (E-6) et les écrit (E-7) ; les
   joueurs ne les voient jamais.
   *(P-3)*
-- **B-17** — Un MJ tient la liste de préparation d'une campagne sur sa page (E-6) : des tâches en
+- **B-17** — *(replaced by B-60, same five categories)* Un MJ tient la liste de préparation d'une campagne sur sa page (E-6) : des tâches en
   cinq catégories (monstres, PNJ, cartes, déroulements, autre) qu'il coche ; une tâche cochée
   quitte la liste active sans disparaître. Les joueurs n'en voient rien. *(P-3)*
 - **B-18** — Un joueur voit la liste des campagnes de l'univers, nom et statut. *(P-4, P-6)*
+  *Amended (`kanevas-scenarios`)*: a player sees, in the « Aventures » list (E-8) and in the
+  « Campagnes en cours » block of E-3, the adventures he can read — a campaign is readable when
+  one of its sections is; the creation form opens « Présentation » to the players by default for
+  a campaign, not for a scenario — with their status (B-59).
+- **B-58** — *(kanevas-scenarios)* An **adventure** — a campaign, a scenario, a one-shot — is a
+  sheet of the « Aventure » type: sections with their audience, links from and to any sheet,
+  relations, files and illustration, search, and the tree. The sub-type is free (B-52); the
+  product proposes « Campagne » and « Scénario »; a scenario belongs to its campaign by the tree
+  (its parent), a one-shot stands at the root. The GM creates an adventure from the type's list
+  (E-8, where the tree is the default view) and reads and writes it in E-9, like any sheet;
+  deleting, renaming, changing the type follow the sheets' rules (B-… of `kanevas-import-tenir`).
+  *(P-3)*
+- **B-59** — *(kanevas-scenarios)* Every adventure carries a **play status**: « En préparation »
+  (at birth), « Prête », « En cours », « Terminée ». The GM changes it in place from the header
+  of E-9 and from the card's menu of E-8; a change touches no other adventure. The status shows as
+  a badge on the card, on the tree line, in the header and in the results of E-17; the GM filters
+  the list by status; a player sees the status of the adventures he sees. *(P-3, P-4, P-6)*
+- **B-60** — *(kanevas-scenarios)* The **preparation** list (five categories, cocher/décocher,
+  GM only, as B-17 said) and the **comptes-rendus** of an adventure live on its sheet (E-9) as
+  blocks of the sheet, above its sections; « Nouveau compte-rendu » stands in that block, for any
+  member, and the CR names that adventure (B-19). The blocks of E-3 read the adventures
+  « En cours »: « Campagnes en cours » (sub-type Campagne), « Derniers comptes-rendus »
+  (unchanged), « Préparation » (the open tasks of the adventures en cours, GM). *(P-3, P-4)*
+- **B-61** — *(kanevas-scenarios)* The **import API** pushes an adventure through the sheets
+  route (`type: aventure`, `sousType`, `statut`, `parent` by origin key, sections); a reimport
+  never overwrites a status, a sub-type or a parent changed in Kanevas (B-48 extended); a
+  compte-rendu names its adventure by its origin key as before. The former campaign and scenario
+  routes of the import disappear. *(P-10)*
+- **B-62** — *(kanevas-scenarios)* The GM's **assistant** creates a sheet of any activated type
+  — title, sub-type, parent — and so an adventure; « créer une campagne » and « créer un
+  scénario » become that one gesture. *(P-3)*
 
 ### Comptes-rendus et mise à jour du monde
 - **B-19** — Quand un membre écrit un compte-rendu depuis la page d'une campagne (E-6), le CR est
   lisible par toute la table et modifiable par son auteur ; le MJ lit et écrit tout CR. Plusieurs
-  CR coexistent pour une même séance. *(P-4)*
+  CR coexistent pour une même séance. *(P-4)* *Amended (`kanevas-scenarios`)*: « depuis la page
+  d'une campagne (E-6) » reads « from the sheet of an adventure (E-9, block « Comptes-rendus »),
+  campaign or scenario »; the CR names that adventure, and E-13 shows it.
 - **B-20** — Les comptes-rendus d'un univers se lisent ensemble, du plus récemment créé au plus
   ancien (un CR retouché ne remonte pas), dans la liste des CR (E-13). *(P-4, P-6)*
 - **B-21** — Quand un MJ demande à son assistant (E-12) une mise à jour du monde à partir d'un CR,
@@ -303,11 +344,17 @@ dernier MJ — refusé avec la raison ; un compte qui n'est pas admin ouvre l'ad
 introuvable. ».
 
 ### P-3 — Préparer la séance du samedi (MJ, dimanche soir, bureau)
-1. **Vue d'ensemble** (E-3) : les campagnes actives, les derniers CR, la préparation en cours.
-2. **Campagne** (E-6) : il crée la campagne (« En préparation ») ou ouvre l'existante et la passe
-   « Active » ; il relit les CR les plus récents, crée ou ouvre un **scénario** (E-7) et l'écrit
-   (ou demande à son **assistant** (E-12) de créer la campagne ou le scénario : le bloc d'écriture mène à E-6 ou E-7).
-3. Il coche ou ajoute des tâches de **préparation** (E-6).
+1. **Vue d'ensemble** (E-3) : les campagnes en cours, les derniers CR, la préparation en cours.
+2. *(kanevas-scenarios)* **Aventures** (E-8, tree view): he creates the campaign « La Couronne
+   brisée » (sub-type Campagne, born « En préparation », « Présentation » open to the players) or
+   opens the existing one and sets it « En cours » from its header (E-9); under it he creates the
+   scenario « Acte II — Le sceau brisé » (sub-type Scénario, parent the campaign, sections closed
+   to the players), writes it in E-9 like any sheet — links to Aldric and Port-Sel, the plan of the
+   crypt from the media library, a relation to the Guilde —, and sets it « Prête » when it is; or
+   he asks his **assistant** (E-12) to create it: the writing block leads to its sheet.
+3. On the campaign's sheet (E-9), block « Préparation »: he ticks or adds tasks.
+   *Échec*: the campaign's page is open in two tabs; a status set in one is shown stale in the
+   other until it reloads — the status menu writes the whole value, no conflict to resolve.
 4. **Lore** : depuis la **liste d'un type** (E-8, parmi les types activés), il crée un PNJ ou un lieu, avec au besoin son **sous-type** ; sur la **fiche** (E-9), il
    écrit « Apparence » (lue des joueurs) et « Vérité — MJ seul », relie le PNJ à sa faction,
    dépose le plan d'un lieu, et pose le portrait d'Aldric en **illustration** de la fiche (visible
@@ -331,10 +378,11 @@ retrait échoue — « L'action n'a pas abouti. Réessayez. », l'illustration r
 pas — le cadre dit « Image indisponible. » et il garde « Remplacer » et « Retirer ».
 
 ### P-4 — Écrire le compte-rendu (joueur ou MJ, le lendemain de la partie)
-1. Depuis la **vue d'ensemble** (E-3) ou la **liste des campagnes** (E-6), il ouvre la campagne.
-2. **Nouveau compte-rendu** : titre, texte ; il le publie — il s'ouvre comme une **fiche** (E-9)
-   de type compte-rendu.
-3. Il le retouche plus tard ; les autres le lisent depuis la campagne ou la **liste des CR**
+1. Depuis la **vue d'ensemble** (E-3) ou la liste **Aventures** (E-8), il ouvre la campagne — or
+   the scenario played that night — (E-9). *(amended by `kanevas-scenarios`)*
+2. **Nouveau compte-rendu**, in the block « Comptes-rendus » of that sheet: titre, texte ; il le
+   publie — il s'ouvre comme une **fiche** (E-9) de type compte-rendu, which names the adventure.
+3. Il le retouche plus tard ; les autres le lisent depuis l'aventure ou la **liste des CR**
    (E-13).
 
 ### P-5 — Mettre le monde à jour après la partie (MJ)
@@ -354,6 +402,9 @@ pas — le cadre dit « Image indisponible. » et il garde « Remplacer » et «
    que la table sait.
 3. Il ouvre la **carte** (E-11), touche un token, relit la fiche.
 4. Ou il demande à son **assistant** (E-12) « que sait-on d'Aldric ? ».
+5. *(kanevas-scenarios)* **Aventures** (E-8): he sees « La Couronne brisée », « En cours », and
+   reads what its sheet shows to the players (E-9) — its « Présentation », never the scenarios
+   beneath it, whose sections are closed.
 *Échec* : il demande de lire « Vérité » : l'assistant répond « Introuvable. », comme l'interface ;
 l'assistant est indisponible ou en erreur : le panneau le dit, et la fiche reste lisible (E-9).
 *Échec* (illustration, étape 2) : une image ne se charge pas (réseau du téléphone) — la carte
@@ -564,6 +615,11 @@ introuvable. ».
 
 - **Jeu en direct** : pas d'initiative, de combat animé, de brouillard de guerre ; la table reste
   physique.
+- *(kanevas-scenarios)* **A calendar of sessions** (dates, who was there) and a **play log per
+  scenario** (« joué le 12 octobre avec Léa et Mira ») — the status says where an adventure
+  stands, not when; reopened if the GM asks for the history of a campaign.
+- *(kanevas-scenarios)* **Status automation** — no status moves by itself (a CR written, a date
+  passed): the GM sets it.
 - **Caractéristiques structurées** (fiche de combat, statistiques) : une pièce jointe en V1 ; des
   types de fiches dédiés plus tard.
 - **Supprimer** une campagne, un scénario, un CR, une carte, une tâche, un système : rien de cela
