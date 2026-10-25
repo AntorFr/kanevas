@@ -103,7 +103,7 @@ E-16 vivent hors des univers : leurs cases disent le rôle dans un univers ratta
 | E-6 | tout | liste, statut, CR, « Nouveau compte-rendu » ; ni scénarios ni préparation (cachés) | — |
 | E-7 | tout | — | — |
 | E-8 | lire, chercher, créer ; la vignette de chaque fiche (son illustration, ou le repli dessiné) ; *(kanevas-fiche-mj-seul)* the « MJ seul » badge on a sheet players cannot see, the « Visibilité » filter | lire, chercher ; la vignette des fiches qu'il voit ; *(kanevas-fiche-mj-seul)* no badge, no filter (**caché**) | — |
-| E-9 | tout ; mode Joueur ; relier et retirer des relations ; poser, remplacer, retirer l'illustration (hors mode Joueur) ; *(kanevas-import)* sous-type, réserver un fichier au MJ, voir un fichier en attente d'import (tuile) | sections lisibles ; écrire celles permises ; relations lisibles (section et cible) ; pièces jointes de celles-ci ; voir l'illustration, jamais la poser ; *(kanevas-import)* dans une section qu'il écrit, ajouter un fichier ou en choisir un qu'il voit (les deux chemins de B-55) et retirer une référence ; fichiers sous double garde ; jamais régler une visibilité (**caché**) ; un fichier en attente d'import : rien (**caché**) | — |
+| E-9 | tout ; mode Joueur ; *(kanevas-fiche-mj-seul)* the « MJ seul » badge in the header (GM mode) ; relier et retirer des relations ; poser, remplacer, retirer l'illustration (hors mode Joueur) ; *(kanevas-import)* sous-type, réserver un fichier au MJ, voir un fichier en attente d'import (tuile) | sections lisibles ; écrire celles permises ; relations lisibles (section et cible) ; pièces jointes de celles-ci ; voir l'illustration, jamais la poser ; *(kanevas-import)* dans une section qu'il écrit, ajouter un fichier ou en choisir un qu'il voit (les deux chemins de B-55) et retirer une référence ; fichiers sous double garde ; jamais régler une visibilité (**caché**) ; un fichier en attente d'import : rien (**caché**) | — |
 | E-10 | tout | cartes visibles | — |
 | E-11 | tout ; mode Joueur | lire une carte visible, ouvrir une fiche | — |
 | E-12 | catalogue MJ (dont générer une image, si un moteur d'images est disponible) ; propositions : le MJ demandeur seul les voit, les applique, les abandonne | catalogue Joueur (sans image : l'outil est absent, l'assistant répond qu'il ne peut pas) ; propositions : **caché** (ni outil ni bloc ; ce qu'on vérifie est l'absence de proposition et de bloc, pas le texte libre de l'assistant) | — |
@@ -320,7 +320,7 @@ lieu »…) ouvre une fenêtre : « Titre » (1 à 120 caractères) et, pour un 
 | chargement | « Chargement des fiches… » | — |
 | erreur | « Impossible de charger les fiches. » ; création échouée : « L'action n'a pas abouti. Réessayez. », titre conservé | « Réessayer » |
 | connexion perdue | le bandeau ; « Nouveau … » et « Créer la fiche » désactivés | ouvrir une fiche listée |
-| refus | un type inconnu : « Page introuvable. » ; une fiche illisible est absente de la liste | — |
+| refus | un type inconnu : « Page introuvable. » ; une fiche illisible est absente de la liste ; *(kanevas-fiche-mj-seul)* `?visibilite=` posed by a player or in player mode: 400 « Requête invalide. » from the API, the screen never sends it and ignores it in the address | — |
 | contenu long | plus de 100 fiches : « Charger la suite » ; titre trop long tronqué par « … » avec infobulle | idem |
 
 *Critère.* Étant donné la fiche « Maître Aldric », dont Léa ne lit aucune section, quand Léa ouvre la
@@ -330,8 +330,11 @@ liste des personnages, alors elle n'y voit pas « Maître Aldric ».
 
 Le titre, le badge du type — *(kanevas-fiche-mj-seul, B-57)* and, for a GM in GM mode, the amber
 « MJ seul » badge (`lock`) when no section is readable by the players, with the tooltip « Aucune
-section n'est visible des joueurs. »; it appears or disappears as soon as an audience setting of
-the sheet changes, without reloading; absent in player mode and for a player —, puis les **sections** dans leur ordre, chacune un panneau : titre,
+section n'est visible des joueurs. » (the badge is focusable; on focus or touch the sentence is
+written under the header line, as E-18 does); it follows the saved state only — it appears or
+disappears as soon as an audience setting is saved, without reloading, and does not move on
+« L'action n'a pas abouti. Réessayez. » —; with a 120-character title it wraps to the next line
+with the type badge, the title is never truncated for it; absent in player mode and for a player —, puis les **sections** dans leur ordre, chacune un panneau : titre,
 contenu en Markdown rendu (AD-95), et un emplacement de **blocs de section** (relations, pièces
 jointes : les tranches suivantes y inscrivent le leur, comme pour E-3, dans
 `frontend/src/ecrans/fiche/blocs/` et `registre.ts`).
@@ -2739,6 +2742,22 @@ the remembered view. The counts are those of the sheets of the type. The state i
 reading, never stored: opening one section to the players, from E-9, removes the badge at the next
 reading of the list. A player, and the GM in player mode, see neither the badge nor the filter, and
 the API does not tell them whether a sheet is GM-only (it only lists what they read, E-8 refus).
+States of the filter: its three values are fixed (no loading, no counts); it keeps its value in the
+address (`?visibilite=mj`, like `sousType`) and across « Charger la suite »; a filtered visibility
+without any sheet renders « Aucune fiche réservée au MJ. » or « Aucune fiche visible des joueurs. »
+with « Voir toutes les fiches » (which resets the filter); loading, error and offline are the
+grid's (the control is disabled under the connection-lost banner, like « Nouveau … »); switching
+to player mode removes the control and drops the parameter, the grid reloads unfiltered. The E-8
+and E-9 mockups draw neither the badge nor the filter: this text is authoritative, and the badge is
+the charte's audience badge (`Pastille` sens « secrete », icon `lock`). On a section, « MJ seul »
+names that section; on a card, a tree line or the header it names the whole sheet — the header
+tooltip says so. *Critères.* Étant donné Antor, MJ, et « Rapport secret de l'amirauté » dont la
+seule section est « MJ seul », quand il ouvre la liste des personnages, alors la carte porte
+« MJ seul » et « Visibilité » ▸ « Réservées au MJ » la liste seule. Étant donné la même fiche, quand
+Antor ouvre « Apparence » aux joueurs sur E-9, alors la pastille de l'en-tête disparaît sans
+recharger, et la carte n'en porte plus à la prochaine lecture. Étant donné Léa, joueuse, quand elle
+ouvre la liste des personnages ou `/univers/1/fiches/personnages?visibilite=mj`, alors elle ne voit
+ni pastille ni filtre, et la liste est celle de ses droits.
 
 | État | Ce qu'on voit | Ce qu'on peut faire |
 |---|---|---|

@@ -207,7 +207,7 @@ Forme de la skill `exigences` ; chaque besoin cite les parcours qui le réalisen
   like a GM-only file in the media library; and the GM filters the list by visibility (« Toutes »,
   « Visibles des joueurs », « Réservées au MJ »). Nothing is stored: the state is read from the
   sections, and opening one section to the players removes the badge. A player, and the GM in
-  player mode, see neither badge nor filter. *(P-3, P-6 ; decision of Monsieur, 2026-10-25)*
+  player mode, see neither badge nor filter. *(P-3 step 4 ; decision of Monsieur, 2026-10-25)*
 
 ### Assistant : son jeton posé depuis l'administration (`kanevas-import`)
 - **B-51** — Quand l'admin d'instance
@@ -318,7 +318,9 @@ introuvable. ».
 4. **Lore** : depuis la **liste d'un type** (E-8, parmi les types activés), il crée un PNJ ou un lieu, avec au besoin son **sous-type** ; sur la **fiche** (E-9), il
    écrit « Apparence » (lue des joueurs) et « Vérité — MJ seul », relie le PNJ à sa faction,
    dépose le plan d'un lieu, et pose le portrait d'Aldric en **illustration** de la fiche (visible
-   de qui voit la fiche) ; de retour sur la liste, la carte d'Aldric porte ce portrait.
+   de qui voit la fiche) ; de retour sur la liste, la carte d'Aldric porte ce portrait. *(kanevas-fiche-mj-seul)*
+   The card of « Rapport secret de l'amirauté », whose only section is « MJ seul », carries the
+   « MJ seul » badge; « Visibilité » ▸ « Réservées au MJ » lists what the table will not see (B-57).
 5. Il demande à son **assistant** (E-12) « rappelle-moi tout ce qu'on sait d'Aldric » puis
    « fais un portrait pour Apparence » : l'image est attachée à la section, et il suit « Ouvrir la section »
    dans le fil pour la voir sur la fiche (E-9).
