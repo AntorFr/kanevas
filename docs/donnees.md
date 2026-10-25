@@ -567,8 +567,9 @@ start-up after backup, as every migration) :
 1. For each row of `campagnes` : a `fiches` row (`type='aventure'`, `sous_type='Campagne'`,
    `titre=nom`, `charge={"v":1,"statut":s}` with `en_preparation→en_preparation`,
    `active→en_cours`, `terminee→terminee`, `cree_le`, `cle_origine`, `dernier_import`) and one
-   section « Présentation », empty, `joueurs_lisent=1` (B-18 : a campaign stays visible to the
-   players) ; a `cle_origine` already used by a sheet of the universe takes the prefix
+   section « Présentation », empty, open to the players (`joueurs_lisent=1`) only when the
+   campaign was `active` or `terminee` — the players saw it ; a campaign `en_preparation` stays
+   closed (decision of Monsieur, 2026-10-25) ; a `cle_origine` already used by a sheet of the universe takes the prefix
    `campagne:` — verified on 2026-10-25 : the stub seed sets no origin key on a campaign or a
    scenario (`src/bouchon/`), and the production has no campaign : the prefix is a safety, never
    exercised.
@@ -584,5 +585,5 @@ start-up after backup, as every migration) :
 
 Test : the stub's base at the previous schema (two campaigns, two scenarios, tasks, CR) committed
 as the example base ; after start-up the campaign « La Couronne brisée » is a sheet « En cours »
-with its « Présentation » open, « Acte II » is under it with its content in a closed section, the
+with its « Présentation » open (it was active), a campaign in preparation has it closed, « Acte II » is under it with its content in a closed section, the
 tasks are on the campaign, the CR shows « Campagne : La Couronne brisée ».
