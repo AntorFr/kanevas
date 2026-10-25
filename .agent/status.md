@@ -1,6 +1,6 @@
 # Status — kanevas
 
-> MàJ : 2026-10-24 (correctif `kanevas-e2e-stables`, dernier paragraphe ; avant : assemblage de kanevas-import-mediatheque, repris après l'arbitrage de la recette : `epic/kanevas` fusionnée dans la feature, l'image générée par l'assistant entre dans la médiathèque par `ajouterFichier` ; l'historique des reprises précédentes est dans `git log`)
+> MàJ : 2026-10-25 (correctif `kanevas-relation-badge-pj`, dernier paragraphe ; avant : 2026-10-24, correctif `kanevas-e2e-stables`, dernier paragraphe ; avant : assemblage de kanevas-import-mediatheque, repris après l'arbitrage de la recette : `epic/kanevas` fusionnée dans la feature, l'image générée par l'assistant entre dans la médiathèque par `ajouterFichier` ; l'historique des reprises précédentes est dans `git log`)
 
 **Lecture de ce fichier :** le clone qui le porte contient déjà toutes les tranches nommées ci-dessous ; « PR non fusionnée » dit seulement que la tranche n'est pas encore sur `main`, pas qu'elle manque du code.
 
@@ -218,3 +218,7 @@ outil `chercher` de l'assistant sans `type` = même fonction, « Introuvable. »
 Aucun test supprimé, sauté ni affaibli. Preuve : `src/e2e` joué sous `taskset -c 0-3 … --test-concurrency=2` (conditions de la CI), vert plusieurs fois, dont avec une seconde suite en parallèle.
 **Reste :** la suite verte trois fois de suite (constat de la vérification ; aucune CI ne tourne sur une PR : workflow manuel `tests.yml` ou `npm run tests:attestes`), puis la fusion ; la mise en production de 0.16.x est une PR GitOps à part (Monsieur).
 Piège encore vrai : un e2e qui lit le DOM juste après une navigation ou un `fill` sans attendre l'état visé se révèle sous charge — attendre l'élément ou sa disparition, jamais un délai.
+
+`feature/kanevas-relation-badge-pj` (correctif hors epic, branché sur `main` ; PR non fusionnée) : une fiche dont une relation vise un personnage s'ouvrait en erreur (E-9, `badgeFiche` lisait `charge.pj` sur une cible qui n'avait pas de charge). AD-64 amendé : `cible` porte `charge: {pj}` pour un personnage et rien d'autre (`chargeDeCible`, `services/relations.ts`, dans la liste du GET et la réponse 201 du POST) ; le bloc Relations ne force plus `as Fiche`, et `badgeFiche` accepte une charge absente (libellé du type). Pas de migration. Tests : `src/routes/relations-badge-pj.test.ts` (route), `src/e2e/relation-badge-pj.test.ts` (écran, Chromium).
+**Reste :** la recette (une fiche du semis reliée à « Maître Aldric » s'ouvre, badge PNJ/PJ) puis la fusion. Hors tranche : toute autre donnée de la cible.
+Piège : ne joindre à `cible` que ce que le badge lit ; une autre clé de charge fuirait des données de la fiche cible.
