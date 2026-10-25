@@ -675,15 +675,15 @@ section (AD-39), sans « Relier » ni « Retirer ».
 
 Le formulaire n'est pas gardé en cas de session expirée. Une fiche se relie à toute fiche de son
 univers, **sauf à elle-même**. Une section porte au plus 100 relations ; deux relations de même
-type vers la même fiche ne coexistent pas. « Retirer » sur une ligne supprime la relation sans
+nature et de même qualificatif vers la même fiche ne coexistent pas *(`kanevas-fiches-liees`)*. « Retirer » sur une ligne supprime la relation sans
 confirmation (elle se refait en trois gestes) ; retirer une section retire ses relations avec elle.
 
 Textes : bloc sans relation (MJ) : « Aucune relation pour l'instant. » ; erreurs sous les champs :
-« Erreur : le type de relation est obligatoire. », « Erreur : 80 caractères au plus. », « Erreur :
+« Erreur : le qualificatif est obligatoire sans nature. » *(`kanevas-fiches-liees`, replaces « le type de relation est obligatoire »)*, « Erreur : 80 caractères au plus. » (the qualifier; spaces alone count as empty), « Erreur :
 choisissez une fiche. » ; refus du service, au-dessus du formulaire : « Cette relation existe
 déjà. », « Une fiche ne se relie pas à elle-même. », « Cette section porte déjà 100 relations. » ;
 liste de choix vide : « Aucune faction à relier. » (autres types : « Aucun personnage… ») ;
-chaque bouton « Retirer » porte l'étiquette accessible « Retirer la relation membre de → Lames Grises ».
+chaque bouton « Retirer » porte l'étiquette accessible « Retirer la relation membre de → Lames Grises » *(`kanevas-fiches-liees`: « Retirer la relation membre de · Lames Grises — trésorier »)*.
 
 | État | Ce qu'on voit | Ce qu'on peut faire |
 |---|---|---|
@@ -692,7 +692,7 @@ chaque bouton « Retirer » porte l'étiquette accessible « Retirer la relation
 | erreur | « Impossible de charger les relations. » dans le bloc seul, les autres sections intactes ; échec d'écriture : « L'action n'a pas abouti. Réessayez. », saisie conservée | « Réessayer » |
 | connexion perdue | le bandeau ; « Relier », « Retirer » désactivés ; la liste affichée reste | suivre un lien |
 | refus | le bloc d'une section illisible n'existe pas (la section est absente, B-9) ; une relation vers une fiche illisible est absente ; « Relier » et « Retirer » n'existent pas pour un Joueur ni en mode Joueur | — |
-| contenu long | 100 relations : la liste défile avec la section ; un type de 80 caractères et un titre de fiche de 120 passent à la ligne | idem |
+| contenu long | 100 relations : la liste défile avec la section ; un qualificatif de 80 caractères et un titre de fiche de 120 passent à la ligne | idem |
 
 *Critères.*
 - Étant donné Antor, MJ, qui a relié la section « Apparence » de « Maître Aldric » à la faction
@@ -1034,15 +1034,15 @@ section (AD-39), sans « Relier » ni « Retirer ».
 
 Le formulaire n'est pas gardé en cas de session expirée. Une fiche se relie à toute fiche de son
 univers, **sauf à elle-même**. Une section porte au plus 100 relations ; deux relations de même
-type vers la même fiche ne coexistent pas. « Retirer » sur une ligne supprime la relation sans
+nature et de même qualificatif vers la même fiche ne coexistent pas *(`kanevas-fiches-liees`)*. « Retirer » sur une ligne supprime la relation sans
 confirmation (elle se refait en trois gestes) ; retirer une section retire ses relations avec elle.
 
 Textes : bloc sans relation (MJ) : « Aucune relation pour l'instant. » ; erreurs sous les champs :
-« Erreur : le type de relation est obligatoire. », « Erreur : 80 caractères au plus. », « Erreur :
+« Erreur : le qualificatif est obligatoire sans nature. » *(`kanevas-fiches-liees`, replaces « le type de relation est obligatoire »)*, « Erreur : 80 caractères au plus. » (the qualifier; spaces alone count as empty), « Erreur :
 choisissez une fiche. » ; refus du service, au-dessus du formulaire : « Cette relation existe
 déjà. », « Une fiche ne se relie pas à elle-même. », « Cette section porte déjà 100 relations. » ;
 liste de choix vide : « Aucune faction à relier. » (autres types : « Aucun personnage… ») ;
-chaque bouton « Retirer » porte l'étiquette accessible « Retirer la relation membre de → Lames Grises ».
+chaque bouton « Retirer » porte l'étiquette accessible « Retirer la relation membre de → Lames Grises » *(`kanevas-fiches-liees`: « Retirer la relation membre de · Lames Grises — trésorier »)*.
 
 | État | Ce qu'on voit | Ce qu'on peut faire |
 |---|---|---|
@@ -1051,7 +1051,7 @@ chaque bouton « Retirer » porte l'étiquette accessible « Retirer la relation
 | erreur | « Impossible de charger les relations. » dans le bloc seul, les autres sections intactes ; échec d'écriture : « L'action n'a pas abouti. Réessayez. », saisie conservée | « Réessayer » |
 | connexion perdue | le bandeau ; « Relier », « Retirer » désactivés ; la liste affichée reste | suivre un lien |
 | refus | le bloc d'une section illisible n'existe pas (la section est absente, B-9) ; une relation vers une fiche illisible est absente ; « Relier » et « Retirer » n'existent pas pour un Joueur ni en mode Joueur | — |
-| contenu long | 100 relations : la liste défile avec la section ; un type de 80 caractères et un titre de fiche de 120 passent à la ligne | idem |
+| contenu long | 100 relations : la liste défile avec la section ; un qualificatif de 80 caractères et un titre de fiche de 120 passent à la ligne | idem |
 
 *Critères.*
 - Étant donné Antor, MJ, qui a relié la section « Apparence » de « Maître Aldric » à la faction
@@ -3338,13 +3338,13 @@ side that holds it (AD-128 (3)).
 
 A relation without nature is « sans nature » (free, as today). The place-in-place relation is the
 tree, never a nature (« se situe » is not offered for lieu → lieu). Aventures (`kanevas-scenarios`)
-take no nature in this epic (reopened with the first need): their « Relier » form has « Qualificatif » alone, required.
+take no nature in this epic (reopened with the first need): their « Relier » form has « Qualificatif » alone, required, and « Type de fiche » lists every enabled type.
 
 ### E-9 — « Relier à une fiche », with a nature
 
 The form of the Relations block (`kanevas-relier-chercher`) gains a first step: **« Nature »**, a
 list of the natures whose source types include this sheet's type, read from the source, plus
-« Sans nature » (default when the list is empty, last otherwise); choosing a nature restricts
+« Sans nature » (the first nature is preselected; « Sans nature » alone when the list is empty, last otherwise); choosing a nature restricts
 « Type de fiche » to the nature's target types (the select shows them only); then the sheet
 picker as today; then **« Qualificatif »** (1 to 80; optional with a nature, **required without one** — « Le qualificatif est obligatoire sans nature. » —, replaces the former free « Type de
 relation » field, same place, placeholder « habite, capitaine… »). « Relier » refuses a nature
@@ -3361,10 +3361,10 @@ section.
 |---|---|---|
 | chargement | the list of natures loads with the types: « Chargement… » in place of the « Nature » field | — |
 | erreur | « Impossible de charger les natures. » with « Réessayer »; the form stays usable with « Sans nature » alone | « Réessayer », relier sans nature |
-| vide | a sheet whose type is the source of no nature (objet, événement, quête…): the « Nature » field is not shown, the form is the former one (qualifier required) | relier sans nature |
+| vide | a sheet whose type is the source of no nature (événement, quête, race, savoir…): the « Nature » field is not shown, the form is the former one (qualifier required) | relier sans nature |
 | connexion perdue | le bandeau; « Relier » disabled, the entries stay | lire |
-| refus | « Le qualificatif est obligatoire sans nature. » (checked by the screen before sending, and by the server: 400 `invalide`; more than 80 characters: « Le qualificatif : 80 caractères au plus. »); « Relier » refused by the server (`relation_existante`, `limite_relations`, `nature_incompatible`): « Cette relation existe déjà. », « Cette section porte déjà 100 relations. », « Cette nature ne relie pas ces deux types de fiches. », the entries stay | corriger |
-| vide de recherche | the sheet picker without a result: « Aucune fiche de ce type. », « Relier » stays disabled | changer de type ou de recherche |
+| refus | « Le qualificatif est obligatoire sans nature. » (checked by the screen before sending, and by the server: 400 `invalide`; more than 80 characters: « Le qualificatif : 80 caractères au plus. »); « Relier » refused by the server (`relation_existante`, `limite_relations`, `nature_incompatible`): « Cette relation existe déjà. », « Une fiche ne se relie pas à elle-même. » (`auto_relation`), « Cette section porte déjà 100 relations. », « Cette nature ne relie pas ces deux types de fiches. », the entries stay | corriger |
+| vide de recherche | the sheet picker without a result: « Aucune fiche pour cette recherche. » (« Aucune fiche de ce type. » when the type has none), « Relier » stays disabled | changer de type ou de recherche |
 | contenu long | a 80-character qualifier wraps in the line; on the graph the label is cut at 40 characters with an ellipsis, whole in the tooltip | idem |
 
 Changing the nature after a sheet was picked keeps the pick if its type still fits, else empties it.
