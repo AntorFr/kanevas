@@ -3369,13 +3369,12 @@ link **« Chercher parmi »** to E-17 with the filters pre-filled (lié à, natu
 with nothing readable is absent; the block is absent when every group is. « Mentionnée dans »
 keeps the links and the free relations only.
 
-`[À TRANCHER]` **block or side panel.** Kanka shows the linked entities in a right-hand panel.
-Recommended: a **block** of the sheet, like « Contient » and « Mentionnée dans » — one place to
-read a sheet, the same on a phone (a panel has no room under 760 px and would fold into… a block),
-and the charte's blocks already carry counts and folding. Reversed if Monsieur wants the linked
-sheets visible while reading the sections, without scrolling: then a side panel on desktop (≥ 1200
-px) that becomes this block under it. The mockup `e09-lieu-liees.html` shows the block, and the
-panel as the state `#etat-volet`.
+**Block, not side panel** (decision of Monsieur, 2026-10-25: « on commence par un bloc et on
+verra à l'usage »). Kanka shows the linked entities in a right-hand panel; here a block of the
+sheet, like « Contient » and « Mentionnée dans » — one place to read a sheet, the same on a phone,
+the charte's folding and counts. A side panel on desktop (≥ 1200 px) that folds into this block
+stays a possible evolution, drawn as the state `#etat-volet` of `e09-lieu-liees.html`; it is not
+built.
 
 | État | Ce qu'on voit | Ce qu'on peut faire |
 |---|---|---|
