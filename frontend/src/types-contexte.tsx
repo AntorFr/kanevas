@@ -2,6 +2,7 @@ import {
   BookOpen,
   Dna,
   FileText,
+  Flag,
   Gem,
   Hourglass,
   Lightbulb,
@@ -40,6 +41,7 @@ export interface TypeVue {
 
 /** The Lucide name the server sends → its component. An unknown name falls back to a sheet icon. */
 const ICONES: Record<string, LucideIcon> = {
+  flag: Flag,
   'users-round': UsersRound,
   'map-pin': MapPin,
   shield: Shield,
