@@ -55,7 +55,7 @@ bascule existe (fiche, carte et, depuis `kanevas-import`, recherche E-17).
 |---|---|---|---|
 | **E-1 Accueil** | connexion ; logo | voir ses univers et son rôle dans chacun ; en créer un ; voir son identifiant | P-1, P-6 |
 | **E-2 Créer un univers** | E-1 | nom, description ; le créateur devient MJ | P-1 |
-| **E-3 Vue d'ensemble de l'univers** | E-1 ; sélecteur d'univers ; E-5 (admin devenu membre) | les campagnes actives, les derniers CR, la préparation (MJ), les cartes visibles | P-2, P-3, P-4, P-6 |
+| **E-3 Vue d'ensemble de l'univers** | E-1 ; sélecteur d'univers ; E-5 (admin devenu membre) | les campagnes actives (*`kanevas-scenarios`* : « Campagnes en cours », the adventures), les derniers CR, la préparation (MJ), les cartes visibles | P-2, P-3, P-4, P-6 |
 | **E-4 Membres** | nav Univers (MJ) | lister, ajouter par identifiant, changer le rôle, retirer | P-2 |
 | **E-5 Administration** | nav (admin d'instance) | lister les univers de l'instance, en gérer les membres — jamais le contenu ; poser le jeton de l'assistant (B-51) | P-2, P-15 |
 | **E-6 Campagne** | *retired by `kanevas-scenarios`* — an adventure is a sheet: its list is E-8 of the « Aventure » type, its page E-9, with the blocks « Préparation » and « Comptes-rendus » | — | — |
@@ -1075,6 +1075,8 @@ introuvable. »). Chemin d'échec propre à cette tranche (`docs/parcours.md` n'
 jamais « caché ». Chemin d'échec de relier une section : le refus du service s'écrit au-dessus du formulaire (« Cette relation existe déjà. », « Une fiche ne se relie pas à elle-même. », « Cette section porte déjà 100 relations. »), la saisie et le choix sont conservés ; un échec d'écriture générique et une session expirée suivent les textes communs (« L'action n'a pas abouti. Réessayez. » ; connexion, formulaire non gardé).
 
 ## Détail des écrans de `kanevas-assistant-membre`
+
+> *Amended by `kanevas-scenarios` (AD-126): `creer_campagne` and `creer_scenario` become the one tool `creer_fiche`; the events read « Fiche « La Couronne brisée » créée » and « Ouvrir » leads to the adventure's sheet (E-9); E-6 and E-7 are retired. The stub keeps the two sentences of the recipes below.*
 
 > E-12 Assistant, et son ajout au shell d'un univers. Mêmes six états et mêmes textes communs que
 > `kanevas-premiere-fiche` (chargement, connexion perdue, session expirée) ; ne sont redits que les
@@ -2097,7 +2099,7 @@ et le bloc de E-3 livrent leurs six états (B-29), ci-dessus.
 
 ### Le Markdown, partout où l'on écrit un texte long
 
-Sections (E-9), scénarios (E-7), entrées d'un système (E-15), comptes-rendus (E-9) : le texte est du
+*(`kanevas-scenarios`: a scenario's text is a section of its sheet — what this part says of E-7 holds for that section, resolved in its universe like any section.)* Sections (E-9), scénarios (E-7), entrées d'un système (E-15), comptes-rendus (E-9) : le texte est du
 Markdown (B-32, AD-95). **Ce qui se met en forme** : paragraphes (un saut de ligne simple reste un
 saut de ligne, comme le texte brut d'avant), intertitres `#` à `####` (`#` et `##` au même niveau, rendus sous le titre de la
 section, jamais au-dessus), gras, italique, barré, listes à puces et numérotées, citations, code,
@@ -3233,9 +3235,11 @@ The sheet of any type, with:
     l'instant. » with the button. A player sees the CR he reads.
 - **« Contient »** (the existing children block) lists the scenarios of a campaign: nothing to
   add; « Déplacer sous… » moves a scenario to another campaign.
-- Deleting an adventure follows the sheets' rule (E-9 ⋯ Supprimer, with its confirmation that
-  counts what leaves): its scenarios go to the root (the tree's `ON DELETE SET NULL`), its tasks
-  go with it, its comptes-rendus stay and show « Aventure supprimée » in their « Campagne » line.
+- Deleting an adventure follows the sheets' rule (E-9 ⋯ Supprimer, AD-119): the confirmation
+  counts, besides what every sheet counts, « n tâches de préparation supprimées », « m scénarios
+  qui passent à la racine » and « k comptes-rendus qui resteront sans aventure »; its scenarios
+  go to the root (the tree's `ON DELETE SET NULL`), its tasks go with it, its comptes-rendus stay
+  and show « Aventure supprimée » in their « Campagne » line.
 
 | État | Ce qu'on voit | Ce qu'on peut faire |
 |---|---|---|
@@ -3262,7 +3266,17 @@ n'est visible des joueurs. » et aucun bloc « Préparation ».
   (GM): the open tasks of the adventures « En cours », grouped by adventure, five per adventure,
   as before; empty: « Rien à préparer pour l'instant. ».
 - **E-13**: the column « campagne » shows the adventure the CR names (campaign or scenario), as
-  a link to its sheet; the filter by campaign of the route stays (`?campagne=<fiche id>`).
+  a link to its sheet — **to a reader who reads that adventure**; otherwise the column is empty
+  for that CR and the « Campagne » line of its sheet (E-9) is absent: the title of a scenario
+  closed to the players never leaks through a CR (rule 3 of `docs/donnees.md`), the CR itself stays
+  readable. The filter by adventure of the route stays (`?campagne=<fiche id>`), for an adventure
+  the caller reads (404 otherwise, like the sheet).
+- **Type deactivated** (E-14/E-15, AD-122): the « Aventures » entry leaves the bar, creating an
+  adventure is refused, existing adventures stay readable by their address and in the search like
+  any sheet of a deactivated type; the E-3 blocks show their empty texts; « Nouveau compte-rendu »
+  is absent (a CR needs an adventure); the import accepts an adventure with the `type_desactive`
+  warning, as any type; `creer_fiche` refuses the type. Nothing else to decide: the suivi sleeps
+  with the type.
 - **E-12**: the GM's assistant has one tool « créer une fiche » (type among the activated ones,
   title, sub-type, parent); the writing block of the conversation leads to the new sheet; « crée
   une campagne « X » » and « crée un scénario « X » dans « Y » » go through it (the stub keeps the

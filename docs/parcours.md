@@ -77,11 +77,11 @@ Forme de la skill `exigences` ; chaque besoin cite les parcours qui le réalisen
   rien (son adresse répond comme une adresse inconnue). *(P-3, P-6)*
 
 ### Écrire, lier, ranger (`kanevas-import`)
-- **B-32** — Le contenu d'une section, d'un scénario et d'une entrée de système est du **Markdown** :
+- **B-32** — *(`kanevas-scenarios`: « un scénario » reads « a section of an adventure's sheet », E-7 being retired)* Le contenu d'une section, d'un scénario et d'une entrée de système est du **Markdown** :
   quand un compte l'enregistre (E-9, E-7, E-15), Kanevas l'affiche mis en forme — titres, gras,
   italique, listes, citations, tableaux, liens, images de la section — et jamais du HTML écrit dans le
   texte, qui s'affiche tel quel ; l'éditeur a un **aperçu**. *(P-12, P-14)*
-- **B-33** — Quand un compte qui écrit une section tape `[[`, E-9 lui propose les fiches qu'il peut
+- **B-33** — *(`kanevas-scenarios`: the same in an adventure's sections)* Quand un compte qui écrit une section tape `[[`, E-9 lui propose les fiches qu'il peut
   lire et insère un **lien** vers celle qu'il choisit ; à la lecture, un lien vers une fiche que le
   lecteur voit s'ouvre sur cette fiche ; un lien vers une fiche qu'il ne voit pas s'affiche comme le
   texte autour, sans soulignement ni trace ; un lien dont la cible n'existe pas (supprimée, jamais
@@ -153,17 +153,17 @@ Forme de la skill `exigences` ; chaque besoin cite les parcours qui le réalisen
 - **B-46** — Un MJ voit les jetons de son univers (nom, créé par, dernier usage, expiration) et en
   **révoque** un depuis E-18 ; si le jeton est révoqué, expiré, ou si son MJ a perdu ce rôle, alors
   toute requête qui le présente est refusée (401) et rien n'est écrit. *(P-11)*
-- **B-47** — Quand un script pousse une fiche par l'API d'import avec une **clé d'origine**, Kanevas
+- **B-47** — *(`kanevas-scenarios`: adventures go through this same route, B-61)* Quand un script pousse une fiche par l'API d'import avec une **clé d'origine**, Kanevas
   la crée si la clé est inconnue dans l'univers, la met à jour si elle est connue, et ne change rien si
   rien n'a changé — fiche, sections, relations, alias, étiquettes, parent, pièces jointes, illustration,
   campagnes et scénarios ; rejouer le même import ne crée aucun doublon. *(P-10)*
-- **B-48** — Si ce qu'un import a écrit a été **modifié dans Kanevas** depuis (par un humain ou son
+- **B-48** — *(`kanevas-scenarios`: the `statut` of an adventure is protected like its sub-type and its parent)* Si ce qu'un import a écrit a été **modifié dans Kanevas** depuis (par un humain ou son
   assistant) — le titre, le type, le sous-type, le parent, les alias, les étiquettes d'une fiche ; le titre, le
   contenu, l'audience, les fichiers joints d'une section ; l'illustration d'une fiche ; le nom et le
   statut d'une campagne ; le titre et le contenu d'un scénario ; le nom et la **visibilité** d'un
   fichier de la médiathèque —, alors un nouvel import n'écrase pas ce qui a été modifié,
   écrit le reste, et le rapport du lot nomme chaque champ laissé. *(P-10, P-14)*
-- **B-49** — Un MJ voit sur E-18 les **lots d'import** de son univers : quand, par quel jeton, combien
+- **B-49** — *(`kanevas-scenarios`: the lot counts adventures among the sheets — no « campagnes » nor « scénarios » counters any more, AD-125)* Un MJ voit sur E-18 les **lots d'import** de son univers : quand, par quel jeton, combien
   d'objets créés, mis à jour, inchangés, refusés, **par nature** (fiches, fichiers, campagnes,
   scénarios, relations), combien de liens et références restent en attente, et pour chaque refus la
   clé d'origine et la raison. *(P-10)*
@@ -453,7 +453,7 @@ Il veut d'abord un essai jetable, puis la vraie base, sans doublon ni fuite.*
    « Vaisseau » à activé (le système le désactive) — P-13.
 3. **Accès par API** (E-18) : « Nouveau jeton », nom « Script Kanka — Mac », durée 30 jours ;
    Kanevas montre le jeton une fois ; il le copie dans la configuration du script.
-4. *Hors de Kanevas* : il lance le script ; le script ouvre un **lot**, pousse d'abord les
+4. *(`kanevas-scenarios`: campaigns and scenarios are pushed as sheets of type `aventure`, and counted with them)* *Hors de Kanevas* : il lance le script ; le script ouvre un **lot**, pousse d'abord les
    **campagnes**, puis les fiches, parents d'abord (clé d'origine, type, titre, parent, alias,
    étiquettes, sections en Markdown avec leurs liens `[[…]]`, leurs blocs MJ, leurs images, leur
    audience) — les comptes-rendus avec la clé de leur campagne —, puis les relations, et clôt le lot
@@ -461,7 +461,7 @@ Il veut d'abord un essai jetable, puis la vraie base, sans doublon ni fuite.*
    Les fichiers, images et documents, vont d'abord dans la **médiathèque** (E-19), chacun avec ses
    droits — « Réservée au MJ » pour ceux que Kanka n'affiche que dans du contenu MJ, « Visible des
    joueurs » sinon —, y compris les 385 Mo qu'aucune fiche n'utilise ; les fiches les référencent.
-5. **Accès par API** (E-18), bloc « Lots d'import » : « Fiches : 498 créées, 3 refusées · Fichiers :
+5. *(`kanevas-scenarios`: campaigns and scenarios are pushed as sheets of type `aventure`, and counted with them)* **Accès par API** (E-18), bloc « Lots d'import » : « Fiches : 498 créées, 3 refusées · Fichiers :
    1 140 créés · Campagnes : 4 créées · Scénarios : 12 créés · Relations : 324 créées · 6 en attente » ; il
    déplie les refus : « personnage:aldric-le-gris — section « Vérité » : 112 000 caractères, 100 000
    au plus ».
