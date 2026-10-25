@@ -2723,88 +2723,88 @@ The generating assistant tool (`generer_image`, `kanevas-images`) calls that sam
 - Given the toggle on « Documents », only documents appear, each with its type
   icon, name and size.
 
-### E-8 Liste de fiches — l'arbre
+### E-8 Sheet list — the tree
 
-Une bascule « Grille / Arbre » (icônes `layout-grid`, `list-tree`) à côté de la recherche ; le choix est
-mémorisé par type dans le navigateur. **L'arbre** : les fiches du type que le compte lit, dont le
-parent est absent, illisible ou d'un autre type, par titre ; une fiche dont le parent lisible est d'un
-autre type porte « dans La Guilde des Brumes » (`--texte-3`, lien). Chaque nœud qui a des enfants **du même
-type** lisibles a un chevron ; déplier charge ses enfants (100, puis « Charger la suite »). Pas de
-compteur d'enfants (il ne compterait que le lisible, mais n'aide en rien). La recherche dans le type
-rend la grille, jamais l'arbre. Les types de la barre sont ceux qui sont activés ; l'adresse d'un type
-désactivé ouvre quand même sa liste (on y arrive par une fiche), avec la ligne « Ce type est désactivé
-dans cet univers. » et sans bouton de création. Le choix du type à la création : les types activés.
+A « Grille / Arbre » toggle (`layout-grid`, `list-tree` icons) beside search; the choice is
+remembered per type in the browser. **The tree**: readable sheets of the type whose
+parent is absent, unreadable or of another type, by title; a sheet whose readable parent has a
+different type carries « dans La Guilde des Brumes » (`--texte-3`, link). Each node with readable **same-type**
+children has a chevron; expanding loads its children (100, then « Charger la suite »). No
+child count (it would count only readable ones, but helps in no way). Type search
+returns the grid, never the tree. Sidebar types are those enabled; a disabled type's
+address still opens its list (reached through a sheet), with the « Ce type est désactivé
+dans cet univers. » row and no creation button. Type choice at creation: enabled types.
 
-**Sous-type** (B-52, décision de Monsieur du 2026-10-11) : la carte d'une fiche (grille) et la ligne de l'arbre montrent
-son sous-type sous le titre (`--texte-3`) ; un filtre « Sous-type » à côté de la recherche (« Tous » ;
-puis les sous-types des fiches du type que le lecteur voit, par ordre alphabétique, avec leur nombre de
-fiches lisibles) ; un sous-type filtré rend la grille. La fenêtre de création a un champ « Sous-type »
-facultatif, avec la même complétion que E-9.
+**Subtype** (B-52, Monsieur's decision of 2026-10-11): a sheet's card (grid) and tree row show
+its subtype below the title (`--texte-3`); a « Sous-type » filter beside search (« Tous »;
+then subtypes of sheets of this type the reader sees, alphabetically, with their readable
+sheet count); a filtered subtype returns the grid. The creation dialog has an optional « Sous-type »
+field, with the same completion as E-9.
 
-| État | Ce qu'on voit | Ce qu'on peut faire |
+| State | What is seen | Available actions |
 |---|---|---|
-| vide | les textes de la grille ; nouveaux types : « Aucune créature », « Aucune race », « Aucun vaisseau », « Aucun savoir », « Aucun récit », « Aucune règle », « Aucune note » + « pour l'instant. » / « à voir pour l'instant. » ; boutons « Nouvelle créature », « Nouvelle race », « Nouveau vaisseau », « Nouveau savoir », « Nouveau récit », « Nouvelle règle », « Nouvelle note » | MJ : créer |
-| chargement | « Chargement des fiches… » ; un nœud qui se déplie : « Chargement… » sous lui | — |
-| erreur | « Impossible de charger les fiches. » ; un nœud : « Impossible de charger la suite. » | « Réessayer » |
-| connexion perdue | le bandeau ; « Nouveau … » désactivé | déplier ce qui est chargé |
-| refus | un type inconnu de la liste du produit : « Page introuvable. » | — |
-| contenu long | 201 lieux : 100 racines puis la suite ; 12 niveaux de profondeur : l'indentation plafonne à 6 niveaux, la profondeur se lit au chevron | idem |
+| empty | grid texts; new types: « Aucune créature », « Aucune race », « Aucun vaisseau », « Aucun savoir », « Aucun récit », « Aucune règle », « Aucune note » + « pour l'instant. » / « à voir pour l'instant. »; buttons « Nouvelle créature », « Nouvelle race », « Nouveau vaisseau », « Nouveau savoir », « Nouveau récit », « Nouvelle règle », « Nouvelle note » | GM: create |
+| loading | « Chargement des fiches… »; expanding node: « Chargement… » below it | — |
+| error | « Impossible de charger les fiches. »; a node: « Impossible de charger la suite. » | « Réessayer » |
+| connection lost | banner; « Nouveau … » disabled | expand what is loaded |
+| refusal | type unknown to the product list: « Page introuvable. » | — |
+| long content | 201 locations: 100 roots then more; 12 levels deep: indentation capped at 6 levels, depth read from the chevron | same |
 
-*Critère.* Étant donné « La Taverne du Kraken » sous « Port-Sel », lisibles de Léa, quand Léa passe
-« Lieux » en arbre et déplie « Port-Sel », alors elle voit « La Taverne du Kraken » dessous.
-- Étant donné « Port-Sel » et « Havre-Gris » de sous-type « Port », et « Port-Noir » de sous-type
-  « Port » que Léa ne lit pas, quand Léa filtre « Lieux » sur « Port », alors elle voit « Port-Sel » et
-  « Havre-Gris », et le filtre dit « Port (2) ».
+*Criterion.* Given « La Taverne du Kraken » under « Port-Sel », readable by Léa, when Léa switches
+« Lieux » to tree and expands « Port-Sel », she sees « La Taverne du Kraken » below it.
+- Given « Port-Sel » and « Havre-Gris » with subtype « Port », and « Port-Noir » with subtype
+  « Port » that Léa cannot read, when Léa filters « Lieux » by « Port », she sees « Port-Sel » and
+  « Havre-Gris », and the filter says « Port (2) ».
 
-### Ce que `kanevas-import-arbre` construit (E-8 arbre, E-9 fil, « Contient », « Déplacer sous… »)
+### What `kanevas-import-arbre` builds (E-8 tree, E-9 breadcrumb, « Contient », « Déplacer sous… »)
 
-*Précisions de la tranche, sur le cadre ci-dessus (AD-99, AD-115) ; la maquette de E-9 est `e09-fiche-importee.html`
-(`#etat-deplacer`), l'arbre n'en a pas.*
+*Slice details within the framework above (AD-99, AD-115); E-9's mockup is `e09-fiche-importee.html`
+(`#etat-deplacer`), the tree has none.*
 
-**Arbre (E-8).** L'adresse ne change pas ; le choix « Grille / Arbre » est gardé par type sous la clé
-`kanevas:vue-liste:<univers>:<type>` du navigateur (`localStorage`, valeurs `grille`, `arbre`) ; absent : la grille.
-La liste est un `role="tree"`, chaque nœud un `role="treeitem"` avec `aria-expanded` quand il a un chevron et
-`aria-level` ; le chevron est un bouton (`aria-label` « Déplier » / « Replier ») distinct du lien vers la fiche ;
-au clavier, flèche droite déplie, flèche gauche replie, Entrée ouvre. Déplier appelle
-`GET …/fiches?type=T&parent=<id>` ; replier garde ce qui est chargé, le déplier de nouveau ne rappelle pas.
-Les racines sont `…&parent=racine` ; « Charger la suite » charge la page suivante d'un nœud ou des racines.
-Un nœud sans enfant lisible du même type n'a pas de chevron (le champ `aDesEnfants`). La ligne d'un nœud :
-icône du type, titre, sous-type (`--texte-3`), et « dans « La Guilde des Brumes » » quand `dans` est rendu.
-Au téléphone, l'indentation vaut 12 px par niveau, plafonnée à 6 niveaux ; la ligne ne passe pas sous 44 px de haut.
-En mode Joueur d'un MJ, la bascule garde son choix et l'arbre se recharge sous le mode. Un filtre de sous-type ou une recherche rend la grille ; vider le filtre ou la recherche rend l'arbre si c'était le choix mémorisé. Un nœud déplié dont la fiche devient illisible entre deux lectures disparaît à la lecture suivante (404 : « Impossible de charger la suite. »). Un parent « en attente » de l'import (AD-104) est compté, avec les liens en attente, dans la ligne « liens et références en attente » de E-18 ; le rejeu qui le pose se voit dans l'arbre.
+**Tree (E-8).** The address stays the same; the « Grille / Arbre » choice is kept per type under the browser's
+`kanevas:vue-liste:<univers>:<type>` key (`localStorage`, values `grille`, `arbre`); absent: grid.
+The list is a `role="tree"`, each node a `role="treeitem"` with `aria-expanded` when it has a chevron and
+`aria-level`; the chevron is a button (`aria-label` « Déplier » / « Replier ») separate from the sheet link;
+on the keyboard, right arrow expands, left arrow collapses, Enter opens. Expanding calls
+`GET …/fiches?type=T&parent=<id>`; collapsing keeps what is loaded, expanding again makes no new call.
+Roots are `…&parent=racine`; « Charger la suite » loads the next page of a node or roots.
+A node without readable same-type children has no chevron (the `aDesEnfants` field). A node's row:
+type icon, title, subtype (`--texte-3`), and « dans « La Guilde des Brumes » » when `dans` is returned.
+On a phone, indentation is 12 px per level, capped at 6 levels; a row is never less than 44 px high.
+In a GM's Player mode, the toggle keeps its choice and the tree reloads under that mode. A subtype filter or search returns the grid; clearing the filter or search returns the tree if that was the remembered choice. An expanded node whose sheet becomes unreadable between reads disappears on the next read (404: « Impossible de charger la suite. »). A pending import parent (AD-104) is counted with pending links in E-18's « liens et références en attente » row; a replay that sets it is visible in the tree.
 
-**Fil d'Ariane (E-9).** `ancetres` vient de la vue de la fiche ; chaque ancêtre est un lien vers sa fiche ; une
-fiche sans ancêtre lisible a le fil de toujours. Plus de trois ancêtres : le premier, « … » (un menu qui liste
-les autres, avec leur type), les deux derniers. Le retour par le fil (P-12 étape 5) est ce lien : aucun état
-particulier. Un ancêtre qui devient illisible entre deux lectures n'est plus dans le fil à la lecture suivante.
+**Breadcrumb (E-9).** `ancetres` comes from the sheet view; each ancestor links to its sheet; a
+sheet without readable ancestors has the usual breadcrumb. More than three ancestors: the first, « … » (a menu listing
+the others with their type), the last two. Returning via the breadcrumb (P-12 step 5) uses this link: no special
+state. An ancestor becoming unreadable between reads is absent from the breadcrumb on the next read.
 
-**« Contient » (E-9).** Le bloc suit les textes de `Contient` plus haut. Il appelle
-`GET …/fiches/:fid/enfants` une fois la fiche chargée, indépendamment des sections (la fiche et ses sections arrivent en une réponse, « Contient » dans une seconde) : son erreur ne retire pas le
-texte. Ses états : *chargement* « Chargement… » sous le titre du bloc ; *erreur* « Impossible de charger les
-enfants. » avec « Réessayer » ; *vide* le bloc est absent ; *contenu long* 50 puis « Afficher les N suivants »
-(N = ce que la page suivante compte, jamais un total) ; l'échec de cette suite dit « Impossible de charger la suite. » sans retirer ce qui est affiché ; connexion perdue : le bandeau, le bloc chargé reste ; fiche supprimée entre-temps (404) : le bloc disparaît. Une fiche sans section lisible mais avec des enfants lisibles montre quand même « Contient ». Chaque enfant montre l'icône, le titre et le sous-type (« Taverne »). En mode Joueur le bloc se relit sous le mode.
+**« Contient » (E-9).** The block follows the « Contient » texts above. It calls
+`GET …/fiches/:fid/enfants` once the sheet is loaded, independently of sections (the sheet and its sections arrive in one response, « Contient » in a second): its error does not remove the
+text. Its states: *loading* « Chargement… » below the block title; *error* « Impossible de charger les
+enfants. » with « Réessayer »; *empty* block absent; *long content* 50 then « Afficher les N suivants »
+(N = the next page's count, never a total); failure to load more says « Impossible de charger la suite. » without removing what is displayed; connection lost: banner, loaded block stays; sheet deleted meanwhile (404): block disappears. A sheet without readable sections but with readable children still shows « Contient ». Each child shows the icon, title and subtype (« Taverne »). In Player mode the block is reread under that mode.
 
-**« Déplacer sous… » (E-9).** La boîte est celle de `#etat-deplacer`. Le champ cherche dans la liste de
-recherche existante (`GET …/fiches?q=`, sans `type`, 300 ms après la frappe, 1 caractère au moins, 100 au plus) ;
-la fiche elle-même est écartée de la liste ; une ligne montre l'icône du type, le titre et le sous-type (« Lieu · Sphère »), et la recherche porte sur le titre seul (le placeholder « Titre ou alias » de la maquette est celui de E-17 : ici le champ dit « Chercher une fiche ») ; « 1 caractère au moins, 100 au plus » vise la saisie, la liste rend 100 lignes au plus puis « Charger la suite », et défile dans la boîte ; avant toute saisie la liste dit « Tapez le début d'un titre. » ; une saisie sans résultat dit « Aucune fiche ne correspond. », la recherche en cours « Recherche… », son échec « Impossible de chercher. » avec « Réessayer » ; « Aucun parent » est la première ligne et met la fiche à la racine.
-« Déplacer » reste inactif tant qu'aucune ligne n'est choisie (la maquette le montre actif parce qu'un choix y est déjà fait) ; le refus s'écrit sous le champ ; il envoie `PATCH …/fiches/:fid` `{parent}`. Réponses :
-succès (200, la fiche en réponse) → la boîte se ferme, le fil se recharge et le toast dit « Fiche déplacée. » ; 400 `cycle` → le texte
-« Une fiche ne peut pas être rangée sous l'un de ses descendants. » sous le champ, la boîte reste ouverte ;
-400 `trop_profond` → « La hiérarchie est trop profonde. » et 404 → « Introuvable. », tous deux sous le champ comme le cycle ; connexion perdue →
-bandeau, « Déplacer » désactivé. La boîte n'existe que pour un MJ hors mode Joueur, et le menu « ⋯ » est absent pour un Joueur. Une fiche de tout type peut être parent ou enfant, un compte-rendu compris (AD-99) : « Déplacer sous… » existe aussi pour lui (MJ seulement : un Joueur, même auteur de son compte-rendu, n'a pas le menu « ⋯ ») ; E-13 ne montre pas la hiérarchie et ne change pas.
+**« Déplacer sous… » (E-9).** The dialog is that of `#etat-deplacer`. The field searches the existing search
+list (`GET …/fiches?q=`, without `type`, 300 ms after typing, at least 1 character, at most 100);
+the sheet itself is excluded from the list; a row shows the type icon, title and subtype (« Lieu · Sphère »), and search covers the title only (the mockup's « Titre ou alias » placeholder belongs to E-17: here the field says « Chercher une fiche »); the 1-to-100-character constraint applies to input, the list returns at most 100 rows then « Charger la suite », and scrolls inside the dialog; before any input the list says « Tapez le début d'un titre. »; input without results says « Aucune fiche ne correspond. », searching « Recherche… », failure « Impossible de chercher. » with « Réessayer »; « Aucun parent » is the first row and puts the sheet at the root.
+« Déplacer » stays inactive until a row is chosen (the mockup shows it active because a choice has already been made); refusal appears below the field; it sends `PATCH …/fiches/:fid` `{parent}`. Responses:
+success (200, sheet in response) → dialog closes, breadcrumb reloads and toast says « Fiche déplacée. »; 400 `cycle` → text
+« Une fiche ne peut pas être rangée sous l'un de ses descendants. » below the field, dialog stays open;
+400 `trop_profond` → « La hiérarchie est trop profonde. » and 404 → « Introuvable. », both below the field like the cycle; connection lost →
+banner, « Déplacer » disabled. The dialog exists only for a GM outside Player mode, and the « ⋯ » menu is absent for a Player. A sheet of any type may be parent or child, including a session report (AD-99): « Déplacer sous… » also exists for it (GM only: a Player, even the author of their session report, has no « ⋯ » menu); E-13 does not show the hierarchy and stays unchanged.
 
-*Critères de la tranche* (les données sont celles du semis, `docs/ecrans.md` plus haut) :
-- Étant donné « Les Sphères » (lieu MJ seul) dont « Port-Sel » est l'enfant, quand Léa ouvre « Lieux » en arbre,
-  alors « Port-Sel » est une racine sans « dans … » (son parent est illisible) ; Antor, lui, voit « Les Sphères »
-  racine, et « Port-Sel » dessous.
-- Étant donné « Le Repaire des contrebandiers » (MJ seul) sous « Port-Sel », quand Léa déplie « Port-Sel », alors
-  elle voit « La Taverne du Kraken », « Les Docks », « Le Phare aux Sels » et « Quartier des Cordiers », pas le Repaire,
-  et aucun nombre ne lui dit qu'il existe.
-- Étant donné un enfant d'un autre type sous « Port-Sel » (un événement lu des joueurs ; le semis du bouchon n'en pose pas, il se crée ou s'importe pour ce critère), quand Léa déplie
-  « Port-Sel » dans « Lieux », alors cet enfant n'y est pas ; il est dans « Contient » de « Port-Sel », et dans
-  « Événements » il porte « dans Port-Sel ».
-- Étant donné une réponse de `GET …/fiches?type=lieu&parent=racine` pour Léa, alors aucun champ ne porte le titre,
-  l'identifiant ou le nombre d'une fiche qu'elle ne lit pas (`dans` est `null` si le parent est illisible).
+*Slice criteria* (data is the seed data, `docs/ecrans.md` above):
+- Given « Les Sphères » (GM-only location) whose child is « Port-Sel », when Léa opens « Lieux » as a tree,
+  « Port-Sel » is a root without « dans … » (its parent is unreadable); Antor sees « Les Sphères »
+  as a root, and « Port-Sel » below it.
+- Given « Le Repaire des contrebandiers » (GM only) under « Port-Sel », when Léa expands « Port-Sel »,
+  she sees « La Taverne du Kraken », « Les Docks », « Le Phare aux Sels » and « Quartier des Cordiers », not the hideout,
+  and no number tells her it exists.
+- Given a child of another type under « Port-Sel » (an event read by players; the stub seed does not create one, it is created or imported for this criterion), when Léa expands
+  « Port-Sel » in « Lieux », that child is absent there; it is in « Contient » of « Port-Sel », and in
+  « Événements » it carries « dans Port-Sel ».
+- Given a `GET …/fiches?type=lieu&parent=racine` response for Léa, no field carries the title,
+  identifier or count of a sheet she cannot read (`dans` is `null` if the parent is unreadable).
 
 ### E-17 Recherche
 
