@@ -258,7 +258,7 @@ Forme de la skill `exigences` ; chaque besoin cite les parcours qui le réalisen
   *(P-3)*
 - **B-59** — *(kanevas-scenarios)* Every adventure carries a **play status**: « En préparation »
   (at birth), « Prête », « En cours », « Terminée ». The GM changes it in place from the header
-  of E-9 and from the card's menu of E-8; a change touches no other adventure. The status shows as
+  of E-9 and from the menu of its card or of its tree line in E-8; a change touches no other adventure. The status shows as
   a badge on the card, on the tree line, in the header and in the results of E-17; the GM filters
   the list by status; a player sees the status of the adventures he sees. *(P-3, P-4, P-6)*
 - **B-60** — *(kanevas-scenarios)* The **preparation** list (five categories, cocher/décocher,
