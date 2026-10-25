@@ -102,8 +102,8 @@ E-16 vivent hors des univers : leurs cases disent le rôle dans un univers ratta
 | E-5 | — | — | lister les univers et leurs membres ; ajouter, changer un rôle, retirer un membre ; voir l'état du jeton de l'assistant, connecter ou reconnecter l'abonnement |
 | E-6 | *retired (`kanevas-scenarios`)* | — | — |
 | E-7 | *retired (`kanevas-scenarios`)* | — | — |
-| E-8 | lire, chercher, créer ; la vignette de chaque fiche (son illustration, ou le repli dessiné) ; *(kanevas-fiches-liees)* la marque « mort » sur la vignette, le filtre « Vivants / Morts / Tous » (personnages, créatures) ; *(kanevas-scenarios)* for the « Aventure » type: the status badge, the « Statut » filter, the status menu on a card or a tree line, the creation form with sub-type suggestions and « Visible des joueurs » | lire, chercher ; la vignette des fiches qu'il voit | — |
-| E-9 | tout ; mode Joueur ; *(kanevas-fiches-liees)* relier avec une nature et un qualificatif, le bloc « Fiches liées » avec « sous-lieux compris », « Marquer mort » / « Marquer vivant » dans l'en-tête ; *(kanevas-scenarios)* on an adventure: the status menu in the header, the blocks « Préparation » (GM) and « Comptes-rendus » (« Nouveau compte-rendu ») ; relier et retirer des relations ; poser, remplacer, retirer l'illustration (hors mode Joueur) ; *(kanevas-import)* sous-type, réserver un fichier au MJ, voir un fichier en attente d'import (tuile) | sections lisibles ; écrire celles permises ; relations lisibles (section et cible) ; pièces jointes de celles-ci ; voir l'illustration, jamais la poser ; *(kanevas-import)* dans une section qu'il écrit, ajouter un fichier ou en choisir un qu'il voit (les deux chemins de B-55) et retirer une référence ; fichiers sous double garde ; jamais régler une visibilité (**caché**) ; un fichier en attente d'import : rien (**caché**) | — |
+| E-8 | lire, chercher, créer ; la vignette de chaque fiche (son illustration, ou le repli dessiné) ; *(kanevas-fiches-liees)* la marque « mort » sur la vignette, le filtre « Vivants / Morts / Tous » (personnages, créatures) ; *(kanevas-scenarios)* for the « Aventure » type: the status badge, the « Statut » filter, the status menu on a card or a tree line, the creation form with sub-type suggestions and « Visible des joueurs » | lire, chercher ; la vignette des fiches qu'il voit ; *(kanevas-fiches-liees)* the dead mark and the « Vivants / Morts » filter as the GM, never « Marquer mort » (**caché**) | — |
+| E-9 | tout ; mode Joueur ; *(kanevas-fiches-liees)* relier avec une nature et un qualificatif, le bloc « Fiches liées » avec « sous-lieux compris », « Marquer mort » / « Marquer vivant » dans l'en-tête ; *(kanevas-scenarios)* on an adventure: the status menu in the header, the blocks « Préparation » (GM) and « Comptes-rendus » (« Nouveau compte-rendu ») ; relier et retirer des relations ; poser, remplacer, retirer l'illustration (hors mode Joueur) ; *(kanevas-import)* sous-type, réserver un fichier au MJ, voir un fichier en attente d'import (tuile) | sections lisibles ; écrire celles permises ; relations lisibles (section et cible) ; pièces jointes de celles-ci ; voir l'illustration, jamais la poser ; *(kanevas-import)* dans une section qu'il écrit, ajouter un fichier ou en choisir un qu'il voit (les deux chemins de B-55) et retirer une référence ; fichiers sous double garde ; jamais régler une visibilité (**caché**) ; un fichier en attente d'import : rien (**caché**) ; *(kanevas-fiches-liees)* « Fiches liées » réduit aux relations qu'il lit (comptes compris) ; la marque « mort » ; « Marquer mort » et la nature au relier : **cachés** | — |
 | E-10 | tout | cartes visibles | — |
 | E-11 | tout ; mode Joueur | lire une carte visible, ouvrir une fiche | — |
 | E-12 | catalogue MJ (dont générer une image, si un moteur d'images est disponible) ; propositions : le MJ demandeur seul les voit, les applique, les abandonne | catalogue Joueur (sans image : l'outil est absent, l'assistant répond qu'il ne peut pas) ; propositions : **caché** (ni outil ni bloc ; ce qu'on vérifie est l'absence de proposition et de bloc, pas le texte libre de l'assistant) | — |
@@ -111,7 +111,7 @@ E-16 vivent hors des univers : leurs cases disent le rôle dans un univers ratta
 | E-14 | tout ; « Supprimer l'univers » (*kanevas-import*) | — (« Page introuvable. ») | « Page introuvable. » |
 | E-15 (hors univers ; les colonnes disent le rôle dans un univers **rattaché au système**) | lire ; « Ajouter … », « Modifier » | lire (« Lecture seule ») ; ni « Ajouter » ni « Modifier » | « Page introuvable. », sauf s'il est lui-même membre d'un univers rattaché : alors la colonne de son rôle là (l'admin MJ d'un univers rattaché lit et modifie) |
 | E-16 (hors univers) | ses systèmes, avec ses univers et son rôle | ses systèmes, « Lecture seule » | la liste de ses propres systèmes (comme MJ ou Joueur s'il est membre d'un univers rattaché) ; vide sinon — l'écran est proposé à tout compte |
-| E-17 *(kanevas-import)* | *(kanevas-fiches-liees)* recherche avancée (lié à, nature, sous-lieux, vivants/morts) sur ce qu'il lit ; chercher dans toutes les fiches de l'univers, blocs MJ compris ; en **mode Joueur**, comme un joueur (ni blocs MJ, ni fiches qu'un joueur ne lit pas) ; filtres : les types activés ; les fiches des types désactivés restent des résultats sous « Tous » | chercher dans ce qu'il lit, hors blocs MJ ; filtres par type et par étiquette des seules fiches qu'il voit ; bascule de mode : absente (cachée) ; blocs MJ : hors recherche (jamais lus) ; « Alias et étiquettes… » sur E-9 : cachée | — |
+| E-17 *(kanevas-import)* | *(kanevas-fiches-liees)* recherche avancée (lié à, nature, sous-lieux, vivants/morts) sur ce qu'il lit ; chercher dans toutes les fiches de l'univers, blocs MJ compris ; en **mode Joueur**, comme un joueur (ni blocs MJ, ni fiches qu'un joueur ne lit pas) ; filtres : les types activés ; les fiches des types désactivés restent des résultats sous « Tous » | chercher dans ce qu'il lit, hors blocs MJ ; filtres par type et par étiquette des seules fiches qu'il voit ; bascule de mode : absente (cachée) ; blocs MJ : hors recherche (jamais lus) ; « Alias et étiquettes… » sur E-9 : cachée ; *(kanevas-fiches-liees)* la recherche avancée sur ce qu'il lit, « Lié à » ne propose que les fiches qu'il voit | — |
 | E-19 *(kanevas-import)* | tout : ajouter, renommer, visibilité, supprimer ; « Utilisé dans » complet | les fichiers visibles des joueurs et ceux qu'il a ajoutés ; « Utilisé dans » réduit aux fiches qu'il lit ; ni ajout depuis E-19 (**caché** ; il ajoute un fichier par une section qu'il écrit, E-9), ni réglage, ni suppression (**cachés**) | — |
 | E-18 *(kanevas-import)* | créer un jeton ; voir et révoquer tous les jetons de l'univers (y compris ceux d'un autre MJ) ; voir les lots | — (**caché** : absent de la barre, « Page introuvable. » par l'adresse) | — |
 
@@ -665,7 +665,7 @@ section, même vide. En mode Joueur, le MJ voit le bloc comme un Joueur qui n'es
 section (AD-39), sans « Relier » ni « Retirer ».
 
 *Le MJ relie.* « Relier à une fiche » ouvre un formulaire sous la liste :
-1. « Type de relation » (texte libre, 1 à 80 caractères, par exemple « membre de ») ;
+1. « Type de relation » (texte libre, 1 à 80 caractères, par exemple « membre de ») ; *(`kanevas-fiches-liees`: replaced by « Nature » (the list of the pair, or « Sans nature ») and « Qualificatif » (free, optional) — see « Détail des écrans de `kanevas-fiches-liees` »)*
 2. « Type de fiche » (Personnage, Lieu, Faction, Objet, Événement, Quête ; Personnage par défaut) ;
 3. un champ « Chercher dans les factions » et la liste des fiches de ce type, cent à la fois avec
    « Charger la suite » : c'est la liste et la recherche de E-8, pas une autre ;
@@ -1024,7 +1024,7 @@ section, même vide. En mode Joueur, le MJ voit le bloc comme un Joueur qui n'es
 section (AD-39), sans « Relier » ni « Retirer ».
 
 *Le MJ relie.* « Relier à une fiche » ouvre un formulaire sous la liste :
-1. « Type de relation » (texte libre, 1 à 80 caractères, par exemple « membre de ») ;
+1. « Type de relation » (texte libre, 1 à 80 caractères, par exemple « membre de ») ; *(`kanevas-fiches-liees`: replaced by « Nature » (the list of the pair, or « Sans nature ») and « Qualificatif » (free, optional) — see « Détail des écrans de `kanevas-fiches-liees` »)*
 2. « Type de fiche » (Personnage, Lieu, Faction, Objet, Événement, Quête ; Personnage par défaut) ;
 3. un champ « Chercher dans les factions » et la liste des fiches de ce type, cent à la fois avec
    « Charger la suite » : c'est la liste et la recherche de E-8, pas une autre ;
@@ -3329,8 +3329,12 @@ below, from what a table needs first; a nature is added by a line, never removed
 | `membre` | membre de | membres | personnage, créature → faction, famille |
 | `dirige` | dirige | dirigé(e) par | personnage → faction, famille, lieu, vaisseau |
 | `detient` | détient | détenu par | personnage, faction, famille, lieu → objet, vaisseau |
-| `allie` | allié de | alliés | faction, famille, personnage → faction, famille, personnage |
-| `ennemi` | ennemi de | ennemis | faction, famille, personnage → faction, famille, personnage |
+| `allie` *(symmetric)* | allié de | allié de | faction, famille, personnage ↔ faction, famille, personnage |
+| `ennemi` *(symmetric)* | ennemi de | ennemi de | faction, famille, personnage ↔ faction, famille, personnage |
+
+A **symmetric** nature reads the same from both sides and is stored once, on the side that
+entered it: both sheets list the other in « Fiches liées », under the section's audience of the
+side that holds it (AD-128 (3)).
 
 A relation without nature is « sans nature » (free, as today). The place-in-place relation is the
 tree, never a nature (« se situe » is not offered for lieu → lieu). Aventures (`kanevas-scenarios`)
@@ -3375,7 +3379,7 @@ panel as the state `#etat-volet`.
 
 | État | Ce qu'on voit | Ce qu'on peut faire |
 |---|---|---|
-| vide | the block is absent (no readable linked sheet) ; on a place with sub-places and nothing at its level: the groups of the sub-places only, « sous-lieux compris » checked and disabled | — |
+| vide | the route gives, per group, the totals with and without descendants (AD-130) : nothing readable either way, the block is absent ; nothing at the place's own level but something below, the block shows with « sous-lieux compris » checked and disabled, and a line « Rien à ce niveau ; N fiches dans ses sous-lieux. » | — |
 | chargement | « Chargement… » in the block, the sheet readable | — |
 | erreur | « Impossible de charger les fiches liées. » with « Réessayer », the rest of the sheet readable | « Réessayer » |
 | connexion perdue | le bandeau ; the toggle and « Afficher les 12 » still work on what is loaded | lire |
@@ -3389,7 +3393,9 @@ dans Port-Sel) s'ajoute avec « — Les Docks ». Étant donné Léa, Joueuse, q
 « Port-Sel », alors elle lit « Personnages (1) » : « Le Prieur masqué », dont la relation est dans
 « Secret — MJ seul », n'y est pas, ni dans le compte. Étant donné Antor sur « La Guilde des
 Brumes », quand il ouvre la fiche, alors « Membres : Personnages (1) » montre « Tenny Balla —
-passeur » ; « Dirigée par » est absent tant que personne ne la dirige.
+passeur » ; « Dirigée par » est absent tant que personne ne la dirige. Étant donné la famille « Les Corvalis »
+(type Famille), quand Antor ouvre sa fiche, alors « Membres : Personnages (2) » montre « Bran
+Corvalis — aîné » (avec la marque « mort ») et « Dame Ombeline — veuve ».
 
 ### E-17 — the advanced search (B-65, AD-129)
 

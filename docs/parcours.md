@@ -63,7 +63,7 @@ Forme de la skill `exigences` ; chaque besoin cite les parcours qui le réalisen
   lit et écrit tout. *(P-3, P-7)*
 - **B-9** — Quand un compte ouvre une fiche, il n'en voit que les sections qu'il peut lire, sans
   titre ni trace des autres ; une fiche dont il ne lit rien n'existe pas pour lui. *(P-6)*
-- **B-10** — Un MJ relie une fiche à une autre par une relation typée en texte libre, portée par
+- **B-10** — *(`kanevas-fiches-liees`: the relation carries a nature from the product's list and a free qualifier, B-63; « typée en texte libre » reads « qualifiée en texte libre »)* Un MJ relie une fiche à une autre par une relation typée en texte libre, portée par
   une section : elle a la visibilité de sa section, et une cible illisible n'est pas nommée.
   *(P-3, P-9)*
 - **B-11** — Quand un compte cherche dans la liste d'un type (E-8), Kanevas ne rend que les fiches
@@ -406,9 +406,10 @@ pas — le cadre dit « Image indisponible. » et il garde « Remplacer » et «
    que la table sait.
 3. Il ouvre la **carte** (E-11), touche un token, relit la fiche.
 4. Ou il demande à son **assistant** (E-12) « que sait-on d'Aldric ? ».
-6. *(kanevas-fiches-liees)* Sur « Port-Sel » (E-9), Léa lit « S'y trouvent : Personnages (4) » —
-   ceux dont la relation est dans une section qu'elle lit — et voit la marque « mort » sur le
-   portrait du Prieur.
+6. *(kanevas-fiches-liees)* Sur « Port-Sel » (E-9), Léa lit « S'y trouvent : Personnages (1) » —
+   Maître Aldric, dont la relation est dans « Apparence » qu'elle lit ; le Prieur, relié depuis
+   « Secret — MJ seul », n'y est ni compté ni nommé — et, dans la grille des personnages (E-8),
+   la marque « mort » sur le portrait de Bran Corvalis, tombé à la séance 12.
 5. *(kanevas-scenarios)* **Aventures** (E-8): he sees « La Couronne brisée », « En cours », and
    reads what its sheet shows to the players (E-9) — its « Présentation », never the scenarios
    beneath it, whose sections are closed.
@@ -460,7 +461,7 @@ Il veut d'abord un essai jetable, puis la vraie base, sans doublon ni fuite.*
    « Vaisseau » à activé (le système le désactive) — P-13.
 3. **Accès par API** (E-18) : « Nouveau jeton », nom « Script Kanka — Mac », durée 30 jours ;
    Kanevas montre le jeton une fois ; il le copie dans la configuration du script.
-4. *(`kanevas-scenarios`: campaigns and scenarios are pushed as sheets of type `aventure`, and counted with them)* *Hors de Kanevas* : il lance le script ; le script ouvre un **lot**, pousse d'abord les
+4. *(`kanevas-fiches-liees`: a relation entry carries `nature` and `qualificatif` — `type` still read as the qualifier for one version —, a character or creature `mort`, a `famille` sheet; an unknown or incompatible nature is a refusal counted, `nature_incompatible`)* *(`kanevas-scenarios`: campaigns and scenarios are pushed as sheets of type `aventure`, and counted with them)* *Hors de Kanevas* : il lance le script ; le script ouvre un **lot**, pousse d'abord les
    **campagnes**, puis les fiches, parents d'abord (clé d'origine, type, titre, parent, alias,
    étiquettes, sections en Markdown avec leurs liens `[[…]]`, leurs blocs MJ, leurs images, leur
    audience) — les comptes-rendus avec la clé de leur campagne —, puis les relations, et clôt le lot
@@ -670,6 +671,9 @@ introuvable. ».
    « contrebande ».
 3. **Fiche** (E-9) d'un contrebandier : il relie « membre de » → « La Guilde des Brumes »,
    qualificatif « passeur » ; sur la fiche de la Guilde, « Membres : Personnages (9) » le compte.
+   Il crée la **famille** « Les Corvalis » (E-8, type Famille, B-66) et y relie Bran et Dame
+   Ombeline par « membre de » (« aîné », « veuve ») ; sur la fiche des Corvalis, « Membres :
+   Personnages (2) ».
 4. Un PNJ est mort à la séance 12 : sur sa fiche, **« Marquer mort »** ; sa carte porte la marque
    dans la grille et dans « S'y trouvent », et « Vivants » ne le liste plus.
 *Moment fort* : l'étape 1, le lieu qui montre d'un coup qui s'y trouve, sous-lieux compris.
