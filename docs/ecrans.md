@@ -329,7 +329,8 @@ liste des personnages, alors elle n'y voit pas « Maître Aldric ».
 ### E-9 Fiche
 
 Le titre, le badge du type — *(kanevas-fiche-mj-seul, B-57)* and, for a GM in GM mode, the amber
-« MJ seul » badge (`lock`) when no section is readable by the players, with the tooltip « Aucune
+« MJ seul » badge (`lock`) when no section is readable by the players (a sheet without any
+section carries it too), with the tooltip « Aucune
 section n'est visible des joueurs. » (the badge is focusable; on focus or touch the sentence is
 written under the header line, as E-18 does; the E-9 mockup does not draw it, this text is
 authoritative); it follows the saved state only — it appears or
@@ -2748,20 +2749,20 @@ address (`?visibilite=joueurs` or `?visibilite=mj`, like `sousType`) and across 
 suite »; any other value in the address is ignored (« Toutes », unfiltered, nothing sent). A
 visibility filtered alone without any sheet renders « Aucune fiche réservée au MJ. » or « Aucune
 fiche visible des joueurs. » with « Voir toutes les fiches » (which resets the three filters);
-combined with a sub-type or a search, the empty texts of those apply (« Aucune fiche de ce
-sous-type. », « Aucun résultat pour « lames » dans les personnages. »), their reset button resets
-the visibility too. Loading, error and offline are the grid's (the control is disabled under the
+combined with a sub-type or a search and empty, « Aucune fiche pour ces filtres. » with « Voir
+toutes les fiches », which resets the three. Loading, error and offline are the grid's (the control is disabled under the
 connection-lost banner, like « Nouveau … »). Switching to player mode removes the control and
 drops the parameter, the grid reloads unfiltered; back in GM mode the filter is « Toutes » again.
 The badge of a card and of a tree line has the accessible name and tooltip « Aucune section n'est
-visible des joueurs. », like the header's. The E-8
+visible des joueurs. », like the header's; focusable, on focus or touch the sentence is written
+under the card's title, or under the tree line. The E-8
 and E-9 mockups draw neither the badge nor the filter: this text is authoritative, and the badge is
 the charte's audience badge (`Pastille` sens « secrete », icon `lock`). On a section, « MJ seul »
 names that section; on a card, a tree line or the header it names the whole sheet — the header
 tooltip says so. *Critères.* Étant donné Antor, MJ, et « Le Prieur masqué », personnage dont la seule section est
-« MJ seul », quand il ouvre la liste des personnages, alors sa carte porte « MJ seul », et
-« Visibilité » ▸ « Réservées au MJ » ne liste que les personnages sans section lue des joueurs, lui
-compris, aucun autre. Étant donné la même fiche, quand Antor ouvre sa seule section aux joueurs sur
+« Secret — MJ seul », quand il ouvre la liste des personnages, alors sa carte porte « MJ seul », et
+« Visibilité » ▸ « Réservées au MJ » le liste et ne liste pas « Maître Aldric », dont « Apparence »
+est lue des joueurs. Étant donné la même fiche, quand Antor ouvre sa seule section aux joueurs sur
 E-9, alors la pastille de l'en-tête disparaît sans recharger, et sa carte n'en porte plus à la
 prochaine lecture de la liste. Étant donné Léa, joueuse, quand elle
 ouvre la liste des personnages ou `/univers/1/fiches/personnages?visibilite=mj`, alors elle ne voit
