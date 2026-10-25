@@ -1168,90 +1168,91 @@ B-24 → the E-9 attachments block (add in one action, view an image, download a
 file, remove; its visibility follows where it was added, see the amendment below). Reached through P-3 step 4 (a location's map) and P-7 step 2 (the
 portrait of one's character). The block provides its six states (B-29), above.
 
-## Détail des écrans de `kanevas-images`
+## Screen details for `kanevas-images`
 
-> Un seul ajout, aucun écran neuf : le **bloc « Image attachée »** de E-12 (le panneau de
-> l'assistant). Mêmes textes communs et mêmes six états que « Détail des écrans de
-> `kanevas-premiere-fiche` » et « Détail des écrans de `kanevas-assistant-membre` ». Maquette :
-> `e12-assistant.html` (bloc Image attachée, échec de génération).
+> A single addition, no new screen: the E-12 **« Image attachée » block** (the assistant
+> panel). The same common texts and six states as the screen details for
+> `kanevas-premiere-fiche` and the screen details for `kanevas-assistant-membre`. Mockup:
+> `e12-assistant.html` (« Image attachée » block, generation failure).
 
-**Ce que l'assistant fait de plus.** Le catalogue du **MJ** reçoit un outil, `generer_image` (AD-89) ;
-celui du Joueur n'en reçoit pas. Le MJ demande « Fais un portrait pour Apparence d'Aldric » : l'assistant
-décrit l'image, la fait générer, l'attache à la section (comme si le MJ l'avait ajoutée par « Joindre un fichier » de E-9, AD-117 §6)
-et le dit. Une demande n'attache **qu'une** image ; l'image est un fichier de la médiathèque (E-19),
-joint à la section, avec la visibilité que donne l'endroit d'ajout (« Visible des joueurs » si les joueurs lisent la section,
-« Réservé au MJ » sinon, B-24, AD-111), que le MJ peut réserver, retirer ou remplacer depuis E-9 ou E-19. Un Joueur qui demande une image n'a pas l'outil : l'assistant répond
-qu'il ne peut pas, sans événement et sans rien attacher (le texte est celui du modèle ; on vérifie
-l'absence d'écriture). Sans moteur d'images disponible (ni bouchon, ni Codex), l'outil n'est pas dans
-le catalogue du MJ non plus, et l'assistant le dit de même.
+**What the assistant additionally does.** The **GM** catalogue gets one tool, `generer_image` (AD-89);
+the player's does not. The GM asks « Fais un portrait pour Apparence d'Aldric »: the assistant
+describes the image, has it generated, attaches it to the section (as if the GM had added it through E-9's « Joindre un fichier », AD-117 §6)
+and says so. A request attaches **only one** image; the image is a media library file (E-19),
+attached to the section, with visibility determined by where it is added (« Visible des joueurs » if players can read the section,
+« Réservé au MJ » otherwise, B-24, AD-111), which the GM may reserve, remove or replace from E-9 or E-19. A player asking for an image lacks the tool: the assistant replies
+that it cannot, with no event and without attaching anything (wording comes from the model; the check is
+the absence of a write). Without an available image engine (neither stub nor Codex), the tool is absent
+from the GM catalogue too, and the assistant says so in the same way.
 
-### Bloc « Image attachée » (E-12)
+### « Image attachée » block (E-12)
 
-Sous la réponse, comme les autres écritures (AD-76), un événement `image_attachee` : un bloc « Écrit par
-l'assistant » dont le libellé est « Image attachée à la section « Apparence » de « Maître Aldric » »,
-**la vignette de l'image** (au plus 240 px de large, rapport conservé, texte alternatif : la
-description demandée) et un lien « Ouvrir la section » vers E-9, à la section. La vignette est lue par la
-route authentifiée des fichiers (AD-67, AD-111) : aucune adresse publique.
+Below the answer, like other writes (AD-76), an `image_attachee` event: an « Écrit par
+l'assistant » block labelled « Image attachée à la section « Apparence » de « Maître Aldric » »,
+**the image thumbnail** (at most 240 px wide, aspect ratio preserved, alternative text: the
+requested description) and an « Ouvrir la section » link to E-9, at that section. The thumbnail is read through the
+authenticated file route (AD-67, AD-111): no public address.
 
-| État | Ce qu'on voit | Ce qu'on peut faire |
+| State | What is shown | Available actions |
 |---|---|---|
-| vide | sans objet : le bloc n'existe que si une image a été attachée | — |
-| chargement | la vignette est un cadre gris « Chargement de l'image… » (`role="status"`) ; le libellé et le lien sont déjà là | « Ouvrir la section » |
-| erreur | image retirée depuis, ou illisible : le cadre dit « Image indisponible. » avec « Recharger l'image » ; le libellé et le lien restent | « Recharger l'image » (rend la même réponse si l'image est retirée) ; « Ouvrir la section » |
-| connexion perdue | le bandeau commun ; une vignette déjà chargée reste ; sinon « Image indisponible. » avec « Recharger l'image » (désactivé tant que la connexion n'est pas revenue) | lire, ouvrir |
-| refus | rôle ou droit retiré après coup : la lecture de la vignette et le lien répondent « Page introuvable. » comme toute section illisible (le cadre dit « Image indisponible. », sans « Recharger l'image » utile) ; sinon sans objet, l'événement n'existe que pour un MJ qui vient d'écrire dans cette section | — |
-| contenu long | un titre de fiche de 120 caractères et un titre de section de 80 passent à la ligne dans le libellé ; une image très haute est contenue dans 240 px de large et 320 px de haut | idem |
+| Empty | Not applicable: the block exists only if an image was attached | — |
+| Loading | Thumbnail is a grey frame « Chargement de l'image… » (`role="status"`); label and link already present | « Ouvrir la section » |
+| Error | Image removed since, or unreadable: frame says « Image indisponible. » with « Recharger l'image »; label and link remain | « Recharger l'image » (returns the same response if the image was removed); « Ouvrir la section » |
+| Offline | Common banner; already loaded thumbnail remains; otherwise « Image indisponible. » with « Recharger l'image » (disabled until back online) | Read, open |
+| Refused | Role or permission subsequently removed: thumbnail read and link answer « Page introuvable. » like any unreadable section (frame says « Image indisponible. », without a useful « Recharger l'image »); otherwise not applicable, the event exists only for a GM who just wrote to this section | — |
+| Long content | A 120-character sheet title and an 80-character section title wrap in the label; a very tall image fits within 240 px width and 320 px height | Same |
 
-**Pendant la génération.** L'assistant ne répond qu'à la fin (AD-75) : « Kanevas réfléchit… » reste
-affiché ; au bout de 20 secondes, **pour un MJ seulement** (pastille « MJ » ; le Joueur n'a pas l'outil et garde « Kanevas réfléchit… »), il devient « Kanevas travaille toujours… Une image peut prendre
-jusqu'à trois minutes. » (`role="status"`). Le client n'abandonne pas la requête avant 300 secondes.
-Fermer le panneau ne l'arrête pas ; recharger la page ou quitter l'univers l'abandonne : rien n'est alors
-attaché.
+**During generation.** The assistant only answers at the end (AD-75): « Kanevas réfléchit… » stays
+displayed; after 20 seconds, **for a GM only** (« MJ » badge; the player lacks the tool and keeps « Kanevas réfléchit… »), it becomes « Kanevas travaille toujours… Une image peut prendre
+jusqu'à trois minutes. » (`role="status"`). The client does not abandon the request before 300 seconds.
+Closing the panel does not stop it; reloading the page or leaving the universe abandons it: nothing is then
+attached.
 
-**Les échecs, dits par l'assistant** (réponse sans événement, rien n'est attaché) : génération en
-échec ou trop longue — « Je n'ai pas pu générer l'image. » ; section pleine (100 fichiers joints) — « Cette section
-porte déjà 100 fichiers joints. » ; droit d'écrire retiré entre-temps — « Vous ne pouvez pas modifier cette
-section. » ; seconde image dans la même demande — « Une seule image par demande. » ; description de plus de 500 caractères — « La description est limitée à 500 caractères. » (l'assistant en propose une plus courte) ; aucun moteur d'images — l'assistant répond qu'il ne peut pas générer d'image (l'outil est absent). Dans le bouchon, une
-demande dont la description contient « échec » donne le premier cas.
+**Failures, stated by the assistant** (answer without an event, nothing attached): failed or
+overlong generation — « Je n'ai pas pu générer l'image. »; full section (100 attachments) — « Cette section
+porte déjà 100 fichiers joints. »; write permission removed in the meantime — « Vous ne pouvez pas modifier cette
+section. »; second image in the same request — « Une seule image par demande. »; description over 500 characters — « La description est limitée à 500 caractères. » (the assistant suggests a shorter one); no image engine — the assistant replies that it cannot generate an image (the tool is absent). In stub mode, a
+request whose description contains « échec » gives the first case.
 
-*Critères.*
-- Étant donné Antor, MJ, et « Apparence » de « Maître Aldric », quand il demande « Fais un portrait pour
-  « Apparence » d'« Maître Aldric » », alors le fil montre « Image attachée à la section « Apparence » de
-  « Maître Aldric » » avec la vignette et « Ouvrir la section », et la section d'Aldric, ouverte sur E-9,
-  porte un fichier joint image de plus, qui figure aussi dans E-19.
-- Étant donné Léa, Joueuse, quand elle fait la même demande, alors l'assistant répond qu'il ne peut pas
-  et la section ne gagne aucun fichier joint.
-- Étant donné Antor, en bouchon, quand sa demande contient « échec », alors le fil dit « Je n'ai pas pu
-  générer l'image. », sans bloc « Image attachée », et la section n'a pas de fichier de plus.
-- Étant donné Antor et une section qui porte déjà 100 fichiers joints, quand il demande une image, alors
-  l'assistant dit « Cette section porte déjà 100 fichiers joints. » et rien n'est attaché.
-- Étant donné une image attachée puis retirée de E-9, quand Antor ferme puis rouvre le panneau (le fil
-  survit, AD-28, et la vignette est relue à la réouverture), alors le cadre dit « Image indisponible. » avec « Recharger l'image », et « Ouvrir la
-  section » mène toujours à E-9 ; « Recharger l'image » relit la vignette et, l'image étant toujours
-  retirée, rend le même texte.
-- Étant donné une image attachée, quand sa vignette charge, alors le cadre gris « Chargement de l'image… »
-  précède l'image ; et quand la connexion est perdue avant la lecture, alors le bandeau commun s'affiche et
-  le cadre dit « Image indisponible. » avec « Recharger l'image » désactivé jusqu'au retour de la connexion.
-- Étant donné Léa, Joueuse, quand l'assistant tarde plus de 20 secondes, alors elle voit toujours « Kanevas
-  réfléchit… » et jamais le texte sur l'image ; Antor, MJ, le voit dès 20 secondes, même pour une demande qui
-  n'a rien à voir avec une image.
-- Étant donné une demande d'image qui dure plus de 20 secondes, alors le panneau affiche « Kanevas
-  travaille toujours… Une image peut prendre jusqu'à trois minutes. » ; et si la demande passe 270 secondes,
+*Acceptance criteria.*
+- Given Antor, a GM, and « Apparence » of « Maître Aldric », when he asks « Fais un portrait pour
+  « Apparence » d'« Maître Aldric » », the thread shows « Image attachée à la section « Apparence » de
+  « Maître Aldric » » with the thumbnail and « Ouvrir la section », and Aldric's section, opened on E-9,
+  has one more image attachment, also listed in E-19.
+- Given Léa, a player, when she makes the same request, the assistant replies that it cannot,
+  and the section gains no attachment.
+- Given Antor in stub mode, when his request contains « échec », the thread says « Je n'ai pas pu
+  générer l'image. », without an « Image attachée » block, and the section has no extra file.
+- Given Antor and a section already carrying 100 attachments, when he asks for an image,
+  the assistant says « Cette section porte déjà 100 fichiers joints. » and nothing is attached.
+- Given an image attached then removed from E-9, when Antor closes then reopens the panel (the thread
+  survives, AD-28, and the thumbnail is reread on reopening), the frame says « Image indisponible. » with « Recharger l'image », and « Ouvrir la
+  section » still leads to E-9; « Recharger l'image » rereads the thumbnail and, since the image is still
+  removed, returns the same text.
+- Given an attached image, when its thumbnail loads, the grey « Chargement de l'image… » frame
+  precedes the image; and when the connection is lost before the read, the common banner appears and
+  the frame says « Image indisponible. » with « Recharger l'image » disabled until back online.
+- Given Léa, a player, when the assistant takes more than 20 seconds, she still sees « Kanevas
+  réfléchit… » and never the image text; Antor, a GM, sees it after 20 seconds, even for a request
+  unrelated to an image.
+- Given an image request lasting more than 20 seconds, the panel displays « Kanevas
+  travaille toujours… Une image peut prendre jusqu'à trois minutes. »; and if the request exceeds 270 seconds,
   « Je n'ai pas pu répondre — réessayer ».
-- Étant donné un titre de fiche de 120 caractères et un titre de section de 80, alors le libellé passe à la
-  ligne et la vignette, même d'une image très haute, reste dans ses bornes (240 px de large, 320 px de haut).
-- Étant donné une vignette déjà chargée, quand la connexion est perdue, alors elle reste affichée ; et quand
-  le rôle d'Antor dans l'univers est retiré, alors la lecture de la vignette répond « Page introuvable. » et le
-  cadre dit « Image indisponible. ».
-- Étant donné une instance sans moteur d'images, quand Antor demande un portrait, alors l'assistant
-  répond qu'il ne peut pas générer d'image, sans événement et sans fichier joint.
+- Given a 120-character sheet title and an 80-character section title, the label wraps
+  and the thumbnail, even for a very tall image, stays within its bounds (240 px wide, 320 px high).
+- Given an already loaded thumbnail, when the connection is lost, it stays displayed; and when
+  Antor's role in the universe is removed, the thumbnail read answers « Page introuvable. » and the
+  frame says « Image indisponible. ».
+- Given an instance without an image engine, when Antor asks for a portrait, the assistant
+  replies that it cannot generate an image, without an event or attachment.
 
-### Clôture de `kanevas-images`
+### Closure of `kanevas-images`
 
-B-25 → le bloc ci-dessus (générer, attacher en un geste, un échec n'attache rien) ; B-27 (générer) →
-l'outil `generer_image` du catalogue MJ ; P-3 étape 5 → E-12 et E-9 ; B-29 → les six états du bloc. Le
-bloc est atteint par P-3 (étape 5). Les rôles : le MJ a l'outil, le Joueur non ; l'admin d'instance sans
-rôle n'a pas E-12. Écart au cadrage : aucun.
+B-25 → the block above (generate, attach in one action, a failure attaches nothing); B-27 (generate) →
+the GM catalogue's `generer_image` tool; P-3 step 5 → E-12 and E-9; B-29 → the block's six states. The
+block is reached through P-3 (step 5). Roles: the GM has the tool, the player does not; the instance admin without
+a role has no E-12. Deviation from scope: none.
+
 ## Détail de `kanevas-refonte-visuelle`
 
 La refonte ne change ni les droits, ni les données, ni les textes d'un écran : elle change la
