@@ -330,3 +330,37 @@ test('mockups amendment: only the two exact baseline counts, in their own sectio
     assert.deepEqual(otherBase.json.fichiers[0].ecarts, [{ fait: 'E-4', avant: 0, apres: 1 }]);
   } finally { rmSync(dir, { recursive: true, force: true }); }
 });
+
+test('product evolution amendment: only the exact old count, in its own section of docs/ecrans.md', () => {
+  // Same shape as the frozen baseline: a preamble and 21 numbered sections.
+  const headings = Array.from({ length: 20 }, (_, i) => `## Section ${i + 1}\nText.`).join('\n');
+  const base = `${headings}\n## Section 21\nSee E-9.\n`;
+  const dir = depot(base);
+  try {
+    mkdirSync(join(dir, 'docs'));
+    writeFileSync(join(dir, 'docs/ecrans.md'), base);
+    execFileSync('git', ['add', 'docs/ecrans.md'], { cwd: dir });
+    execFileSync('git', ['commit', '-qm', 'evolution baseline'], { cwd: dir });
+    const audit = (...args: string[]) => lancer(dir, ['--base', 'HEAD', ...args]);
+    const preamble = 'Preamble: E-17, E-18, E-19.\n';
+    const evolved = preamble + base.replace('## Section 13\nText.', '## Section 13\nSee AD-90.');
+    writeFileSync(join(dir, 'docs/ecrans.md'), evolved);
+    // Section 13 of the reference had no AD-90 (0 -> 1 is the recorded evolution).
+    assert.equal(audit('docs/ecrans.md').code, 0);
+    assert.equal(audit('--sections', 'docs/ecrans.md:13-13').code, 0);
+    // A second occurrence, or a lost fact of the same section, is a real gap.
+    writeFileSync(join(dir, 'docs/ecrans.md'), evolved.replace('See AD-90.', 'See AD-90 and AD-90.'));
+    const twice = audit('--sections', 'docs/ecrans.md:13-13');
+    assert.equal(twice.code, 1);
+    assert.deepEqual(twice.json.fichiers[0].ecarts, [{ fait: 'AD-90', avant: 1, apres: 2 }]);
+    writeFileSync(join(dir, 'docs/ecrans.md'), evolved.replace('See E-9.', 'Text.'));
+    assert.equal(audit('docs/ecrans.md').code, 1);
+    // The amendment does not lend its allowance to the neighbouring section.
+    writeFileSync(join(dir, 'docs/ecrans.md'), evolved.replace('See E-9.', 'See E-9 and AD-90.').replace('See AD-90.', 'Text.'));
+    assert.equal(audit('docs/ecrans.md').code, 1);
+    assert.equal(audit('--sections', 'docs/ecrans.md:21-21').code, 1);
+    // Never for another document.
+    writeFileSync(join(dir, 'a.md'), evolved);
+    assert.equal(audit('a.md').code, 1);
+  } finally { rmSync(dir, { recursive: true, force: true }); }
+});

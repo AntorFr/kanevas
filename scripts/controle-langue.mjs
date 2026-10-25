@@ -93,6 +93,36 @@ function referenceAmendment(file, sections) {
   });
 }
 
+// Product commits after the frozen baseline (7d5b789..a13635d) changed facts of four
+// screen sections before they were translated. Each entry amends one reference section
+// (frozen numbering) and applies only if every listed count is exactly the old one:
+// [fact, old count, new count]. Any other fact, or another count, is still compared.
+const PRODUCT_EVOLUTION = [
+  [0, [['E-17', 0, 1], ['E-18', 0, 1], ['E-19', 0, 1]]],
+  [12, [['AD-111', 2, 4], ['AD-39', 2, 1], ['B-24', 1, 0], ['AD-117', 0, 1], ['E-19', 0, 1]]],
+  [13, [['AD-90', 0, 1]]],
+  [19, [['titres', 16, 17], ['tableaux', 50, 58], ['P-10', 7, 8], ['AD-111', 4, 5], ['E-9', 52, 64],
+    ['E-18', 11, 13], ['E-14', 12, 16], ['E-19', 12, 13], ['B-33', 2, 3], ['P-14', 3, 4], ['E-13', 4, 6],
+    ['E-1', 1, 2], ['B-39', 1, 2], ['B-40', 1, 3], ['B-41', 1, 2], ['AD-117', 0, 1], ['AD-105', 0, 1],
+    ['AD-119', 0, 1], ['B-25', 0, 1], ['AD-44', 0, 1]]],
+];
+const FLAT = ['titres', 'blocs', 'tableaux'];
+function productEvolution(file, sections) {
+  // The frozen baseline has exactly 22 numbered sections after the preamble (0..21).
+  if (file !== 'docs/ecrans.md' || sections.length !== 22) return sections;
+  return sections.map((s, i) => {
+    const entry = PRODUCT_EVOLUTION.find(([index]) => index === i);
+    if (!entry) return s;
+    const count = (f) => (FLAT.includes(f) ? s.faits[f] : s.faits.identifiants[f]) || 0;
+    if (!entry[1].every(([f, old]) => count(f) === old)) return s;
+    const faits = { ...s.faits, identifiants: { ...s.faits.identifiants } };
+    for (const [f, , now] of entry[1]) {
+      if (FLAT.includes(f)) faits[f] = now; else faits.identifiants[f] = now;
+    }
+    return { ...s, faits };
+  });
+}
+
 function differences(before, after) {
   const findings = [];
   for (const key of ['titres', 'blocs', 'tableaux']) {
@@ -232,7 +262,7 @@ function main() {
         continue;
       }
       const original = parse(oldText(normalized(file)));
-      const amended = referenceAmendment(normalized(file), original);
+      const amended = productEvolution(normalized(file), referenceAmendment(normalized(file), original));
       const before = referenceSections(normalized(file), amended, current);
       const oldProse = original.map((s) => s.prose).join('\n');
       const currentProse = current.map((s) => s.prose).join('\n');
