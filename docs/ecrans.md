@@ -3390,10 +3390,10 @@ panel as the state `#etat-volet`.
 se situent, quand il ouvre la fiche, alors « Fiches liées » dit « S'y trouvent : Personnages (2) »
 avec les deux cartes ; quand il coche « sous-lieux compris », alors « Suie » (se situe aux Docks,
 dans Port-Sel) s'ajoute avec « — Les Docks ». Étant donné Léa, Joueuse, quand elle ouvre
-« Port-Sel », alors elle lit « Personnages (1) » : « Le Prieur masqué », dont la relation est dans
-« Secret — MJ seul », n'y est pas, ni dans le compte. Étant donné Antor sur « La Guilde des
-Brumes », quand il ouvre la fiche, alors « Membres : Personnages (1) » montre « Tenny Balla —
-passeur » ; « Dirigée par » est absent tant que personne ne la dirige. Étant donné la famille « Les Corvalis »
+« Port-Sel », alors elle lit « Personnages (1) » : Maître Aldric ; « Le Prieur masqué », dont la relation est
+dans « Secret — MJ seul », n'y est ni nommé ni compté. Étant donné Antor sur « La Guilde des
+Brumes », quand il ouvre la fiche, alors « Membres : Personnages (1) » montre « Maître Aldric —
+trésorier » ; « Dirigée par » est absent tant que personne ne la dirige. Étant donné la famille « Les Corvalis »
 (type Famille), quand Antor ouvre sa fiche, alors « Membres : Personnages (2) » montre « Bran
 Corvalis — aîné » (avec la marque « mort ») et « Dame Ombeline — veuve ».
 
@@ -3402,8 +3402,8 @@ Corvalis — aîné » (avec la marque « mort ») et « Dame Ombeline — veuve
 Under the field and the two filter rows, a disclosure **« Recherche avancée »** (open when the
 address carries one of its parameters): **« Lié à »** (a sheet picker, the E-8 list as in
 « Relier » ; a chip « Port-Sel ✕ » once chosen), **« Par »** (the natures whose target types include
-the chosen sheet's type, read backwards: « s'y trouvent », « membres »…, plus « toute relation » by
-default), **« sous-lieux compris »** (shown when the chosen sheet is a place), and **« Vivants /
+the chosen sheet's type, read backwards: « s'y trouvent », « membres »…, the symmetric ones
+whichever side holds them, plus « toute relation » by default), **« sous-lieux compris »** (shown when the chosen sheet is a place), and **« Vivants /
 Morts / Tous »** (shown when the type filter is Personnage or Créature, or « Tous »). Address :
 `&lie=<id>&nature=<key>&descendants=1&etat=vivants|morts`. The results are the E-17 list, same
 order, same rights (a relation counts only if its section and its source are readable by the
@@ -3442,10 +3442,10 @@ Aldric et Suie seulement, et la bascule de mode est absente.
 - **Import**: `mort: true|false` on a personnage or a créature (default false, protected by B-48
   like `pj`).
 
-*Critères.* Étant donné Antor sur « Le Prieur masqué », quand il choisit « Marquer mort », alors
-l'en-tête porte « Mort », le portrait prend la marque, et la carte de la grille aussi sans
-recharger la page de la grille à sa prochaine lecture ; « Vivants » ne le liste plus ; Léa voit la
-marque et pas l'entrée du menu.
+*Critères.* Étant donné Antor sur « Bran Corvalis » (vivant dans le semis, « Apparence » lue des
+joueurs), quand il choisit « Marquer mort », alors l'en-tête porte « Mort », le portrait prend la
+marque, et sa carte de la grille aussi à la prochaine lecture de la liste ; « Vivants » ne le liste
+plus ; Léa voit la marque sur sa fiche et sa carte, et pas l'entrée du menu.
 
 ### E-11 and « Mentionnée dans » (B-69)
 

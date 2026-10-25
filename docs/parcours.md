@@ -470,7 +470,7 @@ Il veut d'abord un essai jetable, puis la vraie base, sans doublon ni fuite.*
    droits — « Réservée au MJ » pour ceux que Kanka n'affiche que dans du contenu MJ, « Visible des
    joueurs » sinon —, y compris les 385 Mo qu'aucune fiche n'utilise ; les fiches les référencent.
 5. *(`kanevas-scenarios`: campaigns and scenarios are pushed as sheets of type `aventure`, and counted with them)* **Accès par API** (E-18), bloc « Lots d'import » : « Fiches : 498 créées, 3 refusées · Fichiers :
-   1 140 créés · Campagnes : 4 créées · Scénarios : 12 créés · Relations : 324 créées · 6 en attente » ; il
+   1 140 créés · Campagnes : 4 créées · Scénarios : 12 créés · Relations : 324 créées, 2 refusées (nature incompatible, *`kanevas-fiches-liees`*) · 6 en attente » ; il
    déplie les refus : « personnage:aldric-le-gris — section « Vérité » : 112 000 caractères, 100 000
    au plus ».
 6. Il ouvre quelques fiches (**E-8** en arbre, **E-9**, **E-17**) et passe en **mode Joueur** pour
@@ -647,12 +647,12 @@ introuvable. ».
   is the list of E-17, under the same rights. *(P-17)*
 - **B-66** — « **Famille** » is a type of the product's list (reglable, activated by default,
   icon `users`): a family is a sheet like a faction, members are characters linked to it by the
-  nature « membre de ». *(P-3)*
+  nature « membre de ». *(P-17)*
 - **B-67** — A **character or a creature is alive or dead**: a mark the GM sets in place from the
   header of E-9 (« Marquer mort » / « Marquer vivant »), shown by a sober mark on the image of the
   card (E-8, E-17, the linked-sheet lines, the relation lines) and a badge « Mort » in the header,
   visible to whoever sees the sheet, with a filter « Vivants / Morts / Tous » on the lists of
-  characters and creatures. No date, no cause: the text says the rest. *(P-3, P-6)*
+  characters and creatures. No date, no cause: the text says the rest. *(P-17, P-6)*
 - **B-68** — The **import API** pushes the nature and the qualifier of a relation, the dead mark of
   a character or a creature, and families, with the protection of B-48; the former free `type` of
   a relation is the qualifier. *(P-10)*
