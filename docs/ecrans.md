@@ -2755,7 +2755,10 @@ connection-lost banner, like « Nouveau … »). Switching to player mode remove
 drops the parameter, the grid reloads unfiltered; back in GM mode the filter is « Toutes » again.
 The badge of a card and of a tree line has the accessible name and tooltip « Aucune section n'est
 visible des joueurs. », like the header's; focusable, on focus or touch the sentence is written
-under the card's title, or under the tree line. The E-8
+under the card's title, or under the tree line. The badge shows wherever a sheet card or line is
+drawn to the GM in GM mode: the grid, the tree, the « Relier » sheet selector of E-9 (which is the
+E-8 list as it is) and the results of E-17; the « Visibilité » filter exists on the grid only
+(decision of Monsieur, 2026-10-25). The E-8
 and E-9 mockups draw neither the badge nor the filter: this text is authoritative, and the badge is
 the charte's audience badge (`Pastille` sens « secrete », icon `lock`). On a section, « MJ seul »
 names that section; on a card, a tree line or the header it names the whole sheet — the header
