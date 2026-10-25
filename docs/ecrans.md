@@ -1779,114 +1779,114 @@ each relationship to the system (GM, Player, without an attached universe) has i
 data; B-13 and B-14 are unchanged. Both needs come from Monsieur's decisions on
 2026-10-06, recorded as B-30 and B-31 (`docs/parcours.md`).
 
-## Détail des écrans de `kanevas-monde`
+## Screen details for `kanevas-monde`
 
-> Le bloc « proposition de mise à jour » de E-12, et rien d'autre : pas de nouvel écran, pas de
-> nouvelle adresse d'écran. Mêmes six états et mêmes textes communs que `kanevas-premiere-fiche`
-> (chargement, connexion perdue, session expirée) ; ne sont redits que les textes propres.
-> Maquette `docs/maquettes/e12-propositions.html` (d'avant la charte : contenu et états seulement) (thème sombre ; le bloc dans ses états,
-> sur ordinateur et sur téléphone). Composant : `docs/charte.md` « Proposition de mise à jour ».
+> The E-12 update proposal block, and nothing else: no new screen, no
+> new screen address. Same six states and common text as `kanevas-premiere-fiche`
+> (loading, connection lost, session expired); only specific text is repeated.
+> Mockup `docs/maquettes/e12-propositions.html` (before the style guide: content and states only) (dark theme; block in its states,
+> on desktop and phones). Component: `docs/charte.md` « Proposition de mise à jour ».
 
-**Comment une proposition naît.** Le MJ écrit dans le champ de E-12, en nommant la section et le
-compte-rendu : « Mets à jour la section Vérité d'Aldric d'après le compte-rendu de la séance 3 ».
-L'assistant ne connaît pas l'écran où se trouve la personne (AD-75 n'envoie que le message et le
-fil) : le compte-rendu se nomme dans la demande. La réponse de l'assistant qui accompagne le bloc est du texte libre du modèle (la maquette en illustre un). L'assistant lit le CR et la section, puis appelle
-l'outil `proposer_mise_a_jour` (AD-80) : **rien n'est écrit dans la section**. La réponse porte un
-événement `proposition_creee` (AD-76) que le fil rend comme un bloc « Mise à jour proposée », sous
-la réponse de l'assistant, à la place d'un bloc « Écrit par l'assistant ».
+**How a proposal is created.** The GM writes in the E-12 field, naming the section and
+session report: « Mets à jour la section Vérité d'Aldric d'après le compte-rendu de la séance 3 ».
+The assistant does not know which screen the person is on (AD-75 sends only the message and
+thread): the report is named in the request. The assistant's answer accompanying the block is free-form model text (the mockup illustrates one). The assistant reads the report and section, then calls
+`proposer_mise_a_jour` (AD-80): **nothing is written in the section**. The response carries a
+`proposition_creee` event (AD-76) that the thread renders as a « Mise à jour proposée » block, below
+the assistant's answer, in place of an « Écrit par l'assistant » block.
 
-### Bloc « Mise à jour proposée »
+### « Mise à jour proposée » block
 
-De haut en bas :
+From top to bottom:
 
-- **l'en-tête** : « Mise à jour proposée » ; dessous, la section visée, « Section « Vérité » de
-  « Maître Aldric » », et la source, « d'après « Séance 3 » » ;
-- **deux zones de texte brut côte à côte** (AD-58 ; *depuis `kanevas-import`, rendues en Markdown par la fonction de rendu d'AD-95, vue du MJ, avec une bascule « Rendu / Source » au-dessus des deux*), étiquetées « Actuel » et « Proposé » ; sous
-  760 px elles s'empilent, « Actuel » d'abord. « Actuel » montre le contenu **courant** de la
-  section au moment de l'affichage (pas celui de la proposition) ; une section vide s'écrit « (section vide) » ;
-- **les gestes** : « Appliquer » (principal), « Abandonner », et un lien « Ouvrir » vers la fiche
-  (E-9, à la section).
+- **header**: « Mise à jour proposée »; below, the target section, « Section « Vérité » de
+  « Maître Aldric » », and the source, « d'après « Séance 3 » »;
+- **two plain text areas side by side** (AD-58; *since `kanevas-import`, rendered in Markdown through AD-95's renderer, GM view, with a « Rendu / Source » toggle above both*), labelled « Actuel » and « Proposé »; below
+  760 px they stack, « Actuel » first. « Actuel » shows the **current** section
+  content at display time (not the proposal's content); an empty section reads « (section vide) »;
+- **actions**: « Appliquer » (primary), « Abandonner », and an « Ouvrir » link to the sheet
+  (E-9, at the section).
 
-Le bloc se lit **au serveur** à chaque affichage et après chaque geste (AD-82) : un bloc ancien
-du fil dit la vérité du moment, pas celle de sa création. « Appliquer » écrit le contenu proposé
-dans la section (AD-81) ; « Abandonner » supprime la proposition. Ni l'un ni l'autre ne passe par
-l'assistant.
+The block is read **from the server** on every display and after every action (AD-82): an old block
+in the thread tells the current truth, not the truth at creation. « Appliquer » writes the proposed content
+in the section (AD-81); « Abandonner » deletes the proposal. Neither goes through
+the assistant.
 
-**Ce que chaque rôle y voit.** Le MJ qui a demandé la proposition : le bloc entier. Le Joueur : il n'a pas
-l'outil (AD-80), donc jamais le bloc ; s'il demande une mise à jour, l'assistant répond qu'il ne
-peut pas, sans événement (texte libre du modèle, comme pour la création d'un scénario). Un autre MJ
-du même univers ne voit pas la proposition de son collègue : **caché**, l'adresse répond comme une adresse inconnue (elle n'est à personne d'autre que son
-demandeur, AD-79) ; l'admin d'instance sans rôle n'a pas E-12. Un MJ en mode Joueur d'une fiche garde son catalogue réel (AD-74) : il peut proposer et appliquer.
-Toute lecture de la proposition par un autre compte répond comme une adresse inconnue (AD-81).
+**What each role sees.** The GM who requested the proposal: the whole block. The Player does not have
+the tool (AD-80), therefore never the block; if they request an update, the assistant answers that it
+cannot, without an event (free-form model text, as for creating a scenario). Another GM
+of the same universe does not see their colleague's proposal: **hidden**, its address responds like an unknown address (it belongs only to its
+requester, AD-79); the instance admin without a role has no E-12. A GM in a sheet's player mode keeps their actual catalogue (AD-74): they can propose and apply.
+Any read of the proposal by another account responds like an unknown address (AD-81).
 
-| État | Ce qu'on voit | Ce qu'on peut faire |
+| State | What is shown | Available actions |
 |---|---|---|
-| vide | sans objet : le bloc n'existe qu'avec une proposition (l'outil refuse un contenu vide, AD-80), donc « Proposé » n'est jamais vide ; une section vide s'écrit « (section vide) » dans « Actuel » | — |
-| chargement (lecture de la proposition) | l'en-tête absent ; « Chargement de la proposition… » (`role="status"`) ; ni zones ni gestes | continuer à écrire dans le fil ; fermer |
-| en attente | l'en-tête, « Actuel » et « Proposé », les gestes | Appliquer ; Abandonner ; Ouvrir |
-| relecture (après un geste, ou à l'affichage d'un bloc déjà lu) | l'ancien contenu reste lisible, sans « Chargement… » ; les gestes sont désactivés (`aria-disabled`) le temps de la relecture | lire ; Ouvrir |
-| application ou abandon en cours | « Appliquer » (ou « Abandonner ») affiche « … » ; les deux gestes désactivés (`aria-disabled`) ; zones inchangées | attendre |
-| appliquée | l'en-tête reste (section visée, source) ; « Appliquée : la section « Vérité » est à jour. » (`role="status"`) ; « Actuel » montre le contenu appliqué, « Proposé » disparaît ; plus de geste, sauf « Ouvrir » | Ouvrir |
-| abandonnée (par ce geste) | l'en-tête reste (section visée, source) ; « Proposition abandonnée. » (`role="status"`) ; plus de zones ni de geste | continuer à écrire dans le fil |
-| périmée (la section a changé depuis la proposition, par n'importe qui), vue à l'affichage **ou découverte au clic** sur « Appliquer » (refus `section_modifiee` : le bloc se relit et passe à cet état, rien n'est écrit) | le bandeau « La section a changé depuis la proposition. Demandez-en une nouvelle. » (`role="alert"`) au-dessus des zones ; « Actuel » montre le contenu courant ; « Appliquer » désactivé (`aria-disabled`) | Abandonner ; Ouvrir ; demander une nouvelle proposition dans le fil. Une proposition **appliquée** ne devient jamais « périmée » : elle reste « appliquée » même si la section change ensuite |
-| erreur | à la lecture : « Je n'ai pas pu afficher la proposition — réessayer » (`role="alert"`) avec « Réessayer » qui la relit ; à un geste : « L'action n'a pas abouti. Réessayez. » (`role="alert"`) au-dessus des gestes, la proposition reste en attente, les gestes se réactivent | Réessayer ; le geste à nouveau |
-| connexion perdue | le bandeau commun (« Connexion perdue. Ce que vous voyez peut être dépassé ; rien n'est enregistré tant qu'elle ne revient pas. », texte de `kanevas-premiere-fiche`) ; zones lisibles ; « Appliquer » et « Abandonner » désactivés ; perdue pendant un geste en cours, la réponse est perdue : le « … » disparaît, les gestes restent désactivés, et au retour de la connexion la proposition est relue — le bloc dit ce que la base dit (appliquée ou en attente), jamais un état supposé | lire ; Ouvrir |
-| refus (adresse inconnue : abandonnée ailleurs, supprimée avec sa section, autre compte, MJ retiré de l'univers) | « Cette proposition n'existe plus. » ; plus de zones ni de geste ; session expirée : la personne est menée à la connexion, le fil est perdu | continuer à écrire dans le fil |
-| déjà appliquée, vue d'un autre onglet | même rendu que « appliquée » (la lecture dit l'état, AD-82) ; un « Appliquer » ou un « Abandonner » en course rend 409 `proposition_appliquee` et le bloc se relit | Ouvrir |
-| contenu long | contenu de 100 000 caractères : chaque zone a une hauteur maximale de 15 lignes et défile (`tabindex="0"`, étiquetée « Actuel » / « Proposé ») ; les paragraphes (lignes vides) sont conservés ; un titre de fiche ou de compte-rendu de 120 caractères passe à la ligne | faire défiler chaque zone |
+| empty | not applicable: the block only exists with a proposal (the tool refuses empty content, AD-80), so « Proposé » is never empty; an empty section reads « (section vide) » in « Actuel » | — |
+| loading (reading the proposal) | no header; « Chargement de la proposition… » (`role="status"`); no areas or actions | keep writing in the thread; close |
+| pending | header, « Actuel » and « Proposé », actions | « Appliquer »; « Abandonner »; « Ouvrir » |
+| rereading (after an action, or when displaying a previously read block) | old content stays readable, without « Chargement… »; actions disabled (`aria-disabled`) during reread | read; « Ouvrir » |
+| applying or abandoning | « Appliquer » (or « Abandonner ») shows « … »; both actions disabled (`aria-disabled`); areas unchanged | wait |
+| applied | header remains (target section, source); « Appliquée : la section « Vérité » est à jour. » (`role="status"`); « Actuel » shows applied content, « Proposé » disappears; no action except « Ouvrir » | « Ouvrir » |
+| abandoned (by this action) | header remains (target section, source); « Proposition abandonnée. » (`role="status"`); no more areas or actions | keep writing in the thread |
+| stale (section changed since the proposal, by anyone), seen on display **or discovered on clicking** « Appliquer » (`section_modifiee` refusal: block reread and moves to this state, nothing written) | « La section a changé depuis la proposition. Demandez-en une nouvelle. » banner (`role="alert"`) above the areas; « Actuel » shows current content; « Appliquer » disabled (`aria-disabled`) | « Abandonner »; « Ouvrir »; request a new proposal in the thread. An **applied** proposal never becomes stale: it stays applied even if the section later changes |
+| error | on read: « Je n'ai pas pu afficher la proposition — réessayer » (`role="alert"`) with « Réessayer » which rereads it; on an action: « L'action n'a pas abouti. Réessayez. » (`role="alert"`) above the actions, proposal stays pending, actions re-enabled | « Réessayer »; repeat the action |
+| connection lost | common banner (« Connexion perdue. Ce que vous voyez peut être dépassé ; rien n'est enregistré tant qu'elle ne revient pas. », text from `kanevas-premiere-fiche`); readable areas; « Appliquer » and « Abandonner » disabled; lost during an action, the response is lost: « … » disappears, actions stay disabled, and when connection returns the proposal is reread — block says what the database says (applied or pending), never an assumed state | read; « Ouvrir » |
+| refusal (unknown address: abandoned elsewhere, deleted with its section, other account, GM removed from universe) | « Cette proposition n'existe plus. »; no more areas or actions; session expired: person taken to sign-in, thread lost | keep writing in the thread |
+| already applied, seen from another tab | same rendering as applied (read gives state, AD-82); a racing « Appliquer » or « Abandonner » returns 409 `proposition_appliquee` and block is reread | « Ouvrir » |
+| long content | 100 000-character content: each area has a maximum height of 15 lines and scrolls (`tabindex="0"`, labelled « Actuel » / « Proposé »); paragraphs (blank lines) preserved; a 120-character sheet or report title wraps | scroll each area |
 
-La proposition vit en base (AD-79) mais le fil non (AD-28) : au rechargement de la page, au changement d'univers ou
-après « Nouvelle conversation », le bloc disparaît du fil et la proposition devient inatteignable ; elle
-reste en base jusqu'à être remplacée par une nouvelle pour la même section (AD-79). Limite acceptée de la V1, bornée : une
-proposition en attente par section et par MJ.
+The proposal lives in the database (AD-79) but the thread does not (AD-28): on page reload, universe change or
+after « Nouvelle conversation », the block disappears from the thread and the proposal becomes unreachable; it
+stays in the database until replaced by a new one for the same section (AD-79). Accepted, bounded V1 limitation: one
+pending proposal per section and per GM.
 
-*Critère.* Étant donné Léa qui a écrit le compte-rendu « Séance 3 » et la fiche « Maître Aldric »
-dont « Vérité » dit « Il sert la Couronne », quand Antor demande à son assistant de mettre à jour
-« Vérité » d'après ce compte-rendu, alors le fil montre « Mise à jour proposée » avec « Actuel »
-et « Proposé » et **la section n'a pas changé** (la fiche, ouverte à côté, l'atteste) ; quand il clique « Appliquer », la section
-montre le contenu proposé et le bloc dit « Appliquée » ; quand une autre proposition est faite puis que
-quelqu'un modifie la section, « Appliquer » est désactivé et le bandeau dit pourquoi ; Léa,
-qui demande la même chose à son assistant, n'obtient aucune proposition.
+*Criterion.* Given Léa who wrote the « Séance 3 » report and the « Maître Aldric » sheet
+whose « Vérité » says « Il sert la Couronne », when Antor asks his assistant to update
+« Vérité » from this report, then the thread shows « Mise à jour proposée » with « Actuel »
+and « Proposé » and **the section has not changed** (the sheet, opened alongside, proves it); when he clicks « Appliquer », the section
+shows the proposed content and the block says « Appliquée »; when another proposal is made and then
+someone edits the section, « Appliquer » is disabled and the banner explains why; Léa,
+asking her assistant the same thing, receives no proposal.
 
-### Clôture de `kanevas-monde`
+### Closure of `kanevas-monde`
 
-B-21 → bloc « Mise à jour proposée » (toutes ses lignes) ; B-27 → proposer (générer reste à
-`kanevas-images`). Parcours : P-5 étapes 2 et 3. Rôles : le MJ a le bloc et ses gestes, le Joueur
-ne l'a pas, l'admin d'instance sans rôle n'a pas E-12. Une migration (la table `propositions`, numérotée
-à la fusion, AD-51). Reste hors de la tranche : l'application par un joueur, les propositions en
-lot, la reprise d'une proposition après rechargement.
+B-21 → « Mise à jour proposée » block (all its rows); B-27 → propose (generation remains with
+`kanevas-images`). Journey: P-5 steps 2 and 3. Roles: GM has the block and its actions, Player
+does not, instance admin without a role has no E-12. One migration (the `propositions` table, numbered
+at merge, AD-51). Still outside this slice: applying by a player, batch proposals,
+resuming a proposal after reload.
 
-## Maquettes
+## Mockups
 
-`docs/maquettes/<écran>.html`, une par écran structurant. Elles illustrent ; ce document décide,
-et quand les deux divergent, la maquette a tort.
+`docs/maquettes/<écran>.html`, one per structural screen. They illustrate; this document decides,
+and when the two diverge, the mockup is wrong.
 
-**Finies** (direction, tokens et composants de `docs/charte.md`, deux thèmes, bureau et
-téléphone, vrai contenu) : E-1, E-3, E-4, E-6, E-8, E-9, E-14 (liste de référence ; les autres sections y renvoient). Depuis `kanevas-illustrations`, `e08` est la grille de cartes
-(types Personnages, Lieux, Factions, `#etat-lieux`, `#etat-factions`) et `e09` porte l'illustration
-de l'en-tête ; leurs images sont des illustrations de démonstration peintes en SVG. E-15 et E-16
-(`e15-systeme-de-jeu.html`, `e16-systemes-de-jeu.html`) sont finies hors du cadre d'un univers ;
-les menus du sélecteur d'univers des maquettes `e03`, `e08`, `e09`, `e14` et la barre de `e01` portent
-« Systèmes de jeu ». `e09-fiche.html` **fait référence pour le
-cadre** de tous les écrans d'un univers (barre latérale, sélecteur d'univers, menu du compte,
-barre haute, bascule de mode, bouton « Demander à Kanevas », tiroir au téléphone) et pour les
-composants partagés. Leurs états s'ouvrent par l'adresse (`#etat-joueur`, `#etat-menu`,
-`#etat-perdue`… ; la liste est en tête de leur style). Le bloc « Cartes visibles » de `e03` et les maquettes `e10` et `e11` appartiennent à
-`kanevas-cartes-graphes` (détail plus bas).
+**Finished** (direction, tokens and components from `docs/charte.md`, both themes, desktop and
+phones, real content): E-1, E-3, E-4, E-6, E-8, E-9, E-14 (reference list; other sections refer to it). Since `kanevas-illustrations`, `e08` is the card grid
+(types « Personnages », « Lieux », « Factions », `#etat-lieux`, `#etat-factions`) and `e09` carries the header
+illustration; their images are demo illustrations painted in SVG. E-15 and E-16
+(`e15-systeme-de-jeu.html`, `e16-systemes-de-jeu.html`) are finished outside the universe shell;
+the universe selector menus in mockups `e03`, `e08`, `e09`, `e14` and the `e01` sidebar carry
+« Systèmes de jeu ». `e09-fiche.html` **is the reference for the
+shell** of every universe screen (sidebar, universe selector, account menu,
+top bar, mode toggle, « Demander à Kanevas » button, drawer on phones) and shared
+components. Their states open through the address (`#etat-joueur`, `#etat-menu`,
+`#etat-perdue`…; the list is at the top of their styles). The « Cartes visibles » block in `e03` and mockups `e10` and `e11` belong to
+`kanevas-cartes-graphes` (details below).
 
-**Finies par le cadrage de `kanevas-import`** : `e09-fiche-importee.html` (E-9 : Markdown, liens,
-bloc MJ, fil d'ancêtres, « Contient », « Mentionnée dans », menu de la fiche), `e18-acces-api.html`
-(E-18), `e14-types-de-fiche.html` (panneaux « Types de fiche » de E-14 et E-15, suppression d'un
-univers) et `e19-mediatheque.html` (E-19 : images et documents, le sélecteur), dans le cadre et avec les composants
-de `e09-fiche.html`.
+**Finished by the `kanevas-import` framing**: `e09-fiche-importee.html` (E-9: Markdown, links,
+GM block, ancestor trail, « Contient », « Mentionnée dans », sheet menu), `e18-acces-api.html`
+(E-18), `e14-types-de-fiche.html` (E-14 and E-15 « Types de fiche » panels, universe
+deletion) and `e19-mediatheque.html` (E-19: images and documents, the picker), within the shell and with the components
+of `e09-fiche.html`.
 
-**D'avant la charte** : les autres (e02, e05, e07, e10, e11, e12-assistant, e12-propositions, e13). Elles valent pour le contenu et le vocabulaire, pas pour la
-forme ; un écran qui n'a qu'elles se construit dans le cadre et avec les composants de la
-maquette E-9.
+**Before the style guide**: the others (e02, e05, e07, e10, e11, e12-assistant, e12-propositions, e13). They specify content and vocabulary rather than
+appearance; a screen with only these mockups is built within the shell and with the components of the
+E-9 mockup.
 
-**Hors produit, en bouchon seulement** : la page de démonstration des composants
-(`/demo-composants`), servie quand `KANEVAS_STUB=1` et absente sinon (404), comme l'écran de
-choix d'un compte de test.
+**Outside the product, in stub mode only**: the component demo page
+(`/demo-composants`), served when `KANEVAS_STUB=1` and otherwise absent (404), like the test account
+selection screen.
 
 ## Détail des écrans de `kanevas-cartes-graphes`
 
