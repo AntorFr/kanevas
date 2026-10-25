@@ -562,7 +562,9 @@ tree » ; « an adventure has exactly one status among four » ; « a task belon
 **Physical.** SQLite, unchanged. The status filter reads `json_extract(charge, '$.statut')` : no
 index — a universe counts tens of adventures, hundreds at most ; reopened above ten thousand.
 
-**Migration `kanevas-scenarios`** (one script, number taken at the merge, AD-51 ; played at
+**Migration `kanevas-scenarios`** (one script, number taken at the merge, AD-51 — `0017` while
+the branch is alone ; first line `-- migrate: sans-cles-etrangeres` since the task table is rebuilt
+and its parents dropped, `foreign_key_check` before commit, `db.ts` ; played at
 start-up after backup, as every migration) :
 1. For each row of `campagnes` : a `fiches` row (`type='aventure'`, `sous_type='Campagne'`,
    `titre=nom`, `charge={"v":1,"statut":s}` with `en_preparation→en_preparation`,
@@ -576,7 +578,11 @@ start-up after backup, as every migration) :
 2. For each row of `scenarios` : a `fiches` row (`sous_type='Scénario'`, `titre`, `statut
    en_preparation`, `parent_id` = its campaign's sheet, `cree_le`, `cle_origine` prefixed
    `scenario:` on collision, `version_importee`) and one section « Scénario » closed to the
-   players with `contenu` (its `version` becomes the section's).
+   players with `contenu` (its `version` becomes the section's). `contenu_public` (AD-114) is
+   `contenu` when it holds no `:::` and `''` otherwise: SQL cannot parse the container, and a
+   scenario's `:::mj` was plain text that becomes a GM block, so the safe value hides it (never a
+   leak) until the next write through `poserContenu` recomputes it ; likewise the `liens` rows of
+   the text are born at that next write — accepted, no production campaign exists.
 3. `taches_preparation.campagne_id` → `fiche_id` (table rebuilt, SQLite) ; the CR charges
    rewritten (`campagne_id` : old campaign id → its sheet id).
 4. `DROP TABLE scenarios`, `DROP TABLE campagnes`.
