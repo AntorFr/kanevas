@@ -65,6 +65,7 @@ export function ParentAventure({ universId, valeur, onChange }: {
   }
 
   const vide = resultats.etat === 'ok' && resultats.fiches.length === 0;
+  const visibles = !trop && resultats.etat === 'ok' ? resultats.fiches.slice(0, resultats.visibles) : [];
   return (
     <div className="parent-aventure">
       <Champ etiquette="Dans" facultatif value={saisie} autoComplete="off"
@@ -77,16 +78,16 @@ export function ParentAventure({ universId, valeur, onChange }: {
           <input type="radio" name="parent-aventure" checked={valeur === null} onChange={() => onChange(null)} />
           Aucun parent
         </label>
-        {valeur && <label title={valeur.titre}>
+        {valeur && !visibles.some((f) => f.id === valeur.id) && <label title={valeur.titre}>
           <input type="radio" name="parent-aventure" checked onChange={() => {}} />
           <span>{valeur.titre}</span>
         </label>}
         {!trop && resultats.etat === 'chargement' && <p role="status">Chargement des aventures…</p>}
         {!trop && resultats.etat === 'erreur' && <p role="alert">Impossible de charger les aventures. <Bouton petit onClick={() => setEssai((n) => n + 1)}>Réessayer</Bouton></p>}
         {!trop && vide && <p>{mot ? 'Aucune aventure ne correspond.' : 'Aucune aventure'}</p>}
-        {!trop && resultats.etat === 'ok' && resultats.fiches.slice(0, resultats.visibles).filter((f) => f.id !== valeur?.id).map((f) => (
+        {visibles.map((f) => (
           <label key={f.id} title={f.titre}>
-            <input type="radio" name="parent-aventure" checked={false} onChange={() => onChange({ id: f.id, titre: f.titre })} />
+            <input type="radio" name="parent-aventure" checked={f.id === valeur?.id} onChange={() => onChange({ id: f.id, titre: f.titre })} />
             <span>{f.titre}</span>
           </label>
         ))}
