@@ -3381,7 +3381,7 @@ built.
 | vide | the route gives, per group, the totals with and without descendants (AD-130) : nothing readable either way, the block is absent ; nothing at the place's own level but something below, the block shows with « sous-lieux compris » checked and disabled, and a line « Rien à ce niveau ; N fiches dans ses sous-lieux. » | — |
 | chargement | « Chargement… » in the block, the sheet readable | — |
 | erreur | « Impossible de charger les fiches liées. » with « Réessayer », the rest of the sheet readable | « Réessayer » |
-| connexion perdue | the banner of the other blocks (its text is theirs: « Connexion perdue. »); the loaded content stays readable, the toggle and « Afficher les 12 » (which ask the server) are disabled | lire |
+| connexion perdue | the banner of the other blocks (the text of the connection-lost state above, B-29); the loaded content stays readable, the toggle and « Afficher les 12 » (which ask the server) are disabled | lire |
 | refus | a player: only the relations whose section and source sheet he reads, counts included; the block is absent (no trace) when nothing is readable; the toggle is shown to every role on a place; in player mode the GM sees the same | — |
 | rafraîchissement | after the toggle or « Afficher les N »: the previous content stays, dimmed, controls disabled; a failed re-read keeps it, the toggle back in the state the shown content answers (not the one just clicked), and shows « Impossible de charger les fiches liées. » with « Réessayer » | « Réessayer » |
 | contenu long | a place with 300 characters: « Personnages (300) », five shown, « Afficher les 300 » pages by 50 ; a depth of 50 sub-places: the toggle says « sous-lieux compris (50 niveaux au plus) » | idem |
