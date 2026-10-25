@@ -626,9 +626,9 @@ Detail of the slice's part of AD-129 and B-65; nothing here adds a filter, a nat
    relation » and leaves the address by `replace`. « sous-lieux compris » is shown when the chosen sheet is a `lieu`.
    Everything rides on the address (`lie`, `nature`, `descendants`), in the order of the mockup; the disclosure is open
    when one of them is present. `etat` is not read here (`-disparu` adds it to this volet).
-8. **Security** — the only new read path is a condition of the list; it ships no field the list did not ship (no count, no
-   via, no path). Tested as Léa and as the GM in player mode on: a relation of a closed section (the Prieur), a relation to a
-   hidden place (Le Repaire), a hidden intermediate place, an unreadable `lie`, a symmetric nature held by a sheet the
+8. **Security** — the only new read path is a condition of the list; it ships one field the list did not ship, `via` (a place the reader
+   reads, point 1), and no count, no intermediate place, no path. Tested as Léa and as the GM in player mode on: a relation of a closed section (the Prieur), a relation to a
+   hidden place (Le Repaire), a hidden intermediate place, an unreadable `lie`, a `via` that is never a hidden place, a direct link winning over `via`, a symmetric nature held by a sheet the
    reader cannot read.
 9. **Documentation** — the route row above, `docs/ecrans.md` E-17 (states, the point 6 correction), and the API reference
    of the screen « Accès API » is not touched (the import has no list route with these parameters).

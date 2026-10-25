@@ -69,7 +69,7 @@ bascule existe (fiche, carte et, depuis `kanevas-import`, recherche E-17).
 | **E-14 Paramètres de l'univers** | nav Univers (MJ) | nom, description, système de jeu (choisir dans le catalogue, en créer un) | P-8 |
 | **E-15 Système de jeu** | E-16 ; lien depuis E-3 et E-14 | le référentiel commun : règles, créatures, objets ; ajouter, modifier (MJ d'un univers rattaché) ; hors du cadre d'un univers | P-8 |
 | **E-16 Systèmes de jeu** | barre réduite ; menu du sélecteur d'univers | les systèmes rattachés aux univers du compte, chacun avec ceux de ses univers qui l'utilisent | P-8 |
-| **E-17 Recherche** *(kanevas-import)* | « Rechercher » de la barre ; `/` ; une étiquette touchée sur E-9 ; *(kanevas-fiches-liees)* « Chercher parmi » d'un bloc « Fiches liées » | chercher dans tous les types, titres, alias et sections lisibles ; filtrer par type ; *(kanevas-fiches-liees)* recherche avancée : lié à une fiche, par nature, sous-lieux compris, vivants / morts et par étiquette | P-12, P-10 |
+| **E-17 Recherche** *(kanevas-import)* | « Rechercher » de la barre ; `/` ; une étiquette touchée sur E-9 ; *(kanevas-fiches-liees)* « Chercher parmi » d'un bloc « Fiches liées » | chercher dans tous les types, titres, alias et sections lisibles ; filtrer par type ; *(kanevas-fiches-liees)* recherche avancée : lié à une fiche, par nature, sous-lieux compris, vivants / morts et par étiquette | P-12, P-10, P-17 |
 | **E-19 Médiathèque** *(kanevas-import)* | nav Médiathèque ; « Choisir dans la médiathèque » de l'éditeur et de l'illustration (E-9) | voir les fichiers (images, documents) ouverts au compte et où ils servent ; MJ : ajouter, renommer, régler la visibilité, supprimer | P-16, P-10 |
 | **E-18 Accès par API** *(kanevas-import)* | nav Univers ▸ Accès par API (MJ) | créer, lister, révoquer les jetons d'API de l'univers ; voir les lots d'import et leurs refus | P-10, P-11 |
 
@@ -3414,13 +3414,14 @@ group opens E-17 so pre-filled.
 | vide | « Aucune fiche liée à « Port-Sel » pour ces critères. » — with « Lié à » set this text wins over « Aucune fiche ne correspond. », words or not ; without « Lié à » and without words: E-17 asks for a word, as today | retirer un filtre |
 | chargement | as E-17 (the previous results stay, dimmed, until the new ones arrive) ; the picker shows « Chargement… » | — |
 | erreur | as E-17 ; a failed picker call reads « Impossible de charger les fiches. » inside the picker | « Réessayer » |
-| connexion perdue | as E-17 ; the picker disabled | lire |
+| connexion perdue | as E-17 ; the picker disabled, « Hors connexion » in its field | lire |
+| `nature` / `descendants` that do not fit the chosen sheet (a nature whose target types exclude it, `sous-lieux` on a person) | the address is cleaned by `replace` and the list runs without them | — |
 | sélecteur vide | « Aucune fiche. » under the field when the typed words match no sheet the caller reads | modifier la saisie |
 | refus | a player or player mode: the sheet picker lists what he reads ; `?lie=` on a sheet the caller does not read (a player, **or the GM** on a deleted sheet or one of another universe): the chip reads « Fiche introuvable » (✕ kept) and the search still runs with it: the API answers an empty page, the list reads « Aucune fiche liée pour ces critères. » ; « Par » then offers « toute relation » only and « sous-lieux compris » is hidden | — |
-| contenu long | a tree deeper than 50 levels is searched down to the 50th, without a word about it ; « Par » holds five natures at most ; the filters wrap on two rows under 760 px ; a picked title of 120 characters is cut with an ellipsis in the chip, whole in its tooltip | idem |
+| contenu long | a tree deeper than 50 levels is searched down to the 50th, without a word about it ; « Par » holds five natures at most ; the filters wrap on two rows under 760 px ; a picked title of 120 characters is cut with an ellipsis in the chip and in the empty sentence, whole in the chip's tooltip | idem |
 
 *Critères.* Étant donné Antor, quand il cherche « lié à Port-Sel », « s'y trouvent », sous-lieux
-compris, type Personnage, alors la liste porte Aldric, le Prieur et Suie ; avec « Vivants », le
+compris, type Personnage, alors la liste porte Aldric, le Prieur et Suie ; avec « Vivants » *(`kanevas-fiches-liees-disparu`, not this slice)*, le
 Prieur (mort) disparaît. Étant donné Léa, quand elle ouvre la même adresse, alors la liste porte
 Aldric et Suie seulement, et la bascule de mode est absente.
 
