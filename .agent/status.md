@@ -1,6 +1,6 @@
 # Status — kanevas
 
-> MàJ : 2026-10-24 (correctif `kanevas-e2e-stables`, dernier paragraphe ; avant : assemblage de kanevas-import-mediatheque, repris après l'arbitrage de la recette : `epic/kanevas` fusionnée dans la feature, l'image générée par l'assistant entre dans la médiathèque par `ajouterFichier` ; l'historique des reprises précédentes est dans `git log`)
+> MàJ : 2026-10-25 (correctif `kanevas-connexion-claude-com`, dernier paragraphe ; avant : correctif `kanevas-e2e-stables`, dernier paragraphe ; avant : assemblage de kanevas-import-mediatheque, repris après l'arbitrage de la recette : `epic/kanevas` fusionnée dans la feature, l'image générée par l'assistant entre dans la médiathèque par `ajouterFichier` ; l'historique des reprises précédentes est dans `git log`)
 
 **Lecture de ce fichier :** le clone qui le porte contient déjà toutes les tranches nommées ci-dessous ; « PR non fusionnée » dit seulement que la tranche n'est pas encore sur `main`, pas qu'elle manque du code.
 
@@ -218,3 +218,7 @@ outil `chercher` de l'assistant sans `type` = même fonction, « Introuvable. »
 Aucun test supprimé, sauté ni affaibli. Preuve : `src/e2e` joué sous `taskset -c 0-3 … --test-concurrency=2` (conditions de la CI), vert plusieurs fois, dont avec une seconde suite en parallèle.
 **Reste :** la suite verte trois fois de suite (constat de la vérification ; aucune CI ne tourne sur une PR : workflow manuel `tests.yml` ou `npm run tests:attestes`), puis la fusion ; la mise en production de 0.16.x est une PR GitOps à part (Monsieur).
 Piège encore vrai : un e2e qui lit le DOM juste après une navigation ou un `fill` sans attendre l'état visé se révèle sous charge — attendre l'élément ou sa disparition, jamais un délai.
+
+**Correctif `kanevas-connexion-claude-com`** (bug de B-51 / E-5, AD-112 règle 3 ; PR non fusionnée) : Claude Code 2.1.287 affiche son adresse de connexion sur `claude.com` (`/cai/oauth/authorize`), que `tirerAdresse` (`services/assistant/connexion-claude.ts`) ignorait ; en production « Connecter » attendait 30 s puis répondait 502. Le filtre accepte maintenant `claude.com`, `claude.ai` et `anthropic.com` (et leurs sous-domaines), rien d'autre ; `connexion-adresse.test.ts` rejoue la sortie réelle du CLI (séquence OSC 8 + adresse en clair) et attend l'adresse seule. AD-112 amendé. Le bouchon (`scripts/faux-setup-token.mjs`, claude.ai) et la maquette e05 ne changent pas.
+**Reste :** la fusion après recette, puis une nouvelle version de l'image et sa PR GitOps (Monsieur) ; en production, vérifier « Connecter » avec le vrai CLI.
+Piège encore vrai : le filtre dépend du domaine que le CLI imprime ; un nouveau changement de domaine se verra en production par un 502 au bout de 30 s, pas par un test (le test rejoue une sortie passée) — élargir la liste alors, jamais à un hôte quelconque.
