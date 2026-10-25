@@ -597,8 +597,10 @@ the two guards), `descendantsDe` (point 3 of the `-recherche` notes), the sheet-
    the nature read from the target (`libelleCible`; a symmetric nature's `libelleSource`). `types` are the types of the
    linked sheets in the order of the list of types, each `{type, total, totalAvecDescendants}`: `total` counts the sheets
    linked to the sheet itself, `totalAvecDescendants` those linked to it **or to one of its descendants**
-   (`descendantsDe`, the set including the sheet; for a sheet that is not a place the set is the sheet's own type's
-   descendants, and the screen never offers the toggle). A sheet is counted **once** per group and type, however many
+   (`descendantsDe`, the set including the sheet). The descent is for a **place** only (AD-130): for any other sheet
+   `totalAvecDescendants` equals `total` and `descendants=1` is accepted and changes nothing — no toggle, no « Rien à ce niveau »
+   outside a place. The answer also carries `profondeurAtteinte` (boolean, top level): true when the walk met the 50-level bound
+   (`descendantsDe` reports it; if the `-recherche` function does not yet, this slice adds the flag to its result, not a second walk) A sheet is counted **once** per group and type, however many
    relations bind it. Both totals are always sent (the screen decides from them, AD-130 (1)); a group with
    `totalAvecDescendants = 0` for every type is absent, and so is the whole list (`groupes: []`, the block absent) — an empty
    answer for a sheet that is nobody's target, hidden or not.
@@ -623,7 +625,8 @@ the two guards), `descendantsDe` (point 3 of the `-recherche` notes), the sheet-
    appear in the block of the target, and, for a symmetric nature, of both ends.
 6. **The block.** A sheet block (AD-124) `frontend/src/ecrans/fiche/blocs-fiche/liees.tsx`, served to the types that are the target
    of a nature (`lieu`, `faction`, `famille`, `objet`, `vaisseau`, plus `personnage` for the symmetric natures — the list
-   `natures.ts` gives them, the screen never copies it) with a rank **before** « Mentionnée dans », every role. It loads its own
+   `natures.ts` gives them, the screen never copies it) with a rank **immediately before** « Mentionnée dans » (E-9), every role; the slot where the registry draws sheet blocks relative
+   to the sections is AD-124 (1)'s and is not moved here, « before Mentionnée dans » holds in either slot. It loads its own
    answer (`GET …/liees`), not carried by `lireFiche`: states « Chargement… », « Impossible de charger les fiches liées. » with
    « Réessayer » (`docs/ecrans.md`), the sheet readable meanwhile. `groupes: []` renders nothing (not even the heading).
    The toggle « sous-lieux compris » exists on a `lieu` only; checked, the answer is read again with `descendants=1`; the choice is
@@ -631,7 +634,12 @@ the two guards), `descendantsDe` (point 3 of the `-recherche` notes), the sheet-
    the universe (AD-28 forbids browser storage for the *thread*, not for a display preference; `localStorage` already holds the
    theme). When `total` is 0 for every type of every group and some `totalAvecDescendants` is positive, the toggle is checked and
    disabled and the line « Rien à ce niveau ; N fiches dans ses sous-lieux. » (N the sum of the groups' deeper totals) shows
-   instead of lines. A tree reaching the depth bound shows « sous-lieux compris (50 niveaux au plus) ».
+   instead of lines. When `profondeurAtteinte` is true the toggle reads « sous-lieux compris (50 niveaux au plus) ». While the answer is re-read (toggle,
+   « Afficher les N »), the previous content stays and is dimmed, the controls are disabled; a failed re-read keeps it and shows
+   « Impossible de charger les fiches liées. » with « Réessayer » under the group; lost connection: the banner of the other blocks, the
+   loaded content readable, the toggle and « Afficher les N » (which need the server) disabled. For a reader with nothing readable the
+   block is **absent**, not refused (no trace of it). The toggle is shown to every role on a place (reading only). On 360 px a line
+   wraps: card, then qualifier and place on a second line, truncated at two lines with the whole text in the tooltip.
 7. **« Chercher parmi ».** A link to E-17 (`/recherche?lie=<fid>&nature=<key>&descendants=1`, `descendants` only when the toggle is
    checked); nothing is computed in the screen. The nature is the group's key.
 8. **The lines are the shared component**: the card line of `vignette.tsx`, whose `MarqueDisparu` marks a gone sheet, then the
@@ -641,6 +649,5 @@ the two guards), `descendantsDe` (point 3 of the `-recherche` notes), the sheet-
    place (neither named nor counted, `via` never names it), `GET` on a sheet the reader cannot read (the same `introuvable` as an
    unknown id), a symmetric nature held by a sheet the reader cannot read, a free relation (never in the block). `total` for Léa
    equals the number of lines she can page to.
-10. **Documentation and tests.** The route row above, `docs/ecrans.md` (the block's states are unchanged; point 6's `localStorage`
-    key and the « Rien à ce niveau » sum written), `docs/parcours.md` P-6 step 6 unchanged. The seed is `-natures`'s (Port-Sel,
+10. **Documentation and tests.** The route row above, `docs/ecrans.md` (E-9 block: the states of point 6 written, with Given/When/Then criteria for loading, error, lost connection, « Rien à ce niveau ; N fiches dans ses sous-lieux. », long content and the GM in player mode; the `localStorage` key), `docs/parcours.md` P-6 step 6 unchanged. The seed is `-natures`'s (Port-Sel,
     Suie aux Docks, the Guilde, les Corvalis); this slice adds no seed.
