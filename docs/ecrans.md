@@ -1253,534 +1253,531 @@ the GM catalogue's `generer_image` tool; P-3 step 5 → E-12 and E-9; B-29 → t
 block is reached through P-3 (step 5). Roles: the GM has the tool, the player does not; the instance admin without
 a role has no E-12. Deviation from scope: none.
 
-## Détail de `kanevas-refonte-visuelle`
+## Details for `kanevas-refonte-visuelle`
 
-La refonte ne change ni les droits, ni les données, ni les textes d'un écran : elle change la
-forme, et les gestes ci-dessous, que le testeur vérifie. La direction, les tokens et les
-composants sont dans `docs/charte.md`. E-1, E-3, E-4, E-6, E-8, E-9 et E-14 ont leur maquette finie (celle de E-15, `e15-systeme-de-jeu.html`, l'est hors du cadre d'un univers) ; E-2,
-E-7 et E-13 se refont dans le même cadre et avec les mêmes composants, sans
-maquette finie : leurs maquettes actuelles, faites avant la charte, valent pour le contenu et
-le vocabulaire, pas pour la forme (barre, compte, couleurs).
+The redesign changes neither permissions, data nor screen text: it changes the
+appearance and the interactions below, which the tester checks. Direction, tokens and
+components are in `docs/charte.md`. E-1, E-3, E-4, E-6, E-8, E-9 and E-14 have finished mockups (the E-15 mockup, `e15-systeme-de-jeu.html`, is finished outside the universe shell); E-2,
+E-7 and E-13 are redesigned within the same shell and with the same components, without
+finished mockups: their current mockups, made before the style guide, specify content and
+vocabulary, rather than appearance (sidebar, account, colours).
 
-**Partout.** Le cadre de E-9 sur tous les écrans d'un univers ; chaque entrée de navigation et
-chaque action a son icône ; le compte est derrière l'avatar (§ Barre latérale). Une action
-réussie est confirmée par un **toast** qui part seul après 4 s ou à « Fermer », et ne prend
-jamais le focus ; un échec n'est pas un toast : il reste un message en ligne, comme aujourd'hui.
-Textes des toasts : « « <section> » enregistrée », « Audience de « <section> » enregistrée »,
+**Everywhere.** The E-9 shell on every universe screen; each navigation entry and
+action has its icon; the account is behind the avatar (§ Sidebar). A successful
+action is confirmed by a **toast** that disappears after 4 s or on « Fermer », and never
+takes focus; a failure stays as an inline message, as today.
+Toast text: « « <section> » enregistrée », « Audience de « <section> » enregistrée »,
 « Section « <titre> » ajoutée — fermée aux joueurs », « Section « <titre> » retirée »,
 « « <section> » reliée à « <fiche> » », « « <fichier> » est secrète » / « Le secret de
 « <fichier> » est levé »,
 « « <section> » montée d'un cran » / « descendue d'un cran », « « <fichier> » ajouté » /
-« retiré », « Envoi de « <fichier> » annulé », « Relation vers « <fiche> » retirée » ; sur les
-autres écrans, le même gabarit (« « <objet> » <participe> ») ; un message de réussite qu'un écran
-affiche aujourd'hui en ligne devient le texte de son toast (E-14 : « Enregistré. »).
+« retiré », « Envoi de « <fichier> » annulé », « Relation vers « <fiche> » retirée »; on other
+screens, the same template (« « <objet> » <participe> »); a success message currently
+shown inline becomes the toast text (E-14: « Enregistré. »).
 
-**E-9 Fiche**, pour le MJ :
+**E-9 Sheet**, for the GM:
 
-- les sections ne sont plus des panneaux : titre, texte, puis ses blocs, en colonne de lecture ;
-- la **pastille d'audience**, juste après le titre de la section, dit qui la voit — « Lue des
-  joueurs » si les joueurs la lisent (« Écrite par les joueurs » s'ils l'écrivent aussi) ; sinon
-  « Confiée à <auteur> » si un auteur la lit ou l'écrit ; sinon « MJ seul » — et ouvre le
-  réglage d'audience, titré « Qui voit « <section> » » (les cinq réglages, en interrupteurs et
-  une liste, et « Chaque changement est enregistré aussitôt. ») ;
-- un **filet** dans la marge redit la pastille : vert plein pour une section lue ou écrite par
-  les joueurs, pointillé pour une section confiée ; une section « MJ seul » est hachurée d'ambre ;
-- « Modifier » paraît au survol et au focus de la section, et toujours sur un écran sans survol
-  (téléphone, tablette : `hover: none`) ;
-  « Monter », « Descendre » et « Retirer la section » sont dans son menu « ⋯ » ;
-- en édition : sous le champ, le compteur « n / 100 000 » et l'aide « Échap annuler · Ctrl ↵
-  enregistrer » ; Échap fait ce que fait « Annuler » (le texte saisi est abandonné, comme
-  aujourd'hui) ; Ctrl+Entrée (⌘+Entrée sur Mac) fait exactement ce que fait « Enregistrer » :
-  il envoie, et une écriture périmée reçoit « La section a changé depuis que vous l'avez
-  ouverte… » ; au-delà de 100 000 caractères ou connexion perdue, il ne part pas, comme le bouton ;
-- la bascule en tête s'appelle « Mode MJ » et « Mode Joueur » (« MJ » et « Joueur » au
-  téléphone) ; en mode Joueur, un bandeau sous la barre haute : « Mode Joueur : vous voyez ce
+- sections are no longer panels: title, text, then blocks, in a reading column;
+- the **audience badge**, immediately after the section title, says who sees it — « Lue des
+  joueurs » if players read it (« Écrite par les joueurs » if they also write it); otherwise
+  « Confiée à <auteur> » if an author reads or writes it; otherwise « MJ seul » — and opens
+  the audience settings, titled « Qui voit « <section> » » (the five settings, as switches and
+  a list, and « Chaque changement est enregistré aussitôt. »);
+- a **rule** in the margin repeats the badge: solid green for a section read or written by
+  players, dotted for an entrusted section; an « MJ seul » section has amber hatching;
+- « Modifier » appears on section hover and focus, and always on a screen without hover
+  (phone, tablet: `hover: none`);
+  « Monter », « Descendre » and « Retirer la section » are in its « ⋯ » menu;
+- when editing: below the field, the « n / 100 000 » counter and « Échap annuler · Ctrl ↵
+  enregistrer » help; Escape does what « Annuler » does (entered text is discarded, as
+  today); Ctrl+Enter (⌘+Enter on Mac) does exactly what « Enregistrer » does:
+  it submits, and a stale write receives « La section a changé depuis que vous l'avez
+  ouverte… »; beyond 100 000 characters or with connection lost, it does not submit, like the button;
+- the top toggle is called « Mode MJ » and « Mode Joueur » (« MJ » and « Joueur » on
+  phones); in player mode, a banner below the top bar: « Mode Joueur : vous voyez ce
   que voit un joueur. »
 
-**Un Joueur, et le MJ en mode Joueur**, ne voient aucune pastille d'audience, ni filet, ni
-hachure, ni menu « ⋯ » : la section n'a que son titre, son texte et ses blocs.
+**A Player, and the GM in player mode**, see no audience badge, rule,
+hatching or « ⋯ » menu: the section has only its title, text and blocks.
 
-| Ligne de la matrice | MJ | Joueur | MJ en mode Joueur |
+| Matrix row | GM | Player | GM in player mode |
 |---|---|---|---|
-| menu du compte (thème, déconnexion) — et pour l'admin d'instance, hors univers | oui | oui | oui |
-| bascule « Mode MJ » / « Mode Joueur » et bandeau du mode Joueur | oui | caché | oui |
-| « Modifier » d'une section | oui | sur ce qu'il écrit | sur ce que les joueurs écrivent |
-| bouton « Demander à Kanevas » | oui | oui | oui |
-| pastille et réglage d'audience | lire, régler | caché | caché |
-| filet et hachure | voir | caché | caché |
-| menu « ⋯ » (ordre, retrait) | oui | caché | caché |
-| tiroir au téléphone | oui | oui | oui |
+| account menu (theme, sign out) — and for the instance admin, outside universes | yes | yes | yes |
+| « Mode MJ » / « Mode Joueur » toggle and player mode banner | yes | hidden | yes |
+| section « Modifier » | yes | on what they write | on what players write |
+| « Demander à Kanevas » button | yes | yes | yes |
+| audience badge and settings | read, configure | hidden | hidden |
+| rule and hatching | see | hidden | hidden |
+| « ⋯ » menu (order, removal) | yes | hidden | hidden |
+| drawer on phones | yes | yes | yes |
 
-**États des composants du cadre.**
+**Shell component states.**
 
-| Composant | Ce qui peut arriver | Ce qu'on voit |
+| Component | What can happen | What is shown |
 |---|---|---|
-| menu du compte | connexion perdue | il s'ouvre ; le thème change (il est local) ; « Se déconnecter » reste actif |
-| menu du compte | `/api/moi` en échec | l'identifiant manque ; le thème et « Se déconnecter » restent |
-| identifiant, nom d'auteur, fil d'Ariane | trop longs | coupés par « … », le texte entier en infobulle ; le fil garde son dernier maillon entier |
-| réglage d'audience | échec d'un changement | l'interrupteur revient à sa valeur, « L'action n'a pas abouti. Réessayez. » sous le réglage ; pas de toast |
-| réglage d'audience | connexion perdue | interrupteurs et liste désactivés, le réglage se lit |
-| tiroir | ouvert au téléphone | la barre par-dessus la page, voile derrière ; Échap, le voile ou une entrée le ferment |
-| toast | plusieurs actions de suite | ils s'empilent, le plus récent en bas, trois au plus |
-| bandeau de connexion perdue | la connexion tombe | sous la barre haute, sur tout écran, comme aujourd'hui, au-dessus du bandeau du mode Joueur s'il y est ; il part quand elle revient |
+| account menu | connection lost | it opens; the theme changes (it is local); « Se déconnecter » stays active |
+| account menu | `/api/moi` fails | the identifier is missing; the theme and « Se déconnecter » remain |
+| identifier, author name, breadcrumb | too long | truncated with « … », full text in a tooltip; the breadcrumb keeps its last item whole |
+| audience settings | a change fails | the switch returns to its value, « L'action n'a pas abouti. Réessayez. » below the setting; no toast |
+| audience settings | connection lost | switches and list disabled, settings remain readable |
+| drawer | open on a phone | sidebar over the page, backdrop behind; Escape, the backdrop or an entry closes it |
+| toast | several successive actions | they stack, newest at the bottom, three at most |
+| connection lost banner | connection drops | below the top bar, on every screen, as today, above the player mode banner if present; it disappears when connection returns |
 
-*Critères.*
-- Étant donné Antor, MJ, sur « Maître Aldric », quand il ouvre la pastille « Lue des joueurs »
-  d'« Apparence » et coupe « Les joueurs la lisent », alors la pastille dit « MJ seul », la section
-  se hachure d'ambre, et un toast dit « Audience de « Apparence » enregistrée ».
-- Étant donné Antor, quand il passe en mode Joueur, alors il voit le bandeau du mode Joueur et
-  ne voit ni pastille, ni filet, ni menu « ⋯ ».
-- Étant donné Antor sur n'importe quel écran d'un univers, quand il ouvre le menu de son avatar,
-  alors il y trouve le thème (Clair, Sombre, Système, en icônes) et « Se déconnecter », et la
-  barre latérale ne les porte plus.
+*Criteria.*
+- Given Antor, GM, on « Maître Aldric », when he opens the « Lue des joueurs » badge
+  of « Apparence » and turns off « Les joueurs la lisent », then the badge says « MJ seul », the section
+  gets amber hatching, and a toast says « Audience de « Apparence » enregistrée ».
+- Given Antor, when he switches to player mode, then he sees the player mode banner and
+  no badge, rule or « ⋯ » menu.
+- Given Antor on any universe screen, when he opens his avatar menu,
+  then he finds the theme (« Clair », « Sombre », « Système », as icons) and « Se déconnecter », and the
+  sidebar no longer carries them.
 
-**Clôture.** Aucun besoin ni parcours nouveau ; B-29 (les six états) est tenu par les tableaux
-ci-dessus et ceux de chaque écran ; le menu du compte, le tiroir et le bandeau sont
-du cadre, atteints par toute étape de tout parcours sur un écran d'univers ; la bascule et son
-bandeau sont P-3 (le MJ vérifie ce que voit la table) ; la pastille
-d'audience porte le geste de P-3 étape 4 (« Apparence » lue des joueurs, « Vérité — MJ seul »),
-déjà sur E-9 ; chaque rôle a sa colonne
-dans la matrice ci-dessus.
+**Closure.** No new need or journey; B-29 (the six states) is met by the tables
+above and those of each screen; the account menu, drawer and banner belong to
+the shell, reached by any step of any journey on a universe screen; the toggle and its
+banner are P-3 (the GM checks what the table sees); the audience badge
+carries the action of P-3 step 4 (« Apparence » read by players, « Vérité — MJ seul »),
+already on E-9; each role has its column
+in the matrix above.
 
-## Détail des écrans de `kanevas-illustrations` (illustrations ; systèmes de jeu hors des univers)
+## Screen details for `kanevas-illustrations` (illustrations; game systems outside universes)
 
-> *Amendé par `kanevas-import` (AD-111, AD-93 amendée, décisions de Monsieur du 2026-10-11) : l'illustration est un fichier image de la médiathèque, référencé par la fiche ; elle se voit si la fiche **et** le fichier sont lisibles — « jamais secrète » tombe ; un joueur qui voit la fiche lit « Image réservée au MJ. » en en-tête et la vignette de repli dans E-8 quand l'illustration est réservée au MJ ; elle se pose par les deux chemins d'ajout de E-9. La matrice « Qui voit quoi » ci-dessous vaut avec cette double garde.*
+> *Amended by `kanevas-import` (AD-111, AD-93 amended, decisions by Monsieur on 2026-10-11): the illustration is an image file in the media library, referenced by the sheet; it is visible if both the sheet **and** the file are readable — the “never secret” rule is dropped; a player who sees the sheet reads « Image réservée au MJ. » in the header and sees the fallback thumbnail in E-8 when the illustration is GM-only; it is set through the two E-9 addition paths. The “Who sees what” matrix below applies with this double guard.*
 
-> Décision de Monsieur (2026-10-06) : « La liste des fiches doit être présentée avec une vignette
-> d'illustration, pas juste une liste » ; « chaque fiche doit avoir une propriété possible qui est
-> son image d'illustration ». Deux changements, aucun écran neuf : **E-8 devient une grille de
-> cartes** et **l'en-tête de E-9 porte l'illustration**. Données : `docs/donnees.md` (migration
-> `kanevas-illustrations`) ; décision : AD-93. Mêmes six états et mêmes textes communs que la
-> première fiche (chargement, erreur, connexion perdue, refus « Page introuvable. », écriture en
-> cours, échec d'une écriture), mêmes toasts que la refonte visuelle. Maquettes : `e08` (grille)
-> et `e09` (en-tête). Le document prime sur la maquette.
+> Decision by Monsieur (2026-10-06): the sheet list must have illustration thumbnails rather than just a list; each sheet must have an optional illustration image property. Two changes, no new screen: **E-8 becomes a card grid** and **the E-9 header carries the illustration**. Data: `docs/donnees.md` (migration
+> `kanevas-illustrations`); decision: AD-93. Same six states and common text as the
+> first sheet (loading, error, connection lost, refusal « Page introuvable. », write in
+> progress, failed write), same toasts as the visual redesign. Mockups: `e08` (grid)
+> and `e09` (header). The document takes precedence over the mockup.
 
-**L'illustration, en une phrase par règle.** Une fiche a **zéro ou une** illustration, une image
-PNG, JPEG, GIF ou WebP (reconnue à son contenu, pas à son nom). Elle se voit **partout où la
-fiche et le fichier se voient** (amended: a GM-only image shows « Image réservée au MJ. » to players). **Le MJ seul** la pose, la remplace
-ou la retire, en mode MJ, depuis l'en-tête de E-9. Ce n'est pas une pièce jointe : elle n'est
-dans aucune section, et une image jointe à une section ne devient jamais l'illustration d'elle-même.
+**The illustration, one sentence per rule.** A sheet has **zero or one** illustration, a
+PNG, JPEG, GIF or WebP image (recognised by its contents, not its name). It is visible **wherever the
+sheet and file are visible** (amended: a GM-only image shows « Image réservée au MJ. » to players). **Only the GM** sets, replaces
+or removes it, in GM mode, from the E-9 header. It is not an attachment: it belongs to
+no section, and an image attached to a section never becomes the illustration automatically.
 
-### E-8 — la grille de cartes
+### E-8 — the card grid
 
-Les fiches du type, **dans le même ordre** (alphabétique sans casse) et avec la même règle de
-lecture qu'avant, s'affichent en **grille de cartes**. Une carte est un lien vers E-9 :
+Sheets of the type, **in the same order** (case-insensitive alphabetical) and with the same
+read rule as before, appear in a **card grid**. A card is a link to E-9:
 
-- la **vignette**, cadre 4:3 aux coins `--rayon-champ`, l'image cadrée sans déformation
-  (`object-fit: cover`, recentrée vers le haut : `object-position: 50% 30%`, pour garder un
-  visage) ; l'image est décorative (`alt=""`) parce que le titre suit ;
-- le **titre**, sur deux lignes au plus, coupé par « … » avec le titre entier en infobulle ;
-- pour un personnage, la pastille **PJ** ou **PNJ** (celle de la liste d'avant) ; les autres types
-  n'ont pas de pastille : la page entière est du type.
+- the **thumbnail**, a 4:3 frame with `--rayon-champ` corners, the image cropped without distortion
+  (`object-fit: cover`, centred towards the top: `object-position: 50% 30%`, to preserve a
+  face); the image is decorative (`alt=""`) because the title follows;
+- the **title**, at most two lines, truncated with « … » with the full title in a tooltip;
+- for a character, the **PJ** or **PNJ** badge (from the previous list); other types
+  have no badge: the whole page is for that type.
 
-**Vignette de repli**, pour une fiche sans illustration — jamais un trou gris ni une image cassée :
-un aplat `--surface-2` tramé de points (`--bord-fort`, un point tous les 12 px), l'**initiale** du
-titre, article écarté (« Le Gué-aux-Saules » → « G »), en Fraunces 56 px (44 au téléphone) `--texte-3` au centre, et l'**icône du type** (Lucide, celle de la barre
-latérale) dans une puce en haut à gauche. Le repli sert aussi quand l'image d'une fiche ne se charge
-pas : la carte ne montre jamais d'erreur. Le tramage en points n'emprunte pas la hachure, réservée
-au secret (la section « MJ seul »).
+**Fallback thumbnail**, for a sheet without an illustration — never a grey hole or a broken image:
+a `--surface-2` fill dotted with `--bord-fort` (one dot every 12 px), the title's **initial**,
+article omitted (« Le Gué-aux-Saules » → « G »), in Fraunces 56 px (44 on phones) `--texte-3` at the centre, and the **type icon** (Lucide, the sidebar icon)
+in a chip at the top left. The fallback also serves when a sheet's image fails to load:
+the card never shows an error. Dots do not use hatching, reserved
+for secrecy (the « MJ seul » section).
 
-*Disposition.* Colonne de 1 120 px au plus (au lieu de 784 : une grille respire plus qu'un texte),
-`repeat(auto-fill, minmax(176 px, 1fr))`, 24 px entre les cartes (16 px entre deux rangées sous
-1 080 px). Au téléphone (moins de 760 px), **deux colonnes** (12 px entre elles, 16 px entre deux rangées),
-titre 13 px, la pastille sous le titre. Les images
-se chargent **à l'approche** (`loading="lazy"`) dans un cadre déjà à sa taille (la grille ne saute
-pas). The illustration address includes its token (`/fichiers/<id>?v=<jeton>`, AD-93), so a replaced
+*Layout.* Column at most 1 120 px wide (instead of 784: a grid needs more space than text),
+`repeat(auto-fill, minmax(176 px, 1fr))`, 24 px between cards (16 px between rows below
+1 080 px). On phones (below 760 px), **two columns** (12 px between them, 16 px between rows),
+13 px title, badge below the title. Images
+load **as they approach** (`loading="lazy"`) in a frame already at its final size (the grid does not
+jump). The illustration address includes its token (`/fichiers/<id>?v=<jeton>`, AD-93), so a replaced
 image reloads while an unchanged image comes from the cache.
 
-*Survol et focus.* La carte se soulève d'un plan (`--surface-2` derrière la carte, contour
-`--bord-fort` autour de la vignette) ; au clavier, l'anneau de focus entoure la carte entière.
-Pas d'ombre (la charte réserve la seule ombre à ce qui flotte).
+*Hover and focus.* The card rises one level (`--surface-2` behind the card, `--bord-fort`
+outline around the thumbnail); with the keyboard, the focus ring surrounds the whole card.
+No shadow (the style guide reserves the only shadow for floating elements).
 
-*Recherche.* Conservée telle quelle au-dessus de la grille (champ, « Chercher », « Effacer la
-recherche », adresse `?q=`) ; ses résultats sont des cartes, dans le même ordre.
+*Search.* Kept as is above the grid (field, « Chercher », « Effacer la
+recherche », `?q=` address); results are cards, in the same order.
 
-| État | Ce qu'on voit | Ce qu'on peut faire |
+| State | What is shown | Available actions |
 |---|---|---|
-| vide | MJ : « Aucun personnage pour l'instant. » et « Nouveau personnage » ; Joueur : « Aucun personnage à voir pour l'instant. » (textes par type inchangés) ; recherche sans résultat : « Aucun résultat pour « Vérité » dans les personnages. » | MJ : créer ; « Effacer la recherche » |
-| chargement | dix cartes squelettes (`--squelette`, cadre 4:3 et un trait ; deux rangées au bureau) et « Chargement des fiches… » (`role="status"`) ; une recherche : « Recherche… » ; une vignette pas encore chargée : son cadre en `--squelette`, à sa taille | — |
-| erreur | « Impossible de charger les fiches. » ou « Impossible de lancer la recherche. » ; une image qui ne se charge pas : la vignette de repli, sans message | « Réessayer » |
-| connexion perdue | le bandeau ; « Nouveau … », « Chercher » désactivés ; les cartes affichées et leurs images déjà chargées restent ; une image pas encore chargée : la vignette de repli | ouvrir une fiche |
-| refus | type inconnu : « Page introuvable. » ; une fiche illisible est absente de la grille, et l'adresse de son illustration répond 404 comme une adresse inconnue | — |
-| contenu long | titre de 120 caractères : deux lignes puis « … », infobulle ; plus de 100 fiches : « Charger la suite » sous la grille ; une image très haute ou très large : cadrée en 4:3 ; un GIF animé : il s'anime | idem |
+| empty | GM: « Aucun personnage pour l'instant. » and « Nouveau personnage »; Player: « Aucun personnage à voir pour l'instant. » (text per type unchanged); search without results: « Aucun résultat pour « Vérité » dans les personnages. » | GM: create; « Effacer la recherche » |
+| loading | ten skeleton cards (`--squelette`, 4:3 frame and a line; two rows on desktop) and « Chargement des fiches… » (`role="status"`); a search: « Recherche… »; thumbnail not yet loaded: its frame in `--squelette`, at its final size | — |
+| error | « Impossible de charger les fiches. » or « Impossible de lancer la recherche. »; an image that fails to load: fallback thumbnail, no message | « Réessayer » |
+| connection lost | the banner; « Nouveau … », « Chercher » disabled; displayed cards and their already loaded images remain; an image not yet loaded: fallback thumbnail | open a sheet |
+| refusal | unknown type: « Page introuvable. »; an unreadable sheet is absent from the grid, and its illustration address returns 404 like an unknown address | — |
+| long content | 120-character title: two lines then « … », tooltip; more than 100 sheets: « Charger la suite » below the grid; a very tall or wide image: cropped to 4:3; an animated GIF: it animates | same |
 
-### E-9 — l'illustration dans l'en-tête
+### E-9 — the illustration in the header
 
-L'en-tête de la fiche devient deux colonnes au bureau : à gauche l'**illustration**, cadre de
-176 × 220 px (4:5, `--rayon-panneau`, contour `--bord`), l'image cadrée comme dans E-8 ; à droite,
-alignés en bas, la pastille du type et le titre. Un clic sur l'illustration ouvre l'image entière
-dans un nouvel onglet ; son texte alternatif est « Illustration de « Maître Aldric » ». **Sans
-illustration, l'en-tête reste celui d'avant** (type puis titre, pleine largeur) : pas de vignette
-de repli sur la fiche, le repli est un objet de la grille. Au téléphone, l'illustration (96 ×
-120 px) reste à gauche de la pastille et du titre, pour que le texte de la fiche commence dans le
-premier écran ; un titre long passe à la ligne à sa droite.
+The sheet header becomes two columns on desktop: on the left the **illustration**, a
+176 × 220 px frame (4:5, `--rayon-panneau`, `--bord` outline), the image cropped as in E-8; on the right,
+bottom-aligned, the type badge and title. Clicking the illustration opens the whole image
+in a new tab; its alternative text is « Illustration de « Maître Aldric » ». **Without
+an illustration, the header stays as before** (type then title, full width): no fallback
+thumbnail on the sheet, the fallback belongs to the grid. On phones, the illustration (96 ×
+120 px) stays to the left of the badge and title so the sheet text starts within the
+first screen; a long title wraps to its right.
 
-*Les gestes du MJ* (mode MJ seulement) :
+*GM actions* (GM mode only):
 
-- **Ajouter** — sur une fiche sans illustration, au-dessus de la pastille du type, un bouton
-  fantôme « Ajouter une illustration » (`image-plus`) suivi de l'aide « Visible de tous ceux qui
-  voient la fiche. » (12 px, `--texte-3`) ; ils paraissent au survol et au focus de l'en-tête, et
-  toujours sur un écran sans survol (comme « Modifier »). Choisir le fichier suffit : l'envoi part
-  aussitôt (un seul fichier ; le sélecteur propose `image/png, image/jpeg, image/gif, image/webp`,
-  mais c'est le serveur qui juge).
-- **Remplacer** et **Retirer** — sur une fiche illustrée, deux boutons-icônes posés en bas à droite
-  de l'illustration, sur une puce `--surface` avec `--ombre-flottant` : « Remplacer l'illustration »
-  (`image-up`) et « Retirer l'illustration » (`trash-2`, danger) ; ils paraissent au survol et au
-  focus de l'illustration, toujours sans survol. L'aide « Visible de tous ceux qui voient la
-  fiche. » est l'infobulle de « Remplacer » et se lit sous l'illustration pendant l'envoi.
-  Remplacer garde l'ancienne image affichée jusqu'à ce que la nouvelle soit enregistrée.
-- **Confirmer le retrait**, sur place, sous l'illustration : « Retirer l'illustration de « Maître
-  Aldric » ? L'image sera perdue. » avec « Annuler » et « Retirer l'illustration » (danger). Retirer
-  ne touche à aucune pièce jointe.
+- **Add** — on a sheet without an illustration, above the type badge, a ghost
+  button « Ajouter une illustration » (`image-plus`) followed by the help text « Visible de tous ceux qui
+  voient la fiche. » (12 px, `--texte-3`); they appear on header hover and focus, and
+  always on screens without hover (like « Modifier »). Choosing the file is enough: upload starts
+  immediately (one file only; the picker offers `image/png, image/jpeg, image/gif, image/webp`,
+  but the server decides).
+- **Replace** and **Remove** — on an illustrated sheet, two icon buttons at the bottom right
+  of the illustration, on a `--surface` chip with `--ombre-flottant`: « Remplacer l'illustration »
+  (`image-up`) and « Retirer l'illustration » (`trash-2`, danger); they appear on illustration hover and
+  focus, always without hover. The help text « Visible de tous ceux qui voient la
+  fiche. » is the « Remplacer » tooltip and appears below the illustration during upload.
+  Replacing keeps the old image displayed until the new one is saved.
+- **Confirm removal**, inline, below the illustration: « Retirer l'illustration de « Maître
+  Aldric » ? L'image sera perdue. » with « Annuler » and « Retirer l'illustration » (danger). Removal
+  does not affect any attachment.
 
-*Textes.* Envoi : dans le cadre (au téléphone, juste sous lui), une barre de 2 px `--accent` et « Envoi… 42 % » (`role="status"`)
-avec « Annuler » ; envoi annulé : rien ne change, toast « Envoi de « portrait.png » annulé ».
-Toasts de réussite : « Illustration de « Maître Aldric » ajoutée », « … remplacée », « … retirée ».
-Échecs, en ligne sous l'en-tête (jamais en toast), avec « Ignorer » : envoi interrompu « « portrait.png » :
-l'envoi n'a pas abouti. » (et « Réessayer ») ; fichier qui n'est pas une image (400
+*Text.* Upload: inside the frame (on phones, just below it), a 2 px `--accent` bar and « Envoi… 42 % » (`role="status"`)
+with « Annuler »; upload cancelled: nothing changes, toast « Envoi de « portrait.png » annulé ».
+Success toasts: « Illustration de « Maître Aldric » ajoutée », « … remplacée », « … retirée ».
+Failures, inline below the header (never a toast), with « Ignorer »: interrupted upload « « portrait.png » :
+l'envoi n'a pas abouti. » (and « Réessayer »); file that is not an image (400
 `pas_une_image`) « « plan.pdf » n'est pas une image. Choisissez un PNG, un JPEG, un GIF ou un
-WebP. » ; fichier vide « « portrait.png » est vide. » ; retrait échoué « L'action n'a pas abouti.
-Réessayez. » (la confirmation se ferme, l'image reste ; « Réessayer » relance le retrait, « Ignorer »
-efface le message) ; droit perdu entre-temps (403, le compte n'est plus MJ) « Vous ne
-pouvez plus modifier l'illustration de cette fiche. », puis la fiche se recharge et les gestes
-disparaissent ; image qui ne se charge pas : le cadre `--surface-2` avec l'icône `image-off` et
-« Image indisponible. » (le MJ garde « Remplacer » et « Retirer »).
+WebP. »; empty file « « portrait.png » est vide. »; failed removal « L'action n'a pas abouti.
+Réessayez. » (confirmation closes, image remains; « Réessayer » retries removal, « Ignorer »
+clears the message); permissions lost meanwhile (403, account no longer a GM) « Vous ne
+pouvez plus modifier l'illustration de cette fiche. », then the sheet reloads and actions
+disappear; image that fails to load: the `--surface-2` frame with the `image-off` icon and
+« Image indisponible. » (the GM keeps « Remplacer » and « Retirer »).
 
-| État | Ce qu'on voit | Ce qu'on peut faire |
+| State | What is shown | Available actions |
 |---|---|---|
-| vide | fiche sans illustration : l'en-tête d'avant ; MJ (mode MJ) : « Ajouter une illustration » et l'aide | MJ : ajouter |
-| chargement | les squelettes de la fiche, avec un cadre 4:5 à gauche du titre ; une image pas encore chargée : son cadre en `--squelette` ; un envoi : « Envoi… 42 % » dans le cadre | annuler l'envoi |
-| erreur | envoi interrompu, fichier qui n'est pas une image, fichier vide, retrait échoué : le message en ligne ci-dessus ; image illisible : « Image indisponible. » | « Réessayer », « Ignorer » |
-| connexion perdue | le bandeau ; « Ajouter une illustration », « Remplacer », « Retirer » désactivés ; l'image déjà chargée reste ; un envoi en cours qui échoue devient l'erreur « l'envoi n'a pas abouti » | lire, ouvrir l'image |
-| refus | MJ rétrogradé pendant le geste : « Vous ne pouvez plus modifier l'illustration de cette fiche. » ; fiche illisible : « Page introuvable. » (et son illustration répond 404) ; Joueur : les gestes sont absents, jamais grisés | recharger |
-| contenu long | un fichier de plusieurs Go : la progression en pourcentage (pas de limite de taille, AD-7) ; une image très haute ou panoramique : cadrée en 4:5 ; un titre de 120 caractères : passe à la ligne à droite de l'illustration, au bureau comme au téléphone | idem |
+| empty | sheet without an illustration: previous header; GM (GM mode): « Ajouter une illustration » and help text | GM: add |
+| loading | sheet skeletons, with a 4:5 frame to the left of the title; image not yet loaded: its frame in `--squelette`; an upload: « Envoi… 42 % » in the frame | cancel upload |
+| error | interrupted upload, non-image file, empty file, failed removal: inline message above; unreadable image: « Image indisponible. » | « Réessayer », « Ignorer » |
+| connection lost | the banner; « Ajouter une illustration », « Remplacer », « Retirer » disabled; already loaded image remains; an ongoing upload that fails becomes the « l'envoi n'a pas abouti » error | read, open image |
+| refusal | GM demoted during the action: « Vous ne pouvez plus modifier l'illustration de cette fiche. »; unreadable sheet: « Page introuvable. » (and its illustration returns 404); Player: actions absent, never greyed out | reload |
+| long content | a multi-GB file: percentage progress (no size limit, AD-7); a very tall or panoramic image: cropped to 4:5; a 120-character title: wraps to the right of the illustration, on desktop and phones | same |
 
-### Qui voit quoi
+### Who sees what
 
-| Ligne de la matrice | MJ | Joueur | MJ en mode Joueur | Admin d'instance (sans rôle) |
+| Matrix row | GM | Player | GM in player mode | Instance admin (without a role) |
 |---|---|---|---|---|
-| vignette (ou repli) d'une fiche dans E-8 | toutes les fiches de l'univers | les fiches qu'il voit | sans objet : E-8 n'a pas de mode | — (« Page introuvable. ») |
-| illustration dans l'en-tête de E-9 | oui | oui, sur une fiche qu'il voit | oui, si la fiche est visible des joueurs | — |
-| ouvrir l'image entière | oui | oui | oui | — |
-| « Ajouter une illustration » et l'aide | oui | **absent** | **absent** | — |
-| « Remplacer », « Retirer » | oui | **absent** | **absent** | — |
-| adresse de l'illustration d'une fiche qu'il ne voit pas | sans objet (il voit tout) | **404**, identique à une adresse inconnue | ses droits réels : il la lit | 404 |
-| `PUT` / `DELETE` de l'illustration par l'API | oui | **403** sur une fiche qu'il voit, 404 sinon | oui (le mode ne change que l'écran) | 404 |
+| sheet thumbnail (or fallback) in E-8 | all universe sheets | sheets they see | not applicable: E-8 has no mode | — (« Page introuvable. ») |
+| illustration in the E-9 header | yes | yes, on a sheet they see | yes, if the sheet is visible to players | — |
+| open the whole image | yes | yes | yes | — |
+| « Ajouter une illustration » and help text | yes | **absent** | **absent** | — |
+| « Remplacer », « Retirer » | yes | **absent** | **absent** | — |
+| illustration address of a sheet they cannot see | not applicable (sees everything) | **404**, identical to an unknown address | actual permissions: can read it | 404 |
+| illustration `PUT` / `DELETE` through the API | yes | **403** on a sheet they see, otherwise 404 | yes (mode only changes the screen) | 404 |
 
-Un Joueur auteur ou rédacteur d'une section ne pose pas d'illustration : elle est au niveau de la
-fiche, pas de la section.
+A Player who authors or writes a section does not set illustrations: these belong to the
+sheet, not the section.
 
-### Critères
+### Criteria
 
-- Étant donné Léa, Joueuse, qui ne voit pas la fiche « Le Prieur masqué » (aucune section lue des
-  joueurs) et à qui Antor a posé une illustration, quand elle demande l'illustration de cette
-  fiche par son adresse, alors elle reçoit 404, de corps identique à celui d'un identifiant de fiche
-  qui n'a jamais existé ; et la fiche n'est pas dans sa grille.
-- Étant donné Antor, MJ, sur « Maître Aldric » sans illustration, en mode MJ, quand il survole
-  l'en-tête, alors il voit « Ajouter une illustration » et « Visible de tous ceux qui voient la
-  fiche. » ; quand il choisit « portrait-aldric.png », alors « Envoi… » paraît dans le cadre, puis
-  l'illustration s'affiche à gauche du titre et un toast dit « Illustration de « Maître Aldric »
+- Given Léa, a Player, who cannot see the « Le Prieur masqué » sheet (no section read by
+  players) and on which Antor set an illustration, when she requests that sheet's illustration
+  by its address, then she receives 404, with the same body as for a sheet identifier
+  that never existed; and the sheet is absent from her grid.
+- Given Antor, GM, on « Maître Aldric » without an illustration, in GM mode, when he hovers
+  over the header, then he sees « Ajouter une illustration » and « Visible de tous ceux qui voient la
+  fiche. »; when he chooses « portrait-aldric.png », then « Envoi… » appears in the frame, then
+  the illustration appears to the left of the title and a toast says « Illustration de « Maître Aldric »
   ajoutée ».
-- Étant donné Léa sur la grille des personnages, quand Antor a posé ce portrait, alors la carte
-  « Maître Aldric » montre le portrait ; la carte « Bran Corvalis », sans illustration, montre la
-  vignette de repli (« B » et l'icône des personnages), jamais un cadre vide.
-- Étant donné Antor qui remplace le portrait d'Aldric, quand Léa revient sur la grille, alors elle
-  voit le nouveau portrait, sans recharger la page de force (le jeton de l'adresse a changé).
-- Étant donné Antor qui choisit « plan.pdf » (ou un fichier « image.png » qui contient du HTML),
-  alors il voit « « plan.pdf » n'est pas une image. Choisissez un PNG, un JPEG, un GIF ou un WebP. »
-  et l'illustration d'avant reste ; rien n'est écrit.
-- Étant donné Antor qui retire l'illustration et confirme « Retirer l'illustration », alors l'en-tête
-  redevient celui d'avant, la carte d'Aldric montre la vignette de repli, et l'ancienne adresse de
-  l'image répond 404.
-- Étant donné Léa sur une fiche qu'elle voit et qui porte une illustration, alors elle voit l'image
-  et ni « Remplacer », ni « Retirer », ni « Ajouter une illustration » ; un `PUT` de sa part reçoit 403.
-- Étant donné Antor en mode Joueur sur « Maître Aldric », alors il voit l'illustration et aucun de
-  ses gestes.
-- Étant donné Antor qui choisit un fichier vide « portrait.png », alors il voit « « portrait.png »
-  est vide. » avec « Ignorer », l'illustration d'avant reste, et rien n'est écrit.
-- Étant donné Antor qui confirme « Retirer l'illustration » quand le serveur échoue, alors la
-  confirmation se ferme et il voit, sous l'en-tête, « L'action n'a pas abouti. Réessayez. » avec
-  « Réessayer » (qui relance le retrait) et « Ignorer » ; l'illustration reste affichée, sur la fiche
-  comme dans la grille.
-- Étant donné une illustration dont l'image ne se charge pas, quand Antor (mode MJ) ouvre la fiche,
-  alors le cadre dit « Image indisponible. » et il garde « Remplacer » et « Retirer » ; quand Léa
-  ouvre la même fiche, alors elle voit le même cadre « Image indisponible. », sans aucun geste, et,
-  sur la grille, la carte montre la vignette de repli.
-- Étant donné un envoi en cours quand la connexion tombe, alors le bandeau paraît, les gestes de
-  l'illustration sont désactivés et l'envoi devient « « portrait.png » : l'envoi n'a pas abouti. »
-  avec « Réessayer » et « Ignorer ».
-- Étant donné Antor rétrogradé Joueur par un autre MJ pendant qu'il envoie, alors il voit « Vous ne
-  pouvez plus modifier l'illustration de cette fiche. » et les gestes disparaissent.
-- Étant donné la grille au téléphone (390 px), alors elle a deux colonnes et aucun titre ne déborde.
+- Given Léa on the character grid, when Antor has set this portrait, then the
+  « Maître Aldric » card shows the portrait; the « Bran Corvalis » card, without an illustration, shows the
+  fallback thumbnail (« B » and the character icon), never an empty frame.
+- Given Antor replacing Aldric's portrait, when Léa returns to the grid, then she
+  sees the new portrait without a forced page reload (the address token changed).
+- Given Antor choosing « plan.pdf » (or an « image.png » file containing HTML),
+  then he sees « « plan.pdf » n'est pas une image. Choisissez un PNG, un JPEG, un GIF ou un WebP. »
+  and the previous illustration remains; nothing is written.
+- Given Antor removing the illustration and confirming « Retirer l'illustration », then the header
+  returns to its previous form, Aldric's card shows the fallback thumbnail, and the old image
+  address returns 404.
+- Given Léa on a sheet she sees that has an illustration, then she sees the image
+  and neither « Remplacer », « Retirer » nor « Ajouter une illustration »; a `PUT` from her receives 403.
+- Given Antor in player mode on « Maître Aldric », then he sees the illustration and none of
+  its actions.
+- Given Antor choosing an empty « portrait.png » file, then he sees « « portrait.png »
+  est vide. » with « Ignorer », the previous illustration remains, and nothing is written.
+- Given Antor confirming « Retirer l'illustration » when the server fails, then the
+  confirmation closes and he sees, below the header, « L'action n'a pas abouti. Réessayez. » with
+  « Réessayer » (which retries removal) and « Ignorer »; the illustration stays displayed, on the sheet
+  and in the grid.
+- Given an illustration whose image fails to load, when Antor (GM mode) opens the sheet,
+  then the frame says « Image indisponible. » and he keeps « Remplacer » and « Retirer »; when Léa
+  opens the same sheet, then she sees the same « Image indisponible. » frame, without any action, and,
+  on the grid, the card shows the fallback thumbnail.
+- Given an upload in progress when connection drops, then the banner appears, the illustration
+  actions are disabled and the upload becomes « « portrait.png » : l'envoi n'a pas abouti. »
+  with « Réessayer » and « Ignorer ».
+- Given Antor demoted to Player by another GM while uploading, then he sees « Vous ne
+  pouvez plus modifier l'illustration de cette fiche. » and the actions disappear.
+- Given the grid on a phone (390 px), then it has two columns and no title overflows.
 
-### Systèmes de jeu, hors des univers
+### Game systems, outside universes
 
-> Décision de Monsieur (2026-10-06) : le système de jeu devient **une dimension à part**, pas un
-> sous-élément d'un univers. Aujourd'hui le fil d'Ariane dit « Lame d'Ébène › CoF Mini » parce que
-> tout accès à un système passe par un univers (AD-83) ; désormais un système a sa propre adresse et
-> sa place dans la barre réduite (AD-94). **Droits inchangés, aucune donnée nouvelle.** Maquettes :
-> `e16-systemes-de-jeu.html` (nouvelle), `e15-systeme-de-jeu.html` (refaite hors univers),
-> `e01-accueil.html` (l'entrée de la barre).
+> Decision by Monsieur (2026-10-06): the game system becomes **a separate dimension**, rather than a
+> sub-element of a universe. Today the breadcrumb says « Lame d'Ébène › CoF Mini » because
+> every system is accessed through a universe (AD-83); from now on a system has its own address and
+> place in the reduced sidebar (AD-94). **Permissions unchanged, no new data.** Mockups:
+> `e16-systemes-de-jeu.html` (new), `e15-systeme-de-jeu.html` (redesigned outside universes),
+> `e01-accueil.html` (sidebar entry).
 
-**Un écran de plus : E-16 Systèmes de jeu**, et non E-15 « en mode liste ». La liste a sa propre
-adresse (`/systemes`), sa place dans la navigation, ses propres six états et un contenu que E-15
-n'a pas (les univers du compte, par système) ; E-15 reste la page d'**un** système
-(`/systemes/:sid`). Un écran par adresse, comme E-1 et E-3.
+**One more screen: E-16 Game systems**, rather than E-15 “in list mode”. The list has its own
+address (`/systemes`), navigation entry, six states and content E-15 does not
+have (the account's universes, per system); E-15 remains the page for **one** system
+(`/systemes/:sid`). One screen per address, like E-1 and E-3.
 
 **Navigation.**
-- Barre réduite (E-1, E-2, E-5, E-15, E-16) : « Mes univers » (`library`), **« Systèmes de jeu »**
-  (`dices`), puis « Administration » pour un admin d'instance. Sur E-15 et E-16, « Systèmes de
-  jeu » est l'item courant. Pas de bouton « Demander à Kanevas » : il n'existe que dans un univers.
-- Depuis un univers : le menu du **sélecteur d'univers** porte, sous la liste des univers, « Mes
-  univers » puis « Systèmes de jeu » (tous deux hors de l'univers). Le bloc « Système de jeu » de
-  E-3 (« Ouvrir le système ») et le panneau de E-14 (« Ouvrir le système ») mènent à E-15 de ce
-  système. Rien ne s'ajoute à la barre d'un univers : le système n'en est pas une partie.
-- Fil d'Ariane : E-16 « Systèmes de jeu » ; E-15 « Systèmes de jeu › CoF Mini » (au téléphone,
-  l'icône `dices` et le nom seul).
-- L'ancienne adresse `/univers/:id/systeme` mène à `/systemes/:sid` si l'univers est rattaché et que
-  le compte en est membre ; sinon « Page introuvable. ». Un lien gardé n'est donc pas cassé.
+- Reduced sidebar (E-1, E-2, E-5, E-15, E-16): « Mes univers » (`library`), **« Systèmes de jeu »**
+  (`dices`), then « Administration » for an instance admin. On E-15 and E-16, « Systèmes de
+  jeu » is the current item. No « Demander à Kanevas » button: it exists only within a universe.
+- From a universe: below the universe list, the **universe selector** menu has « Mes
+  univers » then « Systèmes de jeu » (both outside the universe). The E-3 « Système de jeu » block
+  (« Ouvrir le système ») and E-14 panel (« Ouvrir le système ») lead to that system's E-15.
+  Nothing is added to the universe sidebar: the system is not part of it.
+- Breadcrumb: E-16 « Systèmes de jeu »; E-15 « Systèmes de jeu › CoF Mini » (on phones,
+  the `dices` icon and name only).
+- The old `/univers/:id/systeme` address leads to `/systemes/:sid` if the universe is attached and
+  the account is a member; otherwise « Page introuvable. ». A saved link therefore still works.
 
-**Ce qu'on voit d'un système, et de qui.** Un compte voit un système **seulement s'il est rattaché à
-un univers dont il est membre** ; il le **modifie s'il est MJ d'un de ces univers** (quel que soit
-son rôle dans les autres). Il voit, par système, **ses** univers qui l'utilisent, avec son rôle dans
-chacun, et le nombre total d'univers (« Utilisé par 2 univers ») — **jamais le nom d'un univers dont
-il n'est pas membre** (AD-84). L'adresse d'un système qu'il ne voit pas répond « Page introuvable. »,
-comme une adresse inconnue.
+**What is visible about a system, and to whom.** An account sees a system **only if it is attached to
+ a universe of which they are a member**; they **edit it if they are GM of one of these universes** (whatever
+ their role in the others). Per system, they see **their own** universes using it, with their role in
+ each, and the total universe count (« Utilisé par 2 univers ») — **never the name of a universe of which
+ they are not a member** (AD-84). The address of a system they cannot see answers « Page introuvable. »,
+ like an unknown address.
 
-#### E-16 Systèmes de jeu
+#### E-16 Game systems
 
-Titre « Systèmes de jeu », sous-titre « Les référentiels de vos univers. ». Une **grille de
-cartes** (décision de Monsieur du 2026-10-06 : « des cartes plutôt qu'une liste se prête plus au
-contexte »), de la famille des cartes de fiche de E-8 : colonne de 1 120 px au plus,
-`repeat(auto-fill, minmax(288 px, 1fr))`, 24 px entre les cartes ; au téléphone, **une colonne**
-(une carte porte trop de texte et de puces pour deux). Par nom (ordre alphabétique sans casse), sans
-pagination (on ne voit que les systèmes de ses propres univers). **Toute la carte mène à E-15.**
-Chaque carte (composant « Carte de système » de `docs/charte.md`) :
+Title « Systèmes de jeu », subtitle « Les référentiels de vos univers. ». A **card grid**
+(decision by Monsieur on 2026-10-06: cards rather than a list suit the context better),
+in the same family as E-8 sheet cards: column at most 1 120 px wide,
+`repeat(auto-fill, minmax(288 px, 1fr))`, 24 px between cards; on phones, **one column**
+(a card carries too much text and too many chips for two). By name (case-insensitive alphabetical order), without
+pagination (only systems of one's own universes are visible). **The whole card leads to E-15.**
+Each card (« Carte de système » component in `docs/charte.md`):
 
-- un **en-tête dessiné** 2:1 (5:2 au téléphone), calculé par le frontend à partir du nom, toujours le
-  même pour un nom donné et sans aucune donnée : un treillis triangulaire, un grand dé (d20, d8 ou
-  d12) teinté d'encre avec un halo, un petit dé neutre, et le monogramme du système (« Cm » pour CoF
-  Mini) en Fraunces ; jamais une image, jamais un rectangle vide ;
-- si le compte n'est MJ d'aucun de ses univers : la pastille « Lecture seule » (`eye`) posée en haut à
-  droite de l'en-tête ;
-- le **nom** (Fraunces 18 px, deux lignes au plus, « … », infobulle) ;
-- en `--texte-3` : « Utilisé par 2 univers », puis « 3 règles · 4 créatures · 2 objets » (« 1 règle »,
-  « aucune créature »…) ;
-- **ses univers** qui l'utilisent, en puces (sceau, nom, pastille du rôle) ; dans la carte, les
-  puces ne sont pas des liens à part (la carte entière en est un) ; elles mènent à E-3 sur E-15.
+- a **drawn header** at 2:1 (5:2 on phones), computed by the frontend from the name, always the
+  same for a given name and without any data: a triangular lattice, a large ink-tinted die (d20, d8 or
+  d12) with a halo, a small neutral die, and the system monogram (« Cm » for CoF
+  Mini) in Fraunces; never an image, never an empty rectangle;
+- if the account is GM of none of their universes: the « Lecture seule » badge (`eye`) at the
+  top right of the header;
+- the **name** (Fraunces 18 px, at most two lines, « … », tooltip);
+- in `--texte-3`: « Utilisé par 2 univers », then « 3 règles · 4 créatures · 2 objets » (« 1 règle »,
+  « aucune créature »…);
+- **their universes** using it, as chips (seal, name, role badge); within the card,
+  chips are not separate links (the whole card is one); they lead to E-3 on E-15.
 
-Pas d'action d'écriture sur E-16 : un système se crée et se rattache depuis E-14 (P-8), qui reste le
-seul chemin. Textes du vide : pour un compte MJ d'au moins un univers, « Aucun système de jeu pour
-l'instant. » et « Un système se rattache depuis les paramètres d'un univers que vous menez. » avec le
-lien « Mes univers » ; pour les autres, « Aucun système de jeu pour l'instant. » et « Les systèmes
+No write action on E-16: a system is created and attached from E-14 (P-8), which remains the
+only path. Empty text: for an account that is GM of at least one universe, « Aucun système de jeu pour
+l'instant. » and « Un système se rattache depuis les paramètres d'un univers que vous menez. » with the
+« Mes univers » link; for others, « Aucun système de jeu pour l'instant. » and « Les systèmes
 de vos univers apparaîtront ici quand leur MJ en rattachera un. ».
 
-| État | Ce qu'on voit | Ce qu'on peut faire |
+| State | What is shown | Available actions |
 |---|---|---|
-| vide | « Aucun système de jeu pour l'instant. » et le texte selon le compte (ci-dessus) | « Mes univers » |
-| chargement | trois cartes squelettes (en-tête 2:1, nom, une ligne, une puce) et « Chargement des systèmes… » (`role="status"`) | — |
-| erreur | « Impossible de charger les systèmes de jeu. » | « Réessayer » |
-| connexion perdue | le bandeau ; la grille déjà chargée reste (E-16 n'écrit rien) | ouvrir un système |
-| refus | sans objet : E-16 n'a pas de paramètre et ne montre que ce que le compte voit ; un système détaché de tous ses univers disparaît de la grille au prochain chargement | — |
-| contenu long | un nom de 80 caractères : deux lignes, « … », infobulle ; un système utilisé par 12 de ses univers : les puces passent à la ligne et la carte s'allonge (les cartes d'une rangée gardent leur en-tête aligné) ; un nom d'univers de 80 caractères dans une puce : coupé à 24 caractères, infobulle | idem |
+| empty | « Aucun système de jeu pour l'instant. » and account-specific text (above) | « Mes univers » |
+| loading | three skeleton cards (2:1 header, name, one line, one chip) and « Chargement des systèmes… » (`role="status"`) | — |
+| error | « Impossible de charger les systèmes de jeu. » | « Réessayer » |
+| connection lost | the banner; already loaded grid remains (E-16 writes nothing) | open a system |
+| refusal | not applicable: E-16 has no parameter and shows only what the account sees; a system detached from all their universes disappears from the grid on next load | — |
+| long content | an 80-character name: two lines, « … », tooltip; a system used by 12 of their universes: chips wrap and the card grows (cards in a row keep their headers aligned); an 80-character universe name in a chip: truncated at 24 characters, tooltip | same |
 
-#### E-15 hors de l'univers
+#### E-15 outside the universe
 
-Le contenu de E-15 ne change pas (onglets Règles, Créatures, Objets ; entrées ouvertes sur place ;
-ajouter, modifier pour le MJ ; textes et états de `kanevas-systemes`). Ce qui change :
+E-15 content does not change (« Règles », « Créatures », « Objets » tabs; entries opened inline;
+add, edit for the GM; text and states from `kanevas-systemes`). What changes:
 
-- le **cadre** : barre réduite, « Systèmes de jeu » courant, fil « Systèmes de jeu › CoF Mini » ;
-- sous le titre (`dices`, nom) : « Référentiel commun · utilisé par 2 univers », puis la ligne
-  « Dans vos univers » et les puces de ses univers (comme sur E-16) ; si le compte ne le modifie pas,
-  la pastille « Lecture seule » ;
-- l'adresse `/systemes/:sid` ; l'onglet se garde dans l'adresse (`?type=creature`), Créatures par
-  défaut ;
-- le **refus** : système inconnu ou d'aucun univers du compte : « Page introuvable. » et un lien
-  « Systèmes de jeu » ; droit retiré pendant une écriture (le compte n'est plus MJ d'aucun univers
-  rattaché, ou l'univers est détaché) : « Vous ne pouvez plus modifier ce système. » et la page se
-  recharge (en lecture seule, ou « Page introuvable. ») ;
-- les toasts du gabarit commun : « « Garde du sceau » ajoutée », « « Loup des brumes »
+- the **shell**: reduced sidebar, « Systèmes de jeu » current, breadcrumb « Systèmes de jeu › CoF Mini »;
+- below the title (`dices`, name): « Référentiel commun · utilisé par 2 univers », then the
+  « Dans vos univers » line and chips for their universes (as on E-16); if the account cannot edit it,
+  the « Lecture seule » badge;
+- the `/systemes/:sid` address; the tab is kept in the address (`?type=creature`), « Créatures » by
+  default;
+- **refusal**: system unknown or belonging to none of the account's universes: « Page introuvable. » and a
+  « Systèmes de jeu » link; permission removed during a write (account no longer GM of any attached universe,
+  or universe detached): « Vous ne pouvez plus modifier ce système. » and the page
+  reloads (read-only, or « Page introuvable. »);
+- common-template toasts: « « Garde du sceau » ajoutée », « « Loup des brumes »
   enregistré ».
 
-| État | Ce qu'on voit | Ce qu'on peut faire |
+| State | What is shown | Available actions |
 |---|---|---|
-| vide | un onglet sans entrée : « Aucune créature pour l'instant. » (MJ, avec « Ajouter une créature ») ; « Aucune créature à voir pour l'instant. » (lecture seule) ; « Aucune règle », « Aucun objet » de même | MJ : ajouter |
-| chargement | squelettes du titre, du sous-titre, des puces, des onglets et de trois lignes ; « Chargement du système… » (`role="status"`) | — |
-| erreur | « Impossible de charger ce système. » ; échec d'écriture : « L'action n'a pas abouti. Réessayez. », saisie gardée ; écriture périmée : « Cette entrée a changé depuis que vous l'avez ouverte… » ; nom vide ou déjà pris : sous le champ | « Réessayer », « Recharger » |
-| connexion perdue | le bandeau ; « Ajouter … », « Modifier », « Enregistrer » désactivés, le texte en cours reste ; les puces d'univers restent des liens | lire |
-| refus | système inconnu, ou rattaché à aucun univers du compte (y compris par l'ancienne adresse) : « Page introuvable. » et le lien **« Systèmes de jeu »** (plus « Mes univers ») ; droit perdu pendant une écriture : « Vous ne pouvez plus modifier ce système. », puis la page se recharge en lecture seule ou en « Page introuvable. » ; un Joueur : « Ajouter … » et « Modifier » sont absents | « Systèmes de jeu » |
-| contenu long | 100 entrées : « Charger la suite » ; nom d'entrée de 120 caractères tronqué par « … », infobulle ; contenu de 100 000 caractères en entier ; nom de système de 80 caractères : le titre passe à la ligne | idem |
+| empty | a tab with no entry: « Aucune créature pour l'instant. » (GM, with « Ajouter une créature »); « Aucune créature à voir pour l'instant. » (read-only); « Aucune règle », « Aucun objet » similarly | GM: add |
+| loading | skeletons for title, subtitle, chips, tabs and three lines; « Chargement du système… » (`role="status"`) | — |
+| error | « Impossible de charger ce système. »; failed write: « L'action n'a pas abouti. Réessayez. », input kept; stale write: « Cette entrée a changé depuis que vous l'avez ouverte… »; empty or taken name: below the field | « Réessayer », « Recharger » |
+| connection lost | the banner; « Ajouter … », « Modifier », « Enregistrer » disabled, text being edited remains; universe chips remain links | read |
+| refusal | system unknown or attached to none of the account's universes (including through the old address): « Page introuvable. » and the **« Systèmes de jeu »** link (no longer « Mes univers »); permission lost during a write: « Vous ne pouvez plus modifier ce système. », then the page reloads read-only or with « Page introuvable. »; a Player: « Ajouter … » and « Modifier » absent | « Systèmes de jeu » |
+| long content | 100 entries: « Charger la suite »; 120-character entry name truncated with « … », tooltip; 100 000-character content in full; 80-character system name: title wraps | same |
 
-*Le bloc « Dans vos univers »* (E-15 et chaque ligne de E-16) arrive avec le système : il n'a ni
-chargement ni erreur à lui. Vide : sans objet — un système visible est toujours rattaché à au moins
-un univers du compte. Connexion perdue : il reste affiché, ses liens mènent à E-3. Refus : un univers
-dont le compte a été retiré disparaît des puces au chargement suivant (et le système entier, si
-c'était le dernier). Contenu long : douze univers ou plus — les puces passent à la ligne sous le
-libellé ; un nom d'univers de 80 caractères — coupé à 24 caractères par « … », nom entier en
-infobulle et dans l'étiquette accessible de la puce.
+*The « Dans vos univers » block* (E-15 and each E-16 row) arrives with the system: it has no
+loading or error of its own. Empty: not applicable — a visible system is always attached to at least
+one universe of the account. Connection lost: it remains displayed, its links lead to E-3. Refusal: a universe
+from which the account was removed disappears from the chips on next load (and the entire system if
+it was the last). Long content: twelve universes or more — chips wrap below the
+label; an 80-character universe name — truncated at 24 characters with « … », full name in a
+tooltip and in the chip's accessible label.
 
-#### E-3 et E-14 : ce que la retouche change
+#### E-3 and E-14: what the adjustment changes
 
-| Écran | Ce qui change | État touché |
+| Screen | What changes | State affected |
 |---|---|---|
-| E-3, bloc « Système de jeu » | « Ouvrir le système » mène à `/systemes/:sid` (E-15 hors univers) ; le bloc lit le système dans `GET /api/univers/:id` (`systeme: {id, nom}`) | refus : si le système est devenu illisible entre-temps (un MJ a détaché l'univers), le clic mène à E-15 qui dit « Page introuvable. » avec « Systèmes de jeu » ; au retour sur E-3, le bloc a disparu (il n'existe pas sans système) |
-| E-14, panneau « Système de jeu » | « Ouvrir le système » mène à `/systemes/:sid` ; la liste du catalogue se lit dans `GET /api/systemes/catalogue` | refus : de même, si un autre MJ a détaché l'univers pendant que la page était ouverte, E-15 dit « Page introuvable. » ; revenu sur E-14, le panneau dit « Cet univers n'est rattaché à aucun système de jeu. » ; erreur du catalogue : « Impossible de charger cette page. » comme avant |
+| E-3, « Système de jeu » block | « Ouvrir le système » leads to `/systemes/:sid` (E-15 outside universes); the block reads the system in `GET /api/univers/:id` (`systeme: {id, nom}`) | refusal: if the system has become unreadable meanwhile (a GM detached the universe), clicking leads to E-15 which says « Page introuvable. » with « Systèmes de jeu »; back on E-3, the block has disappeared (it does not exist without a system) |
+| E-14, « Système de jeu » panel | « Ouvrir le système » leads to `/systemes/:sid`; the catalogue list is read in `GET /api/systemes/catalogue` | refusal: likewise, if another GM detached the universe while the page was open, E-15 says « Page introuvable. »; back on E-14, the panel says « Cet univers n'est rattaché à aucun système de jeu. »; catalogue error: « Impossible de charger cette page. » as before |
 
-#### Qui voit quoi (systèmes)
+#### Who sees what (systems)
 
-| Ligne de la matrice | MJ d'un univers rattaché | Joueur d'un univers rattaché (et MJ d'aucun) | Compte sans univers rattaché (Teo ; l'admin d'instance sans rôle) |
+| Matrix row | GM of an attached universe | Player of an attached universe (and GM of none) | Account without an attached universe (Teo; instance admin without a role) |
 |---|---|---|---|
-| « Systèmes de jeu » dans la barre réduite et le menu du sélecteur | oui | oui | oui (E-16 vide) |
-| le système dans E-16 | oui, avec ses univers et son rôle | oui, « Lecture seule » | absent |
-| E-15 : lire | oui | oui | « Page introuvable. » |
-| E-15 : « Ajouter … », « Modifier » | oui | **absents** | — |
-| noms des univers d'autres comptes | jamais | jamais | jamais |
-| `GET /api/systemes/:sid` | 200 | 200 | **404**, corps identique à un identifiant inconnu |
-| `POST`/`PUT` d'une entrée | 201 / 200 | **403** | **404** |
+| « Systèmes de jeu » in the reduced sidebar and selector menu | yes | yes | yes (empty E-16) |
+| system in E-16 | yes, with their universes and role | yes, « Lecture seule » | absent |
+| E-15: read | yes | yes | « Page introuvable. » |
+| E-15: « Ajouter … », « Modifier » | yes | **absent** | — |
+| names of other accounts' universes | never | never | never |
+| `GET /api/systemes/:sid` | 200 | 200 | **404**, same body as an unknown identifier |
+| entry `POST`/`PUT` | 201 / 200 | **403** | **404** |
 
-#### Critères (systèmes)
+#### Criteria (systems)
 
-- Étant donné Mira, MJ des « Landes grises » rattachées à « CoF Mini », que partage « Lame d'Ébène »
-  d'Antor, quand elle ouvre « Systèmes de jeu », alors elle voit « CoF Mini », « Utilisé par 2
-  univers » et la seule puce « Les Landes grises · MJ » ; « Lame d'Ébène » n'apparaît nulle part,
-  ni sur E-16 ni sur E-15.
-- Étant donné Antor, quand il ouvre « CoF Mini » depuis E-16, alors le fil d'Ariane dit « Systèmes de
-  jeu › CoF Mini », la barre est la barre réduite et « Systèmes de jeu » y est l'item courant.
-- Étant donné Antor sur la vue d'ensemble de Lame d'Ébène, quand il clique « Ouvrir le système »,
-  alors il arrive sur la même page E-15, hors de l'univers ; et le menu du sélecteur d'univers lui
-  propose « Systèmes de jeu ».
-- Étant donné Léa, Joueuse de Lame d'Ébène, quand elle ouvre « Systèmes de jeu », alors elle voit
-  « CoF Mini » avec « Lame d'Ébène · Joueur » et « Lecture seule » ; sur E-15, ni « Ajouter une
-  créature » ni « Modifier » ; un `POST` d'entrée de sa part reçoit 403.
-- Étant donné Antor, MJ de Lame d'Ébène (« CoF Mini ») et Joueur des Cendres de Vaëlis
-  (« Chroniques Oubliées Fantasy »), alors E-16 montre les deux systèmes, « Lecture seule » sur le
-  second seulement.
-- Étant donné Teo, membre d'aucun univers rattaché, quand il ouvre l'adresse de « CoF Mini », alors
-  il voit « Page introuvable. » ; par l'API, `GET /api/systemes/<CoF Mini>` lui répond 404 avec le
-  même corps que `GET /api/systemes/999999` ; sa liste E-16 dit « Aucun système de jeu pour
+- Given Mira, GM of « Landes grises » attached to « CoF Mini », shared with Antor's « Lame d'Ébène »,
+  when she opens « Systèmes de jeu », then she sees « CoF Mini », « Utilisé par 2
+  univers » and only the « Les Landes grises · MJ » chip; « Lame d'Ébène » appears nowhere,
+  neither on E-16 nor on E-15.
+- Given Antor, when he opens « CoF Mini » from E-16, then the breadcrumb says « Systèmes de
+  jeu › CoF Mini », the sidebar is reduced and « Systèmes de jeu » is its current item.
+- Given Antor on the « Lame d'Ébène » overview, when he clicks « Ouvrir le système »,
+  then he reaches the same E-15 page, outside the universe; and the universe selector menu
+  offers « Systèmes de jeu ».
+- Given Léa, Player in « Lame d'Ébène », when she opens « Systèmes de jeu », then she sees
+  « CoF Mini » with « Lame d'Ébène · Joueur » and « Lecture seule »; on E-15, neither « Ajouter une
+  créature » nor « Modifier »; an entry `POST` from her receives 403.
+- Given Antor, GM of « Lame d'Ébène » (« CoF Mini ») and Player in « Les Cendres de Vaëlis »
+  (« Chroniques Oubliées Fantasy »), then E-16 shows both systems, « Lecture seule » only on the
+  second.
+- Given Teo, member of no attached universe, when he opens the « CoF Mini » address, then
+  he sees « Page introuvable. »; through the API, `GET /api/systemes/<CoF Mini>` returns 404 with the
+  same body as `GET /api/systemes/999999`; his E-16 list says « Aucun système de jeu pour
   l'instant. ».
-- Étant donné un lien gardé vers `/univers/<Lame d'Ébène>/systeme`, quand Antor l'ouvre, alors il
-  arrive sur `/systemes/<CoF Mini>`.
-- Étant donné Antor qui détache Lame d'Ébène de « CoF Mini » (E-14), quand Léa recharge E-16, alors
-  « CoF Mini » n'y est plus et son adresse lui répond « Page introuvable. ».
-- Étant donné Mira, quand elle ouvre « Créatures » de « CoF Mini » après qu'Antor y a ajouté
-  « Garde du sceau », alors elle la voit, avec « Utilisé par 2 univers » et la seule puce « Les
-  Landes grises · MJ ».
-- Étant donné « Admin », MJ de l'univers « Brume » qu'il vient de créer, non rattaché, alors la vue
-  d'ensemble de « Brume » n'a pas de bloc « Système de jeu », E-16 ne lui montre aucun système de
-  « Brume », et `/univers/<Brume>/systeme` répond « Page introuvable. ».
-- Étant donné Antor sur E-14 de Lame d'Ébène, ouvert pendant qu'un autre MJ de l'univers la
-  détache de « CoF Mini », quand il clique « Ouvrir le système », alors il voit « Page
-  introuvable. » et le lien « Systèmes de jeu » ; revenu sur E-14, le panneau dit « Cet univers n'est rattaché à aucun système de
+- Given a saved link to `/univers/<Lame d'Ébène>/systeme`, when Antor opens it, then he
+  reaches `/systemes/<CoF Mini>`.
+- Given Antor detaching « Lame d'Ébène » from « CoF Mini » (E-14), when Léa reloads E-16, then
+  « CoF Mini » is no longer there and its address answers « Page introuvable. ».
+- Given Mira, when she opens « Créatures » in « CoF Mini » after Antor added
+  « Garde du sceau », then she sees it, with « Utilisé par 2 univers » and only the « Les
+  Landes grises · MJ » chip.
+- Given « Admin », GM of the newly created, unattached « Brume » universe, then the
+  « Brume » overview has no « Système de jeu » block, E-16 shows no system for
+  « Brume », and `/univers/<Brume>/systeme` answers « Page introuvable. ».
+- Given Antor on E-14 of « Lame d'Ébène », open while another GM of the universe
+  detaches it from « CoF Mini », when he clicks « Ouvrir le système », then he sees « Page
+  introuvable. » and the « Systèmes de jeu » link; back on E-14, the panel says « Cet univers n'est rattaché à aucun système de
   jeu. ».
-- Étant donné Léa sur la vue d'ensemble de Lame d'Ébène, ouverte avant qu'Antor ne détache
-  l'univers, quand elle clique « Ouvrir le système », alors elle voit « Page introuvable. » et le
-  lien « Systèmes de jeu » ; revenue sur la vue d'ensemble, le bloc « Système de jeu » a disparu.
+- Given Léa on the « Lame d'Ébène » overview, opened before Antor detaches the
+  universe, when she clicks « Ouvrir le système », then she sees « Page introuvable. » and the
+  « Systèmes de jeu » link; back on the overview, the « Système de jeu » block has disappeared.
 
-### E-1 en cartes
+### E-1 as cards
 
-Décision de Monsieur (2026-10-06) : « Mes univers » passe en **grille de cartes**, comme E-8 et
-E-16, pour la cohérence. Ce qui ne change pas : l'en-tête (« Mes univers », « Connecté en tant que
-antor », « Créer un univers »), le compte « 2 univers », l'ordre par nom, E-2 et ses états. Grille :
-colonne de 1 120 px au plus, `repeat(auto-fill, minmax(288 px, 1fr))`, 24 px entre les cartes ; au
-téléphone, une colonne. **Toute la carte mène à E-3.** Chaque carte (composant « Carte d'univers »
-de `docs/charte.md`) :
+Decision by Monsieur (2026-10-06): « Mes univers » becomes a **card grid**, like E-8 and
+E-16, for consistency. Unchanged: the header (« Mes univers », « Connecté en tant que
+antor », « Créer un univers »), the « 2 univers » count, ordering by name, E-2 and its states. Grid:
+column at most 1 120 px wide, `repeat(auto-fill, minmax(288 px, 1fr))`, 24 px between cards; on
+phones, one column. **The whole card leads to E-3.** Each card (« Carte d'univers » component
+in `docs/charte.md`):
 
-- un **en-tête dessiné** 2:1 (3:1 au téléphone), calculé du nom par le frontend : deux reliefs en
-  courbes de niveau (un territoire — là où le système a des dés), le sommet teinté d'encre, et le
-  **sceau** de l'univers (son initiale, article écarté : celui du sélecteur d'univers) en bas à
-  gauche ; la pastille du rôle (« MJ » ambre, « Joueur » vert) en haut à droite ;
-- le **nom** (Fraunces 18 px, une ligne, « … », infobulle) ;
-- la **description** sur deux lignes au plus (Newsreader 15 px), absente si l'univers n'en a pas ;
-- ce qui aide à choisir, en `--texte-3` : le **système de jeu** rattaché (`dices`, son nom coupé par
-  « … ») ou « Sans système de jeu », et le **nombre de membres** (`users-round`, « 2 membres »).
+- a **drawn header** at 2:1 (3:1 on phones), computed from the name by the frontend: two hills in
+  contour lines (a territory — where the system has dice), the peak ink-tinted, and the universe
+  **seal** (its initial, article omitted: the universe selector's seal) at the bottom
+  left; the role badge (« MJ » amber, « Joueur » green) at the top right;
+- the **name** (Fraunces 18 px, one line, « … », tooltip);
+- the **description**, at most two lines (Newsreader 15 px), absent if the universe has none;
+- information helping selection, in `--texte-3`: the attached **game system** (`dices`, its name truncated with
+  « … ») or « Sans système de jeu », and the **member count** (`users-round`, « 2 membres »).
 
-Données : `GET /api/univers` rend en plus, par univers, `systeme: {id, nom}` ou `null` et
-`nbMembres` (les membres d'un univers se lisent déjà par ses membres : aucun droit nouveau, aucune
-colonne nouvelle).
+Data: `GET /api/univers` additionally returns, per universe, `systeme: {id, nom}` or `null` and
+`nbMembres` (universe members can already be read by its members: no new permission, no
+new column).
 
-| État | Ce qu'on voit | Ce qu'on peut faire |
+| State | What is shown | Available actions |
 |---|---|---|
-| vide | inchangé : « Aucun univers pour l'instant. » et les deux chemins (« Créer un univers », l'identifiant à donner au MJ) | « Créer un univers » |
-| chargement | trois cartes squelettes (en-tête, nom, deux lignes) et « Chargement de vos univers… » | — |
-| erreur | « Impossible de charger vos univers. » | « Réessayer » |
-| connexion perdue | le bandeau ; la grille déjà chargée reste ; « Créer un univers » désactivé | ouvrir un univers |
-| refus | sans objet : la page ne montre que les univers du compte | — |
-| contenu long | 100 univers : la grille défile ; un nom de 80 caractères : une ligne, « … », infobulle ; une description longue : deux lignes et « … » ; un nom de système de 80 caractères : coupé par « … », nom entier en infobulle | idem |
+| empty | unchanged: « Aucun univers pour l'instant. » and both paths (« Créer un univers », identifier to give the GM) | « Créer un univers » |
+| loading | three skeleton cards (header, name, two lines) and « Chargement de vos univers… » | — |
+| error | « Impossible de charger vos univers. » | « Réessayer » |
+| connection lost | the banner; loaded grid remains; « Créer un univers » disabled | open a universe |
+| refusal | not applicable: page only shows the account's universes | — |
+| long content | 100 universes: grid scrolls; an 80-character name: one line, « … », tooltip; a long description: two lines and « … »; an 80-character system name: truncated with « … », full name in a tooltip | same |
 
-*Critères.*
-- Étant donné Antor, quand il ouvre « Mes univers », alors il voit deux cartes, par nom : « Lame
-  d'Ébène » (MJ, « CoF Mini », « 2 membres ») et « Les Cendres de Vaëlis » (Joueur, « Chroniques
-  Oubliées Fantasy », « 2 membres ») ; un clic n'importe où sur une carte ouvre la vue d'ensemble.
-- Étant donné Teo, compte neuf, alors il voit l'état vide à deux chemins, inchangé.
+*Criteria.*
+- Given Antor, when he opens « Mes univers », then he sees two cards, by name: « Lame
+  d'Ébène » (« MJ », « CoF Mini », « 2 membres ») and « Les Cendres de Vaëlis » (« Joueur », « Chroniques
+  Oubliées Fantasy », « 2 membres »); clicking anywhere on a card opens the overview.
+- Given Teo, a new account, then he sees the unchanged empty state with two paths.
 
-### Données de départ du bouchon
+### Stub seed data
 
-Les critères de cette tranche supposent un monde. **En mode bouchon (AD-55), au démarrage du
-serveur et seulement si la base n'a encore aucun univers**, Kanevas sème ce jeu de départ, par les
-fonctions de service (AD-2) — pas par du SQL — et sans rien qui existe hors bouchon. Le semis vit au
-démarrage du serveur, pas dans la fabrique de l'application : les tests, qui bâtissent leur
-application sur une base vide, ne le reçoivent que s'ils l'appellent ; les serveurs que lance le harnais e2e posent `KANEVAS_SANS_SEMIS=1` (bouchon seulement) pour garder une base vide. Les images sont quelques
-fichiers PNG et WebP de démonstration versionnés avec le code, déposés par la vraie fonction de pose
-(AD-93), avec un fichier « plan.pdf » et un fichier vide pour les échecs.
+The criteria for this slice assume a world. **In stub mode (AD-55), on server startup
+and only if the database has no universe yet**, Kanevas seeds this starting set, through
+service functions (AD-2) — not SQL — and with nothing that exists outside stub mode. Seeding runs at
+server startup, not in the application factory: tests, which build their
+application on an empty database, receive it only if they call it; servers started by the e2e harness set `KANEVAS_SANS_SEMIS=1` (stub only) to keep an empty database. Images are a few
+demo PNG and WebP files versioned with the code, set through the real illustration-setting function
+(AD-93), with a « plan.pdf » file and an empty file for failures.
 
-Il se pose **en deux temps**, comme les tâches : `kanevas-il-systemes-serveur` pose le mécanisme
-(semis au démarrage en bouchon, base sans univers), les univers, les membres, les systèmes et leurs
-entrées, les fiches **sans illustration**, et versionne les fichiers de démonstration ;
-`kanevas-il-illustration-ecrans`, qui en dépend, y ajoute les illustrations (par la fonction de pose)
-et les fichiers d'échec (« plan.pdf », le fichier vide). Les colonnes « avec illustration » du
-tableau ci-dessous sont donc celles du second temps.
+It is set up **in two stages**, like the tasks: `kanevas-il-systemes-serveur` sets up the mechanism
+(seeding at startup in stub mode, database without universes), universes, members, systems and their
+entries, sheets **without illustrations**, and versions the demo files;
+`kanevas-il-illustration-ecrans`, which depends on it, adds illustrations (through the setting function)
+and failure files (« plan.pdf », empty file). The “with illustration” columns in the
+table below therefore belong to the second stage.
 
-**Provoquer les échecs en bouchon** (règles du bouchon, comme « une demande qui contient « échec » »
-du moteur d'images, AD-55 ; elles vivent dans la couche du bouchon, enregistrée seulement avec
-`KANEVAS_STUB=1`, jamais dans le service) :
-- **retrait qui échoue** : retirer l'illustration d'une fiche dont le titre contient « échec » répond
-  une erreur serveur et ne retire rien ; le semis pose une telle fiche, « Le Portrait de l'échec »
-  (personnage PNJ de Lame d'Ébène, « Apparence » lue des joueurs, avec illustration) ;
-- **image illisible** : le semis pose « La Fresque effacée » (lieu de Lame d'Ébène, lu des joueurs),
-  dont l'illustration est enregistrée mais dont le fichier est absent du disque : sa lecture échoue,
-  E-9 dit « Image indisponible. » et la grille montre la vignette de repli ;
-- **envoi qui n'aboutit pas** : couper le réseau du navigateur pendant l'envoi ; **fichier refusé** :
-  « plan.pdf » et le fichier vide du semis.
+**Triggering failures in stub mode** (stub rules, like a request containing « échec »
+for the image engine, AD-55; they live in the stub layer, registered only with
+`KANEVAS_STUB=1`, never in the service):
+- **failed removal**: removing the illustration of a sheet whose title contains « échec » returns
+  a server error and removes nothing; the seed includes such a sheet, « Le Portrait de l'échec »
+  (NPC in « Lame d'Ébène », « Apparence » read by players, with an illustration);
+- **unreadable image**: the seed includes « La Fresque effacée » (place in « Lame d'Ébène », read by players),
+  whose illustration is recorded but whose file is missing from disk: reading it fails,
+  E-9 says « Image indisponible. » and the grid shows the fallback thumbnail;
+- **upload that does not complete**: cut the browser network during upload; **file refused**:
+  « plan.pdf » and the seed's empty file.
 
-| Objet | Contenu |
+| Object | Content |
 |---|---|
-| comptes | ceux du bouchon : Antor, Léa, Teo, Mira, Admin (inchangés) |
-| « Lame d'Ébène » | Antor MJ, Léa Joueuse ; rattachée à « CoF Mini » |
-| « Les Landes grises » | Mira MJ ; rattachées à « CoF Mini » |
-| « Les Cendres de Vaëlis » | Admin MJ, Antor Joueur ; rattachées à « Chroniques Oubliées Fantasy » |
-| Teo | membre d'aucun univers (donc d'aucun univers rattaché) |
-| « CoF Mini » | règles « Attaque au contact », « Points de chance », « Repos » ; créatures « Gobelin des Landes », « Loup des brumes », « Sentinelle d'Ébène », « Vouivre des tourbières » (pas « Garde du sceau », que le critère fait ajouter) ; objets « Lame grise », « Sceau de Val-Fortin » |
-| « Chroniques Oubliées Fantasy » | quelques entrées de chaque type |
-| personnages de Lame d'Ébène | « Maître Aldric » (PNJ ; « Apparence » lue des joueurs, « Vérité — MJ seul » fermée ; **sans** illustration au départ, pour le critère d'ajout) ; « Bran Corvalis » (PNJ, « Apparence » lue, sans illustration) ; « Le Prieur masqué » (PNJ, une seule section « Secret — MJ seul » : **invisible de Léa** ; **avec** illustration) ; « Léa Brisefer » (PJ, avec illustration) ; « Dame Ombeline de Val-Fortin » (PNJ, avec illustration) ; « Suie » (PNJ, avec illustration) |
-| lieux et factions de Lame d'Ébène | « Val-Fortin » et « Le Pendu Joyeux » (avec illustration), « Rue des Cordiers » (sans) ; « Lames Grises » (avec), « Cercle des Cendres » (section MJ seul, avec illustration : invisible de Léa) |
+| accounts | stub accounts: Antor, Léa, Teo, Mira, Admin (unchanged) |
+| « Lame d'Ébène » | Antor GM, Léa Player; attached to « CoF Mini » |
+| « Les Landes grises » | Mira GM; attached to « CoF Mini » |
+| « Les Cendres de Vaëlis » | Admin GM, Antor Player; attached to « Chroniques Oubliées Fantasy » |
+| Teo | member of no universe (therefore no attached universe) |
+| « CoF Mini » | rules « Attaque au contact », « Points de chance », « Repos »; creatures « Gobelin des Landes », « Loup des brumes », « Sentinelle d'Ébène », « Vouivre des tourbières » (not « Garde du sceau », added by the criterion); items « Lame grise », « Sceau de Val-Fortin » |
+| « Chroniques Oubliées Fantasy » | a few entries of each type |
+| characters in « Lame d'Ébène » | « Maître Aldric » (NPC; « Apparence » read by players, « Vérité — MJ seul » closed; **without** illustration initially, for the addition criterion); « Bran Corvalis » (NPC, « Apparence » read, without illustration); « Le Prieur masqué » (NPC, a single « Secret — MJ seul » section: **invisible to Léa**; **with** illustration); « Léa Brisefer » (PC, with illustration); « Dame Ombeline de Val-Fortin » (NPC, with illustration); « Suie » (NPC, with illustration) |
+| places and factions in « Lame d'Ébène » | « Val-Fortin » and « Le Pendu Joyeux » (with illustration), « Rue des Cordiers » (without); « Lames Grises » (with), « Cercle des Cendres » (GM-only section, with illustration: invisible to Léa) |
 
-**Semis de `kanevas-import`** (ajouté au même semis, par les fonctions de service, chaque morceau par
-la tranche qui le cite la première ; plan de l'epic) :
+**`kanevas-import` seed** (added to the same seed through service functions, each part by
+the first slice referencing it; epic plan):
 
-| Objet | Contenu | Semé par |
+| Object | Content | Seeded by |
 |---|---|---|
-| « Essai Kanka » (univers, sans système) et un jeton d'API | Antor MJ, Léa Joueuse ; le jeton « Jeton du bouchon » d'Antor, valeur fixe connue des tests (`kvs_bouchon_essai…`), un an, semé **en bouchon seulement** comme tout le semis ; c'est là et avec lui que les critères importent (aucun import dans « Lame d'Ébène ») | `kanevas-import-fil` |
-| « Port-Sel » (lieu de Lame d'Ébène) | « Description » lue des joueurs (Markdown : intertitre, liste, tableau des quartiers), « Histoire » lue des joueurs, **Léa pour auteur avec lecture et écriture**, avec un bloc MJ « Le port est tenu en sous-main par la Guilde des Brumes… », « Vérité » MJ seul | `kanevas-import-secrets` |
-| « La Guilde des Brumes » (faction, MJ seul) ; « Rapport secret de l'amirauté » (événement, MJ seul) | la Guilde invisible de Léa ; le rapport porte, dans un bloc MJ, un lien vers « Maître Aldric » ; « Histoire » de Port-Sel lie « Maître Aldric » et « La Guilde des Brumes » ; « Apparence » de « Maître Aldric » lie « Port-Sel » ; « Description » de « La Guilde des Brumes » lie « Maître Aldric » ; dans « Essai Kanka », le lieu « Anse-aux-Sels » (lu des joueurs) dont « Description » porte `[[cle:faction:repaire|les contrebandiers du Repaire]]` (en attente) et `[[999999|Capitaine Hesk]]` (cassé : aucune fiche ne porte cet identifiant) | `kanevas-import-liens` |
-| « Les Sphères » (lieu, MJ seul) ; « La Taverne du Kraken », « Les Docks », « Le Phare aux Sels », « Quartier des Cordiers » (lieux lus des joueurs) ; « Le Repaire des contrebandiers » (lieu, MJ seul) | Port-Sel sous Les Sphères ; les cinq sous Port-Sel, dont le Repaire, invisible de Léa | `kanevas-import-arbre` |
-| sous-types des lieux existants | « Val-Fortin » · Ville, « Le Pendu Joyeux » · Taverne, « Rue des Cordiers » · Rue | `kanevas-import-types` |
-| alias, étiquettes, un savoir | Port-Sel : alias « Salport », « Port-aux-Sels », étiquette « Côte des Brumes » (aussi sur « Cercle des Cendres », invisible de Léa) ; « Chronique de l'Âge d'Ombre » (savoir, lu des joueurs) | `kanevas-import-recherche` |
-| fichiers de la médiathèque | « Plan secret de la Guilde » (image, réservée au MJ, non utilisée) ; « Carte des Sphères » (image, visible des joueurs) : illustration de Port-Sel, insérée dans « Description » de « Val-Fortin », jointe à « Apparence » de « Maître Aldric » ; « port-sel-quais.webp » joint à « Description » de Port-Sel ; « Notes de la table », section de « Léa Brisefer » dont Léa est l'auteur (lit, écrit), fermée aux autres joueurs | `kanevas-import-mediatheque` |
+| « Essai Kanka » (universe, no system) and an API token | Antor GM, Léa Player; Antor's « Jeton du bouchon » token, fixed value known to tests (`kvs_bouchon_essai…`), one year, seeded **in stub mode only** like the whole seed; criteria import here and with this token (no import into « Lame d'Ébène ») | `kanevas-import-fil` |
+| « Port-Sel » (place in « Lame d'Ébène ») | « Description » read by players (Markdown: subheading, list, district table), « Histoire » read by players, **Léa as author with read and write**, with a GM block « Le port est tenu en sous-main par la Guilde des Brumes… », « Vérité » GM-only | `kanevas-import-secrets` |
+| « La Guilde des Brumes » (faction, GM-only); « Rapport secret de l'amirauté » (event, GM-only) | Guild invisible to Léa; the report has, in a GM block, a link to « Maître Aldric »; Port-Sel's « Histoire » links to « Maître Aldric » and « La Guilde des Brumes »; « Apparence » of « Maître Aldric » links to « Port-Sel »; « Description » of « La Guilde des Brumes » links to « Maître Aldric »; in « Essai Kanka », the « Anse-aux-Sels » place (read by players) whose « Description » has « `[[cle:faction:repaire|les contrebandiers du Repaire]]` » (pending) and `[[999999|Capitaine Hesk]]` (broken: no sheet has this identifier) | `kanevas-import-liens` |
+| « Les Sphères » (place, GM-only); « La Taverne du Kraken », « Les Docks », « Le Phare aux Sels », « Quartier des Cordiers » (places read by players); « Le Repaire des contrebandiers » (place, GM-only) | Port-Sel under « Les Sphères »; the five under Port-Sel, including the Repaire, invisible to Léa | `kanevas-import-arbre` |
+| subtypes of existing places | « Val-Fortin » · « Ville », « Le Pendu Joyeux » · « Taverne », « Rue des Cordiers » · « Rue » | `kanevas-import-types` |
+| aliases, labels, one lore sheet | Port-Sel: aliases « Salport », « Port-aux-Sels », label « Côte des Brumes » (also on « Cercle des Cendres », invisible to Léa); « Chronique de l'Âge d'Ombre » (lore, read by players) | `kanevas-import-recherche` |
+| media library files | « Plan secret de la Guilde » (image, GM-only, unused); « Carte des Sphères » (image, visible to players): illustration of Port-Sel, inserted in « Description » of « Val-Fortin », attached to « Apparence » of « Maître Aldric »; « port-sel-quais.webp » attached to « Description » of Port-Sel; « Notes de la table », section of « Léa Brisefer » authored by Léa (read, write), closed to other players | `kanevas-import-mediatheque` |
 
-Teo reste membre d'aucun univers dans le semis : un critère qui a besoin de lui l'ajoute d'abord en
-Joueur de « Lame d'Ébène » (E-4).
+Teo remains a member of no universe in the seed: a criterion needing him first adds him as
+Player in « Lame d'Ébène » (E-4).
 
-### Clôture de `kanevas-illustrations`
+### Closure of `kanevas-illustrations`
 
-B-30 → la grille de E-8 (vignette, repli) et l'en-tête de E-9 (voir, poser, remplacer, retirer). Atteint par P-3 (le MJ prépare son lore : il pose l'illustration sur E-9 et la
-retrouve sur E-8) et P-6 (une joueuse parcourt le lore sur son téléphone : la grille). Chaque rôle a
-sa colonne ci-dessus ; les six états de chaque changement sont dans les tableaux (B-29).
-B-31 → E-16 (nouveau) et E-15 hors univers ; atteints par P-8 (étape 2 :
-« Systèmes de jeu », ou « Ouvrir le système » depuis E-14 / E-3) ; B-14 reste servi par E-15 ;
-chaque relation au système (MJ, Joueur, sans univers rattaché) a sa colonne. Aucune donnée
-nouvelle ; B-13 et B-14 sont inchangés. Les deux besoins viennent des décisions de Monsieur du
-2026-10-06, écrites en B-30 et B-31 (`docs/parcours.md`).
+B-30 → the E-8 grid (thumbnail, fallback) and E-9 header (see, set, replace, remove). Reached by P-3 (the GM prepares lore: sets the illustration on E-9 and
+finds it on E-8) and P-6 (a player browses lore on her phone: the grid). Each role has
+its column above; the six states of each change are in the tables (B-29).
+B-31 → E-16 (new) and E-15 outside universes; reached by P-8 (step 2:
+« Systèmes de jeu », or « Ouvrir le système » from E-14 / E-3); B-14 remains served by E-15;
+each relationship to the system (GM, Player, without an attached universe) has its column. No new
+data; B-13 and B-14 are unchanged. Both needs come from Monsieur's decisions on
+2026-10-06, recorded as B-30 and B-31 (`docs/parcours.md`).
 
 ## Détail des écrans de `kanevas-monde`
 
