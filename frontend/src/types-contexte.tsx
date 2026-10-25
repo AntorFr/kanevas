@@ -145,8 +145,8 @@ export const typesActifs = (types: TypeVue[]) => types.filter((t) => t.active);
 export const libelleDuType = (types: TypeVue[], type: string) => typeParType(types, type)?.singulier ?? type;
 
 /** The badge of a sheet: PJ or PNJ for a character, the type's label otherwise. */
-export function badgeFiche(types: TypeVue[], f: { type: string; charge: { pj?: boolean } }): string {
-  if (f.type === 'personnage') return f.charge.pj ? 'PJ' : 'PNJ';
+export function badgeFiche(types: TypeVue[], f: { type: string; charge?: { pj?: boolean } }): string {
+  if (f.type === 'personnage') return f.charge?.pj ? 'PJ' : 'PNJ';
   return libelleDuType(types, f.type);
 }
 
