@@ -3157,11 +3157,9 @@ l'abonnement » ; les messages d'état sont dans une région `aria-live="polite"
 **Format.** Web, desktop and phone, as the rest of Kanevas; nothing specific to the type.
 
 **Information architecture.** One object for the user: an **aventure** (his words: « ma
-campagne », « le scénario de samedi »). `[À TRANCHER]` the type's name: « Aventure » is
-recommended — a campaign, a scenario and a one-shot are all one, and « Aventures » reads well in
-the bar; alternatives « Intrigue » (narrower), « Partie » (a session, not a story); reversed if
-Monsieur's table says « campagne » for everything, in which case the type is « Campagne » with
-« Scénario » as its only proposed sub-type. A campaign holds scenarios (the tree: a scenario's
+campagne », « le scénario de samedi »). The type's name is « Aventure » (decision of Monsieur, 2026-10-25) — a campaign, a scenario
+and a one-shot are all one, and « Aventures » reads well in the bar next to « Personnages » and
+« Lieux »; « Intrigue » (narrower) and « Partie » (a session, not a story) were set aside. A campaign holds scenarios (the tree: a scenario's
 parent is its campaign); a one-shot stands at the root. An adventure has a **status** (« En
 préparation », « Prête », « En cours », « Terminée »), sections like any sheet, and two blocks of
 its own: « Préparation » and « Comptes-rendus ». Vocabulary: « Aventures » in the bar, « Campagne »
@@ -3184,11 +3182,12 @@ The list of the type, as for any type, with these specifics:
   search filter renders the grid.
 - **Creation window** « Nouvelle aventure »: « Titre » (1 to 120), « Sous-type » with the
   suggestions « Campagne » and « Scénario » (free text, as B-52), « Dans » — the parent, an
-  adventure of the universe, optional —, and « Visible des joueurs » (a checkbox: checked by
-  default when the sub-type is « Campagne », unchecked otherwise; it opens the first section
-  « Présentation » to the players — « Les joueurs la lisent » —; the section is created empty in
-  both cases). « Créer l'aventure » leads to E-9. The status is « En préparation » at birth, never
-  asked here.
+  adventure of the universe, optional —, and « Visible des joueurs » (a checkbox, **unchecked by
+  default whatever the sub-type**: an adventure in preparation is the GM's alone — decision of
+  Monsieur, 2026-10-25 —; checked, it opens the first section « Présentation » to the players,
+  « Les joueurs la lisent »; the section is created empty in both cases, and the GM opens or closes
+  it later from the section's audience, as for any sheet). « Créer l'aventure » leads to E-9. The
+  status is « En préparation » at birth, never asked here.
 - **Card and tree line**: the status badge (`Pastille`, neutral for « En préparation », the
   charte's accent for « Prête », success for « En cours », muted for « Terminée »; label the
   status itself), next to the sub-type; on a card, for the GM in GM mode, the badge is a menu
@@ -3209,8 +3208,9 @@ The list of the type, as for any type, with these specifics:
 | contenu long | 100 then « Charger la suite » ; a campaign with 60 scenarios: the tree node pages like any node | idem |
 
 *Critères.* Étant donné Antor, MJ, quand il crée « La Couronne brisée » (Campagne, « Visible des
-joueurs » coché), alors E-9 s'ouvre sur une fiche « En préparation » dont la section
-« Présentation » est lue des joueurs. Étant donné Antor, quand il crée « Acte II — Le sceau brisé »
+joueurs » laissé décoché), alors E-9 s'ouvre sur une fiche « En préparation » dont la section
+« Présentation » est fermée aux joueurs, et Léa ne la voit pas dans « Aventures » ; quand il
+ouvre « Présentation » aux joueurs, alors Léa la voit, avec son statut. Étant donné Antor, quand il crée « Acte II — Le sceau brisé »
 (Scénario, dans « La Couronne brisée »), alors la fiche naît sous la campagne dans l'arbre, sa
 section fermée aux joueurs, et Léa ne la voit ni dans l'arbre ni dans la grille. Étant donné
 Antor, quand il choisit « En cours » dans le menu de la carte de « La Couronne brisée », alors la

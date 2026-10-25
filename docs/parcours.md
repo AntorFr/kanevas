@@ -243,10 +243,11 @@ Forme de la skill `exigences` ; chaque besoin cite les parcours qui le réalisen
   cinq catégories (monstres, PNJ, cartes, déroulements, autre) qu'il coche ; une tâche cochée
   quitte la liste active sans disparaître. Les joueurs n'en voient rien. *(P-3)*
 - **B-18** — Un joueur voit la liste des campagnes de l'univers, nom et statut. *(P-4, P-6)*
-  *Amended (`kanevas-scenarios`)*: a player sees, in the « Aventures » list (E-8) and in the
-  « Campagnes en cours » block of E-3, the adventures he can read — a campaign is readable when
-  one of its sections is; the creation form opens « Présentation » to the players by default for
-  a campaign, not for a scenario — with their status (B-59).
+  *Amended (`kanevas-scenarios`, decision of Monsieur, 2026-10-25)*: **the GM decides which
+  adventures the players see**, campaign or scenario alike: a player sees, in the « Aventures »
+  list (E-8) and in the « Campagnes en cours » block of E-3, the adventures one section of which
+  the GM opened to the players — typically « Présentation » when the campaign starts; nothing is
+  open at creation, a campaign in preparation stays the GM's — with their status (B-59).
 - **B-58** — *(kanevas-scenarios)* An **adventure** — a campaign, a scenario, a one-shot — is a
   sheet of the « Aventure » type: sections with their audience, links from and to any sheet,
   relations, files and illustration, search, and the tree. The sub-type is free (B-52); the
@@ -346,8 +347,9 @@ introuvable. ».
 ### P-3 — Préparer la séance du samedi (MJ, dimanche soir, bureau)
 1. **Vue d'ensemble** (E-3) : les campagnes en cours, les derniers CR, la préparation en cours.
 2. *(kanevas-scenarios)* **Aventures** (E-8, tree view): he creates the campaign « La Couronne
-   brisée » (sub-type Campagne, born « En préparation », « Présentation » open to the players) or
-   opens the existing one and sets it « En cours » from its header (E-9); under it he creates the
+   brisée » (sub-type Campagne, born « En préparation », nothing open to the players yet) or
+   opens the existing one, sets it « En cours » from its header (E-9) and opens « Présentation »
+   to the players, now that the campaign starts; under it he creates the
    scenario « Acte II — Le sceau brisé » (sub-type Scénario, parent the campaign, sections closed
    to the players), writes it in E-9 like any sheet — links to Aldric and Port-Sel, the plan of the
    crypt from the media library, a relation to the Guilde —, and sets it « Prête » when it is; or
