@@ -589,13 +589,13 @@ Detail of the slice's part of AD-129 and B-65; nothing here adds a filter, a nat
 1. **One function, three options** — `listerFiches` gains `lie?: number`, `nature?: string`, `descendants?: boolean`,
    each one more `EXISTS`/`IN` in the same `where` list as `etiquette` (AD-63); no second search function, the assistant's
    `chercher` is untouched. They combine by AND with every other option, `parent` included. The cursor, the order and the
-   page size are unchanged; no `DISTINCT` is needed (a condition, never a join), so a sheet linked twice is listed once. With `lie` **and** `descendants=1`, each row carries `via: {id, titre}` when the relation found points to a descendant rather than `lie` itself (the first such target, by title then id): the target of a counted relation is readable by the second guard, so `via` names no hidden place and never an intermediate one; without `descendants`, or when the relation points at `lie`, the row has no `via`.
+   page size are unchanged; no `DISTINCT` is needed (a condition, never a join), so a sheet linked twice is listed once. With `lie` **and** `descendants=1`, each row carries `via: {id, titre}` when the relation found points to a descendant rather than `lie` itself (the first such target, by title then id): the target of a counted relation is readable by the second guard, so `via` names no hidden place and never an intermediate one; without `descendants`, or when the candidate also holds a qualifying relation to `lie` itself (the direct link wins), the row has no `via`; for the reverse reading of a symmetric nature, `via` is the sub-place at the other end of the relation (its source). The nature and the qualifier of the relation are **not** returned by the list: the mockup's « se situe à — habite » sub-line belongs to « Fiches liées » (`-bloc`), not to E-17.
 2. **The relation counted** — the candidate sheet `f` is the **source** of a row of `relations` whose `cible_fiche_id` is
    `lie` (or one of its descendants) and, if `nature` is set, whose `nature` is that key. AD-64's two guards are applied to the
    row, not to the path — the section of the relation, and the sheets at **both** ends of it: its section is readable by the reader (`sqlSectionLisible`), the candidate is readable (the list's
    own `sqlFicheLisible`), and **the target of the row is readable** (`sqlFicheLisible` on it — AD-64's second guard; a
    relation to a hidden sub-place is not counted for Léa). A **symmetric** nature (`allie`, `ennemi`) is also read the other
-   way: a row whose source is `lie` (or a descendant) and whose target is the candidate, under the same three guards (the
+   way: a row whose source is `lie` (or a descendant) and whose target is the candidate, under the same two guards (the
    fact is stored once, `-natures` point 3). A free relation counts only when `nature` is absent.
 3. **The descent** — one function `descendantsDe(db, ficheId)` in `fiches.ts` (exported: `-bloc` reuses it for « sous-lieux
    compris » and its counts) returns the ids: a recursive CTE on `fiches_par_parent` (or `parent_id`) from `lie`, **`UNION`
