@@ -199,6 +199,8 @@ main.principal:has(.page-grille) { max-width: 1080px; }
 .aide-mj-seul { font-size: var(--t-13); color: var(--texte-3); }
 .carte .aide-mj-seul { padding: 0 2px; }
 .arbre .ligne-arbre { flex-wrap: wrap; }
+.arbre .aide-mj-seul { flex-basis: 100%; padding-left: var(--e-6); padding-bottom: var(--e-2); }
+.relations .choix-fiche-ligne .aide-mj-seul, .ligne-recherche .aide-mj-seul { flex-basis: 100%; }
 .filtre-visibilite { position: relative; flex: 0 1 200px; min-width: 140px; }
 @media (max-width: 520px) { .filtre-visibilite { flex: 1 1 100%; } }
 .filtre-visibilite .champ { margin: 0; }
