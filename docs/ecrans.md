@@ -2315,90 +2315,90 @@ screen with no Player mode: a broken or pending link is always marked there; `li
   « Impossible de chercher. » and « Réessayer »; offline, `[[` stays text, « Enregistrer » is disabled and his
   text kept; a broken link in the scenario is marked.
 
-### E-9 Fiche — ce que `kanevas-import` change
+### E-9 Sheet — what `kanevas-import` changes
 
-*Maquette finie* : `docs/maquettes/e09-fiche-importee.html` (« Port-Sel », états `#etat-fichier`, `#etat-joindre`, `#etat-sous-type`, `#etat-changer-type`, `#etat-joueur`,
+*Finished mockup*: `docs/maquettes/e09-fiche-importee.html` (« Port-Sel », states `#etat-fichier`, `#etat-joindre`, `#etat-sous-type`, `#etat-changer-type`, `#etat-joueur`,
 `#etat-edition`, `#etat-supprimer`, `#etat-deplacer`).
 
-**En-tête.** Fil d'Ariane : univers › type › ancêtres **lisibles** du plus haut au plus proche ›
-fiche ; un ancêtre illisible est sauté sans marque (B-35) ; plus de trois ancêtres : le premier, « … »
-(menu des autres), les deux derniers. **Largeur (AD-99, arbitrage du 2026-10-15)** : le titre de la fiche courante cède en dernier (les ancêtres rétrécissent d'abord, jusqu'à leur minimum) ; un maillon d'ancêtre garde au moins 8 caractères (largeur `8ch`) et s'ellipse par « … » au-delà, jamais en dessous ; aucun maillon ne recouvre un chevron. Au téléphone (≤ 480 px), dès qu'il y a deux ancêtres lisibles ou plus, tous passent dans le menu « … » (icône du type › « … » › titre) ; avec un seul, il s'ellipse comme dit, sauf pour un MJ sur une fiche (la bascule MJ / Joueur prend la largeur du fil) : il passe alors lui aussi dans « … ». Entre 481 et 760 px, les ancêtres restent visibles. « Poser » ou « Remplacer » l'illustration (MJ) ouvre les deux
-chemins d'ajout (« Fichiers », ci-dessous), limités aux images ; « Retirer » ôte la référence, l'image reste dans la
-médiathèque. Le badge du type porte le **sous-type** : « Lieu · Port » (B-52) ;
-MJ, hors mode Joueur : un clic sur le sous-type l'édite en place, avec la liste des sous-types déjà
-employés pour ce type dans l'univers, par ordre alphabétique (titre de la liste « Sous-types de lieu
-déjà employés » ; complétion sans tenir compte de la casse ; aide « Entrée enregistre · Échap annule »
-et « Champ vide : plus de sous-type » ; 1 à 60 caractères, au-delà « Erreur : 60 caractères au plus. ») ;
-une fiche sans sous-type montre au MJ le libellé « Sous-type » à cet endroit, rien à un joueur. Sous le titre : « Aussi appelée Salport, Port-aux-Sels » (alias,
-`--texte-2`) et les **étiquettes** en pastilles neutres (`tag`), chacune un lien vers E-17 filtrée.
-MJ, hors mode Joueur : le titre s'édite en place (clic, Entrée enregistre) ; le menu « ⋯ » de l'en-tête
-porte « Changer le type… », « Déplacer sous… », « Alias et étiquettes… », une ligne d'information
-« Importée · clé lieu:port-sel · créée le 3 mars 2021 » (si la fiche a une clé d'origine, B-50) et,
-séparé, « Supprimer la fiche… » en `--danger`.
-*Dans la tranche `kanevas-import-fil`*, la ligne « Importée · clé … » est la seule entrée du menu : pour une
-fiche sans clé d'origine, le menu « ⋯ » n'est pas affiché ; « créée le … » est la date de création de la
-fiche (`creeLe` de l'import s'il l'a donnée, B-50, sinon la date de l'import). La clé d'origine est cachée à
-tout autre rôle que le MJ (hors mode Joueur) : ni le menu, ni la réponse de lecture.
+**Header.** Breadcrumb: universe › type › **readable** ancestors from highest to nearest ›
+sheet; an unreadable ancestor is skipped without a mark (B-35); more than three ancestors: the first, « … »
+(menu of the others), the last two. **Width (AD-99, decision of 2026-10-15)**: the current sheet's title yields last (ancestors shrink first, down to their minimum); an ancestor segment keeps at least 8 characters (width `8ch`) and truncates with « … » beyond that, never below; no segment overlaps a chevron. On a phone (≤ 480 px), once there are two or more readable ancestors, all go into the « … » menu (type icon › « … » › title); a single one truncates as described, except for a GM on a sheet (the GM / Player toggle takes the breadcrumb's width): it then also goes into « … ». Between 481 and 760 px, ancestors stay visible. « Poser » or « Remplacer » the illustration (GM) opens the two
+add paths (Files, below), restricted to images; « Retirer » removes the reference, the image stays in the
+media library. The type badge carries the **subtype**: « Lieu · Port » (B-52);
+GM, outside Player mode: clicking the subtype edits it inline, with a list of subtypes already
+used for this type in the universe, alphabetically (list title « Sous-types de lieu
+déjà employés »; case-insensitive completion; help « Entrée enregistre · Échap annule »
+and « Champ vide : plus de sous-type »; 1 to 60 characters, beyond that « Erreur : 60 caractères au plus. »);
+a sheet without a subtype shows the GM the « Sous-type » label there, nothing to a player. Below the title: « Aussi appelée Salport, Port-aux-Sels » (aliases,
+`--texte-2`) and **labels** as neutral chips (`tag`), each a link to filtered E-17.
+GM, outside Player mode: the title edits inline (click, Enter saves); the header's « ⋯ » menu
+carries « Changer le type… », « Déplacer sous… », « Alias et étiquettes… », an information row
+« Importée · clé lieu:port-sel · créée le 3 mars 2021 » (if the sheet has an origin key, B-50) and,
+separately, « Supprimer la fiche… » in `--danger`.
+*In the `kanevas-import-fil` slice*, the « Importée · clé … » row is the menu's only entry: for a
+sheet without an origin key, the « ⋯ » menu is not displayed; « créée le … » is the sheet's creation
+date (the import's `creeLe` if supplied, B-50, otherwise the import date). The origin key is hidden from
+all roles other than the GM (outside Player mode): neither menu nor read response.
 
-- *Changer le type* : une liste des types de la liste du produit, activés d'abord, puis « Autres
-  types » ; pour « Personnage », le choix PJ / PNJ ; et le champ « Sous-type » (vidé au changement de
-  type, puisqu'il est propre au type, avec les sous-types déjà employés pour le nouveau type). Le
-  compte-rendu n'y figure pas ; un compte-rendu n'a pas cette entrée.
-- *Déplacer sous…* : boîte « Déplacer « Port-Sel » sous… », champ « Chercher une fiche » et la liste de
-  recherche (tous types, fiches que le MJ lit), plus « Aucun parent » ; pied : « Annuler » puis « Déplacer » (à droite au bureau, côte à côte sur toute la largeur, 40 px de haut, au téléphone) ;
-  un descendant de la fiche est refusé : « Une fiche ne peut pas être rangée sous l'un de ses
+- *Change type*: a list of types from the product list, enabled first, then « Autres
+  types »; for « Personnage », the PC / NPC choice; and the « Sous-type » field (cleared on type
+  change, since it is specific to the type, with subtypes already used for the new type). The
+  session report is not listed; a session report does not have this entry.
+- *Move under…*: « Déplacer « Port-Sel » sous… » dialog, « Chercher une fiche » field and the
+  search list (all types, sheets the GM reads), plus « Aucun parent »; footer: « Annuler » then « Déplacer » (on the right on desktop, side by side across the full width, 40 px high, on a phone);
+  a descendant of the sheet is refused: « Une fiche ne peut pas être rangée sous l'un de ses
   descendants. ».
-- *Alias et étiquettes* : deux champs à pastilles (Entrée ajoute, × retire) ; une étiquette se
-  complète sur celles de l'univers ; alias 1 à 120 caractères, 20 au plus ; étiquette 1 à 40
-  caractères, 20 au plus par fiche.
-- *Supprimer la fiche* : boîte de dialogue « Supprimer « Port-Sel » ? » qui compte ce qui part —
+- *Aliases and labels*: two chip fields (Enter adds, × removes); a label completes
+  from the universe's labels; alias 1 to 120 characters, at most 20; label 1 to 40
+  characters, at most 20 per sheet.
+- *Delete sheet*: « Supprimer « Port-Sel » ? » dialog counting what goes —
   « 3 sections ; 3 relations qui la visent ; 1 place sur une carte. Ses 2 fichiers restent dans la médiathèque. Ses 5 enfants
-  remonteront sous « Les Sphères ». Les liens qui la visent deviendront des liens cassés. » — et
-  « Supprimer la fiche » (`--danger`) / « Annuler ». Après : retour à la liste du type, toast « Fiche
-  supprimée. ». Ces nombres ne sont montrés qu'au MJ, qui lit tout.
+  remonteront sous « Les Sphères ». Les liens qui la visent deviendront des liens cassés. » — and
+  « Supprimer la fiche » (`--danger`) / « Annuler ». Afterwards: back to the type's list, toast « Fiche
+  supprimée. ». These numbers are shown only to the GM, who reads everything.
 
-**Sections.** Rendu Markdown ci-dessus. « Modifier » n'apparaît pas pour un Joueur sur une section qui
-contient un bloc MJ, même s'il en a l'écriture (B-34) ; s'il l'ouvre par une autre voie, le serveur
-refuse : « Vous ne pouvez pas modifier cette section. ».
+**Sections.** Markdown rendering above. « Modifier » does not appear for a Player on a section
+containing a GM block, even with write permission (B-34); if they open it another way, the server
+refuses: « Vous ne pouvez pas modifier cette section. ».
 
-**Fichiers** (B-24, B-44, B-55, AD-111 ; décisions de Monsieur du 2026-10-11). Tout fichier de la fiche
-vit dans la médiathèque et y est référencé. **Lecture** : un fichier (image insérée, fichier joint,
-lien de fichier dans le texte) ou l'illustration se montre si le lecteur le voit ; sinon, dans une
-section qu'il lit, un cadre neutre (`lock`, `--texte-3`) dit « Image réservée au MJ. » (avec la
-légende s'il y en a une) ou « Fichier réservé au MJ. » pour un document ; dans un bloc MJ, rien.
-L'illustration réservée au MJ d'une fiche qu'un joueur voit : la même mention dans l'en-tête, la
-vignette de repli dans la grille de E-8 (sans mention). Fichier supprimé : « Fichier supprimé de la
-médiathèque. » pour un MJ, rien pour un joueur. In player mode, the GM sees what a player sees, plus files they added themselves (third rule, AD-117).
+**Files** (B-24, B-44, B-55, AD-111; Monsieur's decisions of 2026-10-11). Every file on the sheet
+lives in the media library and is referenced there. **Reading**: a file (inserted image, attachment,
+file link in text) or illustration is shown if the reader can see it; otherwise, in a
+section they read, a neutral frame (`lock`, `--texte-3`) says « Image réservée au MJ. » (with the
+caption if any) or « Fichier réservé au MJ. » for a document; inside a GM block, nothing.
+A GM-only illustration on a sheet a player sees: the same notice in the header, the
+fallback thumbnail in E-8's grid (without notice). Deleted file: « Fichier supprimé de la
+médiathèque. » for a GM, nothing for a player. In player mode, the GM sees what a player sees, plus files they added themselves (third rule, AD-117).
 
-**Deux chemins d'ajout** : le bouton « Fichier » (`paperclip`) de la barre d'outils, en édition, et
-« Joindre un fichier » en pied du bloc Pièces jointes — présent hors édition pour qui écrit la section,
-comme le dépôt d'avant (`kanevas-fichiers`) — ouvrent le même menu —
-1. **« Ajouter depuis l'appareil »** (ou un glisser-déposer sur la section) : en **un seul geste**, le
-   fichier entre dans la médiathèque (ajouté par le compte ; **visibilité selon l'endroit d'ajout** : dans
-   un bloc MJ, ou dans une section que les joueurs ne lisent pas tous, « Réservé au MJ » — la ligne du
-   fichier le dit par sa pastille « MJ seul » — ; ailleurs, « Visible des joueurs » ; une illustration :
-   « Visible des joueurs » si la fiche a une section lue des joueurs) **et** s'intègre à la
-   fiche — depuis la barre d'outils, une image s'insère dans le texte au point d'insertion
-   (`![nom](fichier:<id>)`) et un document y met un lien (`[nom](fichier:<id>)`), each reference on **its own line** (a newline is added before and after when the insertion point touches text or a `:::` fence; after a table row, a blank line separates the reference from the table so it cannot become another row; it never sticks to a closing fence and therefore never falls into the GM block) ; depuis le bloc, le
-   fichier est joint à la section ; depuis l'en-tête (« Poser » ou « Remplacer » l'illustration, MJ),
-   une image devient l'illustration. Un échec n'ajoute rien à la médiathèque ni à la fiche.
-2. **« Choisir dans la médiathèque »** : le sélecteur de E-19 (« Choisir un fichier »), filtré sur ce
-   que le compte voit (et sur les images pour l'illustration) ; choisir intègre la référence de la même
-   façon, sans rien ajouter à la médiathèque, **sans changer sa visibilité**.
-Celui qui a ajouté un fichier le **voit toujours**, ici et dans E-19, même réservé au MJ (troisième règle
-de lecture d'AD-111).
-L'avertissement de B-55 s'affiche sous le champ, ou dans la boîte de l'illustration, tant que la
-condition tient (un fichier réservé au MJ posé hors bloc MJ dans une section lue des joueurs, ou en
-illustration d'une fiche que des joueurs voient) ; il n'empêche rien.
+**Two add paths**: the toolbar's « Fichier » (`paperclip`) button, while editing, and
+« Joindre un fichier » at the foot of the attachments block — present outside editing for those who write the section,
+as in the previous upload flow (`kanevas-fichiers`) — open the same menu —
+1. **« Ajouter depuis l'appareil »** (or drag and drop onto the section): in **one action**, the
+   file enters the media library (added by the account; **visibility from the add location**: inside
+   a GM block, or in a section not all players read, « Réservé au MJ » — the file
+   row says so with its « MJ seul » chip —; elsewhere, « Visible des joueurs »; an illustration:
+   « Visible des joueurs » if the sheet has a section read by players) **and** is integrated into the
+   sheet — from the toolbar, an image is inserted in the text at the insertion point
+   (`![nom](fichier:<id>)`) and a document puts a link there (`[nom](fichier:<id>)`), each reference on **its own line** (a newline is added before and after when the insertion point touches text or a `:::` fence; after a table row, a blank line separates the reference from the table so it cannot become another row; it never sticks to a closing fence and therefore never falls into the GM block); from the block, the
+   file is attached to the section; from the header (« Poser » or « Remplacer » the illustration, GM),
+   an image becomes the illustration. A failure adds nothing to either the media library or the sheet.
+2. **« Choisir dans la médiathèque »**: E-19's picker (« Choisir un fichier »), filtered to
+   what the account sees (and to images for the illustration); choosing integrates the reference in the same
+   way, adding nothing to the media library, **without changing its visibility**.
+Whoever added a file **always sees it**, here and in E-19, even if GM-only (AD-111's third read
+rule).
+The B-55 warning appears below the field, or in the illustration dialog, while the
+condition holds (a GM-only file placed outside a GM block in a section read by players, or as
+illustration of a sheet players see); it does not prevent anything.
 
-**Le bloc Pièces jointes** montre les fichiers joints à la section : images en vignettes, documents par
-l'icône de leur type, leur nom et leur taille ; pour un MJ, la pastille « MJ seul » d'un fichier réservé.
-Menu d'une ligne : « Retirer » ôte la référence, jamais le fichier de la médiathèque ; pour un MJ,
-« Réserver au MJ » / « Rendre visible des joueurs » change la visibilité **du fichier** (même boîte que
-E-19 s'il est lu ailleurs par des joueurs) ; « Ouvrir dans la médiathèque ». La case « secrète » de
-`kanevas-fichiers` disparaît : c'est la visibilité du fichier. **100 fichiers joints** au plus par
-section (« Cette section porte déjà 100 fichiers joints. » au MJ, « Cette section ne peut pas recevoir
-d'autre fichier. » au joueur) ; les références dans le texte ne comptent pas.
+**The attachments block** shows files attached to the section: images as thumbnails, documents with
+their type icon, name and size; for a GM, a reserved file's « MJ seul » chip.
+Row menu: « Retirer » removes the reference, never the media library file; for a GM,
+« Réserver au MJ » / « Rendre visible des joueurs » changes **the file's** visibility (same dialog as
+E-19 if players read it elsewhere); « Ouvrir dans la médiathèque ». The « secrète » checkbox from
+`kanevas-fichiers` disappears: this is the file's visibility. At most **100 attachments** per
+section (« Cette section porte déjà 100 fichiers joints. » to the GM, « Cette section ne peut pas recevoir
+d'autre fichier. » to the player); references in text do not count.
 
 **Pending file reference** (import, `fichiers_attente`, AD-111): a file key not yet known in
 this universe. For a GM outside player mode, an inline image, an attachment row and the
@@ -2427,46 +2427,46 @@ join stays pending and the batch warns « section « Notes » : 100 fichiers joi
 « fichier en attente » (never « référence » on E-9; E-18 counts « liens et références en
 attente » for the batch).
 
-**Blocs de fiche** (après les sections, hors de toute section) :
-- **Contient** (`folder-tree`) — les enfants lisibles, par type puis titre, chacun avec son icône ; 50
-  puis « Afficher les N suivants » (N compté sur ce que le lecteur voit). Absent s'il n'y en a aucun.
-- **Mentionnée dans** (`link-2`) — les fiches qui la citent et que le lecteur voit : titre, icône,
-  et le pourquoi : « lien dans « Histoire » » ou le libellé de la relation (« Amiral de »). 50 puis la
-  suite. Absent s'il n'y en a aucune (B-36). Jamais de compteur de ce qui est caché.
+**Sheet blocks** (after the sections, outside any section):
+- **« Contient »** (`folder-tree`) — readable children, by type then title, each with its icon; 50
+  then « Afficher les N suivants » (N counted from what the reader sees). Absent if there are none.
+- **« Mentionnée dans »** (`link-2`) — sheets citing it that the reader sees: title, icon,
+  and reason: « lien dans « Histoire » » or the relation label (« Amiral de »). 50 then
+  more. Absent if there are none (B-36). Never a count of hidden items.
 
-| État | Ce qu'on voit | Ce qu'on peut faire |
+| State | What is seen | Available actions |
 |---|---|---|
-| vide | fiche importée sans section : comme avant ; ni « Mentionnée dans » ; « Contient » seulement si elle a des enfants lisibles | MJ : ajouter une section |
-| chargement | squelettes de l'en-tête et de deux sections ; la fiche et ses sections arrivent en une réponse, « Contient » dans une seconde (« Chargement… » sous son titre) | — |
-| erreur | « Impossible de charger cette fiche. » ; image insérée qui ne se charge pas : « Image indisponible. » à sa place, sa légende dessous ; déplacement, changement de type, suppression qui échoue : « L'action n'a pas abouti. Réessayez. », rien n'a changé | « Réessayer » |
-| connexion perdue | le bandeau ; « Modifier », le menu « ⋯ », l'édition du titre désactivés ; les liens restent suivables | lire |
-| refus | fiche illisible : « Page introuvable. » ; un lien vers elle n'est que du texte ; supprimée pendant la lecture : « Page introuvable. » à l'action suivante ; Joueur : ni menu « ⋯ », ni édition du titre (**caché**) | « Mes univers » |
-| contenu long | section de 100 000 caractères : rendue en entier, l'éditeur défile ; « Erreur : 100 000 caractères au plus. » au-delà ; tableau de 12 colonnes : défile dans son cadre ; 300 enfants : 50 puis la suite ; titre de 120 caractères et fil de 6 ancêtres : le fil se replie (« … ») | idem |
+| empty | imported sheet without sections: as before; no « Mentionnée dans »; « Contient » only if it has readable children | GM: add a section |
+| loading | skeletons of the header and two sections; the sheet and its sections arrive in one response, « Contient » in a second (« Chargement… » below its title) | — |
+| error | « Impossible de charger cette fiche. »; inserted image failing to load: « Image indisponible. » in its place, caption below; failed move, type change, deletion: « L'action n'a pas abouti. Réessayez. », nothing changed | « Réessayer » |
+| connection lost | banner; « Modifier », « ⋯ » menu, title editing disabled; links can still be followed | read |
+| refusal | unreadable sheet: « Page introuvable. »; a link to it is text only; deleted while reading: « Page introuvable. » at the next action; Player: neither « ⋯ » menu nor title editing (**hidden**) | « Mes univers » |
+| long content | 100,000-character section: rendered in full, editor scrolls; « Erreur : 100 000 caractères au plus. » beyond that; 12-column table: scrolls within its frame; 300 children: 50 then more; 120-character title and 6-ancestor breadcrumb: breadcrumb collapses (« … ») | same |
 
-*Critères.*
-- Étant donné « Port-Sel » dont la section « Histoire » (lue des joueurs) contient un bloc MJ « Le port
-  est tenu par la Guilde des Brumes », quand Léa ouvre la fiche, alors elle lit « Histoire » sans
-  aucun mot du bloc, sans espace ni marque à sa place.
-- Étant donné la même fiche, quand Antor passe en mode Joueur, alors il voit exactement ce que voit
-  Léa ; revenu en mode MJ, le bloc est hachuré d'ambre, pastille « MJ seul ».
-- Étant donné un lien `[[…]]` de « Port-Sel » vers « La Guilde des Brumes » (fiche dont Léa ne lit
-  rien), quand Léa lit « Port-Sel », alors « La Guilde des Brumes » est du texte simple, sans lien.
-- Étant donné Léa auteur avec écriture d'une section qui contient un bloc MJ, quand elle ouvre la
-  fiche, alors cette section n'a pas « Modifier ».
-- Étant donné « Rapport secret de l'amirauté » (MJ seul) qui lie « Port-Sel », quand Léa ouvre
-  « Port-Sel », alors « Mentionnée dans » ne nomme pas ce rapport ; Antor l'y voit.
-- Étant donné « Port-Sel » sous « Les Sphères » (lieu illisible de Léa), sans autre ancêtre, quand
-  Léa ouvre « Port-Sel », alors le fil est « Lame d'Ébène › Lieux › Port-Sel ».
-- Étant donné « Port-Sel » sous « Les Sphères » (lieu illisible de Léa) sous « Le Grand Vide »
-  (lisible), quand Léa ouvre « Port-Sel », alors le fil est « Lame d'Ébène › Lieux › Le Grand Vide ›
+*Criteria.*
+- Given « Port-Sel » whose « Histoire » section (read by players) contains a GM block « Le port
+  est tenu par la Guilde des Brumes », when Léa opens the sheet, she reads « Histoire » without
+  any word from the block, without a gap or mark in its place.
+- Given the same sheet, when Antor switches to Player mode, he sees exactly what Léa
+  sees; back in GM mode, the block is amber-hatched, with an « MJ seul » chip.
+- Given an `[[…]]` link from « Port-Sel » to « La Guilde des Brumes » (a sheet Léa reads
+  nothing of), when Léa reads « Port-Sel », « La Guilde des Brumes » is plain text, without a link.
+- Given Léa is an author with write permission on a section containing a GM block, when she opens the
+  sheet, this section has no « Modifier ».
+- Given « Rapport secret de l'amirauté » (GM only) linking to « Port-Sel », when Léa opens
+  « Port-Sel », « Mentionnée dans » does not name this report; Antor sees it there.
+- Given « Port-Sel » under « Les Sphères » (a location unreadable by Léa), with no other ancestor, when
+  Léa opens « Port-Sel », the breadcrumb is « Lame d'Ébène › Lieux › Port-Sel ».
+- Given « Port-Sel » under « Les Sphères » (a location unreadable by Léa) under « Le Grand Vide »
+  (readable), when Léa opens « Port-Sel », the breadcrumb is « Lame d'Ébène › Lieux › Le Grand Vide ›
   Port-Sel ».
-- Étant donné Antor qui déplace « Les Sphères » sous « Port-Sel », son enfant, alors il voit « Une
-  fiche ne peut pas être rangée sous l'un de ses descendants. » et rien ne change.
-- Étant donné Antor qui supprime « Port-Sel » (5 enfants, dont un illisible de Léa, parent « Les Sphères »), alors les 5
-  enfants ont « Les Sphères » pour parent, l'adresse de « Port-Sel » répond « Page introuvable. », et
-  un lien vers elle dans « Maître Aldric » est marqué « lien cassé » pour Antor et du texte pour Léa.
-- Étant donné un contenu qui contient `<script>alert(1)</script>` et `<b>gras</b>`, quand la section
-  s'affiche, alors ces balises s'affichent comme du texte, et aucun script ne s'exécute.
+- Given Antor moving « Les Sphères » under « Port-Sel », its child, he sees « Une
+  fiche ne peut pas être rangée sous l'un de ses descendants. » and nothing changes.
+- Given Antor deleting « Port-Sel » (5 children, one unreadable by Léa, parent « Les Sphères »), all 5
+  children have « Les Sphères » as parent, « Port-Sel »'s address answers « Page introuvable. », and
+  a link to it in « Maître Aldric » is marked « lien cassé » for Antor and text for Léa.
+- Given content containing `<script>alert(1)</script>` and `<b>gras</b>`, when the section
+  is displayed, these tags appear as text, and no script runs.
 
 ### Ce que `kanevas-import-tenir` construit (E-9 titre et suppression, E-14 « Supprimer l'univers »)
 
