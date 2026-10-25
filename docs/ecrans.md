@@ -2097,113 +2097,113 @@ B-12 (map) → E-11 player mode. Reached by P-3 step 6 (place the NPC, player mo
 visible), P-6 step 3 (a player's map) and all of P-9 (graph). Screens E-10 and E-11
 and the E-3 block provide their six states (B-29), above.
 
-## Détail des écrans de `kanevas-import` (cadrage)
+## Screen details for `kanevas-import` (scope)
 
-> Cadrage proposé le 2026-10-11 (`epic/kanevas-import`). Besoins B-32 à B-56, parcours P-10 à P-16,
-> décisions AD-95 à AD-111. Les tranches détaillent leurs écrans dans ce cadre ; elles ne
-> l'inventent pas. Écrans structurants, avec maquette finie : **E-9** (la fiche importée, moment fort
-> de P-12), **E-18** (Accès par API, P-10 et P-11), **E-14 / E-15 « Types de fiche »** (P-13), **E-19** (Médiathèque, P-16). E-17 et
-> l'arbre de E-8 sont décrits ici sans maquette : ils se construisent avec les composants de E-8
-> (grille, recherche, pastilles). Les textes communs (chargement, erreur, connexion perdue, refus)
-> sont ceux de `kanevas-premiere-fiche`.
+> Scope proposed on 2026-10-11 (`epic/kanevas-import`). Needs B-32 to B-56, journeys P-10 to P-16,
+> decisions AD-95 to AD-111. Slices detail their screens within this framework; they do not
+> invent it. Key screens, with finished mockups: **E-9** (the imported sheet, the key moment
+> of P-12), **E-18** (API access, P-10 and P-11), **E-14 / E-15 « Types de fiche »** (P-13), **E-19** (media library, P-16). E-17 and
+> the E-8 tree are described here without mockups: they use E-8's components
+> (grid, search, chips). Common texts (loading, error, connection lost, refusal)
+> are those of `kanevas-premiere-fiche`.
 
-### Le Markdown, partout où l'on écrit un texte long
+### Markdown, wherever long text is written
 
-Sections (E-9), scénarios (E-7), entrées d'un système (E-15), comptes-rendus (E-9) : le texte est du
-Markdown (B-32, AD-95). **Ce qui se met en forme** : paragraphes (un saut de ligne simple reste un
-saut de ligne, comme le texte brut d'avant), intertitres `#` à `####` (`#` et `##` au même niveau, rendus sous le titre de la
-section, jamais au-dessus), gras, italique, barré, listes à puces et numérotées, citations, code,
-filets, tableaux, liens web (`http`, `https`, `mailto` seulement ; ils s'ouvrent dans un nouvel
-onglet), fichiers de la médiathèque (une image `![légende](fichier:…)`, un document `[nom](fichier:…)`, B-44), liens vers une fiche (`[[…]]`, B-33),
-blocs MJ (`:::mj` … `:::`, B-34). **Ce qui reste du texte** : tout HTML écrit dans le contenu, une
-image d'une autre adresse (le texte de l'image s'affiche à sa place), un lien d'un autre schéma.
+Sections (E-9), scenarios (E-7), system entries (E-15), session reports (E-9): the text is
+Markdown (B-32, AD-95). **What is formatted**: paragraphs (a single newline remains a
+newline, as with the previous plain text), headings `#` to `####` (`#` and `##` at the same level, rendered below the
+section title, never above it), bold, italic, strikethrough, bulleted and numbered lists, quotations, code,
+rules, tables, web links (`http`, `https`, `mailto` only; they open in a new
+tab), media library files (an image `![légende](fichier:…)`, a document `[nom](fichier:…)`, B-44), sheet links (`[[…]]`, B-33),
+GM blocks (`:::mj` … `:::`, B-34). **What remains text**: any HTML written in the content, an
+image from another address (its alternative text is displayed instead), a link with another scheme.
 
-**Selon le texte** (AD-97) : dans une **section** (et un compte-rendu), tout ce qui précède. Dans un
-**scénario** (E-7), les liens `[[…]]` visent les fiches de l'univers de sa campagne, résolus sous les
-mêmes droits (le lecteur d'un scénario est un MJ de cet univers) ; ils ne comptent pas dans
-« Mentionnée dans » (un scénario n'est pas une fiche) ; pas de fichier ni de bloc MJ (un scénario ne
-référence pas la médiathèque et est déjà au MJ seul). Dans une **entrée de système** (E-15), partagée entre les
-univers rattachés : **pas de lien `[[…]]`** — `[[…]]` y reste du texte, tel qu'écrit, et l'éditeur n'a
-ni « Lien vers une fiche » ni la liste ouverte par `[[` ; pas de fichier ni de bloc MJ non plus. Dans
-un scénario comme dans une entrée de système, `![…](fichier:…)`, `[…](fichier:…)` et `:::mj` **ne sont pas interprétés** :
-ils restent du texte, affiché tel qu'écrit (même règle que `[[…]]` dans une entrée de système) ; l'API
-d'import ne les refuse pas.
+**Depending on the text** (AD-97): in a **section** (and a session report), all of the above. In a
+**scenario** (E-7), `[[…]]` links target sheets in its campaign's universe, resolved under the
+same permissions (a scenario's reader is a GM of that universe); they do not count in
+« Mentionnée dans » (a scenario is not a sheet); no file or GM block (a scenario does not
+reference the media library and is already GM-only). In a **system entry** (E-15), shared between
+attached universes: **no `[[…]]` link** — `[[…]]` remains text as written, and the editor has
+neither « Lien vers une fiche » nor the list opened by `[[`; no file or GM block either. In
+both scenarios and system entries, `![…](fichier:…)`, `[…](fichier:…)` and `:::mj` **are not interpreted**:
+they remain text, displayed as written (the same rule as `[[…]]` in a system entry); the import
+API does not refuse them.
 
-**L'éditeur** (édition en place, charte « L'édition en place ») : le champ de texte garde la police
-de lecture ; au-dessus, une barre d'outils discrète — « Gras », « Italique », « Lien vers une fiche »,
-« Fichier », et pour un MJ « Bloc MJ » (entoure la sélection) — et la bascule « Écrire /
-Aperçu ». Raccourcis : Ctrl/⌘+B, Ctrl/⌘+I, Ctrl/⌘+K (lien vers une fiche), Échap annule, Ctrl/⌘+Entrée
-enregistre. Taper `[[` ouvre la liste de recherche de E-8 (`ListeRecherche`, tous types) au point
-d'insertion ; choisir une fiche insère `[[<id>|<titre>]]`, Échap ferme la liste et laisse `[[`. Le
-compteur dit « 12 480 / 100 000 ».
+**The editor** (inline editing, charter's inline editing section): the text field keeps the reading
+font; above it, a discreet toolbar — « Gras », « Italique », « Lien vers une fiche »,
+« Fichier », and for a GM « Bloc MJ » (wraps the selection) — and the « Écrire /
+Aperçu » toggle. Shortcuts: Ctrl/⌘+B, Ctrl/⌘+I, Ctrl/⌘+K (sheet link), Escape cancels, Ctrl/⌘+Enter
+saves. Typing `[[` opens E-8's search list (`ListeRecherche`, all types) at the insertion
+point; choosing a sheet inserts `[[<id>|<titre>]]`, Escape closes the list and leaves `[[`. The
+counter reads « 12 480 / 100 000 ».
 
-**Rendu** : un lien vers une fiche lisible est en `--accent-texte`, souligné fin, avec l'icône du type
-au survol ; vers une fiche illisible : le texte, sans aucune marque ; **lien cassé** (MJ seul) : le
-texte souligné en tirets `--danger`, infobulle « Lien cassé : cette fiche n'existe plus. » ; **lien en
-attente** d'import (MJ seul) : souligné en tirets `--texte-3`, infobulle « Lien en attente : aucune
-fiche n'a encore la clé « personnage:aldric ». ». Un **bloc MJ**, pour le MJ hors mode Joueur, prend
-la matière de la section MJ seul (trame hachurée, filet ambre, pastille « MJ seul » `lock`) **dans** la
-section, à sa place dans le texte ; en mode Joueur et pour tout autre lecteur, il n'existe pas — pas de
-blanc, pas de filet, le paragraphe suivant suit le précédent. Un tableau large défile dans son cadre
-au téléphone, jamais la page.
+**Rendering**: a link to a readable sheet uses `--accent-texte`, a thin underline, and the type icon
+on hover; to an unreadable sheet: text, without any mark; **broken link** (GM only): text
+with a dashed `--danger` underline, tooltip « Lien cassé : cette fiche n'existe plus. »; **pending import
+link** (GM only): dashed `--texte-3` underline, tooltip « Lien en attente : aucune
+fiche n'a encore la clé « personnage:aldric ». ». A **GM block**, for the GM outside Player mode, takes
+the GM-only section's styling (hatched texture, amber rule, « MJ seul » `lock` chip) **inside** the
+section, at its place in the text; in Player mode and for any other reader, it does not exist — no
+gap, no rule, the next paragraph follows the previous one. A wide table scrolls inside its frame
+on a phone, never the page.
 
-### Le Markdown — ce que `kanevas-import-markdown` construit (E-9, E-7, E-15, E-12)
+### Markdown — what `kanevas-import-markdown` builds (E-9, E-7, E-15, E-12)
 
-Cette tranche livre le rendu et l'éditeur **sans** lien `[[…]]`, sans fichier et sans bloc MJ (leurs
-tranches les ajoutent à la même barre et au même rendu). Maquette : `e09-fiche-importee.html`,
-`#etat-edition` pour l'éditeur ; `e07-scenario.html`, `e15-systeme-de-jeu.html` et `e12-propositions.html`
-pour l'emplacement du rendu (le contenu y devient mis en forme, la mise en page ne change pas).
+This slice delivers rendering and the editor **without** `[[…]]` links, files or GM blocks (their
+slices add them to the same toolbar and rendering). Mockup: `e09-fiche-importee.html`,
+`#etat-edition` for the editor; `e07-scenario.html`, `e15-systeme-de-jeu.html` and `e12-propositions.html`
+for the rendering location (content becomes formatted there, the layout stays the same).
 
-- **Parcours** : lire, P-12 étape 2 (E-9, E-7, E-15, E-12) ; écrire et prévisualiser, P-14 étape 1 (E-9, E-7, E-15).
-  Le texte d'un compte-rendu se lit rendu sur E-9 ; la fenêtre « Nouveau compte-rendu » de E-6 garde son
-  champ simple dans cette tranche, avec le plafond de 100 000 (« Erreur : 100 000 caractères au plus. ») et
-  sans barre ni aperçu ; son compteur et son erreur « Erreur : 100 000 caractères au plus. » existent déjà (maquette `e06`) : seul le
-  seuil passe de 20 000 à 100 000 ; ses autres états sont ceux de E-6 et ne changent pas.
-- **Maquettes** : `e09-fiche-importee.html` (`#etat-edition`, `#etat-apercu`) montre la barre **complète**
-  de l'epic (avec « Lien vers une fiche », « Fichier », la liste ouverte par `[[`) ; cette tranche n'en
-  construit que « Gras », « Italique » et la bascule, les autres boutons viennent avec leurs tranches. La
-  bascule est un groupe de deux options (`role="radio"`, `aria-checked`) comme la maquette. Les maquettes de
-  E-7, E-15 et E-12 gardent leur mise en page : l'éditeur y est le même, la bascule « Rendu / Source » de
-  E-12 s'ajoute au-dessus des deux zones, à la façon de la bascule « Écrire / Aperçu ».
-- **Rendu** : un seul composant montre le HTML que le serveur a rendu, partout (sections et
-  comptes-rendus de E-9, scénario de E-7, entrées de E-15, zones de E-12). Les intertitres `#` et `##`
-  s'affichent au niveau « intertitre » le plus haut, `###` et `####` plus bas : jamais au niveau du
-  titre de la section. Un lien web s'ouvre dans un nouvel onglet. Tableau large : il défile dans son
-  cadre. Contenu vide : « Rien d'écrit pour l'instant. » (déjà le texte d'aujourd'hui). Un contenu
-  d'avant (texte brut) se lit comme avant : paragraphes et sauts de ligne.
-- **Éditeur** (E-9, E-7, E-15) : le champ, au-dessus la
-  barre « Gras » (`bold`), « Italique » (`italic`) et la bascule « Écrire / Aperçu » (deux boutons, l'un
-  actif, `role="radio"`) ; sous le champ, le compteur « 12 480 / 100 000 ». Ctrl/⌘+B et Ctrl/⌘+I entourent
-  la sélection (ou posent deux marques et placent le curseur entre elles), Ctrl/⌘+Entrée enregistre,
-  Échap annule. « Aperçu » remplace le champ par le rendu de la même fonction que la lecture ; le texte
-  saisi reste dans le champ et revient avec « Écrire ». Les boutons « Lien vers une fiche » et « Fichier » n'existent pas encore ;
-  « Bloc MJ » est décrit plus bas (E-9, bloc MJ).
-- **États de l'aperçu** : en cours, « Aperçu en cours… » (le champ reste, bascule désactivée) ; texte
-  vide, « Rien à prévisualiser. » ; échec ou hors ligne, « L'aperçu n'a pas abouti. Réessayez. » avec
-  « Réessayer », et le champ intact (message aussi d'une session expirée ou d'un refus du serveur : le texte saisi n'est pas perdu) ; plus de 100 000 caractères, pas d'appel, « Erreur : 100 000
-  caractères au plus. » sous le champ. Au-delà de 100 000, le comportement de E-9 d'aujourd'hui
-  (§ E-9, « contenu long ») tient avec le nouveau seuil.
-- **Qui voit quoi** : la lecture ne montre que le rendu. Le champ d'édition reçoit la **source** :
-  elle n'est envoyée qu'à qui peut écrire la section (le scénario, au MJ qui le lit). Un joueur, ou le MJ
-  en mode Joueur, ne la reçoit pas ; la réponse de lecture de Léa ne contient pas le Markdown.
-- **E-12** : au-dessus des zones « Actuel » et « Proposé », deux boutons « Rendu / Source » (« Rendu »
-  par défaut) ; « Source » montre le Markdown brut des deux zones, côte à côte comme aujourd'hui. Le fil
-  de conversation reste en texte. Après « Appliquer » ou « Abandonner », le choix « Rendu / Source » est
-  conservé ; une proposition périmée garde ses deux zones lisibles dans le mode choisi.
-- **Cas extrêmes** : une zone de E-12 garde sa hauteur de 15 lignes et défile ; un mot ou une adresse sans
-  espace passe à la ligne sans élargir la page à 375 px ; une image d'une autre adresse
-  (`![plan](https://…)`) se lit « plan » (son texte alternatif), sans image.
-- **Rôles** :
+- **Journeys**: reading, P-12 step 2 (E-9, E-7, E-15, E-12); writing and previewing, P-14 step 1 (E-9, E-7, E-15).
+  A session report's text is rendered on E-9; E-6's « Nouveau compte-rendu » dialog keeps its
+  simple field in this slice, with the 100,000 limit (« Erreur : 100 000 caractères au plus. ») and
+  no toolbar or preview; its counter and « Erreur : 100 000 caractères au plus. » error already exist (mockup `e06`): only the
+  threshold changes from 20,000 to 100,000; its other states are those of E-6 and do not change.
+- **Mockups**: `e09-fiche-importee.html` (`#etat-edition`, `#etat-apercu`) shows the epic's **complete** toolbar
+  (with « Lien vers une fiche », « Fichier », the list opened by `[[`); this slice
+  builds only « Gras », « Italique » and the toggle, the other buttons come with their slices. The
+  toggle is a group of two options (`role="radio"`, `aria-checked`) as in the mockup. The
+  E-7, E-15 and E-12 mockups keep their layout: the editor is the same there; E-12's « Rendu / Source »
+  toggle is added above the two areas, like the « Écrire / Aperçu » toggle.
+- **Rendering**: a single component shows the server-rendered HTML everywhere (sections and
+  session reports on E-9, E-7 scenario, E-15 entries, E-12 areas). Headings `#` and `##`
+  appear at the highest subheading level, `###` and `####` lower: never at the
+  section title's level. A web link opens in a new tab. Wide table: it scrolls inside its
+  frame. Empty content: « Rien d'écrit pour l'instant. » (already today's text). Previous
+  content (plain text) reads as before: paragraphs and newlines.
+- **Editor** (E-9, E-7, E-15): the field, above it the
+  « Gras » (`bold`), « Italique » (`italic`) toolbar and the « Écrire / Aperçu » toggle (two buttons, one
+  active, `role="radio"`); below the field, the « 12 480 / 100 000 » counter. Ctrl/⌘+B and Ctrl/⌘+I wrap
+  the selection (or insert two marks and place the cursor between them), Ctrl/⌘+Enter saves,
+  Escape cancels. « Aperçu » replaces the field with the output of the same rendering function used for reading; the entered
+  text stays in the field and returns with « Écrire ». The « Lien vers une fiche » and « Fichier » buttons do not exist yet;
+  « Bloc MJ » is described below (E-9, GM block).
+- **Preview states**: in progress, « Aperçu en cours… » (the field stays, toggle disabled); empty
+  text, « Rien à prévisualiser. »; failure or offline, « L'aperçu n'a pas abouti. Réessayez. » with
+  « Réessayer », and the field intact (also the message for an expired session or a server refusal: entered text is not lost); more than 100,000 characters, no call, « Erreur : 100 000
+  caractères au plus. » below the field. Beyond 100,000, today's E-9 behavior
+  (§ E-9, long content) holds with the new threshold.
+- **Who sees what**: reading shows only the rendering. The editing field receives the **source**:
+  it is sent only to those who may write the section (for a scenario, to the GM reading it). A player, or a GM
+  in Player mode, does not receive it; Léa's read response does not contain the Markdown.
+- **E-12**: above the « Actuel » and « Proposé » areas, two « Rendu / Source » buttons (« Rendu »
+  by default); « Source » shows both areas' raw Markdown, side by side as today. The conversation
+  thread stays text. After « Appliquer » or « Abandonner », the « Rendu / Source » choice is
+  kept; a stale proposal keeps both areas readable in the chosen mode.
+- **Extreme cases**: an E-12 area keeps its 15-line height and scrolls; a word or address without
+  spaces wraps without widening the page at 375 px; an image from another address
+  (`![plan](https://…)`) reads « plan » (its alternative text), without an image.
+- **Roles**:
 
-  | | MJ | Joueur lecteur | Joueur qui écrit la section | MJ en mode Joueur |
+  | | GM | Reading player | Player writing the section | GM in Player mode |
   |---|---|---|---|---|
-  | Lit le rendu | oui | oui | oui | oui |
-  | Reçoit la source | oui | non (le champ n'est pas dans la réponse) | oui | comme le rôle qu'il imite |
-  | Barre, aperçu, compteur | en édition | caché | en édition | comme le rôle qu'il imite |
-  | E-7, E-12 | éditeur au MJ, rendu pour qui lit | écran absent (404, MJ seul) | écran absent | écran absent |
-  | E-15 (système rattaché) | éditeur au MJ, rendu | rendu seul, ni source ni barre (champ absent) | sans objet | rendu seul |
-- **Plafond** : 100 000 caractères pour une section, un compte-rendu, un scénario, une entrée de système et
-  un contenu proposé ; au-delà le serveur répond 400 « Contenu trop long : 100 000 caractères au plus. ».
+  | Reads the rendering | yes | yes | yes | yes |
+  | Receives the source | yes | no (the field is absent from the response) | yes | like the role being imitated |
+  | Toolbar, preview, counter | while editing | hidden | while editing | like the role being imitated |
+  | E-7, E-12 | editor for the GM, rendering for readers | screen absent (404, GM only) | screen absent | screen absent |
+  | E-15 (attached system) | editor for the GM, rendering | rendering only, neither source nor toolbar (field absent) | not applicable | rendering only |
+- **Limit**: 100,000 characters for a section, session report, scenario, system entry and
+  proposed content; beyond that the server answers 400 « Contenu trop long : 100 000 caractères au plus. ».
 
 ### Les liens `[[…]]` — ce que `kanevas-import-liens` construit
 
