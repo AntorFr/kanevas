@@ -205,7 +205,7 @@ Une table et deux index de recherche ; aucune entité nouvelle (la relation est 
 
 | Objet | Colonnes (hors clés) | Contraintes |
 |---|---|---|
-| `relations` | `id`, `section_id` (la porteuse), `cible_fiche_id`, `type` (texte libre), `cree_le` | `section_id` → `sections` **ON DELETE CASCADE** (retirer une section retire ses relations) ; `cible_fiche_id` → `fiches` **ON DELETE RESTRICT** (filet : `supprimerFiche` retire d'abord les places de la fiche, AD-119) ; `type` 1 à 80 caractères après rognage ; `UNIQUE (section_id, cible_fiche_id, type)` |
+| `relations` | `id`, `section_id` (la porteuse), `cible_fiche_id`, `nature` (clé de `services/natures.ts`, `''` = libre), `qualificatif`, `cree_le` | `section_id` → `sections` **ON DELETE CASCADE** (retirer une section retire ses relations) ; `cible_fiche_id` → `fiches` **ON DELETE RESTRICT** (filet : `supprimerFiche` retire d'abord les places de la fiche, AD-119) ; `qualificatif` 0 à 80 caractères après rognage (le service l'exige non vide sans nature) ; `UNIQUE (section_id, cible_fiche_id, nature, qualificatif)` ; index `relations_par_cible_nature` (migration 0017) |
 | `recherche_fiches` (FTS5) | `titre` ; `rowid` = `fiches.id` | tokenizer `unicode61 remove_diacritics 2` |
 | `recherche_sections` (FTS5) | `titre`, `contenu` ; `rowid` = `sections.id` | idem |
 

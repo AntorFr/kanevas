@@ -1,7 +1,7 @@
 import '@fastify/multipart';
 import type { FastifyInstance } from 'fastify';
 
-import { invalide } from '../services/erreurs.js';
+import { ErreurService, invalide } from '../services/erreurs.js';
 import {
   changerSousType,
   changerTypeFiche,
@@ -27,6 +27,7 @@ import {
   type ChangementAudience,
 } from '../services/sections.js';
 import { etiquettesProposees, poserEtiquetage } from '../services/etiquettes.js';
+import { listerNatures } from '../services/natures.js';
 import { lireRelations, relierSection, retirerRelation } from '../services/relations.js';
 import type { Acteur } from '../services/types.js';
 import { idDeChemin } from './univers.js';
@@ -296,12 +297,22 @@ export function registerFichesRoutes(app: FastifyInstance) {
     const i = ids(request);
     const b = corps(request);
     if (!Number.isSafeInteger(b.cibleFicheId)) throw invalide('La fiche cible est invalide.');
+    const texte = (v: unknown) => (v === undefined ? undefined : chaine(v, 'Le qualificatif : 80 caractères au plus.'));
+    if (b.nature !== undefined && b.nature !== null && typeof b.nature !== 'string') {
+      throw new ErreurService('invalide', 'Cette nature ne relie pas ces deux types de fiches.', 'nature_incompatible');
+    }
     const r = relierSection(app.db, request.session!.id, i.univers, i.fiche, i.section, {
       cibleFicheId: b.cibleFicheId as number,
-      type: chaine(b.type, 'Le type : de 1 à 80 caractères.'),
+      nature: b.nature as string | null | undefined,
+      qualificatif: texte(b.qualificatif),
+      type: texte(b.type),
     });
     return reply.code(201).send(r);
   });
+
+  app.get('/api/univers/:id/natures', async (request) => ({
+    natures: listerNatures(app.db, request.session!.id, idDeChemin((request.params as { id: string }).id)),
+  }));
 
   app.delete(`${base}/relations/:rid`, async (request, reply) => {
     const i = ids(request);

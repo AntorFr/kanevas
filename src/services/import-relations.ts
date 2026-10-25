@@ -66,7 +66,7 @@ export function assurerRelations(
     }
     try {
       const relation = relierSection(db, compteId, universId, source.id, section.id,
-        { cibleFicheId: cible.id, type: entree.type });
+        { cibleFicheId: cible.id, qualificatif: entree.type });
       noter('creees');
       return { ...entree, id: relation.id, etat: 'creee', avertissements: [] };
     } catch (e) {

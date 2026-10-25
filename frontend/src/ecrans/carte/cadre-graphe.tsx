@@ -81,7 +81,7 @@ export function CadreGraphe({ universId, elements, liens, gerer, selection, onSe
               <g key={i} className="graphe-lien">
                 <line x1={x1} y1={y1} x2={x2} y2={y2} markerEnd="url(#pointe)" />
                 <text x={(x1 + x2) / 2 + ox} y={(y1 + y2) / 2 + oy - 4} textAnchor="middle">
-                  {l.type}
+                  {l.libelle}
                 </text>
               </g>
             );

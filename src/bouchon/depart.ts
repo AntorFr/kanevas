@@ -236,9 +236,9 @@ export function semerBouchon(db: Db): boolean {
     // `kanevas-import-tenir`: three relations that target Port-Sel (the criteria of its deletion); its place on
     // a map comes with the files (`semerFichiers`, a map is created asynchronously). A base short of 0005 has no table.
     if (db.prepare("SELECT 1 FROM sqlite_master WHERE name = 'relations'").get()) {
-      relierSection(db, id.antor, lame.id, aldric.id, aldric.sections['Apparence']!, { cibleFicheId: port.id, type: 'maître de port' });
-      relierSection(db, id.antor, lame.id, guilde.id, guilde.sections['Description']!, { cibleFicheId: port.id, type: 'y fait passer ses cargaisons' });
-      relierSection(db, id.antor, lame.id, rapport.id, rapport.sections['Secret — MJ seul']!, { cibleFicheId: port.id, type: 'surveille' });
+      relierSection(db, id.antor, lame.id, aldric.id, aldric.sections['Apparence']!, { cibleFicheId: port.id, qualificatif: 'maître de port' });
+      relierSection(db, id.antor, lame.id, guilde.id, guilde.sections['Description']!, { cibleFicheId: port.id, qualificatif: 'y fait passer ses cargaisons' });
+      relierSection(db, id.antor, lame.id, rapport.id, rapport.sections['Secret — MJ seul']!, { cibleFicheId: port.id, qualificatif: 'surveille' });
     }
     // « Essai Kanka »: a place whose text waits for a key and points at a vanished sheet.
     const anse = creerFiche(db, id.antor, essai.id, { type: 'lieu', titre: 'Anse-aux-Sels' });

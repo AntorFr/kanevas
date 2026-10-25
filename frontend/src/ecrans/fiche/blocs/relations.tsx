@@ -15,7 +15,7 @@ const LONGUEUR_TYPE = 80;
 
 interface Relation {
   id: number;
-  type: string;
+  qualificatif: string;
   cible: { id: number; titre: string; type: string };
 }
 
@@ -67,7 +67,7 @@ function BlocRelations({ universId, fiche, section, role, suffixeMode = '' }: Pr
             {relations.map((r) => (
               <li key={r.id}>
                 <LigneRelation
-                  lien={r.type}
+                  lien={r.qualificatif}
                   icone={iconeDuType(types, r.cible.type)}
                   cible={r.cible.titre}
                   type={badgeFiche(types, r.cible as Fiche)}
@@ -75,7 +75,7 @@ function BlocRelations({ universId, fiche, section, role, suffixeMode = '' }: Pr
                   actions={
                     mj && (
                       <BoutonIcone
-                        etiquette={`Retirer la relation ${r.type} → ${r.cible.titre}`}
+                        etiquette={`Retirer la relation ${r.qualificatif} → ${r.cible.titre}`}
                         infobulle="Retirer"
                         icone={X}
                         danger
