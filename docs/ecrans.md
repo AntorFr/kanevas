@@ -3153,7 +3153,11 @@ l'abonnement » ; les messages d'état sont dans une région `aria-live="polite"
 **Format.** Web, desktop and phone, as the rest of Kanevas; nothing specific to the type.
 
 **Information architecture.** One object for the user: an **aventure** (his words: « ma
-campagne », « le scénario de samedi »). A campaign holds scenarios (the tree: a scenario's
+campagne », « le scénario de samedi »). `[À TRANCHER]` the type's name: « Aventure » is
+recommended — a campaign, a scenario and a one-shot are all one, and « Aventures » reads well in
+the bar; alternatives « Intrigue » (narrower), « Partie » (a session, not a story); reversed if
+Monsieur's table says « campagne » for everything, in which case the type is « Campagne » with
+« Scénario » as its only proposed sub-type. A campaign holds scenarios (the tree: a scenario's
 parent is its campaign); a one-shot stands at the root. An adventure has a **status** (« En
 préparation », « Prête », « En cours », « Terminée »), sections like any sheet, and two blocks of
 its own: « Préparation » and « Comptes-rendus ». Vocabulary: « Aventures » in the bar, « Campagne »
