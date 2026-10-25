@@ -2205,115 +2205,115 @@ for the rendering location (content becomes formatted there, the layout stays th
 - **Limit**: 100,000 characters for a section, session report, scenario, system entry and
   proposed content; beyond that the server answers 400 « Contenu trop long : 100 000 caractères au plus. ».
 
-### Les liens `[[…]]` — ce que `kanevas-import-liens` construit
+### `[[…]]` links — what `kanevas-import-liens` builds
 
-*Reconnu* (AD-116) : `[[<id>|<texte>]]` (l'identifiant est un entier ≥ 1) et `[[cle:<clé>|<texte>]]`
-(une clé d'origine d'import), et à l'écriture seulement `[[<id>]]`. Le texte fait 1 à 200 caractères, sans
-`]`, `|` ni saut de ligne ; une forme qui ne tient pas ces règles, ou qui se trouve dans un bloc de code
-ou dans un code en ligne, reste du texte. `[[cle:…]]` s'accepte de l'import comme de l'éditeur (même
-résolution). Un `[[<id>]]` écrit sans texte est **réécrit** par le service en `[[<id>|<titre courant>]]`
-avant d'enregistrer, si l'auteur lit la fiche ; sinon l'écriture est refusée (400, code `lien_illisible`,
-« Cette fiche n'existe pas ou vous ne pouvez pas la lire. »), le texte reste dans le champ. Un
-`[[<id>|<texte>]]` dont la cible est absente ou illisible de l'auteur s'enregistre (le texte est celui de
-l'auteur, rien ne fuit) ; il se lira comme un lien cassé ou comme du texte, selon le lecteur.
+*Recognized* (AD-116): `[[<id>|<texte>]]` (the identifier is an integer ≥ 1) and `[[cle:<clé>|<texte>]]`
+(an import origin key), and on write only `[[<id>]]`. Text is 1 to 200 characters, without
+`]`, `|` or newlines; a form that fails these rules, or occurs in a code block
+or inline code, remains text. `[[cle:…]]` is accepted from both import and editor (same
+resolution). An `[[<id>]]` written without text is **rewritten** by the service as `[[<id>|<titre courant>]]`
+before saving, if the author can read the sheet; otherwise the write is refused (400, code `lien_illisible`,
+« Cette fiche n'existe pas ou vous ne pouvez pas la lire. »), and the text stays in the field. An
+`[[<id>|<texte>]]` whose target is absent or unreadable by the author is saved (the text is the
+author's, nothing leaks); it will read as a broken link or text, depending on the reader.
 
-*Lecture* : le rendu d'un lien dépend du lecteur et se décide **au rendu, par la cible**, pas par la
-table `liens` : cible lisible du lecteur → `<a class="lien-fiche" href="/univers/<u>/fiche/<id>"
-data-type="<type>">` ; cible illisible → le texte seul, sans élément ni marque ; cible supprimée → pour le
-MJ hors mode Joueur `<span class="lien-casse" tabindex="0">` et son infobulle, le texte seul pour tout
-autre lecteur ; clé en attente → pour le MJ hors mode Joueur `<span class="lien-attente" tabindex="0">`
-(infobulle « Lien en attente : aucune fiche n'a encore la clé « <clé> ». »), le texte seul pour tout autre
-lecteur. En mode Joueur le MJ lit comme un joueur. Un lien dans un bloc MJ n'existe, comme le bloc, que
-pour le MJ hors mode Joueur (le bloc est ôté avant le rendu, AD-98). Le rendu résout tous les liens d'un
-texte en **une** requête (jamais une par lien). L'assistant reçoit `[texte](fiche:<id>)` pour une cible
-lisible et `texte` sinon, jamais un identifiant illisible (AD-96).
+*Reading*: a link's rendering depends on the reader and is decided **at rendering time, by the target**, not by the
+`liens` table: target readable by the reader → `<a class="lien-fiche" href="/univers/<u>/fiche/<id>"
+data-type="<type>">`; unreadable target → text only, without any element or mark; deleted target → for the
+GM outside Player mode `<span class="lien-casse" tabindex="0">` and its tooltip, text only for any
+other reader; pending key → for the GM outside Player mode `<span class="lien-attente" tabindex="0">`
+(tooltip « Lien en attente : aucune fiche n'a encore la clé « <clé> ». »), text only for any other
+reader. In Player mode the GM reads as a player. A link in a GM block, like the block itself, exists only
+for the GM outside Player mode (the block is removed before rendering, AD-98). Rendering resolves all links in
+one text in **one** query (never one per link). The assistant receives `[texte](fiche:<id>)` for a readable
+target and `texte` otherwise, never an unreadable identifier (AD-96).
 
-*Écriture* : le service qui écrit le contenu d'une section (le point d'écriture unique de
-`kanevas-import-secrets`) remplace, dans la même transaction, les lignes de `liens` de la section : une
-par lien trouvé, avec `dans_bloc_mj` d'après la position du lien, jamais par expression régulière hors des
-jetons du moteur Markdown. Les textes déjà enregistrés avant la tranche ne sont pas rejoués : un
-`[[…]]` d'avant n'était pas une syntaxe, et la table se remplit à la première écriture de la section.
+*Writing*: the service that writes a section's content (the single write point of
+`kanevas-import-secrets`) replaces the section's `liens` rows in the same transaction: one
+per link found, with `dans_bloc_mj` from the link's position, never through a regular expression outside the
+Markdown engine's tokens. Texts saved before the slice are not replayed: an
+old `[[…]]` was not syntax, and the table is populated at the section's first write.
 
-*Import* : `[[cle:<clé>|<texte>]]` dont la clé est connue de l'univers s'enregistre en `[[<id>|<texte>]]` ;
-sinon il reste tel quel, ligne de `liens` « en attente » (`cible_cle`). La création de la fiche qui porte
-la clé réécrit, **dans la même transaction**, les contenus qui l'attendent (`contenu`, `contenu_public`,
-lignes de `liens`) sans toucher à `version`, à `version_importee` ni à `modifie_le` de la section. Un
-rejeu compare le texte envoyé **après** y avoir résolu les clés connues : un lien déjà résolu rend
-« inchangée » (AD-104). Le lot compte « liens et références en attente » à sa clôture (`en_attente`).
+*Import*: `[[cle:<clé>|<texte>]]` whose key is known in the universe is saved as `[[<id>|<texte>]]`;
+otherwise it stays as written, a pending `liens` row (`cible_cle`). Creating the sheet carrying
+the key rewrites, **in the same transaction**, the waiting content (`contenu`, `contenu_public`,
+`liens` rows) without touching the section's `version`, `version_importee` or `modifie_le`. A
+replay compares the submitted text **after** resolving known keys: an already resolved link yields
+« inchangée » (AD-104). The batch counts « liens et références en attente » at closure (`en_attente`).
 
-*Scénario* (E-7) : mêmes formes, résolues à la lecture dans l'univers de la campagne du scénario, sous les
-droits du lecteur (un MJ de l'univers) ; une clé en attente se résout à la lecture par l'index des clés
-d'origine ; aucune ligne de `liens`. L'éditeur d'un scénario a « Lien vers une fiche » et la liste ouverte
-par `[[`. *Entrée de système* (E-15) : `[[…]]` reste du texte, sans bouton ni liste.
+*Scenario* (E-7): same forms, resolved on read in the scenario's campaign universe, under the
+reader's permissions (a GM of the universe); a pending key is resolved on read through the origin-key
+index; no `liens` row. A scenario's editor has « Lien vers une fiche » and the list opened
+by `[[`. *System entry* (E-15): `[[…]]` remains text, without a button or list.
 
-*La liste ouverte par `[[`* (et « Lien vers une fiche », Ctrl/⌘+K) : le composant `ListeRecherche`, appelé
-sans `type` ; elle cherche par titre dans toutes les fiches que le compte lit
-(`GET /api/univers/:id/fiches?q=`), 50 au plus, chaque ligne avec l'icône et le libellé du type.
-Taper après `[[` filtre ; ↑ ↓ choisissent, Entrée insère `[[<id>|<titre>]]` et ferme la liste, Échap la
-ferme et laisse `[[`. Vide de résultat : « Aucune fiche. ». Erreur : « Impossible de chercher. » et
-« Réessayer » ; la saisie n'est pas perdue. Connexion perdue : la liste ne s'ouvre pas, le bandeau commun
-parle.
+*The list opened by `[[`* (and « Lien vers une fiche », Ctrl/⌘+K): the `ListeRecherche` component, called
+without `type`; it searches by title across all sheets the account reads
+(`GET /api/univers/:id/fiches?q=`), at most 50, each row with its type icon and label.
+Typing after `[[` filters; ↑ ↓ select, Enter inserts `[[<id>|<titre>]]` and closes the list, Escape
+closes it and leaves `[[`. No results: « Aucune fiche. ». Error: « Impossible de chercher. » and
+« Réessayer »; input is not lost. Connection lost: the list does not open, the common banner
+speaks.
 
-*« Mentionnée dans »* (B-36, AD-100) : la route de la fiche rend `mentions` (50 premières) et `mentionsSuite`
-(booléen) ; `GET /api/univers/:id/fiches/:fid/mentions?apres=<n>` rend les 50 suivantes. Une ligne par fiche
-source : titre (lien vers elle), icône du type, et le pourquoi — « lien dans « Histoire » » (la section
-qui porte le lien), le libellé de la relation (« Amiral de »), ou les deux séparés par « · » si la
-même fiche cite de plusieurs façons. Une source compte si sa fiche est lisible **et** que la section qui
-porte le lien (ou la relation) l'est, **et** que le lien n'est pas dans un bloc MJ pour un non-MJ ; une
-fiche qui se cite elle-même ne s'affiche pas ; l'ordre est le titre puis l'identifiant. Jamais de
-compteur de ce qui est caché ; `mentionsSuite` se calcule sur ce que le lecteur voit seulement.
+*« Mentionnée dans »* (B-36, AD-100): the sheet route returns `mentions` (first 50) and `mentionsSuite`
+(boolean); `GET /api/univers/:id/fiches/:fid/mentions?apres=<n>` returns the next 50. One row per source
+sheet: title (link to it), type icon, and the reason — « lien dans « Histoire » » (the section
+carrying the link), the relation label (« Amiral de »), or both separated by « · » if the
+same sheet cites it in several ways. A source counts if its sheet is readable **and** the section
+carrying the link (or relation) is readable, **and** the link is outside a GM block for a non-GM; a
+sheet citing itself is not displayed; order is title then identifier. Never a
+count of hidden items; `mentionsSuite` is calculated only from what the reader sees.
 
-*États* (B-29). **Liste ouverte par `[[`** : chargement — la ligne « Recherche… » sous la saisie (la liste précédente
-s'efface) ; vide — « Aucune fiche. » ; erreur — « Impossible de chercher. » et « Réessayer » ; connexion perdue
-— la liste ne s'ouvre pas, `[[` reste du texte, « Enregistrer » est désactivé et le texte en cours conservé ; refus — l'éditeur n'est offert qu'à qui écrit la section, il n'y a donc ni
-bouton ni liste pour les autres (**caché**) ; contenu extrême — un titre de 120 caractères tient sur une ligne
-tronquée par « … » (le titre entier en infobulle), plus de 50 résultats : les 50 premiers puis la ligne
-« Affinez la recherche pour voir les autres. ». **Bloc « Mentionnée dans »** : la suite en cours — le bouton « Afficher
-les N suivants » devient « Chargement… » désactivé ; échec — « Impossible de charger la suite. » et « Réessayer » ;
-connexion perdue — le bouton est désactivé ; les 50 premières arrivent avec la fiche (pas d'état propre).
-**Refus d'écriture** `lien_illisible` : le message, en `--danger`, sous le champ de l'éditeur (E-9 comme E-7), le
-texte conservé, l'enregistrement non fait. **E-7** : mêmes états pour la liste (lignes « erreur » et « connexion perdue » du tableau de E-7) ; E-7 est un écran MJ
-seul qui ne connaît pas le mode Joueur : un lien cassé ou en attente y est toujours marqué ; `lien_illisible` y est sans objet
-(un MJ lit toutes les fiches de l'univers). *Maquette* : `e09-fiche-importee.html#etat-liens`.
+*States* (B-29). **List opened by `[[`**: loading — the « Recherche… » row below the input (the previous list
+is cleared); empty — « Aucune fiche. »; error — « Impossible de chercher. » and « Réessayer »; connection lost
+— the list does not open, `[[` remains text, « Enregistrer » is disabled and the current text kept; refusal — the editor is offered only to those writing the section, so there is neither
+button nor list for others (**hidden**); extreme content — a 120-character title fits on one row
+truncated with « … » (full title in a tooltip), more than 50 results: the first 50 then the
+« Affinez la recherche pour voir les autres. » row. **« Mentionnée dans » block**: loading more — the « Afficher
+les N suivants » button becomes disabled « Chargement… »; failure — « Impossible de charger la suite. » and « Réessayer »;
+connection lost — the button is disabled; the first 50 arrive with the sheet (no separate state).
+**Write refusal** `lien_illisible`: the message, in `--danger`, below the editor field (E-9 and E-7), the
+text kept, no save. **E-7**: same list states (error and connection-lost rows of E-7's table); E-7 is a GM-only
+screen with no Player mode: a broken or pending link is always marked there; `lien_illisible` is not applicable
+(a GM reads all sheets in the universe). *Mockup*: `e09-fiche-importee.html#etat-liens`.
 
-*Qui fait quoi* (liens) :
+*Who does what* (links):
 
-| Rôle | Éditeur : `[[` et « Lien vers une fiche » | Lecture d'un lien | « Mentionnée dans » |
+| Role | Editor: `[[` and « Lien vers une fiche » | Reading a link | « Mentionnée dans » |
 |---|---|---|---|
-| MJ, hors mode Joueur | oui (E-9, E-7) | lien, cassé, en attente marqués | tout ce qu'il lit, blocs MJ compris |
-| MJ en mode Joueur, sur E-9 | **caché** (aucun geste d'écriture en mode Joueur) | comme un Joueur | comme un Joueur |
-| Joueur, sur E-7 | **caché** : « Page introuvable. », ni écran ni lien vers lui | — | — |
-| Joueur, section qu'il écrit sans bloc MJ | oui | lien si la cible est lue ; sinon, cassé et en attente compris, le texte seul (**caché**, sans marque) | sources lisibles, hors blocs MJ ; le reste est **caché**, sans compteur |
-| Joueur, section qu'il n'écrit pas, ou qui contient un bloc MJ (B-34) | **caché** : pas de « Modifier », donc ni bouton ni liste | idem | idem |
-| Joueur qui tape à la main le lien d'une fiche qu'il ne lit pas | **refusé** : `lien_illisible` | — | — |
-| Admin d'instance non membre | **caché** : « Page introuvable. » sur E-9 et E-7 | — | — |
+| GM, outside Player mode | yes (E-9, E-7) | link, broken, pending marked | everything they read, including GM blocks |
+| GM in Player mode, on E-9 | **hidden** (no writing action in Player mode) | like a Player | like a Player |
+| Player, on E-7 | **hidden**: « Page introuvable. », neither screen nor link to it | — | — |
+| Player, section they write without a GM block | yes | link if target is readable; otherwise, including broken and pending, text only (**hidden**, no mark) | readable sources, outside GM blocks; the rest is **hidden**, no count |
+| Player, section they do not write, or containing a GM block (B-34) | **hidden**: no « Modifier », hence neither button nor list | same | same |
+| Player manually typing a link to a sheet they cannot read | **refused**: `lien_illisible` | — | — |
+| Instance admin without membership | **hidden**: « Page introuvable. » on E-9 and E-7 | — | — |
 
-*Critères* (liste et bloc).
-- Étant donné Antor qui édite « Histoire » de « Port-Sel », quand il tape `[[` puis « ald », alors la liste montre
-  « Maître Aldric » avec l'icône et le libellé de son type ; Entrée insère `[[<id>|Maître Aldric]]`, Échap ferme
-  la liste en laissant `[[`.
-- Étant donné la recherche qui échoue, quand Antor tape `[[`, alors « Impossible de chercher. » et « Réessayer »
-  paraissent et son texte reste.
-- Étant donné une recherche sans résultat, alors « Aucune fiche. ».
-- Étant donné 60 fiches qui citent « Maître Aldric » lisibles de Léa, quand elle ouvre sa fiche, alors « Mentionnée dans »
-  en montre 50 et « Afficher les 10 suivants » ; la touche les ajoute ; sans réseau, le bouton est désactivé.
-- Étant donné « Anse-aux-Sels » dans « Essai Kanka », quand Antor la lit, alors « les contrebandiers du Repaire » est
-  souligné en tirets `--texte-3` (« Lien en attente : aucune fiche n'a encore la clé « faction:repaire ». ») et « Capitaine
-  Hesk » en tirets `--danger` ; Léa lit les deux en texte simple.
-- Étant donné Antor qui a accordé l'écriture aux joueurs sur « Description » de « Port-Sel », et Léa qui y tape à la
-  main `[[<id>]]` (l'identifiant d'une adresse de fiche) de « La Guilde des Brumes », quand elle enregistre, alors
-  « Cette fiche n'existe pas ou vous ne pouvez pas la lire. » paraît sous le champ, son texte intact, la section inchangée.
-- Étant donné une recherche lente, quand Antor tape `[[` puis « ald », alors « Recherche… » paraît sous la saisie jusqu'à la
-  réponse ; hors connexion, `[[` reste du texte et le bandeau commun parle.
-- Étant donné 60 fiches qui répondent à « a », alors la liste montre 50 lignes puis « Affinez la recherche pour voir les
-  autres. » ; un titre de 120 caractères tient sur une ligne finissant par « … ».
-- Étant donné Léa sur une section de « Port-Sel » qu'elle n'écrit pas, alors ni « Lien vers une fiche » ni liste n'existent
-  pour elle ; sur une section qui contient un bloc MJ, pas de « Modifier ».
-- Étant donné « Afficher les 10 suivants » dont la requête est lente, alors le bouton dit « Chargement… » désactivé ; si elle
-  échoue, « Impossible de charger la suite. » et « Réessayer » ; sans réseau, le bouton est désactivé.
-- Étant donné Antor dans le scénario « La Couronne brisée » et la recherche qui échoue, quand il tape `[[`, alors
-  « Impossible de chercher. » et « Réessayer » ; hors connexion, `[[` y reste du texte, « Enregistrer » est désactivé et son
-  texte conservé ; un lien cassé du scénario y est marqué.
+*Criteria* (list and block).
+- Given Antor editing « Histoire » of « Port-Sel », when he types `[[` then « ald », the list shows
+  « Maître Aldric » with its type icon and label; Enter inserts `[[<id>|Maître Aldric]]`, Escape closes
+  the list leaving `[[`.
+- Given a failing search, when Antor types `[[`, « Impossible de chercher. » and « Réessayer »
+  appear and his text stays.
+- Given a search without results, « Aucune fiche. ».
+- Given 60 sheets citing « Maître Aldric » readable by Léa, when she opens his sheet, « Mentionnée dans »
+  shows 50 and « Afficher les 10 suivants »; pressing it adds them; without network, the button is disabled.
+- Given « Anse-aux-Sels » in « Essai Kanka », when Antor reads it, « les contrebandiers du Repaire » has a
+  dashed `--texte-3` underline (« Lien en attente : aucune fiche n'a encore la clé « faction:repaire ». ») and « Capitaine
+  Hesk » a dashed `--danger` underline; Léa reads both as plain text.
+- Given Antor granted players write access to « Description » of « Port-Sel », and Léa manually types
+  `[[<id>]]` (the identifier from a sheet address) of « La Guilde des Brumes », when she saves,
+  « Cette fiche n'existe pas ou vous ne pouvez pas la lire. » appears below the field, her text intact, the section unchanged.
+- Given a slow search, when Antor types `[[` then « ald », « Recherche… » appears below the input until the
+  response; offline, `[[` remains text and the common banner speaks.
+- Given 60 sheets matching « a », the list shows 50 rows then « Affinez la recherche pour voir les
+  autres. »; a 120-character title fits on a row ending with « … ».
+- Given Léa on a section of « Port-Sel » she does not write, neither « Lien vers une fiche » nor the list exists
+  for her; on a section containing a GM block, no « Modifier ».
+- Given a slow request from « Afficher les 10 suivants », the button reads disabled « Chargement… »; if it
+  fails, « Impossible de charger la suite. » and « Réessayer »; without network, the button is disabled.
+- Given Antor in the « La Couronne brisée » scenario and a failing search, when he types `[[`,
+  « Impossible de chercher. » and « Réessayer »; offline, `[[` stays text, « Enregistrer » is disabled and his
+  text kept; a broken link in the scenario is marked.
 
 ### E-9 Fiche — ce que `kanevas-import` change
 
