@@ -201,6 +201,13 @@ Forme de la skill `exigences` ; chaque besoin cite les parcours qui le réalisen
   référencent ; les fichiers de l'export qu'aucune fiche n'utilise y entrent aussi. Le script **doit**
   envoyer « Réservée au MJ » pour un fichier que la source n'utilise que dans du contenu MJ. *(P-10 ;
   décision de Monsieur du 2026-10-11)*
+- **B-57** — *(kanevas-fiche-mj-seul)* A GM sees at a glance, in GM mode, which sheets the players
+  cannot see: a sheet none of whose sections is readable by players (or with no section at all)
+  carries the amber « MJ seul » badge on its card (E-8), on its tree line and in its header (E-9),
+  like a GM-only file in the media library; and the GM filters the list by visibility (« Toutes »,
+  « Visibles des joueurs », « Réservées au MJ »). Nothing is stored: the state is read from the
+  sections, and opening one section to the players removes the badge. A player, and the GM in
+  player mode, see neither badge nor filter. *(P-3, P-6 ; decision of Monsieur, 2026-10-25)*
 
 ### Assistant : son jeton posé depuis l'administration (`kanevas-import`)
 - **B-51** — Quand l'admin d'instance

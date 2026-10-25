@@ -102,7 +102,7 @@ E-16 vivent hors des univers : leurs cases disent le rôle dans un univers ratta
 | E-5 | — | — | lister les univers et leurs membres ; ajouter, changer un rôle, retirer un membre ; voir l'état du jeton de l'assistant, connecter ou reconnecter l'abonnement |
 | E-6 | tout | liste, statut, CR, « Nouveau compte-rendu » ; ni scénarios ni préparation (cachés) | — |
 | E-7 | tout | — | — |
-| E-8 | lire, chercher, créer ; la vignette de chaque fiche (son illustration, ou le repli dessiné) | lire, chercher ; la vignette des fiches qu'il voit | — |
+| E-8 | lire, chercher, créer ; la vignette de chaque fiche (son illustration, ou le repli dessiné) ; *(kanevas-fiche-mj-seul)* the « MJ seul » badge on a sheet players cannot see, the « Visibilité » filter | lire, chercher ; la vignette des fiches qu'il voit ; *(kanevas-fiche-mj-seul)* no badge, no filter (**caché**) | — |
 | E-9 | tout ; mode Joueur ; relier et retirer des relations ; poser, remplacer, retirer l'illustration (hors mode Joueur) ; *(kanevas-import)* sous-type, réserver un fichier au MJ, voir un fichier en attente d'import (tuile) | sections lisibles ; écrire celles permises ; relations lisibles (section et cible) ; pièces jointes de celles-ci ; voir l'illustration, jamais la poser ; *(kanevas-import)* dans une section qu'il écrit, ajouter un fichier ou en choisir un qu'il voit (les deux chemins de B-55) et retirer une référence ; fichiers sous double garde ; jamais régler une visibilité (**caché**) ; un fichier en attente d'import : rien (**caché**) | — |
 | E-10 | tout | cartes visibles | — |
 | E-11 | tout ; mode Joueur | lire une carte visible, ouvrir une fiche | — |
@@ -328,7 +328,10 @@ liste des personnages, alors elle n'y voit pas « Maître Aldric ».
 
 ### E-9 Fiche
 
-Le titre, le badge du type, puis les **sections** dans leur ordre, chacune un panneau : titre,
+Le titre, le badge du type — *(kanevas-fiche-mj-seul, B-57)* and, for a GM in GM mode, the amber
+« MJ seul » badge (`lock`) when no section is readable by the players, with the tooltip « Aucune
+section n'est visible des joueurs. »; it appears or disappears as soon as an audience setting of
+the sheet changes, without reloading; absent in player mode and for a player —, puis les **sections** dans leur ordre, chacune un panneau : titre,
 contenu en Markdown rendu (AD-95), et un emplacement de **blocs de section** (relations, pièces
 jointes : les tranches suivantes y inscrivent le leur, comme pour E-3, dans
 `frontend/src/ecrans/fiche/blocs/` et `registre.ts`).
@@ -2723,6 +2726,19 @@ son sous-type sous le titre (`--texte-3`) ; un filtre « Sous-type » à côté 
 puis les sous-types des fiches du type que le lecteur voit, par ordre alphabétique, avec leur nombre de
 fiches lisibles) ; un sous-type filtré rend la grille. La fenêtre de création a un champ « Sous-type »
 facultatif, avec la même complétion que E-9.
+
+**Visibility** (B-57, `kanevas-fiche-mj-seul`, decision of Monsieur, 2026-10-25). For a GM in GM
+mode, a sheet none of whose sections is readable by the players (the « Les joueurs la lisent »
+setting; a section readable by its player author alone does not count, nor does a sheet without any
+section) carries the amber « MJ seul » badge (`lock`, the charte's audience badge, same as a
+GM-only file in E-19) on its card, under the title next to the sub-type, and on its tree line. A
+filter « Visibilité » stands next to « Sous-type », for the GM only: « Toutes » (default), « Visibles
+des joueurs », « Réservées au MJ »; a filtered visibility renders the grid, like a filtered sub-type,
+and combines with the sub-type filter and the search; « Toutes » renders the tree back when it was
+the remembered view. The counts are those of the sheets of the type. The state is derived at each
+reading, never stored: opening one section to the players, from E-9, removes the badge at the next
+reading of the list. A player, and the GM in player mode, see neither the badge nor the filter, and
+the API does not tell them whether a sheet is GM-only (it only lists what they read, E-8 refus).
 
 | État | Ce qu'on voit | Ce qu'on peut faire |
 |---|---|---|
