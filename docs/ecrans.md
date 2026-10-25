@@ -3088,72 +3088,72 @@ The `e08-liste-fiches.html` mockup is not redrawn for subtype: the text above sa
 - **Every role has its column**: GM, Player, Instance admin for E-17, E-18 and E-19 (matrix); the import
   script is not a role: it acts as the token's GM, on the API alone — holds.
 
-## Détail de l'écran de `kanevas-import-jeton-assistant`
+## Screen details for `kanevas-import-jeton-assistant`
 
-> **E-5** reçoit un panneau, rien d'autre (B-51, P-15). Maquette finie :
-> `docs/maquettes/e05-administration.html` (les états principaux : vide, posé, connexion en cours, échec, expirée, erreur de lecture ; les autres sont décrits par le tableau ci-dessous). Les textes communs
-> (chargement, erreur, connexion perdue, refus) sont ceux de E-5 ci-dessus.
+> **E-5** gets a panel, nothing else (B-51, P-15). Finished mockup:
+> `docs/maquettes/e05-administration.html` (main states: empty, set, connecting, failure, expired, read error; others are described by the table below). Common texts
+> (loading, error, connection lost, refusal) are those of E-5 above.
 
-**Place.** Un panneau pleine largeur « Jeton de l'assistant », **sous** les deux zones (liste des
-univers, membres), visible quelle que soit la sélection d'univers (adresses inchangées :
-`/administration`, `/administration/univers/:id`) ; le jeton est de l'instance, pas d'un univers.
-Une sélection d'univers ne remet pas le panneau à zéro, une connexion en cours survit au changement
-d'univers. Le panneau ne montre **jamais** la valeur du jeton : ni dans une réponse, ni dans le DOM,
-ni dans un message d'erreur.
+**Location.** A full-width « Jeton de l'assistant » panel, **below** both areas (universe
+list, members), visible regardless of universe selection (unchanged addresses:
+`/administration`, `/administration/univers/:id`); the token belongs to the instance, not a universe.
+Selecting a universe does not reset the panel, a connection in progress survives a universe
+change. The panel **never** shows the token value: neither in a response, the DOM,
+nor an error message.
 
-**Ce qu'on voit.** Le titre ; une ligne d'état, dans cet ordre de priorité : « Jeton posé le 11 octobre
-2026. » (le jeton du fichier du volume, date de sa pose), « Jeton fourni par le déploiement. » (pas de
-fichier, la variable `CLAUDE_CODE_OAUTH_TOKEN` non vide : le panneau ne sait pas depuis quand),
-« Aucun jeton posé. » ; le bouton « Connecter l'abonnement » (« Reconnecter l'abonnement » dès qu'un jeton est posé, du fichier
-ou du déploiement, dans tous les états ci-dessous). Un admin qui est aussi membre d'un univers voit le panneau comme les autres. Un clic démarre la connexion : l'adresse d'autorisation, en lecture seule, avec « Ouvrir »
-(nouvel onglet, `rel="noopener noreferrer"`) et « Copier » (« Copiée. » 2 s) ; un champ « Code » et
-« Valider » ; « Annuler » ; la mention « Cette connexion expire dans 10 minutes. » suivie de « Reste 9 min. »
-(minutes pleines arrondies au-dessus, « Reste moins d'une minute. » sous la minute ; rafraîchi chaque seconde, sans annonce
-vocale ; à 0 la phrase d'expiration remplace le champ). Recharger la page ne rouvre pas la connexion : le panneau repart de l'état lu, sans adresse ni champ « Code » ; la connexion du
-serveur vit jusqu'à son expiration. Quand un admin clique « Connecter » (le même après un rechargement, ou un second admin), le
-serveur en démarre une nouvelle qui remplace la précédente, et le « Valider » de l'ancienne reçoit alors « La connexion a expiré.
-Recommencez. ». « Valider » est désactivé tant que le champ est vide. Le code collé n'est pas conservé : le
-champ est vidé après chaque validation. Le jeton posé prime sur la variable : un jeton du volume se
-remplace par une nouvelle connexion, jamais par un champ de saisie (il n'y en a pas).
+**What is seen.** Title; a status line, in this priority order: « Jeton posé le 11 octobre
+2026. » (token from the volume file, date set), « Jeton fourni par le déploiement. » (no
+file, nonempty `CLAUDE_CODE_OAUTH_TOKEN` variable: the panel does not know since when),
+« Aucun jeton posé. »; the « Connecter l'abonnement » button (« Reconnecter l'abonnement » once a token is set, from file
+or deployment, in all states below). An admin also belonging to a universe sees the panel like the others. Clicking starts the connection: the authorization address, read only, with « Ouvrir »
+(new tab, `rel="noopener noreferrer"`) and « Copier » (« Copiée. » 2 s); a « Code » field and
+« Valider »; « Annuler »; the notice « Cette connexion expire dans 10 minutes. » followed by « Reste 9 min. »
+(whole minutes rounded up, « Reste moins d'une minute. » below one minute; refreshed every second, without spoken
+announcement; at 0 the expiry sentence replaces the field). Reloading the page does not reopen the connection: the panel restarts from the read state, without an address or « Code » field; the server's
+connection lives until expiry. When an admin clicks « Connecter » (the same admin after reload, or a second admin), the
+server starts a new one replacing the previous one, and the old one's « Valider » then receives « La connexion a expiré.
+Recommencez. ». « Valider » is disabled while the field is empty. The pasted code is not kept: the
+field is cleared after every validation. The set token takes precedence over the variable: a volume token is
+replaced through a new connection, never through an input field (there is none).
 
-| État | Ce qu'on voit | Ce qu'on peut faire |
+| State | What is seen | Available actions |
 |---|---|---|
-| vide (aucun jeton) | « Aucun jeton posé. » ; sous le titre : « L'assistant est indisponible tant qu'aucun jeton n'est posé. » (affichée seulement si l'assistant n'a vraiment aucun moyen de répondre ; sous le bouchon, où l'assistant répond déjà, rien) | « Connecter l'abonnement » |
-| posé | « Jeton posé le 11 octobre 2026. » (ou « Jeton fourni par le déploiement. ») ; « L'assistant est disponible sur tous les univers. » (le jeton est de l'instance : voulu aussi pour le jeton du déploiement) | « Reconnecter l'abonnement » |
-| chargement | « Chargement de l'état du jeton… » (lecture de l'état) ; « Connexion en cours… » pendant le démarrage (le bouton désactivé, `aria-busy`) | — |
-| connexion en cours | l'adresse, « Ouvrir », « Copier », le champ « Code », « Valider », « Annuler », le temps restant | coller le code, valider, annuler |
-| validation en cours | « Validation… », champ et boutons désactivés | — |
-| posé à l'instant | « Jeton posé le 11 octobre 2026. » (région `role="status"`), le champ disparaît ; l'assistant est disponible sans redéploiement ni redémarrage | « Reconnecter l'abonnement » |
-| échec | code refusé : « La connexion n'a pas abouti. Recommencez. » ; l'ancien état (posé ou non) reste affiché, le champ est vidé, la connexion en cours est terminée côté serveur | « Connecter l'abonnement » (« Reconnecter » si un jeton est posé) |
-| échec de validation autre (serveur injoignable, 5xx) | « L'action n'a pas abouti. Réessayez. » ; le champ est vidé, la connexion reste ouverte tant qu'elle n'a pas expiré | coller de nouveau, annuler |
-| expirée | au bout de 10 minutes, ou serveur redémarré : « La connexion a expiré. Recommencez. » ; l'ancien état reste | « Connecter l'abonnement » (« Reconnecter » si un jeton est posé) |
-| erreur de lecture | « Impossible de charger l'état du jeton. » avec « Réessayer » ; le reste de la page reste utilisable | « Réessayer » |
-| erreur de démarrage | « La connexion n'a pas pu démarrer. Réessayez. » (le programme `claude` ou `script` absent, ou aucune adresse rendue en 30 s) ; aucun détail technique | « Connecter l'abonnement » (« Reconnecter » si un jeton est posé) |
-| connexion perdue | le bandeau ; « Connecter l'abonnement » (« Reconnecter » si un jeton est posé), « Valider » et « Annuler » désactivés ; l'état chargé reste | lire |
-| refus | tout compte hors du groupe : la page entière est « Page introuvable. » (E-5 ci-dessus) ; une route du panneau sans le groupe répond 404 comme une adresse inconnue | « Mes univers » |
-| contenu long | l'adresse d'autorisation (plus de 200 caractères) se replie sur plusieurs lignes dans une zone qui défile, sans élargir la page ; le champ « Code » accepte 500 caractères au plus | idem |
+| empty (no token) | « Aucun jeton posé. »; below the title: « L'assistant est indisponible tant qu'aucun jeton n'est posé. » (shown only if the assistant truly has no way to answer; under the stub, where the assistant already answers, nothing) | « Connecter l'abonnement » |
+| set | « Jeton posé le 11 octobre 2026. » (or « Jeton fourni par le déploiement. »); « L'assistant est disponible sur tous les univers. » (the token belongs to the instance: intentional also for the deployment token) | « Reconnecter l'abonnement » |
+| loading | « Chargement de l'état du jeton… » (reading state); « Connexion en cours… » during startup (button disabled, `aria-busy`) | — |
+| connecting | address, « Ouvrir », « Copier », « Code » field, « Valider », « Annuler », remaining time | paste code, validate, cancel |
+| validating | « Validation… », field and buttons disabled | — |
+| just set | « Jeton posé le 11 octobre 2026. » (`role="status"` region), field disappears; assistant available without redeployment or restart | « Reconnecter l'abonnement » |
+| failure | refused code: « La connexion n'a pas abouti. Recommencez. »; old state (set or not) stays displayed, field cleared, ongoing connection ended server-side | « Connecter l'abonnement » (« Reconnecter » if a token is set) |
+| other validation failure (server unreachable, 5xx) | « L'action n'a pas abouti. Réessayez. »; field cleared, connection stays open until expiry | paste again, cancel |
+| expired | after 10 minutes, or server restarted: « La connexion a expiré. Recommencez. »; old state stays | « Connecter l'abonnement » (« Reconnecter » if a token is set) |
+| read error | « Impossible de charger l'état du jeton. » with « Réessayer »; rest of page stays usable | « Réessayer » |
+| startup error | « La connexion n'a pas pu démarrer. Réessayez. » (`claude` or `script` program absent, or no address returned in 30 s); no technical detail | « Connecter l'abonnement » (« Reconnecter » if a token is set) |
+| connection lost | banner; « Connecter l'abonnement » (« Reconnecter » if a token is set), « Valider » and « Annuler » disabled; loaded state stays | read |
+| refusal | any account outside the group: entire page is « Page introuvable. » (E-5 above); a panel route without the group answers 404 like an unknown address | « Mes univers » |
+| long content | authorization address (more than 200 characters) wraps across lines in a scrolling area without widening the page; « Code » field accepts at most 500 characters | same |
 
-**Clavier et lecteur d'écran.** Le panneau est un `section` titré ; l'ouverture de la connexion place
-le focus sur le champ « Code » ; à l'expiration ou à l'échec le focus revient sur le bouton « Connecter
-l'abonnement » ; les messages d'état sont dans une région `aria-live="polite"`, sauf le temps restant.
+**Keyboard and screen reader.** The panel is a titled `section`; opening the connection places
+focus on the « Code » field; on expiry or failure focus returns to the « Connecter
+l'abonnement » button; status messages are in an `aria-live="polite"` region, except remaining time.
 
-*Critères.*
-- Étant donné Admin (groupe `parents`) et un bouchon sans jeton, quand il ouvre `/administration`, alors le
-  panneau dit « Aucun jeton posé. » ; quand il clique « Connecter l'abonnement », alors il voit une adresse
-  d'autorisation, un champ « Code » et « Valider » désactivé.
-- Étant donné la connexion ouverte, quand Admin colle `bouchon` et valide, alors il voit « Jeton posé le
-  <date du jour>. » ; la disponibilité de l'assistant, lue **sans** `KANEVAS_STUB` (config injectée),
-  est `claude-agent`, sans redémarrage ; aucune réponse des routes du panneau ne contient la valeur du
-  jeton (le test cherche la valeur factice dans chaque corps et dans le journal).
-- Étant donné la connexion ouverte, quand Admin colle un autre code, alors il voit « La connexion n'a pas
-  abouti. Recommencez. » et l'état d'avant (posé ou non) est inchangé ; un second essai valide s'ouvre.
-- Étant donné la connexion ouverte et l'horloge passée au-delà de 10 minutes, quand Admin valide, alors il
-  voit « La connexion a expiré. Recommencez. » ; le processus est arrêté.
-- Étant donné un jeton posé par le panneau et une variable `CLAUDE_CODE_OAUTH_TOKEN` différente, alors
-  l'assistant utilise celui du fichier ; après suppression du fichier, la variable reprend.
-- Étant donné une connexion ouverte, quand Admin recharge la page, alors le panneau montre l'état lu (« Aucun jeton posé. » ou « Jeton posé… ») sans adresse ni champ « Code » ; quand il clique « Connecter l'abonnement », alors une nouvelle adresse paraît ; et le « Valider » d'un second onglet resté sur l'ancienne connexion dit « La connexion a expiré. Recommencez. ».
-- Étant donné le panneau affiché, quand le réseau est coupé, alors « Connecter l'abonnement » (ou « Reconnecter »), « Valider » et « Annuler » sont désactivés et le bandeau s'affiche ; au retour du réseau ils se réactivent.
-- Étant donné Léa (hors du groupe), quand elle appelle une route du panneau, alors elle reçoit 404.
+*Criteria.*
+- Given Admin (`parents` group) and a stub without a token, when they open `/administration`, the
+  panel says « Aucun jeton posé. »; when they click « Connecter l'abonnement », they see an authorization
+  address, a « Code » field and disabled « Valider ».
+- Given the connection open, when Admin pastes `bouchon` and validates, they see « Jeton posé le
+  <date du jour>. »; assistant availability, read **without** `KANEVAS_STUB` (injected config),
+  is `claude-agent`, without restart; no panel-route response contains the token
+  value (the test searches for the dummy value in every body and the log).
+- Given the connection open, when Admin pastes another code, they see « La connexion n'a pas
+  abouti. Recommencez. » and the previous state (set or not) is unchanged; a second valid attempt opens.
+- Given the connection open and the clock advanced beyond 10 minutes, when Admin validates, they
+  see « La connexion a expiré. Recommencez. »; the process is stopped.
+- Given a token set through the panel and a different `CLAUDE_CODE_OAUTH_TOKEN` variable, the
+  assistant uses the file's token; after deleting the file, the variable takes over.
+- Given an open connection, when Admin reloads the page, the panel shows the read state (« Aucun jeton posé. » or « Jeton posé… ») without an address or « Code » field; when they click « Connecter l'abonnement », a new address appears; and « Valider » in a second tab left on the old connection says « La connexion a expiré. Recommencez. ».
+- Given the panel displayed, when the network is cut, « Connecter l'abonnement » (or « Reconnecter »), « Valider » and « Annuler » are disabled and the banner appears; when the network returns they reactivate.
+- Given Léa (outside the group), when she calls a panel route, she receives 404.
 
 ## Détail des écrans de `kanevas-outils` (cadrage)
 
