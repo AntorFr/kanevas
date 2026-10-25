@@ -2468,58 +2468,58 @@ attente » for the batch).
 - Given content containing `<script>alert(1)</script>` and `<b>gras</b>`, when the section
   is displayed, these tags appear as text, and no script runs.
 
-### Ce que `kanevas-import-tenir` construit (E-9 titre et suppression, E-14 « Supprimer l'univers »)
+### What `kanevas-import-tenir` builds (E-9 title and deletion, E-14 « Supprimer l'univers »)
 
-*Précisions de la tranche, sur le cadre ci-dessus (B-39, B-40, B-41, AD-105, AD-119) ; les maquettes sont
-`e09-fiche-importee.html` (`#etat-supprimer`) et `e14-types-de-fiche.html` (`#etat-supprimer-univers`).*
+*Slice details within the framework above (B-39, B-40, B-41, AD-105, AD-119); mockups are
+`e09-fiche-importee.html` (`#etat-supprimer`) and `e14-types-de-fiche.html` (`#etat-supprimer-univers`).*
 
-*La maquette `#etat-supprimer` ne dessine que l'état nominal de la boîte et celle de l'en-tête que le titre au repos : les états ci-dessous (titre vidé ou trop long, toast, bilan en chargement ou en erreur) sont décrits ici, et ce texte fait foi.*
+*The `#etat-supprimer` mockup draws only the dialog's nominal state, and the header mockup only the idle title: the states below (empty or too-long title, toast, summary loading or error) are described here, and this text is authoritative.*
 
-**Titre en place (E-9, MJ hors mode Joueur).** Un clic sur le titre le rend champ de saisie, texte
-sélectionné ; Entrée enregistre, Échap annule, la perte de focus enregistre. 1 à 120 caractères après
-rognage ; vide : « Erreur : le titre est obligatoire. » ; au-delà : « Erreur : 120 caractères au plus. » ; le
-champ reste ouvert. Titre inchangé : rien n'est envoyé. Enregistré : toast « Fiche renommée. », le fil
-d'Ariane des descendants et le badge de la liste suivent à la lecture suivante ; les liens `[[…]]` ne bougent pas
-(ils visent l'identifiant, B-33). Échec : « L'action n'a pas abouti. Réessayez. » sous le titre, le champ reste ouvert avec la saisie (Échap rend l'ancien titre). Un
-Joueur ou le mode Joueur : titre en texte, sans curseur d'édition.
+**Inline title (E-9, GM outside Player mode).** Clicking the title turns it into an input field, text
+selected; Enter saves, Escape cancels, losing focus saves. 1 to 120 characters after
+trimming; empty: « Erreur : le titre est obligatoire. »; beyond that: « Erreur : 120 caractères au plus. »; the
+field stays open. Unchanged title: nothing is sent. Saved: toast « Fiche renommée. », descendants'
+breadcrumbs and the list badge follow on the next read; `[[…]]` links do not change
+(they target the identifier, B-33). Failure: « L'action n'a pas abouti. Réessayez. » below the title, the field stays open with the input (Escape restores the old title). A
+Player or Player mode: title as text, without an editing cursor.
 
-**Suppression d'une fiche (E-9).** « Supprimer la fiche… » ouvre la boîte **après** avoir lu son bilan
-(`GET …/fiches/:fid/suppression`) : « Chargement… » dans la boîte, bouton « Supprimer la fiche » inactif tant que
-le bilan n'est pas là. Le texte est composé des seuls postes non nuls, au singulier ou au pluriel
+**Deleting a sheet (E-9).** « Supprimer la fiche… » opens the dialog **after** reading its summary
+(`GET …/fiches/:fid/suppression`): « Chargement… » in the dialog, « Supprimer la fiche » button inactive until
+the summary arrives. Text contains only nonzero items, singular or plural
 (« 1 section », « 1 relation qui la vise », « 1 place sur une carte », « Son fichier reste dans la
-médiathèque », « Son enfant remontera sous… ») ; sans parent, « … remonteront à la racine de la liste du
-type » ; sans enfant, la phrase manque ; la fiche seule : « Cette fiche ne porte rien d'autre. ».
-Les nombres sont ceux du MJ, qui lit tout. Erreur du bilan : « Impossible de charger le détail. » et
-« Réessayer » ; échec de la suppression : le message dans la boîte, qui reste ouverte, la fiche n'a pas
-bougé. Succès : retour à la liste du type, toast « Fiche supprimée. ». Une fiche déjà supprimée par ailleurs :
-« Page introuvable. » à l'ouverture de la boîte. Un compte-rendu se supprime de même (retour à E-13).
+médiathèque », « Son enfant remontera sous… »); without a parent, « … remonteront à la racine de la liste du
+type »; without children, the sentence is absent; sheet alone: « Cette fiche ne porte rien d'autre. ».
+Numbers are the GM's, who reads everything. Summary error: « Impossible de charger le détail. » and
+« Réessayer »; deletion failure: the message in the dialog, which stays open, the sheet has not
+changed. Success: back to the type's list, toast « Fiche supprimée. ». A sheet already deleted elsewhere:
+« Page introuvable. » when opening the dialog. A session report is deleted the same way (back to E-13).
 
-**Import (E-18).** Un `DELETE` d'import ajoute au bilan du lot le compteur « Fiches : 1 supprimée »
-(« supprimées » au pluriel), sans refus possible ; clé inconnue : rien n'est compté.
+**Import (E-18).** An import `DELETE` adds the « Fiches : 1 supprimée » counter to the batch summary
+(« supprimées » in the plural), with no possible refusal; unknown key: nothing is counted.
 
-**Supprimer l'univers (E-14, tout MJ).** La boîte suit le texte ci-dessus ; le champ compare le nom saisi au
-nom de l'univers à la lettre près, casse et espaces compris (l'espace final saisi par erreur laisse le bouton
-inactif) ; le serveur recompare (`nom`) et refuse un nom différent (400 `nom_different`, « Le nom ne correspond
-pas à celui de l'univers. » ; l'écran affiche « Le nom ne correspond pas. »). Pendant la suppression : bouton « Suppression… » inactif. Après : E-1, toast « Univers supprimé. » ;
-les autres membres, à leur prochaine action, voient « Page introuvable. ». Échec de la suppression : « L'action n'a pas
-abouti. Réessayez. » dans la boîte, qui reste ouverte, l'univers est intact ; une suppression longue garde
-« Suppression… » tant que le serveur n'a pas répondu (pas de délai au-delà duquel la boîte se ferme).
+**Delete universe (E-14, any GM).** The dialog follows the text above; the field compares the entered name to the
+universe name exactly, including case and spaces (an accidentally entered trailing space leaves the button
+inactive); the server compares again (`nom`) and refuses a different name (400 `nom_different`, « Le nom ne correspond
+pas à celui de l'univers. »; the screen displays « Le nom ne correspond pas. »). During deletion: inactive « Suppression… » button. Afterwards: E-1, toast « Univers supprimé. »;
+other members see « Page introuvable. » at their next action. Deletion failure: « L'action n'a pas
+abouti. Réessayez. » in the dialog, which stays open, the universe intact; a long deletion keeps
+« Suppression… » until the server responds (no timeout that closes the dialog).
 
-**États propres à la tranche** (en plus du tableau de E-9 et de E-14).
+**Slice-specific states** (in addition to the E-9 and E-14 tables).
 
-| Écran | État | Ce qu'on voit | Ce qu'on peut faire |
+| Screen | State | What is seen | Available actions |
 |---|---|---|---|
-| E-9, boîte | chargement du bilan | « Chargement… », « Supprimer la fiche » inactif | « Annuler » |
-| E-9, boîte | erreur du bilan | « Impossible de charger le détail. » | « Réessayer », « Annuler » |
-| E-9, boîte | échec de la suppression | « L'action n'a pas abouti. Réessayez. » dans la boîte, la fiche n'a pas bougé | « Supprimer la fiche », « Annuler » |
-| E-9, boîte | connexion perdue | le bandeau ; « Supprimer la fiche » inactif, le bilan chargé reste | « Annuler » |
-| E-9, titre | échec de l'enregistrement | « L'action n'a pas abouti. Réessayez. » sous le titre, le champ reste ouvert avec la saisie | Entrée pour réessayer, Échap |
-| E-9, titre | connexion perdue pendant l'édition | le bandeau ; Entrée n'envoie rien, la saisie est gardée | Échap |
-| E-14, boîte | connexion perdue | le bandeau ; « Supprimer l'univers » inactif | « Annuler » |
+| E-9, dialog | summary loading | « Chargement… », « Supprimer la fiche » inactive | « Annuler » |
+| E-9, dialog | summary error | « Impossible de charger le détail. » | « Réessayer », « Annuler » |
+| E-9, dialog | deletion failure | « L'action n'a pas abouti. Réessayez. » in the dialog, the sheet has not changed | « Supprimer la fiche », « Annuler » |
+| E-9, dialog | connection lost | banner; « Supprimer la fiche » inactive, loaded summary stays | « Annuler » |
+| E-9, title | save failure | « L'action n'a pas abouti. Réessayez. » below the title, field stays open with the input | Enter to retry, Escape |
+| E-9, title | connection lost while editing | banner; Enter sends nothing, input is kept | Escape |
+| E-14, dialog | connection lost | banner; « Supprimer l'univers » inactive | « Annuler » |
 
-Un compte-rendu s'appelle « fiche » dans ces textes (« Supprimer la fiche… ») : c'est une fiche (B-40), et sa boîte
-compte ses sections, ses propositions de l'assistant incluses ; retour à E-13 au lieu de la liste du type.
-Les chemins d'échec de P-14 et de P-10 renvoient à ce tableau.
+A session report is called « fiche » in these texts (« Supprimer la fiche… »): it is a sheet (B-40), and its dialog
+counts its sections, including assistant proposals; back to E-13 instead of the type's list.
+The failure paths of P-14 and P-10 refer to this table.
 ### Le bloc MJ — ce que `kanevas-import-secrets` construit (E-9, E-12, import)
 
 Cette tranche livre le bloc `:::mj` (B-34, AD-98, AD-114) sur le rendu et l'éditeur que
