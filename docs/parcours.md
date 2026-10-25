@@ -319,8 +319,8 @@ introuvable. ».
    écrit « Apparence » (lue des joueurs) et « Vérité — MJ seul », relie le PNJ à sa faction,
    dépose le plan d'un lieu, et pose le portrait d'Aldric en **illustration** de la fiche (visible
    de qui voit la fiche) ; de retour sur la liste, la carte d'Aldric porte ce portrait. *(kanevas-fiche-mj-seul)*
-   The card of « Rapport secret de l'amirauté », whose only section is « MJ seul », carries the
-   « MJ seul » badge; « Visibilité » ▸ « Réservées au MJ » lists what the table will not see (B-57).
+   In the list of lieux, the card of a lieu whose only section so far is « Vérité — MJ seul » carries
+   the « MJ seul » badge; « Visibilité » ▸ « Réservées au MJ » lists what the table will not see (B-57).
 5. Il demande à son **assistant** (E-12) « rappelle-moi tout ce qu'on sait d'Aldric » puis
    « fais un portrait pour Apparence » : l'image est attachée à la section, et il suit « Ouvrir la section »
    dans le fil pour la voir sur la fiche (E-9).
