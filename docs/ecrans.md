@@ -69,7 +69,7 @@ bascule existe (fiche, carte et, depuis `kanevas-import`, recherche E-17).
 | **E-14 Paramètres de l'univers** | nav Univers (MJ) | nom, description, système de jeu (choisir dans le catalogue, en créer un) | P-8 |
 | **E-15 Système de jeu** | E-16 ; lien depuis E-3 et E-14 | le référentiel commun : règles, créatures, objets ; ajouter, modifier (MJ d'un univers rattaché) ; hors du cadre d'un univers | P-8 |
 | **E-16 Systèmes de jeu** | barre réduite ; menu du sélecteur d'univers | les systèmes rattachés aux univers du compte, chacun avec ceux de ses univers qui l'utilisent | P-8 |
-| **E-17 Recherche** *(kanevas-import)* | « Rechercher » de la barre ; `/` ; une étiquette touchée sur E-9 | chercher dans tous les types, titres, alias et sections lisibles ; filtrer par type et par étiquette | P-12, P-10 |
+| **E-17 Recherche** *(kanevas-import)* | « Rechercher » de la barre ; `/` ; une étiquette touchée sur E-9 ; *(kanevas-fiches-liees)* « Chercher parmi » d'un bloc « Fiches liées » | chercher dans tous les types, titres, alias et sections lisibles ; filtrer par type ; *(kanevas-fiches-liees)* recherche avancée : lié à une fiche, par nature, sous-lieux compris, vivants / morts et par étiquette | P-12, P-10 |
 | **E-19 Médiathèque** *(kanevas-import)* | nav Médiathèque ; « Choisir dans la médiathèque » de l'éditeur et de l'illustration (E-9) | voir les fichiers (images, documents) ouverts au compte et où ils servent ; MJ : ajouter, renommer, régler la visibilité, supprimer | P-16, P-10 |
 | **E-18 Accès par API** *(kanevas-import)* | nav Univers ▸ Accès par API (MJ) | créer, lister, révoquer les jetons d'API de l'univers ; voir les lots d'import et leurs refus | P-10, P-11 |
 
@@ -102,8 +102,8 @@ E-16 vivent hors des univers : leurs cases disent le rôle dans un univers ratta
 | E-5 | — | — | lister les univers et leurs membres ; ajouter, changer un rôle, retirer un membre ; voir l'état du jeton de l'assistant, connecter ou reconnecter l'abonnement |
 | E-6 | *retired (`kanevas-scenarios`)* | — | — |
 | E-7 | *retired (`kanevas-scenarios`)* | — | — |
-| E-8 | lire, chercher, créer ; la vignette de chaque fiche (son illustration, ou le repli dessiné) ; *(kanevas-scenarios)* for the « Aventure » type: the status badge, the « Statut » filter, the status menu on a card or a tree line, the creation form with sub-type suggestions and « Visible des joueurs » | lire, chercher ; la vignette des fiches qu'il voit | — |
-| E-9 | tout ; mode Joueur ; *(kanevas-scenarios)* on an adventure: the status menu in the header, the blocks « Préparation » (GM) and « Comptes-rendus » (« Nouveau compte-rendu ») ; relier et retirer des relations ; poser, remplacer, retirer l'illustration (hors mode Joueur) ; *(kanevas-import)* sous-type, réserver un fichier au MJ, voir un fichier en attente d'import (tuile) | sections lisibles ; écrire celles permises ; relations lisibles (section et cible) ; pièces jointes de celles-ci ; voir l'illustration, jamais la poser ; *(kanevas-import)* dans une section qu'il écrit, ajouter un fichier ou en choisir un qu'il voit (les deux chemins de B-55) et retirer une référence ; fichiers sous double garde ; jamais régler une visibilité (**caché**) ; un fichier en attente d'import : rien (**caché**) | — |
+| E-8 | lire, chercher, créer ; la vignette de chaque fiche (son illustration, ou le repli dessiné) ; *(kanevas-fiches-liees)* la marque « mort » sur la vignette, le filtre « Vivants / Morts / Tous » (personnages, créatures) ; *(kanevas-scenarios)* for the « Aventure » type: the status badge, the « Statut » filter, the status menu on a card or a tree line, the creation form with sub-type suggestions and « Visible des joueurs » | lire, chercher ; la vignette des fiches qu'il voit | — |
+| E-9 | tout ; mode Joueur ; *(kanevas-fiches-liees)* relier avec une nature et un qualificatif, le bloc « Fiches liées » avec « sous-lieux compris », « Marquer mort » / « Marquer vivant » dans l'en-tête ; *(kanevas-scenarios)* on an adventure: the status menu in the header, the blocks « Préparation » (GM) and « Comptes-rendus » (« Nouveau compte-rendu ») ; relier et retirer des relations ; poser, remplacer, retirer l'illustration (hors mode Joueur) ; *(kanevas-import)* sous-type, réserver un fichier au MJ, voir un fichier en attente d'import (tuile) | sections lisibles ; écrire celles permises ; relations lisibles (section et cible) ; pièces jointes de celles-ci ; voir l'illustration, jamais la poser ; *(kanevas-import)* dans une section qu'il écrit, ajouter un fichier ou en choisir un qu'il voit (les deux chemins de B-55) et retirer une référence ; fichiers sous double garde ; jamais régler une visibilité (**caché**) ; un fichier en attente d'import : rien (**caché**) | — |
 | E-10 | tout | cartes visibles | — |
 | E-11 | tout ; mode Joueur | lire une carte visible, ouvrir une fiche | — |
 | E-12 | catalogue MJ (dont générer une image, si un moteur d'images est disponible) ; propositions : le MJ demandeur seul les voit, les applique, les abandonne | catalogue Joueur (sans image : l'outil est absent, l'assistant répond qu'il ne peut pas) ; propositions : **caché** (ni outil ni bloc ; ce qu'on vérifie est l'absence de proposition et de bloc, pas le texte libre de l'assistant) | — |
@@ -111,7 +111,7 @@ E-16 vivent hors des univers : leurs cases disent le rôle dans un univers ratta
 | E-14 | tout ; « Supprimer l'univers » (*kanevas-import*) | — (« Page introuvable. ») | « Page introuvable. » |
 | E-15 (hors univers ; les colonnes disent le rôle dans un univers **rattaché au système**) | lire ; « Ajouter … », « Modifier » | lire (« Lecture seule ») ; ni « Ajouter » ni « Modifier » | « Page introuvable. », sauf s'il est lui-même membre d'un univers rattaché : alors la colonne de son rôle là (l'admin MJ d'un univers rattaché lit et modifie) |
 | E-16 (hors univers) | ses systèmes, avec ses univers et son rôle | ses systèmes, « Lecture seule » | la liste de ses propres systèmes (comme MJ ou Joueur s'il est membre d'un univers rattaché) ; vide sinon — l'écran est proposé à tout compte |
-| E-17 *(kanevas-import)* | chercher dans toutes les fiches de l'univers, blocs MJ compris ; en **mode Joueur**, comme un joueur (ni blocs MJ, ni fiches qu'un joueur ne lit pas) ; filtres : les types activés ; les fiches des types désactivés restent des résultats sous « Tous » | chercher dans ce qu'il lit, hors blocs MJ ; filtres par type et par étiquette des seules fiches qu'il voit ; bascule de mode : absente (cachée) ; blocs MJ : hors recherche (jamais lus) ; « Alias et étiquettes… » sur E-9 : cachée | — |
+| E-17 *(kanevas-import)* | *(kanevas-fiches-liees)* recherche avancée (lié à, nature, sous-lieux, vivants/morts) sur ce qu'il lit ; chercher dans toutes les fiches de l'univers, blocs MJ compris ; en **mode Joueur**, comme un joueur (ni blocs MJ, ni fiches qu'un joueur ne lit pas) ; filtres : les types activés ; les fiches des types désactivés restent des résultats sous « Tous » | chercher dans ce qu'il lit, hors blocs MJ ; filtres par type et par étiquette des seules fiches qu'il voit ; bascule de mode : absente (cachée) ; blocs MJ : hors recherche (jamais lus) ; « Alias et étiquettes… » sur E-9 : cachée | — |
 | E-19 *(kanevas-import)* | tout : ajouter, renommer, visibilité, supprimer ; « Utilisé dans » complet | les fichiers visibles des joueurs et ceux qu'il a ajoutés ; « Utilisé dans » réduit aux fiches qu'il lit ; ni ajout depuis E-19 (**caché** ; il ajoute un fichier par une section qu'il écrit, E-9), ni réglage, ni suppression (**cachés**) | — |
 | E-18 *(kanevas-import)* | créer un jeton ; voir et révoquer tous les jetons de l'univers (y compris ceux d'un autre MJ) ; voir les lots | — (**caché** : absent de la barre, « Page introuvable. » par l'adresse) | — |
 
@@ -3300,4 +3300,166 @@ this text is authoritative where they differ.
   B-61 → the import API (no screen, E-18 shows the lots) ; B-62 → E-12. Tient.
 - Each screen is reached by a journey: E-8/E-9 of adventures by P-3 and P-6 ; the CR block by
   P-4 ; E-3 by P-3 ; E-12 by P-3. Tient.
+- Each role has its column: GM and player above ; admin d'instance : nothing new. Tient.
+
+## Détail des écrans de `kanevas-fiches-liees`
+
+> Decisions of Monsieur, 2026-10-25 (B-63 to B-69, AD-128 to AD-133). No new screen: E-9 (the
+> « Relier » form, a block « Fiches liées », the dead mark), E-8 and E-17 (a mark, two filters, an
+> advanced mode), E-11 (labels). New text in English (canon); user-facing labels French. Same six
+> states and common texts as the other screens.
+
+**Format.** Web, desktop and phone, as the rest of Kanevas.
+
+**Information architecture.** Two notions for the user: a **relation** now says *what* it is
+(its nature: « se situe à », « membre de », « dirige », « détient »…) and *how* (its qualifier,
+free); and the **linked sheets** of a sheet — what points to it by a nature, read backwards. The
+vocabulary: « nature » for the finite kind, « qualificatif » for the free text (never « type »,
+which names the type of sheet), « Fiches liées » for the block, « sous-lieux compris » for the
+aggregation through the tree, « vivant » / « mort » for the mark.
+
+### The natures (AD-128)
+
+The product's list, in code like the types (`[À TRANCHER]` the initial content — recommended
+below, from what a table needs first; a nature is added by a line, never removed once used) :
+
+| Nature (key) | Read from the source | Read from the target | Source types → target types |
+|---|---|---|---|
+| `se_situe` | se situe à | s'y trouvent | personnage, créature, objet, faction, famille, vaisseau → lieu |
+| `membre` | membre de | membres | personnage, créature → faction, famille |
+| `dirige` | dirige | dirigé(e) par | personnage → faction, famille, lieu, vaisseau |
+| `detient` | détient | détenu par | personnage, faction, famille, lieu → objet, vaisseau |
+| `allie` | allié de | alliés | faction, famille, personnage → faction, famille, personnage |
+| `ennemi` | ennemi de | ennemis | faction, famille, personnage → faction, famille, personnage |
+
+A relation without nature is « sans nature » (free, as today). The place-in-place relation is the
+tree, never a nature (« se situe » is not offered for lieu → lieu). Aventures (`kanevas-scenarios`)
+take no nature in this epic (reopened with the first need).
+
+### E-9 — « Relier à une fiche », with a nature
+
+The form of the Relations block (`kanevas-relier-chercher`) gains a first step: **« Nature »**, a
+list of the natures whose source types include this sheet's type, read from the source, plus
+« Sans nature » (default when the list is empty, last otherwise); choosing a nature restricts
+« Type de fiche » to the nature's target types (the select shows them only); then the sheet
+picker as today; then **« Qualificatif »** (optional, 1 to 80, replaces the former free « Type de
+relation » field, same place, placeholder « habite, capitaine… »). « Relier » refuses a nature
+that does not fit the pair (400 `nature_incompatible`, « Cette nature ne relie pas ces deux types
+de fiches. ») — the screen never offers it. A relation line reads « se situe à · **Port-Sel** —
+habite » (nature, target, qualifier in grey); a free relation reads its qualifier alone as today.
+The relation lines in the block and the lines of « Fiches liées » show the dead mark on a
+character or creature target (B-67). Nothing changes for the audience: the relation belongs to its
+section.
+
+### E-9 — the block « Fiches liées » (B-64, AD-130)
+
+On every sheet whose type is the target of at least one nature, a sheet block placed **before**
+« Mentionnée dans » (registry of the sheet blocks by type, AD-124): one group per nature read
+backwards, in the natures' order, each with its counts by type (« S'y trouvent : Personnages (12),
+Créatures (3) ») — counts of what the reader reads —, folded beyond five lines per group
+(« Afficher les 12 »), each line the card line of E-8 (vignette, title, badge, sub-type, the dead
+mark) and the qualifier in grey; on a **place**, a toggle **« sous-lieux compris »** (off by default,
+remembered per browser) adds the sheets linked to its descendants in the tree (bounded by the
+tree's depth, AD-129), each line then saying its place in grey (« — Les Docks »); a group has a
+link **« Chercher parmi »** to E-17 with the filters pre-filled (lié à, nature, sous-lieux). A group
+with nothing readable is absent; the block is absent when every group is. « Mentionnée dans »
+keeps the links and the free relations only.
+
+`[À TRANCHER]` **block or side panel.** Kanka shows the linked entities in a right-hand panel.
+Recommended: a **block** of the sheet, like « Contient » and « Mentionnée dans » — one place to
+read a sheet, the same on a phone (a panel has no room under 760 px and would fold into… a block),
+and the charte's blocks already carry counts and folding. Reversed if Monsieur wants the linked
+sheets visible while reading the sections, without scrolling: then a side panel on desktop (≥ 1200
+px) that becomes this block under it. The mockup `e09-lieu-liees.html` shows the block, and the
+panel as the state `#etat-volet`.
+
+| État | Ce qu'on voit | Ce qu'on peut faire |
+|---|---|---|
+| vide | the block is absent (no readable linked sheet) ; on a place with sub-places and nothing at its level: the groups of the sub-places only, « sous-lieux compris » checked and disabled | — |
+| chargement | « Chargement… » in the block, the sheet readable | — |
+| erreur | « Impossible de charger les fiches liées. » with « Réessayer », the rest of the sheet readable | « Réessayer » |
+| connexion perdue | le bandeau ; the toggle and « Afficher les 12 » still work on what is loaded | lire |
+| refus | a player: only the relations whose section and source sheet he reads, counts included ; in player mode the GM sees the same | — |
+| contenu long | a place with 300 characters: « Personnages (300) », five shown, « Afficher les 300 » pages by 50 ; a depth of 50 sub-places: the toggle says « sous-lieux compris (50 niveaux au plus) » | idem |
+
+*Critères.* Étant donné Antor, MJ, et « Port-Sel » dont « Maître Aldric » et « Le Prieur masqué »
+se situent, quand il ouvre la fiche, alors « Fiches liées » dit « S'y trouvent : Personnages (2) »
+avec les deux cartes ; quand il coche « sous-lieux compris », alors « Suie » (se situe aux Docks,
+dans Port-Sel) s'ajoute avec « — Les Docks ». Étant donné Léa, Joueuse, quand elle ouvre
+« Port-Sel », alors elle lit « Personnages (1) » : « Le Prieur masqué », dont la relation est dans
+« Secret — MJ seul », n'y est pas, ni dans le compte. Étant donné Antor sur « La Guilde des
+Brumes », quand il ouvre la fiche, alors « Membres : Personnages (1) » montre « Tenny Balla —
+passeur » ; « Dirigée par » est absent tant que personne ne la dirige.
+
+### E-17 — the advanced search (B-65, AD-129)
+
+Under the field and the two filter rows, a disclosure **« Recherche avancée »** (open when the
+address carries one of its parameters): **« Lié à »** (a sheet picker, the E-8 list as in
+« Relier » ; a chip « Port-Sel ✕ » once chosen), **« Par »** (the natures whose target types include
+the chosen sheet's type, read backwards: « s'y trouvent », « membres »…, plus « toute relation » by
+default), **« sous-lieux compris »** (shown when the chosen sheet is a place), and **« Vivants /
+Morts / Tous »** (shown when the type filter is Personnage or Créature, or « Tous »). Address :
+`&lie=<id>&nature=<key>&descendants=1&etat=vivants|morts`. The results are the E-17 list, same
+order, same rights (a relation counts only if its section and its source are readable by the
+searcher; in player mode, as a player). With « Lié à » set, the words become optional (« Chercher »
+starts with the filters alone, as a label does today). « Chercher parmi » from a « Fiches liées »
+group opens E-17 so pre-filled.
+
+| État | Ce qu'on voit | Ce qu'on peut faire |
+|---|---|---|
+| vide | « Aucune fiche liée à « Port-Sel » pour ces critères. » ; without « Lié à » and without words: E-17 asks for a word, as today | retirer un filtre |
+| chargement | as E-17 | — |
+| erreur | as E-17 | « Réessayer » |
+| connexion perdue | as E-17 ; the picker disabled | lire |
+| refus | a player or player mode: the sheet picker lists what he reads ; `?lie=` on a sheet he does not read: the chip reads « Fiche introuvable » and the search runs without it | — |
+| contenu long | the filters wrap on two rows under 760 px ; a picked title of 120 characters is cut with an ellipsis in the chip, whole in its tooltip | idem |
+
+*Critères.* Étant donné Antor, quand il cherche « lié à Port-Sel », « s'y trouvent », sous-lieux
+compris, type Personnage, alors la liste porte Aldric, le Prieur et Suie ; avec « Vivants », le
+Prieur (mort) disparaît. Étant donné Léa, quand elle ouvre la même adresse, alors la liste porte
+Aldric et Suie seulement, et la bascule de mode est absente.
+
+### E-8, E-9, E-17 — the dead mark (B-67, AD-131)
+
+- **Header of E-9** (personnage, créature): for the GM in GM mode, a menu entry « Marquer mort »
+  in the « ⋯ » menu of the header (« Marquer vivant » when dead), written whole; the header then
+  carries the badge « Mort » (`Pastille` neutral, icon `skull`) next to the type badge, and the
+  illustration takes the mark below. A player sees the badge, never the entry.
+- **The mark on the image**: on the vignette of a card (E-8, E-17, « Fiches liées », « Contient »,
+  the relation lines) and on the illustration of E-9, a sober mark — the image desaturated at 60 %
+  and a small `skull` glyph in a round chip at the bottom-left of the frame; on the drawn fallback,
+  the glyph alone. Never a cross over the face, never a red overlay (the charte's restraint).
+- **Filter** « Vivants / Morts / Tous » (« Tous » by default) on E-8 for the types Personnage and
+  Créature, next to « Sous-type », kept in the address (`?etat=vivants`); a filtered state renders
+  the grid; empty: « Aucun personnage mort. » / « Aucun personnage vivant. » with « Voir tous les
+  personnages ».
+- **Import**: `mort: true|false` on a personnage or a créature (default false, protected by B-48
+  like `pj`).
+
+*Critères.* Étant donné Antor sur « Le Prieur masqué », quand il choisit « Marquer mort », alors
+l'en-tête porte « Mort », le portrait prend la marque, et la carte de la grille aussi sans
+recharger la page de la grille à sa prochaine lecture ; « Vivants » ne le liste plus ; Léa voit la
+marque et pas l'entrée du menu.
+
+### E-11 and « Mentionnée dans » (B-69)
+
+The graph labels a link with the nature's label read from the source (« se situe à ») and the
+qualifier after a dash; a free relation keeps its qualifier as label. « Mentionnée dans » drops the
+natured relations (they are in « Fiches liées ») and keeps the links and the free relations.
+
+### Mockups
+
+`docs/maquettes/e09-lieu-liees.html` — « Port-Sel » for the GM: the block « Fiches liées » with
+« S'y trouvent » folded, « sous-lieux compris », a dead mark on a line; `#etat-volet` shows the
+side-panel alternative; `#etat-joueur` what Léa sees. `docs/maquettes/e17-recherche-avancee.html`
+— E-17 with the disclosure open, « Port-Sel » chosen, « s'y trouvent », sous-lieux compris,
+« Vivants ». The E-9 « Relier » form and the dead mark in the header reuse `e09-fiche.html`; this
+text is authoritative.
+
+### Clôture
+
+- Each need has a screen: B-63 → E-9 (Relier) ; B-64 → E-9 (Fiches liées) ; B-65 → E-17 ; B-66 →
+  E-8/E-14 (the type's list) ; B-67 → E-9, E-8, E-17 ; B-68 → the import API (E-18 lists the lots) ;
+  B-69 → E-11, E-9. Tient.
+- Each screen is reached by a journey: P-17 (E-9, E-17), P-3 step 4 (Relier), P-6 step 6 (Léa). Tient.
 - Each role has its column: GM and player above ; admin d'instance : nothing new. Tient.

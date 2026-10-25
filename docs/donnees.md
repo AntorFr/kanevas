@@ -20,9 +20,9 @@ façon (AD-2).
 | **membre** | (univers, compte, rôle MJ \| Joueur) | univers, compte | les membres de l'univers ; l'admin d'instance | MJ de l'univers ; admin d'instance (cette table seulement, AD-9) ; au moins un MJ par univers (B-5) |
 | **système de jeu** | nom | ← univers ; → gabarits | tout MJ d'un univers (nom seul) ; le contenu : membres d'un univers rattaché | création : tout MJ ; référentiel : MJ d'un univers rattaché |
 | **gabarit** | type (règle, créature, objet), nom, contenu | système de jeu | membres d'un univers rattaché | MJ d'un univers rattaché (B-14) |
-| **fiche** | type (la liste du produit, AD-102 : personnage, lieu, faction, objet, événement, quête, compte-rendu, et depuis `kanevas-import` créature, race, vaisseau, savoir, récit, règle, note), **sous-type** libre (B-52), titre, créée le (date d'origine si l'import la donne, B-50), modifiée le, charge utile versionnée par type (AD-6) — personnage : PJ \| PNJ ; compte-rendu : sa campagne ; **illustration** facultative (une image au plus, AD-93) ; *(kanevas-import)* **parent** facultatif (une fiche du même univers, AD-99), **alias**, **étiquettes**, **clé d'origine** facultative | univers ; → sections ; → parent ; ← enfants | qui lit au moins une de ses sections ; sinon elle n'existe pas (B-9) ; son illustration, ses alias, ses étiquettes : qui voit la fiche ; sa clé d'origine : le MJ | création : MJ ; un compte-rendu : tout membre (B-19) ; l'illustration, le titre, le type, le sous-type, le parent, les alias, les étiquettes, la suppression : MJ (B-38 à B-40, B-52) |
+| **fiche** | type (la liste du produit, AD-102 : personnage, lieu, faction, objet, événement, quête, compte-rendu, et depuis `kanevas-import` créature, race, vaisseau, savoir, récit, règle, note ; *(kanevas-fiches-liees)* famille ; charge `mort` d'un personnage ou d'une créature), **sous-type** libre (B-52), titre, créée le (date d'origine si l'import la donne, B-50), modifiée le, charge utile versionnée par type (AD-6) — personnage : PJ \| PNJ ; compte-rendu : sa campagne ; **illustration** facultative (une image au plus, AD-93) ; *(kanevas-import)* **parent** facultatif (une fiche du même univers, AD-99), **alias**, **étiquettes**, **clé d'origine** facultative | univers ; → sections ; → parent ; ← enfants | qui lit au moins une de ses sections ; sinon elle n'existe pas (B-9) ; son illustration, ses alias, ses étiquettes : qui voit la fiche ; sa clé d'origine : le MJ | création : MJ ; un compte-rendu : tout membre (B-19) ; l'illustration, le titre, le type, le sous-type, le parent, les alias, les étiquettes, la suppression : MJ (B-38 à B-40, B-52) |
 | **section** | titre, ordre, contenu (Markdown depuis `kanevas-import`, AD-95, avec ses **blocs MJ**, AD-98), modifiée le ; lecture et écriture des joueurs ; auteur (un compte) avec sa lecture et son écriture ; *(kanevas-import)* clé d'origine, version du dernier import | fiche ; → relations, pièces jointes, liens | le MJ ; un joueur selon les bascules (AD-19), **sans ses blocs MJ** | contenu : qui a l'écriture, **un MJ seul si elle contient un bloc MJ** ; structure et audience : MJ |
-| **relation** | type (texte libre), dirigée | section porteuse → fiche cible | qui lit la section **et** la fiche cible (sinon la cible n'est pas nommée) | MJ |
+| **relation** | *(kanevas-fiches-liees)* **nature** (a key of the product's list, or none : free), **qualificatif** (texte libre facultatif — the former « type »), dirigée | section porteuse → fiche cible ; the nature is allowed for the pair (type source → type cible) | qui lit la section **et** la fiche cible (sinon la cible n'est pas nommée) ; read backwards from the target under the same two guards | MJ |
 | **fichier** *(kanevas-import, médiathèque, AD-111)* | nom, type (déterminé à la signature ; image si PNG, JPEG, GIF, WebP, document sinon), taille, nom sur disque (UUID), empreinte, **visibilité** (`joueurs` par défaut \| `mj`), ajouté par, ajouté le, clé d'origine | univers ; ← références (sections, illustrations) | le MJ : tous ; un joueur : ceux `joueurs`, **et ceux qu'il a ajoutés** (troisième règle de lecture, pas un niveau : `ajoute_par`) ; **dans une fiche** : si le conteneur **et** le fichier sont lisibles (double garde) | MJ : tout ; qui écrit une section : en ajouter un depuis la fiche, en un geste avec sa référence (visibilité selon l'endroit d'ajout, AD-111) ; l'import |
 | **référence de fichier** *(kanevas-import)* | un fichier joint à une section, ou cité dans son texte (et alors, dans un bloc MJ ou non) ; l'illustration est une référence portée par la fiche | section → fichier ; fiche → fichier (illustration) | comme le fichier, sous double garde | déduite du texte à chaque écriture ; jointe ou retirée par qui écrit la section ; l'illustration : MJ |
 | **pièce jointe** | *depuis `kanevas-import` (AD-111) : une référence de fichier jointe à une section ; « secrète » est la visibilité du fichier ; ci-dessous, le modèle d'avant, que la migration reprend* — nom d'origine, type MIME, taille, nom sur disque (UUID), secrète | section | qui lit la section, et le MJ seul si secrète | qui écrit la section ; « secrète » : MJ |
@@ -179,6 +179,10 @@ stockée nulle part (AD-28) ; seul le fichier l'est. Les identifiants du moteur 
 10. *(kanevas-import)* Un **fichier de la médiathèque** (image ou document) porte ses propres droits ;
    dans une fiche, il ne se montre que si son conteneur **et** lui-même sont lisibles ; sinon, dans un
    conteneur lisible, « Image réservée au MJ. » ou « Fichier réservé au MJ. » (AD-111).
+13. *(kanevas-fiches-liees)* A **nature** gives a relation a meaning in both directions, nothing
+   else : the audience stays the section's, the two guards of AD-64 apply to « Fiches liées », to
+   the counts and to the search (a relation the reader cannot read does not count) ; the dead mark
+   is read by whoever reads the sheet (like PJ/PNJ), written by the GM alone.
 12. *(kanevas-scenarios)* An **adventure** is a sheet: rules 2, 3, 6, 7 and 10 apply to it
    without exception. Its **status** lives in `fiches.charge` (`{v:1, statut}`) and is read by
    whoever reads the sheet (a player sees « En cours »), written by the GM alone. The
@@ -587,3 +591,36 @@ Test : the stub's base at the previous schema (two campaigns, two scenarios, tas
 as the example base ; after start-up the campaign « La Couronne brisée » is a sheet « En cours »
 with its « Présentation » open (it was active), a campaign in preparation has it closed, « Acte II » is under it with its content in a closed section, the
 tasks are on the campaign, the CR shows « Campagne : La Couronne brisée ».
+
+## Cadrage `kanevas-fiches-liees` : le modèle
+
+No new entity. What changes, at the three levels :
+
+**Conceptual.** « A relation has at most one nature, taken from the product's list, allowed for
+its pair of types » ; « a nature reads in both directions » ; « a relation has at most one
+qualifier » ; « a character or a creature is alive or dead, alive at birth » ; « a family is a
+sheet ».
+
+**Logical.**
+- `relations` : `type` **becomes `qualificatif`** (same constraints — trimmed, 0 to 80 ; empty
+  allowed, `''`) and a column `nature TEXT NOT NULL DEFAULT ''` (`''` = free ; a key of the list
+  otherwise, validated by the application against the list and the pair of types — no `CHECK` on
+  the keys : the list is the product's, like the types, AD-102). `UNIQUE(section_id, cible_fiche_id,
+  nature, qualificatif)` replaces `UNIQUE(section_id, cible_fiche_id, type)` : the same target may be
+  « se situe à — habite » and « se situe à — y travaille » from one section. Index
+  `relations_par_cible_nature (cible_fiche_id, nature)` for « Fiches liées » and the search.
+- `fiches.charge` : personnage `{v:1, pj, mort?}`, créature `{v:1, mort?}` — `mort` boolean, absent
+  = false (the schemas are strict : the key is added to both) ; written by the GM alone through the
+  sheet's charge route (`PATCH {mort}`, AD-131) and the import.
+- `fiches.type = 'famille'` : no migration (AD-102).
+
+**Physical.** SQLite, unchanged. The descent of the tree for « sous-lieux compris » is a recursive
+CTE bounded to 50 levels (AD-129) on `fiches_par_parent` ; the natured lookup reads
+`relations_par_cible_nature` then joins `sections` and `fiches` under the two guards.
+
+**Migration `kanevas-fiches-liees`** (one script, number taken at the merge, AD-51) : rebuild
+`relations` with `qualificatif` (values of `type`), `nature = ''`, the new unique index, the new
+index ; counts before and after equal ; `PRAGMA foreign_key_check` empty. No data moves (decision of
+Monsieur, 2026-10-25 : he redoes the import once the model is delivered). Test : the stub's base at
+the previous schema, three relations (`src/bouchon/depart.ts`) ; after start-up the three are free,
+with their former text as qualifier, and the graph of Port-Sel still shows them.
