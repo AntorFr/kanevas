@@ -853,7 +853,7 @@ date de création, lien vers E-9. Cent à la fois, puis « Charger la suite ». 
 
 | État | Ce qu'on voit | Ce qu'on peut faire |
 |---|---|---|
-| vide | « Aucun compte-rendu pour l'instant. » (Joueur : « Aucun compte-rendu à lire pour l'instant. ») | MJ et Joueur : « Voir les campagnes » (→ E-6) |
+| vide | « Aucun compte-rendu pour l'instant. » (Joueur : « Aucun compte-rendu à lire pour l'instant. ») | MJ et Joueur : « Voir les aventures » (→ E-8, type « Aventure ») |
 | chargement | « Chargement des comptes-rendus… » | — |
 | erreur | « Impossible de charger les comptes-rendus. » ; « Charger la suite » en échec : « Impossible de charger la suite. » | « Réessayer » |
 | connexion perdue | le bandeau ; la liste chargée reste ; « Charger la suite » désactivé | ouvrir |
@@ -871,7 +871,7 @@ Trois blocs indépendants, dans cet ordre. Chacun a un titre, un état vide, et 
 compteur ni un nom que le compte ne peut pas lire.
 
 - **Campagnes actives** (tous) : nom de chaque campagne active, lien vers E-6 de la campagne.
-  Toutes les campagnes actives, une par ligne. Vide : « Aucune campagne active. » (MJ : suivi du lien « Voir les campagnes »).
+  Toutes les campagnes actives, une par ligne. Vide : « Aucune campagne en cours. » (MJ : suivi du lien « Voir les aventures » → E-8, type « Aventure »).
 - **Derniers comptes-rendus** (tous) : les cinq plus récemment créés que le compte peut lire,
   titre, campagne, date, lien vers E-9 ; lien « Tous les comptes-rendus » (→ E-13). Vide : « Aucun
   compte-rendu pour l'instant. » (Joueur : « Aucun compte-rendu à lire pour l'instant. »).
@@ -2887,8 +2887,7 @@ toast « Adresse copiée. »). Deux panneaux.
    si elle n'est pas nulle : un rejeu sans rien de neuf lit « Fiches : 1 inchangée » (le rapport de l'API,
    lui, rend tous les compteurs, `creees: 0`), et un compte nul d'attente ou d'avertissements est omis
    (la maquette abrège « 6 en attente » ; le texte est celui d'ici). Un `PUT` refusé (400) avec son lot
-   counts one refusal and records its origin key and reason (for example, « campagne inconnue : c:absente »
-   or « type « monstre » inconnu de Kanevas »); without a batch it leaves no trace here. A
+   counts one refusal and records its origin key and reason (for example, « type « monstre » inconnu de Kanevas »); without a batch it leaves no trace here. A
    ligne se déplie :
    les refus et avertissements, chacun avec la clé d'origine, ce qui est en cause et la raison
    (« section « Vérité » : 112 000 caractères, 100 000 au plus » ; « parent lieu:les-docks inconnu :
@@ -3244,7 +3243,7 @@ The sheet of any type, with:
   counts, besides what every sheet counts, « n tâches de préparation supprimées », « m scénarios
   qui passent à la racine » and « k comptes-rendus qui resteront sans aventure »; its scenarios
   go to the root (the tree's `ON DELETE SET NULL`), its tasks go with it, its comptes-rendus stay
-  and show « Aventure supprimée » in their « Campagne » line — **to the GM only**: the server names a
+  and show « Aventure supprimée » in their « Campagne » line — **to the GM only** (a GM in player mode reads it as a player does, so nothing): the server names a
   deleted adventure (an id that matches no sheet) to a GM, and sends nothing for it to anyone else, so
   a player cannot tell a deleted adventure from one closed to him (no existence leaks, AD-64).
 

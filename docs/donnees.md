@@ -589,7 +589,8 @@ start-up after backup, as every migration) :
 5. Checks : as many adventures as campaigns + scenarios ; every task has a sheet ; every CR charge
    points to an existing adventure ; `PRAGMA foreign_key_check` empty.
 
-Test : the stub's base at the previous schema (two campaigns, two scenarios, tasks, CR) committed
-as the example base ; after start-up the campaign « La Couronne brisée » is a sheet « En cours »
+Test : the example base is built by the test itself (migrations 0001 to 0016, then SQL rows: two
+campaigns, three scenarios one of which has an origin key already taken, tasks, CR; no binary file
+committed, and the stub seeds no campaign); after start-up the campaign « La Couronne brisée » is a sheet « En cours »
 with its « Présentation » open (it was active), a campaign in preparation has it closed, « Acte II » is under it with its content in a closed section, the
 tasks are on the campaign, the CR shows « Campagne : La Couronne brisée ».
