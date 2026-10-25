@@ -578,3 +578,51 @@ Val-Fortin » (veuve) as members — every one of these relations from the chara
 read by the players, so that Léa's criteria (E-9, E-17) hold ; the Prieur's alone from « Secret — MJ
 seul » ; the
 three former free relations of Port-Sel keep their text as qualifier.
+
+### Slice `kanevas-fiches-liees-natures` — design notes (2026-10-25)
+
+Detail of the slice's part of AD-128, AD-132, AD-133; nothing here adds a nature, a type or a screen.
+The repository facts were read on `epic/kanevas-fiches-liees` (last migration `0016`; the number of
+this one is taken at the merge, AD-51).
+
+1. **Natures** — `src/services/natures.ts` holds the list (`key`, `libelleSource`, `libelleCible`,
+   `symetrique`, `types source`, `types cible`); `TypeNature` and the validity of a pair derive from it.
+   `GET /api/univers/:id/natures` (any member) returns the list in this order: se_situe, membre,
+   detient, allie, ennemi. `famille` is added to `TYPES` (`types-fiche.ts`, charge `v1()`, icon `users`,
+   `reglable`) in the same slice; the `disparu` key of its charge is `-disparu`'s.
+2. **Migration** — rebuild of `relations` in the style of `0013` (header `-- migrate: sans-cles-etrangeres`,
+   `foreign_key_check` before commit): `type` → `qualificatif` (`TEXT NOT NULL`, `length(trim()) <= 80`, **empty
+   allowed**), `nature TEXT NOT NULL DEFAULT ''`, `UNIQUE(section_id, cible_fiche_id, nature, qualificatif)`,
+   indexes `relations_par_section`, `relations_par_cible` kept and `relations_par_cible_nature` added; row ids
+   kept; counts equal. Its test builds a base at the previous schema with three relations.
+3. **Service rules** (`relierSection`, entry `{cibleFicheId, nature?, qualificatif?}`; `type` is a synonym of
+   `qualificatif` and both together are 400): `nature` absent or `''` is free; a nature unknown to the list or
+   not allowed for the pair is `invalide` with `detail: 'nature_incompatible'`; **a free relation needs a
+   non-empty qualifier** (as today's `type`, 1 to 80), a natured relation may have none. The sheet's own
+   type decides the source side; a symmetric nature is accepted in either orientation of the pair. The
+   duplicate check (`relation_existante`) is on (section, target, nature, qualifier) and, for a symmetric nature,
+   also refuses the same nature and qualifier already held by the **other** sheet toward this one, in any of
+   its sections (the fact is stored once). `LIMITE_RELATIONS` unchanged. `lireRelations` returns
+   `{id, nature, qualificatif, cible: {id, titre, type}}` under both guards, unchanged otherwise.
+4. **Mentioned in** (AD-100) — `mentions.ts` keeps the relations whose `nature = ''` only; the libelle shown is
+   the qualifier. Natured relations are read by `-bloc`; until it lands, they are listed by the relation line of
+   their own section only (accepted: the bloc is the next-but-two slice of the epic, the seed's free relations
+   keep the criterion « Mentionnée dans de Port-Sel liste la Guilde et le rapport »).
+5. **Graph** (AD-41, E-11) — `LienVue` carries `nature` and `qualificatif` besides the label; the label is
+   `libelleSource` of the nature (qualifier after « — » when present) or the qualifier when free; the dedupe
+   key adds the nature; nothing else of `lireCarte` changes. Two links between the same pair stay two.
+6. **Import** (AD-133) — `assurerRelations` reads `nature?` and `qualificatif?` (`type` read as `qualificatif`
+   when it is the only one, answered with an `avertissements` entry « type est déprécié, utilisez qualificatif »);
+   an unknown or incompatible nature is a **refusal** counted `refusees` with `code: 'nature_incompatible'`
+   (a field error `champ: 'nature'`), never a free relation; `relation_existante` stays « inchangée ». `PUT
+   /fiches/:cle` accepts `type: 'famille'` through the type list. The API reference of the import (screen
+   « Accès API » and `docs/`) documents both fields and the deprecation.
+7. **Screens** — the form of E-9 and the relation line follow « Détail des écrans de `kanevas-fiches-liees` »
+   as written; the natures come from `GET …/natures` fetched once per fiche screen; « Nature » defaults to
+   the first nature of the list when there is one, else « Sans nature »; changing the nature empties a
+   chosen target that no longer fits. The Lore bar entry « Familles » and the card icon come from the type list.
+8. **Security** — no new read path: the natures route is metadata; `lireRelations` and the graph keep both
+   guards; a player still reads no relation of a closed section (tested on the route, the graph and E-9).
+9. **Seed** — `depart.ts` follows « Bouchons » above, minus `disparu` (`-disparu` adds the Prieur's death and
+   Bran's mark). The existing free relation `Aldric → Port-Sel « maître de port »` is kept beside the new
+   « se situe à — habite ».
