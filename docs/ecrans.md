@@ -736,180 +736,180 @@ searches and reads what they can; the instance admin reaches neither (« Page
 introuvable. »). Failure path specific to this slice (`docs/parcours.md` has none for P-3 and P-6): a search without results says « Aucun résultat pour … »,
 never « caché ». Failure path for relating a section: the service refusal appears above the form (« Cette relation existe déjà. », « Une fiche ne se relie pas à elle-même. », « Cette section porte déjà 100 relations. »), input and selection are kept; a generic write failure and an expired session follow the shared text (« L'action n'a pas abouti. Réessayez. »; sign-in, form not kept).
 
-## Détail des écrans de `kanevas-suivi`
+## Screen details for `kanevas-suivi`
 
-> E-6 Campagne, E-7 Scénario, E-13 Comptes-rendus, et leurs ajouts à E-3, à E-9 et à la barre
-> latérale. Mêmes six états et mêmes textes communs que ci-dessus (chargement, erreur de
-> chargement, connexion perdue, écriture en cours, échec d'écriture, refus, session expirée) ; ne
-> sont redits que les textes propres. Vocabulaire : les écrans disent « compte-rendu » en toutes
-> lettres ; « CR » n'est qu'un sigle des documents (B-19, B-20). Dates : « 22 sept. 2026 » (jour, mois
-> abrégé, année), comme sur E-9. Maquettes : `e06` et `e03` sont finies ; `e07` et `e13` sont d'avant la charte (contenu et vocabulaire seulement).
+> E-6 Campaign, E-7 Scenario, E-13 Session reports, and their additions to E-3, E-9 and the
+> sidebar. The same six states and common texts as above (loading, loading error,
+> offline, writing, write failure, refusal, expired session); only specific
+> texts are repeated. Vocabulary: screens spell out « compte-rendu »;
+> « CR » is only an abbreviation in the documents (B-19, B-20). Dates: « 22 sept. 2026 » (day, abbreviated
+> month, year), as on E-9. Mockups: `e06` and `e03` are finished; `e07` and `e13` predate the charter (content and vocabulary only).
 
-**Ajouts aux écrans déjà construits.**
+**Additions to existing screens.**
 
-- *Barre latérale* : **Campagnes** et **Comptes-rendus** apparaissent, pour tous les rôles, entre
-  « Vue d'ensemble » et « Lore ». Sur téléphone, comme les autres items (tiroir).
-- *E-3* : trois blocs, inscrits au registre (une ligne chacun, aucun bloc existant modifié) :
-  « Campagnes actives » (tous), « Derniers comptes-rendus » (tous), « Préparation » (MJ).
-  La région « Rien à afficher pour l'instant… » ne s'affiche plus tant qu'un bloc est inscrit pour
-  le rôle ; chaque bloc a son propre état vide.
-- *E-9, fiche de type compte-rendu* : sous le titre, une ligne « Campagne : <nom> » qui mène à
-  E-6 de la campagne. Pour une fiche d'un autre type, rien n'est ajouté. E-9 n'a pas aujourd'hui
-  d'emplacement sous le titre : la tranche en ajoute **un seul**, un registre de lignes de titre
-  (`frontend/src/ecrans/fiche/lignes/registre.ts`, une ligne : type de fiche concerné, composant),
-  vide pour tout autre type ; aucun bloc de section existant n'est modifié. États de la ligne : le
-  nom de la campagne passe à la ligne (80 caractères) ; pendant le chargement, la ligne est absente ;
-  campagne illisible ou en erreur, la ligne est absente sans message (le compte-rendu reste lisible) ; connexion perdue : la ligne déjà affichée reste cliquable (navigation seule, sans écriture).
-- *E-9, ce que chaque rôle voit d'un compte-rendu* : une seule section, « Compte-rendu », lisible de
-  tous les membres. « Modifier » est offert à son auteur (le Joueur qui l'a créé) et au MJ, pas aux
-  autres Joueurs ; le MJ règle l'audience comme pour toute section. Un compte-rendu créé par un MJ
-  n'a pas d'auteur. Fermer la section aux joueurs la cache aux autres Joueurs, pas à son auteur
+- *Sidebar*: **« Campagnes »** and **« Comptes-rendus »** appear, for all roles, between
+  « Vue d'ensemble » and « Lore ». On phones, like the other items (drawer).
+- *E-3*: three registered blocks (one line each, no existing block changed):
+  « Campagnes actives » (everyone), « Derniers comptes-rendus » (everyone), « Préparation » (GM).
+  The « Rien à afficher pour l'instant… » region stops appearing as soon as a block is registered for
+  the role; each block has its own empty state.
+- *E-9, session-report sheet*: below the title, a « Campagne : <nom> » line leads to
+  the campaign's E-6. Nothing is added for other sheet types. E-9 currently has no
+  slot below the title: the slice adds **just one**, a title-line registry
+  (`frontend/src/ecrans/fiche/lignes/registre.ts`, one line: relevant sheet type, component),
+  empty for every other type; no existing section block is changed. Line states: the
+  campaign name wraps (80 characters); while loading, the line is absent;
+  unreadable campaign or error: the line is absent without a message (the report remains readable); offline: the displayed line stays clickable (navigation only, no write).
+- *E-9, what each role sees of a session report*: a single section, « Compte-rendu », readable by
+  all members. « Modifier » is offered to its author (the player who created it) and the GM, but not
+  other players; the GM sets the audience as for any section. A report created by a GM
+  has no author. Closing the section to players hides it from other players, but not its author
   (AD-61).
 
-### E-6 Campagne
+### E-6 Campaign
 
-Deux vues, une adresse chacune : la **liste** (`/univers/:id/campagnes`) et la **page d'une
-campagne** (`/univers/:id/campagnes/:campagne`).
+Two views, each with its own address: the **list** (`/univers/:id/campagnes`) and a **campaign
+page** (`/univers/:id/campagnes/:campagne`).
 
-*La liste* : les campagnes de l'univers — nom, statut — **actives d'abord, puis en préparation,
-puis terminées, chaque groupe par nom** (sans casse). Plusieurs campagnes peuvent être actives
-(AD-60). Le MJ voit pour chacune une liste de statut (« En préparation », « Active », « Terminée »)
-qu'il change en place, et en tête « Nouvelle campagne » : un champ « Nom » (1 à 80 caractères) et
-« Créer la campagne » ; la campagne naît « En préparation » et on reste sur la liste, où elle
-apparaît. Le Joueur voit le statut en badge, sans réglage. Ni le nom d'une campagne ni le libellé d'une
-tâche ne se corrigent, et rien ne se supprime : hors tranche.
+*The list*: the universe's campaigns — name, status — **active first, then in preparation,
+then completed, each group sorted by name** (case-insensitive). Several campaigns may be active
+(AD-60). For each one, the GM sees a status dropdown (« En préparation », « Active », « Terminée »)
+to change it in place, and « Nouvelle campagne » at the top: a « Nom » field (1 to 80 characters) and
+« Créer la campagne »; the campaign starts « En préparation » and the list stays open, showing
+it. The player sees a status badge, with no control. Neither a campaign name nor a task
+label can be corrected, and nothing can be deleted: outside this slice.
 
-*La page d'une campagne* : le nom (titre), le statut (liste pour le MJ, badge pour le Joueur),
-puis trois panneaux (une campagne n'a ni description ni autre champ que son nom et son statut).
+*The campaign page*: the name (title), status (dropdown for the GM, badge for the player),
+then three panels (a campaign has no description or fields other than name and status).
 
-1. **Scénarios** (MJ seul — le panneau n'existe pas pour un Joueur, ni son titre) : les scénarios par
-   ordre de création, le plus ancien d'abord, chacun un lien vers E-7 ; « Nouveau scénario » : un
-   champ « Titre » (1 à 120 caractères) et « Créer le scénario », qui mène à E-7.
-2. **Préparation** (MJ seul, idem) : les tâches **non cochées**, regroupées sous les cinq
-   catégories dans cet ordre — Monstres, PNJ, Cartes, Déroulements, Autre — une catégorie vide
-   n'est pas montrée ; chaque tâche : une case, son libellé. Cocher la fait passer dans le groupe
-   « Cochées (n) », sous la liste, avec son badge de catégorie, un lien « Décocher » et le libellé
-   barré ; les cochées sont triées de la plus récemment cochée à la plus ancienne. En pied, « Nouvelle
-   tâche » : libellé (1 à 200 caractères), catégorie (obligatoire, « Autre » par défaut),
-   « Ajouter ». **Aucune tâche ne se supprime** (matrice du cadrage).
-3. **Comptes-rendus** (tous) : les comptes-rendus **lisibles** de cette campagne, du plus
-   récemment créé au plus ancien, chacun : titre, auteur (l'identifiant de l'auteur de la section ; un compte-rendu
-   créé par le MJ n'a pas d'auteur, AD-61 : rien n'est affiché, pas même le nom du MJ), date de création, lien vers E-9. « Nouveau
-   compte-rendu » ouvre une fenêtre : « Titre » (1 à 120 caractères), « Texte » (facultatif, 100 000
-   au plus depuis `kanevas-import`, AD-106 ; 20 000 avant), « Publier » et « Annuler » ; « Publier » crée le compte-rendu et mène à E-9 (AD-61). Si la
-   création échoue, la fenêtre reste ouverte, la saisie gardée, avec « L'action n'a pas abouti.
-   Réessayez. » ; session expirée pendant la saisie : le texte est gardé comme sur E-9. Cent à la fois,
-   puis « Charger la suite ».
+1. **« Scénarios »** (GM only — players have neither the panel nor its title): scenarios in
+   creation order, oldest first, each a link to E-7; « Nouveau scénario »: a
+   « Titre » field (1 to 120 characters) and « Créer le scénario », leading to E-7.
+2. **« Préparation »** (GM only, likewise): **unchecked** tasks, grouped under the five
+   categories in this order — « Monstres », « PNJ », « Cartes », « Déroulements », « Autre » — empty categories
+   are not shown; each task: a checkbox and its label. Checking moves it to the
+   « Cochées (n) » group below the list, with its category badge, an « Décocher » link and a
+   struck-through label; checked tasks sort from most recently checked to oldest. At the bottom, « Nouvelle
+   tâche »: label (1 to 200 characters), category (required, « Autre » by default),
+   « Ajouter ». **No task can be deleted** (scope matrix).
+3. **« Comptes-rendus »** (everyone): this campaign's **readable** session reports, newest
+   creation first, each with title, author (the section author's identifier; a report
+   created by the GM has no author, AD-61: nothing is shown, not even the GM's name), creation date and link to E-9. « Nouveau
+   compte-rendu » opens a dialog: « Titre » (1 to 120 characters), « Texte » (optional, at most 100 000
+   since `kanevas-import`, AD-106; 20 000 before), « Publier » and « Annuler »; « Publier » creates the report and leads to E-9 (AD-61). If
+   creation fails, the dialog stays open and keeps the input, with « L'action n'a pas abouti.
+   Réessayez. »; session expires during input: text is kept as on E-9. One hundred at a time,
+   then « Charger la suite ».
 
-Erreurs de saisie, sous le champ : « Erreur : le nom est obligatoire. » / « Erreur : 80 caractères
-au plus. » (campagne) ; « Erreur : le titre est obligatoire. » / « Erreur : 120 caractères au plus. »
-(scénario, compte-rendu) ; « Erreur : le libellé est obligatoire. » / « Erreur : 200 caractères au
-plus. » (tâche) ; « Erreur : 100 000 caractères au plus. » (texte du compte-rendu).
+Input errors, below the field: « Erreur : le nom est obligatoire. » / « Erreur : 80 caractères
+au plus. » (campaign); « Erreur : le titre est obligatoire. » / « Erreur : 120 caractères au plus. »
+(scenario, report); « Erreur : le libellé est obligatoire. » / « Erreur : 200 caractères au
+plus. » (task); « Erreur : 100 000 caractères au plus. » (report text).
 
-Textes : liste vide, MJ : « Aucune campagne pour l'instant. » et « Nouvelle campagne » ; Joueur :
-« Aucune campagne pour l'instant. » ; scénarios vides : « Aucun scénario pour l'instant. » ;
-préparation vide, aussi quand toutes les tâches sont cochées : « Rien à préparer pour l'instant. »,
-le groupe « Cochées (n) » restant sous elle ; cochées vides : le groupe n'est pas montré ;
-comptes-rendus vides : « Aucun compte-rendu pour l'instant. » (Joueur : « Aucun compte-rendu à lire
-pour l'instant. »). Une campagne terminée garde ses panneaux et accepte de nouveaux comptes-rendus.
+Texts: empty list, GM: « Aucune campagne pour l'instant. » and « Nouvelle campagne »; player:
+« Aucune campagne pour l'instant. »; no scenarios: « Aucun scénario pour l'instant. »;
+empty preparation, including when all tasks are checked: « Rien à préparer pour l'instant. »,
+with the « Cochées (n) » group remaining below it; no checked tasks: the group is not shown;
+no reports: « Aucun compte-rendu pour l'instant. » (player: « Aucun compte-rendu à lire
+pour l'instant. »). A completed campaign keeps its panels and accepts new reports.
 
-| État | Ce qu'on voit | Ce qu'on peut faire |
+| State | What is shown | Available actions |
 |---|---|---|
-| vide | les textes ci-dessus, panneau par panneau | MJ : créer une campagne, un scénario, une tâche ; tous : un compte-rendu |
-| chargement | « Chargement des campagnes… » (liste) ; « Chargement de la campagne… » (page), le titre absent | — |
-| erreur | « Impossible de charger les campagnes. » / « Impossible de charger cette campagne. » (le nom ou le statut illisible vide la page ; l'échec d'un seul panneau — scénarios, préparation, comptes-rendus — ne vide que ce panneau : « Impossible de charger ce panneau. » avec « Réessayer ») ; « Charger la suite » en échec : « Impossible de charger la suite. » ; un échec d'écriture (statut, tâche, création) s'écrit au-dessus du panneau, la valeur revient à celle d'avant, la saisie reste | « Réessayer » |
-| connexion perdue | le bandeau ; liste de statut, cases, « Ajouter », « Créer… », « Publier » désactivés ; saisie conservée | lire, ouvrir |
-| refus | campagne inconnue ou d'un autre univers, univers sans rôle : « Page introuvable. » ; pour un Joueur, les panneaux Scénarios et Préparation sont absents, sans titre ni compteur, et l'adresse d'un scénario répond « Page introuvable. » | « Mes univers » |
-| contenu long | 100 campagnes : la liste défile ; un nom de 80 caractères passe à la ligne ; un titre de compte-rendu de 120 caractères passe à la ligne ; 100 scénarios ou plus : la liste s'allonge ; 100 tâches ou plus par catégorie : la liste s'allonge, sans pagination ; plus de 100 comptes-rendus : « Charger la suite » | idem |
+| Empty | The texts above, panel by panel | GM: create a campaign, scenario, task; everyone: a report |
+| Loading | « Chargement des campagnes… » (list); « Chargement de la campagne… » (page), title absent | — |
+| Error | « Impossible de charger les campagnes. » / « Impossible de charger cette campagne. » (unreadable name or status empties the page; failure of a single panel — scenarios, preparation, reports — empties only that panel: « Impossible de charger ce panneau. » with « Réessayer »); failed « Charger la suite »: « Impossible de charger la suite. »; write failure (status, task, creation) appears above the panel, the value returns to its previous state, input remains | « Réessayer » |
+| Offline | Banner; status dropdown, checkboxes, « Ajouter », « Créer… », « Publier » disabled; input kept | Read, open |
+| Refused | Unknown campaign or campaign from another universe, universe without a role: « Page introuvable. »; players have neither the scenarios nor preparation panels, titles or counters, and a scenario address answers « Page introuvable. » | « Mes univers » |
+| Long content | 100 campaigns: list scrolls; an 80-character name wraps; a 120-character report title wraps; 100 or more scenarios: list grows; 100 or more tasks per category: list grows, without pagination; over 100 reports: « Charger la suite » | Same |
 
-*Critères.*
-- Étant donné Antor, MJ, qui a une tâche « Plan de la crypte » (Cartes) non cochée, quand il la
-  coche, alors elle quitte « Préparation » et apparaît dans « Cochées (1) » ; quand il la décoche,
-  elle revient sous « Cartes ».
-- Étant donné Léa, Joueuse, quand elle ouvre « La Couronne brisée », alors elle voit le nom, le
-  statut et les comptes-rendus, et dans la réponse de la route ni scénario ni tâche, ni leur nombre.
-- Étant donné Antor qui change le statut en « Terminée », quand Léa recharge la liste, alors le
-  badge de la campagne dit « Terminée » et la campagne passe en dernier groupe.
+*Acceptance criteria.*
+- Given Antor, a GM, with an unchecked « Plan de la crypte » task (« Cartes »), when he
+  checks it, it leaves « Préparation » and appears in « Cochées (1) »; when he unchecks it,
+  it returns under « Cartes ».
+- Given Léa, a player, when she opens « La Couronne brisée », she sees the name,
+  status and reports, and the route response contains neither scenarios nor tasks nor their counts.
+- Given Antor changing the status to « Terminée », when Léa reloads the list, the
+  campaign's badge says « Terminée » and the campaign moves to the last group.
 
-### E-7 Scénario (MJ)
+### E-7 Scenario (GM)
 
-Atteint depuis E-6 (liste des scénarios, « Créer le scénario »). Le titre, un lien « ← La
-Couronne brisée » vers E-6, le contenu en Markdown rendu (AD-95) ; « Modifier » ouvre « Titre » et
-« Contenu » (20 000 caractères au plus ; 100 000 et Markdown depuis `kanevas-import`, AD-95, AD-106), « Enregistrer », « Annuler ». Enregistrer envoie la version
-lue (AD-62) ; un scénario ne se supprime pas.
+Reached from E-6 (scenario list, « Créer le scénario »). The title, a « ← La
+Couronne brisée » link to E-6, rendered Markdown content (AD-95); « Modifier » opens « Titre » and
+« Contenu » (at most 20 000 characters; 100 000 and Markdown since `kanevas-import`, AD-95, AD-106), « Enregistrer », « Annuler ». Saving sends the version
+read (AD-62); a scenario cannot be deleted.
 
-Textes : contenu vide : « Rien d'écrit pour l'instant. » ; écriture périmée : « Ce scénario a changé
+Texts: empty content: « Rien d'écrit pour l'instant. »; stale write: « Ce scénario a changé
 depuis que vous l'avez ouvert. Rechargez-le pour voir la nouvelle version ; votre texte reste
-ci-dessous. » avec « Recharger le scénario » ; titre vide ou trop long : « Erreur : le titre est
-obligatoire. » / « Erreur : 120 caractères au plus. » ; contenu : « Erreur : 100 000 caractères au
-plus. ». Session expirée pendant une saisie : le texte est gardé comme sur E-9.
+ci-dessous. » with « Recharger le scénario »; empty or overlong title: « Erreur : le titre est
+obligatoire. » / « Erreur : 120 caractères au plus. »; content: « Erreur : 100 000 caractères au
+plus. ». Session expires during input: text is kept as on E-9.
 
-| État | Ce qu'on voit | Ce qu'on peut faire |
+| State | What is shown | Available actions |
 |---|---|---|
-| vide | « Rien d'écrit pour l'instant. » | « Modifier » |
-| chargement | « Chargement du scénario… », le titre absent | — |
-| erreur | « Impossible de charger ce scénario. » ; échec d'écriture : « L'action n'a pas abouti. Réessayez. », texte conservé ; *(kanevas-import-liens)* la liste de `[[` : « Impossible de chercher. » et « Réessayer » | « Réessayer » |
-| connexion perdue | le bandeau ; « Enregistrer » désactivé, texte en cours conservé ; *(kanevas-import-liens)* la liste de `[[` ne s'ouvre pas | lire |
-| refus | Joueur, scénario inconnu, d'une autre campagne ou d'un autre univers : « Page introuvable. » ; un Joueur n'a ni l'écran ni de lien vers lui | « Mes univers » |
-| contenu long | 100 000 caractères : passent à la ligne, affichés en entier ; titre de 120 caractères : passe à la ligne | idem |
+| Empty | « Rien d'écrit pour l'instant. » | « Modifier » |
+| Loading | « Chargement du scénario… », title absent | — |
+| Error | « Impossible de charger ce scénario. »; write failure: « L'action n'a pas abouti. Réessayez. », text kept; *(kanevas-import-liens)* the `[[` list: « Impossible de chercher. » and « Réessayer » | « Réessayer » |
+| Offline | Banner; « Enregistrer » disabled, current text kept; *(kanevas-import-liens)* the `[[` list does not open | Read |
+| Refused | Player, unknown scenario, scenario from another campaign or universe: « Page introuvable. »; a player has neither the screen nor a link to it | « Mes univers » |
+| Long content | 100 000 characters: wrap, displayed in full; 120-character title: wraps | Same |
 
-*Critère.* Étant donné Léa, Joueuse, quand elle ouvre l'adresse du scénario « Acte II — Le sceau
-brisé » que lui donne Antor, alors elle voit « Page introuvable. », sans le titre.
+*Acceptance criterion.* Given Léa, a player, when she opens the address of the « Acte II — Le sceau
+brisé » scenario supplied by Antor, she sees « Page introuvable. », without the title.
 
-### E-13 Comptes-rendus
+### E-13 Session reports
 
-Tous les comptes-rendus de l'univers **que le compte peut lire**, du plus récemment créé au plus
-ancien (un compte-rendu retouché ne remonte pas, B-20) ; chacun : titre, nom de sa campagne, auteur (comme sur E-6 : l'identifiant, rien s'il n'y en a pas),
-date de création, lien vers E-9. Cent à la fois, puis « Charger la suite ». Pas de création ici :
-« Nouveau compte-rendu » est sur E-6, qui porte la campagne.
+All of the universe's session reports **the account can read**, newest creation first
+(editing a report does not move it up, B-20); each with title, campaign name, author (as on E-6: the identifier, nothing if absent),
+creation date and link to E-9. One hundred at a time, then « Charger la suite ». No creation here:
+« Nouveau compte-rendu » is on E-6, which carries the campaign.
 
-| État | Ce qu'on voit | Ce qu'on peut faire |
+| State | What is shown | Available actions |
 |---|---|---|
-| vide | « Aucun compte-rendu pour l'instant. » (Joueur : « Aucun compte-rendu à lire pour l'instant. ») | MJ et Joueur : « Voir les campagnes » (→ E-6) |
-| chargement | « Chargement des comptes-rendus… » | — |
-| erreur | « Impossible de charger les comptes-rendus. » ; « Charger la suite » en échec : « Impossible de charger la suite. » | « Réessayer » |
-| connexion perdue | le bandeau ; la liste chargée reste ; « Charger la suite » désactivé | ouvrir |
-| refus | un compte-rendu dont rien n'est lisible est absent de la liste, jamais signalé ; univers sans rôle : « Page introuvable. » | « Mes univers » |
-| contenu long | plus de 100 : « Charger la suite » ; titre de 120 caractères : passe à la ligne | idem |
+| Empty | « Aucun compte-rendu pour l'instant. » (player: « Aucun compte-rendu à lire pour l'instant. ») | GM and player: « Voir les campagnes » (→ E-6) |
+| Loading | « Chargement des comptes-rendus… » | — |
+| Error | « Impossible de charger les comptes-rendus. »; failed « Charger la suite »: « Impossible de charger la suite. » | « Réessayer » |
+| Offline | Banner; loaded list remains; « Charger la suite » disabled | Open |
+| Refused | A report with nothing readable is absent from the list, never indicated; universe without a role: « Page introuvable. » | « Mes univers » |
+| Long content | Over 100: « Charger la suite »; 120-character title: wraps | Same |
 
-*Critère.* Étant donné Antor qui a fermé aux joueurs la section du compte-rendu « Session 11 » qu'il a écrit, quand
-Léa ouvre E-13, alors elle ne voit pas « Session 11 » et la liste ne laisse aucun trou ni compteur.
+*Acceptance criterion.* Given Antor closing the section of his « Session 11 » report to players, when
+Léa opens E-13, she does not see « Session 11 » and the list leaves no gap or counter.
 
-### Blocs de E-3 (`kanevas-suivi`)
+### E-3 blocks (`kanevas-suivi`)
 
-Trois blocs indépendants, dans cet ordre. Chacun a un titre, un état vide, et ne montre jamais un
-compteur ni un nom que le compte ne peut pas lire.
+Three independent blocks, in this order. Each has a title and an empty state, and never shows a
+counter or name the account cannot read.
 
-- **Campagnes actives** (tous) : nom de chaque campagne active, lien vers E-6 de la campagne.
-  Toutes les campagnes actives, une par ligne. Vide : « Aucune campagne active. » (MJ : suivi du lien « Voir les campagnes »).
-- **Derniers comptes-rendus** (tous) : les cinq plus récemment créés que le compte peut lire,
-  titre, campagne, date, lien vers E-9 ; lien « Tous les comptes-rendus » (→ E-13). Vide : « Aucun
-  compte-rendu pour l'instant. » (Joueur : « Aucun compte-rendu à lire pour l'instant. »).
-- **Préparation** (MJ seul — le bloc n'existe pas pour un Joueur) : par campagne active, ses cinq
-  premières tâches non cochées (plus anciennes d'abord) avec leur catégorie, lien vers E-6. Vide :
+- **« Campagnes actives »** (everyone): each active campaign's name, link to its E-6.
+  All active campaigns, one per line. Empty: « Aucune campagne active. » (GM: followed by the « Voir les campagnes » link).
+- **« Derniers comptes-rendus »** (everyone): the five most recently created reports the account can read,
+  title, campaign, date, link to E-9; « Tous les comptes-rendus » link (→ E-13). Empty: « Aucun
+  compte-rendu pour l'instant. » (player: « Aucun compte-rendu à lire pour l'instant. »).
+- **« Préparation »** (GM only — no block for players): per active campaign, its five
+  first unchecked tasks (oldest first) with their category, link to E-6. Empty:
   « Rien à préparer pour l'instant. ».
 
-| État | Ce qu'on voit |
+| State | What is shown |
 |---|---|
-| chargement | chaque bloc affiche « Chargement… » à sa place, indépendamment |
-| erreur | le bloc seul dit « Impossible de charger ce bloc. » avec « Réessayer » ; les autres blocs restent |
-| connexion perdue | le bandeau ; contenu déjà chargé |
-| refus | sans objet pour les blocs ; le bloc Préparation est absent pour un Joueur |
-| contenu long | nom de campagne de 80 caractères, titre de compte-rendu de 120, libellé de tâche de 200 : passent à la ligne ; au plus cinq comptes-rendus, et cinq tâches par campagne active ; le nombre de campagnes actives n'est pas borné (AD-60) : « Campagnes actives » et « Préparation » s'allongent avec lui, sans « Charger la suite » — voulu, une table compte quelques campagnes actives |
+| Loading | Each block displays « Chargement… » in its place, independently |
+| Error | Only that block says « Impossible de charger ce bloc. » with « Réessayer »; the other blocks remain |
+| Offline | Banner; already loaded content |
+| Refused | Not applicable to blocks; the preparation block is absent for players |
+| Long content | 80-character campaign name, 120-character report title, 200-character task label: wrap; at most five reports, and five tasks per active campaign; the number of active campaigns is unlimited (AD-60): « Campagnes actives » and « Préparation » grow with it, without « Charger la suite » — intentional, a table has a few active campaigns |
 
-*Critère.* Étant donné Léa, quand elle ouvre E-3, alors elle voit « Campagnes actives » et
-« Derniers comptes-rendus », jamais « Préparation » ; Antor voit les trois.
+*Acceptance criterion.* Given Léa, when she opens E-3, she sees « Campagnes actives » and
+« Derniers comptes-rendus », never « Préparation »; Antor sees all three.
 
-### Clôture de la tranche
+### Slice closure
 
-B-15 → E-6 (liste et page) ; B-16 → E-6 et E-7 ; B-17 → E-6 ; B-18 → E-6 ; B-19 → E-6 et E-9 ;
-B-20 → E-13. Parcours : P-3 étapes 1 à 3 (E-3, E-6, E-7), P-4 en entier, P-5 étape 1 (E-13 →
-E-9) ; P-6 étape 1 ne lit que les blocs de E-3 (derniers comptes-rendus) ; B-18 et B-20 le citent, mais aucune étape de P-6 ne passe par E-6 ni E-13. Les trois rôles : le Joueur a E-3, E-6
-(sans scénarios ni préparation), E-13 ; l'admin d'instance sans rôle n'a aucun de ces écrans.
-Reste aux autres tranches : la proposition de mise à jour depuis un CR (`kanevas-monde`) ; créer une campagne ou un scénario par
-l'assistant est construit (E-12, `kanevas-assistant-membre`).
+B-15 → E-6 (list and page); B-16 → E-6 and E-7; B-17 → E-6; B-18 → E-6; B-19 → E-6 and E-9;
+B-20 → E-13. Journeys: P-3 steps 1 to 3 (E-3, E-6, E-7), all of P-4, P-5 step 1 (E-13 →
+E-9); P-6 step 1 only reads the E-3 blocks (latest reports); B-18 and B-20 cite it, but no step of P-6 goes through E-6 or E-13. The three roles: the player has E-3, E-6
+(without scenarios or preparation), E-13; the instance admin without a role has none of these screens.
+Left to other slices: the update proposal from a report (`kanevas-monde`); creating a campaign or scenario through
+the assistant is built (E-12, `kanevas-assistant-membre`).
 
-## Détail des écrans de `kanevas-relier-chercher`
+## Screen details for `kanevas-relier-chercher`
 
 ## Détail des écrans de `kanevas-fichiers`
 
