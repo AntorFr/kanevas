@@ -555,7 +555,7 @@ tree » ; « an adventure has exactly one status among four » ; « a task belon
   stay ; index `(fiche_id, faite)` for the block and the E-3 block.
 - Comptes-rendus : `charge.campagne_id` keeps its name and references `fiches.id` of an adventure ;
   not a foreign key (JSON), as today — the deletion of the adventure leaves it dangling on purpose
-  (« Aventure supprimée »).
+  (« Aventure supprimée », told to a GM only: the server sends the deleted adventure to nobody else, so a player cannot tell it from one closed to him).
 - `campagnes` and `scenarios` are **dropped** ; `cle_origine`, `dernier_import`, `version_importee`
   of a scenario move to the sheet (same columns on `fiches`, same unique `(univers_id, cle_origine)`).
 

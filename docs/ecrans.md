@@ -102,18 +102,20 @@ E-16 vivent hors des univers : leurs cases disent le rôle dans un univers ratta
 | E-5 | — | — | lister les univers et leurs membres ; ajouter, changer un rôle, retirer un membre ; voir l'état du jeton de l'assistant, connecter ou reconnecter l'abonnement |
 | E-6 | *retired (`kanevas-scenarios`)* | — | — |
 | E-7 | *retired (`kanevas-scenarios`)* | — | — |
-| E-8 | lire, chercher, créer ; la vignette de chaque fiche (son illustration, ou le repli dessiné) ; *(kanevas-scenarios)* for the « Aventure » type: the status badge, the « Statut » filter, the status menu on a card or a tree line, the creation form with sub-type suggestions and « Visible des joueurs » | lire, chercher ; la vignette des fiches qu'il voit | — |
-| E-9 | tout ; mode Joueur ; *(kanevas-scenarios)* on an adventure: the status menu in the header, the blocks « Préparation » (GM) and « Comptes-rendus » (« Nouveau compte-rendu ») ; relier et retirer des relations ; poser, remplacer, retirer l'illustration (hors mode Joueur) ; *(kanevas-import)* sous-type, réserver un fichier au MJ, voir un fichier en attente d'import (tuile) | sections lisibles ; écrire celles permises ; relations lisibles (section et cible) ; pièces jointes de celles-ci ; voir l'illustration, jamais la poser ; *(kanevas-import)* dans une section qu'il écrit, ajouter un fichier ou en choisir un qu'il voit (les deux chemins de B-55) et retirer une référence ; fichiers sous double garde ; jamais régler une visibilité (**caché**) ; un fichier en attente d'import : rien (**caché**) | — |
+| E-8 | lire, chercher, créer ; la vignette de chaque fiche (son illustration, ou le repli dessiné) ; *(kanevas-scenarios)* for the « Aventure » type: the status badge, the « Statut » filter, the status menu on a card or a tree line, the creation form with sub-type suggestions and « Visible des joueurs » | lire, chercher ; la vignette des fiches qu'il voit ; *(kanevas-scenarios)* the status badge and the « Statut » filter, never the status menu (**caché**) | — |
+| E-9 | tout ; mode Joueur ; *(kanevas-scenarios)* on an adventure: the status menu in the header, the blocks « Préparation » (GM) and « Comptes-rendus » (« Nouveau compte-rendu ») ; relier et retirer des relations ; poser, remplacer, retirer l'illustration (hors mode Joueur) ; *(kanevas-import)* sous-type, réserver un fichier au MJ, voir un fichier en attente d'import (tuile) | sections lisibles ; écrire celles permises ; relations lisibles (section et cible) ; pièces jointes de celles-ci ; voir l'illustration, jamais la poser ; *(kanevas-import)* dans une section qu'il écrit, ajouter un fichier ou en choisir un qu'il voit (les deux chemins de B-55) et retirer une référence ; fichiers sous double garde ; jamais régler une visibilité (**caché**) ; un fichier en attente d'import : rien (**caché**) ; *(kanevas-scenarios)* the status badge without its menu (**caché**), « Préparation » (**caché**), « Comptes-rendus » : lire et « Nouveau compte-rendu » | — |
 | E-10 | tout | cartes visibles | — |
 | E-11 | tout ; mode Joueur | lire une carte visible, ouvrir une fiche | — |
 | E-12 | catalogue MJ (dont générer une image, si un moteur d'images est disponible) ; propositions : le MJ demandeur seul les voit, les applique, les abandonne | catalogue Joueur (sans image : l'outil est absent, l'assistant répond qu'il ne peut pas) ; propositions : **caché** (ni outil ni bloc ; ce qu'on vérifie est l'absence de proposition et de bloc, pas le texte libre de l'assistant) | — |
-| E-13 | tous les CR | les CR lisibles | — |
+| E-13 | tous les CR ; *(kanevas-scenarios)* the adventure of each, « Aventure supprimée » when it is gone | les CR lisibles ; the adventure column only for an adventure he reads (**caché** otherwise, deleted or closed alike) | — |
 | E-14 | tout ; « Supprimer l'univers » (*kanevas-import*) | — (« Page introuvable. ») | « Page introuvable. » |
 | E-15 (hors univers ; les colonnes disent le rôle dans un univers **rattaché au système**) | lire ; « Ajouter … », « Modifier » | lire (« Lecture seule ») ; ni « Ajouter » ni « Modifier » | « Page introuvable. », sauf s'il est lui-même membre d'un univers rattaché : alors la colonne de son rôle là (l'admin MJ d'un univers rattaché lit et modifie) |
 | E-16 (hors univers) | ses systèmes, avec ses univers et son rôle | ses systèmes, « Lecture seule » | la liste de ses propres systèmes (comme MJ ou Joueur s'il est membre d'un univers rattaché) ; vide sinon — l'écran est proposé à tout compte |
 | E-17 *(kanevas-import)* | chercher dans toutes les fiches de l'univers, blocs MJ compris ; en **mode Joueur**, comme un joueur (ni blocs MJ, ni fiches qu'un joueur ne lit pas) ; filtres : les types activés ; les fiches des types désactivés restent des résultats sous « Tous » | chercher dans ce qu'il lit, hors blocs MJ ; filtres par type et par étiquette des seules fiches qu'il voit ; bascule de mode : absente (cachée) ; blocs MJ : hors recherche (jamais lus) ; « Alias et étiquettes… » sur E-9 : cachée | — |
 | E-19 *(kanevas-import)* | tout : ajouter, renommer, visibilité, supprimer ; « Utilisé dans » complet | les fichiers visibles des joueurs et ceux qu'il a ajoutés ; « Utilisé dans » réduit aux fiches qu'il lit ; ni ajout depuis E-19 (**caché** ; il ajoute un fichier par une section qu'il écrit, E-9), ni réglage, ni suppression (**cachés**) | — |
 | E-18 *(kanevas-import)* | créer un jeton ; voir et révoquer tous les jetons de l'univers (y compris ceux d'un autre MJ) ; voir les lots | — (**caché** : absent de la barre, « Page introuvable. » par l'adresse) | — |
+
+What `kanevas-scenarios` adds to the lines above: **E-17** — the status badge on the result card of an adventure, for every role that reads the sheet; **E-12** — the MJ column gains the tool « créer une fiche » (type among the activated ones, title, sub-type, parent), the player column gets **caché** (no tool: the assistant answers it cannot); **E-18** — no « Campagnes » or « Scénarios » counter in a lot: adventures count among « Fiches ».
 
 Ce que `kanevas-import` ajoute aux lignes existantes : **barre latérale** — tous : la section « Lore »
 ne montre que les types activés ; **E-8** — MJ : la vue en arbre, la création dans les seuls types activés,
@@ -2879,7 +2881,7 @@ toast « Adresse copiée. »). Deux panneaux.
 2. **Lots d'import** — les 20 derniers lots, du plus récent : date d'ouverture, jeton, état (« En
    cours », « Clos », « Abandonné » — ouvert depuis plus de 24 h sans écriture), et les compteurs
    **par nature d'objet**, à la suite et séparés par « · », les natures sans objet omises : « Fiches : 498 créées ·
-   3 refusées », « Fichiers : 1 140 créés », « Campagnes : 4 créées », « Scénarios : 12 créés »,
+   3 refusées », « Fichiers : 1 140 créés »,
    « Relations : 324 créées », puis « 6 liens et références en attente » et « 1 avertissement ». Dans une
    nature, chaque forme (« créée(s) », « mise(s) à jour », « inchangée(s) », « refusée(s) ») n'est écrite que
    si elle n'est pas nulle : un rejeu sans rien de neuf lit « Fiches : 1 inchangée » (le rapport de l'API,
@@ -3242,14 +3244,16 @@ The sheet of any type, with:
   counts, besides what every sheet counts, « n tâches de préparation supprimées », « m scénarios
   qui passent à la racine » and « k comptes-rendus qui resteront sans aventure »; its scenarios
   go to the root (the tree's `ON DELETE SET NULL`), its tasks go with it, its comptes-rendus stay
-  and show « Aventure supprimée » in their « Campagne » line.
+  and show « Aventure supprimée » in their « Campagne » line — **to the GM only**: the server names a
+  deleted adventure (an id that matches no sheet) to a GM, and sends nothing for it to anyone else, so
+  a player cannot tell a deleted adventure from one closed to him (no existence leaks, AD-64).
 
 | État | Ce qu'on voit | Ce qu'on peut faire |
 |---|---|---|
 | vide | a new adventure: its empty « Présentation » section, « Préparation » empty (GM), « Comptes-rendus » empty with the button | write, tick, create a CR |
 | chargement | the sheet's ; each block « Chargement… » in place | — |
-| erreur | the sheet's ; a block that fails: « Impossible de charger ce bloc. » with « Réessayer », the rest of the sheet readable ; status change failed: « L'action n'a pas abouti. Réessayez. » | « Réessayer » |
-| connexion perdue | le bandeau ; status menu, « Ajouter », ticks and « Nouveau compte-rendu » disabled | lire |
+| erreur | the sheet's ; a block that fails: « Impossible de charger ce bloc. » with « Réessayer », the rest of the sheet readable ; status change failed: « L'action n'a pas abouti. Réessayez. » ; « Ajouter », tick or untick that fails: the same text under the block, the field and the tick unchanged ; « Nouveau compte-rendu » that fails: « Le compte-rendu n'a pas pu être créé. Réessayez. », title and text kept in the window (an empty title: « Donnez un titre. » ; a text over 100 000 characters: the ceiling's message) | « Réessayer » |
+| connexion perdue | le bandeau ; status menu, « Ajouter », ticks and « Nouveau compte-rendu » disabled, an open « Nouveau compte-rendu » window keeps its text and its « Créer » disabled ; the blocks shown stay as last read, not marked stale | lire |
 | refus | a player on a scenario with no open section: « Page introuvable. » (the sheet's rule) ; « Préparation » absent for a player and in player mode (**caché**) ; the status menu absent for a player (**caché**) | — |
 | contenu long | a 120-character title with the status line: the line wraps under the title ; 300 tasks: « Cochées (n) » stays folded ; a CR list of 1 000: pages | idem |
 
@@ -3269,6 +3273,13 @@ n'est visible des joueurs. » et aucun bloc « Préparation ».
   the adventure of a CR is named only to a reader who reads it (the same guard as E-13). « Préparation »
   (GM): the open tasks of the adventures « En cours », grouped by adventure, five per adventure,
   as before; empty: « Rien à préparer pour l'instant. ».
+- **States of E-3 and E-13** (the old states of `kanevas-suivi` are the reference, with these texts): E-3 blocks
+  « Campagnes en cours » and « Préparation » each load in place (« Chargement… »), fail alone
+  (« Impossible de charger ce bloc. », « Réessayer », the other blocks readable), are inert offline
+  (the bandeau, links still open); E-13: « Chargement des comptes-rendus… », « Impossible de charger les comptes-rendus. »
+  with « Réessayer », offline the list stays and « Charger la suite » is disabled; a CR whose adventure is deleted shows « Aventure
+  supprimée » in the column to a GM and an empty column to anyone else; a player's E-13 column is empty (**caché**) for every CR
+  whose adventure he does not read.
 - **E-13**: the column « campagne » shows the adventure the CR names (campaign or scenario), as
   a link to its sheet — **to a reader who reads that adventure**; otherwise the column is empty
   for that CR and the « Campagne » line of its sheet (E-9) is absent: the title of a scenario
