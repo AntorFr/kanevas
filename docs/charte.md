@@ -1,441 +1,441 @@
-# Kanevas — charte graphique
+# Kanevas — visual design guidelines
 
-> Doc du produit. Les tokens que le code lit vivent dans `frontend/src/ui/tokens.css` ; ce
-> document dit ce qu'ils signifient, ce que fait chaque composant et les seuils mesurés. La
-> maquette de référence est `docs/maquettes/e09-fiche.html` : elle porte le cadre de tous les
-> écrans d'un univers et les composants partagés ci-dessous (le panneau d'assistant, la proposition de mise à jour et la carte de système n'ont que leur description ici et leurs maquettes propres, classées dans `docs/ecrans.md` « Maquettes »), dans les deux thèmes, au bureau et au
-> téléphone. Changer la valeur d'un token existant change tous les écrans : c'est une décision
-> de Monsieur, écrite ici avec sa raison (voir « Écarts assumés »).
+> Product documentation. Tokens read by the code live in `frontend/src/ui/tokens.css`; this
+> document explains their meaning, each component's behaviour and the measured thresholds. The
+> reference mockup is `docs/maquettes/e09-fiche.html`: it includes the shell of all
+> universe screens and the shared components below (the assistant panel, update proposal and system card have only their description here and their own mockups, listed in the mockups section of `docs/ecrans.md`), in both themes, on desktop and
+> phone. Changing an existing token's value changes every screen: it is a decision
+> for Monsieur, recorded here with its reason (see “Deliberate deviations”).
 
 ## 1. Direction
 
-- **Sujet.** La mémoire d'une table de jeu de rôle. Un MJ y écrit le soir à son bureau, longtemps ;
-  une joueuse y relit sur son téléphone, entre deux séances. On y **lit** des textes longs, et ce
-  qui est secret ou partagé en est le cœur : une fuite vaut un spoiler.
-- **Références.** La page-document de Notion (une colonne de lecture, des blocs sans cadre, le
-  titre qui ouvre la page) ; la navigation et les menus de Linear (densité, icônes partout, menu
-  du compte, finesse des états de survol et de focus) ; les wikis de monde (World Anvil, Kanka)
-  pour le vocabulaire — fiche, lore, relations — sans leur encombrement de panneaux.
-- **Ligne de caractère : « qui voit quoi », rendu matière.** Chaque section porte dans sa marge un
-  **filet d'audience** : vert plein, la table la lit ; pointillé neutre, elle est confiée à un
-  joueur ; et la section **MJ seul** n'est plus un texte mais une matière — trame hachurée et
-  filet ambre, qui déborde de la colonne. En descendant une fiche, on lit sa carte des secrets
-  dans la marge avant d'en lire un mot. Le mode Joueur efface la marge : il n'y a rien à cacher
-  à qui ne voit que ce qu'il peut voir.
-- **Typographie de livre, interface d'outil.** Fraunces pour les titres (un serif à axe optique,
-  chaleureux sans faire « médiéval »), Newsreader pour le texte à lire (dessiné pour la lecture
-  longue à l'écran), Inter pour tout ce qui se manipule. L'accent est l'**encre** : un indigo
-  qui dit « agir, écrire », loin de l'ambre du secret et du vert de la table.
+- **Subject.** The memory of a role-playing table. A GM writes here at their desk in the evening, for long stretches;
+  a player rereads on her phone between sessions. People **read** long texts here, and
+  secrecy and sharing are central: a leak means a spoiler.
+- **References.** Notion's document page (one reading column, blocks without frames, the
+  title opening the page); Linear's navigation and menus (density, icons everywhere, account
+  menu, subtle hover and focus states); world wikis (World Anvil, Kanka)
+  for vocabulary — sheets, lore, relations — without their clutter of panels.
+- **Distinctive trait: “who sees what”, made tangible.** Each section has an
+  **audience rule** in its margin: solid green, the table reads it; neutral dashes, entrusted to a
+  player; and a **GM-only** section becomes more than text — a hatched texture and
+  amber rule, extending beyond the column. Scrolling down a sheet, you read its map of secrets
+  in the margin before reading a word. Player mode erases the margin: there is nothing to hide
+  from someone who sees only what they may see.
+- **Book typography, tool interface.** Fraunces for headings (a serif with an optical axis,
+  warm without looking “medieval”), Newsreader for reading text (designed for long
+  reading on screen), Inter for everything interactive. The accent is **ink**: an indigo
+  meaning “act, write”, far from the amber of secrecy and the green of the table.
 
 ## 2. Tokens
 
-Source : `frontend/src/ui/tokens.css`, propriétés sur `:root` (sombre) et
-`:root[data-theme="light"]` ; `color-scheme: light dark`. Le choix Clair / Sombre / Système est
-mémorisé (`localStorage`, clé `kanevas-theme`) ; « Système » suit `prefers-color-scheme` et est
-le choix par défaut tant que rien n'est mémorisé ; il est résolu en sombre ou clair par `theme.ts`, si bien que ces deux blocs sont les seuls endroits où
-vivent les couleurs. Trois tokens dérivés des tokens MJ (`--mj-section-fond`, `--mj-section-bord`, `--mj-section-filet`, mélangés par `color-mix`) donnent à une section « MJ seul » son fond, son bord et son filet ambre. Les composants ne lisent que ces tokens : un hexadécimal dans un composant
-est un défaut. La maquette porte les mêmes noms et les mêmes valeurs.
+Source: `frontend/src/ui/tokens.css`, properties on `:root` (dark) and
+`:root[data-theme="light"]`; `color-scheme: light dark`. The « Clair » / « Sombre » / « Système » choice is
+remembered (`localStorage`, key `kanevas-theme`); « Système » follows `prefers-color-scheme` and is
+the default until a choice is stored; `theme.ts` resolves it to dark or light, so these two blocks are the only places
+where colours live. Three tokens derived from GM tokens (`--mj-section-fond`, `--mj-section-bord`, `--mj-section-filet`, blended through `color-mix`) give a « MJ seul » section its background, border and amber rule. Components read only these tokens: a hex value in a component
+is a defect. The mockup carries the same names and values.
 
-Les neutres sont teintés vers l'encre (bleu froid très léger), jamais un gris pur.
+Neutrals are tinted towards ink (a very slight cool blue), never pure grey.
 
-| Token | Sombre | Clair | Rôle |
+| Token | Dark | Light | Role |
 |---|---|---|---|
-| `--fond` | `#121317` | `#fcfcfd` | fond de la page-document |
-| `--fond-lateral` | `#0e0f12` | `#f4f5f7` | barre latérale |
-| `--surface` | `#191a1f` | `#ffffff` | ce qui flotte (menu, réglage, boîte de dialogue, toast), champ, formulaire en ligne |
-| `--surface-2` | `#202128` | `#f1f2f5` | survol d'un item, fond d'un segment, cible d'une relation |
-| `--surface-3` | `#2a2b33` | `#e8e9ee` | bouton neutre, interrupteur éteint |
-| `--bord` | `rgba(255,255,255,.08)` | `rgba(22,26,44,.09)` | séparateur décoratif (filet d'en-tête, entre blocs) |
-| `--bord-fort` *(nouveau)* | `rgba(255,255,255,.14)` | `rgba(22,26,44,.16)` | contour d'un bouton neutre, d'une vignette, d'un formulaire en ligne |
-| `--bord-champ` | `#74757f` | `#808290` | contour qui **identifie** un champ, une case, un interrupteur éteint (3:1) |
-| `--texte` | `#ebecf0` | `#1a1b22` | texte courant, texte à lire |
-| `--texte-2` | `#a6a7b0` | `#4a4c58` | texte secondaire, item de navigation au repos |
-| `--texte-3` | `#8b8c97` | `#646674` | aide, légende, titre de groupe, état vide |
-| `--accent` | `#8b9bf0` | `#3a4cc0` | l'encre : action principale, interrupteur allumé, choix courant |
-| `--sur-accent` | `#11142b` | `#ffffff` | texte sur `--accent` |
-| `--accent-texte` | `#9aa6f5` | `#3a4cc0` | icône ou texte d'accent (item courant, avatar) |
-| `--accent-fond` | `rgba(154,166,245,.16)` | `rgba(58,76,192,.10)` | item courant de la navigation, halo d'un champ en édition |
-| `--mj` | `#f2a33c` | `#8a5300` | **réservé au MJ** : texte, icône, filet de la section MJ seul, cadre d'une pièce secrète (depuis `kanevas-import` : d'un fichier réservé au MJ) |
-| `--mj-fond` | `rgba(242,163,60,.14)` | `rgba(214,140,30,.14)` | fond de la pastille « MJ seul », segment « Mode MJ » |
-| `--mj-bord` *(nouveau)* | `rgba(242,163,60,.42)` | `rgba(176,108,10,.45)` | contour d'une section MJ seul, d'une pièce secrète (d'un fichier réservé au MJ) |
-| `--mj-trame` *(nouveau)* | `rgba(242,163,60,.075)` | `rgba(176,108,10,.09)` | hachure de la section MJ seul (1 px tous les 8 px, à 135°) |
-| `--table` | `#3fc79a` | `#08694a` | **lu par la table** : texte, icône |
-| `--table-fond` | `rgba(63,199,154,.14)` | `rgba(8,105,74,.12)` | pastille « Lue des joueurs », segment « Mode Joueur », bandeau du mode Joueur |
-| `--table-bord` *(nouveau)* | `rgba(63,199,154,.55)` | `rgba(8,105,74,.70)` | filet d'audience d'une section lue des joueurs |
-| `--danger` | `#ec7b6f` | `#b4352b` | erreur, refus, action destructive |
-| `--sur-danger` *(nouveau)* | `#1a0c0a` | `#ffffff` | texte sur un bouton `--danger` |
-| `--danger-fond` | `rgba(236,123,111,.14)` | `rgba(180,53,43,.10)` | message d'erreur, bandeau « connexion perdue » |
-| `--focus` | `#9aa6f5` | `#3a4cc0` | anneau de focus |
-| `--voile` *(nouveau)* | `rgba(5,6,9,.62)` | `rgba(20,22,34,.38)` | sous une boîte de dialogue, sous le tiroir |
-| `--ombre-flottant` *(nouveau)* | anneau blanc 6 % + ombre 32 px | anneau encre 8 % + ombre 32 px | tout ce qui flotte (seule ombre du produit) |
-| `--squelette` *(nouveau)* | `rgba(255,255,255,.06)` | `rgba(22,26,44,.07)` | blocs de chargement |
+| `--fond` | `#121317` | `#fcfcfd` | document page background |
+| `--fond-lateral` | `#0e0f12` | `#f4f5f7` | sidebar |
+| `--surface` | `#191a1f` | `#ffffff` | floating elements (menu, settings, dialog, toast), field, inline form |
+| `--surface-2` | `#202128` | `#f1f2f5` | item hover, segment background, relation target |
+| `--surface-3` | `#2a2b33` | `#e8e9ee` | neutral button, off switch |
+| `--bord` | `rgba(255,255,255,.08)` | `rgba(22,26,44,.09)` | decorative divider (header rule, between blocks) |
+| `--bord-fort` *(new)* | `rgba(255,255,255,.14)` | `rgba(22,26,44,.16)` | border of a neutral button, thumbnail, inline form |
+| `--bord-champ` | `#74757f` | `#808290` | border that **identifies** a field, checkbox, off switch (3:1) |
+| `--texte` | `#ebecf0` | `#1a1b22` | body text, reading text |
+| `--texte-2` | `#a6a7b0` | `#4a4c58` | secondary text, idle navigation item |
+| `--texte-3` | `#8b8c97` | `#646674` | help, caption, group heading, empty state |
+| `--accent` | `#8b9bf0` | `#3a4cc0` | ink: primary action, on switch, current choice |
+| `--sur-accent` | `#11142b` | `#ffffff` | text on `--accent` |
+| `--accent-texte` | `#9aa6f5` | `#3a4cc0` | accent icon or text (current item, avatar) |
+| `--accent-fond` | `rgba(154,166,245,.16)` | `rgba(58,76,192,.10)` | current navigation item, halo around a field being edited |
+| `--mj` | `#f2a33c` | `#8a5300` | **GM-only**: text, icon, GM-only section rule, secret attachment frame (since `kanevas-import`: a GM-only file) |
+| `--mj-fond` | `rgba(242,163,60,.14)` | `rgba(214,140,30,.14)` | « MJ seul » badge background, « Mode MJ » segment |
+| `--mj-bord` *(new)* | `rgba(242,163,60,.42)` | `rgba(176,108,10,.45)` | border of a GM-only section, secret attachment (a GM-only file) |
+| `--mj-trame` *(new)* | `rgba(242,163,60,.075)` | `rgba(176,108,10,.09)` | GM-only section hatching (1 px every 8 px, at 135°) |
+| `--table` | `#3fc79a` | `#08694a` | **read by the table**: text, icon |
+| `--table-fond` | `rgba(63,199,154,.14)` | `rgba(8,105,74,.12)` | « Lue des joueurs » badge, « Mode Joueur » segment, Player mode banner |
+| `--table-bord` *(new)* | `rgba(63,199,154,.55)` | `rgba(8,105,74,.70)` | audience rule of a section read by players |
+| `--danger` | `#ec7b6f` | `#b4352b` | error, refusal, destructive action |
+| `--sur-danger` *(new)* | `#1a0c0a` | `#ffffff` | text on a `--danger` button |
+| `--danger-fond` | `rgba(236,123,111,.14)` | `rgba(180,53,43,.10)` | error message, lost connection banner |
+| `--focus` | `#9aa6f5` | `#3a4cc0` | focus ring |
+| `--voile` *(new)* | `rgba(5,6,9,.62)` | `rgba(20,22,34,.38)` | beneath a dialog, beneath the drawer |
+| `--ombre-flottant` *(new)* | white ring 6 % + shadow 32 px | ink ring 8 % + shadow 32 px | all floating elements (the product's only shadow) |
+| `--squelette` *(new)* | `rgba(255,255,255,.06)` | `rgba(22,26,44,.07)` | loading blocks |
 
-**Typographie.** `--police-titre` : Fraunces (axe optique : 144 pour le titre de fiche, 48 pour
-une section), repli `"Iowan Old Style", Georgia, serif`. `--police-lecture` *(nouveau)* :
-Newsreader, même repli. `--police-texte` : Inter, repli `system-ui, -apple-system, "Segoe UI",
-Roboto, sans-serif`. En production, les trois sont servies par le produit (`@fontsource`,
-poids 400/500/600, Newsreader avec italique), jamais par un hôte externe ; la maquette les prend
-chez Google Fonts. Échelle : `--t-12` légende, pastille · `--t-13` interface dense (navigation,
-boutons, blocs) · `--t-14` corps d'interface · `--t-16` titre de boîte de dialogue · `--t-18`
-*(nouveau)* texte à lire (17 px au téléphone), interligne 1,68, 66 caractères au plus par ligne ·
-`--t-22` titre de section · `--t-32` *(nouveau)* titre de fiche au téléphone · `--t-40`
-*(nouveau)* titre de fiche au bureau, interligne 1,08, approche −1,5 %. Graisses : 400 lecture,
-500 interface et titres, 600 nom d'univers et titres de boîte. *(kanevas-import)* `--police-code` : pile système
-`ui-monospace, "SF Mono", Menlo, Consolas, monospace`, pour ce qui se copie à l'identique (un jeton
-d'API, une adresse, une clé d'origine, du code dans un texte) ; aucune fonte de plus n'est servie.
+**Typography.** `--police-titre`: Fraunces (optical axis: 144 for a sheet title, 48 for
+a section), fallback `"Iowan Old Style", Georgia, serif`. `--police-lecture` *(new)*:
+Newsreader, same fallback. `--police-texte`: Inter, fallback `system-ui, -apple-system, "Segoe UI",
+Roboto, sans-serif`. In production, all three are served by the product (`@fontsource`,
+weights 400/500/600, Newsreader with italics), never by an external host; the mockup gets them
+from Google Fonts. Scale: `--t-12` caption, badge · `--t-13` dense interface (navigation,
+buttons, blocks) · `--t-14` interface body · `--t-16` dialog heading · `--t-18`
+*(new)* reading text (17 px on phones), line height 1,68, at most 66 characters per line ·
+`--t-22` section heading · `--t-32` *(new)* sheet title on phones · `--t-40`
+*(new)* sheet title on desktop, line height 1,08, letter spacing −1,5 %. Weights: 400 reading,
+500 interface and headings, 600 universe name and dialog headings. *(kanevas-import)* `--police-code`: system stack
+`ui-monospace, "SF Mono", Menlo, Consolas, monospace`, for content copied verbatim (an API
+token, an address, an origin key, code within text); no additional font is served.
 
-**Espace.** Grille de 4 px : `--e-1` 4 · `--e-2` 8 · `--e-3` 12 · `--e-4` 16 · `--e-5` 24 ·
-`--e-6` 32 *(nouveau)* · `--e-7` 48 *(nouveau)* · `--e-8` 64 *(nouveau)*. Colonne de lecture :
-784 px de large avec ses marges (688 px de texte), centrée ; 64 px au-dessus du titre ; 32 px
-entre deux sections ; marge d'audience à 28 px à gauche de la colonne (18 px sous 1 080 px,
-10 px au téléphone, où la gouttière est de 16 px).
+**Spacing.** 4 px grid: `--e-1` 4 · `--e-2` 8 · `--e-3` 12 · `--e-4` 16 · `--e-5` 24 ·
+`--e-6` 32 *(new)* · `--e-7` 48 *(new)* · `--e-8` 64 *(new)*. Reading column:
+784 px wide including margins (688 px of text), centred; 64 px above the title; 32 px
+between sections; audience margin 28 px to the left of the column (18 px below 1 080 px,
+10 px on phones, where the gutter is 16 px).
 
-**Profondeur.** Une seule stratégie : **des plans de couleur et des filets fins** ; une seule
-ombre, `--ombre-flottant`, réservée à ce qui flotte au-dessus de la page. Les sections ne sont
-pas des cartes : seule la section MJ seul a une matière. Rayons : `--rayon-item` *(nouveau)*
-6 px (item, bouton-icône, segment) · `--rayon-champ` 8 px (bouton, champ, vignette, ligne de
-fichier) · `--rayon-panneau` 12 px (menu, boîte, formulaire en ligne, section MJ seul) ·
+**Depth.** One strategy: **planes of colour and thin rules**; one
+shadow, `--ombre-flottant`, reserved for elements floating above the page. Sections are not
+cards: only a GM-only section has a texture. Radii: `--rayon-item` *(new)*
+6 px (item, icon button, segment) · `--rayon-champ` 8 px (button, field, thumbnail, file
+row) · `--rayon-panneau` 12 px (menu, dialog, inline form, GM-only section) ·
 `--rayon-pastille` 999 px.
 
-**Icônes.** Lucide, trait 1,75, 16 px (14 px dans un bouton ou une ligne de bloc, 12 px dans une
-pastille), `currentColor`. Servies par le produit (`lucide-react`), jamais par un CDN. Une icône
-à côté de chaque item de navigation et de chaque action ; un bouton qui n'a qu'une icône a une
-étiquette accessible et une infobulle. Jamais d'émoji. Correspondances fixées : Vue d'ensemble
-`layout-grid`, Campagnes `flag`, Comptes-rendus `notebook-pen`, Personnages `users-round`, Lieux
-`map-pin`, Factions `shield`, Objets `gem`, Événements `hourglass`, Quêtes `scroll-text`, Membres
-`contact-round`, Paramètres `settings-2`, Systèmes de jeu `dices`, Mes univers `library`, Cartes `map`, Administration `shield-check`, Relations `waypoints`, Pièces jointes `paperclip`, MJ
-seul et secret `lock`, lu des joueurs `eye`, écrit par les joueurs `pen-line`, mode MJ
-`lock-keyhole`, assistant `sparkles`, thème `sun` / `moon` / `monitor`, déconnexion `log-out`,
-menu du téléphone `panel-left`.
-Depuis `kanevas-import` (types et écrans nouveaux, même jeu, mêmes règles) : Créatures `paw-print`,
-Races `dna`, Vaisseaux `ship`, Savoirs `lightbulb` (savoir général : histoire, phénomènes, ressources, chronologie), Récits `book-open`, Règles `scale`, Notes
-`sticky-note`, Rechercher `search`, Accès par API `key-round`, Médiathèque `images`, document `file-text` (PDF), `file-spreadsheet` (tableur), `file-archive` (archive), `file` (autre), « Fichier » de l'éditeur `paperclip`, Cartes `map` (la barre l'avait sans icône fixée), image réservée au MJ `lock` (cadre neutre, `--texte-3`), étiquette `tag`, Contient
-`folder-tree`, Mentionnée dans `link-2`, vue en arbre `list-tree`, lien cassé `link-2-off`.
+**Icons.** Lucide, stroke 1,75, 16 px (14 px in a button or block row, 12 px in a
+badge), `currentColor`. Served by the product (`lucide-react`), never by a CDN. An icon
+beside each navigation item and each action; an icon-only button has an
+accessible label and a tooltip. Never emoji. Fixed mappings: « Vue d'ensemble »
+`layout-grid`, « Campagnes » `flag`, « Comptes-rendus » `notebook-pen`, « Personnages » `users-round`, « Lieux »
+`map-pin`, « Factions » `shield`, « Objets » `gem`, « Événements » `hourglass`, « Quêtes » `scroll-text`, « Membres »
+`contact-round`, « Paramètres » `settings-2`, « Systèmes de jeu » `dices`, « Mes univers » `library`, « Cartes » `map`, « Administration » `shield-check`, « Relations » `waypoints`, « Pièces jointes » `paperclip`, GM-only
+and secret `lock`, read by players `eye`, written by players `pen-line`, GM mode
+`lock-keyhole`, assistant `sparkles`, theme `sun` / `moon` / `monitor`, sign-out `log-out`,
+phone menu `panel-left`.
+Since `kanevas-import` (new types and screens, same set, same rules): « Créatures » `paw-print`,
+« Races » `dna`, « Vaisseaux » `ship`, « Savoirs » `lightbulb` (general knowledge: history, phenomena, resources, chronology), « Récits » `book-open`, « Règles » `scale`, « Notes »
+`sticky-note`, « Rechercher » `search`, « Accès par API » `key-round`, « Médiathèque » `images`, document `file-text` (PDF), `file-spreadsheet` (spreadsheet), `file-archive` (archive), `file` (other), editor's « Fichier » `paperclip`, « Cartes » `map` (the bar had it without a fixed icon), GM-only image `lock` (neutral frame, `--texte-3`), label `tag`, « Contient »
+`folder-tree`, « Mentionnée dans » `link-2`, tree view `list-tree`, broken link `link-2-off`.
 
-**Mouvement.** `--duree` 160 ms, `--courbe` *(nouveau)* `cubic-bezier(.2,.7,.2,1)`. Seuls
-bougent : l'apparition d'un menu, d'un réglage ou d'une boîte (opacité et 4 px), le tiroir, le
-toast, l'interrupteur. Aucune animation d'entrée de page. Sous `prefers-reduced-motion`,
-`--duree` vaut 0.
+**Motion.** `--duree` 160 ms, `--courbe` *(new)* `cubic-bezier(.2,.7,.2,1)`. Only
+these move: a menu, settings panel or dialog appearing (opacity and 4 px), the drawer,
+toast and switch. No page entrance animation. Under `prefers-reduced-motion`,
+`--duree` is 0.
 
-## 3. Usages
+## 3. Conventions
 
-Ceux que Kanevas suit :
+Those Kanevas follows:
 
-- **Le compte** : un avatar et l'identifiant en pied de barre latérale, qui ouvrent un menu —
-  l'identifiant (« Votre identifiant »), le **thème** en bascule à trois icônes (soleil, lune,
-  écran), « Se déconnecter ». Rien de cela n'est étalé dans la navigation.
-- **La navigation** : en tête le sélecteur d'univers (sceau, nom, rôle en pastille, menu des
-  univers du compte et « Mes univers ») ; des items à icône groupés, les groupes titrés en casse
-  normale (« Lore », « Univers »), l'item courant sur `--accent-fond` avec son icône en
-  `--accent-texte` ; un tiroir sous un bouton « Menu » au téléphone.
-- **La barre haute** : le fil d'Ariane (univers › type › ancêtres lisibles › fiche ; au téléphone (≤ 760 px), le sceau de l'univers et le libellé du type disparaissent, et à 480 px et moins les ancêtres se replient (menu « … » dès deux ancêtres) ; E-9 détaille) et, sur les écrans qui l'ont, la bascule mode MJ / mode Joueur.
-- **L'édition en place** : « Modifier » transforme la section en champ à la même typographie, au
-  même endroit ; Échap annule, Ctrl/⌘ + Entrée enregistre ; le compteur de caractères est visible.
-- **Les réglages rares sont repliés** : l'audience d'une section se lit dans sa pastille et se
-  règle derrière elle. **Les actions secondaires se révèlent au survol et au focus** (« Modifier »
-  et le menu « ⋯ » d'une section, « Retirer » d'une relation ou d'un membre ; le rôle d'un membre se
-  règle derrière une pastille-menu, comme le statut) ; elles restent visibles là où il
-  n'y a pas de survol (écran tactile).
-- **Les retours** : un toast par action réussie ; un message en ligne, au-dessus du panneau
-  concerné, pour un échec (les textes sont ceux de `docs/ecrans.md`) ; des squelettes au
-  chargement d'une fiche.
-- **Les composants** sont dessinés : menus, interrupteurs, cases, bascules segmentées, boîtes de
-  dialogue. Une liste déroulante native n'est gardée que pour un choix dans une liste courte
-  (auteur, type de fiche), habillée (fond, contour, chevron Lucide).
+- **Account**: an avatar and identifier at the bottom of the sidebar, opening a menu —
+  the identifier (« Votre identifiant »), **theme** as a three-icon toggle (sun, moon,
+  monitor), « Se déconnecter ». None of this is spread through navigation.
+- **Navigation**: universe selector at the top (seal, name, role badge, menu of the
+  account's universes and « Mes univers »); grouped icon items, group headings in sentence
+  case (« Lore », « Univers »), current item on `--accent-fond` with its icon in
+  `--accent-texte`; a drawer under a « Menu » button on phones.
+- **Top bar**: breadcrumb (universe › type › readable ancestors › sheet; on phones (≤ 760 px), the universe seal and type label disappear, and at 480 px and below ancestors collapse (a « … » menu from two ancestors onwards); E-9 gives the details) and, on screens that have it, the GM / Player mode toggle.
+- **Inline editing**: « Modifier » turns the section into a field with the same typography, in
+  the same place; Escape cancels, Ctrl/⌘ + Enter saves; the character counter is visible.
+- **Infrequent settings are collapsed**: a section's audience is read from its badge and
+  configured behind it. **Secondary actions appear on hover and focus** (« Modifier »
+  and a section's « ⋯ » menu, « Retirer » on a relation or member; a member's role is
+  configured behind a badge menu, like the status); they stay visible where
+  hover is unavailable (touchscreen).
+- **Feedback**: a toast per successful action; an inline message above the relevant
+  panel for a failure (text from `docs/ecrans.md`); skeletons when loading
+  a sheet.
+- **Components** are custom drawn: menus, switches, checkboxes, segmented toggles, dialogs.
+  A native select is kept only for a choice from a short list
+  (author, sheet type), styled (background, border, Lucide chevron).
 
-Écarts assumés à l'usage :
+Deliberate departures from convention:
 
-- **Pas de palette ⌘K** pour l'instant : `docs/ecrans.md` n'en décrit pas ; la recherche vit
-  dans E-8. Elle est proposée, pas dessinée.
-- **Le bouton de l'assistant est sombre sur clair (inversé), pas en accent** : il flotte sur
-  toute page et ne doit pas se confondre avec l'action principale de l'écran.
+- **No ⌘K palette** yet: `docs/ecrans.md` describes none; search lives
+  in E-8. It is proposed, not designed.
+- **The assistant button is dark on light (inverted), not accented**: it floats on
+  every page and must not be confused with the screen's primary action.
 
-**Le secret dans le texte** (`kanevas-import`, aucun token nouveau). Un **bloc MJ** au milieu
-d'une section prend la matière de la section MJ seul, à l'échelle d'un paragraphe : trame
-`--mj-trame`, filet gauche `--mj` de 2 px, contour `--mj-bord`, `--rayon-champ`, pastille « MJ seul »
-(`lock`) en tête ; il ne déborde pas de la colonne (seule la section entière déborde). Un **lien vers
-une fiche** est en `--accent-texte`, souligné à 1 px à 30 % d'opacité, plein au survol ; un **lien
-cassé** (MJ seul) garde la couleur du texte, souligné en tirets `--danger` ; un **lien en attente**
-(MJ seul), en tirets `--texte-3`. Un lien vers une fiche illisible n'a **aucune** marque : il est du
-texte. L'état est porté par le soulignement **et** l'infobulle, jamais par la seule couleur.
+**Secrets within text** (`kanevas-import`, no new token). A **GM block** in the middle
+of a section takes the texture of a GM-only section at paragraph scale: hatching
+`--mj-trame`, 2 px `--mj` left rule, `--mj-bord` border, `--rayon-champ`, « MJ seul » badge
+(`lock`) at the top; it does not overflow the column (only the whole section overflows). A **sheet
+link** uses `--accent-texte`, underlined at 1 px with 30 % opacity, solid on hover; a **broken
+link** (GM-only) keeps the text colour with a dashed `--danger` underline; a **waiting link**
+(GM-only), dashed `--texte-3`. A link to an unreadable sheet has **no** marking: it is
+text. State is conveyed by the underline **and** the tooltip, never colour alone.
 
-## 4. Composants
+## 4. Components
 
-Pour chacun : **V** visuelle, **C** comportementale. Tous ont l'anneau de focus (2 px `--focus`,
-décalé de 2 px) sur `:focus-visible`.
+For each: **V** visual, **C** behavioural. All have the focus ring (2 px `--focus`,
+2 px offset) on `:focus-visible`.
 
-**Bouton** (neutre, principal, danger, fantôme ; normal 30 px, petit 26 px ; bouton-icône 28 px).
-- V : neutre `--surface-3`, contour `--bord-fort` (survol : `--bord-champ`), texte `--texte` ;
-  principal `--accent` / `--sur-accent` (survol : 12 % de `--texte` mêlé) ; danger `--danger` /
-  `--sur-danger` ; fantôme sans fond, `--texte-2`, survol `--surface-2` et `--texte` ;
-  bouton-icône `--texte-3`, survol `--surface-2` (danger : `--danger-fond` et `--danger`). Rayon
-  `--rayon-champ` (icône : `--rayon-item`). Icône Lucide 14 px à gauche du libellé. Désactivé :
-  opacité 45 % et curseur interdit. Chargement : libellé « … ».
-- C : Tab l'atteint, Entrée et Espace l'activent ; désactivé, il porte `aria-disabled="true"`
-  et ne part pas ; pendant l'envoi, il affiche « … » et ne se déclenche qu'une fois. Un bouton
-  destructif porte le verbe et l'objet (« Retirer la section », « Retirer le fichier »), jamais
-  « OK ». Un bouton-icône a une étiquette accessible qui nomme l'objet (« Retirer la relation
-  membre de → Lames Grises ») et une infobulle courte (« Retirer »). 36 à 40 px au téléphone.
+**Button** (neutral, primary, danger, ghost; normal 30 px, small 26 px; icon button 28 px).
+- V: neutral `--surface-3`, border `--bord-fort` (hover: `--bord-champ`), text `--texte`;
+  primary `--accent` / `--sur-accent` (hover: 12 % `--texte` blended in); danger `--danger` /
+  `--sur-danger`; ghost without background, `--texte-2`, hover `--surface-2` and `--texte`;
+  icon button `--texte-3`, hover `--surface-2` (danger: `--danger-fond` and `--danger`). Radius
+  `--rayon-champ` (icon: `--rayon-item`). Lucide icon 14 px left of the label. Disabled:
+  45 % opacity and not-allowed cursor. Loading: label « … ».
+- C: Tab reaches it, Enter and Space activate it; disabled, it carries `aria-disabled="true"`
+  and does not fire; while sending, it displays « … » and fires only once. A destructive
+  button names the verb and object (« Retirer la section », « Retirer le fichier »), never
+  « OK ». An icon button has an accessible label naming the object (« Retirer la relation
+  membre de → Lames Grises ») and a short tooltip (« Retirer »). 36 to 40 px on phones.
 
-**Menu** (compte, univers, actions d'une section).
-- V : `--surface`, `--ombre-flottant`, rayon `--rayon-panneau`, 4 px de marge intérieure ;
-  entrées de 32 px (40 au téléphone), icône `--texte-3` à gauche, survol `--surface-2` ; une
-  entrée danger en `--danger` (icône comprise) ; séparateur `--bord` ; titre de groupe 12 px
-  `--texte-3`. Apparition : opacité et 4 px, `--duree`.
-- C : le bouton qui l'ouvre porte `aria-haspopup="menu"` et `aria-expanded` ; le menu
-  `role="menu"`, ses entrées `role="menuitem"`. Ouvert au clavier, le focus va à la première
-  entrée ; ↑ ↓ la déplacent ; Échap ferme et rend le focus au bouton ; un clic dehors ferme.
-  Une entrée impossible (« Monter » sur la première section) est `aria-disabled`, visible,
-  inerte. Le menu d'une section : « Monter », « Descendre », puis « Retirer la section ».
+**Menu** (account, universe, section actions).
+- V: `--surface`, `--ombre-flottant`, radius `--rayon-panneau`, 4 px padding;
+  32 px entries (40 on phones), `--texte-3` icon on the left, hover `--surface-2`; a
+  danger entry in `--danger` (including the icon); divider `--bord`; group heading 12 px
+  `--texte-3`. Appearance: opacity and 4 px, `--duree`.
+- C: the opening button carries `aria-haspopup="menu"` and `aria-expanded`; the menu
+  `role="menu"`, its entries `role="menuitem"`. Opened with the keyboard, focus moves to the first
+  entry; ↑ ↓ move it; Escape closes and returns focus to the button; clicking outside closes.
+  An unavailable entry (« Monter » on the first section) is `aria-disabled`, visible,
+  inert. A section's menu: « Monter », « Descendre », then « Retirer la section ».
 
-**Interrupteur** (les quatre réglages booléens de l'audience).
-- V : 32 × 18 px ; éteint `--surface-3` cerné de `--bord-champ`, pastille `--texte-2` ; allumé
-  `--accent`, pastille `--sur-accent` à droite. La ligne entière (40 px) est la cible ; son
-  libellé est à gauche, avec son icône.
-- C : `role="switch"` et `aria-checked` ; Espace et un clic sur la ligne le basculent ; le
-  changement est enregistré aussitôt (pas de bouton « Enregistrer ») et confirmé par un toast ;
-  en cas d'échec, il revient à sa valeur d'avant et le message « L'action n'a pas abouti.
-  Réessayez. » paraît. Le mouvement suit `--duree`.
+**Switch** (the four boolean audience settings).
+- V: 32 × 18 px; off `--surface-3` bordered by `--bord-champ`, thumb `--texte-2`; on
+  `--accent`, thumb `--sur-accent` on the right. The whole row (40 px) is the target; its
+  label is on the left with its icon.
+- C: `role="switch"` and `aria-checked`; Space and clicking the row toggle it; the
+  change is saved immediately (no « Enregistrer » button) and confirmed by a toast;
+  on failure it returns to its previous value and the message « L'action n'a pas abouti.
+  Réessayez. » appears. Motion follows `--duree`.
 
-**Pastille d'audience** (et pastilles de rôle, de secret).
-- V : 22 px de haut, rayon pastille, 12 px graisse 500, icône Lucide 12 px. Les quatre états
-  d'une section : **Lue des joueurs** (`eye`, `--table` sur `--table-fond`) ; **Écrite par les
-  joueurs** (`pen-line`, mêmes teintes) ; **Confiée à Léa** (avatar de l'auteur, neutre
-  `--texte-2` sur `--surface-2`) ; **MJ seul** (`lock`, `--mj` sur `--mj-fond`). Rôle dans le
-  sélecteur : « MJ » ambre, « Joueur » vert. Pièce secrète : « Secrète — MJ seul » (`lock`, *depuis `kanevas-import`, un fichier réservé au MJ porte la pastille « MJ seul », même rendu ; AD-111*,
-  `--mj` sur `--surface` cerné de `--mj-bord`), posée sur la vignette. Sur une fiche du MJ, la
-  pastille est un bouton (chevron 12 px) : au survol, un anneau de sa propre teinte. Elle se
-  place **juste après le titre** de la section, jamais poussée par les actions.
-- C : l'état est porté par **icône + mot + teinte**, jamais la teinte seule. Le mot se déduit des
-  cinq réglages : les joueurs la lisent → « Lue des joueurs » (« Écrite par les joueurs » s'ils
-  l'écrivent aussi) ; sinon un auteur qui la lit ou l'écrit → « Confiée à <auteur> » ; sinon
-  « MJ seul ». Elle ouvre le réglage d'audience (un panneau `role="dialog"`, titré « Qui voit
-  « <section> » », 320 px) : les deux interrupteurs des joueurs, la liste « Auteur » (aucun,
-  puis les Joueurs de l'univers), les deux interrupteurs de l'auteur, et « Chaque changement est
-  enregistré aussitôt. ». Échap le ferme et rend le focus à la pastille. Son étiquette accessible
-  dit l'état et le geste (« Lue des joueurs — régler l'audience de « Apparence » »). Elle
-  n'existe ni pour un Joueur ni en mode Joueur.
+**Audience badge** (and role, secret badges).
+- V: 22 px high, pill radius, 12 px weight 500, Lucide icon 12 px. A section's four
+  states: **« Lue des joueurs »** (`eye`, `--table` on `--table-fond`); **« Écrite par les
+  joueurs »** (`pen-line`, same colours); **« Confiée à Léa »** (author avatar, neutral
+  `--texte-2` on `--surface-2`); **« MJ seul »** (`lock`, `--mj` on `--mj-fond`). Role in the
+  selector: « MJ » amber, « Joueur » green. Secret attachment: « Secrète — MJ seul » (`lock`, *since `kanevas-import`, a GM-only file carries the « MJ seul » badge, same rendering; AD-111*,
+  `--mj` on `--surface` bordered by `--mj-bord`), placed on the thumbnail. On a GM's sheet, the
+  badge is a button (12 px chevron): on hover, a ring in its own colour. It sits
+  **just after the section title**, never pushed away by actions.
+- C: state is conveyed by **icon + word + colour**, never colour alone. Wording follows the
+  five settings: players read it → « Lue des joueurs » (« Écrite par les joueurs » if they
+  also write it); otherwise an author reads or writes it → « Confiée à <auteur> »; otherwise
+  « MJ seul ». It opens audience settings (a `role="dialog"` panel, titled « Qui voit
+  « <section> » », 320 px): the two player switches, the « Auteur » list (none,
+  then the universe's Players), the two author switches, and « Chaque changement est
+  enregistré aussitôt. ». Escape closes it and returns focus to the badge. Its accessible label
+  names the state and action (« Lue des joueurs — régler l'audience de « Apparence » »). It
+  exists neither for a Player nor in Player mode.
 
-**Filet d'audience et section MJ seul** (la ligne de caractère).
-- V : à 28 px à gauche de la colonne, un filet de 2 px sur la hauteur de la section :
-  `--table-bord` plein (lue, ou écrite, par les joueurs), pointillé `--bord-champ` 4/4 (confiée).
-  La section MJ seul déborde de 28 px de chaque côté de la colonne (son texte reste aligné) :
-  fond `--mj-fond` à 22 % sous une hachure `--mj-trame` (1 px tous les 8 px, 135°), contour
-  `--mj-bord` à 45 %, filet `--mj` de 3 px à gauche, coins droits arrondis `--rayon-panneau`.
-  E-14 (Paramètres) reprend ce bloc fermé pour ses trois blocs MJ (Identité, Système de jeu, Créer un système), dans une
-  colonne de 688 px (`max-width` de la page) ; comme en E-6, les blocs débordent de 28 px de chaque côté.
-- C : purement redondant — la pastille dit la même chose en mots, le filet n'est jamais le seul
-  porteur. Il change avec le réglage (une section qu'on ferme aux joueurs devient hachurée sous
-  les yeux du MJ). En mode Joueur, aucun filet ni hachure : la section MJ seul n'existe pas.
+**Audience rule and GM-only section** (the distinctive trait).
+- V: 28 px to the left of the column, a 2 px rule over the section's height:
+  solid `--table-bord` (read, or written, by players), dashed `--bord-champ` 4/4 (entrusted).
+  The GM-only section overflows 28 px on each side of the column (its text stays aligned):
+  `--mj-fond` background at 22 % under `--mj-trame` hatching (1 px every 8 px, 135°),
+  `--mj-bord` border at 45 %, 3 px `--mj` left rule, right corners rounded to `--rayon-panneau`.
+  E-14 (« Paramètres ») reuses this closed block for its three GM blocks (« Identité », « Système de jeu », « Créer un système »), in a
+  688 px column (page `max-width`); as in E-6, blocks overflow by 28 px on each side.
+- C: purely redundant — the badge says the same thing in words; the rule is never the sole
+  carrier. It changes with the setting (a section closed to players becomes hatched before
+  the GM's eyes). In Player mode, no rule or hatching: the GM-only section does not exist.
 
 **Toast.**
-- V : `--surface`, `--ombre-flottant`, rayon `--rayon-champ`, 40 px de haut ; icône
-  `circle-check` en `--table`, texte 13 px, bouton-icône « Fermer ». Centré en bas au bureau ;
-  au téléphone, pleine largeur moins la place du bouton de l'assistant ; tant que le réglage
-  d'audience (feuille en bas au téléphone) est ouvert, les toasts passent en haut de l'écran
-  pour ne pas en couvrir une ligne.
-- C : un toast par action réussie (« « Rumeurs entendues » enregistrée », « Audience de
-  « Apparence » enregistrée », « Section « … » retirée »), dans une région `role="status"`
-  `aria-live="polite"` ; il part seul après 4 s, ou à « Fermer » ; il ne prend jamais le focus.
-  Un échec n'est pas un toast : c'est un message en ligne qui reste.
+- V: `--surface`, `--ombre-flottant`, radius `--rayon-champ`, 40 px high; icon
+  `circle-check` in `--table`, 13 px text, « Fermer » icon button. Centred at the bottom on desktop;
+  on phones, full width minus the space for the assistant button; while audience
+  settings (bottom sheet on phones) are open, toasts move to the top of the screen
+  to avoid covering any row.
+- C: a toast per successful action (« « Rumeurs entendues » enregistrée », « Audience de
+  « Apparence » enregistrée », « Section « … » retirée »), in a `role="status"` region with
+  `aria-live="polite"`; it leaves on its own after 4 s, or on « Fermer »; it never takes focus.
+  A failure is not a toast: it is an inline message that stays.
 
-**Boîte de dialogue** (confirmation de retrait d'une section).
-- V : `--surface` sur `--voile`, `--ombre-flottant`, rayon `--rayon-panneau`, 440 px au plus,
-  24 px de marge ; pastille d'icône 36 px (`trash-2` en `--danger` sur `--danger-fond`) ; titre
-  16 px graisse 600 ; texte `--texte-2` ; boutons à droite, « Annuler » neutre puis l'action en
-  danger.
-- C : `role="alertdialog"`, `aria-modal`, titrée et décrite ; le focus entre sur « Annuler » et
-  y reste (Tab boucle) ; Échap ou un clic sur le voile ferme ; le focus revient au bouton qui l'a
-  ouverte (au titre de la fiche si la section a disparu). Les textes sont ceux de
-  `docs/ecrans.md`. La confirmation de retrait d'un fichier, elle, se fait **sur place** : la
-  ligne « Retirer « plan-des-egouts.pdf » ? Le fichier sera perdu. » avec « Annuler » et
+**Dialog** (section removal confirmation).
+- V: `--surface` on `--voile`, `--ombre-flottant`, radius `--rayon-panneau`, at most 440 px,
+  24 px margin; 36 px icon badge (`trash-2` in `--danger` on `--danger-fond`); heading
+  16 px weight 600; text `--texte-2`; buttons on the right, neutral « Annuler » then the danger
+  action.
+- C: `role="alertdialog"`, `aria-modal`, titled and described; focus enters on « Annuler » and
+  stays within (Tab loops); Escape or clicking the overlay closes; focus returns to the button that
+  opened it (to the sheet title if the section disappeared). Text comes from
+  `docs/ecrans.md`. File removal confirmation, however, happens **inline**: the
+  row « Retirer « plan-des-egouts.pdf » ? Le fichier sera perdu. » with « Annuler » and
   « Retirer le fichier ».
 
-**Champ** (texte, zone de texte d'une section, liste, case).
-- V : 34 px, `--surface`, contour `--bord-champ`, rayon `--rayon-champ`, étiquette 12 px
-  graisse 500 `--texte-2` au-dessus ; au focus, contour `--accent` et halo 3 px
-  `--accent-fond`. La zone de texte d'une section garde la typographie de lecture (Newsreader
-  18 px) sur `--surface`, cernée d'`--accent` avec halo, pied « 313 / 100 000 », aide clavier,
-  « Annuler », « Enregistrer ». Case : 16 px, contour `--bord-champ` ; cochée `--mj` (la seule
-  case du produit dit « Secrète (MJ seul) »).
-- C : une étiquette visible liée au champ ; l'erreur s'affiche dessous en `--danger` avec
-  « Erreur : » devant, reliée par `aria-describedby` ; une saisie n'est jamais perdue sur échec.
+**Field** (text, section textarea, list, checkbox).
+- V: 34 px, `--surface`, border `--bord-champ`, radius `--rayon-champ`, 12 px label
+  weight 500 `--texte-2` above; on focus, `--accent` border and 3 px
+  `--accent-fond` halo. A section's textarea keeps the reading typography (Newsreader
+  18 px) on `--surface`, bordered by `--accent` with a halo, footer « 313 / 100 000 », keyboard help,
+  « Annuler », « Enregistrer ». Checkbox: 16 px, `--bord-champ` border; checked `--mj` (the product's
+  only checkbox says « Secrète (MJ seul) »).
+- C: a visible label linked to the field; the error appears beneath in `--danger` with
+  « Erreur : » before it, linked by `aria-describedby`; input is never lost on failure.
 
-**Item de navigation.**
-- V : 30 px (40 au téléphone), rayon `--rayon-item`, icône 16 px `--texte-3` et libellé 13 px
-  graisse 500 `--texte-2` ; survol `--surface-2`, `--texte` ; courant `--accent-fond`, libellé
-  `--texte`, icône `--accent-texte`. Titre de groupe 12 px `--texte-3`, casse normale.
-- C : dans un `nav` étiqueté ; l'item courant porte `aria-current="page"` ; un item dont l'écran
-  n'est pas proposé au rôle, ou pas construit, est absent. Au téléphone, la barre est un tiroir
-  (300 px au plus, sur `--voile`) sous le bouton « Menu » (`panel-left`, `aria-expanded`) ; Échap
-  ou un toucher sur le voile le ferme et rend le focus à « Menu ».
+**Navigation item.**
+- V: 30 px (40 on phones), radius `--rayon-item`, 16 px `--texte-3` icon and 13 px
+  weight 500 `--texte-2` label; hover `--surface-2`, `--texte`; current `--accent-fond`, label
+  `--texte`, icon `--accent-texte`. Group heading 12 px `--texte-3`, sentence case.
+- C: inside a labelled `nav`; the current item carries `aria-current="page"`; an item whose screen
+  is not offered to the role, or not built, is absent. On phones the bar is a drawer
+  (at most 300 px, on `--voile`) under the « Menu » button (`panel-left`, `aria-expanded`); Escape
+  or tapping the overlay closes it and returns focus to « Menu ».
 
 **Avatar.**
-- V : cercle 28 px (16 px dans une pastille), initiales en 11 px graisse 600 ; le compte
-  connecté sur `--accent-fond` / `--accent-texte` ; un joueur auteur sur `--table-fond` /
+- V: 28 px circle (16 px in a badge), initials in 11 px weight 600; signed-in
+  account on `--accent-fond` / `--accent-texte`; player author on `--table-fond` /
   `--table`.
-- C : décoratif (`aria-hidden`) : le nom est toujours écrit à côté. Le bouton du compte
-  (avatar, identifiant, chevron) ouvre le menu du compte, `aria-haspopup="menu"`.
+- C: decorative (`aria-hidden`): the name is always written beside it. The account button
+  (avatar, identifier, chevron) opens the account menu, `aria-haspopup="menu"`.
 
-**Bascule mode MJ / mode Joueur.**
-- V : deux segments dans un fond `--surface-2` ; « Mode MJ » (`lock-keyhole`) actif en `--mj`
-  sur `--mj-fond` ; « Mode Joueur » (`eye`) actif en `--table` sur `--table-fond`. Au téléphone :
-  « MJ » et « Joueur ». En mode Joueur, un bandeau `--table-fond` sous la barre haute : « Mode
+**GM / Player mode toggle.**
+- V: two segments on a `--surface-2` background; « Mode MJ » (`lock-keyhole`) active in `--mj`
+  on `--mj-fond`; « Mode Joueur » (`eye`) active in `--table` on `--table-fond`. On phones:
+  « MJ » and « Joueur ». In Player mode, a `--table-fond` banner below the top bar: « Mode
   Joueur : vous voyez ce que voit un joueur. »
-- C : `role="radiogroup"`, deux `role="radio"` ; ← → basculent ; le bandeau est `role="status"`.
+- C: `role="radiogroup"`, two `role="radio"`; ← → switch; the banner is `role="status"`.
 
-**Bloc de section** (Relations, Pièces jointes).
-- V : une ligne sous le texte, séparée par `--bord` : libellé à gauche (136 px, icône et 13 px
-  `--texte-3`), contenu à droite ; au téléphone, l'un sous l'autre. Relation : « membre de »
-  `--texte-2`, flèche, puis la cible en jeton (`--surface-2`, icône du type, titre, type en
-  `--texte-3`). Vignette 160 × 120, rayon `--rayon-champ`, légende 12 px dessous puis ses
-  boutons-icônes ; une pièce secrète (un fichier réservé au MJ, depuis `kanevas-import`) est cernée de 2 px `--mj` et porte sa pastille. Fichier :
-  une ligne de 40 px cernée de `--bord` (secret : `--mj-bord` et filet `--mj`), icône, nom,
-  taille, boutons-icônes. Envoi : la même ligne avec « Envoi… 42 % » et une barre de 2 px
-  `--accent`. Vide : « Aucune relation pour l'instant. » en `--texte-3` suivi de l'action.
-- C : ce que voit chaque rôle est celui de `docs/ecrans.md` (un bloc qui n'a rien à dire n'existe
-  pas pour un joueur ; le MJ voit chaque bloc, même vide).
+**Section block** (« Relations », « Pièces jointes »).
+- V: a row below the text, separated by `--bord`: label on the left (136 px, icon and 13 px
+  `--texte-3`), content on the right; on phones, stacked. Relation: « membre de »
+  `--texte-2`, arrow, then the target as a chip (`--surface-2`, type icon, title, type in
+  `--texte-3`). Thumbnail 160 × 120, radius `--rayon-champ`, 12 px caption below then its
+  icon buttons; a secret attachment (a GM-only file, since `kanevas-import`) has a 2 px `--mj` border and its badge. File:
+  a 40 px row bordered by `--bord` (secret: `--mj-bord` and `--mj` rule), icon, name,
+  size, icon buttons. Upload: the same row with « Envoi… 42 % » and a 2 px
+  `--accent` bar. Empty: « Aucune relation pour l'instant. » in `--texte-3` followed by the action.
+- C: each role sees what `docs/ecrans.md` describes (a block with nothing to say does not exist
+  for a player; the GM sees every block, even empty).
 
-**Bandeau** (connexion perdue, mode bouchon, mode Joueur).
-- V : pleine largeur, collé sous la barre haute, opaque (`--fond` sous la teinte) ; connexion
-  perdue `--danger` sur `--danger-fond` avec `wifi-off` ; mode bouchon `--mj` sur `--mj-fond`.
-- C : `role="status"`, non fermable ; textes exacts dans `docs/ecrans.md`. Connexion perdue : tout
-  geste qui écrit est désactivé (`aria-disabled`, 45 %).
+**Banner** (lost connection, stub mode, Player mode).
+- V: full width, attached below the top bar, opaque (`--fond` beneath the tint); lost
+  connection `--danger` on `--danger-fond` with `wifi-off`; stub mode `--mj` on `--mj-fond`.
+- C: `role="status"`, not dismissible; exact text in `docs/ecrans.md`. Lost connection: every
+  write action is disabled (`aria-disabled`, 45 %).
 
-**Panneau d'assistant** (E-12, `kanevas-assistant-membre`).
-- V : un bouton flottant « Demander à Kanevas » **inversé** (`--texte` sur `--fond`, voir « Écarts
-  assumés »), rayon pastille, icône `sparkles`, `--ombre-flottant`, en bas à droite ; le panneau en
-  `--fond-lateral`, bord gauche `--bord-champ`, 380 px, plein écran sous 760 px ; message de la
-  personne `--surface-3`, réponse `--surface` avec bord `--bord` ; bloc « Écrit par l'assistant » :
-  `--surface-2`, liseré `--accent`, le mot en `--accent-texte` ; erreur : `--danger-fond` et
-  `--danger`. Le bouton « Envoyer » et les autres sont des **Boutons** ci-dessus.
-- C : le bouton est atteignable à la tabulation et porte `aria-expanded` ; le panneau est un
-  `complementary` titré (`h2`) ; à l'ouverture le focus va au champ, Échap ferme et rend le focus au
-  bouton ; une nouvelle réponse est annoncée (`role="log"`, `aria-live="polite"`) ; « Kanevas
-  réfléchit… » est un `role="status"` ; l'erreur un `role="alert"` ; l'état indisponible désactive
-  le champ **et** dit pourquoi. Le bouton ne masque jamais un champ ou un bouton de l'écran : le
-  contenu garde une marge basse de la hauteur du bouton. Aucun état par la teinte seule.
-- **Proposition de mise à jour** (bloc de E-12, `kanevas-monde`). V : le bloc « Écrit par l'assistant »
-  en plus haut : `--surface-2`, liseré `--accent` ; « Mise à jour proposée » en `--accent-texte` ; deux
-  zones côte à côte, « Actuel » sur `--surface` avec bord `--bord`, « Proposé » sur `--accent-fond` avec
-  bord `--accent` (jamais le rouge et le vert d'un diff : la teinte seule ne dit rien) ; « Appliquer »
-  bouton principal, « Abandonner » bouton secondaire ; périmée : bandeau `--danger-fond` et `--danger`.
-  C : chaque zone est une région étiquetée (`role="region"`, `aria-label` « Actuel » / « Proposé »),
-  `tabindex="0"` pour défiler au clavier ; hauteur maximale de 15 lignes ; « Appliquer » désactivé
-  par `aria-disabled` (il reste dans l'ordre de tabulation, la raison est lue dans le bandeau) ; le
-  résultat (« Appliquée… », « Proposition abandonnée. ») est un `role="status"`, la raison de
-  péremption un `role="alert"` ; après « Appliquer » ou « Abandonner » le focus va au résultat. Sous
-  760 px les zones s'empilent.
-- **Fenêtre** (créer une fiche). V : `--surface` sur voile ; C : `role="dialog"`, le focus y
-  entre et y reste, Échap ferme, le focus revient au bouton qui l'a ouverte.
-- **État d'écran** (vide, chargement, erreur, refus). V : un bloc centré, texte `--texte-2`, un
-  titre, une action. C : chargement `role="status"` ; erreur `role="alert"` avec le bouton
-  « Réessayer ».
+**Assistant panel** (E-12, `kanevas-assistant-membre`).
+- V: an **inverted** floating « Demander à Kanevas » button (`--texte` on `--fond`, see “Deliberate
+  deviations”), pill radius, `sparkles` icon, `--ombre-flottant`, bottom right; panel on
+  `--fond-lateral`, left border `--bord-champ`, 380 px, full screen below 760 px; person's
+  message `--surface-3`, answer `--surface` with `--bord` border; « Écrit par l'assistant » block:
+  `--surface-2`, `--accent` rule, wording in `--accent-texte`; error: `--danger-fond` and
+  `--danger`. The « Envoyer » button and the others follow **Button** above.
+- C: the button is reachable by Tab and carries `aria-expanded`; the panel is a
+  titled (`h2`) `complementary`; on opening, focus moves to the field, Escape closes and returns focus to the
+  button; a new answer is announced (`role="log"`, `aria-live="polite"`); « Kanevas
+  réfléchit… » is a `role="status"`; an error is a `role="alert"`; the unavailable state disables
+  the field **and** says why. The button never obscures a screen field or button: the
+  content keeps a bottom margin equal to the button's height. No state through colour alone.
+- **Update proposal** (E-12 block, `kanevas-monde`). V: a taller « Écrit par l'assistant » block:
+  `--surface-2`, `--accent` rule; « Mise à jour proposée » in `--accent-texte`; two
+  areas side by side, « Actuel » on `--surface` with `--bord` border, « Proposé » on `--accent-fond` with
+  `--accent` border (never a diff's red and green: colour alone says nothing); « Appliquer »
+  primary button, « Abandonner » secondary button; stale: `--danger-fond` and `--danger` banner.
+  C: each area is a labelled region (`role="region"`, `aria-label` « Actuel » / « Proposé »),
+  `tabindex="0"` for keyboard scrolling; maximum height 15 lines; « Appliquer » disabled
+  through `aria-disabled` (it stays in tab order, the reason is read in the banner); the
+  result (« Appliquée… », « Proposition abandonnée. ») is a `role="status"`, the reason for
+  staleness a `role="alert"`; after « Appliquer » or « Abandonner », focus moves to the result. Below
+  760 px the areas stack.
+- **Modal** (create a sheet). V: `--surface` on overlay; C: `role="dialog"`, focus
+  enters and stays within, Escape closes, focus returns to the opening button.
+- **Screen state** (empty, loading, error, refusal). V: a centred block, `--texte-2` text, a
+  heading, an action. C: loading `role="status"`; error `role="alert"` with the
+  « Réessayer » button.
 
-**Carte de fiche** (grille de E-8, `kanevas-illustrations`).
-- V : pas de cadre ni d'ombre (les cartes ne sont pas un kit) ; une vignette 4:3, rayon
-  `--rayon-champ`, filet intérieur `--bord` (`--bord-fort` au survol), l'image en `object-fit:
-  cover`, `object-position: 50% 30%` ; dessous, le titre 14 px graisse 500 sur deux lignes au plus
-  et la pastille PJ / PNJ (`.type`). Survol : `--surface-2` derrière la carte, 6 px de débord.
-  **Vignette de repli** : `--surface-2` tramé de points `--bord-fort` (1 px tous les 12 px) —
-  jamais la hachure, qui dit le secret —, l'initiale en Fraunces 56 px `--texte-3` (4,81 / 5,08:1
-  sur `--surface-2`), l'icône du type dans une puce `--surface` de 26 px en haut à gauche.
-- C : la carte entière est un lien (anneau de focus autour d'elle) ; l'image est décorative
-  (`alt=""`) car le titre suit ; elle se charge à l'approche ; une image qui échoue laisse la place
-  au repli, sans message.
+**Sheet card** (E-8 grid, `kanevas-illustrations`).
+- V: no frame or shadow (cards are not a kit); a 4:3 thumbnail, radius
+  `--rayon-champ`, inner rule `--bord` (`--bord-fort` on hover), image in `object-fit:
+  cover`, `object-position: 50% 30%`; below, 14 px weight 500 title over at most two lines
+  and the « PJ » / « PNJ » badge (`.type`). Hover: `--surface-2` behind the card, 6 px overflow.
+  **Fallback thumbnail**: `--surface-2` with `--bord-fort` dots (1 px every 12 px) —
+  never hatching, which means secrecy —, initial in Fraunces 56 px `--texte-3` (4,81 / 5,08:1
+  on `--surface-2`), type icon in a 26 px `--surface` chip at top left.
+- C: the whole card is a link (focus ring around it); the image is decorative
+  (`alt=""`) since the title follows; it loads as it approaches the viewport; an image that fails gives way
+  to the fallback without a message.
 
-**Carte de système** (E-16) et **carte d'univers** (E-1) : la carte de fiche, avec un en-tête
-dessiné au lieu d'une image.
-- V : mêmes règles que la carte de fiche — pas de cadre ni d'ombre, survol `--surface-2` derrière la
-  carte, filet intérieur `--bord` (`--bord-fort` au survol) ; en-tête 2:1, rayon `--rayon-champ`,
-  sur `--surface-2`. Système : treillis `--bord-fort`, grand dé en `--accent-fond` cerné
-  d'`--accent-texte` à 55 % avec un halo d'encre, petit dé `--surface` cerné de `--bord-champ`,
-  monogramme Fraunces 46 px `--texte-2`. Univers : courbes de niveau `--bord-fort`, les trois plus
-  hautes en `--accent-texte` à 50 %, sommet teinté à 14 % ; le sceau de l'univers (44 px, `--surface`)
-  en bas à gauche. Pastille posée en haut à droite (rôle, ou « Lecture seule » sur `--surface`).
-  Grille `minmax(288 px, 1fr)`, 24 px ; une colonne au téléphone. Nom Fraunces 18 px ; méta 13 px
+**System card** (E-16) and **universe card** (E-1): the sheet card, with a drawn header
+instead of an image.
+- V: same rules as the sheet card — no frame or shadow, hover `--surface-2` behind the
+  card, inner rule `--bord` (`--bord-fort` on hover); 2:1 header, radius `--rayon-champ`,
+  on `--surface-2`. System: `--bord-fort` lattice, large die in `--accent-fond` bordered
+  by `--accent-texte` at 55 % with an ink halo, small die `--surface` bordered by `--bord-champ`,
+  Fraunces monogram 46 px `--texte-2`. Universe: `--bord-fort` contour lines, the top three
+  in `--accent-texte` at 50 %, summit tinted at 14 %; universe seal (44 px, `--surface`)
+  at bottom left. Badge at top right (role, or « Lecture seule » on `--surface`).
+  Grid `minmax(288 px, 1fr)`, 24 px; one column on phones. Name Fraunces 18 px; metadata 13 px
   `--texte-3`.
-- C : l'en-tête est décoratif (`aria-hidden`), calculé du nom, le même à chaque visite ; la carte
-  entière est un seul lien (anneau de focus autour d'elle) ; les puces d'univers d'une carte de
-  système ne sont pas des liens à part. Jamais l'ambre ni le vert dans l'en-tête : ils disent le
-  secret et la table.
+- C: the header is decorative (`aria-hidden`), computed from the name, identical on each visit; the whole
+  card is one link (focus ring around it); universe chips on a system card
+  are not separate links. Never amber or green in the header: they mean secrecy
+  and the table.
 
-**Illustration de fiche** (en-tête de E-9).
-- V : cadre 4:5 de 176 px (96 px au téléphone), rayon `--rayon-panneau`, filet intérieur
-  `--bord` ; les gestes du MJ dans une puce `--surface` + `--ombre-flottant`, en bas à droite,
-  boutons-icônes `image-up` et `trash-2` (danger) ; « Ajouter une illustration » est un bouton
-  fantôme petit (`image-plus`) suivi de l'aide 12 px `--texte-3`. Envoi : barre 2 px `--accent`.
-- C : les gestes paraissent au survol et au focus (toujours sans survol), n'existent ni pour un
-  Joueur ni en mode Joueur ; le clic sur l'image ouvre l'original dans un nouvel onglet ; le
-  retrait se confirme sur place (« Annuler » prend le focus).
+**Sheet illustration** (E-9 header).
+- V: 176 px 4:5 frame (96 px on phones), radius `--rayon-panneau`, inner rule
+  `--bord`; GM actions in a `--surface` + `--ombre-flottant` chip, bottom right,
+  `image-up` and `trash-2` (danger) icon buttons; « Ajouter une illustration » is a small ghost
+  button (`image-plus`) followed by 12 px `--texte-3` help. Upload: 2 px `--accent` bar.
+- C: actions appear on hover and focus (always when hover is unavailable), exist neither for a
+  Player nor in Player mode; clicking the image opens the original in a new tab;
+  removal is confirmed inline (« Annuler » takes focus).
 
-**État de chargement.** V : des squelettes `--squelette` à la forme de la fiche (type, titre,
-filet, deux sections). C : `role="status"`, « Chargement de la fiche… » lu et écrit dessous.
+**Loading state.** V: `--squelette` skeletons shaped like the sheet (type, title,
+rule, two sections). C: `role="status"`, « Chargement de la fiche… » read and written below.
 
-## 5. Seuils
+## 5. Thresholds
 
-Plancher : WCAG 2.2 AA. Mesuré avec le script de contraste de la skill `charte-graphique` (hors de ce dépôt), rejoué par `frontend/src/ui/contraste.test.ts` ; une
-teinte translucide est composée sur ce qui est dessous.
+Floor: WCAG 2.2 AA. Measured with the `charte-graphique` skill's contrast script (outside this repository), replayed by `frontend/src/ui/contraste.test.ts`; a
+translucent colour is composited over what lies beneath.
 
-| Premier plan | Fond | Thème | Ratio | Seuil | |
+| Foreground | Background | Theme | Ratio | Threshold | |
 |---|---|---|---|---|---|
-| `--texte` | `--fond` | sombre / clair | 15,73 / 16,74 | 4,5 | ok |
-| `--texte` | `--surface` | sombre / clair | 14,72 / 17,16 | 4,5 | ok |
-| `--texte-2` | `--fond` | sombre / clair | 7,76 / 8,31 | 4,5 | ok |
-| `--texte-2` | `--fond-lateral` | sombre / clair | 8,01 / 7,81 | 4,5 | ok |
-| `--texte-3` | `--fond` | sombre / clair | 5,57 / 5,54 | 4,5 | ok |
-| `--texte-3` | `--fond-lateral` | sombre / clair | 5,75 / 5,21 | 4,5 | ok |
-| `--texte-3` | `--surface` | sombre / clair | 5,21 / 5,68 | 4,5 | ok |
-| `--texte-3` | `--surface-2` | sombre / clair | 4,81 / 5,08 | 4,5 | ok |
-| `--sur-accent` | `--accent` | sombre / clair | 6,94 / 7,06 | 4,5 | ok |
-| `--accent-texte` | `--fond` | sombre / clair | 8,09 / 6,88 | 4,5 | ok |
-| `--texte` (item courant) | `--accent-fond` sur `--fond-lateral` | sombre / clair | 12,48 / 13,52 | 4,5 | ok |
-| `--accent-texte` (icône courante) | `--accent-fond` sur `--fond-lateral` | sombre / clair | 6,42 / 5,56 | 3 | ok |
-| `--mj` | `--mj-fond` sur `--fond` | sombre / clair | 6,97 / 5,43 | 4,5 | ok |
-| `--mj` | `--mj-fond` sur `--surface-2` (segment « Mode MJ ») | sombre / clair | 5,87 / 5,01 | 4,5 | ok |
-| `--mj` | `--surface` (« Secrète — MJ seul » sur vignette) | sombre / clair | 8,34 / 6,33 | 4,5 | ok |
-| `--texte` | trame MJ sur `--fond` (texte de la section MJ seul) | sombre / clair | 15,06 / 15,03 | 4,5 | ok |
-| `--table` | `--table-fond` sur `--fond` | sombre / clair | 6,84 / 5,45 | 4,5 | ok |
-| `--table` | `--table-fond` sur `--surface-2` (segment « Mode Joueur ») | sombre / clair | 5,77 / 5,02 | 4,5 | ok |
-| `--table-bord` (filet d'audience) | `--fond` | sombre / clair | 3,40 / 4,24 | 3 | ok |
-| `--danger` | `--danger-fond` sur `--fond` | sombre / clair | 5,53 / 5,03 | 4,5 | ok |
-| `--texte` (message d'erreur) | `--danger-fond` sur `--fond` | sombre / clair | 12,90 / 14,33 | 4,5 | ok |
-| `--sur-danger` | `--danger` | sombre / clair | 6,93 / 6,03 | 4,5 | ok |
-| `--bord-champ` | `--surface-2` | sombre / clair | 3,51 / 3,40 | 3 | ok |
-| `--bord-champ` | `--surface` | sombre / clair | 3,80 / 3,81 | 3 | ok |
-| `--focus` | `--fond` | sombre / clair | 8,09 / 6,88 | 3 | ok |
-| `--mj` (filet de la section MJ seul) | `--fond` | sombre / clair | 8,91 / 6,17 | 3 | ok |
-| `--fond` (assistant, inversé) | `--texte` | sombre / clair | 15,73 / 16,74 | 4,5 | ok |
+| `--texte` | `--fond` | dark / light | 15,73 / 16,74 | 4,5 | ok |
+| `--texte` | `--surface` | dark / light | 14,72 / 17,16 | 4,5 | ok |
+| `--texte-2` | `--fond` | dark / light | 7,76 / 8,31 | 4,5 | ok |
+| `--texte-2` | `--fond-lateral` | dark / light | 8,01 / 7,81 | 4,5 | ok |
+| `--texte-3` | `--fond` | dark / light | 5,57 / 5,54 | 4,5 | ok |
+| `--texte-3` | `--fond-lateral` | dark / light | 5,75 / 5,21 | 4,5 | ok |
+| `--texte-3` | `--surface` | dark / light | 5,21 / 5,68 | 4,5 | ok |
+| `--texte-3` | `--surface-2` | dark / light | 4,81 / 5,08 | 4,5 | ok |
+| `--sur-accent` | `--accent` | dark / light | 6,94 / 7,06 | 4,5 | ok |
+| `--accent-texte` | `--fond` | dark / light | 8,09 / 6,88 | 4,5 | ok |
+| `--texte` (current item) | `--accent-fond` on `--fond-lateral` | dark / light | 12,48 / 13,52 | 4,5 | ok |
+| `--accent-texte` (current icon) | `--accent-fond` on `--fond-lateral` | dark / light | 6,42 / 5,56 | 3 | ok |
+| `--mj` | `--mj-fond` on `--fond` | dark / light | 6,97 / 5,43 | 4,5 | ok |
+| `--mj` | `--mj-fond` on `--surface-2` (« Mode MJ » segment) | dark / light | 5,87 / 5,01 | 4,5 | ok |
+| `--mj` | `--surface` (« Secrète — MJ seul » on thumbnail) | dark / light | 8,34 / 6,33 | 4,5 | ok |
+| `--texte` | GM hatching on `--fond` (GM-only section text) | dark / light | 15,06 / 15,03 | 4,5 | ok |
+| `--table` | `--table-fond` on `--fond` | dark / light | 6,84 / 5,45 | 4,5 | ok |
+| `--table` | `--table-fond` on `--surface-2` (« Mode Joueur » segment) | dark / light | 5,77 / 5,02 | 4,5 | ok |
+| `--table-bord` (audience rule) | `--fond` | dark / light | 3,40 / 4,24 | 3 | ok |
+| `--danger` | `--danger-fond` on `--fond` | dark / light | 5,53 / 5,03 | 4,5 | ok |
+| `--texte` (error message) | `--danger-fond` on `--fond` | dark / light | 12,90 / 14,33 | 4,5 | ok |
+| `--sur-danger` | `--danger` | dark / light | 6,93 / 6,03 | 4,5 | ok |
+| `--bord-champ` | `--surface-2` | dark / light | 3,51 / 3,40 | 3 | ok |
+| `--bord-champ` | `--surface` | dark / light | 3,80 / 3,81 | 3 | ok |
+| `--focus` | `--fond` | dark / light | 8,09 / 6,88 | 3 | ok |
+| `--mj` (GM-only section rule) | `--fond` | dark / light | 8,91 / 6,17 | 3 | ok |
+| `--fond` (assistant, inverted) | `--texte` | dark / light | 15,73 / 16,74 | 4,5 | ok |
 
-Mesuré et écarté en cours de route : le vert clair d'avant, `#0a7554` (puis `#0b7352`), tombait
-à 4,42:1 dans le segment « Mode Joueur » et son filet à 2,39:1 ; `--table` clair est passé à
-`#08694a` et `--table-bord` à 70 %.
+Measured and rejected along the way: the former light green, `#0a7554` (then `#0b7352`), fell
+to 4,42:1 in the « Mode Joueur » segment and its rule to 2,39:1; light `--table` changed to
+`#08694a` and `--table-bord` to 70 %.
 
-Tenus par construction : l'anneau de focus n'est jamais retiré sans remplacement (2.4.7) ; la
-barre haute collante (52 px) et les bandeaux sont compensés par `scroll-padding-top` et ne
-masquent jamais l'élément focalisé (2.4.11) ; toute cible fait au moins 24 × 24 px CSS (les
-plus petites, la pastille de 22 px de haut et les boutons-icônes de 26 px, sont espacées de
-sorte que leur cercle de 24 px ne touche aucune autre cible), 36 à 40 px au téléphone (2.5.8) ;
-aucun état ne repose sur la couleur seule — audience, rôle, secret, mode : icône + mot +
-teinte (1.4.1). `--texte-3` n'est jamais posé sur `--surface-3`.
+Guaranteed by construction: the focus ring is never removed without replacement (2.4.7); the
+sticky top bar (52 px) and banners are compensated by `scroll-padding-top` and never
+obscure the focused element (2.4.11); every target is at least 24 × 24 CSS px (the
+smallest, the 22 px-high badge and 26 px icon buttons, are spaced so
+that their 24 px circle touches no other target), 36 to 40 px on phones (2.5.8);
+no state relies on colour alone — audience, role, secret, mode: icon + word +
+colour (1.4.1). `--texte-3` is never placed on `--surface-3`.
 
-## 6. Écarts assumés
+## 6. Deliberate deviations
 
-Aucun ratio sous un seuil.
+No ratio below a threshold.
 
-**Valeurs de tokens existants changées par cette charte — décision de Monsieur.** La maquette
-et cette charte les portent ; `frontend/src/ui/tokens.css` les porte depuis `kanevas-refonte-visuelle` (les noms, eux, ne
-changent pas : le code les lit tels quels).
+**Existing token values changed by these guidelines — Monsieur's decision.** The mockup
+and these guidelines carry them; `frontend/src/ui/tokens.css` has carried them since `kanevas-refonte-visuelle` (names do not
+change: the code reads them as they are).
 
-| Token | Avant (sombre / clair) | Après | Raison |
+| Token | Before (dark / light) | After | Reason |
 |---|---|---|---|
-| `--accent`, `--accent-texte`, `--accent-fond`, `--focus`, `--sur-accent` | violet `#8b7cf6` / `#5240d0` | encre `#8b9bf0` / `#3a4cc0` | le violet est la teinte par défaut des produits SaaS et de « l'IA » ; l'encre dit écrire, et s'écarte de l'ambre et du vert sans les concurrencer |
-| `--fond`, `--fond-lateral`, `--surface`, `--surface-2`, `--surface-3`, `--bord`, `--bord-champ`, `--texte`, `--texte-2`, `--texte-3` | neutres gris chauds (`#101012`… / `#f4f3f0`…) | neutres teintés vers l'encre ; en clair, page presque blanche (`#fcfcfd`) | une page-document se lit sur blanc ; les gris purs faisaient « formulaire » |
-| `--table`, `--table-fond` (clair) | `#0a7554` | `#08694a` | l'ancien vert tombait à 4,42:1 dans le segment « Mode Joueur » |
-| `--mj-fond` (clair) | `rgba(242,163,60,.14)` | `rgba(214,140,30,.14)` | une teinte ambre propre au clair, plus dense sur blanc |
-| `--danger`, `--danger-fond` (clair) | `#b0332a` | `#b4352b` | alignement mesuré ; quasi inchangé |
-| `--police-titre`, `--police-texte` | serif et sans-serif système | Fraunces, Inter (servies par le produit) | une vraie fonte choisie pour le sujet ; la police système faisait l'écran « basique » |
-| `--duree` | 120 ms | 160 ms | dans la plage 150–250 ms ; 120 ms paraissait sec sur les menus |
-| titre de fiche (`h1`) | `--t-22` | `--t-40` (`--t-32` au téléphone) | le titre ouvre la page comme dans un document ; `--t-22` reste le titre de section |
+| `--accent`, `--accent-texte`, `--accent-fond`, `--focus`, `--sur-accent` | violet `#8b7cf6` / `#5240d0` | ink `#8b9bf0` / `#3a4cc0` | violet is the default colour of SaaS and “AI” products; ink means writing, and differs from amber and green without competing with them |
+| `--fond`, `--fond-lateral`, `--surface`, `--surface-2`, `--surface-3`, `--bord`, `--bord-champ`, `--texte`, `--texte-2`, `--texte-3` | warm grey neutrals (`#101012`… / `#f4f3f0`…) | neutrals tinted towards ink; in light mode, an almost white page (`#fcfcfd`) | a document page is read on white; pure greys looked like a “form” |
+| `--table`, `--table-fond` (light) | `#0a7554` | `#08694a` | the former green fell to 4,42:1 in the « Mode Joueur » segment |
+| `--mj-fond` (light) | `rgba(242,163,60,.14)` | `rgba(214,140,30,.14)` | an amber tint specific to light mode, denser on white |
+| `--danger`, `--danger-fond` (light) | `#b0332a` | `#b4352b` | measured alignment; almost unchanged |
+| `--police-titre`, `--police-texte` | system serif and sans-serif | Fraunces, Inter (served by the product) | a real font chosen for the subject; the system font made the screen look “basic” |
+| `--duree` | 120 ms | 160 ms | within the 150–250 ms range; 120 ms felt abrupt on menus |
+| sheet title (`h1`) | `--t-22` | `--t-40` (`--t-32` on phones) | the title opens the page like a document; `--t-22` remains the section heading |
 
-Les tokens marqués *(nouveau)* s'ajoutent sans rien changer à l'existant.
+Tokens marked *(new)* are added without changing anything existing.
