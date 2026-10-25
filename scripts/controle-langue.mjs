@@ -14,7 +14,7 @@ const run = (command, args) => execFileSync(command, args, {
 const count = (text, pattern) => [...text.matchAll(pattern)].length;
 
 function parse(text) {
-  const sections = [{ numero: 0, titre: '', lines: [], code: [] }];
+  const sections = [{ number: 0, title: '', lines: [], code: [] }];
   let section = sections[0];
   let fence = 0;
   for (const line of text.split(/\r?\n/)) {
@@ -28,7 +28,7 @@ function parse(text) {
     } else {
       const heading = /^## (.+?)(?: +#+)?\s*$/.exec(line);
       if (heading) {
-        section = { numero: sections.length, titre: heading[1], lines: [], code: [] };
+        section = { number: sections.length, title: heading[1], lines: [], code: [] };
         sections.push(section);
       }
       section.lines.push(line);
@@ -44,24 +44,24 @@ function parse(text) {
       else if (char === '»') { depth = Math.max(0, depth - 1); unquoted += ' '; }
       else unquoted += depth ? ' ' : char;
     }
-    const mots = {};
+    const words = {};
     for (const word of unquoted.toLowerCase().match(/[\p{L}\p{N}_]+/gu) || []) {
       if (['le', 'la', 'les', 'des', 'est', 'pour', 'avec', 'une', 'dans'].includes(word)) {
-        mots[word] = (mots[word] || 0) + 1;
+        words[word] = (words[word] || 0) + 1;
       }
     }
-    const identifiants = {};
+    const identifiers = {};
     for (const id of (prose + '\n' + s.code.join('\n')).match(/\b(?:B|P|E|AD)-\d+\b/g) || []) {
-      identifiants[id] = (identifiants[id] || 0) + 1;
+      identifiers[id] = (identifiers[id] || 0) + 1;
     }
     return {
-      numero: s.numero, titre: s.titre, prose, mots,
-      francais: Object.values(mots).reduce((a, b) => a + b, 0),
-      faits: {
-        identifiants,
-        titres: s.lines.filter((l) => /^ {0,3}#{1,6}\s+/.test(l)).length,
-        blocs: s.blocks || 0,
-        tableaux: s.lines.filter((l) => l.startsWith('|') && !/^\|[\s:|\-]+$/.test(l)).length,
+      number: s.number, title: s.title, prose, words,
+      french: Object.values(words).reduce((a, b) => a + b, 0),
+      facts: {
+        identifiers,
+        headings: s.lines.filter((l) => /^ {0,3}#{1,6}\s+/.test(l)).length,
+        blocks: s.blocks || 0,
+        tableRows: s.lines.filter((l) => l.startsWith('|') && !/^\|[\s:|\-]+$/.test(l)).length,
       },
     };
   });
@@ -70,10 +70,10 @@ function parse(text) {
 // kanevas-images added section 14 after the frozen translation baseline. Keep
 // that baseline intact: only this documented insertion has no facts counterpart.
 function referenceSections(file, before, current) {
-  if (file !== 'docs/ecrans.md' || before.some((s) => s.titre.includes('`kanevas-images`'))
-      || !current[14]?.titre.includes('`kanevas-images`')
-      || !current[15]?.titre.includes('`kanevas-refonte-visuelle`')
-      || !before[14]?.titre.includes('`kanevas-refonte-visuelle`')) return before;
+  if (file !== 'docs/ecrans.md' || before.some((s) => s.title.includes('`kanevas-images`'))
+      || !current[14]?.title.includes('`kanevas-images`')
+      || !current[15]?.title.includes('`kanevas-refonte-visuelle`')
+      || !before[14]?.title.includes('`kanevas-refonte-visuelle`')) return before;
   return [...before.slice(0, 14), null, ...before.slice(14)];
 }
 
@@ -82,14 +82,14 @@ function referenceSections(file, before, current) {
 // section's exact old counts; compare every current count normally, totals too.
 function referenceAmendment(file, sections) {
   if (file !== 'docs/ecrans.md') return sections;
-  const index = sections[14]?.titre.includes('`kanevas-images`') ? 18 : 17;
+  const index = sections[14]?.title.includes('`kanevas-images`') ? 18 : 17;
   const section = sections[index];
-  if (!section || !['Maquettes', 'Mockups'].includes(section.titre)
-      || (section.faits.identifiants['E-4'] || 0) !== 0
-      || section.faits.identifiants['E-14'] !== 1) return sections;
+  if (!section || !['Maquettes', 'Mockups'].includes(section.title)
+      || (section.facts.identifiers['E-4'] || 0) !== 0
+      || section.facts.identifiers['E-14'] !== 1) return sections;
   return sections.map((s, i) => i !== index ? s : {
     ...s,
-    faits: { ...s.faits, identifiants: { ...s.faits.identifiants, 'E-4': 1, 'E-14': 2 } },
+    facts: { ...s.facts, identifiers: { ...s.facts.identifiers, 'E-4': 1, 'E-14': 2 } },
   });
 }
 
@@ -101,48 +101,48 @@ const PRODUCT_EVOLUTION = [
   [0, [['E-17', 0, 1], ['E-18', 0, 1], ['E-19', 0, 1]]],
   [12, [['AD-111', 2, 4], ['AD-39', 2, 1], ['B-24', 1, 0], ['AD-117', 0, 1], ['E-19', 0, 1]]],
   [13, [['AD-90', 0, 1]]],
-  [19, [['titres', 16, 17], ['tableaux', 50, 58], ['P-10', 7, 8], ['AD-111', 4, 5], ['E-9', 52, 64],
+  [19, [['headings', 16, 17], ['tableRows', 50, 58], ['P-10', 7, 8], ['AD-111', 4, 5], ['E-9', 52, 64],
     ['E-18', 11, 13], ['E-14', 12, 16], ['E-19', 12, 13], ['B-33', 2, 3], ['P-14', 3, 4], ['E-13', 4, 6],
     ['E-1', 1, 2], ['B-39', 1, 2], ['B-40', 1, 3], ['B-41', 1, 2], ['AD-117', 0, 1], ['AD-105', 0, 1],
     ['AD-119', 0, 1], ['B-25', 0, 1], ['AD-44', 0, 1]]],
 ];
-const FLAT = ['titres', 'blocs', 'tableaux'];
+const FLAT = ['headings', 'blocks', 'tableRows'];
 function productEvolution(file, sections) {
   // The frozen baseline has exactly 22 numbered sections after the preamble (0..21).
   if (file !== 'docs/ecrans.md' || sections.length !== 22) return sections;
   return sections.map((s, i) => {
     const entry = PRODUCT_EVOLUTION.find(([index]) => index === i);
     if (!entry) return s;
-    const count = (f) => (FLAT.includes(f) ? s.faits[f] : s.faits.identifiants[f]) || 0;
+    const count = (f) => (FLAT.includes(f) ? s.facts[f] : s.facts.identifiers[f]) || 0;
     if (!entry[1].every(([f, old]) => count(f) === old)) return s;
-    const faits = { ...s.faits, identifiants: { ...s.faits.identifiants } };
+    const facts = { ...s.facts, identifiers: { ...s.facts.identifiers } };
     for (const [f, , now] of entry[1]) {
-      if (FLAT.includes(f)) faits[f] = now; else faits.identifiants[f] = now;
+      if (FLAT.includes(f)) facts[f] = now; else facts.identifiers[f] = now;
     }
-    return { ...s, faits };
+    return { ...s, facts };
   });
 }
 
-function differences(before, after) {
+function compareFacts(before, after) {
   const findings = [];
-  for (const key of ['titres', 'blocs', 'tableaux']) {
+  for (const key of ['headings', 'blocks', 'tableRows']) {
     if ((before?.[key] || 0) !== (after?.[key] || 0)) {
-      findings.push({ fait: key, avant: before?.[key] || 0, apres: after?.[key] || 0 });
+      findings.push({ fact: key, before: before?.[key] || 0, after: after?.[key] || 0 });
     }
   }
-  for (const id of new Set([...Object.keys(before?.identifiants || {}), ...Object.keys(after?.identifiants || {})])) {
-    const a = before?.identifiants[id] || 0;
-    const b = after?.identifiants[id] || 0;
-    if (a !== b) findings.push({ fait: id, avant: a, apres: b });
+  for (const id of new Set([...Object.keys(before?.identifiers || {}), ...Object.keys(after?.identifiers || {})])) {
+    const a = before?.identifiers[id] || 0;
+    const b = after?.identifiers[id] || 0;
+    if (a !== b) findings.push({ fact: id, before: a, after: b });
   }
   return findings;
 }
 
 function total(sections) {
-  const result = { identifiants: {}, titres: 0, blocs: 0, tableaux: 0 };
+  const result = { identifiers: {}, headings: 0, blocks: 0, tableRows: 0 };
   for (const s of sections) {
-    for (const key of ['titres', 'blocs', 'tableaux']) result[key] += s.faits[key];
-    for (const [id, n] of Object.entries(s.faits.identifiants)) result.identifiants[id] = (result.identifiants[id] || 0) + n;
+    for (const key of ['headings', 'blocks', 'tableRows']) result[key] += s.facts[key];
+    for (const [id, n] of Object.entries(s.facts.identifiers)) result.identifiers[id] = (result.identifiers[id] || 0) + n;
   }
   return result;
 }
@@ -197,7 +197,7 @@ function main() {
       if (arg === '--attendu') {
         const m = /^(.+):titres=(\d+),puces=(\d+),liens=(\d+)$/.exec(value);
         if (!m || expected.has(m[1])) throw new Error(`Invalid or duplicate release expectation: ${value}`);
-        expected.set(m[1], { titres: +m[2], puces: +m[3], liens: +m[4] });
+        expected.set(m[1], { headings: +m[2], bullets: +m[3], links: +m[4] });
       }
     } else if (arg === '--titres') titles = true;
     else if (arg === '--liens') checkLinks = true;
@@ -208,7 +208,7 @@ function main() {
   if (expected.size && !releases) throw new Error('--attendu requires --releases');
   if (releases && (titles || checkLinks || ranges.size || files.length || base)) throw new Error('Release mode cannot audit local files');
   let failed = false;
-  const output = { fichiers: [], releases: [] };
+  const output = { files: [], releases: [] };
   if (releases) {
     const published = JSON.parse(run('gh', ['release', 'list', '--limit', '100000', '--json', 'tagName,isDraft']))
       .filter((r) => !r.isDraft);
@@ -219,16 +219,16 @@ function main() {
       const { body } = JSON.parse(run('gh', ['release', 'view', tag, '--json', 'body']));
       const sections = parse(body);
       const prose = sections.map((s) => s.prose).join('\n');
-      const comptes = {
-        titres: total(sections).titres,
-        puces: count(prose, /^\s*(?:[-+*]|\d+[.)])\s+/gm),
-        liens: links(prose).length,
+      const counts = {
+        headings: total(sections).headings,
+        bullets: count(prose, /^\s*(?:[-+*]|\d+[.)])\s+/gm),
+        links: links(prose).length,
       };
-      const ecarts = Object.entries(expected.get(tag) || {}).filter(([key, n]) => comptes[key] !== n)
-        .map(([fait, avant]) => ({ fait, avant, apres: comptes[fait] }));
-      const francais = sections.reduce((n, s) => n + s.francais, 0);
-      failed ||= francais > 0 || ecarts.length > 0;
-      output.releases.push({ tag, francais, comptes, ecarts, sections: sections.map(({ prose: _, ...s }) => s) });
+      const differences = Object.entries(expected.get(tag) || {}).filter(([key, n]) => counts[key] !== n)
+        .map(([fact, before]) => ({ fact, before, after: counts[fact] }));
+      const french = sections.reduce((n, s) => n + s.french, 0);
+      failed ||= french > 0 || differences.length > 0;
+      output.releases.push({ tag, french, counts, differences, sections: sections.map(({ prose: _, ...s }) => s) });
     }
   } else {
     for (const file of ranges.keys()) if (!files.includes(file)) files.push(file);
@@ -258,7 +258,7 @@ function main() {
     for (const file of [...new Set(files)]) {
       const current = parse(readFileSync(file, 'utf8'));
       if (titles) {
-        output.fichiers.push({ fichier: file, sections: current.map(({ numero, titre }) => ({ numero, titre })) });
+        output.files.push({ file, sections: current.map(({ number, title }) => ({ number, title })) });
         continue;
       }
       const original = parse(oldText(normalized(file)));
@@ -274,22 +274,22 @@ function main() {
         const a = before[i];
         const b = current[i];
         const wordsOnly = a === null;
-        const ecarts = wordsOnly ? [] : differences(a?.faits, b?.faits);
-        if (!wordsOnly && Boolean(a) !== Boolean(b)) ecarts.push({ fait: 'section', avant: Boolean(a), apres: Boolean(b) });
+        const differences = wordsOnly ? [] : compareFacts(a?.facts, b?.facts);
+        if (!wordsOnly && Boolean(a) !== Boolean(b)) differences.push({ fact: 'section', before: Boolean(a), after: Boolean(b) });
         if (checkLinks && b) {
           const oldLinks = new Set(links(a?.prose || '', oldProse));
           for (const href of links(b.prose, currentProse)) {
             if (!resolves(normalized(file), href, false) && (!oldLinks.has(href) || resolves(normalized(file), href, true))) {
-              broken.push({ section: i, lien: href });
+              broken.push({ section: i, link: href });
             }
           }
         }
-        sections.push({ numero: i, titre: b?.titre ?? a?.titre, francais: b?.francais || 0, mots: b?.mots || {}, faits: b?.faits, ecarts });
+        sections.push({ number: i, title: b?.title ?? a?.title, french: b?.french || 0, words: b?.words || {}, facts: b?.facts, differences });
       }
-      const francais = sections.reduce((n, s) => n + s.francais, 0);
-      const ecarts = ranges.has(file) ? sections.flatMap((s) => s.ecarts) : differences(total(amended), total(current.filter((_, i) => before[i] !== null)));
-      failed ||= francais > 0 || broken.length > 0 || ecarts.length > 0 || sections.some((s) => s.ecarts.length);
-      output.fichiers.push({ fichier: file, francais, faits: total(current), ecarts, liens: broken, sections });
+      const french = sections.reduce((n, s) => n + s.french, 0);
+      const differences = ranges.has(file) ? sections.flatMap((s) => s.differences) : compareFacts(total(amended), total(current.filter((_, i) => before[i] !== null)));
+      failed ||= french > 0 || broken.length > 0 || differences.length > 0 || sections.some((s) => s.differences.length);
+      output.files.push({ file, french, facts: total(current), differences, links: broken, sections });
     }
   }
   console.log(JSON.stringify(output, null, 2));
