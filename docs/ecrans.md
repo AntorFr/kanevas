@@ -1088,85 +1088,85 @@ searches and reads what they can; the instance admin reaches neither (« Page
 introuvable. »). Failure path specific to this slice (`docs/parcours.md` has none for P-3 and P-6): a search with no results says « Aucun résultat pour … »,
 never « caché ». Failure path for linking a section: the service refusal appears above the form (« Cette relation existe déjà. », « Une fiche ne se relie pas à elle-même. », « Cette section porte déjà 100 relations. »), input and choice are kept; a generic write failure and an expired session follow the common texts (« L'action n'a pas abouti. Réessayez. »; sign-in, form not kept).
 
-## Détail des écrans de `kanevas-assistant-membre`
+## Screen details for `kanevas-assistant-membre`
 
-> E-12 Assistant, et son ajout au shell d'un univers. Mêmes six états et mêmes textes communs que
-> `kanevas-premiere-fiche` (chargement, connexion perdue, session expirée) ; ne sont redits que les
-> textes propres. Maquette `docs/maquettes/e12-assistant.html` (d'avant la charte : contenu et états seulement) (thème sombre ; MJ, Joueur,
-> et les états). Composant : `docs/charte.md` « Panneau d'assistant ».
+> E-12 Assistant, and its addition to a universe's shell. The same six states and common texts as
+> `kanevas-premiere-fiche` (loading, offline, expired session); only specific
+> texts are repeated. Mockup `docs/maquettes/e12-assistant.html` (predates the charter: content and states only) (dark theme; GM, player,
+> and states). Component: `docs/charte.md`, assistant panel.
 
-**Ajout au shell.** Un bouton flottant « Demander à Kanevas », en bas à droite, sur **tout écran
-d'un univers** pour un membre (MJ ou Joueur) ; il n'existe ni hors d'un univers, ni pour un compte
-sans rôle dans l'univers (l'admin d'instance sans rôle, Teo avant son ajout) : l'écran n'a alors pas
-de bouton, et l'assistant n'a pas de page à lui (l'adresse `/univers/:id/assistant` répond « Page introuvable. ») et sa route d'API répond 404 (AD-75). Il se monte par un seul fichier, sans
-modifier un composant existant du shell. Bascule « mode Joueur » d'une fiche : sans effet sur
-l'assistant, qui garde le catalogue du rôle réel (AD-74) ; le panneau le dit par sa pastille.
+**Addition to the shell.** A floating « Demander à Kanevas » button, bottom right, on **every screen
+of a universe** for a member (GM or player); it exists neither outside a universe nor for an account
+without a role in that universe (the instance admin without a role, Teo before being added): the screen then has no
+button, the assistant has no page of its own (the `/univers/:id/assistant` address answers « Page introuvable. »), and its API route answers 404 (AD-75). It mounts through a single file, without
+changing an existing shell component. A sheet's player-mode toggle has no effect on
+the assistant, which keeps the real role's catalogue (AD-74); the panel states this through its badge.
 
 ### E-12 Assistant
 
-Un panneau à droite (380 px, sur ordinateur) qui s'ouvre au bouton et se ferme par « Fermer » ou
-Échap ; le contenu de l'écran dessous reste lisible et utilisable. Sur téléphone (moins de 760 px)
-il prend tout l'écran, et Échap ou « Fermer » rend le focus au bouton flottant. Dedans, de haut en
-bas :
+A panel on the right (380 px on desktop) opens through the button and closes through « Fermer » or
+Escape; the screen content underneath stays readable and usable. On phones (under 760 px)
+it takes the whole screen, and Escape or « Fermer » returns focus to the floating button. Inside, top to
+bottom:
 
-- **l'en-tête** : « Kanevas — assistant », la pastille du catalogue (« MJ » ou « Joueur », mot et
-  teinte), « Nouvelle conversation », « Fermer » ;
-- **le fil** : les messages de la personne et les réponses de l'assistant, en texte brut (le fil le reste après `kanevas-import`),
-  du plus ancien au plus récent ; le fil défile et reste calé sur le dernier message ;
-- **sous une réponse, les écritures** : un bloc « Écrit par l'assistant » par événement (AD-76), le
-  libellé (« Section « Notes de la table » complétée », « Scénario « Acte III — La crypte » créé
-  dans La Couronne brisée ») et un lien « Ouvrir » vers E-9 (la fiche), E-7 (le scénario) ou E-6
-  (la campagne). Les quatre écritures possibles : « Section « Notes de la table » complétée »
-  (`ajouter_a_section`, lien vers E-9), « Section « Vérité » modifiée » (`modifier_section`, lien
-  vers E-9), « Campagne « La Couronne brisée » créée » (`creer_campagne`, lien vers E-6), « Scénario
-  « Acte III — La crypte » créé dans La Couronne brisée » (`creer_scenario`, lien vers E-7) ;
-- **la saisie** : le champ, étiqueté « Demander à Kanevas » par une étiquette visible au-dessus de lui (son texte d'aide est « Votre question »), dans tous les états où il est affiché, et « Envoyer » (Entrée
-  envoie, Maj+Entrée va à la ligne).
+- **the header**: « Kanevas — assistant », the catalogue badge (« MJ » or « Joueur », word and
+  tint), « Nouvelle conversation », « Fermer »;
+- **the thread**: the person's messages and the assistant's answers, in plain text (the thread stays that way after `kanevas-import`),
+  oldest first; the thread scrolls and stays aligned with the latest message;
+- **below an answer, the writes**: one « Écrit par l'assistant » block per event (AD-76), the
+  label (« Section « Notes de la table » complétée », « Scénario « Acte III — La crypte » créé
+  dans La Couronne brisée ») and an « Ouvrir » link to E-9 (the sheet), E-7 (the scenario) or E-6
+  (the campaign). The four possible writes: « Section « Notes de la table » complétée »
+  (`ajouter_a_section`, link to E-9), « Section « Vérité » modifiée » (`modifier_section`, link
+  to E-9), « Campagne « La Couronne brisée » créée » (`creer_campagne`, link to E-6), « Scénario
+  « Acte III — La crypte » créé dans La Couronne brisée » (`creer_scenario`, link to E-7);
+- **the input**: the field, labelled « Demander à Kanevas » by a visible label above it (its hint is « Votre question »), in every state where it is displayed, and « Envoyer » (Enter
+  sends, Shift+Enter inserts a line break).
 
-Le **fil vit dans le navigateur**, dans un magasin du module `frontend/src/ecrans/assistant/fil.ts`, hors du routeur et du stockage du navigateur (AD-28) : il survit à un
-changement d'écran et à la fermeture du panneau ; il disparaît au rechargement de la page, au
-changement d'univers et à la déconnexion ; « Nouvelle conversation » le vide. Il n'est écrit
-nulle part (ni stockage du navigateur, ni serveur). Le client envoie le message et les 20 derniers
-messages du fil (AD-75).
+The **thread lives in the browser**, in a store in `frontend/src/ecrans/assistant/fil.ts`, outside the router and browser storage (AD-28): it survives
+screen changes and closing the panel; it disappears on page reload,
+universe change and sign-out; « Nouvelle conversation » clears it. It is written
+nowhere (neither browser storage nor server). The client sends the message and the thread's last 20
+messages (AD-75).
 
-**Ce que chaque rôle y voit.** Le Joueur : chercher, lire une fiche, lire une section, modifier une
-section, ajouter un paragraphe à une section, lister les campagnes. Le MJ : les mêmes, plus créer
-une campagne, créer un scénario et générer une image (`kanevas-images`). Un Joueur qui demande de créer un scénario ou de générer une image n'a pas l'outil :
-l'assistant répond qu'il ne peut pas, sans événement et sans rien créer (le texte est celui du
-modèle, il n'est pas fixé ; ce qu'on vérifie est l'absence d'écriture). Dans les deux cas
-l'assistant ne lit et n'écrit que ce que la personne lit et écrit : une section fermée est
-« Introuvable. », une section lisible mais non écrite « Vous ne pouvez pas modifier cette
-section. » (AD-74). Cette tranche **ne donne aucun outil sur les cartes ni les graphes** (écarté, AD-74). Elle **ne dessine pas** la proposition de mise à jour (`kanevas-monde`) ; l'image est le bloc de
-`kanevas-images`, décrit plus bas : l'un et l'autre s'inscrivent au registre de blocs.
+**What each role sees.** Player: search, read a sheet, read a section, edit a
+section, append a paragraph to a section, list campaigns. GM: the same, plus create
+a campaign, create a scenario and generate an image (`kanevas-images`). A player asking to create a scenario or generate an image lacks the tool:
+the assistant replies that it cannot, with no event and without creating anything (the wording comes from the
+model and is not fixed; the check is the absence of a write). In both cases,
+the assistant only reads and writes what the person can read and write: a closed section is
+« Introuvable. », a readable section without write access is « Vous ne pouvez pas modifier cette
+section. » (AD-74). This slice **provides no tool for maps or graphs** (rejected, AD-74). It **does not draw** the update proposal (`kanevas-monde`); the image is the
+`kanevas-images` block described below: both register in the block registry.
 
-| État | Ce qu'on voit | Ce qu'on peut faire |
+| State | What is shown | Available actions |
 |---|---|---|
-| vide (fil sans message) | « Demandez-moi de chercher, de résumer ou d'écrire dans ce que vous pouvez lire et écrire. Exemple : « Que sait-on d'Aldric ? » » | écrire ; fermer ; « Nouvelle conversation » (sans effet sur un fil vide) |
-| chargement (disponibilité) | le bouton est présent ; dans le panneau, « Chargement… » à la place du champ et de « Envoyer » (absents, pas désactivés) ; aucun « Réessayer » tant que l'appel n'a pas répondu | fermer ; nouvelle conversation |
-| disponibilité en échec (serveur muet, erreur) | « Je n'ai pas pu répondre — réessayer » avec un bouton « Réessayer » qui relit la disponibilité ; le champ et « Envoyer » sont présents mais désactivés (`aria-disabled`) | réessayer ; fermer ; nouvelle conversation |
-| réponse en cours | le message envoyé apparaît ; « Kanevas réfléchit… » (`role="status"`) ; « Envoyer » affiche « … » et est désactivé ; le champ reste lisible ; pour un MJ seulement, au bout de 20 secondes d'attente **quelle que soit la demande** (le client ne sait pas ce que fait l'assistant), « Kanevas travaille toujours… Une image peut prendre jusqu'à trois minutes. » (`kanevas-images`) ; le Joueur garde « Kanevas réfléchit… » | fermer (la réponse arrive dans le fil) ; « Nouvelle conversation » est désactivée tant que la réponse n'est pas arrivée |
-| erreur | « Je n'ai pas pu répondre — réessayer » (`role="alert"`), sans événement, pour toutes les causes (délai de 120 s, erreur de transport) : la personne ne les distingue pas ; demande déjà en cours (429) : « Une demande est déjà en cours. Patientez. » ; la saisie n'est jamais perdue : à l'envoi le champ se vide, la question reste dans le fil, une seule fois ; « Réessayer » (offert pour toutes les erreurs, le 429 compris) la renvoie telle quelle : le message d'erreur disparaît, « Kanevas réfléchit… » prend sa place, et la question n'est pas affichée une seconde fois ; une demande avec image dure 270 secondes au plus (AD-90) : au-delà, le même texte | « Réessayer » renvoie la même question ; saisir autre chose ; fermer ; nouvelle conversation |
-| indisponible (sans jeton, hors bouchon, AD-77) | « L'assistant n'est pas disponible pour le moment. » ; champ et « Envoyer » désactivés (`aria-disabled`) | lire le fil ; fermer ; nouvelle conversation |
-| connexion perdue | le bandeau commun ; le fil reste lisible ; champ et « Envoyer » désactivés. Perdue pendant « Kanevas réfléchit… » : la réponse est perdue, l'état passe à l'erreur ci-dessus avec « Réessayer » (désactivé tant que la connexion n'est pas revenue) ; au retour de la connexion, le bandeau disparaît et le champ est réactivé | lire, ouvrir les liens ; fermer ; nouvelle conversation |
-| refus | le compte sans rôle n'a pas le bouton (rien à décrire ici) ; un refus d'outil est une réponse de l'assistant, pas un écran d'erreur — « Introuvable. », « Vous ne pouvez pas modifier cette section. », « La section a changé depuis que vous l'avez lue. Relisez-la. » —, sans événement ; la réponse commence par ce texte, la suite est du texte libre du modèle ; session expirée : la personne est menée à la connexion, le fil est perdu | refus d'outil : le fil reste, on écrit à nouveau ; fermer ; nouvelle conversation |
-| contenu long | message de plus de 2 000 caractères : « Erreur : 2 000 caractères au plus. » sous le champ, « Envoyer » désactivé ; fil de plus de 20 messages : la note « Seuls les 20 derniers messages sont transmis à l'assistant. » ; réponse longue : passe à la ligne, le fil défile ; titre de 120 caractères dans un libellé : passe à la ligne | écrire (après avoir raccourci le message) ; fermer ; nouvelle conversation |
+| Empty (thread without messages) | « Demandez-moi de chercher, de résumer ou d'écrire dans ce que vous pouvez lire et écrire. Exemple : « Que sait-on d'Aldric ? » » | Write; close; « Nouvelle conversation » (no effect on an empty thread) |
+| Loading (availability) | Button present; in the panel, « Chargement… » replaces the field and « Envoyer » (absent, not disabled); no « Réessayer » until the call answers | Close; new conversation |
+| Availability failure (unresponsive server, error) | « Je n'ai pas pu répondre — réessayer » with a « Réessayer » button that rechecks availability; field and « Envoyer » present but disabled (`aria-disabled`) | Retry; close; new conversation |
+| Answer in progress | Sent message appears; « Kanevas réfléchit… » (`role="status"`); « Envoyer » displays « … » and is disabled; field stays readable; GM only, after 20 seconds of waiting **whatever the request** (the client does not know what the assistant is doing), « Kanevas travaille toujours… Une image peut prendre jusqu'à trois minutes. » (`kanevas-images`); players keep « Kanevas réfléchit… » | Close (answer arrives in the thread); « Nouvelle conversation » disabled until the answer arrives |
+| Error | « Je n'ai pas pu répondre — réessayer » (`role="alert"`), no event, for all causes (120 s timeout, transport error): the person cannot distinguish them; request already in progress (429): « Une demande est déjà en cours. Patientez. »; input is never lost: on send the field clears, the question stays in the thread, once only; « Réessayer » (offered for every error, including 429) resends it unchanged: the error message disappears, « Kanevas réfléchit… » replaces it, and the question is not displayed twice; a request with an image lasts at most 270 seconds (AD-90): beyond that, the same text | « Réessayer » resends the same question; type something else; close; new conversation |
+| Unavailable (no token, outside stub mode, AD-77) | « L'assistant n'est pas disponible pour le moment. »; field and « Envoyer » disabled (`aria-disabled`) | Read thread; close; new conversation |
+| Offline | Common banner; thread stays readable; field and « Envoyer » disabled. Lost during « Kanevas réfléchit… »: the answer is lost, state switches to the error above with « Réessayer » (disabled until back online); on reconnection, banner disappears and field is enabled again | Read, open links; close; new conversation |
+| Refused | Account without a role has no button (nothing to describe here); a tool refusal is an assistant answer, not an error screen — « Introuvable. », « Vous ne pouvez pas modifier cette section. », « La section a changé depuis que vous l'avez lue. Relisez-la. » — with no event; the answer starts with that text, followed by the model's free text; expired session: the person is taken to sign-in, thread is lost | Tool refusal: thread stays, type again; close; new conversation |
+| Long content | Message over 2 000 characters: « Erreur : 2 000 caractères au plus. » below the field, « Envoyer » disabled; thread over 20 messages: note « Seuls les 20 derniers messages sont transmis à l'assistant. »; long answer: wraps, thread scrolls; 120-character title in a label: wraps | Write (after shortening the message); close; new conversation |
 
-*Critère.* Étant donné Léa Joueuse de « Lame d'Ébène », quand elle demande « Que sait-on d'Aldric ? »,
-alors le fil donne « Apparence » et rien de « Vérité » ; quand elle demande de lire « Vérité », le fil
-dit « Introuvable. » ; Antor, lui, obtient les deux sections, et fait créer un scénario qui apparaît
-dans le fil avec « Ouvrir » vers E-7 et sur E-6.
+*Acceptance criterion.* Given Léa, a player in « Lame d'Ébène », when she asks « Que sait-on d'Aldric ? »,
+the thread gives « Apparence » and nothing from « Vérité »; when she asks to read « Vérité », the thread
+says « Introuvable. »; Antor gets both sections and has a scenario created, which appears
+in the thread with « Ouvrir » to E-7 and on E-6.
 
-### Clôture de `kanevas-assistant-membre`
+### Closure of `kanevas-assistant-membre`
 
-B-26 → E-12 (toutes ses lignes) ; B-27 → E-12 (créer une campagne ou un scénario ; proposer et
-générer restent à `kanevas-monde` et `kanevas-images`). Parcours : P-3 étape 5 (« rappelle-moi tout
-ce qu'on sait d'Aldric », première moitié), P-6 étape 4, P-7 étape 2. Rôles : MJ et Joueur ont
-E-12, l'admin d'instance sans rôle ne l'a pas. Aucune migration, aucune entité : le fil n'est pas
-stocké. Reste aux autres tranches : les propositions de mise à jour (`kanevas-monde`), les images
+B-26 → E-12 (all its rows); B-27 → E-12 (create a campaign or scenario; proposals and
+generation remain with `kanevas-monde` and `kanevas-images`). Journeys: P-3 step 5 (« rappelle-moi tout
+ce qu'on sait d'Aldric », first half), P-6 step 4, P-7 step 2. Roles: GM and player have
+E-12, the instance admin without a role does not. No migration, no entity: the thread is not
+stored. Left to other slices: update proposals (`kanevas-monde`), images
 (`kanevas-images`).
-B-24 → le bloc Pièces jointes de E-9 (ajouter en un geste, voir une image, télécharger un autre
-fichier, retirer; its visibility follows where it was added, see the amendment below). Atteint par P-3 étape 4 (le plan d'un lieu) et P-7 étape 2 (le
-portrait de son personnage). Le bloc livre ses six états (B-29), ci-dessus.
+B-24 → the E-9 attachments block (add in one action, view an image, download another
+file, remove; its visibility follows where it was added, see the amendment below). Reached through P-3 step 4 (a location's map) and P-7 step 2 (the
+portrait of one's character). The block provides its six states (B-29), above.
 
 ## Détail des écrans de `kanevas-images`
 
