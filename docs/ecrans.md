@@ -3155,119 +3155,119 @@ l'abonnement » button; status messages are in an `aria-live="polite"` region, e
 - Given the panel displayed, when the network is cut, « Connecter l'abonnement » (or « Reconnecter »), « Valider » and « Annuler » are disabled and the banner appears; when the network returns they reactivate.
 - Given Léa (outside the group), when she calls a panel route, she receives 404.
 
-## Détail des écrans de `kanevas-outils` (cadrage)
+## Screen details for `kanevas-outils` (scope)
 
-> Cadrage proposé le 2026-10-16 (`epic/kanevas-outils`). Besoins B-57 à B-79, parcours P-17 à P-21,
-> décisions AD-121 à AD-137. Écrans structurants, avec maquette finie : **E-20** (`docs/maquettes/e20-outils.html`,
-> moment fort de P-17), **E-21** (`e21-carte-galaxie.html`, P-18), **E-22** (`e22-concepteur-vaisseaux.html`, P-19,
-> avec la section gérée de E-9). Les textes communs (chargement, erreur, connexion perdue, refus) sont ceux de
-> `kanevas-premiere-fiche`. **Format** : les deux outils se jouent au téléphone et à la tablette comme au
-> bureau (B-70) : sous 760 px, une colonne, les panneaux sous la carte, les gestes de survol deviennent un appui.
+> Scope proposed on 2026-10-16 (`epic/kanevas-outils`). Needs B-57 to B-79, journeys P-17 to P-21,
+> decisions AD-121 to AD-137. Key screens, with finished mockups: **E-20** (`docs/maquettes/e20-outils.html`,
+> key moment of P-17), **E-21** (`e21-carte-galaxie.html`, P-18), **E-22** (`e22-concepteur-vaisseaux.html`, P-19,
+> with E-9's managed section). Common texts (loading, error, connection lost, refusal) are those of
+> `kanevas-premiere-fiche`. **Format**: both tools work on phones and tablets as on
+> desktop (B-70): below 760 px, one column, panels below the map, hover gestures become taps.
 
-### Ce qu'un outil apporte à l'interface
+### What a tool brings to the interface
 
-Trois points d'entrée, selon le contrat du type d'outil (AD-122) : une **carte dynamique** vit dans la section
-Cartes (E-10) et s'ouvre sur son écran ; un **générateur** a un écran à lui (E-22) et des **sections gérées** sur
-les fiches ; une **aide de jeu** aurait sa propre entrée de barre (aucune ici). Le code d'un outil ne se charge
-qu'à l'ouverture de son écran ou quand une fiche montre l'une de ses sections (AD-133). Aucun écran n'est
-ajouté ou modifié à la main dans le routeur : un module déclare son point d'entrée.
+Three entry points, according to the tool type's contract (AD-122): a **dynamic map** lives in the
+maps section (E-10) and opens on its screen; a **generator** has its own screen (E-22) and **managed sections** on
+sheets; a **play aid** would have its own sidebar entry (none here). A tool's code loads
+only when its screen opens or when a sheet shows one of its sections (AD-133). No screen is
+added or modified manually in the router: a module declares its entry point.
 
-### E-20 — Outils (onglet de E-14 et de E-15)
+### E-20 — Tools (E-14 and E-15 tab)
 
-**Contenu** : une carte par outil applicable (nom, une ligne, « Système · activé/désactivé », « Univers · suit /
-forcé »), ses **dépendances**, sa **visibilité** (deux cases, MJ et Joueurs), ses **réglages** (chacun : valeur
-en vigueur, d'où elle vient, « Remplacer pour l'univers »), son **catalogue** (version, nombre d'éléments par
-nature, « Importer un catalogue… », « Voir les éléments »), et en pied « Supprimer les données de l'outil… ». En tête, sur E-15, le
-**responsable** du système et « Transférer la responsabilité ».
+**Content**: a card per applicable tool (name, one line, « Système · activé/désactivé », « Univers · suit /
+forcé »), its **dependencies**, **visibility** (two checkboxes, GM and Players), **settings** (each: effective
+value, its source, « Remplacer pour l'univers »), **catalogue** (version, element count per
+nature, « Importer un catalogue… », « Voir les éléments »), and at the foot « Supprimer les données de l'outil… ». At the top, on E-15, the
+system's **manager** and « Transférer la responsabilité ».
 
-| État | Ce que voit l'utilisateur | Texte |
+| State | What the user sees | Text |
 |---|---|---|
-| vide | le système n'a aucun outil applicable | « Aucun outil ne s'applique à ce système de jeu. » |
-| chargement | squelettes de cartes | « Chargement des outils… » |
-| erreur | la liste ne vient pas | « Impossible de charger les outils. » + « Réessayer » |
-| hors-ligne | bandeau ; tous les gestes d'écriture désactivés | « Connexion perdue. » |
-| refus | un joueur : « Page introuvable. » ; un MJ non responsable sur le système : lecture seule, gestes **cachés** | — |
-| contenu long | 6 outils : liste défilante ; un rapport d'import de 300 lignes : tronqué à 50 refus avec « Voir tout » | « 237 autres refus… » |
+| empty | system has no applicable tool | « Aucun outil ne s'applique à ce système de jeu. » |
+| loading | card skeletons | « Chargement des outils… » |
+| error | list does not arrive | « Impossible de charger les outils. » + « Réessayer » |
+| offline | banner; all writing actions disabled | « Connexion perdue. » |
+| refusal | a player: « Page introuvable. »; a GM who is not the system manager: read only, actions **hidden** | — |
+| long content | 6 tools: scrolling list; 300-line import report: truncated to 50 refusals with « Voir tout » | « 237 autres refus… » |
 
-Critères :
-- Étant donné un outil d'essai qui dépend d'un autre outil désactivé, quand Antor, MJ responsable, tente de l'activer,
-  alors il reste désactivé et l'écran dit « <Outil> demande <autre outil> : activez-le d'abord. » (aucun outil SWN n'a de dépendance).
-- Étant donné Mira, MJ non responsable d'un univers rattaché, quand elle ouvre E-20 sur le système, alors elle voit
-  les outils et leurs valeurs et ni « Activer », ni « Importer », ni « Supprimer les données ».
-- Étant donné un fichier de catalogue où une arme n'a pas de masse, quand Antor l'importe, alors l'aperçu liste
-  « 1 refusée » avec la clé et le champ `masse`, le reste est proposé à l'application, et rien n'est écrit avant « Appliquer ».
-- Étant donné Léa, Joueuse, quand elle force l'adresse de E-20, alors elle lit « Page introuvable. ».
+Criteria:
+- Given a test tool depending on another disabled tool, when Antor, GM and manager, attempts to enable it,
+  it stays disabled and the screen says « <Outil> demande <autre outil> : activez-le d'abord. » (no SWN tool has a dependency).
+- Given Mira, GM of an attached universe but not the system manager, when she opens E-20 on the system, she sees
+  tools and their values and neither « Activer », « Importer » nor « Supprimer les données ».
+- Given a catalogue file where a weapon lacks mass, when Antor imports it, the preview lists
+  « 1 refusée » with the key and `masse` field, the rest is offered for application, and nothing is written before « Appliquer ».
+- Given Léa, Player, when she forces E-20's address, she reads « Page introuvable. ».
 
-**Les éléments du catalogue** (« Voir les éléments », sur E-14 ; décision de Monsieur du 2026-10-17) : la liste par
-nature, chaque élément avec son origine (« Système », « Univers », « Remplacé pour l'univers », « Retiré de
-l'univers ») et, pour un élément d'univers, « Visible des joueurs » / « MJ seul ». Gestes d'un MJ de l'univers :
-« Masquer aux joueurs » et « Rendre visible » sur un élément d'univers ; « Retirer de cet univers » et
-« Rétablir » sur un élément du système. Sur E-15 (système), la liste se lit sans aucun de ces gestes.
-- Étant donné l'arme d'univers « Lance d'Orak'Ziel » masquée par Antor, quand Léa ouvre le concepteur, alors
-  elle n'est dans aucune liste, et rien ne dit qu'un élément manque ; Antor la voit, marquée « MJ seul ».
-- Étant donné la conception de Léa qui porte déjà la « Lance d'Orak'Ziel », quand Antor la masque, alors Léa la voit
-  toujours sur son vaisseau et le réenregistre sans alerte ; elle ne peut plus l'ajouter ailleurs.
-- Étant donné le « Laser à impulsion » du système remplacé pour « Éneria d'essai » puis masqué, quand Léa ouvre le
-  concepteur, alors aucun « Laser à impulsion » n'est dans sa liste (ni l'élément d'univers, ni celui du système) ;
-  une conception qui le porte est calculée avec les valeurs de l'univers.
-- Étant donné la coque du système « Corvette » retirée d'« Éneria d'essai », alors aucun compte de cet univers
-  ne la voit dans le concepteur ; l'autre univers du système la voit ; « Rétablir » la fait revenir.
+**Catalogue elements** (« Voir les éléments », on E-14; Monsieur's decision of 2026-10-17): list by
+nature, each element with its origin (« Système », « Univers », « Remplacé pour l'univers », « Retiré de
+l'univers ») and, for a universe element, « Visible des joueurs » / « MJ seul ». Universe GM actions:
+« Masquer aux joueurs » and « Rendre visible » on a universe element; « Retirer de cet univers » and
+« Rétablir » on a system element. On E-15 (system), the list is read without any of these actions.
+- Given the universe weapon « Lance d'Orak'Ziel » hidden by Antor, when Léa opens the designer,
+  it appears in no list, and nothing says an element is missing; Antor sees it, marked « MJ seul ».
+- Given Léa's design already carrying the « Lance d'Orak'Ziel », when Antor hides it, Léa still sees it
+  on her ship and saves again without warning; she can no longer add it elsewhere.
+- Given the system's « Laser à impulsion » overridden for « Éneria d'essai » then hidden, when Léa opens the
+  designer, no « Laser à impulsion » appears in her list (neither universe nor system element);
+  a design carrying it is calculated with the universe's values.
+- Given the system hull « Corvette » removed from « Éneria d'essai », no account in that universe
+  sees it in the designer; the system's other universe sees it; « Rétablir » brings it back.
 
-### E-21 — Carte de la galaxie
+### E-21 — Galaxy map
 
-**Contenu** : un canevas hexagonal (déplacement, zoom, pincement), la légende, un panneau du système sélectionné
-(nom, taille, notes lisibles, routes, lien partageable), la mesure au survol (au toucher : appui), l'outil
-« Trajet » (départ, arrivée, routes : toutes / publiques, moteur → distance et durée), la recherche d'un système
-(parmi ceux qu'on lit). MJ : « Placer un système », « Promouvoir », « Tracer une route », « Dessiner une zone »,
-« Renommer », « Supprimer la galaxie… » (confirmation : « Les 214 systèmes, 49 routes et 6 zones de cette galaxie seront effacés. »), « Graine… », « Document MJ… » (choisir la fiche, ou en créer une de type Savoir ; l'outil y écrit la section gérée « Document MJ », MJ seul), le mode Joueur. La vue ne demande que les blocs qu'elle montre.
+**Content**: a hexagonal canvas (pan, zoom, pinch), legend, selected-system panel
+(name, size, readable notes, routes, shareable link), measurement on hover (touch: tap), the
+« Trajet » tool (departure, arrival, routes: all / public, drive → distance and duration), system search
+(among readable systems). GM: « Placer un système », « Promouvoir », « Tracer une route », « Dessiner une zone »,
+« Renommer », « Supprimer la galaxie… » (confirmation: « Les 214 systèmes, 49 routes et 6 zones de cette galaxie seront effacés. »), « Graine… », « Document MJ… » (choose the sheet, or create one of type lore; the tool writes the GM-only « Document MJ » managed section there), Player mode. The view requests only the blocks it shows.
 
-| État | Texte |
+| State | Text |
 |---|---|
-| vide | MJ : « Aucun système défini. Placez-en un ou promouvez un système généré. » ; Joueur : « Rien à voir sur cette carte pour l'instant. » |
-| chargement | « Chargement de la carte… » (blocs qui arrivent au fil) |
-| erreur | bloc qui ne vient pas : le bloc reste vide, « Impossible de charger une partie de la carte. » + « Réessayer » |
-| hors-ligne | la vue affichée reste, bandeau « Connexion perdue. », écritures désactivées |
-| refus | carte non visible pour le rôle, ou outil invisible : « Page introuvable. » (MJ en mode Joueur sur carte cachée : l'avis de E-11) |
-| contenu long | 500 systèmes définis, 49 routes : l'étiquette des noms se replie au dézoom ; noms de 80 caractères tronqués |
-| conflit | « Ce système a changé depuis que vous l'avez ouvert. » + « Recharger » |
+| empty | GM: « Aucun système défini. Placez-en un ou promouvez un système généré. »; Player: « Rien à voir sur cette carte pour l'instant. » |
+| loading | « Chargement de la carte… » (blocks arrive progressively) |
+| error | block not arriving: block stays empty, « Impossible de charger une partie de la carte. » + « Réessayer » |
+| offline | displayed view stays, « Connexion perdue. » banner, writes disabled |
+| refusal | map not visible to role, or tool invisible: « Page introuvable. » (GM in Player mode on hidden map: E-11 notice) |
+| long content | 500 defined systems, 49 routes: name labels collapse on zooming out; 80-character names truncated |
+| conflict | « Ce système a changé depuis que vous l'avez ouvert. » + « Recharger » |
 
-Critères :
-- Étant donné Léa, Joueuse, quand elle cherche « Station fantôme » (un système fantôme du MJ), alors la recherche ne
-  trouve rien, sans trace d'un masquage, et aucune route ni zone n'y mène sur sa carte.
-- Étant donné Léa à 390 px de large, quand elle appuie sur « Vael », alors le panneau s'ouvre sous la carte avec
-  nom, distance et « Trajet depuis ici ».
-- Étant donné le trajet « Port-Sel » → « Vael » de 7 cases au moteur 2, quand Léa le calcule, alors elle lit « 4,5 jours ».
-- Étant donné Antor, MJ, qui passe en mode Joueur, alors la route privée et le territoire secret disparaissent de la
-  carte, du trajet et de la recherche.
-- Étant donné deux visites de la même case anonyme, alors le même système est généré ; changer la graine demande la
-  confirmation qui dit que tous les systèmes non définis changent de place.
+Criteria:
+- Given Léa, Player, when she searches « Station fantôme » (a GM ghost system), search finds
+  nothing, with no trace of hiding, and no route or zone leads there on her map.
+- Given Léa at 390 px width, when she taps « Vael », the panel opens below the map with
+  name, distance and « Trajet depuis ici ».
+- Given the « Port-Sel » → « Vael » journey of 7 hexes with drive 2, when Léa calculates it, she reads « 4,5 jours ».
+- Given Antor, GM, switching to Player mode, the private route and secret territory disappear from the
+  map, journey and search.
+- Given two visits to the same anonymous hex, the same system is generated; changing the seed asks for
+  confirmation stating that all undefined systems change position.
 
-### E-22 — Concepteur de vaisseaux
+### E-22 — Ship designer
 
-**Contenu** : la **liste** des conceptions lisibles (nom, coque, classe, prix, alertes) et l'**atelier** d'une conception : à
-gauche les choix par nature (coque, moteur, aménagements, défenses, armes, modifications) pris dans le catalogue
-du système complété par celui de l'univers (un élément local est marqué « Univers »), à droite les résultats
-(prix, PV, CA, puissance et masse libres, chantier, entretien) et les **alertes** (« Bloquante » / « À surveiller »),
-« Enregistrer », « Recalculer » quand la conception est « calculée avec d'anciens réglages » ; MJ : « Générer les fiches de règles… » (crée les fiches de règles absentes, une par nature, et celle des exemples ; met à jour les autres, sections gérées). Sur E-9, la section
-gérée montre son bandeau et un lien « Ouvrir dans le concepteur ».
+**Content**: the **list** of readable designs (name, hull, class, price, alerts) and a design's **workshop**: on the
+left, choices by nature (hull, drive, fittings, defenses, weapons, modifications) taken from the system
+catalogue supplemented by the universe's (a local element is marked « Univers »); on the right, results
+(price, HP, AC, free power and mass, shipyard, maintenance) and **alerts** (« Bloquante » / « À surveiller »),
+« Enregistrer », « Recalculer » when the design is « calculée avec d'anciens réglages »; GM: « Générer les fiches de règles… » (creates missing rule sheets, one per nature, and the examples sheet; updates the others, managed sections). On E-9, the managed
+section shows its banner and an « Ouvrir dans le concepteur » link.
 
-| État | Texte |
+| State | Text |
 |---|---|
-| vide | liste : « Aucune conception. » (MJ : « Créez une fiche de vaisseau, puis ouvrez-la ici. ») ; catalogue sans éléments : « Le catalogue du système est vide. Importez-en un (Outils). » |
-| chargement | « Chargement du concepteur… » |
-| erreur | « Impossible de calculer ce vaisseau. » + « Réessayer » (jamais un résultat partiel) |
-| hors-ligne | choix verrouillés, « Connexion perdue. » |
-| refus | conception illisible : « Page introuvable. » ; non-auteur : lecture seule, « Modifier » absent |
-| contenu long | 40 aménagements : liste filtrable par nature ; une conception à 30 alertes : bloquantes d'abord |
-| conflit | « Cette conception a changé depuis que vous l'avez ouverte. » + « Recharger » |
-| périmé | « Calculée avec d'anciens réglages. » + « Recalculer » (rien n'est recalculé sans le geste) |
-| élément retiré | alerte « Bloquante » « Élément retiré de cet univers » sur la ligne de choix ; « Enregistrer » refusé tant qu'il n'est pas remplacé ; le texte de la section ne change pas (B-62, décision de Monsieur du 2026-10-17) |
+| empty | list: « Aucune conception. » (GM: « Créez une fiche de vaisseau, puis ouvrez-la ici. »); catalogue without elements: « Le catalogue du système est vide. Importez-en un (Outils). » |
+| loading | « Chargement du concepteur… » |
+| error | « Impossible de calculer ce vaisseau. » + « Réessayer » (never a partial result) |
+| offline | choices locked, « Connexion perdue. » |
+| refusal | unreadable design: « Page introuvable. »; non-author: read only, « Modifier » absent |
+| long content | 40 fittings: list filterable by nature; design with 30 alerts: blocking first |
+| conflict | « Cette conception a changé depuis que vous l'avez ouverte. » + « Recharger » |
+| stale | « Calculée avec d'anciens réglages. » + « Recalculer » (nothing recalculated without the action) |
+| removed element | « Bloquante » alert « Élément retiré de cet univers » on the choice row; « Enregistrer » refused until replaced; section text does not change (B-62, Monsieur's decision of 2026-10-17) |
 
-Critères :
-- Étant donné Léa, autrice de « Caractéristiques » du « Vent d'Orak », quand elle ajoute une arme qui dépasse la puissance,
-  alors une alerte bloquante « Puissance insuffisante » s'affiche et « Enregistrer » est refusé avec le motif.
-- Étant donné Léa sur la fiche E-9, alors « Caractéristiques » montre « Générée par le concepteur de vaisseaux » et aucun éditeur.
-- Étant donné Antor qui change la portée de saut d'un réglage d'univers, alors la conception de Léa montre « Calculée avec d'anciens
-  réglages » et son texte n'a pas changé tant que personne n'a recalculé.
-- Étant donné le concepteur désactivé, alors la fiche montre « Caractéristiques » en version texte avec « Outil désactivé ».
-- Étant donné Teo, sans rôle dans l'univers, quand il force l'adresse d'une conception, alors « Page introuvable. ».
+Criteria:
+- Given Léa, author of « Caractéristiques » on « Vent d'Orak », when she adds a weapon exceeding power,
+  a blocking « Puissance insuffisante » alert appears and « Enregistrer » is refused with the reason.
+- Given Léa on sheet E-9, « Caractéristiques » shows « Générée par le concepteur de vaisseaux » and no editor.
+- Given Antor changing jump range in a universe setting, Léa's design shows « Calculée avec d'anciens
+  réglages » and its text has not changed until someone recalculates.
+- Given the designer disabled, the sheet shows « Caractéristiques » as text with « Outil désactivé ».
+- Given Teo, without a role in the universe, when he forces a design's address, « Page introuvable. ».
