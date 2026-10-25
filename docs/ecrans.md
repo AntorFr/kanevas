@@ -3426,27 +3426,44 @@ compris, type Personnage, alors la liste porte Aldric, le Prieur et Suie ; avec 
 Prieur (mort) disparaît. Étant donné Léa, quand elle ouvre la même adresse, alors la liste porte
 Aldric et Suie seulement, et la bascule de mode est absente.
 
-### E-8, E-9, E-17 — the dead mark (B-67, AD-131)
+### E-8, E-9, E-17 — the « gone » mark (B-67, AD-131)
 
-- **Header of E-9** (personnage, créature): for the GM in GM mode, a menu entry « Marquer mort »
-  in the « ⋯ » menu of the header (« Marquer vivant » when dead), written whole; the header then
-  carries the badge « Mort » (`Pastille` neutral, icon `skull`) next to the type badge, and the
-  illustration takes the mark below. A player sees the badge, never the entry.
+One mark, `disparu`, carried by the types that can be gone, each with its word (decision of
+Monsieur, 2026-10-25) :
+
+| Type | Word (badge) | Menu entry | Filter | Glyph |
+|---|---|---|---|---|
+| personnage, créature | Mort / Morte | Marquer mort · Marquer vivant | Vivants / Morts / Tous | `skull` |
+| famille | Éteinte | Marquer éteinte · Marquer vivante | Vivantes / Éteintes / Tous | `skull` |
+| faction | Détruite | Marquer détruite · Marquer active | Actives / Détruites / Tous | `shield-off` |
+| lieu, objet, vaisseau | Détruit | Marquer détruit · Marquer intact | Intacts / Détruits / Tous | `flame` |
+
+The other types (événement, quête, savoir, récit, règle, note, compte-rendu, aventure) carry no
+mark. The grammatical gender of the word follows the type's label (« Détruite » for a faction,
+« Détruit » for a lieu), never the sheet's content.
+
+- **Header of E-9**: for the GM in GM mode, the menu entry of the table in the « ⋯ » menu of the
+  header (the reverse entry when gone), written whole; the header then carries the badge with the
+  word (`Pastille` neutral, the type's glyph) next to the type badge, and the illustration takes the
+  mark below. A player sees the badge, never the entry.
 - **The mark on the image**: on the vignette of a card (E-8, E-17, « Fiches liées », « Contient »,
   the relation lines) and on the illustration of E-9, a sober mark — the image desaturated at 60 %
-  and a small `skull` glyph in a round chip at the bottom-left of the frame; on the drawn fallback,
-  the glyph alone. Never a cross over the face, never a red overlay (the charte's restraint).
-- **Filter** « Vivants / Morts / Tous » (« Tous » by default) on E-8 for the types Personnage and
-  Créature, next to « Sous-type », kept in the address (`?etat=vivants`); a filtered state renders
-  the grid; empty: « Aucun personnage mort. » / « Aucun personnage vivant. » with « Voir tous les
-  personnages ».
-- **Import**: `mort: true|false` on a personnage or a créature (default false, protected by B-48
-  like `pj`).
+  and the type's glyph in a small round chip at the bottom-left of the frame; on the drawn fallback,
+  the glyph alone. Never a cross over a face, never a red overlay (the charte's restraint).
+- **Filter** of the table (« Tous » by default) on E-8 for the types that carry the mark, next to
+  « Sous-type », kept in the address (`?etat=la|disparu` — the two values are the same for every
+  type, the words differ); a filtered state renders the grid; empty: « Aucun personnage mort. »,
+  « Aucun lieu détruit. »… with « Voir tous les … ».
+- **Import**: `disparu: true|false` on a sheet of a type that carries the mark (default false,
+  protected by B-48 like `pj`); refused with `champ_inconnu` on another type.
 
 *Critères.* Étant donné Antor sur « Bran Corvalis » (vivant dans le semis, « Apparence » lue des
 joueurs), quand il choisit « Marquer mort », alors l'en-tête porte « Mort », le portrait prend la
 marque, et sa carte de la grille aussi à la prochaine lecture de la liste ; « Vivants » ne le liste
-plus ; Léa voit la marque sur sa fiche et sa carte, et pas l'entrée du menu.
+plus ; Léa voit la marque sur sa fiche et sa carte, et pas l'entrée du menu. Étant donné Antor sur
+« Le Phare aux Sels » (lieu), quand il choisit « Marquer détruit », alors l'en-tête porte
+« Détruit » avec la flamme, et « Intacts » ne le liste plus ; sur une quête, le menu n'a pas
+d'entrée.
 
 ### E-11 and « Mentionnée dans » (B-69)
 

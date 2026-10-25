@@ -462,7 +462,7 @@ Il veut d'abord un essai jetable, puis la vraie base, sans doublon ni fuite.*
    « Vaisseau » à activé (le système le désactive) — P-13.
 3. **Accès par API** (E-18) : « Nouveau jeton », nom « Script Kanka — Mac », durée 30 jours ;
    Kanevas montre le jeton une fois ; il le copie dans la configuration du script.
-4. *(`kanevas-fiches-liees`: a relation entry carries `nature` and `qualificatif` — `type` still read as the qualifier for one version —, a character or creature `mort`, a `famille` sheet; an unknown or incompatible nature is a refusal counted, `nature_incompatible`)* *(`kanevas-scenarios`: campaigns and scenarios are pushed as sheets of type `aventure`, and counted with them)* *Hors de Kanevas* : il lance le script ; le script ouvre un **lot**, pousse d'abord les
+4. *(`kanevas-fiches-liees`: a relation entry carries `nature` and `qualificatif` — `type` still read as the qualifier for one version —, a `disparu` mark on a sheet of a type that carries it, a `famille` sheet; an unknown or incompatible nature is a refusal counted, `nature_incompatible`)* *(`kanevas-scenarios`: campaigns and scenarios are pushed as sheets of type `aventure`, and counted with them)* *Hors de Kanevas* : il lance le script ; le script ouvre un **lot**, pousse d'abord les
    **campagnes**, puis les fiches, parents d'abord (clé d'origine, type, titre, parent, alias,
    étiquettes, sections en Markdown avec leurs liens `[[…]]`, leurs blocs MJ, leurs images, leur
    audience) — les comptes-rendus avec la clé de leur campagne —, puis les relations, et clôt le lot
@@ -649,13 +649,17 @@ introuvable. ».
 - **B-66** — « **Famille** » is a type of the product's list (reglable, activated by default,
   icon `users`): a family is a sheet like a faction, members are characters linked to it by the
   nature « membre de ». *(P-17)*
-- **B-67** — A **character or a creature is alive or dead**: a mark the GM sets in place from the
-  header of E-9 (« Marquer mort » / « Marquer vivant »), shown by a sober mark on the image of the
-  card (E-8, E-17, the linked-sheet lines, the relation lines) and a badge « Mort » in the header,
-  visible to whoever sees the sheet, with a filter « Vivants / Morts / Tous » on the lists of
-  characters and creatures. No date, no cause: the text says the rest. *(P-17, P-6)*
-- **B-68** — The **import API** pushes the nature and the qualifier of a relation, the dead mark of
-  a character or a creature, and families, with the protection of B-48; the former free `type` of
+- **B-67** — A sheet can be **gone**: a character or a creature is **mort**, a faction
+  **détruite**, a family **éteinte**, a place, an object or a vessel **détruit** (decision of
+  Monsieur, 2026-10-25 : one mark, a word per type). The GM sets it in place from the header of E-9
+  (« Marquer mort » / « Marquer détruite » … and the reverse), it shows by a sober mark on the image
+  of the card (E-8, E-17, the linked-sheet lines, the relation lines) and a badge with the type's
+  word in the header, visible to whoever sees the sheet, with a filter per list (« Vivants / Morts /
+  Tous » on characters and creatures, « Intacts / Détruits / Tous » on places, objects and
+  vessels, « Actives / Détruites / Tous » on factions, « Vivantes / Éteintes / Tous » on families).
+  No date, no cause: the text says the rest. *(P-17, P-6)*
+- **B-68** — The **import API** pushes the nature and the qualifier of a relation, the « gone » mark
+  (`disparu`) of a sheet of a type that carries it, and families, with the protection of B-48; the former free `type` of
   a relation is the qualifier. *(P-10)*
 - **B-69** — The graph (E-11) and « Mentionnée dans » (E-9) read the nature where there is one:
   the link of a graph shows the nature's label, the qualifier after it; « Mentionnée dans » keeps
