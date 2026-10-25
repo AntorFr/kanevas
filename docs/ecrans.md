@@ -2549,7 +2549,7 @@ closed to it from now on. Mockup: `e09-fiche-importee.html` (« Port-Sel », « 
 - **Preview** (« Écrire / Aperçu »): its states are those of `kanevas-import-markdown` — « Aperçu en cours… »,
   « Rien à prévisualiser. », « L'aperçu n'a pas abouti. Réessayez. » with « Réessayer », « Erreur : 100 000 caractères au plus. » —;
   a scenario (E-7) or system entry (E-15) preview leaves `:::mj` as text, like their reading view (only editing an
-  E-9 section requests the section nature with its universe and mode, AD-114); `nature: 'section'` without an integer `univers_id` is refused (400), an unknown universe or one the account does not belong to answers 404 like any read; a non-GM member receives a preview without blocks. For the GM, the block appears hatched as on read; for a non-GM,
+  E-9 section requests the `section` nature with its universe and mode, AD-114); `nature: 'section'` without an integer `univers_id` is refused (400), an unknown universe or one the account does not belong to answers 404 like any read; a non-GM member receives a preview without blocks. For the GM, the block appears hatched as on read; for a non-GM,
   or outside a universe, it does not exist (preview applies the same view as reading, AD-114).
 - **Extreme cases**: a 100,000-character block scrolls with the section; a wide table inside a block
   scrolls inside the block's frame, never the page at 375 px; several blocks in a section form separate frames, separated by
@@ -2696,7 +2696,7 @@ The generating assistant tool (`generer_image`, `kanevas-images`) calls that sam
 | long content | 1,140 files: 100 then more; 200-character name truncated with « … » and tooltip; file used in 40 sheets: 10 then « Afficher les 30 autres »; 30 MB image: preview loads, nothing is resized (AD-93); 300 MB document: tile and « Télécharger », nothing is loaded ahead | same |
 
 *Criteria.*
-- Given « plan-du-repaire.png » reserved for the GM and inserted into « Histoire » of « Les Docks », read
+- Given « plan-du-repaire.png » reserved for the GM and inserted into « Histoire » of « Docks », read
   by players, when Léa reads « Les Docks », she sees « Image réservée au MJ. » in its place; and
   her media library does not show this file.
 - Given the same file inserted inside a GM block, when Léa reads the section, nothing appears.
