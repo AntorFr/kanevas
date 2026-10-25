@@ -3346,7 +3346,7 @@ The form of the Relations block (`kanevas-relier-chercher`) gains a first step: 
 list of the natures whose source types include this sheet's type, read from the source, plus
 « Sans nature » (default when the list is empty, last otherwise); choosing a nature restricts
 « Type de fiche » to the nature's target types (the select shows them only); then the sheet
-picker as today; then **« Qualificatif »** (optional, 1 to 80, replaces the former free « Type de
+picker as today; then **« Qualificatif »** (1 to 80; optional with a nature, **required without one** — « Le qualificatif est obligatoire sans nature. » —, replaces the former free « Type de
 relation » field, same place, placeholder « habite, capitaine… »). « Relier » refuses a nature
 that does not fit the pair (400 `nature_incompatible`, « Cette nature ne relie pas ces deux types
 de fiches. ») — the screen never offers it. A relation line reads « se situe à · **Port-Sel** —
@@ -3354,6 +3354,33 @@ habite » (nature, target, qualifier in grey); a free relation reads its qualifi
 The relation lines in the block and the lines of « Fiches liées » show the « gone » mark on a
 target that carries it (B-67). Nothing changes for the audience: the relation belongs to its
 section.
+
+**The form, state by state** (slice `kanevas-fiches-liees-natures`).
+
+| État | Ce qu'on voit | Ce qu'on peut faire |
+|---|---|---|
+| chargement | the list of natures loads with the types: « Chargement… » in place of the « Nature » field | — |
+| erreur | « Impossible de charger les natures. » with « Réessayer »; the form stays usable with « Sans nature » alone | « Réessayer », relier sans nature |
+| vide | a sheet whose type is the source of no nature (objet, événement, quête…): the « Nature » field is not shown, the form is the former one (qualifier required) | relier sans nature |
+| connexion perdue | le bandeau; « Relier » disabled, the entries stay | lire |
+| refus | « Relier » refused by the server (`relation_existante`, `limite_relations`, `nature_incompatible`): « Cette relation existe déjà. », « Cette section porte déjà 100 relations. », « Cette nature ne relie pas ces deux types de fiches. », the entries stay | corriger |
+| contenu long | a 80-character qualifier wraps in the line; on the graph the label is cut at 40 characters with an ellipsis, whole in the tooltip | idem |
+
+Changing the nature after a sheet was picked keeps the pick if its type still fits, else empties it.
+The error texts and the accessible names of the block say « qualificatif » and « relation », never
+« type de relation »; the line reads « se situe à · Port-Sel — habite » where the former text read
+« membre de → Lames Grises » (the older criteria are read that way). A symmetric nature (« allié de »)
+entered on one sheet is listed by that sheet's section only until `kanevas-fiches-liees-bloc` shows the
+other side; the same fact entered from the other side with the same qualifier is refused as
+`relation_existante`. Roles: the GM outside player mode relates; a player, and the GM in player mode,
+never see « Relier », the « Nature » field or « Nouvelle famille » (hidden); the list « Familles »
+is read like any list of E-8, empty state « Aucune famille. » with « Nouvelle famille » for the GM.
+
+*Critères.* Étant donné Antor, MJ, sur « Dame Ombeline de Val-Fortin », quand il relie « se
+situe à » → Port-Sel avec « habite », alors la ligne lit « se situe à · Port-Sel — habite » ; quand il
+relie « Sans nature » sans qualificatif, alors « Le qualificatif est obligatoire sans nature. » et rien
+n'est écrit. Étant donné la carte « Carte de la côte » (E-11), quand Antor l'ouvre, alors le lien
+d'Aldric vers Port-Sel est étiqueté « se situe à — habite » et son lien libre « maître de port ».
 
 ### E-9 — the block « Fiches liées » (B-64, AD-130)
 

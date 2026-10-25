@@ -602,8 +602,8 @@ qualifier » ; « a sheet of a type that can be gone is there or gone (mort, dé
 sheet ».
 
 **Logical.**
-- `relations` : `type` **becomes `qualificatif`** (same constraints — trimmed, 0 to 80 ; empty
-  allowed, `''`) and a column `nature TEXT NOT NULL DEFAULT ''` (`''` = free ; a key of the list
+- `relations` : `type` **becomes `qualificatif`** (trimmed, 0 to 80 ; empty allowed in the base, `''` — the service requires
+  one for a free relation, as the former `type`) and a column `nature TEXT NOT NULL DEFAULT ''` (`''` = free ; a key of the list
   otherwise, validated by the application against the list and the pair of types — no `CHECK` on
   the keys : the list is the product's, like the types, AD-102). `UNIQUE(section_id, cible_fiche_id,
   nature, qualificatif)` replaces `UNIQUE(section_id, cible_fiche_id, type)` : the same target may be
