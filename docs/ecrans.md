@@ -3063,30 +3063,30 @@ The `e08-liste-fiches.html` mockup is not redrawn for subtype: the text above sa
 
 ### E-7, E-13, E-5
 
-- **E-7** et les entrées de **E-15** : l'éditeur et le rendu Markdown ci-dessus, avec ce que permet
-  chaque texte (« Selon le texte ») : E-7 garde « Lien vers une fiche » ; ni E-7 ni E-15 n'ont
-  « Fichier » ni « Bloc MJ » ; E-15 n'a pas de lien vers une fiche.
-- **E-13** : l'ordre est la date de création de la fiche, qui est sa **date d'origine** si l'import en
-  a donné une (B-50) ; la ligne montre cette date.
-- **E-5** (B-51, dernière tranche) : un panneau « Jeton de l'assistant » sous la liste des
-  univers — « Aucun jeton posé. » ou « Jeton posé le 11 octobre 2026. » (jamais la valeur) ;
-  « Connecter l'abonnement » montre l'adresse d'autorisation (« Ouvrir », « Copier ») et un champ
-  « Code » avec « Valider » ; la fenêtre expire au bout de 10 minutes (« La connexion a expiré.
-  Recommencez. ») ; un code refusé : « La connexion n'a pas abouti. Recommencez. », l'ancien jeton reste.
-  États et maquette : la tranche.
+- **E-7** and **E-15** entries: the Markdown editor and rendering above, with what each
+  text allows (Depending on the text): E-7 keeps « Lien vers une fiche »; neither E-7 nor E-15 has
+  « Fichier » or « Bloc MJ »; E-15 has no sheet link.
+- **E-13**: order is the sheet's creation date, which is its **original date** if the import
+  provided one (B-50); the row shows that date.
+- **E-5** (B-51, last slice): a « Jeton de l'assistant » panel below the universe
+  list — « Aucun jeton posé. » or « Jeton posé le 11 octobre 2026. » (never the value);
+  « Connecter l'abonnement » shows the authorization address (« Ouvrir », « Copier ») and a
+  « Code » field with « Valider »; the window expires after 10 minutes (« La connexion a expiré.
+  Recommencez. »); a refused code: « La connexion n'a pas abouti. Recommencez. », old token stays.
+  States and mockup: the slice.
 
-### Clôture de `kanevas-import` (cadrage)
+### Closure of `kanevas-import` (scope)
 
-- **Chaque besoin a un écran** : B-32 E-9, E-7, E-15 · B-33 E-9 · B-34 E-9 (et E-17, E-12 pour ce
-  qu'ils ne montrent pas) · B-35 E-9, E-8 · B-36 E-9 · B-37 E-17 · B-38 E-9, E-17 · B-39 E-9 · B-40 E-9 ·
-  B-41 E-14 · B-42 E-14, E-15, barre · B-43 E-9 · B-44 E-9 · B-45, B-46, B-49 E-18 · B-47, B-48 : **pas
-  d'écran, par décision** — le geste est le script, son résultat se lit sur E-18 (B-49) ; AD-53 tient :
-  l'écran d'un import est E-18 · B-50 E-9, E-13 · B-51 E-5 · B-52 E-8, E-9, E-17 · B-53, B-54 E-19 ·
-  B-55 E-9 (les deux chemins d'ajout), E-19 (le sélecteur) · B-56 : pas d'écran (le script), résultat sur E-19 et E-18 — tient.
-- **Chaque écran est atteint par un parcours** : E-17 (P-12), E-18 (P-10, P-11), E-14 et E-15 (P-13,
-  P-10), E-9 (P-12, P-14, P-16), E-8 (P-12), E-5 (P-15), E-19 (P-16, P-10) — tient.
-- **Chaque rôle a sa colonne** : MJ, Joueur, Admin d'instance pour E-17, E-18 et E-19 (matrice) ; le script
-  d'import n'est pas un rôle : il agit comme le MJ du jeton, sur l'API seule — tient.
+- **Every need has a screen**: B-32 E-9, E-7, E-15 · B-33 E-9 · B-34 E-9 (and E-17, E-12 for what
+  they do not show) · B-35 E-9, E-8 · B-36 E-9 · B-37 E-17 · B-38 E-9, E-17 · B-39 E-9 · B-40 E-9 ·
+  B-41 E-14 · B-42 E-14, E-15, sidebar · B-43 E-9 · B-44 E-9 · B-45, B-46, B-49 E-18 · B-47, B-48: **no
+  screen, by decision** — the action is the script, its result is read on E-18 (B-49); AD-53 holds:
+  an import's screen is E-18 · B-50 E-9, E-13 · B-51 E-5 · B-52 E-8, E-9, E-17 · B-53, B-54 E-19 ·
+  B-55 E-9 (both add paths), E-19 (the picker) · B-56: no screen (the script), result on E-19 and E-18 — holds.
+- **Every screen is reached by a journey**: E-17 (P-12), E-18 (P-10, P-11), E-14 and E-15 (P-13,
+  P-10), E-9 (P-12, P-14, P-16), E-8 (P-12), E-5 (P-15), E-19 (P-16, P-10) — holds.
+- **Every role has its column**: GM, Player, Instance admin for E-17, E-18 and E-19 (matrix); the import
+  script is not a role: it acts as the token's GM, on the API alone — holds.
 
 ## Détail de l'écran de `kanevas-import-jeton-assistant`
 
