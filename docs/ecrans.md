@@ -3186,7 +3186,7 @@ The list of the type, as for any type, with these specifics:
   default whatever the sub-type**: an adventure in preparation is the GM's alone — decision of
   Monsieur, 2026-10-25 —; checked, it opens the first section « Présentation » to the players,
   « Les joueurs la lisent »; the section is created empty in both cases, and the GM opens or closes
-  it later from the section's audience, as for any sheet). « Créer l'aventure » leads to E-9. The
+  it later from the section's audience, as for any sheet). « Créer l'aventure » leads to E-9 (the window sends one call: the parent and the empty « Présentation » section ride with the creation, AD-128 — a failure leaves nothing created). The
   status is « En préparation » at birth, never asked here.
 - **Card and tree line**: the status badge (`Pastille`, neutral for « En préparation », the
   charte's accent for « Prête », success for « En cours », muted for « Terminée »; label the
