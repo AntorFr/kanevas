@@ -53,7 +53,7 @@ const withFile = (content: string, args: string[], f: (r: ReturnType<typeof run>
 };
 
 test('English with a French quotation and code block: zero, exit 0', () => {
-  withFile(ENGLISH, ['--liens'], (r) => {
+  withFile(ENGLISH, ['--links'], (r) => {
     assert.equal(r.code, 0);
     assert.equal(r.json.files[0].french, 0);
     assert.deepEqual(r.json.files[0].differences, []);
@@ -143,7 +143,7 @@ test('numbering: 0 before the first ##, section 0 text kept apart', () => {
   });
   const dir = makeRepo(ENGLISH);
   try {
-    const t = run(dir, ['--titres', 'a.md']);
+    const t = run(dir, ['--headings', 'a.md']);
     assert.equal(t.code, 0);
     assert.deepEqual(t.json.files[0].sections,
       [{ number: 0, title: '' }, { number: 1, title: 'First' }, { number: 2, title: 'Second' }]);
@@ -165,30 +165,30 @@ test('French in a section outside --sections is not counted', () => {
   } finally { rmSync(dir, { recursive: true, force: true }); }
 });
 
-test('--liens: a translated anchor that no longer resolves; a link already broken at the base is tolerated', () => {
-  withFile(ENGLISH.replace('## First', '## Premier'), ['--liens'], (r) => {
+test('--links: a translated anchor that no longer resolves; a link already broken at the base is tolerated', () => {
+  withFile(ENGLISH.replace('## First', '## Premier'), ['--links'], (r) => {
     assert.equal(r.code, 1);
     assert.deepEqual(r.json.files[0].links, [{ section: 2, link: '#first' }]);
   });
-  withFile(ENGLISH.replace('(#first)', '(#nowhere)'), ['--liens'], (r) => {
+  withFile(ENGLISH.replace('(#first)', '(#nowhere)'), ['--links'], (r) => {
     assert.equal(r.code, 1);
     assert.deepEqual(r.json.files[0].links, [{ section: 2, link: '#nowhere' }]);
   });
-  withFile(ENGLISH.replace('(#first)', '(other.md)'), ['--liens'], (r) => {
+  withFile(ENGLISH.replace('(#first)', '(other.md)'), ['--links'], (r) => {
     assert.deepEqual(r.json.files[0].links, [{ section: 2, link: 'other.md' }]);
   });
-  withFile(ENGLISH.replace('(#first)', '(https://x.org/#a)'), ['--liens'], (r) => assert.equal(r.code, 0));
+  withFile(ENGLISH.replace('(#first)', '(https://x.org/#a)'), ['--links'], (r) => assert.equal(r.code, 0));
   const dir = makeRepo(ENGLISH.replace('(#first)', '(#nowhere)'));
-  try { assert.equal(run(dir, ['--base', 'HEAD', '--liens', 'a.md']).code, 0); }
+  try { assert.equal(run(dir, ['--base', 'HEAD', '--links', 'a.md']).code, 0); }
   finally { rmSync(dir, { recursive: true, force: true }); }
-  // without --liens: links are not looked at
+  // without --links: links are not looked at
   withFile(ENGLISH.replace('(#first)', '(#nowhere)'), [], (r) => assert.equal(r.code, 0));
 });
 
 test('starting tree: zero fact differences, positive French count', () => {
   const dir = makeRepo(ENGLISH.replace('Intro text.', 'Le chat est dans la maison.'));
   try {
-    const r = run(dir, ['--base', 'HEAD', '--liens', 'a.md']);
+    const r = run(dir, ['--base', 'HEAD', '--links', 'a.md']);
     assert.equal(r.json.files[0].french, 4);
     assert.deepEqual(r.json.files[0].differences, []);
     assert.equal(r.json.files[0].sections.every((s: any) => s.differences.length === 0), true);
@@ -199,7 +199,10 @@ test('invalid invocation or missing input: exit 2', () => {
   const dir = makeRepo(ENGLISH);
   try {
     assert.equal(run(dir, ['--nope']).code, 2);
-    assert.equal(run(dir, ['--attendu', 'v1:titres=1,puces=1,liens=1', 'a.md']).code, 2);
+    for (const old of ['--liens', '--titres']) assert.equal(run(dir, [old, 'a.md']).code, 2, old);
+    assert.equal(run(dir, ['--releases', '--attendu', 'v1:headings=1,bullets=1,links=1']).code, 2);
+    assert.equal(run(dir, ['--releases', '--expected', 'v1:titres=1,puces=1,liens=1']).code, 2);
+    assert.equal(run(dir, ['--expected', 'v1:headings=1,bullets=1,links=1', 'a.md']).code, 2);
     assert.equal(run(dir, ['--base', 'HEAD', 'absent.md']).code, 2);
     assert.equal(run(dir, ['--base', 'HEAD', '--sections', 'a.md:3-1']).code, 2);
   } finally { rmSync(dir, { recursive: true, force: true }); }
@@ -221,7 +224,7 @@ else console.log(JSON.stringify({ body: r[a[2]] }));
   } finally { rmSync(dir, { recursive: true, force: true }); }
 }
 
-test('--releases: English body zero; French reported; --attendu compares headings, bullets, links', () => {
+test('--releases: English body zero; French reported; --expected compares headings, bullets, links', () => {
   const body = '## Added\n- one [a](https://x.org)\n- two\n';
   withGh({ 'v1.0.0': body, 'v0.9.0': '## Added\n- Le chat est ici\n' }, (env, dir) => {
     const r = run(dir, ['--releases'], env);
@@ -232,12 +235,12 @@ test('--releases: English body zero; French reported; --attendu compares heading
     assert.deepEqual(byTag['v1.0.0'].counts, { headings: 1, bullets: 2, links: 1 });
   });
   withGh({ 'v1.0.0': body }, (env, dir) => {
-    const ok = run(dir, ['--releases', '--attendu', 'v1.0.0:titres=1,puces=2,liens=1'], env);
+    const ok = run(dir, ['--releases', '--expected', 'v1.0.0:headings=1,bullets=2,links=1'], env);
     assert.equal(ok.code, 0);
-    const ko = run(dir, ['--releases', '--attendu', 'v1.0.0:titres=1,puces=3,liens=0'], env);
+    const ko = run(dir, ['--releases', '--expected', 'v1.0.0:headings=1,bullets=3,links=0'], env);
     assert.equal(ko.code, 1);
     assert.deepEqual(ko.json.releases[0].differences, [{ fact: 'bullets', before: 3, after: 2 }, { fact: 'links', before: 0, after: 1 }]);
-    assert.equal(run(dir, ['--releases', '--attendu', 'v2:titres=1,puces=1,liens=1'], env).code, 2);
+    assert.equal(run(dir, ['--releases', '--expected', 'v2:headings=1,bullets=1,links=1'], env).code, 2);
   });
 });
 
