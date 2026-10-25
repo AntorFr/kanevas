@@ -536,3 +536,80 @@ ask for, and a scenario's sections are born closed.
 CR « Séance 12 » ; the assistant's stub keeps its two sentences (AD-126).
 
 **Différé.** See the list above.
+
+## Detail of `kanevas-scenarios-import-assistant` (2026-10-25)
+
+Third slice of the epic: it reopens, on the sheets, the two write paths that the pivot slice removed
+with the tables. It adds no migration, no table and no route (AD-125, AD-126 hold as written). What it
+fixes beyond them:
+
+**Import of an adventure** (`src/services/import-fiches.ts`, `lireCorps` / `ecrire`).
+- `TYPES_IMPORT` already derives from the type list, so `aventure` is accepted once the type exists.
+  `statut` is read by `lireCorps`: `undefined` (says nothing), or one of the four values of AD-123.
+  Any other value, or a `statut` on a type other than `aventure`, is a 400 `invalide` with
+  `champ: statut` before any write (counted as « 1 refusée » with `?lot=`, no trace without it).
+  The sentence names the four values.
+- Creation: the charge is `{v: 1, statut: statut ?? 'en_preparation'}` for an adventure (the `pj` charge
+  of a character is the only other one built here); the sheet is born through `creerFiche` like any
+  other, `sousType` and `parent` by the code that already serves them. The import asks for no audience
+  the script does not give: the sections follow `joueursLisent` / `joueursEcrivent` (closed by default),
+  so a campaign pushed without them stays the GM's — the GM opens « Présentation » (decision of
+  Monsieur, 2026-10-25).
+- Replay: `MarqueFiche` gains `statut`; the comparison is the one of `sousType` (equal: mark it; equal
+  to the last import's mark: write it with `changerStatutFiche`; else warn « statut modifié dans
+  Kanevas : non écrasé »). An absent `statut` leaves the status alone. A type change towards
+  `aventure` writes the charge with the wanted status (default `en_preparation`) and a change away from
+  it drops `marque.statut`, as `marque.sousType` is dropped today.
+- Compte-rendu: `campagne` is the origin key of an **adventure sheet of the token's universe**
+  (`fiches.type = 'aventure'`, `cle_origine`); an unknown key, or a key of a sheet of another type, is
+  the existing refusal (400 `invalide`, `champ: campagne`, « campagne inconnue : <clé> »); the id goes
+  to `charge.campagne_id` through `creerCompteRendu` as before; the replay keeps the adventure and warns
+  « campagne non modifiable, ignorée ». The lookup replaces whatever the pivot left; the sample orders
+  the adventures before the reports.
+- `GET /` : `types` already lists `aventure` with its activation ; `limites` loses `nomCampagne`,
+  `titreScenario` and `contenuScenario` (the pivot removes them with the routes; this slice checks they
+  are gone) and gains `statuts: ["en_preparation","prete","en_cours","terminee"]`, so the script knows
+  the vocabulary without reading the code.
+- The lot counts an adventure in `fiches` (no new nature): E-18 needs no change.
+
+**Assistant tool** (`src/services/assistant/catalogue.ts`). `creer_fiche` is GM-only (the catalogue
+chosen from the role, AD-26): `{type: z.enum(TYPES_FICHE minus compte_rendu), titre, sousType?,
+parentId?}`. `compte_rendu` is left out because a report needs its adventure and has its own creation
+(AD-61); `creerFiche` would refuse it anyway. One transaction: `creerFiche` (which refuses a disabled
+type with `type_desactive`, said « Ce type est désactivé dans cet univers. »), then `deplacerFiche`
+if `parentId` is given (the one writer of `parent_id`, AD-99) — a parent the GM cannot read, of
+another universe or unknown answers « Introuvable. » and nothing is created. Success returns the
+event `fiche_creee`, `libelle` « Fiche « <titre> » créée », `cible: {type: 'fiche', ficheId}`;
+the event types `campagne_creee` and `scenario_cree`, and the targets `campagne` / `scenario`, leave
+the server types, `frontend/src/ecrans/assistant/fil.ts` and `blocs/registre.ts` (the block
+`Ecriture` serves `fiche_creee`, « Ouvrir » leads to `/univers/<id>/fiches/<id>`). A refusal returns
+`{ok: false, erreur}` with no event (AD-76).
+
+**Stub of the assistant** (`assistant/bouchon.ts`). The two sentences stay: « crée une campagne
+« X » » → `creer_fiche {type: 'aventure', titre: X, sousType: 'Campagne'}`; « crée un scénario « X »
+dans « Y » » → `chercher {mots: Y, type: 'aventure'}` for the parent (exact title, else « Introuvable. »),
+then `creer_fiche {type: 'aventure', titre: X, sousType: 'Scénario', parentId}`. Answers keep their
+wording (« Campagne « X » créée. », « Scénario « X » créé dans Y. »); in Léa's session the tool is
+absent and the existing « absent » answer is given.
+
+**Stub seed and sample.** `src/bouchon/depart.ts` seeds « La Couronne brisée » (Campagne, `en_cours`,
+« Présentation » open to the players), « Acte II — Le sceau brisé » (Scénario, `prete`, under it,
+sections closed), two preparation tasks and the report « Séance 12 » naming the campaign — the content
+the pivot's browser proofs created by routes, now in the seed (its test in `depart.test.ts`).
+`src/bouchon/echantillon/echantillon.json` drops `campagnes` and `scenarios`: its campaigns and
+scenarios become entries of `fiches` (`type: aventure`, `sousType`, `statut`, scenarios with `parent`
+= the key of the campaign), listed before the reports that name them; `client-import.ts` drops the two
+routes and the two counters (the schema loses `campagnes` and `scenarios`) and the sample's README
+says it. `npm run import:echantillon` on a fresh base ends with « Fiches » counting the adventures,
+no refusal other than the planned ones of `refus.json`. The README (root) recipes that said « Crée une
+campagne » and the import recipe follow.
+
+**Security.** Nothing new is readable: the import and the tool write only; the event and the answers
+name only what the GM may read; a scenario pushed by the import has closed sections unless the script
+opens them, so no title or text reaches a player by this path.
+
+**Contract note for Monsieur** (his script is outside the product): `PUT …/campagnes/:cle` and
+`…/scenarios/:scle` are gone; a campaign is `PUT …/fiches/<cle>` with `type: "aventure"`, `sousType:
+"Campagne"`, `statut`; a scenario is the same with `parent: "<campaign key>"`; a report keeps
+`campagne: "<key of the adventure>"`; `GET …/univers/<id>` gives `statuts`. It is written to the
+epic's discussion when the slice is delivered.
