@@ -569,8 +569,9 @@ start-up after backup, as every migration) :
    `active→en_cours`, `terminee→terminee`, `cree_le`, `cle_origine`, `dernier_import`) and one
    section « Présentation », empty, `joueurs_lisent=1` (B-18 : a campaign stays visible to the
    players) ; a `cle_origine` already used by a sheet of the universe takes the prefix
-   `campagne:` — `[À VÉRIFIER]` : none in the stub seed (`src/bouchon/`), the production has no
-   campaign.
+   `campagne:` — verified on 2026-10-25 : the stub seed sets no origin key on a campaign or a
+   scenario (`src/bouchon/`), and the production has no campaign : the prefix is a safety, never
+   exercised.
 2. For each row of `scenarios` : a `fiches` row (`sous_type='Scénario'`, `titre`, `statut
    en_preparation`, `parent_id` = its campaign's sheet, `cree_le`, `cle_origine` prefixed
    `scenario:` on collision, `version_importee`) and one section « Scénario » closed to the
