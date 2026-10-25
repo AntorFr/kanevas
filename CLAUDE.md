@@ -73,7 +73,7 @@
   function (AD-63). The FTS5 indexes (migration 0005) only deliver candidate ids and are kept by SQL
   triggers (AD-21) — never write to `recherche_*` from code. A relation is read under both guards
   (`lireRelations`: carrying section and target sheet readable, AD-64); do not add a count or a
-  placeholder for hidden ones. Refusal codes: `auto_relation` (invalide), `relation_existante` and
+  placeholder for hidden ones. The `cible` of a relation carries `charge: {pj}` for a personnage and no other charge key (the badge reads only that; more would leak data of the target sheet; `chargeDeCible`). Refusal codes: `auto_relation` (invalide), `relation_existante` and
   `limite_relations` (conflit) : the service puts the code in `ErreurService.detail`, the route sends it as `code` in the body.
 - Maps (`kanevas-cartes-graphes`, migration 0007): `src/services/cartes.ts`. `lireCarte` is the only read
   of a map, elements and graph links included (AD-68); the browser filters nothing. Graph links are never
