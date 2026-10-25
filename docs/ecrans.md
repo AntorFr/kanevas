@@ -3416,7 +3416,7 @@ group opens E-17 so pre-filled.
 | chargement | as E-17 | — |
 | erreur | as E-17 | « Réessayer » |
 | connexion perdue | as E-17 ; the picker disabled | lire |
-| refus | a player or player mode: the sheet picker lists what he reads ; `?lie=` on a sheet he does not read: the chip reads « Fiche introuvable » and the search runs without it | — |
+| refus | a player or player mode: the sheet picker lists what he reads ; `?lie=` on a sheet he does not read: the chip reads « Fiche introuvable » (✕ kept) and the search still runs with it: the API answers an empty page, the list reads « Aucune fiche liée pour ces critères. » | — |
 | contenu long | the filters wrap on two rows under 760 px ; a picked title of 120 characters is cut with an ellipsis in the chip, whole in its tooltip | idem |
 
 *Critères.* Étant donné Antor, quand il cherche « lié à Port-Sel », « s'y trouvent », sous-lieux
