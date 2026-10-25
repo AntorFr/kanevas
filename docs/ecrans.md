@@ -2549,7 +2549,7 @@ closed to it from now on. Mockup: `e09-fiche-importee.html` (« Port-Sel », « 
 - **Preview** (« Écrire / Aperçu »): its states are those of `kanevas-import-markdown` — « Aperçu en cours… »,
   « Rien à prévisualiser. », « L'aperçu n'a pas abouti. Réessayez. » with « Réessayer », « Erreur : 100 000 caractères au plus. » —;
   a scenario (E-7) or system entry (E-15) preview leaves `:::mj` as text, like their reading view (only editing an
-  E-9 section requests the `section` nature with its universe and mode, AD-114); `nature: 'section'` without an integer `univers_id` is refused (400), an unknown universe or one the account does not belong to answers 404 like any read; a non-GM member receives a preview without blocks. For the GM, the block appears hatched as on read; for a non-GM,
+  E-9 section requests the « section » nature with its universe and mode, AD-114); `nature: 'section'` without an integer `univers_id` is refused (400), an unknown universe or one the account does not belong to answers 404 like any read; a non-GM member receives a preview without blocks. For the GM, the block appears hatched as on read; for a non-GM,
   or outside a universe, it does not exist (preview applies the same view as reading, AD-114).
 - **Extreme cases**: a 100,000-character block scrolls with the section; a wide table inside a block
   scrolls inside the block's frame, never the page at 375 px; several blocks in a section form separate frames, separated by
@@ -2778,7 +2778,7 @@ sheet without readable ancestors has the usual breadcrumb. More than three ances
 the others with their type), the last two. Returning via the breadcrumb (P-12 step 5) uses this link: no special
 state. An ancestor becoming unreadable between reads is absent from the breadcrumb on the next read.
 
-**« Contient » (E-9).** The block follows the « Contient » texts above. It calls
+**« Contient » (E-9).** The block follows the `Contient` texts above. It calls
 `GET …/fiches/:fid/enfants` once the sheet is loaded, independently of sections (the sheet and its sections arrive in one response, « Contient » in a second): its error does not remove the
 text. Its states: *loading* « Chargement… » below the block title; *error* « Impossible de charger les
 enfants. » with « Réessayer »; *empty* block absent; *long content* 50 then « Afficher les N suivants »
