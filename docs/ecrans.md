@@ -2863,69 +2863,69 @@ Player mode (« Rechercher », a label).
 - **Dialog states**: empty (sheet without aliases or labels): two empty fields, « Enregistrer » active (nothing to write = no call); server refuses save: « L'action n'a pas abouti. Réessayez. », input stays; connection lost with dialog open: banner, « Enregistrer » disabled, input stays; « Annuler » or Escape discards unsaved input without asking. The dialog is described only here (no separate mockup: a dialog in E-9's family, `e09-fiche-importee.html`).
 - **Stub seed** (`KANEVAS_STUB=1`, universe « Lame d'Ébène »): aliases « Salport » and « Port-aux-Sels » on « Port-Sel »; label « Côte des Brumes » on « Port-Sel » and « Cercle des Cendres » (unreadable by Léa); readable lore « Chronique de l'Âge d'Ombre » (subtype « Récit »); word « sous-main » only in the GM block of « Port-Sel » (seeded by `kanevas-import-secrets`); subtypes « Taverne » (« Le Pendu Joyeux ») and « Récit » come from `kanevas-import-types` and this seed.
 
-### E-18 Accès par API (MJ)
+### E-18 API access (GM)
 
-*Maquette finie* : `docs/maquettes/e18-acces-api.html` (états `#etat-nouveau`, `#etat-jeton-montre`,
+*Finished mockup*: `docs/maquettes/e18-acces-api.html` (states `#etat-nouveau`, `#etat-jeton-montre`,
 `#etat-lot`, `#etat-vide`, `#etat-perdue`).
 
-Atteint par « Univers ▸ Accès par API » (`key-round`), MJ seul. Le bouton « Demander à Kanevas » de la maquette est celui de l'assistant, présent sur tous les écrans (B-26, E-12), sans rien de propre à E-18. Une introduction d'une ligne :
-« Un jeton permet à un script d'écrire dans cet univers avec vos droits, par l'API d'import. » et
-l'**adresse de base** à copier (`https://kanevas.berard.me/api/import/v1/univers/<id>`, « Copier »,
-toast « Adresse copiée. »). Deux panneaux.
+Reached through « Univers ▸ Accès par API » (`key-round`), GM only. The mockup's « Demander à Kanevas » button belongs to the assistant, present on all screens (B-26, E-12), with nothing specific to E-18. A one-line introduction:
+« Un jeton permet à un script d'écrire dans cet univers avec vos droits, par l'API d'import. » and
+the **base address** to copy (`https://kanevas.berard.me/api/import/v1/univers/<id>`, « Copier »,
+toast « Adresse copiée. »). Two panels.
 
-1. **Jetons** — « Nouveau jeton » (`plus`). Une ligne par jeton, actifs d'abord puis révoqués et expirés
-   (les 20 derniers) : nom, « créé par antor le 11 oct. 2026 », « dernier usage il y a 3 min » ou
-   « jamais », « expire le 10 nov. 2026 » ou la pastille « Révoqué » (danger) / « Expiré » (neutre), les infos séparées par « · » au bureau ; « Révoquer » au
-   survol (visible au toucher). *Nouveau jeton* : boîte « Nouveau jeton » — « Nom » (1 à 80 caractères,
-   obligatoire), « Durée » (bascule segmentée 7 jours, **30 jours**, 90 jours, 1 an), « Créer le
-   jeton », « Annuler » ; puis la même boîte montre le nom du jeton en étiquette et le jeton seul, en chasse fixe, pleine largeur, puis l'encadré (`circle-alert`) « Il ne sera plus jamais affiché. Rangez-le dans la configuration de votre
-   script. », et au pied « Copier » (toast « Jeton copié. ») et « J'ai copié le jeton » — tant que le jeton est montré, seul ce bouton ferme la boîte
-   (ni Échap ni le voile) ; la ligne du jeton arrive alors en tête de la liste. Le jeton d'un MJ qui n'a plus ce rôle (B-46) reste listé, avec la pastille « Inactif »
-   et l'infobulle « Son créateur n'est plus MJ de cet univers. » (au toucher, la même phrase s'écrit sous la ligne) ; il reste parmi les jetons actifs, rangé avec eux par date de création ; « Révoquer » reste possible. Pendant « Créer le
-   jeton » et « Révoquer le jeton » le bouton est désactivé et dit « Création… » / « Révocation… » (pas de double envoi) ; « Annuler » et la fermeture de la boîte sont désactivés aussi jusqu'à la réponse. La maquette ne dessine ni « Inactif » ni ces boutons : le texte d'ici fait foi (pastille neutre, en `--texte-2` ; « Révoqué » est en teinte danger, « Expiré » neutre). *Révoquer* : boîte « Révoquer « Script Kanka — Mac » ? Le script
-   qui l'utilise ne pourra plus rien écrire. », « Révoquer le jeton » (`--danger`) / « Annuler » ; toast « Jeton révoqué. ».
-2. **Lots d'import** — les 20 derniers lots, du plus récent : date d'ouverture, jeton, état (« En
-   cours », « Clos », « Abandonné » — ouvert depuis plus de 24 h sans écriture), et les compteurs
-   **par nature d'objet**, à la suite et séparés par « · », les natures sans objet omises : « Fiches : 498 créées ·
+1. **Tokens** — « Nouveau jeton » (`plus`). One row per token, active first then revoked and expired
+   (the last 20): name, « créé par antor le 11 oct. 2026 », « dernier usage il y a 3 min » or
+   « jamais », « expire le 10 nov. 2026 » or the « Révoqué » (danger) / « Expiré » (neutral) chip, information separated by « · » on desktop; « Révoquer » on
+   hover (visible on touch). *New token*: « Nouveau jeton » dialog — « Nom » (1 to 80 characters,
+   required), « Durée » (segmented toggle « 7 jours », **« 30 jours »**, « 90 jours », « 1 an »), « Créer le
+   jeton », « Annuler »; then the same dialog shows the token name as a label and the token alone, monospace, full width, then the notice (`circle-alert`) « Il ne sera plus jamais affiché. Rangez-le dans la configuration de votre
+   script. », and at the foot « Copier » (toast « Jeton copié. ») and « J'ai copié le jeton » — while the token is shown, only this button closes the dialog
+   (neither Escape nor overlay); the token row then arrives at the top of the list. A token whose GM no longer has that role (B-46) remains listed, with the « Inactif » chip
+   and tooltip « Son créateur n'est plus MJ de cet univers. » (on touch, the same sentence appears below the row); it remains among active tokens, sorted with them by creation date; « Révoquer » stays possible. During « Créer le
+   jeton » and « Révoquer le jeton » the button is disabled and reads « Création… » / « Révocation… » (no double submission); « Annuler » and dialog closing are also disabled until the response. The mockup draws neither « Inactif » nor these buttons: this text is authoritative (neutral chip in `--texte-2`; « Révoqué » has danger tint, « Expiré » neutral). *Revoke*: dialog « Révoquer « Script Kanka — Mac » ? Le script
+   qui l'utilise ne pourra plus rien écrire. », « Révoquer le jeton » (`--danger`) / « Annuler »; toast « Jeton révoqué. ».
+2. **Import batches** — the last 20 batches, newest first: opening date, token, state (« En
+   cours », « Clos », « Abandonné » — open with no write for more than 24 h), and counters
+   **per object nature**, in sequence separated by « · », natures without objects omitted: « Fiches : 498 créées ·
    3 refusées », « Fichiers : 1 140 créés », « Campagnes : 4 créées », « Scénarios : 12 créés »,
-   « Relations : 324 créées », puis « 6 liens et références en attente » et « 1 avertissement ». Dans une
-   nature, chaque forme (« créée(s) », « mise(s) à jour », « inchangée(s) », « refusée(s) ») n'est écrite que
-   si elle n'est pas nulle : un rejeu sans rien de neuf lit « Fiches : 1 inchangée » (le rapport de l'API,
-   lui, rend tous les compteurs, `creees: 0`), et un compte nul d'attente ou d'avertissements est omis
-   (la maquette abrège « 6 en attente » ; le texte est celui d'ici). Un `PUT` refusé (400) avec son lot
+   « Relations : 324 créées », then « 6 liens et références en attente » and « 1 avertissement ». Within a
+   nature, each form (« créée(s) », « mise(s) à jour », « inchangée(s) », « refusée(s) ») is written only
+   if nonzero: a replay with nothing new reads « Fiches : 1 inchangée » (the API report
+   returns all counters, `creees: 0`), and a zero pending or warning count is omitted
+   (the mockup shortens it to « 6 en attente »; this text is authoritative). A refused `PUT` (400) with its batch
    counts one refusal and records its origin key and reason (for example, « campagne inconnue : c:absente »
    or « type « monstre » inconnu de Kanevas »); without a batch it leaves no trace here. A
-   ligne se déplie :
-   les refus et avertissements, chacun avec la clé d'origine, ce qui est en cause et la raison
-   (« section « Vérité » : 112 000 caractères, 100 000 au plus » ; « parent lieu:les-docks inconnu :
-   fiche écrite sans parent » ; « section « Notes » modifiée dans Kanevas depuis le dernier import : non
-   écrasée » ; « titre modifié dans Kanevas : non écrasé »), en deux groupes titrés par leur compte (« 3 refusées », « 2 avertissements »), 200 au
-   plus puis « … et 37 autres ». Un lot sans refus ni avertissement ne se déplie pas. Le jeton,
-   l'adresse et les clés d'origine sont en chasse fixe (pile système `ui-monospace`, charte).
+   row expands:
+   refusals and warnings, each with the origin key, what is affected and the reason
+   (« section « Vérité » : 112 000 caractères, 100 000 au plus »; « parent lieu:les-docks inconnu :
+   fiche écrite sans parent »; « section « Notes » modifiée dans Kanevas depuis le dernier import : non
+   écrasée »; « titre modifié dans Kanevas : non écrasé »), in two groups titled with their count (« 3 refusées », « 2 avertissements »), at most 200
+   then « … et 37 autres ». A batch without refusals or warnings does not expand. The token,
+   address and origin keys use monospace (system `ui-monospace` stack, charter).
    File warnings also include « fichier vide : 0 octet, refusé », « visibilité modifiée
    dans Kanevas : non écrasée » and « nom modifié dans Kanevas : non écrasé ». A pending
    reference warns « fichier « img:quais » inconnu : référence en attente ».
 
 
-| État | Ce qu'on voit | Ce qu'on peut faire |
+| State | What is seen | Available actions |
 |---|---|---|
-| vide | « Aucun jeton. Créez-en un pour qu'un script écrive dans cet univers. » (aucun jeton du tout ; avec seulement des jetons révoqués ou expirés, la liste les montre, sans ce texte) ; « Aucun lot d'import pour l'instant. » | « Nouveau jeton » |
-| chargement | squelettes des deux panneaux | — |
-| erreur | « Impossible de charger cette page. » ; nom vide : « Erreur : le nom est obligatoire. » ; création ou révocation qui échoue : « L'action n'a pas abouti. Réessayez. », rien n'a changé (aucun jeton à moitié créé) | « Réessayer » |
-| connexion perdue | le bandeau ; « Nouveau jeton » et « Révoquer » désactivés ; si la boîte montre un jeton, il reste affiché jusqu'à « J'ai copié le jeton » | copier |
-| refus | Joueur, compte sans rôle, admin sans rôle : item absent, « Page introuvable. » ; rôle retiré pendant la page : « Vous ne pouvez plus gérer l'accès par API de cet univers. » à l'action suivante | « Mes univers » |
-| contenu long | nom de 80 caractères tronqué par « … » avec infobulle ; un lot de 501 refus : 200 puis « … et 301 autres » ; plus de 20 jetons : les 20 derniers, les actifs toujours tous | idem |
+| empty | « Aucun jeton. Créez-en un pour qu'un script écrive dans cet univers. » (no tokens at all; with only revoked or expired tokens, the list shows them without this text); « Aucun lot d'import pour l'instant. » | « Nouveau jeton » |
+| loading | skeletons of both panels | — |
+| error | « Impossible de charger cette page. »; empty name: « Erreur : le nom est obligatoire. »; failed creation or revocation: « L'action n'a pas abouti. Réessayez. », nothing changed (no half-created token) | « Réessayer » |
+| connection lost | banner; « Nouveau jeton » and « Révoquer » disabled; if the dialog shows a token, it stays displayed until « J'ai copié le jeton » | copy |
+| refusal | Player, account without a role, admin without a role: item absent, « Page introuvable. »; role removed while viewing: « Vous ne pouvez plus gérer l'accès par API de cet univers. » at the next action | « Mes univers » |
+| long content | 80-character name truncated with « … » and tooltip; batch of 501 refusals: 200 then « … et 301 autres »; more than 20 tokens: last 20, always all active ones | same |
 
-*Critères.*
-- Étant donné Antor, MJ, quand il crée « Script Kanka — Mac » pour 30 jours, alors le jeton s'affiche
-  une fois ; après « J'ai copié le jeton », la ligne montre le nom, « jamais » et l'expiration, et la
-  valeur n'est plus nulle part à l'écran ni dans une réponse de l'API.
-- Étant donné ce jeton révoqué, quand le script appelle l'API d'import avec lui, alors il reçoit 401
-  et aucun lot n'apparaît.
-- Étant donné un lot clos avec 3 refus, quand Antor déplie la ligne, alors il lit les 3 clés d'origine
-  et leur raison.
-- Étant donné Léa, Joueuse, quand elle ouvre l'adresse de E-18, alors elle voit « Page introuvable. »
-  et l'item n'est pas dans sa barre.
+*Criteria.*
+- Given Antor, GM, when he creates « Script Kanka — Mac » for 30 days, the token is shown
+  once; after « J'ai copié le jeton », the row shows the name, « jamais » and expiry, and the
+  value is no longer anywhere on screen or in an API response.
+- Given this token revoked, when the script calls the import API with it, it receives 401
+  and no batch appears.
+- Given a closed batch with 3 refusals, when Antor expands the row, he reads the 3 origin keys
+  and their reasons.
+- Given Léa, Player, when she opens E-18's address, she sees « Page introuvable. »
+  and the item is absent from her sidebar.
 
 ### E-14 et E-15 — « Types de fiche »
 
