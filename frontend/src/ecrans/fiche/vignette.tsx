@@ -1,6 +1,9 @@
-import { useState } from 'react';
+import { Lock } from 'lucide-react';
+import { useState, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 
+import { useVue } from '../../cadre-contexte';
+import { Pastille } from '../../ui';
 import { badgeFiche, iconeDuType, useTypes } from '../../types-contexte';
 import type { Fiche } from './types';
 
@@ -12,6 +15,45 @@ export const adresseIllustration = (universId: number | string, fichierId: numbe
 export function initiale(titre: string): string {
   const sans = titre.trim().replace(/^(le |la |les |l['’])/i, '');
   return ([...(sans || titre.trim())][0] ?? '?').toUpperCase();
+}
+
+export const PHRASE_MJ_SEUL = "Aucune section n'est visible des joueurs.";
+
+/**
+ * The « MJ seul » badge of a whole sheet (B-57) and the sentence it writes on focus or touch.
+ * Nothing unless the server said `visibleJoueurs: false` (it says nothing to a player or in player mode).
+ * `badge` goes where the badge stands, `aide` under the title or the line.
+ */
+export function useMJSeul(fiche: Pick<Fiche, 'visibleJoueurs'>): { badge: ReactNode; aide: ReactNode } {
+  const [lue, setLue] = useState(false);
+  const { mode } = useVue();
+  if (mode === 'joueur' || fiche.visibleJoueurs !== false) return { badge: null, aide: null };
+  return {
+    badge: (
+      <span
+        className="mj-seul"
+        role="img"
+        tabIndex={0}
+        title={PHRASE_MJ_SEUL}
+        aria-label={PHRASE_MJ_SEUL}
+        onFocus={() => setLue(true)}
+        onBlur={() => setLue(false)}
+        onClick={(e) => {
+          e.preventDefault();
+          setLue(true);
+        }}
+      >
+        <Pastille sens="secrete" icone={Lock}>
+          MJ seul
+        </Pastille>
+      </span>
+    ),
+    aide: lue ? (
+      <span className="aide-mj-seul" role="status">
+        {PHRASE_MJ_SEUL}
+      </span>
+    ) : null,
+  };
 }
 
 /** Fallback thumbnail: dotted flat, the initial, the type icon. Never an empty frame. */
@@ -36,6 +78,7 @@ export function CarteFiche({ universId, fiche }: { universId: number | string; f
   const ill = fiche.illustration && 'jeton' in fiche.illustration ? fiche.illustration : null;
   const jeton = ill?.jeton;
   const [ko, setKo] = useState<string>();
+  const mjSeul = useMJSeul(fiche);
   const image = jeton !== undefined && ko !== jeton;
   return (
     <Link className="carte" to={`/univers/${universId}/fiche/${fiche.id}`}>
@@ -62,6 +105,8 @@ export function CarteFiche({ universId, fiche }: { universId: number | string; f
           <span className={`badge-type${fiche.charge.pj ? ' pj' : ''}`}>{badgeFiche(types, fiche)}</span>
         )}
       </span>
+      {mjSeul.badge && <span className="pastille-carte">{mjSeul.badge}</span>}
+      {mjSeul.aide}
       {fiche.sousType && (
         <span className="sous-type" title={fiche.sousType}>
           {fiche.sousType}

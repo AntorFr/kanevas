@@ -7,3 +7,5 @@
   box-shadow: 0 0 0 1px var(--bord-fort); display: flex; flex-direction: column; gap: var(--e-2); }
 .relations .formulaire-relation .champ { margin: 0; }
 .relations .formulaire-relation .actions { justify-content: flex-end; margin-top: var(--e-2); }
+.relations .choix-fiche-ligne { display: flex; align-items: center; flex-wrap: wrap; gap: var(--e-2); padding-right: var(--e-3); }
+.relations .choix-fiche-ligne .choix-fiche { flex: 1 1 0; width: auto; }
