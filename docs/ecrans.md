@@ -3312,7 +3312,7 @@ this text is authoritative where they differ.
 **Format.** Web, desktop and phone, as the rest of Kanevas.
 
 **Information architecture.** Two notions for the user: a **relation** now says *what* it is
-(its nature: « se situe à », « membre de », « dirige », « détient »…) and *how* (its qualifier,
+(its nature: « se situe à », « membre de », « détient »…) and *how* (its qualifier,
 free); and the **linked sheets** of a sheet — what points to it by a nature, read backwards. The
 vocabulary: « nature » for the finite kind, « qualificatif » for the free text (never « type »,
 which names the type of sheet), « Fiches liées » for the block, « sous-lieux compris » for the
@@ -3320,14 +3320,14 @@ aggregation through the tree, « vivant » / « mort » for the mark.
 
 ### The natures (AD-128)
 
-The product's list, in code like the types (`[À TRANCHER]` the initial content — recommended
-below, from what a table needs first; a nature is added by a line, never removed once used) :
+The product's list, in code like the types (decision of Monsieur, 2026-10-25: these five to
+start — « dirige » was set aside, « dirige » is a qualifier of « membre de » ; a nature is added by a
+line, never removed once used) :
 
 | Nature (key) | Read from the source | Read from the target | Source types → target types |
 |---|---|---|---|
 | `se_situe` | se situe à | s'y trouvent | personnage, créature, objet, faction, famille, vaisseau → lieu |
 | `membre` | membre de | membres | personnage, créature → faction, famille |
-| `dirige` | dirige | dirigé(e) par | personnage → faction, famille, lieu, vaisseau |
 | `detient` | détient | détenu par | personnage, faction, famille, lieu → objet, vaisseau |
 | `allie` *(symmetric)* | allié de | allié de | faction, famille, personnage ↔ faction, famille, personnage |
 | `ennemi` *(symmetric)* | ennemi de | ennemi de | faction, famille, personnage ↔ faction, famille, personnage |
@@ -3393,7 +3393,7 @@ dans Port-Sel) s'ajoute avec « — Les Docks ». Étant donné Léa, Joueuse, q
 « Port-Sel », alors elle lit « Personnages (1) » : Maître Aldric ; « Le Prieur masqué », dont la relation est
 dans « Secret — MJ seul », n'y est ni nommé ni compté. Étant donné Antor sur « La Guilde des
 Brumes », quand il ouvre la fiche, alors « Membres : Personnages (1) » montre « Maître Aldric —
-trésorier » ; « Dirigée par » est absent tant que personne ne la dirige. Étant donné la famille « Les Corvalis »
+trésorier » ; « Dirige » n'est pas une nature : Aldric « membre de » la Guilde avec le qualificatif « trésorier », Ombeline « membre de » avec « capitaine ». Étant donné la famille « Les Corvalis »
 (type Famille), quand Antor ouvre sa fiche, alors « Membres : Personnages (2) » montre « Bran
 Corvalis — aîné » et « Dame Ombeline de Val-Fortin — veuve » (Bran porte la marque « mort » une fois
 le geste de « Marquer mort » joué, pas avant).
@@ -3403,7 +3403,7 @@ le geste de « Marquer mort » joué, pas avant).
 Under the field and the two filter rows, a disclosure **« Recherche avancée »** (open when the
 address carries one of its parameters): **« Lié à »** (a sheet picker, the E-8 list as in
 « Relier » ; a chip « Port-Sel ✕ » once chosen), **« Par »** (the natures whose target types include
-the chosen sheet's type, read backwards: « s'y trouvent », « membres »…, the symmetric ones
+the chosen sheet's type, read backwards: « s'y trouvent », « membres », « détenu par »…, the symmetric ones
 whichever side holds them, plus « toute relation » by default), **« sous-lieux compris »** (shown when the chosen sheet is a place), and **« Vivants /
 Morts / Tous »** (shown when the type filter is Personnage or Créature, or « Tous »). Address :
 `&lie=<id>&nature=<key>&descendants=1&etat=vivants|morts`. The results are the E-17 list, same

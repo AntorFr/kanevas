@@ -671,7 +671,9 @@ introuvable. ».
    Personnage, « Vivants » : la liste des vivants du port ; il affine avec l'étiquette
    « contrebande ».
 3. **Fiche** (E-9) d'un contrebandier : il relie « membre de » → « La Guilde des Brumes »,
-   qualificatif « passeur » ; sur la fiche de la Guilde, « Membres : Personnages (9) » le compte.
+   qualificatif « passeur » ; sur la fiche de la Guilde, « Membres : Personnages (9) » le compte ;
+   la cheffe de la Guilde y est « membre de » avec le qualificatif « dirige » (« dirige » n'est pas une
+   nature : décision de Monsieur).
    Il crée la **famille** « Les Corvalis » (E-8, type Famille, B-66) et y relie Bran et Dame
    Ombeline par « membre de » (« aîné », « veuve ») ; sur la fiche des Corvalis, « Membres :
    Personnages (2) ».
