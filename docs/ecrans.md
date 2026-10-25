@@ -2769,7 +2769,7 @@ on the keyboard, right arrow expands, left arrow collapses, Enter opens. Expandi
 `GET …/fiches?type=T&parent=<id>`; collapsing keeps what is loaded, expanding again makes no new call.
 Roots are `…&parent=racine`; « Charger la suite » loads the next page of a node or roots.
 A node without readable same-type children has no chevron (the `aDesEnfants` field). A node's row:
-type icon, title, subtype (`--texte-3`), and « dans « La Guilde des Brumes » » when `dans` is returned.
+type icon, title, subtype (`--texte-3`), and « dans « La Guilde des Brumes » » when « `dans` » is returned.
 On a phone, indentation is 12 px per level, capped at 6 levels; a row is never less than 44 px high.
 In a GM's Player mode, the toggle keeps its choice and the tree reloads under that mode. A subtype filter or search returns the grid; clearing the filter or search returns the tree if that was the remembered choice. An expanded node whose sheet becomes unreadable between reads disappears on the next read (404: « Impossible de charger la suite. »). A pending import parent (AD-104) is counted with pending links in E-18's « liens et références en attente » row; a replay that sets it is visible in the tree.
 
@@ -2804,7 +2804,7 @@ banner, « Déplacer » disabled. The dialog exists only for a GM outside Player
   « Port-Sel » in « Lieux », that child is absent there; it is in « Contient » of « Port-Sel », and in
   « Événements » it carries « dans Port-Sel ».
 - Given a `GET …/fiches?type=lieu&parent=racine` response for Léa, no field carries the title,
-  identifier or count of a sheet she cannot read (`dans` is `null` if the parent is unreadable).
+  identifier or count of a sheet she cannot read (« `dans` » is `null` if the parent is unreadable).
 
 ### E-17 Search
 
