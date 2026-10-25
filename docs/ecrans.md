@@ -1888,214 +1888,214 @@ E-9 mockup.
 (`/demo-composants`), served when `KANEVAS_STUB=1` and otherwise absent (404), like the test account
 selection screen.
 
-## Détail des écrans de `kanevas-cartes-graphes`
+## Screen details for `kanevas-cartes-graphes`
 
-> E-10 Cartes, E-11 Carte (carte illustrée et graphe), le bloc « Cartes visibles » de E-3, l'item « Cartes »
-> de la barre latérale (il apparaît avec cette tranche). Mêmes états (B-29) et mêmes textes communs que
-> la première fiche (chargement, erreur, connexion perdue, écriture en cours, échec d'une écriture,
-> refus « Page introuvable. », session expirée). Maquettes : `e10` (liste : MJ, Joueuse, vide,
-> création en erreur) et `e11` (carte illustrée et graphe : MJ, MJ en mode Joueur, Joueuse, états).
-> Le document prime sur la maquette.
+> E-10 Maps, E-11 Map (illustrated map and graph), the E-3 « Cartes visibles » block, the « Cartes »
+> sidebar item (appears with this slice). Same states (B-29) and common text as
+> the first sheet (loading, error, connection lost, write in progress, failed write,
+> refusal « Page introuvable. », session expired). Mockups: `e10` (list: GM, Player, empty,
+> creation error) and `e11` (illustrated map and graph: GM, GM in player mode, Player, states).
+> The document takes precedence over the mockup.
 
-### E-10 Cartes
+### E-10 Maps
 
-Le titre « Cartes », le sous-titre « Les cartes de l'univers. Les joueurs ne voient que celles que vous rendez visibles. » (MJ seulement), puis la liste des cartes **de l'univers que le compte lit** : le MJ les voit
-toutes ; un Joueur seulement celles qui sont **visibles**. Une
-ligne : une vignette (le fond d'une carte illustrée, un motif neutre sans fond ou pour un graphe), le
-titre, la forme (« Carte illustrée » ou « Graphe »), et pour le MJ l'état « Visible des joueurs » ou
-« MJ seul » (seul ce dernier est une pastille ambre) avec le geste inverse : « Rendre visible » / « Cacher aux joueurs », qui
-agit au clic. Un clic sur le titre ouvre la carte (E-11). Ordre : titre alphabétique, puis création ;
-cent cartes par page et « Charger la suite ».
+Title « Cartes », subtitle « Les cartes de l'univers. Les joueurs ne voient que celles que vous rendez visibles. » (GM only), then the list of **universe maps the account can read**: GM sees
+them all; a Player sees only those that are **visible**. A
+row: a thumbnail (illustrated map background, neutral pattern without a background or for a graph), the
+title, form (« Carte illustrée » or « Graphe »), and for the GM the « Visible des joueurs » or
+« MJ seul » state (only the latter is an amber badge) with the reverse action: « Rendre visible » / « Cacher aux joueurs », which
+takes effect on click. Clicking the title opens the map (E-11). Order: alphabetical title, then creation;
+one hundred maps per page and « Charger la suite ».
 
-*Créer (MJ).* En tête, « Nouvelle carte » ouvre un formulaire en ligne : **Titre** (1 à 80
-caractères), **Forme** (« Carte illustrée » par défaut, ou « Graphe » ; elle ne se change plus
-ensuite), et pour une carte illustrée **Image de fond** (« Choisir une image », facultative : choisir
-n'envoie rien, l'image part avec « Créer »). « Créer » mène à la carte (E-11), **non visible** ; un
-graphe naît vide, ses fiches se choisissent sur la carte. « Annuler » ferme le formulaire.
+*Create (GM).* At the top, « Nouvelle carte » opens an inline form: **« Titre »** (1 to 80
+characters), **« Forme »** (« Carte illustrée » by default, or « Graphe »; cannot be changed
+later), and for an illustrated map **« Image de fond »** (« Choisir une image », optional: choosing
+sends nothing, the image is sent with « Créer »). « Créer » leads to the map (E-11), **not visible**; a
+graph starts empty, its sheets are selected on the map. « Annuler » closes the form.
 
-| Rôle | Voir | Créer | Rendre visible / cacher |
+| Role | See | Create | Make visible / hide |
 |---|---|---|---|
-| MJ | toutes les cartes de l'univers | oui | oui |
-| Joueur | les cartes visibles ; ni l'état ni le geste de visibilité | **absent** | **absent** |
-| MJ en mode Joueur | sur E-10 la bascule n'est pas proposée : le MJ y voit toujours la liste complète ; le mode Joueur se joue sur E-11 | — | — |
-| Admin d'instance, ou compte sans rôle dans l'univers (Teo) | aucune (« Page introuvable. ») | — | — |
+| GM | all universe maps | yes | yes |
+| Player | visible maps; neither visibility state nor action | **absent** | **absent** |
+| GM in player mode | E-10 offers no toggle: GM always sees the full list here; player mode is on E-11 | — | — |
+| Instance admin, or account without a universe role (Teo) | none (« Page introuvable. ») | — | — |
 
-*Textes.* Aucune carte : MJ « Aucune carte pour l'instant. Créez-en une pour commencer. » (le
-formulaire reste proposé) ; Joueur « Aucune carte n'est visible pour l'instant. » ; titre vide ou
-trop long : « Erreur : le titre est obligatoire. » / « Erreur : 80 caractères au plus. » ; fond qui
-n'est pas une image PNG, JPEG, GIF ou WebP, ou vide : « Erreur : ce fichier n'est pas une image (PNG,
-JPEG, GIF ou WebP). » ; fond de plus de 25 Mo (réponse 413) : « Erreur : l'image dépasse 25 Mo. » ; échec de
-création : « La carte n'a pas pu être créée. Réessayez. », le formulaire garde sa saisie (le fond
-choisi aussi). Une vignette qui ne se charge pas montre le motif neutre.
+*Text.* No map: GM « Aucune carte pour l'instant. Créez-en une pour commencer. » (form
+still available); Player « Aucune carte n'est visible pour l'instant. »; empty or
+long title: « Erreur : le titre est obligatoire. » / « Erreur : 80 caractères au plus. »; background that
+is not a PNG, JPEG, GIF or WebP image, or is empty: « Erreur : ce fichier n'est pas une image (PNG,
+JPEG, GIF ou WebP). »; background above 25 MB (413 response): « Erreur : l'image dépasse 25 Mo. »; failed
+creation: « La carte n'a pas pu être créée. Réessayez. », form keeps its input (including the chosen
+background). A thumbnail that fails to load shows the neutral pattern.
 
-| État | Ce qu'on voit | Ce qu'on peut faire |
+| State | What is shown | Available actions |
 |---|---|---|
-| vide | les textes ci-dessus ; pour le MJ, « Nouvelle carte » | créer (MJ) |
-| chargement | « Chargement… » seul, à la place de l'écran | — |
-| erreur | « Impossible de charger cette page. » ; échec d'une visibilité : « L'action n'a pas abouti. Réessayez. » et l'état d'avant | « Réessayer » |
-| connexion perdue | le bandeau ; « Nouvelle carte », « Créer », « Rendre visible », « Cacher aux joueurs » désactivés ; la liste chargée reste | ouvrir une carte déjà listée |
-| refus | Admin d'instance, ou compte sans rôle : « Page introuvable. » et « Mes univers » | « Mes univers » |
-| contenu long | un titre de 80 caractères passe à la ligne ; 100 cartes, puis « Charger la suite » (« Impossible de charger la suite. » et le bouton reste en cas d'échec) | charger la suite |
+| empty | text above; for GM, « Nouvelle carte » | create (GM) |
+| loading | only « Chargement… », in place of the screen | — |
+| error | « Impossible de charger cette page. »; failed visibility change: « L'action n'a pas abouti. Réessayez. » and previous state | « Réessayer » |
+| connection lost | the banner; « Nouvelle carte », « Créer », « Rendre visible », « Cacher aux joueurs » disabled; loaded list remains | open an already listed map |
+| refusal | Instance admin, or account without a role: « Page introuvable. » and « Mes univers » | « Mes univers » |
+| long content | an 80-character title wraps; 100 maps, then « Charger la suite » (« Impossible de charger la suite. » and button remains on failure) | load more |
 
-*Critères.*
-- Étant donné Antor, MJ, qui crée « La ville de Brume » (carte illustrée, avec un fond) puis revient à
-  la liste, alors Léa ne la voit pas ; quand Antor clique « Rendre visible », elle la voit, sans
-  l'état de visibilité ni le geste.
-- Étant donné un fichier « plan.pdf » choisi comme fond, alors la création est refusée par le texte
-  ci-dessus et rien n'est créé.
-- Étant donné Teo, sans rôle dans l'univers, quand il force l'adresse de la liste, alors il voit
+*Criteria.*
+- Given Antor, GM, creating « La ville de Brume » (illustrated map, with a background) then returning to
+  the list, then Léa does not see it; when Antor clicks « Rendre visible », she sees it without
+  the visibility state or action.
+- Given a « plan.pdf » file chosen as background, then creation is refused with the text
+  above and nothing is created.
+- Given Teo, without a universe role, when he forces the list address, then he sees
   « Page introuvable. ».
 
-### E-11 Carte
+### E-11 Map
 
-En tête : le titre (MJ : « Renommer » — un champ en ligne, 1 à 80 caractères, « Enregistrer » /
-« Annuler »), la forme, l'état de visibilité, et pour le MJ la **bascule mode MJ / mode Joueur** (celle de la barre haute) et
-« Rendre visible » / « Cacher aux joueurs ». Dessous, **le cadre** de la carte, puis la liste
-« Sur la carte », puis (graphe) la liste « Liens ».
+At the top: title (GM: « Renommer » — an inline field, 1 to 80 characters, « Enregistrer » /
+« Annuler »), form, visibility state, and for the GM the **GM mode / player mode toggle** (from the top bar) and
+« Rendre visible » / « Cacher aux joueurs ». Below, the map **frame**, then the
+« Sur la carte » list, then (graph) the « Liens » list.
 
-*Carte illustrée.* Le cadre montre l'image de fond à ses proportions (16/10 neutre sans fond, AD-70) ;
-chaque **token** est un rond portant la première lettre du titre de sa fiche, avec le titre dessous
-(24 caractères, puis « … »). Sa zone cliquable fait au moins 44 px. Un token n'est présent que si sa
-fiche est lisible du lecteur (AD-38). **Joueur** : toucher un token ouvre la fiche (E-9) ; rien d'autre.
-**MJ (mode MJ)** : un clic **sélectionne** le token et met le token en évidence (anneau ambre, la couleur du MJ) et ouvre, sous le cadre, un panneau MJ au liseré ambre « Maître
-Aldric · Personnage » avec « Ouvrir la fiche » et « Retirer de la carte » (ce bouton demande la même confirmation que la liste « Sur la carte » : rien n'est retiré au premier clic) ; on **déplace** un token au
-glisser, ou au clavier (token sélectionné : flèches, 1 %, avec Maj 5 % ; l'aide « Flèches : déplacer de 1 % (Maj : 5 %) » est affichée sous le cadre) ; la position s'enregistre au
-relâchement (ou à la touche) ; hors du cadre elle est ramenée au bord. « Ajouter une fiche » ouvre une
-fenêtre : un choix de **type** (les sept ; *depuis `kanevas-import`, la liste du produit, types activés d'abord, AD-102*), un champ de recherche (lancée par « Chercher » ou Entrée ; plus de 100 caractères : « 100 caractères au plus. »), la liste des fiches de ce type
-(celles que le MJ lit : toutes), chacune avec « Ajouter » ; une fiche déjà sur la carte porte « Déjà
-sur la carte » sans bouton. « Fermer » ferme la fenêtre. Le token apparaît au **centre** (50 %, 50 %), prêt à être déplacé.
-« Changer le fond » (« Ajouter un fond » s'il n'y en a pas) ouvre le sélecteur : **choisir l'image
-suffit**, elle part aussitôt et remplace l'ancienne.
+*Illustrated map.* The frame shows the background image at its aspect ratio (neutral 16/10 without a background, AD-70);
+each **token** is a circle with the first letter of its sheet's title, with the title underneath
+(24 characters, then « … »). Its clickable area is at least 44 px. A token is present only if its
+sheet is readable by the reader (AD-38). **Player**: touching a token opens the sheet (E-9); nothing else.
+**GM (GM mode)**: a click **selects** the token, highlights it (amber ring, the GM colour) and opens, below the frame, an amber-bordered GM panel « Maître
+Aldric · Personnage » with « Ouvrir la fiche » and « Retirer de la carte » (this button requires the same confirmation as the « Sur la carte » list: nothing is removed on first click); a token is **moved** by
+dragging, or with the keyboard (selected token: arrows, 1%, with Shift 5%; the « Flèches : déplacer de 1 % (Maj : 5 %) » help is displayed below the frame); position is saved on
+release (or keypress); outside the frame it is clamped to the edge. « Ajouter une fiche » opens a
+window: a **type** choice (the seven; *since `kanevas-import`, the product list, enabled types first, AD-102*), a search field (started with « Chercher » or Enter; more than 100 characters: « 100 caractères au plus. »), the list of sheets of this type
+(those the GM reads: all), each with « Ajouter »; a sheet already on the map has « Déjà
+sur la carte » without a button. « Fermer » closes the window. The token appears at the **centre** (50%, 50%), ready to move.
+« Changer le fond » (« Ajouter un fond » if there is none) opens the picker: **choosing the image
+is enough**, it is sent immediately and replaces the previous one.
 
-*Graphe.* Le cadre est un schéma : un **nœud** par fiche (rond, première lettre, titre dessous, 24
-caractères), une flèche par **lien** de la fiche d'où vient la relation vers la fiche visée, avec le
-type de la relation écrit sur la flèche (lien de A vers B : « membre de »). La disposition est celle
-du navigateur (AD-71) ; elle n'est pas modifiable. La zone cliquable d'un nœud fait au moins 44 px ; le
-cadre prend la largeur que la page lui donne (jamais moins d'un nœud plus ses marges) et sa hauteur
-grandit avec le nombre de lignes de nœuds ; chaque nœud occupe sa propre case (150 × 70 px) d'une
-grille, donc deux nœuds ne se recouvrent jamais ; ce qui ne tient pas dans la largeur (téléphone)
-défile, et la liste « Sur la carte » reste le chemin sûr au toucher. Joueur : toucher un nœud ouvre sa fiche. MJ : un
-clic sélectionne le nœud, avec « Ouvrir la fiche » et « Retirer de la carte » (même mot, même confirmation que la liste « Sur la carte ») ; « Ajouter une fiche »
-est la même fenêtre. Une relation ajoutée ou retirée sur une fiche se voit au rechargement de la
-carte.
+*Graph.* The frame is a diagram: one **node** per sheet (circle, first letter, title underneath, 24
+characters), one arrow per **link** from the sheet carrying the relation to the target sheet, with the
+relation type written on the arrow (link from A to B: « membre de »). Layout is handled by
+the browser (AD-71); it cannot be edited. A node's clickable area is at least 44 px; the
+frame takes the width the page gives it (never less than a node plus its margins), and its height
+grows with the number of node rows; each node occupies its own cell (150 × 70 px) in a
+grid, so two nodes never overlap; what does not fit the width (phones)
+scrolls, and the « Sur la carte » list remains the reliable touch path. Player: touching a node opens its sheet. GM: a
+click selects the node, with « Ouvrir la fiche » and « Retirer de la carte » (same wording and confirmation as the « Sur la carte » list); « Ajouter une fiche »
+is the same window. A relation added or removed on a sheet appears on map
+reload.
 
-*Fenêtre « Ajouter une fiche »* — états propres, car c'est elle qui décide. **Vide** : un type sans
-fiche, « Aucune fiche de ce type. » ; une recherche sans résultat, « Aucune fiche ne correspond. ».
-**Chargement** : « Chargement… » à la place de la liste, le choix du type et la recherche déjà là.
-**Erreur** : « Impossible de charger les fiches. » et « Réessayer », la fenêtre reste ouverte.
-**Connexion perdue** : le bandeau ; « Ajouter » désactivé, la liste chargée reste. **Contenu long** :
-cent fiches par page et « Charger la suite » (« Impossible de charger la suite. » en cas d'échec) ;
-un titre de 80 caractères passe à la ligne. **Refus** : sans objet, la fenêtre n'existe que pour le
-MJ hors mode Joueur.
+*« Ajouter une fiche » window* — its own states, because it is where the choice is made. **Empty**: a type with no
+sheet, « Aucune fiche de ce type. »; a search without results, « Aucune fiche ne correspond. ».
+**Loading**: « Chargement… » in place of the list, type choice and search already present.
+**Error**: « Impossible de charger les fiches. » and « Réessayer », window stays open.
+**Connection lost**: the banner; « Ajouter » disabled, loaded list remains. **Long content**:
+one hundred sheets per page and « Charger la suite » (« Impossible de charger la suite. » on failure);
+an 80-character title wraps. **Refusal**: not applicable, window exists only for the
+GM outside player mode.
 
-Chaque action de E-10 et de E-11 porte une icône Lucide (règle de `docs/charte.md`, « Icônes ») : Renommer un crayon, Rendre visible / Cacher un œil / œil barré, Ajouter une fiche un plus, Fond une image, Retirer une corbeille, Ouvrir la fiche un lien externe.
+Every E-10 and E-11 action has a Lucide icon (`docs/charte.md`, “Icons” rule): rename a pencil, make visible / hide an eye / crossed-out eye, add a sheet a plus, background an image, remove a bin, open the sheet an external link.
 
-*Sur la carte* (liste sous le cadre, toujours présente quand il y a des éléments) : une ligne par
-token ou nœud, son titre en lien vers la fiche, son type ; pour le MJ, « Retirer de la carte »
-(confirmation sur place : « Retirer « Maître Aldric » de cette carte ? La fiche reste. » avec
-« Retirer de la carte » et « Annuler ») ; c'est aussi le chemin au clavier et au lecteur d'écran.
-*Liens* (graphe) : une ligne « Maître Aldric — membre de → Les Lames Grises » par lien ; aucun lien :
+*« Sur la carte »* (list below the frame, always present when there are elements): one row per
+token or node, title linking to the sheet, type; for the GM, « Retirer de la carte »
+(inline confirmation: « Retirer « Maître Aldric » de cette carte ? La fiche reste. » with
+« Retirer de la carte » and « Annuler »); also the keyboard and screen-reader path.
+*« Liens »* (graph): one « Maître Aldric — membre de → Les Lames Grises » row per link; no links:
 « Aucun lien entre ces fiches. ».
 
-*Visibilité et mode Joueur.* « Rendre visible » rend la carte lisible des Joueurs ; « Cacher aux
-joueurs » la leur retire (au prochain chargement de leur côté : elle leur répond « Page
-introuvable. »). Le **mode Joueur** (AD-39) montre au MJ la carte telle que la verrait un Joueur qui
-n'est l'auteur d'aucune section : mêmes tokens, mêmes nœuds, mêmes liens, plus aucun geste de
-modification. Sur une carte **non visible**, le MJ en mode Joueur voit « Les joueurs ne voient pas
-cette carte : elle n'est pas visible. » avec « Quitter le mode Joueur » (un Joueur, lui, recevrait
+*Visibility and player mode.* « Rendre visible » makes the map readable by Players; « Cacher aux
+joueurs » removes it from them (on their next load: it answers « Page
+introuvable. »). **Player mode** (AD-39) shows the GM the map as a Player who authors no section would
+see it: same tokens, same nodes, same links, no editing
+actions. On a **non-visible** map, the GM in player mode sees « Les joueurs ne voient pas
+cette carte : elle n'est pas visible. » with « Quitter le mode Joueur » (a Player would receive
 « Page introuvable. »).
 
-| Rôle | Voir | Gestes |
+| Role | See | Actions |
 |---|---|---|
-| MJ | la carte, tous ses éléments (toute fiche de l'univers), tous les liens | renommer ; rendre visible ou cacher ; fond ; ajouter une fiche ; déplacer (carte illustrée) ; retirer ; mode Joueur ; ouvrir une fiche |
-| MJ en mode Joueur | comme un Joueur | ouvrir une fiche ; quitter le mode |
-| Joueur | une carte visible ; les éléments dont il lit la fiche, les liens dont il lit la relation (AD-64) et les deux bouts ; **aucun compteur de ce qui manque** | ouvrir une fiche |
-| Admin d'instance, ou compte sans rôle dans l'univers (Teo) | aucune | « Page introuvable. » |
+| GM | map, all its elements (any sheet in the universe), all links | rename; make visible or hide; background; add a sheet; move (illustrated map); remove; player mode; open a sheet |
+| GM in player mode | like a Player | open a sheet; leave mode |
+| Player | a visible map; elements whose sheet they can read, links whose relation (AD-64) and both ends they can read; **no count of what is missing** | open a sheet |
+| Instance admin, or account without a universe role (Teo) | none | « Page introuvable. » |
 
-Un geste qu'un rôle n'a pas est **absent** de l'écran (jamais grisé, sauf hors connexion). Par l'API,
-un geste d'écriture d'un non-MJ est refusé **403** sur une carte qu'il lit ; sur une carte qu'il ne
-lit pas, **404**. Un token dont la fiche devient illisible disparaît au chargement suivant, sans trace.
+An action a role lacks is **absent** from the screen (never greyed out, except offline). Through the API,
+a write action by a non-GM is refused with **403** on a map they can read; on a map they cannot
+read, **404**. A token whose sheet becomes unreadable disappears on next load, without a trace.
 
-*Textes.* Carte illustrée sans token : MJ « Aucun token. Ajoutez une fiche pour la placer sur la
-carte. » ; Joueur « Rien à voir sur cette carte pour l'instant. ». Graphe sans nœud : MJ « Aucune fiche.
-Ajoutez des fiches pour voir leurs liens. » ; Joueur « Rien à voir sur ce graphe pour l'instant. ».
-Fond : fichier non image ou vide « Erreur : ce fichier n'est pas une image (PNG, JPEG, GIF ou WebP). »,
-plus de 25 Mo « Erreur : l'image dépasse 25 Mo. ». 100 éléments : « Cette carte porte déjà 100
-éléments. ». Fiche devenue inconnue à l'ajout : « Cette fiche n'existe plus. » (la liste de la fenêtre
-se recharge). Échec d'un déplacement, d'un retrait, d'un ajout, d'un renommage, d'une visibilité, d'un
-fond : « L'action n'a pas abouti. Réessayez. », et l'état d'avant revient (le token retourne à sa
-place) ; une saisie en cours est conservée. Titre vide ou trop long : les textes d'E-10. Le fond qui
-ne charge pas : dans le cadre « Le fond de la carte n'a pas pu être chargé. » avec « Réessayer » ;
-les tokens ne sont pas posés (leurs positions n'ont de sens que sur le fond), la liste « Sur la carte »
-reste. Hors connexion, le fond déjà chargé reste affiché.
+*Text.* Illustrated map without tokens: GM « Aucun token. Ajoutez une fiche pour la placer sur la
+carte. »; Player « Rien à voir sur cette carte pour l'instant. ». Graph without nodes: GM « Aucune fiche.
+Ajoutez des fiches pour voir leurs liens. »; Player « Rien à voir sur ce graphe pour l'instant. ».
+Background: non-image or empty file « Erreur : ce fichier n'est pas une image (PNG, JPEG, GIF ou WebP). »,
+above 25 MB « Erreur : l'image dépasse 25 Mo. ». 100 elements: « Cette carte porte déjà 100
+éléments. ». Sheet becoming unknown during addition: « Cette fiche n'existe plus. » (window list
+reloads). Failed move, removal, addition, rename, visibility change or
+background change: « L'action n'a pas abouti. Réessayez. », and previous state returns (token returns to its
+position); ongoing input is preserved. Empty or long title: E-10 text. Background failing to
+load: inside the frame « Le fond de la carte n'a pas pu être chargé. » with « Réessayer »;
+tokens are not placed (their positions make sense only on the background), the « Sur la carte » list
+remains. Offline, the already loaded background stays displayed.
 
-| État | Ce qu'on voit | Ce qu'on peut faire |
+| State | What is shown | Available actions |
 |---|---|---|
-| vide | les textes « Aucun token », « Aucune fiche », « Rien à voir… » ; « Aucun lien entre ces fiches. » pour un graphe sans lien | MJ : ajouter une fiche |
-| chargement | « Chargement… » ; le cadre à 16/10 neutre jusqu'au chargement du fond (« Chargement… » dedans), les tokens posés quand le fond est là | — |
-| erreur | « Impossible de charger cette page. » ; fond : le message du cadre ; échec d'une écriture : « L'action n'a pas abouti. Réessayez. » | « Réessayer » |
-| connexion perdue | le bandeau ; renommer, visibilité, fond, « Ajouter une fiche », déplacer, retirer désactivés (carte illustrée : les tokens deviennent des liens vers la fiche, sans sélection ni glisser ; graphe : la sélection reste) ; la carte chargée reste | lire, ouvrir une fiche |
-| refus | carte inconnue ou illisible, compte sans rôle ou Admin : « Page introuvable. » et « Mes univers » ; MJ en mode Joueur sur une carte non visible : sa propre phrase | « Mes univers », « Quitter le mode Joueur » |
-| contenu long | un titre de 80 caractères passe à la ligne ; 100 éléments : titres de 24 caractères puis « … » (le titre entier dans la liste « Sur la carte », qui défile) ; une image très large ou très haute garde ses proportions et tient en largeur ; téléphone : le cadre prend toute la largeur, une seule colonne | — |
+| empty | « Aucun token », « Aucune fiche », « Rien à voir… » text; « Aucun lien entre ces fiches. » for a graph without links | GM: add a sheet |
+| loading | « Chargement… »; neutral 16/10 frame until background loads (« Chargement… » inside), tokens placed when background is present | — |
+| error | « Impossible de charger cette page. »; background: frame message; failed write: « L'action n'a pas abouti. Réessayez. » | « Réessayer » |
+| connection lost | the banner; rename, visibility, background, « Ajouter une fiche », move, remove disabled (illustrated map: tokens become sheet links, without selection or dragging; graph: selection remains); loaded map remains | read, open a sheet |
+| refusal | map unknown or unreadable, account without a role or Admin: « Page introuvable. » and « Mes univers »; GM in player mode on a non-visible map: its specific sentence | « Mes univers », « Quitter le mode Joueur » |
+| long content | an 80-character title wraps; 100 elements: 24-character titles then « … » (full title in the « Sur la carte » list, which scrolls); a very wide or tall image keeps its aspect ratio and fits the width; phones: frame takes full width, single column | — |
 
-*Critères.*
-- Étant donné la carte illustrée « La ville de Brume » avec un fond, où Antor place « Maître Aldric »
-  et « Les Ombres de Fer » (faction dont Léa ne lit aucune section) puis la rend visible, quand Léa
-  l'ouvre, alors elle voit le fond et le token d'Aldric, ni le token ni le titre de la faction, ni
-  « Les Ombres de Fer » dans la liste « Sur la carte » ; quand elle touche le token d'Aldric, alors
-  elle arrive sur sa fiche.
-- Étant donné la même carte, quand Antor passe en mode Joueur, alors il voit exactement ce que voit
-  Léa ; quand il la cache aux joueurs, alors Léa, au rechargement, voit « Page introuvable. » et la
-  carte n'est plus dans sa liste.
-- Étant donné Antor qui déplace le token d'Aldric puis recharge, alors il est à sa nouvelle place ;
-  une panne pendant le déplacement le ramène à l'ancienne et affiche « L'action n'a pas abouti.
+*Criteria.*
+- Given the illustrated « La ville de Brume » map with a background, where Antor places « Maître Aldric »
+  and « Les Ombres de Fer » (faction of which Léa reads no section) then makes it visible, when Léa
+  opens it, then she sees the background and Aldric's token, neither the faction's token nor title, nor
+  « Les Ombres de Fer » in the « Sur la carte » list; when she touches Aldric's token, then
+  she reaches his sheet.
+- Given the same map, when Antor switches to player mode, then he sees exactly what
+  Léa sees; when he hides it from players, then Léa, on reload, sees « Page introuvable. » and the
+  map is no longer in her list.
+- Given Antor moving Aldric's token then reloading, then it is at its new position;
+  a failure during the move returns it to the old one and displays « L'action n'a pas abouti.
   Réessayez. ».
-- Étant donné le graphe « Les factions » avec « Les Lames Grises », « Les Corbeaux » et « La
-  Guilde » ; la relation « allié de » de la première vers la deuxième, portée par une section que
-  Léa ne lit pas, et « rival de » de la première vers la troisième, portée par une section qu'elle lit :
-  Antor voit les deux liens ; Léa, qui lit les trois fiches de ce graphe, voit seulement « rival de » ;
-  si elle ne lisait pas « La Guilde », elle verrait deux nœuds et aucun lien.
-- Étant donné un graphe où Antor a mis aussi « Les Ombres de Fer » (Léa n'en lit aucune section),
-  alors Léa n'y voit ni son nœud ni ses liens, et aucune trace de leur absence.
-- Étant donné le fond « plan.pdf » choisi sur une carte, alors le refus s'affiche et le fond d'avant
-  reste ; l'adresse du fond d'une carte non visible répond 404 à Léa.
-- Étant donné Léa sur une carte, quand elle force l'adresse d'une action de MJ, alors elle reçoit 403.
+- Given the « Les factions » graph with « Les Lames Grises », « Les Corbeaux » and « La
+  Guilde »; the « allié de » relation from the first to the second, carried by a section
+  Léa does not read, and « rival de » from the first to the third, carried by a section she reads:
+  Antor sees both links; Léa, who reads all three sheets in this graph, sees only « rival de »;
+  if she could not read « La Guilde », she would see two nodes and no link.
+- Given a graph where Antor also placed « Les Ombres de Fer » (Léa reads none of its sections),
+  then Léa sees neither its node nor its links, and no trace of their absence.
+- Given « plan.pdf » chosen as a map background, then the refusal appears and the previous background
+  remains; the background address of a non-visible map returns 404 to Léa.
+- Given Léa on a map, when she forces the address of a GM action, then she receives 403.
 
-### E-3 — le bloc « Cartes visibles »
+### E-3 — the « Cartes visibles » block
 
-Sur la vue d'ensemble, un bloc **Cartes visibles** (le titre de la maquette `e03`), inscrit au registre des blocs de E-3 (un fichier dans
-`frontend/src/ecrans/vue-ensemble/blocs/` que le registre trouve seul (rang après les blocs des campagnes et
-des comptes-rendus) ; aucun bloc existant n'est modifié). Il liste, pour tous les rôles, les **cartes
-visibles des joueurs** (cinq au plus, titre alphabétique) : le titre en lien vers E-11 et la forme ;
-dessous « Toutes » vers E-10. Chaque carte est une vignette (le fond de la carte, ou le motif neutre
-d'un graphe ou d'une carte sans fond) avec une icône carte, le titre et la forme. Le MJ voit donc ce que la table voit ; ses cartes « MJ seul »
-se trouvent sur E-10.
+On the overview, a **« Cartes visibles »** block (the `e03` mockup title), registered in the E-3 block registry (one file in
+`frontend/src/ecrans/vue-ensemble/blocs/` found automatically by the registry (ranked after campaign and
+report blocks); no existing block is changed). For all roles, it lists **maps
+visible to players** (five at most, alphabetical title): title linking to E-11 and form;
+below, « Toutes » to E-10. Each map is a thumbnail (map background, or neutral pattern
+for a graph or map without background) with a map icon, title and form. The GM therefore sees what the table sees; « MJ seul » maps
+are on E-10.
 
-| État | Ce qu'on voit | Ce qu'on peut faire |
+| State | What is shown | Available actions |
 |---|---|---|
-| vide | MJ : « Aucune carte visible des joueurs. » et « Toutes » ; Joueur : **pas de bloc** (ni titre ni compteur) | MJ : « Toutes » |
-| chargement | le titre du bloc et « Chargement… » | — |
-| erreur | « Impossible de charger les cartes. » | « Réessayer » |
-| connexion perdue | le bandeau ; les cartes déjà chargées restent | ouvrir |
-| refus | sans objet : le refus d'E-3 couvre le bloc (« Page introuvable. ») | — |
-| contenu long | un titre tient sur une ligne, puis « … » ; au-delà de cinq cartes, cinq et « Toutes » | — |
+| empty | GM: « Aucune carte visible des joueurs. » and « Toutes »; Player: **no block** (neither title nor count) | GM: « Toutes » |
+| loading | block title and « Chargement… » | — |
+| error | « Impossible de charger les cartes. » | « Réessayer » |
+| connection lost | the banner; already loaded maps remain | open |
+| refusal | not applicable: E-3 refusal covers the block (« Page introuvable. ») | — |
+| long content | title fits on one line, then « … »; beyond five maps, five and « Toutes » | — |
 
-| Rôle | Voir |
+| Role | See |
 |---|---|
-| MJ | le bloc, avec les seules cartes visibles des joueurs |
-| Joueur | le bloc s'il y a au moins une carte visible, sinon aucun bloc |
-| Admin d'instance, ou compte sans rôle | aucun : E-3 lui répond « Page introuvable. » |
+| GM | block, with only maps visible to players |
+| Player | block if at least one map is visible, otherwise no block |
+| Instance admin, or account without a role | none: E-3 answers « Page introuvable. » |
 
-*Critère.* Étant donné deux cartes visibles et une « MJ seul », alors le bloc de Léa en liste deux ;
-celui d'Antor aussi.
+*Criterion.* Given two visible maps and one « MJ seul », then Léa's block lists two;
+Antor's does too.
 
-### Clôture de `kanevas-cartes-graphes`
+### Closure of `kanevas-cartes-graphes`
 
-B-22 → E-10 (créer une carte illustrée avec son fond, ou un graphe) et E-11 (placer des tokens,
-choisir les fiches d'un graphe) ; B-23 → « Rendre visible » et la lecture filtrée d'un joueur ;
-B-12 (carte) → le mode Joueur de E-11. Atteint par P-3 étape 6 (placer le PNJ, mode Joueur, rendre
-visible), P-6 étape 3 (la carte d'un joueur) et P-9 en entier (le graphe). Les écrans E-10 et E-11
-et le bloc de E-3 livrent leurs six états (B-29), ci-dessus.
+B-22 → E-10 (create an illustrated map with its background, or a graph) and E-11 (place tokens,
+choose a graph's sheets); B-23 → « Rendre visible » and a player's filtered read;
+B-12 (map) → E-11 player mode. Reached by P-3 step 6 (place the NPC, player mode, make
+visible), P-6 step 3 (a player's map) and all of P-9 (graph). Screens E-10 and E-11
+and the E-3 block provide their six states (B-29), above.
 
 ## Détail des écrans de `kanevas-import` (cadrage)
 
