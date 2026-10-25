@@ -3364,7 +3364,7 @@ Créatures (3) ») — counts of what the reader reads —, folded beyond five l
 (« Afficher les 12 »), each line the card line of E-8 (vignette, title, badge, sub-type, the dead
 mark) and the qualifier in grey; on a **place**, a toggle **« sous-lieux compris »** (off by default,
 remembered per browser) adds the sheets linked to its descendants in the tree (bounded by the
-tree's depth, AD-129), each line then saying its place in grey (« — Les Docks »); a group has a
+tree's depth, AD-129), each line then saying its place in grey (« — Les Docks »), and under the toggle a grey line naming the sub-places read (« Les Docks, Le Phare aux Sels, … », as in the mock-up); a group has a
 link **« Chercher parmi »** to E-17 with the filters pre-filled (lié à, nature, sous-lieux). A group
 with nothing readable is absent; the block is absent when every group is. « Mentionnée dans »
 keeps the links and the free relations only.
@@ -3381,17 +3381,17 @@ built.
 | vide | the route gives, per group, the totals with and without descendants (AD-130) : nothing readable either way, the block is absent ; nothing at the place's own level but something below, the block shows with « sous-lieux compris » checked and disabled, and a line « Rien à ce niveau ; N fiches dans ses sous-lieux. » | — |
 | chargement | « Chargement… » in the block, the sheet readable | — |
 | erreur | « Impossible de charger les fiches liées. » with « Réessayer », the rest of the sheet readable | « Réessayer » |
-| connexion perdue | the banner of the other blocks; the loaded content stays readable, the toggle and « Afficher les 12 » (which ask the server) are disabled | lire |
+| connexion perdue | the banner of the other blocks (its text is theirs: « Connexion perdue. »); the loaded content stays readable, the toggle and « Afficher les 12 » (which ask the server) are disabled | lire |
 | refus | a player: only the relations whose section and source sheet he reads, counts included; the block is absent (no trace) when nothing is readable; the toggle is shown to every role on a place; in player mode the GM sees the same | — |
-| rafraîchissement | after the toggle or « Afficher les N »: the previous content stays, dimmed, controls disabled; a failed re-read keeps it and shows « Impossible de charger les fiches liées. » with « Réessayer » | « Réessayer » |
+| rafraîchissement | after the toggle or « Afficher les N »: the previous content stays, dimmed, controls disabled; a failed re-read keeps it, the toggle back in the state the shown content answers (not the one just clicked), and shows « Impossible de charger les fiches liées. » with « Réessayer » | « Réessayer » |
 | contenu long | a place with 300 characters: « Personnages (300) », five shown, « Afficher les 300 » pages by 50 ; a depth of 50 sub-places: the toggle says « sous-lieux compris (50 niveaux au plus) » | idem |
 
-*Critères (états).* Étant donné « Port-Sel » en cours de chargement, alors « Chargement… » dans le bloc et le reste de la fiche lisible. Étant donné la route en erreur, alors « Impossible de charger les fiches liées. » et « Réessayer » la relit. Étant donné la connexion perdue, alors le bandeau, le contenu chargé lisible, la bascule désactivée. Étant donné « Les Sphères » (rien à son niveau, Port-Sel dessous), alors la bascule est cochée et désactivée avec « Rien à ce niveau ; 3 fiches dans ses sous-lieux. ». Étant donné un groupe de 300 fiches, alors « Personnages (300) », cinq lignes, « Afficher les 300 » par pages de 50. Étant donné le MJ en mode Joueur sur « Port-Sel », alors il lit comme Léa. Étant donné un qualificatif de 80 caractères sur un téléphone (360 px), alors la ligne passe à la ligne et le texte entier est dans l'infobulle.
+*Critères (états).* Étant donné « Port-Sel » en cours de chargement, alors « Chargement… » dans le bloc et le reste de la fiche lisible. Étant donné la route en erreur, alors « Impossible de charger les fiches liées. » et « Réessayer » la relit. Étant donné la connexion perdue, alors le bandeau, le contenu chargé lisible, la bascule et « Afficher les 12 » désactivés. Étant donné un rafraîchissement qui échoue après un clic sur la bascule, alors le contenu précédent reste, la case revient à son état d'avant, et « Impossible de charger les fiches liées. » avec « Réessayer ». Étant donné Léa sur un lieu dont rien n'est lisible pour elle, ni à son niveau ni dessous, alors le bloc est absent, sans trace. Étant donné 50 niveaux de sous-lieux, alors la bascule dit « sous-lieux compris (50 niveaux au plus) ». Étant donné « Rien à ce niveau » avec un seul sous-lieu concerné, alors « Rien à ce niveau ; 1 fiche dans ses sous-lieux. ». Étant donné « Les Sphères » (rien à son niveau, Port-Sel dessous), alors la bascule est cochée et désactivée avec « Rien à ce niveau ; 3 fiches dans ses sous-lieux. ». Étant donné un groupe de 300 fiches, alors « Personnages (300) », cinq lignes, « Afficher les 300 » par pages de 50. Étant donné le MJ en mode Joueur sur « Port-Sel », alors il lit comme Léa. Étant donné un qualificatif de 80 caractères sur un téléphone (360 px), alors la ligne passe à la ligne et le texte entier est dans l'infobulle.
 
 *Critères.* Étant donné Antor, MJ, et « Port-Sel » dont « Maître Aldric » et « Le Prieur masqué »
 se situent, quand il ouvre la fiche, alors « Fiches liées » dit « S'y trouvent : Personnages (2) »
 avec les deux cartes ; quand il coche « sous-lieux compris », alors « Suie » (se situe aux Docks,
-dans Port-Sel) s'ajoute avec « — Les Docks ». Étant donné Léa, Joueuse, quand elle ouvre
+dans Port-Sel) s'ajoute avec « — Les Docks », et « Le Kraken des Cales » (Créatures (1), « — La Taverne du Kraken ») dans son propre groupe. Étant donné Léa, Joueuse, quand elle ouvre
 « Port-Sel », alors elle lit « Personnages (1) » : Maître Aldric ; « Le Prieur masqué », dont la relation est
 dans « Secret — MJ seul », n'y est ni nommé ni compté. Étant donné Antor sur « La Guilde des
 Brumes », quand il ouvre la fiche, alors « Membres : Personnages (2) » montre « Maître Aldric —
