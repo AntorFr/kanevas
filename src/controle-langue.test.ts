@@ -240,3 +240,37 @@ test('--releases : corps anglais zéro ; français signalé ; --attendu compare 
     assert.equal(lancer(dir, ['--releases', '--attendu', 'v2:titres=1,puces=1,liens=1'], env).code, 2);
   });
 });
+
+
+test('screen baseline: inserted images checked for words, following facts still checked', () => {
+  const headings = Array.from({ length: 13 }, (_, i) => `## Section ${i + 1}\nText.`).join('\n');
+  const base = `${headings}\n## Details for \`kanevas-refonte-visuelle\`\nSee AD-12.\n## Following\nSee E-9.\n`;
+  const dir = depot(base);
+  try {
+    mkdirSync(join(dir, 'docs'));
+    writeFileSync(join(dir, 'docs/ecrans.md'), base);
+    execFileSync('git', ['add', 'docs/ecrans.md'], { cwd: dir });
+    execFileSync('git', ['commit', '-qm', 'screen baseline'], { cwd: dir });
+    const current = base.replace('## Details for', '## Details for `kanevas-images`\nSee AD-88.\n## Details for');
+    const audit = (...args: string[]) => lancer(dir, ['--base', 'HEAD', ...args]);
+    writeFileSync(join(dir, 'docs/ecrans.md'), current);
+    assert.equal(audit('docs/ecrans.md').code, 0);
+    assert.equal(audit('--sections', 'docs/ecrans.md:15-16').code, 0);
+    assert.equal(audit('--sections', 'docs/ecrans.md:17-17').code, 2);
+    writeFileSync(join(dir, 'docs/ecrans.md'), current.replace('See AD-88.', 'Le texte est ici.'));
+    const words = audit('--sections', 'docs/ecrans.md:14-14');
+    assert.equal(words.code, 1);
+    assert.equal(words.json.fichiers[0].francais, 2);
+    assert.deepEqual(words.json.fichiers[0].ecarts, []);
+    writeFileSync(join(dir, 'docs/ecrans.md'), current.replace('See AD-12.', 'Text.'));
+    const facts = audit('--sections', 'docs/ecrans.md:15-15');
+    assert.equal(facts.code, 1);
+    assert.deepEqual(facts.json.fichiers[0].ecarts, [{ fait: 'AD-12', avant: 1, apres: 0 }]);
+    // An unrelated inserted heading must still fail the facts audit.
+    writeFileSync(join(dir, 'docs/ecrans.md'), current.replace('## Following', '## Extra\nText.\n## Following'));
+    assert.equal(audit('docs/ecrans.md').code, 1);
+    // The exception is scoped to docs/ecrans.md, never another document.
+    writeFileSync(join(dir, 'a.md'), current);
+    assert.equal(audit('a.md').code, 1);
+  } finally { rmSync(dir, { recursive: true, force: true }); }
+});

@@ -67,6 +67,16 @@ function parse(text) {
   });
 }
 
+// kanevas-images added section 14 after the frozen translation baseline. Keep
+// that baseline intact: only this documented insertion has no facts counterpart.
+function referenceSections(file, before, current) {
+  if (file !== 'docs/ecrans.md' || before.some((s) => s.titre.includes('`kanevas-images`'))
+      || !current[14]?.titre.includes('`kanevas-images`')
+      || !current[15]?.titre.includes('`kanevas-refonte-visuelle`')
+      || !before[14]?.titre.includes('`kanevas-refonte-visuelle`')) return before;
+  return [...before.slice(0, 14), null, ...before.slice(14)];
+}
+
 function differences(before, after) {
   const findings = [];
   for (const key of ['titres', 'blocs', 'tableaux']) {
@@ -205,8 +215,9 @@ function main() {
         output.fichiers.push({ fichier: file, sections: current.map(({ numero, titre }) => ({ numero, titre })) });
         continue;
       }
-      const before = parse(oldText(normalized(file)));
-      const oldProse = before.map((s) => s.prose).join('\n');
+      const original = parse(oldText(normalized(file)));
+      const before = referenceSections(normalized(file), original, current);
+      const oldProse = original.map((s) => s.prose).join('\n');
       const currentProse = current.map((s) => s.prose).join('\n');
       const range = ranges.get(file) || [0, Math.max(before.length, current.length) - 1];
       if (ranges.has(file) && range[1] >= before.length) throw new Error(`Section outside reference: ${file}:${range[1]}`);
@@ -215,8 +226,9 @@ function main() {
       for (let i = range[0]; i <= range[1]; i++) {
         const a = before[i];
         const b = current[i];
-        const ecarts = differences(a?.faits, b?.faits);
-        if (Boolean(a) !== Boolean(b)) ecarts.push({ fait: 'section', avant: Boolean(a), apres: Boolean(b) });
+        const wordsOnly = a === null;
+        const ecarts = wordsOnly ? [] : differences(a?.faits, b?.faits);
+        if (!wordsOnly && Boolean(a) !== Boolean(b)) ecarts.push({ fait: 'section', avant: Boolean(a), apres: Boolean(b) });
         if (checkLinks && b) {
           const oldLinks = new Set(links(a?.prose || '', oldProse));
           for (const href of links(b.prose, currentProse)) {
@@ -228,7 +240,7 @@ function main() {
         sections.push({ numero: i, titre: b?.titre ?? a?.titre, francais: b?.francais || 0, mots: b?.mots || {}, faits: b?.faits, ecarts });
       }
       const francais = sections.reduce((n, s) => n + s.francais, 0);
-      const ecarts = ranges.has(file) ? sections.flatMap((s) => s.ecarts) : differences(total(before), total(current));
+      const ecarts = ranges.has(file) ? sections.flatMap((s) => s.ecarts) : differences(total(original), total(current.filter((_, i) => before[i] !== null)));
       failed ||= francais > 0 || broken.length > 0 || ecarts.length > 0 || sections.some((s) => s.ecarts.length);
       output.fichiers.push({ fichier: file, francais, faits: total(current), ecarts, liens: broken, sections });
     }
