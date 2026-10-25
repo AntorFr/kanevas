@@ -2806,62 +2806,62 @@ banner, « Déplacer » disabled. The dialog exists only for a GM outside Player
 - Given a `GET …/fiches?type=lieu&parent=racine` response for Léa, no field carries the title,
   identifier or count of a sheet she cannot read (`dans` is `null` if the parent is unreadable).
 
-### E-17 Recherche
+### E-17 Search
 
-*Maquette finie* : `docs/maquettes/e17-recherche.html` (MJ, Joueur, mode Joueur, étiquette, savoir, états).
+*Finished mockup*: `docs/maquettes/e17-recherche.html` (GM, Player, Player mode, label, lore, states).
 
-Adresse `/univers/:id/recherche?q=…&type=…&etiquette=…`. Un champ en tête (focus à l'ouverture,
-1 à 100 caractères, sans bouton : la recherche part à la frappe ou à Entrée), dessous deux rangées de filtres : les **types** (pastilles à icône, « Tous » par
-défaut ; **seuls les types activés** ont leur pastille, B-42 — une fiche d'un type désactivé reste un
-résultat sous « Tous ») et les **étiquettes** (une liste à
-compléter, celles des fiches que le compte voit). Les résultats : la ligne de E-8 (vignette, icône du
-type, titre, badge, sous-type) plus, si la fiche a été trouvée par un alias, « alias : Salport » ; ses étiquettes.
-Le champ cherche dans le titre, les alias, le **sous-type** (B-52) et les sections lisibles. **Ordre** : titre, alphabétique sans casse — pas de pertinence ni d'extrait (AD-63 tient : un extrait
-est du contenu à filtrer, un classement trahit ce qui est caché). 100 puis « Charger la suite ». Une
-étiquette seule, sans mot, liste les fiches qui la portent. **Mode Joueur** (MJ) : la barre haute de
-E-17 porte la bascule du cadre (« Mode MJ » / « Mode Joueur ») ; en mode Joueur, la recherche répond comme pour un
-joueur qui n'est l'auteur d'aucune section (AD-39, AD-101) — sans blocs MJ, sans fiche qu'un joueur ne
-lit pas ; le mode passe par l'adresse (`&mode=joueur`) et suit le MJ qui arrive d'une fiche ouverte en
-mode Joueur (« Rechercher », une étiquette).
+Address `/univers/:id/recherche?q=…&type=…&etiquette=…`. A field at the top (focused on opening,
+1 to 100 characters, no button: search starts on typing or Enter), below it two filter rows: **types** (icon chips, « Tous » by
+default; **only enabled types** have a chip, B-42 — a sheet of a disabled type remains a
+result under « Tous ») and **labels** (a list with
+completion, from sheets the account sees). Results: E-8's row (thumbnail, type icon,
+title, badge, subtype) plus, if the sheet was found through an alias, « alias : Salport »; its labels.
+The field searches titles, aliases, **subtype** (B-52) and readable sections. **Order**: title, case-insensitive alphabetical — no relevance or snippet (AD-63 holds: a snippet
+is content to filter, ranking betrays hidden content). 100 then « Charger la suite ». A
+label alone, without a word, lists sheets carrying it. **Player mode** (GM): E-17's top bar
+carries the shell's toggle (« Mode MJ » / « Mode Joueur »); in Player mode, search answers like for a
+player who authors no section (AD-39, AD-101) — without GM blocks, without sheets a player cannot
+read; the mode goes through the address (`&mode=joueur`) and follows the GM arriving from a sheet open in
+Player mode (« Rechercher », a label).
 
-| État | Ce qu'on voit | Ce qu'on peut faire |
+| State | What is seen | Available actions |
 |---|---|---|
-| vide | une saisie d'espaces seuls ne part pas : l'état de départ reste ; sans saisie ni filtre : « Cherchez un nom, un alias ou un mot. » ; sans résultat : « Aucune fiche ne correspond. » | changer la saisie, retirer un filtre |
-| chargement | « Recherche… » sous le champ, les résultats d'avant restent grisés ; à l'ouverture, la rangée des étiquettes attend son appel (aucune pastille, le reste de l'écran est utilisable) ; « Charger la suite » en cours : le bouton est grisé et porte « Chargement… » | — |
-| erreur | « La recherche n'a pas abouti. Réessayez. » (le champ et les filtres sont conservés) ; échec de « Charger la suite » : « Impossible de charger la suite. », les résultats restent ; échec de la rangée des étiquettes : elle est absente, sans message ; saisie de plus de 100 caractères (collage, ou adresse `?q=` : le champ ne la bloque pas à la frappe mais refuse l'envoi) : « Erreur : 100 caractères au plus. » | « Réessayer » (pour « La recherche n'a pas abouti. » seulement ; les autres erreurs se corrigent en changeant la saisie, ou disparaissent à la prochaine recherche) |
-| connexion perdue | le bandeau de connexion perdue du cadre (texte de la section « Textes communs ») ; le champ reste, la recherche ne part pas ; les résultats déjà affichés restent lisibles, « Charger la suite » est désactivé | — |
-| refus | compte sans rôle : « Page introuvable. » ; une fiche illisible n'est jamais un résultat, une étiquette qui ne porte que des fiches illisibles n'est pas proposée | — |
-| contenu long | 501 résultats : 100 puis la suite ; titre long tronqué par « … » avec infobulle ; alias de 120 caractères et étiquette de 40 tronqués par « … » avec infobulle ; plus de 4 étiquettes sur une ligne : « +N » ; les rangées de pastilles passent à la ligne ; sur un téléphone (390 px) la rangée des types défile à l'horizontale à l'intérieur de sa rangée, la page jamais | idem |
+| empty | spaces-only input is not sent: the initial state stays; no input or filter: « Cherchez un nom, un alias ou un mot. »; no results: « Aucune fiche ne correspond. » | change input, remove a filter |
+| loading | « Recherche… » below the field, previous results stay dimmed; on opening, the label row waits for its call (no chips, rest of screen usable); loading « Charger la suite »: button dimmed and reads « Chargement… » | — |
+| error | « La recherche n'a pas abouti. Réessayez. » (field and filters kept); « Charger la suite » failure: « Impossible de charger la suite. », results stay; label-row failure: absent, no message; input exceeding 100 characters (paste, or `?q=` address: field does not block typing but refuses submission): « Erreur : 100 caractères au plus. » | « Réessayer » (only for « La recherche n'a pas abouti. »; other errors are corrected by changing input, or disappear at the next search) |
+| connection lost | shell's connection-lost banner (text in the common-texts section); field stays, search is not sent; displayed results stay readable, « Charger la suite » disabled | — |
+| refusal | account without a role: « Page introuvable. »; an unreadable sheet is never a result, a label carrying only unreadable sheets is not offered | — |
+| long content | 501 results: 100 then more; long title truncated with « … » and tooltip; 120-character alias and 40-character label truncated with « … » and tooltip; more than 4 labels on one row: « +N »; chip rows wrap; on a phone (390 px) the type row scrolls horizontally within itself, never the page | same |
 
-*Critères.*
-- Étant donné le mot « sous-main » présent seulement dans le bloc MJ de « Port-Sel », quand Léa
-  cherche « sous-main », alors « Port-Sel » n'est pas un résultat ; quand Antor le cherche, il l'est.
-  Quand Antor le cherche en mode Joueur, « Port-Sel » n'est pas un résultat.
-- Étant donné « Savoir » désactivé dans Lame d'Ébène et « Chronique de l'Âge d'Ombre » (un savoir
-  lisible de Léa), quand Léa cherche « chronique », alors elle est un résultat sous « Tous », et aucune
-  pastille « Savoirs » n'est proposée.
-- Étant donné « Le Pendu Joyeux » de sous-type « Taverne », quand Léa cherche « taverne », alors
-  « Le Pendu Joyeux » est un résultat ; sous la pastille « Lieux », seuls des lieux le sont.
-- Étant donné le texte de lien « La Guilde des Brumes » écrit dans « Histoire » (lue de Léa) vers une
-  fiche que Léa ne lit pas, quand Léa cherche « guilde », alors « Port-Sel » est un résultat et « La
-  Guilde des Brumes » n'en est pas un (ce lien est semé par `kanevas-import-liens`, livrée avant la recherche dans l'ordre du plan mais pas sa dépendance : le critère se joue à la recette d'ensemble de l'epic, P-12 étape 4).
-- Étant donné « Port-Sel » d'alias « Salport », quand Léa cherche « salport », alors « Port-Sel » est
-  un résultat, avec « alias : Salport ».
-- Étant donné l'étiquette « Côte des Brumes » posée sur « Port-Sel » et sur « Cercle des Cendres »
-  (illisible de Léa), quand Léa filtre sur elle, alors seul « Port-Sel » est rendu.
+*Criteria.*
+- Given the word « sous-main » present only in the GM block of « Port-Sel », when Léa
+  searches « sous-main », « Port-Sel » is not a result; when Antor searches it, it is.
+  When Antor searches it in Player mode, « Port-Sel » is not a result.
+- Given « Savoir » disabled in « Lame d'Ébène » and « Chronique de l'Âge d'Ombre » (lore
+  readable by Léa), when Léa searches « chronique », it is a result under « Tous », and no
+  « Savoirs » chip is offered.
+- Given « Le Pendu Joyeux » with subtype « Taverne », when Léa searches « taverne »,
+  « Le Pendu Joyeux » is a result; under the « Lieux » chip, only locations are results.
+- Given the link text « La Guilde des Brumes » written in « Histoire » (read by Léa) targeting a
+  sheet Léa cannot read, when Léa searches « guilde », « Port-Sel » is a result and « La
+  Guilde des Brumes » is not (this link is seeded by `kanevas-import-liens`, delivered before search in the plan order but not its dependency: the criterion is played at the epic's overall acceptance, P-12 step 4).
+- Given « Port-Sel » with alias « Salport », when Léa searches « salport », « Port-Sel » is
+  a result, with « alias : Salport ».
+- Given the « Côte des Brumes » label on « Port-Sel » and « Cercle des Cendres »
+  (unreadable by Léa), when Léa filters by it, only « Port-Sel » is returned.
 
-### La recherche — ce que `kanevas-import-recherche` construit
+### Search — what `kanevas-import-recherche` builds
 
-- **Fichier et adresse** : `frontend/src/ecrans/recherche.tsx` (un `Ecran` du registre), adresse `/univers/:id/recherche`. L'entrée « Rechercher » (`search`) est la **première** de `items.ts`, avant « Vue d'ensemble », et ne montre qu'avec l'écran enregistré. Le raccourci `/` (hors d'un champ de saisie, d'une boîte ouverte ou de l'éditeur) est posé une fois par le cadre (`useRaccourciRecherche`, appelé dans `Cadre.tsx`) et navigue vers l'adresse ci-dessus ; hors d'un univers il ne fait rien.
-- **Saisie** : la recherche part 300 ms après la dernière frappe ou à Entrée, et à chaque changement de pastille ; une saisie plus courte que 1 caractère utile ne part pas ; l'adresse suit l'état (`?q=&type=&etiquette=&mode=`, remplacement d'entrée d'historique, pas d'empilement). Une seule requête est en vol : la plus récente gagne.
-- **Pastilles de types** : « Tous » puis les types **activés** (ordre de la liste du produit) ; une seule à la fois. Pastilles d'étiquettes : celles que renvoie `GET /api/univers/:id/etiquettes` (nom, ordre alphabétique sans casse), une seule à la fois ; retirer la pastille active la ré-appuie. Une adresse qui nomme un type ou une étiquette inconnus ou non proposés les ignore (pas d'erreur).
-- **Mode Joueur** : la bascule du cadre (`cadre-contexte`), qui reste affichée avec la navigation du MJ ; le mode part en `?mode=joueur` de toute requête de cette tranche (liste, étiquettes proposées, écriture d'étiquetage) ; le MJ qui arrive d'une fiche en mode Joueur garde le mode (`&mode=joueur` posé par le lien « Rechercher » et par les pastilles d'étiquette de E-9). Un non-MJ n'a pas la bascule et l'adresse `mode=joueur` n'y change rien.
-- **Alias et étiquettes de la boîte** : à l'enregistrement, « Enregistrer » est grisé et porte « Enregistrement… » jusqu'à la réponse ; pas d'état de chargement à l'ouverture (la boîte s'ouvre sur les valeurs déjà lues) ; 20 alias de 120 caractères et 20 étiquettes de 40 : les pastilles passent à la ligne et la boîte défile verticalement ; permission : la boîte n'existe pas pour un joueur ni en mode Joueur (menu sans l'entrée, rien à refuser).
-- **Touche `/`** : critère de la tâche E-17 ; elle ne fait rien dans un champ, un éditeur, une boîte ouverte ou hors d'un univers.
-- **Résultat** : lien vers E-9 ; l'alias n'est montré que si le **titre ne correspond pas** aux mots et qu'un alias y correspond (le premier par ordre alphabétique) ; les étiquettes de la fiche suivent, chacune ré-applique le filtre. Les pastilles d'étiquettes proposées et celles d'une fiche ne comptent jamais une fiche illisible.
-- **E-9** : sous le titre « Aussi appelée … » et les pastilles d'étiquettes (liens vers E-17 `?etiquette=`) ; la boîte « Alias et étiquettes… » enregistre les deux listes d'un coup (« Enregistrer » / « Annuler » ; refus : « Erreur : 20 alias au plus. », « Erreur : 20 étiquettes au plus. », « Erreur : 120 caractères au plus. », « Erreur : 40 caractères au plus. » ; un doublon sans tenir compte de la casse est ignoré à la saisie) ; toast « Alias et étiquettes enregistrés. ». Elle est cachée à un joueur et au MJ en mode Joueur.
-- **États de la boîte** : vide (fiche sans alias ni étiquette) : deux champs vides, « Enregistrer » actif (rien à écrire = aucun appel) ; enregistrement refusé par le serveur : « L'action n'a pas abouti. Réessayez. », la saisie reste ; connexion perdue boîte ouverte : le bandeau, « Enregistrer » désactivé, la saisie reste ; « Annuler » ou Échap abandonne la saisie non enregistrée sans demande. La boîte est décrite ici seule (pas de maquette propre : fenêtre de la famille des boîtes de E-9, `e09-fiche-importee.html`).
-- **Semis du bouchon** (`KANEVAS_STUB=1`, univers « Lame d'Ébène ») : alias « Salport » et « Port-aux-Sels » sur « Port-Sel » ; étiquette « Côte des Brumes » sur « Port-Sel » et « Cercle des Cendres » (illisible de Léa) ; savoir lisible « Chronique de l'Âge d'Ombre » (sous-type « Récit ») ; le mot « sous-main » seulement dans le bloc MJ de « Port-Sel » (semé par `kanevas-import-secrets`) ; les sous-types « Taverne » (« Le Pendu Joyeux ») et « Récit » viennent de `kanevas-import-types` et de ce semis.
+- **File and address**: `frontend/src/ecrans/recherche.tsx` (an `Ecran` in the registry), address `/univers/:id/recherche`. The « Rechercher » (`search`) entry is **first** in `items.ts`, before « Vue d'ensemble », and appears only with the screen registered. The `/` shortcut (outside an input field, open dialog or editor) is installed once by the shell (`useRaccourciRecherche`, called in `Cadre.tsx`) and navigates to the above address; outside a universe it does nothing.
+- **Input**: search starts 300 ms after the last keystroke or on Enter, and at every chip change; input shorter than 1 meaningful character is not sent; the address follows state (`?q=&type=&etiquette=&mode=`, history entry replacement, no stacking). Only one request is in flight: the latest wins.
+- **Type chips**: « Tous » then **enabled** types (product list order); one at a time. Label chips: those returned by `GET /api/univers/:id/etiquettes` (name, case-insensitive alphabetical order), one at a time; pressing the active chip again removes it. An address naming unknown or unavailable types or labels ignores them (no error).
+- **Player mode**: the shell toggle (`cadre-contexte`), which stays displayed with the GM's navigation; the mode is sent as `?mode=joueur` on every request of this slice (list, offered labels, label writes); the GM arriving from a sheet in Player mode keeps the mode (`&mode=joueur` set by the « Rechercher » link and E-9's label chips). A non-GM has no toggle and the `mode=joueur` address changes nothing for them.
+- **Dialog aliases and labels**: on save, « Enregistrer » is dimmed and reads « Enregistrement… » until the response; no loading state on opening (dialog opens with already-read values); 20 aliases of 120 characters and 20 labels of 40: chips wrap and dialog scrolls vertically; permission: the dialog does not exist for a player or in Player mode (menu without the entry, nothing to refuse).
+- **`/` key**: E-17 task criterion; it does nothing in a field, editor, open dialog or outside a universe.
+- **Result**: link to E-9; an alias is shown only if the **title does not match** the words and an alias does (first alphabetically); the sheet's labels follow, each reapplies the filter. Offered label chips and a sheet's label chips never count an unreadable sheet.
+- **E-9**: below the title « Aussi appelée … » and label chips (links to E-17 `?etiquette=`); the « Alias et étiquettes… » dialog saves both lists at once (« Enregistrer » / « Annuler »; refusals: « Erreur : 20 alias au plus. », « Erreur : 20 étiquettes au plus. », « Erreur : 120 caractères au plus. », « Erreur : 40 caractères au plus. »; case-insensitive duplicates are ignored during input); toast « Alias et étiquettes enregistrés. ». It is hidden from a player and the GM in Player mode.
+- **Dialog states**: empty (sheet without aliases or labels): two empty fields, « Enregistrer » active (nothing to write = no call); server refuses save: « L'action n'a pas abouti. Réessayez. », input stays; connection lost with dialog open: banner, « Enregistrer » disabled, input stays; « Annuler » or Escape discards unsaved input without asking. The dialog is described only here (no separate mockup: a dialog in E-9's family, `e09-fiche-importee.html`).
+- **Stub seed** (`KANEVAS_STUB=1`, universe « Lame d'Ébène »): aliases « Salport » and « Port-aux-Sels » on « Port-Sel »; label « Côte des Brumes » on « Port-Sel » and « Cercle des Cendres » (unreadable by Léa); readable lore « Chronique de l'Âge d'Ombre » (subtype « Récit »); word « sous-main » only in the GM block of « Port-Sel » (seeded by `kanevas-import-secrets`); subtypes « Taverne » (« Le Pendu Joyeux ») and « Récit » come from `kanevas-import-types` and this seed.
 
 ### E-18 Accès par API (MJ)
 
