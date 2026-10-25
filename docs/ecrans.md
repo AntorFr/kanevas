@@ -3395,7 +3395,8 @@ dans « Secret — MJ seul », n'y est ni nommé ni compté. Étant donné Antor
 Brumes », quand il ouvre la fiche, alors « Membres : Personnages (1) » montre « Maître Aldric —
 trésorier » ; « Dirigée par » est absent tant que personne ne la dirige. Étant donné la famille « Les Corvalis »
 (type Famille), quand Antor ouvre sa fiche, alors « Membres : Personnages (2) » montre « Bran
-Corvalis — aîné » (avec la marque « mort ») et « Dame Ombeline — veuve ».
+Corvalis — aîné » et « Dame Ombeline de Val-Fortin — veuve » (Bran porte la marque « mort » une fois
+le geste de « Marquer mort » joué, pas avant).
 
 ### E-17 — the advanced search (B-65, AD-129)
 

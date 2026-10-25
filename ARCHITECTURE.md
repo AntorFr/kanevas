@@ -571,7 +571,10 @@ The dead mark is public like PJ/PNJ : it says nothing the sheet's title does not
 **Bouchons.** None new : the stub seed (`src/bouchon/depart.ts`) gains what the criteria play —
 « Maître Aldric » « se situe à » Port-Sel (habite) from « Apparence » and « membre de » La Guilde
 des Brumes (trésorier) ; « Le Prieur masqué » « se situe à » Port-Sel (se cache) from « Secret — MJ
-seul », and dead ; « Suie » « se situe à » Les Docks (a sub-place of Port-Sel) ; « Dame Ombeline »
-« dirige » Port-Sel (capitaine du port) ; the family « Les Corvalis » with « Bran Corvalis » (aîné,
-alive : the « Marquer mort » criterion kills him) and « Dame Ombeline » (veuve) as members ; the
+seul », and dead ; « Suie » « se situe à » Les Docks (a sub-place of Port-Sel) ; « Dame Ombeline de
+Val-Fortin » « dirige » Port-Sel (capitaine du port) ; the family « Les Corvalis » with « Bran
+Corvalis » (aîné, alive : the « Marquer mort » criterion kills him) and « Dame Ombeline de
+Val-Fortin » (veuve) as members — every one of these relations from the character's « Apparence »,
+read by the players, so that Léa's criteria (E-9, E-17) hold ; the Prieur's alone from « Secret — MJ
+seul » ; the
 three former free relations of Port-Sel keep their text as qualifier.

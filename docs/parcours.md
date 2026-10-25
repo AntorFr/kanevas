@@ -409,7 +409,8 @@ pas — le cadre dit « Image indisponible. » et il garde « Remplacer » et «
 6. *(kanevas-fiches-liees)* Sur « Port-Sel » (E-9), Léa lit « S'y trouvent : Personnages (1) » —
    Maître Aldric, dont la relation est dans « Apparence » qu'elle lit ; le Prieur, relié depuis
    « Secret — MJ seul », n'y est ni compté ni nommé — et, dans la grille des personnages (E-8),
-   la marque « mort » sur le portrait de Bran Corvalis, tombé à la séance 12.
+   la marque « mort » sur le portrait de Bran Corvalis — une fois qu'Antor l'a marqué mort (P-17,
+   étape 4) ; avant, Bran est vivant dans le semis.
 5. *(kanevas-scenarios)* **Aventures** (E-8): he sees « La Couronne brisée », « En cours », and
    reads what its sheet shows to the players (E-9) — its « Présentation », never the scenarios
    beneath it, whose sections are closed.
