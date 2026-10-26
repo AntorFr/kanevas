@@ -33,8 +33,12 @@ test('semis des natures : relations, qualificatifs, lecture MJ/Léa/mode Joueur,
 
   const attendu = [['se_situe', 'habite', 'Port-Sel'], ['membre', 'trésorier', 'La Guilde des Brumes']];
   assert.deepEqual(rel(antor, 'Maître Aldric', 'Apparence').sort(), attendu.sort());
-  // Critère : Léa lit aussi les deux (sections lues).
-  assert.deepEqual(rel(lea, 'Maître Aldric', 'Apparence').sort(), attendu.sort(), 'Léa : habite + trésorier');
+  // Arbitration (b): the Guild is closed to players (AD-64), so Léa reads « habite » alone,
+  // with no trace of the Guild relation (name, id or count).
+  assert.deepEqual(rel(lea, 'Maître Aldric', 'Apparence'), [['se_situe', 'habite', 'Port-Sel']]);
+  const brut = JSON.stringify(lireRelations(db, lea, univers, fiche('Maître Aldric').id, section(fiche('Maître Aldric').id, 'Apparence')));
+  assert.ok(!brut.includes('Guilde') && !brut.includes('trésorier'));
+  assert.ok(!brut.includes(`"id":${fiche('La Guilde des Brumes').id},`));
   assert.deepEqual(rel(antor, 'Le Prieur masqué', 'Secret — MJ seul'), [['se_situe', 'se cache', 'Port-Sel']]);
   assert.throws(() => rel(lea, 'Le Prieur masqué', 'Secret — MJ seul'));
   assert.throws(() => rel(modeJoueur, 'Le Prieur masqué', 'Secret — MJ seul'));
