@@ -2762,7 +2762,9 @@ E-8 list as it is) and the results of E-17; the « Visibilité » filter exists 
 and E-9 mockups draw neither the badge nor the filter: this text is authoritative, and the badge is
 the charte's audience badge (`Pastille` sens « secrete », icon `lock`). On a section, « MJ seul »
 names that section; on a card, a tree line or the header it names the whole sheet — the header
-tooltip says so. *Critères.* Étant donné Antor, MJ, et « Le Prieur masqué », personnage dont la seule section est
+tooltip says so. Under 760 px the badge never squeezes the title: on a E-17 result it wraps under the row
+(the title keeps the full width), and the E-9 header row (type badge, « MJ seul », « ⋯ ») wraps to a second
+line with the type badge on one line. *Critères.* Étant donné Antor, MJ, et « Le Prieur masqué », personnage dont la seule section est
 « Secret — MJ seul », quand il ouvre la liste des personnages, alors sa carte porte « MJ seul », et
 « Visibilité » ▸ « Réservées au MJ » le liste et ne liste pas « Maître Aldric », dont « Apparence »
 est lue des joueurs. Étant donné la même fiche, quand Antor ouvre sa seule section aux joueurs sur
