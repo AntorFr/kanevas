@@ -161,6 +161,7 @@ function FenetreCreation({
   const type = types.find((t) => t.type === typeChoisi) ?? depart;
   const aventure = type.type === 'aventure';
   const [titre, setTitre] = useState('');
+  const [titreSaisi, setTitreSaisi] = useState(false);
   const [sousType, setSousType] = useState('');
   const [deja, setDeja] = useState<string[]>([]);
   const [pj, setPj] = useState(false);
@@ -232,8 +233,8 @@ function FenetreCreation({
           </div>
         )}
         <fieldset className="creation-fiche-champs" disabled={enCours}>
-        <Champ etiquette="Titre" value={titre} erreur={aventure && titreInvalide ? 'Donnez un titre de 1 à 120 caractères.' : erreur}
-          onChange={(e: { target: { value: string } }) => { setTitre(e.target.value); setErreur(undefined); }} />
+        <Champ etiquette="Titre" value={titre} erreur={aventure && titreSaisi && titreInvalide ? 'Donnez un titre de 1 à 120 caractères.' : erreur}
+          onChange={(e: { target: { value: string } }) => { setTitre(e.target.value); setTitreSaisi(true); setErreur(undefined); }} />
         <Champ
           etiquette="Type"
           liste
