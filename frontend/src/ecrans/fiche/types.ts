@@ -51,6 +51,8 @@ export interface Fiche {
   /** Aliases and labels (AD-118), sorted by the server. */
   alias?: string[];
   etiquettes?: string[];
+  /** B-57: a GM outside player mode only; `false` = no section is readable by the players. Absent for anyone else. */
+  visibleJoueurs?: boolean;
   /** With a search: the alias that answers when the title does not. */
   aliasTrouve?: string;
 }

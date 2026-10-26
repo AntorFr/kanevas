@@ -9,7 +9,7 @@ import { ChangerType } from './changer-type';
 import { BoiteEtiquetage } from './etiquetage';
 import { DeplacerSous } from './deplacer';
 import { SousTypeBadge } from './sous-type';
-import { adresseIllustration } from './vignette';
+import { adresseIllustration, useMJSeul } from './vignette';
 import type { Detail } from '../mediatheque/commun';
 import { MESSAGE_RESERVE, useAjoutFichier } from './fichiers';
 import { MESSAGES_PIECES } from './pieces';
@@ -60,6 +60,7 @@ export function EnteteFiche({ universId, fiche, gestion, modeJoueur, badge, Icon
   const [etiquetage, setEtiquetage] = useState(false);
   const [deplacement, setDeplacement] = useState(false);
   const [suppression, setSuppression] = useState(false);
+  const mjSeul = useMJSeul(fiche, true);
   const alias = fiche.alias ?? [];
   const etiquettes = fiche.etiquettes ?? [];
   const { types } = useTypes();
@@ -233,6 +234,7 @@ export function EnteteFiche({ universId, fiche, gestion, modeJoueur, badge, Icon
               onDroitPerdu={onDroitPerdu}
             />
             </span>
+            {gestion && mjSeul.badge}
             {/* « ⋯ » (E-9): « Changer le type… » (not for a report) and, for an imported sheet, its origin. */}
             {gestion && (
 
@@ -267,6 +269,7 @@ export function EnteteFiche({ universId, fiche, gestion, modeJoueur, badge, Icon
               />
             )}
           </div>
+          {gestion && mjSeul.aide}
           <TitreFiche universId={universId} fiche={fiche} gestion={gestion} rafraichir={rafraichir}
             onDroitPerdu={droitFichePerdu} onIntrouvable={onIntrouvable} />
           {alias.length > 0 && <p className="alias-fiche">Aussi appelée {alias.join(', ')}</p>}
