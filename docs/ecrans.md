@@ -3501,6 +3501,32 @@ The graph labels a link with the nature's label read from the source (« se situ
 qualifier after a dash; a free relation keeps its qualifier as label. « Mentionnée dans » drops the
 natured relations (they are in « Fiches liées ») and keeps the links and the free relations.
 
+**Where a graph label sits** (one rule, the same on desktop and at 390 px, light and dark):
+- Each link is drawn once, as its own stroke. Parallel links between the same two nodes are
+  spread by a fixed perpendicular step (18 px) around the node axis, **once**: the offset moves the
+  stroke, and the label is placed from the offset stroke, never offset a second time.
+- A label is centred on the middle of **its own** stroke, just above it, on a halo of the
+  background colour: the stroke never crosses the text, and the label is read as belonging to the
+  nearest stroke (at most 12 px from it, nearer to it than to any other stroke).
+- **Stroke geometry** (same at 390 px): a stroke runs from the **edge** of its source node's disc to the
+  edge of its target node's disc, on the line parallel to the node axis shifted by the step above
+  (the ends are the intersections of that parallel with the two discs, not the disc centres shifted);
+  the arrowhead touches the target disc without covering it. With a step of 18 px and a disc radius of
+  15 px two parallel strokes both meet both discs. A stroke passes under no node pill: the pill is
+  placed on the far side of its disc from the strokes (or, failing that, moved along the outward
+  perpendicular) until its box meets no stroke.
+- A label overlaps no node pill and no other label. When the middle of the stroke is covered by a
+  pill, the label slides along its stroke until free; it never leaves the stroke for another place.
+- Testable on the rendered boxes: for every link, the label's box is within 12 px of its stroke's
+  midpoint, no stroke segment crosses a label box, and no label box meets a pill box or another
+  label box — checked at 1440 px and at 390 px on « Carte de la côte » (the two Aldric–Port-Sel
+  links).
+
+**The « Relier » picker list** (E-9): the bounded list (max 176 px, scrolling) is a **complete frame** —
+a visible border on all four sides, rounded bottom corners, as in `docs/maquettes/e09-fiche.html`;
+no row is cut flat at the bottom edge, and the selected row is highlighted. The gap between « Type de
+fiche » and the search field is the form's regular field gap, no more.
+
 ### Mockups
 
 `docs/maquettes/e09-lieu-liees.html` — « Port-Sel » for the GM: the block « Fiches liées » with
