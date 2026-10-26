@@ -278,3 +278,29 @@ test('assistant : le catalogue n\'a plus creer_campagne, creer_scenario ni liste
   assert.ok(noms.length > 0);
   for (const n of ['creer_campagne', 'creer_scenario', 'lister_campagnes']) assert.ok(!noms.includes(n), n);
 });
+
+test('fuite : charge.campagne_id d\'un CR ne sort pas, par liste ni recherche, vers qui ne lit pas l\'aventure (fermée ou supprimée, même silence)', async () => {
+  const w = await monter();
+  const c = await w.campagneOuverte();
+  const s = await w.scenarioFerme(c.id, 'Titre Fermé Quux');
+  const ouvert = (await w.appel(w.antor, 'POST', `${w.base}/comptes-rendus`, { campagneId: c.id, titre: 'Séance Ouverte', texte: 't' })).json();
+  const ferme = (await w.appel(w.antor, 'POST', `${w.base}/comptes-rendus`, { campagneId: s.id, titre: 'Séance Fermée', texte: 't' })).json();
+  const charge = async (h: Hote, url: string, titre: string) => {
+    const r = await w.appel(h, 'GET', url);
+    assert.equal(r.statusCode, 200, r.body);
+    const f = (r.json().fiches as { titre: string; charge: Record<string, unknown> }[]).find((x) => x.titre === titre);
+    assert.ok(f, `${titre} absent de ${url}`);
+    return f.charge;
+  };
+  for (const url of [`${w.base}/fiches?type=compte_rendu`, `${w.base}/fiches?recherche=${encodeURIComponent('Séance')}`]) {
+    // a reader of the adventure may carry its id ; the others get none
+    assert.equal((await charge(w.lea, url, 'Séance Ouverte')).campagne_id, c.id, url);
+    assert.ok(!('campagne_id' in (await charge(w.lea, url, 'Séance Fermée'))), `${url} : l'id d'une aventure fermée sort par charge`);
+    assert.equal((await charge(w.antor, url, 'Séance Fermée')).campagne_id, s.id, url);
+  }
+  // deleted: still silent for the player
+  assert.equal((await w.appel(w.antor, 'DELETE', `${w.base}/fiches/${s.id}`)).statusCode, 204);
+  const l = await charge(w.lea, `${w.base}/fiches?type=compte_rendu`, 'Séance Fermée');
+  assert.ok(!('campagne_id' in l));
+  void ouvert; void ferme;
+});
