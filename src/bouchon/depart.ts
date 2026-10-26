@@ -247,7 +247,7 @@ export function semerBouchon(db: Db): boolean {
         relierSection(db, id.antor, lame.id, src.id, src.sections[section]!, { cibleFicheId: cible.id, nature, qualificatif });
       // A base short of 0013 still has the CHECK on `fiches.type`, which does not know « famille ».
       const sqlFiches = (db.prepare("SELECT sql FROM sqlite_master WHERE name = 'fiches'").get() as { sql: string }).sql;
-      const corvalis = /CHECK/i.test(sqlFiches) ? undefined : fiche('famille', 'Les Corvalis', [{ titre: 'Description', lue: true }]);
+      const corvalis = /CHECK\s*\(\s*type\s+IN/i.test(sqlFiches) ? undefined : fiche('famille', 'Les Corvalis', [{ titre: 'Description', lue: true }]);
       relier(aldric, 'Apparence', port, 'se_situe', 'habite');
       relier(aldric, 'Apparence', guilde, 'membre', 'trésorier');
       relier(prieur, 'Secret — MJ seul', port, 'se_situe', 'se cache');
