@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 
 import { badgeFiche, iconeDuType, useTypes } from '../../types-contexte';
 import type { Fiche } from './types';
+import { StatutAventure } from './statut';
 
 /** Address of the illustration of a sheet; the token makes a replaced image reload and a kept one cache. */
 export const adresseIllustration = (universId: number | string, fichierId: number, jeton: string) =>
@@ -31,13 +32,18 @@ function Repli({ fiche }: { fiche: Fiche }) {
 }
 
 /** A card of the grid of E-8: a link to the sheet, thumbnail (or fallback), title, PJ / PNJ for a character. */
-export function CarteFiche({ universId, fiche }: { universId: number | string; fiche: Fiche }) {
+export function CarteFiche({ universId, fiche, gestion = false, onChange }: {
+  universId: number | string;
+  fiche: Fiche;
+  gestion?: boolean;
+  onChange?: (fiche: Fiche) => void;
+}) {
   const { types } = useTypes();
   const ill = fiche.illustration && 'jeton' in fiche.illustration ? fiche.illustration : null;
   const jeton = ill?.jeton;
   const [ko, setKo] = useState<string>();
   const image = jeton !== undefined && ko !== jeton;
-  return (
+  const carte = (
     <Link className="carte" to={`/univers/${universId}/fiche/${fiche.id}`}>
       <span className="vue">
         {image ? (
@@ -62,12 +68,23 @@ export function CarteFiche({ universId, fiche }: { universId: number | string; f
           <span className={`badge-type${fiche.charge.pj ? ' pj' : ''}`}>{badgeFiche(types, fiche)}</span>
         )}
       </span>
-      {fiche.sousType && (
+      {fiche.type !== 'aventure' && fiche.sousType && (
         <span className="sous-type" title={fiche.sousType}>
           {fiche.sousType}
         </span>
       )}
     </Link>
+  );
+  if (fiche.type !== 'aventure') return carte;
+  // The menu is beside the link: no nested interactive controls, including for keyboard users.
+  return (
+    <div className="carte-aventure">
+      {carte}
+      <div className="details-aventure">
+        {fiche.sousType && <span className="sous-type" title={fiche.sousType}>{fiche.sousType}</span>}
+        <StatutAventure universId={universId} fiche={fiche} gestion={gestion} onChange={onChange} />
+      </div>
+    </div>
   );
 }
 

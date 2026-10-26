@@ -259,7 +259,7 @@ Forme de la skill `exigences` ; chaque besoin cite les parcours qui le réalisen
 - **B-59** — *(kanevas-scenarios)* Every adventure carries a **play status**: « En préparation »
   (at birth), « Prête », « En cours », « Terminée ». The GM changes it in place from the header
   of E-9 and from the menu of its card or of its tree line in E-8; a change touches no other adventure. The status shows as
-  a badge on the card, on the tree line, in the header and in the results of E-17; the GM filters
+  a badge on the card, on the tree line, in the header and in the results of E-17; every reader filters
   the list by status; a player sees the status of the adventures he sees. *(P-3, P-4, P-6)*
 - **B-60** — *(kanevas-scenarios)* The **preparation** list (five categories, cocher/décocher,
   GM only, as B-17 said) and the **comptes-rendus** of an adventure live on its sheet (E-9) as
@@ -352,7 +352,7 @@ introuvable. ».
    to the players, now that the campaign starts; under it he creates the
    scenario « Acte II — Le sceau brisé » (sub-type Scénario, parent the campaign, sections closed
    to the players), writes it in E-9 like any sheet — links to Aldric and Port-Sel, the plan of the
-   crypt from the media library, a relation to the Guilde —, and sets it « Prête » when it is; or
+   crypt from the media library, a relation to the Guilde —, and sets it « Prête » when it is — from the status line of its sheet, or in place from its tree line or its card in E-8, where he can also filter by « Statut »; when a status change or a creation fails, « L'action n'a pas abouti. Réessayez. » and nothing changes —; or
    he asks his **assistant** (E-12) to create it: the writing block leads to its sheet.
 3. On the campaign's sheet (E-9), block « Préparation »: he ticks or adds tasks.
    *Échec*: the campaign's page is open in two tabs; a status set in one is shown stale in the

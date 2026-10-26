@@ -58,10 +58,10 @@ bascule existe (fiche, carte et, depuis `kanevas-import`, recherche E-17).
 | **E-3 Vue d'ensemble de l'univers** | E-1 ; sélecteur d'univers ; E-5 (admin devenu membre) | les campagnes actives (*`kanevas-scenarios`* : « Campagnes en cours », the adventures), les derniers CR, la préparation (MJ), les cartes visibles | P-2, P-3, P-4, P-6 |
 | **E-4 Membres** | nav Univers (MJ) | lister, ajouter par identifiant, changer le rôle, retirer | P-2 |
 | **E-5 Administration** | nav (admin d'instance) | lister les univers de l'instance, en gérer les membres — jamais le contenu ; poser le jeton de l'assistant (B-51) | P-2, P-15 |
-| **E-6 Campagne** | *retired by `kanevas-scenarios`* — an adventure is a sheet: its list is E-8 of the « Aventure » type, its page E-9, with the blocks « Préparation » and « Comptes-rendus » | — | — |
-| **E-7 Scénario** | *retired by `kanevas-scenarios`* — a scenario is a sheet (E-9) under its campaign in the tree | — | — |
-| **E-8 Liste de fiches** | nav Lore | les fiches d'un type que le compte peut lire, en grille de cartes illustrées ; chercher dans ce type ; créer (MJ) | P-3, P-6 |
-| **E-9 Fiche** | E-8 ; un token ; un lien ; E-13 | lire et écrire les sections permises ; ajouter, réordonner, retirer une section, régler son audience, relier (MJ) ; joindre un fichier (les deux chemins d'ajout, AD-111), réserver un fichier au MJ (MJ), retirer une référence ; régler le sous-type (MJ) ; poser, remplacer, retirer l'illustration (MJ) ; bascule mode Joueur (MJ). Un compte-rendu s'ouvre ici. | P-3 à P-7 |
+| **E-6 Campagne** | *to be retired by `kanevas-scenarios-suivi`; still served until then* — an adventure is a sheet: its list is E-8 of the « Aventure » type, its page E-9, with the blocks « Préparation » and « Comptes-rendus » | — | — |
+| **E-7 Scénario** | *to be retired by `kanevas-scenarios-suivi`; still served until then* — a scenario is a sheet (E-9) under its campaign in the tree | — | — |
+| **E-8 Liste de fiches** | nav Lore | les fiches d'un type que le compte peut lire, en grille de cartes illustrées ; chercher dans ce type ; créer (MJ) ; *(kanevas-scenarios)* « Aventure » type: status badge and filter, status menu (MJ), « Nouvelle aventure » with sub-type | P-3, P-6 |
+| **E-9 Fiche** | E-8 ; un token ; un lien ; E-13 | lire et écrire les sections permises ; ajouter, réordonner, retirer une section, régler son audience, relier (MJ) ; joindre un fichier (les deux chemins d'ajout, AD-111), réserver un fichier au MJ (MJ), retirer une référence ; régler le sous-type (MJ) ; poser, remplacer, retirer l'illustration (MJ) ; bascule mode Joueur (MJ). Un compte-rendu s'ouvre ici. ; *(kanevas-scenarios)* on an adventure: the status line and its menu (MJ) | P-3 à P-7 |
 | **E-10 Cartes** | nav Cartes | les cartes lisibles ; créer une carte illustrée (avec son image de fond) ou un graphe (MJ) | P-3, P-9 |
 | **E-11 Carte** | E-10 ; E-3 | carte illustrée : fond, tokens ; graphe : nœuds et liens. MJ : déposer ou changer le fond, placer, rendre visible, mode Joueur. Joueur : ouvrir la fiche d'un token. | P-3, P-6, P-9 |
 | **E-12 Assistant** | bouton flottant, sur tout écran d'univers | converser ; voir ce que l'assistant a écrit, avec un lien ; MJ : propositions de mise à jour (actuel/proposé, **Appliquer**, **Abandonner**) | P-3, P-5, P-6, P-7 |
@@ -69,7 +69,7 @@ bascule existe (fiche, carte et, depuis `kanevas-import`, recherche E-17).
 | **E-14 Paramètres de l'univers** | nav Univers (MJ) | nom, description, système de jeu (choisir dans le catalogue, en créer un) | P-8 |
 | **E-15 Système de jeu** | E-16 ; lien depuis E-3 et E-14 | le référentiel commun : règles, créatures, objets ; ajouter, modifier (MJ d'un univers rattaché) ; hors du cadre d'un univers | P-8 |
 | **E-16 Systèmes de jeu** | barre réduite ; menu du sélecteur d'univers | les systèmes rattachés aux univers du compte, chacun avec ceux de ses univers qui l'utilisent | P-8 |
-| **E-17 Recherche** *(kanevas-import)* | « Rechercher » de la barre ; `/` ; une étiquette touchée sur E-9 | chercher dans tous les types, titres, alias et sections lisibles ; filtrer par type et par étiquette | P-12, P-10 |
+| **E-17 Recherche** *(kanevas-import)* | « Rechercher » de la barre ; `/` ; une étiquette touchée sur E-9 | chercher dans tous les types, titres, alias et sections lisibles ; filtrer par type et par étiquette ; *(kanevas-scenarios)* the status badge of an adventure result | P-12, P-10 |
 | **E-19 Médiathèque** *(kanevas-import)* | nav Médiathèque ; « Choisir dans la médiathèque » de l'éditeur et de l'illustration (E-9) | voir les fichiers (images, documents) ouverts au compte et où ils servent ; MJ : ajouter, renommer, régler la visibilité, supprimer | P-16, P-10 |
 | **E-18 Accès par API** *(kanevas-import)* | nav Univers ▸ Accès par API (MJ) | créer, lister, révoquer les jetons d'API de l'univers ; voir les lots d'import et leurs refus | P-10, P-11 |
 
@@ -102,16 +102,16 @@ E-16 vivent hors des univers : leurs cases disent le rôle dans un univers ratta
 | E-5 | — | — | lister les univers et leurs membres ; ajouter, changer un rôle, retirer un membre ; voir l'état du jeton de l'assistant, connecter ou reconnecter l'abonnement |
 | E-6 | *retired (`kanevas-scenarios`)* | — | — |
 | E-7 | *retired (`kanevas-scenarios`)* | — | — |
-| E-8 | lire, chercher, créer ; la vignette de chaque fiche (son illustration, ou le repli dessiné) ; *(kanevas-scenarios)* for the « Aventure » type: the status badge, the « Statut » filter, the status menu on a card or a tree line, the creation form with sub-type suggestions and « Visible des joueurs » | lire, chercher ; la vignette des fiches qu'il voit | — |
-| E-9 | tout ; mode Joueur ; *(kanevas-scenarios)* on an adventure: the status menu in the header, the blocks « Préparation » (GM) and « Comptes-rendus » (« Nouveau compte-rendu ») ; relier et retirer des relations ; poser, remplacer, retirer l'illustration (hors mode Joueur) ; *(kanevas-import)* sous-type, réserver un fichier au MJ, voir un fichier en attente d'import (tuile) | sections lisibles ; écrire celles permises ; relations lisibles (section et cible) ; pièces jointes de celles-ci ; voir l'illustration, jamais la poser ; *(kanevas-import)* dans une section qu'il écrit, ajouter un fichier ou en choisir un qu'il voit (les deux chemins de B-55) et retirer une référence ; fichiers sous double garde ; jamais régler une visibilité (**caché**) ; un fichier en attente d'import : rien (**caché**) | — |
+| E-8 | lire, chercher, créer ; la vignette de chaque fiche (son illustration, ou le repli dessiné) ; *(kanevas-scenarios)* for the « Aventure » type: the status badge, the « Statut » filter, the status menu on a card or a tree line (outside player mode), the creation form with sub-type suggestions and « Visible des joueurs » | lire, chercher ; la vignette des fiches qu'il voit ; *(kanevas-scenarios)* adventures: the status badge and the « Statut » filter; the status menu and « Nouvelle aventure » (**caché**) | — |
+| E-9 | tout ; mode Joueur ; *(kanevas-scenarios)* on an adventure: the status menu in the header (outside player mode), the blocks « Préparation » (GM, outside player mode) and « Comptes-rendus » (« Nouveau compte-rendu ») ; relier et retirer des relations ; poser, remplacer, retirer l'illustration (hors mode Joueur) ; *(kanevas-import)* sous-type, réserver un fichier au MJ, voir un fichier en attente d'import (tuile) | sections lisibles ; écrire celles permises ; *(kanevas-scenarios)* on an adventure: the status badge and « Comptes-rendus » (the CR he reads; « Nouveau compte-rendu » allowed); the status menu and « Préparation » (**caché**) ; relations lisibles (section et cible) ; pièces jointes de celles-ci ; voir l'illustration, jamais la poser ; *(kanevas-import)* dans une section qu'il écrit, ajouter un fichier ou en choisir un qu'il voit (les deux chemins de B-55) et retirer une référence ; fichiers sous double garde ; jamais régler une visibilité (**caché**) ; un fichier en attente d'import : rien (**caché**) | — |
 | E-10 | tout | cartes visibles | — |
 | E-11 | tout ; mode Joueur | lire une carte visible, ouvrir une fiche | — |
 | E-12 | catalogue MJ (dont générer une image, si un moteur d'images est disponible) ; propositions : le MJ demandeur seul les voit, les applique, les abandonne | catalogue Joueur (sans image : l'outil est absent, l'assistant répond qu'il ne peut pas) ; propositions : **caché** (ni outil ni bloc ; ce qu'on vérifie est l'absence de proposition et de bloc, pas le texte libre de l'assistant) | — |
-| E-13 | tous les CR | les CR lisibles | — |
+| E-13 | tous les CR ; *(kanevas-scenarios)* the adventure of each, as a link | les CR lisibles ; *(kanevas-scenarios)* the adventure's column only for one he reads, else empty | — |
 | E-14 | tout ; « Supprimer l'univers » (*kanevas-import*) | — (« Page introuvable. ») | « Page introuvable. » |
 | E-15 (hors univers ; les colonnes disent le rôle dans un univers **rattaché au système**) | lire ; « Ajouter … », « Modifier » | lire (« Lecture seule ») ; ni « Ajouter » ni « Modifier » | « Page introuvable. », sauf s'il est lui-même membre d'un univers rattaché : alors la colonne de son rôle là (l'admin MJ d'un univers rattaché lit et modifie) |
 | E-16 (hors univers) | ses systèmes, avec ses univers et son rôle | ses systèmes, « Lecture seule » | la liste de ses propres systèmes (comme MJ ou Joueur s'il est membre d'un univers rattaché) ; vide sinon — l'écran est proposé à tout compte |
-| E-17 *(kanevas-import)* | chercher dans toutes les fiches de l'univers, blocs MJ compris ; en **mode Joueur**, comme un joueur (ni blocs MJ, ni fiches qu'un joueur ne lit pas) ; filtres : les types activés ; les fiches des types désactivés restent des résultats sous « Tous » | chercher dans ce qu'il lit, hors blocs MJ ; filtres par type et par étiquette des seules fiches qu'il voit ; bascule de mode : absente (cachée) ; blocs MJ : hors recherche (jamais lus) ; « Alias et étiquettes… » sur E-9 : cachée | — |
+| E-17 *(kanevas-import)* | chercher dans toutes les fiches de l'univers, blocs MJ compris ; en **mode Joueur**, comme un joueur (ni blocs MJ, ni fiches qu'un joueur ne lit pas) ; filtres : les types activés ; les fiches des types désactivés restent des résultats sous « Tous » ; *(kanevas-scenarios)* an adventure result carries its status badge (the player's too) | chercher dans ce qu'il lit, hors blocs MJ ; filtres par type et par étiquette des seules fiches qu'il voit ; bascule de mode : absente (cachée) ; blocs MJ : hors recherche (jamais lus) ; « Alias et étiquettes… » sur E-9 : cachée | — |
 | E-19 *(kanevas-import)* | tout : ajouter, renommer, visibilité, supprimer ; « Utilisé dans » complet | les fichiers visibles des joueurs et ceux qu'il a ajoutés ; « Utilisé dans » réduit aux fiches qu'il lit ; ni ajout depuis E-19 (**caché** ; il ajoute un fichier par une section qu'il écrit, E-9), ni réglage, ni suppression (**cachés**) | — |
 | E-18 *(kanevas-import)* | créer un jeton ; voir et révoquer tous les jetons de l'univers (y compris ceux d'un autre MJ) ; voir les lots | — (**caché** : absent de la barre, « Page introuvable. » par l'adresse) | — |
 
@@ -3026,9 +3026,9 @@ infobulle et dans le champ. Échecs : « Le type n'a pas changé. Réessayez. »
 rôle : « Vous ne pouvez plus modifier cette fiche. » ; connexion perdue : bandeau, bouton désactivé.
 Enregistrement en cours : le bouton passe à « Enregistrement… » et la boîte est figée. Échec de lecture de la
 liste des types : « Impossible de charger les types. » et « Réessayer » à la place de la liste, bouton désactivé.
-La liste des 13 types défile dans la boîte (hauteur bornée) au bureau comme au téléphone, où la boîte occupe
+La liste des 14 types défile dans la boîte (hauteur bornée) au bureau comme au téléphone, où la boîte occupe
 l'écran. Un sous-type de plus de 60 caractères saisi dans le champ : « Erreur : 60 caractères au plus. ». Le
-cas « vide » est sans objet : la liste des types n'est jamais vide (treize types réglables).
+cas « vide » est sans objet : la liste des types n'est jamais vide (quatorze types réglables).
 **E-9 — sous-type en place.** La liste de complétion défile au-delà de huit entrées ; sans sous-type déjà
 employé pour ce type, elle n'apparaît pas et le champ reste libre.
 **E-8 — compte du filtre.** Le compte de « Port (N) » reste toujours visible, jusqu'à 9 999 ; au-delà la
@@ -3186,7 +3186,7 @@ The list of the type, as for any type, with these specifics:
   default whatever the sub-type**: an adventure in preparation is the GM's alone — decision of
   Monsieur, 2026-10-25 —; checked, it opens the first section « Présentation » to the players,
   « Les joueurs la lisent »; the section is created empty in both cases, and the GM opens or closes
-  it later from the section's audience, as for any sheet). « Créer l'aventure » leads to E-9. The
+  it later from the section's audience, as for any sheet). « Créer l'aventure » leads to E-9 (the window sends one call: the parent and the empty « Présentation » section ride with the creation, AD-128 — a failure leaves nothing created). The
   status is « En préparation » at birth, never asked here.
 - **Card and tree line**: the status badge (`Pastille`, neutral for « En préparation », the
   charte's accent for « Prête », success for « En cours », muted for « Terminée »; label the
@@ -3206,7 +3206,14 @@ The list of the type, as for any type, with these specifics:
 | erreur | « Impossible de charger les fiches. » ; status change failed : « L'action n'a pas abouti. Réessayez. », badge unchanged | « Réessayer » |
 | connexion perdue | le bandeau ; « Nouvelle aventure », the status menus and the filters disabled | ouvrir une fiche listée |
 | refus | a player: adventures he reads only (a scenario with no open section is absent) ; the status menu: absent (**caché**) ; `?statut=` with an unknown value: ignored (« Tous ») | — |
-| contenu long | 100 then « Charger la suite » ; a campaign with 60 scenarios: the tree node pages like any node | idem |
+| contenu long | 100 then « Charger la suite » ; a campaign with 60 scenarios: the tree node pages like any node ; a 120-character title: the card and the tree line wrap it, the badge and the sub-type stay on their own line | idem |
+| en écriture | a status menu between the choice and the server's answer: disabled, the old badge kept; the new badge appears only on success | — |
+| GM en mode Joueur | the player's column: no status menu on a card or a tree line, no « Nouvelle aventure » | lire |
+| aucun résultat | a search or a sub-type, alone or combined with a status, that matches nothing: « Aucune aventure ne correspond. » with « Voir toutes les aventures »; « Aucune aventure avec ce statut. » only for a status alone (the search wins when both apply) | idem |
+
+*Creation window, states.* « Titre » empty or over 120 characters: « Donnez un titre de 1 à 120 caractères. », « Créer l'aventure » disabled. While the creation is sent: « Créer l'aventure » disabled, the input kept. « Dans » lists the adventures the GM reads (a title of 120 characters is cut with an ellipsis, the full title in its tooltip; with 200 adventures the field is a search-as-you-type list showing 20 at a time; an universe with none: the field reads « Aucune aventure » and stays empty, optional). Creation failed (server or lost connection): « L'action n'a pas abouti. Réessayez. », the window stays open with its input, nothing created (AD-128); while lost, « Créer l'aventure » is disabled. A scenario readable by a player whose campaign is not: the tree shows it at the root, as for any sheet whose parent is unreadable (the tree rule of E-8), never its parent's title.
+
+*Coexistence.* Until `kanevas-scenarios-suivi` lands, E-6 and E-7 and the « Campagnes » entry still work as before, and the blocks « Préparation » and « Comptes-rendus » below are not yet there: the retirements and the blocks described in this part are delivered by that slice. **How to read this part in this slice**: everything it says about the blocks « Préparation » and « Comptes-rendus », the retirement of E-6/E-7 and of the bar entry, E-3 (« Campagnes en cours », « Préparation ») and the « Campagne » line of E-13 is the target of `kanevas-scenarios-suivi`; until then E-3 keeps « Campagnes actives » and E-9 shows no block. This slice delivers the type, E-8 and the status line of E-9 (with « Contient » as for any sheet), and the badge of E-17. The mock-up `e09-aventure.html` shows the blocks too, and a status badge, « Acte II · Prête », a count in « Contient », « MJ seul » and « 4 à faire » on « Préparation », author and date per CR line, and the title « Statut de l'aventure »: ignore all of them in this slice, and « Contient » stays a plain list; the document prevails. In this slice an old campaign (E-6) and an adventure of sub-type « Campagne » are two unrelated objects.
 
 *Critères.* Étant donné Antor, MJ, quand il crée « La Couronne brisée » (Campagne, « Visible des
 joueurs » laissé décoché), alors E-9 s'ouvre sur une fiche « En préparation » dont la section
@@ -3251,6 +3258,9 @@ The sheet of any type, with:
 | erreur | the sheet's ; a block that fails: « Impossible de charger ce bloc. » with « Réessayer », the rest of the sheet readable ; status change failed: « L'action n'a pas abouti. Réessayez. » | « Réessayer » |
 | connexion perdue | le bandeau ; status menu, « Ajouter », ticks and « Nouveau compte-rendu » disabled | lire |
 | refus | a player on a scenario with no open section: « Page introuvable. » (the sheet's rule) ; « Préparation » absent for a player and in player mode (**caché**) ; the status menu absent for a player (**caché**) | — |
+| en écriture | the status menu between the choice and the answer: disabled, the old status kept | — |
+| GM en mode Joueur | the player's view: the status as a badge, no menu, no « Préparation » | lire |
+| type désactivé | an existing adventure keeps its status line, its menu and its blocks; the type's entry is out of the bar and « Nouvelle aventure » does not exist (as for any deactivated type, on E-8 too) | idem |
 | contenu long | a 120-character title with the status line: the line wraps under the title ; 300 tasks: « Cochées (n) » stays folded ; a CR list of 1 000: pages | idem |
 
 *Critères.* Étant donné Antor sur « La Couronne brisée », quand il ajoute « Plan de la crypte »
@@ -3284,7 +3294,7 @@ n'est visible des joueurs. » et aucun bloc « Préparation ».
   title, sub-type, parent); the writing block of the conversation leads to the new sheet; « crée
   une campagne « X » » and « crée un scénario « X » dans « Y » » go through it (the stub keeps the
   same two sentences, AD-126). « lister les campagnes » is the search with the type « Aventure ».
-- **E-17**: adventures are searched like any sheet, their status badge on the result card.
+- **E-17**: adventures are searched like any sheet, their status badge on the result card (a result the reader may not read is absent; a long title wraps with the badge on its own line; the states are E-17's, the badge adds none).
 
 ### Mockup
 
