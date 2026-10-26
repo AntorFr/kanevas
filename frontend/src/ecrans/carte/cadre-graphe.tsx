@@ -7,6 +7,8 @@ import { adresseFiche, titreCourt, type Element, type Lien } from './types';
 const RAYON = 15;
 /** Perpendicular step between the parallel links of a pair. */
 const PAS = 18;
+/** Where a label may slide along its own stroke, nearest the middle first, in small steps. */
+const FRACTIONS = Array.from({ length: 20 }, (_, k) => k + 1).reduce<number[]>((acc, k) => [...acc, -k * 0.02, k * 0.02], [0]);
 
 interface Boite { x: number; y: number; width: number; height: number }
 
@@ -159,7 +161,7 @@ export function CadreGraphe({ universId, elements, liens, gerer, selection, onSe
         let place = presDuTrait(0, cote * distance);
         recherche: for (let rang = 0; rang < Math.ceil(hauteur / 20); rang++) {
           for (const sens of [cote, -cote]) {
-            for (const fraction of [0, -0.1, 0.1, -0.2, 0.2, -0.3, 0.3, -0.4, 0.4]) {
+            for (const fraction of FRACTIONS) {
               const candidat = presDuTrait(fraction, sens * (distance + rang * 20));
               if (libre(candidat.x, candidat.y)) {
                 place = candidat;
