@@ -87,6 +87,42 @@ export function peutVoirFiche(db: Db, role: Role, ficheId: number, acteur: Acteu
   return row !== undefined;
 }
 
+/**
+ * The adventure a report names, as this reader sees it (AD-124 (4)): its id and title only when the
+ * reader reads that adventure; `{supprimee: true}` for a GM (outside player mode) when the id matches
+ * no sheet at all; nothing otherwise — a closed adventure, a deleted one, a sheet of another
+ * universe or of another type are the same answer for a player, and no title leaves by any other way.
+ */
+export interface CampagneVue {
+  campagneId?: number;
+  campagneNom?: string;
+  campagneSupprimee?: true;
+}
+
+export function aventureLue(db: Db, role: Role, acteur: Acteur, universId: number, id: number): { id: number; titre: string } | null {
+  const f = db.prepare('SELECT id, titre, type, univers_id FROM fiches WHERE id = ?').get(id) as
+    | { id: number; titre: string; type: string; univers_id: number }
+    | undefined;
+  if (!f || f.type !== 'aventure' || f.univers_id !== universId) return null;
+  return peutVoirFiche(db, role, f.id, acteur) ? { id: f.id, titre: f.titre } : null;
+}
+
+export function campagneDuCompteRendu(
+  db: Db,
+  role: Role,
+  acteur: Acteur,
+  universId: number,
+  campagneId: unknown,
+): CampagneVue {
+  if (typeof campagneId !== 'number' || !Number.isSafeInteger(campagneId)) return {};
+  const a = aventureLue(db, role, acteur, universId, campagneId);
+  if (a) return { campagneId: a.id, campagneNom: a.titre };
+  if (vueMJ(role, acteur) && !db.prepare('SELECT 1 FROM fiches WHERE id = ?').get(campagneId)) {
+    return { campagneSupprimee: true };
+  }
+  return {};
+}
+
 /** Write rights come from the audience (AD-19); the GM always writes (AD-18). */
 export function peutEcrireSection(role: Role, s: SectionRow, compteId: number): boolean {
   if (role === 'mj') return true;

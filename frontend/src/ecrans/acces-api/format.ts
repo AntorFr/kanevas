@@ -1,7 +1,7 @@
 /** Pure wording of E-18 (docs/ecrans.md): dates, counters of a batch, state of a token. */
 
 export type Issue = 'creees' | 'mises_a_jour' | 'inchangees' | 'refusees' | 'supprimees';
-export type Nature = 'fiches' | 'fichiers' | 'campagnes' | 'scenarios' | 'relations';
+export type Nature = 'fiches' | 'fichiers' | 'relations';
 /** `supprimees` exists on the `fiches` nature only (AD-119 (4)); absent elsewhere and in older batches. */
 export type Compteurs = Record<Nature, Partial<Record<Issue, number>>>;
 
@@ -74,8 +74,6 @@ export function etatJeton(j: JetonVue, maintenant: number): EtatJeton {
 const NATURES: { cle: Nature; libelle: string; feminin: boolean }[] = [
   { cle: 'fiches', libelle: 'Fiches', feminin: true },
   { cle: 'fichiers', libelle: 'Fichiers', feminin: false },
-  { cle: 'campagnes', libelle: 'Campagnes', feminin: true },
-  { cle: 'scenarios', libelle: 'Scénarios', feminin: false },
   { cle: 'relations', libelle: 'Relations', feminin: true },
 ];
 

@@ -53,6 +53,10 @@ export interface Fiche {
   etiquettes?: string[];
   /** With a search: the alias that answers when the title does not. */
   aliasTrouve?: string;
+  /** A report only: the adventure it names, for a reader of that adventure; `campagneSupprimee` for a GM when it is gone. */
+  campagneId?: number;
+  campagneNom?: string;
+  campagneSupprimee?: true;
 }
 
 /** One line of « Mentionnée dans » (AD-100). */

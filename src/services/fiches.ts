@@ -6,6 +6,7 @@ import {
   peutVoirFiche,
   sqlFicheLisible,
   sqlSectionLisible,
+  campagneDuCompteRendu,
   vueMJ,
   vueSection,
 } from './droits.js';
@@ -303,6 +304,10 @@ export interface BilanSuppression {
   fichiers: number;
   enfants: number;
   parent: { id: number; titre: string } | null;
+  /** An adventure only (AD-119, AD-124 (5)): its tasks (deleted), its scenarios (to the root), the reports left without it. */
+  taches?: number;
+  scenarios?: number;
+  comptesRendus?: number;
 }
 
 /**
@@ -338,6 +343,17 @@ function recenser(db: Db, f: FicheRow): BilanSuppression & { disques: string[] }
     fichiers,
     enfants: n('SELECT COUNT(*) AS n FROM fiches WHERE parent_id = ?', f.id),
     parent,
+    ...(f.type === 'aventure'
+      ? {
+          taches: n('SELECT COUNT(*) AS n FROM taches_preparation WHERE fiche_id = ?', f.id),
+          scenarios: n("SELECT COUNT(*) AS n FROM fiches WHERE parent_id = ? AND type = 'aventure'", f.id),
+          comptesRendus: n(
+            "SELECT COUNT(*) AS n FROM fiches WHERE type = 'compte_rendu' AND univers_id = ? AND json_extract(charge, '$.campagne_id') = ?",
+            f.univers_id,
+            f.id,
+          ),
+        }
+      : {}),
     disques,
   };
 }
@@ -374,6 +390,7 @@ export function supprimerFiche(db: Db, acteur: Acteur, universId: number, ficheI
     db.prepare('UPDATE fiches SET parent_id = ? WHERE parent_id = ?').run(f.parent_id, f.id);
     db.prepare('DELETE FROM relations WHERE cible_fiche_id = ?').run(f.id);
     db.prepare('DELETE FROM elements_carte WHERE fiche_id = ?').run(f.id);
+    db.prepare('DELETE FROM taches_preparation WHERE fiche_id = ?').run(f.id);
     db.prepare('DELETE FROM sections WHERE fiche_id = ?').run(f.id);
     db.prepare('DELETE FROM fiches WHERE id = ?').run(f.id);
     return bilan;
@@ -580,8 +597,15 @@ export function lireFiche(
   const vueFiche = versFiche(fiche, (f) => lisiblePar(role, acteur, f));
   // An illustration the import has not delivered yet: a tile for the GM outside player mode, nothing for anyone else.
   const attendue = vueFiche.illustration === null && vueMJ(role, acteur) ? illustrationEnAttente(db, ficheId) : null;
+  // A report names its adventure only to a reader who reads it (AD-124 (4)): the id leaves `charge` for
+  // everyone, the title comes back beside it for the readers of that adventure (and « supprimée » for a GM).
+  const campagne = fiche.type === 'compte_rendu'
+    ? campagneDuCompteRendu(db, role, acteur, universId, vueFiche.charge.campagne_id)
+    : null;
+  if (campagne) delete vueFiche.charge.campagne_id;
   return {
     ...vueFiche,
+    ...(campagne ?? {}),
     ...(attendue !== null ? { illustration: { attente: true as const, cle: attendue } } : {}),
     ancetres: ancetresLisibles(db, role, acteur, fiche),
     mentions: mentions.mentions,

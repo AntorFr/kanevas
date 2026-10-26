@@ -1,5 +1,4 @@
 import {
-  Flag,
   Images,
   KeyRound,
   LayoutGrid,
@@ -42,7 +41,6 @@ export const GROUPE_ADMIN = 'parents';
 export const ITEMS_UNIVERS: Item[] = [
   { libelle: 'Rechercher', icone: Search, garderMode: true, chemin: (id) => `/univers/${id}/recherche` },
   { libelle: 'Vue d’ensemble', icone: LayoutGrid, chemin: (id) => `/univers/${id}` },
-  { libelle: 'Campagnes', icone: Flag, chemin: (id) => `/univers/${id}/campagnes` },
   { libelle: 'Comptes-rendus', icone: NotebookPen, chemin: (id) => `/univers/${id}/comptes-rendus` },
   { libelle: 'Cartes', icone: Carte, chemin: (id) => `/univers/${id}/cartes` },
   { libelle: 'Médiathèque', icone: Images, chemin: (id) => `/univers/${id}/mediatheque` },

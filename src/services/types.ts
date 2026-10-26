@@ -176,4 +176,8 @@ export interface FicheVue extends Fiche {
   mentionsRestantes: number;
   /** Import origin key (B-50): only in the GM view (outside player mode), never in a reader's answer. */
   cleOrigine?: string;
+  /** A report only (AD-124 (4)): the adventure it names, for a reader of that adventure; `campagneSupprimee` for a GM when it is gone. */
+  campagneId?: number;
+  campagneNom?: string;
+  campagneSupprimee?: true;
 }
