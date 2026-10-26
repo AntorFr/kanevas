@@ -164,7 +164,7 @@ a.cadre-ill:focus-visible { outline-offset: 2px; border-radius: var(--rayon-pann
 .envoi-ill span { flex: 1; }
 .envoi-ill .bouton { min-height: 24px; padding: 0 8px; }
 .aide-ill { margin-top: 8px; font-size: var(--t-12); line-height: 1.4; color: var(--texte-3); }
-.tete-texte { min-width: 0; }
+.tete-texte { min-width: 0; position: relative; }
 /* Sheet without illustration: the old header; the GM has « Ajouter une illustration » on hover and focus. */
 .ajout-ill { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 10px; margin: -8px 0 12px; opacity: 0; transition: opacity var(--duree); }
 .entete:hover .ajout-ill, .entete:focus-within .ajout-ill { opacity: 1; }
@@ -185,6 +185,13 @@ a.cadre-ill:focus-visible { outline-offset: 2px; border-radius: var(--rayon-pann
      tooltip stay on the wrapper. */
   .entete.illustree .tete-ligne { flex-wrap: nowrap; }
   .entete.illustree .tete-ligne .mj-seul-texte { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  /* The type badge may shrink (sub-type cut with an ellipsis) so the row and its « ⋯ » fit the column. */
+  .entete.illustree .tete-ligne .type { min-width: 0; flex: 0 1 auto; overflow: hidden; }
+  .entete.illustree .tete-ligne .type .sous-type-bouton { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .entete.illustree .tete-ligne > .menu-racine { flex: none; }
+  /* The help sentence floats over what follows instead of pushing the illustration: no reserved line. */
+  .entete.illustree .aide-mj-seul { position: absolute; left: 0; right: 0; z-index: 2; padding: 2px 4px; background: var(--surface); border-radius: var(--rayon-item); }
+  .entete.illustree .aide-mj-seul.reservee { display: none; }
   .envoi-ill { position: relative; flex-wrap: wrap; gap: 0 6px; margin-top: 6px; padding: 6px 0 0; background: none; }
   .envoi-ill .bouton { min-height: 36px; margin-left: -8px; }
   .gestes-ill .bouton-icone { width: 36px; height: 36px; }
