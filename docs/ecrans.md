@@ -332,7 +332,7 @@ Le titre, le badge du type — *(kanevas-fiche-mj-seul, B-57)* and, for a GM in 
 « MJ seul » badge (`lock`) when no section is readable by the players (a sheet without any
 section carries it too), with the tooltip « Aucune
 section n'est visible des joueurs. » (the badge is focusable; on focus or touch the sentence is
-written under the header line, as E-18 does; the E-9 mockup does not draw it, this text is
+written under the header line, as E-18 does — the line keeps its (empty) place while unread, so the sections below never move on focus or blur; the E-9 mockup does not draw it, this text is
 authoritative); it follows the saved state only — it appears or
 disappears as soon as an audience setting is saved, without reloading, and does not move on
 « L'action n'a pas abouti. Réessayez. » —; with a 120-character title it wraps to the next line
