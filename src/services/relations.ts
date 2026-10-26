@@ -10,7 +10,14 @@ export interface Relation {
   id: number;
   /** The free label of the relation. */
   type: string;
-  cible: { id: number; titre: string; type: TypeFiche };
+  cible: { id: number; titre: string; type: TypeFiche; charge?: { pj: boolean } };
+}
+
+/** What the badge of a target reads: `pj` for a personnage, nothing else (AD-64). */
+function chargeDeCible(type: TypeFiche, charge: string | Record<string, unknown>): { charge?: { pj: boolean } } {
+  if (type !== 'personnage') return {};
+  const c = typeof charge === 'string' ? (JSON.parse(charge) as Record<string, unknown>) : charge;
+  return { charge: { pj: c.pj === true } };
 }
 
 function chargerSection(db: Db, ficheId: number, sectionId: number): SectionRow {
@@ -75,7 +82,7 @@ export function relierSection(
     return {
       id: Number(info.lastInsertRowid),
       type,
-      cible: { id: cible.id, titre: cible.titre, type: cible.type },
+      cible: { id: cible.id, titre: cible.titre, type: cible.type, ...chargeDeCible(cible.type, cible.charge) },
     };
   })();
 }
@@ -115,7 +122,7 @@ export function lireRelations(
   if (!peutLireSection(role, section, acteur)) throw introuvable();
   const rows = db
     .prepare(
-      `SELECT r.id, r.type, f.id AS cible_id, f.titre AS cible_titre, f.type AS cible_type
+      `SELECT r.id, r.type, f.id AS cible_id, f.titre AS cible_titre, f.type AS cible_type, f.charge AS cible_charge
        FROM relations r JOIN fiches f ON f.id = r.cible_fiche_id
        WHERE r.section_id = ? AND f.univers_id = ? ORDER BY r.id`,
     )
@@ -125,12 +132,18 @@ export function lireRelations(
     cible_id: number;
     cible_titre: string;
     cible_type: TypeFiche;
+    cible_charge: string;
   }[];
   return rows
     .filter((r) => peutVoirFiche(db, role, r.cible_id, acteur))
     .map((r) => ({
       id: r.id,
       type: r.type,
-      cible: { id: r.cible_id, titre: r.cible_titre, type: r.cible_type },
+      cible: {
+        id: r.cible_id,
+        titre: r.cible_titre,
+        type: r.cible_type,
+        ...chargeDeCible(r.cible_type, r.cible_charge),
+      },
     }));
 }

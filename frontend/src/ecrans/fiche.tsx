@@ -11,7 +11,6 @@ import './ecrans.css';
 import './fiche/fiche.css';
 import { PanneauSection, type Joueur } from './fiche/section';
 import type { FicheVue, Mention } from './fiche/types';
-import { lignesDuType } from './fiche/lignes/registre';
 import { badgeFiche, iconeDuType, typeParType, useTypes } from '../types-contexte';
 import { BlocMentions } from './fiche/mentions';
 import { BlocContient } from './fiche/contient';
@@ -200,9 +199,6 @@ function PageFiche() {
           void rafraichir();
         }}
       />
-      {lignesDuType(fiche.type).map((l, i) => (
-        <l.composant key={i} universId={id!} fiche={fiche} />
-      ))}
       {echec && (
         <div className="alerte echec" role="alert">
           <span>{echec}</span>
