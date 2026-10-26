@@ -2737,7 +2737,7 @@ mode, a sheet none of whose sections is readable by the players (the « Les joue
 setting; a section readable by its player author alone does not count; a sheet without any section
 carries it too, nobody reads it) carries the amber « MJ seul » badge (`lock`, the charte's audience badge, same as a
 GM-only file in E-19) on its card, under the title next to the sub-type, and on its tree line. A
-filter « Visibilité » stands next to « Sous-type », for the GM only: « Toutes » (default), « Visibles
+filter « Visibilité » stands next to « Sous-type », for the GM only: « Toutes » (default; the option reads « Visibilité : toutes »), « Visibles
 des joueurs », « Réservées au MJ »; a filtered visibility renders the grid, like a filtered sub-type,
 and combines with the sub-type filter and the search; « Toutes » renders the tree back when it was
 the remembered view. The counts are those of the sheets of the type. The state is derived at each
