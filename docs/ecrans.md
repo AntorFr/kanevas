@@ -656,7 +656,7 @@ recherche.
 Dans chaque section, sous son contenu : un bloc **Relations**, inscrit au registre des blocs de
 section (un fichier, sans modifier un bloc existant). Il liste les relations **portées par cette
 section** : chacune dit son type et nomme sa cible — « membre de → Lames Grises », avec le badge du
-type de la cible — et mène à la fiche de la cible (E-9). Une relation est dirigée : elle va de la
+type de la cible (« PJ » or « PNJ » for a character, AD-64) — et mène à la fiche de la cible (E-9). Une relation est dirigée : elle va de la
 section vers la cible ; la fiche cible ne montre pas les relations qui l'atteignent.
 
 | Rôle | Lire les relations d'une section | Relier, retirer | Refus |
@@ -1008,7 +1008,7 @@ block, even when empty.
 Dans chaque section, sous son contenu : un bloc **Relations**, inscrit au registre des blocs de
 section (un fichier, sans modifier un bloc existant). Il liste les relations **portées par cette
 section** : chacune dit son type et nomme sa cible — « membre de → Lames Grises », avec le badge du
-type de la cible — et mène à la fiche de la cible (E-9). Une relation est dirigée : elle va de la
+type de la cible (« PJ » or « PNJ » for a character, AD-64) — et mène à la fiche de la cible (E-9). Une relation est dirigée : elle va de la
 section vers la cible ; la fiche cible ne montre pas les relations qui l'atteignent.
 
 | Rôle | Lire les relations d'une section | Relier, retirer | Refus |

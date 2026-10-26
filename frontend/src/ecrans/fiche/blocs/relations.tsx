@@ -17,7 +17,7 @@ const LONGUEUR_TYPE = 80;
 interface Relation {
   id: number;
   type: string;
-  cible: { id: number; titre: string; type: string };
+  cible: { id: number; titre: string; type: string; charge?: { pj?: boolean } };
 }
 
 /** Refusals of the service shown as they come (their message is the screen text). */
@@ -71,7 +71,7 @@ function BlocRelations({ universId, fiche, section, role, suffixeMode = '' }: Pr
                   lien={r.type}
                   icone={iconeDuType(types, r.cible.type)}
                   cible={r.cible.titre}
-                  type={badgeFiche(types, r.cible as Fiche)}
+                  type={badgeFiche(types, r.cible)}
                   vers={`/univers/${universId}/fiche/${r.cible.id}`}
                   actions={
                     mj && (
