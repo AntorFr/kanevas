@@ -223,7 +223,7 @@ test('graphe : lien libre = son qualificatif ; lien à nature {nature, qualifica
   const p = await m.fiche('personnage', 'P');
   await m.relier(a, { cibleFicheId: b.id, qualificatif: 'rival de' });
   await m.relier(a, { cibleFicheId: b.id, nature: 'allie', qualificatif: 'pacte' });
-  await m.relier(a, { cibleFicheId: b.id, nature: 'ennemi' });
+  await m.relier(a, { cibleFicheId: b.id, nature: 'ennemi', qualificatif: 'pacte' });
   await m.relier(p, { cibleFicheId: a.id, nature: 'membre', qualificatif: 'dirige' });
   const g = (await appel(m.app, m.antor, 'POST', `${m.base}/cartes`, { titre: 'G', forme: 'graphe' })).json();
   for (const f of [a, b, p]) await appel(m.app, m.antor, 'POST', `${m.base}/cartes/${g.id}/elements`, { ficheId: f.id });
@@ -232,7 +232,7 @@ test('graphe : lien libre = son qualificatif ; lien à nature {nature, qualifica
   assert.equal(liens.length, 4);
   assert.deepEqual(liens.find((l: unknown[]) => l[3] === 'rival de'), [a.id, b.id, '', 'rival de', 'rival de']);
   assert.deepEqual(liens.find((l: unknown[]) => l[2] === 'allie'), [a.id, b.id, 'allie', 'pacte', 'allié de — pacte']);
-  assert.deepEqual(liens.find((l: unknown[]) => l[2] === 'ennemi'), [a.id, b.id, 'ennemi', '', 'ennemi de']);
+  assert.deepEqual(liens.find((l: unknown[]) => l[2] === 'ennemi'), [a.id, b.id, 'ennemi', 'pacte', 'ennemi de — pacte']);
   assert.deepEqual(liens.find((l: unknown[]) => l[2] === 'membre'), [p.id, a.id, 'membre', 'dirige', 'membre de — dirige']);
 });
 
