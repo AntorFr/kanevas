@@ -1,6 +1,6 @@
 # Status — kanevas
 
-> MàJ : 2026-10-26 (assemblage de kanevas-fiches-liees-natures, paragraphe dédié ; avant : 2026-10-24, correctif `kanevas-e2e-stables`, dernier paragraphe ; avant : assemblage de kanevas-import-mediatheque, repris après l'arbitrage de la recette : `epic/kanevas` fusionnée dans la feature, l'image générée par l'assistant entre dans la médiathèque par `ajouterFichier` ; l'historique des reprises précédentes est dans `git log`)
+> MàJ : 2026-10-26 (reprise de l'assemblage après la vérification ; assemblage de kanevas-fiches-liees-natures, paragraphe dédié ; avant : 2026-10-24, correctif `kanevas-e2e-stables`, dernier paragraphe ; avant : assemblage de kanevas-import-mediatheque, repris après l'arbitrage de la recette : `epic/kanevas` fusionnée dans la feature, l'image générée par l'assistant entre dans la médiathèque par `ajouterFichier` ; l'historique des reprises précédentes est dans `git log`)
 
 **Lecture de ce fichier :** le clone qui le porte contient déjà toutes les tranches nommées ci-dessous ; « PR non fusionnée » dit seulement que la tranche n'est pas encore sur `main`, pas qu'elle manque du code.
 
@@ -213,7 +213,8 @@ outil `chercher` de l'assistant sans `type` = même fonction, « Introuvable. »
 - Aligné à l'assemblage : rien à défaire entre les quatre tâches (noms `nature`/`qualificatif`/`libelle` identiques du service à l'écran, au graphe, à l'import et au semis).
 - Pièges encore vrais : une relation à nature n'apparaît dans aucun « Mentionnée dans » avant `-bloc` (« Fiches liées ») ; une relation libre exige un qualificatif, une relation à nature non ; le semis de Léa ne lit que « habite » d'Aldric (la Guilde reste une section fermée, arbitrage b) ; le `<title>` d'un lien du graphe n'existe que si le libellé est coupé à 40 caractères (sinon le texte est compté deux fois par les tests) ; la liste des natures vient du serveur, jamais recopiée dans l'écran.
 - Hors tranche : « Fiches liées » (`-bloc`), recherche par lien (`-recherche`), marque `disparu` (`-disparu`, qui ajoute la mort du Prieur et la marque de Bran au semis).
-- Rouges connus, antérieurs à la feature : trois tests de médiathèque (`carnet.pdf`, 101e fichier, B-55 exclusion) ; sous charge, des e2e s'annulent en cascade et passent seuls.
+- Suite entière verte (2455/2455 sur 5eb5fc2, `npm run tests:attestes`) ; sous charge, des e2e peuvent s'annuler en cascade et passent seuls. Les ids de « Notes de la table » (médiathèque) suivent la fiche « Les Corvalis » du semis.
+- Repris après la vérification : E-9 « Relier » dans l'ordre Nature, Type de fiche, fiche, Qualificatif avec les listes dessinées (`Champ liste`), étiquettes du graphe placées hors des pastilles. Non bloquants laissés : garde `nature_incompatible` doublée route/service, `useCharge` des natures sans cache par section, poids de libellé du formulaire.
 - Reste : la recette de Monsieur en bouchon (README), la fusion dans `epic/kanevas-fiches-liees`.
 
 **Suivant :** les tranches non encore livrées.
