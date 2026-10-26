@@ -22,7 +22,7 @@ before(async () => {
     return r.json();
   };
   uid = (await post('/api/univers', { nom: 'Cadenas' })).id;
-  cid = (await post(`/api/univers/${uid}/campagnes`, { nom: 'Camp' })).id;
+  cid = (await post(`/api/univers/${uid}/fiches`, { type: 'aventure', sousType: 'Campagne', titre: 'Camp', sections: [{ titre: 'Présentation', joueursLisent: true }] })).id;
 }, { timeout: 120000 });
 after(async () => {
   if (skipBrowser) return;
@@ -34,7 +34,7 @@ for (const theme of ['clair', 'sombre'] as const) {
   test(`panneaux « MJ seul » avec cadenas (${theme})`, opts, async () => {
     await page.addInitScript((c: string) => localStorage.setItem('kanevas-theme', c), theme);
     const cas: Array<[string, string[]]> = [
-      [`/univers/${uid}/campagnes/${cid}`, ['Scénarios', 'Préparation']],
+      [`/univers/${uid}`, ['Préparation']],
       [`/univers/${uid}/parametres`, ['Identité', 'Système de jeu', 'Créer un système', 'Types de fiche', 'Supprimer l’univers']],
     ];
     for (const [url, titres] of cas) {
