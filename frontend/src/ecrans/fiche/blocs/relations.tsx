@@ -292,10 +292,10 @@ function FormulaireRelier({
       />
       {erreurChoix && <div className="erreur">Erreur : {erreurChoix}</div>}
       <div className="actions">
+        <Bouton onClick={onFerme}>Annuler</Bouton>
         <Bouton variante="principal" ecrit enCours={enCours} disabled={choix === undefined} onClick={() => void relier()}>
           Relier
         </Bouton>
-        <Bouton onClick={onFerme}>Annuler</Bouton>
       </div>
     </div>
   );
