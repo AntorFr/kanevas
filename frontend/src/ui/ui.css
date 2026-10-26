@@ -175,6 +175,7 @@ a { color: var(--accent-texte); }
 .bloc-vide { font-size: var(--t-13); color: var(--texte-3); }
 .relation { display: flex; align-items: flex-start; gap: var(--e-2); font-size: var(--t-13); min-width: 0; flex-basis: 100%; }
 .relation-lien { color: var(--texte-2); min-width: 0; overflow-wrap: anywhere; padding-top: 4px; }
+.relation-type { padding-top: 4px; }
 .relation-fleche { color: var(--texte-3); flex: none; margin-top: 7px; }
 .relation > .jeton { flex: 0 1 auto; }
 .relation > .actions-revelees { flex: none; }

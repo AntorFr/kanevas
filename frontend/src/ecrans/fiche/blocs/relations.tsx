@@ -15,12 +15,22 @@ const LONGUEUR_TYPE = 80;
 
 interface Relation {
   id: number;
+  /** Key of the nature, '' for a free relation. */
+  nature: string;
   qualificatif: string;
   cible: { id: number; titre: string; type: string };
 }
 
 /** Refusals of the service shown as they come (their message is the screen text). */
-const REFUS = new Set(['auto_relation', 'relation_existante', 'limite_relations']);
+const REFUS = new Set(['auto_relation', 'relation_existante', 'limite_relations', 'nature_incompatible']);
+
+/** A nature as `GET /api/univers/:id/natures` sends it (AD-128): the server owns the list. */
+interface Nature {
+  cle: string;
+  libelleSource: string;
+  typesSource: string[];
+  typesCible: string[];
+}
 
 /**
  * E-9 block « Relations »: the relations carried by one section (B-10). The server already hides
@@ -32,6 +42,9 @@ function BlocRelations({ universId, fiche, section, role, suffixeMode = '' }: Pr
   const mj = role === 'mj';
   const base = `/api/univers/${universId}/fiches/${fiche.id}/sections/${section.id}/relations`;
   const [etat, recharger] = useCharge<{ relations: Relation[] }>(`${base}${suffixeMode}`);
+  const [etatNatures, rechargerNatures] = useCharge<{ natures: Nature[] }>(`/api/univers/${universId}/natures`);
+  const natures = etatNatures.etat === 'ok' ? etatNatures.valeur.natures : [];
+  const libelleNature = (cle: string) => natures.find((n) => n.cle === cle)?.libelleSource ?? '';
   const [ouvert, setOuvert] = useState(false);
   const [echec, setEchec] = useState<string>();
   const [retrait, setRetrait] = useState<number>();
@@ -42,6 +55,10 @@ function BlocRelations({ universId, fiche, section, role, suffixeMode = '' }: Pr
     return <ErreurChargement texte="Impossible de charger les relations." onReessayer={recharger} />;
   }
   const { relations } = etat.valeur;
+  const intitule = (r: Relation) => {
+    const n = libelleNature(r.nature);
+    return n ? (r.qualificatif ? `${n} · ${r.cible.titre} — ${r.qualificatif}` : `${n} · ${r.cible.titre}`) : `${r.qualificatif} → ${r.cible.titre}`;
+  };
   if (!mj && relations.length === 0) return null;
 
   async function retirer(r: Relation) {
@@ -67,7 +84,8 @@ function BlocRelations({ universId, fiche, section, role, suffixeMode = '' }: Pr
             {relations.map((r) => (
               <li key={r.id}>
                 <LigneRelation
-                  lien={r.qualificatif}
+                  lien={libelleNature(r.nature) || r.qualificatif}
+                  qualificatif={libelleNature(r.nature) ? r.qualificatif : undefined}
                   icone={iconeDuType(types, r.cible.type)}
                   cible={r.cible.titre}
                   type={badgeFiche(types, r.cible as Fiche)}
@@ -75,7 +93,7 @@ function BlocRelations({ universId, fiche, section, role, suffixeMode = '' }: Pr
                   actions={
                     mj && (
                       <BoutonIcone
-                        etiquette={`Retirer la relation ${r.qualificatif} → ${r.cible.titre}`}
+                        etiquette={`Retirer la relation ${intitule(r)}`}
                         infobulle="Retirer"
                         icone={X}
                         danger
@@ -100,6 +118,10 @@ function BlocRelations({ universId, fiche, section, role, suffixeMode = '' }: Pr
             <FormulaireRelier
               universId={universId}
               url={base}
+              typeFiche={fiche.type}
+              natures={etatNatures.etat === 'ok' ? natures : undefined}
+              erreurNatures={etatNatures.etat === 'erreur'}
+              onReessayerNatures={rechargerNatures}
               onFerme={() => setOuvert(false)}
               onRelie={(titre) => {
                 setOuvert(false);
@@ -120,32 +142,48 @@ function BlocRelations({ universId, fiche, section, role, suffixeMode = '' }: Pr
 function FormulaireRelier({
   universId,
   url,
+  typeFiche: typeSource,
+  natures,
+  erreurNatures,
+  onReessayerNatures,
   onFerme,
   onRelie,
 }: {
   universId: number;
   url: string;
+  typeFiche: string;
+  /** Undefined while loading (or failed). */
+  natures: Nature[] | undefined;
+  erreurNatures: boolean;
+  onReessayerNatures: () => void;
   onFerme: () => void;
   onRelie: (titre: string) => void;
 }) {
   const [type, setType] = useState('');
+  // '' is « Sans nature ». The first nature of the sheet's type is preselected until the user chooses.
+  const proposees = (natures ?? []).filter((n) => n.typesSource.includes(typeSource));
+  const [natureChoisie, setNatureChoisie] = useState<string>();
+  const nature = natureChoisie !== undefined && (natureChoisie === '' || proposees.some((n) => n.cle === natureChoisie)) ? natureChoisie : (proposees[0]?.cle ?? '');
+  const cibles = proposees.find((n) => n.cle === nature)?.typesCible;
   const { types: tous, etat: etatTypes, recharger: rechargerTypes } = useTypes();
   // The types one can relate to: the enabled ones, the session report (its own screen) aside.
-  const choixTypes = typesActifs(tous).filter((t) => t.reglable);
+  const choixTypes = typesActifs(tous).filter((t) => t.reglable && (cibles === undefined || cibles.includes(t.type)));
   const [typeChoisi, setTypeFiche] = useState('');
   const [recherche, setRecherche] = useState('');
-  const [choix, setChoix] = useState<Fiche>();
+  const [choixBrut, setChoix] = useState<Fiche>();
+  // Changing the nature keeps the pick if its type still fits, else empties it.
+  const choix = choixBrut && choixTypes.some((t) => t.type === choixBrut.type) ? choixBrut : undefined;
   const [erreurType, setErreurType] = useState<string>();
   const [erreurChoix, setErreurChoix] = useState<string>();
   const [refus, setRefus] = useState<string>();
   const [enCours, setEnCours] = useState(false);
-  const typeFiche = typeChoisi || choixTypes[0]?.type || '';
+  const typeFiche = choixTypes.some((t) => t.type === typeChoisi) ? typeChoisi : (choixTypes[0]?.type ?? '');
   const lore = choixTypes.find((t) => t.type === typeFiche);
 
   async function relier() {
     if (enCours) return;
     const t = type.trim();
-    const eType = t === '' ? 'le type de relation est obligatoire.' : t.length > LONGUEUR_TYPE ? `${LONGUEUR_TYPE} caractères au plus.` : undefined;
+    const eType = t === '' && nature === '' ? 'le qualificatif est obligatoire sans nature.' : t.length > LONGUEUR_TYPE ? `${LONGUEUR_TYPE} caractères au plus.` : undefined;
     const eChoix = choix === undefined ? 'choisissez une fiche.' : undefined;
     setErreurType(eType);
     setErreurChoix(eChoix);
@@ -153,7 +191,7 @@ function FormulaireRelier({
     if (eType || eChoix || choix === undefined) return;
     setEnCours(true);
     try {
-      await appeler('POST', url, { cibleFicheId: choix.id, type: t });
+      await appeler('POST', url, { cibleFicheId: choix.id, nature: nature === '' ? null : nature, qualificatif: t });
       onRelie(choix.titre);
     } catch (err) {
       setRefus(err instanceof ErreurApi && err.code && REFUS.has(err.code) ? err.message : ECHEC);
@@ -168,8 +206,31 @@ function FormulaireRelier({
           {refus}
         </div>
       )}
+      {natures === undefined && !erreurNatures && <Chargement texte="Chargement…" />}
+      {erreurNatures && <ErreurChargement texte="Impossible de charger les natures." onReessayer={onReessayerNatures} />}
+      {(natures === undefined || proposees.length > 0) && natures !== undefined && (
+        <label className="champ">
+          <span>Nature</span>
+          <select
+            value={nature}
+            onChange={(e) => {
+              setNatureChoisie(e.target.value);
+              setRecherche('');
+              setErreurType(undefined);
+            }}
+          >
+            {proposees.map((n) => (
+              <option key={n.cle} value={n.cle}>
+                {n.libelleSource}
+              </option>
+            ))}
+            <option value="">Sans nature</option>
+          </select>
+        </label>
+      )}
       <Champ
-        etiquette="Type de relation"
+        etiquette="Qualificatif"
+        placeholder="habite, capitaine…"
         value={type}
         onKeyDown={(e: { key: string; preventDefault: () => void }) => {
           if (e.key === 'Enter') {
