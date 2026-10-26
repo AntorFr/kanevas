@@ -215,6 +215,7 @@ outil `chercher` de l'assistant sans `type` = même fonction, « Introuvable. »
 - Hors tranche : « Fiches liées » (`-bloc`), recherche par lien (`-recherche`), marque `disparu` (`-disparu`, qui ajoute la mort du Prieur et la marque de Bran au semis).
 - Suite entière verte (2455/2455 sur 5eb5fc2, `npm run tests:attestes`) ; sous charge, des e2e peuvent s'annuler en cascade et passent seuls. Les ids de « Notes de la table » (médiathèque) suivent la fiche « Les Corvalis » du semis.
 - Repris après la vérification : E-9 « Relier » dans l'ordre Nature, Type de fiche, fiche, Qualificatif avec les listes dessinées (`Champ liste`), étiquettes du graphe placées hors des pastilles. Non bloquants laissés : garde `nature_incompatible` doublée route/service, `useCharge` des natures sans cache par section, poids de libellé du formulaire.
+- Seconde reprise après la vérification : la liste des fiches de « Relier » est bornée (176 px, défilante) avec la ligne choisie surlignée, boutons Annuler puis Relier ; chaque étiquette du graphe s'ancre à son propre trait (les liens parallèles d'une même paire ne se barrent plus). Restes laissés à la recette : ligne de relation libre et à nature qui diffèrent par le séparateur et la place du badge de type (voulu par `docs/ecrans.md`) ; le bouton flottant de l'assistant peut recouvrir la liste au téléphone.
 - Reste : la recette de Monsieur en bouchon (README), la fusion dans `epic/kanevas-fiches-liees`.
 
 **Suivant :** les tranches non encore livrées.
