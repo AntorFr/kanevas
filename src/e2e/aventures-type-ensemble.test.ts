@@ -258,8 +258,19 @@ describe('kanevas-scenarios-type : les aventures, du besoin à l’écran', { sk
     await p.getByText(AUCUNE_MJ).waitFor();
     const dlg = await ouvrirCreation(p);
     const creer = dlg.getByRole('button', { name: "Créer l'aventure" });
-    await dlg.getByText('Donnez un titre de 1 à 120 caractères.').waitFor();
+    const MSG = 'Donnez un titre de 1 à 120 caractères.';
+    // No fault announced before any action (as « Nouveau lieu »); the button is simply inactive.
+    await dlg.getByLabel('Titre').waitFor();
+    assert.equal(await dlg.getByText(MSG).count(), 0, 'aucun message à l\'ouverture');
+    assert.notEqual(await dlg.getByLabel('Titre').getAttribute('aria-invalid'), 'true', 'pas invalide à l\'ouverture');
     assert.equal(await creer.isDisabled(), true, 'titre vide');
+    // Typed then erased: now the fault shows.
+    await dlg.getByLabel('Titre').fill('a');
+    await dlg.getByLabel('Titre').fill('');
+    await dlg.getByText(MSG).waitFor();
+    assert.equal(await creer.isDisabled(), true, 'titre effacé');
+    await dlg.getByLabel('Titre').fill('   ');
+    await dlg.getByText(MSG).waitFor();
     await dlg.getByLabel('Titre').fill('x'.repeat(121));
     await dlg.getByText('Donnez un titre de 1 à 120 caractères.').waitFor();
     assert.equal(await creer.isDisabled(), true, '121 caractères');
