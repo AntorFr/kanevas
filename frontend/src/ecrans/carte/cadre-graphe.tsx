@@ -85,7 +85,7 @@ export function CadreGraphe({ universId, elements, liens, gerer, selection, onSe
                 <text x={(x1 + x2) / 2 + ox} y={(y1 + y2) / 2 + oy - 4 + rang * 18} textAnchor="middle">
                   {Array.from(l.libelle).length > 40 ? `${Array.from(l.libelle).slice(0, 40).join('')}…` : l.libelle}
                 </text>
-                <title>{l.libelle}</title>
+                {Array.from(l.libelle).length > 40 && <title>{l.libelle}</title>}
               </g>
             );
           })}
