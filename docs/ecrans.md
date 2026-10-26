@@ -3026,9 +3026,9 @@ infobulle et dans le champ. Échecs : « Le type n'a pas changé. Réessayez. »
 rôle : « Vous ne pouvez plus modifier cette fiche. » ; connexion perdue : bandeau, bouton désactivé.
 Enregistrement en cours : le bouton passe à « Enregistrement… » et la boîte est figée. Échec de lecture de la
 liste des types : « Impossible de charger les types. » et « Réessayer » à la place de la liste, bouton désactivé.
-La liste des 13 types défile dans la boîte (hauteur bornée) au bureau comme au téléphone, où la boîte occupe
+La liste des 14 types défile dans la boîte (hauteur bornée) au bureau comme au téléphone, où la boîte occupe
 l'écran. Un sous-type de plus de 60 caractères saisi dans le champ : « Erreur : 60 caractères au plus. ». Le
-cas « vide » est sans objet : la liste des types n'est jamais vide (treize types réglables).
+cas « vide » est sans objet : la liste des types n'est jamais vide (quatorze types réglables).
 **E-9 — sous-type en place.** La liste de complétion défile au-delà de huit entrées ; sans sous-type déjà
 employé pour ce type, elle n'apparaît pas et le champ reste libre.
 **E-8 — compte du filtre.** Le compte de « Port (N) » reste toujours visible, jusqu'à 9 999 ; au-delà la

@@ -55,7 +55,7 @@ Les cartes et graphes (E-10, E-11) sont construits. `kanevas-monde` ajoute la pr
   (campagnes actives, derniers comptes-rendus, préparation pour le MJ) et la ligne « Campagne » de E-9
   (registre `fiche/lignes/`). *`kanevas-scenarios` (2026-10-25)* : campaigns and scenarios become
   sheets of type `aventure` (AD-122 to AD-127) ; the services `campagnes` and `scenarios` and the
-  routes of E-6/E-7 disappear, `preparation` and `comptes_rendus` hang on an adventure's sheet,
+  routes of E-6/E-7 disappear (with `kanevas-scenarios-suivi`: until then they are still served and coexist with the adventure type), `preparation` and `comptes_rendus` hang on an adventure's sheet,
   the status is a charge of the sheet ; see « Cadrage `kanevas-scenarios` » below.
 
 - Médiathèque (`kanevas-import-mediatheque`, AD-111, AD-117) : `src/services/stockage.ts` (écrire, lire, supprimer un fichier du volume),
@@ -127,10 +127,10 @@ elles remplacent les anciennes routes `GET /api/univers/:id/systeme` et `…/sys
 | `POST .../sections/:sid/fichiers`, `DELETE .../sections/:sid/fichiers/:fichierId` | joindre `{fichierId}` (201 ; 100 au plus, `limite_pieces`), ôter la référence (204) |
 | `PUT\|DELETE .../fiches/:fid/illustration` | poser (MJ) : soit `{fichierId}` (une image de la médiathèque ; 400 `pas_une_image`), soit multipart (une partie `fichier`, ajoutée à la médiathèque, `fichier_vide`) ; retirer (204). Les octets se lisent par `GET .../fichiers/:fid?v=<jeton>` ; la liste et la fiche rendent `illustration: null` ou `{id, jeton}` (`type` et `taille` ne sortent que dans la réponse du `PUT`) (AD-93 amendée, AD-117) |
 | `PUT /api/univers/:id/fiches/:fid/sections/:sid/contenu` | écrire `{contenu, version}` ; 400 si contenu > 100 000 caractères (contrôlé après les droits, avant la version) ; 409 si `version` périmée |
-| ~~`GET\|POST /api/univers/:id/campagnes`, `GET .../campagnes/:cid`~~ | *removed by `kanevas-scenarios`* : an adventure is a sheet — `GET\|POST /api/univers/:id/fiches` with `type=aventure` (`?statut=` filters, `?sousType=Campagne`) |
-| ~~`PATCH /api/campagnes/:cid`~~ | *removed* : `PATCH /api/univers/:id/fiches/:fid` `{statut}` (`en_preparation`, `prete`, `en_cours`, `terminee` ; MJ hors mode Joueur ; 400 on another type or value ; 403 player or player mode, 404 unreadable), AD-123 |
-| ~~`GET\|POST /api/campagnes/:cid/scenarios`, `GET\|PUT /api/scenarios/:sid`~~ | *removed by `kanevas-scenarios`* : a scenario is a sheet under its campaign (`parent`), its text a section |
-| `GET\|POST /api/univers/:id/fiches/:fid/taches`, `PUT /api/taches/:tid` | *(kanevas-scenarios, replaces `/api/campagnes/:cid/taches`)* préparation `{categorie, libelle}` of an adventure ; cocher `{faite}`. MJ of the adventure's universe alone, 404 pour tout autre (AD-47) |
+| ~~`GET\|POST /api/univers/:id/campagnes`, `GET .../campagnes/:cid`~~ | *to be removed by `kanevas-scenarios-suivi`; still served until then* : an adventure is a sheet — `GET\|POST /api/univers/:id/fiches` with `type=aventure` (`?statut=` filters, `?sousType=Campagne`) |
+| ~~`PATCH /api/campagnes/:cid`~~ | *to be removed by `kanevas-scenarios-suivi`; still served until then* : `PATCH /api/univers/:id/fiches/:fid` `{statut}` (`en_preparation`, `prete`, `en_cours`, `terminee` ; MJ hors mode Joueur ; 400 on another type or value ; 403 player or player mode, 404 unreadable), AD-123 |
+| ~~`GET\|POST /api/campagnes/:cid/scenarios`, `GET\|PUT /api/scenarios/:sid`~~ | *to be removed by `kanevas-scenarios-suivi`; still served until then* : a scenario is a sheet under its campaign (`parent`), its text a section |
+| `GET\|POST /api/univers/:id/fiches/:fid/taches`, `PUT /api/taches/:tid` | *(kanevas-scenarios-suivi, not yet built; replaces `/api/campagnes/:cid/taches`)* préparation `{categorie, libelle}` of an adventure ; cocher `{faite}`. MJ of the adventure's universe alone, 404 pour tout autre (AD-47) |
 | `GET /api/univers/:id/propositions/:pid` | la proposition de l'appelant : `{id, universId, sectionId, ficheId, crId, contenuActuel, contenuPropose, versionOrigine, etat, creeLe, appliqueeLe}` ; `etat` : `en_attente`, `perimee` ou `appliquee` (AD-81). Demandeur MJ seul, 404 pour tout autre (AD-79) |
 | `POST /api/univers/:id/propositions/:pid/appliquer`, `.../abandonner` | appliquer rend la même vue que le `GET` (200) ; 409 `section_modifiee` ou `proposition_appliquee`, rien n'est écrit. Abandonner rend 204 (409 si appliquée). Aucune route de création : la proposition naît de l'outil de l'assistant (AD-48) |
 | `GET /api/univers/:id/assistant`, `POST .../assistant/messages` | disponibilité et envoi d'un message (détail ci-dessous, AD-73 à AD-78) |
