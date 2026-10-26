@@ -1,6 +1,6 @@
 # Status — kanevas
 
-> MàJ : 2026-10-24 (correctif `kanevas-e2e-stables`, dernier paragraphe ; avant : assemblage de kanevas-import-mediatheque, repris après l'arbitrage de la recette : `epic/kanevas` fusionnée dans la feature, l'image générée par l'assistant entre dans la médiathèque par `ajouterFichier` ; l'historique des reprises précédentes est dans `git log`)
+> MàJ : 2026-10-26 (assemblage de kanevas-fiches-liees-natures, paragraphe dédié ; avant : 2026-10-24, correctif `kanevas-e2e-stables`, dernier paragraphe ; avant : assemblage de kanevas-import-mediatheque, repris après l'arbitrage de la recette : `epic/kanevas` fusionnée dans la feature, l'image générée par l'assistant entre dans la médiathèque par `ajouterFichier` ; l'historique des reprises précédentes est dans `git log`)
 
 **Lecture de ce fichier :** le clone qui le porte contient déjà toutes les tranches nommées ci-dessous ; « PR non fusionnée » dit seulement que la tranche n'est pas encore sur `main`, pas qu'elle manque du code.
 
@@ -208,6 +208,13 @@ outil `chercher` de l'assistant sans `type` = même fonction, « Introuvable. »
 - Pièges : aucune réponse ne nomme ni ne compte une fiche illisible (ancêtres, enfants, `dans`, `aDesEnfants` booléen) ; ne jamais écrire `parent_id` hors de `deplacerFiche` (sauf la remontée des enfants de `supprimerFiche` / `supprimerUnivers`) ; un compte-rendu peut être parent ou déplacé (MJ) ; un type désactivé reste atteint par son adresse.
 - Hors tranche : remonter les enfants à la suppression d'une fiche (`kanevas-import-tenir`) ; l'arbre n'est chargé que nœud par nœud (à revoir si un lot de 500 fiches le ralentit à la recette).
 - Reste : la recette de Monsieur en bouchon (README, « Recette de l'arbre »), la fusion dans `epic/kanevas-import`. Pas de tag avant la fusion de l'epic.
+
+`feature/kanevas-fiches-liees-natures` (PR vers `epic/kanevas-fiches-liees`, non fusionnée ; B-63, B-66, B-68, B-69, AD-128, AD-132, AD-133) : une relation porte une **nature** (cinq, `services/natures.ts`, `GET /api/univers/:id/natures`) et un **qualificatif** ; migration `0017-natures-relations.sql` (`type` → `qualificatif`, `nature`, unicité par nature, aucune donnée déplacée : les anciennes relations sont libres) ; `relierSection` refuse `nature_incompatible` (400) et stocke une nature symétrique une fois ; « Mentionnée dans » ne garde que les relations libres ; les liens du graphe portent `nature`, `qualificatif`, `libelle` ; le type **Famille** ; l'import lit `nature`, `qualificatif` (`type` seul = qualificatif, déprécié) et refuse une nature inconnue ou incompatible ; le semis du bouchon pose les relations à nature de « Bouchons » et « Les Corvalis » ; E-9 « Relier » commence par « Nature », E-11 étiquette par la nature.
+- Aligné à l'assemblage : rien à défaire entre les quatre tâches (noms `nature`/`qualificatif`/`libelle` identiques du service à l'écran, au graphe, à l'import et au semis).
+- Pièges encore vrais : une relation à nature n'apparaît dans aucun « Mentionnée dans » avant `-bloc` (« Fiches liées ») ; une relation libre exige un qualificatif, une relation à nature non ; le semis de Léa ne lit que « habite » d'Aldric (la Guilde reste une section fermée, arbitrage b) ; le `<title>` d'un lien du graphe n'existe que si le libellé est coupé à 40 caractères (sinon le texte est compté deux fois par les tests) ; la liste des natures vient du serveur, jamais recopiée dans l'écran.
+- Hors tranche : « Fiches liées » (`-bloc`), recherche par lien (`-recherche`), marque `disparu` (`-disparu`, qui ajoute la mort du Prieur et la marque de Bran au semis).
+- Rouges connus, antérieurs à la feature : trois tests de médiathèque (`carnet.pdf`, 101e fichier, B-55 exclusion) ; sous charge, des e2e s'annulent en cascade et passent seuls.
+- Reste : la recette de Monsieur en bouchon (README), la fusion dans `epic/kanevas-fiches-liees`.
 
 **Suivant :** les tranches non encore livrées.
 
