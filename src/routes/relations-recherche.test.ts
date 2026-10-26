@@ -97,8 +97,8 @@ test('relations : le MJ relie, Léa ne voit que la cible lisible, sans fuite ni 
   const a = await appel(app, antor, 'POST', rel, { cibleFicheId: grises.id, type: 'membre de' });
   assert.equal(a.statusCode, 201, a.body);
   assert.deepEqual(
-    { type: a.json().type, cible: a.json().cible },
-    { type: 'membre de', cible: { id: grises.id, titre: 'Lames Grises', type: 'faction' } },
+    { qualificatif: a.json().qualificatif, cible: a.json().cible },
+    { qualificatif: 'membre de', cible: { id: grises.id, titre: 'Lames Grises', type: 'faction' } },
   );
   const b = await appel(app, antor, 'POST', rel, { cibleFicheId: cendres.id, type: 'membre de' });
   assert.equal(b.statusCode, 201);
