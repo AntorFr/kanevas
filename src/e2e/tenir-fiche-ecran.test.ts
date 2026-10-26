@@ -75,7 +75,7 @@ describe('renommer et supprimer une fiche depuis son en-tête', { skip: skipBrow
     const boite = page.getByRole('alertdialog');
     await boite.getByText(/3 sections/).waitFor();
     const t = (await boite.innerText()).replace(/\s+/g, ' ');
-    assert.match(t, /3 sections ; 3 relations qui la visent ; 1 place sur une carte\./);
+    assert.match(t, /3 sections ; 5 relations qui la visent ; 1 place sur une carte\./);
     assert.match(t, /Ses 2 fichiers restent dans la médiathèque\./);
     assert.match(t, /Ses 5 enfants remonteront sous « Les Sphères »\./);
     assert.match(t, /Les liens qui la visent deviendront des liens cassés\./);
