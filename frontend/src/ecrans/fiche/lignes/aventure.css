@@ -1,0 +1,11 @@
+/* Keep the status under the title, in the text column of illustrated headers too. */
+.ligne-statut-aventure {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: var(--e-2);
+  margin-top: var(--e-3);
+  color: var(--texte-2);
+  font-size: var(--t-13);
+  line-height: 24px;
+}

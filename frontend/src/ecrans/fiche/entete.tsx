@@ -16,6 +16,7 @@ import { MESSAGES_PIECES } from './pieces';
 import { libelleDuType, useTypes } from '../../types-contexte';
 import { TitreFiche } from './titre';
 import { SupprimerFiche } from './supprimer';
+import { lignesDuType } from './lignes/registre';
 
 const AIDE = 'Visible de tous ceux qui voient la fiche.';
 const ECHEC = 'L’action n’a pas abouti. Réessayez.';
@@ -269,6 +270,9 @@ export function EnteteFiche({ universId, fiche, gestion, modeJoueur, badge, Icon
           </div>
           <TitreFiche universId={universId} fiche={fiche} gestion={gestion} rafraichir={rafraichir}
             onDroitPerdu={droitFichePerdu} onIntrouvable={onIntrouvable} />
+          {lignesDuType(fiche.type).map((l, i) => (
+            <l.composant key={i} universId={universId} fiche={fiche} gestion={gestion} rafraichir={rafraichir} />
+          ))}
           {alias.length > 0 && <p className="alias-fiche">Aussi appelée {alias.join(', ')}</p>}
           {etiquettes.length > 0 && (
             <ul className="etiquettes-fiche" aria-label="Étiquettes">
