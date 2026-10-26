@@ -3308,6 +3308,10 @@ this text is authoritative where they differ.
 > « Relier » form, a block « Fiches liées », the dead mark), E-8 and E-17 (a mark, two filters, an
 > advanced mode), E-11 (labels). New text in English (canon); user-facing labels French. Same six
 > states and common texts as the other screens.
+>
+> **Built so far** (`kanevas-fiches-liees-natures`): the « Relier » form (nature, qualifier), the relation line, the
+> E-11 labels and « Familles ». **Not built yet**: the block « Fiches liées », the filters and the advanced mode of
+> E-8 and E-17, the dead mark (slices `-bloc`, `-recherche`, `-disparu`).
 
 **Format.** Web, desktop and phone, as the rest of Kanevas.
 
