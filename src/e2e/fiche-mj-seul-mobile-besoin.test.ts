@@ -10,6 +10,11 @@ let browser: Any;
 let antor: Any;
 let U = 0;
 let idFaction = 0;
+let idIllustree = 0;
+let idReference = 0;
+const PNG = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==', 'base64');
+const TITRE_ILL = 'Le Veilleur Illustre Mobile';
+const TITRE_REF = 'Le Veilleur Ouvert Mobile';
 const TITRE_E17 = 'Guilde des Brumes Sansgenre';
 const TITRE = 'La Guilde des Brumes Mobile';
 
@@ -29,6 +34,22 @@ describe('kanevas-fiche-mj-seul-ecran, téléphone', { skip: skipBrowser }, () =
     const f = await api('POST', `/api/univers/${U}/fiches`, { type: 'faction', titre: TITRE });
     idFaction = f.id;
     await api('POST', `/api/univers/${U}/fiches`, { type: 'faction', titre: TITRE_E17 });
+    const ill = await api('POST', `/api/univers/${U}/fiches`, { type: 'personnage', titre: TITRE_ILL, charge: { v: 1, pj: false } });
+    idIllustree = ill.id;
+    const ref = await api('POST', `/api/univers/${U}/fiches`, { type: 'personnage', titre: TITRE_REF, charge: { v: 1, pj: false } });
+    idReference = ref.id;
+    const sec = await api('POST', `/api/univers/${U}/fiches/${idReference}/sections`, { titre: 'Description', contenu: 'Texte.' });
+    await api('PATCH', `/api/univers/${U}/fiches/${idReference}/sections/${sec.id}`, { joueursLisent: true });
+    for (const id of [idIllustree, idReference]) {
+      await api('PATCH', `/api/univers/${U}/fiches/${id}`, { sousType: 'Sous-type assez long' });
+      const r = await antor.request.fetch(`${srv.base}/api/univers/${U}/fiches/${id}/illustration`, {
+        method: 'PUT',
+        multipart: { fichier: { name: 'portrait.png', mimeType: 'image/png', buffer: PNG } },
+      });
+      assert.ok(r.status() < 300, `PUT illustration -> ${r.status()}`);
+    }
+    const put = { status: () => 200 };
+    assert.ok(put.status() < 300, `PUT illustration -> ${put.status()}`);
   }, { timeout: 120000 });
   after(async () => {
     await browser?.close();
@@ -61,4 +82,40 @@ describe('kanevas-fiche-mj-seul-ecran, téléphone', { skip: skipBrowser }, () =
     const deborde = await antor.evaluate(() => document.documentElement.scrollWidth > window.innerWidth);
     assert.equal(deborde, false, 'débordement horizontal');
   });
+
+  for (const schema of ['light', 'dark'] as const) {
+    test(`E-9 illustrée (${schema}) : la rangée d'en-tête reste d'une ligne, à côté de l'illustration`, async () => {
+      const ctx = await browser.newContext({ storageState: await antor.context().storageState(), colorScheme: schema, baseURL: srv.base, viewport: { width: 390, height: 844 } });
+      const page = await ctx.newPage();
+      try {
+        const mesure = async (id: number, titre: string) => {
+          await page.goto(`/univers/${U}/fiche/${id}`);
+          await page.getByRole('heading', { level: 1, name: titre }).waitFor();
+          await page.locator('.entete.illustree .illustration').first().waitFor();
+          return {
+            pas: await page.locator('.fiche .entete').getByText('MJ seul', { exact: true }).count(),
+            ill: await page.locator('.entete.illustree .illustration').first().boundingBox(),
+            ligne: await page.locator('.entete.illustree .tete-ligne').boundingBox(),
+            type: await page.locator('.entete.illustree .type').first().boundingBox(),
+            menu: await page.locator('.entete.illustree .tete-ligne').getByRole('button', { name: /Autres actions sur/ }).boundingBox(),
+            h1: await page.getByRole('heading', { level: 1 }).boundingBox(),
+          };
+        };
+        const ref = await mesure(idReference, TITRE_REF);
+        const m = await mesure(idIllustree, TITRE_ILL);
+        assert.equal(ref.pas, 0);
+        assert.equal(m.pas, 1);
+        assert.ok(m.type.height <= 26, `type sur plusieurs lignes : ${m.type.height}`);
+        assert.ok(m.menu.x + m.menu.width <= 390, `menu « … » hors de l'écran : bord droit ${m.menu.x + m.menu.width} > 390`);
+        assert.ok(m.menu.y < m.type.y + m.type.height && m.menu.y + m.menu.height > m.type.y, `menu « … » descendu : menu.y ${m.menu.y} type.y ${m.type.y}`);
+        assert.ok(Math.abs(m.ligne.height - ref.ligne.height) <= 2, `rangée plus haute que la référence : ${m.ligne.height} vs ${ref.ligne.height}`);
+        assert.ok(Math.abs(m.ligne.y - m.ill.y - (ref.ligne.y - ref.ill.y)) <= 2, `badges décalés par rapport à l'illustration : ${m.ligne.y - m.ill.y} vs ${ref.ligne.y - ref.ill.y}`);
+        assert.ok(Math.abs(m.ill.y + m.ill.height - (m.h1.y + m.h1.height) - (ref.ill.y + ref.ill.height - (ref.h1.y + ref.h1.height))) <= 2, 'titre décalé par rapport au pied de l\'illustration');
+        const deborde = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth);
+        assert.equal(deborde, false, 'débordement horizontal');
+      } finally {
+        await ctx.close();
+      }
+    });
+  }
 });
