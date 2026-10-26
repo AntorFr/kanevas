@@ -5,6 +5,8 @@ import { disposer, enPixels, tailleCadre } from './disposition';
 import { adresseFiche, titreCourt, type Element, type Lien } from './types';
 
 const RAYON = 15;
+/** Perpendicular step between the parallel links of a pair. */
+const PAS = 18;
 
 interface Boite { x: number; y: number; width: number; height: number }
 
@@ -68,22 +70,57 @@ export function CadreGraphe({ universId, elements, liens, gerer, selection, onSe
 
   const traits = useMemo(() => liens.flatMap((l, i) => {
     if (!points.has(l.de) || !points.has(l.vers)) return [];
-    const a = points.get(l.de)!;
-    const b = points.get(l.vers)!;
+    // One axis per pair of nodes, whatever the direction of its links: the links of the pair are
+    // spread around it by a fixed step, once, so opposite links and parallel ones never share a line.
+    const [premier, second] = l.de < l.vers ? [l.de, l.vers] : [l.vers, l.de];
+    const a = points.get(premier)!;
+    const b = points.get(second)!;
     const d = Math.hypot(b.x - a.x, b.y - a.y) || 1;
     const ux = (b.x - a.x) / d;
     const uy = (b.y - a.y) / d;
-    // A small side shift keeps opposite links between two nodes apart.
-    // Leave room for a line of text and its clearance between parallel arrows.
-    const rang = liens.slice(0, i).filter((m) => m.de === l.de && m.vers === l.vers).length;
-    const ox = -uy * (7 + rang * 28);
-    const oy = ux * (7 + rang * 28);
-    const x1 = a.x + ux * RAYON + ox;
-    const y1 = a.y + uy * RAYON + oy;
-    const x2 = b.x - ux * (RAYON + 2) + ox;
-    const y2 = b.y - uy * (RAYON + 2) + oy;
-    return [{ l, i, x1, y1, x2, y2, x: (x1 + x2) / 2, y: (y1 + y2) / 2, nx: -uy, ny: ux }];
+    const dupliquees = liens.filter((m) => points.has(m.de) && points.has(m.vers)
+      && Math.min(m.de, m.vers) === premier && Math.max(m.de, m.vers) === second);
+    const rang = dupliquees.indexOf(l);
+    // Every parallel must still meet both discs: shrink the step when a pair carries many links.
+    const pas = dupliquees.length > 1 ? Math.min(PAS, (2 * (RAYON - 2)) / (dupliquees.length - 1)) : 0;
+    const decalage = (rang - (dupliquees.length - 1) / 2) * pas;
+    // The ends are where the parallel meets the two discs, not the disc centres shifted.
+    const coupe = Math.sqrt(Math.max(RAYON * RAYON - decalage * decalage, 0));
+    const px = -uy * decalage;
+    const py = ux * decalage;
+    const sens = l.de === premier ? 1 : -1;
+    const x1 = (sens === 1 ? a.x : b.x) + sens * ux * coupe + px;
+    const y1 = (sens === 1 ? a.y : b.y) + sens * uy * coupe + py;
+    const x2 = (sens === 1 ? b.x : a.x) - sens * ux * (coupe + 1) + px;
+    const y2 = (sens === 1 ? b.y : a.y) - sens * uy * (coupe + 1) + py;
+    return [{ l, i, x1, y1, x2, y2, x: (x1 + x2) / 2, y: (y1 + y2) / 2, nx: -uy * sens, ny: ux * sens }];
   }), [liens, points]);
+
+  // A node's pill sits on the far side of its disc from the strokes: below or above, whichever
+  // leaves it crossed by fewer strokes (measured from the real pill sizes).
+  const [dessus, setDessus] = useState<Set<number>>(new Set());
+  useLayoutEffect(() => {
+    const cadre = zone.current?.querySelector('.graphe');
+    if (!cadre) return;
+    let actif = true;
+    const choisir = () => {
+      if (!actif) return;
+      const haut = new Set<number>();
+      for (const e of elements) {
+        const p = points.get(e.ficheId);
+        const pilule = cadre.querySelector<HTMLElement>(`[data-fiche="${e.ficheId}"] span`);
+        if (!p || !pilule) continue;
+        const w = pilule.offsetWidth;
+        const h = pilule.offsetHeight;
+        const touches = (y: number) => traits.filter((t) => traverse({ x: p.x - w / 2, y, width: w, height: h }, t, 2)).length;
+        if (touches(p.y - RAYON - 2 - h) < touches(p.y + RAYON + 2)) haut.add(e.ficheId);
+      }
+      setDessus((avant) => (avant.size === haut.size && [...haut].every((f) => avant.has(f)) ? avant : haut));
+    };
+    choisir();
+    void document.fonts.ready.then(choisir);
+    return () => { actif = false; };
+  }, [traits, points, elements]);
 
   useLayoutEffect(() => {
     const cadre = zone.current?.querySelector('.graphe');
@@ -143,7 +180,7 @@ export function CadreGraphe({ universId, elements, liens, gerer, selection, onSe
       actif = false;
       document.fonts.removeEventListener('loadingdone', placer);
     };
-  }, [traits, largeur, hauteur]);
+  }, [traits, largeur, hauteur, dessus]);
 
   if (n === 0) {
     return (
@@ -184,6 +221,7 @@ export function CadreGraphe({ universId, elements, liens, gerer, selection, onSe
         {elements.map((e) => {
           const p = pos(e.ficheId);
           const style = { left: p.x, top: p.y };
+          const classe = `carte-token${dessus.has(e.ficheId) ? ' dessus' : ''}`;
           const contenu = (
             <>
               <i aria-hidden="true">{Array.from(e.titre)[0]?.toUpperCase() ?? '?'}</i>
@@ -192,7 +230,7 @@ export function CadreGraphe({ universId, elements, liens, gerer, selection, onSe
           );
           if (!gerer) {
             return (
-              <Link key={e.id} className="carte-token" style={style} to={adresseFiche(universId, e.ficheId)} aria-label={e.titre}>
+              <Link key={e.id} className={classe} data-fiche={e.ficheId} style={style} to={adresseFiche(universId, e.ficheId)} aria-label={e.titre}>
                 {contenu}
               </Link>
             );
@@ -201,7 +239,8 @@ export function CadreGraphe({ universId, elements, liens, gerer, selection, onSe
             <button
               key={e.id}
               type="button"
-              className={`carte-token${selection === e.id ? ' sel' : ''}`}
+              className={`${classe}${selection === e.id ? ' sel' : ''}`}
+              data-fiche={e.ficheId}
               style={style}
               aria-label={e.titre}
               aria-pressed={selection === e.id}

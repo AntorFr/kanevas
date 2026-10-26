@@ -8,7 +8,8 @@
   box-shadow: 0 0 0 1px var(--bord-fort); display: flex; flex-direction: column; gap: var(--e-2); }
 .relations .formulaire-relation .champ { margin: 0; }
 .relations .formulaire-relation .liste-fiches { max-height: 176px; overflow: auto; margin: 0; padding: var(--e-1);
-  border-radius: var(--rayon-champ); box-shadow: inset 0 0 0 1px var(--bord); }
-.relations .formulaire-relation .choix-fiche { margin: 0; }
+  border: 1px solid var(--bord); border-radius: var(--rayon-champ); background: var(--surface); }
+.relations .formulaire-relation .liste-fiches li > .choix-fiche { margin: 0; width: 100%; }
 .relations .formulaire-relation .choix-fiche:focus-visible { outline-offset: -2px; }
 .relations .formulaire-relation .actions { justify-content: flex-end; margin-top: var(--e-2); }
+.relations .formulaire-relation .recherche { margin: 0; }
