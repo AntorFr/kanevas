@@ -558,11 +558,17 @@ describe('kanevas-scenarios-type : les aventures, du besoin à l’écran', { sk
     const id = await aventure(u, 'La Couronne brisée', { sousType: 'Campagne', joueursLisent: true });
     const rep = await monde.antor.request.put(`/api/univers/${u}/types/aventure`, { data: { etat: 'desactive' } });
     assert.equal(rep.status(), 200);
-    const p = await page(monde.antor, `/univers/${u}/fiche/${id}`);
+    // The sidebar reads the types after the page has loaded: arm the wait for that response before navigating,
+    // then assert on the main navigation only (the breadcrumb of the existing sheet legitimately keeps « Aventures »).
+    const p = await monde.antor.newPage();
+    const types = p.waitForResponse((r) => r.url().includes(`/api/univers/${u}/types`) && r.request().method() === 'GET');
+    await p.goto(`/univers/${u}/fiche/${id}`);
+    await types;
     await declencheur(p, 'La Couronne brisée', 'En préparation').waitFor();
-    // The sidebar reads the types after the page has loaded: wait for the entry to leave, then assert (no read before the action ends).
-    await p.getByRole('link', { name: 'Aventures', exact: true }).waitFor({ state: 'detached' });
-    assert.equal(await p.getByRole('link', { name: 'Aventures', exact: true }).count(), 0, 'plus d’entrée dans la barre');
+    const barre = p.getByRole('navigation', { name: 'Navigation principale' });
+    await barre.waitFor();
+    await p.getByRole('navigation', { name: 'Fil d’Ariane' }).getByRole('link', { name: 'Aventures', exact: true }).waitFor();
+    assert.equal(await barre.getByRole('link', { name: 'Aventures', exact: true }).count(), 0, 'plus d’entrée dans la barre');
     await choisirStatut(p, 'La Couronne brisée', 'En cours');
     const creer = await monde.antor.request.post(`/api/univers/${u}/fiches`, { data: { type: 'aventure', titre: 'Refusée' } });
     assert.ok([400, 403, 409].includes(creer.status()), `création refusée (obtenu ${creer.status()})`);

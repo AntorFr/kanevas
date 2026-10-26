@@ -304,3 +304,23 @@ test('fuite : charge.campagne_id d\'un CR ne sort pas, par liste ni recherche, v
   assert.ok(!('campagne_id' in l));
   void ouvert; void ferme;
 });
+
+test('fuite : un MJ en mode Joueur ne reçoit pas charge.campagne_id d\'un CR sur aventure fermée ; le MJ hors mode le garde ; l\'arbre non plus ne la porte pas pour Léa', async () => {
+  const w = await monter();
+  const c = await w.campagneOuverte();
+  const s = await w.scenarioFerme(c.id, 'Titre Fermé Quux');
+  assert.equal((await w.appel(w.antor, 'POST', `${w.base}/comptes-rendus`, { campagneId: s.id, titre: 'Séance Fermée', texte: 't' })).statusCode, 201);
+  const charge = async (h: Hote, url: string) => {
+    const r = await w.appel(h, 'GET', url);
+    assert.equal(r.statusCode, 200, r.body);
+    const f = (r.json().fiches as { titre: string; charge: Record<string, unknown> }[]).find((x) => x.titre === 'Séance Fermée');
+    assert.ok(f, url);
+    return f.charge;
+  };
+  for (const q of ['type=compte_rendu', 'recherche=S%C3%A9ance']) {
+    assert.equal((await charge(w.antor, `${w.base}/fiches?${q}`)).campagne_id, s.id, q);
+    assert.ok(!('campagne_id' in (await charge(w.antor, `${w.base}/fiches?${q}&mode=joueur`))), `${q} mode joueur`);
+  }
+  const arbre = await w.appel(w.lea, 'GET', `${w.base}/fiches?parent=racine`);
+  assert.doesNotMatch(arbre.body, /campagne_id/);
+});
