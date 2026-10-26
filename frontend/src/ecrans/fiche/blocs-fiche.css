@@ -21,9 +21,9 @@
 .tache-cochee-fiche > svg { color: var(--texte-3); flex: none; }
 .tache-cochee-fiche .libelle { flex: 1 1 160px; min-width: 0; color: var(--texte-3); text-decoration: line-through; overflow-wrap: anywhere; }
 .ajout-tache-fiche { display: grid; grid-template-columns: minmax(0, 1fr) 160px auto; align-items: start; gap: var(--e-2); margin-top: var(--e-3); padding-top: var(--e-3); border-top: 1px dashed var(--bord); }
+.ajout-tache-fiche > .champ { margin: 0; }
 .ajout-tache-fiche > .bouton { margin-top: 22px; }
 .bloc-fiche .suivi-liste { margin-top: var(--e-3); }
-.bloc-fiche .fenetre textarea { min-height: 160px; }
 @media (max-width: 760px) {
   .bloc-fiche-tete { gap: var(--e-3) var(--e-2); }
   .bloc-fiche-action { flex-basis: 100%; margin-left: 0; }

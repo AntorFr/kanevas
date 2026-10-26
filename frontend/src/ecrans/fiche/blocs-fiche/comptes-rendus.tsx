@@ -35,7 +35,7 @@ function ComptesRendus({ universId, fiche, suffixeMode }: PropsBlocFiche) {
   return (
     <>
     <CadreBlocFiche titre="Comptes-rendus" icone={NotebookPen} chargement={etat.k === 'chargement'} erreur={etat.k === 'erreur'} recharger={recharger}
-      action={<Bouton petit icone={Plus} ecrit onClick={() => setOuvert(true)}>Nouveau compte-rendu</Bouton>}>
+      action={<Bouton petit variante="principal" icone={Plus} ecrit onClick={() => setOuvert(true)}>Nouveau compte-rendu</Bouton>}>
       {etat.k === 'ok' && (etat.valeur.comptesRendus.length === 0 ? (
         <p className="bloc-fiche-vide">Aucun compte-rendu pour l'instant.</p>
       ) : (
