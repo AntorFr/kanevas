@@ -32,7 +32,7 @@ async function monter() {
   const u = (await appel(app, antor, 'POST', '/api/univers', { nom: 'Lame d’Ébène' })).json();
   const base = `/api/univers/${u.id}`;
   await appel(app, antor, 'POST', `${base}/membres`, { username: 'lea' });
-  const c = (await appel(app, antor, 'POST', `${base}/campagnes`, { nom: 'La Couronne brisée' })).json();
+  const c = (await appel(app, antor, 'POST', `${base}/fiches`, { type: 'aventure', sousType: 'Campagne', titre: 'La Couronne brisée' })).json();
   return { app, antor, lea, admin, base, c };
 }
 
@@ -44,27 +44,21 @@ test('critère : disponibilité par rôle', async () => {
   assert.deepEqual((await appel(app, lea, 'GET', `${base}/assistant`)).json(), { disponible: true, catalogue: 'joueur' });
 });
 
-test('critère : Antor crée un scénario et une campagne, relus par les routes de suivi ; Léa ne crée rien', async () => {
-  const { app, antor, lea, base, c } = await monter();
-  const r = await appel(app, antor, 'POST', `${base}/assistant/messages`, { message: SCEN });
-  assert.equal(r.statusCode, 200, r.body);
-  assert.equal(r.json().evenements.length, 1);
-  assert.equal(r.json().evenements[0].type, 'scenario_cree');
-  assert.equal(r.json().evenements[0].cible.campagneId, c.id);
-  const l = (await appel(app, antor, 'GET', `/api/campagnes/${c.id}/scenarios`)).json();
-  assert.deepEqual(l.scenarios.map((s: { titre: string }) => s.titre), ['Acte III — La crypte']);
-
-  const r2 = await appel(app, antor, 'POST', `${base}/assistant/messages`, { message: 'Crée une campagne « Les Marches rouges »' });
-  assert.equal(r2.statusCode, 200, r2.body);
-  assert.equal(r2.json().evenements[0].type, 'campagne_creee');
-  const cs = (await appel(app, antor, 'GET', `${base}/campagnes`)).json();
-  assert.ok(cs.campagnes.some((x: { nom: string }) => x.nom === 'Les Marches rouges'));
-
-  const rl = await appel(app, lea, 'POST', `${base}/assistant/messages`, { message: 'Crée un scénario « Zed » dans « La Couronne brisée »' });
-  assert.equal(rl.statusCode, 200);
-  assert.deepEqual(rl.json().evenements, []);
-  const l2 = (await appel(app, antor, 'GET', `/api/campagnes/${c.id}/scenarios`)).json();
-  assert.equal(l2.scenarios.length, 1);
+test('AD-127 : créer un scénario ou une campagne n’est plus un script ; phrase hors script, aucun événement, aucune fiche créée', async () => {
+  const { app, antor, lea, base } = await monter();
+  const nb = () => (app.db.prepare('SELECT count(*) n FROM fiches').get() as { n: number }).n;
+  const avant = nb();
+  for (const [h, message] of [
+    [antor, SCEN],
+    [antor, 'Crée une campagne « Les Marches rouges »'],
+    [lea, 'Crée un scénario « Zed » dans « La Couronne brisée »'],
+  ] as const) {
+    const r = await appel(app, h, 'POST', `${base}/assistant/messages`, { message });
+    assert.equal(r.statusCode, 200, r.body);
+    assert.deepEqual(r.json().evenements, []);
+    assert.match(r.json().reponse, /chercher, lire, ajouter\./);
+  }
+  assert.equal(nb(), avant);
 });
 
 test('bords : message vide, 2001 caractères, historique de 21 : 400 ; 2000 et 20 passent', async () => {

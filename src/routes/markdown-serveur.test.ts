@@ -14,9 +14,7 @@ const { creerUnivers } = await import('../services/univers.js');
 const { ajouterMembre } = await import('../services/membres.js');
 const { creerFiche } = await import('../services/fiches.js');
 const { ajouterSection, ecrireContenu, changerAudience } = await import('../services/sections.js');
-const { creerCampagne } = await import('../services/campagnes.js');
 const { creerCompteRendu } = await import('../services/comptes_rendus.js');
-const { creerScenario } = await import('../services/scenarios.js');
 const { creerProposition } = await import('../services/propositions.js');
 const { creerSysteme, rattacherSysteme, creerGabarit } = await import('../services/systemes.js');
 const { catalogueDe } = await import('../services/assistant/catalogue.js');
@@ -147,7 +145,7 @@ test('plafond : compte-rendu, scénario, entrée de système, proposition à 100
   assurerCompte(db, 'lea');
   const u = creerUnivers(db, antor.id, { nom: 'U' });
   ajouterMembre(db, antor.id, u.id, 'lea', 'joueur');
-  const camp = creerCampagne(db, antor.id, u.id, { nom: 'C' });
+  const camp = creerFiche(db, antor.id, u.id, { type: 'aventure', sousType: 'Campagne', titre: 'C' });
   const msg = (fn: () => unknown) => {
     try {
       fn();
@@ -171,8 +169,9 @@ test('plafond : compte-rendu, scénario, entrée de système, proposition à 100
   assert.ok(cr.id);
   assert.equal(msg(() => creerCompteRendu(db, antor.id, u.id, camp.id, { titre: 'CR2', texte: N1 })), MESSAGE);
   // scénario
-  step('scenario', () => creerScenario(db, antor.id, camp.id, { titre: 'S', contenu: N }));
-  assert.equal(msg(() => creerScenario(db, antor.id, camp.id, { titre: 'S2', contenu: N1 })), MESSAGE);
+  const scen = creerFiche(db, antor.id, u.id, { type: 'aventure', sousType: 'Scénario', titre: 'S', parent: camp.id });
+  step('scenario', () => ajouterSection(db, antor.id, u.id, scen.id, { titre: 'Scénario', contenu: N }));
+  assert.equal(msg(() => ajouterSection(db, antor.id, u.id, scen.id, { titre: 'Scénario 2', contenu: N1 })), MESSAGE);
   // entrée de système
   const sys = creerSysteme(db, antor.id, { nom: 'Sys' });
   rattacherSysteme(db, antor.id, u.id, sys.id);

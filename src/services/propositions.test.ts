@@ -2,7 +2,6 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 
 import { migrate, openDb, type Db } from '../db/db.js';
-import { creerCampagne } from './campagnes.js';
 import { assurerCompte } from './comptes.js';
 import { creerCompteRendu } from './comptes_rendus.js';
 import { ErreurService } from './erreurs.js';
@@ -41,7 +40,7 @@ function monde() {
   const u2 = creerUnivers(db, paul.id, { nom: 'U2' });
   ajouterMembre(db, antor.id, u.id, 'lea', 'joueur');
   ajouterMembre(db, antor.id, u.id, 'bob', 'mj');
-  const camp = creerCampagne(db, antor.id, u.id, { nom: 'C' });
+  const camp = creerFiche(db, antor.id, u.id, { type: 'aventure', sousType: 'Campagne', titre: 'C' });
   const cr = creerCompteRendu(db, antor.id, u.id, camp.id, { titre: 'Séance 3', texte: 'Texte' });
   const fiche = creerFiche(db, antor.id, u.id, { type: 'personnage', titre: 'Aldric', charge: { pj: false } });
   const sec = ajouterSection(db, antor.id, u.id, fiche.id, { titre: 'Vérité', contenu: 'Ancien' });
@@ -125,7 +124,7 @@ test('refus sans ligne créée : vide, blanc, trop long, CR non CR, autre univer
     'invalide',
   );
   // report from another universe
-  const camp2 = creerCampagne(m.db, m.paul.id, m.u2.id, { nom: 'C2' });
+  const camp2 = creerFiche(m.db, m.paul.id, m.u2.id, { type: 'aventure', sousType: 'Campagne', titre: 'C2' });
   const cr2 = creerCompteRendu(m.db, m.paul.id, m.u2.id, camp2.id, { titre: 'Autre', texte: 't' });
   assert.notEqual(
     err(() =>
