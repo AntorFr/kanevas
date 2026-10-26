@@ -560,6 +560,8 @@ describe('kanevas-scenarios-type : les aventures, du besoin à l’écran', { sk
     assert.equal(rep.status(), 200);
     const p = await page(monde.antor, `/univers/${u}/fiche/${id}`);
     await declencheur(p, 'La Couronne brisée', 'En préparation').waitFor();
+    // The sidebar reads the types after the page has loaded: wait for the entry to leave, then assert (no read before the action ends).
+    await p.getByRole('link', { name: 'Aventures', exact: true }).waitFor({ state: 'detached' });
     assert.equal(await p.getByRole('link', { name: 'Aventures', exact: true }).count(), 0, 'plus d’entrée dans la barre');
     await choisirStatut(p, 'La Couronne brisée', 'En cours');
     const creer = await monde.antor.request.post(`/api/univers/${u}/fiches`, { data: { type: 'aventure', titre: 'Refusée' } });
