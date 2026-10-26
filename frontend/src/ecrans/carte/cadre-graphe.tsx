@@ -6,6 +6,29 @@ import { adresseFiche, titreCourt, type Element, type Lien } from './types';
 
 const RAYON = 15;
 
+interface Boite { x: number; y: number; width: number; height: number }
+
+/** Whether the segment enters a label's padded box, including at either endpoint. */
+function traverse(boite: Boite, trait: { x1: number; y1: number; x2: number; y2: number }, marge: number) {
+  let debut = 0;
+  let fin = 1;
+  for (const [origine, delta, min, max] of [
+    [trait.x1, trait.x2 - trait.x1, boite.x - marge, boite.x + boite.width + marge],
+    [trait.y1, trait.y2 - trait.y1, boite.y - marge, boite.y + boite.height + marge],
+  ] as const) {
+    if (Math.abs(delta) < 1e-6) {
+      if (origine < min || origine > max) return false;
+    } else {
+      const a = (min - origine) / delta;
+      const b = (max - origine) / delta;
+      debut = Math.max(debut, Math.min(a, b));
+      fin = Math.min(fin, Math.max(a, b));
+      if (debut > fin) return false;
+    }
+  }
+  return true;
+}
+
 interface Props {
   universId: string;
   elements: Element[];
@@ -51,16 +74,15 @@ export function CadreGraphe({ universId, elements, liens, gerer, selection, onSe
     const ux = (b.x - a.x) / d;
     const uy = (b.y - a.y) / d;
     // A small side shift keeps opposite links between two nodes apart.
-    // Several links on the same pair and direction: rank them, so their labels stack instead of piling up.
+    // Leave room for a line of text and its clearance between parallel arrows.
     const rang = liens.slice(0, i).filter((m) => m.de === l.de && m.vers === l.vers).length;
-    // Parallel lines of one pair are 18 px apart, so no stroke crosses another's label.
-    const ox = -uy * (7 + rang * 18);
-    const oy = ux * (7 + rang * 18);
+    const ox = -uy * (7 + rang * 28);
+    const oy = ux * (7 + rang * 28);
     const x1 = a.x + ux * RAYON + ox;
     const y1 = a.y + uy * RAYON + oy;
     const x2 = b.x - ux * (RAYON + 2) + ox;
     const y2 = b.y - uy * (RAYON + 2) + oy;
-    return [{ l, i, x1, y1, x2, y2, x: (x1 + x2) / 2 + ox, y: (y1 + y2) / 2 + oy - 4 + rang * 14 * Math.abs(uy) }];
+    return [{ l, i, x1, y1, x2, y2, x: (x1 + x2) / 2, y: (y1 + y2) / 2, nx: -uy, ny: ux }];
   }), [liens, points]);
 
   useLayoutEffect(() => {
@@ -80,28 +102,36 @@ export function CadreGraphe({ universId, elements, liens, gerer, selection, onSe
         const texte = textes[i]!;
         const boite = texte.getBBox();
         const dy = boite.y - Number(texte.getAttribute('y'));
+        const boiteDe = (x: number, y: number) => ({ x: x - boite.width / 2, y: y + dy, width: boite.width, height: boite.height });
         const libre = (x: number, y: number) => {
-          const r = { x: x - boite.width / 2, y: y + dy, width: boite.width, height: boite.height };
+          const r = boiteDe(x, y);
           const marge = 4; // Includes the text's background stroke and breathing room.
           return r.x >= marge && r.x + r.width <= largeur - marge && r.y >= marge && r.y + r.height <= hauteur - marge
             && !obstacles.some((o) => r.x < o.x + o.width + marge && o.x < r.x + r.width + marge
-              && r.y < o.y + o.height + marge && o.y < r.y + r.height + marge);
+              && r.y < o.y + o.height + marge && o.y < r.y + r.height + marge)
+            && !traits.some((trait) => traverse(r, trait, 3));
         };
-        // Prefer the midpoint, then nearby positions along the arrow; move off it only if necessary.
-        let place = { x: t.x, y: t.y };
+        // Anchor the measured box next to its own stroke, with 4 px of clearance.
+        // Try both sides along that arrow before increasing the distance from it.
+        const cote = t.ny <= 0 ? 1 : -1;
+        const distance = Math.abs(t.nx) * boite.width / 2 + Math.abs(t.ny) * boite.height / 2 + 5;
+        const presDuTrait = (fraction: number, ecart: number) => ({
+          x: t.x + (t.x2 - t.x1) * fraction + t.nx * ecart,
+          y: t.y + (t.y2 - t.y1) * fraction + t.ny * ecart - dy - boite.height / 2,
+        });
+        let place = presDuTrait(0, cote * distance);
         recherche: for (let rang = 0; rang < Math.ceil(hauteur / 20); rang++) {
-          for (const decalage of rang === 0 ? [0] : [-rang * 20, rang * 20]) {
+          for (const sens of [cote, -cote]) {
             for (const fraction of [0, -0.1, 0.1, -0.2, 0.2, -0.3, 0.3, -0.4, 0.4]) {
-              const x = t.x + (t.x2 - t.x1) * fraction;
-              const y = t.y + (t.y2 - t.y1) * fraction + decalage;
-              if (libre(x, y)) {
-                place = { x, y };
+              const candidat = presDuTrait(fraction, sens * (distance + rang * 20));
+              if (libre(candidat.x, candidat.y)) {
+                place = candidat;
                 break recherche;
               }
             }
           }
         }
-        obstacles.push({ x: place.x - boite.width / 2, y: place.y + dy, width: boite.width, height: boite.height });
+        obstacles.push(boiteDe(place.x, place.y));
         return place;
       });
       setEtiquettes(places);
