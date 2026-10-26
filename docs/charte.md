@@ -359,6 +359,19 @@ décalé de 2 px) sur `:focus-visible`.
   bounded scroll area and full-title tooltips. The visibility checkbox starts unchecked.
   The fields stay in the window on failure; they are disabled during creation.
 
+**Adventure sheet blocks** (`fiche/blocs-fiche/`, E-9, AD-124).
+- Visual: the compact panels of `e09-aventure.html`, `--surface` and `--bord`,
+  `--rayon-panneau`, 16 px padding and gap; the preparation border uses `--mj-bord`.
+  Titles use Fraunces 18 px, secondary text `--texte-3`, standard fields and buttons.
+  The task form stacks on phones. No new colour token.
+- Behaviour: each block loads and retries independently. Categories with open tasks are
+  shown in order; checked tasks stay in a folded disclosure, last checked first.
+  Checkboxes keep their old state until success. Creation failures keep the fields and
+  show an inline alert; report drafts use session storage until creation or cancellation.
+  The report window uses the shared focus trap. Offline, writing and pagination are disabled.
+  Preparation is absent for players and in player mode; report pagination uses the server's
+  filtered pages. Existing sheets keep these blocks when their type is deactivated.
+
 **Carte de système** (E-16) et **carte d'univers** (E-1) : la carte de fiche, avec un en-tête
 dessiné au lieu d'une image.
 - V : mêmes règles que la carte de fiche — pas de cadre ni d'ombre, survol `--surface-2` derrière la
