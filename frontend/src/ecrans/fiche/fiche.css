@@ -180,6 +180,11 @@ a.cadre-ill:focus-visible { outline-offset: 2px; border-radius: var(--rayon-pann
   .entete.illustree { grid-template-columns: 96px minmax(0, 1fr); column-gap: var(--e-4); }
   .illustration { width: 96px; }
   .gestes-ill { right: 4px; bottom: 4px; }
+  /* Narrow text column beside the illustration: the row stays on one line (the « ⋯ » never drops under it,
+     which would lift the badges above the illustration); « MJ seul » shrinks to its padlock, its name and
+     tooltip stay on the wrapper. */
+  .entete.illustree .tete-ligne { flex-wrap: nowrap; }
+  .entete.illustree .tete-ligne .mj-seul-texte { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
   .envoi-ill { position: relative; flex-wrap: wrap; gap: 0 6px; margin-top: 6px; padding: 6px 0 0; background: none; }
   .envoi-ill .bouton { min-height: 36px; margin-left: -8px; }
   .gestes-ill .bouton-icone { width: 36px; height: 36px; }

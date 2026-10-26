@@ -47,7 +47,7 @@ export function useMJSeul(
         }}
       >
         <Pastille sens="secrete" icone={Lock}>
-          MJ seul
+          <span className="mj-seul-texte">MJ seul</span>
         </Pastille>
       </span>
     ),
