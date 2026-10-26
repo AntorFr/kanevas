@@ -73,8 +73,9 @@ export function CadreGraphe({ universId, elements, liens, gerer, selection, onSe
             // A small side shift keeps opposite links between two nodes apart.
             // Several links on the same pair and direction: rank them, so their labels stack instead of piling up.
             const rang = liens.slice(0, i).filter((m) => m.de === l.de && m.vers === l.vers).length;
-            const ox = -uy * 7;
-            const oy = ux * 7;
+            // Parallel lines of one pair are 18 px apart, so no stroke crosses another's label.
+            const ox = -uy * (7 + rang * 18);
+            const oy = ux * (7 + rang * 18);
             const x1 = a.x + ux * RAYON + ox;
             const y1 = a.y + uy * RAYON + oy;
             const x2 = b.x - ux * (RAYON + 2) + ox;
@@ -82,7 +83,7 @@ export function CadreGraphe({ universId, elements, liens, gerer, selection, onSe
             return (
               <g key={i} className="graphe-lien">
                 <line x1={x1} y1={y1} x2={x2} y2={y2} markerEnd="url(#pointe)" />
-                <text x={(x1 + x2) / 2 + ox} y={(y1 + y2) / 2 + oy - 4 + rang * 18} textAnchor="middle">
+                <text x={(x1 + x2) / 2 + ox} y={(y1 + y2) / 2 + oy - 4 + rang * 14 * Math.abs(uy)} textAnchor="middle">
                   {Array.from(l.libelle).length > 40 ? `${Array.from(l.libelle).slice(0, 40).join('')}…` : l.libelle}
                 </text>
                 {Array.from(l.libelle).length > 40 && <title>{l.libelle}</title>}

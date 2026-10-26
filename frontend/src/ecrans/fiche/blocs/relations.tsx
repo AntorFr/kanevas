@@ -208,59 +208,41 @@ function FormulaireRelier({
       )}
       {natures === undefined && !erreurNatures && <Chargement texte="Chargement…" />}
       {erreurNatures && <ErreurChargement texte="Impossible de charger les natures." onReessayer={onReessayerNatures} />}
-      {(natures === undefined || proposees.length > 0) && natures !== undefined && (
-        <label className="champ">
-          <span>Nature</span>
-          <select
-            value={nature}
-            onChange={(e) => {
-              setNatureChoisie(e.target.value);
-              setRecherche('');
-              setErreurType(undefined);
-            }}
-          >
-            {proposees.map((n) => (
-              <option key={n.cle} value={n.cle}>
-                {n.libelleSource}
-              </option>
-            ))}
-            <option value="">Sans nature</option>
-          </select>
-        </label>
-      )}
-      <Champ
-        etiquette="Qualificatif"
-        placeholder="habite, capitaine…"
-        value={type}
-        onKeyDown={(e: { key: string; preventDefault: () => void }) => {
-          if (e.key === 'Enter') {
-            e.preventDefault();
-            void relier();
-          }
-        }}
-        erreur={erreurType}
-        onChange={(e: { target: { value: string } }) => {
-          setType(e.target.value);
-          setErreurType(undefined);
-        }}
-      />
-      <label className="champ">
-        <span>Type de fiche</span>
-        <select
-          value={typeFiche}
-          onChange={(e) => {
-            setTypeFiche(e.target.value);
+      {natures !== undefined && proposees.length > 0 && (
+        <Champ
+          etiquette="Nature"
+          liste
+          value={nature}
+          onChange={(e: { target: { value: string } }) => {
+            setNatureChoisie(e.target.value);
             setRecherche('');
-            setChoix(undefined);
+            setErreurType(undefined);
           }}
         >
-          {choixTypes.map((t) => (
-            <option key={t.type} value={t.type}>
-              {t.singulier}
+          {proposees.map((n) => (
+            <option key={n.cle} value={n.cle}>
+              {n.libelleSource}
             </option>
           ))}
-        </select>
-      </label>
+          <option value="">Sans nature</option>
+        </Champ>
+      )}
+      <Champ
+        etiquette="Type de fiche"
+        liste
+        value={typeFiche}
+        onChange={(e: { target: { value: string } }) => {
+          setTypeFiche(e.target.value);
+          setRecherche('');
+          setChoix(undefined);
+        }}
+      >
+        {choixTypes.map((t) => (
+          <option key={t.type} value={t.type}>
+            {t.singulier}
+          </option>
+        ))}
+      </Champ>
       {!lore && etatTypes === 'erreur' && <ErreurChargement texte="Impossible de charger les types." onReessayer={rechargerTypes} />}
       {!lore && etatTypes === 'chargement' && <Chargement texte="Chargement des types…" />}
       {lore && (
@@ -292,6 +274,22 @@ function FormulaireRelier({
         )}
       />
       )}
+      <Champ
+        etiquette="Qualificatif"
+        placeholder="habite, capitaine…"
+        value={type}
+        onKeyDown={(e: { key: string; preventDefault: () => void }) => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            void relier();
+          }
+        }}
+        erreur={erreurType}
+        onChange={(e: { target: { value: string } }) => {
+          setType(e.target.value);
+          setErreurType(undefined);
+        }}
+      />
       {erreurChoix && <div className="erreur">Erreur : {erreurChoix}</div>}
       <div className="actions">
         <Bouton variante="principal" ecrit enCours={enCours} disabled={choix === undefined} onClick={() => void relier()}>
