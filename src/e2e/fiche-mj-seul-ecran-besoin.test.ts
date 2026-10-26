@@ -120,7 +120,9 @@ describe('kanevas-fiche-mj-seul-ecran, B-57', { skip: skipBrowser }, () => {
     await antor.keyboard.press('Enter');
     await antor.waitForURL(/q=Crypte/);
     await antor.waitForURL(/visibilite=mj/);
+    // the list goes through its loading state (every card leaves): wait for the old card to leave, then for the answer
     await carte(antor, 'Lieu vide B57').waitFor({ state: 'detached' });
+    await carte(antor, 'Crypte fermée B57').waitFor();
     assert.equal(await carte(antor, 'Crypte fermée B57').count(), 1);
     // « Toutes » : the tree comes back once the filters are gone
     await versLieux(antor, '?visibilite=mj', 'memorisee');
