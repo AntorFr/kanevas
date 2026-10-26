@@ -93,7 +93,7 @@ test('B-2 Antor crée « Lame d\'Ébène » : il arrive sur sa vue d\'ensemble, 
   assert.ok(t.includes(DESC), 'description shown');
   assert.ok(/\bMJ\b/.test(t), 'role badge MJ shown');
   assert.ok(!t.includes("Rien à afficher pour l'instant."), 'blocks of kanevas-suivi replace the empty region');
-  assert.ok(t.includes('Campagnes actives') && t.includes('Derniers comptes-rendus'));
+  assert.ok(t.includes('Campagnes en cours') && t.includes('Derniers comptes-rendus'));
   await antor.goto('/');
   await voit(antor, NOM);
   const carte = antor.getByRole('link', { name: rx(NOM) });

@@ -77,7 +77,7 @@ test('vide : MJ (avec Nouvelle carte, via la barre), Joueuse, et E-3 sans bloc p
   await antor.screenshot({ path: '/tmp/e10-vide-mj.png' });
 
   await lea.goto(`/univers/${uid}`);
-  await lea.getByRole('heading', { name: 'Campagnes actives' }).waitFor();
+  await lea.getByRole('heading', { name: 'Campagnes en cours' }).waitFor();
   await attendre(lea);
   assert.ok(!(await texte(lea)).includes('Cartes visibles'), 'pas de bloc pour Léa sans carte visible');
   await lea.getByRole('link', { name: rxExact('Cartes') }).click();
@@ -217,7 +217,7 @@ test('bloc : en échec sans toucher aux autres blocs', opts, async () => {
   await antor.goto(`/univers/${uid}`);
   await antor.getByText(rx('Impossible de charger les cartes.')).waitFor();
   const t = await texte(antor);
-  assert.ok(t.includes('Campagnes actives') && t.includes('Derniers comptes-rendus'));
+  assert.ok(t.includes('Campagnes en cours') && t.includes('Derniers comptes-rendus'));
   assert.ok(!t.includes('Impossible de charger cette page.'));
   await antor.screenshot({ path: '/tmp/e3-bloc-erreur.png' });
   await antor.unroute('**/api/univers/*/cartes**');
