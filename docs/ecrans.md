@@ -3469,6 +3469,20 @@ The graph labels a link with the nature's label read from the source (« se situ
 qualifier after a dash; a free relation keeps its qualifier as label. « Mentionnée dans » drops the
 natured relations (they are in « Fiches liées ») and keeps the links and the free relations.
 
+**Where a graph label sits** (one rule, the same on desktop and at 390 px, light and dark):
+- Each link is drawn once, as its own stroke. Parallel links between the same two nodes are
+  spread by a fixed perpendicular step (18 px) around the node axis, **once**: the offset moves the
+  stroke, and the label is placed from the offset stroke, never offset a second time.
+- A label is centred on the middle of **its own** stroke, just above it, on a halo of the
+  background colour: the stroke never crosses the text, and the label is read as belonging to the
+  nearest stroke (at most 12 px from it, nearer to it than to any other stroke).
+- A label overlaps no node pill and no other label. When the middle of the stroke is covered by a
+  pill, the label slides along its stroke until free; it never leaves the stroke for another place.
+- Testable on the rendered boxes: for every link, the label's box is within 12 px of its stroke's
+  midpoint, no stroke segment crosses a label box, and no label box meets a pill box or another
+  label box — checked at 1440 px and at 390 px on « Carte de la côte » (the two Aldric–Port-Sel
+  links).
+
 ### Mockups
 
 `docs/maquettes/e09-lieu-liees.html` — « Port-Sel » for the GM: the block « Fiches liées » with
