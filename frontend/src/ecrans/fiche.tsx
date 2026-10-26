@@ -204,7 +204,7 @@ function PageFiche() {
       {etat.k === 'ok' && blocs.length > 0 && (
         <div className="blocs-fiche">
           {blocs.map((bloc) => (
-            <bloc.composant key={`${id}/${fid}/${suffixe}/${bloc.id}`} universId={id!} fiche={fiche} role={modeEffectif} suffixeMode={suffixe} />
+            <bloc.composant key={`${id}/${fid}/${modeEffectif}/${suffixe}/${bloc.id}`} universId={id!} fiche={fiche} role={modeEffectif} suffixeMode={suffixe} />
           ))}
         </div>
       )}
