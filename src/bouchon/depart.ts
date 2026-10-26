@@ -245,14 +245,20 @@ export function semerBouchon(db: Db): boolean {
       // `kanevas-fiches-liees-natures`: relations with a nature (AD-128) and the family « Les Corvalis » (a type).
       const relier = (src: { id: number; sections: Record<string, number> }, section: string, cible: { id: number }, nature: string, qualificatif: string) =>
         relierSection(db, id.antor, lame.id, src.id, src.sections[section]!, { cibleFicheId: cible.id, nature, qualificatif });
-      const corvalis = fiche('famille', 'Les Corvalis', [{ titre: 'Description', lue: true }]);
+      // A base short of 0013 still has the CHECK on `fiches.type`, which does not know « famille ».
+      const sqlFiches = (db.prepare("SELECT sql FROM sqlite_master WHERE name = 'fiches'").get() as { sql: string }).sql;
+      const corvalis = /CHECK/i.test(sqlFiches) ? undefined : fiche('famille', 'Les Corvalis', [{ titre: 'Description', lue: true }]);
       relier(aldric, 'Apparence', port, 'se_situe', 'habite');
       relier(aldric, 'Apparence', guilde, 'membre', 'trésorier');
       relier(prieur, 'Secret — MJ seul', port, 'se_situe', 'se cache');
-      if (docks) relier(suie, 'Apparence', docks, 'se_situe', '');
+      // Same for the empty qualifier of a nature (0017): the old `relations` demands one.
+      const sqlRelations = (db.prepare("SELECT sql FROM sqlite_master WHERE name = 'relations'").get() as { sql: string }).sql;
+      if (docks && !/BETWEEN 1 AND 80/.test(sqlRelations)) relier(suie, 'Apparence', docks, 'se_situe', '');
       relier(ombeline, 'Apparence', guilde, 'membre', 'dirige');
-      relier(bran, 'Apparence', corvalis, 'membre', 'aîné');
-      relier(ombeline, 'Apparence', corvalis, 'membre', 'veuve');
+      if (corvalis) {
+        relier(bran, 'Apparence', corvalis, 'membre', 'aîné');
+        relier(ombeline, 'Apparence', corvalis, 'membre', 'veuve');
+      }
     }
     // « Essai Kanka »: a place whose text waits for a key and points at a vanished sheet.
     const anse = creerFiche(db, id.antor, essai.id, { type: 'lieu', titre: 'Anse-aux-Sels' });
