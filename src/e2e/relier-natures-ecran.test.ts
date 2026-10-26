@@ -287,6 +287,56 @@ describe('kanevas-fiches-liees-natures-ecran, E-9 Relier avec une nature, E-11, 
     await ctx.close();
   });
 
+  test('téléphone 390 px, thème sombre : la ligne de relation passe à la ligne sans couper de mot, le graphe garde deux étiquettes lisibles', opts, async () => {
+    const ctx = await browser.newContext({ baseURL: srv.base, viewport: { width: 390, height: 844 } });
+    await ctx.addInitScript(() => window.localStorage.setItem('kanevas-theme', 'sombre'));
+    const page = await ctx.newPage();
+    page.setDefaultTimeout(30000);
+    await page.goto('/connexion-bouchon');
+    await page.getByRole('button', { name: /^Se connecter en tant que Antor$/i }).click();
+    await page.waitForLoadState('networkidle');
+    await ouvrir(page, 'Bran Corvalis');
+    const ligne = bloc(page).locator('.relation').filter({ hasText: 'La Guilde des Brumes' });
+    await ligne.waitFor();
+    const mots = (await ligne.evaluate((el: Any) => {
+      // each word of the line must sit on one single rendered line (no mid-word break)
+      const out: { mot: string; lignes: number }[] = [];
+      const w = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+      for (let n = w.nextNode(); n; n = w.nextNode()) {
+        const t = n.textContent ?? '';
+        for (const m of t.matchAll(/\S+/g)) {
+          const r = document.createRange();
+          r.setStart(n, m.index!);
+          r.setEnd(n, m.index! + m[0].length);
+          const ys = new Set([...r.getClientRects()].map((q) => Math.round(q.top)));
+          out.push({ mot: m[0], lignes: ys.size });
+        }
+      }
+      return out;
+    })) as { mot: string; lignes: number }[];
+    assert.ok(mots.length > 3, JSON.stringify(mots));
+    assert.deepEqual(mots.filter((m) => m.lignes > 1), [], 'mot coupé');
+    const { sw, cw } = await page.evaluate(() => ({ sw: document.documentElement.scrollWidth, cw: document.documentElement.clientWidth }));
+    assert.ok(sw <= cw, `scrollWidth ${sw} > ${cw}`);
+    await photo(page, 'sombre-390-ligne');
+    await page.goto(`/univers/${U}/cartes/${carteId}`);
+    await page.locator('.graphe-lien text').first().waitFor();
+    const mesure = (await page.evaluate(() => {
+      return {
+        labels: [...document.querySelectorAll('.graphe-lien text')].map((e) => ({ t: e.firstChild?.textContent ?? '', x: e.getBoundingClientRect().x, y: e.getBoundingClientRect().y, w: e.getBoundingClientRect().width, h: e.getBoundingClientRect().height })),
+        tokens: [...document.querySelectorAll('.graphe .carte-token')].map((e) => ({ t: e.getAttribute('aria-label') ?? '', x: e.getBoundingClientRect().x, y: e.getBoundingClientRect().y, w: e.getBoundingClientRect().width, h: e.getBoundingClientRect().height })),
+      };
+    })) as { labels: { t: string; x: number; y: number; w: number; h: number }[]; tokens: { t: string; x: number; y: number; w: number; h: number }[] };
+    for (const l of mesure.labels.filter((x) => x.t === 'se situe à — habite' || x.t === 'maître de port')) {
+      for (const k of mesure.tokens) {
+        const sur = l.x < k.x + k.w && k.x < l.x + l.w && l.y < k.y + k.h && k.y < l.y + l.h;
+        assert.equal(sur, false, `« ${l.t} » recouvre la pastille « ${k.t} » : ${JSON.stringify([l, k])}`);
+      }
+    }
+    await photo(page, 'sombre-390-graphe');
+    await ctx.close();
+  });
+
   test('« Familles » dans la barre Lore, « Aucune famille. » puis « Nouvelle famille » crée « Les Orfèvres » dont la fiche s’ouvre', opts, async () => {
     const { ctx, page } = await connecte(browser, srv.base, 'Antor');
     const u = await (await page.request.fetch(`${srv.base}/api/univers`, {})).json();
