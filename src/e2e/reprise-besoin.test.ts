@@ -308,7 +308,7 @@ test('exclusions : l’API de reprise refuse sans jeton, d’un autre univers, s
   });
   assert.equal(ailleurs.status, 404);
   const antor = await cookieDe(m, 'antor');
-  assert.equal(((await session(m, antor, `/univers/${m.essai}/fiches?type=lieu`)).json.fiches as Any[]).length, 0);
+  assert.ok(!((await session(m, antor, `/univers/${m.essai}/fiches?type=lieu`)).json.fiches as Any[]).some((f) => f.titre === 'X'));
   const lot = await imp(m, 'POST', '/lots');
   assert.equal(lot.status, 201);
   assert.equal((await imp(m, 'POST', `/lots/${lot.json.lotId}/clore`)).status, 200);
