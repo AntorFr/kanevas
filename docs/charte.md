@@ -367,7 +367,8 @@ décalé de 2 px) sur `:focus-visible`.
 - Behaviour: each block loads and retries independently. Categories with open tasks are
   shown in order; checked tasks stay in a folded disclosure, last checked first.
   Checkboxes keep their old state until success. Creation failures keep the fields and
-  show an inline alert; report drafts use session storage until creation or cancellation.
+  show an inline alert; report drafts use session storage, scoped to their account and adventure,
+  until creation or cancellation.
   The report window uses the shared focus trap. Offline, writing and pagination are disabled.
   Preparation is absent for players and in player mode; report pagination uses the server's
   filtered pages. Existing sheets keep these blocks when their type is deactivated.

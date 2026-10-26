@@ -1,7 +1,8 @@
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { ArrowDown, NotebookPen, Plus } from 'lucide-react';
 
 import { lire, useConnexionPerdue } from '../../../api';
+import { useMoi } from '../../../cadre-contexte';
 import { Bouton } from '../../../ui';
 import { LigneCompteRendu, type PageComptesRendus } from '../../suivi/commun';
 import { CadreBlocFiche } from '../bloc-fiche';
@@ -15,8 +16,13 @@ function ComptesRendus({ universId, fiche, suffixeMode }: PropsBlocFiche) {
   const [suiteEnCours, setSuiteEnCours] = useState(false);
   const [suiteEchec, setSuiteEchec] = useState(false);
   const verrou = useRef(false);
-  const cleBrouillon = `kanevas:brouillon-cr:${universId}:${fiche.id}`;
-  const [ouvert, setOuvert] = useState(() => lireBrouillon(cleBrouillon) !== undefined);
+  const moi = useMoi();
+  // A shared browser tab may sign in as another account: never restore its predecessor's draft.
+  const cleBrouillon = moi.etat === 'ok' ? `kanevas:brouillon-cr:${moi.valeur.username}:${universId}:${fiche.id}` : undefined;
+  const [ouvert, setOuvert] = useState(false);
+  useEffect(() => {
+    if (cleBrouillon && lireBrouillon(cleBrouillon)) setOuvert(true);
+  }, [cleBrouillon]);
   const fermer = useCallback(() => setOuvert(false), []);
   const perdue = useConnexionPerdue();
 

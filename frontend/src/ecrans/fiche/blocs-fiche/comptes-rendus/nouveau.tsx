@@ -9,7 +9,8 @@ import type { Fiche } from '../../types';
 interface Brouillon { titre: string; texte: string }
 
 /** Like a section draft, a report survives session expiry; storage can be unavailable. */
-export function lireBrouillon(cle: string): Brouillon | undefined {
+export function lireBrouillon(cle: string | undefined): Brouillon | undefined {
+  if (!cle) return undefined;
   try {
     const b: unknown = JSON.parse(sessionStorage.getItem(cle) ?? 'null');
     if (b && typeof b === 'object' && 'titre' in b && typeof b.titre === 'string' && 'texte' in b && typeof b.texte === 'string') {
@@ -22,7 +23,7 @@ export function lireBrouillon(cle: string): Brouillon | undefined {
 export function NouveauCompteRendu({ universId, ficheId, cleBrouillon, onFermer }: {
   universId: string;
   ficheId: number;
-  cleBrouillon: string;
+  cleBrouillon?: string;
   onFermer: () => void;
 }) {
   const [brouillon] = useState(() => lireBrouillon(cleBrouillon));
@@ -37,18 +38,20 @@ export function NouveauCompteRendu({ universId, ficheId, cleBrouillon, onFermer 
   const { toast } = useToasts();
 
   function garder(titre: string, texte: string) {
+    if (!cleBrouillon) return;
     try { sessionStorage.setItem(cleBrouillon, JSON.stringify({ titre, texte })); }
     catch { /* The current fields still keep the draft. */ }
   }
 
   function effacer() {
+    if (!cleBrouillon) return;
     try { sessionStorage.removeItem(cleBrouillon); }
     catch { /* Storage unavailable. */ }
   }
 
   const annuler = useCallback(() => {
     if (enCours) return;
-    try { sessionStorage.removeItem(cleBrouillon); }
+    try { if (cleBrouillon) sessionStorage.removeItem(cleBrouillon); }
     catch { /* Storage unavailable. */ }
     onFermer();
   }, [enCours, cleBrouillon, onFermer]);
