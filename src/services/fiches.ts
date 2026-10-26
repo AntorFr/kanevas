@@ -782,6 +782,12 @@ export function listerFiches(
   const enrichie = (r: FicheRow): Fiche => {
     const e = etiquetageDe(db, r.id);
     const f: Fiche = { ...versFiche(r, (f) => lisiblePar(role, acteur, f)), alias: e.alias, etiquettes: e.etiquettes };
+    // A report's payload must not reveal an adventure the reader cannot read (AD-124 (4)),
+    // including through search or the tree. The GM outside player mode keeps the stored id.
+    if (f.type === 'compte_rendu' && !vueMJ(role, acteur)
+      && campagneDuCompteRendu(db, role, acteur, universId, f.charge.campagne_id).campagneId === undefined) {
+      delete f.charge.campagne_id;
+    }
     if (mots !== null) {
       const trouve = mots.length > 0 && !repond(r.titre, mots) ? e.alias.find((a) => repond(a, mots)) : undefined;
       if (trouve !== undefined) f.aliasTrouve = trouve;
