@@ -3379,7 +3379,7 @@ entered on one sheet is listed by that sheet's section only until `kanevas-fiche
 other side; the same fact entered from the other side with the same qualifier is refused as
 `relation_existante` (« Cette relation existe déjà. », the other side holding it, even though this side does not list it yet). Roles: the GM outside player mode relates; a player, and the GM in player mode,
 never see « Relier », the « Nature » field or « Nouvelle famille » (hidden); the list « Familles »
-is read like any list of E-8, empty state « Aucune famille. » with « Nouvelle famille » for the GM.
+is read like any list of E-8, empty state « Aucune famille pour l’instant. » with « Nouvelle famille » for the GM.
 
 *Critères.* Étant donné Antor, MJ, sur « Dame Ombeline de Val-Fortin », quand il relie « se
 situe à » → Port-Sel avec « habite », alors la ligne lit « se situe à · Port-Sel — habite » ; quand il
