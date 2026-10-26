@@ -38,7 +38,9 @@ describe('kanevas-fiches-liees-natures, le semis du bouchon à l’écran', { sk
   // Panne visée : le semis ne pose plus la relation de Suie, ou y ajoute un qualificatif / un tiret vide.
   test('Suie : « se situe à · Les Docks », sans qualificatif ni tiret', opts, async () => {
     await ouvrir(antor, 'Suie');
-    const t = norm(await section(antor, 'Apparence').getByRole('group', { name: 'Relations' }).innerText());
+    const g = section(antor, 'Apparence').getByRole('group', { name: 'Relations' });
+    await antor.waitForFunction((attendu: string) => [...document.querySelectorAll('[role=group][aria-label=Relations]')].some((e) => (e as HTMLElement).innerText.replace(/\s+/g, ' ').includes(attendu)), 'se situe à · Les Docks');
+    const t = norm(await g.innerText());
     assert.ok(t.includes('se situe à · Les Docks'), t);
     assert.ok(!t.includes('Les Docks —'), t);
   });
@@ -46,7 +48,9 @@ describe('kanevas-fiches-liees-natures, le semis du bouchon à l’écran', { sk
   // Panne visée : le semis perd la relation « se cache » du Prieur ou la pose sur une autre section.
   test('Le Prieur masqué, section « Secret — MJ seul » : « se situe à · Port-Sel — se cache » pour Antor', opts, async () => {
     await ouvrir(antor, 'Le Prieur masqué');
-    const t = norm(await section(antor, 'Secret — MJ seul').getByRole('group', { name: 'Relations' }).innerText());
+    const g = section(antor, 'Secret — MJ seul').getByRole('group', { name: 'Relations' });
+    await antor.waitForFunction((attendu: string) => [...document.querySelectorAll('[role=group][aria-label=Relations]')].some((e) => (e as HTMLElement).innerText.replace(/\s+/g, ' ').includes(attendu)), 'se situe à · Port-Sel — se cache');
+    const t = norm(await g.innerText());
     assert.ok(t.includes('se situe à · Port-Sel — se cache'), t);
   });
 
