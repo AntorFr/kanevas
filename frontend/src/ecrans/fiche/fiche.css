@@ -7,7 +7,7 @@ a.bouton { text-decoration: none; display: inline-flex; }
 /* ---------- La fiche (E-9) : une colonne de lecture, des sections sans panneau ---------- */
 .fiche { max-width: 784px; margin: 0 auto; padding: var(--e-4) 0 120px; }
 .fiche .entete { padding-bottom: var(--e-5); border-bottom: 1px solid var(--bord); }
-.fiche .type { display: inline-flex; align-items: center; gap: 6px; height: 24px; padding: 0 9px 0 7px; border-radius: var(--rayon-item);
+.fiche .type { white-space: nowrap; display: inline-flex; align-items: center; gap: 6px; height: 24px; padding: 0 9px 0 7px; border-radius: var(--rayon-item);
   background: var(--surface-2); color: var(--texte-2); font-size: var(--t-12); font-weight: 500; }
 .fiche .type svg { color: var(--texte-3); }
 .fiche .entete h1 { margin-top: var(--e-4); font: 500 var(--t-40)/1.08 var(--police-titre); letter-spacing: -.015em;
@@ -187,7 +187,7 @@ a.cadre-ill:focus-visible { outline-offset: 2px; border-radius: var(--rayon-pann
 }
 
 /* « ⋯ » of the header (E-9): beside the type badge; its only line here is the origin of an imported sheet. */
-.tete-ligne { display: flex; align-items: center; gap: var(--e-2); }
+.tete-ligne { display: flex; flex-wrap: wrap; align-items: center; gap: var(--e-2); }
 .tete-ligne > .menu-racine { margin-left: auto; }
 .menu .info-fiche { display: flex; align-items: flex-start; gap: var(--e-2); padding: 7px 10px 8px; font-size: var(--t-12); line-height: 1.45; color: var(--texte-3); white-space: normal; }
 .menu:has(.info-fiche) { width: max-content; max-width: calc(100vw - 24px); }

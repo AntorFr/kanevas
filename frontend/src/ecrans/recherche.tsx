@@ -273,7 +273,7 @@ function Ligne({ universId, fiche, onEtiquette }: { universId: string; fiche: Fi
   const mjSeul = useMJSeul(fiche);
   const badge = fiche.sousType ? `${badgeFiche(types, fiche)} · ${fiche.sousType}` : badgeFiche(types, fiche);
   return (
-    <li className="ligne-recherche">
+    <li className={mjSeul.badge ? "ligne-recherche avec-pastille" : "ligne-recherche"}>
       <Link className="lien-recherche" to={`/univers/${universId}/fiche/${fiche.id}`}>
         <span className="vignette-recherche" aria-hidden="true">
           {jeton !== undefined && !ko ? (
