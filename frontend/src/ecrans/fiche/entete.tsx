@@ -60,7 +60,7 @@ export function EnteteFiche({ universId, fiche, gestion, modeJoueur, badge, Icon
   const [etiquetage, setEtiquetage] = useState(false);
   const [deplacement, setDeplacement] = useState(false);
   const [suppression, setSuppression] = useState(false);
-  const mjSeul = useMJSeul(fiche);
+  const mjSeul = useMJSeul(fiche, true);
   const alias = fiche.alias ?? [];
   const etiquettes = fiche.etiquettes ?? [];
   const { types } = useTypes();

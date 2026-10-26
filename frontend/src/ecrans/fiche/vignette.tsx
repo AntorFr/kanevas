@@ -24,7 +24,10 @@ export const PHRASE_MJ_SEUL = "Aucune section n'est visible des joueurs.";
  * Nothing unless the server said `visibleJoueurs: false` (it says nothing to a player or in player mode).
  * `badge` goes where the badge stands, `aide` under the title or the line.
  */
-export function useMJSeul(fiche: Pick<Fiche, 'visibleJoueurs'>): { badge: ReactNode; aide: ReactNode } {
+export function useMJSeul(
+  fiche: Pick<Fiche, 'visibleJoueurs'>,
+  reserver = false,
+): { badge: ReactNode; aide: ReactNode } {
   const [lue, setLue] = useState(false);
   const { mode } = useVue();
   if (mode === 'joueur' || fiche.visibleJoueurs !== false) return { badge: null, aide: null };
@@ -48,9 +51,15 @@ export function useMJSeul(fiche: Pick<Fiche, 'visibleJoueurs'>): { badge: ReactN
         </Pastille>
       </span>
     ),
+    // `reserver`: the line keeps its place while unread, so the layout does not move on blur (a click
+    // landing on what was below would be lost between mousedown and mouseup).
     aide: lue ? (
       <span className="aide-mj-seul" role="status">
         {PHRASE_MJ_SEUL}
+      </span>
+    ) : reserver ? (
+      <span className="aide-mj-seul reservee" aria-hidden="true">
+        {'\u00a0'}
       </span>
     ) : null,
   };
