@@ -288,10 +288,10 @@ test('graphe : liens filtrés par garde de section ; sans le 3e nœud, aucun lie
   const { m, b, c } = graphe();
   const g = await carte(m, 'graphe', true);
   for (const f of [m.aldric, b, c]) ajouterElement(m.db, m.antor.id, false, g.id, { ficheId: f.id });
-  const types = (l: { liens?: { type: string }[] }) => (l.liens ?? []).map((x) => x.type).sort();
+  const types = (l: { liens?: { libelle: string }[] }) => (l.liens ?? []).map((x) => x.libelle).sort();
   assert.deepEqual(types(lireCarte(m.db, m.antor.id, false, g.id)), ['allié de', 'rival de']);
   const lea = lireCarte(m.db, m.lea.id, false, g.id);
-  assert.deepEqual(lea.liens, [{ de: m.aldric.id, vers: c.id, type: 'rival de' }]);
+  assert.deepEqual(lea.liens, [{ de: m.aldric.id, vers: c.id, nature: '', qualificatif: 'rival de', libelle: 'rival de' }]);
   assert.equal(lea.elements.length, 3);
   assert.deepEqual(types(lireCarte(m.db, m.antor.id, true, g.id)), ['rival de']);
   // Léa ne lit pas la cible : ni nœud, ni lien

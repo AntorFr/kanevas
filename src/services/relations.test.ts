@@ -52,7 +52,7 @@ test('migration 0005 sur base 0001+0002 peuplée : relations, index remplis, ide
   db.prepare(
     "INSERT INTO sections (fiche_id, titre, ordre, contenu, version, modifie_le) VALUES (1,'Histoire',1,'dragon ancien',1,'x')",
   ).run();
-  assert.deepEqual(migrate(db), [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]);
+  assert.deepEqual(migrate(db), [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17]);
   assert.equal(nb(db, 'relations'), 0);
   assert.equal(nb(db, 'recherche_fiches'), 1);
   assert.equal(nb(db, 'recherche_sections'), 1);
@@ -64,9 +64,9 @@ test('migration 0005 sur base 0001+0002 peuplée : relations, index remplis, ide
 test('MJ relie une section à une fiche de l’univers ; lue par le MJ', () => {
   const { db, marc, u, a, b, sa } = monde();
   const r = relierSection(db, marc.id, u.id, a.id, sa.id, { cibleFicheId: b.id, type: 'habite' });
-  assert.equal(r.type, 'habite');
+  assert.equal(r.qualificatif, 'habite');
   assert.equal(r.cible.id, b.id);
-  assert.deepEqual(lireRelations(db, { compteId: marc.id }, u.id, a.id, sa.id).map((x) => [x.type, x.cible.titre]), [['habite', 'Château']]);
+  assert.deepEqual(lireRelations(db, { compteId: marc.id }, u.id, a.id, sa.id).map((x) => [x.qualificatif, x.cible.titre]), [['habite', 'Château']]);
 });
 
 test('refus : joueur, inconnu, autre univers, soi-même, doublon, type — rien n’est écrit', () => {
@@ -114,10 +114,10 @@ test('deux gardes : section et cible lisibles, sans trace ni compte des autres',
   // target b unreadable still
   assert.deepEqual(lireRelations(db, L, u.id, a.id, sa.id), []);
   pub(db, marc.id, u.id, b.id, sb.id);
-  assert.deepEqual(lireRelations(db, L, u.id, a.id, sa.id).map((r) => r.type), ['vers-b']);
+  assert.deepEqual(lireRelations(db, L, u.id, a.id, sa.id).map((r) => r.qualificatif), ['vers-b']);
   // GM in player mode: same as player
-  assert.deepEqual(lireRelations(db, { compteId: marc.id, modeJoueur: true }, u.id, a.id, sa.id).map((r) => r.type), ['vers-b']);
-  assert.deepEqual(lireRelations(db, { compteId: marc.id }, u.id, a.id, sa.id).map((r) => r.type), ['vers-b', 'vers-c']);
+  assert.deepEqual(lireRelations(db, { compteId: marc.id, modeJoueur: true }, u.id, a.id, sa.id).map((r) => r.qualificatif), ['vers-b']);
+  assert.deepEqual(lireRelations(db, { compteId: marc.id }, u.id, a.id, sa.id).map((r) => r.qualificatif), ['vers-b', 'vers-c']);
 });
 
 test('retirer une relation : MJ seulement ; retirer une section retire ses relations', () => {

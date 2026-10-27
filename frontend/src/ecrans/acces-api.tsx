@@ -482,6 +482,19 @@ function AccesApi() {
         )}
       </section>
 
+      <section className="bloc-api" aria-labelledby="h-relations-api">
+        <div className="tete-panneau">
+          <h2 id="h-relations-api">Relier deux fiches</h2>
+        </div>
+        <p className="intro">
+          <code className="chasse">POST /fiches/:cle/relations</code> lit une liste d’entrées ; « nature » (se_situe, membre, detient, allie, ennemi) est facultative, « qualificatif »
+          est obligatoire sans nature. « type » est déprécié : lu comme « qualificatif », avec un avertissement.
+        </p>
+        <code className="valeur chasse" aria-label="Exemple de relation">
+          {'{ "section": "apparence", "cible": "lieu:port-sel", "nature": "se_situe", "qualificatif": "habite" }'}
+        </code>
+      </section>
+
       {nouveau && (
         <BoiteNouveauJeton
           base={base}
