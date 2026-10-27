@@ -3,7 +3,8 @@ import { NotebookPen, Plus, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 import { appeler, useConnexionPerdue } from '../../../../api';
-import { Bouton, Champ, Fenetre, useToasts } from '../../../../ui';
+import { useLimiteContenu } from '../../../../cadre-contexte';
+import { Bouton, Champ, Fenetre, depasse, messageTropLong, useToasts } from '../../../../ui';
 import type { Fiche } from '../../types';
 
 interface Brouillon { titre: string; texte: string }
@@ -34,6 +35,8 @@ export function NouveauCompteRendu({ universId, ficheId, cleBrouillon, onFermer 
   const [echec, setEchec] = useState(false);
   const [enCours, setEnCours] = useState(false);
   const perdue = useConnexionPerdue();
+  const maxContenu = useLimiteContenu();
+  const trop = depasse(texte, maxContenu);
   const naviguer = useNavigate();
   const { toast } = useToasts();
 
@@ -61,7 +64,7 @@ export function NouveauCompteRendu({ universId, ficheId, cleBrouillon, onFermer 
     if (enCours || perdue) return;
     const nom = titre.trim();
     const et = !nom ? 'Donnez un titre.' : nom.length > 120 ? '120 caractères au plus.' : undefined;
-    const ex = texte.length > 100000 ? '100 000 caractères au plus.' : undefined;
+    const ex = trop ? messageTropLong(maxContenu!) : undefined;
     setErreurTitre(et);
     setErreurTexte(ex);
     if (et || ex) return;
@@ -84,7 +87,7 @@ export function NouveauCompteRendu({ universId, ficheId, cleBrouillon, onFermer 
           setTitre(e.target.value); garder(e.target.value, texte);
         }} />
         <Champ etiquette="Texte" zone facultatif value={texte} rows={10} disabled={enCours} erreur={erreurTexte}
-          compteur={`${texte.length.toLocaleString('fr-FR')} / 100 000`} trop={texte.length > 100000}
+          compteur={`${texte.length.toLocaleString('fr-FR')}${maxContenu === undefined ? '' : ` / ${maxContenu.toLocaleString('fr-FR')}`}`} trop={trop}
           onChange={(e: { target: { value: string } }) => { setTexte(e.target.value); garder(titre, e.target.value); }} />
         {echec && <div className="echec" role="alert">Le compte-rendu n'a pas pu être créé. Réessayez.</div>}
         <div className="boutons">
