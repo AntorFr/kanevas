@@ -6,6 +6,8 @@ import { ErreurApi, lire, useConnexionPerdue } from '../../api';
 import { useCharge } from '../../cadre-contexte';
 import { Bouton, Champ } from '../../ui';
 import type { Fiche } from '../fiche/types';
+import { FiltreEtat, type EtatFiche } from '../fiche/marque';
+import type { MotsDisparu } from '../../types-contexte';
 import { ChoisirFiche } from './choisir-fiche';
 
 interface Nature {
@@ -59,7 +61,10 @@ export function useAvancee(universId: string, suffixeMode: string, params: URLSe
   };
 }
 
-export function Avancee({ universId, suffixeMode, params, setParams, avancee }: {
+export function Avancee({ universId, suffixeMode, params, setParams, avancee, mots, etat }: {
+  /** Words of the chosen type's gone mark; the filter is offered only with them. */
+  mots?: MotsDisparu;
+  etat: EtatFiche;
   universId: string;
   suffixeMode: string;
   params: URLSearchParams;
@@ -71,7 +76,7 @@ export function Avancee({ universId, suffixeMode, params, setParams, avancee }: 
   // The native check changes immediately, while navigation commits asynchronously.
   const [caseCochee, setCaseCochee] = useState(descendants);
   useEffect(() => setCaseCochee(descendants), [lie, descendants]);
-  const porteFiltres = params.has('lie') || params.has('nature') || params.has('descendants');
+  const porteFiltres = params.has('lie') || params.has('nature') || params.has('descendants') || (mots !== undefined && etat !== '');
   const [ouvert, setOuvert] = useState(porteFiltres);
   const details = useRef<HTMLDetailsElement>(null);
   const boutonRetrait = useRef<HTMLButtonElement>(null);
@@ -110,6 +115,12 @@ export function Avancee({ universId, suffixeMode, params, setParams, avancee }: 
           {proposees.map((n) => <option key={n.cle} value={n.cle}>{n.symetrique ? n.libelleSource : n.libelleCible}</option>)}
         </Champ>
       </div>
+      {mots && (
+        <div className="filtre-etat-avance">
+          <span className="lib-champ">État</span>
+          <FiltreEtat mots={mots} valeur={etat} onChoix={(v) => changer('etat', v)} />
+        </div>
+      )}
       {lie && lieu && <label className="filtre-descendants"><input type="checkbox" checked={caseCochee} disabled={perdue}
         onChange={(e) => { setCaseCochee(e.target.checked); changer('descendants', e.target.checked ? '1' : ''); }} /> sous-lieux compris</label>}
     </div>

@@ -77,3 +77,4 @@
   .filtre-nature { flex: 1; }
   .choisir-fiche-menu li > button { min-height: 40px; }
 }
+.filtre-etat-avance > .lib-champ { display: block; margin-bottom: var(--e-1); font-size: var(--t-13); font-weight: 500; }

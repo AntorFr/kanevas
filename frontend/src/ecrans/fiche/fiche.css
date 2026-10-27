@@ -271,3 +271,4 @@ a.cadre-ill:focus-visible { outline-offset: 2px; border-radius: var(--rayon-pann
    (e09), the labels never wrap. */
 .menu-ajout-fichier .menu { min-width: 220px; }
 .menu-ajout-fichier .menu-entree { white-space: nowrap; }
+.fiche .type.marque-badge { white-space: nowrap; }

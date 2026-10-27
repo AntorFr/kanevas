@@ -12,6 +12,7 @@ import './ecrans.css';
 import './fiche/fiche.css';
 import './liste.css';
 import { lireVue, memoriserVue, type VueListe } from './fiche/arbre';
+import { etatDe } from './fiche/marque';
 import { ListeRecherche } from './fiche/liste-recherche';
 import { ChargementGrille } from './fiche/vignette';
 import type { Fiche } from './fiche/types';
@@ -82,6 +83,8 @@ function Liste({ universId, slug }: { universId: string; slug: string | undefine
         onRecherche={(q) => setParams((p) => majParam(p, 'q', q))}
         sousType={params.get('sousType') ?? ''}
         onSousType={(v) => setParams((p) => majParam(p, 'sousType', v))}
+        etat={type.disparu ? etatDe(params.get('etat')) : ''}
+        onEtat={(v) => setParams((p) => majParam(p, 'etat', v))}
         videListe={
           <VideIcone icone={iconeDuType(types, type.type)}>
             <p>{type.aucun} {mj ? 'pour l’instant.' : 'à voir pour l’instant.'}</p>

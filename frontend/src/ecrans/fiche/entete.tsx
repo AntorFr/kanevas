@@ -10,10 +10,11 @@ import { BoiteEtiquetage } from './etiquetage';
 import { DeplacerSous } from './deplacer';
 import { SousTypeBadge } from './sous-type';
 import { adresseIllustration } from './vignette';
+import { MarqueDisparu, classeDisparu } from './marque';
 import type { Detail } from '../mediatheque/commun';
 import { MESSAGE_RESERVE, useAjoutFichier } from './fichiers';
 import { MESSAGES_PIECES } from './pieces';
-import { libelleDuType, useTypes } from '../../types-contexte';
+import { libelleDuType, iconeDeNom, marqueDe, typeParType, useTypes } from '../../types-contexte';
 import { TitreFiche } from './titre';
 import { SupprimerFiche } from './supprimer';
 
@@ -63,6 +64,32 @@ export function EnteteFiche({ universId, fiche, gestion, modeJoueur, badge, Icon
   const alias = fiche.alias ?? [];
   const etiquettes = fiche.etiquettes ?? [];
   const { types } = useTypes();
+  const [marquage, setMarquage] = useState(false);
+  const mots = typeParType(types, fiche.type)?.disparu;
+  const marque = marqueDe(types, fiche);
+
+  /** « Marquer mort » and its reverse: written whole, no optimistic badge (E-9, the gone mark). */
+  async function marquer() {
+    if (!mots || marquage) return;
+    const vers = fiche.charge.disparu !== true;
+    setMarquage(true);
+    setMessage(undefined);
+    try {
+      await appeler('PATCH', `/api/univers/${universId}/fiches/${fiche.id}`, { disparu: vers });
+      await rafraichir();
+      toast(vers ? `Fiche marquée : ${mots.oui}.` : 'Marque retirée.');
+    } catch (e) {
+      if (e instanceof ErreurApi && e.statut === 404) {
+        setMessage({ texte: 'Fiche introuvable.' });
+        onIntrouvable();
+      } else {
+        if (e instanceof ErreurApi && e.statut === 403) onDroitPerdu();
+        setMessage({ texte: 'Impossible de modifier la fiche. Réessayez.' });
+      }
+    } finally {
+      setMarquage(false);
+    }
+  }
 
   const ill = fiche.illustration && 'jeton' in fiche.illustration ? fiche.illustration : null;
   const fermee = fiche.illustration && 'fermee' in fiche.illustration ? fiche.illustration : null;
@@ -162,7 +189,7 @@ export function EnteteFiche({ universId, fiche, gestion, modeJoueur, badge, Icon
           <figure className={`illustration${envoi ? ' en-envoi' : ''}`}>
             <div className="boite-ill">
               {jeton !== undefined && !indisponible ? (
-                <a className="cadre-ill" href={adresseIllustration(universId, ill!.id, jeton)} target="_blank" rel="noopener" title="Ouvrir l’image entière">
+                <a className={`cadre-ill${classeDisparu(marque)}`} href={adresseIllustration(universId, ill!.id, jeton)} target="_blank" rel="noopener" title="Ouvrir l’image entière">
                   <img
                     src={adresseIllustration(universId, ill!.id, jeton)}
                     alt={`Illustration de « ${fiche.titre} »`}
@@ -171,6 +198,7 @@ export function EnteteFiche({ universId, fiche, gestion, modeJoueur, badge, Icon
                     decoding="async"
                     onError={() => setKo(jeton)}
                   />
+                  {marque && <MarqueDisparu mot={marque.mot} Icone={marque.Icone} />}
                 </a>
               ) : (
                 <div className="cadre-ill">
@@ -233,6 +261,12 @@ export function EnteteFiche({ universId, fiche, gestion, modeJoueur, badge, Icon
               onDroitPerdu={onDroitPerdu}
             />
             </span>
+            {marque && (
+              <span className="type marque-badge" title={marque.mot}>
+                <marque.Icone size={14} strokeWidth={1.75} aria-hidden="true" />
+                {marque.mot}
+              </span>
+            )}
             {/* « ⋯ » (E-9): « Changer le type… » (not for a report) and, for an imported sheet, its origin. */}
             {gestion && (
 
@@ -243,6 +277,14 @@ export function EnteteFiche({ universId, fiche, gestion, modeJoueur, badge, Icon
                 entrees={[
                   ...(fiche.type !== 'compte_rendu'
                     ? [{ libelle: 'Changer le type…', icone: ArrowRightLeft, onChoisir: () => setChangement(true) }]
+                    : []),
+                  ...(mots
+                    ? [{
+                        libelle: fiche.charge.disparu === true ? mots.menuNon : mots.menuOui,
+                        icone: iconeDeNom(mots.icone),
+                        impossible: marquage,
+                        onChoisir: () => void marquer(),
+                      }]
                     : []),
                   { libelle: 'Déplacer sous…', icone: FolderInput, onChoisir: () => setDeplacement(true) },
                   { libelle: 'Alias et étiquettes…', icone: Tags, onChoisir: () => setEtiquetage(true) },
