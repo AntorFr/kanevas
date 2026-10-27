@@ -517,7 +517,7 @@ of the content ; the preparation tasks are GM-only under AD-47. One point to wat
 that the import opens to the players by mistake — the import sets no audience the script does not
 ask for, and a scenario's sections are born closed.
 
-**Stubs.** None new in this slice : its stub seed carries no adventure (`kanevas-scenarios-import-assistant` then seeds « La Couronne brisée » and « Acte II »)  ; the import sample (`src/bouchon/echantillon`) carries two campaigns and two scenarios as `aventure` sheets. In this slice the assistant's stub keeps no sentence about campaigns; `kanevas-scenarios-import-assistant` restores the two through `creer_fiche` (AD-126).
+**Stubs.** None new in this slice : its stub seed carried no adventure (`kanevas-scenarios-import-assistant` seeded « La Couronne brisée » and « Acte II ») ; the import sample (`src/bouchon/echantillon`) carries two campaigns and two scenarios as `aventure` sheets. In this slice the assistant's stub kept no sentence about campaigns; `kanevas-scenarios-import-assistant` restored the two through `creer_fiche` (AD-126).
 
 **Deferred.** See the list above.
 
