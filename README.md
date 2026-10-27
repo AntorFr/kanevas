@@ -106,7 +106,13 @@ warning (the relation probe from `personnage:tenny-balla` to `lieu:absent`), zer
 April 18, March 3, February 10, 2021, newest first. In Éneria Prime, Base Éneria-1 resolves
 and Nyx stays « en attente »; player mode hides the GM paragraph and image, the base and
 Obscura, including in search. In « Aventures », open the campaign « Éneria », then its 60,000-character scenario (section « Scénario », GM only), and follow its
-Éneria Prime link.
+Éneria Prime link. The sample sends explicit adventure statuses: Éneria « En préparation »,
+Prélude « Terminée », the long scenario « Prête » and the arrival scenario « Terminée ». Change
+Éneria to « En cours » from its sheet’s status menu, then replay: it stays « En cours » and the
+report warns « statut modifié dans Kanevas : non écrasé ». In E-18, the batch counts all four
+adventures in « Fiches : 15 créées », with no campaign or scenario counter. The import base
+(`GET /api/import/v1/univers/4`) lists the supported `statuts`; an omitted status defaults to
+`en_preparation` at creation and leaves an existing status alone on replay.
 
 To exercise incremental replay, copy the sample JSON **within its directory** (file paths are
 relative to it), append a sheet with a fresh `cle`, then pass that JSON path as a fourth argument:

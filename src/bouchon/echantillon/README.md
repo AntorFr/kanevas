@@ -5,7 +5,10 @@
 Its `provenance` lists the source sheets. It contains extracts, not a Kanka converter.
 
 Each `fiches` entry is an API payload plus `cle`; the campaigns and scenarios are `aventure`
-sheets (a scenario has its campaign as `parent`). A file has `cle`, `chemin` (relative to the JSON), `nom` and `visibilite`.
+sheets with `sousType` and `statut` (a scenario has its campaign as `parent`). Adventures precede
+the reports whose `campagne` names their origin key. Éneria starts `en_preparation`, Prélude
+`terminee`, the long scenario `prete` and the arrival scenario `terminee`. The client sends
+files, parent-first sheets and relations; adventures count in « Fiches ». A file has `cle`, `chemin` (relative to the JSON), `nom` and `visibilite`.
 Relations are grouped by source `fiche`, with the API array in `entrees`.
 Arrays may be omitted; the optional fourth CLI argument selects another JSON file.
 
@@ -36,7 +39,9 @@ extra label and four relation probes are acceptance data. No credentials are sto
 
 Expected first batch: 15 sheets (2 campaign and 2 scenario adventures among them), 3 files and 3 relations created;
 one warning for the unknown relation target, zero refusals. Replay creates nothing;
-the unknown relation still warns and Nyx still waits. `refus.json` produces one refused
+the unknown relation still warns and Nyx still waits. Change an adventure’s status in Kanevas
+and replay: it stays changed, with « statut modifié dans Kanevas : non écrasé ». Omitting
+`statut` leaves an existing status alone; a new adventure defaults to `en_preparation`. `refus.json` produces one refused
 sheet with `champ: campagne` and an unknown-campaign reason; the client prints the closed
 report and exits with status 1. A connection or fatal HTTP error leaves the batch open;
 rerunning resumes it and safely replays the entries already sent.

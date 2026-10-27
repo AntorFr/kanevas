@@ -43,6 +43,7 @@
       "cle": "c:eneria",
       "type": "aventure",
       "titre": "Éneria",
+      "statut": "en_preparation",
       "sousType": "Campagne",
       "sections": [
         {
@@ -57,6 +58,7 @@
       "cle": "c:prelude",
       "type": "aventure",
       "titre": "Prélude",
+      "statut": "terminee",
       "sousType": "Campagne",
       "sections": [
         {
@@ -71,6 +73,7 @@
       "cle": "s:long",
       "type": "aventure",
       "titre": "La Mission des Cristaux d’Énergie — lecture longue",
+      "statut": "prete",
       "sousType": "Scénario",
       "parent": "c:eneria",
       "sections": [
@@ -86,6 +89,7 @@
       "cle": "s:arrivee",
       "type": "aventure",
       "titre": "L’Arrivée sur Éneria",
+      "statut": "terminee",
       "sousType": "Scénario",
       "parent": "c:prelude",
       "sections": [
