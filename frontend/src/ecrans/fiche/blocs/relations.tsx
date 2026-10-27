@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { appeler, ErreurApi } from '../../../api';
 import { useCharge } from '../../../cadre-contexte';
 import { BlocSection as BlocUi, Bouton, BoutonIcone, Champ, Chargement, ErreurChargement, LigneRelation, useToasts } from '../../../ui';
-import { badgeFiche, iconeDuType, typesActifs, useTypes } from '../../../types-contexte';
+import { badgeFiche, iconeDuType, libelleDuType, typesActifs, useTypes } from '../../../types-contexte';
 import type { BlocSection } from '../registre';
 import { ListeRecherche } from '../liste-recherche';
 import type { Fiche, PropsBlocSection } from '../types';
@@ -88,7 +88,7 @@ function BlocRelations({ universId, fiche, section, role, suffixeMode = '' }: Pr
                   qualificatif={libelleNature(r.nature) ? r.qualificatif : undefined}
                   icone={iconeDuType(types, r.cible.type)}
                   cible={r.cible.titre}
-                  type={badgeFiche(types, r.cible as Fiche)}
+                  type={libelleDuType(types, r.cible.type)}
                   vers={`/univers/${universId}/fiche/${r.cible.id}`}
                   actions={
                     mj && (
