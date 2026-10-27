@@ -3126,13 +3126,13 @@ The sheet of any type, with:
 - **Two blocks of the sheet**, above the sections, in this order — the mechanism is a registry
   of **sheet blocks by type** (AD-124), distinct from the section blocks:
   - « **Préparation** » — GM only, hidden in player mode: the five categories, « Ajouter »
-    (label of 1 to 200 characters, category), tick and untick, « Cochées (n) » folded; empty:
+    (label of 1 to 200 characters, category), tick and untick (open tasks by ascending id within a category), « Cochées (n) » folded; empty:
     « Rien à préparer pour l'instant. ». On a scenario as on a campaign.
   - « **Comptes-rendus** » — every member: the CR that name this adventure, most recent first,
     100 then « Charger la suite », each a link to its sheet; « Nouveau compte-rendu » (title,
     text) creates it as before (AD-61) and opens it; empty: « Aucun compte-rendu pour
     l'instant. » with the button. A player sees the CR he reads.
-- **« Contient »** (the existing children block) lists the scenarios of a campaign: nothing to
+- **« Contient »** (the existing children block, after the sections and the two blocks above — not before « Présentation » as the mock-up has it) lists the scenarios of a campaign, each as the type icon, the title and « · sub-type »: nothing to
   add; « Déplacer sous… » moves a scenario to another campaign.
 - Deleting an adventure follows the sheets' rule (E-9 ⋯ Supprimer, AD-119): the confirmation
   counts, besides what every sheet counts, « n tâches de préparation supprimées », « m scénarios
@@ -3194,7 +3194,7 @@ n'est visible des joueurs. » and no « Préparation » block.
 
 `docs/maquettes/e09-aventure.html` — the sheet of « La Couronne brisée » for the GM: the header
 with the sub-type badge and the status menu, the blocks « Préparation » and « Comptes-rendus »
-above « Présentation », « Contient » with a plain list of titles. The E-8 tree and
+above « Présentation », « Contient » with a plain list of titles (icon, title, sub-type), after the sections. The E-8 tree and
 the badges reuse the existing mockup `e08-liste-fiches.html` and the charte's audience badge;
 this text is authoritative where they differ.
 
