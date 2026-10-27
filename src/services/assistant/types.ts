@@ -6,6 +6,7 @@ import type { z } from 'zod';
  * the link (sheet or proposal).
  */
 export type TypeEvenement =
+  | 'fiche_creee'
   | 'section_modifiee'
   | 'section_completee'
   | 'proposition_creee'

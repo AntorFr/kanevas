@@ -622,21 +622,26 @@ describe('kanevas-scenarios-suivi : du schéma précédent à la fiche de l’av
     await p.close();
   });
 
-  // Fails if the assistant still creates a campaign or lists them.
-  test('l_assistant_d_antor_ne_cree_pas_de_campagne_et_n_ecrit_rien', async () => {
-    const avant = await antor.request.get('/api/univers/1/fiches?type=aventure');
-    const nAvant = ((await avant.json()) as { fiches: unknown[] }).fiches.length;
+  // Fails if the assistant cannot create an adventure (B-62, AD-126), still lists campaigns, or lets the player create.
+  test('l_assistant_d_antor_cree_une_campagne_en_preparation_et_ne_liste_pas_les_campagnes', async () => {
+    const liste = async () => ((await (await antor.request.get('/api/univers/1/fiches?type=aventure')).json()) as { fiches: { titre: string; id: number; charge: { statut: string } }[] }).fiches;
+    const nAvant = (await liste()).length;
     const r = await antor.request.post('/api/univers/1/assistant/messages', { data: { message: 'Crée une campagne « La Reine rouge »', historique: [] } });
     assert.equal(r.status(), 200, await r.text());
-    const corps = (await r.json()) as { evenements?: unknown[]; evenement?: unknown };
-    assert.ok(!corps.evenements || corps.evenements.length === 0, 'aucun événement');
-    const apres = await antor.request.get('/api/univers/1/fiches?type=aventure');
-    const f = ((await apres.json()) as { fiches: { titre: string }[] }).fiches;
-    assert.equal(f.length, nAvant, 'aucune aventure créée');
-    assert.ok(!f.some((x) => /Reine/.test(x.titre)));
+    const corps = (await r.json()) as { reponse: string; evenements: { type: string; libelle: string }[] };
+    assert.equal(corps.reponse, 'Campagne « La Reine rouge » créée.');
+    assert.deepEqual(corps.evenements.map((e) => [e.type, e.libelle]), [['fiche_creee', 'Fiche « La Reine rouge » créée']]);
+    const f = await liste();
+    assert.equal(f.length, nAvant + 1);
+    assert.equal(f.find((x) => x.titre === 'La Reine rouge')!.charge.statut, 'en_preparation');
     const q = await antor.request.post('/api/univers/1/assistant/messages', { data: { message: 'Liste les campagnes de l’univers', historique: [] } });
     assert.equal(q.status(), 200);
-    assert.doesNotMatch(await q.text(), /La Couronne brisée.*En cours.*Les Cendres/s, 'pas de lister_campagnes');
+    assert.match(await q.text(), /Je ne sais répondre qu/, 'pas de lister_campagnes');
+    const l = await lea.request.post('/api/univers/1/assistant/messages', { data: { message: 'Crée une campagne « Pirate »', historique: [] } });
+    const lc = (await l.json()) as { reponse: string; evenements: unknown[] };
+    assert.deepEqual(lc.evenements, []);
+    assert.match(lc.reponse, /creer_fiche/);
+    assert.equal((await liste()).length, nAvant + 1);
   });
 
   // ------------------------------------------------------------------ AD-122 (5)

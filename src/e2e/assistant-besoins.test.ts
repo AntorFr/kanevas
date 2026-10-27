@@ -169,29 +169,31 @@ describe('E-12 assistant : droits d’écriture (B-26)', { skip: skipBrowser }, 
 });
 
 describe('E-12 assistant : catalogue du MJ (B-27)', { skip: skipBrowser }, () => {
-  test('mj_et_joueuse_demandent_de_creer_une_campagne_ou_un_scenario_rien_n_est_cree_phrase_hors_script', async () => {
-    // AD-127: the creation tools are gone (the assistant creates no campaign nor scenario any more).
-    const m = await monde('Lame d’Ébène création retirée');
+  test('mj_cree_une_campagne_puis_un_scenario_dessous_joueuse_recoit_outil_absent', async () => {
+    // B-62, AD-126: creer_fiche for the GM; absent for the player; nothing written for her.
+    const m = await monde('Lame d’Ébène création');
     await ouvrirFiche(m.antor, m);
     await ouvrirPanneau(m.antor);
     await demander(m.antor, 'Crée une campagne « Les Marches rouges »');
     let t = await texte(m.antor);
-    assert.doesNotMatch(t, /Campagne « Les Marches rouges » créée/);
-    assert.doesNotMatch(t, /Écrit par l'assistant/);
-    assert.match(t, /chercher, lire, ajouter/);
+    assert.match(t, /Campagne « Les Marches rouges » créée\./);
+    assert.match(t, /Fiche « Les Marches rouges » créée/);
     await demander(m.antor, 'Crée un scénario « Acte III — La crypte » dans « Les Marches rouges »');
     t = await texte(m.antor);
-    assert.doesNotMatch(t, /Scénario « Acte III — La crypte » créé/);
+    assert.match(t, /Scénario « Acte III — La crypte » créé dans Les Marches rouges\./);
     await m.antor.screenshot({ path: '/tmp/e12-antor-creation.png' });
-    const aventures = await json(m.antor, 'GET', `/api/univers/${m.U}/fiches?type=aventure`);
-    assert.equal(JSON.stringify(aventures).includes('Marches rouges'), false);
+    const aventures = (await json(m.antor, 'GET', `/api/univers/${m.U}/fiches?type=aventure`)) as any;
+    const liste = JSON.stringify(aventures);
+    assert.ok(liste.includes('Marches rouges') && liste.includes('Acte III'));
 
     await ouvrirFiche(m.lea, m);
     await ouvrirPanneau(m.lea);
-    await demander(m.lea, 'Crée une campagne « Les Marches rouges »');
+    await demander(m.lea, 'Crée une campagne « Les Cendres »');
     const tl = await texte(m.lea);
-    assert.doesNotMatch(tl, /Écrit par l'assistant/);
-    assert.doesNotMatch(tl, /Campagne « Les Marches rouges » créée/);
+    assert.match(tl, /l'outil « creer_fiche » ne fait pas partie de ceux dont vous disposez/);
+    assert.doesNotMatch(tl, /Écrit par l'assistant|Fiche « Les Cendres » créée/);
+    const apres = JSON.stringify(await json(m.antor, 'GET', `/api/univers/${m.U}/fiches?type=aventure`));
+    assert.equal(apres.includes('Les Cendres'), false);
     await m.lea.screenshot({ path: '/tmp/e12-lea-creation.png' });
   });
 });

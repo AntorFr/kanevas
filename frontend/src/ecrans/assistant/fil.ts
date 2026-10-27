@@ -6,7 +6,7 @@ import { ErreurApi, appeler } from '../../api';
 export const MAX_MESSAGE = 2000;
 export const MAX_HISTORIQUE = 20;
 
-export type TypeEvenement = 'section_modifiee' | 'section_completee' | 'image_attachee' | 'proposition_creee';
+export type TypeEvenement = 'fiche_creee' | 'section_modifiee' | 'section_completee' | 'image_attachee' | 'proposition_creee';
 
 /** The client never gives up before this (an image request lasts 270 s at most, AD-90). */
 export const DELAI_REQUETE_MS = 300_000;

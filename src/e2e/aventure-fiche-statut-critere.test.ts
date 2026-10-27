@@ -39,6 +39,10 @@ describe('kanevas-scenarios-type-fiche, E-9 aventure', { skip: skipBrowser }, ()
     antor = (await connecte(browser, srv.base, 'Antor')).page;
     lea = (await connecte(browser, srv.base, 'Léa')).page;
     U = (await api(antor, 'GET', '/api/univers')).find((u: Any) => u.nom === "Lame d'Ébène").id;
+    // The seed now carries its own « La Couronne brisée » (AD-126): this test builds its own, so drop the seeded ones.
+    for (const f of (await api(antor, 'GET', `/api/univers/${U}/fiches?type=aventure`)).fiches ?? []) {
+      await api(antor, 'DELETE', `/api/univers/${U}/fiches/${f.id}`);
+    }
     const mk = async (titre: string, extra: object = {}) =>
       (await api(antor, 'POST', `/api/univers/${U}/fiches`, { type: 'aventure', titre, ...extra })).id as number;
     camp = await mk('La Couronne brisée', { sections: [{ titre: 'Présentation', joueursLisent: false }] });

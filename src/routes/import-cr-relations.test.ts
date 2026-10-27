@@ -82,7 +82,7 @@ test('échec : campagne absente ou inconnue → 400 champ campagne, rien d’éc
   const sans = await m.put('cr:y', { type: 'compte_rendu', titre: 'Y', sections: [] }, l);
   assert.equal(sans.statusCode, 400);
   assert.equal(sans.json().champ, 'campagne');
-  assert.equal(n(m.app, "SELECT COUNT(*) n FROM fiches WHERE type='compte_rendu'"), 0);
+  assert.equal(n(m.app, "SELECT COUNT(*) n FROM fiches WHERE type='compte_rendu' AND cle_origine IS NOT NULL"), 0);
   const lt = await m.lire(l);
   assert.equal(lt.compteurs.fiches.refusees, 2);
   assert.equal(lt.rapport[0].cle, 'cr:x');
@@ -96,7 +96,7 @@ test('exclusion : une campagne d’un autre univers n’est pas résolue', async
   const r = await m.put('cr:z', cr('Z', '2021-03-03T20:00:00Z', { campagne: 'c:etr' }));
   assert.equal(r.statusCode, 400);
   assert.equal(r.json().champ, 'campagne');
-  assert.equal(n(m.app, "SELECT COUNT(*) n FROM fiches WHERE type='compte_rendu'"), 0);
+  assert.equal(n(m.app, "SELECT COUNT(*) n FROM fiches WHERE type='compte_rendu' AND cle_origine IS NOT NULL"), 0);
 });
 
 test('bords : creeLe dans le futur → 400 ; sans creeLe, la date est celle de la création', async () => {
@@ -105,7 +105,7 @@ test('bords : creeLe dans le futur → 400 ; sans creeLe, la date est celle de l
   const f = await m.put('cr:f', cr('Futur', '2999-01-01T00:00:00Z'));
   assert.equal(f.statusCode, 400);
   assert.equal(f.json().champ, 'creeLe');
-  assert.equal(n(m.app, "SELECT COUNT(*) n FROM fiches WHERE type='compte_rendu'"), 0);
+  assert.equal(n(m.app, "SELECT COUNT(*) n FROM fiches WHERE type='compte_rendu' AND cle_origine IS NOT NULL"), 0);
   const ok = await m.put('cr:nd', { type: 'compte_rendu', titre: 'Sans date', campagne: 'c:brumes', sections: [] });
   assert.equal(ok.statusCode, 200, ok.body);
   const d = (m.app.db.prepare("SELECT cree_le FROM fiches WHERE cle_origine='cr:nd'").get() as { cree_le: string }).cree_le;

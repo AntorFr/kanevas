@@ -11,7 +11,7 @@ import { cloreLot, lireLot, MAX_RAPPORT, ouvrirLot } from '../services/lots.js';
 import { lireContexteImport } from '../services/import.js';
 import { assurerFiche, lotDeRequete, supprimerFicheImport } from '../services/import-fiches.js';
 import { assurerFichier, MAX_FICHIERS_JOINTS } from '../services/fichiers.js';
-import { TYPES_FICHE, typeActif } from '../services/types-fiche.js';
+import { STATUT_AVENTURE, TYPES_FICHE, typeActif } from '../services/types-fiche.js';
 import { registerErreurs } from './erreurs.js';
 
 /** Body cap of the import API (AD-103/104). */
@@ -89,6 +89,7 @@ export async function registerImportRoutes(app: FastifyInstance) {
           type,
           active: typeActif(app.db, ctx.univers.id, type),
         })),
+        statuts: STATUT_AVENTURE.options,
         limites: {
           relationsParSection: LIMITE_RELATIONS,
           contenuSection: MAX_CONTENU_SECTION,

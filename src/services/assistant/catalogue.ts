@@ -4,7 +4,7 @@ import type { Db } from '../../db/db.js';
 import { exigerRole } from '../droits.js';
 import { ErreurService } from '../erreurs.js';
 import { ajouterFichier, MAX_FICHIERS_JOINTS, verifierDepot } from '../fichiers.js';
-import { lireFiche, listerFiches } from '../fiches.js';
+import { creerFiche, deplacerFiche, lireFiche, listerFiches } from '../fiches.js';
 import { choisirAdaptateur, type AdaptateurChoisi } from '../images/index.js';
 import { creerProposition } from '../propositions.js';
 import { ecrireContenu, lireSection } from '../sections.js';
@@ -173,6 +173,31 @@ export function catalogueDe(
 
   if (role === 'mj') {
     outils.push(
+      outil(
+        'creer_fiche',
+        'Crée une fiche d’un type activé (hors compte-rendu), avec un titre, un sous-type facultatif et un parent facultatif. Une aventure naît En préparation, fermée aux joueurs. Pour une campagne ou un scénario, utiliser le type aventure et le sous-type Campagne ou Scénario ; chercher le parent pour obtenir son id.',
+        z.strictObject({
+          type: z.enum(TYPES_FICHE.filter((type) => type !== 'compte_rendu')),
+          titre: z.string(),
+          sousType: z.string().optional(),
+          parentId: id.optional(),
+        }),
+        ({ type, titre, sousType, parentId }) => db.transaction(() => {
+          // Match the sheet form's default for a character: an NPC (no generic payload parameter).
+          const fiche = creerFiche(db, compteId, universId, {
+            type, titre, sousType, charge: type === 'personnage' ? { pj: false } : undefined,
+          });
+          if (parentId !== undefined) deplacerFiche(db, acteur, universId, fiche.id, parentId);
+          return {
+            donnees: { id: fiche.id, type: fiche.type, titre: fiche.titre },
+            evenement: {
+              type: 'fiche_creee' as const,
+              libelle: `Fiche « ${fiche.titre} » créée`,
+              cible: { type: 'fiche' as const, ficheId: fiche.id },
+            },
+          };
+        })(),
+      ),
       outil(
         'proposer_mise_a_jour',
         "Propose un nouveau contenu pour une section, d'après un compte-rendu. N'écrit jamais dans la section : le MJ applique ou abandonne la proposition lui-même. `version` est celle rendue par `lire_section`.",
