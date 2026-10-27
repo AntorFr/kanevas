@@ -116,7 +116,7 @@ E-16 vivent hors des univers : leurs cases disent le rôle dans un univers ratta
 | E-19 *(kanevas-import)* | tout : ajouter, renommer, visibilité, supprimer ; « Utilisé dans » complet | les fichiers visibles des joueurs et ceux qu'il a ajoutés ; « Utilisé dans » réduit aux fiches qu'il lit ; ni ajout depuis E-19 (**caché** ; il ajoute un fichier par une section qu'il écrit, E-9), ni réglage, ni suppression (**cachés**) | — |
 | E-18 *(kanevas-import)* | créer un jeton ; voir et révoquer tous les jetons de l'univers (y compris ceux d'un autre MJ) ; voir les lots | — (**caché** : absent de la barre, « Page introuvable. » par l'adresse) | — |
 
-What `kanevas-scenarios` adds to the lines above: **E-17** — the status badge on the result card of an adventure, for every role that reads the sheet; **E-12** — no tool creates or lists adventures (`kanevas-scenarios-suivi` removed the campaign tools; `creer_fiche` comes with `kanevas-scenarios-import-assistant`), the assistant answers it cannot; **E-18** — no « Campagnes » or « Scénarios » counter in a lot: adventures count among « Fiches ».
+What `kanevas-scenarios` adds to the lines above: **E-17** — the status badge on the result card of an adventure, for every role that reads the sheet; **E-12** — the GM creates sheets through `creer_fiche` (AD-126), with a « Fiche « X » créée » writing block and « Ouvrir » leading to E-9; the player has no creation tool; **E-18** — no « Campagnes » or « Scénarios » counter in a lot: adventures count among « Fiches ».
 
 Ce que `kanevas-import` ajoute aux lignes existantes : **barre latérale** — tous : la section « Lore »
 ne montre que les types activés ; **E-8** — MJ : la vue en arbre, la création dans les seuls types activés,
@@ -972,7 +972,7 @@ jamais « caché ». Chemin d'échec de relier une section : le refus du service
 
 ## Détail des écrans de `kanevas-assistant-membre`
 
-> *`kanevas-scenarios-suivi`: the tools `creer_campagne`, `creer_scenario` and `lister_campagnes` are gone; the assistant creates no adventure until the slice `kanevas-scenarios-import-assistant` adds `creer_fiche` (AD-126). To find an adventure it searches, with the type « Aventure ».*
+> *`kanevas-scenarios-suivi`: the tools `creer_campagne`, `creer_scenario` and `lister_campagnes` are gone; the GM now creates sheets, including adventures, through `creer_fiche` (AD-126); players have no creation tool. To find an adventure it searches, with the type « Aventure ».*
 
 > E-12 Assistant, et son ajout au shell d'un univers. Mêmes six états et mêmes textes communs que
 > `kanevas-premiere-fiche` (chargement, connexion perdue, session expirée) ; ne sont redits que les
@@ -1011,7 +1011,7 @@ nulle part (ni stockage du navigateur, ni serveur). Le client envoie le message 
 messages du fil (AD-75).
 
 **Ce que chaque rôle y voit.** Le Joueur : chercher, lire une fiche, lire une section, modifier une
-section, ajouter un paragraphe à une section. The GM: the same, plus generating an image (`kanevas-images`). A player asking to generate an image, or anyone asking to create a campaign, lacks the tool:
+section, ajouter un paragraphe à une section. The GM: the same, plus creating sheets (`creer_fiche`, AD-126), proposing updates and generating an image (`kanevas-images`). A player asking to generate an image or create a sheet lacks the tool:
 l'assistant répond qu'il ne peut pas, sans événement et sans rien créer (le texte est celui du
 modèle, il n'est pas fixé ; ce qu'on vérifie est l'absence d'écriture). Dans les deux cas
 l'assistant ne lit et n'écrit que ce que la personne lit et écrit : une section fermée est
@@ -1037,7 +1037,7 @@ dit « Introuvable. » ; Antor, lui, obtient les deux sections.
 
 ### Clôture de `kanevas-assistant-membre`
 
-B-26 → E-12 (toutes ses lignes) ; B-27 → E-12 (campaign or scenario creation: removed, to return with `kanevas-scenarios-import-assistant` ; proposer et
+B-26 → E-12 (toutes ses lignes) ; B-27 → E-12 (campaign or scenario creation: `creer_fiche`, AD-126 ; proposer et
 générer restent à `kanevas-monde` et `kanevas-images`). Parcours : P-3 étape 5 (« rappelle-moi tout
 ce qu'on sait d'Aldric », première moitié), P-6 étape 4, P-7 étape 2. Rôles : MJ et Joueur ont
 E-12, l'admin d'instance sans rôle ne l'a pas. Aucune migration, aucune entité : le fil n'est pas
@@ -3187,7 +3187,7 @@ n'est visible des joueurs. » and no « Préparation » block.
   more — the « Aventures » entry leaves the bar, creating an adventure is refused (E-8; the import warns `type_desactive`); existing adventures stay readable and writable by their
   address and in the search, with their blocks « Préparation » and « Comptes-rendus » and their
   status menu (no data is hidden); the E-3 blocks keep listing the adventures « En cours ».
-- **E-12**: no tool creates an adventure in this slice (« crée une campagne » gets the answer of any missing tool); to find one the assistant searches with the type « Aventure ». `creer_fiche` (AD-126) belongs to `kanevas-scenarios-import-assistant`.
+- **E-12**: the GM creates an adventure through `creer_fiche` (AD-126), with optional sub-type and parent. Its « Fiche « X » créée » block opens E-9; it starts « En préparation », closed to players. The player has no creation tool. To find an adventure the assistant searches with the type « Aventure ».
 - **E-17**: adventures are searched like any sheet, their status badge on the result card (a result the reader may not read is absent; a long title wraps with the badge on its own line; the states are E-17's, the badge adds none).
 
 ### Mockup

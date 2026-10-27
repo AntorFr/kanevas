@@ -17,7 +17,9 @@ import { ajouterSection, changerAudience, ecrireContenu, lireSection } from '../
 import { poserEtiquetage } from '../services/etiquettes.js';
 import { relierSection } from '../services/relations.js';
 import { creerCarte, ajouterElement } from '../services/cartes.js';
-import { creerFiche, deplacerFiche, lireFiche } from '../services/fiches.js';
+import { changerStatutFiche, creerFiche, deplacerFiche, lireFiche } from '../services/fiches.js';
+import { creerCompteRendu } from '../services/comptes_rendus.js';
+import { ajouterTache } from '../services/preparation.js';
 import { assurerCompte } from '../services/comptes.js';
 import { creerEtRattacherSysteme, creerGabarit, rattacherSysteme } from '../services/systemes.js';
 import { creerJetonDeValeur } from '../services/jetons.js';
@@ -248,6 +250,20 @@ export function semerBouchon(db: Db): boolean {
         'Une crique que fréquentent [[cle:faction:repaire|les contrebandiers du Repaire]] et jadis [[999999|Capitaine Hesk]].',
     });
     changerAudience(db, id.antor, essai.id, anse.id, descriptionAnse.id, { joueursLisent: true });
+
+    // Migration tests also seed a pre-pivot base: adventures require the 0017 task schema.
+    if ((db.pragma('table_info(taches_preparation)') as { name: string }[]).some((c) => c.name === 'fiche_id')) {
+      const couronne = fiche('aventure', 'La Couronne brisée', [{ titre: 'Présentation', lue: true }], undefined, 'Campagne');
+      changerStatutFiche(db, { compteId: id.antor }, lame.id, couronne.id, 'en_cours');
+      const acte = fiche('aventure', 'Acte II — Le sceau brisé', [{ titre: 'Présentation', lue: false }], undefined, 'Scénario');
+      changerStatutFiche(db, { compteId: id.antor }, lame.id, acte.id, 'prete');
+      ranger(acte.id, couronne.id);
+      ajouterTache(db, id.antor, couronne.id, { categorie: 'cartes', libelle: 'Plan de la crypte' });
+      ajouterTache(db, id.antor, couronne.id, { categorie: 'deroulements', libelle: 'Que se passe-t-il si Léa refuse le sceau ?' });
+      creerCompteRendu(db, id.lea, lame.id, couronne.id, {
+        titre: 'Séance 12', texte: 'La compagnie poursuit la piste du sceau brisé.',
+      });
+    }
   })();
   return true;
 }

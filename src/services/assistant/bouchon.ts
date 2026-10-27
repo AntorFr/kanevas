@@ -28,6 +28,26 @@ const absent = (nom: string) =>
 
 type Donnees = Record<string, any>;
 
+async function creerCampagne(a: Appel, titre: string): Promise<string> {
+  if (!a.a('creer_fiche')) return absent('creer_fiche');
+  const r = await a.faire('creer_fiche', { type: 'aventure', titre, sousType: 'Campagne' });
+  return r.ok ? `Campagne « ${(r.donnees as Donnees).titre} » créée.` : r.erreur;
+}
+
+async function creerScenario(a: Appel, titre: string, campagne: string): Promise<string> {
+  if (!a.a('creer_fiche')) return absent('creer_fiche');
+  const cherche = await a.faire('chercher', { mots: campagne, type: 'aventure' });
+  if (!cherche.ok) return cherche.erreur;
+  const parent = (cherche.donnees as Donnees).fiches.find(
+    (f: Donnees) => f.titre.toLowerCase() === campagne.toLowerCase(),
+  );
+  if (!parent) return INTROUVABLE;
+  const r = await a.faire('creer_fiche', {
+    type: 'aventure', titre, sousType: 'Scénario', parentId: parent.id,
+  });
+  return r.ok ? `Scénario « ${(r.donnees as Donnees).titre} » créé dans ${parent.titre}.` : r.erreur;
+}
+
 async function lireSection(a: Appel, section: string): Promise<string> {
   const cherche = await a.faire('chercher', { mots: section });
   if (!cherche.ok) return cherche.erreur;
@@ -139,6 +159,11 @@ type Regle = { motif: RegExp; agir: (a: Appel, m: RegExpMatchArray, message: str
 
 /** Ordered: the first rule whose keywords appear in the message wins (AD-78). */
 const REGLES: Regle[] = [
+  { motif: /cr[ée]e une campagne «\s*(.+?)\s*»/i, agir: (a, m) => creerCampagne(a, m[1]!) },
+  {
+    motif: /cr[ée]e un sc[ée]nario «\s*(.+?)\s*» dans «\s*(.+?)\s*»/i,
+    agir: (a, m) => creerScenario(a, m[1]!, m[2]!),
+  },
   {
     motif: /mets [àa] jour la section «\s*(.+?)\s*» de «\s*(.+?)\s*» d['’]après le compte-rendu «\s*(.+?)\s*»/i,
     agir: (a, m) => proposer(a, m[1]!, m[2]!, m[3]!),
