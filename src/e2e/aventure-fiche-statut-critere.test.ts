@@ -90,6 +90,7 @@ describe('kanevas-scenarios-type-fiche, E-9 aventure', { skip: skipBrowser }, ()
     await ouvrir(antor, camp, 'La Couronne brisée');
     const main = antor.locator('main');
     await main.getByRole('heading', { name: 'Contient' }).waitFor();
+    await main.getByText('Acte II — Le sceau brisé').first().waitFor();
     assert.match(await main.innerText(), /Acte II — Le sceau brisé/);
     await ouvrir(antor, scen, 'Acte II — Le sceau brisé');
     await antor.getByRole('button', { name: /^Autres actions sur/ }).first().click();

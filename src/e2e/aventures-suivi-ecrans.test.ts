@@ -1,5 +1,5 @@
-// Black-box tests of kanevas-suivi-ecran-comptes-rendus, written from its exit criterion and
-// docs/ecrans.md « E-13 Comptes-rendus », « Blocs de E-3 », « Ajouts… E-9 ».
+// Black-box tests of the E-3 blocks and E-13 on adventure sheets (kanevas-scenarios-suivi-pivot, AD-127), from
+// docs/ecrans.md « E-13 Comptes-rendus », « Blocs de E-3 » and the « kanevas-scenarios » amendments.
 // Real server in stub mode + real Chromium. Expected texts are literals from the doc.
 import assert from 'node:assert/strict';
 import { after, before, test } from 'node:test';
@@ -61,16 +61,16 @@ after(async () => {
 
 test('états vides : E-3 (blocs) et E-13, MJ et Joueuse', opts, async () => {
   await antor.goto(`/univers/${uid}`);
-  await antor.getByRole('heading', { name: 'Campagnes actives' }).waitFor();
+  await antor.getByRole('heading', { name: 'Campagnes en cours' }).waitFor();
   await attendre(antor);
   let t = await texte(antor);
-  for (const s of ['Campagnes actives', 'Derniers comptes-rendus', 'Préparation', 'Aucune campagne active.', 'Aucun compte-rendu pour l\'instant.', 'Rien à préparer pour l\'instant.', 'Tous les comptes-rendus'])
+  for (const s of ['Campagnes en cours', 'Derniers comptes-rendus', 'Préparation', 'Aucune campagne en cours.', 'Aucun compte-rendu pour l\'instant.', 'Rien à préparer pour l\'instant.', 'Tous les comptes-rendus'])
     assert.ok(t.includes(s), `« ${s} » attendu`);
   assert.ok(!t.includes('Rien à afficher pour l\'instant.'));
   await antor.screenshot({ path: '/tmp/e3-vide-mj.png' });
 
   await lea.page.goto(`/univers/${uid}`);
-  await lea.page.getByRole('heading', { name: 'Campagnes actives' }).waitFor();
+  await lea.page.getByRole('heading', { name: 'Campagnes en cours' }).waitFor();
   await attendre(lea.page);
   t = await texte(lea.page);
   assert.ok(t.includes('Derniers comptes-rendus') && t.includes('Aucun compte-rendu à lire pour l\'instant.'));
@@ -80,23 +80,24 @@ test('états vides : E-3 (blocs) et E-13, MJ et Joueuse', opts, async () => {
   await antor.getByRole('link', { name: rxExact('Comptes-rendus') }).click();
   await antor.getByRole('heading', { name: 'Comptes-rendus', level: 1 }).waitFor();
   await antor.getByText(rx('Aucun compte-rendu pour l\'instant.')).waitFor();
-  assert.ok(await antor.getByRole('link', { name: rxExact('Voir les campagnes') }).count());
+  assert.ok(await antor.getByRole('link', { name: rxExact('Voir les aventures') }).count());
   await antor.screenshot({ path: '/tmp/e13-vide-mj.png' });
   await lea.page.getByRole('link', { name: rxExact('Comptes-rendus') }).click();
   await lea.page.getByText(rx('Aucun compte-rendu à lire pour l\'instant.')).first().waitFor();
-  await lea.page.getByRole('link', { name: rxExact('Voir les campagnes') }).click();
-  await lea.page.waitForURL(new RegExp(`/univers/${uid}/campagnes$`));
+  await lea.page.getByRole('link', { name: rxExact('Voir les aventures') }).click();
+  await lea.page.waitForURL(new RegExp(`/univers/${uid}/fiches/aventures$`));
 });
 
-test('E-3 : Campagnes actives (seule l\'active, lien E-6), Préparation = cinq premières non cochées', opts, async () => {
-  const c = await api(antor, 'POST', `/api/univers/${uid}/campagnes`, { nom: NOM });
+test('E-3 : Campagnes en cours (seule celle « En cours », lien vers sa fiche), Préparation = cinq premières non cochées', opts, async () => {
+  const c = await api(antor, 'POST', `/api/univers/${uid}/fiches`, { type: 'aventure', sousType: 'Campagne', titre: NOM, sections: [{ titre: 'Présentation', joueursLisent: true }] });
+  assert.equal(c.status, 201, JSON.stringify(c.body));
   campId = c.body.id;
-  await api(antor, 'PATCH', `/api/campagnes/${campId}`, { statut: 'active' });
-  const d = await api(antor, 'POST', `/api/univers/${uid}/campagnes`, { nom: 'Dormante' });
-  await api(antor, 'POST', `/api/campagnes/${d.body.id}/taches`, { categorie: 'pnj', libelle: 'Tâche dormante' });
+  assert.equal((await api(antor, 'PATCH', `/api/univers/${uid}/fiches/${campId}`, { statut: 'en_cours' })).status, 200);
+  const d = await api(antor, 'POST', `/api/univers/${uid}/fiches`, { type: 'aventure', sousType: 'Campagne', titre: 'Dormante', sections: [{ titre: 'Présentation', joueursLisent: true }] });
+  await api(antor, 'POST', `/api/univers/${uid}/fiches/${d.body.id}/taches`, { categorie: 'pnj', libelle: 'Tâche dormante' });
   const ids: number[] = [];
   for (let i = 1; i <= 7; i++) {
-    const r = await api(antor, 'POST', `/api/campagnes/${campId}/taches`, { categorie: i === 1 ? 'cartes' : 'pnj', libelle: `Tâche ${i}` });
+    const r = await api(antor, 'POST', `/api/univers/${uid}/fiches/${campId}/taches`, { categorie: i === 1 ? 'cartes' : 'pnj', libelle: `Tâche ${i}` });
     assert.equal(r.status, 201, JSON.stringify(r.body));
     ids.push(r.body.id);
   }
@@ -107,20 +108,22 @@ test('E-3 : Campagnes actives (seule l\'active, lien E-6), Préparation = cinq p
   await attendre(antor);
   const t = await texte(antor);
   assert.ok(t.includes(NOM));
-  assert.ok(!t.includes('Dormante'), 'a campaign in preparation is not active');
+  assert.ok(!t.includes('Dormante'), 'a campaign in preparation is not « en cours »');
+  assert.ok(await antor.getByText('En cours', { exact: true }).count(), 'le statut de la campagne est montré');
   for (const s of ['Tâche 1', 'Tâche 3', 'Tâche 4', 'Tâche 5', 'Tâche 6']) assert.ok(t.includes(s), s);
   for (const s of ['Tâche 2', 'Tâche 7', 'Tâche dormante']) assert.ok(!t.includes(s), `${s} ne doit pas figurer`);
   assert.ok(avant(t, 'Tâche 1', 'Tâche 3') && avant(t, 'Tâche 5', 'Tâche 6'), 'plus anciennes d\'abord');
   await antor.screenshot({ path: '/tmp/e3-prepa.png' });
   await antor.getByRole('link', { name: rx(NOM) }).first().click();
-  await antor.waitForURL(new RegExp(`/univers/${uid}/campagnes/${campId}$`));
+  await antor.waitForURL(new RegExp(`/univers/${uid}/fiche/${campId}$`));
 
   await lea.page.goto(`/univers/${uid}`);
   await lea.page.getByRole('link', { name: rx(NOM) }).first().waitFor();
   await attendre(lea.page);
   const tl = await texte(lea.page);
   assert.ok(!tl.includes('Tâche 1') && !tl.includes('Préparation'));
-  assert.ok(!tl.includes('Dormante'));
+  assert.ok(!tl.includes('Dormante'), 'la campagne en préparation (Présentation ouverte) n\'est pas « en cours »');
+  assert.ok(tl.includes(NOM) && tl.includes('En cours'), 'Léa lit la campagne en cours et son statut');
 });
 
 test('comptes-rendus : cinq derniers sur E-3, ordre de création sur E-13, retouche sans remontée, fermeture aux joueurs sans trou', opts, async () => {
@@ -195,37 +198,6 @@ test('comptes-rendus : cinq derniers sur E-3, ordre de création sur E-13, retou
   await antor.getByRole('link', { name: rx('Session 11') }).waitFor();
 });
 
-test('E-9 : un compte-rendu porte « Campagne : <nom> » vers E-6, une autre fiche rien', opts, async () => {
-  await antor.goto(`/univers/${uid}/fiche/${session11}`);
-  await antor.getByRole('heading', { name: 'Session 11', level: 1 }).waitFor();
-  const ligne = antor.getByText(/^Campagne :/);
-  await ligne.waitFor();
-  assert.equal((await ligne.innerText()).replace(/\s+/g, ' ').trim(), `Campagne : ${NOM}`);
-  // under the title
-  const yTitre = (await antor.getByRole('heading', { name: 'Session 11', level: 1 }).boundingBox()).y;
-  assert.ok((await ligne.boundingBox()).y > yTitre);
-  await antor.screenshot({ path: '/tmp/e9-campagne.png' });
-  await ligne.getByRole('link', { name: rx(NOM) }).click();
-  await antor.waitForURL(new RegExp(`/univers/${uid}/campagnes/${campId}$`));
-
-  const lieu = await api(antor, 'POST', `/api/univers/${uid}/fiches`, { type: 'lieu', titre: 'La crypte' });
-  assert.equal(lieu.status, 201, JSON.stringify(lieu.body));
-  await antor.goto(`/univers/${uid}/fiche/${lieu.body.id}`);
-  await antor.getByRole('heading', { name: 'La crypte', level: 1 }).waitFor();
-  await attendre(antor);
-  assert.ok(!(await texte(antor)).includes('Campagne :'));
-  await antor.screenshot({ path: '/tmp/e9-lieu.png' });
-
-  // campaign unreadable: the line is absent without any message, the report stays readable
-  await antor.route('**/api/univers/*/campagnes/*', (r: Any) => r.fulfill({ status: 500, body: '{}' }));
-  await antor.goto(`/univers/${uid}/fiche/${session11}`);
-  await antor.getByRole('heading', { name: 'Session 11', level: 1 }).waitFor();
-  await attendre(antor);
-  const t = await texte(antor);
-  assert.ok(!t.includes('Campagne :') && !t.includes('Impossible'));
-  await antor.unrouteAll({ behavior: 'ignoreErrors' });
-});
-
 test('E-3 : chaque bloc échoue pour soi ; Réessayer ; chargement par bloc', opts, async () => {
   const page = antor;
   await page.route(`**/api/univers/${uid}/comptes-rendus*`, (r: Any) => r.fulfill({ status: 500, body: '{}' }));
@@ -242,7 +214,7 @@ test('E-3 : chaque bloc échoue pour soi ; Réessayer ; chargement par bloc', op
   assert.equal(await page.getByText('Impossible de charger ce bloc.').count(), 0);
 
   // tasks route fails: only Préparation fails
-  await page.route('**/api/campagnes/*/taches', (r: Any) => r.fulfill({ status: 500, body: '{}' }));
+  await page.route('**/api/univers/*/fiches/*/taches', (r: Any) => r.fulfill({ status: 500, body: '{}' }));
   await page.goto(`/univers/${uid}`);
   await page.getByText('Impossible de charger ce bloc.').waitFor();
   await attendre(page);
@@ -301,7 +273,7 @@ test('E-13 : chargement, erreur + Réessayer, connexion perdue, univers sans rô
 });
 
 test('E-13 contenu long : 100 puis « Charger la suite », échec de la suite, titre de 120 caractères', opts, async () => {
-  const camp = await api(antor, 'POST', `/api/univers/${uid}/campagnes`, { nom: 'Pleine' });
+  const camp = await api(antor, 'POST', `/api/univers/${uid}/fiches`, { type: 'aventure', sousType: 'Campagne', titre: 'Pleine' });
   for (let i = 0; i < 100; i++) {
     const r = await api(antor, 'POST', `/api/univers/${uid}/comptes-rendus`, { campagneId: camp.body.id, titre: `Lot ${String(i).padStart(3, '0')}` });
     assert.equal(r.status, 201);

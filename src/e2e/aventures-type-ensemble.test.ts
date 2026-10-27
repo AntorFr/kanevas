@@ -23,7 +23,6 @@ import { after, before, describe, test } from 'node:test';
 //  B-59 exclus.   Léa: badge without menu, never a closed scenario ; PATCH refused to player / player mode /
 //                 other type / out-of-range value ; filter route
 //  E-17           status badge on a search result ; a closed scenario is not a result for Léa
-//  coexistence    E-6 « Campagnes » still serves campaigns
 //  type désactivé the entry leaves the bar, creation is gone, an existing adventure keeps its status menu
 const require = createRequire(import.meta.url);
 type PW = typeof import('playwright');
@@ -552,28 +551,6 @@ describe('kanevas-scenarios-type : les aventures, du besoin à l’écran', { sk
     await capture(l, 'recherche-lea');
   });
 
-  // ------------------------------------------------------- coexistence
-  // Fails if the arrival of the type breaks E-6: the « Campagnes » entry and a campaign created there.
-  test('e6_campagnes_fonctionne_comme_avant', async () => {
-    const u = await univers();
-    const p = await page(monde.antor, `/univers/${u}`);
-    await p.getByRole('link', { name: 'Campagnes', exact: true }).click();
-    await p.waitForURL(/\/campagnes$/);
-    await p.getByLabel('Nom').fill('Vieille campagne');
-    await p.getByRole('button', { name: 'Créer la campagne' }).click();
-    await declencheur(p, 'Vieille campagne', 'En préparation').waitFor();
-    await choisirStatut(p, 'Vieille campagne', 'Active');
-    await p.getByRole('link', { name: /Vieille campagne/ }).first().click();
-    await p.waitForURL(/\/campagnes\/\d+$/);
-    await p.getByRole('button', { name: 'Nouveau scénario', exact: true }).click();
-    await p.getByLabel('Titre').fill('Ancien scénario');
-    await p.getByRole('button', { name: 'Créer le scénario' }).click();
-    await p.getByText('Ancien scénario').first().waitFor();
-    await capture(p, 'e6-campagne');
-    // Two unrelated objects: the old campaign is not an adventure.
-    assert.deepEqual(await titresListes(monde.antor, u, 'type=aventure'), []);
-  });
-
   // ------------------------------------------------------ type désactivé
   // Fails if deactivating the type does not remove its entry and its creation, or hides existing adventures' menu.
   test('type_desactive_sort_de_la_barre_sans_creation_et_l_aventure_existante_garde_son_menu', async () => {
@@ -581,9 +558,17 @@ describe('kanevas-scenarios-type : les aventures, du besoin à l’écran', { sk
     const id = await aventure(u, 'La Couronne brisée', { sousType: 'Campagne', joueursLisent: true });
     const rep = await monde.antor.request.put(`/api/univers/${u}/types/aventure`, { data: { etat: 'desactive' } });
     assert.equal(rep.status(), 200);
-    const p = await page(monde.antor, `/univers/${u}/fiche/${id}`);
+    // The sidebar reads the types after the page has loaded: arm the wait for that response before navigating,
+    // then assert on the main navigation only (the breadcrumb of the existing sheet legitimately keeps « Aventures »).
+    const p = await monde.antor.newPage();
+    const types = p.waitForResponse((r) => r.url().includes(`/api/univers/${u}/types`) && r.request().method() === 'GET');
+    await p.goto(`/univers/${u}/fiche/${id}`);
+    await types;
     await declencheur(p, 'La Couronne brisée', 'En préparation').waitFor();
-    assert.equal(await p.getByRole('link', { name: 'Aventures', exact: true }).count(), 0, 'plus d’entrée dans la barre');
+    const barre = p.getByRole('navigation', { name: 'Navigation principale' });
+    await barre.waitFor();
+    await p.getByRole('navigation', { name: 'Fil d’Ariane' }).getByRole('link', { name: 'Aventures', exact: true }).waitFor();
+    assert.equal(await barre.getByRole('link', { name: 'Aventures', exact: true }).count(), 0, 'plus d’entrée dans la barre');
     await choisirStatut(p, 'La Couronne brisée', 'En cours');
     const creer = await monde.antor.request.post(`/api/univers/${u}/fiches`, { data: { type: 'aventure', titre: 'Refusée' } });
     assert.ok([400, 403, 409].includes(creer.status()), `création refusée (obtenu ${creer.status()})`);

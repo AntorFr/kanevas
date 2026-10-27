@@ -169,55 +169,30 @@ describe('E-12 assistant : droits d’écriture (B-26)', { skip: skipBrowser }, 
 });
 
 describe('E-12 assistant : catalogue du MJ (B-27)', { skip: skipBrowser }, () => {
-  test('mj_cree_campagne_puis_scenario_retrouve_sur_e6_et_e7', async () => {
-    // Fails if the creation tools are absent, mis-labelled or mis-linked.
-    const m = await monde('Lame d’Ébène création');
+  test('mj_et_joueuse_demandent_de_creer_une_campagne_ou_un_scenario_rien_n_est_cree_phrase_hors_script', async () => {
+    // AD-127: the creation tools are gone (the assistant creates no campaign nor scenario any more).
+    const m = await monde('Lame d’Ébène création retirée');
     await ouvrirFiche(m.antor, m);
     await ouvrirPanneau(m.antor);
     await demander(m.antor, 'Crée une campagne « Les Marches rouges »');
     let t = await texte(m.antor);
-    assert.match(t, /Campagne « Les Marches rouges » créée/);
+    assert.doesNotMatch(t, /Campagne « Les Marches rouges » créée/);
+    assert.doesNotMatch(t, /Écrit par l'assistant/);
+    assert.match(t, /chercher, lire, ajouter/);
     await demander(m.antor, 'Crée un scénario « Acte III — La crypte » dans « Les Marches rouges »');
     t = await texte(m.antor);
-    assert.match(t, /Scénario « Acte III — La crypte » créé dans Les Marches rouges/);
-    await m.antor.screenshot({ path: '/tmp/e12-antor-creation.png' });
-    // The last "Ouvrir" leads to the scenario (E-7), where its title is visible.
-    await m.antor.getByRole('link', { name: /^Ouvrir/ }).last().click();
-    await attendre(m.antor);
-    assert.match(await texte(m.antor), /Acte III — La crypte/);
-    // And the campaign page (E-6) lists it.
-    await m.antor.goto(`/univers/${m.U}/campagnes`);
-    await attendre(m.antor);
-    assert.match(await texte(m.antor), /Les Marches rouges/);
-    await m.antor.getByRole("link", { name: /Les Marches rouges/ }).first().click();
-    await m.antor.getByText('Acte III — La crypte').first().waitFor();
-    assert.match(await texte(m.antor), /Acte III — La crypte/);
-  });
-
-  test('joueuse_demande_de_creer_un_scenario_rien_n_est_cree', async () => {
-    // Fails if the player gets a creation tool.
-    const m = await monde('Lame d’Ébène joueuse crée');
-    await json(m.antor, 'POST', `/api/univers/${m.U}/campagnes`, { nom: 'La Couronne brisée' }).catch(() => null);
-    await ouvrirFiche(m.lea, m);
-    await ouvrirPanneau(m.lea);
-    await demander(m.lea, 'Crée un scénario « Acte III — La crypte » dans « La Couronne brisée »');
-    const t = await texte(m.lea);
-    assert.doesNotMatch(t, /Écrit par l'assistant/);
     assert.doesNotMatch(t, /Scénario « Acte III — La crypte » créé/);
-    await m.lea.screenshot({ path: '/tmp/e12-lea-creation.png' });
-  });
+    await m.antor.screenshot({ path: '/tmp/e12-antor-creation.png' });
+    const aventures = await json(m.antor, 'GET', `/api/univers/${m.U}/fiches?type=aventure`);
+    assert.equal(JSON.stringify(aventures).includes('Marches rouges'), false);
 
-  test('joueuse_demande_de_creer_une_campagne_rien_n_est_cree', async () => {
-    const m = await monde('Lame d’Ébène joueuse campagne');
     await ouvrirFiche(m.lea, m);
     await ouvrirPanneau(m.lea);
     await demander(m.lea, 'Crée une campagne « Les Marches rouges »');
-    const t = await texte(m.lea);
-    assert.doesNotMatch(t, /Écrit par l'assistant/);
-    assert.doesNotMatch(t, /Campagne « Les Marches rouges » créée/);
-    await m.lea.goto(`/univers/${m.U}`);
-    await attendre(m.lea);
-    assert.doesNotMatch(await texte(m.lea), /Les Marches rouges/);
+    const tl = await texte(m.lea);
+    assert.doesNotMatch(tl, /Écrit par l'assistant/);
+    assert.doesNotMatch(tl, /Campagne « Les Marches rouges » créée/);
+    await m.lea.screenshot({ path: '/tmp/e12-lea-creation.png' });
   });
 });
 

@@ -4,7 +4,7 @@ import type { Outil } from './types.js';
 import { ECHEC_IMAGE } from './catalogue.js';
 
 export const HORS_SCRIPT =
-  "Je ne sais répondre qu'à des demandes de test : chercher, lire, ajouter, créer une campagne ou un scénario.";
+  "Je ne sais répondre qu'à des demandes de test : chercher, lire, ajouter.";
 const INTROUVABLE = 'Introuvable.';
 
 /** What the stub's script calls: the real tools of the caller's catalogue (AD-78). */
@@ -27,22 +27,6 @@ const absent = (nom: string) =>
   `Je ne peux pas le faire : l'outil « ${nom} » ne fait pas partie de ceux dont vous disposez.`;
 
 type Donnees = Record<string, any>;
-
-async function creerScenario(a: Appel, titre: string, campagne: string): Promise<string> {
-  if (!a.a('creer_scenario')) return absent('creer_scenario');
-  const l = await a.faire('lister_campagnes', {});
-  if (!l.ok) return l.erreur;
-  const c = (l.donnees as Donnees).campagnes.find((x: Donnees) => x.nom === campagne);
-  if (!c) return INTROUVABLE;
-  const r = await a.faire('creer_scenario', { campagneId: c.id, titre });
-  return r.ok ? `Scénario « ${titre} » créé dans ${campagne}.` : r.erreur;
-}
-
-async function creerCampagne(a: Appel, nom: string): Promise<string> {
-  if (!a.a('creer_campagne')) return absent('creer_campagne');
-  const r = await a.faire('creer_campagne', { nom });
-  return r.ok ? `Campagne « ${nom} » créée.` : r.erreur;
-}
 
 async function lireSection(a: Appel, section: string): Promise<string> {
   const cherche = await a.faire('chercher', { mots: section });
@@ -155,8 +139,6 @@ type Regle = { motif: RegExp; agir: (a: Appel, m: RegExpMatchArray, message: str
 
 /** Ordered: the first rule whose keywords appear in the message wins (AD-78). */
 const REGLES: Regle[] = [
-  { motif: /cr[ée]e un sc[ée]nario «\s*(.+?)\s*» dans «\s*(.+?)\s*»/i, agir: (a, m) => creerScenario(a, m[1]!, m[2]!) },
-  { motif: /cr[ée]e une campagne «\s*(.+?)\s*»/i, agir: (a, m) => creerCampagne(a, m[1]!) },
   {
     motif: /mets [àa] jour la section «\s*(.+?)\s*» de «\s*(.+?)\s*» d['’]après le compte-rendu «\s*(.+?)\s*»/i,
     agir: (a, m) => proposer(a, m[1]!, m[2]!, m[3]!),

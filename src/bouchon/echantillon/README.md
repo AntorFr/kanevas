@@ -4,8 +4,8 @@
 `960538bf07b2a7b2ac560c3edd193abaab87c44e`, following the owner's October 15 clarification.
 Its `provenance` lists the source sheets. It contains extracts, not a Kanka converter.
 
-Each `fiches` or `campagnes` entry is an API payload plus `cle`; each scenario adds `cle`
-and `campagne`. A file has `cle`, `chemin` (relative to the JSON), `nom` and `visibilite`.
+Each `fiches` entry is an API payload plus `cle`; the campaigns and scenarios are `aventure`
+sheets (a scenario has its campaign as `parent`). A file has `cle`, `chemin` (relative to the JSON), `nom` and `visibilite`.
 Relations are grouped by source `fiche`, with the API array in `entrees`.
 Arrays may be omitted; the optional fourth CLI argument selects another JSON file.
 
@@ -34,7 +34,7 @@ illustrations, not canonical portraits. `plan.pdf` reuses the repository's demo 
 The long scenario repeats an extract of `scenarios/pitch-initial.md`. The metadata table,
 extra label and four relation probes are acceptance data. No credentials are stored here.
 
-Expected first batch: 11 sheets, 3 files, 2 campaigns, 2 scenarios and 3 relations created;
+Expected first batch: 15 sheets (2 campaign and 2 scenario adventures among them), 3 files and 3 relations created;
 one warning for the unknown relation target, zero refusals. Replay creates nothing;
 the unknown relation still warns and Nyx still waits. `refus.json` produces one refused
 sheet with `champ: campagne` and an unknown-campaign reason; the client prints the closed

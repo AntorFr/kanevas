@@ -8,7 +8,7 @@ import type { Jeton } from './jetons.js';
 /** Entries kept in a batch report (AD-104); further ones are counted but not listed. */
 export const MAX_RAPPORT = 1000;
 
-export const NATURES = ['fiches', 'fichiers', 'campagnes', 'scenarios', 'relations'] as const;
+export const NATURES = ['fiches', 'fichiers', 'relations'] as const;
 export type Nature = (typeof NATURES)[number];
 export type Issue = 'creees' | 'mises_a_jour' | 'inchangees' | 'refusees';
 

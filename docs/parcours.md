@@ -268,7 +268,7 @@ Forme de la skill `exigences` ; chaque besoin cite les parcours qui le réalisen
   « En cours »: « Campagnes en cours » (sub-type Campagne), « Derniers comptes-rendus »
   (unchanged), « Préparation » (the open tasks of the adventures en cours, GM). *(P-3, P-4)*
 - **B-61** — *(kanevas-scenarios)* The **import API** pushes an adventure through the sheets
-  route (`type: aventure`, `sousType`, `statut`, `parent` by origin key, sections); a reimport
+  route (`type: aventure`, `sousType`, `parent` by origin key, sections; `statut` joins with `kanevas-scenarios-import-assistant`); a reimport
   never overwrites a status, a sub-type or a parent changed in Kanevas (B-48 extended); a
   compte-rendu names its adventure by its origin key as before. The former campaign and scenario
   routes of the import disappear. *(P-10)*
@@ -464,7 +464,7 @@ Il veut d'abord un essai jetable, puis la vraie base, sans doublon ni fuite.*
    droits — « Réservée au MJ » pour ceux que Kanka n'affiche que dans du contenu MJ, « Visible des
    joueurs » sinon —, y compris les 385 Mo qu'aucune fiche n'utilise ; les fiches les référencent.
 5. *(`kanevas-scenarios`: campaigns and scenarios are pushed as sheets of type `aventure`, and counted with them)* **Accès par API** (E-18), bloc « Lots d'import » : « Fiches : 498 créées, 3 refusées · Fichiers :
-   1 140 créés · Campagnes : 4 créées · Scénarios : 12 créés · Relations : 324 créées · 6 en attente » ; il
+   1 140 créés · Relations : 324 créées · 6 en attente » ; il
    déplie les refus : « personnage:aldric-le-gris — section « Vérité » : 112 000 caractères, 100 000
    au plus ».
 6. Il ouvre quelques fiches (**E-8** en arbre, **E-9**, **E-17**) et passe en **mode Joueur** pour
@@ -627,6 +627,9 @@ introuvable. ».
 - **Supprimer** une campagne, un scénario, un CR, une carte, une tâche, un système : rien de cela
   ne se supprime, sauf une pièce jointe, une section, une relation, un membre, et le token ou le nœud
   d'une carte (on le retire de la carte ; sa fiche reste). *(choix de cadrage, à revoir à l'usage)*
+  Depuis `kanevas-scenarios`, une campagne et un scénario sont des fiches : ils se suppriment comme elles (B-40, E-9), la confirmation
+  comptant leurs tâches, leurs scénarios et leurs comptes-rendus (AD-119) ; désactiver le type « Aventure » (E-14, P-13) ne cache aucune
+  aventure, seule l'entrée de la barre et la création disparaissent.
   Depuis `kanevas-import`, une **fiche**, un **univers** et un **fichier de la médiathèque** se suppriment (B-40, B-41, B-54) ; un CR, qui
   est une fiche, se supprime avec l'univers et, par un MJ, comme une fiche.
 - **Créer une fiche en joueur** : le MJ crée toute fiche, y compris celle d'un PJ, et en ouvre une

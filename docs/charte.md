@@ -359,6 +359,32 @@ décalé de 2 px) sur `:focus-visible`.
   bounded scroll area and full-title tooltips. The visibility checkbox starts unchecked.
   The fields stay in the window on failure; they are disabled during creation.
 
+**Report rows** (`suivi/commun.tsx`, E-13).
+- Visual: the title leads; below it, the author (when present), a middle dot only when
+  both author and adventure are shown, and the adventure in a neutral `badge-type` pill.
+  The date stays at the right; hairlines separate rows. Long titles and pills wrap within
+  the text column, including on phones. Existing `--texte`, `--texte-3`, `--texte-2`,
+  `--surface-2` and `--bord` tokens provide both themes.
+- Behaviour: the title opens the report; the adventure pill is a separate keyboard link
+  to its sheet, at least 24 px high. Only adventure fields returned by the server appear.
+  A deleted adventure is plain text for the GM; a hidden one leaves no placeholder or
+  separator. Dates use a semantic `time` element. Without the adventure option (E-9 block),
+  the same row keeps only its title, author and date.
+
+**Adventure sheet blocks** (`fiche/blocs-fiche/`, E-9, AD-124).
+- Visual: the compact panels of `e09-aventure.html`, `--surface` and `--bord`,
+  `--rayon-panneau`, 16 px padding and gap; the preparation border uses `--mj-bord`.
+  Titles use Fraunces 18 px, secondary text `--texte-3`, standard fields and buttons.
+  The task form stacks on phones. No new colour token.
+- Behaviour: each block loads and retries independently. Categories with open tasks are
+  shown in order; checked tasks stay in a folded disclosure, last checked first.
+  Checkboxes keep their old state until success. Creation failures keep the fields and
+  show an inline alert; report drafts use session storage, scoped to their account and adventure,
+  until creation or cancellation.
+  The report window uses the shared focus trap. Offline, writing and pagination are disabled.
+  Preparation is absent for players and in player mode; report pagination uses the server's
+  filtered pages. Existing sheets keep these blocks when their type is deactivated.
+
 **Carte de système** (E-16) et **carte d'univers** (E-1) : la carte de fiche, avec un en-tête
 dessiné au lieu d'une image.
 - V : mêmes règles que la carte de fiche — pas de cadre ni d'ombre, survol `--surface-2` derrière la

@@ -9,9 +9,6 @@ import { ErreurService, introuvable } from '../services/erreurs.js';
 import { verifierJeton, type Jeton } from '../services/jetons.js';
 import { cloreLot, lireLot, MAX_RAPPORT, ouvrirLot } from '../services/lots.js';
 import { lireContexteImport } from '../services/import.js';
-import { importerCampagne, importerScenario } from '../services/import-suivi.js';
-import { MAX_NOM_CAMPAGNE } from '../services/campagnes.js';
-import { MAX_TITRE_SCENARIO } from '../services/scenarios.js';
 import { assurerFiche, lotDeRequete, supprimerFicheImport } from '../services/import-fiches.js';
 import { assurerFichier, MAX_FICHIERS_JOINTS } from '../services/fichiers.js';
 import { TYPES_FICHE, typeActif } from '../services/types-fiche.js';
@@ -95,9 +92,6 @@ export async function registerImportRoutes(app: FastifyInstance) {
         limites: {
           relationsParSection: LIMITE_RELATIONS,
           contenuSection: MAX_CONTENU_SECTION,
-          contenuScenario: MAX_CONTENU_SECTION,
-          nomCampagne: MAX_NOM_CAMPAGNE,
-          titreScenario: MAX_TITRE_SCENARIO,
           entreesRapport: MAX_RAPPORT,
           aliasParFiche: MAX_ALIAS,
           longueurAlias: LONGUEUR_ALIAS,
@@ -116,18 +110,6 @@ export async function registerImportRoutes(app: FastifyInstance) {
     scope.get(`${base}/lots/:lid`, async (request) => {
       const { lid } = request.params as { lid: string };
       return lireLot(app.db, jetonDe(request), entier(lid), app.horloge());
-    });
-
-    scope.put(`${base}/campagnes/:cle`, async (request) => {
-      const { cle } = request.params as { cle: string };
-      const { lot } = request.query as { lot?: unknown };
-      return importerCampagne(app.db, jetonDe(request), lotDeRequete(lot), cle, request.body, app.horloge());
-    });
-
-    scope.put(`${base}/campagnes/:cle/scenarios/:scle`, async (request) => {
-      const { cle, scle } = request.params as { cle: string; scle: string };
-      const { lot } = request.query as { lot?: unknown };
-      return importerScenario(app.db, jetonDe(request), lotDeRequete(lot), cle, scle, request.body, app.horloge());
     });
 
     scope.put(`${base}/fiches/:cle`, async (request) => {

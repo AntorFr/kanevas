@@ -1,14 +1,12 @@
 import { Readable } from 'node:stream';
 import { z } from 'zod';
 import type { Db } from '../../db/db.js';
-import { creerCampagne, lireCampagne, listerCampagnes } from '../campagnes.js';
 import { exigerRole } from '../droits.js';
 import { ErreurService } from '../erreurs.js';
 import { ajouterFichier, MAX_FICHIERS_JOINTS, verifierDepot } from '../fichiers.js';
 import { lireFiche, listerFiches } from '../fiches.js';
 import { choisirAdaptateur, type AdaptateurChoisi } from '../images/index.js';
 import { creerProposition } from '../propositions.js';
-import { creerScenario } from '../scenarios.js';
 import { ecrireContenu, lireSection } from '../sections.js';
 import { TYPES_FICHE } from '../types-fiche.js';
 import type { Acteur } from '../types.js';
@@ -171,58 +169,10 @@ export function catalogueDe(
         };
       },
     ),
-    outil(
-      'lister_campagnes',
-      "Liste les campagnes de l'univers.",
-      z.strictObject({}),
-      () => ({
-        donnees: {
-          campagnes: listerCampagnes(db, compteId, universId).map((c) => ({
-            id: c.id,
-            nom: c.nom,
-            statut: c.statut,
-          })),
-        },
-      }),
-    ),
   ];
 
   if (role === 'mj') {
     outils.push(
-      outil(
-        'creer_campagne',
-        "Crée une campagne (en préparation) dans l'univers.",
-        z.strictObject({ nom: z.string() }),
-        ({ nom }) => {
-          const c = creerCampagne(db, compteId, universId, { nom });
-          return {
-            donnees: { id: c.id, nom: c.nom, statut: c.statut },
-            evenement: {
-              type: 'campagne_creee',
-              libelle: `Campagne « ${c.nom} » créée`,
-              cible: { type: 'campagne', campagneId: c.id },
-            },
-          };
-        },
-      ),
-      outil(
-        'creer_scenario',
-        "Crée un scénario dans une campagne de l'univers.",
-        z.strictObject({ campagneId: id, titre: z.string(), contenu: z.string().optional() }),
-        ({ campagneId, titre, contenu }) => {
-          // The campaign must belong to THIS universe, not just to one the account is GM of.
-          const campagne = lireCampagne(db, compteId, universId, campagneId);
-          const s = creerScenario(db, compteId, campagneId, { titre, contenu });
-          return {
-            donnees: { id: s.id, titre: s.titre, campagneId },
-            evenement: {
-              type: 'scenario_cree',
-              libelle: `Scénario « ${s.titre} » créé dans ${campagne.nom}`,
-              cible: { type: 'scenario', campagneId, scenarioId: s.id },
-            },
-          };
-        },
-      ),
       outil(
         'proposer_mise_a_jour',
         "Propose un nouveau contenu pour une section, d'après un compte-rendu. N'écrit jamais dans la section : le MJ applique ou abandonne la proposition lui-même. `version` est celle rendue par `lire_section`.",

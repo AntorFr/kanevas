@@ -1,4 +1,3 @@
-import { campagneDeCle } from './campagnes.js';
 import { creerCompteRendu, TITRE_SECTION_COMPTE_RENDU } from './comptes_rendus.js';
 import type { Db } from '../db/db.js';
 import { cleValide } from './import.js';
@@ -325,7 +324,10 @@ export function assurerFiche(
     if (!cleValide(cle)) throw new Refus('cle', 'fiche', "clé d'origine invalide");
     entree = lireCorps(corps, maintenant);
     if (entree.campagne !== undefined) {
-      const campagne = campagneDeCle(db, jeton.compteId, jeton.universId, entree.campagne);
+      // The key of the adventure sheet this report names (AD-125 (2)): a sheet of `aventure` type of the token's universe.
+      const campagne = db
+        .prepare("SELECT id FROM fiches WHERE univers_id = ? AND cle_origine = ? AND type = 'aventure'")
+        .get(jeton.universId, entree.campagne) as { id: number } | undefined;
       if (!campagne) throw new Refus('campagne', 'fiche', `campagne inconnue : ${entree.campagne}`);
       entree.campagneId = campagne.id;
     }

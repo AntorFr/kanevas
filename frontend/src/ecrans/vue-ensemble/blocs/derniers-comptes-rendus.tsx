@@ -37,8 +37,8 @@ function DerniersComptesRendus({ universId, role }: { universId: number; role: R
                 <span className="corps">
                   <span className="titre">{cr.titre}</span>
                   <span className="sous">
-                    {cr.campagneNom}
-                    <span className="date-tel"> · {dateCourte(cr.creeLe)}</span>
+                    {cr.campagneNom ?? (cr.campagneSupprimee ? 'Aventure supprimée' : null)}
+                    <span className="date-tel">{cr.campagneNom !== undefined || cr.campagneSupprimee ? ' · ' : ''}{dateCourte(cr.creeLe)}</span>
                   </span>
                 </span>
                 <span className="meta">{dateCourte(cr.creeLe)}</span>
