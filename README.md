@@ -92,12 +92,12 @@ Start the stub application on a fresh database (see below). « Essai Kanka » is
 seed; the client needs no browser session, only that id and a token. In another terminal:
 
 ```bash
-npm run import:echantillon -- http://localhost:3001 4 <token>
+npm run import:echantillon -- http://localhost:3055 4 <token>
 ```
 
 Use the public stub token `kvs_bouchon_essai_Hq7Zr2LmX9cVt4Wd8KpNb3YsJf6Ga0Ue` (`JETON_BOUCHON` in `src/bouchon/depart.ts`) or create a token in
 « Accès par API » (E-18). The standalone client sends files, parent-first sheets (15 in the sample: 11 ordinary sheets plus the 2 campaigns and 2 scenarios, which are `aventure` sheets),
-relations in a batch, closes it, and prints the counters and warning reasons.
+relations in a batch, closes it, and prints the counters and warning reasons. Note: in the import, the `campagne` field of a report names *any* adventure sheet (campaign or scenario) by its origin key; « Campagne » as a sub-type is only a label.
 Tokens are passed as arguments and never written to disk. The sample comes from Éneria;
 its source mapping and neutral JSON format are documented in `src/bouchon/echantillon/README.md`.
 
@@ -120,7 +120,7 @@ one created sheet and fifteen unchanged. Use the original file again for the bas
 For the refusal case (one refusal, reason names the missing campaign, exit status 1):
 
 ```bash
-npm run import:echantillon -- http://localhost:3001 4 <token> src/bouchon/echantillon/refus.json
+npm run import:echantillon -- http://localhost:3055 4 <token> src/bouchon/echantillon/refus.json
 ```
 
 Finally delete « Essai Kanka » in E-14, create a fresh universe and a token in E-18, and run
