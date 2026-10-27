@@ -8,7 +8,7 @@ import type { Ecran } from '../registre';
 import { badgeFiche, iconeDuType, typesActifs, useTypes } from '../types-contexte';
 import type { UniversListe } from '../types';
 import { Bouton, Champ, PageIntrouvable } from '../ui';
-import { adresseIllustration } from './fiche/vignette';
+import { adresseIllustration, useMJSeul } from './fiche/vignette';
 import { LONGUEUR_RECHERCHE } from './fiche/liste-recherche';
 import type { Fiche, PageFiches } from './fiche/types';
 import { StatutAventure } from './fiche/statut';
@@ -271,9 +271,10 @@ function Ligne({ universId, fiche, onEtiquette }: { universId: string; fiche: Fi
   const [ko, setKo] = useState(false);
   const jeton = fiche.illustration && 'jeton' in fiche.illustration ? fiche.illustration.jeton : undefined;
   const etiquettes = fiche.etiquettes ?? [];
+  const mjSeul = useMJSeul(fiche);
   const badge = fiche.sousType ? `${badgeFiche(types, fiche)} · ${fiche.sousType}` : badgeFiche(types, fiche);
   return (
-    <li className="ligne-recherche">
+    <li className={mjSeul.badge ? "ligne-recherche avec-pastille" : "ligne-recherche"}>
       <Link className="lien-recherche" to={`/univers/${universId}/fiche/${fiche.id}`}>
         <span className="vignette-recherche" aria-hidden="true">
           {jeton !== undefined && !ko ? (
@@ -309,6 +310,8 @@ function Ligne({ universId, fiche, onEtiquette }: { universId: string; fiche: Fi
         </span>
         {fiche.type === 'aventure' && <StatutAventure universId={universId} fiche={fiche} />}
       </Link>
+      {mjSeul.badge}
+      {mjSeul.aide}
     </li>
   );
 }

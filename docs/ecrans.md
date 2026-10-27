@@ -103,8 +103,8 @@ E-16 vivent hors des univers : leurs cases disent le rôle dans un univers ratta
 | E-5 | — | — | lister les univers et leurs membres ; ajouter, changer un rôle, retirer un membre ; voir l'état du jeton de l'assistant, connecter ou reconnecter l'abonnement |
 | E-6 | *retired (`kanevas-scenarios`)* | — | — |
 | E-7 | *retired (`kanevas-scenarios`)* | — | — |
-| E-8 | lire, chercher, créer ; la vignette de chaque fiche (son illustration, ou le repli dessiné) ; *(kanevas-scenarios)* for the « Aventure » type: the status badge, the « Statut » filter, the status menu on a card or a tree line (outside player mode), the creation form with sub-type suggestions and « Visible des joueurs » | lire, chercher ; la vignette des fiches qu'il voit ; *(kanevas-scenarios)* adventures: the status badge and the « Statut » filter; the status menu and « Nouvelle aventure » (**caché**) | — |
-| E-9 | tout ; mode Joueur ; *(kanevas-scenarios)* on an adventure: the status menu in the header (outside player mode), the blocks « Préparation » (GM, outside player mode) and « Comptes-rendus » (« Nouveau compte-rendu ») ; relier et retirer des relations ; poser, remplacer, retirer l'illustration (hors mode Joueur) ; *(kanevas-import)* sous-type, réserver un fichier au MJ, voir un fichier en attente d'import (tuile) | sections lisibles ; écrire celles permises ; *(kanevas-scenarios)* on an adventure: the status badge and « Comptes-rendus » (the CR he reads; « Nouveau compte-rendu » allowed); the status menu and « Préparation » (**hidden**) ; relations lisibles (section et cible) ; pièces jointes de celles-ci ; voir l'illustration, jamais la poser ; *(kanevas-import)* dans une section qu'il écrit, ajouter un fichier ou en choisir un qu'il voit (les deux chemins de B-55) et retirer une référence ; fichiers sous double garde ; jamais régler une visibilité (**caché**) ; un fichier en attente d'import : rien (**caché**) | — |
+| E-8 | lire, chercher, créer ; la vignette de chaque fiche (son illustration, ou le repli dessiné) ; *(kanevas-scenarios)* for the « Aventure » type: the status badge, the « Statut » filter, the status menu on a card or a tree line (outside player mode), the creation form with sub-type suggestions and « Visible des joueurs » ; *(kanevas-fiche-mj-seul)* the « MJ seul » badge on a sheet players cannot see, the « Visibilité » filter | lire, chercher ; la vignette des fiches qu'il voit ; *(kanevas-scenarios)* adventures: the status badge and the « Statut » filter; the status menu and « Nouvelle aventure » ; *(kanevas-fiche-mj-seul)* no « MJ seul » badge, no « Visibilité » filter (**caché**) | — |
+| E-9 | tout ; mode Joueur ; *(kanevas-scenarios)* on an adventure: the status menu in the header (outside player mode), the blocks « Préparation » (GM, outside player mode) and « Comptes-rendus » (« Nouveau compte-rendu ») ; *(kanevas-fiche-mj-seul)* the « MJ seul » badge in the header (GM mode) ; relier et retirer des relations ; poser, remplacer, retirer l'illustration (hors mode Joueur) ; *(kanevas-import)* sous-type, réserver un fichier au MJ, voir un fichier en attente d'import (tuile) | sections lisibles ; écrire celles permises ; *(kanevas-scenarios)* on an adventure: the status badge and « Comptes-rendus » (the CR he reads; « Nouveau compte-rendu » allowed); the status menu and « Préparation » (**hidden**) ; relations lisibles (section et cible) ; pièces jointes de celles-ci ; voir l'illustration, jamais la poser ; *(kanevas-fiche-mj-seul)* no « MJ seul » badge in the header (**caché**) ; *(kanevas-import)* dans une section qu'il écrit, ajouter un fichier ou en choisir un qu'il voit (les deux chemins de B-55) et retirer une référence ; fichiers sous double garde ; jamais régler une visibilité (**caché**) ; un fichier en attente d'import : rien (**caché**) | — |
 | E-10 | tout | cartes visibles | — |
 | E-11 | tout ; mode Joueur | lire une carte visible, ouvrir une fiche | — |
 | E-12 | catalogue MJ (dont générer une image, si un moteur d'images est disponible) ; propositions : le MJ demandeur seul les voit, les applique, les abandonne | catalogue Joueur (sans image : l'outil est absent, l'assistant répond qu'il ne peut pas) ; propositions : **caché** (ni outil ni bloc ; ce qu'on vérifie est l'absence de proposition et de bloc, pas le texte libre de l'assistant) | — |
@@ -323,7 +323,7 @@ lieu »…) ouvre une fenêtre : « Titre » (1 à 120 caractères) et, pour un 
 | chargement | « Chargement des fiches… » | — |
 | erreur | « Impossible de charger les fiches. » ; création échouée : « L'action n'a pas abouti. Réessayez. », titre conservé | « Réessayer » |
 | connexion perdue | le bandeau ; « Nouveau … » et « Créer la fiche » désactivés | ouvrir une fiche listée |
-| refus | un type inconnu : « Page introuvable. » ; une fiche illisible est absente de la liste | — |
+| refus | un type inconnu : « Page introuvable. » ; une fiche illisible est absente de la liste ; *(kanevas-fiche-mj-seul)* `?visibilite=` posed by a player or in player mode: 400 « Requête invalide. » from the API, the screen never sends it and ignores it in the address | — |
 | contenu long | plus de 100 fiches : « Charger la suite » ; titre trop long tronqué par « … » avec infobulle | idem |
 
 *Critère.* Étant donné la fiche « Maître Aldric », dont Léa ne lit aucune section, quand Léa ouvre la
@@ -331,7 +331,15 @@ liste des personnages, alors elle n'y voit pas « Maître Aldric ».
 
 ### E-9 Fiche
 
-Le titre, le badge du type, puis les **sections** dans leur ordre, chacune un panneau : titre,
+Le titre, le badge du type — *(kanevas-fiche-mj-seul, B-57)* and, for a GM in GM mode, the amber
+« MJ seul » badge (`lock`) when no section is readable by the players (a sheet without any
+section carries it too), with the tooltip « Aucune
+section n'est visible des joueurs. » (the badge is focusable; on focus or touch the sentence is
+written under the header line, as E-18 does — the line keeps its (empty) place while unread, so the sections below never move on focus or blur; the E-9 mockup does not draw it, this text is
+authoritative); it follows the saved state only — it appears or
+disappears as soon as an audience setting is saved, without reloading, and does not move on
+« L'action n'a pas abouti. Réessayez. » —; with a 120-character title it wraps to the next line
+with the type badge, the title is never truncated for it; absent in player mode and for a player —, puis les **sections** dans leur ordre, chacune un panneau : titre,
 contenu en Markdown rendu (AD-95), et un emplacement de **blocs de section** (relations, pièces
 jointes : les tranches suivantes y inscrivent le leur, comme pour E-3, dans
 `frontend/src/ecrans/fiche/blocs/` et `registre.ts`).
@@ -2623,6 +2631,50 @@ puis les sous-types des fiches du type que le lecteur voit, par ordre alphabéti
 fiches lisibles) ; un sous-type filtré rend la grille. La fenêtre de création a un champ « Sous-type »
 facultatif, avec la même complétion que E-9.
 
+**Visibility** (B-57, `kanevas-fiche-mj-seul`, decision of Monsieur, 2026-10-25). For a GM in GM
+mode, a sheet none of whose sections is readable by the players (the « Les joueurs la lisent »
+setting; a section readable by its player author alone does not count; a sheet without any section
+carries it too, nobody reads it) carries the amber « MJ seul » badge (`lock`, the charte's audience badge, same as a
+GM-only file in E-19) on its card, under the title next to the sub-type, and on its tree line. A
+filter « Visibilité » stands next to « Sous-type », for the GM only: « Toutes » (default; the option reads « Visibilité : toutes »), « Visibles
+des joueurs », « Réservées au MJ »; a filtered visibility renders the grid, like a filtered sub-type,
+and combines with the sub-type filter and the search; « Toutes » renders the tree back when it was
+the remembered view. The counts are those of the sheets of the type. The state is derived at each
+reading, never stored: opening one section to the players, from E-9, removes the badge at the next
+reading of the list. A player, and the GM in player mode, see neither the badge nor the filter, and
+the API does not tell them whether a sheet is GM-only (it only lists what they read, E-8 refus).
+States of the filter: its three values are fixed (no loading, no counts); it keeps its value in the
+address (`?visibilite=joueurs` or `?visibilite=mj`, like `sousType`) and across « Charger la
+suite »; any other value in the address is ignored (« Toutes », unfiltered, nothing sent). A
+visibility filtered alone without any sheet renders « Aucune fiche réservée au MJ. » or « Aucune
+fiche visible des joueurs. » with « Voir toutes les fiches » (which resets the three filters);
+combined with a sub-type or a search and empty, « Aucune fiche pour ces filtres. » with « Voir
+toutes les fiches », which resets the three. Loading, error and offline are the grid's (the control is disabled under the
+connection-lost banner, like « Nouveau … »). Switching to player mode removes the control and
+drops the parameter, the grid reloads unfiltered; back in GM mode the filter is « Toutes » again.
+The badge of a card and of a tree line has the accessible name and tooltip « Aucune section n'est
+visible des joueurs. », like the header's; focusable, on focus or touch the sentence is written
+under the card's title, or under the tree line. The badge shows wherever a sheet card or line is
+drawn to the GM in GM mode: the grid, the tree, the « Relier » sheet selector of E-9 (which is the
+E-8 list as it is) and the results of E-17; the « Visibilité » filter exists on the grid only
+(decision of Monsieur, 2026-10-25). The E-8
+and E-9 mockups draw neither the badge nor the filter: this text is authoritative, and the badge is
+the charte's audience badge (`Pastille` sens « secrete », icon `lock`). On a section, « MJ seul »
+names that section; on a card, a tree line or the header it names the whole sheet — the header
+tooltip says so. Under 760 px the badge never squeezes the title: on a E-17 result it wraps under the row
+(the title keeps the full width). On the E-9 header row (type badge, « MJ seul », « ⋯ ») the type badge
+stays on one line; without illustration the row wraps to a second line when it must. Beside an
+illustration the text column is narrow, so the row never wraps: « MJ seul » shrinks to its padlock (name
+and tooltip kept for assistive technology), the type badge shrinks with an ellipsis on the sub-type, « ⋯ »
+stays on the row, and the help sentence floats over what follows instead of pushing the illustration down. *Critères.* Étant donné Antor, MJ, et « Le Prieur masqué », personnage dont la seule section est
+« Secret — MJ seul », quand il ouvre la liste des personnages, alors sa carte porte « MJ seul », et
+« Visibilité » ▸ « Réservées au MJ » le liste et ne liste pas « Maître Aldric », dont « Apparence »
+est lue des joueurs. Étant donné la même fiche, quand Antor ouvre sa seule section aux joueurs sur
+E-9, alors la pastille de l'en-tête disparaît sans recharger, et sa carte n'en porte plus à la
+prochaine lecture de la liste. Étant donné Léa, joueuse, quand elle
+ouvre la liste des personnages ou `/univers/1/fiches/personnages?visibilite=mj`, alors elle ne voit
+ni pastille ni filtre, et la liste est celle de ses droits.
+
 | État | Ce qu'on voit | Ce qu'on peut faire |
 |---|---|---|
 | vide | les textes de la grille ; nouveaux types : « Aucune créature », « Aucune race », « Aucun vaisseau », « Aucun savoir », « Aucun récit », « Aucune règle », « Aucune note » + « pour l'instant. » / « à voir pour l'instant. » ; boutons « Nouvelle créature », « Nouvelle race », « Nouveau vaisseau », « Nouveau savoir », « Nouveau récit », « Nouvelle règle », « Nouvelle note » | MJ : créer |
@@ -3009,7 +3061,7 @@ remplace par une nouvelle connexion, jamais par un champ de saisie (il n'y en a 
 | échec de validation autre (serveur injoignable, 5xx) | « L'action n'a pas abouti. Réessayez. » ; le champ est vidé, la connexion reste ouverte tant qu'elle n'a pas expiré | coller de nouveau, annuler |
 | expirée | au bout de 10 minutes, ou serveur redémarré : « La connexion a expiré. Recommencez. » ; l'ancien état reste | « Connecter l'abonnement » (« Reconnecter » si un jeton est posé) |
 | erreur de lecture | « Impossible de charger l'état du jeton. » avec « Réessayer » ; le reste de la page reste utilisable | « Réessayer » |
-| erreur de démarrage | « La connexion n'a pas pu démarrer. Réessayez. » (le programme `claude` ou `script` absent, ou aucune adresse rendue en 30 s) ; aucun détail technique | « Connecter l'abonnement » (« Reconnecter » si un jeton est posé) |
+| erreur de démarrage | « La connexion n'a pas pu démarrer. Réessayez. » (le programme `claude` ou `script` absent, ou aucune adresse rendue en 30 s — y compris une adresse sur un hôte autre que claude.com, claude.ai, anthropic.com et leurs sous-domaines, que le filtre écarte, AD-112) ; aucun détail technique | « Connecter l'abonnement » (« Reconnecter » si un jeton est posé) |
 | connexion perdue | le bandeau ; « Connecter l'abonnement » (« Reconnecter » si un jeton est posé), « Valider » et « Annuler » désactivés ; l'état chargé reste | lire |
 | refus | tout compte hors du groupe : la page entière est « Page introuvable. » (E-5 ci-dessus) ; une route du panneau sans le groupe répond 404 comme une adresse inconnue | « Mes univers » |
 | contenu long | l'adresse d'autorisation (plus de 200 caractères) se replie sur plusieurs lignes dans une zone qui défile, sans élargir la page ; le champ « Code » accepte 500 caractères au plus | idem |

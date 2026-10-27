@@ -14,6 +14,8 @@ import { STATUTS_AVENTURE, statutValide, type Statut } from './statut';
 /** Longest search the server accepts (B-11). */
 export const LONGUEUR_RECHERCHE = 100;
 
+export type Visibilite = '' | 'joueurs' | 'mj';
+
 const dans = (type: TypeVue) => `les ${type.pluriel.toLowerCase()}`;
 
 interface Props {
@@ -26,7 +28,11 @@ interface Props {
   onStatut?: (statut: string) => void;
   /** Editing is granted by E-8, never by a reusable list's default. */
   gestion?: boolean;
-  onToutVoir?: () => void;
+  /** The visibility filter in force (B-57, GM in GM mode): '' (all), 'joueurs' or 'mj'; with `onVisibilite` the filter is offered. */
+  visibilite?: Visibilite;
+  onVisibilite?: (visibilite: Visibilite) => void;
+  /** Clear all the filters in one address update. */
+  onToutEffacer?: () => void;
   /** The search in force (empty = the whole list). The caller owns it: address, local state… */
   recherche: string;
   onRecherche: (recherche: string) => void;
@@ -45,7 +51,7 @@ interface Props {
 }
 
 /** The list of one lore type with its search field (E-8); reused by the « Relier » form of E-9. */
-export function ListeRecherche({ universId, type, recherche, onRecherche, sousType = '', onSousType, statut: brutStatut, onStatut, gestion = false, onToutVoir, ligne, action, videListe, vue = 'grille', bascule, suffixeMode = '' }: Props) {
+export function ListeRecherche({ universId, type, recherche, onRecherche, sousType = '', onSousType, statut: brutStatut, onStatut, gestion = false, visibilite = '', onVisibilite, onToutEffacer, ligne, action, videListe, vue = 'grille', bascule, suffixeMode = '' }: Props) {
   const perdue = useConnexionPerdue();
   const [saisie, setSaisie] = useState(recherche);
   const [erreur, setErreur] = useState<string>();
@@ -80,7 +86,8 @@ export function ListeRecherche({ universId, type, recherche, onRecherche, sousTy
   const base = `/api/univers/${universId}/fiches?type=${type.type}`;
   const avecSousType = sousType === '' ? base : `${base}&sousType=${encodeURIComponent(sousType)}`;
   const avecStatut = statut === '' ? avecSousType : `${avecSousType}&statut=${statut}`;
-  const chemin = (recherche === '' ? avecStatut : `${avecStatut}&q=${encodeURIComponent(recherche)}`) + suffixeMode;
+  const avecVisibilite = visibilite === '' ? avecStatut : `${avecStatut}&visibilite=${visibilite}`;
+  const chemin = (recherche === '' ? avecVisibilite : `${avecVisibilite}&q=${encodeURIComponent(recherche)}`) + suffixeMode;
   const etiquette = `Chercher dans ${dans(type)}`;
 
   return (
@@ -108,6 +115,7 @@ export function ListeRecherche({ universId, type, recherche, onRecherche, sousTy
             </Champ>
           </div>
         )}
+        {onVisibilite && <FiltreVisibilite valeur={visibilite} onChoix={onVisibilite} desactive={perdue} />}
         <div className="actions">
           <Bouton type="submit" disabled={perdue}>
             Chercher
@@ -120,7 +128,7 @@ export function ListeRecherche({ universId, type, recherche, onRecherche, sousTy
           {bascule}
         </div>
       </form>
-      {vue === 'arbre' && recherche === '' && sousType === '' && statut === '' ? (
+      {vue === 'arbre' && recherche === '' && sousType === '' && statut === '' && visibilite === '' ? (
         <Arbre key={`${type.type}${suffixeMode}`} universId={universId} type={type} suffixeMode={suffixeMode} videListe={videListe} gestion={gestion} />
       ) : (
       <Resultats
@@ -133,7 +141,9 @@ export function ListeRecherche({ universId, type, recherche, onRecherche, sousTy
         onSousType={onSousType}
         statut={statut}
         gestion={gestion}
-        onToutVoir={onToutVoir}
+        visibilite={visibilite}
+        onVisibilite={onVisibilite}
+        onToutEffacer={onToutEffacer}
         ligne={ligne}
         action={action}
         videListe={videListe}
@@ -153,12 +163,14 @@ function Resultats({
   onSousType,
   statut = '',
   gestion,
-  onToutVoir,
+  visibilite = '',
+  onVisibilite,
+  onToutEffacer,
   ligne,
   action,
   videListe,
   onEffacer,
-}: Pick<Props, 'universId' | 'type' | 'recherche' | 'sousType' | 'onSousType' | 'statut' | 'gestion' | 'onToutVoir' | 'ligne' | 'action' | 'videListe'> & {
+}: Pick<Props, 'universId' | 'type' | 'recherche' | 'sousType' | 'onSousType' | 'statut' | 'gestion' | 'visibilite' | 'onVisibilite' | 'onToutEffacer' | 'ligne' | 'action' | 'videListe'> & {
   chemin: string;
   onEffacer: () => void;
 }) {
@@ -204,10 +216,24 @@ function Resultats({
 
   return (
     <>
-      {fiches.length === 0 && type.type === 'aventure' && (cherche || sousType !== '' || statut !== '') ? (
+      {fiches.length === 0 && type.type === 'aventure' && visibilite === '' && (cherche || sousType !== '' || statut !== '') ? (
         <VideIcone icone={SearchX}>
           <p>{cherche || sousType !== '' ? 'Aucune aventure ne correspond.' : 'Aucune aventure avec ce statut.'}</p>
-          <Bouton onClick={onToutVoir ?? onEffacer}>Voir toutes les aventures</Bouton>
+          <Bouton onClick={onToutEffacer ?? onEffacer}>Voir toutes les aventures</Bouton>
+        </VideIcone>
+      ) : fiches.length === 0 && visibilite !== '' && (cherche || sousType !== '' || statut !== '') ? (
+        <VideIcone icone={SearchX}>
+          <p>Aucune fiche pour ces filtres.</p>
+          <Bouton
+            onClick={onToutEffacer}
+          >
+            Voir toutes les fiches
+          </Bouton>
+        </VideIcone>
+      ) : fiches.length === 0 && !cherche && visibilite !== '' ? (
+        <VideIcone icone={SearchX}>
+          <p>{visibilite === 'mj' ? 'Aucune fiche réservée au MJ.' : 'Aucune fiche visible des joueurs.'}</p>
+          <Bouton onClick={onToutEffacer}>Voir toutes les fiches</Bouton>
         </VideIcone>
       ) : fiches.length === 0 && !cherche && sousType !== '' ? (
         <VideIcone icone={SearchX}>
@@ -305,6 +331,25 @@ function FiltreSousType({
             {s.sousType} ({compte(s.nb)})
           </option>
         ))}
+      </Champ>
+    </div>
+  );
+}
+
+/** The « Visibilité » filter of E-8 (GM in GM mode): three fixed values, no loading, no counts. */
+function FiltreVisibilite({ valeur, onChoix, desactive }: { valeur: Visibilite; onChoix: (v: Visibilite) => void; desactive: boolean }) {
+  return (
+    <div className="filtre-visibilite">
+      <Champ
+        etiquette="Visibilité"
+        liste
+        disabled={desactive}
+        value={valeur}
+        onChange={(e: { target: { value: string } }) => onChoix(e.target.value as Visibilite)}
+      >
+        <option value="">Visibilité : toutes</option>
+        <option value="joueurs">Visibles des joueurs</option>
+        <option value="mj">Réservées au MJ</option>
       </Champ>
     </div>
   );

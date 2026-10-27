@@ -157,3 +157,4 @@
   with `stdio: 'ignore'` and nothing of it is logged. The `codex` adapter lists `generated_images/` before and
   after (one engine at a time: `verrou.ts`), deletes the new file(s) and its scratch directory, 150 s deadline
   (AD-90). The Dockerfile pins `@openai/codex` (`CODEX_VERSION`).
+- Sheet visibility (`kanevas-fiche-mj-seul`, B-57, rule 11 of `docs/donnees.md`): a sheet has none of its own. `visibleJoueurs` is computed in the query (`SQL_VISIBLE_JOUEURS`, `services/fiches.ts`) from `sections.joueurs_lisent` and given to the GM outside player mode only; never store it in a column, never recompute it in the browser, never count the author's right of a player as « visible ».

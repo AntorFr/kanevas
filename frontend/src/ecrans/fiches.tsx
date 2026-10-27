@@ -1,9 +1,9 @@
 import { LayoutGrid, ListTree, Plus } from 'lucide-react';
-import { useEffect, useId, useState, type FormEvent } from 'react';
+import { useEffect, useId, useRef, useState, type FormEvent } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
 import { appeler, ErreurApi, lire, useConnexionPerdue } from '../api';
-import { useBasculeMode, useCharge } from '../cadre-contexte';
+import { useBasculeMode, useCharge, useVue } from '../cadre-contexte';
 import type { Ecran } from '../registre';
 import type { UniversListe } from '../types';
 import { Bouton, Champ, ErreurChargement, Fenetre, PageIntrouvable, VideIcone, useToasts } from '../ui';
@@ -12,7 +12,7 @@ import './ecrans.css';
 import './fiche/fiche.css';
 import './liste.css';
 import { lireVue, memoriserVue, type VueListe } from './fiche/arbre';
-import { ListeRecherche } from './fiche/liste-recherche';
+import { ListeRecherche, type Visibilite } from './fiche/liste-recherche';
 import { ChargementGrille } from './fiche/vignette';
 import type { Fiche } from './fiche/types';
 import { iconeDuType, typeParSlug, typesActifs, useTypes, type TypeVue } from '../types-contexte';
@@ -33,10 +33,39 @@ function Liste({ universId, slug }: { universId: string; slug: string | undefine
   const [univers] = useCharge<UniversListe>(`/api/univers/${universId}`);
   const { types, etat: etatTypes, recharger: rechargerTypes } = useTypes();
   const [creation, setCreation] = useState(false);
-  const mj = univers.etat === 'ok' && univers.valeur.role === 'mj';
-  const mode = useBasculeMode(mj);
+  const role = univers.etat === 'ok' ? univers.valeur.role : undefined;
   const perdue = useConnexionPerdue();
+  const mode = useBasculeMode(role === 'mj');
+  const { setMode } = useVue();
+  const initialise = useRef(false);
+  const precedent = useRef(mode);
+  useEffect(() => {
+    if (role !== 'mj' || initialise.current) return;
+    initialise.current = true;
+    if (params.get('mode') === 'joueur') {
+      precedent.current = 'joueur';
+      setMode('joueur');
+    }
+  }, [role, params, setMode]);
+  useEffect(() => {
+    if (mode === precedent.current) return;
+    precedent.current = mode;
+    if (!initialise.current) return;
+    setParams((p) => {
+      const n = majParam(p, 'mode', mode === 'joueur' ? 'joueur' : '');
+      if (mode === 'joueur') n.delete('visibilite');
+      return n;
+    }, { replace: true });
+  }, [mode, setParams]);
+  const modeJoueur = role === 'mj' && (mode === 'joueur' || params.get('mode') === 'joueur');
   const [vues, setVues] = useState<Record<string, VueListe>>({});
+
+  // Player mode drops the parameter (back in GM mode the filter is « Toutes » again).
+  const sansFiltre = role !== undefined && (role !== 'mj' || params.get('mode') === 'joueur');
+  const aParam = params.has('visibilite');
+  useEffect(() => {
+    if (sansFiltre && aParam) setParams((p) => majParam(p, 'visibilite', ''), { replace: true });
+  }, [sansFiltre, aParam, setParams]);
 
   if (univers.etat === 'chargement' || (univers.etat === 'ok' && etatTypes === 'chargement')) {
     return (
@@ -54,10 +83,15 @@ function Liste({ universId, slug }: { universId: string; slug: string | undefine
   }
   const type = typeParSlug(types, slug);
   if (!type) return <PageIntrouvable />;
+  const mj = univers.valeur.role === 'mj';
+  // B-57: the filter exists for the GM in GM mode only; anywhere else the parameter is ignored.
+  const offreVisibilite = mj && !modeJoueur;
+  const v = params.get('visibilite');
+  const visibilite: Visibilite = offreVisibilite && (v === 'mj' || v === 'joueurs') ? v : '';
   const vue = vues[type.type] ?? lireVue(universId, type.type);
-  const gestion = mj && mode !== 'joueur';
+  const gestion = mj && !modeJoueur;
   const statut = type.type === 'aventure' ? statutValide(params.get('statut')) : '';
-  const filtree = Boolean(params.get('q')?.trim() || params.get('sousType') || statut);
+  const filtree = Boolean(params.get('q')?.trim() || params.get('sousType') || statut || visibilite);
   const choisirVue = (v: VueListe) => {
     memoriserVue(universId, type.type, v);
     setVues((m) => ({ ...m, [type.type]: v }));
@@ -83,7 +117,7 @@ function Liste({ universId, slug }: { universId: string; slug: string | undefine
         type={type}
         vue={vue}
         gestion={gestion}
-        suffixeMode={mj && mode === 'joueur' ? '&mode=joueur' : ''}
+        suffixeMode={modeJoueur ? '&mode=joueur' : ''}
         bascule={<BasculeVue vue={filtree ? 'grille' : vue} onChoix={choisirVue} />}
         recherche={params.get('q')?.trim() ?? ''}
         onRecherche={(q) => setParams((p) => majParam(p, 'q', q))}
@@ -91,11 +125,13 @@ function Liste({ universId, slug }: { universId: string; slug: string | undefine
         onSousType={(v) => setParams((p) => majParam(p, 'sousType', v))}
         statut={statut}
         onStatut={(v) => setParams((p) => majParam(p, 'statut', v))}
-        onToutVoir={() => setParams((p) => {
+        onToutEffacer={() => setParams((p) => {
           const n = new URLSearchParams(p);
-          for (const cle of ['q', 'sousType', 'statut']) n.delete(cle);
+          for (const cle of ['q', 'sousType', 'statut', 'visibilite']) n.delete(cle);
           return n;
         })}
+        visibilite={visibilite}
+        onVisibilite={offreVisibilite ? (v) => setParams((p) => majParam(p, 'visibilite', v)) : undefined}
         videListe={
           <VideIcone icone={iconeDuType(types, type.type)}>
             <p>{type.aucun} {gestion ? 'pour l’instant.' : 'à voir pour l’instant.'}</p>

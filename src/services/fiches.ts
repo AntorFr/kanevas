@@ -51,7 +51,17 @@ interface FicheRow {
   cle_origine: string | null;
   sous_type: string | null;
   parent_id: number | null;
+  visible_joueurs?: number;
 }
+
+/** B-57: a player's own author right never opens the sheet to players in general. */
+const SQL_VISIBLE_JOUEURS = 'EXISTS (SELECT 1 FROM sections v WHERE v.fiche_id = f.id AND v.joueurs_lisent = 1)';
+
+const projectionVisibilite = (mj: boolean): string => mj ? `, ${SQL_VISIBLE_JOUEURS} AS visible_joueurs` : '';
+
+/** The field is absent altogether outside the full GM view. */
+const visibiliteVue = (r: FicheRow): { visibleJoueurs?: boolean } =>
+  r.visible_joueurs === undefined ? {} : { visibleJoueurs: r.visible_joueurs === 1 };
 
 /**
  * The sheet as a reader sees it. Without `lecteur` (the GM's own writes) the illustration is the file; with
@@ -102,9 +112,9 @@ const DISQUE_ILLUSTRATION =
    (SELECT x.ajoute_par FROM fichiers x WHERE x.id = f.illustration_fichier_id) AS illustration_ajoute_par`;
 
 /** The sheet row of this universe, or not found (a sheet of another universe does not exist here). */
-export function chargerFiche(db: Db, universId: number, ficheId: number): FicheRow {
+export function chargerFiche(db: Db, universId: number, ficheId: number, avecVisibilite = false): FicheRow {
   const row = db
-    .prepare(`SELECT f.*, ${DISQUE_ILLUSTRATION} FROM fiches f WHERE f.id = ? AND f.univers_id = ?`)
+    .prepare(`SELECT f.*, ${DISQUE_ILLUSTRATION}${projectionVisibilite(avecVisibilite)} FROM fiches f WHERE f.id = ? AND f.univers_id = ?`)
     .get(ficheId, universId) as FicheRow | undefined;
   if (!row) throw introuvable();
   return row;
@@ -507,7 +517,7 @@ export function listerEnfants(
   }
   const rows = db
     .prepare(
-      `SELECT f.*, (${RANG_TYPE}) AS rang FROM fiches f WHERE ${where.join(' AND ')}
+      `SELECT f.*, (${RANG_TYPE}) AS rang${projectionVisibilite(vueMJ(role, acteur))} FROM fiches f WHERE ${where.join(' AND ')}
        ORDER BY rang, plier(f.titre), f.id LIMIT ?`,
     )
     .all(...params, LIMITE_ENFANTS + 1) as (FicheRow & { rang: number })[];
@@ -517,7 +527,7 @@ export function listerEnfants(
     rows.length > LIMITE_ENFANTS && dernier
       ? Buffer.from(JSON.stringify({ r: dernier.rang, t: dernier.titre, i: dernier.id })).toString('base64url')
       : null;
-  const enfants: Enfant[] = page.map((r) => ({ id: r.id, titre: r.titre, type: r.type, sousType: r.sous_type }));
+  const enfants: Enfant[] = page.map((r) => ({ id: r.id, titre: r.titre, type: r.type, sousType: r.sous_type, ...visibiliteVue(r) }));
   return { enfants, suivant };
 }
 
@@ -590,7 +600,7 @@ export function lireFiche(
   formeLiens: 'html' | 'markdown' = 'html',
 ): FicheVue {
   const role = exigerRole(db, universId, acteur.compteId);
-  const fiche = chargerFiche(db, universId, ficheId);
+  const fiche = chargerFiche(db, universId, ficheId, vueMJ(role, acteur));
   const lisibles = sectionsDe(db, ficheId).filter((s) => peutLireSection(role, s, acteur));
   if (lisibles.length === 0 && (role !== 'mj' || acteur.modeJoueur)) throw introuvable();
   const mentions = mentionsDe(db, role, acteur, universId, ficheId);
@@ -606,6 +616,7 @@ export function lireFiche(
   return {
     ...vueFiche,
     ...(campagne ?? {}),
+    ...visibiliteVue(fiche),
     ...(attendue !== null ? { illustration: { attente: true as const, cle: attendue } } : {}),
     ancetres: ancetresLisibles(db, role, acteur, fiche),
     mentions: mentions.mentions,
@@ -682,6 +693,8 @@ export function listerFiches(
     sousType?: string;
     statut?: string;
     etiquette?: string;
+    /** Derived player visibility (B-57), for the GM outside player mode only. */
+    visibilite?: string;
     curseur?: string;
     limite?: number;
     recherche?: string;
@@ -690,9 +703,16 @@ export function listerFiches(
   } = {},
 ): PageFiches {
   const role = exigerRole(db, universId, acteur.compteId);
+  if (options.visibilite !== undefined &&
+      (!vueMJ(role, acteur) || !['mj', 'joueurs'].includes(options.visibilite))) {
+    throw invalide('Requête invalide.');
+  }
   const limite = Math.min(Math.max(Math.trunc(options.limite ?? LIMITE_LISTE), 1), LIMITE_LISTE);
   const where = ['f.univers_id = ?'];
   const params: (string | number)[] = [universId];
+  if (options.visibilite !== undefined) {
+    where.push(options.visibilite === 'joueurs' ? SQL_VISIBLE_JOUEURS : `NOT ${SQL_VISIBLE_JOUEURS}`);
+  }
   if (options.type !== undefined) {
     if (!estTypeFiche(options.type)) {
       throw invalide('Type de fiche inconnu.');
@@ -768,7 +788,7 @@ export function listerFiches(
   }
   const rows = db
     .prepare(
-      `SELECT f.*, ${DISQUE_ILLUSTRATION} FROM fiches f WHERE ${where.join(' AND ')}
+      `SELECT f.*, ${DISQUE_ILLUSTRATION}${projectionVisibilite(vueMJ(role, acteur))} FROM fiches f WHERE ${where.join(' AND ')}
        ORDER BY plier(f.titre), f.id LIMIT ?`,
     )
     .all(...params, limite + 1) as FicheRow[];
@@ -781,7 +801,7 @@ export function listerFiches(
   const mots = options.recherche === undefined ? null : motsDe(options.recherche);
   const enrichie = (r: FicheRow): Fiche => {
     const e = etiquetageDe(db, r.id);
-    const f: Fiche = { ...versFiche(r, (f) => lisiblePar(role, acteur, f)), alias: e.alias, etiquettes: e.etiquettes };
+    const f: Fiche = { ...versFiche(r, (f) => lisiblePar(role, acteur, f)), ...visibiliteVue(r), alias: e.alias, etiquettes: e.etiquettes };
     // A report's payload must not reveal an adventure the reader cannot read (AD-124 (4)),
     // including through search or the tree. The GM outside player mode keeps the stored id.
     if (f.type === 'compte_rendu' && !vueMJ(role, acteur)

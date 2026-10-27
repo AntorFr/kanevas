@@ -186,6 +186,13 @@ stockée nulle part (AD-28) ; seul le fichier l'est. Les identifiants du moteur 
 7. *(kanevas-import)* Un **bloc MJ** n'existe que pour un MJ hors mode Joueur : ni sur la fiche, ni dans
    l'index qu'un non-MJ interroge, ni dans un lien entrant, ni dans une image (AD-98) ; un fichier
    ajouté depuis un bloc MJ entre « Réservé au MJ » (AD-111, décision de Monsieur du 2026-10-11).
+11. *(kanevas-fiche-mj-seul)* A sheet has **no visibility of its own**: « visible des joueurs » is
+   derived, at each reading, from its sections — true when at least one section is readable by the
+   players (the `joueurs_lisent` setting, AD-19), whatever a player author reads of his own; false
+   for a sheet without section. The GM alone receives this derived state (`visibleJoueurs` in the
+   list, the tree and the sheet, absent in player mode and for a player, rule 3) and filters the
+   list by it (`visibilite=joueurs|mj`). Never stored, never settable: the sections stay the one
+   place where an audience is decided (B-57, decision of Monsieur, 2026-10-25).
 8. *(kanevas-import)* Un **lien** ou un **lien entrant** se lit sous les deux gardes d'une relation :
    la section qui le porte, la fiche qu'il vise ; sinon seul le texte de l'auteur reste (AD-97, AD-100).
 9. *(kanevas-import)* Un **jeton d'API** agit avec les droits du MJ qui l'a créé, dans son seul
