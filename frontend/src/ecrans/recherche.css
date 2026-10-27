@@ -55,7 +55,11 @@
 .pastille-lie > button:focus-visible, .choisir-fiche-menu button:focus-visible { outline: 2px solid var(--focus); outline-offset: -2px; }
 .filtre-nature { flex: 0 1 172px; min-width: 0; }
 .filtre-descendants { display: flex; align-items: center; gap: var(--e-2); min-height: 34px; font-size: var(--t-13); color: var(--texte-2); cursor: pointer; }
-.filtre-descendants input { width: 16px; height: 16px; accent-color: var(--accent); }
+.filtre-descendants input { appearance: none; display: grid; place-items: center; flex: none; width: 16px; height: 16px; margin: 0; border: 1px solid var(--bord-champ); border-radius: 3px; background: var(--surface); color: var(--sur-accent); cursor: pointer; }
+.filtre-descendants input:checked { background: var(--accent); border-color: var(--accent); }
+.filtre-descendants input:checked::after { content: ''; width: 4px; height: 8px; border: solid currentColor; border-width: 0 2px 2px 0; transform: translateY(-1px) rotate(45deg); }
+.filtre-descendants input:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.filtre-descendants input:disabled { opacity: .45; cursor: not-allowed; }
 .choisir-fiche { position: relative; }
 .choisir-fiche-menu { position: absolute; z-index: 5; top: calc(100% + var(--e-1)); left: 0; width: max(100%, 300px); max-width: calc(100vw - 64px); max-height: 320px; overflow-y: auto; padding: var(--e-1); background: var(--surface); border: 1px solid var(--bord-champ); border-radius: var(--rayon-champ); box-shadow: var(--ombre-flottant); }
 .choisir-fiche-menu p { margin: var(--e-2); color: var(--texte-2); font-size: var(--t-13); }
