@@ -76,13 +76,13 @@ interface Session {
 const ANSI = /\u001b(?:\[[0-?]*[ -/]*[@-~]|\][^\u0007\u001b]*(?:\u0007|\u001b\\)|[@-Z\\-_])/g;
 const nettoyer = (s: string) => s.replace(ANSI, '').replace(/\r/g, '\n');
 
-/** The first https address on a claude.ai or anthropic.com host, else null. */
+/** The first https address on a claude.com, claude.ai or anthropic.com host, else null. */
 export function tirerAdresse(sortie: string): string | null {
   for (const m of nettoyer(sortie).matchAll(/https:\/\/[^\s"'<>]+/g)) {
     try {
       const u = new URL(m[0]);
       const h = u.hostname;
-      const ok = ['claude.ai', 'anthropic.com'].some((d) => h === d || h.endsWith(`.${d}`));
+      const ok = ['claude.com', 'claude.ai', 'anthropic.com'].some((d) => h === d || h.endsWith(`.${d}`));
       if (u.protocol === 'https:' && ok) return u.href;
     } catch {
       /* not an address */
