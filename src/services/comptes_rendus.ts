@@ -113,12 +113,10 @@ export function listerComptesRendus(
   const where = ["f.univers_id = ?", "f.type = 'compte_rendu'", lisible];
   const params: (string | number)[] = [universId];
   if (!mj) params.push(lecteur);
-  // The filter by adventure answers nothing for a reader who does not read that adventure: closed,
-  // deleted and unknown are the same empty list, so the filter cannot tell a hidden adventure.
+  // Filtering names an adventure: require the same read guard as its sheet, for every role.
+  // Closed, deleted, foreign and unknown adventures all answer not found to a non-reader.
   if (options.campagneId !== undefined) {
-    if (!mj && !aventureLue(db, role, acteur, universId, options.campagneId)) {
-      return { comptesRendus: [], total: 0, suivant: null };
-    }
+    if (!aventureLue(db, role, acteur, universId, options.campagneId)) throw introuvable();
     where.push("json_extract(f.charge, '$.campagne_id') = ?");
     params.push(options.campagneId);
   }
