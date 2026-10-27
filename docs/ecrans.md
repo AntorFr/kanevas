@@ -3194,7 +3194,7 @@ n'est visible des joueurs. » and no « Préparation » block.
 
 `docs/maquettes/e09-aventure.html` — the sheet of « La Couronne brisée » for the GM: the header
 with the sub-type badge and the status menu, the blocks « Préparation » and « Comptes-rendus »
-above « Présentation », « Contient » with « Acte II — Le sceau brisé · Prête ». The E-8 tree and
+above « Présentation », « Contient » with a plain list of titles. The E-8 tree and
 the badges reuse the existing mockup `e08-liste-fiches.html` and the charte's audience badge;
 this text is authoritative where they differ.
 
