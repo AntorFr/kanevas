@@ -36,12 +36,41 @@ function monde() {
 
 const SCEN = 'Crée un scénario « Acte III — La crypte » dans « La Couronne brisée »';
 
-test('bouchon : créer un scénario ou une campagne n’est plus un script (AD-127) : phrase hors script, rien écrit, pour Antor comme pour Léa', async () => {
-  const { antor, lea, dit, nb } = monde();
+const ABSENT = "Je ne peux pas le faire : l'outil « creer_fiche » ne fait pas partie de ceux dont vous disposez.";
+
+test('bouchon (B-62, AD-126) : Antor crée une campagne puis un scénario dessous, avec l’événement fiche_creee', async () => {
+  const { db, antor, u, dit } = monde();
+  const c = await dit(antor.id, 'Crée une campagne « Les Cendres »');
+  assert.equal(c.reponse, 'Campagne « Les Cendres » créée.');
+  assert.equal(c.evenements.length, 1);
+  assert.equal(c.evenements[0]!.type, 'fiche_creee');
+  assert.equal(c.evenements[0]!.libelle, 'Fiche « Les Cendres » créée');
+  const camp = db.prepare("SELECT id, type, json_extract(charge,'$.statut') st FROM fiches WHERE titre='Les Cendres'").get() as any;
+  assert.deepEqual([camp.type, camp.st], ['aventure', 'en_preparation']);
+  assert.deepEqual(c.evenements[0]!.cible, { type: 'fiche', ficheId: camp.id });
+  const s = await dit(antor.id, 'Crée un scénario « Le Creuset » dans « Les Cendres »');
+  assert.equal(s.reponse, 'Scénario « Le Creuset » créé dans Les Cendres.');
+  assert.equal(s.evenements[0]!.libelle, 'Fiche « Le Creuset » créée');
+  const sc = db.prepare("SELECT parent_id p, sous_type, json_extract(charge,'$.statut') st FROM fiches WHERE titre='Le Creuset'").get() as any;
+  assert.deepEqual([sc.p, sc.sous_type, sc.st], [camp.id, 'Scénario', 'en_preparation']);
+  void u;
+});
+
+test('bouchon : scénario dans une campagne inconnue → Introuvable., rien créé, aucun événement', async () => {
+  const { antor, dit, nb } = monde();
   const avant = nb('fiches');
-  for (const [compte, phrase] of [[antor.id, SCEN], [lea.id, SCEN], [antor.id, 'Crée une campagne « Les Marches rouges »'], [lea.id, 'Crée une campagne « Les Marches rouges »']] as const) {
-    const r = await dit(compte, phrase);
-    assert.equal(r.reponse, HORS);
+  const r = await dit(antor.id, 'Crée un scénario « Zed » dans « Nulle part »');
+  assert.equal(r.reponse, 'Introuvable.');
+  assert.deepEqual(r.evenements, []);
+  assert.equal(nb('fiches'), avant);
+});
+
+test('bouchon : pour Léa, creer_fiche est absent : réponse « absent », rien écrit, aucun événement', async () => {
+  const { lea, dit, nb } = monde();
+  const avant = nb('fiches');
+  for (const phrase of [SCEN, 'Crée une campagne « Les Marches rouges »']) {
+    const r = await dit(lea.id, phrase);
+    assert.equal(r.reponse, ABSENT);
     assert.deepEqual(r.evenements, []);
   }
   assert.equal(nb('fiches'), avant);

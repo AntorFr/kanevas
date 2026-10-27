@@ -168,11 +168,11 @@ test('refus : Léa écrit dans une section qu’elle lit sans l’écrire → me
   assert.ok(!(await texte(lea)).includes('Il boite.'));
 });
 
-test('refus : Léa demande de créer un scénario → phrase hors script, aucun événement, rien de créé (AD-127)', opts, async () => {
+test('refus : Léa demande de créer un scénario → outil creer_fiche absent, aucun événement, rien de créé (AD-126)', opts, async () => {
   await ouvrir(lea);
   await nouvelle(lea);
   await demander(lea, 'Crée un scénario « Acte Zéro » dans « La Couronne brisée »');
-  await panneau(lea).getByText(/chercher, lire, ajouter/).waitFor();
+  await panneau(lea).getByText(/l'outil « creer_fiche » ne fait pas partie/).waitFor();
   assert.equal(await blocs(lea).count(), 0);
   const r = await antor.request.get(srv.base + '/api/univers/1/fiches?type=aventure');
   assert.ok(r.ok());
@@ -194,14 +194,24 @@ test('écriture : Léa complète « Notes de la table », « Ouvrir » mène à 
   assert.ok(!(await texte(lea)).includes('régent déchu'));
 });
 
-test('création retirée : Antor demande une campagne ou un scénario → phrase hors script, aucun bloc, rien de créé', opts, async () => {
+test('création : Antor demande une campagne puis un scénario → bloc « Fiche … créée », « Ouvrir » mène à la fiche', opts, async () => {
   await ouvrir(antor, '/univers/1');
   await nouvelle(antor);
   await demander(antor, 'Crée une campagne « Les Marches rouges »');
-  await panneau(antor).getByText(/chercher, lire, ajouter/).first().waitFor();
-  assert.equal(await blocs(antor).count(), 0);
+  await panneau(antor).getByText('Campagne « Les Marches rouges » créée.').waitFor();
+  await panneau(antor).getByText('Fiche « Les Marches rouges » créée').waitFor();
+  assert.equal(await blocs(antor).count(), 1);
+  await demander(antor, 'Crée un scénario « Acte Trois » dans « Les Marches rouges »');
+  await panneau(antor).getByText('Scénario « Acte Trois » créé dans Les Marches rouges.').waitFor();
+  await panneau(antor).getByText('Fiche « Acte Trois » créée').waitFor();
+  const liens = panneau(antor).getByRole('link', { name: /^Ouvrir/ });
+  await liens.last().click();
+  await antor.waitForURL(/\/univers\/1\/fiche\/\d+$/);
+  await attendre(antor);
+  await voit(antor, 'Acte Trois');
   const r = await antor.request.get(srv.base + '/api/univers/1/fiches?type=aventure');
-  assert.ok(!(await r.text()).includes('Marches rouges'));
+  const t = await r.text();
+  assert.ok(t.includes('Marches rouges') && t.includes('Acte Trois'));
 });
 
 test('fil : survit au changement d’écran et à la fermeture, vidé par « Nouvelle conversation », absent du stockage', opts, async () => {

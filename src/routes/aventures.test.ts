@@ -189,8 +189,8 @@ test('filtre statut : seulement type aventure + valeur valide ; jamais une fiche
     const j = r.json();
     return (j.fiches ?? j.items ?? j).map((f: { titre: string }) => f.titre).sort();
   };
-  assert.deepEqual(await titres(w.antor, 'type=aventure&statut=en_cours'), ['Cours fermée', 'Cours ouverte']);
-  assert.deepEqual(await titres(w.lea, 'type=aventure&statut=en_cours'), ['Cours ouverte']);
+  assert.deepEqual(await titres(w.antor, 'type=aventure&statut=en_cours'), ['Cours fermée', 'Cours ouverte', 'La Couronne brisée']); // + the seeded campaign (AD-126), En cours and open
+  assert.deepEqual(await titres(w.lea, 'type=aventure&statut=en_cours'), ['Cours ouverte', 'La Couronne brisée']);
   assert.deepEqual(await titres(w.antor, 'type=aventure&statut=terminee'), []);
   for (const qs of ['statut=en_cours', 'type=lieu&statut=en_cours', 'type=aventure&statut=zzz', 'type=aventure&statut=']) {
     assert.equal((await w.req(w.antor, 'GET', `${w.base}/fiches?${qs}`)).statusCode, 400, qs);

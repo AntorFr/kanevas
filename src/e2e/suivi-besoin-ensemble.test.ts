@@ -405,17 +405,21 @@ describe('kanevas-scenarios-suivi : fiche aventure, blocs, E-3, E-13', { skip: s
     await antor.screenshot({ path: '/tmp/suivi-e18.png', fullPage: true });
   });
 
-  test('retrait_assistant_ne_cree_plus_de_campagne_ni_de_scenario_et_ne_liste_plus_les_campagnes', async () => {
-    // Casse si : un outil creer_campagne / creer_scenario / lister_campagnes répond encore.
+  test('assistant_cree_une_campagne_et_un_scenario_et_ne_liste_plus_les_campagnes', async () => {
+    // Casse si : creer_fiche ne répond pas pour le MJ (B-62), ou un lister_campagnes répond encore.
     const avant = (await appel(antor, 'GET', '/api/univers/1/fiches?type=aventure')).body.fiches.length;
-    for (const message of ['Crée une campagne « Les Brumes d\'Azur »', 'Crée un scénario « Acte IX » dans La Couronne brisée', 'Liste les campagnes']) {
-      const r = await appel(antor, 'POST', '/api/univers/1/assistant/messages', { message, historique: [] });
-      assert.equal(r.status, 200, r.text);
-      assert.deepEqual(r.body.evenements, [], `événement pour « ${message} »`);
-      assert.match(r.body.reponse, /Je ne sais répondre qu'à des demandes de test/, message);
-    }
+    const c = await appel(antor, 'POST', '/api/univers/1/assistant/messages', { message: 'Crée une campagne « Les Brumes d\'Azur »', historique: [] });
+    assert.equal(c.status, 200, c.text);
+    assert.equal(c.body.reponse, 'Campagne « Les Brumes d\'Azur » créée.');
+    assert.equal(c.body.evenements.length, 1);
+    assert.equal(c.body.evenements[0].type, 'fiche_creee');
+    const s = await appel(antor, 'POST', '/api/univers/1/assistant/messages', { message: 'Crée un scénario « Acte IX » dans « Les Brumes d\'Azur »', historique: [] });
+    assert.equal(s.body.reponse, 'Scénario « Acte IX » créé dans Les Brumes d\'Azur.');
+    const l = await appel(antor, 'POST', '/api/univers/1/assistant/messages', { message: 'Liste les campagnes', historique: [] });
+    assert.deepEqual(l.body.evenements, []);
+    assert.match(l.body.reponse, /Je ne sais répondre qu'à des demandes de test/);
     const apres = (await appel(antor, 'GET', '/api/univers/1/fiches?type=aventure')).body.fiches.length;
-    assert.equal(apres, avant, 'l\'assistant a créé une aventure');
+    assert.equal(apres, avant + 2);
   });
 
   // ---------- Suppression d'une aventure (AD-119 amendé) ----------
@@ -483,6 +487,12 @@ describe('kanevas-scenarios-suivi : états vides de E-3 et de la fiche', { skip:
   before(async () => {
     s = await startServer({ KANEVAS_SANS_SEMIS: '' });
     browser = await launch();
+    // The seed carries « La Couronne brisée », its tasks and « Séance 12 » (AD-126): empty states need an empty universe.
+    const { page } = await connecte(browser, s.base, 'antor');
+    for (const type of ['compte_rendu', 'aventure']) {
+      const liste = (await (await page.request.get(`${s.base}/api/univers/1/fiches?type=${type}`)).json()) as { fiches: { id: number }[] };
+      for (const f of liste.fiches) await page.request.delete(`${s.base}/api/univers/1/fiches/${f.id}`);
+    }
   });
   after(async () => {
     await browser?.close();

@@ -44,21 +44,26 @@ test('critère : disponibilité par rôle', async () => {
   assert.deepEqual((await appel(app, lea, 'GET', `${base}/assistant`)).json(), { disponible: true, catalogue: 'joueur' });
 });
 
-test('AD-127 : créer un scénario ou une campagne n’est plus un script ; phrase hors script, aucun événement, aucune fiche créée', async () => {
+test('AD-126 : Antor crée une campagne puis un scénario ; Léa reçoit « absent » sans rien créer', async () => {
   const { app, antor, lea, base } = await monter();
   const nb = () => (app.db.prepare('SELECT count(*) n FROM fiches').get() as { n: number }).n;
+  const dit = (h: typeof antor, message: string) => appel(app, h, 'POST', `${base}/assistant/messages`, { message });
   const avant = nb();
-  for (const [h, message] of [
-    [antor, SCEN],
-    [antor, 'Crée une campagne « Les Marches rouges »'],
-    [lea, 'Crée un scénario « Zed » dans « La Couronne brisée »'],
-  ] as const) {
-    const r = await appel(app, h, 'POST', `${base}/assistant/messages`, { message });
+  const c = await dit(antor, 'Crée une campagne « Les Cendres »');
+  assert.equal(c.statusCode, 200, c.body);
+  assert.equal(c.json().reponse, 'Campagne « Les Cendres » créée.');
+  assert.equal(c.json().evenements[0].type, 'fiche_creee');
+  const s = await dit(antor, 'Crée un scénario « Le Creuset » dans « Les Cendres »');
+  assert.equal(s.json().reponse, 'Scénario « Le Creuset » créé dans Les Cendres.');
+  assert.equal(nb(), avant + 2);
+  const apres = nb();
+  for (const message of ['Crée un scénario « Zed » dans « Les Cendres »', 'Crée une campagne « Zut »']) {
+    const r = await dit(lea, message);
     assert.equal(r.statusCode, 200, r.body);
     assert.deepEqual(r.json().evenements, []);
-    assert.match(r.json().reponse, /chercher, lire, ajouter\./);
+    assert.match(r.json().reponse, /creer_fiche/);
   }
-  assert.equal(nb(), avant);
+  assert.equal(nb(), apres);
 });
 
 test('bords : message vide, 2001 caractères, historique de 21 : 400 ; 2000 et 20 passent', async () => {

@@ -41,6 +41,13 @@ describe('kanevas-scenarios-type-liste, E-8 Aventures', { skip: skipBrowser }, (
     lea = (await connecte(browser, srv.base, 'Léa')).page;
     const us = await api(antor, 'GET', '/api/univers');
     U = us.find((u: Any) => u.nom === "Lame d'Ébène").id;
+    // The seed carries « La Couronne brisée » and its scenario (AD-126): this suite starts from an empty universe.
+    for (const f of (await api(antor, 'GET', `/api/univers/${U}/fiches?type=aventure`)).fiches) {
+      await api(antor, 'DELETE', `/api/univers/${U}/fiches/${f.id}`);
+    }
+    for (const f of (await api(antor, 'GET', `/api/univers/${U}/fiches?type=compte_rendu`)).fiches) {
+      await api(antor, 'DELETE', `/api/univers/${U}/fiches/${f.id}`);
+    }
     await antor.goto(`/univers/${U}`);
     await lea.goto(`/univers/${U}`);
     await attendre(antor);
