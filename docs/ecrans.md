@@ -3479,10 +3479,10 @@ mark. The grammatical gender of the word follows the type's label (« Détruite 
   header (the reverse entry when gone), written whole; the header then carries the badge with the
   word (`Pastille` neutral, the type's glyph) next to the type badge, and the illustration takes the
   mark below. A player sees the badge, never the entry.
-- **The mark on the image**: on the vignette of a card (E-8, E-17, « Fiches liées », « Contient »,
-  the relation lines) and on the illustration of E-9, a sober mark — the image desaturated at 60 %
+- **The mark on the image**: on the vignette of a card (E-8, E-17) and on the illustration of E-9, a sober mark — the image desaturated at 60 %
   and the type's glyph in a small round chip at the bottom-left of the frame; on the drawn fallback,
-  the glyph alone. Never a cross over a face, never a red overlay (the charte's restraint).
+  the glyph alone. Never a cross over a face, never a red overlay (the charte's restraint). Built today: « Contient » and the
+  relation lines are text lines with no image, so they carry no mark; `-bloc` will render « Fiches liées » with the marked component.
 - **Filter** of the table (« Tous » by default) on E-8 for the types that carry the mark, next to
   « Sous-type », kept in the address (`?etat=la|disparu` — the two values are the same for every
   type, the words differ); a filtered state renders the grid; empty: « Aucun personnage mort. »,

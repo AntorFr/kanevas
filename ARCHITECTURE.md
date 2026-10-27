@@ -584,7 +584,10 @@ The server part of `kanevas-fiches-liees-disparu` is built: `marquerDisparu` in 
 is the writer used by the PATCH, import and seed. `changerTypeFiche` preserves the mark between
 compatible types and drops it otherwise. `GET …/types` returns each supported type's `disparu`
 words, empty sentences and glyph; `listerFiches({etat})` intersects the existing filters and
-excludes types without the mark. The screen part remains in its own task.
+excludes types without the mark. The screen part is built too: `MarqueDisparu`
+(`frontend/src/ecrans/fiche/marque.tsx`) on the card vignette and E-9's illustration, the « ⋯ » entry and badge
+in `entete.tsx`, the state filter on E-8 and in the E-17 volet. « Contient » and the relation lines have no image and
+carry no mark yet (`-bloc`).
 
 ### Slice `kanevas-fiches-liees-disparu` — design notes (2026-10-25)
 
