@@ -27,7 +27,7 @@ export function FiltreEtat({ mots, valeur, onChoix }: { mots: MotsDisparu; valeu
   return (
     <div className="bascule-vue filtre-etat" role="group" aria-label="État">
       {choix.map(([v, libelle]) => (
-        <button key={v || 'tous'} type="button" aria-pressed={valeur === v} onClick={() => onChoix(v)}>
+        <button key={v || 'tous'} type="button" aria-pressed={valeur === v} aria-label={v === '' ? `${libelle}, sans filtre d’état` : undefined} onClick={() => onChoix(v)}>
           {libelle}
         </button>
       ))}
