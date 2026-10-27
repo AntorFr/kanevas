@@ -187,14 +187,23 @@ test('comptes-rendus : le nom de l\'aventure n\'est donné qu\'à qui la lit (li
   assert.equal(fOuvert.campagneNom, 'La Couronne brisée');
   void supprime;
 
-  // Filter: a reader who does not read the adventure gets the empty list, as for an unknown id.
+  // Filter: an adventure the caller does not read answers 404, identical to an unknown id (E-13).
   const s2 = await w.scenarioFerme(c.id, 'Acte III');
   await w.appel(w.antor, 'POST', `${w.base}/comptes-rendus`, { campagneId: s2.id, titre: 'Séance III' });
-  const parFerme = (await w.appel(w.lea, 'GET', `${w.base}/comptes-rendus?campagne=${s2.id}`)).json();
-  const parInconnu = (await w.appel(w.lea, 'GET', `${w.base}/comptes-rendus?campagne=999999`)).json();
-  assert.deepEqual(parFerme, parInconnu);
-  assert.equal(parFerme.comptesRendus.length, 0);
-  assert.equal(parFerme.total, 0);
+  const parFerme = await w.appel(w.lea, 'GET', `${w.base}/comptes-rendus?campagne=${s2.id}`);
+  const parInconnu = await w.appel(w.lea, 'GET', `${w.base}/comptes-rendus?campagne=999999`);
+  assert.equal(parFerme.statusCode, 404);
+  assert.equal(parInconnu.statusCode, 404);
+  assert.equal(parFerme.body, parInconnu.body);
+  assert.ok(!parFerme.body.includes('Acte III'));
+  // the GM: unknown id, deleted, other universe's sheet, non-adventure, and player mode on a closed one
+  const perso = (await w.appel(w.antor, 'POST', `${w.base}/fiches`, { titre: 'Un PNJ', type: 'personnage' })).json();
+  const jetable = await w.scenarioFerme(c.id, 'Acte jetable');
+  assert.equal((await w.appel(w.antor, 'DELETE', `${w.base}/fiches/${jetable.id}`)).statusCode, 204);
+  for (const id of [999999, jetable.id, perso.id]) {
+    assert.equal((await w.appel(w.antor, 'GET', `${w.base}/comptes-rendus?campagne=${id}`)).statusCode, 404, `MJ campagne=${id}`);
+  }
+  assert.equal((await w.appel(w.antor, 'GET', `${w.base}/comptes-rendus?campagne=${s2.id}&mode=joueur`)).statusCode, 404);
   assert.equal((await liste(w.antor, `?campagne=${s2.id}`)).length, 1);
   assert.equal((await liste(w.lea, `?campagne=${c.id}`)).length, 2);
   assert.ok(!JSON.stringify(await liste(w.teo)).includes('Acte III'));

@@ -30,6 +30,16 @@ async function api(page: Any, method: string, path: string, data?: unknown) {
   return { status: r.status(), body: await r.json().catch(() => null) };
 }
 
+/** The row of a report carries its title link and, apart, a link to its adventure (E-13). */
+async function pastille(page: Any, titre: string, aventure: string, fiche: number) {
+  const li = page.locator('main li').filter({ hasText: titre }).first();
+  assert.equal(await li.locator('a', { hasText: titre }).count(), 1);
+  const lien = li.locator('a', { hasText: aventure });
+  assert.equal(await lien.count(), 1, `pastille ${aventure}`);
+  assert.match((await lien.getAttribute('href')) ?? '', new RegExp(`/fiche/${fiche}$`));
+  assert.ok(!(await li.innerText()).includes(' — '), 'plus de tiret séparateur');
+}
+
 /** The E-13 row of a report, as text. */
 const ligne = async (page: Any, titre: string): Promise<string> =>
   (await page.locator('main li').filter({ hasText: titre }).first().innerText()).replace(/\s+/g, ' ').trim();
@@ -86,16 +96,17 @@ test('E-13 : « La Couronne brisée » en colonne à Antor ; « Acte II » (scé
   await antor.goto(`/univers/${uid}/comptes-rendus`);
   await antor.getByRole('link', { name: /Séance de la Couronne/ }).waitFor();
   await attendre(antor);
-  assert.match(await ligne(antor, 'Séance de la Couronne'), /Séance de la Couronne — La Couronne brisée/);
-  assert.match(await ligne(antor, 'Séance du scénario'), /Séance du scénario — Acte II/);
+  await pastille(antor, 'Séance de la Couronne', 'La Couronne brisée', couronne);
+  await pastille(antor, 'Séance du scénario', 'Acte II', acte2);
   await antor.screenshot({ path: '/tmp/pivot-e13-antor.png' });
 
   await lea.page.goto(`/univers/${uid}/comptes-rendus`);
   await lea.page.getByRole('link', { name: /Séance de la Couronne/ }).waitFor();
   await attendre(lea.page);
-  assert.match(await ligne(lea.page, 'Séance de la Couronne'), /Séance de la Couronne — La Couronne brisée/);
+  await pastille(lea.page, 'Séance de la Couronne', 'La Couronne brisée', couronne);
   const l = await ligne(lea.page, 'Séance du scénario');
-  assert.ok(!l.includes('—') && !l.includes('Acte II —'), `colonne vide : ${l}`);
+  assert.ok(!l.includes('Acte II') && !l.includes('·'), `colonne vide : ${l}`);
+  assert.equal(await lea.page.locator('main li').filter({ hasText: 'Séance du scénario' }).first().locator('a').count(), 1, 'seul le lien du CR, aucun lien d\'aventure');
   assert.ok(!(await texte(lea.page)).includes('Acte II'), 'le titre du scénario fermé ne sort nulle part');
   await lea.page.screenshot({ path: '/tmp/pivot-e13-lea.png' });
 });
