@@ -13,7 +13,7 @@
 ## Reste
 
 - Recette de Monsieur en bouchon (README : « Adventure recipe », « Import sample acceptance »), puis fusion dans `epic/kanevas-scenarios` (phase merge).
-- Tranche suivante `kanevas-scenarios-import-assistant` : rouvrir l'import des aventures (`statut` à l'import) et l'outil `creer_fiche` de l'assistant (AD-125, AD-126). **Entre les deux tranches, aucune route n'importe une aventure et l'assistant n'en crée pas** (accepté : aucune campagne en production).
+- Tranche suivante `kanevas-scenarios-import-assistant` : rouvrir l'import des aventures (`statut` à l'import) et l'outil `creer_fiche` de l'assistant (AD-125, AD-126). **Entre les deux tranches, l'import crée une fiche `aventure` comme une autre mais ne lit pas son `statut` (elle naît « En préparation »), et l'assistant n'en crée pas** (accepté : aucune campagne en production).
 - Maquettes `e06-campagne.html` et `e07-scenario.html` : écrans retirés, fichiers gardés parce que les barres des autres maquettes y renvoient ; à nettoyer avec la refonte des maquettes restantes.
 - Les textes de `docs/ecrans.md` d'avant le pivot (Markdown, assistant) gardent des mentions de E-7 ; la note en tête de « Le Markdown » dit comment les lire.
 - Doc écrite en français avant la règle « anglais » du `CLAUDE.md` : non traduite, par décision (une feature de traduction à part).

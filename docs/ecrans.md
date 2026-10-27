@@ -2083,7 +2083,7 @@ pour l'emplacement du rendu (le contenu y devient mis en forme, la mise en page 
   | Lit le rendu | oui | oui | oui | oui |
   | Reçoit la source | oui | non (le champ n'est pas dans la réponse) | oui | comme le rôle qu'il imite |
   | Barre, aperçu, compteur | en édition | caché | en édition | comme le rôle qu'il imite |
-  | E-7, E-12 | éditeur au MJ, rendu pour qui lit | écran absent (404, MJ seul) | écran absent | écran absent |
+  | E-12 | éditeur au MJ, rendu pour qui lit | écran absent (404, MJ seul) | écran absent | écran absent |
   | E-15 (système rattaché) | éditeur au MJ, rendu | rendu seul, ni source ni barre (champ absent) | sans objet | rendu seul |
 - **Plafond** : 100 000 caractères pour une section, un compte-rendu, un scénario, une entrée de système et
   un contenu proposé ; au-delà le serveur répond 400 « Contenu trop long : 100 000 caractères au plus. ».
@@ -2163,13 +2163,12 @@ seul qui ne connaît pas le mode Joueur : un lien cassé ou en attente y est tou
 
 | Rôle | Éditeur : `[[` et « Lien vers une fiche » | Lecture d'un lien | « Mentionnée dans » |
 |---|---|---|---|
-| MJ, hors mode Joueur | oui (E-9, E-7) | lien, cassé, en attente marqués | tout ce qu'il lit, blocs MJ compris |
+| MJ, hors mode Joueur | oui (E-9) | lien, cassé, en attente marqués | tout ce qu'il lit, blocs MJ compris |
 | MJ en mode Joueur, sur E-9 | **caché** (aucun geste d'écriture en mode Joueur) | comme un Joueur | comme un Joueur |
-| Joueur, sur E-7 | **caché** : « Page introuvable. », ni écran ni lien vers lui | — | — |
 | Joueur, section qu'il écrit sans bloc MJ | oui | lien si la cible est lue ; sinon, cassé et en attente compris, le texte seul (**caché**, sans marque) | sources lisibles, hors blocs MJ ; le reste est **caché**, sans compteur |
 | Joueur, section qu'il n'écrit pas, ou qui contient un bloc MJ (B-34) | **caché** : pas de « Modifier », donc ni bouton ni liste | idem | idem |
 | Joueur qui tape à la main le lien d'une fiche qu'il ne lit pas | **refusé** : `lien_illisible` | — | — |
-| Admin d'instance non membre | **caché** : « Page introuvable. » sur E-9 et E-7 | — | — |
+| Admin d'instance non membre | **caché** : « Page introuvable. » sur E-9 | — | — |
 
 *Critères* (liste et bloc).
 - Étant donné Antor qui édite « Histoire » de « Port-Sel », quand il tape `[[` puis « ald », alors la liste montre
