@@ -12,6 +12,7 @@ import {
   Shield,
   Ship,
   StickyNote,
+  Users,
   UsersRound,
   type LucideIcon,
 } from 'lucide-react';
@@ -40,6 +41,7 @@ export interface TypeVue {
 
 /** The Lucide name the server sends → its component. An unknown name falls back to a sheet icon. */
 const ICONES: Record<string, LucideIcon> = {
+  users: Users,
   'users-round': UsersRound,
   'map-pin': MapPin,
   shield: Shield,

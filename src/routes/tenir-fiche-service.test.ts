@@ -100,7 +100,7 @@ test('bilan_de_port_sel_pour_antor_404_pour_lea', async () => {
   assert.equal(r.status, 200, JSON.stringify(r.json));
   assert.deepEqual(r.json, {
     sections: 3,
-    relations: 3,
+    relations: 5,
     places: 1,
     fichiers: 2,
     enfants: 5,
@@ -176,7 +176,7 @@ test('transaction_en_echec_laisse_fiche_enfants_et_disque_intacts_puis_succes_ef
   assert.equal(n(`SELECT COUNT(*) n FROM fiches WHERE id = ${port}`), 1);
   assert.equal(n(`SELECT COUNT(*) n FROM fiches WHERE parent_id = ${port}`), 5);
   assert.equal(n(`SELECT COUNT(*) n FROM sections WHERE fiche_id = ${port}`), 3);
-  assert.equal(n(`SELECT COUNT(*) n FROM relations WHERE cible_fiche_id = ${port}`), 3);
+  assert.equal(n(`SELECT COUNT(*) n FROM relations WHERE cible_fiche_id = ${port}`), 5);
   assert.equal(n(`SELECT COUNT(*) n FROM elements_carte WHERE fiche_id = ${port}`), 1);
   assert.equal(n(`SELECT COUNT(*) n FROM pieces_jointes WHERE fichier = '${nom}'`), 1);
   assert.ok(existsSync(join(DISQUE, nom)), 'le disque est intact après un échec');

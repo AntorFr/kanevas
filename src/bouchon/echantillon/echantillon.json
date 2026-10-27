@@ -247,17 +247,17 @@
         {
           "section": "description",
           "cible": "lieu:eneria-prime",
-          "type": "explore"
+          "qualificatif": "explore"
         },
         {
           "section": "description",
           "cible": "objet:dalle-de-donnees",
-          "type": "utilise"
+          "qualificatif": "utilise"
         },
         {
           "section": "description",
           "cible": "lieu:absent",
-          "type": "visite"
+          "qualificatif": "visite"
         }
       ]
     },
@@ -267,7 +267,7 @@
         {
           "section": "description",
           "cible": "evenement:ascension",
-          "type": "étudie"
+          "qualificatif": "étudie"
         }
       ]
     }
