@@ -3503,13 +3503,13 @@ natured relations (they are in « Fiches liées ») and keeps the links and the 
 
 **Where a graph label sits** (one rule, the same on desktop and at 390 px, light and dark):
 - Each link is drawn once, as its own stroke. Parallel links between the same two nodes are
-  spread by a perpendicular step (18 px, tightened only when a pair carries so many links that the
-  strokes would miss a disc) around the node axis, **once**: the offset moves the
+  spread by a perpendicular step (18 px, tightened to 26/(n−1) px from three links on a pair, so that
+  every stroke still meets both discs) around the node axis, **once**: the offset moves the
   stroke, and the label is placed from the offset stroke, never offset a second time.
 - A label starts centred on the middle of **its own** stroke, just above it, on a halo of the
   background colour, so the stroke never crosses the text. It slides along that stroke (steps of 2 %,
   up to 40 % of its length) until its box meets no pill and no other label; failing that, it moves off
-  the stroke in steps of 20 px, on either side. The rendered test requires it within 16 px of its
+  the stroke in steps of 20 px, trying either side of it (the other side included, with the full slide). The rendered test requires it within 16 px of its
   nearest stroke.
 - **Stroke geometry** (same at 390 px): a stroke runs from the **edge** of its source node's disc to the
   edge of its target node's disc, on the line parallel to the node axis shifted by the step above
@@ -3520,7 +3520,7 @@ natured relations (they are in « Fiches liées ») and keeps the links and the 
   crossed — the case is not met on the seeded map.
 - A label overlaps no node pill and no other label. When the middle of the stroke is covered by a
   pill, the label slides along its stroke as said above.
-- Testable on the rendered boxes: for every link, the label's box is within 16 px of its nearest stroke,
+- Testable on the rendered boxes: for the two Aldric–Port-Sel links, the label's box is within 16 px of its nearest stroke,
   no stroke segment crosses a label box, and no label box meets a pill box or another
   label box — checked at 1440 px and at 390 px on « Carte de la côte » (the two Aldric–Port-Sel
   links).
