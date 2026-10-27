@@ -128,31 +128,27 @@ colonne ni table de plus.
 
 > Fichier : `src/db/migrations/0003-suivi.sql` — numéro **définitif** (0003).
 
-Trois tables, aucune entité nouvelle (campagne, scénario, tâche de préparation sont celles du
-cadrage). Les comptes-rendus n'ont pas de table : un compte-rendu est une fiche de type
+Une table (`taches_preparation`) ; campagnes et scénarios sont des fiches de type `aventure` (migration 0017, « Cadrage `kanevas-scenarios` » plus bas : les tables `campagnes` et `scenarios` n'existent plus). Les comptes-rendus n'ont pas de table : un compte-rendu est une fiche de type
 `compte_rendu` (charge `{"v":1,"campagne_id":…}`, déjà posée par 0001, AD-52).
 
 | Table | Colonnes (hors clés) | Contraintes |
 |---|---|---|
-| `campagnes` | `id`, `univers_id`, `nom`, `statut` (`en_preparation` \| `active` \| `terminee`), `cree_le` | `nom` non vide, 1 à 80 caractères ; `statut` contraint à ces trois valeurs, `en_preparation` à la création ; plusieurs `active` permises (AD-60) ; **aucune suppression** |
-| `scenarios` | `id`, `campagne_id`, `titre`, `contenu` (source Markdown, AD-95 ; 100 000 caractères au plus, AD-106), `version` (entier, 1 à la création, AD-62), `cree_le`, `modifie_le` | `titre` non vide, 1 à 120 caractères ; `contenu` 20 000 caractères au plus *(100 000 depuis `kanevas-import`, AD-106 : la même constante pour tout texte Markdown)* ; **aucune suppression** |
-| `taches_preparation` | `id`, `campagne_id`, `categorie` (`monstres` \| `pnj` \| `cartes` \| `deroulements` \| `autre`), `libelle`, `faite`, `faite_le` (date de la dernière coche, vide si décochée), `cree_le` | `libelle` non vide, 1 à 200 caractères ; catégorie contrainte à ces cinq valeurs (AD-46) ; **aucune suppression** |
+| `taches_preparation` | `id`, `fiche_id` (la fiche aventure ; supprimée avec elle), `categorie` (`monstres` \| `pnj` \| `cartes` \| `deroulements` \| `autre`), `libelle`, `faite`, `faite_le` (date de la dernière coche, vide si décochée), `cree_le` | `libelle` non vide, 1 à 200 caractères ; catégorie contrainte à ces cinq valeurs (AD-46) ; **aucune suppression** |
 
 Un compte-rendu se crée en une seule transaction : la fiche (type `compte_rendu`, `campagne_id` de
-la campagne de l'univers) et **une** section « Compte-rendu » portant le texte, lisible des
+la fiche aventure) et **une** section « Compte-rendu » portant le texte, lisible des
 joueurs, non écrivable par eux ; si le créateur est un Joueur, il en est l'auteur, qui la lit et
-l'écrit ; si c'est un MJ, la section n'a pas d'auteur (AD-61). La campagne cible doit appartenir à
-l'univers du créateur, sinon la création échoue comme pour une campagne inconnue. Rien n'est écrit
+l'écrit ; si c'est un MJ, la section n'a pas d'auteur (AD-61). L'aventure cible doit être une fiche aventure de
+l'univers du créateur qu'il lit, sinon la création échoue comme pour une aventure inconnue. Rien n'est écrit
 si l'une des deux écritures échoue. L'ordre des comptes-rendus est `cree_le` décroissant, `id`
-décroissant en cas d'égalité. Le nom de la campagne et l'auteur d'un compte-rendu se lisent à
+décroissant en cas d'égalité. Le titre de l'aventure et l'auteur d'un compte-rendu se lisent à
 travers les droits de la fiche : l'auteur n'est montré que si la section est lisible du compte.
 
-Droits (en plus de ceux de 0001) : `campagnes` — nom et statut, tout membre de l'univers ; création
-et statut, MJ. `scenarios` et `taches_preparation` — MJ de l'univers **de la campagne** seul (AD-47),
-évalué sur l'univers de la campagne, jamais sur un identifiant fourni par l'appelant : un MJ d'un
-autre univers n'atteint aucun scénario ni aucune tâche, un Joueur non plus (réponse comme pour un
-identifiant inconnu, AD-22), et leur nombre ni leur existence ne sortent jamais d'une réponse à
-un Joueur.
+Droits (en plus de ceux de 0001) : `taches_preparation` — MJ de l'univers **de l'aventure** seul (AD-47),
+évalué sur l'univers de la fiche, jamais sur un identifiant fourni par l'appelant : un MJ d'un
+autre univers n'atteint aucune tâche, un Joueur non plus (réponse comme pour un identifiant inconnu,
+AD-22), et leur nombre ni leur existence ne sortent jamais d'une réponse à un Joueur. Le statut d'une
+aventure est une charge de la fiche, lisible de qui la lit, écrite par le MJ.
 
 ## `kanevas-images` : aucune migration
 
@@ -457,8 +453,6 @@ tels quels ; les déclencheurs de `recherche_fiches` sont recréés.
 |---|---|---|
 | `sections` | `contenu_public` (texte `NOT NULL DEFAULT ''` ; le contenu sans blocs MJ ; « la section contient un bloc » est `contenu_public ≠ contenu`, AD-114 ; vide par défaut : un site d'écriture oublié montre une section vide, il ne fuit pas), `cle_origine` (nulle : née dans Kanevas), `version_importee` (entier ; nul : jamais écrite par un import), `dernier_import` (JSON : titre, audience et ensemble des fichiers joints (clés) écrits par le dernier import ; nul : jamais) | (12) le contenu est modifié dans Kanevas si `version` ≠ `version_importee`, le titre ou l'audience si la valeur courante ≠ `dernier_import` ; (8) écrit par le service dans la même transaction que `contenu` (AD-98) — une fonction Markdown ne s'écrit pas en SQL ; index unique `(fiche_id, cle_origine)` (2) |
 | `pieces_jointes` | No new columns: **neither written nor read** since AD-111. Migration turns each row into a media library file (`mj` if `secrete` or if the section is not readable by players, `joueurs` otherwise), attached to its section, then empties the table. Only rows of a universe with at least one member are converted (the uploader is taken from the members); rows of a member-less universe are dropped and their bytes stay on disk, orphaned (`src/db/migration-mediatheque.test.ts`). Illustrations become `mj` if their sheet has no section readable by players, `joueurs` otherwise. Disk filenames stay unchanged; no byte copying. The table will be removed in a later tightening slice, once the previous image is no longer running. |
-| `campagnes` | `cle_origine`, `dernier_import` (JSON : nom et statut écrits par le dernier import ; nul : jamais) | index unique `(univers_id, cle_origine)` (2) ; (12) même règle, champ par champ |
-| `scenarios` | `cle_origine`, `dernier_import` (JSON : titre écrit ; nul : jamais), `version_importee` (la `version` laissée par le dernier import) | index unique `(campagne_id, cle_origine)` (2) ; (12) le contenu est modifié dans Kanevas si `version` ≠ `version_importee`, le titre si la valeur courante ≠ `dernier_import` |
 
 **Ce que la base ne dit pas, et que le service porte**, avec sa raison : même univers pour parent,
 étiquette, cible de lien et de relation (la règle croise deux tables) ; pas de cycle (récursif) ; le
@@ -500,11 +494,7 @@ FTS5, AD-101). Les déclencheurs restent la seule source des index (AD-21) ; le 
 **Multi-tenant** : inchangé — tout est dans un univers ; chaque table nouvelle porte `univers_id` ou
 pend d'une ligne qui le porte, et toute requête filtre dessus. Un système de jeu reste hors des univers.
 
-Campaign/scenario import bookkeeping is applied by migration `0016-import-suivi.sql`.
-Existing rows keep their values and receive null origin keys and import markers (not imported).
-Unique `(univers_id, cle_origine)` and `(campagne_id, cle_origine)` indexes serve the import
-lookups; SQLite permits multiple null keys. JSON markers are checked with `json_valid`; a non-null
-`version_importee` must be positive. No content or rights are copied or changed.
+Migration `0016-import-suivi.sql` gave `campagnes` and `scenarios` origin keys and import markers; `0017` carries them to the `aventure` sheets (`fiches.cle_origine`, `dernier_import`, `version_importee`) and drops both tables.
 
 ### Plan de migration
 

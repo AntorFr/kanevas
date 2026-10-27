@@ -6,7 +6,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
 
-import { migrate, openDb } from './db.js';
+import { comptesDuPivot, migrate, openDb } from './db.js';
 
 const D = '2022-02-02T10:00:00.000Z';
 
@@ -47,7 +47,9 @@ test('0017 convertit campagnes et scénarios en fiches aventure, tâches et CR r
     tache.run(1, 'cartes', 'La salle du trône', 1, D, D);
     tache.run(2, 'autre', 'Les masques', 0, null, D);
 
+    assert.deepEqual(comptesDuPivot(db), { campagnes: 2, scenarios: 3, taches: 3, comptesRendus: 2 }, 'les comptes que le démarrage journalise');
     assert.deepEqual(migrate(db), [17]);
+    assert.equal(comptesDuPivot(db), null, 'rien à convertir une fois la 0017 jouée');
 
     const avs = db.prepare("SELECT * FROM fiches WHERE type = 'aventure' ORDER BY id").all() as any[];
     assert.equal(avs.length, 5, 'autant d\'aventures que de campagnes + scénarios');

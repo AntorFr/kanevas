@@ -268,7 +268,7 @@ Forme de la skill `exigences` ; chaque besoin cite les parcours qui le réalisen
   « En cours »: « Campagnes en cours » (sub-type Campagne), « Derniers comptes-rendus »
   (unchanged), « Préparation » (the open tasks of the adventures en cours, GM). *(P-3, P-4)*
 - **B-61** — *(kanevas-scenarios)* The **import API** pushes an adventure through the sheets
-  route (`type: aventure`, `sousType`, `statut`, `parent` by origin key, sections); a reimport
+  route (`type: aventure`, `sousType`, `parent` by origin key, sections; `statut` joins with `kanevas-scenarios-import-assistant`); a reimport
   never overwrites a status, a sub-type or a parent changed in Kanevas (B-48 extended); a
   compte-rendu names its adventure by its origin key as before. The former campaign and scenario
   routes of the import disappear. *(P-10)*

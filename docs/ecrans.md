@@ -4,7 +4,7 @@
 > y arrive, à quoi il sert, ce que chaque rôle y fait. Les états de chaque écran et la maquette
 > finie se détaillent dans la tranche qui le construit.
 
-> **Construit à ce jour** : E-1, E-2, E-3 (nom, navigation et blocs : système de jeu, campagnes actives, derniers comptes-rendus, préparation pour le MJ, cartes visibles), E-4, E-5 (Administration), E-6, E-7, E-13, E-8 (avec la
+> **Construit à ce jour** : E-1, E-2, E-3 (nom, navigation et blocs : système de jeu, campagnes en cours, derniers comptes-rendus, préparation pour le MJ, cartes visibles), E-4, E-5 (Administration), E-13, E-8 (avec la
 > recherche dans un type, en grille de cartes illustrées), E-9 (avec les blocs Relations et Pièces jointes, l'illustration en tête, le titre en place et « Supprimer la fiche… »), E-10 et E-11 (cartes et graphes), E-12 (Assistant), E-14 (Paramètres, avec « Supprimer l'univers »), E-15 (Système de jeu, à `/systemes/:sid`), E-16 (Systèmes de jeu), E-17 (Recherche), E-18 (Accès par API), E-19 (Médiathèque), la ligne « Campagne » de E-9, la session
 > et la barre latérale.
 
@@ -58,8 +58,7 @@ bascule existe (fiche, carte et, depuis `kanevas-import`, recherche E-17).
 | **E-3 Vue d'ensemble de l'univers** | E-1 ; sélecteur d'univers ; E-5 (admin devenu membre) | les campagnes actives (*`kanevas-scenarios`* : « Campagnes en cours », the adventures), les derniers CR, la préparation (MJ), les cartes visibles | P-2, P-3, P-4, P-6 |
 | **E-4 Membres** | nav Univers (MJ) | lister, ajouter par identifiant, changer le rôle, retirer | P-2 |
 | **E-5 Administration** | nav (admin d'instance) | lister les univers de l'instance, en gérer les membres — jamais le contenu ; poser le jeton de l'assistant (B-51) | P-2, P-15 |
-| **E-6 Campagne** | *to be retired by `kanevas-scenarios-suivi`; still served until then* — an adventure is a sheet: its list is E-8 of the « Aventure » type, its page E-9, with the blocks « Préparation » and « Comptes-rendus » | — | — |
-| **E-7 Scénario** | *to be retired by `kanevas-scenarios-suivi`; still served until then* — a scenario is a sheet (E-9) under its campaign in the tree | — | — |
+| **E-6 Campagne**, **E-7 Scénario** | *retired (`kanevas-scenarios-suivi`)* — an adventure is a sheet: its list is E-8 of the « Aventure » type, its page E-9, with the blocks « Préparation » and « Comptes-rendus » | — | — |
 | **E-8 Liste de fiches** | nav Lore | les fiches d'un type que le compte peut lire, en grille de cartes illustrées ; chercher dans ce type ; créer (MJ) ; *(kanevas-scenarios)* « Aventure » type: status badge and filter, status menu (MJ), « Nouvelle aventure » with sub-type | P-3, P-6 |
 | **E-9 Fiche** | E-8 ; un token ; un lien ; E-13 | lire et écrire les sections permises ; ajouter, réordonner, retirer une section, régler son audience, relier (MJ) ; joindre un fichier (les deux chemins d'ajout, AD-111), réserver un fichier au MJ (MJ), retirer une référence ; régler le sous-type (MJ) ; poser, remplacer, retirer l'illustration (MJ) ; bascule mode Joueur (MJ). Un compte-rendu s'ouvre ici. ; *(kanevas-scenarios)* on an adventure: the status line and its menu (MJ) | P-3 à P-7 |
 | **E-10 Cartes** | nav Cartes | les cartes lisibles ; créer une carte illustrée (avec son image de fond) ou un graphe (MJ) | P-3, P-9 |
@@ -115,7 +114,7 @@ E-16 vivent hors des univers : leurs cases disent le rôle dans un univers ratta
 | E-19 *(kanevas-import)* | tout : ajouter, renommer, visibilité, supprimer ; « Utilisé dans » complet | les fichiers visibles des joueurs et ceux qu'il a ajoutés ; « Utilisé dans » réduit aux fiches qu'il lit ; ni ajout depuis E-19 (**caché** ; il ajoute un fichier par une section qu'il écrit, E-9), ni réglage, ni suppression (**cachés**) | — |
 | E-18 *(kanevas-import)* | créer un jeton ; voir et révoquer tous les jetons de l'univers (y compris ceux d'un autre MJ) ; voir les lots | — (**caché** : absent de la barre, « Page introuvable. » par l'adresse) | — |
 
-What `kanevas-scenarios` adds to the lines above: **E-17** — the status badge on the result card of an adventure, for every role that reads the sheet; **E-12** — the MJ column gains the tool « créer une fiche » (type among the activated ones, title, sub-type, parent), the player column gets **caché** (no tool: the assistant answers it cannot); **E-18** — no « Campagnes » or « Scénarios » counter in a lot: adventures count among « Fiches ».
+What `kanevas-scenarios` adds to the lines above: **E-17** — the status badge on the result card of an adventure, for every role that reads the sheet; **E-12** — no tool creates or lists adventures (`kanevas-scenarios-suivi` removed the campaign tools; `creer_fiche` comes with `kanevas-scenarios-import-assistant`), the assistant answers it cannot; **E-18** — no « Campagnes » or « Scénarios » counter in a lot: adventures count among « Fiches ».
 
 Ce que `kanevas-import` ajoute aux lignes existantes : **barre latérale** — tous : la section « Lore »
 ne montre que les types activés ; **E-8** — MJ : la vue en arbre, la création dans les seuls types activés,
@@ -721,135 +720,34 @@ jamais « caché ». Chemin d'échec de relier une section : le refus du service
 
 ## Détail des écrans de `kanevas-suivi`
 
-> *Retired in part by `kanevas-scenarios` (2026-10-25): E-6 and E-7 disappear, their content
-> lives on E-8 and E-9 of the « Aventure » type; the blocks of E-3, E-13 and the « Campagne » line
-> of a compte-rendu stay, reading adventures. See « Détail des écrans de `kanevas-scenarios` »
-> at the end of this document; what follows is kept as the history of the suivi.*
-
-> E-6 Campagne, E-7 Scénario, E-13 Comptes-rendus, et leurs ajouts à E-3, à E-9 et à la barre
-> latérale. Mêmes six états et mêmes textes communs que ci-dessus (chargement, erreur de
-> chargement, connexion perdue, écriture en cours, échec d'écriture, refus, session expirée) ; ne
-> sont redits que les textes propres. Vocabulaire : les écrans disent « compte-rendu » en toutes
-> lettres ; « CR » n'est qu'un sigle des documents (B-19, B-20). Dates : « 22 sept. 2026 » (jour, mois
-> abrégé, année), comme sur E-9. Maquettes : `e06` et `e03` sont finies ; `e07` et `e13` sont d'avant la charte (contenu et vocabulaire seulement).
+> E-13 Comptes-rendus et les blocs de E-3, avec la ligne « Campagne » de E-9. Les campagnes et
+> scénarios sont des fiches de type « Aventure » (E-8, E-9 : « Détail des écrans de
+> `kanevas-scenarios` » plus bas) ; E-6 Campagne et E-7 Scénario n'existent plus, ni l'entrée
+> « Campagnes » de la barre. Mêmes six états et mêmes textes communs que ci-dessus. Vocabulaire :
+> les écrans disent « compte-rendu » en toutes lettres ; « CR » n'est qu'un sigle des documents
+> (B-19, B-20). Dates : « 22 sept. 2026 » (jour, mois abrégé, année), comme sur E-9.
 
 **Ajouts aux écrans déjà construits.**
 
-- *Barre latérale* : **Campagnes** et **Comptes-rendus** apparaissent, pour tous les rôles, entre
-  « Vue d'ensemble » et « Lore ». Sur téléphone, comme les autres items (tiroir).
-- *E-3* : trois blocs, inscrits au registre (une ligne chacun, aucun bloc existant modifié) :
-  « Campagnes actives » (tous), « Derniers comptes-rendus » (tous), « Préparation » (MJ).
-  La région « Rien à afficher pour l'instant… » ne s'affiche plus tant qu'un bloc est inscrit pour
-  le rôle ; chaque bloc a son propre état vide.
+- *Barre latérale* : **Comptes-rendus** apparaît, pour tous les rôles, entre « Vue d'ensemble » et
+  « Lore ». Sur téléphone, comme les autres items (tiroir).
 - *E-9, fiche de type compte-rendu* : sous le titre, une ligne « Campagne : <nom> » qui mène à
-  E-6 de la campagne. Pour une fiche d'un autre type, rien n'est ajouté. E-9 n'a pas aujourd'hui
-  d'emplacement sous le titre : la tranche en ajoute **un seul**, un registre de lignes de titre
-  (`frontend/src/ecrans/fiche/lignes/registre.ts`, une ligne : type de fiche concerné, composant),
-  vide pour tout autre type ; aucun bloc de section existant n'est modifié. États de la ligne : le
-  nom de la campagne passe à la ligne (80 caractères) ; pendant le chargement, la ligne est absente ;
-  campagne illisible ou en erreur, la ligne est absente sans message (le compte-rendu reste lisible) ; connexion perdue : la ligne déjà affichée reste cliquable (navigation seule, sans écriture).
+  la fiche de l'aventure, pour qui la lit (registre `fiche/lignes/`). Nom sur 80 caractères qui passent
+  à la ligne ; pendant le chargement, ligne absente ; aventure illisible ou en erreur, ligne
+  absente sans message (le compte-rendu reste lisible) ; connexion perdue : la ligne déjà affichée
+  reste cliquable.
 - *E-9, ce que chaque rôle voit d'un compte-rendu* : une seule section, « Compte-rendu », lisible de
   tous les membres. « Modifier » est offert à son auteur (le Joueur qui l'a créé) et au MJ, pas aux
   autres Joueurs ; le MJ règle l'audience comme pour toute section. Un compte-rendu créé par un MJ
   n'a pas d'auteur. Fermer la section aux joueurs la cache aux autres Joueurs, pas à son auteur
-  (AD-61).
-
-### E-6 Campagne
-
-Deux vues, une adresse chacune : la **liste** (`/univers/:id/campagnes`) et la **page d'une
-campagne** (`/univers/:id/campagnes/:campagne`).
-
-*La liste* : les campagnes de l'univers — nom, statut — **actives d'abord, puis en préparation,
-puis terminées, chaque groupe par nom** (sans casse). Plusieurs campagnes peuvent être actives
-(AD-60). Le MJ voit pour chacune une liste de statut (« En préparation », « Active », « Terminée »)
-qu'il change en place, et en tête « Nouvelle campagne » : un champ « Nom » (1 à 80 caractères) et
-« Créer la campagne » ; la campagne naît « En préparation » et on reste sur la liste, où elle
-apparaît. Le Joueur voit le statut en badge, sans réglage. Ni le nom d'une campagne ni le libellé d'une
-tâche ne se corrigent, et rien ne se supprime : hors tranche.
-
-*La page d'une campagne* : le nom (titre), le statut (liste pour le MJ, badge pour le Joueur),
-puis trois panneaux (une campagne n'a ni description ni autre champ que son nom et son statut).
-
-1. **Scénarios** (MJ seul — le panneau n'existe pas pour un Joueur, ni son titre) : les scénarios par
-   ordre de création, le plus ancien d'abord, chacun un lien vers E-7 ; « Nouveau scénario » : un
-   champ « Titre » (1 à 120 caractères) et « Créer le scénario », qui mène à E-7.
-2. **Préparation** (MJ seul, idem) : les tâches **non cochées**, regroupées sous les cinq
-   catégories dans cet ordre — Monstres, PNJ, Cartes, Déroulements, Autre — une catégorie vide
-   n'est pas montrée ; chaque tâche : une case, son libellé. Cocher la fait passer dans le groupe
-   « Cochées (n) », sous la liste, avec son badge de catégorie, un lien « Décocher » et le libellé
-   barré ; les cochées sont triées de la plus récemment cochée à la plus ancienne. En pied, « Nouvelle
-   tâche » : libellé (1 à 200 caractères), catégorie (obligatoire, « Autre » par défaut),
-   « Ajouter ». **Aucune tâche ne se supprime** (matrice du cadrage).
-3. **Comptes-rendus** (tous) : les comptes-rendus **lisibles** de cette campagne, du plus
-   récemment créé au plus ancien, chacun : titre, auteur (l'identifiant de l'auteur de la section ; un compte-rendu
-   créé par le MJ n'a pas d'auteur, AD-61 : rien n'est affiché, pas même le nom du MJ), date de création, lien vers E-9. « Nouveau
-   compte-rendu » ouvre une fenêtre : « Titre » (1 à 120 caractères), « Texte » (facultatif, 100 000
-   au plus depuis `kanevas-import`, AD-106 ; 20 000 avant), « Publier » et « Annuler » ; « Publier » crée le compte-rendu et mène à E-9 (AD-61). Si la
-   création échoue, la fenêtre reste ouverte, la saisie gardée, avec « L'action n'a pas abouti.
-   Réessayez. » ; session expirée pendant la saisie : le texte est gardé comme sur E-9. Cent à la fois,
-   puis « Charger la suite ».
-
-Erreurs de saisie, sous le champ : « Erreur : le nom est obligatoire. » / « Erreur : 80 caractères
-au plus. » (campagne) ; « Erreur : le titre est obligatoire. » / « Erreur : 120 caractères au plus. »
-(scénario, compte-rendu) ; « Erreur : le libellé est obligatoire. » / « Erreur : 200 caractères au
-plus. » (tâche) ; « Erreur : 100 000 caractères au plus. » (texte du compte-rendu).
-
-Textes : liste vide, MJ : « Aucune campagne pour l'instant. » et « Nouvelle campagne » ; Joueur :
-« Aucune campagne pour l'instant. » ; scénarios vides : « Aucun scénario pour l'instant. » ;
-préparation vide, aussi quand toutes les tâches sont cochées : « Rien à préparer pour l'instant. »,
-le groupe « Cochées (n) » restant sous elle ; cochées vides : le groupe n'est pas montré ;
-comptes-rendus vides : « Aucun compte-rendu pour l'instant. » (Joueur : « Aucun compte-rendu à lire
-pour l'instant. »). Une campagne terminée garde ses panneaux et accepte de nouveaux comptes-rendus.
-
-| État | Ce qu'on voit | Ce qu'on peut faire |
-|---|---|---|
-| vide | les textes ci-dessus, panneau par panneau | MJ : créer une campagne, un scénario, une tâche ; tous : un compte-rendu |
-| chargement | « Chargement des campagnes… » (liste) ; « Chargement de la campagne… » (page), le titre absent | — |
-| erreur | « Impossible de charger les campagnes. » / « Impossible de charger cette campagne. » (le nom ou le statut illisible vide la page ; l'échec d'un seul panneau — scénarios, préparation, comptes-rendus — ne vide que ce panneau : « Impossible de charger ce panneau. » avec « Réessayer ») ; « Charger la suite » en échec : « Impossible de charger la suite. » ; un échec d'écriture (statut, tâche, création) s'écrit au-dessus du panneau, la valeur revient à celle d'avant, la saisie reste | « Réessayer » |
-| connexion perdue | le bandeau ; liste de statut, cases, « Ajouter », « Créer… », « Publier » désactivés ; saisie conservée | lire, ouvrir |
-| refus | campagne inconnue ou d'un autre univers, univers sans rôle : « Page introuvable. » ; pour un Joueur, les panneaux Scénarios et Préparation sont absents, sans titre ni compteur, et l'adresse d'un scénario répond « Page introuvable. » | « Mes univers » |
-| contenu long | 100 campagnes : la liste défile ; un nom de 80 caractères passe à la ligne ; un titre de compte-rendu de 120 caractères passe à la ligne ; 100 scénarios ou plus : la liste s'allonge ; 100 tâches ou plus par catégorie : la liste s'allonge, sans pagination ; plus de 100 comptes-rendus : « Charger la suite » | idem |
-
-*Critères.*
-- Étant donné Antor, MJ, qui a une tâche « Plan de la crypte » (Cartes) non cochée, quand il la
-  coche, alors elle quitte « Préparation » et apparaît dans « Cochées (1) » ; quand il la décoche,
-  elle revient sous « Cartes ».
-- Étant donné Léa, Joueuse, quand elle ouvre « La Couronne brisée », alors elle voit le nom, le
-  statut et les comptes-rendus, et dans la réponse de la route ni scénario ni tâche, ni leur nombre.
-- Étant donné Antor qui change le statut en « Terminée », quand Léa recharge la liste, alors le
-  badge de la campagne dit « Terminée » et la campagne passe en dernier groupe.
-
-### E-7 Scénario (MJ)
-
-Atteint depuis E-6 (liste des scénarios, « Créer le scénario »). Le titre, un lien « ← La
-Couronne brisée » vers E-6, le contenu en Markdown rendu (AD-95) ; « Modifier » ouvre « Titre » et
-« Contenu » (20 000 caractères au plus ; 100 000 et Markdown depuis `kanevas-import`, AD-95, AD-106), « Enregistrer », « Annuler ». Enregistrer envoie la version
-lue (AD-62) ; un scénario ne se supprime pas.
-
-Textes : contenu vide : « Rien d'écrit pour l'instant. » ; écriture périmée : « Ce scénario a changé
-depuis que vous l'avez ouvert. Rechargez-le pour voir la nouvelle version ; votre texte reste
-ci-dessous. » avec « Recharger le scénario » ; titre vide ou trop long : « Erreur : le titre est
-obligatoire. » / « Erreur : 120 caractères au plus. » ; contenu : « Erreur : 100 000 caractères au
-plus. ». Session expirée pendant une saisie : le texte est gardé comme sur E-9.
-
-| État | Ce qu'on voit | Ce qu'on peut faire |
-|---|---|---|
-| vide | « Rien d'écrit pour l'instant. » | « Modifier » |
-| chargement | « Chargement du scénario… », le titre absent | — |
-| erreur | « Impossible de charger ce scénario. » ; échec d'écriture : « L'action n'a pas abouti. Réessayez. », texte conservé ; *(kanevas-import-liens)* la liste de `[[` : « Impossible de chercher. » et « Réessayer » | « Réessayer » |
-| connexion perdue | le bandeau ; « Enregistrer » désactivé, texte en cours conservé ; *(kanevas-import-liens)* la liste de `[[` ne s'ouvre pas | lire |
-| refus | Joueur, scénario inconnu, d'une autre campagne ou d'un autre univers : « Page introuvable. » ; un Joueur n'a ni l'écran ni de lien vers lui | « Mes univers » |
-| contenu long | 100 000 caractères : passent à la ligne, affichés en entier ; titre de 120 caractères : passe à la ligne | idem |
-
-*Critère.* Étant donné Léa, Joueuse, quand elle ouvre l'adresse du scénario « Acte II — Le sceau
-brisé » que lui donne Antor, alors elle voit « Page introuvable. », sans le titre.
+  (AD-61). La création se fait depuis le bloc « Comptes-rendus » de l'aventure (E-9).
 
 ### E-13 Comptes-rendus
 
 Tous les comptes-rendus de l'univers **que le compte peut lire**, du plus récemment créé au plus
-ancien (un compte-rendu retouché ne remonte pas, B-20) ; chacun : titre, nom de sa campagne, auteur (comme sur E-6 : l'identifiant, rien s'il n'y en a pas),
+ancien (un compte-rendu retouché ne remonte pas, B-20) ; chacun : titre, nom de son aventure (lue de qui peut la lire), auteur (l'identifiant, rien s'il n'y en a pas),
 date de création, lien vers E-9. Cent à la fois, puis « Charger la suite ». Pas de création ici :
-« Nouveau compte-rendu » est sur E-6, qui porte la campagne.
+« Nouveau compte-rendu » est dans le bloc « Comptes-rendus » de l'aventure (E-9).
 
 | État | Ce qu'on voit | Ce qu'on peut faire |
 |---|---|---|
@@ -865,19 +763,20 @@ Léa ouvre E-13, alors elle ne voit pas « Session 11 » et la liste ne laisse a
 
 ### Blocs de E-3 (`kanevas-suivi`)
 
-> *Amended by `kanevas-scenarios`: « Campagnes actives » reads « Campagnes en cours » and lists adventures (E-8/E-9, E-6 being retired); « Derniers comptes-rendus » names a CR's adventure only to a reader who reads it; see « Détail des écrans de `kanevas-scenarios` ».*
+Trois blocs indépendants, dans cet ordre, qui lisent des aventures (détail : « Détail des écrans de
+`kanevas-scenarios` », « E-3, E-13, E-12 et E-17 »). Chacun a un titre, un état vide, et ne montre
+jamais un compteur ni un nom que le compte ne peut pas lire.
 
-Trois blocs indépendants, dans cet ordre. Chacun a un titre, un état vide, et ne montre jamais un
-compteur ni un nom que le compte ne peut pas lire.
-
-- **Campagnes actives** (tous) : nom de chaque campagne active, lien vers E-6 de la campagne.
-  Toutes les campagnes actives, une par ligne. Vide : « Aucune campagne en cours. » (MJ : suivi du lien « Voir les aventures » → E-8, type « Aventure »).
+- **Campagnes en cours** (tous) : les aventures de sous-type « Campagne » au statut « En cours »
+  que le compte lit, chacune un lien vers sa fiche (E-9) avec son statut. Vide : « Aucune campagne
+  en cours. » (MJ : lien « Voir les aventures » → E-8, type « Aventure »).
 - **Derniers comptes-rendus** (tous) : les cinq plus récemment créés que le compte peut lire,
-  titre, campagne, date, lien vers E-9 ; lien « Tous les comptes-rendus » (→ E-13). Vide : « Aucun
-  compte-rendu pour l'instant. » (Joueur : « Aucun compte-rendu à lire pour l'instant. »).
-- **Préparation** (MJ seul — le bloc n'existe pas pour un Joueur) : par campagne active, ses cinq
-  premières tâches non cochées (plus anciennes d'abord) avec leur catégorie, lien vers E-6. Vide :
-  « Rien à préparer pour l'instant. ».
+  titre, aventure (si le compte la lit), date, lien vers E-9 ; lien « Tous les comptes-rendus »
+  (→ E-13). Vide : « Aucun compte-rendu pour l'instant. » (Joueur : « Aucun compte-rendu à lire
+  pour l'instant. »).
+- **Préparation** (MJ seul — le bloc n'existe pas pour un Joueur) : par aventure « En cours », ses
+  cinq premières tâches non cochées (plus anciennes d'abord) avec leur catégorie, lien vers la
+  fiche. Vide : « Rien à préparer pour l'instant. ».
 
 | État | Ce qu'on voit |
 |---|---|
@@ -885,19 +784,10 @@ compteur ni un nom que le compte ne peut pas lire.
 | erreur | le bloc seul dit « Impossible de charger ce bloc. » avec « Réessayer » ; les autres blocs restent |
 | connexion perdue | le bandeau ; contenu déjà chargé |
 | refus | sans objet pour les blocs ; le bloc Préparation est absent pour un Joueur |
-| contenu long | nom de campagne de 80 caractères, titre de compte-rendu de 120, libellé de tâche de 200 : passent à la ligne ; au plus cinq comptes-rendus, et cinq tâches par campagne active ; le nombre de campagnes actives n'est pas borné (AD-60) : « Campagnes actives » et « Préparation » s'allongent avec lui, sans « Charger la suite » — voulu, une table compte quelques campagnes actives |
+| contenu long | titre d'aventure de 120 caractères, de compte-rendu de 120, libellé de tâche de 200 : passent à la ligne ; au plus cinq comptes-rendus, et cinq tâches par aventure ; le nombre d'aventures en cours n'est pas borné (AD-60) |
 
-*Critère.* Étant donné Léa, quand elle ouvre E-3, alors elle voit « Campagnes actives » et
+*Critère.* Étant donné Léa, quand elle ouvre E-3, alors elle voit « Campagnes en cours » et
 « Derniers comptes-rendus », jamais « Préparation » ; Antor voit les trois.
-
-### Clôture de la tranche
-
-B-15 → E-6 (liste et page) ; B-16 → E-6 et E-7 ; B-17 → E-6 ; B-18 → E-6 ; B-19 → E-6 et E-9 ;
-B-20 → E-13. Parcours : P-3 étapes 1 à 3 (E-3, E-6, E-7), P-4 en entier, P-5 étape 1 (E-13 →
-E-9) ; P-6 étape 1 ne lit que les blocs de E-3 (derniers comptes-rendus) ; B-18 et B-20 le citent, mais aucune étape de P-6 ne passe par E-6 ni E-13. Les trois rôles : le Joueur a E-3, E-6
-(sans scénarios ni préparation), E-13 ; l'admin d'instance sans rôle n'a aucun de ces écrans.
-Reste aux autres tranches : la proposition de mise à jour depuis un CR (`kanevas-monde`) ; créer une campagne ou un scénario par
-l'assistant est construit (E-12, `kanevas-assistant-membre`).
 
 ## Détail des écrans de `kanevas-relier-chercher`
 
@@ -1080,7 +970,7 @@ jamais « caché ». Chemin d'échec de relier une section : le refus du service
 
 ## Détail des écrans de `kanevas-assistant-membre`
 
-> *Amended by `kanevas-scenarios` (AD-126): `creer_campagne` and `creer_scenario` become the one tool `creer_fiche`; the events read « Fiche « La Couronne brisée » créée » and « Ouvrir » leads to the adventure's sheet (E-9); E-6 and E-7 are retired. The stub keeps the two sentences of the recipes below.*
+> *`kanevas-scenarios-suivi`: the tools `creer_campagne`, `creer_scenario` and `lister_campagnes` are gone; the assistant creates no adventure until the slice `kanevas-scenarios-import-assistant` adds `creer_fiche` (AD-126). To find an adventure it searches, with the type « Aventure ».*
 
 > E-12 Assistant, et son ajout au shell d'un univers. Mêmes six états et mêmes textes communs que
 > `kanevas-premiere-fiche` (chargement, connexion perdue, session expirée) ; ne sont redits que les
@@ -1106,12 +996,9 @@ bas :
 - **le fil** : les messages de la personne et les réponses de l'assistant, en texte brut (le fil le reste après `kanevas-import`),
   du plus ancien au plus récent ; le fil défile et reste calé sur le dernier message ;
 - **sous une réponse, les écritures** : un bloc « Écrit par l'assistant » par événement (AD-76), le
-  libellé (« Section « Notes de la table » complétée », « Scénario « Acte III — La crypte » créé
-  dans La Couronne brisée ») et un lien « Ouvrir » vers E-9 (la fiche), E-7 (le scénario) ou E-6
-  (la campagne). Les quatre écritures possibles : « Section « Notes de la table » complétée »
-  (`ajouter_a_section`, lien vers E-9), « Section « Vérité » modifiée » (`modifier_section`, lien
-  vers E-9), « Campagne « La Couronne brisée » créée » (`creer_campagne`, lien vers E-6), « Scénario
-  « Acte III — La crypte » créé dans La Couronne brisée » (`creer_scenario`, lien vers E-7) ;
+  libellé (« Section « Notes de la table » complétée ») et un lien « Ouvrir » vers E-9 (la fiche).
+  Les écritures possibles : « Section « Notes de la table » complétée » (`ajouter_a_section`),
+  « Section « Vérité » modifiée » (`modifier_section`) ;
 - **la saisie** : le champ, étiqueté « Demander à Kanevas » par une étiquette visible au-dessus de lui (son texte d'aide est « Votre question »), dans tous les états où il est affiché, et « Envoyer » (Entrée
   envoie, Maj+Entrée va à la ligne).
 
@@ -1122,8 +1009,7 @@ nulle part (ni stockage du navigateur, ni serveur). Le client envoie le message 
 messages du fil (AD-75).
 
 **Ce que chaque rôle y voit.** Le Joueur : chercher, lire une fiche, lire une section, modifier une
-section, ajouter un paragraphe à une section, lister les campagnes. Le MJ : les mêmes, plus créer
-une campagne, créer un scénario et générer une image (`kanevas-images`). Un Joueur qui demande de créer un scénario ou de générer une image n'a pas l'outil :
+section, ajouter un paragraphe à une section. Le MJ : les mêmes, plus générer une image (`kanevas-images`). Un Joueur qui demande de générer une image, ou quiconque de créer une campagne, n'a pas l'outil :
 l'assistant répond qu'il ne peut pas, sans événement et sans rien créer (le texte est celui du
 modèle, il n'est pas fixé ; ce qu'on vérifie est l'absence d'écriture). Dans les deux cas
 l'assistant ne lit et n'écrit que ce que la personne lit et écrit : une section fermée est
@@ -1145,12 +1031,11 @@ section. » (AD-74). Cette tranche **ne donne aucun outil sur les cartes ni les 
 
 *Critère.* Étant donné Léa Joueuse de « Lame d'Ébène », quand elle demande « Que sait-on d'Aldric ? »,
 alors le fil donne « Apparence » et rien de « Vérité » ; quand elle demande de lire « Vérité », le fil
-dit « Introuvable. » ; Antor, lui, obtient les deux sections, et fait créer un scénario qui apparaît
-dans le fil avec « Ouvrir » vers E-7 et sur E-6.
+dit « Introuvable. » ; Antor, lui, obtient les deux sections.
 
 ### Clôture de `kanevas-assistant-membre`
 
-B-26 → E-12 (toutes ses lignes) ; B-27 → E-12 (créer une campagne ou un scénario ; proposer et
+B-26 → E-12 (toutes ses lignes) ; B-27 → E-12 (créer une campagne ou un scénario : retiré, repris par `kanevas-scenarios-import-assistant` ; proposer et
 générer restent à `kanevas-monde` et `kanevas-images`). Parcours : P-3 étape 5 (« rappelle-moi tout
 ce qu'on sait d'Aldric », première moitié), P-6 étape 4, P-7 étape 2. Rôles : MJ et Joueur ont
 E-12, l'admin d'instance sans rôle ne l'a pas. Aucune migration, aucune entité : le fil n'est pas
@@ -2143,16 +2028,18 @@ au téléphone, jamais la page.
 
 ### Le Markdown — ce que `kanevas-import-markdown` construit (E-9, E-7, E-15, E-12)
 
+> *Depuis `kanevas-scenarios-suivi`, E-7 n'existe plus : ce que ce passage dit du texte d'un scénario vaut pour sa section sur E-9 (fiche de type « Aventure »), et ce qu'il dit de E-6 pour le bloc « Comptes-rendus » de E-9.*
+
 Cette tranche livre le rendu et l'éditeur **sans** lien `[[…]]`, sans fichier et sans bloc MJ (leurs
 tranches les ajoutent à la même barre et au même rendu). Maquette : `e09-fiche-importee.html`,
 `#etat-edition` pour l'éditeur ; `e07-scenario.html`, `e15-systeme-de-jeu.html` et `e12-propositions.html`
 pour l'emplacement du rendu (le contenu y devient mis en forme, la mise en page ne change pas).
 
 - **Parcours** : lire, P-12 étape 2 (E-9, E-7, E-15, E-12) ; écrire et prévisualiser, P-14 étape 1 (E-9, E-7, E-15).
-  Le texte d'un compte-rendu se lit rendu sur E-9 ; la fenêtre « Nouveau compte-rendu » de E-6 garde son
+  Le texte d'un compte-rendu se lit rendu sur E-9 ; la fenêtre « Nouveau compte-rendu » du bloc de l'aventure (E-9) garde son
   champ simple dans cette tranche, avec le plafond de 100 000 (« Erreur : 100 000 caractères au plus. ») et
-  sans barre ni aperçu ; son compteur et son erreur « Erreur : 100 000 caractères au plus. » existent déjà (maquette `e06`) : seul le
-  seuil passe de 20 000 à 100 000 ; ses autres états sont ceux de E-6 et ne changent pas.
+  sans barre ni aperçu ; son compteur et son erreur « Erreur : 100 000 caractères au plus. » existent déjà (maquette `e06`, d'avant le retrait de E-6) : seul le
+  seuil passe de 20 000 à 100 000 ; ses autres états sont ceux du bloc « Comptes-rendus » (E-9) et ne changent pas.
 - **Maquettes** : `e09-fiche-importee.html` (`#etat-edition`, `#etat-apercu`) montre la barre **complète**
   de l'epic (avec « Lien vers une fiche », « Fichier », la liste ouverte par `[[`) ; cette tranche n'en
   construit que « Gras », « Italique » et la bascule, les autres boutons viennent avec leurs tranches. La
@@ -2561,7 +2448,7 @@ sont fermées dès maintenant. Maquette : `e09-fiche-importee.html` (« Port-Sel
   qui écrit la section qu'elle ne peut pas la modifier, jamais pourquoi : aucun message ne nomme le bloc, et c'est
   la seule trace d'un bloc que ce choix laisse (acceptée : elle ne livre aucun mot du secret). Un joueur qui écrit un contenu qui
   **contient** un bloc (il a tapé `:::mj` dans une section qui n'en avait pas) reçoit 400, « Un bloc MJ ne peut être
-  écrit que par un MJ. », sous le champ, texte conservé ; il en va de même du texte d'un compte-rendu qu'il crée (E-6),
+  écrit que par un MJ. », sous le champ, texte conservé ; il en va de même du texte d'un compte-rendu qu'il crée (bloc « Comptes-rendus » de E-9),
   dont la fenêtre montre ce message sous le champ comme ses autres refus. En mode Joueur, le MJ n'a pas « Modifier »
   (le mode est une vue de lecture, il imite un joueur qui ne peut pas écrire cette section) ; ce que l'API
   lui accepte ne change pas, le mode ne restreint que des lectures (AD-39).
@@ -2591,7 +2478,7 @@ sont fermées dès maintenant. Maquette : `e09-fiche-importee.html` (« Port-Sel
   | Voit le bloc | oui, hachuré | rien | rien | rien |
   | « Bloc MJ » dans la barre | oui | sans objet (pas d'édition) | **caché** | **caché** |
   | Écrit une section à bloc | oui | non | non (« Modifier » **caché**, 403) | par l'API oui ; à l'écran « Modifier » **caché** |
-  | Écrit un contenu qui contient un bloc (section, texte d'un compte-rendu créé en E-6) | oui | non | non (**refusé** : 400, message sous le champ) | par l'API oui |
+  | Écrit un contenu qui contient un bloc (section, texte d'un compte-rendu créé depuis le bloc de E-9) | oui | non | non (**refusé** : 400, message sous le champ) | par l'API oui |
   | Trouve une fiche par un mot du bloc | oui | **rien** (la fiche n'est pas un résultat) | **rien** | **rien** |
   | L'assistant lui rend le bloc | oui | **rien** (le public) | **rien** (le public) | oui (catalogue du MJ) |
 
@@ -3206,7 +3093,7 @@ The list of the type, as for any type, with these specifics:
 | chargement | « Chargement des fiches… » | — |
 | erreur | « Impossible de charger les fiches. » ; status change failed : « L'action n'a pas abouti. Réessayez. », badge unchanged | « Réessayer » |
 | connexion perdue | le bandeau ; « Nouvelle aventure », the status menus and the filters disabled | ouvrir une fiche listée |
-| refus | a player: adventures he reads only (a scenario with no open section is absent) ; the status menu: absent (**caché**) ; `?statut=` with an unknown value: ignored (« Tous ») | — |
+| refus | a player: adventures he reads only (a scenario with no open section is absent) ; the status menu: absent (**caché**) ; `?statut=` with an unknown value in the screen's address: ignored (« Tous »; the API answers 400) | — |
 | contenu long | 100 then « Charger la suite » ; a campaign with 60 scenarios: the tree node pages like any node ; a 120-character title: the card and the tree line wrap it, the badge and the sub-type stay on their own line | idem |
 | en écriture | a status menu between the choice and the server's answer: disabled, the old badge kept; the new badge appears only on success | — |
 | GM en mode Joueur | the player's column: no status menu on a card or a tree line, no « Nouvelle aventure » | lire |
@@ -3214,7 +3101,7 @@ The list of the type, as for any type, with these specifics:
 
 *Creation window, states.* « Titre » empty or over 120 characters: « Donnez un titre de 1 à 120 caractères. », « Créer l'aventure » disabled. While the creation is sent: « Créer l'aventure » disabled, the input kept. « Dans » lists the adventures the GM reads (a title of 120 characters is cut with an ellipsis, the full title in its tooltip; with 200 adventures the field is a search-as-you-type list showing 20 at a time; an universe with none: the field reads « Aucune aventure » and stays empty, optional). Creation failed (server or lost connection): « L'action n'a pas abouti. Réessayez. », the window stays open with its input, nothing created (AD-128); while lost, « Créer l'aventure » is disabled. A scenario readable by a player whose campaign is not: the tree shows it at the root, as for any sheet whose parent is unreadable (the tree rule of E-8), never its parent's title.
 
-*Coexistence.* Until `kanevas-scenarios-suivi` lands, E-6 and E-7 and the « Campagnes » entry still work as before, and the blocks « Préparation » and « Comptes-rendus » below are not yet there: the retirements and the blocks described in this part are delivered by that slice. **How to read this part in this slice**: everything it says about the blocks « Préparation » and « Comptes-rendus », the retirement of E-6/E-7 and of the bar entry, E-3 (« Campagnes en cours », « Préparation ») and the « Campagne » line of E-13 is the target of `kanevas-scenarios-suivi`; until then E-3 keeps « Campagnes actives » and E-9 shows no block. This slice delivers the type, E-8 and the status line of E-9 (with « Contient » as for any sheet), and the badge of E-17. The mock-up `e09-aventure.html` shows the blocks too, and a status badge, « Acte II · Prête », a count in « Contient », « MJ seul » and « 4 à faire » on « Préparation », author and date per CR line, and the title « Statut de l'aventure »: ignore all of them in this slice, and « Contient » stays a plain list; the document prevails. In this slice an old campaign (E-6) and an adventure of sub-type « Campagne » are two unrelated objects.
+*Coexistence.* Delivered: the type, E-8, the status line of E-9, the blocks « Préparation » and « Comptes-rendus », the retirement of E-6, E-7 and of the « Campagnes » entry, E-3 (« Campagnes en cours », « Préparation »), the « Campagne » line of E-13 and the deletion report (`kanevas-scenarios-suivi`). The mock-up `e09-aventure.html` shows a few details this text does not keep (status badge « Acte II · Prête » and a count in « Contient », « MJ seul » and « 4 à faire » on « Préparation », author and date per CR line, title « Statut de l'aventure »): the document prevails.
 
 *Critères.* Étant donné Antor, MJ, quand il crée « La Couronne brisée » (Campagne, « Visible des
 joueurs » laissé décoché), alors E-9 s'ouvre sur une fiche « En préparation » dont la section
@@ -3238,7 +3125,7 @@ The sheet of any type, with:
 - **Two blocks of the sheet**, above the sections, in this order — the mechanism is a registry
   of **sheet blocks by type** (AD-124), distinct from the section blocks:
   - « **Préparation** » — GM only, hidden in player mode: the five categories, « Ajouter »
-    (libellé 1 to 200, category), tick and untick, « Cochées (n) » folded, as E-6 did; empty:
+    (libellé 1 to 200, category), tick and untick, « Cochées (n) » folded; empty:
     « Rien à préparer pour l'instant. ». On a scenario as on a campaign.
   - « **Comptes-rendus** » — every member: the CR that name this adventure, most recent first,
     100 then « Charger la suite », each a link to its sheet; « Nouveau compte-rendu » (titre,
@@ -3296,14 +3183,10 @@ n'est visible des joueurs. » et aucun bloc « Préparation ».
   readable. The filter by adventure of the route stays (`?campagne=<fiche id>`), for an adventure
   the caller reads (404 otherwise, like the sheet).
 - **Type deactivated** (E-14/E-15, AD-122): exactly what deactivating any type does, nothing
-  more — the « Aventures » entry leaves the bar, creating an adventure is refused (E-8, `creer_fiche`,
-  the import warns `type_desactive`); existing adventures stay readable and writable by their
+  more — the « Aventures » entry leaves the bar, creating an adventure is refused (E-8; the import warns `type_desactive`); existing adventures stay readable and writable by their
   address and in the search, with their blocks « Préparation » and « Comptes-rendus » and their
   status menu (no data is hidden); the E-3 blocks keep listing the adventures « En cours ».
-- **E-12**: the GM's assistant has one tool « créer une fiche » (type among the activated ones,
-  title, sub-type, parent); the writing block of the conversation leads to the new sheet; « crée
-  une campagne « X » » and « crée un scénario « X » dans « Y » » go through it (the stub keeps the
-  same two sentences, AD-126). « lister les campagnes » is the search with the type « Aventure ».
+- **E-12**: no tool creates an adventure in this slice (« crée une campagne » gets the answer of any missing tool); to find one the assistant searches with the type « Aventure ». `creer_fiche` (AD-126) belongs to `kanevas-scenarios-import-assistant`.
 - **E-17**: adventures are searched like any sheet, their status badge on the result card (a result the reader may not read is absent; a long title wraps with the badge on its own line; the states are E-17's, the badge adds none).
 
 ### Mockup

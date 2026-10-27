@@ -92,3 +92,21 @@ function sansClesEtrangeres(db: Db, file: string, jouer: () => void): void {
     db.pragma('foreign_keys = ON');
   }
 }
+
+/**
+ * Counts what migration 0017 will convert (AD-127), or `null` when it has nothing to convert (fresh
+ * base, or already played). Read BEFORE `migrate`: the tables are gone afterwards.
+ */
+export function comptesDuPivot(db: Db): { campagnes: number; scenarios: number; taches: number; comptesRendus: number } | null {
+  const table = (n: string) =>
+    db.prepare("SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = ?").get(n) !== undefined;
+  if (!table('campagnes') || !table('scenarios') || !table('migrations')) return null;
+  if (db.prepare('SELECT 1 FROM migrations WHERE numero = 17').get() !== undefined) return null;
+  const n = (sql: string) => (db.prepare(sql).get() as { n: number }).n;
+  return {
+    campagnes: n('SELECT COUNT(*) AS n FROM campagnes'),
+    scenarios: n('SELECT COUNT(*) AS n FROM scenarios'),
+    taches: n('SELECT COUNT(*) AS n FROM taches_preparation'),
+    comptesRendus: n("SELECT COUNT(*) AS n FROM fiches WHERE type = 'compte_rendu'"),
+  };
+}
