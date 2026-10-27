@@ -1,4 +1,4 @@
-import { ChevronRight } from 'lucide-react';
+import { ChevronRight, type LucideIcon } from 'lucide-react';
 import { useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
@@ -7,6 +7,7 @@ import { Bouton, ErreurChargement, ChargementListe } from '../../ui';
 import { iconeDuType, useTypes, type TypeVue } from '../../types-contexte';
 import './arbre.css';
 import type { Fiche, PageFiches } from './types';
+import { useMJSeul } from './vignette';
 
 /** A row of the tree (AD-115): `aDesEnfants` and `dans` are computed by the server under the caller's reading. */
 export type FicheArbre = Fiche & { aDesEnfants?: boolean; dans?: { id: number; titre: string } | null };
@@ -259,19 +260,7 @@ export function Arbre({
               ) : (
                 <span className="chevron vide" aria-hidden="true" />
               )}
-              <Link className="lien-fiche" to={`/univers/${universId}/fiche/${f.id}`} tabIndex={-1}>
-                <span className="glyphe" aria-hidden="true">
-                  <Icone size={16} strokeWidth={1.75} />
-                </span>
-                <span className="titre-fiche" title={f.titre}>
-                  {f.titre}
-                </span>
-                {f.sousType && (
-                  <span className="sous-type" title={f.sousType}>
-                    {f.sousType}
-                  </span>
-                )}
-              </Link>
+              <LienFiche universId={universId} fiche={f} Icone={Icone} />
               {f.dans && (
                 <Link className="dans" to={`/univers/${universId}/fiche/${f.dans.id}`} tabIndex={-1}>
                   dans {f.dans.titre}
@@ -282,5 +271,29 @@ export function Arbre({
         );
       })}
     </ul>
+  );
+}
+
+/** The link of a tree row: glyph, title, sub-type, and the « MJ seul » badge of a sheet the players cannot read (B-57). */
+function LienFiche({ universId, fiche: f, Icone }: { universId: string; fiche: FicheArbre; Icone: LucideIcon }) {
+  const mjSeul = useMJSeul(f);
+  return (
+    <>
+      <Link className="lien-fiche" to={`/univers/${universId}/fiche/${f.id}`} tabIndex={-1}>
+        <span className="glyphe" aria-hidden="true">
+          <Icone size={16} strokeWidth={1.75} />
+        </span>
+        <span className="titre-fiche" title={f.titre}>
+          {f.titre}
+        </span>
+        {f.sousType && (
+          <span className="sous-type" title={f.sousType}>
+            {f.sousType}
+          </span>
+        )}
+      </Link>
+      {mjSeul.badge}
+      {mjSeul.aide}
+    </>
   );
 }
