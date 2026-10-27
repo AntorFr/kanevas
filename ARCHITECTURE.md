@@ -108,10 +108,11 @@ elles remplacent les anciennes routes `GET /api/univers/:id/systeme` et `…/sys
 | `GET\|POST /api/univers/:id/membres`, `PATCH\|DELETE .../membres/:compteId` | membres (MJ) |
 | `GET /api/instance/univers`, `GET\|POST /api/instance/univers/:id/membres`, `PATCH\|DELETE .../membres/:compteId` | admin d'instance (groupe `parents`, AD-86, AD-87) : `{id, nom, nbMembres}` ; membres d'un univers, ajout (201), rôle, retrait (204) ; hors du groupe, 404 comme une adresse inconnue |
 | `GET /api/instance/assistant/jeton`, `POST /api/instance/assistant/jeton/connexion`, `POST …/jeton/code`, `DELETE …/jeton/connexion` | *(kanevas-import, AD-112)* admin d'instance seul (404 sinon) : état du jeton de l'assistant (`pose`, `poseLe`, `source`, `assistant` = la disponibilité d'AD-77, jamais la valeur), ouverture de la connexion (`connexionId`, adresse, `expireLe`), code (`{connexionId, code}` ; 200, 400 `connexion_echouee`, 410 `connexion_expiree`), annulation (204) |
-| `GET\|POST /api/univers/:id/fiches` (`?type`, `?q`, `?curseur`, *`kanevas-fiches-liees`, not built yet (slices `-recherche`, `-disparu`)* : `?lie=<fid>`, `?nature`, `?descendants=1`, `?etat=la\|disparu`) | liste paginée (100), `q` (vide ou plus de 100 caractères : 400 ; sans lettre ni chiffre : liste vide) cherche dans le type, ou dans tous les types sans `?type` (AD-63, AD-101) ; `?etiquette=` filtre par étiquette, `?mode=joueur` lit en Joueur (AD-118) ; création (MJ) |
+| `GET\|POST /api/univers/:id/fiches` (`?type`, `?q`, `?curseur`, `?lie=<fid>`, `?nature`, `?descendants=1` *(AD-129, `kanevas-fiches-liees-recherche`)*, and *not built yet (`-disparu`)* `?etat=la\|disparu`) | liste paginée (100), `q` (vide ou plus de 100 caractères : 400 ; sans lettre ni chiffre : liste vide) cherche dans le type, ou dans tous les types sans `?type` (AD-63, AD-101) ; `?etiquette=` filtre par étiquette, `?mode=joueur` lit en Joueur (AD-118) ; création (MJ) |
 | `PUT .../fiches/:fid/etiquetage`, `GET /api/univers/:id/etiquettes` | alias et étiquettes d'une fiche remplacés d'un bloc `{alias, etiquettes}` (MJ hors mode Joueur) ; étiquettes proposées `[{nom}]` (fiches lisibles seulement), `?mode=joueur` aux deux (AD-118) |
 | `GET .../fiches/:fid` | fiche et sections lisibles ; `?mode=joueur` lit en Joueur ; 404 si aucune section n'est lisible (l'écran le traduit en « Aucune section n'est visible des joueurs. ») |
 | `GET .../fiches?type=T&parent=racine\|<fid>` | *(AD-115, `kanevas-import-arbre`)* l'arbre d'un type : `type` est obligatoire avec `parent` ; `racine` rend les fiches du type que le compte lit dont le parent est nul, illisible ou d'un autre type, `<fid>` les enfants **du même type** de cette fiche que le compte lit (404 si `<fid>` est illisible) ; même page de 100 et même curseur que la liste ; chaque fiche porte en plus `aDesEnfants` (un enfant du même type lisible existe) et `dans: {id, titre}` ou `null` (son parent, quand il est lisible et d'un autre type) ; sans `parent`, ces deux champs ne sont pas rendus |
+| `GET .../fiches?lie=<fid>&nature=<key>&descendants=1` | *(kanevas-fiches-liees, B-65, AD-129)* the list with the linked-sheet conditions, all optional and combined by AND with `type`, `sousType`, `etiquette`, `q`, `parent` : `lie` the target sheet, `nature` a key of `GET …/natures` (absent = any relation, free ones included), `descendants=1` includes same-type descendants down to 50 levels through `descendantsDe` (a bounded recursive `UNION` CTE) ; symmetric natures match either direction ; both sheets and the carrying section must be readable ; each row may carry `via: {id, titre}`, the readable other end of the relation, ordered by title then id, absent when a qualifying direct link exists ; `lie` on a sheet the caller does not read, or of another universe, answers `200` with an empty page ; `nature` or `descendants` without `lie`, an unknown nature, a `lie` that is not an integer, or a `descendants` other than `1` : `400 Requête invalide.` ; same page of 100, same cursor, same order |
 | `GET .../fiches/:fid/enfants` (`?curseur`) | *(AD-115)* « Contient » : les enfants que le compte lit, tous types, par type (ordre de la liste du produit) puis titre ; 50 par page, `{enfants: [{id, titre, type, sousType}], suivant}` ; 404 si la fiche est illisible ; jamais de compteur de ce qui est caché |
 | `PATCH .../fiches/:fid`, `POST .../fiches/:fid/type` | *(AD-120)* `PATCH` `{titre}` (1 à 120 caractères, AD-119 ; MJ hors mode Joueur), `{sousType}` (texte de 1 à 60 caractères, ou `null` pour l'ôter) et/ou `{parent}` (id d'une fiche ou `null`, AD-115 ; 200 avec la fiche) ; une clé inconnue, ou aucune des quatre : 400) ; `POST …/type` `{type, pj?, sousType?}` change le type (MJ ; 400 `meme_type`, `type_inconnu`, `type_non_reglable` — un compte-rendu ne change ni ne devient pas de type) ; *(`kanevas-fiches-liees`, AD-131)* `{disparu}` (booléen ; personnage, créature, faction, famille, lieu, objet, vaisseau ; MJ hors mode Joueur ; 400 on another type) |
 | `GET .../fiches/:fid/mentions?apres=<n>` | *(kanevas-import-liens, AD-100, AD-116)* les 50 fiches suivantes qui citent la fiche, lisibles du lecteur : `{mentions: [{ficheId, titre, type, pourquoi: [{genre: 'lien', section} \| {genre: 'relation', libelle}]}], suite, restantes}` ; la première page voyage avec `GET .../fiches/:fid` (`mentions`, `mentionsSuite`, `mentionsRestantes` : le N de « Afficher les N suivants ») ; `?mode=joueur` lit en Joueur ; 404 comme la fiche |
@@ -578,6 +579,59 @@ Val-Fortin » (veuve) as members — every one of these relations from the chara
 read by the players, so that Léa's criteria (E-9, E-17) hold ; the Prieur's alone from « Secret — MJ
 seul » ; the
 three former free relations of Port-Sel keep their text as qualifier.
+
+### Slice `kanevas-fiches-liees-recherche` — design notes (2026-10-25)
+
+Detail of the slice's part of AD-129 and B-65; nothing here adds a filter, a nature or a screen. Repository facts read on
+`epic/kanevas-fiches-liees`: `listerFiches` (`src/services/fiches.ts`), the whitelist of the list route
+(`src/routes/fiches.ts`), `recherche.tsx`, `PROFONDEUR_MAX = 50`.
+
+1. **One function, three options** — `listerFiches` gains `lie?: number`, `nature?: string`, `descendants?: boolean`,
+   each one more `EXISTS`/`IN` in the same `where` list as `etiquette` (AD-63); no second search function, the assistant's
+   `chercher` is untouched. They combine by AND with every other option, `parent` included. The cursor, the order and the
+   page size are unchanged; no `DISTINCT` is needed (a condition, never a join), so a sheet linked twice is listed once. With `lie` **and** `descendants=1`, each row carries `via: {id, titre}` when the relation found points to a descendant rather than `lie` itself (the first such target, by title then id): the target of a counted relation is readable by the second guard, so `via` names no hidden place and never an intermediate one; without `descendants`, or when the candidate also holds a qualifying relation to `lie` itself (the direct link wins), the row has no `via`; for the reverse reading of a symmetric nature, `via` is the sub-place at the other end of the relation (its source). The nature and the qualifier of the relation are **not** returned by the list: the mockup's « se situe à — habite » sub-line belongs to « Fiches liées » (`-bloc`), not to E-17.
+2. **The relation counted** — the candidate sheet `f` is the **source** of a row of `relations` whose `cible_fiche_id` is
+   `lie` (or one of its descendants) and, if `nature` is set, whose `nature` is that key. AD-64's two guards are applied to the
+   row, not to the path — the section of the relation, and the sheets at **both** ends of it: its section is readable by the reader (`sqlSectionLisible`), the candidate is readable (the list's
+   own `sqlFicheLisible`), and **the target of the row is readable** (`sqlFicheLisible` on it — AD-64's second guard; a
+   relation to a hidden sub-place is not counted for Léa). A **symmetric** nature (`allie`, `ennemi`) is also read the other
+   way: a row whose source is `lie` (or a descendant) and whose target is the candidate, under the same two guards (the
+   fact is stored once, `-natures` point 3). A free relation counts only when `nature` is absent.
+3. **The descent** — one function `descendantsDe(db, ficheId)` in `fiches.ts` (exported: `-bloc` reuses it for « sous-lieux
+   compris » and its counts) returns the ids: a recursive CTE on `fiches_par_parent` (or `parent_id`) from `lie`, **`UNION`
+   not `UNION ALL`** (a loop in the data ends), a `niveau` column stopped at `PROFONDEUR_MAX` (50), **the same type as
+   `lie`** at every level (as AD-115's tree). The ids go into the `IN (…)` of point 2; no title, no readability, nothing of
+   the intermediate places is returned or tested. A tree deeper than 50 stops at level 50 without error. `lie` itself is
+   part of the set.
+4. **`lie` on what the reader does not read** — checked once, before the query, with `peutVoirFiche`: a missing id, an id
+   of another universe or an unreadable sheet gives `{fiches: [], suivant: null}` with `200`, the same bytes in the three
+   cases (AD-129 (3)). The GM in player mode is checked as a player.
+5. **Validation** (route, before the service) — `lie` `^\d{1,9}$`; `nature` a key of the list of `natures.ts`; `descendants`
+   exactly `1`; `nature` or `descendants` without `lie` is refused (a stale address is cleaned by the screen, which never
+   sends them without `lie`). `descendants=1` on a `lie` that is not a place is accepted and descends the sheet's own type.
+   Errors are the route's `invalide('Requête invalide.')`. `q` stays optional when `lie` is set; with neither `q`, `etiquette`
+   nor `lie` the **screen** keeps its « asks for a word » state — the API has no such rule (the list of a type has none).
+6. **The screen** (`recherche.tsx`, the disclosure in `recherche/avancee.tsx`) — the existing pickers
+   (`fiche/deplacer.tsx`, `carte/ajout-fiche.tsx`) are two copies of a search field plus the E-8 list call, not a shared
+   component; the « Lié à » picker is written once as a component of its own (`recherche/choisir-fiche.tsx`: field, list
+   call `GET …/fiches?q=`, reader's rights, mode of the address) that `-natures-ecran`'s « Relier » form may adopt later,
+   and the two existing ones are not touched. The chip title is read with `GET …/fiches/:fid`; a `404` reads « Fiche
+   introuvable » (the chip keeps its ✕). **Decision — the screen still sends `lie` when the chip reads « Fiche
+   introuvable »**: the API answers empty (AD-129 (3)), the list shows the empty state « Aucune fiche liée pour ces
+   critères. », and the slice's criterion (« liste vide ») holds. The state table of `docs/ecrans.md` (« the search runs
+   without it ») is corrected to say so: running it unfiltered would show a list that is not the one of the address.
+7. **« Par »** — the natures from `GET …/natures` (fetched once per screen) whose target types include the chosen sheet's type,
+   in the list's order, each with `libelleCible` (symmetric ones with `libelleSource`) and « toute relation » first and by
+   default; changing the chosen sheet drops a `nature` no longer offered; an unknown `nature` in the address reads as « toute
+   relation » and leaves the address by `replace`. « sous-lieux compris » is shown when the chosen sheet is a `lieu`.
+   Everything rides on the address (`lie`, `nature`, `descendants`), in the order of the mockup; the disclosure is open
+   when one of them is present. `etat` is not read here (`-disparu` adds it to this volet).
+8. **Security** — the only new read path is a condition of the list; it ships one field the list did not ship, `via` (a place the reader
+   reads, point 1), and no count, no intermediate place, no path. Tested as Léa and as the GM in player mode on: a relation of a closed section (the Prieur), a relation to a
+   hidden place (Le Repaire), a hidden intermediate place, an unreadable `lie`, a `via` that is never a hidden place, a direct link winning over `via`, a symmetric nature held by a sheet the
+   reader cannot read.
+9. **Documentation** — the route row above, `docs/ecrans.md` E-17 (states, the point 6 correction), and the API reference
+   of the screen « Accès API » is not touched (the import has no list route with these parameters).
 
 ### Slice `kanevas-fiches-liees-natures` — design notes (2026-10-25)
 
