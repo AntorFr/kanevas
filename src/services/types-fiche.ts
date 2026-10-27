@@ -25,25 +25,99 @@ export interface DefinitionType {
   icone: string;
   /** False for the session report, which no setting turns off and no one changes into. */
   reglable: boolean;
+  /** Public words and glyph of the gone mark (AD-131); absent on other types. */
+  disparu?: {
+    oui: string;
+    non: string;
+    menuOui: string;
+    menuNon: string;
+    filtre: { la: string; disparu: string; tous: string };
+    vide: { la: string; disparu: string };
+    icone: string;
+  };
   /** Versioned payload of the type (AD-6, AD-17). */
   charge: z.ZodType<Record<string, unknown>>;
 }
 
 const v1 = () => z.strictObject({ v: z.literal(1) });
+const v1Disparu = () => z.strictObject({ v: z.literal(1), disparu: z.boolean().optional() });
 
 const def = <T extends string>(d: Omit<DefinitionType, 'type'> & { type: T }) => d;
 
 export const TYPES = [
-  def({ type: 'personnage', slug: 'personnages', singulier: 'Personnage', pluriel: 'Personnages', nouveau: 'Nouveau personnage', aucun: 'Aucun personnage', icone: 'users-round', reglable: true, charge: z.strictObject({ v: z.literal(1), pj: z.boolean() }) }),
-  def({ type: 'lieu', slug: 'lieux', singulier: 'Lieu', pluriel: 'Lieux', nouveau: 'Nouveau lieu', aucun: 'Aucun lieu', icone: 'map-pin', reglable: true, charge: v1() }),
-  def({ type: 'faction', slug: 'factions', singulier: 'Faction', pluriel: 'Factions', nouveau: 'Nouvelle faction', aucun: 'Aucune faction', icone: 'shield', reglable: true, charge: v1() }),
-  def({ type: 'famille', slug: 'familles', singulier: 'Famille', pluriel: 'Familles', nouveau: 'Nouvelle famille', aucun: 'Aucune famille', icone: 'users', reglable: true, charge: v1() }),
-  def({ type: 'objet', slug: 'objets', singulier: 'Objet', pluriel: 'Objets', nouveau: 'Nouvel objet', aucun: 'Aucun objet', icone: 'gem', reglable: true, charge: v1() }),
+  def({
+    type: 'personnage', slug: 'personnages', singulier: 'Personnage', pluriel: 'Personnages', nouveau: 'Nouveau personnage', aucun: 'Aucun personnage', icone: 'users-round', reglable: true,
+    disparu: {
+      oui: 'Mort', non: 'Vivant', menuOui: 'Marquer mort', menuNon: 'Marquer vivant',
+      filtre: { la: 'Vivants', disparu: 'Morts', tous: 'Tous' },
+      vide: { la: 'Aucun personnage vivant.', disparu: 'Aucun personnage mort.' },
+      icone: 'skull',
+    },
+    charge: z.strictObject({ v: z.literal(1), pj: z.boolean(), disparu: z.boolean().optional() }),
+  }),
+  def({
+    type: 'lieu', slug: 'lieux', singulier: 'Lieu', pluriel: 'Lieux', nouveau: 'Nouveau lieu', aucun: 'Aucun lieu', icone: 'map-pin', reglable: true,
+    disparu: {
+      oui: 'Détruit', non: 'Intact', menuOui: 'Marquer détruit', menuNon: 'Marquer intact',
+      filtre: { la: 'Intacts', disparu: 'Détruits', tous: 'Tous' },
+      vide: { la: 'Aucun lieu intact.', disparu: 'Aucun lieu détruit.' },
+      icone: 'flame',
+    },
+    charge: v1Disparu(),
+  }),
+  def({
+    type: 'faction', slug: 'factions', singulier: 'Faction', pluriel: 'Factions', nouveau: 'Nouvelle faction', aucun: 'Aucune faction', icone: 'shield', reglable: true,
+    disparu: {
+      oui: 'Détruite', non: 'Active', menuOui: 'Marquer détruite', menuNon: 'Marquer active',
+      filtre: { la: 'Actives', disparu: 'Détruites', tous: 'Toutes' },
+      vide: { la: 'Aucune faction active.', disparu: 'Aucune faction détruite.' },
+      icone: 'shield-off',
+    },
+    charge: v1Disparu(),
+  }),
+  def({
+    type: 'famille', slug: 'familles', singulier: 'Famille', pluriel: 'Familles', nouveau: 'Nouvelle famille', aucun: 'Aucune famille', icone: 'users', reglable: true,
+    disparu: {
+      oui: 'Éteinte', non: 'Vivante', menuOui: 'Marquer éteinte', menuNon: 'Marquer vivante',
+      filtre: { la: 'Vivantes', disparu: 'Éteintes', tous: 'Toutes' },
+      vide: { la: 'Aucune famille vivante.', disparu: 'Aucune famille éteinte.' },
+      icone: 'skull',
+    },
+    charge: v1Disparu(),
+  }),
+  def({
+    type: 'objet', slug: 'objets', singulier: 'Objet', pluriel: 'Objets', nouveau: 'Nouvel objet', aucun: 'Aucun objet', icone: 'gem', reglable: true,
+    disparu: {
+      oui: 'Détruit', non: 'Intact', menuOui: 'Marquer détruit', menuNon: 'Marquer intact',
+      filtre: { la: 'Intacts', disparu: 'Détruits', tous: 'Tous' },
+      vide: { la: 'Aucun objet intact.', disparu: 'Aucun objet détruit.' },
+      icone: 'flame',
+    },
+    charge: v1Disparu(),
+  }),
   def({ type: 'evenement', slug: 'evenements', singulier: 'Événement', pluriel: 'Événements', nouveau: 'Nouvel événement', aucun: 'Aucun événement', icone: 'hourglass', reglable: true, charge: v1() }),
   def({ type: 'quete', slug: 'quetes', singulier: 'Quête', pluriel: 'Quêtes', nouveau: 'Nouvelle quête', aucun: 'Aucune quête', icone: 'scroll-text', reglable: true, charge: v1() }),
-  def({ type: 'creature', slug: 'creatures', singulier: 'Créature', pluriel: 'Créatures', nouveau: 'Nouvelle créature', aucun: 'Aucune créature', icone: 'paw-print', reglable: true, charge: v1() }),
+  def({
+    type: 'creature', slug: 'creatures', singulier: 'Créature', pluriel: 'Créatures', nouveau: 'Nouvelle créature', aucun: 'Aucune créature', icone: 'paw-print', reglable: true,
+    disparu: {
+      oui: 'Morte', non: 'Vivante', menuOui: 'Marquer morte', menuNon: 'Marquer vivante',
+      filtre: { la: 'Vivantes', disparu: 'Mortes', tous: 'Toutes' },
+      vide: { la: 'Aucune créature vivante.', disparu: 'Aucune créature morte.' },
+      icone: 'skull',
+    },
+    charge: v1Disparu(),
+  }),
   def({ type: 'race', slug: 'races', singulier: 'Race', pluriel: 'Races', nouveau: 'Nouvelle race', aucun: 'Aucune race', icone: 'dna', reglable: true, charge: v1() }),
-  def({ type: 'vaisseau', slug: 'vaisseaux', singulier: 'Vaisseau', pluriel: 'Vaisseaux', nouveau: 'Nouveau vaisseau', aucun: 'Aucun vaisseau', icone: 'ship', reglable: true, charge: v1() }),
+  def({
+    type: 'vaisseau', slug: 'vaisseaux', singulier: 'Vaisseau', pluriel: 'Vaisseaux', nouveau: 'Nouveau vaisseau', aucun: 'Aucun vaisseau', icone: 'ship', reglable: true,
+    disparu: {
+      oui: 'Détruit', non: 'Intact', menuOui: 'Marquer détruit', menuNon: 'Marquer intact',
+      filtre: { la: 'Intacts', disparu: 'Détruits', tous: 'Tous' },
+      vide: { la: 'Aucun vaisseau intact.', disparu: 'Aucun vaisseau détruit.' },
+      icone: 'flame',
+    },
+    charge: v1Disparu(),
+  }),
   def({ type: 'savoir', slug: 'savoirs', singulier: 'Savoir', pluriel: 'Savoirs', nouveau: 'Nouveau savoir', aucun: 'Aucun savoir', icone: 'lightbulb', reglable: true, charge: v1() }),
   def({ type: 'recit', slug: 'recits', singulier: 'Récit', pluriel: 'Récits', nouveau: 'Nouveau récit', aucun: 'Aucun récit', icone: 'book-open', reglable: true, charge: v1() }),
   def({ type: 'regle', slug: 'regles', singulier: 'Règle', pluriel: 'Règles', nouveau: 'Nouvelle règle', aucun: 'Aucune règle', icone: 'scale', reglable: true, charge: v1() }),
@@ -64,6 +138,10 @@ export const CHARGES = Object.fromEntries(TYPES.map((t) => [t.type, t.charge])) 
   z.ZodType<Record<string, unknown>>
 >;
 
+/** Whether the product's type list carries the gone mark. */
+export const porteMarqueDisparu = (type: string): boolean =>
+  TYPES.some((t) => t.type === type && t.disparu !== undefined);
+
 export type OrigineType = 'univers' | 'systeme' | 'defaut';
 
 export interface TypeVue {
@@ -75,6 +153,7 @@ export interface TypeVue {
   aucun: string;
   icone: string;
   reglable: boolean;
+  disparu?: DefinitionType['disparu'];
   active: boolean;
   /** Who decided: the universe's forcing, its system's setting, or the product default. */
   origine: OrigineType;
@@ -174,6 +253,7 @@ export function typesDeLUnivers(db: Db, compteId: number, universId: number): Ty
       origine: x.origine,
       forcage: x.forcage,
     };
+    if (t.disparu) vue.disparu = t.disparu;
     if (comptes) {
       vue.systeme = x.systeme;
       vue.nbFiches = comptes.get(t.type) ?? 0;

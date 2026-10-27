@@ -17,7 +17,7 @@ import { ajouterSection, changerAudience, ecrireContenu, lireSection } from '../
 import { poserEtiquetage } from '../services/etiquettes.js';
 import { relierSection } from '../services/relations.js';
 import { creerCarte, ajouterElement } from '../services/cartes.js';
-import { creerFiche, deplacerFiche, lireFiche } from '../services/fiches.js';
+import { creerFiche, deplacerFiche, lireFiche, marquerDisparu } from '../services/fiches.js';
 import { assurerCompte } from '../services/comptes.js';
 import { creerEtRattacherSysteme, creerGabarit, rattacherSysteme } from '../services/systemes.js';
 import { creerJetonDeValeur } from '../services/jetons.js';
@@ -119,6 +119,7 @@ export function semerBouchon(db: Db): boolean {
     const aldric = fiche('personnage', 'Maître Aldric', [apparence, verite], { pj: false });
     const bran = fiche('personnage', 'Bran Corvalis', [apparence], { pj: false });
     const prieur = fiche('personnage', 'Le Prieur masqué', [{ titre: 'Secret — MJ seul', lue: false }], { pj: false });
+    marquerDisparu(db, { compteId: id.antor }, lame.id, prieur.id, true);
     fiche('personnage', 'Léa Brisefer', [apparence], { pj: true });
     const ombeline = fiche('personnage', 'Dame Ombeline de Val-Fortin', [apparence], { pj: false });
     const suie = fiche('personnage', 'Suie', [apparence], { pj: false });

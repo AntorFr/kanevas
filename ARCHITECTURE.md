@@ -108,7 +108,7 @@ elles remplacent les anciennes routes `GET /api/univers/:id/systeme` et `…/sys
 | `GET\|POST /api/univers/:id/membres`, `PATCH\|DELETE .../membres/:compteId` | membres (MJ) |
 | `GET /api/instance/univers`, `GET\|POST /api/instance/univers/:id/membres`, `PATCH\|DELETE .../membres/:compteId` | admin d'instance (groupe `parents`, AD-86, AD-87) : `{id, nom, nbMembres}` ; membres d'un univers, ajout (201), rôle, retrait (204) ; hors du groupe, 404 comme une adresse inconnue |
 | `GET /api/instance/assistant/jeton`, `POST /api/instance/assistant/jeton/connexion`, `POST …/jeton/code`, `DELETE …/jeton/connexion` | *(kanevas-import, AD-112)* admin d'instance seul (404 sinon) : état du jeton de l'assistant (`pose`, `poseLe`, `source`, `assistant` = la disponibilité d'AD-77, jamais la valeur), ouverture de la connexion (`connexionId`, adresse, `expireLe`), code (`{connexionId, code}` ; 200, 400 `connexion_echouee`, 410 `connexion_expiree`), annulation (204) |
-| `GET\|POST /api/univers/:id/fiches` (`?type`, `?q`, `?curseur`, `?lie=<fid>`, `?nature`, `?descendants=1` *(AD-129, `kanevas-fiches-liees-recherche`)*, and *not built yet (`-disparu`)* `?etat=la\|disparu`) | liste paginée (100), `q` (vide ou plus de 100 caractères : 400 ; sans lettre ni chiffre : liste vide) cherche dans le type, ou dans tous les types sans `?type` (AD-63, AD-101) ; `?etiquette=` filtre par étiquette, `?mode=joueur` lit en Joueur (AD-118) ; création (MJ) |
+| `GET\|POST /api/univers/:id/fiches` (`?type`, `?q`, `?curseur`, `?lie=<fid>`, `?nature`, `?descendants=1` *(AD-129, `kanevas-fiches-liees-recherche`)*, and `?etat=la\|disparu` *(AD-131)*) | liste paginée (100), `q` (vide ou plus de 100 caractères : 400 ; sans lettre ni chiffre : liste vide) cherche dans le type, ou dans tous les types sans `?type` (AD-63, AD-101) ; `?etiquette=` filtre par étiquette, `?mode=joueur` lit en Joueur (AD-118) ; création (MJ) |
 | `PUT .../fiches/:fid/etiquetage`, `GET /api/univers/:id/etiquettes` | alias et étiquettes d'une fiche remplacés d'un bloc `{alias, etiquettes}` (MJ hors mode Joueur) ; étiquettes proposées `[{nom}]` (fiches lisibles seulement), `?mode=joueur` aux deux (AD-118) |
 | `GET .../fiches/:fid` | fiche et sections lisibles ; `?mode=joueur` lit en Joueur ; 404 si aucune section n'est lisible (l'écran le traduit en « Aucune section n'est visible des joueurs. ») |
 | `GET .../fiches?type=T&parent=racine\|<fid>` | *(AD-115, `kanevas-import-arbre`)* l'arbre d'un type : `type` est obligatoire avec `parent` ; `racine` rend les fiches du type que le compte lit dont le parent est nul, illisible ou d'un autre type, `<fid>` les enfants **du même type** de cette fiche que le compte lit (404 si `<fid>` est illisible) ; même page de 100 et même curseur que la liste ; chaque fiche porte en plus `aDesEnfants` (un enfant du même type lisible existe) et `dans: {id, titre}` ou `null` (son parent, quand il est lisible et d'un autre type) ; sans `parent`, ces deux champs ne sont pas rendus |
@@ -579,6 +579,12 @@ Val-Fortin » (veuve) as members — every one of these relations from the chara
 read by the players, so that Léa's criteria (E-9, E-17) hold ; the Prieur's alone from « Secret — MJ
 seul » ; the
 three former free relations of Port-Sel keep their text as qualifier.
+
+The server part of `kanevas-fiches-liees-disparu` is built: `marquerDisparu` in `services/fiches.ts`
+is the writer used by the PATCH, import and seed. `changerTypeFiche` preserves the mark between
+compatible types and drops it otherwise. `GET …/types` returns each supported type's `disparu`
+words, empty sentences and glyph; `listerFiches({etat})` intersects the existing filters and
+excludes types without the mark. The screen part remains in its own task.
 
 ### Slice `kanevas-fiches-liees-disparu` — design notes (2026-10-25)
 
