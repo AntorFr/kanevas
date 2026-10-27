@@ -192,7 +192,7 @@ function Resultats({
       {fiches.length === 0 && !cherche && etat !== '' && type.disparu ? (
         <VideIcone icone={SearchX}>
           <p>{etat === 'disparu' ? type.disparu.vide.disparu : type.disparu.vide.la}</p>
-          <Bouton onClick={() => onEtat?.('')}>Voir tous {dans(type)}</Bouton>
+          <Bouton onClick={() => onEtat?.('')}>Voir tous {dans(type)}.</Bouton>
         </VideIcone>
       ) : fiches.length === 0 && !cherche && sousType !== '' ? (
         <VideIcone icone={SearchX}>

@@ -180,6 +180,7 @@ a.cadre-ill:focus-visible { outline-offset: 2px; border-radius: var(--rayon-pann
   .entete.illustree { grid-template-columns: 96px minmax(0, 1fr); column-gap: var(--e-4); }
   .illustration { width: 96px; }
   .gestes-ill { right: 4px; bottom: 4px; }
+  .boite-ill:has(.marque-disparu) .gestes-ill { bottom: auto; top: 4px; }
   .envoi-ill { position: relative; flex-wrap: wrap; gap: 0 6px; margin-top: 6px; padding: 6px 0 0; background: none; }
   .envoi-ill .bouton { min-height: 36px; margin-left: -8px; }
   .gestes-ill .bouton-icone { width: 36px; height: 36px; }
@@ -187,7 +188,8 @@ a.cadre-ill:focus-visible { outline-offset: 2px; border-radius: var(--rayon-pann
 }
 
 /* « ⋯ » of the header (E-9): beside the type badge; its only line here is the origin of an imported sheet. */
-.tete-ligne { display: flex; align-items: center; gap: var(--e-2); }
+.tete-ligne { display: flex; align-items: center; flex-wrap: wrap; gap: var(--e-2); }
+.tete-ligne .type { white-space: nowrap; }
 .tete-ligne > .menu-racine { margin-left: auto; }
 .menu .info-fiche { display: flex; align-items: flex-start; gap: var(--e-2); padding: 7px 10px 8px; font-size: var(--t-12); line-height: 1.45; color: var(--texte-3); white-space: normal; }
 .menu:has(.info-fiche) { width: max-content; max-width: calc(100vw - 24px); }
