@@ -3527,7 +3527,7 @@ natured relations (they are in « Fiches liées ») and keeps the links and the 
 
 **The « Relier » picker list** (E-9): the bounded list (max 176 px, scrolling) is a **complete frame** —
 a visible border on all four sides, rounded bottom corners, as in `docs/maquettes/e09-fiche.html`;
-no row is cut flat at the bottom edge, and the selected row is highlighted. The gap between « Type de
+a row clipped by the frame's bottom edge is allowed — it is the scrolling cue, and the height is not rounded to whole rows — and the selected row is highlighted. The gap between « Type de
 fiche » and the search field is the form's field gap (`var(--e-2)`), with no extra margin on the search field.
 Code: `frontend/src/ecrans/fiche/blocs/relations.tsx` and `relations.css`; the graph is `frontend/src/ecrans/carte/cadre-graphe.tsx`.
 

@@ -63,19 +63,21 @@ export function LigneRelation({
   );
   if (nature) {
     return (
-      <div className="relation">
-        <span className="relation-lien">{lien}</span>
-        <span className="relation-lien" aria-hidden="true">
-          ·
+      <div className="relation relation-nature">
+        <span className="relation-texte">
+          <span className="relation-lien">{lien}</span>
+          <span className="relation-lien" aria-hidden="true">
+            ·
+          </span>
+          {vers ? (
+            <Link className="jeton" to={vers}>
+              {jeton}
+            </Link>
+          ) : (
+            <span className="jeton">{jeton}</span>
+          )}
+          {qualificatif !== '' && <span className="relation-lien">— {qualificatif}</span>}
         </span>
-        {vers ? (
-          <Link className="jeton" to={vers}>
-            {jeton}
-          </Link>
-        ) : (
-          <span className="jeton">{jeton}</span>
-        )}
-        {qualificatif !== '' && <span className="relation-lien">— {qualificatif}</span>}
         <span className="jeton-type relation-type">{type}</span>
         {actions && <span className="actions-revelees">{actions}</span>}
       </div>
