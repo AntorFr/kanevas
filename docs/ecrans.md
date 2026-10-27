@@ -1,5 +1,7 @@
 # Kanevas — écrans
 
+> **E-6 Campagne et E-7 Scénario n'existent plus** (`kanevas-scenarios-suivi`) : les mentions qui en restent dans les parties datées plus bas décrivent l'écran d'une aventure (E-9) et son bloc ; la table des écrans ci-dessous fait foi.
+>
 > Doc du produit (voir `docs/parcours.md`). Au cadrage, à grosses mailles : chaque écran, d'où on
 > y arrive, à quoi il sert, ce que chaque rôle y fait. Les états de chaque écran et la maquette
 > finie se détaillent dans la tranche qui le construit.
