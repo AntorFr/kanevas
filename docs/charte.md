@@ -359,6 +359,18 @@ décalé de 2 px) sur `:focus-visible`.
   bounded scroll area and full-title tooltips. The visibility checkbox starts unchecked.
   The fields stay in the window on failure; they are disabled during creation.
 
+**Report rows** (`suivi/commun.tsx`, E-13).
+- Visual: the title leads; below it, the author (when present), a middle dot only when
+  both author and adventure are shown, and the adventure in a neutral `badge-type` pill.
+  The date stays at the right; hairlines separate rows. Long titles and pills wrap within
+  the text column, including on phones. Existing `--texte`, `--texte-3`, `--texte-2`,
+  `--surface-2` and `--bord` tokens provide both themes.
+- Behaviour: the title opens the report; the adventure pill is a separate keyboard link
+  to its sheet, at least 24 px high. Only adventure fields returned by the server appear.
+  A deleted adventure is plain text for the GM; a hidden one leaves no placeholder or
+  separator. Dates use a semantic `time` element. Without the adventure option (E-9 block),
+  the same row keeps only its title, author and date.
+
 **Adventure sheet blocks** (`fiche/blocs-fiche/`, E-9, AD-124).
 - Visual: the compact panels of `e09-aventure.html`, `--surface` and `--bord`,
   `--rayon-panneau`, 16 px padding and gap; the preparation border uses `--mj-bord`.

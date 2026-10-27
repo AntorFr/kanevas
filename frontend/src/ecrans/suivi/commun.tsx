@@ -48,22 +48,27 @@ export function dateCourte(iso: string): string {
   return new Date(iso).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
-/** One report of a list (E-13): title, author when there is one, date, link to E-9. */
+/** One report: title above author and adventure, with separate links to their sheets (E-13). */
 export function LigneCompteRendu({ universId, cr, campagne }: { universId: string; cr: CompteRendu; campagne?: boolean }) {
+  const aventure = campagne && (cr.campagneNom !== undefined || cr.campagneSupprimee);
+  const metadonnees = cr.auteur !== null || aventure;
   return (
-    <li className="ligne-suivi">
-      <Link className="grand" to={`/univers/${universId}/fiche/${cr.id}`}>
+    <li className="ligne-suivi ligne-compte-rendu">
+      <div className="grand">
         <span className="mono" aria-hidden="true">
           <NotebookPen size={14} strokeWidth={1.75} />
         </span>
         <span className="texte-ligne">
-          <span className="titre-long">{cr.titre}</span>
-          {campagne && cr.campagneNom !== undefined && <small> — {cr.campagneNom}</small>}
-          {campagne && cr.campagneSupprimee && <small> — Aventure supprimée</small>}
-          {cr.auteur !== null && <small> {cr.auteur}</small>}
+          <Link className="titre-long titre-compte-rendu" to={`/univers/${universId}/fiche/${cr.id}`}>{cr.titre}</Link>
+          {metadonnees && <small className="meta-compte-rendu">
+            {cr.auteur !== null && <span>{cr.auteur}</span>}
+            {cr.auteur !== null && aventure && <span aria-hidden="true">·</span>}
+            {campagne && cr.campagneNom !== undefined && <Link className="badge-type" to={`/univers/${universId}/fiche/${cr.campagneId}`}>{cr.campagneNom}</Link>}
+            {campagne && cr.campagneSupprimee && <span className="badge-type">Aventure supprimée</span>}
+          </small>}
         </span>
-      </Link>
-      <span className="date">{dateCourte(cr.creeLe)}</span>
+      </div>
+      <time className="date" dateTime={cr.creeLe}>{dateCourte(cr.creeLe)}</time>
     </li>
   );
 }
