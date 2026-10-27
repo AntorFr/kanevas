@@ -19,8 +19,6 @@ export interface PropsBloc {
 export const blocs: Partial<Record<TypeEvenement, ComponentType<PropsBloc>>> = {
   section_modifiee: Ecriture,
   section_completee: Ecriture,
-  campagne_creee: Ecriture,
-  scenario_cree: Ecriture,
   image_attachee: ImageAttachee,
   proposition_creee: Proposition,
 };

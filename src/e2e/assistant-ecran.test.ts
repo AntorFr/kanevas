@@ -75,12 +75,6 @@ before(async () => {
   await choisirAuteur(antor, 'Notes de la table', 'lea');
   await regler(antor, 'Notes de la table', 'L’auteur la lit', true);
   await regler(antor, 'Notes de la table', 'L’auteur l’écrit', true);
-  // a campaign for the scenario
-  await antor.goto('/univers/1/campagnes');
-  await attendre(antor);
-  await antor.getByLabel(/^Nom/).fill('La Couronne brisée');
-  await antor.getByRole('button', { name: rxExact('Créer la campagne') }).click();
-  await attendre(antor);
 });
 
 after(async () => {
@@ -174,23 +168,19 @@ test('refus : Léa écrit dans une section qu’elle lit sans l’écrire → me
   assert.ok(!(await texte(lea)).includes('Il boite.'));
 });
 
-test('refus : Léa demande de créer un scénario → aucun événement, rien de créé', opts, async () => {
+test('refus : Léa demande de créer un scénario → phrase hors script, aucun événement, rien de créé (AD-127)', opts, async () => {
   await ouvrir(lea);
   await nouvelle(lea);
   await demander(lea, 'Crée un scénario « Acte Zéro » dans « La Couronne brisée »');
-  await panneau(lea).getByText(/ne fait pas partie de ceux dont vous disposez/).waitFor();
+  await panneau(lea).getByText(/chercher, lire, ajouter/).waitFor();
   assert.equal(await blocs(lea).count(), 0);
-  const r = await antor.request.get(srv.base + '/api/univers/1/campagnes');
+  const r = await antor.request.get(srv.base + '/api/univers/1/fiches?type=aventure');
   assert.ok(r.ok());
-  await antor.goto('/univers/1/campagnes');
-  await attendre(antor);
-  await antor.getByRole('link', { name: /La Couronne brisée/ }).first().click();
-  await attendre(antor);
-  assert.ok(!(await texte(antor)).includes('Acte Zéro'));
+  assert.ok(!(await r.text()).includes('Acte Zéro'));
 });
 
 test('écriture : Léa complète « Notes de la table », « Ouvrir » mène à la fiche où le paragraphe est écrit', opts, async () => {
-  await ouvrir(lea, '/univers/1/campagnes');
+  await ouvrir(lea, '/univers/1');
   await nouvelle(lea);
   await demander(lea, 'Ajoute le paragraphe « Elle cherche son frère. » dans « Notes de la table »');
   await blocs(lea).waitFor();
@@ -204,31 +194,14 @@ test('écriture : Léa complète « Notes de la table », « Ouvrir » mène à 
   assert.ok(!(await texte(lea)).includes('régent déchu'));
 });
 
-test('création : Antor crée un scénario, « Ouvrir » mène à E-7, il figure sur E-6', opts, async () => {
-  await ouvrir(antor, '/univers/1');
-  await nouvelle(antor);
-  await demander(antor, 'Crée un scénario « Acte III — La crypte » dans « La Couronne brisée »');
-  await panneau(antor).getByText('Scénario « Acte III — La crypte » créé dans La Couronne brisée').first().waitFor();
-  await panneau(antor).getByRole('link', { name: /^Ouvrir/ }).click();
-  await antor.waitForURL(/\/univers\/1\/scenarios\/\d+$/);
-  await attendre(antor);
-  await antor.getByRole('heading', { name: /Acte III — La crypte/ }).first().waitFor();
-  await antor.goto('/univers/1/campagnes');
-  await attendre(antor);
-  await antor.getByRole('link', { name: /La Couronne brisée/ }).first().click();
-  await attendre(antor);
-  await antor.getByText(/Acte III — La crypte/).first().waitFor();
-});
-
-test('création : Antor crée une campagne, « Ouvrir » mène à E-6 où elle figure', opts, async () => {
+test('création retirée : Antor demande une campagne ou un scénario → phrase hors script, aucun bloc, rien de créé', opts, async () => {
   await ouvrir(antor, '/univers/1');
   await nouvelle(antor);
   await demander(antor, 'Crée une campagne « Les Marches rouges »');
-  await panneau(antor).getByText('Campagne « Les Marches rouges » créée').first().waitFor();
-  await panneau(antor).getByRole('link', { name: /^Ouvrir/ }).click();
-  await antor.waitForURL(/\/univers\/1\/campagnes\/\d+$/);
-  await attendre(antor);
-  await antor.getByRole('heading', { name: /Les Marches rouges/ }).first().waitFor();
+  await panneau(antor).getByText(/chercher, lire, ajouter/).first().waitFor();
+  assert.equal(await blocs(antor).count(), 0);
+  const r = await antor.request.get(srv.base + '/api/univers/1/fiches?type=aventure');
+  assert.ok(!(await r.text()).includes('Marches rouges'));
 });
 
 test('fil : survit au changement d’écran et à la fermeture, vidé par « Nouvelle conversation », absent du stockage', opts, async () => {
@@ -242,8 +215,8 @@ test('fil : survit au changement d’écran et à la fermeture, vidé par « Nou
   await bouton(lea).click();
   await panneau(lea).getByText(/cape grise/).waitFor();
   // change of screen without reload (sidebar link)
-  await lea.getByRole('complementary', { name: 'Barre latérale' }).getByRole('link', { name: 'Campagnes' }).click();
-  await lea.waitForURL(/campagnes/);
+  await lea.getByRole('complementary', { name: 'Barre latérale' }).getByRole('link', { name: 'Comptes-rendus' }).click();
+  await lea.waitForURL(/comptes-rendus/);
   if ((await panneau(lea).count()) === 0) await bouton(lea).click();
   await panneau(lea).getByText(/cape grise/).waitFor();
   await panneau(lea).getByText('Que sait-on d’Aldric ?').waitFor();

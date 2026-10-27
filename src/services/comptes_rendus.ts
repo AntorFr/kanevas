@@ -1,11 +1,11 @@
 import type { Db } from '../db/db.js';
-import { campagneBrute } from './campagnes.js';
-import { exigerMJ, exigerRole } from './droits.js';
+import { aventureLue, campagneDuCompteRendu, exigerMJ, exigerRole } from './droits.js';
 import { introuvable, invalide } from './erreurs.js';
 import { LIMITE_LISTE, lireFiche, validerTitre } from './fiches.js';
 import { preparerContenu } from './liens.js';
 import { exigerSansBloc, insererSection, validerContenu } from './sections.js';
 import type { Acteur, FicheVue } from './types.js';
+import type { CampagneVue } from './droits.js';
 
 export const TITRE_SECTION_COMPTE_RENDU = 'Compte-rendu';
 
@@ -29,8 +29,8 @@ export function creerCompteRendu(
 ): FicheVue {
   const role = exigerRole(db, universId, compteId);
   if (entree.origine) exigerMJ(db, universId, compteId);
-  const campagne = campagneBrute(db, campagneId);
-  if (campagne.univers_id !== universId) throw introuvable();
+  // The adventure must be one the caller reads, in this universe: else it does not exist for them.
+  if (!aventureLue(db, role, { compteId }, universId, campagneId)) throw introuvable();
   const titre = validerTitre(entree.titre, 120, 'Le titre');
   const texte = entree.texte ?? '';
   validerContenu(texte);
@@ -66,15 +66,13 @@ export function creerCompteRendu(
   return lireFiche(db, { compteId }, universId, ficheId);
 }
 
-export interface CompteRenduResume {
+export type CompteRenduResume = {
   id: number;
   titre: string;
-  campagneId: number;
-  campagneNom: string;
   /** Username of the section's author, only when the caller may read that section; else null. */
   auteur: string | null;
   creeLe: string;
-}
+} & CampagneVue;
 
 export interface PageComptesRendus {
   comptesRendus: CompteRenduResume[];
@@ -87,8 +85,7 @@ interface LigneCR {
   id: number;
   titre: string;
   cree_le: string;
-  campagne_id: number;
-  campagne_nom: string;
+  campagne_id: unknown;
   auteur: string | null;
 }
 
@@ -96,7 +93,7 @@ interface LigneCR {
  * Session reports of the universe the caller reads at least one section of,
  * newest first (`cree_le`, then `id`, descending), at most 100 a page. A report
  * with no readable section is neither returned nor counted (B-9, AD-22).
- * `campagneId` narrows to one campaign.
+ * `campagneId` narrows to one adventure (one the caller reads).
  */
 export function listerComptesRendus(
   db: Db,
@@ -116,12 +113,10 @@ export function listerComptesRendus(
   const where = ["f.univers_id = ?", "f.type = 'compte_rendu'", lisible];
   const params: (string | number)[] = [universId];
   if (!mj) params.push(lecteur);
-  // A report only counts when its campaign belongs to the listed universe: the
-  // `campagne_id` of a sheet is free-form and must never leak another universe's campaign name.
-  where.push(
-    "EXISTS (SELECT 1 FROM campagnes c WHERE c.id = json_extract(f.charge, '$.campagne_id') AND c.univers_id = f.univers_id)",
-  );
+  // Filtering names an adventure: require the same read guard as its sheet, for every role.
+  // Closed, deleted, foreign and unknown adventures all answer not found to a non-reader.
   if (options.campagneId !== undefined) {
+    if (!aventureLue(db, role, acteur, universId, options.campagneId)) throw introuvable();
     where.push("json_extract(f.charge, '$.campagne_id') = ?");
     params.push(options.campagneId);
   }
@@ -147,12 +142,10 @@ export function listerComptesRendus(
     : '(s.joueurs_lisent = 1 OR (s.auteur_lit = 1 AND s.auteur_id = ?))';
   const sql = `SELECT f.id, f.titre, f.cree_le,
        json_extract(f.charge, '$.campagne_id') AS campagne_id,
-       c.nom AS campagne_nom,
        (SELECT a.username FROM sections s JOIN comptes a ON a.id = s.auteur_id
          WHERE s.fiche_id = f.id AND s.auteur_id IS NOT NULL AND ${auteurLisible}
          ORDER BY s.ordre LIMIT 1) AS auteur
      FROM fiches f
-     JOIN campagnes c ON c.id = json_extract(f.charge, '$.campagne_id') AND c.univers_id = f.univers_id
      WHERE ${filtres.join(' AND ')}
      ORDER BY f.cree_le DESC, f.id DESC LIMIT ?`;
   const args = mj ? [...p, limite + 1] : [lecteur, ...p, limite + 1];
@@ -167,10 +160,9 @@ export function listerComptesRendus(
     comptesRendus: page.map((r) => ({
       id: r.id,
       titre: r.titre,
-      campagneId: r.campagne_id,
-      campagneNom: r.campagne_nom,
       auteur: r.auteur,
       creeLe: r.cree_le,
+      ...campagneDuCompteRendu(db, role, acteur, universId, r.campagne_id),
     })),
     total,
     suivant,

@@ -11,6 +11,7 @@ import { Bouton, Champ, PageIntrouvable } from '../ui';
 import { adresseIllustration } from './fiche/vignette';
 import { LONGUEUR_RECHERCHE } from './fiche/liste-recherche';
 import type { Fiche, PageFiches } from './fiche/types';
+import { StatutAventure } from './fiche/statut';
 import './liste.css';
 import './recherche.css';
 
@@ -306,6 +307,7 @@ function Ligne({ universId, fiche, onEtiquette }: { universId: string; fiche: Fi
         <span className="badge-type" title={badge}>
           {badge}
         </span>
+        {fiche.type === 'aventure' && <StatutAventure universId={universId} fiche={fiche} />}
       </Link>
     </li>
   );

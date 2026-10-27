@@ -259,7 +259,7 @@ Forme de la skill `exigences` ; chaque besoin cite les parcours qui le réalisen
 - **B-59** — *(kanevas-scenarios)* Every adventure carries a **play status**: « En préparation »
   (at birth), « Prête », « En cours », « Terminée ». The GM changes it in place from the header
   of E-9 and from the menu of its card or of its tree line in E-8; a change touches no other adventure. The status shows as
-  a badge on the card, on the tree line, in the header and in the results of E-17; the GM filters
+  a badge on the card, on the tree line, in the header and in the results of E-17; every reader filters
   the list by status; a player sees the status of the adventures he sees. *(P-3, P-4, P-6)*
 - **B-60** — *(kanevas-scenarios)* The **preparation** list (five categories, cocher/décocher,
   GM only, as B-17 said) and the **comptes-rendus** of an adventure live on its sheet (E-9) as
@@ -268,7 +268,7 @@ Forme de la skill `exigences` ; chaque besoin cite les parcours qui le réalisen
   « En cours »: « Campagnes en cours » (sub-type Campagne), « Derniers comptes-rendus »
   (unchanged), « Préparation » (the open tasks of the adventures en cours, GM). *(P-3, P-4)*
 - **B-61** — *(kanevas-scenarios)* The **import API** pushes an adventure through the sheets
-  route (`type: aventure`, `sousType`, `statut`, `parent` by origin key, sections); a reimport
+  route (`type: aventure`, `sousType`, `parent` by origin key, sections; `statut` joins with `kanevas-scenarios-import-assistant`); a reimport
   never overwrites a status, a sub-type or a parent changed in Kanevas (B-48 extended); a
   compte-rendu names its adventure by its origin key as before. The former campaign and scenario
   routes of the import disappear. *(P-10)*
@@ -352,7 +352,7 @@ introuvable. ».
    to the players, now that the campaign starts; under it he creates the
    scenario « Acte II — Le sceau brisé » (sub-type Scénario, parent the campaign, sections closed
    to the players), writes it in E-9 like any sheet — links to Aldric and Port-Sel, the plan of the
-   crypt from the media library, a relation to the Guilde —, and sets it « Prête » when it is; or
+   crypt from the media library, a relation to the Guilde —, and sets it « Prête » when it is — from the status line of its sheet, or in place from its tree line or its card in E-8, where he can also filter by « Statut »; when a status change or a creation fails, « L'action n'a pas abouti. Réessayez. » and nothing changes —; or
    he asks his **assistant** (E-12) to create it: the writing block leads to its sheet.
 3. On the campaign's sheet (E-9), block « Préparation »: he ticks or adds tasks.
    *Échec*: the campaign's page is open in two tabs; a status set in one is shown stale in the
@@ -464,7 +464,7 @@ Il veut d'abord un essai jetable, puis la vraie base, sans doublon ni fuite.*
    droits — « Réservée au MJ » pour ceux que Kanka n'affiche que dans du contenu MJ, « Visible des
    joueurs » sinon —, y compris les 385 Mo qu'aucune fiche n'utilise ; les fiches les référencent.
 5. *(`kanevas-scenarios`: campaigns and scenarios are pushed as sheets of type `aventure`, and counted with them)* **Accès par API** (E-18), bloc « Lots d'import » : « Fiches : 498 créées, 3 refusées · Fichiers :
-   1 140 créés · Campagnes : 4 créées · Scénarios : 12 créés · Relations : 324 créées · 6 en attente » ; il
+   1 140 créés · Relations : 324 créées · 6 en attente » ; il
    déplie les refus : « personnage:aldric-le-gris — section « Vérité » : 112 000 caractères, 100 000
    au plus ».
 6. Il ouvre quelques fiches (**E-8** en arbre, **E-9**, **E-17**) et passe en **mode Joueur** pour
@@ -627,6 +627,9 @@ introuvable. ».
 - **Supprimer** une campagne, un scénario, un CR, une carte, une tâche, un système : rien de cela
   ne se supprime, sauf une pièce jointe, une section, une relation, un membre, et le token ou le nœud
   d'une carte (on le retire de la carte ; sa fiche reste). *(choix de cadrage, à revoir à l'usage)*
+  Depuis `kanevas-scenarios`, une campagne et un scénario sont des fiches : ils se suppriment comme elles (B-40, E-9), la confirmation
+  comptant leurs tâches, leurs scénarios et leurs comptes-rendus (AD-119) ; désactiver le type « Aventure » (E-14, P-13) ne cache aucune
+  aventure, seule l'entrée de la barre et la création disparaissent.
   Depuis `kanevas-import`, une **fiche**, un **univers** et un **fichier de la médiathèque** se suppriment (B-40, B-41, B-54) ; un CR, qui
   est une fiche, se supprime avec l'univers et, par un MJ, comme une fiche.
 - **Créer une fiche en joueur** : le MJ crée toute fiche, y compris celle d'un PJ, et en ouvre une

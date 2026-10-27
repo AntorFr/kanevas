@@ -6,6 +6,7 @@ import {
   peutVoirFiche,
   sqlFicheLisible,
   sqlSectionLisible,
+  campagneDuCompteRendu,
   vueMJ,
   vueSection,
 } from './droits.js';
@@ -15,7 +16,8 @@ import { mentionsDe } from './mentions.js';
 import { illustrationEnAttente, lireLignes, lisiblePar, type FichierRow } from './fichiers.js';
 import { supprimerFichier } from './stockage.js';
 import { IMAGE_RESERVEE } from './markdown.js';
-import { CHARGES, estTypeFiche, typeActif } from './types-fiche.js';
+import { CHARGES, TYPES, STATUT_AVENTURE, estTypeFiche, typeActif } from './types-fiche.js';
+import { ajouterSection, changerAudience } from './sections.js';
 import {
   TYPES_FICHE,
   type Acteur,
@@ -115,9 +117,8 @@ function sectionsDe(db: Db, ficheId: number): SectionRow[] {
 }
 
 /**
- * The GM creates a sheet of one of the seven types. No section yet: the GM
- * adds them. (A session report by any member, B-19, comes with kanevas-suivi,
- * which owns campaigns.)
+ * The GM creates a sheet, optionally with its parent and up to ten empty sections,
+ * in one transaction (AD-128). Section and hierarchy writes keep their single service.
  */
 export function creerFiche(
   db: Db,
@@ -129,6 +130,8 @@ export function creerFiche(
     charge?: Record<string, unknown>;
     /** Optional free sub-type of the sheet (B-52); `null` or absent: none. */
     sousType?: string | null;
+    parent?: number | null;
+    sections?: { titre: string; joueursLisent?: boolean }[];
     /** Import only (B-50, AD-107): the origin key and dates of the sheet, and what the import wrote. */
     origine?: { cle: string; creeLe?: string; modifieLe?: string; dernierImport: unknown };
   },
@@ -146,28 +149,68 @@ export function creerFiche(
   const sousType = entree.sousType == null ? null : validerSousType(entree.sousType);
   const charge = CHARGES[type].safeParse({ v: 1, ...entree.charge });
   if (!charge.success) throw invalide('Charge utile invalide pour ce type de fiche.');
-  const now = new Date().toISOString();
-  const o = entree.origine;
-  const cree = o?.creeLe ?? now;
-  const info = db
-    .prepare(
-      `INSERT INTO fiches (univers_id, type, titre, charge, cree_le, modifie_le, cle_origine, dernier_import)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-    )
-    .run(
-      universId,
-      type,
-      titre,
-      JSON.stringify(charge.data),
-      cree,
-      o?.modifieLe ?? (cree > now ? cree : now),
-      o?.cle ?? null,
-      o ? JSON.stringify(o.dernierImport) : null,
-    );
-  const id = Number(info.lastInsertRowid);
-  // A separate write: a base short of 0013 (the migration test seeds one through the services) has no column.
-  if (sousType !== null) db.prepare('UPDATE fiches SET sous_type = ? WHERE id = ?').run(sousType, id);
-  return versFiche(chargerFiche(db, universId, id));
+  if (entree.parent !== undefined && entree.parent !== null && !Number.isSafeInteger(entree.parent)) {
+    throw invalide('Le parent doit être une fiche ou null.');
+  }
+  if (entree.sections !== undefined && (!Array.isArray(entree.sections) || entree.sections.length > 10)) {
+    throw invalide('La création accepte au plus 10 sections.');
+  }
+  for (const section of entree.sections ?? []) {
+    if (!section || typeof section.titre !== 'string') throw invalide('Le titre : de 1 à 80 caractères.');
+    if (section.joueursLisent !== undefined && typeof section.joueursLisent !== 'boolean') {
+      throw invalide('Réglage d’audience invalide.');
+    }
+  }
+  return db.transaction(() => {
+    const now = new Date().toISOString();
+    const o = entree.origine;
+    const cree = o?.creeLe ?? now;
+    const info = db
+      .prepare(
+        `INSERT INTO fiches (univers_id, type, titre, charge, cree_le, modifie_le, cle_origine, dernier_import)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      )
+      .run(
+        universId,
+        type,
+        titre,
+        JSON.stringify(charge.data),
+        cree,
+        o?.modifieLe ?? (cree > now ? cree : now),
+        o?.cle ?? null,
+        o ? JSON.stringify(o.dernierImport) : null,
+      );
+    const id = Number(info.lastInsertRowid);
+    // A separate write: a base short of 0013 (the migration test seeds one through the services) has no column.
+    if (sousType !== null) db.prepare('UPDATE fiches SET sous_type = ? WHERE id = ?').run(sousType, id);
+    if (entree.parent !== undefined) deplacerFiche(db, { compteId }, universId, id, entree.parent);
+    for (const section of entree.sections ?? []) {
+      const s = ajouterSection(db, compteId, universId, id, { titre: section.titre });
+      if (section.joueursLisent === true) changerAudience(db, compteId, universId, id, s.id, { joueursLisent: true });
+    }
+    return versFiche(chargerFiche(db, universId, id));
+  })();
+}
+
+/** Play state, GM outside player mode only; changing it does not modify the text date (AD-123). */
+export function changerStatutFiche(
+  db: Db,
+  acteur: Acteur,
+  universId: number,
+  ficheId: number,
+  statut: unknown,
+): Fiche {
+  const role = exigerRole(db, universId, acteur.compteId);
+  const fiche = chargerFiche(db, universId, ficheId);
+  // A player must first read the sheet; a GM in player mode is always refused a write.
+  if (role !== 'mj' && !peutVoirFiche(db, role, ficheId, acteur)) throw introuvable();
+  if (!vueMJ(role, acteur)) throw refuse();
+  if (fiche.type !== 'aventure' || !STATUT_AVENTURE.safeParse(statut).success) {
+    throw invalide('Statut invalide pour ce type de fiche.');
+  }
+  const charge = CHARGES[fiche.type].parse({ v: 1, statut });
+  db.prepare('UPDATE fiches SET charge = ? WHERE id = ?').run(JSON.stringify(charge), ficheId);
+  return versFiche(chargerFiche(db, universId, ficheId));
 }
 
 /**
@@ -215,7 +258,7 @@ export function changerSousType(
 }
 
 /**
- * The GM changes the type of a sheet among the thirteen settable ones (AD-120 (4)): the same row,
+ * The GM changes the type of a sheet among the settable ones (AD-120 (4)): the same row,
  * so id, sections, relations and map places stay. The payload becomes that of the new type (a
  * character takes `pj`, `false` by default) and the sub-type is cleared unless the caller gives a
  * new one. A disabled target type is allowed. A session report cannot be changed into or out of.
@@ -233,7 +276,7 @@ export function changerTypeFiche(
   exigerMJ(db, universId, compteId);
   const actuelle = chargerFiche(db, universId, ficheId);
   if (!estTypeFiche(type)) throw new ErreurService('invalide', 'Type de fiche inconnu.', 'type_inconnu');
-  if (type === 'compte_rendu' || actuelle.type === 'compte_rendu') {
+  if (!TYPES.find((t) => t.type === type)?.reglable || !TYPES.find((t) => t.type === actuelle.type)?.reglable) {
     throw new ErreurService('invalide', 'Ce type ne se change pas.', 'type_non_reglable');
   }
   if (type === actuelle.type && charge === undefined) {
@@ -261,6 +304,10 @@ export interface BilanSuppression {
   fichiers: number;
   enfants: number;
   parent: { id: number; titre: string } | null;
+  /** An adventure only (AD-119, AD-124 (5)): its tasks (deleted), its scenarios (to the root), the reports left without it. */
+  taches?: number;
+  scenarios?: number;
+  comptesRendus?: number;
 }
 
 /**
@@ -296,6 +343,17 @@ function recenser(db: Db, f: FicheRow): BilanSuppression & { disques: string[] }
     fichiers,
     enfants: n('SELECT COUNT(*) AS n FROM fiches WHERE parent_id = ?', f.id),
     parent,
+    ...(f.type === 'aventure'
+      ? {
+          taches: n('SELECT COUNT(*) AS n FROM taches_preparation WHERE fiche_id = ?', f.id),
+          scenarios: n("SELECT COUNT(*) AS n FROM fiches WHERE parent_id = ? AND type = 'aventure'", f.id),
+          comptesRendus: n(
+            "SELECT COUNT(*) AS n FROM fiches WHERE type = 'compte_rendu' AND univers_id = ? AND json_extract(charge, '$.campagne_id') = ?",
+            f.univers_id,
+            f.id,
+          ),
+        }
+      : {}),
     disques,
   };
 }
@@ -332,6 +390,7 @@ export function supprimerFiche(db: Db, acteur: Acteur, universId: number, ficheI
     db.prepare('UPDATE fiches SET parent_id = ? WHERE parent_id = ?').run(f.parent_id, f.id);
     db.prepare('DELETE FROM relations WHERE cible_fiche_id = ?').run(f.id);
     db.prepare('DELETE FROM elements_carte WHERE fiche_id = ?').run(f.id);
+    db.prepare('DELETE FROM taches_preparation WHERE fiche_id = ?').run(f.id);
     db.prepare('DELETE FROM sections WHERE fiche_id = ?').run(f.id);
     db.prepare('DELETE FROM fiches WHERE id = ?').run(f.id);
     return bilan;
@@ -538,8 +597,15 @@ export function lireFiche(
   const vueFiche = versFiche(fiche, (f) => lisiblePar(role, acteur, f));
   // An illustration the import has not delivered yet: a tile for the GM outside player mode, nothing for anyone else.
   const attendue = vueFiche.illustration === null && vueMJ(role, acteur) ? illustrationEnAttente(db, ficheId) : null;
+  // A report names its adventure only to a reader who reads it (AD-124 (4)): the id leaves `charge` for
+  // everyone, the title comes back beside it for the readers of that adventure (and « supprimée » for a GM).
+  const campagne = fiche.type === 'compte_rendu'
+    ? campagneDuCompteRendu(db, role, acteur, universId, vueFiche.charge.campagne_id)
+    : null;
+  if (campagne) delete vueFiche.charge.campagne_id;
   return {
     ...vueFiche,
+    ...(campagne ?? {}),
     ...(attendue !== null ? { illustration: { attente: true as const, cle: attendue } } : {}),
     ancetres: ancetresLisibles(db, role, acteur, fiche),
     mentions: mentions.mentions,
@@ -614,6 +680,7 @@ export function listerFiches(
   options: {
     type?: string;
     sousType?: string;
+    statut?: string;
     etiquette?: string;
     curseur?: string;
     limite?: number;
@@ -636,6 +703,13 @@ export function listerFiches(
   if (options.sousType !== undefined) {
     where.push('f.sous_type = ? COLLATE NOCASE');
     params.push(options.sousType);
+  }
+  if (options.statut !== undefined) {
+    if (options.type !== 'aventure' || !STATUT_AVENTURE.safeParse(options.statut).success) {
+      throw invalide('Le statut nécessite le type aventure et une valeur valide.');
+    }
+    where.push("json_extract(f.charge, '$.statut') = ?");
+    params.push(options.statut);
   }
   if (options.etiquette !== undefined) {
     // A label is compared exactly, never through FTS (AD-118 (2)); it only narrows the read filter.
@@ -708,6 +782,12 @@ export function listerFiches(
   const enrichie = (r: FicheRow): Fiche => {
     const e = etiquetageDe(db, r.id);
     const f: Fiche = { ...versFiche(r, (f) => lisiblePar(role, acteur, f)), alias: e.alias, etiquettes: e.etiquettes };
+    // A report's payload must not reveal an adventure the reader cannot read (AD-124 (4)),
+    // including through search or the tree. The GM outside player mode keeps the stored id.
+    if (f.type === 'compte_rendu' && !vueMJ(role, acteur)
+      && campagneDuCompteRendu(db, role, acteur, universId, f.charge.campagne_id).campagneId === undefined) {
+      delete f.charge.campagne_id;
+    }
     if (mots !== null) {
       const trouve = mots.length > 0 && !repond(r.titre, mots) ? e.alias.find((a) => repond(a, mots)) : undefined;
       if (trouve !== undefined) f.aliasTrouve = trouve;

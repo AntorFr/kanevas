@@ -31,6 +31,8 @@ export interface DefinitionType {
 
 const v1 = () => z.strictObject({ v: z.literal(1) });
 
+export const STATUT_AVENTURE = z.enum(['en_preparation', 'prete', 'en_cours', 'terminee']);
+
 const def = <T extends string>(d: Omit<DefinitionType, 'type'> & { type: T }) => d;
 
 export const TYPES = [
@@ -47,6 +49,7 @@ export const TYPES = [
   def({ type: 'recit', slug: 'recits', singulier: 'Récit', pluriel: 'Récits', nouveau: 'Nouveau récit', aucun: 'Aucun récit', icone: 'book-open', reglable: true, charge: v1() }),
   def({ type: 'regle', slug: 'regles', singulier: 'Règle', pluriel: 'Règles', nouveau: 'Nouvelle règle', aucun: 'Aucune règle', icone: 'scale', reglable: true, charge: v1() }),
   def({ type: 'note', slug: 'notes', singulier: 'Note', pluriel: 'Notes', nouveau: 'Nouvelle note', aucun: 'Aucune note', icone: 'sticky-note', reglable: true, charge: v1() }),
+  def({ type: 'aventure', slug: 'aventures', singulier: 'Aventure', pluriel: 'Aventures', nouveau: 'Nouvelle aventure', aucun: 'Aucune aventure', icone: 'flag', reglable: true, charge: z.strictObject({ v: z.literal(1), statut: STATUT_AVENTURE.default('en_preparation') }) }),
   def({ type: 'compte_rendu', slug: 'comptes-rendus', singulier: 'Compte-rendu', pluriel: 'Comptes-rendus', nouveau: 'Nouveau compte-rendu', aucun: 'Aucun compte-rendu', icone: 'file-text', reglable: false, charge: z.strictObject({ v: z.literal(1), campagne_id: z.number().int().positive() }) }),
 ] as const;
 

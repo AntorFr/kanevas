@@ -50,9 +50,9 @@ interface Props {
   section?: { universId: string; modeJoueur: boolean; blocMJ: boolean };
   /**
    * Offers « Lien vers une fiche » (Ctrl/⌘+K) and the list opened by `[[` (B-33). Absent for E-15 and the report window,
-   * where `[[…]]` stays text. `campagneId` makes the preview a scenario's (links read in its campaign's universe).
+   * where `[[…]]` stays text.
    */
-  liens?: { universId: string; campagneId?: number };
+  liens?: { universId: string };
   /** « Fichier » (`paperclip`) of the toolbar and the drop of files (B-55): the screen supplies the tool. Absent where a text holds no file. */
   fichier?: (api: ApiEditeurFichier) => ReactNode;
   /** A warning under the field that blocks nothing (B-55). */
@@ -208,7 +208,6 @@ export function EditeurMarkdown({ etiquette, valeur, onChange, max, rows = 8, au
       const r = await appeler<{ html: string }>('POST', '/api/apercu', {
         texte: valeur,
         ...(section ? { nature: 'section', univers_id: Number(section.universId), mode: section.modeJoueur ? 'joueur' : 'mj' } : {}),
-        ...(liens?.campagneId !== undefined ? { nature: 'scenario', campagne_id: liens.campagneId } : {}),
       });
       if (n === demande.current) setApercu({ etat: 'ok', html: r.html });
     } catch {
