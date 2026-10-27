@@ -38,3 +38,42 @@
 .etiquette-ligne:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
 .plus-etiquettes { font-size: var(--t-12); color: var(--texte-3); line-height: 22px; }
 .suite-recherche { display: flex; justify-content: center; margin-top: var(--e-4); }
+
+/* The advanced filters share the field and chip vocabulary of E-17. */
+.recherche-avancee { margin-top: var(--e-4); padding: var(--e-3) 0; border-block: 1px solid var(--bord); }
+.recherche-avancee summary { width: fit-content; cursor: pointer; color: var(--texte-2); font-size: var(--t-13); min-height: 24px; align-content: center; }
+.recherche-avancee summary:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; border-radius: var(--rayon-item); }
+.filtres-avances { display: flex; align-items: end; flex-wrap: wrap; gap: var(--e-3) var(--e-4); margin-top: var(--e-3); }
+.filtres-avances .champ { margin: 0; }
+.filtre-lie, .choisir-fiche { min-width: 0; flex: 1 1 200px; max-width: 100%; }
+.filtre-lie > .lib-champ { display: block; margin-bottom: var(--e-1); }
+.pastille-lie { display: inline-flex; align-items: center; gap: var(--e-2); min-height: 34px; max-width: 100%; padding-left: var(--e-3); background: var(--accent-fond); color: var(--accent-texte); border: 1px solid var(--accent); border-radius: var(--rayon-pastille); font-size: var(--t-13); }
+.pastille-lie > svg { flex: none; }
+.pastille-lie > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pastille-lie > button { display: grid; place-items: center; flex: none; width: 32px; height: 32px; padding: 0; color: inherit; border: 0; background: transparent; border-radius: var(--rayon-pastille); cursor: pointer; }
+.pastille-lie > button:hover { background: var(--surface); }
+.pastille-lie > button:focus-visible, .choisir-fiche-menu button:focus-visible { outline: 2px solid var(--focus); outline-offset: -2px; }
+.filtre-nature { flex: 0 1 172px; min-width: 0; }
+.filtre-descendants { display: flex; align-items: center; gap: var(--e-2); min-height: 34px; font-size: var(--t-13); color: var(--texte-2); cursor: pointer; }
+.filtre-descendants input { appearance: none; display: grid; place-items: center; flex: none; width: 16px; height: 16px; margin: 0; border: 1px solid var(--bord-champ); border-radius: 3px; background: var(--surface); color: var(--sur-accent); cursor: pointer; }
+.filtre-descendants input:checked { background: var(--accent); border-color: var(--accent); }
+.filtre-descendants input:checked::after { content: ''; width: 4px; height: 8px; border: solid currentColor; border-width: 0 2px 2px 0; transform: translateY(-1px) rotate(45deg); }
+.filtre-descendants input:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.filtre-descendants input:disabled { opacity: .45; cursor: not-allowed; }
+.choisir-fiche { position: relative; }
+.choisir-fiche-menu { position: absolute; z-index: 5; top: calc(100% + var(--e-1)); left: 0; width: max(100%, 300px); max-width: calc(100vw - 64px); max-height: 320px; overflow-y: auto; padding: var(--e-1); background: var(--surface); border: 1px solid var(--bord-champ); border-radius: var(--rayon-champ); box-shadow: var(--ombre-flottant); }
+.choisir-fiche-menu p { margin: var(--e-2); color: var(--texte-2); font-size: var(--t-13); }
+.choisir-fiche-menu ul { list-style: none; margin: 0; padding: 0; }
+.choisir-fiche-menu li > button { display: flex; align-items: center; gap: var(--e-2); width: 100%; min-height: 36px; border: 0; border-radius: var(--rayon-item); padding: var(--e-2); font: inherit; font-size: var(--t-13); background: transparent; color: var(--texte); text-align: left; cursor: pointer; }
+.choisir-fiche-menu li > button:hover, .choisir-fiche-menu li > button:focus-visible { background: var(--surface-2); }
+.choisir-fiche-menu li > button > svg { flex: none; color: var(--texte-3); }
+.choisir-fiche-menu li > button > span { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.choisir-fiche-menu small { color: var(--texte-3); font-size: var(--t-12); }
+.via-recherche { color: var(--texte-3); font-size: var(--t-12); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cible-vide { display: inline-block; max-width: min(240px, 55vw); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; vertical-align: bottom; }
+@media (max-width: 760px) {
+  .filtres-avances { gap: var(--e-3); }
+  .filtre-lie, .choisir-fiche { flex-basis: 100%; }
+  .filtre-nature { flex: 1; }
+  .choisir-fiche-menu li > button { min-height: 40px; }
+}

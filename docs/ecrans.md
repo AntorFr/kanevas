@@ -69,7 +69,7 @@ bascule existe (fiche, carte et, depuis `kanevas-import`, recherche E-17).
 | **E-14 Paramètres de l'univers** | nav Univers (MJ) | nom, description, système de jeu (choisir dans le catalogue, en créer un) | P-8 |
 | **E-15 Système de jeu** | E-16 ; lien depuis E-3 et E-14 | le référentiel commun : règles, créatures, objets ; ajouter, modifier (MJ d'un univers rattaché) ; hors du cadre d'un univers | P-8 |
 | **E-16 Systèmes de jeu** | barre réduite ; menu du sélecteur d'univers | les systèmes rattachés aux univers du compte, chacun avec ceux de ses univers qui l'utilisent | P-8 |
-| **E-17 Recherche** *(kanevas-import)* | « Rechercher » de la barre ; `/` ; une étiquette touchée sur E-9 ; *(kanevas-fiches-liees)* « Chercher parmi » d'un bloc « Fiches liées » | chercher dans tous les types, titres, alias et sections lisibles ; filtrer par type ; *(kanevas-fiches-liees)* recherche avancée : lié à une fiche, par nature, sous-lieux compris, vivants / morts et par étiquette | P-12, P-10 |
+| **E-17 Recherche** *(kanevas-import)* | « Rechercher » de la barre ; `/` ; une étiquette touchée sur E-9 ; *(kanevas-fiches-liees)* « Chercher parmi » d'un bloc « Fiches liées » | chercher dans tous les types, titres, alias et sections lisibles ; filtrer par type ; *(kanevas-fiches-liees)* recherche avancée : lié à une fiche, par nature, sous-lieux compris, vivants / morts et par étiquette | P-12, P-10, P-17 |
 | **E-19 Médiathèque** *(kanevas-import)* | nav Médiathèque ; « Choisir dans la médiathèque » de l'éditeur et de l'illustration (E-9) | voir les fichiers (images, documents) ouverts au compte et où ils servent ; MJ : ajouter, renommer, régler la visibilité, supprimer | P-16, P-10 |
 | **E-18 Accès par API** *(kanevas-import)* | nav Univers ▸ Accès par API (MJ) | créer, lister, révoquer les jetons d'API de l'univers ; voir les lots d'import et leurs refus | P-10, P-11 |
 
@@ -665,8 +665,8 @@ section, même vide. En mode Joueur, le MJ voit le bloc comme un Joueur qui n'es
 section (AD-39), sans « Relier » ni « Retirer ».
 
 *Le MJ relie.* « Relier à une fiche » ouvre un formulaire sous la liste :
-1. « Type de relation » (texte libre, 1 à 80 caractères, par exemple « membre de ») ; *(`kanevas-fiches-liees`: replaced by « Nature » (the list of the pair, or « Sans nature ») and « Qualificatif » (free, optional) — see « Détail des écrans de `kanevas-fiches-liees` »)*
-2. « Type de fiche » (Personnage, Lieu, Faction, Objet, Événement, Quête ; Personnage par défaut) ;
+1. « Type de relation » (texte libre, 1 à 80 caractères, par exemple « membre de ») ; *(`kanevas-fiches-liees`: replaced by « Nature » (the list of the pair, or « Sans nature ») and « Qualificatif » (free, 1 to 80; optional with a nature, required without one) — see « Détail des écrans de `kanevas-fiches-liees` »)*
+2. « Type de fiche » (Personnage, Lieu, Faction, Objet, Événement, Quête ; Personnage par défaut) ; *(`kanevas-fiches-liees`: with a nature, the select is restricted to the target types of the nature, e.g. Lieu for « se situe à »)*
 3. un champ « Chercher dans les factions » et la liste des fiches de ce type, cent à la fois avec
    « Charger la suite » : c'est la liste et la recherche de E-8, pas une autre ;
 4. choisir une fiche (une seule), puis « Relier » ; « Annuler » ferme sans rien écrire.
@@ -675,15 +675,15 @@ section (AD-39), sans « Relier » ni « Retirer ».
 
 Le formulaire n'est pas gardé en cas de session expirée. Une fiche se relie à toute fiche de son
 univers, **sauf à elle-même**. Une section porte au plus 100 relations ; deux relations de même
-type vers la même fiche ne coexistent pas. « Retirer » sur une ligne supprime la relation sans
+nature et de même qualificatif vers la même fiche ne coexistent pas *(`kanevas-fiches-liees`)*. « Retirer » sur une ligne supprime la relation sans
 confirmation (elle se refait en trois gestes) ; retirer une section retire ses relations avec elle.
 
 Textes : bloc sans relation (MJ) : « Aucune relation pour l'instant. » ; erreurs sous les champs :
-« Erreur : le type de relation est obligatoire. », « Erreur : 80 caractères au plus. », « Erreur :
+« Erreur : le qualificatif est obligatoire sans nature. » *(`kanevas-fiches-liees`, replaces « le type de relation est obligatoire »)*, « Erreur : 80 caractères au plus. » (the qualifier; spaces alone count as empty), « Erreur :
 choisissez une fiche. » ; refus du service, au-dessus du formulaire : « Cette relation existe
 déjà. », « Une fiche ne se relie pas à elle-même. », « Cette section porte déjà 100 relations. » ;
 liste de choix vide : « Aucune faction à relier. » (autres types : « Aucun personnage… ») ;
-chaque bouton « Retirer » porte l'étiquette accessible « Retirer la relation membre de → Lames Grises ».
+chaque bouton « Retirer » porte l'étiquette accessible « Retirer la relation membre de → Lames Grises » *(`kanevas-fiches-liees`: « Retirer la relation membre de · Lames Grises — trésorier »)*.
 
 | État | Ce qu'on voit | Ce qu'on peut faire |
 |---|---|---|
@@ -692,7 +692,7 @@ chaque bouton « Retirer » porte l'étiquette accessible « Retirer la relation
 | erreur | « Impossible de charger les relations. » dans le bloc seul, les autres sections intactes ; échec d'écriture : « L'action n'a pas abouti. Réessayez. », saisie conservée | « Réessayer » |
 | connexion perdue | le bandeau ; « Relier », « Retirer » désactivés ; la liste affichée reste | suivre un lien |
 | refus | le bloc d'une section illisible n'existe pas (la section est absente, B-9) ; une relation vers une fiche illisible est absente ; « Relier » et « Retirer » n'existent pas pour un Joueur ni en mode Joueur | — |
-| contenu long | 100 relations : la liste défile avec la section ; un type de 80 caractères et un titre de fiche de 120 passent à la ligne | idem |
+| contenu long | 100 relations : la liste défile avec la section ; un qualificatif de 80 caractères et un titre de fiche de 120 passent à la ligne | idem |
 
 *Critères.*
 - Étant donné Antor, MJ, qui a relié la section « Apparence » de « Maître Aldric » à la faction
@@ -1024,7 +1024,7 @@ section, même vide. En mode Joueur, le MJ voit le bloc comme un Joueur qui n'es
 section (AD-39), sans « Relier » ni « Retirer ».
 
 *Le MJ relie.* « Relier à une fiche » ouvre un formulaire sous la liste :
-1. « Type de relation » (texte libre, 1 à 80 caractères, par exemple « membre de ») ; *(`kanevas-fiches-liees`: replaced by « Nature » (the list of the pair, or « Sans nature ») and « Qualificatif » (free, optional) — see « Détail des écrans de `kanevas-fiches-liees` »)*
+1. « Type de relation » (texte libre, 1 à 80 caractères, par exemple « membre de ») ; *(`kanevas-fiches-liees`: replaced by « Nature » (the list of the pair, or « Sans nature ») and « Qualificatif » (free, 1 to 80; optional with a nature, required without one) — see « Détail des écrans de `kanevas-fiches-liees` »)*
 2. « Type de fiche » (Personnage, Lieu, Faction, Objet, Événement, Quête ; Personnage par défaut) ;
 3. un champ « Chercher dans les factions » et la liste des fiches de ce type, cent à la fois avec
    « Charger la suite » : c'est la liste et la recherche de E-8, pas une autre ;
@@ -1034,15 +1034,15 @@ section (AD-39), sans « Relier » ni « Retirer ».
 
 Le formulaire n'est pas gardé en cas de session expirée. Une fiche se relie à toute fiche de son
 univers, **sauf à elle-même**. Une section porte au plus 100 relations ; deux relations de même
-type vers la même fiche ne coexistent pas. « Retirer » sur une ligne supprime la relation sans
+nature et de même qualificatif vers la même fiche ne coexistent pas *(`kanevas-fiches-liees`)*. « Retirer » sur une ligne supprime la relation sans
 confirmation (elle se refait en trois gestes) ; retirer une section retire ses relations avec elle.
 
 Textes : bloc sans relation (MJ) : « Aucune relation pour l'instant. » ; erreurs sous les champs :
-« Erreur : le type de relation est obligatoire. », « Erreur : 80 caractères au plus. », « Erreur :
+« Erreur : le qualificatif est obligatoire sans nature. » *(`kanevas-fiches-liees`, replaces « le type de relation est obligatoire »)*, « Erreur : 80 caractères au plus. » (the qualifier; spaces alone count as empty), « Erreur :
 choisissez une fiche. » ; refus du service, au-dessus du formulaire : « Cette relation existe
 déjà. », « Une fiche ne se relie pas à elle-même. », « Cette section porte déjà 100 relations. » ;
 liste de choix vide : « Aucune faction à relier. » (autres types : « Aucun personnage… ») ;
-chaque bouton « Retirer » porte l'étiquette accessible « Retirer la relation membre de → Lames Grises ».
+chaque bouton « Retirer » porte l'étiquette accessible « Retirer la relation membre de → Lames Grises » *(`kanevas-fiches-liees`: « Retirer la relation membre de · Lames Grises — trésorier »)*.
 
 | État | Ce qu'on voit | Ce qu'on peut faire |
 |---|---|---|
@@ -1051,7 +1051,7 @@ chaque bouton « Retirer » porte l'étiquette accessible « Retirer la relation
 | erreur | « Impossible de charger les relations. » dans le bloc seul, les autres sections intactes ; échec d'écriture : « L'action n'a pas abouti. Réessayez. », saisie conservée | « Réessayer » |
 | connexion perdue | le bandeau ; « Relier », « Retirer » désactivés ; la liste affichée reste | suivre un lien |
 | refus | le bloc d'une section illisible n'existe pas (la section est absente, B-9) ; une relation vers une fiche illisible est absente ; « Relier » et « Retirer » n'existent pas pour un Joueur ni en mode Joueur | — |
-| contenu long | 100 relations : la liste défile avec la section ; un type de 80 caractères et un titre de fiche de 120 passent à la ligne | idem |
+| contenu long | 100 relations : la liste défile avec la section ; un qualificatif de 80 caractères et un titre de fiche de 120 passent à la ligne | idem |
 
 *Critères.*
 - Étant donné Antor, MJ, qui a relié la section « Apparence » de « Maître Aldric » à la faction
@@ -2802,7 +2802,7 @@ bandeau, « Déplacer » désactivé. La boîte n'existe que pour un MJ hors mod
 
 *Maquette finie* : `docs/maquettes/e17-recherche.html` (MJ, Joueur, mode Joueur, étiquette, savoir, états).
 
-Adresse `/univers/:id/recherche?q=…&type=…&etiquette=…`. Un champ en tête (focus à l'ouverture,
+Adresse `/univers/:id/recherche?q=…&type=…&etiquette=…` (le volet « Recherche avancée » et ses adresses `lie`, `nature`, `descendants` sont décrits plus bas, avec « Lié à » qui change l'état de départ). Un champ en tête (focus à l'ouverture,
 1 à 100 caractères, sans bouton : la recherche part à la frappe ou à Entrée), dessous deux rangées de filtres : les **types** (pastilles à icône, « Tous » par
 défaut ; **seuls les types activés** ont leur pastille, B-42 — une fiche d'un type désactivé reste un
 résultat sous « Tous ») et les **étiquettes** (une liste à
@@ -3308,6 +3308,10 @@ this text is authoritative where they differ.
 > « Relier » form, a block « Fiches liées », the dead mark), E-8 and E-17 (a mark, two filters, an
 > advanced mode), E-11 (labels). New text in English (canon); user-facing labels French. Same six
 > states and common texts as the other screens.
+>
+> **Built so far** (`kanevas-fiches-liees-natures`): the « Relier » form (nature, qualifier), the relation line, the
+> E-11 labels and « Familles ». **Not built yet**: the block « Fiches liées », the filters and the advanced mode of
+> E-8 and E-17, the dead mark (slices `-bloc`, `-recherche`, `-disparu`).
 
 **Format.** Web, desktop and phone, as the rest of Kanevas.
 
@@ -3338,15 +3342,15 @@ side that holds it (AD-128 (3)).
 
 A relation without nature is « sans nature » (free, as today). The place-in-place relation is the
 tree, never a nature (« se situe » is not offered for lieu → lieu). Aventures (`kanevas-scenarios`)
-take no nature in this epic (reopened with the first need).
+take no nature in this epic (reopened with the first need): their « Relier » form has « Qualificatif » alone, required, and « Type de fiche » lists every enabled type.
 
 ### E-9 — « Relier à une fiche », with a nature
 
 The form of the Relations block (`kanevas-relier-chercher`) gains a first step: **« Nature »**, a
 list of the natures whose source types include this sheet's type, read from the source, plus
-« Sans nature » (default when the list is empty, last otherwise); choosing a nature restricts
+« Sans nature » (the first nature is preselected; « Sans nature » alone when the list is empty, last otherwise); choosing a nature restricts
 « Type de fiche » to the nature's target types (the select shows them only); then the sheet
-picker as today; then **« Qualificatif »** (optional, 1 to 80, replaces the former free « Type de
+picker as today; then **« Qualificatif »** (1 to 80; optional with a nature, **required without one** — « Le qualificatif est obligatoire sans nature. » —, replaces the former free « Type de
 relation » field, same place, placeholder « habite, capitaine… »). « Relier » refuses a nature
 that does not fit the pair (400 `nature_incompatible`, « Cette nature ne relie pas ces deux types
 de fiches. ») — the screen never offers it. A relation line reads « se situe à · **Port-Sel** —
@@ -3354,6 +3358,34 @@ habite » (nature, target, qualifier in grey); a free relation reads its qualifi
 The relation lines in the block and the lines of « Fiches liées » show the « gone » mark on a
 target that carries it (B-67). Nothing changes for the audience: the relation belongs to its
 section.
+
+**The form, state by state** (slice `kanevas-fiches-liees-natures`).
+
+| État | Ce qu'on voit | Ce qu'on peut faire |
+|---|---|---|
+| chargement | the list of natures loads with the types: « Chargement… » in place of the « Nature » field | — |
+| erreur | « Impossible de charger les natures. » with « Réessayer »; the form stays usable with « Sans nature » alone | « Réessayer », relier sans nature |
+| vide | a sheet whose type is the source of no nature (événement, quête, race, savoir…): the « Nature » field is not shown, the form is the former one (qualifier required) | relier sans nature |
+| connexion perdue | le bandeau; « Relier » disabled, the entries stay | lire |
+| refus | « Le qualificatif est obligatoire sans nature. » (checked by the screen before sending, and by the server: 400 `invalide`; more than 80 characters: « Erreur : 80 caractères au plus. »); « Relier » refused by the server (`relation_existante`, `limite_relations`, `nature_incompatible`): « Cette relation existe déjà. », « Une fiche ne se relie pas à elle-même. » (`auto_relation`), « Cette section porte déjà 100 relations. », « Cette nature ne relie pas ces deux types de fiches. », the entries stay | corriger |
+| vide de recherche | the sheet picker without a result: « Aucune fiche pour cette recherche. » (« Aucune fiche de ce type. » when the type has none), « Relier » stays disabled | changer de type ou de recherche |
+| contenu long | a 80-character qualifier wraps in the line; on the graph the label is cut at 40 characters with an ellipsis, whole in the tooltip | idem |
+
+Changing the nature after a sheet was picked keeps the pick if its type still fits, else empties it.
+The error texts and the accessible names of the block say « qualificatif » and « relation », never
+« type de relation »; the line reads « se situe à · Port-Sel — habite » where the former text read
+« membre de → Lames Grises » (the older criteria are read that way). A symmetric nature (« allié de »)
+entered on one sheet is listed by that sheet's section only until `kanevas-fiches-liees-bloc` shows the
+other side; the same fact entered from the other side with the same qualifier is refused as
+`relation_existante` (« Cette relation existe déjà. », the other side holding it, even though this side does not list it yet). Roles: the GM outside player mode relates; a player, and the GM in player mode,
+never see « Relier », the « Nature » field or « Nouvelle famille » (hidden); the list « Familles »
+is read like any list of E-8, empty state « Aucune famille pour l’instant. » with « Nouvelle famille » for the GM.
+
+*Critères.* Étant donné Antor, MJ, sur « Dame Ombeline de Val-Fortin », quand il relie « se
+situe à » → Port-Sel avec « habite », alors la ligne lit « se situe à · Port-Sel — habite » ; quand il
+relie « Sans nature » sans qualificatif, alors « Le qualificatif est obligatoire sans nature. » et rien
+n'est écrit. Étant donné la carte « Carte de la côte » (E-11), quand Antor l'ouvre, alors le lien
+d'Aldric vers Port-Sel est étiqueté « se situe à — habite » et son lien libre « maître de port ».
 
 ### E-9 — the block « Fiches liées » (B-64, AD-130)
 
@@ -3404,23 +3436,25 @@ address carries one of its parameters): **« Lié à »** (a sheet picker, the E
 « Relier » ; a chip « Port-Sel ✕ » once chosen), **« Par »** (the natures whose target types include
 the chosen sheet's type, read backwards: « s'y trouvent », « membres », « détenu par »…, the symmetric ones
 whichever side holds them, plus « toute relation » by default), **« sous-lieux compris »** (shown when the chosen sheet is a place), and the « gone » filter of the type (the three words of the type's row in the table below — « Vivants / Morts / Tous » for Personnage, « Vivantes / Mortes / Toutes » for Créature, « Intacts / Détruits / Tous » for a lieu…, shown when the type filter is one that carries the mark). Address :
-`&lie=<id>&nature=<key>&descendants=1&etat=la|disparu`. The results are the E-17 list, same
-order, same rights (a relation counts only if its section and its source are readable by the
-searcher; in player mode, as a player). With « Lié à » set, the words become optional (« Chercher »
-starts with the filters alone, as a label does today). « Chercher parmi » from a « Fiches liées »
+`&lie=<id>&nature=<key>&descendants=1&etat=la|disparu`. The results are the E-17 list (the row of E-8 with its aliases and labels), same
+order, same rights (a relation counts only if its section, the sheet that holds it and the sheet it points to are all readable by the
+searcher: a hidden sub-place such as « Le Repaire » does not count for Léa; in player mode, as a player). « sous-lieux compris » descends only through sheets of the same type as the chosen one (a descendant of another type is ignored). With « Lié à » set, the words become optional (the search starts with the filters alone, as a label does today ; the field reads « Cherchez un nom, un alias ou un mot — facultatif avec « Lié à ». » and E-17 has no « Chercher » button). With « sous-lieux compris », a row found through a sub-place says it in grey under the title (« Les Docks » for Suie): its `via`, the place the relation points to — never an intermediate place. The text is authoritative; the mockup shows the layout, minus the nature sub-line (« se situe à — habite », which belongs to `-bloc`: this list shows only the grey `via`) ; the « gone » filter it draws (« Vivants / Morts », `etat=`) is delivered by `kanevas-fiches-liees-disparu`, not by the slice that builds this volet, and its address line is the browser's, not a component. « Chercher parmi » from a « Fiches liées »
 group opens E-17 so pre-filled.
 
 | État | Ce qu'on voit | Ce qu'on peut faire |
 |---|---|---|
-| vide | « Aucune fiche liée à « Port-Sel » pour ces critères. » ; without « Lié à » and without words: E-17 asks for a word, as today | retirer un filtre |
-| chargement | as E-17 | — |
-| erreur | as E-17 | « Réessayer » |
-| connexion perdue | as E-17 ; the picker disabled | lire |
-| refus | a player or player mode: the sheet picker lists what he reads ; `?lie=` on a sheet he does not read: the chip reads « Fiche introuvable » and the search runs without it | — |
-| contenu long | the filters wrap on two rows under 760 px ; a picked title of 120 characters is cut with an ellipsis in the chip, whole in its tooltip | idem |
+| vide | « Aucune fiche liée à « Port-Sel » pour ces critères. » — with « Lié à » set this text wins over « Aucune fiche ne correspond. », words or not ; without « Lié à » and without words: E-17 asks for a word, as today | retirer un filtre |
+| chargement | as E-17 (the previous results stay, dimmed, until the new ones arrive) ; the picker shows « Chargement… » | — |
+| erreur | as E-17 ; a failed picker call reads « Impossible de charger les fiches. » inside the picker | « Réessayer » |
+| connexion perdue | as E-17 ; the picker disabled, « Hors connexion » in its field | lire |
+| `nature` / `descendants` that do not fit the chosen sheet (a nature whose target types exclude it, `sous-lieux` on a person) | the address is cleaned by `replace` and the list runs without them | — |
+| sélecteur vide | « Aucune fiche. » under the field when the typed words match no sheet the caller reads | modifier la saisie |
+| erreur de lecture de la fiche ou des natures | the chip reads « Impossible de charger la fiche. », or « Par » reads « Impossible de charger les natures. », each with « Réessayer » ; the list still runs | « Réessayer » |
+| refus | a player or player mode: the sheet picker lists what he reads ; `?lie=` on a sheet the caller does not read (a player, **or the GM** on a deleted sheet or one of another universe): the chip reads « Fiche introuvable » (✕ kept) and the search still runs with it: the API answers an empty page, the list reads « Aucune fiche liée pour ces critères. » ; « Par » then offers « toute relation » only and « sous-lieux compris » is hidden | — |
+| contenu long | a tree deeper than 50 levels is searched down to the 50th, without a word about it ; « Par » holds five natures at most ; the filters wrap on two rows under 760 px ; a picked title of 120 characters is cut with an ellipsis in the chip and in the empty sentence, whole in the chip's tooltip | idem |
 
 *Critères.* Étant donné Antor, quand il cherche « lié à Port-Sel », « s'y trouvent », sous-lieux
-compris, type Personnage, alors la liste porte Aldric, le Prieur et Suie ; avec « Vivants », le
+compris, type Personnage, alors la liste porte Aldric, le Prieur et Suie ; avec « Vivants » *(`kanevas-fiches-liees-disparu`, not this slice)*, le
 Prieur (mort) disparaît. Étant donné Léa, quand elle ouvre la même adresse, alors la liste porte
 Aldric et Suie seulement, et la bascule de mode est absente.
 
@@ -3502,6 +3536,36 @@ carte marquée, entier dans l'infobulle.
 The graph labels a link with the nature's label read from the source (« se situe à ») and the
 qualifier after a dash; a free relation keeps its qualifier as label. « Mentionnée dans » drops the
 natured relations (they are in « Fiches liées ») and keeps the links and the free relations.
+
+**Where a graph label sits** (one rule, the same on desktop and at 390 px, light and dark):
+- Each link is drawn once, as its own stroke. Parallel links between the same two nodes are
+  spread by a perpendicular step (18 px, tightened to 26/(n−1) px from three links on a pair, so that
+  every stroke still meets both discs) around the node axis, **once**: the offset moves the
+  stroke, and the label is placed from the offset stroke, never offset a second time.
+- A label starts centred on the middle of **its own** stroke, just above it, on a halo of the
+  background colour, so the stroke never crosses the text. It slides along that stroke (steps of 2 %,
+  up to 40 % of its length) until its box meets no pill and no other label; failing that, it moves off
+  the stroke in steps of 20 px, trying either side of it (the other side included, with the full slide). The rendered test requires it within 16 px of its
+  nearest stroke.
+- **Stroke geometry** (same at 390 px): a stroke runs from the **edge** of its source node's disc to the
+  edge of its target node's disc, on the line parallel to the node axis shifted by the step above
+  (the ends are the intersections of that parallel with the two discs, not the disc centres shifted);
+  the arrowhead touches the target disc without covering it. With a step of 18 px and a disc radius of
+  15 px two parallel strokes both meet both discs. A node's pill sits below or above its disc, whichever
+  is crossed by fewer strokes (measured on the real pill boxes); if both are crossed, the pill stays
+  crossed — the case is not met on the seeded map.
+- A label overlaps no node pill and no other label. When the middle of the stroke is covered by a
+  pill, the label slides along its stroke as said above.
+- Testable on the rendered boxes: for the two Aldric–Port-Sel links, the label's box is within 16 px of its nearest stroke,
+  no stroke segment crosses a label box, and no label box meets a pill box or another
+  label box — checked at 1440 px and at 390 px on « Carte de la côte » (the two Aldric–Port-Sel
+  links).
+
+**The « Relier » picker list** (E-9): the bounded list (max 176 px, scrolling) is a **complete frame** —
+a visible border on all four sides, rounded bottom corners, as in `docs/maquettes/e09-fiche.html`;
+a row clipped by the frame's bottom edge is allowed — it is the scrolling cue, and the height is not rounded to whole rows — and the selected row is highlighted. The gap between « Type de
+fiche » and the search field is the form's field gap (`var(--e-2)`), with no extra margin on the search field.
+Code: `frontend/src/ecrans/fiche/blocs/relations.tsx` and `relations.css`; the graph is `frontend/src/ecrans/carte/cadre-graphe.tsx`.
 
 ### Mockups
 

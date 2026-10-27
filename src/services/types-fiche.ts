@@ -37,6 +37,7 @@ export const TYPES = [
   def({ type: 'personnage', slug: 'personnages', singulier: 'Personnage', pluriel: 'Personnages', nouveau: 'Nouveau personnage', aucun: 'Aucun personnage', icone: 'users-round', reglable: true, charge: z.strictObject({ v: z.literal(1), pj: z.boolean() }) }),
   def({ type: 'lieu', slug: 'lieux', singulier: 'Lieu', pluriel: 'Lieux', nouveau: 'Nouveau lieu', aucun: 'Aucun lieu', icone: 'map-pin', reglable: true, charge: v1() }),
   def({ type: 'faction', slug: 'factions', singulier: 'Faction', pluriel: 'Factions', nouveau: 'Nouvelle faction', aucun: 'Aucune faction', icone: 'shield', reglable: true, charge: v1() }),
+  def({ type: 'famille', slug: 'familles', singulier: 'Famille', pluriel: 'Familles', nouveau: 'Nouvelle famille', aucun: 'Aucune famille', icone: 'users', reglable: true, charge: v1() }),
   def({ type: 'objet', slug: 'objets', singulier: 'Objet', pluriel: 'Objets', nouveau: 'Nouvel objet', aucun: 'Aucun objet', icone: 'gem', reglable: true, charge: v1() }),
   def({ type: 'evenement', slug: 'evenements', singulier: 'Événement', pluriel: 'Événements', nouveau: 'Nouvel événement', aucun: 'Aucun événement', icone: 'hourglass', reglable: true, charge: v1() }),
   def({ type: 'quete', slug: 'quetes', singulier: 'Quête', pluriel: 'Quêtes', nouveau: 'Nouvelle quête', aucun: 'Aucune quête', icone: 'scroll-text', reglable: true, charge: v1() }),

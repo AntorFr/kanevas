@@ -35,7 +35,7 @@ Les cartes et graphes (E-10, E-11) sont construits. `kanevas-monde` ajoute la pr
   adaptateurs `bouchon` et `claude-agent` (AD-73, AD-78), la disponibilité (AD-77) et
   l'orchestration d'une demande (AD-75), le jeton (`jeton.ts`) et sa session de connexion (`connexion-claude.ts`, AD-112 ; `scripts/faux-setup-token.mjs` en bouchon) ; `src/routes/assistant.ts` : les deux routes. Aucune requête SQL
   dans ce module (AD-2, AD-27).
-- `src/db/` : ouverture du fichier SQLite, `migrations/0001-*.sql`, `0002-systemes.sql`, `0003-suivi.sql`, `0004-pieces-jointes.sql`, `0005-relier-chercher.sql`, `0006-illustrations.sql`, `0007-cartes.sql`, `0008-propositions.sql`, `0009-plafond-contenu.sql` (plafond à 100 000, AD-106), `0010-fil-contrat.sql` (jetons, lots, clés d’origine, AD-103), `0011-contenu-public.sql` (`sections.contenu_public`, index des sections recréé, AD-114), `0012-liens.sql` (table `liens`, index des cibles et `relations (cible_fiche_id)`, AD-116), `0013-types.sql` *(`kanevas-import-types`, AD-120 ; numéro 0013 posé à la reprise de l'epic, repris si une autre tranche passe avant (AD-51) ; recréation de `fiches`)*, `0014-alias-etiquettes.sql` *(`kanevas-import-recherche`, AD-118 ; alias, étiquettes, index des titres recréé)*, `0015-mediatheque.sql` *(`kanevas-import-mediatheque`, AD-117 ; `fichiers`, `fichiers_sections`, `fiches.illustration_fichier_id`, migration des pièces jointes et des illustrations)*, `0016-import-suivi.sql` *(`kanevas-import-reprise`, AD-121 ; `cle_origine`, `dernier_import`, `version_importee` sur campagnes et scénarios)*, runner (AD-14).
+- `src/db/` : ouverture du fichier SQLite, `migrations/0001-*.sql`, `0002-systemes.sql`, `0003-suivi.sql`, `0004-pieces-jointes.sql`, `0005-relier-chercher.sql`, `0006-illustrations.sql`, `0007-cartes.sql`, `0008-propositions.sql`, `0009-plafond-contenu.sql` (plafond à 100 000, AD-106), `0010-fil-contrat.sql` (jetons, lots, clés d’origine, AD-103), `0011-contenu-public.sql` (`sections.contenu_public`, index des sections recréé, AD-114), `0012-liens.sql` (table `liens`, index des cibles et `relations (cible_fiche_id)`, AD-116), `0013-types.sql` *(`kanevas-import-types`, AD-120 ; numéro 0013 posé à la reprise de l'epic, repris si une autre tranche passe avant (AD-51) ; recréation de `fiches`)*, `0014-alias-etiquettes.sql` *(`kanevas-import-recherche`, AD-118 ; alias, étiquettes, index des titres recréé)*, `0015-mediatheque.sql` *(`kanevas-import-mediatheque`, AD-117 ; `fichiers`, `fichiers_sections`, `fiches.illustration_fichier_id`, migration des pièces jointes et des illustrations)*, `0016-import-suivi.sql` *(`kanevas-import-reprise`, AD-121 ; `cle_origine`, `dernier_import`, `version_importee` sur campagnes et scénarios)*, `0017-natures-relations.sql` *(`kanevas-fiches-liees-natures`, AD-128 ; `relations.type` → `qualificatif`, colonne `nature`)*, runner (AD-14).
 - `src/e2e/` : tests d'ensemble, serveur réel en bouchon et navigateur piloté (Playwright, ignoré s'il manque) ; E-5 : `administration*.test.ts`.
 - `src/services/` : `comptes`, `univers`, `membres`, `instance`, `fiches`, `sections`, `droits`, `systemes`, `relations`, `campagnes`, `scenarios`, `preparation`, `comptes_rendus`, `fichiers` (la médiathèque : seul écrivain de `fichiers*`, à la suppression d'un univers près : `univers.ts` en efface les lignes), `fichiers-lecture` (lecture des fichiers référencés par clé, rendu en attente), `cartes`, `propositions`, `types-fiche` *(AD-120)*, `markdown`, `liens`, `mentions`, `jetons`, `lots`, `import` (contexte du jeton), `import-suivi` *(AD-121 : campagnes et scénarios importés)*, `import-relations` *(AD-121 : relations importées)*, `types` *(AD-120)*, `etiquettes` *(AD-118)*, `import-fiches`, `stockage` — les seules
   fonctions qui lisent ou écrivent les données (AD-2) ; `src/routes/` : routes `/api` minces ; `univers.ts` et `instance.ts` portent les routes d'univers et d'instance ; `import.ts` (API d'import à jeton, `/api/import/v1`) et `acces-api.ts` (E-18, par session : `GET|POST /api/univers/:id/jetons`, `POST …/jetons/:jid/revoquer`, `GET …/lots`).
@@ -108,18 +108,19 @@ elles remplacent les anciennes routes `GET /api/univers/:id/systeme` et `…/sys
 | `GET\|POST /api/univers/:id/membres`, `PATCH\|DELETE .../membres/:compteId` | membres (MJ) |
 | `GET /api/instance/univers`, `GET\|POST /api/instance/univers/:id/membres`, `PATCH\|DELETE .../membres/:compteId` | admin d'instance (groupe `parents`, AD-86, AD-87) : `{id, nom, nbMembres}` ; membres d'un univers, ajout (201), rôle, retrait (204) ; hors du groupe, 404 comme une adresse inconnue |
 | `GET /api/instance/assistant/jeton`, `POST /api/instance/assistant/jeton/connexion`, `POST …/jeton/code`, `DELETE …/jeton/connexion` | *(kanevas-import, AD-112)* admin d'instance seul (404 sinon) : état du jeton de l'assistant (`pose`, `poseLe`, `source`, `assistant` = la disponibilité d'AD-77, jamais la valeur), ouverture de la connexion (`connexionId`, adresse, `expireLe`), code (`{connexionId, code}` ; 200, 400 `connexion_echouee`, 410 `connexion_expiree`), annulation (204) |
-| `GET\|POST /api/univers/:id/fiches` (`?type`, `?q`, `?curseur`, *`kanevas-fiches-liees`* : `?lie=<fid>`, `?nature`, `?descendants=1`, `?etat=la\|disparu`) | liste paginée (100), `q` (vide ou plus de 100 caractères : 400 ; sans lettre ni chiffre : liste vide) cherche dans le type, ou dans tous les types sans `?type` (AD-63, AD-101) ; `?etiquette=` filtre par étiquette, `?mode=joueur` lit en Joueur (AD-118) ; création (MJ) |
+| `GET\|POST /api/univers/:id/fiches` (`?type`, `?q`, `?curseur`, `?lie=<fid>`, `?nature`, `?descendants=1` *(AD-129, `kanevas-fiches-liees-recherche`)*, and *not built yet (`-disparu`)* `?etat=la\|disparu`) | liste paginée (100), `q` (vide ou plus de 100 caractères : 400 ; sans lettre ni chiffre : liste vide) cherche dans le type, ou dans tous les types sans `?type` (AD-63, AD-101) ; `?etiquette=` filtre par étiquette, `?mode=joueur` lit en Joueur (AD-118) ; création (MJ) |
 | `PUT .../fiches/:fid/etiquetage`, `GET /api/univers/:id/etiquettes` | alias et étiquettes d'une fiche remplacés d'un bloc `{alias, etiquettes}` (MJ hors mode Joueur) ; étiquettes proposées `[{nom}]` (fiches lisibles seulement), `?mode=joueur` aux deux (AD-118) |
 | `GET .../fiches/:fid` | fiche et sections lisibles ; `?mode=joueur` lit en Joueur ; 404 si aucune section n'est lisible (l'écran le traduit en « Aucune section n'est visible des joueurs. ») |
 | `GET .../fiches?type=T&parent=racine\|<fid>` | *(AD-115, `kanevas-import-arbre`)* l'arbre d'un type : `type` est obligatoire avec `parent` ; `racine` rend les fiches du type que le compte lit dont le parent est nul, illisible ou d'un autre type, `<fid>` les enfants **du même type** de cette fiche que le compte lit (404 si `<fid>` est illisible) ; même page de 100 et même curseur que la liste ; chaque fiche porte en plus `aDesEnfants` (un enfant du même type lisible existe) et `dans: {id, titre}` ou `null` (son parent, quand il est lisible et d'un autre type) ; sans `parent`, ces deux champs ne sont pas rendus |
+| `GET .../fiches?lie=<fid>&nature=<key>&descendants=1` | *(kanevas-fiches-liees, B-65, AD-129)* the list with the linked-sheet conditions, all optional and combined by AND with `type`, `sousType`, `etiquette`, `q`, `parent` : `lie` the target sheet, `nature` a key of `GET …/natures` (absent = any relation, free ones included), `descendants=1` includes same-type descendants down to 50 levels through `descendantsDe` (a bounded recursive `UNION` CTE) ; symmetric natures match either direction ; both sheets and the carrying section must be readable ; each row may carry `via: {id, titre}`, the readable other end of the relation, ordered by title then id, absent when a qualifying direct link exists ; `lie` on a sheet the caller does not read, or of another universe, answers `200` with an empty page ; `nature` or `descendants` without `lie`, an unknown nature, a `lie` that is not an integer, or a `descendants` other than `1` : `400 Requête invalide.` ; same page of 100, same cursor, same order |
 | `GET .../fiches/:fid/enfants` (`?curseur`) | *(AD-115)* « Contient » : les enfants que le compte lit, tous types, par type (ordre de la liste du produit) puis titre ; 50 par page, `{enfants: [{id, titre, type, sousType}], suivant}` ; 404 si la fiche est illisible ; jamais de compteur de ce qui est caché |
 | `PATCH .../fiches/:fid`, `POST .../fiches/:fid/type` | *(AD-120)* `PATCH` `{titre}` (1 à 120 caractères, AD-119 ; MJ hors mode Joueur), `{sousType}` (texte de 1 à 60 caractères, ou `null` pour l'ôter) et/ou `{parent}` (id d'une fiche ou `null`, AD-115 ; 200 avec la fiche) ; une clé inconnue, ou aucune des quatre : 400) ; `POST …/type` `{type, pj?, sousType?}` change le type (MJ ; 400 `meme_type`, `type_inconnu`, `type_non_reglable` — un compte-rendu ne change ni ne devient pas de type) ; *(`kanevas-fiches-liees`, AD-131)* `{disparu}` (booléen ; personnage, créature, faction, famille, lieu, objet, vaisseau ; MJ hors mode Joueur ; 400 on another type) |
 | `GET .../fiches/:fid/mentions?apres=<n>` | *(kanevas-import-liens, AD-100, AD-116)* les 50 fiches suivantes qui citent la fiche, lisibles du lecteur : `{mentions: [{ficheId, titre, type, pourquoi: [{genre: 'lien', section} \| {genre: 'relation', libelle}]}], suite, restantes}` ; la première page voyage avec `GET .../fiches/:fid` (`mentions`, `mentionsSuite`, `mentionsRestantes` : le N de « Afficher les N suivants ») ; `?mode=joueur` lit en Joueur ; 404 comme la fiche |
 | `POST .../fiches/:fid/sections`, `PUT .../fiches/:fid/ordre` | ajouter, ordonner (MJ) |
 | `DELETE .../fiches/:fid`, `GET .../fiches/:fid/suppression` | *(AD-119)* supprimer la fiche (MJ hors mode Joueur ; 204) ; le bilan que la boîte de E-9 compte avant de supprimer |
 | `GET\|PATCH\|DELETE .../sections/:sid` | lire ; titre et audience (MJ) ; retirer (MJ) |
-| `GET\|POST .../sections/:sid/relations`, `DELETE /api/univers/:id/fiches/relations/:rid` (sans `:fid`) | relations lisibles de la section `{relations: [{id, type, cible: {id, titre, type}}]}` (AD-64) ; relier `{cibleFicheId, type}` (201 ; `type` est le libellé libre de la relation, 1 à 80 caractères, `cible.type` est le type de fiche) et retirer (204), MJ seul, 404 pour un joueur. *`kanevas-fiches-liees` (AD-128)* : `{id, nature, qualificatif, cible: {id, titre, type, charge?}}` ; relier `{cibleFicheId, nature?, qualificatif?}` (`type` accepted as a synonym of `qualificatif` for one version) ; 400 `nature_incompatible` |
-| `GET /api/univers/:id/fiches/:fid/liees` (`?nature`, `?descendants=1`, `?curseur`) | *(kanevas-fiches-liees, AD-130)* the sheets linked to the sheet by a nature, read backwards, grouped : `{groupes: [{nature, libelle, types: [{type, total, totalAvecDescendants}], fiches: [{…ligne de E-8, qualificatif, via?: {id, titre}}], suivant}]}` ; counts and lines under the two guards of AD-64 ; `descendants` on a place only |
+| `GET\|POST .../sections/:sid/relations`, `DELETE /api/univers/:id/fiches/relations/:rid` (sans `:fid`) | relations lisibles de la section `{relations: [{id, nature, qualificatif, cible: {id, titre, type, charge?}}]}` (AD-64, AD-128 ; `nature` vide = relation libre, `cible.type` est le type de fiche) ; relier `{cibleFicheId, nature?, qualificatif?}` (201 ; `qualificatif` de 0 à 80 caractères, obligatoire sans nature ; `type` accepted as a synonym of `qualificatif` for one version) ; 400 `nature_incompatible` ; retirer (204), MJ seul, 404 pour un joueur |
+| `GET /api/univers/:id/fiches/:fid/liees` (`?nature`, `?descendants=1`, `?curseur`) | *(kanevas-fiches-liees, AD-130; **not built yet** — slice `-bloc`, this route answers 404)* the sheets linked to the sheet by a nature, read backwards, grouped : `{groupes: [{nature, libelle, types: [{type, total, totalAvecDescendants}], fiches: [{…ligne de E-8, qualificatif, via?: {id, titre}}], suivant}]}` ; counts and lines under the two guards of AD-64 ; `descendants` on a place only |
 | `GET /api/univers/:id/natures` | *(kanevas-fiches-liees)* the product's list of natures with their labels both ways and their pairs of types |
 | `POST .../fichiers` | *(AD-117)* ajouter à la médiathèque (multipart, un fichier ; les champs `section`, `maniere` (`joint`\|`texte`), `blocMj`, `fiche` **avant** le champ `fichier`) ; la visibilité n'est jamais lue du client, elle se déduit de l'endroit ; 201 |
 | `GET .../fichiers` | liste lisible de l'appelant ; `nature`, `visibilite`, `usage`, `q`, `tri`, `apres` |
@@ -168,7 +169,7 @@ base en snake_case (`docs/donnees.md`).
   `OIDC_*` (ou avec une partie seulement), login et callback répondent 404 ; une valeur vide
   ou invalide fait échouer le démarrage.
 - **Vingt-six tables et deux index de recherche, aucun ORM** : `comptes`, `univers`, `membres`, `fiches`, `sections` (migration
-  0001), `systemes_jeu`, `gabarits` (migration 0002), `campagnes`, `scenarios`, `taches_preparation` (migration 0003), `pieces_jointes` (migration 0004, vidée par la 0015 et plus lue), `relations`, `recherche_fiches` et `recherche_sections` (FTS5, migration 0005) ; trois colonnes d'illustration sur `fiches` (migration 0006), `cartes` et `elements_carte` (migration 0007), `propositions` (migration 0008, `kanevas-monde`) ; `jetons_api` et `lots_import`, plus les clés d'origine de `fiches` et `sections` (migration 0010, `kanevas-import-fil`) ; `sections.contenu_public` et l'index `recherche_sections` recréé (migration 0011, `kanevas-import-secrets`, AD-114) ; `liens` (migration 0012, `kanevas-import-liens`, AD-116) ; `types_systeme` et `types_univers`, et `fiches` recréée sans `CHECK` sur le type (migration 0013, `kanevas-import-types`, AD-120) ; `fiche_alias`, `etiquettes` et `fiche_etiquettes`, et `recherche_fiches` recréée en `(titre, alias, sous_type)` (migration 0014, `kanevas-import-recherche`, AD-118) ; `fichiers`, `fichiers_sections` et `fiches.illustration_fichier_id` (migration 0015, `kanevas-import-mediatheque`, AD-117 ; `fichiers_attente`, créée par la même migration, écrite par `assurerFichier` et l'import des fiches, `kanevas-import-fichiers` ; les colonnes d'illustration d'AD-93 restent, inutilisées) ; la migration 0009 (`kanevas-import-markdown`) reconstruit `gabarits`, `scenarios` et `propositions` pour relever leur CHECK à 100 000 caractères ; les numéros 0001 à 0007 sont définitifs, 0008 à 0016 sont provisoires jusqu'à la fusion de l'epic dans `main` et les suivants se prennent à la fusion (AD-51 ; `docs/donnees.md`). Aucune requête SQL hors de `src/services/` et `src/db/` (le semis du bouchon, `src/bouchon/`, lit par `db.prepare` pour retrouver les identifiants qu'il vient de créer).
+  0001), `systemes_jeu`, `gabarits` (migration 0002), `campagnes`, `scenarios`, `taches_preparation` (migration 0003), `pieces_jointes` (migration 0004, vidée par la 0015 et plus lue), `relations`, `recherche_fiches` et `recherche_sections` (FTS5, migration 0005) ; trois colonnes d'illustration sur `fiches` (migration 0006), `cartes` et `elements_carte` (migration 0007), `propositions` (migration 0008, `kanevas-monde`) ; `jetons_api` et `lots_import`, plus les clés d'origine de `fiches` et `sections` (migration 0010, `kanevas-import-fil`) ; `sections.contenu_public` et l'index `recherche_sections` recréé (migration 0011, `kanevas-import-secrets`, AD-114) ; `liens` (migration 0012, `kanevas-import-liens`, AD-116) ; `types_systeme` et `types_univers`, et `fiches` recréée sans `CHECK` sur le type (migration 0013, `kanevas-import-types`, AD-120) ; `fiche_alias`, `etiquettes` et `fiche_etiquettes`, et `recherche_fiches` recréée en `(titre, alias, sous_type)` (migration 0014, `kanevas-import-recherche`, AD-118) ; `fichiers`, `fichiers_sections` et `fiches.illustration_fichier_id` (migration 0015, `kanevas-import-mediatheque`, AD-117 ; `fichiers_attente`, créée par la même migration, écrite par `assurerFichier` et l'import des fiches, `kanevas-import-fichiers` ; les colonnes d'illustration d'AD-93 restent, inutilisées) ; la migration 0009 (`kanevas-import-markdown`) reconstruit `gabarits`, `scenarios` et `propositions` pour relever leur CHECK à 100 000 caractères ; les numéros 0001 à 0007 sont définitifs, 0008 à 0017 sont provisoires jusqu'à la fusion de l'epic dans `main` et les suivants se prennent à la fusion (AD-51 ; `docs/donnees.md`). Aucune requête SQL hors de `src/services/` et `src/db/` (le semis du bouchon, `src/bouchon/`, lit par `db.prepare` pour retrouver les identifiants qu'il vient de créer).
 - **Toute route hors `/healthz`, `/api/auth/*`, `/api/import/v1/*` (gardée par un jeton Bearer qui ignore le cookie, AD-103) et, en bouchon, `/connexion-bouchon` est gardée par la session** ; sous `/api` un
   défaut de session répond 401, ailleurs il redirige vers la connexion (AD-15).
 - **Une seule route appelle un modèle : l'assistant** (`src/routes/assistant.ts`, par `repondre`, AD-73), avec le jeton de
@@ -428,7 +429,7 @@ Une écriture porte `?lot=<id>` pour être comptée ; sans lot elle réussit mai
 | `PUT /fichiers/:cle` | assurer un fichier de la médiathèque, image ou document (multipart : `visibilite` (`joueurs` par défaut \| `mj`), `nom`, puis `fichier`) ; inchangé si l'empreinte, le nom et la visibilité sont les mêmes ; B-48 protège nom et visibilité. **Le script doit envoyer `mj` pour un fichier que la source n'utilise que dans du contenu MJ** (décision de Monsieur du 2026-10-11) ; un fichier que la source n'attache à aucune fiche s'importe ici aussi. Une fiche le référence ensuite par sa clé (texte, `fichiers` d'une section, `illustration`) |
 | *(retirée)* `PUT …/pieces/:pcle` | plus de pièce jointe à part : un fichier s'envoie à la médiathèque (`PUT /fichiers/:cle`), puis la section le référence (AD-111) |
 | *(retirée)* `PUT …/illustration` | l'illustration est le champ `illustration` (clé d'un fichier image ; un document : 400 `pas_une_image`) de `PUT /fiches/:cle` (AD-111) |
-| `POST /fiches/:cle/relations` | `[{section: <clé de section>, cible: <clé>, type}]` : assurer chaque relation (unicité existante section, cible, type) ; une relation absente n'est pas retirée |
+| `POST /fiches/:cle/relations` | `[{section: <clé de section>, cible: <clé>, nature?, qualificatif?}]` (`type` seul lu comme `qualificatif`, déprécié, avec un avertissement) : assurer chaque relation (unicité section, cible, nature, qualificatif) ; une nature inconnue ou hors du couple est refusée et comptée (`nature_incompatible`) ; une relation absente n'est pas retirée |
 | `DELETE /fiches/:cle` | supprimer la fiche (AD-105, AD-119 (4)) ; 204, aussi si la clé est inconnue ; porte `?lot=` comme toute écriture |
 | `PUT /campagnes/:cle`, `PUT /campagnes/:cle/scenarios/:scle` | assurer une campagne `{nom, statut}`, un scénario `{titre, contenu}` |
 
@@ -619,3 +620,104 @@ screens ; these notes close what the code leaves open.
 7. **The import.** `lireCorps` of `services/import-fiches.ts` reads `disparu` (boolean), `champ_inconnu` on a type
    without the key ; it counts in the batch like `pj`.
 8. **The seed.** « Le Prieur masqué » is created gone ; « Bran Corvalis » and « Le Phare aux Sels » stay there.
+
+### Slice `kanevas-fiches-liees-recherche` — design notes (2026-10-25)
+
+Detail of the slice's part of AD-129 and B-65; nothing here adds a filter, a nature or a screen. Repository facts read on
+`epic/kanevas-fiches-liees`: `listerFiches` (`src/services/fiches.ts`), the whitelist of the list route
+(`src/routes/fiches.ts`), `recherche.tsx`, `PROFONDEUR_MAX = 50`.
+
+1. **One function, three options** — `listerFiches` gains `lie?: number`, `nature?: string`, `descendants?: boolean`,
+   each one more `EXISTS`/`IN` in the same `where` list as `etiquette` (AD-63); no second search function, the assistant's
+   `chercher` is untouched. They combine by AND with every other option, `parent` included. The cursor, the order and the
+   page size are unchanged; no `DISTINCT` is needed (a condition, never a join), so a sheet linked twice is listed once. With `lie` **and** `descendants=1`, each row carries `via: {id, titre}` when the relation found points to a descendant rather than `lie` itself (the first such target, by title then id): the target of a counted relation is readable by the second guard, so `via` names no hidden place and never an intermediate one; without `descendants`, or when the candidate also holds a qualifying relation to `lie` itself (the direct link wins), the row has no `via`; for the reverse reading of a symmetric nature, `via` is the sub-place at the other end of the relation (its source). The nature and the qualifier of the relation are **not** returned by the list: the mockup's « se situe à — habite » sub-line belongs to « Fiches liées » (`-bloc`), not to E-17.
+2. **The relation counted** — the candidate sheet `f` is the **source** of a row of `relations` whose `cible_fiche_id` is
+   `lie` (or one of its descendants) and, if `nature` is set, whose `nature` is that key. AD-64's two guards are applied to the
+   row, not to the path — the section of the relation, and the sheets at **both** ends of it: its section is readable by the reader (`sqlSectionLisible`), the candidate is readable (the list's
+   own `sqlFicheLisible`), and **the target of the row is readable** (`sqlFicheLisible` on it — AD-64's second guard; a
+   relation to a hidden sub-place is not counted for Léa). A **symmetric** nature (`allie`, `ennemi`) is also read the other
+   way: a row whose source is `lie` (or a descendant) and whose target is the candidate, under the same two guards (the
+   fact is stored once, `-natures` point 3). A free relation counts only when `nature` is absent.
+3. **The descent** — one function `descendantsDe(db, ficheId)` in `fiches.ts` (exported: `-bloc` reuses it for « sous-lieux
+   compris » and its counts) returns the ids: a recursive CTE on `fiches_par_parent` (or `parent_id`) from `lie`, **`UNION`
+   not `UNION ALL`** (a loop in the data ends), a `niveau` column stopped at `PROFONDEUR_MAX` (50), **the same type as
+   `lie`** at every level (as AD-115's tree). The ids go into the `IN (…)` of point 2; no title, no readability, nothing of
+   the intermediate places is returned or tested. A tree deeper than 50 stops at level 50 without error. `lie` itself is
+   part of the set.
+4. **`lie` on what the reader does not read** — checked once, before the query, with `peutVoirFiche`: a missing id, an id
+   of another universe or an unreadable sheet gives `{fiches: [], suivant: null}` with `200`, the same bytes in the three
+   cases (AD-129 (3)). The GM in player mode is checked as a player.
+5. **Validation** (route, before the service) — `lie` `^\d{1,9}$`; `nature` a key of the list of `natures.ts`; `descendants`
+   exactly `1`; `nature` or `descendants` without `lie` is refused (a stale address is cleaned by the screen, which never
+   sends them without `lie`). `descendants=1` on a `lie` that is not a place is accepted and descends the sheet's own type.
+   Errors are the route's `invalide('Requête invalide.')`. `q` stays optional when `lie` is set; with neither `q`, `etiquette`
+   nor `lie` the **screen** keeps its « asks for a word » state — the API has no such rule (the list of a type has none).
+6. **The screen** (`recherche.tsx`, the disclosure in `recherche/avancee.tsx`) — the existing pickers
+   (`fiche/deplacer.tsx`, `carte/ajout-fiche.tsx`) are two copies of a search field plus the E-8 list call, not a shared
+   component; the « Lié à » picker is written once as a component of its own (`recherche/choisir-fiche.tsx`: field, list
+   call `GET …/fiches?q=`, reader's rights, mode of the address) that `-natures-ecran`'s « Relier » form may adopt later,
+   and the two existing ones are not touched. The chip title is read with `GET …/fiches/:fid`; a `404` reads « Fiche
+   introuvable » (the chip keeps its ✕). **Decision — the screen still sends `lie` when the chip reads « Fiche
+   introuvable »**: the API answers empty (AD-129 (3)), the list shows the empty state « Aucune fiche liée pour ces
+   critères. », and the slice's criterion (« liste vide ») holds. The state table of `docs/ecrans.md` (« the search runs
+   without it ») is corrected to say so: running it unfiltered would show a list that is not the one of the address.
+7. **« Par »** — the natures from `GET …/natures` (fetched once per screen) whose target types include the chosen sheet's type,
+   in the list's order, each with `libelleCible` (symmetric ones with `libelleSource`) and « toute relation » first and by
+   default; changing the chosen sheet drops a `nature` no longer offered; an unknown `nature` in the address reads as « toute
+   relation » and leaves the address by `replace`. « sous-lieux compris » is shown when the chosen sheet is a `lieu`.
+   Everything rides on the address (`lie`, `nature`, `descendants`), in the order of the mockup; the disclosure is open
+   when one of them is present. `etat` is not read here (`-disparu` adds it to this volet).
+8. **Security** — the only new read path is a condition of the list; it ships one field the list did not ship, `via` (a place the reader
+   reads, point 1), and no count, no intermediate place, no path. Tested as Léa and as the GM in player mode on: a relation of a closed section (the Prieur), a relation to a
+   hidden place (Le Repaire), a hidden intermediate place, an unreadable `lie`, a `via` that is never a hidden place, a direct link winning over `via`, a symmetric nature held by a sheet the
+   reader cannot read.
+9. **Documentation** — the route row above, `docs/ecrans.md` E-17 (states, the point 6 correction), and the API reference
+   of the screen « Accès API » is not touched (the import has no list route with these parameters).
+
+### Slice `kanevas-fiches-liees-natures` — design notes (2026-10-25)
+
+Detail of the slice's part of AD-128, AD-132, AD-133; nothing here adds a nature, a type or a screen.
+The repository facts were read on `epic/kanevas-fiches-liees` (last migration `0016`; this slice's is `0017-natures-relations.sql`, its number
+being confirmed at the merge, AD-51).
+
+1. **Natures** — `src/services/natures.ts` holds the list (`key`, `libelleSource`, `libelleCible`,
+   `symetrique`, `types source`, `types cible`); `TypeNature` and the validity of a pair derive from it.
+   `GET /api/univers/:id/natures` (any member) returns the list in this order: se_situe, membre,
+   detient, allie, ennemi. `famille` is added to `TYPES` (`types-fiche.ts`, charge `v1()`, icon `users`,
+   `reglable`) in the same slice; the `disparu` key of its charge is `-disparu`'s.
+2. **Migration** — rebuild of `relations` in the style of `0013` (header `-- migrate: sans-cles-etrangeres`,
+   `foreign_key_check` before commit): `type` → `qualificatif` (`TEXT NOT NULL`, `length(trim()) <= 80`, **empty
+   allowed**), `nature TEXT NOT NULL DEFAULT ''`, `UNIQUE(section_id, cible_fiche_id, nature, qualificatif)`,
+   indexes `relations_par_section`, `relations_par_cible` kept and `relations_par_cible_nature` added; row ids
+   kept; counts equal. Its test builds a base at the previous schema with three relations.
+3. **Service rules** (`relierSection`, entry `{cibleFicheId, nature?, qualificatif?}`; `type` is a synonym of
+   `qualificatif` and both together are 400): `nature` absent or `''` is free; a nature unknown to the list or
+   not allowed for the pair is `invalide` with `detail: 'nature_incompatible'`; **a free relation needs a
+   non-empty qualifier** (as today's `type`, 1 to 80), a natured relation may have none. The sheet's own
+   type decides the source side; a symmetric nature is accepted in either orientation of the pair. The
+   duplicate check (`relation_existante`) is on (section, target, nature, qualifier) and, for a symmetric nature,
+   also refuses the same nature and qualifier already held by the **other** sheet toward this one, in any of
+   its sections (the fact is stored once). `LIMITE_RELATIONS` unchanged. `lireRelations` returns
+   `{id, nature, qualificatif, cible: {id, titre, type}}` under both guards, unchanged otherwise.
+4. **Mentioned in** (AD-100) — `mentions.ts` keeps the relations whose `nature = ''` only; the libelle shown is
+   the qualifier. Natured relations are read by `-bloc`; until it lands, they are listed by the relation line of
+   their own section only (accepted: the bloc is the next-but-two slice of the epic, the seed's free relations
+   keep the criterion « Mentionnée dans de Port-Sel liste la Guilde et le rapport »).
+5. **Graph** (AD-41, E-11) — `LienVue` carries `nature` and `qualificatif` besides the label; the label is
+   `libelleSource` of the nature (qualifier after « — » when present) or the qualifier when free; the dedupe
+   key adds the nature; nothing else of `lireCarte` changes. Two links between the same pair stay two.
+6. **Import** (AD-133) — `assurerRelations` reads `nature?` and `qualificatif?` (`type` read as `qualificatif`
+   when it is the only one, answered with an `avertissements` entry « type est déprécié, utilisez qualificatif »);
+   an unknown or incompatible nature is a **refusal** counted `refusees` with `code: 'nature_incompatible'`
+   (a field error `champ: 'nature'`), never a free relation; `relation_existante` stays « inchangée ». `PUT
+   /fiches/:cle` accepts `type: 'famille'` through the type list. The API reference of the import (screen
+   « Accès API » and `docs/`) documents both fields and the deprecation.
+7. **Screens** — the form of E-9 and the relation line follow « Détail des écrans de `kanevas-fiches-liees` »
+   as written; the natures come from `GET …/natures` fetched once per fiche screen; « Nature » defaults to
+   the first nature of the list when there is one, else « Sans nature »; changing the nature empties a
+   chosen target that no longer fits. The Lore bar entry « Familles » and the card icon come from the type list.
+8. **Security** — no new read path: the natures route is metadata; `lireRelations` and the graph keep both
+   guards; a player still reads no relation of a closed section (tested on the route, the graph and E-9).
+9. **Seed** — `depart.ts` follows « Bouchons » above, minus `disparu` (`-disparu` adds the Prieur's death and
+   Bran's mark). The existing free relation `Aldric → Port-Sel « maître de port »` is kept beside the new
+   « se situe à — habite ».

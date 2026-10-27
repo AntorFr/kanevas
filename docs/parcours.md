@@ -671,7 +671,7 @@ introuvable. ».
    Personnages (12) » ; il coche **« sous-lieux compris »** : « Les Docks », « Le Pendu Joyeux »
    ajoutent les leurs, chacun avec son quartier en gris et son qualificatif (« habite »,
    « tient la taverne »). Il repère ceux qu'il n'a pas joués depuis longtemps.
-2. **Recherche avancée** (E-17) : « lié à Port-Sel », « se situe à », sous-lieux compris, type
+2. **Recherche avancée** (E-17) : « lié à Port-Sel », « s'y trouvent » (la nature « se situe à » lue à l'envers), sous-lieux compris, type
    Personnage, « Vivants » : la liste des vivants du port ; il affine avec l'étiquette
    « contrebande ».
 3. **Fiche** (E-9) d'un contrebandier : il relie « membre de » → « La Guilde des Brumes »,

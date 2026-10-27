@@ -34,7 +34,7 @@ const VALFORTIN = 8;
 const VALFORTIN_DESCRIPTION = 9;
 const ALDRIC_VERITE = 2;
 const LEA_FICHE = 4;
-const NOTES = 28;
+const NOTES = 29; // one section more than before: « Les Corvalis » (kanevas-fiches-liees-natures) is seeded before it
 const PDF = (name: string) => ({
   name,
   mimeType: 'application/pdf',

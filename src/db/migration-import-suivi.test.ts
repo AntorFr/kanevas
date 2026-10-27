@@ -35,7 +35,7 @@ test('0016 preserves populated 0015 rows, adds null import markers and scopes or
     const tables = ['comptes', 'univers', 'membres', 'campagnes', 'scenarios', 'taches_preparation'];
     const snapshot = () => tables.map((table) => db.prepare(`SELECT * FROM ${table} ORDER BY rowid`).all());
     const before = snapshot();
-    assert.deepEqual(migrate(db), [16]);
+    assert.deepEqual(migrate(db), [16, 17]);
     const expected = before.map((rows, i) => rows.map((row) => ({
       ...(row as Record<string, unknown>),
       ...(tables[i] === 'campagnes' ? { cle_origine: null, dernier_import: null } : {}),

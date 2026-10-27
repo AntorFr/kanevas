@@ -1,7 +1,7 @@
 import '@fastify/multipart';
 import type { FastifyInstance } from 'fastify';
 
-import { invalide } from '../services/erreurs.js';
+import { ErreurService, invalide } from '../services/erreurs.js';
 import {
   changerSousType,
   changerTypeFiche,
@@ -27,6 +27,7 @@ import {
   type ChangementAudience,
 } from '../services/sections.js';
 import { etiquettesProposees, poserEtiquetage } from '../services/etiquettes.js';
+import { estNature, listerNatures } from '../services/natures.js';
 import { lireRelations, relierSection, retirerRelation } from '../services/relations.js';
 import type { Acteur } from '../services/types.js';
 import { idDeChemin } from './univers.js';
@@ -138,9 +139,15 @@ export function registerFichesRoutes(app: FastifyInstance) {
 
   app.get(base, async (request) => {
     const q = request.query as Record<string, unknown>;
-    for (const k of ['type', 'sousType', 'etiquette', 'curseur', 'q', 'parent']) {
+    for (const k of ['type', 'sousType', 'etiquette', 'curseur', 'q', 'parent', 'lie', 'nature', 'descendants']) {
       if (q[k] !== undefined && typeof q[k] !== 'string') throw invalide('Requête invalide.');
     }
+    if ((q.nature !== undefined || q.descendants !== undefined) && q.lie === undefined) {
+      throw invalide('Requête invalide.');
+    }
+    if (q.lie !== undefined && !/^\d{1,9}$/.test(q.lie as string)) throw invalide('Requête invalide.');
+    if (q.nature !== undefined && !estNature(q.nature as string)) throw invalide('Requête invalide.');
+    if (q.descendants !== undefined && q.descendants !== '1') throw invalide('Requête invalide.');
     let parent: 'racine' | number | undefined;
     if (q.parent !== undefined) {
       if (q.parent === 'racine') parent = 'racine';
@@ -151,6 +158,9 @@ export function registerFichesRoutes(app: FastifyInstance) {
       type: q.type as string | undefined,
       sousType: q.sousType as string | undefined,
       etiquette: q.etiquette as string | undefined,
+      lie: q.lie === undefined ? undefined : Number(q.lie),
+      nature: q.nature as string | undefined,
+      descendants: q.descendants === undefined ? undefined : true,
       curseur: q.curseur as string | undefined,
       recherche: q.q as string | undefined,
       parent,
@@ -296,12 +306,22 @@ export function registerFichesRoutes(app: FastifyInstance) {
     const i = ids(request);
     const b = corps(request);
     if (!Number.isSafeInteger(b.cibleFicheId)) throw invalide('La fiche cible est invalide.');
+    const texte = (v: unknown) => (v === undefined ? undefined : chaine(v, 'Le qualificatif : 80 caractères au plus.'));
+    if (b.nature !== undefined && b.nature !== null && typeof b.nature !== 'string') {
+      throw new ErreurService('invalide', 'Cette nature ne relie pas ces deux types de fiches.', 'nature_incompatible');
+    }
     const r = relierSection(app.db, request.session!.id, i.univers, i.fiche, i.section, {
       cibleFicheId: b.cibleFicheId as number,
-      type: chaine(b.type, 'Le type : de 1 à 80 caractères.'),
+      nature: b.nature as string | null | undefined,
+      qualificatif: texte(b.qualificatif),
+      type: texte(b.type),
     });
     return reply.code(201).send(r);
   });
+
+  app.get('/api/univers/:id/natures', async (request) => ({
+    natures: listerNatures(app.db, request.session!.id, idDeChemin((request.params as { id: string }).id)),
+  }));
 
   app.delete(`${base}/relations/:rid`, async (request, reply) => {
     const i = ids(request);

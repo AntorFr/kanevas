@@ -104,6 +104,8 @@ export interface Fiche {
   etiquettes?: string[];
   /** With a search: the first alias that answers when the title does not (AD-118 (3)). */
   aliasTrouve?: string;
+  /** With a linked search including descendants: the readable other end, absent for a direct link. */
+  via?: { id: number; titre: string };
 }
 
 export type IllustrationVue =
