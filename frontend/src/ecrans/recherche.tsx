@@ -1,6 +1,6 @@
 import { Search } from 'lucide-react';
-import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react';
-import { Link, useParams, useSearchParams } from 'react-router-dom';
+import { useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react';
+import { Link, useParams, useSearchParams, type SetURLSearchParams } from 'react-router-dom';
 
 import { ErreurApi, lire, useConnexionPerdue } from '../api';
 import { useBasculeMode, useCharge, useVue } from '../cadre-contexte';
@@ -36,7 +36,12 @@ function Recherche() {
 function Corps({ universId, mj }: { universId: string; mj: boolean }) {
   const perdue = useConnexionPerdue();
   const { types, etat: etatTypes } = useTypes();
-  const [params, setParams] = useSearchParams();
+  const [params, setParamsAdresse] = useSearchParams();
+  // Navigation updates the address before React commits the next render. Compose quick filter
+  // gestures with that address, so the next control cannot restore a filter just removed.
+  const setParams = useCallback<SetURLSearchParams>((suite, options) => {
+    setParamsAdresse(typeof suite === 'function' ? suite(new URLSearchParams(window.location.search)) : suite, options);
+  }, [setParamsAdresse]);
   const mode = useBasculeMode(mj);
   const { setMode } = useVue();
 
@@ -104,7 +109,12 @@ function Corps({ universId, mj }: { universId: string; mj: boolean }) {
       setResultats({ etat: 'depart' });
       return;
     }
-    if (attend || perdue) {
+    if (perdue) {
+      vol.current++;
+      setResultats((r) => r.etat === 'depart' ? r : { ...r, etat: 'ok' });
+      return;
+    }
+    if (attend) {
       vol.current++;
       setResultats((r) => r.etat === 'depart' ? r : { ...r, etat: 'chargement' });
       return;

@@ -68,6 +68,9 @@ export function Avancee({ universId, suffixeMode, params, setParams, avancee }: 
 }) {
   const perdue = useConnexionPerdue();
   const { lie, cible, proposees, nature, descendants, lieu, natures } = avancee;
+  // The native check changes immediately, while navigation commits asynchronously.
+  const [caseCochee, setCaseCochee] = useState(descendants);
+  useEffect(() => setCaseCochee(descendants), [lie, descendants]);
   const porteFiltres = params.has('lie') || params.has('nature') || params.has('descendants');
   const [ouvert, setOuvert] = useState(porteFiltres);
   const details = useRef<HTMLDetailsElement>(null);
@@ -107,8 +110,8 @@ export function Avancee({ universId, suffixeMode, params, setParams, avancee }: 
           {proposees.map((n) => <option key={n.cle} value={n.cle}>{n.symetrique ? n.libelleSource : n.libelleCible}</option>)}
         </Champ>
       </div>
-      {lie && lieu && <label className="filtre-descendants"><input type="checkbox" checked={descendants} disabled={perdue}
-        onChange={(e) => changer('descendants', e.target.checked ? '1' : '')} /> sous-lieux compris</label>}
+      {lie && lieu && <label className="filtre-descendants"><input type="checkbox" checked={caseCochee} disabled={perdue}
+        onChange={(e) => { setCaseCochee(e.target.checked); changer('descendants', e.target.checked ? '1' : ''); }} /> sous-lieux compris</label>}
     </div>
     {natures.etat === 'erreur' && <div className="echec" role="alert">Impossible de charger les natures. <Bouton petit disabled={perdue} onClick={avancee.rechargerNatures}>Réessayer</Bouton></div>}
   </details>;

@@ -33,7 +33,7 @@ export function ChoisirFiche({ universId, suffixeMode, onChoisir }: {
       if (e.key === 'Escape') { e.stopPropagation(); setOuvert(false); }
     }}>
       <Champ etiquette="Lié à" placeholder={perdue ? 'Hors connexion' : 'Chercher une fiche…'}
-        autoComplete="off" disabled={perdue} value={saisie}
+        autoComplete="off" disabled={perdue} value={perdue ? 'Hors connexion' : saisie}
         erreur={trop ? `${LONGUEUR_RECHERCHE} caractères au plus.` : undefined}
         onFocus={() => setOuvert(true)}
         onKeyDown={(e: KeyboardEvent) => { if (e.key === 'ArrowDown') setOuvert(true); }}
