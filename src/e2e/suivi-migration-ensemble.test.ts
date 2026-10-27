@@ -116,7 +116,7 @@ describe('kanevas-scenarios-suivi : migration de la base d\'exemple (campagnes e
 
   test('journal_du_demarrage_dit_les_comptes_de_la_conversion', async () => {
     // Casse si : la conversion ne se dit pas au démarrage, ou compte autre chose que 3 campagnes, 3 scénarios, 3 tâches, 2 CR.
-    assert.match(journal, /0017/, journal);
+    assert.match(journal, /Migration 0017:/, journal);
     for (const [nature, n] of [['campagnes', 3], ['scenarios', 3], ['taches', 3], ['comptesRendus', 2]] as const) {
       assert.match(journal, new RegExp(`${nature}\\D{1,6}${n}\\b`), `${nature}=${n} absent du journal : ${journal}`);
     }
@@ -236,7 +236,7 @@ describe('kanevas-scenarios-suivi : migration de la base d\'exemple (campagnes e
     const a = await connecte(browser, base, 'antor');
     const liste = await appel(a.page, '/api/univers/1/fiches?type=aventure');
     assert.equal(liste.body.fiches.length, 6);
-    assert.ok(!/0017/.test(journal), `le second démarrage reconvertit : ${journal}`);
+    assert.ok(!/Migration 0017:/.test(journal), `le second démarrage reconvertit : ${journal}`);
     assert.ok(existsSync(dbPath()));
   });
 });
