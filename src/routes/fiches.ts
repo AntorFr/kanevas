@@ -28,7 +28,9 @@ import {
   type ChangementAudience,
 } from '../services/sections.js';
 import { etiquettesProposees, poserEtiquetage } from '../services/etiquettes.js';
-import { estNature, listerNatures } from '../services/natures.js';
+import { exigerRole } from '../services/droits.js';
+import { liees } from '../services/liees.js';
+import { estNature, listerNatures, type TypeNature } from '../services/natures.js';
 import { lireRelations, relierSection, retirerRelation } from '../services/relations.js';
 import type { Acteur } from '../services/types.js';
 import { idDeChemin } from './univers.js';
@@ -221,6 +223,25 @@ export function registerFichesRoutes(app: FastifyInstance) {
       n = Number(apres);
     }
     return lireMentions(app.db, acteur(request), i.univers, i.fiche, n);
+  });
+
+  app.get(`${base}/:fid/liees`, async (request) => {
+    const i = ids(request);
+    const q = request.query as Record<string, unknown>;
+    if (q.nature !== undefined && (typeof q.nature !== 'string' || !estNature(q.nature))) {
+      throw invalide('Requête invalide.');
+    }
+    if (q.descendants !== undefined && q.descendants !== '1') throw invalide('Requête invalide.');
+    if (q.curseur !== undefined && (typeof q.curseur !== 'string' || !/^\d{1,9}$/.test(q.curseur))) {
+      throw invalide('Requête invalide.');
+    }
+    const a = acteur(request);
+    const role = exigerRole(app.db, i.univers, a.compteId);
+    return liees(app.db, role, a, i.univers, i.fiche, {
+      nature: q.nature as TypeNature | undefined,
+      descendants: q.descendants === '1',
+      apres: q.curseur === undefined ? undefined : Number(q.curseur),
+    });
   });
 
   app.post(`${base}/:fid/sections`, async (request, reply) => {
