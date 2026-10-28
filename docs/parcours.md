@@ -739,12 +739,12 @@ the density of generated systems never changes based on a territory she cannot s
 3. She saves: the sheet (**E-9**) shows « Caractéristiques » under the « Générée par le concepteur de
    vaisseaux » banner linking to the tool; Léa cannot manually edit the text.
 4. Later, Antor changes the jump range or universe catalogue: E-22 and E-9 signal « Calculé avec
-   d'anciens réglages » and offer « Recalculer »; Léa loses nothing until she confirms.
+   d'anciens réglages » and offer « Recalculer »; Léa loses nothing until she confirms. A section its tool declares « on proposal » is not rewritten by the gesture: the setting change files a proposal for the GM who made it, and E-9 offers him « Voir la proposition » (E-12, « Appliquer » or « Ignorer »); a GM who has none can « Proposer un recalcul ». A player without the tool's usage reads the state and has no button.
 5. Rule sheets (« Moteurs », « Défenses ») and the 11 examples are managed sections, readable and
    uneditable; Léa shares the ship link with another player, who reads it according to their permissions.
 *Highlight*: budgets recalculate before their eyes, and the sheet's section stays consistent with what
 is calculated.
-*Failure*: Antor disables the designer — the sheet shows « Caractéristiques » as text with « Outil
+*Failure*: a recalculation that fails — « Le recalcul n'a pas abouti. Réessayez. », the text unchanged; the usage removed meanwhile — « Vous ne pouvez plus recalculer cette section. »; connection lost — « Connexion perdue. », the buttons disabled. Antor disables the designer — the sheet shows « Caractéristiques » as text with « Outil
 désactivé », without editing; Léa opens Roxane's design, which she cannot read — « Page introuvable. »;
 two concurrent writes — the second refused with « Recharger »; calculating an invalid design —
 blocking alerts, « Enregistrer » refuses and explains why; on a phone, the catalogue is browsed in one column.
