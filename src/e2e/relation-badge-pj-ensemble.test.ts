@@ -123,7 +123,8 @@ describe('kanevas-relation-badge-pj, E-9 badge de la cible', { skip: skipBrowser
     await ouvrir(antor);
     const b = bloc(antor);
     await b.getByRole('button', { name: /^Relier à une fiche$/ }).click();
-    await b.getByLabel('Type de relation').fill('rival de');
+    await b.getByLabel('Nature').selectOption({ label: 'Sans nature' });
+    await b.getByLabel('Qualificatif').fill('rival de');
     await b.getByLabel('Chercher dans les personnages').fill('Zéphyr');
     await b.getByRole('button', { name: /^Chercher$/ }).click();
     await b.locator('button.choix-fiche').filter({ hasText: 'Zéphyr Nouveau' }).click();

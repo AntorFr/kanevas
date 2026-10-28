@@ -64,7 +64,7 @@ describe('kanevas-relation-badge-pj, besoin', { skip: skipBrowser }, () => {
   test('route : la cible personnage porte charge {pj}, exactement, la cible faction n’en porte pas', async () => {
     const { status, corps } = await api(antor, 'GET', urlRel());
     assert.equal(status, 200);
-    const par = (t: string) => corps.relations.find((r: Any) => r.type === t).cible;
+    const par = (t: string) => corps.relations.find((r: Any) => r.qualificatif === t).cible;
     assert.deepEqual(par('allié de').charge, { pj: true });
     assert.deepEqual(par('mentor de').charge, { pj: false });
     assert.equal('charge' in par('membre de'), false);
@@ -90,9 +90,9 @@ describe('kanevas-relation-badge-pj, besoin', { skip: skipBrowser }, () => {
   test('route : Léa reçoit la charge des cibles qu’elle lit et aucune trace de la cible cachée', async () => {
     const { status, corps } = await api(lea, 'GET', urlRel());
     assert.equal(status, 200);
-    const types = corps.relations.map((r: Any) => r.type).sort();
+    const types = corps.relations.map((r: Any) => r.qualificatif).sort();
     assert.deepEqual(types, ['allié de', 'membre de', 'mentor de']);
-    assert.deepEqual(corps.relations.find((r: Any) => r.type === 'allié de').cible.charge, { pj: true });
+    assert.deepEqual(corps.relations.find((r: Any) => r.qualificatif === 'allié de').cible.charge, { pj: true });
     assert.ok(!JSON.stringify(corps).includes('Spectre'));
   });
 
@@ -128,7 +128,8 @@ describe('kanevas-relation-badge-pj, besoin', { skip: skipBrowser }, () => {
     await ouvrir(antor);
     const b = bloc(antor);
     await b.getByRole('button', { name: /^Relier à une fiche$/ }).click();
-    await b.getByLabel('Type de relation').fill('rival de');
+    await b.getByLabel('Nature').selectOption({ label: 'Sans nature' });
+    await b.getByLabel('Qualificatif').fill('rival de');
     await b.getByLabel('Type de fiche').selectOption({ label: 'Personnage' });
     await b.getByLabel('Chercher dans les personnages').fill('Kara');
     await b.getByRole('button', { name: /^Chercher$/ }).click();

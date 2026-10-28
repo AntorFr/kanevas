@@ -36,7 +36,7 @@ describe('kanevas-import-types : compléments au besoin', { skip: skipBrowser },
     return String(mine.find((u) => u.nom === nom)!.id);
   };
 
-  test('exclusion B-42 : le compte-rendu n’est pas réglable (400 type_non_reglable), les quatorze autres le sont', async () => {
+  test('exclusion B-42 : le compte-rendu n’est pas réglable (400 type_non_reglable), les quinze autres le sont', async () => {
     // Panne visée : `compte_rendu` devient désactivable, ce qui cacherait les comptes-rendus d’une campagne.
     const antor = await connecte(browser, srv.base, 'antor');
     const r = await fetchAs(antor.page, 'PUT', '/api/univers/1/types/compte_rendu', { etat: 'desactive' });

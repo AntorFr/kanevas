@@ -48,7 +48,7 @@ test('0017 convertit campagnes et scénarios en fiches aventure, tâches et CR r
     tache.run(2, 'autre', 'Les masques', 0, null, D);
 
     assert.deepEqual(comptesDuPivot(db), { campagnes: 2, scenarios: 3, taches: 3, comptesRendus: 2 }, 'les comptes que le démarrage journalise');
-    assert.deepEqual(migrate(db), [17]);
+    assert.deepEqual(migrate(db), [17, 18]);
     assert.equal(comptesDuPivot(db), null, 'rien à convertir une fois la 0017 jouée');
 
     const avs = db.prepare("SELECT * FROM fiches WHERE type = 'aventure' ORDER BY id").all() as any[];
@@ -110,7 +110,7 @@ test('0017 convertit campagnes et scénarios en fiches aventure, tâches et CR r
 test('0017 sur une base sans campagne ni scénario : rien à convertir, tâches intactes', () => {
   const { db, dir } = base0016();
   try {
-    assert.deepEqual(migrate(db), [17]);
+    assert.deepEqual(migrate(db), [17, 18]);
     assert.equal((db.prepare("SELECT COUNT(*) AS n FROM fiches WHERE type='aventure'").get() as any).n, 0);
     assert.deepEqual(db.pragma('foreign_key_check'), []);
   } finally {
@@ -124,7 +124,7 @@ test('0017 : une clé de scénario déjà prise par un autre scénario de l\'uni
   try {
     db.exec(`INSERT INTO campagnes (id, univers_id, nom, statut, cree_le, cle_origine) VALUES (1,1,'A','terminee','${D}','k1'), (2,1,'B','active','${D}','k2')`);
     db.exec(`INSERT INTO scenarios (id, campagne_id, titre, contenu, version, cree_le, modifie_le, cle_origine) VALUES (1,1,'S1','',1,'${D}','${D}','s'), (2,2,'S2','',1,'${D}','${D}','s')`);
-    assert.deepEqual(migrate(db), [17]);
+    assert.deepEqual(migrate(db), [17, 18]);
     const keys = (db.prepare("SELECT cle_origine FROM fiches WHERE type='aventure' ORDER BY id").all() as any[]).map((r) => r.cle_origine);
     assert.equal(new Set(keys).size, keys.length);
     assert.deepEqual(db.pragma('foreign_key_check'), []);

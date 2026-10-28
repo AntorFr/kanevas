@@ -56,7 +56,8 @@ const ligne = (page: Any, cible: string) => page.getByRole('group', { name: 'Rel
 async function relierParEcran(page: Any, type: string, typeFiche: string, chercherDans: string, cible: string): Promise<void> {
   const b = page.getByRole('group', { name: 'Relations' }).first();
   await b.getByRole('button', { name: rxExact('Relier à une fiche') }).click();
-  await b.getByLabel('Type de relation').fill(type);
+  await b.getByLabel('Nature').selectOption({ label: 'Sans nature' });
+  await b.getByLabel('Qualificatif').fill(type);
   await b.getByLabel('Type de fiche').selectOption({ label: typeFiche });
   await b.getByLabel(`Chercher dans ${chercherDans}`).fill(cible);
   await b.getByRole('button', { name: rxExact('Chercher') }).click();

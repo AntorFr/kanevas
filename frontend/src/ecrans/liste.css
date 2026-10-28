@@ -46,7 +46,7 @@
 
 /* Search in a type */
 .recherche { display: flex; flex-wrap: wrap; align-items: center; gap: var(--e-2); margin: var(--e-6) 0 0; }
-.champ-recherche { position: relative; flex: 1 1 220px; min-width: 0; }
+.champ-recherche { position: relative; flex: 1 1 180px; min-width: 0; }
 .champ-recherche > svg { position: absolute; left: 10px; top: 9px; color: var(--texte-3); pointer-events: none; z-index: 1; }
 .champ-recherche .champ { margin: 0; }
 .champ-recherche .champ > .lib-champ { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; margin: 0; }
@@ -188,7 +188,7 @@ main.principal:has(.page-grille) { max-width: 1080px; }
 
 /* Sub-type under the title of a card (B-52): quiet, one line, the whole text in the tooltip. */
 .carte .sous-type { margin-top: -6px; padding: 0 2px; font-size: var(--t-13); color: var(--texte-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.filtre-sous-type { position: relative; flex: 0 1 200px; min-width: 140px; }
+.filtre-sous-type { position: relative; flex: 0 1 170px; min-width: 140px; }
 @media (max-width: 520px) { .filtre-sous-type { flex: 1 1 100%; } }
 .filtre-sous-type .champ { margin: 0; }
 .filtre-sous-type .champ > .lib-champ { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; margin: 0; }
@@ -220,7 +220,7 @@ main.principal:has(.page-grille) { max-width: 1080px; }
 .arbre .ligne-arbre { flex-wrap: wrap; }
 .arbre .aide-mj-seul { flex-basis: 100%; padding-left: var(--e-6); padding-bottom: var(--e-2); }
 .relations .choix-fiche-ligne .aide-mj-seul, .ligne-recherche .aide-mj-seul { flex-basis: 100%; }
-.filtre-visibilite { position: relative; flex: 0 1 200px; min-width: 140px; }
+.filtre-visibilite { position: relative; flex: 0 1 170px; min-width: 140px; }
 @media (max-width: 520px) { .filtre-visibilite { flex: 1 1 100%; } }
 .filtre-visibilite .champ { margin: 0; }
 .filtre-visibilite .champ > .lib-champ { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; margin: 0; }
