@@ -72,13 +72,13 @@ have it (sheet, map and, since `kanevas-import`, search E-17).
 | **E-17 Search** *(kanevas-import)* | « Rechercher » in the sidebar; `/`; a label tapped on E-9 | search across all types, titles, aliases and readable sections; filter by type and label | P-12, P-10 |
 | **E-19 Media library** *(kanevas-import)* | « Médiathèque » navigation; « Choisir dans la médiathèque » in the editor and illustration (E-9) | see files (images, documents) accessible to the account and where they are used; GM: add, rename, set visibility, delete | P-16, P-10 |
 | **E-18 API access** *(kanevas-import)* | « Univers » ▸ « Accès par API » navigation (GM) | create, list, revoke the universe's API tokens; see import batches and their refusals | P-10, P-11 |
-| **E-20 Tools** *(kanevas-outils)* | « Outils » tab of E-15 (system) and E-14 (universe) | enable a tool, set its visibility per role and its settings (system value, universe value), import a catalogue (preview then confirmation), see dependencies, disable, delete data; the system's maintainer | P-17, P-21 |
+| **E-20 Tools** *(kanevas-outils)* | « Outils » tab of E-15 (system) and E-14 (universe) | enable a tool, set its visibility per role and its settings (system value, universe value), import a catalogue (preview then confirmation), see dependencies, disable, delete data; the system's responsible | P-17, P-21 |
 | **E-21 Galaxy map** *(kanevas-outils)* | E-10 (a tool map); E-3; a shareable link | explore the grid, measure, calculate a route; GM: place, promote, plot, draw, Player mode, GM document | P-18, P-20 |
 | **E-22 Ship designer** *(kanevas-outils)* | « Outils » sidebar; a ship sheet's managed section (E-9); a shareable link | readable designs list and a design's workshop: choices, budgets, warnings, save, recalculate | P-19 |
 
 Screens **modified** by `kanevas-outils`: **E-9** (managed section: « Générée par … » banner, rendering
 by its component or its text version, « Outil désactivé »; no editor on a managed section),
-**E-10** (maps from an enabled, visible tool join the list, with their visibility; « Nouvelle carte » ▸ « Carte de la galaxie » if the tool is enabled, GM), **E-14** and **E-15** (the « Outils » tab, and the system's maintainer on E-15), **E-18**
+**E-10** (maps from an enabled, visible tool join the list, with their visibility; « Nouvelle carte » ▸ « Carte de la galaxie » if the tool is enabled, GM), **E-14** and **E-15** (the « Outils » tab, and the system's responsible on E-15), **E-18**
 (a token's scope per tool; tool batches), **E-12** (assistant tools), the sidebar
 (an « Outils » section, below).
 
@@ -123,7 +123,7 @@ E-16 live outside universes: their cells describe the role in a universe attache
 | E-17 *(kanevas-import)* | search all sheets in the universe, including GM blocks; in **Player mode**, as a player (no GM blocks or sheets unreadable by a player); filters: enabled types; sheets of disabled types remain results under « Tous » | search readable content, excluding GM blocks; type and label filters from visible sheets only; mode toggle: absent (hidden); GM blocks: excluded from search (never read); « Alias et étiquettes… » on E-9: hidden | — |
 | E-19 *(kanevas-import)* | everything: add, rename, visibility, delete; complete « Utilisé dans » | files visible to players and files they added; « Utilisé dans » restricted to readable sheets; no adding from E-19 (**hidden**; they add a file through a section they write, E-9), no settings or deletion (**hidden**) | — |
 | E-18 *(kanevas-import)* | create a token; see and revoke all the universe's tokens (including another GM's); see batches | — (**hidden**: absent from the sidebar, « Page introuvable. » by address) | — |
-| E-20 *(kanevas-outils)* | **on the universe**: enable, override, disable; visibility per role; settings; import the universe catalogue; delete universe data. **on the system**: read only (**hidden**: « Activer », « Importer », « Supprimer les données ») except the **maintainer**, who also acts on the system | — (**hidden**: « Page introuvable. ») | — |
+| E-20 *(kanevas-outils)* | **on the universe**: enable, override, disable; visibility per role; settings; import the universe catalogue; delete universe data. **on the system**: read only (**hidden**: « Activer », « Importer », « Supprimer les données ») except the **responsible**, who also acts on the system | — (**hidden**: « Page introuvable. ») | — |
 | E-21 *(kanevas-outils)* | everything (place, promote, plot, draw, protected settings); Player mode: as a player; GM document | explore, measure, route, link; only readable systems, routes and zones; no write actions (**hidden**) | — |
 | E-22 *(kanevas-outils)* | all the universe's designs; create, edit, recalculate; set the section's author | designs whose sheet and section they read; edit and recalculate **those whose « Caractéristiques » section they author**; « Nouvelle conception » **absent** (the GM creates the sheet) | — |
 
@@ -3178,7 +3178,7 @@ added or modified manually in the router: a module declares its entry point.
 forcé »), its **dependencies**, **visibility** (two checkboxes, GM and Players), **settings** (each: effective
 value, its source, « Remplacer pour l'univers »), **catalogue** (version, element count per
 nature, « Importer un catalogue… », « Voir les éléments »), and at the foot « Supprimer les données de l'outil… ». At the top, on E-15, the
-system's **manager** and « Transférer la responsabilité ».
+system's **responsible** and « Transférer la responsabilité ».
 
 | State | What the user sees | Text |
 |---|---|---|
@@ -3186,13 +3186,13 @@ system's **manager** and « Transférer la responsabilité ».
 | loading | card skeletons | « Chargement des outils… » |
 | error | list does not arrive | « Impossible de charger les outils. » + « Réessayer » |
 | offline | banner; all writing actions disabled | « Connexion perdue. » |
-| refusal | a player: « Page introuvable. »; a GM who is not the system manager: read only, actions **hidden** | — |
+| refusal | a player: « Page introuvable. »; a GM who is not the system's responsible: read only, actions **hidden** | — |
 | long content | 6 tools: scrolling list; 300-line import report: truncated to 50 refusals with « Voir tout » | « 237 autres refus… » |
 
 Criteria:
-- Given a test tool depending on another disabled tool, when Antor, GM and manager, attempts to enable it,
+- Given a test tool depending on another disabled tool, when Antor, GM and responsible, attempts to enable it,
   it stays disabled and the screen says « <Outil> demande <autre outil> : activez-le d'abord. » (no SWN tool has a dependency).
-- Given Mira, GM of an attached universe but not the system manager, when she opens E-20 on the system, she sees
+- Given Mira, GM of an attached universe but not the system's responsible, when she opens E-20 on the system, she sees
   tools and their values and neither « Activer », « Importer » nor « Supprimer les données ».
 - Given a catalogue file where a weapon lacks mass, when Antor imports it, the preview lists
   « 1 refusée » with the key and `masse` field, the rest is offered for application, and nothing is written before « Appliquer ».
@@ -3271,3 +3271,102 @@ Criteria:
   réglages » and its text has not changed until someone recalculates.
 - Given the designer disabled, the sheet shows « Caractéristiques » as text with « Outil désactivé ».
 - Given Teo, without a role in the universe, when he forces a design's address, « Page introuvable. ».
+
+## What `kanevas-outils-catalogue` builds (E-20 catalogue block, E-18 scope)
+
+Architecture: `ARCHITECTURE.md`, « Detail of `kanevas-outils-catalogue` » (K-1 to K-8). Mockups: `docs/maquettes/e20-catalogue.html` (states `#etat-apercu`, `#etat-refus`, `#etat-resultat`, `#etat-elements`, `#etat-elements-systeme`) and `docs/maquettes/e18-portee-outil.html` (`#etat-nouveau-outil`, `#etat-lot-outil`); where a mockup and this text differ, this text wins. Format: desktop and phone — below 760 px the dialog is a full-height sheet, tables become stacked rows, buttons are 44 px targets (B-70). The block appears only on a tool that **declares a catalogue**; the card of a tool without one shows no catalogue line at all (the old mockup's « Pas de catalogue » sentence is dropped).
+
+### The catalogue block of a tool's card (E-20, both tabs)
+
+- **Content**: « Catalogue du système · version 2026-11-essai · 4 coques · 8 armes » and, on the universe tab, a second line « Catalogue de l'univers · version 2026-12-orak · 1 arme » (each count is the rows **of that level**; « aucun catalogue importé » when the version is empty). Two buttons: « Importer un catalogue… » and « Voir les éléments ».
+- **Who** (the table « Roles, made explicit for the catalogue » below crosses the roles): *universe tab* — any GM of the universe imports for the universe, even if the tool is disabled; *system tab* — only the responsible (or any GM when there is none) sees « Importer un catalogue… »; a non-responsible GM sees the line, « Voir les éléments » (read only) and, under the buttons, « Seul le responsable du système importe le catalogue. »; a Player never sees the tab.
+- **Which level**: « Importer un catalogue… » on the system tab writes the system's catalogue, on the universe tab the universe's. The dialog says it in its title: « Importer le catalogue du système » / « Importer le catalogue de l'univers ».
+
+### The import dialog (structuring screen)
+
+Opened by « Importer un catalogue… »: a header with the title and « Fermer » (disabled while an application runs), a file field (« Choisir un fichier JSON ») accepting `.json`, « Annuler ». Choosing the file reads it in the browser, sends it to the preview route and shows, **before anything is written**:
+
+1. « Fichier : catalogue-essai.json · version 2026-11-essai » (the version the file declares).
+2. A summary sentence: « 11 ajoutés, 0 modifié, 1 refusé » (singular when 0 or 1, plural otherwise: « 0 modifié », « 1 modifié », « 2 modifiés »; « inchangés » likewise), then « N inchangés » only when non-zero; on the universe tab « dont N remplacent un élément du système » when non-zero.
+3. A table by nature (Nature · Ajouté · Modifié · Inchangé · Refusé), natures labelled by the tool (« Coques », « Armes »).
+4. The refusals, in a list of 50 at most, one line each: « Arme « laser-lourd », champ `masse` : nombre attendu. Cet élément n'est pas appliqué. » (key and field in monospace); beyond 50, « 237 autres refus… » and a « Voir tout » button that unfolds all of them (the server sends at most 1 000; past that the line reads « … et N autres »).
+5. « Les éléments qui ne sont plus dans le fichier restent dans le catalogue. » and, when non-zero, « N éléments du catalogue ne sont pas dans ce fichier. ».
+6. The buttons « Appliquer (11 éléments) » (the count of added plus modified; disabled when it is 0, with the line « Rien à appliquer. ») and « Annuler ».
+
+« Appliquer » sends the same file to the application route; while it runs the button reads « Application… » and the dialog cannot be closed. The result replaces the preview in the same dialog: « Catalogue appliqué · version 2026-11-essai » with the summary sentence of the *application* (« 11 ajoutés, 0 modifié, 1 refusé »), « Fermer »; the card's line refreshes (counts, version). A replay of the same file reads « 0 ajouté, 0 modifié, 11 inchangés » and the version line does not change.
+
+| State | What the user sees | Text |
+|---|---|---|
+| empty | no file chosen yet | « Choisissez un fichier de catalogue (JSON). » |
+| loading | after choosing the file, while the preview is computed | « Lecture du fichier… » (the buttons except « Annuler » disabled) |
+| invalid file | not JSON, wrong tool, no version, unknown section, over 5 000 elements | « Ce fichier n'est pas un catalogue valide. » + the cause in small text (« Ce catalogue est pour « Essai G », pas pour « Essai A ». », « Section inconnue : `canons`. », « Ce catalogue dépasse 5 000 éléments. ») + « Choisir un autre fichier »; over 8 MiB: « Ce fichier est trop volumineux (8 Mio au plus). » |
+| error | the preview or the application does not answer (network, 5xx) | « L'action n'a pas abouti. Rien n'est appliqué. » + « Réessayer », which replays the call with **the file already chosen** (kept in memory until « Fermer ») |
+| connection lost | **during the preview**: banner « Connexion perdue. », « Appliquer » disabled, the chosen file kept; **during the application**: the dialog keeps the preview, « Appliquer » enabled again | « Connexion perdue pendant l'application. Rien n'est appliqué à moitié : relancez l'aperçu pour voir l'état du catalogue. » |
+| changed meanwhile | the catalogue changed between the preview and the application (another import, another GM): the application's counts differ from the previewed ones | the result shows the application's counts under « Le catalogue a changé depuis l'aperçu : voici ce qui a été appliqué. » (the import is by key, nothing is refused, so no « Recharger » exists here) |
+| refusal | the role lost meanwhile (no longer responsible / GM) | « Vous ne pouvez plus importer ce catalogue. » (the dialog closes on « Fermer ») |
+| long content | 300 refusals; a 80-character key; a reason of 200 characters | 50 shown + « 250 autres refus… » + « Voir tout »; keys and reasons wrap, no horizontal scroll |
+
+*Criteria.*
+- Given Antor, responsible of « Système d'essai », when he chooses the 12-element file with an arme « laser-lourd » lacking `masse` on the system tab, then the dialog reads « 11 ajoutés, 0 modifié, 1 refusé » (masculine: the dialog counts elements; the older « 1 refusée » of the epic's first criterion is superseded) and « Arme « laser-lourd », champ `masse` : nombre attendu. », and the card still says « aucun catalogue importé » (nothing written).
+- Given that preview, when he presses « Appliquer (11 éléments) », then the dialog reads « Catalogue appliqué · version 2026-11-essai » and the card says « 4 coques · 7 armes »; choosing the same file again reads « 0 ajouté, 0 modifié, 11 inchangés ».
+- Given a text file that is not JSON, then the dialog reads « Ce fichier n'est pas un catalogue valide. » and « Appliquer » does not exist.
+- Given a file of 300 faulty elements, then 50 refusals are listed with « 250 autres refus… » and « Voir tout » lists the 300.
+- Given the network cut while « Appliquer » is pressed, then the dialog reads « Connexion perdue pendant l'application. Rien n'est appliqué à moitié… » and a new preview shows the real state (all or nothing).
+- Given Antor on E-18 with « Outils » chosen, when the list of offerable tools does not arrive, then « Impossible de charger les outils. » and « Réessayer » show and « Créer le jeton » is disabled; when the connection drops while he creates the token, then the dialog keeps its fields and shows « Connexion perdue. Réessayez. » with « Réessayer ».
+- Given Antor who lost the responsibility while « Voir les éléments » is open, when he masks an element, then the panel shows « Vous ne pouvez plus gérer ce catalogue. » and nothing is written.
+- Given Antor in Player mode, when he opens the « Outils » tab of E-14 or E-18 by address, then the tab is absent and the address answers « Page introuvable. ».
+- Given Mira, GM of an attached universe but not the responsible, on the system tab, then the card shows the catalogue line, « Voir les éléments » and « Seul le responsable du système importe le catalogue. », and no « Importer un catalogue… » (absent from the DOM).
+- Given Antor on « Éneria d'essai », when he imports a file whose weapon « laser » has the key of a system weapon, then the dialog says « dont 1 remplace un élément du système »; « Univers voisin » still shows the system's.
+
+### « Voir les éléments » (structuring screen: a panel under the card)
+
+A panel titled « Éléments · <tool> » (« Éléments · Essai G ») listing the **resolved** catalogue (K-2) of the tool, loaded when opened: a segmented control of the tool's natures (« Coques · 4 », « Armes · 8 » — counts of the resolved list the user is allowed to see), then rows of 50, « Afficher la suite » at the end. A row: the name, the key in monospace, the module's one-line summary (« masse 12 · coût 4 »), an origin chip and, for a universe row, a visibility chip.
+
+- **Origin chips (GM only)**: « Système », « Univers », « Remplacé pour l'univers », « Retiré de l'univers » (a withdrawn system element, shown dimmed; it appears **only** to a GM). Visibility chip on an « Univers » / « Remplacé » row: « Visible des joueurs » or « MJ seul ».
+- **Actions, universe tab, GM (not in Player mode)**: on an « Univers » or « Remplacé » row, « Masquer aux joueurs » (when visible) / « Rendre visible » (when « MJ seul »); on a « Système » row, « Retirer de cet univers »; on a « Retiré » row, « Rétablir ». A « Remplacé » row has no withdrawal (the replacement is the row). No action exists to hide a system element. Each action asks no confirmation (every one is undone by its opposite) and, while it runs, the row's button is disabled; the row then shows its new chip.
+- **System tab (and a non-responsible GM, and any read-only view)**: the same list with « Système » chips only, **no action**, and under the panel title the sentence « Lecture seule : seul le responsable importe. »; E-15 shows the system's own rows (no universe, no withdrawal).
+- **A Player** has no panel (the tab is absent); the same list is what the designer's choice lists show later, with neither chip.
+
+| State | What the user sees | Text |
+|---|---|---|
+| empty | the tool has no element | « Aucun élément dans ce catalogue. » (+ « Importer un catalogue… » for who may); a nature with none: « Aucun élément de ce type. » |
+| loading | row skeletons | « Chargement des éléments… » |
+| error | the list does not arrive | « Impossible de charger les éléments. » + « Réessayer »; a failed action: « L'action n'a pas abouti. » + the row back to its previous chip |
+| connection lost | banner, the displayed list stays, actions disabled | « Connexion perdue. » |
+| refusal | role lost meanwhile (no longer a GM, switched to Player mode) | the action answers « Vous ne pouvez plus gérer ce catalogue. » and the panel reloads as a player's read (no chip, no button); a Player has no panel (the tab is absent) and forcing the catalogue route returns 404 |
+| conflict | the element changed meanwhile (another GM, an import) | « Cet élément a changé depuis que vous l'avez ouvert. » + « Recharger » (the list reloads) |
+| long content | 300 elements; a 120-character name | 50 per page; the name wraps, the chips stay visible |
+
+*Criteria.*
+- Given the universe weapon « Lance d'essai » masked by Antor, when Léa's session reads the catalogue route (a Player has no catalogue screen in this slice; the designer that shows these lists comes with `kanevas-outils-vaisseaux`), then it is nowhere, with no count or gap; Antor reads it with « MJ seul » and « Rendre visible », and once visible Léa reads it.
+- Given the system hull « Corvette » withdrawn for « Éneria d'essai », then no one in that universe reads it, Antor sees it dimmed as « Retiré de l'univers » with « Rétablir », « Univers voisin » reads it as « Système »; « Rétablir » brings it back.
+- Given the system weapon « Laser » replaced for the universe then masked, then Léa reads neither the replacement nor the system's « Laser ».
+- Given Antor masking an element on a version another GM already changed, then he reads « Cet élément a changé depuis que vous l'avez ouvert. » and « Recharger »; he masks an element, then re-applies the file that contains it: the element stays « MJ seul ».
+- Given Mira on the system tab, then the list has « Système » chips and no button.
+- Given a connection cut, then « Connexion perdue. » shows and every action is disabled; a 120-character name wraps without hiding its chips.
+
+### E-18 — the scope of a token and tool batches
+
+- **« Nouveau jeton »** gains a **« Portée »** choice below « Durée »: « Contenu de l'univers » (default: sheets, files, campaigns… as before) or « Outils », which lists the tools of the universe's system that have a catalogue as checkboxes (« Essai G · Générateur · Module d'essai »; none checked by default; at least one is required). A tool token writes **only** those tools' data and no content; the dialog says it: « Un jeton d'outil n'écrit que le catalogue des outils cochés. Il n'ouvre ni fiches ni fichiers. » An universe whose system has no tool with a catalogue shows « Outils » disabled with « Aucun outil de ce système ne reçoit de catalogue par l'API. ». A scope cannot be changed afterwards (create another token).
+- **A token row** shows its scope after its dates: « Portée : contenu » or « Portée : Essai G » (several: « Essai G, Essai X »; a tool no longer offered keeps its key as label, and so does the title of its batches).
+- **A tool batch** (E-18's second panel) is titled with its tool — « Essai G » — instead of the date alone, and its counters read **by the tool's natures**: « Coques : 4 créés · Armes : 7 créés, 1 refusé » (the elements are masculine); its refusals expand like the others (nature, key, reason with the field: « armes · laser-lourd : champ `masse` : nombre attendu »), 200 then « … et N autres ». Content batches are unchanged.
+- **States added to the dialog** (the rest of E-18's grid stands): *the list of offerable tools is loading* — « Outils » shows « Chargement… » and « Créer le jeton » is disabled while « Outils » is chosen (« Contenu de l'univers » stays usable); *connection lost while creating the token* — the dialog keeps its fields and shows « Connexion perdue. Réessayez. » with « Réessayer »; *the list of offerable tools does not arrive* — « Impossible de charger les outils. » + « Réessayer » in the « Outils » choice, « Créer le jeton » disabled; *none offerable* (a universe without a game system such as « Essai Kanka », or a system whose tools have no catalogue) — « Outils » disabled with « Aucun outil de ce système ne reçoit de catalogue par l'API. »; *validation* — « Créer le jeton » stays disabled with the dialog's error line « Cochez au moins un outil. » while « Outils » is chosen and nothing is checked; *a tool no longer offered after the token was created* — the row keeps its scope under the tool's key and the script's import receives 401.
+- Additional criteria —
+  - Given Antor creating « Script catalogue » with scope « Outils » and « Essai G » checked, then the row reads « Portée : Essai G », and with nothing checked « Créer le jeton » is disabled with « Cochez au moins un outil. ».
+  - Given that token used to import a 12-element file with one refusal into a batch, then E-18 shows « Essai G » with « Coques : 4 créés · Armes : 7 créés, 1 refusé » and the expanded refusal.
+  - Given a content token calling the tool route, or that tool token calling a sheet route, then the script receives 401 and no batch appears.
+- Roles: unchanged — GM only, absent for players; a GM in Player mode is treated as a Player on E-18 (absent from the sidebar, « Page introuvable. » by address), like any E-18 screen; the roles table below has no E-18 line because this slice adds none.
+
+### Roles, made explicit for the catalogue
+
+| Role | System tab (E-15) | Universe tab (E-14) |
+|---|---|---|
+| Responsible (or any GM when none) | catalogue line, « Importer un catalogue… », « Voir les éléments » (read) | the GM row |
+| GM of an attached universe, not responsible | line and « Voir les éléments », **no import** (the button is absent, the sentence « Seul le responsable du système importe le catalogue. » explains) | import and every element action for the universe |
+| GM in Player mode | **tab hidden** on E-14 and E-15, as for a Player (the catalogue is read by the route as a player reads it: no masked or withdrawn element, no chip) | no panel, no import, no action: « Page introuvable. » by address |
+| Player, foreigner, instance admin without a role | tab absent, « Page introuvable. » | tab absent, « Page introuvable. » |
+
+### Journey
+
+`docs/parcours.md` carries the detail of P-17 step 3 (elements panel, tool-scoped token, batch named after the tool); P-17 step 2 (system catalogue, with its refusal wording) and step 3 (universe catalogue) are what the criteria above play, with the trial module standing for « Stars Without Number révisé » until `kanevas-outils-vaisseaux`. The two catalogues of the epic's journey are those two dialogs; the withdrawal and masking gestures are those of B-62.
+
