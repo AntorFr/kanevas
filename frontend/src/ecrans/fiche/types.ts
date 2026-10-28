@@ -45,7 +45,7 @@ export interface Fiche {
   creeLe?: string;
   /** Free sub-type under the title (AD-120), absent when the sheet has none. */
   sousType?: string | null;
-  charge: { v?: number; pj?: boolean };
+  charge: { v?: number; pj?: boolean; disparu?: boolean };
   /** The sheet's illustration (AD-93): `jeton` changes at each replacement and goes in the image address. */
   illustration?: { id: number; jeton: string } | { fermee: true; message: string } | { attente: true; cle: string } | null;
   /** Aliases and labels (AD-118), sorted by the server. */
@@ -53,6 +53,8 @@ export interface Fiche {
   etiquettes?: string[];
   /** With a search: the alias that answers when the title does not. */
   aliasTrouve?: string;
+  /** Readable sub-place through which the linked-sheet search found this row (AD-129). */
+  via?: { id: number; titre: string };
 }
 
 /** One line of « Mentionnée dans » (AD-100). */

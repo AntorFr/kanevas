@@ -2,6 +2,7 @@ import {
   BookOpen,
   Dna,
   FileText,
+  Flame,
   Gem,
   Hourglass,
   Lightbulb,
@@ -10,8 +11,11 @@ import {
   Scale,
   ScrollText,
   Shield,
+  ShieldOff,
   Ship,
+  Skull,
   StickyNote,
+  Users,
   UsersRound,
   type LucideIcon,
 } from 'lucide-react';
@@ -20,6 +24,16 @@ import { matchPath, useLocation } from 'react-router-dom';
 
 import { lire } from './api';
 import { useUnivers } from './cadre-contexte';
+
+export interface MotsDisparu {
+  oui: string;
+  non: string;
+  menuOui: string;
+  menuNon: string;
+  filtre: { la: string; disparu: string; tous: string };
+  vide: { la: string; disparu: string };
+  icone: string;
+}
 
 /** A type as `GET /api/univers/:id/types` returns it (AD-120): the server owns the list, nothing is copied here. */
 export interface TypeVue {
@@ -31,6 +45,8 @@ export interface TypeVue {
   aucun: string;
   icone: string;
   reglable: boolean;
+  /** Words and glyph of the gone mark (AD-131); absent on a type that cannot be gone. */
+  disparu?: MotsDisparu;
   active: boolean;
   origine: 'univers' | 'systeme' | 'defaut';
   forcage: 'active' | 'desactive' | null;
@@ -40,9 +56,13 @@ export interface TypeVue {
 
 /** The Lucide name the server sends → its component. An unknown name falls back to a sheet icon. */
 const ICONES: Record<string, LucideIcon> = {
+  users: Users,
   'users-round': UsersRound,
   'map-pin': MapPin,
   shield: Shield,
+  'shield-off': ShieldOff,
+  skull: Skull,
+  flame: Flame,
   gem: Gem,
   hourglass: Hourglass,
   'scroll-text': ScrollText,
@@ -152,3 +172,9 @@ export function badgeFiche(types: TypeVue[], f: { type: string; charge: { pj?: b
 
 /** The icon of a sheet type, the same as its sidebar item. */
 export const iconeDuType = (types: TypeVue[], type: string): LucideIcon => iconeDeNom(typeParType(types, type)?.icone);
+
+/** The mark of a gone sheet: the word of its type and the glyph; `null` when it is there or its type has no mark. */
+export function marqueDe(types: TypeVue[], f: { type: string; charge: { disparu?: boolean } }): { mot: string; Icone: LucideIcon } | null {
+  const mots = typeParType(types, f.type)?.disparu;
+  return mots && f.charge.disparu === true ? { mot: mots.oui, Icone: iconeDeNom(mots.icone) } : null;
+}

@@ -844,7 +844,7 @@ test('B-50 exclusions · Léa ne voit ni menu ni clé, aucune réponse qu’elle
     // made in Kanevas has no origin line.
     await antor.page.getByRole('button', { name: /Autres actions sur « Fait main »/ }).click();
     const menuFait = ((await antor.page.getByRole('menu').innerText()) as string).replace(/\s+/g, ' ').trim();
-    assert.equal(menuFait, 'Changer le type… Déplacer sous… Alias et étiquettes… Supprimer la fiche…', 'no key, no origin line');
+    assert.equal(menuFait, 'Changer le type… Marquer détruit Déplacer sous… Alias et étiquettes… Supprimer la fiche…', 'no key, no origin line');
     assert.ok(!(await lire(antor.page)).includes('Importée'));
   } finally {
     await lea.ctx.close();

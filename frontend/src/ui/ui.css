@@ -173,15 +173,21 @@ a { color: var(--accent-texte); }
 .bloc-libelle { display: flex; align-items: center; gap: var(--e-2); font-size: var(--t-13); color: var(--texte-3); min-height: 28px; }
 .bloc-contenu { display: flex; flex-wrap: wrap; align-items: center; gap: var(--e-2) var(--e-3); min-width: 0; }
 .bloc-vide { font-size: var(--t-13); color: var(--texte-3); }
-.relation { display: flex; align-items: flex-start; gap: var(--e-2); font-size: var(--t-13); min-width: 0; flex-basis: 100%; }
-.relation-lien { color: var(--texte-2); min-width: 0; overflow-wrap: anywhere; padding-top: 4px; }
+.relation { display: flex; flex-wrap: wrap; align-items: flex-start; gap: var(--e-2); font-size: var(--t-13); min-width: 0; flex-basis: 100%; }
+.relation-lien { color: var(--texte-2); min-width: 0; overflow-wrap: break-word; padding-top: 4px; }
+.relation-type { padding-top: 4px; }
+.relation-nature { flex-wrap: nowrap; }
+.relation-texte { flex: 1 1 0; min-width: 0; display: flex; flex-wrap: wrap; align-items: center; gap: 0 var(--e-2); min-height: 26px; }
+.relation-nature > .relation-type { flex: none; white-space: nowrap; align-self: flex-start; }
+.relation-nature > .actions-revelees { align-self: flex-start; }
+.relation-texte .relation-lien { padding-top: 0; }
 .relation-fleche { color: var(--texte-3); flex: none; margin-top: 7px; }
 .relation > .jeton { flex: 0 1 auto; }
 .relation > .actions-revelees { flex: none; }
 .jeton { display: inline-flex; align-items: center; gap: 6px; min-height: 26px; padding: 2px var(--e-2); min-width: 0; background: var(--surface-2); border-radius: var(--rayon-item); }
 .jeton svg { color: var(--texte-3); flex: none; }
-.jeton-titre { min-width: 0; overflow-wrap: anywhere; }
-.jeton-type { color: var(--texte-3); font-size: var(--t-12); min-width: 0; overflow-wrap: anywhere; }
+.jeton-titre { min-width: 0; overflow-wrap: break-word; }
+.jeton-type { color: var(--texte-3); font-size: var(--t-12); min-width: 0; overflow-wrap: break-word; }
 .fichier { position: relative; display: flex; align-items: center; gap: var(--e-2); flex-basis: 100%; min-height: 40px; padding: 0 var(--e-2) 0 var(--e-3);
   font-size: var(--t-13); border: 1px solid var(--bord); border-radius: var(--rayon-champ); overflow: hidden; }
 .fichier > svg { color: var(--texte-3); flex: none; }

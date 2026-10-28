@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>La marque « disparu » — E-8, E-9 — Kanevas</title>
+<meta name="color-scheme" content="light dark">
+<style>
+/* MAQUETTE — the gone mark (kanevas-fiches-liees-disparu, B-67, AD-131). Illustrates docs/ecrans.md
+   « E-8, E-9, E-17 — the gone mark »: header badge, « ⋯ » entry, desaturated illustration with its chip,
+   the E-8 filter and its empty state. Text is authoritative where they differ. Colours stand for tokens.css. */
+:root{--fond:#16161a;--surface:#202026;--bord:#33333c;--texte:#ececf1;--doux:#a0a0ad;--accent:#7aa2f7}
+@media (prefers-color-scheme:light){:root{--fond:#f6f5f2;--surface:#fff;--bord:#d9d6cf;--texte:#1d1d22;--doux:#62626d;--accent:#2f5bd1}}
+body{margin:0;font:15px/1.5 system-ui,sans-serif;background:var(--fond);color:var(--texte);padding:24px}
+h2{font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:var(--doux);margin:32px 0 10px}
+.cadre{background:var(--surface);border:1px solid var(--bord);border-radius:12px;padding:16px;max-width:760px}
+.entete{display:flex;gap:16px;align-items:flex-start}
+.ill{position:relative;width:132px;height:176px;border-radius:10px;background:linear-gradient(160deg,#6b7a99,#3b4258);overflow:hidden;flex:none}
+.ill.mort{filter:saturate(.4)}
+.chip{position:absolute;left:6px;bottom:6px;width:22px;height:22px;border-radius:50%;background:var(--surface);color:var(--texte);border:1px solid var(--bord);display:grid;place-items:center;font-size:12px}
+.pastille{display:inline-block;border:1px solid var(--bord);border-radius:999px;padding:1px 10px;font-size:12px;color:var(--doux);margin-right:6px}
+.menu{border:1px solid var(--bord);border-radius:8px;padding:4px 0;width:240px;margin-top:10px;background:var(--surface)}
+.menu div{padding:6px 14px}.menu .nouveau{outline:2px solid var(--accent);outline-offset:-2px}
+.seg{display:inline-flex;border:1px solid var(--bord);border-radius:8px;overflow:hidden}
+.seg span{padding:5px 14px;font-size:13px;color:var(--doux)}.seg .on{background:var(--accent);color:#fff}
+.grille{display:flex;gap:12px;margin-top:12px}.carte{width:110px}.carte .ill{width:110px;height:82px}
+.carte .t{font-size:13px;margin-top:4px}.vide{margin-top:14px;color:var(--doux)}
+.toast{display:inline-block;margin-top:10px;border:1px solid var(--bord);border-radius:8px;padding:6px 12px;background:var(--surface);font-size:13px}
+</style>
+</head>
+<body>
+<h2>E-9 — Antor, « Bran Corvalis », marqué mort (menu ouvert)</h2>
+<div class="cadre">
+  <div class="entete">
+    <div class="ill mort" role="img" aria-label="Portrait de Bran Corvalis"><span class="chip" role="img" aria-label="Mort" title="Mort">☠</span></div>
+    <div>
+      <h1 style="margin:0">Bran Corvalis</h1>
+      <p style="margin:6px 0"><span class="pastille">PNJ</span><span class="pastille" title="Mort">☠ Mort</span></p>
+      <div class="menu" role="menu"><div>Changer le type…</div><div>Déplacer sous…</div><div>Alias et étiquettes…</div><div class="nouveau">Marquer vivant</div></div>
+          </div>
+  </div>
+</div>
+<h2>E-9 — après le geste, le toast (4 s, sans focus)</h2>
+<div class="cadre"><div class="toast" role="status">Fiche marquée : Mort.</div></div>
+<h2>E-9 — la même fiche, vivante : l'entrée du menu est « Marquer mort » ; en Léa, aucune entrée</h2>
+<div class="cadre"><div class="entete"><div class="ill" role="img" aria-label="Portrait de Bran Corvalis"></div><div><h1 style="margin:0">Bran Corvalis</h1><div class="menu"><div>Changer le type…</div><div>Déplacer sous…</div><div>Alias et étiquettes…</div><div class="nouveau">Marquer mort</div></div></div></div></div>
+<h2>E-8 — Personnages, filtre « Morts » (kept in ?etat=disparu)</h2>
+<div class="cadre">
+  <span class="seg" role="group" aria-label="Vivants, morts ou tous"><span>Vivants</span><span class="on">Morts</span><span>Tous</span></span>
+  <div class="grille"><div class="carte"><div class="ill mort"><span class="chip" title="Mort">☠</span></div><div class="t">Bran Corvalis</div></div><div class="carte"><div class="ill mort"><span class="chip" title="Mort">☠</span></div><div class="t">Le Prieur masqué</div></div></div>
+</div>
+<h2>E-8 — Lieux, filtre « Détruits » sans résultat</h2>
+<div class="cadre"><span class="seg"><span>Intacts</span><span class="on">Détruits</span><span>Tous</span></span><p class="vide">Aucun lieu détruit. <a href="#" style="color:var(--accent)">Voir tous les lieux.</a></p></div>
+</body>
+</html>

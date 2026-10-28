@@ -2,14 +2,17 @@ import type { Db } from '../db/db.js';
 import { exigerRole, peutLireSection, peutVoirFiche } from './droits.js';
 import { ErreurService, introuvable, invalide } from './erreurs.js';
 import { chargerFiche } from './fiches.js';
+import { natureConvient, natureDe, estNature } from './natures.js';
 import type { Acteur, SectionRow, TypeFiche } from './types.js';
 
 export const LIMITE_RELATIONS = 100;
 
 export interface Relation {
   id: number;
-  /** The free label of the relation. */
-  type: string;
+  /** Key of the nature (services/natures.ts), '' for a free relation. */
+  nature: string;
+  /** The qualifier; required without a nature, optional with one. */
+  qualificatif: string;
   cible: { id: number; titre: string; type: TypeFiche };
 }
 
@@ -27,9 +30,9 @@ function exigerMJCache(db: Db, universId: number, compteId: number): void {
 }
 
 /**
- * The GM links a section to a sheet of the same universe (AD-64). Refusals
- * write nothing: `auto_relation` (invalide), `relation_existante` and
- * `limite_relations` (conflit, in `detail`).
+ * The GM links a section to a sheet of the same universe (AD-64, AD-128). Refusals
+ * write nothing: `auto_relation` and `nature_incompatible` (invalide), `relation_existante` and
+ * `limite_relations` (conflit), in `detail`. `type` is a synonym of `qualificatif`; both together are refused.
  */
 export function relierSection(
   db: Db,
@@ -37,24 +40,47 @@ export function relierSection(
   universId: number,
   ficheId: number,
   sectionId: number,
-  entree: { cibleFicheId: number; type: string },
+  entree: { cibleFicheId: number; nature?: string | null; qualificatif?: string; type?: string },
 ): Relation {
   exigerMJCache(db, universId, compteId);
-  chargerFiche(db, universId, ficheId);
+  const source = chargerFiche(db, universId, ficheId);
   chargerSection(db, ficheId, sectionId);
-  const type = String(entree.type).trim();
-  if (type.length < 1 || type.length > 80) throw invalide('Le type : de 1 à 80 caractères.');
+  if (entree.type !== undefined && entree.qualificatif !== undefined) {
+    throw invalide('Le qualificatif : un seul des champs « type » et « qualificatif ».');
+  }
+  const brut = entree.qualificatif ?? entree.type;
+  if (brut !== undefined && typeof brut !== 'string') throw invalide('Le qualificatif : 80 caractères au plus.');
+  const qualificatif = (brut ?? '').trim();
+  const nature = entree.nature === undefined || entree.nature === null ? '' : entree.nature;
+  if (typeof nature !== 'string') {
+    throw new ErreurService('invalide', 'Cette nature ne relie pas ces deux types de fiches.', 'nature_incompatible');
+  }
+  if (qualificatif.length > 80) throw invalide('Le qualificatif : 80 caractères au plus.');
+  if (nature === '' && qualificatif.length < 1) throw invalide('Le qualificatif est obligatoire sans nature.');
   const cible = chargerFiche(db, universId, entree.cibleFicheId);
   if (cible.id === ficheId) {
     throw new ErreurService('invalide', 'Une fiche ne se relie pas à elle-même.', 'auto_relation');
   }
+  if (nature !== '' && !(estNature(nature) && natureConvient(nature, source.type, cible.type))) {
+    throw new ErreurService('invalide', 'Cette nature ne relie pas ces deux types de fiches.', 'nature_incompatible');
+  }
+  const symetrique = nature !== '' && natureDe(nature)?.symetrique === true;
   return db.transaction((): Relation => {
     const doublon = db
       .prepare(
-        'SELECT 1 FROM relations WHERE section_id = ? AND cible_fiche_id = ? AND type = ?',
+        'SELECT 1 FROM relations WHERE section_id = ? AND cible_fiche_id = ? AND nature = ? AND qualificatif = ?',
       )
-      .get(sectionId, cible.id, type);
-    if (doublon) {
+      .get(sectionId, cible.id, nature, qualificatif);
+    // A symmetric fact is stored once: the other sheet already holding it toward this one is a duplicate.
+    const inverse =
+      symetrique &&
+      db
+        .prepare(
+          `SELECT 1 FROM relations r JOIN sections s ON s.id = r.section_id
+            WHERE s.fiche_id = ? AND r.cible_fiche_id = ? AND r.nature = ? AND r.qualificatif = ?`,
+        )
+        .get(cible.id, ficheId, nature, qualificatif);
+    if (doublon || inverse) {
       throw new ErreurService('conflit', 'Cette relation existe déjà.', 'relation_existante');
     }
     const { n } = db
@@ -69,12 +95,13 @@ export function relierSection(
     }
     const info = db
       .prepare(
-        'INSERT INTO relations (section_id, cible_fiche_id, type, cree_le) VALUES (?, ?, ?, ?)',
+        'INSERT INTO relations (section_id, cible_fiche_id, nature, qualificatif, cree_le) VALUES (?, ?, ?, ?, ?)',
       )
-      .run(sectionId, cible.id, type, new Date().toISOString());
+      .run(sectionId, cible.id, nature, qualificatif, new Date().toISOString());
     return {
       id: Number(info.lastInsertRowid),
-      type,
+      nature,
+      qualificatif,
       cible: { id: cible.id, titre: cible.titre, type: cible.type },
     };
   })();
@@ -115,13 +142,14 @@ export function lireRelations(
   if (!peutLireSection(role, section, acteur)) throw introuvable();
   const rows = db
     .prepare(
-      `SELECT r.id, r.type, f.id AS cible_id, f.titre AS cible_titre, f.type AS cible_type
+      `SELECT r.id, r.nature, r.qualificatif, f.id AS cible_id, f.titre AS cible_titre, f.type AS cible_type
        FROM relations r JOIN fiches f ON f.id = r.cible_fiche_id
        WHERE r.section_id = ? AND f.univers_id = ? ORDER BY r.id`,
     )
     .all(sectionId, universId) as {
     id: number;
-    type: string;
+    nature: string;
+    qualificatif: string;
     cible_id: number;
     cible_titre: string;
     cible_type: TypeFiche;
@@ -130,7 +158,8 @@ export function lireRelations(
     .filter((r) => peutVoirFiche(db, role, r.cible_id, acteur))
     .map((r) => ({
       id: r.id,
-      type: r.type,
+      nature: r.nature,
+      qualificatif: r.qualificatif,
       cible: { id: r.cible_id, titre: r.cible_titre, type: r.cible_type },
     }));
 }

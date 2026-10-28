@@ -17,7 +17,7 @@ import { ajouterSection, changerAudience, ecrireContenu, lireSection } from '../
 import { poserEtiquetage } from '../services/etiquettes.js';
 import { relierSection } from '../services/relations.js';
 import { creerCarte, ajouterElement } from '../services/cartes.js';
-import { creerFiche, deplacerFiche, lireFiche } from '../services/fiches.js';
+import { creerFiche, deplacerFiche, lireFiche, marquerDisparu } from '../services/fiches.js';
 import { assurerCompte } from '../services/comptes.js';
 import { creerEtRattacherSysteme, creerGabarit, rattacherSysteme } from '../services/systemes.js';
 import { creerJetonDeValeur } from '../services/jetons.js';
@@ -117,11 +117,12 @@ export function semerBouchon(db: Db): boolean {
     const apparence = { titre: 'Apparence', lue: true };
     const verite = { titre: 'Vérité — MJ seul', lue: false };
     const aldric = fiche('personnage', 'Maître Aldric', [apparence, verite], { pj: false });
-    fiche('personnage', 'Bran Corvalis', [apparence], { pj: false });
-    fiche('personnage', 'Le Prieur masqué', [{ titre: 'Secret — MJ seul', lue: false }], { pj: false });
+    const bran = fiche('personnage', 'Bran Corvalis', [apparence], { pj: false });
+    const prieur = fiche('personnage', 'Le Prieur masqué', [{ titre: 'Secret — MJ seul', lue: false }], { pj: false });
+    marquerDisparu(db, { compteId: id.antor }, lame.id, prieur.id, true);
     fiche('personnage', 'Léa Brisefer', [apparence], { pj: true });
-    fiche('personnage', 'Dame Ombeline de Val-Fortin', [apparence], { pj: false });
-    fiche('personnage', 'Suie', [apparence], { pj: false });
+    const ombeline = fiche('personnage', 'Dame Ombeline de Val-Fortin', [apparence], { pj: false });
+    const suie = fiche('personnage', 'Suie', [apparence], { pj: false });
     fiche('personnage', "Le Portrait de l'échec", [apparence], { pj: false });
     const lieux: [string, string | undefined][] = [
       ['Val-Fortin', 'Ville'],
@@ -178,6 +179,7 @@ export function semerBouchon(db: Db): boolean {
       arbre && deplacerFiche(db, { compteId: id.antor }, lame.id, enfant, parent);
     const spheres = fiche('lieu', 'Les Sphères', [mjSeul]);
     ranger(port.id, spheres.id);
+    let docks: { id: number; sections: Record<string, number> } | undefined;
     for (const [titre, sections] of [
       ['La Taverne du Kraken', [lue]],
       ['Les Docks', [lue]],
@@ -185,7 +187,9 @@ export function semerBouchon(db: Db): boolean {
       ['Quartier des Cordiers', [lue]],
       ['Le Repaire des contrebandiers', [mjSeul]],
     ] as const) {
-      ranger(fiche('lieu', titre, [...sections]).id, port.id);
+      const f = fiche('lieu', titre, [...sections]);
+      if (titre === 'Les Docks') docks = f;
+      ranger(f.id, port.id);
     }
     fiche('faction', 'Lames Grises', [{ titre: 'Description', lue: true }]);
     const cercle = fiche('faction', 'Cercle des Cendres', [{ titre: 'Secret — MJ seul', lue: false }]);
@@ -236,9 +240,26 @@ export function semerBouchon(db: Db): boolean {
     // `kanevas-import-tenir`: three relations that target Port-Sel (the criteria of its deletion); its place on
     // a map comes with the files (`semerFichiers`, a map is created asynchronously). A base short of 0005 has no table.
     if (db.prepare("SELECT 1 FROM sqlite_master WHERE name = 'relations'").get()) {
-      relierSection(db, id.antor, lame.id, aldric.id, aldric.sections['Apparence']!, { cibleFicheId: port.id, type: 'maître de port' });
-      relierSection(db, id.antor, lame.id, guilde.id, guilde.sections['Description']!, { cibleFicheId: port.id, type: 'y fait passer ses cargaisons' });
-      relierSection(db, id.antor, lame.id, rapport.id, rapport.sections['Secret — MJ seul']!, { cibleFicheId: port.id, type: 'surveille' });
+      relierSection(db, id.antor, lame.id, aldric.id, aldric.sections['Apparence']!, { cibleFicheId: port.id, qualificatif: 'maître de port' });
+      relierSection(db, id.antor, lame.id, guilde.id, guilde.sections['Description']!, { cibleFicheId: port.id, qualificatif: 'y fait passer ses cargaisons' });
+      relierSection(db, id.antor, lame.id, rapport.id, rapport.sections['Secret — MJ seul']!, { cibleFicheId: port.id, qualificatif: 'surveille' });
+      // `kanevas-fiches-liees-natures`: relations with a nature (AD-128) and the family « Les Corvalis » (a type).
+      const relier = (src: { id: number; sections: Record<string, number> }, section: string, cible: { id: number }, nature: string, qualificatif: string) =>
+        relierSection(db, id.antor, lame.id, src.id, src.sections[section]!, { cibleFicheId: cible.id, nature, qualificatif });
+      // A base short of 0013 still has the CHECK on `fiches.type`, which does not know « famille ».
+      const sqlFiches = (db.prepare("SELECT sql FROM sqlite_master WHERE name = 'fiches'").get() as { sql: string }).sql;
+      const corvalis = /CHECK\s*\(\s*type\s+IN/i.test(sqlFiches) ? undefined : fiche('famille', 'Les Corvalis', [{ titre: 'Description', lue: true }]);
+      relier(aldric, 'Apparence', port, 'se_situe', 'habite');
+      relier(aldric, 'Apparence', guilde, 'membre', 'trésorier');
+      relier(prieur, 'Secret — MJ seul', port, 'se_situe', 'se cache');
+      // Same for the empty qualifier of a nature (0017): the old `relations` demands one.
+      const sqlRelations = (db.prepare("SELECT sql FROM sqlite_master WHERE name = 'relations'").get() as { sql: string }).sql;
+      if (docks && !/BETWEEN 1 AND 80/.test(sqlRelations)) relier(suie, 'Apparence', docks, 'se_situe', '');
+      relier(ombeline, 'Apparence', guilde, 'membre', 'dirige');
+      if (corvalis) {
+        relier(bran, 'Apparence', corvalis, 'membre', 'aîné');
+        relier(ombeline, 'Apparence', corvalis, 'membre', 'veuve');
+      }
     }
     // « Essai Kanka »: a place whose text waits for a key and points at a vanished sheet.
     const anse = creerFiche(db, id.antor, essai.id, { type: 'lieu', titre: 'Anse-aux-Sels' });
@@ -360,6 +381,7 @@ async function semerFichiers(db: Db, racine: string): Promise<void> {
   // A graph map holds Port-Sel (its place goes with it when the sheet is deleted).
   const graphe = await creerCarte(db, antor.compteId, false, univers, { titre: 'Carte de la côte', forme: 'graphe' });
   ajouterElement(db, antor.compteId, false, graphe.id, { ficheId: trouver('Port-Sel').id });
+  ajouterElement(db, antor.compteId, false, graphe.id, { ficheId: trouver('Maître Aldric').id });
 
   const lb = trouver('Léa Brisefer');
   const notes = ajouterSection(db, antor.compteId, univers, lb.id, {
