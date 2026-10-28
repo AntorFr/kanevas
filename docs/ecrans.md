@@ -3271,3 +3271,58 @@ Criteria:
   réglages » and its text has not changed until someone recalculates.
 - Given the designer disabled, the sheet shows « Caractéristiques » as text with « Outil désactivé ».
 - Given Teo, without a role in the universe, when he forces a design's address, « Page introuvable. ».
+
+## Screen details for `kanevas-outils-sections-gerees`
+
+Mockup: `docs/maquettes/e09-section-geree.html` (the banner in its five states, desktop and 360 px). Decisions: `ARCHITECTURE.md`, « Detail of `kanevas-outils-sections-gerees` » (S-1 to S-8). The slice changes only the **section panel of E-9**; the rest of the sheet, the audience controls, « Monter », « Descendre » and « Retirer la section » are those of E-9.
+
+### E-9 — a managed section
+
+A managed section is a panel like the others: its title, its audience badge (« MJ seul » for the GM), then, **above the text**, a **banner** of one line (wrapping on a phone) and the content. There is **never an editor**: no « Modifier », for the GM either, and the section's audience controls stay (the audience is the GM's, the content is the tool's). The content is the rendered text version (AD-95); when the tool has a display component for this section (`geree.composant`), the component replaces the text, loaded only then (S-7).
+
+**Banner** — always visible, above the content, tone: neutral (violet badge « Outil »). Its parts:
+
+- **Name**: « Générée par <libellé de l'outil> », a link to the tool's entry (`geree.lien`) when the reader can open the tool; « Générée par un outil » (no link) when the tool exists but is not visible to the reader's role; **« Outil désactivé »** (no name, no link) when the tool is disabled or unknown.
+- **State**, to the right of the name, when the tool is open to the reader: nothing when up to date; **« Calculée avec d'anciens réglages. »** (amber, `role="status"`) when stale. The text and `version` have not moved.
+- **Actions** (buttons on the banner's row): « Ouvrir dans l'outil » (GM outside Player mode, and the section's author); « Recalculer » when stale, of type `geste`, for who has the tool's usage and the right to write the section; for a `proposition` section: « Voir la proposition » (the GM who requested it; leads to the proposal on E-12) or « Proposer un recalcul » (GM without pending proposal). Nothing else.
+
+| Who | Sees |
+|---|---|
+| GM (outside Player mode) | everything above; « Recalculer » / « Proposer un recalcul » when stale and the usage allows it |
+| GM in Player mode | what Léa would see; no action (buttons absent from the DOM) |
+| Player or author with the usage | banner, state; « Ouvrir dans l'outil » if author; « Recalculer » if the usage and « L'auteur l'écrit » allow it |
+| Player or author without the usage | banner and state, **no action** (Essai G's usage is GM only) |
+| A reader of a GM-only managed section | nothing: the section does not exist for them (no title, no banner) |
+| Account without a role | « Page introuvable. » as for any sheet |
+
+| State | Text / behaviour |
+|---|---|
+| up to date | banner with the name only |
+| stale | « Calculée avec d'anciens réglages. » + the action of the role; the text stays, nothing rewritten (AD-128) |
+| recalculating | the button reads « Recalcul… », disabled; the text stays until the answer; focus stays on the button |
+| recalculated | the text and the state update in place; the banner reads the name only; a polite live region says « Section recalculée. » |
+| proposal filed | « Voir la proposition » replaces « Proposer un recalcul »; the text is unchanged until the proposal is applied (E-12) |
+| tool disabled | « Outil désactivé »; the text version only; no action; no regeneration |
+| error | under the banner, « Le recalcul n'a pas abouti. Réessayez. » (`role="alert"`), the button back; the text unchanged |
+| conflict | « La section a changé depuis que vous l'avez ouverte. Rechargez-la pour voir la nouvelle version. » with « Recharger la section » (the words of the other sections) |
+| usage lost | « Vous ne pouvez plus recalculer cette section. », the button removed |
+| offline | « Connexion perdue. », « Recalculer » and « Proposer un recalcul » disabled |
+| component unavailable | the text version, with « Mise en forme indisponible — version texte affichée. » |
+| long content | the text scrolls with the page like any section (up to 100 000 characters); on a phone the banner wraps and the buttons go below the text of the banner, full width, 44 px high |
+
+**Accessibility**: the banner is a `<div role="group" aria-label="Section gérée par un outil">`; the state is `role="status"`; the name link and the buttons are reached by keyboard in that order, before the content; the amber of the stale state is never the only signal (the words carry it).
+
+**Order of the section list on E-9 in an edit**: unchanged. Other sections of the sheet remain editable beside a managed one (a sheet mixes both, B-66).
+
+### E-12 — a proposal that recalculates
+
+The proposal screen shows, for a proposal with `source = 'recalcul'` (no report), the line « Recalcul proposé après un changement de réglage — <libellé de l'outil> » where a report proposal shows « Depuis le compte-rendu … », then the same side-by-side view and « Appliquer » / « Ignorer ». « Appliquer » on a disabled tool gives « Introuvable. » (the proposal stays). Applying updates the text and the banner's source.
+
+### Criteria
+
+- Given a managed section, when Antor or Léa sends `PUT …/contenu`, then `refuse` with `code: 'section_geree'`, whatever the role.
+- Given Léa reading « Vaisseau d'essai », « Caractéristiques » shows « Générée par le générateur d'essai » and no « Modifier »; her view carries no source.
+- Given Antor changing « Marge d'essai », when Léa reloads, then « Calculée avec d'anciens réglages. » and the same text; Antor's « Recalculer » updates the text, and the state disappears.
+- Given the generator disabled, then « Outil désactivé » and the text; a write is `introuvable`.
+- Given a `proposition` section and Antor changing the setting, then « Voir la proposition » appears for Antor only; « Ignorer » leaves the text, « Appliquer » replaces it.
+- Given 360 px width, the banner wraps and no action is cut off.
