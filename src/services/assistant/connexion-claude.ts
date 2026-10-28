@@ -233,13 +233,13 @@ export class ConnexionClaude {
     }
     adresse ??= tirerAdresse(sortie.texte);
     if (!adresse) {
-      await this.arreter(session);
       const fond = extrait(sortie.texte);
       const cause = erreurLancement !== null
         ? `lancement impossible (${erreurLancement})`
         : sorti
           ? `sorti avec le code ${codeSortie}`
           : 'délai dépassé';
+      await this.arreter(session);
       throw this.impossible(`${cause}; sortie : ${fond}`);
     }
     this.derniereCause = null;
