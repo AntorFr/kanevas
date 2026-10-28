@@ -3284,7 +3284,7 @@ Criteria:
 - Given the trial galaxy, when Léa calculates Port-Sel → Vael, engine 2, public routes, then she reads « 7 cases · 4,5 jours » and the path is highlighted.
 - Given Léa and Antor asking Port-Sel → Hesper, engine 2, when each calculates (Antor with « Toutes »), then Antor reads « 6 cases · 4 jours » through the private route and Léa « 13 cases · 8,5 jours » through Vael, with no segment of the private route.
 - Given Léa, when she types « fant » in the search, then nothing is listed and the text is « Aucun système ne correspond. »; the map shows no route, zone or hexagon marked as hidden.
-- Given Antor in Player mode, when the map reloads, then the secret system, the private route and the secret zone are gone from map, search and journey, and a block above the secret zone is the one Léa sees.
+- Given Antor in Player mode, when the map reloads, then the secret system, the private route and the secret zone are gone from map, search and journey, and block (−2,0), which overlaps the secret zone, is the one Léa sees.
 - Given a mouse, when the pointer rests on « Hesper » with « Vael » as departure, then a tag reads « Hesper · 6 cases ».
 - Given Teo (no role in the universe) or Léa on a hidden galaxy, when they open the address, then « Page introuvable. » and the tool's code is not requested (no request for the tool's code in the browser's log, for either).
 - Given Antor on the list of maps, then « Galaxie d'essai » carries the « Galaxie » badge; made invisible, it carries « MJ seul » for him and is absent for Léa.
