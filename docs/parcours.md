@@ -743,12 +743,12 @@ the density of generated systems never changes based on a territory she cannot s
    d'anciens réglages » and offer « Recalculer »; Léa loses nothing until she confirms.
 5. Rule sheets (« Moteurs », « Défenses ») and the 11 examples are managed sections, readable and
    uneditable (`kanevas-outils-vaisseaux-regles`); in the first slice, Léa shares the ship link with Roxane, a player
-   who has no design of her own on it: Roxane reads « Étoile du soir » read-only, with « Enregistrer » and « Annuler »
+   who has no design of her own on it: Roxane reads « Étoile du soir » (Léa's second design, on a hull of the system, which she may read) read-only, with « Enregistrer » and « Annuler »
    absent, and « Vent d'Orak » is « Page introuvable. » for her (not hers to read).
 *Highlight*: budgets recalculate before their eyes, and the sheet's section stays consistent with what
 is calculated.
 *Failure*: Antor disables the designer — the sheet shows « Caractéristiques » as text with « Outil
-désactivé », without editing; Léa opens Roxane's design, which she cannot read — « Page introuvable. »;
+désactivé », without editing; Roxane opens Léa's « Vent d'Orak », which she cannot read — « Page introuvable. »;
 two concurrent writes — the second refused with « Recharger »; calculating an invalid design —
 blocking alerts, « Enregistrer » refuses and explains why; Antor withdraws the hull of « Étoile du soir » from the universe or masks « Lance d'essai » — the design keeps its text, the line says « Élément retiré de cet univers » and « Enregistrer » stays disabled (withdrawn), or Léa still sees the masked element on her design but does not find it in her choices; on a phone, the catalogue is browsed in one column.
 
