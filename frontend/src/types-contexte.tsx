@@ -3,6 +3,7 @@ import {
   Dna,
   FileText,
   Flame,
+  Flag,
   Gem,
   Hourglass,
   Lightbulb,
@@ -57,6 +58,7 @@ export interface TypeVue {
 /** The Lucide name the server sends → its component. An unknown name falls back to a sheet icon. */
 const ICONES: Record<string, LucideIcon> = {
   users: Users,
+  flag: Flag,
   'users-round': UsersRound,
   'map-pin': MapPin,
   shield: Shield,
@@ -164,9 +166,9 @@ export const typesActifs = (types: TypeVue[]) => types.filter((t) => t.active);
 /** The label of a type, its identifier while the list is not read. */
 export const libelleDuType = (types: TypeVue[], type: string) => typeParType(types, type)?.singulier ?? type;
 
-/** The badge of a sheet: PJ or PNJ for a character, the type's label otherwise. */
-export function badgeFiche(types: TypeVue[], f: { type: string; charge: { pj?: boolean } }): string {
-  if (f.type === 'personnage') return f.charge.pj ? 'PJ' : 'PNJ';
+/** The badge of a sheet: PJ or PNJ for a character carrying a charge, the type's label otherwise (absent charge included). */
+export function badgeFiche(types: TypeVue[], f: { type: string; charge?: { pj?: boolean } }): string {
+  if (f.type === 'personnage' && f.charge) return f.charge.pj ? 'PJ' : 'PNJ';
   return libelleDuType(types, f.type);
 }
 

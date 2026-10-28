@@ -2,7 +2,6 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 
 import { openDb, migrate, type Db } from '../../db/db.js';
-import { creerCampagne } from '../campagnes.js';
 import { assurerCompte } from '../comptes.js';
 import { creerFiche } from '../fiches.js';
 import { ajouterMembre } from '../membres.js';
@@ -23,8 +22,8 @@ function monde() {
   const app = ajouterSection(db, antor.id, u.id, aldric.id, { titre: 'Apparence', contenu: 'Grand.' });
   changerAudience(db, antor.id, u.id, aldric.id, app.id, { joueursLisent: true });
   const verite = ajouterSection(db, antor.id, u.id, aldric.id, { titre: 'Vérité — MJ seul', contenu: 'Traître.' });
-  const camp = creerCampagne(db, antor.id, u.id, { nom: 'La Couronne brisée' });
-  const campAutre = creerCampagne(db, paul.id, u2.id, { nom: 'Etrangère' });
+  const camp = creerFiche(db, antor.id, u.id, { type: 'aventure', sousType: 'Campagne', titre: 'La Couronne brisée' });
+  const campAutre = creerFiche(db, paul.id, u2.id, { type: 'aventure', sousType: 'Campagne', titre: 'Etrangère' });
   const outil = (compte: number, nom: string, args: unknown, univ = u.id) =>
     catalogueDe(db, compte, univ).outils.find((o) => o.nom === nom)!.executer(args);
   const nbSections = () => db.prepare('SELECT count(*) n FROM sections').get() as { n: number };
@@ -35,13 +34,13 @@ const ok = (r: any) => {
   return r;
 };
 
-test('catalogues : creer_* seulement chez le MJ, aucun paramètre compte/univers/rôle', () => {
+test('catalogues : plus de creer_campagne, creer_scenario ni lister_campagnes (AD-127), aucun paramètre compte/univers/rôle', () => {
   const { db, antor, lea, u } = monde();
   const noms = (id: number) => catalogueDe(db, id, u.id).outils.map((o) => o.nom);
-  assert.ok(!noms(lea.id).includes('creer_campagne'));
-  assert.ok(!noms(lea.id).includes('creer_scenario'));
-  assert.ok(noms(antor.id).includes('creer_campagne'));
-  assert.ok(noms(antor.id).includes('creer_scenario'));
+  for (const retire of ['creer_campagne', 'creer_scenario', 'lister_campagnes']) {
+    assert.ok(!noms(lea.id).includes(retire), retire);
+    assert.ok(!noms(antor.id).includes(retire), retire);
+  }
   for (const o of catalogueDe(db, antor.id, u.id).outils) {
     for (const k of Object.keys(o.schema.shape)) {
       assert.ok(!/compte|univers|role|rôle/i.test(k), `${o.nom}.${k}`);
@@ -91,9 +90,8 @@ test('chercher Garde sans type : 20 fiches triées par titre (AD-118), tronquée
   assert.equal(t.tronquee, false);
 });
 
-test('lister_campagnes, lire_fiche et lire_section selon le rôle', () => {
+test('lire_fiche et lire_section selon le rôle', () => {
   const { lea, antor, outil, aldric, app, verite } = monde();
-  assert.deepEqual(ok(outil(lea.id, 'lister_campagnes', {})).donnees.campagnes.map((c: any) => c.nom), ['La Couronne brisée']);
   const f = ok(outil(lea.id, 'lire_fiche', { ficheId: aldric.id })).donnees;
   assert.deepEqual(f.sections.map((s: any) => [s.titre, s.version]), [['Apparence', 1]]);
   assert.equal(ok(outil(antor.id, 'lire_fiche', { ficheId: aldric.id })).donnees.sections.length, 2);
@@ -104,21 +102,12 @@ test('lister_campagnes, lire_fiche et lire_section selon le rôle', () => {
   assert.equal(ok(outil(lea.id, 'lire_section', { ficheId: aldric.id, sectionId: app.id })).donnees.contenu, '<p>Grand.</p>\n');
 });
 
-test('creer_campagne / creer_scenario : événements, visibilité, étanchéité entre univers', () => {
-  const { antor, lea, outil, camp, campAutre, db } = monde();
-  const c = ok(outil(antor.id, 'creer_campagne', { nom: 'Les Marches rouges' }));
-  assert.equal(c.evenement.type, 'campagne_creee');
-  assert.ok(c.evenement.libelle.includes('Les Marches rouges'));
-  assert.ok(ok(outil(lea.id, 'lister_campagnes', {})).donnees.campagnes.some((x: any) => x.nom === 'Les Marches rouges'));
-  const s = ok(outil(antor.id, 'creer_scenario', { campagneId: camp.id, titre: 'Le Siège' }));
-  assert.equal(s.evenement.type, 'scenario_cree');
-  assert.ok(s.evenement.libelle.includes('Le Siège') && s.evenement.libelle.includes('La Couronne brisée'));
-  assert.equal((db.prepare('SELECT count(*) n FROM scenarios').get() as any).n, 1);
-  // a campaign of another universe, even if Antor were its GM, and an unknown one
-  const autre = outil(antor.id, 'creer_scenario', { campagneId: campAutre.id, titre: 'X' });
-  assert.deepEqual(autre, { ok: false, erreur: 'Introuvable.' });
-  assert.deepEqual(outil(antor.id, 'creer_scenario', { campagneId: 99999, titre: 'X' }), { ok: false, erreur: 'Introuvable.' });
-  assert.equal((db.prepare('SELECT count(*) n FROM scenarios').get() as any).n, 1);
+test('une aventure créée par le MJ se cherche et se lit comme une fiche ; Léa ne lit pas une Présentation fermée', () => {
+  const { antor, lea, outil, camp, db, u } = monde();
+  ajouterSection(db, antor.id, u.id, camp.id, { titre: 'Présentation', contenu: 'Secret.' });
+  assert.deepEqual(outil(lea.id, 'chercher', { mots: 'Couronne' }), { ok: false, erreur: 'Introuvable.' });
+  assert.ok(JSON.stringify(ok(outil(antor.id, 'chercher', { mots: 'Couronne', type: 'aventure' })).donnees).includes('Couronne'));
+  assert.deepEqual(outil(lea.id, 'lire_fiche', { ficheId: camp.id }), { ok: false, erreur: 'Introuvable.' });
 });
 
 test('modifier_section : remplace avec la version lue, refuse une version périmée sans événement', () => {
@@ -151,7 +140,7 @@ test('ajouter_a_section de Léa : écrit après l’existant ; lecture seule et 
 test('paramètres inconnus ou invalides : échec sans effet', () => {
   const { lea, outil, aldric, antor } = monde();
   assert.equal(outil(lea.id, 'lire_fiche', { ficheId: aldric.id, compteId: antor.id }).ok, false);
-  assert.equal(outil(antor.id, 'creer_campagne', { nom: '' }).ok, false);
+  assert.equal(outil(antor.id, 'lire_fiche', { ficheId: 'x' }).ok, false);
 });
 
 test('bouchon : chercher salport (Antor, sans type) rend Port-Sel ; sous-main (Léa) : Introuvable., aucun événement', async () => {
@@ -170,4 +159,86 @@ test('bouchon : chercher salport (Antor, sans type) rend Port-Sel ; sous-main (L
   assert.equal(l.ok, false, JSON.stringify(l));
   assert.equal(l.erreur, 'Introuvable.');
   assert.equal(l.evenement, undefined);
+});
+
+// ---- creer_fiche (B-62, AD-126) ----
+import { reglerTypeUnivers } from '../types-fiche.js';
+import { lireFiche } from '../fiches.js';
+
+const nbFiches = (db: Db) => (db.prepare('SELECT count(*) n FROM fiches').get() as { n: number }).n;
+
+test('creer_fiche : MJ seulement ; Léa ne l’a pas ; aucun paramètre de compte ou d’univers', () => {
+  const { db, antor, lea, u } = monde();
+  const noms = (id: number) => catalogueDe(db, id, u.id).outils.map((o) => o.nom);
+  assert.ok(noms(antor.id).includes('creer_fiche'));
+  assert.ok(!noms(lea.id).includes('creer_fiche'));
+  const o = catalogueDe(db, antor.id, u.id).outils.find((x) => x.nom === 'creer_fiche')!;
+  assert.deepEqual(Object.keys(o.schema.shape).sort(), ['parentId', 'sousType', 'titre', 'type']);
+});
+
+test('creer_fiche : campagne puis scénario dessous, En préparation, événement fiche_creee, fermé à Léa', () => {
+  const { db, antor, lea, u, outil } = monde();
+  const c = ok(outil(antor.id, 'creer_fiche', { type: 'aventure', titre: 'Les Cendres', sousType: 'Campagne' }));
+  assert.equal(c.donnees.titre, 'Les Cendres');
+  assert.deepEqual(c.evenement, {
+    type: 'fiche_creee', libelle: 'Fiche « Les Cendres » créée', cible: { type: 'fiche', ficheId: c.donnees.id },
+  });
+  const s = ok(outil(antor.id, 'creer_fiche', { type: 'aventure', titre: 'Le Creuset', sousType: 'Scénario', parentId: c.donnees.id }));
+  const f = lireFiche(db, { compteId: antor.id }, u.id, s.donnees.id) as any;
+  assert.deepEqual(f.ancetres.map((a: any) => a.id), [c.donnees.id]);
+  assert.equal(f.charge.statut, 'en_preparation');
+  assert.equal(f.sousType, 'Scénario');
+  // Léa ne voit ni l'un ni l'autre
+  assert.deepEqual(outil(lea.id, 'chercher', { mots: 'Creuset' }), { ok: false, erreur: 'Introuvable.' });
+  assert.deepEqual(outil(lea.id, 'chercher', { mots: 'Cendres' }), { ok: false, erreur: 'Introuvable.' });
+});
+
+test('creer_fiche : parent inconnu ou d’un autre univers → Introuvable., rien de créé, aucun événement', () => {
+  const { db, antor, u, campAutre, outil } = monde();
+  const avant = nbFiches(db);
+  for (const parentId of [99999, campAutre.id]) {
+    const r = outil(antor.id, 'creer_fiche', { type: 'aventure', titre: 'Orphelin', parentId }) as any;
+    assert.deepEqual(r, { ok: false, erreur: 'Introuvable.' });
+    assert.equal(r.evenement, undefined);
+  }
+  assert.equal(nbFiches(db), avant);
+  assert.equal(db.prepare("SELECT count(*) n FROM fiches WHERE titre='Orphelin'").get().n, 0);
+  void u;
+});
+
+test('creer_fiche : type désactivé refusé sans événement ; compte_rendu et type inconnu refusés', () => {
+  const { db, antor, u, outil } = monde();
+  reglerTypeUnivers(db, antor.id, u.id, 'aventure', 'desactive');
+  const avant = nbFiches(db);
+  const r = outil(antor.id, 'creer_fiche', { type: 'aventure', titre: 'X' }) as any;
+  assert.equal(r.ok, false);
+  assert.equal(r.evenement, undefined);
+  for (const type of ['compte_rendu', 'dragon']) {
+    const q = outil(antor.id, 'creer_fiche', { type, titre: 'Y' }) as any;
+    assert.equal(q.ok, false, type);
+    assert.equal(q.evenement, undefined);
+  }
+  assert.equal(nbFiches(db), avant);
+});
+
+test('creer_fiche : paramètres en trop (compteId, universId) refusés, titre vide refusé', () => {
+  const { db, antor, u, outil } = monde();
+  const avant = nbFiches(db);
+  for (const extra of [{ compteId: 1 }, { universId: u.id }]) {
+    assert.equal((outil(antor.id, 'creer_fiche', { type: 'lieu', titre: 'Z', ...extra }) as any).ok, false);
+  }
+  assert.equal((outil(antor.id, 'creer_fiche', { type: 'lieu', titre: '   ' }) as any).ok, false);
+  assert.equal(nbFiches(db), avant);
+});
+
+test('creer_fiche : un personnage sans charge naît PNJ ; un lieu sans parent', () => {
+  const { db, antor, u, outil } = monde();
+  const p = ok(outil(antor.id, 'creer_fiche', { type: 'personnage', titre: 'Mara' }));
+  assert.equal((lireFiche(db, { compteId: antor.id }, u.id, p.donnees.id) as any).charge.pj, false);
+  ok(outil(antor.id, 'creer_fiche', { type: 'lieu', titre: 'Port' }));
+});
+
+test('creer_fiche : un MJ d’un autre univers ne crée rien ici (introuvable)', () => {
+  const { db, paul, u } = monde();
+  assert.throws(() => catalogueDe(db, paul.id, u.id), (e: any) => e.code === 'introuvable');
 });

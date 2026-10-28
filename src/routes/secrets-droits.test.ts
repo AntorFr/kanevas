@@ -128,7 +128,7 @@ test('« Description » ouverte aux joueurs : Léa écrit un bloc → 400, texte
 
 test('compte-rendu : Léa avec un bloc → 400 ; Antor avec un bloc, lu de Léa sans le bloc', async () => {
   const { app, antor, lea, base, u } = await monter();
-  const camp = await app.inject({ method: 'POST', url: `${base}/campagnes`, headers: antor, payload: { nom: 'Camp', systemeId: null } });
+  const camp = await app.inject({ method: 'POST', url: `${base}/fiches`, headers: antor, payload: { type: 'aventure', sousType: 'Campagne', titre: 'Camp', sections: [{ titre: 'Présentation', joueursLisent: true }] } });
   assert.equal(camp.statusCode, 201, camp.body);
   const cible = { campagneId: camp.json().id, titre: 'Séance 1' };
   const n0 = (app.db.prepare('SELECT count(*) n FROM fiches').get() as { n: number }).n;

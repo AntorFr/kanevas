@@ -9,9 +9,9 @@ import { after, before, describe, test } from 'node:test';
 
 import { type Any, attendre, connecte, creerFiche, creerUnivers, launch, rx, skipBrowser, startServer, texte, type Server } from './harnais.test.js';
 
-const QUATORZE = [
+const REGLABLES = [
   'personnage', 'lieu', 'faction', 'famille', 'objet', 'evenement', 'quete', 'creature', 'race', 'vaisseau', 'savoir',
-  'recit', 'regle', 'note',
+  'recit', 'regle', 'note', 'aventure',
 ];
 
 describe('kanevas-import-types : compléments au besoin', { skip: skipBrowser }, () => {
@@ -44,7 +44,7 @@ describe('kanevas-import-types : compléments au besoin', { skip: skipBrowser },
     assert.equal(r.corps.code, 'type_non_reglable');
     const liste = await fetchAs(antor.page, 'GET', '/api/univers/1/types');
     const reglables = (liste.corps as Any[]).filter((t) => t.reglable).map((t) => t.type);
-    assert.deepEqual(reglables, QUATORZE);
+    assert.deepEqual(reglables, REGLABLES);
     await antor.ctx.close();
   });
 
@@ -70,7 +70,7 @@ describe('kanevas-import-types : compléments au besoin', { skip: skipBrowser },
     const antor = await connecte(browser, srv.base, 'antor');
     await creerUnivers(antor.page, 'Tout éteint');
     const id = await idDe(antor.page, 'Tout éteint');
-    for (const t of QUATORZE) {
+    for (const t of REGLABLES) {
       const r = await fetchAs(antor.page, 'PUT', `/api/univers/${id}/types/${t}`, { etat: 'desactive' });
       assert.equal(r.status, 200, t);
     }

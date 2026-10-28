@@ -8,6 +8,7 @@ import { badgeFiche, iconeDuType, libelleDuType, typesActifs, useTypes } from '.
 import type { BlocSection } from '../registre';
 import { ListeRecherche } from '../liste-recherche';
 import type { Fiche, PropsBlocSection } from '../types';
+import { useMJSeul } from '../vignette';
 import './relations.css';
 
 const ECHEC = 'L’action n’a pas abouti. Réessayez.';
@@ -18,7 +19,7 @@ interface Relation {
   /** Key of the nature, '' for a free relation. */
   nature: string;
   qualificatif: string;
-  cible: { id: number; titre: string; type: string };
+  cible: { id: number; titre: string; type: string; charge?: { pj?: boolean } };
 }
 
 /** Refusals of the service shown as they come (their message is the screen text). */
@@ -88,7 +89,7 @@ function BlocRelations({ universId, fiche, section, role, suffixeMode = '' }: Pr
                   qualificatif={libelleNature(r.nature) ? r.qualificatif : undefined}
                   icone={iconeDuType(types, r.cible.type)}
                   cible={r.cible.titre}
-                  type={libelleDuType(types, r.cible.type)}
+                  type={badgeFiche(types, r.cible)}
                   vers={`/univers/${universId}/fiche/${r.cible.id}`}
                   actions={
                     mj && (
@@ -256,21 +257,15 @@ function FormulaireRelier({
         }}
         videListe={<p>{lore.aucun} à relier.</p>}
         ligne={(f) => (
-          <button
-            type="button"
-            className="choix-fiche"
-            aria-pressed={choix?.id === f.id}
-            onClick={() => {
+          <ChoixFiche
+            fiche={f}
+            titreType={badgeFiche(tous, f)}
+            choisie={choix?.id === f.id}
+            onChoix={() => {
               setChoix(f);
               setErreurChoix(undefined);
             }}
-          >
-            <span className="puce" aria-hidden="true" />
-            <span className="titre-fiche" title={f.titre}>
-              {f.titre}
-            </span>
-            <span className="badge-type">{badgeFiche(tous, f)}</span>
-          </button>
+          />
         )}
       />
       )}
@@ -302,3 +297,21 @@ function FormulaireRelier({
 }
 
 export default { id: 'relations', roles: ['mj', 'joueur'], rang: 10, composant: BlocRelations } satisfies BlocSection;
+
+/** One sheet of the « Relier » selector; the « MJ seul » badge stands beside the button, never inside it (B-57). */
+function ChoixFiche({ fiche: f, titreType, choisie, onChoix }: { fiche: Fiche; titreType: string; choisie: boolean; onChoix: () => void }) {
+  const mjSeul = useMJSeul(f);
+  return (
+    <div className="choix-fiche-ligne">
+      <button type="button" className="choix-fiche" aria-pressed={choisie} onClick={onChoix}>
+        <span className="puce" aria-hidden="true" />
+        <span className="titre-fiche" title={f.titre}>
+          {f.titre}
+        </span>
+        <span className="badge-type">{titreType}</span>
+      </button>
+      {mjSeul.badge}
+      {mjSeul.aide}
+    </div>
+  );
+}

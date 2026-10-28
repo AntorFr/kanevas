@@ -91,23 +91,3 @@ test('E-14 à 390 px : pas de débordement horizontal', opts, async () => {
   await p.setViewportSize({ width: 1440, height: 900 });
   assert.equal(deborde, false);
 });
-
-test('E-6 campagne : la hachure d’audience (E-9) reste intacte sur Scénarios', opts, async () => {
-  await p.emulateMedia({ colorScheme: 'dark' });
-  const idUnivers = new URL(p.url()).pathname.split('/')[2];
-  await p.goto(`/univers/${idUnivers}/campagnes`);
-  await attendre(p);
-  await p.getByLabel(/^Nom/).fill('Camp gabarit');
-  await p.getByRole('button', { name: rxExact('Créer la campagne') }).click();
-  await attendre(p);
-  await p.locator('main').getByRole('link', { name: /^Camp gabarit/ }).first().click();
-  await p.getByRole('heading', { name: 'Camp gabarit', level: 1 }).waitFor();
-  await attendre(p);
-  const bg = await p.locator('.panneau.reserve-mj').first().evaluate((e: HTMLElement) => ({
-    bg: getComputedStyle(e).backgroundImage, ml: getComputedStyle(e).marginLeft,
-    before: getComputedStyle(e, '::before').content,
-  }));
-  assert.ok(bg.bg.includes('repeating-linear-gradient'), `hachure : ${bg.bg}`);
-  assert.equal(bg.ml, '-28px');
-  assert.equal(bg.before, '""');
-});

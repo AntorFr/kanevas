@@ -37,6 +37,13 @@
 .ligne-suivi .date { flex: none; color: var(--texte-3); font-size: var(--t-12); white-space: nowrap; }
 .ligne-suivi .libelle { flex: 1; min-width: 0; overflow-wrap: anywhere; }
 
+/* E-13: the report title leads; author and adventure sit below, as in e13. */
+.titre-compte-rendu { display: block; color: var(--texte); text-decoration: none; }
+.titre-compte-rendu:hover { text-decoration: underline; }
+.ligne-compte-rendu .meta-compte-rendu { display: flex; align-items: center; flex-wrap: wrap; gap: var(--e-1) var(--e-2); margin-top: var(--e-1); }
+.meta-compte-rendu .badge-type { max-width: 100%; min-width: 0; height: auto; min-height: 24px; padding: var(--e-1) var(--e-2); white-space: normal; overflow-wrap: anywhere; text-decoration: none; }
+.meta-compte-rendu a.badge-type:hover { box-shadow: inset 0 0 0 1px var(--bord-fort); text-decoration: underline; }
+
 /* Search in a type */
 .recherche { display: flex; flex-wrap: wrap; align-items: center; gap: var(--e-2); margin: var(--e-6) 0 0; }
 .champ-recherche { position: relative; flex: 1 1 220px; min-width: 0; }
@@ -203,3 +210,17 @@ main.principal:has(.page-grille) { max-width: 1080px; }
 .vignette-recherche .marque-disparu svg { width: 10px; height: 10px; }
 .vignette-recherche.disparu > img { filter: saturate(.4); }
 .filtre-etat { display: inline-flex; flex: none; }
+/* B-57: the « MJ seul » badge of a whole sheet (card, tree line, selector, search result). */
+.mj-seul { display: inline-flex; flex: none; border-radius: 11px; cursor: help; }
+.mj-seul:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.carte .pastille-carte { display: flex; margin-top: -4px; padding: 0 2px; }
+.aide-mj-seul { display: block; font-size: var(--t-13); color: var(--texte-3); }
+.aide-mj-seul.reservee { min-height: 1.5em; }
+.carte .aide-mj-seul { padding: 0 2px; }
+.arbre .ligne-arbre { flex-wrap: wrap; }
+.arbre .aide-mj-seul { flex-basis: 100%; padding-left: var(--e-6); padding-bottom: var(--e-2); }
+.relations .choix-fiche-ligne .aide-mj-seul, .ligne-recherche .aide-mj-seul { flex-basis: 100%; }
+.filtre-visibilite { position: relative; flex: 0 1 200px; min-width: 140px; }
+@media (max-width: 520px) { .filtre-visibilite { flex: 1 1 100%; } }
+.filtre-visibilite .champ { margin: 0; }
+.filtre-visibilite .champ > .lib-champ { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; margin: 0; }

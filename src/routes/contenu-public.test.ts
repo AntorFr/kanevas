@@ -182,18 +182,17 @@ test('rendreMarkdown : le conteneur n\'existe que pour la nature section', () =>
   assert.equal(rendreMarkdown(src, { nature: 'texte' }), '<p>:::mj<br>\nsecret<br>\n:::</p>\n');
 });
 
-test('scénario et entrée de système : :::mj reste du texte, trois lignes lues', async () => {
-  const { app, antor, base } = await monter();
+test('entrée de système : :::mj reste du texte ; le texte d’un scénario (section d’une aventure) a le conteneur : Léa ne lit pas le bloc', async () => {
+  const { app, antor, lea, base } = await monter();
   const src = ':::mj\nsecret\n:::';
   const attendu = '<p>:::mj<br>\nsecret<br>\n:::</p>\n';
-  const c = await app.inject({ method: 'POST', url: `${base}/campagnes`, headers: antor, payload: { nom: 'Camp', systemeId: null } });
-  assert.equal(c.statusCode, 201, c.body);
-  const sc = await app.inject({ method: 'POST', url: `/api/campagnes/${c.json().id}/scenarios`, headers: antor, payload: { titre: 'S', contenu: src } });
+  const sc = await app.inject({ method: 'POST', url: `${base}/fiches`, headers: antor, payload: { type: 'aventure', sousType: 'Scénario', titre: 'S', sections: [{ titre: 'Scénario', joueursLisent: true }] } });
   assert.equal(sc.statusCode, 201, sc.body);
-  assert.equal(sc.json().html, attendu);
-  const lu = await app.inject({ method: 'GET', url: `/api/scenarios/${sc.json().id}`, headers: antor });
-  assert.equal(lu.json().html, attendu);
-  assert.equal(lu.json().contenu, src);
+  const sid = (app.db.prepare('SELECT id FROM sections WHERE fiche_id = ?').get(sc.json().id) as { id: number }).id;
+  const ecr = await app.inject({ method: 'PUT', url: `${base}/fiches/${sc.json().id}/sections/${sid}/contenu`, headers: antor, payload: { contenu: 'vu\n' + src, version: 1 } });
+  assert.equal(ecr.statusCode, 200, ecr.body);
+  const lu = await app.inject({ method: 'GET', url: `${base}/fiches/${sc.json().id}`, headers: lea });
+  assert.ok(lu.body.includes('vu') && !lu.body.includes('secret'), lu.body);
   // system entry (template)
   const sy = await app.inject({ method: 'POST', url: '/api/systemes', headers: antor, payload: { nom: 'Sys' } });
   assert.equal(sy.statusCode, 201, sy.body);

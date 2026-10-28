@@ -212,36 +212,6 @@ test('bords section : 100 000 s’enregistre (compteur plein) ; 100 001 grise En
   await page.close();
 });
 
-test('bords scénario : 100 000 s’enregistre ; 100 001 grise Enregistrer, erreur, aucun aperçu', opts, async () => {
-  const m = await monde('Editeur plafond scenario');
-  const camp = await api(C.antor, 'post', `${m.b}/campagnes`, { nom: 'Camp' });
-  const sc = await api(C.antor, 'post', `/api/campagnes/${camp.id}/scenarios`, { titre: 'Acte 1', contenu: 'x' });
-  const page = await C.antor.ctx.newPage();
-  await page.goto(`${srv.base}/univers/${m.u}/scenarios/${sc.id}`);
-  await page.waitForLoadState('networkidle');
-  await page.getByRole('button', { name: 'Modifier', exact: true }).click();
-  const champ = page.getByLabel('Contenu', { exact: true });
-  const compte = compterApercus(page);
-  await champ.fill('a'.repeat(100001));
-  await page.getByText('Erreur : 100 000 caractères au plus.').waitFor();
-  const enr = page.getByRole('button', { name: 'Enregistrer', exact: true });
-  assert.equal(await enr.getAttribute('aria-disabled'), 'true');
-  await enr.click({ force: true });
-  await page.getByRole('radio', { name: 'Aperçu', exact: true }).click();
-  assert.equal(compte.n, 0);
-  assert.equal(await champ.inputValue().then((v: string) => v.length), 100001, 'le clic sur un bouton grisé n’enregistre pas');
-  await champ.fill('a'.repeat(100000));
-  assert.match(plat(await page.locator('.compteur-md').innerText()), new RegExp(COMPTEUR_PLEIN));
-  await enr.click();
-  await champ.waitFor({ state: 'detached' });
-  const lu = await api(C.antor, 'get', `/api/campagnes/${camp.id}/scenarios/${sc.id}`).catch(() => undefined);
-  if (lu) assert.equal(JSON.stringify(lu).includes('a'.repeat(100000)), true);
-  await page.reload();
-  await page.waitForLoadState('networkidle');
-  assert.equal((await page.locator('.contenu-scenario').innerText()).length >= 100000, true);
-  await page.close();
-});
-
 test('bords entrée de système : 100 000 s’enregistre ; 100 001 grise Enregistrer, erreur, aucun aperçu', opts, async () => {
   const m = await monde('Editeur plafond entree');
   const sys = await api(C.antor, 'post', '/api/systemes', { nom: 'Plafond MD' });
@@ -274,25 +244,5 @@ test('bords entrée de système : 100 000 s’enregistre ; 100 001 grise Enregis
   await page.getByRole('button', { name: /Gobelin/ }).click();
   await page.locator('.entree-contenu.md').waitFor();
   assert.equal((await page.locator('.entree-contenu.md').innerText()).length >= 100000, true);
-  await page.close();
-});
-
-test('E-6 : la fenêtre garde son champ simple (ni barre ni aperçu) ; 100 000 passe, 100 001 reçoit l’erreur au clic', opts, async () => {
-  const m = await monde('Editeur CR');
-  const camp = await api(C.antor, 'post', `${m.b}/campagnes`, { nom: 'Camp' });
-  const page = await C.lea.ctx.newPage();
-  await page.goto(`${srv.base}/univers/${m.u}/campagnes/${camp.id}`);
-  await page.waitForLoadState('networkidle');
-  await page.getByRole('button', { name: 'Nouveau compte-rendu', exact: true }).click();
-  const f = page.getByRole('dialog');
-  assert.equal(await f.getByRole('radio').count(), 0);
-  assert.equal(await f.getByRole('button', { name: /Gras|Italique/ }).count(), 0);
-  await f.getByLabel('Titre').fill('Séance 1');
-  await f.getByLabel('Texte').fill('a'.repeat(100001));
-  await f.getByRole('button', { name: 'Publier', exact: true }).click();
-  await f.getByText('Erreur : 100 000 caractères au plus.').waitFor();
-  await f.getByLabel('Texte').fill('a'.repeat(100000));
-  await f.getByRole('button', { name: 'Publier', exact: true }).click();
-  await page.getByRole('heading', { name: 'Séance 1', level: 1 }).waitFor();
   await page.close();
 });

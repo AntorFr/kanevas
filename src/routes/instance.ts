@@ -44,6 +44,8 @@ export function registerInstanceRoutes(app: FastifyInstance) {
   const STATUT_CONNEXION = { connexion_impossible: 502, connexion_echouee: 400, connexion_expiree: 410 } as const;
   const refus = (reply: FastifyReply, e: unknown) => {
     if (!(e instanceof ErreurConnexion)) throw e;
+    // The cause (bounded, no token) goes to the log only, never into the answer.
+    if (e.diagnostic) app.log.warn({ code: e.code, cause: e.diagnostic }, 'connexion Claude impossible');
     return reply.code(STATUT_CONNEXION[e.code]).send({ message: e.message, code: e.code });
   };
 

@@ -2,7 +2,6 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 
 import { openDb, migrate, type Db } from '../../db/db.js';
-import { creerCampagne } from '../campagnes.js';
 import { assurerCompte } from '../comptes.js';
 import { creerCompteRendu } from '../comptes_rendus.js';
 import { creerFiche } from '../fiches.js';
@@ -25,7 +24,7 @@ function monde() {
   ajouterMembre(db, antor.id, u.id, 'lea', 'joueur');
   const aldric = creerFiche(db, antor.id, u.id, { type: 'personnage', titre: 'Maître Aldric', charge: { pj: false } });
   const verite = ajouterSection(db, antor.id, u.id, aldric.id, { titre: 'Vérité — MJ seul', contenu: 'Traître.' });
-  const camp = creerCampagne(db, antor.id, u.id, { nom: 'La Couronne brisée' });
+  const camp = creerFiche(db, antor.id, u.id, { type: 'aventure', sousType: 'Campagne', titre: 'La Couronne brisée' });
   const cr = creerCompteRendu(db, antor.id, u.id, camp.id, { titre: 'Séance 3', texte: 'Aldric trahit.' });
   const autreFiche = creerFiche(db, paul.id, u2.id, { type: 'personnage', titre: 'Etranger', charge: { pj: false } });
   const autreSec = ajouterSection(db, paul.id, u2.id, autreFiche.id, { titre: 'Secret', contenu: 'x' });

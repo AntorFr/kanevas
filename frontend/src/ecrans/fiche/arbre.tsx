@@ -1,4 +1,4 @@
-import { ChevronRight } from 'lucide-react';
+import { ChevronRight, type LucideIcon } from 'lucide-react';
 import { useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
@@ -7,6 +7,8 @@ import { Bouton, ErreurChargement, ChargementListe } from '../../ui';
 import { iconeDuType, useTypes, type TypeVue } from '../../types-contexte';
 import './arbre.css';
 import type { Fiche, PageFiches } from './types';
+import { StatutAventure } from './statut';
+import { useMJSeul } from './vignette';
 
 /** A row of the tree (AD-115): `aDesEnfants` and `dans` are computed by the server under the caller's reading. */
 export type FicheArbre = Fiche & { aDesEnfants?: boolean; dans?: { id: number; titre: string } | null };
@@ -18,12 +20,14 @@ export const NIVEAUX_MAX = 6;
 
 const cleVue = (universId: string | number, type: string) => `kanevas:vue-liste:${universId}:${type}`;
 
-/** The remembered view of a type in this browser; absent or unreadable: the grid. */
+/** The remembered view, defaulting to the tree for adventures, the grid for other types. */
 export function lireVue(universId: string | number, type: string): VueListe {
+  const defaut = type === 'aventure' ? 'arbre' : 'grille';
   try {
-    return window.localStorage.getItem(cleVue(universId, type)) === 'arbre' ? 'arbre' : 'grille';
+    const memorisee = window.localStorage.getItem(cleVue(universId, type));
+    return memorisee === 'arbre' || memorisee === 'grille' ? memorisee : defaut;
   } catch {
-    return 'grille';
+    return defaut;
   }
 }
 
@@ -63,12 +67,14 @@ export function Arbre({
   type,
   suffixeMode,
   videListe,
+  gestion = false,
 }: {
   universId: string;
   type: TypeVue;
   /** `&mode=joueur` when a GM looks as a player, else empty. */
   suffixeMode: string;
   videListe: ReactNode;
+  gestion?: boolean;
 }) {
   const perdue = useConnexionPerdue();
   const navigate = useNavigate();
@@ -245,7 +251,7 @@ export function Arbre({
             onFocus={(e) => e.target === e.currentTarget && setFocus(l.cle)}
             onKeyDown={(e) => toucher(e, f)}
           >
-            <div className="ligne-arbre">
+            <div className={`ligne-arbre${f.type === 'aventure' ? ' ligne-aventure' : ''}`}>
               {aEnfants ? (
                 <button
                   type="button"
@@ -259,28 +265,50 @@ export function Arbre({
               ) : (
                 <span className="chevron vide" aria-hidden="true" />
               )}
-              <Link className="lien-fiche" to={`/univers/${universId}/fiche/${f.id}`} tabIndex={-1}>
-                <span className="glyphe" aria-hidden="true">
-                  <Icone size={16} strokeWidth={1.75} />
-                </span>
-                <span className="titre-fiche" title={f.titre}>
-                  {f.titre}
-                </span>
-                {f.sousType && (
-                  <span className="sous-type" title={f.sousType}>
-                    {f.sousType}
-                  </span>
-                )}
-              </Link>
+              <LienFiche universId={universId} fiche={f} Icone={Icone} />
               {f.dans && (
                 <Link className="dans" to={`/univers/${universId}/fiche/${f.dans.id}`} tabIndex={-1}>
                   dans {f.dans.titre}
                 </Link>
+              )}
+              {f.type === 'aventure' && (
+                <div className="details-aventure">
+                  {f.sousType && <span className="sous-type" title={f.sousType}>{f.sousType}</span>}
+                  <StatutAventure universId={universId} fiche={f} gestion={gestion} onChange={(maj) => {
+                    setNoeuds((m) => Object.fromEntries(Object.entries(m).map(([cle, n]) => [cle, {
+                      ...n, fiches: n.fiches.map((fiche) => fiche.id === maj.id ? { ...fiche, ...maj } : fiche),
+                    }])));
+                  }} />
+                </div>
               )}
             </div>
           </li>
         );
       })}
     </ul>
+  );
+}
+
+/** The link of a tree row: glyph, title, sub-type, and the « MJ seul » badge of a sheet the players cannot read (B-57). */
+function LienFiche({ universId, fiche: f, Icone }: { universId: string; fiche: FicheArbre; Icone: LucideIcon }) {
+  const mjSeul = useMJSeul(f);
+  return (
+    <>
+      <Link className="lien-fiche" to={`/univers/${universId}/fiche/${f.id}`} tabIndex={-1}>
+        <span className="glyphe" aria-hidden="true">
+          <Icone size={16} strokeWidth={1.75} />
+        </span>
+        <span className="titre-fiche" title={f.titre}>
+          {f.titre}
+        </span>
+        {f.type !== 'aventure' && f.sousType && (
+          <span className="sous-type" title={f.sousType}>
+            {f.sousType}
+          </span>
+        )}
+      </Link>
+      {mjSeul.badge}
+      {mjSeul.aide}
+    </>
   );
 }
