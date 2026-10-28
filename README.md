@@ -41,7 +41,7 @@ menu de l'avatar qui porte le thème et la déconnexion) et les composants parta
 boîte de dialogue, interrupteur, pastille…) sont communs à tous les écrans. Les polices (Fraunces, Newsreader, Inter,
 `@fontsource`) et les icônes (`lucide-react`) sont empaquetées, sans requête vers un hôte tiers (AD-92).
 
-Tests sans Docker : `npm run typecheck` puis `npm test` (ils jouent aussi les e2e là où Playwright est installé, ce qui est long : voir « Tests de bout en bout » ; un seul fichier, e2e ou non (`src/db/migration-types.test.ts` : moins d'une seconde) : `node --import tsx --test <fichier>.test.ts`, et jamais deux suites à la fois, les e2e démarrent leurs serveurs et échouent en masse sous concurrence ; après un renumérotage de migration, `rm -rf dist` avant `npm run build`, sinon l'ancien fichier copié reste dans `dist/db/migrations` et le serveur ne démarre plus) ; la voie Docker de référence est dans `CLAUDE.md`.
+Tests sans Docker : `npm ci` d'abord (un `node_modules/` présent peut être incomplet), puis `npm run typecheck` puis `npm test` (ils jouent aussi les e2e là où Playwright est installé, ce qui est long : voir « Tests de bout en bout » ; un seul fichier, e2e ou non (`src/db/migration-types.test.ts` : moins d'une seconde) : `node --import tsx --test <fichier>.test.ts`, et jamais deux suites à la fois, les e2e démarrent leurs serveurs et échouent en masse sous concurrence ; après un renumérotage de migration, `rm -rf dist` avant `npm run build`, sinon l'ancien fichier copié reste dans `dist/db/migrations` et le serveur ne démarre plus) ; la voie Docker de référence est dans `CLAUDE.md`.
 
 ## Démarrage local
 
