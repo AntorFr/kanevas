@@ -746,7 +746,7 @@ the density of generated systems never changes based on a territory she cannot s
 is calculated.
 *Failure*: a recalculation that fails — « Le recalcul n'a pas abouti. Réessayez. », the text unchanged; the usage removed meanwhile — « Vous ne pouvez plus recalculer cette section. »; connection lost — « Connexion perdue. », the buttons disabled. Antor disables the designer — the sheet shows « Caractéristiques » as text with « Outil
 désactivé », without editing; Léa opens Roxane's design, which she cannot read — « Page introuvable. »;
-two concurrent writes — the second refused with « Recharger »; calculating an invalid design —
+two concurrent writes — the second refused with « Recharger la section »; calculating an invalid design —
 blocking alerts, « Enregistrer » refuses and explains why; on a phone, the catalogue is browsed in one column.
 
 ### P-20 — Migrate Éneria's current tools (Monsieur, Saturday, Mac and private repository)

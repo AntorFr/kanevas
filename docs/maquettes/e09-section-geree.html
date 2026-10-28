@@ -2,9 +2,9 @@
 <html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Section gérée — Kanevas</title><style>
 /*
 MAQUETTE — E-9, section gérée par un outil. Illustre docs/ecrans.md « Screen details for
-`kanevas-outils-sections-gerees` » : la bannière et ses états ; docs/parcours.md B-66, B-67, P-19.
+`kanevas-outils-sections-gerees` » : le bandeau et ses états ; docs/parcours.md B-66, B-67, P-19.
 Tokens : e11-carte.html (docs/charte.md). Le document prime sur la maquette.
-Sur un téléphone (<= 760 px) les boutons passent sous le texte de la bannière, pleine largeur, 44 px.
+Dès 760 px et en dessous, le bandeau passe en colonne et les boutons passent sous le texte du bandeau, pleine largeur, 44 px.
 */
 :root{--bg:#101012;--weave:#131316;--s1:#1a1a1f;--s2:#212127;--s3:#2a2a31;--b:rgba(255,255,255,.07);--bs:rgba(255,255,255,.15);
 --i1:#f5f4f2;--i2:#a3a2a8;--i3:#6b6a72;--vi:#8b7cf6;--vis:#aca2f9;--vid:rgba(139,124,246,.16);--vib:rgba(139,124,246,.4);
@@ -37,6 +37,7 @@ body{font-family:var(--sans);background:var(--bg);color:var(--i1);font-size:14px
 .btn[disabled]{opacity:.5}
 .phone{width:360px;border:1px solid var(--bs);border-radius:14px;padding:10px;background:var(--bg)}
 .phone .ban{flex-direction:column;align-items:stretch}.phone .ban .sp{display:none}.phone .ban .acts{flex-direction:column}.phone .btn{width:100%;min-height:44px;text-align:center;padding-top:12px}
+@media(max-width:760px){.ban{flex-direction:column;align-items:stretch}.ban .sp{display:none}.ban .acts{flex-direction:column}.btn{width:100%;min-height:44px;text-align:center;padding-top:12px}}
 </style></head><body><div class="wrap" style="padding:16px">
 <p class="label">À jour — le MJ (Antor), bureau</p>
 <div class="panel"><h3>Caractéristiques <span class="badge mj">MJ seul</span></h3>
@@ -50,23 +51,23 @@ body{font-family:var(--sans);background:var(--bg);color:var(--i1);font-size:14px
 
 <p class="label">Périmée, sur proposition — le MJ ; puis la même section vue par Léa (aucune action)</p>
 <div class="panel"><h3>Notes</h3>
-<div class="ban" role="group" aria-label="Section gérée par un outil"><a class="nm" href="#">Générée par le générateur d'essai</a><span class="st" role="status">Calculée avec d'anciens réglages.</span><span class="sp"></span><span class="acts"><button class="btn">Voir la proposition</button></span></div>
+<div class="ban" role="group" aria-label="Section gérée par un outil"><a class="nm" href="#">Générée par le générateur d'essai</a><span class="st" role="status">Calculée avec d'anciens réglages.</span><span class="sp"></span><span class="acts"><a class="btn" href="#">Ouvrir dans l'outil</a><button class="btn">Voir la proposition</button></span></div>
 <div class="txt">Notes — marge 10 %</div></div>
 <div class="panel"><h3>Notes</h3>
 <div class="ban" role="group" aria-label="Section gérée par un outil"><a class="nm" href="#">Générée par le générateur d'essai</a><span class="st" role="status">Calculée avec d'anciens réglages.</span></div>
 <div class="txt">Notes — marge 10 %</div></div>
 
-<p class="label">Outil désactivé — pour tous ; erreur de recalcul sous la bannière</p>
+<p class="label">Outil désactivé — pour tous ; erreur de recalcul sous le bandeau</p>
 <div class="panel"><h3>Caractéristiques</h3>
 <div class="ban off" role="group" aria-label="Section gérée par un outil"><span class="nm plain">Outil désactivé</span></div>
 <div class="txt">Marge d'essai : 10 %</div></div>
 <div class="panel"><h3>Caractéristiques</h3>
-<div class="ban" role="group" aria-label="Section gérée par un outil"><a class="nm" href="#">Générée par le générateur d'essai</a><span class="st" role="status">Calculée avec d'anciens réglages.</span><span class="sp"></span><span class="acts"><button class="btn pri">Recalculer</button></span></div>
+<div class="ban" role="group" aria-label="Section gérée par un outil"><a class="nm" href="#">Générée par le générateur d'essai</a><span class="st" role="status">Calculée avec d'anciens réglages.</span><span class="sp"></span><span class="acts"><a class="btn" href="#">Ouvrir dans l'outil</a><button class="btn pri">Recalculer</button></span></div>
 <div class="alert" role="alert">Le recalcul n'a pas abouti. Réessayez.</div><div class="txt">Marge d'essai : 10 %</div></div>
 
 <p class="label">Téléphone, 360 px — périmée</p>
 <div class="phone"><div class="panel"><h3>Caractéristiques</h3>
 <div class="ban" role="group" aria-label="Section gérée par un outil"><a class="nm" href="#">Générée par le générateur d'essai</a><span class="st" role="status">Calculée avec d'anciens réglages.</span><span class="acts"><a class="btn" href="#">Ouvrir dans l'outil</a><button class="btn pri">Recalculer</button></span></div>
 <div class="txt">Marge d'essai : 10 %</div></div></div>
-<p class="note">Pas d'éditeur : jamais de « Modifier » sur une section gérée. Pour un joueur sans l'usage de l'outil, la bannière et l'état se lisent, sans bouton.</p>
+<p class="note">Pas d'éditeur : jamais de « Modifier » sur une section gérée. Pour un joueur sans l'usage de l'outil, le bandeau et l'état se lisent, sans bouton.</p>
 </div></body></html>
