@@ -3,20 +3,19 @@ import type { z } from 'zod';
 /**
  * What an agent write adds to the answer (AD-76). `libelle` is written by the
  * server and only names what the caller may read; `cible` lets the client build
- * the link (sheet, campaign or scenario).
+ * the link (sheet or proposal).
  */
 export type TypeEvenement =
+  | 'fiche_creee'
   | 'section_modifiee'
   | 'section_completee'
-  | 'campagne_creee'
-  | 'scenario_cree'
   | 'proposition_creee'
   | 'image_attachee';
 
 export interface Evenement {
   type: TypeEvenement;
   libelle: string;
-  cible: { type: 'fiche' | 'campagne' | 'scenario' | 'proposition'; [id: string]: string | number };
+  cible: { type: 'fiche' | 'proposition'; [id: string]: string | number };
 }
 
 /**

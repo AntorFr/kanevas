@@ -1,5 +1,5 @@
 import type { Db } from '../db/db.js';
-import { exigerMJDeCampagne } from './campagnes.js';
+import { roleDe } from './droits.js';
 import { introuvable, invalide } from './erreurs.js';
 import { validerTitre } from './fiches.js';
 
@@ -8,7 +8,7 @@ export type CategorieTache = (typeof CATEGORIES_TACHE)[number];
 
 export interface Tache {
   id: number;
-  campagneId: number;
+  ficheId: number;
   categorie: CategorieTache;
   libelle: string;
   faite: boolean;
@@ -19,7 +19,7 @@ export interface Tache {
 
 interface TacheRow {
   id: number;
-  campagne_id: number;
+  fiche_id: number;
   categorie: CategorieTache;
   libelle: string;
   faite: number;
@@ -29,7 +29,7 @@ interface TacheRow {
 
 const versTache = (r: TacheRow): Tache => ({
   id: r.id,
-  campagneId: r.campagne_id,
+  ficheId: r.fiche_id,
   categorie: r.categorie,
   libelle: r.libelle,
   faite: r.faite === 1,
@@ -37,12 +37,25 @@ const versTache = (r: TacheRow): Tache => ({
   creeLe: r.cree_le,
 });
 
+/**
+ * Rights on an adventure's tasks are those of the universe OF THE ADVENTURE, never of an id the caller
+ * sends (AD-47): a player, a GM of another universe, an unknown id and a sheet that is not an adventure
+ * all get « not found » (AD-22). No universe id is ever a parameter.
+ */
+export function exigerMJDeAventure(db: Db, compteId: number, ficheId: number): { id: number; univers_id: number } {
+  const f = db.prepare("SELECT id, univers_id FROM fiches WHERE id = ? AND type = 'aventure'").get(ficheId) as
+    | { id: number; univers_id: number }
+    | undefined;
+  if (!f || roleDe(db, f.univers_id, compteId) !== 'mj') throw introuvable();
+  return f;
+}
+
 function chargerPourMJ(db: Db, compteId: number, tacheId: number): TacheRow {
   const t = db.prepare('SELECT * FROM taches_preparation WHERE id = ?').get(tacheId) as
     | TacheRow
     | undefined;
   if (!t) throw introuvable();
-  exigerMJDeCampagne(db, compteId, t.campagne_id);
+  exigerMJDeAventure(db, compteId, t.fiche_id);
   return t;
 }
 
@@ -50,31 +63,31 @@ function chargerPourMJ(db: Db, compteId: number, tacheId: number): TacheRow {
 export function ajouterTache(
   db: Db,
   compteId: number,
-  campagneId: number,
+  ficheId: number,
   entree: { categorie: string; libelle: string },
 ): Tache {
-  exigerMJDeCampagne(db, compteId, campagneId);
+  exigerMJDeAventure(db, compteId, ficheId);
   if (!(CATEGORIES_TACHE as readonly string[]).includes(entree.categorie)) {
     throw invalide('Catégorie inconnue.');
   }
   const libelle = validerTitre(entree.libelle, 200, 'Le libellé');
   const info = db
     .prepare(
-      'INSERT INTO taches_preparation (campagne_id, categorie, libelle, cree_le) VALUES (?, ?, ?, ?)',
+      'INSERT INTO taches_preparation (fiche_id, categorie, libelle, cree_le) VALUES (?, ?, ?, ?)',
     )
-    .run(campagneId, entree.categorie, libelle, new Date().toISOString());
+    .run(ficheId, entree.categorie, libelle, new Date().toISOString());
   return versTache(chargerPourMJ(db, compteId, Number(info.lastInsertRowid)));
 }
 
 /**
- * Tasks of a campaign: the unticked ones by category (Monstres, PNJ, Cartes,
+ * Tasks of an adventure: the unticked ones by category (Monstres, PNJ, Cartes,
  * Déroulements, Autre) then creation, then the ticked ones, last ticked first.
  */
-export function listerTaches(db: Db, compteId: number, campagneId: number): Tache[] {
-  exigerMJDeCampagne(db, compteId, campagneId);
+export function listerTaches(db: Db, compteId: number, ficheId: number): Tache[] {
+  exigerMJDeAventure(db, compteId, ficheId);
   const rows = db
-    .prepare('SELECT * FROM taches_preparation WHERE campagne_id = ?')
-    .all(campagneId) as TacheRow[];
+    .prepare('SELECT * FROM taches_preparation WHERE fiche_id = ?')
+    .all(ficheId) as TacheRow[];
   const rang = (c: CategorieTache) => CATEGORIES_TACHE.indexOf(c);
   const cmp = (a: TacheRow, b: TacheRow) => {
     if (a.faite !== b.faite) return a.faite - b.faite;

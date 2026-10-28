@@ -43,7 +43,7 @@ export async function bati(antor: Any, lea: Any, nom = "Lame d'Ébène"): Promis
   await post(antor, `/api/univers/${u.id}/membres`, { username: 'lea', role: 'joueur' });
   const f = await post(antor, `/api/univers/${u.id}/fiches`, { type: 'personnage', titre: 'Maître Aldric', charge: { v: 1, pj: false } });
   const s = await post(antor, `/api/univers/${u.id}/fiches/${f.id}/sections`, { titre: 'Vérité', contenu: VERITE });
-  const c = await post(antor, `/api/univers/${u.id}/campagnes`, { nom: 'La Couronne brisée' });
+  const c = await post(antor, `/api/univers/${u.id}/fiches`, { type: 'aventure', sousType: 'Campagne', titre: 'La Couronne brisée', sections: [{ titre: 'Présentation', joueursLisent: true }] });
   const cr = await post(lea, `/api/univers/${u.id}/comptes-rendus`, { campagneId: c.id, titre: 'Séance 3', texte: 'Aldric a livré la clef de la crypte à la Couronne.' });
   return { univers: u.id, fiche: f.id, section: s.id, cr: cr.id };
 }

@@ -202,7 +202,8 @@ describe('kanevas-types-ecran-fiche, au navigateur', { skip: skipBrowser }, () =
       await attendre(antor);
       const menus = await antor.getByRole('button', { name: /^Autres actions sur/ }).count();
       if (menus > 0) {
-        await antor.getByRole('button', { name: /^Autres actions sur/ }).click();
+        // The seeded report (« Séance 12 ») has the header menu and its section's: open the header one.
+        await antor.getByRole('button', { name: /^Autres actions sur/ }).first().click();
         assert.equal(await antor.getByRole('menuitem', { name: rx('Changer le type…') }).count(), 0);
       }
     }

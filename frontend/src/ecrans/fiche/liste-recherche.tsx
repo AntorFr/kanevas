@@ -9,6 +9,7 @@ import type { Fiche, PageFiches } from './types';
 import type { TypeVue } from '../../types-contexte';
 import { CarteFiche, ChargementGrille } from './vignette';
 import { Arbre, type VueListe } from './arbre';
+import { STATUTS_AVENTURE, statutValide, type Statut } from './statut';
 
 /** Longest search the server accepts (B-11). */
 export const LONGUEUR_RECHERCHE = 100;
@@ -23,10 +24,14 @@ interface Props {
   /** The sub-type filter in force (E-8); with `onSousType` the filter is offered. */
   sousType?: string;
   onSousType?: (sousType: string) => void;
+  statut?: string;
+  onStatut?: (statut: string) => void;
+  /** Editing is granted by E-8, never by a reusable list's default. */
+  gestion?: boolean;
   /** The visibility filter in force (B-57, GM in GM mode): '' (all), 'joueurs' or 'mj'; with `onVisibilite` the filter is offered. */
   visibilite?: Visibilite;
   onVisibilite?: (visibilite: Visibilite) => void;
-  /** Clear all three filters in one address update. */
+  /** Clear all the filters in one address update. */
   onToutEffacer?: () => void;
   /** The search in force (empty = the whole list). The caller owns it: address, local state… */
   recherche: string;
@@ -46,10 +51,11 @@ interface Props {
 }
 
 /** The list of one lore type with its search field (E-8); reused by the « Relier » form of E-9. */
-export function ListeRecherche({ universId, type, recherche, onRecherche, sousType = '', onSousType, visibilite = '', onVisibilite, onToutEffacer, ligne, action, videListe, vue = 'grille', bascule, suffixeMode = '' }: Props) {
+export function ListeRecherche({ universId, type, recherche, onRecherche, sousType = '', onSousType, statut: brutStatut, onStatut, gestion = false, visibilite = '', onVisibilite, onToutEffacer, ligne, action, videListe, vue = 'grille', bascule, suffixeMode = '' }: Props) {
   const perdue = useConnexionPerdue();
   const [saisie, setSaisie] = useState(recherche);
   const [erreur, setErreur] = useState<string>();
+  const statut = type.type === 'aventure' ? statutValide(brutStatut) : '';
 
   // The search in force changed from outside (back button): the field follows.
   useEffect(() => {
@@ -79,7 +85,8 @@ export function ListeRecherche({ universId, type, recherche, onRecherche, sousTy
 
   const base = `/api/univers/${universId}/fiches?type=${type.type}`;
   const avecSousType = sousType === '' ? base : `${base}&sousType=${encodeURIComponent(sousType)}`;
-  const avecVisibilite = visibilite === '' ? avecSousType : `${avecSousType}&visibilite=${visibilite}`;
+  const avecStatut = statut === '' ? avecSousType : `${avecSousType}&statut=${statut}`;
+  const avecVisibilite = visibilite === '' ? avecStatut : `${avecStatut}&visibilite=${visibilite}`;
   const chemin = (recherche === '' ? avecVisibilite : `${avecVisibilite}&q=${encodeURIComponent(recherche)}`) + suffixeMode;
   const etiquette = `Chercher dans ${dans(type)}`;
 
@@ -99,7 +106,15 @@ export function ListeRecherche({ universId, type, recherche, onRecherche, sousTy
             onKeyDown={touche}
           />
         </div>
-        {onSousType && <FiltreSousType universId={universId} type={type} valeur={sousType} onChoix={onSousType} />}
+        {onSousType && <FiltreSousType universId={universId} type={type} valeur={sousType} onChoix={onSousType} suffixeMode={suffixeMode} />}
+        {type.type === 'aventure' && onStatut && (
+          <div className="filtre-sous-type">
+            <Champ etiquette="Statut" liste value={statut} disabled={perdue} onChange={(e: { target: { value: string } }) => onStatut(e.target.value)}>
+              <option value="">Statut : Tous</option>
+              {(Object.keys(STATUTS_AVENTURE) as Statut[]).map((s) => <option key={s} value={s}>{STATUTS_AVENTURE[s].libelle}</option>)}
+            </Champ>
+          </div>
+        )}
         {onVisibilite && <FiltreVisibilite valeur={visibilite} onChoix={onVisibilite} desactive={perdue} />}
         <div className="actions">
           <Bouton type="submit" disabled={perdue}>
@@ -113,8 +128,8 @@ export function ListeRecherche({ universId, type, recherche, onRecherche, sousTy
           {bascule}
         </div>
       </form>
-      {vue === 'arbre' && recherche === '' && sousType === '' && visibilite === '' ? (
-        <Arbre key={`${type.type}${suffixeMode}`} universId={universId} type={type} suffixeMode={suffixeMode} videListe={videListe} />
+      {vue === 'arbre' && recherche === '' && sousType === '' && statut === '' && visibilite === '' ? (
+        <Arbre key={`${type.type}${suffixeMode}`} universId={universId} type={type} suffixeMode={suffixeMode} videListe={videListe} gestion={gestion} />
       ) : (
       <Resultats
         key={chemin}
@@ -124,6 +139,8 @@ export function ListeRecherche({ universId, type, recherche, onRecherche, sousTy
         recherche={recherche}
         sousType={sousType}
         onSousType={onSousType}
+        statut={statut}
+        gestion={gestion}
         visibilite={visibilite}
         onVisibilite={onVisibilite}
         onToutEffacer={onToutEffacer}
@@ -144,6 +161,8 @@ function Resultats({
   recherche,
   sousType = '',
   onSousType,
+  statut = '',
+  gestion,
   visibilite = '',
   onVisibilite,
   onToutEffacer,
@@ -151,7 +170,7 @@ function Resultats({
   action,
   videListe,
   onEffacer,
-}: Pick<Props, 'universId' | 'type' | 'recherche' | 'sousType' | 'onSousType' | 'visibilite' | 'onVisibilite' | 'onToutEffacer' | 'ligne' | 'action' | 'videListe'> & {
+}: Pick<Props, 'universId' | 'type' | 'recherche' | 'sousType' | 'onSousType' | 'statut' | 'gestion' | 'visibilite' | 'onVisibilite' | 'onToutEffacer' | 'ligne' | 'action' | 'videListe'> & {
   chemin: string;
   onEffacer: () => void;
 }) {
@@ -160,6 +179,7 @@ function Resultats({
   const [suite, setSuite] = useState<{ fiches: Fiche[]; suivant: string | null } | null>(null);
   const [suiteEnCours, setSuiteEnCours] = useState(false);
   const [suiteEchec, setSuiteEchec] = useState(false);
+  const [modifiees, setModifiees] = useState<Record<number, Fiche>>({});
   const cherche = recherche !== '';
 
   if (page.etat === 'chargement') {
@@ -175,7 +195,9 @@ function Resultats({
       />
     );
   }
-  const fiches = [...page.valeur.fiches, ...(suite?.fiches ?? [])];
+  const fiches = [...page.valeur.fiches, ...(suite?.fiches ?? [])]
+    .map((f) => modifiees[f.id] ?? f)
+    .filter((f) => statut === '' || f.charge.statut === statut);
   const suivant = suite ? suite.suivant : page.valeur.suivant;
 
   async function chargerSuite() {
@@ -194,7 +216,12 @@ function Resultats({
 
   return (
     <>
-      {fiches.length === 0 && visibilite !== '' && (cherche || sousType !== '') ? (
+      {fiches.length === 0 && type.type === 'aventure' && visibilite === '' && (cherche || sousType !== '' || statut !== '') ? (
+        <VideIcone icone={SearchX}>
+          <p>{cherche || sousType !== '' ? 'Aucune aventure ne correspond.' : 'Aucune aventure avec ce statut.'}</p>
+          <Bouton onClick={onToutEffacer ?? onEffacer}>Voir toutes les aventures</Bouton>
+        </VideIcone>
+      ) : fiches.length === 0 && visibilite !== '' && (cherche || sousType !== '' || statut !== '') ? (
         <VideIcone icone={SearchX}>
           <p>Aucune fiche pour ces filtres.</p>
           <Bouton
@@ -228,7 +255,8 @@ function Resultats({
           ) : (
             <ul className={ligne ? 'liste-fiches' : 'grille-fiches'}>
               {fiches.map((f) => (
-                <li key={f.id}>{ligne ? ligne(f) : <CarteFiche universId={universId} fiche={f} />}</li>
+                <li key={f.id}>{ligne ? ligne(f) : <CarteFiche universId={universId} fiche={f} gestion={gestion}
+                  onChange={(maj) => setModifiees((m) => ({ ...m, [maj.id]: maj }))} />}</li>
               ))}
             </ul>
           )}
@@ -261,13 +289,16 @@ function FiltreSousType({
   type,
   valeur,
   onChoix,
+  suffixeMode,
 }: {
   universId: string;
   type: TypeVue;
   valeur: string;
   onChoix: (sousType: string) => void;
+  suffixeMode: string;
 }) {
-  const [etat] = useCharge<{ sousTypes: SousTypeCompte[] }>(`/api/univers/${universId}/sous-types?type=${type.type}`);
+  const perdue = useConnexionPerdue();
+  const [etat] = useCharge<{ sousTypes: SousTypeCompte[] }>(`/api/univers/${universId}/sous-types?type=${type.type}${suffixeMode}`);
   if (etat.etat === 'chargement') {
     return (
       <div className="filtre-sous-type">
@@ -292,7 +323,7 @@ function FiltreSousType({
   const inconnu = valeur !== '' && !liste.some((s) => s.sousType === valeur);
   return (
     <div className="filtre-sous-type">
-      <Champ etiquette="Sous-type" liste value={valeur} onChange={(e: { target: { value: string } }) => onChoix(e.target.value)}>
+      <Champ etiquette="Sous-type" liste value={valeur} disabled={perdue} onChange={(e: { target: { value: string } }) => onChoix(e.target.value)}>
         <option value="">Sous-type : tous</option>
         {inconnu && <option value={valeur}>{valeur}</option>}
         {liste.map((s) => (

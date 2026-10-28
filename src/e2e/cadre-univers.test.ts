@@ -260,7 +260,7 @@ test('hors univers : barre réduite, sans sélecteur ni items de l’univers', o
   const b = barre(antor);
   await b.getByRole('link', { name: /Mes univers/ }).first().waitFor();
   await b.getByRole('button', { name: /antor|lea|léa/i }).waitFor();
-  for (const mot of ['Personnages', 'Campagnes', 'Membres', 'Vue d’ensemble']) {
+  for (const mot of ['Personnages', 'Membres', 'Vue d’ensemble']) {
     assert.equal(await b.getByRole('link', { name: rxExact(mot) }).count(), 0, mot);
   }
   assert.equal(await b.getByRole('button', { name: /changer d’univers|Univers/ }).count(), 0);

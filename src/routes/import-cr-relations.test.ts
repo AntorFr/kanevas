@@ -21,7 +21,16 @@ async function monter() {
   const q = (lot?: number) => (lot ? `?lot=${lot}` : '');
   const inj = (method: 'PUT' | 'POST', url: string, payload: unknown) =>
     app.inject({ method, url: `${base}${url}`, headers: auth, payload: payload as object });
-  const putC = (cle: string, p: unknown, lot?: number) => inj('PUT', `/campagnes/${encodeURIComponent(cle)}${q(lot)}`, p);
+  // The import of adventures belongs to a later slice: the sheet is made directly, with its origin key.
+  const putC = async (cle: string, p: { nom: string }, universId: number = u.id) => {
+    const info = app.db
+      .prepare("INSERT INTO fiches (univers_id, type, titre, charge, cree_le, modifie_le, cle_origine, sous_type) VALUES (?, 'aventure', ?, '{\"v\":1,\"statut\":\"en_cours\"}', '2020-01-01', '2020-01-01', ?, 'Campagne')")
+      .run(universId, p.nom, cle);
+    app.db
+      .prepare("INSERT INTO sections (fiche_id, titre, ordre, contenu, contenu_public, modifie_le, joueurs_lisent) VALUES (?, 'Présentation', 1, '', '', '2020-01-01', 1)")
+      .run(info.lastInsertRowid);
+    return Number(info.lastInsertRowid);
+  };
   const put = (cle: string, p: unknown, lot?: number) => inj('PUT', `/fiches/${encodeURIComponent(cle)}${q(lot)}`, p);
   const rel = (cle: string, p: unknown, lot?: number) => inj('POST', `/fiches/${encodeURIComponent(cle)}/relations${q(lot)}`, p);
   const lot = async () => (await app.inject({ method: 'POST', url: `${base}/lots`, headers: auth })).json().lotId as number;
@@ -73,7 +82,7 @@ test('échec : campagne absente ou inconnue → 400 champ campagne, rien d’éc
   const sans = await m.put('cr:y', { type: 'compte_rendu', titre: 'Y', sections: [] }, l);
   assert.equal(sans.statusCode, 400);
   assert.equal(sans.json().champ, 'campagne');
-  assert.equal(n(m.app, "SELECT COUNT(*) n FROM fiches WHERE type='compte_rendu'"), 0);
+  assert.equal(n(m.app, "SELECT COUNT(*) n FROM fiches WHERE type='compte_rendu' AND cle_origine IS NOT NULL"), 0);
   const lt = await m.lire(l);
   assert.equal(lt.compteurs.fiches.refusees, 2);
   assert.equal(lt.rapport[0].cle, 'cr:x');
@@ -83,11 +92,11 @@ test('échec : campagne absente ou inconnue → 400 champ campagne, rien d’éc
 test('exclusion : une campagne d’un autre univers n’est pas résolue', async () => {
   const m = await monter();
   const autre = (m.app.db.prepare("INSERT INTO univers (nom, cree_le) VALUES ('Autre', '2020-01-01')").run().lastInsertRowid) as number;
-  m.app.db.prepare("INSERT INTO campagnes (univers_id, nom, statut, cle_origine, cree_le) VALUES (?, 'Etrangère', 'active', 'c:etr', '2020-01-01')").run(autre);
+  await m.putC('c:etr', { nom: 'Etrangère' }, autre);
   const r = await m.put('cr:z', cr('Z', '2021-03-03T20:00:00Z', { campagne: 'c:etr' }));
   assert.equal(r.statusCode, 400);
   assert.equal(r.json().champ, 'campagne');
-  assert.equal(n(m.app, "SELECT COUNT(*) n FROM fiches WHERE type='compte_rendu'"), 0);
+  assert.equal(n(m.app, "SELECT COUNT(*) n FROM fiches WHERE type='compte_rendu' AND cle_origine IS NOT NULL"), 0);
 });
 
 test('bords : creeLe dans le futur → 400 ; sans creeLe, la date est celle de la création', async () => {
@@ -96,7 +105,7 @@ test('bords : creeLe dans le futur → 400 ; sans creeLe, la date est celle de l
   const f = await m.put('cr:f', cr('Futur', '2999-01-01T00:00:00Z'));
   assert.equal(f.statusCode, 400);
   assert.equal(f.json().champ, 'creeLe');
-  assert.equal(n(m.app, "SELECT COUNT(*) n FROM fiches WHERE type='compte_rendu'"), 0);
+  assert.equal(n(m.app, "SELECT COUNT(*) n FROM fiches WHERE type='compte_rendu' AND cle_origine IS NOT NULL"), 0);
   const ok = await m.put('cr:nd', { type: 'compte_rendu', titre: 'Sans date', campagne: 'c:brumes', sections: [] });
   assert.equal(ok.statusCode, 200, ok.body);
   const d = (m.app.db.prepare("SELECT cree_le FROM fiches WHERE cle_origine='cr:nd'").get() as { cree_le: string }).cree_le;
@@ -125,7 +134,7 @@ test('rejeu : 3 inchangées, ordre et dates intacts ; autre campagne ou autre da
   assert.deepEqual(m.liste(m.antor), avant);
   assert.deepEqual(m.app.db.prepare('SELECT id, version, modifie_le FROM sections ORDER BY id').all(), sections);
   const camp = m.app.db.prepare("SELECT json_extract(charge,'$.campagne_id') c FROM fiches WHERE cle_origine='cr:mars'").get() as { c: number };
-  assert.equal(camp.c, (m.app.db.prepare("SELECT id FROM campagnes WHERE cle_origine='c:brumes'").get() as { id: number }).id);
+  assert.equal(camp.c, (m.app.db.prepare("SELECT id FROM fiches WHERE type='aventure' AND cle_origine='c:brumes'").get() as { id: number }).id);
 });
 
 test('exclusion : le MJ ferme aux joueurs la section d’un des trois → Léa ne voit que deux lignes (total 2), Antor trois', async () => {

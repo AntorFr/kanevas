@@ -2,7 +2,7 @@ import { LayoutGrid, ListTree, Plus } from 'lucide-react';
 import { useEffect, useId, useRef, useState, type FormEvent } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
-import { appeler, ErreurApi, lire } from '../api';
+import { appeler, ErreurApi, lire, useConnexionPerdue } from '../api';
 import { useBasculeMode, useCharge, useVue } from '../cadre-contexte';
 import type { Ecran } from '../registre';
 import type { UniversListe } from '../types';
@@ -16,6 +16,8 @@ import { ListeRecherche, type Visibilite } from './fiche/liste-recherche';
 import { ChargementGrille } from './fiche/vignette';
 import type { Fiche } from './fiche/types';
 import { iconeDuType, typeParSlug, typesActifs, useTypes, type TypeVue } from '../types-contexte';
+import { statutValide } from './fiche/statut';
+import { ParentAventure } from './fiche/parent-aventure';
 
 const ECHEC = 'L’action n’a pas abouti. Réessayez.';
 
@@ -32,6 +34,7 @@ function Liste({ universId, slug }: { universId: string; slug: string | undefine
   const { types, etat: etatTypes, recharger: rechargerTypes } = useTypes();
   const [creation, setCreation] = useState(false);
   const role = univers.etat === 'ok' ? univers.valeur.role : undefined;
+  const perdue = useConnexionPerdue();
   const mode = useBasculeMode(role === 'mj');
   const { setMode } = useVue();
   const initialise = useRef(false);
@@ -86,12 +89,15 @@ function Liste({ universId, slug }: { universId: string; slug: string | undefine
   const v = params.get('visibilite');
   const visibilite: Visibilite = offreVisibilite && (v === 'mj' || v === 'joueurs') ? v : '';
   const vue = vues[type.type] ?? lireVue(universId, type.type);
+  const gestion = mj && !modeJoueur;
+  const statut = type.type === 'aventure' ? statutValide(params.get('statut')) : '';
+  const filtree = Boolean(params.get('q')?.trim() || params.get('sousType') || statut || visibilite);
   const choisirVue = (v: VueListe) => {
     memoriserVue(universId, type.type, v);
     setVues((m) => ({ ...m, [type.type]: v }));
   };
   const nouveau = (
-    <Bouton variante="principal" ecrit icone={Plus} title={type.nouveau} onClick={() => setCreation(true)}>
+    <Bouton variante="principal" ecrit disabled={perdue} icone={Plus} title={type.nouveau} onClick={() => setCreation(true)}>
       <span className="lib-creer">{type.nouveau}</span>
     </Bouton>
   );
@@ -103,33 +109,36 @@ function Liste({ universId, slug }: { universId: string; slug: string | undefine
           <Glyphe type={type.type} />
         </span>
         <h1>{type.pluriel}</h1>
-        {mj && type.active && nouveau}
+        {gestion && type.active && nouveau}
       </header>
       {!type.active && <p className="note-type">Ce type est désactivé dans cet univers.</p>}
       <ListeRecherche
         universId={universId}
         type={type}
         vue={vue}
+        gestion={gestion}
         suffixeMode={modeJoueur ? '&mode=joueur' : ''}
-        bascule={<BasculeVue vue={vue} onChoix={choisirVue} />}
+        bascule={<BasculeVue vue={filtree ? 'grille' : vue} onChoix={choisirVue} />}
         recherche={params.get('q')?.trim() ?? ''}
         onRecherche={(q) => setParams((p) => majParam(p, 'q', q))}
         sousType={params.get('sousType') ?? ''}
         onSousType={(v) => setParams((p) => majParam(p, 'sousType', v))}
+        statut={statut}
+        onStatut={(v) => setParams((p) => majParam(p, 'statut', v))}
         onToutEffacer={() => setParams((p) => {
           const n = new URLSearchParams(p);
-          for (const cle of ['q', 'sousType', 'visibilite']) n.delete(cle);
+          for (const cle of ['q', 'sousType', 'statut', 'visibilite']) n.delete(cle);
           return n;
         })}
         visibilite={visibilite}
         onVisibilite={offreVisibilite ? (v) => setParams((p) => majParam(p, 'visibilite', v)) : undefined}
         videListe={
           <VideIcone icone={iconeDuType(types, type.type)}>
-            <p>{type.aucun} {mj ? 'pour l’instant.' : 'à voir pour l’instant.'}</p>
+            <p>{type.aucun} {gestion ? 'pour l’instant.' : 'à voir pour l’instant.'}</p>
           </VideIcone>
         }
       />
-      {creation && type.active && (
+      {creation && gestion && (
         <FenetreCreation
           universId={universId}
           type={type}
@@ -185,17 +194,24 @@ function FenetreCreation({
   const { types, recharger: rechargerTypes } = useTypes();
   const choix = typesActifs(types).filter((t) => t.reglable);
   const [typeChoisi, setTypeChoisi] = useState(depart.type);
-  const type = choix.find((t) => t.type === typeChoisi) ?? choix[0] ?? depart;
+  const type = types.find((t) => t.type === typeChoisi) ?? depart;
+  const aventure = type.type === 'aventure';
   const [titre, setTitre] = useState('');
+  const [titreSaisi, setTitreSaisi] = useState(false);
   const [sousType, setSousType] = useState('');
   const [deja, setDeja] = useState<string[]>([]);
   const [pj, setPj] = useState(false);
+  const [parent, setParent] = useState<Pick<Fiche, 'id' | 'titre'> | null>(null);
+  const [visible, setVisible] = useState(false);
   const [erreur, setErreur] = useState<string>();
   const [erreurSousType, setErreurSousType] = useState<string>();
   const [echec, setEchec] = useState<string>();
   const [enCours, setEnCours] = useState(false);
   const { toast } = useToasts();
   const idListe = useId();
+  const perdue = useConnexionPerdue();
+  const titreInvalide = titre.trim().length === 0 || titre.trim().length > 120;
+  const suggestions = aventure ? [...new Set(['Campagne', 'Scénario', ...deja])] : deja;
 
   // The sub-types already used for the chosen type, for the completion; a failure leaves the field free.
   useEffect(() => {
@@ -212,10 +228,11 @@ function FenetreCreation({
 
   async function creer(e: FormEvent) {
     e.preventDefault();
-    if (enCours) return;
+    if (enCours || perdue || !type.active) return;
     const t = titre.trim();
     const st = sousType.trim();
-    const eTitre = t === '' ? 'le titre est obligatoire.' : t.length > 120 ? '120 caractères au plus.' : undefined;
+    const eTitre = aventure && titreInvalide ? 'Donnez un titre de 1 à 120 caractères.'
+      : t === '' ? 'le titre est obligatoire.' : t.length > 120 ? '120 caractères au plus.' : undefined;
     const eSousType = Array.from(st).length > MAX_SOUS_TYPE ? `${MAX_SOUS_TYPE} caractères au plus.` : undefined;
     setErreur(eTitre);
     setErreurSousType(eSousType);
@@ -228,6 +245,7 @@ function FenetreCreation({
         titre: t,
         ...(st === '' ? {} : { sousType: st }),
         ...(type.type === 'personnage' ? { charge: { pj } } : {}),
+        ...(aventure ? { parent: parent?.id ?? null, sections: [{ titre: 'Présentation', joueursLisent: visible }] } : {}),
       });
       toast(`« ${f.titre} » créée`);
       onCree(f);
@@ -250,7 +268,9 @@ function FenetreCreation({
             {echec}
           </div>
         )}
-        <Champ etiquette="Titre" value={titre} erreur={erreur} onChange={(e: { target: { value: string } }) => setTitre(e.target.value)} />
+        <fieldset className="creation-fiche-champs" disabled={enCours}>
+        <Champ etiquette="Titre" value={titre} erreur={aventure && titreSaisi && titreInvalide ? 'Donnez un titre de 1 à 120 caractères.' : erreur}
+          onChange={(e: { target: { value: string } }) => { setTitre(e.target.value); setTitreSaisi(true); setErreur(undefined); }} />
         <Champ
           etiquette="Type"
           liste
@@ -259,8 +279,12 @@ function FenetreCreation({
             setTypeChoisi(e.target.value);
             setSousType('');
             setErreurSousType(undefined);
+            setParent(null);
+            setVisible(false);
+            setEchec(undefined);
           }}
         >
+          {!type.active && <option value={type.type}>{type.singulier} (désactivé)</option>}
           {choix.map((t) => (
             <option key={t.type} value={t.type}>
               {t.singulier}
@@ -281,7 +305,7 @@ function FenetreCreation({
           etiquette="Sous-type"
           facultatif
           value={sousType}
-          list={deja.length > 0 ? idListe : undefined}
+          list={suggestions.length > 0 ? idListe : undefined}
           autoComplete="off"
           erreur={erreurSousType}
           onChange={(e: { target: { value: string } }) => {
@@ -289,16 +313,24 @@ function FenetreCreation({
             setErreurSousType(undefined);
           }}
         />
-        {deja.length > 0 && (
+        {suggestions.length > 0 && (
           <datalist id={idListe} title={`Sous-types de ${type.singulier.toLowerCase()} déjà employés`}>
-            {deja.map((d) => (
+            {suggestions.map((d) => (
               <option key={d} value={d} />
             ))}
           </datalist>
         )}
+        {aventure && <>
+          <ParentAventure universId={universId} valeur={parent} onChange={setParent} />
+          <label className="creation-visibilite">
+            <input type="checkbox" checked={visible} onChange={(e) => setVisible(e.target.checked)} />
+            Visible des joueurs
+          </label>
+        </>}
+        </fieldset>
         <div className="actions">
-          <Bouton type="submit" variante="principal" ecrit enCours={enCours}>
-            Créer la fiche
+          <Bouton type="submit" variante="principal" ecrit enCours={enCours} disabled={!type.active || (aventure && titreInvalide)}>
+            {aventure ? "Créer l'aventure" : 'Créer la fiche'}
           </Bouton>
           <Bouton onClick={onFermer}>Annuler</Bouton>
         </div>

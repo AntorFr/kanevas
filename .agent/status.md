@@ -1,43 +1,45 @@
 # Status — kanevas
 
+> MàJ : 2026-10-27 (assemblage de `kanevas-scenarios-import-assistant` ; l'historique tranche par tranche est dans `git log`, ce fichier ne garde que l'état et les pièges encore vrais)
 > MàJ : 2026-10-25 (correctif `kanevas-connexion-claude-com`, dernier paragraphe ; avant : correctif `kanevas-relation-badge-pj` fusionné et assemblage de `kanevas-fiche-mj-seul` ; avant : correctif `kanevas-e2e-stables` ; l'historique des reprises précédentes est dans `git log`)
 
-**Lecture de ce fichier :** le clone qui le porte contient déjà toutes les tranches nommées ci-dessous ; « PR non fusionnée » dit seulement que la tranche n'est pas encore sur `main`, pas qu'elle manque du code.
+**Lecture :** le clone qui porte ce fichier contient déjà toutes les tranches de `epic/kanevas-scenarios` fusionnées avant lui ; « PR non fusionnée » dit que la tranche n'est pas encore sur `main`, pas que son code manque. Carte du code : `ARCHITECTURE.md`. Écrans, besoins, données : `docs/ecrans.md`, `docs/parcours.md`, `docs/donnees.md`.
 
-**État :** `epic/kanevas` porte le socle, la première fiche, les systèmes de jeu, le suivi de la séance
-(campagnes, scénarios, préparation, comptes-rendus ; E-6, E-7, E-13) et les pièces jointes (migration
-`0004-pieces-jointes.sql`, AD-65 à AD-67). `kanevas-relier-chercher` (fusionnée, PR #8) y ajoute :
-la migration `0005-relier-chercher.sql` (`relations`, index FTS5 `recherche_fiches` et `recherche_sections`,
-déclencheurs, remplissage de l'existant), `services/relations.ts` (relier, retirer, lire sous deux gardes),
-`peutVoirFiche` et les conditions SQL de lecture dans `droits.ts`, l'option `recherche` de `listerFiches`,
-les routes `?q=` et `/relations`, le composant `ListeRecherche` (E-8, réemployé par « Relier ») et le bloc
-Relations de E-9 (AD-63, AD-64). Carte et invariants : `ARCHITECTURE.md`.
+## État
 
-`feature/kanevas-cartes-graphes` (fusionnée dans `epic/kanevas`, PR #12) ajoute : la migration `0007-cartes.sql` (`cartes`,
-`elements_carte`), `services/cartes.ts` (`lireCarte` seule lecture, filtrée pour le lecteur ; fond par `stockage.ts`, 25 Mo, AD-69),
-les routes `/api/univers/:id/cartes…`, E-10 « Cartes », E-11 (carte illustrée à tokens en pourcentage, AD-70 ; graphe dont les liens
-sont les relations lues sous les deux gardes et la disposition calculée dans le navigateur, AD-71) et le bloc « Cartes visibles » de E-3
-(AD-68 à AD-72). Hors tranche : outils de l'agent sur les cartes, calques, échelle, zoom.
+- Le produit couvre : comptes, univers, membres, administration d'instance (E-5), fiches et sections à droits, systèmes de jeu, relations et recherche (FTS5), pièces jointes et médiathèque (E-19), illustrations, cartes et graphes, refonte visuelle (`ui/`, `docs/charte.md`), assistant du membre (E-12) avec proposition de mise à jour et image, Markdown et liens `[[…]]`, types de fiche réglables, arbre, API d'import `/api/import/v1` (lots, E-18), suppression de fiche et d'univers.
+- **`kanevas-scenarios-suivi` (tranche précédente, PR vers `epic/kanevas-scenarios`, non fusionnée)** : campagnes et scénarios sont des fiches de type `aventure` (migration `0017-scenarios-pivot.sql`, AD-127). Blocs de fiche « Préparation » (MJ) et « Comptes-rendus » (registre `frontend/src/ecrans/fiche/registre-blocs-fiche.ts`, AD-124) ; E-3 et E-13 lisent des aventures ; bilan de suppression d'une aventure (AD-119). Retirés : E-6, E-7, l'entrée « Campagnes » de la barre, `services/campagnes.ts`, `services/scenarios.ts`, `services/import-suivi.ts`, les routes d'import `…/campagnes/:cle` et `…/scenarios/:scle`, les compteurs « campagnes » et « scénarios » des lots, les outils `creer_campagne`, `creer_scenario`, `lister_campagnes`.
+- **`kanevas-scenarios-import-assistant` (la tranche que porte ce clone, PR vers `epic/kanevas-scenarios`, non fusionnée)** : l'import et l'assistant écrivent de nouveau des aventures. `PUT …/fiches/:cle` accepte `type: aventure` avec `sousType`, `statut` (défaut `en_preparation`, 400 `invalide` `champ: statut` hors des quatre valeurs ou sur un autre type) et `parent` ; le statut est marqué dans `dernier_import` et protégé au rejeu (B-48) ; un CR importé nomme son aventure par `campagne: <clé>` ; `GET /` rend `statuts` ; le lot compte les aventures dans « Fiches ». L'outil MJ `creer_fiche` (type activé hors `compte_rendu`, `titre`, `sousType?`, `parentId?`) émet l'événement `fiche_creee` (« Ouvrir » mène à E-9) ; le bouchon de l'assistant rejoue ses deux phrases par lui. Le semis du bouchon porte « La Couronne brisée » (Campagne, En cours), « Acte II — Le sceau brisé » (Prête, dessous), deux tâches et le CR « Séance 12 » ; l'échantillon d'import pose ses 4 aventures avec un `statut`.
+- Base d'exemple du test de migration : construite par le test (`src/db/migration-scenarios-pivot.test.ts`), aucun binaire committé. L'échantillon d'import (`src/bouchon/echantillon`) porte 2 campagnes et 2 scénarios en fiches `aventure` (15 fiches au premier passage).
 
-`feature/kanevas-refonte-visuelle` (PR non fusionnée, rattrapée sur `epic/kanevas` : cartes, administration, propositions) refait la charte et tous les écrans construits : tokens clair/sombre,
-polices et icônes embarquées (AD-92), composants partagés (`frontend/src/ui/`), cadre (navigation à icônes, barre haute,
-tiroir au téléphone (à toute hauteur de téléphone, la navigation défile, le pied — compte — reste ancré en bas sous un fondu qui dit qu'il y a une suite, et « Paramètres » reste atteignable ; testé à 526 et 664 px), thème et déconnexion dans le menu de l'avatar, seul endroit du thème), E-1 à E-4, E-6 à E-9, E-13 à E-15
-avec leurs états, pastille/filet d'audience, menu « ⋯ » et toasts sur la fiche. Aucun geste, droit ni donnée nouveau.
-Page `/demo-composants` en bouchon seulement. Maquettes e01, e03, e04, e06, e08, e09, e14, e15 et e16 refaites ; e02, e05, e07, e10, e11, e12-assistant, e12-propositions et e13 restent d’avant la charte (contenu seulement ; le panneau d’assistant et la proposition de mise à jour n’ont de maquette qu’à l’ancienne forme, leur forme est dans `docs/charte.md`). E-5, E-10, E-11, E-12 et E-16 sont des tranches voisines qui prennent le cadre en passant, hors de cette liste. E-14 suit sa maquette (colonne de 688 px, blocs MJ débordant de 28 px de chaque côté, champs pleine largeur) et ses trois blocs MJ reprennent le bloc fermé et hachuré de E-6/E-9, comme la charte (arbitré à la vérification du 2026-10-13 ; le cadre ouvert à teinte légère est abandonné).
+## Reste
 
-`feature/kanevas-illustrations` (fusionnée dans `epic/kanevas`, PR #10) ajoute : l'illustration d'une fiche (migration `0006-illustrations.sql`, `services/illustrations.ts`, routes
-`PUT|DELETE|GET …/fiches/:fid/illustration`, AD-93), la grille de cartes illustrées (E-8) et l'illustration en tête de E-9 ;
-le système de jeu hors des univers (AD-94) : `GET /api/systemes` (systèmes du compte), `/api/systemes/catalogue`,
-`/api/systemes/:sid…`, écrans E-16 « Systèmes de jeu » et E-15 à `/systemes/:sid` (l'ancienne adresse redirige), E-1 en
-cartes ; le semis du bouchon (`src/bouchon/depart.ts`, fichiers dans `src/bouchon/demo/`).
+- Recette de Monsieur en bouchon (README : « Assistant creation recipe », « World update recipe », « Adventure recipe », « Import sample acceptance »), puis fusion dans `epic/kanevas-scenarios` (phase merge), après `kanevas-scenarios-suivi`.
+- Contrat final à signaler à Monsieur pour son script (discussion de l'epic) : plus de `PUT …/campagnes/:cle` ni `…/scenarios/:scle` ; tout passe par `PUT …/fiches/:cle` (`type: aventure`, `sousType`, `statut`, `parent`).
+- Maquettes `e06-campagne.html` et `e07-scenario.html` : écrans retirés, fichiers gardés parce que les barres des autres maquettes y renvoient ; à nettoyer avec la refonte des maquettes restantes.
+- Les textes de `docs/ecrans.md` d'avant le pivot (Markdown, assistant) gardent des mentions de E-7 ; la note en tête de « Le Markdown » dit comment les lire.
+- Doc écrite en français avant la règle « anglais » du `CLAUDE.md` : non traduite, par décision (une feature de traduction à part).
 
-`feature/kanevas-assistant-membre` (fusionnée dans `epic/kanevas`, PR #11) ajoute l'assistant de chaque membre (E-12, AD-73 à AD-78),
-sans migration : `src/services/assistant/` (catalogues d'outils MJ et Joueur fermés sur compte, univers et rôle ; port `AgentTransport`
-et adaptateurs `bouchon` et `claude-agent` ; disponibilité ; orchestration `repondre`), `src/routes/assistant.ts`
-(`GET /api/univers/:id/assistant`, `POST …/assistant/messages` ; formats dans `ARCHITECTURE.md`), et l'écran `frontend/src/ecrans/assistant*` (bouton flottant inversé, panneau, fil en
-mémoire, registre de blocs d'écriture). Outils : chercher, lire_fiche, lire_section, modifier_section, ajouter_a_section,
-lister_campagnes ; le MJ en plus creer_campagne et creer_scenario. Aucun outil de carte ni de graphe (la proposition vient de `kanevas-monde`, ci-dessous). `kanevas-images` (tâche `kanevas-im-outil`) ajoute au catalogue MJ `generer_image` (absent si l'adaptateur d'images est `aucun`), l'événement `image_attachee` et la règle « portrait » du bouchon ; le délai de 120 s de la demande est suspendu pendant l'outil (AD-89, AD-90).
+## Pièges encore vrais
 
+- **Node** : 20 est la cible (CI, Dockerfile). `better-sqlite3` est épinglé en `^12` (la 13 exige Node ≥ 22, SIGSEGV sous 20). Les pods de la chaîne jouent sous Node 22 sans Docker ; la CI Node 20 fait foi. Ne lancer qu'un seul `npm ci` à la fois dans un clone.
+- **CI** : l'image ne se construit que sur un tag `v*` dont le commit porte l'attestation « tests-complets » (`npm run tests:attestes -- --publier`). Ni `main` ni une PR ne la déclenchent.
+- **Migrations** : la plus haute est 0017 ; la suivante prend le numéro libre à sa fusion (AD-51). `-- migrate: sans-cles-etrangeres` en première ligne pour une migration qui reconstruit des tables. La 0017 écrit `contenu_public` d'un scénario converti à `contenu` sans `:::`, sinon vide : les liens `[[…]]` du texte naissent à la prochaine écriture (`poserContenu`).
+- **Suivi** : les tâches de préparation prennent un id de **fiche aventure**, jamais un id d'univers ; la garde MJ se calcule sur l'univers de la fiche (AD-47) ; un refus répond 404. Un compte-rendu nomme son aventure (`campagneId`, `campagneNom`) seulement à qui la lit ; « Aventure supprimée » (`campagneSupprimee`) n'est dit qu'au MJ hors mode Joueur ; `charge.campagne_id` ne sort jamais pour qui ne lit pas l'aventure (liste, recherche, arbre compris). Plusieurs aventures peuvent être « En cours » (AD-60). L'auteur Joueur d'un CR lit et écrit sa section même fermée aux autres joueurs (AD-61).
+- **Type « Aventure » désactivé** : se comporte comme tout type désactivé (entrée de barre et « Nouvelle aventure » partent), les fiches restent lisibles avec leurs blocs et leur menu de statut. Le fil d'Ariane garde le pluriel du type : un test de la barre doit cibler « Navigation principale ».
+- **Import d'une aventure** : un CR dont `campagne` désigne une fiche non `aventure` ou inconnue est refusé (400 `invalide`, `champ: campagne`) ; les aventures se poussent avant les CR qui les nomment. Une aventure importée sans sections ouvertes reste fermée aux joueurs (le MJ ouvre « Présentation »). Un `statut` sur un autre type que `aventure` est refusé.
+- **Assistant** : `creer_fiche` est MJ seul, jamais `compte_rendu` (sa création est propre, AD-61) ; le parent se lit par `parentId` (id de `chercher`), un parent illisible répond « Introuvable. » sans rien créer. `repondre` est l'unique entrée ; ni compte, ni univers, ni rôle en paramètre d'un outil ; pas de `process.env` hors `config/env.ts` (exceptions : `FRONTEND_DIR`, et la lecture de `PATH` / d'une variable nommée par la configuration dans `services/images/` et `assistant/connexion-claude.ts`). Le verrou « une demande à la fois par compte » est en mémoire (une seule instance). Le panneau a sa propre racine React (`assistant.tsx`). Le fil ne se garde pas (AD-28) : une proposition en attente n'est plus atteignable après rechargement.
+- **Recherche et relations** : `listerFiches({recherche})` seule (AD-63) ; ne jamais écrire dans `recherche_*`. Une relation est lue sous deux gardes (AD-64), sans compteur ni placeholder de ce qui est caché.
+- **Fichiers** : le type vient de la signature des octets ; seules PNG, JPEG, GIF, WebP sont servies en ligne, le reste en `attachment`. Un refus de lecture répond 404 comme un id inconnu (AD-22). Les fonds de carte passent par `stockage.ts`, pas par `ajouterFichier`.
+- **Cartes** : un graphe n'a ni position stockée ni déplacement de nœud (AD-71) ; la forme d'une carte ne change jamais ; un fond se remplace, ne se retire pas.
+- **Propositions** (AD-79 à AD-82) : lues, appliquées, abandonnées par leur seul demandeur, encore MJ ; tout autre compte reçoit 404.
+- **Texte Markdown** plafonné à 100 000 caractères (`MAX_CONTENU_SECTION`, AD-91, AD-106).
+- **Administration** : le groupe Authelia est lu à la connexion et vaut 7 jours (AD-86) ; un admin sans rôle reste un compte sans rôle (AD-9).
+- **Bouchon** : sur une base sans univers, `semerBouchon` pose le monde de recette (Lame d'Ébène, Landes grises, CoF Mini, Essai Kanka = univers 4 sur base neuve) ; `KANEVAS_SANS_SEMIS=1` le coupe (e2e). Jamais hors bouchon. Le jeton du bouchon est `JETON_BOUCHON` (`src/bouchon/depart.ts`).
+- **Connexion perdue** (`frontend/src/api.ts`) : sondage de `/healthz` toutes les 3 s tant que le bandeau est levé.
+- **Production sans `/data`** : base en mémoire (avertissement) ; la clé de session vient de `SESSION_SECRET`, sinon de `<data>/session.key`.
+- **Suite e2e (Playwright)** : sous forte charge, quelques tests passent seuls et échouent par intermittence ; non attribué à un défaut du produit. Les attentes se font sur des éléments, jamais `networkidle`.
+- **Code mort connu, non traité** : `export { ErreurService }` (`droits.ts`), option `limite` de `listerFiches`, `blocsVisibles`/`blocsSectionVisibles` jumeaux.
 `feature/kanevas-images` (PR non fusionnée) ajoute, sans migration, la génération d'un portrait par l'assistant du MJ (P-3 étape 5, AD-88 à AD-90) :
 `src/services/images/` (port `GenerateurImage`, adaptateurs `bouchon` — PNG fixe, « échec » lève —, `codex` — `codex exec` en sous-processus, 150 s,
 fichier repéré par liste avant/après sous verrou — et `aucun`, choisis par `choisirAdaptateur()`), `verifierDepot` (aujourd'hui dans `fichiers.ts`)

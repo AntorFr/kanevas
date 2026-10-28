@@ -13,6 +13,10 @@ interface Bilan {
   fichiers: number;
   enfants: number;
   parent: { id: number; titre: string } | null;
+  /** An adventure only, counted by the server (AD-119). */
+  taches?: number;
+  scenarios?: number;
+  comptesRendus?: number;
 }
 
 /** Only non-empty posts are announced; files stay in the library (AD-119). */
@@ -21,12 +25,16 @@ function texteBilan(b: Bilan): string {
   if (b.sections) postes.push(`${b.sections} section${b.sections > 1 ? 's' : ''}`);
   if (b.relations) postes.push(`${b.relations} relation${b.relations > 1 ? 's qui la visent' : ' qui la vise'}`);
   if (b.places) postes.push(`${b.places} place${b.places > 1 ? 's sur des cartes' : ' sur une carte'}`);
+  if (b.taches) postes.push(`${b.taches} tâche${b.taches > 1 ? 's' : ''} de préparation supprimée${b.taches > 1 ? 's' : ''}`);
   const phrases: string[] = postes.length ? [`${postes.join(' ; ')}.`] : [];
   if (b.fichiers) phrases.push(b.fichiers === 1 ? 'Son fichier reste dans la médiathèque.' : `Ses ${b.fichiers} fichiers restent dans la médiathèque.`);
-  if (b.enfants) {
+  const autres = b.enfants - (b.scenarios ?? 0); // scenarios have their own line
+  if (autres > 0) {
     const destination = b.parent ? `sous « ${b.parent.titre} »` : 'à la racine de la liste du type';
-    phrases.push(b.enfants === 1 ? `Son enfant remontera ${destination}.` : `Ses ${b.enfants} enfants remonteront ${destination}.`);
+    phrases.push(autres === 1 ? `Son enfant remontera ${destination}.` : `Ses ${autres} enfants remonteront ${destination}.`);
   }
+  if (b.scenarios) phrases.push(b.scenarios === 1 ? '1 scénario passe à la racine.' : `${b.scenarios} scénarios passent à la racine.`);
+  if (b.comptesRendus) phrases.push(b.comptesRendus === 1 ? '1 compte-rendu restera sans aventure.' : `${b.comptesRendus} comptes-rendus resteront sans aventure.`);
   if (!phrases.length) phrases.push("Cette fiche ne porte rien d'autre.");
   phrases.push('Les liens qui la visent deviendront des liens cassés.');
   return phrases.join(' ');

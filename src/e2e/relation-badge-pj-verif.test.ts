@@ -131,7 +131,7 @@ describe('kanevas-relation-badge-pj, badge PJ/PNJ du bloc Relations (E-9)', { sk
 
   test('la charge d une cible qui n est pas un personnage ne fuit pas (compte-rendu : pas de campagne_id)', async () => {
     // panne : la charge entière de la fiche cible est jointe sans filtre
-    const c = await ok(antor, 'POST', `/api/univers/${U}/campagnes`, { nom: 'La Couronne brisée' });
+    const c = await ok(antor, 'POST', `/api/univers/${U}/fiches`, { type: 'aventure', sousType: 'Campagne', titre: 'La Couronne brisée', sections: [{ titre: 'Présentation', joueursLisent: true }] });
     const cr = await ok(lea, 'POST', `/api/univers/${U}/comptes-rendus`, { campagneId: c.id, titre: 'Séance 3', texte: 'Aldric parle.' });
     const r = await api(antor, 'POST', relUrl(F['Port-Sel'], secPortSel), { cibleFicheId: cr.id, type: 'raconté dans' });
     assert.equal(r.status, 201);
