@@ -745,7 +745,7 @@ the density of generated systems never changes based on a territory she cannot s
    calculation together. Until she does, nothing is rewritten; Roxane, who only reads, sees the banner and no button. An
    « Enregistrer » after an edit also brings the design up to date, and the banner says so.
 5. Antor chooses « Générer les fiches de règles… » in E-22: seven sheets of type Règle appear (one per kind of element,
-   « Règles — Armes », « Règles — Moteurs »…, and « Exemples de vaisseaux », the 11 examples of the catalogue replayed
+   « Règles — Armes », « Règles — Moteurs »…, and « Exemples de vaisseaux », the examples of the catalogue replayed
    through the same calculation), each with one managed section, readable and uneditable. Run again, it updates without a
    duplicate. Antor then masks an element, or reimports the universe catalogue with a changed weapon: the sheets he
    concerns **propose** their update (E-9, E-12), which he accepts or ignores; their text changes only on his agreement.
