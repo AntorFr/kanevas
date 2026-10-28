@@ -737,7 +737,7 @@ porteeSaut      = reglages.porteeSaut × (niveau du moteur + 1) cases, null with
 | `moteurs` | `niveau` integer 1–6, then the **element fields** |
 | `amenagements`, `defenses`, `modifications` | the **element fields** |
 | `armes` | `emport`, `munitions`, `cout_munition` integers ≥ 0, then the element fields |
-| `exemples` | `coque` (a hull `cle`), `choix`: `{ nature, cle, quantite }[]` (at most 100); each pair must resolve in the **universe's visible catalogue** at import, otherwise the example is refused with `champ: 'choix'` and the reason `élément inconnu : <nature>/<cle>` |
+| `exemples` | `coque` (a hull `cle`), `choix`: `{ nature, cle, quantite }[]` (at most 100); each pair must resolve at import among the valid elements of the same file and the **catalogue visible at the target level** (the system's for a system import; the universe's own then the system's for a universe import), otherwise the example is refused with `champ: 'choix'` and the reason `élément inconnu : <nature>/<cle>` |
 
 *Element fields*: `cout`, `puissance`, `masse`, `pv`, `ca` integers ≥ 0; `x_cout`, `x_puissance`, `x_masse` booleans (multiplied by the hull's factor); `limite` integer ≥ 0 (greatest quantity per design, 0 = none). `description`, `source`, `nom_en` are the optional **foundation columns** of docs/donnees.md, stored and shown nowhere in this slice. The adapter writes **one statement set per nature**, built once from the declared columns (not seven copies); `masque` and the withdrawals go through `poserMasque` and `poserRetrait` of K-1 (`swn_catalogue_retraits`).
 
