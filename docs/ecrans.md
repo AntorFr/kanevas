@@ -112,7 +112,7 @@ E-16 live outside universes: their cells describe the role in a universe attache
 | E-6 | everything | list, status, session reports, « Nouveau compte-rendu »; no scenarios or preparation (hidden) | — |
 | E-7 | everything | — | — |
 | E-8 | read, search, create; each sheet's thumbnail (its illustration, or the drawn fallback) | read, search; thumbnails of visible sheets | — |
-| E-9 | everything; managed section: « Ouvrir dans l'outil », « Recalculer », « Proposer un recalcul », « Voir la proposition » (never an editor); Player mode; relate and remove relations; set, replace, remove the illustration (outside Player mode); *(kanevas-import)* subtype, restrict a file to the GM, see a file awaiting import (tile) | readable sections; write permitted ones; readable relations (section and target); their attachments; see the illustration, never set it; a managed section: banner and state, « Ouvrir dans l'outil » (author) and « Recalculer » (with the usage), never an editor; *(kanevas-import)* in a section they write, add a file or choose a visible one (both paths of B-55) and remove a reference; files under both guards; never set visibility (**hidden**); a file awaiting import: nothing (**hidden**) | — |
+| E-9 | everything; managed section: « Ouvrir dans l'outil », « Recalculer », « Proposer un recalcul », « Voir la proposition » (never an editor); Player mode; relate and remove relations; set, replace, remove the illustration (outside Player mode); *(kanevas-import)* subtype, restrict a file to the GM, see a file awaiting import (tile) | readable sections; write permitted ones; readable relations (section and target); their attachments; see the illustration, never set it; a managed section: banner and state, « Ouvrir dans l'outil » (author) and « Recalculer » (author with the tool's usage and « L'auteur l'écrit »), never an editor; *(kanevas-import)* in a section they write, add a file or choose a visible one (both paths of B-55) and remove a reference; files under both guards; never set visibility (**hidden**); a file awaiting import: nothing (**hidden**) | — |
 | E-10 | everything | visible maps | — |
 | E-11 | everything; Player mode | read a visible map, open a sheet | — |
 | E-12 | GM catalogue (including image generation, if an image engine is available); proposals: only the requesting GM sees, applies, abandons them | Player catalogue (no image: the tool is absent, the assistant answers that it cannot); proposals: **hidden** (neither tool nor block; what is checked is the absence of a proposal and block, not the assistant's free text) | — |
@@ -130,7 +130,7 @@ E-16 live outside universes: their cells describe the role in a universe attache
 What `kanevas-outils` adds: **sidebar** — an **« Outils »** section, after « Cartes » and before « Lore »,
 listing entry points for tools **enabled and visible to the role** (« Concepteur de vaisseaux »); the
 galaxy is reached through « Cartes »; a disabled or invisible tool has neither an entry nor an address (« Page
-introuvable. »). **E-9** — everyone: a managed section is read like any other, without an editor; GM and author:
+introuvable. »). **E-9** — everyone: a managed section is read like any other, without an editor; GM (outside Player mode) and author, when the tool is open to them:
 « Ouvrir dans l'outil ». **E-10** — GM: « Nouvelle carte » ▸ « Carte de la galaxie »; Player: the
 tool map, if it is visible and the tool is visible to their role.
 
@@ -3249,7 +3249,7 @@ left, choices by nature (hull, drive, fittings, defenses, weapons, modifications
 catalogue supplemented by the universe's (a local element is marked « Univers »); on the right, results
 (price, HP, AC, free power and mass, shipyard, maintenance) and **alerts** (« Bloquante » / « À surveiller »),
 « Enregistrer », « Recalculer » when the design is « calculée avec d'anciens réglages »; GM: « Générer les fiches de règles… » (creates missing rule sheets, one per nature, and the examples sheet; updates the others, managed sections). On E-9, the managed
-section shows its banner and an « Ouvrir dans l'outil » button (`kanevas-outils-sections-gerees`).
+section shows its banner and an « Ouvrir dans l'outil » link styled as a button (`kanevas-outils-sections-gerees`).
 
 | State | Text |
 |---|---|
@@ -3349,5 +3349,10 @@ The proposal screen shows, for a proposal with `source = 'recalcul'` (no report)
 - Given a tool enabled but hidden from players, then Léa reads « Générée par un outil » with no link, no state and no action.
 - Given a component wider than the column, then it scrolls inside its area and the page does not widen.
 - Given a failed sheet load, then « Impossible de charger cette fiche. » and no banner alone.
+- Given the component still loading, then the text version shows in place and the component replaces it when loaded.
+- Given the connection lost while reading, then the loaded page stays readable and the actions are disabled.
+- Given a tool label of 80 characters, then it wraps inside the banner, untruncated.
+- Given Mira, a GM who did not file the pending proposal, then she does not see it and « Proposer un recalcul » is offered if the section is stale.
+- Given Roxane, a player who is not the author, then she reads the banner and state and has no action, the tool's usage notwithstanding.
 - Given a GM-only managed section, Léa sees neither its title nor its banner.
 - Given Antor in Player mode, then no banner action is in the DOM.
