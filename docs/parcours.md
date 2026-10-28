@@ -720,10 +720,13 @@ session.*
 4. Antor (E-21, GM mode; the galaxy was created from E-10 « Nouvelle carte » ▸ « Carte de la galaxie », not visible until he makes it so): he **places** a system in an anonymous hex (promotes it: name, notes, size,
    colour), **draws** a route to « Vael » (exact length), **draws** a territory marked secret, then
    switches to **Player mode**: the ghost system, private route and territory no longer exist.
-5. « Document MJ… »: he chooses the « Galaxie — notes MJ » sheet (or creates one); the tool writes the managed « Document MJ » section there, GM-only, and updates it on each request.
+   From the « Galaxie ▾ » menu he also renames the galaxy, makes it visible (« Rendre visible »; he can hide it again),
+   changes its **seed** (« Graine… »: the undefined systems move, those he placed or promoted stay) and, apart,
+   « Supprimer la galaxie… » (the dialog counts what will be erased).
+5. « Document MJ… »: he chooses the « Galaxie — notes MJ » sheet (or creates one); the tool writes the managed « Document MJ » section there, GM-only. When he later places a system, the tool files an update **proposal** (« Proposition en attente »); the section changes only when he applies it, never on its own.
 *Highlight*: the same journey, seen by Léa then Antor, does not follow the same route: the smuggling
 route does not exist for her.
-*Failure*: Léa searches for « Station fantôme » — no result, never « masqué »; Antor saves a system from a
+*Failure*: Léa searches for « Station fantôme » — no result, never « masqué »; a write refused while Antor's form is open (role lost, tool disabled) — the form keeps his input and says « Action refusée. »; he abandons the document proposal — « Proposer la mise à jour » comes back; Antor saves a system from a
 stale version (modified meanwhile by the other GM) — « Ce système a changé depuis que vous l'avez ouvert. »
 and « Recharger »; connection lost — the map keeps the displayed view, writing actions are disabled;
 the density of generated systems never changes based on a territory she cannot see.
