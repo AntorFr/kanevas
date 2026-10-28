@@ -359,7 +359,7 @@ Format from the `exigences` skill; each need cites the journeys that fulfill it.
   it requests and permissions allow. *(P-18)*
 - **B-72** — An account measures distance on hover and calculates a **route** (shortest path using
   all routes or public routes only) with its duration according to the **engine it chooses** in the tool and the
-  configured jump range; a route is exact on the grid. *(P-18)*
+  configured jump range (a leg is usable up to `portée × (moteur + 1)` cases, and lasts length ÷ engine + 1 day of transit); a route is exact on the grid. *(P-18)*
 - **B-73** — The GM **places** a system, **promotes** an anonymous system (name, notes, size, colour: it
   keeps its location and becomes universe data with its permissions), **draws** a route, **draws**
   a zone; a ghost system, private route or secret territory is absent for a player and for

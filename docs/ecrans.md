@@ -3242,6 +3242,49 @@ Criteria:
 - Given two visits to the same anonymous hex, the same system is generated; changing the seed asks for
   confirmation stating that all undefined systems change position.
 
+**What `kanevas-outils-galaxie-lire` builds of E-21 and E-10** (the read side; the GM's writing gestures — « Placer un système », « Promouvoir », « Tracer une route », « Dessiner une zone », « Renommer », « Supprimer la galaxie… », « Graine… », « Document MJ… », the Player-mode toggle of the screen, the conflict state — are `kanevas-outils-galaxie-tenir`: the screen leaves no empty slot for them). Mockup: `docs/maquettes/e21-carte-galaxie.html` (the document wins). Architecture: `ARCHITECTURE.md`, « Detail of `kanevas-outils-galaxie-lire` » (G-1 to G-9). Format: web, desktop and phone/tablet (390 px is the proof width).
+
+*Entry.* **E-10** lists the galaxies of the universe among the maps, after the illustrated maps, with a « Galaxie » badge; a GM also sees « Masquée aux joueurs » on one that is not visible; a player sees only visible ones; none when the tool is disabled or invisible to the role. The address is `/univers/:id/outils/swn/galaxie/:galaxieId` (`?systeme=<cle>` for a system link). The sidebar entry « Outils » of `cadre` also reaches the tool, which then opens the first readable galaxy or lists them if there are several.
+
+*Layout.* From 760 px: the map on the left, a 320 px column on the right holding, from top to bottom, search, the « Trajet » tool and the selected system's panel. Below 760 px: the map under the title (60 % of the viewport height), then the same three blocks stacked below it; selecting a system scrolls its panel into view and leaves the map in place. The map has « + », « − » and « Recentrer » buttons (44 px) besides pinch and wheel; the legend (system, selected, departure/arrival, route, zone) folds into a « Légende » button on a phone.
+
+*Gestures.* Drag pans; wheel/pinch zooms; tapping a system selects it (panel + distance in hexagons from the reference system, written « 7 cases »); on a mouse, hovering shows the same name and distance in a tag. The reference system is the **departure** set by « Trajet depuis ici » in the panel, else the selected system itself (distance 0 is not shown). Tapping an empty hexagon selects nothing; tapping a generated (undefined) system opens a panel « Système non défini » with its coordinates and « Trajet depuis ici ». The « Trajet » block has « Départ » and « Arrivée » (each a search field over readable systems, or « Trajet depuis ici » / « Trajet vers ici »), « Moteur » (1 to 6, default 2), « Routes » (« Toutes » / « Publiques », shown to a GM only) and « Calculer ». The result: « 7 cases · 4,5 jours », the list of stops, the highlighted path on the map; « Effacer » clears it. « Copier le lien » in the panel copies the address of the system and says « Lien copié » for two seconds (if the clipboard is refused: the address selected in a field).
+
+| Who | Sees and can do |
+|---|---|
+| Léa (Player, galaxy visible) | the map without secret systems, private routes or secret zones; search, measure, journey on public routes, copy a link; **no** writing control, no « Routes » choice |
+| Roxane (Player) | same as Léa |
+| Antor, Mira (GM) | what a player sees plus secret systems (badge « MJ seul »), private routes (dashed, « Privée ») and secret zones (« Secret »), « Routes: Toutes »; their writing controls arrive with `galaxie-tenir` |
+| A GM in Player mode | exactly what a player sees; on a hidden galaxy, the E-11 notice for Player mode |
+| Teo (no role), a player on a hidden galaxy, an invisible tool | « Page introuvable. » (hidden, no distinction between *absent* and *forbidden*) |
+
+States (the shared ones are those of the E-21 table above; this slice adds):
+
+| State | What the user sees | Text |
+|---|---|---|
+| journey, no path | the result block, no highlighted path | « Aucun trajet avec ce moteur. » |
+| journey, same system | nothing computed | « Choisissez deux systèmes différents. » |
+| journey, system unreadable (address kept after a change of rights) | the field cleared | « Ce système n'existe plus ou n'est plus visible. » (one text for both) |
+| search, no match | under the field | « Aucun système ne correspond. » (never « masqué ») |
+| search, too short | nothing | — (from 2 characters) |
+| system link, unreadable | whole page | « Page introuvable. » |
+| link, readable | map centred on the system, panel open | — |
+| blocks loading | the grid and what is already loaded stay; missing blocks hatched | « Chargement de la carte… » once, at first load only |
+| zoomed out to the limit | « − » disabled | — |
+| 80-character name | truncated to 24 on the map, in full (wrapped) in the panel | — |
+
+Criteria:
+- Given Léa at 390 px on « Galaxie d'essai », when she taps « Vael », then the panel opens below the map with « Vael », « 7 cases » from Port-Sel set as departure, and « Trajet depuis ici ».
+- Given the trial galaxy, when Léa calculates Port-Sel → Vael, engine 2, public routes, then she reads « 7 cases · 4,5 jours » and the path is highlighted.
+- Given Léa and Antor asking Port-Sel → Hesper, engine 2, when each calculates (Antor with « Toutes »), then Antor reads « 6 cases · 4 jours » through the private route and Léa « 13 cases · 8,5 jours » through Vael, with no segment of the private route.
+- Given Léa, when she types « fant » in the search, then nothing is listed and the text is « Aucun système ne correspond. »; the map shows no route, zone or hexagon marked as hidden.
+- Given Antor in Player mode, when the map reloads, then the secret system, the private route and the secret zone are gone from map, search and journey, and a block above the secret zone is the one Léa sees.
+- Given a mouse, when the pointer rests on « Hesper » with « Vael » as departure, then a tag reads « Hesper · 6 cases ».
+- Given Teo (no role in the universe) or Léa on a hidden galaxy, when they open the address, then « Page introuvable. » and the tool's code is not requested.
+- Given Léa pasting `…/galaxie/1?systeme=station-fantome`, then « Page introuvable. »; with `?systeme=vael`, the map is centred on « Vael » with its panel open.
+- Given the connection lost after the first view, then the displayed view stays, « Connexion perdue. » shows, and panning to unloaded blocks leaves them hatched with « Impossible de charger une partie de la carte. » and « Réessayer ».
+- Given the assistant asked « Combien de temps de Port-Sel à Vael avec un moteur 2 ? » by Léa, then it answers « 7 cases · 4,5 jours » (same result as the screen).
+
 ### E-22 — Ship designer
 
 **Content**: the **list** of readable designs (name, hull, class, price, alerts) and a design's **workshop**: on the
