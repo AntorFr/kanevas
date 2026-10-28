@@ -739,10 +739,18 @@ the density of generated systems never changes based on a territory she cannot s
    lance, a blocking alert appears (« Puissance insuffisante : −2 »), then disappears when she removes it.
 3. She saves: the sheet (**E-9**) shows « Caractéristiques » under the « Générée par le concepteur de
    vaisseaux » banner linking to the tool; Léa cannot manually edit the text.
-4. *(Later slice, `kanevas-outils-vaisseaux-regles`.)* Later, Antor changes the jump range or universe catalogue: E-22 and E-9 signal « Calculé avec
-   d'anciens réglages » and offer « Recalculer »; Léa loses nothing until she confirms.
-5. Rule sheets (« Moteurs », « Défenses ») and the 11 examples are managed sections, readable and
-   uneditable (`kanevas-outils-vaisseaux-regles`); in the first slice, Léa shares the ship link with Roxane, a player
+4. Later, Antor changes the jump range of the universe setting (or imports a catalogue of the universe): the design is
+   « Calculée avec d'anciens réglages » on E-22 and on E-9, and its text has not moved. Léa opens it: the workshop shows the
+   result **stored** in the section, the banner and « Recalculer ». She confirms: the text and the figures take the new
+   calculation together. Until she does, nothing is rewritten; Roxane, who only reads, sees the banner and no button. An
+   « Enregistrer » after an edit also brings the design up to date, and the banner says so.
+5. Antor chooses « Générer les fiches de règles… » in E-22: seven sheets of type Règle appear (one per kind of element,
+   « Règles — Armes », « Règles — Moteurs »…, and « Exemples de vaisseaux », the 11 examples of the catalogue replayed
+   through the same calculation), each with one managed section, readable and uneditable. Run again, it updates without a
+   duplicate. Antor then masks an element, or reimports the universe catalogue with a changed weapon: the sheets he
+   concerns **propose** their update (E-9, E-12), which he accepts or ignores; their text changes only on his agreement.
+   Players read these sheets with what *they* may see: a masked element is absent, and so is any example that uses it.
+   In the first slice, Léa shares the ship link with Roxane, a player
    who has no design of her own on it: Roxane reads « Étoile du soir » (Léa's second design, on a hull of the system, which she may read) read-only, with « Enregistrer » and « Annuler »
    absent, and « Vent d'Orak » is « Page introuvable. » for her (not hers to read).
 *Highlight*: budgets recalculate before their eyes, and the sheet's section stays consistent with what
