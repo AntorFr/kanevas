@@ -753,10 +753,13 @@ blocking alerts, « Enregistrer » refuses and explains why; on a phone, the cat
 *Current files (map, ships) remain usable; Monsieur wants to switch over.*
 1. In `AntorFr/eneria` (private), a script converts files to the module format (`_outils/kanevas/`
    folder); converted output and reference values are versioned alongside.
-2. With an API token scoped to « galaxie » then « vaisseaux » (**E-18**), he pushes batches; **E-18**
-   shows created, updated, refused, each refusal with its field.
-3. He replays: no duplicates. Tests on real data (49 routes, the 11 ships) run **in
-   pods**, which read `eneria`; `kanevas` CI remains synthetic (Monsieur's decision, 2026-10-16).
+2. With an API token scoped to « galaxie » then another scoped to « vaisseaux » (**E-18**), he pushes batches: the
+   catalogue, then the designs (one per ship, keyed, the sheet created if missing — the 11 example ships among them), then
+   the galaxy; **E-18** shows created, updated, refused, each refusal with its field.
+3. He replays: no duplicates, a design he changed in Kanevas in the meantime is refused (« Modifié dans Kanevas depuis le
+   dernier import. ») and the rest passes. Tests on real data (49 routes, the 11 ships, the two named corrections)
+   run **in pods**, which read `eneria`; `kanevas` CI remains synthetic (Monsieur's decision, 2026-10-16). Any gap the
+   real import reveals in the format is written down and corrected in `kanevas`, never worked around in the converter.
 *Failure*: malformed element — refused with its field, the rest goes through; a token lacking the tool's scope —
 refused (401/403 depending on the import API) and nothing written.
 

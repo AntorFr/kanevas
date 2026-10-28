@@ -2927,6 +2927,11 @@ toast « Adresse copiée. »). Two panels.
 - Given Léa, Player, when she opens E-18's address, she sees « Page introuvable. »
   and the item is absent from her sidebar.
 
+
+**What `kanevas-outils-eneria` adds to E-18: nothing on the screen.** A token scoped `swn/vaisseaux` also writes designs; its
+batches show a counter « Conceptions : 4 créées · 0 refusées », labelled from the nature the tool declares (K-6), each refusal
+with its `champ` (`conceptions[2].coque`) in the report, like any tool batch. No new state, no new text but the nature's label.
+
 ### E-14 and E-15 — « Types de fiche »
 
 *Finished mockup*: `docs/maquettes/e14-types-de-fiche.html` (E-14 panel, E-15 panel,
