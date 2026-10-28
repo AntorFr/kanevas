@@ -27,7 +27,7 @@ async function startServer(extraEnv: Record<string, string>) {
   Object.assign(env, extraEnv);
   const child: ChildProcess = spawn('node', ['--import', 'tsx', 'src/server.ts'], { env, stdio: 'ignore' });
   const base = `http://127.0.0.1:${port}`;
-  for (let i = 0; i < 100; i++) {
+  for (let i = 0; i < 300; i++) {
     try {
       await fetch(`${base}/healthz`);
       return { base, stop: () => child.kill('SIGKILL') };

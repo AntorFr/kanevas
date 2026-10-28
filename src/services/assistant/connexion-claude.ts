@@ -30,8 +30,15 @@ const MESSAGES: Record<CodeConnexion, string> = {
 };
 
 export class ErreurConnexion extends Error {
-  constructor(readonly code: CodeConnexion) {
+  /** Why it failed, with the tail of the program's output: for the log and the tests, never for the client. */
+  readonly diagnostic: string | undefined;
+
+  constructor(
+    readonly code: CodeConnexion,
+    diagnostic?: string,
+  ) {
     super(MESSAGES[code]);
+    this.diagnostic = diagnostic;
     this.name = 'ErreurConnexion';
   }
 }
@@ -75,6 +82,10 @@ interface Session {
 // eslint-disable-next-line no-control-regex
 const ANSI = /\u001b(?:\[[0-?]*[ -/]*[@-~]|\][^\u0007\u001b]*(?:\u0007|\u001b\\)|[@-Z\\-_])/g;
 const nettoyer = (s: string) => s.replace(ANSI, '').replace(/\r/g, '\n');
+
+/** The tail of the output kept in a diagnostic: the CLI prints the address before the code, never a token. */
+const MAX_EXTRAIT = 500;
+const extrait = (sortie: string) => nettoyer(sortie).trim().slice(-MAX_EXTRAIT);
 
 /** The first https address on a claude.com, claude.ai or anthropic.com host, else null. */
 export function tirerAdresse(sortie: string): string | null {
@@ -132,6 +143,8 @@ export function programmeBouchon(): Programme {
  */
 export class ConnexionClaude {
   private session: Session | null = null;
+  /** The cause of the last `connexion_impossible` (null before any, reset by a success). */
+  derniereCause: string | null = null;
 
   constructor(readonly options: OptionsConnexion = {}) {}
 
@@ -157,6 +170,12 @@ export class ConnexionClaude {
     rmSync(s.home, { recursive: true, force: true });
   }
 
+  /** Keeps the cause of a start failure and carries it on the error. */
+  private impossible(cause: string): ErreurConnexion {
+    this.derniereCause = cause;
+    return new ErreurConnexion('connexion_impossible', cause);
+  }
+
   async demarrer(): Promise<Connexion> {
     await this.arreter(this.session);
     const programme =
@@ -173,18 +192,22 @@ export class ConnexionClaude {
         stdio: ['pipe', 'pipe', 'pipe'],
         env: { PATH: process.env.PATH ?? '/usr/bin:/bin', HOME: home, TERM: 'xterm' },
       });
-    } catch {
+    } catch (e) {
       rmSync(home, { recursive: true, force: true });
-      throw new ErreurConnexion('connexion_impossible');
+      throw this.impossible(`lancement impossible (${e instanceof Error ? e.message : 'erreur'})`);
     }
     let sorti = false;
+    let codeSortie: number | string | null = null;
+    let erreurLancement: string | null = null;
     const fin = new Promise<void>((resolve) => {
-      proc.once('close', () => {
+      proc.once('close', (code, signal) => {
         sorti = true;
+        codeSortie = code ?? signal;
         resolve();
       });
-      proc.once('error', () => {
+      proc.once('error', (e) => {
         sorti = true;
+        erreurLancement = e.message;
         resolve();
       });
     });
@@ -210,9 +233,16 @@ export class ConnexionClaude {
     }
     adresse ??= tirerAdresse(sortie.texte);
     if (!adresse) {
+      const fond = extrait(sortie.texte);
+      const cause = erreurLancement !== null
+        ? `lancement impossible (${erreurLancement})`
+        : sorti
+          ? `sorti avec le code ${codeSortie}`
+          : 'délai dépassé';
       await this.arreter(session);
-      throw new ErreurConnexion('connexion_impossible');
+      throw this.impossible(`${cause}; sortie : ${fond}`);
     }
+    this.derniereCause = null;
     this.session = session;
     return { connexionId: session.id, adresse, expireLe: new Date(session.expireMs).toISOString() };
   }
