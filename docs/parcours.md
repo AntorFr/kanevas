@@ -711,9 +711,9 @@ during application — nothing is partially applied.
 ### P-18 — Explore the galaxy, then maintain it (Léa, Player, on a phone; Antor, GM, at a desk)
 *Wednesday evening, Léa prepares her ship's next jump; on Sunday, Antor adds a system before the
 session.*
-1. Léa: **Maps** (**E-10**), « Galaxie d'Éneria » ▸ **E-21**. The map opens on systems she
-   may read (all non-secret ones); she drags, pinches, hovers over (on touch: presses) a system: name and distance from the system she
-   chose as departure.
+1. Léa: **Maps** (**E-10**), « Galaxie d'Éneria » (« Galaxie d'essai » in the stub seed) ▸ **E-21**; a shared link to a system opens the same map centred on it, or « Page introuvable. » if she cannot read it. The map opens on systems she
+   may read (all non-secret ones); she drags, pinches, hovers over (on touch: presses) a system: name and distance from the departure system she
+   set, else from the galaxy's default reference (the first system the GM defined).
 2. She chooses departure and arrival: « Port-Sel » → « Vael », and engine (2). The path along public
    routes appears with its duration (« 7 cases · 4,5 jours »).
 3. She copies the « Vael » link (stable address); the assistant, on request, calculates the same path.
