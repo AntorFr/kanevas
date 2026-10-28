@@ -612,11 +612,11 @@ sheet ».
 - `fiches.charge` : `disparu?` boolean, absent = false, on the types that carry the mark —
   personnage `{v:1, pj, disparu?}`, créature, faction, famille, lieu, objet, vaisseau `{v:1,
   disparu?}` (the schemas are strict : the key is added to these seven, refused elsewhere) ; written
-  by the GM alone through the sheet's charge route (`PATCH {disparu}`, AD-131) and the import.
+  by the GM alone through the sheet's charge route (`PATCH {disparu}`, AD-132) and the import.
 - `fiches.type = 'famille'` : no migration (AD-102).
 
 **Physical.** SQLite, unchanged. The descent of the tree for « sous-lieux compris » is a recursive
-CTE bounded to 50 levels (AD-129) on `fiches_par_parent` ; the natured lookup reads
+CTE bounded to 50 levels (AD-130) on `fiches_par_parent` ; the natured lookup reads
 `relations_par_cible_nature` then joins `sections` and `fiches` under the two guards.
 
 **Migration `kanevas-fiches-liees`** (one script, number taken at the merge, AD-51) : rebuild

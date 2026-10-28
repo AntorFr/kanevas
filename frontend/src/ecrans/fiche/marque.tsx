@@ -5,7 +5,7 @@ import type { LucideIcon } from 'lucide-react';
 export const classeDisparu = (marque: unknown) => (marque ? ' disparu' : '');
 
 /**
- * The gone mark (AD-131), placed in the frame of an image: the glyph of the type in a small round chip at
+ * The gone mark (AD-132), placed in the frame of an image: the glyph of the type in a small round chip at
  * the bottom-left. On the drawn fallback (`seul`) the glyph stands alone, without a chip. The word is its name.
  */
 export function MarqueDisparu({ mot, Icone, seul }: { mot: string; Icone: LucideIcon; seul?: boolean }) {

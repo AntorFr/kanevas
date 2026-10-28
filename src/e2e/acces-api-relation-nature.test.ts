@@ -1,4 +1,4 @@
-// E-18 « Accès API »: the relation reference names `nature` and `qualificatif` and the deprecation of `type` (AD-133).
+// E-18 « Accès API »: the relation reference names `nature` and `qualificatif` and the deprecation of `type` (AD-134).
 import assert from 'node:assert/strict';
 import { after, before, test } from 'node:test';
 import { type Any, connecte, launch, skipBrowser, startServer } from './harnais.test.js';

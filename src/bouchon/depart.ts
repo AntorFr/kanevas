@@ -243,7 +243,7 @@ export function semerBouchon(db: Db): boolean {
       relierSection(db, id.antor, lame.id, aldric.id, aldric.sections['Apparence']!, { cibleFicheId: port.id, qualificatif: 'maître de port' });
       relierSection(db, id.antor, lame.id, guilde.id, guilde.sections['Description']!, { cibleFicheId: port.id, qualificatif: 'y fait passer ses cargaisons' });
       relierSection(db, id.antor, lame.id, rapport.id, rapport.sections['Secret — MJ seul']!, { cibleFicheId: port.id, qualificatif: 'surveille' });
-      // `kanevas-fiches-liees-natures`: relations with a nature (AD-128) and the family « Les Corvalis » (a type).
+      // `kanevas-fiches-liees-natures`: relations with a nature (AD-129) and the family « Les Corvalis » (a type).
       const relier = (src: { id: number; sections: Record<string, number> }, section: string, cible: { id: number }, nature: string, qualificatif: string) =>
         relierSection(db, id.antor, lame.id, src.id, src.sections[section]!, { cibleFicheId: cible.id, nature, qualificatif });
       // A base short of 0013 still has the CHECK on `fiches.type`, which does not know « famille ».

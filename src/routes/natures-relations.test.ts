@@ -1,4 +1,4 @@
-// Tests of kanevas-fiches-liees-natures-serveur written from the exit criterion (AD-128, AD-132):
+// Tests of kanevas-fiches-liees-natures-serveur written from the exit criterion (AD-129, AD-133):
 // the natures list and route, the relation rules, mentions, graph links, the type « famille ».
 import assert from 'node:assert/strict';
 import { test } from 'node:test';

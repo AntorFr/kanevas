@@ -25,7 +25,7 @@ export interface DefinitionType {
   icone: string;
   /** False for the session report, which no setting turns off and no one changes into. */
   reglable: boolean;
-  /** Public words and glyph of the gone mark (AD-131); absent on other types. */
+  /** Public words and glyph of the gone mark (AD-132); absent on other types. */
   disparu?: {
     oui: string;
     non: string;

@@ -24,7 +24,7 @@ interface Relation {
 /** Refusals of the service shown as they come (their message is the screen text). */
 const REFUS = new Set(['auto_relation', 'relation_existante', 'limite_relations', 'nature_incompatible']);
 
-/** A nature as `GET /api/univers/:id/natures` sends it (AD-128): the server owns the list. */
+/** A nature as `GET /api/univers/:id/natures` sends it (AD-129): the server owns the list. */
 interface Nature {
   cle: string;
   libelleSource: string;

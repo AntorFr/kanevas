@@ -53,7 +53,7 @@ export interface Fiche {
   etiquettes?: string[];
   /** With a search: the alias that answers when the title does not. */
   aliasTrouve?: string;
-  /** Readable sub-place through which the linked-sheet search found this row (AD-129). */
+  /** Readable sub-place through which the linked-sheet search found this row (AD-130). */
   via?: { id: number; titre: string };
 }
 

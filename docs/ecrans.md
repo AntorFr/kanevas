@@ -3304,7 +3304,7 @@ this text is authoritative where they differ.
 
 ## Détail des écrans de `kanevas-fiches-liees`
 
-> Decisions of Monsieur, 2026-10-25 (B-63 to B-69, AD-128 to AD-133). No new screen: E-9 (the
+> Decisions of Monsieur, 2026-10-25 (B-63 to B-69, AD-129 to AD-134). No new screen: E-9 (the
 > « Relier » form, a block « Fiches liées », the dead mark), E-8 and E-17 (a mark, two filters, an
 > advanced mode), E-11 (labels). New text in English (canon); user-facing labels French. Same six
 > states and common texts as the other screens.
@@ -3322,7 +3322,7 @@ vocabulary: « nature » for the finite kind, « qualificatif » for the free te
 which names the type of sheet), « Fiches liées » for the block, « sous-lieux compris » for the
 aggregation through the tree, « vivant » / « mort » for the mark.
 
-### The natures (AD-128)
+### The natures (AD-129)
 
 The product's list, in code like the types (decision of Monsieur, 2026-10-25: these five to
 start — « dirige » was set aside, « dirige » is a qualifier of « membre de » ; a nature is added by a
@@ -3338,7 +3338,7 @@ line, never removed once used) :
 
 A **symmetric** nature reads the same from both sides and is stored once, on the side that
 entered it: both sheets list the other in « Fiches liées », under the section's audience of the
-side that holds it (AD-128 (3)).
+side that holds it (AD-129 (3)).
 
 A relation without nature is « sans nature » (free, as today). The place-in-place relation is the
 tree, never a nature (« se situe » is not offered for lieu → lieu). Aventures (`kanevas-scenarios`)
@@ -3387,7 +3387,7 @@ relie « Sans nature » sans qualificatif, alors « Le qualificatif est obligato
 n'est écrit. Étant donné la carte « Carte de la côte » (E-11), quand Antor l'ouvre, alors le lien
 d'Aldric vers Port-Sel est étiqueté « se situe à — habite » et son lien libre « maître de port ».
 
-### E-9 — the block « Fiches liées » (B-64, AD-130)
+### E-9 — the block « Fiches liées » (B-64, AD-131)
 
 On every sheet whose type is the target of at least one nature, a sheet block placed **before**
 « Mentionnée dans » (registry of the sheet blocks by type, AD-124): one group per nature read
@@ -3396,7 +3396,7 @@ Créatures (3) ») — counts of what the reader reads —, folded beyond five l
 (« Afficher les 12 »), each line the card line of E-8 (vignette, title, badge, sub-type, the dead
 mark) and the qualifier in grey; on a **place**, a toggle **« sous-lieux compris »** (off by default,
 remembered per browser) adds the sheets linked to its descendants in the tree (bounded by the
-tree's depth, AD-129), each line then saying its place in grey (« — Les Docks »); a group has a
+tree's depth, AD-130), each line then saying its place in grey (« — Les Docks »); a group has a
 link **« Chercher parmi »** to E-17 with the filters pre-filled (lié à, nature, sous-lieux). A group
 with nothing readable is absent; the block is absent when every group is. « Mentionnée dans »
 keeps the links and the free relations only.
@@ -3410,7 +3410,7 @@ built.
 
 | État | Ce qu'on voit | Ce qu'on peut faire |
 |---|---|---|
-| vide | the route gives, per group, the totals with and without descendants (AD-130) : nothing readable either way, the block is absent ; nothing at the place's own level but something below, the block shows with « sous-lieux compris » checked and disabled, and a line « Rien à ce niveau ; N fiches dans ses sous-lieux. » | — |
+| vide | the route gives, per group, the totals with and without descendants (AD-131) : nothing readable either way, the block is absent ; nothing at the place's own level but something below, the block shows with « sous-lieux compris » checked and disabled, and a line « Rien à ce niveau ; N fiches dans ses sous-lieux. » | — |
 | chargement | « Chargement… » in the block, the sheet readable | — |
 | erreur | « Impossible de charger les fiches liées. » with « Réessayer », the rest of the sheet readable | « Réessayer » |
 | connexion perdue | le bandeau ; the toggle and « Afficher les 12 » still work on what is loaded | lire |
@@ -3429,7 +3429,7 @@ trésorier » et « Dame Ombeline de Val-Fortin — dirige » ; « Dirige » n'e
 Corvalis — aîné » et « Dame Ombeline de Val-Fortin — veuve » (Bran porte la marque « mort » une fois
 le geste de « Marquer mort » joué, pas avant).
 
-### E-17 — the advanced search (B-65, AD-129)
+### E-17 — the advanced search (B-65, AD-130)
 
 Under the field and the two filter rows, a disclosure **« Recherche avancée »** (open when the
 address carries one of its parameters): **« Lié à »** (a sheet picker, the E-8 list as in
@@ -3458,7 +3458,7 @@ compris, type Personnage, alors la liste porte Aldric, le Prieur et Suie ; avec 
 Prieur (mort) disparaît. Étant donné Léa, quand elle ouvre la même adresse, alors la liste porte
 Aldric et Suie seulement, et la bascule de mode est absente.
 
-### E-8, E-9, E-17 — the « gone » mark (B-67, AD-131)
+### E-8, E-9, E-17 — the « gone » mark (B-67, AD-132)
 
 One mark, `disparu`, carried by the types that can be gone, each with its word (decision of
 Monsieur, 2026-10-25) :

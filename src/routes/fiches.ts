@@ -86,7 +86,7 @@ export function registerFichesRoutes(app: FastifyInstance) {
     return reply.code(201).send(fiche);
   });
 
-  // Title, sub-type, parent and gone mark, in one transaction (AD-119, AD-115, AD-131).
+  // Title, sub-type, parent and gone mark, in one transaction (AD-119, AD-115, AD-132).
   app.patch(`${base}/:fid`, async (request) => {
     const i = ids(request);
     const b = corps(request);

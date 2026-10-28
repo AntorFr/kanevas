@@ -30,7 +30,7 @@ function exigerMJCache(db: Db, universId: number, compteId: number): void {
 }
 
 /**
- * The GM links a section to a sheet of the same universe (AD-64, AD-128). Refusals
+ * The GM links a section to a sheet of the same universe (AD-64, AD-129). Refusals
  * write nothing: `auto_relation` and `nature_incompatible` (invalide), `relation_existante` and
  * `limite_relations` (conflit), in `detail`. `type` is a synonym of `qualificatif`; both together are refused.
  */

@@ -45,7 +45,7 @@ export interface TypeVue {
   aucun: string;
   icone: string;
   reglable: boolean;
-  /** Words and glyph of the gone mark (AD-131); absent on a type that cannot be gone. */
+  /** Words and glyph of the gone mark (AD-132); absent on a type that cannot be gone. */
   disparu?: MotsDisparu;
   active: boolean;
   origine: 'univers' | 'systeme' | 'defaut';

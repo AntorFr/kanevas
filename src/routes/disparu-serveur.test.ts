@@ -1,4 +1,4 @@
-// Tests of kanevas-fiches-liees-disparu-serveur written from the exit criterion (B-67, B-68, AD-131, AD-63):
+// Tests of kanevas-fiches-liees-disparu-serveur written from the exit criterion (B-67, B-68, AD-132, AD-63):
 // the gone mark: PATCH, list filter, type words, conversion, import (B-48), seed.
 import assert from 'node:assert/strict';
 import { test } from 'node:test';

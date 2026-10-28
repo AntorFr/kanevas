@@ -218,7 +218,7 @@ export function changerSousType(
 }
 
 /**
- * The GM sets the public gone mark outside player mode (AD-131). Like a title, this
+ * The GM sets the public gone mark outside player mode (AD-132). Like a title, this
  * leaves `dernier_import` alone: the import compares its last write before replaying.
  */
 export function marquerDisparu(
@@ -375,7 +375,7 @@ export const PROFONDEUR_MAX = 50;
 
 /**
  * Ids of the sheet and its same-type descendants, including unreadable intermediate sheets
- * (AD-129). UNION and the depth bound tolerate corrupt cycles; no title or path leaves this read.
+ * (AD-130). UNION and the depth bound tolerate corrupt cycles; no title or path leaves this read.
  */
 export function descendantsDe(db: Db, ficheId: number): number[] {
   const rows = db.prepare(`
@@ -655,7 +655,7 @@ export interface PageFiches {
  * word of the title, of an alias or of the sub-type, or all of them a word of one section the caller reads.
  * `etiquette` is one more optional condition (AD-118). Each sheet carries its `alias` and `etiquettes`,
  * and, with `recherche`, the `aliasTrouve` when only an alias answers the title.
- * `lie`, `nature` and `descendants` narrow the same list under both relation guards (AD-129).
+ * `lie`, `nature` and `descendants` narrow the same list under both relation guards (AD-130).
  */
 export function listerFiches(
   db: Db,
@@ -666,7 +666,7 @@ export function listerFiches(
     sousType?: string;
     etiquette?: string;
     etat?: 'la' | 'disparu';
-    /** Linked sheets, under both relation guards (AD-129); descendants stay the target's type. */
+    /** Linked sheets, under both relation guards (AD-130); descendants stay the target's type. */
     lie?: number;
     nature?: string;
     descendants?: boolean;

@@ -3,7 +3,7 @@ import { exigerRole } from './droits.js';
 import type { TypeFiche } from './types-fiche.js';
 
 /**
- * The natures of a relation (AD-128): the product's list, in code like the types. A nature is
+ * The natures of a relation (AD-129): the product's list, in code like the types. A nature is
  * added by a line, never removed once used. « dirige » is a qualifier of « membre », not a nature.
  * The place-in-place relation is the tree, never a nature.
  */
