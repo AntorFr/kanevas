@@ -717,7 +717,7 @@ session.*
 2. She chooses departure and arrival: « Port-Sel » → « Vael », and engine (2). The path along public
    routes appears with its duration (« 7 cases · 4,5 jours »).
 3. She copies the « Vael » link (stable address); the assistant, on request, calculates the same path.
-4. Antor (E-21, GM mode): he **places** a system in an anonymous hex (promotes it: name, notes, size,
+4. Antor (E-21, GM mode; the galaxy was created from E-10 « Nouvelle carte » ▸ « Carte de la galaxie », not visible until he makes it so): he **places** a system in an anonymous hex (promotes it: name, notes, size,
    colour), **draws** a route to « Vael » (exact length), **draws** a territory marked secret, then
    switches to **Player mode**: the ghost system, private route and territory no longer exist.
 5. « Document MJ… »: he chooses the « Galaxie — notes MJ » sheet (or creates one); the tool writes the managed « Document MJ » section there, GM-only, and updates it on each request.

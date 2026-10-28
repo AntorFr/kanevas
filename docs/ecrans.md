@@ -3293,6 +3293,53 @@ Criteria:
 - Given the connection lost after the first view, then the displayed view stays, « Connexion perdue. » shows, « Calculer » and the search are disabled, and panning to unloaded blocks leaves them hatched with « Impossible de charger une partie de la carte. » and « Réessayer ».
 - Given the assistant asked « Combien de temps de Port-Sel à Vael avec un moteur 2 ? » by Léa, then it answers « 7 cases · 4,5 jours » (same result as the screen).
 
+**What `kanevas-outils-galaxie-tenir` builds of E-21 and E-10** (the write side, on the screen `galaxie-lire` built). Mockup: `docs/maquettes/e21-ecriture.html` (the document wins); the frames of `e21-carte-galaxie.html` for the GM, Player mode and the seed stay valid. Architecture: `ARCHITECTURE.md`, « Detail of `kanevas-outils-galaxie-tenir` » (T-1 to T-10). Format: web, desktop and phone/tablet (390 px is the proof width).
+
+*Creating the galaxy (E-10).* For a GM, « Nouvelle carte » offers, in « Forme », « Carte illustrée », « Graphe » and **« Carte de la galaxie »** when the tool is enabled and visible to him. Choosing it hides « Image de fond » and keeps « Titre » (1 to 80 characters, same errors as the other maps). « Créer » leads to E-21 of the new galaxy, **not visible** (« MJ seul »), empty, with a seed drawn by the server. A galaxy of the list carries « Rendre visible » / « Cacher aux joueurs » like the other maps; a hidden one is absent for players on their next load and its address answers « Page introuvable. ».
+
+*The header of E-21 (GM).* The title, the shell's « Mode MJ » / « Mode Joueur » toggle (the product's own, mounted here; in Player mode the page becomes exactly the read-only page of `galaxie-lire`: every control below is **absent**, not disabled), then the write controls: « Placer un système » (primary), « Tracer une route », « Dessiner une zone », and a menu « Galaxie ▾ » with « Renommer », « Visible des joueurs » / « MJ seul », « Document MJ… », « Graine… » and, apart and in the danger colour, « Supprimer la galaxie… ». Below 760 px the controls fold into one « Modifier la carte ▾ » (44 px, same items). Léa and Roxane see none of it, and the toggle is absent for them.
+
+*Gestures.* Each is a mode of the map with one instruction line above it and « Annuler » (or `Échap`) to leave:
+
+| Gesture | Instruction | Then |
+|---|---|---|
+| Placer un système | « Touchez un hexagone. » | an empty hexagon opens the form « Nouveau système »; a **generated** one (« Système non défini » in the panel) opens « Promouvoir ce système » (same form, title only differs: it keeps the hexagon); an hexagon already holding a system selects it instead |
+| Tracer une route | « Touchez le système de départ, puis celui d'arrivée. » | the form « Nouvelle route »: « De Port Noir à Vael », « Longueur : 6 cases » (shown, calculated, not an input), « Route publique » switch (on by default), « Tracer » |
+| Dessiner une zone | « Touchez les sommets du contour, puis « Terminer ». » | the outline is drawn as the vertices are tapped; « Annuler le dernier point », « Terminer » (enabled from 3); then the form « Nouvelle zone »: « Nom », « Couleur », « Densité de systèmes » (a percentage, empty: the zone does not change the density), « Secrète » switch (off by default) |
+
+*The system form* (also « Modifier » in the panel of a defined system): « Nom » (1 to 80), « Taille » (« Petite », « Moyenne », « Grande »), « Couleur » (six swatches, each named in text for assistive technology), « Notes » (plain text, 2 000 characters), « Secret (MJ seul) » switch, « Hexagone (4, −2) » read-only with « Déplacer » (the map then asks « Touchez le nouvel hexagone. »; the routes of the system are recomputed and the form says so: « Ses 2 routes seront recalculées. »). The panel of a defined system gains, for the GM, « Modifier » and « Retirer » (confirmation: « Retirer « Vael » ? Ses 2 routes seront effacées. »); a route and a zone, selected on the map, open a panel with « Modifier » (visibility for a route, every field for a zone) and « Retirer ». The map marks, for the GM only, secret systems (« MJ seul »), private routes (dashed, « Privée ») and secret zones (« Secret »), as `galaxie-lire` did.
+
+*Dialogs.*
+- **« Renommer »**: « Titre », « Enregistrer ».
+- **« Graine… »** (protected setting, B-64): shows the current seed, « Nouvelle graine » (1 to 64 characters, « Tirer au hasard »), then « Changer la graine » opens the confirmation « Tous les systèmes non définis changent de place. Les 5 systèmes que vous avez placés ou promus gardent la leur. » with « Changer la graine » and « Annuler » (focus on « Annuler »). 
+- **« Supprimer la galaxie… »**: « Les 5 systèmes, 4 routes et 2 zones de cette galaxie seront effacés. » (the counts are read when the dialog opens; if they changed meanwhile: « Cette galaxie a changé : relisez le décompte. » with the new counts), and, when a document exists, « Sa section « Document MJ » de la fiche « Notes MJ » sera retirée. » ; « Effacer la galaxie » / « Annuler ». Singular and plural follow the count (« 1 système », « 1 route », « 1 zone »; « 0 route »).
+- **« Document MJ… »**: with no document, two choices — « Choisir une fiche » (a search field over the universe's sheets) or « Créer une fiche de type Savoir » (« Titre », « Galaxie — notes MJ » by default) — and « Écrire le document » (the section is GM only; the dialog says « Seul le MJ lit ce document. »). With a document: « Document dans « Notes MJ » », « Ouvrir la fiche », and its state — « À jour. », or « Le document n'est plus à jour. » with « Proposer la mise à jour » (files the proposal, then « Proposition en attente — à appliquer dans les propositions ») — the section changes only when the GM applies the proposal.
+
+| State (adds to the table of E-21) | Text |
+|---|---|
+| conflict, system | « Ce système a changé depuis que vous l'avez ouvert. » + « Recharger » (fields replaced by the stored ones) |
+| conflict, route / zone / galaxy | « Cette route a changé depuis que vous l'avez ouverte. » / « Cette zone a changé… » / « Cette galaxie a changé depuis que vous l'avez ouverte. » + « Recharger » |
+| hexagon taken | « Cet hexagone porte déjà un système. » (under « Hexagone ») |
+| outside the map | « Cet hexagone est hors de la carte. » |
+| name | « Erreur : le nom est obligatoire. » / « Erreur : 80 caractères au plus. » |
+| route, same system | « Choisissez deux systèmes différents. » |
+| route, already there | « Ces deux systèmes sont déjà reliés. » |
+| zone, too short / crossing | « Un contour compte au moins 3 points. » / « Ce contour se croise. Corrigez-le. » |
+| write failed | « L'enregistrement a échoué. Réessayez. » (the form keeps its input) |
+| connection lost | every write control disabled, « Connexion perdue. » (already shown); an open form keeps its input |
+| nothing defined (GM) | the empty text of E-21 stays, with « Placer un système » highlighted |
+| long content | a zone of 64 vertices, 80-character names (panel wraps), a document listing 500 systems (the sheet scrolls; the list is cut under the section ceiling with « … n systèmes de plus non listés. ») |
+
+Criteria:
+- Given Antor on « Galaxie d'essai » (4 systems, 3 routes, 1 zone), when he places « Port Noir » on an empty hexagon, traces a private route from it to « Vael » and draws a second secret zone, then Léa's map, search and journeys show none of the three, and the route's length is the grid distance (never typed).
+- Given Antor switching to Player mode, then « Port Noir », the route, the zone and every write control are gone, and the toggle still offers « Mode MJ ».
+- Given Antor and Mira both on « Vael », when Antor moves it one hexagon and Mira then saves her form with the version she read, then Mira reads « Ce système a changé depuis que vous l'avez ouvert. » and « Recharger » shows the moved system.
+- Given a generated system tapped in « Placer un système », when Antor names it « Relais » and saves, then it is at the tapped hexagon, defined; and when he changes the seed after the confirmation, « Relais » stays and an undefined system elsewhere has moved.
+- Given Antor opening « Document MJ… » and creating a sheet, then the sheet holds the section « Document MJ », Léa cannot read it, and a system placed afterwards makes the dialog say « Le document n'est plus à jour. » while the text is unchanged; accepting the proposal updates it.
+- Given Antor on E-10 creating « Galaxie neuve » by « Carte de la galaxie », then it is « MJ seul », Léa does not list it; renamed « Galaxie du bord » and made visible she lists it; hidden again she reads « Page introuvable. » on its address.
+- Given 5 systems, 4 routes and 2 zones, « Supprimer la galaxie… » says the sentence above and deletes them after « Effacer la galaxie ».
+- Given Léa at 390 px, no write control is rendered; given Antor at 390 px, « Modifier la carte ▾ » holds the gestures and the form opens under the map.
+
 ### E-22 — Ship designer
 
 **Content**: the **list** of readable designs (name, hull, class, price, alerts) and a design's **workshop**: on the
