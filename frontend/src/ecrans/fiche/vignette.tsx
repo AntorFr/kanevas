@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 
-import { badgeFiche, iconeDuType, useTypes } from '../../types-contexte';
+import { badgeFiche, iconeDuType, marqueDe, useTypes } from '../../types-contexte';
+import { MarqueDisparu, classeDisparu } from './marque';
 import type { Fiche } from './types';
 
 /** Address of the illustration of a sheet; the token makes a replaced image reload and a kept one cache. */
@@ -18,6 +19,14 @@ export function initiale(titre: string): string {
 function Repli({ fiche }: { fiche: Fiche }) {
   const { types } = useTypes();
   const Icone = iconeDuType(types, fiche.type);
+  const marque = marqueDe(types, fiche);
+  if (marque) {
+    return (
+      <span className="repli">
+        <MarqueDisparu mot={marque.mot} Icone={marque.Icone} seul />
+      </span>
+    );
+  }
   return (
     <span className="repli">
       <span className="puce-type" aria-hidden="true">
@@ -37,9 +46,10 @@ export function CarteFiche({ universId, fiche }: { universId: number | string; f
   const jeton = ill?.jeton;
   const [ko, setKo] = useState<string>();
   const image = jeton !== undefined && ko !== jeton;
+  const marque = marqueDe(types, fiche);
   return (
     <Link className="carte" to={`/univers/${universId}/fiche/${fiche.id}`}>
-      <span className="vue">
+      <span className={`vue${classeDisparu(marque)}`}>
         {image ? (
           <img
             src={adresseIllustration(universId, ill!.id, jeton)}
@@ -53,6 +63,7 @@ export function CarteFiche({ universId, fiche }: { universId: number | string; f
         ) : (
           <Repli fiche={fiche} />
         )}
+        {marque && image && <MarqueDisparu mot={marque.mot} Icone={marque.Icone} />}
       </span>
       <span className="pied-carte">
         <span className="titre" title={fiche.titre}>

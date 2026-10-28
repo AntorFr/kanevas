@@ -15,6 +15,7 @@ import {
   lireMentions,
   listerFiches,
   listerSousTypes,
+  marquerDisparu,
 } from '../services/fiches.js';
 import {
   ajouterSection,
@@ -85,11 +86,15 @@ export function registerFichesRoutes(app: FastifyInstance) {
     return reply.code(201).send(fiche);
   });
 
-  // Title, sub-type (`null` removes it) and parent, in one transaction (AD-119 (1), AD-115).
+  // Title, sub-type, parent and gone mark, in one transaction (AD-119, AD-115, AD-131).
   app.patch(`${base}/:fid`, async (request) => {
     const i = ids(request);
     const b = corps(request);
-    if (b.titre === undefined && b.sousType === undefined && b.parent === undefined) {
+    if (Object.keys(b).some((k) => !['titre', 'sousType', 'parent', 'disparu'].includes(k))) {
+      throw invalide('Requête invalide.');
+    }
+    if (b.disparu !== undefined && typeof b.disparu !== 'boolean') throw invalide('Requête invalide.');
+    if (b.titre === undefined && b.sousType === undefined && b.parent === undefined && b.disparu === undefined) {
       throw invalide('Rien à modifier.');
     }
     if (b.titre !== undefined && typeof b.titre !== 'string') throw invalide('Le titre : de 1 à 120 caractères.');
@@ -103,6 +108,7 @@ export function registerFichesRoutes(app: FastifyInstance) {
       if (b.titre !== undefined) fiche = renommerFiche(app.db, a, i.univers, i.fiche, b.titre as string);
       if (b.sousType !== undefined) fiche = changerSousType(app.db, a.compteId, i.univers, i.fiche, b.sousType);
       if (b.parent !== undefined) fiche = deplacerFiche(app.db, a, i.univers, i.fiche, b.parent as number | null);
+      if (b.disparu !== undefined) fiche = marquerDisparu(app.db, a, i.univers, i.fiche, b.disparu as boolean);
       return fiche;
     })();
   });
@@ -139,9 +145,10 @@ export function registerFichesRoutes(app: FastifyInstance) {
 
   app.get(base, async (request) => {
     const q = request.query as Record<string, unknown>;
-    for (const k of ['type', 'sousType', 'etiquette', 'curseur', 'q', 'parent', 'lie', 'nature', 'descendants']) {
+    for (const k of ['type', 'sousType', 'etiquette', 'curseur', 'q', 'parent', 'lie', 'nature', 'descendants', 'etat']) {
       if (q[k] !== undefined && typeof q[k] !== 'string') throw invalide('Requête invalide.');
     }
+    if (q.etat !== undefined && q.etat !== 'la' && q.etat !== 'disparu') throw invalide('Requête invalide.');
     if ((q.nature !== undefined || q.descendants !== undefined) && q.lie === undefined) {
       throw invalide('Requête invalide.');
     }
@@ -158,6 +165,7 @@ export function registerFichesRoutes(app: FastifyInstance) {
       type: q.type as string | undefined,
       sousType: q.sousType as string | undefined,
       etiquette: q.etiquette as string | undefined,
+      etat: q.etat as 'la' | 'disparu' | undefined,
       lie: q.lie === undefined ? undefined : Number(q.lie),
       nature: q.nature as string | undefined,
       descendants: q.descendants === undefined ? undefined : true,

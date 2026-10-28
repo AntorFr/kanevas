@@ -5,10 +5,11 @@ import { Link, useParams, useSearchParams, type SetURLSearchParams } from 'react
 import { ErreurApi, lire, useConnexionPerdue } from '../api';
 import { useBasculeMode, useCharge, useVue } from '../cadre-contexte';
 import type { Ecran } from '../registre';
-import { badgeFiche, iconeDuType, typesActifs, useTypes } from '../types-contexte';
+import { badgeFiche, iconeDuType, marqueDe, typesActifs, useTypes } from '../types-contexte';
 import type { UniversListe } from '../types';
 import { Bouton, Champ, PageIntrouvable } from '../ui';
 import { adresseIllustration } from './fiche/vignette';
+import { MarqueDisparu, classeDisparu, etatDe } from './fiche/marque';
 import { LONGUEUR_RECHERCHE } from './fiche/liste-recherche';
 import type { Fiche, PageFiches } from './fiche/types';
 import './liste.css';
@@ -76,6 +77,8 @@ function Corps({ universId, mj }: { universId: string; mj: boolean }) {
   const etiquetteUrl = params.get('etiquette') ?? '';
   const etiquette = etiquettesLues.etat === 'ok' && noms.includes(etiquetteUrl) ? etiquetteUrl : '';
 
+  const mots = proposes.find((t) => t.type === type)?.disparu;
+  const etat = mots ? etatDe(params.get('etat')) : '';
   const avancee = useAvancee(universId, suffixeMode, params, setParams);
   const { lie, nature, descendants } = avancee;
   const trop = q.length > LONGUEUR_RECHERCHE;
@@ -93,6 +96,7 @@ function Corps({ universId, mj }: { universId: string; mj: boolean }) {
     if (q !== '') p.set('q', q);
     if (type !== '') p.set('type', type);
     if (etiquette !== '') p.set('etiquette', etiquette);
+    if (etat !== '') p.set('etat', etat);
     if (lie !== '') {
       p.set('lie', lie);
       if (nature) p.set('nature', nature);
@@ -100,7 +104,7 @@ function Corps({ universId, mj }: { universId: string; mj: boolean }) {
     }
     if (joueur) p.set('mode', 'joueur');
     return `/api/univers/${universId}/fiches?${p.toString()}`;
-  }, [universId, q, type, etiquette, joueur, lie, nature, descendants]);
+  }, [universId, q, type, etat, etiquette, joueur, lie, nature, descendants]);
 
   const parti = !depart && !trop && !attend && !perdue;
   useEffect(() => {
@@ -169,7 +173,12 @@ function Corps({ universId, mj }: { universId: string; mj: boolean }) {
     }
   }
 
-  const choisir = (cle: 'type' | 'etiquette', valeur: string) => setParams((p) => majParam(p, cle, valeur), { replace: true });
+  const choisir = (cle: 'type' | 'etiquette', valeur: string) =>
+    setParams((p) => {
+      const n = majParam(p, cle, valeur);
+      if (cle === 'type') n.delete('etat');
+      return n;
+    }, { replace: true });
 
   return (
     <div className="page-recherche">
@@ -208,7 +217,7 @@ function Corps({ universId, mj }: { universId: string; mj: boolean }) {
           ))}
         </div>
       )}
-      <Avancee universId={universId} suffixeMode={suffixeMode} params={params} setParams={setParams} avancee={avancee} />
+      <Avancee universId={universId} suffixeMode={suffixeMode} params={params} setParams={setParams} avancee={avancee} mots={mots} etat={etat} />
       <Corps2
         lie={lie !== ''}
         cible={avancee.cible.etat === 'ok' ? avancee.cible.fiche.titre : undefined}
@@ -303,16 +312,18 @@ function Ligne({ universId, fiche, onEtiquette }: { universId: string; fiche: Fi
   const [ko, setKo] = useState(false);
   const jeton = fiche.illustration && 'jeton' in fiche.illustration ? fiche.illustration.jeton : undefined;
   const etiquettes = fiche.etiquettes ?? [];
+  const marque = marqueDe(types, fiche);
   const badge = fiche.sousType ? `${badgeFiche(types, fiche)} · ${fiche.sousType}` : badgeFiche(types, fiche);
   return (
     <li className="ligne-recherche">
       <Link className="lien-recherche" to={`/univers/${universId}/fiche/${fiche.id}`}>
-        <span className="vignette-recherche" aria-hidden="true">
+        <span className={`vignette-recherche${classeDisparu(marque)}`} aria-hidden={marque ? undefined : 'true'}>
           {jeton !== undefined && !ko ? (
             <img src={adresseIllustration(universId, fiche.id, jeton)} alt="" width={40} height={40} loading="lazy" onError={() => setKo(true)} />
           ) : (
             <Icone size={16} strokeWidth={1.75} />
           )}
+          {marque && <MarqueDisparu mot={marque.mot} Icone={marque.Icone} />}
         </span>
         <span className="texte-recherche">
           <span className="titre-recherche" title={fiche.titre}>

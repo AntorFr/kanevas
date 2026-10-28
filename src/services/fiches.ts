@@ -16,7 +16,7 @@ import { estNature, NATURES } from './natures.js';
 import { illustrationEnAttente, lireLignes, lisiblePar, type FichierRow } from './fichiers.js';
 import { supprimerFichier } from './stockage.js';
 import { IMAGE_RESERVEE } from './markdown.js';
-import { CHARGES, estTypeFiche, typeActif } from './types-fiche.js';
+import { CHARGES, TYPES, estTypeFiche, porteMarqueDisparu, typeActif } from './types-fiche.js';
 import {
   TYPES_FICHE,
   type Acteur,
@@ -218,6 +218,31 @@ export function changerSousType(
 }
 
 /**
+ * The GM sets the public gone mark outside player mode (AD-131). Like a title, this
+ * leaves `dernier_import` alone: the import compares its last write before replaying.
+ */
+export function marquerDisparu(
+  db: Db,
+  acteur: Acteur,
+  universId: number,
+  ficheId: number,
+  disparu: boolean,
+): Fiche {
+  exigerMJ(db, universId, acteur.compteId);
+  if (acteur.modeJoueur) throw refuse();
+  const fiche = chargerFiche(db, universId, ficheId);
+  if (!porteMarqueDisparu(fiche.type)) throw invalide('Cette fiche ne peut pas être marquée disparue.');
+  if (typeof disparu !== 'boolean') throw invalide('Requête invalide.');
+  const charge = { ...(JSON.parse(fiche.charge) as Record<string, unknown>), disparu };
+  db.prepare('UPDATE fiches SET charge = ?, modifie_le = ? WHERE id = ?').run(
+    JSON.stringify(charge),
+    new Date().toISOString(),
+    ficheId,
+  );
+  return versFiche(chargerFiche(db, universId, ficheId));
+}
+
+/**
  * The GM changes the type of a sheet among the thirteen settable ones (AD-120 (4)): the same row,
  * so id, sections, relations and map places stay. The payload becomes that of the new type (a
  * character takes `pj`, `false` by default) and the sub-type is cleared unless the caller gives a
@@ -244,7 +269,10 @@ export function changerTypeFiche(
   }
   const voulu = sousType == null ? null : validerSousType(sousType);
   const base = type === 'personnage' ? { pj: false } : {};
-  const c = CHARGES[type].safeParse({ v: 1, ...base, ...charge });
+  // Conversion preserves a compatible mark, never changes it from a caller's payload.
+  const ancienneCharge = JSON.parse(actuelle.charge) as Record<string, unknown>;
+  const marque = porteMarqueDisparu(type) ? { disparu: ancienneCharge.disparu } : {};
+  const c = CHARGES[type].safeParse({ v: 1, ...base, ...charge, ...marque });
   if (!c.success) throw invalide('Charge utile invalide pour ce type de fiche.');
   const garde = type === actuelle.type ? actuelle.sous_type : null;
   db.prepare('UPDATE fiches SET type = ?, charge = ?, sous_type = ?, modifie_le = ? WHERE id = ?').run(
@@ -637,6 +665,7 @@ export function listerFiches(
     type?: string;
     sousType?: string;
     etiquette?: string;
+    etat?: 'la' | 'disparu';
     /** Linked sheets, under both relation guards (AD-129); descendants stay the target's type. */
     lie?: number;
     nature?: string;
@@ -656,6 +685,9 @@ export function listerFiches(
   if (options.lie !== undefined && (!Number.isSafeInteger(options.lie) || options.lie < 0 || options.lie > 999999999)) {
     throw invalide('Requête invalide.');
   }
+  if (options.etat !== undefined && options.etat !== 'la' && options.etat !== 'disparu') {
+    throw invalide('Requête invalide.');
+  }
   const limite = Math.min(Math.max(Math.trunc(options.limite ?? LIMITE_LISTE), 1), LIMITE_LISTE);
   const where = ['f.univers_id = ?'];
   const params: (string | number)[] = [universId];
@@ -665,6 +697,13 @@ export function listerFiches(
     }
     where.push('f.type = ?');
     params.push(options.type);
+  }
+  if (options.etat !== undefined) {
+    const types = TYPES.filter((t) => t.disparu).map((t) => t.type);
+    where.push(`f.type IN (${types.map(() => '?').join(',')})`);
+    params.push(...types);
+    where.push("COALESCE(json_extract(f.charge, '$.disparu'), 0) = ?");
+    params.push(options.etat === 'disparu' ? 1 : 0);
   }
   if (options.sousType !== undefined) {
     where.push('f.sous_type = ? COLLATE NOCASE');

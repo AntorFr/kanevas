@@ -18,6 +18,7 @@ import {
   creerFiche,
   deplacerFiche,
   renommerFiche,
+  marquerDisparu,
   supprimerFiche,
   validerSousType,
 } from './fiches.js';
@@ -45,7 +46,7 @@ import {
   resoudreClesEnAttente,
 } from './sections.js';
 import type { SectionRow } from './types.js';
-import { TYPES, typeActif } from './types-fiche.js';
+import { TYPES, porteMarqueDisparu, typeActif } from './types-fiche.js';
 
 /** Every product sheet type is accepted by the import. */
 export const TYPES_IMPORT: readonly string[] = TYPES.map((t) => t.type);
@@ -75,6 +76,8 @@ interface FicheEntree {
   /** `undefined`: the request says nothing (left as is); `null`: no sub-type wanted. */
   sousType?: string | null;
   pj: boolean;
+  /** Absent on types without the mark; otherwise defaults to false. */
+  disparu?: boolean;
   campagne?: string;
   campagneId?: number;
   /** `undefined`: the request says nothing (left as is). Cleaned, bounds not yet checked. */
@@ -150,6 +153,11 @@ function lireCorps(corps: unknown, maintenant: Date): FicheEntree {
     throw new Refus('modifieLe', 'fiche', 'modifieLe : antérieure à creeLe');
   }
   const pj = booleen(c.pj, 'pj', 'fiche');
+  const marqueDisparu = porteMarqueDisparu(type);
+  if (!marqueDisparu && Object.hasOwn(c, 'disparu')) {
+    throw new Refus('disparu', 'fiche', 'disparu : champ inconnu pour ce type', 'champ_inconnu');
+  }
+  const disparu = marqueDisparu ? booleen(c.disparu, 'disparu', 'fiche') : undefined;
   let sousType: string | null | undefined;
   if (c.sousType !== undefined && c.sousType !== null) {
     try {
@@ -235,7 +243,7 @@ function lireCorps(corps: unknown, maintenant: Date): FicheEntree {
     };
   });
   if (type === 'compte_rendu' && sections[0]) sections[0].titre = TITRE_SECTION_COMPTE_RENDU;
-  return { type, titre, sousType, pj, campagne, alias, etiquettes, parent, illustration, creeLe, modifieLe, sections };
+  return { type, titre, sousType, pj, disparu, campagne, alias, etiquettes, parent, illustration, creeLe, modifieLe, sections };
 }
 
 interface FicheLue {
@@ -258,6 +266,7 @@ interface MarqueFiche {
   titre?: string;
   type?: string;
   pj?: boolean | null;
+  disparu?: boolean;
   sousType?: string | null;
   alias?: string[];
   etiquettes?: string[];
@@ -380,6 +389,7 @@ function ecrire(
       type: e.type,
       pj: pjDe(e.type, JSON.stringify(charge)),
       sousType: e.sousType ?? null,
+      ...(e.disparu !== undefined ? { disparu: e.disparu } : {}),
     };
     if (!typeActif(db, universId, e.type)) prevenir('fiche', desactive(e.type));
     const alias = ensembleVoulu(e.alias, MAX_ALIAS, LONGUEUR_ALIAS, 'alias', prevenir);
@@ -398,6 +408,7 @@ function ecrire(
       charge,
       origine,
     });
+    if (e.disparu !== undefined) marquerDisparu(db, { compteId }, universId, fiche.id, e.disparu);
     if (e.type === 'compte_rendu' && e.sousType) changerSousType(db, compteId, universId, fiche.id, e.sousType);
     // The sheets that waited for this key now point at it, in this transaction (AD-116).
     resoudreClesEnAttente(db, universId, cle, fiche.id);
@@ -459,6 +470,22 @@ function ecrire(
     if (existante.type !== e.type) marque.sousType = null;
     ecrit = true;
   } else prevenir('fiche', 'type modifié dans Kanevas : non écrasé');
+
+  // The mark is protected independently of type/PJ. Read after a conversion, which may
+  // preserve it or drop it; a human's type change to an unsupported type is left alone.
+  const apresType = db.prepare('SELECT type, charge FROM fiches WHERE id = ?').get(existante.id) as {
+    type: string; charge: string;
+  };
+  if (!porteMarqueDisparu(apresType.type)) delete marque.disparu;
+  else if (e.disparu !== undefined) {
+    const courant = (JSON.parse(apresType.charge) as { disparu?: boolean }).disparu === true;
+    if (courant === e.disparu) marque.disparu = e.disparu;
+    else if (courant === (di?.disparu ?? false)) {
+      marquerDisparu(db, { compteId }, universId, existante.id, e.disparu);
+      marque.disparu = e.disparu;
+      ecrit = true;
+    } else prevenir('fiche', 'disparu modifié dans Kanevas : non écrasé');
+  }
 
   // Sub-type, with the same protection: what a human changed since the last import is left alone.
   if (e.sousType !== undefined) {
