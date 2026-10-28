@@ -733,21 +733,24 @@ the density of generated systems never changes based on a territory she cannot s
 1. Antor creates the **« Vaisseau »** sheet « Vent d'Orak » (E-8/E-9): free sections « Histoire » and « Notes MJ »;
    in **E-22**, « Nouvelle conception » on that sheet, hull chosen; the « Caractéristiques » section
    is created, managed by the designer, and he makes **Léa** its author.
-2. Léa opens the **designer** (E-22) from the sheet or the « Outils » bar: she chooses an engine, four
-   fittings, two weapons; free power and mass, price, HP and AC recalculate with each choice;
-   a blocking alert appears (« Puissance insuffisante : −2 »), then disappears.
+2. Léa opens the **designer** from the sheet (the banner link) or the « Outils » bar, where she first sees the
+   **list** of the designs she may read (E-22), then opens « Vent d'Orak »: she chooses an engine, a hold, a laser
+   and a test lance; free power and mass, price, HP and AC recalculate with each choice; she adds a second test
+   lance, a blocking alert appears (« Puissance insuffisante : −2 »), then disappears when she removes it.
 3. She saves: the sheet (**E-9**) shows « Caractéristiques » under the « Générée par le concepteur de
    vaisseaux » banner linking to the tool; Léa cannot manually edit the text.
-4. Later, Antor changes the jump range or universe catalogue: E-22 and E-9 signal « Calculé avec
+4. *(Later slice, `kanevas-outils-vaisseaux-regles`.)* Later, Antor changes the jump range or universe catalogue: E-22 and E-9 signal « Calculé avec
    d'anciens réglages » and offer « Recalculer »; Léa loses nothing until she confirms.
 5. Rule sheets (« Moteurs », « Défenses ») and the 11 examples are managed sections, readable and
-   uneditable; Léa shares the ship link with another player, who reads it according to their permissions.
+   uneditable (`kanevas-outils-vaisseaux-regles`); in the first slice, Léa shares the ship link with Roxane, a player
+   who has no design of her own on it: Roxane reads « Étoile du soir » read-only, with « Enregistrer » and « Annuler »
+   absent, and « Vent d'Orak » is « Page introuvable. » for her (not hers to read).
 *Highlight*: budgets recalculate before their eyes, and the sheet's section stays consistent with what
 is calculated.
 *Failure*: Antor disables the designer — the sheet shows « Caractéristiques » as text with « Outil
 désactivé », without editing; Léa opens Roxane's design, which she cannot read — « Page introuvable. »;
 two concurrent writes — the second refused with « Recharger »; calculating an invalid design —
-blocking alerts, « Enregistrer » refuses and explains why; on a phone, the catalogue is browsed in one column.
+blocking alerts, « Enregistrer » refuses and explains why; Antor withdraws the hull of « Étoile du soir » from the universe or masks « Lance d'essai » — the design keeps its text, the line says « Élément retiré de cet univers » and « Enregistrer » stays disabled (withdrawn), or Léa still sees the masked element on her design but does not find it in her choices; on a phone, the catalogue is browsed in one column.
 
 ### P-20 — Migrate Éneria's current tools (Monsieur, Saturday, Mac and private repository)
 *Current files (map, ships) remain usable; Monsieur wants to switch over.*
