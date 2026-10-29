@@ -351,7 +351,7 @@ test('visibleJoueurs sur les lignes : rendu au MJ hors mode joueur (Prieur faux,
     ((await m.get(h, 'Port-Sel', `${qs}nature=se_situe`)).json() as { groupes: { fiches: L[] }[] }).groupes[0]!.fiches;
   const mj = await lignes(m.antor, '?');
   assert.equal(mj.find((f) => f.id === m.id('Le Prieur masqué'))?.visibleJoueurs, false);
-  assert.equal(mj.find((f) => f.titre === 'Aldric')?.visibleJoueurs, true);
+  assert.equal(mj.find((f) => f.titre === 'Maître Aldric')?.visibleJoueurs, true);
   const mj5 = ((await m.get(m.antor, 'Port-Sel')).json() as { groupes: { fiches: L[] }[] }).groupes.find((_, i) => i === 0)!;
   assert.ok(mj5.fiches.every((f) => typeof f.visibleJoueurs === 'boolean'));
   for (const [h, qs] of [[m.lea, '?'], [m.antor, '?mode=joueur&'], [m.lea, '?mode=joueur&']] as const) {
