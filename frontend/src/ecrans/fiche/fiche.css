@@ -285,6 +285,11 @@ a.cadre-ill:focus-visible { outline-offset: 2px; border-radius: var(--rayon-pann
 .menu-ajout-fichier .menu-entree { white-space: nowrap; }
 
 /* « Déplacer sous… » (E-9, kanevas-deplacer-arborescence): the two views, the path, the rows of the tree. */
+.fenetre:has(.deplacer) { display: flex; flex-direction: column; max-height: calc(100dvh - 2 * var(--e-5)); }
+.fenetre:has(.deplacer) > :not(.deplacer) { flex: none; }
+.deplacer { display: flex; flex-direction: column; min-height: 0; }
+.deplacer > * { flex-shrink: 0; }
+.deplacer .resultats { min-height: 0; flex-shrink: 1; overscroll-behavior-y: contain; }
 .deplacer .bascule-vue { align-self: flex-start; }
 .deplacer .chemin-deplacer { display: flex; align-items: center; flex-wrap: nowrap; gap: 4px; min-width: 0; font-size: var(--t-13); color: var(--texte-2); }
 .deplacer .chemin-deplacer .suite-chemin { display: inline-flex; align-items: center; gap: 4px; min-width: 0; }
@@ -307,7 +312,9 @@ a.cadre-ill:focus-visible { outline-offset: 2px; border-radius: var(--rayon-pann
 .deplacer .nouveau-parent { margin: 0; font-size: var(--t-13); color: var(--texte-2); }
 .cache-lecteur { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
 @media (max-width: 480px) {
+  .fenetre:has(.deplacer) { width: 100%; height: 100dvh; max-height: 100dvh; border-radius: 0; }
+  .deplacer { flex: 1; }
   .deplacer .resultat { min-height: 44px; }
   .deplacer .chevron-res { width: 44px; height: 44px; }
-  .deplacer .resultats { max-height: none; }
+  .deplacer .resultats { flex: 1; max-height: none; }
 }

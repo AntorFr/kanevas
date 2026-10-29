@@ -398,8 +398,8 @@ export function DeplacerSous({
                 </p>
               )}
               {niveau.k === 'ok' && niveau.suivant !== null && (
-                <Bouton ecrit={false} enCours={suiteEnCoursN} disabled={perdue} onClick={() => void suiteNiveau()}>
-                  Charger la suite
+                <Bouton ecrit={false} disabled={perdue || suiteEnCoursN} onClick={() => void suiteNiveau()}>
+                  {suiteEnCoursN ? 'Chargement…' : 'Charger la suite'}
                 </Bouton>
               )}
             </>
@@ -428,8 +428,8 @@ export function DeplacerSous({
                 </p>
               )}
               {resultats.k === 'ok' && resultats.suivant !== null && (
-                <Bouton ecrit={false} enCours={suiteEnCours} disabled={perdue} onClick={() => void suite()}>
-                  Charger la suite
+                <Bouton ecrit={false} disabled={perdue || suiteEnCours} onClick={() => void suite()}>
+                  {suiteEnCours ? 'Chargement…' : 'Charger la suite'}
                 </Bouton>
               )}
             </>
