@@ -565,8 +565,8 @@ E-14 (« Page introuvable. ») et lit l'onglet de E-15 en « Lecture seule », i
    menu « ⋯ » : « Déplacer sous… » « Les Sphères » ; « Alias et étiquettes ». Sur « Les Cristaux
    d'Ombre », importée en Note, « Changer le type » : Note → Savoir, sous-type « Ressource ».
    *(kanevas-deplacer-arborescence)* « Déplacer sous… » opens on the level where the sheet is (its parent's
-   children, the sheet marked « (cette fiche) »): Antor goes up to « Les Sphères », down into « Port-Sel »,
-   chooses « Les Docks » without typing; « Recherche » stays one click away when he knows the title.
+   children, the sheet marked « (cette fiche) »): Antor walks up and down to the parent and chooses it
+   without typing; « Recherche » stays one click away when he knows the title.
 3. Menu « ⋯ » d'un doublon : « Supprimer la fiche… » ; la boîte compte ce qui part avec elle
    (sections, relations qui la visent, places sur une carte ; ses fichiers restent dans la médiathèque),
    dit sous quelle fiche
