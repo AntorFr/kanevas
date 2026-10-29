@@ -259,7 +259,7 @@ export function DeplacerSous({
     }
   }
 
-  const ligne = (f: { id: number; titre: string; type: string; sousType?: string | null }, badge: string, enfants: boolean) => {
+  const ligne = (f: { id: number; titre: string; type: string; sousType?: string | null }, badge: string, enfants: boolean, arbre = false) => {
     const soi = f.id === fiche.id;
     const Icone = iconeDuType(types, f.type);
     const detail = [badge, f.sousType].filter(Boolean).join(' · ') + (f.id === parentActuel ? ' (parent actuel)' : '');
@@ -286,6 +286,7 @@ export function DeplacerSous({
             <ChevronRight size={16} strokeWidth={1.75} aria-hidden="true" />
           </button>
         )}
+        {arbre && (!enfants || soi) && <span className="sans-chevron" aria-hidden="true" />}
       </div>
     );
   };
@@ -391,7 +392,7 @@ export function DeplacerSous({
                 </p>
               )}
               {niveau.k === 'ok' && niveau.enfants.length === 0 && <p className="vide-res">Aucune fiche à ce niveau.</p>}
-              {niveau.k === 'ok' && niveau.enfants.map((f) => ligne(f, badgeFiche(types, f), f.aDesEnfants))}
+              {niveau.k === 'ok' && niveau.enfants.map((f) => ligne(f, badgeFiche(types, f), f.aDesEnfants, true))}
               {suiteEchecN && (
                 <p className="vide-res" role="alert">
                   Impossible de charger la suite.
