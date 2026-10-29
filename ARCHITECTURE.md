@@ -692,7 +692,7 @@ the two guards), `descendantsDe` (point 3 of the `-recherche` notes), the sheet-
    answer (`GET …/liees`), not carried by `lireFiche`: states « Chargement… », « Impossible de charger les fiches liées. » with
    « Réessayer » (`docs/ecrans.md`), the sheet readable meanwhile. `groupes: []` renders nothing (not even the heading).
    The toggle « sous-lieux compris » exists on a `lieu` only; checked, the answer is read again with `descendants=1`; the choice is
-   remembered **per browser** under one `localStorage` key (`kanevas.liees.sousLieux`) — a preference of the reader, no data of
+   remembered **per browser** under one `localStorage` key (`kanevas-fiches-liees-sous-lieux`, `"1"` or `"0"`) — a preference of the reader, no data of
    the universe (AD-28 forbids browser storage for the *thread*, not for a display preference; `localStorage` already holds the
    theme). When `total` is 0 for every type of every group and some `totalAvecDescendants` is positive, the toggle is checked and
    disabled and the line « Rien à ce niveau ; N fiches dans ses sous-lieux. » (N the sum of the groups' deeper totals) shows
