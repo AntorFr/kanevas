@@ -2783,7 +2783,8 @@ type, and « Aucun parent » carries « (actuel) » when the sheet has no parent
   level; the last is the shown level (`aria-current="location"`). Before the path, an icon button « Remonter »
   (`corner-left-up`, `aria-label` « Remonter d'un niveau »), inactive at the root. More than three crumbs
   after the universe: the universe, « … » (a menu listing the hidden ones, with their type icon), the last two
-  — the rule of E-9's breadcrumb. At opening the path is built from the sheet's `ancetres` (the GM outside
+  — the rule of E-9's breadcrumb. Choosing an entry of that menu shows that level, as a crumb does, and closes
+  the menu; Échap or a click outside closes it without moving; offline, « … » is inactive like the crumbs. At opening the path is built from the sheet's `ancetres` (the GM outside
   player mode reads them all); walking down appends, walking up or clicking a crumb cuts.
 - *A row.* The radio dot, the type icon, the title, then on the right « Lieu · Taverne » (type, sub-type) in
   `--texte-3` — the search row of today — and, when the row has readable children (`aDesEnfants`, AD-129), a
@@ -2857,6 +2858,9 @@ Docks », « Le Phare aux Sels », « Quartier des Cordiers », « Le Repaire de
   shows, and the sheet has no « ⋯ » menu any more.
 - Given Léa (player), when she calls `GET …/fiches/racines` or a search with `horsDe`, then she gets 403 for
   the roots and 400 for `horsDe`, and nothing about the hierarchy (AD-129); so does Antor in player mode.
+- Given a chain of five levels under the universe (created for the test; the seed goes two deep at most), when
+  Antor opens « Déplacer sous… » on its deepest sheet, then the path shows the universe, « … » and the last two
+  crumbs; when he opens « … » and chooses the first hidden level, then that level's children are listed.
 
 ### E-17 Recherche
 
