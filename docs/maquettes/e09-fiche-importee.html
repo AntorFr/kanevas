@@ -69,12 +69,13 @@
      #etat-joindre    le même menu, ouvert par « Joindre un fichier » au pied des pièces jointes
      #etat-sous-type  le sous-type en édition dans le badge : champ « Port » et la liste des sous-types
                       de lieu déjà employés (Port, Port franc, Quartier, Sphère, Taverne)
-     #etat-sous-type-survol  (kanevas-sous-type-dialogue) le sous-type « Port » du badge au survol / au focus :
-                      fond --surface-3, crayon 12 px, anneau de focus
+     #etat-sous-type-survol  (kanevas-sous-type-dialogue) le sous-type « Port » du badge au survol : fond, crayon
+     #etat-sous-type-focus   le même au focus clavier : fond, crayon et anneau de focus
      #etat-menu       menu « ⋯ » de l'en-tête ouvert
      #etat-changer-type boîte « Changer le type de « Port-Sel » » : types activés, « Autres types », choix PJ / PNJ pour un personnage, sous-type retiré
      #etat-changer-sous-type (kanevas-sous-type-dialogue) la même boîte, type actuel gardé : champ « Port franc »
                       (rempli de « Port » à l'ouverture), pas d'avertissement, « Enregistrer le sous-type » actif
+     #etat-changer-sous-type-echec la même, après un échec : « Le sous-type n'a pas changé. Réessayez. »
      #etat-deplacer   boîte « Déplacer sous… » : liste de recherche, « Aucun parent », refus du cycle
      #etat-supprimer  boîte « Supprimer « Port-Sel » ? »
      #etat-tiroir     barre latérale ouverte au téléphone
@@ -837,11 +838,13 @@ body.mode-joueur .ariane [data-illisible] { display: none; }
 /* (kanevas-sous-type-dialogue) The sub-type shows it edits: background and pencil on hover and keyboard focus;
    the pencil's room is always reserved, so the badge never shifts; always visible without hover (touch). */
 .sous-type .crayon-st { width: 12px; height: 12px; color: var(--texte-3); visibility: hidden; }
-.sous-type:hover, .sous-type:focus-visible, .sous-type.survol { background: var(--surface-3); }
+.sous-type:hover, .sous-type:focus-visible, .sous-type.survol, .sous-type.focus-clavier { background: var(--surface-3); }
 .sous-type:hover .crayon-st, .sous-type:focus-visible .crayon-st, .sous-type.survol .crayon-st,
 .sous-type.vide:hover, .sous-type.vide:focus-visible, .sous-type.vide.survol { color: var(--texte-2); }
-.sous-type:hover .crayon-st, .sous-type:focus-visible .crayon-st, .sous-type.survol .crayon-st { visibility: visible; }
-.sous-type.survol { outline: 2px solid var(--focus); outline-offset: 2px; }
+.sous-type:hover .crayon-st, .sous-type:focus-visible .crayon-st, .sous-type.survol .crayon-st, .sous-type.focus-clavier .crayon-st { visibility: visible; }
+.sous-type.focus-clavier { outline: 2px solid var(--focus); outline-offset: 2px; }
+.sous-type:disabled { pointer-events: none; cursor: auto; }
+.sous-type:disabled .crayon-st { display: none; }
 @media (hover: none) { .sous-type .crayon-st { visibility: visible; } }
 body.mode-joueur .sous-type .crayon-st { display: none; }
 .sous-type.vide { color: var(--texte-3); font-weight: 400; }
@@ -1288,7 +1291,7 @@ body.mode-joueur .image-section.reservee .image-reservee { display: flex; }
       <input class="saisie" id="ct-sous-type" autocomplete="off" maxlength="60" placeholder="Facultatif">
     </div>
     <p id="ct-info" style="font-size:var(--t-13);color:var(--texte-2)" hidden>Le sous-type « Port » sera retiré.</p>
-    <div class="alerte" role="alert" id="ct-erreur" hidden><svg class="i" aria-hidden="true"><use href="#i-circle-alert"/></svg><div class="corps-alerte"><span>Le type n'a pas changé. Réessayez.</span></div></div>
+    <div class="alerte" role="alert" id="ct-erreur" hidden><svg class="i" aria-hidden="true"><use href="#i-circle-alert"/></svg><div class="corps-alerte"><span id="ct-erreur-texte">Le type n'a pas changé. Réessayez.</span></div></div>
     <div class="actions">
       <button class="bouton" id="ct-annuler">Annuler</button>
       <button class="bouton principal" id="ct-confirmer" disabled>Changer le type</button>
@@ -1927,7 +1930,7 @@ var ILLUS = (function () {
     ctChoix = b;
     $$('#ct-types .resultat').forEach(function (x) { x.setAttribute('aria-checked', x === b || (!b && estActuel(x))); });
     $('#ct-sous-type').value = estActuel(b) ? stCourant : '';
-    $('#ct-pj').hidden = !(b && b.dataset.type === 'Personnage');
+    $('#ct-pj').hidden = !(b && b.dataset.type === 'Personnage' && !estActuel(b));
     ctMaj();
   }
   $('#ct-sous-type').oninput = ctMaj;
@@ -2101,6 +2104,11 @@ var ILLUS = (function () {
       if (et === 'menu') plus_tard(function () { ouvrirMenu($('#menu-fiche'), $('#bouton-menu-fiche')); });
       if (et === 'sous-type') plus_tard(stEditer);
       if (et === 'sous-type-survol') $('#sous-type').classList.add('survol');
+      if (et === 'sous-type-focus') $('#sous-type').classList.add('focus-clavier');
+      if (et === 'changer-sous-type-echec') plus_tard(function () {
+        ouvrirChangerType(); $('#ct-sous-type').value = 'Port franc'; ctMaj();
+        $('#ct-erreur-texte').textContent = 'Le sous-type n’a pas changé. Réessayez.'; $('#ct-erreur').hidden = false;
+      });
       if (et === 'changer-sous-type') plus_tard(function () { ouvrirChangerType(); $('#ct-sous-type').value = 'Port franc'; ctMaj(); });
       if (et === 'deplacer') plus_tard(function () {
         ouvrirDeplacer();

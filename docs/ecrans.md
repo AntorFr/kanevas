@@ -104,7 +104,7 @@ E-16 vivent hors des univers : leurs cases disent le rôle dans un univers ratta
 | E-6 | *retired (`kanevas-scenarios`)* | — | — |
 | E-7 | *retired (`kanevas-scenarios`)* | — | — |
 | E-8 | lire, chercher, créer ; la vignette de chaque fiche (son illustration, ou le repli dessiné) ; *(kanevas-scenarios)* for the « Aventure » type: the status badge, the « Statut » filter, the status menu on a card or a tree line (outside player mode), the creation form with sub-type suggestions and « Visible des joueurs » ; *(kanevas-fiche-mj-seul)* the « MJ seul » badge on a sheet players cannot see, the « Visibilité » filter | lire, chercher ; la vignette des fiches qu'il voit ; *(kanevas-scenarios)* adventures: the status badge and the « Statut » filter; the status menu and « Nouvelle aventure » ; *(kanevas-fiche-mj-seul)* no « MJ seul » badge, no « Visibilité » filter (**caché**) | — |
-| E-9 | tout ; mode Joueur ; *(kanevas-scenarios)* on an adventure: the status menu in the header (outside player mode), the blocks « Préparation » (GM, outside player mode) and « Comptes-rendus » (« Nouveau compte-rendu ») ; *(kanevas-fiche-mj-seul)* the « MJ seul » badge in the header (GM mode) ; relier et retirer des relations ; poser, remplacer, retirer l'illustration (hors mode Joueur) ; *(kanevas-import)* sous-type, réserver un fichier au MJ, voir un fichier en attente d'import (tuile) | sections lisibles ; écrire celles permises ; *(kanevas-scenarios)* on an adventure: the status badge and « Comptes-rendus » (the CR he reads; « Nouveau compte-rendu » allowed); the status menu and « Préparation » (**hidden**) ; relations lisibles (section et cible) ; pièces jointes de celles-ci ; voir l'illustration, jamais la poser ; *(kanevas-fiche-mj-seul)* no « MJ seul » badge in the header (**caché**) ; *(kanevas-import)* dans une section qu'il écrit, ajouter un fichier ou en choisir un qu'il voit (les deux chemins de B-55) et retirer une référence ; fichiers sous double garde ; jamais régler une visibilité (**caché**) ; un fichier en attente d'import : rien (**caché**) | — |
+| E-9 | tout ; mode Joueur ; *(kanevas-scenarios)* on an adventure: the status menu in the header (outside player mode), the blocks « Préparation » (GM, outside player mode) and « Comptes-rendus » (« Nouveau compte-rendu ») ; *(kanevas-fiche-mj-seul)* the « MJ seul » badge in the header (GM mode) ; relier et retirer des relations ; poser, remplacer, retirer l'illustration (hors mode Joueur) ; *(kanevas-import)* sous-type, réserver un fichier au MJ ; *(kanevas-sous-type-dialogue)* changer le seul sous-type depuis « Changer le type… » (hors mode Joueur ; pour un Joueur, **caché** : ni menu « ⋯ » ni crayon), voir un fichier en attente d'import (tuile) | sections lisibles ; écrire celles permises ; *(kanevas-scenarios)* on an adventure: the status badge and « Comptes-rendus » (the CR he reads; « Nouveau compte-rendu » allowed); the status menu and « Préparation » (**hidden**) ; relations lisibles (section et cible) ; pièces jointes de celles-ci ; voir l'illustration, jamais la poser ; *(kanevas-fiche-mj-seul)* no « MJ seul » badge in the header (**caché**) ; *(kanevas-import)* dans une section qu'il écrit, ajouter un fichier ou en choisir un qu'il voit (les deux chemins de B-55) et retirer une référence ; fichiers sous double garde ; jamais régler une visibilité (**caché**) ; un fichier en attente d'import : rien (**caché**) | — |
 | E-10 | tout | cartes visibles | — |
 | E-11 | tout ; mode Joueur | lire une carte visible, ouvrir une fiche | — |
 | E-12 | catalogue MJ (dont générer une image, si un moteur d'images est disponible) ; propositions : le MJ demandeur seul les voit, les applique, les abandonne | catalogue Joueur (sans image : l'outil est absent, l'assistant répond qu'il ne peut pas) ; propositions : **caché** (ni outil ni bloc ; ce qu'on vérifie est l'absence de proposition et de bloc, pas le texte libre de l'assistant) | — |
@@ -2947,7 +2947,7 @@ dans son infobulle. Un sous-type filtré qui n'a plus de fiche (renommée entre-
 **E-9 — sous-type en place.** Le MJ (hors mode Joueur) clique le sous-type du badge : champ, liste de
 complétion, Entrée enregistre, Échap annule (maquette `#etat-sous-type`). Enregistrement en cours : champ
 désactivé, « Enregistrement… ». Échec : « L'action n'a pas abouti. Réessayez. » sous le champ, la valeur
-tapée est gardée. Un champ vidé retire le sous-type (« Sous-type retiré. »). Connexion perdue : l'édition est désactivée (le sous-type reste lisible). Contenu long : 60 caractères, tronqués par
+tapée est gardée. Enregistré : toast « Sous-type enregistré. » ; un champ vidé retire le sous-type (« Sous-type retiré. »). Connexion perdue : l'édition est désactivée (le sous-type reste lisible). Contenu long : 60 caractères, tronqués par
 une ellipse dans le badge, entiers dans l'infobulle. Un joueur lit le sous-type en
 simple texte ; une fiche sans sous-type ne montre rien à un joueur.
 *(kanevas-sous-type-dialogue)* **Le sous-type montre qu'il s'édite** (MJ, hors mode Joueur ; maquette
@@ -2963,6 +2963,12 @@ Là où il n'y a pas de survol (écran tactile, `(hover: none)`), le crayon est 
 « Sous-type » en `--texte-3` au repos, avec le même survol et le même crayon. Le crayon ne pousse pas le titre :
 sa place (12 px et 4 px d'écart) est comptée dans la largeur du badge, qui ne bouge pas au survol.
 Un joueur, ou le MJ en mode Joueur : ni fond, ni crayon, ni focus — le sous-type est du texte.
+Connexion perdue : le bandeau « Connexion perdue. Ce que vous voyez peut être dépassé ; rien n'est enregistré tant qu'elle ne revient pas. » ; le sous-type est désactivé (`disabled`) : ni fond ni
+crayon au survol, curseur ordinaire, la tabulation ne s'y arrête plus ; tout revient au retour de la connexion.
+Enregistrement en cours : sans objet pour le survol — le champ d'édition remplace le sous-type le temps de
+l'enregistrement (« Enregistrement… » ci-dessus), et la boîte « Changer le type… », modale, le recouvre.
+Le survol et le focus clavier sont deux états distincts : le survol montre le fond et le crayon, sans
+anneau ; le focus clavier les montre avec l'anneau (maquette `#etat-sous-type-survol` et `#etat-sous-type-focus`).
 
 **E-9 — « Changer le type… »** (MJ, hors mode Joueur ; absent pour un compte-rendu) : maquette
 `e09-fiche-importee.html#etat-changer-type`. Boîte « Changer le type de « Port-Sel » » : une
@@ -2977,23 +2983,28 @@ relations, places sur une carte et propositions sont intactes.
 *(kanevas-sous-type-dialogue — changer le seul sous-type ; maquette `#etat-changer-sous-type`.)* À
 l'ouverture, le type actuel est coché et le champ « Sous-type » porte le sous-type actuel de la fiche
 (vide si elle n'en a pas), avec la complétion du type actuel. Tant que le type reste l'actuel :
-- la boîte ne dit pas « … sera retiré. » ;
+- la boîte ne dit pas « … sera retiré. » (cet avertissement n'existe que pour un autre type, si la fiche a
+  un sous-type et tant que le champ reste vide) ;
 - le bouton principal dit **« Enregistrer le sous-type »** ; il est désactivé tant que le champ, rogné,
   est égal au sous-type actuel (la casse compte : « capitaine » remplace « Capitaine ») ; il s'active dès
   qu'il en diffère, champ vidé compris quand la fiche avait un sous-type ;
 - il envoie `PATCH …/fiches/:fid` `{sousType}` (le texte rogné, ou `null` pour un champ vide) — la route
   existante (AD-120), rien d'autre ; succès : la boîte se ferme, l'en-tête se recharge, toast « Sous-type
   enregistré. » (« Sous-type retiré. » pour un champ vide), les mêmes que l'édition dans le badge ;
-- PJ / PNJ ne s'affiche pas (il ne se change pas ici, ci-dessous).
+- PJ / PNJ ne s'affiche pas, « Personnage (actuel) » compris (il ne se change pas ici, ci-dessous).
 Choisir un autre type rend le comportement d'un changement de type : champ vidé, « … sera retiré. » si la
 fiche a un sous-type, bouton « Changer le type ». Revenir au type actuel rend le champ rempli du sous-type
 actuel et le bouton « Enregistrer le sous-type » (désactivé tant que rien ne diffère). Enregistrement en
 cours : le bouton passe à « Enregistrement… » et la boîte est figée. Échec du `PATCH` : « Le sous-type n'a
 pas changé. Réessayez. » dans la boîte, qui reste ouverte avec la saisie ; 403 : la boîte se ferme et
 « Vous ne pouvez plus modifier cette fiche. » ; 404 : « Introuvable. » dans la boîte ; connexion perdue :
-bandeau, bouton désactivé. Un sous-type de plus de 60 caractères : « Erreur : 60 caractères au plus. »
-sous le champ, rien n'est envoyé. Ni état vide ni chargement propres : le champ est rempli de la fiche
-déjà lue ; la liste des types et la complétion gardent leurs états ci-dessus.
+le bandeau « Connexion perdue. Ce que vous voyez peut être dépassé ; rien n'est enregistré tant qu'elle ne revient pas. », bouton désactivé, saisie gardée. Un sous-type de plus de 60 caractères : « Erreur : 60 caractères au plus. »
+sous le champ, rien n'est envoyé. Chargement : tant que la liste des types n'est pas lue, le bouton reste
+désactivé, quel que soit son libellé — « Enregistrer le sous-type » compris, même si le champ diffère déjà ;
+il ne s'active qu'une fois la liste lue (son échec : « Impossible de charger les types. », ci-dessus, bouton
+désactivé). Pas d'état vide propre : le champ est rempli de la fiche déjà lue, et la liste des types n'est
+jamais vide. Échec dessiné : maquette `#etat-changer-sous-type-echec`. Un Joueur n'a ni le menu « ⋯ » ni
+la boîte (caché, comme pour « Changer le type… »).
 Le choix PJ / PNJ n'apparaît que pour **devenir** un personnage ; le PJ / PNJ d'un personnage existant ne se
 change pas ici. Chargement : tant que la liste des types n'est pas lue, la liste de la boîte dit « Chargement des
 types… » et « Changer le type » reste désactivé. Contenu long : un titre de 120 caractères passe à la ligne dans

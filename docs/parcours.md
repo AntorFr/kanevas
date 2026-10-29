@@ -564,6 +564,9 @@ E-14 (« Page introuvable. ») et lit l'onglet de E-15 en « Lecture seule », i
    « Port franc » (la liste lui propose les sous-types de lieu déjà employés : Sphère, Port, Taverne…) ;
    menu « ⋯ » : « Déplacer sous… » « Les Sphères » ; « Alias et étiquettes ». Sur « Les Cristaux
    d'Ombre », importée en Note, « Changer le type » : Note → Savoir, sous-type « Ressource ».
+   *(kanevas-sous-type-dialogue, B-52)* Sur « Maître Aldric » (PNJ · Capitaine), il rouvre « Changer le
+   type… » sans changer le type : le champ porte « Capitaine », il tape « Amiral », « Enregistrer le
+   sous-type » ; le badge dit « PNJ · Amiral ». Il a trouvé le geste au survol du badge : le crayon y apparaît.
 3. Menu « ⋯ » d'un doublon : « Supprimer la fiche… » ; la boîte compte ce qui part avec elle
    (sections, relations qui la visent, places sur une carte ; ses fichiers restent dans la médiathèque),
    dit sous quelle fiche
