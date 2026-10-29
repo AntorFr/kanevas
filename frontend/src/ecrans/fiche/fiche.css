@@ -213,8 +213,16 @@ a.cadre-ill:focus-visible { outline-offset: 2px; border-radius: var(--rayon-pann
 
 /* Sub-type in the badge (B-52): a button for the GM, plain text for a player; the list hangs under the badge. */
 .fiche .type .sous-type-bouton { background: none; border: 0; padding: 0 4px; margin: 0 -4px 0 -3px; font: inherit; color: inherit; cursor: pointer; border-radius: 4px; }
-.fiche .type .sous-type-bouton:hover { background: var(--surface-3); }
+.fiche .type .sous-type-bouton { display: inline-flex; align-items: center; gap: 4px; }
+.fiche .type .sous-type-bouton .crayon { flex: none; opacity: 0; color: var(--texte-2); }
+.fiche .type .sous-type-bouton:not(:disabled):hover, .fiche .type .sous-type-bouton:not(:disabled):focus-visible { background: var(--surface-3); }
+.fiche .type .sous-type-bouton:not(:disabled):hover .crayon, .fiche .type .sous-type-bouton:not(:disabled):focus-visible .crayon { opacity: 1; }
+.fiche .type .sous-type-bouton:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.fiche .type .sous-type-bouton:disabled { cursor: default; }
+.fiche .type .sous-type-bouton:disabled .crayon { display: none; }
 .fiche .type .sous-type-bouton.vide { color: var(--texte-3); }
+.fiche .type .sous-type-bouton.vide:not(:disabled):hover, .fiche .type .sous-type-bouton.vide:not(:disabled):focus-visible { color: var(--texte-2); }
+@media (hover: none) { .fiche .type .sous-type-bouton:not(:disabled) .crayon { opacity: 1; } }
 .fiche .type:has(.sous-type-edition) { position: relative; background: var(--surface); box-shadow: 0 0 0 1px var(--accent), 0 0 0 4px var(--accent-fond); }
 .fiche .type .sous-type-edition { display: inline-flex; align-items: center; }
 .fiche .type .sous-type-edition input { height: 20px; width: 13ch; max-width: 40vw; padding: 0 2px; font: inherit; color: var(--texte); background: transparent; border: 0; border-radius: 3px; }

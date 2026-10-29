@@ -1,7 +1,7 @@
-import { Check } from 'lucide-react';
+import { Check, Pencil } from 'lucide-react';
 import { useEffect, useId, useRef, useState } from 'react';
 
-import { ErreurApi, appeler, lire } from '../../api';
+import { ErreurApi, appeler, lire, useConnexionPerdue } from '../../api';
 import { useToasts } from '../../ui';
 import '../../ui/liste-liens.css';
 
@@ -50,6 +50,7 @@ export function SousTypeBadge({
   onDroitPerdu: () => void;
 }) {
   const { toast } = useToasts();
+  const perdue = useConnexionPerdue();
   const [edition, setEdition] = useState(false);
   const [valeur, setValeur] = useState('');
   const [erreur, setErreur] = useState<string>();
@@ -111,10 +112,12 @@ export function SousTypeBadge({
           ref={declencheur}
           type="button"
           className={`sous-type-bouton${sousType ? '' : ' vide'}`}
-          title="Modifier le sous-type"
+          aria-label={sousType ? `Sous-type : ${sousType}. Modifier le sous-type` : 'Ajouter un sous-type'}
+          disabled={perdue}
           onClick={ouvrir}
         >
           {sousType || 'Sous-type'}
+          <Pencil size={12} strokeWidth={1.75} className="crayon" aria-hidden="true" />
         </button>
       </>
     );
