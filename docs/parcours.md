@@ -564,12 +564,12 @@ E-14 (« Page introuvable. ») et lit l'onglet de E-15 en « Lecture seule », i
    « Port franc » (la liste lui propose les sous-types de lieu déjà employés : Sphère, Port, Taverne…) ;
    menu « ⋯ » : « Déplacer sous… » « Les Sphères » ; « Alias et étiquettes ». Sur « Les Cristaux
    d'Ombre », importée en Note, « Changer le type » : Note → Savoir, sous-type « Ressource ».
-   *(kanevas-sous-type-dialogue, B-52)* « Maître Aldric » est un PNJ de sous-type « Capitaine » (badge
-   « PNJ · Capitaine » ; dans le bouchon, la fiche semée n'en a pas : Antor le pose d'abord dans le badge). Antor ouvre sa fiche depuis « Personnages », puis son menu « ⋯ », « Changer le type… », laisse « Personnage (actuel) » :
-   le champ porte « Capitaine » ; il tape « Amiral » et clique « Changer le type » ; le badge dit
+   *(kanevas-sous-type-dialogue, B-52)* « Maître Aldric » is an NPC with sub-type « Capitaine » (badge
+   « PNJ · Capitaine »; in the stub, the seeded sheet has none: Antor first sets it in the badge). Antor opens his sheet from « Personnages », then its « ⋯ » menu, « Changer le type… », and leaves « Personnage (actuel) »:
+   the field holds « Capitaine »; he types « Amiral » and clicks « Changer le type »; the badge says
    « PNJ · Amiral ».
-   *(kanevas-sous-type-dialogue, B-52)* Le sous-type « Port » de « Port-Sel », plus haut, il l'a changé en
-   place, dans le badge : au survol, le crayon apparu à côté de « Port » lui a montré qu'il s'édite.
+   *(kanevas-sous-type-dialogue, B-52)* The sub-type « Port » of « Port-Sel », above, he changed in
+   place, in the badge: on hover, the pencil that appeared next to « Port » showed him that it is editable.
 3. Menu « ⋯ » d'un doublon : « Supprimer la fiche… » ; la boîte compte ce qui part avec elle
    (sections, relations qui la visent, places sur une carte ; ses fichiers restent dans la médiathèque),
    dit sous quelle fiche
@@ -586,9 +586,9 @@ texte pour Léa, jusqu'à l'arrivée de la fiche ; dans un scénario, la liste q
 ne peut pas être rangée sous l'un de ses descendants. » ; un titre vidé — « Erreur : le titre est obligatoire. », le champ reste ; un bilan de suppression qui ne se charge pas — « Impossible de charger le détail. », « Réessayer » (états : E-9) ; un Joueur auteur d'une section qui contient
 un bloc MJ — « Modifier » n'y paraît pas ; un texte qui passe 100 000 caractères — « Erreur : 100 000
 caractères au plus. », le texte reste.
-*(kanevas-sous-type-dialogue)* Le sous-type « Amiral » ne s'enregistre pas depuis « Changer le type… » —
-« Le sous-type n'a pas changé. Réessayez. », la boîte reste ouverte avec « Amiral » ; la connexion tombe —
-le bandeau, « Changer le type » désactivé, et le sous-type du badge n'offre plus ni fond ni crayon.
+*(kanevas-sous-type-dialogue)* The sub-type « Amiral » is not saved from « Changer le type… » —
+« Le sous-type n'a pas changé. Réessayez. », the box stays open with « Amiral »; the connection drops —
+the banner, « Changer le type » disabled, and the badge's sub-type no longer offers a background or pencil.
 
 ### P-15 — Poser le jeton de l'assistant (Admin, admin d'instance) (B-51)
 *Admin vient de déployer Kanevas : l'assistant n'a pas encore de jeton, et il ne veut pas passer par un redéploiement.*

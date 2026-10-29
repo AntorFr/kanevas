@@ -158,6 +158,10 @@ export function ChangerType({
                 </label>
               </div>
             )}
+          </>
+        )}
+        {(etat !== 'ok' || proposes.length > 0) && (
+          <>
             <Champ
               etiquette="Sous-type"
               facultatif
