@@ -181,6 +181,56 @@ describe('kanevas-sous-type-dialogue-badge, au navigateur', { skip: skipBrowser 
     }
   });
 
+  // Gaps measured on the rendered text (Range), in px: type text → dot, dot → sub-type text, and the dot's right edge → the focus ring's outer edge.
+  const ecarts = async (page: Any) => {
+    await page.evaluate(() => {
+      (globalThis as Any).__name = (f: unknown) => f; // tsx's keepNames helper, absent from the page
+    });
+    return page.locator('.type').first().evaluate((badge: Element) => {
+      const rect = (n: Node) => {
+        const r = document.createRange();
+        r.selectNodeContents(n);
+        return r.getBoundingClientRect();
+      };
+      const texte = (n: Node): Node[] => (n.nodeType === 3 ? ((n.textContent ?? '').trim() ? [n] : []) : [...n.childNodes].flatMap(texte));
+      const point = badge.querySelector('.point-type')!;
+      const bouton = badge.querySelector('.sous-type-bouton');
+      const st = bouton ?? badge.querySelector('.sous-type')!;
+      const nom = texte(badge).find((n) => !point.contains(n) && !st.contains(n))!;
+      const pr = rect(point.firstChild!);
+      const sr = rect(texte(st)[0]!);
+      return { avant: pr.left - rect(nom).right, apres: sr.left - pr.right, point: pr.right, bouton: bouton ? bouton.getBoundingClientRect().left : null, texte: sr.left };
+    });
+  };
+
+  test('le point « · » est à égale distance du type et du sous-type (MJ, Joueuse, mode Joueur) et l’anneau de focus ne le touche pas', async () => {
+    const egal = (e: { avant: number; apres: number }, qui: string) => {
+      assert.ok(Math.abs(e.avant - e.apres) <= 1, `${qui} : ${e.avant} px avant le point, ${e.apres} px après`);
+      assert.ok(e.avant >= 8, `${qui} : point trop collé (${e.avant} px)`);
+    };
+    await ouvrir(antor, pnj);
+    const mj = await ecarts(antor);
+    egal(mj, 'MJ');
+    // Focus ring: 2 px outline at 2 px offset, around the button's box → outer edge at button.left - 4; the dot must stay clear of it.
+    assert.ok(mj.bouton! - 4 - mj.point >= 1, `l’anneau (bord ${mj.bouton! - 4}) touche le point (bord droit ${mj.point})`);
+    const b = bouton(antor);
+    await antor.mouse.move(0, 0);
+    let n = 0;
+    while (!(await b.evaluate((e: Element) => e === document.activeElement)) && n++ < 40) await antor.keyboard.press('Tab');
+    const focus = await ecarts(antor);
+    assert.deepEqual([focus.avant, focus.apres], [mj.avant, mj.apres], 'le focus ne déplace pas le point');
+    const lecteur = (await connecte(browser, srv.base, 'Léa')).page;
+    await ouvrir(lecteur, pnj);
+    const lea = await ecarts(lecteur);
+    egal(lea, 'Joueuse');
+    await antor.mouse.move(0, 0);
+    await antor.getByRole('radio', { name: 'Mode Joueur' }).check();
+    await antor.getByText(/Mode Joueur : vous voyez ce que voit un joueur\./).waitFor();
+    await antor.locator('.type .sous-type').first().waitFor();
+    egal(await ecarts(antor), 'mode Joueur');
+    assert.ok(Math.abs(lea.avant - mj.avant) <= 1 && Math.abs(lea.apres - mj.apres) <= 1, 'même écart en lecture et en gestion');
+  });
+
   test('connexion perdue : sous-type désactivé, sans fond ni crayon, hors de la tabulation', async () => {
     const { ctx, page } = await connecte(browser, srv.base, 'Antor');
     await ouvrir(page, pnj);
