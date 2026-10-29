@@ -141,7 +141,8 @@ describe('kanevas-fiches-liees-rattrapage, l’epic et main fusionnés, au bouch
     await prep(antor).getByLabel('Nouvelle tâche').fill('Plan de la crypte');
     await prep(antor).getByLabel('Catégorie').selectOption({ label: 'Cartes' });
     await prep(antor).getByRole('button', { name: 'Ajouter', exact: true }).click();
-    const case_ = prep(antor).getByRole('checkbox', { name: 'Plan de la crypte', exact: true });
+    // The stub seed already holds a « Plan de la crypte » on this campaign: wait for the added one (the second) to appear.
+    const case_ = prep(antor).getByRole('checkbox', { name: 'Plan de la crypte', exact: true }).nth(1);
     await case_.waitFor();
     await case_.click();
     await prep(antor).locator('summary').filter({ hasText: 'Cochées (1)' }).waitFor();
