@@ -32,7 +32,9 @@
        un Lieu de sous-type Sphère que la table ne lit pas, sauté en mode Joueur), badge du type avec
        son sous-type « Lieu · Port » éditable en place (complétion sur les sous-types de lieu déjà
        employés), alias et étiquettes, menu « ⋯ » de l'en-tête et sa ligne « Importée · clé … »,
-       « Déplacer sous… » (« Aucun parent », refus du cycle), « Supprimer « Port-Sel » ? », blocs
+       « Déplacer sous… » (kanevas-deplacer-arborescence : vues « Arborescence » et « Recherche »,
+       « Aucun parent », la fiche « (cette fiche) », « (parent actuel) » ; le texte du refus du cycle
+       est dans le document, la maquette ne le dessine plus), « Supprimer « Port-Sel » ? », blocs
        « Contient » (avec le sous-type des enfants quand il dit quelque chose) et « Mentionnée dans » ;
        le paragraphe « Fichiers » (décisions de Monsieur du 2026-10-11 : tout fichier vit dans la
        médiathèque) : « Fichier » (`paperclip`) dans la barre d'outils et « Joindre un fichier » en pied
@@ -75,7 +77,13 @@
                       docs/ecrans.md « Ce que kanevas-deplacer-arborescence construit ») : le niveau de « Les Sphères »,
                       « Port-Sel (cette fiche) » non choisissable, chevrons, chemin, « Remonter » ; cliquable (monter,
                       descendre, choisir, « Nouveau parent : … »)
-     #etat-deplacer-recherche  la même boîte sur « Recherche » : ni la fiche ni ses descendants dans la liste
+     #etat-deplacer-recherche  « Havre-Gris » choisi dans l'arborescence, puis « Recherche » et « Les » : « Les Sphères
+                      (parent actuel) » seule — « Les Docks », descendante de Port-Sel, n'y est pas ; le choix
+                      « Nouveau parent : Havre-Gris » est gardé d'une vue à l'autre
+     #etat-deplacer-racine  la boîte sur une fiche sans parent (« Les Sphères ») : la racine, « Remonter »
+                      inactif, « Aucun parent (actuel) »
+     #etat-deplacer-profond le chemin à plus de trois maillons : « Lame d'Ébène › … › La Capitainerie ›
+                      La Salle des Cartes », « … » listant les maillons cachés
      #etat-supprimer  boîte « Supprimer « Port-Sel » ? »
      #etat-tiroir     barre latérale ouverte au téléphone
    ===================================================================================== */
@@ -1923,14 +1931,17 @@ var ILLUS = (function () {
   });
   // Déplacer sous… : deux vues sur un seul choix ; la fiche est montrée à sa place, jamais choisissable,
   // et l'on ne descend pas en elle ; la recherche (côté serveur, horsDe) ne rend ni elle ni ses descendants.
-  var IC = { Personnage: 'i-user-round', Lieu: 'i-map-pin', Faction: 'i-shield', 'Événement': 'i-flag' };
-  var UNIVERS = "Lame d'Ébène", PARENT_ACTUEL = 'Les Sphères', FICHE = 'Port-Sel';
+  var IC = { Personnage: 'i-user-round', Lieu: 'i-map-pin', Faction: 'i-shield', 'Événement': 'i-flag', Objet: 'i-gem' };
+  var UNIVERS = "Lame d'Ébène", PARENT_ACTUEL = 'Les Sphères', FICHE = 'Port-Sel', CHEMIN_FICHE = ['Les Sphères'];
   var NIVEAUX = {
     '': [['Maître Aldric', 'Personnage · PNJ'], ['Le Grand Vide', 'Lieu · Sphère'], ['Les Sphères', 'Lieu · Sphère', 1], ['La Guilde des Brumes', 'Faction']],
     'Les Sphères': [['Havre-Gris', 'Lieu · Port', 1], ['Port-Sel', 'Lieu · Port', 1], ["Le Naufrage de l'Albatros", 'Événement']],
-    'Havre-Gris': [['La Capitainerie', 'Lieu · Bâtiment'], ['Le Marché aux Épices', 'Lieu · Marché']]
+    'Havre-Gris': [['La Capitainerie', 'Lieu · Bâtiment', 1], ['Le Marché aux Épices', 'Lieu · Marché']],
+    'La Capitainerie': [['La Salle des Cartes', 'Lieu · Salle', 1]],
+    'La Salle des Cartes': [['Le Coffre du capitaine', 'Objet']]
   };
-  var RECHERCHE = [['Le Grand Vide', 'Lieu · Sphère'], ['Les Sphères', 'Lieu · Sphère'], ['Havre-Gris', 'Lieu · Port'], ['La Guilde des Brumes', 'Faction']];
+  // Ce que le serveur rend avec horsDe=<Port-Sel> : ni Port-Sel ni ses descendants (Les Docks, La Taverne du Kraken…).
+  var RECHERCHE = [['Le Grand Vide', 'Lieu · Sphère'], ['Les Sphères', 'Lieu · Sphère'], ['Havre-Gris', 'Lieu · Port'], ['La Guilde des Brumes', 'Faction'], ['La Capitainerie', 'Lieu · Bâtiment']];
   var depChoix = null, depChemin = ['Les Sphères'], depVue = 'arbre';
   function ligne(t, detail, enfants) {
     var b = document.createElement('button'); b.type = 'button'; b.className = 'resultat'; b.setAttribute('role', 'radio');
@@ -1954,9 +1965,21 @@ var ILLUS = (function () {
       var up = document.createElement('button'); up.className = 'icone'; up.type = 'button'; up.setAttribute('aria-label', "Remonter d'un niveau");
       up.innerHTML = '<svg class="i" aria-hidden="true"><use href="#i-corner-left-up"/></svg>'; up.disabled = depChemin.length === 0;
       up.onclick = function () { depChemin.pop(); rendreDep(); }; nav.appendChild(up);
-      [UNIVERS].concat(depChemin).forEach(function (m, k, tout) {
-        if (k) { var sp = document.createElement('span'); sp.className = 'sep-chemin'; sp.textContent = '›'; nav.appendChild(sp); }
-        var dernier = k === tout.length - 1, el = document.createElement(dernier ? 'span' : 'button');
+      // Plus de trois maillons après l'univers : l'univers, « … » (les maillons cachés), les deux derniers.
+      // Le document fait de « … » un menu des maillons cachés ; la maquette se contente de leur infobulle.
+      var tout = [UNIVERS].concat(depChemin), montres = tout.map(function (m, k) { return k; });
+      if (depChemin.length > 3) montres = [0, -1, tout.length - 2, tout.length - 1];
+      montres.forEach(function (k, n) {
+        if (n) { var sp = document.createElement('span'); sp.className = 'sep-chemin'; sp.textContent = '›'; nav.appendChild(sp); }
+        var el;
+        if (k === -1) {
+          el = document.createElement('button'); el.type = 'button'; el.className = 'maillon cache'; el.textContent = '…';
+          el.setAttribute('aria-label', 'Autres niveaux : ' + tout.slice(1, tout.length - 2).join(', '));
+          el.title = tout.slice(1, tout.length - 2).join(' › ');
+          el.onclick = function () { depChemin = depChemin.slice(0, 1); rendreDep(); };
+          el.style.minWidth = 'auto'; nav.appendChild(el); return;
+        }
+        var m = tout[k], dernier = k === tout.length - 1; el = document.createElement(dernier ? 'span' : 'button');
         el.className = 'maillon'; el.textContent = m; el.title = m;
         if (dernier) el.setAttribute('aria-current', 'location'); else { el.type = 'button'; el.onclick = function () { depChemin = depChemin.slice(0, k); rendreDep(); }; }
         nav.appendChild(el);
@@ -1973,7 +1996,9 @@ var ILLUS = (function () {
         r.forEach(function (x) { liste.appendChild(ligne(x[0], x[1])); });
       }
     }
-    $('#dep-resultats .aucun').setAttribute('aria-checked', depChoix === '');
+    var aucun = $('#dep-resultats .aucun');
+    aucun.setAttribute('aria-checked', depChoix === '');
+    aucun.innerHTML = '<span class="puce"></span>Aucun parent' + (PARENT_ACTUEL === null ? ' <span class="actuel">(actuel)</span>' : '');
   }
   function choisirParent(b) {
     depChoix = b ? b.dataset.parent : null;
@@ -1982,13 +2007,14 @@ var ILLUS = (function () {
     var r = $('#dep-resume');
     r.hidden = depChoix === null;
     if (b) r.innerHTML = 'Nouveau parent : <strong>' + b.dataset.titre + '</strong>';
-    $('#dep-confirmer').disabled = depChoix === null || depChoix === PARENT_ACTUEL;
+    $('#dep-confirmer').disabled = depChoix === null || depChoix === (PARENT_ACTUEL === null ? '' : PARENT_ACTUEL);
   }
   $('#dep-resultats .aucun').onclick = function () { choisirParent(this); };
   $$('.vues-dep button').forEach(function (b) { b.onclick = function () { depVue = b.dataset.vue; rendreDep(); if (depVue === 'recherche') $('#dep-cherche').focus(); }; });
   $('#dep-cherche').addEventListener('input', rendreDep);
   function ouvrirDeplacer(vue) {
-    depVue = vue || 'arbre'; depChemin = ['Les Sphères']; $('#dep-cherche').value = vue === 'recherche' ? 'Port' : '';
+    depVue = vue || 'arbre'; depChemin = CHEMIN_FICHE.slice(); $('#dep-cherche').value = '';
+    $('#dep-titre').textContent = 'Déplacer « ' + FICHE + ' » sous…';
     choisirParent(null); rendreDep();
     ouvrirDialogue($('#voile-deplacer'), vue === 'recherche' ? $('#dep-cherche') : $('#dep-liste .resultat:not(.elle-meme)'));
     setTimeout(function () { var m = $('#dep-liste .elle-meme'); if (m) m.scrollIntoView({ block: 'nearest' }); }, 40);
@@ -2168,7 +2194,15 @@ var ILLUS = (function () {
       if (et === 'menu') plus_tard(function () { ouvrirMenu($('#menu-fiche'), $('#bouton-menu-fiche')); });
       if (et === 'sous-type') plus_tard(stEditer);
       if (et === 'deplacer') plus_tard(function () { ouvrirDeplacer(); });
-      if (et === 'deplacer-recherche') plus_tard(function () { ouvrirDeplacer('recherche'); choisirParent($('#dep-liste [data-parent="Havre-Gris"]')); });
+      if (et === 'deplacer-recherche') plus_tard(function () {
+        ouvrirDeplacer(); choisirParent($('#dep-liste [data-parent="Havre-Gris"]'));
+        depVue = 'recherche'; $('#dep-cherche').value = 'Les'; rendreDep(); $('#dep-cherche').focus();
+      });
+      if (et === 'deplacer-racine') plus_tard(function () { FICHE = 'Les Sphères'; PARENT_ACTUEL = null; CHEMIN_FICHE = []; ouvrirDeplacer(); });
+      if (et === 'deplacer-profond') plus_tard(function () {
+        FICHE = 'Le Coffre du capitaine'; PARENT_ACTUEL = 'La Salle des Cartes';
+        CHEMIN_FICHE = ['Les Sphères', 'Havre-Gris', 'La Capitainerie', 'La Salle des Cartes']; ouvrirDeplacer();
+      });
       if (et === 'changer-type') plus_tard(function () { ouvrirChangerType(); choisirType($('#ct-types [data-type="Savoir"]')); });
       if (et === 'supprimer') plus_tard(function () { ouvrirDialogue($('#voile-supprimer'), $('#sup-annuler')); });
       if (et === 'tiroir') tiroir(true);

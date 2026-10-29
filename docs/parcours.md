@@ -564,9 +564,12 @@ E-14 (« Page introuvable. ») et lit l'onglet de E-15 en « Lecture seule », i
    « Port franc » (la liste lui propose les sous-types de lieu déjà employés : Sphère, Port, Taverne…) ;
    menu « ⋯ » : « Déplacer sous… » « Les Sphères » ; « Alias et étiquettes ». Sur « Les Cristaux
    d'Ombre », importée en Note, « Changer le type » : Note → Savoir, sous-type « Ressource ».
-   *(kanevas-deplacer-arborescence)* « Déplacer sous… » opens on the level where the sheet is (its parent's
-   children, the sheet marked « (cette fiche) »): Antor walks up and down to the parent and chooses it
-   without typing; « Recherche » stays one click away when he knows the title.
+   *(kanevas-deplacer-arborescence)* Another day, Antor moves « La Taverne du Kraken »: « Déplacer sous… » opens
+   on the level where it is — « Lame d'Ébène › Les Sphères › Port-Sel », its siblings listed, the Taverne marked
+   « (cette fiche) » — and he chooses « Les Docks » without typing anything (moment fort: he sees where the sheet
+   is before choosing where it goes); « Recherche » stays one click away when he knows the title. Failure: a
+   level that does not load says « Impossible de charger ce niveau. » with « Réessayer », the path still usable;
+   connection lost — the banner, navigation and « Déplacer » inactive, the shown level stays.
 3. Menu « ⋯ » d'un doublon : « Supprimer la fiche… » ; la boîte compte ce qui part avec elle
    (sections, relations qui la visent, places sur une carte ; ses fichiers restent dans la médiathèque),
    dit sous quelle fiche

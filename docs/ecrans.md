@@ -2729,6 +2729,10 @@ succès (200, la fiche en réponse) → la boîte se ferme, le fil se recharge e
 « Une fiche ne peut pas être rangée sous l'un de ses descendants. » sous le champ, la boîte reste ouverte ;
 400 `trop_profond` → « La hiérarchie est trop profonde. » et 404 → « Introuvable. », tous deux sous le champ comme le cycle ; connexion perdue →
 bandeau, « Déplacer » désactivé. La boîte n'existe que pour un MJ hors mode Joueur, et le menu « ⋯ » est absent pour un Joueur. Une fiche de tout type peut être parent ou enfant, un compte-rendu compris (AD-99) : « Déplacer sous… » existe aussi pour lui (MJ seulement : un Joueur, même auteur de son compte-rendu, n'a pas le menu « ⋯ ») ; E-13 ne montre pas la hiérarchie et ne change pas.
+*(kanevas-deplacer-arborescence)* This paragraph now describes the « Recherche » view only, and three of its
+rules changed: the sheet **and its descendants** are left out (not the sheet alone); a refusal is written under
+the list (the « Arborescence » view has no field); « Déplacer » is also inactive while the choice is the current
+parent. The box as a whole is « Ce que `kanevas-deplacer-arborescence` construit » below.
 
 *Critères de la tranche* (les données sont celles du semis, `docs/ecrans.md` plus haut) :
 - Étant donné « Les Sphères » (lieu MJ seul) dont « Port-Sel » est l'enfant, quand Léa ouvre « Lieux » en arbre,
@@ -2745,9 +2749,10 @@ bandeau, « Déplacer » désactivé. La boîte n'existe que pour un MJ hors mod
 
 ### Ce que `kanevas-deplacer-arborescence` construit (« Déplacer sous… » of E-9)
 
-*Detail of the slice on the frame above (AD-99 unchanged, AD-115, AD-129). Mockup: `e09-fiche-importee.html`,
-`#etat-deplacer` (the « Arborescence » view, as it opens) and `#etat-deplacer-recherche` (the « Recherche »
-view). Decided by Monsieur on 2026-10-29: the GM did not find a parent by its title alone; he wants to see where
+*Detail of the slice on the frame above (B-35; AD-99 unchanged, AD-115, AD-129). Mockup: `e09-fiche-importee.html`,
+`#etat-deplacer` (the « Arborescence » view, as it opens), `#etat-deplacer-recherche` (the « Recherche »
+view, the choice kept from the tree), `#etat-deplacer-racine` (a sheet without a parent) and
+`#etat-deplacer-profond` (a path of more than three crumbs). Decided by Monsieur on 2026-10-29: the GM did not find a parent by its title alone; he wants to see where
 the sheet is and walk the hierarchy.*
 
 **Who.** Unchanged: the box exists only for a GM outside player mode (the « ⋯ » menu is absent for a player,
@@ -2794,10 +2799,15 @@ type, and « Aucun parent » carries « (actuel) » when the sheet has no parent
 - *States of a level.* Loading: « Chargement… » in the list (`role="status"`), the previous level is gone.
   Failure: « Impossible de charger ce niveau. » with « Réessayer » (`role="alert"`); the path stays usable.
   Empty: « Aucune fiche à ce niveau. » (a level emptied between two reads, or a root that holds only the
-  sheet itself, which is then shown alone with « (cette fiche) »). Next page fails: « Impossible de charger la
-  suite. », what is shown stays. Opened sheet no longer exists (404 on the first read): « Introuvable. » under
-  the list, as for the move. Connection lost: the banner; « Déplacer », the chevrons, the crumbs and
-  « Remonter » are inactive; the shown level stays.
+  sheet itself, which is then shown alone with « (cette fiche) »). Next page loading: « Charger la suite »
+  reads « Chargement… » and is inactive, what is shown stays. Next page fails: « Impossible de charger la
+  suite. », what is shown stays. A level whose sheet no longer exists (404 — on the first read, or reached by a
+  chevron or a crumb after it was deleted meanwhile): « Introuvable. » replaces the list, the path keeps that
+  level and « Remonter » reads the level above again. Right lost while the box is open (403 on a level read,
+  e.g. Antor's GM role removed meanwhile): the box closes and E-9 says what it says when the move gets 403.
+  The GM cannot switch to player mode while the box is open (it is modal), so no level is read in player mode.
+  Connection lost: the banner; « Déplacer », the chevrons, the crumbs and « Remonter » are inactive; the shown
+  level stays.
 - *Long content.* A title of 120 characters is cut by an ellipsis in the row (whole in `title`), a crumb keeps
   at least 8 characters (`8ch`) and ends in « … », the last crumb gives way last (E-9's breadcrumb rule). A
   level of 500 children: 50, then « Charger la suite » ; the list scrolls inside the box.
