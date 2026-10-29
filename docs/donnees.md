@@ -208,7 +208,7 @@ Une table et deux index de recherche ; aucune entité nouvelle (la relation est 
 
 | Objet | Colonnes (hors clés) | Contraintes |
 |---|---|---|
-| `relations` | `id`, `section_id` (la porteuse), `cible_fiche_id`, `nature` (clé de `services/natures.ts`, `''` = libre), `qualificatif`, `cree_le` | `section_id` → `sections` **ON DELETE CASCADE** (retirer une section retire ses relations) ; `cible_fiche_id` → `fiches` **ON DELETE RESTRICT** (filet : `supprimerFiche` retire d'abord les places de la fiche, AD-119) ; `qualificatif` 0 à 80 caractères après rognage (le service l'exige non vide sans nature) ; `UNIQUE (section_id, cible_fiche_id, nature, qualificatif)` ; index `relations_par_cible_nature` (migration 0017) |
+| `relations` | `id`, `section_id` (la porteuse), `cible_fiche_id`, `nature` (clé de `services/natures.ts`, `''` = libre), `qualificatif`, `cree_le` | `section_id` → `sections` **ON DELETE CASCADE** (retirer une section retire ses relations) ; `cible_fiche_id` → `fiches` **ON DELETE RESTRICT** (filet : `supprimerFiche` retire d'abord les places de la fiche, AD-119) ; `qualificatif` 0 à 80 caractères après rognage (le service l'exige non vide sans nature) ; `UNIQUE (section_id, cible_fiche_id, nature, qualificatif)` ; index `relations_par_cible_nature` (migration 0018) |
 | `recherche_fiches` (FTS5) | `titre` ; `rowid` = `fiches.id` | tokenizer `unicode61 remove_diacritics 2` |
 | `recherche_sections` (FTS5) | `titre`, `contenu` ; `rowid` = `sections.id` | idem |
 
@@ -216,8 +216,8 @@ Les index sont tenus par des **déclencheurs** (AD-21) : à l'insertion, à la m
 (fiche) ou du titre et du contenu (section), à la suppression, y compris celle qu'une cascade
 provoque. La migration **remplit** les index depuis les lignes déjà présentes (une base de la
 première fiche garde ses fiches cherchables). Index SQL : `relations (section_id)` sert la lecture
-des relations d'une section ; aucun index sur `cible_fiche_id` (aucune requête de cette tranche n'en
-a besoin ; le graphe des cartes ajoutera le sien si sa requête l'exige).
+des relations d'une section ; aucun index sur `cible_fiche_id` à l'origine (aucune requête n'en
+a besoin ; le graphe des cartes ajoutera le sien si sa requête l'exige). Depuis `kanevas-fiches-liees` : `relations_par_cible` et `relations_par_cible_nature` (migration 0018).
 
 > **Since `kanevas-import-mediatheque` this describes the history, not the rules in force:** the table above is emptied and unread; `fichiers.visibilite` and `fichierLisible` (`src/services/fichiers.ts`) govern who reads a file, and the limit is 100 joined files per section. `pieces_jointes.secrete` and the 50-piece ceiling below no longer apply.
 

@@ -3266,8 +3266,8 @@ this text is authoritative where they differ.
 > states and common texts as the other screens.
 >
 > **Built so far** (`kanevas-fiches-liees-natures`): the « Relier » form (nature, qualifier), the relation line, the
-> E-11 labels and « Familles ». **Not built yet**: the block « Fiches liées », the filters and the advanced mode of
-> E-8 and E-17, the dead mark (slices `-bloc`, `-recherche`, `-disparu`).
+> E-11 labels and « Familles ». **Not built yet**: the block « Fiches liées » (slice `-bloc`). The advanced mode of E-17, the
+> filters and the dead mark are built (slices `-recherche`, `-disparu`, sections below).
 
 **Format.** Web, desktop and phone, as the rest of Kanevas.
 
