@@ -2208,6 +2208,7 @@ seul qui ne connaît pas le mode Joueur : un lien cassé ou en attente y est tou
 ### E-9 Fiche — ce que `kanevas-import` change
 
 *Maquette finie* : `docs/maquettes/e09-fiche-importee.html` (« Port-Sel », états `#etat-fichier`, `#etat-joindre`, `#etat-sous-type`, `#etat-changer-type`, `#etat-joueur`,
+`#etat-sous-type-survol`, `#etat-sous-type-focus`, `#etat-changer-sous-type`, `#etat-changer-sous-type-echec`,
 `#etat-edition`, `#etat-supprimer`, `#etat-deplacer`).
 
 **En-tête.** Fil d'Ariane : univers › type › ancêtres **lisibles** du plus haut au plus proche ›
@@ -2946,7 +2947,7 @@ dans son infobulle. Un sous-type filtré qui n'a plus de fiche (renommée entre-
 
 **E-9 — sous-type en place.** Le MJ (hors mode Joueur) clique le sous-type du badge : champ, liste de
 complétion, Entrée enregistre, Échap annule (maquette `#etat-sous-type`). Enregistrement en cours : champ
-désactivé, « Enregistrement… ». Échec : « L'action n'a pas abouti. Réessayez. » sous le champ, la valeur
+désactivé, « Enregistrement… ». Échec : « Le sous-type n’a pas été enregistré. Réessayez. » sous le champ, la valeur
 tapée est gardée. Enregistré : toast « Sous-type enregistré. » ; un champ vidé retire le sous-type (« Sous-type retiré. »). Connexion perdue : l'édition est désactivée (le sous-type reste lisible). Contenu long : 60 caractères, tronqués par
 une ellipse dans le badge, entiers dans l'infobulle. Un joueur lit le sous-type en
 simple texte ; une fiche sans sous-type ne montre rien à un joueur.
@@ -3058,8 +3059,8 @@ La maquette `e08-liste-fiches.html` n'est pas redessinée pour le sous-type : le
   qu'elle ne revient pas. » s'affiche, « Changer le type » est désactivé et la saisie reste ; boîte
   fermée, le sous-type du badge est désactivé : ni fond ni crayon au survol, la tabulation ne s'y arrête pas.
 - *(kanevas-sous-type-dialogue)* Étant donné la liste des types pas encore lue, quand Antor ouvre « Changer le
-  type… » et remplace « Capitaine » par « Amiral », alors « Chargement des types… » s'affiche et « Enregistrer
-  le sous-type » reste désactivé jusqu'à ce que la liste soit lue.
+  type… » et remplace « Capitaine » par « Amiral », alors « Chargement des types… » s'affiche et « Changer
+  le type » reste désactivé jusqu'à ce que la liste soit lue.
 - *(kanevas-sous-type-dialogue)* Étant donné la boîte ouverte sur ce PNJ, quand Antor saisit 61 caractères et
   enregistre, alors « Erreur : 60 caractères au plus. » s'affiche sous le champ, rien n'est envoyé et le badge
   dit encore « PNJ · Capitaine ».
