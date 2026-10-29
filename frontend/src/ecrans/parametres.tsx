@@ -38,6 +38,7 @@ function Parametres() {
   const { id } = useParams();
   const [params, setParams] = useSearchParams();
   const surOutils = params.get('onglet') === 'outils';
+  const surTypes = params.get('onglet') === 'types';
   const { recharger: rechargerUnivers } = useUnivers();
   const { toast } = useToasts();
   const navigate = useNavigate();
@@ -268,7 +269,17 @@ function Parametres() {
         </span>
         <h1>Paramètres de l’univers</h1>
       </header>
-      <div className="panneaux-suivi">
+      <div className="onglets outils-onglets" role="tablist" aria-label="Paramètres de l’univers">
+        <button type="button" role="tab" aria-selected={!surOutils && !surTypes} className={!surOutils && !surTypes ? 'actif' : undefined}
+          onClick={() => setParams({}, { replace: true })}>Général</button>
+        <button type="button" role="tab" aria-selected={surTypes} className={surTypes ? 'actif' : undefined}
+          onClick={() => setParams({ onglet: 'types' }, { replace: true })}>Types de fiche</button>
+        <button type="button" role="tab" aria-selected={surOutils} className={surOutils ? 'actif' : undefined}
+          onClick={() => setParams({ onglet: 'outils' }, { replace: true })}>Outils</button>
+      </div>
+      {surOutils && <div role="tabpanel"><PanneauOutils key={`${id}-${systeme?.id ?? 'sans'}`} id={id!} niveau="univers" sansSysteme={systeme === null} /></div>}
+      {surTypes && <div role="tabpanel"><PanneauTypesUnivers universId={id!} universNom={nomUnivers} avecSysteme={systeme !== null} /></div>}
+      {!surOutils && !surTypes && <div className="panneaux-suivi">
         <Panneau titre="Identité" reserveMj>
           {echecIdentite && (
             <div className="echec" role="alert">
@@ -339,16 +350,7 @@ function Parametres() {
           </form>
         </Panneau>
 
-        <div>
-          <div className="onglets outils-onglets" role="tablist" aria-label="Réglages du système dans cet univers">
-            <button type="button" role="tab" aria-selected={!surOutils} className={!surOutils ? 'actif' : undefined}
-              onClick={() => setParams({}, { replace: true })}>Types de fiche</button>
-            <button type="button" role="tab" aria-selected={surOutils} className={surOutils ? 'actif' : undefined}
-              onClick={() => setParams({ onglet: 'outils' }, { replace: true })}>Outils</button>
-          </div>
-          <div role="tabpanel">{surOutils ? <PanneauOutils key={`${id}-${systeme?.id ?? 'sans'}`} id={id!} niveau="univers" sansSysteme={systeme === null} />
-            : <PanneauTypesUnivers universId={id!} universNom={nomUnivers} avecSysteme={systeme !== null} />}</div>
-        </div>
+        <PanneauTypesUnivers universId={id!} universNom={nomUnivers} avecSysteme={systeme !== null} />
 
         <Panneau titre="Supprimer l’univers" reserveMj danger>
           <div className="actions">
@@ -357,7 +359,7 @@ function Parametres() {
             </Bouton>
           </div>
         </Panneau>
-      </div>
+      </div>}
       {boiteSuppression && (
         <BoiteDialogue
           titre={`Supprimer « ${nomUnivers} » ?`}

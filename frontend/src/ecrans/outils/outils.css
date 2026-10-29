@@ -7,13 +7,24 @@
 .outil-tete > div { flex: 1; min-width: 0; }
 .outil-carte .outil-tete h2 { margin: 0; font: 600 var(--t-16)/1.4 var(--police-texte); letter-spacing: 0; }
 .outil-tete p, .outil-reglage p, .outil-description, .outil-dependances, .outil-origine, .outils-note { margin: var(--e-1) 0; color: var(--texte-2); font-size: var(--t-13); line-height: 1.5; }
-.outil-tete .interrupteur { flex: none; min-height: 44px; gap: var(--e-3); }
+.outil-tete .interrupteur { flex: none; width: auto; min-height: 44px; gap: var(--e-3); }
 .outil-description { margin: var(--e-3) 0; }
 .outil-activation { display: flex; flex-wrap: wrap; gap: var(--e-2); padding: 0; margin: var(--e-3) 0; border: 0; min-width: 0; }
 .outil-activation legend { font-size: var(--t-12); color: var(--texte-2); margin-bottom: var(--e-2); }
 .outil-activation label { display: inline-flex; align-items: center; gap: var(--e-2); padding: var(--e-2) var(--e-3); min-height: 44px; border: 1px solid var(--bord-champ); border-radius: var(--rayon-champ); font-size: var(--t-13); cursor: pointer; }
 .outil-activation label.choisi { background: var(--accent-fond); color: var(--accent-texte); }
 .outil-carte input[type="radio"], .outil-carte input[type="checkbox"], .responsable-candidats input { accent-color: var(--accent); width: 18px; height: 18px; flex: none; margin: 0; }
+.outil-carte input[type="checkbox"] { appearance: none; border: 1px solid var(--bord-champ); border-radius: var(--e-1); background: var(--surface); display: grid; place-content: center; }
+.outil-carte input[type="checkbox"]::before { content: ''; width: 8px; height: 4px; border: solid var(--sur-accent); border-width: 0 0 2px 2px; transform: translateY(-1px) rotate(-45deg); opacity: 0; }
+.outil-carte input[type="checkbox"]:checked { border-color: var(--accent); background: var(--accent); }
+.outil-carte input[type="checkbox"]:checked::before { opacity: 1; }
+.outil-carte input[type="checkbox"]:indeterminate { border-color: var(--bord-champ); background: var(--surface-3); }
+.outil-carte input[type="checkbox"]:indeterminate::before { opacity: 1; width: 8px; height: 0; border: 0; border-top: 2px solid var(--texte); transform: none; }
+.outil-carte input[type="radio"], .responsable-candidats input { appearance: none; border: 1px solid var(--bord-champ); border-radius: 50%; background: var(--surface); display: grid; place-content: center; }
+.outil-carte input[type="radio"]::before, .responsable-candidats input::before { content: ''; width: 10px; height: 10px; border-radius: 50%; background: var(--accent); transform: scale(0); }
+.outil-carte input[type="radio"]:checked::before, .responsable-candidats input:checked::before { transform: scale(1); }
+.outil-carte input:focus-visible, .responsable-candidats input:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; }
+.outil-carte input:disabled { opacity: .5; cursor: not-allowed; }
 .outil-visibilite { display: flex; flex-wrap: wrap; align-items: center; gap: var(--e-3); margin: var(--e-3) 0; font-size: var(--t-13); }
 .outil-visibilite > span:first-child { color: var(--texte-2); font-size: var(--t-12); }
 .outil-role { display: flex; flex-direction: column; }
