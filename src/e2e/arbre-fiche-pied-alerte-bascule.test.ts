@@ -71,9 +71,15 @@ describe('kanevas-arbre-fiche, pied, bandeau de cycle et fil avec bascule', { sk
       const { ctx, page } = await ouvrir({ width: 390, height: 844 }, th);
       // Port-Sel is under Les Sphères (seed): moving Les Sphères under Port-Sel is a cycle
       const d = await boite(page, 'Les Sphères');
+      // La recherche écarte les descendants (AD-129) : le cycle ne reste atteignable que si la hiérarchie change boîte
+      // ouverte. Une fiche libre est choisie, puis rangée sous Port-Sel par ailleurs.
+      const reponse = await page.request.fetch(srv.base + `/api/univers/${U}/fiches`, { method: 'POST', data: { type: 'lieu', titre: 'Cible du cycle' } });
+      const libre = (await reponse.json()).id;
       await d.getByRole('button', { name: 'Recherche' }).click();
-      await d.getByLabel('Chercher une fiche').fill('Port-Sel');
-      await d.getByRole('radio', { name: /^Port-Sel/ }).check({ force: true });
+      await d.getByLabel('Chercher une fiche').fill('Cible du cycle');
+      await d.getByRole('radio', { name: /^Cible du cycle/ }).check({ force: true });
+      const p = await page.request.fetch(srv.base + `/api/univers/${U}/fiches/${libre}`, { method: 'PATCH', data: { parent: ids['Port-Sel'] } });
+      assert.ok(p.status() < 300, `PATCH ${p.status()}`);
       await d.getByRole('button', { name: 'Déplacer', exact: true }).click();
       const al = d.getByRole('alert').filter({ hasText: 'Une fiche ne peut pas être rangée sous l’un de ses descendants.' });
       const alerte = (await al.count()) ? al : d.getByRole('alert').filter({ hasText: /descendants/ });
@@ -93,6 +99,7 @@ describe('kanevas-arbre-fiche, pied, bandeau de cycle et fil avec bascule', { sk
       assert.ok(m.top >= m.liste - 0.5, `bandeau pas sous la liste: ${JSON.stringify(m)}`);
       assert.ok(m.bottom <= m.actions + 0.5, `bandeau pas avant les actions: ${JSON.stringify(m)}`);
       await page.screenshot({ path: `/tmp/arbre-cycle-${th}.png` });
+      await page.request.fetch(srv.base + `/api/univers/${U}/fiches/${libre}`, { method: 'DELETE' });
       await ctx.close();
     });
 

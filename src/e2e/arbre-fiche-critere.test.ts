@@ -83,8 +83,16 @@ describe('kanevas-arbre-fiche, E-9 fil, Contient, Déplacer sous…', { skip: sk
   });
 
   test('Antor range Docks sous Taverne, Phare sous Docks : fil replié, menu « … » = Port-Sel', async () => {
-    await deplacer(antor, 'La Taverne du Kraken', 'Port-Sel'); // déjà sous Port-Sel
-    await antor.getByText('Fiche déplacée.').waitFor();
+    // La Taverne est déjà sous Port-Sel : le choisir laisse « Déplacer » inactif (parent actuel).
+    await ouvrir(antor, 'La Taverne du Kraken');
+    await antor.getByRole('button', { name: /^Autres actions sur/ }).first().click();
+    await antor.getByRole('menuitem', { name: 'Déplacer sous…' }).click();
+    const dp = antor.getByRole('dialog');
+    await dp.getByRole('button', { name: 'Recherche' }).click();
+    await dp.getByLabel('Chercher une fiche').fill('Port-Sel');
+    await dp.getByLabel(/^Port-Sel/).first().check();
+    assert.equal(await dp.getByRole('button', { name: 'Déplacer', exact: true }).isDisabled(), true);
+    await dp.getByRole('button', { name: 'Annuler' }).click();
     await deplacer(antor, 'Les Docks', 'La Taverne du Kraken');
     await antor.getByText('Fiche déplacée.').waitFor();
     await deplacer(antor, 'Le Phare aux Sels', 'Les Docks');
@@ -106,9 +114,13 @@ describe('kanevas-arbre-fiche, E-9 fil, Contient, Déplacer sous…', { skip: sk
     await antor.getByRole('button', { name: /^Autres actions sur/ }).first().click();
     await antor.getByRole('menuitem', { name: 'Déplacer sous…' }).click();
     const d = antor.getByRole('dialog');
+    // La recherche écarte les descendants (AD-129) : le cycle ne reste atteignable que si la hiérarchie change boîte
+    // ouverte. Une fiche libre est choisie, puis rangée sous Port-Sel par ailleurs.
+    const libre = (await api(antor, 'POST', `/api/univers/${U}/fiches`, { type: 'lieu', titre: 'Cible du cycle' })).id;
     await d.getByRole('button', { name: 'Recherche' }).click();
-    await d.getByLabel('Chercher une fiche').fill('Port-Sel');
-    await d.getByLabel(/^Port-Sel/).first().check();
+    await d.getByLabel('Chercher une fiche').fill('Cible du cycle');
+    await d.getByLabel(/^Cible du cycle/).first().check();
+    await api(antor, 'PATCH', `/api/univers/${U}/fiches/${libre}`, { parent: ids['Port-Sel'] });
     await d.getByRole('button', { name: 'Déplacer', exact: true }).click();
     await d.getByText('Une fiche ne peut pas être rangée sous l’un de ses descendants.').waitFor();
     assert.equal(await d.isVisible(), true);
@@ -119,6 +131,7 @@ describe('kanevas-arbre-fiche, E-9 fil, Contient, Déplacer sous…', { skip: sk
     await antor.waitForTimeout(800);
     assert.equal(await d.getByLabel(/^Les Sphères/).count(), 0);
     await d.getByRole('button', { name: 'Annuler' }).click();
+    await api(antor, 'DELETE', `/api/univers/${U}/fiches/${libre}`);
 
     await deplacer(antor, 'Les Docks', 'Les Sphères');
     await antor.getByText('Fiche déplacée.').waitFor();
