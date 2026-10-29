@@ -107,7 +107,7 @@ describe('kanevas-connexion-claude-com : « Connecter » avec une adresse sur cl
     app.connexionClaude.options.programme = programmeScript();
     app.connexionClaude.options.delaiAdresse = 30000;
     const r = await app.inject({ method: 'POST', url: `${BASE}/connexion`, headers: { cookie } });
-    assert.equal(r.statusCode, 201, r.body);
+    assert.equal(r.statusCode, 201, `${r.body} — cause : ${app.connexionClaude.derniereCause ?? 'inconnue'}`);
     const u = new URL(r.json().adresse);
     assert.equal(u.protocol, 'https:');
     assert.match(u.hostname, /^(.+\.)?(claude\.com|claude\.ai|anthropic\.com)$/);
