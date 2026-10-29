@@ -67,7 +67,12 @@ export function SousTypeBadge({
     if (edition) champ.current?.focus();
   }, [edition]);
 
-  if (!gestion) return sousType ? <span className="sous-type"> · {sousType}</span> : null;
+  if (!gestion) return sousType ? (
+    <>
+      <span className="point-type" aria-hidden="true">·</span>
+      <span className="sous-type">{sousType}</span>
+    </>
+  ) : null;
 
   function ouvrir() {
     setValeur(sousType ?? '');
@@ -107,7 +112,7 @@ export function SousTypeBadge({
   if (!edition) {
     return (
       <>
-        <span className="point-type" aria-hidden="true"> · </span>
+        <span className="point-type" aria-hidden="true">·</span>
         <button
           ref={declencheur}
           type="button"

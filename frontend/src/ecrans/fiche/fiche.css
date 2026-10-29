@@ -212,7 +212,10 @@ a.cadre-ill:focus-visible { outline-offset: 2px; border-radius: var(--rayon-pann
 .menu .info-fiche code { font: 500 11.5px/1.3 ui-monospace, "SF Mono", Menlo, Consolas, monospace; color: var(--texte-2); white-space: nowrap; }
 
 /* Sub-type in the badge (B-52): a button for the GM, plain text for a player; the list hangs under the badge. */
-.fiche .type .sous-type-bouton { background: none; border: 0; padding: 0 4px; margin: 0 -4px 0 -3px; font: inherit; color: inherit; cursor: text; border-radius: 4px; }
+/* Mirror the button's text inset around the dot; keep the full 6 px gap clear for its 4 px focus ring. */
+.fiche .type .point-type { flex: none; margin-left: var(--e-1); }
+.fiche .type > .sous-type { padding-left: var(--e-1); }
+.fiche .type .sous-type-bouton { background: none; border: 0; padding: 0 4px; margin: 0 -4px 0 0; font: inherit; color: inherit; cursor: text; border-radius: 4px; }
 .fiche .type .sous-type-bouton { display: inline-flex; align-items: center; gap: 4px; }
 .fiche .type .sous-type-bouton .crayon { flex: none; opacity: 0; color: var(--texte-2); }
 .fiche .type .sous-type-bouton:not(:disabled):hover, .fiche .type .sous-type-bouton:not(:disabled):focus-visible { background: var(--surface-3); }
