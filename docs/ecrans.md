@@ -2234,10 +2234,9 @@ tout autre rôle que le MJ (hors mode Joueur) : ni le menu, ni la réponse de le
   types » ; pour « Personnage », le choix PJ / PNJ ; et le champ « Sous-type » (vidé au changement de
   type, puisqu'il est propre au type, avec les sous-types déjà employés pour le nouveau type). Le
   compte-rendu n'y figure pas ; un compte-rendu n'a pas cette entrée.
-- *Déplacer sous…* : boîte « Déplacer « Port-Sel » sous… », champ « Chercher une fiche » et la liste de
-  recherche (tous types, fiches que le MJ lit), plus « Aucun parent » ; pied : « Annuler » puis « Déplacer » (à droite au bureau, côte à côte sur toute la largeur, 40 px de haut, au téléphone) ;
-  un descendant de la fiche est refusé : « Une fiche ne peut pas être rangée sous l'un de ses
-  descendants. ».
+- *Déplacer sous…* : boîte « Déplacer « Port-Sel » sous… », deux vues (« Arborescence » par défaut, « Recherche » avec le champ « Chercher une fiche » et sa liste, tous types, fiches que le MJ lit), plus « Aucun parent » ; pied : « Annuler » puis « Déplacer » (à droite au bureau, côte à côte sur toute la largeur, 40 px de haut, au téléphone) ;
+  la fiche et ses descendants ne sont jamais proposés (le refus « Une fiche ne peut pas être rangée sous l'un de ses
+  descendants. » ne reste que si la hiérarchie bouge boîte ouverte).
   *(kanevas-deplacer-arborescence)* The box has two views, « Arborescence » (open by default, placed
   where the sheet is) and « Recherche » (the search above); the sheet and its descendants are never
   offered as a target. Detail: « Ce que `kanevas-deplacer-arborescence` construit » below.
@@ -2353,8 +2352,8 @@ attente » for the batch).
 - Étant donné « Port-Sel » sous « Les Sphères » (lieu illisible de Léa) sous « Le Grand Vide »
   (lisible), quand Léa ouvre « Port-Sel », alors le fil est « Lame d'Ébène › Lieux › Le Grand Vide ›
   Port-Sel ».
-- Étant donné Antor qui déplace « Les Sphères » sous « Port-Sel », son enfant, alors il voit « Une
-  fiche ne peut pas être rangée sous l'un de ses descendants. » et rien ne change.
+- Étant donné Antor qui déplace « Les Sphères » alors que « Port-Sel », son enfant, lui est rangé dessous entre-temps (hiérarchie changée boîte ouverte), alors il voit « Une
+  fiche ne peut pas être rangée sous l'un de ses descendants. » et rien ne change *(kanevas-deplacer-arborescence: the box no longer offers « Port-Sel » in the first place)*.
 - Étant donné Antor qui supprime « Port-Sel » (5 enfants, dont un illisible de Léa, parent « Les Sphères »), alors les 5
   enfants ont « Les Sphères » pour parent, l'adresse de « Port-Sel » répond « Page introuvable. », et
   un lien vers elle dans « Maître Aldric » est marqué « lien cassé » pour Antor et du texte pour Léa.
@@ -2721,13 +2720,13 @@ texte. Ses états : *chargement* « Chargement… » sous le titre du bloc ; *er
 enfants. » avec « Réessayer » ; *vide* le bloc est absent ; *contenu long* 50 puis « Afficher les N suivants »
 (N = ce que la page suivante compte, jamais un total) ; l'échec de cette suite dit « Impossible de charger la suite. » sans retirer ce qui est affiché ; connexion perdue : le bandeau, le bloc chargé reste ; fiche supprimée entre-temps (404) : le bloc disparaît. Une fiche sans section lisible mais avec des enfants lisibles montre quand même « Contient ». Chaque enfant montre l'icône, le titre et le sous-type (« Taverne »). En mode Joueur le bloc se relit sous le mode.
 
-**« Déplacer sous… » (E-9).** La boîte est celle de `#etat-deplacer`. Le champ cherche dans la liste de
+**« Déplacer sous… » (E-9).** *(kanevas-deplacer-arborescence)* Ce paragraphe décrit la vue « Recherche » ; la boîte entière est « Ce que `kanevas-deplacer-arborescence` construit » plus bas. Le champ cherche dans la liste de
 recherche existante (`GET …/fiches?q=`, sans `type`, 300 ms après la frappe, 1 caractère au moins, 100 au plus) ;
-la fiche elle-même est écartée de la liste ; une ligne montre l'icône du type, le titre et le sous-type (« Lieu · Sphère »), et la recherche porte sur le titre seul (le placeholder « Titre ou alias » de la maquette est celui de E-17 : ici le champ dit « Chercher une fiche ») ; « 1 caractère au moins, 100 au plus » vise la saisie, la liste rend 100 lignes au plus puis « Charger la suite », et défile dans la boîte ; avant toute saisie la liste dit « Tapez le début d'un titre. » ; une saisie sans résultat dit « Aucune fiche ne correspond. », la recherche en cours « Recherche… », son échec « Impossible de chercher. » avec « Réessayer » ; « Aucun parent » est la première ligne et met la fiche à la racine.
-« Déplacer » reste inactif tant qu'aucune ligne n'est choisie (la maquette le montre actif parce qu'un choix y est déjà fait) ; le refus s'écrit sous le champ ; il envoie `PATCH …/fiches/:fid` `{parent}`. Réponses :
+la fiche et ses descendants sont écartés de la liste (`horsDe`) ; une ligne montre l'icône du type, le titre et le sous-type (« Lieu · Sphère »), et la recherche porte sur le titre seul (le placeholder « Titre ou alias » de la maquette est celui de E-17 : ici le champ dit « Chercher une fiche ») ; « 1 caractère au moins, 100 au plus » vise la saisie, la liste rend 100 lignes au plus puis « Charger la suite », et défile dans la boîte ; avant toute saisie la liste dit « Tapez le début d'un titre. » ; une saisie sans résultat dit « Aucune fiche ne correspond. », la recherche en cours « Recherche… », son échec « Impossible de chercher. » avec « Réessayer » ; « Aucun parent » est la première ligne et met la fiche à la racine.
+« Déplacer » reste inactif tant qu'aucune ligne n'est choisie ou tant que le choix est le parent actuel (la maquette le montre actif parce qu'un choix y est déjà fait) ; le refus s'écrit sous la liste ; il envoie `PATCH …/fiches/:fid` `{parent}`. Réponses :
 succès (200, la fiche en réponse) → la boîte se ferme, le fil se recharge et le toast dit « Fiche déplacée. » ; 400 `cycle` → le texte
-« Une fiche ne peut pas être rangée sous l'un de ses descendants. » sous le champ, la boîte reste ouverte ;
-400 `trop_profond` → « La hiérarchie est trop profonde. » et 404 → « Introuvable. », tous deux sous le champ comme le cycle ; connexion perdue →
+« Une fiche ne peut pas être rangée sous l'un de ses descendants. » sous la liste, la boîte reste ouverte ;
+400 `trop_profond` → « La hiérarchie est trop profonde. » et 404 → « Introuvable. », tous deux sous la liste comme le cycle ; connexion perdue →
 bandeau, « Déplacer » désactivé. La boîte n'existe que pour un MJ hors mode Joueur, et le menu « ⋯ » est absent pour un Joueur. Une fiche de tout type peut être parent ou enfant, un compte-rendu compris (AD-99) : « Déplacer sous… » existe aussi pour lui (MJ seulement : un Joueur, même auteur de son compte-rendu, n'a pas le menu « ⋯ ») ; E-13 ne montre pas la hiérarchie et ne change pas.
 *(kanevas-deplacer-arborescence)* This paragraph now describes the « Recherche » view only, and three of its
 rules changed: the sheet **and its descendants** are left out (not the sheet alone); a refusal is written under
