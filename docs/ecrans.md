@@ -2985,7 +2985,8 @@ l'ouverture, le type actuel est coché et le champ « Sous-type » porte le sous
 (vide si elle n'en a pas), avec la complétion du type actuel. Tant que le type reste l'actuel :
 - la boîte ne dit pas « … sera retiré. » (cet avertissement n'existe que pour un autre type, si la fiche a
   un sous-type et tant que le champ reste vide) ;
-- le bouton principal dit **« Enregistrer le sous-type »** ; il est désactivé tant que le champ, rogné,
+- le bouton reste **« Changer le type »** — le sous-type fait partie du type (décision de Monsieur du
+  2026-10-29 : un libellé « Enregistrer le sous-type » proposé et refusé) ; il est désactivé tant que le champ, rogné,
   est égal au sous-type actuel (la casse compte : « capitaine » remplace « Capitaine ») ; il s'active dès
   qu'il en diffère, champ vidé compris quand la fiche avait un sous-type ;
 - il envoie `PATCH …/fiches/:fid` `{sousType}` (le texte rogné, ou `null` pour un champ vide) — la route
@@ -2994,13 +2995,13 @@ l'ouverture, le type actuel est coché et le champ « Sous-type » porte le sous
 - PJ / PNJ ne s'affiche pas, « Personnage (actuel) » compris (il ne se change pas ici, ci-dessous).
 Choisir un autre type rend le comportement d'un changement de type : champ vidé, « … sera retiré. » si la
 fiche a un sous-type, bouton « Changer le type ». Revenir au type actuel rend le champ rempli du sous-type
-actuel et le bouton « Enregistrer le sous-type » (désactivé tant que rien ne diffère). Enregistrement en
+actuel et le bouton « Changer le type » (désactivé tant que rien ne diffère). Enregistrement en
 cours : le bouton passe à « Enregistrement… » et la boîte est figée. Échec du `PATCH` : « Le sous-type n'a
 pas changé. Réessayez. » dans la boîte, qui reste ouverte avec la saisie ; 403 : la boîte se ferme et
 « Vous ne pouvez plus modifier cette fiche. » ; 404 : « Introuvable. » dans la boîte ; connexion perdue :
 le bandeau « Connexion perdue. Ce que vous voyez peut être dépassé ; rien n'est enregistré tant qu'elle ne revient pas. », bouton désactivé, saisie gardée. Un sous-type de plus de 60 caractères : « Erreur : 60 caractères au plus. »
 sous le champ, rien n'est envoyé. Chargement : tant que la liste des types n'est pas lue, le bouton reste
-désactivé, quel que soit son libellé — « Enregistrer le sous-type » compris, même si le champ diffère déjà ;
+désactivé, même si le champ diffère déjà ;
 il ne s'active qu'une fois la liste lue (son échec : « Impossible de charger les types. », ci-dessus, bouton
 désactivé). Pas d'état vide propre : le champ est rempli de la fiche déjà lue, et la liste des types n'est
 jamais vide. Échec dessiné : maquette `#etat-changer-sous-type-echec`. Un Joueur n'a ni le menu « ⋯ » ni
@@ -3035,17 +3036,16 @@ La maquette `e08-liste-fiches.html` n'est pas redessinée pour le sous-type : le
 *Critères de la tranche* (les critères d'écran ci-dessus restent les siens).
 - *(kanevas-sous-type-dialogue)* Étant donné un PNJ « Capitaine » dans Lame d'Ébène, quand Antor (MJ, hors mode
   Joueur) ouvre « Changer le type… », laisse « Personnage (actuel) », remplace le sous-type par « Amiral » et
-  clique « Enregistrer le sous-type », alors la boîte se ferme, le toast dit « Sous-type enregistré. » et le badge
+  clique « Changer le type », alors la boîte se ferme, le toast dit « Sous-type enregistré. » et le badge
   affiche « PNJ · Amiral » ; la fiche est toujours un PNJ, dans « Personnages ».
 - *(kanevas-sous-type-dialogue)* Étant donné ce même PNJ, quand Antor ouvre « Changer le type… », alors le champ
-  porte « Capitaine », le bouton « Enregistrer le sous-type » est désactivé et la boîte ne dit pas « … sera
+  porte « Capitaine », le bouton « Changer le type » est désactivé et la boîte ne dit pas « … sera
   retiré. » ; il le reste tant que ni le type ni le sous-type ne change, et s'active dès qu'il vide le champ.
 - *(kanevas-sous-type-dialogue)* Étant donné ce même PNJ, quand Antor vide le champ et enregistre, alors le toast
   dit « Sous-type retiré. » et le badge affiche « PNJ » seul.
 - *(kanevas-sous-type-dialogue)* Étant donné ce même PNJ, quand Antor choisit « Lieu » puis revient à
-  « Personnage », alors le champ porte de nouveau « Capitaine » et le bouton dit « Enregistrer le sous-type » ;
-  choisir « Lieu » avait vidé le champ, affiché « Le sous-type « Capitaine » sera retiré. » et renommé le bouton
-  « Changer le type ».
+  « Personnage », alors le champ porte de nouveau « Capitaine », « Changer le type » est désactivé et l'avertissement a disparu ;
+  choisir « Lieu » avait vidé le champ et affiché « Le sous-type « Capitaine » sera retiré. ».
 - *(kanevas-sous-type-dialogue)* Étant donné Antor sur ce PNJ, quand il survole le sous-type « Capitaine » du
   badge, puis quand il l'atteint à la tabulation, alors le fond `--surface-3` et le crayon apparaissent (et,
   au clavier, l'anneau de focus) ; Entrée ouvre l'édition en place. Étant donné Léa (Joueuse), quand elle
@@ -3055,7 +3055,7 @@ La maquette `e08-liste-fiches.html` n'est pas redessinée pour le sous-type : le
   changé. Réessayez. », le champ porte toujours « Amiral », et le badge dit encore « PNJ · Capitaine ».
 - *(kanevas-sous-type-dialogue)* Étant donné la connexion perdue, quand Antor a la boîte ouverte avec « Amiral »
   saisi, alors le bandeau « Connexion perdue. Ce que vous voyez peut être dépassé ; rien n'est enregistré tant
-  qu'elle ne revient pas. » s'affiche, « Enregistrer le sous-type » est désactivé et la saisie reste ; boîte
+  qu'elle ne revient pas. » s'affiche, « Changer le type » est désactivé et la saisie reste ; boîte
   fermée, le sous-type du badge est désactivé : ni fond ni crayon au survol, la tabulation ne s'y arrête pas.
 - *(kanevas-sous-type-dialogue)* Étant donné la liste des types pas encore lue, quand Antor ouvre « Changer le
   type… » et remplace « Capitaine » par « Amiral », alors « Chargement des types… » s'affiche et « Enregistrer

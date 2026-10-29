@@ -566,7 +566,7 @@ E-14 (« Page introuvable. ») et lit l'onglet de E-15 en « Lecture seule », i
    d'Ombre », importée en Note, « Changer le type » : Note → Savoir, sous-type « Ressource ».
    *(kanevas-sous-type-dialogue, B-52)* « Maître Aldric » est un PNJ de sous-type « Capitaine » (badge
    « PNJ · Capitaine »). Antor ouvre sa fiche depuis « Personnages », puis son menu « ⋯ », « Changer le type… », laisse « Personnage (actuel) » :
-   le champ porte « Capitaine » ; il tape « Amiral » et clique « Enregistrer le sous-type » ; le badge dit
+   le champ porte « Capitaine » ; il tape « Amiral » et clique « Changer le type » ; le badge dit
    « PNJ · Amiral ».
    *(kanevas-sous-type-dialogue, B-52)* Le sous-type « Port » de « Port-Sel », plus haut, il l'a changé en
    place, dans le badge : au survol, le crayon apparu à côté de « Port » lui a montré qu'il s'édite.
@@ -588,7 +588,7 @@ un bloc MJ — « Modifier » n'y paraît pas ; un texte qui passe 100 000 carac
 caractères au plus. », le texte reste.
 *(kanevas-sous-type-dialogue)* Le sous-type « Amiral » ne s'enregistre pas depuis « Changer le type… » —
 « Le sous-type n'a pas changé. Réessayez. », la boîte reste ouverte avec « Amiral » ; la connexion tombe —
-le bandeau, « Enregistrer le sous-type » désactivé, et le sous-type du badge n'offre plus ni fond ni crayon.
+le bandeau, « Changer le type » désactivé, et le sous-type du badge n'offre plus ni fond ni crayon.
 
 ### P-15 — Poser le jeton de l'assistant (Admin, admin d'instance) (B-51)
 *Admin vient de déployer Kanevas : l'assistant n'a pas encore de jeton, et il ne veut pas passer par un redéploiement.*

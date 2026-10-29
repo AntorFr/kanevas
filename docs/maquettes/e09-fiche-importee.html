@@ -74,7 +74,7 @@
      #etat-menu       menu « ⋯ » de l'en-tête ouvert
      #etat-changer-type boîte « Changer le type de « Port-Sel » » : types activés, « Autres types », choix PJ / PNJ pour un personnage, sous-type retiré
      #etat-changer-sous-type (kanevas-sous-type-dialogue) la même boîte, type actuel gardé : champ « Port franc »
-                      (rempli de « Port » à l'ouverture), pas d'avertissement, « Enregistrer le sous-type » actif
+                      (rempli de « Port » à l'ouverture), pas d'avertissement, « Changer le type » actif
      #etat-changer-sous-type-echec la même, après un échec : « Le sous-type n'a pas changé. Réessayez. »
      #etat-deplacer   boîte « Déplacer sous… » : liste de recherche, « Aucun parent », refus du cycle
      #etat-supprimer  boîte « Supprimer « Port-Sel » ? »
@@ -1915,14 +1915,13 @@ var ILLUS = (function () {
   $('[data-deplacer]').onclick = ouvrirDeplacer;
   // Changer le type : le type courant reste « (actuel) » ; « Personnage » ouvre PJ / PNJ.
   // (kanevas-sous-type-dialogue) Type actuel gardé : le champ porte le sous-type actuel, le bouton dit
-  // « Enregistrer le sous-type » et ne s'active que si le sous-type diffère ; un autre type vide le champ,
-  // annonce le retrait et rend « Changer le type ».
+  // toujours « Changer le type » et ne s'active que si le sous-type diffère ; un autre type vide le champ
+  // et annonce le retrait.
   var ctChoix = null;
   function estActuel(b) { return !b || (b.querySelector('.type-option') && b.querySelector('.type-option').textContent === '(actuel)'); }
   function ctMaj() {
     var actuel = estActuel(ctChoix), v = $('#ct-sous-type').value.trim();
-    $('#ct-confirmer').textContent = actuel ? 'Enregistrer le sous-type' : 'Changer le type';
-    $('#ct-confirmer').disabled = actuel ? v === stCourant : false;
+        $('#ct-confirmer').disabled = actuel ? v === stCourant : false;
     $('#ct-info').hidden = actuel || !stCourant || v !== '';
     $('#ct-info').textContent = 'Le sous-type « ' + stCourant + ' » sera retiré.';
   }
