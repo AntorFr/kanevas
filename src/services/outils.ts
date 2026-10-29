@@ -198,8 +198,9 @@ export function poserActivation(db: Db, compte: number | Acteur, cible: CibleOut
     db.prepare(`UPDATE ${t.nom} SET active = ? WHERE ${t.id} = ? AND outil = ?`).run(active === null ? null : Number(active), cible.id, cle);
     if (resolution(db, cible, cle).active) {
       for (const dep of outil.dependances) {
-        if (!resolution(db, cible, dep).active) throw new ErreurService('conflit',
-          `${outil.libelle} demande ${declarationOutil(dep).libelle} : activez-le d'abord.`, 'dependance');
+        const dependance = declarationOutil(dep);
+        if (!applicable(dependance, systeme.nom) || !resolution(db, cible, dep).active) throw new ErreurService('conflit',
+          `${outil.libelle} demande ${dependance.libelle} : activez-le d'abord.`, 'dependance');
       }
     } else {
       for (const dependant of module.outils.filter((o) => applicable(o, systeme.nom) && o.dependances.includes(cle))) {
