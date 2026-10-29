@@ -34,7 +34,7 @@ const VALFORTIN = 8;
 const VALFORTIN_DESCRIPTION = 9;
 const ALDRIC_VERITE = 2;
 const LEA_FICHE = 4;
-const NOTES = 29; // one section more than before: « Les Corvalis » (kanevas-fiches-liees-natures) is seeded before it
+let NOTES = 0; // « Notes de la table » of Léa's sheet, resolved in before(): the seed's section ids move when it grows
 const PDF = (name: string) => ({
   name,
   mimeType: 'application/pdf',
@@ -56,6 +56,8 @@ before(async () => {
   browser = await launch();
   antor = (await connecte(browser, srv.base, 'Antor')).page;
   lea = (await connecte(browser, srv.base, 'Léa')).page;
+  const fl = await (await lea.request.get(`/api/univers/${U}/fiches/${LEA_FICHE}`)).json();
+  NOTES = fl.sections.find((x: Any) => x.titre === 'Notes de la table').id;
   teo = (await connecte(browser, srv.base, 'Teo')).page;
 });
 after(async () => {

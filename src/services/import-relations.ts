@@ -48,7 +48,7 @@ export function assurerRelations(
       type: typeof b.type === 'string' ? b.type.trim() : undefined,
     };
     const champsTextes = ['nature', 'qualificatif', 'type'].every((k) => b[k] === undefined || b[k] === null || typeof b[k] === 'string');
-    // `type` is the deprecated name of `qualificatif` (AD-133): read as such when it is alone.
+    // `type` is the deprecated name of `qualificatif` (AD-134): read as such when it is alone.
     const deprecie = entree.type !== undefined && entree.qualificatif === undefined;
     const qualificatif = deprecie ? entree.type : entree.qualificatif;
     const nature = entree.nature ?? '';

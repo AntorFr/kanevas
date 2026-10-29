@@ -1,4 +1,4 @@
-// Tests of kanevas-fiches-liees-recherche-serveur written from the exit criterion (B-65, AD-129):
+// Tests of kanevas-fiches-liees-recherche-serveur written from the exit criterion (B-65, AD-130):
 // the list filtered by `lie`, `nature`, `descendants` under both relation guards.
 import assert from 'node:assert/strict';
 import { test } from 'node:test';

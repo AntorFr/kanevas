@@ -284,6 +284,7 @@ describe('E-5 Administration : recours, états et exclusions complémentaires (B
       const { page } = w.admin;
       await page.goto(`/administration/univers/${w.lame}`);
       await page.getByText('2 membres').waitFor();
+      await page.getByRole('textbox').first().waitFor();
       assert.equal(await page.getByText(SECRET).count(), 0);
       assert.equal(await page.getByRole('textbox').count(), 1, 'only the member identifier field');
       await page.getByText('Pour lire le contenu, l’admin s’ajoute lui-même', { exact: false }).or(

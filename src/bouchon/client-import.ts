@@ -11,17 +11,15 @@ const sampleSchema = z.object({
     cle: z.string(), chemin: z.string(), nom: z.string(),
     visibilite: z.enum(['joueurs', 'mj']),
   })).default([]),
-  campagnes: z.array(keyed).default([]),
   fiches: z.array(sheet).default([]),
   relations: z.array(z.object({
     fiche: z.string(),
-    // `{section, cible, nature?, qualificatif?}`; `type` is the deprecated name of `qualificatif` (AD-133).
+    // `{section, cible, nature?, qualificatif?}`; `type` is the deprecated name of `qualificatif` (AD-134).
     entrees: z.array(z.object({
       section: z.string(), cible: z.string(),
       nature: z.string().optional(), qualificatif: z.string().optional(), type: z.string().optional(),
     }).passthrough()),
   })).default([]),
-  scenarios: z.array(keyed.extend({ campagne: z.string() })).default([]),
 });
 
 /** Stable parent-first order, preserving the deliberate late-link and report order. */
@@ -92,17 +90,11 @@ async function main() {
     form.set('fichier', new Blob([new Uint8Array(f.bytes)]), f.nom);
     await request(counted(`/fichiers/${key(f.cle)}`), 'PUT', form, true);
   }
-  for (const { cle, ...body } of sample.campagnes) {
-    await request(counted(`/campagnes/${key(cle)}`), 'PUT', body, true);
-  }
   for (const { cle, ...body } of sheets) {
     await request(counted(`/fiches/${key(cle)}`), 'PUT', body, true);
   }
   for (const r of sample.relations) {
     await request(counted(`/fiches/${key(r.fiche)}/relations`), 'POST', r.entrees, true);
-  }
-  for (const { campagne, cle, ...body } of sample.scenarios) {
-    await request(counted(`/campagnes/${key(campagne)}/scenarios/${key(cle)}`), 'PUT', body, true);
   }
   const report = await request(`/lots/${batch.lotId}/clore`, 'POST') as {
     compteurs: Record<string, { creees: number; mises_a_jour: number; inchangees: number; refusees: number }>;
@@ -110,12 +102,12 @@ async function main() {
     rapport: { cle: string; gravite: string; raison: string }[];
   };
   const names: Record<string, string> = {
-    fiches: 'Fiches', fichiers: 'Fichiers', campagnes: 'Campagnes', scenarios: 'Scénarios', relations: 'Relations',
+    fiches: 'Fiches', fichiers: 'Fichiers', relations: 'Relations',
   };
   console.log(`Lot ${batch.lotId}`);
   let refused = 0;
   for (const [nature, c] of Object.entries(report.compteurs)) {
-    const feminine = !['fichiers', 'scenarios'].includes(nature);
+    const feminine = nature !== 'fichiers';
     const agreement = (word: string, n: number) => word + (feminine ? 'e' : '') + (n > 1 ? 's' : '');
     const updated = feminine ? (c.mises_a_jour > 1 ? 'mises' : 'mise') : 'mis';
     console.log(`${names[nature] ?? nature} : ${c.creees} ${agreement('créé', c.creees)}, ${c.mises_a_jour} ${updated} à jour, ${c.inchangees} ${agreement('inchangé', c.inchangees)}, ${c.refusees} ${agreement('refusé', c.refusees)}`);

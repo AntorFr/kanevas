@@ -1,4 +1,4 @@
-// Migration 0017 (kanevas-fiches-liees-natures-serveur): `relations.type` becomes `qualificatif`, a `nature`
+// Migration 0018 (kanevas-fiches-liees-natures-serveur): `relations.type` becomes `qualificatif`, a `nature`
 // column appears, ids and count are kept. The base at the previous schema is built here, rows by hand.
 import assert from 'node:assert/strict';
 import { copyFileSync, mkdtempSync, readdirSync } from 'node:fs';
@@ -8,11 +8,11 @@ import { test } from 'node:test';
 
 import { migrate, openDb } from './db.js';
 
-function base16() {
+function base17() {
   const dir = mkdtempSync(join(tmpdir(), 'mig-nat-'));
   const source = new URL('./migrations/', import.meta.url);
   for (const f of readdirSync(source)) {
-    if (/^\d{4}-.+\.sql$/.test(f) && Number(f.slice(0, 4)) <= 16) copyFileSync(new URL(f, source), join(dir, f));
+    if (/^\d{4}-.+\.sql$/.test(f) && Number(f.slice(0, 4)) <= 17) copyFileSync(new URL(f, source), join(dir, f));
   }
   const db = openDb(':memory:');
   migrate(db, dir + '/');
@@ -35,10 +35,10 @@ function base16() {
   return db;
 }
 
-test('0017 : trois relations à type → nature "" et ancien texte en qualificatif, mêmes ids, clés étrangères saines', () => {
-  const db = base16();
+test('0018 : trois relations à type → nature "" et ancien texte en qualificatif, mêmes ids, clés étrangères saines', () => {
+  const db = base17();
   assert.equal(db.prepare('SELECT COUNT(*) n FROM relations').get()?.n, 3);
-  assert.deepEqual(migrate(db), [17]);
+  assert.deepEqual(migrate(db), [18]);
   assert.deepEqual(
     db.prepare('SELECT id, nature, qualificatif, cible_fiche_id FROM relations ORDER BY id').all(),
     [
@@ -49,12 +49,12 @@ test('0017 : trois relations à type → nature "" et ancien texte en qualificat
   );
   assert.deepEqual(db.pragma('foreign_key_check'), []);
   assert.equal(db.pragma('foreign_keys', { simple: true }), 1);
-  assert.equal(db.prepare('SELECT COUNT(*) n FROM migrations WHERE numero = 17').get()?.n, 1);
+  assert.equal(db.prepare('SELECT COUNT(*) n FROM migrations WHERE numero = 18').get()?.n, 1);
   assert.deepEqual(migrate(db), []);
 });
 
-test('0017 : unicité (section, cible, nature, qualificatif), index relations_par_cible_nature, qualificatif vide permis, 81 refusé', () => {
-  const db = base16();
+test('0018 : unicité (section, cible, nature, qualificatif), index relations_par_cible_nature, qualificatif vide permis, 81 refusé', () => {
+  const db = base17();
   migrate(db);
   const ins = (nature: string, q: string) =>
     db.prepare("INSERT INTO relations (section_id, cible_fiche_id, nature, qualificatif, cree_le) VALUES (1, 2, ?, ?, 'a')").run(nature, q);

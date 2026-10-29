@@ -444,7 +444,7 @@ describe('kanevas-import-tenir · B-40, supprimer une fiche (E-9)', { skip: skip
 
   // Un compte-rendu se supprime de même, retour à E-13.
   test('B-40 : un compte-rendu se supprime de même et ramène à la liste des comptes-rendus (E-13)', async () => {
-    const c = await api(srv, antor, 'POST', `${A()}/campagnes`, { nom: 'La Couronne brisée' });
+    const c = await api(srv, antor, 'POST', `${A()}/fiches`, { type: 'aventure', sousType: 'Campagne', titre: 'La Couronne brisée', sections: [{ titre: 'Présentation', joueursLisent: true }] });
     const cr = await api(srv, antor, 'POST', `${A()}/comptes-rendus`, { campagneId: c.id, titre: 'Session 12', texte: 'On a ri.' });
     await ouvrirFiche(antor, U, cr.id, 'Session 12');
     await ouvrirBoite(antor, 'Session 12');

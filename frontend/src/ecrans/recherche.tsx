@@ -8,10 +8,11 @@ import type { Ecran } from '../registre';
 import { badgeFiche, iconeDuType, marqueDe, typesActifs, useTypes } from '../types-contexte';
 import type { UniversListe } from '../types';
 import { Bouton, Champ, PageIntrouvable } from '../ui';
-import { adresseIllustration } from './fiche/vignette';
+import { adresseIllustration, useMJSeul } from './fiche/vignette';
 import { MarqueDisparu, classeDisparu, etatDe } from './fiche/marque';
 import { LONGUEUR_RECHERCHE } from './fiche/liste-recherche';
 import type { Fiche, PageFiches } from './fiche/types';
+import { StatutAventure } from './fiche/statut';
 import './liste.css';
 import './recherche.css';
 import { Avancee, useAvancee } from './recherche/avancee';
@@ -313,9 +314,10 @@ function Ligne({ universId, fiche, onEtiquette }: { universId: string; fiche: Fi
   const jeton = fiche.illustration && 'jeton' in fiche.illustration ? fiche.illustration.jeton : undefined;
   const etiquettes = fiche.etiquettes ?? [];
   const marque = marqueDe(types, fiche);
+  const mjSeul = useMJSeul(fiche);
   const badge = fiche.sousType ? `${badgeFiche(types, fiche)} · ${fiche.sousType}` : badgeFiche(types, fiche);
   return (
-    <li className="ligne-recherche">
+    <li className={mjSeul.badge ? "ligne-recherche avec-pastille" : "ligne-recherche"}>
       <Link className="lien-recherche" to={`/univers/${universId}/fiche/${fiche.id}`}>
         <span className={`vignette-recherche${classeDisparu(marque)}`} aria-hidden={marque ? undefined : 'true'}>
           {jeton !== undefined && !ko ? (
@@ -351,7 +353,10 @@ function Ligne({ universId, fiche, onEtiquette }: { universId: string; fiche: Fi
         <span className="badge-type" title={badge}>
           {badge}
         </span>
+        {fiche.type === 'aventure' && <StatutAventure universId={universId} fiche={fiche} />}
       </Link>
+      {mjSeul.badge}
+      {mjSeul.aide}
     </li>
   );
 }

@@ -17,7 +17,9 @@ import { ajouterSection, changerAudience, ecrireContenu, lireSection } from '../
 import { poserEtiquetage } from '../services/etiquettes.js';
 import { relierSection } from '../services/relations.js';
 import { creerCarte, ajouterElement } from '../services/cartes.js';
-import { creerFiche, deplacerFiche, lireFiche, marquerDisparu } from '../services/fiches.js';
+import { changerStatutFiche, creerFiche, deplacerFiche, lireFiche, marquerDisparu } from '../services/fiches.js';
+import { creerCompteRendu } from '../services/comptes_rendus.js';
+import { ajouterTache } from '../services/preparation.js';
 import { assurerCompte } from '../services/comptes.js';
 import { creerEtRattacherSysteme, creerGabarit, rattacherSysteme } from '../services/systemes.js';
 import { creerJetonDeValeur } from '../services/jetons.js';
@@ -243,7 +245,7 @@ export function semerBouchon(db: Db): boolean {
       relierSection(db, id.antor, lame.id, aldric.id, aldric.sections['Apparence']!, { cibleFicheId: port.id, qualificatif: 'maître de port' });
       relierSection(db, id.antor, lame.id, guilde.id, guilde.sections['Description']!, { cibleFicheId: port.id, qualificatif: 'y fait passer ses cargaisons' });
       relierSection(db, id.antor, lame.id, rapport.id, rapport.sections['Secret — MJ seul']!, { cibleFicheId: port.id, qualificatif: 'surveille' });
-      // `kanevas-fiches-liees-natures`: relations with a nature (AD-128) and the family « Les Corvalis » (a type).
+      // `kanevas-fiches-liees-natures`: relations with a nature (AD-129) and the family « Les Corvalis » (a type).
       const relier = (src: { id: number; sections: Record<string, number> }, section: string, cible: { id: number }, nature: string, qualificatif: string) =>
         relierSection(db, id.antor, lame.id, src.id, src.sections[section]!, { cibleFicheId: cible.id, nature, qualificatif });
       // A base short of 0013 still has the CHECK on `fiches.type`, which does not know « famille ».
@@ -252,7 +254,7 @@ export function semerBouchon(db: Db): boolean {
       relier(aldric, 'Apparence', port, 'se_situe', 'habite');
       relier(aldric, 'Apparence', guilde, 'membre', 'trésorier');
       relier(prieur, 'Secret — MJ seul', port, 'se_situe', 'se cache');
-      // Same for the empty qualifier of a nature (0017): the old `relations` demands one.
+      // Same for the empty qualifier of a nature (0018): the old `relations` demands one.
       const sqlRelations = (db.prepare("SELECT sql FROM sqlite_master WHERE name = 'relations'").get() as { sql: string }).sql;
       if (docks && !/BETWEEN 1 AND 80/.test(sqlRelations)) relier(suie, 'Apparence', docks, 'se_situe', '');
       relier(ombeline, 'Apparence', guilde, 'membre', 'dirige');
@@ -269,6 +271,20 @@ export function semerBouchon(db: Db): boolean {
         'Une crique que fréquentent [[cle:faction:repaire|les contrebandiers du Repaire]] et jadis [[999999|Capitaine Hesk]].',
     });
     changerAudience(db, id.antor, essai.id, anse.id, descriptionAnse.id, { joueursLisent: true });
+
+    // Migration tests also seed a pre-pivot base: adventures require the 0017 task schema.
+    if ((db.pragma('table_info(taches_preparation)') as { name: string }[]).some((c) => c.name === 'fiche_id')) {
+      const couronne = fiche('aventure', 'La Couronne brisée', [{ titre: 'Présentation', lue: true }], undefined, 'Campagne');
+      changerStatutFiche(db, { compteId: id.antor }, lame.id, couronne.id, 'en_cours');
+      const acte = fiche('aventure', 'Acte II — Le sceau brisé', [{ titre: 'Présentation', lue: false }], undefined, 'Scénario');
+      changerStatutFiche(db, { compteId: id.antor }, lame.id, acte.id, 'prete');
+      ranger(acte.id, couronne.id);
+      ajouterTache(db, id.antor, couronne.id, { categorie: 'cartes', libelle: 'Plan de la crypte' });
+      ajouterTache(db, id.antor, couronne.id, { categorie: 'deroulements', libelle: 'Que se passe-t-il si Léa refuse le sceau ?' });
+      creerCompteRendu(db, id.lea, lame.id, couronne.id, {
+        titre: 'Séance 12', texte: 'La compagnie poursuit la piste du sceau brisé.',
+      });
+    }
   })();
   return true;
 }
