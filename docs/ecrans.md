@@ -2804,7 +2804,9 @@ type, and « Aucun parent » carries « (actuel) » when the sheet has no parent
   suite. », what is shown stays. A level whose sheet no longer exists (404 — on the first read, or reached by a
   chevron or a crumb after it was deleted meanwhile): « Introuvable. » replaces the list, the path keeps that
   level and « Remonter » reads the level above again. Right lost while the box is open (403 on a level read,
-  e.g. Antor's GM role removed meanwhile): the box closes and E-9 says what it says when the move gets 403.
+  e.g. Antor's GM role removed meanwhile): the box closes without a toast or a message, and the sheet is read
+  again as a player reads it — no « ⋯ » menu any more, so the box cannot be reopened (the same handling as a 403
+  on the move itself, which also closes the box).
   The GM cannot switch to player mode while the box is open (it is modal), so no level is read in player mode.
   Connection lost: the banner; « Déplacer », the chevrons, the crumbs and « Remonter » are inactive; the shown
   level stays.
@@ -2846,6 +2848,13 @@ Docks », « Le Phare aux Sels », « Quartier des Cordiers », « Le Repaire de
   (« Lame d'Ébène » alone in the path, « Remonter » inactive) and « Aucun parent » carries « (actuel) ».
 - Given the level read fails, then « Impossible de charger ce niveau. » and « Réessayer » replace the list,
   and « Réessayer » reads it again.
+- Given a level of more than 50 children (created for the test; the seed has none), when Antor clicks « Charger la suite », then the button reads
+  « Chargement… » and is inactive while the next page loads, and the first 50 rows stay.
+- Given the box opened on « La Taverne du Kraken » and « Les Docks » deleted meanwhile (by another GM), when Antor
+  clicks the chevron of « Les Docks », then « Introuvable. » replaces the list, the path ends on « Les Docks »,
+  and « Remonter » shows the « Port-Sel » level again, without « Les Docks ».
+- Given the box open and Antor's GM role removed meanwhile, when he opens a level, then the box closes, no toast
+  shows, and the sheet has no « ⋯ » menu any more.
 - Given Léa (player), when she calls `GET …/fiches/racines` or a search with `horsDe`, then she gets 403 for
   the roots and 400 for `horsDe`, and nothing about the hierarchy (AD-129); so does Antor in player mode.
 

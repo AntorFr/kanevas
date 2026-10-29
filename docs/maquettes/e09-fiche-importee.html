@@ -83,7 +83,7 @@
      #etat-deplacer-racine  la boîte sur une fiche sans parent (« Les Sphères ») : la racine, « Remonter »
                       inactif, « Aucun parent (actuel) »
      #etat-deplacer-profond le chemin à plus de trois maillons : « Lame d'Ébène › … › La Capitainerie ›
-                      La Salle des Cartes », « … » listant les maillons cachés
+                      La Salle des Cartes », le menu de « … » ouvert (« Les Sphères », « Havre-Gris », icône du type)
      #etat-supprimer  boîte « Supprimer « Port-Sel » ? »
      #etat-tiroir     barre latérale ouverte au téléphone
    ===================================================================================== */
@@ -1940,6 +1940,7 @@ var ILLUS = (function () {
     'La Capitainerie': [['La Salle des Cartes', 'Lieu · Salle', 1]],
     'La Salle des Cartes': [['Le Coffre du capitaine', 'Objet']]
   };
+  var TYPE_DE = { 'Les Sphères': 'Lieu', 'Havre-Gris': 'Lieu', 'La Capitainerie': 'Lieu', 'La Salle des Cartes': 'Lieu' };
   // Ce que le serveur rend avec horsDe=<Port-Sel> : ni Port-Sel ni ses descendants (Les Docks, La Taverne du Kraken…).
   var RECHERCHE = [['Le Grand Vide', 'Lieu · Sphère'], ['Les Sphères', 'Lieu · Sphère'], ['Havre-Gris', 'Lieu · Port'], ['La Guilde des Brumes', 'Faction'], ['La Capitainerie', 'Lieu · Bâtiment']];
   var depChoix = null, depChemin = ['Les Sphères'], depVue = 'arbre';
@@ -1966,18 +1967,27 @@ var ILLUS = (function () {
       up.innerHTML = '<svg class="i" aria-hidden="true"><use href="#i-corner-left-up"/></svg>'; up.disabled = depChemin.length === 0;
       up.onclick = function () { depChemin.pop(); rendreDep(); }; nav.appendChild(up);
       // Plus de trois maillons après l'univers : l'univers, « … » (les maillons cachés), les deux derniers.
-      // Le document fait de « … » un menu des maillons cachés ; la maquette se contente de leur infobulle.
       var tout = [UNIVERS].concat(depChemin), montres = tout.map(function (m, k) { return k; });
       if (depChemin.length > 3) montres = [0, -1, tout.length - 2, tout.length - 1];
       montres.forEach(function (k, n) {
         if (n) { var sp = document.createElement('span'); sp.className = 'sep-chemin'; sp.textContent = '›'; nav.appendChild(sp); }
         var el;
         if (k === -1) {
+          // « … » : un menu des maillons cachés, chacun avec l'icône de son type (la règle du fil de E-9).
+          var boite = document.createElement('span'); boite.style.position = 'relative'; boite.style.flex = 'none';
           el = document.createElement('button'); el.type = 'button'; el.className = 'maillon cache'; el.textContent = '…';
-          el.setAttribute('aria-label', 'Autres niveaux : ' + tout.slice(1, tout.length - 2).join(', '));
-          el.title = tout.slice(1, tout.length - 2).join(' › ');
-          el.onclick = function () { depChemin = depChemin.slice(0, 1); rendreDep(); };
-          el.style.minWidth = 'auto'; nav.appendChild(el); return;
+          el.setAttribute('aria-label', 'Autres niveaux'); el.setAttribute('aria-haspopup', 'menu'); el.setAttribute('aria-expanded', 'false');
+          el.style.minWidth = 'auto';
+          var menu = document.createElement('div'); menu.className = 'menu'; menu.setAttribute('role', 'menu');
+          menu.style.left = '0'; menu.style.top = 'calc(100% + 4px)';
+          tout.slice(1, tout.length - 2).forEach(function (m, h) {
+            var e = document.createElement('button'); e.type = 'button'; e.className = 'entree'; e.setAttribute('role', 'menuitem');
+            e.innerHTML = '<svg class="i" aria-hidden="true"><use href="#' + (IC[TYPE_DE[m]] || 'i-map-pin') + '"/></svg>' + m;
+            e.onclick = function () { depChemin = depChemin.slice(0, h + 1); rendreDep(); };
+            menu.appendChild(e);
+          });
+          el.onclick = function () { var o = !menu.classList.contains('ouvert'); menu.classList.toggle('ouvert', o); el.setAttribute('aria-expanded', o); };
+          boite.appendChild(el); boite.appendChild(menu); nav.appendChild(boite); return;
         }
         var m = tout[k], dernier = k === tout.length - 1; el = document.createElement(dernier ? 'span' : 'button');
         el.className = 'maillon'; el.textContent = m; el.title = m;
@@ -2202,6 +2212,7 @@ var ILLUS = (function () {
       if (et === 'deplacer-profond') plus_tard(function () {
         FICHE = 'Le Coffre du capitaine'; PARENT_ACTUEL = 'La Salle des Cartes';
         CHEMIN_FICHE = ['Les Sphères', 'Havre-Gris', 'La Capitainerie', 'La Salle des Cartes']; ouvrirDeplacer();
+        setTimeout(function () { var c = $('#dep-chemin .cache'); if (c) c.click(); }, 60);
       });
       if (et === 'changer-type') plus_tard(function () { ouvrirChangerType(); choisirType($('#ct-types [data-type="Savoir"]')); });
       if (et === 'supprimer') plus_tard(function () { ouvrirDialogue($('#voile-supprimer'), $('#sup-annuler')); });
