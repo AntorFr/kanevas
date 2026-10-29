@@ -217,7 +217,7 @@ Les index sont tenus par des **déclencheurs** (AD-21) : à l'insertion, à la m
 provoque. La migration **remplit** les index depuis les lignes déjà présentes (une base de la
 première fiche garde ses fiches cherchables). Index SQL : `relations (section_id)` sert la lecture
 des relations d'une section ; aucun index sur `cible_fiche_id` à l'origine (aucune requête n'en
-a besoin ; le graphe des cartes ajoutera le sien si sa requête l'exige). Depuis `kanevas-fiches-liees` : `relations_par_cible` et `relations_par_cible_nature` (migration 0018).
+a besoin ; le graphe des cartes ajoutera le sien si sa requête l'exige). Since `kanevas-fiches-liees`: `relations_par_cible` and `relations_par_cible_nature` (migration 0018).
 
 > **Since `kanevas-import-mediatheque` this describes the history, not the rules in force:** the table above is emptied and unread; `fichiers.visibilite` and `fichierLisible` (`src/services/fichiers.ts`) govern who reads a file, and the limit is 100 joined files per section. `pieces_jointes.secrete` and the 50-piece ceiling below no longer apply.
 

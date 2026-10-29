@@ -254,7 +254,7 @@ export function semerBouchon(db: Db): boolean {
       relier(aldric, 'Apparence', port, 'se_situe', 'habite');
       relier(aldric, 'Apparence', guilde, 'membre', 'trésorier');
       relier(prieur, 'Secret — MJ seul', port, 'se_situe', 'se cache');
-      // Same for the empty qualifier of a nature (0017): the old `relations` demands one.
+      // Same for the empty qualifier of a nature (0018): the old `relations` demands one.
       const sqlRelations = (db.prepare("SELECT sql FROM sqlite_master WHERE name = 'relations'").get() as { sql: string }).sql;
       if (docks && !/BETWEEN 1 AND 80/.test(sqlRelations)) relier(suie, 'Apparence', docks, 'se_situe', '');
       relier(ombeline, 'Apparence', guilde, 'membre', 'dirige');
