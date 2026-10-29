@@ -260,3 +260,102 @@ export function poserReglages(db: Db, compte: number | Acteur, cible: CibleOutil
       WHERE ${t.id} = ? AND outil = ?`).run(JSON.stringify(valeurs), cible.id, cle);
   })();
 }
+
+// ---- Reads for the common API (C-5) -------------------------------------------------------
+
+export interface EntreeOutil { cle: string; libelle: string; icone: string; chemin: string }
+/** The sidebar's entries: tools enabled and visible to the actor, nothing about the hidden ones. */
+export function entreesOutils(db: Db, acteur: Acteur, universId: number): EntreeOutil[] {
+  const role = roleDe(db, universId, acteur.compteId);
+  if (!role) throw introuvable();
+  return modulesActifs().flatMap((m) => m.outils)
+    .filter((o) => accessible(db, acteur, universId, o.cle))
+    .map((o) => ({ cle: o.cle, libelle: o.ecran.libelle, icone: o.ecran.icone, chemin: `/univers/${universId}/outils/${o.cle}` }));
+}
+
+const vueReglages = (reglages: Reglages) => Object.entries(reglages).map(([nom, r]) => ({ nom, ...r }));
+
+export interface DescriptionOutil {
+  cle: string; libelle: string; type: string; description: string; dependances: string[];
+  usages: { nom: string; mjSeul: boolean }[]; reglages: ReturnType<typeof vueReglages>;
+  valeurs: Record<string, ValeurResolue>; communs: Record<string, ValeurResolue>;
+}
+/** What an actor who can use the tool learns about it; `introuvable` otherwise. */
+export function decrireOutil(db: Db, acteur: Acteur, universId: number, cle: string): DescriptionOutil {
+  const r = exigerOutil(db, acteur, universId, cle);
+  const o = declarationOutil(cle);
+  return { cle: o.cle, libelle: o.libelle, type: o.type, description: o.description, dependances: o.dependances,
+    usages: o.usages, reglages: vueReglages(o.reglages), valeurs: r.reglages, communs: r.communs.reglages };
+}
+
+interface NiveauVu {
+  active: boolean | null;
+  visibilite: { mj: boolean | null; joueur: boolean | null };
+  valeurs: Record<string, ValeurReglage>;
+  versionReglages: number;
+}
+const niveauVu = (l: LigneOutil | undefined, defaut: { active: boolean; mj: boolean; joueur: boolean } | null): NiveauVu => {
+  const b = (v: number | null | undefined, d: boolean | null) => v === null || v === undefined ? d : Boolean(v);
+  return {
+    active: b(l?.active, defaut?.active ?? null),
+    visibilite: { mj: b(l?.visibilite_mj, defaut?.mj ?? null), joueur: b(l?.visibilite_joueur, defaut?.joueur ?? null) },
+    valeurs: JSON.parse(l?.reglages ?? '{}') as Record<string, ValeurReglage>,
+    versionReglages: l?.version_reglages ?? 0,
+  };
+};
+export interface VueOutils {
+  ecriture: boolean;
+  responsable?: { id: number; nom: string; vousEtes: boolean } | null;
+  outils: {
+    cle: string; module: string; libelle: string; description: string; type: string; dependances: string[];
+    usages: { nom: string; mjSeul: boolean }[]; reglages: ReturnType<typeof vueReglages>;
+    systeme: NiveauVu; univers: NiveauVu | null;
+    effectif: { active: boolean; visibilite: { mj: boolean; joueur: boolean }; reglages: Record<string, ValeurResolue> };
+  }[];
+  communs: { module: string; libelle: string; reglages: ReturnType<typeof vueReglages>;
+    systeme: NiveauVu; univers: NiveauVu | null; effectif: Record<string, ValeurResolue> }[];
+}
+/** E-20: every applicable tool, even disabled, both levels side by side. GM of the universe / of an attached universe only. */
+export function lireOutils(db: Db, acteur: Acteur, cible: CibleOutils): VueOutils {
+  let ecriture: boolean;
+  let responsable: VueOutils['responsable'];
+  let systemeId: number | null;
+  if (cible.niveau === 'univers') {
+    if (roleDe(db, cible.id, acteur.compteId) !== 'mj' || acteur.modeJoueur) throw introuvable();
+    ecriture = true;
+    systemeId = (db.prepare('SELECT systeme_id FROM univers WHERE id = ?').get(cible.id) as { systeme_id: number | null }).systeme_id;
+  } else {
+    systeme(db, cible.id);
+    if (!estMJRattache(db, acteur.compteId, cible.id) || acteur.modeJoueur) throw introuvable();
+    const id = responsableEffectif(db, cible.id);
+    ecriture = id === null || id === acteur.compteId;
+    const nom = id === null ? undefined : (db.prepare('SELECT username FROM comptes WHERE id = ?').get(id) as { username: string } | undefined)?.username;
+    responsable = id === null || nom === undefined ? null : { id, nom, vousEtes: id === acteur.compteId };
+    systemeId = cible.id;
+  }
+  const vide: VueOutils = { ecriture, outils: [], communs: [] };
+  if (responsable !== undefined) vide.responsable = responsable;
+  if (systemeId === null) return vide;
+  const nomSysteme = systeme(db, systemeId).nom;
+  const sys = (cle: string) => lireLigneOutil(db, { niveau: 'systeme', id: systemeId }, cle);
+  const uni = (cle: string) => cible.niveau === 'univers' ? lireLigneOutil(db, cible, cle) : undefined;
+  for (const m of modulesActifs()) {
+    const outils = m.outils.filter((o) => applicable(o, nomSysteme));
+    if (outils.length === 0) continue;
+    for (const o of outils) {
+      const r = resolution(db, cible, o.cle);
+      vide.outils.push({
+        cle: o.cle, module: m.nom, libelle: o.libelle, description: o.description, type: o.type,
+        dependances: o.dependances, usages: o.usages, reglages: vueReglages(o.reglages),
+        systeme: niveauVu(sys(o.cle), { active: false, ...o.visibiliteParDefaut }),
+        univers: cible.niveau === 'univers' ? niveauVu(uni(o.cle), null) : null,
+        effectif: { active: r.active, visibilite: r.visibilite, reglages: r.reglages },
+      });
+    }
+    const rc = resoudreReglages(m.reglagesCommuns, sys(m.nom), uni(m.nom));
+    vide.communs.push({ module: m.nom, libelle: m.libelle, reglages: vueReglages(m.reglagesCommuns),
+      systeme: niveauVu(sys(m.nom), null), univers: cible.niveau === 'univers' ? niveauVu(uni(m.nom), null) : null,
+      effectif: rc.reglages });
+  }
+  return vide;
+}

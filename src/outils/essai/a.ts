@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { roleDe, vueMJ } from '../../services/droits.js';
+import { resoudreOutil } from '../../services/outils.js';
 import type { DeclarationCarte } from '../declaration.js';
 
 export const essaiA: DeclarationCarte = {
@@ -17,11 +18,14 @@ export const essaiA: DeclarationCarte = {
     const cartes = [{ titre: 'Carte visible', visible: true }, { titre: 'Carte MJ', visible: false }];
     return vueMJ(role, acteur) ? cartes : cartes.filter((c) => c.visible);
   },
-  outilsAssistant: () => [{
-    nom: 'essai_a_decrire', description: "Décrire l'outil Essai A.", schema: z.strictObject({}),
+  outilsAssistant: ({ db, universId }) => [{
+    nom: 'essai_a_decrire', description: "Décrire l'outil Essai A et la valeur de « Pas de charges de carburant ».",
+    schema: z.strictObject({}),
     executer(args) {
       if (!z.strictObject({}).safeParse(args ?? {}).success) return { ok: false, erreur: 'Paramètres invalides.' };
-      return { ok: true, donnees: { description: essaiA.description } };
+      const r = resoudreOutil(db, universId, 'essai/a');
+      return { ok: true, donnees: { libelle: essaiA.libelle,
+        sansChargesCarburant: r.reglages.sansChargesCarburant!.valeur } };
     },
   }],
 };
