@@ -48,7 +48,7 @@ function monde() {
 
 test('migration: tables, types sans CHECK, clés étrangères, idempotente', () => {
   const db = openDb(':memory:');
-  assert.deepEqual(migrate(db), [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]);
+  assert.deepEqual(migrate(db), [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17]);
   assert.deepEqual(migrate(db), []);
   const tables = (
     db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' AND name != 'migrations' AND name NOT LIKE 'recherche!_%' ESCAPE '!' ORDER BY name").all() as { name: string }[]
