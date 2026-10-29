@@ -1,5 +1,5 @@
 import type { Db } from '../db/db.js';
-import { peutVoirFiche, sqlFicheLisible, sqlSectionLisible } from './droits.js';
+import { peutVoirFiche, sqlFicheLisible, sqlSectionLisible, vueMJ } from './droits.js';
 import { introuvable, invalide } from './erreurs.js';
 import { etiquetageDe } from './etiquettes.js';
 import { chargerFiche, descendantsDe, versFiche } from './fiches.js';
@@ -123,7 +123,7 @@ export function liees(
       const premier = ls[0];
       const e = etiquetageDe(db, premier.fiche_id);
       const ligne: FicheLiee = {
-        ...versFiche(chargerFiche(db, universId, premier.fiche_id), (f) => lisiblePar(role, acteur, f)),
+        ...versFiche(chargerFiche(db, universId, premier.fiche_id, vueMJ(role, acteur)), (f) => lisiblePar(role, acteur, f)),
         alias: e.alias,
         etiquettes: e.etiquettes,
       };
