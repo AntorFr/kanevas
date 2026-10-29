@@ -2953,13 +2953,14 @@ simple texte ; une fiche sans sous-type ne montre rien à un joueur.
 *(kanevas-sous-type-dialogue)* **Le sous-type montre qu'il s'édite** (MJ, hors mode Joueur ; maquette
 `#etat-sous-type-survol`). Au repos, rien ne change. Au survol du sous-type, et quand il reçoit le focus
 au clavier (c'est un bouton, atteint à la tabulation après le badge du type), il prend le fond
-`--surface-3` (rayon 4 px) et une icône crayon (`pencil`, 12 px, `--texte-3`, décorative) apparaît
-après son texte ; le pointeur est le curseur de texte ; au focus clavier s'ajoute l'anneau de focus de
+`--surface-3` (rayon 4 px) et une icône crayon (`pencil`, 12 px, décorative) apparaît
+après son texte — sur ce fond, crayon et libellé « Sous-type » passent en `--texte-2` (la charte ne pose
+jamais `--texte-3` sur `--surface-3`) ; le pointeur est le curseur de texte ; au focus clavier s'ajoute l'anneau de focus de
 la charte (2 px `--focus`, décalé de 2 px). L'infobulle dit « Modifier le sous-type » ; le nom
 accessible « Sous-type : Port. Modifier le sous-type » (sans sous-type : « Ajouter un sous-type »).
 Là où il n'y a pas de survol (écran tactile, `(hover: none)`), le crayon est toujours visible (charte,
 « Les actions secondaires se révèlent au survol et au focus »). Une fiche sans sous-type : le libellé
-« Sous-type » en `--texte-3`, avec le même survol et le même crayon. Le crayon ne pousse pas le titre :
+« Sous-type » en `--texte-3` au repos, avec le même survol et le même crayon. Le crayon ne pousse pas le titre :
 sa place (12 px et 4 px d'écart) est comptée dans la largeur du badge, qui ne bouge pas au survol.
 Un joueur, ou le MJ en mode Joueur : ni fond, ni crayon, ni focus — le sous-type est du texte.
 
