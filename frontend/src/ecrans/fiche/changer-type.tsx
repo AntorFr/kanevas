@@ -28,7 +28,7 @@ export function ChangerType({
   const { toast } = useToasts();
   const [choisi, setChoisi] = useState<string>(fiche.type);
   const [pj, setPj] = useState(false);
-  const [sousType, setSousType] = useState('');
+  const [sousType, setSousType] = useState(fiche.sousType ?? '');
   const [erreur, setErreur] = useState<string>();
   const [echec, setEchec] = useState<string>();
   const [enCours, setEnCours] = useState(false);
@@ -41,12 +41,40 @@ export function ChangerType({
   const autres = proposes.filter((t) => !t.active);
   const cible = choisi !== fiche.type ? typeParType(types, choisi) : undefined;
   const selection = typeParType(types, choisi);
+  // The type stays the current one: the box changes the sub-type alone (PATCH), not the type.
+  const seul = choisi === fiche.type;
+  const differe = sousType.trim() !== (fiche.sousType ?? '');
   const actuel = typeParType(types, fiche.type)?.singulier ?? fiche.type;
 
   async function changer(e: FormEvent) {
     e.preventDefault();
-    if (enCours || !cible) return;
+    if (enCours) return;
     const st = sousType.trim();
+    if (seul) {
+      if (etat !== 'ok' || !differe) return;
+      if (Array.from(st).length > MAX_SOUS_TYPE) return setErreur(`Erreur : ${MAX_SOUS_TYPE} caractères au plus.`);
+      setErreur(undefined);
+      setEchec(undefined);
+      setEnCours(true);
+      try {
+        await appeler('PATCH', `/api/univers/${universId}/fiches/${fiche.id}`, { sousType: st === '' ? null : st });
+        await rafraichir();
+        toast(st === '' ? 'Sous-type retiré.' : 'Sous-type enregistré.');
+        onFermer();
+      } catch (err) {
+        setEnCours(false);
+        if (err instanceof ErreurApi && err.statut === 403) {
+          onFermer();
+          onDroitPerdu();
+        } else if (err instanceof ErreurApi && err.statut === 404) {
+          setEchec('Introuvable.');
+        } else {
+          setEchec('Le sous-type n’a pas changé. Réessayez.');
+        }
+      }
+      return;
+    }
+    if (!cible) return;
     if (Array.from(st).length > MAX_SOUS_TYPE) return setErreur(`${MAX_SOUS_TYPE} caractères au plus.`);
     setErreur(undefined);
     setEchec(undefined);
@@ -82,7 +110,7 @@ export function ChangerType({
           checked={choisi === t.type}
           onChange={() => {
             setChoisi(t.type);
-            setSousType('');
+            setSousType(t.type === fiche.type ? (fiche.sousType ?? '') : '');
             setErreur(undefined);
           }}
         />
@@ -120,7 +148,7 @@ export function ChangerType({
                 </>
               )}
             </div>
-            {cible?.type === 'personnage' && (
+            {!seul && cible?.type === 'personnage' && (
               <div className="choix" role="radiogroup" aria-label="Nature du personnage">
                 <label>
                   <input type="radio" name="nature" checked={pj} onChange={() => setPj(true)} /> PJ
@@ -149,11 +177,11 @@ export function ChangerType({
                 ))}
               </datalist>
             )}
-            {fiche.sousType && <p className="retrait">Le sous-type « {fiche.sousType} » sera retiré.</p>}
+            {!seul && fiche.sousType && sousType.trim() === '' && <p className="retrait">Le sous-type « {fiche.sousType} » sera retiré.</p>}
           </>
         )}
         <div className="actions">
-          <Bouton type="submit" variante="principal" ecrit enCours={enCours} disabled={!cible}>
+          <Bouton type="submit" variante="principal" ecrit enCours={enCours} disabled={seul ? etat !== 'ok' || !differe : !cible}>
             Changer le type
           </Bouton>
           <Bouton onClick={onFermer}>Annuler</Bouton>
