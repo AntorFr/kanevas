@@ -1,22 +1,22 @@
-// Tests d'ensemble de la feature kanevas-fiches-liees-bloc (B-64, part « Mentionnée dans » de B-69),
-// écrits depuis la fiche de la feature, docs/parcours.md (B-64, B-69, P-17), docs/ecrans.md (E-9 « Fiches liées »),
-// la maquette e09-lieu-liees.html et le contrat de la route GET …/fiches/:fid/liees d'ARCHITECTURE.md.
-// Serveur réel en bouchon avec le semis + vrai Chromium. Les attendus sont des littéraux du besoin.
+// Whole-feature tests of kanevas-fiches-liees-bloc (B-64, the « Mentionnée dans » part of B-69),
+// written from the feature sheet, docs/parcours.md (B-64, B-69, P-17), docs/ecrans.md (E-9 « Fiches liées »),
+// the mock-up e09-lieu-liees.html and the contract of the route GET …/fiches/:fid/liees in ARCHITECTURE.md.
+// Real server on the stub with the seed + real Chromium. The expected values are literals of the need.
 //
-// PLAN (besoin -> cas -> preuve ; panne = ce qui ferait rougir le test)
-//  B-64 nominal   Port-Sel/Antor : « S'y trouvent : Personnages (2) », Aldric + Prieur (panne : groupe/regroupement absent)
-//                 sous-lieux compris : Suie « — Les Docks », (3), Kraken « — La Taverne du Kraken » (panne : descente absente)
-//                 Guilde/Corvalis : « Membres : Personnages (2) » + qualificatifs (panne : nature lue à l'endroit)
-//                 « Chercher parmi » -> E-17 pré-remplie
-//  B-64 bords     Sphères : rien à son niveau -> case cochée+désactivée, « Rien à ce niveau ; 4 fiches… » ; singulier ;
-//                 5 lignes puis « Afficher les 56 » puis suivants ; 50 niveaux ; bloc absent sur quête / sans relation ;
-//                 qualificatif de 80 caractères à 360 px ; mémorisation de la case
-//  B-64 échec     route 500 -> « Impossible de charger… » + Réessayer ; relecture échouée -> contenu gardé, case revenue ;
-//                 connexion perdue -> bandeau, contrôles désactivés ; « Chargement… »
-//  B-64 exclusions Léa : Prieur ni nommé ni compté (liste, comptes, totaux de la route) ; relation en section MJ ; fiche
-//                 source MJ seul ; lieu MJ seul introuvable ; mode Joueur du MJ = Léa ; autre univers 404 ; via = lieu direct
-//  B-69           « Mentionnée dans » ne liste plus les relations à nature, garde les libres et les liens
-//  Marque disparu : Bran « Mort » sur sa ligne après « Marquer mort », pas avant ; le Prieur la porte d'emblée
+// PLAN (need -> case -> proof; failure = what would turn the test red)
+//  B-64 nominal   Port-Sel/Antor: « S'y trouvent : Personnages (2) », Aldric + Prieur (failure: group/grouping missing)
+//                 sous-lieux compris: Suie « — Les Docks », (3), Kraken « — La Taverne du Kraken » (failure: no descent)
+//                 Guilde/Corvalis: « Membres : Personnages (2) » + qualifiers (failure: nature read the wrong way round)
+//                 « Chercher parmi » -> E-17 pre-filled
+//  B-64 edges     Sphères: nothing at its own level -> checkbox checked+disabled, « Rien à ce niveau ; 4 fiches… »; singular;
+//                 5 lines then « Afficher les 56 » then the next ones; 50 levels; block absent on a quest / without relation;
+//                 80-character qualifier at 360 px; the checkbox is remembered
+//  B-64 failure   route 500 -> « Impossible de charger… » + Réessayer; failed re-read -> content kept, checkbox put back;
+//                 connection lost -> banner, controls disabled; « Chargement… »
+//  B-64 exclusions Léa: the Prieur neither named nor counted (list, counts, route totals); relation in a GM section; GM-only
+//                 source sheet; GM-only place not found; GM in player mode = Léa; other universe 404; via = direct place
+//  B-69           « Mentionnée dans » no longer lists the relations with a nature, keeps the free ones and the links
+//  Disappeared mark: Bran « Mort » on his line after « Marquer mort », not before; the Prieur wears it from the start
 import assert from 'node:assert/strict';
 import { mkdirSync } from 'node:fs';
 import { after, before, describe, test } from 'node:test';
@@ -125,10 +125,10 @@ describe('kanevas-fiches-liees-bloc, le bloc « Fiches liées » (B-64)', { skip
     srv?.stop();
   });
 
-  // ---------- Nominal : Antor ----------
+  // ---------- Nominal: Antor ----------
 
   test('antor_voit_les_personnages_qui_se_trouvent_a_port_sel_avant_mentionnee_dans', async () => {
-    // panne : bloc absent, groupe mal intitulé, mal compté, ou placé après « Mentionnée dans »
+    // failure: block absent, group badly titled, badly counted, or placed after « Mentionnée dans »
     await ouvrir(antor, 'Port-Sel');
     const b = await blocPret(antor);
     const groupe = b.getByRole('region', { name: "S'y trouvent" });
@@ -146,7 +146,7 @@ describe('kanevas-fiches-liees-bloc, le bloc « Fiches liées » (B-64)', { skip
   });
 
   test('sous_lieux_compris_ajoute_suie_aux_docks_et_le_kraken_dans_son_groupe', async () => {
-    // panne : la descente de l'arbre manque, ou le lieu intermédiaire n'est pas dit, ou le total ne bouge pas
+    // failure: the tree descent is missing, or the intermediate place is not said, or the total does not move
     await ouvrir(antor, 'Port-Sel');
     const b = await blocPret(antor);
     await b.getByRole('checkbox', { name: 'sous-lieux compris' }).click();
@@ -157,10 +157,10 @@ describe('kanevas-fiches-liees-bloc, le bloc « Fiches liées » (B-64)', { skip
     assert.ok(l.some((x) => /^Le Kraken des Cales.*dort sous la taverne.*— La Taverne du Kraken$/.test(x)), l.join(' | '));
     const g = norm(await b.getByRole('region', { name: "S'y trouvent" }).getByRole('heading', { level: 3 }).innerText());
     assert.match(g, /^S'y trouvent : Personnages \(3\), Créatures \(1\)/);
-    // Aldric et le Prieur, liés à Port-Sel même, ne portent pas de lieu
+    // Aldric and the Prieur, linked to Port-Sel itself, carry no place
     assert.ok(l.some((x) => /^Maître Aldric.*habite$/.test(x)), l.join(' | '));
     await photo(antor, 'port-sel-sous-lieux');
-    // la case est mémorisée par le navigateur
+    // the checkbox is remembered by the browser
     await antor.reload();
     const b2 = await blocPret(antor);
     assert.equal(await b2.getByRole('checkbox', { name: 'sous-lieux compris' }).isChecked(), true);
@@ -173,7 +173,7 @@ describe('kanevas-fiches-liees-bloc, le bloc « Fiches liées » (B-64)', { skip
   });
 
   test('chercher_parmi_ouvre_e17_prerempli_sous_lieux_compris', async () => {
-    // panne : lien sans filtre, mauvaise nature, ou « sous-lieux » perdu
+    // failure: link without filter, wrong nature, or « sous-lieux » lost
     await antor.evaluate(() => localStorage.clear());
     await ouvrir(antor, 'Port-Sel');
     const b = await blocPret(antor);
@@ -199,7 +199,7 @@ describe('kanevas-fiches-liees-bloc, le bloc « Fiches liées » (B-64)', { skip
   });
 
   test('guilde_des_brumes_membres_avec_leur_qualificatif', async () => {
-    // panne : nature lue à l'endroit (la Guilde « membre de »), ou qualificatif perdu
+    // failure: nature read the wrong way round (the Guilde « membre de »), or qualifier lost
     await ouvrir(antor, 'La Guilde des Brumes');
     const b = await blocPret(antor);
     const g = b.getByRole('region', { name: 'Membres' });
@@ -213,7 +213,7 @@ describe('kanevas-fiches-liees-bloc, le bloc « Fiches liées » (B-64)', { skip
   });
 
   test('corvalis_bran_porte_la_marque_mort_seulement_apres_marquer_mort', async () => {
-    // panne : la ligne n'utilise pas le composant marqué, ou le bloc n'est pas relu après le geste
+    // failure: the line does not use the marked component, or the block is not read again after the gesture
     await ouvrir(antor, 'Les Corvalis');
     let b = await blocPret(antor);
     assert.equal(norm(await b.getByRole('region', { name: 'Membres' }).getByRole('heading', { level: 3 }).innerText()).replace(' Chercher parmi', ''), 'Membres : Personnages (2)');
@@ -234,17 +234,17 @@ describe('kanevas-fiches-liees-bloc, le bloc « Fiches liées » (B-64)', { skip
   });
 
   test('le_prieur_mort_au_semis_porte_la_marque_dans_le_bloc_de_port_sel', async () => {
-    // panne : le bloc rend ses lignes sans la marque partagée
+    // failure: the block renders its lines without the shared mark
     await ouvrir(antor, 'Port-Sel');
     const b = await blocPret(antor);
     await b.locator('li.ligne-liee').filter({ hasText: 'Le Prieur masqué' }).getByRole('img', { name: 'Mort' }).waitFor();
     assert.equal(await b.locator('li.ligne-liee').filter({ hasText: 'Maître Aldric' }).getByRole('img', { name: 'Mort' }).count(), 0);
   });
 
-  // ---------- Bords ----------
+  // ---------- Edges ----------
 
   test('les_spheres_rien_a_son_niveau_case_cochee_desactivee_et_la_phrase', async () => {
-    // panne : le bloc disparaît, ou la case reste libre, ou la phrase se trompe de total
+    // failure: the block disappears, or the checkbox stays free, or the sentence gets the total wrong
     await antor.evaluate(() => localStorage.clear());
     await ouvrir(antor, 'Les Sphères');
     const b = await blocPret(antor);
@@ -259,7 +259,7 @@ describe('kanevas-fiches-liees-bloc, le bloc « Fiches liées » (B-64)', { skip
   });
 
   test('un_seul_sous_lieu_lisible_dit_1_fiche_au_singulier', async () => {
-    // panne : « 1 fiches », ou le bloc est absent quand le niveau propre est vide
+    // failure: « 1 fiches », or the block is absent when the own level is empty
     const haut = await creer('lieu', 'Haut-Pays');
     const bas = await creer('lieu', 'Bas-Pays', { parent: haut.id });
     await personneLiee('Seul Habitant', bas.id);
@@ -272,7 +272,7 @@ describe('kanevas-fiches-liees-bloc, le bloc « Fiches liées » (B-64)', { skip
   });
 
   test('lieu_sans_aucune_fiche_liee_et_fiche_non_cible_nont_pas_de_bloc', async () => {
-    // panne : un bloc vide ou un en-tête orphelin
+    // failure: an empty block or an orphan heading
     const vide = await creer('lieu', 'Lieu Vide');
     await ouvrir(antor, vide.id);
     await antor.getByRole('heading', { level: 1, name: 'Lieu Vide' }).waitFor();
@@ -286,7 +286,7 @@ describe('kanevas-fiches-liees-bloc, le bloc « Fiches liées » (B-64)', { skip
   });
 
   test('une_quete_na_pas_de_bloc_fiches_liees', async () => {
-    // panne : le registre rend le bloc pour tous les types
+    // failure: the registry renders the block for every type
     const q = await creer('quete', 'Quête du test');
     await ouvrir(antor, q.id);
     await antor.getByRole('heading', { level: 1, name: 'Quête du test' }).waitFor();
@@ -296,7 +296,7 @@ describe('kanevas-fiches-liees-bloc, le bloc « Fiches liées » (B-64)', { skip
   });
 
   test('cinquante_six_personnages_cinq_lignes_puis_afficher_les_56_par_pages', async () => {
-    // panne : tout est chargé d'un coup, ou le bouton ne pagine pas, ou le total est celui de la page
+    // failure: everything loaded at once, or the button does not page, or the total is the page's
     await ouvrir(antor, await citeCinquanteSix());
     const b = await blocPret(antor);
     assert.match(norm(await b.getByRole('region', { name: "S'y trouvent" }).getByRole('heading', { level: 3 }).innerText()), /^S'y trouvent : Personnages \(56\)/);
@@ -316,7 +316,7 @@ describe('kanevas-fiches-liees-bloc, le bloc « Fiches liées » (B-64)', { skip
   });
 
   test('cinquante_niveaux_de_sous_lieux_la_case_le_dit', async () => {
-    // panne : la descente est sans borne ou la borne n'est pas dite
+    // failure: the descent is unbounded or the bound is not said
     const racine = await creer('lieu', 'Racine Profonde');
     let parent = racine.id;
     for (let i = 1; i <= 50; i++) parent = (await creer('lieu', `Niveau ${i}`, { parent })).id;
@@ -331,7 +331,7 @@ describe('kanevas-fiches-liees-bloc, le bloc « Fiches liées » (B-64)', { skip
   });
 
   test('qualificatif_de_80_caracteres_sur_telephone_passe_a_la_ligne_et_reste_entier_en_infobulle', async () => {
-    // panne : débordement horizontal, ou texte tronqué sans infobulle
+    // failure: horizontal overflow, or text truncated without a tooltip
     const q = 'a'.repeat(10) + ' ' + 'b'.repeat(10) + ' ' + 'c'.repeat(10) + ' ' + 'd'.repeat(10) + ' ' + 'e'.repeat(10) + ' ' + 'f'.repeat(10) + ' ' + 'g'.repeat(14);
     assert.equal(q.length, 80);
     const lieu = await creer('lieu', 'Lieu Qualificatif');
@@ -351,17 +351,17 @@ describe('kanevas-fiches-liees-bloc, le bloc « Fiches liées » (B-64)', { skip
     await ctx.close();
   });
 
-  // ---------- Exclusions : Léa et les droits ----------
+  // ---------- Exclusions: Léa and the rights ----------
 
   test('lea_lit_personnages_1_aldric_le_prieur_ni_nomme_ni_compte', async () => {
-    // panne : la garde de la section « Secret — MJ seul » absente de la liste ou du compte
+    // failure: the guard of the « Secret — MJ seul » section missing from the list or the count
     await lea.evaluate(() => localStorage.clear());
     await ouvrir(lea, 'Port-Sel');
     const b = await blocPret(lea);
     assert.equal(norm(await b.getByRole('region', { name: "S'y trouvent" }).getByRole('heading', { level: 3 }).innerText()).replace(' Chercher parmi', ''), "S'y trouvent : Personnages (1)");
     assert.deepEqual(await titres(b), ['Maître Aldric']);
     assert.equal(norm(await lea.locator('main').innerText()).includes('Prieur'), false, 'le Prieur n\'est nommé nulle part pour Léa');
-    // la case reste offerte à tout rôle sur un lieu ; les comptes sous-lieux sont ceux de Léa
+    // the checkbox stays offered to every role on a place; the sub-place counts are Léa's
     await b.getByRole('checkbox', { name: 'sous-lieux compris' }).click();
     await b.getByText('Suie').waitFor();
     const g = norm(await b.getByRole('region', { name: "S'y trouvent" }).getByRole('heading', { level: 3 }).innerText());
@@ -372,7 +372,7 @@ describe('kanevas-fiches-liees-bloc, le bloc « Fiches liées » (B-64)', { skip
   });
 
   test('mentionnee_dans_ne_liste_plus_les_relations_a_nature_mais_garde_les_libres_et_les_liens', async () => {
-    // panne : « habite » (relation à nature d'Aldric) encore listée dans « Mentionnée dans »
+    // failure: « habite » (Aldric's relation with a nature) still listed in « Mentionnée dans »
     for (const page of [antor, lea]) {
       await ouvrir(page, 'Port-Sel');
       await blocPret(page);
@@ -390,7 +390,7 @@ describe('kanevas-fiches-liees-bloc, le bloc « Fiches liées » (B-64)', { skip
   });
 
   test('lea_ne_lit_pas_les_spheres_et_n_a_aucun_bloc_dessus', async () => {
-    // panne : le lieu MJ seul trahi par son bloc
+    // failure: the GM-only place betrayed by its block
     await ouvrir(lea, 'Les Sphères');
     await lea.getByText('Page introuvable.').waitFor();
     assert.equal(await bloc(lea).count(), 0);
@@ -399,7 +399,7 @@ describe('kanevas-fiches-liees-bloc, le bloc « Fiches liées » (B-64)', { skip
   });
 
   test('bloc_absent_sans_trace_pour_lea_quand_rien_n_est_lisible_pour_elle', async () => {
-    // panne : un bloc vide, un « 0 » ou un titre de groupe pour une fiche cachée
+    // failure: an empty block, a « 0 » or a group title for a hidden sheet
     const lieu = await creer('lieu', 'Lieu Aux Secrets');
     await personneLiee('Complice Caché', lieu.id, 'tapi', false);
     await ouvrir(lea, lieu.id);
@@ -421,7 +421,7 @@ describe('kanevas-fiches-liees-bloc, le bloc « Fiches liées » (B-64)', { skip
   // ---------- Route ----------
 
   test('route_rend_les_totaux_avec_et_sans_descendants_par_type', async () => {
-    // panne : un total absent, ou égal à l'autre, ou un type manquant
+    // failure: a total missing, or equal to the other, or a type missing
     const r = await liees(antor, ids['Port-Sel'], '?descendants=1');
     assert.equal(r.status, 200);
     assert.equal(r.body.profondeurAtteinte, false);
@@ -447,7 +447,7 @@ describe('kanevas-fiches-liees-bloc, le bloc « Fiches liées » (B-64)', { skip
   });
 
   test('route_en_mode_joueur_rend_les_comptes_de_lea_et_aucun_secret', async () => {
-    // panne : le MJ en mode Joueur lit plus que Léa, ou un total trahit le Prieur
+    // failure: the GM in player mode reads more than Léa, or a total betrays the Prieur
     const ml = await liees(antor, ids['Port-Sel'], '?mode=joueur&descendants=1');
     const l = await liees(lea, ids['Port-Sel'], '?descendants=1');
     for (const r of [ml, l]) {
@@ -463,7 +463,7 @@ describe('kanevas-fiches-liees-bloc, le bloc « Fiches liées » (B-64)', { skip
   });
 
   test('route_fiche_inconnue_ou_d_un_autre_univers_est_introuvable', async () => {
-    // panne : 200 vide ou 500 au lieu du 404 du reste de l'API
+    // failure: empty 200 or 500 instead of the 404 of the rest of the API
     assert.equal((await liees(antor, 999999)).status, 404);
     const autre = await api(antor, 'GET', '/api/univers');
     const u2 = (autre.find?.((u: Any) => u.id !== U) ?? autre.univers.find((u: Any) => u.id !== U)).id;
@@ -476,7 +476,7 @@ describe('kanevas-fiches-liees-bloc, le bloc « Fiches liées » (B-64)', { skip
   });
 
   test('route_pagine_un_groupe_par_50_sans_perte_ni_doublon', async () => {
-    // panne : curseur ignoré, page de 5 répétée, ou fiches perdues entre deux pages
+    // failure: cursor ignored, page of 5 repeated, or sheets lost between two pages
     const cite = await citeCinquanteSix();
     const p1 = await liees(antor, cite);
     const g1 = p1.body.groupes[0];
@@ -502,7 +502,7 @@ describe('kanevas-fiches-liees-bloc, le bloc « Fiches liées » (B-64)', { skip
   });
 
   test('route_nature_symetrique_se_lit_des_deux_cotes', async () => {
-    // panne : « allié de » lu d'un seul côté (la fiche cible seule)
+    // failure: « allié de » read from one side only (the target sheet alone)
     const a = await creer('faction', 'Ligue Alpha');
     const b = await creer('faction', 'Ligue Beta');
     await relier(a.id, a.section, b.id, 'allie', 'pacte de sel');
@@ -521,7 +521,7 @@ describe('kanevas-fiches-liees-bloc, le bloc « Fiches liées » (B-64)', { skip
   });
 
   test('route_via_nomme_le_lieu_direct_jamais_un_lieu_intermediaire', async () => {
-    // panne : « via » = le lieu intermédiaire ou un chemin
+    // failure: « via » = the intermediate place or a path
     const haut = await creer('lieu', 'Royaume Haut');
     const milieu = await creer('lieu', 'Comté Milieu', { parent: haut.id });
     const bas = await creer('lieu', 'Hameau Bas', { parent: milieu.id });
@@ -534,11 +534,11 @@ describe('kanevas-fiches-liees-bloc, le bloc « Fiches liées » (B-64)', { skip
   });
 
   test('route_exclut_pour_lea_la_relation_en_section_mj_et_la_fiche_source_mj_seul', async () => {
-    // panne : un des deux gardes d'AD-64 retiré du compte ou des lignes
+    // failure: one of the two guards of AD-64 removed from the count or the lines
     const lieu = await creer('lieu', 'Lieu Deux Gardes');
     await personneLiee('Source Visible', lieu.id, 'là');
     await personneLiee('Source Mj Seul', lieu.id, 'caché', false);
-    // relation tenue par une section MJ seul d'une fiche par ailleurs lisible
+    // relation held by a GM-only section of an otherwise readable sheet
     const p = await api(antor, 'POST', `/api/univers/${U}/fiches`, {
       type: 'personnage', titre: 'Double Section', charge: { pj: false },
       sections: [{ titre: 'Public', contenu: 'x', joueursLisent: true }, { titre: 'Secret', contenu: 'y', joueursLisent: false }],
@@ -555,10 +555,10 @@ describe('kanevas-fiches-liees-bloc, le bloc « Fiches liées » (B-64)', { skip
     assert.equal(JSON.stringify(l.body).includes('Mj Seul'), false);
   });
 
-  // ---------- États ----------
+  // ---------- States ----------
 
   test('erreur_de_la_route_dit_impossible_de_charger_et_reessayer_relit', async () => {
-    // panne : erreur avalée, bloc qui disparaît, ou « Réessayer » sans effet ; le reste de la fiche reste lisible
+    // failure: error swallowed, block that disappears, or « Réessayer » without effect; the rest of the sheet stays readable
     let panne = true;
     await antor.route(/\/fiches\/\d+\/liees/, (route: Any) =>
       panne ? route.fulfill({ status: 500, contentType: 'application/json', body: '{"message":"boum"}' }) : route.continue());
@@ -575,7 +575,7 @@ describe('kanevas-fiches-liees-bloc, le bloc « Fiches liées » (B-64)', { skip
   });
 
   test('chargement_dit_chargement_dans_le_bloc_et_la_fiche_reste_lisible', async () => {
-    // panne : bloc invisible jusqu'à la réponse
+    // failure: block invisible until the response
     let lacher: () => void = () => undefined;
     const attente = new Promise<void>((r) => (lacher = r));
     await antor.route(/\/fiches\/\d+\/liees/, async (route: Any) => {
@@ -592,7 +592,7 @@ describe('kanevas-fiches-liees-bloc, le bloc « Fiches liées » (B-64)', { skip
   });
 
   test('relecture_echouee_garde_le_contenu_et_remet_la_case_dans_l_etat_affiche', async () => {
-    // panne : case restée cochée sur un contenu non descendant, ou contenu vidé par l'échec
+    // failure: checkbox left checked on non-descendant content, or content emptied by the failure
     await antor.evaluate(() => localStorage.clear());
     await ouvrir(antor, 'Port-Sel');
     const b = await blocPret(antor);
@@ -609,7 +609,7 @@ describe('kanevas-fiches-liees-bloc, le bloc « Fiches liées » (B-64)', { skip
   });
 
   test('connexion_perdue_bandeau_et_controles_qui_interrogent_le_serveur_desactives', async () => {
-    // panne : la case ou « Afficher les N » reste active hors connexion, ou le contenu chargé disparaît
+    // failure: the checkbox or « Afficher les N » stays active offline, or the loaded content disappears
     await antor.evaluate(() => localStorage.clear());
     await ouvrir(antor, await citeCinquanteSix());
     const b = await blocPret(antor);

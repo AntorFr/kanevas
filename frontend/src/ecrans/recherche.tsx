@@ -5,11 +5,11 @@ import { Link, useParams, useSearchParams, type SetURLSearchParams } from 'react
 import { ErreurApi, lire, useConnexionPerdue } from '../api';
 import { useBasculeMode, useCharge, useVue } from '../cadre-contexte';
 import type { Ecran } from '../registre';
-import { badgeFiche, iconeDuType, marqueDe, typesActifs, useTypes } from '../types-contexte';
+import { badgeFiche, iconeDuType, typesActifs, useTypes } from '../types-contexte';
 import type { UniversListe } from '../types';
-import { Bouton, Champ, PageIntrouvable } from '../ui';
-import { adresseIllustration, useMJSeul } from './fiche/vignette';
-import { MarqueDisparu, classeDisparu, etatDe } from './fiche/marque';
+import { Bouton, Champ, PageIntrouvable, VignetteFiche } from '../ui';
+import { useMJSeul } from './fiche/vignette';
+import { etatDe } from './fiche/marque';
 import { LONGUEUR_RECHERCHE } from './fiche/liste-recherche';
 import type { Fiche, PageFiches } from './fiche/types';
 import { StatutAventure } from './fiche/statut';
@@ -310,23 +310,13 @@ function Corps2({
 function Ligne({ universId, fiche, onEtiquette }: { universId: string; fiche: Fiche; onEtiquette: (nom: string) => void }) {
   const { types } = useTypes();
   const Icone = iconeDuType(types, fiche.type);
-  const [ko, setKo] = useState(false);
-  const jeton = fiche.illustration && 'jeton' in fiche.illustration ? fiche.illustration.jeton : undefined;
   const etiquettes = fiche.etiquettes ?? [];
-  const marque = marqueDe(types, fiche);
   const mjSeul = useMJSeul(fiche);
   const badge = fiche.sousType ? `${badgeFiche(types, fiche)} · ${fiche.sousType}` : badgeFiche(types, fiche);
   return (
     <li className={mjSeul.badge ? "ligne-recherche avec-pastille" : "ligne-recherche"}>
       <Link className="lien-recherche" to={`/univers/${universId}/fiche/${fiche.id}`}>
-        <span className={`vignette-recherche${classeDisparu(marque)}`} aria-hidden={marque ? undefined : 'true'}>
-          {jeton !== undefined && !ko ? (
-            <img src={adresseIllustration(universId, fiche.id, jeton)} alt="" width={40} height={40} loading="lazy" onError={() => setKo(true)} />
-          ) : (
-            <Icone size={16} strokeWidth={1.75} />
-          )}
-          {marque && <MarqueDisparu mot={marque.mot} Icone={marque.Icone} />}
-        </span>
+        <VignetteFiche universId={universId} fiche={fiche} taille={40} className="vignette-recherche" />
         <span className="texte-recherche">
           <span className="titre-recherche" title={fiche.titre}>
             <Icone size={14} strokeWidth={1.75} aria-hidden="true" />

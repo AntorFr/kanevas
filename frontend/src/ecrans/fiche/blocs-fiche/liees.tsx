@@ -3,12 +3,9 @@ import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 
 import { ErreurApi, lire, useConnexionPerdue } from '../../../api';
-import { Bouton, Case } from '../../../ui';
-import { badgeFiche, iconeDuType, marqueDe, useTypes } from '../../../types-contexte';
-import { CadreBlocFiche } from '../bloc-fiche';
+import { Bouton, Case, LigneFicheLiee } from '../../../ui';
+import { useTypes } from '../../../types-contexte';
 import type { BlocFiche, PropsBlocFiche } from '../registre-blocs-fiche';
-import { MarqueDisparu, classeDisparu } from '../marque';
-import { adresseIllustration, useMJSeul } from '../vignette';
 import type { Fiche } from '../types';
 import './liees.css';
 
@@ -65,38 +62,6 @@ const compte = (g: Groupe, descendants: boolean) =>
   g.types.map((t) => ({ type: t.type, n: descendants ? t.totalAvecDescendants : t.total })).filter((t) => t.n > 0);
 const total = (g: Groupe, descendants: boolean) => compte(g, descendants).reduce((s, t) => s + t.n, 0);
 const majuscule = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
-
-function LigneLiee({ universId, fiche, lieu }: { universId: string; fiche: FicheLiee; lieu: boolean }) {
-  const { types } = useTypes();
-  const Icone = iconeDuType(types, fiche.type);
-  const [ko, setKo] = useState(false);
-  const marque = marqueDe(types, fiche);
-  const mjSeul = useMJSeul(fiche);
-  const ill = fiche.illustration && 'jeton' in fiche.illustration ? fiche.illustration : null;
-  return (
-    <li className="ligne-liee">
-      <span className={`vignette-liee${classeDisparu(marque)}`} aria-hidden={marque ? undefined : 'true'}>
-        {ill && !ko ? (
-          <img src={adresseIllustration(universId, ill.id, ill.jeton)} alt="" width={36} height={36} loading="lazy" onError={() => setKo(true)} />
-        ) : (
-          <Icone size={16} strokeWidth={1.75} />
-        )}
-        {marque && <MarqueDisparu mot={marque.mot} Icone={marque.Icone} />}
-      </span>
-      <Link className="jeton cible titre-liee" to={`/univers/${universId}/fiche/${fiche.id}`} title={fiche.titre}>
-        {fiche.titre}
-      </Link>
-      {fiche.type === 'personnage' && (
-        <span className={`badge-type${fiche.charge.pj ? ' pj' : ''}`}>{badgeFiche(types, fiche)}</span>
-      )}
-      {fiche.sousType && <span className="gris-liee">{fiche.sousType}</span>}
-      {mjSeul.badge}
-      {fiche.qualificatif && <span className="gris-liee qualif-liee" title={fiche.qualificatif}>{fiche.qualificatif}</span>}
-      {lieu && fiche.via && <span className="gris-liee via-liee" title={fiche.via.titre}>— {fiche.via.titre}</span>}
-      {mjSeul.aide}
-    </li>
-  );
-}
 
 function Liees({ universId, fiche, suffixeMode }: PropsBlocFiche) {
   const { types } = useTypes();
@@ -202,7 +167,14 @@ function Liees({ universId, fiche, suffixeMode }: PropsBlocFiche) {
   const suffixeRecherche = suffixeMode.replace('?', '&');
 
   return (
-    <CadreBlocFiche titre="Fiches liées" icone={Waypoints} chargement={!affiche && enCours} erreur={false} recharger={() => setEssai((n) => n + 1)}>
+    <div className="blocs">
+    <section className="bloc-section bloc-liees" aria-labelledby="titre-liees">
+      <h2 id="titre-liees" className="bloc-libelle">
+        <Waypoints size={14} strokeWidth={1.75} aria-hidden="true" />
+        Fiches liées
+      </h2>
+      <div className="bloc-contenu">
+      {!affiche && enCours && <p role="status" className="chargement-liees">Chargement…</p>}
       {!affiche && echec && <ErreurLiees perdue={perdue} onReessayer={() => setEssai((n) => n + 1)} />}
       {affiche && (
         <div className={`liees${occupe ? ' rafraichit' : ''}`} aria-busy={occupe || undefined}>
@@ -240,7 +212,9 @@ function Liees({ universId, fiche, suffixeMode }: PropsBlocFiche) {
                   <Link className="chercher" to={recherche}>Chercher parmi</Link>
                 </h3>
                 <ul className="lignes-liees">
-                  {lignes.map((f) => <LigneLiee key={f.id} universId={universId} fiche={f} lieu={lieu} />)}
+                  {lignes.map((f) => (
+                    <LigneFicheLiee key={f.id} universId={universId} fiche={f} qualificatif={f.qualificatif} via={lieu ? f.via?.titre : undefined} />
+                  ))}
                 </ul>
                 {suivant !== null && (
                   <Bouton
@@ -258,7 +232,9 @@ function Liees({ universId, fiche, suffixeMode }: PropsBlocFiche) {
           {echec && <ErreurLiees perdue={perdue} onReessayer={() => setEssai((x) => x + 1)} />}
         </div>
       )}
-    </CadreBlocFiche>
+      </div>
+    </section>
+    </div>
   );
 }
 
@@ -276,5 +252,6 @@ export default {
   types: ['lieu', 'faction', 'famille', 'personnage', 'objet', 'vaisseau'],
   roles: ['mj', 'joueur'],
   rang: 90,
+  place: 'bas',
   composant: Liees,
 } satisfies BlocFiche;
