@@ -20,8 +20,15 @@ test('aventure, joueur (ou MJ en mode Joueur) : Comptes-rendus seul, jamais Pré
   assert.deepEqual(ids('aventure', 'joueur'), ['comptes-rendus']);
 });
 
+test('« Fiches liées » : les six types cibles d\'une nature, tous rôles, jamais les autres', () => {
+  for (const type of ['lieu', 'faction', 'famille', 'personnage', 'objet', 'vaisseau']) {
+    assert.deepEqual(ids(type, 'mj'), ['liees'], type);
+    assert.deepEqual(ids(type, 'joueur'), ['liees'], type);
+  }
+});
+
 test('les autres types ne reçoivent aucun bloc de fiche', () => {
-  for (const type of ['personnage', 'lieu', 'compte_rendu', 'scenario', 'inconnu', 'toString']) {
+  for (const type of ['quete', 'compte_rendu', 'scenario', 'inconnu', 'toString']) {
     assert.deepEqual(ids(type, 'mj'), [], type);
     assert.deepEqual(ids(type, 'joueur'), [], type);
   }
