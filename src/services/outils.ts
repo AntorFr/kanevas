@@ -83,7 +83,7 @@ export function exigerResponsable(db: Db, compte: number | Acteur, systemeId: nu
 export function transfererResponsabilite(db: Db, compte: number | Acteur, systemeId: number, versCompteId: number): void {
   db.transaction(() => {
     exigerResponsable(db, compte, systemeId);
-    if (!estMJRattache(db, versCompteId, systemeId)) throw invalide('compte', "Ce compte n'est pas MJ d'un univers rattaché.");
+    if (!estMJRattache(db, versCompteId, systemeId)) throw invalide('compte', "Ce compte n'est plus MJ d'un univers de ce système.");
     db.prepare('UPDATE systemes_jeu SET responsable_id = ? WHERE id = ?').run(versCompteId, systemeId);
   })();
 }
