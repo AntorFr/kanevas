@@ -495,13 +495,39 @@ export function listerEnfants(
   const role = exigerRole(db, universId, acteur.compteId);
   chargerFiche(db, universId, ficheId);
   if (!peutVoirFiche(db, role, ficheId, acteur)) throw introuvable();
-  const where = ['f.parent_id = ?', 'f.univers_id = ?'];
-  const params: (string | number)[] = [ficheId, universId];
+  return pageEnfants(db, role, acteur, universId, 'f.parent_id = ?', [ficheId], curseur);
+}
+
+/**
+ * The universe root for « Déplacer sous… » (AD-129): the sheets without a parent, every type, in the
+ * order and shape of `listerEnfants`. GM outside player mode only.
+ */
+export function listerRacines(db: Db, acteur: Acteur, universId: number, curseur?: string): PageEnfants {
+  const role = exigerRole(db, universId, acteur.compteId);
+  if (!vueMJ(role, acteur)) throw refuse();
+  return pageEnfants(db, role, acteur, universId, 'f.parent_id IS NULL', [], curseur);
+}
+
+/** One page of sheets under a condition on `f`, with `aDesEnfants` read under the caller's filter (AD-129 (2)). */
+function pageEnfants(
+  db: Db,
+  role: Role,
+  acteur: Acteur,
+  universId: number,
+  condition: string,
+  paramsCondition: (string | number)[],
+  curseur?: string,
+): PageEnfants {
+  const where = [condition, 'f.univers_id = ?'];
+  const params: (string | number)[] = [...paramsCondition, universId];
   const lisible = sqlFicheLisible(role, acteur, 'f');
   if (lisible) {
     where.push(lisible.sql);
     params.push(...lisible.params);
   }
+  const lisibleE = sqlFicheLisible(role, acteur, 'e');
+  const aDesEnfants = `EXISTS (SELECT 1 FROM fiches e WHERE e.parent_id = f.id${lisibleE ? ` AND ${lisibleE.sql}` : ''}) AS a_des_enfants`;
+  const paramsProjection = lisibleE?.params ?? [];
   if (curseur !== undefined) {
     let c: { r: number; t: string; i: number };
     try {
@@ -517,17 +543,17 @@ export function listerEnfants(
   }
   const rows = db
     .prepare(
-      `SELECT f.*, (${RANG_TYPE}) AS rang${projectionVisibilite(vueMJ(role, acteur))} FROM fiches f WHERE ${where.join(' AND ')}
+      `SELECT f.*, (${RANG_TYPE}) AS rang, ${aDesEnfants}${projectionVisibilite(vueMJ(role, acteur))} FROM fiches f WHERE ${where.join(' AND ')}
        ORDER BY rang, plier(f.titre), f.id LIMIT ?`,
     )
-    .all(...params, LIMITE_ENFANTS + 1) as (FicheRow & { rang: number })[];
+    .all(...paramsProjection, ...params, LIMITE_ENFANTS + 1) as (FicheRow & { rang: number; a_des_enfants: number })[];
   const page = rows.slice(0, LIMITE_ENFANTS);
   const dernier = page[page.length - 1];
   const suivant =
     rows.length > LIMITE_ENFANTS && dernier
       ? Buffer.from(JSON.stringify({ r: dernier.rang, t: dernier.titre, i: dernier.id })).toString('base64url')
       : null;
-  const enfants: Enfant[] = page.map((r) => ({ id: r.id, titre: r.titre, type: r.type, sousType: r.sous_type, ...visibiliteVue(r) }));
+  const enfants: Enfant[] = page.map((r) => ({ id: r.id, titre: r.titre, type: r.type, sousType: r.sous_type, ...visibiliteVue(r), aDesEnfants: r.a_des_enfants === 1 }));
   return { enfants, suivant };
 }
 
@@ -670,6 +696,26 @@ export function motsRecherche(saisie: string): string | null {
   return mots.length > 0 ? mots.join(' ') : null;
 }
 
+/** A sheet and all its descendants, gathered by `parent_id` one level per read, 50 levels at most (AD-129 (3)). */
+function sousArbre(db: Db, universId: number, ficheId: number): number[] {
+  const niveau = db.prepare('SELECT id FROM fiches WHERE univers_id = ? AND parent_id = ?');
+  const tous = new Set<number>([ficheId]);
+  let courant = [ficheId];
+  for (let i = 0; i < PROFONDEUR_MAX && courant.length > 0; i++) {
+    const suite: number[] = [];
+    for (const p of courant) {
+      for (const r of niveau.all(universId, p) as { id: number }[]) {
+        if (!tous.has(r.id)) {
+          tous.add(r.id);
+          suite.push(r.id);
+        }
+      }
+    }
+    courant = suite;
+  }
+  return [...tous];
+}
+
 export interface PageFiches {
   fiches: Fiche[];
   /** Opaque cursor for the next page, null at the end. */
@@ -700,11 +746,16 @@ export function listerFiches(
     recherche?: string;
     /** The tree of a type (AD-115): `racine` or a sheet id. Needs `type`. */
     parent?: 'racine' | number;
+    /** Leaves out this sheet and all its descendants (AD-129); needs `recherche`, GM outside player mode. */
+    horsDe?: number;
   } = {},
 ): PageFiches {
   const role = exigerRole(db, universId, acteur.compteId);
   if (options.visibilite !== undefined &&
       (!vueMJ(role, acteur) || !['mj', 'joueurs'].includes(options.visibilite))) {
+    throw invalide('Requête invalide.');
+  }
+  if (options.horsDe !== undefined && (!vueMJ(role, acteur) || options.recherche === undefined)) {
     throw invalide('Requête invalide.');
   }
   const limite = Math.min(Math.max(Math.trunc(options.limite ?? LIMITE_LISTE), 1), LIMITE_LISTE);
@@ -743,6 +794,11 @@ export function listerFiches(
   if (lisible) {
     where.push(lisible.sql);
     params.push(...lisible.params);
+  }
+  if (options.horsDe !== undefined) {
+    chargerFiche(db, universId, options.horsDe);
+    where.push('f.id NOT IN (SELECT value FROM json_each(?))');
+    params.push(JSON.stringify(sousArbre(db, universId, options.horsDe)));
   }
   if (options.parent !== undefined) {
     if (options.type === undefined) throw invalide('Le type est obligatoire avec le parent.');

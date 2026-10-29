@@ -2234,10 +2234,12 @@ tout autre rôle que le MJ (hors mode Joueur) : ni le menu, ni la réponse de le
   types » ; pour « Personnage », le choix PJ / PNJ ; et le champ « Sous-type » (vidé au changement de
   type, puisqu'il est propre au type, avec les sous-types déjà employés pour le nouveau type). Le
   compte-rendu n'y figure pas ; un compte-rendu n'a pas cette entrée.
-- *Déplacer sous…* : boîte « Déplacer « Port-Sel » sous… », champ « Chercher une fiche » et la liste de
-  recherche (tous types, fiches que le MJ lit), plus « Aucun parent » ; pied : « Annuler » puis « Déplacer » (à droite au bureau, côte à côte sur toute la largeur, 40 px de haut, au téléphone) ;
-  un descendant de la fiche est refusé : « Une fiche ne peut pas être rangée sous l'un de ses
-  descendants. ».
+- *Déplacer sous…* : boîte « Déplacer « Port-Sel » sous… », deux vues (« Arborescence » par défaut, « Recherche » avec le champ « Chercher une fiche » et sa liste, tous types, fiches que le MJ lit), plus « Aucun parent » ; pied : « Annuler » puis « Déplacer » (à droite au bureau, côte à côte sur toute la largeur, 40 px de haut, au téléphone) ;
+  la fiche et ses descendants ne sont jamais proposés (le refus « Une fiche ne peut pas être rangée sous l'un de ses
+  descendants. » ne reste que si la hiérarchie bouge boîte ouverte).
+  *(kanevas-deplacer-arborescence)* The box has two views, « Arborescence » (open by default, placed
+  where the sheet is) and « Recherche » (the search above); the sheet and its descendants are never
+  offered as a target. Detail: « Ce que `kanevas-deplacer-arborescence` construit » below.
 - *Alias et étiquettes* : deux champs à pastilles (Entrée ajoute, × retire) ; une étiquette se
   complète sur celles de l'univers ; alias 1 à 120 caractères, 20 au plus ; étiquette 1 à 40
   caractères, 20 au plus par fiche.
@@ -2350,8 +2352,8 @@ attente » for the batch).
 - Étant donné « Port-Sel » sous « Les Sphères » (lieu illisible de Léa) sous « Le Grand Vide »
   (lisible), quand Léa ouvre « Port-Sel », alors le fil est « Lame d'Ébène › Lieux › Le Grand Vide ›
   Port-Sel ».
-- Étant donné Antor qui déplace « Les Sphères » sous « Port-Sel », son enfant, alors il voit « Une
-  fiche ne peut pas être rangée sous l'un de ses descendants. » et rien ne change.
+- Étant donné Antor qui déplace « Les Sphères » alors que « Port-Sel », son enfant, lui est rangé dessous entre-temps (hiérarchie changée boîte ouverte), alors il voit « Une
+  fiche ne peut pas être rangée sous l'un de ses descendants. » et rien ne change *(kanevas-deplacer-arborescence: the box no longer offers « Port-Sel » in the first place)*.
 - Étant donné Antor qui supprime « Port-Sel » (5 enfants, dont un illisible de Léa, parent « Les Sphères »), alors les 5
   enfants ont « Les Sphères » pour parent, l'adresse de « Port-Sel » répond « Page introuvable. », et
   un lien vers elle dans « Maître Aldric » est marqué « lien cassé » pour Antor et du texte pour Léa.
@@ -2718,14 +2720,18 @@ texte. Ses états : *chargement* « Chargement… » sous le titre du bloc ; *er
 enfants. » avec « Réessayer » ; *vide* le bloc est absent ; *contenu long* 50 puis « Afficher les N suivants »
 (N = ce que la page suivante compte, jamais un total) ; l'échec de cette suite dit « Impossible de charger la suite. » sans retirer ce qui est affiché ; connexion perdue : le bandeau, le bloc chargé reste ; fiche supprimée entre-temps (404) : le bloc disparaît. Une fiche sans section lisible mais avec des enfants lisibles montre quand même « Contient ». Chaque enfant montre l'icône, le titre et le sous-type (« Taverne »). En mode Joueur le bloc se relit sous le mode.
 
-**« Déplacer sous… » (E-9).** La boîte est celle de `#etat-deplacer`. Le champ cherche dans la liste de
+**« Déplacer sous… » (E-9).** *(kanevas-deplacer-arborescence)* Ce paragraphe décrit la vue « Recherche » ; la boîte entière est « Ce que `kanevas-deplacer-arborescence` construit » plus bas. Le champ cherche dans la liste de
 recherche existante (`GET …/fiches?q=`, sans `type`, 300 ms après la frappe, 1 caractère au moins, 100 au plus) ;
-la fiche elle-même est écartée de la liste ; une ligne montre l'icône du type, le titre et le sous-type (« Lieu · Sphère »), et la recherche porte sur le titre seul (le placeholder « Titre ou alias » de la maquette est celui de E-17 : ici le champ dit « Chercher une fiche ») ; « 1 caractère au moins, 100 au plus » vise la saisie, la liste rend 100 lignes au plus puis « Charger la suite », et défile dans la boîte ; avant toute saisie la liste dit « Tapez le début d'un titre. » ; une saisie sans résultat dit « Aucune fiche ne correspond. », la recherche en cours « Recherche… », son échec « Impossible de chercher. » avec « Réessayer » ; « Aucun parent » est la première ligne et met la fiche à la racine.
-« Déplacer » reste inactif tant qu'aucune ligne n'est choisie (la maquette le montre actif parce qu'un choix y est déjà fait) ; le refus s'écrit sous le champ ; il envoie `PATCH …/fiches/:fid` `{parent}`. Réponses :
+la fiche et ses descendants sont écartés de la liste (`horsDe`) ; une ligne montre l'icône du type, le titre et le sous-type (« Lieu · Sphère »), et la recherche porte sur le titre seul (le placeholder « Titre ou alias » de la maquette est celui de E-17 : ici le champ dit « Chercher une fiche ») ; « 1 caractère au moins, 100 au plus » vise la saisie, la liste rend 100 lignes au plus puis « Charger la suite », et défile dans la boîte ; avant toute saisie la liste dit « Tapez le début d'un titre. » ; une saisie sans résultat dit « Aucune fiche ne correspond. », la recherche en cours « Recherche… », son échec « Impossible de chercher. » avec « Réessayer » ; « Aucun parent » est la première ligne et met la fiche à la racine.
+« Déplacer » reste inactif tant qu'aucune ligne n'est choisie ou tant que le choix est le parent actuel (la maquette le montre actif parce qu'un choix y est déjà fait) ; le refus s'écrit sous la liste ; il envoie `PATCH …/fiches/:fid` `{parent}`. Réponses :
 succès (200, la fiche en réponse) → la boîte se ferme, le fil se recharge et le toast dit « Fiche déplacée. » ; 400 `cycle` → le texte
-« Une fiche ne peut pas être rangée sous l'un de ses descendants. » sous le champ, la boîte reste ouverte ;
-400 `trop_profond` → « La hiérarchie est trop profonde. » et 404 → « Introuvable. », tous deux sous le champ comme le cycle ; connexion perdue →
+« Une fiche ne peut pas être rangée sous l'un de ses descendants. » sous la liste, la boîte reste ouverte ;
+400 `trop_profond` → « La hiérarchie est trop profonde. » et 404 → « Introuvable. », tous deux sous la liste comme le cycle ; connexion perdue →
 bandeau, « Déplacer » désactivé. La boîte n'existe que pour un MJ hors mode Joueur, et le menu « ⋯ » est absent pour un Joueur. Une fiche de tout type peut être parent ou enfant, un compte-rendu compris (AD-99) : « Déplacer sous… » existe aussi pour lui (MJ seulement : un Joueur, même auteur de son compte-rendu, n'a pas le menu « ⋯ ») ; E-13 ne montre pas la hiérarchie et ne change pas.
+*(kanevas-deplacer-arborescence)* This paragraph now describes the « Recherche » view only, and three of its
+rules changed: the sheet **and its descendants** are left out (not the sheet alone); a refusal is written under
+the list (the « Arborescence » view has no field); « Déplacer » is also inactive while the choice is the current
+parent. The box as a whole is « Ce que `kanevas-deplacer-arborescence` construit » below.
 
 *Critères de la tranche* (les données sont celles du semis, `docs/ecrans.md` plus haut) :
 - Étant donné « Les Sphères » (lieu MJ seul) dont « Port-Sel » est l'enfant, quand Léa ouvre « Lieux » en arbre,
@@ -2739,6 +2745,121 @@ bandeau, « Déplacer » désactivé. La boîte n'existe que pour un MJ hors mod
   « Événements » il porte « dans Port-Sel ».
 - Étant donné une réponse de `GET …/fiches?type=lieu&parent=racine` pour Léa, alors aucun champ ne porte le titre,
   l'identifiant ou le nombre d'une fiche qu'elle ne lit pas (`dans` est `null` si le parent est illisible).
+
+### Ce que `kanevas-deplacer-arborescence` construit (« Déplacer sous… » of E-9)
+
+*Detail of the slice on the frame above (B-35; AD-99 unchanged, AD-115, AD-129). Mockup: `e09-fiche-importee.html`,
+`#etat-deplacer` (the « Arborescence » view, as it opens), `#etat-deplacer-recherche` (the « Recherche »
+view, the choice kept from the tree), `#etat-deplacer-racine` (a sheet without a parent) and
+`#etat-deplacer-profond` (a path of more than three crumbs). Decided by Monsieur on 2026-10-29: the GM did not find a parent by its title alone; he wants to see where
+the sheet is and walk the hierarchy.*
+
+**Who.** Unchanged: the box exists only for a GM outside player mode (the « ⋯ » menu is absent for a player,
+and for the GM in player mode); every type can be a parent, a report included (AD-99).
+
+**The box.** Title « Déplacer « Port-Sel » sous… ». Under it, a segmented switch « Arborescence » /
+« Recherche » (the « Grille / Arbre » switch of E-8: two `button`s with `aria-pressed`, icons `list-tree` and
+`search`). Every opening starts on « Arborescence »; the choice is not remembered. Then the fixed first row
+« Aucun parent » (both views, as before), the list of the active view, the refusal line, and the footer
+« Annuler » / « Déplacer ». Between the list and the footer, a summary line « Nouveau parent : Les Docks »
+(`--texte-2`; « Nouveau parent : aucun (racine de l'univers) » for « Aucun parent »; absent while nothing is
+chosen): the chosen row may have scrolled or been left behind by the navigation, the line keeps it visible.
+
+**One choice for both views.** The list is one `role="radiogroup"` « Nouveau parent » whose rows are radios.
+Choosing a row in either view sets the one choice; switching views or levels keeps it (the radio of the
+chosen sheet is checked wherever that sheet is shown). « Déplacer » is active once a choice is made **and**
+that choice differs from the current parent: the current parent's row carries « (parent actuel) » after its
+type, and « Aucun parent » carries « (actuel) » when the sheet has no parent; choosing either leaves
+« Déplacer » inactive (as « Changer le type » with the current type).
+
+**« Arborescence » view.**
+- *Where it opens.* On the level that holds the sheet: the readable children of its parent
+  (`GET …/fiches/:pid/enfants`), or, for a sheet without a parent, the universe root
+  (`GET …/fiches/racines`, AD-129). The level is read when the box opens, nothing typed. The sheet's own row
+  is scrolled into view.
+- *The path.* Above the list, a path line: the universe's name, then each ancestor down to the shown level,
+  « › » between them (« Lame d'Ébène › Les Sphères »). Each crumb except the last is a button that shows that
+  level; the last is the shown level (`aria-current="location"`). Before the path, an icon button « Remonter »
+  (`corner-left-up`, `aria-label` « Remonter d'un niveau »), inactive at the root. More than three crumbs
+  after the universe: the universe, « … » (a menu listing the hidden ones, with their type icon), the last two
+  — the rule of E-9's breadcrumb. Choosing an entry of that menu shows that level, as a crumb does, and closes
+  the menu; Échap or a click outside closes it without moving; offline, « … » is inactive like the crumbs. At opening the path is built from the sheet's `ancetres` (the GM outside
+  player mode reads them all); walking down appends, walking up or clicking a crumb cuts.
+- *A row.* The radio dot, the type icon, the title, then on the right « Lieu · Taverne » (type, sub-type) in
+  `--texte-3` — the search row of today — and, when the row has readable children (`aDesEnfants`, AD-129), a
+  chevron button (`chevron-right`, `aria-label` « Ouvrir « Les Docks » ») that shows its children. Order and
+  page size are those of « Contient »: by type (product order), then title, 50 rows, then « Charger la suite ».
+- *The sheet itself* is shown at its place, not choosable: `--texte-3`, no radio dot, « (cette fiche) » after
+  its title, `aria-disabled="true"`, no chevron. Its descendants are therefore never reached in this view.
+- *Keyboard.* Up / Down move and choose within the radiogroup (native radios; the sheet's own row is
+  skipped). Right on a row with children shows its children; Left or Backspace (outside a text field) goes up
+  one level. After a level change the focus goes to the first choosable row, and a polite live region says the
+  level (« Niveau : Port-Sel » ; at the root « Niveau : Lame d'Ébène »). The chevrons are out of the Tab order
+  (`tabindex="-1"`), keyboard reaches them through Right.
+- *States of a level.* Loading: « Chargement… » in the list (`role="status"`), the previous level is gone.
+  Failure: « Impossible de charger ce niveau. » with « Réessayer » (`role="alert"`); the path stays usable.
+  Empty: « Aucune fiche à ce niveau. » (a level emptied between two reads, or a root that holds only the
+  sheet itself, which is then shown alone with « (cette fiche) »). Next page loading: « Charger la suite »
+  reads « Chargement… » and is inactive, what is shown stays. Next page fails: « Impossible de charger la
+  suite. », what is shown stays. A level whose sheet no longer exists (404 — on the first read, or reached by a
+  chevron or a crumb after it was deleted meanwhile): « Introuvable. » replaces the list, the path keeps that
+  level and « Remonter » reads the level above again. Right lost while the box is open (403 on a level read,
+  e.g. Antor's GM role removed meanwhile): the box closes without a toast or a message, and the sheet is read
+  again as a player reads it — no « ⋯ » menu any more, so the box cannot be reopened (the same handling as a 403
+  on the move itself, which also closes the box).
+  The GM cannot switch to player mode while the box is open (it is modal), so no level is read in player mode.
+  Connection lost: the banner; « Déplacer », the chevrons, the crumbs and « Remonter » are inactive; the shown
+  level stays.
+- *Long content.* A title of 120 characters is cut by an ellipsis in the row (whole in `title`), a crumb keeps
+  at least 8 characters (`8ch`) and ends in « … », the last crumb gives way last (E-9's breadcrumb rule). A
+  level of 500 children: 50, then « Charger la suite » ; the list scrolls inside the box.
+
+**« Recherche » view.** The search described above (`GET …/fiches?q=`, 300 ms, 1 to 100 characters, the same
+texts), with one change: the list leaves out the sheet **and its descendants**, by the server
+(`horsDe=<sheet>`, AD-129) — not by the page, so the paging stays right. The field takes the focus when the
+view is chosen; what was typed is kept when coming back to it. A result row has no chevron.
+
+**Phone (≤ 480 px).** The box takes the screen, as « Changer le type ». Rows are 44 px high, the chevron is
+a 44 × 44 target; the path keeps the universe, « … » and the last crumb; the footer buttons side by side on
+the full width, 40 px high (as before).
+
+**Move.** Unchanged: `PATCH …/fiches/:fid` `{parent}`, the same answers and texts (« Fiche déplacée. »; a
+cycle, still possible if the hierarchy changed meanwhile, says « Une fiche ne peut pas être rangée sous l'un de
+ses descendants. » under the list; `trop_profond`; 404; 403 closes the box).
+
+*Slice criteria* (the bouchon's seed: « Les Sphères » › « Port-Sel » › « La Taverne du Kraken », « Les
+Docks », « Le Phare aux Sels », « Quartier des Cordiers », « Le Repaire des contrebandiers »; Antor is GM of
+« Lame d'Ébène ») :
+- Given « La Taverne du Kraken » under « Port-Sel », when Antor opens « Déplacer sous… » on it, then without
+  typing he sees the path « Lame d'Ébène › Les Sphères › Port-Sel » and the rows « Le Phare aux Sels », « Le
+  Repaire des contrebandiers », « Les Docks », « Quartier des Cordiers », and « La Taverne du Kraken (cette
+  fiche) », not choosable.
+- Given that box, when Antor clicks « Les Sphères » in the path, then « Port-Sel » is listed with
+  « (parent actuel) » and a chevron; choosing it leaves « Déplacer » inactive.
+- Given that box, when Antor chooses « Les Docks », then « Nouveau parent : Les Docks » shows; when he
+  confirms, the toast says « Fiche déplacée. » and the breadcrumb of « La Taverne du Kraken » reads « Lame
+  d'Ébène › Lieux › Les Sphères › Port-Sel › Les Docks › La Taverne du Kraken » (cut by E-9's rule).
+- Given that box with « Les Docks » chosen, when Antor clicks « Remonter » then the chevron of « Port-Sel »,
+  then he is back on the « Port-Sel » level and « Les Docks » is still checked.
+- Given « Port-Sel » (parent of five), when Antor opens « Déplacer sous… » on it and opens nothing, then
+  « Port-Sel (cette fiche) » has no chevron; when he switches to « Recherche » and types « Doc », then « Les
+  Docks » is not in the list; « Taverne » gives « Aucune fiche ne correspond. ».
+- Given « Les Sphères » (no parent), when Antor opens « Déplacer sous… » on it, then the root is shown
+  (« Lame d'Ébène » alone in the path, « Remonter » inactive) and « Aucun parent » carries « (actuel) ».
+- Given the level read fails, then « Impossible de charger ce niveau. » and « Réessayer » replace the list,
+  and « Réessayer » reads it again.
+- Given a level of more than 50 children (created for the test; the seed has none), when Antor clicks « Charger la suite », then the button reads
+  « Chargement… » and is inactive while the next page loads, and the first 50 rows stay.
+- Given the box opened on « La Taverne du Kraken » and « Les Docks » deleted meanwhile (by another GM), when Antor
+  clicks the chevron of « Les Docks », then « Introuvable. » replaces the list, the path ends on « Les Docks »,
+  and « Remonter » shows the « Port-Sel » level again, without « Les Docks ».
+- Given the box open and Antor's GM role removed meanwhile, when he opens a level, then the box closes, no toast
+  shows, and the sheet has no « ⋯ » menu any more.
+- Given Léa (player), when she calls `GET …/fiches/racines` or a search with `horsDe`, then she gets 403 for
+  the roots and 400 for `horsDe`, and nothing about the hierarchy (AD-129); so does Antor in player mode.
+- Given a chain of five levels under the universe (created for the test; the seed goes two deep at most), when
+  Antor opens « Déplacer sous… » on its deepest sheet, then the path shows the universe, « … » and the last two
+  crumbs; when he opens « … » and chooses the first hidden level, then that level's children are listed.
 
 ### E-17 Recherche
 

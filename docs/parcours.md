@@ -564,6 +564,12 @@ E-14 (« Page introuvable. ») et lit l'onglet de E-15 en « Lecture seule », i
    « Port franc » (la liste lui propose les sous-types de lieu déjà employés : Sphère, Port, Taverne…) ;
    menu « ⋯ » : « Déplacer sous… » « Les Sphères » ; « Alias et étiquettes ». Sur « Les Cristaux
    d'Ombre », importée en Note, « Changer le type » : Note → Savoir, sous-type « Ressource ».
+   *(kanevas-deplacer-arborescence)* Another day, Antor moves « La Taverne du Kraken »: « Déplacer sous… » opens
+   on the level where it is — « Lame d'Ébène › Les Sphères › Port-Sel », its siblings listed, the Taverne marked
+   « (cette fiche) » — and he chooses « Les Docks » without typing anything (moment fort: he sees where the sheet
+   is before choosing where it goes); « Recherche » stays one click away when he knows the title. Failure: a
+   level that does not load says « Impossible de charger ce niveau. » with « Réessayer », the path still usable;
+   connection lost — the banner, navigation and « Déplacer » inactive, the shown level stays.
 3. Menu « ⋯ » d'un doublon : « Supprimer la fiche… » ; la boîte compte ce qui part avec elle
    (sections, relations qui la visent, places sur une carte ; ses fichiers restent dans la médiathèque),
    dit sous quelle fiche
@@ -576,7 +582,7 @@ E-14 (« Page introuvable. ») et lit l'onglet de E-15 en « Lecture seule », i
 pas ou vous ne pouvez pas la lire. » sous le champ, son texte intact ; la liste ne répond pas — « Impossible de
 chercher. » et « Réessayer » ; un lien vers une fiche qui n'est pas encore importée — « en attente » pour Antor,
 texte pour Léa, jusqu'à l'arrivée de la fiche ; dans un scénario, la liste qui échoue — « Impossible de chercher. ».
-*Échec* : un déplacement qui ferait un cycle (« Les Sphères » sous l'un de ses enfants) — « Une fiche
+*Échec* : un déplacement qui ferait un cycle (la boîte n'offre plus l'enfant ; reste le cas d'une hiérarchie changée boîte ouverte) — « Une fiche
 ne peut pas être rangée sous l'un de ses descendants. » ; un titre vidé — « Erreur : le titre est obligatoire. », le champ reste ; un bilan de suppression qui ne se charge pas — « Impossible de charger le détail. », « Réessayer » (états : E-9) ; un Joueur auteur d'une section qui contient
 un bloc MJ — « Modifier » n'y paraît pas ; un texte qui passe 100 000 caractères — « Erreur : 100 000
 caractères au plus. », le texte reste.
