@@ -343,3 +343,18 @@ test('mentions : liens et relations libres gardés, relations à nature retirée
   assert.equal(mentions[0]!.pourquoi[0]!.genre, 'relation');
   assert.equal(mentions[1]!.pourquoi[0]!.genre, 'lien');
 });
+
+test('visibleJoueurs sur les lignes : rendu au MJ hors mode joueur (Prieur faux, Aldric vrai), jamais à Léa ni en mode joueur', async () => {
+  const m = await bouchon();
+  type L = Ligne & { visibleJoueurs?: boolean };
+  const lignes = async (h: Hote, qs: string) =>
+    ((await m.get(h, 'Port-Sel', `${qs}nature=se_situe`)).json() as { groupes: { fiches: L[] }[] }).groupes[0]!.fiches;
+  const mj = await lignes(m.antor, '?');
+  assert.equal(mj.find((f) => f.id === m.id('Le Prieur masqué'))?.visibleJoueurs, false);
+  assert.equal(mj.find((f) => f.titre === 'Aldric')?.visibleJoueurs, true);
+  const mj5 = ((await m.get(m.antor, 'Port-Sel')).json() as { groupes: { fiches: L[] }[] }).groupes.find((_, i) => i === 0)!;
+  assert.ok(mj5.fiches.every((f) => typeof f.visibleJoueurs === 'boolean'));
+  for (const [h, qs] of [[m.lea, '?'], [m.antor, '?mode=joueur&'], [m.lea, '?mode=joueur&']] as const) {
+    assert.ok((await lignes(h, qs)).every((f) => !('visibleJoueurs' in f)));
+  }
+});
