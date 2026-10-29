@@ -239,10 +239,12 @@ describe('B-67 à l’écran, en Antor', { skip: skipBrowser }, () => {
 
     await antor.getByRole('button', { name: 'Vivants' }).click();
     await carte(antor, 'Bran Corvalis').waitFor({ state: 'detached' });
+    await carte(antor, 'Maître Aldric').waitFor();
     assert.equal(await carte(antor, 'Maître Aldric').count(), 1);
     assert.equal(await carte(antor, 'Le Prieur masqué').count(), 0);
     await antor.getByRole('button', { name: 'Morts' }).click();
     await carte(antor, 'Maître Aldric').waitFor({ state: 'detached' });
+    await carte(antor, 'Bran Corvalis').waitFor();
     assert.equal(await carte(antor, 'Bran Corvalis').count(), 1);
     assert.equal(await carte(antor, 'Le Prieur masqué').count(), 1);
     assert.match(antor.url(), /etat=disparu/);
