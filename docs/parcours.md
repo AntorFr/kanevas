@@ -565,7 +565,7 @@ E-14 (« Page introuvable. ») et lit l'onglet de E-15 en « Lecture seule », i
    menu « ⋯ » : « Déplacer sous… » « Les Sphères » ; « Alias et étiquettes ». Sur « Les Cristaux
    d'Ombre », importée en Note, « Changer le type » : Note → Savoir, sous-type « Ressource ».
    *(kanevas-sous-type-dialogue, B-52)* « Maître Aldric » est un PNJ de sous-type « Capitaine » (badge
-   « PNJ · Capitaine »). Antor ouvre son menu « ⋯ », « Changer le type… », laisse « Personnage (actuel) » :
+   « PNJ · Capitaine »). Antor ouvre sa fiche depuis « Personnages », puis son menu « ⋯ », « Changer le type… », laisse « Personnage (actuel) » :
    le champ porte « Capitaine » ; il tape « Amiral » et clique « Enregistrer le sous-type » ; le badge dit
    « PNJ · Amiral ».
    *(kanevas-sous-type-dialogue, B-52)* Le sous-type « Port » de « Port-Sel », plus haut, il l'a changé en
