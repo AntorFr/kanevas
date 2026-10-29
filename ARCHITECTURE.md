@@ -644,6 +644,14 @@ Decisions of this slice, taken inside AD-121 to AD-126, AD-133, AD-136 and AD-13
 
 **Files.** `src/outils/declaration.ts` (the types below and their zod check), `src/outils/registre.ts` (`modulesActifs()`: the list of modules; the `essai` module is in it only under `KANEVAS_STUB=1` or `NODE_ENV=test`, read in `config/env.ts` like the other switches), `src/outils/essai/` (the trial module: `index.ts` declares it, one file per tool), `src/services/outils.ts` (**the only reader and writer of `outils_systeme` and `outils_univers`**, and of `systemes_jeu.responsable_id` for the transfer), `src/routes/outils.ts` (thin routes, AD-2). Frontend: `frontend/src/outils/registre.ts` maps `module/outil` to a lazy import of its screen; `frontend/src/ecrans/outils/` holds E-20. One migration of the core, numbered when the slice merges (AD-51): the two tables of `docs/donnees.md` and `systemes_jeu.responsable_id` (nullable, no backfill).
 
+The core implementation uses migration `0017-outils.sql` (provisional number). Its three write services
+take `(db, acteur, cible, cle, valeur)`, where `acteur` is an account id or an `Acteur` and `cible` is
+`{ niveau: 'systeme' | 'univers', id }`; settings take `{ version, valeurs, confirme? }` as their value.
+`resoudreOutilSysteme` exposes the base resolution for the system settings screen; `resoudreOutil`
+exposes the universe resolution. Both return common settings as `communs: { reglages, versionReglages }`.
+`responsableEffectif` computes ownership without changing the stored account; `exigerOutil`,
+`exigerUsage` and `listerCartesOutil` compose activation, role and item visibility checks for module callers.
+
 **The declaration (AD-121).**
 
 ```
