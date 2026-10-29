@@ -114,9 +114,11 @@ describe('kanevas-types-ecran-fiche, au navigateur', { skip: skipBrowser }, () =
     await antor.getByRole('button', { name: /^Autres actions sur « (Les Cristaux|Le Mont|Bague)/ }).click();
     await antor.getByRole('menuitem', { name: rx('Changer le type…') }).click();
     const boite = antor.getByRole('dialog');
+    // kanevas-sous-type-dialogue: the warning only exists once another type is chosen.
+    assert.equal(await boite.getByText(/sera retiré/).count(), 0);
+    await boite.getByRole('radio', { name: rxExact('Note') }).check();
     await boite.getByText('Le sous-type « Ressource » sera retiré.').waitFor();
     await capture(antor, 'changer-type-boite');
-    await boite.getByRole('radio', { name: rxExact('Note') }).check();
     await boite.getByRole('button', { name: rxExact('Changer le type') }).click();
     await antor.getByText('Type changé : Savoir → Note.').waitFor();
     await attendre(antor);

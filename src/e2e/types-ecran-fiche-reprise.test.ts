@@ -74,6 +74,9 @@ describe('kanevas-types-ecran-fiche, reprise E-9', { skip: skipBrowser }, () => 
     assert.match(await courant.innerText(), /Lieu/);
     assert.equal(await courant.locator('input[type=radio]').isChecked(), true);
     assert.equal(await boite.getByRole('button', { name: rxExact('Changer le type') }).isDisabled(), true);
+    // kanevas-sous-type-dialogue: on the current type no « sera retiré » line; it appears with another type.
+    assert.equal(await boite.getByText(/sera retiré/).count(), 0);
+    await boite.getByRole('radio', { name: rxExact('Faction') }).check();
     const yChamp = (await boite.getByLabel('Sous-type').boundingBox()).y;
     const yRetrait = (await boite.getByText(/sera retiré/).boundingBox()).y;
     assert.ok(yChamp < yRetrait, 'le champ « Sous-type » précède la ligne « sera retiré »');
