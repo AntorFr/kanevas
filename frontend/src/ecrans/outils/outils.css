@@ -1,0 +1,48 @@
+/* E-20: module cards and inline settings; semantic tokens shared by both themes. */
+.panneau-outils { display: grid; gap: var(--e-4); margin-top: var(--e-4); min-width: 0; }
+.outils-module { display: grid; gap: var(--e-4); min-width: 0; }
+.outil-carte { padding: var(--e-4); background: var(--surface); border: 1px solid var(--bord-fort); border-radius: var(--rayon-panneau); min-width: 0; overflow-wrap: anywhere; }
+.outil-tete { display: flex; align-items: center; gap: var(--e-3); }
+.outil-tete > svg { flex: none; color: var(--texte-2); }
+.outil-tete > div { flex: 1; min-width: 0; }
+.outil-carte .outil-tete h2 { margin: 0; font: 600 var(--t-16)/1.4 var(--police-texte); letter-spacing: 0; }
+.outil-tete p, .outil-reglage p, .outil-description, .outil-dependances, .outil-origine, .outils-note { margin: var(--e-1) 0; color: var(--texte-2); font-size: var(--t-13); line-height: 1.5; }
+.outil-tete .interrupteur { flex: none; min-height: 44px; gap: var(--e-3); }
+.outil-description { margin: var(--e-3) 0; }
+.outil-activation { display: flex; flex-wrap: wrap; gap: var(--e-2); padding: 0; margin: var(--e-3) 0; border: 0; min-width: 0; }
+.outil-activation legend { font-size: var(--t-12); color: var(--texte-2); margin-bottom: var(--e-2); }
+.outil-activation label { display: inline-flex; align-items: center; gap: var(--e-2); padding: var(--e-2) var(--e-3); min-height: 44px; border: 1px solid var(--bord-champ); border-radius: var(--rayon-champ); font-size: var(--t-13); cursor: pointer; }
+.outil-activation label.choisi { background: var(--accent-fond); color: var(--accent-texte); }
+.outil-carte input[type="radio"], .outil-carte input[type="checkbox"], .responsable-candidats input { accent-color: var(--accent); width: 18px; height: 18px; flex: none; margin: 0; }
+.outil-visibilite { display: flex; flex-wrap: wrap; align-items: center; gap: var(--e-3); margin: var(--e-3) 0; font-size: var(--t-13); }
+.outil-visibilite > span:first-child { color: var(--texte-2); font-size: var(--t-12); }
+.outil-role { display: flex; flex-direction: column; }
+.outil-role label { display: flex; gap: var(--e-2); align-items: center; min-height: 44px; cursor: pointer; }
+.outil-role .herite, .outil-role small { color: var(--texte-2); }
+.outil-reglage { margin-top: var(--e-3); padding-top: var(--e-3); border-top: 1px solid var(--bord); font-size: var(--t-13); }
+.outil-valeur { display: flex; flex-wrap: wrap; gap: var(--e-2) var(--e-3); align-items: center; }
+.outil-valeur > div { flex: 1; min-width: 160px; }
+.outil-valeur strong { font-weight: 500; }
+.outil-origine { overflow-wrap: anywhere; }
+.outil-valeur > .outil-origine { font-variant-numeric: tabular-nums; }
+.outil-edition { margin-top: var(--e-3); max-width: 30rem; }
+.outil-edition .champ { margin: 0; }
+.outil-reglage > .bouton { margin-top: var(--e-2); }
+.outils-vide { border: 1px dashed var(--bord-fort); border-radius: var(--rayon-panneau); padding: var(--e-5); color: var(--texte-2); font-size: var(--t-14); }
+.responsable-systeme { display: flex; flex-wrap: wrap; align-items: center; gap: var(--e-2) var(--e-3); font-size: var(--t-13); margin-top: var(--e-3); overflow-wrap: anywhere; }
+.responsable-candidats { display: grid; gap: var(--e-1); max-height: 352px; overflow: auto; margin: var(--e-3) 0; }
+.responsable-candidats label { display: flex; align-items: center; gap: var(--e-3); padding: var(--e-2); min-height: 44px; border-radius: var(--rayon-item); overflow-wrap: anywhere; }
+.responsable-candidats label:has(input:checked) { background: var(--accent-fond); }
+.outils-onglets { max-width: 100%; overflow-x: auto; }
+@media (max-width: 760px) {
+  .outil-tete { flex-wrap: wrap; }
+  .outil-tete > div { flex-basis: calc(100% - 40px); }
+  .outil-tete .interrupteur { width: 100%; justify-content: space-between; }
+  .outil-valeur { display: grid; grid-template-columns: minmax(0, 1fr); }
+  .outil-valeur > div { min-width: 0; }
+  .outil-valeur .bouton { justify-self: start; max-width: 100%; white-space: normal; text-align: left; }
+  .outil-reglage .actions { flex-wrap: wrap; }
+  .outil-activation label { flex: 1 1 auto; }
+  .outils-onglets button { min-height: 44px; }
+  .responsable-systeme .bouton { max-width: 100%; white-space: normal; text-align: left; }
+}
