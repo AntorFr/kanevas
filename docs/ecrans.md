@@ -3266,8 +3266,8 @@ this text is authoritative where they differ.
 > states and common texts as the other screens.
 >
 > **Built so far** (`kanevas-fiches-liees-natures`): the « Relier » form (nature, qualifier), the relation line, the
-> E-11 labels and « Familles ». **Not built yet**: the block « Fiches liées » (slice `-bloc`). The advanced mode of E-17, the
-> filters and the dead mark are built (slices `-recherche`, `-disparu`, sections below).
+> E-11 labels and « Familles ». The block « Fiches liées » (slice `-bloc`), the advanced mode of E-17, the
+> filters and the dead mark are built (sections below).
 
 **Format.** Web, desktop and phone, as the rest of Kanevas.
 
@@ -3331,9 +3331,8 @@ Changing the nature after a sheet was picked keeps the pick if its type still fi
 The error texts and the accessible names of the block say « qualificatif » and « relation », never
 « type de relation »; the line reads « se situe à · Port-Sel — habite » where the former text read
 « membre de → Lames Grises » (the older criteria are read that way). A symmetric nature (« allié de »)
-entered on one sheet is listed by that sheet's section only until `kanevas-fiches-liees-bloc` shows the
-other side; the same fact entered from the other side with the same qualifier is refused as
-`relation_existante` (« Cette relation existe déjà. », the other side holding it, even though this side does not list it yet). Roles: the GM outside player mode relates; a player, and the GM in player mode,
+entered on one sheet is listed by that sheet's section, and by « Fiches liées » on the other side (`kanevas-fiches-liees-bloc`); the same fact entered from the other side with the same qualifier is refused as
+`relation_existante` (« Cette relation existe déjà. », the other side holding it). Roles: the GM outside player mode relates; a player, and the GM in player mode,
 never see « Relier », the « Nature » field or « Nouvelle famille » (hidden); the list « Familles »
 is read like any list of E-8, empty state « Aucune famille pour l’instant. » with « Nouvelle famille » for the GM.
 
@@ -3352,7 +3351,7 @@ Créatures (3) ») — counts of what the reader reads —, folded beyond five l
 (« Afficher les 12 »), each line the card line of E-8 (vignette, title, badge, sub-type, the dead
 mark) and the qualifier in grey; on a **place**, a toggle **« sous-lieux compris »** (off by default,
 remembered per browser) adds the sheets linked to its descendants in the tree (bounded by the
-tree's depth, AD-130), each line then saying its place in grey (« — Les Docks »), and under the toggle a grey line naming the sub-places read (« Les Docks, Le Phare aux Sels, … », as in the mock-up, which draws Léa's line: for Antor the line also names « Le Repaire des contrebandiers », which only a GM reads); a group has a
+tree's depth, AD-130), each line then saying its place in grey (« — Les Docks »); the mock-up also draws a grey line naming the sub-places read, which is not built; a group has a
 link **« Chercher parmi »** to E-17 with the filters pre-filled (lié à, nature, sous-lieux). A group
 with nothing readable is absent; the block is absent when every group is. « Mentionnée dans »
 keeps the links and the free relations only.
@@ -3372,7 +3371,7 @@ built.
 | connexion perdue | the banner of the other blocks (the text of the connection-lost state above, B-29); the loaded content stays readable, the toggle and « Afficher les 12 » (which ask the server) are disabled | lire |
 | refus | a player: only the relations whose section and source sheet he reads, counts included; the block is absent (no trace) when nothing is readable; the toggle is shown to every role on a place; in player mode the GM sees the same | — |
 | rafraîchissement | after the toggle or « Afficher les N »: the previous content stays, dimmed, controls disabled; a failed re-read keeps it, the toggle back in the state the shown content answers (not the one just clicked), and shows « Impossible de charger les fiches liées. » with « Réessayer » | « Réessayer » |
-| contenu long | a place with 300 characters: « Personnages (300) », five shown, « Afficher les 300 » pages by 50 ; a depth of 50 sub-places: the toggle says « sous-lieux compris (50 niveaux au plus) » | idem |
+| contenu long | a place with 300 characters: « Personnages (300) », five shown, « Afficher les 300 » pages by 50 (the button then reads « Afficher les N suivants », N the lines left) ; a depth of 50 sub-places: the toggle says « sous-lieux compris (50 niveaux au plus) » | idem |
 
 *Critères (états).* Étant donné « Port-Sel » en cours de chargement, alors « Chargement… » dans le bloc et le reste de la fiche lisible. Étant donné la route en erreur, alors « Impossible de charger les fiches liées. » et « Réessayer » la relit. Étant donné la connexion perdue, alors le bandeau, le contenu chargé lisible, la bascule et « Afficher les 12 » désactivés. Étant donné un rafraîchissement qui échoue après un clic sur la bascule, alors le contenu précédent reste, la case revient à son état d'avant, et « Impossible de charger les fiches liées. » avec « Réessayer ». Étant donné Léa sur un lieu dont rien n'est lisible pour elle, ni à son niveau ni dessous, alors le bloc est absent, sans trace. Étant donné 50 niveaux de sous-lieux, alors la bascule dit « sous-lieux compris (50 niveaux au plus) ». Étant donné Antor (MJ), un lieu sans relation à son niveau et une seule fiche lisible dans ses sous-lieux, alors « Rien à ce niveau ; 1 fiche dans ses sous-lieux. », la case cochée et désactivée. Étant donné Antor sur « Les Sphères » (rien à son niveau, Port-Sel dessous), alors la bascule est cochée et désactivée avec « Rien à ce niveau ; 4 fiches dans ses sous-lieux. » (Aldric, le Prieur masqué, Suie, Le Kraken des Cales) ; Léa ne peut pas lire « Les Sphères » (MJ seul), le bloc n'y existe pas pour elle. Étant donné « Port-Sel » et un clic sur la bascule ou sur « Afficher les 12 » dont la relecture est en cours, alors le contenu précédent reste, estompé, la bascule et « Afficher les 12 » désactivées ; si la relecture de « Afficher les 12 » échoue, alors les cinq lignes d'avant restent, avec « Impossible de charger les fiches liées. » et « Réessayer ». Étant donné un groupe de 300 fiches, alors « Personnages (300) », cinq lignes, « Afficher les 300 » par pages de 50. Étant donné le MJ en mode Joueur sur « Port-Sel », alors il lit comme Léa. Étant donné un qualificatif de 80 caractères sur un téléphone (360 px), alors la ligne passe à la ligne et le texte entier est dans l'infobulle.
 
@@ -3441,7 +3440,7 @@ mark. The grammatical gender of the word follows the type's label (« Détruite 
 - **The mark on the image**: on the vignette of a card (E-8, E-17) and on the illustration of E-9, a sober mark — the image desaturated at 60 %
   and the type's glyph in a small round chip at the bottom-left of the frame; on the drawn fallback,
   the glyph alone. Never a cross over a face, never a red overlay (the charte's restraint). Built today: « Contient » and the
-  relation lines are text lines with no image, so they carry no mark; `-bloc` will render « Fiches liées » with the marked component.
+  relation lines are text lines with no image, so they carry no mark; « Fiches liées » renders its lines with the marked component.
 - **Filter** of the table (« Tous » by default) on E-8 for the types that carry the mark, next to
   « Sous-type », kept in the address (`?etat=la|disparu` — the two values are the same for every
   type, the words differ); a filtered state renders the grid; empty: « Aucun personnage mort. »,
@@ -3482,7 +3481,7 @@ Antor choisit « Marquer vivant », alors le badge et la marque disparaissent et
 « Morts » liste les morts seuls ; sur « La Guilde des Brumes » (faction), l'entrée est « Marquer détruite » et le
 badge « Détruite » avec `shield-off` ; sur « Les Corvalis » (famille), « Marquer éteinte » et « Éteinte ». La marque se
 voit sur la ligne du Prieur (mort au semis) dans une recherche E-17 « Morts » (type Personnage) ; dans « Contient » et
-dans « Fiches liées », elle vient avec `-bloc`, qui rend ses lignes par le même composant. Étant donné Antor
+dans « Fiches liées », elle vient du même composant. Étant donné Antor
 en mode Joueur, quand il ouvre Bran, alors l'entrée du menu est absente. Étant donné que le PATCH échoue,
 quand Antor choisit « Marquer mort », alors le message « Impossible de modifier la fiche. Réessayez. » apparaît sous
 l'en-tête et la fiche n'a ni badge ni marque. Étant donné la grille des lieux sans lieu détruit, quand Antor choisit
