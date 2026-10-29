@@ -2232,7 +2232,9 @@ tout autre rôle que le MJ (hors mode Joueur) : ni le menu, ni la réponse de le
 
 - *Changer le type* : une liste des types de la liste du produit, activés d'abord, puis « Autres
   types » ; pour « Personnage », le choix PJ / PNJ ; et le champ « Sous-type » (vidé au changement de
-  type, puisqu'il est propre au type, avec les sous-types déjà employés pour le nouveau type). Le
+  type, puisqu'il est propre au type, avec les sous-types déjà employés pour le nouveau type ;
+  *(kanevas-sous-type-dialogue)* rempli du sous-type actuel tant que le type reste l'actuel, et alors
+  la boîte change le seul sous-type). Le
   compte-rendu n'y figure pas ; un compte-rendu n'a pas cette entrée.
 - *Déplacer sous…* : boîte « Déplacer « Port-Sel » sous… », champ « Chercher une fiche » et la liste de
   recherche (tous types, fiches que le MJ lit), plus « Aucun parent » ; pied : « Annuler » puis « Déplacer » (à droite au bureau, côte à côte sur toute la largeur, 40 px de haut, au téléphone) ;
@@ -2948,6 +2950,18 @@ désactivé, « Enregistrement… ». Échec : « L'action n'a pas abouti. Rées
 tapée est gardée. Un champ vidé retire le sous-type (« Sous-type retiré. »). Connexion perdue : l'édition est désactivée (le sous-type reste lisible). Contenu long : 60 caractères, tronqués par
 une ellipse dans le badge, entiers dans l'infobulle. Un joueur lit le sous-type en
 simple texte ; une fiche sans sous-type ne montre rien à un joueur.
+*(kanevas-sous-type-dialogue)* **Le sous-type montre qu'il s'édite** (MJ, hors mode Joueur ; maquette
+`#etat-sous-type-survol`). Au repos, rien ne change. Au survol du sous-type, et quand il reçoit le focus
+au clavier (c'est un bouton, atteint à la tabulation après le badge du type), il prend le fond
+`--surface-3` (rayon 4 px) et une icône crayon (`pencil`, 12 px, `--texte-3`, décorative) apparaît
+après son texte ; le pointeur est le curseur de texte ; au focus clavier s'ajoute l'anneau de focus de
+la charte (2 px `--focus`, décalé de 2 px). L'infobulle dit « Modifier le sous-type » ; le nom
+accessible « Sous-type : Port. Modifier le sous-type » (sans sous-type : « Ajouter un sous-type »).
+Là où il n'y a pas de survol (écran tactile, `(hover: none)`), le crayon est toujours visible (charte,
+« Les actions secondaires se révèlent au survol et au focus »). Une fiche sans sous-type : le libellé
+« Sous-type » en `--texte-3`, avec le même survol et le même crayon. Le crayon ne pousse pas le titre :
+sa place (12 px et 4 px d'écart) est comptée dans la largeur du badge, qui ne bouge pas au survol.
+Un joueur, ou le MJ en mode Joueur : ni fond, ni crayon, ni focus — le sous-type est du texte.
 
 **E-9 — « Changer le type… »** (MJ, hors mode Joueur ; absent pour un compte-rendu) : maquette
 `e09-fiche-importee.html#etat-changer-type`. Boîte « Changer le type de « Port-Sel » » : une
@@ -2959,6 +2973,26 @@ autre type, avec les sous-types déjà employés pour le type choisi). Si la fic
 type » (désactivé tant que le type reste l'actuel) et « Annuler ». Après : la fiche se recharge sous son
 nouveau type, toast « Type changé : Note → Savoir. », le fil d'Ariane et la barre suivent ; ses sections,
 relations, places sur une carte et propositions sont intactes.
+*(kanevas-sous-type-dialogue — changer le seul sous-type ; maquette `#etat-changer-sous-type`.)* À
+l'ouverture, le type actuel est coché et le champ « Sous-type » porte le sous-type actuel de la fiche
+(vide si elle n'en a pas), avec la complétion du type actuel. Tant que le type reste l'actuel :
+- la boîte ne dit pas « … sera retiré. » ;
+- le bouton principal dit **« Enregistrer le sous-type »** ; il est désactivé tant que le champ, rogné,
+  est égal au sous-type actuel (la casse compte : « capitaine » remplace « Capitaine ») ; il s'active dès
+  qu'il en diffère, champ vidé compris quand la fiche avait un sous-type ;
+- il envoie `PATCH …/fiches/:fid` `{sousType}` (le texte rogné, ou `null` pour un champ vide) — la route
+  existante (AD-120), rien d'autre ; succès : la boîte se ferme, l'en-tête se recharge, toast « Sous-type
+  enregistré. » (« Sous-type retiré. » pour un champ vide), les mêmes que l'édition dans le badge ;
+- PJ / PNJ ne s'affiche pas (il ne se change pas ici, ci-dessous).
+Choisir un autre type rend le comportement d'un changement de type : champ vidé, « … sera retiré. » si la
+fiche a un sous-type, bouton « Changer le type ». Revenir au type actuel rend le champ rempli du sous-type
+actuel et le bouton « Enregistrer le sous-type » (désactivé tant que rien ne diffère). Enregistrement en
+cours : le bouton passe à « Enregistrement… » et la boîte est figée. Échec du `PATCH` : « Le sous-type n'a
+pas changé. Réessayez. » dans la boîte, qui reste ouverte avec la saisie ; 403 : la boîte se ferme et
+« Vous ne pouvez plus modifier cette fiche. » ; 404 : « Introuvable. » dans la boîte ; connexion perdue :
+bandeau, bouton désactivé. Un sous-type de plus de 60 caractères : « Erreur : 60 caractères au plus. »
+sous le champ, rien n'est envoyé. Ni état vide ni chargement propres : le champ est rempli de la fiche
+déjà lue ; la liste des types et la complétion gardent leurs états ci-dessus.
 Le choix PJ / PNJ n'apparaît que pour **devenir** un personnage ; le PJ / PNJ d'un personnage existant ne se
 change pas ici. Chargement : tant que la liste des types n'est pas lue, la liste de la boîte dit « Chargement des
 types… » et « Changer le type » reste désactivé. Contenu long : un titre de 120 caractères passe à la ligne dans
@@ -2987,6 +3021,23 @@ La maquette `e08-liste-fiches.html` n'est pas redessinée pour le sous-type : le
 (sous le titre de la carte, `--texte-3` ; filtre à côté de la recherche).
 
 *Critères de la tranche* (les critères d'écran ci-dessus restent les siens).
+- *(kanevas-sous-type-dialogue)* Étant donné un PNJ « Capitaine » dans Lame d'Ébène, quand Antor (MJ, hors mode
+  Joueur) ouvre « Changer le type… », laisse « Personnage (actuel) », remplace le sous-type par « Amiral » et
+  clique « Enregistrer le sous-type », alors la boîte se ferme, le toast dit « Sous-type enregistré. » et le badge
+  affiche « PNJ · Amiral » ; la fiche est toujours un PNJ, dans « Personnages ».
+- *(kanevas-sous-type-dialogue)* Étant donné ce même PNJ, quand Antor ouvre « Changer le type… », alors le champ
+  porte « Capitaine », le bouton « Enregistrer le sous-type » est désactivé et la boîte ne dit pas « … sera
+  retiré. » ; il le reste tant que ni le type ni le sous-type ne change, et s'active dès qu'il vide le champ.
+- *(kanevas-sous-type-dialogue)* Étant donné ce même PNJ, quand Antor vide le champ et enregistre, alors le toast
+  dit « Sous-type retiré. » et le badge affiche « PNJ » seul.
+- *(kanevas-sous-type-dialogue)* Étant donné ce même PNJ, quand Antor choisit « Lieu » puis revient à
+  « Personnage », alors le champ porte de nouveau « Capitaine » et le bouton dit « Enregistrer le sous-type » ;
+  choisir « Lieu » avait vidé le champ, affiché « Le sous-type « Capitaine » sera retiré. » et renommé le bouton
+  « Changer le type ».
+- *(kanevas-sous-type-dialogue)* Étant donné Antor sur ce PNJ, quand il survole le sous-type « Capitaine » du
+  badge, puis quand il l'atteint à la tabulation, alors le fond `--surface-3` et le crayon apparaissent (et,
+  au clavier, l'anneau de focus) ; Entrée ouvre l'édition en place. Étant donné Léa (Joueuse), quand elle
+  survole « Capitaine », alors rien ne change et la tabulation ne s'y arrête pas.
 - Étant donné « Les Cristaux d'Ombre » (Savoir · Ressource), quand Antor la passe en Note, alors elle est
   dans « Notes » sans sous-type, et la boîte l'avait annoncé.
 - Étant donné « Lame d'Ébène » où « Note » est désactivé, quand Antor ouvre « Changer le type… » d'une
