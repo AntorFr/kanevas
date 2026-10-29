@@ -41,7 +41,7 @@ describe('kanevas-types-ecran-fiche, au navigateur', { skip: skipBrowser }, () =
   test('Antor édite « Ville » en « Cité » dans le badge ; Léa lit « Lieu · Cité » sans pouvoir le modifier', async () => {
     await antor.goto(`/univers/${lame}/fiche/${val}`);
     await attendre(antor);
-    await entete(antor).getByRole('button', { name: rxExact('Ville') }).click();
+    await entete(antor).getByRole('button', { name: rxExact('Sous-type : Ville. Modifier le sous-type') }).click();
     const champ = antor.getByLabel('Sous-type', { exact: true });
     await champ.fill('Cité');
     await champ.press('Enter');
@@ -52,7 +52,7 @@ describe('kanevas-types-ecran-fiche, au navigateur', { skip: skipBrowser }, () =
     await lea.goto(`/univers/${lame}/fiche/${val}`);
     await attendre(lea);
     assert.match(await entete(lea).innerText(), /Lieu\s*·\s*Cité/);
-    assert.equal(await lea.getByRole('button', { name: rxExact('Cité') }).count(), 0);
+    assert.equal(await lea.getByRole('button', { name: rxExact('Sous-type : Cité. Modifier le sous-type') }).count(), 0);
     assert.equal(await lea.getByRole('button', { name: /^Autres actions sur/ }).count(), 0);
     await capture(lea, 'badge-joueur');
   });
@@ -60,12 +60,12 @@ describe('kanevas-types-ecran-fiche, au navigateur', { skip: skipBrowser }, () =
   test('Échap annule l’édition sans rien enregistrer ; plus de 60 caractères : « Erreur : 60 caractères au plus. »', async () => {
     await antor.goto(`/univers/${lame}/fiche/${val}`);
     await attendre(antor);
-    await entete(antor).getByRole('button', { name: rxExact('Cité') }).click();
+    await entete(antor).getByRole('button', { name: rxExact('Sous-type : Cité. Modifier le sous-type') }).click();
     const champ = antor.getByLabel('Sous-type', { exact: true });
     await champ.fill('Autre');
     await champ.press('Escape');
-    await entete(antor).getByRole('button', { name: rxExact('Cité') }).waitFor();
-    await entete(antor).getByRole('button', { name: rxExact('Cité') }).click();
+    await entete(antor).getByRole('button', { name: rxExact('Sous-type : Cité. Modifier le sous-type') }).waitFor();
+    await entete(antor).getByRole('button', { name: rxExact('Sous-type : Cité. Modifier le sous-type') }).click();
     await antor.getByLabel('Sous-type', { exact: true }).fill('x'.repeat(61));
     await antor.getByLabel('Sous-type', { exact: true }).press('Enter');
     await antor.getByText('Erreur : 60 caractères au plus.').waitFor();
@@ -75,12 +75,12 @@ describe('kanevas-types-ecran-fiche, au navigateur', { skip: skipBrowser }, () =
   test('un champ vidé retire le sous-type : « Sous-type retiré. », « Sous-type » pour Antor, rien pour Léa', async () => {
     await antor.goto(`/univers/${lame}/fiche/${val}`);
     await attendre(antor);
-    await entete(antor).getByRole('button', { name: rxExact('Cité') }).click();
+    await entete(antor).getByRole('button', { name: rxExact('Sous-type : Cité. Modifier le sous-type') }).click();
     const champ = antor.getByLabel('Sous-type', { exact: true });
     await champ.fill('');
     await champ.press('Enter');
     await antor.getByText('Sous-type retiré.').waitFor();
-    await entete(antor).getByRole('button', { name: rxExact('Sous-type') }).waitFor();
+    await entete(antor).getByRole('button', { name: rxExact('Ajouter un sous-type') }).waitFor();
     await lea.goto(`/univers/${lame}/fiche/${val}`);
     await attendre(lea);
     const t = await entete(lea).innerText();
@@ -94,7 +94,7 @@ describe('kanevas-types-ecran-fiche, au navigateur', { skip: skipBrowser }, () =
     await page.route('**/api/univers/*/fiches/*', (r: Any) => (r.request().method() === 'PATCH' ? r.fulfill({ status: 500, contentType: 'application/json', body: '{}' }) : r.continue()));
     await page.goto(`/univers/${lame}/fiche/${val}`);
     await attendre(page);
-    await entete(page).getByRole('button', { name: rxExact('Sous-type') }).click();
+    await entete(page).getByRole('button', { name: rxExact('Ajouter un sous-type') }).click();
     const champ = page.getByLabel('Sous-type', { exact: true });
     await champ.fill('Bourg');
     await champ.press('Enter');
@@ -195,7 +195,7 @@ describe('kanevas-types-ecran-fiche, au navigateur', { skip: skipBrowser }, () =
     await page.getByText(/Mode Joueur/).first().waitFor();
     await attendre(page);
     assert.equal(await page.getByRole('button', { name: /^Autres actions sur/ }).count(), 0);
-    assert.equal(await page.getByRole('button', { name: rxExact('Sous-type') }).count(), 0);
+    assert.equal(await page.getByRole('button', { name: rxExact('Ajouter un sous-type') }).count(), 0);
     await capture(page, 'mode-joueur');
     const cr = await api(antor, 'GET', `/api/univers/${lame}/fiches?type=compte_rendu`).catch(() => null);
     const liste = cr ? (Array.isArray(cr) ? cr : cr.fiches) : [];

@@ -31,7 +31,7 @@ describe('kanevas-types-ecran-fiche, reprise E-9', { skip: skipBrowser }, () => 
   test('sous-type en place : liste dessinée (listbox), titre, coche sur la valeur courante, pas de datalist', async () => {
     await antor.goto(`/univers/${lame}/fiche/${val}`);
     await attendre(antor);
-    await entete(antor).getByRole('button', { name: rxExact('Ville') }).click();
+    await entete(antor).getByRole('button', { name: rxExact('Sous-type : Ville. Modifier le sous-type') }).click();
     const champ = antor.getByRole('combobox', { name: 'Sous-type' });
     const liste = antor.getByRole('listbox');
     await liste.waitFor();
@@ -43,13 +43,13 @@ describe('kanevas-types-ecran-fiche, reprise E-9', { skip: skipBrowser }, () => 
     await champ.fill('zzzz-aucun');
     assert.equal(await liste.getByRole('option').count(), 0);
     await champ.press('Escape');
-    await entete(antor).getByRole('button', { name: rxExact('Ville') }).waitFor();
+    await entete(antor).getByRole('button', { name: rxExact('Sous-type : Ville. Modifier le sous-type') }).waitFor();
   });
 
   test('sous-type en place : choisir une option à la flèche + Entrée l’enregistre', async () => {
     await antor.goto(`/univers/${lame}/fiche/${val}`);
     await attendre(antor);
-    await entete(antor).getByRole('button', { name: rxExact('Ville') }).click();
+    await entete(antor).getByRole('button', { name: rxExact('Sous-type : Ville. Modifier le sous-type') }).click();
     const liste = antor.getByRole('listbox');
     await antor.getByRole('combobox', { name: 'Sous-type' }).fill('');
     await liste.getByRole('option').nth(1).waitFor();
@@ -90,7 +90,7 @@ describe('kanevas-types-ecran-fiche, reprise E-9', { skip: skipBrowser }, () => 
       const p = await ctx.newPage();
       await p.goto(`${srv.base}/univers/${lame}/fiche/${val}`);
       await attendre(p);
-      await entete(p).getByRole('button', { name: rxExact('Ville') }).click();
+      await entete(p).getByRole('button', { name: rxExact('Sous-type : Ville. Modifier le sous-type') }).click();
       const champ = p.getByRole('combobox', { name: 'Sous-type' });
       await champ.waitFor();
       const badge = p.locator('.type').filter({ has: champ }).first();
