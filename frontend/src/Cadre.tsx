@@ -4,7 +4,7 @@ import { Link, Outlet, matchPath, useLocation, useNavigate } from 'react-router-
 
 import { useConnexionPerdue } from './api';
 import { Barre, Sceau, universDeLAdresse } from './Barre';
-import { useUnivers, useVue, type AncetreAriane, type ModeVue, type Parent } from './cadre-contexte';
+import { useUnivers, useVue, type AncetreAriane, type ModeVue } from './cadre-contexte';
 import { ITEMS_UNIVERS, itemsLore, type Item } from './items';
 import { ecranEnregistre } from './registre';
 import { iconeDuType, useTypes } from './types-contexte';
@@ -40,10 +40,10 @@ function maillonsAncetres(racine: string, ancetres: AncetreAriane[], telephone: 
 
 /**
  * The crumbs of an address (pure, tested): the universe, then the section of the sidebar that
- * answers, then, when a screen gave one, its parent crumb (E-7: the campaign), then the last crumb it gave (a sheet's title). Outside a universe: « Mes univers »,
+ * answers, then the last crumb it gave (a sheet's title). Outside a universe: « Mes univers »,
  * then « Créer un univers ».
  */
-export function maillons(pathname: string, nomUnivers: string | undefined, titre: string | undefined, dedans: boolean, section?: string, lore: Item[] = [], ancetres: AncetreAriane[] = [], telephone = false, bascule = false, parent?: Parent): Maillon[] {
+export function maillons(pathname: string, nomUnivers: string | undefined, titre: string | undefined, dedans: boolean, section?: string, lore: Item[] = [], ancetres: AncetreAriane[] = [], telephone = false, bascule = false): Maillon[] {
   if (!dedans) {
     // E-5: the instance screen, not a universe's; its crumb says where it sits in the bar.
     if (pathname === '/administration' || pathname.startsWith('/administration/')) {
@@ -69,7 +69,6 @@ export function maillons(pathname: string, nomUnivers: string | undefined, titre
     .filter((i) => section !== undefined || i.chemin(Number(id)) === racine || pathname === i.chemin(Number(id)) || pathname.startsWith(`${i.chemin(Number(id))}/`))
     .sort((a, b) => b.chemin(Number(id)).length - a.chemin(Number(id)).length)[0];
   if (item) liste.push({ libelle: item.libelle, vers: item.chemin(Number(id)), icone: 'item' });
-  if (titre && parent) liste.push({ libelle: parent.libelle, vers: parent.vers });
   if (titre) liste.push(...maillonsAncetres(racine, ancetres, telephone, bascule), { libelle: titre });
   // The last crumb is the page you are on: it is not a link.
   const dernier = liste[liste.length - 1]!;
@@ -96,7 +95,7 @@ function Ariane() {
   const telephone = useTelephoneAriane();
   const { pathname } = useLocation();
   const { univers } = useUnivers();
-  const { titre, section, ancetres, bascule, parent } = useVue();
+  const { titre, section, ancetres, bascule } = useVue();
   const navigate = useNavigate();
   const id = universDeLAdresse(pathname);
   const connu = univers.etat !== 'ok' || univers.valeur.some((u) => u.id === id);
@@ -104,7 +103,7 @@ function Ariane() {
   const nom = univers.etat === 'ok' ? univers.valeur.find((u) => u.id === id)?.nom : univers.etat === 'chargement' ? '…' : undefined;
   const { types } = useTypes();
   const lore = itemsLore(types);
-  const liste = maillons(pathname, nom, titre, dedans, section, lore, ancetres, telephone, bascule, parent);
+  const liste = maillons(pathname, nom, titre, dedans, section, lore, ancetres, telephone, bascule);
   const typeDe = (t: string) => iconeDuType(types, t);
   const icones = dedans ? new Map([...ITEMS_UNIVERS, ...lore].map((i) => [i.libelle, i.icone])) : new Map();
   return (

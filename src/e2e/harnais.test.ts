@@ -52,6 +52,11 @@ export interface Server {
   stop: () => void;
 }
 
+/** How long `startServer` waits for /healthz, ms. */
+export const DELAI_DEMARRAGE_MS = 30_000;
+/** The tail of the server output kept for the failure message. */
+const MAX_SORTIE_SERVEUR = 4096;
+
 export async function startServer(extraEnv: Record<string, string> = {}): Promise<Server> {
   ensureBuilt();
   const dir = mkdtempSync(join(tmpdir(), 'kanevas-e2e-'));
@@ -69,13 +74,23 @@ export async function startServer(extraEnv: Record<string, string> = {}): Promis
   for (const k of Object.keys(env)) if (k.startsWith('OIDC_')) delete env[k];
   Object.assign(env, extraEnv);
   for (const k of Object.keys(env)) if (env[k] === '') delete env[k];
-  const child: ChildProcess = spawn('node', ['dist/server.js'], { env, stdio: 'ignore' });
+  const child: ChildProcess = spawn('node', ['dist/server.js'], { env, stdio: ['ignore', 'pipe', 'pipe'] });
+  let sortie = '';
+  const garder = (d: Buffer) => {
+    sortie = (sortie + String(d)).slice(-MAX_SORTIE_SERVEUR);
+  };
+  child.stdout?.on('data', garder);
+  child.stderr?.on('data', garder);
+  let sorti: string | null = null;
+  child.on('exit', (code, signal) => (sorti = signal ? `signal ${signal}` : `code ${code}`));
+  child.on('error', (e) => (sorti = `spawn error: ${e.message}`));
   const base = `http://127.0.0.1:${port}`;
   const stop = () => {
     child.kill('SIGKILL');
     rmSync(dir, { recursive: true, force: true });
   };
-  for (let i = 0; i < 100; i++) {
+  const limite = Date.now() + DELAI_DEMARRAGE_MS;
+  while (sorti === null && Date.now() < limite) {
     try {
       await fetch(`${base}/healthz`);
       return { base, stop };
@@ -84,7 +99,8 @@ export async function startServer(extraEnv: Record<string, string> = {}): Promis
     }
   }
   stop();
-  throw new Error('server did not start');
+  const cause = sorti !== null ? `the server exited (${sorti})` : `no answer after ${DELAI_DEMARRAGE_MS} ms`;
+  throw new Error(`server did not start: ${cause}\n--- server output (tail) ---\n${sortie}`);
 }
 
 /** Runs the server process and reports whether it exits by itself, and its stderr. */
@@ -317,10 +333,10 @@ export async function ecrireSection(page: Any, titre: string, contenu: string): 
   await s.getByRole('button', { name: rxExact('Enregistrer') }).click();
 }
 
-/** Sections of the open fiche, in display order (title text only, without the "MJ seul" pill). */
+/** Sections of the open fiche, in display order (content sections only, not the « Contient » block; title text without the "MJ seul" pill). */
 export async function titresSections(page: Any): Promise<string[]> {
   const hs: string[] = await page
-    .locator('main section h2')
+    .locator('main section.sec h2')
     .evaluateAll((els: Element[]) => els.map((e) => e.firstChild?.textContent ?? ''));
   return hs.map((h) => h.replace(/’/g, "'").trim());
 }

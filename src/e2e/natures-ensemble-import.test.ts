@@ -1,4 +1,4 @@
-// Tests d'ensemble de kanevas-fiches-liees-natures, par l'API d'import (B-68, AD-133 pour le contrat), écrits depuis le
+// Tests d'ensemble de kanevas-fiches-liees-natures, par l'API d'import (B-68, AD-134 pour le contrat), écrits depuis le
 // besoin : « une entrée {section, cible, nature, qualificatif} crée la relation, rejouée elle est inchangée, `type` seul est
 // lu comme qualificatif, une nature inconnue est refusée et comptée », « type: famille ». Vrai serveur en mode bouchon, avec
 // son monde de départ (« Essai Kanka », jeton du bouchon, README) ; l'application lit ensuite ce que l'import a écrit.

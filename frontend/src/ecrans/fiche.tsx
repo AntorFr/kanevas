@@ -11,11 +11,11 @@ import './ecrans.css';
 import './fiche/fiche.css';
 import { PanneauSection, type Joueur } from './fiche/section';
 import type { FicheVue, Mention } from './fiche/types';
-import { lignesDuType } from './fiche/lignes/registre';
 import { badgeFiche, iconeDuType, typeParType, useTypes } from '../types-contexte';
 import { BlocMentions } from './fiche/mentions';
 import { BlocContient } from './fiche/contient';
 import { EnteteFiche, type MessageIllustration } from './fiche/entete';
+import { blocsFicheVisibles } from './fiche/registre-blocs-fiche';
 
 /** Stable empty list: the mentions block resets on a new array. */
 const AUCUNE: Mention[] = [];
@@ -143,6 +143,7 @@ function PageFiche() {
   const fiche = etat.fiche;
   const sections = etat.k === 'ok' ? fiche.sections : [];
   const gestion = mj && modeEffectif === 'mj';
+  const blocs = blocsFicheVisibles(fiche.type, modeEffectif);
 
   async function ordonner(index: number, delta: number) {
     const ids = sections.map((s) => s.id);
@@ -200,9 +201,13 @@ function PageFiche() {
           void rafraichir();
         }}
       />
-      {lignesDuType(fiche.type).map((l, i) => (
-        <l.composant key={i} universId={id!} fiche={fiche} />
-      ))}
+      {etat.k === 'ok' && blocs.length > 0 && (
+        <div className="blocs-fiche">
+          {blocs.map((bloc) => (
+            <bloc.composant key={`${id}/${fid}/${modeEffectif}/${suffixe}/${bloc.id}`} universId={id!} fiche={fiche} role={modeEffectif} suffixeMode={suffixe} />
+          ))}
+        </div>
+      )}
       {echec && (
         <div className="alerte echec" role="alert">
           <span>{echec}</span>

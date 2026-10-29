@@ -4,6 +4,7 @@ import type { FastifyInstance } from 'fastify';
 import { ErreurService, invalide } from '../services/erreurs.js';
 import {
   changerSousType,
+  changerStatutFiche,
   changerTypeFiche,
   creerFiche,
   deplacerFiche,
@@ -79,24 +80,32 @@ export function registerFichesRoutes(app: FastifyInstance) {
     if (charge !== undefined && (charge === null || typeof charge !== 'object' || Array.isArray(charge))) {
       throw invalide('Charge utile invalide pour ce type de fiche.');
     }
+    if (b.statut !== undefined || (b.type === 'aventure' && charge && 'statut' in charge)) {
+      throw invalide('Une aventure naît en préparation.');
+    }
     const fiche = creerFiche(app.db, request.session!.id, ids(request).univers, {
       type: chaine(b.type, 'Type de fiche inconnu.'),
       titre: chaine(b.titre, 'Le titre : de 1 à 120 caractères.'),
       charge: charge as Record<string, unknown> | undefined,
       sousType: b.sousType === undefined ? undefined : (b.sousType as string | null),
+      parent: b.parent as number | null | undefined,
+      sections: b.sections as { titre: string; joueursLisent?: boolean }[] | undefined,
     });
     return reply.code(201).send(fiche);
   });
 
-  // Title, sub-type, parent and gone mark, in one transaction (AD-119, AD-115, AD-131).
+  // Title, sub-type, parent, play status and gone mark, in one transaction (AD-119, AD-115, AD-128, AD-132).
   app.patch(`${base}/:fid`, async (request) => {
     const i = ids(request);
     const b = corps(request);
-    if (Object.keys(b).some((k) => !['titre', 'sousType', 'parent', 'disparu'].includes(k))) {
+    if (Object.keys(b).some((k) => !['titre', 'sousType', 'parent', 'statut', 'disparu'].includes(k))) {
       throw invalide('Requête invalide.');
     }
     if (b.disparu !== undefined && typeof b.disparu !== 'boolean') throw invalide('Requête invalide.');
-    if (b.titre === undefined && b.sousType === undefined && b.parent === undefined && b.disparu === undefined) {
+    if (
+      b.titre === undefined && b.sousType === undefined && b.parent === undefined && b.statut === undefined &&
+      b.disparu === undefined
+    ) {
       throw invalide('Rien à modifier.');
     }
     if (b.titre !== undefined && typeof b.titre !== 'string') throw invalide('Le titre : de 1 à 120 caractères.');
@@ -107,6 +116,7 @@ export function registerFichesRoutes(app: FastifyInstance) {
     const a = acteur(request);
     return app.db.transaction(() => {
       let fiche;
+      if (b.statut !== undefined) fiche = changerStatutFiche(app.db, a, i.univers, i.fiche, b.statut);
       if (b.titre !== undefined) fiche = renommerFiche(app.db, a, i.univers, i.fiche, b.titre as string);
       if (b.sousType !== undefined) fiche = changerSousType(app.db, a.compteId, i.univers, i.fiche, b.sousType);
       if (b.parent !== undefined) fiche = deplacerFiche(app.db, a, i.univers, i.fiche, b.parent as number | null);
@@ -147,7 +157,10 @@ export function registerFichesRoutes(app: FastifyInstance) {
 
   app.get(base, async (request) => {
     const q = request.query as Record<string, unknown>;
-    for (const k of ['type', 'sousType', 'etiquette', 'curseur', 'q', 'parent', 'lie', 'nature', 'descendants', 'etat']) {
+    const cles = [
+      'type', 'sousType', 'statut', 'etiquette', 'curseur', 'q', 'parent', 'visibilite', 'lie', 'nature', 'descendants', 'etat',
+    ];
+    for (const k of cles) {
       if (q[k] !== undefined && typeof q[k] !== 'string') throw invalide('Requête invalide.');
     }
     if (q.etat !== undefined && q.etat !== 'la' && q.etat !== 'disparu') throw invalide('Requête invalide.');
@@ -166,11 +179,13 @@ export function registerFichesRoutes(app: FastifyInstance) {
     return listerFiches(app.db, acteur(request), ids(request).univers, {
       type: q.type as string | undefined,
       sousType: q.sousType as string | undefined,
+      statut: q.statut as string | undefined,
       etiquette: q.etiquette as string | undefined,
       etat: q.etat as 'la' | 'disparu' | undefined,
       lie: q.lie === undefined ? undefined : Number(q.lie),
       nature: q.nature as string | undefined,
       descendants: q.descendants === undefined ? undefined : true,
+      visibilite: q.visibilite as string | undefined,
       curseur: q.curseur as string | undefined,
       recherche: q.q as string | undefined,
       parent,

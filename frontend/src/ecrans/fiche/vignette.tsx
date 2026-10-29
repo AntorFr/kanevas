@@ -1,9 +1,13 @@
-import { useState } from 'react';
+import { Lock } from 'lucide-react';
+import { useState, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 
+import { useVue } from '../../cadre-contexte';
+import { Pastille } from '../../ui';
 import { badgeFiche, iconeDuType, marqueDe, useTypes } from '../../types-contexte';
 import { MarqueDisparu, classeDisparu } from './marque';
 import type { Fiche } from './types';
+import { StatutAventure } from './statut';
 
 /** Address of the illustration of a sheet; the token makes a replaced image reload and a kept one cache. */
 export const adresseIllustration = (universId: number | string, fichierId: number, jeton: string) =>
@@ -13,6 +17,54 @@ export const adresseIllustration = (universId: number | string, fichierId: numbe
 export function initiale(titre: string): string {
   const sans = titre.trim().replace(/^(le |la |les |l['’])/i, '');
   return ([...(sans || titre.trim())][0] ?? '?').toUpperCase();
+}
+
+export const PHRASE_MJ_SEUL = "Aucune section n'est visible des joueurs.";
+
+/**
+ * The « MJ seul » badge of a whole sheet (B-57) and the sentence it writes on focus or touch.
+ * Nothing unless the server said `visibleJoueurs: false` (it says nothing to a player or in player mode).
+ * `badge` goes where the badge stands, `aide` under the title or the line.
+ */
+export function useMJSeul(
+  fiche: Pick<Fiche, 'visibleJoueurs'>,
+  reserver = false,
+): { badge: ReactNode; aide: ReactNode } {
+  const [lue, setLue] = useState(false);
+  const { mode } = useVue();
+  if (mode === 'joueur' || fiche.visibleJoueurs !== false) return { badge: null, aide: null };
+  return {
+    badge: (
+      <span
+        className="mj-seul"
+        role="img"
+        tabIndex={0}
+        title={PHRASE_MJ_SEUL}
+        aria-label={PHRASE_MJ_SEUL}
+        onFocus={() => setLue(true)}
+        onBlur={() => setLue(false)}
+        onClick={(e) => {
+          e.preventDefault();
+          setLue(true);
+        }}
+      >
+        <Pastille sens="secrete" icone={Lock}>
+          <span className="mj-seul-texte">MJ seul</span>
+        </Pastille>
+      </span>
+    ),
+    // `reserver`: the line keeps its place while unread, so the layout does not move on blur (a click
+    // landing on what was below would be lost between mousedown and mouseup).
+    aide: lue ? (
+      <span className="aide-mj-seul" role="status">
+        {PHRASE_MJ_SEUL}
+      </span>
+    ) : reserver ? (
+      <span className="aide-mj-seul reservee" aria-hidden="true">
+        {'\u00a0'}
+      </span>
+    ) : null,
+  };
 }
 
 /** Fallback thumbnail: dotted flat, the initial, the type icon. Never an empty frame. */
@@ -40,14 +92,20 @@ function Repli({ fiche }: { fiche: Fiche }) {
 }
 
 /** A card of the grid of E-8: a link to the sheet, thumbnail (or fallback), title, PJ / PNJ for a character. */
-export function CarteFiche({ universId, fiche }: { universId: number | string; fiche: Fiche }) {
+export function CarteFiche({ universId, fiche, gestion = false, onChange }: {
+  universId: number | string;
+  fiche: Fiche;
+  gestion?: boolean;
+  onChange?: (fiche: Fiche) => void;
+}) {
   const { types } = useTypes();
   const ill = fiche.illustration && 'jeton' in fiche.illustration ? fiche.illustration : null;
   const jeton = ill?.jeton;
   const [ko, setKo] = useState<string>();
+  const mjSeul = useMJSeul(fiche);
   const image = jeton !== undefined && ko !== jeton;
   const marque = marqueDe(types, fiche);
-  return (
+  const carte = (
     <Link className="carte" to={`/univers/${universId}/fiche/${fiche.id}`}>
       <span className={`vue${classeDisparu(marque)}`}>
         {image ? (
@@ -73,12 +131,25 @@ export function CarteFiche({ universId, fiche }: { universId: number | string; f
           <span className={`badge-type${fiche.charge.pj ? ' pj' : ''}`}>{badgeFiche(types, fiche)}</span>
         )}
       </span>
-      {fiche.sousType && (
+      {mjSeul.badge && <span className="pastille-carte">{mjSeul.badge}</span>}
+      {mjSeul.aide}
+      {fiche.type !== 'aventure' && fiche.sousType && (
         <span className="sous-type" title={fiche.sousType}>
           {fiche.sousType}
         </span>
       )}
     </Link>
+  );
+  if (fiche.type !== 'aventure') return carte;
+  // The menu is beside the link: no nested interactive controls, including for keyboard users.
+  return (
+    <div className="carte-aventure">
+      {carte}
+      <div className="details-aventure">
+        {fiche.sousType && <span className="sous-type" title={fiche.sousType}>{fiche.sousType}</span>}
+        <StatutAventure universId={universId} fiche={fiche} gestion={gestion} onChange={onChange} />
+      </div>
+    </div>
   );
 }
 

@@ -80,7 +80,7 @@ test('critère : désactiver au système, forcer dans l’univers, réactiver, s
 test('un univers sans système : tout actif, origine defaut ; compte_rendu non réglable', async () => {
   const w = await monde();
   const l = await w.liste(w.antor, w.essai);
-  assert.equal(l.length, 15);
+  assert.equal(l.length, 16);
   assert.ok(l.every((x) => x.active === true && x.origine === 'defaut' && x.forcage === null));
   assert.ok(l.every((x) => x.systeme === null));
 });

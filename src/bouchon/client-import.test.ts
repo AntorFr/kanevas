@@ -14,10 +14,8 @@ const { buildApp } = await import('../app.js');
 const { JETON_BOUCHON, semerBouchon } = await import('./depart.js');
 const { trouverCompte } = await import('../services/comptes.js');
 const { listerComptesRendus } = await import('../services/comptes_rendus.js');
-const { listerFiches, lireFiche } = await import('../services/fiches.js');
-const { listerCampagnes, changerStatutCampagne } = await import('../services/campagnes.js');
+const { listerFiches, lireFiche, changerStatutFiche } = await import('../services/fiches.js');
 const { creerJeton } = await import('../services/jetons.js');
-const { listerScenarios } = await import('../services/scenarios.js');
 
 const CLIENT = fileURLToPath(new URL('./client-import.ts', import.meta.url));
 const DOSSIER = fileURLToPath(new URL('./echantillon/', import.meta.url));
@@ -50,13 +48,12 @@ function client(args: string[]) {
 const pousser = (extra: string[] = [], u = univers, jeton = JETON_BOUCHON) =>
   client([origine, String(u), jeton, ...extra]);
 
-test('critère : premier lot → fiches 11 créées, fichiers 3, campagnes 2, scénarios 2, relations 3, un avertissement, zéro refus', async () => {
+test('critère : premier lot → fiches 15 créées (dont 2 campagnes et 2 scénarios), fichiers 3, relations 3, un avertissement, zéro refus', async () => {
   const r = await pousser();
   assert.equal(r.code, 0, r.err + r.out);
-  assert.match(r.out, /^Fiches : 11 créées, 0 mise à jour, 0 inchangée, 0 refusée$/m);
+  assert.match(r.out, /^Fiches : 15 créées, 0 mise à jour, 0 inchangée, 0 refusée$/m);
   assert.match(r.out, /^Fichiers : 3 créés, 0 mis à jour, 0 inchangé, 0 refusé$/m);
-  assert.match(r.out, /^Campagnes : 2 créées, /m);
-  assert.match(r.out, /^Scénarios : 2 créés, /m);
+  assert.doesNotMatch(r.out, /^(Campagnes|Scénarios) :/m);
   assert.match(r.out, /^Relations : 3 créées, /m);
   assert.match(r.out, /^Avertissements : 1 ;/m);
   assert.ok(!/ [1-9]\d* refusé/.test(r.out));
@@ -79,21 +76,20 @@ test('critère : le lien vers la clé tardive est résolu, celui vers la clé qu
   assert.match(html, /<span class="lien-attente"[^>]*>Nyx<\/span>/);
 });
 
-test('critère : rejeu sans changement → 0 créée, 11 inchangées, rien de créé ailleurs', async () => {
+test('critère : rejeu sans changement → 0 créée, 15 inchangées, rien de créé ailleurs', async () => {
   const avant = (t: string) => (app.db.prepare(`SELECT COUNT(*) n FROM ${t}`).get() as { n: number }).n;
-  const tables = ['fiches', 'sections', 'fichiers', 'campagnes', 'scenarios', 'relations'];
+  const tables = ['fiches', 'sections', 'fichiers', 'relations'];
   const comptes = tables.map(avant);
   const r = await pousser();
   assert.equal(r.code, 0, r.err + r.out);
-  assert.match(r.out, /^Fiches : 0 créée, 0 mise à jour, 11 inchangées, 0 refusée$/m);
+  assert.match(r.out, /^Fiches : 0 créée, 0 mise à jour, 15 inchangées, 0 refusée$/m);
   assert.match(r.out, /^Fichiers : 0 créé, /m);
-  assert.match(r.out, /^Campagnes : 0 créée, /m);
-  assert.match(r.out, /^Scénarios : 0 créé, /m);
+  assert.doesNotMatch(r.out, /^(Campagnes|Scénarios) :/m);
   assert.match(r.out, /^Relations : 0 créée, /m);
   assert.deepEqual(tables.map(avant), comptes);
 });
 
-test('critère : une fiche de plus dans le JSON → 1 créée, 11 inchangées', async () => {
+test('critère : une fiche de plus dans le JSON → 1 créée, 15 inchangées', async () => {
   const dir = await mkdtemp(join(tmpdir(), 'echantillon-'));
   const s = JSON.parse(await readFile(join(DOSSIER, 'echantillon.json'), 'utf8'));
   s.fichiers = s.fichiers.map((f: { chemin: string }) => ({ ...f, chemin: join(DOSSIER, f.chemin) }));
@@ -105,23 +101,30 @@ test('critère : une fiche de plus dans le JSON → 1 créée, 11 inchangées', 
   await writeFile(chemin, JSON.stringify(s));
   const r = await pousser([chemin]);
   assert.equal(r.code, 0, r.err + r.out);
-  assert.match(r.out, /^Fiches : 1 créée, 0 mise à jour, 11 inchangées, 0 refusée$/m);
+  assert.match(r.out, /^Fiches : 1 créée, 0 mise à jour, 15 inchangées, 0 refusée$/m);
 });
 
-test('critère : un statut de campagne changé à la main n’est pas écrasé au rejeu suivant', async () => {
-  const c = listerCampagnes(app.db, antor, univers).find((x) => x.nom === 'Éneria')!;
-  assert.equal(c.statut, 'active');
-  changerStatutCampagne(app.db, antor, c.id, 'terminee');
+const campagneEneria = () =>
+  app.db.prepare("SELECT id, json_extract(charge, '$.statut') AS statut FROM fiches WHERE type = 'aventure' AND titre = 'Éneria'").get() as { id: number; statut: string };
+
+test('critère : un statut d’aventure changé à la main n’est pas écrasé au rejeu suivant', async () => {
+  const c = campagneEneria();
+  assert.equal(c.statut, 'en_preparation');
+  changerStatutFiche(app.db, { compteId: antor }, univers, c.id, 'terminee');
   const r = await pousser();
   assert.equal(r.code, 0, r.err + r.out);
-  assert.equal(listerCampagnes(app.db, antor, univers).find((x) => x.nom === 'Éneria')!.statut, 'terminee');
+  assert.equal(campagneEneria().statut, 'terminee');
 });
 
-test('critère : le scénario de 60 000 caractères est importé en entier, avec son lien par clé', () => {
-  const c = listerCampagnes(app.db, antor, univers).find((x) => x.nom === 'Éneria')!;
-  const longs = listerScenarios(app.db, antor, c.id).filter((s) => s.contenu.length >= 60_000);
-  assert.equal(longs.length, 1);
-  assert.match(longs[0]!.contenu, /\[\[[^\]]+\]\]/);
+test('critère : le scénario de 60 000 caractères est importé en entier, sous sa campagne, avec son lien par clé', () => {
+  const c = campagneEneria();
+  const enfants = app.db.prepare("SELECT id FROM fiches WHERE parent_id = ? AND type = 'aventure'").all(c.id) as { id: number }[];
+  assert.equal(enfants.length, 1);
+  const sec = app.db.prepare("SELECT contenu, joueurs_lisent FROM sections WHERE fiche_id = ? AND titre = 'Scénario'").get(enfants[0]!.id) as { contenu: string; joueurs_lisent: number };
+  // 60 000 characters sent; the keyed links `[[cle:…]]` are stored as `[[id|titre]]` (AD-116), a little shorter.
+  assert.ok(sec.contenu.length >= 59_000, String(sec.contenu.length));
+  assert.match(sec.contenu, /\[\[[^\]]+\]\]/);
+  assert.equal(sec.joueurs_lisent, 0);
 });
 
 test('exclusion : en mode Joueur ni le bloc MJ ni la faction « MJ seul » n’apparaissent, fiche ou recherche', () => {
@@ -174,10 +177,9 @@ test('critère : univers neuf et jeton neuf → mêmes comptes ; le Jeton du bou
   const { valeur } = creerJeton(app.db, antor, nouveau, { nom: 'recette', dureeJours: 7 });
   const r = await pousser([], nouveau, valeur);
   assert.equal(r.code, 0, r.err + r.out);
-  assert.match(r.out, /^Fiches : 11 créées, 0 mise à jour, 0 inchangée, 0 refusée$/m);
+  assert.match(r.out, /^Fiches : 15 créées, 0 mise à jour, 0 inchangée, 0 refusée$/m);
   assert.match(r.out, /^Fichiers : 3 créés, /m);
-  assert.match(r.out, /^Campagnes : 2 créées, /m);
-  assert.match(r.out, /^Scénarios : 2 créés, /m);
+  assert.doesNotMatch(r.out, /^(Campagnes|Scénarios) :/m);
   assert.match(r.out, /^Relations : 3 créées, /m);
   assert.ok(!(r.out + r.err).includes(valeur));
 });

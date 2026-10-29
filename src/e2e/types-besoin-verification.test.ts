@@ -41,7 +41,10 @@ describe('kanevas-import-types : migration sur une base d’avant', () => {
       rmSync(join(avant, '0013-types.sql'));
       rmSync(join(avant, '0014-alias-etiquettes.sql'));
       rmSync(join(avant, '0015-mediatheque.sql'));
-      rmSync(join(avant, '0017-natures-relations.sql')); // the seed below writes the former `type` column
+      rmSync(join(avant, '0018-natures-relations.sql')); // the seed below writes the former `type` column
+      // 0016 and 0017 follow 0013 (0017 writes `fiches.sous_type`): the base « d'avant » stops before 0013.
+      rmSync(join(avant, '0016-import-suivi.sql'));
+      rmSync(join(avant, '0017-scenarios-pivot.sql'));
       const chemin = join(dir, 'k.db');
       const db = openDb(chemin);
       migrate(db, avant + '/');

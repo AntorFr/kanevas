@@ -50,7 +50,7 @@ before(async () => {
   lea = (await connecte(browser, srv.base, 'Léa')).page;
   U = (await api(antor, 'POST', '/api/univers', { nom: 'Lame d’Ébène' })).json.id;
   await api(antor, 'POST', `/api/univers/${U}/membres`, { username: 'lea', role: 'joueur' });
-  const camp = (await api(antor, 'POST', `/api/univers/${U}/campagnes`, { nom: 'La Couronne brisée' })).json;
+  const camp = (await api(antor, 'POST', `/api/univers/${U}/fiches`, { type: 'aventure', sousType: 'Campagne', titre: 'La Couronne brisée', sections: [{ titre: 'Présentation', joueursLisent: true }] })).json;
   await api(antor, 'POST', `/api/univers/${U}/comptes-rendus`, { campagneId: camp.id, titre: 'Séance 3', texte: 'Aldric trahit.' });
   fiche = (await api(antor, 'POST', `/api/univers/${U}/fiches`, { type: 'personnage', titre: 'Maître Aldric', charge: { pj: false } })).json.id;
   sec = (await api(antor, 'POST', `/api/univers/${U}/fiches/${fiche}/sections`, { titre: 'Vérité', contenu: 'Il sert la Couronne' })).json.id;

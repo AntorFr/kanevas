@@ -13,3 +13,5 @@
 .relations .formulaire-relation .choix-fiche:focus-visible { outline-offset: -2px; }
 .relations .formulaire-relation .actions { justify-content: flex-end; margin-top: var(--e-2); }
 .relations .formulaire-relation .recherche { margin: 0; }
+.relations .choix-fiche-ligne { display: flex; align-items: center; flex-wrap: wrap; gap: var(--e-2); padding-right: var(--e-3); }
+.relations .choix-fiche-ligne .choix-fiche { flex: 1 1 0; width: auto; }

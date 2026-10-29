@@ -115,7 +115,7 @@ test('E-9 : Léa lit la section en Markdown, le hostile en texte, aucun dialogue
 
 test('E-9 : le compte-rendu de même forme se lit mis en forme sur la fiche', opts, async () => {
   const m = await monde();
-  const camp = await api(C.antor, 'post', `${m.b}/campagnes`, { nom: 'Camp' });
+  const camp = await api(C.antor, 'post', `${m.b}/fiches`, { type: 'aventure', sousType: 'Campagne', titre: 'Camp', sections: [{ titre: 'Présentation', joueursLisent: true }] });
   const cr = await api(C.antor, 'post', `${m.b}/comptes-rendus`, { campagneId: camp.id, titre: 'Séance 1', texte: MD });
   const lea = await api(C.lea, 'get', `${m.b}/fiches/${cr.id}`);
   assert.ok(lea.sections.length >= 1, JSON.stringify(lea));
@@ -129,18 +129,8 @@ test('E-9 : le compte-rendu de même forme se lit mis en forme sur la fiche', op
   await page.close();
 });
 
-test('E-7 et E-15 : scénario et entrée écrits en Markdown se lisent mis en forme', opts, async () => {
+test('E-15 : une entrée de système écrite en Markdown se lit mise en forme', opts, async () => {
   const m = await monde();
-  const camp = await api(C.antor, 'post', `${m.b}/campagnes`, { nom: 'Camp' });
-  const sc = await api(C.antor, 'post', `/api/campagnes/${camp.id}/scenarios`, { titre: 'Acte 1', contenu: MD });
-  const page = await C.antor.ctx.newPage();
-  const dlg = surveiller(page);
-  await page.goto(`${srv.base}/univers/${m.u}/scenarios/${sc.id}`);
-  await page.waitForLoadState('networkidle');
-  await page.locator('.contenu-scenario.md').waitFor();
-  await verifierRendu(page, '.contenu-scenario.md');
-  assert.deepEqual(dlg, []);
-
   const sys = await api(C.antor, 'post', '/api/systemes', { nom: 'MD Mini' });
   await api(C.antor, 'put', `${m.b}/systeme`, { systemeId: sys.id });
   await api(C.antor, 'post', `/api/systemes/${sys.id}/gabarits`, { type: 'creature', nom: 'Gobelin', contenu: MD });
@@ -157,7 +147,6 @@ test('E-7 et E-15 : scénario et entrée écrits en Markdown se lisent mis en fo
     assert.deepEqual(d, []);
     await p.close();
   }
-  await page.close();
 });
 
 test('E-12 : proposition rendue, « Source » brut dans les deux zones, « Rendu » revient', opts, async () => {
@@ -166,7 +155,7 @@ test('E-12 : proposition rendue, « Source » brut dans les deux zones, « Rendu
   await api(C.antor, 'post', `${b}/membres`, { username: 'lea', role: 'joueur' });
   const f = await api(C.antor, 'post', `${b}/fiches`, { type: 'personnage', titre: 'Maître Aldric', charge: { v: 1, pj: false } });
   await api(C.antor, 'post', `${b}/fiches/${f.id}/sections`, { titre: 'Vérité', contenu: '## Avant\n\n- un' });
-  const camp = await api(C.antor, 'post', `${b}/campagnes`, { nom: 'C' });
+  const camp = await api(C.antor, 'post', `${b}/fiches`, { type: 'aventure', sousType: 'Campagne', titre: 'C', sections: [{ titre: 'Présentation', joueursLisent: true }] });
   await api(C.lea, 'post', `${b}/comptes-rendus`, { campagneId: camp.id, titre: 'Séance 3', texte: 'Aldric a livré la clef.' });
   const rep = await api(C.antor, 'post', `${b}/assistant/messages`, {
     message: 'Mets à jour la section « Vérité » de « Maître Aldric » d\'après le compte-rendu « Séance 3 »',

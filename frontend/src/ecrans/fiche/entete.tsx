@@ -9,7 +9,7 @@ import { ChangerType } from './changer-type';
 import { BoiteEtiquetage } from './etiquetage';
 import { DeplacerSous } from './deplacer';
 import { SousTypeBadge } from './sous-type';
-import { adresseIllustration } from './vignette';
+import { adresseIllustration, useMJSeul } from './vignette';
 import { MarqueDisparu, classeDisparu } from './marque';
 import type { Detail } from '../mediatheque/commun';
 import { MESSAGE_RESERVE, useAjoutFichier } from './fichiers';
@@ -17,6 +17,7 @@ import { MESSAGES_PIECES } from './pieces';
 import { libelleDuType, iconeDeNom, marqueDe, typeParType, useTypes } from '../../types-contexte';
 import { TitreFiche } from './titre';
 import { SupprimerFiche } from './supprimer';
+import { lignesDuType } from './lignes/registre';
 
 const AIDE = 'Visible de tous ceux qui voient la fiche.';
 const ECHEC = 'L’action n’a pas abouti. Réessayez.';
@@ -61,6 +62,7 @@ export function EnteteFiche({ universId, fiche, gestion, modeJoueur, badge, Icon
   const [etiquetage, setEtiquetage] = useState(false);
   const [deplacement, setDeplacement] = useState(false);
   const [suppression, setSuppression] = useState(false);
+  const mjSeul = useMJSeul(fiche, true);
   const alias = fiche.alias ?? [];
   const etiquettes = fiche.etiquettes ?? [];
   const { types } = useTypes();
@@ -267,6 +269,7 @@ export function EnteteFiche({ universId, fiche, gestion, modeJoueur, badge, Icon
                 {marque.mot}
               </span>
             )}
+            {gestion && mjSeul.badge}
             {/* « ⋯ » (E-9): « Changer le type… » (not for a report) and, for an imported sheet, its origin. */}
             {gestion && (
 
@@ -309,8 +312,12 @@ export function EnteteFiche({ universId, fiche, gestion, modeJoueur, badge, Icon
               />
             )}
           </div>
+          {gestion && mjSeul.aide}
           <TitreFiche universId={universId} fiche={fiche} gestion={gestion} rafraichir={rafraichir}
             onDroitPerdu={droitFichePerdu} onIntrouvable={onIntrouvable} />
+          {lignesDuType(fiche.type).map((l, i) => (
+            <l.composant key={i} universId={universId} fiche={fiche} gestion={gestion} rafraichir={rafraichir} />
+          ))}
           {alias.length > 0 && <p className="alias-fiche">Aussi appelée {alias.join(', ')}</p>}
           {etiquettes.length > 0 && (
             <ul className="etiquettes-fiche" aria-label="Étiquettes">

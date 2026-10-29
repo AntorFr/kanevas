@@ -17,10 +17,9 @@ export interface PropsBloc {
  * images) add their line here without touching an existing block.
  */
 export const blocs: Partial<Record<TypeEvenement, ComponentType<PropsBloc>>> = {
+  fiche_creee: Ecriture,
   section_modifiee: Ecriture,
   section_completee: Ecriture,
-  campagne_creee: Ecriture,
-  scenario_cree: Ecriture,
   image_attachee: ImageAttachee,
   proposition_creee: Proposition,
 };
