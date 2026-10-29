@@ -646,7 +646,7 @@ three former free relations of Port-Sel keep their text as qualifier.
 Detail of the slice's part of AD-130 and B-64 / B-69; nothing here adds a nature, a type, a screen or a column. Repository
 facts read on `epic/kanevas-fiches-liees` and its voisines: `mentions.ts` (the model of a read-only backwards lookup under
 the two guards), `descendantsDe` (point 3 of the `-recherche` notes), the sheet-block registry of AD-124 delivered by
-`kanevas-scenarios-suivi` (`frontend/src/ecrans/fiche/blocs-fiche/`), the line component of `vignette.tsx` and its
+`kanevas-scenarios-suivi` (`frontend/src/ecrans/fiche/blocs-fiche/`), the card thumbnail `vignette.tsx` and its
 `MarqueDisparu` (`-disparu`).
 
 1. **One service, read-only.** `liees(db, role, acteur, universId, ficheId, opts)` in `src/services/liees.ts`, beside
@@ -687,7 +687,7 @@ the two guards), `descendantsDe` (point 3 of the `-recherche` notes), the sheet-
    appear in the block of the target, and, for a symmetric nature, of both ends.
 6. **The block.** A sheet block (AD-124) `frontend/src/ecrans/fiche/blocs-fiche/liees.tsx`, served to the types that are the target
    of a nature (`lieu`, `faction`, `famille`, `objet`, `vaisseau`, plus `personnage` for the symmetric natures — the list is
-   copied in `liees.tsx` from `natures.ts`: a new nature on another type needs it extended there) with a rank **immediately before** « Mentionnée dans » (E-9), every role; the slot where the registry draws sheet blocks relative
+   copied in `liees.tsx` from `natures.ts`: a new nature on another type needs it extended there) with `rang: 90, place: 'bas'`: « Mentionnée dans » is not a registry block (`fiche.tsx` draws it after the `bas` blocks), so the order comes from the slot, not from the rank; every role; the slot where the registry draws sheet blocks relative
    to the sections is AD-124 (1)'s and is not moved here, « before Mentionnée dans » holds in either slot. It loads its own
    answer (`GET …/liees`), not carried by `lireFiche`: states « Chargement… », « Impossible de charger les fiches liées. » with
    « Réessayer » (`docs/ecrans.md`), the sheet readable meanwhile. `groupes: []` renders nothing (not even the heading).
@@ -704,7 +704,7 @@ the two guards), `descendantsDe` (point 3 of the `-recherche` notes), the sheet-
    wraps: card, then qualifier and place on a second line, truncated at two lines with the whole text in the tooltip.
 7. **« Chercher parmi ».** A link to E-17 (`/univers/<id>/recherche?lie=<fid>&nature=<key>&descendants=1`, `descendants` only when the toggle is
    checked); nothing is computed in the screen. The nature is the group's key.
-8. **The lines are the shared component**: the card line of `vignette.tsx`, whose `MarqueDisparu` marks a gone sheet, then the
+8. **The lines are the shared component**: `LigneFicheLiee` (`frontend/src/ui/ligne-fiche-liee.tsx`, shared with E-17), built on the thumbnail of `vignette.tsx` whose `MarqueDisparu` marks a gone sheet, then the
    qualifier in grey and the place in grey (« — Les Docks »). The block draws no mark of its own.
 9. **Security.** The one new read path sends names and counts that the two guards of AD-64 already allow in the list; tested as Léa
    and as the GM in player mode on: the Prieur (a closed section), a relation to a hidden place (Le Repaire), a hidden intermediate
