@@ -3378,7 +3378,7 @@ built.
 *Critères.* Étant donné Antor, MJ, et « Port-Sel » dont « Maître Aldric » et « Le Prieur masqué »
 se situent, quand il ouvre la fiche, alors « Fiches liées » dit « S'y trouvent : Personnages (2) »
 avec les deux cartes ; quand il coche « sous-lieux compris », alors « Suie » (se situe aux Docks,
-dans Port-Sel) s'ajoute avec « — Les Docks », et « Le Kraken des Cales » (Créatures (1), « — La Taverne du Kraken ») dans son propre groupe. Étant donné Léa, Joueuse, quand elle ouvre
+dans Port-Sel) s'ajoute avec « — Les Docks », et « Le Kraken des Cales » (Créatures (1), « — La Taverne du Kraken ») on its own type line of the same group. Étant donné Léa, Joueuse, quand elle ouvre
 « Port-Sel », alors elle lit « Personnages (1) » : Maître Aldric ; « Le Prieur masqué », dont la relation est
 dans « Secret — MJ seul », n'y est ni nommé ni compté. Étant donné Antor sur « La Guilde des
 Brumes », quand il ouvre la fiche, alors « Membres : Personnages (2) » montre « Maître Aldric —

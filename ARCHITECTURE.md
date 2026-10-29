@@ -686,8 +686,8 @@ the two guards), `descendantsDe` (point 3 of the `-recherche` notes), the sheet-
    `relations` branch of `src`); the links and the free relations stay; the page counts follow the same filter. Natured relations
    appear in the block of the target, and, for a symmetric nature, of both ends.
 6. **The block.** A sheet block (AD-124) `frontend/src/ecrans/fiche/blocs-fiche/liees.tsx`, served to the types that are the target
-   of a nature (`lieu`, `faction`, `famille`, `objet`, `vaisseau`, plus `personnage` for the symmetric natures — the list
-   `natures.ts` gives them, the screen never copies it) with a rank **immediately before** « Mentionnée dans » (E-9), every role; the slot where the registry draws sheet blocks relative
+   of a nature (`lieu`, `faction`, `famille`, `objet`, `vaisseau`, plus `personnage` for the symmetric natures — the list is
+   copied in `liees.tsx` from `natures.ts`: a new nature on another type needs it extended there) with a rank **immediately before** « Mentionnée dans » (E-9), every role; the slot where the registry draws sheet blocks relative
    to the sections is AD-124 (1)'s and is not moved here, « before Mentionnée dans » holds in either slot. It loads its own
    answer (`GET …/liees`), not carried by `lireFiche`: states « Chargement… », « Impossible de charger les fiches liées. » with
    « Réessayer » (`docs/ecrans.md`), the sheet readable meanwhile. `groupes: []` renders nothing (not even the heading).
@@ -702,7 +702,7 @@ the two guards), `descendantsDe` (point 3 of the `-recherche` notes), the sheet-
    loaded content readable, the toggle and « Afficher les N » (which need the server) disabled. For a reader with nothing readable the
    block is **absent**, not refused (no trace of it). The toggle is shown to every role on a place (reading only). On 360 px a line
    wraps: card, then qualifier and place on a second line, truncated at two lines with the whole text in the tooltip.
-7. **« Chercher parmi ».** A link to E-17 (`/recherche?lie=<fid>&nature=<key>&descendants=1`, `descendants` only when the toggle is
+7. **« Chercher parmi ».** A link to E-17 (`/univers/<id>/recherche?lie=<fid>&nature=<key>&descendants=1`, `descendants` only when the toggle is
    checked); nothing is computed in the screen. The nature is the group's key.
 8. **The lines are the shared component**: the card line of `vignette.tsx`, whose `MarqueDisparu` marks a gone sheet, then the
    qualifier in grey and the place in grey (« — Les Docks »). The block draws no mark of its own.
