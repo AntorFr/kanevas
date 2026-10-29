@@ -2,7 +2,7 @@ import type { Db } from '../db/db.js';
 import { peutVoirFiche, sqlFicheLisible, sqlSectionLisible, vueMJ } from './droits.js';
 import { introuvable, invalide } from './erreurs.js';
 import { etiquetageDe } from './etiquettes.js';
-import { chargerFiche, descendantsDe, versFiche } from './fiches.js';
+import { chargerFiche, descendantsDe, versFiche, visibiliteVue } from './fiches.js';
 import { lisiblePar } from './fichiers.js';
 import { estNature, NATURES, type TypeNature } from './natures.js';
 import { TYPES_FICHE, type Acteur, type Fiche, type Role, type TypeFiche } from './types.js';
@@ -122,8 +122,10 @@ export function liees(
     const fiches = selection.slice(apres, apres + limite).map((ls): FicheLiee => {
       const premier = ls[0];
       const e = etiquetageDe(db, premier.fiche_id);
+      const row = chargerFiche(db, universId, premier.fiche_id, vueMJ(role, acteur));
       const ligne: FicheLiee = {
-        ...versFiche(chargerFiche(db, universId, premier.fiche_id, vueMJ(role, acteur)), (f) => lisiblePar(role, acteur, f)),
+        ...versFiche(row, (f) => lisiblePar(role, acteur, f)),
+        ...visibiliteVue(row),
         alias: e.alias,
         etiquettes: e.etiquettes,
       };

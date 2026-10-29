@@ -63,7 +63,7 @@ const SQL_VISIBLE_JOUEURS = 'EXISTS (SELECT 1 FROM sections v WHERE v.fiche_id =
 const projectionVisibilite = (mj: boolean): string => mj ? `, ${SQL_VISIBLE_JOUEURS} AS visible_joueurs` : '';
 
 /** The field is absent altogether outside the full GM view. */
-const visibiliteVue = (r: FicheRow): { visibleJoueurs?: boolean } =>
+export const visibiliteVue = (r: FicheRow): { visibleJoueurs?: boolean } =>
   r.visible_joueurs === undefined ? {} : { visibleJoueurs: r.visible_joueurs === 1 };
 
 /**
