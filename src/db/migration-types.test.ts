@@ -47,7 +47,7 @@ function avant10(): Db {
   db.exec('CREATE TABLE fichiers_sections (fichier_id, section_id, joint, dans_texte, dans_bloc_mj, PRIMARY KEY (fichier_id, section_id))');
   db.exec('CREATE TABLE fichiers_attente (id INTEGER PRIMARY KEY, univers_id, cle, section_id, fiche_id, maniere)');
   db.exec('ALTER TABLE fiches ADD COLUMN illustration_fichier_id INTEGER');
-  // Likewise `relations` (0017): the seed writes `nature` / `qualificatif`, which this schema (`type`) lacks.
+  // Likewise `relations` (0018): the seed writes `nature` / `qualificatif`, which this schema (`type`) lacks.
   db.exec('ALTER TABLE relations RENAME COLUMN type TO qualificatif');
   db.exec("ALTER TABLE relations ADD COLUMN nature TEXT NOT NULL DEFAULT ''");
   semerBouchon(db);

@@ -1,8 +1,8 @@
-// Test d'ensemble de kanevas-fiches-liees-rattrapage, critère de sortie : « une base au schéma de `main`, ouverte par
-// l'application, monte toutes les migrations sans erreur ». La base est construite ici avec les migrations 0001 à 0017
-// (celles de `main`, AD-51), peuplée d'une campagne (fiche `aventure`) et d'une relation libre ; le vrai serveur démarre dessus.
-// Attendus littéraux du besoin : l'application démarre, les migrations de l'epic passent après celles de `main`, la campagne
-// reste lisible avec son statut, la relation d'avant répond nature '' et son texte en qualificatif.
+// Whole-feature test of kanevas-fiches-liees-rattrapage, exit criterion: "a database with `main`'s schema, opened by
+// the application, runs every migration without error". The database is built here with migrations 0001 to 0017
+// (`main`'s, AD-51), filled with a campaign (an `aventure` sheet) and a free relation; the real server starts on it.
+// Literal expectations of the need: the application starts, the epic's migrations run after `main`'s, the campaign
+// stays readable with its status, the earlier relation answers nature '' and its text as qualifier.
 import assert from 'node:assert/strict';
 import { copyFileSync, mkdirSync, mkdtempSync, readdirSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -63,7 +63,7 @@ describe('kanevas-fiches-liees-rattrapage, une base au schéma de main monte les
     if (dir) rmSync(dir, { recursive: true, force: true });
   });
 
-  // Panne visée : un numéro de migration de l'epic collisionne avec ceux de main, ou une migration échoue sur une base de main.
+  // Failure aimed at: an epic migration number collides with main's, or a migration fails on a main database.
   test('la base ouverte par l’application porte les migrations 1 à 18, une fois chacune', () => {
     const ro = new Database(chemin, { readonly: true });
     const numeros = (ro.prepare('SELECT numero FROM migrations ORDER BY numero').all() as { numero: number }[]).map((r) => r.numero);
@@ -71,7 +71,7 @@ describe('kanevas-fiches-liees-rattrapage, une base au schéma de main monte les
     assert.deepEqual(numeros, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18]);
   });
 
-  // Panne visée : la migration des relations perd la relation d'avant ou son texte.
+  // Failure aimed at: the relations migration loses the earlier relation or its text.
   test('la relation libre d’avant répond nature "" et son texte en qualificatif', async () => {
     const r = await lire('/api/univers/1/fiches/1/sections/1/relations');
     assert.equal(r.status, 200);
@@ -79,7 +79,7 @@ describe('kanevas-fiches-liees-rattrapage, une base au schéma de main monte les
     assert.deepEqual(relations.map((x) => [x.nature, x.qualificatif, x.cible.titre]), [['', 'mouille à', 'Port-Sel']]);
   });
 
-  // Panne visée : la fusion casse la lecture d'une fiche d'aventure de main (charge, statut).
+  // Failure aimed at: the merge breaks reading an adventure sheet from main (charge, status).
   test('la campagne de main reste lisible, type aventure, statut « en_cours »', async () => {
     const r = await lire('/api/univers/1/fiches/1');
     assert.equal(r.status, 200);
@@ -90,7 +90,7 @@ describe('kanevas-fiches-liees-rattrapage, une base au schéma de main monte les
     assert.deepEqual(f.sections.map((s: Any) => s.titre), ['Présentation']);
   });
 
-  // Panne visée : la liste d'un type ne répond plus sur la base migrée.
+  // Failure aimed at: a type's list no longer answers on the migrated database.
   test('la liste des aventures répond et porte la campagne', async () => {
     const r = await lire('/api/univers/1/fiches?type=aventure');
     assert.equal(r.status, 200);
@@ -98,7 +98,7 @@ describe('kanevas-fiches-liees-rattrapage, une base au schéma de main monte les
     assert.deepEqual(fiches.map((x) => x.titre), ['La Couronne brisée']);
   });
 
-  // Échec : sur la base migrée, une relation à nature se pose, preuve que le schéma de l'epic est en place.
+  // Failure: on the migrated database, a relation with a nature can be posed, proof the epic's schema is in place.
   test('une relation à nature se relie sur la base migrée', async () => {
     const r = await fetch(`${srv.base}/api/univers/1/fiches/3/sections/2/relations`, {
       method: 'POST',

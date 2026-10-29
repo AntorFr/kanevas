@@ -1,8 +1,8 @@
-// Tests d'ensemble de kanevas-fiches-liees-rattrapage, écrits depuis le critère de sortie de la tâche de fusion :
-// « au bouchon, en Antor, « Port-Sel » ouvre encore sa fiche avec ses relations à nature et son qualificatif, E-17 filtre
-// encore par « Lié à », et l'écran d'un scénario et le registre de blocs de fiche sont ceux de `main` »
-// (docs/ecrans.md : E-9 fiche d'aventure, E-17 recherche avancée, ses critères). Vrai serveur en mode bouchon avec son monde de
-// départ, vrai Chromium. Les attendus sont des littéraux de la doc, pas des valeurs lues dans le code.
+// Whole-feature tests of kanevas-fiches-liees-rattrapage, written from the merge task's exit criterion:
+// "in the stub, in Antor, « Port-Sel » still opens its sheet with its relations carrying nature and qualifier, E-17 still
+// filters by « Lié à », and a scenario's screen and the sheet block registry are `main`'s"
+// (docs/ecrans.md: E-9 adventure sheet, E-17 advanced search, their criteria). Real server in stub mode with its starting world,
+// real Chromium. The expected values are literals of the docs, not values read from the code.
 import assert from 'node:assert/strict';
 import { after, before, describe, test } from 'node:test';
 
@@ -47,7 +47,7 @@ describe('kanevas-fiches-liees-rattrapage, l’epic et main fusionnés, au bouch
     srv?.stop();
   });
 
-  // Panne visée : la fusion casse l'ouverture de la fiche d'un lieu de l'epic (types, en-tête, sections).
+  // Failure aimed at: the merge breaks the opening of an epic place's sheet (types, header, sections).
   test('Antor ouvre « Port-Sel » : titre, Description, Histoire et la section MJ seul', opts, async () => {
     await antor.goto(`/univers/${U}/fiche/${ids['Port-Sel']}`);
     await antor.getByRole('heading', { level: 1, name: 'Port-Sel' }).waitFor();
@@ -55,7 +55,7 @@ describe('kanevas-fiches-liees-rattrapage, l’epic et main fusionnés, au bouch
     await antor.screenshot({ path: '/tmp/rattrapage-port-sel-antor.png' });
   });
 
-  // Exclusion : la section « Vérité » du lieu n'existe pas pour Léa.
+  // Exclusion: the place's « Vérité » section does not exist for Léa.
   test('Léa ouvre « Port-Sel » : Description et Histoire, pas « Vérité »', opts, async () => {
     await lea.goto(`/univers/${U}/fiche/${ids['Port-Sel']}`);
     await lea.getByRole('heading', { level: 1, name: 'Port-Sel' }).waitFor();
@@ -63,7 +63,7 @@ describe('kanevas-fiches-liees-rattrapage, l’epic et main fusionnés, au bouch
     assert.equal(await lea.getByRole('region', { name: /Vérité/ }).count(), 0);
   });
 
-  // Panne visée : la fusion perd la nature ou le qualificatif d'une relation vers Port-Sel (service ou écran).
+  // Failure aimed at: the merge loses the nature or qualifier of a relation to Port-Sel (service or screen).
   test('Aldric, Apparence : « se situe à · Port-Sel — habite », « membre de · La Guilde des Brumes — trésorier » et « maître de port » sans nature', opts, async () => {
     await antor.goto(`/univers/${U}/fiche/${ids['Maître Aldric']}`);
     await antor.getByRole('heading', { level: 1, name: 'Maître Aldric' }).waitFor();
@@ -76,7 +76,7 @@ describe('kanevas-fiches-liees-rattrapage, l’epic et main fusionnés, au bouch
     await antor.screenshot({ path: '/tmp/rattrapage-aldric-relations.png' });
   });
 
-  // Exclusion : la cible (La Guilde, MJ seul) est fermée à Léa, sa relation et son qualificatif aussi.
+  // Exclusion: the target (La Guilde, GM only) is closed to Léa, so are its relation and qualifier.
   test('Léa lit Aldric : la relation vers la Guilde et « trésorier » sont absents', opts, async () => {
     await lea.goto(`/univers/${U}/fiche/${ids['Maître Aldric']}`);
     await lea.getByRole('heading', { level: 1, name: 'Maître Aldric' }).waitFor();
@@ -87,7 +87,7 @@ describe('kanevas-fiches-liees-rattrapage, l’epic et main fusionnés, au bouch
     assert.ok(!t.includes('La Guilde des Brumes'), t);
   });
 
-  // E-17, critère : « lié à Port-Sel », « s'y trouvent », sous-lieux compris, type Personnage → Aldric, le Prieur et Suie.
+  // E-17, criterion: "linked to Port-Sel", "located there", sub-places included, type Personnage → Aldric, le Prieur and Suie.
   test('E-17 Antor : lié à Port-Sel, s’y trouvent, sous-lieux compris, Personnage → Aldric, Le Prieur masqué, Suie', opts, async () => {
     await recherche(antor, `type=personnage&lie=${ids['Port-Sel']}&nature=se_situe&descendants=1`);
     await antor.getByText('Port-Sel', { exact: false }).first().waitFor();
@@ -98,14 +98,14 @@ describe('kanevas-fiches-liees-rattrapage, l’epic et main fusionnés, au bouch
     await antor.screenshot({ path: '/tmp/rattrapage-e17-antor.png' });
   });
 
-  // Bord : le filtre « Vivants » retire le Prieur (mort), garde les deux autres.
+  // Edge: the « Vivants » filter removes le Prieur (dead), keeps the other two.
   test('E-17 Antor, « Vivants » (etat=la) : le Prieur mort disparaît de la liste', opts, async () => {
     await recherche(antor, `type=personnage&lie=${ids['Port-Sel']}&nature=se_situe&descendants=1&etat=la`);
     await antor.waitForFunction(() => document.querySelectorAll('main a[href*="/fiche/"]').length >= 2);
     assert.deepEqual((await liste(antor)).sort(), ['Maître Aldric', 'Suie']);
   });
 
-  // Exclusion : Léa ne trouve ni le Prieur (fiche fermée) et n'a pas de bascule de mode.
+  // Exclusion: Léa finds neither le Prieur (closed sheet) nor a mode switch.
   test('E-17 Léa, même adresse : Aldric et Suie seulement, pas de bascule de mode', opts, async () => {
     await recherche(lea, `type=personnage&lie=${ids['Port-Sel']}&nature=se_situe&descendants=1`);
     await lea.waitForFunction(() => document.querySelectorAll('main a[href*="/fiche/"]').length >= 2);
@@ -114,14 +114,14 @@ describe('kanevas-fiches-liees-rattrapage, l’epic et main fusionnés, au bouch
     await lea.screenshot({ path: '/tmp/rattrapage-e17-lea.png' });
   });
 
-  // Échec : une fiche « Lié à » que personne ne lit → phrase vide du besoin, la recherche tourne quand même.
+  // Failure: a « Lié à » sheet nobody reads → the need's empty sentence, the search still runs.
   test('E-17 : lié à une fiche inexistante → « Fiche introuvable » et « Aucune fiche liée pour ces critères. »', opts, async () => {
     await recherche(antor, 'lie=999999');
     await antor.getByText('Fiche introuvable').first().waitFor();
     await antor.getByText('Aucune fiche liée pour ces critères.').waitFor();
   });
 
-  // Registre de blocs de fiche de main (AD-124) : deux blocs au-dessus des sections, dans l'ordre, pour le MJ ; Léa n'a pas « Préparation ».
+  // Sheet block registry from main (AD-124): two blocks above the sections, in order, for the GM; Léa has no « Préparation ».
   test('La Couronne brisée, Antor : statut, puis « Préparation » avant « Comptes-rendus », avant les sections', opts, async () => {
     await antor.goto(`/univers/${U}/fiche/${ids['La Couronne brisée']}`);
     await antor.getByRole('heading', { level: 1, name: 'La Couronne brisée' }).waitFor();
@@ -153,7 +153,7 @@ describe('kanevas-fiches-liees-rattrapage, l’epic et main fusionnés, au bouch
     assert.ok(!norm(await lea.locator('main').innerText()).includes('Plan de la crypte'));
   });
 
-  // Exclusion : Antor en mode Joueur sur « Acte II » (aucune section lue des joueurs) → pas de « Préparation ».
+  // Exclusion: Antor in Player mode on « Acte II » (no section read by players) → no « Préparation ».
   test('Acte II, Antor en mode Joueur : « Aucune section n’est visible des joueurs. » et aucun bloc « Préparation »', opts, async () => {
     await antor.goto(`/univers/${U}/fiche/${ids['Acte II — Le sceau brisé']}`);
     await antor.getByRole('heading', { level: 1, name: 'Acte II — Le sceau brisé' }).waitFor();
