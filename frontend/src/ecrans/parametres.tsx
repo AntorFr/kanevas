@@ -1,6 +1,6 @@
 import { ArrowRight, Check, Link2, Plus, Settings2, Trash2 } from 'lucide-react';
 import { useEffect, useMemo, useState, type FormEvent } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
 import { ErreurApi, appeler } from '../api';
 import { useCharge, useUnivers } from '../cadre-contexte';
@@ -8,6 +8,7 @@ import type { Ecran } from '../registre';
 import type { UniversListe } from '../types';
 import { BoiteDialogue, Bouton, Champ, ChargementListe, ErreurChargement, PageIntrouvable, Panneau, useToasts } from '../ui';
 import { PanneauTypesUnivers } from './types-reglage/panneau-univers';
+import { PanneauOutils } from './outils/panneau';
 import './ecrans.css';
 import './liste.css';
 import './reglages.css';
@@ -35,6 +36,8 @@ function messageEchec(e: unknown): string {
 /** E-14 Paramètres de l'univers (GM only): identity, game system attach/detach, create a system. */
 function Parametres() {
   const { id } = useParams();
+  const [params, setParams] = useSearchParams();
+  const surOutils = params.get('onglet') === 'outils';
   const { recharger: rechargerUnivers } = useUnivers();
   const { toast } = useToasts();
   const navigate = useNavigate();
@@ -336,7 +339,16 @@ function Parametres() {
           </form>
         </Panneau>
 
-        <PanneauTypesUnivers universId={id!} universNom={nomUnivers} avecSysteme={systeme !== null} />
+        <div>
+          <div className="onglets outils-onglets" role="tablist" aria-label="Réglages du système dans cet univers">
+            <button type="button" role="tab" aria-selected={!surOutils} className={!surOutils ? 'actif' : undefined}
+              onClick={() => setParams({}, { replace: true })}>Types de fiche</button>
+            <button type="button" role="tab" aria-selected={surOutils} className={surOutils ? 'actif' : undefined}
+              onClick={() => setParams({ onglet: 'outils' }, { replace: true })}>Outils</button>
+          </div>
+          <div role="tabpanel">{surOutils ? <PanneauOutils key={`${id}-${systeme?.id ?? 'sans'}`} id={id!} niveau="univers" sansSysteme={systeme === null} />
+            : <PanneauTypesUnivers universId={id!} universNom={nomUnivers} avecSysteme={systeme !== null} />}</div>
+        </div>
 
         <Panneau titre="Supprimer l’univers" reserveMj danger>
           <div className="actions">

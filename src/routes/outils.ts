@@ -6,6 +6,7 @@ import { ErreurService } from '../services/erreurs.js';
 import {
   decrireOutil, entreesOutils, lireOutils, poserActivation, poserReglages, poserVisibilite,
   resoudreOutil, transfererResponsabilite, accessible, type CibleOutils, type ResolutionOutil,
+  lireResponsable, candidatsResponsable,
 } from '../services/outils.js';
 import type { Acteur, Role } from '../services/types.js';
 import { acteur, corps } from './fiches.js';
@@ -57,6 +58,14 @@ export async function registerOutilsRoutes(app: FastifyInstance) {
   for (const niveau of ['univers', 'systeme'] as const) {
     const base = `/api/${niveau === 'univers' ? 'univers' : 'systemes'}/:id/outils/:module/:outil`;
     const cible = (request: { params: unknown }): CibleOutils => ({ niveau, id: idDe(request) });
+    // Common settings use the module key, with no artificial tool key (C-3).
+    app.put(`/api/${niveau === 'univers' ? 'univers' : 'systemes'}/:id/outils/:module/reglages`, async (request, reply) => {
+      const b = corps(request);
+      poserReglages(app.db, acteur(request), cible(request), (request.params as { module: string }).module, {
+        version: b.version as number, valeurs: b.valeurs as Record<string, never>, confirme: b.confirme === true,
+      });
+      return reply.code(204).send();
+    });
     app.put(`${base}/activation`, async (request, reply) => {
       const b = corps(request);
       poserActivation(app.db, acteur(request), cible(request), cleDe(request), b.active as boolean | null);
@@ -75,6 +84,8 @@ export async function registerOutilsRoutes(app: FastifyInstance) {
     });
   }
 
+  app.get('/api/systemes/:id/responsable', async (request) => lireResponsable(app.db, acteur(request), idDe(request)));
+  app.get('/api/systemes/:id/responsable/candidats', async (request) => candidatsResponsable(app.db, acteur(request), idDe(request)));
   app.post('/api/systemes/:id/responsable', async (request, reply) => {
     const b = corps(request);
     if (!Number.isInteger(b.compteId)) {

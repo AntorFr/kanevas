@@ -28,6 +28,11 @@ export function PanneauOutils({ id, niveau, sansSysteme = false }: { id: string;
     void recharger();
     return () => { generation.current++; };
   }, [recharger]);
+  useEffect(() => {
+    const rafraichir = () => { void recharger(); };
+    window.addEventListener('kanevas:outils-modifies', rafraichir);
+    return () => window.removeEventListener('kanevas:outils-modifies', rafraichir);
+  }, [recharger]);
 
   if (etat === 'introuvable') return <PageIntrouvable />;
   if (!vue) return etat === 'erreur' ? <ErreurChargement texte="Impossible de charger les outils." onReessayer={() => void recharger()} />
@@ -38,7 +43,7 @@ export function PanneauOutils({ id, niveau, sansSysteme = false }: { id: string;
     {!vue.ecriture && <p className="outils-note">Seul le responsable du système règle ces valeurs.</p>}
     {vue.outils.length === 0 && <p className="outils-vide">{sansSysteme ? 'Cet univers n’a pas de système de jeu.' : 'Aucun outil ne s’applique à ce système de jeu.'}</p>}
     {vue.communs.map((m) => <div className="outils-module" key={m.module}>
-      {m.reglages.length > 0 && <Carte key={m.module} titre={`Réglages communs · ${m.module}`} base={base} cle={`${m.module}/commun`}
+      {m.reglages.length > 0 && <Carte key={m.module} titre={`Réglages communs · ${m.module}`} base={base} cle={m.module}
         niveau={niveau} definition={m} ecriture={vue.ecriture} recharger={recharger} />}
       {vue.outils.filter((o) => o.module === m.module).map((o) => <Carte key={o.cle} titre={o.libelle} base={base} cle={o.cle}
         niveau={niveau} definition={o} outil={o} outils={vue.outils} ecriture={vue.ecriture} recharger={recharger} />)}

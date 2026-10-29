@@ -143,6 +143,17 @@ first sign-in (otherwise « Ce compte ne s'est jamais connecté. » when adding 
 start in stub mode if an `OIDC_*` variable is set. With `NODE_ENV=production` (as in the image; `npm start` does not set it) and no `/data` volume, the database is in
 memory (startup warning).
 
+**Tools settings recipe** (`kanevas-outils-cadre`, fresh stub seed): as `antor`, open « Système d'essai » in « Systèmes de jeu », then « Outils ».
+Enable « Essai A » before « Essai B » (the reverse order is refused inline), change its « Joueurs » visibility and its fuel setting.
+On « Éneria d'essai » → « Paramètres » → « Outils », override that setting, then restore the system value.
+The universe activation has three choices; visibility checkboxes cycle through inherited, enabled and disabled.
+« Responsable : vous » and « Transférer la responsabilité » appear above the system tabs; choose Mira, then confirm.
+Mira can now write the system settings; Antor can still write his universe settings. No tool is enabled by the seed.
+The E-14 tab address is `/univers/:id/parametres?onglet=outils`; E-15 uses `/systemes/:sid?type=outils`.
+Supporting API reads: `GET /api/systemes/:id/responsable` (attached GM) and `GET …/responsable/candidats` (responsible only,
+other attached GMs, names and ids only). Common module settings use `PUT /api/{univers|systemes}/:id/outils/:module/reglages`
+with the same `{version, valeurs}` body as tool settings; all three routes are session guarded.
+
 **GM block recipe** (`kanevas-import-secrets`, in stub mode): in « Lame d'Ébène », sheet « Port-Sel » (type `lieu`), section « Histoire ».
 Signed in as `lea`, the section reads without the word « sous-main » and has no « Modifier »; searching for « sous-main » in « Lieux » does not return « Port-Sel ».
 Signed in as `antor`, the block appears hatched with the « MJ seul » badge, the same search returns « Port-Sel », and Player mode restores Léa's view.

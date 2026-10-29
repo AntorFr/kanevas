@@ -87,6 +87,26 @@ export function transfererResponsabilite(db: Db, compte: number | Acteur, system
     db.prepare('UPDATE systemes_jeu SET responsable_id = ? WHERE id = ?').run(versCompteId, systemeId);
   })();
 }
+/** E-15's heading: the same reading and writing rights as its tools tab, without loading tools. */
+export function lireResponsable(db: Db, acteur: Acteur, systemeId: number): {
+  ecriture: boolean; responsable: { id: number; nom: string; vousEtes: boolean } | null;
+} {
+  systeme(db, systemeId);
+  if (!estMJRattache(db, acteur.compteId, systemeId) || acteur.modeJoueur) throw introuvable();
+  const id = responsableEffectif(db, systemeId);
+  const compte = id === null ? undefined : db.prepare('SELECT username FROM comptes WHERE id = ?').get(id) as { username: string } | undefined;
+  return { ecriture: id === null || id === acteur.compteId,
+    responsable: id === null || !compte ? null : { id, nom: compte.username, vousEtes: id === acteur.compteId } };
+}
+
+/** The transfer offers only other attached GMs; it reveals no universe or membership list. */
+export function candidatsResponsable(db: Db, acteur: Acteur, systemeId: number): { id: number; nom: string }[] {
+  exigerResponsable(db, acteur, systemeId);
+  return db.prepare(`SELECT DISTINCT c.id, c.username AS nom FROM comptes c
+    JOIN membres m ON m.compte_id = c.id JOIN univers u ON u.id = m.univers_id
+    WHERE u.systeme_id = ? AND m.role = 'mj' AND c.id <> ? ORDER BY c.username COLLATE NOCASE, c.id`)
+    .all(systemeId, acteur.compteId) as { id: number; nom: string }[];
+}
 /** Seed-only fixture of a system predating ownership; never exposed by a route. */
 export function creerSystemeAncienPourBouchon(db: Db, nom: string): { id: number; nom: string } {
   if (env.KANEVAS_STUB !== '1' && env.NODE_ENV !== 'test') throw refuse();
@@ -325,12 +345,7 @@ export function lireOutils(db: Db, acteur: Acteur, cible: CibleOutils): VueOutil
     ecriture = true;
     systemeId = (db.prepare('SELECT systeme_id FROM univers WHERE id = ?').get(cible.id) as { systeme_id: number | null }).systeme_id;
   } else {
-    systeme(db, cible.id);
-    if (!estMJRattache(db, acteur.compteId, cible.id) || acteur.modeJoueur) throw introuvable();
-    const id = responsableEffectif(db, cible.id);
-    ecriture = id === null || id === acteur.compteId;
-    const nom = id === null ? undefined : (db.prepare('SELECT username FROM comptes WHERE id = ?').get(id) as { username: string } | undefined)?.username;
-    responsable = id === null || nom === undefined ? null : { id, nom, vousEtes: id === acteur.compteId };
+    ({ ecriture, responsable } = lireResponsable(db, acteur, cible.id));
     systemeId = cible.id;
   }
   const vide: VueOutils = { ecriture, outils: [], communs: [] };

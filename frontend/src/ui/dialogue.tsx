@@ -30,7 +30,7 @@ export function BoiteDialogue({
   titre: string;
   texte: ReactNode;
   /** Verb and object of the destructive action: « Retirer la section ». */
-  action: string;
+  action?: string;
   onConfirmer: () => void;
   onFermer: () => void;
   enCours?: boolean;
@@ -120,7 +120,7 @@ export function BoiteDialogue({
             <button type="button" className="bouton neutre" ref={annuler} onClick={onFermer}>
               Annuler
             </button>
-            <Bouton
+            {action && <Bouton
               icone={iconeAction}
               variante={variante === 'mj' ? 'principal' : 'danger'}
               enCours={libelleEnCours ? undefined : enCours}
@@ -129,7 +129,7 @@ export function BoiteDialogue({
               onClick={onConfirmer}
             >
               {enCours && libelleEnCours ? libelleEnCours : action}
-            </Bouton>
+            </Bouton>}
           </div>
         </div>
       </div>
