@@ -37,6 +37,7 @@ async function deplacer(page: Any, titre: string, cible: string | null): Promise
   await d.waitFor();
   if (cible === null) await d.getByLabel('Aucun parent').check();
   else {
+    await d.getByRole('button', { name: 'Recherche' }).click();
     await d.getByLabel('Chercher une fiche').fill(cible);
     await d.getByLabel(new RegExp(`^${cible}`)).first().check();
   }
@@ -105,6 +106,7 @@ describe('kanevas-arbre-fiche, E-9 fil, Contient, Déplacer sous…', { skip: sk
     await antor.getByRole('button', { name: /^Autres actions sur/ }).first().click();
     await antor.getByRole('menuitem', { name: 'Déplacer sous…' }).click();
     const d = antor.getByRole('dialog');
+    await d.getByRole('button', { name: 'Recherche' }).click();
     await d.getByLabel('Chercher une fiche').fill('Port-Sel');
     await d.getByLabel(/^Port-Sel/).first().check();
     await d.getByRole('button', { name: 'Déplacer', exact: true }).click();
@@ -112,6 +114,7 @@ describe('kanevas-arbre-fiche, E-9 fil, Contient, Déplacer sous…', { skip: sk
     assert.equal(await d.isVisible(), true);
     await antor.screenshot({ path: `${SHOTS}/cycle.png` });
     // soi-même n'est pas proposé
+    await d.getByRole('button', { name: 'Recherche' }).click();
     await d.getByLabel('Chercher une fiche').fill('Sphères');
     await antor.waitForTimeout(800);
     assert.equal(await d.getByLabel(/^Les Sphères/).count(), 0);

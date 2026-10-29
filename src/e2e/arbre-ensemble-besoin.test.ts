@@ -221,6 +221,7 @@ describe('kanevas-import-arbre, la hiérarchie de bout en bout', { skip: skipBro
     await antor.getByRole('button', { name: /^Autres actions sur/ }).first().click();
     await antor.getByRole('menuitem', { name: 'Déplacer sous…' }).click();
     const d = antor.getByRole('dialog');
+    await d.getByRole('button', { name: 'Recherche' }).click();
     await d.getByLabel('Chercher une fiche').fill('Port-Sel');
     await d.getByLabel(/^Port-Sel/).first().check();
     await d.getByRole('button', { name: 'Déplacer', exact: true }).click();
@@ -242,10 +243,12 @@ describe('kanevas-import-arbre, la hiérarchie de bout en bout', { skip: skipBro
     await antor.getByRole('button', { name: /^Autres actions sur/ }).first().click();
     await antor.getByRole('menuitem', { name: 'Déplacer sous…' }).click();
     const d = antor.getByRole('dialog');
+    await d.getByRole('button', { name: 'Recherche' }).click();
     await d.getByLabel('Chercher une fiche').fill('Pillage');
     const ligne = d.getByLabel(/^Le Pillage des Docks/).first();
     await ligne.waitFor();
     assert.ok((await d.innerText()).includes('Événement'));
+    await d.getByRole('button', { name: 'Recherche' }).click();
     await d.getByLabel('Chercher une fiche').fill('Les Docks');
     await antor.waitForTimeout(900);
     await attendre(antor);

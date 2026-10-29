@@ -71,6 +71,7 @@ describe('kanevas-arbre-fiche, pied, bandeau de cycle et fil avec bascule', { sk
       const { ctx, page } = await ouvrir({ width: 390, height: 844 }, th);
       // Port-Sel is under Les Sphères (seed): moving Les Sphères under Port-Sel is a cycle
       const d = await boite(page, 'Les Sphères');
+      await d.getByRole('button', { name: 'Recherche' }).click();
       await d.getByLabel('Chercher une fiche').fill('Port-Sel');
       await d.getByRole('radio', { name: /^Port-Sel/ }).check({ force: true });
       await d.getByRole('button', { name: 'Déplacer', exact: true }).click();

@@ -38,6 +38,7 @@ describe('kanevas-arbre-fiche, puce et fil à 390 px', { skip: skipBrowser }, ()
       await page.getByRole('button', { name: /^Autres actions sur/ }).first().click();
       await page.getByRole('menuitem', { name: 'Déplacer sous…' }).click();
       const d = page.getByRole('dialog');
+      await d.getByRole('button', { name: 'Recherche' }).click();
       await d.getByLabel('Chercher une fiche').fill('Port-Sel');
       const ligne = d.locator('label', { has: page.getByRole('radio', { name: /^Port-Sel/ }) }).first();
       await ligne.waitFor();
