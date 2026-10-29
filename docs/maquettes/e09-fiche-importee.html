@@ -839,8 +839,8 @@ body.mode-joueur .ariane [data-illisible] { display: none; }
    the pencil's room is always reserved, so the badge never shifts; always visible without hover (touch). */
 .sous-type .crayon-st { width: 12px; height: 12px; color: var(--texte-3); visibility: hidden; }
 .sous-type:hover, .sous-type:focus-visible, .sous-type.survol, .sous-type.focus-clavier { background: var(--surface-3); }
-.sous-type:hover .crayon-st, .sous-type:focus-visible .crayon-st, .sous-type.survol .crayon-st,
-.sous-type.vide:hover, .sous-type.vide:focus-visible, .sous-type.vide.survol { color: var(--texte-2); }
+.sous-type:hover .crayon-st, .sous-type:focus-visible .crayon-st, .sous-type.survol .crayon-st, .sous-type.focus-clavier .crayon-st,
+.sous-type.vide:hover, .sous-type.vide:focus-visible, .sous-type.vide.survol, .sous-type.vide.focus-clavier { color: var(--texte-2); }
 .sous-type:hover .crayon-st, .sous-type:focus-visible .crayon-st, .sous-type.survol .crayon-st, .sous-type.focus-clavier .crayon-st { visibility: visible; }
 .sous-type.focus-clavier { outline: 2px solid var(--focus); outline-offset: 2px; }
 .sous-type:disabled { pointer-events: none; cursor: auto; }

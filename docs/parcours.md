@@ -564,9 +564,12 @@ E-14 (« Page introuvable. ») et lit l'onglet de E-15 en « Lecture seule », i
    « Port franc » (la liste lui propose les sous-types de lieu déjà employés : Sphère, Port, Taverne…) ;
    menu « ⋯ » : « Déplacer sous… » « Les Sphères » ; « Alias et étiquettes ». Sur « Les Cristaux
    d'Ombre », importée en Note, « Changer le type » : Note → Savoir, sous-type « Ressource ».
-   *(kanevas-sous-type-dialogue, B-52)* Sur « Maître Aldric » (PNJ · Capitaine), il rouvre « Changer le
-   type… » sans changer le type : le champ porte « Capitaine », il tape « Amiral », « Enregistrer le
-   sous-type » ; le badge dit « PNJ · Amiral ». Il a trouvé le geste au survol du badge : le crayon y apparaît.
+   *(kanevas-sous-type-dialogue, B-52)* « Maître Aldric » est un PNJ de sous-type « Capitaine » (badge
+   « PNJ · Capitaine »). Antor ouvre son menu « ⋯ », « Changer le type… », laisse « Personnage (actuel) » :
+   le champ porte « Capitaine » ; il tape « Amiral » et clique « Enregistrer le sous-type » ; le badge dit
+   « PNJ · Amiral ».
+   *(kanevas-sous-type-dialogue, B-52)* Le sous-type « Port » de « Port-Sel », plus haut, il l'a changé en
+   place, dans le badge : au survol, le crayon apparu à côté de « Port » lui a montré qu'il s'édite.
 3. Menu « ⋯ » d'un doublon : « Supprimer la fiche… » ; la boîte compte ce qui part avec elle
    (sections, relations qui la visent, places sur une carte ; ses fichiers restent dans la médiathèque),
    dit sous quelle fiche
@@ -583,6 +586,9 @@ texte pour Léa, jusqu'à l'arrivée de la fiche ; dans un scénario, la liste q
 ne peut pas être rangée sous l'un de ses descendants. » ; un titre vidé — « Erreur : le titre est obligatoire. », le champ reste ; un bilan de suppression qui ne se charge pas — « Impossible de charger le détail. », « Réessayer » (états : E-9) ; un Joueur auteur d'une section qui contient
 un bloc MJ — « Modifier » n'y paraît pas ; un texte qui passe 100 000 caractères — « Erreur : 100 000
 caractères au plus. », le texte reste.
+*(kanevas-sous-type-dialogue)* Le sous-type « Amiral » ne s'enregistre pas depuis « Changer le type… » —
+« Le sous-type n'a pas changé. Réessayez. », la boîte reste ouverte avec « Amiral » ; la connexion tombe —
+le bandeau, « Enregistrer le sous-type » désactivé, et le sous-type du badge n'offre plus ni fond ni crayon.
 
 ### P-15 — Poser le jeton de l'assistant (Admin, admin d'instance) (B-51)
 *Admin vient de déployer Kanevas : l'assistant n'a pas encore de jeton, et il ne veut pas passer par un redéploiement.*
