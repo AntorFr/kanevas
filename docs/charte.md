@@ -159,12 +159,14 @@ cassé** (MJ seul) garde la couleur du texte, souligné en tirets `--danger` ; u
 (MJ seul), en tirets `--texte-3`. Un lien vers une fiche illisible n'a **aucune** marque : il est du
 texte. L'état est porté par le soulignement **et** l'infobulle, jamais par la seule couleur.
 
-**La marque (`kanevas-icones`).** L'icône « Marge » (`assets/brand/kanevas-marge/`, encre #121317,
-pervenche #8B9BF0, papier #FCFCFD — des neutres et de l'accent de la charte, aucun token ajouté) est
-l'identité de Kanevas. Elle se montre : dans l'onglet (favicon), sur l'écran d'accueil (apple-touch-icon),
-à l'installation (manifeste), et **dans la barre, à la place du carré « K »** hors d'un univers : l'image
-`favicon.svg` à 30 px (même gabarit que le sceau d'univers), `alt` vide (le lien porte « Kanevas — Mes univers »), sans cadre,
-ombre ni fond ajouté, identique dans les deux thèmes (son carré encre porte son propre fond). Le **sceau d'univers** (initiale du nom) n'est pas la marque : il ne change pas. Dans un univers, la barre montre le sélecteur, pas la marque. On ne redessine pas l'icône, on ne la recolore pas.
+**The brand (`kanevas-icones`, AD-135).** The "Marge" icon (`assets/brand/kanevas-marge/`: ink #121317,
+periwinkle #8B9BF0, paper #FCFCFD — neutrals and the accent of the charter, no token added) is Kanevas's
+identity. It shows in the tab (favicon), on the home screen (apple-touch-icon), at install (manifest), and
+**in the sidebar, in place of the "K" square**, outside a universe: the `favicon.svg` image at 30 px (same size as
+the universe seal), empty `alt` (the link carries "Kanevas — Mes univers"), no border, shadow or added background,
+identical in both themes (its ink square carries its own background). The **universe seal** (initial of the name)
+is not the brand and does not change. Inside a universe, the sidebar shows the selector, not the brand. The icon is
+not redrawn and not recoloured.
 
 ## 4. Composants
 
