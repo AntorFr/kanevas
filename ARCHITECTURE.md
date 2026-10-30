@@ -19,9 +19,11 @@ preparation, session reports; `kanevas-relier-chercher`, relations between sheet
 call the same service functions as the routes, with the person's permissions (AD-73 to AD-78).
 Maps and graphs (E-10, E-11) are built. `kanevas-monde` adds a proposed section update based on a session report, which the GM applies or abandons with one action (AD-79 to AD-82); `kanevas-images` adds generation of a portrait attached to a section (AD-88 to AD-90).
 `kanevas-recours-admin` adds instance administration (E-5, AD-86, AD-87).
+`kanevas-outils-cadre` adds the tools framework (`src/outils/`, `services/outils.ts`, `routes/outils.ts`, migration `0017-outils.sql`, routes `/api/univers/:id/outils…` and `/api/systemes/:id/{outils,responsable}…`, tab « Outils » of E-14/E-15, sidebar section « Outils »): detail and decisions C-1 to C-6 in « Detail of `kanevas-outils-cadre` »; no real tool yet, only the trial module `essai` in stub mode and in test.
 
 ## Map
 
+- `src/outils/`, `services/outils.ts`, `routes/outils.ts`, `frontend/src/outils/`, `frontend/src/ecrans/outils/`: the tools framework (`kanevas-outils-cadre`, see « Detail of `kanevas-outils-cadre` »).
 - `src/server.ts`, `src/app.ts`: startup and assembly of the Fastify app
   (`buildApp`), the repository's only application; all future routes register
   there.
@@ -77,6 +79,8 @@ Volume `/data`: `kanevas.db` (SQLite, WAL), `session.key` (session secret, 0600)
 in progress, emptied at startup except with an in-memory database, where the directory is shared).
 
 ## Routes `/api`
+
+The tools framework's routes (`/api/univers/:id/outils…`, `/api/systemes/:id/outils…`, `/api/systemes/:id/responsable…`) are tabulated in « Detail of `kanevas-outils-cadre` », C-5.
 
 All guarded by the session (401 without a session), except `/api/auth/*` and `/api/import/v1/*`, which opens only with a Bearer token (AD-103) and ignores the cookie. Service errors are
 `introuvable` 404, `refuse` 403, `invalide` 400, `conflit` 409 (`section_modifiee`, `nom_pris`, `gabarit_modifie`, `scenario_modifie`, `proposition_appliquee`, `relation_existante`, `limite_relations`, `limite_pieces`: 100 attached files per section (AD-111) — 409 for a GM, 403 `refuse` for another member (AD-117), `fiche_deja_placee` and `carte_pleine` for maps; 413 `fond_trop_lourd` for a background over 25 MB; 400 `fichier_vide` for an empty attachment (an empty map background is a 400 `fond_invalide`); `auto_relation` is a 400 `invalide`). Removing the last
@@ -562,9 +566,9 @@ added / modified / refused report). Screen, API and assistant go through the **s
 **AD-125 — Activation, visibility and settings resolve system → universe.** [ADOPTED, decisions (6), point 3, point 10]
 Binds: B-57 to B-60. Prevents: three places deciding who sees a tool, and settings read in different places.
 Rule: a single function resolves, for (universe, tool), the *enabled* state, visibility by role and each setting's value: the universe row if there is one, otherwise the system row,
-otherwise the declared default. The system's **maintainer** (creator by default, transferable role) alone writes at system level; any GM writes at their universe's level; the instance
+otherwise the declared default. The system's **responsible** (creator by default, transferable role) alone writes at system level; any GM writes at their universe's level; the instance
 admin has no access. Disabling at system level hides the tool from universes following it; a universe that forced it keeps access, including system data. *Rejected*: “any GM of an attached
-universe configures the system” (the action affects all universes); *the instance admin as maintainer* — they have no content access (AD-9). Templates keep their current rule.
+universe configures the system” (the action affects all universes); *the instance admin as responsible* — they have no content access (AD-9). Templates keep their current rule.
 
 **AD-126 — Tool permissions have two levels, enforced in services.** [ADOPTED, decision point 3]
 Binds: B-59, B-73. Prevents: a tool leaking a secret in player view (search, route, zone, menu).
@@ -622,7 +626,7 @@ Printing is a later core function for any sheet (outside the epic).
 **AD-135 — Disabling hides; deleting is a separate action.** [ADOPTED, point 6]
 Binds: B-63. Prevents: data lost by clicking a toggle.
 Rule: disabling a tool touches no row; it hides the entry point, addresses, data and the view of system data for the universe; its managed sections remain readable in text form with an
-« outil désactivé » banner, without regeneration or modification. Deleting data is a separate, restricted function (maintainer for the system, GM for the universe), whose confirmation counts what goes and, for the system,
+« outil désactivé » banner, without regeneration or modification. Deleting data is a separate, restricted function (the responsible for the system, GM for the universe), whose confirmation counts what goes and, for the system,
 what still uses it (universes, local items, designs). Deleting a universe erases its tools' data (one transaction, including the module's tables).
 
 **AD-136 — A tool's capabilities for the assistant are neutral module tools.** [ADOPTED, model (8)]

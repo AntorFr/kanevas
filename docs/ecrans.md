@@ -3178,7 +3178,7 @@ added or modified manually in the router: a module declares its entry point.
 forcé »), its **dependencies**, **visibility** (two checkboxes, GM and Players), **settings** (each: effective
 value, its source, « Remplacer pour l'univers »), **catalogue** (version, element count per
 nature, « Importer un catalogue… », « Voir les éléments »), and at the foot « Supprimer les données de l'outil… ». At the top, on E-15, the
-system's **manager** and « Transférer la responsabilité ».
+system's **responsible** and « Transférer la responsabilité ».
 
 | State | What the user sees | Text |
 |---|---|---|
