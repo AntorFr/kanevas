@@ -3,6 +3,7 @@ import { env } from '../config/env.js';
 import { applicable, schemaValeur, type CarteOutil, type DeclarationModule, type DeclarationOutil,
   type Reglages, type ValeurReglage } from '../outils/declaration.js';
 import { modulesActifs } from '../outils/registre.js';
+import { resumeCatalogue, type ResumeCatalogue } from './catalogues.js';
 import { exigerMJ, roleDe, vueMJ } from './droits.js';
 import { ErreurService, introuvable, refuse } from './erreurs.js';
 import type { Acteur } from './types.js';
@@ -330,6 +331,7 @@ export interface VueOutils {
     cle: string; module: string; libelle: string; description: string; type: string; dependances: string[];
     usages: { nom: string; mjSeul: boolean }[]; reglages: ReturnType<typeof vueReglages>;
     systeme: NiveauVu; univers: NiveauVu | null;
+    catalogue?: ResumeCatalogue;
     effectif: { active: boolean; visibilite: { mj: boolean; joueur: boolean }; reglages: Record<string, ValeurResolue> };
   }[];
   communs: { module: string; libelle: string; reglages: ReturnType<typeof vueReglages>;
@@ -364,6 +366,7 @@ export function lireOutils(db: Db, acteur: Acteur, cible: CibleOutils): VueOutil
         dependances: o.dependances, usages: o.usages, reglages: vueReglages(o.reglages),
         systeme: niveauVu(sys(o.cle), { active: false, ...o.visibiliteParDefaut }),
         univers: cible.niveau === 'univers' ? niveauVu(uni(o.cle), null) : null,
+        ...(o.catalogue ? { catalogue: resumeCatalogue(db, cible, o.cle) } : {}),
         effectif: { active: r.active, visibilite: r.visibilite, reglages: r.reglages },
       });
     }

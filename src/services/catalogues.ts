@@ -23,6 +23,28 @@ export interface VueElementCatalogue {
 }
 export interface PageCatalogue { elements: VueElementCatalogue[]; suivant: string | null }
 export interface OptionsCatalogue { nature?: string; curseur?: string }
+export interface ResumeCatalogue {
+  natures: { nom: string; libelle: string }[];
+  systeme: { version: string | null; comptes: Record<string, number> };
+  univers: { version: string | null; comptes: Record<string, number> };
+}
+
+/** Raw counts for the GM tools list, whose caller has already guarded the target. */
+export function resumeCatalogue(db: Db, cible: CibleOutils, outil: string): ResumeCatalogue {
+  const { catalogue, systemeId } = context(db, cible, outil);
+  const niveau = (target: CibleOutils | null) => {
+    const comptes = Object.fromEntries(catalogue.natures.map((n) => [n.nom, 0]));
+    if (target) {
+      for (const row of catalogue.stockage.lister(db, storageTarget(target))) comptes[row.nature]!++;
+    }
+    return { version: target ? lireLigneOutil(db, target, outil)?.version_catalogue ?? null : null, comptes };
+  };
+  return {
+    natures: catalogue.natures.map(({ nom, libelle }) => ({ nom, libelle })),
+    systeme: niveau({ niveau: 'systeme', id: systemeId }),
+    univers: niveau(cible.niveau === 'univers' ? cible : null),
+  };
+}
 
 /** Structured file errors are kept in the service, for both import entry points. */
 export class ErreurCatalogue extends ErreurService {
