@@ -168,7 +168,7 @@ identical in both themes (its ink square carries its own background). The **univ
 is not the brand and does not change. Inside a universe, the sidebar shows the selector, not the brand. The icon is
 not redrawn and not recoloured.
 
-The sign-in page is not ours (Authelia; in stub mode a plain server page) and carries no brand; the tab icon of the app is declared by `index.html`. The source is the pack's main icon (ink square variant, « Encre & papier »).
+The sign-in page is not ours (Authelia; in stub mode a plain server page) and declares no brand (a browser asks `/favicon.ico` by itself and may show the icon in that tab, since the file is public); the tab icon of the app is declared by `index.html`. The source is the pack's main icon (ink square variant, « Encre & papier »).
 
 *States.* Loading, empty, permission denied and extreme content do not apply to the brand (a fixed image, the same
 for every role, and served without a session). If the image fails to load (network, 404), the link shows
