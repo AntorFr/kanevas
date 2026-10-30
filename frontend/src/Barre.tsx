@@ -5,6 +5,8 @@ import { Link, matchPath, useLocation } from 'react-router-dom';
 import { appeler } from './api';
 import { useMoi, useUnivers, useVue } from './cadre-contexte';
 import { ITEMS_UNIVERS, itemsLore, type Item } from './items';
+import { useEntreesOutils } from './outils/entrees';
+import { outilClient } from './outils/registre';
 import { ecranEnregistre } from './registre';
 import { type ChoixTheme, useTheme } from './theme';
 import { typesActifs, useTypes } from './types-contexte';
@@ -207,8 +209,19 @@ function Contenu({ onNavigue }: { onNavigue: () => void }) {
   // « Lore » comes from the types the server sends, between the first group and « Univers ».
   const typesLu = useTypes();
   const lore = dedans ? itemsLore(typesActifs(typesLu.types)) : [];
+  // « Outils » comes from the entries the server sends (AD-133), between the first group and « Lore »;
+  // a GM in player mode asks as a player, so the bar shows what a player sees.
+  const entreesOutils = useEntreesOutils(dedans ? id : null, role === 'mj' && mode === 'joueur' ? 'joueur' : 'mj');
+  const outils: Item[] = entreesOutils.map((e) => ({
+    libelle: e.libelle,
+    icone: outilClient(e.cle)!.icone,
+    section: 'Outils',
+    garderMode: true,
+    chemin: (u: number) => `/univers/${u}/outils/${e.cle}`,
+  }));
   const sections = [...new Set(items.map((i) => i.section ?? ''))];
   if (dedans) sections.splice(Math.min(1, sections.length), 0, 'Lore');
+  if (dedans && outils.length > 0) sections.splice(Math.min(1, sections.length), 0, 'Outils');
   const horsUnivers = dedans ? [] : ITEMS_UNIVERS.filter((i) => i.horsUnivers && visible(i, i.chemin(0)));
 
   // True while the nav has more entries below the visible part (drawer on a short phone): shows a « more below » cue.
@@ -228,7 +241,7 @@ function Contenu({ onNavigue }: { onNavigue: () => void }) {
       window.removeEventListener('resize', mesurer);
       obs?.disconnect();
     };
-  }, [items.length, dedans]);
+  }, [items.length, outils.length, dedans]);
 
   return (
     <>
@@ -291,7 +304,7 @@ function Contenu({ onNavigue }: { onNavigue: () => void }) {
                 )}
               </div>
             )}
-            {(s === 'Lore' ? lore : items.filter((i) => (i.section ?? '') === s))
+            {(s === 'Lore' ? lore : s === 'Outils' ? outils : items.filter((i) => (i.section ?? '') === s))
               .map((i) => (
                 <Link key={i.libelle} to={i.chemin(id!) + (i.garderMode && mode === 'joueur' ? '?mode=joueur' : '')} className="item" aria-current={itemCourant(i, id!, pathname, section) ? 'page' : undefined}>
                   <i.icone size={16} strokeWidth={1.75} aria-hidden="true" />

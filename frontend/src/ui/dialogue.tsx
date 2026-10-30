@@ -11,6 +11,8 @@ const FOCALISABLES = 'a[href],button,input,textarea,select,[tabindex]:not([tabin
  * described. The focus enters on « Annuler » and stays (Tab loops); Escape or a click on the veil
  * closes; the focus goes back to the opener — or to `reperage` (the sheet's title) when the opener
  * has vanished. The action is a danger button named with its verb and object.
+ * Without an action, the same dialog only offers « Fermer »; its text explains why
+ * no action is available, and focus enters on that sole closing button.
  */
 export function BoiteDialogue({
   titre,
@@ -30,7 +32,7 @@ export function BoiteDialogue({
   titre: string;
   texte: ReactNode;
   /** Verb and object of the destructive action: « Retirer la section ». */
-  action: string;
+  action?: string;
   onConfirmer: () => void;
   onFermer: () => void;
   enCours?: boolean;
@@ -118,9 +120,9 @@ export function BoiteDialogue({
           {children}
           <div className="boite-actions">
             <button type="button" className="bouton neutre" ref={annuler} onClick={onFermer}>
-              Annuler
+              {action ? 'Annuler' : 'Fermer'}
             </button>
-            <Bouton
+            {action && <Bouton
               icone={iconeAction}
               variante={variante === 'mj' ? 'principal' : 'danger'}
               enCours={libelleEnCours ? undefined : enCours}
@@ -129,7 +131,7 @@ export function BoiteDialogue({
               onClick={onConfirmer}
             >
               {enCours && libelleEnCours ? libelleEnCours : action}
-            </Bouton>
+            </Bouton>}
           </div>
         </div>
       </div>

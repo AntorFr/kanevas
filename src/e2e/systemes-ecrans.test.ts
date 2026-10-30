@@ -102,7 +102,7 @@ describe('kanevas-il-systemes-ecrans', { skip: skipBrowser }, () => {
   test('Antor : deux systèmes, « Lecture seule » sur le second seulement', opts, async () => {
     await va(antor, '/systemes');
     const cartes = antor.locator('.carte-dessin');
-    assert.equal(await cartes.count(), 2);
+    assert.equal(await cartes.count(), 3); // + « Système d'essai » (kanevas-outils-cadre)
     const cof = cartes.filter({ hasText: /CoF Mini/ });
     const chro = cartes.filter({ hasText: /Chroniques Oubliées Fantasy/ });
     assert.equal(await chro.filter({ hasText: 'Lecture seule' }).count(), 1);
@@ -133,15 +133,18 @@ describe('kanevas-il-systemes-ecrans', { skip: skipBrowser }, () => {
 
   test('E-1 : deux cartes par nom, rôle, système, 2 membres ; Teo vide', opts, async () => {
     await va(antor, '/');
-    // « Essai Kanka » (kanevas-import) is seeded too: this test is about the two others.
-    const cartes = antor.locator('.carte-dessin').filter({ hasNotText: 'Essai Kanka' });
-    assert.equal(await cartes.count(), 2);
-    const t0 = await cartes.nth(0).innerText();
-    const t1 = await cartes.nth(1).innerText();
+    // « Essai Kanka » (kanevas-import) and the two trial universes (kanevas-outils-cadre) are seeded too:
+    // this test is about the two others, picked by name.
+    const cartes = antor.locator('.carte-dessin');
+    assert.equal(await cartes.count(), 5);
+    const lameCarte = cartes.filter({ hasText: /Lame d.Ébène/ });
+    assert.equal(await lameCarte.count(), 1);
+    const t0 = await lameCarte.innerText();
+    const t1 = await cartes.filter({ hasText: /Les Cendres de Vaëlis/ }).innerText();
     assert.match(t0, /Lame d'Ébène/); assert.match(t0, /MJ/); assert.match(t0, /CoF Mini/); assert.match(t0, /2 membres/);
     assert.match(t1, /Les Cendres de Vaëlis/); assert.match(t1, /Joueur/); assert.match(t1, /Chroniques Oubliées Fantasy/); assert.match(t1, /2 membres/);
     await photo(antor, 'antor-e1');
-    await cartes.nth(0).click();
+    await lameCarte.click();
     await attendre(antor);
     assert.match(antor.url(), new RegExp(`/univers/${ids["Lame d'Ébène"]}$`));
     const t = await va(teo, '/');
@@ -201,14 +204,18 @@ describe('kanevas-il-systemes-ecrans', { skip: skipBrowser }, () => {
   test('connexion perdue : la grille chargée reste, bandeau, « Créer un univers » désactivé', opts, async () => {
     await va(antor, '/');
     await antor.context().setOffline(true);
-    await antor.evaluate(() => window.dispatchEvent(new Event('offline')));
-    await antor.getByText(/Connexion perdue/).first().waitFor();
-    assert.equal(await antor.locator('.carte-dessin').count(), 3); // + « Essai Kanka »
-    const b = antor.getByRole('button', { name: /Créer un univers/ }).or(antor.getByRole('link', { name: /Créer un univers/ })).first();
-    assert.ok((await b.isDisabled()) || (await b.getAttribute('aria-disabled')) === 'true');
-    await photo(antor, 'hors-ligne-e1');
-    await antor.context().setOffline(false);
-    await antor.evaluate(() => window.dispatchEvent(new Event('online')));
+    try {
+      await antor.evaluate(() => window.dispatchEvent(new Event('offline')));
+      await antor.getByText(/Connexion perdue/).first().waitFor();
+      assert.equal(await antor.locator('.carte-dessin').count(), 5); // + « Essai Kanka », « Éneria d'essai », « Univers voisin »
+      const b = antor.getByRole('button', { name: /Créer un univers/ }).or(antor.getByRole('link', { name: /Créer un univers/ })).first();
+      assert.ok((await b.isDisabled()) || (await b.getAttribute('aria-disabled')) === 'true');
+      await photo(antor, 'hors-ligne-e1');
+    } finally {
+      // Never leave the shared context offline: the next tests would fail on the network, not on their own claim.
+      await antor.context().setOffline(false);
+      await antor.evaluate(() => window.dispatchEvent(new Event('online')));
+    }
   });
 
   test('téléphone : E-16 et E-1 en une colonne sans débordement', opts, async () => {
@@ -304,7 +311,7 @@ describe('kanevas-il-systemes-ecrans', { skip: skipBrowser }, () => {
     const e15 = `/systemes/${idS}`;
     await va(pg, e15);
     const tabs = (await pg.getByRole('tab').allInnerTexts()).map((t: string) => t.replace(/\s+/g, ' ').trim());
-    assert.deepEqual(tabs, ['Règles 3', 'Créatures 5', 'Objets 2', 'Types de fiche']);
+    assert.deepEqual(tabs, ['Règles 3', 'Créatures 5', 'Objets 2', 'Types de fiche', 'Outils']); // « Outils » (E-20) is the tab of kanevas-outils-cadre-onglet
     const m = await pg.evaluate(() => {
       let bouton: Element | null = null;
       for (const x of Array.from(document.querySelectorAll('button'))) if (/^Ajouter une créature/.test(x.textContent ?? '')) bouton = x;
