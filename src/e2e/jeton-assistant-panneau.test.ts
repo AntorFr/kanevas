@@ -75,18 +75,25 @@ async function demarrerSansVerrou(): Promise<Serveur> {
   for (const k of Object.keys(env)) if (k.startsWith('OIDC_')) delete env[k];
   const base = `http://127.0.0.1:${port}`;
   let child: ChildProcess;
+  // Ready = /healthz answers. The wait ends on that state (or on the child's death), not on a fixed count of
+  // polls: a node + tsx startup under the pod's load can take longer than any guess. 120 s is only a ceiling.
   const lancer = async () => {
-    child = spawn('node', ['--import', 'tsx', 'src/server.ts'], { env, stdio: 'ignore' });
-    for (let i = 0; i < 150; i++) {
+    const enfant = spawn('node', ['--import', 'tsx', 'src/server.ts'], { env, stdio: 'ignore' });
+    child = enfant;
+    let mort = false;
+    enfant.once('exit', () => (mort = true));
+    const limite = Date.now() + 120_000;
+    while (!mort && Date.now() < limite) {
       try {
-        await fetch(`${base}/healthz`);
-        return;
+        const r = await fetch(`${base}/healthz`);
+        if (r.ok) return;
       } catch {
-        await new Promise((r) => setTimeout(r, 100));
+        // not listening yet
       }
+      await new Promise((r) => setTimeout(r, 100));
     }
-    child.kill('SIGKILL');
-    throw new Error('server did not start');
+    enfant.kill('SIGKILL');
+    throw new Error(mort ? 'server exited before being ready' : 'server did not start');
   };
   await lancer();
   return {
@@ -96,9 +103,12 @@ async function demarrerSansVerrou(): Promise<Serveur> {
       rmSync(dossier, { recursive: true, force: true });
     },
     redemarrer: async () => {
-      child.kill('SIGKILL');
-      await new Promise((r) => setTimeout(r, 300));
-      await lancer();
+      // Wait for the old process to be gone (its port released), then start the new one under the harness lock.
+      const ancien = child;
+      const parti = new Promise<void>((r) => (ancien.exitCode !== null || ancien.signalCode !== null ? r() : ancien.once('exit', () => r())));
+      ancien.kill('SIGKILL');
+      await parti;
+      await withStartupLock(lancer);
     },
   };
 }
