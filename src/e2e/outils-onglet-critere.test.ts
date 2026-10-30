@@ -129,7 +129,7 @@ describe('onglet « Outils » de E-14 et E-15 et transfert de responsabilité', 
         await page.goto(e14('Univers voisin'));
         const voisinA = carte(page, 'Essai A');
         await voisinA.getByLabel('Activé', { exact: true }).check();
-        await voisinA.getByText('Activé · Univers').waitFor();
+        await voisinA.getByText('Univers · activé').waitFor();
         await page.goto(e15("Système d'essai"));
         await carte(page, 'Essai A').getByText('Activé', { exact: true }).first().click();
         await page.getByText("Essai B demande Essai A : désactivez-le d'abord.").waitFor();
@@ -141,7 +141,7 @@ describe('onglet « Outils » de E-14 et E-15 et transfert de responsabilité', 
         await page.goto(e14("Éneria d'essai"));
         await carte(page, 'Essai A').getByText('Désactivé (suit le système)').waitFor();
         await page.goto(e14('Univers voisin'));
-        await carte(page, 'Essai A').getByText('Activé · Univers').waitFor();
+        await carte(page, 'Essai A').getByText('Univers · activé').waitFor();
         await photo(page, 'e14-voisin');
         // everything succeeded through the PUT routes only
         assert.ok(ecr.every((e) => /^(PUT|POST) \/api\/(systemes|univers)\//.test(e)), ecr.join('\n'));

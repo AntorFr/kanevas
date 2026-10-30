@@ -454,12 +454,12 @@ test('mira : sur « Système ancien » (sans responsable stocké) elle a l’int
   assert.doesNotMatch(await mira.locator('main').innerText(), /Seul le responsable du système règle ces valeurs\./);
 });
 
-test('mira : Système ancien, transférer sans autre MJ → « Aucun autre MJ d’un univers de ce système. », « Annuler » seul', opts, async () => {
+test('mira : Système ancien, transférer sans autre MJ → « Aucun autre MJ d’un univers de ce système. », « Fermer » seul', opts, async () => {
   await mira.getByRole('button', { name: 'Transférer la responsabilité' }).click();
   const d = mira.getByRole('alertdialog').or(mira.getByRole('dialog'));
   await d.getByText(rx('Aucun autre MJ d’un univers de ce système.')).waitFor();
   assert.equal(await d.getByRole('button', { name: 'Transférer', exact: true }).count(), 0);
-  await d.getByRole('button', { name: 'Annuler' }).click();
+  await d.getByRole('button', { name: 'Fermer' }).click();
   await d.waitFor({ state: 'detached' });
 });
 
