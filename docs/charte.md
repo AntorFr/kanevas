@@ -159,6 +159,13 @@ cassé** (MJ seul) garde la couleur du texte, souligné en tirets `--danger` ; u
 (MJ seul), en tirets `--texte-3`. Un lien vers une fiche illisible n'a **aucune** marque : il est du
 texte. L'état est porté par le soulignement **et** l'infobulle, jamais par la seule couleur.
 
+**La marque (`kanevas-icones`).** L'icône « Marge » (`assets/brand/kanevas-marge/`, encre #121317,
+pervenche #8B9BF0, papier #FCFCFD — des neutres et de l'accent de la charte, aucun token ajouté) est
+l'identité de Kanevas. Elle se montre : dans l'onglet (favicon), sur l'écran d'accueil (apple-touch-icon),
+à l'installation (manifeste), et **dans la barre, à la place du carré « K »** hors d'un univers : l'image
+`favicon.svg` à 30 px (même gabarit que le sceau d'univers), `alt` vide (le lien porte « Kanevas — Mes univers »), sans cadre,
+ombre ni fond ajouté, identique dans les deux thèmes (son carré encre porte son propre fond). Le **sceau d'univers** (initiale du nom) n'est pas la marque : il ne change pas. Dans un univers, la barre montre le sélecteur, pas la marque. On ne redessine pas l'icône, on ne la recolore pas.
+
 ## 4. Composants
 
 Pour chacun : **V** visuelle, **C** comportementale. Tous ont l'anneau de focus (2 px `--focus`,

@@ -214,7 +214,7 @@ des univers du compte, puis « Mes univers » et « Systèmes de jeu » en pied 
 les types activés de l'univers (« Aventures » — a type that can be deactivated like any other —, Personnages, Lieux, Factions, Objets, Événements, Quêtes par défaut ; liste complète en haut de ce document) ; pour un MJ, **Univers ▸ Membres** et **Paramètres** ; en
 pied, le compte (avatar et identifiant) qui ouvre le menu du compte : l'identifiant, le thème
 (Clair, Sombre, Système, en trois icônes) et « Se déconnecter ». Hors d'un univers (E-1,
-E-2, E-5, E-15, E-16) : « Mes univers », « Systèmes de jeu », « Administration » pour un compte du groupe `parents` (E-5, plus bas) et le compte en pied. **Un item dont l'écran n'est
+E-2, E-5, E-15, E-16) : en tête la **marque** (l'icône Marge de 30 px, puis « Kanevas » ; un lien vers « Mes univers », charte § 3) ; « Mes univers », « Systèmes de jeu », « Administration » pour un compte du groupe `parents` (E-5, plus bas) et le compte en pied. **Un item dont l'écran n'est
 pas construit n'est pas affiché** (« Comptes-rendus » and « Cartes » are shown). « Paramètres » (E-14) n'est affiché qu'au MJ. Sur téléphone (moins de 760 px), la barre est un tiroir sous un
 bouton « Menu ».
 
