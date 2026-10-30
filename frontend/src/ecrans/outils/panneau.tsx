@@ -107,7 +107,7 @@ function Carte({ titre, base, cle, niveau, definition, outil, outils = [], ecrit
           {v === null ? `Suit le système (${outil.systeme.active ? 'Activé' : 'Désactivé'})` : v ? 'Activé' : 'Désactivé'}
         </label>)}
       </fieldset> : <p className="outil-origine">{niveau === 'systeme' ? 'Système · ' : ''}{actif ? 'Activé' : 'Désactivé'}</p>}
-      {niveau === 'univers' && <p className="outil-origine">{actif ? 'Activé' : 'Désactivé'}{courant.active === null ? ' (suit le système)' : ' · Univers'}</p>}
+      {niveau === 'univers' && <p className="outil-origine">{courant.active !== null && 'Univers · '}{actif ? 'Activé' : 'Désactivé'}{courant.active === null && ' (suit le système)'}</p>}
       {echec && <div className="echec" role="alert">{echec} {reprise && <Bouton petit icone={RotateCcw} ecrit disabled={inactif} onClick={reprise}>Réessayer</Bouton>}</div>}
       {outil.dependances.length > 0 && <p className="outil-dependances">Demande : {outil.dependances.map((d) => {
         const dep = outils.find((o) => o.cle === d);

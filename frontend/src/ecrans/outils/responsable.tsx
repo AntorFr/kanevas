@@ -71,13 +71,13 @@ function Transfert({ id, fermer, termine }: { id: string; fermer: () => void; te
   }
   const vide = candidats?.length === 0;
   return <BoiteDialogue titre="Transférer la responsabilité" icone={Users} iconeAction={ArrowRightLeft} variante="mj"
-    texte={nom ? `${nom} pourra activer les outils et régler le système ; vous gardez vos droits de MJ.` : 'Choisissez un MJ d’un univers rattaché.'}
+    texte={vide ? 'Aucun autre MJ d’un univers de ce système.' : nom ? `${nom} pourra activer les outils et régler le système ; vous gardez vos droits de MJ.` : 'Choisissez un MJ d’un univers rattaché.'}
     action={vide ? undefined : 'Transférer'} enCours={attente} desactive={!nom || perdue} onConfirmer={() => void transferer()} onFermer={() => { if (!attente) fermer(); }}>
     <div className={vide ? 'transfert-vide' : undefined}>
       {perdue && <p role="status" className="echec">Connexion perdue.</p>}
       {erreur ? <ErreurChargement texte="Impossible de charger les MJ." onReessayer={() => setEssai((n) => n + 1)} />
         : !candidats ? <ChargementListe texte="Chargement…" />
-        : vide ? <p>Aucun autre MJ d’un univers de ce système.</p>
+        : vide ? null
         : <div className="responsable-candidats" role="radiogroup" aria-label="Nouveau responsable">{candidats.map((c) => <label key={c.id}>
           <input type="radio" name="responsable" value={c.id} checked={choix === c.id} disabled={attente || perdue} onChange={() => setChoix(c.id)} />{c.nom}
         </label>)}</div>}
