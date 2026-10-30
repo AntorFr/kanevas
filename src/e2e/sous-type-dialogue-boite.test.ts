@@ -120,6 +120,7 @@ describe('kanevas-sous-type-dialogue-boite, au navigateur', { skip: skipBrowser 
     await champ.fill('x'.repeat(61));
     await bouton(boite).click();
     await boite.getByText('Erreur : 60 caractères au plus.').waitFor();
+    assert.equal((await boite.innerText()).split('Erreur :').length - 1, 1, 'un seul « Erreur : »');
     assert.equal((await lire(id)).sousType, 'Capitaine');
     await capture(antor, '61-caracteres');
     await champ.fill('y'.repeat(60));

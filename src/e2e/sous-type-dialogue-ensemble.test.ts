@@ -290,6 +290,7 @@ describe('kanevas-sous-type-dialogue : ensemble depuis le besoin', { skip: skipB
       await champ(boite).fill('C'.repeat(61));
       await bouton(boite).click();
       await boite.getByText(rx('Erreur : 60 caractères au plus.')).waitFor();
+      assert.equal((await boite.innerText()).split('Erreur :').length - 1, 1, 'un seul « Erreur : »');
       await p.waitForTimeout(300);
       p.removeAllListeners('request');
       assert.deepEqual(patchs, []);
