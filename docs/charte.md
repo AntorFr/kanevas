@@ -240,8 +240,6 @@ For each: **V** visual, **C** behavioural. All have the focus ring (2 px `--focu
   A failure is not a toast: it is an inline message that stays.
 
 **Dialog** (section removal confirmation).
-- `frontend/src/ui/dialogue.tsx` also hosts the responsibility transfer (`variante="mj"`):
-  amber badge, primary action; when no candidate exists, the optional action is omitted and only « Annuler » remains.
 - V: `--surface` on `--voile`, `--ombre-flottant`, radius `--rayon-panneau`, at most 440 px,
   24 px margin; 36 px icon badge (`trash-2` in `--danger` on `--danger-fond`); heading
   16 px weight 600; text `--texte-2`; buttons on the right, neutral « Annuler » then the danger
