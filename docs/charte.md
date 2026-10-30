@@ -296,6 +296,10 @@ décalé de 2 px) sur `:focus-visible`.
 - C : ce que voit chaque rôle est celui de `docs/ecrans.md` (un bloc qui n'a rien à dire n'existe
   pas pour un joueur ; le MJ voit chaque bloc, même vide).
 
+**Ligne de fiche liée** (`LigneFicheLiee` and `VignetteFiche`, `frontend/src/ui/ligne-fiche-liee.tsx`; the block « Fiches liées » of E-9; E-17 reuses the thumbnail).
+- V: a row of at least 40 px, gap `--e-1` / `--e-3`; thumbnail 36 px (40 px in E-17) that keeps its image inside the frame (the image is clipped by its own radius, the « disparu » mark stays free to overflow), radius `--rayon-champ`, background `--surface-2`, the illustration or else the type icon in `--texte-3`; the title as a link (`.jeton`), then the type badge (`pj` for a player character), the sub-type in `--texte-3` 13 px, the « MJ seul » pill, the qualifier in grey, and « — via » (the sub-place) in grey 12 px. The « disparu » mark is the shared one: a round 16 px pill at left/bottom −4 px, 10 px icon, image at `saturate(.4)`. At 360 px the row wraps.
+- C: the thumbnail is `aria-hidden` unless it carries the mark (`role="img"`, the word of the mark); the title is truncated with `title`, the whole qualifier is in a tooltip; the link is reached by keyboard with the `--focus` ring.
+
 **Bandeau** (connexion perdue, mode bouchon, mode Joueur).
 - V : pleine largeur, collé sous la barre haute, opaque (`--fond` sous la teinte) ; connexion
   perdue `--danger` sur `--danger-fond` avec `wifi-off` ; mode bouchon `--mj` sur `--mj-fond`.

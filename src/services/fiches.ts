@@ -63,7 +63,7 @@ const SQL_VISIBLE_JOUEURS = 'EXISTS (SELECT 1 FROM sections v WHERE v.fiche_id =
 const projectionVisibilite = (mj: boolean): string => mj ? `, ${SQL_VISIBLE_JOUEURS} AS visible_joueurs` : '';
 
 /** The field is absent altogether outside the full GM view. */
-const visibiliteVue = (r: FicheRow): { visibleJoueurs?: boolean } =>
+export const visibiliteVue = (r: FicheRow): { visibleJoueurs?: boolean } =>
   r.visible_joueurs === undefined ? {} : { visibleJoueurs: r.visible_joueurs === 1 };
 
 /**
@@ -446,7 +446,7 @@ export const PROFONDEUR_MAX = 50;
  * Ids of the sheet and its same-type descendants, including unreadable intermediate sheets
  * (AD-130). UNION and the depth bound tolerate corrupt cycles; no title or path leaves this read.
  */
-export function descendantsDe(db: Db, ficheId: number): number[] {
+export function descendantsDe(db: Db, ficheId: number): { ids: number[]; profondeurAtteinte: boolean } {
   const rows = db.prepare(`
     WITH RECURSIVE descente(id, univers_id, type, niveau) AS (
       SELECT id, univers_id, type, 0 FROM fiches WHERE id = ?
@@ -455,9 +455,9 @@ export function descendantsDe(db: Db, ficheId: number): number[] {
         FROM fiches f JOIN descente d ON f.parent_id = d.id
        WHERE f.univers_id = d.univers_id AND f.type = d.type AND d.niveau < ?
     )
-    SELECT DISTINCT id FROM descente
-  `).all(ficheId, PROFONDEUR_MAX) as { id: number }[];
-  return rows.map((r) => r.id);
+    SELECT id, MAX(niveau) AS niveau FROM descente GROUP BY id
+  `).all(ficheId, PROFONDEUR_MAX) as { id: number; niveau: number }[];
+  return { ids: rows.map((r) => r.id), profondeurAtteinte: rows.some((r) => r.niveau === PROFONDEUR_MAX) };
 }
 
 /**
@@ -816,7 +816,7 @@ export function listerFiches(
   if (options.lie !== undefined) {
     const cible = db.prepare('SELECT id FROM fiches WHERE id = ? AND univers_id = ?').get(options.lie, universId);
     if (!cible || !peutVoirFiche(db, role, options.lie, acteur)) return { fiches: [], suivant: null };
-    const ids = options.descendants ? descendantsDe(db, options.lie) : [options.lie];
+    const ids = options.descendants ? descendantsDe(db, options.lie).ids : [options.lie];
     const places = ids.map(() => '?').join(',');
     const sectionLue = sqlSectionLisible(role, acteur, 'porteuse');
     const cibleLue = sqlFicheLisible(role, acteur, 'cible');

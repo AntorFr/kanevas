@@ -182,6 +182,7 @@ export function semerBouchon(db: Db): boolean {
     const spheres = fiche('lieu', 'Les Sphères', [mjSeul]);
     ranger(port.id, spheres.id);
     let docks: { id: number; sections: Record<string, number> } | undefined;
+    let taverne: { id: number; sections: Record<string, number> } | undefined;
     for (const [titre, sections] of [
       ['La Taverne du Kraken', [lue]],
       ['Les Docks', [lue]],
@@ -191,6 +192,7 @@ export function semerBouchon(db: Db): boolean {
     ] as const) {
       const f = fiche('lieu', titre, [...sections]);
       if (titre === 'Les Docks') docks = f;
+      if (titre === 'La Taverne du Kraken') taverne = f;
       ranger(f.id, port.id);
     }
     fiche('faction', 'Lames Grises', [{ titre: 'Description', lue: true }]);
@@ -251,6 +253,11 @@ export function semerBouchon(db: Db): boolean {
       // A base short of 0013 still has the CHECK on `fiches.type`, which does not know « famille ».
       const sqlFiches = (db.prepare("SELECT sql FROM sqlite_master WHERE name = 'fiches'").get() as { sql: string }).sql;
       const corvalis = /CHECK\s*\(\s*type\s+IN/i.test(sqlFiches) ? undefined : fiche('famille', 'Les Corvalis', [{ titre: 'Description', lue: true }]);
+      // The E-9 descendant example also needs a creature; pre-0013 bases reject that type too.
+      if (taverne && !/CHECK\s*\(\s*type\s+IN/i.test(sqlFiches)) {
+        const kraken = fiche('creature', 'Le Kraken des Cales', [lue]);
+        relier(kraken, 'Description', taverne, 'se_situe', 'dort sous la taverne');
+      }
       relier(aldric, 'Apparence', port, 'se_situe', 'habite');
       relier(aldric, 'Apparence', guilde, 'membre', 'trésorier');
       relier(prieur, 'Secret — MJ seul', port, 'se_situe', 'se cache');

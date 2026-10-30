@@ -116,12 +116,12 @@ elles remplacent les anciennes routes `GET /api/univers/:id/systeme` et `…/sys
 | `GET .../fiches?lie=<fid>&nature=<key>&descendants=1` | *(kanevas-fiches-liees, B-65, AD-130)* the list with the linked-sheet conditions, all optional and combined by AND with `type`, `sousType`, `etiquette`, `q`, `parent` : `lie` the target sheet, `nature` a key of `GET …/natures` (absent = any relation, free ones included), `descendants=1` includes same-type descendants down to 50 levels through `descendantsDe` (a bounded recursive `UNION` CTE) ; symmetric natures match either direction ; both sheets and the carrying section must be readable ; each row may carry `via: {id, titre}`, the readable other end of the relation, ordered by title then id, absent when a qualifying direct link exists ; `lie` on a sheet the caller does not read, or of another universe, answers `200` with an empty page ; `nature` or `descendants` without `lie`, an unknown nature, a `lie` that is not an integer, or a `descendants` other than `1` : `400 Requête invalide.` ; same page of 100, same cursor, same order |
 | `GET .../fiches/:fid/enfants` (`?curseur`) | *(AD-115)* « Contient » : les enfants que le compte lit, tous types, par type (ordre de la liste du produit) puis titre ; 50 par page, `{enfants: [{id, titre, type, sousType}], suivant}` (each child also carries `visibleJoueurs` for the GM outside player mode, B-57) ; 404 si la fiche est illisible ; jamais de compteur de ce qui est caché |
 | `PATCH .../fiches/:fid`, `POST .../fiches/:fid/type` | *(AD-120)* `PATCH` `{titre}` (1 à 120 caractères, AD-119 ; MJ hors mode Joueur), `{sousType}` (texte de 1 à 60 caractères, ou `null` pour l'ôter) et/ou `{parent}` (id d'une fiche ou `null`, AD-115 ; 200 avec la fiche) ; `{statut}` (`en_preparation`, `prete`, `en_cours` or `terminee`, adventures only, GM outside player mode, AD-124; another type or value: 400) ; an unknown key, or none of these keys: 400) ; `POST …/type` `{type, pj?, sousType?}` change le type (MJ ; 400 `meme_type`, `type_inconnu`, `type_non_reglable` — un compte-rendu ne change ni ne devient pas de type) ; *(`kanevas-fiches-liees`, AD-132)* `{disparu}` (booléen ; personnage, créature, faction, famille, lieu, objet, vaisseau ; MJ hors mode Joueur ; 400 on another type) |
-| `GET .../fiches/:fid/mentions?apres=<n>` | *(kanevas-import-liens, AD-100, AD-116)* les 50 fiches suivantes qui citent la fiche, lisibles du lecteur : `{mentions: [{ficheId, titre, type, pourquoi: [{genre: 'lien', section} \| {genre: 'relation', libelle}]}], suite, restantes}` ; la première page voyage avec `GET .../fiches/:fid` (`mentions`, `mentionsSuite`, `mentionsRestantes` : le N de « Afficher les N suivants ») ; `?mode=joueur` lit en Joueur ; 404 comme la fiche |
+| `GET .../fiches/:fid/mentions?apres=<n>` | *(kanevas-import-liens, AD-100, AD-116)* the next 50 readable sheets citing this sheet through links or free relations (natured relations belong to `liees`) : `{mentions: [{ficheId, titre, type, pourquoi: [{genre: 'lien', section} \| {genre: 'relation', libelle}]}], suite, restantes}` ; la première page voyage avec `GET .../fiches/:fid` (`mentions`, `mentionsSuite`, `mentionsRestantes` : le N de « Afficher les N suivants ») ; `?mode=joueur` lit en Joueur ; 404 comme la fiche |
 | `POST .../fiches/:fid/sections`, `PUT .../fiches/:fid/ordre` | ajouter, ordonner (MJ) |
 | `DELETE .../fiches/:fid`, `GET .../fiches/:fid/suppression` | *(AD-119)* supprimer la fiche (MJ hors mode Joueur ; 204) ; le bilan que la boîte de E-9 compte avant de supprimer |
 | `GET\|PATCH\|DELETE .../sections/:sid` | lire ; titre et audience (MJ) ; retirer (MJ) |
 | `GET\|POST .../sections/:sid/relations`, `DELETE /api/univers/:id/fiches/relations/:rid` (sans `:fid`) | relations lisibles de la section `{relations: [{id, nature, qualificatif, cible: {id, titre, type, charge?}}]}` (AD-64, AD-129 ; `charge: {pj}` for a personnage target, `kanevas-relation-badge-pj` ; `nature` vide = relation libre, `cible.type` est le type de fiche) ; relier `{cibleFicheId, nature?, qualificatif?}` (201 ; `qualificatif` de 0 à 80 caractères, obligatoire sans nature ; `type` accepted as a synonym of `qualificatif` for one version) ; 400 `nature_incompatible` ; retirer (204), MJ seul, 404 pour un joueur |
-| `GET /api/univers/:id/fiches/:fid/liees` (`?nature`, `?descendants=1`, `?curseur`) | *(kanevas-fiches-liees, AD-131; **not built yet** — slice `-bloc`, this route answers 404)* the sheets linked to the sheet by a nature, read backwards, grouped : `{groupes: [{nature, libelle, types: [{type, total, totalAvecDescendants}], fiches: [{…ligne de E-8, qualificatif, via?: {id, titre}}], suivant}]}` ; counts and lines under the two guards of AD-64 ; `descendants` on a place only |
+| `GET /api/univers/:id/fiches/:fid/liees` (`?nature`, `?descendants=1`, `?curseur`, `?mode=joueur`) | *(kanevas-fiches-liees, AD-130)* the sheets linked to the sheet by a nature, read backwards, grouped : `{profondeurAtteinte, groupes: [{nature, libelle, types: [{type, total, totalAvecDescendants}], fiches: [{…ligne de E-8, qualificatif, via?: {id, titre}}], suivant}]}` ; counts and lines under the two guards of AD-64 ; `services/liees.ts` returns five lines per group, or 50 after the numeric offset `curseur` with `nature` ; unreadable sheet: 404 ; `descendants` on a place only (accepted without effect on other types) ; `profondeurAtteinte` at level 50 |
 | `GET /api/univers/:id/natures` | *(kanevas-fiches-liees)* the product's list of natures with their labels both ways and their pairs of types |
 | `POST .../fichiers` | *(AD-117)* ajouter à la médiathèque (multipart, un fichier ; les champs `section`, `maniere` (`joint`\|`texte`), `blocMj`, `fiche` **avant** le champ `fichier`) ; la visibilité n'est jamais lue du client, elle se déduit de l'endroit ; 201 |
 | `GET .../fichiers` | liste lisible de l'appelant ; `nature`, `visibilite`, `usage`, `q`, `tri`, `apres` |
@@ -201,7 +201,7 @@ base en snake_case (`docs/donnees.md`).
 # La cible
 
 > Construit à ce jour : renommer et supprimer une fiche, supprimer un univers (`kanevas-import-tenir`, AD-119), l'API d'import des fiches et E-18 (`kanevas-import-fil`), les fichiers par clé et leurs références en attente (`kanevas-import-fichiers`), le bloc MJ `:::mj` (`kanevas-import-secrets`, AD-114), la session, le mode bouchon, les tables et leurs fonctions de service,
-> les systèmes de jeu et leurs gabarits, relation natures and qualifiers, search by link (advanced E-17), the « gone » mark and the Famille type (`kanevas-fiches-liees`, AD-129 to AD-134; the « Fiches liées » block remains to be built), les relations et la recherche dans tous les types, par alias et par étiquette (E-17, `kanevas-import-recherche`), le suivi (campagnes, scénarios, préparation, comptes-rendus), les écrans E-1 à E-11, E-13, E-14, E-15 et E-16 (E-9 avec son bloc Pièces jointes), l'illustration des fiches, les cartes et graphes (E-10, E-11, bloc « Cartes visibles » de E-3), les types de fiche et l'arbre, les liens `[[…]]`, la médiathèque de l'univers (E-19, fichiers à droits propres, migration 0015), le stockage des fichiers sur le volume, et l'assistant du membre (E-12 ; ses outils : chercher, lire, écrire dans une section, et pour le MJ générer une image qui entre dans la médiathèque et se joint à une section), et la proposition de mise à jour d'une section d'après un compte-rendu (`kanevas-monde` : outil `proposer_mise_a_jour`, routes `propositions`, bloc « Mise à jour proposée »). Le reste
+> les systèmes de jeu et leurs gabarits, relation natures and qualifiers, search by link (advanced E-17), the « gone » mark and the Famille type (`kanevas-fiches-liees`, AD-129 to AD-134, and the « Fiches liées » block of E-9), les relations et la recherche dans tous les types, par alias et par étiquette (E-17, `kanevas-import-recherche`), le suivi (campagnes, scénarios, préparation, comptes-rendus), les écrans E-1 à E-11, E-13, E-14, E-15 et E-16 (E-9 avec son bloc Pièces jointes), l'illustration des fiches, les cartes et graphes (E-10, E-11, bloc « Cartes visibles » de E-3), les types de fiche et l'arbre, les liens `[[…]]`, la médiathèque de l'univers (E-19, fichiers à droits propres, migration 0015), le stockage des fichiers sur le volume, et l'assistant du membre (E-12 ; ses outils : chercher, lire, écrire dans une section, et pour le MJ générer une image qui entre dans la médiathèque et se joint à une section), et la proposition de mise à jour d'une section d'après un compte-rendu (`kanevas-monde` : outil `proposer_mise_a_jour`, routes `propositions`, bloc « Mise à jour proposée »). Le reste
 > est la cible des tranches suivantes. L'epic `kanevas-import` (cadrage proposé le 2026-10-11) ajoute
 > AD-95 à AD-120, l'« API d'import » et ses lignes de sécurité, de déploiement et de bouchons.
 
@@ -641,6 +641,79 @@ read by the players, so that Léa's criteria (E-9, E-17) hold ; the Prieur's alo
 seul » ; the
 three former free relations of Port-Sel keep their text as qualifier.
 
+### Slice `kanevas-fiches-liees-bloc` — design notes (2026-10-26)
+
+Detail of the slice's part of AD-130 and B-64 / B-69; nothing here adds a nature, a type, a screen or a column. Repository
+facts read on `epic/kanevas-fiches-liees` and its voisines: `mentions.ts` (the model of a read-only backwards lookup under
+the two guards), `descendantsDe` (point 3 of the `-recherche` notes), the sheet-block registry of AD-124 delivered by
+`kanevas-scenarios-suivi` (`frontend/src/ecrans/fiche/blocs-fiche/`), the card thumbnail `vignette.tsx` and its
+`MarqueDisparu` (`-disparu`).
+
+1. **One service, read-only.** `liees(db, role, acteur, universId, ficheId, opts)` in `src/services/liees.ts`, beside
+   `mentions.ts`; only `services/` reads `relations` (AD-2). `opts = {nature?, descendants?, apres?}`. The route
+   `GET …/fiches/:fid/liees` (inside the guarded scope, `?mode=joueur` as the other reads) first checks that the reader reads
+   `:fid` (`peutVoirFiche`; else `introuvable`, like `…/mentions`) and validates `nature` (a key of `natures.ts`),
+   `descendants` (exactly `1`), `curseur` (`^\d{1,9}$`, an offset) — `invalide('Requête invalide.')` otherwise.
+2. **The groups.** One group per nature of the list, **in the list's order**, whose target types include the sheet's type
+   (a symmetric nature also when the sheet is a source type): `{nature, libelle, types, fiches, suivant}`. `libelle` is
+   the nature read from the target (`libelleCible`; a symmetric nature's `libelleSource`). `types` are the types of the
+   linked sheets in the order of the list of types, each `{type, total, totalAvecDescendants}`: `total` counts the sheets
+   linked to the sheet itself, `totalAvecDescendants` those linked to it **or to one of its descendants**
+   (`descendantsDe`, the set including the sheet). The descent is for a **place** only (AD-130): for any other sheet
+   `totalAvecDescendants` equals `total` and `descendants=1` is accepted and changes nothing — no toggle, no « Rien à ce niveau »
+   outside a place. The answer also carries `profondeurAtteinte` (boolean, top level): true when the walk met the 50-level bound
+   (`descendantsDe` reports it; if the `-recherche` function does not yet, this slice adds the flag to its result, not a second walk) A sheet is counted **once** per group and type, however many
+   relations bind it. Both totals are always sent (the screen decides from them, AD-130 (1)); a group with
+   `totalAvecDescendants = 0` for every type is absent, and so is the whole list (`groupes: []`, the block absent) — an empty
+   answer for a sheet that is nobody's target, hidden or not.
+3. **The relation counted** is the one of `-recherche` point 2, read in the same words: a row of `relations` whose target is
+   the sheet (or a descendant) and whose `nature` is the group's, **under the two guards of AD-64** — the section of the
+   row readable by the reader (`sqlSectionLisible`), the source sheet readable (`sqlFicheLisible`), **and the target readable**
+   (a relation to a hidden sub-place counts for nobody who cannot read that place). A symmetric nature is also read from the
+   side where the sheet is the source (stored once, `-natures` point 3); the "other end" is then the line. The count and the
+   lines come from the **same** query: a number never exceeds what the lines list (no count of a hidden sheet, no placeholder).
+   The group's `libelle` and a type are shown only because at least one readable relation exists.
+4. **The lines.** `fiches` of a group hold the first five lines (the screen's folding), each the E-8 line
+   (`{id, titre, type, sousType, charge, illustration…}`, the same shape as `listerFiches` so that the screen reuses the card)
+   plus `qualificatif` (the qualifiers of the readable relations that bind it, de-duplicated, joined by « · »; empty omitted)
+   and `via?: {id, titre}` with the rule of `-recherche` point 1 (a direct link wins; the first descendant target by title then
+   id; readable, so never a hidden or intermediate place). Order: title (nocase) then id. `descendants` absent: no `via`, and
+   the counts are `total`. `suivant` is the next `curseur` or `null`. `?nature=` limits the answer to that group and returns
+   up to **50** lines after `curseur` (the page behind « Afficher les N »); without `nature`, the five-line groups of all
+   natures. The route sends the totals of both modes in every answer, whatever `descendants` says; `descendants=1` only
+   changes which sheets the lines list.
+5. **« Mentionnée dans » (B-69).** `mentionsDe` stops listing the **natured** relations (`nature <> ''` is dropped from the
+   `relations` branch of `src`); the links and the free relations stay; the page counts follow the same filter. Natured relations
+   appear in the block of the target, and, for a symmetric nature, of both ends.
+6. **The block.** A sheet block (AD-124) `frontend/src/ecrans/fiche/blocs-fiche/liees.tsx`, served to the types that are the target
+   of a nature (`lieu`, `faction`, `famille`, `objet`, `vaisseau`, plus `personnage` for the symmetric natures — the list is
+   copied in `liees.tsx` from `natures.ts`: a new nature on another type needs it extended there) with `rang: 90, place: 'bas'`: « Mentionnée dans » is not a registry block (`fiche.tsx` draws it after the `bas` blocks), so the order comes from the slot, not from the rank; every role; the slot where the registry draws sheet blocks relative
+   to the sections is AD-124 (1)'s and is not moved here, « before Mentionnée dans » holds in either slot. It loads its own
+   answer (`GET …/liees`), not carried by `lireFiche`: states « Chargement… », « Impossible de charger les fiches liées. » with
+   « Réessayer » (`docs/ecrans.md`), the sheet readable meanwhile. `groupes: []` renders nothing (not even the heading).
+   The toggle « sous-lieux compris » exists on a `lieu` only; checked, the answer is read again with `descendants=1`; the choice is
+   remembered **per browser** under one `localStorage` key (`kanevas-fiches-liees-sous-lieux`, `"1"` or `"0"`) — a preference of the reader, no data of
+   the universe (AD-28 forbids browser storage for the *thread*, not for a display preference; `localStorage` already holds the
+   theme). When `total` is 0 for every type of every group and some `totalAvecDescendants` is positive, the toggle is checked and
+   disabled and the line « Rien à ce niveau ; N fiches dans ses sous-lieux. » (N the sum of the groups' deeper totals) shows
+   instead of lines. When `profondeurAtteinte` is true the toggle reads « sous-lieux compris (50 niveaux au plus) ». While the answer is re-read (toggle,
+   « Afficher les N »), the previous content stays and is dimmed, the controls are disabled; a failed re-read keeps it and shows
+   « Impossible de charger les fiches liées. » with « Réessayer » under the group; lost connection: the banner of the other blocks, the
+   loaded content readable, the toggle and « Afficher les N » (which need the server) disabled. For a reader with nothing readable the
+   block is **absent**, not refused (no trace of it). The toggle is shown to every role on a place (reading only). On 360 px a line
+   wraps: card, then qualifier and place on a second line, truncated at two lines with the whole text in the tooltip.
+7. **« Chercher parmi ».** A link to E-17 (`/univers/<id>/recherche?lie=<fid>&nature=<key>&descendants=1`, `descendants` only when the toggle is
+   checked); nothing is computed in the screen. The nature is the group's key.
+8. **The lines are the shared component**: `LigneFicheLiee` (`frontend/src/ui/ligne-fiche-liee.tsx`, shared with E-17), built on the thumbnail of `vignette.tsx` whose `MarqueDisparu` marks a gone sheet, then the
+   qualifier in grey and the place in grey (« — Les Docks »). The block draws no mark of its own.
+9. **Security.** The one new read path sends names and counts that the two guards of AD-64 already allow in the list; tested as Léa
+   and as the GM in player mode on: the Prieur (a closed section), a relation to a hidden place (Le Repaire), a hidden intermediate
+   place (neither named nor counted, `via` never names it), `GET` on a sheet the reader cannot read (the same `introuvable` as an
+   unknown id), a symmetric nature held by a sheet the reader cannot read, a free relation (never in the block). `total` for Léa
+   equals the number of lines she can page to.
+10. **Documentation and tests.** The route row above, `docs/ecrans.md` (E-9 block: the states of point 6 written, with Given/When/Then criteria for loading, error, lost connection, « Rien à ce niveau ; N fiches dans ses sous-lieux. », long content and the GM in player mode; the `localStorage` key), `docs/parcours.md` P-6 step 6 unchanged. The seed is `-natures`'s (Port-Sel,
+    Suie aux Docks, the Guilde, les Corvalis); this slice adds no seed.
+
 The server part of `kanevas-fiches-liees-disparu` is built: `marquerDisparu` in `services/fiches.ts`
 is the writer used by the PATCH, import and seed. `changerTypeFiche` preserves the mark between
 compatible types and drops it otherwise. `GET …/types` returns each supported type's `disparu`
@@ -709,7 +782,7 @@ Detail of the slice's part of AD-130 and B-65; nothing here adds a filter, a nat
    way: a row whose source is `lie` (or a descendant) and whose target is the candidate, under the same two guards (the
    fact is stored once, `-natures` point 3). A free relation counts only when `nature` is absent.
 3. **The descent** — one function `descendantsDe(db, ficheId)` in `fiches.ts` (exported: `-bloc` reuses it for « sous-lieux
-   compris » and its counts) returns the ids: a recursive CTE on `fiches_par_parent` (or `parent_id`) from `lie`, **`UNION`
+   compris » and its counts) returns `{ids, profondeurAtteinte}` (the flag is true when level 50 was reached): a recursive CTE on `fiches_par_parent` (or `parent_id`) from `lie`, **`UNION`
    not `UNION ALL`** (a loop in the data ends), a `niveau` column stopped at `PROFONDEUR_MAX` (50), **the same type as
    `lie`** at every level (as AD-115's tree). The ids go into the `IN (…)` of point 2; no title, no readability, nothing of
    the intermediate places is returned or tested. A tree deeper than 50 stops at level 50 without error. `lie` itself is

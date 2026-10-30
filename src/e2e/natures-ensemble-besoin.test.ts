@@ -170,6 +170,7 @@ describe('kanevas-fiches-liees-natures, besoin assemblé (B-63, B-66, B-69)', { 
     const rels = await relations(antor, ids['Bran Corvalis'], 3);
     assert.equal(rels.length, avant + 1);
     assert.ok(rels.some((x) => x.nature === '' && x.qualificatif === 'prisonnier de' && x.cible.titre === 'Val-Fortin'));
+    await bloc(antor).getByText('prisonnier de').first().waitFor();
     assert.ok(norm(await bloc(antor).innerText()).includes('prisonnier de'));
   });
 

@@ -209,6 +209,20 @@ a { color: var(--accent-texte); }
 .vignette-bloc figcaption > .actions-revelees { flex: none; }
 @media (max-width: 760px) { .bloc-section { grid-template-columns: 1fr; gap: var(--e-1); } }
 
+/* Related sheet row (charte §4): LigneFicheLiee and the thumbnail E-17 shares */
+.vignette-fiche { position: relative; flex: none; display: grid; place-items: center; border-radius: var(--rayon-champ); background: var(--surface-2); color: var(--texte-3); }
+.vignette-fiche.t36 { width: 36px; height: 36px; }
+.vignette-fiche.t40 { width: 40px; height: 40px; }
+/* The image is out of flow and clipped by its own radius: the grid track would otherwise grow to its intrinsic height and spill out of the 36/40 px frame, while the mark stays free to overhang. */
+.vignette-fiche img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; border-radius: var(--rayon-champ); }
+.vignette-fiche.disparu img { filter: saturate(.4); }
+.vignette-fiche .marque-disparu { left: -4px; bottom: -4px; width: 16px; height: 16px; }
+.vignette-fiche .marque-disparu svg { width: 10px; height: 10px; }
+.ligne-liee { display: flex; align-items: center; flex-wrap: wrap; gap: var(--e-1) var(--e-3); min-height: 40px; min-width: 0; font-size: var(--t-13); }
+.titre-liee { min-width: 0; max-width: 100%; }
+.gris-liee { color: var(--texte-3); font-size: var(--t-13); overflow-wrap: anywhere; }
+.via-liee { font-size: var(--t-12); }
+
 /* Loading skeleton */
 .squelette-fiche { max-width: 784px; }
 .squelette { background: var(--squelette); border-radius: var(--rayon-item); }

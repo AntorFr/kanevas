@@ -239,10 +239,12 @@ describe('B-67 à l’écran, en Antor', { skip: skipBrowser }, () => {
 
     await antor.getByRole('button', { name: 'Vivants' }).click();
     await carte(antor, 'Bran Corvalis').waitFor({ state: 'detached' });
+    await carte(antor, 'Maître Aldric').waitFor();
     assert.equal(await carte(antor, 'Maître Aldric').count(), 1);
     assert.equal(await carte(antor, 'Le Prieur masqué').count(), 0);
     await antor.getByRole('button', { name: 'Morts' }).click();
     await carte(antor, 'Maître Aldric').waitFor({ state: 'detached' });
+    await carte(antor, 'Bran Corvalis').waitFor();
     assert.equal(await carte(antor, 'Bran Corvalis').count(), 1);
     assert.equal(await carte(antor, 'Le Prieur masqué').count(), 1);
     assert.match(antor.url(), /etat=disparu/);
@@ -270,9 +272,11 @@ describe('B-67 à l’écran, en Antor', { skip: skipBrowser }, () => {
       await liste(antor, 'lieux');
       await antor.getByRole('button', { name: 'Intacts' }).click();
       await carte(antor, 'Le Phare aux Sels').waitFor({ state: 'detached' });
+      await carte(antor, 'Port-Sel').waitFor();
       assert.equal(await carte(antor, 'Port-Sel').count(), 1);
       await antor.getByRole('button', { name: 'Détruits' }).click();
       await carte(antor, 'Port-Sel').waitFor({ state: 'detached' });
+      await carte(antor, 'Le Phare aux Sels').waitFor();
       assert.equal(await carte(antor, 'Le Phare aux Sels').count(), 1);
     } finally {
       await marquer('Le Phare aux Sels', false);
@@ -395,6 +399,7 @@ describe('B-67 à l’écran, en Léa', { skip: skipBrowser }, () => {
       await carte(lea, 'Bran Corvalis').getByRole('img', { name: 'Mort' }).waitFor();
       await lea.getByRole('button', { name: 'Morts' }).click();
       await carte(lea, 'Maître Aldric').waitFor({ state: 'detached' });
+      await carte(lea, 'Bran Corvalis').waitFor();
       assert.equal(await carte(lea, 'Bran Corvalis').count(), 1);
     } finally {
       await marquer('Bran Corvalis', false);
