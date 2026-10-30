@@ -1,5 +1,6 @@
 # Status — kanevas
 
+> MàJ : 2026-10-30 (assemblage de `kanevas-icones`)
 > MàJ : 2026-10-28 (assemblage de `kanevas-tests-attestes-pod`, correctif du harnais e2e et de la connexion Claude ; les tranches `kanevas-scenarios-*` citées plus bas sont fusionnées sur `main` (PR #43))
 > MàJ : 2026-10-27 (assemblage de `kanevas-scenarios-import-assistant` ; l'historique tranche par tranche est dans `git log`, ce fichier ne garde que l'état et les pièges encore vrais)
 > MàJ : 2026-10-25 (correctif `kanevas-connexion-claude-com`, dernier paragraphe ; avant : correctif `kanevas-relation-badge-pj` fusionné et assemblage de `kanevas-fiche-mj-seul` ; avant : correctif `kanevas-e2e-stables` ; l'historique des reprises précédentes est dans `git log`)
@@ -16,6 +17,7 @@
 
 ## Reste
 
+- **`kanevas-icones` (PR vers `main`, non fusionnée)** : l'icône « Marge » est l'identité de Kanevas (AD-135). Sept fichiers dans `frontend/public/` (copies du pack `assets/brand/kanevas-marge/web/`, comparées par test), servis par `routes/session.ts` avant la garde, sans session ; `index.html` les déclare ; la barre hors univers montre `/favicon.svg` à la place du carré « K » (le sceau d'univers est inchangé). Ni service worker ni hors ligne. Les maquettes `docs/maquettes/` dessinent encore le « K » : la charte prime. Reste à Monsieur : voir l'onglet, l'écran d'accueil et l'installation sur un vrai navigateur/téléphone (recette).
 - Recette de Monsieur de l'epic `kanevas-scenarios`, si elle n'est pas faite (README : « Assistant creation recipe », « World update recipe », « Adventure recipe », « Import sample acceptance »).
 - Contrat final à signaler à Monsieur pour son script (discussion de l'epic) : plus de `PUT …/campagnes/:cle` ni `…/scenarios/:scle` ; tout passe par `PUT …/fiches/:cle` (`type: aventure`, `sousType`, `statut`, `parent`).
 - Maquettes `e06-campagne.html` et `e07-scenario.html` : écrans retirés, fichiers gardés parce que les barres des autres maquettes y renvoient ; à nettoyer avec la refonte des maquettes restantes.

@@ -37,6 +37,17 @@ declare module 'fastify' {
   }
 }
 
+/** The seven brand files served without a session (AD-135), and no other root file. */
+export const FICHIERS_MARQUE = [
+  'favicon.ico',
+  'favicon.svg',
+  'apple-touch-icon.png',
+  'icon-192.png',
+  'icon-512.png',
+  'icon-maskable-512.png',
+  'site.webmanifest',
+] as const;
+
 /** Sets the session cookie after an authentication (OIDC callback or stub choice). */
 export function ouvrirSession(
   app: FastifyInstance,
@@ -74,6 +85,19 @@ export async function registerSessionRoutes(app: FastifyInstance) {
     reply.clearCookie(SESSION_COOKIE, { path: '/' });
     return { loginUrl: urlConnexion() };
   });
+
+  // Brand files (AD-135): public, before the guard scope — a browser fetches them without the cookie.
+  if (frontend) {
+    await app.register(async (publics) => {
+      await publics.register(fastifyStatic, { root: frontend.racine, serve: false, maxAge: 86_400_000 });
+      for (const nom of FICHIERS_MARQUE) {
+        publics.get(`/${nom}`, async (_request, reply) => {
+          if (nom === 'site.webmanifest') reply.type('application/manifest+json');
+          return reply.sendFile(nom);
+        });
+      }
+    });
+  }
 
   // Unknown addresses: /api answers 404 even without a session; elsewhere no session means the sign-in.
   app.setNotFoundHandler(async (request, reply) => {

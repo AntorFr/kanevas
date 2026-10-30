@@ -41,7 +41,7 @@
   (`services/cartes.ts`, AD-69) go through `stockage.ts` directly, never write the volume themselves. The type is sniffed from the bytes, never trusted.
 - `frontend/` (React, Vite, `react-router`; AD-16, AD-57): `npm run build` also builds it into
   `dist/public`, located by `routes/frontend.ts` and served by `routes/session.ts` behind the session guard (`@fastify/static` for
-  `/assets/`, `index.html` as the fallback of any other GET). A screen is one file
+  `/assets/`, `index.html` as the fallback of any other GET); the seven brand files of `frontend/public` (`favicon.ico`, `favicon.svg`, `apple-touch-icon.png`, `icon-192.png`, `icon-512.png`, `icon-maskable-512.png`, `site.webmanifest`) are served before the guard, without a session (AD-135). A screen is one file
   `frontend/src/ecrans/<nom>.tsx` exporting an `Ecran` (`registre.ts`) — never edit the router or
   the sidebar for the screens of a universe; sidebar items live in `items.ts` and show only when a registered screen answers
   their address. The two outside-universe links (« Mes univers », « Systèmes de jeu ») are fixed in
