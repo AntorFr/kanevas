@@ -27,6 +27,7 @@ import { registerSystemesRoutes } from './systemes.js';
 import { registerSuiviRoutes } from './suivi.js';
 import { registerAssistantRoutes } from './assistant.js';
 import { registerAccesApiRoutes } from './acces-api.js';
+import { registerOutilsRoutes } from './outils.js';
 import { registerPropositionsRoutes } from './propositions.js';
 import { chargerFrontend } from './frontend.js';
 import { pageIntrouvable, urlConnexion } from './pages.js';
@@ -130,6 +131,7 @@ export async function registerSessionRoutes(app: FastifyInstance) {
     registerAssistantRoutes(garde);
     registerPropositionsRoutes(garde);
     registerAccesApiRoutes(garde);
+    await registerOutilsRoutes(garde);
   });
 }
 

@@ -153,3 +153,7 @@
   with `stdio: 'ignore'` and nothing of it is logged. The `codex` adapter lists `generated_images/` before and
   after (one engine at a time: `verrou.ts`), deletes the new file(s) and its scratch directory, 150 s deadline
   (AD-90). The Dockerfile pins `@openai/codex` (`CODEX_VERSION`).
+- Tools API (`kanevas-outils-cadre`, `routes/outils.ts`, C-5): in the guarded scope only, never in the import scope. A tool the caller
+  cannot use (disabled, hidden from the role, unknown) answers `reply.callNotFound()`, byte for byte like an unregistered path — never a
+  service `introuvable` JSON. Module routes are registered by `DeclarationModule.routes(app, garde)`; `catalogueDe` appends
+  `outilsAssistant` of every accessible tool of `modulesActifs()` without naming any.
