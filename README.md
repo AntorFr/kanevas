@@ -19,12 +19,13 @@ scripts/tests-attestes.mjs           `npm run tests:attestes`: plays the whole s
 src/
   server.ts, app.ts               Startup; assembly of plugins and routes
   config/env.ts                   Environment variables (zod)
-  db/                             SQLite (better-sqlite3), migrations/0001 to 0016, runner
+  db/                             SQLite (better-sqlite3), migrations/0001 to 0017, runner
   services/                       comptes, univers, membres, instance, fiches, sections, droits, systemes, relations, campagnes, scenarios, preparation, comptes_rendus, propositions, markdown (single renderer), liens (`liens` table, sole writer), etiquettes (aliases and labels, sole writer), mentions (“Mentioned in”), types, types-fiche (the list of types and their activation),
                                    fichiers (media library, sole writer of `fichiers*`, except that deleting a universe in `univers.ts` erases its rows), fichiers-lecture (read of the files a text or sheet references by key, waiting render), cartes, jetons, lots, import (token context), import-fiches (import API), import-suivi (campaigns and scenarios by origin key), import-relations (relations by origin key),  stockage (bytes on the volume)
                                    the only code that reads or writes the data; session, oidc
   routes/                         health, auth (OIDC), session (cookie, guard, /api/moi),
                                    bouchon, univers (+ membres), instance (admin, AD-87), systemes, suivi, cartes, fiches (+ sections), fichiers (E-19 media library, bytes, attachments, illustration), propositions, assistant, acces-api (E-18, session), import (token-based import API, `/api/import/v1`), frontend
+  outils/                         Tools framework (AD-121 (module declaration)): `declaration.ts` (the single declaration of a module), `registre.ts` (modules registered; `essai`, the trial module, only under `KANEVAS_STUB=1` or in test); `services/outils.ts` resolves system → universe and enforces rights; `routes/outils.ts` is the common API under `/api/univers/:id/outils/<module>/…`; front side `frontend/src/outils/` (registry, lazy code loading), tab "Outils" in `frontend/src/ecrans/outils/`
   bouchon/                        Demonstration world seeded at startup in stub mode (depart.ts), client-import.ts and echantillon/ (resume recipe) and its files (demo/)
   services/assistant/             The assistant: tool catalogues, AgentTransport port (stub, claude-agent), orchestration, token and its sign-in session
   services/images/                The assistant's image engine: GenerateurImage port, adapters stub, codex, none (AD-88, AD-90)
