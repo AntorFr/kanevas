@@ -302,7 +302,7 @@ export function EnteteFiche({ universId, fiche, gestion, modeJoueur, badge, Icon
         </div>
       )}
       {gestion && changement && (
-        <ChangerType universId={universId} fiche={fiche} onFermer={() => setChangement(false)} rafraichir={rafraichir} onDroitPerdu={onDroitPerdu} />
+        <ChangerType universId={universId} fiche={fiche} onFermer={() => setChangement(false)} rafraichir={rafraichir} onDroitPerdu={droitFichePerdu} />
       )}
       {gestion && suppression && (
         <SupprimerFiche universId={universId} fiche={fiche} onFermer={() => setSuppression(false)}

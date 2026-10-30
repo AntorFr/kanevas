@@ -69,8 +69,13 @@
      #etat-joindre    le même menu, ouvert par « Joindre un fichier » au pied des pièces jointes
      #etat-sous-type  le sous-type en édition dans le badge : champ « Port » et la liste des sous-types
                       de lieu déjà employés (Port, Port franc, Quartier, Sphère, Taverne)
+     #etat-sous-type-survol  (kanevas-sous-type-dialogue) le sous-type « Port » du badge au survol : fond, crayon
+     #etat-sous-type-focus   le même au focus clavier : fond, crayon et anneau de focus
      #etat-menu       menu « ⋯ » de l'en-tête ouvert
      #etat-changer-type boîte « Changer le type de « Port-Sel » » : types activés, « Autres types », choix PJ / PNJ pour un personnage, sous-type retiré
+     #etat-changer-sous-type (kanevas-sous-type-dialogue) la même boîte, type actuel gardé : champ « Port franc »
+                      (rempli de « Port » à l'ouverture), pas d'avertissement, « Changer le type » actif
+     #etat-changer-sous-type-echec la même, après un échec : « Le sous-type n'a pas changé. Réessayez. »
      #etat-deplacer   boîte « Déplacer sous… » : liste de recherche, « Aucun parent », refus du cycle
      #etat-supprimer  boîte « Supprimer « Port-Sel » ? »
      #etat-tiroir     barre latérale ouverte au téléphone
@@ -829,7 +834,19 @@ body.mode-joueur .ariane [data-illisible] { display: none; }
 .type .point-type { margin: 0 -1px; color: var(--texte-3); }
 .sous-type { height: 20px; margin: 0 -4px 0 -3px; padding: 0 4px; border-radius: 4px; color: var(--texte); font-weight: 500;
   cursor: text; transition: background-color var(--duree); }
-.sous-type:hover { background: var(--surface-3); }
+.sous-type { display: inline-flex; align-items: center; gap: 4px; }
+/* (kanevas-sous-type-dialogue) The sub-type shows it edits: background and pencil on hover and keyboard focus;
+   the pencil's room is always reserved, so the badge never shifts; always visible without hover (touch). */
+.sous-type .crayon-st { width: 12px; height: 12px; color: var(--texte-3); visibility: hidden; }
+.sous-type:hover, .sous-type:focus-visible, .sous-type.survol, .sous-type.focus-clavier { background: var(--surface-3); }
+.sous-type:hover .crayon-st, .sous-type:focus-visible .crayon-st, .sous-type.survol .crayon-st, .sous-type.focus-clavier .crayon-st,
+.sous-type.vide:hover, .sous-type.vide:focus-visible, .sous-type.vide.survol, .sous-type.vide.focus-clavier { color: var(--texte-2); }
+.sous-type:hover .crayon-st, .sous-type:focus-visible .crayon-st, .sous-type.survol .crayon-st, .sous-type.focus-clavier .crayon-st { visibility: visible; }
+.sous-type.focus-clavier { outline: 2px solid var(--focus); outline-offset: 2px; }
+.sous-type:disabled { pointer-events: none; cursor: auto; }
+.sous-type:disabled .crayon-st { display: none; }
+@media (hover: none) { .sous-type .crayon-st { visibility: visible; } }
+body.mode-joueur .sous-type .crayon-st { display: none; }
 .sous-type.vide { color: var(--texte-3); font-weight: 400; }
 body.mode-joueur .sous-type { pointer-events: none; cursor: auto; }
 body.mode-joueur .sous-type.vide, body.mode-joueur .point-type.vide { display: none; }
@@ -1010,7 +1027,7 @@ body.mode-joueur .image-section.reservee .image-reservee { display: flex; }
           </figure>
           <div class="tete-texte">
             <div class="tete-ligne">
-              <span class="type" id="type-fiche"><svg class="i p" aria-hidden="true"><use href="#i-map-pin"/></svg>Lieu<span class="point-type" id="point-type" aria-hidden="true">·</span><button type="button" class="sous-type" id="sous-type" title="Modifier le sous-type" aria-label="Sous-type : Port. Modifier le sous-type">Port</button><span class="st-edition" id="st-edition" hidden><input class="st-saisie" id="st-saisie" type="text" autocomplete="off" spellcheck="false" role="combobox" aria-label="Sous-type" aria-autocomplete="list" aria-expanded="false" aria-controls="st-liste"><span class="liste-liens liste-st" id="st-liste" role="listbox" aria-label="Sous-types de lieu déjà employés"></span></span></span>
+              <span class="type" id="type-fiche"><svg class="i p" aria-hidden="true"><use href="#i-map-pin"/></svg>Lieu<span class="point-type" id="point-type" aria-hidden="true">·</span><button type="button" class="sous-type" id="sous-type" title="Modifier le sous-type" aria-label="Sous-type : Port. Modifier le sous-type"><span class="texte-st">Port</span><svg class="i crayon-st" aria-hidden="true"><use href="#i-pencil"/></svg></button><span class="st-edition" id="st-edition" hidden><input class="st-saisie" id="st-saisie" type="text" autocomplete="off" spellcheck="false" role="combobox" aria-label="Sous-type" aria-autocomplete="list" aria-expanded="false" aria-controls="st-liste"><span class="liste-liens liste-st" id="st-liste" role="listbox" aria-label="Sous-types de lieu déjà employés"></span></span></span>
               <span class="ancre" data-mj>
                 <button class="icone" id="bouton-menu-fiche" aria-haspopup="menu" aria-expanded="false" aria-controls="menu-fiche" aria-label="Autres actions sur « Port-Sel »" title="Autres actions"><svg class="i" aria-hidden="true"><use href="#i-ellipsis"/></svg></button>
                 <div class="menu menu-fiche" id="menu-fiche" role="menu" aria-label="Actions sur la fiche">
@@ -1271,10 +1288,10 @@ body.mode-joueur .image-section.reservee .image-reservee { display: flex; }
     </div>
     <div class="champ">
       <label for="ct-sous-type" style="font-size:var(--t-12);font-weight:500;color:var(--texte-2)">Sous-type</label>
-      <input class="saisie" id="ct-sous-type" autocomplete="off" maxlength="60" placeholder="Facultatif">
+      <input class="saisie" id="ct-sous-type" autocomplete="off" placeholder="Facultatif">
     </div>
-    <p id="ct-info" style="font-size:var(--t-13);color:var(--texte-2)">Le sous-type « Port » sera retiré.</p>
-    <div class="alerte" role="alert" id="ct-erreur" hidden><svg class="i" aria-hidden="true"><use href="#i-circle-alert"/></svg><div class="corps-alerte"><span>Le type n'a pas changé. Réessayez.</span></div></div>
+    <p id="ct-info" style="font-size:var(--t-13);color:var(--texte-2)" hidden>Le sous-type « Port » sera retiré.</p>
+    <div class="alerte" role="alert" id="ct-erreur" hidden><svg class="i" aria-hidden="true"><use href="#i-circle-alert"/></svg><div class="corps-alerte"><span id="ct-erreur-texte">Le type n'a pas changé. Réessayez.</span></div></div>
     <div class="actions">
       <button class="bouton" id="ct-annuler">Annuler</button>
       <button class="bouton principal" id="ct-confirmer" disabled>Changer le type</button>
@@ -1806,7 +1823,7 @@ var ILLUS = (function () {
   var stCourant = 'Port', stActif = -1;
   function stMontrer(v) {
     stCourant = v;
-    stBouton.textContent = v || 'Sous-type';
+    stBouton.querySelector('.texte-st').textContent = v || 'Sous-type';
     stBouton.classList.toggle('vide', !v); $('#point-type').classList.toggle('vide', !v);
     stBouton.setAttribute('aria-label', v ? 'Sous-type : ' + v + '. Modifier le sous-type' : 'Ajouter un sous-type');
   }
@@ -1896,20 +1913,36 @@ var ILLUS = (function () {
   });
   function ouvrirDeplacer() { choisirParent(null); $('#dep-cherche').value = ''; $$('#dep-resultats .resultat').forEach(function (b) { b.hidden = false; }); ouvrirDialogue($('#voile-deplacer'), $('#dep-cherche')); }
   $('[data-deplacer]').onclick = ouvrirDeplacer;
-  // Changer le type : le type courant reste « (actuel) » ; « Personnage » ouvre PJ / PNJ ; « Changer le type » n'est actif qu'après un autre choix.
+  // Changer le type : le type courant reste « (actuel) » ; « Personnage » ouvre PJ / PNJ.
+  // (kanevas-sous-type-dialogue) Type actuel gardé : le champ porte le sous-type actuel, le bouton dit
+  // toujours « Changer le type » et ne s'active que si le sous-type diffère ; un autre type vide le champ
+  // et annonce le retrait.
   var ctChoix = null;
+  function estActuel(b) { return !b || (b.querySelector('.type-option') && b.querySelector('.type-option').textContent === '(actuel)'); }
+  function ctMaj() {
+    var actuel = estActuel(ctChoix), v = $('#ct-sous-type').value.trim();
+        $('#ct-confirmer').disabled = actuel ? v === stCourant : false;
+    $('#ct-info').hidden = actuel || !stCourant || v !== '';
+    $('#ct-info').textContent = 'Le sous-type « ' + stCourant + ' » sera retiré.';
+  }
   function choisirType(b) {
     ctChoix = b;
-    $$('#ct-types .resultat').forEach(function (x) { x.setAttribute('aria-checked', x === b || (!b && x.querySelector('.type-option') && x.querySelector('.type-option').textContent === '(actuel)')); });
-    var autre = b && !(b.querySelector('.type-option') && b.querySelector('.type-option').textContent === '(actuel)');
-    $('#ct-confirmer').disabled = !autre;
-    $('#ct-pj').hidden = !(b && b.dataset.type === 'Personnage');
+    $$('#ct-types .resultat').forEach(function (x) { x.setAttribute('aria-checked', x === b || (!b && estActuel(x))); });
+    $('#ct-sous-type').value = estActuel(b) ? stCourant : '';
+    $('#ct-pj').hidden = !(b && b.dataset.type === 'Personnage' && !estActuel(b));
+    ctMaj();
   }
+  $('#ct-sous-type').oninput = ctMaj;
   $$('#ct-types .resultat').forEach(function (b) { b.onclick = function () { choisirType(b); }; });
   function ouvrirChangerType() { choisirType(null); ouvrirDialogue($('#voile-changer-type'), $('#ct-types .resultat[aria-checked=true]')); }
   $('[data-changer-type]').onclick = ouvrirChangerType;
   $('#ct-annuler').onclick = fermerDialogue;
-  $('#ct-confirmer').onclick = function () { if (!ctChoix) return; fermerDialogue(); toast('Type changé : Lieu → ' + ctChoix.dataset.type + '.'); };
+  $('#ct-confirmer').onclick = function () {
+    fermerDialogue();
+    if (!estActuel(ctChoix)) return toast('Type changé : Lieu → ' + ctChoix.dataset.type + '.');
+    var v = $('#ct-sous-type').value.trim(); stMontrer(v);
+    toast(v ? 'Sous-type enregistré.' : 'Sous-type retiré.');
+  };
   $('#dep-annuler').onclick = fermerDialogue;
   $('#dep-confirmer').onclick = function () {
     if (!depChoix) return;
@@ -2069,6 +2102,13 @@ var ILLUS = (function () {
       if (et === 'joindre') plus_tard(function () { var b = $('#joindre'); b.scrollIntoView({ block: 'center' }); ouvrirAjout(b, { stopPropagation: function () {}, detail: 1 }); });
       if (et === 'menu') plus_tard(function () { ouvrirMenu($('#menu-fiche'), $('#bouton-menu-fiche')); });
       if (et === 'sous-type') plus_tard(stEditer);
+      if (et === 'sous-type-survol') $('#sous-type').classList.add('survol');
+      if (et === 'sous-type-focus') $('#sous-type').classList.add('focus-clavier');
+      if (et === 'changer-sous-type-echec') plus_tard(function () {
+        ouvrirChangerType(); $('#ct-sous-type').value = 'Port franc'; ctMaj();
+        $('#ct-erreur-texte').textContent = 'Le sous-type n’a pas changé. Réessayez.'; $('#ct-erreur').hidden = false;
+      });
+      if (et === 'changer-sous-type') plus_tard(function () { ouvrirChangerType(); $('#ct-sous-type').value = 'Port franc'; ctMaj(); });
       if (et === 'deplacer') plus_tard(function () {
         ouvrirDeplacer();
         choisirParent($('#dep-resultats [data-descendant]'));
