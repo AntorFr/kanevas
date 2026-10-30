@@ -23,7 +23,8 @@ import { creerEtRattacherSysteme, creerGabarit, rattacherSysteme } from '../serv
 import { creerJetonDeValeur } from '../services/jetons.js';
 import { creerUnivers } from '../services/univers.js';
 import { modulesActifs } from '../outils/registre.js';
-import { creerSystemeAncienPourBouchon } from '../services/outils.js';
+import { creerSystemeAncienPourBouchon, poserActivation } from '../services/outils.js';
+import { semerGalaxieEssai } from '../services/swn/galaxies.js';
 
 /**
  * Starting world of the stub mode (AD-55, `docs/ecrans.md` « Données de départ du bouchon »),
@@ -262,6 +263,11 @@ export function semerBouchon(db: Db): boolean {
       const ancien = creerUnivers(db, id.mira, { nom: 'Univers ancien' });
       const systemeAncien = creerSystemeAncienPourBouchon(db, 'Système ancien');
       rattacherSysteme(db, id.mira, ancien.id, systemeAncien.id);
+      if (modulesActifs().some((m) => m.nom === 'swn')) {
+        // The galaxy tool is on for the system, visible to GMs and players (B-71).
+        poserActivation(db, id.antor, { niveau: 'systeme', id: systeme.id }, 'swn/galaxie', true);
+        semerGalaxieEssai(db, eneria.id);
+      }
     }
   })();
   return true;

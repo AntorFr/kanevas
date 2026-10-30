@@ -37,7 +37,7 @@ interface BaseOutil {
   outilsAssistant?(ctx: ContexteOutil): Outil[];
   ecran: { libelle: string; icone: string };
 }
-export interface CarteOutil { titre: string; visible: boolean }
+export interface CarteOutil { id: number; titre: string; visible: boolean }
 /** Maps recompute on read after a setting changes (AD-128). */
 export interface DeclarationCarte extends BaseOutil {
   type: 'carte';

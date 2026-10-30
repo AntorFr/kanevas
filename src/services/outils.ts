@@ -1,6 +1,6 @@
 import type { Db } from '../db/db.js';
 import { env } from '../config/env.js';
-import { applicable, schemaValeur, type CarteOutil, type DeclarationModule, type DeclarationOutil,
+import { applicable, schemaValeur, type CarteOutil, type DeclarationCarte, type DeclarationModule, type DeclarationOutil,
   type Reglages, type ValeurReglage } from '../outils/declaration.js';
 import { modulesActifs } from '../outils/registre.js';
 import { exigerMJ, roleDe, vueMJ } from './droits.js';
@@ -197,6 +197,18 @@ export function listerCartesOutil(db: Db, acteur: Acteur, universId: number, cle
   if (outil.type !== 'carte') throw introuvable();
   const role = roleDe(db, universId, acteur.compteId)!;
   return outil.cartes(db, acteur, universId).filter((c) => vueMJ(role, acteur) || c.visible);
+}
+export interface CarteListee { module: string; outil: string; id: number; titre: string; visible: boolean }
+/** Every map of every active module for E-10 (G-8): tools `accessible` to the actor only, a player gets the visible maps. */
+export function listerCartesOutils(db: Db, acteur: Acteur, universId: number): CarteListee[] {
+  const role = roleDe(db, universId, acteur.compteId);
+  if (!role) throw introuvable();
+  const mj = vueMJ(role, acteur);
+  return modulesActifs().flatMap((m) => m.outils.map((o) => ({ m, o })))
+    .filter(({ o }) => o.type === 'carte' && accessible(db, acteur, universId, o.cle))
+    .flatMap(({ m, o }) => (o as DeclarationCarte).cartes(db, acteur, universId)
+      .filter((c) => mj || c.visible)
+      .map((c) => ({ module: m.nom, outil: o.cle.slice(m.nom.length + 1), id: c.id, titre: c.titre, visible: c.visible })));
 }
 function assurerLigne(db: Db, cible: CibleOutils, cle: string): void {
   const t = table(cible);
