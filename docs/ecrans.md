@@ -3013,7 +3013,7 @@ types… » et « Changer le type » reste désactivé. Contenu long : un titre 
 le titre de la boîte ; un sous-type de 60 caractères est tronqué par une ellipse dans le badge, entier dans son
 infobulle et dans le champ. Échecs : « Le type n'a pas changé. Réessayez. » dans la boîte (elle reste ouverte) ; un MJ qui n'a plus de
 rôle : « Vous ne pouvez plus modifier cette fiche. » ; connexion perdue : bandeau, bouton désactivé.
-Enregistrement en cours : le bouton passe à « Enregistrement… » et la boîte est figée. Échec de lecture de la
+Enregistrement en cours : le bouton passe à « … » et la boîte est figée. Échec de lecture de la
 liste des types : « Impossible de charger les types. » et « Réessayer » à la place de la liste, bouton désactivé.
 La liste des 14 types défile dans la boîte (hauteur bornée) au bureau comme au téléphone, où la boîte occupe
 l'écran. Un sous-type de plus de 60 caractères saisi dans le champ : « Erreur : 60 caractères au plus. ». Le
