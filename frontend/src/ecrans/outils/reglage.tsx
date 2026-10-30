@@ -15,6 +15,7 @@ export function LigneReglage({ reglage, valeur, niveau, version, ecriture, occup
   const [edition, setEdition] = useState<{ valeur: Valeur; version: number }>();
   const [attente, setAttente] = useState(false);
   const [erreur, setErreur] = useState<string>();
+  const [invalide, setInvalide] = useState(false);
   const [perime, setPerime] = useState(false);
   const [reprise, setReprise] = useState<() => void>();
   const disabled = perdue || occupe || attente;
@@ -24,6 +25,7 @@ export function LigneReglage({ reglage, valeur, niveau, version, ecriture, occup
     if (disabled) return;
     setAttente(true);
     setErreur(undefined);
+    setInvalide(false);
     setPerime(false);
     setReprise(undefined);
     try {
@@ -31,6 +33,7 @@ export function LigneReglage({ reglage, valeur, niveau, version, ecriture, occup
       setEdition(undefined);
     } catch (e) {
       const stale = e instanceof ErreurApi && e.code === 'version';
+      setInvalide(e instanceof ErreurApi && e.statut === 400);
       setPerime(stale);
       setErreur(stale ? 'Ce réglage a changé depuis que vous l’avez ouvert.'
         : e instanceof ErreurApi && e.statut === 400 ? e.message
@@ -48,12 +51,12 @@ export function LigneReglage({ reglage, valeur, niveau, version, ecriture, occup
         setEdition({ valeur: valeur.valeur, version }); setErreur(undefined); setPerime(false); setReprise(undefined);
       }}>{niveau === 'univers' ? 'Remplacer pour l’univers' : 'Remplacer'}</Bouton>}
     </div>
-    {ecriture && edition && <form className="outil-edition" onSubmit={(e) => { e.preventDefault(); void sauver(edition.valeur, edition.version); }}>
-      {forme.type === 'booleen' || forme.type === 'choix' ? <Champ etiquette={reglage.libelle} liste disabled={disabled}
+    {ecriture && edition && <form className="outil-edition" noValidate onSubmit={(e) => { e.preventDefault(); void sauver(edition.valeur, edition.version); }}>
+      {forme.type === 'booleen' || forme.type === 'choix' ? <Champ etiquette={reglage.libelle} erreur={invalide ? erreur : undefined} liste disabled={disabled}
         value={String(edition.valeur)} onChange={(e: { target: { value: string } }) => setEdition({ ...edition, valeur: forme.type === 'booleen' ? e.target.value === 'true' : e.target.value })}>
         {forme.type === 'booleen' ? <><option value="true">Oui</option><option value="false">Non</option></>
           : forme.valeurs.map((v) => <option key={v}>{v}</option>)}
-      </Champ> : <Champ etiquette={reglage.libelle} disabled={disabled} required value={edition.valeur}
+      </Champ> : <Champ etiquette={reglage.libelle} erreur={invalide ? erreur : undefined} disabled={disabled} required value={edition.valeur}
         type={forme.type === 'nombre' ? 'number' : 'text'} min={forme.type === 'nombre' ? forme.min : undefined}
         max={forme.type === 'nombre' ? forme.max : undefined} step={forme.type === 'nombre' ? (forme.entier ? 1 : 'any') : undefined}
         maxLength={forme.type === 'texte' ? forme.max : undefined}
@@ -64,7 +67,7 @@ export function LigneReglage({ reglage, valeur, niveau, version, ecriture, occup
     {ecriture && niveau === 'univers' && valeur.origine === 'univers' && !reglage.protege && <Bouton petit ecrit icone={RotateCcw} disabled={disabled}
       onClick={() => void sauver(null, edition?.version ?? version)}>Revenir à la valeur du système</Bouton>}
     {attente && <p role="status">Enregistrement… {edition ? afficher(edition.valeur) : ''}</p>}
-    {erreur && <div className="echec" role="alert">{erreur} {perime && <Bouton petit icone={RotateCcw} onClick={async () => {
+    {erreur && !invalide && <div className="echec" role="alert">{erreur} {perime && <Bouton petit icone={RotateCcw} onClick={async () => {
       await recharger(); setEdition(undefined); setErreur(undefined); setPerime(false);
     }}>Recharger</Bouton>}{reprise && <Bouton petit ecrit disabled={disabled} onClick={reprise}>Réessayer</Bouton>}</div>}
   </div>;
