@@ -6,6 +6,7 @@ import { createServer } from 'node:net';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { after, before, describe, test } from 'node:test';
+import { withStartupLock } from './harnais.test.js';
 
 // Complements administration.test.ts (B-6, P-2 step 3, E-5, B-29): the exclusions of the design
 // (the admin never reads content, the entry exists only for the admin) and the states that file
@@ -49,7 +50,12 @@ interface Serveur {
   stop: () => void;
 }
 
-async function demarrer(): Promise<Serveur> {
+// Startups share the harness lock: one server or browser launching at a time on the pod.
+function demarrer(...args: Parameters<typeof demarrerSansVerrou>): ReturnType<typeof demarrerSansVerrou> {
+  return withStartupLock(() => demarrerSansVerrou(...args));
+}
+
+async function demarrerSansVerrou(): Promise<Serveur> {
   const port = await freePort();
   const dossier = mkdtempSync(join(tmpdir(), 'kanevas-e2e-'));
   const env: NodeJS.ProcessEnv = {
@@ -128,7 +134,7 @@ describe('E-5 Administration : exclusions et états (B-6, B-29)', { skip: raison
       const r = spawnSync('npm', ['run', 'build'], { stdio: 'inherit' });
       assert.equal(r.status, 0, 'npm run build');
     }
-    browser = await pw!.chromium.launch();
+    browser = await withStartupLock(() => pw!.chromium.launch());
   });
   after(async () => {
     await browser?.close();

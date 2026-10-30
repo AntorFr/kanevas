@@ -8,6 +8,7 @@ import { join } from 'node:path';
 import { after, before, describe, test } from 'node:test';
 
 import Database from 'better-sqlite3';
+import { withStartupLock } from './harnais.test.js';
 
 // E-5 add-member form on a phone (arbitration 2026-10-09): the identifier field keeps at least 12rem
 // (192 px) so the label and placeholder stay whole and the form wraps (role + button on the next
@@ -51,7 +52,12 @@ interface Serveur {
   stop: () => void;
 }
 
-async function demarrer(): Promise<Serveur> {
+// Startups share the harness lock: one server or browser launching at a time on the pod.
+function demarrer(...args: Parameters<typeof demarrerSansVerrou>): ReturnType<typeof demarrerSansVerrou> {
+  return withStartupLock(() => demarrerSansVerrou(...args));
+}
+
+async function demarrerSansVerrou(): Promise<Serveur> {
   const port = await freePort();
   const dossier = mkdtempSync(join(tmpdir(), 'kanevas-e2e-'));
   const dbPath = join(dossier, 'kanevas.db');
@@ -125,7 +131,7 @@ describe('E-5 formulaire d\'ajout de membre : repli à 390 px, une ligne au bure
       const r = spawnSync('npm', ['run', 'build'], { stdio: 'inherit' });
       assert.equal(r.status, 0, 'npm run build');
     }
-    browser = await pw!.chromium.launch();
+    browser = await withStartupLock(() => pw!.chromium.launch());
   });
   after(async () => {
     await browser?.close();

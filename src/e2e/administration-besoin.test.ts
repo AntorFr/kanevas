@@ -6,6 +6,7 @@ import { createServer } from 'node:net';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { after, before, describe, test } from 'node:test';
+import { withStartupLock } from './harnais.test.js';
 
 // Third layer of E-5 tests (B-6, P-2 step 3, B-29), written from docs/parcours.md and
 // docs/ecrans.md only: what the two other files leave out (the P-2 repair story end to end,
@@ -48,7 +49,12 @@ interface Serveur {
   stop: () => void;
 }
 
-async function demarrer(): Promise<Serveur> {
+// Startups share the harness lock: one server or browser launching at a time on the pod.
+function demarrer(...args: Parameters<typeof demarrerSansVerrou>): ReturnType<typeof demarrerSansVerrou> {
+  return withStartupLock(() => demarrerSansVerrou(...args));
+}
+
+async function demarrerSansVerrou(): Promise<Serveur> {
   const port = await freePort();
   const dossier = mkdtempSync(join(tmpdir(), 'kanevas-e2e-'));
   const env: NodeJS.ProcessEnv = {
@@ -128,7 +134,7 @@ describe('E-5 Administration : recours, états et exclusions complémentaires (B
       const r = spawnSync('npm', ['run', 'build'], { stdio: 'inherit' });
       assert.equal(r.status, 0, 'npm run build');
     }
-    browser = await pw!.chromium.launch();
+    browser = await withStartupLock(() => pw!.chromium.launch());
   });
   after(async () => {
     await browser?.close();

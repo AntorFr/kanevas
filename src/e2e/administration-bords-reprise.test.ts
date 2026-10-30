@@ -8,6 +8,7 @@ import { join } from 'node:path';
 import { after, before, describe, test } from 'node:test';
 
 import Database from 'better-sqlite3';
+import { withStartupLock } from './harnais.test.js';
 
 // Second pass of black-box tests for B-6 / P-2 step 3 / E-5 / B-29 (kanevas-recours-admin), written
 // from docs/parcours.md and docs/ecrans.md only: boundaries of the addresses and of the API, the
@@ -55,7 +56,12 @@ interface Serveur {
   stop: () => void;
 }
 
-async function demarrer(): Promise<Serveur> {
+// Startups share the harness lock: one server or browser launching at a time on the pod.
+function demarrer(...args: Parameters<typeof demarrerSansVerrou>): ReturnType<typeof demarrerSansVerrou> {
+  return withStartupLock(() => demarrerSansVerrou(...args));
+}
+
+async function demarrerSansVerrou(): Promise<Serveur> {
   const port = await freePort();
   const dossier = mkdtempSync(join(tmpdir(), 'kanevas-e2e-'));
   const dbPath = join(dossier, 'kanevas.db');
@@ -140,7 +146,7 @@ describe('E-5 Administration : bords, exclusions et contenu long (B-6, B-29)', {
       const r = spawnSync('npm', ['run', 'build'], { stdio: 'inherit' });
       assert.equal(r.status, 0, 'npm run build');
     }
-    browser = await pw!.chromium.launch();
+    browser = await withStartupLock(() => pw!.chromium.launch());
   });
   after(async () => {
     await browser?.close();

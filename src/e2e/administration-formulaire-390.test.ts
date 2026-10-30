@@ -6,6 +6,7 @@ import { createServer } from 'node:net';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { after, before, describe, test } from 'node:test';
+import { withStartupLock } from './harnais.test.js';
 
 // E-5 (docs/ecrans.md, maquette e05): in the « Membres » zone, the add form is a field « Identifiant du
 // compte », a role (Joueur by default) and « Ajouter ». Re-verification of the 390 px gap: the identifier
@@ -37,7 +38,12 @@ async function freePort(): Promise<number> {
   });
 }
 
-async function demarrer() {
+// Startups share the harness lock: one server or browser launching at a time on the pod.
+function demarrer(...args: Parameters<typeof demarrerSansVerrou>): ReturnType<typeof demarrerSansVerrou> {
+  return withStartupLock(() => demarrerSansVerrou(...args));
+}
+
+async function demarrerSansVerrou() {
   const port = await freePort();
   const dossier = mkdtempSync(join(tmpdir(), 'kanevas-f390-'));
   const env: NodeJS.ProcessEnv = {
@@ -123,7 +129,7 @@ async function mesurer(largeur: number) {
 
 describe('E-5 formulaire d\'ajout, zone Membres, à 390 px puis au bureau (depuis le besoin)', { skip: pw ? false : 'playwright introuvable' }, () => {
   before(async () => {
-    browser = await pw!.chromium.launch();
+    browser = await withStartupLock(() => pw!.chromium.launch());
   });
   after(async () => {
     await browser?.close();

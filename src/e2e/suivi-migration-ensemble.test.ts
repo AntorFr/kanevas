@@ -10,7 +10,7 @@ import { join } from 'node:path';
 import { after, before, describe, test } from 'node:test';
 
 import { migrate, openDb } from '../db/db.js';
-import { type Any, connecte, ensureBuilt, freePort, launch, skipBrowser, texte } from './harnais.test.js';
+import { withStartupLock, type Any, connecte, ensureBuilt, freePort, launch, skipBrowser, texte } from './harnais.test.js';
 
 interface Appel {
   status: number;
@@ -75,7 +75,8 @@ describe('kanevas-scenarios-suivi : migration de la base d\'exemple (campagnes e
   const ids: Record<string, number> = {};
   const dbPath = () => join(dir, 'k.db');
 
-  async function demarrer(): Promise<void> {
+  const demarrer = () => withStartupLock(demarrerSansVerrou);
+  async function demarrerSansVerrou(): Promise<void> {
     ensureBuilt();
     const port = await freePort();
     const env: NodeJS.ProcessEnv = { ...process.env, PORT: String(port), NODE_ENV: 'production', KANEVAS_STUB: '1', KANEVAS_SANS_SEMIS: '1', DB_PATH: dbPath(), SESSION_SECRET: 'e2e-secret-e2e-secret-e2e' };

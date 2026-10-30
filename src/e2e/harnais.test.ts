@@ -64,7 +64,7 @@ let startupQueue: Promise<void> = Promise.resolve();
  * runner supplies a shared POSIX lock path for its isolated test-file processes.
  * The local queue also covers concurrent calls within a file, or a standalone run.
  */
-async function withStartupLock<T>(run: () => Promise<T>): Promise<T> {
+export async function withStartupLock<T>(run: () => Promise<T>): Promise<T> {
   const previous = startupQueue;
   let releaseQueue!: () => void;
   startupQueue = new Promise<void>((resolve) => (releaseQueue = resolve));

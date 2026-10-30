@@ -6,6 +6,7 @@ import { createServer } from 'node:net';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { after, before, describe, test } from 'node:test';
+import { withStartupLock } from './harnais.test.js';
 
 // Feature `kanevas-scenarios-type`, assembled, written from the need only (the sheet's « Livre » and
 // critère de sortie, B-58, B-59, E-8, E-9, E-17 of docs/): « Aventure » type, creation window, status
@@ -62,7 +63,12 @@ interface Serveur {
   stop: () => void;
 }
 
-async function demarrer(): Promise<Serveur> {
+// Startups share the harness lock: one server or browser launching at a time on the pod.
+function demarrer(...args: Parameters<typeof demarrerSansVerrou>): ReturnType<typeof demarrerSansVerrou> {
+  return withStartupLock(() => demarrerSansVerrou(...args));
+}
+
+async function demarrerSansVerrou(): Promise<Serveur> {
   const port = await freePort();
   const dossier = mkdtempSync(join(tmpdir(), 'kanevas-e2e-'));
   const env: NodeJS.ProcessEnv = {
@@ -185,7 +191,7 @@ describe('kanevas-scenarios-type : les aventures, du besoin à l’écran', { sk
       const r = spawnSync('npm', ['run', 'build'], { stdio: 'inherit' });
       assert.equal(r.status, 0, 'npm run build');
     }
-    browser = await pw!.chromium.launch();
+    browser = await withStartupLock(() => pw!.chromium.launch());
     const s = await demarrer();
     monde = { s, antor: await connecter(s, 'antor'), lea: await connecter(s, 'lea') };
   });
