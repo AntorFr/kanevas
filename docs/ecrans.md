@@ -3157,6 +3157,8 @@ l'abonnement » button; status messages are in an `aria-live="polite"` region, e
 
 ## Screen details for `kanevas-outils` (scope)
 
+> **Built so far (`kanevas-outils-cadre`):** the « Outils » tab of E-14 and E-15 without catalogue (no « Importer un catalogue… », no « Supprimer les données de l'outil… »), the system's responsible and « Transférer la responsabilité », the sidebar's « Outils » section; E-21, E-22, import and removal are other slices and not built.
+>
 > Scope proposed on 2026-10-16 (`epic/kanevas-outils`). Needs B-57 to B-79, journeys P-17 to P-21,
 > decisions AD-121 to AD-137. Key screens, with finished mockups: **E-20** (`docs/maquettes/e20-outils.html`,
 > key moment of P-17), **E-21** (`e21-carte-galaxie.html`, P-18), **E-22** (`e22-concepteur-vaisseaux.html`, P-19,
