@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { isDeepStrictEqual } from 'node:util';
+import { jsonCanonique } from '../catalogue-json.js';
 import type { CibleCatalogue, DeclarationCatalogue, LigneCatalogue, StockageCatalogue } from '../declaration.js';
 import type { Db } from '../../db/db.js';
 import { ErreurService, introuvable } from '../../services/erreurs.js';
@@ -37,7 +37,7 @@ export const stockageEssai: StockageCatalogue = {
   ecrire(db, c, nature, { cle, donnees: d, versionCatalogue }) {
     const o = owner(c);
     const previous = read(db, c, nature, cle);
-    if (previous && isDeepStrictEqual(previous.donnees, d)) return 'inchange';
+    if (previous && jsonCanonique(previous.donnees) === jsonCanonique(d)) return 'inchange';
     if (previous) {
       db.prepare(`UPDATE essai_catalogue_elements SET nom = ?, masse = ?, cout = ?, portee = ?,
         version_catalogue = ?, version = version + 1 WHERE niveau = ? AND ${o.colonne} = ? AND nature = ? AND cle = ?`)

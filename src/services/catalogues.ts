@@ -1,4 +1,4 @@
-import { isDeepStrictEqual } from 'node:util';
+import { jsonCanonique } from '../outils/catalogue-json.js';
 import type { z } from 'zod';
 import type { Db } from '../db/db.js';
 import { applicable, type CibleCatalogue, type DeclarationCatalogue, type LigneCatalogue } from '../outils/declaration.js';
@@ -110,7 +110,7 @@ function importCatalogue(db: Db, acteur: Acteur, cible: CibleOutils, cle: string
     for (const nature of catalogue.natures) {
       const counts = rapport.natures[nature.nom] = { ajoutes: 0, modifies: 0, inchanges: 0, refuses: 0 };
       const seen = new Set<string>();
-      for (const item of (file[nature.nom] ?? []) as unknown[]) {
+      for (const item of (Object.hasOwn(file, nature.nom) ? file[nature.nom] : []) as unknown[]) {
         const itemKey = object(item) && typeof item.cle === 'string' ? item.cle : '';
         if (!/^[a-z0-9][a-z0-9_-]{0,63}$/.test(itemKey)) {
           reject(nature.nom, itemKey, 'cle', 'clé invalide'); continue;
@@ -127,7 +127,7 @@ function importCatalogue(db: Db, acteur: Acteur, cible: CibleOutils, cle: string
         }
         const donnees = parsed.data as Record<string, unknown>;
         const old = catalogue.stockage.lirePar(db, target, nature.nom, itemKey);
-        const status = !old ? 'ajoutes' : old.nom !== donnees.nom || !isDeepStrictEqual(old.donnees, donnees) ? 'modifies' : 'inchanges';
+        const status = !old ? 'ajoutes' : old.nom !== donnees.nom || jsonCanonique(old.donnees) !== jsonCanonique(donnees) ? 'modifies' : 'inchanges';
         counts[status]++;
         if (status !== 'inchanges') {
           changed = true;
