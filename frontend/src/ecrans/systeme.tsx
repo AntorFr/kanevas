@@ -9,6 +9,8 @@ import type { Ecran } from '../registre';
 import { Bouton, Champ, ChargementListe, EditeurMarkdown, ErreurChargement, Markdown, PageIntrouvable, Pastille, VideIcone, depasse, messageTropLong, refusServeur, useToasts } from '../ui';
 import { PucesUnivers } from './systeme/puces';
 import { OngletTypesSysteme } from './types-reglage/onglet-systeme';
+import { PanneauOutils } from './outils/panneau';
+import { ResponsableSysteme } from './outils/responsable';
 import './ecrans.css';
 import './liste.css';
 import './reglages.css';
@@ -135,6 +137,7 @@ function Systeme() {
   const [params, setParams] = useSearchParams();
   const demande = params.get('type');
   const surTypes = demande === 'types';
+  const surOutils = demande === 'outils';
   const type: Type = TYPES.find((t) => t === demande) ?? 'creature';
   const [entete, setEntete] = useState<Omit<Page, 'gabarits' | 'suivant'>>();
   const [entrees, setEntrees] = useState<Gabarit[]>([]);
@@ -195,6 +198,8 @@ function Systeme() {
     return <ChargementListe texte="Chargement du système…" />;
   }
   const peutEcrire = entete.peutEcrire;
+  const peutLireOutils = entete.mesUnivers.some((u) => u.role === 'mj');
+  if (surOutils && !peutLireOutils) return <PageIntrouvable retour="systemes" />;
 
   async function suite() {
     if (!suivant || suiteEnCours) return;
@@ -277,6 +282,7 @@ function Systeme() {
         <span>Dans vos univers</span>
         <PucesUnivers univers={entete.mesUnivers} lien />
       </div>
+      {peutLireOutils && <ResponsableSysteme key={sid} id={sid!} />}
       </div>
       {plusDroit && (
         <div className="echec" role="alert">
@@ -290,8 +296,8 @@ function Systeme() {
               key={o.type}
               type="button"
               role="tab"
-              aria-selected={!surTypes && o.type === type}
-              className={!surTypes && o.type === type ? 'actif' : undefined}
+              aria-selected={!surTypes && !surOutils && o.type === type}
+              className={!surTypes && !surOutils && o.type === type ? 'actif' : undefined}
               onClick={() => choisir(o.type)}
             >
               {o.titre}
@@ -307,8 +313,10 @@ function Systeme() {
           >
             Types de fiche
           </button>
+          {peutLireOutils && <button type="button" role="tab" aria-selected={surOutils} className={surOutils ? 'actif' : undefined}
+            onClick={() => setParams({ type: 'outils' }, { replace: true })}>Outils</button>}
         </div>
-        {!surTypes && etat === 'ok' && peutEcrire && !ajout && (
+        {!surTypes && !surOutils && etat === 'ok' && peutEcrire && !ajout && (
           <Bouton variante="principal" ecrit icone={Plus} onClick={() => setAjout(true)}>
             {onglet.ajout}
           </Bouton>
@@ -333,7 +341,8 @@ function Systeme() {
           />
         </div>
       )}
-      <div role="tabpanel" hidden={surTypes}>
+      {surOutils && <div role="tabpanel"><PanneauOutils key={sid} id={sid!} niveau="systeme" /></div>}
+      <div role="tabpanel" hidden={surTypes || surOutils}>
         {etat === 'chargement' && <ChargementListe texte="Chargement du système…" />}
         {etat === 'erreur' && (
           <ErreurChargement texte="Impossible de charger ce système." onReessayer={() => setEssai((n) => n + 1)} />

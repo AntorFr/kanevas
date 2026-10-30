@@ -19,9 +19,11 @@ preparation, session reports; `kanevas-relier-chercher`, relations between sheet
 call the same service functions as the routes, with the person's permissions (AD-73 to AD-78).
 Maps and graphs (E-10, E-11) are built. `kanevas-monde` adds a proposed section update based on a session report, which the GM applies or abandons with one action (AD-79 to AD-82); `kanevas-images` adds generation of a portrait attached to a section (AD-88 to AD-90).
 `kanevas-recours-admin` adds instance administration (E-5, AD-86, AD-87).
+`kanevas-outils-cadre` adds the tools framework (`src/outils/`, `services/outils.ts`, `routes/outils.ts`, migration `0017-outils.sql`, routes `/api/univers/:id/outils…` and `/api/systemes/:id/{outils,responsable}…`, tab « Outils » of E-14/E-15, sidebar section « Outils »): detail and decisions C-1 to C-6 in « Detail of `kanevas-outils-cadre` »; no real tool yet, only the trial module `essai` in stub mode and in test.
 
 ## Map
 
+- `src/outils/`, `services/outils.ts`, `routes/outils.ts`, `frontend/src/outils/`, `frontend/src/ecrans/outils/`: the tools framework (`kanevas-outils-cadre`, see « Detail of `kanevas-outils-cadre` »).
 - `src/server.ts`, `src/app.ts`: startup and assembly of the Fastify app
   (`buildApp`), the repository's only application; all future routes register
   there.
@@ -35,7 +37,7 @@ Maps and graphs (E-10, E-11) are built. `kanevas-monde` adds a proposed section 
   `bouchon` and `claude-agent` adapters (AD-73, AD-78), availability (AD-77) and
   request orchestration (AD-75), the token (`jeton.ts`) and its connection session (`connexion-claude.ts`, AD-112; `scripts/faux-setup-token.mjs` in stub mode); `src/routes/assistant.ts`: the two routes. No SQL queries
   in this module (AD-2, AD-27).
-- `src/db/`: opening the SQLite file, `migrations/0001-*.sql`, `0002-systemes.sql`, `0003-suivi.sql`, `0004-pieces-jointes.sql`, `0005-relier-chercher.sql`, `0006-illustrations.sql`, `0007-cartes.sql`, `0008-propositions.sql`, `0009-plafond-contenu.sql` (100,000 ceiling, AD-106), `0010-fil-contrat.sql` (tokens, batches, source keys, AD-103), `0011-contenu-public.sql` (`sections.contenu_public`, section index rebuilt, AD-114), `0012-liens.sql` (`liens` table, target indexes and `relations (cible_fiche_id)`, AD-116), `0013-types.sql` *(`kanevas-import-types`, AD-120; number 0013 assigned when the epic resumed, reassigned if another slice goes first (AD-51); rebuilding `fiches`)*, `0014-alias-etiquettes.sql` *(`kanevas-import-recherche`, AD-118; aliases, labels, title index rebuilt)*, `0015-mediatheque.sql` *(`kanevas-import-mediatheque`, AD-117; `fichiers`, `fichiers_sections`, `fiches.illustration_fichier_id`, migration of attachments and illustrations)*, `0016-import-suivi.sql` *(`kanevas-import-reprise`, AD-121; `cle_origine`, `dernier_import`, `version_importee` on campaigns and scenarios)*, runner (AD-14).
+- `src/db/`: opening the SQLite file, `migrations/0001-*.sql`, `0002-systemes.sql`, `0003-suivi.sql`, `0004-pieces-jointes.sql`, `0005-relier-chercher.sql`, `0006-illustrations.sql`, `0007-cartes.sql`, `0008-propositions.sql`, `0009-plafond-contenu.sql` (100,000 ceiling, AD-106), `0010-fil-contrat.sql` (tokens, batches, source keys, AD-103), `0011-contenu-public.sql` (`sections.contenu_public`, section index rebuilt, AD-114), `0012-liens.sql` (`liens` table, target indexes and `relations (cible_fiche_id)`, AD-116), `0013-types.sql` *(`kanevas-import-types`, AD-120; number 0013 assigned when the epic resumed, reassigned if another slice goes first (AD-51); rebuilding `fiches`)*, `0014-alias-etiquettes.sql` *(`kanevas-import-recherche`, AD-118; aliases, labels, title index rebuilt)*, `0015-mediatheque.sql` *(`kanevas-import-mediatheque`, AD-117; `fichiers`, `fichiers_sections`, `fiches.illustration_fichier_id`, migration of attachments and illustrations)*, `0016-import-suivi.sql` *(`kanevas-import-reprise`, AD-121; `cle_origine`, `dernier_import`, `version_importee` on campaigns and scenarios)*, `0017-outils.sql` *(`kanevas-outils-cadre`, AD-121 (module declaration); `outils_systeme`, `outils_univers`, `systemes_jeu.responsable_id`; the number is provisional until the slice merges, AD-51)*, runner (AD-14).
 - `src/e2e/`: end-to-end tests, real server in stub mode and driven browser (Playwright, skipped if missing); E-5: `administration*.test.ts`.
 - `src/services/`: `comptes`, `univers`, `membres`, `instance`, `fiches`, `sections`, `droits`, `systemes`, `relations`, `campagnes`, `scenarios`, `preparation`, `comptes_rendus`, `fichiers` (the media library: sole writer of `fichiers*`, except when deleting a universe: `univers.ts` deletes its rows), `fichiers-lecture` (reading files referenced by key, pending rendering), `cartes`, `propositions`, `types-fiche` *(AD-120)*, `markdown`, `liens`, `mentions`, `jetons`, `lots`, `import` (token context), `import-suivi` *(AD-121: imported campaigns and scenarios)*, `import-relations` *(AD-121: imported relations)*, `types` *(AD-120)*, `etiquettes` *(AD-118)*, `import-fiches`, `stockage` — the only
   functions that read or write data (AD-2); `src/routes/`: thin `/api` routes; `univers.ts` and `instance.ts` carry universe and instance routes; `import.ts` (token-based import API, `/api/import/v1`) and `acces-api.ts` (E-18, session-based: `GET|POST /api/univers/:id/jetons`, `POST …/jetons/:jid/revoquer`, `GET …/lots`).
@@ -77,6 +79,8 @@ Volume `/data`: `kanevas.db` (SQLite, WAL), `session.key` (session secret, 0600)
 in progress, emptied at startup except with an in-memory database, where the directory is shared).
 
 ## Routes `/api`
+
+The tools framework's routes (`/api/univers/:id/outils…`, `/api/systemes/:id/outils…`, `/api/systemes/:id/responsable…`) are tabulated in « Detail of `kanevas-outils-cadre` », C-5.
 
 All guarded by the session (401 without a session), except `/api/auth/*` and `/api/import/v1/*`, which opens only with a Bearer token (AD-103) and ignores the cookie. Service errors are
 `introuvable` 404, `refuse` 403, `invalide` 400, `conflit` 409 (`section_modifiee`, `nom_pris`, `gabarit_modifie`, `scenario_modifie`, `proposition_appliquee`, `relation_existante`, `limite_relations`, `limite_pieces`: 100 attached files per section (AD-111) — 409 for a GM, 403 `refuse` for another member (AD-117), `fiche_deja_placee` and `carte_pleine` for maps; 413 `fond_trop_lourd` for a background over 25 MB; 400 `fichier_vide` for an empty attachment (an empty map background is a 400 `fond_invalide`); `auto_relation` is a 400 `invalide`). Removing the last
@@ -562,9 +566,9 @@ added / modified / refused report). Screen, API and assistant go through the **s
 **AD-125 — Activation, visibility and settings resolve system → universe.** [ADOPTED, decisions (6), point 3, point 10]
 Binds: B-57 to B-60. Prevents: three places deciding who sees a tool, and settings read in different places.
 Rule: a single function resolves, for (universe, tool), the *enabled* state, visibility by role and each setting's value: the universe row if there is one, otherwise the system row,
-otherwise the declared default. The system's **maintainer** (creator by default, transferable role) alone writes at system level; any GM writes at their universe's level; the instance
+otherwise the declared default. The system's **responsible** (creator by default, transferable role) alone writes at system level; any GM writes at their universe's level; the instance
 admin has no access. Disabling at system level hides the tool from universes following it; a universe that forced it keeps access, including system data. *Rejected*: “any GM of an attached
-universe configures the system” (the action affects all universes); *the instance admin as maintainer* — they have no content access (AD-9). Templates keep their current rule.
+universe configures the system” (the action affects all universes); *the instance admin as responsible* — they have no content access (AD-9). Templates keep their current rule.
 
 **AD-126 — Tool permissions have two levels, enforced in services.** [ADOPTED, decision point 3]
 Binds: B-59, B-73. Prevents: a tool leaking a secret in player view (search, route, zone, menu).
@@ -622,7 +626,7 @@ Printing is a later core function for any sheet (outside the epic).
 **AD-135 — Disabling hides; deleting is a separate action.** [ADOPTED, point 6]
 Binds: B-63. Prevents: data lost by clicking a toggle.
 Rule: disabling a tool touches no row; it hides the entry point, addresses, data and the view of system data for the universe; its managed sections remain readable in text form with an
-« outil désactivé » banner, without regeneration or modification. Deleting data is a separate, restricted function (maintainer for the system, GM for the universe), whose confirmation counts what goes and, for the system,
+« outil désactivé » banner, without regeneration or modification. Deleting data is a separate, restricted function (the responsible for the system, GM for the universe), whose confirmation counts what goes and, for the system,
 what still uses it (universes, local items, designs). Deleting a universe erases its tools' data (one transaction, including the module's tables).
 
 **AD-136 — A tool's capabilities for the assistant are neutral module tools.** [ADOPTED, model (8)]
@@ -633,6 +637,81 @@ to the role read from the database; account, universe and role are closed over, 
 **AD-137 — Two modules talk through their functions, on a declared dependency.** [ADOPTED, decision (e)]
 Binds: every module. Prevents: a module reading another's tables or calling it over HTTP.
 Rule: a dependency is declared in the declaration (AD-121), the activation screen enforces it (B-58); the call goes through the other module's exported function, under the same permissions. In this epic, there is no dependency between tools: `vaisseaux` reads the jump range configured at `swn` module level, not the map. The mechanism is tested with the trial module.
+
+### Detail of `kanevas-outils-cadre` (the framework slice)
+
+Decisions of this slice, taken inside AD-121 to AD-126, AD-133, AD-136 and AD-137 (they amend none). Marked **C-n**.
+
+**A numbering collision, noted.** `AD-121` is used twice in this file: by `kanevas-import-reprise` (campaigns, scenarios, session reports and relations through the import API, in the code at `services/campagnes.ts` and `scenarios.ts`) and by the tools framing (« A module registers through a single declaration »). The framing was validated with its numbers and renumbering it would rewrite the decision Monsieur read; this slice therefore always writes **« AD-121 (module declaration) »** and its tasks cite it that way; `git grep 'AD-121 (module'` finds it. Cheapest to undo: renumber the tools decision to the next free number in a later pass.
+
+**C-6 — The sidebar refresh (AD-133).** E-20 and the bar are two tasks; their contract is one browser event: after every successful write of `PanneauOutils` (activation, visibility, settings, transfer) it dispatches `window.dispatchEvent(new Event('kanevas:outils-modifies'))`; the bar listens and re-asks `…/outils/entrees`. The event name is the whole interface. The bar's task tests it by dispatching the event itself after a `PUT`; the tab's task tests that each write dispatches it.
+
+**Files.** `src/outils/declaration.ts` (the types below and their zod check), `src/outils/registre.ts` (`modulesActifs()`: the list of modules; the `essai` module is in it only under `KANEVAS_STUB=1` or `NODE_ENV=test`, read in `config/env.ts` like the other switches), `src/outils/essai/` (the trial module: `index.ts` declares it, one file per tool), `src/services/outils.ts` (**the only reader and writer of `outils_systeme` and `outils_univers`**, and of `systemes_jeu.responsable_id` for the transfer), `src/routes/outils.ts` (thin routes, AD-2). Frontend: `frontend/src/outils/registre.ts` maps `module/outil` to a lazy import of its screen; `frontend/src/ecrans/outils/` holds E-20. One migration of the core, numbered when the slice merges (AD-51): the two tables of `docs/donnees.md` and `systemes_jeu.responsable_id` (nullable, no backfill).
+
+The core implementation uses migration `0017-outils.sql` (provisional number). Its three write services
+take `(db, acteur, cible, cle, valeur)`, where `acteur` is an account id or an `Acteur` and `cible` is
+`{ niveau: 'systeme' | 'univers', id }`; settings take `{ version, valeurs, confirme? }` as their value.
+`resoudreOutilSysteme` exposes the base resolution for the system settings screen; `resoudreOutil`
+exposes the universe resolution. Both return common settings as `communs: { reglages, versionReglages }`.
+`responsableEffectif` computes ownership without changing the stored account; `exigerOutil`,
+`exigerUsage` and `listerCartesOutil` compose activation, role and item visibility checks for module callers.
+
+**The declaration (AD-121).**
+
+```
+DeclarationModule { nom, libelle, reglagesCommuns: Reglages, outils: DeclarationOutil[], routes?(app, garde) }
+DeclarationOutil  { cle: 'module/outil', libelle, description,
+                    type: 'carte' | 'generateur' | 'aide',
+                    portee: 'tous' | { noms: string[] },      // game systems it applies to (C-1)
+                    dependances: string[],                    // keys of other tools of the same module
+                    visibiliteParDefaut: { mj: boolean, joueur: boolean },
+                    usages: { nom, mjSeul: boolean }[],
+                    reglages: Reglages,
+                    outilsAssistant?(ctx): OutilAssistant[],  // AD-136
+                    ecran: { libelle, icone }  }              // sidebar entry, AD-133
+Reglage           { libelle, aide?, niveau: 'systeme+univers' | 'univers',
+                    forme: booleen | nombre{min,max,entier?} | texte{max} | choix{valeurs}, defaut, protege?: boolean }
+```
+
+`verifierDeclaration` runs at startup and in the unit tests: unique keys, dependencies that exist in the module and form no cycle, a default inside its own shape, at most one tool of a key. A malformed declaration stops the server (a developer's error, never a user's). The core imports no module by name: it reads `modulesActifs()`.
+
+**C-1 — Which systems a tool applies to.** `portee: 'tous'` (every game system) or `{ noms }`, names compared after trimming and case-folding. The system has no stable key (`systemes_jeu` carries a name); the SWN tranches choose between the two. *Cheapest to undo*: a key column on `systemes_jeu` replaces `noms` later without touching any stored row. The trial module uses `'tous'`; the unit test covers `noms`.
+
+**Resolution (AD-125).** `resoudreOutil(db, universId, cle)` is the one function; it returns `{ active, visibilite: { mj, joueur }, reglages: { [nom]: { valeur, origine: 'defaut' | 'systeme' | 'univers' } }, versionReglages: { systeme, univers } }`. For each field: the universe row if it is non-null, else the system row, else the declared default (a tool is *disabled* by default). A setting of `niveau: 'univers'` ignores the system row. The common settings of the module (row `outil = '<module>'`) resolve the same way and are returned apart, under `communs`. `accessible(db, acteur, universId, cle)` answers whether the tool is **enabled and visible to the actor**: the role read from `membres` at each call, `visibilite.mj` for a GM outside Player mode, `visibilite.joueur` for a player and for a GM in Player mode; no role = no. **A tool the actor cannot use is `introuvable`** (same response as an unknown address). The tool's own check `peutUsage(acteur, cle, usage)` then applies its declared `usages` (an `mjSeul` usage is refused to a player with `refuse`).
+
+**C-2 — Who writes where (B-57).** `exigerResponsable(db, compteId, systemeId)`: the account is `responsable_id`; when it is null, any GM of a universe attached to the system. Anyone else: a GM of an attached universe who is not the responsible gets `refuse` on a write and reads; an account that is no GM of an attached universe (player, foreigner, instance admin as such) gets `introuvable`. Universe-level writes: `exigerMJ` of the universe. A GM in Player mode has no write (like every service of the product). `creerSysteme` and `creerEtRattacherSysteme` set `responsable_id` to the creator. `transfererResponsabilite(db, compteId, systemeId, versCompteId)`: the caller is the responsible (or any GM when there is none); the target must be a GM of an attached universe, else `invalide` with `champ: 'compte'`; the former responsible keeps their GM role in their universes and loses the system level only. If the responsible account is deleted, `ON DELETE SET NULL` brings the system back to the rule without owner.
+
+**C-3 — Writes.** Three separate service functions per level, so that none rewrites the others: `poserActivation(…, active)` (system: `true`/`false`; universe: `true`/`false`/`null` = follow), `poserVisibilite(…, { mj?, joueur? })` (system: booleans; universe: booleans or `null` = follow), `poserReglages(…, { version, valeurs })` (a value `null` removes the universe override; a system value is never null). Only the settings write bumps `version_reglages` of its row (AD-128: activation never makes a design stale); a stale `version` is `conflit` with `detail: 'version'`. A value outside its shape is `invalide` with `champ` = the setting's name; an unknown setting or a setting of another level is `invalide`. A protected setting (`protege`) is written through the same function but the route requires `confirme: true` in the body, else `invalide` with `code: 'confirmation_requise'` (the screen of the tool shows the confirmation; the trial module has none).
+
+**C-4 — Dependencies (AD-137, B-58).** Activating a tool *at a level* requires every dependency to be effectively active **at that level** after the write (system: system rows; universe: the resolved value for the universe); otherwise `conflit`, `detail: 'dependance'`, message « <Outil> demande <autre outil> : activez-le d'abord. ». The reverse is guarded too: turning a tool off while a dependent is active at that same level is refused with « <Autre outil> demande <Outil> : désactivez-le d'abord. » (`detail: 'dependant'`) — cheaper than a tool left active over a missing one; undone by dropping the check. A dependency never reads another module (AD-137): the trial test only checks the enforcement.
+
+**C-5 — Common API (AD-124).** All under the session guard; errors `code` + `champ` as in `kanevas-import`.
+
+| Route | Who | Gives |
+|---|---|---|
+| `GET /api/univers/:id/outils/entrees` | any member | the sidebar's entries: `[{ cle, libelle, icone, chemin }]`, only tools enabled **and** visible to the actor (the client hides an entry whose screen it does not know, as `items.ts` does); never a count of hidden ones |
+| `GET /api/univers/:id/outils/:module/:outil/description` | an actor who can use the tool | label, type, description, settings and their shape, dependencies, usages, effective values; `introuvable` otherwise |
+| `GET /api/univers/:id/outils` | GM | E-20, universe tab: every applicable tool, even disabled, with the system level and the universe level side by side, the common settings, dependencies, `version_reglages`; players: `introuvable` |
+| `PUT /api/univers/:id/outils/:module/:outil/activation` · `/visibilite` · `/reglages` | GM | the three writes of C-3 at universe level |
+| `PUT /api/univers/:id/outils/:module/reglages` · `PUT /api/systemes/:id/outils/:module/reglages` | GM (universe) · the responsible (system) | the common settings of a module: same body as a tool's `/reglages`, the module key standing where `module/outil` would (no artificial tool key) |
+| bodies | | `activation`: `{ "active": true \| false \| null }` (`null` = follow, universe only); `visibilite`: `{ mj?, joueur? }` (booleans, `null` = follow at universe level); `reglages`: `{ version, valeurs, confirme? }`; all answer 204 |
+| `GET /api/systemes/:id/outils` | GM of an attached universe | E-20, system tab, with `responsable` (`{ id, nom, vousEtes }`); a non-responsible GM gets the same body with `ecriture: false` |
+| `PUT /api/systemes/:id/outils/:module/:outil/activation` · `/visibilite` · `/reglages` | the responsible (C-2) | the same writes at system level |
+| `GET /api/systemes/:id/responsable` · `GET /api/systemes/:id/responsable/candidats` | GM of an attached universe | the head of E-15 (`{ id, nom, vousEtes }`) · the GMs the responsibility can go to |
+| `POST /api/systemes/:id/responsable` | the responsible | `{ compteId }`, C-2 |
+| `/api/univers/:id/outils/:module/…` and `/api/systemes/:id/outils/:module/…` (module routes) | per tool | registered by `DeclarationModule.routes(app, garde)`; `garde('module/outil')` is a pre-handler that runs `accessible` and puts `{ acteur, role, modeJoueur, resolution }` on the request, or answers 404 exactly like an unregistered path |
+
+The `mode=joueur` query of a GM is read by the common pre-handler as everywhere else. The routes are in the guarded scope of `registerSessionRoutes` (AD-15); a tool token (`kvs_…`) opens none of them in this slice (the import scope is `kanevas-outils-catalogue`).
+
+**Assistant (AD-136).** `catalogueDe(db, compteId, universId)` appends, for each tool of `modulesActifs()` with `accessible` true for the role it reads, the tools of `outilsAssistant({ db, compteId, universId, role })`; they follow the `{nom, description, schema, executer}` shape, names prefixed by the module (`essai_…`), and close over account, universe and role. The trial tool `essai_a_decrire` (read-only, no event) returns the tool's label and the effective value of « Pas de charges de carburant ». The catalogue is built at each request, so disabling or hiding takes effect on the next message.
+
+**Interface (AD-133).** The bar asks `…/outils/entrees` when a universe opens and again after any E-20 write in the same session (a refresh, no polling) and builds an « Outils » section (heading, one item per entry, icon from `ecran.icone`), between « Cartes » and « Lore » as the mockup shows; an entry whose `module/outil` is absent from `frontend/src/outils/registre.ts` is not shown. Its address is `/univers/:id/outils/:module/:outil`; the generic screen `OutilEcran` first calls the `description` route (404: « Page introuvable. », and **no code of the tool is requested**), then `import()`s the tool's component, shows « Chargement de l'outil… » meanwhile. The trial tools' components are a title, the tool's description and the effective settings (nothing else): they exist to prove the contracts, not as a product screen.
+
+**The three contracts (AD-122), proven by the trial module.** A contract is a TypeScript interface the declaration's `type` selects, with a test that registers one tool of each type by declaration alone and checks what the core does with it: *carte* — `cartes?(db, acteur, universId)` lists `{ titre, visible }` for E-10 (the core does not call it before `galaxie-lire`; the test calls it directly, and a player gets only visible maps); *generateur* — `usages` include « concevoir » and the tool is a candidate for managed sections (the mechanism arrives with `kanevas-outils-sections-gerees`); *aide* — an own entry point, none beyond the sidebar entry. Each contract states in its comment how a changed setting is handled (AD-128): *carte* recomputes on read, *generateur* marks stale (`version_reglages`), *aide* reads live.
+
+**The trial module `essai` and the seed.** Tools: `essai/a` « Essai A » (*carte*, `portee: 'tous'`, setting « Pas de charges de carburant », boolean, `systeme+univers`, default `false`; one assistant tool), `essai/b` « Essai B » (*aide*, depends on `essai/a`), `essai/g` « Essai G » (*generateur*, usage « concevoir » `mjSeul`, setting « Marge d'essai », number 0–100, `niveau: 'univers'`, default 10); the module declares one common setting « Portée d'essai » (number 1–6, `systeme+univers`, default 1) which E-20 shows in its « Réglages communs » card. Default visibility of the three: GM and players. Stub seed (`bouchon/depart.ts`, through the services): accounts `roxane` added; « Système d'essai » (created by Antor, hence responsible) attached to « Éneria d'essai » (Antor GM; Mira GM; Léa and Roxane players) and to « Univers voisin » (Antor GM alone); « Système ancien » with `responsable_id` null, attached to « Univers ancien » (Mira GM). No tool is enabled at seed: the acceptance starts from « Désactivé ». The seed runs only when `essai` is registered.
+
+**Tests.** Service tests on a temporary database: resolution table (system only, universe only, forced, followed, null), C-2 matrix (responsible, other GM, no-owner system, player, foreigner, instance admin, transfer, target not a GM), C-3 (shape, version conflict, protected), C-4 both ways, `accessible` per role and Player mode, the declaration check. Route tests: the common table above, the uniform 404 of a hidden tool compared byte for byte with an unregistered path, and a module route behind `garde`. An assistant test (the tool present for Antor when enabled and visible, absent for Léa when GM-only, absent when disabled). A front test of `OutilEcran` that the module is not imported when the description answers 404.
 
 ## Interfaces
 
