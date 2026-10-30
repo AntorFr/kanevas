@@ -2,6 +2,7 @@ import { rendreMarkdown } from './markdown.js';
 import type { Db } from '../db/db.js';
 import { estGeree, exigerMJ, resolveurLiens, roleDe } from './droits.js';
 import { ErreurService, introuvable, invalide } from './erreurs.js';
+import { declarationSection, poserSectionGeree } from './sections-gerees.js';
 import { ecrireContenu, MESSAGE_SECTION_GEREE, validerContenu } from './sections.js';
 import type { SectionRow } from './types.js';
 
@@ -133,6 +134,25 @@ export function creerProposition(
   return lireProposition(db, compteId, universId, id);
 }
 
+/** Files a recalculation proposal (no report), replacing the requester's pending one on the section (AD-79). */
+export function deposerRecalcul(
+  db: Db,
+  e: { universId: number; compteId: number; sectionId: number; contenu: string; versionOrigine: number; sourceVersion: string },
+): number {
+  return db.transaction(() => {
+    db.prepare(
+      'DELETE FROM propositions WHERE demandeur_id = ? AND section_id = ? AND appliquee_le IS NULL',
+    ).run(e.compteId, e.sectionId);
+    const info = db
+      .prepare(
+        `INSERT INTO propositions (univers_id, demandeur_id, section_id, cr_id, contenu_propose, version_origine,
+           creee_le, source_version) VALUES (?, ?, ?, NULL, ?, ?, ?, ?)`,
+      )
+      .run(e.universId, e.compteId, e.sectionId, e.contenu, e.versionOrigine, new Date().toISOString(), e.sourceVersion);
+    return Number(info.lastInsertRowid);
+  })();
+}
+
 /** The proposal with the current section, and its state computed at each read. */
 export function lireProposition(
   db: Db,
@@ -161,7 +181,17 @@ export function appliquerProposition(
     if (p.appliquee_le !== null) {
       throw new ErreurService('conflit', 'La proposition est déjà appliquée.', 'proposition_appliquee');
     }
-    ecrireContenu(db, compteId, universId, s.fiche_id, s.id, p.contenu_propose, p.version_origine);
+    if (p.source_version !== null && estGeree(s)) {
+      // A recalculation proposal: the managed write, with the checks of the tool (usage, enabled; AD-128).
+      const [module, nom, type = ''] = s.gere_par!.split('/');
+      if (!declarationSection(`${module}/${nom}`, type)) throw introuvable();
+      poserSectionGeree(db, compteId, universId, {
+        ficheId: s.fiche_id, outil: `${module}/${nom}`, type, sectionId: s.id,
+        contenu: p.contenu_propose, sourceVersion: p.source_version, version: p.version_origine,
+      });
+    } else {
+      ecrireContenu(db, compteId, universId, s.fiche_id, s.id, p.contenu_propose, p.version_origine);
+    }
     db.prepare('UPDATE propositions SET appliquee_le = ? WHERE id = ?').run(
       new Date().toISOString(),
       id,
