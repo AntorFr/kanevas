@@ -1,5 +1,6 @@
 # Status — kanevas
 
+> MàJ : 2026-10-31 (assemblage de `kanevas-release-outils-cadre-anglais`)
 > MàJ : 2026-10-30 (assemblage de `kanevas-icones`)
 > MàJ : 2026-10-28 (assemblage de `kanevas-tests-attestes-pod`, correctif du harnais e2e et de la connexion Claude ; les tranches `kanevas-scenarios-*` citées plus bas sont fusionnées sur `main` (PR #43))
 > MàJ : 2026-10-27 (assemblage de `kanevas-scenarios-import-assistant` ; l'historique tranche par tranche est dans `git log`, ce fichier ne garde que l'état et les pièges encore vrais)
@@ -22,7 +23,8 @@
 - Contrat final à signaler à Monsieur pour son script (discussion de l'epic) : plus de `PUT …/campagnes/:cle` ni `…/scenarios/:scle` ; tout passe par `PUT …/fiches/:cle` (`type: aventure`, `sousType`, `statut`, `parent`).
 - Maquettes `e06-campagne.html` et `e07-scenario.html` : écrans retirés, fichiers gardés parce que les barres des autres maquettes y renvoient ; à nettoyer avec la refonte des maquettes restantes.
 - Les textes de `docs/ecrans.md` d'avant le pivot (Markdown, assistant) gardent des mentions de E-7 ; la note en tête de « Le Markdown » dit comment les lire.
-- **`kanevas-releases-anglais` (correctif, PR vers `main`)** : les corps des Releases v0.26.0-kanevas-scenarios.3, v0.26.0-kanevas-scenarios.2, v0.26.0-kanevas-fiches-liees.1 et v0.25.0 ont été réécrits en anglais sur GitHub (`gh release edit`) ; aucun fichier de l'arbre ne change hors ce statut. Le test « the published GitHub Releases are in English » de `src/doc-anglais.test.ts` passe (rejoué avec le fichier de `origin/feature/kanevas-outils-catalogue`, qui n’est pas encore sur `main`). Les six autres tests de ce fichier restent rouges tant que la doc n'est pas traduite (feature de traduction à part). Les e2e `administration-badge-entete` et `administration-exclusions`, rejoués seuls, passent : leurs échecs en suite complète viennent de la charge.
+- **`kanevas-releases-anglais` (correctif, PR vers `main`)** : les corps des Releases v0.26.0-kanevas-scenarios.3, v0.26.0-kanevas-scenarios.2, v0.26.0-kanevas-fiches-liees.1 et v0.25.0 ont été réécrits en anglais sur GitHub (`gh release edit`) ; aucun fichier de l'arbre ne change hors ce statut. Le test « the published GitHub Releases are in English » vit dans `src/doc-anglais.test.ts`, absent de cette branche (il est sur `origin/feature/kanevas-outils-catalogue`, pas sur `main`) ; `src/releases-anglais.test.ts` vérifie ces Releases ici. La doc écrite en français reste à traduire (feature à part). Les e2e `administration-badge-entete` et `administration-exclusions`, rejoués seuls, passent : leurs échecs en suite complète viennent de la charge.
+- **`kanevas-release-outils-cadre-anglais` (correctif, PR vers `main`)** : le corps de la préversion v0.25.0-kanevas-outils.2 est en anglais sur GitHub (`gh release edit`) ; tag, titre et statut de préversion inchangés. Seul fichier ajouté : `src/release-outils-cadre-anglais.test.ts`, qui lit la Release avec `gh` (ignoré sans `gh`).
 - Doc écrite en français avant la règle « anglais » du `CLAUDE.md` : non traduite, par décision (une feature de traduction à part).
 
 ## Pièges encore vrais
