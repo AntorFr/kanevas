@@ -374,3 +374,17 @@ export function lireOutils(db: Db, acteur: Acteur, cible: CibleOutils): VueOutil
   }
   return vide;
 }
+
+/** Catalogue metadata uses the same missing-row defaults as tool resolution. */
+export function poserVersionCatalogue(db: Db, compte: number | Acteur, cible: CibleOutils,
+  cle: string, version: string): void {
+  db.transaction(() => {
+    exigerEcriture(db, compte, cible);
+    if (!exigerApplicable(db, cible, cle).outil?.catalogue) throw introuvable();
+    if (typeof version !== 'string' || version.length < 1 || version.length > 40) throw invalide('version');
+    assurerLigne(db, cible, cle);
+    const t = table(cible);
+    db.prepare(`UPDATE ${t.nom} SET version_catalogue = ? WHERE ${t.id} = ? AND outil = ?`)
+      .run(version, cible.id, cle);
+  })();
+}
