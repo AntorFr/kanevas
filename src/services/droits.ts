@@ -186,9 +186,12 @@ export function vueSection(
   formeLiens: 'html' | 'markdown' = 'html',
 ): SectionVue {
   // Player mode is a read view: it never shows a write right the player lacks as a non-author.
-  const peutEcrire = acteur.modeJoueur
-    ? peutEcrireSection('joueur', s, -1)
-    : peutEcrireSection(role, s, acteur.compteId);
+  // A managed section is written by its tool only (AD-127): nobody edits it here, so no source in the view.
+  const peutEcrire = s.gere_par !== null
+    ? false
+    : acteur.modeJoueur
+      ? peutEcrireSection('joueur', s, -1)
+      : peutEcrireSection(role, s, acteur.compteId);
   const lecteurMJ = vueMJ(role, acteur);
   const vue: SectionVue = {
     id: s.id,
@@ -201,7 +204,7 @@ export function vueSection(
     modifieLe: s.modifie_le,
     peutEcrire,
   };
-  if (peutEcrire) vue.contenu = lecteurMJ ? s.contenu : s.contenu_public; // the source goes only to who may write it (AD-113)
+  if (peutEcrire || (s.gere_par !== null && formeLiens === 'markdown')) vue.contenu = lecteurMJ ? s.contenu : s.contenu_public; // the source goes only to who may write it (AD-113)
   if (lecteurMJ) vue.audience = audienceDe(s);
   return vue;
 }

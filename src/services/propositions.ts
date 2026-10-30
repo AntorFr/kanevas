@@ -2,7 +2,7 @@ import { rendreMarkdown } from './markdown.js';
 import type { Db } from '../db/db.js';
 import { exigerMJ, resolveurLiens, roleDe } from './droits.js';
 import { ErreurService, introuvable, invalide } from './erreurs.js';
-import { ecrireContenu, validerContenu } from './sections.js';
+import { ecrireContenu, MESSAGE_SECTION_GEREE, validerContenu } from './sections.js';
 import type { SectionRow } from './types.js';
 
 /** `appliquee` once applied (whatever the section did since), else `perimee` if the section moved on. */
@@ -13,7 +13,8 @@ export interface PropositionVue {
   universId: number;
   sectionId: number;
   ficheId: number;
-  crId: number;
+  /** The session report it comes from; null for a recalculation proposal (AD-128). */
+  crId: number | null;
   /** Current content of the section, for the side-by-side view. */
   contenuActuel: string;
   contenuPropose: string;
@@ -31,7 +32,8 @@ interface PropositionRow {
   univers_id: number;
   demandeur_id: number;
   section_id: number;
-  cr_id: number;
+  cr_id: number | null;
+  source_version: string | null;
   contenu_propose: string;
   version_origine: number;
   creee_le: string;
@@ -105,6 +107,7 @@ export function creerProposition(
     )
     .get(entree.sectionId, universId) as SectionRow | undefined;
   if (!s) throw introuvable();
+  if (s.gere_par !== null) throw new ErreurService('refuse', MESSAGE_SECTION_GEREE, 'section_geree');
   const cr = db
     .prepare("SELECT 1 AS ok FROM fiches WHERE id = ? AND univers_id = ? AND type = 'compte_rendu'")
     .get(entree.crId, universId);

@@ -46,6 +46,10 @@ export interface SectionRow {
   auteur_id: number | null;
   auteur_lit: number;
   auteur_ecrit: number;
+  /** `module/outil/type` of the tool that manages the section (AD-127), null for a free section. */
+  gere_par: string | null;
+  /** Version of the sources the managed text was produced with (AD-128), null with `gere_par`. */
+  source_version: string | null;
 }
 
 export interface Audience {
