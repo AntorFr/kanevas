@@ -55,7 +55,7 @@ bascule existe (fiche, carte et, depuis `kanevas-import`, recherche E-17).
 
 | Écran | Atteint depuis | Sert à | Parcours |
 |---|---|---|---|
-| **E-1 Accueil** | connexion ; logo | voir ses univers et son rôle dans chacun ; en créer un ; voir son identifiant | P-1, P-6 |
+| **E-1 Accueil** | connexion ; marque Kanevas (icône Marge) | voir ses univers et son rôle dans chacun ; en créer un ; voir son identifiant | P-1, P-6 |
 | **E-2 Créer un univers** | E-1 | nom, description ; le créateur devient MJ | P-1 |
 | **E-3 Vue d'ensemble de l'univers** | E-1 ; sélecteur d'univers ; E-5 (admin devenu membre) | les campagnes actives (*`kanevas-scenarios`* : « Campagnes en cours », the adventures), les derniers CR, la préparation (MJ), les cartes visibles | P-2, P-3, P-4, P-6 |
 | **E-4 Membres** | nav Univers (MJ) | lister, ajouter par identifiant, changer le rôle, retirer | P-2 |

@@ -169,15 +169,16 @@ is not the brand and does not change. Inside a universe, the sidebar shows the s
 not redrawn and not recoloured.
 
 *States.* Loading, empty, permission denied and extreme content do not apply to the brand (a fixed image, the same
-for every role, and served without a session). If the image fails to load (network, 404, offline), the link shows
+for every role, and served without a session). If the image fails to load (network, 404), the link shows
 « Kanevas » alone: the 30 px slot stays empty, nothing else moves, and the link keeps its `aria-label`.
+Offline use is out of scope (no service worker, see `docs/parcours.md`): the installed app needs the network, and the brand image is no exception. A browser "offers installation" when it shows its own install prompt or menu entry for a manifest with name, icons and `display: standalone`; where, depends on the browser and is not specified here.
 *Criteria.* Given the app served, when a browser asks for `/favicon.ico`, `/favicon.svg`, `/apple-touch-icon.png`,
 `/icon-192.png`, `/icon-512.png`, `/icon-maskable-512.png` or `/site.webmanifest` without a session, then each answers
 200, not a redirect to the sign-in. Given a signed-in user outside a universe, when the page opens, then the tab shows
 the Marge icon and the sidebar shows it before « Kanevas », in both themes; inside a universe, the sidebar shows the
 selector. Given a browser that offers installation, when the user installs, then the app is named « Kanevas » and its
 icon is the Marge icon (on iOS, « Add to Home Screen » uses the 180 px apple-touch-icon). The mock-ups under
-`docs/maquettes/` still draw the "K" square: on this point the charter prevails.
+`docs/maquettes/` still draw the "K" square (for example `e01-accueil.html`): on this point the charter prevails, and the mock-ups are not redrawn.
 
 ## 4. Composants
 
