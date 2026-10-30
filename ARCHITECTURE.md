@@ -689,8 +689,11 @@ Reglage           { libelle, aide?, niveau: 'systeme+univers' | 'univers',
 | `GET /api/univers/:id/outils/:module/:outil/description` | an actor who can use the tool | label, type, description, settings and their shape, dependencies, usages, effective values; `introuvable` otherwise |
 | `GET /api/univers/:id/outils` | GM | E-20, universe tab: every applicable tool, even disabled, with the system level and the universe level side by side, the common settings, dependencies, `version_reglages`; players: `introuvable` |
 | `PUT /api/univers/:id/outils/:module/:outil/activation` · `/visibilite` · `/reglages` | GM | the three writes of C-3 at universe level |
+| `PUT /api/univers/:id/outils/:module/reglages` · `PUT /api/systemes/:id/outils/:module/reglages` | GM (universe) · the responsible (system) | the common settings of a module: same body as a tool's `/reglages`, the module key standing where `module/outil` would (no artificial tool key) |
+| bodies | | `activation`: `{ "active": true \| false \| null }` (`null` = follow, universe only); `visibilite`: `{ mj?, joueur? }` (booleans, `null` = follow at universe level); `reglages`: `{ version, valeurs, confirme? }`; all answer 204 |
 | `GET /api/systemes/:id/outils` | GM of an attached universe | E-20, system tab, with `responsable` (`{ id, nom, vousEtes }`); a non-responsible GM gets the same body with `ecriture: false` |
 | `PUT /api/systemes/:id/outils/:module/:outil/activation` · `/visibilite` · `/reglages` | the responsible (C-2) | the same writes at system level |
+| `GET /api/systemes/:id/responsable` · `GET /api/systemes/:id/responsable/candidats` | GM of an attached universe | the head of E-15 (`{ id, nom, vousEtes }`) · the GMs the responsibility can go to |
 | `POST /api/systemes/:id/responsable` | the responsible | `{ compteId }`, C-2 |
 | `/api/univers/:id/outils/:module/…` and `/api/systemes/:id/outils/:module/…` (module routes) | per tool | registered by `DeclarationModule.routes(app, garde)`; `garde('module/outil')` is a pre-handler that runs `accessible` and puts `{ acteur, role, modeJoueur, resolution }` on the request, or answers 404 exactly like an unregistered path |
 
