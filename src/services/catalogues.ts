@@ -203,13 +203,9 @@ export function lireCatalogueGestion(db: Db, acteur: Acteur, universId: number, 
   const { catalogue } = context(db, { niveau: 'univers', id: universId }, outil);
   return page(catalogue, resolve(db, universId, outil, options.nature), true, options);
 }
-/** A single-item read has the same guard and projection as the list, without pagination. */
-export function lireElement(db: Db, acteur: Acteur, universId: number, outil: string, nature: string, cle: string): VueElementCatalogue {
-  exigerOutil(db, acteur, universId, outil);
-  const mj = vueMJ(roleDe(db, universId, acteur.compteId)!, acteur);
-  const catalogue = declaration(outil);
-  const rows = resolve(db, universId, outil, nature).filter((r) => r.cle === cle && r.origine !== 'retire');
-  const element = page(catalogue, rows, mj, {}).elements[0];
+/** Single-item counterpart of resoudreElements, for computations already guarded by tool usage. */
+export function lireElement(db: Db, universId: number, outil: string, nature: string, cle: string): ElementResolu {
+  const element = resoudreElements(db, universId, outil, nature).find((r) => r.cle === cle);
   if (!element) throw introuvable();
   return element;
 }
