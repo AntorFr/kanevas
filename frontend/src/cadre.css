@@ -16,6 +16,7 @@
 .sceau.petit { width: 18px; height: 18px; font-size: 10px; border-radius: 5px; }
 .menu-entree .sceau.petit { width: 22px; height: 22px; font-size: 12px; border-radius: 6px; }
 .marque { display: flex; align-items: center; gap: 10px; padding: 6px; border-radius: var(--rayon-champ); color: var(--texte); text-decoration: none; }
+.marque .logo { width: 30px; height: 30px; flex: none; }
 .nom-marque { font: 500 var(--t-18)/1 var(--police-titre); }
 .selecteur { position: relative; }
 .univers { display: grid; grid-template-columns: 30px minmax(0, 1fr) auto; grid-template-areas: "s n c" "s r c"; column-gap: 10px; row-gap: 2px; align-items: center;
