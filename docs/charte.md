@@ -168,6 +168,17 @@ identical in both themes (its ink square carries its own background). The **univ
 is not the brand and does not change. Inside a universe, the sidebar shows the selector, not the brand. The icon is
 not redrawn and not recoloured.
 
+*States.* Loading, empty, permission denied and extreme content do not apply to the brand (a fixed image, the same
+for every role, and served without a session). If the image fails to load (network, 404, offline), the link shows
+« Kanevas » alone: the 30 px slot stays empty, nothing else moves, and the link keeps its `aria-label`.
+*Criteria.* Given the app served, when a browser asks for `/favicon.ico`, `/favicon.svg`, `/apple-touch-icon.png`,
+`/icon-192.png`, `/icon-512.png`, `/icon-maskable-512.png` or `/site.webmanifest` without a session, then each answers
+200, not a redirect to the sign-in. Given a signed-in user outside a universe, when the page opens, then the tab shows
+the Marge icon and the sidebar shows it before « Kanevas », in both themes; inside a universe, the sidebar shows the
+selector. Given a browser that offers installation, when the user installs, then the app is named « Kanevas » and its
+icon is the Marge icon (on iOS, « Add to Home Screen » uses the 180 px apple-touch-icon). The mock-ups under
+`docs/maquettes/` still draw the "K" square: on this point the charter prevails.
+
 ## 4. Composants
 
 Pour chacun : **V** visuelle, **C** comportementale. Tous ont l'anneau de focus (2 px `--focus`,
