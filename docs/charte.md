@@ -159,6 +159,29 @@ cassé** (MJ seul) garde la couleur du texte, souligné en tirets `--danger` ; u
 (MJ seul), en tirets `--texte-3`. Un lien vers une fiche illisible n'a **aucune** marque : il est du
 texte. L'état est porté par le soulignement **et** l'infobulle, jamais par la seule couleur.
 
+**The brand (`kanevas-icones`, AD-135).** The "Marge" icon (`assets/brand/kanevas-marge/`: ink #121317,
+periwinkle #8B9BF0, paper #FCFCFD — neutrals and the accent of the charter, no token added) is Kanevas's
+identity. It shows in the tab (favicon), on the home screen (apple-touch-icon), at install (manifest), and
+**in the sidebar, in place of the "K" square**, outside a universe: the `favicon.svg` image at 30 px (same size as
+the universe seal), empty `alt` (the link carries "Kanevas — Mes univers"), no border, shadow or added background,
+identical in both themes (its ink square carries its own background). The **universe seal** (initial of the name)
+is not the brand and does not change. Inside a universe, the sidebar shows the selector, not the brand. The icon is
+not redrawn and not recoloured.
+
+The sign-in page is not ours (Authelia; in stub mode a plain server page) and declares no brand (a browser asks `/favicon.ico` by itself and may show the icon in that tab, since the file is public); the tab icon of the app is declared by `index.html`. The source is the pack's main icon (ink square variant, « Encre & papier »).
+
+*States.* Loading, empty, permission denied and extreme content do not apply to the brand (a fixed image, the same
+for every role, and served without a session). If the image fails to load (network, 404), the link shows
+« Kanevas » alone: the 30 px slot stays empty, nothing else moves, and the link keeps its `aria-label`.
+Offline use is out of scope (no service worker, see `docs/parcours.md`): the installed app needs the network, and the brand image is no exception. A browser "offers installation" when it shows its own install prompt or menu entry for a manifest with name, icons and `display: standalone`; where, depends on the browser and is not specified here.
+*Criteria.* Given the app served, when a browser asks for `/favicon.ico`, `/favicon.svg`, `/apple-touch-icon.png`,
+`/icon-192.png`, `/icon-512.png`, `/icon-maskable-512.png` or `/site.webmanifest` without a session, then each answers
+200, not a redirect to the sign-in. Given a signed-in user outside a universe, when the page opens, then the tab shows
+the Marge icon and the sidebar shows it before « Kanevas », in both themes; inside a universe, the sidebar shows the
+selector. Given a browser that offers installation, when the user installs, then the app is named « Kanevas » and its
+icon is the Marge icon (on iOS, « Add to Home Screen » uses the 180 px apple-touch-icon). The mock-ups under
+`docs/maquettes/` still draw the "K" square (for example `e01-accueil.html`): on this point the charter prevails, and the mock-ups are not redrawn.
+
 ## 4. Composants
 
 Pour chacun : **V** visuelle, **C** comportementale. Tous ont l'anneau de focus (2 px `--focus`,
