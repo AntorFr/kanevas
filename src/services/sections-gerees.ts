@@ -1,6 +1,6 @@
 import type { Db } from '../db/db.js';
 import type { ContexteSection, SectionGeree } from '../outils/declaration.js';
-import { exigerMJ, exigerRole, peutEcrireSection, roleDe, vueMJ, vueSection } from './droits.js';
+import { estGeree, exigerMJ, exigerRole, peutEcrireSection, roleDe, vueMJ, vueSection } from './droits.js';
 import { ErreurService, introuvable, invalide, refuse } from './erreurs.js';
 import { chargerFiche, validerTitre } from './fiches.js';
 import { preparerContenu } from './liens.js';
@@ -131,8 +131,9 @@ export interface Geree {
 
 /** `null` for a free section; the staleness is computed at each read, never stored (AD-128). */
 export function etatGere(db: Db, acteur: Acteur, universId: number, s: SectionRow): Geree | null {
-  if (s.gere_par === null) return null;
-  const [module, nom, type = ''] = s.gere_par.split('/');
+  if (!estGeree(s)) return null;
+  const gerePar = s.gere_par!;
+  const [module, nom, type = ''] = gerePar.split('/');
   const cle = `${module}/${nom}`;
   const sans: Geree = {
     outil: null, libelle: null, type, lien: null, etat: 'desactive', recalcul: null,

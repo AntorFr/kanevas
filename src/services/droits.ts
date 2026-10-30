@@ -34,6 +34,9 @@ function regard(role: Role, acteur: Acteur): { mj: boolean; auteurId: number | n
 }
 
 /** True when the read view of this caller is the full GM one. */
+/** Managed by a tool (AD-127). A schema older than 0018 has no `gere_par` at all: that is a free section. */
+export const estGeree = (s: SectionRow): boolean => typeof s.gere_par === 'string';
+
 export function vueMJ(role: Role, acteur: Acteur): boolean {
   return regard(role, acteur).mj;
 }
@@ -187,7 +190,7 @@ export function vueSection(
 ): SectionVue {
   // Player mode is a read view: it never shows a write right the player lacks as a non-author.
   // A managed section is written by its tool only (AD-127): nobody edits it here, so no source in the view.
-  const peutEcrire = s.gere_par !== null
+  const peutEcrire = estGeree(s)
     ? false
     : acteur.modeJoueur
       ? peutEcrireSection('joueur', s, -1)
@@ -204,7 +207,7 @@ export function vueSection(
     modifieLe: s.modifie_le,
     peutEcrire,
   };
-  if (peutEcrire || (s.gere_par !== null && formeLiens === 'markdown')) vue.contenu = lecteurMJ ? s.contenu : s.contenu_public; // the source goes only to who may write it (AD-113)
+  if (peutEcrire || (estGeree(s) && formeLiens === 'markdown')) vue.contenu = lecteurMJ ? s.contenu : s.contenu_public; // the source goes only to who may write it (AD-113)
   if (lecteurMJ) vue.audience = audienceDe(s);
   return vue;
 }

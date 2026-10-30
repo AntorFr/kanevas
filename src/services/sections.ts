@@ -1,5 +1,6 @@
 import type { Db } from '../db/db.js';
 import {
+  estGeree,
   exigerMJ,
   exigerRole,
   peutEcrireSection,
@@ -57,27 +58,20 @@ export function insererSection(
     sourceVersion?: string;
   },
 ): number {
+  const colonnes = ['fiche_id', 'titre', 'ordre', 'contenu', 'contenu_public', 'modifie_le',
+    'joueurs_lisent', 'joueurs_ecrivent', 'auteur_id', 'auteur_lit', 'auteur_ecrit'];
+  const valeurs: (string | number | null)[] = [
+    s.ficheId, s.titre, s.ordre, s.contenu, contenuPublic(s.contenu), s.modifieLe,
+    s.joueursLisent ?? 0, s.joueursEcrivent ?? 0, s.auteurId ?? null, s.auteurLit ?? 0, s.auteurEcrit ?? 0,
+  ];
+  // The managed columns are named only when set: a free section is written as it always was.
+  if (s.gerePar !== undefined) {
+    colonnes.push('gere_par', 'source_version');
+    valeurs.push(s.gerePar, s.sourceVersion ?? null);
+  }
   const info = db
-    .prepare(
-      `INSERT INTO sections (fiche_id, titre, ordre, contenu, contenu_public, modifie_le,
-         joueurs_lisent, joueurs_ecrivent, auteur_id, auteur_lit, auteur_ecrit, gere_par, source_version)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-    )
-    .run(
-      s.ficheId,
-      s.titre,
-      s.ordre,
-      s.contenu,
-      contenuPublic(s.contenu),
-      s.modifieLe,
-      s.joueursLisent ?? 0,
-      s.joueursEcrivent ?? 0,
-      s.auteurId ?? null,
-      s.auteurLit ?? 0,
-      s.auteurEcrit ?? 0,
-      s.gerePar ?? null,
-      s.sourceVersion ?? null,
-    );
+    .prepare(`INSERT INTO sections (${colonnes.join(', ')}) VALUES (${colonnes.map(() => '?').join(', ')})`)
+    .run(...valeurs);
   const id = Number(info.lastInsertRowid);
   remplacerLiens(db, id, s.contenu);
   recalculerFichiersSection(db, id, s.contenu, contenuPublic(s.contenu));
@@ -331,10 +325,10 @@ export function ecrireContenu(
       throw refuse("Vous ne pouvez pas modifier cette section.");
     }
     // The lock (AD-127): a managed section is written only by its tool, through `sections-gerees.ts`.
-    if (s.gere_par !== null && (!geree || !s.gere_par.startsWith(`${geree.outil}/`))) {
+    if (estGeree(s) && (!geree || !s.gere_par!.startsWith(`${geree.outil}/`))) {
       throw new ErreurService('refuse', MESSAGE_SECTION_GEREE, 'section_geree');
     }
-    if (geree && s.gere_par === null) throw refuse("Cette section n'est pas gérée par un outil.");
+    if (geree && !estGeree(s)) throw refuse("Cette section n'est pas gérée par un outil.");
     validerContenu(contenu);
     exigerSansBloc(role, contenu);
     if (s.version !== version) {

@@ -1,6 +1,6 @@
 import { rendreMarkdown } from './markdown.js';
 import type { Db } from '../db/db.js';
-import { exigerMJ, resolveurLiens, roleDe } from './droits.js';
+import { estGeree, exigerMJ, resolveurLiens, roleDe } from './droits.js';
 import { ErreurService, introuvable, invalide } from './erreurs.js';
 import { ecrireContenu, MESSAGE_SECTION_GEREE, validerContenu } from './sections.js';
 import type { SectionRow } from './types.js';
@@ -107,7 +107,7 @@ export function creerProposition(
     )
     .get(entree.sectionId, universId) as SectionRow | undefined;
   if (!s) throw introuvable();
-  if (s.gere_par !== null) throw new ErreurService('refuse', MESSAGE_SECTION_GEREE, 'section_geree');
+  if (estGeree(s)) throw new ErreurService('refuse', MESSAGE_SECTION_GEREE, 'section_geree');
   const cr = db
     .prepare("SELECT 1 AS ok FROM fiches WHERE id = ? AND univers_id = ? AND type = 'compte_rendu'")
     .get(entree.crId, universId);
