@@ -4,7 +4,7 @@
 // taken from the image (global install) and, when it or Chromium is missing, the browser
 // tests are skipped with a message instead of failing.
 import { type ChildProcess, execFileSync, spawn } from 'node:child_process';
-import { existsSync, mkdtempSync, readlinkSync, rmSync, symlinkSync, unlinkSync } from 'node:fs';
+import { existsSync, mkdtempSync, readFileSync, readlinkSync, rmSync, symlinkSync, unlinkSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { createServer } from 'node:net';
 import { tmpdir } from 'node:os';
@@ -55,6 +55,8 @@ export interface Server {
 
 /** How long `startServer` waits for /healthz, ms. */
 export const DELAI_DEMARRAGE_MS = 30_000;
+/** Absolute ceiling of a startup that keeps making CPU progress (a starved pod), ms. */
+export const PLAFOND_DEMARRAGE_MS = 180_000;
 /** The tail of the server output kept for the failure message. */
 const MAX_SORTIE_SERVEUR = 4096;
 
@@ -119,6 +121,19 @@ export async function withStartupLock<T>(run: () => Promise<T>): Promise<T> {
   }
 }
 
+/** CPU ticks (user + system) consumed by a process, null when /proc does not tell. */
+function cpuTicks(pid: number | undefined): number | null {
+  if (pid === undefined) return null;
+  try {
+    const stat = readFileSync(`/proc/${pid}/stat`, 'utf8');
+    const champs = stat.slice(stat.lastIndexOf(')') + 2).split(' ');
+    const total = Number(champs[11]) + Number(champs[12]);
+    return Number.isFinite(total) ? total : null;
+  } catch {
+    return null;
+  }
+}
+
 export function startServer(extraEnv: Record<string, string> = {}): Promise<Server> {
   return withStartupLock(() => startServerUnlocked(extraEnv));
 }
@@ -165,7 +180,22 @@ async function startServerUnlocked(extraEnv: Record<string, string>): Promise<Se
   // The queue wait consumes no startup budget. Once spawned, readiness means a
   // successful health response, not an elapsed sleep or merely any HTTP answer.
   // Keep the existing watchdog for a genuinely stuck server, including a hung fetch.
-  const watchdog = setTimeout(() => startup.abort(), DELAI_DEMARRAGE_MS);
+  // A server starved of CPU by the other test files is not stuck: the watchdog only fires
+  // after DELAI_DEMARRAGE_MS without any CPU time consumed by the server (no /proc: plain
+  // elapsed time), and never past PLAFOND_DEMARRAGE_MS.
+  const debutDemarrage = Date.now();
+  let dernierTicks = cpuTicks(child.pid);
+  let dernierProgres = debutDemarrage;
+  const watchdog = setInterval(() => {
+    const maintenant = Date.now();
+    const ticks = cpuTicks(child.pid);
+    if (ticks !== null && ticks !== dernierTicks) {
+      dernierTicks = ticks;
+      dernierProgres = maintenant;
+    }
+    if (maintenant - dernierProgres >= DELAI_DEMARRAGE_MS || maintenant - debutDemarrage >= PLAFOND_DEMARRAGE_MS)
+      startup.abort();
+  }, 250);
   let lastStatus: number | null = null;
   try {
     while (!startup.signal.aborted) {
@@ -180,11 +210,11 @@ async function startServerUnlocked(extraEnv: Record<string, string>): Promise<Se
       await delay(100, undefined, { signal: startup.signal }).catch(() => {});
     }
   } finally {
-    clearTimeout(watchdog);
+    clearInterval(watchdog);
   }
   stop();
   const cause = sorti !== null ? `the server exited (${sorti})`
-    : `/healthz not ready after ${DELAI_DEMARRAGE_MS} ms${lastStatus === null ? '' : ` (HTTP ${lastStatus})`}`;
+    : `/healthz not ready after ${Date.now() - debutDemarrage} ms${lastStatus === null ? '' : ` (HTTP ${lastStatus})`}`;
   throw new Error(`server did not start: ${cause}\n--- server output (tail) ---\n${sortie}`);
 }
 
