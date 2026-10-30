@@ -2947,7 +2947,7 @@ dans son infobulle. Un sous-type filtré qui n'a plus de fiche (renommée entre-
 
 **E-9 — sous-type en place.** Le MJ (hors mode Joueur) clique le sous-type du badge : champ, liste de
 complétion, Entrée enregistre, Échap annule (maquette `#etat-sous-type`). Enregistrement en cours : champ
-désactivé, « Enregistrement… ». Échec : « Le sous-type n’a pas été enregistré. Réessayez. » sous le champ, la valeur
+désactivé (aucun libellé). Échec : « Le sous-type n’a pas été enregistré. Réessayez. » sous le champ, la valeur
 tapée est gardée. Saved: toast « Sous-type enregistré. »; an emptied field removes the sub-type (« Sous-type retiré. »). Connexion perdue : l'édition est désactivée (le sous-type reste lisible). Contenu long : 60 caractères, tronqués par
 une ellipse dans le badge, entiers dans l'infobulle. Un joueur lit le sous-type en
 simple texte ; une fiche sans sous-type ne montre rien à un joueur.
@@ -2967,7 +2967,7 @@ A player, or the GM in player mode: no background, no pencil, no focus — the s
 Connection lost: the banner « Connexion perdue. Ce que vous voyez peut être dépassé ; rien n'est enregistré tant qu'elle ne revient pas. »; the sub-type is disabled (`disabled`): no background or
 pencil on hover, ordinary cursor, Tab no longer stops on it; everything returns with the connection.
 Saving in progress: not applicable to hover — the edit field replaces the sub-type while saving
-(« Enregistrement… » above), and the modal box « Changer le type… » covers it.
+(field disabled, above), and the modal box « Changer le type… » covers it.
 Hover and keyboard focus are two distinct states: hover shows the background and the pencil, without the
 ring; keyboard focus shows them with the ring (mockup `#etat-sous-type-survol` and `#etat-sous-type-focus`).
 
@@ -2978,7 +2978,7 @@ désactivés (« désactivé » en `--texte-3`), le type courant coché et indiq
 « Personnage » ouvre le choix « PJ / PNJ » (PNJ par défaut) ; le champ « Sous-type » (vide d'office pour un
 autre type, avec les sous-types déjà employés pour le type choisi). Si la fiche a un sous-type, la boîte dit :
 « Le sous-type « Port » sera retiré. » tant que le champ n'est pas rempli. Boutons « Changer le
-type » (désactivé tant que le type reste l'actuel) et « Annuler ». Après : la fiche se recharge sous son
+type » et « Annuler » (pour le seul sous-type, voir plus bas : « Changer le type » est désactivé tant que rien ne diffère). Après : la fiche se recharge sous son
 nouveau type, toast « Type changé : Note → Savoir. », le fil d'Ariane et la barre suivent ; ses sections,
 relations, places sur une carte et propositions sont intactes.
 *(kanevas-sous-type-dialogue — changing the sub-type alone; mockup `#etat-changer-sous-type`.)* On
@@ -2997,7 +2997,7 @@ opening, the current type is ticked and the « Sous-type » field holds the shee
 Choosing another type gives the behaviour of a type change: field emptied, « … sera retiré. » if the
 sheet has a sub-type, button « Changer le type ». Going back to the current type restores the field with the
 current sub-type and the button « Changer le type » (disabled while nothing differs). Saving in
-progress: the button reads « Enregistrement… » and the box is frozen. `PATCH` failure: « Le sous-type n'a
+progress: the button shows its waiting mark « … » (as every button) and the box is frozen. `PATCH` failure: « Le sous-type n'a
 pas changé. Réessayez. » in the box, which stays open with the input; 403: the box closes and
 « Vous ne pouvez plus modifier cette fiche. » shows; 404: « Introuvable. » in the box; connection lost:
 the banner « Connexion perdue. Ce que vous voyez peut être dépassé ; rien n'est enregistré tant qu'elle ne revient pas. », button disabled, input kept. A sub-type over 60 characters: « Erreur : 60 caractères au plus. »
