@@ -376,7 +376,7 @@ test('bornes : « Marge d’essai » (0 à 100) accepte 0 et 100, refuse 101 et 
 
 test('bornes : « Portée d’essai » (réglage commun, 1 à 6) accepte 6, refuse 7 et 0', opts, async () => {
   await ouvrirSysteme(antor);
-  const C = () => antor.getByRole('region', { name: /Réglages communs/ });
+  const C = () => antor.getByRole('region', { name: /Réglages communs · essai/ });
   const lib = rx('Portée d’essai');
   assert.equal(await saisir(antor, C(), lib, /^Remplacer$/, '6'), 204);
   await C().getByText(rx('Système · 6')).waitFor();

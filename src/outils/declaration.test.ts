@@ -82,7 +82,7 @@ test('portée par noms : comparaison après trim et pliage de casse', () => {
 });
 
 test('registre : le module d\'essai n\'existe qu\'en test ou sous KANEVAS_STUB', () => {
-  assert.deepEqual(modulesActifs().map((m) => m.nom), ['essai']);
+  assert.deepEqual(modulesActifs().map((m) => m.nom), ['essai', 'swn']);
   assert.throws(() => verifierRegistre([essai, essai]), /duplicate/i);
   const code = `const m = await import('./src/outils/registre.js'); console.log(JSON.stringify(m.modulesActifs().map(x => x.nom)));`;
   const lancer = (env: Record<string, string>) => {
@@ -95,8 +95,8 @@ test('registre : le module d\'essai n\'existe qu\'en test ou sous KANEVAS_STUB',
   };
   assert.deepEqual(lancer({ NODE_ENV: 'production' }), []);
   assert.deepEqual(lancer({ NODE_ENV: 'development' }), []);
-  assert.deepEqual(lancer({ NODE_ENV: 'development', KANEVAS_STUB: '1' }), ['essai']);
-  assert.deepEqual(lancer({ NODE_ENV: 'test' }), ['essai']);
+  assert.deepEqual(lancer({ NODE_ENV: 'development', KANEVAS_STUB: '1' }), ['essai', 'swn']);
+  assert.deepEqual(lancer({ NODE_ENV: 'test' }), ['essai', 'swn']);
 });
 
 // --- un test par type de contrat : la déclaration seule, sans toucher routeur ni barre ---
@@ -113,16 +113,16 @@ function monde() {
 }
 
 const cle = (c: string) => declarationOutil(c);
-test('contrat carte : la déclaration seule donne ses {titre, visible} ; un joueur ne reçoit que les visibles', () => {
+test('contrat carte : la déclaration seule donne ses {id, titre, visible} ; un joueur ne reçoit que les visibles', () => {
   const { db, antor, lea, u } = monde();
   assert.equal(cle('essai/a').type, 'carte');
   poserActivation(db, antor.id, { niveau: 'univers', id: u.id }, 'essai/a', true);
   assert.deepEqual(listerCartesOutil(db, { compteId: antor.id }, u.id, 'essai/a'),
-    [{ titre: 'Carte visible', visible: true }, { titre: 'Carte MJ', visible: false }]);
-  assert.deepEqual(listerCartesOutil(db, { compteId: lea.id }, u.id, 'essai/a'), [{ titre: 'Carte visible', visible: true }]);
+    [{ id: 1, titre: 'Carte visible', visible: true }, { id: 2, titre: 'Carte MJ', visible: false }]);
+  assert.deepEqual(listerCartesOutil(db, { compteId: lea.id }, u.id, 'essai/a'), [{ id: 1, titre: 'Carte visible', visible: true }]);
   // MJ en mode Joueur : lu comme un joueur
   assert.deepEqual(listerCartesOutil(db, { compteId: antor.id, modeJoueur: true }, u.id, 'essai/a'),
-    [{ titre: 'Carte visible', visible: true }]);
+    [{ id: 1, titre: 'Carte visible', visible: true }]);
   // un outil qui n'est pas une carte n'a pas de cartes
   poserActivation(db, antor.id, { niveau: 'univers', id: u.id }, 'essai/g', true);
   assert.throws(() => listerCartesOutil(db, { compteId: antor.id }, u.id, 'essai/g'), { code: 'introuvable' });
