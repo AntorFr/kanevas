@@ -52,7 +52,7 @@ export function ChangerType({
     const st = sousType.trim();
     if (seul) {
       if (etat !== 'ok' || !differe) return;
-      if (Array.from(st).length > MAX_SOUS_TYPE) return setErreur(`Erreur : ${MAX_SOUS_TYPE} caractères au plus.`);
+      if (Array.from(st).length > MAX_SOUS_TYPE) return setErreur(`${MAX_SOUS_TYPE} caractères au plus.`);
       setErreur(undefined);
       setEchec(undefined);
       setEnCours(true);
@@ -75,7 +75,7 @@ export function ChangerType({
       return;
     }
     if (!cible) return;
-    if (Array.from(st).length > MAX_SOUS_TYPE) return setErreur(`Erreur : ${MAX_SOUS_TYPE} caractères au plus.`);
+    if (Array.from(st).length > MAX_SOUS_TYPE) return setErreur(`${MAX_SOUS_TYPE} caractères au plus.`);
     setErreur(undefined);
     setEchec(undefined);
     setEnCours(true);
