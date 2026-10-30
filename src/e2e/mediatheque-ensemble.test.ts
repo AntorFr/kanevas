@@ -243,6 +243,7 @@ test('« Utilisé dans » ne nomme jamais une section que Léa ne lit pas, et di
   assert.ok(jb.ok(), `join in Description: ${jb.status()}`);
   await mediatheque(lea);
   await ouvrirFichier(lea, 'croquis.png');
+  await lea.locator('.med-panneau [role=status]').filter({ hasText: 'Chargement' }).waitFor({ state: 'detached' });
   const panneau = await texte(lea);
   assert.match(panneau, /Utilisé dans/);
   assert.match(panneau, /Port-Sel/);
@@ -258,6 +259,7 @@ test('« Utilisé dans » ne nomme jamais une section que Léa ne lit pas, et di
   assert.ok(pa.ok(), `patch visibility: ${pa.status()}`);
   await mediatheque(lea);
   await ouvrirFichier(lea, 'seul-mj-lit.png');
+  await lea.locator('.med-panneau [role=status]').filter({ hasText: 'Chargement' }).waitFor({ state: 'detached' });
   const p2 = await texte(lea);
   assert.doesNotMatch(p2, /Utilisé dans/);
   assert.doesNotMatch(p2, /Vérité/);
