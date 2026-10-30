@@ -1,24 +1,23 @@
 import type { PropsOutil } from '../types';
 
 const texte = (v: unknown) => (typeof v === 'boolean' ? (v ? 'Oui' : 'Non') : String(v));
+const ORIGINES: Record<string, string> = { defaut: 'Par défaut', systeme: 'Système', univers: 'Univers' };
 
-/** The trial tools' whole screen: a title, the description and the effective settings. */
+/** The trial tools' whole screen: a title, the description and the effective settings with their origin. */
 export function VueEssai({ description }: Pick<PropsOutil, 'description'>) {
-  const lignes = [...description.reglages, ...Object.keys(description.communs).map((nom) => ({ nom, libelle: nom }))];
   return (
     <section className="outil-essai">
       <h1>{description.libelle}</h1>
       <p>{description.description}</p>
-      {lignes.length > 0 && (
-        <dl>
-          {description.reglages.map((r) => (
-            <div key={r.nom}>
-              <dt>{r.libelle}</dt>
-              <dd>{texte(description.valeurs[r.nom]?.valeur)}</dd>
-            </div>
-          ))}
-        </dl>
-      )}
+      {description.reglages.map((r) => {
+        const v = description.valeurs[r.nom];
+        return (
+          <p key={r.nom} className="outil-reglage" style={{ overflowWrap: 'anywhere' }}>
+            {r.libelle} : {texte(v?.valeur)}
+            {v && <span> ({ORIGINES[v.origine] ?? v.origine} · {texte(v.valeur)})</span>}
+          </p>
+        );
+      })}
     </section>
   );
 }
