@@ -23,4 +23,10 @@ export interface EntreeOutil {
 export interface PropsOutil {
   universId: number;
   description: DescriptionOutil;
+  /** The path segment after the tool (a galaxy id), when the address has one. */
+  cible?: string;
+  /** What the tool's `verifier` read before its code was requested. */
+  prealable?: unknown;
+  /** `?mode=joueur` when a GM views as a player, else empty: the mode the tool was opened under. */
+  suffixeMode?: string;
 }
