@@ -24,7 +24,7 @@ export interface VueElementCatalogue {
 export interface PageCatalogue { elements: VueElementCatalogue[]; suivant: string | null }
 export interface OptionsCatalogue { nature?: string; curseur?: string }
 export interface ResumeCatalogue {
-  natures: { nom: string; libelle: string }[];
+  natures: { nom: string; libelle: string; libellePluriel: string }[];
   systeme: { version: string | null; comptes: Record<string, number> };
   univers: { version: string | null; comptes: Record<string, number> };
 }
@@ -40,7 +40,7 @@ export function resumeCatalogue(db: Db, cible: CibleOutils, outil: string): Resu
     return { version: target ? lireLigneOutil(db, target, outil)?.version_catalogue ?? null : null, comptes };
   };
   return {
-    natures: catalogue.natures.map(({ nom, libelle }) => ({ nom, libelle })),
+    natures: catalogue.natures.map(({ nom, libelle, libellePluriel }) => ({ nom, libelle, libellePluriel })),
     systeme: niveau({ niveau: 'systeme', id: systemeId }),
     univers: niveau(cible.niveau === 'univers' ? cible : null),
   };
