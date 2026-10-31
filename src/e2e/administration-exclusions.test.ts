@@ -6,7 +6,7 @@ import { createServer } from 'node:net';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { after, before, describe, test } from 'node:test';
-import { withStartupLock } from './harnais.test.js';
+import { attendreServeurPret, withStartupLock } from './harnais.test.js';
 
 // Complements administration.test.ts (B-6, P-2 step 3, E-5, B-29): the exclusions of the design
 // (the admin never reads content, the entry exists only for the admin) and the states that file
@@ -70,22 +70,19 @@ async function demarrerSansVerrou(): Promise<Serveur> {
   for (const k of Object.keys(env)) if (k.startsWith('OIDC_')) delete env[k];
   const child: ChildProcess = spawn('node', ['--import', 'tsx', 'src/server.ts'], { env, stdio: 'ignore' });
   const base = `http://127.0.0.1:${port}`;
-  for (let i = 0; i < 150; i++) {
-    try {
-      await fetch(`${base}/healthz`);
-      return {
-        base,
-        stop: () => {
-          child.kill('SIGKILL');
-          rmSync(dossier, { recursive: true, force: true });
-        },
-      };
-    } catch {
-      await new Promise((r) => setTimeout(r, 100));
-    }
+  try {
+    await attendreServeurPret(child, base, () => '');
+  } catch (e) {
+    child.kill('SIGKILL');
+    throw e;
   }
-  child.kill('SIGKILL');
-  throw new Error('server did not start');
+  return {
+    base,
+    stop: () => {
+      child.kill('SIGKILL');
+      rmSync(dossier, { recursive: true, force: true });
+    },
+  };
 }
 
 const NOMS: Record<string, string> = { antor: 'Antor', lea: 'Léa', teo: 'Teo', mira: 'Mira', admin: 'Admin' };

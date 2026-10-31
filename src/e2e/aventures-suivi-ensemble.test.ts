@@ -8,7 +8,7 @@ import { join } from 'node:path';
 import { after, before, describe, test } from 'node:test';
 
 import Database from 'better-sqlite3';
-import { withStartupLock } from './harnais.test.js';
+import { attendreServeurPret, withStartupLock } from './harnais.test.js';
 
 // Feature `kanevas-scenarios-suivi`, assembled, written from the need only (the sheet's « Livre » and
 // « Critère de sortie », B-18/B-19 amended, B-49, B-60, E-3, E-9 blocks, E-13, E-14, E-18 of docs/).
@@ -155,17 +155,13 @@ async function demarrerSansVerrou(dossier: string, dbPath: string): Promise<Serv
     child.kill('SIGKILL');
     rmSync(dossier, { recursive: true, force: true });
   };
-  for (let i = 0; i < 200; i++) {
-    try {
-      await fetch(`${base}/healthz`);
-      return { base, journal: () => sortie, stop };
-    } catch {
-      await new Promise((r) => setTimeout(r, 100));
-    }
+  try {
+    await attendreServeurPret(child, base, () => sortie);
+  } catch (e) {
+    stop();
+    throw e;
   }
-  const vu = sortie;
-  stop();
-  throw new Error(`server did not start: ${vu}`);
+  return { base, journal: () => sortie, stop };
 }
 
 const NOMS: Record<string, string> = { antor: 'Antor', lea: 'Léa' };

@@ -162,6 +162,33 @@ async function startServerUnlocked(extraEnv: Record<string, string>): Promise<Se
   };
   child.stdout?.on('data', garder);
   child.stderr?.on('data', garder);
+  const base = `http://127.0.0.1:${port}`;
+  const stop = () => {
+    child.kill('SIGKILL');
+    rmSync(dir, { recursive: true, force: true });
+  };
+  try {
+    await attendreServeurPret(child, base, () => sortie);
+  } catch (e) {
+    stop();
+    throw e;
+  }
+  return { base, stop };
+}
+
+/**
+ * The one readiness wait of every e2e server started by a test file: resolves when `/healthz`
+ * answers 200, rejects (without stopping the child: the caller owns it) when the server exits
+ * or makes no progress.
+ *
+ * The queue wait consumes no startup budget. Once spawned, readiness means a successful health
+ * response, not an elapsed sleep or merely any HTTP answer. The watchdog still catches a
+ * genuinely stuck server, including a hung fetch. A server starved of CPU by the other test
+ * files is not stuck: it only fires after DELAI_DEMARRAGE_MS without any CPU time consumed by
+ * the server (no /proc: plain elapsed time), and never past PLAFOND_DEMARRAGE_MS.
+ * Call it right after the spawn; `sortie` gives the server output for the failure message.
+ */
+export async function attendreServeurPret(child: ChildProcess, base: string, sortie: () => string): Promise<void> {
   let sorti: string | null = null;
   const startup = new AbortController();
   child.on('exit', (code, signal) => {
@@ -172,17 +199,6 @@ async function startServerUnlocked(extraEnv: Record<string, string>): Promise<Se
     sorti = `spawn error: ${e.message}`;
     startup.abort();
   });
-  const base = `http://127.0.0.1:${port}`;
-  const stop = () => {
-    child.kill('SIGKILL');
-    rmSync(dir, { recursive: true, force: true });
-  };
-  // The queue wait consumes no startup budget. Once spawned, readiness means a
-  // successful health response, not an elapsed sleep or merely any HTTP answer.
-  // Keep the existing watchdog for a genuinely stuck server, including a hung fetch.
-  // A server starved of CPU by the other test files is not stuck: the watchdog only fires
-  // after DELAI_DEMARRAGE_MS without any CPU time consumed by the server (no /proc: plain
-  // elapsed time), and never past PLAFOND_DEMARRAGE_MS.
   const debutDemarrage = Date.now();
   let dernierTicks = cpuTicks(child.pid);
   let dernierProgres = debutDemarrage;
@@ -203,7 +219,7 @@ async function startServerUnlocked(extraEnv: Record<string, string>): Promise<Se
         const response = await fetch(`${base}/healthz`, { signal: startup.signal });
         lastStatus = response.status;
         await response.body?.cancel();
-        if (response.status === 200 && sorti === null) return { base, stop };
+        if (response.status === 200 && sorti === null) return;
       } catch {
         // Connection refused while starting, or aborted by exit/the watchdog.
       }
@@ -212,10 +228,9 @@ async function startServerUnlocked(extraEnv: Record<string, string>): Promise<Se
   } finally {
     clearInterval(watchdog);
   }
-  stop();
   const cause = sorti !== null ? `the server exited (${sorti})`
     : `/healthz not ready after ${Date.now() - debutDemarrage} ms${lastStatus === null ? '' : ` (HTTP ${lastStatus})`}`;
-  throw new Error(`server did not start: ${cause}\n--- server output (tail) ---\n${sortie}`);
+  throw new Error(`server did not start: ${cause}\n--- server output (tail) ---\n${sortie()}`);
 }
 
 /** Runs the server process and reports whether it exits by itself, and its stderr. */
