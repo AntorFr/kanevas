@@ -671,6 +671,7 @@ introuvable. ».
   supprime l'univers d'essai.
 - **Export vers Kanka ou un autre outil** : non trié.
 - **Calendrier ou chronologie, lanceur de dés, usage sans connexion (PWA)** : non triés.
+  Since `kanevas-icones` (AD-135), Kanevas is installable (manifest, icons) but ships **no service worker and no offline cache**: the installed app needs the network, and offline use stays untriaged.
 - **Historique des modifications, export, partage public.**
 
 ## Contrôle croisé du cadrage `kanevas-import`

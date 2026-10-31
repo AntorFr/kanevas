@@ -10,7 +10,7 @@ import { join } from 'node:path';
 import { after, before, describe, test } from 'node:test';
 
 import { migrate, openDb } from '../db/db.js';
-import { type Any, connecte, ensureBuilt, freePort, launch, skipBrowser, texte } from './harnais.test.js';
+import { attendreServeurPret, withStartupLock, type Any, connecte, ensureBuilt, freePort, launch, skipBrowser, texte } from './harnais.test.js';
 
 interface Appel {
   status: number;
@@ -75,7 +75,8 @@ describe('kanevas-scenarios-suivi : migration de la base d\'exemple (campagnes e
   const ids: Record<string, number> = {};
   const dbPath = () => join(dir, 'k.db');
 
-  async function demarrer(): Promise<void> {
+  const demarrer = () => withStartupLock(demarrerSansVerrou);
+  async function demarrerSansVerrou(): Promise<void> {
     ensureBuilt();
     const port = await freePort();
     const env: NodeJS.ProcessEnv = { ...process.env, PORT: String(port), NODE_ENV: 'production', KANEVAS_STUB: '1', KANEVAS_SANS_SEMIS: '1', DB_PATH: dbPath(), SESSION_SECRET: 'e2e-secret-e2e-secret-e2e' };
@@ -85,15 +86,12 @@ describe('kanevas-scenarios-suivi : migration de la base d\'exemple (campagnes e
     enfant.stdout?.on('data', (d) => (journal += String(d)));
     enfant.stderr?.on('data', (d) => (journal += String(d)));
     base = `http://127.0.0.1:${port}`;
-    for (let i = 0; i < 150; i++) {
-      try {
-        await fetch(`${base}/healthz`);
-        return;
-      } catch {
-        await new Promise((r) => setTimeout(r, 100));
-      }
+    try {
+      await attendreServeurPret(enfant, base, () => journal);
+    } catch (e) {
+      enfant.kill('SIGKILL');
+      throw e;
     }
-    throw new Error(`le serveur ne démarre pas : ${journal}`);
   }
   const arreter = () => enfant?.kill('SIGKILL');
 

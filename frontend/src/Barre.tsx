@@ -235,9 +235,7 @@ function Contenu({ onNavigue }: { onNavigue: () => void }) {
         <Selecteur courant={id} onChoix={onNavigue} />
       ) : (
         <Link to="/" className="marque" aria-label="Kanevas — Mes univers">
-          <span className="sceau" aria-hidden="true">
-            K
-          </span>
+          <img src="/favicon.svg" className="logo" alt="" width={30} height={30} />
           <span className="nom-marque">Kanevas</span>
         </Link>
       )}

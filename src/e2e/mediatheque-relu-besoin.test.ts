@@ -205,6 +205,7 @@ describe('médiathèque — le parcours du critère de sortie (bouchon, monde se
     await tuile(p, 'carnet.pdf').click();
     await p.getByRole('button', { name: 'Fermer' }).waitFor();
     await attendre(p);
+    await p.getByText(/ajouté par lea/).first().waitFor();
     assert.match(await texte(p), /ajouté par lea/);
     // Antor : « Réservé au MJ »
     const ckT = await cookie(srv.base, 'teo');

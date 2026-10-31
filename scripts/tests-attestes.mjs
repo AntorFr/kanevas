@@ -16,16 +16,24 @@
 // a link to the run (the workflow passes its own).
 import { execFileSync, spawnSync } from 'node:child_process';
 import { readdirSync, readFileSync, writeFileSync, mkdtempSync } from 'node:fs';
-import { hostname, tmpdir } from 'node:os';
+import { availableParallelism, hostname, tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 const CONTEXTE = 'tests-complets';
 const RAPPORT = 'rapport-tests.json';
+// The reference run on the 3-CPU pod completed the whole suite with two files at a
+// time and no startup/browser launch failure. Keep that measured budget on larger
+// hosts too; the harness also serializes startup bursts between these files.
+const MAX_CONCURRENCY = 2;
 
 const args = process.argv.slice(2);
 const publier = args.includes('--publier');
 const iConc = args.indexOf('--concurrence');
-const concurrence = iConc >= 0 ? Number(args[iConc + 1]) : 0;
+const concurrence = iConc >= 0 ? Number(args[iConc + 1]) : Math.min(availableParallelism(), MAX_CONCURRENCY);
+if (!Number.isSafeInteger(concurrence) || concurrence < 1) {
+  console.error('--concurrence expects a positive integer.');
+  process.exit(2);
+}
 
 const git = (...a) => execFileSync('git', a, { encoding: 'utf8' }).trim();
 
@@ -64,20 +72,26 @@ const playwright = (() => {
 })();
 
 const debut = new Date();
+console.log(`Test file concurrency: ${concurrence}${iConc < 0 ? ' (default)' : ' (--concurrence)'}. Harness startups run one at a time.`);
 const typecheck = spawnSync('npm', ['run', 'typecheck'], { stdio: 'inherit' });
 // The build too: a screen test checks what the built application serves (fonts, no foreign
 // host), and skips without dist/ — the suite would not be complete.
 const build = typecheck.status === 0 ? spawnSync('npm', ['run', 'build'], { stdio: 'inherit' }) : null;
 
-const tap = join(mkdtempSync(join(tmpdir(), 'tests-attestes-')), 'resultats.tap');
+const resultsDir = mkdtempSync(join(tmpdir(), 'tests-attestes-'));
+const tap = join(resultsDir, 'resultats.tap');
 const commande = [
   '--import', 'tsx', '--test',
-  ...(concurrence > 0 ? [`--test-concurrency=${concurrence}`] : []),
+  `--test-concurrency=${concurrence}`,
   '--test-reporter=spec', '--test-reporter-destination=stdout',
   '--test-reporter=tap', `--test-reporter-destination=${tap}`,
   ...fichiers,
 ];
-const suite = build && build.status === 0 ? spawnSync(process.execPath, commande, { stdio: 'inherit' }) : null;
+const suite = build && build.status === 0 ? spawnSync(process.execPath, commande, {
+  stdio: 'inherit',
+  // A fresh lock for each run: an interrupted suite cannot block the next one.
+  env: { ...process.env, KANEVAS_E2E_STARTUP_LOCK: join(resultsDir, 'startup.lock') },
+}) : null;
 
 // Totals from the TAP summary (`# pass 12`…), the last occurrence of each.
 const totaux = { tests: 0, pass: 0, fail: 0, skipped: 0, todo: 0, cancelled: 0 };
@@ -111,7 +125,7 @@ const rapport = {
   raisons,
   totaux,
   fichiers: fichiers.length,
-  concurrence: concurrence || null,
+  concurrence,
   lieu: process.env.TESTS_LIEU || hostname(),
   lien: process.env.TESTS_LIEN || null,
   debut: debut.toISOString(),

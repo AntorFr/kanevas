@@ -150,6 +150,7 @@ test('E-19 · au téléphone (390 px) : la grille et le panneau d’un fichier t
   await p.screenshot({ path: '/tmp/scr/rep-mediatheque-390-grille.png' });
   await p.getByRole('button', { name: /Carte des Sphères/ }).first().click();
   await p.locator('.med-panneau').waitFor();
+  await p.locator('.med-panneau .med-corps').waitFor(); // measure the filled panel
   assert.ok((await large()) <= 0, 'no sideways scroll with the panel open');
   assert.match(await texte(p), /Carte des Sphères/);
   await p.screenshot({ path: '/tmp/scr/rep-mediatheque-390-panneau.png' });
