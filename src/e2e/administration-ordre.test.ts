@@ -6,7 +6,7 @@ import { createServer } from 'node:net';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { after, before, describe, test } from 'node:test';
-import { withStartupLock } from './harnais.test.js';
+import { attendreServeurPret, withStartupLock } from './harnais.test.js';
 
 // E-5 (docs/ecrans.md, maquette e05): in the « Membres » zone, the add form is a field « Identifiant du
 // compte », a role (Joueur by default) and « Ajouter ». Re-verification of the 390 px gap: the identifier
@@ -58,22 +58,19 @@ async function demarrerSansVerrou() {
   for (const k of Object.keys(env)) if (k.startsWith('OIDC_')) delete env[k];
   const child: ChildProcess = spawn('node', ['--import', 'tsx', 'src/server.ts'], { env, stdio: 'ignore' });
   const base = `http://127.0.0.1:${port}`;
-  for (let i = 0; i < 150; i++) {
-    try {
-      await fetch(`${base}/healthz`);
-      return {
-        base,
-        stop: () => {
-          child.kill('SIGKILL');
-          rmSync(dossier, { recursive: true, force: true });
-        },
-      };
-    } catch {
-      await new Promise((r) => setTimeout(r, 100));
-    }
+  try {
+    await attendreServeurPret(child, base, () => '');
+  } catch (e) {
+    child.kill('SIGKILL');
+    throw e;
   }
-  child.kill('SIGKILL');
-  throw new Error('server did not start');
+  return {
+    base,
+    stop: () => {
+      child.kill('SIGKILL');
+      rmSync(dossier, { recursive: true, force: true });
+    },
+  };
 }
 
 

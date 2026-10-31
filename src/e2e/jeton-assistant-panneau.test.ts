@@ -6,7 +6,7 @@ import { createServer } from 'node:net';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { after, before, describe, test } from 'node:test';
-import { withStartupLock } from './harnais.test.js';
+import { attendreServeurPret, withStartupLock } from './harnais.test.js';
 
 // Black-box tests of the E-5 panel « Jeton de l'assistant » (B-51, P-15, B-29), written from
 // docs/parcours.md and docs/ecrans.md: the real server in stub mode, a real Chromium driven by
@@ -75,25 +75,16 @@ async function demarrerSansVerrou(): Promise<Serveur> {
   for (const k of Object.keys(env)) if (k.startsWith('OIDC_')) delete env[k];
   const base = `http://127.0.0.1:${port}`;
   let child: ChildProcess;
-  // Ready = /healthz answers. The wait ends on that state (or on the child's death), not on a fixed count of
-  // polls: a node + tsx startup under the pod's load can take longer than any guess. 120 s is only a ceiling.
+  // Ready = /healthz answers 200 (the harness wait: no fixed count of polls, no fixed delay).
   const lancer = async () => {
     const enfant = spawn('node', ['--import', 'tsx', 'src/server.ts'], { env, stdio: 'ignore' });
     child = enfant;
-    let mort = false;
-    enfant.once('exit', () => (mort = true));
-    const limite = Date.now() + 120_000;
-    while (!mort && Date.now() < limite) {
-      try {
-        const r = await fetch(`${base}/healthz`);
-        if (r.ok) return;
-      } catch {
-        // not listening yet
-      }
-      await new Promise((r) => setTimeout(r, 100));
+    try {
+      await attendreServeurPret(enfant, base, () => '');
+    } catch (e) {
+      enfant.kill('SIGKILL');
+      throw e;
     }
-    enfant.kill('SIGKILL');
-    throw new Error(mort ? 'server exited before being ready' : 'server did not start');
   };
   await lancer();
   return {

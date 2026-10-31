@@ -8,7 +8,7 @@ import { join } from 'node:path';
 import { after, before, describe, test } from 'node:test';
 
 import Database from 'better-sqlite3';
-import { withStartupLock } from './harnais.test.js';
+import { attendreServeurPret, withStartupLock } from './harnais.test.js';
 
 // E-5 add-member form on a phone (arbitration 2026-10-09): the identifier field keeps at least 12rem
 // (192 px) so the label and placeholder stay whole and the form wraps (role + button on the next
@@ -73,23 +73,20 @@ async function demarrerSansVerrou(): Promise<Serveur> {
   for (const k of Object.keys(env)) if (k.startsWith('OIDC_')) delete env[k];
   const child: ChildProcess = spawn('node', ['--import', 'tsx', 'src/server.ts'], { env, stdio: 'ignore' });
   const base = `http://127.0.0.1:${port}`;
-  for (let i = 0; i < 150; i++) {
-    try {
-      await fetch(`${base}/healthz`);
-      return {
-        base,
-        dbPath,
-        stop: () => {
-          child.kill('SIGKILL');
-          rmSync(dossier, { recursive: true, force: true });
-        },
-      };
-    } catch {
-      await new Promise((r) => setTimeout(r, 100));
-    }
+  try {
+    await attendreServeurPret(child, base, () => '');
+  } catch (e) {
+    child.kill('SIGKILL');
+    throw e;
   }
-  child.kill('SIGKILL');
-  throw new Error('server did not start');
+  return {
+    base,
+    dbPath,
+    stop: () => {
+      child.kill('SIGKILL');
+      rmSync(dossier, { recursive: true, force: true });
+    },
+  };
 }
 
 const NOMS: Record<string, string> = { antor: 'Antor', lea: 'Léa', teo: 'Teo', mira: 'Mira', admin: 'Admin' };
