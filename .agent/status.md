@@ -1,6 +1,6 @@
 # Status — kanevas
 
-> MàJ : 2026-10-29 (assemblage de `kanevas-deplacer-arborescence`, PR vers `main`)
+> MàJ : 2026-10-31 (assemblage de `kanevas-deplacer-arborescence`, PR vers `main`)
 > MàJ : 2026-10-31 (assemblage de `kanevas-suite-attestee-charge`)
 > MàJ : 2026-10-31 (assemblage de `kanevas-release-outils-cadre-anglais`)
 > MàJ : 2026-10-30 (assemblage de `kanevas-icones`)
