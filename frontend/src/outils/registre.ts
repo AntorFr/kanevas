@@ -12,6 +12,8 @@ import type { PropsOutil } from './types';
  */
 export interface OutilClient {
   icone: LucideIcon;
+  /** The tool is reached from its own list (E-10 « Cartes »), never from the « Outils » section of the bar. */
+  horsBarre?: boolean;
   /**
    * Asked together with the description, before `charger`: a refusal (404, 403) stops the page and the
    * tool's code is never requested. Only for tools whose address carries a target.
@@ -25,6 +27,7 @@ export const OUTILS_CLIENT: Record<string, OutilClient> = {
   'essai/b': { icone: BookOpen, charger: () => import('./essai/b') },
   'swn/galaxie': {
     icone: Carte,
+    horsBarre: true,
     verifier: (universId, cible, suffixe) => lire(`/api/univers/${universId}/outils/swn/galaxie/galaxies/${encodeURIComponent(cible ?? '')}${suffixe}`),
     charger: () => import('./swn/galaxie'),
   },
