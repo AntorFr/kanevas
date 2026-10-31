@@ -20,6 +20,7 @@ call the same service functions as the routes, with the person's permissions (AD
 Maps and graphs (E-10, E-11) are built. `kanevas-monde` adds a proposed section update based on a session report, which the GM applies or abandons with one action (AD-79 to AD-82); `kanevas-images` adds generation of a portrait attached to a section (AD-88 to AD-90).
 `kanevas-recours-admin` adds instance administration (E-5, AD-86, AD-87).
 `kanevas-outils-cadre` adds the tools framework (`src/outils/`, `services/outils.ts`, `routes/outils.ts`, migration `0017-outils.sql`, routes `/api/univers/:id/outils…` and `/api/systemes/:id/{outils,responsable}…`, tab « Outils » of E-14/E-15, sidebar section « Outils »): detail and decisions C-1 to C-6 in « Detail of `kanevas-outils-cadre` »; no real tool yet, only the trial module `essai` in stub mode and in test.
+`kanevas-outils-galaxie-lire` adds the first real tool, the read side of the galaxy map (module `swn`, tool `galaxie`, migration `0018-swn-galaxie.sql` with provisional number, `src/outils/swn/`, `src/services/swn/`, screen E-21 in `frontend/src/outils/swn/galaxie/`, assistant tool `swn_galaxie_trajet`): detail and decisions G-1 to G-9 in « Detail of `kanevas-outils-galaxie-lire` »; like `essai`, the module registers only in stub mode and in test until a deployment lists it. Writing the map (place, route, zone, seed, import) is `kanevas-outils-galaxie-tenir`.
 
 ## Map
 

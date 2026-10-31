@@ -3157,7 +3157,7 @@ l'abonnement » button; status messages are in an `aria-live="polite"` region, e
 
 ## Screen details for `kanevas-outils` (scope)
 
-> **Built so far (`kanevas-outils-cadre`):** the « Outils » tab of E-14 and E-15 without catalogue (no « Importer un catalogue… », no « Supprimer les données de l'outil… »), the system's responsible and « Transférer la responsabilité », the sidebar's « Outils » section; E-21, E-22, import and removal are other slices and not built.
+> **Built so far (`kanevas-outils-cadre`):** the « Outils » tab of E-14 and E-15 without catalogue (no « Importer un catalogue… », no « Supprimer les données de l'outil… »), the system's responsible and « Transférer la responsabilité », the sidebar's « Outils » section; E-21 (read side: see « What `kanevas-outils-galaxie-lire` builds of E-21 and E-10 » below), E-22, import and removal are other slices and not built by `cadre`.
 >
 > Scope proposed on 2026-10-16 (`epic/kanevas-outils`). Needs B-57 to B-79, journeys P-17 to P-21,
 > decisions AD-121 to AD-137. Key screens, with finished mockups: **E-20** (`docs/maquettes/e20-outils.html`,
@@ -3314,7 +3314,7 @@ Criteria:
 - Given Léa opening a galaxy by address while the tool is disabled, then « Page introuvable. ».
 - Given Léa pasting `…/galaxie/1?systeme=station-fantome`, then « Page introuvable. »; with `?systeme=vael`, the map is centred on « Vael » with its panel open.
 - Given the connection lost after the first view, then the displayed view stays, « Connexion perdue. » shows, « Calculer » and the search are disabled, and panning to unloaded blocks leaves them hatched with « Impossible de charger une partie de la carte. » and « Réessayer ».
-- Given the assistant asked « Combien de temps de Port-Sel à Vael avec un moteur 2 ? » by Léa, then it answers « 7 cases · 4,5 jours » (same result as the screen).
+- Given the assistant asked « Combien de temps de Port-Sel à Vael avec un moteur 2 ? » by Léa, then, through the tool `swn_galaxie_trajet`, it answers with the screen's result « 7 cases · 4,5 jours » (proved on the tool in `src/outils/swn/routes.test.ts`; the stub's keyword assistant has no rule for it, so it is not playable in stub mode).
 
 ### E-22 — Ship designer
 
