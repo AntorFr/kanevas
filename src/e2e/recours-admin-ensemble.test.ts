@@ -132,6 +132,8 @@ describe('kanevas-recours-admin : B-6 / P-2 étape 3 / E-5 (navigateur)', { skip
     await ouvrirAdmin(m.admin.page, LAME);
     await ajouter(m.admin.page, 'mira', 'MJ');
     await ligne(m.admin.page, 'mira').waitFor();
+    // The universe list recounts after the add answered: wait for that state, then assert.
+    await m.admin.page.getByText('3 membres', { exact: true }).waitFor();
     assert.match(await texte(m.admin.page), /3 membres/);
     const url = `/univers/${m.ids[LAME]}`;
     await m.admin.page.goto(url);
