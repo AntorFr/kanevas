@@ -1,4 +1,4 @@
-import { Link2, Route as IconeRoute, Search } from 'lucide-react';
+import { Calculator, ChevronDown, Link2, MapPin, Route as IconeRoute, Search } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
 import { ErreurApi, lire, useConnexionPerdue } from '../../../api';
@@ -82,7 +82,7 @@ export function Recherche({ base, suffixe, onChoisir }: { base: string; suffixe:
   return (
     <div className="gx-bloc gx-recherche">
       <label htmlFor="gx-recherche"><Search size={14} aria-hidden="true" /> Rechercher un système</label>
-      <input id="gx-recherche" type="search" value={rech.texte} disabled={perdue} autoComplete="off" onChange={(e) => rech.setTexte(e.target.value)} />
+      <input id="gx-recherche" type="search" placeholder="Rechercher un système" value={rech.texte} disabled={perdue} autoComplete="off" onChange={(e) => rech.setTexte(e.target.value)} />
       <ResultatsRecherche liste={rech.liste} echec={rech.echec} onChoisir={(r) => { rech.vider(); onChoisir(r); }} onReessayer={rech.reessayer} />
     </div>
   );
@@ -144,7 +144,7 @@ export function PanneauSystemeVue({ selection, etat, secret, mesure, onDepuis, o
       </dl>
       <div className="gx-actions">
         <Bouton icone={IconeRoute} onClick={() => onDepuis(ici)}>Trajet depuis ici</Bouton>
-        <Bouton onClick={() => onVers(ici)}>Trajet vers ici</Bouton>
+        <Bouton icone={MapPin} onClick={() => onVers(ici)}>Trajet vers ici</Bouton>
         <Bouton icone={Link2} onClick={() => void copier()}>Copier le lien</Bouton>
         {copie && <span role="status" className="gx-note">Lien copié</span>}
       </div>
@@ -197,21 +197,21 @@ export function Trajet({ base, suffixe, mj, depart, arrivee, onDepart, onArrivee
       <ChampSysteme base={base} suffixe={suffixe} etiquette="Arrivée" valeur={arrivee} onChoisir={onArrivee} />
       <div className="gx-champ">
         <label htmlFor="gx-moteur">Moteur</label>
-        <select id="gx-moteur" value={moteur} onChange={(e) => setMoteur(Number(e.target.value))}>
+        <span className="champ-liste"><select id="gx-moteur" value={moteur} onChange={(e) => setMoteur(Number(e.target.value))}>
           {[1, 2, 3, 4, 5, 6].map((n) => <option key={n} value={n}>{n}</option>)}
-        </select>
+        </select><ChevronDown size={16} strokeWidth={1.75} aria-hidden="true" /></span>
       </div>
       {mj && (
         <div className="gx-champ">
           <label htmlFor="gx-routes">Routes</label>
-          <select id="gx-routes" value={routes} onChange={(e) => setRoutes(e.target.value as 'toutes' | 'publiques')}>
+          <span className="champ-liste"><select id="gx-routes" value={routes} onChange={(e) => setRoutes(e.target.value as 'toutes' | 'publiques')}>
             <option value="toutes">Toutes</option>
             <option value="publiques">Publiques</option>
-          </select>
+          </select><ChevronDown size={16} strokeWidth={1.75} aria-hidden="true" /></span>
         </div>
       )}
       <div className="gx-actions">
-        <Bouton variante="principal" disabled={!prets || perdue} enCours={false} onClick={() => void calculer()}>{calcul ? 'Calcul…' : 'Calculer'}</Bouton>
+        <Bouton variante="principal" icone={Calculator} disabled={!prets || perdue} enCours={false} onClick={() => void calculer()}>{calcul ? 'Calcul…' : 'Calculer'}</Bouton>
         {resultat && <Bouton onClick={() => { onResultat(null); setMessage(undefined); }}>Effacer</Bouton>}
       </div>
       {message && <p className="gx-note" role="status">{message}</p>}

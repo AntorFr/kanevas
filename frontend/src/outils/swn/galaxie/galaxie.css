@@ -63,7 +63,8 @@
 .gx-lien { width: 100%; margin-top: var(--e-2); }
 .gx-champ { display: flex; flex-direction: column; gap: var(--e-1); margin-bottom: var(--e-2); }
 .gx-champ label, .gx-recherche label { color: var(--texte-2); font-size: var(--t-13); display: flex; gap: var(--e-1); align-items: center; }
-.gx-champ input, .gx-champ select, .gx-recherche input { min-height: 44px; background: var(--surface-2); color: var(--texte); border: 1px solid var(--bord-champ); border-radius: var(--rayon-champ); padding: 0 var(--e-3); font: inherit; }
+.gx-champ input, .gx-champ select, .gx-recherche input { width: 100%; box-sizing: border-box; min-height: 44px; background: var(--surface-2); color: var(--texte); border: 1px solid var(--bord-champ); border-radius: var(--rayon-champ); padding: 0 var(--e-3); font: inherit; }
+.gx-recherche { display: flex; flex-direction: column; gap: var(--e-1); }
 .gx-choisi { display: flex; justify-content: space-between; align-items: center; gap: var(--e-2); min-height: 44px; overflow-wrap: anywhere; }
 .gx-resultats { list-style: none; margin: var(--e-1) 0 0; padding: 0; border: 1px solid var(--bord); border-radius: var(--rayon-champ); max-height: 240px; overflow-y: auto; }
 .gx-resultats button { width: 100%; min-height: 44px; text-align: left; background: transparent; color: var(--texte); border: 0; padding: 0 var(--e-3); font: inherit; cursor: pointer; overflow-wrap: anywhere; }
@@ -77,3 +78,4 @@
   .gx-legende { display: block; }
   .gx-legende-bouton { display: none; }
 }
+.gx-champ .champ-liste select { padding-right: var(--e-6); }

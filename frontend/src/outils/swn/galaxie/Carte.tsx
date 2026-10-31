@@ -1,15 +1,15 @@
-import { Minus, Plus } from 'lucide-react';
+import { Crosshair, Minus, Plus } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { ErreurApi, lire, useConnexionPerdue } from '../../../api';
 import { Bouton } from '../../../ui';
-import { abreger, BLOCS_MAX, bloc, cases, COTE_BLOC, distanceHex, TAILLE_MAX, tailleMinimale, versHex, versPlan } from './geo';
+import { abreger, BLOCS_MAX, bloc, cases, COTE_BLOC, distanceHex, TAILLE_MAX, TAILLE_MIN, tailleMinimale, versHex, versPlan } from './geo';
 import type { Reference, RouteCarte, Selection, SystemeCarte, VueBlocs, VueGalaxie, ZoneCarte } from './types';
 
 const RACINE_3 = Math.sqrt(3);
 const TAILLE_DEPART = 28;
 /** Below this radius (px) the name labels collapse. */
-const SEUIL_ETIQUETTES = 18;
+const SEUIL_ETIQUETTES = 12;
 const EN_VOL_MAX = 4;
 const BLOCS_GARDES = 400;
 
@@ -50,8 +50,10 @@ export function CarteHex({ base, suffixe, galaxie, selection, onSelection, mesur
   const depart = galaxie.reference ?? { q: 0, r: 0 };
   const [vue, setVue] = useState<Vue>(() => {
     const p = versPlan(depart.q, depart.r);
-    return { vx: p.x, vy: p.y, s: TAILLE_DEPART };
+    // Starts wide (raised to the lowest zoom once measured): the first blocks tell where the systems are, then the view is framed on them.
+    return { vx: p.x, vy: p.y, s: TAILLE_MIN };
   });
+  const cadree = useRef(false);
   const [donnees, setDonnees] = useState<Donnees>(vide);
   const [premier, setPremier] = useState(true);
   const [echec, setEchec] = useState(false);
@@ -82,8 +84,33 @@ export function CarteHex({ base, suffixe, galaxie, selection, onSelection, mesur
 
   useEffect(() => { setVue((v) => (v.s < sMin ? { ...v, s: sMin } : v)); }, [sMin]);
 
+  /** The view that holds every system loaded so far, or the reference at the starting zoom. */
+  const cadrage = (): Vue => {
+    const pts = [...donnees.systemes.values()].map((x) => versPlan(x.q, x.r));
+    if (pts.length === 0) {
+      const p = versPlan(depart.q, depart.r);
+      return { vx: p.x, vy: p.y, s: borne(TAILLE_DEPART) };
+    }
+    const xs = pts.map((p) => p.x), ys = pts.map((p) => p.y);
+    const x0 = Math.min(...xs), x1 = Math.max(...xs), y0 = Math.min(...ys), y1 = Math.max(...ys);
+    // Room left around the systems for the zoom column and the legend that sit over the map's corners.
+    const s = Math.min((taille.w * 0.56) / (x1 - x0 + 2), (taille.h * 0.56) / (y1 - y0 + 2), TAILLE_DEPART * 1.5);
+    return { vx: (x0 + x1) / 2, vy: (y0 + y1) / 2, s: borne(s) };
+  };
+
+  // Once every visible block of the wide first view is in, frame the systems (unless a link already centred the view).
+  useEffect(() => {
+    if (cadree.current || premier || echec) return;
+    for (let by = visibles.by0; by <= visibles.by1; by++) {
+      for (let bx = visibles.bx0; bx <= visibles.bx1; bx++) if (!donnees.blocs.has(cleBloc(bx, by))) return;
+    }
+    cadree.current = true;
+    if (!centrer) setVue(cadrage());
+  }); // eslint-disable-line react-hooks/exhaustive-deps
+
   useEffect(() => {
     if (!centrer) return;
+    cadree.current = true;
     const p = versPlan(centrer.q, centrer.r);
     setVue((v) => ({ ...v, vx: p.x, vy: p.y }));
   }, [centrer]);
@@ -361,7 +388,7 @@ export function CarteHex({ base, suffixe, galaxie, selection, onSelection, mesur
       <div className="gx-zoom">
         <Bouton aria-label="Zoom avant" title="Zoom avant" onClick={() => setVue((v) => ({ ...v, s: borne(v.s * 1.4) }))} disabled={vue.s >= TAILLE_MAX}><Plus size={16} aria-hidden="true" /></Bouton>
         <Bouton aria-label="Zoom arrière" title="Zoom arrière" onClick={() => setVue((v) => ({ ...v, s: borne(v.s / 1.4) }))} disabled={vue.s <= sMin + 1e-6}><Minus size={16} aria-hidden="true" /></Bouton>
-        <Bouton onClick={() => { const p = versPlan(depart.q, depart.r); setVue({ vx: p.x, vy: p.y, s: borne(TAILLE_DEPART) }); }}>Recentrer</Bouton>
+        <Bouton icone={Crosshair} onClick={() => setVue(cadrage())}>Recentrer</Bouton>
       </div>
       <div className="gx-legende-zone">
         <Bouton className="gx-legende-bouton" aria-expanded={legende} onClick={() => setLegende((o) => !o)}>Légende</Bouton>
