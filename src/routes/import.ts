@@ -1,13 +1,16 @@
 import { assurerRelations } from '../services/import-relations.js';
 import { LIMITE_RELATIONS } from '../services/relations.js';
 import multipart from '@fastify/multipart';
-import type { FastifyInstance, FastifyRequest } from 'fastify';
+import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 
 import { LONGUEUR_ALIAS, LONGUEUR_ETIQUETTE, MAX_ALIAS, MAX_ETIQUETTES } from '../services/etiquettes.js';
 import { MAX_CONTENU_SECTION } from '../services/sections.js';
 import { ErreurService, introuvable } from '../services/erreurs.js';
 import { verifierJeton, type Jeton } from '../services/jetons.js';
 import { cloreLot, lireLot, MAX_RAPPORT, ouvrirLot } from '../services/lots.js';
+import {
+  appliquerCatalogueParJeton, apercuCatalogueParJeton, niveauDeRequete,
+} from '../services/import-catalogue.js';
 import { lireContexteImport } from '../services/import.js';
 import { importerCampagne, importerScenario } from '../services/import-suivi.js';
 import { MAX_NOM_CAMPAGNE } from '../services/campagnes.js';
@@ -28,6 +31,36 @@ declare module 'fastify' {
   interface FastifyRequest {
     /** The verified API token of the import scope; never set elsewhere. */
     jeton: Jeton | null;
+  }
+}
+
+/**
+ * What a route of this scope accepts (K-6): `contenu` the content token only, `outil` a token
+ * carrying the tool of the address, `ouverture` the opening of a batch (the token's kind decides),
+ * `lot` any token (a batch of its universe). A route without one is refused.
+ */
+export type PorteeImport = 'contenu' | 'outil' | 'ouverture' | 'lot';
+
+declare module 'fastify' {
+  interface FastifyContextConfig {
+    portee?: PorteeImport;
+  }
+}
+
+function porteeOuverte(portee: PorteeImport | undefined, jeton: Jeton, request: FastifyRequest): boolean {
+  switch (portee) {
+    case 'contenu': return jeton.outils.length === 0;
+    case 'lot': return true;
+    case 'ouverture': {
+      const { outil } = request.query as { outil?: unknown };
+      if (outil === undefined) return jeton.outils.length === 0;
+      return typeof outil === 'string' && jeton.outils.includes(outil);
+    }
+    case 'outil': {
+      const { module, outil } = request.params as { module?: string; outil?: string };
+      return jeton.outils.includes(`${module}/${outil}`);
+    }
+    default: return false;
   }
 }
 
@@ -72,6 +105,10 @@ export async function registerImportRoutes(app: FastifyInstance) {
       const m = typeof entete === 'string' ? /^Bearer (\S+)$/.exec(entete) : null;
       const jeton = m ? verifierJeton(app.db, m[1]!, app.horloge()) : null;
       if (!jeton) return reply.code(401).send(JETON_INVALIDE);
+      // No route escapes the scope; an unmatched path is left to the not-found handler.
+      if (!request.is404 && !porteeOuverte(request.routeOptions.config?.portee, jeton, request)) {
+        return reply.code(401).send(JETON_INVALIDE);
+      }
       request.jeton = jeton;
       // Another universe than the token's: unknown, like any resource out of reach.
       const { id } = request.params as { id?: string };
@@ -82,7 +119,7 @@ export async function registerImportRoutes(app: FastifyInstance) {
     const entier = (v: string) => (/^\d+$/.test(v) ? Number(v) : -1);
     const base = '/api/import/v1/univers/:id';
 
-    scope.get(`${base}`, async (request) => {
+    scope.get(`${base}`, { config: { portee: 'contenu' } }, async (request) => {
       const ctx = lireContexteImport(app.db, jetonDe(request));
       return {
         univers: ctx.univers,
@@ -108,42 +145,43 @@ export async function registerImportRoutes(app: FastifyInstance) {
       };
     });
 
-    scope.post(`${base}/lots`, async (request, reply) => {
-      const { lot, repris } = ouvrirLot(app.db, jetonDe(request), app.horloge());
+    scope.post(`${base}/lots`, { config: { portee: 'ouverture' } }, async (request, reply) => {
+      const { outil } = request.query as { outil?: string };
+      const { lot, repris } = ouvrirLot(app.db, jetonDe(request), app.horloge(), outil ?? null);
       return reply.code(repris ? 200 : 201).send(lot);
     });
 
-    scope.get(`${base}/lots/:lid`, async (request) => {
+    scope.get(`${base}/lots/:lid`, { config: { portee: 'lot' } }, async (request) => {
       const { lid } = request.params as { lid: string };
       return lireLot(app.db, jetonDe(request), entier(lid), app.horloge());
     });
 
-    scope.put(`${base}/campagnes/:cle`, async (request) => {
+    scope.put(`${base}/campagnes/:cle`, { config: { portee: 'contenu' } }, async (request) => {
       const { cle } = request.params as { cle: string };
       const { lot } = request.query as { lot?: unknown };
       return importerCampagne(app.db, jetonDe(request), lotDeRequete(lot), cle, request.body, app.horloge());
     });
 
-    scope.put(`${base}/campagnes/:cle/scenarios/:scle`, async (request) => {
+    scope.put(`${base}/campagnes/:cle/scenarios/:scle`, { config: { portee: 'contenu' } }, async (request) => {
       const { cle, scle } = request.params as { cle: string; scle: string };
       const { lot } = request.query as { lot?: unknown };
       return importerScenario(app.db, jetonDe(request), lotDeRequete(lot), cle, scle, request.body, app.horloge());
     });
 
-    scope.put(`${base}/fiches/:cle`, async (request) => {
+    scope.put(`${base}/fiches/:cle`, { config: { portee: 'contenu' } }, async (request) => {
       const { cle } = request.params as { cle: string };
       const { lot } = request.query as { lot?: unknown };
       return assurerFiche(app.db, jetonDe(request), lotDeRequete(lot), cle, request.body, app.horloge());
     });
 
-    scope.post(`${base}/fiches/:cle/relations`, async (request) => {
+    scope.post(`${base}/fiches/:cle/relations`, { config: { portee: 'contenu' } }, async (request) => {
       const { cle } = request.params as { cle: string };
       const { lot } = request.query as { lot?: unknown };
       return assurerRelations(app.db, jetonDe(request), lotDeRequete(lot), cle, request.body, app.horloge());
     });
 
     // The script sends `nom` and optional `visibilite` before the streamed `fichier` part.
-    scope.put(`${base}/fichiers/:cle`, async (request) => {
+    scope.put(`${base}/fichiers/:cle`, { config: { portee: 'contenu' } }, async (request) => {
       const { cle } = request.params as { cle: string };
       const lot = lotDeRequete((request.query as { lot?: unknown }).lot);
       const part = request.isMultipart() ? await request.file() : undefined;
@@ -164,14 +202,39 @@ export async function registerImportRoutes(app: FastifyInstance) {
       }, app.horloge());
     });
 
-    scope.delete(`${base}/fiches/:cle`, async (request, reply) => {
+    scope.delete(`${base}/fiches/:cle`, { config: { portee: 'contenu' } }, async (request, reply) => {
       const { cle } = request.params as { cle: string };
       const { lot } = request.query as { lot?: unknown };
       supprimerFicheImport(app.db, jetonDe(request), lotDeRequete(lot), cle, app.horloge());
       return reply.code(204).send();
     });
 
-    scope.post(`${base}/lots/:lid/clore`, async (request) => {
+    // The file is read by the catalogue core; its 413 has a code of its own (K-3).
+    const erreurFichier = (erreur: Error & { statusCode?: number }, request: FastifyRequest, reply: FastifyReply) =>
+      erreur.statusCode === 413
+        ? reply.code(413).send({ message: 'Ce fichier est trop volumineux (8 Mio au plus).', code: 'fichier_trop_gros' })
+        : scope.errorHandler(erreur as never, request, reply);
+    const cleOutil = (request: FastifyRequest) => {
+      const p = request.params as { module: string; outil: string };
+      return `${p.module}/${p.outil}`;
+    };
+
+    scope.put(`${base}/outils/:module/:outil/catalogue`, {
+      config: { portee: 'outil' }, errorHandler: erreurFichier,
+    }, async (request) => {
+      const q = request.query as { niveau?: unknown; lot?: unknown };
+      return appliquerCatalogueParJeton(app.db, jetonDe(request), lotDeRequete(q.lot), niveauDeRequete(q.niveau),
+        cleOutil(request), request.body, app.horloge());
+    });
+
+    scope.post(`${base}/outils/:module/:outil/catalogue/apercu`, {
+      config: { portee: 'outil' }, errorHandler: erreurFichier,
+    }, async (request) => {
+      const q = request.query as { niveau?: unknown };
+      return apercuCatalogueParJeton(app.db, jetonDe(request), niveauDeRequete(q.niveau), cleOutil(request), request.body);
+    });
+
+    scope.post(`${base}/lots/:lid/clore`, { config: { portee: 'lot' } }, async (request) => {
       const { lid } = request.params as { lid: string };
       return cloreLot(app.db, jetonDe(request), entier(lid), app.horloge());
     });

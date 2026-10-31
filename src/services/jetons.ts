@@ -2,7 +2,9 @@ import { createHash, randomBytes } from 'node:crypto';
 
 import type { Db } from '../db/db.js';
 import { exigerMJ, roleDe } from './droits.js';
-import { introuvable, invalide } from './erreurs.js';
+import { ErreurService, introuvable, invalide } from './erreurs.js';
+import { applicable } from '../outils/declaration.js';
+import { modulesActifs } from '../outils/registre.js';
 
 /** Allowed lifetimes in days (AD-103); 30 is the default of the screen. */
 export const DUREES_JETON = [7, 30, 90, 365] as const;
@@ -19,13 +21,19 @@ export interface Jeton {
   expireLe: string;
   revoqueLe: string | null;
   dernierUsageLe: string | null;
+  /** The tools it writes (K-6); empty is the content token. */
+  outils: string[];
 }
 
 /** A listed token: also says whether its creator is still a GM (B-46, the "Inactif" pill). */
-export interface JetonListe extends Jeton {
+export interface JetonListe extends Omit<Jeton, 'outils'> {
   createur: string;
   actif: boolean;
+  /** Labelled; a key the registry no longer knows keeps its key as label. */
+  outils: { cle: string; libelle: string }[];
 }
+
+export interface OutilProposable { cle: string; libelle: string; module: string }
 
 interface JetonRow {
   id: number;
@@ -38,7 +46,7 @@ interface JetonRow {
   dernier_usage_le: string | null;
 }
 
-const versJeton = (r: JetonRow): Jeton => ({
+const versJeton = (r: JetonRow, outils: string[]): Jeton => ({
   id: r.id,
   universId: r.univers_id,
   compteId: r.compte_id,
@@ -47,7 +55,31 @@ const versJeton = (r: JetonRow): Jeton => ({
   expireLe: r.expire_le,
   revoqueLe: r.revoque_le,
   dernierUsageLe: r.dernier_usage_le,
+  outils,
 });
+
+const outilsDe = (db: Db, jetonId: number): string[] =>
+  (db.prepare('SELECT outil FROM jetons_outils WHERE jeton_id = ? ORDER BY outil').all(jetonId) as { outil: string }[])
+    .map((r) => r.outil);
+
+/**
+ * Tools with a catalogue that apply to the universe's game system, in registry order; none without
+ * a system. The caller guards the role.
+ */
+function proposables(db: Db, universId: number): OutilProposable[] {
+  const s = db
+    .prepare('SELECT s.nom FROM univers u JOIN systemes_jeu s ON s.id = u.systeme_id WHERE u.id = ?')
+    .get(universId) as { nom: string } | undefined;
+  if (!s) return [];
+  return modulesActifs().flatMap((m) =>
+    m.outils.filter((o) => o.catalogue && applicable(o, s.nom)).map((o) => ({ cle: o.cle, libelle: o.libelle, module: m.nom })));
+}
+
+/** The tools a GM can put in a token's scope on E-18 (K-6). GM only. */
+export function listerOutilsProposables(db: Db, compteId: number, universId: number): OutilProposable[] {
+  exigerMJ(db, universId, compteId);
+  return proposables(db, universId);
+}
 
 export const empreinteDe = (valeur: string): string =>
   createHash('sha256').update(valeur).digest('hex');
@@ -60,7 +92,7 @@ export function creerJeton(
   db: Db,
   compteId: number,
   universId: number,
-  entree: { nom: unknown; dureeJours: unknown },
+  entree: { nom: unknown; dureeJours: unknown; outils?: unknown },
   maintenant: Date = new Date(),
 ): { jeton: Jeton; valeur: string } {
   exigerMJ(db, universId, compteId);
@@ -70,7 +102,16 @@ export function creerJeton(
   if (!(DUREES_JETON as readonly unknown[]).includes(duree)) {
     throw invalide('Erreur : la durée est invalide.');
   }
-  return inserer(db, compteId, universId, nom, duree as number, `kvs_${randomBytes(32).toString('base64url')}`, maintenant);
+  let outils: string[] = [];
+  if (entree.outils !== undefined) {
+    const offerts = new Set(proposables(db, universId).map((o) => o.cle));
+    const liste = entree.outils;
+    if (!Array.isArray(liste) || liste.some((o) => typeof o !== 'string' || !offerts.has(o))) {
+      throw new ErreurService('invalide', 'Erreur : un outil ne reçoit pas de catalogue dans cet univers.', undefined, 'outils');
+    }
+    outils = [...new Set(liste as string[])];
+  }
+  return inserer(db, compteId, universId, nom, duree as number, `kvs_${randomBytes(32).toString('base64url')}`, maintenant, outils);
 }
 
 /**
@@ -96,17 +137,23 @@ function inserer(
   duree: number,
   valeur: string,
   maintenant: Date,
+  outils: string[] = [],
 ): { jeton: Jeton; valeur: string } {
   const creeLe = maintenant.toISOString();
   const expireLe = new Date(maintenant.getTime() + duree * JOUR_MS).toISOString();
+  return db.transaction(() => {
   const { lastInsertRowid } = db
     .prepare(
       `INSERT INTO jetons_api (univers_id, compte_id, nom, empreinte, cree_le, expire_le)
        VALUES (?, ?, ?, ?, ?, ?)`,
     )
     .run(universId, compteId, nom, empreinteDe(valeur), creeLe, expireLe);
+  for (const outil of outils) {
+    db.prepare('INSERT INTO jetons_outils (jeton_id, outil) VALUES (?, ?)').run(lastInsertRowid, outil);
+  }
   const row = db.prepare('SELECT * FROM jetons_api WHERE id = ?').get(lastInsertRowid) as JetonRow;
-  return { jeton: versJeton(row), valeur };
+  return { jeton: versJeton(row, outils), valeur };
+  })();
 }
 
 /** Tokens listed on E-18: the 20 latest, the active ones always all (B-46). */
@@ -130,8 +177,10 @@ export function listerJetons(
     )
     .all(universId) as (JetonRow & { createur: string })[];
   const iso = maintenant.toISOString();
+  const libelles = new Map(modulesActifs().flatMap((m) => m.outils).map((o) => [o.cle, o.libelle]));
   const liste = rows.map((r) => ({
-    ...versJeton(r),
+    ...versJeton(r, []),
+    outils: outilsDe(db, r.id).map((cle) => ({ cle, libelle: libelles.get(cle) ?? cle })),
     createur: r.createur,
     actif: roleDe(db, universId, r.compte_id) === 'mj',
   }));
@@ -178,5 +227,5 @@ export function verifierJeton(db: Db, valeur: string, maintenant: Date = new Dat
     db.prepare('UPDATE jetons_api SET dernier_usage_le = ? WHERE id = ?').run(maintenantIso, row.id);
     row.dernier_usage_le = maintenantIso;
   }
-  return versJeton(row);
+  return versJeton(row, outilsDe(db, row.id));
 }
