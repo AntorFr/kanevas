@@ -210,10 +210,16 @@ export async function registerImportRoutes(app: FastifyInstance) {
     });
 
     // The file is read by the catalogue core; its 413 has a code of its own (K-3).
-    const erreurFichier = (erreur: Error & { statusCode?: number }, request: FastifyRequest, reply: FastifyReply) =>
-      erreur.statusCode === 413
-        ? reply.code(413).send({ message: 'Ce fichier est trop volumineux (8 Mio au plus).', code: 'fichier_trop_gros' })
-        : scope.errorHandler(erreur as never, request, reply);
+    const erreurFichier = (erreur: Error & { statusCode?: number }, request: FastifyRequest, reply: FastifyReply) => {
+      if (erreur.statusCode === 413) {
+        return reply.code(413).send({ message: 'Ce fichier est trop volumineux (8 Mio au plus).', code: 'fichier_trop_gros' });
+      }
+      // A refusal carries its code, like the session route (K-6): 403 `refuse`.
+      if (erreur instanceof ErreurService && erreur.code === 'refuse' && !erreur.detail) {
+        return reply.code(403).send({ message: erreur.message, code: 'refuse' });
+      }
+      return scope.errorHandler(erreur as never, request, reply);
+    };
     const cleOutil = (request: FastifyRequest) => {
       const p = request.params as { module: string; outil: string };
       return `${p.module}/${p.outil}`;
