@@ -14,9 +14,9 @@ function dossierJusqua(max: number): string {
   return dir;
 }
 
-test('catalogues : montée depuis 0017 peuplée, lots et jetons restent lisibles (outil nul)', () => {
+test('catalogues : montée depuis 0018 peuplée, lots et jetons restent lisibles (outil nul)', () => {
   const db = openDb(':memory:');
-  migrate(db, dossierJusqua(17));
+  migrate(db, dossierJusqua(18));
   const d = '2026-10-01T00:00:00.000Z';
   db.prepare("INSERT INTO comptes (id, username, cree_le) VALUES (1, 'antor', ?)").run(d);
   db.prepare("INSERT INTO univers (id, nom, cree_le) VALUES (1, 'U', ?)").run(d);
@@ -26,7 +26,7 @@ test('catalogues : montée depuis 0017 peuplée, lots et jetons restent lisibles
   const jeton = db.prepare('SELECT * FROM jetons_api').all();
   const lot = db.prepare('SELECT * FROM lots_import').all();
 
-  assert.deepEqual(migrate(db), [18]);
+  assert.deepEqual(migrate(db), [19]);
   assert.deepEqual(db.prepare('SELECT * FROM jetons_api').all(), jeton);
   assert.deepEqual(db.prepare('SELECT * FROM lots_import').all(), lot.map((l) => ({ ...(l as object), outil: null })));
   assert.deepEqual(db.pragma('foreign_key_check'), []);
