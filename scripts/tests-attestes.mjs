@@ -21,7 +21,7 @@ import { join } from 'node:path';
 
 const CONTEXTE = 'tests-complets';
 const RAPPORT = 'rapport-tests.json';
-// The reference run on the 3-CPU pod completed all 2592 tests with two files at a
+// The reference run on the 3-CPU pod completed the whole suite with two files at a
 // time and no startup/browser launch failure. Keep that measured budget on larger
 // hosts too; the harness also serializes startup bursts between these files.
 const MAX_CONCURRENCY = 2;

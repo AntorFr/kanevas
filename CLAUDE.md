@@ -4,7 +4,7 @@
   included), ADRs and release notes in **English**; `.agent/*` stays French. Existing French
   docs are translated by a feature of their own, not rewritten in passing: new text is English.
 - Attested tests: `npm run tests:attestes` plays the whole suite (typecheck, build, every test,
-  none skipped) on the committed tree and writes `rapport-tests.json`; `-- --publier` posts the
+  none skipped, two files at a time by default, `--concurrence N` to change it) on the committed tree and writes `rapport-tests.json`; `-- --publier` posts the
   `tests-complets` commit status when green. The image build and the `main` rule require it; the
   CI runs no test by itself.
 - Commit messages in French: subject, then the *why*. Explicit paths
