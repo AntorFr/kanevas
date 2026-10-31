@@ -64,7 +64,7 @@ li.ouvert .lot-tete .chev { transform: rotate(90deg); }
   .probleme .cle { white-space: normal; overflow-wrap: anywhere; }
 }
 
-.boite-jeton { width: min(480px, calc(100vw - 32px)); }
+.boite-jeton { width: min(480px, calc(100vw - 32px)); max-height: calc(100dvh - 32px); overflow-y: auto; }
 .boite-jeton { flex-direction: column; gap: 0; }
 .boite-jeton .tuile-jeton { width: 36px; height: 36px; border-radius: 10px; display: grid; place-items: center; margin-bottom: var(--e-4);
   background: var(--accent-fond); color: var(--accent-texte); }
@@ -82,6 +82,20 @@ li.ouvert .lot-tete .chev { transform: rotate(90deg); }
 .boite-jeton .segments label:has(input:checked) { background: var(--surface); color: var(--texte);
   box-shadow: 0 0 0 1px var(--bord-fort); }
 .boite-jeton .segments label:has(input:focus-visible) { outline: 2px solid var(--focus); outline-offset: -2px; }
+.boite-jeton .segments label:has(input:disabled) { color: var(--texte-3); cursor: not-allowed; }
+.boite-jeton .portee-jeton { display: flex; flex-direction: column; gap: var(--e-2); }
+.boite-jeton .portee-jeton > .lib-champ { font-size: var(--t-12); font-weight: 500; color: var(--texte-2); }
+.boite-jeton .portee-jeton .segments { align-self: flex-start; flex-wrap: wrap; }
+.boite-jeton .aide-portee p { margin: 0; font-size: var(--t-13); }
+.boite-jeton .aide-portee { display: grid; gap: var(--e-2); }
+.boite-jeton .outils-portee { display: grid; gap: var(--e-2); }
+.boite-jeton .aide-portee .erreur-portee { color: var(--danger); }
+.jeton .portee-ligne { font-size: var(--t-12); color: var(--texte-2); overflow-wrap: anywhere; }
+.lot-ouverture { color: var(--texte-3); }
+@media (max-width: 760px) {
+  .boite-jeton .segments label { min-height: 36px; padding-inline: var(--e-2); }
+  .boite-jeton .outils-portee .case { min-height: 36px; }
+}
 
 .boite-jeton .face-jeton { display: flex; flex-direction: column; gap: var(--e-4); margin-top: var(--e-5); }
 .face-jeton .lib { display: block; margin-bottom: 6px; font-size: var(--t-12); font-weight: 500; color: var(--texte-2); }

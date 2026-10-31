@@ -1,12 +1,12 @@
 import { Ban, Check, ChevronRight, CircleAlert, CircleX, Copy, Hourglass, KeyRound, Loader, Plus, TriangleAlert } from 'lucide-react';
 import { useEffect, useId, useRef, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
 
-import { ErreurApi, appeler } from '../api';
-import { useCharge } from '../cadre-contexte';
+import { ErreurApi, appeler, useConnexionPerdue } from '../api';
+import { useCharge, useVue } from '../cadre-contexte';
 import type { Ecran } from '../registre';
 import type { UniversListe } from '../types';
-import { Alerte, BoiteDialogue, Bouton, Champ, ChargementListe, ErreurChargement, PageIntrouvable, Pastille, useToasts } from '../ui';
+import { Alerte, BoiteDialogue, Bouton, Case, Champ, ChargementListe, ErreurChargement, PageIntrouvable, Pastille, useToasts } from '../ui';
 import {
   ETAT_LOT,
   dateCourte,
@@ -18,6 +18,7 @@ import {
   type EntreeRapport,
   type JetonVue,
   type LotVue,
+  type OutilProposable,
 } from './acces-api/format';
 import './acces-api/acces-api.css';
 import './ecrans.css';
@@ -61,6 +62,11 @@ async function copier(texte: string): Promise<boolean> {
 function BoiteNouveauJeton({ base, onFini }: { base: string; onFini: (cree: boolean) => void }) {
   const [nom, setNom] = useState('');
   const [duree, setDuree] = useState(30);
+  const [portee, setPortee] = useState<'contenu' | 'outils'>('contenu');
+  const [choisis, setChoisis] = useState<string[]>([]);
+  const [outils, rechargerOutils] = useCharge<OutilProposable[]>(`${base}/jetons/outils`);
+  const [erreurPortee, setErreurPortee] = useState<string>();
+  const perdue = useConnexionPerdue();
   const [erreurNom, setErreurNom] = useState<string>();
   const [echec, setEchec] = useState<string>();
   const [envoi, setEnvoi] = useState(false);
@@ -70,6 +76,10 @@ function BoiteNouveauJeton({ base, onFini }: { base: string; onFini: (cree: bool
   const ref = useRef<HTMLDivElement>(null);
   const idTitre = useId();
   const nomDuree = useId();
+  const nomPortee = useId();
+  const aidePortee = useId();
+  const sansOutil = outils.etat === 'ok' && outils.valeur.length === 0;
+  const porteeInvalide = portee === 'outils' && (outils.etat !== 'ok' || sansOutil || choisis.length === 0);
   const etat = useRef({ envoi, valeur });
   etat.current = { envoi, valeur };
   const fini = useRef(onFini);
@@ -115,7 +125,7 @@ function BoiteNouveauJeton({ base, onFini }: { base: string; onFini: (cree: bool
   }, [valeur]);
 
   async function creer() {
-    if (envoi) return;
+    if (envoi || perdue || porteeInvalide) return;
     const net = nom.trim();
     if (net.length < 1) return setErreurNom('le nom est obligatoire.');
     if (net.length > 80) return setErreurNom('80 caractères au plus.');
@@ -123,11 +133,15 @@ function BoiteNouveauJeton({ base, onFini }: { base: string; onFini: (cree: bool
     setEchec(undefined);
     setEnvoi(true);
     try {
-      const r = await appeler<{ valeur: string }>('POST', `${base}/jetons`, { nom: net, dureeJours: duree });
+      const r = await appeler<{ valeur: string }>('POST', `${base}/jetons`, {
+        nom: net, dureeJours: duree, ...(portee === 'outils' ? { outils: choisis } : {}),
+      });
       setNomCree(net);
       setValeur(r.valeur);
     } catch (e) {
-      if (e instanceof ErreurApi && e.statut === 400) setErreurNom(e.message.replace(/^Erreur : /, ''));
+      if (e instanceof ErreurApi && e.statut === 0) setEchec('Connexion perdue. Réessayez.');
+      else if (e instanceof ErreurApi && e.statut === 400 && portee === 'outils') setErreurPortee(e.message.replace(/^Erreur : /, ''));
+      else if (e instanceof ErreurApi && e.statut === 400) setErreurNom(e.message.replace(/^Erreur : /, ''));
       else setEchec(messageEchec(e));
     } finally {
       setEnvoi(false);
@@ -176,12 +190,53 @@ function BoiteNouveauJeton({ base, onFini }: { base: string; onFini: (cree: bool
                   ))}
                 </div>
               </div>
-              {echec && <Alerte>{echec}</Alerte>}
+              <div className="portee-jeton">
+                <span className="lib-champ" id={nomPortee}>Portée</span>
+                <div className="segments" role="radiogroup" aria-labelledby={nomPortee} aria-describedby={aidePortee}>
+                  <label>
+                    <input type="radio" name="portee" checked={portee === 'contenu'} disabled={envoi}
+                      onChange={() => { setPortee('contenu'); setErreurPortee(undefined); }} />
+                    Contenu de l’univers
+                  </label>
+                  <label>
+                    <input type="radio" name="portee" checked={portee === 'outils'} disabled={sansOutil || envoi}
+                      onChange={() => { setPortee('outils'); setErreurPortee(undefined); }} />
+                    Outils
+                  </label>
+                </div>
+                <div id={aidePortee} className="aide-portee" aria-live="polite">
+                  {sansOutil ? <p>Aucun outil de ce système ne reçoit de catalogue par l’API.</p> : (
+                    <>
+                      {outils.etat === 'chargement' && <p role="status">Chargement…</p>}
+                      {outils.etat === 'erreur' && <div>
+                        <p role="alert">Impossible de charger les outils.</p>
+                        <Bouton petit disabled={envoi} onClick={rechargerOutils}>Réessayer</Bouton>
+                      </div>}
+                      {portee === 'outils' && <>
+                        <p>Un jeton d’outil n’écrit que le catalogue des outils cochés. Il n’ouvre ni fiches ni fichiers.</p>
+                        {outils.etat === 'ok' && <div className="outils-portee">
+                          {outils.valeur.map((outil) => <Case key={outil.cle}
+                            etiquette={`${outil.libelle} · ${outil.module}`} checked={choisis.includes(outil.cle)} disabled={envoi}
+                            onChange={(e) => {
+                              setChoisis((actuels) => e.target.checked ? [...actuels, outil.cle] : actuels.filter((cle) => cle !== outil.cle));
+                              setErreurPortee(undefined);
+                            }} />)}
+                        </div>}
+                        {outils.etat === 'ok' && choisis.length === 0 && <p className="erreur-portee">Cochez au moins un outil.</p>}
+                      </>}
+                    </>
+                  )}
+                </div>
+                {erreurPortee && <Alerte>{erreurPortee}</Alerte>}
+              </div>
+              {echec && <Alerte action={echec === 'Connexion perdue. Réessayez.' && (
+                <Bouton petit ecrit disabled={envoi || porteeInvalide} onClick={() => void creer()}>Réessayer</Bouton>
+              )}>{echec}</Alerte>}
               <div className="boite-actions">
                 <Bouton disabled={envoi} onClick={() => onFini(false)}>
                   Annuler
                 </Bouton>
-                <Bouton variante="principal" type="submit" ecrit disabled={envoi}>
+                <Bouton variante="principal" type="submit" ecrit disabled={envoi || porteeInvalide}>
                   {envoi ? 'Création…' : 'Créer le jeton'}
                 </Bouton>
               </div>
@@ -238,6 +293,7 @@ function LigneJeton({ jeton, maintenant, onRevoquer }: { jeton: JetonVue; mainte
             <span>{dernierUsage(jeton.dernierUsageLe, maintenant)}</span>
             {vivant && <span>expire le {dateCourte(jeton.expireLe)}</span>}
           </span>
+          <span className="portee-ligne">Portée : {jeton.outils.length ? jeton.outils.map((outil) => outil.libelle).join(', ') : 'contenu'}</span>
           {etat === 'inactif' && <span className="note-inactif">Son créateur n’est plus MJ de cet univers.</span>}
         </span>
         {etat === 'inactif' && (
@@ -269,15 +325,14 @@ const ICONE_LOT = { en_cours: Loader, clos: Check, abandonne: Ban } as const;
 
 /** Counters of a batch line: the « N refusée(s) » pieces read in the danger colour. */
 function colorerRefus(m: string) {
-  return m.split(' · ').map((part, i) => (
-    <span key={i} className={/refusée/.test(part) ? 'refus-n' : undefined}>
-      {i > 0 && ' · '}
+  return m.split(/( · |, )/).map((part, i) => (
+    <span key={i} className={/refusé/.test(part) ? 'refus-n' : undefined}>
       {part}
     </span>
   ));
 }
 
-function GroupeProbleme({ titre, entrees, autres, sorte }: { titre: string; entrees: EntreeRapport[]; autres: number; sorte: 'refus' | 'avert' }) {
+function GroupeProbleme({ titre, entrees, autres, sorte, outil }: { titre: string; entrees: EntreeRapport[]; autres: number; sorte: 'refus' | 'avert'; outil?: boolean }) {
   const Icone = sorte === 'refus' ? CircleX : TriangleAlert;
   return (
     <div className="groupe-pb">
@@ -287,7 +342,7 @@ function GroupeProbleme({ titre, entrees, autres, sorte }: { titre: string; entr
           <li key={i} className={`probleme ${sorte}`}>
             <Icone size={16} strokeWidth={1.75} aria-hidden="true" />
             <span className="cle chasse" title={e.cle}>
-              {e.cle}
+              {outil && `${e.objet} · `}{e.cle}
             </span>
             <span className="raison">{e.raison}</span>
           </li>
@@ -312,7 +367,8 @@ function LigneLot({ lot }: { lot: LotVue }) {
       </span>
       <span className="corps">
         <span className="lot-ligne1">
-          <span className="lot-date">{dateHeure(lot.ouvertLe)}</span>
+          <span className="lot-date">{lot.outil?.libelle ?? dateHeure(lot.ouvertLe)}</span>
+          {lot.outil && <span className="lot-ouverture">{dateHeure(lot.ouvertLe)}</span>}
           <span className="lot-jeton">
             <KeyRound size={12} strokeWidth={1.75} aria-hidden="true" />
             {lot.jeton}
@@ -345,9 +401,9 @@ function LigneLot({ lot }: { lot: LotVue }) {
       )}
       {depliable && ouvert && (
         <div className="lot-detail" id={id}>
-          {nbRefus > 0 && <GroupeProbleme titre={titreGroupe(nbRefus, 'refus')} entrees={lot.refus} autres={lot.refusAutres} sorte="refus" />}
+          {nbRefus > 0 && <GroupeProbleme titre={lot.outil ? `${nbRefus.toLocaleString('fr-FR')} ${nbRefus > 1 ? 'refusés' : 'refusé'}` : titreGroupe(nbRefus, 'refus')} entrees={lot.refus} autres={lot.refusAutres} sorte="refus" outil={!!lot.outil} />}
           {nbAlertes > 0 && (
-            <GroupeProbleme titre={titreGroupe(nbAlertes, 'avertissement')} entrees={lot.alertes} autres={lot.alertesAutres} sorte="avert" />
+            <GroupeProbleme titre={titreGroupe(nbAlertes, 'avertissement')} entrees={lot.alertes} autres={lot.alertesAutres} sorte="avert" outil={!!lot.outil} />
           )}
         </div>
       )}
@@ -358,6 +414,8 @@ function LigneLot({ lot }: { lot: LotVue }) {
 /** E-18 Accès par API (GM only): the universe's API tokens and the report of its import batches. */
 function AccesApi() {
   const { id } = useParams();
+  const [query] = useSearchParams();
+  const { mode } = useVue();
   const { toast } = useToasts();
   const base = `/api/univers/${id}`;
   const [univers] = useCharge<UniversListe>(base);
@@ -373,6 +431,7 @@ function AccesApi() {
 
   const adresse = `${window.location.origin}/api/import/v1/univers/${id}`;
 
+  if (mode === 'joueur' || query.get('mode') === 'joueur') return <PageIntrouvable />;
   if ([univers, jetons, lots].some((c) => c.etat === 'chargement')) return <ChargementListe texte="Chargement de l’accès par API…" />;
   // A player, no role, an unknown universe: the same answer.
   if (univers.etat === 'erreur' && univers.statut === 404) return <PageIntrouvable />;
