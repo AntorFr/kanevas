@@ -1,7 +1,7 @@
 import type { Db } from '../db/db.js';
 import { ErreurService, introuvable, refuse } from './erreurs.js';
 import { resolveurFichiers, resolveurFichiersEnAttente } from './fichiers-lecture.js';
-import { etatGere } from './sections-gerees.js';
+import { etatGere } from './sections-gerees-etat.js';
 import { extraireLiens, rendreMarkdown, type ResolveurLiens } from './markdown.js';
 import type { Acteur, Audience, Role, SectionRow, SectionVue } from './types.js';
 
