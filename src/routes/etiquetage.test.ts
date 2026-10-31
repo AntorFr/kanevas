@@ -181,7 +181,7 @@ test('migration depuis 0013 : la recherche du titre existant trouve toujours la 
   db.exec('DROP TABLE fichiers_attente; DROP TABLE fichiers_sections; DROP TABLE fichiers; ALTER TABLE fiches DROP COLUMN illustration_fichier_id; ALTER TABLE systemes_jeu DROP COLUMN responsable_id');
   const avant = db.prepare('SELECT id, titre FROM fiches ORDER BY id').all() as { id: number; titre: string }[];
   assert.ok(avant.length >= 5);
-  assert.deepEqual(migrate(db), [14, 15, 16, 17]);
+  assert.deepEqual(migrate(db), [14, 15, 16, 17, 18]);
   for (const f of avant) {
     const mot = f.titre.split(/[^\p{L}\p{N}]+/u)[0]!;
     const ids = (db.prepare('SELECT rowid FROM recherche_fiches WHERE recherche_fiches MATCH ?').all(`titre:${mot}*`) as Any[]).map((r) => r.rowid);
