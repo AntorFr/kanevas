@@ -147,7 +147,7 @@ export function ImportDialog({ base, level, catalogue, tools, tool, onClose, onA
         </div>
         <footer className="catalogue-actions">
           {!finished && report && <div>
-            <Bouton variante="principal" icone={Upload} ecrit disabled={working || count === 0}
+            <Bouton variante="principal" icone={Upload} ecrit disabled={working || count === 0 || phase !== 'preview'}
               onClick={() => void request('application')}>
               {phase === 'applying' ? 'Application…' : `Appliquer (${count} élément${count > 1 ? 's' : ''})`}
             </Bouton>
