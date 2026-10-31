@@ -2,9 +2,11 @@ import assert from 'node:assert/strict';
 import { type ChildProcess, spawn } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { createServer as createHttpsServer, type Server } from 'node:https';
+import { createServer as createHttpServer } from 'node:http';
 import { createServer as createNetServer } from 'node:net';
 import { generateKeyPairSync, createSign } from 'node:crypto';
 import { test } from 'node:test';
+import { attendreServeurPret, withStartupLock } from './harnais.test.js';
 
 // Black-box tests of B-28 (kanevas-socle): login leads to the identity
 // provider (Authelia), and its return answers the identifier of the connected
@@ -82,7 +84,12 @@ async function startFakeAuthelia(opts: { rejectToken?: boolean } = {}) {
   return { issuer, stop: () => server.close() };
 }
 
-async function startKanevas(extraEnv: Record<string, string>, fixedPort?: number) {
+// Startups share the harness lock: one server or browser launching at a time on the pod.
+function startKanevas(...args: Parameters<typeof startKanevasSansVerrou>): ReturnType<typeof startKanevasSansVerrou> {
+  return withStartupLock(() => startKanevasSansVerrou(...args));
+}
+
+async function startKanevasSansVerrou(extraEnv: Record<string, string>, fixedPort?: number) {
   const port = fixedPort ?? (await freePort());
   const env: NodeJS.ProcessEnv = { ...process.env, PORT: String(port), NODE_ENV: 'production', NODE_EXTRA_CA_CERTS: IDP_CERT_PATH };
   for (const k of ['APP_VERSION', 'OIDC_ISSUER', 'OIDC_CLIENT_ID', 'OIDC_CLIENT_SECRET', 'OIDC_REDIRECT_URI']) {
@@ -91,35 +98,37 @@ async function startKanevas(extraEnv: Record<string, string>, fixedPort?: number
   Object.assign(env, extraEnv);
   const child: ChildProcess = spawn('node', ['--import', 'tsx', 'src/server.ts'], { env, stdio: 'ignore' });
   const base = `http://127.0.0.1:${port}`;
-  for (let i = 0; i < 100; i++) {
-    try {
-      await fetch(`${base}/healthz`);
-      return { base, redirectUri: `${base}/api/auth/oidc/callback`, stop: () => child.kill('SIGKILL') };
-    } catch {
-      await new Promise((r) => setTimeout(r, 100));
-    }
+  try {
+    await attendreServeurPret(child, base, () => '');
+  } catch (e) {
+    child.kill('SIGKILL');
+    throw e;
   }
-  child.kill('SIGKILL');
-  throw new Error('server did not start');
+  return { base, redirectUri: `${base}/api/auth/oidc/callback`, stop: () => child.kill('SIGKILL') };
 }
 
 async function withLogin<T>(
   fakeOpts: { rejectToken?: boolean },
   fn: (ctx: { base: string; issuer: string; redirectUri: string }) => Promise<T>,
+  hooks: { kanevasPort?: number; onIssuer?: (issuer: string) => void } = {},
 ) {
   const idp = await startFakeAuthelia(fakeOpts);
-  const port = await freePort();
-  const redirectUri = `http://127.0.0.1:${port}/api/auth/oidc/callback`;
-  const k = await startKanevas({
-    OIDC_ISSUER: idp.issuer,
-    OIDC_CLIENT_ID: CLIENT_ID,
-    OIDC_CLIENT_SECRET: 's3cret',
-    OIDC_REDIRECT_URI: redirectUri,
-  }, port);
   try {
-    return await fn({ base: k.base, issuer: idp.issuer, redirectUri });
+    hooks.onIssuer?.(idp.issuer);
+    const port = hooks.kanevasPort ?? (await freePort());
+    const redirectUri = `http://127.0.0.1:${port}/api/auth/oidc/callback`;
+    const k = await startKanevas({
+      OIDC_ISSUER: idp.issuer,
+      OIDC_CLIENT_ID: CLIENT_ID,
+      OIDC_CLIENT_SECRET: 's3cret',
+      OIDC_REDIRECT_URI: redirectUri,
+    }, port);
+    try {
+      return await fn({ base: k.base, issuer: idp.issuer, redirectUri });
+    } finally {
+      k.stop();
+    }
   } finally {
-    k.stop();
     idp.stop();
   }
 }
@@ -226,4 +235,29 @@ test('B-28 with only part of the OIDC settings, login and callback answer 404', 
   } finally {
     k.stop();
   }
+});
+
+test('B-28 when Kanevas fails to start, the fake provider is stopped and its port opens again', async () => {
+  // Panne visée : startKanevas échoue (port déjà pris) et le faux fournisseur reste ouvert.
+  const occupant = createHttpServer((_req, res) => res.writeHead(404).end());
+  await new Promise<void>((r) => occupant.listen(0, '127.0.0.1', r));
+  const taken = (occupant.address() as { port: number }).port;
+  let issuer = '';
+  try {
+    await assert.rejects(
+      withLogin({}, async () => assert.fail('the server must not start'), { kanevasPort: taken, onIssuer: (i) => (issuer = i) }),
+      /server did not start/,
+    );
+  } finally {
+    occupant.closeAllConnections();
+    await new Promise((r) => occupant.close(r));
+  }
+  assert.ok(issuer, 'the fake provider was started');
+  const port = Number(new URL(issuer).port);
+  const again = createNetServer();
+  await new Promise<void>((resolve, reject) => {
+    again.once('error', reject);
+    again.listen(port, '127.0.0.1', resolve);
+  });
+  await new Promise((r) => again.close(r));
 });

@@ -76,7 +76,7 @@ npm run dev            # or, without reload: npm run build && npm start (`npm st
 curl http://localhost:3001/healthz   # -> "kanevas 0.0.0-dev"
 ```
 
-The attested run is `npm run tests:attestes` (no test skipped). The script refuses a dirty tree (exit 2): commit first.
+The attested run is `npm run tests:attestes` (no test skipped). It plays two test files at a time at most (`--concurrence <n>` overrides), and the e2e harness lets only one server start at a time (`withStartupLock` in `src/e2e/harnais.test.ts`; the script gives each run its own lock file through `KANEVAS_E2E_STARTUP_LOCK`, so an interrupted run blocks nothing). A starting server is awaited on `/healthz`, never a fixed delay. The script refuses a dirty tree (exit 2): commit first.
 
 This block serves `/healthz` and the API only; to log in and see the screens, use the stub-mode command under “Without Authelia: stub mode” (`KANEVAS_STUB=1`).
 
