@@ -271,3 +271,23 @@ a.cadre-ill:focus-visible { outline-offset: 2px; border-radius: var(--rayon-pann
    (e09), the labels never wrap. */
 .menu-ajout-fichier .menu { min-width: 220px; }
 .menu-ajout-fichier .menu-entree { white-space: nowrap; }
+
+/* ---------- Bandeau d'une section gérée par un outil (S-7) ; `.bandeau` nomme déjà les messages de page ---------- */
+.bandeau-gere { display: flex; flex-wrap: wrap; align-items: center; gap: var(--e-2) var(--e-3); margin-top: var(--e-3); padding: var(--e-2) var(--e-3);
+  border: 1px solid var(--accent-fond); border-radius: var(--rayon-champ); background: var(--accent-fond); font-size: var(--t-13); }
+.bandeau-gere.desactive { border-color: var(--bord-fort); background: var(--surface-2); color: var(--texte-2); }
+.bandeau-gere .bg-nom { color: var(--accent-texte); font-weight: 600; overflow-wrap: anywhere; }
+.bandeau-gere.desactive .bg-nom { color: var(--texte-2); }
+.bandeau-gere a.bg-nom { text-decoration: underline; }
+.bandeau-gere .bg-etat { color: var(--mj); }
+.bandeau-gere .bg-actions { display: flex; flex-wrap: wrap; gap: var(--e-2); margin-left: auto; }
+.bandeau-gere a.bouton { align-items: center; }
+.bg-note { margin-top: var(--e-2); font-size: var(--t-13); color: var(--texte-2); }
+.bg-annonce:empty { display: none; }
+.bg-annonce { margin-top: var(--e-2); font-size: var(--t-13); color: var(--table); }
+.composant-section { overflow: auto; max-width: 100%; }
+@media (max-width: 760px) {
+  .bandeau-gere { flex-direction: column; align-items: stretch; }
+  .bandeau-gere .bg-actions { flex-direction: column; margin-left: 0; }
+  .bandeau-gere .bg-actions .bouton { width: 100%; min-height: 44px; justify-content: center; }
+}
