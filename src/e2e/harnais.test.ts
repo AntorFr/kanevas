@@ -53,7 +53,8 @@ export interface Server {
   stop: () => void;
 }
 
-/** How long `startServer` waits for /healthz, ms. */
+/** Startup window without server CPU progress, ms (elapsed time without /proc);
+ * total readiness wait is capped by PLAFOND_DEMARRAGE_MS. */
 export const DELAI_DEMARRAGE_MS = 30_000;
 /** Absolute ceiling of a startup that keeps making CPU progress (a starved pod), ms. */
 export const PLAFOND_DEMARRAGE_MS = 180_000;
