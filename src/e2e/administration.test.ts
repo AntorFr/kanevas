@@ -6,6 +6,7 @@ import { createServer } from 'node:net';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { after, before, describe, test } from 'node:test';
+import { attendreServeurPret, withStartupLock } from './harnais.test.js';
 
 // Black-box tests of B-6, P-2 step 3, E-5, B-29 (kanevas-recours-admin), written from
 // docs/parcours.md and docs/ecrans.md only: the real server in stub mode (KANEVAS_STUB=1),
@@ -52,7 +53,12 @@ interface Serveur {
   stop: () => void;
 }
 
-async function demarrer(): Promise<Serveur> {
+// Startups share the harness lock: one server or browser launching at a time on the pod.
+function demarrer(...args: Parameters<typeof demarrerSansVerrou>): ReturnType<typeof demarrerSansVerrou> {
+  return withStartupLock(() => demarrerSansVerrou(...args));
+}
+
+async function demarrerSansVerrou(): Promise<Serveur> {
   const port = await freePort();
   const dossier = mkdtempSync(join(tmpdir(), 'kanevas-e2e-'));
   const env: NodeJS.ProcessEnv = {
@@ -67,22 +73,19 @@ async function demarrer(): Promise<Serveur> {
   for (const k of Object.keys(env)) if (k.startsWith('OIDC_')) delete env[k];
   const child: ChildProcess = spawn('node', ['--import', 'tsx', 'src/server.ts'], { env, stdio: 'ignore' });
   const base = `http://127.0.0.1:${port}`;
-  for (let i = 0; i < 150; i++) {
-    try {
-      await fetch(`${base}/healthz`);
-      return {
-        base,
-        stop: () => {
-          child.kill('SIGKILL');
-          rmSync(dossier, { recursive: true, force: true });
-        },
-      };
-    } catch {
-      await new Promise((r) => setTimeout(r, 100));
-    }
+  try {
+    await attendreServeurPret(child, base, () => '');
+  } catch (e) {
+    child.kill('SIGKILL');
+    throw e;
   }
-  child.kill('SIGKILL');
-  throw new Error('server did not start');
+  return {
+    base,
+    stop: () => {
+      child.kill('SIGKILL');
+      rmSync(dossier, { recursive: true, force: true });
+    },
+  };
 }
 
 const NOMS: Record<string, string> = { antor: 'Antor', lea: 'Léa', teo: 'Teo', mira: 'Mira', admin: 'Admin' };
@@ -141,7 +144,7 @@ describe('E-5 Administration (B-6, P-2 étape 3)', { skip: raisonSaut }, () => {
       const r = spawnSync('npm', ['run', 'build'], { stdio: 'inherit' });
       assert.equal(r.status, 0, 'npm run build');
     }
-    browser = await pw!.chromium.launch();
+    browser = await withStartupLock(() => pw!.chromium.launch());
   });
   after(async () => {
     await browser?.close();
@@ -382,6 +385,8 @@ describe('E-5 Administration (B-6, P-2 étape 3)', { skip: raisonSaut }, () => {
       await page.getByRole('button', { name: 'Retirer admin' }).last().click();
       await page.getByRole('button', { name: 'Retirer admin' }).first().waitFor({ state: 'detached' });
       assert.ok(page.url().includes('/administration'));
+      // The rights refresh after the removal: wait for the link to go, then assert it is gone.
+      await page.getByRole('link', { name: /Ouvrir/ }).first().waitFor({ state: 'detached' });
       assert.equal(await page.getByRole('link', { name: /Ouvrir/ }).count(), 0);
       await page.goto('/');
       await page.waitForLoadState('networkidle');
