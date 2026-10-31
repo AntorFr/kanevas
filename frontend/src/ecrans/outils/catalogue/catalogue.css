@@ -45,3 +45,18 @@
   .catalogue-counts th, .catalogue-counts td { padding: var(--e-1) 0; border: 0; }
   .catalogue-actions { padding-bottom: env(safe-area-inset-bottom); }
 }
+.catalogue-elements { border-top: 1px solid var(--bord); margin-top: var(--e-4); padding-top: var(--e-4); }
+.catalogue-elements h3 { font: 600 var(--t-13)/1.5 var(--police-texte); margin: 0 0 var(--e-2); }
+.catalogue-natures { display: flex; flex-wrap: wrap; gap: var(--e-1); margin: var(--e-2) 0; }
+.catalogue-natures button { padding: var(--e-1) var(--e-3); border: 1px solid var(--bord); border-radius: var(--rayon-champ); background: transparent; color: var(--texte-2); font: inherit; font-size: var(--t-13); cursor: pointer; }
+.catalogue-natures button.on { background: var(--fond-2, var(--table-fond)); color: var(--texte); font-weight: 600; }
+.catalogue-lignes { list-style: none; margin: var(--e-2) 0; padding: 0; display: grid; gap: var(--e-2); }
+.catalogue-lignes li { display: flex; flex-wrap: wrap; align-items: center; gap: var(--e-2) var(--e-3); padding: var(--e-2) 0; border-bottom: 1px solid var(--bord); }
+.catalogue-lignes li.estompe { opacity: .55; }
+.catalogue-nom { flex: 1 1 220px; min-width: 0; overflow-wrap: anywhere; font-size: var(--t-14); }
+.catalogue-nom code { color: var(--texte-2); font-size: var(--t-12); }
+.catalogue-nom small { display: block; color: var(--texte-2); font-size: var(--t-12); }
+.catalogue-pastilles { display: flex; flex-wrap: wrap; gap: var(--e-1); }
+@media (max-width: 760px) { .catalogue-elements .bouton { min-height: 44px; } .catalogue-natures button { min-height: 44px; } }
+.catalogue-boutons { display: flex; flex-wrap: wrap; gap: var(--e-2); margin-top: var(--e-3); }
+.catalogue-bloc .catalogue-boutons > .bouton { margin-top: 0; }

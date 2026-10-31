@@ -1,8 +1,9 @@
-import { Upload } from 'lucide-react';
+import { List, Upload } from 'lucide-react';
 import { useState } from 'react';
 
 import { Bouton } from '../../../ui';
 import type { CatalogueSummary, Niveau, Outil } from '../types';
+import { ElementsCatalogue } from './elements';
 import { ImportDialog } from './import-dialog';
 import './catalogue.css';
 
@@ -12,6 +13,7 @@ export function BlocCatalogue({ base, niveau, outil, catalogue, outils, ecriture
   ecriture: boolean; recharger: () => Promise<void>;
 }) {
   const [open, setOpen] = useState(false);
+  const [elements, setElements] = useState(false);
   const levels = niveau === 'systeme' ? ['systeme'] as const : ['systeme', 'univers'] as const;
   return <div className="catalogue-bloc">
     <h3>Catalogue</h3>
@@ -28,8 +30,13 @@ export function BlocCatalogue({ base, niveau, outil, catalogue, outils, ecriture
         </>}
       </p>;
     })}
+    <div className="catalogue-boutons">
     {ecriture ? <Bouton icone={Upload} ecrit onClick={() => setOpen(true)}>Importer un catalogue…</Bouton>
-      : niveau === 'systeme' && <p className="catalogue-note">Seul le responsable du système importe le catalogue.</p>}
+      : null}
+    <Bouton icone={List} aria-expanded={elements} onClick={() => setElements(!elements)}>Voir les éléments</Bouton>
+    </div>
+    {!ecriture && niveau === 'systeme' && <p className="catalogue-note">Seul le responsable du système importe le catalogue.</p>}
+    {elements && <ElementsCatalogue key={`${niveau}/${catalogue.systeme.version}/${catalogue.univers.version}`} base={base} niveau={niveau} outil={outil} catalogue={catalogue} ecriture={ecriture} />}
     {open && <ImportDialog base={base} level={niveau} catalogue={catalogue} tools={outils} tool={outil}
       onClose={() => setOpen(false)} onApplied={recharger} />}
   </div>;
