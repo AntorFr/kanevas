@@ -385,6 +385,8 @@ describe('E-5 Administration (B-6, P-2 étape 3)', { skip: raisonSaut }, () => {
       await page.getByRole('button', { name: 'Retirer admin' }).last().click();
       await page.getByRole('button', { name: 'Retirer admin' }).first().waitFor({ state: 'detached' });
       assert.ok(page.url().includes('/administration'));
+      // The rights refresh after the removal: wait for the link to go, then assert it is gone.
+      await page.getByRole('link', { name: /Ouvrir/ }).first().waitFor({ state: 'detached' });
       assert.equal(await page.getByRole('link', { name: /Ouvrir/ }).count(), 0);
       await page.goto('/');
       await page.waitForLoadState('networkidle');
