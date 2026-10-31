@@ -143,6 +143,46 @@ describe('E-21 galaxie en lecture et ligne « Galaxie » de E-10', { skip: skipB
     await ctx.close();
   });
 
+  it('cadrage et champs (maquette, charte) : sans zoom, Port-Sel, Vael et Hesper dans le cadre à 390 px ; recherche pleine largeur à texte indicatif ; icônes ; listes à chevron', async () => {
+    const { page, ctx } = await ouvre('Antor');
+    await page.goto(adresse);
+    for (const nom of ['Port-Sel', 'Vael', 'Hesper']) await page.locator(`g.gx-systeme[aria-label="${nom}"]`).waitFor();
+    const dedans = async () => page.evaluate(() => {
+      const c = document.querySelector('svg.gx-svg')!.getBoundingClientRect();
+      return ['Port-Sel', 'Vael', 'Hesper'].map((n) => {
+        const r = document.querySelector(`g.gx-systeme[aria-label="${n}"]`)!.getBoundingClientRect();
+        return r.left >= c.left && r.right <= c.right && r.top >= c.top && r.bottom <= c.bottom;
+      });
+    });
+    await page.waitForTimeout(800);
+    assert.deepEqual(await dedans(), [true, true, true], 'à l\'ouverture, sans zoom');
+    // after losing the framing, « Recentrer » restores it
+    await page.getByRole('button', { name: 'Zoom avant' }).click();
+    await page.getByRole('button', { name: 'Zoom avant' }).click();
+    await page.getByRole('button', { name: 'Recentrer' }).click();
+    await page.waitForTimeout(500);
+    assert.deepEqual(await dedans(), [true, true, true], 'après Recentrer');
+    await page.screenshot({ path: `${SHOTS}/390-cadrage.png`, fullPage: true });
+
+    const rech = page.getByLabel('Rechercher un système', { exact: true }).first();
+    assert.equal(await rech.getAttribute('placeholder'), 'Rechercher un système');
+    const depart = await page.getByLabel('Départ', { exact: true }).boundingBox();
+    const br = await rech.boundingBox();
+    assert.ok(Math.abs(br!.width - depart!.width) <= 2, `recherche pleine largeur (${br!.width} / ${depart!.width})`);
+    for (const nom of ['Recentrer', 'Calculer']) {
+      assert.equal(await page.getByRole('button', { name: nom, exact: true }).locator('svg').count(), 1, `icône sur ${nom}`);
+    }
+    for (const lbl of ['Moteur', 'Routes']) {
+      const s = page.getByLabel(lbl, { exact: true });
+      assert.equal(await s.evaluate((e: Any) => getComputedStyle(e).appearance), 'none', `${lbl} sans flèche native`);
+      assert.equal(await s.locator('xpath=..').locator('svg').count(), 1, `chevron sur ${lbl}`);
+    }
+    await (await page.locator('g.gx-systeme[aria-label="Vael"]')).click();
+    await page.getByRole('button', { name: 'Trajet vers ici' }).waitFor();
+    assert.equal(await page.getByRole('button', { name: 'Trajet vers ici' }).locator('svg').count(), 1, 'icône sur Trajet vers ici');
+    await ctx.close();
+  });
+
   it('Léa : aucune marque d\'écriture sur la carte', async () => {
     const { page, ctx } = await ouvre('Léa');
     await ouvrirGalaxie(page);
