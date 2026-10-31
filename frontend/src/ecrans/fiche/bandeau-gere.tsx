@@ -1,11 +1,11 @@
-import { RefreshCw } from 'lucide-react';
+import { ExternalLink, Eye, RefreshCw, RotateCcw, Send } from 'lucide-react';
 import { useEffect, useState, type ComponentType } from 'react';
 import { Link } from 'react-router-dom';
 
 import { ErreurApi, appeler, useConnexionPerdue } from '../../api';
 import { composantSection } from '../../outils/registre';
 import type { PropsSection } from '../../outils/types';
-import { Bouton, Markdown } from '../../ui';
+import { Alerte, Bouton, Markdown } from '../../ui';
 import { montrerProposition } from '../assistant/fil';
 import type { SectionVue } from './types';
 
@@ -98,6 +98,7 @@ export function BandeauGere({ universId, ficheId, section, rafraichir }: Props) 
           <span className="bg-actions">
             {g.peutOuvrir && g.lien && !desactive && (
               <Link className="bouton" to={g.lien}>
+                <ExternalLink size={14} strokeWidth={1.75} aria-hidden="true" />
                 Ouvrir dans l’outil
               </Link>
             )}
@@ -107,12 +108,12 @@ export function BandeauGere({ universId, ficheId, section, rafraichir }: Props) 
               </Bouton>
             )}
             {proposer && (
-              <Bouton ecrit disabled={perdue || enCours === 'proposition'} onClick={() => void geste('proposition')}>
+              <Bouton ecrit icone={Send} disabled={perdue || enCours === 'proposition'} onClick={() => void geste('proposition')}>
                 Proposer un recalcul
               </Bouton>
             )}
             {voir && (
-              <Bouton onClick={() => montrerProposition(Number(universId), g.propositionId!)}>Voir la proposition</Bouton>
+              <Bouton icone={Eye} onClick={() => montrerProposition(Number(universId), g.propositionId!)}>Voir la proposition</Bouton>
             )}
           </span>
         )}
@@ -123,20 +124,17 @@ export function BandeauGere({ universId, ficheId, section, rafraichir }: Props) 
           Vous ne pouvez plus recalculer cette section.
         </p>
       )}
-      {erreur && (
-        <div className="alerte" role="alert">
-          <span>{erreur}</span>
-        </div>
-      )}
+      {erreur && <Alerte>{erreur}</Alerte>}
       {conflit && (
-        <div className="alerte" role="alert">
-          <div className="corps-alerte">
-            <span>La section a changé depuis que vous l’avez ouverte. Rechargez-la pour voir la nouvelle version.</span>
-            <Bouton petit enCours={enCours === 'recharger'} onClick={() => void recharger()}>
+        <Alerte
+          action={
+            <Bouton petit icone={RotateCcw} enCours={enCours === 'recharger'} onClick={() => void recharger()}>
               Recharger la section
             </Bouton>
-          </div>
-        </div>
+          }
+        >
+          La section a changé depuis que vous l’avez ouverte. Rechargez-la pour voir la nouvelle version.
+        </Alerte>
       )}
       <div className="bg-annonce" role="status" aria-live="polite">
         {annonce}
