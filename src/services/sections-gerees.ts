@@ -238,7 +238,7 @@ function proposer(db: Db, compteId: number, universId: number, s: SectionRow, de
   const ctx: ContexteSection = { db, acteur: { compteId }, universId, ficheId: s.fiche_id, sectionId: s.id };
   const p = decl.produire(ctx);
   return deposerRecalcul(db, {
-    universId, compteId, sectionId: s.id, contenu: p.contenu, versionOrigine: s.version, sourceVersion: p.sourceVersion,
+    universId, compteId, sectionId: s.id, contenu: p.contenu, versionOrigine: s.version, source: p.sourceVersion,
   });
 }
 

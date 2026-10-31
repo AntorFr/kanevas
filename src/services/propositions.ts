@@ -137,7 +137,7 @@ export function creerProposition(
 /** Files a recalculation proposal (no report), replacing the requester's pending one on the section (AD-79). */
 export function deposerRecalcul(
   db: Db,
-  e: { universId: number; compteId: number; sectionId: number; contenu: string; versionOrigine: number; sourceVersion: string },
+  e: { universId: number; compteId: number; sectionId: number; contenu: string; versionOrigine: number; source: string },
 ): number {
   return db.transaction(() => {
     db.prepare(
@@ -148,7 +148,7 @@ export function deposerRecalcul(
         `INSERT INTO propositions (univers_id, demandeur_id, section_id, cr_id, contenu_propose, version_origine,
            creee_le, source_version) VALUES (?, ?, ?, NULL, ?, ?, ?, ?)`,
       )
-      .run(e.universId, e.compteId, e.sectionId, e.contenu, e.versionOrigine, new Date().toISOString(), e.sourceVersion);
+      .run(e.universId, e.compteId, e.sectionId, e.contenu, e.versionOrigine, new Date().toISOString(), e.source);
     return Number(info.lastInsertRowid);
   })();
 }
