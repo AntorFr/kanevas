@@ -71,6 +71,7 @@ const tuilesNoms = async (p: Any): Promise<string> => (await p.locator('main').i
 const ouvrirFichier = async (p: Any, nom: string) => {
   await tuile(p, nom).first().click();
   await p.locator('.med-panneau').waitFor();
+  await p.locator('.med-panneau .med-corps').waitFor(); // detail loaded: absences below are real
 };
 const nbFichiers = async (p: Any): Promise<string> => {
   const t = await texte(p);
