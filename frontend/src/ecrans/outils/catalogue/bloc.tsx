@@ -19,9 +19,9 @@ export function BlocCatalogue({ base, niveau, outil, catalogue, outils, ecriture
       const summary = catalogue[level];
       return <p key={level} className="catalogue-version">
         Catalogue {level === 'systeme' ? 'du système' : 'de l’univers'} · {summary.version === null ? 'aucun catalogue importé' : <>
-          version <strong>{summary.version}</strong> · {catalogue.natures.map(({ nom, libelle }) => {
+          version <strong>{summary.version}</strong> · {catalogue.natures.map(({ nom, libelle, libellePluriel }) => {
             const count = summary.comptes[nom] ?? 0;
-            return `${count} ${count > 1 ? libelle.toLocaleLowerCase('fr') : libelle.toLocaleLowerCase('fr').replace(/s$/, '')}`;
+            return `${count} ${(count > 1 ? libellePluriel : libelle).toLocaleLowerCase('fr')}`;
           }).join(' · ')}
         </>}
       </p>;

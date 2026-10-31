@@ -124,8 +124,8 @@ export function ImportDialog({ base, level, catalogue, tools, tool, onClose, onA
     }} />
     <Fenetre titre={`Importer le catalogue ${level === 'systeme' ? 'du système' : 'de l’univers'}`} onFermer={dismiss}>
       <div className="catalogue-dialog" ref={content}>
-        <BoutonIcone className="catalogue-close" data-close etiquette="Fermer" icone={X}
-          disabled={phase === 'applying'} onClick={dismiss} />
+        <div className="catalogue-close"><BoutonIcone data-close etiquette="Fermer" icone={X}
+          disabled={phase === 'applying'} onClick={dismiss} /></div>
         <div className="catalogue-content" aria-busy={working || undefined}>
           {!finished && <Bouton icone={FileJson} disabled={working} onClick={() => fileInput.current?.click()}>
             {phase === 'invalid' ? 'Choisir un autre fichier' : 'Choisir un fichier JSON'}

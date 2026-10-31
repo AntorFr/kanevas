@@ -46,16 +46,16 @@ export function Report({ report, natures }: { report: ImportReport; natures: Cat
     {report.remplacements > 0 && <p className="catalogue-note">dont {report.remplacements} {report.remplacements === 1 ? 'remplace' : 'remplacent'} un élément du système</p>}
     <table className="catalogue-counts" aria-label="Résumé par nature">
       <thead><tr><th scope="col">Nature</th>{columns.map(([key, label]) => <th key={key} scope="col">{label}</th>)}</tr></thead>
-      <tbody>{natures.map(({ nom, libelle }) => {
+      <tbody>{natures.map(({ nom, libellePluriel }) => {
         const counts = report.natures[nom];
-        return counts && <tr key={nom}><th scope="row">{libelle}</th>
+        return counts && <tr key={nom}><th scope="row">{libellePluriel}</th>
           {columns.map(([key, label]) => <td key={key} data-label={label}>{counts[key]}</td>)}
         </tr>;
       })}</tbody>
     </table>
     {visible.length > 0 && <ol className="catalogue-refusals" aria-label="Éléments refusés">
       {visible.map((refusal, index) => <li key={index}>
-        {natures.find((n) => n.nom === refusal.nature)?.libelle.replace(/s$/, '') ?? refusal.nature} « <code>{refusal.cle}</code> », champ <code>{refusal.champ}</code> : {refusal.raison}. Cet élément n’est pas appliqué.
+        {natures.find((n) => n.nom === refusal.nature)?.libelle ?? refusal.nature} « <code>{refusal.cle}</code> », champ <code>{refusal.champ}</code> : {refusal.raison}. Cet élément n’est pas appliqué.
       </li>)}
     </ol>}
     {remaining > 0 && <p className="catalogue-more">{expanded ? `… et ${remaining} autres` : `${remaining} autres refus…`}

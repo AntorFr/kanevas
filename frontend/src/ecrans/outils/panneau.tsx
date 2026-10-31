@@ -1,5 +1,6 @@
 import { BookOpen, Map, RotateCcw, Settings2, Sparkles } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 
 import { appeler, ErreurApi, useConnexionPerdue } from '../../api';
 import { Bouton, ChargementListe, ErreurChargement, Interrupteur, PageIntrouvable, useToasts } from '../../ui';
@@ -10,12 +11,15 @@ import './outils.css';
 
 /** E-20 reads the common declaration, never a module's implementation. */
 export function PanneauOutils({ id, niveau, sansSysteme = false }: { id: string; niveau: Niveau; sansSysteme?: boolean }) {
+  const [params] = useSearchParams();
+  const playerMode = params.get('mode') === 'joueur';
   const base = `/api/${niveau === 'systeme' ? 'systemes' : 'univers'}/${id}/outils`;
   const [vue, setVue] = useState<VueOutils>();
   const [etat, setEtat] = useState<'chargement' | 'ok' | 'erreur' | 'introuvable'>('chargement');
   const generation = useRef(0);
   const perdue = useConnexionPerdue();
   const recharger = useCallback(async () => {
+    if (playerMode) return;
     const tour = ++generation.current;
     try {
       const v = await appeler<VueOutils>('GET', base);
@@ -23,7 +27,7 @@ export function PanneauOutils({ id, niveau, sansSysteme = false }: { id: string;
     } catch (e) {
       if (tour === generation.current) setEtat(e instanceof ErreurApi && e.statut === 404 ? 'introuvable' : 'erreur');
     }
-  }, [base]);
+  }, [base, playerMode]);
   useEffect(() => {
     setVue(undefined); setEtat('chargement');
     void recharger();
@@ -35,7 +39,7 @@ export function PanneauOutils({ id, niveau, sansSysteme = false }: { id: string;
     return () => window.removeEventListener('kanevas:outils-modifies', rafraichir);
   }, [recharger]);
 
-  if (etat === 'introuvable') return <PageIntrouvable />;
+  if (playerMode || etat === 'introuvable') return <PageIntrouvable />;
   if (!vue) return etat === 'erreur' ? <ErreurChargement texte="Impossible de charger les outils." onReessayer={() => void recharger()} />
     : <ChargementListe texte="Chargement des outils…" />;
   return <div className="panneau-outils">
