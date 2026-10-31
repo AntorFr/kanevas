@@ -38,8 +38,9 @@ describe('kanevas-arbre-fiche, puce et fil à 390 px', { skip: skipBrowser }, ()
       await page.getByRole('button', { name: /^Autres actions sur/ }).first().click();
       await page.getByRole('menuitem', { name: 'Déplacer sous…' }).click();
       const d = page.getByRole('dialog');
-      await d.getByLabel('Chercher une fiche').fill('Port-Sel');
-      const ligne = d.locator('label', { has: page.getByRole('radio', { name: /^Port-Sel/ }) }).first();
+      await d.getByRole('button', { name: 'Recherche' }).click();
+      await d.getByLabel('Chercher une fiche').fill('Portrait');
+      const ligne = d.locator('label', { has: page.getByRole('radio', { name: /^Le Portrait/ }) }).first();
       await ligne.waitFor();
       const info = async (l: Any) => l.evaluate((el: Any) => {
         const p = el.querySelector('.puce');
@@ -52,9 +53,9 @@ describe('kanevas-arbre-fiche, puce et fil à 390 px', { skip: skipBrowser }, ()
       assert.ok(!/ 4px/.test(vide.shadow) && /1\.5px/.test(vide.shadow), `non choisie doit être vide: ${vide.shadow}`);
       const aucun = d.locator('label', { has: page.getByRole('radio', { name: 'Aucun parent' }) });
       assert.ok((await info(aucun)).puce, 'puce « Aucun parent » absente');
-      await page.getByRole('radio', { name: /^Port-Sel/ }).first().focus();
+      await page.getByRole('radio', { name: /^Le Portrait/ }).first().focus();
       await page.keyboard.press('Space');
-      assert.equal(await page.getByRole('radio', { name: /^Port-Sel/ }).first().isChecked(), true);
+      assert.equal(await page.getByRole('radio', { name: /^Le Portrait/ }).first().isChecked(), true);
       const plein = await info(ligne);
       assert.ok(/4px/.test(plein.shadow), `choisie doit être pleine: ${plein.shadow}`);
       await page.screenshot({ path: `/tmp/arbre-fiche-puce-${th}.png` });

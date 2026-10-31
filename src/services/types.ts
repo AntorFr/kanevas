@@ -153,6 +153,8 @@ export interface Enfant {
   sousType: string | null;
   /** Derived from player-readable sections (B-57); GM outside player mode only. */
   visibleJoueurs?: boolean;
+  /** At least one child the caller reads, every type (AD-129). */
+  aDesEnfants: boolean;
 }
 
 export interface PageEnfants {
