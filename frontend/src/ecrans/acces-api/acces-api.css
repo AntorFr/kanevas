@@ -73,19 +73,19 @@ li.ouvert .lot-tete .chev { transform: rotate(90deg); }
 .boite-jeton form { display: flex; flex-direction: column; gap: var(--e-4); margin-top: var(--e-5); }
 .boite-jeton form .champ { margin: 0; }
 .boite-jeton .boite-actions { margin-top: var(--e-1); }
-.boite-jeton .segments { display: inline-flex; padding: 2px; gap: 2px; border-radius: var(--rayon-champ); background: var(--surface-2);
+.boite-jeton :is(.segments, .choix-portee) { display: inline-flex; padding: 2px; gap: 2px; border-radius: var(--rayon-champ); background: var(--surface-2);
   box-shadow: inset 0 0 0 1px var(--bord); }
-.boite-jeton .segments label { position: relative; display: inline-flex; align-items: center; height: 28px; padding: 0 12px; cursor: pointer;
+.boite-jeton :is(.segments, .choix-portee) label { position: relative; display: inline-flex; align-items: center; height: 28px; padding: 0 12px; cursor: pointer;
   border-radius: var(--rayon-item); color: var(--texte-3); font-size: var(--t-13); transition: background-color var(--duree), color var(--duree); }
-.boite-jeton .segments label:hover { color: var(--texte); }
-.boite-jeton .segments input { position: absolute; opacity: 0; }
-.boite-jeton .segments label:has(input:checked) { background: var(--surface); color: var(--texte);
+.boite-jeton :is(.segments, .choix-portee) label:hover { color: var(--texte); }
+.boite-jeton :is(.segments, .choix-portee) input { position: absolute; opacity: 0; }
+.boite-jeton :is(.segments, .choix-portee) label:has(input:checked) { background: var(--surface); color: var(--texte);
   box-shadow: 0 0 0 1px var(--bord-fort); }
-.boite-jeton .segments label:has(input:focus-visible) { outline: 2px solid var(--focus); outline-offset: -2px; }
-.boite-jeton .segments label:has(input:disabled) { color: var(--texte-3); cursor: not-allowed; }
+.boite-jeton :is(.segments, .choix-portee) label:has(input:focus-visible) { outline: 2px solid var(--focus); outline-offset: -2px; }
+.boite-jeton :is(.segments, .choix-portee) label:has(input:disabled) { color: var(--texte-3); cursor: not-allowed; }
 .boite-jeton .portee-jeton { display: flex; flex-direction: column; gap: var(--e-2); }
 .boite-jeton .portee-jeton > .lib-champ { font-size: var(--t-12); font-weight: 500; color: var(--texte-2); }
-.boite-jeton .portee-jeton .segments { align-self: flex-start; flex-wrap: wrap; }
+.boite-jeton .portee-jeton .choix-portee { align-self: flex-start; flex-wrap: wrap; }
 .boite-jeton .aide-portee p { margin: 0; font-size: var(--t-13); }
 .boite-jeton .aide-portee { display: grid; gap: var(--e-2); }
 .boite-jeton .outils-portee { display: grid; gap: var(--e-2); }
@@ -93,7 +93,7 @@ li.ouvert .lot-tete .chev { transform: rotate(90deg); }
 .jeton .portee-ligne { font-size: var(--t-12); color: var(--texte-2); overflow-wrap: anywhere; }
 .lot-ouverture { color: var(--texte-3); }
 @media (max-width: 760px) {
-  .boite-jeton .segments label { min-height: 36px; padding-inline: var(--e-2); }
+  .boite-jeton :is(.segments, .choix-portee) label { min-height: 36px; padding-inline: var(--e-2); }
   .boite-jeton .outils-portee .case { min-height: 36px; }
 }
 

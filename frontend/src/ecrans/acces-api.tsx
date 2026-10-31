@@ -192,7 +192,7 @@ function BoiteNouveauJeton({ base, onFini }: { base: string; onFini: (cree: bool
               </div>
               <div className="portee-jeton">
                 <span className="lib-champ" id={nomPortee}>Portée</span>
-                <div className="segments" role="radiogroup" aria-labelledby={nomPortee} aria-describedby={aidePortee}>
+                <div className="choix-portee" role="radiogroup" aria-labelledby={nomPortee} aria-describedby={aidePortee}>
                   <label>
                     <input type="radio" name="portee" checked={portee === 'contenu'} disabled={envoi}
                       onChange={() => { setPortee('contenu'); setErreurPortee(undefined); }} />
