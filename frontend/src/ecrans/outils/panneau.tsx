@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { appeler, ErreurApi, useConnexionPerdue } from '../../api';
 import { Bouton, ChargementListe, ErreurChargement, Interrupteur, PageIntrouvable, useToasts } from '../../ui';
 import { LigneReglage } from './reglage';
+import { BlocCatalogue } from './catalogue/bloc';
 import { type Communs, type Ligne, type Niveau, type Outil, type Resolue, type Valeur, type VueOutils } from './types';
 import './outils.css';
 
@@ -132,5 +133,7 @@ function Carte({ titre, base, cle, niveau, definition, outil, outils = [], ecrit
       valeur={reglages[r.nom] ?? { valeur: r.defaut, origine: 'defaut' } as Resolue} niveau={niveau} version={ligne.versionReglages}
       ecriture={ecriture} occupe={attente} recharger={recharger}
       enregistrer={(valeurs: Record<string, Valeur | null>, version) => ecrire('reglages', { valeurs, version })} />)}
+    {outil?.catalogue && <BlocCatalogue base={`${base}/${cle}/catalogue`} niveau={niveau} outil={outil}
+      catalogue={outil.catalogue} outils={outils} ecriture={ecriture} recharger={recharger} />}
   </section>;
 }

@@ -1,0 +1,47 @@
+/* E-20 catalogue: the existing modal, buttons and semantic palette, at both levels. */
+.catalogue-bloc { border-top: 1px solid var(--bord); margin-top: var(--e-4); padding-top: var(--e-4); }
+.catalogue-bloc h3 { font: 600 var(--t-13)/1.5 var(--police-texte); margin: 0 0 var(--e-2); }
+.catalogue-version, .catalogue-note, .catalogue-file { color: var(--texte-2); font-size: var(--t-13); line-height: 1.6; overflow-wrap: anywhere; }
+.catalogue-version { margin: var(--e-1) 0; }
+.catalogue-bloc > .bouton { margin-top: var(--e-3); }
+.fenetre:has(> .catalogue-dialog) { position: relative; display: flex; flex-direction: column; width: min(640px, calc(100vw - 48px)); max-height: calc(100dvh - 48px); }
+.fenetre:has(> .catalogue-dialog) > h2 { flex: none; padding-right: var(--e-6); margin: 0 0 var(--e-4); font: 600 var(--t-16)/1.5 var(--police-texte); }
+.catalogue-dialog { display: flex; flex-direction: column; min-height: 0; font-size: var(--t-14); line-height: 1.6; overflow-wrap: anywhere; }
+.catalogue-close { position: absolute; top: var(--e-4); right: var(--e-4); }
+.catalogue-content { overflow-y: auto; min-height: 0; padding: var(--e-1); }
+.catalogue-content > p { margin: var(--e-3) 0; }
+.catalogue-content .catalogue-summary { font-size: var(--t-16); font-weight: 600; color: var(--texte); }
+.catalogue-file strong, .catalogue-version strong { font-weight: 500; }
+.catalogue-counts { width: 100%; border-collapse: collapse; margin: var(--e-4) 0; font-size: var(--t-13); font-variant-numeric: tabular-nums; }
+.catalogue-counts th, .catalogue-counts td { padding: var(--e-2); text-align: right; border-bottom: 1px solid var(--bord); }
+.catalogue-counts thead th { color: var(--texte-2); font-size: var(--t-12); font-weight: 500; }
+.catalogue-counts th:first-child { text-align: left; }
+.catalogue-counts tbody th { font-weight: 500; }
+.catalogue-refusals { list-style: none; padding: 0; margin: var(--e-4) 0; display: grid; gap: var(--e-2); }
+.catalogue-refusals li, .catalogue-failure { padding: var(--e-3); border: 1px solid var(--danger); border-radius: var(--rayon-champ); background: var(--danger-fond); color: var(--texte); font-size: var(--t-13); }
+.catalogue-refusals code { font-size: inherit; overflow-wrap: anywhere; }
+.catalogue-failure { margin: var(--e-3) 0; }
+.catalogue-failure p { margin: 0; }
+.catalogue-failure .catalogue-cause { font-size: var(--t-12); margin-top: var(--e-2); }
+.catalogue-failure .bouton { margin: var(--e-3) var(--e-2) 0 0; }
+.catalogue-more { display: flex; align-items: center; flex-wrap: wrap; gap: var(--e-3); }
+.catalogue-result { display: flex; align-items: center; gap: var(--e-2); padding: var(--e-3); margin: var(--e-3) 0; background: var(--table-fond); color: var(--table); border-radius: var(--rayon-champ); font-weight: 500; }
+.catalogue-result svg { flex: none; }
+.catalogue-actions { display: flex; justify-content: flex-end; align-items: flex-start; flex-wrap: wrap; gap: var(--e-2); padding-top: var(--e-4); margin-top: var(--e-3); border-top: 1px solid var(--bord); }
+.catalogue-actions .catalogue-note { margin: var(--e-1) 0 0; }
+@media (max-width: 760px) {
+  .fenetre:has(> .catalogue-dialog) { width: 100%; height: 100dvh; max-height: 100dvh; border-radius: 0; padding: var(--e-4); }
+  .catalogue-dialog { flex: 1; }
+  .catalogue-content { flex: 1; }
+  .catalogue-dialog .bouton, .catalogue-dialog .bouton-icone, .catalogue-bloc .bouton { min-height: 44px; }
+  .catalogue-close { top: var(--e-2); right: var(--e-3); min-width: 44px; }
+  .catalogue-dialog .bouton, .catalogue-bloc .bouton { max-width: 100%; white-space: normal; text-align: left; }
+  .catalogue-counts thead { display: none; }
+  .catalogue-counts tbody { display: grid; gap: var(--e-3); }
+  .catalogue-counts tr { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--e-1) var(--e-4); border-bottom: 1px solid var(--bord); padding-bottom: var(--e-3); }
+  .catalogue-counts tbody th { grid-column: 1 / -1; }
+  .catalogue-counts td { display: flex; justify-content: space-between; gap: var(--e-2); }
+  .catalogue-counts td::before { content: attr(data-label); color: var(--texte-2); }
+  .catalogue-counts th, .catalogue-counts td { padding: var(--e-1) 0; border: 0; }
+  .catalogue-actions { padding-bottom: env(safe-area-inset-bottom); }
+}
