@@ -1203,7 +1203,7 @@ hachure, ni menu « ⋯ » : la section n'a que son titre, son texte et ses bloc
 |---|---|---|
 | menu du compte | connexion perdue | il s'ouvre ; le thème change (il est local) ; « Se déconnecter » reste actif |
 | menu du compte | `/api/moi` en échec | l'identifiant manque ; le thème et « Se déconnecter » restent |
-| identifiant, nom d'auteur, fil d'Ariane | trop longs | coupés par « … », le texte entier en infobulle ; le fil garde son dernier maillon entier |
+| identifiant, nom d'auteur, fil d'Ariane | trop longs | coupés par « … », le texte entier en infobulle ; dans le fil, le titre de la fiche courante cède en dernier (voir En-tête) |
 | réglage d'audience | échec d'un changement | l'interrupteur revient à sa valeur, « L'action n'a pas abouti. Réessayez. » sous le réglage ; pas de toast |
 | réglage d'audience | connexion perdue | interrupteurs et liste désactivés, le réglage se lit |
 | tiroir | ouvert au téléphone | la barre par-dessus la page, voile derrière ; Échap, le voile ou une entrée le ferment |
@@ -2722,7 +2722,7 @@ enfants. » avec « Réessayer » ; *vide* le bloc est absent ; *contenu long* 5
 
 **« Déplacer sous… » (E-9).** *(kanevas-deplacer-arborescence)* Ce paragraphe décrit la vue « Recherche » ; la boîte entière est « Ce que `kanevas-deplacer-arborescence` construit » plus bas. Le champ cherche dans la liste de
 recherche existante (`GET …/fiches?q=`, sans `type`, 300 ms après la frappe, 1 caractère au moins, 100 au plus) ;
-la fiche et ses descendants sont écartés de la liste (`horsDe`) ; une ligne montre l'icône du type, le titre et le sous-type (« Lieu · Sphère »), et la recherche porte sur le titre seul (le placeholder « Titre ou alias » de la maquette est celui de E-17 : ici le champ dit « Chercher une fiche ») ; « 1 caractère au moins, 100 au plus » vise la saisie, la liste rend 100 lignes au plus puis « Charger la suite », et défile dans la boîte ; avant toute saisie la liste dit « Tapez le début d'un titre. » ; une saisie sans résultat dit « Aucune fiche ne correspond. », la recherche en cours « Recherche… », son échec « Impossible de chercher. » avec « Réessayer » ; « Aucun parent » est la première ligne et met la fiche à la racine.
+la fiche et ses descendants sont écartés de la liste (`horsDe`) ; une ligne montre l'icône du type, le titre et le sous-type (« Lieu · Sphère »), et la recherche est celle de la liste (AD-63 : titre, alias, sous-type et texte lisible des sections, comme E-17 ; la boîte n'ajoute que `horsDe`) (le placeholder « Titre ou alias » de la maquette est celui de E-17 : ici le champ dit « Chercher une fiche ») ; « 1 caractère au moins, 100 au plus » vise la saisie, la liste rend 100 lignes au plus puis « Charger la suite », et défile dans la boîte ; avant toute saisie la liste dit « Tapez le début d'un titre. » ; une saisie sans résultat dit « Aucune fiche ne correspond. », la recherche en cours « Recherche… », son échec « Impossible de chercher. » avec « Réessayer » ; « Aucun parent » est la première ligne et met la fiche à la racine.
 « Déplacer » reste inactif tant qu'aucune ligne n'est choisie ou tant que le choix est le parent actuel (la maquette le montre actif parce qu'un choix y est déjà fait) ; le refus s'écrit sous la liste ; il envoie `PATCH …/fiches/:fid` `{parent}`. Réponses :
 succès (200, la fiche en réponse) → la boîte se ferme, le fil se recharge et le toast dit « Fiche déplacée. » ; 400 `cycle` → le texte
 « Une fiche ne peut pas être rangée sous l'un de ses descendants. » sous la liste, la boîte reste ouverte ;
@@ -2843,7 +2843,7 @@ Docks », « Le Phare aux Sels », « Quartier des Cordiers », « Le Repaire de
   then he is back on the « Port-Sel » level and « Les Docks » is still checked.
 - Given « Port-Sel » (parent of five), when Antor opens « Déplacer sous… » on it and opens nothing, then
   « Port-Sel (cette fiche) » has no chevron; when he switches to « Recherche » and types « Doc », then « Les
-  Docks » is not in the list; « Taverne » gives « Aucune fiche ne correspond. ».
+  Docks » is not in the list; « Zzzz » gives « Aucune fiche ne correspond. ».
 - Given « Les Sphères » (no parent), when Antor opens « Déplacer sous… » on it, then the root is shown
   (« Lame d'Ébène » alone in the path, « Remonter » inactive) and « Aucun parent » carries « (actuel) ».
 - Given the level read fails, then « Impossible de charger ce niveau. » and « Réessayer » replace the list,

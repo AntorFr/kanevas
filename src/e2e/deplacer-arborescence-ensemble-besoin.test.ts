@@ -198,15 +198,13 @@ describe('kanevas-deplacer-arborescence, « Déplacer sous… » de bout en bout
     await boite(antor).getByRole('button', { name: 'Annuler' }).click();
   });
 
-  // Critère de la doc (docs/ecrans.md, critères de la tranche) : sur Port-Sel, « Taverne » donne « Aucune fiche ne
-  // correspond. », et « la recherche porte sur le titre seul ». Panne : la recherche rend une fiche dont le titre ne
-  // contient pas le mot saisi (ici « Le Pendu Joyeux », dont seul le sous-type est « Taverne »).
-  test('critère de la tranche : la Recherche porte sur le titre seul, « Taverne » sur Port-Sel ne rend rien', async () => {
+  // Critère de la doc (docs/ecrans.md, critères de la tranche) : sur Port-Sel, une saisie sans résultat donne
+  // « Aucune fiche ne correspond. ». La recherche est celle de la liste (AD-63) : elle trouve aussi par sous-type.
+  // Panne : la saisie sans correspondance n'affiche pas le message vide.
+  test('critère de la tranche : une saisie sans résultat, « Zzzz » sur Port-Sel, dit « Aucune fiche ne correspond. »', async () => {
     await ouvrirBoite(antor, 'Port-Sel');
     await boite(antor).getByRole('button', { name: 'Recherche' }).click();
-    await boite(antor).getByRole('textbox', { name: 'Chercher une fiche' }).fill('Taverne');
-    await rangee(antor, 'Le Pendu Joyeux').or(boite(antor).getByText('Aucune fiche ne correspond.')).waitFor();
-    assert.equal(await boite(antor).getByRole('radio', { name: /^Le Pendu Joyeux/ }).count(), 0, 'fiche trouvée par son sous-type');
+    await boite(antor).getByRole('textbox', { name: 'Chercher une fiche' }).fill('Zzzz');
     await boite(antor).getByText('Aucune fiche ne correspond.').waitFor();
   });
 
