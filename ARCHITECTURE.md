@@ -24,6 +24,7 @@ Maps and graphs (E-10, E-11) are built. `kanevas-monde` adds a proposed section 
 ## Map
 
 - `src/outils/`, `services/outils.ts`, `routes/outils.ts`, `frontend/src/outils/`, `frontend/src/ecrans/outils/`: the tools framework (`kanevas-outils-cadre`, see « Detail of `kanevas-outils-cadre` »).
+- `src/services/sections-gerees.ts`, `src/db/migrations/0018-sections-gerees.sql` (provisional number, AD-51), `frontend/src/ecrans/fiche/bandeau-gere.tsx`: managed sections, the one caller of the `ecrireContenu` lock (`kanevas-outils-sections-gerees`, see « Detail of `kanevas-outils-sections-gerees` »).
 - `src/server.ts`, `src/app.ts`: startup and assembly of the Fastify app
   (`buildApp`), the repository's only application; all future routes register
   there.
