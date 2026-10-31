@@ -2,7 +2,7 @@ import { rendreMarkdown } from './markdown.js';
 import type { Db } from '../db/db.js';
 import { estGeree, exigerMJ, resolveurLiens, roleDe } from './droits.js';
 import { ErreurService, introuvable, invalide } from './erreurs.js';
-import { declarationSection, poserSectionGeree } from './sections-gerees.js';
+import { appliquerRecalcul } from './sections-gerees.js';
 import { ecrireContenu, MESSAGE_SECTION_GEREE, validerContenu } from './sections.js';
 import type { SectionRow } from './types.js';
 
@@ -183,12 +183,7 @@ export function appliquerProposition(
     }
     if (p.source_version !== null && estGeree(s)) {
       // A recalculation proposal: the managed write, with the checks of the tool (usage, enabled; AD-128).
-      const [module, nom, type = ''] = s.gere_par!.split('/');
-      if (!declarationSection(`${module}/${nom}`, type)) throw introuvable();
-      poserSectionGeree(db, compteId, universId, {
-        ficheId: s.fiche_id, outil: `${module}/${nom}`, type, sectionId: s.id,
-        contenu: p.contenu_propose, sourceVersion: p.source_version, version: p.version_origine,
-      });
+      appliquerRecalcul(db, compteId, universId, s, p.contenu_propose, p.source_version, p.version_origine);
     } else {
       ecrireContenu(db, compteId, universId, s.fiche_id, s.id, p.contenu_propose, p.version_origine);
     }

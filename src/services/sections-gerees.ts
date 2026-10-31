@@ -286,3 +286,18 @@ export function signalerSourceModifiee(db: Db, compteId: number, universId: numb
     proposer(db, compteId, universId, s, decl, outil);
   }
 }
+
+/** Writes the text of an applied recalculation proposal through the lock (the checks of the tool apply). */
+export function appliquerRecalcul(
+  db: Db,
+  compteId: number,
+  universId: number,
+  s: SectionRow,
+  contenu: string,
+  sourceVersion: string,
+  version: number,
+): void {
+  const { cle, type, decl } = declareeDe(s);
+  if (!decl) throw introuvable();
+  poserSectionGeree(db, compteId, universId, { ficheId: s.fiche_id, outil: cle, type, sectionId: s.id, contenu, sourceVersion, version });
+}
