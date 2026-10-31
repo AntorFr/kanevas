@@ -1,4 +1,6 @@
 import { cartesGalaxies } from '../../services/swn/galaxies.js';
+import { outilTrajet } from './assistant.js';
+import { routesGalaxie } from './routes.js';
 import type { DeclarationCarte, DeclarationModule } from '../declaration.js';
 
 export const swnGalaxie: DeclarationCarte = {
@@ -7,6 +9,7 @@ export const swnGalaxie: DeclarationCarte = {
   visibiliteParDefaut: { mj: true, joueur: true }, usages: [], reglages: {},
   ecran: { libelle: 'Galaxie', icone: 'Map' },
   cartes: (db, acteur, universId) => cartesGalaxies(db, acteur, universId),
+  outilsAssistant: outilTrajet,
 };
 
 /** The module `swn` applies to every game system: `systemes_jeu` has no key (G-1). */
@@ -17,4 +20,5 @@ export const swn: DeclarationModule = {
       niveau: 'systeme+univers', forme: { type: 'nombre', min: 1, max: 20, entier: true }, defaut: 5 },
   },
   outils: [swnGalaxie],
+  routes: routesGalaxie,
 };

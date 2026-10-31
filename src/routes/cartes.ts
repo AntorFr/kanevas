@@ -13,6 +13,8 @@ import {
   retirerElement,
   type FormeCarte,
 } from '../services/cartes.js';
+import { roleDe, vueMJ } from '../services/droits.js';
+import { listerCartesOutils } from '../services/outils.js';
 import { invalide } from '../services/erreurs.js';
 import { acteur, corps } from './fiches.js';
 import { idDeChemin } from './univers.js';
@@ -42,9 +44,19 @@ export function registerCartesRoutes(app: FastifyInstance) {
     const a = acteur(request);
     const q = request.query as Record<string, unknown>;
     if (q.curseur !== undefined && typeof q.curseur !== 'string') throw invalide('Requête invalide.');
-    return listerCartes(app.db, a.compteId, !!a.modeJoueur, ids(request).univers, {
+    const univers = ids(request).univers;
+    const page = listerCartes(app.db, a.compteId, !!a.modeJoueur, univers, {
       curseur: q.curseur as string | undefined,
     });
+    // Tool maps (G-8) join the first page; this route knows no module by name.
+    if (q.curseur !== undefined) return page;
+    const mj = vueMJ(roleDe(app.db, univers, a.compteId)!, a);
+    const outils = listerCartesOutils(app.db, a, univers).map((c) => ({
+      type: 'outil' as const, id: c.id, universId: univers, titre: c.titre, module: c.module, outil: c.outil,
+      adresse: `/univers/${univers}/outils/${c.module}/${c.outil}/${c.id}`,
+      ...(mj ? { visible: c.visible } : {}),
+    }));
+    return { ...page, cartes: [...page.cartes, ...outils] };
   });
 
   // JSON `{titre, forme}`, or multipart with `titre` and `forme` before the `fichier` (illustrated map).
