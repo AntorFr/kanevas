@@ -44,6 +44,7 @@ const tuile = (p: Any, nom: string) => p.locator('.med-tuile').filter({ has: p.l
 const ouvrirFichier = async (p: Any, nom: string) => {
   await tuile(p, nom).click();
   await p.getByRole('complementary').or(p.locator('.med-panneau')).first().waitFor();
+  await p.locator('.med-panneau .med-corps').waitFor(); // detail loaded before measuring
 };
 
 test('barre : « Médiathèque » est sous « Cartes »', opts, async () => {

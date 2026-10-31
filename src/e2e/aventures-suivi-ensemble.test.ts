@@ -8,6 +8,7 @@ import { join } from 'node:path';
 import { after, before, describe, test } from 'node:test';
 
 import Database from 'better-sqlite3';
+import { attendreServeurPret, withStartupLock } from './harnais.test.js';
 
 // Feature `kanevas-scenarios-suivi`, assembled, written from the need only (the sheet's « Livre » and
 // « Critère de sortie », B-18/B-19 amended, B-49, B-60, E-3, E-9 blocks, E-13, E-14, E-18 of docs/).
@@ -128,7 +129,12 @@ function baseAncienSchema(dossier: string): string {
   return fichier;
 }
 
-async function demarrer(dossier: string, dbPath: string): Promise<Serveur> {
+// Startups share the harness lock: one server or browser launching at a time on the pod.
+function demarrer(...args: Parameters<typeof demarrerSansVerrou>): ReturnType<typeof demarrerSansVerrou> {
+  return withStartupLock(() => demarrerSansVerrou(...args));
+}
+
+async function demarrerSansVerrou(dossier: string, dbPath: string): Promise<Serveur> {
   const port = await freePort();
   const env: NodeJS.ProcessEnv = {
     ...process.env,
@@ -149,17 +155,13 @@ async function demarrer(dossier: string, dbPath: string): Promise<Serveur> {
     child.kill('SIGKILL');
     rmSync(dossier, { recursive: true, force: true });
   };
-  for (let i = 0; i < 200; i++) {
-    try {
-      await fetch(`${base}/healthz`);
-      return { base, journal: () => sortie, stop };
-    } catch {
-      await new Promise((r) => setTimeout(r, 100));
-    }
+  try {
+    await attendreServeurPret(child, base, () => sortie);
+  } catch (e) {
+    stop();
+    throw e;
   }
-  const vu = sortie;
-  stop();
-  throw new Error(`server did not start: ${vu}`);
+  return { base, journal: () => sortie, stop };
 }
 
 const NOMS: Record<string, string> = { antor: 'Antor', lea: 'Léa' };
@@ -199,7 +201,7 @@ describe('kanevas-scenarios-suivi : du schéma précédent à la fiche de l’av
       const r = spawnSync('npm', ['run', 'build'], { stdio: 'inherit' });
       assert.equal(r.status, 0, 'npm run build');
     }
-    browser = await pw!.chromium.launch();
+    browser = await withStartupLock(() => pw!.chromium.launch());
     const dossier = mkdtempSync(join(tmpdir(), 'kanevas-suivi-'));
     srv = await demarrer(dossier, baseAncienSchema(dossier));
     antor = await connecter(srv, 'antor');

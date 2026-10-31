@@ -225,6 +225,8 @@ describe('kanevas-cartes-graphes, du besoin', { skip: skipBrowser }, () => {
       await m.antor.waitForURL(new RegExp(`/univers/${m.U}/cartes/\\d+$`));
       await m.antor.getByRole('heading', { name: 'La ville de Brume', level: 1 }).waitFor();
       await attendre(m.antor);
+      // The empty-map sentence is drawn once the background image has loaded: wait for it, not for a quiet network.
+      await m.antor.getByText('Aucun token. Ajoutez une fiche pour la placer sur la carte.').waitFor();
       carte = Number(m.antor.url().split('/').pop());
       const t = await texte(m.antor);
       assert.ok(t.includes('Carte illustrée'));
