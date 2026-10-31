@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
 
-// Critère de sortie de kanevas-outils-galaxie-lire-donnees : migration 0018, semis, niveaux, référence, cartes.
+// Critère de sortie de kanevas-outils-galaxie-lire-donnees : migration 0019, semis, niveaux, référence, cartes.
 process.env.NODE_ENV = 'test';
 delete process.env.KANEVAS_STUB;
 const { migrate, openDb } = await import('../../db/db.js');
@@ -14,7 +14,7 @@ const { applicable } = await import('../../outils/declaration.js');
 const { niveauLecture, referenceGalaxie, galaxieLisible } = await import('./galaxies.js');
 const { modulesActifs } = await import('../../outils/registre.js');
 
-test('0018 crée les quatre tables sans toucher les lignes existantes', () => {
+test('0019 crée les quatre tables sans toucher les lignes existantes', () => {
   const dir = mkdtempSync(join(tmpdir(), 'migration-swn-'));
   const db = openDb(':memory:');
   const source = new URL('../../db/migrations/', import.meta.url);

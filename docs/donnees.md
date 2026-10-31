@@ -620,4 +620,6 @@ on restart without harm, AD-132). No generated data is stored.
 2. **Migrate**: `responsable_id` remains null for existing systems (no stored creator); module tables arrive with their module migrations (same runner, AD-14, numbering at
    merge, AD-51; one module = migrations creating only its prefixed tables).
 3. **Contract**: nothing — `responsable_id` remains nullable (1).
+
+**`kanevas-outils-sections-gerees`** (one core migration, number taken at merge, AD-51): `sections.gere_par` (column `CHECK` on the form `module/outil/type`) and `sections.source_version`, both nullable, no backfill — set together or null together, held by the service; `propositions` rebuilt (procedure of migration 0009, foreign keys off then `foreign_key_check`) with `cr_id` nullable, `source_version TEXT` and `CHECK ((cr_id IS NULL) = (source_version IS NOT NULL))`: a proposal comes from a session report or from the recalculation of a managed section, never both. Rollback: an earlier image ignores the two columns and reads every section as free text (the text version is in `contenu`); before going back, delete the proposals whose `cr_id` is null (an earlier image expects a report on every proposal).
 Rollback: an earlier image ignores the new tables; managed sections keep their text (text version) and are read normally.

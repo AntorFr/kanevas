@@ -30,3 +30,8 @@ export interface PropsOutil {
   /** `?mode=joueur` when a GM views as a player, else empty: the mode the tool was opened under. */
   suffixeMode?: string;
 }
+
+/** What a tool's display component for a managed section receives (S-7): the server's rendering of the text version. */
+export interface PropsSection {
+  html: string;
+}

@@ -112,7 +112,7 @@ E-16 live outside universes: their cells describe the role in a universe attache
 | E-6 | everything | list, status, session reports, « Nouveau compte-rendu »; no scenarios or preparation (hidden) | — |
 | E-7 | everything | — | — |
 | E-8 | read, search, create; each sheet's thumbnail (its illustration, or the drawn fallback) | read, search; thumbnails of visible sheets | — |
-| E-9 | everything; Player mode; relate and remove relations; set, replace, remove the illustration (outside Player mode); *(kanevas-import)* subtype, restrict a file to the GM, see a file awaiting import (tile) | readable sections; write permitted ones; readable relations (section and target); their attachments; see the illustration, never set it; *(kanevas-import)* in a section they write, add a file or choose a visible one (both paths of B-55) and remove a reference; files under both guards; never set visibility (**hidden**); a file awaiting import: nothing (**hidden**) | — |
+| E-9 | everything; managed section: « Ouvrir dans l'outil », « Recalculer », « Proposer un recalcul », « Voir la proposition » (never an editor); Player mode; relate and remove relations; set, replace, remove the illustration (outside Player mode); *(kanevas-import)* subtype, restrict a file to the GM, see a file awaiting import (tile) | readable sections; write permitted ones; readable relations (section and target); their attachments; see the illustration, never set it; a managed section: banner and state, « Ouvrir dans l'outil » (author) and « Recalculer » (author with the tool's usage and « L'auteur l'écrit »), never an editor; *(kanevas-import)* in a section they write, add a file or choose a visible one (both paths of B-55) and remove a reference; files under both guards; never set visibility (**hidden**); a file awaiting import: nothing (**hidden**) | — |
 | E-10 | everything, tool maps (the galaxy) included, with « MJ seul » on those not visible | visible maps, tool maps included when visible and the tool is visible to their role (otherwise absent) | — |
 | E-11 | everything; Player mode | read a visible map, open a sheet | — |
 | E-12 | GM catalogue (including image generation, if an image engine is available); proposals: only the requesting GM sees, applies, abandons them | Player catalogue (no image: the tool is absent, the assistant answers that it cannot); proposals: **hidden** (neither tool nor block; what is checked is the absence of a proposal and block, not the assistant's free text) | — |
@@ -130,8 +130,8 @@ E-16 live outside universes: their cells describe the role in a universe attache
 What `kanevas-outils` adds: **sidebar** — an **« Outils »** section, after « Cartes » and before « Lore »,
 listing entry points for tools **enabled and visible to the role** (« Concepteur de vaisseaux »); the
 galaxy is reached through « Cartes »; a disabled or invisible tool has neither an entry nor an address (« Page
-introuvable. »). **E-9** — everyone: a managed section is read like any other, without an editor; GM and author:
-« Ouvrir dans le concepteur ». **E-10** — GM: « Nouvelle carte » ▸ « Carte de la galaxie »; Player: the
+introuvable. »). **E-9** — everyone: a managed section is read like any other, without an editor; GM (outside Player mode) and author, when the tool is open to them:
+« Ouvrir dans l'outil ». **E-10** — GM: « Nouvelle carte » ▸ « Carte de la galaxie »; Player: the
 tool map, if it is visible and the tool is visible to their role.
 
 What `kanevas-import` adds to existing rows: **sidebar** — everyone: the « Lore » section
@@ -3323,7 +3323,7 @@ left, choices by nature (hull, drive, fittings, defenses, weapons, modifications
 catalogue supplemented by the universe's (a local element is marked « Univers »); on the right, results
 (price, HP, AC, free power and mass, shipyard, maintenance) and **alerts** (« Bloquante » / « À surveiller »),
 « Enregistrer », « Recalculer » when the design is « calculée avec d'anciens réglages »; GM: « Générer les fiches de règles… » (creates missing rule sheets, one per nature, and the examples sheet; updates the others, managed sections). On E-9, the managed
-section shows its banner and an « Ouvrir dans le concepteur » link.
+section shows its banner and an « Ouvrir dans l'outil » link styled as a button (`kanevas-outils-sections-gerees`).
 
 | State | Text |
 |---|---|
@@ -3345,3 +3345,88 @@ Criteria:
   réglages » and its text has not changed until someone recalculates.
 - Given the designer disabled, the sheet shows « Caractéristiques » as text with « Outil désactivé ».
 - Given Teo, without a role in the universe, when he forces a design's address, « Page introuvable. ».
+
+## Screen details for `kanevas-outils-sections-gerees`
+
+Mockup: `docs/maquettes/e09-section-geree.html` (the banner in its five states, desktop and 360 px). Decisions: `ARCHITECTURE.md`, « Detail of `kanevas-outils-sections-gerees` » (S-1 to S-8). The slice changes only the **section panel of E-9**; the rest of the sheet, the audience controls, « Monter », « Descendre » and « Retirer la section » are those of E-9.
+
+### E-9 — a managed section
+
+A managed section is a panel like the others: its title, its audience badge (« MJ seul » for the GM), then, **above the text**, a **banner** of one line (wrapping on a phone) and the content. There is **never an editor**: no « Modifier », for the GM either, and the section's audience controls stay (the audience is the GM's, the content is the tool's). The content is the rendered text version (AD-95); when the tool has a display component for this section (`geree.composant`), the component replaces the text, loaded only then (S-7).
+
+**Banner** — always visible, above the content, violet-tinted band (a neutral grey band when the tool is disabled). « Ouvrir dans l'outil » is a link styled as a button (it navigates); « Recalculer », « Proposer un recalcul » and « Voir la proposition » are buttons. In the code the class is `.bandeau-gere`: `.bandeau` already names the page messages (connection lost, Player mode). Its parts (the mockup tints the band in the violet of the tool badges and carries no badge of its own; the frame and the legend « Composant de l'outil » around the component are mockup annotations: the product draws no frame or legend of its own, the component draws itself):
+
+- **Name**: « Générée par <libellé de l'outil> », a link to the tool's entry (`geree.lien`) when the reader can open the tool; « Générée par un outil » (no link) when the tool exists but is not visible to the reader's role; **« Outil désactivé »** (no name, no link) when the tool is disabled or unknown.
+- **State**, to the right of the name, when the tool is open to the reader: nothing when up to date; **« Calculée avec d'anciens réglages. »** (amber, `role="status"`) when stale. The text and `version` have not moved.
+- **Actions** (buttons on the banner's row): « Ouvrir dans l'outil » (GM outside Player mode, and the section's author); « Recalculer » when stale, of type `geste`, for who has the tool's usage and the right to write the section; for a `proposition` section: « Voir la proposition » (the GM who requested it; leads to the proposal on E-12) or « Proposer un recalcul » (GM without pending proposal). Nothing else.
+
+| Who | Sees |
+|---|---|
+| GM (outside Player mode), tool open to them | banner, state, « Ouvrir dans l'outil »; when stale: « Recalculer » (type `geste`) or « Proposer un recalcul » / « Voir la proposition » (type `proposition`), if the tool's usage allows it |
+| GM in Player mode | what Léa would see; no action (absent from the DOM) |
+| Author (player) who can open the tool | banner, state, « Ouvrir dans l'outil »; « Recalculer » only with the tool's usage and « L'auteur l'écrit » |
+| Player who is not the author | banner and state only, no action (even with the usage: the right to write the section is also needed) |
+| Author or player without the tool's usage | banner and state; « Ouvrir dans l'outil » for the author; no « Recalculer » (Essai G's usage is GM only) |
+| Reader whose role cannot see the tool (enabled but hidden from them) | « Générée par un outil », no link, no state, **no action, « Ouvrir dans l'outil » included, even for the author** |
+| Tool disabled, for everyone (the GM too) | « Outil désactivé », the text, no action |
+| A reader of a GM-only managed section | nothing: the section does not exist for them (no title, no banner) |
+| Account without a role | « Page introuvable. » as for any sheet |
+| A GM who did not request the pending proposal | does not see it; « Proposer un recalcul » is offered if the section is stale |
+
+*Hidden versus refused*: an action the role cannot take is **absent from the DOM**; the server refuses it anyway (`refuse`, or `introuvable` when the reader cannot see the section).
+
+| State | Text / behaviour |
+|---|---|
+| up to date | banner with the name only |
+| stale | « Calculée avec d'anciens réglages. » + the action of the role; the text stays, nothing rewritten (AD-128) |
+| recalculating | the button reads « Recalcul… », disabled; the text stays until the answer; focus stays on the button |
+| recalculated | the text and the state update in place; the banner reads the name only; a polite live region says « Section recalculée. » |
+| proposal filed | « Voir la proposition » replaces « Proposer un recalcul »; the text is unchanged until the proposal is applied (E-12) |
+| tool disabled | « Outil désactivé »; the text version only; no action; no regeneration |
+| error | under the banner, « Le recalcul n'a pas abouti. Réessayez. » (`role="alert"`), the button back; the text unchanged |
+| conflict | « La section a changé depuis que vous l'avez ouverte. Rechargez-la pour voir la nouvelle version. » with « Recharger la section » (the words of the other sections) |
+| usage lost | « Vous ne pouvez plus recalculer cette section. », the button removed |
+| offline | « Connexion perdue. », « Recalculer » and « Proposer un recalcul » disabled |
+| component unavailable | the text version, with « Mise en forme indisponible — version texte affichée. » |
+| long content | the text scrolls with the page like any section (up to 100 000 characters); a tool label of 80 characters wraps inside the banner (no truncation); from 760 px down the banner is one column, the buttons below its text, full width, 44 px high (360 px is the checked width) |
+| loading the component | the text version shows at once, in place; the component replaces it when loaded (no empty frame, no layout jump larger than the component) |
+| error reading the sheet | the existing E-9 error (« Impossible de charger cette fiche. » with « Réessayer »); the banner is part of the section view and is never shown alone |
+| offline, reading | the page already loaded stays readable; banner actions disabled; the stale state shown may be out of date until the connection returns |
+| very wide or tall component | it scrolls inside its own area (horizontal and vertical), never widening the page; the banner stays above it |
+| empty text | not a state: a managed write refuses an empty text (`invalide`), so a managed section always has text |
+| proposal already pending by another GM | « Proposer un recalcul » is offered to a GM who has none of their own: proposals are per requester (AD-79), the other GM's is invisible to them |
+
+**Accessibility**: the banner is a `<div role="group" aria-label="Section gérée par un outil">`; the state is `role="status"`; the name link and the buttons are reached by keyboard in that order, before the content; the amber of the stale state is never the only signal (the words carry it).
+
+**Order of the section list on E-9 in an edit**: unchanged. Other sections of the sheet remain editable beside a managed one (a sheet mixes both, B-66).
+
+### E-12 — a proposal that recalculates
+
+The proposal screen shows, for a proposal with `source = 'recalcul'` (no report), the line « Recalcul proposé après un changement de réglage — <libellé de l'outil> » where a report proposal shows « Depuis le compte-rendu … », then the same side-by-side view and « Appliquer » / « Ignorer ». « Appliquer » on a disabled tool gives « Introuvable. » (the proposal stays). Applying updates the text and the banner's source.
+
+### Criteria
+
+- Given a managed section, when Antor or Léa sends `PUT …/contenu`, then `refuse` with `code: 'section_geree'`, whatever the role.
+- Given Léa reading « Vaisseau d'essai », « Caractéristiques » shows « Générée par le générateur d'essai » and no « Modifier »; her view carries no source.
+- Given Antor changing « Marge d'essai », when Léa reloads, then « Calculée avec d'anciens réglages. » and the same text; Antor's « Recalculer » updates the text, and the state disappears.
+- Given the generator disabled, then « Outil désactivé » and the text; a write is `introuvable`.
+- Given a `proposition` section and Antor changing the setting, then « Voir la proposition » appears for Antor only; « Ignorer » leaves the text, « Appliquer » replaces it.
+- Given 360 px width, the banner wraps and no action is cut off.
+- Given Antor clicking « Recalculer », when the answer is pending, then the button reads « Recalcul… » disabled and the text is unchanged; when it arrives, the new text shows and « Section recalculée. » is announced.
+- Given the recalculation answering an error, then « Le recalcul n'a pas abouti. Réessayez. » shows under the banner and the text is unchanged.
+- Given another GM having changed the section meanwhile, when Antor recalculates, then « La section a changé depuis que vous l'avez ouverte… » with « Recharger la section ».
+- Given Antor's usage removed meanwhile, when he clicks « Recalculer », then « Vous ne pouvez plus recalculer cette section. » and the button disappears.
+- Given the connection lost, then « Connexion perdue. » and the recalculation buttons are disabled.
+- Given the component failing to load, then the text version and « Mise en forme indisponible — version texte affichée. ».
+- Given Antor having filed a proposal, then « Voir la proposition » replaces « Proposer un recalcul » and the text is unchanged.
+- Given the tool disabled, then « Outil désactivé » and no action for the GM either.
+- Given a tool enabled but hidden from players, then Léa reads « Générée par un outil » with no link, no state and no action.
+- Given a component wider than the column, then it scrolls inside its area and the page does not widen.
+- Given a failed sheet load, then « Impossible de charger cette fiche. » and no banner alone.
+- Given the component still loading, then the text version shows in place and the component replaces it when loaded.
+- Given the connection lost while reading, then the loaded page stays readable and the actions are disabled.
+- Given a tool label of 80 characters, then it wraps inside the banner, untruncated.
+- Given Mira, a GM who did not file the pending proposal, then she does not see it and « Proposer un recalcul » is offered if the section is stale.
+- Given Roxane, a player who is not the author, then she reads the banner and state and has no action, the tool's usage notwithstanding.
+- Given a GM-only managed section, Léa sees neither its title nor its banner.
+- Given Antor in Player mode, then no banner action is in the DOM.
