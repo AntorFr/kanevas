@@ -284,6 +284,65 @@ describe('kanevas-deplacer-arborescence-boite, E-9 « Déplacer sous… »', { s
     await antor.setViewportSize({ width: 1280, height: 720 });
   });
 
+  for (const [nom, w, h] of [['bureau', 1280, 720], ['téléphone', 390, 844]] as const) {
+    test(`vue Arborescence (${nom}) : le type finit au même bord avec ou sans chevron, le chevron est dans la surbrillance du choix`, async () => {
+      await antor.setViewportSize({ width: w, height: h });
+      const d = await ouvrirBoite(antor, 'La Taverne du Kraken');
+      await d.getByText('La Taverne du Kraken (cette fiche)').waitFor();
+      await d.getByRole('navigation', { name: 'Chemin' }).getByRole('button', { name: 'Lame d\'Ébène' }).click();
+      await d.getByRole('button', { name: 'Ouvrir « Les Sphères »' }).waitFor();
+      // right edge of the type text of every row (with, without chevron, the current sheet)
+      const bords = await d.getByRole('radiogroup', { name: 'Nouveau parent' }).locator('.ligne-res').evaluateAll((rows: Element[]) =>
+        rows
+          .filter((r) => r.querySelector('.type-option'))
+          .map((r) => ({ t: r.textContent, chevron: !!r.querySelector('.chevron-res'), droite: Math.round(r.querySelector('.type-option')!.getBoundingClientRect().right) })),
+      );
+      assert.ok(bords.some((b: Any) => b.chevron) && bords.some((b: Any) => !b.chevron), `il faut des lignes avec et sans chevron: ${JSON.stringify(bords)}`);
+      assert.equal(new Set(bords.map((b: Any) => b.droite)).size, 1, `colonne des types dentelée: ${JSON.stringify(bords)}`);
+      // the highlighted row contains the chevron
+      await d.getByLabel(/^Les Sphères/).check();
+      const ok = await d.getByLabel(/^Les Sphères/).evaluate((i: Element) => {
+        const row = i.closest('.ligne-res')!;
+        const fond = getComputedStyle(row).backgroundColor;
+        const rr = row.getBoundingClientRect();
+        const cb = row.querySelector('.chevron-res')!.getBoundingClientRect();
+        return { fond, dedans: cb.right <= rr.right + 0.5 && cb.left >= rr.left };
+      });
+      assert.notEqual(ok.fond, 'rgba(0, 0, 0, 0)', 'la ligne entière (chevron compris) porte la surbrillance');
+      assert.equal(ok.dedans, true);
+      await d.getByRole('button', { name: 'Annuler' }).click();
+    });
+    test(`chemin profond à titre long (${nom}) : aucun maillon ne déborde de la boîte, le niveau courant cède en dernier`, async () => {
+      await antor.setViewportSize({ width: w, height: h });
+      let parent: number | undefined;
+      let dernier = 0;
+      for (const t of ['Les Archives de l’Amirauté', 'Archipel des Brumes Hurlantes', 'Les Grands Entrepôts Royaux', 'Chambre forte numéro neuf']) {
+        const f = await api(antor, 'POST', `/api/univers/${U}/fiches`, { type: 'lieu', titre: `${t} ${nom}`, ...(parent ? { parent } : {}) });
+        parent = f.id;
+        dernier = f.id;
+      }
+      const e = await api(antor, 'POST', `/api/univers/${U}/fiches`, { type: 'lieu', titre: `Enfant du fond ${nom}`, parent: dernier });
+      ids[`Enfant du fond ${nom}`] = e.id;
+      const d = await ouvrirBoite(antor, `Enfant du fond ${nom}`);
+      await d.getByText(`Enfant du fond ${nom} (cette fiche)`).waitFor();
+      const nav = d.getByRole('navigation', { name: 'Chemin' });
+      const m = await nav.evaluate((n: Element) => {
+        const b = n.closest('[role="dialog"]')!.getBoundingClientRect();
+        const kids = [...n.querySelectorAll('.maillon, .menu-declencheur')] as HTMLElement[];
+        return {
+          boiteDroite: b.right,
+          debord: n.scrollWidth - n.clientWidth,
+          maillons: kids.map((k) => ({ t: k.textContent, droite: k.getBoundingClientRect().right, w: k.getBoundingClientRect().width, tronque: k.scrollWidth > k.clientWidth })),
+          courant: (() => { const c = n.querySelector('[aria-current="location"]') as HTMLElement; return { w: c.getBoundingClientRect().width, sw: c.scrollWidth, t: c.textContent }; })(),
+        };
+      });
+      assert.ok(m.debord <= 0, `le chemin déborde de ${m.debord}px: ${JSON.stringify(m)}`);
+      for (const k of m.maillons) assert.ok(k.droite <= m.boiteDroite + 0.5, `maillon « ${k.t} » hors de la boîte: ${JSON.stringify(m)}`);
+      assert.ok(m.courant.w >= 40, `le niveau courant est écrasé: ${JSON.stringify(m.courant)}`);
+      await d.getByRole('button', { name: 'Annuler' }).click();
+    });
+  }
+
   test('Docks puis Déplacer : rangée sous Les Docks, le fil d’Ariane le montre (critère de sortie)', async () => {
     const d = await ouvrirBoite(antor, 'La Taverne du Kraken');
     await d.getByLabel(/^Les Docks/).check();
