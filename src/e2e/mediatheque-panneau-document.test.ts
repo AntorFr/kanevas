@@ -47,6 +47,8 @@ const ouvrirPanneau = async (nom: string) => {
   await antor.waitForLoadState('networkidle');
   await antor.locator('.med-tuile').filter({ has: antor.locator(`[title="${nom}"]`) }).click();
   await antor.locator('.med-panneau').waitFor();
+  // The body only exists once the detail answered: wait for that state before any count()/innerText().
+  await antor.locator('.med-panneau .med-corps').waitFor();
   await antor.waitForLoadState('networkidle');
 };
 

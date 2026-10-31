@@ -6,6 +6,7 @@ import { createServer } from 'node:net';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { after, before, describe, test } from 'node:test';
+import { attendreServeurPret, withStartupLock } from './harnais.test.js';
 
 // Black-box tests of the E-5 panel « Jeton de l'assistant » (B-51, P-15, B-29), written from
 // docs/parcours.md and docs/ecrans.md: the real server in stub mode, a real Chromium driven by
@@ -53,7 +54,12 @@ interface Serveur {
   redemarrer: () => Promise<void>;
 }
 
-async function demarrer(): Promise<Serveur> {
+// Startups share the harness lock: one server or browser launching at a time on the pod.
+function demarrer(...args: Parameters<typeof demarrerSansVerrou>): ReturnType<typeof demarrerSansVerrou> {
+  return withStartupLock(() => demarrerSansVerrou(...args));
+}
+
+async function demarrerSansVerrou(): Promise<Serveur> {
   const port = await freePort();
   const dossier = mkdtempSync(join(tmpdir(), 'kanevas-e2e-'));
   const env: NodeJS.ProcessEnv = {
@@ -69,18 +75,16 @@ async function demarrer(): Promise<Serveur> {
   for (const k of Object.keys(env)) if (k.startsWith('OIDC_')) delete env[k];
   const base = `http://127.0.0.1:${port}`;
   let child: ChildProcess;
+  // Ready = /healthz answers 200 (the harness wait: no fixed count of polls, no fixed delay).
   const lancer = async () => {
-    child = spawn('node', ['--import', 'tsx', 'src/server.ts'], { env, stdio: 'ignore' });
-    for (let i = 0; i < 150; i++) {
-      try {
-        await fetch(`${base}/healthz`);
-        return;
-      } catch {
-        await new Promise((r) => setTimeout(r, 100));
-      }
+    const enfant = spawn('node', ['--import', 'tsx', 'src/server.ts'], { env, stdio: 'ignore' });
+    child = enfant;
+    try {
+      await attendreServeurPret(enfant, base, () => '');
+    } catch (e) {
+      enfant.kill('SIGKILL');
+      throw e;
     }
-    child.kill('SIGKILL');
-    throw new Error('server did not start');
   };
   await lancer();
   return {
@@ -90,9 +94,12 @@ async function demarrer(): Promise<Serveur> {
       rmSync(dossier, { recursive: true, force: true });
     },
     redemarrer: async () => {
-      child.kill('SIGKILL');
-      await new Promise((r) => setTimeout(r, 300));
-      await lancer();
+      // Wait for the old process to be gone (its port released), then start the new one under the harness lock.
+      const ancien = child;
+      const parti = new Promise<void>((r) => (ancien.exitCode !== null || ancien.signalCode !== null ? r() : ancien.once('exit', () => r())));
+      ancien.kill('SIGKILL');
+      await parti;
+      await withStartupLock(lancer);
     },
   };
 }
@@ -133,7 +140,7 @@ describe('E-5 panneau « Jeton de l\'assistant » (B-51, P-15)', { skip: raisonS
       const r = spawnSync('npm', ['run', 'build'], { stdio: 'inherit' });
       assert.equal(r.status, 0, 'npm run build');
     }
-    browser = await pw!.chromium.launch();
+    browser = await withStartupLock(() => pw!.chromium.launch());
   });
   after(async () => {
     await browser?.close();

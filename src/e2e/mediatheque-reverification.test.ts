@@ -55,6 +55,7 @@ const panneau = async (nom: string) => {
   await attendre(antor);
   await antor.getByRole('button', { name: nom, exact: false }).filter({ hasText: nom }).first().click();
   await antor.locator('.med-panneau').waitFor();
+  await antor.locator('.med-panneau [role=status]').filter({ hasText: 'Chargement' }).waitFor({ state: 'detached' });
 };
 
 test('B3 · image citée avec un titre : « Utilisé dans » et la boîte « Réserver au MJ » nomment « Port-Sel — « Description » »', opts, async () => {
@@ -63,7 +64,6 @@ test('B3 · image citée avec un titre : « Utilisé dans » et la boîte « Ré
   assert.deepEqual(await impact(id, 'reserver'), ['Port-Sel — « Description »']);
   await panneau('grammaire-image.png');
   const p = antor.locator('.med-panneau');
-  await p.getByText(/Utilisé dans/).first().waitFor(); // the panel first shows « Chargement… »
   assert.match(await p.innerText(), /Utilisé dans[\s\S]*Port-Sel/);
   await p.getByText('Réservé au MJ', { exact: true }).click();
   const boite = antor.getByRole('alertdialog');
