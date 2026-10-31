@@ -6,6 +6,7 @@ import { modulesActifs } from '../outils/registre.js';
 import { resumeCatalogue, type ResumeCatalogue } from './catalogues.js';
 import { exigerMJ, roleDe, vueMJ } from './droits.js';
 import { ErreurService, introuvable, refuse } from './erreurs.js';
+import { surSourceModifiee } from './crochets-outils.js';
 import type { Acteur } from './types.js';
 
 export type CibleOutils = { niveau: 'systeme' | 'univers'; id: number };
@@ -279,6 +280,8 @@ export function poserReglages(db: Db, compte: number | Acteur, cible: CibleOutil
     const t = table(cible);
     db.prepare(`UPDATE ${t.nom} SET reglages = ?, version_reglages = version_reglages + 1
       WHERE ${t.id} = ? AND outil = ?`).run(JSON.stringify(valeurs), cible.id, cle);
+    // A system-level write files nothing: it would write for GMs who did nothing (S-5).
+    if (cible.niveau === 'univers') surSourceModifiee.appeler(db, acteurDe(compte).compteId, cible.id, cle);
   })();
 }
 

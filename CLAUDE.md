@@ -157,3 +157,11 @@
   cannot use (disabled, hidden from the role, unknown) answers `reply.callNotFound()`, byte for byte like an unregistered path — never a
   service `introuvable` JSON. Module routes are registered by `DeclarationModule.routes(app, garde)`; `catalogueDe` appends
   `outilsAssistant` of every accessible tool of `modulesActifs()` without naming any.
+- Managed sections (`kanevas-outils-sections-gerees`, migration 0018, AD-127/128): a section with `gere_par` (`module/outil/type`) is written
+  only by its tool. `ecrireContenu` refuses it (`refuse`, `detail: 'section_geree'`) unless its last parameter `geree` is passed — and
+  **only `services/sections-gerees.ts` passes it** (`poserSectionGeree`, on behalf of the account, never more rights than it has;
+  a source-scan test fails otherwise). `source_version` is written in that branch, same transaction; never a new `INSERT INTO sections` /
+  `UPDATE sections SET contenu`. The state is `etatGere` (`a_jour` / `perime` / `desactive`), **computed at each read, never stored**; a
+  disabled or unknown tool gives no name, a tool not visible to the reader gives `libelle: null`. A view of a managed section never carries
+  `contenu` (the source) — `vueSection` gives `peutEcrire: false` — except the assistant's `'markdown'` form. `creerProposition` and the
+  import (`code: 'section_geree'`, before the transaction) refuse a managed section too.

@@ -63,8 +63,30 @@ export interface DeclarationCarte extends BaseOutil {
   type: 'carte';
   cartes(db: Db, acteur: Acteur, universId: number): CarteOutil[];
 }
+export interface ContexteSection {
+  db: Db;
+  acteur: Acteur;
+  universId: number;
+  ficheId: number;
+  sectionId: number | null;
+}
+/** A section a generator writes and locks (AD-122, AD-127): the section holds the text version only. */
+export interface SectionGeree {
+  /** Third part of `gere_par` (`module/outil/type`). */
+  type: string;
+  libelle: string;
+  /** The declared usage (AD-126) the writer needs, e.g. `concevoir`. */
+  usage: string;
+  recalcul: 'geste' | 'proposition';
+  /** The module ships a display component for this type (the browser then loads it, S-7). */
+  composant?: boolean;
+  /** The current version of the sources (catalogue, settings): cheap, read-only. */
+  versionSource(ctx: ContexteSection): string;
+  /** The text version and the source version it was made with; reads what the actor may read, never writes. */
+  produire(ctx: ContexteSection): { contenu: string; sourceVersion: string };
+}
 /** Generators record settings versions to mark designs stale (AD-128). */
-export interface DeclarationGenerateur extends BaseOutil { type: 'generateur' }
+export interface DeclarationGenerateur extends BaseOutil { type: 'generateur'; sections?: SectionGeree[] }
 /** A play aid reads its settings live (AD-128); its screen is its entry point. */
 export interface DeclarationAide extends BaseOutil { type: 'aide' }
 export type DeclarationOutil = DeclarationCarte | DeclarationGenerateur | DeclarationAide;
@@ -118,6 +140,10 @@ const declaration = z.strictObject({
         poserMasque: fonction, retraits: fonction, poserRetrait: fonction }),
     }).optional(),
     reglages, outilsAssistant: fonction.optional(), cartes: fonction.optional(),
+    sections: z.array(z.strictObject({
+      type: z.string().regex(/^[a-z][a-z0-9-]*$/), libelle: z.string().min(1), usage: z.string().min(1),
+      recalcul: z.enum(['geste', 'proposition']), composant: z.boolean().optional(), versionSource: fonction, produire: fonction,
+    })).optional(),
     ecran: z.strictObject({ libelle: z.string().min(1), icone: z.string().min(1) }),
   })), routes: fonction.optional(),
 });
@@ -141,6 +167,16 @@ export function verifierDeclaration(module: DeclarationModule): void {
     if (outil.type === 'carte' && typeof outil.cartes !== 'function') throw new Error('A map needs its map reader.');
     if (outil.type === 'generateur' && !outil.usages.some((u) => u.nom === 'concevoir')) {
       throw new Error('A generator needs the concevoir usage.');
+    }
+    const sections = (outil as { sections?: SectionGeree[] }).sections;
+    if (sections !== undefined) {
+      if (outil.type !== 'generateur') throw new Error('Only a generator declares sections.');
+      if (new Set(sections.map((s) => s.type)).size !== sections.length) {
+        throw new Error(`Duplicate section type in ${outil.cle}.`);
+      }
+      for (const s of sections) {
+        if (!outil.usages.some((u) => u.nom === s.usage)) throw new Error(`Unknown usage ${s.usage} for ${outil.cle}/${s.type}.`);
+      }
     }
     if (new Set(outil.usages.map((u) => u.nom)).size !== outil.usages.length) throw new Error('Duplicate usage.');
     if (outil.catalogue) {

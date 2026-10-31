@@ -1,8 +1,10 @@
 import { rendreMarkdown } from './markdown.js';
 import type { Db } from '../db/db.js';
-import { exigerMJ, resolveurLiens, roleDe } from './droits.js';
+import { estGeree, exigerMJ, resolveurLiens, roleDe } from './droits.js';
 import { ErreurService, introuvable, invalide } from './erreurs.js';
-import { ecrireContenu, validerContenu } from './sections.js';
+import { declarationOutil } from './outils.js';
+import { appliquerRecalcul } from './sections-gerees.js';
+import { ecrireContenu, MESSAGE_SECTION_GEREE, validerContenu } from './sections.js';
 import type { SectionRow } from './types.js';
 
 /** `appliquee` once applied (whatever the section did since), else `perimee` if the section moved on. */
@@ -13,7 +15,12 @@ export interface PropositionVue {
   universId: number;
   sectionId: number;
   ficheId: number;
-  crId: number;
+  /** The session report it comes from; null for a recalculation proposal (AD-128). */
+  crId: number | null;
+  /** `compte_rendu` (a session report) or `recalcul` (a managed section gone stale, AD-128). */
+  source: 'compte_rendu' | 'recalcul';
+  /** The tool's name for a recalculation proposal; null otherwise or when the tool is unknown. */
+  outilLibelle: string | null;
   /** Current content of the section, for the side-by-side view. */
   contenuActuel: string;
   contenuPropose: string;
@@ -31,7 +38,8 @@ interface PropositionRow {
   univers_id: number;
   demandeur_id: number;
   section_id: number;
-  cr_id: number;
+  cr_id: number | null;
+  source_version: string | null;
   contenu_propose: string;
   version_origine: number;
   creee_le: string;
@@ -42,6 +50,18 @@ function etatDe(p: PropositionRow, s: SectionRow): EtatProposition {
   if (p.appliquee_le !== null) return 'appliquee';
   return s.version !== p.version_origine ? 'perimee' : 'en_attente';
 }
+
+function libelleOutil(s: SectionRow): string | null {
+  if (sansOutil(s)) return null;
+  const [module, nom] = s.gere_par!.split('/');
+  try {
+    return declarationOutil(`${module}/${nom}`).libelle;
+  } catch (e) {
+    if (e instanceof ErreurService && e.code === 'introuvable') return null;
+    throw e;
+  }
+}
+const sansOutil = (s: SectionRow): boolean => !estGeree(s);
 
 function vue(db: Db, p: PropositionRow, s: SectionRow): PropositionVue {
   // The reader is the requesting GM, outside player mode: links read as they do on the sheet (AD-116).
@@ -54,6 +74,8 @@ function vue(db: Db, p: PropositionRow, s: SectionRow): PropositionVue {
     sectionId: p.section_id,
     ficheId: s.fiche_id,
     crId: p.cr_id,
+    source: p.source_version === null ? 'compte_rendu' : 'recalcul',
+    outilLibelle: libelleOutil(s),
     contenuActuel: s.contenu,
     contenuPropose: p.contenu_propose,
     htmlActuel: html(s.contenu),
@@ -105,6 +127,7 @@ export function creerProposition(
     )
     .get(entree.sectionId, universId) as SectionRow | undefined;
   if (!s) throw introuvable();
+  if (estGeree(s)) throw new ErreurService('refuse', MESSAGE_SECTION_GEREE, 'section_geree');
   const cr = db
     .prepare("SELECT 1 AS ok FROM fiches WHERE id = ? AND univers_id = ? AND type = 'compte_rendu'")
     .get(entree.crId, universId);
@@ -128,6 +151,25 @@ export function creerProposition(
     return Number(info.lastInsertRowid);
   })();
   return lireProposition(db, compteId, universId, id);
+}
+
+/** Files a recalculation proposal (no report), replacing the requester's pending one on the section (AD-79). */
+export function deposerRecalcul(
+  db: Db,
+  e: { universId: number; compteId: number; sectionId: number; contenu: string; versionOrigine: number; source: string },
+): number {
+  return db.transaction(() => {
+    db.prepare(
+      'DELETE FROM propositions WHERE demandeur_id = ? AND section_id = ? AND appliquee_le IS NULL',
+    ).run(e.compteId, e.sectionId);
+    const info = db
+      .prepare(
+        `INSERT INTO propositions (univers_id, demandeur_id, section_id, cr_id, contenu_propose, version_origine,
+           creee_le, source_version) VALUES (?, ?, ?, NULL, ?, ?, ?, ?)`,
+      )
+      .run(e.universId, e.compteId, e.sectionId, e.contenu, e.versionOrigine, new Date().toISOString(), e.source);
+    return Number(info.lastInsertRowid);
+  })();
 }
 
 /** The proposal with the current section, and its state computed at each read. */
@@ -158,7 +200,12 @@ export function appliquerProposition(
     if (p.appliquee_le !== null) {
       throw new ErreurService('conflit', 'La proposition est déjà appliquée.', 'proposition_appliquee');
     }
-    ecrireContenu(db, compteId, universId, s.fiche_id, s.id, p.contenu_propose, p.version_origine);
+    if (p.source_version !== null && estGeree(s)) {
+      // A recalculation proposal: the managed write, with the checks of the tool (usage, enabled; AD-128).
+      appliquerRecalcul(db, compteId, universId, s, p.contenu_propose, p.source_version, p.version_origine);
+    } else {
+      ecrireContenu(db, compteId, universId, s.fiche_id, s.id, p.contenu_propose, p.version_origine);
+    }
     db.prepare('UPDATE propositions SET appliquee_le = ? WHERE id = ?').run(
       new Date().toISOString(),
       id,
