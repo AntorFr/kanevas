@@ -243,12 +243,12 @@ function proposer(db: Db, compteId: number, universId: number, s: SectionRow, de
 }
 
 /** A GM asks for the proposal of a stale `'proposition'` section (the gesture of « Proposer un recalcul »). */
-export function proposerRecalcul(db: Db, compteId: number, universId: number, sectionId: number): PropositionVue {
+export function proposerRecalcul(db: Db, compteId: number, universId: number, sectionId: number, ficheId: number | null = null): PropositionVue {
   const role = exigerRole(db, universId, compteId);
   if (role !== 'mj') throw introuvable();
   const acteur: Acteur = { compteId };
   const id = db.transaction(() => {
-    const s = sectionGeree(db, universId, null, sectionId);
+    const s = sectionGeree(db, universId, ficheId, sectionId);
     if (!estGeree(s)) throw introuvable();
     const { cle, decl } = declareeDe(s);
     if (!decl || !accessible(db, acteur, universId, cle)) throw introuvable();

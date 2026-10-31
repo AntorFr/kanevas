@@ -1,6 +1,7 @@
 import type { Db } from '../db/db.js';
 import { ErreurService, introuvable, refuse } from './erreurs.js';
 import { resolveurFichiers, resolveurFichiersEnAttente } from './fichiers-lecture.js';
+import { etatGere } from './sections-gerees.js';
 import { extraireLiens, rendreMarkdown, type ResolveurLiens } from './markdown.js';
 import type { Acteur, Audience, Role, SectionRow, SectionVue } from './types.js';
 
@@ -209,6 +210,8 @@ export function vueSection(
   };
   if (peutEcrire || (estGeree(s) && formeLiens === 'markdown')) vue.contenu = lecteurMJ ? s.contenu : s.contenu_public; // the source goes only to who may write it (AD-113)
   if (lecteurMJ) vue.audience = audienceDe(s);
+  const geree = etatGere(db, acteur, universId, s);
+  if (geree) vue.geree = geree;
   return vue;
 }
 

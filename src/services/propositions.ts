@@ -2,6 +2,7 @@ import { rendreMarkdown } from './markdown.js';
 import type { Db } from '../db/db.js';
 import { estGeree, exigerMJ, resolveurLiens, roleDe } from './droits.js';
 import { ErreurService, introuvable, invalide } from './erreurs.js';
+import { declarationOutil } from './outils.js';
 import { appliquerRecalcul } from './sections-gerees.js';
 import { ecrireContenu, MESSAGE_SECTION_GEREE, validerContenu } from './sections.js';
 import type { SectionRow } from './types.js';
@@ -16,6 +17,10 @@ export interface PropositionVue {
   ficheId: number;
   /** The session report it comes from; null for a recalculation proposal (AD-128). */
   crId: number | null;
+  /** `compte_rendu` (a session report) or `recalcul` (a managed section gone stale, AD-128). */
+  source: 'compte_rendu' | 'recalcul';
+  /** The tool's name for a recalculation proposal; null otherwise or when the tool is unknown. */
+  outilLibelle: string | null;
   /** Current content of the section, for the side-by-side view. */
   contenuActuel: string;
   contenuPropose: string;
@@ -46,6 +51,18 @@ function etatDe(p: PropositionRow, s: SectionRow): EtatProposition {
   return s.version !== p.version_origine ? 'perimee' : 'en_attente';
 }
 
+function libelleOutil(s: SectionRow): string | null {
+  if (sansOutil(s)) return null;
+  const [module, nom] = s.gere_par!.split('/');
+  try {
+    return declarationOutil(`${module}/${nom}`).libelle;
+  } catch (e) {
+    if (e instanceof ErreurService && e.code === 'introuvable') return null;
+    throw e;
+  }
+}
+const sansOutil = (s: SectionRow): boolean => !estGeree(s);
+
 function vue(db: Db, p: PropositionRow, s: SectionRow): PropositionVue {
   // The reader is the requesting GM, outside player mode: links read as they do on the sheet (AD-116).
   const acteur = { compteId: p.demandeur_id };
@@ -57,6 +74,8 @@ function vue(db: Db, p: PropositionRow, s: SectionRow): PropositionVue {
     sectionId: p.section_id,
     ficheId: s.fiche_id,
     crId: p.cr_id,
+    source: p.source_version === null ? 'compte_rendu' : 'recalcul',
+    outilLibelle: libelleOutil(s),
     contenuActuel: s.contenu,
     contenuPropose: p.contenu_propose,
     htmlActuel: html(s.contenu),

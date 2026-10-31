@@ -132,7 +132,7 @@ they replace the old `GET /api/univers/:id/systeme` and `…/systeme/gabarits*` 
 | `PATCH /api/campagnes/:cid` | `{statut}` (`en_preparation`, `active`, `terminee`) (GM of the campaign's universe) |
 | `GET\|POST /api/campagnes/:cid/scenarios`, `GET\|PUT /api/scenarios/:sid` | scenarios `{titre, contenu?}`; write `{titre, contenu, version}`, 409 `scenario_modifie` if stale (AD-62). GM only, 404 for anyone else (AD-22, AD-47) |
 | `GET\|POST /api/campagnes/:cid/taches`, `PUT /api/taches/:tid` | preparation `{categorie, libelle}`; check `{faite}`. GM only, 404 for anyone else |
-| `GET /api/univers/:id/propositions/:pid` | caller's proposal: `{id, universId, sectionId, ficheId, crId, contenuActuel, contenuPropose, versionOrigine, etat, creeLe, appliqueeLe}`; `etat`: `en_attente`, `perimee` or `appliquee` (AD-81). Requesting GM only, 404 for anyone else (AD-79) |
+| `GET /api/univers/:id/propositions/:pid` | caller's proposal: `{id, universId, sectionId, ficheId, crId, source (`compte_rendu` or `recalcul`), outilLibelle, contenuActuel, contenuPropose, versionOrigine, etat, creeLe, appliqueeLe}`; `etat`: `en_attente`, `perimee` or `appliquee` (AD-81). Requesting GM only, 404 for anyone else (AD-79) |
 | `POST /api/univers/:id/propositions/:pid/appliquer`, `.../abandonner` | apply returns the same view as `GET` (200); 409 `section_modifiee` or `proposition_appliquee`, nothing written. Abandon returns 204 (409 if applied). No creation route: the proposal originates from the assistant tool (AD-48) |
 | `GET /api/univers/:id/assistant`, `POST .../assistant/messages` | availability and message submission (details below, AD-73 to AD-78) |
 | `POST /api/univers/:id/comptes-rendus` | `{campagneId, titre, texte?}`; any member (AD-61); returns the sheet |

@@ -2,6 +2,7 @@ export type Role = 'mj' | 'joueur';
 
 export { TYPES_FICHE, type TypeFiche } from './types-fiche.js';
 import type { TypeFiche } from './types-fiche.js';
+import type { Geree } from './sections-gerees.js';
 
 /**
  * Who is asking. `modeJoueur` (AD-39) only restricts READS: the caller is read
@@ -76,6 +77,8 @@ export interface SectionVue {
   audience?: Audience;
   /** Attachments the caller sees; filled by a sheet read (AD-67). */
   piecesJointes?: PieceJointeVue[];
+  /** Only on a section managed by a tool (AD-128): the banner's state, never the source. */
+  geree?: Geree;
 }
 
 export interface PieceJointeVue {
