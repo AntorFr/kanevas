@@ -398,7 +398,7 @@ test('dépendances : activer A puis B, désactiver dans l\'ordre inverse', () =>
 
 // ----- semis -----
 
-test('semis du bouchon : systèmes, univers, rôles, responsables, aucun outil activé', async () => {
+test('semis du bouchon : systèmes, univers, rôles, responsables, seul swn/galaxie activé', async () => {
   const { semerBouchon } = await import('../bouchon/depart.js');
   const db = openDb(':memory:');
   migrate(db);
@@ -414,7 +414,9 @@ test('semis du bouchon : systèmes, univers, rôles, responsables, aucun outil a
     FROM systemes_jeu s LEFT JOIN comptes c ON c.id = s.responsable_id WHERE s.nom = ?`, nom)[0];
   assert.deepEqual(sys("Système d'essai"), { nom: "Système d'essai", resp: 'antor', us: "Univers voisin|Éneria d'essai" });
   assert.deepEqual(sys('Système ancien'), { nom: 'Système ancien', resp: null, us: 'Univers ancien' });
-  assert.equal(q('SELECT 1 FROM outils_systeme').length + q('SELECT 1 FROM outils_univers').length, 0);
+  // B-71 : le seul outil activé est la galaxie, au système ; aucun réglage ni activation d'univers
+  assert.deepEqual(q('SELECT outil FROM outils_systeme').map((x) => x.outil), ['swn/galaxie']);
+  assert.equal(q('SELECT 1 FROM outils_univers').length, 0);
   // comportement : responsable effectif / repli
   const id = (u: string) => q('SELECT id FROM comptes WHERE username = ?', u)[0].id as number;
   const sid = (n: string) => q('SELECT id FROM systemes_jeu WHERE nom = ?', n)[0].id as number;

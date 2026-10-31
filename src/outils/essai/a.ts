@@ -15,7 +15,7 @@ export const essaiA: DeclarationCarte = {
   cartes(db, acteur, universId) {
     const role = roleDe(db, universId, acteur.compteId);
     if (!role) return [];
-    const cartes = [{ titre: 'Carte visible', visible: true }, { titre: 'Carte MJ', visible: false }];
+    const cartes = [{ id: 1, titre: 'Carte visible', visible: true }, { id: 2, titre: 'Carte MJ', visible: false }];
     return vueMJ(role, acteur) ? cartes : cartes.filter((c) => c.visible);
   },
   outilsAssistant: ({ db, universId }) => [{

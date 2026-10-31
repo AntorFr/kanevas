@@ -1,7 +1,7 @@
 // Tests of kanevas-recherche-donnees, written from the exit criterion (B-38, AD-21, AD-118 (1,4,5,8)).
 // HTTP in stub mode, real SQLite.
 import assert from 'node:assert/strict';
-import { copyFileSync, mkdirSync, mkdtempSync, readdirSync } from 'node:fs';
+import { copyFileSync, mkdirSync, mkdtempSync, readdirSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
@@ -177,11 +177,15 @@ test('migration depuis 0013 : la recherche du titre existant trouve toujours la 
   db.exec('ALTER TABLE fiches ADD COLUMN illustration_fichier_id INTEGER');
   // Same for the owner of a system (0017), which the current services write.
   db.exec('ALTER TABLE systemes_jeu ADD COLUMN responsable_id INTEGER');
+  // The seed also enables the galaxy tool and sows its galaxy: scratch copies of the tables of 0017 and 0019.
+  const scratch = ['0017-outils.sql', '0019-swn-galaxie.sql'].map((f) => readFileSync(src + f, 'utf8').replace(/^ALTER TABLE .*$/m, '')).join('\n');
+  db.exec(scratch);
   semerBouchon(db);
+  db.exec('DROP TABLE swn_zones; DROP TABLE swn_routes; DROP TABLE swn_systemes; DROP TABLE swn_galaxies; DROP TABLE outils_univers; DROP TABLE outils_systeme');
   db.exec('DROP TABLE fichiers_attente; DROP TABLE fichiers_sections; DROP TABLE fichiers; ALTER TABLE fiches DROP COLUMN illustration_fichier_id; ALTER TABLE systemes_jeu DROP COLUMN responsable_id');
   const avant = db.prepare('SELECT id, titre FROM fiches ORDER BY id').all() as { id: number; titre: string }[];
   assert.ok(avant.length >= 5);
-  assert.deepEqual(migrate(db), [14, 15, 16, 17, 18]);
+  assert.deepEqual(migrate(db), [14, 15, 16, 17, 18, 19]);
   for (const f of avant) {
     const mot = f.titre.split(/[^\p{L}\p{N}]+/u)[0]!;
     const ids = (db.prepare('SELECT rowid FROM recherche_fiches WHERE recherche_fiches MATCH ?').all(`titre:${mot}*`) as Any[]).map((r) => r.rowid);

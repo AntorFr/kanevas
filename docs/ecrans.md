@@ -113,7 +113,7 @@ E-16 live outside universes: their cells describe the role in a universe attache
 | E-7 | everything | — | — |
 | E-8 | read, search, create; each sheet's thumbnail (its illustration, or the drawn fallback) | read, search; thumbnails of visible sheets | — |
 | E-9 | everything; managed section: « Ouvrir dans l'outil », « Recalculer », « Proposer un recalcul », « Voir la proposition » (never an editor); Player mode; relate and remove relations; set, replace, remove the illustration (outside Player mode); *(kanevas-import)* subtype, restrict a file to the GM, see a file awaiting import (tile) | readable sections; write permitted ones; readable relations (section and target); their attachments; see the illustration, never set it; a managed section: banner and state, « Ouvrir dans l'outil » (author) and « Recalculer » (author with the tool's usage and « L'auteur l'écrit »), never an editor; *(kanevas-import)* in a section they write, add a file or choose a visible one (both paths of B-55) and remove a reference; files under both guards; never set visibility (**hidden**); a file awaiting import: nothing (**hidden**) | — |
-| E-10 | everything | visible maps | — |
+| E-10 | everything, tool maps (the galaxy) included, with « MJ seul » on those not visible | visible maps, tool maps included when visible and the tool is visible to their role (otherwise absent) | — |
 | E-11 | everything; Player mode | read a visible map, open a sheet | — |
 | E-12 | GM catalogue (including image generation, if an image engine is available); proposals: only the requesting GM sees, applies, abandons them | Player catalogue (no image: the tool is absent, the assistant answers that it cannot); proposals: **hidden** (neither tool nor block; what is checked is the absence of a proposal and block, not the assistant's free text) | — |
 | E-13 | all session reports | readable session reports | — |
@@ -3157,7 +3157,7 @@ l'abonnement » button; status messages are in an `aria-live="polite"` region, e
 
 ## Screen details for `kanevas-outils` (scope)
 
-> **Built so far (`kanevas-outils-cadre`):** the « Outils » tab of E-14 and E-15 without catalogue (no « Importer un catalogue… », no « Supprimer les données de l'outil… »), the system's responsible and « Transférer la responsabilité », the sidebar's « Outils » section; E-21, E-22, import and removal are other slices and not built.
+> **Built so far (`kanevas-outils-cadre`):** the « Outils » tab of E-14 and E-15 without catalogue (no « Importer un catalogue… », no « Supprimer les données de l'outil… »), the system's responsible and « Transférer la responsabilité », the sidebar's « Outils » section; E-21 (read side: see « What `kanevas-outils-galaxie-lire` builds of E-21 and E-10 » below), E-22, import and removal are other slices and not built by `cadre`.
 >
 > Scope proposed on 2026-10-16 (`epic/kanevas-outils`). Needs B-57 to B-79, journeys P-17 to P-21,
 > decisions AD-121 to AD-137. Key screens, with finished mockups: **E-20** (`docs/maquettes/e20-outils.html`,
@@ -3264,6 +3264,57 @@ Criteria:
   map, journey and search.
 - Given two visits to the same anonymous hex, the same system is generated; changing the seed asks for
   confirmation stating that all undefined systems change position.
+
+**What `kanevas-outils-galaxie-lire` builds of E-21 and E-10** (the read side; the GM's writing gestures — « Placer un système », « Promouvoir », « Tracer une route », « Dessiner une zone », « Renommer », « Supprimer la galaxie… », « Graine… », « Document MJ… », the Player-mode toggle of the screen, the conflict state — are `kanevas-outils-galaxie-tenir`: the screen leaves no empty slot for them). Mockup: `docs/maquettes/e21-carte-galaxie.html` (the document wins). Architecture: `ARCHITECTURE.md`, « Detail of `kanevas-outils-galaxie-lire` » (G-1 to G-9). Format: web, desktop and phone/tablet (390 px is the proof width).
+
+*Entry.* **E-10** lists the galaxies of the universe among the maps, after the illustrated maps, with a « Galaxie » badge; a GM also sees the « MJ seul » badge (amber, as on the other maps) on one that is not visible; a player sees only visible ones; none when the tool is disabled or invisible to the role. The thumbnail is a neutral hex-grid tile (no image); with no galaxy readable the list says nothing more than for any universe without maps. The address is `/univers/:id/outils/swn/galaxie/:galaxieId` (`?systeme=<cle>` for a system link). The galaxy is reached through « Cartes » only, as the epic's framing says (the « Outils » sidebar section lists the tools that have no map); creating a galaxy (« Nouvelle carte ») is `kanevas-outils-galaxie-tenir` (B-71), this slice's galaxy comes from the stub seed.
+
+*Layout.* From 760 px: the map on the left, a 320 px column on the right holding, from top to bottom, the search field, the selected system's panel and the « Trajet » tool. Below 760 px: the map under the title (60 % of the viewport height), then the same three blocks stacked below it, in the same order; selecting a system scrolls its panel into view and leaves the map in place. The map has « + », « − » and « Recentrer » buttons (44 px) besides pinch and wheel; the map opens wide, then frames every system of the first blocks (unless a system link already centred it), and « Recentrer » frames them again; the legend (system, selected, departure/arrival, route, zone) folds into a « Légende » button on a phone.
+
+*Gestures.* Drag pans; wheel/pinch zooms; tapping a system selects it (panel + distance in hexagons from the reference system, written « 7 cases »); on a mouse, hovering shows the same name and distance in a tag. The reference system is the **departure** set by « Trajet depuis ici » in the panel, else by default the galaxy's first readable defined system (lowest identifier: the one the GM seeded first, « Port-Sel » in the trial galaxy), and the distance is written « 7 cases depuis Port-Sel » (the reference comes with the galaxy's answer, `reference`, so it is known even when its block is not loaded); selecting the reference itself shows no distance. Tapping an empty hexagon selects nothing; tapping a generated (undefined) system opens a panel « Système non défini » with its coordinates and its distance, and no journey button (a journey joins defined systems). The « Trajet » block has « Départ » and « Arrivée » (each a search field over readable systems, or « Trajet depuis ici » / « Trajet vers ici »), « Moteur » (1 to 6, default 2), « Routes » (« Toutes » / « Publiques », shown to a GM only) and « Calculer » (disabled until both ends are chosen, « Calcul… » while it runs). The result: « 7 cases · 4,5 jours », the list of stops, the highlighted path on the map; « Effacer » clears it. « Copier le lien » in the panel copies the address of the system and says « Lien copié » for two seconds (if the clipboard is refused: the address selected in a field).
+
+| Who | Sees and can do |
+|---|---|
+| Léa (Player, galaxy visible) | the map without secret systems, private routes or secret zones; search, measure, journey on public routes, copy a link; **no** writing control, no visibility badge, and no « Routes » choice (the control is absent, not disabled) |
+| Roxane (Player) | same as Léa |
+| Antor, Mira (GM) | what a player sees plus secret systems (badge « MJ seul »), private routes (dashed, « Privée ») and secret zones (« Secret »), « Routes: Toutes »; their writing controls arrive with `galaxie-tenir` |
+| A GM in Player mode | exactly what a player sees, with no « Routes » choice. In this slice the mode is the product's existing toggle (the one of E-9 and E-11, read as `?mode=joueur`); the screen only reads it, its own toggle in the header arrives with `galaxie-tenir`. On a hidden galaxy: the E-11 notice for Player mode, « Cette carte n'est pas visible des joueurs. » |
+| Teo (no role), a player on a hidden galaxy, an invisible tool | « Page introuvable. » (hidden, no distinction between *absent* and *forbidden*) |
+
+States (the shared ones are those of the E-21 table above; this slice adds):
+
+| State | What the user sees | Text |
+|---|---|---|
+| journey, no path | the result block, no highlighted path | « Aucun trajet avec ce moteur. » |
+| journey, same system | nothing computed | « Choisissez deux systèmes différents. » |
+| journey, an end missing | « Calculer » disabled, no text | — |
+| journey, computing | « Calcul… » on the button, the previous result stays | — |
+| journey or search, server error | under the field or the block, a « Réessayer » | « Le calcul a échoué. » / « La recherche a échoué. » |
+| connection lost | the view stays; « Calculer » and the search are disabled; « Copier le lien » still works | « Connexion perdue. » |
+| right removed while the map is open (galaxy hidden, tool disabled) | the next request answers 404: the whole page | « Page introuvable. » |
+| long content | notes wrap and the panel scrolls beyond 40 % of the viewport; the list of stops scrolls beyond 8 lines; long route and zone names wrap | — |
+| journey, system unreadable (address kept after a change of rights) | the field cleared | « Ce système n'existe plus ou n'est plus visible. » (one text for both) |
+| search, no match | under the field | « Aucun système ne correspond. » (never « masqué ») |
+| search, too short | nothing | — (from 2 characters) |
+| system link, unreadable | whole page | « Page introuvable. » |
+| link, readable | map centred on the system, panel open | — |
+| blocks loading | the grid and what is already loaded stay; missing blocks hatched | « Chargement de la carte… » once, at first load only |
+| zoomed out to the limit | « − » disabled | — |
+| 80-character name | truncated to 24 on the map, in full (wrapped) in the panel | — |
+
+Criteria:
+- Given Léa at 390 px on « Galaxie d'essai », when she taps « Vael », then the panel opens below the map with « Vael », « 7 cases depuis Port-Sel » (the default reference, no departure chosen) and « Trajet depuis ici ».
+- Given the trial galaxy, when Léa calculates Port-Sel → Vael, engine 2, public routes, then she reads « 7 cases · 4,5 jours » and the path is highlighted.
+- Given Léa and Antor asking Port-Sel → Hesper, engine 2, when each calculates (Antor with « Toutes »), then Antor reads « 6 cases · 4 jours » through the private route and Léa « 13 cases · 8,5 jours » through Vael, with no segment of the private route.
+- Given Léa, when she types « fant » in the search, then nothing is listed and the text is « Aucun système ne correspond. »; the map shows no route, zone or hexagon marked as hidden.
+- Given Antor in Player mode, when the map reloads, then the secret system, the private route and the secret zone are gone from map, search and journey, and block (−2,0), which overlaps the secret zone, is the one Léa sees.
+- Given a mouse, when the pointer rests on « Hesper » with « Vael » as departure, then a tag reads « Hesper · 6 cases ».
+- Given Teo (no role in the universe) or Léa on a hidden galaxy, when they open the address, then « Page introuvable. » and the tool's code is not requested (no request for the tool's code in the browser's log, for either).
+- Given Antor on the list of maps, then « Galaxie d'essai » carries the « Galaxie » badge; made invisible, it carries « MJ seul » for him and is absent for Léa.
+- Given Léa opening a galaxy by address while the tool is disabled, then « Page introuvable. ».
+- Given Léa pasting `…/galaxie/1?systeme=station-fantome`, then « Page introuvable. »; with `?systeme=vael`, the map is centred on « Vael » with its panel open.
+- Given the connection lost after the first view, then the displayed view stays, « Connexion perdue. » shows, « Calculer » and the search are disabled, and panning to unloaded blocks leaves them hatched with « Impossible de charger une partie de la carte. » and « Réessayer ».
+- Given the assistant asked « Combien de temps de Port-Sel à Vael avec un moteur 2 ? » by Léa, then, through the tool `swn_galaxie_trajet`, it answers with the screen's result « 7 cases · 4,5 jours » (proved on the tool in `src/outils/swn/routes.test.ts`; the stub's keyword assistant has no rule for it, so it is not playable in stub mode).
 
 ### E-22 — Ship designer
 
