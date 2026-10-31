@@ -1,0 +1,79 @@
+/* E-21 (docs/ecrans.md, e21-carte-galaxie.html): colours only through the tokens of ui/tokens.css. */
+.gx-entete { display: flex; align-items: center; gap: var(--e-3); flex-wrap: wrap; margin-bottom: var(--e-3); }
+.gx-entete h1 { margin: 0; overflow-wrap: anywhere; }
+.gx-sous { margin: 0; color: var(--texte-2); }
+.gx-corps { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--e-4); }
+.gx-carte { position: relative; height: 60vh; min-height: 280px; overflow: hidden; background: var(--surface); border: 1px solid var(--bord); border-radius: var(--rayon-panneau); touch-action: none; user-select: none; }
+.gx-svg { display: block; width: 100%; height: 100%; cursor: grab; touch-action: none; }
+.gx-svg:active { cursor: grabbing; }
+.gx-grille { fill: none; stroke: var(--bord); stroke-width: 1; }
+.gx-hachure { stroke: var(--bord-fort); stroke-width: 2; }
+.gx-manquant { stroke: none; opacity: .7; pointer-events: none; }
+.gx-genere { fill: none; stroke: var(--texte-3); stroke-width: 1; opacity: .6; pointer-events: none; }
+.gx-route line { stroke: var(--texte-2); stroke-width: 2; }
+.gx-route.privee line { stroke: var(--mj); }
+.gx-route text { fill: var(--mj); font-size: var(--t-12); }
+.gx-chemin { stroke: var(--accent); stroke-width: 5; stroke-linecap: round; stroke-linejoin: round; opacity: .85; pointer-events: none; }
+.gx-zone polygon { fill: var(--accent-fond); stroke: var(--accent); stroke-width: 1; pointer-events: none; }
+.gx-zone.secrete polygon { fill: var(--mj-trame); stroke: var(--mj); stroke-dasharray: 4 4; }
+.gx-zone text { fill: var(--texte-2); font-size: var(--t-12); pointer-events: none; }
+.gx-zone.gx-c-rouge polygon { fill: var(--danger-fond); stroke: var(--danger); }
+.gx-systeme { cursor: pointer; outline: none; }
+.gx-systeme text { fill: var(--texte); font-size: var(--t-12); pointer-events: none; paint-order: stroke; stroke: var(--surface); stroke-width: 3px; }
+.gx-zone-touche { fill: transparent; }
+.gx-point { fill: var(--accent); stroke: var(--surface); stroke-width: 2; }
+.gx-c-bleu .gx-point { fill: var(--accent); }
+.gx-c-vert .gx-point { fill: var(--table); }
+.gx-c-ambre .gx-point { fill: var(--mj); }
+.gx-c-rouge .gx-point { fill: var(--danger); }
+.gx-systeme.secret .gx-point { stroke: var(--mj); stroke-dasharray: 3 2; }
+.gx-halo { fill: none; stroke: var(--focus); stroke-width: 2; }
+.gx-depart { fill: none; stroke: var(--table); stroke-width: 2; }
+.gx-systeme:focus-visible .gx-halo, .gx-systeme:focus-visible .gx-point { stroke: var(--focus); stroke-width: 3; }
+.gx-chargement { position: absolute; left: var(--e-3); top: var(--e-3); margin: 0; padding: var(--e-1) var(--e-3); background: var(--surface-2); border-radius: var(--rayon-item); color: var(--texte-2); }
+.gx-etiquette { position: absolute; transform: translate(-50%, -100%); margin: 0; padding: var(--e-1) var(--e-2); background: var(--surface-3); color: var(--texte); border: 1px solid var(--bord-fort); border-radius: var(--rayon-item); font-size: var(--t-13); white-space: nowrap; pointer-events: none; }
+.gx-echec { position: absolute; left: var(--e-3); right: 64px; bottom: 56px; margin: 0; }
+.gx-zoom { position: absolute; right: var(--e-2); top: var(--e-2); display: flex; flex-direction: column; gap: var(--e-2); }
+.gx-zoom .bouton { min-width: 44px; min-height: 44px; justify-content: center; }
+.gx-legende-zone { position: absolute; left: var(--e-2); bottom: var(--e-2); display: flex; flex-direction: column-reverse; gap: var(--e-2); align-items: flex-start; }
+.gx-legende-bouton { min-height: 44px; }
+.gx-legende { display: none; list-style: none; margin: 0; padding: var(--e-2) var(--e-3); background: var(--surface-2); border: 1px solid var(--bord-fort); border-radius: var(--rayon-champ); font-size: var(--t-13); }
+.gx-legende.ouverte { display: block; }
+.gx-legende li { display: flex; align-items: center; gap: var(--e-2); }
+.gx-p { display: inline-block; width: 12px; height: 12px; border-radius: 50%; border: 2px solid var(--texte-3); }
+.gx-p.systeme { background: var(--accent); border-color: var(--surface); }
+.gx-p.choisi { border-color: var(--focus); }
+.gx-p.depart { border-color: var(--table); }
+.gx-p.route { border-radius: 0; border: 0; border-top: 2px solid var(--texte-2); height: 0; }
+.gx-p.zone { border-radius: 2px; border-color: var(--accent); background: var(--accent-fond); }
+.gx-colonne { display: flex; flex-direction: column; gap: var(--e-3); min-width: 0; }
+.gx-bloc { background: var(--surface); border: 1px solid var(--bord); border-radius: var(--rayon-panneau); padding: var(--e-3) var(--e-4); }
+.gx-bloc h2 { margin: 0 0 var(--e-2); font-size: var(--t-16); overflow-wrap: anywhere; }
+.gx-tete { display: flex; align-items: center; gap: var(--e-2); flex-wrap: wrap; }
+.gx-tete h2 { margin: 0; }
+.gx-panneau { max-height: 40vh; overflow-y: auto; }
+.gx-kv { display: grid; grid-template-columns: auto 1fr; gap: var(--e-1) var(--e-3); margin: var(--e-2) 0; }
+.gx-kv dt { color: var(--texte-2); font-weight: 600; }
+.gx-kv dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
+.gx-notes { white-space: pre-wrap; }
+.gx-routes { list-style: none; margin: 0; padding: 0; }
+.gx-actions { display: flex; flex-wrap: wrap; gap: var(--e-2); align-items: center; margin-top: var(--e-2); }
+.gx-actions .bouton { min-height: 44px; }
+.gx-note { color: var(--texte-2); margin: var(--e-1) 0; }
+.gx-lien { width: 100%; margin-top: var(--e-2); }
+.gx-champ { display: flex; flex-direction: column; gap: var(--e-1); margin-bottom: var(--e-2); }
+.gx-champ label, .gx-recherche label { color: var(--texte-2); font-size: var(--t-13); display: flex; gap: var(--e-1); align-items: center; }
+.gx-champ input, .gx-champ select, .gx-recherche input { min-height: 44px; background: var(--surface-2); color: var(--texte); border: 1px solid var(--bord-champ); border-radius: var(--rayon-champ); padding: 0 var(--e-3); font: inherit; }
+.gx-choisi { display: flex; justify-content: space-between; align-items: center; gap: var(--e-2); min-height: 44px; overflow-wrap: anywhere; }
+.gx-resultats { list-style: none; margin: var(--e-1) 0 0; padding: 0; border: 1px solid var(--bord); border-radius: var(--rayon-champ); max-height: 240px; overflow-y: auto; }
+.gx-resultats button { width: 100%; min-height: 44px; text-align: left; background: transparent; color: var(--texte); border: 0; padding: 0 var(--e-3); font: inherit; cursor: pointer; overflow-wrap: anywhere; }
+.gx-resultats button:hover { background: var(--surface-2); }
+.gx-resultat { margin-top: var(--e-3); }
+.gx-libelle { font-size: var(--t-16); margin: 0 0 var(--e-1); }
+.gx-etapes { margin: 0; padding-left: var(--e-5); max-height: calc(8 * 1.6em); overflow-y: auto; }
+@media (min-width: 760px) {
+  .gx-corps { grid-template-columns: minmax(0, 1fr) 320px; align-items: start; }
+  .gx-carte { height: 70vh; }
+  .gx-legende { display: block; }
+  .gx-legende-bouton { display: none; }
+}
