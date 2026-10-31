@@ -17,12 +17,14 @@ export function BlocCatalogue({ base, niveau, outil, catalogue, outils, ecriture
     <h3>Catalogue</h3>
     {levels.map((level) => {
       const summary = catalogue[level];
+      const counts = catalogue.natures.filter(({ nom }) => (summary.comptes[nom] ?? 0) > 0)
+        .map(({ nom, libelle, libellePluriel }) => {
+          const count = summary.comptes[nom]!;
+          return `${count} ${(count > 1 ? libellePluriel : libelle).toLocaleLowerCase('fr')}`;
+        }).join(' · ');
       return <p key={level} className="catalogue-version">
         Catalogue {level === 'systeme' ? 'du système' : 'de l’univers'} · {summary.version === null ? 'aucun catalogue importé' : <>
-          version <strong>{summary.version}</strong> · {catalogue.natures.map(({ nom, libelle, libellePluriel }) => {
-            const count = summary.comptes[nom] ?? 0;
-            return `${count} ${(count > 1 ? libellePluriel : libelle).toLocaleLowerCase('fr')}`;
-          }).join(' · ')}
+          version <strong>{summary.version}</strong>{counts && <> · {counts}</>}
         </>}
       </p>;
     })}
