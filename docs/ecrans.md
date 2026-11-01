@@ -100,13 +100,13 @@ E-16 vivent hors des univers : leurs cases disent le rôle dans un univers ratta
 | E-2 | créer | créer | créer |
 | E-3 | tout | sans préparation ni scénarios ; *(kanevas-scenarios)* « Campagnes en cours »: those he reads, with their status | — |
 | E-4 | tout | — | — (passe par E-5) |
-| E-5 | — | — | lister les univers et leurs membres ; ajouter, changer un rôle, retirer un membre ; voir l'état du jeton de l'assistant, connecter ou reconnecter l'abonnement |
+| E-5 | — | — | lister les univers et leurs membres ; ajouter, changer un rôle, retirer un membre ; voir l'état du jeton de l'assistant, connecter ou reconnecter l'abonnement ; *(kanevas-synchro)* régler la taille maximale d'un fond de carte (B-89) |
 | E-6 | *retired (`kanevas-scenarios`)* | — | — |
 | E-7 | *retired (`kanevas-scenarios`)* | — | — |
 | E-8 | lire, chercher, créer ; la vignette de chaque fiche (son illustration, ou le repli dessiné) ; *(kanevas-scenarios)* for the « Aventure » type: the status badge, the « Statut » filter, the status menu on a card or a tree line (outside player mode), the creation form with sub-type suggestions and « Visible des joueurs » ; *(kanevas-fiche-mj-seul)* the « MJ seul » badge on a sheet players cannot see, the « Visibilité » filter | lire, chercher ; la vignette des fiches qu'il voit ; *(kanevas-scenarios)* adventures: the status badge and the « Statut » filter; the status menu and « Nouvelle aventure » ; *(kanevas-fiche-mj-seul)* no « MJ seul » badge, no « Visibilité » filter (**caché**) | — |
 | E-9 | tout ; mode Joueur ; *(kanevas-scenarios)* on an adventure: the status menu in the header (outside player mode), the blocks « Préparation » (GM, outside player mode) and « Comptes-rendus » (« Nouveau compte-rendu ») ; *(kanevas-fiche-mj-seul)* the « MJ seul » badge in the header (GM mode) ; relier et retirer des relations ; poser, remplacer, retirer l'illustration (hors mode Joueur) ; *(kanevas-import)* sous-type, réserver un fichier au MJ, voir un fichier en attente d'import (tuile) | sections lisibles ; écrire celles permises ; *(kanevas-scenarios)* on an adventure: the status badge and « Comptes-rendus » (the CR he reads; « Nouveau compte-rendu » allowed); the status menu and « Préparation » (**hidden**) ; relations lisibles (section et cible) ; pièces jointes de celles-ci ; voir l'illustration, jamais la poser ; *(kanevas-fiche-mj-seul)* no « MJ seul » badge in the header (**caché**) ; *(kanevas-import)* dans une section qu'il écrit, ajouter un fichier ou en choisir un qu'il voit (les deux chemins de B-55) et retirer une référence ; fichiers sous double garde ; jamais régler une visibilité (**caché**) ; un fichier en attente d'import : rien (**caché**) | — |
 | E-10 | tout | cartes visibles | — |
-| E-11 | tout ; mode Joueur | lire une carte visible, ouvrir une fiche | — |
+| E-11 | tout ; mode Joueur ; *(kanevas-synchro)* écrire le texte, rattacher ou détacher une fiche | lire une carte visible, ouvrir une fiche ; *(kanevas-synchro)* lire le texte sans ses blocs MJ, ouvrir la fiche rattachée | — |
 | E-12 | catalogue MJ (dont générer une image, si un moteur d'images est disponible) ; propositions : le MJ demandeur seul les voit, les applique, les abandonne | catalogue Joueur (sans image : l'outil est absent, l'assistant répond qu'il ne peut pas) ; propositions : **caché** (ni outil ni bloc ; ce qu'on vérifie est l'absence de proposition et de bloc, pas le texte libre de l'assistant) | — |
 | E-13 | tous les CR ; *(kanevas-scenarios)* the adventure of each, « Aventure supprimée » when it is gone | les CR lisibles ; the adventure column only for an adventure he reads (**hidden** otherwise, deleted or closed alike) | — |
 | E-14 | tout ; « Supprimer l'univers » (*kanevas-import*) | — (« Page introuvable. ») | « Page introuvable. » |
@@ -1813,7 +1813,7 @@ graphe naît vide, ses fiches se choisissent sur la carte. « Annuler » ferme l
 formulaire reste proposé) ; Joueur « Aucune carte n'est visible pour l'instant. » ; titre vide ou
 trop long : « Erreur : le titre est obligatoire. » / « Erreur : 80 caractères au plus. » ; fond qui
 n'est pas une image PNG, JPEG, GIF ou WebP, ou vide : « Erreur : ce fichier n'est pas une image (PNG,
-JPEG, GIF ou WebP). » ; fond de plus de 25 Mo (réponse 413) : « Erreur : l'image dépasse 25 Mo. » ; échec de
+JPEG, GIF ou WebP). » ; fond de plus de 25 Mo (réponse 413) : « Erreur : l'image dépasse 25 Mo. » *(`kanevas-synchro`: « Image trop lourde : <N> Mo au plus. », N the instance setting, B-89)* ; échec de
 création : « La carte n'a pas pu être créée. Réessayez. », le formulaire garde sa saisie (le fond
 choisi aussi). Une vignette qui ne se charge pas montre le motif neutre.
 
@@ -1909,7 +1909,7 @@ lit pas, **404**. Un token dont la fiche devient illisible disparaît au chargem
 carte. » ; Joueur « Rien à voir sur cette carte pour l'instant. ». Graphe sans nœud : MJ « Aucune fiche.
 Ajoutez des fiches pour voir leurs liens. » ; Joueur « Rien à voir sur ce graphe pour l'instant. ».
 Fond : fichier non image ou vide « Erreur : ce fichier n'est pas une image (PNG, JPEG, GIF ou WebP). »,
-plus de 25 Mo « Erreur : l'image dépasse 25 Mo. ». 100 éléments : « Cette carte porte déjà 100
+plus de 25 Mo « Erreur : l'image dépasse 25 Mo. » *(`kanevas-synchro`: the limit and its message are B-89's)*. 100 éléments : « Cette carte porte déjà 100
 éléments. ». Fiche devenue inconnue à l'ajout : « Cette fiche n'existe plus. » (la liste de la fenêtre
 se recharge). Échec d'un déplacement, d'un retrait, d'un ajout, d'un renommage, d'une visibilité, d'un
 fond : « L'action n'a pas abouti. Réessayez. », et l'état d'avant revient (le token retourne à sa
@@ -2128,7 +2128,7 @@ jetons du moteur Markdown. Les textes déjà enregistrés avant la tranche ne so
 *Import* : `[[cle:<clé>|<texte>]]` dont la clé est connue de l'univers s'enregistre en `[[<id>|<texte>]]` ;
 sinon il reste tel quel, ligne de `liens` « en attente » (`cible_cle`). La création de la fiche qui porte
 la clé réécrit, **dans la même transaction**, les contenus qui l'attendent (`contenu`, `contenu_public`,
-lignes de `liens`) sans toucher à `version`, à `version_importee` ni à `modifie_le` de la section. Un
+lignes de `liens`) sans toucher à `version`, à `version_importee` *(dropped by `kanevas-synchro`)* ni à `modifie_le` de la section. Un
 rejeu compare le texte envoyé **après** y avoir résolu les clés connues : un lien déjà résolu rend
 « inchangée » (AD-104). Le lot compte « liens et références en attente » à sa clôture (`en_attente`).
 
@@ -2957,7 +2957,7 @@ toast « Adresse copiée. »). Deux panneaux.
    plus puis « … et 37 autres ». Un lot sans refus ni avertissement ne se déplie pas. Le jeton,
    l'adresse et les clés d'origine sont en chasse fixe (pile système `ui-monospace`, charte).
    File warnings also include « fichier vide : 0 octet, refusé », « visibilité modifiée
-   dans Kanevas : non écrasée » and « nom modifié dans Kanevas : non écrasé ». A pending
+   dans Kanevas : non écrasée » and « nom modifié dans Kanevas : non écrasé ». *(`kanevas-synchro`: the « modifié dans Kanevas » warnings disappear with B-48; a refusal by fingerprint reads « modifiée depuis la lecture ».)* A pending
    reference warns « fichier « img:quais » inconnu : référence en attente ».
 
 
@@ -3378,3 +3378,47 @@ this text is authoritative where they differ.
 - Each screen is reached by a journey: E-8/E-9 of adventures by P-3 and P-6 ; the CR block by
   P-4 ; E-3 by P-3 ; E-12 by P-3. Covered.
 - Each role has its column: GM and player above ; instance admin: nothing new. Covered.
+
+## Screens of `kanevas-synchro` (framing, 2026-11-01)
+
+No new screen: the epic is an API first (B-80 to B-87, read and written by a script, P-22); its
+human gestures land on four existing screens, in the product's visual direction (`docs/charte.md`).
+The slices draw them; nothing here invents a component.
+
+### E-11 Carte — text and attached sheet
+- Under the header, a line **« Rattachée à <titre> »** (a link to E-9) — GM: « Rattacher à une
+  fiche… » (the same search window as « Ajouter une fiche », one choice) and « Détacher »; without an
+  attachment the GM sees « Rattacher à une fiche… » alone, a player sees nothing. « Changer de
+  fiche… » replaces it in one gesture. An attached sheet the
+  reader cannot read is not named (AD-38): the line is absent for him.
+- Under the frame, the block **« Texte »**: rendered Markdown with its GM blocks (the shared renderer,
+  AD-96); GM: « Modifier » opens the section editor without the `[[` list — preview and GM block
+  only (links are not active in a map's text, AD-142) —, 5,000 characters at most (« 5 000 caractères
+  au plus. »); « Vider » asks no confirmation and can be undone by « Modifier »; empty: GM « Ajouter
+  un texte », player nothing. Two GMs saving the same version: the second sees « Le texte a changé
+  depuis votre lecture. » with « Recharger » (409 `carte_modifiee`, AD-142), his draft kept.
+- GM, imported map: its origin key under the title, GM-only, as on E-9 (B-50).
+- States: text save failed → « Impossible d'enregistrer le texte. » with « Réessayer », the draft
+  kept; background over the limit → « Image trop lourde : <N> Mo au plus. » (N the current setting).
+
+### E-9 Fiche — the block « Cartes »
+A sheet block (registry AD-124), after « Relations »: the maps attached to the sheet that the reader
+may read (GM: all, with « Cachée aux joueurs » on a hidden one; player: the visible ones), each a
+line « <titre> · <forme> » opening E-11. Absent when there is none for this reader.
+
+### E-5 Administration — the panel « Limites »
+Under « Jeton de l'assistant »: « Taille maximale d'un fond de carte » — a number in MB (1 to 500,
+75 by default), « Enregistrer »; the note « S'applique aux prochains envois ; les fonds déjà posés
+restent. » Refusal out of range: « Entre 1 et 500 Mo. »
+
+### E-18 Accès par API — the batch report
+The counters gain the nature **« cartes »**; a write refused by its fingerprint appears among the
+refusals with its key and « modifiée depuis la lecture ». The warnings « modifié dans Kanevas : non
+écrasé » disappear with B-48.
+
+### Cross-check
+- Each need has a screen or its script: B-80 to B-87, B-90, B-91 → the import API (E-18 shows the batches);
+  B-88 → E-11, E-9; B-89 → E-5, E-11.
+- Each journey reaches its screens: P-22 → E-18; P-23 → E-11, E-9, E-5.
+- Each role: GM (E-11, E-9, E-18), player (E-9, E-11 reading), admin (E-5).
+
