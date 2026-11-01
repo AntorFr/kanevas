@@ -268,6 +268,41 @@ test('hors univers : barre réduite, sans sélecteur ni items de l’univers', o
   assert.match(await texte(antor), /Mes univers/);
 });
 
+test('hors univers : la marque est l’image /favicon.svg de 30 px, sans sceau « K », le lien garde son nom', opts, async () => {
+  await antor.setViewportSize({ width: 1440, height: 900 });
+  await sur(antor, '/');
+  const marque = barre(antor).locator('a.marque');
+  await marque.waitFor();
+  assert.equal(await marque.getAttribute('aria-label'), 'Kanevas — Mes univers');
+  assert.equal(await marque.getAttribute('href'), '/');
+  assert.equal(await marque.locator('.sceau').count(), 0);
+  const img = marque.locator('img.logo');
+  assert.equal(await img.count(), 1);
+  assert.equal(await img.getAttribute('src'), '/favicon.svg');
+  assert.equal(await img.getAttribute('alt'), '');
+  const r = await img.evaluate((e: Any) => {
+    const s = getComputedStyle(e);
+    return { w: e.getBoundingClientRect().width, h: e.getBoundingClientRect().height, ok: e.complete && e.naturalWidth > 0, bg: s.backgroundColor, bord: s.borderTopWidth, flex: s.flexShrink };
+  });
+  assert.equal(r.w, 30);
+  assert.equal(r.h, 30);
+  assert.equal(r.ok, true, 'l’image est chargée');
+  assert.equal(r.bg, 'rgba(0, 0, 0, 0)');
+  assert.equal(r.bord, '0px');
+  assert.equal(r.flex, '0');
+  assert.equal(await marque.getByText('Kanevas', { exact: true }).count(), 1);
+});
+
+test('dans un univers : le sélecteur garde son sceau et la marque n’est plus là', opts, async () => {
+  await antor.setViewportSize({ width: 1440, height: 900 });
+  await sur(antor, urlUnivers);
+  const b = barre(antor);
+  await b.locator('.selecteur .sceau').first().waitFor();
+  assert.equal(await b.locator('.selecteur .sceau').first().innerText(), 'L');
+  assert.equal(await b.locator('a.marque').count(), 0);
+  assert.equal(await b.locator('img[src="/favicon.svg"]').count(), 0);
+});
+
 test('refus : une page d’univers inconnu a la barre réduite, sans nom d’univers', opts, async () => {
   await sur(antor, '/univers/9999/personnages');
   const b = barre(antor);

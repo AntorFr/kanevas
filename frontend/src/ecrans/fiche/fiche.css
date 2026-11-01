@@ -253,7 +253,8 @@ a.cadre-ill:focus-visible { outline-offset: 2px; border-radius: var(--rayon-pann
 .deplacer .resultat { position: relative; }
 .deplacer .resultat input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; }
 .deplacer .resultat .puce { width: 14px; height: 14px; flex: none; border-radius: 50%; box-shadow: inset 0 0 0 1.5px var(--bord-champ); }
-.deplacer .resultat:has(input:checked) { background: var(--accent-fond); }
+.deplacer .resultat:has(input:checked), .deplacer .ligne-res:has(input:checked) { background: var(--accent-fond); border-radius: var(--rayon-item); }
+.deplacer .ligne-res:has(input:checked) .resultat { background: none; }
 .deplacer .resultat:has(input:checked) .puce { box-shadow: inset 0 0 0 4px var(--accent); }
 .deplacer .resultat:has(input:focus-visible) { outline: 2px solid var(--accent); outline-offset: -2px; }
 @media (max-width: 760px) { .changer-type .resultat { min-height: 40px; } }
@@ -294,3 +295,41 @@ a.cadre-ill:focus-visible { outline-offset: 2px; border-radius: var(--rayon-pann
    (e09), the labels never wrap. */
 .menu-ajout-fichier .menu { min-width: 220px; }
 .menu-ajout-fichier .menu-entree { white-space: nowrap; }
+
+/* « Déplacer sous… » (E-9, kanevas-deplacer-arborescence): the two views, the path, the rows of the tree. */
+.fenetre:has(.deplacer) { display: flex; flex-direction: column; max-height: calc(100dvh - 2 * var(--e-5)); }
+.fenetre:has(.deplacer) > :not(.deplacer) { flex: none; }
+.deplacer { display: flex; flex-direction: column; min-height: 0; }
+.deplacer > * { flex-shrink: 0; }
+.deplacer .resultats { min-height: 0; flex-shrink: 1; overscroll-behavior-y: contain; }
+.deplacer .bascule-vue { align-self: flex-start; }
+.deplacer .chemin-deplacer { display: flex; align-items: center; flex-wrap: nowrap; gap: 4px; min-width: 0; font-size: var(--t-13); color: var(--texte-2); }
+.deplacer .chemin-deplacer .suite-chemin { display: inline-flex; align-items: center; gap: 4px; min-width: 0; }
+.deplacer .chemin-deplacer .maillon { min-width: 8ch; max-width: 22ch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: 0 4px; background: none; border: 0; border-radius: var(--rayon-item); color: inherit; font: inherit; cursor: pointer; }
+.deplacer .chemin-deplacer button.maillon:hover { background: var(--surface-2); }
+.deplacer .chemin-deplacer .maillon { flex: 0 4 auto; }
+.deplacer .chemin-deplacer [aria-current="location"] { color: var(--texte); cursor: default; flex: 0 1 auto; }
+.deplacer .chemin-deplacer .sep-chemin { flex: none; color: var(--texte-3); }
+.deplacer .chemin-deplacer .menu-declencheur { padding: 0 6px; }
+.deplacer .ligne-res { display: flex; align-items: center; }
+.deplacer .ligne-res .resultat { flex: 1; min-width: 0; }
+.deplacer .titre-res { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.deplacer .note-soi { flex: none; color: var(--texte-3); }
+.deplacer .resultat.soi { color: var(--texte-3); cursor: default; }
+.deplacer .resultat.soi .puce { visibility: hidden; }
+.deplacer .resultat.soi input { cursor: default; }
+.deplacer .resultat .type-option { flex: none; white-space: nowrap; }
+.deplacer .chevron-res { flex: none; display: inline-grid; place-items: center; width: 34px; height: 34px; background: none; border: 0; border-radius: var(--rayon-item); color: var(--texte-3); cursor: pointer; }
+.deplacer .sans-chevron { flex: none; width: 34px; }
+.deplacer .chevron-res:hover { background: var(--surface-2); color: var(--texte); }
+.deplacer .chevron-res[aria-disabled="true"] { opacity: .45; cursor: default; }
+.deplacer .nouveau-parent { margin: 0; font-size: var(--t-13); color: var(--texte-2); }
+.cache-lecteur { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+@media (max-width: 480px) {
+  .fenetre:has(.deplacer) { width: 100%; height: 100dvh; max-height: 100dvh; border-radius: 0; }
+  .deplacer { flex: 1; }
+  .deplacer .resultat { min-height: 44px; }
+  .deplacer .chevron-res { width: 44px; height: 44px; }
+  .deplacer .sans-chevron { width: 44px; }
+  .deplacer .resultats { flex: 1; max-height: none; }
+}

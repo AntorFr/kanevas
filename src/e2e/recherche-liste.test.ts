@@ -94,6 +94,7 @@ describe('kanevas-rc-ecran-recherche, E-8 recherche', { skip: skipBrowser }, () 
     assert.ok(/\/fiche\/\d+/.test(lea.url()));
     await lea.goBack();
     await attendre(lea);
+    await fini(lea);
     assert.ok(lea.url().endsWith('/fiches/personnages?q=aldric'));
     assert.equal(await champ(lea, 'les personnages').inputValue(), 'aldric');
     assert.deepEqual(await titres(lea), ['Maître Aldric']);

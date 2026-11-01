@@ -5,6 +5,7 @@ import { createServer as createHttpsServer, type Server } from 'node:https';
 import { createServer as createNetServer } from 'node:net';
 import { generateKeyPairSync, createSign } from 'node:crypto';
 import { test } from 'node:test';
+import { withStartupLock } from './harnais.test.js';
 
 // Black-box tests of B-28 (kanevas-socle): login leads to the identity
 // provider (Authelia), and its return answers the identifier of the connected
@@ -82,7 +83,12 @@ async function startFakeAuthelia(opts: { rejectToken?: boolean } = {}) {
   return { issuer, stop: () => server.close() };
 }
 
-async function startKanevas(extraEnv: Record<string, string>, fixedPort?: number) {
+// Startups share the harness lock: one server or browser launching at a time on the pod.
+function startKanevas(...args: Parameters<typeof startKanevasSansVerrou>): ReturnType<typeof startKanevasSansVerrou> {
+  return withStartupLock(() => startKanevasSansVerrou(...args));
+}
+
+async function startKanevasSansVerrou(extraEnv: Record<string, string>, fixedPort?: number) {
   const port = fixedPort ?? (await freePort());
   const env: NodeJS.ProcessEnv = { ...process.env, PORT: String(port), NODE_ENV: 'production', NODE_EXTRA_CA_CERTS: IDP_CERT_PATH };
   for (const k of ['APP_VERSION', 'OIDC_ISSUER', 'OIDC_CLIENT_ID', 'OIDC_CLIENT_SECRET', 'OIDC_REDIRECT_URI']) {

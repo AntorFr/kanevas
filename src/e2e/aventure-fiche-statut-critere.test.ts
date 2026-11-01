@@ -100,6 +100,7 @@ describe('kanevas-scenarios-type-fiche, E-9 aventure', { skip: skipBrowser }, ()
     await antor.getByRole('button', { name: /^Autres actions sur/ }).first().click();
     await antor.getByRole('menuitem', { name: 'Déplacer sous…' }).click();
     const d = antor.getByRole('dialog');
+    await d.getByRole('button', { name: 'Recherche' }).click();
     await d.getByLabel('Chercher une fiche').fill('Landes');
     await d.getByLabel(/^Les Landes noires/).first().check();
     await d.getByRole('button', { name: 'Déplacer', exact: true }).click();

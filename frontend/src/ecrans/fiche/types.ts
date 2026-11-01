@@ -82,6 +82,8 @@ export interface Enfant {
   titre: string;
   type: string;
   sousType: string | null;
+  /** At least one child the caller reads, every type (AD-129). */
+  aDesEnfants: boolean;
 }
 
 export interface PageEnfants {
