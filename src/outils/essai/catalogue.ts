@@ -76,10 +76,10 @@ const hull = { nom: z.string().min(1), masse: z.number().nonnegative(), cout: z.
 export const catalogueEssai: DeclarationCatalogue = {
   natures: [
     { nom: 'coques', libelle: 'Coque', libellePluriel: 'Coques', schema: z.strictObject(hull),
-      resume: (d) => `${d.masse} masse · ${d.cout} crédits` },
+      resume: (d) => `masse ${d.masse} · coût ${d.cout}` },
     { nom: 'armes', libelle: 'Arme', libellePluriel: 'Armes',
       schema: z.strictObject({ ...hull, portee: z.enum(['courte', 'longue']) }),
-      resume: (d) => `${d.masse} masse · ${d.cout} crédits · portée ${d.portee}` },
+      resume: (d) => `masse ${d.masse} · coût ${d.cout}` },
   ],
   stockage: stockageEssai,
 };
