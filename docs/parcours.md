@@ -150,7 +150,7 @@ Forme de la skill `exigences` ; chaque besoin cite les parcours qui le réalisen
 - **B-45** — *(`kanevas-synchro`: tokens belong to an account, every member creates them on E-23, they reach the universes chosen, B-94)* Un MJ crée un **jeton d'API** pour son univers depuis « Accès par API » (E-18) : un nom,
   une durée (30 jours par défaut, un an au plus) ; Kanevas le montre **une seule fois** ; le jeton agit
   avec les droits de ce MJ dans ce seul univers, et seulement sur l'API d'import. *(P-11, P-10)*
-- **B-46** — *(`kanevas-synchro`: a token is seen and revoked by its owner on E-23, B-94, and by the instance admin on E-5, B-95; a GM no longer sees nor revokes the tokens that reach his universe, and E-18 keeps the batches only; the 401 rule holds)* Un MJ voit les jetons de son univers (nom, créé par, dernier usage, expiration) et en
+- **B-46** — *(`kanevas-synchro`: a token is seen and revoked by its owner on E-23, B-94, and by the instance admin on E-5, B-95; a GM no longer sees nor revokes the tokens that reach his universe, and E-18 keeps the batches only; a revoked or expired token is still a 401; a lost role no longer refuses the token, it lowers it to the account's current rights there, AD-144)* Un MJ voit les jetons de son univers (nom, créé par, dernier usage, expiration) et en
   **révoque** un depuis E-18 ; si le jeton est révoqué, expiré, ou si son MJ a perdu ce rôle, alors
   toute requête qui le présente est refusée (401) et rien n'est écrit. *(P-11)*
 - **B-47** — *(`kanevas-synchro`: a replay writes every field it carries, B-86; « nothing changes if nothing changed » holds)* *(`kanevas-scenarios`: adventures go through this same route, B-61)* Quand un script pousse une fiche par l'API d'import avec une **clé d'origine**, Kanevas
@@ -311,8 +311,9 @@ thing at a time, and keeps the trace of who changed what (decisions of Monsieur,
   same sheet, never a duplicate. A key is `<type>:<name>` for a sheet born in Kanevas (lowercase
   letters, digits, dashes); an imported key keeps the import's form (1–200 characters). A key holds **at least one letter** —
   one made of digits alone would be read as an id: the import refuses it (`invalide`, field `cle`).
-  The key the GM types on E-9 is lowercase letters, digits, dashes and at most one `:`, 2–200
-  characters, with a letter. *(P-24, P-26)*
+  The key the GM types on E-9 is lowercase letters, digits, `-`, `_` and at most one `:`, 2–200
+  characters, with a letter (`compte_rendu:seance-3` is one). An imported key made of digits alone
+  before this epic is renamed `cle-<digits>` once, and its script must send the new one. *(P-24, P-26)*
 - **B-104** — Every **section** has a key too, unique in its sheet: an imported one keeps its origin
   key; one born in Kanevas receives one at creation from its title (« Histoire » → `histoire`), stable
   across renames. The import and the MCP address any section by it — a section born in Kanevas is no
@@ -334,8 +335,10 @@ thing at a time, and keeps the trace of who changed what (decisions of Monsieur,
   contributor (an account, or one of its tokens), by sheet or by action; a token reads it through the API and the MCP; a player does not.
   *(P-26)*
 - **B-103** — Within 30 days, a GM **restores** a previous value of a section or a header field from
-  the history; restoring is a write, and is itself in the history. It writes over the value the GM sees next to it:
-  if the section or the field changed since he opened the line, it is refused and he reloads — never
+  the history; restoring is a write, and is itself in the history. It covers a section and the header (title, type,
+  sub-type, parent, and the aliases and labels as a whole); a line « section créée » has no previous
+  value and no button. It writes over the value the GM sees next to it:
+  if the section or the field changed since he opened the line — rewritten, or deleted —, it is refused and he reloads — never
   over a write he has not seen. A deleted section comes back under its key, at the end of the sheet,
   unless a section took that key since (refused). A relation's previous value is shown, not
   restored. A deleted sheet stays **readable**
@@ -620,7 +623,7 @@ Il veut d'abord un essai jetable, puis la vraie base, sans doublon ni fuite.*
    modifiée dans Kanevas : non écrasée ». *(`kanevas-synchro`: these warnings disappear with B-48; a
    script that wants this protection sends the fingerprint it read, B-85; a file's visibility is not
    reset by a replay that omits it, B-91.)*
-10. **Accès par API** (E-18) : il révoque le jeton (P-11).
+10. **Accès par API** (E-18) : il révoque le jeton (P-11). *(`kanevas-synchro` : il le révoque sur « Mes jetons d'API », E-23, P-25.)*
 *Moment fort* : le second lot « Fiches : 501 inchangées » et rien de créé dans aucune autre
 nature — rejouer est sans risque.
 *Échec* : jeton mal copié ou révoqué — le script reçoit 401 « Jeton invalide. », rien n'est écrit,
@@ -632,6 +635,7 @@ c'était, puisque tout ce qui est déjà écrit sort « inchangé » ; une image
 raison dans le lot ; supprimer l'univers en tapant un autre nom — le bouton reste inactif ; une suppression qui échoue — « L'action n'a pas abouti. Réessayez. » dans la boîte, l'univers est intact (états : E-14).
 
 ### P-11 — Créer et révoquer un jeton d'API (MJ)
+*(`kanevas-synchro` : remplacé par P-25 — un jeton se crée et se révoque sur « Mes jetons d'API », E-23, par tout membre ; E-18 ne garde que les lots.)*
 1. **Accès par API** (E-18), depuis « Univers » ▸ « Accès par API » dans la barre (MJ seul).
 2. « Nouveau jeton » : un nom, une durée (7, 30, 90 jours ou un an) ; « Créer le jeton ».
 3. La fenêtre montre le jeton, « Copier », et « Il ne sera plus jamais affiché. » ; il la ferme.

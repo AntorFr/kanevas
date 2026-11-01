@@ -72,7 +72,7 @@ bascule existe (fiche, carte et, depuis `kanevas-import`, recherche E-17).
 | **E-16 Systèmes de jeu** | barre réduite ; menu du sélecteur d'univers | les systèmes rattachés aux univers du compte, chacun avec ceux de ses univers qui l'utilisent | P-8 |
 | **E-17 Recherche** *(kanevas-import)* | « Rechercher » de la barre ; `/` ; une étiquette touchée sur E-9 | chercher dans tous les types, titres, alias et sections lisibles ; filtrer par type et par étiquette ; *(kanevas-scenarios)* the status badge of an adventure result | P-12, P-10 |
 | **E-19 Médiathèque** *(kanevas-import)* | nav Médiathèque ; « Choisir dans la médiathèque » de l'éditeur et de l'illustration (E-9) | voir les fichiers (images, documents) ouverts au compte et où ils servent ; MJ : ajouter, renommer, régler la visibilité, supprimer | P-16, P-10 |
-| **E-18 Accès par API** *(kanevas-import)* | nav Univers ▸ Accès par API (MJ) | créer, lister, révoquer les jetons d'API de l'univers ; voir les lots d'import et leurs refus | P-10, P-11 |
+| **E-18 Accès par API** *(kanevas-import)* | nav Univers ▸ Accès par API (MJ) | créer, lister, révoquer les jetons d'API de l'univers ; voir les lots d'import et leurs refus *(`kanevas-synchro` : les lots seulement ; les jetons passent à E-23 et E-5)* | P-10, P-11 |
 
 Écrans **modifiés** par `kanevas-import` : **E-8** (types activés, vue en arbre, sous-type sur la
 carte, filtre « Sous-type », champ « Sous-type » de la création, illustration sous double garde),
@@ -2925,7 +2925,7 @@ mode Joueur (« Rechercher », une étiquette).
 *Maquette finie* : `docs/maquettes/e18-acces-api.html` (états `#etat-nouveau`, `#etat-jeton-montre`,
 `#etat-lot`, `#etat-vide`, `#etat-perdue`).
 
-Atteint par « Univers ▸ Accès par API » (`key-round`), MJ seul. Le bouton « Demander à Kanevas » de la maquette est celui de l'assistant, présent sur tous les écrans (B-26, E-12), sans rien de propre à E-18. Une introduction d'une ligne :
+*(`kanevas-synchro` : ce qui suit sur les jetons — liste, « Nouveau jeton », boîte du jeton montré, « Révoquer » — passe à E-23 et E-5 ; E-18 garde les lots, voir « E-18 Accès par API — batches only ».)* Atteint par « Univers ▸ Accès par API » (`key-round`), MJ seul. Le bouton « Demander à Kanevas » de la maquette est celui de l'assistant, présent sur tous les écrans (B-26, E-12), sans rien de propre à E-18. Une introduction d'une ligne :
 « Un jeton permet à un script d'écrire dans cet univers avec vos droits, par l'API d'import. » et
 l'**adresse de base** à copier (`https://kanevas.berard.me/api/import/v1/univers/<id>`, « Copier »,
 toast « Adresse copiée. »). Deux panneaux.
@@ -3460,8 +3460,8 @@ Address `/univers/eneria/historique`. Lines from the newest: date, contributor (
 faction:les-veilleurs ajoutée », « Fiche supprimée »). Filters: contributor (an account, or one of its tokens), sheet, action, period;
 100 lines at a time, then « Charger la suite ». A line under 30 days opens its detail: the previous value
 next to the current one, and « Restaurer cette version » for a section (a deleted one included) or a header field
-(confirmation; B-103); for a relation, the previous value without the button; for a deleted sheet, its
-sections as they were, read-only. Refusals: changed since the detail opened → « La fiche a changé depuis
+(confirmation; B-103); for a relation or a line « section créée », the previous value (if any) without the button; for a deleted sheet, its
+sections as they were, read-only. Refusals: changed or deleted since the detail opened → « La fiche a changé depuis
 l'affichage. » with « Recharger »; a deleted section whose key was taken since → « Une autre section
 porte maintenant cette clé. ». Over 30 days, the
 line has no detail: « Valeur précédente non conservée (plus de 30 jours). » Lines over 90 days are gone.
@@ -3470,7 +3470,7 @@ line has no detail: « Valeur précédente non conservée (plus de 30 jours). »
 - Under the title, for the GM: the key `lieu:nyx` with « Copier » and « Modifier la clé… » (a field,
   the warning « Les liens et outils qui citent lieu:nyx ne la retrouveront plus ; l'ancienne clé
   continuera de mener ici. »; refused if taken: « Cette clé existe déjà dans l'univers. »; out of form: « Lettres minuscules,
-  chiffres, tirets et un « : » au plus, avec au moins une lettre. »).
+  chiffres, - et _, un « : » au plus, avec au moins une lettre. »).
 - GM menu « ⋯ »: « Historique » opens E-24 filtered on the sheet.
 
 ### E-14 Paramètres de l'univers — its identifier (`kanevas-synchro`)

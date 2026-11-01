@@ -669,7 +669,7 @@ under the same rule as the GM view.
 
 **Physical and migration.** One migration (numbered at merge, AD-51): tokens re-homed (each existing
 token gets `compte_id` = its creator and one `jetons_univers` row at `ecriture`), keys generated
-(collisions suffixed `-2`, `-3`… in id order; an existing key without a letter becomes `cle-<digits>`, and a
+(collisions suffixed `-2`, `-3`… in id order; an existing key without a letter becomes `cle-<digits>`, its former form not kept in `cles_anciennes` (it would read as an id), and a
 universe name without a letter gives `univers-<id>`), triggers created, the history table empty at start.
 `better-sqlite3` runs triggers inside the write's transaction: a write and its history line are
 atomic.
