@@ -270,9 +270,11 @@ describe('kanevas-import-types : écrans', { skip: skipBrowser }, () => {
     const boite = antor.page.getByRole('dialog', { name: /Changer le type de/ });
     await boite.waitFor();
     assert.match(await boite.innerText(), /Autres types/);
-    assert.match(await boite.innerText(), /Le sous-type « Ressource » sera retiré\./);
+    // kanevas-sous-type-dialogue: on the current type the box says nothing of a removal, only once another type is chosen.
+    assert.doesNotMatch(await boite.innerText(), /sera retiré/);
     // Note is disabled in Lame d’Ébène: it sits under « Autres types ».
     await boite.getByRole('radio', { name: /Note/ }).click();
+    await boite.getByText('Le sous-type « Ressource » sera retiré.').waitFor();
     await antor.page.screenshot({ path: '/tmp/shots/changer-type.png' });
     await boite.getByRole('button', { name: 'Changer le type', exact: true }).click();
     await antor.page.getByText(rx('Type changé : Savoir → Note.')).waitFor();

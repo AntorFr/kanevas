@@ -104,7 +104,7 @@ E-16 vivent hors des univers : leurs cases disent le rôle dans un univers ratta
 | E-6 | *retired (`kanevas-scenarios`)* | — | — |
 | E-7 | *retired (`kanevas-scenarios`)* | — | — |
 | E-8 | lire, chercher, créer ; la vignette de chaque fiche (son illustration, ou le repli dessiné) ; *(kanevas-scenarios)* for the « Aventure » type: the status badge, the « Statut » filter, the status menu on a card or a tree line (outside player mode), the creation form with sub-type suggestions and « Visible des joueurs » ; *(kanevas-fiche-mj-seul)* the « MJ seul » badge on a sheet players cannot see, the « Visibilité » filter | lire, chercher ; la vignette des fiches qu'il voit ; *(kanevas-scenarios)* adventures: the status badge and the « Statut » filter; the status menu and « Nouvelle aventure » ; *(kanevas-fiche-mj-seul)* no « MJ seul » badge, no « Visibilité » filter (**caché**) | — |
-| E-9 | tout ; mode Joueur ; *(kanevas-scenarios)* on an adventure: the status menu in the header (outside player mode), the blocks « Préparation » (GM, outside player mode) and « Comptes-rendus » (« Nouveau compte-rendu ») ; *(kanevas-fiche-mj-seul)* the « MJ seul » badge in the header (GM mode) ; relier et retirer des relations ; poser, remplacer, retirer l'illustration (hors mode Joueur) ; *(kanevas-import)* sous-type, réserver un fichier au MJ, voir un fichier en attente d'import (tuile) | sections lisibles ; écrire celles permises ; *(kanevas-scenarios)* on an adventure: the status badge and « Comptes-rendus » (the CR he reads; « Nouveau compte-rendu » allowed); the status menu and « Préparation » (**hidden**) ; relations lisibles (section et cible) ; pièces jointes de celles-ci ; voir l'illustration, jamais la poser ; *(kanevas-fiche-mj-seul)* no « MJ seul » badge in the header (**caché**) ; *(kanevas-import)* dans une section qu'il écrit, ajouter un fichier ou en choisir un qu'il voit (les deux chemins de B-55) et retirer une référence ; fichiers sous double garde ; jamais régler une visibilité (**caché**) ; un fichier en attente d'import : rien (**caché**) | — |
+| E-9 | tout ; mode Joueur ; *(kanevas-scenarios)* on an adventure: the status menu in the header (outside player mode), the blocks « Préparation » (GM, outside player mode) and « Comptes-rendus » (« Nouveau compte-rendu ») ; *(kanevas-fiche-mj-seul)* the « MJ seul » badge in the header (GM mode) ; relier et retirer des relations ; poser, remplacer, retirer l'illustration (hors mode Joueur) ; *(kanevas-import)* sous-type, réserver un fichier au MJ, voir un fichier en attente d'import (tuile) ; *(kanevas-sous-type-dialogue)* change the sub-type alone from « Changer le type… » (outside player mode) | sections lisibles ; écrire celles permises ; *(kanevas-scenarios)* on an adventure: the status badge and « Comptes-rendus » (the CR he reads; « Nouveau compte-rendu » allowed); the status menu and « Préparation » (**hidden**) ; relations lisibles (section et cible) ; pièces jointes de celles-ci ; voir l'illustration, jamais la poser ; *(kanevas-fiche-mj-seul)* no « MJ seul » badge in the header (**caché**) ; *(kanevas-import)* dans une section qu'il écrit, ajouter un fichier ou en choisir un qu'il voit (les deux chemins de B-55) et retirer une référence ; fichiers sous double garde ; jamais régler une visibilité (**caché**) ; un fichier en attente d'import : rien (**caché**) ; *(kanevas-sous-type-dialogue)* the sub-type as plain text; changing it: **hidden** (no « ⋯ » menu, no box, no pencil, no Tab stop) | — |
 | E-10 | tout | cartes visibles | — |
 | E-11 | tout ; mode Joueur | lire une carte visible, ouvrir une fiche | — |
 | E-12 | catalogue MJ (dont générer une image, si un moteur d'images est disponible) ; propositions : le MJ demandeur seul les voit, les applique, les abandonne | catalogue Joueur (sans image : l'outil est absent, l'assistant répond qu'il ne peut pas) ; propositions : **caché** (ni outil ni bloc ; ce qu'on vérifie est l'absence de proposition et de bloc, pas le texte libre de l'assistant) | — |
@@ -2208,6 +2208,7 @@ seul qui ne connaît pas le mode Joueur : un lien cassé ou en attente y est tou
 ### E-9 Fiche — ce que `kanevas-import` change
 
 *Maquette finie* : `docs/maquettes/e09-fiche-importee.html` (« Port-Sel », états `#etat-fichier`, `#etat-joindre`, `#etat-sous-type`, `#etat-changer-type`, `#etat-joueur`,
+`#etat-sous-type-survol`, `#etat-sous-type-focus`, `#etat-changer-sous-type`, `#etat-changer-sous-type-echec`,
 `#etat-edition`, `#etat-supprimer`, `#etat-deplacer`).
 
 **En-tête.** Fil d'Ariane : univers › type › ancêtres **lisibles** du plus haut au plus proche ›
@@ -2232,7 +2233,9 @@ tout autre rôle que le MJ (hors mode Joueur) : ni le menu, ni la réponse de le
 
 - *Changer le type* : une liste des types de la liste du produit, activés d'abord, puis « Autres
   types » ; pour « Personnage », le choix PJ / PNJ ; et le champ « Sous-type » (vidé au changement de
-  type, puisqu'il est propre au type, avec les sous-types déjà employés pour le nouveau type). Le
+  type, puisqu'il est propre au type, avec les sous-types déjà employés pour le nouveau type ;
+  *(kanevas-sous-type-dialogue)* filled with the current sub-type while the type stays the current one, and then
+  the box changes the sub-type alone). Le
   compte-rendu n'y figure pas ; un compte-rendu n'a pas cette entrée.
 - *Déplacer sous…* : boîte « Déplacer « Port-Sel » sous… », deux vues (« Arborescence » par défaut, « Recherche » avec le champ « Chercher une fiche » et sa liste, tous types, fiches que le MJ lit), plus « Aucun parent » ; pied : « Annuler » puis « Déplacer » (à droite au bureau, côte à côte sur toute la largeur, 40 px de haut, au téléphone) ;
   la fiche et ses descendants ne sont jamais proposés (le refus « Une fiche ne peut pas être rangée sous l'un de ses
@@ -3065,10 +3068,29 @@ dans son infobulle. Un sous-type filtré qui n'a plus de fiche (renommée entre-
 
 **E-9 — sous-type en place.** Le MJ (hors mode Joueur) clique le sous-type du badge : champ, liste de
 complétion, Entrée enregistre, Échap annule (maquette `#etat-sous-type`). Enregistrement en cours : champ
-désactivé, « Enregistrement… ». Échec : « L'action n'a pas abouti. Réessayez. » sous le champ, la valeur
-tapée est gardée. Un champ vidé retire le sous-type (« Sous-type retiré. »). Connexion perdue : l'édition est désactivée (le sous-type reste lisible). Contenu long : 60 caractères, tronqués par
+désactivé (aucun libellé). Échec : « Le sous-type n’a pas été enregistré. Réessayez. » sous le champ, la valeur
+tapée est gardée. Saved: toast « Sous-type enregistré. »; an emptied field removes the sub-type (« Sous-type retiré. »). Connexion perdue : l'édition est désactivée (le sous-type reste lisible). Contenu long : 60 caractères, tronqués par
 une ellipse dans le badge, entiers dans l'infobulle. Un joueur lit le sous-type en
 simple texte ; une fiche sans sous-type ne montre rien à un joueur.
+*(kanevas-sous-type-dialogue)* **The sub-type shows that it is editable** (GM, outside player mode; mockup
+`#etat-sous-type-survol`). At rest, nothing changes. On hover of the sub-type, and when it receives
+keyboard focus (it is a button, reached with Tab after the type badge), it takes the
+`--surface-3` background (4 px radius) and a pencil icon (`pencil`, 12 px, decorative) appears
+after its text — on that background, the pencil and the « Sous-type » label turn `--texte-2` (the charter never puts
+`--texte-3` on `--surface-3`); the pointer is the text cursor; keyboard focus adds the charter's focus ring
+(2 px `--focus`, offset 2 px). The tooltip says « Modifier le sous-type »; the accessible name is
+« Sous-type : Port. Modifier le sous-type » (without a sub-type: « Ajouter un sous-type »).
+Where there is no hover (touch screen, `(hover: none)`), the pencil is always visible (charter,
+« Les actions secondaires se révèlent au survol et au focus »). A sheet without a sub-type: the label
+« Sous-type » in `--texte-3` at rest, with the same hover and the same pencil. The pencil does not push the title:
+its room (12 px plus a 4 px gap) is counted in the badge's width, which does not move on hover.
+A player, or the GM in player mode: no background, no pencil, no focus — the sub-type is text.
+Connection lost: the banner « Connexion perdue. Ce que vous voyez peut être dépassé ; rien n'est enregistré tant qu'elle ne revient pas. »; the sub-type is disabled (`disabled`): no background or
+pencil on hover, ordinary cursor, Tab no longer stops on it; everything returns with the connection.
+Saving in progress: not applicable to hover — the edit field replaces the sub-type while saving
+(field disabled, above), and the modal box « Changer le type… » covers it.
+Hover and keyboard focus are two distinct states: hover shows the background and the pencil, without the
+ring; keyboard focus shows them with the ring (mockup `#etat-sous-type-survol` and `#etat-sous-type-focus`).
 
 **E-9 — « Changer le type… »** (MJ, hors mode Joueur ; absent pour un compte-rendu) : maquette
 `e09-fiche-importee.html#etat-changer-type`. Boîte « Changer le type de « Port-Sel » » : une
@@ -3077,16 +3099,42 @@ désactivés (« désactivé » en `--texte-3`), le type courant coché et indiq
 « Personnage » ouvre le choix « PJ / PNJ » (PNJ par défaut) ; le champ « Sous-type » (vide d'office pour un
 autre type, avec les sous-types déjà employés pour le type choisi). Si la fiche a un sous-type, la boîte dit :
 « Le sous-type « Port » sera retiré. » tant que le champ n'est pas rempli. Boutons « Changer le
-type » (désactivé tant que le type reste l'actuel) et « Annuler ». Après : la fiche se recharge sous son
+type » et « Annuler » (pour le seul sous-type, voir plus bas : « Changer le type » est désactivé tant que rien ne diffère). Après : la fiche se recharge sous son
 nouveau type, toast « Type changé : Note → Savoir. », le fil d'Ariane et la barre suivent ; ses sections,
 relations, places sur une carte et propositions sont intactes.
+*(kanevas-sous-type-dialogue — changing the sub-type alone; mockup `#etat-changer-sous-type`.)* On
+opening, the current type is ticked and the « Sous-type » field holds the sheet's current sub-type
+(empty if it has none), with the completion of the current type. While the type stays the current one:
+- the box does not say « … sera retiré. » (that warning exists only for another type, if the sheet has a
+  sub-type and while the field stays empty);
+- the button stays **« Changer le type »** — the sub-type is part of the type (Monsieur's decision of
+  2026-10-29: a label « Enregistrer le sous-type » was proposed and refused); it is disabled while the field, trimmed,
+  equals the current sub-type (case counts: « capitaine » replaces « Capitaine »); it enables as soon as
+  it differs, an emptied field included when the sheet had a sub-type;
+- it sends `PATCH …/fiches/:fid` `{sousType}` (the trimmed text, or `null` for an empty field) — the
+  existing route (AD-120), nothing else; on success: the box closes, the header reloads, toast « Sous-type
+  enregistré. » (« Sous-type retiré. » for an empty field), the same as the in-badge edit;
+- PJ / PNJ is not shown, « Personnage (actuel) » included (it is not changed here, see below).
+Choosing another type gives the behaviour of a type change: field emptied, « … sera retiré. » if the
+sheet has a sub-type, button « Changer le type ». Going back to the current type restores the field with the
+current sub-type and the button « Changer le type » (disabled while nothing differs). Saving in
+progress: the button shows its waiting mark « … » (as every button) and the box is frozen. `PATCH` failure: « Le sous-type n'a
+pas changé. Réessayez. » in the box, which stays open with the input; 403: the box closes and
+« Vous ne pouvez plus modifier cette fiche. » shows; 404: « Introuvable. » in the box; connection lost:
+the banner « Connexion perdue. Ce que vous voyez peut être dépassé ; rien n'est enregistré tant qu'elle ne revient pas. », button disabled, input kept. A sub-type over 60 characters: « Erreur : 60 caractères au plus. »
+under the field, nothing is sent. Loading: while the types list is not read, the « Sous-type » field is
+already there, holding the current sub-type and editable, with « Chargement des types… » shown, and the button stays
+disabled even if the field already differs; it enables only once the list is read (its failure: « Impossible de charger les types. »,
+above, button disabled). No empty state of its own: the field is filled from the sheet already read, and the types list is
+never empty. Failure drawn: mockup `#etat-changer-sous-type-echec`. A Player has neither the « ⋯ » menu nor
+the box (hidden, as for « Changer le type… »).
 Le choix PJ / PNJ n'apparaît que pour **devenir** un personnage ; le PJ / PNJ d'un personnage existant ne se
 change pas ici. Chargement : tant que la liste des types n'est pas lue, la liste de la boîte dit « Chargement des
 types… » et « Changer le type » reste désactivé. Contenu long : un titre de 120 caractères passe à la ligne dans
 le titre de la boîte ; un sous-type de 60 caractères est tronqué par une ellipse dans le badge, entier dans son
 infobulle et dans le champ. Échecs : « Le type n'a pas changé. Réessayez. » dans la boîte (elle reste ouverte) ; un MJ qui n'a plus de
 rôle : « Vous ne pouvez plus modifier cette fiche. » ; connexion perdue : bandeau, bouton désactivé.
-Enregistrement en cours : le bouton passe à « Enregistrement… » et la boîte est figée. Échec de lecture de la
+Enregistrement en cours : le bouton passe à « … » et la boîte est figée. Échec de lecture de la
 liste des types : « Impossible de charger les types. » et « Réessayer » à la place de la liste, bouton désactivé.
 La liste des 14 types défile dans la boîte (hauteur bornée) au bureau comme au téléphone, où la boîte occupe
 l'écran. Un sous-type de plus de 60 caractères saisi dans le champ : « Erreur : 60 caractères au plus. ». Le
@@ -3108,6 +3156,36 @@ La maquette `e08-liste-fiches.html` n'est pas redessinée pour le sous-type : le
 (sous le titre de la carte, `--texte-3` ; filtre à côté de la recherche).
 
 *Critères de la tranche* (les critères d'écran ci-dessus restent les siens).
+- *(kanevas-sous-type-dialogue)* Given an NPC « Capitaine » in Lame d'Ébène, when Antor (GM, outside player
+  mode) opens « Changer le type… », leaves « Personnage (actuel) », replaces the sub-type with « Amiral » and
+  clicks « Changer le type », then the box closes, the toast says « Sous-type enregistré. » and the badge
+  shows « PNJ · Amiral »; the sheet is still an NPC, under « Personnages ».
+- *(kanevas-sous-type-dialogue)* Given that same NPC, when Antor opens « Changer le type… », then the field
+  holds « Capitaine », the « Changer le type » button is disabled and the box does not say « … sera
+  retiré. »; it stays so while neither the type nor the sub-type changes, and enables as soon as he empties the field.
+- *(kanevas-sous-type-dialogue)* Given that same NPC, when Antor empties the field and saves, then the toast
+  says « Sous-type retiré. » and the badge shows « PNJ » alone.
+- *(kanevas-sous-type-dialogue)* Given that same NPC, when Antor picks « Lieu » then goes back to
+  « Personnage », then the field holds « Capitaine » again, « Changer le type » is disabled and the warning is gone;
+  picking « Lieu » had emptied the field and shown « Le sous-type « Capitaine » sera retiré. ».
+- *(kanevas-sous-type-dialogue)* Given Antor on that NPC, when he hovers the sub-type « Capitaine » of the
+  badge, then reaches it with the Tab key, then the `--surface-3` background and the pencil appear (and,
+  with the keyboard, the focus ring); Enter opens the in-place edit. Given Léa (player), when she
+  hovers « Capitaine », then nothing changes and Tab does not stop on it.
+- *(kanevas-sous-type-dialogue)* Given the NPC « Capitaine » and a `PATCH` that fails (500), when Antor
+  saves « Amiral » from « Changer le type… », then the box stays open with « Le sous-type n'a pas
+  changé. Réessayez. », the field still holds « Amiral », and the badge still says « PNJ · Capitaine ».
+- *(kanevas-sous-type-dialogue)* Given the connection lost, when Antor has the box open with « Amiral »
+  typed, then the banner « Connexion perdue. Ce que vous voyez peut être dépassé ; rien n'est enregistré tant
+  qu'elle ne revient pas. » shows, « Changer le type » is disabled and the input stays; with the box
+  closed, the badge's sub-type is disabled: no background or pencil on hover, Tab does not stop on it.
+- *(kanevas-sous-type-dialogue)* Given the types list not yet read, when Antor opens « Changer le
+  type… », then the « Sous-type » field is already there holding « Capitaine » and can be typed in,
+  « Chargement des types… » shows, and « Changer le type » stays disabled — even once « Amiral » replaces
+  « Capitaine » — until the list is read.
+- *(kanevas-sous-type-dialogue)* Given the box open on that NPC, when Antor types 61 characters and
+  saves, then « Erreur : 60 caractères au plus. » shows under the field, nothing is sent and the badge
+  still says « PNJ · Capitaine ».
 - Étant donné « Les Cristaux d'Ombre » (Savoir · Ressource), quand Antor la passe en Note, alors elle est
   dans « Notes » sans sous-type, et la boîte l'avait annoncé.
 - Étant donné « Lame d'Ébène » où « Note » est désactivé, quand Antor ouvre « Changer le type… » d'une
