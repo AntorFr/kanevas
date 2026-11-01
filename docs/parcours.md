@@ -269,10 +269,12 @@ thing at a time, and keeps the trace of who changed what (decisions of Monsieur,
 - **B-86** — Nothing is removed by omission (AD-104 holds): a full `PUT` of a sheet writes what it
   carries and leaves what it does not name; removing is a targeted gesture (B-83, B-84, `DELETE`
   of a sheet). *(P-22)*
-- **B-87** — `[À TRANCHER : le fond — la demande d'origine le prenait dans la médiathèque par clé de fichier ; Monsieur a relevé le plafond (75 Mo) sans choisir ; recommandation : envoyé à part, comme aujourd'hui ; ce qui la renverserait : ne pas vouloir renvoyer 300 Mo d'images déjà dans la médiathèque]` A script imports an **illustrated map** by origin key: title, visible to the players or
+- **B-87** — A script imports an **illustrated map** by origin key: title, visible to the players or
   not, background image, the sheet it belongs to (a key), a short text in Markdown with GM blocks.
   An unknown sheet key is refused with its field (`fiche`), counted, and nothing is written;
-  `fiche` absent leaves the attachment, `null` detaches. Replaying it creates no duplicate; it counts in the batch; it accepts the fingerprint like any
+  `fiche` absent leaves the attachment, `null` detaches. The background travels with the map, not
+  taken from the media library; on an existing map, `fond` absent leaves the background, so a script
+  that reads the background's SHA-256 (B-90) sends it only when it changed. Replaying it creates no duplicate; it counts in the batch; it accepts the fingerprint like any
   write. Its tokens are not imported. *(P-22)*
 - **B-88** — A GM **attaches a map to a sheet** (a place, a ship, an adventure…), changes that sheet
   or detaches it, and writes, rewrites or empties its **text** on E-11; the sheet shows, on E-9, the maps attached to it that the reader may read; a
