@@ -365,3 +365,20 @@ test('verifierDeclaration : natures de même nom, noms réservés', () => {
   assert.throws(() => verifierDeclaration(module([])));
   assert.doesNotThrow(() => verifierDeclaration(module(catalogueEssai.natures)));
 });
+
+test('résumé E-20 : « masse N · coût N » pour les deux natures, zéro compris, sans portée ni crédits', () => {
+  const { db, antor, sys, u1 } = monde();
+  const f = copie();
+  f.coques = [...f.coques, { cle: 'zero-coque', nom: 'Zéro', masse: 0, cout: 0 }];
+  f.armes = [...f.armes, { cle: 'zero-arme', nom: 'Zéro arme', masse: 0, cout: 0, portee: 'longue' }];
+  c.appliquerCatalogue(db, A(antor), S(sys), OUTIL, f);
+  const lu = (nature: string, cle: string) =>
+    c.lireCatalogue(db, A(antor), S(sys), OUTIL, { nature }).elements.find((e) => e.cle === cle)!.resume;
+  assert.equal(lu('coques', 'cargo'), 'masse 20 · coût 80');
+  assert.equal(lu('coques', 'zero-coque'), 'masse 0 · coût 0');
+  assert.equal(lu('armes', 'laser'), 'masse 2 · coût 12');
+  assert.equal(lu('armes', 'laser-lourd'), 'masse 5 · coût 28');
+  assert.equal(lu('armes', 'zero-arme'), 'masse 0 · coût 0');
+  const gestion = c.lireCatalogueGestion(db, A(antor), u1, OUTIL, { nature: 'armes' }) as any;
+  assert.ok(gestion.elements.every((e: any) => !/portée|crédits/.test(e.resume)));
+});
