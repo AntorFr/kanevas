@@ -3,7 +3,7 @@ import { createHash, randomBytes } from 'node:crypto';
 import type { Db } from '../db/db.js';
 import { exigerMJ, roleDe } from './droits.js';
 import { ErreurService, introuvable, invalide } from './erreurs.js';
-import { applicable } from '../outils/declaration.js';
+import { applicable, type DeclarationOutil } from '../outils/declaration.js';
 import { modulesActifs } from '../outils/registre.js';
 
 /** Allowed lifetimes in days (AD-103); 30 is the default of the screen. */
@@ -33,7 +33,13 @@ export interface JetonListe extends Omit<Jeton, 'outils'> {
   outils: { cle: string; libelle: string }[];
 }
 
-export interface OutilProposable { cle: string; libelle: string; module: string }
+export interface OutilProposable {
+  cle: string;
+  libelle: string;
+  module: string;
+  libelleModule: string;
+  type: DeclarationOutil['type'];
+}
 
 interface JetonRow {
   id: number;
@@ -72,7 +78,9 @@ function proposables(db: Db, universId: number): OutilProposable[] {
     .get(universId) as { nom: string } | undefined;
   if (!s) return [];
   return modulesActifs().flatMap((m) =>
-    m.outils.filter((o) => o.catalogue && applicable(o, s.nom)).map((o) => ({ cle: o.cle, libelle: o.libelle, module: m.nom })));
+    m.outils.filter((o) => o.catalogue && applicable(o, s.nom)).map((o) => ({
+      cle: o.cle, libelle: o.libelle, module: m.nom, libelleModule: m.libelle, type: o.type,
+    })));
 }
 
 /** The tools a GM can put in a token's scope on E-18 (K-6). GM only. */
