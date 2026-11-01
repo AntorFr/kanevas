@@ -111,7 +111,7 @@ Forme de la skill `exigences` ; chaque besoin cite les parcours qui le réalisen
 - **B-39** — Un MJ change le **titre**, le **type** et le **parent** d'une fiche après sa création,
   depuis son en-tête (E-9). Le type d'un compte-rendu ne change pas, et une fiche ne devient pas un
   compte-rendu. *(P-14)*
-- **B-40** — Un MJ **supprime une fiche** depuis son en-tête (E-9), après confirmation qui nomme ce
+- **B-40** — *(`kanevas-synchro`: a deletion now leaves a history line, 90 days, and its content stays readable 30 days, B-102, B-103 — decision of Monsieur, 2026-11-01)* Un MJ **supprime une fiche** depuis son en-tête (E-9), après confirmation qui nomme ce
   qui part avec elle (sections et leurs références de fichier, relations qui la visent, places sur les
   cartes ; les fichiers eux-mêmes restent dans la médiathèque) ; ses
   enfants remontent sous son parent ; les liens qui la visaient deviennent des liens cassés (B-33).
@@ -147,10 +147,10 @@ Forme de la skill `exigences` ; chaque besoin cite les parcours qui le réalisen
   du 2026-10-11)*
 
 ### Import et accès par API (`kanevas-import`)
-- **B-45** — Un MJ crée un **jeton d'API** pour son univers depuis « Accès par API » (E-18) : un nom,
+- **B-45** — *(`kanevas-synchro`: tokens belong to an account, every member creates them on E-23, they reach the universes chosen, B-94)* Un MJ crée un **jeton d'API** pour son univers depuis « Accès par API » (E-18) : un nom,
   une durée (30 jours par défaut, un an au plus) ; Kanevas le montre **une seule fois** ; le jeton agit
   avec les droits de ce MJ dans ce seul univers, et seulement sur l'API d'import. *(P-11, P-10)*
-- **B-46** — Un MJ voit les jetons de son univers (nom, créé par, dernier usage, expiration) et en
+- **B-46** — *(`kanevas-synchro`: the GM sees the tokens that reach the universe and withdraws their access, B-95; the owner revokes, B-94)* Un MJ voit les jetons de son univers (nom, créé par, dernier usage, expiration) et en
   **révoque** un depuis E-18 ; si le jeton est révoqué, expiré, ou si son MJ a perdu ce rôle, alors
   toute requête qui le présente est refusée (401) et rien n'est écrit. *(P-11)*
 - **B-47** — *(`kanevas-synchro`: a replay writes every field it carries, B-86; « nothing changes if nothing changed » holds)* *(`kanevas-scenarios`: adventures go through this same route, B-61)* Quand un script pousse une fiche par l'API d'import avec une **clé d'origine**, Kanevas
@@ -220,12 +220,15 @@ Forme de la skill `exigences` ; chaque besoin cite les parcours qui le réalisen
   pseudo-terminal), E-5 existe, et aujourd'hui poser ou renouveler le jeton passe par OpenBao et un
   redémarrage. La tranche n'a aucun lien avec l'import : elle part seule, la dernière.
 
-### Synchronising with a source base (`kanevas-synchro`, 2026-11-01)
-*Kanevas is the source of truth. The import tool remembers what it sent; Kanevas tells it that
-something moved, and lets it write one thing at a time (decisions of Monsieur, 2026-11-01).*
+### Kanevas as the main source (`kanevas-synchro`, 2026-11-01)
+*Kanevas is the source of truth. The tools around it — an import script, an agent working with
+Monsieur — remember what they sent; Kanevas tells them that something moved, lets them write one
+thing at a time, and keeps the trace of who changed what (decisions of Monsieur, 2026-11-01).*
 - **B-80** — A script reads, with an import token, the **list of the universe's sheets**: for each,
   its id, its origin key (none for a sheet born in Kanevas), its type, its title, its
-  **fingerprint** and its **header fingerprint** (the header fields alone); a thousand at a time, in a stable order. *(P-22)*
+  **fingerprint** and its **header fingerprint** (the header fields alone), and its **date of last
+  change**; the script may ask only the sheets changed since a date (`depuis`), a date that moves on
+  every write to what the read returns (B-93); a thousand at a time, in a stable order. *(P-22)*
 - **B-81** — A script reads **one sheet** by its origin key or its id: its header fields (the typed ones and the fields its type carries in its
   charge — an adventure's status, the mark « disparu » —, PJ, origin creation date), its
   sections (origin key or none, title, Markdown content, audience, keys of the joined files, managed
@@ -241,13 +244,19 @@ something moved, and lets it write one thing at a time (decisions of Monsieur, 2
 - **B-91** — A replay of a file writes only the fields it sends: a file's visibility is set to
   `joueurs` by default **at its creation only**; a replay without `visibilite` leaves the one Kanevas
   holds, so a file reserved to the GM in Kanevas never reopens by omission. *(P-22)*
+- **B-92** — A script **exports a whole universe in one call**: one line per sheet in the form of
+  B-81, one per file and per map in the form of B-90, as they are at one instant; a file's bytes
+  are downloaded apart, one by one, with the same token. *(P-24)*
+- **B-93** — The **date of last change** of a sheet moves on every write to anything its read
+  returns (header, sections, relations, aliases, labels, parent, illustration), whoever writes;
+  a false alarm is allowed (a waiting link that resolves), a missed change is not. *(P-22, P-24)*
 - **B-82** — A script changes **only the header fields it sends** of a sheet (title, type,
   sub-type, PJ, parent, aliases, labels, illustration, origin creation date, and the charge fields
   of its type: an adventure's status, « disparu »); the others stay. *(P-22)*
 - **B-83** — A script **creates, rewrites or deletes one section** of a sheet, named by its
   origin key, without sending the rest of the sheet. Deleting it removes its relations and its file
   joins; the files stay in the media library. A section born in Kanevas (no origin key) and a section
-  managed by a tool are never written by the import: refused, with their code. *(P-22)*
+  managed by a tool are never written by the import: refused, with their code. *(P-22)* *(`kanevas-synchro`, extension: every section has a key, B-104 — only a tool-managed section stays refused.)*
 - **B-84** — A script **adds, modifies (nature, qualifier) or removes one relation**, the existing
   one named by the id the read gave. *(P-22)*
 - **B-85** — Every import write may carry the **fingerprint the script read**. If it is no longer
@@ -265,6 +274,49 @@ something moved, and lets it write one thing at a time (decisions of Monsieur, 2
 - **B-88** — A GM **attaches a map to a sheet** (a place, a ship, an adventure…), changes that sheet
   or detaches it, and writes, rewrites or empties its **text** on E-11; the sheet shows, on E-9, the maps attached to it that the reader may read; a
   player reads the text without its GM blocks. *(P-23)*
+- **B-94** — Every member (GM or player) manages **their own API tokens** on « Mes jetons d'API »
+  (E-23): a name, a lifetime (7, 30, 90 or 365 days), and the universes it reaches — either a list,
+  each in « lecture » or « lecture + écriture », or « tous mes univers » at one level, which also
+  covers every universe the account joins later. The token is shown once; its accesses can be
+  changed afterwards; it can be revoked. A token never exceeds its account's rights: a player's token
+  in « lecture + écriture » writes only where that player may write. *(P-25)*
+- **B-95** — A GM sees, on « Accès par API » (E-18), **every token that reaches the universe**
+  (name, owner, level, last use) and **withdraws a token's access to this universe**; the token keeps
+  its other universes, and its owner sees this one marked « retiré par le MJ ». *(P-25)*
+- **B-96** — Everything a token writes is **attributed to its account**, naming the token. *(P-26)*
+- **B-97** — An agent reaches Kanevas through an **MCP server** (`/mcp`) with an API token: it lists
+  the universes of the token, searches, reads a sheet or a section, lists the sheets that mention one,
+  and — with « lecture + écriture » — writes through the targeted writes of B-82 to B-84, each with
+  its precondition (B-85), directly. The tools are the assistant's (one catalogue); image generation
+  is not offered. *(P-24)*
+- **B-98** — A **text search returns passages**: for each match, the sheet, the section and an
+  excerpt around the words (« …les troupes de **Sevrak** franchissent le col… »), paginated; a reader
+  never matches a word that sits only in a GM block he cannot read. *(P-24)*
+- **B-99** — Every sheet has a **readable key** `type:name`, unique in the universe: an imported
+  sheet keeps its origin key; a sheet born in Kanevas receives one at creation from its type and
+  title (« Ténébria », a place → `lieu:tenebria`; taken → `lieu:tenebria-2`). Renaming the sheet or
+  changing its type does not change it. The GM sees it on E-9 and changes it, warned that what cites
+  it will no longer find it; a former key keeps leading to the sheet. *(P-24, P-26)*
+- **B-104** — Every **section** has a key too, unique in its sheet: an imported one keeps its origin
+  key; one born in Kanevas receives one at creation from its title (« Histoire » → `histoire`), stable
+  across renames. The import and the MCP address any section by it — a section born in Kanevas is no
+  longer out of their reach (B-83 amended); a section managed by a tool stays refused. *(P-24)*
+- **B-100** — Every universe has a **readable identifier** (`eneria`), unique on the instance, set at
+  creation from its name and changed by its GM on E-14; a former one keeps leading to it. *(P-24)*
+- **B-101** — Addresses use them: a sheet is `/univers/eneria/lieu/nyx` (its key's two parts; a key
+  without that form, or whose first part is the name of a page, is `/univers/eneria/fiche/<key>`), the
+  API and the MCP accept the key; a numeric address or id is still accepted and leads to the same
+  sheet. *(P-24)*
+- **B-102** — Kanevas keeps the **history of every write to a sheet** — header field, section created,
+  rewritten or deleted, relation added, modified or removed, the sheet created or deleted: the date,
+  what changed, the fingerprint after, the account, the token or « assistant » or « import » (with its
+  batch). This line is kept **90 days**; the **previous value** (a text included) **30 days**. A GM
+  reads it on the sheet (E-9, « Historique ») and for the whole universe (E-24), filtered by
+  contributor, by sheet or by action; a token reads it through the API and the MCP; a player does not.
+  *(P-26)*
+- **B-103** — Within 30 days, a GM **restores** a previous value of a section or a header field from
+  the history; restoring is a write, and is itself in the history. A deleted sheet stays **readable**
+  in the history 30 days (its sections as they were), and is not restored by a gesture. *(P-26)*
 - **B-89** — The **largest map background** is an instance setting the admin changes on E-5
   (75 MB by default); it holds for a background set on E-11 and for one sent by the import. *(P-23)*
 
@@ -701,13 +753,44 @@ introuvable. ».
    lists it. Léa, a player, sees the map on Tyros-7 once it is visible, and its text without the GM block.
 2. A background of 90 MB is refused: the admin raises the limit on **E-5** (B-89), Antor sets it again.
 
+### P-24 — Work the lore with an agent (Monsieur, with his agent, a session on the Mac)
+1. At the start, the agent exports Éneria (B-92) into its local copy, then downloads the images whose
+   fingerprint changed; during the session it checks the list « changed since » the export (B-93).
+2. Monsieur asks for a coherence review of Sevrak: the agent searches the passages (B-98) through the
+   MCP (B-97), reads the sheets that mention `personnage:sevrak` (B-97), and shows the contradictions.
+3. They decide together, in the agent's worktree; once Monsieur says go, the agent writes each change
+   through the MCP, with the fingerprints it read (B-82 to B-85). A write refused because the sheet
+   moved: the agent reads it again and asks Monsieur.
+4. The agent's data cite sheets by key (`lieu:tenebria`, B-99), and Monsieur opens
+   `/univers/eneria/lieu/tenebria` (B-101) to read what the agent wrote.
+
+### P-25 — Manage one's tokens (Léa, player; Antor, GM)
+1. Léa opens « Mes jetons d'API » (**E-23**), creates « Agent de Léa », « tous mes univers », in
+   « lecture » (B-94); she copies the value shown once.
+2. Antor, on « Accès par API » of Éneria (**E-18**), sees « Agent de Léa — Léa — lecture — utilisé
+   hier » (B-95); a week later he withdraws its access to Éneria; Léa's page shows Éneria « retiré par
+   le MJ », her other universes unchanged.
+
+### P-26 — See who changed what, and undo a mistake (Antor, GM, the day after)
+1. On « Historique » of Éneria (**E-24**), Antor filters on the token « Agent Éneria » (B-102): twelve
+   lines yesterday evening, one of them « Section Histoire de Sevrak réécrite ».
+2. He opens it, compares with the previous value, and restores it (B-103); the history now carries his
+   restoration. A sheet deleted by mistake two weeks ago: he reads its sections in the history and
+   copies back what he needs.
+
 ## Hors périmètre
 
 - *(`kanevas-synchro`)* **Keys deleted since the import**: refused — no trace of a deletion is kept
   (B-40, decision of Monsieur, 2026-11-01). **Removal by omission** (« this list of sections is
   complete »): refused, a removal is targeted (B-86). **A mark on the relations the import created**:
-  refused (2026-11-01). **The import writing a section born in Kanevas**: read only (B-81, B-83).
+  refused (2026-11-01). ~~The import writing a section born in Kanevas~~: every section has a key since the extension (B-104).
   **Importing map tokens and graph maps**; **one map per image** is the script's choice.
+  **Free fields per sheet**: refused — positions of systems belong to the galaxy tool (`kanevas-outils`),
+  sources go in a GM-only section keyed `sources` (2026-11-01). **A batch of proposals reviewed in
+  Kanevas, and an all-or-nothing grouped write**: refused — the tool reviews with Monsieur and writes
+  one by one (2026-11-01). **A read-only token scope**: none; a token's level is chosen per universe
+  (B-94). **OAuth through Authelia for the MCP** (claude.ai connectors): deferred. **Restoring a
+  deleted sheet** by a gesture: out.
 - **Jeu en direct** : pas d'initiative, de combat animé, de brouillard de guerre ; la table reste
   physique.
 - *(kanevas-scenarios)* **A calendar of sessions** (dates, who was there) and a **play log per
@@ -749,7 +832,7 @@ introuvable. ».
 - **Export vers Kanka ou un autre outil** : non trié. *(`kanevas-synchro`: the token read of the import API, B-80 and B-81, lets a script read back what it imports; no export screen, no export format.)*
 - **Calendrier ou chronologie, lanceur de dés, usage sans connexion (PWA)** : non triés.
   Since `kanevas-icones` (AD-135), Kanevas is installable (manifest, icons) but ships **no service worker and no offline cache**: the installed app needs the network, and offline use stays untriaged.
-- **Historique des modifications, export, partage public.**
+- **Historique des modifications, export, partage public.** *(`kanevas-synchro`: a history of writes enters, 90 days of lines and 30 of previous values, B-102, B-103; a whole-universe export by token, B-92; public sharing stays out.)*
 
 ## Contrôle croisé du cadrage `kanevas-import`
 

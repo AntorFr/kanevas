@@ -27,7 +27,7 @@ Une barre latérale unique, sur tous les écrans d'un univers :
   Notes ;
 - depuis `kanevas-import`, en tête de la barre sous le sélecteur d'univers : **Rechercher** (E-17 ;
   raccourci `/` hors d'un champ) ;
-- pour un MJ : **Univers** ▸ Membres, Paramètres, et depuis `kanevas-import` **Accès par API** (E-18) ;
+- pour un MJ : **Univers** ▸ Membres, Paramètres, et depuis `kanevas-import` **Accès par API** (E-18) ; *(kanevas-synchro)* **Historique** (E-24) ; for every account, in the account menu : **Mes jetons d'API** (E-23) ;
 - pour un admin d'instance : **Administration** ;
 - en pied, le **compte** : l'avatar et l'identifiant, qui ouvrent un menu — l'identifiant, le
   **thème** (bascule à trois icônes : Clair, Sombre, Système) et « Se déconnecter ». Le thème et
@@ -114,7 +114,9 @@ E-16 vivent hors des univers : leurs cases disent le rôle dans un univers ratta
 | E-16 (hors univers) | ses systèmes, avec ses univers et son rôle | ses systèmes, « Lecture seule » | la liste de ses propres systèmes (comme MJ ou Joueur s'il est membre d'un univers rattaché) ; vide sinon — l'écran est proposé à tout compte |
 | E-17 *(kanevas-import)* | chercher dans toutes les fiches de l'univers, blocs MJ compris ; en **mode Joueur**, comme un joueur (ni blocs MJ, ni fiches qu'un joueur ne lit pas) ; filtres : les types activés ; les fiches des types désactivés restent des résultats sous « Tous » ; *(kanevas-scenarios)* an adventure result carries its status badge (the player's too) | chercher dans ce qu'il lit, hors blocs MJ ; filtres par type et par étiquette des seules fiches qu'il voit ; bascule de mode : absente (cachée) ; blocs MJ : hors recherche (jamais lus) ; « Alias et étiquettes… » sur E-9 : cachée | — |
 | E-19 *(kanevas-import)* | tout : ajouter, renommer, visibilité, supprimer ; « Utilisé dans » complet | les fichiers visibles des joueurs et ceux qu'il a ajoutés ; « Utilisé dans » réduit aux fiches qu'il lit ; ni ajout depuis E-19 (**caché** ; il ajoute un fichier par une section qu'il écrit, E-9), ni réglage, ni suppression (**cachés**) | — |
-| E-18 *(kanevas-import)* | créer un jeton ; voir et révoquer tous les jetons de l'univers (y compris ceux d'un autre MJ) ; voir les lots | — (**caché** : absent de la barre, « Page introuvable. » par l'adresse) | — |
+| E-18 *(kanevas-import)* | *(kanevas-synchro: voir les jetons qui atteignent l'univers, retirer ou rétablir leur accès ; la création passe à E-23)* créer un jeton ; voir et révoquer tous les jetons de l'univers (y compris ceux d'un autre MJ) ; voir les lots | — (**caché** : absent de la barre, « Page introuvable. » par l'adresse) | — |
+| E-23 *(kanevas-synchro)* | ses jetons : créer, modifier les accès, révoquer | ses jetons : créer, modifier les accès, révoquer | ses jetons |
+| E-24 *(kanevas-synchro)* | lire l'historique de l'univers, filtrer, restaurer une valeur de moins de 30 jours | — | — |
 
 What `kanevas-scenarios` adds to the lines above: **E-17** — the status badge on the result card of an adventure, for every role that reads the sheet; **E-12** — the GM creates sheets through `creer_fiche` (AD-126), with a « Fiche « X » créée » writing block and « Ouvrir » leading to E-9; the player has no creation tool; **E-18** — no « Campagnes » or « Scénarios » counter in a lot: adventures count among « Fiches ».
 
@@ -3421,4 +3423,51 @@ refusals with its key and « modifiée depuis la lecture ». The warnings « mod
   B-88 → E-11, E-9; B-89 → E-5, E-11.
 - Each journey reaches its screens: P-22 → E-18; P-23 → E-11, E-9, E-5.
 - Each role: GM (E-11, E-9, E-18), player (E-9, E-11 reading), admin (E-5).
+
+### E-23 Mes jetons d'API (every account) — `kanevas-synchro`
+Reached from the account menu, outside any universe; address `/compte/jetons`.
+- The list: each token with its name, expiry, last use and accesses (« Tous mes univers — lecture +
+  écriture », or « Éneria : lecture + écriture · Essai : lecture »); a universe whose GM withdrew the
+  access is struck through with « retiré par le MJ ».
+- « Créer un jeton »: name (1–80), lifetime (7, 30 default, 90, 365 days), then the accesses: « Tous mes
+  univers » with a level, or the list of the account's universes, each « — / Lecture / Lecture +
+  écriture ». The value is shown once with « Copier » and the note « Il ne sera plus affiché. ».
+- On a token: « Modifier les accès » (the same form), « Révoquer » (confirmation naming the token).
+- The note under the form: « Un jeton n'a jamais plus de droits que votre compte : là où vous êtes
+  joueur, il agit en joueur. »
+- States: none yet → « Aucun jeton. » with « Créer un jeton »; save failed → « Impossible
+  d'enregistrer. » with « Réessayer ».
+
+### E-18 Accès par API — the tokens that reach the universe (`kanevas-synchro`)
+The creation moves to E-23. E-18 lists, for the GM, every token that reaches this universe — name,
+owner, level, last use — each with « Retirer l'accès à cet univers » (confirmation; the token keeps its
+other universes); a withdrawn token is listed under « Accès retirés » with « Rétablir ». The batches
+stay below, unchanged.
+
+### E-24 Historique de l'univers (GM) — `kanevas-synchro`
+Address `/univers/eneria/historique`. Lines from the newest: date, contributor (account, and « via
+<jeton> », « assistant » or « import · lot <n> »), the sheet (link; a deleted one in plain text with
+« supprimée »), what changed (« Section Histoire réécrite », « Titre changé », « Relation vers
+faction:les-veilleurs ajoutée », « Fiche supprimée »). Filters: contributor, sheet, action, period;
+100 lines at a time, then « Charger la suite ». A line under 30 days opens its detail: the previous value
+next to the current one, and « Restaurer cette version » for a section or a header field
+(confirmation; B-103); for a deleted sheet, its sections as they were, read-only. Over 30 days, the
+line has no detail: « Valeur précédente non conservée (plus de 30 jours). » Lines over 90 days are gone.
+
+### E-9 Fiche — key and history (`kanevas-synchro`)
+- Under the title, for the GM: the key `lieu:nyx` with « Copier » and « Modifier la clé… » (a field,
+  the warning « Les liens et outils qui citent lieu:nyx ne la retrouveront plus ; l'ancienne clé
+  continuera de mener ici. »; refused if taken: « Cette clé existe déjà dans l'univers. »).
+- GM menu « ⋯ »: « Historique » opens E-24 filtered on the sheet.
+
+### E-14 Paramètres de l'univers — its identifier (`kanevas-synchro`)
+The field « Identifiant » (`eneria`: lowercase letters, digits, dashes, 2–40), with the warning that
+the former one keeps leading here; refused if taken on the instance.
+
+### Cross-check (extension)
+- B-92, B-93, B-97, B-98 → the API and the MCP (no screen; E-24 shows what they wrote);
+  B-94 → E-23; B-95 → E-18; B-96, B-102, B-103 → E-24, E-9; B-99 → E-9; B-100 → E-14; B-101 → every
+  address.
+- P-24 → the MCP, E-9 by its address; P-25 → E-23, E-18; P-26 → E-24, E-9.
+- Roles: every account on E-23; GM on E-18, E-24, E-9 key, E-14; player: E-23 only.
 

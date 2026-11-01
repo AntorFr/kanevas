@@ -627,3 +627,40 @@ unique index `(univers_id, cle_origine) WHERE cle_origine IS NOT NULL` on `carte
 columns (SQLite ≥ 3.35; `better-sqlite3` 12 embeds a later one). Played at start-up;
 the backup of the file is a manual gesture before the deploy.
 
+### Extension of `kanevas-synchro` (2026-11-01): tokens, keys, history
+
+**Conceptual.** A **token** belongs to an **account** and reaches **universes** at a **level**; a
+**sheet** and a **universe** have a **readable key**, with their **former keys**; a **history line**
+records one write, with a **previous value** for 30 days.
+
+**Logical.**
+- `jetons_api`: `univers_id` and the « GM who created it » give way to `compte_id` (the owner) and
+  `tous` (boolean) with `niveau_tous` (`lecture` | `ecriture`, when `tous`); child
+  `jetons_univers (jeton_id, univers_id, niveau, retire_par, retire_le)` — the list when not `tous`, and
+  the GM's withdrawals in every case (a withdrawn row blocks even under `tous`). `jetons_outils`
+  (`kanevas-outils`) stays a child of the token: a token with tool rows writes only those tools.
+- `fiches.cle_origine` becomes `fiches.cle`, **not null**, unique per universe; the migration gives one
+  to every sheet without (type and title, AD-146). `cles_anciennes (univers_id, cle, fiche_id)`: a former
+  key leads to its sheet; a key in use cannot be a former one.
+- `sections.cle_origine` becomes `sections.cle`, **not null**, unique per sheet; generated from the title
+  for the sections without one.
+- `univers.cle` (unique on the instance, not null; the migration derives it from the name) and
+  `univers_cles_anciennes (cle, univers_id)`.
+- `fiches.modifie_le` moves on every write to what the read returns, held by **triggers** (AD-147).
+- `historique (id, univers_id, fiche_id (null once the sheet is deleted), fiche_cle, fiche_titre, objet
+  (entete | section | relation | fiche), objet_cle, action, empreinte_apres, compte_id, jeton_id,
+  origine (ecran | assistant | import | mcp), lot_id, cree_le, valeur_avant (JSON, null after 30 days))`.
+  Written by triggers from a per-transaction context (AD-147). A daily purge empties `valeur_avant`
+  over 30 days and deletes lines over 90.
+
+**Rights.** A token reads and writes what its account may, in the universes it reaches at its level,
+re-checked at each request (role lost → refused there). The history: GMs of the universe and tokens of
+a GM; never a player (a line can reveal a GM block exists). A previous value in the history is served
+under the same rule as the GM view.
+
+**Physical and migration.** One migration (numbered at merge, AD-51): tokens re-homed (each existing
+token gets `compte_id` = its creator and one `jetons_univers` row at `ecriture`), keys generated
+(collisions suffixed `-2`, `-3`… in id order), triggers created, the history table empty at start.
+`better-sqlite3` runs triggers inside the write's transaction: a write and its history line are
+atomic.
+
