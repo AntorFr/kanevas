@@ -329,7 +329,7 @@ Format from the `exigences` skill; each need cites the journeys that fulfill it.
   its tools' data. *(P-21)*
 - **B-64** — A write to editable tool data (design, placed system, route, zone…)
   based on a stale version is **refused** with the same response as a section, and the screen explains it
-  with a way to reload. No live collaborative editing. *(P-18, P-19)*
+  with a way to reload (on the screen of a design, placed system, route or zone, and in the « Voir les éléments » panel; the catalogue import dialog has no reload: it says the data « changed meanwhile » and shows what was applied, and the file is chosen again to preview a new import). No live collaborative editing. *(P-18, P-19)*
 - **B-65** — An API token has a **scope per tool**; the import API accepts a tool's data
   (catalogue, placed systems, routes, zones, designs): one key per element, replay without duplicates,
   batch report, shape checked by the module (which also checks conversion). *(P-20)*
@@ -693,11 +693,19 @@ introuvable. ».
 1. System page (**E-15**), « Outils » tab (**E-20**): the galaxy map and ship designer
    are listed as « Désactivé ». He enables both. Visibility: designer « MJ et
    joueurs », map « MJ et joueurs ».
-2. He sets the system's base settings (jump range: 1 hex), then imports a **catalogue**: « Importer un catalogue », JSON file; the preview says « 12 coques ajoutées,
-   0 modifiée, 1 refusée : arme « Laser lourd », champ `masse` : nombre attendu »; he confirms.
+2. He sets the system's base settings (jump range: 1 hex), then imports a **catalogue**: « Importer un catalogue », JSON file; the preview says « 11 ajoutés,
+   0 modifié, 1 refusé : arme « laser-lourd », champ `masse` : nombre attendu »; he confirms.
 3. Settings of « Éneria » (**E-14**), « Outils » tab: both tools follow the system; he overrides the
    designer to « Activé », sets « Charges de carburant » to « Non » (house rule) and adds Orak'Ziel
    crystals (a new element) to the universe catalogue by importing a file.
+   *(Detail from `kanevas-outils-catalogue`.)* The two imports are the same dialog on two tabs: step 2 on
+   the system's tab of E-15 (the preview counts elements — « 11 ajoutés, 0 modifié, 1 refusé » for
+   a file of 12; the numbers above are an illustration), step 3 on the universe's tab of E-14,
+   whose preview adds « dont N remplacent un élément du système ». Still on E-14, « Voir les éléments »
+   lets him **hide** the Orak'Ziel weapon from the players until the session, **withdraw** a system hull
+   the campaign does not use, and bring it back (B-62). For his conversion script he creates, on E-18, a
+   token whose scope is the designer alone (B-65, P-20); the script's import comes back as a batch named
+   after the tool.
 4. On the galaxy (E-21), he changes the seed: confirmation says « Tous les systèmes non définis changent de
    place ; les systèmes définis et promus ne bougent pas. ».
 *Highlight*: the « Outils » tab shows « Système · 1 » then « Univers · 2 » for each setting: the value's
@@ -705,7 +713,7 @@ origin is readable.
 *Failure*: he enables a tool depending on a disabled one — « <Outil> demande <autre outil> : activez-le
 d'abord. » (no SWN tool has dependencies: the text is exercised with the trial module); Mira, GM of another universe using the system,
 sees tools and values but neither « Activer » nor « Importer » at system level (hidden, read-only);
-unreadable catalogue file — « Ce fichier n'est pas un catalogue valide. »; connection lost
+unreadable catalogue file — « Ce fichier n'est pas un catalogue valide. »; a tool token refused (revoked, expired, out of scope) — 401 `jeton_invalide`, no batch opened; a refused element in a tool batch — counted « 1 refusé » in the batch of E-18; connection lost
 during application — nothing is partially applied.
 
 ### P-18 — Explore the galaxy, then maintain it (Léa, Player, on a phone; Antor, GM, at a desk)

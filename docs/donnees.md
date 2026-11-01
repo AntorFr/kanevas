@@ -599,6 +599,16 @@ Invariants, in sentences:
 | `swn_fiches_generees` | `univers_id`, `cle` (`regles-armes`, `exemples`…), `fiche_id`, `section_id`, `source_version` | `UNIQUE (univers_id, cle)`; → `fiches`, `sections` ON DELETE CASCADE (deleting the sheet forgets it; the « Générer » action recreates it); rule and example sheets of B-77 |
 | `swn_conceptions` | `univers_id`, `fiche_id`, `section_id`, `coque_cle`, `choix` (JSON: choice rows), `version_reglages` (text: the system's and universe's `version_reglages` for the `module` row and for the `module/outil` row, at computation time; stale if any differs from the current one), `version_catalogue` (text: the system's then the universe's), `resultat` (JSON: computed values), `version` | → `fiches` ON DELETE CASCADE; `UNIQUE (fiche_id)` (7); → `sections` |
 
+**Trial module (`essai_*`, `kanevas-outils-catalogue`, K-8)**: the invented module that proves the contracts. Its tables exist in every database (the migration does not depend on the stub switch) and stay empty outside tests and the stub.
+
+| Table | Columns (excluding keys) | Constraints |
+|---|---|---|
+| `essai_catalogue_elements` | `niveau` (`systeme`/`univers`), `systeme_id` or `univers_id`, `nature` (`coques`/`armes`), `cle`, `nom`, `masse` (real), `cout` (integer), `portee` (`courte`/`longue`, null for a hull), `masque` (boolean, default false), `version` (integer, +1 on each change), `version_catalogue` (text) | the owner is two nullable columns (exactly one set: `CHECK`), so uniqueness is two partial unique indexes: `(systeme_id, nature, cle)` where `niveau = 'systeme'`, `(univers_id, nature, cle)` where `niveau = 'univers'`; `CHECK (masse >= 0 AND cout >= 0)`; `CHECK (niveau = 'univers' OR masque = 0)` — a system element is never masked; `portee` set exactly for `armes`; → `systemes_jeu`, → `univers` ON DELETE CASCADE |
+| `essai_catalogue_retraits` | `univers_id`, `nature`, `cle` (of a system element) | primary key `(univers_id, nature, cle)`; → `univers` ON DELETE CASCADE; deleting the row restores the element |
+| `jetons_outils` | `jeton_id`, `outil` | (core, K-6) primary key `(jeton_id, outil)`; → `jetons_api` ON DELETE CASCADE; no row = a content token |
+
+`lots_import.outil` (core): null for a content batch, else the `module/outil` whose natures the counters carry. A tool batch's `compteurs` keys are the tool's declared natures (the content batch keeps the fixed list).
+
 **What the database does not express, and the service enforces**: the maintainer is a GM of an attached universe (spans two tables);
 the shape of settings and catalogues (declared by the module); the override key of a universe catalogue
 (the same `cle` as the system's); **a route's consistency with the grid** (computed on the spot); each row's permissions.

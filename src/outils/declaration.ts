@@ -25,6 +25,25 @@ export interface ContexteOutil {
   universId: number;
   role: Role;
 }
+export type CibleCatalogue = { systemeId: number } | { universId: number };
+export interface LigneCatalogue {
+  nature: string; cle: string; nom: string; donnees: Record<string, unknown>;
+  masque: boolean; version: number;
+}
+export interface StockageCatalogue {
+  lister(db: Db, cible: CibleCatalogue, nature?: string, page?: { curseur?: string; limite?: number }): LigneCatalogue[];
+  lirePar(db: Db, cible: CibleCatalogue, nature: string, cle: string): LigneCatalogue | null;
+  ecrire(db: Db, cible: CibleCatalogue, nature: string,
+    element: { cle: string; donnees: Record<string, unknown>; versionCatalogue: string }): 'cree' | 'modifie' | 'inchange';
+  poserMasque(db: Db, universId: number, nature: string, cle: string, masque: boolean, versionLue: number): LigneCatalogue;
+  retraits(db: Db, universId: number): { nature: string; cle: string }[];
+  poserRetrait(db: Db, universId: number, nature: string, cle: string, retire: boolean): void;
+}
+export interface DeclarationCatalogue {
+  natures: { nom: string; libelle: string; libellePluriel: string;
+    schema: z.ZodObject; resume(donnees: Record<string, unknown>): string }[];
+  stockage: StockageCatalogue;
+}
 interface BaseOutil {
   cle: string;
   libelle: string;
@@ -34,6 +53,7 @@ interface BaseOutil {
   visibiliteParDefaut: { mj: boolean; joueur: boolean };
   usages: { nom: string; mjSeul: boolean }[];
   reglages: Reglages;
+  catalogue?: DeclarationCatalogue;
   outilsAssistant?(ctx: ContexteOutil): Outil[];
   ecran: { libelle: string; icone: string };
 }
@@ -111,6 +131,14 @@ const declaration = z.strictObject({
     dependances: z.array(z.string()),
     visibiliteParDefaut: z.strictObject({ mj: z.boolean(), joueur: z.boolean() }),
     usages: z.array(z.strictObject({ nom: z.string().min(1), mjSeul: z.boolean() })),
+    catalogue: z.strictObject({
+      natures: z.array(z.strictObject({ nom: z.string().regex(/^[a-z][a-z0-9_-]*$/),
+        libelle: z.string().min(1), libellePluriel: z.string().min(1),
+        schema: z.instanceof(z.ZodObject).refine((s) => s._zod.def.catchall instanceof z.ZodNever && !('cle' in s.shape)),
+        resume: fonction })).min(1),
+      stockage: z.strictObject({ lister: fonction, lirePar: fonction, ecrire: fonction,
+        poserMasque: fonction, retraits: fonction, poserRetrait: fonction }),
+    }).optional(),
     reglages, outilsAssistant: fonction.optional(), cartes: fonction.optional(),
     sections: z.array(z.strictObject({
       type: z.string().regex(/^[a-z][a-z0-9-]*$/), libelle: z.string().min(1), usage: z.string().min(1),
@@ -151,6 +179,12 @@ export function verifierDeclaration(module: DeclarationModule): void {
       }
     }
     if (new Set(outil.usages.map((u) => u.nom)).size !== outil.usages.length) throw new Error('Duplicate usage.');
+    if (outil.catalogue) {
+      const noms = outil.catalogue.natures.map((n) => n.nom);
+      if (new Set(noms).size !== noms.length || noms.some((n) => ['catalogue', 'version'].includes(n))) {
+        throw new Error('Invalid or duplicate catalogue nature.');
+      }
+    }
     verifierReglages(outil.reglages);
     outils.set(outil.cle, outil);
   }

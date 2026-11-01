@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>E-20 — Catalogue : import — Kanevas</title><style>
+/*
+MAQUETTE — E-20 — Catalogue : import. Illustre docs/ecrans.md « What kanevas-outils-catalogue builds » (E-20) ; docs/parcours.md B-61, P-17. Tokens : e11-carte.html (docs/charte.md).
+Le document prime sur la maquette. Contenu inventé (module d'essai). Sur un téléphone (<= 760 px) tout passe en une colonne.
+*/
+:root{--bg:#101012;--weave:#131316;--s1:#1a1a1f;--s2:#212127;--s3:#2a2a31;--b:rgba(255,255,255,.07);--bs:rgba(255,255,255,.15);
+--i1:#f5f4f2;--i2:#a3a2a8;--i3:#6b6a72;--vi:#8b7cf6;--vis:#aca2f9;--vid:rgba(139,124,246,.16);--vib:rgba(139,124,246,.4);
+--am:#f2a33c;--amb:rgba(242,163,60,.14);--amd:rgba(242,163,60,.4);--te:#3fc79a;--teb:rgba(63,199,154,.14);--ted:rgba(63,199,154,.38);
+--re:#e2685b;--reb:rgba(226,104,91,.14);--red:rgba(226,104,91,.38);--serif:ui-serif,Georgia,serif;--sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--i1);font-family:var(--sans);font-size:14px}
+a{color:inherit;text-decoration:none}
+.wrap{padding:16px;display:flex;flex-direction:column;gap:22px}.wrap.single{padding:0}
+.label{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--am);margin:0 0 6px;font-weight:600}.label.j{color:var(--te)}
+.frame{display:flex;position:relative;min-height:560px;border:1px solid var(--bs);border-radius:12px;overflow:hidden;background:var(--bg)}
+.single .frame{border:0;border-radius:0;min-height:100vh}
+aside{width:236px;flex:none;background:var(--weave);border-right:1px solid var(--b);display:flex;flex-direction:column;padding:16px 12px}
+.brand{display:flex;align-items:center;gap:9px;padding:6px 8px 14px;font-family:var(--serif);font-size:17px}
+.mark{width:22px;height:22px;border-radius:6px;background:conic-gradient(from 210deg,var(--am),var(--vi),var(--am))}
+.sw{display:flex;align-items:center;gap:8px;padding:9px 10px;border-radius:9px;background:var(--s1);border:1px solid var(--b);margin-bottom:12px;font-size:13px}
+.sw .dot{width:8px;height:8px;border-radius:50%;background:var(--vis)}.sw .n{flex:1}
+nav{display:flex;flex-direction:column;gap:1px}
+.ns{font-size:10.5px;text-transform:uppercase;letter-spacing:.09em;color:var(--i3);padding:14px 10px 6px}
+.it{display:block;padding:7px 10px;border-radius:8px;color:var(--i2);font-size:13px}.it.sub{padding-left:22px}
+.it.on{background:var(--vid);color:var(--vis)}
+.sp{flex:1}.me{display:flex;align-items:center;gap:8px;padding:10px 8px 0;border-top:1px solid var(--b);font-size:12.5px;color:var(--i2)}
+.av{width:24px;height:24px;border-radius:50%;background:var(--s3);display:flex;align-items:center;justify-content:center;font-size:11px}
+.col{flex:1;min-width:0;display:flex;flex-direction:column}
+header{height:54px;flex:none;display:flex;align-items:center;gap:14px;padding:0 24px;border-bottom:1px solid var(--b);background:rgba(16,16,18,.6)}
+.crumb{font-size:12.5px;color:var(--i3);flex:1}.crumb b{color:var(--i1);font-weight:500}
+main{padding:24px 28px;max-width:1000px;width:100%}
+h1{font-family:var(--serif);font-size:22px;font-weight:500;margin:0 0 4px}
+h2{font-size:10.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--i3);margin:0 0 10px;font-weight:600}
+.sub{color:var(--i3);font-size:12.5px;margin:0 0 18px;max-width:70ch}
+.panel{background:var(--s1);border:1px solid var(--b);border-radius:12px;padding:14px 16px;margin-bottom:14px}
+.panel.mj{border-color:var(--amd);background:linear-gradient(180deg,rgba(242,163,60,.06),var(--s1) 60%)}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px}.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.hrow{display:flex;align-items:center;gap:8px;margin-bottom:10px}.hrow h2{margin:0;flex:1}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.btn{display:inline-block;font-size:12px;padding:6px 12px;border-radius:8px;border:1px solid var(--bs);background:var(--s3);color:var(--i1);font-family:inherit}
+.btn.pri{background:var(--vi);border-color:var(--vi);color:#14121f;font-weight:600}.btn.dg{color:#e88;border-color:var(--red)}.btn.sm{font-size:11px;padding:3px 8px}
+.in{display:block;width:100%;font-size:13px;padding:8px 10px;border-radius:8px;border:1px solid var(--bs);background:var(--s2);color:var(--i1);font-family:inherit}
+textarea.in{min-height:90px;resize:vertical}.fl{font-size:11.5px;color:var(--i2);margin:10px 0 4px;display:block}
+.badge{font-size:11px;padding:3px 9px;border-radius:999px;border:1px solid var(--bs);color:var(--i2);display:inline-block}
+.badge.mj{border-color:var(--amd);background:var(--amb);color:var(--am)}.badge.j{border-color:var(--ted);background:var(--teb);color:var(--te)}
+.badge.v{border-color:var(--vib);background:var(--vid);color:var(--vis)}
+.mode{display:inline-flex;border:1px solid var(--bs);border-radius:999px;overflow:hidden;font-size:11.5px}.mode span{padding:5px 13px;color:var(--i3)}
+.mode .on{background:var(--amb);color:var(--am)}.mode.pj .on{background:var(--teb);color:var(--te)}
+.li{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--b);font-size:13px}.li:last-child{border:0}.li .g{flex:1}.li .d{color:var(--i3);font-size:12px}
+.li small{display:block;color:var(--i3);font-size:11.5px}
+.card{background:var(--s1);border:1px solid var(--b);border-radius:12px;padding:14px}.card .nm{font-family:var(--serif);font-size:15px;margin-bottom:8px}
+.search{padding:8px 12px;border-radius:9px;border:1px solid var(--bs);background:var(--s2);color:var(--i3);font-size:13px;margin-bottom:14px;max-width:420px}
+.empty{padding:26px;text-align:center;color:var(--i3);border:1px dashed var(--bs);border-radius:12px}
+.alert{font-size:12px;padding:8px 12px;border-radius:8px;border:1px solid var(--red);background:var(--reb);color:var(--re);margin:8px 0}
+.chk{width:15px;height:15px;border:1.5px solid var(--bs);border-radius:4px;display:inline-block;flex:none;vertical-align:middle}
+.chk.d{background:var(--vi);border-color:var(--vi)}.done{text-decoration:line-through;color:var(--i3)}
+.cat{font-size:11px;color:var(--vis);margin:10px 0 2px;font-weight:600}
+.chip{display:inline-flex;gap:7px;font-size:12px;padding:5px 11px;border-radius:999px;border:1px solid var(--bs);background:var(--s2);margin:4px 6px 0 0}.chip b{color:var(--vis);font-weight:600}
+.add{display:inline-block;font-size:11px;padding:4px 10px;border-radius:999px;border:1px dashed var(--bs);color:var(--i3);margin:8px 6px 0 0}
+.thumb{width:92px;height:68px;border-radius:8px;border:1px solid var(--bs);background:linear-gradient(135deg,#3a2f22,#5a4430);position:relative}
+.thumb.sec{outline:2px solid var(--amd)}.thumb i{position:absolute;top:4px;left:4px;font-size:8px;font-style:normal;padding:1px 5px;border-radius:999px;background:var(--amb);color:var(--am);border:1px solid var(--amd)}
+.pj{width:92px;font-size:9.5px;color:var(--i3)}.pj .c{display:flex;gap:3px;margin-top:3px}.pj .c span{flex:1;text-align:center;border:1px solid var(--bs);border-radius:5px;padding:2px 0;background:var(--s3);color:var(--i2)}
+.fab{position:absolute;right:20px;bottom:20px;display:flex;align-items:center;gap:8px;padding:11px 18px;border-radius:999px;background:var(--vi);color:#14121f;font-weight:600;font-size:13px;box-shadow:0 8px 24px -8px rgba(0,0,0,.8)}
+.note{font-size:12px;color:var(--i3);margin-top:8px;max-width:80ch}
+.map{position:relative;height:230px;border-radius:12px;border:1px solid var(--bs);background:repeating-linear-gradient(45deg,#2b2417 0 12px,#2f281a 12px 24px)}
+.tok{position:absolute;display:flex;flex-direction:column;align-items:center;font-size:11px;gap:2px}.tok i{font-style:normal;width:30px;height:30px;border-radius:50%;background:var(--s1);border:2px solid var(--vi);display:flex;align-items:center;justify-content:center}
+.tok.sec i{border-color:var(--am)}.tok span{background:rgba(0,0,0,.6);padding:1px 6px;border-radius:6px}
+table{width:100%;border-collapse:collapse;font-size:13px}th{text-align:left;font-size:10.5px;text-transform:uppercase;letter-spacing:.07em;color:var(--i3);padding:6px 8px;font-weight:600}td{padding:9px 8px;border-top:1px solid var(--b)}
+.msg{padding:10px 12px;border-radius:10px;font-size:13px;margin-bottom:10px;line-height:1.5}.msg.u{background:var(--s3);margin-left:40px}.msg.a{background:var(--s2);border:1px solid var(--b)}
+.diff{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0}.diff div{font-size:12px;padding:8px;border-radius:8px;border:1px solid var(--b);line-height:1.5}.diff .o{background:var(--reb)}.diff .p{background:var(--teb)}
+.diff b{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--i3);margin-bottom:3px}
+.dock{width:380px;flex:none;border-left:1px solid var(--bs);background:var(--weave);padding:16px;display:flex;flex-direction:column}
+@media(max-width:760px){.frame{flex-direction:column}aside{width:auto}.g2,.g3,.diff{grid-template-columns:1fr}.dock{width:auto}}
+
+.frame.col2{flex-direction:column}.bar{padding:8px 16px;font-size:12px;border-bottom:1px solid var(--red);background:var(--reb);color:var(--re)}
+.cadre{position:relative;border-radius:12px;border:1px solid var(--bs);overflow:hidden;background:#2b2417 repeating-linear-gradient(45deg,#2b2417 0 12px,#2f281a 12px 24px)}
+.cadre.img{background:linear-gradient(160deg,#3b3322,#262017 55%,#31402c)}
+.cadre .t{position:absolute;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:2px;font-size:11px;min-width:44px;min-height:44px;justify-content:center}
+.cadre .t i{font-style:normal;width:30px;height:30px;border-radius:50%;background:var(--s1);border:2px solid var(--vi);display:flex;align-items:center;justify-content:center;font-weight:600}
+.cadre .t.sel i{border-color:var(--am);box-shadow:0 0 0 4px var(--amb)}.cadre .t span{background:rgba(0,0,0,.65);padding:1px 6px;border-radius:6px;white-space:nowrap}
+.cadre.gr{background:var(--s1);height:250px}.cadre.gr svg{width:100%;height:100%}
+.cadre.gr text{fill:#f5f4f2;font-size:11px;text-anchor:middle}.cadre.gr .lk{fill:#a3a2a8;font-size:10px}.cadre.gr line{stroke:#6b6a72;stroke-width:1.5}.cadre.gr circle{fill:#1a1a1f;stroke:#8b7cf6;stroke-width:2}
+.cadre .msgc{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;color:var(--i3);font-size:13px;text-align:center;padding:12px}
+.notice{padding:14px 16px;border:1px solid var(--ted);background:var(--teb);border-radius:12px;color:var(--te);font-size:13px;margin-bottom:12px}
+.dlg{border:1px solid var(--bs);background:var(--s2);border-radius:12px;padding:14px;max-width:460px}
+.rd{display:inline-block;width:12px;height:12px;border:1.5px solid var(--bs);border-radius:50%;vertical-align:middle}.rd.on{background:var(--vi);border-color:var(--vi)}
+.off{opacity:.45}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--b);margin:0 0 14px}.tabs a{padding:8px 12px;font-size:13px;color:var(--i3);border-bottom:2px solid transparent}.tabs a.on{color:var(--i1,#f5f4f2);border-bottom-color:var(--vi)}
+.sw2{display:inline-flex;align-items:center;gap:6px;font-size:12px}.sw2 b{width:30px;height:18px;border-radius:9px;background:var(--s3);position:relative;display:inline-block;cursor:pointer}.sw2 b:after{content:"";position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:#aaa}.sw2.on b{background:var(--vi)}.sw2.on b:after{left:14px;background:#fff}
+.otool{border:1px solid var(--b);background:var(--s2);border-radius:12px;padding:14px;margin-bottom:12px}.otool h3{margin:0 0 2px;font-size:15px}
+.rg{display:grid;grid-template-columns:1fr auto;gap:4px 12px;align-items:center;padding:8px 0;border-top:1px solid var(--b);font-size:13px}.rg small{color:var(--i3);display:block;font-size:11.5px}
+.hexmap{background:var(--s1);height:340px}.hexmap svg{width:100%;height:100%}.hex{fill:none;stroke:#2e2f38;stroke-width:1}.hex.on{fill:rgba(139,124,246,.16)}
+.sys{fill:#1a1a1f;stroke:#8b7cf6;stroke-width:2;cursor:pointer}.sys.sel{stroke:#e0a458;stroke-width:3}.sys.anon{stroke:#6b6a72;stroke-dasharray:3 2}
+.rt{stroke:#8b7cf6;stroke-width:2}.rt.priv{stroke:#e0a458;stroke-dasharray:5 4}.rt.path{stroke:#4cc38a;stroke-width:3.5}.zn{fill:rgba(224,164,88,.12);stroke:#e0a458;stroke-dasharray:6 4}
+.hexmap text{fill:#f5f4f2;font-size:11px;text-anchor:middle}.hexmap .sm{fill:#a3a2a8;font-size:9.5px}
+.split{display:grid;grid-template-columns:1fr 300px;gap:14px}@media(max-width:760px){.split{grid-template-columns:1fr}}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:3px 12px;font-size:13px}.kv b{color:var(--i3);font-weight:500}
+.al{padding:8px 10px;border-radius:8px;font-size:12.5px;margin-top:6px;border:1px solid var(--b)}.al.blk{background:var(--reb);color:var(--re);border-color:var(--red)}.al.w{background:var(--amb);color:var(--am)}
+.gen{display:flex;align-items:center;gap:8px;padding:8px 12px;border:1px solid var(--b);border-radius:10px;background:var(--s2);font-size:12.5px;color:var(--i3);margin-bottom:8px}
+.lbl{font-size:10.5px;text-transform:uppercase;letter-spacing:.07em;color:var(--i3);margin:12px 0 4px}
+.opt{display:flex;justify-content:space-between;gap:8px;padding:7px 10px;border:1px solid var(--b);border-radius:8px;margin-bottom:5px;font-size:13px;background:var(--s2)}.opt.on{border-color:var(--vi)}.opt em{font-style:normal;color:var(--i3);font-size:11.5px}
+.opt .loc{font-size:10px;padding:1px 6px;border-radius:6px;background:var(--amb);color:var(--am);margin-left:6px}
+.fil{min-height:38px}
+.chip2{display:inline-block;font-size:10.5px;padding:2px 8px;border-radius:999px;border:1px solid var(--bs);color:var(--i2);margin-left:6px}
+.chip2.o{border-color:var(--vib);background:var(--vid);color:var(--vis)}.chip2.m{border-color:var(--amd);background:var(--amb);color:var(--am)}.chip2.r{border-color:var(--ted);background:var(--teb);color:var(--te)}
+.mono{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px}.seg{display:inline-flex;border:1px solid var(--bs);border-radius:999px;overflow:hidden;font-size:12px;margin:0 0 10px}.seg span{padding:5px 14px;color:var(--i3)}.seg .on{background:var(--vid);color:var(--vis)}
+.ro{font-size:12px;color:var(--i3)}.dim{opacity:.55}.stack{max-width:520px}
+.btn.off2{opacity:.45}@media(max-width:760px){.btn{padding:11px 14px}.stack{max-width:none}}
+</style></head><body><div class="wrap"><div id="etat-apercu"><div class="label">E-20 — Antor, responsable : aperçu avant d'appliquer (rien n'est écrit)</div><h1>Système d'essai</h1><div class="tabs"><a href="#">Général</a><a href="#">Types de fiche</a><a class="on" href="#">Outils</a></div><div class="otool"><div class="row"><div style="flex:1"><h3>Essai G</h3><div class="d" style="color:var(--i3);font-size:12.5px">Générateur · Module d'essai</div></div><span class="sw2 on"><b></b> Activé</span></div><div class="lbl">Catalogue</div><div class="d" style="font-size:13px">Catalogue du système · version <b>2026-11-essai</b> · 4 coques · 8 armes</div><div class="row" style="margin-top:8px"><span class="btn">Importer un catalogue…</span><span class="btn">Voir les éléments</span></div></div><div class="dlg stack" style="max-width:560px"><div class="hrow"><h2>Importer le catalogue du système</h2><span class="btn sm">Fermer</span></div><div class="d" style="font-size:13px">Fichier : <b class="mono">catalogue-essai.json</b> · version <b>2026-11-essai</b></div><p style="font-size:14px;margin:10px 0"><b>11 ajoutés</b>, 0 modifié, <b style="color:var(--re)">1 refusé</b></p><table><tr><th>Nature</th><th>Ajouté</th><th>Modifié</th><th>Inchangé</th><th>Refusé</th></tr><tr><td>Coques</td><td>4</td><td>0</td><td>0</td><td>0</td></tr><tr><td>Armes</td><td>7</td><td>0</td><td>0</td><td>1</td></tr></table><div class="al blk">Arme « <span class="mono">laser-lourd</span> », champ <span class="mono">masse</span> : nombre attendu. Cet élément n'est pas appliqué.</div><div class="d" style="font-size:12px;color:var(--i3);margin:8px 0">Les éléments qui ne sont plus dans le fichier restent dans le catalogue.</div><div class="row"><span class="btn pri">Appliquer (11 éléments)</span><span class="btn">Annuler</span></div></div></div><div id="etat-refus"><div class="label">E-20 — Antor, univers : 300 refus, rien à appliquer</div><div class="dlg stack" style="max-width:560px"><div class="hrow"><h2>Importer le catalogue de l'univers</h2><span class="btn sm">Fermer</span></div><div class="d" style="font-size:13px">Fichier : <b class="mono">orak-armes.json</b> · version <b>2026-12-orak</b></div><p style="font-size:14px;margin:10px 0">0 ajouté, 0 modifié, <b style="color:var(--re)">300 refusés</b></p><div class="al blk">Arme « <span class="mono">canon-01</span> », champ <span class="mono">masse</span> : nombre attendu.</div><div class="al blk">Arme « <span class="mono">canon-02</span> », champ <span class="mono">masse</span> : nombre attendu.</div><div class="al blk">Arme « <span class="mono">canon-03</span> », champ <span class="mono">masse</span> : nombre attendu.</div><div class="d" style="margin:8px 0"><b>250 autres refus…</b> <span class="btn sm">Voir tout</span></div><div class="d" style="font-size:12px;color:var(--i3);margin:8px 0">Les éléments qui ne sont plus dans le fichier restent dans le catalogue.</div><div class="row"><span class="btn pri off2">Appliquer (0 élément)</span><span class="btn">Annuler</span></div><div class="d" style="font-size:12px;margin-top:6px">Rien à appliquer.</div></div></div><div id="etat-resultat"><div class="label">E-20 — après « Appliquer »</div><div class="dlg stack" style="max-width:560px"><div class="hrow"><h2>Importer le catalogue du système</h2><span class="btn sm">Fermer</span></div><div class="notice">Catalogue appliqué · version <b>2026-11-essai</b></div><p style="font-size:14px;margin:6px 0"><b>11 ajoutés</b>, 0 modifié, 1 refusé</p><div class="row" style="margin-top:10px"><span class="btn pri">Fermer</span></div></div></div><div id="etat-elements"><div class="label">E-20 — Antor, GM de l'univers : « Voir les éléments »</div><div class="otool"><h3>Éléments · Essai G</h3><div class="seg"><span>Coques · 4</span><span class="on">Armes · 9</span></div><div class="li "><div class="g">Laser à impulsion <span class="mono d">laser</span><small>masse 4 · coût 12</small></div><span class="chip2 m">Remplacé pour l'univers</span><span class="chip2 r">Visible des joueurs</span><span class="btn sm">Masquer aux joueurs</span></div><div class="li "><div class="g">Lance d'essai <span class="mono d">lance-essai</span><small>masse 9 · coût 30</small></div><span class="chip2 o">Univers</span><span class="chip2 m">MJ seul</span><span class="btn sm">Rendre visible</span></div><div class="li "><div class="g">Canon léger <span class="mono d">canon-leger</span><small>masse 6 · coût 10</small></div><span class="chip2">Système</span><span class="btn sm">Retirer de cet univers</span></div><div class="li dim"><div class="g">Mitrailleuse de coque <span class="mono d">mitrailleuse</span><small>masse 5 · coût 8</small></div><span class="chip2">Retiré de l'univers</span><span class="btn sm">Rétablir</span></div><div class="d" style="margin-top:8px"><span class="btn sm">Afficher la suite</span></div></div></div><div id="etat-elements-systeme"><div class="label">E-15 — Mira, GM non responsable : lecture seule</div><div class="otool"><h3>Éléments · Essai G</h3><div class="ro">Lecture seule : seul le responsable importe.</div><div class="seg" style="margin-top:8px"><span>Coques · 4</span><span class="on">Armes · 8</span></div><div class="li "><div class="g">Laser à impulsion <span class="mono d">laser</span><small>masse 4 · coût 12</small></div><span class="chip2">Système</span></div><div class="li "><div class="g">Canon léger <span class="mono d">canon-leger</span><small>masse 6 · coût 10</small></div><span class="chip2">Système</span></div></div></div></div></body></html>

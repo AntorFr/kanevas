@@ -31,7 +31,13 @@ export interface Outil extends Omit<Communs, 'effectif'> {
   description: string;
   type: string;
   dependances: string[];
+  catalogue?: CatalogueSummary;
   effectif: { active: boolean; visibilite: { mj: boolean; joueur: boolean }; reglages: Record<string, Resolue> };
+}
+export interface CatalogueSummary {
+  natures: { nom: string; libelle: string; libellePluriel: string }[];
+  systeme: { version: string | null; comptes: Record<string, number> };
+  univers: { version: string | null; comptes: Record<string, number> };
 }
 export interface Responsable {
   ecriture: boolean;
