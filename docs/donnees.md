@@ -341,7 +341,7 @@ l'univers de la fiche et écrit les trois colonnes ; **après** la validation, i
 fichier remplacé. Retirer : remet les trois colonnes à `NULL`, puis supprime le fichier. Un échec
 ou une annulation n'écrit ni colonne ni fichier ; un fichier remplacé ou retiré dont la
 suppression échoue reste orphelin et inatteignable (même risque accepté que les pièces jointes).
-Poser, remplacer ou retirer ne change pas `modifie_le` de la fiche (ce n'est pas une écriture de
+*(`kanevas-synchro`: it does now, B-93, AD-147.)* Poser, remplacer ou retirer ne change pas `modifie_le` de la fiche (ce n'est pas une écriture de
 ses sections). Le dossier `tmp/` est vidé au démarrage, comme pour les pièces jointes.
 
 **Droits, une phrase chacun.**
@@ -430,7 +430,7 @@ resserrement d'une tranche suivante, hors de cette epic. Le tableau dit l'état 
 |---|---|---|
 | `type` | le `CHECK` des sept valeurs est **levé** | validé par le service contre la liste du code (5) — la base ne peut plus le garantir : c'est le prix d'un type sans migration, choisi par Monsieur |
 | `parent_id` | nouvelle, → `fiches`, **ON DELETE SET NULL** ; nul : la fiche est à la racine | (1) même univers et pas de cycle : **service** (la règle traverse la table ; un déclencheur récursif est rejeté, AD-99) ; `CHECK (parent_id <> id)` |
-| `cle_origine` | nouvelle, texte 1 à 200 ; nulle : fiche née dans Kanevas | (2) index unique `(univers_id, cle_origine)` (plusieurs `NULL` permis) |
+| `cle_origine` | nouvelle, texte 1 à 200 ; nulle : fiche née dans Kanevas | *(`kanevas-synchro`: becomes `cle`, not null, B-99)* (2) index unique `(univers_id, cle_origine)` (plusieurs `NULL` permis) |
 | `sous_type` | nouvelle, texte 1 à 60 après rognage ; nulle : pas de sous-type (B-52, décision de Monsieur du 2026-10-11) | `CHECK (sous_type IS NULL OR length(trim(sous_type)) BETWEEN 1 AND 60)` ; propre au type : le service le vide quand le type change ; index `fiches (univers_id, type, sous_type)` — le filtre de E-8 et la complétion de E-9 (les sous-types distincts d'un type dans l'univers, sans tenir compte de la casse) |
 | `dernier_import` | *(`kanevas-synchro`: dropped, AD-138)* nouvelle, JSON : les valeurs que le dernier import a écrites — titre, type (et PJ), sous-type, alias, étiquettes ; l'illustration (clé) ; pour le parent, la clé **demandée** et le parent **écrit** ; nulle : jamais écrite par un import | (12) écrit par le service à chaque écriture d'import ; un champ dont la valeur courante diffère de la valeur **écrite** a été modifié dans Kanevas ; un champ laissé par B-48 garde la valeur écrite d'avant (il reste « modifié ») ; tant que le parent écrit diffère du parent demandé (cible absente, cycle), la fiche est **parent en attente** : chaque rejeu retente de poser le parent demandé, et ce n'est jamais pris pour une modification humaine |
 | `cree_le`, `modifie_le` | inchangées ; `cree_le` peut venir de l'import (B-50) | — |
@@ -557,6 +557,8 @@ tree » ; « an adventure has exactly one status among four » ; « a task belon
   (« Aventure supprimée », told to a GM only: the server sends the deleted adventure to nobody else, so a player cannot tell it from one closed to him).
 - `campagnes` and `scenarios` are **dropped** ; `cle_origine`, `dernier_import`, `version_importee`
   of a scenario move to the sheet (same columns on `fiches`, same unique `(univers_id, cle_origine)`).
+  *(`kanevas-synchro`, checked against `0017-scenarios-pivot.sql`: the sheet took `dernier_import`;
+  a scenario's `version_importee` went to its section.)*
 
 **Physical.** SQLite, unchanged. The status filter reads `json_extract(charge, '$.statut')` : no
 index — a universe counts tens of adventures, hundreds at most ; reopened above ten thousand.
@@ -618,7 +620,8 @@ stored (AD-139).
 **Rights.** A map's text is read under the map's visibility, its GM blocks for the GM only (AD-114);
 the attached sheet is named only to a reader who may read it (AD-38). The settings: instance admin
 only, read by the upload checks. The import token reads what its GM reads (AD-103): the whole
-universe, GM blocks included.
+universe, GM blocks included. *(Extension: a token is its account's — a player's token reads as the
+player; see below.)*
 
 **Physical and migration.** One migration, numbered at merge (AD-51): on `cartes`, five columns (`cle_origine`, `fiche_id`, `texte`, `texte_public`, `version`) and a partial
 unique index `(univers_id, cle_origine) WHERE cle_origine IS NOT NULL` on `cartes`, a foreign key
@@ -639,6 +642,8 @@ records one write, with a **previous value** for 30 days.
   `jetons_univers (jeton_id, univers_id, niveau, retire_par, retire_le)` — the list when not `tous`, and
   the GM's withdrawals in every case (a withdrawn row blocks even under `tous`). `jetons_outils`
   (`kanevas-outils`) stays a child of the token: a token with tool rows writes only those tools.
+- `fiches.creee_via` (`ecran` | `assistant` | `import` | `mcp`, set at creation; existing sheets: `import`
+  if they had an origin key, else `ecran`) — « née dans Kanevas » is every value but `import`.
 - `fiches.cle_origine` becomes `fiches.cle`, **not null**, unique per universe; the migration gives one
   to every sheet without (type and title, AD-146). `cles_anciennes (univers_id, cle, fiche_id)`: a former
   key leads to its sheet; a key in use cannot be a former one.
@@ -653,7 +658,8 @@ records one write, with a **previous value** for 30 days.
   Written by triggers from a per-transaction context (AD-147). A daily purge empties `valeur_avant`
   over 30 days and deletes lines over 90.
 
-**Rights.** A token reads and writes what its account may, in the universes it reaches at its level,
+**Rights.** A token reads and writes what its account may — a player's token reads what that player
+reads, and the fingerprints it receives are computed on that —  in the universes it reaches at its level,
 re-checked at each request (role lost → refused there). The history: GMs of the universe and tokens of
 a GM; never a player (a line can reveal a GM block exists). A previous value in the history is served
 under the same rule as the GM view.

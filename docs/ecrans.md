@@ -3383,8 +3383,9 @@ this text is authoritative where they differ.
 
 ## Screens of `kanevas-synchro` (framing, 2026-11-01)
 
-No new screen: the epic is an API first (B-80 to B-87, read and written by a script, P-22); its
-human gestures land on four existing screens, in the product's visual direction (`docs/charte.md`).
+The epic is an API first (B-80 to B-87, read and written by a script, P-22); its human gestures
+land on existing screens and on two new ones (E-23, E-24, below), in the product's visual direction
+(`docs/charte.md`).
 The slices draw them; nothing here invents a component.
 
 ### E-11 Carte — text and attached sheet
@@ -3433,6 +3434,8 @@ Reached from the account menu, outside any universe; address `/compte/jetons`.
   univers » with a level, or the list of the account's universes, each « — / Lecture / Lecture +
   écriture ». The value is shown once with « Copier » and the note « Il ne sera plus affiché. ».
 - On a token: « Modifier les accès » (the same form), « Révoquer » (confirmation naming the token).
+- « Outils » (once `kanevas-outils` is in): an optional list of tools the token writes, per universe,
+  as the « Portée » of E-18 in that epic; a token with tools writes only those tools and no content.
 - The note under the form: « Un jeton n'a jamais plus de droits que votre compte : là où vous êtes
   joueur, il agit en joueur. »
 - States: none yet → « Aucun jeton. » with « Créer un jeton »; save failed → « Impossible
