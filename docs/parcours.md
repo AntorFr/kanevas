@@ -321,7 +321,7 @@ thing at a time, and keeps the trace of who changed what (decisions of Monsieur,
   reads it on the sheet (E-9, « Historique ») and for the whole universe (E-24), filtered by
   contributor, by sheet or by action; a token reads it through the API and the MCP; a player does not.
   *(P-26)*
-- **B-103** — `[À TRANCHER : la restauration — « pas de retour arrière » (Monsieur, 21:21) puis l'alignement sur Kanka payant (contenu gardé 30 jours) ; recommandation : restaurer une valeur de moins de 30 jours ; ce qui la renverserait : vouloir l'historique en lecture seule, comme Kanka]` Within 30 days, a GM **restores** a previous value of a section or a header field from
+- **B-103** — Within 30 days, a GM **restores** a previous value of a section or a header field from
   the history; restoring is a write, and is itself in the history. A deleted sheet stays **readable**
   in the history 30 days (its sections as they were), and is not restored by a gesture. *(P-26)*
 - **B-89** — The **largest map background** is an instance setting the admin changes on E-5
