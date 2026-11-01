@@ -251,3 +251,10 @@ test('niveau système, MJ non responsable : le corps porte le code refuse (comme
   assert.equal(m.statusCode, 403);
   assert.equal(m.json().code, 'refuse', m.body);
 });
+
+test('jetons/outils : rôle (type) et libellé du module de chaque outil proposé', async () => {
+  const w = await monde();
+  const p = await w.app.inject({ method: 'GET', url: `/api/univers/${w.E}/jetons/outils`, headers: w.antor });
+  assert.equal(p.statusCode, 200);
+  assert.deepEqual(p.json(), [{ cle: G, libelle: 'Essai G', module: 'essai', libelleModule: "Module d'essai", type: 'generateur' }]);
+});
