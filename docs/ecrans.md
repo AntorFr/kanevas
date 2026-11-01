@@ -2963,6 +2963,8 @@ toast « Adresse copiée. »). Deux panneaux.
    reference warns « fichier « img:quais » inconnu : référence en attente ».
 
 
+*(`kanevas-synchro`: the token rows of this table — « Aucun jeton », « Nouveau jeton », « Révoquer », the role message — move to E-23 and E-5; E-18 keeps the batches, see « E-18 Accès par API — batches only ».)*
+
 | État | Ce qu'on voit | Ce qu'on peut faire |
 |---|---|---|
 | vide | « Aucun jeton. Créez-en un pour qu'un script écrive dans cet univers. » (aucun jeton du tout ; avec seulement des jetons révoqués ou expirés, la liste les montre, sans ce texte) ; « Aucun lot d'import pour l'instant. » | « Nouveau jeton » |
@@ -3429,13 +3431,15 @@ refusals with its key and « modifiée depuis la lecture ». The warnings « mod
 Reached from the account menu, outside any universe; address `/compte/jetons`.
 - The list: each token with its name, expiry, last use and accesses (« Tous mes univers — lecture +
   écriture », or « Éneria : lecture + écriture · Essai : lecture »); a token the admin changed or revoked
-  says so (« modifié par l'admin »).
+  says so (« modifié par l'admin », « révoqué par l'admin »).
 - « Créer un jeton »: name (1–80), lifetime (7, 30 default, 90, 365 days), then the accesses: « Tous mes
-  univers » with a level, or the list of the account's universes, each « — / Lecture / Lecture +
-  écriture ». The value is shown once with « Copier » and the note « Il ne sera plus affiché. ».
+  univers » with a level and, under it, optional exceptions (a universe at another level or at « — »),
+  or the list of the account's universes, each « — / Lecture / Lecture + écriture ». An exception the
+  admin set is shown like the owner's and can be changed by him. The value is shown once with « Copier » and the note « Il ne sera plus affiché. ».
 - On a token: « Modifier les accès » (the same form), « Révoquer » (confirmation naming the token).
-- « Outils » (once `kanevas-outils` is in): an optional list of tools the token writes, per universe,
-  as the « Portée » of E-18 in that epic; a token with tools writes only those tools and no content.
+- « Outils » (`kanevas-outils`, B-65, which this epic follows): an optional list of tools, for the
+  token as a whole; a token with tools writes only those tools' data and no content, and its line says
+  « outils : galaxie » after its accesses.
 - The note under the form: « Un jeton n'a jamais plus de droits que votre compte : là où vous êtes
   joueur, il agit en joueur. »
 - States: none yet → « Aucun jeton. » with « Créer un jeton »; save failed → « Impossible
@@ -3446,32 +3450,38 @@ The token list and its creation leave E-18 (to E-23); E-18 keeps the batches of 
 
 ### E-5 Administration — the panel « Jetons d'API » (`kanevas-synchro`)
 Every token of the instance: name, owner, accesses, expiry, last use; filter by owner; on each
-« Modifier les accès » (the E-23 form) and « Révoquer » (confirmation). The owner's E-23 marks the
+« Modifier les accès » (the E-23 form, exceptions included) and « Révoquer » (confirmation). The owner's E-23 marks the
 token « modifié par l'admin » or « révoqué par l'admin ».
 
 ### E-24 Historique de l'univers (GM) — `kanevas-synchro`
 Address `/univers/eneria/historique`. Lines from the newest: date, contributor (account, and « via
 <jeton> », « assistant » or « import · lot <n> »), the sheet (link; a deleted one in plain text with
 « supprimée »), what changed (« Section Histoire réécrite », « Titre changé », « Relation vers
-faction:les-veilleurs ajoutée », « Fiche supprimée »). Filters: contributor, sheet, action, period;
+faction:les-veilleurs ajoutée », « Fiche supprimée »). Filters: contributor (an account, or one of its tokens), sheet, action, period;
 100 lines at a time, then « Charger la suite ». A line under 30 days opens its detail: the previous value
-next to the current one, and « Restaurer cette version » for a section or a header field
-(confirmation; B-103); for a deleted sheet, its sections as they were, read-only. Over 30 days, the
+next to the current one, and « Restaurer cette version » for a section (a deleted one included) or a header field
+(confirmation; B-103); for a relation, the previous value without the button; for a deleted sheet, its
+sections as they were, read-only. Refusals: changed since the detail opened → « La fiche a changé depuis
+l'affichage. » with « Recharger »; a deleted section whose key was taken since → « Une autre section
+porte maintenant cette clé. ». Over 30 days, the
 line has no detail: « Valeur précédente non conservée (plus de 30 jours). » Lines over 90 days are gone.
 
 ### E-9 Fiche — key and history (`kanevas-synchro`)
 - Under the title, for the GM: the key `lieu:nyx` with « Copier » and « Modifier la clé… » (a field,
   the warning « Les liens et outils qui citent lieu:nyx ne la retrouveront plus ; l'ancienne clé
-  continuera de mener ici. »; refused if taken: « Cette clé existe déjà dans l'univers. »).
+  continuera de mener ici. »; refused if taken: « Cette clé existe déjà dans l'univers. »; out of form: « Lettres minuscules,
+  chiffres, tirets et un « : » au plus, avec au moins une lettre. »).
 - GM menu « ⋯ »: « Historique » opens E-24 filtered on the sheet.
 
 ### E-14 Paramètres de l'univers — its identifier (`kanevas-synchro`)
-The field « Identifiant » (`eneria`: lowercase letters, digits, dashes, 2–40), with the warning that
-the former one keeps leading here; refused if taken on the instance.
+The field « Identifiant » (`eneria`: lowercase letters, digits, dashes, 2–40, at least one letter),
+with the warning that the former one keeps leading here; refused if taken on the instance (« Cet
+identifiant est déjà pris. ») or out of form (« Lettres minuscules, chiffres et tirets, 2 à 40, avec au
+moins une lettre. »).
 
 ### Cross-check (extension)
 - B-92, B-93, B-97, B-98 → the API and the MCP (no screen; E-24 shows what they wrote);
-  B-94 → E-23; B-95 → E-5; B-96, B-102, B-103 → E-24, E-9; B-99 → E-9; B-100 → E-14; B-101 → every
+  B-94 → E-23 (its tools too); B-95 → E-5; B-96, B-102, B-103 → E-24, E-9; B-99 → E-9; B-100 → E-14; B-101 → every
   address.
 - P-24 → the MCP, E-9 by its address; P-25 → E-23, E-5; P-26 → E-24, E-9.
 - Roles: every account on E-23; GM on E-24, E-9 key, E-14; admin on E-5 (tokens); player: E-23 only.

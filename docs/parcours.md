@@ -150,7 +150,7 @@ Forme de la skill `exigences` ; chaque besoin cite les parcours qui le réalisen
 - **B-45** — *(`kanevas-synchro`: tokens belong to an account, every member creates them on E-23, they reach the universes chosen, B-94)* Un MJ crée un **jeton d'API** pour son univers depuis « Accès par API » (E-18) : un nom,
   une durée (30 jours par défaut, un an au plus) ; Kanevas le montre **une seule fois** ; le jeton agit
   avec les droits de ce MJ dans ce seul univers, et seulement sur l'API d'import. *(P-11, P-10)*
-- **B-46** — *(`kanevas-synchro`: the owner revokes, B-94; the instance admin revokes or changes any token, B-95; a GM no longer revokes)* Un MJ voit les jetons de son univers (nom, créé par, dernier usage, expiration) et en
+- **B-46** — *(`kanevas-synchro`: a token is seen and revoked by its owner on E-23, B-94, and by the instance admin on E-5, B-95; a GM no longer sees nor revokes the tokens that reach his universe, and E-18 keeps the batches only; the 401 rule holds)* Un MJ voit les jetons de son univers (nom, créé par, dernier usage, expiration) et en
   **révoque** un depuis E-18 ; si le jeton est révoqué, expiré, ou si son MJ a perdu ce rôle, alors
   toute requête qui le présente est refusée (401) et rien n'est écrit. *(P-11)*
 - **B-47** — *(`kanevas-synchro`: a replay writes every field it carries, B-86; « nothing changes if nothing changed » holds)* *(`kanevas-scenarios`: adventures go through this same route, B-61)* Quand un script pousse une fiche par l'API d'import avec une **clé d'origine**, Kanevas
@@ -273,7 +273,8 @@ thing at a time, and keeps the trace of who changed what (decisions of Monsieur,
   not, background image, the sheet it belongs to (a key), a short text in Markdown with GM blocks.
   An unknown sheet key is refused with its field (`fiche`), counted, and nothing is written;
   `fiche` absent leaves the attachment, `null` detaches. The background travels with the map, not
-  taken from the media library; on an existing map, `fond` absent leaves the background, so a script
+  taken from the media library; a new map may come without one (a neutral 16/10 frame, as on E-11, AD-70;
+  its background SHA-256 is null); on an existing map, `fond` absent leaves the background, so a script
   that reads the background's SHA-256 (B-90) sends it only when it changed. Replaying it creates no duplicate; it counts in the batch; it accepts the fingerprint like any
   write. Its tokens are not imported. *(P-22)*
 - **B-88** — A GM **attaches a map to a sheet** (a place, a ship, an adventure…), changes that sheet
@@ -284,15 +285,19 @@ thing at a time, and keeps the trace of who changed what (decisions of Monsieur,
   each in « lecture » or « lecture + écriture », or « tous mes univers » at one level, which also
   covers every universe the account joins later. The token is shown once; its accesses can be
   changed afterwards; it can be revoked. A token never exceeds its account's rights: a player's token
-  in « lecture + écriture » writes only where that player may write. *(P-25)*
+  in « lecture + écriture » writes only where that player may write. A token restricted to tools
+  (`kanevas-outils`, B-65) keeps that restriction, set on E-23: it writes those tools' data and no
+  content, whatever its level. *(P-25)*
 - **B-95** — The **instance admin** sees every token of the instance on E-5 (name, owner, accesses,
   last use), **revokes** any of them and **changes its accesses**; the owner sees on E-23 « modifié par
-  l'admin ». A GM has no gesture on the tokens that reach his universe: a token is its owner's (decision
+  l'admin » or « révoqué par l'admin ». « Tous mes univers » takes **exceptions** — a universe at another
+  level, or at « — » —, so the admin cuts one universe without cutting the others nor the ones to come;
+  the owner may change the accesses again, and an admin who wants a token gone revokes it. A GM has no gesture on the tokens that reach his universe: a token is its owner's (decision
   of Monsieur, 2026-11-01). *(P-25)*
 - **B-96** — Everything a token writes is **attributed to its account**, naming the token. *(P-26)*
 - **B-97** — An agent reaches Kanevas through an **MCP server** (`/mcp`) with an API token: it lists
   the universes of the token, searches, reads a sheet or a section, lists the sheets that mention one,
-  reads the history (B-102), and — with « lecture + écriture » — creates a sheet and writes
+  reads the history (B-102) where its account is GM, and — with « lecture + écriture » — creates a sheet and writes
   through the targeted writes of B-82 to B-84, each with its precondition (B-85), directly. The tools are the assistant's (one catalogue); image generation
   is not offered. *(P-24)*
 - **B-98** — A **text search returns passages**: for each match, the sheet, the section and an
@@ -304,16 +309,21 @@ thing at a time, and keeps the trace of who changed what (decisions of Monsieur,
   changing its type does not change it. The GM sees it on E-9 and changes it, warned that what cites
   it will no longer find it; a former key keeps leading to the sheet — an import or a read by a former key reaches the
   same sheet, never a duplicate. A key is `<type>:<name>` for a sheet born in Kanevas (lowercase
-  letters, digits, dashes); an imported key keeps the import's form (1–200 characters). *(P-24, P-26)*
+  letters, digits, dashes); an imported key keeps the import's form (1–200 characters). A key holds **at least one letter** —
+  one made of digits alone would be read as an id: the import refuses it (`invalide`, field `cle`).
+  The key the GM types on E-9 is lowercase letters, digits, dashes and at most one `:`, 2–200
+  characters, with a letter. *(P-24, P-26)*
 - **B-104** — Every **section** has a key too, unique in its sheet: an imported one keeps its origin
   key; one born in Kanevas receives one at creation from its title (« Histoire » → `histoire`), stable
   across renames. The import and the MCP address any section by it — a section born in Kanevas is no
   longer out of their reach (B-83 amended); a section managed by a tool stays refused. *(P-24)*
 - **B-100** — Every universe has a **readable identifier** (`eneria`), unique on the instance, set at
   creation from its name and changed by its GM on E-14 (lowercase letters, digits, dashes, 2–40, at
-  least one letter, so it is never mistaken for an id); a former one keeps leading to it. *(P-24, P-26)*
+  least one letter, so it is never mistaken for an id; a name without a letter gives `univers-<id>`);
+  a former one keeps leading to it. *(P-24, P-26)*
 - **B-101** — Addresses use them: a sheet is `/univers/eneria/lieu/nyx` (its key's two parts; a key
-  without that form, or whose first part is the name of a page, is `/univers/eneria/fiche/<key>`), the
+  without that form, or whose first part is not a sheet type of the product, is
+  `/univers/eneria/fiche/<key>`, so no key ever takes a page's address), the
   API and the MCP accept the key; a numeric address or id is still accepted and leads to the same
   sheet. *(P-24)*
 - **B-102** — Kanevas keeps the **history of every write to a sheet** — header field, section created,
@@ -321,10 +331,14 @@ thing at a time, and keeps the trace of who changed what (decisions of Monsieur,
   what changed, the fingerprint after, the account, the token or « assistant » or « import » (with its
   batch). This line is kept **90 days**; the **previous value** (a text included) **30 days**. A GM
   reads it on the sheet (E-9, « Historique ») and for the whole universe (E-24), filtered by
-  contributor, by sheet or by action; a token reads it through the API and the MCP; a player does not.
+  contributor (an account, or one of its tokens), by sheet or by action; a token reads it through the API and the MCP; a player does not.
   *(P-26)*
 - **B-103** — Within 30 days, a GM **restores** a previous value of a section or a header field from
-  the history; restoring is a write, and is itself in the history. A deleted sheet stays **readable**
+  the history; restoring is a write, and is itself in the history. It writes over the value the GM sees next to it:
+  if the section or the field changed since he opened the line, it is refused and he reloads — never
+  over a write he has not seen. A deleted section comes back under its key, at the end of the sheet,
+  unless a section took that key since (refused). A relation's previous value is shown, not
+  restored. A deleted sheet stays **readable**
   in the history 30 days (its sections as they were), and is not restored by a gesture. *(P-26)*
 - **B-89** — The **largest map background** is an instance setting the admin changes on E-5
   (75 MB by default); it holds for a background set on E-11 and for one sent by the import. *(P-23)*
@@ -778,8 +792,9 @@ introuvable. ».
 ### P-25 — Manage one's tokens (Léa, player; Antor, GM)
 1. Léa opens « Mes jetons d'API » (**E-23**), creates « Agent de Léa », « tous mes univers », in
    « lecture » (B-94); she copies the value shown once.
-2. A token of Léa's misbehaves in Éneria: Antor asks the admin, who on **E-5** changes its access to
-   Éneria to « — » (B-95); Léa's page shows « modifié par l'admin », her other universes unchanged.
+2. A token of Léa's misbehaves in Éneria: Antor asks the admin, who on **E-5** adds to « tous mes
+   univers » the exception « Éneria : — » (B-95); Léa's page shows « modifié par l'admin », her other
+   universes unchanged, and so will every universe she joins later.
 
 ### P-26 — See who changed what, and undo a mistake (Antor, GM, the day after)
 1. On « Historique » of Éneria (**E-24**), Antor filters on the token « Agent Éneria » (B-102): twelve

@@ -34,7 +34,7 @@ façon (AD-2).
 | **alias** *(kanevas-import)* | un autre nom de la fiche | fiche | qui voit la fiche | MJ ; l'import |
 | **étiquette** *(kanevas-import)* | nom, unique dans l'univers | univers ; ↔ fiches | ses fiches qu'un compte voit ; une étiquette sans fiche visible n'existe pas pour lui | MJ ; l'import (créée au premier usage) |
 | **réglage de type** *(kanevas-import)* | un type, activé ou non — au système ; forcé activé ou désactivé — à l'univers ; l'absence veut dire « suit » (AD-102) | système de jeu ou univers | membres d'un univers rattaché (système) ; membres de l'univers (univers) | MJ d'un univers rattaché (système, B-42) ; MJ de l'univers (univers) |
-| **jeton d'API** *(kanevas-import)* | nom, empreinte (jamais la valeur), créé le, expire le, révoqué le, dernier usage | univers, compte du MJ qui l'a créé (l'acteur) | les MJ de l'univers (sans la valeur) | création : MJ ; révocation : tout MJ de l'univers (B-45, B-46) |
+| **jeton d'API** *(kanevas-import)* | nom, empreinte (jamais la valeur), créé le, expire le, révoqué le, dernier usage | univers, compte du MJ qui l'a créé (l'acteur) | les MJ de l'univers (sans la valeur) | création : MJ ; révocation : tout MJ de l'univers (B-45, B-46) — *`kanevas-synchro` : le jeton est d'un compte, vu, créé et révoqué par son propriétaire, vu, modifié et révoqué par l'admin d'instance ; plus par les MJ (B-94, B-95)* |
 | **lot d'import** *(kanevas-import)* | ouvert le, clos le, état, compteurs (créées, mises à jour, inchangées, refusées, avertissements), rapport des refus et avertissements | univers, jeton | les MJ de l'univers | le serveur, pour un script qui présente un jeton (B-49) |
 | **proposition** | contenu proposé, empreinte du contenu d'origine (la `version` de la section, AD-59), créée le, appliquée le | univers, compte demandeur, section, CR source | son seul demandeur | créée par l'agent du MJ ; appliquée une fois par son demandeur, si la section n'a pas changé (B-21) |
 
@@ -481,7 +481,7 @@ accepté, `kanevas-fichiers`).
 voit la fiche, s'écrivent par le MJ ; une étiquette est proposée à un compte si elle porte au moins une
 fiche qu'il voit ; un réglage de type de système s'écrit par un MJ d'un univers rattaché, se lit par
 les membres des univers rattachés ; un réglage d'univers s'écrit par un MJ de l'univers ; un jeton et
-un lot se lisent par les MJ de l'univers, un jeton se révoque par tout MJ de l'univers ; la clé
+un lot se lisent par les MJ de l'univers, un jeton se révoque par tout MJ de l'univers *(`kanevas-synchro` : un lot seulement ; un jeton se lit et se révoque par son propriétaire et l'admin d'instance)* ; la clé
 d'origine se lit par le MJ.
 
 ### Physique
@@ -639,10 +639,12 @@ records one write, with a **previous value** for 30 days.
 **Logical.**
 - `jetons_api`: `univers_id` and the « GM who created it » give way to `compte_id` (the owner) and
   `tous` (boolean) with `niveau_tous` (`lecture` | `ecriture`, when `tous`); child
-  `jetons_univers (jeton_id, univers_id, niveau)` — the list when not `tous`; with `tous`, a row at
-  `aucun` excludes a universe (the admin's way to cut one); `modifie_par_admin` (account, date) on
-  the token. `jetons_outils`
-  (`kanevas-outils`) stays a child of the token: a token with tool rows writes only those tools.
+  `jetons_univers (jeton_id, univers_id, niveau)` — the list when not `tous`; with `tous`, the exceptions —
+  a row at the other level, or at `aucun` to leave a universe out — set by the owner or the admin alike;
+  `modifie_par_admin` (account, date) on the token, cleared when the owner saves the accesses again;
+  `revoque_par` (account: the owner or an admin; « révoqué par l'admin » when it is not the owner).
+  `jetons_outils (jeton_id, outil)` (`kanevas-outils`) stays a child of the token: a token with tool
+  rows writes only those tools.
 - `fiches.creee_via` (`ecran` | `assistant` | `import` | `mcp`, set at creation; existing sheets: `import`
   if they had an origin key, else `ecran`) — « née dans Kanevas » is every value but `import`.
 - `fiches.cle_origine` becomes `fiches.cle`, **not null**, unique per universe; the migration gives one
@@ -655,7 +657,7 @@ records one write, with a **previous value** for 30 days.
 - `fiches.modifie_le` moves on every write to what the read returns, held by **triggers** (AD-147).
 - `historique (id, univers_id, fiche_id (null once the sheet is deleted), fiche_cle, fiche_titre, objet
   (entete | section | relation | fiche), objet_cle, action, empreinte_apres, compte_id, jeton_id,
-  origine (ecran | assistant | import | mcp), lot_id, cree_le, valeur_avant (JSON, null after 30 days))`.
+  origine (ecran | assistant | import | mcp | outil), lot_id, cree_le, valeur_avant (JSON, null after 30 days))`.
   Written by triggers from a per-transaction context (AD-147). A daily purge empties `valeur_avant`
   over 30 days and deletes lines over 90.
 
@@ -667,7 +669,8 @@ under the same rule as the GM view.
 
 **Physical and migration.** One migration (numbered at merge, AD-51): tokens re-homed (each existing
 token gets `compte_id` = its creator and one `jetons_univers` row at `ecriture`), keys generated
-(collisions suffixed `-2`, `-3`… in id order), triggers created, the history table empty at start.
+(collisions suffixed `-2`, `-3`… in id order; an existing key without a letter becomes `cle-<digits>`, and a
+universe name without a letter gives `univers-<id>`), triggers created, the history table empty at start.
 `better-sqlite3` runs triggers inside the write's transaction: a write and its history line are
 atomic.
 
