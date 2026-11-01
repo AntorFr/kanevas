@@ -37,6 +37,7 @@ describe('E-18 : portée du jeton et lots d’outil', { skip: skipBrowser, timeo
         await dlg.getByText('Cochez au moins un outil.').waitFor();
         assert.equal(await dlg.getByRole('button', { name: 'Créer le jeton' }).isDisabled(), true);
         await photo(page, 'validation');
+        await dlg.getByLabel("Essai G · Générateur · Module d'essai", { exact: true }).waitFor();
         await dlg.getByLabel(/Essai G/).check();
         assert.equal(await dlg.getByText('Cochez au moins un outil.').count(), 0);
         assert.equal(await dlg.getByRole('button', { name: 'Créer le jeton' }).isDisabled(), false);
