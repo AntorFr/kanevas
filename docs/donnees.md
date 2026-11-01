@@ -639,8 +639,9 @@ records one write, with a **previous value** for 30 days.
 **Logical.**
 - `jetons_api`: `univers_id` and the « GM who created it » give way to `compte_id` (the owner) and
   `tous` (boolean) with `niveau_tous` (`lecture` | `ecriture`, when `tous`); child
-  `jetons_univers (jeton_id, univers_id, niveau, retire_par, retire_le)` — the list when not `tous`, and
-  the GM's withdrawals in every case (a withdrawn row blocks even under `tous`). `jetons_outils`
+  `jetons_univers (jeton_id, univers_id, niveau)` — the list when not `tous`; with `tous`, a row at
+  `aucun` excludes a universe (the admin's way to cut one); `modifie_par_admin` (account, date) on
+  the token. `jetons_outils`
   (`kanevas-outils`) stays a child of the token: a token with tool rows writes only those tools.
 - `fiches.creee_via` (`ecran` | `assistant` | `import` | `mcp`, set at creation; existing sheets: `import`
   if they had an origin key, else `ecran`) — « née dans Kanevas » is every value but `import`.

@@ -150,7 +150,7 @@ Forme de la skill `exigences` ; chaque besoin cite les parcours qui le réalisen
 - **B-45** — *(`kanevas-synchro`: tokens belong to an account, every member creates them on E-23, they reach the universes chosen, B-94)* Un MJ crée un **jeton d'API** pour son univers depuis « Accès par API » (E-18) : un nom,
   une durée (30 jours par défaut, un an au plus) ; Kanevas le montre **une seule fois** ; le jeton agit
   avec les droits de ce MJ dans ce seul univers, et seulement sur l'API d'import. *(P-11, P-10)*
-- **B-46** — *(`kanevas-synchro`: the GM sees the tokens that reach the universe and withdraws their access, B-95; the owner revokes, B-94)* Un MJ voit les jetons de son univers (nom, créé par, dernier usage, expiration) et en
+- **B-46** — *(`kanevas-synchro`: the owner revokes, B-94; the instance admin revokes or changes any token, B-95; a GM no longer revokes)* Un MJ voit les jetons de son univers (nom, créé par, dernier usage, expiration) et en
   **révoque** un depuis E-18 ; si le jeton est révoqué, expiré, ou si son MJ a perdu ce rôle, alors
   toute requête qui le présente est refusée (401) et rien n'est écrit. *(P-11)*
 - **B-47** — *(`kanevas-synchro`: a replay writes every field it carries, B-86; « nothing changes if nothing changed » holds)* *(`kanevas-scenarios`: adventures go through this same route, B-61)* Quand un script pousse une fiche par l'API d'import avec une **clé d'origine**, Kanevas
@@ -283,9 +283,10 @@ thing at a time, and keeps the trace of who changed what (decisions of Monsieur,
   covers every universe the account joins later. The token is shown once; its accesses can be
   changed afterwards; it can be revoked. A token never exceeds its account's rights: a player's token
   in « lecture + écriture » writes only where that player may write. *(P-25)*
-- **B-95** — `[À TRANCHER : la garde du MJ sur les jetons qui atteignent son univers — proposée le 2026-11-01, pas encore répondue ; recommandation : voir et retirer, avec « Rétablir » ; ce qui la renverserait : ne vouloir que la révocation par le propriétaire]` A GM sees, on « Accès par API » (E-18), **every token that reaches the universe**
-  (name, owner, level, last use) and **withdraws a token's access to this universe**; the token keeps
-  its other universes, and its owner sees this one marked « retiré par le MJ ». *(P-25)*
+- **B-95** — The **instance admin** sees every token of the instance on E-5 (name, owner, accesses,
+  last use), **revokes** any of them and **changes its accesses**; the owner sees on E-23 « modifié par
+  l'admin ». A GM has no gesture on the tokens that reach his universe: a token is its owner's (decision
+  of Monsieur, 2026-11-01). *(P-25)*
 - **B-96** — Everything a token writes is **attributed to its account**, naming the token. *(P-26)*
 - **B-97** — An agent reaches Kanevas through an **MCP server** (`/mcp`) with an API token: it lists
   the universes of the token, searches, reads a sheet or a section, lists the sheets that mention one,
@@ -775,9 +776,8 @@ introuvable. ».
 ### P-25 — Manage one's tokens (Léa, player; Antor, GM)
 1. Léa opens « Mes jetons d'API » (**E-23**), creates « Agent de Léa », « tous mes univers », in
    « lecture » (B-94); she copies the value shown once.
-2. Antor, on « Accès par API » of Éneria (**E-18**), sees « Agent de Léa — Léa — lecture — utilisé
-   hier » (B-95); a week later he withdraws its access to Éneria; Léa's page shows Éneria « retiré par
-   le MJ », her other universes unchanged.
+2. A token of Léa's misbehaves in Éneria: Antor asks the admin, who on **E-5** changes its access to
+   Éneria to « — » (B-95); Léa's page shows « modifié par l'admin », her other universes unchanged.
 
 ### P-26 — See who changed what, and undo a mistake (Antor, GM, the day after)
 1. On « Historique » of Éneria (**E-24**), Antor filters on the token « Agent Éneria » (B-102): twelve

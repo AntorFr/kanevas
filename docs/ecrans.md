@@ -100,7 +100,7 @@ E-16 vivent hors des univers : leurs cases disent le rôle dans un univers ratta
 | E-2 | créer | créer | créer |
 | E-3 | tout | sans préparation ni scénarios ; *(kanevas-scenarios)* « Campagnes en cours »: those he reads, with their status | — |
 | E-4 | tout | — | — (passe par E-5) |
-| E-5 | — | — | lister les univers et leurs membres ; ajouter, changer un rôle, retirer un membre ; voir l'état du jeton de l'assistant, connecter ou reconnecter l'abonnement ; *(kanevas-synchro)* régler la taille maximale d'un fond de carte (B-89) |
+| E-5 | — | — | lister les univers et leurs membres ; ajouter, changer un rôle, retirer un membre ; voir l'état du jeton de l'assistant, connecter ou reconnecter l'abonnement ; *(kanevas-synchro)* régler la taille maximale d'un fond de carte (B-89) ; voir tous les jetons, en changer les accès, les révoquer (B-95) |
 | E-6 | *retired (`kanevas-scenarios`)* | — | — |
 | E-7 | *retired (`kanevas-scenarios`)* | — | — |
 | E-8 | lire, chercher, créer ; la vignette de chaque fiche (son illustration, ou le repli dessiné) ; *(kanevas-scenarios)* for the « Aventure » type: the status badge, the « Statut » filter, the status menu on a card or a tree line (outside player mode), the creation form with sub-type suggestions and « Visible des joueurs » ; *(kanevas-fiche-mj-seul)* the « MJ seul » badge on a sheet players cannot see, the « Visibilité » filter | lire, chercher ; la vignette des fiches qu'il voit ; *(kanevas-scenarios)* adventures: the status badge and the « Statut » filter; the status menu and « Nouvelle aventure » ; *(kanevas-fiche-mj-seul)* no « MJ seul » badge, no « Visibilité » filter (**caché**) | — |
@@ -114,7 +114,7 @@ E-16 vivent hors des univers : leurs cases disent le rôle dans un univers ratta
 | E-16 (hors univers) | ses systèmes, avec ses univers et son rôle | ses systèmes, « Lecture seule » | la liste de ses propres systèmes (comme MJ ou Joueur s'il est membre d'un univers rattaché) ; vide sinon — l'écran est proposé à tout compte |
 | E-17 *(kanevas-import)* | chercher dans toutes les fiches de l'univers, blocs MJ compris ; en **mode Joueur**, comme un joueur (ni blocs MJ, ni fiches qu'un joueur ne lit pas) ; filtres : les types activés ; les fiches des types désactivés restent des résultats sous « Tous » ; *(kanevas-scenarios)* an adventure result carries its status badge (the player's too) | chercher dans ce qu'il lit, hors blocs MJ ; filtres par type et par étiquette des seules fiches qu'il voit ; bascule de mode : absente (cachée) ; blocs MJ : hors recherche (jamais lus) ; « Alias et étiquettes… » sur E-9 : cachée | — |
 | E-19 *(kanevas-import)* | tout : ajouter, renommer, visibilité, supprimer ; « Utilisé dans » complet | les fichiers visibles des joueurs et ceux qu'il a ajoutés ; « Utilisé dans » réduit aux fiches qu'il lit ; ni ajout depuis E-19 (**caché** ; il ajoute un fichier par une section qu'il écrit, E-9), ni réglage, ni suppression (**cachés**) | — |
-| E-18 *(kanevas-import)* | *(kanevas-synchro: voir les jetons qui atteignent l'univers, retirer ou rétablir leur accès ; la création passe à E-23)* créer un jeton ; voir et révoquer tous les jetons de l'univers (y compris ceux d'un autre MJ) ; voir les lots | — (**caché** : absent de la barre, « Page introuvable. » par l'adresse) | — |
+| E-18 *(kanevas-import)* | *(kanevas-synchro: les lots seulement ; les jetons passent à E-23, et à E-5 pour l'admin)* créer un jeton ; voir et révoquer tous les jetons de l'univers (y compris ceux d'un autre MJ) ; voir les lots | — (**caché** : absent de la barre, « Page introuvable. » par l'adresse) | — |
 | E-23 *(kanevas-synchro)* | ses jetons : créer, modifier les accès, révoquer | ses jetons : créer, modifier les accès, révoquer | ses jetons |
 | E-24 *(kanevas-synchro)* | lire l'historique de l'univers, filtrer, restaurer une valeur de moins de 30 jours | — | — |
 
@@ -3428,8 +3428,8 @@ refusals with its key and « modifiée depuis la lecture ». The warnings « mod
 ### E-23 Mes jetons d'API (every account) — `kanevas-synchro`
 Reached from the account menu, outside any universe; address `/compte/jetons`.
 - The list: each token with its name, expiry, last use and accesses (« Tous mes univers — lecture +
-  écriture », or « Éneria : lecture + écriture · Essai : lecture »); a universe whose GM withdrew the
-  access is struck through with « retiré par le MJ ».
+  écriture », or « Éneria : lecture + écriture · Essai : lecture »); a token the admin changed or revoked
+  says so (« modifié par l'admin »).
 - « Créer un jeton »: name (1–80), lifetime (7, 30 default, 90, 365 days), then the accesses: « Tous mes
   univers » with a level, or the list of the account's universes, each « — / Lecture / Lecture +
   écriture ». The value is shown once with « Copier » and the note « Il ne sera plus affiché. ».
@@ -3441,11 +3441,13 @@ Reached from the account menu, outside any universe; address `/compte/jetons`.
 - States: none yet → « Aucun jeton. » with « Créer un jeton »; save failed → « Impossible
   d'enregistrer. » with « Réessayer ».
 
-### E-18 Accès par API — the tokens that reach the universe (`kanevas-synchro`)
-The creation moves to E-23. E-18 lists, for the GM, every token that reaches this universe — name,
-owner, level, last use — each with « Retirer l'accès à cet univers » (confirmation; the token keeps its
-other universes); a withdrawn token is listed under « Accès retirés » with « Rétablir ». The batches
-stay below, unchanged.
+### E-18 Accès par API — batches only (`kanevas-synchro`)
+The token list and its creation leave E-18 (to E-23); E-18 keeps the batches of the universe, unchanged.
+
+### E-5 Administration — the panel « Jetons d'API » (`kanevas-synchro`)
+Every token of the instance: name, owner, accesses, expiry, last use; filter by owner; on each
+« Modifier les accès » (the E-23 form) and « Révoquer » (confirmation). The owner's E-23 marks the
+token « modifié par l'admin » or « révoqué par l'admin ».
 
 ### E-24 Historique de l'univers (GM) — `kanevas-synchro`
 Address `/univers/eneria/historique`. Lines from the newest: date, contributor (account, and « via
@@ -3469,8 +3471,8 @@ the former one keeps leading here; refused if taken on the instance.
 
 ### Cross-check (extension)
 - B-92, B-93, B-97, B-98 → the API and the MCP (no screen; E-24 shows what they wrote);
-  B-94 → E-23; B-95 → E-18; B-96, B-102, B-103 → E-24, E-9; B-99 → E-9; B-100 → E-14; B-101 → every
+  B-94 → E-23; B-95 → E-5; B-96, B-102, B-103 → E-24, E-9; B-99 → E-9; B-100 → E-14; B-101 → every
   address.
-- P-24 → the MCP, E-9 by its address; P-25 → E-23, E-18; P-26 → E-24, E-9.
-- Roles: every account on E-23; GM on E-18, E-24, E-9 key, E-14; player: E-23 only.
+- P-24 → the MCP, E-9 by its address; P-25 → E-23, E-5; P-26 → E-24, E-9.
+- Roles: every account on E-23; GM on E-24, E-9 key, E-14; admin on E-5 (tokens); player: E-23 only.
 
