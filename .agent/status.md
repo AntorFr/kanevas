@@ -1,5 +1,6 @@
 # Status — kanevas
 
+> MàJ : 2026-11-01 (assemblage de `kanevas-connexion-claude-entree`, dernier paragraphe)
 > MàJ : 2026-10-31 (assemblage de `kanevas-deplacer-arborescence`, PR vers `main`)
 > MàJ : 2026-10-31 (assemblage de `kanevas-suite-attestee-charge`)
 > MàJ : 2026-10-31 (assemblage de `kanevas-release-outils-cadre-anglais`)
@@ -240,3 +241,6 @@ Piège : ne joindre à `cible` que ce que le badge lit ; une autre clé de charg
 **Correctif `kanevas-connexion-claude-com`** (bug de B-51 / E-5, AD-112 règle 3 ; PR non fusionnée) : Claude Code 2.1.287 affiche son adresse de connexion sur `claude.com` (`/cai/oauth/authorize`), que `tirerAdresse` (`services/assistant/connexion-claude.ts`) ignorait ; en production « Connecter » attendait 30 s puis répondait 502. Le filtre accepte maintenant `claude.com`, `claude.ai` et `anthropic.com` (et leurs sous-domaines), rien d'autre ; `connexion-adresse.test.ts` rejoue la sortie réelle du CLI (séquence OSC 8 + adresse en clair) et attend l'adresse seule. AD-112 amendé. Le bouchon (`scripts/faux-setup-token.mjs`, claude.ai) et la maquette e05 ne changent pas.
 **Reste :** la fusion après recette, puis une nouvelle version de l'image et sa PR GitOps (Monsieur) ; en production, vérifier « Connecter » avec le vrai CLI.
 Piège encore vrai : le filtre dépend du domaine que le CLI imprime ; un nouveau changement de domaine se verra en production par un 502 au bout de 30 s, pas par un test (le test rejoue une sortie passée) — élargir la liste alors, jamais à un hôte quelconque.
+**Correctif `kanevas-connexion-claude-entree`** (bug de B-51 / E-5, AD-112 règles 4 ter et 5 ; PR non fusionnée) : en production, le code `xxxx#yyyy` (87 caractères) collé dans « Code » donnait `connexion_echouee` après 60 s, car `soumettreCode` écrivait le code et `\r` d'un seul morceau et le CLI prenait le tout pour un collage qui avale Entrée. Maintenant le code part seul, puis `\r` seul 500 ms après (`DELAI_ENTREE_MS`). Le faux `setup-token` lit les morceaux bruts et reproduit ce défaut (plus de 40 caractères + `\r` dans le même morceau : pas de validation) ; il accepte aussi un code synthétique de 87 caractères. Tests : `connexion-besoin.test.ts`.
+**Reste :** la fusion après recette, une nouvelle version de l'image et sa PR GitOps (Monsieur) ; le premier vrai code sur l'URL déployée est un geste de Monsieur.
+Piège : « Code » prend maintenant 500 ms de plus avant de répondre ; un faux programme qui accepte code et `\r` ensemble masquerait de nouveau la régression — le bouchon doit rester aussi strict que le CLI.
