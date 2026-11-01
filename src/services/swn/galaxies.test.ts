@@ -25,7 +25,7 @@ test('0019 crée les quatre tables sans toucher les lignes existantes', () => {
   db.prepare("INSERT INTO fiches (univers_id, type, titre, charge, cree_le, modifie_le) VALUES (1, 'lieu', 'F', '{}', 'x', 'x')").run();
   const snap = () => ['comptes', 'univers', 'fiches'].map((t) => db.prepare(`SELECT * FROM ${t}`).all());
   const avant = snap();
-  assert.deepEqual(migrate(db), [18]);
+  assert.deepEqual(migrate(db), [18, 19]);
   assert.deepEqual(snap(), avant);
   assert.deepEqual(db.pragma('foreign_key_check'), []);
   const tables = db.prepare("SELECT name FROM sqlite_master WHERE name LIKE 'swn_%' AND type='table' ORDER BY name").all().map((r: any) => r.name);
