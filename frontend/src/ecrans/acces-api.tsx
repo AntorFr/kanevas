@@ -216,7 +216,7 @@ function BoiteNouveauJeton({ base, onFini }: { base: string; onFini: (cree: bool
                         <p>Un jeton d’outil n’écrit que le catalogue des outils cochés. Il n’ouvre ni fiches ni fichiers.</p>
                         {outils.etat === 'ok' && <div className="outils-portee">
                           {outils.valeur.map((outil) => <Case key={outil.cle}
-                            etiquette={`${outil.libelle} · ${outil.module}`} checked={choisis.includes(outil.cle)} disabled={envoi}
+                            etiquette={`${outil.libelle} · ${outil.type === 'carte' ? 'Carte dynamique' : outil.type === 'generateur' ? 'Générateur' : 'Aide de jeu'} · ${outil.libelleModule}`} checked={choisis.includes(outil.cle)} disabled={envoi}
                             onChange={(e) => {
                               setChoisis((actuels) => e.target.checked ? [...actuels, outil.cle] : actuels.filter((cle) => cle !== outil.cle));
                               setErreurPortee(undefined);

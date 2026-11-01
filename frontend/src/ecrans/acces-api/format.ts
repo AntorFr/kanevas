@@ -6,7 +6,11 @@ export type Nature = 'fiches' | 'fichiers' | 'campagnes' | 'scenarios' | 'relati
 export type Compteurs = Record<string, Partial<Record<Issue, number>>>;
 
 export interface OutilVue { cle: string; libelle: string }
-export interface OutilProposable extends OutilVue { module: string }
+export interface OutilProposable extends OutilVue {
+  module: string;
+  libelleModule: string;
+  type: 'carte' | 'generateur' | 'aide';
+}
 
 export interface JetonVue {
   id: number;
