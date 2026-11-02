@@ -13,7 +13,12 @@ const sampleSchema = z.object({
   })).default([]),
   fiches: z.array(sheet).default([]),
   relations: z.array(z.object({
-    fiche: z.string(), entrees: z.array(z.unknown()),
+    fiche: z.string(),
+    // `{section, cible, nature?, qualificatif?}`; `type` is the deprecated name of `qualificatif` (AD-134).
+    entrees: z.array(z.object({
+      section: z.string(), cible: z.string(),
+      nature: z.string().optional(), qualificatif: z.string().optional(), type: z.string().optional(),
+    }).passthrough()),
   })).default([]),
 });
 

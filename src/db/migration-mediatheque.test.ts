@@ -39,7 +39,7 @@ function avant() {
 
 test('migration 0015 : trois fichiers (mj, joueurs, joueurs), ajoute_par le MJ de plus petit compte, empreinte nulle', () => {
   const db = avant();
-  assert.deepEqual(migrate(db), [15, 16, 17]);
+  assert.deepEqual(migrate(db), [15, 16, 17, 18]);
   const l = db
     .prepare('SELECT nom, disque, visibilite, ajoute_par, empreinte, taille, type, ajoute_le FROM fichiers ORDER BY id')
     .all();
@@ -87,7 +87,7 @@ test('migration 0015 : sans membre, la pièce n’est pas migrée et la table de
   db.prepare("INSERT INTO fiches (id, univers_id, type, titre, charge, cree_le, modifie_le) VALUES (1, 1, 'lieu', 'F', '{}', ?, ?)").run(t, t);
   db.prepare("INSERT INTO sections (id, fiche_id, titre, ordre, modifie_le) VALUES (1, 1, 'S', 1, ?)").run(t);
   db.prepare("INSERT INTO pieces_jointes (section_id, nom, type, taille, fichier, secrete, cree_le) VALUES (1, 'a.pdf', 'application/octet-stream', 3, 'd', 0, ?)").run(t);
-  assert.deepEqual(migrate(db), [15, 16, 17]);
+  assert.deepEqual(migrate(db), [15, 16, 17, 18]);
   assert.equal((db.prepare('SELECT COUNT(*) AS n FROM fichiers').get() as { n: number }).n, 0);
 });
 

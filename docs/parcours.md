@@ -63,7 +63,7 @@ Forme de la skill `exigences` ; chaque besoin cite les parcours qui le réalisen
   lit et écrit tout. *(P-3, P-7)*
 - **B-9** — Quand un compte ouvre une fiche, il n'en voit que les sections qu'il peut lire, sans
   titre ni trace des autres ; une fiche dont il ne lit rien n'existe pas pour lui. *(P-6)*
-- **B-10** — Un MJ relie une fiche à une autre par une relation typée en texte libre, portée par
+- **B-10** — *(`kanevas-fiches-liees`: the relation carries a nature from the product's list and a free qualifier, B-63; « typée en texte libre » reads « qualifiée en texte libre »)* Un MJ relie une fiche à une autre par une relation typée en texte libre, portée par
   une section : elle a la visibilité de sa section, et une cible illisible n'est pas nommée.
   *(P-3, P-9)*
 - **B-11** — Quand un compte cherche dans la liste d'un type (E-8), Kanevas ne rend que les fiches
@@ -365,7 +365,9 @@ introuvable. ».
    *Échec*: the campaign's page is open in two tabs; a status set in one is shown stale in the
    other until it reloads — the status menu writes the whole value, no conflict to resolve.
 4. **Lore** : depuis la **liste d'un type** (E-8, parmi les types activés), il crée un PNJ ou un lieu, avec au besoin son **sous-type** ; sur la **fiche** (E-9), il
-   écrit « Apparence » (lue des joueurs) et « Vérité — MJ seul », relie le PNJ à sa faction,
+   écrit « Apparence » (lue des joueurs) et « Vérité — MJ seul », relie le PNJ à sa faction
+   (*kanevas-fiches-liees* : nature « membre de », qualificatif « trésorier ») et à Port-Sel
+   (« se situe à », « habite »),
    dépose le plan d'un lieu, et pose le portrait d'Aldric en **illustration** de la fiche (visible
    de qui voit la fiche) ; de retour sur la liste, la carte d'Aldric porte ce portrait. *(kanevas-fiche-mj-seul)*
    A PNJ he has described only in « Vérité — MJ seul » carries the « MJ seul » badge in the list of
@@ -414,6 +416,11 @@ pas — le cadre dit « Image indisponible. » et il garde « Remplacer » et «
    que la table sait.
 3. Il ouvre la **carte** (E-11), touche un token, relit la fiche.
 4. Ou il demande à son **assistant** (E-12) « que sait-on d'Aldric ? ».
+6. *(kanevas-fiches-liees)* Sur « Port-Sel » (E-9), Léa lit « S'y trouvent : Personnages (1) » —
+   Maître Aldric, dont la relation est dans « Apparence » qu'elle lit ; le Prieur, relié depuis
+   « Secret — MJ seul », n'y est ni compté ni nommé — et, dans la grille des personnages (E-8),
+   la marque « mort » sur le portrait de Bran Corvalis — une fois qu'Antor l'a marqué mort (P-17,
+   étape 4) ; avant, Bran est vivant dans le semis.
 5. *(kanevas-scenarios)* **Aventures** (E-8): he sees « La Couronne brisée », « En cours », and
    reads what its sheet shows to the players (E-9) — its « Présentation », never the scenarios
    beneath it, whose sections are closed.
@@ -465,7 +472,7 @@ Il veut d'abord un essai jetable, puis la vraie base, sans doublon ni fuite.*
    « Vaisseau » à activé (le système le désactive) — P-13.
 3. **Accès par API** (E-18) : « Nouveau jeton », nom « Script Kanka — Mac », durée 30 jours ;
    Kanevas montre le jeton une fois ; il le copie dans la configuration du script.
-4. *(`kanevas-scenarios`: campaigns and scenarios are pushed as sheets of type `aventure`, and counted with them)* *Hors de Kanevas* : il lance le script ; le script ouvre un **lot**, pousse d'abord les
+4. *(`kanevas-fiches-liees`: a relation entry carries `nature` and `qualificatif` — `type` still read as the qualifier for one version —, a `disparu` mark on a sheet of a type that carries it, a `famille` sheet; an unknown or incompatible nature is a refusal counted, `nature_incompatible`)* *(`kanevas-scenarios`: campaigns and scenarios are pushed as sheets of type `aventure`, and counted with them)* *Hors de Kanevas* : il lance le script ; le script ouvre un **lot**, pousse d'abord les
    **campagnes**, puis les fiches, parents d'abord (clé d'origine, type, titre, parent, alias,
    étiquettes, sections en Markdown avec leurs liens `[[…]]`, leurs blocs MJ, leurs images, leur
    audience) — les comptes-rendus avec la clé de leur campagne —, puis les relations, et clôt le lot
@@ -474,7 +481,7 @@ Il veut d'abord un essai jetable, puis la vraie base, sans doublon ni fuite.*
    droits — « Réservée au MJ » pour ceux que Kanka n'affiche que dans du contenu MJ, « Visible des
    joueurs » sinon —, y compris les 385 Mo qu'aucune fiche n'utilise ; les fiches les référencent.
 5. *(`kanevas-scenarios`: campaigns and scenarios are pushed as sheets of type `aventure`, and counted with them)* **Accès par API** (E-18), bloc « Lots d'import » : « Fiches : 498 créées, 3 refusées · Fichiers :
-   1 140 créés · Relations : 324 créées · 6 en attente » ; il
+   1 140 créés · Relations : 324 créées, 2 refusées (nature incompatible, *`kanevas-fiches-liees`*) · 6 en attente » ; il
    déplie les refus : « personnage:aldric-le-gris — section « Vérité » : 112 000 caractères, 100 000
    au plus ».
 6. Il ouvre quelques fiches (**E-8** en arbre, **E-9**, **E-17**) et passe en **mode Joueur** pour
@@ -638,6 +645,77 @@ dit exactement où les joueurs le perdent.
 « « regles.pdf » n'est pas une image. » ; un joueur force l'adresse d'un fichier réservé au MJ — « Page
 introuvable. ».
 
+### Des propriétés aux fiches et aux liens (`kanevas-fiches-liees`)
+
+> *Decisions of Monsieur, 2026-10-25: a relation carries a **nature** from a finite list of the
+> product, whose meaning Kanevas knows, and a free **qualifier**; the search and the sheets use
+> the nature; a « Famille » type; an alive-or-dead mark on characters and creatures. Kanka was
+> read for reference (connections in free text with a mirrored `two_way`, organisation members
+> apart with a free `role`, a list of locations on a character): one mechanism here instead of
+> three. No migration of the existing free relations: Monsieur redoes the import.*
+
+- **B-63** — A relation carries two things: a **nature**, chosen in the product's list, specific
+  to the pair (type of the source sheet, type of the target sheet) and whose meaning Kanevas knows
+  in both directions — « se situe à » read from the place as « s'y trouvent », « membre de » read
+  from the organisation as « membres » —, or no nature (a free relation, as today); and an optional
+  free **qualifier** (« habite », « capitaine », « en exil ») that says more and decides nothing.
+  The GM picks the nature when he links (E-9); the list offered is the one of the two types. A
+  relation keeps its section, its audience and the two guards of AD-64. *(P-3, P-17)*
+- **B-64** — From the sheet of a place, an organisation, a family — any sheet that natures can
+  target —, the GM and the players see the **linked sheets**, grouped by nature read backwards
+  and by type (« S'y trouvent : Personnages (12), Créatures (3) », « Membres : Personnages (8) »),
+  each as a card line with its qualifier; on a place, « sous-lieux compris » adds what is linked to
+  its descendants in the tree, saying from which sub-place; a reader sees only the relations he
+  reads (the section and the source sheet, AD-64). *(P-17, P-6)*
+- **B-65** — The **advanced search** (E-17) finds the sheets linked to a given sheet by a given
+  nature (or by any relation), « sous-lieux compris » when that sheet is a place, combined with the
+  type, the label, the words and — for the seven types that can be gone — the state filter (« vivants / morts », « intacts / détruits »…); the result
+  is the list of E-17, under the same rights. *(P-17)*
+- **B-66** — « **Famille** » is a type of the product's list (reglable, activated by default,
+  icon `users`): a family is a sheet like a faction, members are characters linked to it by the
+  nature « membre de ». *(P-17)*
+- **B-67** — A sheet can be **gone**: a character or a creature is **mort**, a faction
+  **détruite**, a family **éteinte**, a place, an object or a vessel **détruit** (decision of
+  Monsieur, 2026-10-25 : one mark, a word per type). The GM sets it in place from the header of E-9
+  (« Marquer mort » / « Marquer détruite » … and the reverse), it shows by a sober mark on the image
+  of the card (E-8, E-17, the linked-sheet lines, the relation lines) and a badge with the type's
+  word in the header, visible to whoever sees the sheet, with a filter per list (« Vivants / Morts /
+  Tous » on characters and creatures, « Intacts / Détruits / Tous » on places, objects and
+  vessels, « Actives / Détruites / Tous » on factions, « Vivantes / Éteintes / Tous » on families).
+  No date, no cause: the text says the rest. *(P-17, P-6)*
+- **B-68** — The **import API** pushes the nature and the qualifier of a relation, the « gone » mark
+  (`disparu`) of a sheet of a type that carries it, and families, with the protection of B-48; the former free `type` of
+  a relation is the qualifier. *(P-10)*
+- **B-69** — The graph (E-11) and « Mentionnée dans » (E-9) read the nature where there is one:
+  the link of a graph shows the nature's label, the qualifier after it; « Mentionnée dans » keeps
+  the free relations and the links, the natured ones move to « Fiches liées » (B-64). *(P-6)*
+
+### P-17 — Préparer une scène dans un quartier (Antor, MJ, le vendredi soir, bureau)
+
+1. **Lieu** (E-9) : il ouvre « Port-Sel ». Le bloc **« Fiches liées »** dit « S'y trouvent :
+   Personnages (12) » ; il coche **« sous-lieux compris »** : « Les Docks », « Le Pendu Joyeux »
+   ajoutent les leurs, chacun avec son quartier en gris et son qualificatif (« habite »,
+   « tient la taverne »). Il repère ceux qu'il n'a pas joués depuis longtemps.
+2. **Recherche avancée** (E-17) : « lié à Port-Sel », « s'y trouvent » (la nature « se situe à » lue à l'envers), sous-lieux compris, type
+   Personnage, « Vivants » : la liste des vivants du port ; il affine avec l'étiquette
+   « contrebande ».
+3. **Fiche** (E-9) d'un contrebandier : il relie « membre de » → « La Guilde des Brumes »,
+   qualificatif « passeur » ; sur la fiche de la Guilde, « Membres : Personnages (9) » le compte ;
+   la cheffe de la Guilde y est « membre de » avec le qualificatif « dirige » (« dirige » n'est pas une
+   nature : décision de Monsieur).
+   Il crée la **famille** « Les Corvalis » (E-8, type Famille, B-66) et y relie Bran et Dame
+   Ombeline par « membre de » (« aîné », « veuve ») ; sur la fiche des Corvalis, « Membres :
+   Personnages (2) ».
+4. Un PNJ est mort à la séance 12 : sur sa fiche, **« Marquer mort »** ; sa carte porte la marque
+   dans la grille et dans « S'y trouvent », et « Vivants » ne le liste plus. Dans la grille des
+   personnages (E-8), le filtre « Vivants / Morts / Tous » (gardé dans l'adresse) liste les morts
+   seuls ; s'il s'est trompé de PNJ, **« Marquer vivant »** défait le geste.
+*Moment fort* : l'étape 1, le lieu qui montre d'un coup qui s'y trouve, sous-lieux compris.
+*Échec* : si « Marquer mort » échoue, la fiche reste comme elle était et un message le dit (E-9) ; il relie « se situe à » un **objet** : la nature n'est pas proposée pour ce couple de
+types, le formulaire ne montre que les natures du couple (ou « sans nature ») ; une relation dont
+la section est fermée aux joueurs n'apparaît pas dans « Fiches liées » pour Léa, ni dans sa
+recherche, ni dans le compte.
+
 ## Hors périmètre
 
 - **Jeu en direct** : pas d'initiative, de combat animé, de brouillard de guerre ; la table reste
@@ -645,6 +723,12 @@ introuvable. ».
 - *(kanevas-scenarios)* **A calendar of sessions** (dates, who was there) and a **play log per
   scenario** (« joué le 12 octobre avec Léa et Mira ») — the status says where an adventure
   stands, not when; reopened if the GM asks for the history of a campaign.
+- *(kanevas-fiches-liees)* **L'attitude d'une relation** (Kanka : −100..+100 et une couleur), le
+  **supérieur hiérarchique** d'un membre et l'**épingle** d'une relation ; le **statut** d'une
+  appartenance (actuel, ancien) passe par le qualificatif ou par le retrait du lien — décisions de
+  Monsieur du 25/10 ; **une date ou une cause de la mort** : le texte ; un outil de l'assistant qui
+  relie ou cherche par lien ; les relations à deux sens créées en miroir (le sens inverse se lit, il
+  ne se stocke pas).
 - *(kanevas-scenarios)* **Status automation** — no status moves by itself (a CR written, a date
   passed): the GM sets it.
 - **Caractéristiques structurées** (fiche de combat, statistiques) : une pièce jointe en V1 ; des

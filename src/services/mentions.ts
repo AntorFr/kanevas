@@ -32,9 +32,9 @@ export function mentionsDe(
         FROM liens l JOIN sections s ON s.id = l.section_id JOIN fiches f ON f.id = s.fiche_id
        WHERE l.cible_fiche_id = ? AND f.univers_id = ? AND f.id <> ?${horsBlocMJ}${sectionLue}
       UNION ALL
-      SELECT s.fiche_id, s.titre, s.ordre, 1, r.type, r.id
+      SELECT s.fiche_id, s.titre, s.ordre, 1, r.qualificatif, r.id
         FROM relations r JOIN sections s ON s.id = r.section_id JOIN fiches f ON f.id = s.fiche_id
-       WHERE r.cible_fiche_id = ? AND f.univers_id = ? AND f.id <> ?${sectionLue}
+       WHERE r.cible_fiche_id = ? AND r.nature = '' AND f.univers_id = ? AND f.id <> ?${sectionLue}
     )`;
   const paramsSrc = [ficheId, universId, ficheId, ...sectionParams, ficheId, universId, ficheId, ...sectionParams];
   const pas = Math.max(Math.trunc(apres), 0);

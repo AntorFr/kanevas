@@ -12,6 +12,7 @@ import './ecrans.css';
 import './fiche/fiche.css';
 import './liste.css';
 import { lireVue, memoriserVue, type VueListe } from './fiche/arbre';
+import { etatDe } from './fiche/marque';
 import { ListeRecherche, type Visibilite } from './fiche/liste-recherche';
 import { ChargementGrille } from './fiche/vignette';
 import type { Fiche } from './fiche/types';
@@ -91,7 +92,7 @@ function Liste({ universId, slug }: { universId: string; slug: string | undefine
   const vue = vues[type.type] ?? lireVue(universId, type.type);
   const gestion = mj && !modeJoueur;
   const statut = type.type === 'aventure' ? statutValide(params.get('statut')) : '';
-  const filtree = Boolean(params.get('q')?.trim() || params.get('sousType') || statut || visibilite);
+  const filtree = Boolean(params.get('q')?.trim() || params.get('sousType') || statut || visibilite || (type.disparu && etatDe(params.get('etat'))));
   const choisirVue = (v: VueListe) => {
     memoriserVue(universId, type.type, v);
     setVues((m) => ({ ...m, [type.type]: v }));
@@ -123,11 +124,13 @@ function Liste({ universId, slug }: { universId: string; slug: string | undefine
         onRecherche={(q) => setParams((p) => majParam(p, 'q', q))}
         sousType={params.get('sousType') ?? ''}
         onSousType={(v) => setParams((p) => majParam(p, 'sousType', v))}
+        etat={type.disparu ? etatDe(params.get('etat')) : ''}
+        onEtat={(v) => setParams((p) => majParam(p, 'etat', v))}
         statut={statut}
         onStatut={(v) => setParams((p) => majParam(p, 'statut', v))}
         onToutEffacer={() => setParams((p) => {
           const n = new URLSearchParams(p);
-          for (const cle of ['q', 'sousType', 'statut', 'visibilite']) n.delete(cle);
+          for (const cle of ['q', 'sousType', 'statut', 'visibilite', 'etat']) n.delete(cle);
           return n;
         })}
         visibilite={visibilite}

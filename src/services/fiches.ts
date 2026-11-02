@@ -13,10 +13,11 @@ import {
 import { ErreurService, introuvable, invalide, refuse } from './erreurs.js';
 import { etiquetageDe } from './etiquettes.js';
 import { mentionsDe } from './mentions.js';
+import { estNature, NATURES } from './natures.js';
 import { illustrationEnAttente, lireLignes, lisiblePar, type FichierRow } from './fichiers.js';
 import { supprimerFichier } from './stockage.js';
 import { IMAGE_RESERVEE } from './markdown.js';
-import { CHARGES, TYPES, STATUT_AVENTURE, estTypeFiche, typeActif } from './types-fiche.js';
+import { CHARGES, TYPES, STATUT_AVENTURE, estTypeFiche, porteMarqueDisparu, typeActif } from './types-fiche.js';
 import { ajouterSection, changerAudience } from './sections.js';
 import {
   TYPES_FICHE,
@@ -51,6 +52,8 @@ interface FicheRow {
   cle_origine: string | null;
   sous_type: string | null;
   parent_id: number | null;
+  /** Read projection of the linked-list condition, never a stored column. */
+  lien_via?: string | null;
   visible_joueurs?: number;
 }
 
@@ -60,7 +63,7 @@ const SQL_VISIBLE_JOUEURS = 'EXISTS (SELECT 1 FROM sections v WHERE v.fiche_id =
 const projectionVisibilite = (mj: boolean): string => mj ? `, ${SQL_VISIBLE_JOUEURS} AS visible_joueurs` : '';
 
 /** The field is absent altogether outside the full GM view. */
-const visibiliteVue = (r: FicheRow): { visibleJoueurs?: boolean } =>
+export const visibiliteVue = (r: FicheRow): { visibleJoueurs?: boolean } =>
   r.visible_joueurs === undefined ? {} : { visibleJoueurs: r.visible_joueurs === 1 };
 
 /**
@@ -268,6 +271,31 @@ export function changerSousType(
 }
 
 /**
+ * The GM sets the public gone mark outside player mode (AD-132). Like a title, this
+ * leaves `dernier_import` alone: the import compares its last write before replaying.
+ */
+export function marquerDisparu(
+  db: Db,
+  acteur: Acteur,
+  universId: number,
+  ficheId: number,
+  disparu: boolean,
+): Fiche {
+  exigerMJ(db, universId, acteur.compteId);
+  if (acteur.modeJoueur) throw refuse();
+  const fiche = chargerFiche(db, universId, ficheId);
+  if (!porteMarqueDisparu(fiche.type)) throw invalide('Cette fiche ne peut pas être marquée disparue.');
+  if (typeof disparu !== 'boolean') throw invalide('Requête invalide.');
+  const charge = { ...(JSON.parse(fiche.charge) as Record<string, unknown>), disparu };
+  db.prepare('UPDATE fiches SET charge = ?, modifie_le = ? WHERE id = ?').run(
+    JSON.stringify(charge),
+    new Date().toISOString(),
+    ficheId,
+  );
+  return versFiche(chargerFiche(db, universId, ficheId));
+}
+
+/**
  * The GM changes the type of a sheet among the settable ones (AD-120 (4)): the same row,
  * so id, sections, relations and map places stay. The payload becomes that of the new type (a
  * character takes `pj`, `false` by default) and the sub-type is cleared unless the caller gives a
@@ -294,7 +322,10 @@ export function changerTypeFiche(
   }
   const voulu = sousType == null ? null : validerSousType(sousType);
   const base = type === 'personnage' ? { pj: false } : {};
-  const c = CHARGES[type].safeParse({ v: 1, ...base, ...charge });
+  // Conversion preserves a compatible mark, never changes it from a caller's payload.
+  const ancienneCharge = JSON.parse(actuelle.charge) as Record<string, unknown>;
+  const marque = porteMarqueDisparu(type) ? { disparu: ancienneCharge.disparu } : {};
+  const c = CHARGES[type].safeParse({ v: 1, ...base, ...charge, ...marque });
   if (!c.success) throw invalide('Charge utile invalide pour ce type de fiche.');
   const garde = type === actuelle.type ? actuelle.sous_type : null;
   db.prepare('UPDATE fiches SET type = ?, charge = ?, sous_type = ?, modifie_le = ? WHERE id = ?').run(
@@ -410,6 +441,24 @@ export function supprimerFiche(db: Db, acteur: Acteur, universId: number, ficheI
 
 /** Deepest chain the tree accepts, and the longest climb a read makes (AD-115 (1), (2)). */
 export const PROFONDEUR_MAX = 50;
+
+/**
+ * Ids of the sheet and its same-type descendants, including unreadable intermediate sheets
+ * (AD-130). UNION and the depth bound tolerate corrupt cycles; no title or path leaves this read.
+ */
+export function descendantsDe(db: Db, ficheId: number): { ids: number[]; profondeurAtteinte: boolean } {
+  const rows = db.prepare(`
+    WITH RECURSIVE descente(id, univers_id, type, niveau) AS (
+      SELECT id, univers_id, type, 0 FROM fiches WHERE id = ?
+      UNION
+      SELECT f.id, f.univers_id, f.type, d.niveau + 1
+        FROM fiches f JOIN descente d ON f.parent_id = d.id
+       WHERE f.univers_id = d.univers_id AND f.type = d.type AND d.niveau < ?
+    )
+    SELECT id, MAX(niveau) AS niveau FROM descente GROUP BY id
+  `).all(ficheId, PROFONDEUR_MAX) as { id: number; niveau: number }[];
+  return { ids: rows.map((r) => r.id), profondeurAtteinte: rows.some((r) => r.niveau === PROFONDEUR_MAX) };
+}
 
 /**
  * The GM puts a sheet under another (or at the root with `null`) — the only write of `parent_id`
@@ -729,6 +778,7 @@ export interface PageFiches {
  * word of the title, of an alias or of the sub-type, or all of them a word of one section the caller reads.
  * `etiquette` is one more optional condition (AD-118). Each sheet carries its `alias` and `etiquettes`,
  * and, with `recherche`, the `aliasTrouve` when only an alias answers the title.
+ * `lie`, `nature` and `descendants` narrow the same list under both relation guards (AD-130).
  */
 export function listerFiches(
   db: Db,
@@ -739,6 +789,11 @@ export function listerFiches(
     sousType?: string;
     statut?: string;
     etiquette?: string;
+    etat?: 'la' | 'disparu';
+    /** Linked sheets, under both relation guards (AD-130); descendants stay the target's type. */
+    lie?: number;
+    nature?: string;
+    descendants?: boolean;
     /** Derived player visibility (B-57), for the GM outside player mode only. */
     visibilite?: string;
     curseur?: string;
@@ -751,6 +806,16 @@ export function listerFiches(
   } = {},
 ): PageFiches {
   const role = exigerRole(db, universId, acteur.compteId);
+  if ((options.nature !== undefined || options.descendants !== undefined) && options.lie === undefined) {
+    throw invalide('Requête invalide.');
+  }
+  if (options.nature !== undefined && !estNature(options.nature)) throw invalide('Requête invalide.');
+  if (options.lie !== undefined && (!Number.isSafeInteger(options.lie) || options.lie < 0 || options.lie > 999999999)) {
+    throw invalide('Requête invalide.');
+  }
+  if (options.etat !== undefined && options.etat !== 'la' && options.etat !== 'disparu') {
+    throw invalide('Requête invalide.');
+  }
   if (options.visibilite !== undefined &&
       (!vueMJ(role, acteur) || !['mj', 'joueurs'].includes(options.visibilite))) {
     throw invalide('Requête invalide.');
@@ -771,6 +836,13 @@ export function listerFiches(
     where.push('f.type = ?');
     params.push(options.type);
   }
+  if (options.etat !== undefined) {
+    const types = TYPES.filter((t) => t.disparu).map((t) => t.type);
+    where.push(`f.type IN (${types.map(() => '?').join(',')})`);
+    params.push(...types);
+    where.push("COALESCE(json_extract(f.charge, '$.disparu'), 0) = ?");
+    params.push(options.etat === 'disparu' ? 1 : 0);
+  }
   if (options.sousType !== undefined) {
     where.push('f.sous_type = ? COLLATE NOCASE');
     params.push(options.sousType);
@@ -789,6 +861,51 @@ export function listerFiches(
         WHERE fe.fiche_id = f.id AND e.nom = ? COLLATE NOCASE)`,
     );
     params.push(options.etiquette.trim());
+  }
+  let viaSelection = '';
+  let viaParams: (string | number)[] = [];
+  if (options.lie !== undefined) {
+    const cible = db.prepare('SELECT id FROM fiches WHERE id = ? AND univers_id = ?').get(options.lie, universId);
+    if (!cible || !peutVoirFiche(db, role, options.lie, acteur)) return { fiches: [], suivant: null };
+    const ids = options.descendants ? descendantsDe(db, options.lie).ids : [options.lie];
+    const places = ids.map(() => '?').join(',');
+    const sectionLue = sqlSectionLisible(role, acteur, 'porteuse');
+    const cibleLue = sqlFicheLisible(role, acteur, 'cible');
+    const branches = [
+      `SELECT cible.id, cible.titre FROM relations r
+         JOIN sections porteuse ON porteuse.id = r.section_id
+         JOIN fiches cible ON cible.id = r.cible_fiche_id
+        WHERE porteuse.fiche_id = f.id AND cible.univers_id = f.univers_id
+          AND cible.id IN (${places})${options.nature !== undefined ? ' AND r.nature = ?' : ''}
+          ${sectionLue ? `AND ${sectionLue.sql}` : ''}${cibleLue ? ` AND ${cibleLue.sql}` : ''}`,
+    ];
+    const relationParams: (string | number)[] = [
+      ...ids, ...(options.nature !== undefined ? [options.nature] : []),
+      ...(sectionLue?.params ?? []), ...(cibleLue?.params ?? []),
+    ];
+    const symetriques = NATURES.filter((n) => n.symetrique && (options.nature === undefined || n.cle === options.nature));
+    if (symetriques.length > 0) {
+      const sourceLue = sqlFicheLisible(role, acteur, 'source');
+      branches.push(
+        `SELECT source.id, source.titre FROM relations r
+           JOIN sections porteuse ON porteuse.id = r.section_id
+           JOIN fiches source ON source.id = porteuse.fiche_id
+          WHERE r.cible_fiche_id = f.id AND source.univers_id = f.univers_id
+            AND source.id IN (${places}) AND r.nature IN (${symetriques.map(() => '?').join(',')})
+            ${sectionLue ? `AND ${sectionLue.sql}` : ''}${sourceLue ? ` AND ${sourceLue.sql}` : ''}`,
+      );
+      relationParams.push(...ids, ...symetriques.map((n) => n.cle), ...(sectionLue?.params ?? []), ...(sourceLue?.params ?? []));
+    }
+    // A condition, never a join on the list: multiple qualifying relations still yield one sheet.
+    const relationsLiees = branches.join(' UNION ');
+    where.push(`EXISTS (${relationsLiees})`);
+    params.push(...relationParams);
+    if (options.descendants) {
+      // The very same guarded relations choose the annotation; a qualifying direct link wins.
+      viaSelection = `, (SELECT json_object('id', v.id, 'titre', v.titre) FROM (${relationsLiees}) v
+        ORDER BY (v.id = ?) DESC, plier(v.titre), v.id LIMIT 1) AS lien_via`;
+      viaParams = [...relationParams, options.lie];
+    }
   }
   const lisible = sqlFicheLisible(role, acteur, 'f');
   if (lisible) {
@@ -844,10 +961,10 @@ export function listerFiches(
   }
   const rows = db
     .prepare(
-      `SELECT f.*, ${DISQUE_ILLUSTRATION}${projectionVisibilite(vueMJ(role, acteur))} FROM fiches f WHERE ${where.join(' AND ')}
+      `SELECT f.*, ${DISQUE_ILLUSTRATION}${viaSelection}${projectionVisibilite(vueMJ(role, acteur))} FROM fiches f WHERE ${where.join(' AND ')}
        ORDER BY plier(f.titre), f.id LIMIT ?`,
     )
-    .all(...params, limite + 1) as FicheRow[];
+    .all(...viaParams, ...params, limite + 1) as FicheRow[];
   const page = rows.slice(0, limite);
   const dernier = page[page.length - 1];
   const suivant =
@@ -858,6 +975,10 @@ export function listerFiches(
   const enrichie = (r: FicheRow): Fiche => {
     const e = etiquetageDe(db, r.id);
     const f: Fiche = { ...versFiche(r, (f) => lisiblePar(role, acteur, f)), ...visibiliteVue(r), alias: e.alias, etiquettes: e.etiquettes };
+    if (r.lien_via) {
+      const via = JSON.parse(r.lien_via) as { id: number; titre: string };
+      if (via.id !== options.lie) f.via = via;
+    }
     // A report's payload must not reveal an adventure the reader cannot read (AD-124 (4)),
     // including through search or the tree. The GM outside player mode keeps the stored id.
     if (f.type === 'compte_rendu' && !vueMJ(role, acteur)

@@ -133,11 +133,11 @@ describe('kanevas-cartes-graphes, vérification indépendante', { skip: skipBrow
       await capture(m.antor, 'recherche-101');
     });
 
-    // Fails if the dialog does not offer the fourteen types of the server list plus the compte-rendu (thirteen before kanevas-scenarios-type).
-    test('bord : le choix de type propose les types activés (quatorze par défaut, compte-rendu compris : 15)', async () => {
+    // Fails if the dialog does not offer the fifteen types of the server list (« Famille » and « Aventure » included) plus the compte-rendu.
+    test('bord : le choix de type propose les types activés (quinze par défaut, compte-rendu compris : 16)', async () => {
       const f = await ouvrirFenetre();
       const options = (await f.getByLabel('Type de fiche').locator('option').allInnerTexts()) as string[];
-      assert.equal(options.length, 15);
+      assert.equal(options.length, 16);
     });
 
     // Si « Fermer » ne ferme pas, ou si ajouter ferme la fenêtre sans que le token soit posé.

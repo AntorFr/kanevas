@@ -234,13 +234,13 @@ describe('kanevas-import-tenir · B-40, supprimer une fiche (E-9)', { skip: skip
   };
 
   // Panne : la boîte ne compte plus un poste (sections, relations, places, fichiers, enfants), ou ne dit plus que les fichiers restent.
-  test('B-40 nominal : la boîte de « Port-Sel » compte 3 sections, 3 relations, 1 place, 2 fichiers qui restent, 5 enfants sous « Les Sphères », liens cassés ; Annuler ne touche à rien', async () => {
+  test('B-40 nominal : la boîte de « Port-Sel » compte 3 sections, 5 relations, 1 place, 2 fichiers qui restent, 5 enfants sous « Les Sphères », liens cassés ; Annuler ne touche à rien', async () => {
     await ouvrirFiche(antor, U, ids['Port-Sel']!, 'Port-Sel');
     await ouvrirBoite(antor, 'Port-Sel');
     const t = await bilanTexte(antor);
     assert.equal(
       t,
-      "Supprimer « Port-Sel » ? 3 sections ; 3 relations qui la visent ; 1 place sur une carte. Ses 2 fichiers restent dans la médiathèque. Ses 5 enfants remonteront sous « Les Sphères ». Les liens qui la visent deviendront des liens cassés. Annuler Supprimer la fiche",
+      "Supprimer « Port-Sel » ? 3 sections ; 5 relations qui la visent ; 1 place sur une carte. Ses 2 fichiers restent dans la médiathèque. Ses 5 enfants remonteront sous « Les Sphères ». Les liens qui la visent deviendront des liens cassés. Annuler Supprimer la fiche",
     );
     await antor.screenshot({ path: `${SHOTS}/boite-port-sel.png` });
     await boite(antor).getByRole('button', { name: 'Annuler' }).click();
@@ -367,7 +367,7 @@ describe('kanevas-import-tenir · B-40, supprimer une fiche (E-9)', { skip: skip
       const m = (await api(srv, antor, 'GET', `${A()}/fiches/${ids[autre]}`)).mentions.map((x: Any) => x.titre);
       assert.ok(m.includes('Port-Sel'), `${autre} : ${m.join('|')}`);
     }
-    assert.deepEqual((await api(srv, antor, 'GET', `${A()}/cartes/1`)).elements.map((e: Any) => e.titre), ['Port-Sel']);
+    assert.deepEqual((await api(srv, antor, 'GET', `${A()}/cartes/1`)).elements.map((e: Any) => e.titre), ['Port-Sel', 'Maître Aldric']);
     await ouvrirFiche(antor, U, port, 'Port-Sel');
     await ouvrirBoite(antor, 'Port-Sel');
     await bilanTexte(antor);
@@ -417,9 +417,10 @@ describe('kanevas-import-tenir · B-40, supprimer une fiche (E-9)', { skip: skip
     assert.ok(!aldric.mentions.some((m: Any) => m.titre === 'Port-Sel'), 'Mentionnée dans (Aldric)');
     const guilde = await api(srv, antor, 'GET', `${A()}/fiches/${ids['La Guilde des Brumes']}`);
     assert.ok(!guilde.mentions.some((m: Any) => m.titre === 'Port-Sel'), 'Mentionnée dans (Guilde)');
-    assert.deepEqual((await api(srv, antor, 'GET', `${A()}/fiches/${ids['Maître Aldric']}/sections/1/relations`)).relations, []);
+    // Il ne reste que la relation à nature vers la Guilde (semis des natures) : aucune ne vise plus « Port-Sel ».
+    assert.deepEqual((await api(srv, antor, 'GET', `${A()}/fiches/${ids['Maître Aldric']}/sections/1/relations`)).relations.map((r: Any) => r.cible.titre), ['La Guilde des Brumes']);
     const carte = await api(srv, antor, 'GET', `${A()}/cartes/1`);
-    assert.deepEqual(carte.elements, []);
+    assert.deepEqual(carte.elements.map((e: Any) => e.titre), ['Maître Aldric']);
   });
 
   // Panne : la suppression emporte les fichiers de la médiathèque.

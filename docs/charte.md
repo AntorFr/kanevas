@@ -279,8 +279,8 @@ décalé de 2 px) sur `:focus-visible`.
   graisse 500 `--texte-2` au-dessus ; au focus, contour `--accent` et halo 3 px
   `--accent-fond`. La zone de texte d'une section garde la typographie de lecture (Newsreader
   18 px) sur `--surface`, cernée d'`--accent` avec halo, pied « 313 / 100 000 », aide clavier,
-  « Annuler », « Enregistrer ». Case : 16 px, contour `--bord-champ` ; cochée `--mj` (la seule
-  case du produit dit « Secrète (MJ seul) »).
+  « Annuler », « Enregistrer ». Checkbox: 16 px, outline `--bord-champ`; checked in `--mj`
+  for « Secrète (MJ seul) », in `--accent` for the search filter « sous-lieux compris ».
 - C : une étiquette visible liée au champ ; l'erreur s'affiche dessous en `--danger` avec
   « Erreur : » devant, reliée par `aria-describedby` ; une saisie n'est jamais perdue sur échec.
 
@@ -318,6 +318,10 @@ décalé de 2 px) sur `:focus-visible`.
   `--accent`. Vide : « Aucune relation pour l'instant. » en `--texte-3` suivi de l'action.
 - C : ce que voit chaque rôle est celui de `docs/ecrans.md` (un bloc qui n'a rien à dire n'existe
   pas pour un joueur ; le MJ voit chaque bloc, même vide).
+
+**Ligne de fiche liée** (`LigneFicheLiee` and `VignetteFiche`, `frontend/src/ui/ligne-fiche-liee.tsx`; the block « Fiches liées » of E-9; E-17 reuses the thumbnail).
+- V: a row of at least 40 px, gap `--e-1` / `--e-3`; thumbnail 36 px (40 px in E-17) that keeps its image inside the frame (the image is clipped by its own radius, the « disparu » mark stays free to overflow), radius `--rayon-champ`, background `--surface-2`, the illustration or else the type icon in `--texte-3`; the title as a link (`.jeton`), then the type badge (`pj` for a player character), the sub-type in `--texte-3` 13 px, the « MJ seul » pill, the qualifier in grey, and « — via » (the sub-place) in grey 12 px. The « disparu » mark is the shared one: a round 16 px pill at left/bottom −4 px, 10 px icon, image at `saturate(.4)`. At 360 px the row wraps.
+- C: the thumbnail is `aria-hidden` unless it carries the mark (`role="img"`, the word of the mark); the title is truncated with `title`, the whole qualifier is in a tooltip; the link is reached by keyboard with the `--focus` ring.
 
 **Bandeau** (connexion perdue, mode bouchon, mode Joueur).
 - V : pleine largeur, collé sous la barre haute, opaque (`--fond` sous la teinte) ; connexion

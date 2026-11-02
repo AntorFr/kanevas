@@ -179,6 +179,7 @@ describe('kanevas-fiche-mj-seul-ecran, B-57', { skip: skipBrowser }, () => {
     await antor.getByRole('heading', { level: 1, name: 'Place ouverte B57', exact: true }).waitFor();
     const b = section(antor, 'Description').getByRole('group', { name: 'Relations' });
     await b.getByRole('button', { name: 'Relier à une fiche', exact: true }).click();
+    await b.getByLabel('Nature').selectOption({ label: 'Sans nature' });
     await b.getByLabel('Type de fiche').selectOption({ label: 'Lieu' });
     await b.getByLabel('Chercher dans les lieux').fill('B57');
     await b.getByRole('button', { name: 'Chercher', exact: true }).click();

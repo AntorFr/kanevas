@@ -15,7 +15,7 @@ import { badgeFiche, iconeDuType, typeParType, useTypes } from '../types-context
 import { BlocMentions } from './fiche/mentions';
 import { BlocContient } from './fiche/contient';
 import { EnteteFiche, type MessageIllustration } from './fiche/entete';
-import { blocsFicheVisibles } from './fiche/registre-blocs-fiche';
+import { blocsFicheVisibles, placeDe } from './fiche/registre-blocs-fiche';
 
 /** Stable empty list: the mentions block resets on a new array. */
 const AUCUNE: Mention[] = [];
@@ -143,7 +143,9 @@ function PageFiche() {
   const fiche = etat.fiche;
   const sections = etat.k === 'ok' ? fiche.sections : [];
   const gestion = mj && modeEffectif === 'mj';
-  const blocs = blocsFicheVisibles(fiche.type, modeEffectif);
+  const tous = blocsFicheVisibles(fiche.type, modeEffectif);
+  const blocs = tous.filter((b) => placeDe(b) === 'haut');
+  const blocsBas = tous.filter((b) => placeDe(b) === 'bas');
 
   async function ordonner(index: number, delta: number) {
     const ids = sections.map((s) => s.id);
@@ -246,6 +248,9 @@ function PageFiche() {
         </div>
       )}
       <BlocContient universId={id!} ficheId={fiche.id} suffixeMode={suffixe} />
+      {etat.k === 'ok' && blocsBas.map((bloc) => (
+        <bloc.composant key={`${id}/${fid}/${modeEffectif}/${suffixe}/${bloc.id}`} universId={id!} fiche={fiche} role={modeEffectif} suffixeMode={suffixe} />
+      ))}
       {etat.k === 'ok' && (
         <BlocMentions
           universId={id!}
