@@ -1,6 +1,5 @@
 import { cartesGalaxies } from '../../services/swn/galaxies.js';
 import { outilTrajet } from './assistant.js';
-import { routesGalaxie } from './routes.js';
 import type { DeclarationCarte, DeclarationModule } from '../declaration.js';
 
 export const swnGalaxie: DeclarationCarte = {
@@ -20,5 +19,7 @@ export const swn: DeclarationModule = {
       niveau: 'systeme+univers', forme: { type: 'nombre', min: 1, max: 20, entier: true }, defaut: 5 },
   },
   outils: [swnGalaxie],
-  routes: routesGalaxie,
+  // Loaded at registration of the routes: a static import closes a cycle
+  // (registre → swn → routes → routes/fiches → fiches → types-fiche → droits → outils → registre).
+  routes: async (app, garde) => (await import('./routes.js')).routesGalaxie(app, garde),
 };

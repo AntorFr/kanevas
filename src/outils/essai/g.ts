@@ -1,3 +1,4 @@
+import { catalogueEssai } from './catalogue.js';
 import { resoudreOutil } from '../../services/outils.js';
 import type { ContexteSection, DeclarationGenerateur } from '../declaration.js';
 
@@ -9,6 +10,7 @@ function versionSource({ db, universId }: ContexteSection): string {
 const marge = (ctx: ContexteSection) => resoudreOutil(ctx.db, ctx.universId, 'essai/g').reglages.marge!.valeur;
 
 export const essaiG: DeclarationGenerateur = {
+  catalogue: catalogueEssai,
   cle: 'essai/g', libelle: 'Essai G', description: 'Un générateur pour éprouver la conception.',
   type: 'generateur', portee: 'tous', dependances: [],
   visibiliteParDefaut: { mj: true, joueur: true }, usages: [{ nom: 'concevoir', mjSeul: true }],

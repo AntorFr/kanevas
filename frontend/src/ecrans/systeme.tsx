@@ -198,7 +198,7 @@ function Systeme() {
     return <ChargementListe texte="Chargement du système…" />;
   }
   const peutEcrire = entete.peutEcrire;
-  const peutLireOutils = entete.mesUnivers.some((u) => u.role === 'mj');
+  const peutLireOutils = params.get('mode') !== 'joueur' && entete.mesUnivers.some((u) => u.role === 'mj');
   if (surOutils && !peutLireOutils) return <PageIntrouvable retour="systemes" />;
 
   async function suite() {

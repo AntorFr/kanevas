@@ -109,6 +109,7 @@ function Parametres() {
   const etats = [univers, catalogue, courant];
   if (etats.some((e) => e.etat === 'chargement')) return <ChargementListe texte="Chargement des paramètres…" />;
   // A player, no role, or an unknown universe: the same answer. (No system is a 404 of its own.)
+  if (surOutils && params.get('mode') === 'joueur') return <PageIntrouvable />;
   if (univers.etat === 'erreur' && univers.statut === 404) return <PageIntrouvable />;
   if (univers.etat === 'ok' && univers.valeur.role !== 'mj') return <PageIntrouvable />;
   if (catalogue.etat === 'erreur' && catalogue.statut === 403) return <PageIntrouvable />;

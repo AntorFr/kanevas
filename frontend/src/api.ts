@@ -57,6 +57,8 @@ export class ErreurApi extends Error {
     public statut: number,
     message: string,
     public code?: string,
+    /** Structured refusal fields, when an API provides a cause or a field to explain. */
+    public details?: Record<string, unknown>,
   ) {
     super(message);
   }
@@ -100,6 +102,7 @@ export async function appeler<T>(methode: string, chemin: string, corps?: unknow
       reponse.status,
       typeof json.message === 'string' ? json.message : 'Erreur.',
       typeof json.code === 'string' ? json.code : undefined,
+      json,
     );
   }
   return json as T;
