@@ -1,7 +1,8 @@
 // Tests of the merged tree of kanevas-fiches-liees-rattrapage, from the task's exit criterion and notes:
 // "no conflict marker in the tree"; "ADs in order, no duplicate number"; `main`'s AD-128 keeps its
-// number and its text, the epic's are shifted by one (129 natures, 130 search, 131 "Fiches liées", 132 "gone",
-// 133 Famille, 134 import). The expected values are the literals of the renumbering decision.
+// number and its text, the epic's are shifted by one (130 search, 131 "Fiches liées", 132 "gone",
+// 133 Famille, 134 import); at the delivery merge of `main` `main`'s AD-129 ("Déplacer sous…") keeps its number and
+// the epic's natures take the next free one, 136. The expected values are the literals of the renumbering decisions.
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
@@ -32,9 +33,10 @@ describe('kanevas-fiches-liees-rattrapage, l’arbre fusionné', () => {
   });
 
   // Failure aimed at: main's AD-128 is overwritten by the epic's, or the epic's ADs are not shifted.
-  test('AD-128 reste « A sheet is created whole », les AD de l’epic sont 129 à 134', () => {
+  test('AD-128 reste « A sheet is created whole », les AD de l’epic sont 130 à 134 et 136', () => {
     assert.match(ad(128), /^\| AD-128 \| \*\*A sheet is created whole/);
-    assert.match(ad(129), /^\| AD-129 \| \*\*A relation has a nature/);
+    assert.match(ad(129), /^\| AD-129 \| \*\*« Déplacer sous… » walks the hierarchy/);
+    assert.match(ad(136), /^\| AD-136 \| \*\*A relation has a nature/);
     assert.match(ad(130), /^\| AD-130 \| \*\*The search knows the links and the tree/);
     assert.match(ad(131), /^\| AD-131 \| \*\*« Fiches liées » is a block of the sheet/);
     assert.match(ad(132), /^\| AD-132 \| \*\*« Gone » is a charge of the sheet/);

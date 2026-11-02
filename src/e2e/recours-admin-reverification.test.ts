@@ -72,6 +72,8 @@ describe('kanevas-recours-admin : conséquences de la réparation (navigateur)',
     await m.admin.page.getByText('Retirer antor', { exact: true }).click();
     await m.admin.page.getByText('antor', { exact: true }).waitFor({ state: 'detached' });
     await attendre(m.admin.page);
+    // The universe list recounts after the removal answered: wait for that state, then assert.
+    await m.admin.page.getByText('2 membres', { exact: true }).waitFor();
     assert.match(await texte(m.admin.page), /2 membres/);
     // Mira lit la fiche
     const fiches = await m.mira.ctx.request.get(`/api/univers/${m.id}/fiches`);

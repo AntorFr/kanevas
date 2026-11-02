@@ -16,6 +16,8 @@ export const DUREE_SESSION_MS = 10 * 60 * 1000;
 export const DELAI_ADRESSE_MS = 30_000;
 /** Longest wait for the token once the code is typed. */
 const DELAI_JETON_MS = 60_000;
+/** Let the CLI finish handling a paste before sending Enter as a separate input. */
+const DELAI_ENTREE_MS = 500;
 /** The output is only scanned, never kept whole. */
 const MAX_SORTIE = 64 * 1024;
 export const MAX_CODE = 500;
@@ -263,7 +265,9 @@ export class ConnexionClaude {
       throw new ErreurConnexion('connexion_expiree');
     }
     try {
-      s.proc.stdin?.write(`${code.trim()}\r`);
+      s.proc.stdin?.write(code.trim());
+      await new Promise((r) => setTimeout(r, DELAI_ENTREE_MS));
+      s.proc.stdin?.write('\r');
     } catch {
       /* the wait below ends on the exit */
     }

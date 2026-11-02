@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { type ChildProcess, spawn } from 'node:child_process';
 import { createServer } from 'node:net';
 import { test } from 'node:test';
+import { withStartupLock } from './harnais.test.js';
 
 // Black-box tests of B-1 (kanevas-socle): the real server process is started
 // as a user's deployment would (APP_VERSION from the environment), and
@@ -18,7 +19,12 @@ async function freePort(): Promise<number> {
   });
 }
 
-async function startServer(extraEnv: Record<string, string>) {
+// Startups share the harness lock: one server or browser launching at a time on the pod.
+function startServer(...args: Parameters<typeof startServerSansVerrou>): ReturnType<typeof startServerSansVerrou> {
+  return withStartupLock(() => startServerSansVerrou(...args));
+}
+
+async function startServerSansVerrou(extraEnv: Record<string, string>) {
   const port = await freePort();
   const env: NodeJS.ProcessEnv = { ...process.env, PORT: String(port), NODE_ENV: 'production' };
   for (const k of ['APP_VERSION', 'APP_NAME', 'OIDC_ISSUER', 'OIDC_CLIENT_ID', 'OIDC_CLIENT_SECRET', 'OIDC_REDIRECT_URI']) {

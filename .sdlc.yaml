@@ -1,0 +1,4 @@
+# Declaration of this repository to the SDLC chain (homelab-sdlc-core, docs/chaine.md).
+# langue_publique: the language of what a version publishes (Release notes, tag messages);
+# the merge pod's language guard refuses French ones.
+langue_publique: en

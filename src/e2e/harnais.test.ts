@@ -4,11 +4,12 @@
 // taken from the image (global install) and, when it or Chromium is missing, the browser
 // tests are skipped with a message instead of failing.
 import { type ChildProcess, execFileSync, spawn } from 'node:child_process';
-import { existsSync, mkdtempSync, rmSync } from 'node:fs';
+import { existsSync, mkdtempSync, readFileSync, readlinkSync, rmSync, symlinkSync, unlinkSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { createServer } from 'node:net';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { setTimeout as delay } from 'node:timers/promises';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type Any = any;
@@ -52,12 +53,93 @@ export interface Server {
   stop: () => void;
 }
 
-/** How long `startServer` waits for /healthz, ms. */
+/** Startup window without server CPU progress, ms (elapsed time without /proc);
+ * total readiness wait is capped by PLAFOND_DEMARRAGE_MS. */
 export const DELAI_DEMARRAGE_MS = 30_000;
+/** Absolute ceiling of a startup that keeps making CPU progress (a starved pod), ms. */
+export const PLAFOND_DEMARRAGE_MS = 180_000;
 /** The tail of the server output kept for the failure message. */
 const MAX_SORTIE_SERVEUR = 4096;
 
-export async function startServer(extraEnv: Record<string, string> = {}): Promise<Server> {
+let startupQueue: Promise<void> = Promise.resolve();
+
+/** Serialize startup bursts, not the lifetime of servers or browsers. The attested
+ * runner supplies a shared POSIX lock path for its isolated test-file processes.
+ * The local queue also covers concurrent calls within a file, or a standalone run.
+ */
+export async function withStartupLock<T>(run: () => Promise<T>): Promise<T> {
+  const previous = startupQueue;
+  let releaseQueue!: () => void;
+  startupQueue = new Promise<void>((resolve) => (releaseQueue = resolve));
+  await previous;
+  const lock = process.env.KANEVAS_E2E_STARTUP_LOCK;
+  let releaseLock = () => {};
+  try {
+    if (lock) {
+      for (;;) {
+        try {
+          // An atomic, dangling symlink publishes both ownership and the PID at once.
+          symlinkSync(String(process.pid), lock);
+          break;
+        } catch (error) {
+          if ((error as NodeJS.ErrnoException).code !== 'EEXIST') throw error;
+          try {
+            const owner = Number(readlinkSync(lock));
+            if (!Number.isSafeInteger(owner) || owner < 1) throw new Error('Invalid harness startup lock owner');
+            try {
+              process.kill(owner, 0);
+            } catch (error) {
+              if ((error as NodeJS.ErrnoException).code === 'ESRCH') {
+                // Never hang behind a killed worker, or steal a live worker's lock.
+                throw new Error(`Harness startup lock owner ${owner} exited before releasing it`);
+              }
+              if ((error as NodeJS.ErrnoException).code !== 'EPERM') throw error;
+            }
+          } catch (error) {
+            if ((error as NodeJS.ErrnoException).code === 'ENOENT') continue;
+            throw error;
+          }
+          await delay(50);
+        }
+      }
+      releaseLock = () => {
+        try {
+          unlinkSync(lock);
+        } catch (error) {
+          if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error;
+        }
+      };
+      process.once('exit', releaseLock);
+    }
+    return await run();
+  } finally {
+    process.off('exit', releaseLock);
+    try {
+      releaseLock();
+    } finally {
+      releaseQueue();
+    }
+  }
+}
+
+/** CPU ticks (user + system) consumed by a process, null when /proc does not tell. */
+function cpuTicks(pid: number | undefined): number | null {
+  if (pid === undefined) return null;
+  try {
+    const stat = readFileSync(`/proc/${pid}/stat`, 'utf8');
+    const champs = stat.slice(stat.lastIndexOf(')') + 2).split(' ');
+    const total = Number(champs[11]) + Number(champs[12]);
+    return Number.isFinite(total) ? total : null;
+  } catch {
+    return null;
+  }
+}
+
+export function startServer(extraEnv: Record<string, string> = {}): Promise<Server> {
+  return withStartupLock(() => startServerUnlocked(extraEnv));
+}
+
+async function startServerUnlocked(extraEnv: Record<string, string>): Promise<Server> {
   ensureBuilt();
   const dir = mkdtempSync(join(tmpdir(), 'kanevas-e2e-'));
   const port = await freePort();
@@ -81,30 +163,85 @@ export async function startServer(extraEnv: Record<string, string> = {}): Promis
   };
   child.stdout?.on('data', garder);
   child.stderr?.on('data', garder);
-  let sorti: string | null = null;
-  child.on('exit', (code, signal) => (sorti = signal ? `signal ${signal}` : `code ${code}`));
-  child.on('error', (e) => (sorti = `spawn error: ${e.message}`));
   const base = `http://127.0.0.1:${port}`;
   const stop = () => {
     child.kill('SIGKILL');
     rmSync(dir, { recursive: true, force: true });
   };
-  const limite = Date.now() + DELAI_DEMARRAGE_MS;
-  while (sorti === null && Date.now() < limite) {
-    try {
-      await fetch(`${base}/healthz`);
-      return { base, stop };
-    } catch {
-      await new Promise((r) => setTimeout(r, 100));
-    }
+  try {
+    await attendreServeurPret(child, base, () => sortie);
+  } catch (e) {
+    stop();
+    throw e;
   }
-  stop();
-  const cause = sorti !== null ? `the server exited (${sorti})` : `no answer after ${DELAI_DEMARRAGE_MS} ms`;
-  throw new Error(`server did not start: ${cause}\n--- server output (tail) ---\n${sortie}`);
+  return { base, stop };
+}
+
+/**
+ * The one readiness wait of every e2e server started by a test file: resolves when `/healthz`
+ * answers 200, rejects (without stopping the child: the caller owns it) when the server exits
+ * or makes no progress.
+ *
+ * The queue wait consumes no startup budget. Once spawned, readiness means a successful health
+ * response, not an elapsed sleep or merely any HTTP answer. The watchdog still catches a
+ * genuinely stuck server, including a hung fetch. A server starved of CPU by the other test
+ * files is not stuck: it only fires after DELAI_DEMARRAGE_MS without any CPU time consumed by
+ * the server (no /proc: plain elapsed time), and never past PLAFOND_DEMARRAGE_MS.
+ * Call it right after the spawn; `sortie` gives the server output for the failure message.
+ */
+export async function attendreServeurPret(child: ChildProcess, base: string, sortie: () => string): Promise<void> {
+  let sorti: string | null = null;
+  const startup = new AbortController();
+  child.on('exit', (code, signal) => {
+    sorti = signal ? `signal ${signal}` : `code ${code}`;
+    startup.abort();
+  });
+  child.on('error', (e) => {
+    sorti = `spawn error: ${e.message}`;
+    startup.abort();
+  });
+  const debutDemarrage = Date.now();
+  let dernierTicks = cpuTicks(child.pid);
+  let dernierProgres = debutDemarrage;
+  const watchdog = setInterval(() => {
+    const maintenant = Date.now();
+    const ticks = cpuTicks(child.pid);
+    if (ticks !== null && ticks !== dernierTicks) {
+      dernierTicks = ticks;
+      dernierProgres = maintenant;
+    }
+    if (maintenant - dernierProgres >= DELAI_DEMARRAGE_MS || maintenant - debutDemarrage >= PLAFOND_DEMARRAGE_MS)
+      startup.abort();
+  }, 250);
+  let lastStatus: number | null = null;
+  try {
+    while (!startup.signal.aborted) {
+      try {
+        const response = await fetch(`${base}/healthz`, { signal: startup.signal });
+        lastStatus = response.status;
+        await response.body?.cancel();
+        if (response.status === 200 && sorti === null) return;
+      } catch {
+        // Connection refused while starting, or aborted by exit/the watchdog.
+      }
+      await delay(100, undefined, { signal: startup.signal }).catch(() => {});
+    }
+  } finally {
+    clearInterval(watchdog);
+  }
+  const cause = sorti !== null ? `the server exited (${sorti})`
+    : `/healthz not ready after ${Date.now() - debutDemarrage} ms${lastStatus === null ? '' : ` (HTTP ${lastStatus})`}`;
+  throw new Error(`server did not start: ${cause}\n--- server output (tail) ---\n${sortie()}`);
 }
 
 /** Runs the server process and reports whether it exits by itself, and its stderr. */
-export async function startExpectingExit(
+export function startExpectingExit(
+  extraEnv: Record<string, string>,
+): Promise<{ exited: boolean; code: number | null; stderr: string }> {
+  return withStartupLock(() => startExpectingExitUnlocked(extraEnv));
+}
+
+async function startExpectingExitUnlocked(
   extraEnv: Record<string, string>,
 ): Promise<{ exited: boolean; code: number | null; stderr: string }> {
   ensureBuilt();
@@ -135,7 +272,7 @@ export async function startExpectingExit(
 }
 
 export async function launch(): Promise<Any> {
-  return playwright.chromium.launch({ args: ['--no-sandbox'] });
+  return withStartupLock(() => playwright.chromium.launch({ args: ['--no-sandbox'] }));
 }
 
 /** A fresh browser context signed in as the given stub account (antor, lea, teo, mira, admin). */

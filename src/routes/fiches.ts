@@ -13,6 +13,7 @@ import {
   renommerFiche,
   supprimerFiche,
   listerEnfants,
+  listerRacines,
   lireMentions,
   listerFiches,
   listerSousTypes,
@@ -158,7 +159,7 @@ export function registerFichesRoutes(app: FastifyInstance) {
   app.get(base, async (request) => {
     const q = request.query as Record<string, unknown>;
     const cles = [
-      'type', 'sousType', 'statut', 'etiquette', 'curseur', 'q', 'parent', 'visibilite', 'lie', 'nature', 'descendants', 'etat',
+      'type', 'sousType', 'statut', 'etiquette', 'curseur', 'q', 'parent', 'visibilite', 'horsDe', 'lie', 'nature', 'descendants', 'etat',
     ];
     for (const k of cles) {
       if (q[k] !== undefined && typeof q[k] !== 'string') throw invalide('Requête invalide.');
@@ -176,7 +177,13 @@ export function registerFichesRoutes(app: FastifyInstance) {
       else if (/^\d{1,9}$/.test(q.parent as string)) parent = Number(q.parent);
       else throw invalide('Requête invalide.');
     }
+    let horsDe: number | undefined;
+    if (q.horsDe !== undefined) {
+      if (!/^\d{1,9}$/.test(q.horsDe as string)) throw invalide('Requête invalide.');
+      horsDe = Number(q.horsDe);
+    }
     return listerFiches(app.db, acteur(request), ids(request).univers, {
+      horsDe,
       type: q.type as string | undefined,
       sousType: q.sousType as string | undefined,
       statut: q.statut as string | undefined,
@@ -206,6 +213,13 @@ export function registerFichesRoutes(app: FastifyInstance) {
   app.get(`${base}/:fid`, async (request) => {
     const i = ids(request);
     return lireFiche(app.db, acteur(request), i.univers, i.fiche);
+  });
+
+  // The universe root (AD-129): static, declared before `/:fid` (find-my-way prefers it anyway).
+  app.get(`${base}/racines`, async (request) => {
+    const c = (request.query as Record<string, unknown>).curseur;
+    if (c !== undefined && typeof c !== 'string') throw invalide('Requête invalide.');
+    return listerRacines(app.db, acteur(request), ids(request).univers, c);
   });
 
   // « Contient » (AD-115): the readable children, fifty at a time, no count.

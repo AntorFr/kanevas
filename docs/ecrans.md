@@ -55,7 +55,7 @@ bascule existe (fiche, carte et, depuis `kanevas-import`, recherche E-17).
 
 | Écran | Atteint depuis | Sert à | Parcours |
 |---|---|---|---|
-| **E-1 Accueil** | connexion ; logo | voir ses univers et son rôle dans chacun ; en créer un ; voir son identifiant | P-1, P-6 |
+| **E-1 Accueil** | connexion (page d'Authelia, sans marque) ; marque Kanevas (icône Marge) de la barre | voir ses univers et son rôle dans chacun ; en créer un ; voir son identifiant | P-1, P-6 |
 | **E-2 Créer un univers** | E-1 | nom, description ; le créateur devient MJ | P-1 |
 | **E-3 Vue d'ensemble de l'univers** | E-1 ; sélecteur d'univers ; E-5 (admin devenu membre) | les campagnes actives (*`kanevas-scenarios`* : « Campagnes en cours », the adventures), les derniers CR, la préparation (MJ), les cartes visibles | P-2, P-3, P-4, P-6 |
 | **E-4 Membres** | nav Univers (MJ) | lister, ajouter par identifiant, changer le rôle, retirer | P-2 |
@@ -104,7 +104,7 @@ E-16 vivent hors des univers : leurs cases disent le rôle dans un univers ratta
 | E-6 | *retired (`kanevas-scenarios`)* | — | — |
 | E-7 | *retired (`kanevas-scenarios`)* | — | — |
 | E-8 | lire, chercher, créer ; la vignette de chaque fiche (son illustration, ou le repli dessiné) ; *(kanevas-fiches-liees)* la marque sur la vignette (Mort, Morte, Détruit, Détruite, Éteinte selon le type), le filtre du type (Vivants / Morts, Intacts / Détruits…) ; *(kanevas-scenarios)* for the « Aventure » type: the status badge, the « Statut » filter, the status menu on a card or a tree line (outside player mode), the creation form with sub-type suggestions and « Visible des joueurs » ; *(kanevas-fiche-mj-seul)* the « MJ seul » badge on a sheet players cannot see, the « Visibilité » filter | lire, chercher ; la vignette des fiches qu'il voit ; *(kanevas-fiches-liees)* the « gone » mark and its filter, the same as the GM sees them (the « Marquer … » entry is on E-9 only, hidden from a player) ; *(kanevas-scenarios)* adventures: the status badge and the « Statut » filter; the status menu and « Nouvelle aventure » ; *(kanevas-fiche-mj-seul)* no « MJ seul » badge, no « Visibilité » filter (**caché**) | — |
-| E-9 | tout ; mode Joueur ; *(kanevas-fiches-liees)* relier avec une nature et un qualificatif, le bloc « Fiches liées » avec « sous-lieux compris », « Marquer mort / détruit / éteinte… » dans l'en-tête ; *(kanevas-scenarios)* on an adventure: the status menu in the header (outside player mode), the blocks « Préparation » (GM, outside player mode) and « Comptes-rendus » (« Nouveau compte-rendu ») ; *(kanevas-fiche-mj-seul)* the « MJ seul » badge in the header (GM mode) ; relier et retirer des relations ; poser, remplacer, retirer l'illustration (hors mode Joueur) ; *(kanevas-import)* sous-type, réserver un fichier au MJ, voir un fichier en attente d'import (tuile) | sections lisibles ; écrire celles permises ; *(kanevas-scenarios)* on an adventure: the status badge and « Comptes-rendus » (the CR he reads; « Nouveau compte-rendu » allowed); the status menu and « Préparation » (**hidden**) ; relations lisibles (section et cible) ; pièces jointes de celles-ci ; voir l'illustration, jamais la poser ; *(kanevas-fiche-mj-seul)* no « MJ seul » badge in the header (**caché**) ; *(kanevas-import)* dans une section qu'il écrit, ajouter un fichier ou en choisir un qu'il voit (les deux chemins de B-55) et retirer une référence ; fichiers sous double garde ; jamais régler une visibilité (**caché**) ; un fichier en attente d'import : rien (**caché**) ; *(kanevas-fiches-liees)* « Fiches liées » réduit aux relations qu'il lit (comptes compris) ; la marque « disparu » ; « Marquer mort / détruit… » et la nature au relier : **cachés** | — |
+| E-9 | tout ; mode Joueur ; *(kanevas-fiches-liees)* relier avec une nature et un qualificatif, le bloc « Fiches liées » avec « sous-lieux compris », « Marquer mort / détruit / éteinte… » dans l'en-tête ; *(kanevas-scenarios)* on an adventure: the status menu in the header (outside player mode), the blocks « Préparation » (GM, outside player mode) and « Comptes-rendus » (« Nouveau compte-rendu ») ; *(kanevas-fiche-mj-seul)* the « MJ seul » badge in the header (GM mode) ; relier et retirer des relations ; poser, remplacer, retirer l'illustration (hors mode Joueur) ; *(kanevas-import)* sous-type, réserver un fichier au MJ, voir un fichier en attente d'import (tuile); *(kanevas-sous-type-dialogue)* change the sub-type alone from « Changer le type… » (outside player mode) | sections lisibles ; écrire celles permises ; *(kanevas-scenarios)* on an adventure: the status badge and « Comptes-rendus » (the CR he reads; « Nouveau compte-rendu » allowed); the status menu and « Préparation » (**hidden**) ; relations lisibles (section et cible) ; pièces jointes de celles-ci ; voir l'illustration, jamais la poser ; *(kanevas-fiche-mj-seul)* no « MJ seul » badge in the header (**caché**) ; *(kanevas-import)* dans une section qu'il écrit, ajouter un fichier ou en choisir un qu'il voit (les deux chemins de B-55) et retirer une référence ; fichiers sous double garde ; jamais régler une visibilité (**caché**) ; un fichier en attente d'import : rien (**caché**); *(kanevas-sous-type-dialogue)* the sub-type as plain text; changing it: **hidden** (no « ⋯ » menu, no box, no pencil, no Tab stop) ; *(kanevas-fiches-liees)* « Fiches liées » réduit aux relations qu'il lit (comptes compris) ; la marque « disparu » ; « Marquer mort / détruit… » et la nature au relier : **cachés** | — |
 | E-10 | tout | cartes visibles | — |
 | E-11 | tout ; mode Joueur | lire une carte visible, ouvrir une fiche | — |
 | E-12 | catalogue MJ (dont générer une image, si un moteur d'images est disponible) ; propositions : le MJ demandeur seul les voit, les applique, les abandonne | catalogue Joueur (sans image : l'outil est absent, l'assistant répond qu'il ne peut pas) ; propositions : **caché** (ni outil ni bloc ; ce qu'on vérifie est l'absence de proposition et de bloc, pas le texte libre de l'assistant) | — |
@@ -214,7 +214,7 @@ des univers du compte, puis « Mes univers » et « Systèmes de jeu » en pied 
 les types activés de l'univers (« Aventures » — a type that can be deactivated like any other —, Personnages, Lieux, Factions, Objets, Événements, Quêtes par défaut ; liste complète en haut de ce document) ; pour un MJ, **Univers ▸ Membres** et **Paramètres** ; en
 pied, le compte (avatar et identifiant) qui ouvre le menu du compte : l'identifiant, le thème
 (Clair, Sombre, Système, en trois icônes) et « Se déconnecter ». Hors d'un univers (E-1,
-E-2, E-5, E-15, E-16) : « Mes univers », « Systèmes de jeu », « Administration » pour un compte du groupe `parents` (E-5, plus bas) et le compte en pied. **Un item dont l'écran n'est
+E-2, E-5, E-15, E-16) : the **brand** at the top (the 30 px Marge icon, then « Kanevas »; a link to « Mes univers », charter § 3); « Mes univers », « Systèmes de jeu », « Administration » pour un compte du groupe `parents` (E-5, plus bas) et le compte en pied. **Un item dont l'écran n'est
 pas construit n'est pas affiché** (« Comptes-rendus » and « Cartes » are shown). « Paramètres » (E-14) n'est affiché qu'au MJ. Sur téléphone (moins de 760 px), la barre est un tiroir sous un
 bouton « Menu ».
 
@@ -1203,7 +1203,7 @@ hachure, ni menu « ⋯ » : la section n'a que son titre, son texte et ses bloc
 |---|---|---|
 | menu du compte | connexion perdue | il s'ouvre ; le thème change (il est local) ; « Se déconnecter » reste actif |
 | menu du compte | `/api/moi` en échec | l'identifiant manque ; le thème et « Se déconnecter » restent |
-| identifiant, nom d'auteur, fil d'Ariane | trop longs | coupés par « … », le texte entier en infobulle ; le fil garde son dernier maillon entier |
+| identifiant, nom d'auteur, fil d'Ariane | trop longs | coupés par « … », le texte entier en infobulle ; dans le fil, le titre de la fiche courante cède en dernier (voir En-tête) |
 | réglage d'audience | échec d'un changement | l'interrupteur revient à sa valeur, « L'action n'a pas abouti. Réessayez. » sous le réglage ; pas de toast |
 | réglage d'audience | connexion perdue | interrupteurs et liste désactivés, le réglage se lit |
 | tiroir | ouvert au téléphone | la barre par-dessus la page, voile derrière ; Échap, le voile ou une entrée le ferment |
@@ -2208,6 +2208,7 @@ seul qui ne connaît pas le mode Joueur : un lien cassé ou en attente y est tou
 ### E-9 Fiche — ce que `kanevas-import` change
 
 *Maquette finie* : `docs/maquettes/e09-fiche-importee.html` (« Port-Sel », états `#etat-fichier`, `#etat-joindre`, `#etat-sous-type`, `#etat-changer-type`, `#etat-joueur`,
+`#etat-sous-type-survol`, `#etat-sous-type-focus`, `#etat-changer-sous-type`, `#etat-changer-sous-type-echec`,
 `#etat-edition`, `#etat-supprimer`, `#etat-deplacer`).
 
 **En-tête.** Fil d'Ariane : univers › type › ancêtres **lisibles** du plus haut au plus proche ›
@@ -2232,12 +2233,16 @@ tout autre rôle que le MJ (hors mode Joueur) : ni le menu, ni la réponse de le
 
 - *Changer le type* : une liste des types de la liste du produit, activés d'abord, puis « Autres
   types » ; pour « Personnage », le choix PJ / PNJ ; et le champ « Sous-type » (vidé au changement de
-  type, puisqu'il est propre au type, avec les sous-types déjà employés pour le nouveau type). Le
+  type, puisqu'il est propre au type, avec les sous-types déjà employés pour le nouveau type ;
+  *(kanevas-sous-type-dialogue)* filled with the current sub-type while the type stays the current one, and then
+  the box changes the sub-type alone). Le
   compte-rendu n'y figure pas ; un compte-rendu n'a pas cette entrée.
-- *Déplacer sous…* : boîte « Déplacer « Port-Sel » sous… », champ « Chercher une fiche » et la liste de
-  recherche (tous types, fiches que le MJ lit), plus « Aucun parent » ; pied : « Annuler » puis « Déplacer » (à droite au bureau, côte à côte sur toute la largeur, 40 px de haut, au téléphone) ;
-  un descendant de la fiche est refusé : « Une fiche ne peut pas être rangée sous l'un de ses
-  descendants. ».
+- *Déplacer sous…* : boîte « Déplacer « Port-Sel » sous… », deux vues (« Arborescence » par défaut, « Recherche » avec le champ « Chercher une fiche » et sa liste, tous types, fiches que le MJ lit), plus « Aucun parent » ; pied : « Annuler » puis « Déplacer » (à droite au bureau, côte à côte sur toute la largeur, 40 px de haut, au téléphone) ;
+  la fiche et ses descendants ne sont jamais proposés (le refus « Une fiche ne peut pas être rangée sous l'un de ses
+  descendants. » ne reste que si la hiérarchie bouge boîte ouverte).
+  *(kanevas-deplacer-arborescence)* The box has two views, « Arborescence » (open by default, placed
+  where the sheet is) and « Recherche » (the search above); the sheet and its descendants are never
+  offered as a target. Detail: « Ce que `kanevas-deplacer-arborescence` construit » below.
 - *Alias et étiquettes* : deux champs à pastilles (Entrée ajoute, × retire) ; une étiquette se
   complète sur celles de l'univers ; alias 1 à 120 caractères, 20 au plus ; étiquette 1 à 40
   caractères, 20 au plus par fiche.
@@ -2350,8 +2355,8 @@ attente » for the batch).
 - Étant donné « Port-Sel » sous « Les Sphères » (lieu illisible de Léa) sous « Le Grand Vide »
   (lisible), quand Léa ouvre « Port-Sel », alors le fil est « Lame d'Ébène › Lieux › Le Grand Vide ›
   Port-Sel ».
-- Étant donné Antor qui déplace « Les Sphères » sous « Port-Sel », son enfant, alors il voit « Une
-  fiche ne peut pas être rangée sous l'un de ses descendants. » et rien ne change.
+- Étant donné Antor qui déplace « Les Sphères » alors que « Port-Sel », son enfant, lui est rangé dessous entre-temps (hiérarchie changée boîte ouverte), alors il voit « Une
+  fiche ne peut pas être rangée sous l'un de ses descendants. » et rien ne change *(kanevas-deplacer-arborescence: the box no longer offers « Port-Sel » in the first place)*.
 - Étant donné Antor qui supprime « Port-Sel » (5 enfants, dont un illisible de Léa, parent « Les Sphères »), alors les 5
   enfants ont « Les Sphères » pour parent, l'adresse de « Port-Sel » répond « Page introuvable. », et
   un lien vers elle dans « Maître Aldric » est marqué « lien cassé » pour Antor et du texte pour Léa.
@@ -2718,14 +2723,18 @@ texte. Ses états : *chargement* « Chargement… » sous le titre du bloc ; *er
 enfants. » avec « Réessayer » ; *vide* le bloc est absent ; *contenu long* 50 puis « Afficher les N suivants »
 (N = ce que la page suivante compte, jamais un total) ; l'échec de cette suite dit « Impossible de charger la suite. » sans retirer ce qui est affiché ; connexion perdue : le bandeau, le bloc chargé reste ; fiche supprimée entre-temps (404) : le bloc disparaît. Une fiche sans section lisible mais avec des enfants lisibles montre quand même « Contient ». Chaque enfant montre l'icône, le titre et le sous-type (« Taverne »). En mode Joueur le bloc se relit sous le mode.
 
-**« Déplacer sous… » (E-9).** La boîte est celle de `#etat-deplacer`. Le champ cherche dans la liste de
+**« Déplacer sous… » (E-9).** *(kanevas-deplacer-arborescence)* Ce paragraphe décrit la vue « Recherche » ; la boîte entière est « Ce que `kanevas-deplacer-arborescence` construit » plus bas. Le champ cherche dans la liste de
 recherche existante (`GET …/fiches?q=`, sans `type`, 300 ms après la frappe, 1 caractère au moins, 100 au plus) ;
-la fiche elle-même est écartée de la liste ; une ligne montre l'icône du type, le titre et le sous-type (« Lieu · Sphère »), et la recherche porte sur le titre seul (le placeholder « Titre ou alias » de la maquette est celui de E-17 : ici le champ dit « Chercher une fiche ») ; « 1 caractère au moins, 100 au plus » vise la saisie, la liste rend 100 lignes au plus puis « Charger la suite », et défile dans la boîte ; avant toute saisie la liste dit « Tapez le début d'un titre. » ; une saisie sans résultat dit « Aucune fiche ne correspond. », la recherche en cours « Recherche… », son échec « Impossible de chercher. » avec « Réessayer » ; « Aucun parent » est la première ligne et met la fiche à la racine.
-« Déplacer » reste inactif tant qu'aucune ligne n'est choisie (la maquette le montre actif parce qu'un choix y est déjà fait) ; le refus s'écrit sous le champ ; il envoie `PATCH …/fiches/:fid` `{parent}`. Réponses :
+la fiche et ses descendants sont écartés de la liste (`horsDe`) ; une ligne montre l'icône du type, le titre et le sous-type (« Lieu · Sphère »), et la recherche est celle de la liste (AD-63 : titre, alias, sous-type et texte lisible des sections, comme E-17 ; la boîte n'ajoute que `horsDe`) (le placeholder « Titre ou alias » de la maquette est celui de E-17 : ici le champ dit « Chercher une fiche ») ; « 1 caractère au moins, 100 au plus » vise la saisie, la liste rend 100 lignes au plus puis « Charger la suite », et défile dans la boîte ; avant toute saisie la liste dit « Tapez le début d'un titre. » ; une saisie sans résultat dit « Aucune fiche ne correspond. », la recherche en cours « Recherche… », son échec « Impossible de chercher. » avec « Réessayer » ; « Aucun parent » est la première ligne et met la fiche à la racine.
+« Déplacer » reste inactif tant qu'aucune ligne n'est choisie ou tant que le choix est le parent actuel (la maquette le montre actif parce qu'un choix y est déjà fait) ; le refus s'écrit sous la liste ; il envoie `PATCH …/fiches/:fid` `{parent}`. Réponses :
 succès (200, la fiche en réponse) → la boîte se ferme, le fil se recharge et le toast dit « Fiche déplacée. » ; 400 `cycle` → le texte
-« Une fiche ne peut pas être rangée sous l'un de ses descendants. » sous le champ, la boîte reste ouverte ;
-400 `trop_profond` → « La hiérarchie est trop profonde. » et 404 → « Introuvable. », tous deux sous le champ comme le cycle ; connexion perdue →
+« Une fiche ne peut pas être rangée sous l'un de ses descendants. » sous la liste, la boîte reste ouverte ;
+400 `trop_profond` → « La hiérarchie est trop profonde. » et 404 → « Introuvable. », tous deux sous la liste comme le cycle ; connexion perdue →
 bandeau, « Déplacer » désactivé. La boîte n'existe que pour un MJ hors mode Joueur, et le menu « ⋯ » est absent pour un Joueur. Une fiche de tout type peut être parent ou enfant, un compte-rendu compris (AD-99) : « Déplacer sous… » existe aussi pour lui (MJ seulement : un Joueur, même auteur de son compte-rendu, n'a pas le menu « ⋯ ») ; E-13 ne montre pas la hiérarchie et ne change pas.
+*(kanevas-deplacer-arborescence)* This paragraph now describes the « Recherche » view only, and three of its
+rules changed: the sheet **and its descendants** are left out (not the sheet alone); a refusal is written under
+the list (the « Arborescence » view has no field); « Déplacer » is also inactive while the choice is the current
+parent. The box as a whole is « Ce que `kanevas-deplacer-arborescence` construit » below.
 
 *Critères de la tranche* (les données sont celles du semis, `docs/ecrans.md` plus haut) :
 - Étant donné « Les Sphères » (lieu MJ seul) dont « Port-Sel » est l'enfant, quand Léa ouvre « Lieux » en arbre,
@@ -2739,6 +2748,121 @@ bandeau, « Déplacer » désactivé. La boîte n'existe que pour un MJ hors mod
   « Événements » il porte « dans Port-Sel ».
 - Étant donné une réponse de `GET …/fiches?type=lieu&parent=racine` pour Léa, alors aucun champ ne porte le titre,
   l'identifiant ou le nombre d'une fiche qu'elle ne lit pas (`dans` est `null` si le parent est illisible).
+
+### Ce que `kanevas-deplacer-arborescence` construit (« Déplacer sous… » of E-9)
+
+*Detail of the slice on the frame above (B-35; AD-99 unchanged, AD-115, AD-129). Mockup: `e09-fiche-importee.html`,
+`#etat-deplacer` (the « Arborescence » view, as it opens), `#etat-deplacer-recherche` (the « Recherche »
+view, the choice kept from the tree), `#etat-deplacer-racine` (a sheet without a parent) and
+`#etat-deplacer-profond` (a path of more than three crumbs). Decided by Monsieur on 2026-10-29: the GM did not find a parent by its title alone; he wants to see where
+the sheet is and walk the hierarchy.*
+
+**Who.** Unchanged: the box exists only for a GM outside player mode (the « ⋯ » menu is absent for a player,
+and for the GM in player mode); every type can be a parent, a report included (AD-99).
+
+**The box.** Title « Déplacer « Port-Sel » sous… ». Under it, a segmented switch « Arborescence » /
+« Recherche » (the « Grille / Arbre » switch of E-8: two `button`s with `aria-pressed`, icons `list-tree` and
+`search`). Every opening starts on « Arborescence »; the choice is not remembered. Then the fixed first row
+« Aucun parent » (both views, as before), the list of the active view, the refusal line, and the footer
+« Annuler » / « Déplacer ». Between the list and the footer, a summary line « Nouveau parent : Les Docks »
+(`--texte-2`; « Nouveau parent : aucun (racine de l'univers) » for « Aucun parent »; absent while nothing is
+chosen): the chosen row may have scrolled or been left behind by the navigation, the line keeps it visible.
+
+**One choice for both views.** The list is one `role="radiogroup"` « Nouveau parent » whose rows are radios.
+Choosing a row in either view sets the one choice; switching views or levels keeps it (the radio of the
+chosen sheet is checked wherever that sheet is shown). « Déplacer » is active once a choice is made **and**
+that choice differs from the current parent: the current parent's row carries « (parent actuel) » after its
+type, and « Aucun parent » carries « (actuel) » when the sheet has no parent; choosing either leaves
+« Déplacer » inactive (as « Changer le type » with the current type).
+
+**« Arborescence » view.**
+- *Where it opens.* On the level that holds the sheet: the readable children of its parent
+  (`GET …/fiches/:pid/enfants`), or, for a sheet without a parent, the universe root
+  (`GET …/fiches/racines`, AD-129). The level is read when the box opens, nothing typed. The sheet's own row
+  is scrolled into view.
+- *The path.* Above the list, a path line: the universe's name, then each ancestor down to the shown level,
+  « › » between them (« Lame d'Ébène › Les Sphères »). Each crumb except the last is a button that shows that
+  level; the last is the shown level (`aria-current="location"`). Before the path, an icon button « Remonter »
+  (`corner-left-up`, `aria-label` « Remonter d'un niveau »), inactive at the root. More than three crumbs
+  after the universe: the universe, « … » (a menu listing the hidden ones, with their type icon), the last two
+  — the rule of E-9's breadcrumb. Choosing an entry of that menu shows that level, as a crumb does, and closes
+  the menu; Échap or a click outside closes it without moving; offline, « … » is inactive like the crumbs. At opening the path is built from the sheet's `ancetres` (the GM outside
+  player mode reads them all); walking down appends, walking up or clicking a crumb cuts.
+- *A row.* The radio dot, the type icon, the title, then on the right « Lieu · Taverne » (type, sub-type) in
+  `--texte-3` — the search row of today — and, when the row has readable children (`aDesEnfants`, AD-129), a
+  chevron button (`chevron-right`, `aria-label` « Ouvrir « Les Docks » ») that shows its children. Order and
+  page size are those of « Contient »: by type (product order), then title, 50 rows, then « Charger la suite ».
+- *The sheet itself* is shown at its place, not choosable: `--texte-3`, no radio dot, « (cette fiche) » after
+  its title, `aria-disabled="true"`, no chevron. Its descendants are therefore never reached in this view.
+- *Keyboard.* Up / Down move and choose within the radiogroup (native radios; the sheet's own row is
+  skipped). Right on a row with children shows its children; Left or Backspace (outside a text field) goes up
+  one level. After a level change the focus goes to the first choosable row, and a polite live region says the
+  level (« Niveau : Port-Sel » ; at the root « Niveau : Lame d'Ébène »). The chevrons are out of the Tab order
+  (`tabindex="-1"`), keyboard reaches them through Right.
+- *States of a level.* Loading: « Chargement… » in the list (`role="status"`), the previous level is gone.
+  Failure: « Impossible de charger ce niveau. » with « Réessayer » (`role="alert"`); the path stays usable.
+  Empty: « Aucune fiche à ce niveau. » (a level emptied between two reads, or a root that holds only the
+  sheet itself, which is then shown alone with « (cette fiche) »). Next page loading: « Charger la suite »
+  reads « Chargement… » and is inactive, what is shown stays. Next page fails: « Impossible de charger la
+  suite. », what is shown stays. A level whose sheet no longer exists (404 — on the first read, or reached by a
+  chevron or a crumb after it was deleted meanwhile): « Introuvable. » replaces the list, the path keeps that
+  level and « Remonter » reads the level above again. Right lost while the box is open (403 on a level read,
+  e.g. Antor's GM role removed meanwhile): the box closes without a toast or a message, and the sheet is read
+  again as a player reads it — no « ⋯ » menu any more, so the box cannot be reopened (the same handling as a 403
+  on the move itself, which also closes the box).
+  The GM cannot switch to player mode while the box is open (it is modal), so no level is read in player mode.
+  Connection lost: the banner; « Déplacer », the chevrons, the crumbs and « Remonter » are inactive; the shown
+  level stays.
+- *Long content.* A title of 120 characters is cut by an ellipsis in the row (whole in `title`), a crumb keeps
+  at least 8 characters (`8ch`) and ends in « … », the last crumb gives way last (E-9's breadcrumb rule). A
+  level of 500 children: 50, then « Charger la suite » ; the list scrolls inside the box.
+
+**« Recherche » view.** The search described above (`GET …/fiches?q=`, 300 ms, 1 to 100 characters, the same
+texts), with one change: the list leaves out the sheet **and its descendants**, by the server
+(`horsDe=<sheet>`, AD-129) — not by the page, so the paging stays right. The field takes the focus when the
+view is chosen; what was typed is kept when coming back to it. A result row has no chevron.
+
+**Phone (≤ 480 px).** The box takes the screen, as « Changer le type ». Rows are 44 px high, the chevron is
+a 44 × 44 target; the path keeps the universe, « … » and the last crumb; the footer buttons side by side on
+the full width, 40 px high (as before).
+
+**Move.** Unchanged: `PATCH …/fiches/:fid` `{parent}`, the same answers and texts (« Fiche déplacée. »; a
+cycle, still possible if the hierarchy changed meanwhile, says « Une fiche ne peut pas être rangée sous l'un de
+ses descendants. » under the list; `trop_profond`; 404; 403 closes the box).
+
+*Slice criteria* (the bouchon's seed: « Les Sphères » › « Port-Sel » › « La Taverne du Kraken », « Les
+Docks », « Le Phare aux Sels », « Quartier des Cordiers », « Le Repaire des contrebandiers »; Antor is GM of
+« Lame d'Ébène ») :
+- Given « La Taverne du Kraken » under « Port-Sel », when Antor opens « Déplacer sous… » on it, then without
+  typing he sees the path « Lame d'Ébène › Les Sphères › Port-Sel » and the rows « Le Phare aux Sels », « Le
+  Repaire des contrebandiers », « Les Docks », « Quartier des Cordiers », and « La Taverne du Kraken (cette
+  fiche) », not choosable.
+- Given that box, when Antor clicks « Les Sphères » in the path, then « Port-Sel » is listed with
+  « (parent actuel) » and a chevron; choosing it leaves « Déplacer » inactive.
+- Given that box, when Antor chooses « Les Docks », then « Nouveau parent : Les Docks » shows; when he
+  confirms, the toast says « Fiche déplacée. » and the breadcrumb of « La Taverne du Kraken » reads « Lame
+  d'Ébène › Lieux › Les Sphères › Port-Sel › Les Docks › La Taverne du Kraken » (cut by E-9's rule).
+- Given that box with « Les Docks » chosen, when Antor clicks « Remonter » then the chevron of « Port-Sel »,
+  then he is back on the « Port-Sel » level and « Les Docks » is still checked.
+- Given « Port-Sel » (parent of five), when Antor opens « Déplacer sous… » on it and opens nothing, then
+  « Port-Sel (cette fiche) » has no chevron; when he switches to « Recherche » and types « Doc », then « Les
+  Docks » is not in the list; « Zzzz » gives « Aucune fiche ne correspond. ».
+- Given « Les Sphères » (no parent), when Antor opens « Déplacer sous… » on it, then the root is shown
+  (« Lame d'Ébène » alone in the path, « Remonter » inactive) and « Aucun parent » carries « (actuel) ».
+- Given the level read fails, then « Impossible de charger ce niveau. » and « Réessayer » replace the list,
+  and « Réessayer » reads it again.
+- Given a level of more than 50 children (created for the test; the seed has none), when Antor clicks « Charger la suite », then the button reads
+  « Chargement… » and is inactive while the next page loads, and the first 50 rows stay.
+- Given the box opened on « La Taverne du Kraken » and « Les Docks » deleted meanwhile (by another GM), when Antor
+  clicks the chevron of « Les Docks », then « Introuvable. » replaces the list, the path ends on « Les Docks »,
+  and « Remonter » shows the « Port-Sel » level again, without « Les Docks ».
+- Given the box open and Antor's GM role removed meanwhile, when he opens a level, then the box closes, no toast
+  shows, and the sheet has no « ⋯ » menu any more.
+- Given Léa (player), when she calls `GET …/fiches/racines` or a search with `horsDe`, then she gets 403 for
+  the roots and 400 for `horsDe`, and nothing about the hierarchy (AD-129); so does Antor in player mode.
+- Given a chain of five levels under the universe (created for the test; the seed goes two deep at most), when
+  Antor opens « Déplacer sous… » on its deepest sheet, then the path shows the universe, « … » and the last two
+  crumbs; when he opens « … » and chooses the first hidden level, then that level's children are listed.
 
 ### E-17 Recherche
 
@@ -2944,10 +3068,29 @@ dans son infobulle. Un sous-type filtré qui n'a plus de fiche (renommée entre-
 
 **E-9 — sous-type en place.** Le MJ (hors mode Joueur) clique le sous-type du badge : champ, liste de
 complétion, Entrée enregistre, Échap annule (maquette `#etat-sous-type`). Enregistrement en cours : champ
-désactivé, « Enregistrement… ». Échec : « L'action n'a pas abouti. Réessayez. » sous le champ, la valeur
-tapée est gardée. Un champ vidé retire le sous-type (« Sous-type retiré. »). Connexion perdue : l'édition est désactivée (le sous-type reste lisible). Contenu long : 60 caractères, tronqués par
+désactivé (aucun libellé). Échec : « Le sous-type n’a pas été enregistré. Réessayez. » sous le champ, la valeur
+tapée est gardée. Saved: toast « Sous-type enregistré. »; an emptied field removes the sub-type (« Sous-type retiré. »). Connexion perdue : l'édition est désactivée (le sous-type reste lisible). Contenu long : 60 caractères, tronqués par
 une ellipse dans le badge, entiers dans l'infobulle. Un joueur lit le sous-type en
 simple texte ; une fiche sans sous-type ne montre rien à un joueur.
+*(kanevas-sous-type-dialogue)* **The sub-type shows that it is editable** (GM, outside player mode; mockup
+`#etat-sous-type-survol`). At rest, nothing changes. On hover of the sub-type, and when it receives
+keyboard focus (it is a button, reached with Tab after the type badge), it takes the
+`--surface-3` background (4 px radius) and a pencil icon (`pencil`, 12 px, decorative) appears
+after its text — on that background, the pencil and the « Sous-type » label turn `--texte-2` (the charter never puts
+`--texte-3` on `--surface-3`); the pointer is the text cursor; keyboard focus adds the charter's focus ring
+(2 px `--focus`, offset 2 px). The tooltip says « Modifier le sous-type »; the accessible name is
+« Sous-type : Port. Modifier le sous-type » (without a sub-type: « Ajouter un sous-type »).
+Where there is no hover (touch screen, `(hover: none)`), the pencil is always visible (charter,
+« Les actions secondaires se révèlent au survol et au focus »). A sheet without a sub-type: the label
+« Sous-type » in `--texte-3` at rest, with the same hover and the same pencil. The pencil does not push the title:
+its room (12 px plus a 4 px gap) is counted in the badge's width, which does not move on hover.
+A player, or the GM in player mode: no background, no pencil, no focus — the sub-type is text.
+Connection lost: the banner « Connexion perdue. Ce que vous voyez peut être dépassé ; rien n'est enregistré tant qu'elle ne revient pas. »; the sub-type is disabled (`disabled`): no background or
+pencil on hover, ordinary cursor, Tab no longer stops on it; everything returns with the connection.
+Saving in progress: not applicable to hover — the edit field replaces the sub-type while saving
+(field disabled, above), and the modal box « Changer le type… » covers it.
+Hover and keyboard focus are two distinct states: hover shows the background and the pencil, without the
+ring; keyboard focus shows them with the ring (mockup `#etat-sous-type-survol` and `#etat-sous-type-focus`).
 
 **E-9 — « Changer le type… »** (MJ, hors mode Joueur ; absent pour un compte-rendu) : maquette
 `e09-fiche-importee.html#etat-changer-type`. Boîte « Changer le type de « Port-Sel » » : une
@@ -2956,16 +3099,42 @@ désactivés (« désactivé » en `--texte-3`), le type courant coché et indiq
 « Personnage » ouvre le choix « PJ / PNJ » (PNJ par défaut) ; le champ « Sous-type » (vide d'office pour un
 autre type, avec les sous-types déjà employés pour le type choisi). Si la fiche a un sous-type, la boîte dit :
 « Le sous-type « Port » sera retiré. » tant que le champ n'est pas rempli. Boutons « Changer le
-type » (désactivé tant que le type reste l'actuel) et « Annuler ». Après : la fiche se recharge sous son
+type » et « Annuler » (pour le seul sous-type, voir plus bas : « Changer le type » est désactivé tant que rien ne diffère). Après : la fiche se recharge sous son
 nouveau type, toast « Type changé : Note → Savoir. », le fil d'Ariane et la barre suivent ; ses sections,
 relations, places sur une carte et propositions sont intactes.
+*(kanevas-sous-type-dialogue — changing the sub-type alone; mockup `#etat-changer-sous-type`.)* On
+opening, the current type is ticked and the « Sous-type » field holds the sheet's current sub-type
+(empty if it has none), with the completion of the current type. While the type stays the current one:
+- the box does not say « … sera retiré. » (that warning exists only for another type, if the sheet has a
+  sub-type and while the field stays empty);
+- the button stays **« Changer le type »** — the sub-type is part of the type (Monsieur's decision of
+  2026-10-29: a label « Enregistrer le sous-type » was proposed and refused); it is disabled while the field, trimmed,
+  equals the current sub-type (case counts: « capitaine » replaces « Capitaine »); it enables as soon as
+  it differs, an emptied field included when the sheet had a sub-type;
+- it sends `PATCH …/fiches/:fid` `{sousType}` (the trimmed text, or `null` for an empty field) — the
+  existing route (AD-120), nothing else; on success: the box closes, the header reloads, toast « Sous-type
+  enregistré. » (« Sous-type retiré. » for an empty field), the same as the in-badge edit;
+- PJ / PNJ is not shown, « Personnage (actuel) » included (it is not changed here, see below).
+Choosing another type gives the behaviour of a type change: field emptied, « … sera retiré. » if the
+sheet has a sub-type, button « Changer le type ». Going back to the current type restores the field with the
+current sub-type and the button « Changer le type » (disabled while nothing differs). Saving in
+progress: the button shows its waiting mark « … » (as every button) and the box is frozen. `PATCH` failure: « Le sous-type n'a
+pas changé. Réessayez. » in the box, which stays open with the input; 403: the box closes and
+« Vous ne pouvez plus modifier cette fiche. » shows; 404: « Introuvable. » in the box; connection lost:
+the banner « Connexion perdue. Ce que vous voyez peut être dépassé ; rien n'est enregistré tant qu'elle ne revient pas. », button disabled, input kept. A sub-type over 60 characters: « Erreur : 60 caractères au plus. »
+under the field, nothing is sent. Loading: while the types list is not read, the « Sous-type » field is
+already there, holding the current sub-type and editable, with « Chargement des types… » shown, and the button stays
+disabled even if the field already differs; it enables only once the list is read (its failure: « Impossible de charger les types. »,
+above, button disabled). No empty state of its own: the field is filled from the sheet already read, and the types list is
+never empty. Failure drawn: mockup `#etat-changer-sous-type-echec`. A Player has neither the « ⋯ » menu nor
+the box (hidden, as for « Changer le type… »).
 Le choix PJ / PNJ n'apparaît que pour **devenir** un personnage ; le PJ / PNJ d'un personnage existant ne se
 change pas ici. Chargement : tant que la liste des types n'est pas lue, la liste de la boîte dit « Chargement des
 types… » et « Changer le type » reste désactivé. Contenu long : un titre de 120 caractères passe à la ligne dans
 le titre de la boîte ; un sous-type de 60 caractères est tronqué par une ellipse dans le badge, entier dans son
 infobulle et dans le champ. Échecs : « Le type n'a pas changé. Réessayez. » dans la boîte (elle reste ouverte) ; un MJ qui n'a plus de
 rôle : « Vous ne pouvez plus modifier cette fiche. » ; connexion perdue : bandeau, bouton désactivé.
-Enregistrement en cours : le bouton passe à « Enregistrement… » et la boîte est figée. Échec de lecture de la
+Enregistrement en cours : le bouton passe à « … » et la boîte est figée. Échec de lecture de la
 liste des types : « Impossible de charger les types. » et « Réessayer » à la place de la liste, bouton désactivé.
 La liste des 14 types défile dans la boîte (hauteur bornée) au bureau comme au téléphone, où la boîte occupe
 l'écran. Un sous-type de plus de 60 caractères saisi dans le champ : « Erreur : 60 caractères au plus. ». Le
@@ -2987,6 +3156,36 @@ La maquette `e08-liste-fiches.html` n'est pas redessinée pour le sous-type : le
 (sous le titre de la carte, `--texte-3` ; filtre à côté de la recherche).
 
 *Critères de la tranche* (les critères d'écran ci-dessus restent les siens).
+- *(kanevas-sous-type-dialogue)* Given an NPC « Capitaine » in Lame d'Ébène, when Antor (GM, outside player
+  mode) opens « Changer le type… », leaves « Personnage (actuel) », replaces the sub-type with « Amiral » and
+  clicks « Changer le type », then the box closes, the toast says « Sous-type enregistré. » and the badge
+  shows « PNJ · Amiral »; the sheet is still an NPC, under « Personnages ».
+- *(kanevas-sous-type-dialogue)* Given that same NPC, when Antor opens « Changer le type… », then the field
+  holds « Capitaine », the « Changer le type » button is disabled and the box does not say « … sera
+  retiré. »; it stays so while neither the type nor the sub-type changes, and enables as soon as he empties the field.
+- *(kanevas-sous-type-dialogue)* Given that same NPC, when Antor empties the field and saves, then the toast
+  says « Sous-type retiré. » and the badge shows « PNJ » alone.
+- *(kanevas-sous-type-dialogue)* Given that same NPC, when Antor picks « Lieu » then goes back to
+  « Personnage », then the field holds « Capitaine » again, « Changer le type » is disabled and the warning is gone;
+  picking « Lieu » had emptied the field and shown « Le sous-type « Capitaine » sera retiré. ».
+- *(kanevas-sous-type-dialogue)* Given Antor on that NPC, when he hovers the sub-type « Capitaine » of the
+  badge, then reaches it with the Tab key, then the `--surface-3` background and the pencil appear (and,
+  with the keyboard, the focus ring); Enter opens the in-place edit. Given Léa (player), when she
+  hovers « Capitaine », then nothing changes and Tab does not stop on it.
+- *(kanevas-sous-type-dialogue)* Given the NPC « Capitaine » and a `PATCH` that fails (500), when Antor
+  saves « Amiral » from « Changer le type… », then the box stays open with « Le sous-type n'a pas
+  changé. Réessayez. », the field still holds « Amiral », and the badge still says « PNJ · Capitaine ».
+- *(kanevas-sous-type-dialogue)* Given the connection lost, when Antor has the box open with « Amiral »
+  typed, then the banner « Connexion perdue. Ce que vous voyez peut être dépassé ; rien n'est enregistré tant
+  qu'elle ne revient pas. » shows, « Changer le type » is disabled and the input stays; with the box
+  closed, the badge's sub-type is disabled: no background or pencil on hover, Tab does not stop on it.
+- *(kanevas-sous-type-dialogue)* Given the types list not yet read, when Antor opens « Changer le
+  type… », then the « Sous-type » field is already there holding « Capitaine » and can be typed in,
+  « Chargement des types… » shows, and « Changer le type » stays disabled — even once « Amiral » replaces
+  « Capitaine » — until the list is read.
+- *(kanevas-sous-type-dialogue)* Given the box open on that NPC, when Antor types 61 characters and
+  saves, then « Erreur : 60 caractères au plus. » shows under the field, nothing is sent and the badge
+  still says « PNJ · Capitaine ».
 - Étant donné « Les Cristaux d'Ombre » (Savoir · Ressource), quand Antor la passe en Note, alors elle est
   dans « Notes » sans sous-type, et la boîte l'avait annoncé.
 - Étant donné « Lame d'Ébène » où « Note » est désactivé, quand Antor ouvre « Changer le type… » d'une
@@ -3260,7 +3459,7 @@ this text is authoritative where they differ.
 
 ## Détail des écrans de `kanevas-fiches-liees`
 
-> Decisions of Monsieur, 2026-10-25 (B-63 to B-69, AD-129 to AD-134). No new screen: E-9 (the
+> Decisions of Monsieur, 2026-10-25 (B-63 to B-69, AD-130 to AD-134 and AD-136). No new screen: E-9 (the
 > « Relier » form, a block « Fiches liées », the dead mark), E-8 and E-17 (a mark, two filters, an
 > advanced mode), E-11 (labels). New text in English (canon); user-facing labels French. Same six
 > states and common texts as the other screens.
@@ -3278,7 +3477,7 @@ vocabulary: « nature » for the finite kind, « qualificatif » for the free te
 which names the type of sheet), « Fiches liées » for the block, « sous-lieux compris » for the
 aggregation through the tree, « vivant » / « mort » for the mark.
 
-### The natures (AD-129)
+### The natures (AD-136)
 
 The product's list, in code like the types (decision of Monsieur, 2026-10-25: these five to
 start — « dirige » was set aside, « dirige » is a qualifier of « membre de » ; a nature is added by a
@@ -3294,7 +3493,7 @@ line, never removed once used) :
 
 A **symmetric** nature reads the same from both sides and is stored once, on the side that
 entered it: both sheets list the other in « Fiches liées », under the section's audience of the
-side that holds it (AD-129 (3)).
+side that holds it (AD-136 (3)).
 
 A relation without nature is « sans nature » (free, as today). The place-in-place relation is the
 tree, never a nature (« se situe » is not offered for lieu → lieu). Aventures (`kanevas-scenarios`)
