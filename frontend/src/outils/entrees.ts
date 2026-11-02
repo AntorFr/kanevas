@@ -7,8 +7,8 @@ import type { EntreeOutil } from './types';
 /** Fired by E-20 after every successful write (C-6): the bar asks the entries again. */
 export const EVENEMENT_OUTILS = 'kanevas:outils-modifies';
 
-/** Keeps the entries whose `module/outil` the client knows (an unknown one is not shown). */
-export const entreesConnues = (entrees: EntreeOutil[]) => entrees.filter((e) => outilClient(e.cle));
+/** Keeps the entries whose `module/outil` the client knows and shows in the bar (an unknown one, or one reached from its list, is not shown). */
+export const entreesConnues = (entrees: EntreeOutil[]) => entrees.filter((e) => outilClient(e.cle) && !outilClient(e.cle)?.horsBarre);
 
 /**
  * The tool entries the server shows this caller in this universe. While loading, or on an error,

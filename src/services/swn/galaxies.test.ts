@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
 
-// Critère de sortie de kanevas-outils-galaxie-lire-donnees : migration 0018, semis, niveaux, référence, cartes.
+// Critère de sortie de kanevas-outils-galaxie-lire-donnees : migration 0019, semis, niveaux, référence, cartes.
 process.env.NODE_ENV = 'test';
 delete process.env.KANEVAS_STUB;
 const { migrate, openDb } = await import('../../db/db.js');
@@ -14,7 +14,7 @@ const { applicable } = await import('../../outils/declaration.js');
 const { niveauLecture, referenceGalaxie, galaxieLisible } = await import('./galaxies.js');
 const { modulesActifs } = await import('../../outils/registre.js');
 
-test('0018 crée les quatre tables sans toucher les lignes existantes', () => {
+test('0019 crée les quatre tables sans toucher les lignes existantes', () => {
   const dir = mkdtempSync(join(tmpdir(), 'migration-swn-'));
   const db = openDb(':memory:');
   const source = new URL('../../db/migrations/', import.meta.url);
@@ -25,7 +25,7 @@ test('0018 crée les quatre tables sans toucher les lignes existantes', () => {
   db.prepare("INSERT INTO fiches (univers_id, type, titre, charge, cree_le, modifie_le) VALUES (1, 'lieu', 'F', '{}', 'x', 'x')").run();
   const snap = () => ['comptes', 'univers', 'fiches'].map((t) => db.prepare(`SELECT * FROM ${t}`).all());
   const avant = snap();
-  assert.deepEqual(migrate(db), [18]);
+  assert.deepEqual(migrate(db), [18, 19]);
   assert.deepEqual(snap(), avant);
   assert.deepEqual(db.pragma('foreign_key_check'), []);
   const tables = db.prepare("SELECT name FROM sqlite_master WHERE name LIKE 'swn_%' AND type='table' ORDER BY name").all().map((r: any) => r.name);

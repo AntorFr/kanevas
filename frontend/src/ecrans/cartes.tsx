@@ -10,7 +10,7 @@ import { Bouton, Champ, Chargement, ErreurChargement, Pastille, PageIntrouvable 
 import './ecrans.css';
 import './cartes/cartes.css';
 import { Vignette } from './cartes/vignette';
-import { adresseCarte, FORMES, type Carte, type PageCartes } from './cartes/commun';
+import { adresseCarte, estCarteOutil, FORMES, type Carte, type CarteOutil, type PageCartes } from './cartes/commun';
 
 const ECHEC = 'L’action n’a pas abouti. Réessayez.';
 const NON_IMAGE = 'ce fichier n’est pas une image (PNG, JPEG, GIF ou WebP).';
@@ -23,7 +23,7 @@ function Cartes() {
   const perdue = useConnexionPerdue();
   const [univers] = useCharge<UniversListe>(`/api/univers/${id}`);
   const [page, recharger] = useCharge<PageCartes>(`/api/univers/${id}/cartes`);
-  const [cartes, setCartes] = useState<Carte[]>([]);
+  const [cartes, setCartes] = useState<(Carte | CarteOutil)[]>([]);
   const [suivant, setSuivant] = useState<string | null>(null);
   const [suiteEnCours, setSuiteEnCours] = useState(false);
   const [suiteEchec, setSuiteEchec] = useState(false);
@@ -80,7 +80,7 @@ function Cartes() {
     setEnCoursVisible(c.id);
     try {
       const maj = await appeler<Carte>('PATCH', `/api/univers/${id}/cartes/${c.id}`, { visible: !c.visible });
-      setCartes((l) => l.map((x) => (x.id === c.id ? { ...x, visible: maj.visible } : x)));
+      setCartes((l) => l.map((x) => (!estCarteOutil(x) && x.id === c.id ? { ...x, visible: maj.visible } : x)));
     } catch {
       setEchec(true);
     } finally {
@@ -217,7 +217,18 @@ function Cartes() {
         </div>
       ) : (
         <ul className="cartes-liste">
-          {cartes.map((c) => (
+          {cartes.map((c) => estCarteOutil(c) ? (
+            <li key={`outil-${c.module}-${c.outil}-${c.id}`} className="carte-ligne">
+              <span className="carte-vignette neutre hexagones" aria-hidden="true" />
+              <div className="carte-corps">
+                <Link to={c.adresse}>{c.titre}</Link>
+              </div>
+              <div className="carte-etat">
+                <Pastille sens="neutre">Galaxie</Pastille>
+                {mj && c.visible === false && <Pastille sens="mj">MJ seul</Pastille>}
+              </div>
+            </li>
+          ) : (
             <li key={c.id} className="carte-ligne">
               <Vignette universId={id!} carte={c} classe="carte-vignette" />
               <div className="carte-corps">

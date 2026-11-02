@@ -61,7 +61,7 @@ const joint = (sectionId: number) => ({ ou: 'section', sectionId, maniere: 'join
 
 test('migration : pieces_jointes reste (vidée), les trois tables de la médiathèque existent, rejeu sans effet', () => {
   const db = openDb(':memory:');
-  assert.deepEqual(migrate(db), [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18]);
+  assert.deepEqual(migrate(db), [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]);
   assert.deepEqual(migrate(db), []);
   const cols = (db.prepare('PRAGMA table_info(pieces_jointes)').all() as { name: string }[]).map((c) => c.name);
   assert.deepEqual(cols, ['id', 'section_id', 'nom', 'type', 'taille', 'fichier', 'secrete', 'cree_le']);
