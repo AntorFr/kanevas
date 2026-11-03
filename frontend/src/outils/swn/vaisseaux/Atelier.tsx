@@ -188,7 +188,7 @@ function Corps({ universId, suffixe, saved, onSaved, onRecharger }: {
           <p className="vx-sous">{brouillon.coque.nom} · classe {resultat.coque.classe}</p>
         </div>
         <div className="vx-actions-tete">
-          <Link className="bouton neutre" to={saved.lienFiche}>Ouvrir la fiche</Link>
+          <Link className="bouton neutre" to={`/univers/${universId}/fiche/${saved.ficheId}`}>Ouvrir la fiche</Link>
           <Bouton onClick={() => void copier()}>Copier le lien</Bouton>
         </div>
       </div>
