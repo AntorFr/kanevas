@@ -1,6 +1,6 @@
 import { cartesGalaxies } from '../../services/swn/galaxies.js';
 import { catalogueVaisseaux } from '../../services/swn/catalogue-vaisseaux.js';
-import { apresEcriture, produire, versionSource } from '../../services/swn/conceptions.js';
+import { apresEcriture, produire, versionSource } from '../../services/swn/section-vaisseaux.js';
 import { outilTrajet } from './assistant.js';
 import type { DeclarationCarte, DeclarationGenerateur, DeclarationModule } from '../declaration.js';
 
