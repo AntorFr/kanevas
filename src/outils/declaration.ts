@@ -62,6 +62,13 @@ export interface CarteOutil { id: number; titre: string; visible: boolean }
 export interface DeclarationCarte extends BaseOutil {
   type: 'carte';
   cartes(db: Db, acteur: Acteur, universId: number): CarteOutil[];
+  creation?: CreationCarte;
+}
+/** How E-10 creates and shows a map of this tool without the core knowing the module (T-6). */
+export interface CreationCarte {
+  libelle: string;
+  creer(db: Db, acteur: Acteur, universId: number, titre: string): { id: number };
+  rendreVisible(db: Db, acteur: Acteur, universId: number, id: number, visible: boolean, version: number): { version: number };
 }
 export interface ContexteSection {
   db: Db;
@@ -140,6 +147,7 @@ const declaration = z.strictObject({
         poserMasque: fonction, retraits: fonction, poserRetrait: fonction }),
     }).optional(),
     reglages, outilsAssistant: fonction.optional(), cartes: fonction.optional(),
+    creation: z.strictObject({ libelle: z.string().min(1), creer: fonction, rendreVisible: fonction }).optional(),
     sections: z.array(z.strictObject({
       type: z.string().regex(/^[a-z][a-z0-9-]*$/), libelle: z.string().min(1), usage: z.string().min(1),
       recalcul: z.enum(['geste', 'proposition']), composant: z.boolean().optional(), versionSource: fonction, produire: fonction,
@@ -165,6 +173,7 @@ export function verifierDeclaration(module: DeclarationModule): void {
       throw new Error(`Invalid or duplicate tool key: ${outil.cle}.`);
     }
     if (outil.type === 'carte' && typeof outil.cartes !== 'function') throw new Error('A map needs its map reader.');
+    if ((outil as { creation?: unknown }).creation !== undefined && outil.type !== 'carte') throw new Error('Only a map declares a creation.');
     if (outil.type === 'generateur' && !outil.usages.some((u) => u.nom === 'concevoir')) {
       throw new Error('A generator needs the concevoir usage.');
     }

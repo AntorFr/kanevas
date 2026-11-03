@@ -1,4 +1,4 @@
-import { cartesGalaxies } from '../../services/swn/galaxies.js';
+import { cartesGalaxies, creerGalaxie, rendreVisibleGalaxie } from '../../services/swn/galaxies.js';
 import { outilTrajet } from './assistant.js';
 import type { DeclarationCarte, DeclarationModule } from '../declaration.js';
 
@@ -9,6 +9,11 @@ export const swnGalaxie: DeclarationCarte = {
   ecran: { libelle: 'Galaxie', icone: 'Map' },
   cartes: (db, acteur, universId) => cartesGalaxies(db, acteur, universId),
   outilsAssistant: outilTrajet,
+  creation: {
+    libelle: 'Carte de la galaxie',
+    creer: (db, acteur, universId, titre) => creerGalaxie(db, acteur, universId, { titre }),
+    rendreVisible: (db, acteur, universId, id, visible, version) => rendreVisibleGalaxie(db, acteur, universId, id, visible, version),
+  },
 };
 
 /** The module `swn` applies to every game system: `systemes_jeu` has no key (G-1). */

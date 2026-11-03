@@ -15,7 +15,7 @@ export interface CarteOutil {
   universId: number;
   titre: string;
   module: string;
-  outil: string;
+  outil: { module: string; outil: string };
   adresse: string;
   visible?: boolean;
 }
@@ -25,6 +25,8 @@ export const estCarteOutil = (c: Carte | CarteOutil): c is CarteOutil => 'type' 
 export interface PageCartes {
   cartes: (Carte | CarteOutil)[];
   suivant: string | null;
+  /** « Nouvelle carte » forms of the tools (GM outside Player mode only; first page). */
+  formes?: { module: string; outil: string; libelle: string }[];
 }
 
 export const FORMES: Record<Carte['forme'], string> = { illustree: 'Carte illustrée', graphe: 'Graphe' };

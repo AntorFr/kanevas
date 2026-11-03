@@ -156,6 +156,34 @@ export async function registerOutilsRoutes(app: FastifyInstance) {
     });
   }
 
+  // Creating and showing a tool's map from E-10 (T-6): the tool is found in the registry, the core knows no module.
+  const creationDe = (request: FastifyRequest, reply: FastifyReply) => {
+    const cle = cleDe(request);
+    const outil = modulesActifs().flatMap((m) => m.outils).find((o) => o.cle === cle);
+    const id = Number((request.params as { id?: string }).id);
+    if (!outil || outil.type !== 'carte' || !outil.creation || !Number.isSafeInteger(id) || !accessible(app.db, acteur(request), id, cle)) {
+      reply.callNotFound();
+      return null;
+    }
+    return outil.creation;
+  };
+  const baseCartes = '/api/univers/:id/outils/:module/:outil/cartes';
+  app.post(baseCartes, async (request, reply) => {
+    const creation = creationDe(request, reply);
+    if (!creation) return reply;
+    const b = corps(request);
+    if (typeof b.titre !== 'string') throw new ErreurService('invalide', 'Le titre : de 1 à 80 caractères.', undefined, 'titre');
+    return reply.code(201).send(creation.creer(app.db, acteur(request), idDe(request), b.titre));
+  });
+  app.patch(`${baseCartes}/:cid`, async (request, reply) => {
+    const creation = creationDe(request, reply);
+    if (!creation) return reply;
+    const b = corps(request);
+    const cid = idDeChemin((request.params as { cid: string }).cid);
+    if (typeof b.visible !== 'boolean') throw new ErreurService('invalide', 'Visibilité invalide.', undefined, 'visible');
+    return creation.rendreVisible(app.db, acteur(request), idDe(request), cid, b.visible, b.version as number);
+  });
+
   app.get('/api/systemes/:id/responsable', async (request) => lireResponsable(app.db, acteur(request), idDe(request)));
   app.get('/api/systemes/:id/responsable/candidats', async (request) => candidatsResponsable(app.db, acteur(request), idDe(request)));
   app.post('/api/systemes/:id/responsable', async (request, reply) => {

@@ -1,6 +1,8 @@
 import type { Db } from '../../db/db.js';
+import { randomBytes } from 'node:crypto';
 import { roleDe, vueMJ } from '../droits.js';
 import { ErreurService, introuvable, refuse } from '../erreurs.js';
+import { retirerSection } from '../sections.js';
 import { accessible, resoudreOutil } from '../outils.js';
 import { env } from '../../config/env.js';
 import type { Acteur } from '../types.js';
@@ -110,6 +112,126 @@ export function cartesGalaxies(db: Db, acteur: Acteur, universId: number):
     .all(universId) as { id: number; titre: string; visible: number }[];
   return lignes.filter((l) => niveau === 'mj' || l.visible === 1)
     .map((l) => ({ id: l.id, titre: l.titre, visible: l.visible === 1 }));
+}
+
+const acteurDe = (a: Acteur | number): Acteur => typeof a === 'number' ? { compteId: a } : a;
+const invalideChamp = (champ: string, message: string) => new ErreurService('invalide', message, undefined, champ);
+const MODE_JOUEUR = () => new ErreurService('refuse', 'Passez en mode MJ pour faire cela.', 'mode_joueur');
+const PERIME = () => new ErreurService('conflit', "Cette galaxie a changé depuis que vous l'avez ouverte.", 'donnee_modifiee');
+
+/** What a level that is not the GM's gets when it tries to write: the player-mode GM is told why (T-1). */
+function refusDeLecteur(db: Db, acteur: Acteur, universId: number): ErreurService {
+  return roleDe(db, universId, acteur.compteId) === 'mj' && acteur.modeJoueur ? MODE_JOUEUR() : refuse();
+}
+
+/** Guard of the creation, where there is no galaxy yet (T-1): same levels, same words as `exigerEcritureGalaxie`. */
+export function exigerMJOutil(db: Db, acteur: Acteur | number, universId: number): void {
+  const a = acteurDe(acteur);
+  const niveau = niveauLecture(db, a, universId);
+  if (!niveau) throw introuvable();
+  if (niveau !== 'mj') throw refusDeLecteur(db, a, universId);
+}
+
+/** The one place a write to a galaxy is allowed (T-1); returns the galaxy row. */
+export function exigerEcritureGalaxie(db: Db, acteur: Acteur | number, universId: number, galaxieId: number): LigneGalaxie {
+  const a = acteurDe(acteur);
+  const { galaxie, niveau } = galaxieLisible(db, a, universId, galaxieId);
+  if (niveau !== 'mj') throw refusDeLecteur(db, a, universId);
+  return galaxie;
+}
+
+function titreValide(titre: unknown): string {
+  const t = typeof titre === 'string' ? titre.trim() : '';
+  if (t.length < 1 || t.length > 80) throw invalideChamp('titre', 'Le titre : de 1 à 80 caractères.');
+  return t;
+}
+const versionValide = (version: unknown): number => {
+  if (!Number.isInteger(version) || (version as number) < 1) throw invalideChamp('version', 'Version invalide.');
+  return version as number;
+};
+/** Bumps the galaxy's `version` with one update, or `conflit` when the caller's version is stale. */
+function modifier(db: Db, galaxie: LigneGalaxie, version: number, colonnes: string, valeurs: unknown[]): { version: number } {
+  if (galaxie.version !== version) throw PERIME();
+  db.prepare(`UPDATE swn_galaxies SET ${colonnes}, version = version + 1 WHERE id = ? AND version = ?`)
+    .run(...valeurs, galaxie.id, version);
+  return { version: version + 1 };
+}
+
+export function creerGalaxie(db: Db, acteur: Acteur | number, universId: number, { titre }: { titre: unknown }): { id: number } {
+  exigerMJOutil(db, acteur, universId);
+  const t = titreValide(titre);
+  const graine = randomBytes(6).toString('hex');
+  const id = Number(db.prepare(`INSERT INTO swn_galaxies (univers_id, titre, visible, graine, densite_defaut, version)
+    VALUES (?, ?, 0, ?, 0.2, 1)`).run(universId, t, graine).lastInsertRowid);
+  return { id };
+}
+
+export function renommerGalaxie(db: Db, acteur: Acteur | number, universId: number, galaxieId: number,
+  { titre, version }: { titre: unknown; version: unknown }): { version: number } {
+  return db.transaction(() => {
+    const g = exigerEcritureGalaxie(db, acteur, universId, galaxieId);
+    const t = titreValide(titre);
+    return modifier(db, g, versionValide(version), 'titre = ?', [t]);
+  })();
+}
+
+export function rendreVisibleGalaxie(db: Db, acteur: Acteur | number, universId: number, galaxieId: number,
+  visible: unknown, version: unknown): { version: number } {
+  return db.transaction(() => {
+    const g = exigerEcritureGalaxie(db, acteur, universId, galaxieId);
+    if (typeof visible !== 'boolean') throw invalideChamp('visible', 'Visibilité invalide.');
+    return modifier(db, g, versionValide(version), 'visible = ?', [visible ? 1 : 0]);
+  })();
+}
+
+/** The seed moves every generated system; the defined ones keep their `(q, r)` (AD-132). The server holds the confirmation. */
+export function changerGraine(db: Db, acteur: Acteur | number, universId: number, galaxieId: number,
+  { graine, version, confirme }: { graine: unknown; version: unknown; confirme: unknown }): { version: number } {
+  return db.transaction(() => {
+    const g = exigerEcritureGalaxie(db, acteur, universId, galaxieId);
+    if (confirme !== true) throw invalideChamp('confirme', 'Confirmez le changement de graine.');
+    const v = typeof graine === 'string' ? graine.trim() : '';
+    if (v.length < 1 || v.length > 64) throw invalideChamp('graine', 'La graine : de 1 à 64 caractères.');
+    return modifier(db, g, versionValide(version), 'graine = ?', [v]);
+  })();
+}
+
+export interface DecomptesGalaxie { systemes: number; routes: number; zones: number }
+function decomptes(db: Db, galaxieId: number): DecomptesGalaxie {
+  const n = (table: string) => (db.prepare(`SELECT count(*) AS n FROM ${table} WHERE galaxie_id = ?`).get(galaxieId) as { n: number }).n;
+  return { systemes: n('swn_systemes'), routes: n('swn_routes'), zones: n('swn_zones') };
+}
+
+/** What the deletion dialog states: the counts and the title of the document sheet, if any. */
+export function contenuGalaxie(db: Db, acteur: Acteur | number, universId: number, galaxieId: number):
+  DecomptesGalaxie & { document: { ficheId: number; titre: string } | null } {
+  const g = exigerEcritureGalaxie(db, acteur, universId, galaxieId);
+  const fiche = g.fiche_id === null ? undefined
+    : db.prepare('SELECT titre FROM fiches WHERE id = ?').get(g.fiche_id) as { titre: string } | undefined;
+  return { ...decomptes(db, g.id), document: fiche && g.fiche_id !== null ? { ficheId: g.fiche_id, titre: fiche.titre } : null };
+}
+
+export function supprimerGalaxie(db: Db, acteur: Acteur | number, universId: number, galaxieId: number,
+  version: unknown, vu: unknown): void {
+  const a = acteurDe(acteur);
+  db.transaction(() => {
+    const g = exigerEcritureGalaxie(db, a, universId, galaxieId);
+    const v = versionValide(version);
+    const vus = vu as Partial<DecomptesGalaxie> | null | undefined;
+    if (!vus || !Number.isInteger(vus.systemes) || !Number.isInteger(vus.routes) || !Number.isInteger(vus.zones)) {
+      throw invalideChamp('vu', 'Décomptes invalides.');
+    }
+    if (g.version !== v) throw PERIME();
+    const reel = decomptes(db, g.id);
+    if (reel.systemes !== vus.systemes || reel.routes !== vus.routes || reel.zones !== vus.zones) {
+      throw new ErreurService('conflit',
+        `Le contenu de la galaxie a changé : ${reel.systemes} système(s), ${reel.routes} route(s), ${reel.zones} zone(s).`,
+        'contenu_change');
+    }
+    // The managed document section goes with the galaxy; the sheet stays (T-6, AD-135).
+    if (g.fiche_id !== null && g.section_id !== null) retirerSection(db, a.compteId, universId, g.fiche_id, g.section_id);
+    db.prepare('DELETE FROM swn_galaxies WHERE id = ?').run(g.id);
+  })();
 }
 
 /** Seed-only (stub mode): the invented trial galaxy. Never exposed by a route. */

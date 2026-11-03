@@ -212,6 +212,15 @@ export function listerCartesOutils(db: Db, acteur: Acteur, universId: number): C
       .filter((c) => mj || c.visible)
       .map((c) => ({ module: m.nom, outil: o.cle.slice(m.nom.length + 1), id: c.id, titre: c.titre, visible: c.visible })));
 }
+export interface FormeCreable { module: string; outil: string; libelle: string }
+/** The « Nouvelle carte » forms (T-6): tools `accessible` that declare `creation`, for a GM outside Player mode. */
+export function formesCreablesOutils(db: Db, acteur: Acteur, universId: number): FormeCreable[] {
+  const role = roleDe(db, universId, acteur.compteId);
+  if (!role || !vueMJ(role, acteur)) return [];
+  return modulesActifs().flatMap((m) => m.outils.map((o) => ({ m, o })))
+    .filter(({ o }) => o.type === 'carte' && (o as DeclarationCarte).creation && accessible(db, acteur, universId, o.cle))
+    .map(({ m, o }) => ({ module: m.nom, outil: o.cle.slice(m.nom.length + 1), libelle: (o as DeclarationCarte).creation!.libelle }));
+}
 function assurerLigne(db: Db, cible: CibleOutils, cle: string): void {
   const t = table(cible);
   const { outil } = declaration(cle);

@@ -218,7 +218,7 @@ function Cartes() {
       ) : (
         <ul className="cartes-liste">
           {cartes.map((c) => estCarteOutil(c) ? (
-            <li key={`outil-${c.module}-${c.outil}-${c.id}`} className="carte-ligne">
+            <li key={`outil-${c.outil.module}-${c.outil.outil}-${c.id}`} className="carte-ligne">
               <span className="carte-vignette neutre hexagones" aria-hidden="true" />
               <div className="carte-corps">
                 <Link to={c.adresse}>{c.titre}</Link>
