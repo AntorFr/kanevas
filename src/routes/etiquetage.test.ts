@@ -178,10 +178,19 @@ test('migration depuis 0013 : la recherche du titre existant trouve toujours la 
   // Same for the owner of a system (0017), which the current services write.
   db.exec('ALTER TABLE systemes_jeu ADD COLUMN responsable_id INTEGER');
   // The seed also enables the galaxy tool and sows its galaxy: scratch copies of the tables of 0017 and 0020.
-  const scratch = ['0017-outils.sql', '0020-swn-galaxie.sql'].map((f) => readFileSync(src + f, 'utf8').replace(/^ALTER TABLE .*$/m, '')).join('\n');
+  const avantScratch = new Set((db.prepare("SELECT name FROM sqlite_master WHERE type = 'table'").all() as Any[]).map((r) => r.name));
+  const scratch = ['0017-outils.sql', '0019-catalogues.sql', '0020-swn-galaxie.sql', '0021-swn-vaisseaux.sql'].map((f) => readFileSync(src + f, 'utf8').replace(/^ALTER TABLE .*$/m, '')).join('\n');
+  // The seed also sows managed sections and ship designs (0018, 0019, 0021): two columns of `sections`, then the tables.
+  db.exec('ALTER TABLE sections ADD COLUMN gere_par TEXT; ALTER TABLE sections ADD COLUMN source_version TEXT; ALTER TABLE propositions ADD COLUMN source_version TEXT');
+  db.exec('ALTER TABLE lots_import ADD COLUMN outil TEXT');
+  // The designs' reads also go through the aliases and labels of 0014 (plain scratch tables, no triggers).
+  db.exec('CREATE TABLE fiche_alias (fiche_id, alias); CREATE TABLE etiquettes (id INTEGER PRIMARY KEY, univers_id, nom, cree_le); CREATE TABLE fiche_etiquettes (fiche_id, etiquette_id)');
   db.exec(scratch);
+  const ajoutees = (db.prepare("SELECT name FROM sqlite_master WHERE type = 'table'").all() as Any[]).map((r) => r.name as string).filter((n) => !avantScratch.has(n) && !n.startsWith('sqlite_'));
   semerBouchon(db);
-  db.exec('DROP TABLE swn_zones; DROP TABLE swn_routes; DROP TABLE swn_systemes; DROP TABLE swn_galaxies; DROP TABLE outils_univers; DROP TABLE outils_systeme');
+  db.exec('PRAGMA foreign_keys = OFF');
+  for (const t of ajoutees) db.exec(`DROP TABLE ${t}`);
+  db.exec('PRAGMA foreign_keys = ON; ALTER TABLE sections DROP COLUMN gere_par; ALTER TABLE sections DROP COLUMN source_version; ALTER TABLE propositions DROP COLUMN source_version; ALTER TABLE lots_import DROP COLUMN outil');
   db.exec('DROP TABLE fichiers_attente; DROP TABLE fichiers_sections; DROP TABLE fichiers; ALTER TABLE fiches DROP COLUMN illustration_fichier_id; ALTER TABLE systemes_jeu DROP COLUMN responsable_id');
   const avant = db.prepare('SELECT id, titre FROM fiches ORDER BY id').all() as { id: number; titre: string }[];
   assert.ok(avant.length >= 5);
