@@ -106,9 +106,13 @@ export function FormSysteme({ base, mode, q, r, brouillon, version, cle, nbRoute
         <fieldset disabled={e.enCours} className="gx-gele">
           <Champ etiquette="Nom" value={v.nom} erreur={erreurNomMsg ?? champEchec('nom')} maxLength={200}
             onChange={(ev: { target: { value: string } }) => setV({ ...v, nom: ev.target.value })} />
-          <Champ liste etiquette="Taille" value={v.taille} onChange={(ev: { target: { value: string } }) => setV({ ...v, taille: ev.target.value })}>
-            {TAILLES_NOMS.map((t) => <option key={t.nom} value={t.nom}>{t.libelle}</option>)}
-          </Champ>
+          <fieldset className="gx-segments">
+            <legend>Taille</legend>
+            {TAILLES_NOMS.map((t) => (
+              <Bouton key={t.nom} variante={v.taille === t.nom ? 'principal' : 'neutre'} aria-pressed={v.taille === t.nom}
+                onClick={() => setV({ ...v, taille: t.nom })}>{t.libelle}</Bouton>
+            ))}
+          </fieldset>
           <SelecteurCouleur valeur={v.couleur} onChange={(couleur) => setV({ ...v, couleur })} />
           <Champ zone etiquette="Notes" value={v.notes}
             erreur={[...v.notes].length > 2000 ? '2 000 caractères au plus.' : champEchec('notes')}
@@ -116,7 +120,7 @@ export function FormSysteme({ base, mode, q, r, brouillon, version, cle, nbRoute
           <Interrupteur etiquette="Secret (MJ seul)" coche={v.secret} onChange={(secret) => setV({ ...v, secret })} />
           <div className="gx-champ">
             <span>Hexagone ({entierAffiche(q)}, {entierAffiche(r)})</span>
-            {mode === 'modifier' && <Bouton onClick={() => onDeplacer(v)}>Déplacer</Bouton>}
+            <Bouton onClick={() => onDeplacer(v)}>Déplacer</Bouton>
             {hexagone && <div className="erreur" role="alert">{hexagone}</div>}
             {deplace && nbRoutes > 0 && (
               <p className="gx-note">{nbRoutes === 1 ? 'Sa route sera recalculée.' : `Ses ${nbRoutes} routes seront recalculées.`}</p>

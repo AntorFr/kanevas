@@ -284,8 +284,8 @@ export function DialogueDocument({ base, universId, galaxie, onFermer, onChange,
           <div className="gx-dialogue-corps">
             <p>Seul le MJ lit ce document.</p>
             <div className="gx-actions">
-              <Bouton aria-pressed={choix === 'choisir'} onClick={() => setChoix('choisir')}>Choisir une fiche</Bouton>
-              <Bouton aria-pressed={choix === 'creer'} onClick={() => setChoix('creer')}>Créer une fiche de type Savoir</Bouton>
+              <Bouton variante={choix === 'choisir' ? 'principal' : 'neutre'} aria-pressed={choix === 'choisir'} onClick={() => setChoix('choisir')}>Choisir une fiche</Bouton>
+              <Bouton variante={choix === 'creer' ? 'principal' : 'neutre'} aria-pressed={choix === 'creer'} onClick={() => setChoix('creer')}>Créer une fiche de type Savoir</Bouton>
             </div>
             {choix === 'creer' ? (
               <Champ etiquette="Titre" value={titre} erreur={erreurTitre} onChange={(ev: { target: { value: string } }) => setTitre(ev.target.value)} />

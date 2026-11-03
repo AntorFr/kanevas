@@ -299,7 +299,7 @@ export default function Galaxie({ universId, cible, prealable, suffixeMode }: Pr
               brouillon={formulaire.brouillon} version={formulaire.version} cle={formulaire.cle} nbRoutes={formulaire.nbRoutes}
               onFini={(cle) => { surFini(); setCentrer({ q: formulaire.q, r: formulaire.r, n: Date.now() }); choisir({ k: 'systeme', cle }); }}
               onAnnuler={abandonner}
-              onDeplacer={(b) => { setFormulaire({ ...formulaire, brouillon: b }); setGeste({ k: 'deplacer', cle: formulaire.cle! }); }}
+              onDeplacer={(b) => { setFormulaire({ ...formulaire, brouillon: b }); setGeste({ k: 'deplacer', cle: formulaire.cle ?? '' }); }}
               onRecharger={() => void rechargerSysteme(formulaire.cle!)} onIntrouvable={surIntrouvable}
             />
           )}
