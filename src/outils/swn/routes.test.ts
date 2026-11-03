@@ -139,8 +139,9 @@ test('un jeton kvs_… n\'ouvre aucune route ; sans session 401', async () => {
 test('liste des cartes : « Galaxie d\'essai » en type outil, visible pour le MJ seulement', async () => {
   const w = await monde();
   const url = `/api/univers/${w.E}/cartes`;
+  // The GM's entry also carries the galaxy's `version` (1 here), which « Rendre visible » of E-10 sends back; a player's never does.
   const att = (visible?: boolean) => ({ type: 'outil', id: w.g, universId: w.E, titre: "Galaxie d'essai", module: 'swn', outil: { module: 'swn', outil: 'galaxie' },
-    adresse: `/univers/${w.E}/outils/swn/galaxie/${w.g}`, ...(visible === undefined ? {} : { visible }) });
+    adresse: `/univers/${w.E}/outils/swn/galaxie/${w.g}`, ...(visible === undefined ? {} : { visible, version: 1 }) });
   const o = (r: any) => r.json().cartes.filter((c: any) => c.type === 'outil');
   assert.deepEqual(o(await get(w.app, w.lea, url)), [att()]);
   assert.deepEqual(o(await get(w.app, w.antor, url)), [att(true)]);

@@ -102,7 +102,7 @@ test('reference : Port-Sel ; un secret défini avant n\'est jamais la référenc
 test('listerCartesOutils : Antor visible, Léa selon visibilité et activation', () => {
   const { db, univers, g, a } = monde();
   const l = (u: string, mj = false) => listerCartesOutils(db, a(u, mj), univers);
-  assert.deepEqual(l('antor'), [{ module: 'swn', outil: 'galaxie', id: g, titre: 'Galaxie d\'essai', visible: true }]);
+  assert.deepEqual(l('antor'), [{ module: 'swn', outil: 'galaxie', id: g, titre: 'Galaxie d\'essai', visible: true, version: 1 }]);
   assert.equal(l('lea').length, 1);
   assert.equal(l('lea')[0].id, g);
   db.prepare('UPDATE swn_galaxies SET visible = 0 WHERE id = ?').run(g);
