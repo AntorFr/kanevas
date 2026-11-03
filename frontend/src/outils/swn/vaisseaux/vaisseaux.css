@@ -66,6 +66,8 @@
   .vx-prix { flex-basis: 100%; order: 3; }
   .vx-bouton, .vx .bouton { min-height: 44px; }
   .vx-elements { max-height: none; }
+  /* pinned under the frame bars, compact: it must never cover the open catalogue (title, figures and the reason stay in view) */
+  .vx-resultats { max-height: min(25vh, 190px); padding: var(--e-2) var(--e-3); }
 }
 .vx-tableau { border-collapse: collapse; margin: var(--e-2) 0; width: 100%; font-size: var(--t-13); font-variant-numeric: tabular-nums; }
 .vx-tableau th, .vx-tableau td { border: 1px solid var(--bord-fort); padding: var(--e-1) var(--e-2); text-align: left; white-space: nowrap; }
