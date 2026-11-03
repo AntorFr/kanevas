@@ -231,7 +231,7 @@ export function lireCatalogueGestion(db: Db, acteur: Acteur, universId: number, 
 /** Single-item counterpart of resoudreElements, for computations already guarded by tool usage. */
 export function lireElement(db: Db, universId: number, outil: string, nature: string, cle: string,
   options: { inclureMasques?: boolean } = {}): ElementResolu {
-  const element = resoudreElements(db, universId, outil, nature, options).find((r) => r.cle === cle);
+  const element = resoudreElements(db, universId, outil, nature, { inclureMasques: options.inclureMasques === true }).find((r) => r.cle === cle);
   if (!element) throw introuvable();
   return element;
 }
