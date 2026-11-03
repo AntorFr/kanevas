@@ -2,6 +2,7 @@ import { cartesGalaxies } from '../../services/swn/galaxies.js';
 import { catalogueVaisseaux } from '../../services/swn/catalogue-vaisseaux.js';
 import { apresEcriture, produire, versionSource } from '../../services/swn/section-vaisseaux.js';
 import { outilTrajet } from './assistant.js';
+import { outilVaisseau } from './assistant-vaisseaux.js';
 import type { DeclarationCarte, DeclarationGenerateur, DeclarationModule } from '../declaration.js';
 
 export const swnGalaxie: DeclarationCarte = {
@@ -22,6 +23,7 @@ export const swnVaisseaux: DeclarationGenerateur = {
   reglages: {},
   catalogue: catalogueVaisseaux,
   ecran: { libelle: 'Concepteur de vaisseaux', icone: 'Rocket' },
+  outilsAssistant: outilVaisseau,
   sections: [{
     type: 'caracteristiques', libelle: 'Caractéristiques', usage: 'concevoir', recalcul: 'geste', composant: true,
     // Lazy: the services import the registry, which imports this file (a cycle).
@@ -41,5 +43,9 @@ export const swn: DeclarationModule = {
   outils: [swnGalaxie, swnVaisseaux],
   // Loaded at registration of the routes: a static import closes a cycle
   // (registre → swn → routes → routes/fiches → fiches → types-fiche → droits → outils → registre).
-  routes: async (app, garde) => (await import('./routes.js')).routesGalaxie(app, garde),
+  routes: async (app, garde) => {
+    const m = await import('./routes.js');
+    m.routesGalaxie(app, garde);
+    (await import('./routes-vaisseaux.js')).routesVaisseaux(app, garde);
+  },
 };

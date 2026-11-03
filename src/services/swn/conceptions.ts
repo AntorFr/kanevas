@@ -7,7 +7,7 @@ import { chargerFiche } from '../fiches.js';
 import { accessible, peutUsage } from '../outils.js';
 import { poserSectionGeree } from '../sections-gerees.js';
 import type { Acteur, SectionRow } from '../types.js';
-import { calculerResolu, OUTIL_VAISSEAUX, resoudreChoix, TYPE_CARACTERISTIQUES, validerChoix, versionSourceVaisseaux,
+import { calculerDepuisChoix, calculerResolu, OUTIL_VAISSEAUX, resoudreChoix, TYPE_CARACTERISTIQUES, validerChoix, versionSourceVaisseaux,
   versionsSource, type EntreeCalcul, type LigneChoix, type Porte } from './calcul-vaisseau.js';
 import { ligneDe, porteDe, type ChargeConception, type LigneConception } from './section-vaisseaux.js';
 
@@ -165,4 +165,18 @@ export function enregistrerConception(db: Db, acteur: Acteur, universId: number,
     });
     return lireConception(db, acteur, universId, ficheId);
   })();
+}
+
+/**
+ * `POST calcul` (V-8): nothing is written. With `ficheId`, the design's masked elements still resolve (V-3), once the
+ * design is readable under both guards; an unreadable or unknown one is `introuvable`.
+ */
+export function calculerConception(db: Db, acteur: Acteur, universId: number, entree: unknown) {
+  const o = (entree ?? {}) as { coque?: unknown; choix?: unknown; ficheId?: unknown };
+  let porte: Porte | null = null;
+  if (o.ficheId !== undefined && o.ficheId !== null) {
+    if (!Number.isInteger(o.ficheId)) throw new ErreurService('invalide', 'Fiche invalide.', 'fiche_invalide', 'ficheId');
+    porte = porteDe(lire(db, acteur, universId, o.ficheId as number).ligne);
+  }
+  return calculerDepuisChoix(db, acteur, universId, { coque: o.coque, choix: o.choix }, porte);
 }
