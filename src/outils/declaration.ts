@@ -44,6 +44,11 @@ export interface DeclarationCatalogue {
     schema: z.ZodObject; resume(donnees: Record<string, unknown>): string }[];
   stockage: StockageCatalogue;
 }
+/** A tool a script pushes data into without a catalogue (T-9): the natures key the batch's counters. */
+export interface DeclarationImportation {
+  natures: { nom: string; libelle: string; libellePluriel: string }[];
+  appliquer(db: Db, acteur: Acteur, universId: number, cibleId: number, corps: unknown): unknown;
+}
 interface BaseOutil {
   cle: string;
   libelle: string;
@@ -54,6 +59,7 @@ interface BaseOutil {
   usages: { nom: string; mjSeul: boolean }[];
   reglages: Reglages;
   catalogue?: DeclarationCatalogue;
+  importation?: DeclarationImportation;
   outilsAssistant?(ctx: ContexteOutil): Outil[];
   ecran: { libelle: string; icone: string };
 }
@@ -148,6 +154,11 @@ const declaration = z.strictObject({
       stockage: z.strictObject({ lister: fonction, lirePar: fonction, ecrire: fonction,
         poserMasque: fonction, retraits: fonction, poserRetrait: fonction }),
     }).optional(),
+    importation: z.strictObject({
+      natures: z.array(z.strictObject({ nom: z.string().regex(/^[a-z][a-z0-9_-]*$/),
+        libelle: z.string().min(1), libellePluriel: z.string().min(1) })).min(1),
+      appliquer: fonction,
+    }).optional(),
     reglages, outilsAssistant: fonction.optional(), cartes: fonction.optional(),
     creation: z.strictObject({ libelle: z.string().min(1), creer: fonction, rendreVisible: fonction }).optional(),
     sections: z.array(z.strictObject({
@@ -195,6 +206,10 @@ export function verifierDeclaration(module: DeclarationModule): void {
       if (new Set(noms).size !== noms.length || noms.some((n) => ['catalogue', 'version'].includes(n))) {
         throw new Error('Invalid or duplicate catalogue nature.');
       }
+    }
+    if (outil.importation) {
+      const noms = outil.importation.natures.map((n) => n.nom);
+      if (new Set(noms).size !== noms.length) throw new Error('Duplicate importation nature.');
     }
     verifierReglages(outil.reglages);
     outils.set(outil.cle, outil);

@@ -11,6 +11,8 @@ import { cloreLot, lireLot, MAX_RAPPORT, ouvrirLot } from '../services/lots.js';
 import {
   appliquerCatalogueParJeton, apercuCatalogueParJeton, niveauDeRequete,
 } from '../services/import-catalogue.js';
+import { importerGalaxieParJeton, listerGalaxiesImport } from '../services/swn/import-galaxie.js';
+import { OUTIL_GALAXIE } from '../services/swn/galaxies.js';
 import { lireContexteImport } from '../services/import.js';
 import { importerCampagne, importerScenario } from '../services/import-suivi.js';
 import { MAX_NOM_CAMPAGNE } from '../services/campagnes.js';
@@ -238,6 +240,22 @@ export async function registerImportRoutes(app: FastifyInstance) {
     }, async (request) => {
       const q = request.query as { niveau?: unknown };
       return apercuCatalogueParJeton(app.db, jetonDe(request), niveauDeRequete(q.niveau), cleOutil(request), request.body);
+    });
+
+    // The galaxy of the map tool (T-9): the token carries `swn/galaxie`, the address names a galaxy of its universe.
+    scope.get(`${base}/outils/:module/:outil/galaxies`, { config: { portee: 'outil' } }, async (request) => {
+      if (cleOutil(request) !== OUTIL_GALAXIE) throw introuvable();
+      const j = jetonDe(request);
+      return listerGalaxiesImport(app.db, j.compteId, j.universId);
+    });
+
+    scope.put(`${base}/outils/:module/:outil/galaxies/:gid`, {
+      config: { portee: 'outil' }, errorHandler: erreurFichier,
+    }, async (request) => {
+      if (cleOutil(request) !== OUTIL_GALAXIE) throw introuvable();
+      const { gid } = request.params as { gid: string };
+      const { lot } = request.query as { lot?: unknown };
+      return importerGalaxieParJeton(app.db, jetonDe(request), lotDeRequete(lot), entier(gid), request.body, app.horloge());
     });
 
     scope.post(`${base}/lots/:lid/clore`, { config: { portee: 'lot' } }, async (request) => {

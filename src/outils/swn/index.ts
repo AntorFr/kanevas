@@ -1,5 +1,6 @@
 import { cartesGalaxies, creerGalaxie, rendreVisibleGalaxie } from '../../services/swn/galaxies.js';
 import { produireDocument, versionSourceDocument } from '../../services/swn/document-source.js';
+import { importerGalaxie, NATURES_GALAXIE } from '../../services/swn/import-galaxie.js';
 import { outilTrajet } from './assistant.js';
 import type { DeclarationCarte, DeclarationModule } from '../declaration.js';
 
@@ -10,6 +11,7 @@ export const swnGalaxie: DeclarationCarte = {
   ecran: { libelle: 'Galaxie', icone: 'Map' },
   cartes: (db, acteur, universId) => cartesGalaxies(db, acteur, universId),
   outilsAssistant: outilTrajet,
+  importation: { natures: NATURES_GALAXIE, appliquer: importerGalaxie },
   sections: [{
     type: 'document_mj', libelle: 'Document MJ', usage: 'maintenir', recalcul: 'proposition',
     versionSource: versionSourceDocument, produire: produireDocument,

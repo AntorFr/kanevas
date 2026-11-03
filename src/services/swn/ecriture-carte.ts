@@ -24,8 +24,21 @@ const acteurDe = (a: Acteur | number): Acteur => typeof a === 'number' ? { compt
 const invalideChamp = (champ: string, message: string) => new ErreurService('invalide', message, undefined, champ);
 const PERIME = (quoi: string) => new ErreurService('conflit', `Ce ${quoi} a changé depuis que vous l'avez ouvert.`, 'donnee_modifiee');
 
+let suspendu: { modifie: boolean } | null = null;
+/**
+ * Runs `fn` with the document signal held back, and says whether a write happened: the import signals once per
+ * request, not per item (T-9). The caller signals with `apresEcriture` itself.
+ */
+export function sansSignal<T>(fn: () => T): { valeur: T; modifie: boolean } {
+  const avant = suspendu;
+  const mien = { modifie: false };
+  suspendu = mien;
+  try { return { valeur: fn(), modifie: mien.modifie }; } finally { suspendu = avant; }
+}
+
 /** Called after each write that changes the document's source: the writing GM gets a recalculation proposal (T-7). */
 export function apresEcriture(db: Db, compteId: number, universId: number): void {
+  if (suspendu) { suspendu.modifie = true; return; }
   surSourceModifiee.appeler(db, compteId, universId, OUTIL_GALAXIE);
 }
 
@@ -106,25 +119,50 @@ function estGenere(db: Db, acteur: Acteur, universId: number, g: LigneGalaxie, q
   return !!bloc && bloc.generes.some(([gq, gr]) => gq === q && gr === r);
 }
 
+export interface SystemeNormalise { nom: string; q: number; r: number; taille: number; couleur: string; notes: string; secret: boolean }
+/** The fields of a system as written, defaults applied; `invalide` with the field otherwise. */
+export function normaliserSysteme(entree: unknown): SystemeNormalise {
+  const c = corps(entree);
+  return {
+    nom: nomValide(c.nom), q: coordonnee('q', c.q), r: coordonnee('r', c.r),
+    taille: a(c, 'taille') ? tailleValide(c.taille) : TAILLES.moyenne!,
+    couleur: a(c, 'couleur') ? couleurValide(c.couleur) : 'accent',
+    notes: a(c, 'notes') ? notesValides(c.notes) : '',
+    secret: a(c, 'secret') ? boolValide('secret', c.secret) : false,
+  };
+}
+export interface ZoneNormalisee { nom: string; contour: [number, number][]; couleur: string; densite: number | null; secret: boolean }
+export function normaliserZone(entree: unknown): ZoneNormalisee {
+  const c = corps(entree);
+  return {
+    nom: nomValide(c.nom), contour: contourChoisi(c.contour),
+    couleur: a(c, 'couleur') ? couleurValide(c.couleur) : 'accent',
+    densite: a(c, 'densite') ? densiteValide(c.densite) : null,
+    secret: a(c, 'secret') ? boolValide('secret', c.secret) : false,
+  };
+}
+export function booleenImport(champ: string, v: unknown): boolean { return boolValide(champ, v); }
+/** Routes whose length a move rewrote, by id: the import reads them to put the in-step ones back in step (T-9). */
+export function routesDeSysteme(db: Db, systemeId: number): { id: number; version: number; version_importee: number | null }[] {
+  return db.prepare('SELECT id, version, version_importee FROM swn_routes WHERE depuis_id = ? OR vers_id = ?').all(systemeId, systemeId) as
+    { id: number; version: number; version_importee: number | null }[];
+}
+
 export interface SystemeEntree {
   nom: unknown; q: unknown; r: unknown; taille?: unknown; couleur?: unknown; notes?: unknown; secret?: unknown;
 }
 export interface ResultatSysteme { id: number; cle: string; version: number; promu: boolean }
 
-export function placerSysteme(db: Db, acteur: Acteur | number, universId: number, galaxieId: number, s: SystemeEntree): ResultatSysteme {
+export function placerSysteme(db: Db, acteur: Acteur | number, universId: number, galaxieId: number, s: SystemeEntree,
+  /** The import brings its own `cle` and knows nothing of generation (`promu` false), T-9. */
+  importe?: { cle: string }): ResultatSysteme {
   const ac = acteurDe(acteur);
   return db.transaction(() => {
     const g = exigerEcritureGalaxie(db, ac, universId, galaxieId);
-    const c = corps(s);
-    const nom = nomValide(c.nom);
-    const q = coordonnee('q', c.q), r = coordonnee('r', c.r);
-    const taille = a(c, 'taille') ? tailleValide(c.taille) : TAILLES.moyenne!;
-    const couleur = a(c, 'couleur') ? couleurValide(c.couleur) : 'accent';
-    const notes = a(c, 'notes') ? notesValides(c.notes) : '';
-    const secret = a(c, 'secret') ? boolValide('secret', c.secret) : false;
+    const { nom, q, r, taille, couleur, notes, secret } = normaliserSysteme(s);
     caseLibre(db, g, q, r);
-    const promu = estGenere(db, ac, universId, g, q, r);
-    const cle = cleDe(nom, clesDe(db, 'swn_systemes', g.id));
+    const promu = importe ? false : estGenere(db, ac, universId, g, q, r);
+    const cle = importe?.cle ?? cleDe(nom, clesDe(db, 'swn_systemes', g.id));
     const id = Number(db.prepare(`INSERT INTO swn_systemes (galaxie_id, univers_id, cle, nom, q, r, taille, couleur, notes, secret, promu)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`).run(g.id, universId, cle, nom, q, r, taille, couleur, notes, secret ? 1 : 0, promu ? 1 : 0).lastInsertRowid);
     apresEcriture(db, ac.compteId, universId);
@@ -239,17 +277,14 @@ export function retirerRoute(db: Db, acteur: Acteur | number, universId: number,
 }
 
 export function dessinerZone(db: Db, acteur: Acteur | number, universId: number, galaxieId: number,
-  z: { nom: unknown; contour: unknown; couleur?: unknown; densite?: unknown; secret?: unknown }): { id: number; cle: string; version: number } {
+  z: { nom: unknown; contour: unknown; couleur?: unknown; densite?: unknown; secret?: unknown },
+  /** The import brings its own `cle` (T-9). */
+  importe?: { cle: string }): { id: number; cle: string; version: number } {
   const ac = acteurDe(acteur);
   return db.transaction(() => {
     const g = exigerEcritureGalaxie(db, ac, universId, galaxieId);
-    const c = corps(z);
-    const nom = nomValide(c.nom);
-    const contour = contourChoisi(c.contour);
-    const couleur = a(c, 'couleur') ? couleurValide(c.couleur) : 'accent';
-    const densite = a(c, 'densite') ? densiteValide(c.densite) : null;
-    const secret = a(c, 'secret') ? boolValide('secret', c.secret) : false;
-    const cle = cleDe(nom, clesDe(db, 'swn_zones', g.id));
+    const { nom, contour, couleur, densite, secret } = normaliserZone(z);
+    const cle = importe?.cle ?? cleDe(nom, clesDe(db, 'swn_zones', g.id));
     const id = Number(db.prepare(`INSERT INTO swn_zones (galaxie_id, univers_id, cle, nom, contour, couleur, densite, secret)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`).run(g.id, universId, cle, nom, JSON.stringify(contour), couleur, densite, secret ? 1 : 0).lastInsertRowid);
     apresEcriture(db, ac.compteId, universId);
