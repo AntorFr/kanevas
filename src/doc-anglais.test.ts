@@ -109,3 +109,10 @@ test('the published GitHub Releases are in English', { timeout: 120000 }, (t) =>
   }
   assert.deepEqual(offending, []);
 });
+
+test('the counter: inline code needs a closing run of the same length, on the same line', () => {
+  assert.deepEqual(frenchWords('Use ``une `` and `une`'), {});
+  assert.deepEqual(frenchWords('Use `` une ` and une'), { une: 2 });
+  assert.deepEqual(frenchWords('Open `une\nclose` une'), { une: 2 });
+  assert.deepEqual(frenchWords('`a` une `b`'), { une: 1 });
+});
