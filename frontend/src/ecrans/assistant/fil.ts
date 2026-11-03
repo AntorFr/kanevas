@@ -117,3 +117,31 @@ export function reessayer() {
   if (!derniere || derniere.role !== 'user') return;
   void demander(etat.universId, derniere.content, etat.messages.slice(0, -1));
 }
+
+const demandesOuverture = new Set<() => void>();
+
+/** The panel opens when a screen asks for it (the banner of a managed section: « Voir la proposition »). */
+export function surDemandeOuverture(f: () => void): () => void {
+  demandesOuverture.add(f);
+  return () => demandesOuverture.delete(f);
+}
+
+/** Shows a proposal in the thread (once) and asks the panel to open on it. */
+export function montrerProposition(universId: number, propositionId: number) {
+  if (etat.universId !== universId) return;
+  const deja = etat.messages.some((m) => m.evenements?.some((e) => e.type === 'proposition_creee' && Number(e.cible.propositionId) === propositionId));
+  if (!deja) {
+    poser({
+      ...etat,
+      messages: [
+        ...etat.messages,
+        {
+          role: 'assistant',
+          content: 'Voici la proposition de recalcul.',
+          evenements: [{ type: 'proposition_creee', libelle: 'Recalcul proposé', cible: { type: 'proposition', propositionId } }],
+        },
+      ],
+    });
+  }
+  demandesOuverture.forEach((f) => f());
+}

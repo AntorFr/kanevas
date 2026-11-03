@@ -329,7 +329,7 @@ Format from the `exigences` skill; each need cites the journeys that fulfill it.
   its tools' data. *(P-21)*
 - **B-64** — A write to editable tool data (design, placed system, route, zone…)
   based on a stale version is **refused** with the same response as a section, and the screen explains it
-  with a way to reload. No live collaborative editing. *(P-18, P-19)*
+  with a way to reload (on the screen of a design, placed system, route or zone, and in the « Voir les éléments » panel; the catalogue import dialog has no reload: it says the data « changed meanwhile » and shows what was applied, and the file is chosen again to preview a new import). No live collaborative editing. *(P-18, P-19)*
 - **B-65** — An API token has a **scope per tool**; the import API accepts a tool's data
   (catalogue, placed systems, routes, zones, designs): one key per element, replay without duplicates,
   batch report, shape checked by the module (which also checks conversion). *(P-20)*
@@ -693,11 +693,19 @@ introuvable. ».
 1. System page (**E-15**), « Outils » tab (**E-20**): the galaxy map and ship designer
    are listed as « Désactivé ». He enables both. Visibility: designer « MJ et
    joueurs », map « MJ et joueurs ».
-2. He sets the system's base settings (jump range: 1 hex), then imports a **catalogue**: « Importer un catalogue », JSON file; the preview says « 12 coques ajoutées,
-   0 modifiée, 1 refusée : arme « Laser lourd », champ `masse` : nombre attendu »; he confirms.
+2. He sets the system's base settings (jump range: 1 hex), then imports a **catalogue**: « Importer un catalogue », JSON file; the preview says « 11 ajoutés,
+   0 modifié, 1 refusé : arme « laser-lourd », champ `masse` : nombre attendu »; he confirms.
 3. Settings of « Éneria » (**E-14**), « Outils » tab: both tools follow the system; he overrides the
    designer to « Activé », sets « Charges de carburant » to « Non » (house rule) and adds Orak'Ziel
    crystals (a new element) to the universe catalogue by importing a file.
+   *(Detail from `kanevas-outils-catalogue`.)* The two imports are the same dialog on two tabs: step 2 on
+   the system's tab of E-15 (the preview counts elements — « 11 ajoutés, 0 modifié, 1 refusé » for
+   a file of 12; the numbers above are an illustration), step 3 on the universe's tab of E-14,
+   whose preview adds « dont N remplacent un élément du système ». Still on E-14, « Voir les éléments »
+   lets him **hide** the Orak'Ziel weapon from the players until the session, **withdraw** a system hull
+   the campaign does not use, and bring it back (B-62). For his conversion script he creates, on E-18, a
+   token whose scope is the designer alone (B-65, P-20); the script's import comes back as a batch named
+   after the tool.
 4. On the galaxy (E-21), he changes the seed: confirmation says « Tous les systèmes non définis changent de
    place ; les systèmes définis et promus ne bougent pas. ».
 *Highlight*: the « Outils » tab shows « Système · 1 » then « Univers · 2 » for each setting: the value's
@@ -705,7 +713,7 @@ origin is readable.
 *Failure*: he enables a tool depending on a disabled one — « <Outil> demande <autre outil> : activez-le
 d'abord. » (no SWN tool has dependencies: the text is exercised with the trial module); Mira, GM of another universe using the system,
 sees tools and values but neither « Activer » nor « Importer » at system level (hidden, read-only);
-unreadable catalogue file — « Ce fichier n'est pas un catalogue valide. »; connection lost
+unreadable catalogue file — « Ce fichier n'est pas un catalogue valide. »; a tool token refused (revoked, expired, out of scope) — 401 `jeton_invalide`, no batch opened; a refused element in a tool batch — counted « 1 refusé » in the batch of E-18; connection lost
 during application — nothing is partially applied.
 
 ### P-18 — Explore the galaxy, then maintain it (Léa, Player, on a phone; Antor, GM, at a desk)
@@ -740,14 +748,14 @@ the density of generated systems never changes based on a territory she cannot s
 3. She saves: the sheet (**E-9**) shows « Caractéristiques » under the « Générée par le concepteur de
    vaisseaux » banner linking to the tool; Léa cannot manually edit the text.
 4. *(Later slice, `kanevas-outils-vaisseaux-regles`.)* Later, Antor changes the jump range or universe catalogue: E-22 and E-9 signal « Calculé avec
-   d'anciens réglages » and offer « Recalculer »; Léa loses nothing until she confirms.
+   d'anciens réglages » and offer « Recalculer »; Léa loses nothing until she confirms. A section its tool declares « on proposal » is not rewritten by the gesture: the setting change files a proposal for the GM who made it, and E-9 offers him « Voir la proposition » (E-12, « Appliquer » or « Ignorer »); a GM who has none can « Proposer un recalcul ». A player without the tool's usage reads the state and has no recalculation button (the author keeps « Ouvrir dans l'outil »).
 5. Rule sheets (« Moteurs », « Défenses ») and the 11 examples are managed sections, readable and
    uneditable (`kanevas-outils-vaisseaux-regles`); in the first slice, Léa shares the ship link with Roxane, a player
    who has no design of her own on it: Roxane reads « Étoile du soir » (Léa's second design, on a hull of the system, which she may read) read-only, with « Enregistrer » and « Annuler »
    absent, and « Vent d'Orak » is « Page introuvable. » for her (not hers to read).
 *Highlight*: budgets recalculate before their eyes, and the sheet's section stays consistent with what
 is calculated.
-*Failure*: Antor disables the designer — the sheet shows « Caractéristiques » as text with « Outil
+*Failure*: a recalculation that fails — « Le recalcul n'a pas abouti. Réessayez. », the text unchanged; the usage removed meanwhile — « Vous ne pouvez plus recalculer cette section. »; connection lost — « Connexion perdue. », the buttons disabled. Antor disables the designer — the sheet shows « Caractéristiques » as text with « Outil
 désactivé », without editing; Roxane opens Léa's « Vent d'Orak », which she cannot read — « Page introuvable. »;
 two concurrent writes — the second refused with « Recharger »; calculating an invalid design —
 blocking alerts, « Enregistrer » refuses and explains why; Antor withdraws the hull of « Étoile du soir » from the universe or masks « Lance d'essai » — the design keeps its text, the line says « Élément retiré de cet univers » and « Enregistrer » stays disabled (withdrawn), or Léa still sees the masked element on her design but does not find it in her choices; on a phone, the catalogue is browsed in one column.

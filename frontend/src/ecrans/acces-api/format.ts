@@ -3,7 +3,14 @@
 export type Issue = 'creees' | 'mises_a_jour' | 'inchangees' | 'refusees' | 'supprimees';
 export type Nature = 'fiches' | 'fichiers' | 'campagnes' | 'scenarios' | 'relations';
 /** `supprimees` exists on the `fiches` nature only (AD-119 (4)); absent elsewhere and in older batches. */
-export type Compteurs = Record<Nature, Partial<Record<Issue, number>>>;
+export type Compteurs = Record<string, Partial<Record<Issue, number>>>;
+
+export interface OutilVue { cle: string; libelle: string }
+export interface OutilProposable extends OutilVue {
+  module: string;
+  libelleModule: string;
+  type: 'carte' | 'generateur' | 'aide';
+}
 
 export interface JetonVue {
   id: number;
@@ -15,6 +22,7 @@ export interface JetonVue {
   dernierUsageLe: string | null;
   /** False when the creator is no longer a GM of the universe (B-46). */
   actif: boolean;
+  outils: OutilVue[];
 }
 
 export interface EntreeRapport {
@@ -36,6 +44,8 @@ export interface LotVue {
   alertes: EntreeRapport[];
   refusAutres: number;
   alertesAutres: number;
+  outil?: OutilVue;
+  natures?: { nom: string; libelle: string }[];
 }
 
 const nombre = (n: number) => n.toLocaleString('fr-FR');
@@ -99,15 +109,26 @@ function forme(issue: Issue, n: number, feminin: boolean): string {
 /** « Fiches : 498 créées · 3 refusées » per nature with something in it; null natures omitted. */
 export function ligneNature(c: Compteurs, nature: Nature): string | null {
   const def = NATURES.find((n) => n.cle === nature)!;
+  const compteurs = c[nature] ?? {};
   const parts = (['creees', 'mises_a_jour', 'inchangees', 'refusees', 'supprimees'] as Issue[])
-    .filter((i) => (c[nature][i] ?? 0) > 0)
-    .map((i) => `${nombre(c[nature][i]!)} ${forme(i, c[nature][i]!, def.feminin)}`);
+    .filter((i) => (compteurs[i] ?? 0) > 0)
+    .map((i) => `${nombre(compteurs[i]!)} ${forme(i, compteurs[i]!, def.feminin)}`);
   return parts.length ? `${def.libelle} : ${parts.join(' · ')}` : null;
 }
 
 /** Every piece of the counters line of a batch, in order; empty when nothing was written. */
-export function morceauxLot(lot: Pick<LotVue, 'compteurs' | 'enAttente' | 'avertissements'>): string[] {
+export function morceauxLot(lot: Pick<LotVue, 'compteurs' | 'enAttente' | 'avertissements' | 'outil' | 'natures'>): string[] {
   const out: string[] = [];
+  if (lot.outil) {
+    for (const nature of lot.natures ?? []) {
+      const c = lot.compteurs[nature.nom] ?? {};
+      const parts = (['creees', 'mises_a_jour', 'inchangees', 'refusees'] as Issue[])
+        .filter((issue) => (c[issue] ?? 0) > 0)
+        .map((issue) => `${nombre(c[issue]!)} ${forme(issue, c[issue]!, false)}`);
+      if (parts.length) out.push(`${nature.libelle} : ${parts.join(', ')}`);
+    }
+    return out;
+  }
   for (const n of NATURES) {
     const l = ligneNature(lot.compteurs, n.cle);
     if (l) out.push(l);

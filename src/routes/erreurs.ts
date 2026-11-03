@@ -1,5 +1,6 @@
 import type { FastifyInstance } from 'fastify';
 
+import { ErreurCatalogue } from '../services/catalogues.js';
 import { ErreurService, type CodeErreur } from '../services/erreurs.js';
 
 const STATUT: Record<CodeErreur, number> = {
@@ -16,7 +17,12 @@ const STATUT: Record<CodeErreur, number> = {
 export function registerErreurs(app: FastifyInstance) {
   app.setErrorHandler((erreur, request, reply) => {
     if (erreur instanceof ErreurService) {
-      const corps: { message: string; code?: string; champ?: string } = { message: erreur.message };
+      const corps: { message: string; code?: string; champ?: string; cause?: string; attendu?: string; recu?: unknown } =
+        { message: erreur.message };
+      if (erreur instanceof ErreurCatalogue) {
+        corps.cause = erreur.cause;
+        if (erreur.attendu !== undefined) Object.assign(corps, { attendu: erreur.attendu, recu: erreur.recu });
+      }
       if (erreur.detail) corps.code = erreur.detail;
       if (erreur.champ) {
         corps.champ = erreur.champ;

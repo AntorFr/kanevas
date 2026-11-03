@@ -140,6 +140,7 @@ test('Antor ajoute un PDF depuis E-19 : « Visible des joueurs », 14 fichiers, 
   assert.doesNotMatch(t, /Carte des Sphères/);
   await antor.getByText('Images', { exact: true }).click();
   await antor.getByText('regles-guilde.pdf', { exact: true }).first().waitFor({ state: 'hidden' });
+  await antor.getByText('Carte des Sphères', { exact: true }).first().waitFor();
   await attendre(antor);
   t = norm(await texte(antor));
   assert.doesNotMatch(t, /regles-guilde\.pdf/);
