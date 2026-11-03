@@ -1,4 +1,4 @@
-import { BookOpen, Map as Carte, WandSparkles, type LucideIcon } from 'lucide-react';
+import { BookOpen, Map as Carte, Rocket, WandSparkles, type LucideIcon } from 'lucide-react';
 import type { ComponentType } from 'react';
 
 import { lire } from '../api';
@@ -31,6 +31,16 @@ export const OUTILS_CLIENT: Record<string, OutilClient> = {
     verifier: (universId, cible, suffixe) => lire(`/api/univers/${universId}/outils/swn/galaxie/galaxies/${encodeURIComponent(cible ?? '')}${suffixe}`),
     charger: () => import('./swn/galaxie'),
   },
+  'swn/vaisseaux': {
+    icone: Rocket,
+    // A design opened by its address (`?fiche=`) is read before the tool's code is requested: unreadable = « Page introuvable. ».
+    verifier: (universId, _cible, suffixe) => {
+      const fiche = new URLSearchParams(window.location.search).get('fiche');
+      if (fiche === null) return Promise.resolve(undefined);
+      return lire(`/api/univers/${universId}/outils/swn/vaisseaux/conceptions/${encodeURIComponent(fiche)}${suffixe}`);
+    },
+    charger: () => import('./swn/vaisseaux'),
+  },
   'essai/g': { icone: WandSparkles, charger: () => import('./essai/g') },
 };
 
@@ -42,6 +52,7 @@ export const outilClient = (cle: string): OutilClient | undefined => (Object.has
  */
 export const COMPOSANTS_SECTION: Record<string, () => Promise<{ default: ComponentType<PropsSection> }>> = {
   'essai/g/caracteristiques': () => import('./essai/section-g'),
+  'swn/vaisseaux/caracteristiques': () => import('./swn/vaisseaux/section'),
 };
 
 export const composantSection = (cle: string, type: string) => {

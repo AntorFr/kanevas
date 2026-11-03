@@ -20,6 +20,8 @@ export interface ElementResolu extends LigneCatalogue { origine: OrigineCatalogu
 export interface VueElementCatalogue {
   nature: string; cle: string; nom: string; resume: string;
   origine?: OrigineCatalogue; masque?: boolean; version?: number; donnees?: Record<string, unknown>;
+  /** Player reading only: the element comes from the universe's catalogue (tag « Univers »); no `origine` is carried. */
+  univers?: true;
 }
 export interface PageCatalogue { elements: VueElementCatalogue[]; suivant: string | null }
 export interface OptionsCatalogue { nature?: string; curseur?: string }
@@ -218,7 +220,8 @@ function page(catalogue: DeclarationCatalogue, rows: ElementResolu[], mj: boolea
   }
   const elements = readable.slice(0, 50).map((r): VueElementCatalogue => ({
     nature: r.nature, cle: r.cle, nom: r.nom, resume: natureOf(catalogue, r.nature).resume(r.donnees),
-    ...(mj ? { origine: r.origine, masque: r.masque, version: r.version } : { donnees: r.donnees }),
+    ...(mj ? { origine: r.origine, masque: r.masque, version: r.version }
+      : { donnees: r.donnees, ...(r.origine === 'univers' || r.origine === 'remplace' ? { univers: true as const } : {}) }),
   }));
   return { elements, suivant: readable.length > 50 ? elements.at(-1)!.cle : null };
 }
