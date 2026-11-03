@@ -10,8 +10,9 @@ delete process.env.KANEVAS_STUB;
 const { migrate, openDb } = await import('../db/db.js');
 const { assurerCompte } = await import('./comptes.js');
 const { creerCompteRendu } = await import('./comptes_rendus.js');
-const { creerCampagne } = await import('./campagnes.js');
 const { creerFiche, listerFiches } = await import('./fiches.js');
+const creerCampagne = (db: any, compteId: number, universId: number, o: { nom: string }) =>
+  creerFiche(db, compteId, universId, { type: 'aventure', sousType: 'Campagne', titre: o.nom });
 const { ajouterMembre } = await import('./membres.js');
 const { creerProposition } = await import('./propositions.js');
 const { ajouterSection, ecrireContenu, lireSection } = await import('./sections.js');
