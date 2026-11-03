@@ -343,6 +343,23 @@ export function assurerFiche(
     }
   }
 
+  // A key that is the key of a managed section of the sheet: refused before the transaction (AD-127).
+  const gerees = db
+    .prepare(
+      `SELECT s.cle_origine FROM sections s JOIN fiches f ON f.id = s.fiche_id
+       WHERE f.univers_id = ? AND f.cle_origine = ? AND s.gere_par IS NOT NULL AND s.cle_origine IS NOT NULL`,
+    )
+    .all(jeton.universId, cle) as { cle_origine: string }[];
+  if (gerees.length > 0) {
+    const cles = new Set(gerees.map((g) => g.cle_origine));
+    const i = entree.sections.findIndex((s) => cles.has(s.cle));
+    if (i >= 0) {
+      return refuser(
+        new Refus(`sections[${i}]`, 'section', `section « ${entree.sections[i]!.titre} » : gérée par un outil, non modifiable`, 'section_geree'),
+      );
+    }
+  }
+
   try {
     return db.transaction((): ResultatFiche => {
       const avert: EntreeRapport[] = [];

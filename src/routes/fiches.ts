@@ -1,7 +1,9 @@
 import '@fastify/multipart';
 import type { FastifyInstance } from 'fastify';
 
-import { invalide } from '../services/erreurs.js';
+import { roleDe } from '../services/droits.js';
+import { invalide, refuse } from '../services/erreurs.js';
+import { proposerRecalcul, recalculerSection } from '../services/sections-gerees.js';
 import {
   changerSousType,
   changerTypeFiche,
@@ -284,6 +286,25 @@ export function registerFichesRoutes(app: FastifyInstance) {
       b.contenu,
       b.version as number,
     );
+  });
+
+  // Recalculation of a managed section (S-6, B-66): a gesture, never in player mode.
+  app.post(`${base}/:fid/sections/:sid/recalcul`, async (request) => {
+    const i = ids(request);
+    const a = acteur(request);
+    const b = corps(request);
+    if (!Number.isSafeInteger(b.version)) throw invalide('Version manquante.');
+    if (a.modeJoueur) throw refuse();
+    return recalculerSection(app.db, a.compteId, i.univers, i.fiche, i.section, b.version as number);
+  });
+
+  // The proposal of a recalculation, for a section the tool recalculates on proposal (201).
+  app.post(`${base}/:fid/sections/:sid/recalcul/proposition`, async (request, reply) => {
+    const i = ids(request);
+    const a = acteur(request);
+    // A player (any mode) learns nothing: the service answers « introuvable ».
+    if (a.modeJoueur && roleDe(app.db, i.univers, a.compteId) === 'mj') throw refuse();
+    return reply.code(201).send(proposerRecalcul(app.db, a.compteId, i.univers, i.section, i.fiche));
   });
 
   // Relations of a section (AD-64): read under both guards by the service.

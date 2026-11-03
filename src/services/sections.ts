@@ -1,5 +1,6 @@
 import type { Db } from '../db/db.js';
 import {
+  estGeree,
   exigerMJ,
   exigerRole,
   peutEcrireSection,
@@ -22,6 +23,9 @@ export const MESSAGE_CONTENU_TROP_LONG = 'Contenu trop long : 100 000 caractère
 
 /** The refusal of a GM block written by a non-GM (AD-114 4). */
 export const MESSAGE_BLOC_MJ = 'Un bloc MJ ne peut être écrit que par un MJ.';
+
+/** The refusal of a write on a managed section by anything but its tool (AD-127). */
+export const MESSAGE_SECTION_GEREE = 'Cette section est gérée par un outil.';
 
 /** A non-GM may not write a text that holds a GM block: `contenuPublic` would differ from it. */
 export function exigerSansBloc(role: Role, contenu: string): void {
@@ -49,27 +53,25 @@ export function insererSection(
     auteurId?: number | null;
     auteurLit?: number;
     auteurEcrit?: number;
+    /** A managed section is born with its tool and the version of the sources (AD-127); only `sections-gerees.ts` passes them. */
+    gerePar?: string;
+    sourceVersion?: string;
   },
 ): number {
+  const colonnes = ['fiche_id', 'titre', 'ordre', 'contenu', 'contenu_public', 'modifie_le',
+    'joueurs_lisent', 'joueurs_ecrivent', 'auteur_id', 'auteur_lit', 'auteur_ecrit'];
+  const valeurs: (string | number | null)[] = [
+    s.ficheId, s.titre, s.ordre, s.contenu, contenuPublic(s.contenu), s.modifieLe,
+    s.joueursLisent ?? 0, s.joueursEcrivent ?? 0, s.auteurId ?? null, s.auteurLit ?? 0, s.auteurEcrit ?? 0,
+  ];
+  // The managed columns are named only when set: a free section is written as it always was.
+  if (s.gerePar !== undefined) {
+    colonnes.push('gere_par', 'source_version');
+    valeurs.push(s.gerePar, s.sourceVersion ?? null);
+  }
   const info = db
-    .prepare(
-      `INSERT INTO sections (fiche_id, titre, ordre, contenu, contenu_public, modifie_le,
-         joueurs_lisent, joueurs_ecrivent, auteur_id, auteur_lit, auteur_ecrit)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-    )
-    .run(
-      s.ficheId,
-      s.titre,
-      s.ordre,
-      s.contenu,
-      contenuPublic(s.contenu),
-      s.modifieLe,
-      s.joueursLisent ?? 0,
-      s.joueursEcrivent ?? 0,
-      s.auteurId ?? null,
-      s.auteurLit ?? 0,
-      s.auteurEcrit ?? 0,
-    );
+    .prepare(`INSERT INTO sections (${colonnes.join(', ')}) VALUES (${colonnes.map(() => '?').join(', ')})`)
+    .run(...valeurs);
   const id = Number(info.lastInsertRowid);
   remplacerLiens(db, id, s.contenu);
   recalculerFichiersSection(db, id, s.contenu, contenuPublic(s.contenu));
@@ -122,7 +124,7 @@ function chargerSection(db: Db, ficheId: number, sectionId: number): SectionRow 
   return row;
 }
 
-function toucherFiche(db: Db, ficheId: number, now: string): void {
+export function toucherFiche(db: Db, ficheId: number, now: string): void {
   db.prepare('UPDATE fiches SET modifie_le = ? WHERE id = ?').run(now, ficheId);
 }
 
@@ -312,6 +314,7 @@ export function ecrireContenu(
   sectionId: number,
   contenu: string,
   version: number,
+  geree?: { outil: string; sourceVersion: string },
 ): SectionVue {
   const role = exigerRole(db, universId, compteId);
   chargerFiche(db, universId, ficheId);
@@ -321,6 +324,11 @@ export function ecrireContenu(
       if (!peutLireSection(role, s, { compteId })) throw introuvable();
       throw refuse("Vous ne pouvez pas modifier cette section.");
     }
+    // The lock (AD-127): a managed section is written only by its tool, through `sections-gerees.ts`.
+    if (estGeree(s) && (!geree || !s.gere_par!.startsWith(`${geree.outil}/`))) {
+      throw new ErreurService('refuse', MESSAGE_SECTION_GEREE, 'section_geree');
+    }
+    if (geree && !estGeree(s)) throw refuse("Cette section n'est pas gérée par un outil.");
     validerContenu(contenu);
     exigerSansBloc(role, contenu);
     if (s.version !== version) {
@@ -330,6 +338,9 @@ export function ecrireContenu(
     validerContenu(ecrit);
     const now = new Date().toISOString();
     poserContenu(db, sectionId, ecrit, now);
+    if (geree) {
+      db.prepare('UPDATE sections SET source_version = ? WHERE id = ?').run(geree.sourceVersion, sectionId);
+    }
     toucherFiche(db, ficheId, now);
     return vueSection(db, universId, role, chargerSection(db, ficheId, sectionId), { compteId });
   })();

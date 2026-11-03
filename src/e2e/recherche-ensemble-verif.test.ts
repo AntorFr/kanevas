@@ -363,8 +363,9 @@ describe('kanevas-import-recherche, écriture des alias et étiquettes, types d�
     await versFiche(p, s2.base, 'Maître Aldric');
     await ouvrirBoite(p);
     await ajoute(p, 'Alias', 'x'.repeat(121));
-    await p.getByRole('dialog').getByRole('button', { name: rxExact('Enregistrer') }).click();
+    // The local refusal appears at Entrée; wait for it before saving, which may close the dialog and erase it.
     await p.getByText('Erreur : 120 caractères au plus.').first().waitFor();
+    await p.getByRole('dialog').getByRole('button', { name: rxExact('Enregistrer') }).click();
     await p.keyboard.press('Escape');
     await p.getByRole('dialog').waitFor({ state: 'detached' });
 

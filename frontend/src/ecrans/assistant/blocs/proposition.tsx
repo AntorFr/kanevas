@@ -10,7 +10,9 @@ import type { PropsBloc } from './registre';
 interface PropositionLue {
   id: number;
   ficheId: number;
-  crId: number;
+  crId: number | null;
+  source: 'compte_rendu' | 'recalcul';
+  outilLibelle: string | null;
   sectionId: number;
   contenuActuel: string;
   contenuPropose: string;
@@ -22,6 +24,7 @@ interface PropositionLue {
 interface Titres {
   section: string;
   fiche: string;
+  /** The report's title, or the tool's name for a recalculation proposal. */
   source: string;
 }
 
@@ -68,12 +71,12 @@ export function Proposition({ evenement, universId, surOuverture }: PropsBloc) {
       try {
         const [fiche, cr] = await Promise.all([
           lire<{ titre: string; sections: { id: number; titre: string }[] }>(`/api/univers/${universId}/fiches/${p.ficheId}`),
-          lire<{ titre: string }>(`/api/univers/${universId}/fiches/${p.crId}`),
+          p.crId === null ? Promise.resolve(null) : lire<{ titre: string }>(`/api/univers/${universId}/fiches/${p.crId}`),
         ]);
         t = {
           section: fiche.sections.find((s) => s.id === p.sectionId)?.titre ?? '',
           fiche: fiche.titre,
-          source: cr.titre,
+          source: cr ? cr.titre : (p.outilLibelle ?? ''),
         };
       } catch (e) {
         if (!(e instanceof ErreurApi) || e.statut === 0) throw e;
@@ -219,7 +222,10 @@ export function Proposition({ evenement, universId, surOuverture }: PropsBloc) {
     <>
       <h3 className="asst-prop-titre">Mise à jour proposée</h3>
       <p className="asst-prop-source">
-        Section « {titres.section} » de « {titres.fiche} » · d’après « {titres.source} »
+        Section « {titres.section} » de « {titres.fiche} » ·{' '}
+        {prop.source === 'recalcul'
+          ? `Recalcul proposé après un changement de réglage${titres.source ? ` — ${titres.source}` : ''}`
+          : `d’après « ${titres.source} »`}
       </p>
     </>
   );
@@ -302,7 +308,7 @@ export function Proposition({ evenement, universId, surOuverture }: PropsBloc) {
               Appliquer
             </Bouton>
             <Bouton ecrit enCours={geste === 'abandonner'} disabled={occupe || inconnu} onClick={() => void faire('abandonner')}>
-              Abandonner
+              {prop.source === 'recalcul' ? 'Ignorer' : 'Abandonner'}
             </Bouton>
           </>
         )}

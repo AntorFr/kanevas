@@ -7,6 +7,8 @@ import { ErreurService } from '../erreurs.js';
 import { ajouterFichier, MAX_FICHIERS_JOINTS, verifierDepot } from '../fichiers.js';
 import { lireFiche, listerFiches } from '../fiches.js';
 import { choisirAdaptateur, type AdaptateurChoisi } from '../images/index.js';
+import { modulesActifs } from '../../outils/registre.js';
+import { accessible } from '../outils.js';
 import { creerProposition } from '../propositions.js';
 import { creerScenario } from '../scenarios.js';
 import { ecrireContenu, lireSection } from '../sections.js';
@@ -256,6 +258,14 @@ export function catalogueDe(
 
   // The image engine is a GM tool, and absent when no engine exists (AD-45, AD-89).
   if (role === 'mj' && images.nom !== 'aucun') outils.push(outilImage(db, compteId, universId, images));
+
+  // The tools declared by the modules, without knowing any by name (AD-136): the role is read above, at each request.
+  for (const module of modulesActifs()) {
+    for (const declare of module.outils) {
+      if (!declare.outilsAssistant || !accessible(db, acteur, universId, declare.cle)) continue;
+      outils.push(...declare.outilsAssistant({ db, acteur, universId, role }));
+    }
+  }
 
   return { role, outils };
 }

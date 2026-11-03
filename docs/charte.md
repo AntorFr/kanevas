@@ -250,6 +250,11 @@ For each: **V** visual, **C** behavioural. All have the focus ring (2 px `--focu
   `docs/ecrans.md`. File removal confirmation, however, happens **inline**: the
   row « Retirer « plan-des-egouts.pdf » ? Le fichier sera perdu. » with « Annuler » and
   « Retirer le fichier ».
+- *Variant without action* (kanevas-outils-cadre, « Transférer la responsabilité » when no other GM
+  can take over): same look and icon badge, the footer holds a single « Fermer » button on the right and no
+  action button; the text explains why no action is available. Focus enters on
+  « Fermer »; Escape and the overlay close; focus returns to the opening button; `role="alertdialog"`,
+  titled and described.
 
 **Field** (text, section textarea, list, checkbox).
 - V: 34 px, `--surface`, border `--bord-champ`, radius `--rayon-champ`, 12 px label
