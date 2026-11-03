@@ -59,3 +59,9 @@ export const composantSection = (cle: string, type: string) => {
   const k = `${cle}/${type}`;
   return Object.hasOwn(COMPOSANTS_SECTION, k) ? COMPOSANTS_SECTION[k] : undefined;
 };
+
+/** Wording of the managed-section banner for tools whose name reads differently in the sentence (docs/ecrans.md, E-9). */
+export const MOTS_BANDEAU: Record<string, { nom: string; ouvrir: string }> = {
+  'swn/vaisseaux': { nom: 'le concepteur de vaisseaux', ouvrir: 'Ouvrir dans le concepteur' },
+};
+export const motsBandeau = (cle: string | null) => (cle !== null && Object.hasOwn(MOTS_BANDEAU, cle) ? MOTS_BANDEAU[cle] : undefined);

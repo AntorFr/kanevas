@@ -8,9 +8,14 @@ import { Bouton, BoiteDialogue, Chargement, ErreurChargement, PageIntrouvable, P
 import { brouillonDe, choixDe, memeBrouillon, motifDe, requete } from './format';
 import { Alertes, Chiffres, ErreurCalcul } from './Resultats';
 import { Selecteur } from './Selecteur';
-import { NATURES, type Alerte, type Brouillon, type Calcul, type Conception, type ElementCatalogue, type Ligne, type Nature } from './types';
+import { NATURES, type PageCatalogue, type Alerte, type Brouillon, type Calcul, type Conception, type ElementCatalogue, type Ligne, type Nature } from './types';
 
 type Ouvert = { nature: string; titre: string } | null;
+interface Info { chiffres: string; univers: boolean }
+const infoDe = (e: ElementCatalogue): Info => ({
+  chiffres: e.resume.replace(/coût [^·]*· /, ''),
+  univers: e.univers === true || e.origine === 'univers' || e.origine === 'remplace',
+});
 
 /** E-22, the workshop of one design. The screen carries no rule: every change asks `POST calcul` (V-12). */
 export function Atelier({ universId, ficheId, suffixe, initiale }: {
@@ -68,6 +73,33 @@ function Corps({ universId, suffixe, saved, onSaved, onRecharger }: {
   const [essaiCalcul, setEssaiCalcul] = useState(0);
   const dernier = useRef(0);
   const premier = useRef(true);
+  const [infos, setInfos] = useState<Record<string, Info>>({});
+
+  // The key figures and the « Univers » mark of each line come from the catalogue the player may read (display only).
+  useEffect(() => {
+    let actif = true;
+    (async () => {
+      for (const nature of ['coques', ...NATURES.map((n) => n.nature)]) {
+        let curseur: string | undefined;
+        do {
+          let p: PageCatalogue;
+          try {
+            p = await lire<PageCatalogue>(`${base}/catalogue${requete(suffixe, { nature, curseur })}`);
+          } catch {
+            break;
+          }
+          if (!actif) return;
+          setInfos((avant) => {
+            const apres = { ...avant };
+            for (const e of p.elements) apres[`${e.nature}/${e.cle}`] = infoDe(e);
+            return apres;
+          });
+          curseur = p.suivant ?? undefined;
+        } while (curseur);
+      }
+    })();
+    return () => { actif = false; };
+  }, [universId, suffixe]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useTitreAriane(saved.titre, 'Outils');
 
@@ -101,6 +133,7 @@ function Corps({ universId, suffixe, saved, onSaved, onRecharger }: {
   }, []);
 
   function choisir(e: ElementCatalogue) {
+    setInfos((avant) => ({ ...avant, [`${e.nature}/${e.cle}`]: infoDe(e) }));
     if (e.nature === 'coques') {
       change((b) => ({ ...b, coque: { cle: e.cle, nom: e.nom } }));
     } else {
@@ -208,11 +241,13 @@ function Corps({ universId, suffixe, saved, onSaved, onRecharger }: {
             {modifie ? 'Résultats' : 'Résultats enregistrés'}
             {etatCalcul === 'calcul' && <small className="vx-calcul" role="status"> Calcul…</small>}
           </h2>
+          <div className="vx-defile">
           <div className={estompe ? 'vx-estompe' : undefined} data-estompe={estompe || undefined}>
             <Chiffres r={resultat} />
           </div>
           {etatCalcul === 'erreur' && <ErreurCalcul onReessayer={() => setEssaiCalcul((n) => n + 1)} />}
           <div className="vx-alertes-zone"><Alertes alertes={alertes} /></div>
+          </div>
           {ecriture && (
             <div className="vx-enregistrer">
               <div className="vx-actions">
@@ -232,8 +267,9 @@ function Corps({ universId, suffixe, saved, onSaved, onRecharger }: {
             <div className="vx-ligne-choix">
               <div className="vx-element-texte">
                 <span className="vx-nom">{brouillon.coque.nom}</span>
-                <span className="vx-sous">classe {resultat.coque.classe}</span>
+                <span className="vx-sous">{infos[`coques/${brouillon.coque.cle}`]?.chiffres ?? `classe ${resultat.coque.classe}`}</span>
               </div>
+              {infos[`coques/${brouillon.coque.cle}`]?.univers && <Pastille sens="neutre">Univers</Pastille>}
               {coqueRetiree && <Pastille sens="danger">Élément retiré de cet univers</Pastille>}
               {!verrou && <Bouton petit onClick={() => setOuvert({ nature: 'coques', titre: 'Changer de coque' })}>Changer de coque</Bouton>}
             </div>
@@ -260,7 +296,9 @@ function Corps({ universId, suffixe, saved, onSaved, onRecharger }: {
                       <li key={`${l.nature}/${l.cle}`} className="vx-ligne-choix">
                         <div className="vx-element-texte">
                           <span className="vx-nom">{l.nom}</span>
+                          {infos[`${l.nature}/${l.cle}`]?.chiffres && <span className="vx-sous">{infos[`${l.nature}/${l.cle}`]?.chiffres}</span>}
                         </div>
+                        {infos[`${l.nature}/${l.cle}`]?.univers && <Pastille sens="neutre">Univers</Pastille>}
                         {retirees.has(i) && <Pastille sens="danger">Élément retiré de cet univers</Pastille>}
                         {!ecriture ? (
                           <span className="vx-quantite-lue">× {l.quantite}</span>
