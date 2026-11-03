@@ -55,6 +55,9 @@ before(async () => {
   ({ ctx: ctxAntor, page: antor } = await connecte(browser, srv.base, 'Antor'));
   ({ ctx: ctxLea, page: lea } = await connecte(browser, srv.base, 'Léa'));
   mira = (await connecte(browser, srv.base, 'Mira')).page;
+  // The seed also enables the ship designer for the trial system; these tests count the bar's entries of the trial tools alone.
+  const r = await antor.request.put(`/api/systemes/3/outils/swn/vaisseaux/activation`, { data: { active: false } });
+  assert.equal(r.status(), 204);
 });
 
 after(async () => {
