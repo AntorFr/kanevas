@@ -5,6 +5,7 @@ export * from './composants';
 export * from './etats';
 export * from './menu';
 export * from './interrupteur';
+export * from './segments';
 export * from './toast';
 export * from './dialogue';
 export * from './blocs';

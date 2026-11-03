@@ -130,8 +130,5 @@
 .gx-sr { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
 .gx-form .champ input:not([type=radio]), .gx-form .champ select, [role=dialog] .champ input, [role=dialog] .champ select { min-height: 44px; box-sizing: border-box; }
 
-.gx-segments { display: flex; flex-wrap: wrap; gap: var(--e-2); border: 0; padding: 0; margin: 0 0 var(--e-2); }
-.gx-segments legend { color: var(--texte-2); font-size: var(--t-13); margin-bottom: var(--e-1); padding: 0; float: left; width: 100%; }
-.gx-segments .bouton { min-height: 44px; flex: 1 1 0; justify-content: center; }
 .gx-menu .menu-declencheur { border: 1px solid var(--bord-champ); background: var(--surface-2); padding: 0 var(--e-3); }
 .gx-menu .menu-declencheur:hover { background: var(--surface); border-color: var(--bord-fort); }

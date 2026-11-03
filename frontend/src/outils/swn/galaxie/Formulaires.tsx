@@ -2,7 +2,7 @@ import { Check, X } from 'lucide-react';
 import { useState, type FormEvent, type ReactNode } from 'react';
 
 import { appeler, useConnexionPerdue } from '../../../api';
-import { Bouton, Champ, Interrupteur } from '../../../ui';
+import { Bouton, Champ, Interrupteur, Segments } from '../../../ui';
 import { cases, distanceHex } from './geo';
 import {
   CONFLIT, COULEURS, couleurServeur, ECHEC_ECRITURE, entierAffiche, erreurNom, lireEchec, TAILLES_NOMS, type Echec,
@@ -106,13 +106,9 @@ export function FormSysteme({ base, mode, q, r, brouillon, version, cle, nbRoute
         <fieldset disabled={e.enCours} className="gx-gele">
           <Champ etiquette="Nom" value={v.nom} erreur={erreurNomMsg ?? champEchec('nom')} maxLength={200}
             onChange={(ev: { target: { value: string } }) => setV({ ...v, nom: ev.target.value })} />
-          <fieldset className="gx-segments">
-            <legend>Taille</legend>
-            {TAILLES_NOMS.map((t) => (
-              <Bouton key={t.nom} variante={v.taille === t.nom ? 'principal' : 'neutre'} aria-pressed={v.taille === t.nom}
-                onClick={() => setV({ ...v, taille: t.nom })}>{t.libelle}</Bouton>
-            ))}
-          </fieldset>
+          <Segments legende="Taille" valeur={v.taille}
+            options={TAILLES_NOMS.map((t) => ({ valeur: t.nom, libelle: t.libelle }))}
+            onChange={(taille) => setV({ ...v, taille })} />
           <SelecteurCouleur valeur={v.couleur} onChange={(couleur) => setV({ ...v, couleur })} />
           <Champ zone etiquette="Notes" value={v.notes}
             erreur={[...v.notes].length > 2000 ? '2 000 caractères au plus.' : champEchec('notes')}
