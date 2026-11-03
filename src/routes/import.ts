@@ -11,7 +11,8 @@ import { cloreLot, lireLot, MAX_RAPPORT, ouvrirLot } from '../services/lots.js';
 import {
   appliquerCatalogueParJeton, apercuCatalogueParJeton, niveauDeRequete,
 } from '../services/import-catalogue.js';
-import { importerGalaxieParJeton, listerGalaxiesImport } from '../services/swn/import-galaxie.js';
+import { importerGalaxieParJeton } from '../services/swn/import-galaxie-lot.js';
+import { listerGalaxiesImport } from '../services/swn/import-galaxie.js';
 import { OUTIL_GALAXIE } from '../services/swn/galaxies.js';
 import { lireContexteImport } from '../services/import.js';
 import { importerCampagne, importerScenario } from '../services/import-suivi.js';
