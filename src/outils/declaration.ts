@@ -39,10 +39,17 @@ export interface StockageCatalogue {
   retraits(db: Db, universId: number): { nature: string; cle: string }[];
   poserRetrait(db: Db, universId: number, nature: string, cle: string, retire: boolean): void;
 }
+/** What a nature may check beyond its own schema: whether another element is known at the import's level (V-10). */
+export interface ContexteVerification { existe(nature: string, cle: string): boolean }
 export interface DeclarationCatalogue {
   natures: { nom: string; libelle: string; libellePluriel: string;
     schema: z.ZodObject; resume(donnees: Record<string, unknown>): string }[];
   stockage: StockageCatalogue;
+  /**
+   * Cross-element check of a valid element, run after its schema; natures are read in declared order, so an element may
+   * rely on the valid ones of the same file declared before it. A refusal gives the field and the reason.
+   */
+  verifier?(nature: string, donnees: Record<string, unknown>, ctx: ContexteVerification): { champ: string; raison: string } | null;
 }
 interface BaseOutil {
   cle: string;
@@ -145,6 +152,7 @@ const declaration = z.strictObject({
         resume: fonction })).min(1),
       stockage: z.strictObject({ lister: fonction, lirePar: fonction, ecrire: fonction,
         poserMasque: fonction, retraits: fonction, poserRetrait: fonction }),
+      verifier: fonction.optional(),
     }).optional(),
     reglages, outilsAssistant: fonction.optional(), cartes: fonction.optional(),
     sections: z.array(z.strictObject({

@@ -1,6 +1,7 @@
 import { cartesGalaxies } from '../../services/swn/galaxies.js';
+import { catalogueVaisseaux } from '../../services/swn/catalogue-vaisseaux.js';
 import { outilTrajet } from './assistant.js';
-import type { DeclarationCarte, DeclarationModule } from '../declaration.js';
+import type { DeclarationCarte, DeclarationGenerateur, DeclarationModule } from '../declaration.js';
 
 export const swnGalaxie: DeclarationCarte = {
   cle: 'swn/galaxie', libelle: 'Galaxie', description: 'La carte hexagonale de la galaxie, systèmes, routes et territoires.',
@@ -11,6 +12,23 @@ export const swnGalaxie: DeclarationCarte = {
   outilsAssistant: outilTrajet,
 };
 
+/** The ship designer (V-1): the sections are declared here; the designs and their text come with `conceptions`. */
+export const swnVaisseaux: DeclarationGenerateur = {
+  cle: 'swn/vaisseaux', libelle: 'Concepteur de vaisseaux', description: 'Conçoit un vaisseau sur le catalogue de coques et d\'équipements.',
+  type: 'generateur', portee: 'tous', dependances: [],
+  visibiliteParDefaut: { mj: true, joueur: true },
+  usages: [{ nom: 'concevoir', mjSeul: false }, { nom: 'creer', mjSeul: true }],
+  reglages: {},
+  catalogue: catalogueVaisseaux,
+  ecran: { libelle: 'Concepteur de vaisseaux', icone: 'Rocket' },
+  sections: [{
+    type: 'caracteristiques', libelle: 'Caractéristiques', usage: 'concevoir', recalcul: 'geste', composant: true,
+    versionSource: () => '0',
+    // No product yet: `kanevas-outils-vaisseaux-conceptions` gives the section its text.
+    produire: () => ({ contenu: '', sourceVersion: '0' }),
+  }],
+};
+
 /** The module `swn` applies to every game system: `systemes_jeu` has no key (G-1). */
 export const swn: DeclarationModule = {
   nom: 'swn', libelle: 'Stars Without Number',
@@ -18,7 +36,7 @@ export const swn: DeclarationModule = {
     portee_saut: { libelle: 'Portée de saut', aide: 'Cases par niveau de moteur : la portée est p × (moteur + 1).',
       niveau: 'systeme+univers', forme: { type: 'nombre', min: 1, max: 20, entier: true }, defaut: 5 },
   },
-  outils: [swnGalaxie],
+  outils: [swnGalaxie, swnVaisseaux],
   // Loaded at registration of the routes: a static import closes a cycle
   // (registre → swn → routes → routes/fiches → fiches → types-fiche → droits → outils → registre).
   routes: async (app, garde) => (await import('./routes.js')).routesGalaxie(app, garde),
