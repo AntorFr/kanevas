@@ -302,7 +302,7 @@ function semerVaisseauxEssai(db: Db, id: { antor: number; lea: number }, systeme
 
   const etoile = fiche('Étoile du soir');
   const vue = creerConception(db, antor, universId, { ficheId: etoile, coque: 'eclaireur', auteurId: id.lea });
-  enregistrerConception(db, lea, universId, etoile, { coque: 'eclaireur', version: vue.version, choix: [ligne('moteurs', 'moteur-1')] });
+  enregistrerConception(db, lea, universId, etoile, { coque: 'eclaireur', version: vue.version, choix: [ligne('moteurs', 'moteur-1'), ligne('armes', 'laser')] });
   const section = lireFiche(db, antor, universId, etoile).sections.find((s) => s.titre === 'Caractéristiques')!;
   changerAudience(db, id.antor, universId, etoile, section.id, { joueursLisent: true });
 
