@@ -18,6 +18,8 @@ export interface CarteOutil {
   outil: { module: string; outil: string };
   adresse: string;
   visible?: boolean;
+  /** Token of the map's own row, to change its visibility (GM only). */
+  version?: number;
 }
 
 export const estCarteOutil = (c: Carte | CarteOutil): c is CarteOutil => 'type' in c && c.type === 'outil';
