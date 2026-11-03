@@ -200,7 +200,7 @@ export function listerCartesOutil(db: Db, acteur: Acteur, universId: number, cle
   const role = roleDe(db, universId, acteur.compteId)!;
   return outil.cartes(db, acteur, universId).filter((c) => vueMJ(role, acteur) || c.visible);
 }
-export interface CarteListee { module: string; outil: string; id: number; titre: string; visible: boolean }
+export interface CarteListee { module: string; outil: string; id: number; titre: string; visible: boolean; version?: number }
 /** Every map of every active module for E-10 (G-8): tools `accessible` to the actor only, a player gets the visible maps. */
 export function listerCartesOutils(db: Db, acteur: Acteur, universId: number): CarteListee[] {
   const role = roleDe(db, universId, acteur.compteId);
@@ -210,7 +210,7 @@ export function listerCartesOutils(db: Db, acteur: Acteur, universId: number): C
     .filter(({ o }) => o.type === 'carte' && accessible(db, acteur, universId, o.cle))
     .flatMap(({ m, o }) => (o as DeclarationCarte).cartes(db, acteur, universId)
       .filter((c) => mj || c.visible)
-      .map((c) => ({ module: m.nom, outil: o.cle.slice(m.nom.length + 1), id: c.id, titre: c.titre, visible: c.visible })));
+      .map((c) => ({ module: m.nom, outil: o.cle.slice(m.nom.length + 1), id: c.id, titre: c.titre, visible: c.visible, version: c.version })));
 }
 export interface FormeCreable { module: string; outil: string; libelle: string }
 /** The « Nouvelle carte » forms (T-6): tools `accessible` that declare `creation`, for a GM outside Player mode. */

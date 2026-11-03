@@ -63,7 +63,8 @@ interface BaseOutil {
   outilsAssistant?(ctx: ContexteOutil): Outil[];
   ecran: { libelle: string; icone: string };
 }
-export interface CarteOutil { id: number; titre: string; visible: boolean }
+/** `version` is the optimistic-concurrency token of the map's own row, when its tool can change its visibility (E-10). */
+export interface CarteOutil { id: number; titre: string; visible: boolean; version?: number }
 /** Maps recompute on read after a setting changes (AD-128). */
 export interface DeclarationCarte extends BaseOutil {
   type: 'carte';
