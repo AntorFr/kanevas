@@ -9,6 +9,9 @@ function versionSource({ db, universId }: ContexteSection): string {
 }
 const marge = (ctx: ContexteSection) => resoudreOutil(ctx.db, ctx.universId, 'essai/g').reglages.marge!.valeur;
 
+/** Calls of the `apresEcriture` hook of the `caracteristiques` section, for the contract tests (V-4). */
+export const appelsApresEcriture: { sectionId: number | null; contenu: string; sourceVersion: string; charge?: unknown }[] = [];
+
 export const essaiG: DeclarationGenerateur = {
   catalogue: catalogueEssai,
   cle: 'essai/g', libelle: 'Essai G', description: 'Un générateur pour éprouver la conception.',
@@ -20,7 +23,8 @@ export const essaiG: DeclarationGenerateur = {
   sections: [
     { type: 'caracteristiques', libelle: 'Caractéristiques', usage: 'concevoir', recalcul: 'geste', composant: true,
       versionSource,
-      produire: (ctx) => ({ contenu: `Marge d'essai : ${marge(ctx)} %`, sourceVersion: versionSource(ctx) }) },
+      produire: (ctx) => ({ contenu: `Marge d'essai : ${marge(ctx)} %`, sourceVersion: versionSource(ctx), charge: { marge: marge(ctx) } }),
+      apresEcriture: (ctx, ecrit) => { appelsApresEcriture.push({ sectionId: ctx.sectionId, ...ecrit }); } },
     { type: 'notes', libelle: 'Notes', usage: 'concevoir', recalcul: 'proposition',
       versionSource,
       produire: (ctx) => ({ contenu: `Notes — marge ${marge(ctx)} %`, sourceVersion: versionSource(ctx) }) },

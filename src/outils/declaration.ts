@@ -70,6 +70,8 @@ export interface ContexteSection {
   ficheId: number;
   sectionId: number | null;
 }
+/** What was just written in a managed section. */
+export interface EcritSection { contenu: string; sourceVersion: string; charge?: unknown }
 /** A section a generator writes and locks (AD-122, AD-127): the section holds the text version only. */
 export interface SectionGeree {
   /** Third part of `gere_par` (`module/outil/type`). */
@@ -83,7 +85,12 @@ export interface SectionGeree {
   /** The current version of the sources (catalogue, settings): cheap, read-only. */
   versionSource(ctx: ContexteSection): string;
   /** The text version and the source version it was made with; reads what the actor may read, never writes. */
-  produire(ctx: ContexteSection): { contenu: string; sourceVersion: string };
+  produire(ctx: ContexteSection): { contenu: string; sourceVersion: string; charge?: unknown };
+  /**
+   * Runs in the transaction of every write of the section, after it (S-3, V-4); an error rolls the write back.
+   * `charge` is the opaque value `produire` returned, when the write comes from it.
+   */
+  apresEcriture?(ctx: ContexteSection, ecrit: EcritSection): void;
 }
 /** Generators record settings versions to mark designs stale (AD-128). */
 export interface DeclarationGenerateur extends BaseOutil { type: 'generateur'; sections?: SectionGeree[] }
@@ -142,7 +149,7 @@ const declaration = z.strictObject({
     reglages, outilsAssistant: fonction.optional(), cartes: fonction.optional(),
     sections: z.array(z.strictObject({
       type: z.string().regex(/^[a-z][a-z0-9-]*$/), libelle: z.string().min(1), usage: z.string().min(1),
-      recalcul: z.enum(['geste', 'proposition']), composant: z.boolean().optional(), versionSource: fonction, produire: fonction,
+      recalcul: z.enum(['geste', 'proposition']), composant: z.boolean().optional(), versionSource: fonction, produire: fonction, apresEcriture: fonction.optional(),
     })).optional(),
     ecran: z.strictObject({ libelle: z.string().min(1), icone: z.string().min(1) }),
   })), routes: fonction.optional(),

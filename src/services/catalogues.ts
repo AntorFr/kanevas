@@ -192,8 +192,11 @@ function resolve(db: Db, universId: number, cle: string, nature?: string): Eleme
   return [...rows.values()];
 }
 /** Module computations receive only effective entries; withdrawals are management metadata. */
-export function resoudreElements(db: Db, universId: number, outil: string, nature: string): ElementResolu[] {
-  return resolve(db, universId, outil, nature).filter((r) => r.origine !== 'retire');
+export function resoudreElements(db: Db, universId: number, outil: string, nature: string,
+  options: { inclureMasques?: boolean } = {}): ElementResolu[] {
+  // V-3: `inclureMasques: true` names the hidden elements a design already carries; `false` drops them. Left out, the
+  // historical K-2 reading (masked or not) stays, which the catalogue tests pin. A withdrawn element never comes back.
+  return resolve(db, universId, outil, nature).filter((r) => r.origine !== 'retire' && (options.inclureMasques !== false || !r.masque));
 }
 function page(catalogue: DeclarationCatalogue, rows: ElementResolu[], mj: boolean, options: OptionsCatalogue): PageCatalogue {
   let readable = rows.filter((r) => mj || (!r.masque && r.origine !== 'retire'));
@@ -226,8 +229,9 @@ export function lireCatalogueGestion(db: Db, acteur: Acteur, universId: number, 
   return page(catalogue, resolve(db, universId, outil, options.nature), true, options);
 }
 /** Single-item counterpart of resoudreElements, for computations already guarded by tool usage. */
-export function lireElement(db: Db, universId: number, outil: string, nature: string, cle: string): ElementResolu {
-  const element = resoudreElements(db, universId, outil, nature).find((r) => r.cle === cle);
+export function lireElement(db: Db, universId: number, outil: string, nature: string, cle: string,
+  options: { inclureMasques?: boolean } = {}): ElementResolu {
+  const element = resoudreElements(db, universId, outil, nature, options).find((r) => r.cle === cle);
   if (!element) throw introuvable();
   return element;
 }
