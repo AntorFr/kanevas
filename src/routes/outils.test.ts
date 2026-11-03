@@ -116,7 +116,7 @@ test('GET univers/outils : MJ seulement, tous les outils même désactivés, deu
     assert.equal(r.statusCode, 200);
     const v = r.json();
     assert.equal(v.ecriture, true);
-    assert.deepEqual(v.outils.map((o: any) => o.cle), ['essai/a', 'essai/b', 'essai/g', 'swn/galaxie']);
+    assert.deepEqual(v.outils.map((o: any) => o.cle), ['essai/a', 'essai/b', 'essai/g', 'swn/galaxie', 'swn/vaisseaux']);
     const a = v.outils[0];
     assert.equal(a.systeme.active, false);
     assert.equal(a.systeme.versionReglages, 1);
@@ -141,7 +141,7 @@ test('GET systemes/outils : responsable, ecriture false pour un MJ non responsab
   assert.equal(m.statusCode, 200);
   assert.equal(m.json().ecriture, false);
   assert.deepEqual(m.json().responsable, { id: compteId(w.app, 'antor'), nom: 'antor', vousEtes: false });
-  assert.equal(m.json().outils.length, 4);
+  assert.equal(m.json().outils.length, 5);
   for (const h of [w.lea, w.teo]) assert.equal((await appel(w.app, h, 'GET', `/api/systemes/${w.S}/outils`)).statusCode, 404);
   assert.equal((await appel(w.app, w.antor, 'GET', `/api/systemes/${w.S}/outils?mode=joueur`)).statusCode, 404);
   assert.equal((await appel(w.app, w.antor, 'GET', '/api/systemes/999999/outils')).statusCode, 404);

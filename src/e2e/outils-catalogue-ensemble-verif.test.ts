@@ -439,7 +439,7 @@ describe('B-65 jeton à portée d’outil', () => {
     }
     const offerts = await m.antor('GET', `/api/univers/${m.E}/jetons/outils`);
     assert.equal(offerts.status, 200);
-    assert.deepEqual((offerts.json as Any[]).map((o) => o.cle), ['essai/g']);
+    assert.deepEqual((offerts.json as Any[]).map((o) => o.cle), ['essai/g', 'swn/vaisseaux']);
     const kanka = (await m.antor('GET', '/api/univers')).json.find((u: Any) => u.nom === 'Essai Kanka').id;
     assert.deepEqual((await m.antor('GET', `/api/univers/${kanka}/jetons/outils`)).json, [], 'no system, nothing offered');
   });
