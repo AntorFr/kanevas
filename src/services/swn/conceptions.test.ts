@@ -288,3 +288,17 @@ test('outil désactivé : tout est introuvable', () => {
   assert.equal(err(() => calc.calculerDepuisChoix(db, antor, u, { coque: 'fregate', choix: [] })).code, 'introuvable');
 });
 
+
+test("Étoile du soir : un réenregistrement par Léa garde la section lisible des joueurs et le texte à jour", () => {
+  const { db, u, lea, roxane, etoile } = monde();
+  const avant = section(db, etoile);
+  assert.equal(avant.joueurs_lisent, 1);
+  const r0 = k.lireConception(db, roxane, u, etoile);
+  const v = k.enregistrerConception(db, lea, u, etoile, { coque: 'eclaireur', choix: [ligne('moteurs', 'moteur-1'), ligne('armes', 'laser')], version: r0.version });
+  assert.equal(v.version, r0.version + 1);
+  const apres = section(db, etoile);
+  assert.deepEqual([apres.joueurs_lisent, apres.auteur_id, apres.gere_par], [1, avant.auteur_id, avant.gere_par]);
+  const r1 = k.lireConception(db, roxane, u, etoile);
+  assert.equal(r1.version, r0.version + 1);
+  assert.equal(r1.resultat.prix, 50000);
+});
