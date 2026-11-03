@@ -2,7 +2,7 @@ import type { Db } from '../../db/db.js';
 import { randomBytes } from 'node:crypto';
 import { roleDe, vueMJ } from '../droits.js';
 import { ErreurService, introuvable, refuse } from '../erreurs.js';
-import { retirerSection } from '../sections.js';
+import { retirerSectionGeree } from '../retrait-section.js';
 import { accessible, resoudreOutil } from '../outils.js';
 import { env } from '../../config/env.js';
 import type { Acteur } from '../types.js';
@@ -229,7 +229,7 @@ export function supprimerGalaxie(db: Db, acteur: Acteur | number, universId: num
         'contenu_change');
     }
     // The managed document section goes with the galaxy; the sheet stays (T-6, AD-135).
-    if (g.fiche_id !== null && g.section_id !== null) retirerSection(db, a.compteId, universId, g.fiche_id, g.section_id);
+    if (g.fiche_id !== null && g.section_id !== null) retirerSectionGeree(db, a.compteId, universId, g.fiche_id, g.section_id);
     db.prepare('DELETE FROM swn_galaxies WHERE id = ?').run(g.id);
   })();
 }

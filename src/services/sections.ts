@@ -14,6 +14,7 @@ import { preparerContenu, remplacerLiens, resoudreLiens, sectionsEnAttenteDe } f
 import { recalculerFichiersSection } from './fichiers.js';
 import { contenuPublic, extraireLiens, reecrireLiens } from './markdown.js';
 import type { Acteur, Role, SectionRow, SectionVue } from './types.js';
+import { brancherRetrait } from './retrait-section.js';
 
 /** Ceiling of a section's content, in `String.length` units (AD-91); `/api/moi` hands it to the screen. */
 export const MAX_CONTENU_SECTION = 100000;
@@ -345,3 +346,5 @@ export function ecrireContenu(
     return vueSection(db, universId, role, chargerSection(db, ficheId, sectionId), { compteId });
   })();
 }
+
+brancherRetrait(retirerSection);
