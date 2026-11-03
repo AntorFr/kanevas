@@ -1,5 +1,6 @@
 import { cartesGalaxies } from '../../services/swn/galaxies.js';
 import { catalogueVaisseaux } from '../../services/swn/catalogue-vaisseaux.js';
+import { apresEcriture, produire, versionSource } from '../../services/swn/conceptions.js';
 import { outilTrajet } from './assistant.js';
 import type { DeclarationCarte, DeclarationGenerateur, DeclarationModule } from '../declaration.js';
 
@@ -12,7 +13,7 @@ export const swnGalaxie: DeclarationCarte = {
   outilsAssistant: outilTrajet,
 };
 
-/** The ship designer (V-1): the sections are declared here; the designs and their text come with `conceptions`. */
+/** The ship designer (V-1): its section « Caractéristiques » is written by `services/swn/conceptions.ts` (V-4, V-5). */
 export const swnVaisseaux: DeclarationGenerateur = {
   cle: 'swn/vaisseaux', libelle: 'Concepteur de vaisseaux', description: 'Conçoit un vaisseau sur le catalogue de coques et d\'équipements.',
   type: 'generateur', portee: 'tous', dependances: [],
@@ -23,9 +24,10 @@ export const swnVaisseaux: DeclarationGenerateur = {
   ecran: { libelle: 'Concepteur de vaisseaux', icone: 'Rocket' },
   sections: [{
     type: 'caracteristiques', libelle: 'Caractéristiques', usage: 'concevoir', recalcul: 'geste', composant: true,
-    versionSource: () => '0',
-    // No product yet: `kanevas-outils-vaisseaux-conceptions` gives the section its text.
-    produire: () => ({ contenu: '', sourceVersion: '0' }),
+    // Lazy: the services import the registry, which imports this file (a cycle).
+    versionSource: (ctx) => versionSource(ctx),
+    produire: (ctx) => produire(ctx),
+    apresEcriture: (ctx, ecrit) => apresEcriture(ctx, ecrit),
   }],
 };
 
