@@ -7,7 +7,7 @@ import {
   dessinerZone, modifierRoute, modifierSysteme, modifierZone, placerSysteme, retirerRoute, retirerSysteme, retirerZone, tracerRoute,
 } from '../../services/swn/ecriture-carte.js';
 import {
-  changerGraine, contenuGalaxie, creerGalaxie, exigerEcritureGalaxie, lireGalaxie, renommerGalaxie, rendreVisibleGalaxie, supprimerGalaxie,
+  changerGraine, contenuGalaxie, creerGalaxie, exigerEcritureGalaxie, lireGalaxie, lireGraine, renommerGalaxie, rendreVisibleGalaxie, supprimerGalaxie,
 } from '../../services/swn/galaxies.js';
 import { lireBlocs, lireRoute, lireSysteme, lireZone, rechercherSystemes } from '../../services/swn/lecture-carte.js';
 import { calculerTrajet } from '../../services/swn/trajet.js';
@@ -119,6 +119,11 @@ export function routesGalaxie(app: FastifyInstance, garde: (cle: string) => preH
     const b = corps(request);
     changerGraine(app.db, a, i.univers, i.galaxie, { graine: b.graine, version: b.version, confirme: b.confirme });
     return { statut: 200, corps: lireGalaxie(app.db, a, i.univers, i.galaxie) };
+  }));
+
+  app.get(`${BASE}/graine`, opts, ecrire((request, a) => {
+    const i = ids(request);
+    return { statut: 200, corps: lireGraine(app.db, a, i.univers, i.galaxie) };
   }));
 
   app.get(`${BASE}/contenu`, opts, ecrire((request, a) => {

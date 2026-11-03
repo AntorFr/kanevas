@@ -105,13 +105,13 @@ export function lireGalaxie(db: Db, acteur: Acteur, universId: number, galaxieId
 
 /** The galaxies of the universe for the map contract (E-10): a player gets the visible ones only. */
 export function cartesGalaxies(db: Db, acteur: Acteur, universId: number):
-  { id: number; titre: string; visible: boolean }[] {
+  { id: number; titre: string; visible: boolean; version: number }[] {
   const niveau = niveauLecture(db, acteur, universId);
   if (!niveau) return [];
-  const lignes = db.prepare('SELECT id, titre, visible FROM swn_galaxies WHERE univers_id = ? ORDER BY titre COLLATE NOCASE, id')
-    .all(universId) as { id: number; titre: string; visible: number }[];
+  const lignes = db.prepare('SELECT id, titre, visible, version FROM swn_galaxies WHERE univers_id = ? ORDER BY titre COLLATE NOCASE, id')
+    .all(universId) as { id: number; titre: string; visible: number; version: number }[];
   return lignes.filter((l) => niveau === 'mj' || l.visible === 1)
-    .map((l) => ({ id: l.id, titre: l.titre, visible: l.visible === 1 }));
+    .map((l) => ({ id: l.id, titre: l.titre, visible: l.visible === 1, version: l.version }));
 }
 
 const acteurDe = (a: Acteur | number): Acteur => typeof a === 'number' ? { compteId: a } : a;
@@ -194,6 +194,11 @@ export function changerGraine(db: Db, acteur: Acteur | number, universId: number
     if (v.length < 1 || v.length > 64) throw invalideChamp('graine', 'La graine : de 1 à 64 caractères.');
     return modifier(db, g, versionValide(version), 'graine = ?', [v]);
   })();
+}
+
+/** The seed, read by the GM's « Graine… » dialog (it is not part of the galaxy's view). */
+export function lireGraine(db: Db, acteur: Acteur | number, universId: number, galaxieId: number): { graine: string } {
+  return { graine: exigerEcritureGalaxie(db, acteur, universId, galaxieId).graine };
 }
 
 export interface DecomptesGalaxie { systemes: number; routes: number; zones: number }
