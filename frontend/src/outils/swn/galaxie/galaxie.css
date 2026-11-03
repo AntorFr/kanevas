@@ -128,3 +128,4 @@
 
 .gx-gele { border: 0; padding: 0; margin: 0; min-width: 0; }
 .gx-sr { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+.gx-form .champ input:not([type=radio]), .gx-form .champ select, [role=dialog] .champ input, [role=dialog] .champ select { min-height: 44px; box-sizing: border-box; }
