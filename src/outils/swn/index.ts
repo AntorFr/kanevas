@@ -1,14 +1,19 @@
 import { cartesGalaxies, creerGalaxie, rendreVisibleGalaxie } from '../../services/swn/galaxies.js';
+import { produireDocument, versionSourceDocument } from '../../services/swn/document-source.js';
 import { outilTrajet } from './assistant.js';
 import type { DeclarationCarte, DeclarationModule } from '../declaration.js';
 
 export const swnGalaxie: DeclarationCarte = {
   cle: 'swn/galaxie', libelle: 'Galaxie', description: 'La carte hexagonale de la galaxie, systèmes, routes et territoires.',
   type: 'carte', portee: 'tous', dependances: [],
-  visibiliteParDefaut: { mj: true, joueur: true }, usages: [], reglages: {},
+  visibiliteParDefaut: { mj: true, joueur: true }, usages: [{ nom: 'maintenir', mjSeul: true }], reglages: {},
   ecran: { libelle: 'Galaxie', icone: 'Map' },
   cartes: (db, acteur, universId) => cartesGalaxies(db, acteur, universId),
   outilsAssistant: outilTrajet,
+  sections: [{
+    type: 'document_mj', libelle: 'Document MJ', usage: 'maintenir', recalcul: 'proposition',
+    versionSource: versionSourceDocument, produire: produireDocument,
+  }],
   creation: {
     libelle: 'Carte de la galaxie',
     creer: (db, acteur, universId, titre) => creerGalaxie(db, acteur, universId, { titre }),

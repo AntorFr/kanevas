@@ -63,6 +63,8 @@ export interface DeclarationCarte extends BaseOutil {
   type: 'carte';
   cartes(db: Db, acteur: Acteur, universId: number): CarteOutil[];
   creation?: CreationCarte;
+  /** A map may carry managed sections too (T-7). */
+  sections?: SectionGeree[];
 }
 /** How E-10 creates and shows a map of this tool without the core knowing the module (T-6). */
 export interface CreationCarte {
@@ -149,7 +151,7 @@ const declaration = z.strictObject({
     reglages, outilsAssistant: fonction.optional(), cartes: fonction.optional(),
     creation: z.strictObject({ libelle: z.string().min(1), creer: fonction, rendreVisible: fonction }).optional(),
     sections: z.array(z.strictObject({
-      type: z.string().regex(/^[a-z][a-z0-9-]*$/), libelle: z.string().min(1), usage: z.string().min(1),
+      type: z.string().regex(/^[a-z][a-z0-9_-]*$/), libelle: z.string().min(1), usage: z.string().min(1),
       recalcul: z.enum(['geste', 'proposition']), composant: z.boolean().optional(), versionSource: fonction, produire: fonction,
     })).optional(),
     ecran: z.strictObject({ libelle: z.string().min(1), icone: z.string().min(1) }),
@@ -179,7 +181,7 @@ export function verifierDeclaration(module: DeclarationModule): void {
     }
     const sections = (outil as { sections?: SectionGeree[] }).sections;
     if (sections !== undefined) {
-      if (outil.type !== 'generateur') throw new Error('Only a generator declares sections.');
+      if (outil.type !== 'generateur' && outil.type !== 'carte') throw new Error('Only a generator or a map declares sections.');
       if (new Set(sections.map((s) => s.type)).size !== sections.length) {
         throw new Error(`Duplicate section type in ${outil.cle}.`);
       }

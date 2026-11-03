@@ -6,7 +6,8 @@ import { distanceHex } from '../../outils/swn/regles/hex.js';
 import { ErreurService } from '../erreurs.js';
 import type { Acteur } from '../types.js';
 import { lireBlocsGeneres } from './cache-blocs.js';
-import { exigerEcritureGalaxie, type LigneGalaxie, type LigneRoute, type LigneSysteme, type LigneZone } from './galaxies.js';
+import { surSourceModifiee } from '../crochets-outils.js';
+import { exigerEcritureGalaxie, OUTIL_GALAXIE, type LigneGalaxie, type LigneRoute, type LigneSysteme, type LigneZone } from './galaxies.js';
 
 /**
  * Writes of the elements of a galaxy (T-2 to T-5): systems, routes, zones. Every write goes through
@@ -23,12 +24,9 @@ const acteurDe = (a: Acteur | number): Acteur => typeof a === 'number' ? { compt
 const invalideChamp = (champ: string, message: string) => new ErreurService('invalide', message, undefined, champ);
 const PERIME = (quoi: string) => new ErreurService('conflit', `Ce ${quoi} a changé depuis que vous l'avez ouvert.`, 'donnee_modifiee');
 
-/**
- * Called after each write that changes the document's source. The document task fills it
- * (`signalerSourceModifiee(db, compteId, universId, 'swn/galaxie')`).
- */
-export function apresEcriture(_db: Db, _compteId: number, _universId: number): void {
-  // Filled by the document task.
+/** Called after each write that changes the document's source: the writing GM gets a recalculation proposal (T-7). */
+export function apresEcriture(db: Db, compteId: number, universId: number): void {
+  surSourceModifiee.appeler(db, compteId, universId, OUTIL_GALAXIE);
 }
 
 function versionValide(version: unknown): number {

@@ -15,7 +15,7 @@ import type { Acteur, SectionRow } from './types.js';
 export function declarationSection(cle: string, type: string): SectionGeree | null {
   try {
     const d = declarationOutil(cle);
-    return d.type === 'generateur' ? (d.sections ?? []).find((s) => s.type === type) ?? null : null;
+    return d.type === 'aide' ? null : (d.sections ?? []).find((s) => s.type === type) ?? null;
   } catch (e) {
     if (e instanceof ErreurService && e.code === 'introuvable') return null;
     throw e;
