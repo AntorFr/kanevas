@@ -144,7 +144,14 @@ describe('E-22 concepteur de vaisseaux et section « Caractéristiques » de E-9
     await page.screenshot({ path: `${SHOTS}/7b-390-viewport.png` });
     const br = await page.getByRole('complementary', { name: 'Résultats' }).boundingBox();
     const bs2 = await sel.boundingBox();
-    assert.ok(br.y >= 0 && br.y + br.height <= 780, 'résultats dans la fenêtre');
+    // arbitration 22:44: under 760 px the panel is in the flow (not sticky, no height cap, no inner scroll)
+    const pos = await page.getByRole('complementary', { name: 'Résultats' }).evaluate((e: Element) => {
+      const d = e.querySelector('.vx-defile') as HTMLElement | null;
+      return { position: getComputedStyle(e).position, maxHeight: getComputedStyle(e).maxHeight, interne: d ? d.scrollHeight > d.clientHeight + 1 : false };
+    });
+    assert.notEqual(pos.position, 'sticky', 'panneau non collant à 390 px');
+    assert.equal(pos.maxHeight, 'none', 'panneau non plafonné à 390 px');
+    assert.equal(pos.interne, false, 'aucune zone interne qui défile');
     assert.ok(br.y + br.height <= bs2.y + 2, 'résultats au-dessus du catalogue : ' + JSON.stringify([br, bs2]));
     assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= 391), 'pas de débordement horizontal');
     await ctx.close();

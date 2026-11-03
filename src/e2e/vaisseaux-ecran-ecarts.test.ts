@@ -47,6 +47,10 @@ describe('E-22 à 390 px, alerte bloquante', { skip: skipBrowser }, () => {
     await p.getByText('Puissance insuffisante : −2').first().waitFor();
     await p.getByText('Enregistrement refusé : Puissance insuffisante (−2).').waitFor();
     await p.screenshot({ path: '/tmp/shots/ecarts-390-alerte.png' });
+    // from 390 px the panel is whole in the flow (arbitration 22:44): the blocking alert, then the save row, are reached by scrolling the page
+    await p.getByText('Bloquante').first().scrollIntoViewIfNeeded();
+    assert.equal(await dansVue(p.getByText('Bloquante').first()), true, 'alerte Bloquante visible');
+    await p.getByRole('button', { name: 'Enregistrer' }).scrollIntoViewIfNeeded();
     assert.equal(await dansVue(p.getByRole('button', { name: 'Enregistrer' })), true, 'Enregistrer in view');
     assert.equal(await dansVue(p.getByRole('button', { name: 'Annuler' })), true, 'Annuler in view');
     assert.equal(await dansVue(p.getByText('Enregistrement refusé : Puissance insuffisante (−2).')), true, 'motive in view');
@@ -86,22 +90,38 @@ describe('E-22 lignes de choix', { skip: skipBrowser }, () => {
 });
 
 describe('E-22 / E-9 : le haut du panneau de résultats et la largeur du tableau', { skip: skipBrowser }, () => {
-  it('à 390 px, en défilant, le titre « Résultats » et l’alerte restent visibles sous les barres du cadre', async () => {
+  it('à 390 px le panneau « Résultats » est entier dans le flux : ni collant, ni plafonné, ni zone interne qui défile, au-dessus du catalogue', async () => {
     const { E, orak } = await ids();
     const p = await page('lea', `/univers/${E}/outils/swn/vaisseaux?fiche=${orak}`, 390);
     await p.getByText('Résultats enregistrés').waitFor();
     await p.getByRole('button', { name: "Augmenter la quantité : Lance d'essai" }).click();
     await p.getByText('Puissance insuffisante : −2').first().waitFor();
-    await p.mouse.move(195, 500);
-    await p.mouse.wheel(0, 600);
+    const m = await p.locator('.vx-resultats').evaluate((e: Element) => {
+      const d = e.querySelector('.vx-defile') as HTMLElement | null;
+      const r = e.getBoundingClientRect();
+      const choix = document.querySelector('.vx-choix')!.getBoundingClientRect();
+      return { position: getComputedStyle(e).position, maxHeight: getComputedStyle(e).maxHeight, interne: d ? d.scrollHeight - d.clientHeight : 0, bas: r.bottom + window.scrollY, hautChoix: choix.top + window.scrollY, sous: r.height >= e.scrollHeight - 1 };
+    });
+    assert.notEqual(m.position, 'sticky');
+    assert.equal(m.maxHeight, 'none');
+    assert.ok(m.interne <= 1, `aucune zone interne qui défile ${JSON.stringify(m)}`);
+    assert.ok(m.sous, 'panneau entier');
+    assert.ok(m.bas <= m.hautChoix + 2, `résultats au-dessus du catalogue ${JSON.stringify(m)}`);
+    // page scrolled: the panel leaves with the page (not pinned under the frame bars)
     await p.evaluate(() => window.scrollBy(0, 600));
-    await p.screenshot({ path: '/tmp/shots/ecarts-390-colle.png' });
-    const barres = await p.evaluate(() => Math.max(...[...document.querySelectorAll('.bandeau, .haute')].map((e) => e.getBoundingClientRect().bottom)));
-    const titre = p.locator('.vx-resultats h2').first();
-    const haut = await titre.evaluate((e: Element) => e.getBoundingClientRect().top);
-    assert.ok(haut >= barres - 0.5, `titre sous les barres (${haut} >= ${barres})`);
-    assert.equal(await dansVue(titre), true, 'titre « Résultats » non couvert');
-    assert.equal(await dansVue(p.getByText('Enregistrement refusé : Puissance insuffisante (−2).')), true, 'motif (alerte répétée sous le bouton) non couvert');
+    const haut = await p.locator('.vx-resultats').evaluate((e: Element) => e.getBoundingClientRect().top);
+    assert.ok(haut < 88 || (await p.evaluate(() => window.scrollY)) === 0, 'non collé sous les barres');
+    await p.locator('.vx-resultats').scrollIntoViewIfNeeded();
+    await p.getByText('Bloquante').first().scrollIntoViewIfNeeded();
+    assert.equal(await dansVue(p.getByText('Bloquante').first()), true, 'alerte Bloquante visible');
+    await p.screenshot({ path: '/tmp/shots/ecarts-390-flux.png' });
+  });
+
+  it('à 760 px et plus le panneau « Résultats » est collant sous les barres du cadre', async () => {
+    const { E, orak } = await ids();
+    const p = await page('lea', `/univers/${E}/outils/swn/vaisseaux?fiche=${orak}`, 1100);
+    await p.getByText('Résultats enregistrés').waitFor();
+    assert.equal(await p.locator('.vx-resultats').evaluate((e: Element) => getComputedStyle(e).position), 'sticky');
   });
 
   it('« Caractéristiques » tient dans la largeur de la fiche à 1440 px, bordure droite visible', async () => {
@@ -128,6 +148,10 @@ describe('E-22 / E-9 : le haut du panneau de résultats et la largeur du tableau
     await p.locator('[data-testid="composant-caracteristiques"] table').waitFor();
     const d = await p.evaluate(() => ({ page: document.documentElement.scrollWidth, vue: window.innerWidth }));
     assert.ok(d.page <= d.vue + 1, `la page ne défile pas horizontalement ${JSON.stringify(d)}`);
+    const sec = await p.locator('.vx-section').first().evaluate((e: Element) => ({ defile: e.scrollWidth > e.clientWidth + 1, fonds: getComputedStyle(e).backgroundImage.split('linear-gradient').length - 1, dernier: (e.querySelector('th:last-child') as HTMLElement).getBoundingClientRect().right > e.getBoundingClientRect().right }));
+    assert.ok(sec.defile, 'le cadre défile horizontalement');
+    assert.ok(sec.fonds >= 4, 'dégradés de bord (indice de défilement)');
+    assert.ok(sec.dernier, 'des colonnes restent cachées au départ');
     await p.screenshot({ path: '/tmp/shots/ecarts-e9-390.png' });
   });
 });
