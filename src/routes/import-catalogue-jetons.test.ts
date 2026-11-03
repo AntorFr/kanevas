@@ -219,7 +219,7 @@ test('routes de session : POST/GET jetons avec outils, jetons/outils, lots avec 
   assert.equal(bad.json().champ, 'outils');
   const p = await w.app.inject({ method: 'GET', url: `/api/univers/${w.E}/jetons/outils`, headers: h });
   assert.equal(p.statusCode, 200);
-  assert.deepEqual(p.json().map((o: any) => ({ cle: o.cle, libelle: o.libelle })), [{ cle: G, libelle: 'Essai G' }]);
+  assert.deepEqual(p.json().map((o: any) => ({ cle: o.cle, libelle: o.libelle })), [{ cle: G, libelle: 'Essai G' }, { cle: 'swn/galaxie', libelle: 'Galaxie' }]);
   assert.equal(typeof p.json()[0].module, 'string');
   const pk = await w.app.inject({ method: 'GET', url: `/api/univers/${w.K}/jetons/outils`, headers: h });
   assert.deepEqual(pk.json(), []);
@@ -256,5 +256,8 @@ test('jetons/outils : rôle (type) et libellé du module de chaque outil propos�
   const w = await monde();
   const p = await w.app.inject({ method: 'GET', url: `/api/univers/${w.E}/jetons/outils`, headers: w.antor });
   assert.equal(p.statusCode, 200);
-  assert.deepEqual(p.json(), [{ cle: G, libelle: 'Essai G', module: 'essai', libelleModule: "Module d'essai", type: 'generateur' }]);
+  assert.deepEqual(p.json(), [
+    { cle: G, libelle: 'Essai G', module: 'essai', libelleModule: "Module d'essai", type: 'generateur' },
+    { cle: 'swn/galaxie', libelle: 'Galaxie', module: 'swn', libelleModule: 'Stars Without Number', type: 'carte' },
+  ]);
 });
