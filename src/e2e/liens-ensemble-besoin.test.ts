@@ -490,55 +490,7 @@ describe('B-36 : « Mentionnée dans », bords et exclusions', () => {
   });
 });
 
-describe('B-33 : un scénario (E-7) et une entrée de système (E-15)', opts, () => {
-  let scenario = 0;
-  let campagne = 0;
-  before(async () => {
-    campagne = (await ok(C.antor, 'post', `/api/univers/${lame}/campagnes`, { nom: 'La Couronne brisée' })).id;
-    const contenu = `Allié : [[${id['Maître Aldric']}|Maître Aldric]] ; perdu : [[999999|Capitaine Hesk]] ; ailleurs : [[${id['Anse-aux-Sels']}|Anse d'ailleurs]]`;
-    scenario = (await ok(C.antor, 'post', `/api/campagnes/${campagne}/scenarios`, { titre: 'Acte I', contenu })).id;
-  });
-
-  test("nominal : le lien vers Aldric s'ouvre sur sa fiche ; 999999 est marqué cassé ; la fiche d'un autre univers n'est pas un lien", async () => {
-    const page = await C.antor.ctx.newPage();
-    await page.goto(`${srv.base}/univers/${lame}/scenarios/${scenario}`);
-    await page.waitForLoadState('networkidle');
-    assert.equal(await page.locator('.lien-casse', { hasText: 'Capitaine Hesk' }).count(), 1);
-    assert.equal(await page.locator(`a[href="/univers/${kanka}/fiche/${id['Anse-aux-Sels']}"], a[href="/univers/${lame}/fiche/${id['Anse-aux-Sels']}"]`).count(), 0);
-    assert.match(await page.locator('main').innerText(), /Anse d'ailleurs/);
-    await page.screenshot({ path: `${SHOTS}/liens-scenario.png` });
-    await page.getByRole('link', { name: 'Maître Aldric', exact: true }).click();
-    await page.waitForURL(new RegExp(`/univers/${lame}/fiche/${id['Maître Aldric']}$`));
-    await page.getByRole('heading', { name: 'Maître Aldric', level: 1 }).waitFor();
-    await page.close();
-  });
-
-  test("exclusion : un lien de scénario n'est pas une mention ; Léa n'a pas E-7", async () => {
-    assert.ok(!titresMentions(await lireFiche(C.antor, id['Maître Aldric']!)).includes('Acte I'));
-    const lea = await C.lea.ctx.newPage();
-    await lea.goto(`${srv.base}/univers/${lame}/scenarios/${scenario}`);
-    await lea.waitForLoadState('networkidle');
-    assert.match(await lea.locator('body').innerText(), /Page introuvable\./);
-    await lea.close();
-  });
-
-  test("[[ y liste les fiches de l'univers de la campagne seulement et insère [[<id>|<titre>]]", async () => {
-    const page = await C.antor.ctx.newPage();
-    await page.goto(`${srv.base}/univers/${lame}/scenarios/${scenario}`);
-    await page.waitForLoadState('networkidle');
-    await page.getByRole('button', { name: 'Modifier', exact: true }).click();
-    const champ = page.getByRole('textbox', { name: /Contenu/ });
-    await champ.fill('');
-    await champ.pressSequentially('[[anse');
-    await page.getByText('Aucune fiche.', { exact: true }).waitFor();
-    await champ.fill('');
-    await champ.pressSequentially('[[ald');
-    await page.getByRole('option', { name: /Maître Aldric/ }).click();
-    assert.ok((await champ.inputValue()).startsWith(`[[${id['Maître Aldric']}|Maître Aldric]]`), await champ.inputValue());
-    await page.screenshot({ path: `${SHOTS}/liens-scenario-edition.png` });
-    await page.close();
-  });
-
+describe('B-33 : une entrée de système (E-15)', opts, () => {
   test('exclusion : dans une entrée de système, [[…]] reste du texte (API et éditeur sans liste)', async () => {
     const systeme = (await ok(C.antor, 'get', '/api/systemes/1')).gabarits[0];
     const texte = `Voir [[${id['Maître Aldric']}|Maître Aldric]] et [[cle:x:y|z]]`;

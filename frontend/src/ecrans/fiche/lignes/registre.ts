@@ -2,6 +2,15 @@ import type { ComponentType } from 'react';
 
 import type { Fiche } from '../types';
 
+export interface PropsLigneTitre {
+  universId: string;
+  fiche: Fiche;
+  /** Only the GM outside player mode may edit the line. */
+  gestion: boolean;
+  /** Silent refetch after a successful write; the sections stay mounted. */
+  rafraichir: () => Promise<void>;
+}
+
 /**
  * A line under the title of E-9, for the sheets of one type (e.g. « Campagne : … » of a session
  * report). A slice adds one by dropping a file in `lignes/` whose default export is a `LigneTitre`;
@@ -10,7 +19,7 @@ import type { Fiche } from '../types';
 export interface LigneTitre {
   /** The sheet type it applies to (`fiches.type`). */
   type: string;
-  composant: ComponentType<{ universId: string; fiche: Fiche }>;
+  composant: ComponentType<PropsLigneTitre>;
 }
 
 const modules = import.meta.glob<{ default: LigneTitre }>('./*.tsx', { eager: true });

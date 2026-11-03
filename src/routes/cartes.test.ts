@@ -255,11 +255,11 @@ test('critère : liens du graphe = lecture filtrée pour chaque compte', async (
   await appel(m.app, m.antor, 'PATCH', `${m.cartes}/${g.id}`, { visible: true });
   const mj = (await appel(m.app, m.antor, 'GET', `${m.cartes}/${g.id}`)).json();
   assert.deepEqual(
-    mj.liens.map((l: { de: number; vers: number; type: string }) => [l.de, l.vers, l.type]).sort(),
+    mj.liens.map((l: { de: number; vers: number; libelle: string }) => [l.de, l.vers, l.libelle]).sort(),
     [[m.grises.id, m.aldric.id, 'allié de'], [m.grises.id, m.secrete.id, 'rival de']].sort(),
   );
   const l = await appel(m.app, m.lea, 'GET', `${m.cartes}/${g.id}`);
-  assert.deepEqual(l.json().liens.map((x: { vers: number; type: string }) => [x.vers, x.type]), [[m.aldric.id, 'allié de']]);
+  assert.deepEqual(l.json().liens.map((x: { vers: number; libelle: string }) => [x.vers, x.libelle]), [[m.aldric.id, 'allié de']]);
   assert.ok(!l.body.includes('Cendres') && !l.body.includes('rival'));
   assert.equal((await appel(m.app, m.antor, 'GET', `${m.cartes}/${g.id}?mode=joueur`)).body, l.body);
 });

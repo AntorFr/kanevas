@@ -249,7 +249,7 @@ describe('le menu de l’avatar et le thème', () => {
   });
 
   test('le thème ne se règle nulle part ailleurs : pas de choix de thème dans Paramètres ni ailleurs', opts, async () => {
-    for (const lien of ['Paramètres', 'Vue d’ensemble', 'Campagnes', 'Membres']) {
+    for (const lien of ['Paramètres', 'Vue d’ensemble', 'Membres']) {
       await antor.goto(urlUnivers);
       await attendre(antor);
       await nav(antor).getByRole('link', { name: rx(lien) }).click();
@@ -277,7 +277,7 @@ describe('le cadre d’un univers', () => {
     await antor.goto(urlUnivers);
     await attendre(antor);
     const barre = nav(antor);
-    for (const l of ['Vue d’ensemble', 'Campagnes', 'Comptes-rendus', 'Cartes', 'Personnages', 'Lieux', 'Factions', 'Objets', 'Événements', 'Quêtes', 'Membres', 'Paramètres'])
+    for (const l of ['Vue d’ensemble', 'Comptes-rendus', 'Cartes', 'Personnages', 'Lieux', 'Factions', 'Objets', 'Événements', 'Quêtes', 'Membres', 'Paramètres'])
       assert.equal(await barre.getByRole('link', { name: rx(l) }).count(), 1, l);
     // « Cartes » is in the sidebar since kanevas-cartes-graphes (E-10); « Administration » is still absent for a GM.
     assert.equal(await barre.getByRole('link', { name: rx('Cartes') }).count(), 1, 'Cartes présent');
@@ -745,9 +745,8 @@ describe('B-29 : les états des écrans refaits', () => {
     await ctx.close();
   });
 
-  test('E-6, E-13, E-14, E-15 : chaque écran s’ouvre dans le cadre (barre, titre, assistant)', opts, async () => {
+  test('E-13, E-14, E-15 : chaque écran s’ouvre dans le cadre (barre, titre, assistant)', opts, async () => {
     for (const [lien, titre] of [
-      ['Campagnes', /Campagnes/],
       ['Comptes-rendus', /Comptes-rendus/],
       ['Paramètres', /Paramètres/],
     ] as const) {

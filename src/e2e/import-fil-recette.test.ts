@@ -534,7 +534,7 @@ describe('B-50 clé et date d’origine', () => {
       await menu.waitFor();
       const t = ((await menu.innerText()) as string).replace(/\s+/g, ' ').trim();
       // kanevas-types-ecran-fiche adds « Changer le type… », kanevas-recherche-e9 « Alias et étiquettes… »; the origin line stays.
-      assert.equal(t, 'Changer le type… Déplacer sous… Alias et étiquettes… Importée · clé lieu:port-sel · créée le 3 mars 2021 Supprimer la fiche…');
+      assert.equal(t, 'Changer le type… Marquer détruit Déplacer sous… Alias et étiquettes… Importée · clé lieu:port-sel · créée le 3 mars 2021 Supprimer la fiche…');
       await page.waitForTimeout(600);
       await page.screenshot({ path: join(SHOTS, 'antor-menu-importee.png') });
       // a fiche without origin key: no « ⋯ » menu at all (this slice)
