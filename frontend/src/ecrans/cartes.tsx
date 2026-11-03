@@ -171,7 +171,11 @@ function Cartes() {
     } catch (e) {
       if (e instanceof ErreurApi && e.statut === 0) return;
       setEchecCreation(true);
-      setTexteCreation(e instanceof ErreurApi && e.statut === 404 ? 'Cet outil est désactivé.' : 'L’enregistrement a échoué. Réessayez.');
+      const outil = forme !== 'illustree' && forme !== 'graphe';
+      setTexteCreation(
+        e instanceof ErreurApi && e.statut === 404 ? 'Cet outil est désactivé.'
+          : outil ? 'L’enregistrement a échoué. Réessayez.' : 'La carte n’a pas pu être créée. Réessayez.',
+      );
     } finally {
       setEnCours(false);
     }

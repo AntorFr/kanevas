@@ -86,7 +86,13 @@ export default function Galaxie({ universId, cible, prealable, suffixeMode }: Pr
       },
       (e: unknown) => {
         if (!actif) return;
-        if (e instanceof ErreurApi && e.statut === 404) return setIntrouvable(true);
+        if (e instanceof ErreurApi && e.statut === 404) {
+          // A GM in Player mode (or once the map is on screen) who selected what a player cannot read only
+          // drops the selection; the page stays. A plain deep link to an unknown system is still « not found ».
+          if (premiereLecture.current && suffixe === '') return setIntrouvable(true);
+          setSelection(null);
+          return;
+        }
         setPanneau({ k: 'erreur' });
       },
     );
