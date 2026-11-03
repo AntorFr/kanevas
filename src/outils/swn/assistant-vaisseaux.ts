@@ -1,10 +1,7 @@
 import { z } from 'zod';
 
 import { ErreurService } from '../../services/erreurs.js';
-import { resoudreElements } from '../../services/catalogues.js';
-import { calculerDepuisChoix, OUTIL_VAISSEAUX } from '../../services/swn/calcul-vaisseau.js';
 import { NATURES_DE_LIGNE } from '../../services/swn/catalogue-vaisseaux.js';
-import { lireConception, listerConceptions } from '../../services/swn/conceptions.js';
 import type { Outil, Resultat } from '../../services/assistant/types.js';
 import type { ContexteOutil } from '../declaration.js';
 
@@ -24,7 +21,9 @@ const schema = z.strictObject({
 /** `swn_vaisseau_calculer` (V-9, AD-136): names in, the object of `GET conceptions/:fid` or of `POST calcul` out; never an event. */
 export function outilVaisseau({ db, acteur, universId }: ContexteOutil): Outil[] {
   /** The key of the one readable element of that nature carrying that name. */
-  const cleDe = (nature: string, nom: string): string | Resultat => {
+  const cleDe = (
+    resoudreElements: typeof import('../../services/catalogues.js').resoudreElements, OUTIL_VAISSEAUX: string, nature: string, nom: string,
+  ): string | Resultat => {
     const m = resoudreElements(db, universId, OUTIL_VAISSEAUX, nature, { inclureMasques: false })
       .filter((e) => plier(e.nom) === plier(nom));
     if (m.length === 0) return INTROUVABLE;
@@ -34,11 +33,15 @@ export function outilVaisseau({ db, acteur, universId }: ContexteOutil): Outil[]
     nom: 'swn_vaisseau_calculer',
     description: "Calcule un vaisseau : soit `conception` (le titre d'une conception lisible : son résultat enregistré et ses alertes), soit `coque` (nom) et `choix` (`nature` : moteurs, amenagements, defenses, armes ou modifications, `nom`, `quantite` facultative) : prix, budgets, chantier, alertes. N'écrit rien.",
     schema,
-    executer(args): Resultat {
+    // The services are loaded at the call: a static import closes a cycle (see `index.ts`).
+    async executer(args): Promise<Resultat> {
       const p = schema.safeParse(args ?? {});
       if (!p.success) return { ok: false, erreur: 'Paramètres invalides.' };
       const { conception, coque, choix } = p.data;
       if ((conception !== undefined) === (coque !== undefined) || (conception !== undefined && choix !== undefined)) return PRECISER;
+      const { resoudreElements } = await import('../../services/catalogues.js');
+      const { calculerDepuisChoix, OUTIL_VAISSEAUX } = await import('../../services/swn/calcul-vaisseau.js');
+      const { lireConception, listerConceptions } = await import('../../services/swn/conceptions.js');
       try {
         if (conception !== undefined) {
           const m = listerConceptions(db, acteur, universId).conceptions.filter((c) => plier(c.titre) === plier(conception));
@@ -46,11 +49,11 @@ export function outilVaisseau({ db, acteur, universId }: ContexteOutil): Outil[]
           if (m.length > 1) return PLUSIEURS;
           return { ok: true, donnees: lireConception(db, acteur, universId, m[0]!.ficheId) };
         }
-        const c = cleDe('coques', coque!);
+        const c = cleDe(resoudreElements, OUTIL_VAISSEAUX, 'coques', coque!);
         if (typeof c !== 'string') return c;
         const lignes = [];
         for (const l of choix ?? []) {
-          const cle = cleDe(l.nature, l.nom);
+          const cle = cleDe(resoudreElements, OUTIL_VAISSEAUX, l.nature, l.nom);
           if (typeof cle !== 'string') return cle;
           lignes.push({ nature: l.nature, cle, quantite: l.quantite ?? 1 });
         }
