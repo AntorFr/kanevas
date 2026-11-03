@@ -15,7 +15,7 @@ export interface SystemeVue {
 }
 export interface BoutRoute { cle: string; q: number; r: number }
 export interface RouteVue { id: number; depuis: BoutRoute; vers: BoutRoute; longueur: number; publique?: boolean; version?: number }
-export interface ZoneVue { id: number; nom: string; contour: Point[]; couleur: string; secret?: boolean; cle?: string; version?: number }
+export interface ZoneVue { id: number; nom: string; contour: Point[]; couleur: string; secret?: boolean; cle?: string; version?: number; densite?: number | null }
 export interface VueBlocs { blocs: BlocGenere[]; systemes: SystemeVue[]; routes: RouteVue[]; zones: ZoneVue[] }
 
 function systemeVue(s: LigneSysteme, niveau: NiveauLecture): SystemeVue {
@@ -107,4 +107,26 @@ export function rechercherSystemes(
       return nx < ny ? -1 : nx > ny ? 1 : x.cle < y.cle ? -1 : x.cle > y.cle ? 1 : 0;
     })
     .slice(0, 20).map(({ cle, nom, q, r }) => ({ cle, nom, q, r }));
+}
+
+/** One route of a galaxy as the blocks give it (level `mj` carries `publique` and `version`), by its id. */
+export function lireRoute(db: Db, acteur: Acteur, universId: number, galaxieId: number, id: number): RouteVue {
+  const { galaxie, niveau } = galaxieLisible(db, acteur, universId, galaxieId);
+  const parId = new Map(systemesLisibles(db, galaxie.id, niveau).map((s) => [s.id, s]));
+  const ro = routesLisibles(db, galaxie.id, niveau).find((r) => r.id === id);
+  const d = ro && parId.get(ro.depuis_id), v = ro && parId.get(ro.vers_id);
+  if (!ro || !d || !v) throw introuvable();
+  const route: RouteVue = { id: ro.id, depuis: { cle: d.cle, q: d.q, r: d.r }, vers: { cle: v.cle, q: v.q, r: v.r }, longueur: ro.longueur };
+  if (niveau === 'mj') { route.publique = ro.publique === 1; route.version = ro.version; }
+  return route;
+}
+
+/** One zone of a galaxy as the blocks give it, by its key. */
+export function lireZone(db: Db, acteur: Acteur, universId: number, galaxieId: number, cle: string): ZoneVue {
+  const { galaxie, niveau } = galaxieLisible(db, acteur, universId, galaxieId);
+  const z = zonesLisibles(db, galaxie.id, niveau).find((c) => c.cle === cle);
+  if (!z) throw introuvable();
+  const zone: ZoneVue = { id: z.id, nom: z.nom, contour: JSON.parse(z.contour) as Point[], couleur: z.couleur };
+  if (niveau === 'mj') { zone.secret = z.secret === 1; zone.cle = z.cle; zone.version = z.version; zone.densite = z.densite; }
+  return zone;
 }
