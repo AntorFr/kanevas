@@ -12,8 +12,8 @@ import { calculerDepuisChoix, calculerResolu, OUTIL_VAISSEAUX, resoudreChoix, TY
 import { ligneDe, porteDe, type ChargeConception, type LigneConception } from './section-vaisseaux.js';
 
 // The designs under rights (V-5, V-7): the row `swn_conceptions` and the managed section « Caractéristiques » are written
-// together, in one transaction, by `poserSectionGeree` and its `apresEcriture` hook — never apart. The only SQL on
-// `swn_conceptions`.
+// together, in one transaction, by `poserSectionGeree` and its `apresEcriture` hook — never apart. The SQL on
+// `swn_conceptions` lives in this file and in `section-vaisseaux.ts` (the hook), both under `services/swn/`.
 
 /** A blocking alert refuses the save; the alerts ride on the error (the screen shows them). */
 export class ErreurConceptionBloquee extends ErreurService {
@@ -97,11 +97,13 @@ export function listerConceptions(db: Db, acteur: Acteur, universId: number): Li
       throw e;
     }
     const r = JSON.parse(l.ligne.resultat) as ResultatVaisseau;
+    // Same count as the workshop view: the retired elements are blocking alerts computed now (V-3, B-75).
+    const retirees = resoudreChoix(db, universId, { coque: l.ligne.coque_cle, choix: JSON.parse(l.ligne.choix) as LigneChoix[] }, porteDe(l.ligne)).retirees;
     const auteur = l.section.auteur_id === null ? null
       : db.prepare('SELECT id, username AS nom FROM comptes WHERE id = ?').get(l.section.auteur_id) as { id: number; nom: string } | undefined ?? null;
     conceptions.push({
       ficheId: fiche_id, titre: l.titre, coque: r.coque, prix: r.prix,
-      bloquantes: r.alertes.filter((a) => a.niveau === 'bloquante').length,
+      bloquantes: r.alertes.filter((a) => a.niveau === 'bloquante').length + retirees.length,
       aSurveiller: r.alertes.filter((a) => a.niveau !== 'bloquante').length,
       auteur, peutEcrire: peutEcrire(db, acteur, universId, role, l.section),
     });
