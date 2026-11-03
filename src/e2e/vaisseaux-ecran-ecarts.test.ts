@@ -84,3 +84,50 @@ describe('E-22 lignes de choix', { skip: skipBrowser }, () => {
     await p.screenshot({ path: '/tmp/shots/ecarts-lignes.png' });
   });
 });
+
+describe('E-22 / E-9 : le haut du panneau de résultats et la largeur du tableau', { skip: skipBrowser }, () => {
+  it('à 390 px, en défilant, le titre « Résultats » et l’alerte restent visibles sous les barres du cadre', async () => {
+    const { E, orak } = await ids();
+    const p = await page('lea', `/univers/${E}/outils/swn/vaisseaux?fiche=${orak}`, 390);
+    await p.getByText('Résultats enregistrés').waitFor();
+    await p.getByRole('button', { name: "Augmenter la quantité : Lance d'essai" }).click();
+    await p.getByText('Puissance insuffisante : −2').first().waitFor();
+    await p.mouse.move(195, 500);
+    await p.mouse.wheel(0, 600);
+    await p.evaluate(() => window.scrollBy(0, 600));
+    await p.screenshot({ path: '/tmp/shots/ecarts-390-colle.png' });
+    const barres = await p.evaluate(() => Math.max(...[...document.querySelectorAll('.bandeau, .haute')].map((e) => e.getBoundingClientRect().bottom)));
+    const titre = p.locator('.vx-resultats h2').first();
+    const haut = await titre.evaluate((e: Element) => e.getBoundingClientRect().top);
+    assert.ok(haut >= barres - 0.5, `titre sous les barres (${haut} >= ${barres})`);
+    assert.equal(await dansVue(titre), true, 'titre « Résultats » non couvert');
+    assert.equal(await dansVue(p.getByText('Enregistrement refusé : Puissance insuffisante (−2).')), true, 'motif (alerte répétée sous le bouton) non couvert');
+  });
+
+  it('« Caractéristiques » tient dans la largeur de la fiche à 1440 px, bordure droite visible', async () => {
+    const { E, orak } = await ids();
+    const p = await page('lea', `/univers/${E}/fiche/${orak}`, 1440);
+    await p.getByText(/Générée par/).waitFor();
+    const t = p.locator('[data-testid="composant-caracteristiques"] table');
+    await t.waitFor();
+    const m = await t.evaluate((e: Element) => {
+      const r = e.getBoundingClientRect();
+      const conteneur = (e.closest('.vx-section') ?? e.parentElement!).getBoundingClientRect();
+      return { droite: r.right, conteneurDroite: conteneur.right, largeur: r.width, conteneurLargeur: conteneur.width, defile: (e.closest('.vx-section') as HTMLElement | null)?.scrollWidth ?? 0, client: (e.closest('.vx-section') as HTMLElement | null)?.clientWidth ?? 0 };
+    });
+    assert.ok(m.droite <= m.conteneurDroite + 0.5, `tableau dans son conteneur ${JSON.stringify(m)}`);
+    assert.ok(m.defile <= m.client + 1, `aucun défilement horizontal à 1440 px ${JSON.stringify(m)}`);
+    assert.equal(await t.locator('thead th').last().evaluate((e: Element) => e.getBoundingClientRect().right <= window.innerWidth), true);
+    await p.screenshot({ path: '/tmp/shots/ecarts-e9-1440.png' });
+  });
+
+  it('« Caractéristiques » à 390 px : défilement horizontal dans un cadre, la page ne déborde pas', async () => {
+    const { E, orak } = await ids();
+    const p = await page('lea', `/univers/${E}/fiche/${orak}`, 390);
+    await p.getByText(/Générée par/).waitFor();
+    await p.locator('[data-testid="composant-caracteristiques"] table').waitFor();
+    const d = await p.evaluate(() => ({ page: document.documentElement.scrollWidth, vue: window.innerWidth }));
+    assert.ok(d.page <= d.vue + 1, `la page ne défile pas horizontalement ${JSON.stringify(d)}`);
+    await p.screenshot({ path: '/tmp/shots/ecarts-e9-390.png' });
+  });
+});
