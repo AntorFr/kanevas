@@ -8,8 +8,22 @@ export interface Carte {
   fond: boolean;
 }
 
+/** A map that belongs to a tool (E-10, G-8): listed after the illustrated maps, opened at its own address. */
+export interface CarteOutil {
+  type: 'outil';
+  id: number;
+  universId: number;
+  titre: string;
+  module: string;
+  outil: string;
+  adresse: string;
+  visible?: boolean;
+}
+
+export const estCarteOutil = (c: Carte | CarteOutil): c is CarteOutil => 'type' in c && c.type === 'outil';
+
 export interface PageCartes {
-  cartes: Carte[];
+  cartes: (Carte | CarteOutil)[];
   suivant: string | null;
 }
 
