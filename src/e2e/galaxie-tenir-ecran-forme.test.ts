@@ -50,14 +50,26 @@ describe('E-21 : fidélité des formulaires à la maquette', { skip: skipBrowser
     const form = page.getByRole('region', { name: 'Nouveau système' });
     await form.waitFor();
 
-    const taille = form.getByRole('group', { name: 'Taille' });
-    const noms = await taille.getByRole('button').allTextContents();
+    const taille = form.getByRole('radiogroup', { name: 'Taille' });
+    const noms = await taille.getByRole('radio').allTextContents();
     assert.deepEqual(noms, ['Petite', 'Moyenne', 'Grande']);
     assert.equal(await form.locator('select').count(), 0, 'plus de liste déroulante');
-    assert.equal(await taille.getByRole('button', { name: 'Moyenne' }).getAttribute('aria-pressed'), 'true');
-    await taille.getByRole('button', { name: 'Grande' }).click();
-    assert.equal(await taille.getByRole('button', { name: 'Grande' }).getAttribute('aria-pressed'), 'true');
-    assert.equal(await taille.getByRole('button', { name: 'Moyenne' }).getAttribute('aria-pressed'), 'false');
+    assert.equal(await taille.getByRole('radio', { name: 'Moyenne' }).getAttribute('aria-checked'), 'true');
+    await taille.getByRole('radio', { name: 'Grande' }).click();
+    assert.equal(await taille.getByRole('radio', { name: 'Grande' }).getAttribute('aria-checked'), 'true');
+    assert.equal(await taille.getByRole('radio', { name: 'Moyenne' }).getAttribute('aria-checked'), 'false');
+    // single tab stop + arrow keys move the choice
+    assert.deepEqual(await taille.getByRole('radio').evaluateAll((els: Element[]) => els.map((e) => (e as HTMLElement).tabIndex)), [-1, -1, 0]);
+    await taille.getByRole('radio', { name: 'Grande' }).focus();
+    await page.keyboard.press('ArrowLeft');
+    assert.equal(await taille.getByRole('radio', { name: 'Moyenne' }).getAttribute('aria-checked'), 'true');
+    await page.keyboard.press('ArrowLeft');
+    assert.equal(await taille.getByRole('radio', { name: 'Petite' }).getAttribute('aria-checked'), 'true');
+    await page.keyboard.press('ArrowLeft');
+    assert.equal(await taille.getByRole('radio', { name: 'Grande' }).getAttribute('aria-checked'), 'true');
+    await page.keyboard.press('ArrowRight');
+    assert.equal(await taille.getByRole('radio', { name: 'Petite' }).getAttribute('aria-checked'), 'true');
+    await taille.getByRole('radio', { name: 'Grande' }).click();
 
     const tops = await form.locator('.gx-couleurs label').evaluateAll((els: Element[]) => els.map((e) => Math.round(e.getBoundingClientRect().top)));
     assert.equal(tops.length, 6);
@@ -71,7 +83,7 @@ describe('E-21 : fidélité des formulaires à la maquette', { skip: skipBrowser
     await toucher(page, 2, 0);
     await form.getByText('Hexagone (2, 0)').waitFor();
     assert.equal(await form.getByLabel('Nom', { exact: true }).inputValue(), 'Brouillon');
-    assert.equal(await taille.getByRole('button', { name: 'Grande' }).getAttribute('aria-pressed'), 'true');
+    assert.equal(await taille.getByRole('radio', { name: 'Grande' }).getAttribute('aria-checked'), 'true');
     await form.getByRole('button', { name: 'Placer', exact: true }).click();
     await systeme(page, 'Brouillon').waitFor();
     await c.ctx.close();
