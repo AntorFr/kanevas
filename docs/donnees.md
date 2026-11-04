@@ -623,7 +623,7 @@ only, read by the upload checks. The import token reads what its GM reads (AD-10
 universe, GM blocks included. *(Extension: a token is its account's — a player's token reads as the
 player; see below.)*
 
-**Physical and migration.** One migration, numbered at merge (AD-51): on `cartes`, five columns (`cle_origine`, `fiche_id`, `texte`, `texte_public`, `version`) and a partial
+**Physical and migration.** The migration is cut by slice, each numbered at merge (AD-51) in the slice that needs it (`ecriture`: the column removal; `cartes`: the map model and settings): on `cartes`, five columns (`cle_origine`, `fiche_id`, `texte`, `texte_public`, `version`) and a partial
 unique index `(univers_id, cle_origine) WHERE cle_origine IS NOT NULL` on `cartes`, a foreign key
 `fiche_id → fiches(id) ON DELETE SET NULL` (SQLite: the table is rebuilt, as for `cartes` in
 0007; the `forme` trigger is recreated), `reglages_instance`, and `DROP COLUMN` of the four import
@@ -657,7 +657,7 @@ records one write, with a **previous value** for 30 days.
 - `fiches.modifie_le` moves on every write to what the read returns, held by **triggers** (AD-147).
 - `historique (id, univers_id, fiche_id (null once the sheet is deleted), fiche_cle, fiche_titre, objet
   (entete | section | relation | fiche), objet_cle, action, empreinte_apres, compte_id, jeton_id,
-  origine (ecran | assistant | import | mcp | outil), lot_id, cree_le, valeur_avant (JSON, null after 30 days))`.
+  origine (ecran | assistant | import | mcp | outil | inconnu), lot_id, cree_le, valeur_avant (JSON, null after 30 days))`.
   Written by triggers from a per-transaction context (AD-147). A daily purge empties `valeur_avant`
   over 30 days and deletes lines over 90.
 
@@ -667,7 +667,7 @@ re-checked at each request (role lost → refused there). The history: GMs of th
 a GM; never a player (a line can reveal a GM block exists). A previous value in the history is served
 under the same rule as the GM view.
 
-**Physical and migration.** One migration (numbered at merge, AD-51): tokens re-homed (each existing
+**Physical and migration.** The migration is cut by slice, each numbered at merge (AD-51) (`cles`: keys and `creee_via`; `jetons`: tokens; `historique`: triggers and history): tokens re-homed (each existing
 token gets `compte_id` = its creator and one `jetons_univers` row at `ecriture`), keys generated
 (collisions suffixed `-2`, `-3`… in id order; an existing key without a letter becomes `cle-<digits>`, its former form not kept in `cles_anciennes` (it would read as an id), and a
 universe name without a letter gives `univers-<id>`), triggers created, the history table empty at start.
