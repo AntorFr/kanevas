@@ -1,0 +1,18 @@
+/* Block « Fiches liées » (B-64, E-9): a row like « Contient » and « Mentionnée dans »; the lines are LigneFicheLiee (ui). */
+.bloc-liees h2.bloc-libelle { margin: 0; font-weight: 400; }
+.bloc-liees .bloc-contenu { display: block; }
+.bloc-liees .chargement-liees { margin: 0; color: var(--texte-3); font-size: var(--t-14); }
+.bloc-liees .echec { color: var(--danger); font-size: var(--t-14); }
+.liees { display: grid; gap: var(--e-4); }
+/* the fade applies only when leaving the busy state: entering it is immediate, so « busy » and « dimmed » are one observable moment */
+.liees:not(.rafraichit) { transition: opacity var(--duree) var(--courbe); }
+.liees.rafraichit { opacity: .55; }
+.liees-tete { display: flex; align-items: center; flex-wrap: wrap; gap: var(--e-3); }
+.groupe-liees { display: grid; gap: var(--e-2); }
+.groupe-liees h3 { margin: 0; display: flex; align-items: baseline; flex-wrap: wrap; gap: var(--e-2); font: 500 var(--t-14)/1.3 var(--police-titre); }
+.groupe-liees h3 .comptes { color: var(--texte-3); font: 400 var(--t-13)/1.3 var(--police-texte); }
+.groupe-liees h3 .chercher { margin-left: auto; font: 400 var(--t-12)/1.3 var(--police-texte); color: var(--accent-texte); text-decoration: none; }
+.groupe-liees h3 .chercher:hover { text-decoration: underline; }
+.groupe-liees h3 .chercher:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.lignes-liees { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--e-1); }
+.plus-liees { justify-self: start; }

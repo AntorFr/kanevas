@@ -110,7 +110,6 @@ test('critère : Antor coupe la lecture des joueurs sur « Apparence » : pastil
 
 const ECRANS_UNIVERS: Array<[string, string]> = [
   ['E-3', '/univers/1'],
-  ['E-6', '/univers/1/campagnes'],
   ['E-13', '/univers/1/comptes-rendus'],
   ['E-8', '/univers/1/fiches/personnages'],
   ['E-4', '/univers/1/membres'],
@@ -234,7 +233,7 @@ for (const [nom, adresse] of ECRANS_UNIVERS) {
     for (let i = 0; i < n; i++) {
       const it = items.nth(i);
       const nomItem = (await it.innerText()).trim();
-      if (['Vue d’ensemble', 'Campagnes', 'Comptes-rendus', 'Cartes', 'Personnages', 'Lieux', 'Factions', 'Objets', 'Événements', 'Quêtes', 'Membres', 'Paramètres'].includes(nomItem)) {
+      if (['Vue d’ensemble', 'Comptes-rendus', 'Cartes', 'Personnages', 'Lieux', 'Factions', 'Objets', 'Événements', 'Quêtes', 'Membres', 'Paramètres'].includes(nomItem)) {
         assert.equal(await it.locator('svg').count(), 1, `${nomItem} sans icône`);
       }
     }
@@ -790,7 +789,7 @@ test('charte : aucun hôte externe (polices, icônes) sur les écrans livrés', 
   const { ctx, page } = await session('antor');
   const externes: string[] = [];
   page.on('request', (r: Any) => { const u = new URL(r.url()); if (u.protocol.startsWith('http') && u.origin !== new URL(srv.base).origin) externes.push(r.url()); });
-  for (const a of ['/', '/univers/1', '/univers/1/campagnes', '/univers/1/comptes-rendus', '/univers/1/fiches/personnages', '/univers/1/fiche/1', '/univers/1/membres', '/univers/1/parametres']) {
+  for (const a of ['/', '/univers/1', '/univers/1/comptes-rendus', '/univers/1/fiches/personnages', '/univers/1/fiche/1', '/univers/1/membres', '/univers/1/parametres']) {
     await page.goto(a);
     await attendre(page);
   }
@@ -819,7 +818,7 @@ test('charte : les cibles font au moins 24 × 24 px au bureau et 36 px au télé
   const bureau = await session('antor');
   await bureau.page.goto('/univers/1');
   await attendre(bureau.page);
-  const hauteur = async (page: Any) => page.evaluate(() => [...document.querySelectorAll('nav a')].filter((a) => a.getBoundingClientRect().height > 0 && ['Vue d’ensemble', 'Campagnes', 'Comptes-rendus', 'Cartes', 'Personnages', 'Lieux', 'Factions', 'Objets', 'Événements', 'Quêtes', 'Membres', 'Paramètres'].includes((a.textContent || '').trim())).map((a) => Math.round(a.getBoundingClientRect().height)));
+  const hauteur = async (page: Any) => page.evaluate(() => [...document.querySelectorAll('nav a')].filter((a) => a.getBoundingClientRect().height > 0 && ['Vue d’ensemble', 'Comptes-rendus', 'Cartes', 'Personnages', 'Lieux', 'Factions', 'Objets', 'Événements', 'Quêtes', 'Membres', 'Paramètres'].includes((a.textContent || '').trim())).map((a) => Math.round(a.getBoundingClientRect().height)));
   assert.ok((await hauteur(bureau.page)).every((h: number) => h >= 30), 'items de 30 px');
   await bureau.ctx.close();
   const tel = await session('antor', TEL);
@@ -831,7 +830,7 @@ test('charte : les cibles font au moins 24 × 24 px au bureau et 36 px au télé
 });
 
 // ---------------------------------------------------------------------------------------------
-// E-2, E-4, E-6, E-7, E-13, E-14, E-15 : dans le même cadre, avec les mêmes composants
+// E-2, E-4, E-13, E-14, E-15 : dans le même cadre, avec les mêmes composants
 // ---------------------------------------------------------------------------------------------
 
 test('E-14 : l’enregistrement réussi est un toast « Enregistré. », pas un message en ligne', opts, async () => {

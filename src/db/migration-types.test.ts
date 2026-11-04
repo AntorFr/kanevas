@@ -47,9 +47,14 @@ function avant10(): Db {
   db.exec('CREATE TABLE fichiers_sections (fichier_id, section_id, joint, dans_texte, dans_bloc_mj, PRIMARY KEY (fichier_id, section_id))');
   db.exec('CREATE TABLE fichiers_attente (id INTEGER PRIMARY KEY, univers_id, cle, section_id, fiche_id, maniere)');
   db.exec('ALTER TABLE fiches ADD COLUMN illustration_fichier_id INTEGER');
+  // Likewise `relations` (0018): the seed writes `nature` / `qualificatif`, which this schema (`type`) lacks.
+  db.exec('ALTER TABLE relations RENAME COLUMN type TO qualificatif');
+  db.exec("ALTER TABLE relations ADD COLUMN nature TEXT NOT NULL DEFAULT ''");
   // Same for the owner of a system (0017), which the current services write.
   db.exec('ALTER TABLE systemes_jeu ADD COLUMN responsable_id INTEGER');
   semerBouchon(db);
+  db.exec('ALTER TABLE relations DROP COLUMN nature');
+  db.exec('ALTER TABLE relations RENAME COLUMN qualificatif TO type');
   db.exec('DROP TABLE fichiers_attente; DROP TABLE fichiers_sections; DROP TABLE fichiers');
   db.exec('ALTER TABLE systemes_jeu DROP COLUMN responsable_id');
   return db;
@@ -64,7 +69,7 @@ test('0013: comptes, identifiants, clés étrangères et recherche conservés', 
   const titre = (ids0[0] as { titre: string }).titre;
   const mot = titre.split(/\s+/)[0]!.replace(/[^\p{L}\p{N}]/gu, '');
 
-  assert.deepEqual(migrate(db), [13, 14, 15, 16, 17, 18, 19, 20, 21]);
+  assert.deepEqual(migrate(db), [13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23]);
 
   assert.deepEqual(comptes(db), c0);
   assert.deepEqual(db.prepare('SELECT id, titre, type FROM fiches ORDER BY id').all(), ids0);

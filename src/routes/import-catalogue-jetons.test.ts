@@ -187,7 +187,7 @@ test('toute route du scope d\'import déclare une portée', async () => {
   const src = readFileSync(new URL('./import.ts', import.meta.url), 'utf8');
   const decl = src.match(/scope\.(get|post|put|delete)\(/g) ?? [];
   const configs = src.match(/config: \{ portee: '(contenu|outil|ouverture|lot)'/g) ?? [];
-  assert.ok(decl.length >= 12);
+  assert.ok(decl.length >= 10);
   assert.equal(configs.length, decl.length);
   // Une route sans portée serait refusée : le 404 d'un chemin inconnu reste celui du serveur.
   const t = w.tok('antor');

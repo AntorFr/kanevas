@@ -289,7 +289,8 @@ describe('E-9 refaite : toasts', { skip: skipBrowser }, () => {
     await ouvrir(antor);
     const s = section(antor, 'Apparence');
     await s.getByRole('button', { name: rxExact('Relier à une fiche') }).click();
-    await s.getByLabel('Type de relation').fill('membre de');
+    await s.getByLabel('Nature').selectOption({ label: 'Sans nature' });
+    await s.getByLabel('Qualificatif').fill('membre de');
     await s.getByLabel('Type de fiche').selectOption({ label: 'Faction' });
     await s.getByRole('button', { name: /^Lames Grises/ }).click();
     await s.getByRole('button', { name: rxExact('Relier') }).click();

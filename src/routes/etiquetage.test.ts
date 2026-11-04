@@ -150,17 +150,17 @@ test('index : les alias se cherchent, suivent changement de titre, retrait et su
   const port = m.fid('Port-Sel');
   assert.deepEqual(trouve('alias:salport'), [port]);
   assert.deepEqual(trouve('alias:aux'), [port]);
-  m.app.db.prepare("UPDATE fiches SET titre = 'Port-Sel II' WHERE id = ?").run(port);
+  m.app.db.prepare("UPDATE fiches SET titre = 'Port-Sel Bis' WHERE id = ?").run(port);
   assert.deepEqual(trouve('alias:salport'), [port]); // alias kept after a title change
-  assert.deepEqual(trouve('titre:II'), [port]);
-  await m.put('antor', 'Port-Sel II', { alias: ['Autrenom'], etiquettes: [] }).catch(() => undefined);
+  assert.deepEqual(trouve('titre:Bis'), [port]);
+  await m.put('antor', 'Port-Sel Bis', { alias: ['Autrenom'], etiquettes: [] }).catch(() => undefined);
   const r = await m.req('antor', 'PUT', `/api/univers/${m.lame}/fiches/${port}/etiquetage`, { alias: ['Autrenom'], etiquettes: [] });
   assert.equal(r.status, 200);
   assert.deepEqual(trouve('alias:salport'), []);
   assert.deepEqual(trouve('alias:autrenom'), [port]);
   m.app.db.prepare('DELETE FROM fiche_alias WHERE fiche_id = ?').run(port);
   assert.deepEqual(trouve('alias:autrenom'), []);
-  assert.deepEqual(trouve('titre:II'), [port]); // the sheet is still indexed
+  assert.deepEqual(trouve('titre:Bis'), [port]); // the sheet is still indexed
 });
 
 test('migration depuis 0013 : la recherche du titre existant trouve toujours la fiche', () => {
@@ -175,17 +175,22 @@ test('migration depuis 0013 : la recherche du titre existant trouve toujours la 
   db.exec('CREATE TABLE fichiers_sections (fichier_id, section_id, joint, dans_texte, dans_bloc_mj, PRIMARY KEY (fichier_id, section_id))');
   db.exec('CREATE TABLE fichiers_attente (id INTEGER PRIMARY KEY, univers_id, cle, section_id, fiche_id, maniere)');
   db.exec('ALTER TABLE fiches ADD COLUMN illustration_fichier_id INTEGER');
-  // Same for the owner of a system (0017), which the current services write.
+  // Same for the owner of a system (0019), which the current services write.
   db.exec('ALTER TABLE systemes_jeu ADD COLUMN responsable_id INTEGER');
-  // The seed also enables the galaxy tool and sows its galaxy: scratch copies of the tables of 0017 and 0020.
-  const scratch = ['0017-outils.sql', '0020-swn-galaxie.sql'].map((f) => readFileSync(src + f, 'utf8').replace(/^ALTER TABLE .*$/m, '')).join('\n');
+  // Likewise `relations` (0018): the seed writes `nature` / `qualificatif`, absent from this schema (`type`).
+  db.exec('ALTER TABLE relations RENAME COLUMN type TO qualificatif');
+  db.exec("ALTER TABLE relations ADD COLUMN nature TEXT NOT NULL DEFAULT ''");
+  // The seed also enables the galaxy tool and sows its galaxy: scratch copies of the tables of 0019 and 0022.
+  const scratch = ['0019-outils.sql', '0022-swn-galaxie.sql'].map((f) => readFileSync(src + f, 'utf8').replace(/^ALTER TABLE .*$/m, '')).join('\n');
   db.exec(scratch);
   semerBouchon(db);
   db.exec('DROP TABLE swn_zones; DROP TABLE swn_routes; DROP TABLE swn_systemes; DROP TABLE swn_galaxies; DROP TABLE outils_univers; DROP TABLE outils_systeme');
+  db.exec('ALTER TABLE relations DROP COLUMN nature');
+  db.exec('ALTER TABLE relations RENAME COLUMN qualificatif TO type');
   db.exec('DROP TABLE fichiers_attente; DROP TABLE fichiers_sections; DROP TABLE fichiers; ALTER TABLE fiches DROP COLUMN illustration_fichier_id; ALTER TABLE systemes_jeu DROP COLUMN responsable_id');
   const avant = db.prepare('SELECT id, titre FROM fiches ORDER BY id').all() as { id: number; titre: string }[];
   assert.ok(avant.length >= 5);
-  assert.deepEqual(migrate(db), [14, 15, 16, 17, 18, 19, 20, 21]);
+  assert.deepEqual(migrate(db), [14, 15, 16, 17, 18, 19, 20, 21, 22, 23]);
   for (const f of avant) {
     const mot = f.titre.split(/[^\p{L}\p{N}]+/u)[0]!;
     const ids = (db.prepare('SELECT rowid FROM recherche_fiches WHERE recherche_fiches MATCH ?').all(`titre:${mot}*`) as Any[]).map((r) => r.rowid);
