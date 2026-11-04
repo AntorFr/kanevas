@@ -25,7 +25,7 @@ test('0022 crée les quatre tables sans toucher les lignes existantes', () => {
   db.prepare("INSERT INTO fiches (univers_id, type, titre, charge, cree_le, modifie_le) VALUES (1, 'lieu', 'F', '{}', 'x', 'x')").run();
   const snap = () => ['comptes', 'univers', 'fiches'].map((t) => db.prepare(`SELECT * FROM ${t}`).all());
   const avant = snap();
-  assert.deepEqual(migrate(db), [20, 21, 22]);
+  assert.deepEqual(migrate(db), [20, 21, 22, 23]);
   assert.deepEqual(snap(), avant);
   assert.deepEqual(db.pragma('foreign_key_check'), []);
   const tables = db.prepare("SELECT name FROM sqlite_master WHERE name LIKE 'swn_%' AND type='table' ORDER BY name").all().map((r: any) => r.name);
@@ -102,7 +102,7 @@ test('reference : Port-Sel ; un secret défini avant n\'est jamais la référenc
 test('listerCartesOutils : Antor visible, Léa selon visibilité et activation', () => {
   const { db, univers, g, a } = monde();
   const l = (u: string, mj = false) => listerCartesOutils(db, a(u, mj), univers);
-  assert.deepEqual(l('antor'), [{ module: 'swn', outil: 'galaxie', id: g, titre: 'Galaxie d\'essai', visible: true }]);
+  assert.deepEqual(l('antor'), [{ module: 'swn', outil: 'galaxie', id: g, titre: 'Galaxie d\'essai', visible: true, version: 1 }]);
   assert.equal(l('lea').length, 1);
   assert.equal(l('lea')[0].id, g);
   db.prepare('UPDATE swn_galaxies SET visible = 0 WHERE id = ?').run(g);

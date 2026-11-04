@@ -38,7 +38,7 @@ function base17() {
 test('0018 : trois relations à type → nature "" et ancien texte en qualificatif, mêmes ids, clés étrangères saines', () => {
   const db = base17();
   assert.equal(db.prepare('SELECT COUNT(*) n FROM relations').get()?.n, 3);
-  assert.deepEqual(migrate(db), [18, 19, 20, 21, 22]);
+  assert.deepEqual(migrate(db), [18, 19, 20, 21, 22, 23]);
   assert.deepEqual(
     db.prepare('SELECT id, nature, qualificatif, cible_fiche_id FROM relations ORDER BY id').all(),
     [

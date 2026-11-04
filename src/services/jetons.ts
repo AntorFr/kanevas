@@ -69,7 +69,7 @@ const outilsDe = (db: Db, jetonId: number): string[] =>
     .map((r) => r.outil);
 
 /**
- * Tools with a catalogue that apply to the universe's game system, in registry order; none without
+ * Tools with a catalogue or an importation (T-9) that apply to the universe's game system, in registry order; none without
  * a system. The caller guards the role.
  */
 function proposables(db: Db, universId: number): OutilProposable[] {
@@ -78,7 +78,7 @@ function proposables(db: Db, universId: number): OutilProposable[] {
     .get(universId) as { nom: string } | undefined;
   if (!s) return [];
   return modulesActifs().flatMap((m) =>
-    m.outils.filter((o) => o.catalogue && applicable(o, s.nom)).map((o) => ({
+    m.outils.filter((o) => (o.catalogue || o.importation) && applicable(o, s.nom)).map((o) => ({
       cle: o.cle, libelle: o.libelle, module: m.nom, libelleModule: m.libelle, type: o.type,
     })));
 }

@@ -312,6 +312,12 @@ For each: **V** visual, **C** behavioural. All have the focus ring (2 px `--focu
   Joueur : vous voyez ce que voit un joueur. »
 - C: `role="radiogroup"`, two `role="radio"`; ← → switch; the banner is `role="status"`.
 
+**Segments** (an exclusive choice among a few: the galaxy system « Taille », E-21; `frontend/src/ui/segments.tsx`).
+- V: the segments sit on a `--surface-2` background, radius `--rayon-champ`, each at least 44 px high; the checked one
+  on `--accent` / `--sur-accent`; the legend above, `--texte-2` 13 px. Disabled: 45 % opacity.
+- C: `role="radiogroup"` labelled by the legend, one `role="radio"` per segment with `aria-checked`; a single tab stop
+  (the checked segment); ← → ↑ ↓ move and select, wrapping around.
+
 **Section block** (« Relations », « Pièces jointes »).
 - V: a row below the text, separated by `--bord`: label on the left (136 px, icon and 13 px
   `--texte-3`), content on the right; on phones, stacked. Relation: « membre de »
