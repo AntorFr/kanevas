@@ -14,9 +14,9 @@ function dossierJusqua(max: number): string {
   return dir;
 }
 
-test('0021 : montée depuis 0020 peuplée, rien de perdu, version_importee nulle partout', () => {
+test('0023 : montée depuis 0022 peuplée, rien de perdu, version_importee nulle partout', () => {
   const db = openDb(':memory:');
-  migrate(db, dossierJusqua(20));
+  migrate(db, dossierJusqua(22));
   const d = '2026-10-01T00:00:00.000Z';
   db.prepare("INSERT INTO comptes (id, username, cree_le) VALUES (1, 'antor', ?)").run(d);
   db.prepare("INSERT INTO univers (id, nom, cree_le) VALUES (1, 'U', ?)").run(d);
@@ -28,7 +28,7 @@ test('0021 : montée depuis 0020 peuplée, rien de perdu, version_importee nulle
   db.prepare("INSERT INTO swn_zones (galaxie_id, univers_id, cle, nom, contour, couleur, secret) VALUES (1, 1, 'z', 'Z', '[[0,0],[1,0],[0,1]]', 'accent', 0)").run();
   const tables = ['swn_galaxies', 'swn_systemes', 'swn_routes', 'swn_zones'];
   const avant = tables.map((t) => db.prepare(`SELECT * FROM ${t}`).all());
-  assert.deepEqual(migrate(db), [21]);
+  assert.deepEqual(migrate(db), [23]);
   const apres = tables.map((t) => db.prepare(`SELECT * FROM ${t}`).all());
   apres.slice(1).forEach((lignes: any[], i) => lignes.forEach((l, j) => {
     assert.equal(l.version_importee, null);
