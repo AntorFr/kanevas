@@ -2,6 +2,7 @@ import type { FastifyError, FastifyInstance, FastifyReply, FastifyRequest, preHa
 
 import { acteur } from '../../routes/fiches.js';
 import { ErreurService } from '../../services/erreurs.js';
+import { etatFichesRegles, genererFichesRegles } from '../../services/swn/fiches-regles.js';
 import {
   calculerConception, creerConception, enregistrerConception, ErreurConceptionBloquee, lireConception, listerConceptions,
 } from '../../services/swn/conceptions.js';
@@ -27,6 +28,8 @@ export function routesVaisseaux(app: FastifyInstance, garde: (cle: string) => pr
   const univers = (request: { params: unknown }) => entier((request.params as { id: string }).id);
   const fiche = (request: { params: unknown }) => entier((request.params as { fid: string }).fid);
 
+  app.get(`${BASE}/fiches-regles`, opts, async (request) => etatFichesRegles(app.db, acteur(request), univers(request)));
+  app.post(`${BASE}/fiches-regles`, opts, async (request) => genererFichesRegles(app.db, acteur(request), univers(request)));
   app.get(`${BASE}/conceptions`, opts, async (request) => listerConceptions(app.db, acteur(request), univers(request)));
   app.get(`${BASE}/conceptions/:fid`, opts, async (request) =>
     lireConception(app.db, acteur(request), univers(request), fiche(request)));

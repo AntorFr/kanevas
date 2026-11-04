@@ -153,6 +153,14 @@ export function creerProposition(
   return lireProposition(db, compteId, universId, id);
 }
 
+/** The pending proposal of this requester on a section, or `null` (AD-79: one per requester and section). */
+export function propositionEnAttente(db: Db, compteId: number, sectionId: number): number | null {
+  const r = db
+    .prepare('SELECT id FROM propositions WHERE demandeur_id = ? AND section_id = ? AND appliquee_le IS NULL')
+    .get(compteId, sectionId) as { id: number } | undefined;
+  return r?.id ?? null;
+}
+
 /** Files a recalculation proposal (no report), replacing the requester's pending one on the section (AD-79). */
 export function deposerRecalcul(
   db: Db,
