@@ -27,6 +27,8 @@ import { creerUnivers } from '../services/univers.js';
 import { modulesActifs } from '../outils/registre.js';
 import { creerSystemeAncienPourBouchon, poserActivation } from '../services/outils.js';
 import { semerGalaxieEssai } from '../services/swn/galaxies.js';
+import { appliquerCatalogue } from '../services/catalogues.js';
+import { creerConception, enregistrerConception } from '../services/swn/conceptions.js';
 
 /**
  * Starting world of the stub mode (AD-55, `docs/ecrans.md` « Données de départ du bouchon »),
@@ -297,6 +299,7 @@ export function semerBouchon(db: Db): boolean {
         // The galaxy tool is on for the system, visible to GMs and players (B-71).
         poserActivation(db, id.antor, { niveau: 'systeme', id: systeme.id }, 'swn/galaxie', true);
         semerGalaxieEssai(db, eneria.id);
+        semerVaisseauxEssai(db, { antor: id.antor, lea: id.lea }, systeme.id, eneria.id);
       }
     }
 
@@ -315,6 +318,39 @@ export function semerBouchon(db: Db): boolean {
     }
   })();
   return true;
+}
+
+const EXEMPLES = join(dirname(fileURLToPath(import.meta.url)), '..', 'outils', 'swn', 'exemples');
+const exemple = (nom: string): unknown => JSON.parse(readFileSync(join(EXEMPLES, nom), 'utf8'));
+
+/**
+ * The ship designer on the trial universe (V-11): the tool on for the system, the invented catalogue imported at both levels
+ * (the spear at the universe's), and three ship sheets — « Vent d'Orak » (Léa's design, readable by her and the GMs),
+ * « Étoile du soir » (Léa's design, readable by the players) and « Aube de Sel » (no design yet).
+ */
+function semerVaisseauxEssai(db: Db, id: { antor: number; lea: number }, systemeId: number, universId: number): void {
+  const antor = { compteId: id.antor };
+  const lea = { compteId: id.lea };
+  poserActivation(db, id.antor, { niveau: 'systeme', id: systemeId }, 'swn/vaisseaux', true);
+  appliquerCatalogue(db, antor, { niveau: 'systeme', id: systemeId }, 'swn/vaisseaux', exemple('catalogue-essai.json'));
+  appliquerCatalogue(db, antor, { niveau: 'univers', id: universId }, 'swn/vaisseaux', exemple('catalogue-essai-univers.json'));
+  const fiche = (titre: string) => creerFiche(db, id.antor, universId, { type: 'vaisseau', titre }).id;
+  const ligne = (nature: string, cle: string) => ({ nature, cle, quantite: 1 });
+
+  const orak = fiche("Vent d'Orak");
+  creerConception(db, antor, universId, { ficheId: orak, coque: 'fregate', auteurId: id.lea });
+  enregistrerConception(db, lea, universId, orak, {
+    coque: 'fregate', version: 1,
+    choix: [ligne('moteurs', 'moteur-2'), ligne('amenagements', 'soute'), ligne('armes', 'laser'), ligne('armes', 'lance-d-essai')],
+  });
+
+  const etoile = fiche('Étoile du soir');
+  const vue = creerConception(db, antor, universId, { ficheId: etoile, coque: 'eclaireur', auteurId: id.lea });
+  enregistrerConception(db, lea, universId, etoile, { coque: 'eclaireur', version: vue.version, choix: [ligne('moteurs', 'moteur-1'), ligne('armes', 'laser')] });
+  const section = lireFiche(db, antor, universId, etoile).sections.find((s) => s.titre === 'Caractéristiques')!;
+  changerAudience(db, id.antor, universId, etoile, section.id, { joueursLisent: true });
+
+  fiche('Aube de Sel');
 }
 
 /** The stub token of « Essai Kanka » (docs/ecrans.md): fixed, known to the tests, stub mode only. */

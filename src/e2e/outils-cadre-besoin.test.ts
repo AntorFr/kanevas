@@ -55,6 +55,9 @@ before(async () => {
   ({ ctx: ctxAntor, page: antor } = await connecte(browser, srv.base, 'Antor'));
   ({ ctx: ctxLea, page: lea } = await connecte(browser, srv.base, 'Léa'));
   mira = (await connecte(browser, srv.base, 'Mira')).page;
+  // The seed also enables the ship designer for the trial system; these tests count the bar's entries of the trial tools alone.
+  const r = await antor.request.put(`/api/systemes/3/outils/swn/vaisseaux/activation`, { data: { active: false } });
+  assert.equal(r.status(), 204);
 });
 
 after(async () => {
@@ -447,7 +450,7 @@ test('mira : sur « Système ancien » (sans responsable stocké) elle a l’int
   const A = carte(mira, 'Essai A');
   assert.equal(await A.getByRole('switch').count(), 1);
   // 4 interrupteurs : les trois outils d'essai et swn/galaxie (module swn, portée « tous »)
-  assert.equal(await mira.getByRole('switch').count(), 4);
+  assert.equal(await mira.getByRole('switch').count(), 5);
   await ecrire(mira, /\/systemes\/4\/outils\/essai\/a\/activation$/, () => A.getByRole('switch').click());
   await A.getByText(rx('Système · Activé')).waitFor();
   await photo(mira, 'systeme-ancien-mira');
@@ -685,7 +688,7 @@ test('transfert : Antor transfère à Mira ; elle a l’interrupteur au système
 
   await ouvrirSysteme(mira);
   await mira.getByText(/Responsable : vous/).waitFor();
-  assert.equal(await mira.getByRole('switch').count(), 4);
+  assert.equal(await mira.getByRole('switch').count(), 5);
   await photo(mira, 'apres-transfert-mira');
   // Mira really writes at the system now; Antor's write is refused
   const avantG = await carte(mira, 'Essai G').getByRole('switch').getAttribute('aria-checked');

@@ -1,0 +1,336 @@
+{
+  "catalogue": "swn/vaisseaux",
+  "version": "2026-11-essai-vaisseaux",
+  "coques": [
+    {
+      "cle": "eclaireur",
+      "nom": "Éclaireur",
+      "classe": 1,
+      "cout": 20000,
+      "pv": 8,
+      "ca": 14,
+      "puissance": 10,
+      "masse": 8,
+      "emports": 1,
+      "facteur_cout": 1,
+      "facteur_puissance": 1,
+      "facteur_masse": 1
+    },
+    {
+      "cle": "fregate",
+      "nom": "Frégate d'essai",
+      "classe": 2,
+      "cout": 300000,
+      "pv": 30,
+      "ca": 14,
+      "puissance": 20,
+      "masse": 20,
+      "emports": 3,
+      "facteur_cout": 5,
+      "facteur_puissance": 2,
+      "facteur_masse": 3
+    },
+    {
+      "cle": "croiseur",
+      "nom": "Croiseur d'essai",
+      "classe": 3,
+      "cout": 1000000,
+      "pv": 60,
+      "ca": 15,
+      "puissance": 50,
+      "masse": 40,
+      "emports": 5,
+      "facteur_cout": 10,
+      "facteur_puissance": 3,
+      "facteur_masse": 4
+    }
+  ],
+  "moteurs": [
+    {
+      "cle": "moteur-1",
+      "nom": "Moteur 1",
+      "niveau": 1,
+      "cout": 5000,
+      "puissance": 2,
+      "masse": 1,
+      "x_cout": true,
+      "x_puissance": false,
+      "x_masse": false,
+      "pv": 0,
+      "ca": 0,
+      "limite": 0
+    },
+    {
+      "cle": "moteur-2",
+      "nom": "Moteur 2",
+      "niveau": 2,
+      "cout": 12000,
+      "puissance": 3,
+      "masse": 2,
+      "x_cout": true,
+      "x_puissance": true,
+      "x_masse": false,
+      "pv": 0,
+      "ca": 0,
+      "limite": 0
+    }
+  ],
+  "amenagements": [
+    {
+      "cle": "soute",
+      "nom": "Soute",
+      "cout": 10000,
+      "puissance": 0,
+      "masse": 3,
+      "x_cout": true,
+      "x_puissance": false,
+      "x_masse": true,
+      "pv": 0,
+      "ca": 0,
+      "limite": 1
+    },
+    {
+      "cle": "cabines",
+      "nom": "Cabines",
+      "cout": 8000,
+      "puissance": 1,
+      "masse": 2,
+      "x_cout": true,
+      "x_puissance": false,
+      "x_masse": true,
+      "pv": 0,
+      "ca": 0,
+      "limite": 0
+    }
+  ],
+  "defenses": [
+    {
+      "cle": "blindage",
+      "nom": "Blindage",
+      "cout": 4000,
+      "puissance": 0,
+      "masse": 2,
+      "x_cout": true,
+      "x_puissance": false,
+      "x_masse": true,
+      "pv": 5,
+      "ca": 1,
+      "limite": 0
+    }
+  ],
+  "armes": [
+    {
+      "cle": "laser",
+      "nom": "Laser",
+      "emport": 1,
+      "munitions": 0,
+      "cout_munition": 0,
+      "cout": 25000,
+      "puissance": 2,
+      "masse": 1,
+      "x_cout": true,
+      "x_puissance": true,
+      "x_masse": false,
+      "pv": 0,
+      "ca": 0,
+      "limite": 0
+    },
+    {
+      "cle": "canon-leger",
+      "nom": "Canon léger",
+      "emport": 1,
+      "munitions": 10,
+      "cout_munition": 100,
+      "cout": 12000,
+      "puissance": 1,
+      "masse": 1,
+      "x_cout": true,
+      "x_puissance": false,
+      "x_masse": false,
+      "pv": 0,
+      "ca": 0,
+      "limite": 0
+    }
+  ],
+  "modifications": [
+    {
+      "cle": "renfort",
+      "nom": "Renfort de coque",
+      "cout": 5000,
+      "puissance": 0,
+      "masse": 1,
+      "x_cout": false,
+      "x_puissance": false,
+      "x_masse": true,
+      "pv": 4,
+      "ca": 0,
+      "limite": 0
+    }
+  ],
+  "exemples": [
+    {
+      "cle": "eclaireur-nu",
+      "nom": "Éclaireur nu",
+      "coque": "eclaireur",
+      "choix": [
+        {
+          "nature": "moteurs",
+          "cle": "moteur-1",
+          "quantite": 1
+        }
+      ]
+    },
+    {
+      "cle": "eclaireur-arme",
+      "nom": "Éclaireur armé",
+      "coque": "eclaireur",
+      "choix": [
+        {
+          "nature": "moteurs",
+          "cle": "moteur-1",
+          "quantite": 1
+        },
+        {
+          "nature": "armes",
+          "cle": "laser",
+          "quantite": 1
+        },
+        {
+          "nature": "defenses",
+          "cle": "blindage",
+          "quantite": 1
+        }
+      ]
+    },
+    {
+      "cle": "fregate-de-ligne",
+      "nom": "Frégate de ligne",
+      "coque": "fregate",
+      "choix": [
+        {
+          "nature": "moteurs",
+          "cle": "moteur-2",
+          "quantite": 1
+        },
+        {
+          "nature": "amenagements",
+          "cle": "cabines",
+          "quantite": 1
+        },
+        {
+          "nature": "amenagements",
+          "cle": "soute",
+          "quantite": 1
+        },
+        {
+          "nature": "armes",
+          "cle": "laser",
+          "quantite": 2
+        }
+      ]
+    },
+    {
+      "cle": "fregate-a-l-extreme",
+      "nom": "Frégate à l'extrême",
+      "coque": "fregate",
+      "choix": [
+        {
+          "nature": "moteurs",
+          "cle": "moteur-2",
+          "quantite": 1
+        },
+        {
+          "nature": "amenagements",
+          "cle": "cabines",
+          "quantite": 2
+        },
+        {
+          "nature": "armes",
+          "cle": "laser",
+          "quantite": 3
+        }
+      ]
+    },
+    {
+      "cle": "fregate-gourmande",
+      "nom": "Frégate gourmande",
+      "coque": "fregate",
+      "choix": [
+        {
+          "nature": "moteurs",
+          "cle": "moteur-2",
+          "quantite": 1
+        },
+        {
+          "nature": "amenagements",
+          "cle": "cabines",
+          "quantite": 3
+        },
+        {
+          "nature": "armes",
+          "cle": "laser",
+          "quantite": 3
+        }
+      ]
+    },
+    {
+      "cle": "croiseur-de-transport",
+      "nom": "Croiseur de transport",
+      "coque": "croiseur",
+      "choix": [
+        {
+          "nature": "moteurs",
+          "cle": "moteur-2",
+          "quantite": 1
+        },
+        {
+          "nature": "amenagements",
+          "cle": "soute",
+          "quantite": 1
+        },
+        {
+          "nature": "amenagements",
+          "cle": "cabines",
+          "quantite": 1
+        },
+        {
+          "nature": "armes",
+          "cle": "laser",
+          "quantite": 2
+        },
+        {
+          "nature": "armes",
+          "cle": "canon-leger",
+          "quantite": 1
+        },
+        {
+          "nature": "modifications",
+          "cle": "renfort",
+          "quantite": 1
+        },
+        {
+          "nature": "defenses",
+          "cle": "blindage",
+          "quantite": 1
+        }
+      ]
+    },
+    {
+      "cle": "fregate-sans-moteur",
+      "nom": "Frégate sans moteur",
+      "coque": "fregate",
+      "choix": [
+        {
+          "nature": "amenagements",
+          "cle": "cabines",
+          "quantite": 1
+        },
+        {
+          "nature": "armes",
+          "cle": "laser",
+          "quantite": 1
+        }
+      ]
+    }
+  ]
+}

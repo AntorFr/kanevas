@@ -39,10 +39,17 @@ export interface StockageCatalogue {
   retraits(db: Db, universId: number): { nature: string; cle: string }[];
   poserRetrait(db: Db, universId: number, nature: string, cle: string, retire: boolean): void;
 }
+/** What a nature may check beyond its own schema: whether another element is known at the import's level (V-10). */
+export interface ContexteVerification { existe(nature: string, cle: string): boolean }
 export interface DeclarationCatalogue {
   natures: { nom: string; libelle: string; libellePluriel: string;
     schema: z.ZodObject; resume(donnees: Record<string, unknown>): string }[];
   stockage: StockageCatalogue;
+  /**
+   * Cross-element check of a valid element, run after its schema; natures are read in declared order, so an element may
+   * rely on the valid ones of the same file declared before it. A refusal gives the field and the reason.
+   */
+  verifier?(nature: string, donnees: Record<string, unknown>, ctx: ContexteVerification): { champ: string; raison: string } | null;
 }
 /** A tool a script pushes data into without a catalogue (T-9): the natures key the batch's counters. */
 export interface DeclarationImportation {
@@ -86,6 +93,8 @@ export interface ContexteSection {
   ficheId: number;
   sectionId: number | null;
 }
+/** What was just written in a managed section. */
+export interface EcritSection { contenu: string; sourceVersion: string; charge?: unknown }
 /** A section a generator writes and locks (AD-122, AD-127): the section holds the text version only. */
 export interface SectionGeree {
   /** Third part of `gere_par` (`module/outil/type`). */
@@ -99,7 +108,12 @@ export interface SectionGeree {
   /** The current version of the sources (catalogue, settings): cheap, read-only. */
   versionSource(ctx: ContexteSection): string;
   /** The text version and the source version it was made with; reads what the actor may read, never writes. */
-  produire(ctx: ContexteSection): { contenu: string; sourceVersion: string };
+  produire(ctx: ContexteSection): { contenu: string; sourceVersion: string; charge?: unknown };
+  /**
+   * Runs in the transaction of every write of the section, after it (S-3, V-4); an error rolls the write back.
+   * `charge` is the opaque value `produire` returned, when the write comes from it.
+   */
+  apresEcriture?(ctx: ContexteSection, ecrit: EcritSection): void;
 }
 /** Generators record settings versions to mark designs stale (AD-128). */
 export interface DeclarationGenerateur extends BaseOutil { type: 'generateur'; sections?: SectionGeree[] }
@@ -154,6 +168,7 @@ const declaration = z.strictObject({
         resume: fonction })).min(1),
       stockage: z.strictObject({ lister: fonction, lirePar: fonction, ecrire: fonction,
         poserMasque: fonction, retraits: fonction, poserRetrait: fonction }),
+      verifier: fonction.optional(),
     }).optional(),
     importation: z.strictObject({
       natures: z.array(z.strictObject({ nom: z.string().regex(/^[a-z][a-z0-9_-]*$/),
@@ -164,7 +179,7 @@ const declaration = z.strictObject({
     creation: z.strictObject({ libelle: z.string().min(1), creer: fonction, rendreVisible: fonction }).optional(),
     sections: z.array(z.strictObject({
       type: z.string().regex(/^[a-z][a-z0-9_-]*$/), libelle: z.string().min(1), usage: z.string().min(1),
-      recalcul: z.enum(['geste', 'proposition']), composant: z.boolean().optional(), versionSource: fonction, produire: fonction,
+      recalcul: z.enum(['geste', 'proposition']), composant: z.boolean().optional(), versionSource: fonction, produire: fonction, apresEcriture: fonction.optional(),
     })).optional(),
     ecran: z.strictObject({ libelle: z.string().min(1), icone: z.string().min(1) }),
   })), routes: fonction.optional(),

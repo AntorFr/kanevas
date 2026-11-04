@@ -20,6 +20,8 @@ export interface ElementResolu extends LigneCatalogue { origine: OrigineCatalogu
 export interface VueElementCatalogue {
   nature: string; cle: string; nom: string; resume: string;
   origine?: OrigineCatalogue; masque?: boolean; version?: number; donnees?: Record<string, unknown>;
+  /** Player reading only: the element comes from the universe's catalogue (tag « Univers »); no `origine` is carried. */
+  univers?: true;
 }
 export interface PageCatalogue { elements: VueElementCatalogue[]; suivant: string | null }
 export interface OptionsCatalogue { nature?: string; curseur?: string }
@@ -123,6 +125,14 @@ function importCatalogue(db: Db, acteur: Acteur, cible: CibleOutils, cle: string
     const rapport: RapportCatalogue = { version: file.version, apercu, natures: {}, remplacements: 0,
       absents: 0, refus: [], refusTotal: 0, versionCatalogue: lireLigneOutil(db, cible, cle)?.version_catalogue ?? null };
     const present = new Set<string>();
+    const valides = new Set<string>();
+    const retires = cible.niveau === 'univers'
+      ? new Set(catalogue.stockage.retraits(db, cible.id).map((r) => key(r.nature, r.cle))) : new Set<string>();
+    // Valid elements of the file, then the catalogue visible at the target level (a system import sees its own level only).
+    const existe = (nature: string, cle: string) => valides.has(key(nature, cle))
+      || catalogue.stockage.lirePar(db, target, nature, cle) !== null
+      || (cible.niveau === 'univers' && !retires.has(key(nature, cle))
+        && catalogue.stockage.lirePar(db, { systemeId }, nature, cle) !== null);
     let changed = false;
     const reject = (nature: string, elementKey: string, champ: string, raison: string) => {
       rapport.natures[nature]!.refuses++;
@@ -148,6 +158,9 @@ function importCatalogue(db: Db, acteur: Acteur, cible: CibleOutils, cle: string
           reject(nature.nom, itemKey, champ, issueReason(issue)); continue;
         }
         const donnees = parsed.data as Record<string, unknown>;
+        const verdict = catalogue.verifier?.(nature.nom, donnees, { existe });
+        if (verdict) { reject(nature.nom, itemKey, verdict.champ, verdict.raison); continue; }
+        valides.add(key(nature.nom, itemKey));
         const old = catalogue.stockage.lirePar(db, target, nature.nom, itemKey);
         const status = !old ? 'ajoutes' : old.nom !== donnees.nom || jsonCanonique(old.donnees) !== jsonCanonique(donnees) ? 'modifies' : 'inchanges';
         counts[status]++;
@@ -192,8 +205,11 @@ function resolve(db: Db, universId: number, cle: string, nature?: string): Eleme
   return [...rows.values()];
 }
 /** Module computations receive only effective entries; withdrawals are management metadata. */
-export function resoudreElements(db: Db, universId: number, outil: string, nature: string): ElementResolu[] {
-  return resolve(db, universId, outil, nature).filter((r) => r.origine !== 'retire');
+export function resoudreElements(db: Db, universId: number, outil: string, nature: string,
+  options: { inclureMasques?: boolean } = {}): ElementResolu[] {
+  // V-3: `inclureMasques: true` names the hidden elements a design already carries; `false` drops them. Left out, the
+  // historical K-2 reading (masked or not) stays, which the catalogue tests pin. A withdrawn element never comes back.
+  return resolve(db, universId, outil, nature).filter((r) => r.origine !== 'retire' && (options.inclureMasques !== false || !r.masque));
 }
 function page(catalogue: DeclarationCatalogue, rows: ElementResolu[], mj: boolean, options: OptionsCatalogue): PageCatalogue {
   let readable = rows.filter((r) => mj || (!r.masque && r.origine !== 'retire'));
@@ -204,7 +220,8 @@ function page(catalogue: DeclarationCatalogue, rows: ElementResolu[], mj: boolea
   }
   const elements = readable.slice(0, 50).map((r): VueElementCatalogue => ({
     nature: r.nature, cle: r.cle, nom: r.nom, resume: natureOf(catalogue, r.nature).resume(r.donnees),
-    ...(mj ? { origine: r.origine, masque: r.masque, version: r.version } : { donnees: r.donnees }),
+    ...(mj ? { origine: r.origine, masque: r.masque, version: r.version }
+      : { donnees: r.donnees, ...(r.origine === 'univers' || r.origine === 'remplace' ? { univers: true as const } : {}) }),
   }));
   return { elements, suivant: readable.length > 50 ? elements.at(-1)!.cle : null };
 }
@@ -226,8 +243,9 @@ export function lireCatalogueGestion(db: Db, acteur: Acteur, universId: number, 
   return page(catalogue, resolve(db, universId, outil, options.nature), true, options);
 }
 /** Single-item counterpart of resoudreElements, for computations already guarded by tool usage. */
-export function lireElement(db: Db, universId: number, outil: string, nature: string, cle: string): ElementResolu {
-  const element = resoudreElements(db, universId, outil, nature).find((r) => r.cle === cle);
+export function lireElement(db: Db, universId: number, outil: string, nature: string, cle: string,
+  options: { inclureMasques?: boolean } = {}): ElementResolu {
+  const element = resoudreElements(db, universId, outil, nature, { inclureMasques: options.inclureMasques === true }).find((r) => r.cle === cle);
   if (!element) throw introuvable();
   return element;
 }

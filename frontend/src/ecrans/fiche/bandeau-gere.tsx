@@ -3,7 +3,7 @@ import { useEffect, useState, type ComponentType } from 'react';
 import { Link } from 'react-router-dom';
 
 import { ErreurApi, appeler, useConnexionPerdue } from '../../api';
-import { composantSection } from '../../outils/registre';
+import { composantSection, motsBandeau } from '../../outils/registre';
 import type { PropsSection } from '../../outils/types';
 import { Alerte, Bouton, Markdown } from '../../ui';
 import { montrerProposition } from '../assistant/fil';
@@ -32,6 +32,7 @@ export function BandeauGere({ universId, ficheId, section, rafraichir }: Props) 
   const [perdu, setPerdu] = useState(false);
   const [annonce, setAnnonce] = useState('');
   const url = `/api/univers/${universId}/fiches/${ficheId}/sections/${section.id}`;
+  const mots = motsBandeau(g.outil);
   const desactive = g.etat === 'desactive';
   const ouvert = !desactive && g.outil !== null;
   const perime = ouvert && g.etat === 'perime';
@@ -84,10 +85,10 @@ export function BandeauGere({ universId, ficheId, section, rafraichir }: Props) 
           <span className="bg-nom">Outil désactivé</span>
         ) : g.lien && g.libelle ? (
           <Link className="bg-nom lien" to={g.lien}>
-            Générée par {g.libelle}
+            Générée par {mots && g.libelle ? mots.nom : g.libelle}
           </Link>
         ) : (
-          <span className="bg-nom">{g.libelle ? `Générée par ${g.libelle}` : 'Générée par un outil'}</span>
+          <span className="bg-nom">{g.libelle ? `Générée par ${mots ? mots.nom : g.libelle}` : 'Générée par un outil'}</span>
         )}
         {ouvert && g.libelle !== null && perime && (
           <span className="bg-etat" role="status">
@@ -99,7 +100,7 @@ export function BandeauGere({ universId, ficheId, section, rafraichir }: Props) 
             {g.peutOuvrir && g.lien && !desactive && (
               <Link className="bouton" to={g.lien}>
                 <ExternalLink size={14} strokeWidth={1.75} aria-hidden="true" />
-                Ouvrir dans l’outil
+                {mots ? mots.ouvrir : 'Ouvrir dans l’outil'}
               </Link>
             )}
             {recalculer && (

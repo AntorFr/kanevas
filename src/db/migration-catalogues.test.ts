@@ -26,7 +26,7 @@ test('catalogues : montée depuis 0020 peuplée, lots et jetons restent lisibles
   const jeton = db.prepare('SELECT * FROM jetons_api').all();
   const lot = db.prepare('SELECT * FROM lots_import').all();
 
-  assert.deepEqual(migrate(db), [21, 22, 23]);
+  assert.deepEqual(migrate(db), [21, 22, 23, 24]);
   assert.deepEqual(db.prepare('SELECT * FROM jetons_api').all(), jeton);
   assert.deepEqual(db.prepare('SELECT * FROM lots_import').all(), lot.map((l) => ({ ...(l as object), outil: null })));
   assert.deepEqual(db.pragma('foreign_key_check'), []);

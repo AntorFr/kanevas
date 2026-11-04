@@ -86,7 +86,7 @@ test('aperçu du fichier fautif : 200, ajoutes 11, rien d\'écrit ; application 
   assert.deepEqual(g.catalogue.univers, { version: null, comptes: { coques: 0, armes: 0 } });
   assert.deepEqual(g.catalogue.natures.map((n: any) => n.nom), ['coques', 'armes']);
   // Un outil sans catalogue n'a pas la clé.
-  assert.ok(liste.outils.filter((o: any) => o.cle !== G).every((o: any) => !('catalogue' in o)));
+  assert.ok(liste.outils.filter((o: any) => o.cle !== G && o.cle !== 'swn/vaisseaux').every((o: any) => !('catalogue' in o)));
 });
 
 test('droits d\'application : Mira (MJ non responsable) 403 au système, 200 à l\'univers ; Léa et l\'étranger 404', async () => {

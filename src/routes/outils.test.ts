@@ -54,18 +54,19 @@ test('sans session, chaque route des outils répond 401', async () => {
 
 test('entrées : activé et visible seulement, rien pour un non-membre (404)', async () => {
   const w = await monde();
-  // Only the seeded galaxy tool is enabled yet (B-71); the trial tools are not.
+  // Only the seeded tools are enabled (B-71, V-11: the galaxy and the ship designer); the trial tools are not.
   const galaxie = { cle: 'swn/galaxie', libelle: 'Galaxie', icone: 'Map', chemin: `/univers/${w.E}/outils/swn/galaxie` };
-  assert.deepEqual((await appel(w.app, w.antor, 'GET', base(w.E) + '/entrees')).json(), [galaxie]);
+  const vaisseaux = { cle: 'swn/vaisseaux', libelle: 'Concepteur de vaisseaux', icone: 'Rocket', chemin: `/univers/${w.E}/outils/swn/vaisseaux` };
+  assert.deepEqual((await appel(w.app, w.antor, 'GET', base(w.E) + '/entrees')).json(), [galaxie, vaisseaux]);
   assert.equal((await appel(w.app, w.antor, 'PUT', `/api/systemes/${w.S}/outils/essai/a/activation`, { active: true })).statusCode, 204);
-  const attendu = [{ cle: 'essai/a', libelle: 'Essai A', icone: 'Map', chemin: `/univers/${w.E}/outils/essai/a` }, galaxie];
+  const attendu = [{ cle: 'essai/a', libelle: 'Essai A', icone: 'Map', chemin: `/univers/${w.E}/outils/essai/a` }, galaxie, vaisseaux];
   assert.deepEqual((await appel(w.app, w.antor, 'GET', base(w.E) + '/entrees')).json(), attendu);
   assert.deepEqual((await appel(w.app, w.lea, 'GET', base(w.E) + '/entrees')).json(), attendu);
   // MJ only: Léa has nothing, Antor keeps it; Antor in Player mode loses it too.
   await appel(w.app, w.antor, 'PUT', `/api/systemes/${w.S}/outils/essai/a/visibilite`, { mj: true, joueur: false });
-  assert.deepEqual((await appel(w.app, w.lea, 'GET', base(w.E) + '/entrees')).json(), [galaxie]);
+  assert.deepEqual((await appel(w.app, w.lea, 'GET', base(w.E) + '/entrees')).json(), [galaxie, vaisseaux]);
   assert.deepEqual((await appel(w.app, w.antor, 'GET', base(w.E) + '/entrees')).json(), attendu);
-  assert.deepEqual((await appel(w.app, w.antor, 'GET', base(w.E) + '/entrees?mode=joueur')).json(), [galaxie]);
+  assert.deepEqual((await appel(w.app, w.antor, 'GET', base(w.E) + '/entrees?mode=joueur')).json(), [galaxie, vaisseaux]);
   // Not a member of that universe: 404, not an empty list.
   assert.equal((await appel(w.app, w.teo, 'GET', base(w.E) + '/entrees')).statusCode, 404);
 });
@@ -116,7 +117,7 @@ test('GET univers/outils : MJ seulement, tous les outils même désactivés, deu
     assert.equal(r.statusCode, 200);
     const v = r.json();
     assert.equal(v.ecriture, true);
-    assert.deepEqual(v.outils.map((o: any) => o.cle), ['essai/a', 'essai/b', 'essai/g', 'swn/galaxie']);
+    assert.deepEqual(v.outils.map((o: any) => o.cle), ['essai/a', 'essai/b', 'essai/g', 'swn/galaxie', 'swn/vaisseaux']);
     const a = v.outils[0];
     assert.equal(a.systeme.active, false);
     assert.equal(a.systeme.versionReglages, 1);
@@ -141,7 +142,7 @@ test('GET systemes/outils : responsable, ecriture false pour un MJ non responsab
   assert.equal(m.statusCode, 200);
   assert.equal(m.json().ecriture, false);
   assert.deepEqual(m.json().responsable, { id: compteId(w.app, 'antor'), nom: 'antor', vousEtes: false });
-  assert.equal(m.json().outils.length, 4);
+  assert.equal(m.json().outils.length, 5);
   for (const h of [w.lea, w.teo]) assert.equal((await appel(w.app, h, 'GET', `/api/systemes/${w.S}/outils`)).statusCode, 404);
   assert.equal((await appel(w.app, w.antor, 'GET', `/api/systemes/${w.S}/outils?mode=joueur`)).statusCode, 404);
   assert.equal((await appel(w.app, w.antor, 'GET', '/api/systemes/999999/outils')).statusCode, 404);
@@ -177,7 +178,8 @@ test('PUT univers : MJ de l’univers, joueur 404, mode Joueur refusé', async (
   assert.equal((await appel(w.app, w.lea, 'PUT', url, { active: true })).statusCode, 404);
   assert.equal((await appel(w.app, w.teo, 'PUT', url, { active: true })).statusCode, 404);
   assert.ok((await appel(w.app, w.antor, 'PUT', url + '?mode=joueur', { active: true })).statusCode >= 403);
-  assert.equal(w.app.db.prepare('SELECT count(*) n FROM outils_univers').get()!['n' as never], 0);
+  // The seed holds the universe's own spear catalogue (V-11): its row is the only one, no activation is added.
+  assert.equal(w.app.db.prepare('SELECT count(*) n FROM outils_univers').get()!['n' as never], 1);
   assert.equal((await appel(w.app, w.mira, 'PUT', url, { active: true })).statusCode, 204); // a GM of the universe, not the system's owner
 });
 

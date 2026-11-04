@@ -38,6 +38,8 @@ export interface EntreeSectionGeree {
   contenu: string;
   sourceVersion: string;
   version?: number;
+  /** Opaque value handed to the tool's `apresEcriture` hook (V-4). */
+  charge?: unknown;
 }
 
 const bit = (v: boolean | undefined): number => (v ? 1 : 0);
@@ -61,10 +63,18 @@ export function poserSectionGeree(
 
   if (e.sectionId !== undefined) {
     if (!Number.isInteger(e.version)) throw invalide('La version lue est requise.');
-    return ecrireContenu(db, compteId, universId, e.ficheId, e.sectionId, e.contenu, e.version!, {
-      outil: e.outil,
-      sourceVersion: e.sourceVersion,
-    });
+    const sectionId = e.sectionId;
+    return db.transaction(() => {
+      const vue = ecrireContenu(db, compteId, universId, e.ficheId, sectionId, e.contenu, e.version!, {
+        outil: e.outil,
+        sourceVersion: e.sourceVersion,
+      });
+      decl.apresEcriture?.(
+        { db, acteur, universId, ficheId: e.ficheId, sectionId },
+        { contenu: e.contenu, sourceVersion: e.sourceVersion, charge: e.charge },
+      );
+      return vue;
+    })();
   }
 
   // Creation: a GM gesture like `ajouterSection`.
@@ -100,6 +110,10 @@ export function poserSectionGeree(
       sourceVersion: e.sourceVersion,
     });
     toucherFiche(db, e.ficheId, now);
+    decl.apresEcriture?.(
+      { db, acteur, universId, ficheId: e.ficheId, sectionId: sid },
+      { contenu: e.contenu, sourceVersion: e.sourceVersion, charge: e.charge },
+    );
     return sid;
   })();
   const s = db.prepare('SELECT * FROM sections WHERE id = ?').get(id) as SectionRow;
@@ -153,7 +167,7 @@ export function recalculerSection(
     if (decl.versionSource(ctx) === s.source_version) return vueSection(db, universId, role, s, acteur);
     const p = decl.produire(ctx);
     return poserSectionGeree(db, compteId, universId, {
-      ficheId, outil: cle, type: decl.type, sectionId, contenu: p.contenu, sourceVersion: p.sourceVersion, version,
+      ficheId, outil: cle, type: decl.type, sectionId, contenu: p.contenu, sourceVersion: p.sourceVersion, version, charge: p.charge,
     });
   })();
 }
@@ -226,5 +240,9 @@ export function appliquerRecalcul(
 ): void {
   const { cle, type, decl } = declareeDe(s);
   if (!decl) throw introuvable();
-  poserSectionGeree(db, compteId, universId, { ficheId: s.fiche_id, outil: cle, type, sectionId: s.id, contenu, sourceVersion, version });
+  // A proposal stores no `charge`: a tool with a hook gets the one of a fresh `produire` (V-4).
+  const charge = decl.apresEcriture
+    ? decl.produire({ db, acteur: { compteId }, universId, ficheId: s.fiche_id, sectionId: s.id }).charge
+    : undefined;
+  poserSectionGeree(db, compteId, universId, { ficheId: s.fiche_id, outil: cle, type, sectionId: s.id, contenu, sourceVersion, version, charge });
 }

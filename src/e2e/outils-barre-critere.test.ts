@@ -41,6 +41,9 @@ describe('section « Outils » de la barre et écran d’un outil', { skip: skip
     systemeId = u.systemeId ?? u.systeme_id ?? u.systeme?.id;
     const base = `/api/univers/${universId}/outils`;
     const cible = systemeId ? `/api/systemes/${systemeId}/outils` : base;
+    // the seed enables the ship designer: this test is about the trial tools alone
+    const coupe = await antor.page.request.put(`/api/systemes/${systemeId}/outils/swn/vaisseaux/activation`, { data: { active: false } });
+    assert.equal(coupe.status(), 204);
     // nothing enabled yet: no section
     await lea.page.goto(`/univers/${universId}`);
     await lea.page.getByRole('link', { name: 'Personnages', exact: true }).waitFor();
