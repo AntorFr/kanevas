@@ -4,15 +4,16 @@ import { Link } from 'react-router-dom';
 import { lire } from '../../../api';
 import { Pastille } from '../../../ui';
 import { BlocSuivi, VideBloc } from '../../suivi/blocs-commun';
-import { libelleCategorie, type Campagne, type Tache } from '../../suivi/commun';
+import type { Fiche } from '../../fiche/types';
+import { libelleCategorie, type Tache } from '../../suivi/commun';
 import type { Bloc } from '../registre';
 
 interface Groupe {
-  campagne: Campagne;
+  aventure: Fiche;
   taches: Tache[];
 }
 
-/** E-3 block « Préparation » (GM only): per active campaign, its five oldest unchecked tasks. */
+/** E-3 block « Préparation » (GM only): per adventure « En cours », its five oldest unchecked tasks. */
 function Preparation({ universId }: { universId: number }) {
   return (
     <BlocSuivi
@@ -21,12 +22,13 @@ function Preparation({ universId }: { universId: number }) {
       lignes={3}
       cle={universId}
       charger={async (): Promise<Groupe[]> => {
-        const { campagnes } = await lire<{ campagnes: Campagne[] }>(`/api/univers/${universId}/campagnes`);
-        const actives = campagnes.filter((c) => c.statut === 'active');
+        const { fiches } = await lire<{ fiches: Fiche[] }>(
+          `/api/univers/${universId}/fiches?type=aventure&statut=en_cours`,
+        );
         const groupes = await Promise.all(
-          actives.map(async (campagne) => {
-            const { taches } = await lire<{ taches: Tache[] }>(`/api/campagnes/${campagne.id}/taches`);
-            return { campagne, taches: taches.filter((t) => !t.faite).sort((a, b) => a.id - b.id).slice(0, 5) };
+          fiches.map(async (aventure) => {
+            const { taches } = await lire<{ taches: Tache[] }>(`/api/univers/${universId}/fiches/${aventure.id}/taches`);
+            return { aventure, taches: taches.filter((t) => !t.faite).sort((a, b) => a.id - b.id).slice(0, 5) };
           }),
         );
         return groupes.filter((g) => g.taches.length > 0);
@@ -37,16 +39,16 @@ function Preparation({ universId }: { universId: number }) {
           <VideBloc>Rien à préparer pour l’instant.</VideBloc>
         ) : (
           groupes.map((g) => (
-            <div key={g.campagne.id} className="groupe-prep">
-              <Link className="groupe-prep-tete" to={`/univers/${universId}/campagnes/${g.campagne.id}`}>
+            <div key={g.aventure.id} className="groupe-prep">
+              <Link className="groupe-prep-tete" to={`/univers/${universId}/fiche/${g.aventure.id}`}>
                 <Flag size={14} strokeWidth={1.75} aria-hidden="true" />
-                <span>{g.campagne.nom}</span>
+                <span>{g.aventure.titre}</span>
                 <span className="ouvrir">
                   Ouvrir
                   <ChevronRight size={12} strokeWidth={2} aria-hidden="true" />
                 </span>
               </Link>
-              <ul className="taches" aria-label={`Tâches non cochées de ${g.campagne.nom}`}>
+              <ul className="taches" aria-label={`Tâches non cochées de ${g.aventure.titre}`}>
                 {g.taches.map((t) => (
                   <li key={t.id} className="tache">
                     <span className="rond" aria-hidden="true" />

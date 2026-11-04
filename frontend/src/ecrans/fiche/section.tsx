@@ -9,6 +9,7 @@ import type { Detail } from '../mediatheque/commun';
 import { MESSAGE_RESERVE } from './fichiers';
 import { OutilFichier } from './outil-fichier';
 import { ReglageAudience, type Joueur } from './audience';
+import { BandeauGere, ContenuGere } from './bandeau-gere';
 import { blocsSectionVisibles } from './registre';
 import type { Audience, FicheVue, SectionVue } from './types';
 
@@ -74,6 +75,7 @@ export function PanneauSection(p: Props) {
   const demandes = useRef(new Set<number>());
 
   const mj = role === 'mj';
+  const geree = section.geree !== undefined;
   const url = `/api/univers/${p.universId}/fiches/${fiche.id}/sections/${section.id}`;
   const a = section.audience;
   const etat = a ? etatAudience(a) : undefined;
@@ -244,9 +246,9 @@ export function PanneauSection(p: Props) {
           </span>
         )}
       </div>
-      {(section.peutEcrire && !edition) || mj ? (
+      {(section.peutEcrire && !edition && !geree) || mj ? (
         <div className="sec-actions">
-          {section.peutEcrire && !edition && (
+          {section.peutEcrire && !edition && !geree && (
             <Bouton variante="fantome" petit ecrit icone={Pencil} aria-label="Modifier" onClick={modifier}>
               <span className="lib-modifier">Modifier</span>
             </Bouton>
@@ -287,7 +289,10 @@ export function PanneauSection(p: Props) {
           <span>{echec}</span>
         </div>
       )}
-      {edition ? (
+      {geree && <BandeauGere universId={p.universId} ficheId={fiche.id} section={section} rafraichir={p.rafraichir} />}
+      {geree ? (
+        <ContenuGere section={section} />
+      ) : edition ? (
         <>
           {perime && (
             <div className="alerte" role="alert">

@@ -159,6 +159,29 @@ link** (GM-only) keeps the text colour with a dashed `--danger` underline; a **w
 (GM-only), dashed `--texte-3`. A link to an unreadable sheet has **no** marking: it is
 text. State is conveyed by the underline **and** the tooltip, never colour alone.
 
+**The brand (`kanevas-icones`, AD-135).** The "Marge" icon (`assets/brand/kanevas-marge/`: ink #121317,
+periwinkle #8B9BF0, paper #FCFCFD — neutrals and the accent of the charter, no token added) is Kanevas's
+identity. It shows in the tab (favicon), on the home screen (apple-touch-icon), at install (manifest), and
+**in the sidebar, in place of the "K" square**, outside a universe: the `favicon.svg` image at 30 px (same size as
+the universe seal), empty `alt` (the link carries "Kanevas — Mes univers"), no border, shadow or added background,
+identical in both themes (its ink square carries its own background). The **universe seal** (initial of the name)
+is not the brand and does not change. Inside a universe, the sidebar shows the selector, not the brand. The icon is
+not redrawn and not recoloured.
+
+The sign-in page is not ours (Authelia; in stub mode a plain server page) and declares no brand (a browser asks `/favicon.ico` by itself and may show the icon in that tab, since the file is public); the tab icon of the app is declared by `index.html`. The source is the pack's main icon (ink square variant, « Encre & papier »).
+
+*States.* Loading, empty, permission denied and extreme content do not apply to the brand (a fixed image, the same
+for every role, and served without a session). If the image fails to load (network, 404), the link shows
+« Kanevas » alone: the 30 px slot stays empty, nothing else moves, and the link keeps its `aria-label`.
+Offline use is out of scope (no service worker, see `docs/parcours.md`): the installed app needs the network, and the brand image is no exception. A browser "offers installation" when it shows its own install prompt or menu entry for a manifest with name, icons and `display: standalone`; where, depends on the browser and is not specified here.
+*Criteria.* Given the app served, when a browser asks for `/favicon.ico`, `/favicon.svg`, `/apple-touch-icon.png`,
+`/icon-192.png`, `/icon-512.png`, `/icon-maskable-512.png` or `/site.webmanifest` without a session, then each answers
+200, not a redirect to the sign-in. Given a signed-in user outside a universe, when the page opens, then the tab shows
+the Marge icon and the sidebar shows it before « Kanevas », in both themes; inside a universe, the sidebar shows the
+selector. Given a browser that offers installation, when the user installs, then the app is named « Kanevas » and its
+icon is the Marge icon (on iOS, « Add to Home Screen » uses the 180 px apple-touch-icon). The mock-ups under
+`docs/maquettes/` still draw the "K" square (for example `e01-accueil.html`): on this point the charter prevails, and the mock-ups are not redrawn.
+
 ## 4. Components
 
 For each: **V** visual, **C** behavioural. All have the focus ring (2 px `--focus`,
@@ -250,14 +273,19 @@ For each: **V** visual, **C** behavioural. All have the focus ring (2 px `--focu
   `docs/ecrans.md`. File removal confirmation, however, happens **inline**: the
   row « Retirer « plan-des-egouts.pdf » ? Le fichier sera perdu. » with « Annuler » and
   « Retirer le fichier ».
+- *Variant without action* (kanevas-outils-cadre, « Transférer la responsabilité » when no other GM
+  can take over): same look and icon badge, the footer holds a single « Fermer » button on the right and no
+  action button; the text explains why no action is available. Focus enters on
+  « Fermer »; Escape and the overlay close; focus returns to the opening button; `role="alertdialog"`,
+  titled and described.
 
 **Field** (text, section textarea, list, checkbox).
 - V: 34 px, `--surface`, border `--bord-champ`, radius `--rayon-champ`, 12 px label
   weight 500 `--texte-2` above; on focus, `--accent` border and 3 px
   `--accent-fond` halo. A section's textarea keeps the reading typography (Newsreader
   18 px) on `--surface`, bordered by `--accent` with a halo, footer « 313 / 100 000 », keyboard help,
-  « Annuler », « Enregistrer ». Checkbox: 16 px, `--bord-champ` border; checked `--mj` (the product's
-  only checkbox says « Secrète (MJ seul) »).
+  « Annuler », « Enregistrer ». Checkbox: 16 px, outline `--bord-champ`; checked in `--mj`
+  for « Secrète (MJ seul) », in `--accent` for the search filter « sous-lieux compris ».
 - C: a visible label linked to the field; the error appears beneath in `--danger` with
   « Erreur : » before it, linked by `aria-describedby`; input is never lost on failure.
 
@@ -284,6 +312,12 @@ For each: **V** visual, **C** behavioural. All have the focus ring (2 px `--focu
   Joueur : vous voyez ce que voit un joueur. »
 - C: `role="radiogroup"`, two `role="radio"`; ← → switch; the banner is `role="status"`.
 
+**Segments** (an exclusive choice among a few: the galaxy system « Taille », E-21; `frontend/src/ui/segments.tsx`).
+- V: the segments sit on a `--surface-2` background, radius `--rayon-champ`, each at least 44 px high; the checked one
+  on `--accent` / `--sur-accent`; the legend above, `--texte-2` 13 px. Disabled: 45 % opacity.
+- C: `role="radiogroup"` labelled by the legend, one `role="radio"` per segment with `aria-checked`; a single tab stop
+  (the checked segment); ← → ↑ ↓ move and select, wrapping around.
+
 **Section block** (« Relations », « Pièces jointes »).
 - V: a row below the text, separated by `--bord`: label on the left (136 px, icon and 13 px
   `--texte-3`), content on the right; on phones, stacked. Relation: « membre de »
@@ -295,6 +329,10 @@ For each: **V** visual, **C** behavioural. All have the focus ring (2 px `--focu
   `--accent` bar. Empty: « Aucune relation pour l'instant. » in `--texte-3` followed by the action.
 - C: each role sees what `docs/ecrans.md` describes (a block with nothing to say does not exist
   for a player; the GM sees every block, even empty).
+
+**Ligne de fiche liée** (`LigneFicheLiee` and `VignetteFiche`, `frontend/src/ui/ligne-fiche-liee.tsx`; the block « Fiches liées » of E-9; E-17 reuses the thumbnail).
+- V: a row of at least 40 px, gap `--e-1` / `--e-3`; thumbnail 36 px (40 px in E-17) that keeps its image inside the frame (the image is clipped by its own radius, the « disparu » mark stays free to overflow), radius `--rayon-champ`, background `--surface-2`, the illustration or else the type icon in `--texte-3`; the title as a link (`.jeton`), then the type badge (`pj` for a player character), the sub-type in `--texte-3` 13 px, the « MJ seul » pill, the qualifier in grey, and « — via » (the sub-place) in grey 12 px. The « disparu » mark is the shared one: a round 16 px pill at left/bottom −4 px, 10 px icon, image at `saturate(.4)`. At 360 px the row wraps.
+- C: the thumbnail is `aria-hidden` unless it carries the mark (`role="img"`, the word of the mark); the title is truncated with `title`, the whole qualifier is in a tooltip; the link is reached by keyboard with the `--focus` ring.
 
 **Banner** (lost connection, stub mode, Player mode).
 - V: full width, attached below the top bar, opaque (`--fond` beneath the tint); lost
@@ -344,6 +382,47 @@ For each: **V** visual, **C** behavioural. All have the focus ring (2 px `--focu
   (`alt=""`) since the title follows; it loads as it approaches the viewport; an image that fails gives way
   to the fallback without a message.
 
+**Adventure status** (`fiche/statut.tsx`, E-8 and E-17; reusable by E-9).
+- Visual: a 24 px pill, icon and label; preparation uses `--texte-2` on `--surface-2`,
+  ready uses `--accent-texte` on `--accent-fond`, in progress uses `--table` on
+  `--table-fond`, finished uses `--texte-3` on `--surface-2`. No new colour tokens.
+  Sub-type and status wrap below the title; on phone cards they each take a line.
+- Behaviour: `StatutAventure` is read-only by default. Only a GM outside player mode gets
+  the standard keyboard menu, disabled offline and during PATCH. The old label stays until
+  the response succeeds; failure stays inline. A card's menu is a sibling of its link,
+  and opens toward the available space. The search result carries a passive badge only.
+
+**Adventure creation** (the shared E-8 window).
+- The optional parent is a searchable radio list, twenty adventures at a time, with a
+  bounded scroll area and full-title tooltips. The visibility checkbox starts unchecked.
+  The fields stay in the window on failure; they are disabled during creation.
+
+**Report rows** (`suivi/commun.tsx`, E-13).
+- Visual: the title leads; below it, the author (when present), a middle dot only when
+  both author and adventure are shown, and the adventure in a neutral `badge-type` pill.
+  The date stays at the right; hairlines separate rows. Long titles and pills wrap within
+  the text column, including on phones. Existing `--texte`, `--texte-3`, `--texte-2`,
+  `--surface-2` and `--bord` tokens provide both themes.
+- Behaviour: the title opens the report; the adventure pill is a separate keyboard link
+  to its sheet, at least 24 px high. Only adventure fields returned by the server appear.
+  A deleted adventure is plain text for the GM; a hidden one leaves no placeholder or
+  separator. Dates use a semantic `time` element. Without the adventure option (E-9 block),
+  the same row keeps only its title, author and date.
+
+**Adventure sheet blocks** (`fiche/blocs-fiche/`, E-9, AD-124).
+- Visual: the compact panels of `e09-aventure.html`, `--surface` and `--bord`,
+  `--rayon-panneau`, 16 px padding and gap; the preparation border uses `--mj-bord`.
+  Titles use Fraunces 18 px, secondary text `--texte-3`, standard fields and buttons.
+  The task form stacks on phones. No new colour token.
+- Behaviour: each block loads and retries independently. Categories with open tasks are
+  shown in order; checked tasks stay in a folded disclosure, last checked first.
+  Checkboxes keep their old state until success. Creation failures keep the fields and
+  show an inline alert; report drafts use session storage, scoped to their account and adventure,
+  until creation or cancellation.
+  The report window uses the shared focus trap. Offline, writing and pagination are disabled.
+  Preparation is absent for players and in player mode; report pagination uses the server's
+  filtered pages. Existing sheets keep these blocks when their type is deactivated.
+
 **System card** (E-16) and **universe card** (E-1): the sheet card, with a drawn header
 instead of an image.
 - V: same rules as the sheet card — no frame or shadow, hover `--surface-2` behind the
@@ -387,6 +466,9 @@ translucent colour is composited over what lies beneath.
 | `--texte-3` | `--fond-lateral` | dark / light | 5,75 / 5,21 | 4,5 | ok |
 | `--texte-3` | `--surface` | dark / light | 5,21 / 5,68 | 4,5 | ok |
 | `--texte-3` | `--surface-2` | dark / light | 4,81 / 5,08 | 4,5 | ok |
+| `--texte-2` (adventure preparation) | `--surface-2` | dark / light | 6.70 / 7.61 | 4.5 | ok |
+| `--accent-texte` (adventure ready) | `--accent-fond` on `--surface-2` | dark / light | 5.15 / 5.43 | 4.5 | ok |
+| `--table` (adventure in progress) | `--table-fond` on `--surface-2` | dark / light | 5.77 / 5.02 | 4.5 | ok |
 | `--sur-accent` | `--accent` | dark / light | 6,94 / 7,06 | 4,5 | ok |
 | `--accent-texte` | `--fond` | dark / light | 8,09 / 6,88 | 4,5 | ok |
 | `--texte` (current item) | `--accent-fond` on `--fond-lateral` | dark / light | 12,48 / 13,52 | 4,5 | ok |

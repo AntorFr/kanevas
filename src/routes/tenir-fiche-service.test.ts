@@ -14,8 +14,8 @@ process.env.ATTACHMENTS_DIR = DISQUE;
 
 const { buildApp } = await import('../app.js');
 const { semerBouchon, semerIllustrations, JETON_BOUCHON } = await import('../bouchon/depart.js');
-const { creerCampagne } = await import('../services/campagnes.js');
 const { creerCompteRendu } = await import('../services/comptes_rendus.js');
+const { creerFiche } = await import('../services/fiches.js');
 type Any = any; // eslint-disable-line @typescript-eslint/no-explicit-any
 
 async function monde() {
@@ -77,7 +77,7 @@ test('antor_renomme_port_sel_et_les_titres_invalides_sont_400_lea_403', async ()
 
 test('renommer_ne_touche_pas_dernier_import_et_un_compte_rendu_se_renomme', async () => {
   const w = await monde();
-  const camp = creerCampagne(w.app.db, w.idC('antor'), w.lame, { nom: 'Brumes' });
+  const camp = creerFiche(w.app.db, w.idC('antor'), w.lame, { type: 'aventure', sousType: 'Campagne', titre: 'Brumes' });
   const cr = creerCompteRendu(w.app.db, w.idC('antor'), w.lame, camp.id, { titre: 'Séance 1' });
   const avant = w.app.db.prepare('SELECT dernier_import FROM fiches WHERE id = ?').get(cr.id);
   const r = await w.req('antor', 'PATCH', F(w.lame, cr.id), { titre: 'Séance 1 bis' });
@@ -100,7 +100,7 @@ test('bilan_de_port_sel_pour_antor_404_pour_lea', async () => {
   assert.equal(r.status, 200, JSON.stringify(r.json));
   assert.deepEqual(r.json, {
     sections: 3,
-    relations: 3,
+    relations: 5,
     places: 1,
     fichiers: 2,
     enfants: 5,
@@ -176,7 +176,7 @@ test('transaction_en_echec_laisse_fiche_enfants_et_disque_intacts_puis_succes_ef
   assert.equal(n(`SELECT COUNT(*) n FROM fiches WHERE id = ${port}`), 1);
   assert.equal(n(`SELECT COUNT(*) n FROM fiches WHERE parent_id = ${port}`), 5);
   assert.equal(n(`SELECT COUNT(*) n FROM sections WHERE fiche_id = ${port}`), 3);
-  assert.equal(n(`SELECT COUNT(*) n FROM relations WHERE cible_fiche_id = ${port}`), 3);
+  assert.equal(n(`SELECT COUNT(*) n FROM relations WHERE cible_fiche_id = ${port}`), 5);
   assert.equal(n(`SELECT COUNT(*) n FROM elements_carte WHERE fiche_id = ${port}`), 1);
   assert.equal(n(`SELECT COUNT(*) n FROM pieces_jointes WHERE fichier = '${nom}'`), 1);
   assert.ok(existsSync(join(DISQUE, nom)), 'le disque est intact après un échec');
@@ -210,7 +210,7 @@ test('import_delete_par_cle_cree_supprime_recree_et_cle_inconnue_204_sans_ecritu
   assert.equal(JSON.stringify(w.app.db.prepare('SELECT * FROM fiches ORDER BY id').all()), avant);
   const rap2 = (await w.imp('GET', `lots/${l2}`)).json() as Any;
   assert.equal(rap2.compteurs.fiches.supprimees, 0);
-  for (const n of ['fichiers', 'campagnes', 'scenarios', 'relations']) assert.equal(rap2.compteurs[n].supprimees, undefined, n);
+  for (const n of ['fichiers', 'relations']) assert.equal(rap2.compteurs[n].supprimees, undefined, n);
   // without a lot: nothing counted, no trace
   assert.equal((await w.imp('DELETE', 'fiches/lieu:havre-gris')).statusCode, 204);
   // closed batch

@@ -62,7 +62,7 @@ Format from the `exigences` skill; each need cites the journeys that fulfill it.
   reads and writes everything. *(P-3, P-7)*
 - **B-9** — When an account opens a sheet, it only sees sections it may read, without
   titles or traces of others; a sheet with nothing readable does not exist for it. *(P-6)*
-- **B-10** — A GM connects one sheet to another with a relation whose type is free text, carried by
+- **B-10** — *(`kanevas-fiches-liees`: the relation carries a nature from the product's list and a free qualifier, B-63; « typée en texte libre » reads « qualifiée en texte libre »)* A GM connects one sheet to another with a relation whose type is free text, carried by
   a section: it has that section's visibility, and an unreadable target is not named.
   *(P-3, P-9)*
 - **B-11** — When an account searches a type's list (E-8), Kanevas only returns sheets
@@ -76,11 +76,11 @@ Format from the `exigences` skill; each need cites the journeys that fulfill it.
   nothing from it (its address responds like an unknown address). *(P-3, P-6)*
 
 ### Write, link, organize (`kanevas-import`)
-- **B-32** — The content of a section, scenario and system entry is **Markdown**:
+- **B-32** — *(`kanevas-scenarios`: « un scénario » reads « a section of an adventure's sheet », E-7 being retired)* The content of a section, scenario and system entry is **Markdown**:
   when an account saves it (E-9, E-7, E-15), Kanevas displays it formatted — headings, bold,
   italics, lists, quotes, tables, links, section images — and never interprets HTML written in
   the text, which is displayed as is; the editor has a **preview**. *(P-12, P-14)*
-- **B-33** — When an account writing a section types `[[`, E-9 suggests sheets it may
+- **B-33** — *(`kanevas-scenarios`: the same in an adventure's sections)* When an account writing a section types `[[`, E-9 suggests sheets it may
   read and inserts a **link** to the chosen one; when reading, a link to a sheet the reader
   sees opens that sheet; a link to a sheet they cannot see appears like surrounding
   text, without underlining or any trace; a link whose target does not exist (deleted, never
@@ -152,17 +152,17 @@ Format from the `exigences` skill; each need cites the journeys that fulfill it.
 - **B-46** — A GM sees their universe's tokens (name, created by, last use, expiry) and
   **revokes** one from E-18; if the token is revoked, expired, or its GM has lost that role, then
   every request presenting it is refused (401) and nothing is written. *(P-11)*
-- **B-47** — When a script pushes a sheet through the import API with an **origin key**, Kanevas
+- **B-47** — *(`kanevas-scenarios`: adventures go through this same route, B-61)* When a script pushes a sheet through the import API with an **origin key**, Kanevas
   creates it if the key is unknown in the universe, updates it if known, and changes nothing if
   nothing has changed — sheet, sections, relations, aliases, labels, parent, attachments, illustration,
   campaigns and scenarios; replaying the same import creates no duplicates. *(P-10)*
-- **B-48** — If anything an import wrote has since been **modified in Kanevas** (by a human or their
+- **B-48** — *(`kanevas-scenarios`: the `statut` of an adventure is protected like its sub-type and its parent)* If anything an import wrote has since been **modified in Kanevas** (by a human or their
   assistant) — a sheet's title, type, subtype, parent, aliases, labels; a section's title,
   content, audience, attachments; a sheet's illustration; a campaign's name and
   status; a scenario's title and content; a media library file's name and **visibility** —,
   then a new import does not overwrite what was modified,
   writes the rest, and the batch report names each field left untouched. *(P-10, P-14)*
-- **B-49** — A GM sees their universe's **import batches** on E-18: when, through which token, how many
+- **B-49** — *(`kanevas-scenarios`: the lot counts adventures among the sheets — no « campagnes » nor « scénarios » counters any more, AD-125)* A GM sees their universe's **import batches** on E-18: when, through which token, how many
   objects were created, updated, unchanged, refused, **by kind** (sheets, files, campaigns,
   scenarios, relations), how many links and references remain pending, and each refusal's
   origin key and reason. *(P-10)*
@@ -200,6 +200,13 @@ Format from the `exigences` skill; each need cites the journeys that fulfill it.
   reference them; exported files unused by any sheet enter it too. The script **must**
   send « Réservée au MJ » for a file that the source only uses in GM content. *(P-10;
   Monsieur's decision of 2026-10-11)*
+- **B-57** — *(kanevas-fiche-mj-seul)* A GM sees at a glance, in GM mode, which sheets the players
+  cannot see: a sheet none of whose sections is readable by players (or with no section at all)
+  carries the amber « MJ seul » badge on its card (E-8), on its tree line and in its header (E-9),
+  like a GM-only file in the media library; and the GM filters the list by visibility (« Toutes »,
+  « Visibles des joueurs », « Réservées au MJ »). Nothing is stored: the state is read from the
+  sections, and opening one section to the players removes the badge. A player, and the GM in
+  player mode, see neither badge nor filter. *(P-3 step 4 ; decision of Monsieur, 2026-10-25)*
 
 ### Assistant: its token set from administration (`kanevas-import`)
 - **B-51** — When the instance admin
@@ -225,20 +232,61 @@ Format from the `exigences` skill; each need cites the journeys that fulfill it.
   it cannot see responds like an unknown address. *(P-8)*
 
 ### Campaigns, scenarios, preparation
-- **B-15** — A GM creates a universe's campaigns and changes their status — in preparation,
+
+> *Amended by `kanevas-scenarios` (decision of Monsieur, 2026-10-25): campaigns and scenarios
+> become sheets of the « Aventure » type. B-58 to B-62 replace B-15, B-16 and B-17 and amend
+> B-18 and B-19; E-6 Campagne and E-7 Scénario are retired. The reason: a scenario kept apart
+> received no incoming link, no image, no relation and no tree — the import of a real campaign
+> (ten documents cited by thirty sheets, fourteen table handouts) showed what that cost.*
+
+- **B-15** — *(replaced by B-58 and B-59)* A GM creates a universe's campaigns and changes their status — in preparation,
   active, completed — from the campaign list and page (E-6). *(P-3)*
-- **B-16** — A GM creates a campaign's scenarios from its page (E-6) and writes them (E-7); players
+- **B-16** — *(replaced by B-58; a scenario's sections are born closed to the players, and the GM may open one — a handout — which B-16 forbade)* A GM creates a campaign's scenarios from its page (E-6) and writes them (E-7); players
   never see them.
   *(P-3)*
-- **B-17** — A GM maintains a campaign's preparation list on its page (E-6): tasks in
+- **B-17** — *(replaced by B-60, same five categories)* A GM maintains a campaign's preparation list on its page (E-6): tasks in
   five categories (monsters, NPCs, maps, sequences, other) to check off; a checked task
   leaves the active list without disappearing. Players see none of it. *(P-3)*
 - **B-18** — A player sees the universe's campaign list, names and statuses. *(P-4, P-6)*
+  *Amended (`kanevas-scenarios`, decision of Monsieur, 2026-10-25)*: **the GM decides which
+  adventures the players see**, campaign or scenario alike: a player sees, in the « Aventures »
+  list (E-8) and in the « Campagnes en cours » block of E-3, the adventures one section of which
+  the GM opened to the players — typically « Présentation » when the campaign starts; nothing is
+  open at creation, a campaign in preparation stays the GM's — with their status (B-59).
+- **B-58** — *(kanevas-scenarios)* An **adventure** — a campaign, a scenario, a one-shot — is a
+  sheet of the « Aventure » type: sections with their audience, links from and to any sheet,
+  relations, files and illustration, search, and the tree. The sub-type is free (B-52); the
+  product proposes « Campagne » and « Scénario »; a scenario belongs to its campaign by the tree
+  (its parent), a one-shot stands at the root. The GM creates an adventure from the type's list
+  (E-8, where the tree is the default view) and reads and writes it in E-9, like any sheet;
+  deleting, renaming, changing the type follow the sheets' rules (B-… of `kanevas-import-tenir`).
+  *(P-3)*
+- **B-59** — *(kanevas-scenarios)* Every adventure carries a **play status**: « En préparation »
+  (at birth), « Prête », « En cours », « Terminée ». The GM changes it in place from the header
+  of E-9 and from the menu of its card or of its tree line in E-8; a change touches no other adventure. The status shows as
+  a badge on the card, on the tree line, in the header and in the results of E-17; every reader filters
+  the list by status; a player sees the status of the adventures he sees. *(P-3, P-4, P-6)*
+- **B-60** — *(kanevas-scenarios)* The **preparation** list (five categories, cocher/décocher,
+  GM only, as B-17 said) and the **comptes-rendus** of an adventure live on its sheet (E-9) as
+  blocks of the sheet, above its sections; « Nouveau compte-rendu » stands in that block, for any
+  member, and the CR names that adventure (B-19). The blocks of E-3 read the adventures
+  « En cours »: « Campagnes en cours » (sub-type Campagne), « Derniers comptes-rendus »
+  (unchanged), « Préparation » (the open tasks of the adventures en cours, GM). *(P-3, P-4)*
+- **B-61** — *(kanevas-scenarios)* The **import API** pushes an adventure through the sheets
+  route (`type: aventure`, `sousType`, `parent` by origin key, sections; `statut` too, built by `kanevas-scenarios-import-assistant`); a reimport
+  never overwrites a status, a sub-type or a parent changed in Kanevas (B-48 extended); a
+  compte-rendu names its adventure by its origin key as before. The former campaign and scenario
+  routes of the import disappear. *(P-10)*
+- **B-62** — *(kanevas-scenarios)* The GM's **assistant** creates a sheet of any activated type
+  — title, sub-type, parent — and so an adventure; « créer une campagne » and « créer un
+  scénario » become that one gesture. *(P-3)*
 
 ### Session reports and world updates
 - **B-19** — When a member writes a session report from a campaign page (E-6), the report is
   readable by the whole table and editable by its author; the GM reads and writes every report. Several
-  reports can coexist for the same session. *(P-4)*
+  reports can coexist for the same session. *(P-4)* *Amended (`kanevas-scenarios`)*: « depuis la page
+  d'une campagne (E-6) » reads « from the sheet of an adventure (E-9, block « Comptes-rendus »),
+  campaign or scenario »; the CR names that adventure, and E-13 shows it.
 - **B-20** — A universe's session reports are read together, from newest creation to oldest
   (editing a report does not move it up), in the report list (E-13). *(P-4, P-6)*
 - **B-21** — When a GM asks their assistant (E-12) to update the world from a report,
@@ -329,7 +377,7 @@ Format from the `exigences` skill; each need cites the journeys that fulfill it.
   its tools' data. *(P-21)*
 - **B-64** — A write to editable tool data (design, placed system, route, zone…)
   based on a stale version is **refused** with the same response as a section, and the screen explains it
-  with a way to reload. No live collaborative editing. *(P-18, P-19)*
+  with a way to reload (on the screen of a design, placed system, route or zone, and in the « Voir les éléments » panel; the catalogue import dialog has no reload: it says the data « changed meanwhile » and shows what was applied, and the file is chosen again to preview a new import). No live collaborative editing. *(P-18, P-19)*
 - **B-65** — An API token has a **scope per tool**; the import API accepts a tool's data
   (catalogue, placed systems, routes, zones, designs): one key per element, replay without duplicates,
   batch report, shape checked by the module (which also checks conversion). *(P-20)*
@@ -430,15 +478,27 @@ last GM — refused with the reason; a non-admin account opens the address — �
 introuvable. ».
 
 ### P-3 — Prepare Saturday's session (GM, Sunday evening, at a desk)
-1. **Overview** (E-3): active campaigns, latest reports, ongoing preparation.
-2. **Campaign** (E-6): they create the campaign (« En préparation ») or open an existing one and set it
-   to « Active »; reread the latest reports, create or open a **scenario** (E-7) and write it
-   (or ask their **assistant** (E-12) to create the campaign or scenario: the write block leads to E-6 or E-7).
-3. They check off or add **preparation** tasks (E-6).
+1. **Overview** (E-3): ongoing campaigns, latest reports, ongoing preparation.
+2. *(kanevas-scenarios)* **Aventures** (E-8, tree view): he creates the campaign « La Couronne
+   brisée » (sub-type Campagne, born « En préparation », nothing open to the players yet) or
+   opens the existing one, sets it « En cours » from its header (E-9) and opens « Présentation »
+   to the players, now that the campaign starts; under it he creates the
+   scenario « Acte II — Le sceau brisé » (sub-type Scénario, parent the campaign, sections closed
+   to the players), writes it in E-9 like any sheet — links to Aldric and Port-Sel, the plan of the
+   crypt from the media library, a relation to the Guilde —, and sets it « Prête » when it is — from the status line of its sheet, or in place from its tree line or its card in E-8, where he can also filter by « Statut »; when a status change or a creation fails, « L'action n'a pas abouti. Réessayez. » and nothing changes —; or
+   he asks his **assistant** (E-12) to create it: the writing block leads to its sheet.
+3. On the campaign's sheet (E-9), block « Préparation »: he ticks or adds tasks.
+   *Échec*: the campaign's page is open in two tabs; a status set in one is shown stale in the
+   other until it reloads — the status menu writes the whole value, no conflict to resolve.
 4. **Lore**: from a **type's list** (E-8, among enabled types), they create an NPC or place, with a **subtype** if needed; on the **sheet** (E-9), they
-   write « Apparence » (player-readable) and « Vérité — MJ seul », link the NPC to their faction,
+   write « Apparence » (player-readable) and « Vérité — MJ seul », link the NPC to their faction
+   (*kanevas-fiches-liees*: nature « membre de », qualifier « trésorier ») and to Port-Sel
+   (« se situe à », « habite »),
    upload a place's plan, and set Aldric's portrait as the sheet's **illustration** (visible
-   to anyone seeing the sheet); back on the list, Aldric's card carries that portrait.
+   to anyone seeing the sheet); back on the list, Aldric's card carries that portrait. *(kanevas-fiche-mj-seul)*
+   A PNJ he has described only in « Vérité — MJ seul » carries the « MJ seul » badge in the list of
+   personnages until he writes « Apparence » for the players; « Visibilité » ▸ « Réservées au MJ »
+   lists what the table will not see (B-57).
 5. They ask their **assistant** (E-12) « rappelle-moi tout ce qu'on sait d'Aldric » then
    « fais un portrait pour Apparence »: the image is attached to the section, and they follow « Ouvrir la section »
    in the thread to see it on the sheet (E-9).
@@ -458,10 +518,11 @@ fails — « L'action n'a pas abouti. Réessayez. », the illustration remains; 
 the frame says « Image indisponible. » and keeps « Remplacer » and « Retirer ».
 
 ### P-4 — Write the session report (player or GM, the day after the game)
-1. From the **overview** (E-3) or **campaign list** (E-6), they open the campaign.
-2. **« Nouveau compte-rendu »**: title, text; they publish it — it opens as a **sheet** (E-9)
-   of type session report.
-3. They edit it later; others read it from the campaign or **report list**
+1. From the **overview** (E-3) or the **Aventures** list (E-8), they open the campaign — or
+   the scenario played that night — (E-9). *(amended by `kanevas-scenarios`)*
+2. **« Nouveau compte-rendu »**, in the block « Comptes-rendus » of that sheet: title, text; they
+   publish it — it opens as a **sheet** (E-9) of type session report, which names the adventure.
+3. They edit it later; others read it from the adventure or the **report list**
    (E-13).
 
 ### P-5 — Update the world after the game (GM)
@@ -481,6 +542,14 @@ the frame says « Image indisponible. » and keeps « Remplacer » and « Retire
    the table knows.
 3. They open the **map** (E-11), tap a token, reread the sheet.
 4. Or ask their **assistant** (E-12) « que sait-on d'Aldric ? ».
+6. *(kanevas-fiches-liees)* On « Port-Sel » (E-9), Léa reads « S'y trouvent : Personnages (1) » —
+   Maître Aldric, whose relation is in « Apparence », which she reads; the Prieur, linked from
+   « Secret — MJ seul », is neither counted nor named — and, in the grid of characters (E-8),
+   the « mort » mark on Bran Corvalis's portrait — once Antor has marked him dead (P-17,
+   step 4); before that, Bran is alive in the seed.
+5. *(kanevas-scenarios)* **Aventures** (E-8): he sees « La Couronne brisée », « En cours », and
+   reads what its sheet shows to the players (E-9) — its « Présentation », never the scenarios
+   beneath it, whose sections are closed.
 *Failure*: they ask to read « Vérité »: the assistant answers « Introuvable. », like the interface;
 the assistant is unavailable or fails: the panel says so, and the sheet remains readable (E-9).
 *Failure* (illustration, step 2): an image does not load (phone network) — the card
@@ -529,7 +598,7 @@ He first wants a disposable trial, then the real collection, without duplicates 
    « Vaisseau » to enabled (the system disables it) — P-13.
 3. **« Accès par API »** (E-18): « Nouveau jeton », name « Script Kanka — Mac », lifetime 30 days;
    Kanevas shows the token once; he copies it into the script's configuration.
-4. *Outside Kanevas*: he runs the script; the script opens a **batch**, pushes
+4. *(`kanevas-fiches-liees`: a relation entry carries `nature` and `qualificatif` — `type` still read as the qualifier for one version —, a `disparu` mark on a sheet of a type that carries it, a `famille` sheet; an unknown or incompatible nature is a refusal counted, `nature_incompatible`)* *(`kanevas-scenarios`: campaigns and scenarios are pushed as sheets of type `aventure`, and counted with them)* *Outside Kanevas*: he runs the script; the script opens a **batch**, pushes
    **campaigns** first, then sheets, parents first (origin key, type, title, parent, aliases,
    labels, Markdown sections with their `[[…]]` links, GM blocks, images,
    audience) — session reports with their campaign key —, then relations, and closes the batch
@@ -537,8 +606,8 @@ He first wants a disposable trial, then the real collection, without duplicates 
    Files, images and documents, first go into the **media library** (E-19), each with its
    permissions — « Réservée au MJ » for those Kanka only displays in GM content, « Visible des
    joueurs » otherwise —, including the 385 MB unused by any sheet; sheets reference them.
-5. **« Accès par API »** (E-18), « Lots d'import » block: « Fiches : 498 créées, 3 refusées · Fichiers :
-   1 140 créés · Campagnes : 4 créées · Scénarios : 12 créés · Relations : 324 créées · 6 en attente »; he
+5. *(`kanevas-scenarios`: campaigns and scenarios are pushed as sheets of type `aventure`, and counted with them)* **Accès par API** (E-18), bloc « Lots d'import » : « Fiches : 498 créées, 3 refusées · Fichiers :
+   1 140 créés · Relations : 324 créées, 2 refusées (nature incompatible, *`kanevas-fiches-liees`*) · 6 en attente » ; il
    expands refusals: « personnage:aldric-le-gris — section « Vérité » : 112 000 caractères, 100 000
    au plus ».
 6. He opens a few sheets (**E-8** as a tree, **E-9**, **E-17**) and switches to **Player mode** to
@@ -628,22 +697,37 @@ panel (« Page introuvable. ») and reads E-15's tab as « Lecture seule », swi
    « Port franc » (the list suggests place subtypes already used: « Sphère », « Port », « Taverne »…);
    « ⋯ » menu: « Déplacer sous… » « Les Sphères »; « Alias et étiquettes ». On « Les Cristaux
    d'Ombre », imported as Note, « Changer le type »: « Note » → « Savoir », subtype « Ressource ».
+   *(kanevas-sous-type-dialogue, B-52)* « Maître Aldric » is an NPC with sub-type « Capitaine » (badge
+   « PNJ · Capitaine »; in the stub, the seeded sheet has none: Antor first sets it in the badge). Antor opens his sheet from « Personnages », then its « ⋯ » menu, « Changer le type… », and leaves « Personnage (actuel) »:
+   the field holds « Capitaine »; he types « Amiral » and clicks « Changer le type »; the badge says
+   « PNJ · Amiral ».
+   *(kanevas-sous-type-dialogue, B-52)* The sub-type « Port » of « Port-Sel », above, he changed in
+   place, in the badge: on hover, the pencil that appeared next to « Port » showed him that it is editable.
+   *(kanevas-deplacer-arborescence)* Another day, Antor moves « La Taverne du Kraken »: « Déplacer sous… » opens
+   on the level where it is — « Lame d'Ébène › Les Sphères › Port-Sel », its siblings listed, the Taverne marked
+   « (cette fiche) » — and he chooses « Les Docks » without typing anything (moment fort: he sees where the sheet
+   is before choosing where it goes); « Recherche » stays one click away when he knows the title. Failure: a
+   level that does not load says « Impossible de charger ce niveau. » with « Réessayer », the path still usable;
+   connection lost — the banner, navigation and « Déplacer » inactive, the shown level stays.
 3. A duplicate's « ⋯ » menu: « Supprimer la fiche… »; the dialog counts what goes with it
    (sections, relations targeting it, placements on a map; its files remain in the media library),
    says under which sheet
    its children move up and that links targeting it will become broken links (exact wording:
    E-9); the duplicate came from Kanka: Antor also removes it from the export, otherwise the next import
    recreates it (B-40).
-4. In a **scenario** (E-7), the same action: `[[` opens the same list (sheets in the campaign's universe) and the link
+4. In a **scenario** (E-7 — `kanevas-scenarios`: a section of the scenario's sheet, E-9), the same action: `[[` opens the same list (sheets in the campaign's universe) and the link
    opens the sheet; in a system entry (E-15), `[[` does nothing.
 *Link failure*: Léa, an author with write permission, manually types `[[<id>]]` of a sheet she cannot read (the identifier from an address Antor gave her) — « Cette fiche n'existe
 pas ou vous ne pouvez pas la lire. » below the field, her text intact; the list does not respond — « Impossible de
 chercher. » and « Réessayer »; a link to a sheet not imported yet — « en attente » for Antor,
 text for Léa until the sheet arrives; in a scenario, a failed list — « Impossible de chercher. ».
-*Failure*: a move that would form a cycle (« Les Sphères » under one of its children) — « Une fiche
+*Failure*: a move that would form a cycle (the box no longer offers the child; the case of a hierarchy changed while the box is open remains) — « Une fiche
 ne peut pas être rangée sous l'un de ses descendants. »; an emptied title — « Erreur : le titre est obligatoire. », the field remains; a deletion summary that fails to load — « Impossible de charger le détail. », « Réessayer » (states: E-9); a Player authoring a section containing
 a GM block — « Modifier » does not appear; text exceeding 100,000 characters — « Erreur : 100 000
 caractères au plus. », the text remains.
+*(kanevas-sous-type-dialogue)* The sub-type « Amiral » is not saved from « Changer le type… » —
+« Le sous-type n'a pas changé. Réessayez. », the box stays open with « Amiral »; the connection drops —
+the banner, « Changer le type » disabled, and the badge's sub-type no longer offers a background or pencil.
 
 ### P-15 — Set the assistant's token (Admin, instance admin) (B-51)
 *Admin has just deployed Kanevas: the assistant has no token yet, and they do not want to redeploy.*
@@ -693,11 +777,19 @@ introuvable. ».
 1. System page (**E-15**), « Outils » tab (**E-20**): the galaxy map and ship designer
    are listed as « Désactivé ». He enables both. Visibility: designer « MJ et
    joueurs », map « MJ et joueurs ».
-2. He sets the system's base settings (jump range: 1 hex), then imports a **catalogue**: « Importer un catalogue », JSON file; the preview says « 12 coques ajoutées,
-   0 modifiée, 1 refusée : arme « Laser lourd », champ `masse` : nombre attendu »; he confirms.
+2. He sets the system's base settings (jump range: 1 hex), then imports a **catalogue**: « Importer un catalogue », JSON file; the preview says « 11 ajoutés,
+   0 modifié, 1 refusé : arme « laser-lourd », champ `masse` : nombre attendu »; he confirms.
 3. Settings of « Éneria » (**E-14**), « Outils » tab: both tools follow the system; he overrides the
    designer to « Activé », sets « Charges de carburant » to « Non » (house rule) and adds Orak'Ziel
    crystals (a new element) to the universe catalogue by importing a file.
+   *(Detail from `kanevas-outils-catalogue`.)* The two imports are the same dialog on two tabs: step 2 on
+   the system's tab of E-15 (the preview counts elements — « 11 ajoutés, 0 modifié, 1 refusé » for
+   a file of 12; the numbers above are an illustration), step 3 on the universe's tab of E-14,
+   whose preview adds « dont N remplacent un élément du système ». Still on E-14, « Voir les éléments »
+   lets him **hide** the Orak'Ziel weapon from the players until the session, **withdraw** a system hull
+   the campaign does not use, and bring it back (B-62). For his conversion script he creates, on E-18, a
+   token whose scope is the designer alone (B-65, P-20); the script's import comes back as a batch named
+   after the tool.
 4. On the galaxy (E-21), he changes the seed: confirmation says « Tous les systèmes non définis changent de
    place ; les systèmes définis et promus ne bougent pas. ».
 *Highlight*: the « Outils » tab shows « Système · 1 » then « Univers · 2 » for each setting: the value's
@@ -705,7 +797,7 @@ origin is readable.
 *Failure*: he enables a tool depending on a disabled one — « <Outil> demande <autre outil> : activez-le
 d'abord. » (no SWN tool has dependencies: the text is exercised with the trial module); Mira, GM of another universe using the system,
 sees tools and values but neither « Activer » nor « Importer » at system level (hidden, read-only);
-unreadable catalogue file — « Ce fichier n'est pas un catalogue valide. »; connection lost
+unreadable catalogue file — « Ce fichier n'est pas un catalogue valide. »; a tool token refused (revoked, expired, out of scope) — 401 `jeton_invalide`, no batch opened; a refused element in a tool batch — counted « 1 refusé » in the batch of E-18; connection lost
 during application — nothing is partially applied.
 
 ### P-18 — Explore the galaxy, then maintain it (Léa, Player, on a phone; Antor, GM, at a desk)
@@ -717,13 +809,16 @@ session.*
 2. She chooses departure and arrival: « Port-Sel » → « Vael », and engine (2). The path along public
    routes appears with its duration (« 7 cases · 4,5 jours »).
 3. She copies the « Vael » link (stable address); the assistant, on request, calculates the same path.
-4. Antor (E-21, GM mode): he **places** a system in an anonymous hex (promotes it: name, notes, size,
+4. Antor (E-21, GM mode; the galaxy was created from E-10 « Nouvelle carte » ▸ « Carte de la galaxie », not visible until he makes it so): he **places** a system in an anonymous hex (promotes it: name, notes, size,
    colour), **draws** a route to « Vael » (exact length), **draws** a territory marked secret, then
    switches to **Player mode**: the ghost system, private route and territory no longer exist.
-5. « Document MJ… »: he chooses the « Galaxie — notes MJ » sheet (or creates one); the tool writes the managed « Document MJ » section there, GM-only, and updates it on each request.
+   From the « Galaxie ▾ » menu he also renames the galaxy, makes it visible (« Rendre visible »; he can hide it again),
+   changes its **seed** (« Graine… »: the undefined systems move, those he placed or promoted stay) and, apart,
+   « Supprimer la galaxie… » (the dialog counts what will be erased).
+5. « Document MJ… »: he chooses the « Galaxie — notes MJ » sheet (or creates one); the tool writes the managed « Document MJ » section there, GM-only. When he later places a system, the tool files an update **proposal** (« Proposition en attente »); the section changes only when he applies it, never on its own.
 *Highlight*: the same journey, seen by Léa then Antor, does not follow the same route: the smuggling
 route does not exist for her.
-*Failure*: Léa searches for « Station fantôme » — no result, never « masqué »; Antor saves a system from a
+*Failure*: Léa searches for « Station fantôme » — no result, never « masqué »; a write refused while Antor's form is open (role lost, tool disabled) — the form keeps his input and says « Action refusée. »; he abandons the document proposal — « Proposer la mise à jour » comes back; Antor saves a system from a
 stale version (modified meanwhile by the other GM) — « Ce système a changé depuis que vous l'avez ouvert. »
 and « Recharger »; connection lost — the map keeps the displayed view, writing actions are disabled;
 the density of generated systems never changes based on a territory she cannot see.
@@ -755,7 +850,7 @@ the density of generated systems never changes based on a territory she cannot s
    absent, and « Vent d'Orak » is « Page introuvable. » for her (not hers to read).
 *Highlight*: budgets recalculate before their eyes, and the sheet's section stays consistent with what
 is calculated.
-*Failure*: Antor disables the designer — the sheet shows « Caractéristiques » as text with « Outil
+*Failure*: a recalculation that fails — « Le recalcul n'a pas abouti. Réessayez. », the text unchanged; the usage removed meanwhile — « Vous ne pouvez plus recalculer cette section. »; connection lost — « Connexion perdue. », the buttons disabled. Antor disables the designer — the sheet shows « Caractéristiques » as text with « Outil
 désactivé », without editing; Roxane opens Léa's « Vent d'Orak », which she cannot read — « Page introuvable. »;
 two concurrent writes — the second refused with « Recharger »; calculating an invalid design —
 blocking alerts, « Enregistrer » refuses and explains why; Antor withdraws the hull of « Étoile du soir » from the universe or masks « Lance d'essai » — the design keeps its text, the line says « Élément retiré de cet univers » and « Enregistrer » stays disabled (withdrawn), or Léa still sees the masked element on her design but does not find it in her choices; on a phone, the catalogue is browsed in one column.
@@ -779,6 +874,77 @@ refused (401/403 depending on the import API) and nothing written.
    still using them.
 *Failure*: a GM who is not the system owner does not see system data deletion.
 
+### From properties to sheets and links (`kanevas-fiches-liees`)
+
+> *Decisions of Monsieur, 2026-10-25: a relation carries a **nature** from a finite list of the
+> product, whose meaning Kanevas knows, and a free **qualifier**; the search and the sheets use
+> the nature; a « Famille » type; an alive-or-dead mark on characters and creatures. Kanka was
+> read for reference (connections in free text with a mirrored `two_way`, organisation members
+> apart with a free `role`, a list of locations on a character): one mechanism here instead of
+> three. No migration of the existing free relations: Monsieur redoes the import.*
+
+- **B-63** — A relation carries two things: a **nature**, chosen in the product's list, specific
+  to the pair (type of the source sheet, type of the target sheet) and whose meaning Kanevas knows
+  in both directions — « se situe à » read from the place as « s'y trouvent », « membre de » read
+  from the organisation as « membres » —, or no nature (a free relation, as today); and an optional
+  free **qualifier** (« habite », « capitaine », « en exil ») that says more and decides nothing.
+  The GM picks the nature when he links (E-9); the list offered is the one of the two types. A
+  relation keeps its section, its audience and the two guards of AD-64. *(P-3, P-17)*
+- **B-64** — From the sheet of a place, an organisation, a family — any sheet that natures can
+  target —, the GM and the players see the **linked sheets**, grouped by nature read backwards
+  and by type (« S'y trouvent : Personnages (12), Créatures (3) », « Membres : Personnages (8) »),
+  each as a card line with its qualifier; on a place, « sous-lieux compris » adds what is linked to
+  its descendants in the tree, saying from which sub-place; a reader sees only the relations he
+  reads (the section and the source sheet, AD-64). *(P-17, P-6)*
+- **B-65** — The **advanced search** (E-17) finds the sheets linked to a given sheet by a given
+  nature (or by any relation), « sous-lieux compris » when that sheet is a place, combined with the
+  type, the label, the words and — for the seven types that can be gone — the state filter (« vivants / morts », « intacts / détruits »…); the result
+  is the list of E-17, under the same rights. *(P-17)*
+- **B-66** — « **Famille** » is a type of the product's list (reglable, activated by default,
+  icon `users`): a family is a sheet like a faction, members are characters linked to it by the
+  nature « membre de ». *(P-17)*
+- **B-67** — A sheet can be **gone**: a character or a creature is **mort**, a faction
+  **détruite**, a family **éteinte**, a place, an object or a vessel **détruit** (decision of
+  Monsieur, 2026-10-25 : one mark, a word per type). The GM sets it in place from the header of E-9
+  (« Marquer mort » / « Marquer détruite » … and the reverse), it shows by a sober mark on the image
+  of the card (E-8, E-17, the linked-sheet lines, the relation lines) and a badge with the type's
+  word in the header, visible to whoever sees the sheet, with a filter per list (« Vivants / Morts /
+  Tous » on characters and creatures, « Intacts / Détruits / Tous » on places, objects and
+  vessels, « Actives / Détruites / Tous » on factions, « Vivantes / Éteintes / Tous » on families).
+  No date, no cause: the text says the rest. *(P-17, P-6)*
+- **B-68** — The **import API** pushes the nature and the qualifier of a relation, the « gone » mark
+  (`disparu`) of a sheet of a type that carries it, and families, with the protection of B-48; the former free `type` of
+  a relation is the qualifier. *(P-10)*
+- **B-69** — The graph (E-11) and « Mentionnée dans » (E-9) read the nature where there is one:
+  the link of a graph shows the nature's label, the qualifier after it; « Mentionnée dans » keeps
+  the free relations and the links, the natured ones move to « Fiches liées » (B-64). *(P-6)*
+
+### P-17 — Prepare a scene in a district (Antor, GM, Friday evening, office)
+
+1. **Place** (E-9): he opens « Port-Sel ». The **« Fiches liées »** block says « S'y trouvent :
+   Personnages (12) » ; il coche **« sous-lieux compris »** : « Les Docks », « Le Pendu Joyeux »
+   add theirs, each with its district in grey and its qualifier (« habite »,
+   « tient la taverne »). He spots those he has not played in a long time.
+2. **Advanced search** (E-17): « lié à Port-Sel », « s'y trouvent » (the nature « se situe à » read backwards), sub-places included, type
+   Personnage, « Vivants »: the list of the port's living; he narrows it with the label
+   « contrebande ».
+3. **Fiche** (E-9) d'un contrebandier : il relie « membre de » → « La Guilde des Brumes »,
+   qualifier « passeur »; on the Guilde's sheet, « Membres : Personnages (9) » counts him;
+   the Guilde's leader is « membre de » there with the qualifier « dirige » (« dirige » is not a
+   nature : décision de Monsieur).
+   He creates the **family** « Les Corvalis » (E-8, type Famille, B-66) and links Bran and Dame
+   Ombeline to it by « membre de » (« aîné », « veuve »); on the Corvalis sheet, « Membres :
+   Personnages (2) ».
+4. An NPC died at session 12: on its sheet, **« Marquer mort »**; its card carries the mark
+   in the grid and in « S'y trouvent », and « Vivants » no longer lists it. In the grid of
+   characters (E-8), the filter « Vivants / Morts / Tous » (kept in the address) lists the dead
+   only; if he picked the wrong NPC, **« Marquer vivant »** undoes the gesture.
+*Highlight*: step 1, the place that shows at a glance who is there, sub-places included.
+*Failure*: if « Marquer mort » fails, the sheet stays as it was and a message says so (E-9); he links « se situe à » an **object**: the nature is not offered for this pair of
+types, the form shows only the natures of the pair (or « sans nature »); a relation whose
+section is closed to the players does not appear in « Fiches liées » for Léa, nor in her
+search, nor in the count.
+
 ## Out of scope
 
 - **Tools in `kanevas-outils`** *(Monsieur's decisions, 2026-10-15 and 16)*: the **faction turn manager** (epic `kanevas-factions`, with
@@ -788,11 +954,25 @@ refused (401/403 depending on the import API) and nothing written.
   (existing rule): the GM creates the ship sheet, the player designs as the section author.
 - **Live play**: no initiative, animated combat or fog of war; the table remains
   physical.
+- *(kanevas-scenarios)* **A calendar of sessions** (dates, who was there) and a **play log per
+  scenario** (« joué le 12 octobre avec Léa et Mira ») — the status says where an adventure
+  stands, not when; reopened if the GM asks for the history of a campaign.
+- *(kanevas-fiches-liees)* **The attitude of a relation** (Kanka: −100..+100 and a colour), the
+  **hierarchical superior** of a member and the **pin** of a relation; the **status** of a
+  membership (current, former) goes through the qualifier or the removal of the link — decisions of
+  Monsieur of 25/10; **a date or cause of death**: the text; an assistant tool that
+  links or searches by link; two-way relations created in mirror (the reverse direction is read, it
+  is not stored).
+- *(kanevas-scenarios)* **Status automation** — no status moves by itself (a CR written, a date
+  passed): the GM sets it.
 - **Structured characteristics** (combat sheet, statistics): an attachment in V1; dedicated
   sheet types later.
 - **Deleting** a campaign, scenario, report, map, task, system: none of these can be deleted, except an
   attachment, section, relation, member, and a map token or node
   (removed from the map; its sheet remains). *(scoping choice, to revisit with use)*
+  Since `kanevas-scenarios`, a campaign and a scenario are sheets: they are deleted like them (B-40, E-9), the confirmation
+  counting their tasks, their scenarios and their reports (AD-119); disabling the « Aventure » type (E-14, P-13) hides no
+  adventure, only the sidebar entry and creation disappear.
   Since `kanevas-import`, a **sheet**, **universe** and **media library file** can be deleted (B-40, B-41, B-54); a report, being
   a sheet, is deleted with the universe and, by a GM, as a sheet.
 - **Creating a sheet as a player**: the GM creates every sheet, including a PC's, and opens a
@@ -818,6 +998,7 @@ refused (401/403 depending on the import API) and nothing written.
   the trial universe.
 - **Export to Kanka or another tool**: untriaged.
 - **Calendar or timeline, dice roller, offline use (PWA)**: untriaged.
+  Since `kanevas-icones` (AD-135), Kanevas is installable (manifest, icons) but ships **no service worker and no offline cache**: the installed app needs the network, and offline use stays untriaged.
 - **Edit history, export, public sharing.**
 
 ## Cross-check of the `kanevas-import` scoping

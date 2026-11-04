@@ -65,8 +65,8 @@ function ComptesRendus() {
       {liste.length === 0 ? (
         <VideIcone icone={NotebookPen}>
           <p>{mj ? 'Aucun compte-rendu pour l’instant.' : 'Aucun compte-rendu à lire pour l’instant.'}</p>
-          <Link className="bouton" to={`/univers/${id}/campagnes`}>
-            Voir les campagnes
+          <Link className="bouton" to={`/univers/${id}/fiches/aventures`}>
+            Voir les aventures
           </Link>
         </VideIcone>
       ) : (

@@ -4,7 +4,7 @@
   included), ADRs and release notes in **English**; `.agent/*` stays French. Existing French
   docs are translated by a feature of their own, not rewritten in passing: new text is English.
 - Attested tests: `npm run tests:attestes` plays the whole suite (typecheck, build, every test,
-  none skipped) on the committed tree and writes `rapport-tests.json`; `-- --publier` posts the
+  none skipped, two files at a time by default, `--concurrence N` to change it) on the committed tree and rewrites `rapport-tests.json` (git-ignored) at each run; `-- --publier` posts the
   `tests-complets` commit status when green. The image build and the `main` rule require it; the
   CI runs no test by itself.
 - Commit messages in French: subject, then the *why*. Explicit paths
@@ -41,7 +41,7 @@
   (`services/cartes.ts`, AD-69) go through `stockage.ts` directly, never write the volume themselves. The type is sniffed from the bytes, never trusted.
 - `frontend/` (React, Vite, `react-router`; AD-16, AD-57): `npm run build` also builds it into
   `dist/public`, located by `routes/frontend.ts` and served by `routes/session.ts` behind the session guard (`@fastify/static` for
-  `/assets/`, `index.html` as the fallback of any other GET). A screen is one file
+  `/assets/`, `index.html` as the fallback of any other GET); the seven brand files of `frontend/public` (`favicon.ico`, `favicon.svg`, `apple-touch-icon.png`, `icon-192.png`, `icon-512.png`, `icon-maskable-512.png`, `site.webmanifest`) are served before the guard, without a session (AD-135). A screen is one file
   `frontend/src/ecrans/<nom>.tsx` exporting an `Ecran` (`registre.ts`) — never edit the router or
   the sidebar for the screens of a universe; sidebar items live in `items.ts` and show only when a registered screen answers
   their address. The two outside-universe links (« Mes univers », « Systèmes de jeu ») are fixed in
@@ -64,16 +64,21 @@
   `/connexion-bouchon` and refuses to start if any `OIDC_*` variable is set.
 - Hierarchy (AD-99, AD-115): `parent_id` is written only by `deplacerFiche` in `services/fiches.ts` (the `PATCH {parent}` route and the import both call it), except the lifting of children when their parent goes (`supprimerFiche`, `supprimerUnivers`, AD-119); ancestors, « Contient » and the tree return readable fiches only and never a count of hidden ones.
 - Update `.agent/status.md` in the same commit as the work it reflects — except in a task of a chain feature, which leaves it alone: the feature's assembly writes it once (two tasks both adding to it conflict at integration).
-- `src/services/{campagnes,scenarios,preparation,comptes_rendus}.ts` (`kanevas-suivi`): scenarios and
-  preparation tasks take a **campaign id and no universe id** — the GM guard is evaluated on the
-  campaign's own universe (`exigerMJDeCampagne`, AD-47), and a player, a foreign GM or an unknown id
-  all get `introuvable`. Never add a `universId` parameter there. `creerCompteRendu` is the only
-  non-GM creation of a sheet (AD-61); a sheet's title is written only by `renommerFiche` (it leaves `dernier_import` alone, AD-119); sheets and universes are deleted only by `supprimerFiche` and `supprimerUnivers` (AD-119); a compte-rendu is deleted as a sheet.
+- `src/services/{preparation,comptes_rendus}.ts` (`kanevas-scenarios-suivi`): campaigns and scenarios are `aventure` sheets
+  (migration 0017, AD-127; `campagnes` and `scenarios` no longer exist). Preparation tasks take an **adventure sheet id and no
+  universe id** — the GM guard is evaluated on the adventure's own universe (`exigerMJDeAventure`, AD-47), and a player, a foreign GM,
+  an unknown id or a sheet that is not an adventure all get `introuvable`; the routes (`/fiches/:fid/taches`) also check the path's
+  universe. Never add a `universId` parameter to the service. `creerCompteRendu` is the only non-GM creation of a sheet (AD-61) and
+  names an adventure the caller reads (`aventureLue`, `droits.ts`); a report's adventure leaves the API only for a reader of it
+  (`campagneId`/`campagneNom`, `campagneDuCompteRendu`), `campagneSupprimee` only for a GM when the id matches no sheet — a closed
+  and a deleted adventure are the same silence for anyone else, `charge.campagne_id` included. A sheet's title is written only by
+  `renommerFiche` (it leaves `dernier_import` alone, AD-119); sheets and universes are deleted only by `supprimerFiche` and
+  `supprimerUnivers` (AD-119; the bilan of an adventure adds `taches`, `scenarios`, `comptesRendus`); a compte-rendu is deleted as a sheet.
 - Search and relations (`kanevas-relier-chercher`): search is `listerFiches({recherche})`, never a second
   function (AD-63). The FTS5 indexes (migration 0005) only deliver candidate ids and are kept by SQL
   triggers (AD-21) — never write to `recherche_*` from code. A relation is read under both guards
   (`lireRelations`: carrying section and target sheet readable, AD-64); do not add a count or a
-  placeholder for hidden ones. Refusal codes: `auto_relation` (invalide), `relation_existante` and
+  placeholder for hidden ones. The `cible` of a relation carries `charge: {pj}` for a personnage and no other charge key (the badge reads only that; more would leak data of the target sheet; `chargeDeCible`). Refusal codes: `auto_relation` and `nature_incompatible` (invalide), `relation_existante` and
   `limite_relations` (conflit) : the service puts the code in `ErreurService.detail`, the route sends it as `code` in the body.
 - Maps (`kanevas-cartes-graphes`, migration 0007): `src/services/cartes.ts`. `lireCarte` is the only read
   of a map, elements and graph links included (AD-68); the browser filters nothing. Graph links are never
@@ -90,8 +95,7 @@
   transport. Account, universe and role are closed over, **never a tool parameter**; the actor is
   `{compteId}` with no player mode. Tools only compose service functions (AD-27, no SQL): refusals come
   back as `{ok:false, erreur}` with the interface's words ("Introuvable.", …) and **no event**; only a
-  successful write returns an `evenement` (AD-76). `creer_scenario` checks the campaign belongs to the
-  catalogue's universe (`lireCampagne`) before `creerScenario`, which only guards on the campaign's own.
+  successful write returns an `evenement` (AD-76).
 - Assistant transport (`kanevas-am-transport`, `src/services/assistant/`): `repondre(db, compteId, universId,
   message, historique, deps?)` is the single entry point. Availability (`disponibilite.ts`, AD-77) is checked
   **first**: `KANEVAS_STUB=1` → `bouchon`, a token (`jetonEffectif()`: the posed file, else non-empty `CLAUDE_CODE_OAUTH_TOKEN`) → `claude-agent`, else
@@ -153,3 +157,21 @@
   with `stdio: 'ignore'` and nothing of it is logged. The `codex` adapter lists `generated_images/` before and
   after (one engine at a time: `verrou.ts`), deletes the new file(s) and its scratch directory, 150 s deadline
   (AD-90). The Dockerfile pins `@openai/codex` (`CODEX_VERSION`).
+- Tools API (`kanevas-outils-cadre`, `routes/outils.ts`, C-5): in the guarded scope only, never in the import scope. A tool the caller
+  cannot use (disabled, hidden from the role, unknown) answers `reply.callNotFound()`, byte for byte like an unregistered path — never a
+  service `introuvable` JSON. Module routes are registered by `DeclarationModule.routes(app, garde)`; `catalogueDe` appends
+  `outilsAssistant` of every accessible tool of `modulesActifs()` without naming any.
+- Catalogues (`kanevas-outils-catalogue`, migration 0019, K-1 to K-8 in `ARCHITECTURE.md`): only `services/catalogues.ts` reads a module's
+  `StockageCatalogue` and resolves the two levels (never a module's computation on its own tables); an import (preview or application, one
+  transaction) never writes `masque` nor the withdrawals (B-48) and changes the catalogue version only when an element is added or modified;
+  no gesture hides a system element. A token with no `jetons_outils` row opens no tool route, a tool token opens no content route
+  (`config.portee` of each route in `routes/import.ts`).
+- Managed sections (`kanevas-outils-sections-gerees`, migration 0018, AD-127/128): a section with `gere_par` (`module/outil/type`) is written
+  only by its tool. `ecrireContenu` refuses it (`refuse`, `detail: 'section_geree'`) unless its last parameter `geree` is passed — and
+  **only `services/sections-gerees.ts` passes it** (`poserSectionGeree`, on behalf of the account, never more rights than it has;
+  a source-scan test fails otherwise). `source_version` is written in that branch, same transaction; never a new `INSERT INTO sections` /
+  `UPDATE sections SET contenu`. The state is `etatGere` (`a_jour` / `perime` / `desactive`), **computed at each read, never stored**; a
+  disabled or unknown tool gives no name, a tool not visible to the reader gives `libelle: null`. A view of a managed section never carries
+  `contenu` (the source) — `vueSection` gives `peutEcrire: false` — except the assistant's `'markdown'` form. `creerProposition` and the
+  import (`code: 'section_geree'`, before the transaction) refuse a managed section too.
+- Sheet visibility (`kanevas-fiche-mj-seul`, B-57, rule 11 of `docs/donnees.md`): a sheet has none of its own. `visibleJoueurs` is computed in the query (`SQL_VISIBLE_JOUEURS`, `services/fiches.ts`) from `sections.joueurs_lisent` and given to the GM outside player mode only; never store it in a column, never recompute it in the browser, never count the author's right of a player as « visible ».

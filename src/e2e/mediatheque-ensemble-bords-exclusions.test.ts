@@ -33,7 +33,7 @@ const U = 1;
 const PORT_SEL = 12;
 const DESCRIPTION = 13; // « Description » of Port-Sel, read by players
 const LEA_FICHE = 4;
-const NOTES = 28; // « Notes de la table », closed to the other players
+let NOTES = 0; // « Notes de la table » of Léa's sheet, resolved in before(): the seed's section ids move when it grows
 const PLAN_SECRET = 11;
 const LAMES_GRISES = 8;
 const CARTE = 12;
@@ -58,6 +58,8 @@ before(async () => {
   browser = await launch();
   antor = (await connecte(browser, srv.base, 'Antor')).page;
   lea = (await connecte(browser, srv.base, 'Léa')).page;
+  const fl = await (await lea.request.get(`/api/univers/${U}/fiches/${LEA_FICHE}`)).json();
+  NOTES = fl.sections.find((x: Any) => x.titre === 'Notes de la table').id;
 });
 after(async () => {
   if (skipBrowser) return;
@@ -140,6 +142,7 @@ test('Antor ajoute un PDF depuis E-19 : « Visible des joueurs », 14 fichiers, 
   assert.doesNotMatch(t, /Carte des Sphères/);
   await antor.getByText('Images', { exact: true }).click();
   await antor.getByText('regles-guilde.pdf', { exact: true }).first().waitFor({ state: 'hidden' });
+  await antor.getByText('Carte des Sphères', { exact: true }).first().waitFor();
   await attendre(antor);
   t = norm(await texte(antor));
   assert.doesNotMatch(t, /regles-guilde\.pdf/);

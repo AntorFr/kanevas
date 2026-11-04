@@ -445,7 +445,7 @@ test('écriture : Léa qui tape :::mj dans une section sans bloc est refusée (4
 
 test('écriture : Léa ne crée pas de compte-rendu dont le texte contient un bloc MJ (400)', opts, async () => {
   const m = await monde('Secrets compte rendu');
-  const c = await api(C.antor, 'post', `${m.b}/campagnes`, { nom: 'La Couronne brisée' });
+  const c = await api(C.antor, 'post', `${m.b}/fiches`, { type: 'aventure', sousType: 'Campagne', titre: 'La Couronne brisée', sections: [{ titre: 'Présentation', joueursLisent: true }] });
   const r = await brut(C.lea, 'post', `${m.b}/comptes-rendus`, { campagneId: c.id, titre: 'Séance 9', texte: 'Résumé.\n\n:::mj\nRUSE\n:::' });
   assert.equal(r.status, 400);
   assert.equal(r.corps.message, REFUS_BLOC);

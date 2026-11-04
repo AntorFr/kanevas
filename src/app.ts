@@ -2,7 +2,7 @@ import cookie from '@fastify/cookie';
 import Fastify from 'fastify';
 
 import { dbPath, env } from './config/env.js';
-import { migrate, openDb, type Db } from './db/db.js';
+import { comptesDuPivot, migrate, openDb, type Db } from './db/db.js';
 import { viderTmp } from './services/stockage.js';
 import { registerAuthRoutes } from './routes/auth.js';
 import { registerBouchonRoutes } from './routes/bouchon.js';
@@ -13,6 +13,7 @@ import { ConnexionClaude } from './services/assistant/connexion-claude.js';
 import type { ConfigAssistant } from './services/assistant/disponibilite.js';
 import type { DepsRepondre } from './services/assistant/repondre.js';
 import { chargerCleSession } from './services/session.js';
+import { verifierRegistre } from './outils/registre.js';
 
 declare module 'fastify' {
   interface FastifyInstance {
@@ -27,6 +28,7 @@ declare module 'fastify' {
 }
 
 export async function buildApp() {
+  verifierRegistre();
   const app = Fastify({
     logger: env.NODE_ENV !== 'test',
     // An origin key may hold 200 characters (B-47), up to 12 bytes each once percent-encoded; the
@@ -36,7 +38,9 @@ export async function buildApp() {
 
   // The only connection to the SQLite file; migrations are applied at startup (AD-14).
   const db = openDb(dbPath);
+  const aConvertir = comptesDuPivot(db);
   migrate(db);
+  if (aConvertir) app.log.info(aConvertir, 'Migration 0017: campaigns and scenarios converted to adventure sheets.');
   // Uploads cut short by a restart leave files in tmp/ (AD-65); in memory (tests) the dir is shared, leave it.
   if (dbPath !== ':memory:') await viderTmp();
   if (dbPath === ':memory:' && env.NODE_ENV !== 'test') {

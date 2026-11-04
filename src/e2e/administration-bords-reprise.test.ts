@@ -8,6 +8,7 @@ import { join } from 'node:path';
 import { after, before, describe, test } from 'node:test';
 
 import Database from 'better-sqlite3';
+import { attendreServeurPret, withStartupLock } from './harnais.test.js';
 
 // Second pass of black-box tests for B-6 / P-2 step 3 / E-5 / B-29 (kanevas-recours-admin), written
 // from docs/parcours.md and docs/ecrans.md only: boundaries of the addresses and of the API, the
@@ -55,7 +56,12 @@ interface Serveur {
   stop: () => void;
 }
 
-async function demarrer(): Promise<Serveur> {
+// Startups share the harness lock: one server or browser launching at a time on the pod.
+function demarrer(...args: Parameters<typeof demarrerSansVerrou>): ReturnType<typeof demarrerSansVerrou> {
+  return withStartupLock(() => demarrerSansVerrou(...args));
+}
+
+async function demarrerSansVerrou(): Promise<Serveur> {
   const port = await freePort();
   const dossier = mkdtempSync(join(tmpdir(), 'kanevas-e2e-'));
   const dbPath = join(dossier, 'kanevas.db');
@@ -71,23 +77,20 @@ async function demarrer(): Promise<Serveur> {
   for (const k of Object.keys(env)) if (k.startsWith('OIDC_')) delete env[k];
   const child: ChildProcess = spawn('node', ['--import', 'tsx', 'src/server.ts'], { env, stdio: 'ignore' });
   const base = `http://127.0.0.1:${port}`;
-  for (let i = 0; i < 150; i++) {
-    try {
-      await fetch(`${base}/healthz`);
-      return {
-        base,
-        dbPath,
-        stop: () => {
-          child.kill('SIGKILL');
-          rmSync(dossier, { recursive: true, force: true });
-        },
-      };
-    } catch {
-      await new Promise((r) => setTimeout(r, 100));
-    }
+  try {
+    await attendreServeurPret(child, base, () => '');
+  } catch (e) {
+    child.kill('SIGKILL');
+    throw e;
   }
-  child.kill('SIGKILL');
-  throw new Error('server did not start');
+  return {
+    base,
+    dbPath,
+    stop: () => {
+      child.kill('SIGKILL');
+      rmSync(dossier, { recursive: true, force: true });
+    },
+  };
 }
 
 const NOMS: Record<string, string> = { antor: 'Antor', lea: 'Léa', teo: 'Teo', mira: 'Mira', admin: 'Admin' };
@@ -140,7 +143,7 @@ describe('E-5 Administration : bords, exclusions et contenu long (B-6, B-29)', {
       const r = spawnSync('npm', ['run', 'build'], { stdio: 'inherit' });
       assert.equal(r.status, 0, 'npm run build');
     }
-    browser = await pw!.chromium.launch();
+    browser = await withStartupLock(() => pw!.chromium.launch());
   });
   after(async () => {
     await browser?.close();

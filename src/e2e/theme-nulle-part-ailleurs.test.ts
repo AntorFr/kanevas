@@ -42,7 +42,6 @@ const ECRANS_MJ = [
   '/nouvel-univers',
   '/univers/1',
   '/univers/1/membres',
-  '/univers/1/campagnes',
   '/univers/1/fiches/personnages',
   '/univers/1/fiche/1',
   '/univers/1/cartes',

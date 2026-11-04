@@ -1,6 +1,7 @@
 import type { Db } from '../db/db.js';
 import { ErreurService, introuvable, refuse } from './erreurs.js';
 import { resolveurFichiers, resolveurFichiersEnAttente } from './fichiers-lecture.js';
+import { etatGere } from './sections-gerees-etat.js';
 import { extraireLiens, rendreMarkdown, type ResolveurLiens } from './markdown.js';
 import type { Acteur, Audience, Role, SectionRow, SectionVue } from './types.js';
 
@@ -34,6 +35,9 @@ function regard(role: Role, acteur: Acteur): { mj: boolean; auteurId: number | n
 }
 
 /** True when the read view of this caller is the full GM one. */
+/** Managed by a tool (AD-127). A schema older than 0018 has no `gere_par` at all: that is a free section. */
+export const estGeree = (s: SectionRow): boolean => typeof s.gere_par === 'string';
+
 export function vueMJ(role: Role, acteur: Acteur): boolean {
   return regard(role, acteur).mj;
 }
@@ -85,6 +89,42 @@ export function peutVoirFiche(db: Db, role: Role, ficheId: number, acteur: Acteu
     .prepare(`SELECT 1 AS ok FROM fiches f WHERE f.id = ?${cond ? ` AND ${cond.sql}` : ''}`)
     .get(ficheId, ...(cond?.params ?? []));
   return row !== undefined;
+}
+
+/**
+ * The adventure a report names, as this reader sees it (AD-124 (4)): its id and title only when the
+ * reader reads that adventure; `{supprimee: true}` for a GM (outside player mode) when the id matches
+ * no sheet at all; nothing otherwise — a closed adventure, a deleted one, a sheet of another
+ * universe or of another type are the same answer for a player, and no title leaves by any other way.
+ */
+export interface CampagneVue {
+  campagneId?: number;
+  campagneNom?: string;
+  campagneSupprimee?: true;
+}
+
+export function aventureLue(db: Db, role: Role, acteur: Acteur, universId: number, id: number): { id: number; titre: string } | null {
+  const f = db.prepare('SELECT id, titre, type, univers_id FROM fiches WHERE id = ?').get(id) as
+    | { id: number; titre: string; type: string; univers_id: number }
+    | undefined;
+  if (!f || f.type !== 'aventure' || f.univers_id !== universId) return null;
+  return peutVoirFiche(db, role, f.id, acteur) ? { id: f.id, titre: f.titre } : null;
+}
+
+export function campagneDuCompteRendu(
+  db: Db,
+  role: Role,
+  acteur: Acteur,
+  universId: number,
+  campagneId: unknown,
+): CampagneVue {
+  if (typeof campagneId !== 'number' || !Number.isSafeInteger(campagneId)) return {};
+  const a = aventureLue(db, role, acteur, universId, campagneId);
+  if (a) return { campagneId: a.id, campagneNom: a.titre };
+  if (vueMJ(role, acteur) && !db.prepare('SELECT 1 FROM fiches WHERE id = ?').get(campagneId)) {
+    return { campagneSupprimee: true };
+  }
+  return {};
 }
 
 /** Write rights come from the audience (AD-19); the GM always writes (AD-18). */
@@ -186,9 +226,12 @@ export function vueSection(
   formeLiens: 'html' | 'markdown' = 'html',
 ): SectionVue {
   // Player mode is a read view: it never shows a write right the player lacks as a non-author.
-  const peutEcrire = acteur.modeJoueur
-    ? peutEcrireSection('joueur', s, -1)
-    : peutEcrireSection(role, s, acteur.compteId);
+  // A managed section is written by its tool only (AD-127): nobody edits it here, so no source in the view.
+  const peutEcrire = estGeree(s)
+    ? false
+    : acteur.modeJoueur
+      ? peutEcrireSection('joueur', s, -1)
+      : peutEcrireSection(role, s, acteur.compteId);
   const lecteurMJ = vueMJ(role, acteur);
   const vue: SectionVue = {
     id: s.id,
@@ -201,8 +244,10 @@ export function vueSection(
     modifieLe: s.modifie_le,
     peutEcrire,
   };
-  if (peutEcrire) vue.contenu = lecteurMJ ? s.contenu : s.contenu_public; // the source goes only to who may write it (AD-113)
+  if (peutEcrire || (estGeree(s) && formeLiens === 'markdown')) vue.contenu = lecteurMJ ? s.contenu : s.contenu_public; // the source goes only to who may write it (AD-113)
   if (lecteurMJ) vue.audience = audienceDe(s);
+  const geree = etatGere(db, acteur, universId, s);
+  if (geree) vue.geree = geree;
   return vue;
 }
 
