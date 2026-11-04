@@ -177,6 +177,7 @@ function importCatalogue(db: Db, acteur: Acteur, cible: CibleOutils, cle: string
     if (!apercu && changed) {
       poserVersionCatalogue(db, acteur, cible, cle, file.version);
       rapport.versionCatalogue = file.version;
+      if (cible.niveau === 'univers') surSourceModifiee.appeler(db, acteur.compteId, cible.id, cle);
     }
     return rapport;
   };
