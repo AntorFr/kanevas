@@ -52,11 +52,55 @@ describe('E-21 en écriture : états, confirmations et conflits (vérification)'
     const b = await systeme(page, nom).locator('.gx-zone-touche').boundingBox();
     return { x: b.x + b.width / 2, y: b.y + b.height / 2 };
   };
-  const toucher = async (page: Any, q: number, r: number) => {
+  const lire = async (page: Any) => {
     const p = await centre(page, 'Alpha');
     const v = await centre(page, 'Beta');
-    const s = (v.x - p.x) / (7 * R3);
-    await page.mouse.click(p.x + s * R3 * (q + r / 2), p.y + s * 1.5 * r);
+    return { p, v };
+  };
+  // Positions of « Alpha » and « Beta » identical on two reads one frame apart (the map stops moving: fit, blocks loading).
+  const stable = async (page: Any) => {
+    let lu = await lire(page);
+    for (let i = 0; i < 100; i++) {
+      await page.evaluate(() => new Promise((ok) => requestAnimationFrame(() => requestAnimationFrame(ok))));
+      const suite = await lire(page);
+      if (JSON.stringify(suite) === JSON.stringify(lu)) return suite;
+      lu = suite;
+    }
+    throw new Error(`La carte ne se stabilise pas : ${JSON.stringify(lu)}`);
+  };
+  // The blocks around the view are loaded (no hatched block left): until then a generated hexagon is not known as such.
+  const blocsLus = (page: Any) => page.waitForFunction(
+    () => !document.querySelector('.gx-manquant') && !document.querySelector('.gx-chargement'), undefined, { timeout: 10000 },
+  ).catch(() => undefined);
+  // Taps hexagon (q, r) on a settled map, then checks the caller's effect; without it, reads again and retries (3 tries).
+  // With `libre`, a hexagon the engine generated a system on (« Promouvoir ce système », not « Nouveau système ») is
+  // skipped for the next one to its right: which hexagons are generated depends on the galaxy, not on the test.
+  const toucher = async (page: Any, q: number, r: number, effet: () => Promise<void>, libre = false) => {
+    let dernier = '';
+    for (let essai = 1; essai <= 3; essai++) {
+      await blocsLus(page);
+      const { p, v } = await stable(page);
+      const s = (v.x - p.x) / (7 * R3);
+      const place = (dq: number) => ({ x: p.x + s * R3 * (q + dq + r / 2), y: p.y + s * 1.5 * r });
+      let dq = 0;
+      if (libre) {
+        const genere = await page.evaluate(() => [...document.querySelectorAll('.gx-genere')].map((c) => {
+          const b = c.getBoundingClientRect();
+          return [b.x + b.width / 2, b.y + b.height / 2];
+        }));
+        while (dq < 6 && genere.some(([gx, gy]: number[]) => Math.hypot(gx! - place(dq).x, gy! - place(dq).y) < s * 0.5)) dq++;
+      }
+      const { x, y } = place(dq);
+      const heading = await page.evaluate(() => [...document.querySelectorAll('[role="region"]')].map((e) => e.getAttribute('aria-label')).join('|'));
+      dernier = `hexagone (${q + dq}, ${r}) visé en (${x}, ${y}), Alpha ${JSON.stringify(p)}, Beta ${JSON.stringify(v)}, échelle ${s}, régions « ${heading} »`;
+      await page.mouse.click(x, y);
+      try { await effet(); return; } catch { /* the map moved under the click: read again */ }
+    }
+    throw new Error(`Le toucher n’a eu aucun effet en 3 essais : ${dernier}`);
+  };
+  const apparu = (f: Any) => () => f.waitFor({ timeout: 2000 });
+  const sommets = (page: Any, n: number) => async () => {
+    await page.waitForFunction((k: number) => document.querySelectorAll('.gx-trace circle').length === k, n, { timeout: 2000 });
   };
   const menu = async (page: Any, ouvrant: string, entree: string) => {
     await page.getByRole('button', { name: ouvrant }).click();
@@ -105,9 +149,8 @@ describe('E-21 en écriture : états, confirmations et conflits (vérification)'
     await systeme(page, 'Alpha').waitFor();
     await page.getByRole('button', { name: 'Placer un système' }).click();
     await page.getByText('Touchez un hexagone.').waitFor();
-    await toucher(page, 4, 8);
     const f = section(page, 'Nouveau système');
-    await f.waitFor();
+    await toucher(page, 4, 8, apparu(f), true);
     await f.getByLabel('Nom', { exact: true }).fill('n'.repeat(81));
     await f.getByRole('button', { name: 'Placer', exact: true }).click();
     await f.getByText('Erreur : 80 caractères au plus.').waitFor();
@@ -130,9 +173,9 @@ describe('E-21 en écriture : états, confirmations et conflits (vérification)'
     await page.goto(adresse);
     await systeme(page, 'Alpha').waitFor();
     await page.getByRole('button', { name: 'Dessiner une zone' }).click();
-    await toucher(page, 3, 4);
-    await toucher(page, 5, 4);
-    await toucher(page, 4, 6);
+    await toucher(page, 3, 4, sommets(page, 1));
+    await toucher(page, 5, 4, sommets(page, 2));
+    await toucher(page, 4, 6, sommets(page, 3));
     await page.getByRole('button', { name: 'Terminer' }).click();
     const z = section(page, 'Nouvelle zone');
     await z.getByLabel('Nom', { exact: true }).fill('Dense');
@@ -206,8 +249,8 @@ describe('E-21 en écriture : états, confirmations et conflits (vérification)'
     await systeme(page, 'Alpha').waitFor();
     await page.getByRole('button', { name: 'Placer un système' }).click();
     await page.getByText('Touchez un hexagone.').waitFor();
-    await toucher(page, 4, 8);
     const f = section(page, 'Nouveau système');
+    await toucher(page, 4, 8, apparu(f), true);
     await f.getByLabel('Nom', { exact: true }).fill('Brouillon');
     await page.getByRole('radio', { name: 'Mode Joueur' }).click();
     await f.waitFor({ state: 'detached' });
@@ -216,9 +259,10 @@ describe('E-21 en écriture : états, confirmations et conflits (vérification)'
     }
     await hors(page, 'mode-joueur');
     await page.getByRole('radio', { name: 'Mode MJ' }).click();
+    await systeme(page, 'Alpha').waitFor();
     await page.getByRole('button', { name: 'Placer un système' }).click();
     await page.getByText('Touchez un hexagone.').waitFor();
-    await toucher(page, 4, 8);
+    await toucher(page, 4, 8, apparu(section(page, 'Nouveau système')), true);
     assert.equal(await section(page, 'Nouveau système').getByLabel('Nom', { exact: true }).inputValue(), '');
     assert.equal((await (await page.request.get(`${base(gid)}/contenu`)).json()).systemes, 3);
     await ctx.close();
