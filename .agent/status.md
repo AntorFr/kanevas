@@ -62,6 +62,7 @@ et adaptateurs `bouchon` et `claude-agent` ; disponibilité ; orchestration `rep
 mémoire, registre de blocs d'écriture). Outils : chercher, lire_fiche, lire_section, modifier_section, ajouter_a_section,
 lister_campagnes ; le MJ en plus creer_campagne et creer_scenario. Aucun outil de carte ni de graphe (la proposition vient de `kanevas-monde`, ci-dessous). `kanevas-images` (tâche `kanevas-im-outil`) ajoute au catalogue MJ `generer_image` (absent si l'adaptateur d'images est `aucun`), l'événement `image_attachee` et la règle « portrait » du bouchon ; le délai de 120 s de la demande est suspendu pendant l'outil (AD-89, AD-90).
 
+> MàJ : 2026-11-04 (assemblage de `rouge-kanevas-outils-7`, PR vers `epic/kanevas-outils`)
 > MàJ : 2026-11-02 (livraison de l'epic `kanevas-fiches-liees` vers `main` : `origin/main` fusionnée dans `epic/kanevas-fiches-liees`, AD-129 des natures décalé en AD-136, la numérotation 130 à 134 inchangée)
 > MàJ : 2026-11-01 (assemblage de `kanevas-connexion-claude-entree`, dernier paragraphe)
 > MàJ : 2026-10-31 (assemblage de `kanevas-deplacer-arborescence`, PR vers `main`)
@@ -100,6 +101,8 @@ lister_campagnes ; le MJ en plus creer_campagne et creer_scenario. Aucun outil d
 - Doc écrite en français avant la règle « anglais » du `CLAUDE.md` : non traduite, par décision (une feature de traduction à part).
 
 ## Pièges encore vrais
+
+- **Bloc « Fiches liées » et types** : `liees.tsx` n'affiche aucun groupe tant que `useTypes()` est en `chargement` (sinon le type brut « personnage (2) » clignote) ; en `erreur`, repli sur le type brut. Test : `src/e2e/liees-bloc-types-tardifs.test.ts` (`rouge-kanevas-outils-7`). Le rouge instable de `liees-bloc-besoin-ensemble` avait cette cause ; le rouge des migrations 1 à 23 est corrigé par `rouge-kanevas-outils-5`.
 
 - **Rouge de la suite attestée en pod** : lire le message avant de relancer. Si « server did not start » dit « /healthz not ready after … ms », le serveur est resté 30 s sans consommer de CPU (ou 180 s au total) : ne pas allonger le délai, chercher pourquoi ; s'il dit « exited », la sortie du serveur est dans le message. Un test e2e qui lance son serveur ou Chromium passe par `withStartupLock` et `attendreServeurPret`, jamais par une boucle à délai fixe ; il lit le DOM après l'état attendu (un « Chargement… » qui disparaît), pas après `networkidle`.
 - **Node** : 20 est la cible (CI, Dockerfile). `better-sqlite3` est épinglé en `^12` (la 13 exige Node ≥ 22, SIGSEGV sous 20). Les pods de la chaîne jouent sous Node 22 sans Docker ; la CI Node 20 fait foi. Ne lancer qu'un seul `npm ci` à la fois dans un clone.
