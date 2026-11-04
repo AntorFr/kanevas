@@ -70,7 +70,7 @@ const PREFIXE: Partial<Record<NatureRegles, Cellule<ElementRegle>[]>> = {
   armes: [
     ['Emport', (e) => nombre(e.emport ?? 0)],
     ['Munitions', (e) => nombre(e.munitions ?? 0)],
-    ['Coût d’une munition', (e) => credits(e.cout_munition ?? 0)],
+    ["Coût d'une munition", (e) => credits(e.cout_munition ?? 0)],
   ],
 }
 
