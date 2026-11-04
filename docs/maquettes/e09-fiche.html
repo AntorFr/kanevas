@@ -43,6 +43,8 @@
      #etat-chargement  chargement de la fiche
      #etat-vide        fiche sans section
      #etat-toast       un toast affiché
+     #etat-cle         clé en cours de modification (avertissement visible)
+     #etat-cle-refus   clé refusée (déjà prise) sous le champ : la valeur saisie est gardée, « Enregistrer » actif
      #etat-tiroir      barre latérale ouverte au téléphone
    L'illustration (kanevas-illustrations) :
      #etat-gestes              « Remplacer » et « Retirer » montrés (au survol de l'illustration en vrai)
@@ -636,6 +638,17 @@ body.etat-perdue [data-ecrit] { opacity: .45; pointer-events: none; }
   .edition { margin-left: -8px; margin-right: -8px; }
 }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition-duration: 0ms !important; } }
+.bloc-cle { display: flex; flex-wrap: wrap; align-items: center; gap: var(--e-2); margin-top: var(--e-1); }
+.bloc-cle code { font-family: var(--police-code, ui-monospace, monospace); font-size: var(--t-12); color: var(--texte-2); background: var(--surface-2); padding: 2px var(--e-2); border-radius: var(--rayon-item, 4px); }
+.bloc-cle .edition-cle { display: none; flex-direction: column; gap: var(--e-1); width: 100%; max-width: 420px; }
+.bloc-cle .edition-cle input { min-height: 30px; font-family: var(--police-code, ui-monospace, monospace); background: var(--surface-2); color: var(--texte); border: 1px solid var(--bord-champ); border-radius: 6px; padding: 0 var(--e-2); }
+.bloc-cle .edition-cle .aide, .bloc-cle .erreur-cle { font-size: var(--t-12); }
+.bloc-cle .erreur-cle { color: var(--danger); display: none; }
+body.etat-cle .bloc-cle .lecture-cle { display: none; }
+body.etat-cle .bloc-cle .edition-cle { display: flex; }
+body.etat-cle-refus .bloc-cle .erreur-cle { display: block; }
+body.etat-joueur .bloc-cle { display: none; }
+body.etat-perdue .bloc-cle button { opacity: .45; pointer-events: none; }
 </style>
 </head>
 <body>
@@ -770,6 +783,16 @@ body.etat-perdue [data-ecrit] { opacity: .45; pointer-events: none; }
             </div>
             <span class="type"><svg class="i p" aria-hidden="true"><use href="#i-users-round"/></svg>PNJ</span>
             <h1 id="titre-fiche">Maître Aldric</h1>
+            <div class="bloc-cle" data-mj id="bloc-cle">
+              <span class="lecture-cle"><code>personnage:maitre-aldric</code> <button class="bouton fantome petit" data-copier-cle>Copier</button> <button class="bouton fantome petit" data-ecrit data-modifier-cle>Modifier la clé…</button></span>
+              <form class="edition-cle" onsubmit="return false">
+                <label for="champ-cle" class="aide">Clé de la fiche</label>
+                <input id="champ-cle" type="text" value="personnage:maitre-aldric" autocomplete="off" spellcheck="false" aria-describedby="aide-cle erreur-cle">
+                <span class="aide" id="aide-cle">Les liens et outils qui citent personnage:maitre-aldric ne la retrouveront plus par cette clé ; l'ancienne clé continuera de mener ici.</span>
+                <span class="erreur-cle" id="erreur-cle" role="alert">Erreur : cette clé existe déjà dans l’univers.</span>
+                <span><button class="bouton principal petit" data-ecrit aria-disabled="true">Enregistrer</button> <button class="bouton fantome petit" data-annuler-cle>Annuler</button></span>
+              </form>
+            </div>
           </div>
         </header>
         <div class="message-ill" id="message-ill" data-mj></div>
@@ -1938,10 +1961,19 @@ var ILLUS = (function () {
       if (et === 'chargement') document.body.classList.add('etat-chargement');
       if (et === 'vide') document.body.classList.add('etat-vide');
       if (et === 'toast') { document.body.classList.add('etat-toast'); fixer(function () { toast('« Rumeurs entendues » enregistrée'); }); }
+      if (et === 'cle') document.body.classList.add('etat-cle');
+      if (et === 'cle-refus') { document.body.classList.add('etat-cle', 'etat-cle-refus'); document.getElementById('champ-cle').value = 'personnage:aldric'; var bt = document.querySelector('.edition-cle .principal'); if (bt) bt.removeAttribute('aria-disabled'); }
       if (et === 'tiroir') tiroir(true);
     });
   }
 })();
+</script>
+<script>
+document.addEventListener('click', function (e) {
+  var b = document.body;
+  if (e.target.closest('[data-modifier-cle]')) { b.classList.add('etat-cle'); document.getElementById('champ-cle').focus(); }
+  if (e.target.closest('[data-annuler-cle]')) b.classList.remove('etat-cle', 'etat-cle-refus');
+});
 </script>
 </body>
 </html>

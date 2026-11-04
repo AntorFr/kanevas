@@ -649,10 +649,12 @@ records one write, with a **previous value** for 30 days.
   if they had an origin key, else `ecran`) — « née dans Kanevas » is every value but `import`.
 - `fiches.cle_origine` becomes `fiches.cle`, **not null**, unique per universe; the migration gives one
   to every sheet without (type and title, AD-146). `cles_anciennes (univers_id, cle, fiche_id)`: a former
-  key leads to its sheet; a key in use cannot be a former one.
+  key leads to its sheet; a key in use cannot be the former key of another sheet (`cle_prise`), the owner may take its
+  own former key back (the row is removed). A key is drawn at creation: sheet `type:name` from the title, section from
+  its title, universe from its name (collision suffixed `-2`, `-3`…).
 - `sections.cle_origine` becomes `sections.cle`, **not null**, unique per sheet; generated from the title
   for the sections without one.
-- `univers.cle` (unique on the instance, not null; the migration derives it from the name) and
+- `univers.cle` (form: lowercase letters, digits and hyphens, 2 to 40, at least one letter; unique on the instance, not null; the migration derives it from the name) and
   `univers_cles_anciennes (cle, univers_id)`.
 - `fiches.modifie_le` moves on every write to what the read returns, held by **triggers** (AD-147).
 - `historique (id, univers_id, fiche_id (null once the sheet is deleted), fiche_cle, fiche_titre, objet

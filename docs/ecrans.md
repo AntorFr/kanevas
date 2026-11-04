@@ -3468,7 +3468,7 @@ line has no detail: « Valeur précédente non conservée (plus de 30 jours). »
 
 ### E-9 Fiche — key and history (`kanevas-synchro`)
 - Under the title, for the GM: the key `lieu:nyx` with « Copier » and « Modifier la clé… » (a field,
-  the warning « Les liens et outils qui citent lieu:nyx ne la retrouveront plus ; l'ancienne clé
+  the warning « Les liens et outils qui citent lieu:nyx ne la retrouveront plus par cette clé ; l'ancienne clé
   continuera de mener ici. »; refused if taken: « Cette clé existe déjà dans l'univers. »; out of form: « Lettres minuscules,
   chiffres, - et _, un « : » au plus, avec au moins une lettre. »).
 - GM menu « ⋯ »: « Historique » opens E-24 filtered on the sheet.
@@ -3486,3 +3486,75 @@ moins une lettre. »).
 - P-24 → the MCP, E-9 by its address; P-25 → E-23, E-5; P-26 → E-24, E-9.
 - Roles: every account on E-23; GM on E-24, E-9 key, E-14; admin on E-5 (tokens); player: E-23 only.
 
+
+### What `kanevas-synchro-cles` builds (E-9 key, E-14 identifier, addresses)
+
+*Scope*: B-99, B-100, B-101, B-104, AD-146. No new screen, no new component: one field on E-9 and one on E-14, both
+built from the existing field and inline-edit patterns of those screens (the gardien's verdict: five elements, all existing — Bouton, Champ,
+Bandeau, toast — none new; render `Champ`, whose « Erreur : » prefix is the one the mockups show). The key block of E-9 and the identifier field of E-14 are shown in the mockups `e09-fiche.html` and
+`e14-parametres.html` (state « clé »).
+
+**Addresses (B-101).** The router is not edited (AD-16): the sheet screen answers both
+`/univers/:id/fiche/:fid` (registered today) and the readable forms. The screen reads `:id` and `:fid` as
+*reference* (id or key, never converted by the browser): it asks `GET /api/univers/:ref` and
+`GET /api/univers/:ref/fiches/:ref2`, whose answers carry the numeric `id`, the `cle` and the universe `cle`. When the
+reference used is numeric (or a former key), the screen replaces the address (`history.replace`, no extra entry) by
+`/univers/<u.cle>/<a>/<b>` (key `a:b`, `a` a registered type) or `/univers/<u.cle>/fiche/<key>`; a server-side
+request for a numeric address answers 302 to the readable address (the front's `index.html` fallback keeps serving
+the app). A key whose first part is a type slug is *not* read as a page name: the address list of a universe's pages
+(`fiches`, `fiche`, `membres`, `parametres`, `cartes`, `mediatheque`, `recherche`, `comptes-rendus`, `acces-api`, …)
+is closed and the type registry is checked against it at startup (a type slug equal to a page name is refused).
+
+**E-9 — the key block** (GM only; a player and the GM in player mode see no block, and the sheet's body carries no `cle`
+for them. The key is not a secret, though: it is the readable address, which any reader of the sheet may type, share or
+be redirected to — the 302 serves it to a reader of the sheet and answers like a 404 for a sheet they cannot read. The
+browser of a player does not rewrite the address it was given. This refines « the origin key is hidden from any role but
+the GM » of `kanevas-import` as: not displayed and not in the body). Under the title, `lieu:nyx` in monospace,
+« Copier », « Modifier la clé… ». The field opens inline with the warning, « Enregistrer » / « Annuler »; errors under
+the field, in the words of E-9 above (`cle_prise` 409 → « Cette clé existe déjà dans l'univers. »; `invalide`,
+`champ: cle` → « Lettres minuscules, chiffres, - et _, un « : » au plus, avec au moins une lettre. »). On success the
+address is replaced by the new one and « Enregistré. » shows; the former address still opens the sheet.
+
+| State | Behaviour |
+|---|---|
+| reading | key + two buttons |
+| editing | field prefilled with the key, focus, warning visible, « Enregistrer » inactive while unchanged |
+| refused | message under the field, the field keeps the typed value and the focus |
+| saving | the button inactive, the field read-only |
+| connection lost | the bar's banner; the buttons inactive; the typed value kept |
+| role lost meanwhile | « Vous ne pouvez plus modifier cette fiche. » (as the other E-9 writes), the block disappears |
+| loading | no block until the sheet is loaded (no skeleton) |
+| no key | impossible after the migration (`cle` is not null): the block always shows a key |
+| long key | up to 200 characters: the key wraps on several lines (`overflow-wrap: anywhere`), the buttons stay under it |
+| save failed (server error) | « Impossible d'enregistrer la clé. Réessayez. » under the field, value and focus kept |
+| copy | the label « Copier » becomes « Copiée. » for two seconds |
+| copy refused (clipboard denied) | the label stays « Copier »; the toast « Impossible de copier. Sélectionnez la clé à la main. » shows; the key text stays selectable |
+
+The warning reads: « Les liens et outils qui citent <ancienne clé> ne la retrouveront plus par cette clé ; l'ancienne
+clé continuera de mener ici. » (an import by former key is `kanevas-synchro-ecriture`'s, not promised here). The label of
+the field is « Clé de la fiche ». The « Importée · clé … » line of the « ⋯ » menu loses the key, now shown by the block.
+A key is typed with the sheet's **type** word: `personnage:maitre-aldric` (mockups use that).
+
+**E-14 — the identifier** (GM). A field « Identifiant » in the first panel, with the same save button as the name.
+The states of the mockup are « Identifiant refusé » and « Identifiant mal formé »; the rest is as the key block for editing, refused, saving, connection lost, loading; **not transposed**: no « Copier » and no copy state (the identifier is not a key to paste), no « no key » state (an identifier always exists), no long-key wrapping (40 characters at most, one line); the field is prefilled with the current identifier and « Enregistrer » is inactive while Nom, Identifiant and Description are all unchanged (one button serves the three; an unchanged identifier is not sent). Specifics: one « Enregistrer » for Nom, Description and Identifiant; a form error reads « Lettres minuscules, chiffres et tirets, 2 à 40, avec au moins une lettre. » (mockup: « Identifiant mal formé »); a refused
+identifier saves nothing (the Nom too stays unsaved, typed values kept); server error « Impossible d'enregistrer les
+paramètres. Réessayez. »; role lost « Vous ne pouvez plus modifier ces paramètres. »; the success toast is
+« Enregistré. »; a player gets « Page introuvable. »; the help text under the field reads « Il sert d'adresse :
+/univers/<identifiant>. L'ancien identifiant continue de mener à l'univers. ». On success the address of the whole screen is replaced (`/univers/<new>/parametres`) and the former
+identifier keeps leading to the universe. A key or identifier that is a former one of **another** target is refused (`cle_prise`, it keeps leading
+there); the **owner** may take its own former key back (P-22: `eneria-v2` back to `eneria`): the former row is removed.
+
+**Addresses, states.** An unknown key or identifier, or a sheet the reader cannot read: « Page introuvable. » (the
+same for both, no trace of the key). While the reference resolves, the screen shows its loading state at the address as
+typed; if the server is unreachable the typed address stays and the bar's banner shows. A former key held now by
+another sheet opens that sheet. Léa (player) who opens a shared `/univers/eneria/lieu/nyx` for a sheet she reads sees it;
+for a GM-only sheet she gets « Page introuvable. ». At creation (E-2, E-8) nothing announces the key: it appears
+on the sheet. A key of digits only that the migration renamed to `cle-<digits>` shows nowhere but in the key block.
+
+**Where the browser gets the identifier.** The sidebar, the universe selector, « Mes univers » and the breadcrumbs
+build their links from `cle` when the list answers carry it (`GET /api/univers` returns `cle`); the numeric forms
+stay for what is not yet loaded.
+
+Cross-check: B-99 → E-9 block, `PATCH /fiches/:fid {cle}`; B-100 → E-14 field (P-22 return of `eneria-v2`), `PATCH /univers/:id {cle}`; B-101 →
+router (above) + 302; admin who is not a GM of the universe: no E-9 block, and E-14 answers « Page introuvable. » (the GM guard, as a player); B-104 → the section key travels in the API (`cle` on a section's view); no screen edits it in
+this slice (the import and the MCP address by it).
