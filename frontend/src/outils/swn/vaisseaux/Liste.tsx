@@ -5,6 +5,7 @@ import { ErreurApi, lire, useConnexionPerdue } from '../../../api';
 import { useTitreAriane } from '../../../cadre-contexte';
 import { Bouton, Chargement, ErreurChargement, PageIntrouvable, Pastille } from '../../../ui';
 import { Creation } from './Creation';
+import { Generer } from './Generer';
 import { credits, requete } from './format';
 import type { ListeConceptions, PageCatalogue } from './types';
 
@@ -21,6 +22,7 @@ export function Liste({ universId, suffixe, ouvrir }: { universId: number; suffi
   const [catalogueVide, setCatalogueVide] = useState(false);
   const [affiches, setAffiches] = useState(PAGE);
   const [creation, setCreation] = useState(false);
+  const [generation, setGeneration] = useState(false);
   useTitreAriane('Concepteur de vaisseaux', 'Outils');
 
   const charger = useCallback(() => {
@@ -57,9 +59,12 @@ export function Liste({ universId, suffixe, ouvrir }: { universId: number; suffi
       <div className="vx-entete">
         <h1>Concepteur de vaisseaux</h1>
         {mj && (
-          <Bouton variante="principal" ecrit onClick={() => setCreation(true)}>
-            Nouvelle conception
-          </Bouton>
+          <div className="vx-actions-tete">
+            <Bouton ecrit onClick={() => setGeneration(true)}>Générer les fiches de règles…</Bouton>
+            <Bouton variante="principal" ecrit onClick={() => setCreation(true)}>
+              Nouvelle conception
+            </Bouton>
+          </div>
         )}
       </div>
       {perdue && <p className="echec" role="status">Connexion perdue.</p>}
@@ -89,6 +94,7 @@ export function Liste({ universId, suffixe, ouvrir }: { universId: number; suffi
                 <span className="vx-sous">{c.coque.nom} · classe {c.coque.classe}</span>
               </div>
               <span className="vx-prix">{credits(c.prix)}</span>
+              {c.perime && <Pastille sens="mj">Anciens réglages</Pastille>}
               {c.bloquantes > 0 && <Pastille sens="danger">{c.bloquantes} {c.bloquantes > 1 ? 'bloquantes' : 'bloquante'}</Pastille>}
               {c.aSurveiller > 0 && <Pastille sens="mj">{c.aSurveiller} à surveiller</Pastille>}
               <span className="vx-auteur">{c.auteur?.nom ?? ''}</span>
@@ -97,6 +103,7 @@ export function Liste({ universId, suffixe, ouvrir }: { universId: number; suffi
         </ul>
       )}
       {liste.conceptions.length > affiches && <Bouton onClick={() => setAffiches((n) => n + PAGE)}>Afficher la suite</Bouton>}
+      {generation && <Generer universId={universId} suffixe={suffixe} onFermer={() => setGeneration(false)} />}
       {creation && (
         <Creation
           universId={universId}
