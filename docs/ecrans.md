@@ -4055,7 +4055,7 @@ built.
 | État | Ce qu'on voit | Ce qu'on peut faire |
 |---|---|---|
 | empty | the route gives, per group, the totals with and without descendants (AD-131) : nothing readable either way, the block is absent ; nothing at the place's own level but something below, the block shows with « sous-lieux compris » checked and disabled, and a line « Rien à ce niveau ; N fiches dans ses sous-lieux. » | — |
-| loading | « Chargement… » in the block, the sheet readable | — |
+| loading | « Chargement… » in the block, the sheet readable; it also shows while the universe's list of types is still loading, so that no group is drawn under the raw type (« personnage (2) ») — if that list fails, the groups show with the raw type | — |
 | error | « Impossible de charger les fiches liées. » with « Réessayer », the rest of the sheet readable | « Réessayer » |
 | connection lost | the banner of the other blocks (the text of the connection-lost state above, B-29); the loaded content stays readable, the toggle and « Afficher les 12 » (which ask the server) are disabled | read |
 | refused | a player: only the relations whose section and source sheet he reads, counts included; the block is absent (no trace) when nothing is readable; the toggle is shown to every role on a place; in player mode the GM sees the same | — |

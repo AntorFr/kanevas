@@ -64,7 +64,9 @@ const total = (g: Groupe, descendants: boolean) => compte(g, descendants).reduce
 const majuscule = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
 function Liees({ universId, fiche, suffixeMode }: PropsBlocFiche) {
-  const { types } = useTypes();
+  const { types, etat: etatTypes } = useTypes();
+  // Groups are not shown before the types are known: the plural label would flash as the raw type.
+  const attente = etatTypes === 'chargement';
   const perdue = useConnexionPerdue();
   const lieu = fiche.type === 'lieu';
   const base = `/api/univers/${universId}/fiches/${fiche.id}/liees`;
@@ -136,7 +138,7 @@ function Liees({ universId, fiche, suffixeMode }: PropsBlocFiche) {
 
   if (absent) return null;
   const groupes = affiche ? affiche.page.groupes.filter((g) => total(g, affiche.descendants) > 0) : [];
-  if (affiche && !enCours && groupes.length === 0 && !echec) return null;
+  if (affiche && !attente && !enCours && groupes.length === 0 && !echec) return null;
 
   const descendants = affiche?.descendants ?? false;
   const ailleurs = affiche?.force
@@ -174,9 +176,9 @@ function Liees({ universId, fiche, suffixeMode }: PropsBlocFiche) {
         Fiches liées
       </h2>
       <div className="bloc-contenu">
-      {!affiche && enCours && <p role="status" className="chargement-liees">Chargement…</p>}
+      {(!affiche || attente) && (enCours || attente) && !echec && <p role="status" className="chargement-liees">Chargement…</p>}
       {!affiche && echec && <ErreurLiees perdue={perdue} onReessayer={() => setEssai((n) => n + 1)} />}
-      {affiche && (
+      {affiche && !attente && (
         <div className={`liees${occupe ? ' rafraichit' : ''}`} aria-busy={occupe || undefined}>
           {lieu && (
             <div className="liees-tete">
