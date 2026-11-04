@@ -99,8 +99,8 @@ test('verifierDeclaration accepte le module swn et l\'outil vaisseaux ; le regis
   verifierRegistre();
   const outil = swn.outils.find((x) => x.cle === OUTIL)!;
   assert.equal(outil.type, 'generateur');
-  assert.deepEqual((outil as any).usages.map((u: any) => [u.nom, u.mjSeul]), [['concevoir', false], ['creer', true]]);
-  assert.deepEqual((outil as any).sections.map((s: any) => s.type), ['caracteristiques']);
+  assert.deepEqual((outil as any).usages.map((u: any) => [u.nom, u.mjSeul]), [['concevoir', false], ['creer', true], ['generer', true]]);
+  assert.deepEqual((outil as any).sections.map((s: any) => s.type), ['caracteristiques', 'regles-coques', 'regles-moteurs', 'regles-amenagements', 'regles-defenses', 'regles-armes', 'regles-modifications', 'exemples']);
   assert.deepEqual((outil as any).catalogue.natures.map((n: any) => n.nom), TABLES);
 });
 
