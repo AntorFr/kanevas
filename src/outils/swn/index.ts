@@ -1,7 +1,7 @@
 import { cartesGalaxies, creerGalaxie, rendreVisibleGalaxie } from '../../services/swn/galaxies.js';
 import { catalogueVaisseaux, NATURES_VAISSEAU } from '../../services/swn/catalogue-vaisseaux.js';
 import { apresEcriture, produire, versionSource } from '../../services/swn/section-vaisseaux.js';
-import { apresEcritureRegles, produireRegles, versionSourceRegles } from '../../services/swn/fiches-regles.js';
+import { apresEcritureRegles, produireRegles, versionSourceRegles } from '../../services/swn/regles-hooks.js';
 import { produireDocument, versionSourceDocument } from '../../services/swn/document-source.js';
 import { importerGalaxie, NATURES_GALAXIE } from '../../services/swn/import-galaxie.js';
 import { outilTrajet } from './assistant.js';
