@@ -9,7 +9,7 @@ import { declarationOutil } from './outils.js';
 /** Entries kept in a batch report (AD-104); further ones are counted but not listed. */
 export const MAX_RAPPORT = 1000;
 
-export const NATURES = ['fiches', 'fichiers', 'campagnes', 'scenarios', 'relations'] as const;
+export const NATURES = ['fiches', 'fichiers', 'relations'] as const;
 export type Nature = (typeof NATURES)[number];
 export type Issue = 'creees' | 'mises_a_jour' | 'inchangees' | 'refusees';
 
@@ -65,7 +65,7 @@ function natureDeclaree(cle: string): { outil: { cle: string; libelle: string };
     const d = declarationOutil(cle);
     return {
       outil: { cle, libelle: d.libelle },
-      natures: (d.catalogue?.natures ?? []).map(({ nom, libellePluriel }) => ({ nom, libelle: libellePluriel })),
+      natures: (d.catalogue?.natures ?? d.importation?.natures ?? []).map(({ nom, libellePluriel }) => ({ nom, libelle: libellePluriel })),
     };
   } catch {
     return null;

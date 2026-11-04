@@ -61,14 +61,22 @@ export interface Fiche {
   creeLe?: string;
   /** Free sub-type under the title (AD-120), absent when the sheet has none. */
   sousType?: string | null;
-  charge: { v?: number; pj?: boolean };
+  charge: { v?: number; pj?: boolean; statut?: string; disparu?: boolean };
   /** The sheet's illustration (AD-93): `jeton` changes at each replacement and goes in the image address. */
   illustration?: { id: number; jeton: string } | { fermee: true; message: string } | { attente: true; cle: string } | null;
   /** Aliases and labels (AD-118), sorted by the server. */
   alias?: string[];
   etiquettes?: string[];
+  /** B-57: a GM outside player mode only; `false` = no section is readable by the players. Absent for anyone else. */
+  visibleJoueurs?: boolean;
   /** With a search: the alias that answers when the title does not. */
   aliasTrouve?: string;
+  /** Readable sub-place through which the linked-sheet search found this row (AD-130). */
+  via?: { id: number; titre: string };
+  /** A report only: the adventure it names, for a reader of that adventure; `campagneSupprimee` for a GM when it is gone. */
+  campagneId?: number;
+  campagneNom?: string;
+  campagneSupprimee?: true;
 }
 
 /** One line of « Mentionnée dans » (AD-100). */
@@ -92,6 +100,8 @@ export interface Enfant {
   titre: string;
   type: string;
   sousType: string | null;
+  /** At least one child the caller reads, every type (AD-129). */
+  aDesEnfants: boolean;
 }
 
 export interface PageEnfants {

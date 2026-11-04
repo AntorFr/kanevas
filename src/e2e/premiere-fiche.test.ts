@@ -93,7 +93,7 @@ test('B-2 Antor crée « Lame d\'Ébène » : il arrive sur sa vue d\'ensemble, 
   assert.ok(t.includes(DESC), 'description shown');
   assert.ok(/\bMJ\b/.test(t), 'role badge MJ shown');
   assert.ok(!t.includes("Rien à afficher pour l'instant."), 'blocks of kanevas-suivi replace the empty region');
-  assert.ok(t.includes('Campagnes actives') && t.includes('Derniers comptes-rendus'));
+  assert.ok(t.includes('Campagnes en cours') && t.includes('Derniers comptes-rendus'));
   await antor.goto('/');
   await voit(antor, NOM);
   const carte = antor.getByRole('link', { name: rx(NOM) });
@@ -560,6 +560,8 @@ test('B-12 Antor en mode Joueur voit « Apparence » seule, comme Léa, et plus 
   assert.equal(await antor.locator('main section[data-aud]').count(), 0, 'no rule nor hatching in player mode');
   await antor.getByLabel('Mode MJ').check();
   await section(antor, 'Vérité').waitFor();
+  // The GM view is redrawn after the switch: wait until the list of titles is the settled one (a transient entry may sit in it).
+  for (let i = 0; i < 80 && (await titresSections(antor)).join('|') !== 'Apparence|Vérité — MJ seul|Notes de la table'; i++) await antor.waitForTimeout(100);
   assert.deepEqual(await titresSections(antor), ['Apparence', 'Vérité — MJ seul', 'Notes de la table']);
 });
 

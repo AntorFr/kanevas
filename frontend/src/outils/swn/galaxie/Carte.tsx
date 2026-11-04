@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ErreurApi, lire, useConnexionPerdue } from '../../../api';
 import { Bouton } from '../../../ui';
 import { abreger, BLOCS_MAX, bloc, cases, COTE_BLOC, distanceHex, TAILLE_MAX, TAILLE_MIN, tailleMinimale, versHex, versPlan } from './geo';
-import type { Reference, RouteCarte, Selection, SystemeCarte, VueBlocs, VueGalaxie, ZoneCarte } from './types';
+import type { Geste, Reference, RouteCarte, Selection, SystemeCarte, Touche, VueBlocs, VueGalaxie, ZoneCarte } from './types';
 
 const RACINE_3 = Math.sqrt(3);
 const TAILLE_DEPART = 28;
@@ -39,10 +39,19 @@ export interface PropsCarte {
   centrer: { q: number; r: number; n: number } | null;
   onIntrouvable: () => void;
   onVide: (vide: boolean) => void;
+  /** Bumped after each write: the blocks kept so far are dropped and asked again. */
+  rev?: number;
+  /** The GM's gesture in progress: the next tap goes to `onToucher` instead of selecting. */
+  geste?: Geste | null;
+  onToucher?: (t: Touche) => void;
+  /** The systems, routes and zones loaded so far, for the panels that name them. */
+  onObjets?: (o: ObjetsCarte) => void;
 }
 
+export interface ObjetsCarte { systemes: Map<string, SystemeCarte>; routes: Map<number, RouteCarte>; zones: Map<number, ZoneCarte> }
+
 /** The hexagonal SVG: pan, zoom, pinch, and only the blocks it shows (AD-132, AD-133). */
-export function CarteHex({ base, suffixe, galaxie, selection, onSelection, mesure, chemin, centrer, onIntrouvable, onVide }: PropsCarte) {
+export function CarteHex({ base, suffixe, galaxie, selection, onSelection, mesure, chemin, centrer, onIntrouvable, onVide, rev = 0, geste: mode = null, onToucher, onObjets }: PropsCarte) {
   const perdue = useConnexionPerdue();
   const cadre = useRef<HTMLDivElement>(null);
   const svg = useRef<SVGSVGElement>(null);
@@ -61,6 +70,9 @@ export function CarteHex({ base, suffixe, galaxie, selection, onSelection, mesur
   const [survol, setSurvol] = useState<{ cle: string; x: number; y: number } | null>(null);
   const [legende, setLegende] = useState(false);
   const enVol = useRef(new Set<string>());
+  const revVue = useRef(rev);
+  // A write happened: everything loaded is stale. Requests still in flight are marked so their answer is dropped.
+  const generation = useRef(0);
   const encours = useRef(0);
   const vueRef = useRef(vue);
   vueRef.current = vue;
@@ -83,6 +95,15 @@ export function CarteHex({ base, suffixe, galaxie, selection, onSelection, mesur
   }, []);
 
   useEffect(() => { setVue((v) => (v.s < sMin ? { ...v, s: sMin } : v)); }, [sMin]);
+
+  useEffect(() => {
+    if (revVue.current === rev) return;
+    revVue.current = rev;
+    generation.current++;
+    enVol.current.clear();
+    setDonnees(vide());
+    setEchec(false);
+  }, [rev]);
 
   /** The view that holds every system loaded so far, or the reference at the starting zoom. */
   const cadrage = (): Vue => {
@@ -156,18 +177,21 @@ export function CarteHex({ base, suffixe, galaxie, selection, onSelection, mesur
           for (let by = ty; by <= ay; by++) for (let bx = tx; bx <= ax; bx++) cles.push(cleBloc(bx, by));
           cles.forEach((k) => enVol.current.add(k));
           encours.current++;
+          const mienne = generation.current;
           lire<VueBlocs>(`${base}/blocs?de=${tx},${ty}&a=${ax},${ay}${suffixe ? `&${suffixe.slice(1)}` : ''}`).then(
             (v) => {
+              if (mienne !== generation.current) return;
               setDonnees((d) => fusion(d, v, cles, vueRef.current));
               setPremier(false);
             },
             (e: unknown) => {
+              if (mienne !== generation.current) return;
               if (e instanceof ErreurApi && e.statut === 404) return onIntrouvable();
               setEchec(true);
               setPremier(false);
             },
           ).finally(() => {
-            cles.forEach((k) => enVol.current.delete(k));
+            if (mienne === generation.current) cles.forEach((k) => enVol.current.delete(k));
             encours.current--;
             setRelance((n) => n + 1);
           });
@@ -176,6 +200,8 @@ export function CarteHex({ base, suffixe, galaxie, selection, onSelection, mesur
     }, 150);
     return () => clearTimeout(t);
   }, [visibles, donnees.blocs, echec, relance, base, suffixe, onIntrouvable]);
+
+  useEffect(() => { if (donnees.blocs.size === 0) return; onObjets?.({ systemes: donnees.systemes, routes: donnees.routes, zones: donnees.zones }); }, [donnees.systemes, donnees.routes, donnees.zones]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => { onVide(!premier && donnees.systemes.size === 0 && !galaxie.reference); }, [premier, donnees.systemes.size, galaxie.reference, onVide]);
 
@@ -264,7 +290,16 @@ export function CarteHex({ base, suffixe, galaxie, selection, onSelection, mesur
     const u = versUnite(p, vue);
     const h = versHex(u.x, u.y);
     const b = donnees.blocs.get(cleBloc(bloc(h.q), bloc(h.r)));
-    if (b?.some(([q, r]) => q === h.q && r === h.r)) onSelection({ k: 'genere', q: h.q, r: h.r });
+    const genere = !!b?.some(([q, r]) => q === h.q && r === h.r);
+    if (mode && onToucher) return onToucher({ k: 'hex', q: h.q, r: h.r, genere });
+    if (genere) onSelection({ k: 'genere', q: h.q, r: h.r });
+  }
+
+  /** A system tapped: selected, or handed to the gesture in progress (a route end). */
+  function toucherSysteme(s: SystemeCarte) {
+    if (mode?.k === 'route' && onToucher) return onToucher({ k: 'systeme', systeme: s });
+    if (mode && mode.k !== 'placer' && onToucher) return onToucher({ k: 'hex', q: s.q, r: s.r, genere: false });
+    onSelection({ k: 'systeme', cle: s.cle, secret: s.secret });
   }
 
   // ----- Drawing
@@ -294,7 +329,7 @@ export function CarteHex({ base, suffixe, galaxie, selection, onSelection, mesur
   const ligne = chemin.map((c) => px(c.q, c.r)).map((p) => `${p.x},${p.y}`).join(' ');
 
   return (
-    <div className="gx-carte" ref={cadre}>
+    <div className={`gx-carte${mode ? ' en-geste' : ''}`} ref={cadre}>
       <svg
         ref={svg}
         className="gx-svg"
@@ -320,8 +355,13 @@ export function CarteHex({ base, suffixe, galaxie, selection, onSelection, mesur
           const pts = z.contour.map(([q, r]) => px(q, r));
           const c = pts.reduce((a, p) => ({ x: a.x + p.x / pts.length, y: a.y + p.y / pts.length }), { x: 0, y: 0 });
           return (
-            <g key={z.id} className={`gx-zone gx-c-${z.couleur}${z.secret ? ' secrete' : ''}`}>
+            <g key={z.id} className={`gx-zone gx-c-${z.couleur}${z.secret ? ' secrete' : ''}${z.cle !== undefined && selection?.k === 'zone' && selection.cle === z.cle ? ' choisie' : ''}`}
+              data-zone={z.cle}>
               <polygon points={pts.map((p) => `${p.x},${p.y}`).join(' ')} />
+              {z.cle !== undefined && !mode && (
+                <polygon className="gx-zone-bord" points={pts.map((p) => `${p.x},${p.y}`).join(' ')}
+                  onClick={(e) => { e.stopPropagation(); if (!geste.current.bouge) onSelection({ k: 'zone', cle: z.cle! }); }} />
+              )}
               {vue.s >= SEUIL_ETIQUETTES && <text x={c.x} y={c.y} textAnchor="middle">{abreger(z.nom)}{z.secret ? ' · Secret' : ''}</text>}
             </g>
           );
@@ -331,12 +371,27 @@ export function CarteHex({ base, suffixe, galaxie, selection, onSelection, mesur
           const b = px(r.vers.q, r.vers.r);
           const prive = r.publique === false;
           return (
-            <g key={r.id} className={`gx-route${prive ? ' privee' : ''}`}>
+            <g key={r.id} className={`gx-route${prive ? ' privee' : ''}${selection?.k === 'route' && selection.id === r.id ? ' choisie' : ''}`}
+              data-route={r.id}>
               <line x1={a.x} y1={a.y} x2={b.x} y2={b.y} strokeDasharray={prive ? '6 5' : undefined} />
+              {r.publique !== undefined && !mode && (
+                <line className="gx-route-touche" x1={a.x} y1={a.y} x2={b.x} y2={b.y}
+                  onClick={(e) => { e.stopPropagation(); if (!geste.current.bouge) onSelection({ k: 'route', id: r.id }); }} />
+              )}
               {prive && vue.s >= SEUIL_ETIQUETTES && <text x={(a.x + b.x) / 2} y={(a.y + b.y) / 2 - 6} textAnchor="middle">Privée</text>}
             </g>
           );
         })}
+        {mode?.k === 'zone' && mode.points.length > 0 && (() => {
+          const pts = mode.points.map(([q, r]) => px(q, r));
+          const ch = pts.map((p) => `${p.x},${p.y}`).join(' ');
+          return (
+            <g className="gx-trace" aria-hidden="true">
+              {pts.length > 1 && <polyline points={ch} fill="none" />}
+              {pts.map((p, i) => <circle key={i} cx={p.x} cy={p.y} r={5} />)}
+            </g>
+          );
+        })()}
         {chemin.length > 1 && <polyline className="gx-chemin" points={ligne} fill="none" />}
         {[...donnees.blocs.values()].flatMap((g) => g).map(([q, r]) => {
           const p = px(q, r);
@@ -359,13 +414,14 @@ export function CarteHex({ base, suffixe, galaxie, selection, onSelection, mesur
               aria-label={s.nom}
               aria-pressed={choisi}
               data-systeme={s.cle}
-              onClick={(e) => { e.stopPropagation(); if (!geste.current.bouge) onSelection({ k: 'systeme', cle: s.cle, secret: s.secret }); }}
-              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelection({ k: 'systeme', cle: s.cle, secret: s.secret }); } }}
+              onClick={(e) => { e.stopPropagation(); if (!geste.current.bouge) toucherSysteme(s); }}
+              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toucherSysteme(s); } }}
               onPointerEnter={(e) => { if (e.pointerType === 'mouse') setSurvol({ cle: s.cle, x: p.x, y: p.y }); }}
               onPointerLeave={() => setSurvol(null)}
             >
               <circle className="gx-zone-touche" cx={p.x} cy={p.y} r={Math.max(rr, 22)} />
               {choisi && <circle className="gx-halo" cx={p.x} cy={p.y} r={rr + 5} />}
+              {mode?.k === 'route' && mode.depart?.cle === s.cle && <circle className="gx-halo" cx={p.x} cy={p.y} r={rr + 5} />}
               {mesure?.cle === s.cle && <circle className="gx-depart" cx={p.x} cy={p.y} r={rr + 3} />}
               <circle className="gx-point" cx={p.x} cy={p.y} r={rr} />
               {(vue.s >= SEUIL_ETIQUETTES || choisi) && <text x={p.x} y={p.y + Math.max(rr, 22) - 6 + 14} textAnchor="middle">{abreger(s.nom)}</text>}

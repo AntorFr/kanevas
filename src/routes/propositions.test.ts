@@ -43,7 +43,7 @@ async function monter() {
     | { membres: { compteId: number; username: string }[] };
   const liste = Array.isArray(membres) ? membres : membres.membres;
   const antorId = liste.find((m) => m.username === 'antor')!.compteId;
-  const camp = (await appel(app, antor, 'POST', `${base}/campagnes`, { nom: 'Camp' })).json();
+  const camp = (await appel(app, antor, 'POST', `${base}/fiches`, { type: 'aventure', sousType: 'Campagne', titre: 'Camp' })).json();
   const cr = (
     await appel(app, antor, 'POST', `${base}/comptes-rendus`, {
       campagneId: camp.id,

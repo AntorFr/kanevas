@@ -34,6 +34,7 @@ export function BlocSection({
 /** A relation: « membre de » → target token (type icon, title, type). */
 export function LigneRelation({
   lien,
+  qualificatif,
   icone: Icone,
   cible,
   type,
@@ -41,6 +42,8 @@ export function LigneRelation({
   actions,
 }: {
   lien: string;
+  /** With a nature: the line reads « nature · target — qualifier » (qualifier in grey). */
+  qualificatif?: string;
   icone: LucideIcon;
   cible: string;
   type: string;
@@ -48,15 +51,38 @@ export function LigneRelation({
   vers?: string;
   actions?: ReactNode;
 }) {
+  const nature = qualificatif !== undefined;
   const jeton = (
     <>
       <Icone size={14} strokeWidth={1.75} aria-hidden="true" />
       <span className="jeton-titre" title={cible}>
         {cible}
       </span>
-      <span className="jeton-type">{type}</span>
+      {!nature && <span className="jeton-type">{type}</span>}
     </>
   );
+  if (nature) {
+    return (
+      <div className="relation relation-nature">
+        <span className="relation-texte">
+          <span className="relation-lien">{lien}</span>
+          <span className="relation-lien" aria-hidden="true">
+            ·
+          </span>
+          {vers ? (
+            <Link className="jeton" to={vers}>
+              {jeton}
+            </Link>
+          ) : (
+            <span className="jeton">{jeton}</span>
+          )}
+          {qualificatif !== '' && <span className="relation-lien">— {qualificatif}</span>}
+        </span>
+        <span className="jeton-type relation-type">{type}</span>
+        {actions && <span className="actions-revelees">{actions}</span>}
+      </div>
+    );
+  }
   return (
     <div className="relation">
       <span className="relation-lien">{lien}</span>

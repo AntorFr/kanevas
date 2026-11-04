@@ -51,6 +51,11 @@ export interface DeclarationCatalogue {
    */
   verifier?(nature: string, donnees: Record<string, unknown>, ctx: ContexteVerification): { champ: string; raison: string } | null;
 }
+/** A tool a script pushes data into without a catalogue (T-9): the natures key the batch's counters. */
+export interface DeclarationImportation {
+  natures: { nom: string; libelle: string; libellePluriel: string }[];
+  appliquer(db: Db, acteur: Acteur, universId: number, cibleId: number, corps: unknown): unknown;
+}
 interface BaseOutil {
   cle: string;
   libelle: string;
@@ -61,14 +66,25 @@ interface BaseOutil {
   usages: { nom: string; mjSeul: boolean }[];
   reglages: Reglages;
   catalogue?: DeclarationCatalogue;
+  importation?: DeclarationImportation;
   outilsAssistant?(ctx: ContexteOutil): Outil[];
   ecran: { libelle: string; icone: string };
 }
-export interface CarteOutil { id: number; titre: string; visible: boolean }
+/** `version` is the optimistic-concurrency token of the map's own row, when its tool can change its visibility (E-10). */
+export interface CarteOutil { id: number; titre: string; visible: boolean; version?: number }
 /** Maps recompute on read after a setting changes (AD-128). */
 export interface DeclarationCarte extends BaseOutil {
   type: 'carte';
   cartes(db: Db, acteur: Acteur, universId: number): CarteOutil[];
+  creation?: CreationCarte;
+  /** A map may carry managed sections too (T-7). */
+  sections?: SectionGeree[];
+}
+/** How E-10 creates and shows a map of this tool without the core knowing the module (T-6). */
+export interface CreationCarte {
+  libelle: string;
+  creer(db: Db, acteur: Acteur, universId: number, titre: string): { id: number };
+  rendreVisible(db: Db, acteur: Acteur, universId: number, id: number, visible: boolean, version: number): { version: number };
 }
 export interface ContexteSection {
   db: Db;
@@ -154,9 +170,15 @@ const declaration = z.strictObject({
         poserMasque: fonction, retraits: fonction, poserRetrait: fonction }),
       verifier: fonction.optional(),
     }).optional(),
+    importation: z.strictObject({
+      natures: z.array(z.strictObject({ nom: z.string().regex(/^[a-z][a-z0-9_-]*$/),
+        libelle: z.string().min(1), libellePluriel: z.string().min(1) })).min(1),
+      appliquer: fonction,
+    }).optional(),
     reglages, outilsAssistant: fonction.optional(), cartes: fonction.optional(),
+    creation: z.strictObject({ libelle: z.string().min(1), creer: fonction, rendreVisible: fonction }).optional(),
     sections: z.array(z.strictObject({
-      type: z.string().regex(/^[a-z][a-z0-9-]*$/), libelle: z.string().min(1), usage: z.string().min(1),
+      type: z.string().regex(/^[a-z][a-z0-9_-]*$/), libelle: z.string().min(1), usage: z.string().min(1),
       recalcul: z.enum(['geste', 'proposition']), composant: z.boolean().optional(), versionSource: fonction, produire: fonction, apresEcriture: fonction.optional(),
     })).optional(),
     ecran: z.strictObject({ libelle: z.string().min(1), icone: z.string().min(1) }),
@@ -180,12 +202,13 @@ export function verifierDeclaration(module: DeclarationModule): void {
       throw new Error(`Invalid or duplicate tool key: ${outil.cle}.`);
     }
     if (outil.type === 'carte' && typeof outil.cartes !== 'function') throw new Error('A map needs its map reader.');
+    if ((outil as { creation?: unknown }).creation !== undefined && outil.type !== 'carte') throw new Error('Only a map declares a creation.');
     if (outil.type === 'generateur' && !outil.usages.some((u) => u.nom === 'concevoir')) {
       throw new Error('A generator needs the concevoir usage.');
     }
     const sections = (outil as { sections?: SectionGeree[] }).sections;
     if (sections !== undefined) {
-      if (outil.type !== 'generateur') throw new Error('Only a generator declares sections.');
+      if (outil.type !== 'generateur' && outil.type !== 'carte') throw new Error('Only a generator or a map declares sections.');
       if (new Set(sections.map((s) => s.type)).size !== sections.length) {
         throw new Error(`Duplicate section type in ${outil.cle}.`);
       }
@@ -199,6 +222,10 @@ export function verifierDeclaration(module: DeclarationModule): void {
       if (new Set(noms).size !== noms.length || noms.some((n) => ['catalogue', 'version'].includes(n))) {
         throw new Error('Invalid or duplicate catalogue nature.');
       }
+    }
+    if (outil.importation) {
+      const noms = outil.importation.natures.map((n) => n.nom);
+      if (new Set(noms).size !== noms.length) throw new Error('Duplicate importation nature.');
     }
     verifierReglages(outil.reglages);
     outils.set(outil.cle, outil);

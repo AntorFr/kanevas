@@ -196,9 +196,9 @@ test('E-1 liste : par nom, rôle MJ ou Joueur, un clic mène à E-3', opts, asyn
 test('E-3 matrice des rôles : Préparation « MJ seul » pour le MJ, absente pour le Joueur ; un seul lien « Tous les comptes-rendus »', opts, async () => {
   const mj = await antor.context().newPage();
   mj.setDefaultTimeout(30000);
-  const c = await (await mj.request.post(`/api/univers/${idUnivers}/campagnes`, { data: { nom: 'La Couronne brisée' } })).json();
-  await mj.request.patch(`/api/campagnes/${c.id}`, { data: { statut: 'active' } });
-  await mj.request.post(`/api/campagnes/${c.id}/taches`, { data: { categorie: 'monstres', libelle: 'Statistiques du Revenant' } });
+  const c = await (await mj.request.post(`/api/univers/${idUnivers}/fiches`, { data: { type: 'aventure', sousType: 'Campagne', titre: 'La Couronne brisée', sections: [{ titre: 'Présentation', joueursLisent: true }] } })).json();
+  await mj.request.patch(`/api/univers/${idUnivers}/fiches/${c.id}`, { data: { statut: 'en_cours' } });
+  await mj.request.post(`/api/univers/${idUnivers}/fiches/${c.id}/taches`, { data: { categorie: 'monstres', libelle: 'Statistiques du Revenant' } });
   await mj.request.post(`/api/univers/${idUnivers}/comptes-rendus`, { data: { campagneId: c.id, titre: 'Session 12', texte: 'x' } });
 
   await mj.goto(`/univers/${idUnivers}`);
@@ -207,7 +207,7 @@ test('E-3 matrice des rôles : Préparation « MJ seul » pour le MJ, absente po
   let t = await texte(mj);
   assert.ok(t.includes('MJ seul'));
   assert.ok(t.includes('Statistiques du Revenant'));
-  assert.ok(t.includes('Campagnes actives'));
+  assert.ok(t.includes('Campagnes en cours'));
   assert.ok(t.includes('La Couronne brisée'));
   assert.ok(t.includes('Session 12'));
   assert.equal(await mj.getByRole('link', { name: rx('Tous les comptes-rendus') }).count(), 1);
@@ -216,7 +216,7 @@ test('E-3 matrice des rôles : Préparation « MJ seul » pour le MJ, absente po
   await mj.close();
 
   await lea.goto(`/univers/${idUnivers}`);
-  await lea.getByRole('heading', { name: 'Campagnes actives' }).waitFor();
+  await lea.getByRole('heading', { name: 'Campagnes en cours' }).waitFor();
   await attendre(lea);
   t = await texte(lea);
   assert.equal(await lea.getByRole('heading', { name: 'Préparation' }).count(), 0);

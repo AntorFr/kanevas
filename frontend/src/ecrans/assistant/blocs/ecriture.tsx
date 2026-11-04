@@ -8,10 +8,6 @@ export function lienDe(universId: number, cible: Evenement['cible']): string | n
   switch (cible.type) {
     case 'fiche':
       return `/univers/${universId}/fiche/${cible.ficheId}`;
-    case 'campagne':
-      return `/univers/${universId}/campagnes/${cible.campagneId}`;
-    case 'scenario':
-      return `/univers/${universId}/scenarios/${cible.scenarioId}`;
     default:
       return null;
   }

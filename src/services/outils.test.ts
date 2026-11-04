@@ -39,7 +39,7 @@ function monde() {
   return { db, antor, mira, lea, etranger, admin, u1, u2, sys };
 }
 
-test('migration 0017 : colonnes, tables, aucune reprise des responsables', () => {
+test('migration 0019 : colonnes, tables, aucune reprise des responsables', () => {
   const db = openDb(':memory:');
   migrate(db, new URL('../db/migrations/', import.meta.url).pathname);
   const cols = (t: string) => (db.prepare(`PRAGMA table_info(${t})`).all() as any[]).map((c) => c.name);

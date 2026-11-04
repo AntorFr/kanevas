@@ -6,16 +6,19 @@ import {
   peutVoirFiche,
   sqlFicheLisible,
   sqlSectionLisible,
+  campagneDuCompteRendu,
   vueMJ,
   vueSection,
 } from './droits.js';
 import { ErreurService, introuvable, invalide, refuse } from './erreurs.js';
 import { etiquetageDe } from './etiquettes.js';
 import { mentionsDe } from './mentions.js';
+import { estNature, NATURES } from './natures.js';
 import { illustrationEnAttente, lireLignes, lisiblePar, type FichierRow } from './fichiers.js';
 import { supprimerFichier } from './stockage.js';
 import { IMAGE_RESERVEE } from './markdown.js';
-import { CHARGES, estTypeFiche, typeActif } from './types-fiche.js';
+import { CHARGES, TYPES, STATUT_AVENTURE, estTypeFiche, porteMarqueDisparu, typeActif } from './types-fiche.js';
+import { ajouterSection, changerAudience } from './sections.js';
 import {
   TYPES_FICHE,
   type Acteur,
@@ -49,7 +52,19 @@ interface FicheRow {
   cle_origine: string | null;
   sous_type: string | null;
   parent_id: number | null;
+  /** Read projection of the linked-list condition, never a stored column. */
+  lien_via?: string | null;
+  visible_joueurs?: number;
 }
+
+/** B-57: a player's own author right never opens the sheet to players in general. */
+const SQL_VISIBLE_JOUEURS = 'EXISTS (SELECT 1 FROM sections v WHERE v.fiche_id = f.id AND v.joueurs_lisent = 1)';
+
+const projectionVisibilite = (mj: boolean): string => mj ? `, ${SQL_VISIBLE_JOUEURS} AS visible_joueurs` : '';
+
+/** The field is absent altogether outside the full GM view. */
+export const visibiliteVue = (r: FicheRow): { visibleJoueurs?: boolean } =>
+  r.visible_joueurs === undefined ? {} : { visibleJoueurs: r.visible_joueurs === 1 };
 
 /**
  * The sheet as a reader sees it. Without `lecteur` (the GM's own writes) the illustration is the file; with
@@ -100,9 +115,9 @@ const DISQUE_ILLUSTRATION =
    (SELECT x.ajoute_par FROM fichiers x WHERE x.id = f.illustration_fichier_id) AS illustration_ajoute_par`;
 
 /** The sheet row of this universe, or not found (a sheet of another universe does not exist here). */
-export function chargerFiche(db: Db, universId: number, ficheId: number): FicheRow {
+export function chargerFiche(db: Db, universId: number, ficheId: number, avecVisibilite = false): FicheRow {
   const row = db
-    .prepare(`SELECT f.*, ${DISQUE_ILLUSTRATION} FROM fiches f WHERE f.id = ? AND f.univers_id = ?`)
+    .prepare(`SELECT f.*, ${DISQUE_ILLUSTRATION}${projectionVisibilite(avecVisibilite)} FROM fiches f WHERE f.id = ? AND f.univers_id = ?`)
     .get(ficheId, universId) as FicheRow | undefined;
   if (!row) throw introuvable();
   return row;
@@ -115,9 +130,8 @@ function sectionsDe(db: Db, ficheId: number): SectionRow[] {
 }
 
 /**
- * The GM creates a sheet of one of the seven types. No section yet: the GM
- * adds them. (A session report by any member, B-19, comes with kanevas-suivi,
- * which owns campaigns.)
+ * The GM creates a sheet, optionally with its parent and up to ten empty sections,
+ * in one transaction (AD-128). Section and hierarchy writes keep their single service.
  */
 export function creerFiche(
   db: Db,
@@ -129,6 +143,8 @@ export function creerFiche(
     charge?: Record<string, unknown>;
     /** Optional free sub-type of the sheet (B-52); `null` or absent: none. */
     sousType?: string | null;
+    parent?: number | null;
+    sections?: { titre: string; joueursLisent?: boolean }[];
     /** Import only (B-50, AD-107): the origin key and dates of the sheet, and what the import wrote. */
     origine?: { cle: string; creeLe?: string; modifieLe?: string; dernierImport: unknown };
   },
@@ -146,28 +162,68 @@ export function creerFiche(
   const sousType = entree.sousType == null ? null : validerSousType(entree.sousType);
   const charge = CHARGES[type].safeParse({ v: 1, ...entree.charge });
   if (!charge.success) throw invalide('Charge utile invalide pour ce type de fiche.');
-  const now = new Date().toISOString();
-  const o = entree.origine;
-  const cree = o?.creeLe ?? now;
-  const info = db
-    .prepare(
-      `INSERT INTO fiches (univers_id, type, titre, charge, cree_le, modifie_le, cle_origine, dernier_import)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-    )
-    .run(
-      universId,
-      type,
-      titre,
-      JSON.stringify(charge.data),
-      cree,
-      o?.modifieLe ?? (cree > now ? cree : now),
-      o?.cle ?? null,
-      o ? JSON.stringify(o.dernierImport) : null,
-    );
-  const id = Number(info.lastInsertRowid);
-  // A separate write: a base short of 0013 (the migration test seeds one through the services) has no column.
-  if (sousType !== null) db.prepare('UPDATE fiches SET sous_type = ? WHERE id = ?').run(sousType, id);
-  return versFiche(chargerFiche(db, universId, id));
+  if (entree.parent !== undefined && entree.parent !== null && !Number.isSafeInteger(entree.parent)) {
+    throw invalide('Le parent doit être une fiche ou null.');
+  }
+  if (entree.sections !== undefined && (!Array.isArray(entree.sections) || entree.sections.length > 10)) {
+    throw invalide('La création accepte au plus 10 sections.');
+  }
+  for (const section of entree.sections ?? []) {
+    if (!section || typeof section.titre !== 'string') throw invalide('Le titre : de 1 à 80 caractères.');
+    if (section.joueursLisent !== undefined && typeof section.joueursLisent !== 'boolean') {
+      throw invalide('Réglage d’audience invalide.');
+    }
+  }
+  return db.transaction(() => {
+    const now = new Date().toISOString();
+    const o = entree.origine;
+    const cree = o?.creeLe ?? now;
+    const info = db
+      .prepare(
+        `INSERT INTO fiches (univers_id, type, titre, charge, cree_le, modifie_le, cle_origine, dernier_import)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      )
+      .run(
+        universId,
+        type,
+        titre,
+        JSON.stringify(charge.data),
+        cree,
+        o?.modifieLe ?? (cree > now ? cree : now),
+        o?.cle ?? null,
+        o ? JSON.stringify(o.dernierImport) : null,
+      );
+    const id = Number(info.lastInsertRowid);
+    // A separate write: a base short of 0013 (the migration test seeds one through the services) has no column.
+    if (sousType !== null) db.prepare('UPDATE fiches SET sous_type = ? WHERE id = ?').run(sousType, id);
+    if (entree.parent !== undefined) deplacerFiche(db, { compteId }, universId, id, entree.parent);
+    for (const section of entree.sections ?? []) {
+      const s = ajouterSection(db, compteId, universId, id, { titre: section.titre });
+      if (section.joueursLisent === true) changerAudience(db, compteId, universId, id, s.id, { joueursLisent: true });
+    }
+    return versFiche(chargerFiche(db, universId, id));
+  })();
+}
+
+/** Play state, GM outside player mode only; changing it does not modify the text date (AD-123). */
+export function changerStatutFiche(
+  db: Db,
+  acteur: Acteur,
+  universId: number,
+  ficheId: number,
+  statut: unknown,
+): Fiche {
+  const role = exigerRole(db, universId, acteur.compteId);
+  const fiche = chargerFiche(db, universId, ficheId);
+  // A player must first read the sheet; a GM in player mode is always refused a write.
+  if (role !== 'mj' && !peutVoirFiche(db, role, ficheId, acteur)) throw introuvable();
+  if (!vueMJ(role, acteur)) throw refuse();
+  if (fiche.type !== 'aventure' || !STATUT_AVENTURE.safeParse(statut).success) {
+    throw invalide('Statut invalide pour ce type de fiche.');
+  }
+  const charge = CHARGES[fiche.type].parse({ v: 1, statut });
+  db.prepare('UPDATE fiches SET charge = ? WHERE id = ?').run(JSON.stringify(charge), ficheId);
+  return versFiche(chargerFiche(db, universId, ficheId));
 }
 
 /**
@@ -215,7 +271,32 @@ export function changerSousType(
 }
 
 /**
- * The GM changes the type of a sheet among the thirteen settable ones (AD-120 (4)): the same row,
+ * The GM sets the public gone mark outside player mode (AD-132). Like a title, this
+ * leaves `dernier_import` alone: the import compares its last write before replaying.
+ */
+export function marquerDisparu(
+  db: Db,
+  acteur: Acteur,
+  universId: number,
+  ficheId: number,
+  disparu: boolean,
+): Fiche {
+  exigerMJ(db, universId, acteur.compteId);
+  if (acteur.modeJoueur) throw refuse();
+  const fiche = chargerFiche(db, universId, ficheId);
+  if (!porteMarqueDisparu(fiche.type)) throw invalide('Cette fiche ne peut pas être marquée disparue.');
+  if (typeof disparu !== 'boolean') throw invalide('Requête invalide.');
+  const charge = { ...(JSON.parse(fiche.charge) as Record<string, unknown>), disparu };
+  db.prepare('UPDATE fiches SET charge = ?, modifie_le = ? WHERE id = ?').run(
+    JSON.stringify(charge),
+    new Date().toISOString(),
+    ficheId,
+  );
+  return versFiche(chargerFiche(db, universId, ficheId));
+}
+
+/**
+ * The GM changes the type of a sheet among the settable ones (AD-120 (4)): the same row,
  * so id, sections, relations and map places stay. The payload becomes that of the new type (a
  * character takes `pj`, `false` by default) and the sub-type is cleared unless the caller gives a
  * new one. A disabled target type is allowed. A session report cannot be changed into or out of.
@@ -233,7 +314,7 @@ export function changerTypeFiche(
   exigerMJ(db, universId, compteId);
   const actuelle = chargerFiche(db, universId, ficheId);
   if (!estTypeFiche(type)) throw new ErreurService('invalide', 'Type de fiche inconnu.', 'type_inconnu');
-  if (type === 'compte_rendu' || actuelle.type === 'compte_rendu') {
+  if (!TYPES.find((t) => t.type === type)?.reglable || !TYPES.find((t) => t.type === actuelle.type)?.reglable) {
     throw new ErreurService('invalide', 'Ce type ne se change pas.', 'type_non_reglable');
   }
   if (type === actuelle.type && charge === undefined) {
@@ -241,7 +322,10 @@ export function changerTypeFiche(
   }
   const voulu = sousType == null ? null : validerSousType(sousType);
   const base = type === 'personnage' ? { pj: false } : {};
-  const c = CHARGES[type].safeParse({ v: 1, ...base, ...charge });
+  // Conversion preserves a compatible mark, never changes it from a caller's payload.
+  const ancienneCharge = JSON.parse(actuelle.charge) as Record<string, unknown>;
+  const marque = porteMarqueDisparu(type) ? { disparu: ancienneCharge.disparu } : {};
+  const c = CHARGES[type].safeParse({ v: 1, ...base, ...charge, ...marque });
   if (!c.success) throw invalide('Charge utile invalide pour ce type de fiche.');
   const garde = type === actuelle.type ? actuelle.sous_type : null;
   db.prepare('UPDATE fiches SET type = ?, charge = ?, sous_type = ?, modifie_le = ? WHERE id = ?').run(
@@ -261,6 +345,10 @@ export interface BilanSuppression {
   fichiers: number;
   enfants: number;
   parent: { id: number; titre: string } | null;
+  /** An adventure only (AD-119, AD-124 (5)): its tasks (deleted), its scenarios (to the root), the reports left without it. */
+  taches?: number;
+  scenarios?: number;
+  comptesRendus?: number;
 }
 
 /**
@@ -296,6 +384,17 @@ function recenser(db: Db, f: FicheRow): BilanSuppression & { disques: string[] }
     fichiers,
     enfants: n('SELECT COUNT(*) AS n FROM fiches WHERE parent_id = ?', f.id),
     parent,
+    ...(f.type === 'aventure'
+      ? {
+          taches: n('SELECT COUNT(*) AS n FROM taches_preparation WHERE fiche_id = ?', f.id),
+          scenarios: n("SELECT COUNT(*) AS n FROM fiches WHERE parent_id = ? AND type = 'aventure'", f.id),
+          comptesRendus: n(
+            "SELECT COUNT(*) AS n FROM fiches WHERE type = 'compte_rendu' AND univers_id = ? AND json_extract(charge, '$.campagne_id') = ?",
+            f.univers_id,
+            f.id,
+          ),
+        }
+      : {}),
     disques,
   };
 }
@@ -332,6 +431,7 @@ export function supprimerFiche(db: Db, acteur: Acteur, universId: number, ficheI
     db.prepare('UPDATE fiches SET parent_id = ? WHERE parent_id = ?').run(f.parent_id, f.id);
     db.prepare('DELETE FROM relations WHERE cible_fiche_id = ?').run(f.id);
     db.prepare('DELETE FROM elements_carte WHERE fiche_id = ?').run(f.id);
+    db.prepare('DELETE FROM taches_preparation WHERE fiche_id = ?').run(f.id);
     db.prepare('DELETE FROM sections WHERE fiche_id = ?').run(f.id);
     db.prepare('DELETE FROM fiches WHERE id = ?').run(f.id);
     return bilan;
@@ -341,6 +441,24 @@ export function supprimerFiche(db: Db, acteur: Acteur, universId: number, ficheI
 
 /** Deepest chain the tree accepts, and the longest climb a read makes (AD-115 (1), (2)). */
 export const PROFONDEUR_MAX = 50;
+
+/**
+ * Ids of the sheet and its same-type descendants, including unreadable intermediate sheets
+ * (AD-130). UNION and the depth bound tolerate corrupt cycles; no title or path leaves this read.
+ */
+export function descendantsDe(db: Db, ficheId: number): { ids: number[]; profondeurAtteinte: boolean } {
+  const rows = db.prepare(`
+    WITH RECURSIVE descente(id, univers_id, type, niveau) AS (
+      SELECT id, univers_id, type, 0 FROM fiches WHERE id = ?
+      UNION
+      SELECT f.id, f.univers_id, f.type, d.niveau + 1
+        FROM fiches f JOIN descente d ON f.parent_id = d.id
+       WHERE f.univers_id = d.univers_id AND f.type = d.type AND d.niveau < ?
+    )
+    SELECT id, MAX(niveau) AS niveau FROM descente GROUP BY id
+  `).all(ficheId, PROFONDEUR_MAX) as { id: number; niveau: number }[];
+  return { ids: rows.map((r) => r.id), profondeurAtteinte: rows.some((r) => r.niveau === PROFONDEUR_MAX) };
+}
 
 /**
  * The GM puts a sheet under another (or at the root with `null`) — the only write of `parent_id`
@@ -426,13 +544,39 @@ export function listerEnfants(
   const role = exigerRole(db, universId, acteur.compteId);
   chargerFiche(db, universId, ficheId);
   if (!peutVoirFiche(db, role, ficheId, acteur)) throw introuvable();
-  const where = ['f.parent_id = ?', 'f.univers_id = ?'];
-  const params: (string | number)[] = [ficheId, universId];
+  return pageEnfants(db, role, acteur, universId, 'f.parent_id = ?', [ficheId], curseur);
+}
+
+/**
+ * The universe root for « Déplacer sous… » (AD-129): the sheets without a parent, every type, in the
+ * order and shape of `listerEnfants`. GM outside player mode only.
+ */
+export function listerRacines(db: Db, acteur: Acteur, universId: number, curseur?: string): PageEnfants {
+  const role = exigerRole(db, universId, acteur.compteId);
+  if (!vueMJ(role, acteur)) throw refuse();
+  return pageEnfants(db, role, acteur, universId, 'f.parent_id IS NULL', [], curseur);
+}
+
+/** One page of sheets under a condition on `f`, with `aDesEnfants` read under the caller's filter (AD-129 (2)). */
+function pageEnfants(
+  db: Db,
+  role: Role,
+  acteur: Acteur,
+  universId: number,
+  condition: string,
+  paramsCondition: (string | number)[],
+  curseur?: string,
+): PageEnfants {
+  const where = [condition, 'f.univers_id = ?'];
+  const params: (string | number)[] = [...paramsCondition, universId];
   const lisible = sqlFicheLisible(role, acteur, 'f');
   if (lisible) {
     where.push(lisible.sql);
     params.push(...lisible.params);
   }
+  const lisibleE = sqlFicheLisible(role, acteur, 'e');
+  const aDesEnfants = `EXISTS (SELECT 1 FROM fiches e WHERE e.parent_id = f.id${lisibleE ? ` AND ${lisibleE.sql}` : ''}) AS a_des_enfants`;
+  const paramsProjection = lisibleE?.params ?? [];
   if (curseur !== undefined) {
     let c: { r: number; t: string; i: number };
     try {
@@ -448,17 +592,17 @@ export function listerEnfants(
   }
   const rows = db
     .prepare(
-      `SELECT f.*, (${RANG_TYPE}) AS rang FROM fiches f WHERE ${where.join(' AND ')}
+      `SELECT f.*, (${RANG_TYPE}) AS rang, ${aDesEnfants}${projectionVisibilite(vueMJ(role, acteur))} FROM fiches f WHERE ${where.join(' AND ')}
        ORDER BY rang, plier(f.titre), f.id LIMIT ?`,
     )
-    .all(...params, LIMITE_ENFANTS + 1) as (FicheRow & { rang: number })[];
+    .all(...paramsProjection, ...params, LIMITE_ENFANTS + 1) as (FicheRow & { rang: number; a_des_enfants: number })[];
   const page = rows.slice(0, LIMITE_ENFANTS);
   const dernier = page[page.length - 1];
   const suivant =
     rows.length > LIMITE_ENFANTS && dernier
       ? Buffer.from(JSON.stringify({ r: dernier.rang, t: dernier.titre, i: dernier.id })).toString('base64url')
       : null;
-  const enfants: Enfant[] = page.map((r) => ({ id: r.id, titre: r.titre, type: r.type, sousType: r.sous_type }));
+  const enfants: Enfant[] = page.map((r) => ({ id: r.id, titre: r.titre, type: r.type, sousType: r.sous_type, ...visibiliteVue(r), aDesEnfants: r.a_des_enfants === 1 }));
   return { enfants, suivant };
 }
 
@@ -531,15 +675,23 @@ export function lireFiche(
   formeLiens: 'html' | 'markdown' = 'html',
 ): FicheVue {
   const role = exigerRole(db, universId, acteur.compteId);
-  const fiche = chargerFiche(db, universId, ficheId);
+  const fiche = chargerFiche(db, universId, ficheId, vueMJ(role, acteur));
   const lisibles = sectionsDe(db, ficheId).filter((s) => peutLireSection(role, s, acteur));
   if (lisibles.length === 0 && (role !== 'mj' || acteur.modeJoueur)) throw introuvable();
   const mentions = mentionsDe(db, role, acteur, universId, ficheId);
   const vueFiche = versFiche(fiche, (f) => lisiblePar(role, acteur, f));
   // An illustration the import has not delivered yet: a tile for the GM outside player mode, nothing for anyone else.
   const attendue = vueFiche.illustration === null && vueMJ(role, acteur) ? illustrationEnAttente(db, ficheId) : null;
+  // A report names its adventure only to a reader who reads it (AD-124 (4)): the id leaves `charge` for
+  // everyone, the title comes back beside it for the readers of that adventure (and « supprimée » for a GM).
+  const campagne = fiche.type === 'compte_rendu'
+    ? campagneDuCompteRendu(db, role, acteur, universId, vueFiche.charge.campagne_id)
+    : null;
+  if (campagne) delete vueFiche.charge.campagne_id;
   return {
     ...vueFiche,
+    ...(campagne ?? {}),
+    ...visibiliteVue(fiche),
     ...(attendue !== null ? { illustration: { attente: true as const, cle: attendue } } : {}),
     ancetres: ancetresLisibles(db, role, acteur, fiche),
     mentions: mentions.mentions,
@@ -593,6 +745,26 @@ export function motsRecherche(saisie: string): string | null {
   return mots.length > 0 ? mots.join(' ') : null;
 }
 
+/** A sheet and all its descendants, gathered by `parent_id` one level per read, 50 levels at most (AD-129 (3)). */
+function sousArbre(db: Db, universId: number, ficheId: number): number[] {
+  const niveau = db.prepare('SELECT id FROM fiches WHERE univers_id = ? AND parent_id = ?');
+  const tous = new Set<number>([ficheId]);
+  let courant = [ficheId];
+  for (let i = 0; i < PROFONDEUR_MAX && courant.length > 0; i++) {
+    const suite: number[] = [];
+    for (const p of courant) {
+      for (const r of niveau.all(universId, p) as { id: number }[]) {
+        if (!tous.has(r.id)) {
+          tous.add(r.id);
+          suite.push(r.id);
+        }
+      }
+    }
+    courant = suite;
+  }
+  return [...tous];
+}
+
 export interface PageFiches {
   fiches: Fiche[];
   /** Opaque cursor for the next page, null at the end. */
@@ -606,6 +778,7 @@ export interface PageFiches {
  * word of the title, of an alias or of the sub-type, or all of them a word of one section the caller reads.
  * `etiquette` is one more optional condition (AD-118). Each sheet carries its `alias` and `etiquettes`,
  * and, with `recherche`, the `aliasTrouve` when only an alias answers the title.
+ * `lie`, `nature` and `descendants` narrow the same list under both relation guards (AD-130).
  */
 export function listerFiches(
   db: Db,
@@ -614,18 +787,48 @@ export function listerFiches(
   options: {
     type?: string;
     sousType?: string;
+    statut?: string;
     etiquette?: string;
+    etat?: 'la' | 'disparu';
+    /** Linked sheets, under both relation guards (AD-130); descendants stay the target's type. */
+    lie?: number;
+    nature?: string;
+    descendants?: boolean;
+    /** Derived player visibility (B-57), for the GM outside player mode only. */
+    visibilite?: string;
     curseur?: string;
     limite?: number;
     recherche?: string;
     /** The tree of a type (AD-115): `racine` or a sheet id. Needs `type`. */
     parent?: 'racine' | number;
+    /** Leaves out this sheet and all its descendants (AD-129); needs `recherche`, GM outside player mode. */
+    horsDe?: number;
   } = {},
 ): PageFiches {
   const role = exigerRole(db, universId, acteur.compteId);
+  if ((options.nature !== undefined || options.descendants !== undefined) && options.lie === undefined) {
+    throw invalide('Requête invalide.');
+  }
+  if (options.nature !== undefined && !estNature(options.nature)) throw invalide('Requête invalide.');
+  if (options.lie !== undefined && (!Number.isSafeInteger(options.lie) || options.lie < 0 || options.lie > 999999999)) {
+    throw invalide('Requête invalide.');
+  }
+  if (options.etat !== undefined && options.etat !== 'la' && options.etat !== 'disparu') {
+    throw invalide('Requête invalide.');
+  }
+  if (options.visibilite !== undefined &&
+      (!vueMJ(role, acteur) || !['mj', 'joueurs'].includes(options.visibilite))) {
+    throw invalide('Requête invalide.');
+  }
+  if (options.horsDe !== undefined && (!vueMJ(role, acteur) || options.recherche === undefined)) {
+    throw invalide('Requête invalide.');
+  }
   const limite = Math.min(Math.max(Math.trunc(options.limite ?? LIMITE_LISTE), 1), LIMITE_LISTE);
   const where = ['f.univers_id = ?'];
   const params: (string | number)[] = [universId];
+  if (options.visibilite !== undefined) {
+    where.push(options.visibilite === 'joueurs' ? SQL_VISIBLE_JOUEURS : `NOT ${SQL_VISIBLE_JOUEURS}`);
+  }
   if (options.type !== undefined) {
     if (!estTypeFiche(options.type)) {
       throw invalide('Type de fiche inconnu.');
@@ -633,9 +836,23 @@ export function listerFiches(
     where.push('f.type = ?');
     params.push(options.type);
   }
+  if (options.etat !== undefined) {
+    const types = TYPES.filter((t) => t.disparu).map((t) => t.type);
+    where.push(`f.type IN (${types.map(() => '?').join(',')})`);
+    params.push(...types);
+    where.push("COALESCE(json_extract(f.charge, '$.disparu'), 0) = ?");
+    params.push(options.etat === 'disparu' ? 1 : 0);
+  }
   if (options.sousType !== undefined) {
     where.push('f.sous_type = ? COLLATE NOCASE');
     params.push(options.sousType);
+  }
+  if (options.statut !== undefined) {
+    if (options.type !== 'aventure' || !STATUT_AVENTURE.safeParse(options.statut).success) {
+      throw invalide('Le statut nécessite le type aventure et une valeur valide.');
+    }
+    where.push("json_extract(f.charge, '$.statut') = ?");
+    params.push(options.statut);
   }
   if (options.etiquette !== undefined) {
     // A label is compared exactly, never through FTS (AD-118 (2)); it only narrows the read filter.
@@ -645,10 +862,60 @@ export function listerFiches(
     );
     params.push(options.etiquette.trim());
   }
+  let viaSelection = '';
+  let viaParams: (string | number)[] = [];
+  if (options.lie !== undefined) {
+    const cible = db.prepare('SELECT id FROM fiches WHERE id = ? AND univers_id = ?').get(options.lie, universId);
+    if (!cible || !peutVoirFiche(db, role, options.lie, acteur)) return { fiches: [], suivant: null };
+    const ids = options.descendants ? descendantsDe(db, options.lie).ids : [options.lie];
+    const places = ids.map(() => '?').join(',');
+    const sectionLue = sqlSectionLisible(role, acteur, 'porteuse');
+    const cibleLue = sqlFicheLisible(role, acteur, 'cible');
+    const branches = [
+      `SELECT cible.id, cible.titre FROM relations r
+         JOIN sections porteuse ON porteuse.id = r.section_id
+         JOIN fiches cible ON cible.id = r.cible_fiche_id
+        WHERE porteuse.fiche_id = f.id AND cible.univers_id = f.univers_id
+          AND cible.id IN (${places})${options.nature !== undefined ? ' AND r.nature = ?' : ''}
+          ${sectionLue ? `AND ${sectionLue.sql}` : ''}${cibleLue ? ` AND ${cibleLue.sql}` : ''}`,
+    ];
+    const relationParams: (string | number)[] = [
+      ...ids, ...(options.nature !== undefined ? [options.nature] : []),
+      ...(sectionLue?.params ?? []), ...(cibleLue?.params ?? []),
+    ];
+    const symetriques = NATURES.filter((n) => n.symetrique && (options.nature === undefined || n.cle === options.nature));
+    if (symetriques.length > 0) {
+      const sourceLue = sqlFicheLisible(role, acteur, 'source');
+      branches.push(
+        `SELECT source.id, source.titre FROM relations r
+           JOIN sections porteuse ON porteuse.id = r.section_id
+           JOIN fiches source ON source.id = porteuse.fiche_id
+          WHERE r.cible_fiche_id = f.id AND source.univers_id = f.univers_id
+            AND source.id IN (${places}) AND r.nature IN (${symetriques.map(() => '?').join(',')})
+            ${sectionLue ? `AND ${sectionLue.sql}` : ''}${sourceLue ? ` AND ${sourceLue.sql}` : ''}`,
+      );
+      relationParams.push(...ids, ...symetriques.map((n) => n.cle), ...(sectionLue?.params ?? []), ...(sourceLue?.params ?? []));
+    }
+    // A condition, never a join on the list: multiple qualifying relations still yield one sheet.
+    const relationsLiees = branches.join(' UNION ');
+    where.push(`EXISTS (${relationsLiees})`);
+    params.push(...relationParams);
+    if (options.descendants) {
+      // The very same guarded relations choose the annotation; a qualifying direct link wins.
+      viaSelection = `, (SELECT json_object('id', v.id, 'titre', v.titre) FROM (${relationsLiees}) v
+        ORDER BY (v.id = ?) DESC, plier(v.titre), v.id LIMIT 1) AS lien_via`;
+      viaParams = [...relationParams, options.lie];
+    }
+  }
   const lisible = sqlFicheLisible(role, acteur, 'f');
   if (lisible) {
     where.push(lisible.sql);
     params.push(...lisible.params);
+  }
+  if (options.horsDe !== undefined) {
+    chargerFiche(db, universId, options.horsDe);
+    where.push('f.id NOT IN (SELECT value FROM json_each(?))');
+    params.push(JSON.stringify(sousArbre(db, universId, options.horsDe)));
   }
   if (options.parent !== undefined) {
     if (options.type === undefined) throw invalide('Le type est obligatoire avec le parent.');
@@ -694,10 +961,10 @@ export function listerFiches(
   }
   const rows = db
     .prepare(
-      `SELECT f.*, ${DISQUE_ILLUSTRATION} FROM fiches f WHERE ${where.join(' AND ')}
+      `SELECT f.*, ${DISQUE_ILLUSTRATION}${viaSelection}${projectionVisibilite(vueMJ(role, acteur))} FROM fiches f WHERE ${where.join(' AND ')}
        ORDER BY plier(f.titre), f.id LIMIT ?`,
     )
-    .all(...params, limite + 1) as FicheRow[];
+    .all(...viaParams, ...params, limite + 1) as FicheRow[];
   const page = rows.slice(0, limite);
   const dernier = page[page.length - 1];
   const suivant =
@@ -707,7 +974,17 @@ export function listerFiches(
   const mots = options.recherche === undefined ? null : motsDe(options.recherche);
   const enrichie = (r: FicheRow): Fiche => {
     const e = etiquetageDe(db, r.id);
-    const f: Fiche = { ...versFiche(r, (f) => lisiblePar(role, acteur, f)), alias: e.alias, etiquettes: e.etiquettes };
+    const f: Fiche = { ...versFiche(r, (f) => lisiblePar(role, acteur, f)), ...visibiliteVue(r), alias: e.alias, etiquettes: e.etiquettes };
+    if (r.lien_via) {
+      const via = JSON.parse(r.lien_via) as { id: number; titre: string };
+      if (via.id !== options.lie) f.via = via;
+    }
+    // A report's payload must not reveal an adventure the reader cannot read (AD-124 (4)),
+    // including through search or the tree. The GM outside player mode keeps the stored id.
+    if (f.type === 'compte_rendu' && !vueMJ(role, acteur)
+      && campagneDuCompteRendu(db, role, acteur, universId, f.charge.campagne_id).campagneId === undefined) {
+      delete f.charge.campagne_id;
+    }
     if (mots !== null) {
       const trouve = mots.length > 0 && !repond(r.titre, mots) ? e.alias.find((a) => repond(a, mots)) : undefined;
       if (trouve !== undefined) f.aliasTrouve = trouve;

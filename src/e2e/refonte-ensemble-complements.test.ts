@@ -1,5 +1,5 @@
 // Black-box complements for `kanevas-refonte-visuelle`, written from the need only (fiche « Livre » and
-// « Critère de sortie », docs/ecrans.md « Détail de `kanevas-refonte-visuelle` », E-6, B-29, docs/charte.md).
+// « Critère de sortie », docs/ecrans.md « Détail de `kanevas-refonte-visuelle` », B-29, docs/charte.md).
 // Real server in stub mode + real Chromium (harnais.test.ts). Expected values are literals of the docs.
 //
 // TEST PLAN (besoin -> panne nommée)
@@ -7,8 +7,6 @@
 //                               [le thème ou la déconnexion réapparaît dans la barre]
 //   thème partagé             : choisi sur un écran, il vaut sur les autres [thème propre à un écran]
 //   téléphone, tous écrans    : aucun débordement horizontal, clair et sombre [écran non refait pour le mobile]
-//   B-29 E-6 vide / refus     : textes de la liste vide, panneaux absents pour un Joueur
-//   E-6 ordre                 : actives d'abord, puis en préparation, puis terminées
 //   mode Joueur               : bandeau puis retour du MJ : la pastille revient
 import assert from 'node:assert/strict';
 import { mkdirSync } from 'node:fs';
@@ -75,7 +73,6 @@ after(async () => {
 const ECRANS_MJ: [string, string][] = [
   ['vue d’ensemble', ''],
   ['membres', '/membres'],
-  ['campagnes', '/campagnes'],
   ['comptes-rendus', '/comptes-rendus'],
   ['paramètres', '/parametres'],
   ['liste des personnages', '/personnages'],
@@ -132,76 +129,6 @@ describe('téléphone : aucun écran ne déborde, en clair et en sombre', () => 
       await ctx.close();
     });
   }
-});
-
-describe('E-6 : la liste des campagnes', () => {
-  test('vide : « Aucune campagne pour l’instant. » pour le MJ comme pour la Joueuse ; la Joueuse sans « Nouvelle campagne »', opts, async () => {
-    await antor.goto(urlUnivers + '/campagnes');
-    await attendre(antor);
-    assert.match(await texte(antor), /Aucune campagne pour l'instant\./);
-    assert.ok((await antor.getByText(rx('Nouvelle campagne')).count()) > 0, 'le MJ peut créer');
-    await lea.goto(urlUnivers + '/campagnes');
-    await attendre(lea);
-    assert.match(await texte(lea), /Aucune campagne pour l'instant\./);
-    assert.equal(await lea.getByText(rx('Nouvelle campagne')).count(), 0, 'la Joueuse ne crée pas');
-  });
-
-  test('le nom est obligatoire : « Erreur : le nom est obligatoire. » ; 81 caractères : « Erreur : 80 caractères au plus. »', opts, async () => {
-    await antor.goto(urlUnivers + '/campagnes');
-    await attendre(antor);
-    if ((await antor.getByLabel('Nom', { exact: true }).count()) === 0) await antor.getByRole('button', { name: rx('Nouvelle campagne') }).first().click();
-    await antor.getByRole('button', { name: rxExact('Créer la campagne') }).click();
-    assert.match(await texte(antor), /Erreur : le nom est obligatoire\./);
-    await antor.getByLabel('Nom', { exact: true }).fill('x'.repeat(81));
-    await antor.getByRole('button', { name: rxExact('Créer la campagne') }).click();
-    assert.match(await texte(antor), /Erreur : 80 caractères au plus\./);
-  });
-
-  test('une campagne créée naît « En préparation » et reste sur la liste ; la Joueuse la voit en badge', opts, async () => {
-    await antor.goto(urlUnivers + '/campagnes');
-    await attendre(antor);
-    if ((await antor.getByLabel('Nom', { exact: true }).count()) === 0) await antor.getByRole('button', { name: rx('Nouvelle campagne') }).first().click();
-    await antor.getByLabel('Nom', { exact: true }).fill('La Couronne brisée');
-    await antor.getByRole('button', { name: rxExact('Créer la campagne') }).click();
-    await antor.getByText(rx('La Couronne brisée')).first().waitFor();
-    assert.ok(antor.url().endsWith('/campagnes'), 'on reste sur la liste');
-    const bouton = await antor.getByRole('button', { name: /changer le statut de « La Couronne brisée »$/ }).innerText();
-    assert.match(bouton, /^En préparation/);
-    await lea.goto(urlUnivers + '/campagnes');
-    await attendre(lea);
-    assert.match(await texte(lea), /La Couronne brisée/);
-    assert.match(await texte(lea), /En préparation/);
-    assert.equal(await lea.getByRole('button', { name: /changer le statut/ }).count(), 0);
-    await shot(lea, 'complement-campagnes-joueuse');
-  });
-
-  test('la Joueuse ouvre la campagne : ni Scénarios ni Préparation, mais Comptes-rendus', opts, async () => {
-    await lea.goto(urlUnivers + '/campagnes');
-    await attendre(lea);
-    await lea.getByRole('link', { name: rx('La Couronne brisée') }).first().click();
-    await attendre(lea);
-    await lea.getByText(rx('Aucun compte-rendu à lire pour l’instant.')).waitFor();
-    const t = await texte(lea);
-    assert.doesNotMatch(t, /Scénarios/);
-    assert.doesNotMatch(t, /Préparation/);
-    assert.match(t, /Aucun compte-rendu à lire pour l'instant\./);
-  });
-
-  test('ordre : une campagne active passe avant celle en préparation, même de nom postérieur', opts, async () => {
-    await antor.goto(urlUnivers + '/campagnes');
-    await attendre(antor);
-    if ((await antor.getByLabel('Nom', { exact: true }).count()) === 0) await antor.getByRole('button', { name: rx('Nouvelle campagne') }).first().click();
-    await antor.getByLabel('Nom', { exact: true }).fill('Zèbre de feu');
-    await antor.getByRole('button', { name: rxExact('Créer la campagne') }).click();
-    await antor.getByText(rx('Zèbre de feu')).first().waitFor();
-    await antor.getByRole('button', { name: /changer le statut de « Zèbre de feu »$/ }).click();
-    await antor.getByRole('menuitem', { name: 'Active', exact: true }).click();
-    await attendre(antor);
-    await antor.reload();
-    await attendre(antor);
-    const t = await texte(antor);
-    assert.ok(t.indexOf('Zèbre de feu') < t.indexOf('La Couronne brisée'), 'Active avant En préparation');
-  });
 });
 
 describe('mode Joueur', () => {

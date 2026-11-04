@@ -50,7 +50,27 @@ export function ensureBuilt(): void {
 
 export interface Server {
   base: string;
+  pid: number;
   stop: () => void;
+  /** How the server ended (« signal SIGKILL », « code 1 »), null while it runs or once stopped by `stop`. */
+  sorti: () => string | null;
+  /** The tail of the server output. */
+  sortie: () => string;
+  /** Rejects as soon as the server dies by itself (never when `stop` ends it), with `diagnostic`. */
+  surveille: () => Promise<never>;
+}
+
+/** Runs a test body; if the server dies meanwhile, fails at once with its exit and output tail instead of a mute page timeout. */
+export async function avecServeur<T>(srv: Server, corps: () => Promise<T>): Promise<T> {
+  const mort = srv.surveille();
+  mort.catch(() => {});
+  try {
+    return await Promise.race([corps(), mort]);
+  } catch (e) {
+    const fin = srv.sorti();
+    if (fin === null || (e as Error).message?.includes('server died')) throw e;
+    throw new Error(`${(e as Error).message}\nserver died (${fin})\n--- server output (tail) ---\n${srv.sortie()}`, { cause: e });
+  }
 }
 
 /** Startup window without server CPU progress, ms (elapsed time without /proc);
@@ -164,7 +184,16 @@ async function startServerUnlocked(extraEnv: Record<string, string>): Promise<Se
   child.stdout?.on('data', garder);
   child.stderr?.on('data', garder);
   const base = `http://127.0.0.1:${port}`;
+  let arrete = false;
+  let fin: string | null = null;
+  const dejaSorti = new Promise<void>((resolve) => {
+    child.on('exit', (code, signal) => {
+      if (!arrete) fin = signal ? `signal ${signal}` : `code ${code}`;
+      resolve();
+    });
+  });
   const stop = () => {
+    arrete = true;
     child.kill('SIGKILL');
     rmSync(dir, { recursive: true, force: true });
   };
@@ -174,7 +203,12 @@ async function startServerUnlocked(extraEnv: Record<string, string>): Promise<Se
     stop();
     throw e;
   }
-  return { base, stop };
+  const surveille = async (): Promise<never> => {
+    await dejaSorti;
+    if (fin === null) return new Promise<never>(() => {});
+    throw new Error(`server died (${fin})\n--- server output (tail) ---\n${sortie}`);
+  };
+  return { base, pid: child.pid!, stop, sorti: () => fin, sortie: () => sortie, surveille };
 }
 
 /**

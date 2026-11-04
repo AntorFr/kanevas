@@ -1,4 +1,4 @@
-import { Calculator, ChevronDown, Link2, MapPin, Route as IconeRoute, Search } from 'lucide-react';
+import { Calculator, ChevronDown, Link2, MapPin, Pencil, Route as IconeRoute, Search, Trash2 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
 import { ErreurApi, lire, useConnexionPerdue } from '../../../api';
@@ -95,10 +95,14 @@ export type EtatPanneau =
   | { k: 'ok'; s: PanneauSysteme };
 
 /** The selected system's panel, or « Système non défini » for a generated hexagon. */
-export function PanneauSystemeVue({ selection, etat, secret, mesure, onDepuis, onVers, onReessayer }: {
+export interface GestesSysteme { onModifier: () => void; onRetirer: () => void; onPromouvoir: (q: number, r: number) => void }
+
+export function PanneauSystemeVue({ selection, etat, secret, mesure, onDepuis, onVers, onReessayer, gestes }: {
   selection: { k: 'systeme'; cle: string } | { k: 'genere'; q: number; r: number };
   etat: EtatPanneau; secret?: boolean; mesure: Reference | null;
   onDepuis: (r: Resultat) => void; onVers: (r: Resultat) => void; onReessayer: () => void;
+  /** The GM's gestures (absent in Player mode and for a player: the buttons are not rendered). */
+  gestes?: GestesSysteme;
 }) {
   const [copie, setCopie] = useState(false);
   const [champ, setChamp] = useState<string | null>(null);
@@ -113,6 +117,7 @@ export function PanneauSystemeVue({ selection, etat, secret, mesure, onDepuis, o
         <h2>Système non défini</h2>
         <dl className="gx-kv"><dt>Coordonnées</dt><dd>{selection.q}, {selection.r}</dd>
           {d !== null && <><dt>Distance</dt><dd>{cases(d)}{mesure ? ` depuis ${mesure.nom}` : ''}</dd></>}</dl>
+        {gestes && <div className="gx-actions"><Bouton icone={Pencil} ecrit onClick={() => gestes.onPromouvoir(selection.q, selection.r)}>Promouvoir ce système</Bouton></div>}
       </section>
     );
   }
@@ -148,6 +153,12 @@ export function PanneauSystemeVue({ selection, etat, secret, mesure, onDepuis, o
         <Bouton icone={Link2} onClick={() => void copier()}>Copier le lien</Bouton>
         {copie && <span role="status" className="gx-note">Lien copié</span>}
       </div>
+      {gestes && (
+        <div className="gx-actions">
+          <Bouton icone={Pencil} ecrit onClick={gestes.onModifier}>Modifier</Bouton>
+          <Bouton icone={Trash2} variante="danger" ecrit onClick={gestes.onRetirer}>Retirer</Bouton>
+        </div>
+      )}
       {champ !== null && <input ref={saisie} className="gx-lien" readOnly value={champ} aria-label="Adresse du système" onFocus={(e) => e.currentTarget.select()} />}
     </section>
   );

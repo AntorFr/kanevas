@@ -221,8 +221,13 @@ describe('kanevas-import-arbre, la hiérarchie de bout en bout', { skip: skipBro
     await antor.getByRole('button', { name: /^Autres actions sur/ }).first().click();
     await antor.getByRole('menuitem', { name: 'Déplacer sous…' }).click();
     const d = antor.getByRole('dialog');
-    await d.getByLabel('Chercher une fiche').fill('Port-Sel');
-    await d.getByLabel(/^Port-Sel/).first().check();
+    // La recherche écarte désormais les descendants (AD-129) : le cycle ne reste atteignable que si la hiérarchie
+    // change boîte ouverte. Une fiche libre est choisie, puis rangée sous Port-Sel par ailleurs.
+    const libre = (await api(antor, 'POST', `/api/univers/${U}/fiches`, { type: 'lieu', titre: 'Cible du cycle' })).id;
+    await d.getByRole('button', { name: 'Recherche' }).click();
+    await d.getByLabel('Chercher une fiche').fill('Cible du cycle');
+    await d.getByLabel(/^Cible du cycle/).first().check();
+    assert.equal((await patch(antor, libre, ids['Port-Sel'])).status, 200);
     await d.getByRole('button', { name: 'Déplacer', exact: true }).click();
     await d.getByText(/Une fiche ne peut pas être rangée sous l.un de ses descendants\./).waitFor();
     assert.equal(await d.isVisible(), true);
@@ -230,6 +235,7 @@ describe('kanevas-import-arbre, la hiérarchie de bout en bout', { skip: skipBro
     await d.getByRole('button', { name: 'Annuler' }).click();
     const ancetres = (await api(antor, 'GET', `/api/univers/${U}/fiches/${ids['Port-Sel']}`)).ancetres;
     assert.deepEqual(ancetres.map((a: Any) => a.titre), ['Les Sphères']);
+    await api(antor, 'DELETE', `/api/univers/${U}/fiches/${libre}`);
     // par l'API aussi
     const r = await patch(antor, ids['Les Sphères'], ids['Port-Sel']);
     assert.equal(r.status, 400);
@@ -242,10 +248,12 @@ describe('kanevas-import-arbre, la hiérarchie de bout en bout', { skip: skipBro
     await antor.getByRole('button', { name: /^Autres actions sur/ }).first().click();
     await antor.getByRole('menuitem', { name: 'Déplacer sous…' }).click();
     const d = antor.getByRole('dialog');
+    await d.getByRole('button', { name: 'Recherche' }).click();
     await d.getByLabel('Chercher une fiche').fill('Pillage');
     const ligne = d.getByLabel(/^Le Pillage des Docks/).first();
     await ligne.waitFor();
     assert.ok((await d.innerText()).includes('Événement'));
+    await d.getByRole('button', { name: 'Recherche' }).click();
     await d.getByLabel('Chercher une fiche').fill('Les Docks');
     await antor.waitForTimeout(900);
     await attendre(antor);

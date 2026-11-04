@@ -22,10 +22,9 @@ export function universDeLAdresse(chemin: string): number | null {
 /**
  * An item is current on its own address and below it; a sheet's address is under no item, so the
  * sheet names its type (`section`, the label of the item it hangs under) and that item is current.
- * A scenario's address (`/scenarios/<id>`) is likewise under the campaigns item, not an item of its own.
  */
 export function itemCourant(item: Item, id: number, pathname: string, section?: string): boolean {
-  if (section !== undefined && (pathname.startsWith(`/univers/${id}/fiche/`) || pathname.startsWith(`/univers/${id}/scenarios/`))) return item.libelle === section;
+  if (section !== undefined && pathname.startsWith(`/univers/${id}/fiche/`)) return item.libelle === section;
   const chemin = item.chemin(id);
   return pathname === chemin || (chemin !== `/univers/${id}` && pathname.startsWith(`${chemin}/`));
 }
@@ -249,9 +248,7 @@ function Contenu({ onNavigue }: { onNavigue: () => void }) {
         <Selecteur courant={id} onChoix={onNavigue} />
       ) : (
         <Link to="/" className="marque" aria-label="Kanevas — Mes univers">
-          <span className="sceau" aria-hidden="true">
-            K
-          </span>
+          <img src="/favicon.svg" className="logo" alt="" width={30} height={30} />
           <span className="nom-marque">Kanevas</span>
         </Link>
       )}

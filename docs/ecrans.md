@@ -1,10 +1,12 @@
 # Kanevas — screens
 
+> **E-6 Campagne and E-7 Scénario no longer exist** (`kanevas-scenarios-suivi`): remaining references in the dated sections below describe an adventure's sheet (E-9) and its block; the screen table below is authoritative.
+>
 > Product documentation (see `docs/parcours.md`). At scoping time, a broad outline: each screen, how
 > it is reached, what it is for, what each role does there. Each screen's states and finished
 > mockup are detailed in the slice that builds it.
 
-> **Built so far**: E-1, E-2, E-3 (name, navigation and blocks: game system, active campaigns, latest session reports, preparation for the GM, visible maps), E-4, E-5 (Administration), E-6, E-7, E-13, E-8 (with
+> **Built so far**: E-1, E-2, E-3 (name, navigation and blocks: game system, ongoing campaigns, latest session reports, preparation for the GM, visible maps), E-4, E-5 (Administration), E-13, E-8 (with
 > search within a type, in a grid of illustrated cards), E-9 (with the « Relations » and « Pièces jointes » blocks, the header illustration, inline title and « Supprimer la fiche… »), E-10 and E-11 (maps and graphs), E-12 (Assistant), E-14 (Settings, with « Supprimer l'univers »), E-15 (Game system, at `/systemes/:sid`), E-16 (Game systems), E-17 (Search), E-18 (API access), E-19 (Media library), the « Campagne » line of E-9, the session
 > and sidebar.
 
@@ -53,23 +55,22 @@ have it (sheet, map and, since `kanevas-import`, search E-17).
 
 | Screen | Reached from | Purpose | Journeys |
 |---|---|---|---|
-| **E-1 Home** | sign-in; logo | see the account's universes and role in each; create one; see its username | P-1, P-6 |
+| **E-1 Home** | sign-in (Authelia's page, no brand); Kanevas brand (Marge icon) of the bar | see the account's universes and role in each; create one; see its username | P-1, P-6 |
 | **E-2 Create a universe** | E-1 | name, description; the creator becomes GM | P-1 |
-| **E-3 Universe overview** | E-1; universe selector; E-5 (admin who has become a member) | active campaigns, latest session reports, preparation (GM), visible maps | P-2, P-3, P-4, P-6 |
+| **E-3 Universe overview** | E-1; universe selector; E-5 (admin who has become a member) | active campaigns (*`kanevas-scenarios`*: « Campagnes en cours », the adventures), latest reports, preparation (GM), visible maps | P-2, P-3, P-4, P-6 |
 | **E-4 Members** | « Univers » navigation (GM) | list, add by username, change role, remove | P-2 |
 | **E-5 Administration** | navigation (instance admin) | list the instance's universes, manage their members — never their content; set the assistant token (B-51) | P-2, P-15 |
-| **E-6 Campaign** | « Campagnes » navigation (list); E-3 | campaign list; for a campaign: status, scenarios and « Nouveau scénario » (GM), preparation (GM), session reports, « Nouveau compte-rendu » | P-3, P-4 |
-| **E-7 Scenario** | E-6 (GM) | write and reread a scenario | P-3 |
-| **E-8 Sheet list** | « Lore » navigation | sheets of one type that the account can read, in a grid of illustrated cards; search within that type; create (GM) | P-3, P-6 |
-| **E-9 Sheet** | E-8; a token; a link; E-13 | read and write permitted sections; add, reorder, remove a section, set its audience, relate (GM); attach a file (both addition paths, AD-111), restrict a file to the GM (GM), remove a reference; set the subtype (GM); set, replace, remove the illustration (GM); Player mode toggle (GM). A session report opens here. | P-3 to P-7 |
+| **E-6 Campagne**, **E-7 Scénario** | *retired (`kanevas-scenarios-suivi`)* — an adventure is a sheet: its list is E-8 of the « Aventure » type, its page E-9, with the blocks « Préparation » and « Comptes-rendus » | — | — |
+| **E-8 Sheet list** | « Lore » navigation | sheets of one type that the account can read, in a grid of illustrated cards; search within that type; create (GM); *(kanevas-scenarios)* « Aventure » type: status badge and filter, status menu (GM), « Nouvelle aventure » with sub-type | P-3, P-6 |
+| **E-9 Sheet** | E-8; a token; a link; E-13 | read and write permitted sections; add, reorder, remove a section, set its audience, relate (GM); attach a file (both addition paths, AD-111), restrict a file to the GM (GM), remove a reference; set the subtype (GM); set, replace, remove the illustration (GM); Player mode toggle (GM). A session report opens here. ; *(kanevas-scenarios)* on an adventure: the status line and its menu (GM) | P-3 to P-7 |
 | **E-10 Maps** | « Cartes » navigation | readable maps; create an illustrated map (with its background image) or a graph (GM) | P-3, P-9 |
 | **E-11 Map** | E-10; E-3 | illustrated map: background, tokens; graph: nodes and links. GM: upload or change the background, place elements, make visible, Player mode. Player: open a token's sheet. | P-3, P-6, P-9 |
 | **E-12 Assistant** | floating button, on every universe screen | converse; see what the assistant has written, with a link; GM: update proposals (current/proposed, **« Appliquer »**, **« Abandonner »**) | P-3, P-5, P-6, P-7 |
-| **E-13 Session reports** | « Comptes-rendus » navigation; E-3 | all readable session reports in the universe, newest first, with their campaign | P-4, P-5 |
+| **E-13 Session reports** | « Comptes-rendus » navigation; E-3 | all readable session reports in the universe, newest first, with their campaign (*`kanevas-scenarios`*: the adventure it names, campaign or scenario) | P-4, P-5 |
 | **E-14 Universe settings** | « Univers » navigation (GM) | name, description, game system (choose from the catalogue, create one) | P-8 |
 | **E-15 Game system** | E-16; link from E-3 and E-14 | shared reference: rules, creatures, items; add, edit (GM of an attached universe); outside a universe's frame | P-8 |
 | **E-16 Game systems** | reduced sidebar; universe selector menu | systems attached to the account's universes, each with those of its universes using it | P-8 |
-| **E-17 Search** *(kanevas-import)* | « Rechercher » in the sidebar; `/`; a label tapped on E-9 | search across all types, titles, aliases and readable sections; filter by type and label | P-12, P-10 |
+| **E-17 Search** *(kanevas-import)* | « Rechercher » in the sidebar; `/`; a label tapped on E-9 ; *(kanevas-fiches-liees)* « Chercher parmi » of a « Fiches liées » block | search all types, titles, aliases and readable sections; filter by type; *(kanevas-fiches-liees)* advanced search: linked to a sheet, by nature, sub-places included, alive / dead and by label; *(kanevas-scenarios)* the status badge of an adventure result | P-12, P-10, P-17 |
 | **E-19 Media library** *(kanevas-import)* | « Médiathèque » navigation; « Choisir dans la médiathèque » in the editor and illustration (E-9) | see files (images, documents) accessible to the account and where they are used; GM: add, rename, set visibility, delete | P-16, P-10 |
 | **E-18 API access** *(kanevas-import)* | « Univers » ▸ « Accès par API » navigation (GM) | create, list, revoke the universe's API tokens; see import batches and their refusals | P-10, P-11 |
 | **E-20 Tools** *(kanevas-outils)* | « Outils » tab of E-15 (system) and E-14 (universe) | enable a tool, set its visibility per role and its settings (system value, universe value), import a catalogue (preview then confirmation), see dependencies, disable, delete data; the system's responsible | P-17, P-21 |
@@ -106,25 +107,27 @@ E-16 live outside universes: their cells describe the role in a universe attache
 |---|---|---|---|
 | E-1 | own universes, create | own universes, create | own universes, create |
 | E-2 | create | create | create |
-| E-3 | everything | no preparation or scenarios | — |
+| E-3 | everything | no preparation or scenarios ; *(kanevas-scenarios)* « Campagnes en cours »: those he reads, with their status | — |
 | E-4 | everything | — | — (through E-5) |
 | E-5 | — | — | list universes and their members; add, change a role, remove a member; see assistant token status, connect or reconnect the subscription |
-| E-6 | everything | list, status, session reports, « Nouveau compte-rendu »; no scenarios or preparation (hidden) | — |
-| E-7 | everything | — | — |
-| E-8 | read, search, create; each sheet's thumbnail (its illustration, or the drawn fallback) | read, search; thumbnails of visible sheets | — |
+| E-6 | *retired (`kanevas-scenarios`)* | — | — |
+| E-7 | *retired (`kanevas-scenarios`)* | — | — |
+| E-8 | read, search, create; each sheet's thumbnail (its illustration, or the drawn fallback) ; *(kanevas-fiches-liees)* the mark on the thumbnail (Mort, Morte, Détruit, Détruite, Éteinte depending on the type), the type's filter (Vivants / Morts, Intacts / Détruits…) ; *(kanevas-scenarios)* for the « Aventure » type: the status badge, the « Statut » filter, the status menu on a card or a tree line (outside player mode), the creation form with sub-type suggestions and « Visible des joueurs » ; *(kanevas-fiche-mj-seul)* the « MJ seul » badge on a sheet players cannot see, the « Visibilité » filter | read, search; thumbnails of visible sheets ; *(kanevas-fiches-liees)* the « gone » mark and its filter, the same as the GM sees them (the « Marquer … » entry is on E-9 only, hidden from a player) ; *(kanevas-scenarios)* adventures: the status badge and the « Statut » filter; the status menu and « Nouvelle aventure » ; *(kanevas-fiche-mj-seul)* no « MJ seul » badge, no « Visibilité » filter (**hidden**) | — |
 | E-9 | everything; managed section: « Ouvrir dans l'outil », « Recalculer », « Proposer un recalcul », « Voir la proposition » (never an editor); Player mode; relate and remove relations; set, replace, remove the illustration (outside Player mode); *(kanevas-import)* subtype, restrict a file to the GM, see a file awaiting import (tile) | readable sections; write permitted ones; readable relations (section and target); their attachments; see the illustration, never set it; a managed section: banner and state, « Ouvrir dans l'outil » (author) and « Recalculer » (author with the tool's usage and « L'auteur l'écrit »), never an editor; *(kanevas-import)* in a section they write, add a file or choose a visible one (both paths of B-55) and remove a reference; files under both guards; never set visibility (**hidden**); a file awaiting import: nothing (**hidden**) | — |
-| E-10 | everything, tool maps (the galaxy) included, with « MJ seul » on those not visible | visible maps, tool maps included when visible and the tool is visible to their role (otherwise absent) | — |
+| E-10 | everything, tool maps (the galaxy) included, with « MJ seul » on those not visible; « Nouvelle carte » ▸ « Carte de la galaxie », « Rendre visible » / « Cacher aux joueurs » | visible maps, tool maps included when visible and the tool is visible to their role (otherwise absent); « Nouvelle carte », « Carte de la galaxie » and « Rendre visible » / « Cacher aux joueurs » **hidden** | — |
 | E-11 | everything; Player mode | read a visible map, open a sheet | — |
 | E-12 | GM catalogue (including image generation, if an image engine is available); proposals: only the requesting GM sees, applies, abandons them | Player catalogue (no image: the tool is absent, the assistant answers that it cannot); proposals: **hidden** (neither tool nor block; what is checked is the absence of a proposal and block, not the assistant's free text) | — |
-| E-13 | all session reports | readable session reports | — |
+| E-13 | all session reports ; *(kanevas-scenarios)* the adventure of each, « Aventure supprimée » when it is gone | readable session reports ; the adventure column only for an adventure he reads (**hidden** otherwise, deleted or closed alike) | — |
 | E-14 | everything; « Supprimer l'univers » (*kanevas-import*) | — (« Page introuvable. ») | « Page introuvable. » |
 | E-15 (outside a universe; columns describe the role in a universe **attached to the system**) | read; « Ajouter … », « Modifier » | read (« Lecture seule »); neither « Ajouter » nor « Modifier » | « Page introuvable. », unless also a member of an attached universe: then the column for that role applies (an admin who is GM of an attached universe reads and edits) |
 | E-16 (outside a universe) | own systems, with own universes and role | own systems, « Lecture seule » | list of own systems (as GM or Player if a member of an attached universe); otherwise empty — the screen is offered to every account |
 | E-17 *(kanevas-import)* | search all sheets in the universe, including GM blocks; in **Player mode**, as a player (no GM blocks or sheets unreadable by a player); filters: enabled types; sheets of disabled types remain results under « Tous » | search readable content, excluding GM blocks; type and label filters from visible sheets only; mode toggle: absent (hidden); GM blocks: excluded from search (never read); « Alias et étiquettes… » on E-9: hidden | — |
 | E-19 *(kanevas-import)* | everything: add, rename, visibility, delete; complete « Utilisé dans » | files visible to players and files they added; « Utilisé dans » restricted to readable sheets; no adding from E-19 (**hidden**; they add a file through a section they write, E-9), no settings or deletion (**hidden**) | — |
 | E-18 *(kanevas-import)* | create a token; see and revoke all the universe's tokens (including another GM's); see batches | — (**hidden**: absent from the sidebar, « Page introuvable. » by address) | — |
+
+What `kanevas-scenarios` adds to the lines above: **E-17** — the status badge on the result card of an adventure, for every role that reads the sheet; **E-12** — the GM creates sheets through `creer_fiche` (AD-126), with a « Fiche « X » créée » writing block and « Ouvrir » leading to E-9; the player has no creation tool; **E-18** — no « Campagnes » or « Scénarios » counter in a lot: adventures count among « Fiches ».
 | E-20 *(kanevas-outils)* | **on the universe**: enable, override, disable; visibility per role; settings; import the universe catalogue; delete universe data. **on the system**: read only (**hidden**: « Activer », « Importer », « Supprimer les données ») except the **responsible**, who also acts on the system | — (**hidden**: « Page introuvable. ») | — |
-| E-21 *(kanevas-outils)* | everything (place, promote, plot, draw, protected settings); Player mode: as a player; GM document | explore, measure, route, link; only readable systems, routes and zones; no write actions (**hidden**) | — |
+| E-21 *(kanevas-outils)* | everything: « Placer un système », « Promouvoir », « Tracer une route », « Dessiner une zone », « Modifier », « Retirer », and in « Galaxie ▾ » « Renommer », « Rendre visible » / « Cacher aux joueurs », « Document MJ… », « Graine… », « Supprimer la galaxie… »; in Player mode all of them **hidden** (the page is the player's), the toggle stays; GM document | explore, measure, route, link; only readable systems, routes and zones; no write actions (**hidden**) | — |
 | E-22 *(kanevas-outils)* | all the universe's designs; create, edit, recalculate; set the section's author | designs whose sheet and section they read. **Author** (of the « Caractéristiques » section): edit and recalculate her own design. **Another reader**, and a GM in Player mode on a design he does not author: read-only, « Enregistrer » and « Annuler » **absent** (hidden, not refused; the server refuses a forced write). « Nouvelle conception » is **absent for every player**, the author included (and for a GM in Player mode) | — |
 
 What `kanevas-outils` adds: **sidebar** — an **« Outils »** section, after « Cartes » and before « Lore »,
@@ -226,12 +229,12 @@ Two are set at scoping time because they apply everywhere:
 ### Sidebar
 
 On every screen within a universe: at the top, the **universe selector** (name, role badge, list
-of the account's universes, then « Mes univers » and « Systèmes de jeu » at the bottom of the list); **« Vue d'ensemble »**; **« Campagnes »**, **« Comptes-rendus »** and **« Cartes »**; **« Lore »**:
-the universe's enabled types (« Personnages », « Lieux », « Factions », « Objets », « Événements », « Quêtes » by default; full list at the top of this document); for a GM, **« Univers ▸ Membres »** and **« Paramètres »**; at the
+of the account's universes, then « Mes univers » and « Systèmes de jeu » at the bottom of the list); **« Vue d'ensemble »**; **« Comptes-rendus »** and **« Cartes »**; **« Lore »**:
+the universe's enabled types (« Aventures » — a type that can be deactivated like any other —, « Personnages », « Lieux », « Factions », « Objets », « Événements », « Quêtes » by default; full list at the top of this document); for a GM, **« Univers ▸ Membres »** and **« Paramètres »**; at the
 bottom, the account (avatar and username), opening the account menu: username, theme
 (« Clair », « Sombre », « Système », as three icons) and « Se déconnecter ». Outside a universe (E-1,
-E-2, E-5, E-15, E-16): « Mes univers », « Systèmes de jeu », « Administration » for an account in the `parents` group (E-5, below) and the account at the bottom. **An item whose screen is not
-built is not displayed** (« Campagnes », « Comptes-rendus » and « Cartes » are displayed). « Paramètres » (E-14) is displayed only for the GM. On phones (below 760 px), the sidebar is a drawer under a
+E-2, E-5, E-15, E-16): the **brand** at the top (the 30 px Marge icon, then « Kanevas »; a link to « Mes univers », charter § 3); « Mes univers », « Systèmes de jeu », « Administration » for an account in the `parents` group (E-5, below) and the account at the bottom. **An item whose screen is not
+built is not displayed** (« Comptes-rendus » and « Cartes » are shown). « Paramètres » (E-14) is displayed only for the GM. On phones (below 760 px), the sidebar is a drawer under a
 « Menu » button.
 
 | State | What is shown |
@@ -339,7 +342,7 @@ lieu »…) opens a dialog: « Titre » (1 to 120 characters) and, for a charact
 | chargement | « Chargement des fiches… » | — |
 | erreur | « Impossible de charger les fiches. »; creation failed: « L'action n'a pas abouti. Réessayez. », title kept | « Réessayer » |
 | connexion perdue | the banner; « Nouveau … » and « Créer la fiche » disabled | open a listed sheet |
-| refus | unknown type: « Page introuvable. »; an unreadable sheet is absent from the list | — |
+| refus | unknown type: « Page introuvable. »; an unreadable sheet is absent from the list ; *(kanevas-fiche-mj-seul)* `?visibilite=` posed by a player or in player mode: 400 « Requête invalide. » from the API, the screen never sends it and ignores it in the address | — |
 | contenu long | more than 100 sheets: « Charger la suite »; overlong title truncated with « … » and a tooltip | same |
 
 *Criterion.* Given the « Maître Aldric » sheet, none of whose sections Léa can read, when Léa opens the
@@ -347,7 +350,15 @@ character list, she does not see « Maître Aldric ».
 
 ### E-9 Sheet
 
-The title, type badge, then **sections** in their order, each a panel: title,
+The title, the type badge — *(kanevas-fiche-mj-seul, B-57)* and, for a GM in GM mode, the amber
+« MJ seul » badge (`lock`) when no section is readable by the players (a sheet without any
+section carries it too), with the tooltip « Aucune
+section n'est visible des joueurs. » (the badge is focusable; on focus or touch the sentence is
+written under the header line, as E-18 does — the line keeps its (empty) place while unread, so the sections below never move on focus or blur; the E-9 mockup does not draw it, this text is
+authoritative); it follows the saved state only — it appears or
+disappears as soon as an audience setting is saved, without reloading, and does not move on
+« L'action n'a pas abouti. Réessayez. » —; with a 120-character title it wraps to the next line
+with the type badge, the title is never truncated for it; absent in player mode and for a player —, then the **sections** in their order, each a panel: title,
 rendered Markdown content (AD-95), and a slot for **section blocks** (relations, attachments:
 subsequent slices register their own, as for E-3, in
 `frontend/src/ecrans/fiche/blocs/` and `registre.ts`).
@@ -667,7 +678,7 @@ search.
 In each section, below its content: a **« Relations »** block, registered in the section block
 registry (one file, without modifying an existing block). It lists relations **carried by that
 section**: each states its type and names its target — « membre de → Lames Grises », with the target's
-type badge — and leads to the target sheet (E-9). A relation is directed: it goes from the
+type (« PJ » or « PNJ » for a character, AD-64) — and leads to the target sheet (E-9). A relation is directed: it goes from the
 section to the target; the target sheet does not show incoming relations.
 
 | Role | Read a section's relations | Relate, remove | Refusal |
@@ -684,8 +695,8 @@ block, even empty. In Player mode, the GM sees the block as a Player who authors
 section (AD-39), without « Relier » or « Retirer ».
 
 *The GM creates a relation.* « Relier à une fiche » opens a form below the list:
-1. « Type de relation » (free text, 1 to 80 characters, for example « membre de »);
-2. « Type de fiche » (« Personnage », « Lieu », « Faction », « Objet », « Événement », « Quête »; « Personnage » by default);
+1. « Type de relation » (free text, 1 to 80 characters, for example « membre de »); *(`kanevas-fiches-liees`: replaced by « Nature » (the list of the pair, or « Sans nature ») and « Qualificatif » (free, 1 to 80; optional with a nature, required without one) — see « Screen details for `kanevas-fiches-liees` »)* *(`kanevas-fiches-liees`: replaced by « Nature » (the list of the pair, or « Sans nature ») and « Qualificatif » (free, 1 to 80; optional with a nature, required without one) — see « Screen details for `kanevas-fiches-liees` »)*
+2. « Type de fiche » (« Personnage », « Lieu », « Faction », « Objet », « Événement », « Quête »; « Personnage » by default); *(`kanevas-fiches-liees`: with a nature, the select is restricted to the target types of the nature, e.g. Lieu for « se situe à »)* *(`kanevas-fiches-liees`: with a nature, the select is restricted to the target types of the nature, e.g. Lieu for « se situe à »)*
 3. a « Chercher dans les factions » field and the list of sheets of that type, one hundred at a time with
    « Charger la suite »: this is E-8's list and search, not another one;
 4. choose one sheet (only one), then « Relier »; « Annuler » closes without writing anything.
@@ -694,15 +705,15 @@ section (AD-39), without « Relier » or « Retirer ».
 
 The form is not kept if the session expires. A sheet can be related to any sheet in its
 universe, **except itself**. A section carries at most 100 relations; two relations of the same
-type to the same sheet cannot coexist. « Retirer » on a row deletes the relation without
+nature and the same qualifier to the same sheet cannot coexist *(`kanevas-fiches-liees`)*. « Retirer » on a row deletes the relation without
 confirmation (it can be recreated in three actions); removing a section removes its relations with it.
 
 Text: block without a relation (GM): « Aucune relation pour l'instant. »; errors below fields:
-« Erreur : le type de relation est obligatoire. », « Erreur : 80 caractères au plus. », « Erreur :
+« Erreur : le qualificatif est obligatoire sans nature. » *(`kanevas-fiches-liees`, replaces « le type de relation est obligatoire »)*, « Erreur : 80 caractères au plus. » (the qualifier; spaces alone count as empty), « Erreur :
 choisissez une fiche. »; service refusals, above the form: « Cette relation existe
 déjà. », « Une fiche ne se relie pas à elle-même. », « Cette section porte déjà 100 relations. »;
 empty selection list: « Aucune faction à relier. » (other types: « Aucun personnage… »);
-each « Retirer » button has the accessible label « Retirer la relation membre de → Lames Grises ».
+each « Retirer » button has the accessible label « Retirer la relation membre de → Lames Grises » *(`kanevas-fiches-liees`: « Retirer la relation membre de · Lames Grises — trésorier »)*.
 
 | State | What is shown | Available actions |
 |---|---|---|
@@ -711,7 +722,7 @@ each « Retirer » button has the accessible label « Retirer la relation membre
 | erreur | « Impossible de charger les relations. » in the block alone, other sections intact; write failure: « L'action n'a pas abouti. Réessayez. », input kept | « Réessayer » |
 | connexion perdue | the banner; « Relier », « Retirer » disabled; the displayed list remains | follow a link |
 | refus | an unreadable section's block does not exist (the section is absent, B-9); a relation to an unreadable sheet is absent; « Relier » and « Retirer » do not exist for a Player or in Player mode | — |
-| contenu long | 100 relations: the list scrolls with the section; an 80-character type and a 120-character sheet title wrap | same |
+| contenu long | 100 relations: the list scrolls with the section; an 80-character qualifier and a 120-character sheet title wrap | same |
 
 *Criteria.*
 - Given Antor, a GM, who has related the « Apparence » section of « Maître Aldric » to the
@@ -738,134 +749,38 @@ never « caché ». Failure path for relating a section: the service refusal app
 
 ## Screen details for `kanevas-suivi`
 
-> E-6 Campaign, E-7 Scenario, E-13 Session reports, and their additions to E-3, E-9 and the
-> sidebar. The same six states and common texts as above (loading, loading error,
-> offline, writing, write failure, refusal, expired session); only specific
-> texts are repeated. Vocabulary: screens spell out « compte-rendu »;
-> « CR » is only an abbreviation in the documents (B-19, B-20). Dates: « 22 sept. 2026 » (day, abbreviated
-> month, year), as on E-9. Mockups: `e06` and `e03` are finished; `e07` and `e13` predate the charter (content and vocabulary only).
+> E-13 Comptes-rendus and the E-3 blocks, with the « Campagne » line of E-9. Campaigns and
+> scenarios are sheets of type « Aventure » (E-8, E-9: “Screen details for
+> `kanevas-scenarios`” below); E-6 Campagne, E-7 Scénario and the
+> « Campagnes » sidebar entry no longer exist. Same six states and common texts as above. Vocabulary:
+> screens spell out « compte-rendu »; “CR” is only an abbreviation in the documentation
+> (B-19, B-20). Dates: « 22 sept. 2026 » (day, abbreviated month, year), as on E-9.
 
 **Additions to existing screens.**
 
-- *Sidebar*: **« Campagnes »** and **« Comptes-rendus »** appear, for all roles, between
-  « Vue d'ensemble » and « Lore ». On phones, like the other items (drawer).
-- *E-3*: three registered blocks (one line each, no existing block changed):
-  « Campagnes actives » (everyone), « Derniers comptes-rendus » (everyone), « Préparation » (GM).
-  The « Rien à afficher pour l'instant… » region stops appearing as soon as a block is registered for
-  the role; each block has its own empty state.
+- *Sidebar*: **Comptes-rendus** appears for every role between « Vue d'ensemble » and
+  « Lore ». On phones, like the other entries (drawer).
 - *E-9, session-report sheet*: below the title, a « Campagne : <nom> » line leads to
-  the campaign's E-6. Nothing is added for other sheet types. E-9 currently has no
-  slot below the title: the slice adds **just one**, a title-line registry
-  (`frontend/src/ecrans/fiche/lignes/registre.ts`, one line: relevant sheet type, component),
-  empty for every other type; no existing section block is changed. Line states: the
-  campaign name wraps (80 characters); while loading, the line is absent;
-  unreadable campaign or error: the line is absent without a message (the report remains readable); offline: the displayed line stays clickable (navigation only, no write).
+  the adventure's sheet, for a reader who can read it (`fiche/lignes/` registry). An 80-character name wraps;
+  while loading, the line is absent; if the adventure is unreadable or fails to load, the line
+  is absent without a message (the report stays readable); offline, an already displayed line
+  stays clickable.
 - *E-9, what each role sees of a session report*: a single section, « Compte-rendu », readable by
   all members. « Modifier » is offered to its author (the player who created it) and the GM, but not
   other players; the GM sets the audience as for any section. A report created by a GM
   has no author. Closing the section to players hides it from other players, but not its author
-  (AD-61).
-
-### E-6 Campaign
-
-Two views, each with its own address: the **list** (`/univers/:id/campagnes`) and a **campaign
-page** (`/univers/:id/campagnes/:campagne`).
-
-*The list*: the universe's campaigns — name, status — **active first, then in preparation,
-then completed, each group sorted by name** (case-insensitive). Several campaigns may be active
-(AD-60). For each one, the GM sees a status dropdown (« En préparation », « Active », « Terminée »)
-to change it in place, and « Nouvelle campagne » at the top: a « Nom » field (1 to 80 characters) and
-« Créer la campagne »; the campaign starts « En préparation » and the list stays open, showing
-it. The player sees a status badge, with no control. Neither a campaign name nor a task
-label can be corrected, and nothing can be deleted: outside this slice.
-
-*The campaign page*: the name (title), status (dropdown for the GM, badge for the player),
-then three panels (a campaign has no description or fields other than name and status).
-
-1. **« Scénarios »** (GM only — players have neither the panel nor its title): scenarios in
-   creation order, oldest first, each a link to E-7; « Nouveau scénario »: a
-   « Titre » field (1 to 120 characters) and « Créer le scénario », leading to E-7.
-2. **« Préparation »** (GM only, likewise): **unchecked** tasks, grouped under the five
-   categories in this order — « Monstres », « PNJ », « Cartes », « Déroulements », « Autre » — empty categories
-   are not shown; each task: a checkbox and its label. Checking moves it to the
-   « Cochées (n) » group below the list, with its category badge, a « Décocher » link and a
-   struck-through label; checked tasks sort from most recently checked to oldest. At the bottom, « Nouvelle
-   tâche »: label (1 to 200 characters), category (required, « Autre » by default),
-   « Ajouter ». **No task can be deleted** (scope matrix).
-3. **« Comptes-rendus »** (everyone): this campaign's **readable** session reports, newest
-   creation first, each with title, author (the section author's identifier; a report
-   created by the GM has no author, AD-61: nothing is shown, not even the GM's name), creation date and link to E-9. « Nouveau
-   compte-rendu » opens a dialog: « Titre » (1 to 120 characters), « Texte » (optional, at most 100 000
-   since `kanevas-import`, AD-106; 20 000 before), « Publier » and « Annuler »; « Publier » creates the report and leads to E-9 (AD-61). If
-   creation fails, the dialog stays open and keeps the input, with « L'action n'a pas abouti.
-   Réessayez. »; session expires during input: text is kept as on E-9. One hundred at a time,
-   then « Charger la suite ».
-
-Input errors, below the field: « Erreur : le nom est obligatoire. » / « Erreur : 80 caractères
-au plus. » (campaign); « Erreur : le titre est obligatoire. » / « Erreur : 120 caractères au plus. »
-(scenario, report); « Erreur : le libellé est obligatoire. » / « Erreur : 200 caractères au
-plus. » (task); « Erreur : 100 000 caractères au plus. » (report text).
-
-Texts: empty list, GM: « Aucune campagne pour l'instant. » and « Nouvelle campagne »; player:
-« Aucune campagne pour l'instant. »; no scenarios: « Aucun scénario pour l'instant. »;
-empty preparation, including when all tasks are checked: « Rien à préparer pour l'instant. »,
-with the « Cochées (n) » group remaining below it; no checked tasks: the group is not shown;
-no reports: « Aucun compte-rendu pour l'instant. » (player: « Aucun compte-rendu à lire
-pour l'instant. »). A completed campaign keeps its panels and accepts new reports.
-
-| State | What is shown | Available actions |
-|---|---|---|
-| Empty | The texts above, panel by panel | GM: create a campaign, scenario, task; everyone: a report |
-| Loading | « Chargement des campagnes… » (list); « Chargement de la campagne… » (page), title absent | — |
-| Error | « Impossible de charger les campagnes. » / « Impossible de charger cette campagne. » (unreadable name or status empties the page; failure of a single panel — scenarios, preparation, reports — empties only that panel: « Impossible de charger ce panneau. » with « Réessayer »); failed « Charger la suite »: « Impossible de charger la suite. »; write failure (status, task, creation) appears above the panel, the value returns to its previous state, input remains | « Réessayer » |
-| Offline | Banner; status dropdown, checkboxes, « Ajouter », « Créer… », « Publier » disabled; input kept | Read, open |
-| Refused | Unknown campaign or campaign from another universe, universe without a role: « Page introuvable. »; players have neither the scenarios nor preparation panels, titles or counters, and a scenario address answers « Page introuvable. » | « Mes univers » |
-| Long content | 100 campaigns: list scrolls; an 80-character name wraps; a 120-character report title wraps; 100 or more scenarios: list grows; 100 or more tasks per category: list grows, without pagination; over 100 reports: « Charger la suite » | Same |
-
-*Acceptance criteria.*
-- Given Antor, a GM, with an unchecked « Plan de la crypte » task (« Cartes »), when he
-  checks it, it leaves « Préparation » and appears in « Cochées (1) »; when he unchecks it,
-  it returns under « Cartes ».
-- Given Léa, a player, when she opens « La Couronne brisée », she sees the name,
-  status and reports, and the route response contains neither scenarios nor tasks nor their counts.
-- Given Antor changing the status to « Terminée », when Léa reloads the list, the
-  campaign's badge says « Terminée » and the campaign moves to the last group.
-
-### E-7 Scenario (GM)
-
-Reached from E-6 (scenario list, « Créer le scénario »). The title, a « ← La
-Couronne brisée » link to E-6, rendered Markdown content (AD-95); « Modifier » opens « Titre » and
-« Contenu » (at most 20 000 characters; 100 000 and Markdown since `kanevas-import`, AD-95, AD-106), « Enregistrer », « Annuler ». Saving sends the version
-read (AD-62); a scenario cannot be deleted.
-
-Texts: empty content: « Rien d'écrit pour l'instant. »; stale write: « Ce scénario a changé
-depuis que vous l'avez ouvert. Rechargez-le pour voir la nouvelle version ; votre texte reste
-ci-dessous. » with « Recharger le scénario »; empty or overlong title: « Erreur : le titre est
-obligatoire. » / « Erreur : 120 caractères au plus. »; content: « Erreur : 100 000 caractères au
-plus. ». Session expires during input: text is kept as on E-9.
-
-| State | What is shown | Available actions |
-|---|---|---|
-| Empty | « Rien d'écrit pour l'instant. » | « Modifier » |
-| Loading | « Chargement du scénario… », title absent | — |
-| Error | « Impossible de charger ce scénario. »; write failure: « L'action n'a pas abouti. Réessayez. », text kept; *(kanevas-import-liens)* the `[[` list: « Impossible de chercher. » and « Réessayer » | « Réessayer » |
-| Offline | Banner; « Enregistrer » disabled, current text kept; *(kanevas-import-liens)* the `[[` list does not open | Read |
-| Refused | Player, unknown scenario, scenario from another campaign or universe: « Page introuvable. »; a player has neither the screen nor a link to it | « Mes univers » |
-| Long content | 100 000 characters: wrap, displayed in full; 120-character title: wraps | Same |
-
-*Acceptance criterion.* Given Léa, a player, when she opens the address of the « Acte II — Le sceau
-brisé » scenario supplied by Antor, she sees « Page introuvable. », without the title.
+  (AD-61). Creation starts from the adventure’s « Comptes-rendus » block (E-9).
 
 ### E-13 Session reports
 
 All of the universe's session reports **the account can read**, newest creation first
-(editing a report does not move it up, B-20); each with title, campaign name, author (as on E-6: the identifier, nothing if absent),
+ancien (un compte-rendu retouché ne remonte pas, B-20) ; chacun : titre, the name of its adventure (only for a reader who can read it), auteur (l'identifiant, rien s'il n'y en a pas),
 creation date and link to E-9. One hundred at a time, then « Charger la suite ». No creation here:
-« Nouveau compte-rendu » is on E-6, which carries the campaign.
+« Nouveau compte-rendu » is in the adventure’s « Comptes-rendus » block (E-9).
 
 | State | What is shown | Available actions |
 |---|---|---|
-| Empty | « Aucun compte-rendu pour l'instant. » (player: « Aucun compte-rendu à lire pour l'instant. ») | GM and player: « Voir les campagnes » (→ E-6) |
+| Empty | « Aucun compte-rendu pour l'instant. » (player: « Aucun compte-rendu à lire pour l'instant. ») | GM and player: « Voir les aventures » (→ E-8, type « Aventure ») |
 | Loading | « Chargement des comptes-rendus… » | — |
 | Error | « Impossible de charger les comptes-rendus. »; failed « Charger la suite »: « Impossible de charger la suite. » | « Réessayer » |
 | Offline | Banner; loaded list remains; « Charger la suite » disabled | Open |
@@ -877,17 +792,20 @@ Léa opens E-13, she does not see « Session 11 » and the list leaves no gap or
 
 ### E-3 blocks (`kanevas-suivi`)
 
-Three independent blocks, in this order. Each has a title and an empty state, and never shows a
-counter or name the account cannot read.
+Three independent blocks, in this order, reading adventures (see “Screen details for
+`kanevas-scenarios`”, “E-3, E-13, E-12 and E-17”). Each has a title and an empty state, and never
+shows a count or a name the account cannot read.
 
-- **« Campagnes actives »** (everyone): each active campaign's name, link to its E-6.
-  All active campaigns, one per line. Empty: « Aucune campagne active. » (GM: followed by the « Voir les campagnes » link).
+- **Campagnes en cours** (everyone): adventures of sub-type « Campagne » with status « En cours »
+  that the account reads, each linking to its sheet (E-9) with its status. Empty: « Aucune campagne
+  en cours. » (GM: « Voir les aventures » link → E-8, type « Aventure »).
 - **« Derniers comptes-rendus »** (everyone): the five most recently created reports the account can read,
-  title, campaign, date, link to E-9; « Tous les comptes-rendus » link (→ E-13). Empty: « Aucun
-  compte-rendu pour l'instant. » (player: « Aucun compte-rendu à lire pour l'instant. »).
-- **« Préparation »** (GM only — no block for players): per active campaign, its five
-  first unchecked tasks (oldest first) with their category, link to E-6. Empty:
-  « Rien à préparer pour l'instant. ».
+  title, adventure (if the account reads it), date, link to E-9; « Tous les comptes-rendus » link
+  (→ E-13). Empty: « Aucun compte-rendu pour l'instant. » (player: « Aucun compte-rendu à lire
+  pour l'instant. »).
+- **Préparation** (GM only — the block is absent for a player): for each adventure « En cours », its
+  first five unchecked tasks (oldest first) with their category and a link to the
+  sheet. Empty: « Rien à préparer pour l'instant. ».
 
 | State | What is shown |
 |---|---|
@@ -895,19 +813,10 @@ counter or name the account cannot read.
 | Error | Only that block says « Impossible de charger ce bloc. » with « Réessayer »; the other blocks remain |
 | Offline | Banner; already loaded content |
 | Refused | Not applicable to blocks; the preparation block is absent for players |
-| Long content | 80-character campaign name, 120-character report title, 200-character task label: wrap; at most five reports, and five tasks per active campaign; the number of active campaigns is unlimited (AD-60): « Campagnes actives » and « Préparation » grow with it, without « Charger la suite » — intentional, a table has a few active campaigns |
+| Long content | 120-character adventure title, 120-character report title, 200-character task label: wrap; at most five reports and five tasks per adventure; the number of ongoing adventures is unlimited (AD-60) |
 
-*Acceptance criterion.* Given Léa, when she opens E-3, she sees « Campagnes actives » and
+*Acceptance criterion.* Given Léa, when she opens E-3, she sees « Campagnes en cours » and
 « Derniers comptes-rendus », never « Préparation »; Antor sees all three.
-
-### Slice closure
-
-B-15 → E-6 (list and page); B-16 → E-6 and E-7; B-17 → E-6; B-18 → E-6; B-19 → E-6 and E-9;
-B-20 → E-13. Journeys: P-3 steps 1 to 3 (E-3, E-6, E-7), all of P-4, P-5 step 1 (E-13 →
-E-9); P-6 step 1 only reads the E-3 blocks (latest reports); B-18 and B-20 cite it, but no step of P-6 goes through E-6 or E-13. The three roles: the player has E-3, E-6
-(without scenarios or preparation), E-13; the instance admin without a role has none of these screens.
-Left to other slices: the update proposal from a report (`kanevas-monde`); creating a campaign or scenario through
-the assistant is built (E-12, `kanevas-assistant-membre`).
 
 ## Screen details for `kanevas-relier-chercher`
 
@@ -1019,7 +928,7 @@ block, even when empty.
 In each section, below its content: a **« Relations »** block, registered in the section block
 registry (one file, without changing an existing block). It lists the relations **carried by that
 section**: each gives its type and names its target — « membre de → Lames Grises », with the target
-sheet's type badge — and leads to the target sheet (E-9). A relation is directed: it goes from the
+sheet's type (« PJ » or « PNJ » for a character, AD-64) — and leads to the target sheet (E-9). A relation is directed: it goes from the
 section to the target; the target sheet does not show incoming relations.
 
 | Role | Read a section's relations | Link, remove | Refusal |
@@ -1036,7 +945,7 @@ block, even when empty. In player mode, the GM sees the block like a player who 
 section (AD-39), without « Relier » or « Retirer ».
 
 *The GM links.* « Relier à une fiche » opens a form below the list:
-1. « Type de relation » (free text, 1 to 80 characters, for example « membre de »);
+1. « Type de relation » (free text, 1 to 80 characters, for example « membre de »); *(`kanevas-fiches-liees`: replaced by « Nature » (the list of the pair, or « Sans nature ») and « Qualificatif » (free, 1 to 80; optional with a nature, required without one) — see « Screen details for `kanevas-fiches-liees` »)* *(`kanevas-fiches-liees`: replaced by « Nature » (the list of the pair, or « Sans nature ») and « Qualificatif » (free, 1 to 80; optional with a nature, required without one) — see « Screen details for `kanevas-fiches-liees` »)*
 2. « Type de fiche » (« Personnage », « Lieu », « Faction », « Objet », « Événement », « Quête »; « Personnage » by default);
 3. a « Chercher dans les factions » field and the list of sheets of that type, one hundred at a time with
    « Charger la suite »: the E-8 list and search, not another one;
@@ -1046,15 +955,15 @@ section (AD-39), without « Relier » or « Retirer ».
 
 The form is not kept when the session expires. A sheet can link to any sheet of its
 universe, **except itself**. A section carries at most 100 relations; two relations of the same
-type to the same sheet cannot coexist. « Retirer » on a row deletes the relation without
+nature and the same qualifier to the same sheet cannot coexist *(`kanevas-fiches-liees`)*. « Retirer » on a row deletes the relation without
 confirmation (it can be recreated in three actions); removing a section removes its relations too.
 
 Texts: block without relations (GM): « Aucune relation pour l'instant. »; errors below fields:
-« Erreur : le type de relation est obligatoire. », « Erreur : 80 caractères au plus. », « Erreur :
+« Erreur : le qualificatif est obligatoire sans nature. » *(`kanevas-fiches-liees`, replaces « le type de relation est obligatoire »)*, « Erreur : 80 caractères au plus. » (the qualifier; spaces alone count as empty), « Erreur :
 choisissez une fiche. »; service refusals, above the form: « Cette relation existe
 déjà. », « Une fiche ne se relie pas à elle-même. », « Cette section porte déjà 100 relations. »;
 empty choice list: « Aucune faction à relier. » (other types: « Aucun personnage… »);
-each « Retirer » button has the accessible label « Retirer la relation membre de → Lames Grises ».
+each « Retirer » button has the accessible label « Retirer la relation membre de → Lames Grises » *(`kanevas-fiches-liees`: « Retirer la relation membre de · Lames Grises — trésorier »)*.
 
 | State | What is shown | Available actions |
 |---|---|---|
@@ -1063,7 +972,7 @@ each « Retirer » button has the accessible label « Retirer la relation membre
 | Error | « Impossible de charger les relations. » in this block only, other sections intact; write failure: « L'action n'a pas abouti. Réessayez. », input kept | « Réessayer » |
 | Offline | Banner; « Relier », « Retirer » disabled; displayed list remains | Follow a link |
 | Refused | No block for an unreadable section (the section is absent, B-9); a relation to an unreadable sheet is absent; « Relier » and « Retirer » do not exist for players or in player mode | — |
-| Long content | 100 relations: list scrolls with the section; an 80-character type and a 120-character sheet title wrap | Same |
+| Long content | 100 relations: list scrolls with the section; an 80-character qualifier and a 120-character sheet title wrap | Same |
 
 *Acceptance criteria.*
 - Given Antor, a GM, who has linked the « Apparence » section of « Maître Aldric » to the
@@ -1090,6 +999,8 @@ never « caché ». Failure path for linking a section: the service refusal appe
 
 ## Screen details for `kanevas-assistant-membre`
 
+> *`kanevas-scenarios-suivi`: the tools `creer_campagne`, `creer_scenario` and `lister_campagnes` are gone; the GM now creates sheets, including adventures, through `creer_fiche` (AD-126); players have no creation tool. To find an adventure it searches, with the type « Aventure ».*
+
 > E-12 Assistant, and its addition to a universe's shell. The same six states and common texts as
 > `kanevas-premiere-fiche` (loading, offline, expired session); only specific
 > texts are repeated. Mockup `docs/maquettes/e12-assistant.html` (predates the charter: content and states only) (dark theme; GM, player,
@@ -1114,12 +1025,9 @@ bottom:
 - **the thread**: the person's messages and the assistant's answers, in plain text (the thread stays that way after `kanevas-import`),
   oldest first; the thread scrolls and stays aligned with the latest message;
 - **below an answer, the writes**: one « Écrit par l'assistant » block per event (AD-76), the
-  label (« Section « Notes de la table » complétée », « Scénario « Acte III — La crypte » créé
-  dans La Couronne brisée ») and an « Ouvrir » link to E-9 (the sheet), E-7 (the scenario) or E-6
-  (the campaign). The four possible writes: « Section « Notes de la table » complétée »
-  (`ajouter_a_section`, link to E-9), « Section « Vérité » modifiée » (`modifier_section`, link
-  to E-9), « Campagne « La Couronne brisée » créée » (`creer_campagne`, link to E-6), « Scénario
-  « Acte III — La crypte » créé dans La Couronne brisée » (`creer_scenario`, link to E-7);
+  label (« Section « Notes de la table » complétée ») and an « Ouvrir » link to E-9 (the sheet).
+  Available writes: « Section « Notes de la table » complétée » (`ajouter_a_section`),
+  « Section « Vérité » modifiée » (`modifier_section`) ;
 - **the input**: the field, labelled « Demander à Kanevas » by a visible label above it (its hint is « Votre question »), in every state where it is displayed, and « Envoyer » (Enter
   sends, Shift+Enter inserts a line break).
 
@@ -1130,8 +1038,7 @@ nowhere (neither browser storage nor server). The client sends the message and t
 messages (AD-75).
 
 **What each role sees.** Player: search, read a sheet, read a section, edit a
-section, append a paragraph to a section, list campaigns. GM: the same, plus create
-a campaign, create a scenario and generate an image (`kanevas-images`). A player asking to create a scenario or generate an image lacks the tool:
+section, append a paragraph to a section. The GM: the same, plus creating sheets (`creer_fiche`, AD-126), proposing updates and generating an image (`kanevas-images`). A player asking to generate an image or create a sheet lacks the tool:
 the assistant replies that it cannot, with no event and without creating anything (the wording comes from the
 model and is not fixed; the check is the absence of a write). In both cases,
 the assistant only reads and writes what the person can read and write: a closed section is
@@ -1153,12 +1060,11 @@ section. » (AD-74). This slice **provides no tool for maps or graphs** (rejecte
 
 *Acceptance criterion.* Given Léa, a player in « Lame d'Ébène », when she asks « Que sait-on d'Aldric ? »,
 the thread gives « Apparence » and nothing from « Vérité »; when she asks to read « Vérité », the thread
-says « Introuvable. »; Antor gets both sections and has a scenario created, which appears
-in the thread with « Ouvrir » to E-7 and on E-6.
+says « Introuvable. »; Antor, for his part, gets both sections.
 
 ### Closure of `kanevas-assistant-membre`
 
-B-26 → E-12 (all its rows); B-27 → E-12 (create a campaign or scenario; proposals and
+B-26 → E-12 (all its rows); B-27 → E-12 (campaign or scenario creation: `creer_fiche`, AD-126; proposals and
 generation remain with `kanevas-monde` and `kanevas-images`). Journeys: P-3 step 5 (« rappelle-moi tout
 ce qu'on sait d'Aldric », first half), P-6 step 4, P-7 step 2. Roles: GM and player have
 E-12, the instance admin without a role does not. No migration, no entity: the thread is not
@@ -1257,8 +1163,8 @@ a role has no E-12. Deviation from scope: none.
 
 The redesign changes neither permissions, data nor screen text: it changes the
 appearance and the interactions below, which the tester checks. Direction, tokens and
-components are in `docs/charte.md`. E-1, E-3, E-4, E-6, E-8, E-9 and E-14 have finished mockups (the E-15 mockup, `e15-systeme-de-jeu.html`, is finished outside the universe shell); E-2,
-E-7 and E-13 are redesigned within the same shell and with the same components, without
+components are in `docs/charte.md`. E-1, E-3, E-4, E-8, E-9 and E-14 have finished mockups (E-6 and E-7 are retired, their mockups kept: see the opening note) (the E-15 mockup, `e15-systeme-de-jeu.html`, is finished outside the universe shell); E-2
+and E-13 are redesigned within the same shell and with the same components, without
 finished mockups: their current mockups, made before the style guide, specify content and
 vocabulary, rather than appearance (sidebar, account, colours).
 
@@ -1317,7 +1223,7 @@ hatching or « ⋯ » menu: the section has only its title, text and blocks.
 |---|---|---|
 | account menu | connection lost | it opens; the theme changes (it is local); « Se déconnecter » stays active |
 | account menu | `/api/moi` fails | the identifier is missing; the theme and « Se déconnecter » remain |
-| identifier, author name, breadcrumb | too long | truncated with « … », full text in a tooltip; the breadcrumb keeps its last item whole |
+| identifier, author name, breadcrumb | too long | truncated with « … », full text in a tooltip; in the breadcrumb, the current sheet's title gives way last (see Header) |
 | audience settings | a change fails | the switch returns to its value, « L'action n'a pas abouti. Réessayez. » below the setting; no toast |
 | audience settings | connection lost | switches and list disabled, settings remain readable |
 | drawer | open on a phone | sidebar over the page, backdrop behind; Escape, the backdrop or an entry closes it |
@@ -2109,7 +2015,7 @@ and the E-3 block provide their six states (B-29), above.
 
 ### Markdown, wherever long text is written
 
-Sections (E-9), scenarios (E-7), system entries (E-15), session reports (E-9): the text is
+*(`kanevas-scenarios`: a scenario's text is a section of its sheet — what this part says of E-7 holds for that section, resolved in its universe like any section.)* Sections (E-9), scenarios (E-7), system entries (E-15), session reports (E-9): the text is
 Markdown (B-32, AD-95). **What is formatted**: paragraphs (a single newline remains a
 newline, as with the previous plain text), headings `#` to `####` (`#` and `##` at the same level, rendered below the
 section title, never above it), bold, italic, strikethrough, bulleted and numbered lists, quotations, code,
@@ -2149,16 +2055,18 @@ on a phone, never the page.
 
 ### Markdown — what `kanevas-import-markdown` builds (E-9, E-7, E-15, E-12)
 
+> *Since `kanevas-scenarios-suivi`, E-7 no longer exists: what this passage says about a scenario's text applies to its section on E-9 (a sheet of type « Aventure »), and what it says about E-6 applies to the « Comptes-rendus » block of E-9.*
+
 This slice delivers rendering and the editor **without** `[[…]]` links, files or GM blocks (their
 slices add them to the same toolbar and rendering). Mockup: `e09-fiche-importee.html`,
 `#etat-edition` for the editor; `e07-scenario.html`, `e15-systeme-de-jeu.html` and `e12-propositions.html`
 for the rendering location (content becomes formatted there, the layout stays the same).
 
 - **Journeys**: reading, P-12 step 2 (E-9, E-7, E-15, E-12); writing and previewing, P-14 step 1 (E-9, E-7, E-15).
-  A session report's text is rendered on E-9; E-6's « Nouveau compte-rendu » dialog keeps its
+  A session report's text is rendered on E-9; the « Nouveau compte-rendu » dialog (in the adventure's E-9 block) keeps its
   simple field in this slice, with the 100,000 limit (« Erreur : 100 000 caractères au plus. ») and
-  no toolbar or preview; its counter and « Erreur : 100 000 caractères au plus. » error already exist (mockup `e06`): only the
-  threshold changes from 20,000 to 100,000; its other states are those of E-6 and do not change.
+  no toolbar or preview; its counter and « Erreur : 100 000 caractères au plus. » error already exist (mockup `e06`, from before E-6 was retired): only the
+  seuil passe de 20 000 à 100 000 ; its other states are those of the « Comptes-rendus » block (E-9) and remain unchanged.
 - **Mockups**: `e09-fiche-importee.html` (`#etat-edition`, `#etat-apercu`) shows the epic's **complete** toolbar
   (with « Lien vers une fiche », « Fichier », the list opened by `[[`); this slice
   builds only « Gras », « Italique » and the toggle, the other buttons come with their slices. The
@@ -2200,7 +2108,7 @@ for the rendering location (content becomes formatted there, the layout stays th
   | Reads the rendering | yes | yes | yes | yes |
   | Receives the source | yes | no (the field is absent from the response) | yes | like the role being imitated |
   | Toolbar, preview, counter | while editing | hidden | while editing | like the role being imitated |
-  | E-7, E-12 | editor for the GM, rendering for readers | screen absent (404, GM only) | screen absent | screen absent |
+| E-12 | editor for the GM, rendering for readers | screen absent (404, GM only) | screen absent | screen absent |
   | E-15 (attached system) | editor for the GM, rendering | rendering only, neither source nor toolbar (field absent) | not applicable | rendering only |
 - **Limit**: 100,000 characters for a section, session report, scenario, system entry and
   proposed content; beyond that the server answers 400 « Contenu trop long : 100 000 caractères au plus. ».
@@ -2280,13 +2188,12 @@ screen with no Player mode: a broken or pending link is always marked there; `li
 
 | Role | Editor: `[[` and « Lien vers une fiche » | Reading a link | « Mentionnée dans » |
 |---|---|---|---|
-| GM, outside Player mode | yes (E-9, E-7) | link, broken, pending marked | everything they read, including GM blocks |
+| GM, outside Player mode | oui (E-9) | link, broken, pending marked | everything they read, including GM blocks |
 | GM in Player mode, on E-9 | **hidden** (no writing action in Player mode) | like a Player | like a Player |
-| Player, on E-7 | **hidden**: « Page introuvable. », neither screen nor link to it | — | — |
 | Player, section they write without a GM block | yes | link if target is readable; otherwise, including broken and pending, text only (**hidden**, no mark) | readable sources, outside GM blocks; the rest is **hidden**, no count |
 | Player, section they do not write, or containing a GM block (B-34) | **hidden**: no « Modifier », hence neither button nor list | same | same |
 | Player manually typing a link to a sheet they cannot read | **refused**: `lien_illisible` | — | — |
-| Instance admin without membership | **hidden**: « Page introuvable. » on E-9 and E-7 | — | — |
+| Instance admin without membership | **caché** : « Page introuvable. » sur E-9 | — | — |
 
 *Criteria* (list and block).
 - Given Antor editing « Histoire » of « Port-Sel », when he types `[[` then « ald », the list shows
@@ -2318,6 +2225,7 @@ screen with no Player mode: a broken or pending link is always marked there; `li
 ### E-9 Sheet — what `kanevas-import` changes
 
 *Finished mockup*: `docs/maquettes/e09-fiche-importee.html` (« Port-Sel », states `#etat-fichier`, `#etat-joindre`, `#etat-sous-type`, `#etat-changer-type`, `#etat-joueur`,
+`#etat-sous-type-survol`, `#etat-sous-type-focus`, `#etat-changer-sous-type`, `#etat-changer-sous-type-echec`,
 `#etat-edition`, `#etat-supprimer`, `#etat-deplacer`).
 
 **Header.** Breadcrumb: universe › type › **readable** ancestors from highest to nearest ›
@@ -2342,12 +2250,16 @@ all roles other than the GM (outside Player mode): neither menu nor read respons
 
 - *Change type*: a list of types from the product list, enabled first, then « Autres
   types »; for « Personnage », the PC / NPC choice; and the « Sous-type » field (cleared on type
-  change, since it is specific to the type, with subtypes already used for the new type). The
+  change, since it is specific to the type, with sub-types already used for the new type;
+  *(kanevas-sous-type-dialogue)* filled with the current sub-type while the type stays the current one, and then
+  the box changes the sub-type alone). The
   session report is not listed; a session report does not have this entry.
-- *Move under…*: « Déplacer « Port-Sel » sous… » dialog, « Chercher une fiche » field and the
-  search list (all types, sheets the GM reads), plus « Aucun parent »; footer: « Annuler » then « Déplacer » (on the right on desktop, side by side across the full width, 40 px high, on a phone);
-  a descendant of the sheet is refused: « Une fiche ne peut pas être rangée sous l'un de ses
-  descendants. ».
+- *Move under…*: « Déplacer « Port-Sel » sous… » dialog, two views (« Arborescence » by default, « Recherche » with the « Chercher une fiche » field and its list, all types, sheets the GM reads), plus « Aucun parent »; footer: « Annuler » then « Déplacer » (on the right on desktop, side by side across the full width, 40 px high, on a phone);
+  the sheet and its descendants are never offered (the refusal « Une fiche ne peut pas être rangée sous l'un de ses
+  descendants. » remains only if the hierarchy moves while the box is open).
+  *(kanevas-deplacer-arborescence)* The box has two views, « Arborescence » (open by default, placed
+  where the sheet is) and « Recherche » (the search above); the sheet and its descendants are never
+  offered as a target. Detail: « Ce que `kanevas-deplacer-arborescence` construit » below.
 - *Aliases and labels*: two chip fields (Enter adds, × removes); a label completes
   from the universe's labels; alias 1 to 120 characters, at most 20; label 1 to 40
   characters, at most 20 per sheet.
@@ -2460,7 +2372,7 @@ attente » for the batch).
 - Given « Port-Sel » under « Les Sphères » (a location unreadable by Léa) under « Le Grand Vide »
   (readable), when Léa opens « Port-Sel », the breadcrumb is « Lame d'Ébène › Lieux › Le Grand Vide ›
   Port-Sel ».
-- Given Antor moving « Les Sphères » under « Port-Sel », its child, he sees « Une
+- Given Antor moving « Les Sphères » while « Port-Sel », its child, is meanwhile put under it (hierarchy changed while the box is open), he sees « Une
   fiche ne peut pas être rangée sous l'un de ses descendants. » and nothing changes.
 - Given Antor deleting « Port-Sel » (5 children, one unreadable by Léa, parent « Les Sphères »), all 5
   children have « Les Sphères » as parent, « Port-Sel »'s address answers « Page introuvable. », and
@@ -2567,7 +2479,7 @@ closed to it from now on. Mockup: `e09-fiche-importee.html` (« Port-Sel », « 
   who can write the section that she cannot edit it, never why: no message names the block, and this is
   the only trace this choice leaves of a block (accepted: it reveals no secret words). A player writing content
   **containing** a block (typing `:::mj` in a section that had none) receives 400, « Un bloc MJ ne peut être
-  écrit que par un MJ. », below the field, text kept; the same applies to the text of a session report they create (E-6),
+  écrit que par un MJ. », below the field, text kept; the same applies to the text of a session report they create (the « Comptes-rendus » block of E-9),
   whose dialog shows this message below the field like its other refusals. In Player mode, the GM has no « Modifier »
   (the mode is a reading view, imitating a player unable to write this section); what the API
   accepts from them does not change, the mode restricts reads only (AD-39).
@@ -2597,7 +2509,7 @@ closed to it from now on. Mockup: `e09-fiche-importee.html` (« Port-Sel », « 
   | Sees the block | yes, hatched | nothing | nothing | nothing |
   | « Bloc MJ » in toolbar | yes | not applicable (no editing) | **hidden** | **hidden** |
   | Writes a section with a block | yes | no | no (« Modifier » **hidden**, 403) | through the API yes; on screen « Modifier » **hidden** |
-  | Writes content containing a block (section, text of a session report created in E-6) | yes | no | no (**refused**: 400, message below the field) | through the API yes |
+  | Writes content containing a block (section, text of a report created from the E-9 block) | yes | no | no (**refused**: 400, message below the field) | through the API yes |
   | Finds a sheet through a word in the block | yes | **nothing** (the sheet is not a result) | **nothing** | **nothing** |
   | Assistant returns the block | yes | **nothing** (public text) | **nothing** (public text) | yes (GM catalogue) |
 
@@ -2741,6 +2653,50 @@ then subtypes of sheets of this type the reader sees, alphabetically, with their
 sheet count); a filtered subtype returns the grid. The creation dialog has an optional « Sous-type »
 field, with the same completion as E-9.
 
+**Visibility** (B-57, `kanevas-fiche-mj-seul`, decision of Monsieur, 2026-10-25). For a GM in GM
+mode, a sheet none of whose sections is readable by the players (the « Les joueurs la lisent »
+setting; a section readable by its player author alone does not count; a sheet without any section
+carries it too, nobody reads it) carries the amber « MJ seul » badge (`lock`, the charte's audience badge, same as a
+GM-only file in E-19) on its card, under the title next to the sub-type, and on its tree line. A
+filter « Visibilité » stands next to « Sous-type », for the GM only: « Toutes » (default; the option reads « Visibilité : toutes »), « Visibles
+des joueurs », « Réservées au MJ »; a filtered visibility renders the grid, like a filtered sub-type,
+and combines with the sub-type filter and the search; « Toutes » renders the tree back when it was
+the remembered view. The counts are those of the sheets of the type. The state is derived at each
+reading, never stored: opening one section to the players, from E-9, removes the badge at the next
+reading of the list. A player, and the GM in player mode, see neither the badge nor the filter, and
+the API does not tell them whether a sheet is GM-only (it only lists what they read, E-8 refus).
+States of the filter: its three values are fixed (no loading, no counts); it keeps its value in the
+address (`?visibilite=joueurs` or `?visibilite=mj`, like `sousType`) and across « Charger la
+suite »; any other value in the address is ignored (« Toutes », unfiltered, nothing sent). A
+visibility filtered alone without any sheet renders « Aucune fiche réservée au MJ. » or « Aucune
+fiche visible des joueurs. » with « Voir toutes les fiches » (which resets the three filters);
+combined with a sub-type or a search and empty, « Aucune fiche pour ces filtres. » with « Voir
+toutes les fiches », which resets the three. Loading, error and offline are the grid's (the control is disabled under the
+connection-lost banner, like « Nouveau … »). Switching to player mode removes the control and
+drops the parameter, the grid reloads unfiltered; back in GM mode the filter is « Toutes » again.
+The badge of a card and of a tree line has the accessible name and tooltip « Aucune section n'est
+visible des joueurs. », like the header's; focusable, on focus or touch the sentence is written
+under the card's title, or under the tree line. The badge shows wherever a sheet card or line is
+drawn to the GM in GM mode: the grid, the tree, the « Relier » sheet selector of E-9 (which is the
+E-8 list as it is) and the results of E-17; the « Visibilité » filter exists on the grid only
+(decision of Monsieur, 2026-10-25). The E-8
+and E-9 mockups draw neither the badge nor the filter: this text is authoritative, and the badge is
+the charte's audience badge (`Pastille` sens « secrete », icon `lock`). On a section, « MJ seul »
+names that section; on a card, a tree line or the header it names the whole sheet — the header
+tooltip says so. Under 760 px the badge never squeezes the title: on a E-17 result it wraps under the row
+(the title keeps the full width). On the E-9 header row (type badge, « MJ seul », « ⋯ ») the type badge
+stays on one line; without illustration the row wraps to a second line when it must. Beside an
+illustration the text column is narrow, so the row never wraps: « MJ seul » shrinks to its padlock (name
+and tooltip kept for assistive technology), the type badge shrinks with an ellipsis on the sub-type, « ⋯ »
+stays on the row, and the help sentence floats over what follows instead of pushing the illustration down. *Criteria.* Given Antor, GM, and « Le Prieur masqué », a character whose only section is
+« Secret — MJ seul », when he opens the list of characters, then its card carries « MJ seul », and
+« Visibilité » ▸ « Réservées au MJ » lists it and does not list « Maître Aldric », whose « Apparence »
+is read by the players. Given the same sheet, when Antor opens its only section to the players on
+E-9, then the header badge disappears without reloading, and its card no longer carries one at the
+next read of the list. Given Léa, a player, when she
+opens the list of characters or `/univers/1/fiches/personnages?visibilite=mj`, then she sees
+neither badge nor filter, and the list is the one her rights give.
+
 | State | What is seen | Available actions |
 |---|---|---|
 | empty | grid texts; new types: « Aucune créature », « Aucune race », « Aucun vaisseau », « Aucun savoir », « Aucun récit », « Aucune règle », « Aucune note » + « pour l'instant. » / « à voir pour l'instant. »; buttons « Nouvelle créature », « Nouvelle race », « Nouveau vaisseau », « Nouveau savoir », « Nouveau récit », « Nouvelle règle », « Nouvelle note » | GM: create |
@@ -2784,14 +2740,18 @@ text. Its states: *loading* « Chargement… » below the block title; *error* �
 enfants. » with « Réessayer »; *empty* block absent; *long content* 50 then « Afficher les N suivants »
 (N = the next page's count, never a total); failure to load more says « Impossible de charger la suite. » without removing what is displayed; connection lost: banner, loaded block stays; sheet deleted meanwhile (404): block disappears. A sheet without readable sections but with readable children still shows « Contient ». Each child shows the icon, title and subtype (« Taverne »). In Player mode the block is reread under that mode.
 
-**« Déplacer sous… » (E-9).** The dialog is that of `#etat-deplacer`. The field searches the existing search
+**« Déplacer sous… » (E-9).** *(kanevas-deplacer-arborescence)* This paragraph describes the « Recherche » view; the whole dialog is « Ce que `kanevas-deplacer-arborescence` construit » below. The field searches the existing search
 list (`GET …/fiches?q=`, without `type`, 300 ms after typing, at least 1 character, at most 100);
-the sheet itself is excluded from the list; a row shows the type icon, title and subtype (« Lieu · Sphère »), and search covers the title only (the mockup's « Titre ou alias » placeholder belongs to E-17: here the field says « Chercher une fiche »); the 1-to-100-character constraint applies to input, the list returns at most 100 rows then « Charger la suite », and scrolls inside the dialog; before any input the list says « Tapez le début d'un titre. »; input without results says « Aucune fiche ne correspond. », searching « Recherche… », failure « Impossible de chercher. » with « Réessayer »; « Aucun parent » is the first row and puts the sheet at the root.
-« Déplacer » stays inactive until a row is chosen (the mockup shows it active because a choice has already been made); refusal appears below the field; it sends `PATCH …/fiches/:fid` `{parent}`. Responses:
+the sheet and its descendants are excluded from the list (`horsDe`); a row shows the type icon, title and subtype (« Lieu · Sphère »), and search is the list's own (AD-63: title, alias, subtype and readable section text, like E-17; the dialog adds only `horsDe`) (the mockup's « Titre ou alias » placeholder belongs to E-17: here the field says « Chercher une fiche »); the 1-to-100-character constraint applies to input, the list returns at most 100 rows then « Charger la suite », and scrolls inside the dialog; before any input the list says « Tapez le début d'un titre. »; input without results says « Aucune fiche ne correspond. », searching « Recherche… », failure « Impossible de chercher. » with « Réessayer »; « Aucun parent » is the first row and puts the sheet at the root.
+« Déplacer » stays inactive until a row is chosen or while the choice is the current parent (the mockup shows it active because a choice has already been made); refusal appears below the list; it sends `PATCH …/fiches/:fid` `{parent}`. Responses:
 success (200, sheet in response) → dialog closes, breadcrumb reloads and toast says « Fiche déplacée. »; 400 `cycle` → text
-« Une fiche ne peut pas être rangée sous l'un de ses descendants. » below the field, dialog stays open;
-400 `trop_profond` → « La hiérarchie est trop profonde. » and 404 → « Introuvable. », both below the field like the cycle; connection lost →
+« Une fiche ne peut pas être rangée sous l'un de ses descendants. » below the list, dialog stays open;
+400 `trop_profond` → « La hiérarchie est trop profonde. » and 404 → « Introuvable. », both below the list like the cycle; connection lost →
 banner, « Déplacer » disabled. The dialog exists only for a GM outside Player mode, and the « ⋯ » menu is absent for a Player. A sheet of any type may be parent or child, including a session report (AD-99): « Déplacer sous… » also exists for it (GM only: a Player, even the author of their session report, has no « ⋯ » menu); E-13 does not show the hierarchy and stays unchanged.
+*(kanevas-deplacer-arborescence)* This paragraph now describes the « Recherche » view only, and three of its
+rules changed: the sheet **and its descendants** are left out (not the sheet alone); a refusal is written under
+the list (the « Arborescence » view has no field); « Déplacer » is also inactive while the choice is the current
+parent. The box as a whole is « Ce que `kanevas-deplacer-arborescence` construit » below.
 
 *Slice criteria* (data is the seed data, `docs/ecrans.md` above):
 - Given « Les Sphères » (GM-only location) whose child is « Port-Sel », when Léa opens « Lieux » as a tree,
@@ -2806,11 +2766,126 @@ banner, « Déplacer » disabled. The dialog exists only for a GM outside Player
 - Given a `GET …/fiches?type=lieu&parent=racine` response for Léa, no field carries the title,
   identifier or count of a sheet she cannot read (« `dans` » is `null` if the parent is unreadable).
 
+### Ce que `kanevas-deplacer-arborescence` construit (« Déplacer sous… » of E-9)
+
+*Detail of the slice on the frame above (B-35; AD-99 unchanged, AD-115, AD-129). Mockup: `e09-fiche-importee.html`,
+`#etat-deplacer` (the « Arborescence » view, as it opens), `#etat-deplacer-recherche` (the « Recherche »
+view, the choice kept from the tree), `#etat-deplacer-racine` (a sheet without a parent) and
+`#etat-deplacer-profond` (a path of more than three crumbs). Decided by Monsieur on 2026-10-29: the GM did not find a parent by its title alone; he wants to see where
+the sheet is and walk the hierarchy.*
+
+**Who.** Unchanged: the box exists only for a GM outside player mode (the « ⋯ » menu is absent for a player,
+and for the GM in player mode); every type can be a parent, a report included (AD-99).
+
+**The box.** Title « Déplacer « Port-Sel » sous… ». Under it, a segmented switch « Arborescence » /
+« Recherche » (the « Grille / Arbre » switch of E-8: two `button`s with `aria-pressed`, icons `list-tree` and
+`search`). Every opening starts on « Arborescence »; the choice is not remembered. Then the fixed first row
+« Aucun parent » (both views, as before), the list of the active view, the refusal line, and the footer
+« Annuler » / « Déplacer ». Between the list and the footer, a summary line « Nouveau parent : Les Docks »
+(`--texte-2`; « Nouveau parent : aucun (racine de l'univers) » for « Aucun parent »; absent while nothing is
+chosen): the chosen row may have scrolled or been left behind by the navigation, the line keeps it visible.
+
+**One choice for both views.** The list is one `role="radiogroup"` « Nouveau parent » whose rows are radios.
+Choosing a row in either view sets the one choice; switching views or levels keeps it (the radio of the
+chosen sheet is checked wherever that sheet is shown). « Déplacer » is active once a choice is made **and**
+that choice differs from the current parent: the current parent's row carries « (parent actuel) » after its
+type, and « Aucun parent » carries « (actuel) » when the sheet has no parent; choosing either leaves
+« Déplacer » inactive (as « Changer le type » with the current type).
+
+**« Arborescence » view.**
+- *Where it opens.* On the level that holds the sheet: the readable children of its parent
+  (`GET …/fiches/:pid/enfants`), or, for a sheet without a parent, the universe root
+  (`GET …/fiches/racines`, AD-129). The level is read when the box opens, nothing typed. The sheet's own row
+  is scrolled into view.
+- *The path.* Above the list, a path line: the universe's name, then each ancestor down to the shown level,
+  « › » between them (« Lame d'Ébène › Les Sphères »). Each crumb except the last is a button that shows that
+  level; the last is the shown level (`aria-current="location"`). Before the path, an icon button « Remonter »
+  (`corner-left-up`, `aria-label` « Remonter d'un niveau »), inactive at the root. More than three crumbs
+  after the universe: the universe, « … » (a menu listing the hidden ones, with their type icon), the last two
+  — the rule of E-9's breadcrumb. Choosing an entry of that menu shows that level, as a crumb does, and closes
+  the menu; Échap or a click outside closes it without moving; offline, « … » is inactive like the crumbs. At opening the path is built from the sheet's `ancetres` (the GM outside
+  player mode reads them all); walking down appends, walking up or clicking a crumb cuts.
+- *A row.* The radio dot, the type icon, the title, then on the right « Lieu · Taverne » (type, sub-type) in
+  `--texte-3` — the search row of today — and, when the row has readable children (`aDesEnfants`, AD-129), a
+  chevron button (`chevron-right`, `aria-label` « Ouvrir « Les Docks » ») that shows its children. Order and
+  page size are those of « Contient »: by type (product order), then title, 50 rows, then « Charger la suite ».
+- *The sheet itself* is shown at its place, not choosable: `--texte-3`, no radio dot, « (cette fiche) » after
+  its title, `aria-disabled="true"`, no chevron. Its descendants are therefore never reached in this view.
+- *Keyboard.* Up / Down move and choose within the radiogroup (native radios; the sheet's own row is
+  skipped). Right on a row with children shows its children; Left or Backspace (outside a text field) goes up
+  one level. After a level change the focus goes to the first choosable row, and a polite live region says the
+  level (« Niveau : Port-Sel » ; at the root « Niveau : Lame d'Ébène »). The chevrons are out of the Tab order
+  (`tabindex="-1"`), keyboard reaches them through Right.
+- *States of a level.* Loading: « Chargement… » in the list (`role="status"`), the previous level is gone.
+  Failure: « Impossible de charger ce niveau. » with « Réessayer » (`role="alert"`); the path stays usable.
+  Empty: « Aucune fiche à ce niveau. » (a level emptied between two reads, or a root that holds only the
+  sheet itself, which is then shown alone with « (cette fiche) »). Next page loading: « Charger la suite »
+  reads « Chargement… » and is inactive, what is shown stays. Next page fails: « Impossible de charger la
+  suite. », what is shown stays. A level whose sheet no longer exists (404 — on the first read, or reached by a
+  chevron or a crumb after it was deleted meanwhile): « Introuvable. » replaces the list, the path keeps that
+  level and « Remonter » reads the level above again. Right lost while the box is open (403 on a level read,
+  e.g. Antor's GM role removed meanwhile): the box closes without a toast or a message, and the sheet is read
+  again as a player reads it — no « ⋯ » menu any more, so the box cannot be reopened (the same handling as a 403
+  on the move itself, which also closes the box).
+  The GM cannot switch to player mode while the box is open (it is modal), so no level is read in player mode.
+  Connection lost: the banner; « Déplacer », the chevrons, the crumbs and « Remonter » are inactive; the shown
+  level stays.
+- *Long content.* A title of 120 characters is cut by an ellipsis in the row (whole in `title`), a crumb keeps
+  at least 8 characters (`8ch`) and ends in « … », the last crumb gives way last (E-9's breadcrumb rule). A
+  level of 500 children: 50, then « Charger la suite » ; the list scrolls inside the box.
+
+**« Recherche » view.** The search described above (`GET …/fiches?q=`, 300 ms, 1 to 100 characters, the same
+texts), with one change: the list leaves out the sheet **and its descendants**, by the server
+(`horsDe=<sheet>`, AD-129) — not by the page, so the paging stays right. The field takes the focus when the
+view is chosen; what was typed is kept when coming back to it. A result row has no chevron.
+
+**Phone (≤ 480 px).** The box takes the screen, as « Changer le type ». Rows are 44 px high, the chevron is
+a 44 × 44 target; the path keeps the universe, « … » and the last crumb; the footer buttons side by side on
+the full width, 40 px high (as before).
+
+**Move.** Unchanged: `PATCH …/fiches/:fid` `{parent}`, the same answers and texts (« Fiche déplacée. »; a
+cycle, still possible if the hierarchy changed meanwhile, says « Une fiche ne peut pas être rangée sous l'un de
+ses descendants. » under the list; `trop_profond`; 404; 403 closes the box).
+
+*Slice criteria* (the bouchon's seed: « Les Sphères » › « Port-Sel » › « La Taverne du Kraken », « Les
+Docks », « Le Phare aux Sels », « Quartier des Cordiers », « Le Repaire des contrebandiers »; Antor is GM of
+« Lame d'Ébène ») :
+- Given « La Taverne du Kraken » under « Port-Sel », when Antor opens « Déplacer sous… » on it, then without
+  typing he sees the path « Lame d'Ébène › Les Sphères › Port-Sel » and the rows « Le Phare aux Sels », « Le
+  Repaire des contrebandiers », « Les Docks », « Quartier des Cordiers », and « La Taverne du Kraken (cette
+  fiche) », not choosable.
+- Given that box, when Antor clicks « Les Sphères » in the path, then « Port-Sel » is listed with
+  « (parent actuel) » and a chevron; choosing it leaves « Déplacer » inactive.
+- Given that box, when Antor chooses « Les Docks », then « Nouveau parent : Les Docks » shows; when he
+  confirms, the toast says « Fiche déplacée. » and the breadcrumb of « La Taverne du Kraken » reads « Lame
+  d'Ébène › Lieux › Les Sphères › Port-Sel › Les Docks › La Taverne du Kraken » (cut by E-9's rule).
+- Given that box with « Les Docks » chosen, when Antor clicks « Remonter » then the chevron of « Port-Sel »,
+  then he is back on the « Port-Sel » level and « Les Docks » is still checked.
+- Given « Port-Sel » (parent of five), when Antor opens « Déplacer sous… » on it and opens nothing, then
+  « Port-Sel (cette fiche) » has no chevron; when he switches to « Recherche » and types « Doc », then « Les
+  Docks » is not in the list; « Zzzz » gives « Aucune fiche ne correspond. ».
+- Given « Les Sphères » (no parent), when Antor opens « Déplacer sous… » on it, then the root is shown
+  (« Lame d'Ébène » alone in the path, « Remonter » inactive) and « Aucun parent » carries « (actuel) ».
+- Given the level read fails, then « Impossible de charger ce niveau. » and « Réessayer » replace the list,
+  and « Réessayer » reads it again.
+- Given a level of more than 50 children (created for the test; the seed has none), when Antor clicks « Charger la suite », then the button reads
+  « Chargement… » and is inactive while the next page loads, and the first 50 rows stay.
+- Given the box opened on « La Taverne du Kraken » and « Les Docks » deleted meanwhile (by another GM), when Antor
+  clicks the chevron of « Les Docks », then « Introuvable. » replaces the list, the path ends on « Les Docks »,
+  and « Remonter » shows the « Port-Sel » level again, without « Les Docks ».
+- Given the box open and Antor's GM role removed meanwhile, when he opens a level, then the box closes, no toast
+  shows, and the sheet has no « ⋯ » menu any more.
+- Given Léa (player), when she calls `GET …/fiches/racines` or a search with `horsDe`, then she gets 403 for
+  the roots and 400 for `horsDe`, and nothing about the hierarchy (AD-129); so does Antor in player mode.
+- Given a chain of five levels under the universe (created for the test; the seed goes two deep at most), when
+  Antor opens « Déplacer sous… » on its deepest sheet, then the path shows the universe, « … » and the last two
+  crumbs; when he opens « … » and chooses the first hidden level, then that level's children are listed.
+
 ### E-17 Search
 
 *Finished mockup*: `docs/maquettes/e17-recherche.html` (GM, Player, Player mode, label, lore, states).
 
-Address `/univers/:id/recherche?q=…&type=…&etiquette=…`. A field at the top (focused on opening,
+Address `/univers/:id/recherche?q=…&type=…&etiquette=…` (the « Recherche avancée » panel and its `lie`, `nature`, `descendants` addresses are described below, with « Lié à » changing the starting state). A field at the top (focused on opening,
 1 to 100 characters, no button: search starts on typing or Enter), below it two filter rows: **types** (icon chips, « Tous » by
 default; **only enabled types** have a chip, B-42 — a sheet of a disabled type remains a
 result under « Tous ») and **labels** (a list with
@@ -2887,14 +2962,13 @@ toast « Adresse copiée. »). Two panels.
 2. **Import batches** — the last 20 batches, newest first: opening date, token, state (« En
    cours », « Clos », « Abandonné » — open with no write for more than 24 h), and counters
    **per object nature**, in sequence separated by « · », natures without objects omitted: « Fiches : 498 créées ·
-   3 refusées », « Fichiers : 1 140 créés », « Campagnes : 4 créées », « Scénarios : 12 créés »,
+   3 refusées », « Fichiers : 1 140 créés »,
    « Relations : 324 créées », then « 6 liens et références en attente » and « 1 avertissement ». Within a
    nature, each form (« créée(s) », « mise(s) à jour », « inchangée(s) », « refusée(s) ») is written only
    if nonzero: a replay with nothing new reads « Fiches : 1 inchangée » (the API report
    returns all counters, `creees: 0`), and a zero pending or warning count is omitted
    (the mockup shortens it to « 6 en attente »; this text is authoritative). A refused `PUT` (400) with its batch
-   counts one refusal and records its origin key and reason (for example, « campagne inconnue : c:absente »
-   or « type « monstre » inconnu de Kanevas »); without a batch it leaves no trace here. A
+   counts one refusal and records its origin key and reason (for example, « type « monstre » inconnu de Kanevas »); without a batch it leaves no trace here. A
    row expands:
    refusals and warnings, each with the origin key, what is affected and the reason
    (« section « Vérité » : 112 000 caractères, 100 000 au plus »; « parent lieu:les-docks inconnu :
@@ -3011,10 +3085,29 @@ in its tooltip. A filtered subtype with no remaining sheet (renamed meanwhile) r
 
 **E-9 — inline subtype.** The GM (outside Player mode) clicks the badge's subtype: field, completion
 list, Enter saves, Escape cancels (mockup `#etat-sous-type`). Saving: field
-disabled, « Enregistrement… ». Failure: « L'action n'a pas abouti. Réessayez. » below the field, typed value
-kept. An emptied field removes the subtype (« Sous-type retiré. »). Connection lost: editing disabled (subtype stays readable). Long content: 60 characters, truncated with
+disabled (no label). Failure: « Le sous-type n’a pas été enregistré. Réessayez. » below the field, typed value
+kept. Saved: toast « Sous-type enregistré. »; an emptied field removes the sub-type (« Sous-type retiré. »). Connection lost: editing disabled (subtype stays readable). Long content: 60 characters, truncated with
 an ellipsis in the badge, full text in the tooltip. A player reads the subtype as
 plain text; a sheet without a subtype shows nothing to a player.
+*(kanevas-sous-type-dialogue)* **The sub-type shows that it is editable** (GM, outside player mode; mockup
+`#etat-sous-type-survol`). At rest, nothing changes. On hover of the sub-type, and when it receives
+keyboard focus (it is a button, reached with Tab after the type badge), it takes the
+`--surface-3` background (4 px radius) and a pencil icon (`pencil`, 12 px, decorative) appears
+after its text — on that background, the pencil and the « Sous-type » label turn `--texte-2` (the charter never puts
+`--texte-3` on `--surface-3`); the pointer is the text cursor; keyboard focus adds the charter's focus ring
+(2 px `--focus`, offset 2 px). The tooltip says « Modifier le sous-type »; the accessible name is
+« Sous-type : Port. Modifier le sous-type » (without a sub-type: « Ajouter un sous-type »).
+Where there is no hover (touch screen, `(hover: none)`), the pencil is always visible (charter,
+« Les actions secondaires se révèlent au survol et au focus »). A sheet without a sub-type: the label
+« Sous-type » in `--texte-3` at rest, with the same hover and the same pencil. The pencil does not push the title:
+its room (12 px plus a 4 px gap) is counted in the badge's width, which does not move on hover.
+A player, or the GM in player mode: no background, no pencil, no focus — the sub-type is text.
+Connection lost: the banner « Connexion perdue. Ce que vous voyez peut être dépassé ; rien n'est enregistré tant qu'elle ne revient pas. »; the sub-type is disabled (`disabled`): no background or
+pencil on hover, ordinary cursor, Tab no longer stops on it; everything returns with the connection.
+Saving in progress: not applicable to hover — the edit field replaces the sub-type while saving
+(field disabled, above), and the modal box « Changer le type… » covers it.
+Hover and keyboard focus are two distinct states: hover shows the background and the pencil, without the
+ring; keyboard focus shows them with the ring (mockup `#etat-sous-type-survol` and `#etat-sous-type-focus`).
 
 **E-9 — « Changer le type… »** (GM, outside Player mode; absent for a session report): mockup
 `e09-fiche-importee.html#etat-changer-type`. « Changer le type de « Port-Sel » » dialog: a
@@ -3023,20 +3116,46 @@ disabled ones (« désactivé » in `--texte-3`), current type checked and marke
 « Personnage » opens the « PJ / PNJ » choice (NPC by default); the « Sous-type » field (empty by default for a
 different type, with subtypes already used for the chosen type). If the sheet has a subtype, the dialog says:
 « Le sous-type « Port » sera retiré. » until the field is filled. Buttons « Changer le
-type » (disabled while the type stays current) and « Annuler ». Afterwards: sheet reloads under its
+type » and « Annuler » (for the sub-type alone, see below: « Changer le type » is disabled until something differs). Afterwards: sheet reloads under its
 new type, toast « Type changé : Note → Savoir. », breadcrumb and sidebar follow; its sections,
 relations, map placements and proposals stay intact.
+*(kanevas-sous-type-dialogue — changing the sub-type alone; mockup `#etat-changer-sous-type`.)* On
+opening, the current type is ticked and the « Sous-type » field holds the sheet's current sub-type
+(empty if it has none), with the completion of the current type. While the type stays the current one:
+- the box does not say « … sera retiré. » (that warning exists only for another type, if the sheet has a
+  sub-type and while the field stays empty);
+- the button stays **« Changer le type »** — the sub-type is part of the type (Monsieur's decision of
+  2026-10-29: a label « Enregistrer le sous-type » was proposed and refused); it is disabled while the field, trimmed,
+  equals the current sub-type (case counts: « capitaine » replaces « Capitaine »); it enables as soon as
+  it differs, an emptied field included when the sheet had a sub-type;
+- it sends `PATCH …/fiches/:fid` `{sousType}` (the trimmed text, or `null` for an empty field) — the
+  existing route (AD-120), nothing else; on success: the box closes, the header reloads, toast « Sous-type
+  enregistré. » (« Sous-type retiré. » for an empty field), the same as the in-badge edit;
+- PJ / PNJ is not shown, « Personnage (actuel) » included (it is not changed here, see below).
+Choosing another type gives the behaviour of a type change: field emptied, « … sera retiré. » if the
+sheet has a sub-type, button « Changer le type ». Going back to the current type restores the field with the
+current sub-type and the button « Changer le type » (disabled while nothing differs). Saving in
+progress: the button shows its waiting mark « … » (as every button) and the box is frozen. `PATCH` failure: « Le sous-type n'a
+pas changé. Réessayez. » in the box, which stays open with the input; 403: the box closes and
+« Vous ne pouvez plus modifier cette fiche. » shows; 404: « Introuvable. » in the box; connection lost:
+the banner « Connexion perdue. Ce que vous voyez peut être dépassé ; rien n'est enregistré tant qu'elle ne revient pas. », button disabled, input kept. A sub-type over 60 characters: « Erreur : 60 caractères au plus. »
+under the field, nothing is sent. Loading: while the types list is not read, the « Sous-type » field is
+already there, holding the current sub-type and editable, with « Chargement des types… » shown, and the button stays
+disabled even if the field already differs; it enables only once the list is read (its failure: « Impossible de charger les types. »,
+above, button disabled). No empty state of its own: the field is filled from the sheet already read, and the types list is
+never empty. Failure drawn: mockup `#etat-changer-sous-type-echec`. A Player has neither the « ⋯ » menu nor
+the box (hidden, as for « Changer le type… »).
 The PC / NPC choice appears only when **becoming** a character; an existing character's PC / NPC status
 cannot be changed here. Loading: until the type list is read, the dialog's list says « Chargement des
 types… » and « Changer le type » stays disabled. Long content: a 120-character title wraps in
 the dialog title; a 60-character subtype is truncated with an ellipsis in the badge, full text in its
 tooltip and field. Failures: « Le type n'a pas changé. Réessayez. » in the dialog (it stays open); a GM who no longer has a
 role: « Vous ne pouvez plus modifier cette fiche. »; connection lost: banner, button disabled.
-Saving: button becomes « Enregistrement… » and dialog is frozen. Type-list read failure:
+Saving: button becomes « … » and dialog is frozen. Type-list read failure:
 « Impossible de charger les types. » and « Réessayer » replace the list, button disabled.
-The 13-type list scrolls within the dialog (bounded height) on desktop and on a phone, where the dialog fills
+The 14-type list scrolls within the dialog (bounded height) on desktop and on a phone, where the dialog fills
 the screen. A subtype exceeding 60 characters entered in the field: « Erreur : 60 caractères au plus. ». The
-empty case is not applicable: the type list is never empty (thirteen configurable types).
+empty case is not applicable: the type list is never empty (fourteen configurable types).
 **E-9 — inline subtype.** The completion list scrolls beyond eight entries; with no subtype already
 used for this type, it does not appear and the field stays free-form.
 **E-8 — filter count.** The « Port (N) » count stays visible, up to 9,999; beyond that the
@@ -3054,6 +3173,36 @@ The `e08-liste-fiches.html` mockup is not redrawn for subtype: the text above sa
 (below the card title, `--texte-3`; filter beside search).
 
 *Slice criteria* (the screen criteria above still apply).
+- *(kanevas-sous-type-dialogue)* Given an NPC « Capitaine » in Lame d'Ébène, when Antor (GM, outside player
+  mode) opens « Changer le type… », leaves « Personnage (actuel) », replaces the sub-type with « Amiral » and
+  clicks « Changer le type », then the box closes, the toast says « Sous-type enregistré. » and the badge
+  shows « PNJ · Amiral »; the sheet is still an NPC, under « Personnages ».
+- *(kanevas-sous-type-dialogue)* Given that same NPC, when Antor opens « Changer le type… », then the field
+  holds « Capitaine », the « Changer le type » button is disabled and the box does not say « … sera
+  retiré. »; it stays so while neither the type nor the sub-type changes, and enables as soon as he empties the field.
+- *(kanevas-sous-type-dialogue)* Given that same NPC, when Antor empties the field and saves, then the toast
+  says « Sous-type retiré. » and the badge shows « PNJ » alone.
+- *(kanevas-sous-type-dialogue)* Given that same NPC, when Antor picks « Lieu » then goes back to
+  « Personnage », then the field holds « Capitaine » again, « Changer le type » is disabled and the warning is gone;
+  picking « Lieu » had emptied the field and shown « Le sous-type « Capitaine » sera retiré. ».
+- *(kanevas-sous-type-dialogue)* Given Antor on that NPC, when he hovers the sub-type « Capitaine » of the
+  badge, then reaches it with the Tab key, then the `--surface-3` background and the pencil appear (and,
+  with the keyboard, the focus ring); Enter opens the in-place edit. Given Léa (player), when she
+  hovers « Capitaine », then nothing changes and Tab does not stop on it.
+- *(kanevas-sous-type-dialogue)* Given the NPC « Capitaine » and a `PATCH` that fails (500), when Antor
+  saves « Amiral » from « Changer le type… », then the box stays open with « Le sous-type n'a pas
+  changé. Réessayez. », the field still holds « Amiral », and the badge still says « PNJ · Capitaine ».
+- *(kanevas-sous-type-dialogue)* Given the connection lost, when Antor has the box open with « Amiral »
+  typed, then the banner « Connexion perdue. Ce que vous voyez peut être dépassé ; rien n'est enregistré tant
+  qu'elle ne revient pas. » shows, « Changer le type » is disabled and the input stays; with the box
+  closed, the badge's sub-type is disabled: no background or pencil on hover, Tab does not stop on it.
+- *(kanevas-sous-type-dialogue)* Given the types list not yet read, when Antor opens « Changer le
+  type… », then the « Sous-type » field is already there holding « Capitaine » and can be typed in,
+  « Chargement des types… » shows, and « Changer le type » stays disabled — even once « Amiral » replaces
+  « Capitaine » — until the list is read.
+- *(kanevas-sous-type-dialogue)* Given the box open on that NPC, when Antor types 61 characters and
+  saves, then « Erreur : 60 caractères au plus. » shows under the field, nothing is sent and the badge
+  still says « PNJ · Capitaine ».
 - Given « Les Cristaux d'Ombre » (« Savoir · Ressource »), when Antor changes it to « Note », it is
   in « Notes » without a subtype, and the dialog had announced this.
 - Given « Lame d'Ébène » where « Note » is disabled, when Antor opens « Changer le type… » on a
@@ -3242,7 +3391,7 @@ l'univers ») and, for a universe element, « Visible des joueurs » / « MJ seu
 (name, size, readable notes, routes, shareable link), measurement on hover (touch: tap), the
 « Trajet » tool (departure, arrival, routes: all / public, drive → distance and duration), system search
 (among readable systems). GM: « Placer un système », « Promouvoir », « Tracer une route », « Dessiner une zone »,
-« Renommer », « Supprimer la galaxie… » (confirmation: « Les 214 systèmes, 49 routes et 6 zones de cette galaxie seront effacés. »), « Graine… », « Document MJ… » (choose the sheet, or create one of type lore; the tool writes the GM-only « Document MJ » managed section there), Player mode. The view requests only the blocks it shows.
+« Renommer », « Supprimer la galaxie… » (confirmation: « Les 214 systèmes, 49 routes et 6 zones de cette galaxie seront effacés. »), « Graine… », « Document MJ… » (choose the sheet, or create one of type Savoir; the tool writes the GM-only « Document MJ » managed section there), Player mode. The view requests only the blocks it shows.
 
 | State | Text |
 |---|---|
@@ -3265,7 +3414,7 @@ Criteria:
 - Given two visits to the same anonymous hex, the same system is generated; changing the seed asks for
   confirmation stating that all undefined systems change position.
 
-**What `kanevas-outils-galaxie-lire` builds of E-21 and E-10** (the read side; the GM's writing gestures — « Placer un système », « Promouvoir », « Tracer une route », « Dessiner une zone », « Renommer », « Supprimer la galaxie… », « Graine… », « Document MJ… », the Player-mode toggle of the screen, the conflict state — are `kanevas-outils-galaxie-tenir`: the screen leaves no empty slot for them). Mockup: `docs/maquettes/e21-carte-galaxie.html` (the document wins). Architecture: `ARCHITECTURE.md`, « Detail of `kanevas-outils-galaxie-lire` » (G-1 to G-9). Format: web, desktop and phone/tablet (390 px is the proof width).
+**What `kanevas-outils-galaxie-lire` builds of E-21 and E-10** (the read side; the GM's writing gestures — « Placer un système », « Promouvoir », « Tracer une route », « Dessiner une zone », « Renommer », « Supprimer la galaxie… », « Graine… », « Document MJ… », the Player-mode toggle of the screen, the conflict state — are `kanevas-outils-galaxie-tenir`: the screen leaves no empty slot for them). Mockup: `docs/maquettes/e21-carte-galaxie.html` (the document wins). Architecture: `ARCHITECTURE.md`, « Detail of `kanevas-outils-galaxie-lire` » (G-1 to G-9). Format: web, desktop and phone/tablet (390 px is the proof width). This section stays the read slice as it was built, its « arrives with `galaxie-tenir` » included; the write controls are those of « What `kanevas-outils-galaxie-tenir` builds » below, which wins.
 
 *Entry.* **E-10** lists the galaxies of the universe among the maps, after the illustrated maps, with a « Galaxie » badge; a GM also sees the « MJ seul » badge (amber, as on the other maps) on one that is not visible; a player sees only visible ones; none when the tool is disabled or invisible to the role. The thumbnail is a neutral hex-grid tile (no image); with no galaxy readable the list says nothing more than for any universe without maps. The address is `/univers/:id/outils/swn/galaxie/:galaxieId` (`?systeme=<cle>` for a system link). The galaxy is reached through « Cartes » only, as the epic's framing says (the « Outils » sidebar section lists the tools that have no map); creating a galaxy (« Nouvelle carte ») is `kanevas-outils-galaxie-tenir` (B-71), this slice's galaxy comes from the stub seed.
 
@@ -3277,8 +3426,8 @@ Criteria:
 |---|---|
 | Léa (Player, galaxy visible) | the map without secret systems, private routes or secret zones; search, measure, journey on public routes, copy a link; **no** writing control, no visibility badge, and no « Routes » choice (the control is absent, not disabled) |
 | Roxane (Player) | same as Léa |
-| Antor, Mira (GM) | what a player sees plus secret systems (badge « MJ seul »), private routes (dashed, « Privée ») and secret zones (« Secret »), « Routes: Toutes »; their writing controls arrive with `galaxie-tenir` |
-| A GM in Player mode | exactly what a player sees, with no « Routes » choice. In this slice the mode is the product's existing toggle (the one of E-9 and E-11, read as `?mode=joueur`); the screen only reads it, its own toggle in the header arrives with `galaxie-tenir`. On a hidden galaxy: the E-11 notice for Player mode, « Cette carte n'est pas visible des joueurs. » |
+| Antor, Mira (GM) | what a player sees plus secret systems (badge « MJ seul »), private routes (dashed, « Privée ») and secret zones (« Secret »), « Routes: Toutes »; their writing controls are those of the writing section below |
+| A GM in Player mode | exactly what a player sees, with no « Routes » choice. In this slice the mode is the product's existing toggle (the one of E-9 and E-11, read as `?mode=joueur`); the screen only reads it, its own toggle in the header is described in the writing section below. On a hidden galaxy: the E-11 notice for Player mode, « Cette carte n'est pas visible des joueurs. » |
 | Teo (no role), a player on a hidden galaxy, an invisible tool | « Page introuvable. » (hidden, no distinction between *absent* and *forbidden*) |
 
 States (the shared ones are those of the E-21 table above; this slice adds):
@@ -3315,6 +3464,58 @@ Criteria:
 - Given Léa pasting `…/galaxie/1?systeme=station-fantome`, then « Page introuvable. »; with `?systeme=vael`, the map is centred on « Vael » with its panel open.
 - Given the connection lost after the first view, then the displayed view stays, « Connexion perdue. » shows, « Calculer » and the search are disabled, and panning to unloaded blocks leaves them hatched with « Impossible de charger une partie de la carte. » and « Réessayer ».
 - Given the assistant asked « Combien de temps de Port-Sel à Vael avec un moteur 2 ? » by Léa, then, through the tool `swn_galaxie_trajet`, it answers with the screen's result « 7 cases · 4,5 jours » (proved on the tool in `src/outils/swn/routes.test.ts`; the stub's keyword assistant has no rule for it, so it is not playable in stub mode).
+
+**What `kanevas-outils-galaxie-tenir` builds of E-21 and E-10** (the write side, on the screen `galaxie-lire` built). Mockup: `docs/maquettes/e21-ecriture.html` (the document wins); the frames of `e21-carte-galaxie.html` for the GM, Player mode and the seed stay valid. Architecture: `ARCHITECTURE.md`, « Detail of `kanevas-outils-galaxie-tenir` » (T-1 to T-10). Format: web, desktop and phone/tablet (390 px is the proof width).
+
+*Creating the galaxy (E-10).* For a GM, « Nouvelle carte » offers, in « Forme », « Carte illustrée », « Graphe » and **« Carte de la galaxie »** when the tool is enabled and visible to him. Choosing it hides « Image de fond » and keeps « Titre » (1 to 80 characters, same errors as the other maps). « Créer » leads to E-21 of the new galaxy, **not visible** (« MJ seul »), empty, with a seed drawn by the server. A galaxy of the list carries « Rendre visible » / « Cacher aux joueurs » like the other maps; a hidden one is absent for players on their next load and its address answers « Page introuvable. ».
+
+*The header of E-21 (GM).* The title, the shell's « Mode MJ » / « Mode Joueur » toggle (the product's own, mounted here; in Player mode the page becomes exactly the read-only page of `galaxie-lire`: every control below is **absent**, not disabled), then the write controls: « Placer un système » (primary), « Tracer une route », « Dessiner une zone », and a menu « Galaxie ▾ » with « Renommer », « Rendre visible » / « Cacher aux joueurs » (same words as the list of E-10), « Document MJ… », « Graine… » and, apart and in the danger colour, « Supprimer la galaxie… ». Below 760 px the controls fold into one « Modifier la carte ▾ » (44 px, same items). Léa and Roxane see none of it, and the toggle is absent for them.
+
+*Gestures.* Each is a mode of the map with one instruction line above it and « Annuler » (or `Échap`) to leave:
+
+| Gesture | Instruction | Then |
+|---|---|---|
+| Placer un système | « Touchez un hexagone. » | an empty hexagon opens the form « Nouveau système »; a **generated** one (« Système non défini » in the panel) opens « Promouvoir ce système » (same form, title only differs: it keeps the hexagon); an hexagon already holding a system selects it instead |
+| « Tracer une route » | « Touchez le système de départ, puis celui d'arrivée. » | the form « Nouvelle route »: « De Port Noir à Vael », « Longueur : 6 cases » (shown, calculated, not an input), « Route publique » switch (on by default), « Tracer » |
+| « Dessiner une zone » | « Touchez les sommets du contour, puis « Terminer ». » | the outline is drawn as the vertices are tapped; « Annuler le dernier point », « Terminer » (enabled from 3); then the form « Nouvelle zone »: « Nom », « Couleur », « Densité de systèmes » (a percentage, empty: the zone does not change the density), « Secrète » switch (off by default) |
+
+*The system form* (also « Modifier » in the panel of a defined system): « Nom » (1 to 80), « Taille » (three segmented buttons « Petite », « Moyenne », « Grande »; « Moyenne » by default), « Couleur » (six swatches, each named in text for assistive technology), « Notes » (plain text, 2 000 characters), « Secret (MJ seul) » switch, « Hexagone (4, −2) » read-only with « Déplacer » (the map then asks « Touchez le nouvel hexagone. »; the routes of the system are recomputed and the form says so: « Ses 2 routes seront recalculées. »). The panel of a defined system gains, for the GM, « Modifier » and « Retirer » (confirmation: « Retirer « Vael » ? Ses 2 routes seront effacées. »); a route and a zone, selected on the map, open a panel with « Modifier » (visibility for a route, every field for a zone) and « Retirer ». The map marks, for the GM only, secret systems (« MJ seul »), private routes (dashed, « Privée ») and secret zones (« Secret »), as `galaxie-lire` did.
+
+*API import.* Pushing a galaxy by the import API has no screen of its own in this slice: its batch report (« 0 refusé, n créés », each refusal with its field) is read in the batches of E-18, which `kanevas-outils-catalogue` extends to tool batches; the galaxy reached by E-21 shows the imported elements.
+
+*Dialogs.*
+- **« Renommer »**: « Titre », « Enregistrer ».
+- **« Graine… »** (protected setting, B-64): shows the current seed, « Nouvelle graine » (1 to 64 characters, « Tirer au hasard »), then « Changer la graine » opens the confirmation « Tous les systèmes non définis changent de place. Les 5 systèmes que vous avez placés ou promus gardent la leur. » with « Changer la graine » and « Annuler » (focus on « Annuler »). 
+- **« Supprimer la galaxie… »**: « Les 5 systèmes, 4 routes et 2 zones de cette galaxie seront effacés. » (the counts are read when the dialog opens; if they changed meanwhile: « Cette galaxie a changé : relisez le décompte. » with the new counts), and, when a document exists, « Sa section « Document MJ » de la fiche « Notes MJ » sera retirée. » ; « Effacer la galaxie » / « Annuler ». Singular and plural follow the count (« 1 système », « 1 route », « 1 zone »; « 0 route »).
+- **« Document MJ… »**: with no document, two choices — « Choisir une fiche » (a search field over the universe's sheets) or « Créer une fiche de type Savoir » (« Titre », « Galaxie — notes MJ » by default) — and « Écrire le document » (the section is GM only; the dialog says « Seul le MJ lit ce document. »). With a document: « Document dans « Notes MJ » », « Ouvrir la fiche », and its state — « À jour. », or « Le document n'est plus à jour. » — the write that made it stale has already filed the GM's proposal (S-5), so the dialog says « Proposition en attente — à appliquer dans les propositions » with a link to it, and offers « Proposer la mise à jour » only when the state is out of date and he has **no** pending proposal (he abandoned it) — the section changes only when the GM applies the proposal.
+
+| State (adds to the table of E-21) | Text |
+|---|---|
+| conflict, system | « Ce système a changé depuis que vous l'avez ouvert. » + « Recharger » (fields replaced by the stored ones) |
+| conflict, route / zone / galaxy | « Cette route a changé depuis que vous l'avez ouverte. » / « Cette zone a changé… » / « Cette galaxie a changé depuis que vous l'avez ouverte. » + « Recharger » |
+| hexagon taken | « Cet hexagone porte déjà un système. » (under « Hexagone ») |
+| outside the map | « Cet hexagone est hors de la carte. » |
+| name | « Erreur : le nom est obligatoire. » / « Erreur : 80 caractères au plus. » |
+| route, same system | « Choisissez deux systèmes différents. » |
+| route, already there | « Ces deux systèmes sont déjà reliés. » |
+| zone, too short / crossing | « Un contour compte au moins 3 points. » / « Ce contour se croise. Corrigez-le. » |
+| loading | a write in flight: the button shows « Enregistrement… » and the form is frozen; a dialog reading at opening (counts of « Supprimer la galaxie… », current seed of « Graine… », state of « Document MJ… », search of « Choisir une fiche »): « Chargement… » in its body, its confirm button disabled; if the reading fails: « Impossible de lire. Réessayez. » + « Réessayer » |
+| error, texts | « Renommer » empty or over 80: the « name » texts below; « Graine… » empty or over 64: « Erreur : la graine fait 1 à 64 caractères. », stale: the conflict text; notes over 2 000: « Erreur : 2 000 caractères au plus. »; density outside 0–100: « Erreur : entre 0 et 100. »; zone, 65th vertex: « Un contour compte 64 points au plus. »; « Document MJ… » with a chosen sheet deleted or unreadable meanwhile: « Cette fiche n'est plus disponible. », and a document already put there by the other GM: « Cette fiche porte déjà un document. »; the sheet search with no result: « Aucune fiche. »; E-10 « Créer » failing: « L'enregistrement a échoué. Réessayez. », the tool disabled meanwhile: « Cet outil est désactivé. »; « Rendre visible » in version conflict: « Cette galaxie a changé depuis que vous l'avez ouverte. » + « Recharger » |
+| refused while the screen is open | a write refused for the role (GM demoted, tool disabled, galaxy hidden meanwhile): the form stays with its input and says « Action refusée. » for a role lost, or the screen turns to « Page introuvable. » when the galaxy is no longer readable; switching to « Mode Joueur » with a gesture or form in progress cancels it and discards the input (the player view is exactly the read page) |
+| write failed | « L'enregistrement a échoué. Réessayez. » (the form keeps its input) |
+| connection lost | every write control disabled, « Connexion perdue. » (already shown); an open form keeps its input; a gesture in progress (vertices already tapped) keeps its points; the confirm buttons of an open dialog (« Effacer la galaxie », « Changer la graine ») are disabled until the connection returns |
+| nothing defined (GM) | the empty text of E-21 stays, with « Placer un système » highlighted |
+| long content | a zone of 64 vertices, 80-character names (panel wraps), a document listing 500 systems (the sheet scrolls; the list is cut under the section ceiling with « … n systèmes de plus non listés. ») |
+
+Criteria:
+- Given Antor on « Galaxie d'essai » (4 systems, 3 routes, 1 zone), when he places « Port Noir » on an empty hexagon, traces a private route from it to « Vael » and draws a second secret zone, then Léa's map, search and journeys show none of the three, and the route's length is the grid distance (never typed).
+- Given Antor switching to Player mode, then « Port Noir », the route, the zone and every write control are gone, and the toggle still offers « Mode MJ ».
+- Given Antor and Mira both on « Vael », when Antor moves it one hexagon and Mira then saves her form with the version she read, then Mira reads « Ce système a changé depuis que vous l'avez ouvert. » and « Recharger » shows the moved system.
+- Given a generated system tapped in « Placer un système », when Antor names it « Relais » and saves, then it is at the tapped hexagon, defined; and when he changes the seed after the confirmation, « Relais » stays and an undefined system elsewhere has moved.
+- Given Antor opening « Document MJ… » and creating a sheet, then the sheet holds the section « Document MJ », Léa cannot read it, and a system placed afterwards makes the dialog say « Le document n'est plus à jour. » with « Proposition en attente » (no « Proposer » button, the proposal exists) while the text is unchanged; accepting the proposal updates it; abandoning it brings « Proposer la mise à jour » back.
+- Given Antor on E-10 creating « Galaxie neuve » by « Carte de la galaxie », then it is « MJ seul », Léa does not list it; renamed « Galaxie du bord » and made visible she lists it; hidden again she reads « Page introuvable. » on its address.
+- Given 5 systems, 4 routes and 2 zones, « Supprimer la galaxie… » says the sentence above and deletes them after « Effacer la galaxie ».
+- Given Léa at 390 px, no write control is rendered; given Antor at 390 px, « Modifier la carte ▾ » holds the gestures and the form opens under the map.
 
 ### E-22 — Ship designer
 
@@ -3548,3 +3749,457 @@ The proposal screen shows, for a proposal with `source = 'recalcul'` (no report)
 - Given Roxane, a player who is not the author, then she reads the banner and state and has no action, the tool's usage notwithstanding.
 - Given a GM-only managed section, Léa sees neither its title nor its banner.
 - Given Antor in Player mode, then no banner action is in the DOM.
+
+## Screen details for `kanevas-scenarios`
+
+> Decision of Monsieur, 2026-10-25: campaigns and scenarios are sheets of the « Aventure » type
+> (B-58 to B-62). No new screen: E-8 and E-9 gain what the type needs, E-6 and E-7 are retired,
+> E-3 and E-13 read adventures. Same six states and common texts as the other screens. New text
+> in English, as the repository's canon asks; the labels shown to the user stay French.
+
+**Format.** Web, desktop and phone, as the rest of Kanevas; nothing specific to the type.
+
+**Information architecture.** One object for the user: an **aventure** (his words: « ma
+campagne », « le scénario de samedi »). The type's name is « Aventure » (decision of Monsieur, 2026-10-25) — a campaign, a scenario
+and a one-shot are all one, and « Aventures » reads well in the bar next to « Personnages » and
+« Lieux »; « Intrigue » (narrower) and « Partie » (a session, not a story) were set aside. A campaign holds scenarios (the tree: a scenario's
+parent is its campaign); a one-shot stands at the root. An adventure has a **status** (« En
+préparation », « Prête », « En cours », « Terminée »), sections like any sheet, and two blocks of
+its own: « Préparation » and « Comptes-rendus ». Vocabulary: « Aventures » in the bar, « Campagne »
+and « Scénario » as sub-types, « Statut » for the play status (never « état », which the sheets'
+sections use for their audience).
+
+**Navigation.** The « Campagnes » entry of the bar disappears; « Aventures » (`flag`) appears in
+the Lore bar like every activated type (it is `reglable`, activated by default); « Comptes-rendus »
+stays. The addresses `/univers/:id/campagnes`, `/univers/:id/campagnes/:cid` and
+`/univers/:id/scenarios/:sid` answer « Page introuvable. » (the data moved: the migration gives
+the adventure's sheet address to nobody, there is no redirection table — decided, no production
+campaign exists).
+
+### E-8 — the « Aventures » list
+
+The list of the type, as for any type, with these specifics:
+
+- **Default view: the tree.** The first visit shows the tree (campaigns at the root, scenarios
+  under them); the Grille/Arbre choice is remembered per type as today. A sub-type, status or
+  search filter renders the grid.
+- **Creation window** « Nouvelle aventure »: « Titre » (1 to 120), « Sous-type » with the
+  suggestions « Campagne » and « Scénario » (free text, as B-52), « Dans » — the parent, an
+  adventure of the universe, optional —, and « Visible des joueurs » (a checkbox, **unchecked by
+  default whatever the sub-type**: an adventure in preparation is the GM's alone — decision of
+  Monsieur, 2026-10-25 —; checked, it opens the first section « Présentation » to the players,
+  « Les joueurs la lisent »; the section is created empty in both cases, and the GM opens or closes
+  it later from the section's audience, as for any sheet). « Créer l'aventure » leads to E-9 (the window sends one call: the parent and the empty « Présentation » section ride with the creation, AD-128 — a failure leaves nothing created). The
+  status is « En préparation » at birth, never asked here.
+- **Card and tree line**: the status badge (`Pastille`, neutral for « En préparation », the
+  charte's accent for « Prête », success for « En cours », muted for « Terminée »; label the
+  status itself), next to the sub-type; on a card **and on a tree line**, for the GM in GM mode,
+  the badge is a menu that sets the status in place (the four values; the card or the line
+  redraws; « L'action n'a pas abouti. Réessayez. » on failure, status unchanged). A player sees
+  the badge, never the menu.
+- **« Statut » filter**, next to « Sous-type », for every reader: « Tous », then the four
+  statuses; kept in the address (`?statut=en_cours`), combined with the sub-type, the search and
+  the visibility filter (B-57); a filtered status renders the grid; empty: « Aucune aventure avec
+  ce statut. » with « Voir toutes les aventures ».
+
+| State | What is shown | Available actions |
+|---|---|---|
+| empty | GM: « Aucune aventure pour l'instant. » and « Nouvelle aventure »; player: « Aucune aventure à voir pour l'instant. » | GM: create |
+| loading | « Chargement des fiches… » | — |
+| error | « Impossible de charger les fiches. » ; status change failed : « L'action n'a pas abouti. Réessayez. », badge unchanged | « Réessayer » |
+| offline | the banner; « Nouvelle aventure », the status menus and the filters disabled | open a listed sheet |
+| refusal | a player: adventures he reads only (a scenario with no open section is absent) ; the status menu: absent (**hidden**) ; `?statut=` with an unknown value in the screen's address: ignored (« Tous »; the API answers 400) | — |
+| long content | 100 then « Charger la suite » ; a campaign with 60 scenarios: the tree node pages like any node ; a 120-character title: the card and the tree line wrap it, the badge and the sub-type stay on their own line | same |
+| writing | a status menu between the choice and the server's answer: disabled, the old badge kept; the new badge appears only on success | — |
+| GM in player mode | the player's column: no status menu on a card or a tree line, no « Nouvelle aventure » | read |
+| no results | a search or a sub-type, alone or combined with a status, that matches nothing: « Aucune aventure ne correspond. » with « Voir toutes les aventures »; « Aucune aventure avec ce statut. » only for a status alone (the search wins when both apply) | same |
+
+*Creation window, states.* « Titre » empty or over 120 characters: « Donnez un titre de 1 à 120 caractères. », « Créer l'aventure » disabled. While the creation is sent: « Créer l'aventure » disabled, the input kept. « Dans » lists the adventures the GM reads (a title of 120 characters is cut with an ellipsis, the full title in its tooltip; with 200 adventures the field is a search-as-you-type list showing 20 at a time; an universe with none: the field reads « Aucune aventure » and stays empty, optional). Creation failed (server or lost connection): « L'action n'a pas abouti. Réessayez. », the window stays open with its input, nothing created (AD-128); while lost, « Créer l'aventure » is disabled. A scenario readable by a player whose campaign is not: the tree shows it at the root, as for any sheet whose parent is unreadable (the tree rule of E-8), never its parent's title.
+
+*Coexistence.* Delivered: the type, E-8, the status line of E-9, the blocks « Préparation » and « Comptes-rendus », the retirement of E-6, E-7 and of the « Campagnes » entry, E-3 (« Campagnes en cours », « Préparation »), the « Campagne » line of E-13 and the deletion report (`kanevas-scenarios-suivi`). The mock-up `e09-aventure.html` shows a few details this text does not keep (status badge « Acte II · Prête » and a count in « Contient », « MJ seul » and « 4 à faire » on « Préparation », author and date per CR line, title « Statut de l'aventure »): the document prevails.
+
+*Criteria.* Given Antor, GM, when he creates « La Couronne brisée » (sub-type « Campagne », « Visible des
+joueurs » left unchecked), E-9 opens a sheet « En préparation » whose
+« Présentation » section is closed to players, and Léa does not see it in « Aventures »; when he
+opens « Présentation » to players, Léa sees it with its status. Given Antor, when he creates « Acte II — Le sceau brisé »
+(sub-type « Scénario », in « La Couronne brisée »), the sheet is created under the campaign in the tree, its
+section closed to players, and Léa sees it in neither the tree nor the grid. Given
+Antor, when he chooses « En cours » in the menu on the « La Couronne brisée » card, the
+card shows « En cours » without reloading and « Statut » ▸ « En cours » lists only that adventure. Given
+Léa, player, when she opens « Aventures », she sees « La Couronne brisée · En cours » and
+no status menu.
+
+### E-9 — an adventure's sheet
+
+The sheet of any type, with:
+
+- **The status in the header**: a line « Statut : En cours » (registry of the header lines, by
+  type) — for the GM in GM mode, a menu that sets it in place, the same four values, written
+  whole (no version: the last write wins, two tabs show the last one at their next reload); for a
+  player, the badge alone. The sub-type badge stays where it is.
+- **Two blocks of the sheet**, above the sections, in this order — the mechanism is a registry
+  of **sheet blocks by type** (AD-124), distinct from the section blocks:
+  - « **Préparation** » — GM only, hidden in player mode: the five categories, « Ajouter »
+    (label of 1 to 200 characters, category), tick and untick (open tasks by ascending id within a category), « Cochées (n) » folded; empty:
+    « Rien à préparer pour l'instant. ». On a scenario as on a campaign.
+  - « **Comptes-rendus** » — every member: the CR that name this adventure, most recent first,
+    100 then « Charger la suite », each a link to its sheet; « Nouveau compte-rendu » (title,
+    text) creates it as before (AD-61) and opens it; empty: « Aucun compte-rendu pour
+    l'instant. » with the button. A player sees the CR he reads.
+- **« Contient »** (the existing children block, after the sections and the two blocks above — not before « Présentation » as the mock-up has it) lists the scenarios of a campaign, each as the type icon, the title and « · sub-type »: nothing to
+  add; « Déplacer sous… » moves a scenario to another campaign.
+- Deleting an adventure follows the sheets' rule (E-9 ⋯ Supprimer, AD-119): the confirmation
+  counts, besides what every sheet counts, « n tâches de préparation supprimées », « m scénarios
+  qui passent à la racine » and « k comptes-rendus qui resteront sans aventure »; its scenarios
+  go to the root (the tree's `ON DELETE SET NULL`), its tasks go with it, its comptes-rendus stay
+  and show « Aventure supprimée » in their « Campagne » line — **to the GM only** (a GM in player mode reads it as a player does, so nothing): the server names a
+  deleted adventure (an id that matches no sheet) to a GM, and sends nothing for it to anyone else, so
+  a player cannot tell a deleted adventure from one closed to him (no existence leaks, AD-64).
+
+| State | What is shown | Available actions |
+|---|---|---|
+| empty | a new adventure: its empty « Présentation » section, « Préparation » empty (GM), « Comptes-rendus » empty with the button | write, tick, create a CR |
+| loading | the sheet's ; each block « Chargement… » in place | — |
+| error | the sheet's ; a block that fails: « Impossible de charger ce bloc. » with « Réessayer », the rest of the sheet readable ; status change failed: « L'action n'a pas abouti. Réessayez. » ; « Ajouter », tick or untick that fails: the same text under the block, the field and the tick unchanged ; « Nouveau compte-rendu » that fails: « Le compte-rendu n'a pas pu être créé. Réessayez. », title and text kept in the window (an empty title: « Donnez un titre. » ; a text over 100 000 characters: the ceiling's message) | « Réessayer » |
+| offline | the banner; status menu, « Ajouter », ticks and « Nouveau compte-rendu » disabled, an open « Nouveau compte-rendu » window keeps its text and its « Créer » disabled ; the blocks shown stay as last read, not marked stale | read |
+| refusal | a player on a scenario with no open section: « Page introuvable. » (the sheet's rule) ; « Préparation » absent for a player and in player mode (**hidden**) ; the status menu absent for a player (**hidden**) | — |
+| writing | the status menu between the choice and the answer: disabled, the old status kept | — |
+| GM in player mode | the player's view: the status as a badge, no menu, no « Préparation » | read |
+| deactivated type | an existing adventure keeps its status line, its menu and its blocks; the type's entry is out of the bar and « Nouvelle aventure » does not exist (as for any deactivated type, on E-8 too) | same |
+| long content | a 120-character title with the status line: the line wraps under the title ; 300 tasks: « Cochées (n) » stays folded ; a CR list of 1 000: pages | same |
+
+*Criteria.* Given Antor on « La Couronne brisée », when he adds « Plan de la crypte »
+(category « Cartes ») and ticks it, it moves under « Cochées (1) » without reloading, and Léa, on the same
+sheet, sees no « Préparation » block. Given Léa on « La Couronne brisée », when she
+writes « Séance 12 » through « Nouveau compte-rendu », the report opens (E-9) with « Campagne : La
+Couronne brisée », and appears first in the « Comptes-rendus » block and E-13. Given Antor
+in player mode on « Acte II », when no section is readable by players, he sees « Aucune section
+n'est visible des joueurs. » and no « Préparation » block.
+
+### E-3, E-13, E-12 and E-17
+
+- **E-3**: « Campagnes actives » becomes « **Campagnes en cours** »: the adventures of sub-type
+  « Campagne » with status « En cours » that the reader reads, by title, each with its status
+  badge; empty: « Aucune campagne en cours. ». « Derniers comptes-rendus » unchanged, except that
+  the adventure of a CR is named only to a reader who reads it (the same guard as E-13). « Préparation »
+  (GM): the open tasks of the adventures « En cours », grouped by adventure, five per adventure,
+  as before; empty: « Rien à préparer pour l'instant. ».
+- **States of E-3 and E-13** (the old states of `kanevas-suivi` are the reference, with these texts): E-3 blocks
+  « Campagnes en cours » and « Préparation » each load in place (« Chargement… »), fail alone
+  (« Impossible de charger ce bloc. », « Réessayer », the other blocks readable), are inert offline
+  (the bandeau, links still open); E-13: « Chargement des comptes-rendus… », « Impossible de charger les comptes-rendus. »
+  with « Réessayer », offline the list stays and « Charger la suite » is disabled; a CR whose adventure is deleted shows « Aventure
+  supprimée » in the column to a GM and an empty column to anyone else; a player's E-13 column is empty (**hidden**) for every CR
+  whose adventure he does not read.
+- **E-13**: the column « campagne » shows the adventure the CR names (campaign or scenario), as
+  a link to its sheet — **to a reader who reads that adventure**; otherwise the column is empty
+  for that CR and the « Campagne » line of its sheet (E-9) is absent: the title of a scenario
+  closed to the players never leaks through a CR (rule 3 of `docs/donnees.md`), the CR itself stays
+  readable. The filter by adventure of the route stays (`?campagne=<fiche id>`), for an adventure
+  the caller reads (404 otherwise, like the sheet).
+- **Type deactivated** (E-14/E-15, AD-122): exactly what deactivating any type does, nothing
+  more — the « Aventures » entry leaves the bar, creating an adventure is refused (E-8; the import warns `type_desactive`); existing adventures stay readable and writable by their
+  address and in the search, with their blocks « Préparation » and « Comptes-rendus » and their
+  status menu (no data is hidden); the E-3 blocks keep listing the adventures « En cours ».
+- **E-12**: the GM creates an adventure through `creer_fiche` (AD-126), with optional sub-type and parent. Its « Fiche « X » créée » block opens E-9; it starts « En préparation », closed to players. The player has no creation tool. To find an adventure the assistant searches with the type « Aventure ».
+- **E-17**: adventures are searched like any sheet, their status badge on the result card (a result the reader may not read is absent; a long title wraps with the badge on its own line; the states are E-17's, the badge adds none).
+
+### Mockup
+
+`docs/maquettes/e09-aventure.html` — the sheet of « La Couronne brisée » for the GM: the header
+with the sub-type badge and the status menu, the blocks « Préparation » and « Comptes-rendus »
+above « Présentation », « Contient » with a plain list of titles (icon, title, sub-type), after the sections. The E-8 tree and
+the badges reuse the existing mockup `e08-liste-fiches.html` and the charte's audience badge;
+this text is authoritative where they differ.
+
+### Closure
+
+- Each need has a screen: B-58 → E-8, E-9 ; B-59 → E-8, E-9, E-17, E-3 ; B-60 → E-9, E-3 ;
+  B-61 → the import API (no screen, E-18 shows the lots) ; B-62 → E-12. Covered.
+- Each screen is reached by a journey: E-8/E-9 of adventures by P-3 and P-6 ; the CR block by
+  P-4 ; E-3 by P-3 ; E-12 by P-3. Covered.
+- Each role has its column: GM and player above ; instance admin: nothing new. Covered.
+
+## Screen details for `kanevas-fiches-liees`
+
+> Decisions of Monsieur, 2026-10-25 (B-63 to B-69, AD-130 to AD-134 and AD-136). No new screen: E-9 (the
+> « Relier » form, a block « Fiches liées », the dead mark), E-8 and E-17 (a mark, two filters, an
+> advanced mode), E-11 (labels). New text in English (canon); user-facing labels French. Same six
+> states and common texts as the other screens.
+>
+> **Built so far** (`kanevas-fiches-liees-natures`): the « Relier » form (nature, qualifier), the relation line, the
+> E-11 labels and « Familles ». The block « Fiches liées » (slice `-bloc`), the advanced mode of E-17, the
+> filters and the dead mark are built (sections below).
+
+**Format.** Web, desktop and phone, as the rest of Kanevas.
+
+**Information architecture.** Two notions for the user: a **relation** now says *what* it is
+(its nature: « se situe à », « membre de », « détient »…) and *how* (its qualifier,
+free); and the **linked sheets** of a sheet — what points to it by a nature, read backwards. The
+vocabulary: « nature » for the finite kind, « qualificatif » for the free text (never « type »,
+which names the type of sheet), « Fiches liées » for the block, « sous-lieux compris » for the
+aggregation through the tree, « vivant » / « mort » for the mark.
+
+### The natures (AD-136)
+
+The product's list, in code like the types (decision of Monsieur, 2026-10-25: these five to
+start — « dirige » was set aside, « dirige » is a qualifier of « membre de » ; a nature is added by a
+line, never removed once used) :
+
+| Nature (key) | Read from the source | Read from the target | Source types → target types |
+|---|---|---|---|
+| `se_situe` | se situe à | s'y trouvent | personnage, créature, objet, faction, famille, vaisseau → lieu |
+| `membre` | membre de | membres | personnage, créature → faction, famille |
+| `detient` | détient | détenu par | personnage, faction, famille, lieu → objet, vaisseau |
+| `allie` *(symmetric)* | allié de | allié de | faction, famille, personnage ↔ faction, famille, personnage |
+| `ennemi` *(symmetric)* | ennemi de | ennemi de | faction, famille, personnage ↔ faction, famille, personnage |
+
+A **symmetric** nature reads the same from both sides and is stored once, on the side that
+entered it: both sheets list the other in « Fiches liées », under the section's audience of the
+side that holds it (AD-136 (3)).
+
+A relation without nature is « sans nature » (free, as today). The place-in-place relation is the
+tree, never a nature (« se situe » is not offered for lieu → lieu). Aventures (`kanevas-scenarios`)
+take no nature in this epic (reopened with the first need): their « Relier » form has « Qualificatif » alone, required, and « Type de fiche » lists every enabled type.
+
+### E-9 — « Relier à une fiche », with a nature
+
+The form of the Relations block (`kanevas-relier-chercher`) gains a first step: **« Nature »**, a
+list of the natures whose source types include this sheet's type, read from the source, plus
+« Sans nature » (the first nature is preselected; « Sans nature » alone when the list is empty, last otherwise); choosing a nature restricts
+« Type de fiche » to the nature's target types (the select shows them only); then the sheet
+picker as today; then **« Qualificatif »** (1 to 80; optional with a nature, **required without one** — « Le qualificatif est obligatoire sans nature. » —, replaces the former free « Type de
+relation » field, same place, placeholder « habite, capitaine… »). « Relier » refuses a nature
+that does not fit the pair (400 `nature_incompatible`, « Cette nature ne relie pas ces deux types
+de fiches. ») — the screen never offers it. A relation line reads « se situe à · **Port-Sel** —
+habite » (nature, target, qualifier in grey); a free relation reads its qualifier alone as today.
+The relation lines in the block and the lines of « Fiches liées » show the « gone » mark on a
+target that carries it (B-67). Nothing changes for the audience: the relation belongs to its
+section.
+
+**The form, state by state** (slice `kanevas-fiches-liees-natures`).
+
+| État | Ce qu'on voit | Ce qu'on peut faire |
+|---|---|---|
+| loading | the list of natures loads with the types: « Chargement… » in place of the « Nature » field | — |
+| error | « Impossible de charger les natures. » with « Réessayer »; the form stays usable with « Sans nature » alone | « Réessayer », relier sans nature |
+| empty | a sheet whose type is the source of no nature (événement, quête, race, savoir…): the « Nature » field is not shown, the form is the former one (qualifier required) | relier sans nature |
+| connection lost | the banner; « Relier » disabled, the entries stay | read |
+| refused | « Le qualificatif est obligatoire sans nature. » (checked by the screen before sending, and by the server: 400 `invalide`; more than 80 characters: « Erreur : 80 caractères au plus. »); « Relier » refused by the server (`relation_existante`, `limite_relations`, `nature_incompatible`): « Cette relation existe déjà. », « Une fiche ne se relie pas à elle-même. » (`auto_relation`), « Cette section porte déjà 100 relations. », « Cette nature ne relie pas ces deux types de fiches. », the entries stay | corriger |
+| vide de recherche | the sheet picker without a result: « Aucune fiche pour cette recherche. » (« Aucune fiche de ce type. » when the type has none), « Relier » stays disabled | changer de type ou de recherche |
+| long content | a 80-character qualifier wraps in the line; on the graph the label is cut at 40 characters with an ellipsis, whole in the tooltip | same |
+
+Changing the nature after a sheet was picked keeps the pick if its type still fits, else empties it.
+The error texts and the accessible names of the block say « qualificatif » and « relation », never
+« type de relation »; the line reads « se situe à · Port-Sel — habite » where the former text read
+« membre de → Lames Grises » (the older criteria are read that way). A symmetric nature (« allié de »)
+entered on one sheet is listed by that sheet's section, and by « Fiches liées » on the other side (`kanevas-fiches-liees-bloc`); the same fact entered from the other side with the same qualifier is refused as
+`relation_existante` (« Cette relation existe déjà. », the other side holding it). Roles: the GM outside player mode relates; a player, and the GM in player mode,
+never see « Relier », the « Nature » field or « Nouvelle famille » (hidden); the list « Familles »
+is read like any list of E-8, empty state « Aucune famille pour l’instant. » with « Nouvelle famille » for the GM.
+
+*Criteria.* Given Antor, GM, on « Dame Ombeline de Val-Fortin », when he links « se
+situe à » → Port-Sel with « habite », then the line reads « se situe à · Port-Sel — habite »; when he
+links « Sans nature » without a qualifier, then « Le qualificatif est obligatoire sans nature. » and nothing
+is written. Given the map « Carte de la côte » (E-11), when Antor opens it, then the link
+from Aldric to Port-Sel is labelled « se situe à — habite » and his free link « maître de port ».
+
+### E-9 — the block « Fiches liées » (B-64, AD-131)
+
+On every sheet whose type is the target of at least one nature, a sheet block placed **after « Contient » and before**
+« Mentionnée dans » (a row with a grey label like theirs, not a framed panel; registry of the sheet blocks by type, AD-124): one group per nature read
+backwards, in the natures' order, each with its counts by type (« S'y trouvent : Personnages (12),
+Créatures (3) ») — counts of what the reader reads —, folded beyond five lines per group
+(« Afficher les 12 »), each line the card line of E-8 (vignette, title, badge, sub-type, the dead
+mark) and the qualifier in grey; on a **place**, a toggle **« sous-lieux compris »** (off by default,
+remembered per browser) adds the sheets linked to its descendants in the tree (bounded by the
+tree's depth, AD-130), each line then saying its place in grey (« — Les Docks »); the mock-up also draws a grey line naming the sub-places read, which is not built; a group has a
+link **« Chercher parmi »** to E-17 with the filters pre-filled (lié à, nature, sous-lieux). A group
+with nothing readable is absent; the block is absent when every group is. « Mentionnée dans »
+keeps the links and the free relations only.
+
+**Block, not side panel** (decision of Monsieur, 2026-10-25: « on commence par un bloc et on
+verra à l'usage »). Kanka shows the linked entities in a right-hand panel; here a block of the
+sheet, like « Contient » and « Mentionnée dans » — one place to read a sheet, the same on a phone,
+the charte's folding and counts. A side panel on desktop (≥ 1200 px) that folds into this block
+stays a possible evolution, drawn as the state `#etat-volet` of `e09-lieu-liees.html`; it is not
+built.
+
+| État | Ce qu'on voit | Ce qu'on peut faire |
+|---|---|---|
+| empty | the route gives, per group, the totals with and without descendants (AD-131) : nothing readable either way, the block is absent ; nothing at the place's own level but something below, the block shows with « sous-lieux compris » checked and disabled, and a line « Rien à ce niveau ; N fiches dans ses sous-lieux. » | — |
+| loading | « Chargement… » in the block, the sheet readable | — |
+| error | « Impossible de charger les fiches liées. » with « Réessayer », the rest of the sheet readable | « Réessayer » |
+| connection lost | the banner of the other blocks (the text of the connection-lost state above, B-29); the loaded content stays readable, the toggle and « Afficher les 12 » (which ask the server) are disabled | read |
+| refused | a player: only the relations whose section and source sheet he reads, counts included; the block is absent (no trace) when nothing is readable; the toggle is shown to every role on a place; in player mode the GM sees the same | — |
+| rafraîchissement | after the toggle or « Afficher les N »: the previous content stays, dimmed, controls disabled; a failed re-read keeps it, the toggle back in the state the shown content answers (not the one just clicked), and shows « Impossible de charger les fiches liées. » with « Réessayer » | « Réessayer » |
+| long content | a place with 300 characters: « Personnages (300) », five shown, « Afficher les 300 » pages by 50 (the button then reads « Afficher les N suivants », N the lines left) ; a depth of 50 sub-places: the toggle says « sous-lieux compris (50 niveaux au plus) » | same |
+
+*Criteria (states).* Given « Port-Sel » loading, then « Chargement… » in the block and the rest of the sheet readable. Given the route failing, then « Impossible de charger les fiches liées. » and « Réessayer » reads it again. Given the connection lost, then the banner, the loaded content readable, the toggle and « Afficher les 12 » disabled. Given a re-read that fails after a click on the toggle, then the previous content stays, the checkbox goes back to its previous state, and « Impossible de charger les fiches liées. » with « Réessayer ». Given Léa on a place of which nothing is readable to her, neither at its own level nor below, then the block is absent, without trace. Given 50 levels of sub-places, then the toggle says « sous-lieux compris (50 niveaux au plus) ». Given Antor (GM), a place with no relation at its own level and a single readable sheet in its sub-places, then « Rien à ce niveau ; 1 fiche dans ses sous-lieux. », the checkbox checked and disabled. Given Antor on « Les Sphères » (nothing at its own level, Port-Sel below), then the toggle is checked and disabled with « Rien à ce niveau ; 4 fiches dans ses sous-lieux. » (Aldric, « le Prieur masqué », Suie, « Le Kraken des Cales »); Léa cannot read « Les Sphères » (GM only), the block does not exist for her there. Given « Port-Sel » and a click on the toggle or on « Afficher les 12 » whose re-read is under way, then the previous content stays, dimmed, the toggle and « Afficher les 12 » disabled; if the re-read of « Afficher les 12 » fails, then the five previous lines stay, with « Impossible de charger les fiches liées. » and « Réessayer ». Given a group of 300 sheets, then « Personnages (300) », five lines, « Afficher les 300 » by pages of 50. Given the GM in player mode on « Port-Sel », then he reads like Léa. Given an 80-character qualifier on a phone (360 px), then the line wraps and the whole text is in the tooltip.
+
+*Criteria.* Given Antor, GM, and « Port-Sel » where « Maître Aldric » and « Le Prieur masqué »
+are located, when he opens the sheet, then « Fiches liées » says « S'y trouvent : Personnages (2) »
+with the two cards; when he ticks « sous-lieux compris », then « Suie » (located at the Docks,
+in Port-Sel) is added with « — Les Docks », and « Le Kraken des Cales » (Créatures (1), « — La Taverne du Kraken ») on its own type line of the same group. Given Léa, Player, when she opens
+« Port-Sel », then she reads « Personnages (1) »: Maître Aldric; « Le Prieur masqué », whose relation is
+in « Secret — MJ seul », is neither named nor counted. Given Antor on « La Guilde des
+Brumes », when he opens the sheet, then « Membres : Personnages (2) » shows « Maître Aldric —
+trésorier » and « Dame Ombeline de Val-Fortin — dirige »; « Dirige » is not a nature: Aldric « membre de » the Guilde with the qualifier « trésorier », Ombeline « membre de » with « dirige ». Given the family « Les Corvalis »
+(type Famille), when Antor opens its sheet, then « Membres : Personnages (2) » shows « Bran
+Corvalis — aîné » and « Dame Ombeline de Val-Fortin — veuve » (Bran carries the « mort » mark once
+the gesture of « Marquer mort » is played, not before).
+
+### E-17 — the advanced search (B-65, AD-130)
+
+Under the field and the two filter rows, a disclosure **« Recherche avancée »** (open when the
+address carries one of its parameters): **« Lié à »** (a sheet picker, the E-8 list as in
+« Relier » ; a chip « Port-Sel ✕ » once chosen), **« Par »** (the natures whose target types include
+the chosen sheet's type, read backwards: « s'y trouvent », « membres », « détenu par »…, the symmetric ones
+whichever side holds them, plus « toute relation » by default), **« sous-lieux compris »** (shown when the chosen sheet is a place), and the « gone » filter of the type (the three words of the type's row in the table below — « Vivants / Morts / Tous » for Personnage, « Vivantes / Mortes / Toutes » for Créature, « Intacts / Détruits / Tous » for a lieu…, shown when the type filter is one that carries the mark). Address :
+`&lie=<id>&nature=<key>&descendants=1&etat=la|disparu`. The results are the E-17 list (the row of E-8 with its aliases and labels), same
+order, same rights (a relation counts only if its section, the sheet that holds it and the sheet it points to are all readable by the
+searcher: a hidden sub-place such as « Le Repaire » does not count for Léa; in player mode, as a player). « sous-lieux compris » descends only through sheets of the same type as the chosen one (a descendant of another type is ignored). With « Lié à » set, the words become optional (the search starts with the filters alone, as a label does today ; the field reads « Cherchez un nom, un alias ou un mot — facultatif avec « Lié à ». » and E-17 has no « Chercher » button). With « sous-lieux compris », a row found through a sub-place says it in grey under the title (« Les Docks » for Suie): its `via`, the place the relation points to — never an intermediate place. The text is authoritative; the mockup shows the layout, minus the nature sub-line (« se situe à — habite », which belongs to `-bloc`: this list shows only the grey `via`) ; the « gone » filter it draws (« Vivants / Morts », `etat=`) is delivered by `kanevas-fiches-liees-disparu`, not by the slice that builds this volet, and its address line is the browser's, not a component. « Chercher parmi » from a « Fiches liées »
+group opens E-17 so pre-filled.
+
+| État | Ce qu'on voit | Ce qu'on peut faire |
+|---|---|---|
+| empty | « Aucune fiche liée à « Port-Sel » pour ces critères. » — with « Lié à » set this text wins over « Aucune fiche ne correspond. », words or not ; without « Lié à » and without words: E-17 asks for a word, as today | retirer un filtre |
+| loading | as E-17 (the previous results stay, dimmed, until the new ones arrive) ; the picker shows « Chargement… » | — |
+| error | as E-17 ; a failed picker call reads « Impossible de charger les fiches. » inside the picker | « Réessayer » |
+| connection lost | as E-17 ; the picker disabled, « Hors connexion » in its field | read |
+| `nature` / `descendants` that do not fit the chosen sheet (a nature whose target types exclude it, `sous-lieux` on a person) | the address is cleaned by `replace` and the list runs without them | — |
+| empty picker | « Aucune fiche. » under the field when the typed words match no sheet the caller reads | edit the input |
+| read error of the sheet or the natures | the chip reads « Impossible de charger la fiche. », or « Par » reads « Impossible de charger les natures. », each with « Réessayer » ; the list still runs | « Réessayer » |
+| refused | a player or player mode: the sheet picker lists what he reads ; `?lie=` on a sheet the caller does not read (a player, **or the GM** on a deleted sheet or one of another universe): the chip reads « Fiche introuvable » (✕ kept) and the search still runs with it: the API answers an empty page, the list reads « Aucune fiche liée pour ces critères. » ; « Par » then offers « toute relation » only and « sous-lieux compris » is hidden | — |
+| long content | a tree deeper than 50 levels is searched down to the 50th, without a word about it ; « Par » holds five natures at most ; the filters wrap on two rows under 760 px ; a picked title of 120 characters is cut with an ellipsis in the chip and in the empty sentence, whole in the chip's tooltip | same |
+
+*Criteria.* Given Antor, when he searches « lié à Port-Sel », « s'y trouvent », sub-places
+included, type Personnage, then the list holds Aldric, the Prieur and Suie; with « Vivants » *(`kanevas-fiches-liees-disparu`, not this slice)*, the
+Prieur (dead) disappears. Given Léa, when she opens the same address, then the list holds
+Aldric and Suie only, and the mode switch is absent.
+
+### E-8, E-9, E-17 — the « gone » mark (B-67, AD-132)
+
+One mark, `disparu`, carried by the types that can be gone, each with its word (decision of
+Monsieur, 2026-10-25) :
+
+| Type | Word (badge) | Menu entry | Filter | Glyph |
+|---|---|---|---|---|
+| personnage | Mort | Marquer mort · Marquer vivant | Vivants / Morts / Tous | `skull` |
+| créature | Morte | Marquer morte · Marquer vivante | Vivantes / Mortes / Toutes | `skull` |
+| famille | Éteinte | Marquer éteinte · Marquer vivante | Vivantes / Éteintes / Toutes | `skull` |
+| faction | Détruite | Marquer détruite · Marquer active | Actives / Détruites / Toutes | `shield-off` |
+| lieu, objet, vaisseau | Détruit | Marquer détruit · Marquer intact | Intacts / Détruits / Tous | `flame` |
+
+The other types (événement, quête, savoir, récit, règle, note, compte-rendu, aventure) carry no
+mark. The grammatical gender of the word follows the type's label (« Détruite » for a faction,
+« Détruit » for a lieu), never the sheet's content.
+
+- **Header of E-9**: for the GM in GM mode, the menu entry of the table in the « ⋯ » menu of the
+  header (the reverse entry when gone), written whole; the header then carries the badge with the
+  word (`Pastille` neutral, the type's glyph) next to the type badge, and the illustration takes the
+  mark below. A player sees the badge, never the entry.
+- **The mark on the image**: on the vignette of a card (E-8, E-17) and on the illustration of E-9, a sober mark — the image desaturated at 60 %
+  and the type's glyph in a small round chip at the bottom-left of the frame; on the drawn fallback,
+  the glyph alone. Never a cross over a face, never a red overlay (the charte's restraint). Built today: « Contient » and the
+  relation lines are text lines with no image, so they carry no mark; « Fiches liées » renders its lines with the marked component.
+- **Filter** of the table (« Tous » by default) on E-8 for the types that carry the mark, next to
+  « Sous-type », kept in the address (`?etat=la|disparu` — the two values are the same for every
+  type, the words differ); a filtered state renders the grid; empty: « Aucun personnage mort. »,
+  « Aucun lieu détruit. »… with « Voir tous les … ».
+- **Import**: `disparu: true|false` on a sheet of a type that carries the mark (default false,
+  protected by B-48 like `pj`); refused with `champ_inconnu` on another type.
+
+**Values and words.** `?etat=la|disparu` : `la` is « there » (alive, intact, active : the mark absent), `disparu`
+is the mark set ; the words of the table are what is shown, never the key. The filter is offered, for the seven
+types, on E-8 (the grid of the type) and in the advanced volet of E-17 once the chosen type carries the mark.
+Without a type, E-17 offers no filter. The mark is public : the filter and the badge are the same for a player.
+
+**States** (the gesture and the filter) :
+
+| State | What is shown |
+|---|---|
+| marking, waiting | the entry is disabled while the write is in flight, the header stays as it was ; no optimistic badge |
+| marking, done | the badge, the mark on the illustration and the reverse entry appear together, with the toast « Fiche marquée : Mort. » (the word of the type, capitalised ; « Marque retirée. » for the reverse) |
+| marking, failed | not a toast : an inline message under the header, « Impossible de modifier la fiche. Réessayez. », the sheet unchanged ; the message is `role="alert"`, stays until the next attempt or a reload, and the « ⋯ » menu is closed on click (the header shows the entry disabled while waiting) ; a network cut mid-gesture reads the same sentence (« Connexion perdue » is only shown when the browser is offline before the gesture) ; if the sheet was deleted meanwhile, « Fiche introuvable. » and the screen leaves for E-8 ; if the caller lost the GM role meanwhile, the same sentence (the write is refused, the sheet is re-read and the entry is gone) |
+| GM in player mode | the entry is absent (the mode reads the sheet as a player) |
+| offline | « ⋯ » is disabled as for every write of E-9 (« Connexion perdue ») ; a filtered list shows the generic offline state of its screen |
+| filter, loading | the grid keeps its skeleton cards under the control, which stays usable |
+| filter, no sheet of the type | the control stays (it is the type's, not the list's) and the list shows the type's usual empty state |
+| filter, load error | the control stays, the grid is replaced by the screen's generic error line with « Réessayer » ; the filter chosen is kept |
+| extreme content | a title of 120 characters is cut with an ellipsis on the card, whole in its tooltip ; the chip never covers more than the frame's corner ; the header badge keeps the word on one line (the words are short) ; a grid wholly marked is a grid of marked cards, nothing more |
+| filter, empty | « Aucun personnage mort. », « Aucune créature morte. », « Aucune faction détruite. », « Aucune famille éteinte. », « Aucun lieu détruit. », « Aucun objet détruit. », « Aucun vaisseau détruit. » (the other state reads « Aucun personnage vivant. », « Aucune créature vivante. », « Aucune faction active. », « Aucune famille vivante. », « Aucun lieu intact. », « Aucun objet intact. », « Aucun vaisseau intact. » ; on E-17, with a type and a state and nothing found, the screen's own « Aucune fiche pour ces critères. »), with « Voir tous les <pluriel du type>. » that clears `etat` |
+| mark, accessibility | the chip carries `aria-label` = the word (« Mort ») and a `title` ; the badge is text, the mark never the only carrier of the meaning |
+| mark on a fallback | the glyph of the type's mark replaces the chip : a gone character shows the skull where the live one shows the initial and the type icon ; the badge or the card's word tells which |
+
+*Criteria.* Given Antor on « Bran Corvalis » (alive in the seed, « Apparence » read by
+players), when he chooses « Marquer mort », then the header carries « Mort », the portrait takes the
+mark, and so does his card in the grid at the next read of the list; « Vivants » no longer lists him;
+Léa sees the mark on his sheet and card, but not the menu entry. Given Antor on
+« Le Phare aux Sels » (place), when he chooses « Marquer détruit », then the header carries
+« Détruit » with the flame, and « Intacts » no longer lists it; on a quest, the menu has no
+entry. Given Bran marked dead, when
+Antor chooses « Marquer vivant », then the badge and the mark disappear and « Vivants » lists him again;
+« Morts » lists the dead only; on « La Guilde des Brumes » (faction), the entry is « Marquer détruite » and the
+badge « Détruite » with `shield-off`; on « Les Corvalis » (family), « Marquer éteinte » and « Éteinte ». The mark
+shows on the Prieur's line (dead in the seed) in an E-17 « Morts » search (type Personnage); in « Contient » and
+in « Fiches liées », it comes from the same component. Given Antor
+in player mode, when he opens Bran, then the menu entry is absent. Given the PATCH fails,
+when Antor chooses « Marquer mort », then the message « Impossible de modifier la fiche. Réessayez. » appears under
+the header and the sheet has neither badge nor mark. Given the places grid with no destroyed place, when Antor chooses
+« Détruits », then the list says « Aucun lieu détruit. » with « Voir tous les lieux. »; when a read of the filter fails,
+the control stays and the grid shows the error line with « Réessayer ». A 120-character title is cut on the
+marked card, whole in the tooltip.
+
+### E-11 and « Mentionnée dans » (B-69)
+
+The graph labels a link with the nature's label read from the source (« se situe à ») and the
+qualifier after a dash; a free relation keeps its qualifier as label. « Mentionnée dans » drops the
+natured relations (they are in « Fiches liées ») and keeps the links and the free relations.
+
+**Where a graph label sits** (one rule, the same on desktop and at 390 px, light and dark):
+- Each link is drawn once, as its own stroke. Parallel links between the same two nodes are
+  spread by a perpendicular step (18 px, tightened to 26/(n−1) px from three links on a pair, so that
+  every stroke still meets both discs) around the node axis, **once**: the offset moves the
+  stroke, and the label is placed from the offset stroke, never offset a second time.
+- A label starts centred on the middle of **its own** stroke, just above it, on a halo of the
+  background colour, so the stroke never crosses the text. It slides along that stroke (steps of 2 %,
+  up to 40 % of its length) until its box meets no pill and no other label; failing that, it moves off
+  the stroke in steps of 20 px, trying either side of it (the other side included, with the full slide). The rendered test requires it within 16 px of its
+  nearest stroke.
+- **Stroke geometry** (same at 390 px): a stroke runs from the **edge** of its source node's disc to the
+  edge of its target node's disc, on the line parallel to the node axis shifted by the step above
+  (the ends are the intersections of that parallel with the two discs, not the disc centres shifted);
+  the arrowhead touches the target disc without covering it. With a step of 18 px and a disc radius of
+  15 px two parallel strokes both meet both discs. A node's pill sits below or above its disc, whichever
+  is crossed by fewer strokes (measured on the real pill boxes); if both are crossed, the pill stays
+  crossed — the case is not met on the seeded map.
+- A label overlaps no node pill and no other label. When the middle of the stroke is covered by a
+  pill, the label slides along its stroke as said above.
+- Testable on the rendered boxes: for the two Aldric–Port-Sel links, the label's box is within 16 px of its nearest stroke,
+  no stroke segment crosses a label box, and no label box meets a pill box or another
+  label box — checked at 1440 px and at 390 px on « Carte de la côte » (the two Aldric–Port-Sel
+  links).
+
+**The « Relier » picker list** (E-9): the bounded list (max 176 px, scrolling) is a **complete frame** —
+a visible border on all four sides, rounded bottom corners, as in `docs/maquettes/e09-fiche.html`;
+a row clipped by the frame's bottom edge is allowed — it is the scrolling cue, and the height is not rounded to whole rows — and the selected row is highlighted. The gap between « Type de
+fiche » and the search field is the form's field gap (`var(--e-2)`), with no extra margin on the search field.
+Code: `frontend/src/ecrans/fiche/blocs/relations.tsx` and `relations.css`; the graph is `frontend/src/ecrans/carte/cadre-graphe.tsx`.
+
+### Mockups
+
+`docs/maquettes/e09-lieu-liees.html` — « Port-Sel » for the GM: the block « Fiches liées » with
+« S'y trouvent » folded, « sous-lieux compris », a dead mark on a line; `#etat-volet` shows the
+side-panel alternative; `#etat-joueur` what Léa sees. `docs/maquettes/e17-recherche-avancee.html`
+— E-17 with the disclosure open, « Port-Sel » chosen, « s'y trouvent », sous-lieux compris,
+« Vivants ». The E-9 « Relier » form reuses `e09-fiche.html`; the mark itself (header badge, « ⋯ » entry, desaturated
+illustration, E-8 filter, the states below) is `e09-marque-disparu.html`; this text is authoritative.
+
+### Closure
+
+- Each need has a screen: B-63 → E-9 (Relier) ; B-64 → E-9 (Fiches liées) ; B-65 → E-17 ; B-66 →
+  E-8/E-14 (the type's list) ; B-67 → E-9, E-8, E-17 ; B-68 → the import API (E-18 lists the lots) ;
+  B-69 → E-11, E-9. Holds.
+- Each screen is reached by a journey: P-17 (E-9, E-17), P-3 step 4 (Relier), P-6 step 6 (Léa). Holds.
+- Each role has its column: GM and player above ; instance admin: nothing new. Holds.

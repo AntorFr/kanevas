@@ -101,6 +101,8 @@ export interface Fiche {
   titre: string;
   /** Free sub-type (B-52), null when none. */
   sousType: string | null;
+  /** Derived from player-readable sections (B-57); GM outside player mode only. */
+  visibleJoueurs?: boolean;
   charge: Record<string, unknown>;
   creeLe: string;
   modifieLe: string;
@@ -111,6 +113,8 @@ export interface Fiche {
   etiquettes?: string[];
   /** With a search: the first alias that answers when the title does not (AD-118 (3)). */
   aliasTrouve?: string;
+  /** With a linked search including descendants: the readable other end, absent for a direct link. */
+  via?: { id: number; titre: string };
 }
 
 export type IllustrationVue =
@@ -156,6 +160,10 @@ export interface Enfant {
   titre: string;
   type: TypeFiche;
   sousType: string | null;
+  /** Derived from player-readable sections (B-57); GM outside player mode only. */
+  visibleJoueurs?: boolean;
+  /** At least one child the caller reads, every type (AD-129). */
+  aDesEnfants: boolean;
 }
 
 export interface PageEnfants {
@@ -183,4 +191,8 @@ export interface FicheVue extends Fiche {
   mentionsRestantes: number;
   /** Import origin key (B-50): only in the GM view (outside player mode), never in a reader's answer. */
   cleOrigine?: string;
+  /** A report only (AD-124 (4)): the adventure it names, for a reader of that adventure; `campagneSupprimee` for a GM when it is gone. */
+  campagneId?: number;
+  campagneNom?: string;
+  campagneSupprimee?: true;
 }

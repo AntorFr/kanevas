@@ -10,8 +10,9 @@ delete process.env.KANEVAS_STUB;
 const { migrate, openDb } = await import('../db/db.js');
 const { assurerCompte } = await import('./comptes.js');
 const { creerCompteRendu } = await import('./comptes_rendus.js');
-const { creerCampagne } = await import('./campagnes.js');
 const { creerFiche, listerFiches } = await import('./fiches.js');
+const creerCampagne = (db: any, compteId: number, universId: number, o: { nom: string }) =>
+  creerFiche(db, compteId, universId, { type: 'aventure', sousType: 'Campagne', titre: o.nom });
 const { ajouterMembre } = await import('./membres.js');
 const { creerProposition } = await import('./propositions.js');
 const { ajouterSection, ecrireContenu, lireSection } = await import('./sections.js');
@@ -292,14 +293,14 @@ test('seul services/sections-gerees.ts passe geree à ecrireContenu', () => {
   assert.deepEqual(appelants.map((f) => f.slice(racine.length)), ['services/sections-gerees.ts']);
 });
 
-test('migration 0018 sur une base au schéma 0017 : sections et propositions conservées, cr_id gardé', () => {
+test('migration 0020 sur une base au schéma 0019 : sections et propositions conservées, cr_id gardé', () => {
   const dir = new URL('../db/migrations/', import.meta.url).pathname;
   const tous = readdirSync(dir).filter((f) => f.endsWith('.sql')).sort();
-  const f18 = tous.find((f) => f.startsWith('0018'))!;
-  // Copie des migrations jusqu'à 0017 dans un dossier temporaire.
+  const f20 = tous.find((f) => f.startsWith('0020'))!;
+  // Copie des migrations jusqu'à 0019 dans un dossier temporaire.
   const t = mkdtempSync(join(tmpdir(), 'mig-')) + '/';
   try {
-    for (const f of tous.filter((x) => x < f18)) copyFileSync(join(dir, f), join(t, f));
+    for (const f of tous.filter((x) => x < f20)) copyFileSync(join(dir, f), join(t, f));
     const db = openDb(':memory:');
     migrate(db, t);
     const antor = assurerCompte(db, 'antor').id;
@@ -312,8 +313,8 @@ test('migration 0018 sur une base au schéma 0017 : sections et propositions con
     const avantS = db.prepare('SELECT * FROM sections ORDER BY id').all();
     const avantP = db.prepare('SELECT * FROM propositions ORDER BY id').all() as any[];
     assert.equal(avantP.length, 1);
-    copyFileSync(join(dir, f18), join(t, f18));
-    assert.equal(migrate(db, t).length, 1, 'une seule migration appliquée : 0018');
+    copyFileSync(join(dir, f20), join(t, f20));
+    assert.equal(migrate(db, t).length, 1, 'une seule migration appliquée : 0020');
     const apresS = db.prepare('SELECT * FROM sections ORDER BY id').all() as any[];
     assert.equal(apresS.length, avantS.length);
     for (const [i, a] of (avantS as any[]).entries()) {

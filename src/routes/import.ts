@@ -11,13 +11,13 @@ import { cloreLot, lireLot, MAX_RAPPORT, ouvrirLot } from '../services/lots.js';
 import {
   appliquerCatalogueParJeton, apercuCatalogueParJeton, niveauDeRequete,
 } from '../services/import-catalogue.js';
+import { importerGalaxieParJeton } from '../services/swn/import-galaxie-lot.js';
+import { listerGalaxiesImport } from '../services/swn/import-galaxie.js';
+import { OUTIL_GALAXIE } from '../services/swn/galaxies.js';
 import { lireContexteImport } from '../services/import.js';
-import { importerCampagne, importerScenario } from '../services/import-suivi.js';
-import { MAX_NOM_CAMPAGNE } from '../services/campagnes.js';
-import { MAX_TITRE_SCENARIO } from '../services/scenarios.js';
 import { assurerFiche, lotDeRequete, supprimerFicheImport } from '../services/import-fiches.js';
 import { assurerFichier, MAX_FICHIERS_JOINTS } from '../services/fichiers.js';
-import { TYPES_FICHE, typeActif } from '../services/types-fiche.js';
+import { STATUT_AVENTURE, TYPES_FICHE, typeActif } from '../services/types-fiche.js';
 import { registerErreurs } from './erreurs.js';
 
 /** Body cap of the import API (AD-103/104). */
@@ -129,12 +129,10 @@ export async function registerImportRoutes(app: FastifyInstance) {
           type,
           active: typeActif(app.db, ctx.univers.id, type),
         })),
+        statuts: STATUT_AVENTURE.options,
         limites: {
           relationsParSection: LIMITE_RELATIONS,
           contenuSection: MAX_CONTENU_SECTION,
-          contenuScenario: MAX_CONTENU_SECTION,
-          nomCampagne: MAX_NOM_CAMPAGNE,
-          titreScenario: MAX_TITRE_SCENARIO,
           entreesRapport: MAX_RAPPORT,
           aliasParFiche: MAX_ALIAS,
           longueurAlias: LONGUEUR_ALIAS,
@@ -154,18 +152,6 @@ export async function registerImportRoutes(app: FastifyInstance) {
     scope.get(`${base}/lots/:lid`, { config: { portee: 'lot' } }, async (request) => {
       const { lid } = request.params as { lid: string };
       return lireLot(app.db, jetonDe(request), entier(lid), app.horloge());
-    });
-
-    scope.put(`${base}/campagnes/:cle`, { config: { portee: 'contenu' } }, async (request) => {
-      const { cle } = request.params as { cle: string };
-      const { lot } = request.query as { lot?: unknown };
-      return importerCampagne(app.db, jetonDe(request), lotDeRequete(lot), cle, request.body, app.horloge());
-    });
-
-    scope.put(`${base}/campagnes/:cle/scenarios/:scle`, { config: { portee: 'contenu' } }, async (request) => {
-      const { cle, scle } = request.params as { cle: string; scle: string };
-      const { lot } = request.query as { lot?: unknown };
-      return importerScenario(app.db, jetonDe(request), lotDeRequete(lot), cle, scle, request.body, app.horloge());
     });
 
     scope.put(`${base}/fiches/:cle`, { config: { portee: 'contenu' } }, async (request) => {
@@ -238,6 +224,22 @@ export async function registerImportRoutes(app: FastifyInstance) {
     }, async (request) => {
       const q = request.query as { niveau?: unknown };
       return apercuCatalogueParJeton(app.db, jetonDe(request), niveauDeRequete(q.niveau), cleOutil(request), request.body);
+    });
+
+    // The galaxy of the map tool (T-9): the token carries `swn/galaxie`, the address names a galaxy of its universe.
+    scope.get(`${base}/outils/:module/:outil/galaxies`, { config: { portee: 'outil' } }, async (request) => {
+      if (cleOutil(request) !== OUTIL_GALAXIE) throw introuvable();
+      const j = jetonDe(request);
+      return listerGalaxiesImport(app.db, j.compteId, j.universId);
+    });
+
+    scope.put(`${base}/outils/:module/:outil/galaxies/:gid`, {
+      config: { portee: 'outil' }, errorHandler: erreurFichier,
+    }, async (request) => {
+      if (cleOutil(request) !== OUTIL_GALAXIE) throw introuvable();
+      const { gid } = request.params as { gid: string };
+      const { lot } = request.query as { lot?: unknown };
+      return importerGalaxieParJeton(app.db, jetonDe(request), lotDeRequete(lot), entier(gid), request.body, app.horloge());
     });
 
     scope.post(`${base}/lots/:lid/clore`, { config: { portee: 'lot' } }, async (request) => {

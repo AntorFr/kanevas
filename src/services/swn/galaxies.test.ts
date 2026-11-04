@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
 
-// Critère de sortie de kanevas-outils-galaxie-lire-donnees : migration 0020, semis, niveaux, référence, cartes.
+// Critère de sortie de kanevas-outils-galaxie-lire-donnees : migration 0022, semis, niveaux, référence, cartes.
 process.env.NODE_ENV = 'test';
 delete process.env.KANEVAS_STUB;
 const { migrate, openDb } = await import('../../db/db.js');
@@ -14,18 +14,18 @@ const { applicable } = await import('../../outils/declaration.js');
 const { niveauLecture, referenceGalaxie, galaxieLisible } = await import('./galaxies.js');
 const { modulesActifs } = await import('../../outils/registre.js');
 
-test('0020 crée les quatre tables sans toucher les lignes existantes', () => {
+test('0022 crée les quatre tables sans toucher les lignes existantes', () => {
   const dir = mkdtempSync(join(tmpdir(), 'migration-swn-'));
   const db = openDb(':memory:');
   const source = new URL('../../db/migrations/', import.meta.url);
-  for (const f of readdirSync(source)) if (/^\d{4}-.+\.sql$/.test(f) && Number(f.slice(0, 4)) <= 17) copyFileSync(new URL(f, source), join(dir, f));
+  for (const f of readdirSync(source)) if (/^\d{4}-.+\.sql$/.test(f) && Number(f.slice(0, 4)) <= 19) copyFileSync(new URL(f, source), join(dir, f));
   migrate(db, dir + '/');
   db.prepare("INSERT INTO comptes (id, username, cree_le) VALUES (1, 'antor', 'x')").run();
   db.prepare("INSERT INTO univers (id, nom, cree_le) VALUES (1, 'U', 'x')").run();
   db.prepare("INSERT INTO fiches (univers_id, type, titre, charge, cree_le, modifie_le) VALUES (1, 'lieu', 'F', '{}', 'x', 'x')").run();
   const snap = () => ['comptes', 'univers', 'fiches'].map((t) => db.prepare(`SELECT * FROM ${t}`).all());
   const avant = snap();
-  assert.deepEqual(migrate(db), [18, 19, 20, 21]);
+  assert.deepEqual(migrate(db), [20, 21, 22, 23, 24]);
   assert.deepEqual(snap(), avant);
   assert.deepEqual(db.pragma('foreign_key_check'), []);
   const tables = db.prepare("SELECT name FROM sqlite_master WHERE name LIKE 'swn_%' AND name NOT LIKE 'swn_catalogue_%' AND name <> 'swn_conceptions' AND type='table' ORDER BY name").all().map((r: any) => r.name);
@@ -102,7 +102,7 @@ test('reference : Port-Sel ; un secret défini avant n\'est jamais la référenc
 test('listerCartesOutils : Antor visible, Léa selon visibilité et activation', () => {
   const { db, univers, g, a } = monde();
   const l = (u: string, mj = false) => listerCartesOutils(db, a(u, mj), univers);
-  assert.deepEqual(l('antor'), [{ module: 'swn', outil: 'galaxie', id: g, titre: 'Galaxie d\'essai', visible: true }]);
+  assert.deepEqual(l('antor'), [{ module: 'swn', outil: 'galaxie', id: g, titre: 'Galaxie d\'essai', visible: true, version: 1 }]);
   assert.equal(l('lea').length, 1);
   assert.equal(l('lea')[0].id, g);
   db.prepare('UPDATE swn_galaxies SET visible = 0 WHERE id = ?').run(g);

@@ -14,7 +14,7 @@ import {
   type FormeCarte,
 } from '../services/cartes.js';
 import { roleDe, vueMJ } from '../services/droits.js';
-import { listerCartesOutils } from '../services/outils.js';
+import { formesCreablesOutils, listerCartesOutils } from '../services/outils.js';
 import { invalide } from '../services/erreurs.js';
 import { acteur, corps } from './fiches.js';
 import { idDeChemin } from './univers.js';
@@ -52,11 +52,12 @@ export function registerCartesRoutes(app: FastifyInstance) {
     if (q.curseur !== undefined) return page;
     const mj = vueMJ(roleDe(app.db, univers, a.compteId)!, a);
     const outils = listerCartesOutils(app.db, a, univers).map((c) => ({
-      type: 'outil' as const, id: c.id, universId: univers, titre: c.titre, module: c.module, outil: c.outil,
+      type: 'outil' as const, id: c.id, universId: univers, titre: c.titre, module: c.module,
+      outil: { module: c.module, outil: c.outil },
       adresse: `/univers/${univers}/outils/${c.module}/${c.outil}/${c.id}`,
-      ...(mj ? { visible: c.visible } : {}),
+      ...(mj ? { visible: c.visible, ...(c.version === undefined ? {} : { version: c.version }) } : {}),
     }));
-    return { ...page, cartes: [...page.cartes, ...outils] };
+    return { ...page, cartes: [...page.cartes, ...outils], formes: formesCreablesOutils(app.db, a, univers) };
   });
 
   // JSON `{titre, forme}`, or multipart with `titre` and `forme` before the `fichier` (illustrated map).
