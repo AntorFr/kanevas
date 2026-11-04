@@ -8,6 +8,9 @@ import { test } from 'node:test';
 
 import { migrate, openDb } from './db.js';
 
+const NUMEROS = readdirSync(new URL('./migrations/', import.meta.url)).filter((f) => /^\d{4}-.+\.sql$/.test(f)).map((f) => Number(f.slice(0, 4))).sort((a, b) => a - b);
+const depuis = (n: number) => NUMEROS.filter((x) => x >= n);
+
 function base17() {
   const dir = mkdtempSync(join(tmpdir(), 'mig-nat-'));
   const source = new URL('./migrations/', import.meta.url);
@@ -38,7 +41,7 @@ function base17() {
 test('0018 : trois relations à type → nature "" et ancien texte en qualificatif, mêmes ids, clés étrangères saines', () => {
   const db = base17();
   assert.equal(db.prepare('SELECT COUNT(*) n FROM relations').get()?.n, 3);
-  assert.deepEqual(migrate(db), [18, 19, 20, 21, 22, 23]);
+  assert.deepEqual(migrate(db), depuis(18));
   assert.deepEqual(
     db.prepare('SELECT id, nature, qualificatif, cible_fiche_id FROM relations ORDER BY id').all(),
     [

@@ -7,6 +7,8 @@ import { test } from 'node:test';
 import { migrate, openDb } from './db.js';
 
 const SRC = new URL('./migrations/', import.meta.url).pathname;
+const NUMEROS = readdirSync(SRC).filter((f) => /^\d{4}-.+\.sql$/.test(f)).map((f) => Number(f.slice(0, 4))).sort((a, b) => a - b);
+const depuis = (n: number) => NUMEROS.filter((x) => x >= n);
 function dossierJusqua(max: number): string {
   const dir = join(mkdtempSync(join(tmpdir(), 'mig-')), 'm') + '/';
   mkdirSync(dir);
@@ -26,7 +28,7 @@ test('catalogues : montée depuis 0020 peuplée, lots et jetons restent lisibles
   const jeton = db.prepare('SELECT * FROM jetons_api').all();
   const lot = db.prepare('SELECT * FROM lots_import').all();
 
-  assert.deepEqual(migrate(db), [21, 22, 23, 24, 25]);
+  assert.deepEqual(migrate(db), depuis(21));
   assert.deepEqual(db.prepare('SELECT * FROM jetons_api').all(), jeton);
   assert.deepEqual(db.prepare('SELECT * FROM lots_import').all(), lot.map((l) => ({ ...(l as object), outil: null })));
   assert.deepEqual(db.pragma('foreign_key_check'), []);

@@ -55,7 +55,7 @@ test('migration : neuf tables créées, lignes existantes intactes, foreign_key_
   const dir = mkdtempSync(join(tmpdir(), 'migration-vx-'));
   const db = openDb(':memory:');
   const source = new URL('../../db/migrations/', import.meta.url);
-  for (const f of readdirSync(source)) if (/^\d{4}-.+\.sql$/.test(f) && Number(f.slice(0, 4)) <= 20) copyFileSync(new URL(f, source), join(dir, f));
+  for (const f of readdirSync(source)) if (/^\d{4}-.+\.sql$/.test(f) && Number(f.slice(0, 4)) <= 23) copyFileSync(new URL(f, source), join(dir, f));
   migrate(db, dir + '/');
   db.prepare("INSERT INTO comptes (id, username, cree_le) VALUES (1, 'antor', 'x')").run();
   db.prepare("INSERT INTO univers (id, nom, cree_le) VALUES (1, 'U', 'x')").run();
@@ -63,13 +63,16 @@ test('migration : neuf tables créées, lignes existantes intactes, foreign_key_
   db.prepare("INSERT INTO swn_galaxies (univers_id, titre, graine) VALUES (1, 'G', 'g')").run();
   const snap = () => ['comptes', 'univers', 'fiches', 'swn_galaxies'].map((t) => db.prepare(`SELECT * FROM ${t}`).all());
   const avant = snap();
-  assert.deepEqual(migrate(db), [21]);
+  const swn = () => db.prepare("SELECT name FROM sqlite_master WHERE name LIKE 'swn_%' AND type='table' ORDER BY name").all().map((r: any) => r.name as string);
+  const tablesAvant = swn();
+  const derniere = Math.max(...readdirSync(source).filter((f) => /^\d{4}-.+\.sql$/.test(f)).map((f) => Number(f.slice(0, 4))));
+  assert.deepEqual(migrate(db), Array.from({ length: derniere - 23 }, (_, i) => 24 + i));
   assert.deepEqual(snap(), avant);
   assert.deepEqual(db.pragma('foreign_key_check'), []);
-  const tables = db.prepare("SELECT name FROM sqlite_master WHERE name LIKE 'swn_%' AND type='table' ORDER BY name").all().map((r: any) => r.name);
+  const tables = swn().filter((t) => !tablesAvant.includes(t));
   assert.deepEqual(tables, ['swn_catalogue_amenagements', 'swn_catalogue_armes', 'swn_catalogue_coques', 'swn_catalogue_defenses',
     'swn_catalogue_exemples', 'swn_catalogue_modifications', 'swn_catalogue_moteurs', 'swn_catalogue_retraits',
-    'swn_conceptions', 'swn_galaxies', 'swn_routes', 'swn_systemes', 'swn_zones']);
+    'swn_conceptions']);
 });
 
 test('migration : CHECK de bornes, masque réservé à l\'univers, unicité par niveau', () => {

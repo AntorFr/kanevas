@@ -14,6 +14,9 @@ import Database from 'better-sqlite3';
 import { migrate, openDb } from '../db/db.js';
 import { type Any, startServer, type Server } from './harnais.test.js';
 
+const NUMEROS = readdirSync(new URL('../db/migrations/', import.meta.url)).filter((f) => /^\d{4}-.+\.sql$/.test(f)).map((f) => Number(f.slice(0, 4))).sort((a, b) => a - b);
+const depuis = (n: number) => NUMEROS.filter((x) => x >= n);
+
 let srv: Server;
 let dir = '';
 let chemin = '';
@@ -64,11 +67,11 @@ describe('kanevas-fiches-liees-rattrapage, une base au schéma de main monte les
   });
 
   // Failure aimed at: an epic migration number collides with main's, or a migration fails on a main database.
-  test('la base ouverte par l’application porte les migrations 1 à 23, une fois chacune', () => {
+  test('la base ouverte par l’application porte les migrations 1 à la dernière, une fois chacune', () => {
     const ro = new Database(chemin, { readonly: true });
     const numeros = (ro.prepare('SELECT numero FROM migrations ORDER BY numero').all() as { numero: number }[]).map((r) => r.numero);
     ro.close();
-    assert.deepEqual(numeros, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23]);
+    assert.deepEqual(numeros, NUMEROS);
   });
 
   // Failure aimed at: the relations migration loses the earlier relation or its text.
