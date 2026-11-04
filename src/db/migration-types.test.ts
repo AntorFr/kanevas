@@ -12,6 +12,8 @@ import { creerUnivers } from '../services/univers.js';
 import { migrate, openDb, type Db } from './db.js';
 
 const SRC = new URL('./migrations/', import.meta.url).pathname;
+const NUMEROS = readdirSync(SRC).filter((f) => /^\d{4}-.+\.sql$/.test(f)).map((f) => Number(f.slice(0, 4))).sort((a, b) => a - b);
+const depuis = (n: number) => NUMEROS.filter((x) => x >= n);
 const TABLES = [
   'fiches',
   'sections',
@@ -69,7 +71,7 @@ test('0013: comptes, identifiants, clés étrangères et recherche conservés', 
   const titre = (ids0[0] as { titre: string }).titre;
   const mot = titre.split(/\s+/)[0]!.replace(/[^\p{L}\p{N}]/gu, '');
 
-  assert.deepEqual(migrate(db), [13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24]);
+  assert.deepEqual(migrate(db), depuis(13));
 
   assert.deepEqual(comptes(db), c0);
   assert.deepEqual(db.prepare('SELECT id, titre, type FROM fiches ORDER BY id').all(), ids0);

@@ -7,6 +7,8 @@ import { test } from 'node:test';
 import { migrate, openDb } from './db.js';
 
 const SRC = new URL('./migrations/', import.meta.url).pathname;
+const NUMEROS = readdirSync(SRC).filter((f) => /^\d{4}-.+\.sql$/.test(f)).map((f) => Number(f.slice(0, 4))).sort((a, b) => a - b);
+const depuis = (n: number) => NUMEROS.filter((x) => x >= n);
 function dossierJusqua(max: number): string {
   const dir = join(mkdtempSync(join(tmpdir(), 'mig-')), 'm') + '/';
   mkdirSync(dir);
@@ -28,7 +30,7 @@ test('0023 : montée depuis 0022 peuplée, rien de perdu, version_importee nulle
   db.prepare("INSERT INTO swn_zones (galaxie_id, univers_id, cle, nom, contour, couleur, secret) VALUES (1, 1, 'z', 'Z', '[[0,0],[1,0],[0,1]]', 'accent', 0)").run();
   const tables = ['swn_galaxies', 'swn_systemes', 'swn_routes', 'swn_zones'];
   const avant = tables.map((t) => db.prepare(`SELECT * FROM ${t}`).all());
-  assert.deepEqual(migrate(db), [23]);
+  assert.deepEqual(migrate(db), depuis(23));
   const apres = tables.map((t) => db.prepare(`SELECT * FROM ${t}`).all());
   apres.slice(1).forEach((lignes: any[], i) => lignes.forEach((l, j) => {
     assert.equal(l.version_importee, null);
