@@ -11,15 +11,16 @@ import {
 
 export interface SystemeVue {
   id: number; cle: string; nom: string; q: number; r: number; taille: number; couleur: string; secret?: boolean;
+  version?: number;
 }
 export interface BoutRoute { cle: string; q: number; r: number }
-export interface RouteVue { id: number; depuis: BoutRoute; vers: BoutRoute; longueur: number; publique?: boolean }
-export interface ZoneVue { id: number; nom: string; contour: Point[]; couleur: string; secret?: boolean }
+export interface RouteVue { id: number; depuis: BoutRoute; vers: BoutRoute; longueur: number; publique?: boolean; version?: number }
+export interface ZoneVue { id: number; nom: string; contour: Point[]; couleur: string; secret?: boolean; cle?: string; version?: number; densite?: number | null }
 export interface VueBlocs { blocs: BlocGenere[]; systemes: SystemeVue[]; routes: RouteVue[]; zones: ZoneVue[] }
 
 function systemeVue(s: LigneSysteme, niveau: NiveauLecture): SystemeVue {
   const vue: SystemeVue = { id: s.id, cle: s.cle, nom: s.nom, q: s.q, r: s.r, taille: s.taille, couleur: s.couleur };
-  if (niveau === 'mj') vue.secret = s.secret === 1;
+  if (niveau === 'mj') { vue.secret = s.secret === 1; vue.version = s.version; }
   return vue;
 }
 
@@ -46,7 +47,7 @@ export function lireBlocs(
     if (!d || !v || (!dedans(d) && !dedans(v))) continue;
     const route: RouteVue = { id: ro.id, depuis: { cle: d.cle, q: d.q, r: d.r },
       vers: { cle: v.cle, q: v.q, r: v.r }, longueur: ro.longueur };
-    if (niveau === 'mj') route.publique = ro.publique === 1;
+    if (niveau === 'mj') { route.publique = ro.publique === 1; route.version = ro.version; }
     routes.push(route);
   }
   const zones: ZoneVue[] = [];
@@ -56,7 +57,7 @@ export function lireBlocs(
     const qs = contour.map((p) => p[0]), rs = contour.map((p) => p[1]);
     if (Math.max(...qs) < qMin || Math.min(...qs) > qMax || Math.max(...rs) < rMin || Math.min(...rs) > rMax) continue;
     const zone: ZoneVue = { id: z.id, nom: z.nom, contour, couleur: z.couleur };
-    if (niveau === 'mj') zone.secret = z.secret === 1;
+    if (niveau === 'mj') { zone.secret = z.secret === 1; zone.cle = z.cle; zone.version = z.version; }
     zones.push(zone);
   }
   return { blocs, systemes: dansVue.map((s) => systemeVue(s, niveau)), routes, zones };
@@ -66,6 +67,8 @@ export interface PanneauSysteme {
   nom: string; q: number; r: number; taille: number; couleur: string; notes: string;
   routes: { avec: { cle: string; nom: string }; longueur: number }[];
   lien: string;
+  /** Level `mj` only. */
+  id?: number; secret?: boolean; promu?: boolean; version?: number;
 }
 
 /** The stable key is resolved among readable systems, including both ends of every route. */
@@ -81,8 +84,10 @@ export function lireSysteme(db: Db, acteur: Acteur, universId: number, galaxieId
     const avec = voisin === null ? undefined : parId.get(voisin);
     if (avec) routes.push({ avec: { cle: avec.cle, nom: avec.nom }, longueur: ro.longueur });
   }
-  return { nom: s.nom, q: s.q, r: s.r, taille: s.taille, couleur: s.couleur, notes: s.notes, routes,
+  const panneau: PanneauSysteme = { nom: s.nom, q: s.q, r: s.r, taille: s.taille, couleur: s.couleur, notes: s.notes, routes,
     lien: `/univers/${universId}/outils/swn/galaxie/${galaxie.id}?systeme=${encodeURIComponent(s.cle)}` };
+  if (niveau === 'mj') Object.assign(panneau, { id: s.id, secret: s.secret === 1, promu: s.promu === 1, version: s.version });
+  return panneau;
 }
 
 export interface ResultatRecherche { cle: string; nom: string; q: number; r: number }
@@ -102,4 +107,26 @@ export function rechercherSystemes(
       return nx < ny ? -1 : nx > ny ? 1 : x.cle < y.cle ? -1 : x.cle > y.cle ? 1 : 0;
     })
     .slice(0, 20).map(({ cle, nom, q, r }) => ({ cle, nom, q, r }));
+}
+
+/** One route of a galaxy as the blocks give it (level `mj` carries `publique` and `version`), by its id. */
+export function lireRoute(db: Db, acteur: Acteur, universId: number, galaxieId: number, id: number): RouteVue {
+  const { galaxie, niveau } = galaxieLisible(db, acteur, universId, galaxieId);
+  const parId = new Map(systemesLisibles(db, galaxie.id, niveau).map((s) => [s.id, s]));
+  const ro = routesLisibles(db, galaxie.id, niveau).find((r) => r.id === id);
+  const d = ro && parId.get(ro.depuis_id), v = ro && parId.get(ro.vers_id);
+  if (!ro || !d || !v) throw introuvable();
+  const route: RouteVue = { id: ro.id, depuis: { cle: d.cle, q: d.q, r: d.r }, vers: { cle: v.cle, q: v.q, r: v.r }, longueur: ro.longueur };
+  if (niveau === 'mj') { route.publique = ro.publique === 1; route.version = ro.version; }
+  return route;
+}
+
+/** One zone of a galaxy as the blocks give it, by its key. */
+export function lireZone(db: Db, acteur: Acteur, universId: number, galaxieId: number, cle: string): ZoneVue {
+  const { galaxie, niveau } = galaxieLisible(db, acteur, universId, galaxieId);
+  const z = zonesLisibles(db, galaxie.id, niveau).find((c) => c.cle === cle);
+  if (!z) throw introuvable();
+  const zone: ZoneVue = { id: z.id, nom: z.nom, contour: JSON.parse(z.contour) as Point[], couleur: z.couleur };
+  if (niveau === 'mj') { zone.secret = z.secret === 1; zone.cle = z.cle; zone.version = z.version; zone.densite = z.densite; }
+  return zone;
 }
