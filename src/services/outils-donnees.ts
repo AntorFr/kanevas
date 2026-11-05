@@ -48,6 +48,13 @@ function garder(db: Db, acteur: Acteur, portee: Portee, cle: string): Declaratio
   }
   return outil;
 }
+/** Whether the caller could delete this level of this tool (same guards as `garder`), for the `supprimable` flag. */
+export function peutSupprimer(db: Db, acteur: Acteur, portee: Portee, cle: string): boolean {
+  try { garder(db, acteur, portee, cle); return true; } catch (e) {
+    if (e instanceof ErreurService) return false;
+    throw e;
+  }
+}
 const cibleCatalogue = (p: Portee) => p.niveau === 'univers' ? { universId: p.universId } : { systemeId: p.systemeId };
 
 function recompter(db: Db, outil: DeclarationOutil, portee: Portee): LigneDonnees[] {

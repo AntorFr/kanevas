@@ -12,6 +12,8 @@ import {
   resoudreOutil, transfererResponsabilite, accessible, type CibleOutils, type ResolutionOutil,
   lireResponsable, candidatsResponsable,
 } from '../services/outils.js';
+import { peutSupprimer, resumeSuppression, supprimerDonneesOutil } from '../services/outils-donnees.js';
+import type { Portee } from '../outils/declaration.js';
 import type { Acteur, Role } from '../services/types.js';
 import { acteur, corps } from './fiches.js';
 import { idDeChemin } from './univers.js';
@@ -91,10 +93,21 @@ export async function registerOutilsRoutes(app: FastifyInstance) {
     },
   }, async (request) => decrireOutil(app.db, acteur(request), idDe(request), cleDe(request)));
 
+  /** `supprimable` (D-5) is present only for who may delete that level of that tool. */
+  const avecSupprimable = (cible: (r: FastifyRequest) => CibleOutils) => (request: FastifyRequest) => {
+    const a = acteur(request);
+    const vue = lireOutils(app.db, a, cible(request));
+    const portee = (id: number): Portee => cible(request).niveau === 'univers'
+      ? { niveau: 'univers', universId: id } : { niveau: 'systeme', systemeId: id };
+    return {
+      ...vue,
+      outils: vue.outils.map((o) => peutSupprimer(app.db, a, portee(cible(request).id), o.cle) ? { ...o, supprimable: true } : o),
+    };
+  };
   app.get('/api/univers/:id/outils', async (request) =>
-    lireOutils(app.db, acteur(request), { niveau: 'univers', id: idDe(request) }));
+    avecSupprimable((r) => ({ niveau: 'univers', id: idDe(r) }))(request));
   app.get('/api/systemes/:id/outils', async (request) =>
-    lireOutils(app.db, acteur(request), { niveau: 'systeme', id: idDe(request) }));
+    avecSupprimable((r) => ({ niveau: 'systeme', id: idDe(r) }))(request));
 
   for (const niveau of ['univers', 'systeme'] as const) {
     const base = `/api/${niveau === 'univers' ? 'univers' : 'systemes'}/:id/outils/:module/:outil`;
@@ -130,6 +143,15 @@ export async function registerOutilsRoutes(app: FastifyInstance) {
         return { retire: b.retire };
       });
     }
+    // Deleting the data of a tool, even disabled (D-5, AD-135): the service holds the guards; no tool pre-handler.
+    const portee = (request: { params: unknown }): Portee => niveau === 'univers'
+      ? { niveau, universId: idDe(request) } : { niveau, systemeId: idDe(request) };
+    app.get(`${base}/suppression`, { errorHandler: erreurCatalogue }, async (request) =>
+      resumeSuppression(app.db, acteur(request), portee(request), cleDe(request)));
+    app.post(`${base}/suppression`, { errorHandler: erreurCatalogue }, async (request) => {
+      const lignes = supprimerDonneesOutil(app.db, acteur(request), portee(request), cleDe(request), corps(request).vu);
+      return { efface: lignes, total: lignes.reduce((n, l) => n + l.nombre, 0) };
+    });
     // Common settings use the module key, with no artificial tool key (C-3).
     app.put(`/api/${niveau === 'univers' ? 'univers' : 'systemes'}/:id/outils/:module/reglages`, async (request, reply) => {
       const b = corps(request);
