@@ -432,17 +432,28 @@ Format from the `exigences` skill; each need cites the journeys that fulfill it.
   absent from the catalogue is absent there too. Examples are a seventh kind in the catalogue (`exemples`, imported with it). *(P-19)*
 
 **Migration and accuracy**:
-- **B-78** — Accuracy is proven through **reference cases**: the 11 example ships (price, HP,
-  AC, free power and mass, construction, maintenance, alerts) and named corrections against the book
+- **B-78** — Accuracy is proven through **reference cases**: the example ships of the current
+  tools (price, HP, AC, free power and mass, construction, maintenance, alerts) and named corrections against the book
   (the book's construction: 949,000 cr and 38 days, not 954,000 and 39; buildable battleship: a single
-  laser, a single cargo hold); the 49 exact routes, stability of generated systems, manually
+  laser, a single cargo hold); every route of the current map, exact (the counts of routes and ships are read in the
+  source files by the tests, never copied: Monsieur's figures of 2026-10-16, 49 routes and 11 ships, were wrong,
+  decision of 2026-11-05); stability of generated systems, manually
   calculated durations (7 hexes with engine 2 = 4.5 days). The public repository runs the same tests on its
   **invented** fixture in CI; real expected values come from Monsieur's current tools, calculated
   once and frozen on the private side, run in pods. *(P-20, P-18, P-19)*
 - **B-79** — Éneria's current data (map, catalogues, ships) is converted to the
   module format by a script in the private `AntorFr/eneria` repository (replayable), and imported through the API
   (B-65); current tools remain usable until switchover. None of that data — SWN
-  catalogues, rule sheets, expected values calculated from them — enters the public repository. *(P-20)*
+  catalogues, rule sheets, expected values calculated from them — enters the public repository.
+  **Nothing is left out of the conversion for want of a format** (decision of 2026-11-05): when the
+  data says something the format cannot, the format grows (B-80, B-81) before the conversion. *(P-20)*
+- **B-80** — A **mass** — a hull's or an element's, in the catalogue — is a number, not only an
+  integer: a multiple of 0.5 (the workshop weighs 0.5 × the hull class: 0.5, 1, 1.5…). Free mass,
+  the sum of the lines and the alerts stay exact; the screens show the decimal with a comma. *(P-19, P-20)*
+- **B-81** — A **route** of the galaxy map may carry a **type of link**: a short free label (« Pirate »,
+  « Privée »…, 40 characters at most), set by the GM and imported with the route. It is shown beside the
+  route on the map and in the route's panel, to whoever can read the route (a private route is
+  absent for a player, label included). A route without label is as before. *(P-18, P-20)*
 
 ### Cross-cutting
 - **B-28** — Every page requires sign-in; no content is served without an account, and
@@ -861,7 +872,7 @@ blocking alerts, « Enregistrer » refuses and explains why; Antor withdraws the
    folder); converted output and reference values are versioned alongside.
 2. With an API token scoped to « galaxie » then « vaisseaux » (**E-18**), he pushes batches; **E-18**
    shows created, updated, refused, each refusal with its field.
-3. He replays: no duplicates. Tests on real data (49 routes, the 11 ships) run **in
+3. He replays: no duplicates. Tests on real data (every route and every example ship of the sources) run **in
    pods**, which read `eneria`; `kanevas` CI remains synthetic (Monsieur's decision, 2026-10-16).
 *Failure*: malformed element — refused with its field, the rest goes through; a token lacking the tool's scope —
 refused (401/403 depending on the import API) and nothing written.
@@ -1021,7 +1032,7 @@ Done on 2026-10-16 on the proposal (`cadrage` skill, step 6).
 
 | Cross-check | Result |
 |---|---|
-| Each need has a journey | B-57 P-17 · B-58 P-17, P-21 · B-59 P-17, P-18 · B-60 P-17 · B-61 P-17 · B-62 P-17, P-19 · B-63 P-21 · B-64 P-18, P-19 · B-65 P-20 · B-66 P-19 · B-67 P-19 · B-68 P-18, P-19 · B-69 P-18, P-19 · B-70 P-18, P-19 · B-71 P-18 · B-72 P-18 · B-73 P-18 · B-74 P-18 · B-75 P-19 · B-76 P-19 · B-77 P-19 · B-78 P-18, P-19, P-20 · B-79 P-20 — **holds**. |
+| Each need has a journey | B-57 P-17 · B-58 P-17, P-21 · B-59 P-17, P-18 · B-60 P-17 · B-61 P-17 · B-62 P-17, P-19 · B-63 P-21 · B-64 P-18, P-19 · B-65 P-20 · B-66 P-19 · B-67 P-19 · B-68 P-18, P-19 · B-69 P-18, P-19 · B-70 P-18, P-19 · B-71 P-18 · B-72 P-18 · B-73 P-18 · B-74 P-18 · B-75 P-19 · B-76 P-19 · B-77 P-19 · B-78 P-18, P-19, P-20 · B-79 P-20 · B-80 P-19, P-20 · B-81 P-18, P-20 — **holds**. |
 | Each human action in a journey has a screen | P-17: E-15, E-20, E-14 · P-18: E-10, E-21, E-9 (GM document) · P-19: E-8/E-9, E-22 · P-20: the script (outside the product, like Kanka import); its result is read on E-18; real tests are in the private repository · P-21: E-20 — **holds**, with one action without a screen: conversion and replay (Monsieur's decision). |
 | Each screen has its data | E-20: `outils_systeme`, `outils_univers`, owner, catalogues (version, counts) · E-21: `swn_systemes`, `swn_routes`, `swn_zones`, generated blocks (not stored), seed · E-22: `swn_conceptions`, catalogues, `sections.gere_par` · E-9: `gere_par`, `source_version` — **holds**. |
 | Each entity serves a journey | tool setting P-17, P-21 · owner P-17 · managed section P-19 · token scope P-20 · catalogues P-17, P-19 · placed systems, routes, zones P-18 · design P-19 — **holds**. |
