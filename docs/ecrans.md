@@ -3464,7 +3464,16 @@ next to the current one, and « Restaurer cette version » for a section (a dele
 sections as they were, read-only. Refusals: changed or deleted since the detail opened → « La fiche a changé depuis
 l'affichage. » with « Recharger »; a deleted section whose key was taken since → « Une autre section
 porte maintenant cette clé. ». Over 30 days, the
-line has no detail: « Valeur précédente non conservée (plus de 30 jours). » Lines over 90 days are gone.
+line opens a detail with no previous value: « Valeur précédente non conservée (plus de 30 jours). » Lines over 90 days are gone.
+
+*Detail of the slice `kanevas-synchro-historique`* (mock-up `maquettes/e24-historique.html`; components by the design-system keeper):
+- **Composition.** The sidebar item « Historique » (under « Univers », GM only, `items.ts`); the filters are `Champ` with `liste` (contributor, action, period), the sheet filter is a `ListeLiens` in a `Fenetre` (as E-11's search), with « Toutes les fiches » (small ghost button) when the page is filtered on a sheet; the list is the new `LigneHistorique` (charte); « Charger la suite » is a neutral button; the detail replaces the list on the same address (`?ligne=<id>`, « ← Retour à la liste »): a `Panneau` holding the `Comparaison` (charte) and, under it, « Restaurer cette version » (primary button, `rotate-ccw`), which opens the restoration confirmation (variant of `BoiteDialogue`, focus on « Annuler »); on success a `Toast` « Version restaurée » and the list reloaded with the new line on top.
+- **Refusals** are `Alerte` with « Recharger », above the button; the filters stay.
+- **States.** Empty « Aucune modification dans cette période. » (`EtatVide`); loading skeletons (`ChargementListe`); error « Impossible de charger l'historique. » with « Réessayer » (`ErreurChargement`).
+- **Roles.** GM outside player mode only; a player, or a GM in player mode, has no sidebar item and the address answers « Page introuvable. » (`PageIntrouvable`); the session API answers 404 to a non-member and 403 to a player; no count of lines (a line can reveal a GM block exists).
+- **What a line says.** `Section « <titre> » réécrite | créée | supprimée`, `Titre changé`, `Type changé`, `Fiche déplacée`, `Alias ajouté | retiré`, `Étiquette ajoutée | retirée`, `Fichier joint | retiré` (on the section's sheet), `Relation vers <cle> ajoutée | modifiée | retirée`, `Fiche créée | supprimée`; a section's text in the detail is its source Markdown, as the GM sees it, in plain text.
+- **Restorable.** A section (rewritten or deleted) and a header field (title, type, sub-type, parent, aliases, labels); shown without button: a relation, « section créée », a deleted sheet, an attached file.
+- E-9, GM menu « ⋯ »: entry « Historique » (`Menu`, icon `history`), absent for a player and in player mode; it opens E-24 with `?fiche=<id>`.
 
 ### E-9 Fiche — key and history (`kanevas-synchro`)
 - Under the title, for the GM: the key `lieu:nyx` with « Copier » and « Modifier la clé… » (a field,
