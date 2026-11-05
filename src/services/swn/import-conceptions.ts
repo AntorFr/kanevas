@@ -15,7 +15,7 @@ import { ligneDe, porteDe } from './section-vaisseaux.js';
  * doors. Only this file writes `swn_conceptions.version_importee`, and only for the designs the import wrote (B-48).
  */
 
-export const NATURES_CONCEPTIONS = [{ nom: 'conceptions', libelle: 'conception', libellePluriel: 'conceptions' }];
+export { NATURES_CONCEPTIONS } from './natures-conceptions.js';
 export const MAX_CONCEPTIONS = 500;
 export const HORS_SYNCHRO = 'Modifié dans Kanevas depuis le dernier import.';
 const MAX_REFUS = 1000;
