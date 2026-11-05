@@ -12,6 +12,8 @@ import {
   appliquerCatalogueParJeton, apercuCatalogueParJeton, niveauDeRequete,
 } from '../services/import-catalogue.js';
 import { importerGalaxieParJeton } from '../services/swn/import-galaxie-lot.js';
+import { importerConceptionsParJeton } from '../services/swn/import-conceptions-lot.js';
+import { OUTIL_VAISSEAUX } from '../services/swn/calcul-vaisseau.js';
 import { listerGalaxiesImport } from '../services/swn/import-galaxie.js';
 import { OUTIL_GALAXIE } from '../services/swn/galaxies.js';
 import { lireContexteImport } from '../services/import.js';
@@ -240,6 +242,15 @@ export async function registerImportRoutes(app: FastifyInstance) {
       const { gid } = request.params as { gid: string };
       const { lot } = request.query as { lot?: unknown };
       return importerGalaxieParJeton(app.db, jetonDe(request), lotDeRequete(lot), entier(gid), request.body, app.horloge());
+    });
+
+    // The designs of the ship designer (M-1): the token carries `swn/vaisseaux`, like the catalogue's.
+    scope.put(`${base}/outils/:module/:outil/conceptions`, {
+      config: { portee: 'outil' }, errorHandler: erreurFichier,
+    }, async (request) => {
+      if (cleOutil(request) !== OUTIL_VAISSEAUX) throw introuvable();
+      const { lot } = request.query as { lot?: unknown };
+      return importerConceptionsParJeton(app.db, jetonDe(request), lotDeRequete(lot), request.body, app.horloge());
     });
 
     scope.post(`${base}/lots/:lid/clore`, { config: { portee: 'lot' } }, async (request) => {

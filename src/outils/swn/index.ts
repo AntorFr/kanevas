@@ -4,6 +4,7 @@ import { apresEcriture, produire, versionSource } from '../../services/swn/secti
 import { apresEcritureRegles, produireRegles, versionSourceRegles } from '../../services/swn/regles-hooks.js';
 import { produireDocument, versionSourceDocument } from '../../services/swn/document-source.js';
 import { importerGalaxie, NATURES_GALAXIE } from '../../services/swn/import-galaxie.js';
+import { importerConceptions, NATURES_CONCEPTIONS } from '../../services/swn/import-conceptions.js';
 import { outilTrajet } from './assistant.js';
 import { outilVaisseau } from './assistant-vaisseaux.js';
 import type { DeclarationCarte, DeclarationGenerateur, DeclarationModule, SectionGeree } from '../declaration.js';
@@ -46,6 +47,8 @@ export const swnVaisseaux: DeclarationGenerateur = {
   usages: [{ nom: 'concevoir', mjSeul: false }, { nom: 'creer', mjSeul: true }, { nom: 'generer', mjSeul: true }],
   reglages: {},
   catalogue: catalogueVaisseaux,
+  // The designs have no target but the universe: the file names its sheets by key (M-1).
+  importation: { natures: NATURES_CONCEPTIONS, appliquer: (db, acteur, universId, _cible, corps) => importerConceptions(db, acteur, universId, corps) },
   ecran: { libelle: 'Concepteur de vaisseaux', icone: 'Rocket' },
   outilsAssistant: outilVaisseau,
   sections: [{

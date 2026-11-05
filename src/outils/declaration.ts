@@ -224,7 +224,7 @@ export function verifierDeclaration(module: DeclarationModule): void {
       }
     }
     if (outil.importation) {
-      const noms = outil.importation.natures.map((n) => n.nom);
+      const noms = [...(outil.catalogue?.natures ?? []), ...outil.importation.natures].map((n) => n.nom);
       if (new Set(noms).size !== noms.length) throw new Error('Duplicate importation nature.');
     }
     verifierReglages(outil.reglages);

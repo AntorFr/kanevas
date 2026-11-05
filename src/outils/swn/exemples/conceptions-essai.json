@@ -1,0 +1,45 @@
+{
+  "conceptions": [
+    {
+      "cle": "vent-d-essai",
+      "titre": "Vent d'essai",
+      "coque": "fregate",
+      "choix": [
+        { "nature": "moteurs", "cle": "moteur-2", "quantite": 1 },
+        { "nature": "amenagements", "cle": "soute", "quantite": 1 },
+        { "nature": "armes", "cle": "laser", "quantite": 1 },
+        { "nature": "armes", "cle": "lance-d-essai", "quantite": 1 }
+      ]
+    },
+    {
+      "cle": "etoile-d-essai",
+      "titre": "Étoile d'essai",
+      "coque": "eclaireur",
+      "visibilite": "joueurs",
+      "choix": [
+        { "nature": "moteurs", "cle": "moteur-1", "quantite": 1 },
+        { "nature": "armes", "cle": "laser", "quantite": 1 }
+      ]
+    },
+    {
+      "cle": "sentinelle-d-essai",
+      "titre": "Sentinelle d'essai",
+      "coque": "eclaireur",
+      "choix": [
+        { "nature": "moteurs", "cle": "moteur-1", "quantite": 1 },
+        { "nature": "defenses", "cle": "blindage", "quantite": 1 }
+      ]
+    },
+    {
+      "cle": "convoi-d-essai",
+      "titre": "Convoi d'essai",
+      "coque": "croiseur",
+      "choix": [
+        { "nature": "moteurs", "cle": "moteur-2", "quantite": 1 },
+        { "nature": "amenagements", "cle": "cabines", "quantite": 2 },
+        { "nature": "defenses", "cle": "blindage", "quantite": 1 },
+        { "nature": "armes", "cle": "canon-leger", "quantite": 1 }
+      ]
+    }
+  ]
+}
