@@ -16,7 +16,7 @@ const { poserActivation } = await import('../services/outils.js');
 const T = 'swn/vaisseaux';
 const EXEMPLE = JSON.parse(readFileSync(new URL('../outils/swn/exemples/catalogue-essai.json', import.meta.url), 'utf8'));
 
-test('jeton d\'outil : le catalogue des vaisseaux d\'un univers compte les sept natures dans le lot ; une coque classe 5 est refusée avec son champ', async () => {
+test('jeton d\'outil : le catalogue des vaisseaux d\'un univers compte les sept natures du catalogue (et conceptions à 0) dans le lot ; une coque classe 5 est refusée avec son champ', async () => {
   const app = await buildApp();
   assert.equal(semerBouchon(app.db), true);
   const antor = trouverCompte(app.db, 'antor')!.id;
@@ -35,7 +35,7 @@ test('jeton d\'outil : le catalogue des vaisseaux d\'un univers compte les sept 
   assert.deepEqual(r.json().refus, [{ nature: 'coques', cle: 'dreadnought', champ: 'classe', raison: r.json().refus[0].raison }]);
   const l = (await req('GET', `/lots/${lid}`)).json();
   const crees = Object.fromEntries(Object.entries(l.compteurs).map(([k, v]: any) => [k, v.creees]));
-  assert.deepEqual(crees, { coques: 3, moteurs: 2, amenagements: 2, defenses: 1, armes: 2, modifications: 1, exemples: 7 });
+  assert.deepEqual(crees, { coques: 3, moteurs: 2, amenagements: 2, defenses: 1, armes: 2, modifications: 1, exemples: 7, conceptions: 0 });
   assert.equal(l.compteurs.coques.refusees, 1);
   assert.equal((app.db.prepare('SELECT COUNT(*) n FROM swn_catalogue_coques WHERE proprietaire = ?').get('univers') as any).n, 3);
   // rejeu : tout inchangé
