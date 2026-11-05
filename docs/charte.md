@@ -436,6 +436,12 @@ dessiné au lieu d'une image.
 **État de chargement.** V : des squelettes `--squelette` à la forme de la fiche (type, titre,
 filet, deux sections). C : `role="status"`, « Chargement de la fiche… » lu et écrit dessous.
 
+**Ligne d'historique** (`ui/ligne-historique.tsx`, E-24, `kanevas-synchro-historique`; spec of the design-system keeper). V: a row without frame or card, separated by a `--bord` rule; on the left the date in `<time>` (12 px, `--texte-3`, 96 px wide); in the middle, line 1 the contributor (`--texte`, weight 500) then « via <token> », « assistant » or « import · lot n » in `--texte-2` and the origin as a neutral Pastille with a 12 px Lucide icon; line 2 the sheet link, « — », the change label; a deleted sheet is plain `--texte-2` text with a « supprimée » Pastille; hover `--surface-2`; minimum height 40 px (48 px on a phone, where the date moves above). A line older than 30 days is not dimmed by opacity (contrast). C: the change label is the link that opens the detail, the sheet link is a second, separate link (≥ 24 px target), never nested; a `<ul>` with an accessible name, `aria-current` on the open line; the origin is carried by the word and the icon, never by the hue alone.
+
+**Comparaison** (`ui/comparaison.tsx`, E-24 and the assistant's update proposal share it, `kanevas-synchro-historique`). V: two zones side by side (stacked under 760 px), « Valeur précédente » on `--accent-fond` with an `--accent` border, « Valeur actuelle » on `--surface` with a `--bord` border; 12 px `--texte-3` label in each, text `--texte`, 15 lines at most then scroll; never the red and green of a diff. One-zone variant (a deleted sheet's sections, a field with no current value): one `--surface` zone with its `--bord` border labelled with the section's name. C: each zone is a `role="region"` with an `aria-label` and `tabindex="0"`; plain text, read-only, no Markdown rendering and no active link; no action inside (the restore button sits under it).
+
+**Confirmation de restauration** (variant of the Boîte de dialogue, E-24). A neutral `rotate-ccw` icon badge on `--accent-fond`, the action in the primary button (not danger), focus on « Annuler ».
+
 ## 5. Seuils
 
 Plancher : WCAG 2.2 AA. Mesuré avec le script de contraste de la skill `charte-graphique` (hors de ce dépôt), rejoué par `frontend/src/ui/contraste.test.ts` ; une
