@@ -341,7 +341,7 @@ function semerVaisseauxEssai(db: Db, id: { antor: number; lea: number }, systeme
   // A second local element (with « Lance d'essai »: two), added by a further import of the universe's catalogue.
   appliquerCatalogue(db, antor, { niveau: 'univers', id: universId }, 'swn/vaisseaux', {
     catalogue: 'swn/vaisseaux', version: '2026-11-essai-vaisseaux-univers-2',
-    defenses: [{ cle: 'bouclier-d-essai', nom: "Bouclier d'essai", cout: 6000, puissance: 1, masse: 1, x_cout: true,
+    modifications: [{ cle: 'plaque-d-essai', nom: "Plaque d'essai", cout: 6000, puissance: 1, masse: 1, x_cout: true,
       x_puissance: false, x_masse: true, pv: 3, ca: 1, limite: 0 }],
   });
   const fiche = (titre: string) => creerFiche(db, id.antor, universId, { type: 'vaisseau', titre }).id;
