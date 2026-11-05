@@ -281,7 +281,7 @@ function Corps({ universId, suffixe, saved, onSaved, onRecharger }: {
                 {perdue && saved.peutRecalculer && <p className="vx-note">Connexion perdue.</p>}
               </div>
               {saved.peutRecalculer && !recalcul.perdu && (
-                <Bouton variante="principal" ecrit icone={RefreshCw} disabled={perdue || recalcul.enCours} onClick={demanderRecalcul}>
+                <Bouton variante="principal" petit ecrit icone={RefreshCw} disabled={perdue || recalcul.enCours} onClick={demanderRecalcul}>
                   {recalcul.enCours ? 'Recalcul…' : recalcul.echec ? 'Réessayer' : 'Recalculer'}
                 </Bouton>
               )}

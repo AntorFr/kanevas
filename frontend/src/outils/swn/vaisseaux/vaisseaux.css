@@ -80,7 +80,7 @@
 .vx-tableau th, .vx-tableau td { border: 1px solid var(--bord-fort); padding: var(--e-1) var(--e-2); text-align: left; white-space: nowrap; }
 .vx-tableau th { color: var(--texte-2); font-size: var(--t-12); font-weight: 600; background: var(--surface-2); }
 .vx-colonne { display: flex; flex-direction: column; gap: var(--e-3); min-width: 0; }
-.vx-bande { display: flex; flex-direction: column; align-items: stretch; gap: var(--e-3); padding: var(--e-3) var(--e-4); border: 1px solid var(--mj-bord); border-radius: var(--rayon-panneau); background: var(--mj-fond); }
+.vx-bande { display: flex; flex-direction: column; align-items: flex-start; gap: var(--e-3); padding: var(--e-3) var(--e-4); border: 1px solid var(--mj-bord); border-radius: var(--rayon-panneau); background: var(--mj-fond); }
 .vx-bande p { margin: 0; }
 .vx-bande-titre { color: var(--mj); font-weight: 600; }
 .vx-etiquette { margin: 0 0 var(--e-2); color: var(--texte-2); font-size: var(--t-12); }
@@ -89,6 +89,5 @@
 .vx-generer-ligne:first-child { border-top: 0; }
 .vx-generer-nom { flex: 1; min-width: 0; overflow-wrap: anywhere; }
 @media (max-width: 759px) {
-  .vx-bande .bouton { width: 100%; }
   .vx-generer-ligne { flex-direction: column; align-items: flex-start; }
 }
