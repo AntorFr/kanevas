@@ -436,6 +436,33 @@ dessiné au lieu d'une image.
 **État de chargement.** V : des squelettes `--squelette` à la forme de la fiche (type, titre,
 filet, deux sections). C : `role="status"`, « Chargement de la fiche… » lu et écrit dessous.
 
+**`kanevas-synchro-jetons` — components added (verdict of the design-system guardian, 2026-11-05).** No token is added.
+- **Choix segmenté** (generic segmented choice; `BasculeMjJoueur` stays the MJ/Joueur one). V: `--surface-2` ground with an inner
+  `--bord` line, `--rayon-champ`, 2 px margin; segment 28 px (26 px *small*, 36 px on a phone), `--rayon-item`, `--texte-2`, hover
+  `--texte`; the active one `--surface`, `--texte`, `--bord-fort` line, icon `--accent-texte` — **never** `--mj` or `--table` (they
+  say « secret » and « table »). C: `role="radiogroup"` with a visible label, each segment `role="radio"` with `aria-checked`, one tab
+  stop, ← → move and select, Home/End go to the ends; the state is carried by text and ground, not hue alone;
+  `prefers-reduced-motion` cuts the transition.
+- **Liste d'accès** (one line per universe: name, role pill, a *small* segmented choice). V: frame `--rayon-champ`, inner `--bord`
+  line, lines separated by `--bord`; name 14 px `--texte`; the choice wraps under the name on a phone. C: one line = one
+  radiogroup labelled by the universe name; a universe the account left keeps its line, followed by « (plus membre) » in `--texte-3`; a
+  refusal (« Choisissez au moins un univers. ») in `--danger`, tied to the list by `aria-describedby`.
+- **Ligne de jeton** (named object + meta + actions revealed on hover; class `ligne-jeton`, **not** `.jeton`, which is the relation-target pill
+  of `ui.css`). V: frame `--rayon-panneau`, inner `--bord` line; line 60 px min, `--rayon-champ`, hover and focus-within `--surface-2`; icon disc
+  28 px `--surface-2` (inactive: transparent, `--texte-3`); name 14 px 500 on one line, cut with a tooltip (inactive `--texte-2`); accesses 13 px
+  `--texte-2`, « Tous mes univers » `--texte` 500; meta 13 px `--texte-3` joined by « · »; actions *small ghost* `Bouton`s at the line's right
+  edge, shown on hover and focus, always shown when `(hover: none)`; offline 45 %. C: a `ul`; each action's label names the token; offline
+  `aria-disabled`; an inactive token has no action.
+- **Valeur copiable** (a value shown to be copied: the token, the base address; E-23, E-18). V: 34 px min, `--surface-2`, `--bord-fort` line for a
+  secret, `--rayon-champ`, `user-select: all`, `--police-code` 13 px on one line scrolling sideways (wrapping on a phone); « Copier » (`copy`) at its right, 34 px
+  (40 on a phone); the note « Il ne sera plus affiché. » a `--surface-2` block with a 16 px icon. C: a `code` named by its label; « Copier » has
+  `aria-label` and a toast; never copied by itself.
+- **Pastille** gains the *sens* `accent` (`--accent-texte` on `--accent-fond`, icon and word): « Modifié par l'admin ». « Révoqué » and « Révoqué par l'admin » are
+  `danger`, « Expiré » `neutre`. The contrast of `--danger` on `--danger-fond` and of `--accent-texte` on `--accent-fond` in a 22 px pill is
+  to be measured in both themes (`contraste.py`) before the slice's screens are coded, and added to § 5.
+- **Fenêtre** gains a *large* variant (560 px, scrolling inside itself) and a *locked* property (neither Esc nor the veil closes it while a value is
+  shown — E-23).
+
 ## 5. Seuils
 
 Plancher : WCAG 2.2 AA. Mesuré avec le script de contraste de la skill `charte-graphique` (hors de ce dépôt), rejoué par `frontend/src/ui/contraste.test.ts` ; une

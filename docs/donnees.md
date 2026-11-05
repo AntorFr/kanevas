@@ -623,6 +623,24 @@ only, read by the upload checks. The import token reads what its GM reads (AD-10
 universe, GM blocks included. *(Extension: a token is its account's — a player's token reads as the
 player; see below.)*
 
+**Tokens, in detail** (`kanevas-synchro-jetons`). `jetons_api` is rebuilt (table copy, ids kept so `lots_import.jeton_id`
+and `jetons_outils.jeton_id` still point at the same rows — the migration starts with
+`-- migrate: sans-cles-etrangeres`, then `foreign_key_check`): `id`, `compte_id` → `comptes` (the owner), `nom` 1 to 80,
+`empreinte` unique, `cree_le`, `expire_le` (> `cree_le`), `revoque_le` (null: active), `revoque_par` → `comptes` (null
+until revoked; the owner or an admin), `dernier_usage_le`, `tous` (0 or 1), `niveau_tous` (`lecture` | `ecriture`; **not null
+exactly when `tous` = 1**, a `CHECK`), `modifie_par_admin_par` → `comptes` and `modifie_par_admin_le` (both null or both set; set when an admin
+changes the accesses, cleared when the owner saves them). The column `univers_id` and the index `jetons_api_par_univers` are gone; an index
+`jetons_api_par_compte (compte_id, cree_le)`. `jetons_univers (jeton_id → jetons_api ON DELETE CASCADE, univers_id →
+univers, niveau)`, primary key `(jeton_id, univers_id)`, `niveau` in `lecture` | `ecriture` | `aucun` (`aucun` only
+with `tous` = 1: the exception that leaves a universe out; a list token never stores `aucun` — a universe left at « — » has no row). Rules held by the
+service: a list token has at least one row; an exception row never repeats the level of `tous` (a line put back on « Comme le reste » deletes its row);
+only universes the owner belongs to are accepted (`invalide`, `champ: acces`); the accesses of a revoked or expired token cannot be changed (409
+`jeton_revoque`). Existing tokens: `compte_id` = the creator, `tous` = 0, one `jetons_univers` row at `ecriture` for the former universe,
+`revoque_par` = `compte_id` when `revoque_le` is set (a revocation made by another GM was
+not recorded: the owner is the nearest honest answer, so « Révoqué » rather than « par l'admin »), the other columns unchanged. Deleting a
+universe deletes its `jetons_univers` rows (tokens stay). Reading the effective right at a request is `niveau d'accès ∧ rôle courant`
+(AD-144, AD-jetons-1); nothing is stored.
+
 **Physical and migration.** The migration is cut by slice, each numbered at merge (AD-51) in the slice that needs it (`ecriture`: the column removal; `cartes`: the map model and settings): on `cartes`, five columns (`cle_origine`, `fiche_id`, `texte`, `texte_public`, `version`) and a partial
 unique index `(univers_id, cle_origine) WHERE cle_origine IS NOT NULL` on `cartes`, a foreign key
 `fiche_id → fiches(id) ON DELETE SET NULL` (SQLite: the table is rebuilt, as for `cartes` in

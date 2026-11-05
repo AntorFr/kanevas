@@ -289,8 +289,8 @@ thing at a time, and keeps the trace of who changed what (decisions of Monsieur,
   (`kanevas-outils`, B-65) keeps that restriction, set on E-23: it writes those tools' data and no
   content, whatever its level. *(P-25)*
 - **B-95** — The **instance admin** sees every token of the instance on E-5 (name, owner, accesses,
-  last use), **revokes** any of them and **changes its accesses**; the owner sees on E-23 « modifié par
-  l'admin » or « révoqué par l'admin ». « Tous mes univers » takes **exceptions** — a universe at another
+  last use), **revokes** any of them and **changes its accesses**; the owner sees on E-23 « Modifié par
+  l'admin » or « Révoqué par l'admin ». « Tous mes univers » takes **exceptions** — a universe at another
   level, or at « — » —, so the admin cuts one universe without cutting the others nor the ones to come;
   the owner may change the accesses again, and an admin who wants a token gone revokes it. A GM has no gesture on the tokens that reach his universe: a token is its owner's (decision
   of Monsieur, 2026-11-01). *(P-25)*
@@ -795,10 +795,17 @@ introuvable. ».
 
 ### P-25 — Manage one's tokens (Léa, player; Antor, GM)
 1. Léa opens « Mes jetons d'API » (**E-23**), creates « Agent de Léa », « tous mes univers », in
-   « lecture » (B-94); she copies the value shown once.
-2. A token of Léa's misbehaves in Éneria: Antor asks the admin, who on **E-5** adds to « tous mes
-   univers » the exception « Éneria : — » (B-95); Léa's page shows « modifié par l'admin », her other
+   « lecture » (B-94); she copies the value shown once — the strong moment: it is never shown again. A save that fails says
+   « Impossible d'enregistrer. » and keeps her entries; a change on a token revoked meanwhile says « Ce jeton est révoqué. ».
+2. A token of Léa's misbehaves in Éneria: Antor asks the admin, who on **E-5** adds to the token's « tous mes
+   univers » (« Tous les univers du compte » on E-5) the exception « Éneria : — » (B-95); Léa's page shows « Modifié par l'admin », her other
    universes unchanged, and so will every universe she joins later.
+3. Léa changes the accesses of her token (« Modifier les accès », E-23): the pill goes, the value is
+   unchanged. If she loses the value before copying it, there is no way to read it again: she revokes the
+   token (« Révoquer », confirmation) and creates another.
+4. Another token, forgotten by its owner, still works: the admin revokes it on **E-5** (confirmation naming
+   the token and its owner); its owner then reads « Révoqué par l'admin » on E-23, and the script gets 401
+   `jeton_invalide`. Antor, a GM, sees none of these tokens and has no gesture on them.
 
 ### P-26 — See who changed what, and undo a mistake (Antor, GM, the day after)
 1. On « Historique » of Éneria (**E-24**), Antor filters on the token « Agent Éneria » (B-102): twelve
@@ -874,8 +881,8 @@ cartes hors de l'API, jeton de l'assistant inclus), et après AD-111 (tous les f
 
 | Croisement | Résultat |
 |---|---|
-| Chaque besoin a un parcours | B-32 P-12, P-14 · B-33 P-12, P-14 · B-34 P-12, P-14 · B-35 P-12, P-14 · B-36 P-12 · B-37 P-12 · B-38 P-12, P-14 · B-39 P-14 · B-40 P-14 · B-41 P-10 · B-42 P-13, P-10 · B-43 P-10, P-14 · B-44 P-12, P-16 · B-45 P-11, P-10 · B-46 P-11 · B-47 P-10 · B-48 P-10, P-14 · B-49 P-10 · B-50 P-10 · B-51 P-15 · B-52 P-12, P-14 · B-53 P-16, P-10 · B-54 P-16 · B-55 P-16 · B-56 P-10 — **tient**. |
-| Chaque geste humain d'un parcours a un écran | P-10 : E-1, E-2, E-14, E-18, E-8, E-9, E-17, E-13, E-19 ; l'étape 4 n'est pas un geste dans Kanevas (le script, hors produit, décision de Monsieur), son résultat se lit sur E-18 et E-19 · P-11 : E-18 · P-12 : E-8, E-9, E-17, E-12 · P-13 : E-15, E-14, barre · P-14 : E-9 · P-15 : E-5 · P-16 : E-19, E-9 — **tient**. |
+| Chaque besoin a un parcours | B-32 P-12, P-14 · B-33 P-12, P-14 · B-34 P-12, P-14 · B-35 P-12, P-14 · B-36 P-12 · B-37 P-12 · B-38 P-12, P-14 · B-39 P-14 · B-40 P-14 · B-41 P-10 · B-42 P-13, P-10 · B-43 P-10, P-14 · B-44 P-12, P-16 · B-45 P-25, P-10 · B-46 P-25 · B-47 P-10 · B-48 P-10, P-14 · B-49 P-10 · B-50 P-10 · B-51 P-15 · B-52 P-12, P-14 · B-53 P-16, P-10 · B-54 P-16 · B-55 P-16 · B-56 P-10 — **tient**. |
+| Chaque geste humain d'un parcours a un écran | P-10 : E-1, E-2, E-14, E-18, E-8, E-9, E-17, E-13, E-19 ; l'étape 4 n'est pas un geste dans Kanevas (le script, hors produit, décision de Monsieur), son résultat se lit sur E-18 et E-19 · P-11 : remplacé par P-25 (E-23, E-5) · P-12 : E-8, E-9, E-17, E-12 · P-13 : E-15, E-14, barre · P-14 : E-9 · P-15 : E-5 · P-16 : E-19, E-9 — **tient**. |
 | Chaque écran a ses données | E-17 : fiches, alias, étiquettes, sous-type, index (titre, alias, sous-type, `contenu_public`) · E-18 : jetons d'API, lots d'import · E-14 / E-15 : réglages de type · E-9 : liens, parent, sous-type, alias, étiquettes, clé d'origine, références de fichier (texte, jointes), illustration (un fichier image) · E-8 : sous-type, illustration · E-19 : fichiers (images et documents), références de fichier, illustrations · E-13 : `cree_le` (date d'origine) · E-5 : un fichier du volume, pas une entité (B-51) — **tient**. |
-| Chaque entité sert un parcours | lien P-12, P-14 · alias et étiquette P-12, P-14 · réglage de type P-13 · jeton d'API P-11 · lot d'import P-10 · fichier et référence de fichier P-16, P-12, P-10, P-7 (le joueur qui dépose un portrait passe par le premier chemin d'ajout) — **tient**. |
+| Chaque entité sert un parcours | lien P-12, P-14 · alias et étiquette P-12, P-14 · réglage de type P-13 · jeton d'API P-25 · lot d'import P-10 · fichier et référence de fichier P-16, P-12, P-10, P-7 (le joueur qui dépose un portrait passe par le premier chemin d'ajout) — **tient**. |
 | Trous comblés par un choix écrit | l'import n'a pas d'écran de déclenchement (le script) : décision de Monsieur ; « vider un univers d'essai » remplacé par « supprimer l'univers » (AD-105) ; une fiche supprimée revient au rejeu si l'export l'envoie (décision de Monsieur) ; les cartes hors de l'API, une carte Kanka est une fiche (décision de Monsieur) ; E-17 prend la bascule de mode ; liens d'un scénario et d'une entrée de système réglés (AD-97) ; l'image générée par l'assistant entre dans la médiathèque (AD-44 amendée) ; poser une illustration passe par les deux chemins d'ajout (E-9) ; pièces jointes et médiathèque : tous les fichiers dans la médiathèque (AD-111, décision de Monsieur), les deux chemins d'ajout explicites sur E-9 et E-19. Aucun `[À TRANCHER]` ne reste. |

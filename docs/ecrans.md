@@ -59,7 +59,7 @@ bascule existe (fiche, carte et, depuis `kanevas-import`, recherche E-17).
 | **E-2 Créer un univers** | E-1 | nom, description ; le créateur devient MJ | P-1 |
 | **E-3 Vue d'ensemble de l'univers** | E-1 ; sélecteur d'univers ; E-5 (admin devenu membre) | les campagnes actives (*`kanevas-scenarios`* : « Campagnes en cours », the adventures), les derniers CR, la préparation (MJ), les cartes visibles | P-2, P-3, P-4, P-6 |
 | **E-4 Membres** | nav Univers (MJ) | lister, ajouter par identifiant, changer le rôle, retirer | P-2 |
-| **E-5 Administration** | nav (admin d'instance) | lister les univers de l'instance, en gérer les membres — jamais le contenu ; poser le jeton de l'assistant (B-51) | P-2, P-15 |
+| **E-5 Administration** | nav (admin d'instance) | lister les univers de l'instance, en gérer les membres — jamais le contenu ; poser le jeton de l'assistant (B-51) ; *(`kanevas-synchro`)* voir tous les jetons d'API, en changer les accès, les révoquer (B-95) | P-2, P-15, P-25 |
 | **E-6 Campagne**, **E-7 Scénario** | *retired (`kanevas-scenarios-suivi`)* — an adventure is a sheet: its list is E-8 of the « Aventure » type, its page E-9, with the blocks « Préparation » and « Comptes-rendus » | — | — |
 | **E-8 Liste de fiches** | nav Lore | les fiches d'un type que le compte peut lire, en grille de cartes illustrées ; chercher dans ce type ; créer (MJ) ; *(kanevas-scenarios)* « Aventure » type: status badge and filter, status menu (MJ), « Nouvelle aventure » with sub-type | P-3, P-6 |
 | **E-9 Fiche** | E-8 ; un token ; un lien ; E-13 | lire et écrire les sections permises ; ajouter, réordonner, retirer une section, régler son audience, relier (MJ) ; joindre un fichier (les deux chemins d'ajout, AD-111), réserver un fichier au MJ (MJ), retirer une référence ; régler le sous-type (MJ) ; poser, remplacer, retirer l'illustration (MJ) ; bascule mode Joueur (MJ). Un compte-rendu s'ouvre ici. ; *(kanevas-scenarios)* on an adventure: the status line and its menu (MJ) | P-3 à P-7 |
@@ -72,7 +72,8 @@ bascule existe (fiche, carte et, depuis `kanevas-import`, recherche E-17).
 | **E-16 Systèmes de jeu** | barre réduite ; menu du sélecteur d'univers | les systèmes rattachés aux univers du compte, chacun avec ceux de ses univers qui l'utilisent | P-8 |
 | **E-17 Recherche** *(kanevas-import)* | « Rechercher » de la barre ; `/` ; une étiquette touchée sur E-9 | chercher dans tous les types, titres, alias et sections lisibles ; filtrer par type et par étiquette ; *(kanevas-scenarios)* the status badge of an adventure result | P-12, P-10 |
 | **E-19 Médiathèque** *(kanevas-import)* | nav Médiathèque ; « Choisir dans la médiathèque » de l'éditeur et de l'illustration (E-9) | voir les fichiers (images, documents) ouverts au compte et où ils servent ; MJ : ajouter, renommer, régler la visibilité, supprimer | P-16, P-10 |
-| **E-18 Accès par API** *(kanevas-import)* | nav Univers ▸ Accès par API (MJ) | créer, lister, révoquer les jetons d'API de l'univers ; voir les lots d'import et leurs refus *(`kanevas-synchro` : les lots seulement ; les jetons passent à E-23 et E-5)* | P-10, P-11 |
+| **E-18 Accès par API** *(kanevas-import)* | nav Univers ▸ Accès par API (MJ) | créer, lister, révoquer les jetons d'API de l'univers ; voir les lots d'import et leurs refus *(`kanevas-synchro` : les lots seulement ; les jetons passent à E-23 et E-5)* | P-10 *(P-11 remplacé par P-25)* |
+| **E-23 Mes jetons d'API** *(kanevas-synchro)* | menu du compte (tout compte) | créer, modifier les accès, révoquer ses jetons d'API ; la valeur montrée une fois (B-94) | P-25 |
 
 Écrans **modifiés** par `kanevas-import` : **E-8** (types activés, vue en arbre, sous-type sur la
 carte, filtre « Sous-type », champ « Sous-type » de la création, illustration sous double garde),
@@ -100,7 +101,7 @@ E-16 vivent hors des univers : leurs cases disent le rôle dans un univers ratta
 | E-2 | créer | créer | créer |
 | E-3 | tout | sans préparation ni scénarios ; *(kanevas-scenarios)* « Campagnes en cours »: those he reads, with their status | — |
 | E-4 | tout | — | — (passe par E-5) |
-| E-5 | — | — | lister les univers et leurs membres ; ajouter, changer un rôle, retirer un membre ; voir l'état du jeton de l'assistant, connecter ou reconnecter l'abonnement ; *(kanevas-synchro)* régler la taille maximale d'un fond de carte (B-89) ; voir tous les jetons, en changer les accès, les révoquer (B-95) |
+| E-5 | — (**caché** : ni entrée de barre, « Page introuvable. » par l'adresse) | — (**caché**, idem) | lister les univers et leurs membres ; ajouter, changer un rôle, retirer un membre ; voir l'état du jeton de l'assistant, connecter ou reconnecter l'abonnement ; *(kanevas-synchro)* régler la taille maximale d'un fond de carte (B-89) ; voir tous les jetons, en changer les accès, les révoquer (B-95) |
 | E-6 | *retired (`kanevas-scenarios`)* | — | — |
 | E-7 | *retired (`kanevas-scenarios`)* | — | — |
 | E-8 | lire, chercher, créer ; la vignette de chaque fiche (son illustration, ou le repli dessiné) ; *(kanevas-scenarios)* for the « Aventure » type: the status badge, the « Statut » filter, the status menu on a card or a tree line (outside player mode), the creation form with sub-type suggestions and « Visible des joueurs » ; *(kanevas-fiche-mj-seul)* the « MJ seul » badge on a sheet players cannot see, the « Visibilité » filter | lire, chercher ; la vignette des fiches qu'il voit ; *(kanevas-scenarios)* adventures: the status badge and the « Statut » filter; the status menu and « Nouvelle aventure » ; *(kanevas-fiche-mj-seul)* no « MJ seul » badge, no « Visibilité » filter (**caché**) | — |
@@ -114,8 +115,8 @@ E-16 vivent hors des univers : leurs cases disent le rôle dans un univers ratta
 | E-16 (hors univers) | ses systèmes, avec ses univers et son rôle | ses systèmes, « Lecture seule » | la liste de ses propres systèmes (comme MJ ou Joueur s'il est membre d'un univers rattaché) ; vide sinon — l'écran est proposé à tout compte |
 | E-17 *(kanevas-import)* | chercher dans toutes les fiches de l'univers, blocs MJ compris ; en **mode Joueur**, comme un joueur (ni blocs MJ, ni fiches qu'un joueur ne lit pas) ; filtres : les types activés ; les fiches des types désactivés restent des résultats sous « Tous » ; *(kanevas-scenarios)* an adventure result carries its status badge (the player's too) | chercher dans ce qu'il lit, hors blocs MJ ; filtres par type et par étiquette des seules fiches qu'il voit ; bascule de mode : absente (cachée) ; blocs MJ : hors recherche (jamais lus) ; « Alias et étiquettes… » sur E-9 : cachée | — |
 | E-19 *(kanevas-import)* | tout : ajouter, renommer, visibilité, supprimer ; « Utilisé dans » complet | les fichiers visibles des joueurs et ceux qu'il a ajoutés ; « Utilisé dans » réduit aux fiches qu'il lit ; ni ajout depuis E-19 (**caché** ; il ajoute un fichier par une section qu'il écrit, E-9), ni réglage, ni suppression (**cachés**) | — |
-| E-18 *(kanevas-import)* | *(kanevas-synchro: les lots seulement ; les jetons passent à E-23, et à E-5 pour l'admin)* créer un jeton ; voir et révoquer tous les jetons de l'univers (y compris ceux d'un autre MJ) ; voir les lots | — (**caché** : absent de la barre, « Page introuvable. » par l'adresse) | — |
-| E-23 *(kanevas-synchro)* | ses jetons : créer, modifier les accès, révoquer | ses jetons : créer, modifier les accès, révoquer | ses jetons |
+| E-18 *(kanevas-import)* | *(kanevas-synchro : les lots seulement ; aucun geste sur les jetons, qui passent à E-23, et à E-5 pour l'admin)* ~~créer un jeton ; voir et révoquer tous les jetons de l'univers~~ ; voir les lots, avec le nom du jeton qui les a ouverts | — (**caché** : absent de la barre, « Page introuvable. » par l'adresse) | — (**caché** : un admin qui n'est pas MJ n'a pas l'entrée ; il voit les jetons sur E-5) |
+| E-23 *(kanevas-synchro)* | ses jetons : créer, modifier les accès, révoquer | ses jetons : créer, modifier les accès, révoquer | ses jetons seulement (ceux des autres : E-5) |
 | E-24 *(kanevas-synchro)* | lire l'historique de l'univers, filtrer, restaurer une valeur de moins de 30 jours | — | — |
 
 What `kanevas-scenarios` adds to the lines above: **E-17** — the status badge on the result card of an adventure, for every role that reads the sheet; **E-12** — the GM creates sheets through `creer_fiche` (AD-126), with a « Fiche « X » créée » writing block and « Ouvrir » leading to E-9; the player has no creation tool; **E-18** — no « Campagnes » or « Scénarios » counter in a lot: adventures count among « Fiches ».
@@ -3137,11 +3138,11 @@ La maquette `e08-liste-fiches.html` n'est pas redessinée pour le sous-type : le
 
 - **Chaque besoin a un écran** : B-32 E-9, E-7, E-15 · B-33 E-9 · B-34 E-9 (et E-17, E-12 pour ce
   qu'ils ne montrent pas) · B-35 E-9, E-8 · B-36 E-9 · B-37 E-17 · B-38 E-9, E-17 · B-39 E-9 · B-40 E-9 ·
-  B-41 E-14 · B-42 E-14, E-15, barre · B-43 E-9 · B-44 E-9 · B-45, B-46, B-49 E-18 · B-47, B-48 : **pas
+  B-41 E-14 · B-42 E-14, E-15, barre · B-43 E-9 · B-44 E-9 · B-45, B-46 E-18 *(`kanevas-synchro` : E-23 et E-5, voir l'extension)*, B-49 E-18 · B-47, B-48 : **pas
   d'écran, par décision** — le geste est le script, son résultat se lit sur E-18 (B-49) ; AD-53 tient :
   l'écran d'un import est E-18 · B-50 E-9, E-13 · B-51 E-5 · B-52 E-8, E-9, E-17 · B-53, B-54 E-19 ·
   B-55 E-9 (les deux chemins d'ajout), E-19 (le sélecteur) · B-56 : pas d'écran (le script), résultat sur E-19 et E-18 — tient.
-- **Chaque écran est atteint par un parcours** : E-17 (P-12), E-18 (P-10, P-11), E-14 et E-15 (P-13,
+- **Chaque écran est atteint par un parcours** : E-17 (P-12), E-18 (P-10 ; *`kanevas-synchro`* : P-11 remplacé par P-25, E-23 et E-5), E-14 et E-15 (P-13,
   P-10), E-9 (P-12, P-14, P-16), E-8 (P-12), E-5 (P-15), E-19 (P-16, P-10) — tient.
 - **Chaque rôle a sa colonne** : MJ, Joueur, Admin d'instance pour E-17, E-18 et E-19 (matrice) ; le script
   d'import n'est pas un rôle : il agit comme le MJ du jeton, sur l'API seule — tient.
@@ -3428,30 +3429,97 @@ refusals with its key and « modifiée depuis la lecture ». The warnings « mod
 - Each role: GM (E-11, E-9, E-18), player (E-9, E-11 reading), admin (E-5).
 
 ### E-23 Mes jetons d'API (every account) — `kanevas-synchro`
-Reached from the account menu, outside any universe; address `/compte/jetons`.
-- The list: each token with its name, expiry, last use and accesses (« Tous mes univers — lecture +
-  écriture », or « Éneria : lecture + écriture · Essai : lecture »); a token the admin changed or revoked
-  says so (« modifié par l'admin », « révoqué par l'admin »).
-- « Créer un jeton »: name (1–80), lifetime (7, 30 default, 90, 365 days), then the accesses: « Tous mes
-  univers » with a level and, under it, optional exceptions (a universe at another level or at « — »),
-  or the list of the account's universes, each « — / Lecture / Lecture + écriture ». An exception the
-  admin set is shown like the owner's and can be changed by him. The value is shown once with « Copier » and the note « Il ne sera plus affiché. ».
-- On a token: « Modifier les accès » (the same form), « Révoquer » (confirmation naming the token).
-- « Outils » (`kanevas-outils`, B-65, which this epic follows): an optional list of tools, for the
-  token as a whole; a token with tools writes only those tools' data and no content, and its line says
-  « outils : galaxie » after its accesses.
-- The note under the form: « Un jeton n'a jamais plus de droits que votre compte : là où vous êtes
-  joueur, il agit en joueur. »
-- States: none yet → « Aucun jeton. » with « Créer un jeton »; save failed → « Impossible
-  d'enregistrer. » with « Réessayer ».
+*Finished mockup*: `docs/maquettes/e23-jetons.html` (states `#etat-creer`, `#etat-liste`, `#etat-jeton-montre`,
+`#etat-modifier`, `#etat-revoquer`, `#etat-erreur`, `#etat-vide`, `#etat-perdue`). The entry
+« Mes jetons d'API » (`key-round`) is in the account menu, above « Se déconnecter » (`e01-accueil.html` draws it;
+the other mockups share the frame); the screen is outside any universe, with the bar of the home
+(« Mes univers »), address `/compte/jetons`. One line of introduction: « Un jeton permet à un script ou à un agent
+d'agir avec vos droits, par l'API ou par le serveur MCP, dans les univers que vous choisissez. » Then the panel
+« Jetons » and « Créer un jeton » (`plus`).
+- **A line** (the owner's tokens, active ones first — all of them — then revoked and expired ones up to 20 in
+  all, newest first): the name (80 characters, cut with a tooltip), under it the accesses (« **Tous mes univers** —
+  lecture + écriture · Les Cendres de Vaëlis : lecture » — the exceptions after the level —, or
+  « Lame d'Ébène : lecture · Les Cendres de Vaëlis : — » for a list; a universe the account no longer belongs to
+  keeps its entry, followed by « (plus membre) »), then « créé le … », « dernier usage il y a 3 min » or
+  « jamais utilisé », « expire le … ». A token the admin changed carries the pill « Modifié par l'admin »
+  (accent, until the owner saves the accesses again); one he revoked, the pill « Révoqué par l'admin »; a token
+  the owner revoked, « Révoqué »; an expired one, « Expiré ». « Modifier les accès » (`sliders-horizontal`) and
+  « Révoquer » (`ban`) appear on hover and focus (always visible by touch) on an active token only.
+- **« Créer un jeton »**: a box with « Nom » (1–80; « Erreur : le nom est obligatoire. »), « Durée » (7, **30**,
+  90 days, 1 an), then « Univers atteints »: a segmented choice **« Tous mes univers » / « Une liste d'univers »**
+  (the note « Tous mes univers » covers the ones joined later).
+  *« Tous mes univers »*: a « Niveau » choice (Lecture / **Lecture + écriture**), then « Exceptions »: one line per
+  universe of the account (name, role pill MJ or Joueur) with a choice **Comme le reste / — / Lecture /
+  Lecture + écriture** — only a line moved off « Comme le reste » is an exception, so a universe joined later
+  follows the level. *« Une liste »*: the same lines without « Comme le reste », **— by default**; at least one
+  universe at a level other than « — » (« Choisissez au moins un univers. » otherwise, the button stays active and
+  the message is shown under the list). The note « Un jeton n'a jamais plus de droits que votre compte : là où vous
+  êtes joueur, il agit en joueur. » Footer « Annuler » / « Créer le jeton » (« Création… », disabled, while it runs).
+  Then the same box shows the token name as a label and the value alone, monospace, with « Il ne sera plus affiché. »,
+  « Copier » (toast « Jeton copié. ») and « J'ai copié le jeton »: while the value is shown only that button closes
+  the box (neither Esc nor the veil); the line then arrives first in the list.
+- **« Modifier les accès »**: the same box titled « Modifier les accès » without name and lifetime, filled with
+  the current accesses (the admin's exceptions shown like the owner's), « Enregistrer » (toast « Accès enregistrés. »);
+  saving clears « Modifié par l'admin ». Changing the accesses does not change the value, the name or the expiry.
+- **« Révoquer »**: confirmation « Révoquer « <nom> » ? Le script ou l'agent qui l'utilise ne pourra plus rien lire ni
+  écrire. », « Révoquer le jeton » (`--danger`) / « Annuler »; toast « Jeton révoqué. ».
+- « Outils » (`kanevas-outils`, B-65, which this epic follows): an optional list of tools, for the token as a
+  whole; a token with tools writes only those tools' data and no content, and its line says « outils : galaxie »
+  after its accesses. **Not drawn nor built by `kanevas-synchro-jetons`**: the choice joins the form when
+  `jetons_outils` is in the tree (see the plan of the slice); until then the form creates content tokens only.
+- The level shown on a line is the one **chosen**, not the effective one: where the account is a player, a
+  « lecture + écriture » entry still acts as reading (the note of the form says it; the 403 `lecture_seule` answers a write).
+- The mockup `e23-jetons.html` does not draw the pills « Révoqué » and « (plus membre) », the 409, « Les accès ont changé. » and the load
+  error: the text prevails.
+- Roles: every account sees and manages **its own** tokens, a player as a GM; no account's list shows another's
+  (the admin does on E-5).  A GM has no gesture on a token that reaches his universe (B-95).
+
+| State | What is seen | What can be done |
+|---|---|---|
+| empty | « Aucun jeton. » (no token at all; with only revoked or expired ones the list shows them, without this text) | « Créer un jeton » |
+| loading | skeleton of the panel | — |
+| load error | « Impossible de charger vos jetons. » | « Réessayer » |
+| save error | creation, change or revocation that fails: « Impossible d'enregistrer. » in the box, the entries kept, nothing created or changed | « Réessayer », « Annuler » |
+| changed meanwhile | the admin changed the accesses while the box « Modifier les accès » is open: « Les accès ont changé. » on saving, the box reloads with the new accesses, nothing is overwritten | « Enregistrer » again, « Annuler » |
+| connection lost | the banner; « Créer un jeton », « Modifier les accès », « Révoquer » disabled; a shown value stays until « J'ai copié le jeton » | copy |
+| permission refused | **without object**: the screen is open to any account with a session; an expired session leads to the sign-in, as every screen | — |
+| long content | a 80-character name cut with a tooltip; many exceptions: the box scrolls inside itself; more than 20 inactive tokens: the 20 latest | — |
+| revoked meanwhile | « Modifier les accès » or « Révoquer » on a token the admin revoked in the meantime: « Ce jeton est révoqué. » (409), the list reloads | « Fermer » |
+
+*Components (guardian's verdict, `docs/charte.md` « components added »)*: the list line is the new **Ligne de jeton**; the choices of the form are the new
+**Choix segmenté** and **Liste d'accès**; the value shown and the base address of E-18 are the new **Valeur copiable**; the pills are `Pastille` (new *sens* `accent`);
+the boxes are `Fenêtre` (new *large* and *locked* properties) and `BoiteDialogue`; everything else is existing (`Bouton`, `Champ`, `Menu`, `Toast`, `Bandeau`, `Panneau`, états d'écran).
 
 ### E-18 Accès par API — batches only (`kanevas-synchro`)
-The token list and its creation leave E-18 (to E-23); E-18 keeps the batches of the universe, unchanged.
+The token list and its creation leave E-18 (to E-23); E-18 keeps the batches of the universe, unchanged. The
+introduction becomes « Un script écrit dans cet univers avec vos droits, par l'API d'import. Ses jetons se
+gèrent dans « Mes jetons d'API ». » (the last words a link to E-23), the base address to copy becomes
+`https://kanevas.berard.me/api/v1/univers/<clé de l'univers>` (the former `/api/import/v1/univers/<id>` still
+answers, AD-149), and the panel « Jetons » with its boxes is removed. A lot line keeps the **name** of the token that opened it (a label of the lot, whoever owns the token and
+whether or not it is still active; nothing else of a token is shown to a GM, B-95).
+*State table of E-18 above*: every row about a token — « Aucun jeton… », « Nouveau jeton », the creation and revocation errors, the disabled « Nouveau jeton » and « Révoquer », the role message — is void; the rows kept are the batches (empty, loading, load error, long content), the banner, and « Page introuvable. » for anyone who is not a GM of the universe.
+Empty batches: « Aucun lot d'import pour l'instant. » The mockup `e18-acces-api.html` still draws the removed panel: the text prevails.
 
 ### E-5 Administration — the panel « Jetons d'API » (`kanevas-synchro`)
-Every token of the instance: name, owner, accesses, expiry, last use; filter by owner; on each
-« Modifier les accès » (the E-23 form, exceptions included) and « Révoquer » (confirmation). The owner's E-23 marks the
-token « modifié par l'admin » or « révoqué par l'admin ».
+*Mockup*: `docs/maquettes/e05-administration.html` (panels « Jetons d'API », « révoquer », « vide », « erreur »); it does not draw « Expiré », « Révoqué par l'admin », « Aucun jeton pour ce compte. » nor the 409: the text prevails.
+Full width, under « Jeton de l'assistant », visible to the instance admin only (« Page introuvable. » for anyone
+else, as the screen). A table of every token of the instance: name, owner (account), accesses (as on E-23, universe
+names written in full, « Tous les univers du compte » in place of E-23's « Tous mes univers »), expiry, last use; a filter « Propriétaire » (all, or one account); active tokens all listed, then the 20 latest revoked or expired, each with its pill « Révoqué » (the owner's), « Révoqué par l'admin » or « Expiré », and no action. On an
+active token: « Modifier les accès » (the E-23 box, exceptions included; the choices are the **owner's**
+universes) and « Révoquer » (confirmation naming the token and its owner; « Léa verra « Révoqué par l'admin » »). The value of a
+token is never shown. The owner's E-23 marks the token « Modifié par l'admin » or « Révoqué par l'admin ».
+Under 760 px each token becomes a block (name and owner, accesses, expiry and last use, then the two actions at full width) in place of the table row. States: none → « Aucun jeton sur cette instance. »; load error → « Impossible de charger les jetons. » with
+« Réessayer »; save error as E-23.
+
+| State (E-5, jetons) | What is seen | What can be done |
+|---|---|---|
+| loading | skeleton of the table | — |
+| filter without result | the chosen owner has no token: « Aucun jeton pour ce compte. » (distinct from the empty state), the filter stays | change the filter |
+| connection lost | the banner; « Modifier les accès » and « Révoquer » disabled | — |
+| long content | a 80-character name or a long list of accesses cut with a tooltip; more than 20 inactive tokens: the 20 latest | — |
+| changed meanwhile | the owner changed the accesses before the admin saved: « Les accès ont changé. » in the box, the box reloads with the new accesses, nothing of the admin's entry is applied | « Enregistrer » again, « Annuler » |
+| revoked meanwhile | the owner (or another admin) revoked it before the admin acted — on « Modifier les accès » as on « Révoquer »: « Ce jeton est révoqué. » (409) in the box, the list reloads with the pill « Révoqué » | « Fermer » |
+| permission refused | not the instance admin: « Page introuvable. » (the panel is absent) | — |
 
 ### E-24 Historique de l'univers (GM) — `kanevas-synchro`
 Address `/univers/eneria/historique`. Lines from the newest: date, contributor (account, and « via
