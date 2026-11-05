@@ -67,8 +67,8 @@
   .vx-corps { grid-template-columns: minmax(0, 1fr) 320px; }
   .vx-choix { grid-column: 1; grid-row: 1; }
   /* pinned under the frame bars from 760 px only; below, the panel stays whole in the flow above the catalogue */
-  .vx-colonne { grid-column: 2; grid-row: 1; position: sticky; top: calc(var(--h-bouchon) + 52px); z-index: 2; align-self: start; }
-  .vx-colonne .vx-resultats { position: static; max-height: calc(100vh - 220px); }
+  .vx-colonne { grid-column: 2; grid-row: 1; align-self: stretch; }
+  .vx-colonne .vx-resultats { position: sticky; top: calc(var(--h-bouchon) + 52px); z-index: 2; max-height: calc(100vh - 220px); }
 }
 @media (max-width: 759px) {
   .vx-ligne { flex-wrap: wrap; }
