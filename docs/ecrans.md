@@ -3391,7 +3391,7 @@ l'univers ») and, for a universe element, « Visible des joueurs » / « MJ seu
 (name, size, readable notes, routes, shareable link), measurement on hover (touch: tap), the
 « Trajet » tool (departure, arrival, routes: all / public, drive → distance and duration), system search
 (among readable systems). GM: « Placer un système », « Promouvoir », « Tracer une route », « Dessiner une zone »,
-« Renommer », « Supprimer la galaxie… » (confirmation: « Les 214 systèmes, 49 routes et 6 zones de cette galaxie seront effacés. »), « Graine… », « Document MJ… » (choose the sheet, or create one of type Savoir; the tool writes the GM-only « Document MJ » managed section there), Player mode. The view requests only the blocks it shows.
+« Renommer », « Supprimer la galaxie… » (confirmation: « Les 214 systèmes, 52 routes et 6 zones de cette galaxie seront effacés. »), « Graine… », « Document MJ… » (choose the sheet, or create one of type Savoir; the tool writes the GM-only « Document MJ » managed section there), Player mode. The view requests only the blocks it shows.
 
 | State | Text |
 |---|---|
@@ -3400,7 +3400,7 @@ l'univers ») and, for a universe element, « Visible des joueurs » / « MJ seu
 | error | block not arriving: block stays empty, « Impossible de charger une partie de la carte. » + « Réessayer » |
 | offline | displayed view stays, « Connexion perdue. » banner, writes disabled |
 | refusal | map not visible to role, or tool invisible: « Page introuvable. » (GM in Player mode on hidden map: E-11 notice) |
-| long content | 500 defined systems, 49 routes: name labels collapse on zooming out; 80-character names truncated |
+| long content | 500 defined systems, 52 routes: name labels collapse on zooming out; 80-character names truncated |
 | conflict | « Ce système a changé depuis que vous l'avez ouvert. » + « Recharger » |
 
 Criteria:
