@@ -658,8 +658,14 @@ records one write, with a **previous value** for 30 days.
 - `historique (id, univers_id, fiche_id (null once the sheet is deleted), fiche_cle, fiche_titre, objet
   (entete | section | relation | fiche), objet_cle, action, empreinte_apres, compte_id, jeton_id,
   origine (ecran | assistant | import | mcp | outil | inconnu), lot_id, cree_le, valeur_avant (JSON, null after 30 days))`.
-  Written by triggers from a per-transaction context (AD-147). A daily purge empties `valeur_avant`
-  over 30 days and deletes lines over 90.
+  Written by triggers from a per-transaction context (AD-147). `compte_id` is nullable (an import
+  through the existing session-less path, a write without context). A daily purge empties
+  `valeur_avant` over 30 days and deletes lines over 90.
+- `contexte_ecriture (id (always 1, CHECK), compte_id (null), jeton_id (null), origine (ecran | assistant |
+  import | mcp | outil | inconnu | systeme), lot_id (null))`: a one-row table the service layer fills at the
+  start of each write transaction and clears at commit (AD-147). Empty, a write is recorded with origin
+  `inconnu`; `systeme` (link resolution, cache rewrite) writes no line. `systeme` is never stored in
+  `historique`.
 
 **Rights.** A token reads and writes what its account may — a player's token reads what that player
 reads, and the fingerprints it receives are computed on that —  in the universes it reaches at its level,
