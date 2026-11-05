@@ -1,7 +1,7 @@
 /* E-20 deletion: the catalogue dialog's frame, the semantic palette only (tokens.css). */
 .suppression-bloc { border-top: 1px solid var(--bord); margin-top: var(--e-4); padding-top: var(--e-4); }
 .suppression-bloc p { margin: 0 0 var(--e-2); color: var(--texte-2); font-size: var(--t-13); }
-.fenetre:has(> .suppression-dialog) { position: relative; display: flex; flex-direction: column; width: min(560px, calc(100vw - 48px)); max-height: calc(100dvh - 48px); }
+.fenetre:has(> .suppression-dialog) { position: relative; display: flex; flex-direction: column; width: min(440px, calc(100vw - 48px)); max-height: calc(100dvh - 48px); }
 .fenetre:has(> .suppression-dialog) > h2 { flex: none; padding-right: var(--e-6); margin: 0 0 var(--e-4); font: 600 var(--t-16)/1.5 var(--police-texte); overflow-wrap: anywhere; }
 .suppression-dialog { display: flex; flex-direction: column; min-height: 0; font-size: var(--t-14); line-height: 1.6; overflow-wrap: anywhere; }
 .suppression-close { position: absolute; top: var(--e-4); right: var(--e-4); }
@@ -23,6 +23,8 @@
   .suppression-contenu { flex: 1; }
   .suppression-dialog .bouton, .suppression-dialog .bouton-icone, .suppression-bloc .bouton { min-height: 44px; }
   .suppression-close { top: var(--e-2); right: var(--e-3); min-width: 44px; }
-  .suppression-actions { flex-direction: column-reverse; padding-bottom: env(safe-area-inset-bottom); }
+  .suppression-actions { flex-direction: column; padding-bottom: env(safe-area-inset-bottom); }
   .suppression-actions .bouton { width: 100%; justify-content: center; }
 }
+
+.fenetre:has(> .suppression-dialog) > .ic-fenetre { background: var(--danger-fond); color: var(--danger); box-shadow: none; }

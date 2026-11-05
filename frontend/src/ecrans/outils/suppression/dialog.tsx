@@ -1,4 +1,4 @@
-import { X } from 'lucide-react';
+import { Trash2, X } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 
@@ -70,7 +70,7 @@ export function SuppressionDialog({ base, niveau, outil, onFermer }: { base: str
   const vide = phase === 'pret' && lignes.length === 0;
   const utilise = resume?.encoreUtilise;
   const enCours = phase === 'suppression';
-  return createPortal(<Fenetre titre={`Supprimer les données de « ${outil.libelle} » ?`} onFermer={dismiss}>
+  return createPortal(<Fenetre titre={`Supprimer les données de « ${outil.libelle} » ?`} onFermer={dismiss} icone={Trash2}>
     <div className="suppression-dialog">
       <div className="suppression-close"><BoutonIcone data-close etiquette="Fermer" icone={X} disabled={enCours} onClick={dismiss} /></div>
       <div className="suppression-contenu" aria-busy={phase === 'lecture' || enCours || undefined}>
@@ -105,10 +105,12 @@ export function SuppressionDialog({ base, niveau, outil, onFermer }: { base: str
         {phase === 'pret' && change && <Bouton onClick={() => void lire().then((r) => r && setChange(false))}>Recharger</Bouton>}
       </div>
       <footer className="suppression-actions">
-        {(phase === 'pret' || enCours) && !vide && <Bouton variante="danger" ecrit disabled={perdue || enCours} onClick={() => void confirmer()}>
-          {enCours ? 'Suppression…' : 'Supprimer les données'}</Bouton>}
         {(phase === 'pret' || enCours) && !vide
-          ? <Bouton disabled={enCours} onClick={dismiss}>Annuler</Bouton>
+          ? <>
+            <Bouton disabled={enCours} onClick={dismiss}>Annuler</Bouton>
+            <Bouton variante="danger" ecrit disabled={perdue || enCours} onClick={() => void confirmer()}>
+              {enCours ? 'Suppression…' : 'Supprimer les données'}</Bouton>
+          </>
           : phase !== 'lecture' && <Bouton onClick={dismiss}>Fermer</Bouton>}
       </footer>
     </div>
