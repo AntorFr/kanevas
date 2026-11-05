@@ -1,7 +1,7 @@
 // Tests of kanevas-recherche-donnees, written from the exit criterion (B-38, AD-21, AD-118 (1,4,5,8)).
 // HTTP in stub mode, real SQLite.
 import assert from 'node:assert/strict';
-import { copyFileSync, mkdirSync, mkdtempSync, readdirSync } from 'node:fs';
+import { copyFileSync, mkdirSync, mkdtempSync, readdirSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
@@ -150,17 +150,17 @@ test('index : les alias se cherchent, suivent changement de titre, retrait et su
   const port = m.fid('Port-Sel');
   assert.deepEqual(trouve('alias:salport'), [port]);
   assert.deepEqual(trouve('alias:aux'), [port]);
-  m.app.db.prepare("UPDATE fiches SET titre = 'Port-Sel II' WHERE id = ?").run(port);
+  m.app.db.prepare("UPDATE fiches SET titre = 'Port-Sel Bis' WHERE id = ?").run(port);
   assert.deepEqual(trouve('alias:salport'), [port]); // alias kept after a title change
-  assert.deepEqual(trouve('titre:II'), [port]);
-  await m.put('antor', 'Port-Sel II', { alias: ['Autrenom'], etiquettes: [] }).catch(() => undefined);
+  assert.deepEqual(trouve('titre:Bis'), [port]);
+  await m.put('antor', 'Port-Sel Bis', { alias: ['Autrenom'], etiquettes: [] }).catch(() => undefined);
   const r = await m.req('antor', 'PUT', `/api/univers/${m.lame}/fiches/${port}/etiquetage`, { alias: ['Autrenom'], etiquettes: [] });
   assert.equal(r.status, 200);
   assert.deepEqual(trouve('alias:salport'), []);
   assert.deepEqual(trouve('alias:autrenom'), [port]);
   m.app.db.prepare('DELETE FROM fiche_alias WHERE fiche_id = ?').run(port);
   assert.deepEqual(trouve('alias:autrenom'), []);
-  assert.deepEqual(trouve('titre:II'), [port]); // the sheet is still indexed
+  assert.deepEqual(trouve('titre:Bis'), [port]); // the sheet is still indexed
 });
 
 test('migration depuis 0013 : la recherche du titre existant trouve toujours la fiche', () => {
@@ -175,11 +175,31 @@ test('migration depuis 0013 : la recherche du titre existant trouve toujours la 
   db.exec('CREATE TABLE fichiers_sections (fichier_id, section_id, joint, dans_texte, dans_bloc_mj, PRIMARY KEY (fichier_id, section_id))');
   db.exec('CREATE TABLE fichiers_attente (id INTEGER PRIMARY KEY, univers_id, cle, section_id, fiche_id, maniere)');
   db.exec('ALTER TABLE fiches ADD COLUMN illustration_fichier_id INTEGER');
+  // Same for the owner of a system (0019), which the current services write.
+  db.exec('ALTER TABLE systemes_jeu ADD COLUMN responsable_id INTEGER');
+  // Likewise `relations` (0018): the seed writes `nature` / `qualificatif`, absent from this schema (`type`).
+  db.exec('ALTER TABLE relations RENAME COLUMN type TO qualificatif');
+  db.exec("ALTER TABLE relations ADD COLUMN nature TEXT NOT NULL DEFAULT ''");
+  // The seed also enables the galaxy tool and sows its galaxy: scratch copies of the tables of 0019, 0021, 0022 and 0024.
+  const avantScratch = new Set((db.prepare("SELECT name FROM sqlite_master WHERE type = 'table'").all() as Any[]).map((r) => r.name));
+  const scratch = ['0019-outils.sql', '0021-catalogues.sql', '0022-swn-galaxie.sql', '0024-swn-vaisseaux.sql'].map((f) => readFileSync(src + f, 'utf8').replace(/^ALTER TABLE .*$/m, '')).join('\n');
+  // The seed also sows managed sections and ship designs (0020, 0021, 0024): two columns of `sections`, then the tables.
+  db.exec('ALTER TABLE sections ADD COLUMN gere_par TEXT; ALTER TABLE sections ADD COLUMN source_version TEXT; ALTER TABLE propositions ADD COLUMN source_version TEXT');
+  db.exec('ALTER TABLE lots_import ADD COLUMN outil TEXT');
+  // The designs' reads also go through the aliases and labels of 0014 (plain scratch tables, no triggers).
+  db.exec('CREATE TABLE fiche_alias (fiche_id, alias); CREATE TABLE etiquettes (id INTEGER PRIMARY KEY, univers_id, nom, cree_le); CREATE TABLE fiche_etiquettes (fiche_id, etiquette_id)');
+  db.exec(scratch);
+  const ajoutees = (db.prepare("SELECT name FROM sqlite_master WHERE type = 'table'").all() as Any[]).map((r) => r.name as string).filter((n) => !avantScratch.has(n) && !n.startsWith('sqlite_'));
   semerBouchon(db);
-  db.exec('DROP TABLE fichiers_attente; DROP TABLE fichiers_sections; DROP TABLE fichiers; ALTER TABLE fiches DROP COLUMN illustration_fichier_id');
+  db.exec('PRAGMA foreign_keys = OFF');
+  for (const t of ajoutees) db.exec(`DROP TABLE ${t}`);
+  db.exec('PRAGMA foreign_keys = ON; ALTER TABLE sections DROP COLUMN gere_par; ALTER TABLE sections DROP COLUMN source_version; ALTER TABLE propositions DROP COLUMN source_version; ALTER TABLE lots_import DROP COLUMN outil');
+  db.exec('ALTER TABLE relations DROP COLUMN nature');
+  db.exec('ALTER TABLE relations RENAME COLUMN qualificatif TO type');
+  db.exec('DROP TABLE fichiers_attente; DROP TABLE fichiers_sections; DROP TABLE fichiers; ALTER TABLE fiches DROP COLUMN illustration_fichier_id; ALTER TABLE systemes_jeu DROP COLUMN responsable_id');
   const avant = db.prepare('SELECT id, titre FROM fiches ORDER BY id').all() as { id: number; titre: string }[];
   assert.ok(avant.length >= 5);
-  assert.deepEqual(migrate(db), [14, 15, 16]);
+  assert.deepEqual(migrate(db), [14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25]);
   for (const f of avant) {
     const mot = f.titre.split(/[^\p{L}\p{N}]+/u)[0]!;
     const ids = (db.prepare('SELECT rowid FROM recherche_fiches WHERE recherche_fiches MATCH ?').all(`titre:${mot}*`) as Any[]).map((r) => r.rowid);

@@ -132,16 +132,11 @@ test('B-32 exclusion : la réponse de lecture de Léa (fiche, section) n’a pas
   }
 });
 
-test('B-32 exclusion : l’entrée de système lue par Léa (rendu seul) et le scénario (MJ seul) sans source pour elle', opts, async () => {
+test('B-32 exclusion : l’entrée de système lue par Léa (rendu seul) sans source pour elle', opts, async () => {
   const m = await monde('Entree MD');
   const sys = await api(C.antor, 'post', '/api/systemes', { nom: 'Mini' });
   await api(C.antor, 'put', `${m.b}/systeme`, { systemeId: sys.id });
   await api(C.antor, 'post', `/api/systemes/${sys.id}/gabarits`, { type: 'creature', nom: 'Gobelin', contenu: '**crochu** [[x]]' });
-  const camp = await api(C.antor, 'post', `${m.b}/campagnes`, { nom: 'Camp' });
-  const sc = await api(C.antor, 'post', `/api/campagnes/${camp.id}/scenarios`, { titre: 'Acte', contenu: '**sombre**' });
-  // scenario list: Léa is not GM, she gets nothing of it
-  const l = await C.lea.ctx.request.get(`/api/campagnes/${camp.id}/scenarios`);
-  assert.equal((await l.text()).includes('sombre'), false);
   // entry on screen for Léa: formatted, no editor, no source field
   const p = await C.lea.ctx.newPage();
   await p.goto(`${srv.base}/systemes/${sys.id}`);
@@ -157,7 +152,6 @@ test('B-32 exclusion : l’entrée de système lue par Léa (rendu seul) et le s
   assert.equal(await p.getByRole('radio', { name: 'Aperçu' }).count(), 0);
   await p.screenshot({ path: '/tmp/kanevas-ensemble-entree-lea.png' });
   await p.close();
-  void sc;
 });
 
 test('B-32 exclusion : HTML brut, schémas hors http/https/mailto (toutes casses) et image externe restent du texte', opts, async () => {
@@ -232,7 +226,7 @@ test('B-32 assistant : la lecture de Léa par l’assistant ne rend pas la sourc
   assert.equal(rep.reponse.includes('## Quartiers'), false, rep.reponse);
 });
 
-test('B-43 bords : 100 000 caractères s’enregistrent, 100 001 est refusé (400, message fixe) — section, compte-rendu, scénario, entrée', opts, async () => {
+test('B-43 bords : 100 000 caractères s’enregistrent, 100 001 est refusé (400, message fixe) — section, compte-rendu, entrée', opts, async () => {
   const m = await monde('Plafond MD');
   const MSG = 'Contenu trop long : 100 000 caractères au plus.';
   const ok = 'a'.repeat(100000);
@@ -255,19 +249,12 @@ test('B-43 bords : 100 000 caractères s’enregistrent, 100 001 est refusé (40
   assert.equal(relu.contenu.length, 100000);
 
   // report
-  const camp = await api(C.antor, 'post', `${m.b}/campagnes`, { nom: 'Camp' });
+  const camp = await api(C.antor, 'post', `${m.b}/fiches`, { type: 'aventure', sousType: 'Campagne', titre: 'Camp', sections: [{ titre: 'Présentation', joueursLisent: true }] });
   const cr = (texte: string) => brut(C.lea, 'post', `${m.b}/comptes-rendus`, { campagneId: camp.id, titre: 'Séance', texte });
   assert.equal((await cr(ok)).status, 201);
   const rc = await cr(trop);
   assert.equal(rc.status, 400);
   assert.equal(rc.corps.message, MSG);
-
-  // scenario
-  const sc = (contenu: string) => brut(C.antor, 'post', `/api/campagnes/${camp.id}/scenarios`, { titre: 'Acte', contenu });
-  assert.equal((await sc(ok)).status, 201);
-  const rs = await sc(trop);
-  assert.equal(rs.status, 400);
-  assert.equal(rs.corps.message, MSG);
 
   // system entry
   const sys = await api(C.antor, 'post', '/api/systemes', { nom: 'Plafond' });

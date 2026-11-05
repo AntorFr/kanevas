@@ -9,13 +9,15 @@ import { ChangerType } from './changer-type';
 import { BoiteEtiquetage } from './etiquetage';
 import { DeplacerSous } from './deplacer';
 import { SousTypeBadge } from './sous-type';
-import { adresseIllustration } from './vignette';
+import { adresseIllustration, useMJSeul } from './vignette';
+import { MarqueDisparu, classeDisparu } from './marque';
 import type { Detail } from '../mediatheque/commun';
 import { MESSAGE_RESERVE, useAjoutFichier } from './fichiers';
 import { MESSAGES_PIECES } from './pieces';
-import { libelleDuType, useTypes } from '../../types-contexte';
+import { libelleDuType, iconeDeNom, marqueDe, typeParType, useTypes } from '../../types-contexte';
 import { TitreFiche } from './titre';
 import { SupprimerFiche } from './supprimer';
+import { lignesDuType } from './lignes/registre';
 
 const AIDE = 'Visible de tous ceux qui voient la fiche.';
 const ECHEC = 'L’action n’a pas abouti. Réessayez.';
@@ -60,9 +62,36 @@ export function EnteteFiche({ universId, fiche, gestion, modeJoueur, badge, Icon
   const [etiquetage, setEtiquetage] = useState(false);
   const [deplacement, setDeplacement] = useState(false);
   const [suppression, setSuppression] = useState(false);
+  const mjSeul = useMJSeul(fiche, true);
   const alias = fiche.alias ?? [];
   const etiquettes = fiche.etiquettes ?? [];
   const { types } = useTypes();
+  const [marquage, setMarquage] = useState(false);
+  const mots = typeParType(types, fiche.type)?.disparu;
+  const marque = marqueDe(types, fiche);
+
+  /** « Marquer mort » and its reverse: written whole, no optimistic badge (E-9, the gone mark). */
+  async function marquer() {
+    if (!mots || marquage) return;
+    const vers = fiche.charge.disparu !== true;
+    setMarquage(true);
+    setMessage(undefined);
+    try {
+      await appeler('PATCH', `/api/univers/${universId}/fiches/${fiche.id}`, { disparu: vers });
+      await rafraichir();
+      toast(vers ? `Fiche marquée : ${mots.oui}.` : 'Marque retirée.');
+    } catch (e) {
+      if (e instanceof ErreurApi && e.statut === 404) {
+        setMessage({ texte: 'Fiche introuvable.' });
+        onIntrouvable();
+      } else {
+        if (e instanceof ErreurApi && e.statut === 403) onDroitPerdu();
+        setMessage({ texte: 'Impossible de modifier la fiche. Réessayez.' });
+      }
+    } finally {
+      setMarquage(false);
+    }
+  }
 
   const ill = fiche.illustration && 'jeton' in fiche.illustration ? fiche.illustration : null;
   const fermee = fiche.illustration && 'fermee' in fiche.illustration ? fiche.illustration : null;
@@ -162,7 +191,7 @@ export function EnteteFiche({ universId, fiche, gestion, modeJoueur, badge, Icon
           <figure className={`illustration${envoi ? ' en-envoi' : ''}`}>
             <div className="boite-ill">
               {jeton !== undefined && !indisponible ? (
-                <a className="cadre-ill" href={adresseIllustration(universId, ill!.id, jeton)} target="_blank" rel="noopener" title="Ouvrir l’image entière">
+                <a className={`cadre-ill${classeDisparu(marque)}`} href={adresseIllustration(universId, ill!.id, jeton)} target="_blank" rel="noopener" title="Ouvrir l’image entière">
                   <img
                     src={adresseIllustration(universId, ill!.id, jeton)}
                     alt={`Illustration de « ${fiche.titre} »`}
@@ -171,6 +200,7 @@ export function EnteteFiche({ universId, fiche, gestion, modeJoueur, badge, Icon
                     decoding="async"
                     onError={() => setKo(jeton)}
                   />
+                  {marque && <MarqueDisparu mot={marque.mot} Icone={marque.Icone} />}
                 </a>
               ) : (
                 <div className="cadre-ill">
@@ -233,6 +263,13 @@ export function EnteteFiche({ universId, fiche, gestion, modeJoueur, badge, Icon
               onDroitPerdu={onDroitPerdu}
             />
             </span>
+            {marque && (
+              <span className="type marque-badge" title={marque.mot}>
+                <marque.Icone size={14} strokeWidth={1.75} aria-hidden="true" />
+                {marque.mot}
+              </span>
+            )}
+            {gestion && mjSeul.badge}
             {/* « ⋯ » (E-9): « Changer le type… » (not for a report) and, for an imported sheet, its origin. */}
             {gestion && (
 
@@ -243,6 +280,14 @@ export function EnteteFiche({ universId, fiche, gestion, modeJoueur, badge, Icon
                 entrees={[
                   ...(fiche.type !== 'compte_rendu'
                     ? [{ libelle: 'Changer le type…', icone: ArrowRightLeft, onChoisir: () => setChangement(true) }]
+                    : []),
+                  ...(mots
+                    ? [{
+                        libelle: fiche.charge.disparu === true ? mots.menuNon : mots.menuOui,
+                        icone: iconeDeNom(mots.icone),
+                        impossible: marquage,
+                        onChoisir: () => void marquer(),
+                      }]
                     : []),
                   { libelle: 'Déplacer sous…', icone: FolderInput, onChoisir: () => setDeplacement(true) },
                   { libelle: 'Alias et étiquettes…', icone: Tags, onChoisir: () => setEtiquetage(true) },
@@ -267,8 +312,12 @@ export function EnteteFiche({ universId, fiche, gestion, modeJoueur, badge, Icon
               />
             )}
           </div>
+          {gestion && mjSeul.aide}
           <TitreFiche universId={universId} fiche={fiche} gestion={gestion} rafraichir={rafraichir}
             onDroitPerdu={droitFichePerdu} onIntrouvable={onIntrouvable} />
+          {lignesDuType(fiche.type).map((l, i) => (
+            <l.composant key={i} universId={universId} fiche={fiche} gestion={gestion} rafraichir={rafraichir} />
+          ))}
           {alias.length > 0 && <p className="alias-fiche">Aussi appelée {alias.join(', ')}</p>}
           {etiquettes.length > 0 && (
             <ul className="etiquettes-fiche" aria-label="Étiquettes">
@@ -295,7 +344,7 @@ export function EnteteFiche({ universId, fiche, gestion, modeJoueur, badge, Icon
         </div>
       )}
       {gestion && changement && (
-        <ChangerType universId={universId} fiche={fiche} onFermer={() => setChangement(false)} rafraichir={rafraichir} onDroitPerdu={onDroitPerdu} />
+        <ChangerType universId={universId} fiche={fiche} onFermer={() => setChangement(false)} rafraichir={rafraichir} onDroitPerdu={droitFichePerdu} />
       )}
       {gestion && suppression && (
         <SupprimerFiche universId={universId} fiche={fiche} onFermer={() => setSuppression(false)}

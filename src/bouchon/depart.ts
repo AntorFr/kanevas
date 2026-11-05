@@ -17,11 +17,18 @@ import { ajouterSection, changerAudience, ecrireContenu, lireSection } from '../
 import { poserEtiquetage } from '../services/etiquettes.js';
 import { relierSection } from '../services/relations.js';
 import { creerCarte, ajouterElement } from '../services/cartes.js';
-import { creerFiche, deplacerFiche, lireFiche } from '../services/fiches.js';
+import { changerStatutFiche, creerFiche, deplacerFiche, lireFiche, marquerDisparu } from '../services/fiches.js';
+import { creerCompteRendu } from '../services/comptes_rendus.js';
+import { ajouterTache } from '../services/preparation.js';
 import { assurerCompte } from '../services/comptes.js';
 import { creerEtRattacherSysteme, creerGabarit, rattacherSysteme } from '../services/systemes.js';
 import { creerJetonDeValeur } from '../services/jetons.js';
 import { creerUnivers } from '../services/univers.js';
+import { modulesActifs } from '../outils/registre.js';
+import { creerSystemeAncienPourBouchon, poserActivation } from '../services/outils.js';
+import { semerGalaxieEssai } from '../services/swn/galaxies.js';
+import { appliquerCatalogue } from '../services/catalogues.js';
+import { creerConception, enregistrerConception } from '../services/swn/conceptions.js';
 
 /**
  * Starting world of the stub mode (AD-55, `docs/ecrans.md` « Données de départ du bouchon »),
@@ -117,11 +124,12 @@ export function semerBouchon(db: Db): boolean {
     const apparence = { titre: 'Apparence', lue: true };
     const verite = { titre: 'Vérité — MJ seul', lue: false };
     const aldric = fiche('personnage', 'Maître Aldric', [apparence, verite], { pj: false });
-    fiche('personnage', 'Bran Corvalis', [apparence], { pj: false });
-    fiche('personnage', 'Le Prieur masqué', [{ titre: 'Secret — MJ seul', lue: false }], { pj: false });
+    const bran = fiche('personnage', 'Bran Corvalis', [apparence], { pj: false });
+    const prieur = fiche('personnage', 'Le Prieur masqué', [{ titre: 'Secret — MJ seul', lue: false }], { pj: false });
+    marquerDisparu(db, { compteId: id.antor }, lame.id, prieur.id, true);
     fiche('personnage', 'Léa Brisefer', [apparence], { pj: true });
-    fiche('personnage', 'Dame Ombeline de Val-Fortin', [apparence], { pj: false });
-    fiche('personnage', 'Suie', [apparence], { pj: false });
+    const ombeline = fiche('personnage', 'Dame Ombeline de Val-Fortin', [apparence], { pj: false });
+    const suie = fiche('personnage', 'Suie', [apparence], { pj: false });
     fiche('personnage', "Le Portrait de l'échec", [apparence], { pj: false });
     const lieux: [string, string | undefined][] = [
       ['Val-Fortin', 'Ville'],
@@ -178,6 +186,8 @@ export function semerBouchon(db: Db): boolean {
       arbre && deplacerFiche(db, { compteId: id.antor }, lame.id, enfant, parent);
     const spheres = fiche('lieu', 'Les Sphères', [mjSeul]);
     ranger(port.id, spheres.id);
+    let docks: { id: number; sections: Record<string, number> } | undefined;
+    let taverne: { id: number; sections: Record<string, number> } | undefined;
     for (const [titre, sections] of [
       ['La Taverne du Kraken', [lue]],
       ['Les Docks', [lue]],
@@ -185,7 +195,10 @@ export function semerBouchon(db: Db): boolean {
       ['Quartier des Cordiers', [lue]],
       ['Le Repaire des contrebandiers', [mjSeul]],
     ] as const) {
-      ranger(fiche('lieu', titre, [...sections]).id, port.id);
+      const f = fiche('lieu', titre, [...sections]);
+      if (titre === 'Les Docks') docks = f;
+      if (titre === 'La Taverne du Kraken') taverne = f;
+      ranger(f.id, port.id);
     }
     fiche('faction', 'Lames Grises', [{ titre: 'Description', lue: true }]);
     const cercle = fiche('faction', 'Cercle des Cendres', [{ titre: 'Secret — MJ seul', lue: false }]);
@@ -236,9 +249,31 @@ export function semerBouchon(db: Db): boolean {
     // `kanevas-import-tenir`: three relations that target Port-Sel (the criteria of its deletion); its place on
     // a map comes with the files (`semerFichiers`, a map is created asynchronously). A base short of 0005 has no table.
     if (db.prepare("SELECT 1 FROM sqlite_master WHERE name = 'relations'").get()) {
-      relierSection(db, id.antor, lame.id, aldric.id, aldric.sections['Apparence']!, { cibleFicheId: port.id, type: 'maître de port' });
-      relierSection(db, id.antor, lame.id, guilde.id, guilde.sections['Description']!, { cibleFicheId: port.id, type: 'y fait passer ses cargaisons' });
-      relierSection(db, id.antor, lame.id, rapport.id, rapport.sections['Secret — MJ seul']!, { cibleFicheId: port.id, type: 'surveille' });
+      relierSection(db, id.antor, lame.id, aldric.id, aldric.sections['Apparence']!, { cibleFicheId: port.id, qualificatif: 'maître de port' });
+      relierSection(db, id.antor, lame.id, guilde.id, guilde.sections['Description']!, { cibleFicheId: port.id, qualificatif: 'y fait passer ses cargaisons' });
+      relierSection(db, id.antor, lame.id, rapport.id, rapport.sections['Secret — MJ seul']!, { cibleFicheId: port.id, qualificatif: 'surveille' });
+      // `kanevas-fiches-liees-natures`: relations with a nature (AD-136) and the family « Les Corvalis » (a type).
+      const relier = (src: { id: number; sections: Record<string, number> }, section: string, cible: { id: number }, nature: string, qualificatif: string) =>
+        relierSection(db, id.antor, lame.id, src.id, src.sections[section]!, { cibleFicheId: cible.id, nature, qualificatif });
+      // A base short of 0013 still has the CHECK on `fiches.type`, which does not know « famille ».
+      const sqlFiches = (db.prepare("SELECT sql FROM sqlite_master WHERE name = 'fiches'").get() as { sql: string }).sql;
+      const corvalis = /CHECK\s*\(\s*type\s+IN/i.test(sqlFiches) ? undefined : fiche('famille', 'Les Corvalis', [{ titre: 'Description', lue: true }]);
+      // The E-9 descendant example also needs a creature; pre-0013 bases reject that type too.
+      if (taverne && !/CHECK\s*\(\s*type\s+IN/i.test(sqlFiches)) {
+        const kraken = fiche('creature', 'Le Kraken des Cales', [lue]);
+        relier(kraken, 'Description', taverne, 'se_situe', 'dort sous la taverne');
+      }
+      relier(aldric, 'Apparence', port, 'se_situe', 'habite');
+      relier(aldric, 'Apparence', guilde, 'membre', 'trésorier');
+      relier(prieur, 'Secret — MJ seul', port, 'se_situe', 'se cache');
+      // Same for the empty qualifier of a nature (0018): the old `relations` demands one.
+      const sqlRelations = (db.prepare("SELECT sql FROM sqlite_master WHERE name = 'relations'").get() as { sql: string }).sql;
+      if (docks && !/BETWEEN 1 AND 80/.test(sqlRelations)) relier(suie, 'Apparence', docks, 'se_situe', '');
+      relier(ombeline, 'Apparence', guilde, 'membre', 'dirige');
+      if (corvalis) {
+        relier(bran, 'Apparence', corvalis, 'membre', 'aîné');
+        relier(ombeline, 'Apparence', corvalis, 'membre', 'veuve');
+      }
     }
     // « Essai Kanka »: a place whose text waits for a key and points at a vanished sheet.
     const anse = creerFiche(db, id.antor, essai.id, { type: 'lieu', titre: 'Anse-aux-Sels' });
@@ -248,8 +283,74 @@ export function semerBouchon(db: Db): boolean {
         'Une crique que fréquentent [[cle:faction:repaire|les contrebandiers du Repaire]] et jadis [[999999|Capitaine Hesk]].',
     });
     changerAudience(db, id.antor, essai.id, anse.id, descriptionAnse.id, { joueursLisent: true });
+    if (modulesActifs().some((m) => m.nom === 'essai')) {
+      compte('roxane');
+      const eneria = creerUnivers(db, id.antor, { nom: "Éneria d'essai" });
+      ajouterMembre(db, id.antor, eneria.id, 'mira', 'mj');
+      ajouterMembre(db, id.antor, eneria.id, 'lea', 'joueur');
+      ajouterMembre(db, id.antor, eneria.id, 'roxane', 'joueur');
+      const systeme = creerEtRattacherSysteme(db, id.antor, eneria.id, { nom: "Système d'essai" });
+      const voisin = creerUnivers(db, id.antor, { nom: 'Univers voisin' });
+      rattacherSysteme(db, id.antor, voisin.id, systeme.id);
+      const ancien = creerUnivers(db, id.mira, { nom: 'Univers ancien' });
+      const systemeAncien = creerSystemeAncienPourBouchon(db, 'Système ancien');
+      rattacherSysteme(db, id.mira, ancien.id, systemeAncien.id);
+      if (modulesActifs().some((m) => m.nom === 'swn')) {
+        // The galaxy tool is on for the system, visible to GMs and players (B-71).
+        poserActivation(db, id.antor, { niveau: 'systeme', id: systeme.id }, 'swn/galaxie', true);
+        semerGalaxieEssai(db, eneria.id);
+        semerVaisseauxEssai(db, { antor: id.antor, lea: id.lea }, systeme.id, eneria.id);
+      }
+    }
+
+    // Migration tests also seed a pre-pivot base: adventures require the 0017 task schema.
+    if ((db.pragma('table_info(taches_preparation)') as { name: string }[]).some((c) => c.name === 'fiche_id')) {
+      const couronne = fiche('aventure', 'La Couronne brisée', [{ titre: 'Présentation', lue: true }], undefined, 'Campagne');
+      changerStatutFiche(db, { compteId: id.antor }, lame.id, couronne.id, 'en_cours');
+      const acte = fiche('aventure', 'Acte II — Le sceau brisé', [{ titre: 'Présentation', lue: false }], undefined, 'Scénario');
+      changerStatutFiche(db, { compteId: id.antor }, lame.id, acte.id, 'prete');
+      ranger(acte.id, couronne.id);
+      ajouterTache(db, id.antor, couronne.id, { categorie: 'cartes', libelle: 'Plan de la crypte' });
+      ajouterTache(db, id.antor, couronne.id, { categorie: 'deroulements', libelle: 'Que se passe-t-il si Léa refuse le sceau ?' });
+      creerCompteRendu(db, id.lea, lame.id, couronne.id, {
+        titre: 'Séance 12', texte: 'La compagnie poursuit la piste du sceau brisé.',
+      });
+    }
   })();
   return true;
+}
+
+const EXEMPLES = join(dirname(fileURLToPath(import.meta.url)), '..', 'outils', 'swn', 'exemples');
+const exemple = (nom: string): unknown => JSON.parse(readFileSync(join(EXEMPLES, nom), 'utf8'));
+
+/**
+ * The ship designer on the trial universe (V-11): the tool on for the system, the invented catalogue imported at both levels
+ * (the spear at the universe's), and three ship sheets — « Vent d'Orak » (Léa's design, readable by her and the GMs),
+ * « Étoile du soir » (Léa's design, readable by the players) and « Aube de Sel » (no design yet).
+ */
+function semerVaisseauxEssai(db: Db, id: { antor: number; lea: number }, systemeId: number, universId: number): void {
+  const antor = { compteId: id.antor };
+  const lea = { compteId: id.lea };
+  poserActivation(db, id.antor, { niveau: 'systeme', id: systemeId }, 'swn/vaisseaux', true);
+  appliquerCatalogue(db, antor, { niveau: 'systeme', id: systemeId }, 'swn/vaisseaux', exemple('catalogue-essai.json'));
+  appliquerCatalogue(db, antor, { niveau: 'univers', id: universId }, 'swn/vaisseaux', exemple('catalogue-essai-univers.json'));
+  const fiche = (titre: string) => creerFiche(db, id.antor, universId, { type: 'vaisseau', titre }).id;
+  const ligne = (nature: string, cle: string) => ({ nature, cle, quantite: 1 });
+
+  const orak = fiche("Vent d'Orak");
+  creerConception(db, antor, universId, { ficheId: orak, coque: 'fregate', auteurId: id.lea });
+  enregistrerConception(db, lea, universId, orak, {
+    coque: 'fregate', version: 1,
+    choix: [ligne('moteurs', 'moteur-2'), ligne('amenagements', 'soute'), ligne('armes', 'laser'), ligne('armes', 'lance-d-essai')],
+  });
+
+  const etoile = fiche('Étoile du soir');
+  const vue = creerConception(db, antor, universId, { ficheId: etoile, coque: 'eclaireur', auteurId: id.lea });
+  enregistrerConception(db, lea, universId, etoile, { coque: 'eclaireur', version: vue.version, choix: [ligne('moteurs', 'moteur-1'), ligne('armes', 'laser')] });
+  const section = lireFiche(db, antor, universId, etoile).sections.find((s) => s.titre === 'Caractéristiques')!;
+  changerAudience(db, id.antor, universId, etoile, section.id, { joueursLisent: true });
+
+  fiche('Aube de Sel');
 }
 
 /** The stub token of « Essai Kanka » (docs/ecrans.md): fixed, known to the tests, stub mode only. */
@@ -360,6 +461,7 @@ async function semerFichiers(db: Db, racine: string): Promise<void> {
   // A graph map holds Port-Sel (its place goes with it when the sheet is deleted).
   const graphe = await creerCarte(db, antor.compteId, false, univers, { titre: 'Carte de la côte', forme: 'graphe' });
   ajouterElement(db, antor.compteId, false, graphe.id, { ficheId: trouver('Port-Sel').id });
+  ajouterElement(db, antor.compteId, false, graphe.id, { ficheId: trouver('Maître Aldric').id });
 
   const lb = trouver('Léa Brisefer');
   const notes = ajouterSection(db, antor.compteId, univers, lb.id, {

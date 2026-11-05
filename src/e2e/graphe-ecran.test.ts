@@ -163,7 +163,7 @@ test('Léa, graphe visible : trois nœuds et le seul « rival de » ; toucher un
   assert.ok(!t.includes('allié de'), 'le lien porté par une section illisible n’apparaît pas');
   for (const interdit of ['Retirer', 'Ajouter une fiche', 'Rendre visible', 'Renommer']) assert.ok(!t.includes(interdit));
   const l = (await api(lea, 'GET', base())).body;
-  assert.deepEqual(l.liens.map((x: Any) => x.type), ['rival de']);
+  assert.deepEqual(l.liens.map((x: Any) => x.libelle), ['rival de']);
   await lea.screenshot({ path: '/tmp/e11-graphe-joueuse.png' });
 
   await lea.locator('.graphe .carte-token[aria-label="La Guilde"]').click();

@@ -6,6 +6,7 @@ import { createServer } from 'node:net';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { after, before, describe, test } from 'node:test';
+import { attendreServeurPret, withStartupLock } from './harnais.test.js';
 
 // E-5 (docs/ecrans.md, maquette e05): in the « Membres » zone, the add form is a field « Identifiant du
 // compte », a role (Joueur by default) and « Ajouter ». Re-verification of the 390 px gap: the identifier
@@ -37,7 +38,12 @@ async function freePort(): Promise<number> {
   });
 }
 
-async function demarrer() {
+// Startups share the harness lock: one server or browser launching at a time on the pod.
+function demarrer(...args: Parameters<typeof demarrerSansVerrou>): ReturnType<typeof demarrerSansVerrou> {
+  return withStartupLock(() => demarrerSansVerrou(...args));
+}
+
+async function demarrerSansVerrou() {
   const port = await freePort();
   const dossier = mkdtempSync(join(tmpdir(), 'kanevas-ordre-'));
   const env: NodeJS.ProcessEnv = {
@@ -52,22 +58,19 @@ async function demarrer() {
   for (const k of Object.keys(env)) if (k.startsWith('OIDC_')) delete env[k];
   const child: ChildProcess = spawn('node', ['--import', 'tsx', 'src/server.ts'], { env, stdio: 'ignore' });
   const base = `http://127.0.0.1:${port}`;
-  for (let i = 0; i < 150; i++) {
-    try {
-      await fetch(`${base}/healthz`);
-      return {
-        base,
-        stop: () => {
-          child.kill('SIGKILL');
-          rmSync(dossier, { recursive: true, force: true });
-        },
-      };
-    } catch {
-      await new Promise((r) => setTimeout(r, 100));
-    }
+  try {
+    await attendreServeurPret(child, base, () => '');
+  } catch (e) {
+    child.kill('SIGKILL');
+    throw e;
   }
-  child.kill('SIGKILL');
-  throw new Error('server did not start');
+  return {
+    base,
+    stop: () => {
+      child.kill('SIGKILL');
+      rmSync(dossier, { recursive: true, force: true });
+    },
+  };
 }
 
 
@@ -115,7 +118,7 @@ async function ordre(largeur: number) {
 
 describe('E-5 ordre : liste, puis formulaire d\'ajout (E-4 inchangé)', { skip: pw ? false : 'playwright introuvable' }, () => {
   before(async () => {
-    browser = await pw!.chromium.launch();
+    browser = await withStartupLock(() => pw!.chromium.launch());
   });
   after(async () => {
     await browser?.close();

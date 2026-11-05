@@ -6,24 +6,18 @@
 //
 // TEST PLAN (need → cases; every expectation is a literal written from the docs)
 //   P-10 / critère  nominal   : the client pushes the sample into « Essai Kanka » with the Jeton du bouchon:
-//                               11 fiches, 3 fichiers, 2 campagnes, 2 scénarios, 3 relations created, 0 refusal
+//                               15 fiches (4 adventure sheets among them), 3 fichiers, 3 relations created, 0 refusal
 //                               (ARCHITECTURE « Échantillon de reprise »)
-//                   rejeu     : « Fiches : 0 créée », 11 inchangées, nothing created in any other nature, no new row
+//                   rejeu     : « Fiches : 0 créée », 15 inchangées, nothing created in any other nature, no new row
 //   B-50 / E-13     nominal   : the three journals sent out of order (3 Mar, 10 Feb, 18 Apr 2021) read 18 Apr, 3 Mar, 10 Feb
 //                               on screen, the line shows the origin date
 //                   bords     : a journal without origin date (created now) comes first; one from 2020 comes last
 //                   exclusion : a journal whose every section is closed to players is absent for Léa, total does not count it
-//   B-47 campagnes  nominal   : PUT campagne creee then inchangee, one row; name change → mise_a_jour
-//                   bords     : the three statuts accepted; empty name and unknown statut → 400 invalide, nothing written
-//                   scénario  : creee, inchangee; 100 000 characters accepted, 100 001 refused (400), nothing written
 //   B-47 CR         échec     : compte-rendu with an unknown campaign → refused with « campagne inconnue : … », not created,
 //                               batch shows 1 refusal with key and reason (B-49); client exits non-zero (refus.json)
 //   B-47 relations  nominal   : creee then inchangee; unknown target → ignoree + warning; unknown source fiche → 404
-//   B-48            nominal   : campaign status changed by hand is not overwritten on the next replay, the batch names it;
-//                               scenario content changed by hand likewise
-//   critère E-7     nominal   : the 60 000-character scenario with [[cle:lieu:eneria-prime|…]] reads formatted on E-7 and its
-//                               link opens « Éneria Prime »
-//   exclusions      : no token → 401, a token of another universe → 404; closed batch → 409 lot_clos
+//   exclusions      : no token → 401, a token of another universe → 404; closed batch → 409 lot_clos; the routes of
+//                     campaigns and scenarios answer 404 (AD-127)
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
 import { mkdirSync } from 'node:fs';
@@ -149,13 +143,15 @@ test('P-10 : le client pousse l’échantillon dans Essai Kanka, rejoué il ne c
   assert.equal(lots.length, 1);
   const c = lots[0].compteurs;
   assert.deepEqual(
-    [c.fiches.creees, c.fichiers.creees, c.campagnes.creees, c.scenarios.creees, c.relations.creees],
-    [11, 3, 2, 2, 3],
+    [c.fiches.creees, c.fichiers.creees, c.relations.creees],
+    [15, 3, 3],
   );
   assert.deepEqual(
-    [c.fiches.refusees, c.fichiers.refusees, c.campagnes.refusees, c.scenarios.refusees, c.relations.refusees],
-    [0, 0, 0, 0, 0],
+    [c.fiches.refusees, c.fichiers.refusees, c.relations.refusees],
+    [0, 0, 0],
   );
+  assert.equal(lots[0].campagnes, undefined);
+  assert.equal(lots[0].compteurs.scenarios, undefined);
   assert.equal(lots[0].refus.length, 0);
   assert.equal(lots[0].avertissements, 1);
 
@@ -165,9 +161,9 @@ test('P-10 : le client pousse l’échantillon dans Essai Kanka, rejoué il ne c
   assert.match(second.out, /Fiches : 0 créée/);
   const lots2 = (await session(m, antor, `/univers/${m.essai}/lots`)).json as Any[];
   const d = lots2[0].compteurs;
-  assert.deepEqual([d.fiches.creees, d.fichiers.creees, d.campagnes.creees, d.scenarios.creees, d.relations.creees], [0, 0, 0, 0, 0]);
-  assert.deepEqual([d.fiches.inchangees, d.fichiers.inchangees, d.campagnes.inchangees, d.scenarios.inchangees, d.relations.inchangees], [11, 3, 2, 2, 3]);
-  assert.equal((await session(m, antor, `/univers/${m.essai}/campagnes`)).json.campagnes.length, 2);
+  assert.deepEqual([d.fiches.creees, d.fichiers.creees, d.relations.creees], [0, 0, 0]);
+  assert.deepEqual([d.fiches.inchangees, d.fichiers.inchangees, d.relations.inchangees], [15, 3, 3]);
+  assert.equal((await session(m, antor, `/univers/${m.essai}/fiches?type=aventure`)).json.fiches.length, 4);
   assert.equal((await session(m, antor, `/univers/${m.essai}/fiches?type=compte_rendu`)).json.fiches.length, avant);
   assert.equal((await session(m, antor, `/univers/${m.essai}/comptes-rendus`)).json.total, 3);
 });
@@ -255,64 +251,6 @@ test('B-47 : un compte-rendu d’une campagne absente est refusé avec la raison
   assert.equal((await session(m, antor, `/univers/${m.essai}/comptes-rendus`)).json.total, 0);
 });
 
-test('B-47 : une campagne se crée, ne change pas si rien ne change, se met à jour sinon', async () => {
-  // Panne visée : doublon de campagne au rejeu, ou changement de nom ignoré.
-  const m = await monde();
-  const antor = await cookieDe(m, 'antor');
-  const a = await imp(m, 'PUT', '/campagnes/c:un', { nom: 'Les Marches', statut: 'en_preparation' });
-  assert.equal(a.status, 200);
-  assert.equal(a.json.etat, 'creee');
-  const b = await imp(m, 'PUT', '/campagnes/c:un', { nom: 'Les Marches', statut: 'en_preparation' });
-  assert.equal(b.json.etat, 'inchangee');
-  assert.equal(b.json.id, a.json.id);
-  const c = await imp(m, 'PUT', '/campagnes/c:un', { nom: 'Les Marches rouges', statut: 'en_preparation' });
-  assert.equal(c.json.etat, 'mise_a_jour');
-  const l = (await session(m, antor, `/univers/${m.essai}/campagnes`)).json.campagnes as Any[];
-  const miennes = l.filter((x) => x.nom.startsWith('Les Marches'));
-  assert.equal(miennes.length, 1);
-  assert.equal(miennes[0].nom, 'Les Marches rouges');
-  for (const [k, s] of [['c:deux', 'active'], ['c:trois', 'terminee']] as const) {
-    const r = await imp(m, 'PUT', `/campagnes/${k}`, { nom: `Camp ${k}`, statut: s });
-    assert.equal(r.json.etat, 'creee', `${s}: ${JSON.stringify(r.json)}`);
-  }
-});
-
-test('B-47 : une campagne au statut inconnu ou sans nom est refusée (400) et rien n’est écrit', async () => {
-  // Panne visée : un statut libre ou un nom vide entre en base.
-  const m = await monde();
-  const antor = await cookieDe(m, 'antor');
-  const avant = (await session(m, antor, `/univers/${m.essai}/campagnes`)).json.campagnes.length;
-  const s = await imp(m, 'PUT', '/campagnes/c:x', { nom: 'X', statut: 'bizarre' });
-  assert.equal(s.status, 400);
-  assert.equal(s.json.code, 'invalide');
-  const n = await imp(m, 'PUT', '/campagnes/c:y', { nom: '', statut: 'active' });
-  assert.equal(n.status, 400);
-  assert.equal(n.json.code, 'invalide');
-  assert.equal((await session(m, antor, `/univers/${m.essai}/campagnes`)).json.campagnes.length, avant);
-});
-
-test('B-47 : un scénario se crée sous sa campagne, 100 000 caractères passent, 100 001 sont refusés', async () => {
-  // Panne visée : plafond absent ou décalé d'un caractère ; scénario orphelin d'une campagne inconnue.
-  const m = await monde();
-  const antor = await cookieDe(m, 'antor');
-  await imp(m, 'PUT', '/campagnes/c:un', { nom: 'Les Marches', statut: 'active' });
-  const a = await imp(m, 'PUT', '/campagnes/c:un/scenarios/s:un', { titre: 'Acte I', contenu: 'Début' });
-  assert.equal(a.status, 200);
-  assert.equal(a.json.etat, 'creee');
-  assert.equal((await imp(m, 'PUT', '/campagnes/c:un/scenarios/s:un', { titre: 'Acte I', contenu: 'Début' })).json.etat, 'inchangee');
-  assert.equal((await imp(m, 'PUT', '/campagnes/c:un/scenarios/s:un', { titre: 'Acte I', contenu: 'Début, suite' })).json.etat, 'mise_a_jour');
-  const pile = await imp(m, 'PUT', '/campagnes/c:un/scenarios/s:pile', { titre: 'Pile', contenu: 'a'.repeat(100_000) });
-  assert.equal(pile.status, 200, JSON.stringify(pile.json).slice(0, 200));
-  const trop = await imp(m, 'PUT', '/campagnes/c:un/scenarios/s:trop', { titre: 'Trop', contenu: 'a'.repeat(100_001) });
-  assert.equal(trop.status, 400);
-  assert.equal(trop.json.code, 'invalide');
-  const camp = ((await session(m, antor, `/univers/${m.essai}/campagnes`)).json.campagnes as Any[]).find((x) => x.nom === 'Les Marches');
-  const sc = (await session(m, antor, `/campagnes/${camp.id}/scenarios`)).json.scenarios as Any[];
-  assert.deepEqual(sc.map((x) => x.titre).sort(), ['Acte I', 'Pile']);
-  const orphelin = await imp(m, 'PUT', '/campagnes/c:absente/scenarios/s:o', { titre: 'O', contenu: 'x' });
-  assert.ok(orphelin.status >= 400 && orphelin.status < 500, String(orphelin.status));
-});
-
 test('B-47 : une relation se crée, ne change pas au rejeu, vers une cible inconnue elle est ignorée avec un avertissement', async () => {
   // Panne visée : relation en double au rejeu, ou cible inconnue qui fait échouer ou qui invente une fiche.
   const m = await monde();
@@ -331,61 +269,6 @@ test('B-47 : une relation se crée, ne change pas au rejeu, vers une cible incon
   const e = await imp(m, 'POST', '/fiches/lieu:eneria/relations', [{ ...entree, cible: 'lieu:eneria' }]);
   assert.equal(e.json[0].etat, 'refusee');
   assert.equal(e.json[0].code, 'auto_relation');
-});
-
-test('B-48 : le statut d’une campagne et le contenu d’un scénario changés à la main ne sont pas écrasés au rejeu, le lot le dit', async () => {
-  // Panne visée : le rejeu rétablit la valeur du script par-dessus le travail du MJ.
-  const m = await monde();
-  const antor = await cookieDe(m, 'antor');
-  assert.equal((await client(m)).code, 0);
-  const camps = (await session(m, antor, `/univers/${m.essai}/campagnes`)).json.campagnes as Any[];
-  const eneria = camps.find((x) => x.nom === 'Éneria');
-  assert.equal(eneria.statut, 'active');
-  const p = await session(m, antor, `/campagnes/${eneria.id}`, 'PATCH', { statut: 'terminee' });
-  assert.equal(p.status, 200, JSON.stringify(p.json));
-  const scs = (await session(m, antor, `/campagnes/${eneria.id}/scenarios`)).json.scenarios as Any[];
-  const long = scs.find((x) => x.titre.startsWith('La Mission'));
-  const w = await session(m, antor, `/scenarios/${long.id}`, 'PUT', { titre: long.titre, contenu: 'Réécrit par le MJ.', version: long.version });
-  assert.equal(w.status, 200, JSON.stringify(w.json));
-
-  const r = await client(m);
-  assert.equal(r.code, 0, r.out);
-  const apres = (await session(m, antor, `/univers/${m.essai}/campagnes`)).json.campagnes.find((x: Any) => x.nom === 'Éneria');
-  assert.equal(apres.statut, 'terminee');
-  const sc2 = (await session(m, antor, `/scenarios/${long.id}`)).json;
-  assert.equal(sc2.contenu ?? sc2.scenario?.contenu, 'Réécrit par le MJ.');
-  assert.match(r.out, /c:eneria : statut modifié dans Kanevas : non écrasé/);
-  const lots = (await session(m, antor, `/univers/${m.essai}/lots`)).json as Any[];
-  const raisons = lots[0].alertes.map((x: Any) => `${x.cle} : ${x.raison}`);
-  assert.ok(raisons.includes('c:eneria : statut modifié dans Kanevas : non écrasé'), raisons.join('\n'));
-  assert.ok(raisons.some((x: string) => x.startsWith('s:long')), raisons.join('\n'));
-  assert.equal(lots[0].compteurs.fiches.creees, 0);
-});
-
-test('critère : le scénario de 60 000 caractères se lit mis en forme sur E-7 et son lien ouvre Éneria Prime', { ...opts }, async () => {
-  // Panne visée : lien [[cle:…]] laissé en clair dans un scénario, ou texte tronqué / non rendu en Markdown.
-  const m = await monde();
-  assert.equal((await client(m)).code, 0);
-  const antor = await cookieDe(m, 'antor');
-  const camp = ((await session(m, antor, `/univers/${m.essai}/campagnes`)).json.campagnes as Any[]).find((x) => x.nom === 'Éneria');
-  const sc = ((await session(m, antor, `/campagnes/${camp.id}/scenarios`)).json.scenarios as Any[]).find((x) => x.titre.startsWith('La Mission'));
-  const { ctx, page } = await connecter(m, 'antor');
-  await page.goto(`/univers/${m.essai}/scenarios/${sc.id}`);
-  await page.waitForLoadState('networkidle');
-  await page.getByText('Pitch d’ensemble').first().waitFor();
-  const txt: string = await page.locator('main').innerText();
-  assert.ok(txt.length > 40_000, `texte rendu de ${txt.length} caractères`);
-  assert.ok(!txt.includes('[[cle:'), 'aucun lien en clair');
-  assert.ok(!txt.includes('####') && !txt.includes('**'), 'la mise en forme Markdown est rendue, pas affichée');
-  await page.screenshot({ path: `${CAP}/e7-scenario-long.png` });
-  const lien = page.locator('main').getByRole('link', { name: 'Éneria Prime' }).first();
-  await lien.waitFor();
-  await lien.click();
-  await page.waitForURL(/\/univers\/\d+\/fiche\/\d+/);
-  await page.waitForLoadState('networkidle');
-  await page.getByRole('heading', { name: 'Éneria Prime' }).first().waitFor();
-  await page.screenshot({ path: `${CAP}/e7-lien-ouvre-fiche.png` });
-  await ctx.close();
 });
 
 test('P-10 étape 6 : en mode Joueur, rien du MJ de l’échantillon n’apparaît pour Léa', { ...opts }, async () => {
@@ -409,26 +292,31 @@ test('P-10 étape 6 : en mode Joueur, rien du MJ de l’échantillon n’appara�
   await ctx.close();
 });
 
-test('exclusions : l’API de reprise refuse sans jeton, d’un autre univers, et sur un lot clos', async () => {
-  // Panne visée : une route de campagne ou de scénario oublie la garde du jeton (B-48 protège l'import).
+test('exclusions : l’API de reprise refuse sans jeton, d’un autre univers, sur un lot clos ; les routes des campagnes et scénarios sont retirées', async () => {
+  // Panne visée : une route oublie la garde du jeton (B-48 protège l'import) ; une ancienne route survit.
   const m = await monde();
-  const sans = await imp(m, 'PUT', '/campagnes/c:x', { nom: 'X', statut: 'active' }, null);
+  const corps = { type: 'lieu', titre: 'X', sections: [section('x')] };
+  const sans = await imp(m, 'PUT', '/fiches/lieu:x', corps, null);
   assert.equal(sans.status, 401);
   assert.equal(sans.json.code, 'jeton_invalide');
-  const faux = await imp(m, 'PUT', '/campagnes/c:x', { nom: 'X', statut: 'active' }, 'kvs_pasbon');
+  const faux = await imp(m, 'PUT', '/fiches/lieu:x', corps, 'kvs_pasbon');
   assert.equal(faux.status, 401);
-  const ailleurs = await fetch(`${m.base}/api/import/v1/univers/${m.essai + 1}/campagnes/c:x`, {
+  const ailleurs = await fetch(`${m.base}/api/import/v1/univers/${m.essai + 1}/fiches/lieu:x`, {
     method: 'PUT',
     headers: { authorization: `Bearer ${JETON}`, 'content-type': 'application/json' },
-    body: JSON.stringify({ nom: 'X', statut: 'active' }),
+    body: JSON.stringify(corps),
   });
   assert.equal(ailleurs.status, 404);
   const antor = await cookieDe(m, 'antor');
-  assert.equal(((await session(m, antor, `/univers/${m.essai}/campagnes`)).json.campagnes as Any[]).length, 0);
+  assert.ok(!((await session(m, antor, `/univers/${m.essai}/fiches?type=lieu`)).json.fiches as Any[]).some((f) => f.titre === 'X'));
   const lot = await imp(m, 'POST', '/lots');
   assert.equal(lot.status, 201);
   assert.equal((await imp(m, 'POST', `/lots/${lot.json.lotId}/clore`)).status, 200);
-  const clos = await imp(m, 'PUT', `/campagnes/c:x?lot=${lot.json.lotId}`, { nom: 'X', statut: 'active' });
+  const clos = await imp(m, 'PUT', `/fiches/lieu:x?lot=${lot.json.lotId}`, corps);
   assert.equal(clos.status, 409);
   assert.equal(clos.json.code, 'lot_clos');
+  for (const chemin of ['/campagnes/c:x', '/campagnes/c:x/scenarios/s:y', '/scenarios/s:y']) {
+    const retire = await imp(m, 'PUT', chemin, { nom: 'X', titre: 'X', statut: 'active' });
+    assert.equal(retire.status, 404, chemin);
+  }
 });

@@ -6,7 +6,6 @@ import { env } from '../config/env.js';
 import { assurerCompte, lireCompte } from '../services/comptes.js';
 import { invalide } from '../services/erreurs.js';
 import { contenuPublic, rendreApercu } from '../services/markdown.js';
-import { exigerMJDeCampagne } from '../services/campagnes.js';
 import { exigerRole, resolveurLiens } from '../services/droits.js';
 import { MAX_CONTENU_SECTION, validerContenu } from '../services/sections.js';
 import {
@@ -27,6 +26,7 @@ import { registerSystemesRoutes } from './systemes.js';
 import { registerSuiviRoutes } from './suivi.js';
 import { registerAssistantRoutes } from './assistant.js';
 import { registerAccesApiRoutes } from './acces-api.js';
+import { registerOutilsRoutes } from './outils.js';
 import { registerPropositionsRoutes } from './propositions.js';
 import { chargerFrontend } from './frontend.js';
 import { pageIntrouvable, urlConnexion } from './pages.js';
@@ -37,6 +37,17 @@ declare module 'fastify' {
     session: Session | null;
   }
 }
+
+/** The seven brand files served without a session (AD-135), and no other root file. */
+export const FICHIERS_MARQUE = [
+  'favicon.ico',
+  'favicon.svg',
+  'apple-touch-icon.png',
+  'icon-192.png',
+  'icon-512.png',
+  'icon-maskable-512.png',
+  'site.webmanifest',
+] as const;
 
 /** Sets the session cookie after an authentication (OIDC callback or stub choice). */
 export function ouvrirSession(
@@ -75,6 +86,19 @@ export async function registerSessionRoutes(app: FastifyInstance) {
     reply.clearCookie(SESSION_COOKIE, { path: '/' });
     return { loginUrl: urlConnexion() };
   });
+
+  // Brand files (AD-135): public, before the guard scope — a browser fetches them without the cookie.
+  if (frontend) {
+    await app.register(async (publics) => {
+      await publics.register(fastifyStatic, { root: frontend.racine, serve: false, maxAge: 86_400_000 });
+      for (const nom of FICHIERS_MARQUE) {
+        publics.get(`/${nom}`, async (_request, reply) => {
+          if (nom === 'site.webmanifest') reply.type('application/manifest+json');
+          return reply.sendFile(nom);
+        });
+      }
+    });
+  }
 
   // Unknown addresses: /api answers 404 even without a session; elsewhere no session means the sign-in.
   app.setNotFoundHandler(async (request, reply) => {
@@ -130,6 +154,7 @@ export async function registerSessionRoutes(app: FastifyInstance) {
     registerAssistantRoutes(garde);
     registerPropositionsRoutes(garde);
     registerAccesApiRoutes(garde);
+    await registerOutilsRoutes(garde);
   });
 }
 
@@ -154,12 +179,6 @@ function registerGuardedRoutes(app: FastifyInstance) {
       corps.contexte !== null && typeof corps.contexte === 'object'
         ? (corps.contexte as Record<string, unknown>)
         : corps;
-    if (ctx.nature === 'scenario' && Number.isInteger(ctx.campagne_id)) {
-      // A scenario's links read in the universe of its campaign, for its GM (AD-97).
-      const campagne = exigerMJDeCampagne(app.db, request.session!.id, ctx.campagne_id as number);
-      const liens = resolveurLiens(app.db, campagne.univers_id, 'mj', { compteId: request.session!.id }, texte);
-      return { html: rendreApercu(texte, null, liens, 'scenario') };
-    }
     if (ctx.nature !== 'section') return { html: rendreApercu(texte, null) };
     if (!Number.isInteger(ctx.univers_id)) throw invalide("L'univers est requis pour l'aperçu d'une section.");
     const role = exigerRole(app.db, ctx.univers_id as number, request.session!.id);

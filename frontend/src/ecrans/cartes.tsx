@@ -2,7 +2,7 @@ import { Eye, EyeOff, ImagePlus, Plus, ChevronDown, X } from 'lucide-react';
 import { useEffect, useId, useRef, useState, type FormEvent } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 
-import { appeler, lire, useConnexionPerdue } from '../api';
+import { ErreurApi, appeler, lire, useConnexionPerdue } from '../api';
 import { useCharge } from '../cadre-contexte';
 import type { Ecran } from '../registre';
 import type { UniversListe } from '../types';
@@ -10,7 +10,7 @@ import { Bouton, Champ, Chargement, ErreurChargement, Pastille, PageIntrouvable 
 import './ecrans.css';
 import './cartes/cartes.css';
 import { Vignette } from './cartes/vignette';
-import { adresseCarte, FORMES, type Carte, type PageCartes } from './cartes/commun';
+import { adresseCarte, estCarteOutil, FORMES, type Carte, type CarteOutil, type PageCartes } from './cartes/commun';
 
 const ECHEC = 'L’action n’a pas abouti. Réessayez.';
 const NON_IMAGE = 'ce fichier n’est pas une image (PNG, JPEG, GIF ou WebP).';
@@ -23,19 +23,22 @@ function Cartes() {
   const perdue = useConnexionPerdue();
   const [univers] = useCharge<UniversListe>(`/api/univers/${id}`);
   const [page, recharger] = useCharge<PageCartes>(`/api/univers/${id}/cartes`);
-  const [cartes, setCartes] = useState<Carte[]>([]);
+  const [cartes, setCartes] = useState<(Carte | CarteOutil)[]>([]);
   const [suivant, setSuivant] = useState<string | null>(null);
+  const [formes, setFormes] = useState<NonNullable<PageCartes['formes']>>([]);
+  const [messageOutil, setMessageOutil] = useState<{ id: number; texte: string; recharger: boolean } | null>(null);
   const [suiteEnCours, setSuiteEnCours] = useState(false);
   const [suiteEchec, setSuiteEchec] = useState(false);
   const [echec, setEchec] = useState(false);
 
   const [ouvert, setOuvert] = useState(false);
   const [titre, setTitre] = useState('');
-  const [forme, setForme] = useState<Carte['forme']>('illustree');
+  const [forme, setForme] = useState<string>('illustree');
   const [fond, setFond] = useState<File | null>(null);
   const [erreurTitre, setErreurTitre] = useState<string>();
   const [erreurFond, setErreurFond] = useState<string>();
   const [echecCreation, setEchecCreation] = useState(false);
+  const [texteCreation, setTexteCreation] = useState('La carte n’a pas pu être créée. Réessayez.');
   const [enCours, setEnCours] = useState(false);
   const [enCoursVisible, setEnCoursVisible] = useState<number>();
   const saisieFichier = useRef<HTMLInputElement>(null);
@@ -45,6 +48,7 @@ function Cartes() {
     if (page.etat === 'ok') {
       setCartes(page.valeur.cartes);
       setSuivant(page.valeur.suivant);
+      setFormes(page.valeur.formes ?? []);
     }
   }, [page]);
 
@@ -80,9 +84,30 @@ function Cartes() {
     setEnCoursVisible(c.id);
     try {
       const maj = await appeler<Carte>('PATCH', `/api/univers/${id}/cartes/${c.id}`, { visible: !c.visible });
-      setCartes((l) => l.map((x) => (x.id === c.id ? { ...x, visible: maj.visible } : x)));
+      setCartes((l) => l.map((x) => (!estCarteOutil(x) && x.id === c.id ? { ...x, visible: maj.visible } : x)));
     } catch {
       setEchec(true);
+    } finally {
+      setEnCoursVisible(undefined);
+    }
+  }
+
+  async function basculerOutil(c: CarteOutil) {
+    if (enCoursVisible !== undefined || c.version === undefined) return;
+    setEchec(false);
+    setMessageOutil(null);
+    setEnCoursVisible(c.id);
+    try {
+      const maj = await appeler<{ version: number }>('PATCH', `/api/univers/${id}/outils/${c.outil.module}/${c.outil.outil}/cartes/${c.id}`, { visible: !c.visible, version: c.version });
+      setCartes((l) => l.map((x) => (estCarteOutil(x) && x.id === c.id && x.outil.outil === c.outil.outil ? { ...x, visible: !c.visible, version: maj.version } : x)));
+    } catch (e) {
+      if (e instanceof ErreurApi && e.code === 'donnee_modifiee') {
+        setMessageOutil({ id: c.id, texte: 'Cette galaxie a changé depuis que vous l’avez ouverte.', recharger: true });
+      } else if (e instanceof ErreurApi && e.statut === 404) {
+        setMessageOutil({ id: c.id, texte: 'Cet outil est désactivé.', recharger: false });
+      } else if (!(e instanceof ErreurApi && e.statut === 0)) {
+        setEchec(true);
+      }
     } finally {
       setEnCoursVisible(undefined);
     }
@@ -110,6 +135,12 @@ function Cartes() {
     setEnCours(true);
     try {
       let carte: Carte;
+      const outil = formes.find((f) => `${f.module}/${f.outil}` === forme);
+      if (outil) {
+        const { id: nouvelle } = await appeler<{ id: number }>('POST', `/api/univers/${id}/outils/${outil.module}/${outil.outil}/cartes`, { titre: t });
+        navigate(`/univers/${id}/outils/${outil.module}/${outil.outil}/${nouvelle}`);
+        return;
+      }
       if (forme === 'illustree' && fond) {
         // Order matters: the server reads `titre` and `forme` before the file part.
         const corps = new FormData();
@@ -137,8 +168,14 @@ function Cartes() {
         carte = await appeler<Carte>('POST', `/api/univers/${id}/cartes`, { titre: t, forme });
       }
       navigate(adresseCarte(id!, carte.id));
-    } catch {
+    } catch (e) {
+      if (e instanceof ErreurApi && e.statut === 0) return;
       setEchecCreation(true);
+      const outil = forme !== 'illustree' && forme !== 'graphe';
+      setTexteCreation(
+        e instanceof ErreurApi && e.statut === 404 ? 'Cet outil est désactivé.'
+          : outil ? 'L’enregistrement a échoué. Réessayez.' : 'La carte n’a pas pu être créée. Réessayez.',
+      );
     } finally {
       setEnCours(false);
     }
@@ -162,7 +199,7 @@ function Cartes() {
         <form className="carte-formulaire" onSubmit={creer} noValidate aria-label="Nouvelle carte">
           {echecCreation && (
             <div className="echec" role="alert">
-              La carte n’a pas pu être créée. Réessayez.
+              {texteCreation}
             </div>
           )}
           <Champ
@@ -175,10 +212,11 @@ function Cartes() {
             liste
             etiquette="Forme"
             value={forme}
-            onChange={(e: { target: { value: string } }) => setForme(e.target.value as Carte['forme'])}
+            onChange={(e: { target: { value: string } }) => setForme(e.target.value)}
           >
             <option value="illustree">Carte illustrée</option>
             <option value="graphe">Graphe</option>
+            {formes.map((f) => <option key={`${f.module}/${f.outil}`} value={`${f.module}/${f.outil}`}>{f.libelle}</option>)}
           </Champ>
           {forme === 'illustree' && (
             <div>
@@ -217,7 +255,28 @@ function Cartes() {
         </div>
       ) : (
         <ul className="cartes-liste">
-          {cartes.map((c) => (
+          {cartes.map((c) => estCarteOutil(c) ? (
+            <li key={`outil-${c.outil.module}-${c.outil.outil}-${c.id}`} className="carte-ligne">
+              <span className="carte-vignette neutre hexagones" aria-hidden="true" />
+              <div className="carte-corps">
+                <Link to={c.adresse}>{c.titre}</Link>
+              </div>
+              <div className="carte-etat">
+                <Pastille sens="neutre">Galaxie</Pastille>
+                {mj && c.visible === false && <Pastille sens="mj">MJ seul</Pastille>}
+                {mj && c.visible !== undefined && c.version !== undefined && (
+                  <Bouton petit icone={c.visible ? EyeOff : Eye} ecrit enCours={enCoursVisible === c.id} onClick={() => void basculerOutil(c)}>
+                    {c.visible ? 'Cacher aux joueurs' : 'Rendre visible'}
+                  </Bouton>
+                )}
+                {messageOutil?.id === c.id && (
+                  <span className="echec" role="alert">{messageOutil.texte}{' '}
+                    {messageOutil.recharger && <Bouton petit onClick={() => { setMessageOutil(null); recharger(); }}>Recharger</Bouton>}
+                  </span>
+                )}
+              </div>
+            </li>
+          ) : (
             <li key={c.id} className="carte-ligne">
               <Vignette universId={id!} carte={c} classe="carte-vignette" />
               <div className="carte-corps">
