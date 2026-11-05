@@ -78,12 +78,12 @@ describe('E-22 : conception périmée et « Recalculer »', { skip: skipBrowser,
     await page.getByText(BANDE).waitFor();
     const t = await txt(page);
     assert.match(t, /685 000 cr/);
-    assert.match(t, /Résultat enregistré/);
+    assert.match(t, /Résultats/);
     assert.match(t, /15\s*(cases|\/)/);
     assert.equal(await page.getByRole('button', { name: 'Recalculer' }).count(), 1);
     // la bande est au-dessus des résultats
     const yBande = (await page.getByText(BANDE).boundingBox()).y;
-    const yRes = (await page.getByText('Résultat enregistré').boundingBox()).y;
+    const yRes = (await page.locator('aside.vx-resultats').boundingBox()).y;
     assert.ok(yBande < yRes, 'bande au-dessus des résultats');
     await page.screenshot({ path: `${SHOTS}-perime-lea.png`, fullPage: true });
 
@@ -97,7 +97,7 @@ describe('E-22 : conception périmée et « Recalculer »', { skip: skipBrowser,
 
     // brouillon : l'étiquette disparaît
     await page.getByRole('button', { name: "Augmenter la quantité : Lance d'essai" }).click();
-    await page.getByText('Résultat enregistré').waitFor({ state: 'detached' });
+    assert.equal(await page.getByText('Résultat enregistré').count(), 0);
     await page.getByRole('button', { name: 'Recalculer' }).click();
     const boite = page.getByRole('alertdialog');
     await boite.getByText('Recalculer cette conception ?').waitFor();
@@ -194,7 +194,7 @@ describe('E-22 : conception périmée et « Recalculer »', { skip: skipBrowser,
     const { page } = await ouvrir(m, 'Léa', `?fiche=${m.orak}`, 390);
     await page.getByText(BANDE).waitFor();
     const yBande = (await page.getByText(BANDE).boundingBox()).y;
-    const yRes = (await page.getByText('Résultat enregistré').boundingBox()).y;
+    const yRes = (await page.locator('aside.vx-resultats').boundingBox()).y;
     assert.ok(yBande < yRes);
     assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1), 'pas de défilement horizontal');
     await page.screenshot({ path: `${SHOTS}-390.png`, fullPage: true });

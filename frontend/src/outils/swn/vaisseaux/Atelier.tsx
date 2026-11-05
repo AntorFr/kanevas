@@ -261,23 +261,6 @@ function Corps({ universId, suffixe, saved, onSaved, onRecharger }: {
       {lienCopie && <p role="status" className="vx-note">{lienCopie === 'oui' ? 'Lien copié.' : 'Copie impossible : copiez l’adresse du navigateur.'}</p>}
       {perdue && <p className="echec" role="status">Connexion perdue.</p>}
       {!ecriture && <p className="vx-note" role="status">Lecture seule.</p>}
-      {saved.perime && (
-        <div className="vx-bande" role="status">
-          <div>
-            <p className="vx-bande-titre">Calculée avec d’anciens réglages.</p>
-            <p className="vx-sous">Le texte de la fiche n’a pas changé. Enregistrer ou recalculer le met à jour.</p>
-            {recalcul.refus && <p className="vx-raison" role="alert">{recalcul.refus}</p>}
-            {recalcul.perdu && <p className="vx-note">Vous ne pouvez plus recalculer cette conception.</p>}
-            {recalcul.echec && <p className="echec" role="alert">Impossible de recalculer cette conception.</p>}
-            {perdue && saved.peutRecalculer && <p className="vx-note">Connexion perdue.</p>}
-          </div>
-          {saved.peutRecalculer && !recalcul.perdu && (
-            <Bouton variante="principal" ecrit icone={RefreshCw} disabled={perdue || recalcul.enCours} onClick={demanderRecalcul}>
-              {recalcul.enCours ? 'Recalcul…' : recalcul.echec ? 'Réessayer' : 'Recalculer'}
-            </Bouton>
-          )}
-        </div>
-      )}
       {message && <p className="vx-succes" role="status">{message}</p>}
       {conflit && (
         <p className="echec" role="alert">
@@ -286,12 +269,29 @@ function Corps({ universId, suffixe, saved, onSaved, onRecharger }: {
         </p>
       )}
       <div className="vx-corps">
+        <div className="vx-colonne">
+          {saved.perime && (
+            <div className="vx-bande" role="status">
+              <div>
+                <p className="vx-bande-titre">Calculée avec d’anciens réglages.</p>
+                <p className="vx-sous">Le texte de la fiche n’a pas changé. Enregistrer ou recalculer le met à jour.</p>
+                {recalcul.refus && <p className="vx-raison" role="alert">{recalcul.refus}</p>}
+                {recalcul.perdu && <p className="vx-note">Vous ne pouvez plus recalculer cette conception.</p>}
+                {recalcul.echec && <p className="echec" role="alert">Impossible de recalculer cette conception.</p>}
+                {perdue && saved.peutRecalculer && <p className="vx-note">Connexion perdue.</p>}
+              </div>
+              {saved.peutRecalculer && !recalcul.perdu && (
+                <Bouton variante="principal" ecrit icone={RefreshCw} disabled={perdue || recalcul.enCours} onClick={demanderRecalcul}>
+                  {recalcul.enCours ? 'Recalcul…' : recalcul.echec ? 'Réessayer' : 'Recalculer'}
+                </Bouton>
+              )}
+            </div>
+          )}
         <aside className="vx-resultats" aria-label="Résultats">
           <h2>
-            {modifie ? 'Résultats' : 'Résultats enregistrés'}
+            {modifie || saved.perime ? 'Résultats' : 'Résultats enregistrés'}
             {etatCalcul === 'calcul' && <small className="vx-calcul" role="status"> Calcul…</small>}
           </h2>
-          {saved.perime && !modifie && <p className="vx-etiquette">Résultat enregistré</p>}
           <div className="vx-defile">
           <div className={estompe ? 'vx-estompe' : undefined} data-estompe={estompe || undefined}>
             <Chiffres r={resultat} />
@@ -311,6 +311,7 @@ function Corps({ universId, suffixe, saved, onSaved, onRecharger }: {
             </div>
           )}
         </aside>
+        </div>
         <section className="vx-choix" aria-label="Choix">
           {perdue && <p className="vx-note">Les choix sont verrouillés.</p>}
           <div className="vx-bloc">
