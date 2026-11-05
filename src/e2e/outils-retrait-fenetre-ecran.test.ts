@@ -144,6 +144,50 @@ test('lecture : désactiver garde tout, puis la fenêtre dit les 2 conceptions, 
 
 // --- telephone ------------------------------------------------------------------------------------------
 
+test('charte : pastille trash-2 en danger, largeur d’au plus 440 px, « Annuler » avant l’action danger (bureau et 360 px)', opts, async () => {
+  const mesure = async () => {
+    const f = fenetre(antor);
+    const larg = (await f.boundingBox()).width;
+    const pastille = await f.locator('.ic-fenetre').evaluate((e: Any) => {
+      const c = getComputedStyle(e);
+      const d = document.createElement('i');
+      document.body.append(d);
+      d.style.color = 'var(--danger)';
+      const danger = getComputedStyle(d).color;
+      d.style.color = 'var(--danger-fond)';
+      const dangerFond = getComputedStyle(d).color;
+      d.remove();
+      return { w: e.getBoundingClientRect().width, fond: c.backgroundColor, couleur: c.color, danger, dangerFond, icone: e.querySelector('svg')?.getAttribute('class') ?? '' };
+    });
+    const a = await f.getByRole('button', { name: 'Annuler', exact: true }).boundingBox();
+    const d = await confirmer(antor).boundingBox();
+    return { larg, pastille, a, d };
+  };
+  await ouvrirUnivers(antor);
+  await ouvrirFenetre(antor);
+  await fenetre(antor).getByText('2 conceptions, 2 éléments locaux de catalogue seront effacés.').waitFor();
+  const b = await mesure();
+  assert.ok(b.larg <= 440.5, `desktop width ${b.larg}`);
+  assert.equal(b.pastille.w, 36);
+  assert.equal(b.pastille.fond, b.pastille.dangerFond);
+  assert.equal(b.pastille.couleur, b.pastille.danger);
+  assert.match(b.pastille.icone, /trash-2/);
+  assert.ok(b.a.x < b.d.x, `desktop: Annuler (${b.a.x}) must be left of the danger action (${b.d.x})`);
+  await fermerFenetre(antor);
+  await antor.setViewportSize({ width: 360, height: 740 });
+  try {
+    await ouvrirUnivers(antor);
+    await ouvrirFenetre(antor);
+    await fenetre(antor).getByText('2 conceptions, 2 éléments locaux de catalogue seront effacés.').waitFor();
+    const t = await mesure();
+    assert.equal(t.pastille.fond, t.pastille.dangerFond);
+    assert.ok(t.a.y < t.d.y, `phone: Annuler (${t.a.y}) must be above the danger action (${t.d.y})`);
+    await fermerFenetre(antor);
+  } finally {
+    await antor.setViewportSize({ width: 1280, height: 720 });
+  }
+});
+
 test('telephone : à 360 px la fenêtre est une feuille pleine hauteur, sans défilement horizontal, cibles de 44 px', opts, async () => {
   await antor.setViewportSize({ width: 360, height: 740 });
   try {
