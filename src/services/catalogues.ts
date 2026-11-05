@@ -4,6 +4,7 @@ import type { Db } from '../db/db.js';
 import { applicable, type CibleCatalogue, type DeclarationCatalogue, type LigneCatalogue } from '../outils/declaration.js';
 import { roleDe, vueMJ } from './droits.js';
 import { ErreurService, introuvable, refuse } from './erreurs.js';
+import { surSourceModifiee } from './crochets-outils.js';
 import { declarationOutil, exigerOutil, exigerResponsable, lireLigneOutil, lireResponsable,
   poserVersionCatalogue, type CibleOutils } from './outils.js';
 import type { Acteur } from './types.js';
@@ -176,6 +177,7 @@ function importCatalogue(db: Db, acteur: Acteur, cible: CibleOutils, cle: string
     if (!apercu && changed) {
       poserVersionCatalogue(db, acteur, cible, cle, file.version);
       rapport.versionCatalogue = file.version;
+      if (cible.niveau === 'univers') surSourceModifiee.appeler(db, acteur.compteId, cible.id, cle);
     }
     return rapport;
   };
@@ -260,7 +262,9 @@ export function masquerElement(db: Db, acteur: Acteur, universId: number, outil:
       if (!catalogue.stockage.lirePar(db, { systemeId }, nature, cle)) throw introuvable();
       throw new ErreurService('invalide', "Un élément du système ne se masque pas.", 'element_systeme', 'cle');
     }
-    return catalogue.stockage.poserMasque(db, universId, nature, cle, entree.masque, entree.version);
+    const ligne = catalogue.stockage.poserMasque(db, universId, nature, cle, entree.masque, entree.version);
+    surSourceModifiee.appeler(db, acteur.compteId, universId, outil);
+    return ligne;
   })();
 }
 export function retirerElement(db: Db, acteur: Acteur, universId: number, outil: string, nature: string, cle: string,
@@ -274,5 +278,6 @@ export function retirerElement(db: Db, acteur: Acteur, universId: number, outil:
     }
     if (!catalogue.stockage.lirePar(db, { systemeId }, nature, cle)) throw introuvable();
     catalogue.stockage.poserRetrait(db, universId, nature, cle, entree.retire);
+    surSourceModifiee.appeler(db, acteur.compteId, universId, outil);
   })();
 }

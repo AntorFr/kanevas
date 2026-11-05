@@ -6,6 +6,7 @@ import { ErreurService, introuvable, invalide, refuse } from '../erreurs.js';
 import { chargerFiche } from '../fiches.js';
 import { accessible, peutUsage } from '../outils.js';
 import { poserSectionGeree } from '../sections-gerees.js';
+import { etatGere } from '../sections-gerees-etat.js';
 import type { Acteur, SectionRow } from '../types.js';
 import { calculerDepuisChoix, calculerResolu, OUTIL_VAISSEAUX, resoudreChoix, TYPE_CARACTERISTIQUES, validerChoix, versionSourceVaisseaux,
   versionsSource, type EntreeCalcul, type LigneChoix, type Porte } from './calcul-vaisseau.js';
@@ -30,12 +31,17 @@ export interface VueConception {
   resultat: ResultatVaisseau;
   alertes: AlerteVaisseau[];
   version: number;
+  /** The core's `etatGere` (S-4), read at each call, never stored (R-8). */
+  perime: boolean;
+  peutRecalculer: boolean;
+  sectionId: number;
+  sectionVersion: number;
   peutEcrire: boolean;
   lienFiche: string;
 }
 export interface ConceptionListee {
   ficheId: number; titre: string; coque: { cle: string; nom: string; classe: number }; prix: number;
-  bloquantes: number; aSurveiller: number; auteur: { id: number; nom: string } | null; peutEcrire: boolean;
+  bloquantes: number; aSurveiller: number; perime: boolean; auteur: { id: number; nom: string } | null; peutEcrire: boolean;
 }
 export interface ListeConceptions {
   conceptions: ConceptionListee[];
@@ -71,10 +77,15 @@ function vue(db: Db, acteur: Acteur, universId: number, l: Lue): VueConception {
   const r = resoudreChoix(db, universId, { coque: l.ligne.coque_cle, choix }, porteDe(l.ligne));
   const bloquantes = resultat.alertes.filter((a) => a.niveau === 'bloquante');
   const surveiller = resultat.alertes.filter((a) => a.niveau !== 'bloquante');
+  const geree = etatGere(db, acteur, universId, l.section);
   return {
     ficheId: l.ligne.fiche_id, titre: l.titre, coque: resultat.coque, lignes: resultat.lignes, resultat,
     alertes: [...bloquantes, ...r.retirees, ...surveiller],
     version: l.ligne.version,
+    perime: geree?.etat === 'perime',
+    peutRecalculer: geree?.peutRecalculer === true,
+    sectionId: l.section.id,
+    sectionVersion: l.section.version,
     peutEcrire: peutEcrire(db, acteur, universId, l.role, l.section),
     lienFiche: `/univers/${universId}/fiches/${l.ligne.fiche_id}`,
   };
@@ -89,6 +100,8 @@ export function listerConceptions(db: Db, acteur: Acteur, universId: number): Li
   if (!accessible(db, acteur, universId, OUTIL_VAISSEAUX)) throw introuvable();
   const lignes = db.prepare(`SELECT c.fiche_id FROM swn_conceptions c JOIN fiches f ON f.id = c.fiche_id
     WHERE c.univers_id = ? ORDER BY f.titre COLLATE NOCASE, f.id`).all(universId) as { fiche_id: number }[];
+  // The sources' version is the same for every design of a universe: computed once, not per row (R-8).
+  const courante = versionSourceVaisseaux(db, universId);
   const conceptions: ConceptionListee[] = [];
   for (const { fiche_id } of lignes) {
     let l: Lue;
@@ -103,6 +116,7 @@ export function listerConceptions(db: Db, acteur: Acteur, universId: number): Li
       : db.prepare('SELECT id, username AS nom FROM comptes WHERE id = ?').get(l.section.auteur_id) as { id: number; nom: string } | undefined ?? null;
     conceptions.push({
       ficheId: fiche_id, titre: l.titre, coque: r.coque, prix: r.prix,
+      perime: l.section.source_version !== courante,
       bloquantes: r.alertes.filter((a) => a.niveau === 'bloquante').length + retirees.length,
       aSurveiller: r.alertes.filter((a) => a.niveau !== 'bloquante').length,
       auteur, peutEcrire: peutEcrire(db, acteur, universId, role, l.section),

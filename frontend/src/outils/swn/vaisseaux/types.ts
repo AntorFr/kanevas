@@ -38,6 +38,10 @@ export interface Conception {
   resultat: Resultat;
   alertes: Alerte[];
   version: number;
+  perime: boolean;
+  peutRecalculer: boolean;
+  sectionId: number;
+  sectionVersion: number;
   peutEcrire: boolean;
   lienFiche: string;
 }
@@ -49,6 +53,7 @@ export interface Listee {
   prix: number;
   bloquantes: number;
   aSurveiller: number;
+  perime: boolean;
   auteur: { id: number; nom: string } | null;
   peutEcrire: boolean;
 }
@@ -92,3 +97,18 @@ export const NATURES: { nature: Nature; titre: string; singulier: string; ajout:
   { nature: 'armes', titre: 'Armes', singulier: 'arme', ajout: 'Ajouter une arme' },
   { nature: 'modifications', titre: 'Modifications', singulier: 'modification', ajout: 'Ajouter une modification' },
 ];
+
+export interface EtatFiche {
+  cle: string;
+  libelle: string;
+  ficheId: number | null;
+  titre: string;
+  etat: 'absente' | 'a_jour' | 'perimee';
+  propositionId: number | null;
+}
+
+export interface Rapport {
+  creees: number;
+  misesAJour: number;
+  inchangees: number;
+}

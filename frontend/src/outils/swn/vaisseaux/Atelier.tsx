@@ -1,4 +1,4 @@
-import { Minus, Plus } from 'lucide-react';
+import { Minus, Plus, RefreshCw } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 
@@ -71,6 +71,9 @@ function Corps({ universId, suffixe, saved, onSaved, onRecharger }: {
   const [confirmerAnnuler, setConfirmerAnnuler] = useState(false);
   const [lienCopie, setLienCopie] = useState<'oui' | 'non' | null>(null);
   const [essaiCalcul, setEssaiCalcul] = useState(0);
+  const [confirmerRecalcul, setConfirmerRecalcul] = useState(false);
+  const [recalcul, setRecalcul] = useState<{ enCours: boolean; refus: string | null; echec: boolean; perdu: boolean; fait: boolean }>(
+    { enCours: false, refus: null, echec: false, perdu: false, fait: false });
   const dernier = useRef(0);
   const premier = useRef(true);
   const [infos, setInfos] = useState<Record<string, Info>>({});
@@ -198,6 +201,36 @@ function Corps({ universId, suffixe, saved, onSaved, onRecharger }: {
     setConfirmerAnnuler(false);
   }
 
+  // « Recalculer » (P-19, step 4): the core's route, with the version of the section read; the screen decides nothing.
+  async function recalculer() {
+    if (recalcul.enCours || perdue) return;
+    setConfirmerRecalcul(false);
+    setRecalcul({ enCours: true, refus: null, echec: false, perdu: false, fait: false });
+    setMessage(null);
+    try {
+      await appeler('POST', `/api/univers/${universId}/fiches/${saved.ficheId}/sections/${saved.sectionId}/recalcul${requete(suffixe)}`, { version: saved.sectionVersion });
+      const c = await lire<Conception>(`${base}/conceptions/${saved.ficheId}${requete(suffixe)}`);
+      onSaved(c);
+      setBrouillon(brouillonDe(c));
+      setCalcul({ resultat: c.resultat, alertes: c.alertes });
+      setEtatCalcul('ok');
+      dernier.current++;
+      setRecalcul({ enCours: false, refus: null, echec: false, perdu: false, fait: true });
+      setMessage('Conception recalculée.');
+    } catch (e) {
+      const r = { enCours: false, refus: null as string | null, echec: false, perdu: false, fait: false };
+      if (e instanceof ErreurApi && e.statut === 409) setConflit(true);
+      else if (e instanceof ErreurApi && e.statut === 403) r.perdu = true;
+      else if (e instanceof ErreurApi && e.statut === 400 || e instanceof ErreurApi && e.statut === 422) r.refus = e.message;
+      else r.echec = true;
+      setRecalcul(r);
+    }
+  }
+  function demanderRecalcul() {
+    if (modifie) setConfirmerRecalcul(true);
+    else void recalculer();
+  }
+
   async function copier() {
     const adresse = `${window.location.origin}/univers/${universId}/outils/swn/vaisseaux?fiche=${saved.ficheId}`;
     try {
@@ -236,9 +269,27 @@ function Corps({ universId, suffixe, saved, onSaved, onRecharger }: {
         </p>
       )}
       <div className="vx-corps">
+        <div className="vx-colonne">
+          {saved.perime && (
+            <div className="vx-bande" role="status">
+              <div>
+                <p className="vx-bande-titre">Calculée avec d’anciens réglages.</p>
+                <p className="vx-sous">Le texte de la fiche n’a pas changé. Enregistrer ou recalculer le met à jour.</p>
+                {recalcul.refus && <p className="vx-raison" role="alert">{recalcul.refus}</p>}
+                {recalcul.perdu && <p className="vx-note">Vous ne pouvez plus recalculer cette conception.</p>}
+                {recalcul.echec && <p className="echec" role="alert">Impossible de recalculer cette conception.</p>}
+                {perdue && saved.peutRecalculer && <p className="vx-note">Connexion perdue.</p>}
+              </div>
+              {saved.peutRecalculer && !recalcul.perdu && (
+                <Bouton variante="principal" petit ecrit icone={RefreshCw} disabled={perdue || recalcul.enCours} onClick={demanderRecalcul}>
+                  {recalcul.enCours ? 'Recalcul…' : recalcul.echec ? 'Réessayer' : 'Recalculer'}
+                </Bouton>
+              )}
+            </div>
+          )}
         <aside className="vx-resultats" aria-label="Résultats">
           <h2>
-            {modifie ? 'Résultats' : 'Résultats enregistrés'}
+            {modifie || saved.perime ? 'Résultats' : 'Résultats enregistrés'}
             {etatCalcul === 'calcul' && <small className="vx-calcul" role="status"> Calcul…</small>}
           </h2>
           <div className="vx-defile">
@@ -260,6 +311,7 @@ function Corps({ universId, suffixe, saved, onSaved, onRecharger }: {
             </div>
           )}
         </aside>
+        </div>
         <section className="vx-choix" aria-label="Choix">
           {perdue && <p className="vx-note">Les choix sont verrouillés.</p>}
           <div className="vx-bloc">
@@ -324,6 +376,17 @@ function Corps({ universId, suffixe, saved, onSaved, onRecharger }: {
           })}
         </section>
       </div>
+      {confirmerRecalcul && (
+        <BoiteDialogue
+          titre="Recalculer cette conception ?"
+          texte="Vos modifications non enregistrées seront abandonnées."
+          action="Recalculer"
+          variante="mj"
+          icone={RefreshCw}
+          onConfirmer={() => void recalculer()}
+          onFermer={() => setConfirmerRecalcul(false)}
+        />
+      )}
       {confirmerAnnuler && (
         <BoiteDialogue
           titre="Annuler les changements ?"

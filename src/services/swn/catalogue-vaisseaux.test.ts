@@ -72,7 +72,7 @@ test('migration : neuf tables créées, lignes existantes intactes, foreign_key_
   const tables = swn().filter((t) => !tablesAvant.includes(t));
   assert.deepEqual(tables, ['swn_catalogue_amenagements', 'swn_catalogue_armes', 'swn_catalogue_coques', 'swn_catalogue_defenses',
     'swn_catalogue_exemples', 'swn_catalogue_modifications', 'swn_catalogue_moteurs', 'swn_catalogue_retraits',
-    'swn_conceptions']);
+    'swn_conceptions', 'swn_fiches_generees']);
 });
 
 test('migration : CHECK de bornes, masque réservé à l\'univers, unicité par niveau', () => {
@@ -102,8 +102,8 @@ test('verifierDeclaration accepte le module swn et l\'outil vaisseaux ; le regis
   verifierRegistre();
   const outil = swn.outils.find((x) => x.cle === OUTIL)!;
   assert.equal(outil.type, 'generateur');
-  assert.deepEqual((outil as any).usages.map((u: any) => [u.nom, u.mjSeul]), [['concevoir', false], ['creer', true]]);
-  assert.deepEqual((outil as any).sections.map((s: any) => s.type), ['caracteristiques']);
+  assert.deepEqual((outil as any).usages.map((u: any) => [u.nom, u.mjSeul]), [['concevoir', false], ['creer', true], ['generer', true]]);
+  assert.deepEqual((outil as any).sections.map((s: any) => s.type), ['caracteristiques', 'regles-coques', 'regles-moteurs', 'regles-amenagements', 'regles-defenses', 'regles-armes', 'regles-modifications', 'exemples']);
   assert.deepEqual((outil as any).catalogue.natures.map((n: any) => n.nom), TABLES);
 });
 
