@@ -66,3 +66,11 @@ export function apresEcriture(ctx: ContexteSection, ecrit: EcritSection): void {
       version_catalogue, resultat) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`).run(ctx.universId, ctx.ficheId, ...valeurs);
   }
 }
+
+/** Designs of one universe (D-1 count), and of the universes of a system where the tool is on (`utilisations`). */
+export const compterConceptions = (db: Db, universId: number): number =>
+  (db.prepare('SELECT COUNT(*) AS n FROM swn_conceptions WHERE univers_id = ?').get(universId) as { n: number }).n;
+/** Erases the design rows of a universe; the sheets stay, the core frees their sections (D-3). */
+export function effacerConceptions(db: Db, universId: number): void {
+  db.prepare('DELETE FROM swn_conceptions WHERE univers_id = ?').run(universId);
+}
