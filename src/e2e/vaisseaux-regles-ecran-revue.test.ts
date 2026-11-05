@@ -78,13 +78,18 @@ describe('E-22 : conception périmée et « Recalculer »', { skip: skipBrowser,
     await page.getByText(BANDE).waitFor();
     const t = await txt(page);
     assert.match(t, /685 000 cr/);
-    assert.match(t, /Résultats/);
+    assert.equal(await page.getByRole('heading', { name: 'Résultats', exact: true }).count(), 1, 'titre « Résultats » exact');
+    assert.doesNotMatch(t, /Résultats enregistrés/, 'pas de double libellé à l’état périmé');
     assert.match(t, /15\s*(cases|\/)/);
     assert.equal(await page.getByRole('button', { name: 'Recalculer' }).count(), 1);
     // la bande est au-dessus des résultats
     const yBande = (await page.getByText(BANDE).boundingBox()).y;
     const yRes = (await page.locator('aside.vx-resultats').boundingBox()).y;
     assert.ok(yBande < yRes, 'bande au-dessus des résultats');
+    // maquette e22 : « Recalculer » est un petit bouton à taille naturelle, pas étiré sur la bande
+    const bb = await page.getByText(BANDE).locator('xpath=ancestor::div[contains(@class,"vx-bande")]').boundingBox();
+    const bt = await page.getByRole('button', { name: 'Recalculer' }).boundingBox();
+    assert.ok(bt.width < bb.width * 0.7, `bouton à taille naturelle (${bt.width} / ${bb.width})`);
     await page.screenshot({ path: `${SHOTS}-perime-lea.png`, fullPage: true });
 
     // E-9 : bannière du cœur, texte inchangé
@@ -97,7 +102,8 @@ describe('E-22 : conception périmée et « Recalculer »', { skip: skipBrowser,
 
     // brouillon : l'étiquette disparaît
     await page.getByRole('button', { name: "Augmenter la quantité : Lance d'essai" }).click();
-    assert.equal(await page.getByText('Résultat enregistré').count(), 0);
+    assert.equal(await page.getByRole('heading', { name: 'Résultats', exact: true }).count(), 1, 'brouillon : titre « Résultats » seul');
+    assert.doesNotMatch(await txt(page), /Résultats? enregistrés?/, 'brouillon : aucun libellé enregistré');
     await page.getByRole('button', { name: 'Recalculer' }).click();
     const boite = page.getByRole('alertdialog');
     await boite.getByText('Recalculer cette conception ?').waitFor();
