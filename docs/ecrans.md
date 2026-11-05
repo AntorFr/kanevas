@@ -104,9 +104,9 @@ E-16 vivent hors des univers : leurs cases disent le rôle dans un univers ratta
 | E-6 | *retired (`kanevas-scenarios`)* | — | — |
 | E-7 | *retired (`kanevas-scenarios`)* | — | — |
 | E-8 | lire, chercher, créer ; la vignette de chaque fiche (son illustration, ou le repli dessiné) ; *(kanevas-scenarios)* for the « Aventure » type: the status badge, the « Statut » filter, the status menu on a card or a tree line (outside player mode), the creation form with sub-type suggestions and « Visible des joueurs » ; *(kanevas-fiche-mj-seul)* the « MJ seul » badge on a sheet players cannot see, the « Visibilité » filter | lire, chercher ; la vignette des fiches qu'il voit ; *(kanevas-scenarios)* adventures: the status badge and the « Statut » filter; the status menu and « Nouvelle aventure » ; *(kanevas-fiche-mj-seul)* no « MJ seul » badge, no « Visibilité » filter (**caché**) | — |
-| E-9 | tout ; mode Joueur ; *(kanevas-scenarios)* on an adventure: the status menu in the header (outside player mode), the blocks « Préparation » (GM, outside player mode) and « Comptes-rendus » (« Nouveau compte-rendu ») ; *(kanevas-fiche-mj-seul)* the « MJ seul » badge in the header (GM mode) ; relier et retirer des relations ; poser, remplacer, retirer l'illustration (hors mode Joueur) ; *(kanevas-import)* sous-type, réserver un fichier au MJ, voir un fichier en attente d'import (tuile) | sections lisibles ; écrire celles permises ; *(kanevas-scenarios)* on an adventure: the status badge and « Comptes-rendus » (the CR he reads; « Nouveau compte-rendu » allowed); the status menu and « Préparation » (**hidden**) ; relations lisibles (section et cible) ; pièces jointes de celles-ci ; voir l'illustration, jamais la poser ; *(kanevas-fiche-mj-seul)* no « MJ seul » badge in the header (**caché**) ; *(kanevas-import)* dans une section qu'il écrit, ajouter un fichier ou en choisir un qu'il voit (les deux chemins de B-55) et retirer une référence ; fichiers sous double garde ; jamais régler une visibilité (**caché**) ; un fichier en attente d'import : rien (**caché**) | — |
+| E-9 | tout ; mode Joueur ; *(kanevas-scenarios)* on an adventure: the status menu in the header (outside player mode), the blocks « Préparation » (GM, outside player mode) and « Comptes-rendus » (« Nouveau compte-rendu ») ; *(kanevas-fiche-mj-seul)* the « MJ seul » badge in the header (GM mode) ; relier et retirer des relations ; poser, remplacer, retirer l'illustration (hors mode Joueur) ; *(kanevas-synchro)* le bloc « Cartes » : toutes les cartes rattachées, « Cachée aux joueurs » ; en mode Joueur, comme un joueur ; *(kanevas-import)* sous-type, réserver un fichier au MJ, voir un fichier en attente d'import (tuile) | sections lisibles ; écrire celles permises ; *(kanevas-scenarios)* on an adventure: the status badge and « Comptes-rendus » (the CR he reads; « Nouveau compte-rendu » allowed); the status menu and « Préparation » (**hidden**) ; relations lisibles (section et cible) ; pièces jointes de celles-ci ; voir l'illustration, jamais la poser ; *(kanevas-synchro)* le bloc « Cartes » : les cartes visibles rattachées ; *(kanevas-fiche-mj-seul)* no « MJ seul » badge in the header (**caché**) ; *(kanevas-import)* dans une section qu'il écrit, ajouter un fichier ou en choisir un qu'il voit (les deux chemins de B-55) et retirer une référence ; fichiers sous double garde ; jamais régler une visibilité (**caché**) ; un fichier en attente d'import : rien (**caché**) | — |
 | E-10 | tout | cartes visibles | — |
-| E-11 | tout ; mode Joueur ; *(kanevas-synchro)* écrire le texte, rattacher ou détacher une fiche | lire une carte visible, ouvrir une fiche ; *(kanevas-synchro)* lire le texte sans ses blocs MJ, ouvrir la fiche rattachée | — |
+| E-11 | tout ; mode Joueur ; *(kanevas-synchro)* écrire le texte, rattacher ou détacher une fiche (outside player mode; **caché** in player mode) | lire une carte visible, ouvrir une fiche ; *(kanevas-synchro)* lire le texte sans ses blocs MJ, ouvrir la fiche rattachée ; jamais écrire le texte ni rattacher (**caché**) | — |
 | E-12 | catalogue MJ (dont générer une image, si un moteur d'images est disponible) ; propositions : le MJ demandeur seul les voit, les applique, les abandonne | catalogue Joueur (sans image : l'outil est absent, l'assistant répond qu'il ne peut pas) ; propositions : **caché** (ni outil ni bloc ; ce qu'on vérifie est l'absence de proposition et de bloc, pas le texte libre de l'assistant) | — |
 | E-13 | tous les CR ; *(kanevas-scenarios)* the adventure of each, « Aventure supprimée » when it is gone | les CR lisibles ; the adventure column only for an adventure he reads (**hidden** otherwise, deleted or closed alike) | — |
 | E-14 | tout ; « Supprimer l'univers » (*kanevas-import*) | — (« Page introuvable. ») | « Page introuvable. » |
@@ -3402,24 +3402,67 @@ The slices draw them; nothing here invents a component.
   au plus. »); « Vider » asks no confirmation and can be undone by « Modifier »; empty: GM « Ajouter
   un texte », player nothing. Two GMs saving the same version: the second sees « Le texte a changé
   depuis votre lecture. » with « Recharger » (409 `carte_modifiee`, AD-142), his draft kept.
-- GM, imported map: its origin key under the title, GM-only, as on E-9 (B-50).
-- States: text save failed → « Impossible d'enregistrer le texte. » with « Réessayer », the draft
-  kept; background over the limit → « Image trop lourde : <N> Mo au plus. » (N the current setting).
+- GM, imported map: its origin key under the title, GM-only, as on E-9 (B-50); the mock-up's « · MJ seul »
+  suffix, breadcrumb and reduced sidebar are the usual frame of E-11, not new elements.
+- A player sees « Rattachée à » only if he reads the sheet; a GM in player mode sees what a player sees
+  (no gesture: the buttons « Rattacher à une fiche… », « Changer de fiche… », « Détacher », « Modifier »,
+  « Ajouter un texte » and « Vider » are **hidden**, not refused). A GM whose attached sheet was deleted sees
+  « Rattacher à une fiche… » alone (the deletion detaches the map, AD-142). A text made only of GM blocks is
+  an empty text for a player: no « Texte » block.
+- « Vider » empties the text at once: the GM then sees « Ajouter un texte »; the previous text is not
+  restored (no history of a map's text, nothing promised).
+- States (the shared patterns of this document for the loading and the lost connection):
+
+| Where | State | What is read | Gestures |
+|---|---|---|---|
+| Text | loading | « Chargement… » in the block | — |
+| Text | save failed | « Impossible d'enregistrer le texte. », the draft kept | « Réessayer » |
+| Text | version changed (409) | « Le texte a changé depuis votre lecture. », the draft kept | « Recharger » |
+| Text | connection lost | the banner; « Enregistrer » inactive, the draft kept | — |
+| Text | extreme | 5,000 characters: the block scrolls inside the page, no cut | — |
+| Sheet line | attach, change or detach failed | « Impossible de rattacher la carte. » under the line, nothing changed | « Réessayer » |
+| Choice window | no sheet found | « Aucune fiche trouvée. » | the search field |
+| Choice window | list failed | « Impossible de charger les fiches. » | « Réessayer », « Annuler » |
+| Sheet line | very long title | wrapped on two lines at most, ellipsis, full title in the link's `title` | — |
+| Frame | background over the limit | « Image trop lourde : <N> Mo au plus. » (N the current setting), the background unchanged | choose another image |
 
 ### E-9 Fiche — the block « Cartes »
 A sheet block (registry AD-124), after « Relations »: the maps attached to the sheet that the reader
-may read (GM: all, with « Cachée aux joueurs » on a hidden one; player: the visible ones), each a
-line « <titre> · <forme> » opening E-11. Absent when there is none for this reader.
+may read (GM: all, with « Cachée aux joueurs » — `Pastille` `sens="mj"` with the `lock` icon — on a hidden
+one; player: the visible ones; GM in player mode: as a player), each a line « <titre> · <forme> » (the form
+in words: « Carte illustrée », « Graphe ») opening E-11. Absent when there is none for this reader; no
+count of hidden ones. Loading: the block's own « Chargement… » (the sheet does not wait for it); error:
+« Impossible de charger les cartes. » with « Réessayer », the other blocks untouched; many maps: the block lists them all, scrolling inside the page (a sheet carries few maps).
 
 ### E-5 Administration — the panel « Limites »
 Under « Jeton de l'assistant »: « Taille maximale d'un fond de carte » — a number in MB (1 to 500,
 75 by default), « Enregistrer »; the note « S'applique aux prochains envois ; les fonds déjà posés
-restent. » Refusal out of range: « Entre 1 et 500 Mo. »
+restent. » Refusal out of range: « Entre 1 et 500 Mo. » Seen by the instance admin only; for anyone
+else the panel does not exist (E-5 answers « Page introuvable. »).
+
+| State | What is read | Gestures |
+|---|---|---|
+| loading | « Chargement… » in the panel, « Enregistrer » inactive | — |
+| read failed | « Impossible de charger les limites. » | « Réessayer » |
+| saved | « Limite enregistrée. » beside the button, the field shows the saved value | — |
+| save failed | « L'action n'a pas abouti. Réessayez. » under the field, the entry kept | « Enregistrer » |
+| connection lost | the banner; « Enregistrer » inactive, the entry kept | — |
+| empty / extreme | a field cannot be empty (« Entre 1 et 500 Mo. »); 500 is the largest value | — |
 
 ### E-18 Accès par API — the batch report
 The counters gain the nature **« cartes »**; a write refused by its fingerprint appears among the
 refusals with its key and « modifiée depuis la lecture ». The warnings « modifié dans Kanevas : non
 écrasé » disappear with B-48.
+
+### Components of the maps slice (`kanevas-synchro-cartes`, verdict of the design-system keeper)
+Nothing new, no token. E-5 « Limites »: `Panneau`, `Champ` (the width goes in `administration.css`,
+not inline), `Bouton` primary, the refusal an inline message, after `jeton-assistant.tsx`. E-9 « Cartes »:
+`BlocSection` and `LigneRelation` in a variant « target then type, no arrow » (added to its spec; fallback
+a plain list of links); « Cachée aux joueurs » is the `Pastille` `sens="mj"` with the `lock` icon. E-11:
+`Bouton` small for « Rattacher… / Changer de fiche… / Détacher »; the choice is a `Fenetre` around
+`ListeRecherche` (`frontend/src/ecrans/fiche/liste-recherche.tsx`); « Texte » is a `Panneau`, `Markdown`
+and `Editeur`, the GM block a `Panneau reserveMj` (not a copied style). E-18: the existing batch counter,
+one more nature.
 
 ### Cross-check
 - Each need has a screen or its script: B-80 to B-87, B-90, B-91 → the import API (E-18 shows the batches);

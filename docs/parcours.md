@@ -779,7 +779,7 @@ introuvable. ».
 1. On « Cartes de combat de Tyros-7 » (**E-11**), Antor reads the text, edits it, puts a sentence in a
    GM block, and attaches the map to the sheet « Tyros-7 »; on Tyros-7 (**E-9**), the block « Cartes »
    lists it. Léa, a player, sees the map on Tyros-7 once it is visible, and its text without the GM block.
-2. A background of 90 MB is refused: the admin raises the limit on **E-5** (B-89), Antor sets it again.
+2. A background of 90 MB set on the frame of **E-11** is refused (« Image trop lourde : 75 Mo au plus. »): the admin raises the limit on **E-5** (B-89), Antor sets it again on E-11.
 
 ### P-24 — Work the lore with an agent (Monsieur, with his agent, a session on the Mac)
 1. At the start, the agent exports Éneria (B-92) into its local copy, then downloads the images whose
