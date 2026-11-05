@@ -246,7 +246,10 @@ thing at a time, and keeps the trace of who changed what (decisions of Monsieur,
   holds, so a file reserved to the GM in Kanevas never reopens by omission. *(P-22)*
 - **B-92** — A script **exports a whole universe in one call**: one line per sheet in the form of
   B-81, one per file and per map in the form of B-90, as they are at one instant; a file's bytes
-  are downloaded apart, one by one, with the same token. *(P-24)*
+  are downloaded apart, one by one, with the same token. The export opens with a header line and ends with a
+  closing line carrying the number of lines, so a cut stream is recognised; `?depuis` keeps the sheets changed
+  since a date (files and maps are always all listed); `?empreintes=1` returns the fingerprint list alone;
+  a sheet deleted in Kanevas is found by comparing ids with the list. *(P-24)*
 - **B-93** — The **date of last change** of a sheet moves on every write to anything its read
   returns (header, sections, relations, aliases, labels, parent, illustration), whoever writes;
   a false alarm is allowed (a waiting link that resolves), a missed change is not. *(P-22, P-24)*
