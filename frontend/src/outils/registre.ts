@@ -1,0 +1,80 @@
+import { BookOpen, Map as Carte, Rocket, WandSparkles, type LucideIcon } from 'lucide-react';
+import type { ComponentType } from 'react';
+
+import { lire } from '../api';
+import type { PropsOutil, PropsSection } from './types';
+
+/**
+ * The client side of the tools (AD-133): `module/outil` → its icon and a lazy `import()` of its
+ * component. The code of a tool is requested only after the server has described it to the caller;
+ * an entry of the bar whose key is absent here is not shown. A module adds its lines here — and
+ * touches neither the router nor the bar.
+ */
+export interface OutilClient {
+  icone: LucideIcon;
+  /** The tool is reached from its own list (E-10 « Cartes »), never from the « Outils » section of the bar. */
+  horsBarre?: boolean;
+  /**
+   * Asked together with the description, before `charger`: a refusal (404, 403) stops the page and the
+   * tool's code is never requested. Only for tools whose address carries a target.
+   */
+  verifier?: (universId: number, cible: string | undefined, suffixe: string) => Promise<unknown>;
+  charger: () => Promise<{ default: ComponentType<PropsOutil> }>;
+}
+
+export const OUTILS_CLIENT: Record<string, OutilClient> = {
+  'essai/a': { icone: Carte, charger: () => import('./essai/a') },
+  'essai/b': { icone: BookOpen, charger: () => import('./essai/b') },
+  'swn/galaxie': {
+    icone: Carte,
+    horsBarre: true,
+    verifier: (universId, cible, suffixe) => lire(`/api/univers/${universId}/outils/swn/galaxie/galaxies/${encodeURIComponent(cible ?? '')}${suffixe}`),
+    charger: () => import('./swn/galaxie'),
+  },
+  'swn/vaisseaux': {
+    icone: Rocket,
+    // A design opened by its address (`?fiche=`) is read before the tool's code is requested: unreadable = « Page introuvable. ».
+    verifier: (universId, _cible, suffixe) => {
+      const fiche = new URLSearchParams(window.location.search).get('fiche');
+      if (fiche === null) return Promise.resolve(undefined);
+      return lire(`/api/univers/${universId}/outils/swn/vaisseaux/conceptions/${encodeURIComponent(fiche)}${suffixe}`);
+    },
+    charger: () => import('./swn/vaisseaux'),
+  },
+  'essai/g': { icone: WandSparkles, charger: () => import('./essai/g') },
+};
+
+export const outilClient = (cle: string): OutilClient | undefined => (Object.hasOwn(OUTILS_CLIENT, cle) ? OUTILS_CLIENT[cle] : undefined);
+
+/**
+ * The display components of managed sections (S-7): `module/outil/type` → a lazy `import()`. The module is
+ * requested only when a sheet shows a section whose `geree.composant` is true and whose tool is open to the reader.
+ */
+export const COMPOSANTS_SECTION: Record<string, () => Promise<{ default: ComponentType<PropsSection> }>> = {
+  'essai/g/caracteristiques': () => import('./essai/section-g'),
+  'swn/vaisseaux/caracteristiques': () => import('./swn/vaisseaux/section'),
+};
+
+export const composantSection = (cle: string, type: string) => {
+  const k = `${cle}/${type}`;
+  return Object.hasOwn(COMPOSANTS_SECTION, k) ? COMPOSANTS_SECTION[k] : undefined;
+};
+
+/** Wording of the managed-section banner for tools whose name reads differently in the sentence (docs/ecrans.md, E-9). */
+export const MOTS_BANDEAU: Record<string, { nom: string; ouvrir: string }> = {
+  'swn/vaisseaux': { nom: 'le concepteur de vaisseaux', ouvrir: 'Ouvrir dans le concepteur' },
+};
+export const motsBandeau = (cle: string | null) => (cle !== null && Object.hasOwn(MOTS_BANDEAU, cle) ? MOTS_BANDEAU[cle] : undefined);
+
+/**
+ * After a mask or a withdrawal in E-20 (the catalogue block): a tool may add one sentence read from its own route
+ * (E-22 « fiches de règles »). `null` = nothing to say. The common screen names no tool.
+ */
+export const LIGNE_APRES_MASQUAGE: Record<string, (universId: number) => Promise<string | null>> = {
+  'swn/vaisseaux': async (universId) => {
+    const fiches = await lire<{ etat: string; propositionId: number | null }[]>(`/api/univers/${universId}/outils/swn/vaisseaux/fiches-regles`);
+    return fiches.some((f) => f.etat === 'perimee' && f.propositionId !== null)
+      ? 'Les fiches de règles montrent encore cet élément : acceptez la mise à jour proposée.' : null;
+  },
+};
+export const ligneApresMasquage = (cle: string) => (Object.hasOwn(LIGNE_APRES_MASQUAGE, cle) ? LIGNE_APRES_MASQUAGE[cle] : undefined);

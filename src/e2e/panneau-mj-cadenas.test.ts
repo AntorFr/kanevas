@@ -1,4 +1,4 @@
-// kanevas-rv-composants (reopened by verify): every « MJ seul » panel (E-6 campaign, E-14 settings) shows a
+// kanevas-rv-composants (reopened by verify): every « MJ seul » panel (E-3 « Préparation », E-14 settings) shows a
 // padlock before the words, in light and dark, like the audience pill (charte § Composants: icon, word, tint).
 import assert from 'node:assert/strict';
 import { after, before, test } from 'node:test';
@@ -22,7 +22,7 @@ before(async () => {
     return r.json();
   };
   uid = (await post('/api/univers', { nom: 'Cadenas' })).id;
-  cid = (await post(`/api/univers/${uid}/campagnes`, { nom: 'Camp' })).id;
+  cid = (await post(`/api/univers/${uid}/fiches`, { type: 'aventure', sousType: 'Campagne', titre: 'Camp', sections: [{ titre: 'Présentation', joueursLisent: true }] })).id;
 }, { timeout: 120000 });
 after(async () => {
   if (skipBrowser) return;
@@ -34,7 +34,6 @@ for (const theme of ['clair', 'sombre'] as const) {
   test(`panneaux « MJ seul » avec cadenas (${theme})`, opts, async () => {
     await page.addInitScript((c: string) => localStorage.setItem('kanevas-theme', c), theme);
     const cas: Array<[string, string[]]> = [
-      [`/univers/${uid}/campagnes/${cid}`, ['Scénarios', 'Préparation']],
       [`/univers/${uid}/parametres`, ['Identité', 'Système de jeu', 'Créer un système', 'Types de fiche', 'Supprimer l’univers']],
     ];
     for (const [url, titres] of cas) {
@@ -49,5 +48,12 @@ for (const theme of ['clair', 'sombre'] as const) {
         assert.equal(await p.locator('svg').evaluate((s: Any) => s.getBoundingClientRect().width > 0), true, 'cadenas visible');
       }
     }
+    // E-3 « Préparation » (adventure tasks): the block carries the same padlock pill.
+    await page.goto(`/univers/${uid}`);
+    await page.getByRole('heading', { name: 'Préparation', level: 2 }).waitFor();
+    const pastille = page.locator('section.mj-seul .pastille.mj');
+    assert.equal(await pastille.count(), 1, `E-3 (${theme}) : une pastille « MJ seul »`);
+    assert.equal((await pastille.innerText()).trim(), 'MJ seul');
+    assert.equal(await pastille.locator('svg.lucide-lock').count(), 1, `E-3 (${theme}) : cadenas`);
   });
 }

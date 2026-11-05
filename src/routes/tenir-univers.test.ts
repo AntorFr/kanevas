@@ -16,8 +16,6 @@ process.env.ATTACHMENTS_DIR = DISQUE;
 
 const { buildApp } = await import('../app.js');
 const { semerBouchon, semerIllustrations, fichierDemo, JETON_BOUCHON } = await import('../bouchon/depart.js');
-const { creerCampagne } = await import('../services/campagnes.js');
-const { creerScenario } = await import('../services/scenarios.js');
 const { ajouterTache } = await import('../services/preparation.js');
 const { creerCompteRendu } = await import('../services/comptes_rendus.js');
 const { creerProposition } = await import('../services/propositions.js');
@@ -97,8 +95,8 @@ async function monde() {
     type: 'croise',
   });
   poserEtiquetage(db, antor, essai, anse, { alias: ['Anse'], etiquettes: ['Côte'] });
-  const camp = creerCampagne(db, antor.compteId, essai, { nom: 'Brumes' });
-  creerScenario(db, antor.compteId, camp.id, { titre: 'Acte 1' });
+  const camp = creerFiche(db, antor.compteId, essai, { type: 'aventure', sousType: 'Campagne', titre: 'Brumes' });
+  creerFiche(db, antor.compteId, essai, { type: 'aventure', sousType: 'Scénario', titre: 'Acte 1', parent: camp.id });
   ajouterTache(db, antor.compteId, camp.id, { categorie: 'autre', libelle: 'Préparer' });
   const cr = creerCompteRendu(db, antor.compteId, essai, camp.id, { titre: 'Séance 1' });
   creerProposition(db, antor.compteId, essai, {
@@ -176,7 +174,7 @@ test('le_garnissage_couvre_les_tables_attendues', async () => {
   const p = possedees(w.db, w.essai);
   for (const t of [
     'univers', 'membres', 'jetons_api', 'lots_import', 'fiches', 'sections', 'cartes', 'elements_carte', 'fichiers',
-    'fichiers_sections', 'relations', 'campagnes', 'scenarios', 'taches_preparation', 'propositions', 'etiquettes',
+    'fichiers_sections', 'relations', 'taches_preparation', 'propositions', 'etiquettes',
     'fiche_etiquettes', 'fiche_alias', 'pieces_jointes',
   ]) {
     assert.ok((p.get(t) ?? []).length > 0, `table non garnie ou non détectée : ${t}`);

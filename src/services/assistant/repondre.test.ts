@@ -2,7 +2,6 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 
 import { openDb, migrate, type Db } from '../../db/db.js';
-import { creerCampagne, listerCampagnes } from '../campagnes.js';
 import { assurerCompte } from '../comptes.js';
 import { creerFiche } from '../fiches.js';
 import { ajouterMembre } from '../membres.js';
@@ -16,7 +15,7 @@ import { repondre } from './repondre.js';
 
 const STUB = { KANEVAS_STUB: '1' };
 const HORS =
-  "Je ne sais répondre qu'à des demandes de test : chercher, lire, ajouter, créer une campagne ou un scénario.";
+  "Je ne sais répondre qu'à des demandes de test : chercher, lire, ajouter.";
 
 function monde() {
   const db: Db = openDb(':memory:');
@@ -29,7 +28,7 @@ function monde() {
   const app = ajouterSection(db, antor.id, u.id, aldric.id, { titre: 'Apparence', contenu: 'Grand.' });
   changerAudience(db, antor.id, u.id, aldric.id, app.id, { joueursLisent: true });
   ajouterSection(db, antor.id, u.id, aldric.id, { titre: 'Vérité — MJ seul', contenu: 'Traître.' });
-  creerCampagne(db, antor.id, u.id, { nom: 'La Couronne brisée' });
+  creerFiche(db, antor.id, u.id, { type: 'aventure', sousType: 'Campagne', titre: 'La Couronne brisée' });
   const nb = (t: string) => (db.prepare(`SELECT count(*) n FROM ${t}`).get() as { n: number }).n;
   const dit = (compte: number, m: string, deps: any = { config: STUB }) => repondre(db, compte, u.id, m, [], deps);
   return { db, antor, lea, u, nb, dit };
@@ -37,20 +36,44 @@ function monde() {
 
 const SCEN = 'Crée un scénario « Acte III — La crypte » dans « La Couronne brisée »';
 
-test('bouchon : Antor crée le scénario, événement scenario_cree', async () => {
-  const { antor, dit, nb } = monde();
-  const r = await dit(antor.id, SCEN);
-  assert.equal(nb('scenarios'), 1);
-  assert.deepEqual(r.evenements.map((e) => e.type), ['scenario_cree']);
-  assert.ok(r.reponse.includes('Acte III — La crypte'));
+const ABSENT = "Je ne peux pas le faire : l'outil « creer_fiche » ne fait pas partie de ceux dont vous disposez.";
+
+test('bouchon (B-62, AD-126) : Antor crée une campagne puis un scénario dessous, avec l’événement fiche_creee', async () => {
+  const { db, antor, u, dit } = monde();
+  const c = await dit(antor.id, 'Crée une campagne « Les Cendres »');
+  assert.equal(c.reponse, 'Campagne « Les Cendres » créée.');
+  assert.equal(c.evenements.length, 1);
+  assert.equal(c.evenements[0]!.type, 'fiche_creee');
+  assert.equal(c.evenements[0]!.libelle, 'Fiche « Les Cendres » créée');
+  const camp = db.prepare("SELECT id, type, json_extract(charge,'$.statut') st FROM fiches WHERE titre='Les Cendres'").get() as any;
+  assert.deepEqual([camp.type, camp.st], ['aventure', 'en_preparation']);
+  assert.deepEqual(c.evenements[0]!.cible, { type: 'fiche', ficheId: camp.id });
+  const s = await dit(antor.id, 'Crée un scénario « Le Creuset » dans « Les Cendres »');
+  assert.equal(s.reponse, 'Scénario « Le Creuset » créé dans Les Cendres.');
+  assert.equal(s.evenements[0]!.libelle, 'Fiche « Le Creuset » créée');
+  const sc = db.prepare("SELECT parent_id p, sous_type, json_extract(charge,'$.statut') st FROM fiches WHERE titre='Le Creuset'").get() as any;
+  assert.deepEqual([sc.p, sc.sous_type, sc.st], [camp.id, 'Scénario', 'en_preparation']);
+  void u;
 });
 
-test('bouchon : même phrase pour Léa, rien écrit, refus de l’outil absent, aucun événement', async () => {
-  const { lea, dit, nb } = monde();
-  const r = await dit(lea.id, SCEN);
-  assert.equal(nb('scenarios'), 0);
+test('bouchon : scénario dans une campagne inconnue → Introuvable., rien créé, aucun événement', async () => {
+  const { antor, dit, nb } = monde();
+  const avant = nb('fiches');
+  const r = await dit(antor.id, 'Crée un scénario « Zed » dans « Nulle part »');
+  assert.equal(r.reponse, 'Introuvable.');
   assert.deepEqual(r.evenements, []);
-  assert.ok(r.reponse.includes('creer_scenario') && /ne peux pas/.test(r.reponse), r.reponse);
+  assert.equal(nb('fiches'), avant);
+});
+
+test('bouchon : pour Léa, creer_fiche est absent : réponse « absent », rien écrit, aucun événement', async () => {
+  const { lea, dit, nb } = monde();
+  const avant = nb('fiches');
+  for (const phrase of [SCEN, 'Crée une campagne « Les Marches rouges »']) {
+    const r = await dit(lea.id, phrase);
+    assert.equal(r.reponse, ABSENT);
+    assert.deepEqual(r.evenements, []);
+  }
+  assert.equal(nb('fiches'), avant);
 });
 
 test('bouchon : lire la section « Vérité » pour Léa → Introuvable.', async () => {
@@ -72,27 +95,12 @@ test('bouchon : que sait-on d’Aldric — Apparence seule pour Léa, deux secti
 test('bouchon : « échec » lève l’erreur de transport, rien écrit', async () => {
   const { antor, dit, nb } = monde();
   await assert.rejects(dit(antor.id, 'Fais un échec'), (e: any) => e instanceof ErreurAssistant && e.code === 'assistant_erreur');
-  assert.equal(nb('scenarios'), 0);
-});
-
-test('bouchon : « échec » dans une demande de création n’écrit rien ni n’annonce d’événement', async () => {
-  const { antor, dit, nb } = monde();
-  // AD-78 order: the creation rule wins over « échec »; the result is still a coherent single outcome.
-  const r = await dit(antor.id, 'Crée une campagne « Les Marches rouges »');
-  assert.deepEqual(r.evenements.map((e) => e.type), ['campagne_creee']);
-  assert.equal(nb('campagnes'), 2);
+  assert.equal(nb('fiches'), 2);
 });
 
 test('bouchon : message hors script → phrase d’AD-78', async () => {
   const { antor, dit } = monde();
   assert.equal((await dit(antor.id, 'Bonjour')).reponse, HORS);
-});
-
-test('Léa ne crée pas de campagne', async () => {
-  const { lea, dit, nb } = monde();
-  const r = await dit(lea.id, 'Crée une campagne « Les Marches rouges »');
-  assert.equal(nb('campagnes'), 1);
-  assert.deepEqual(r.evenements, []);
 });
 
 test('sans rôle : introuvable, comme un univers inconnu', async () => {
@@ -157,11 +165,12 @@ test('délai : abort et assistant_erreur ; le verrou n’est pas tenu après', a
 });
 
 test('un événement d’une écriture réussie avant un échec n’est pas rendu (aucune réponse)', async () => {
-  const { antor, dit } = monde();
+  const { antor, dit, db } = monde();
   const transport = {
     nom: 't',
     repondre: async (d: any) => {
-      d.outils.find((o: any) => o.nom === 'creer_campagne').executer({ nom: 'Z' });
+      const sec = db.prepare("SELECT id, fiche_id, version FROM sections WHERE titre LIKE 'Vérité%'").get() as any;
+      d.outils.find((o: any) => o.nom === 'modifier_section').executer({ ficheId: sec.fiche_id, sectionId: sec.id, contenu: 'Z', version: sec.version });
       throw new Error('boom');
     },
   };
@@ -206,7 +215,10 @@ for (const [qui, outilsAttendus] of [['antor', true], ['lea', false]] as const) 
     assert.equal(o.model, 'modele-x');
     assert.deepEqual(o.env, { CLAUDE_CODE_OAUTH_TOKEN: 'tok-123' });
     assert.deepEqual([...o.allowedTools].sort(), cat.outils.map((x) => `mcp__kanevas__${x.nom}`).sort());
-    assert.equal(o.allowedTools.includes('mcp__kanevas__creer_scenario'), outilsAttendus);
+    for (const retire of ['creer_scenario', 'creer_campagne', 'lister_campagnes']) {
+      assert.equal(o.allowedTools.includes(`mcp__kanevas__${retire}`), false, retire);
+    }
+    void outilsAttendus;
     assert.equal(serveur.name, 'kanevas');
     assert.ok(recu.prompt.includes('avant') && recu.prompt.includes('salut'));
     assert.ok(typeof o.systemPrompt === 'string' && /français/.test(o.systemPrompt) && /Introuvable/.test(o.systemPrompt));
@@ -230,10 +242,4 @@ test('claude-agent : sans résultat success → assistant_erreur ; SDK qui cite 
 test('sans jeton, le SDK n’est pas appelé (dispo avant adaptateur)', async () => {
   const { antor, dit } = monde();
   await assert.rejects(dit(antor.id, 'x', { config: { CLAUDE_CODE_OAUTH_TOKEN: '' } }), (e: any) => e.code === 'assistant_indisponible');
-});
-
-test('bouchon : la campagne créée est bien listée (écriture réelle)', async () => {
-  const { antor, dit, db, u } = monde();
-  await dit(antor.id, 'Crée une campagne « Les Marches rouges »');
-  assert.ok(listerCampagnes(db, antor.id, u.id).some((c: any) => c.nom === 'Les Marches rouges'));
 });

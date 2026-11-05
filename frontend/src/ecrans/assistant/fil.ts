@@ -6,7 +6,7 @@ import { ErreurApi, appeler } from '../../api';
 export const MAX_MESSAGE = 2000;
 export const MAX_HISTORIQUE = 20;
 
-export type TypeEvenement = 'section_modifiee' | 'section_completee' | 'campagne_creee' | 'scenario_cree' | 'image_attachee' | 'proposition_creee';
+export type TypeEvenement = 'fiche_creee' | 'section_modifiee' | 'section_completee' | 'image_attachee' | 'proposition_creee';
 
 /** The client never gives up before this (an image request lasts 270 s at most, AD-90). */
 export const DELAI_REQUETE_MS = 300_000;
@@ -15,7 +15,7 @@ export const DELAI_REQUETE_MS = 300_000;
 export interface Evenement {
   type: TypeEvenement;
   libelle: string;
-  cible: { type: 'fiche' | 'campagne' | 'scenario' | 'proposition'; [cle: string]: string | number };
+  cible: { type: 'fiche' | 'proposition'; [cle: string]: string | number };
 }
 
 export interface MessageAffiche {
@@ -116,4 +116,32 @@ export function reessayer() {
   const derniere = etat.messages[etat.messages.length - 1];
   if (!derniere || derniere.role !== 'user') return;
   void demander(etat.universId, derniere.content, etat.messages.slice(0, -1));
+}
+
+const demandesOuverture = new Set<() => void>();
+
+/** The panel opens when a screen asks for it (the banner of a managed section: « Voir la proposition »). */
+export function surDemandeOuverture(f: () => void): () => void {
+  demandesOuverture.add(f);
+  return () => demandesOuverture.delete(f);
+}
+
+/** Shows a proposal in the thread (once) and asks the panel to open on it. */
+export function montrerProposition(universId: number, propositionId: number) {
+  if (etat.universId !== universId) return;
+  const deja = etat.messages.some((m) => m.evenements?.some((e) => e.type === 'proposition_creee' && Number(e.cible.propositionId) === propositionId));
+  if (!deja) {
+    poser({
+      ...etat,
+      messages: [
+        ...etat.messages,
+        {
+          role: 'assistant',
+          content: 'Voici la proposition de recalcul.',
+          evenements: [{ type: 'proposition_creee', libelle: 'Recalcul proposé', cible: { type: 'proposition', propositionId } }],
+        },
+      ],
+    });
+  }
+  demandesOuverture.forEach((f) => f());
 }

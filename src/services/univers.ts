@@ -130,9 +130,7 @@ export function supprimerUnivers(db: Db, acteur: Acteur, universId: number, nom:
     const run = (sql: string) => db.prepare(sql).run(universId);
     run('DELETE FROM lots_import WHERE univers_id = ?');
     run('DELETE FROM jetons_api WHERE univers_id = ?');
-    run('DELETE FROM taches_preparation WHERE campagne_id IN (SELECT id FROM campagnes WHERE univers_id = ?)');
-    run('DELETE FROM scenarios WHERE campagne_id IN (SELECT id FROM campagnes WHERE univers_id = ?)');
-    run('DELETE FROM campagnes WHERE univers_id = ?');
+    run('DELETE FROM taches_preparation WHERE fiche_id IN (SELECT id FROM fiches WHERE univers_id = ?)');
     run('DELETE FROM elements_carte WHERE carte_id IN (SELECT id FROM cartes WHERE univers_id = ?)');
     run('DELETE FROM cartes WHERE univers_id = ?');
     run('DELETE FROM propositions WHERE univers_id = ?');

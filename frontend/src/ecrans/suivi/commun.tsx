@@ -1,33 +1,13 @@
-import { Check, ChevronDown, CircleCheck, CircleDashed, CirclePlay, NotebookPen, type LucideIcon } from 'lucide-react';
+import { NotebookPen } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
-import { Menu } from '../../ui';
 import '../liste.css';
-
-export type Statut = 'en_preparation' | 'active' | 'terminee';
-
-export interface Campagne {
-  id: number;
-  universId: number;
-  nom: string;
-  statut: Statut;
-  creeLe: string;
-}
-
-export interface Scenario {
-  id: number;
-  campagneId: number;
-  titre: string;
-  contenu: string;
-  html: string;
-  version: number;
-}
 
 export type Categorie = 'monstres' | 'pnj' | 'cartes' | 'deroulements' | 'autre';
 
 export interface Tache {
   id: number;
-  campagneId: number;
+  ficheId: number;
   categorie: Categorie;
   libelle: string;
   faite: boolean;
@@ -37,8 +17,11 @@ export interface Tache {
 export interface CompteRendu {
   id: number;
   titre: string;
-  campagneId: number;
-  campagneNom: string;
+  /** Only for a reader of that adventure (E-13); never a title otherwise. */
+  campagneId?: number;
+  campagneNom?: string;
+  /** Only to a GM: the adventure of the report is gone. */
+  campagneSupprimee?: true;
   auteur: string | null;
   creeLe: string;
 }
@@ -49,14 +32,6 @@ export interface PageComptesRendus {
 }
 
 export const ECHEC = 'L’action n’a pas abouti. Réessayez.';
-
-export const LIBELLE_STATUT: Record<Statut, string> = {
-  en_preparation: 'En préparation',
-  active: 'Active',
-  terminee: 'Terminée',
-};
-
-export const STATUTS: Statut[] = ['active', 'en_preparation', 'terminee'];
 
 export const CATEGORIES: { valeur: Categorie; libelle: string }[] = [
   { valeur: 'monstres', libelle: 'Monstres' },
@@ -73,74 +48,27 @@ export function dateCourte(iso: string): string {
   return new Date(iso).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
-const ICONE_STATUT: Record<Statut, LucideIcon> = { en_preparation: CircleDashed, active: CirclePlay, terminee: CircleCheck };
-
-/** Status pill: icon, word, tint (charte, « Pastille »). */
-function PastilleStatut({ statut, chevron }: { statut: Statut; chevron?: boolean }) {
-  const Icone = ICONE_STATUT[statut];
-  return (
-    <span className={`statut ${statut}`}>
-      <Icone size={14} strokeWidth={1.75} aria-hidden="true" />
-      <span>{LIBELLE_STATUT[statut]}</span>
-      {chevron && <ChevronDown size={12} strokeWidth={1.75} aria-hidden="true" />}
-    </span>
-  );
-}
-
-/** Status of a player: the pill alone, nothing to set. */
-export function BadgeStatut({ statut }: { statut: Statut }) {
-  return <PastilleStatut statut={statut} />;
-}
-
-/** Status of a GM: the pill opens a menu of the three statuses; the change is made in place by the parent. */
-export function ListeStatut({
-  statut,
-  nom,
-  desactive,
-  onChange,
-}: {
-  statut: Statut;
-  nom: string;
-  desactive: boolean;
-  onChange: (s: Statut) => void;
-}) {
-  return (
-    <Menu
-      etiquette={`Statut de ${nom}`}
-      aligne="debut"
-      declencheur={
-        <>
-          <PastilleStatut statut={statut} chevron />
-          <span className="cache-lecteur"> — changer le statut de « {nom} »</span>
-        </>
-      }
-      entrees={STATUTS.map((s) => ({
-        libelle: LIBELLE_STATUT[s],
-        icone: s === statut ? Check : ICONE_STATUT[s],
-        impossible: desactive,
-        onChoisir: () => {
-          if (s !== statut) onChange(s);
-        },
-      }))}
-    />
-  );
-}
-
-/** One report of a list (E-6, E-13): title, author when there is one, date, link to E-9. */
+/** One report: title above author and adventure, with separate links to their sheets (E-13). */
 export function LigneCompteRendu({ universId, cr, campagne }: { universId: string; cr: CompteRendu; campagne?: boolean }) {
+  const aventure = campagne && (cr.campagneNom !== undefined || cr.campagneSupprimee);
+  const metadonnees = cr.auteur !== null || aventure;
   return (
-    <li className="ligne-suivi">
-      <Link className="grand" to={`/univers/${universId}/fiche/${cr.id}`}>
+    <li className="ligne-suivi ligne-compte-rendu">
+      <div className="grand">
         <span className="mono" aria-hidden="true">
           <NotebookPen size={14} strokeWidth={1.75} />
         </span>
         <span className="texte-ligne">
-          <span className="titre-long">{cr.titre}</span>
-          {campagne && <small> — {cr.campagneNom}</small>}
-          {cr.auteur !== null && <small> {cr.auteur}</small>}
+          <Link className="titre-long titre-compte-rendu" to={`/univers/${universId}/fiche/${cr.id}`}>{cr.titre}</Link>
+          {metadonnees && <small className="meta-compte-rendu">
+            {cr.auteur !== null && <span>{cr.auteur}</span>}
+            {cr.auteur !== null && aventure && <span aria-hidden="true">·</span>}
+            {campagne && cr.campagneNom !== undefined && <Link className="badge-type" to={`/univers/${universId}/fiche/${cr.campagneId}`}>{cr.campagneNom}</Link>}
+            {campagne && cr.campagneSupprimee && <span className="badge-type">Aventure supprimée</span>}
+          </small>}
         </span>
-      </Link>
-      <span className="date">{dateCourte(cr.creeLe)}</span>
+      </div>
+      <time className="date" dateTime={cr.creeLe}>{dateCourte(cr.creeLe)}</time>
     </li>
   );
 }

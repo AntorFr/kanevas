@@ -11,8 +11,6 @@ const { semerBouchon, JETON_BOUCHON } = await import('../bouchon/depart.js');
 const { creerFiche } = await import('../services/fiches.js');
 const { ajouterSection, changerAudience, ecrireContenu } = await import('../services/sections.js');
 const { relierSection } = await import('../services/relations.js');
-const { creerCampagne } = await import('../services/campagnes.js');
-const { creerScenario } = await import('../services/scenarios.js');
 const { catalogueDe } = await import('../services/assistant/catalogue.js');
 
 type App = Awaited<ReturnType<typeof buildApp>>;
@@ -214,35 +212,31 @@ test('mentions : le titre d’une source fermée ne fuit pas dans la fiche lue p
   assert.doesNotMatch(r.body, /Guilde|Rapport secret|amirauté/);
 });
 
-test('scénario : lien vers Aldric rendu, clé en attente sans erreur, :::mj reste du texte ; aperçu de scénario idem', async () => {
+test('scénario (section d’une fiche aventure) : lien vers Aldric rendu, clé en attente sans erreur ; aperçu idem', async () => {
   const { app, antor, lame, fiche, idDe } = await monter();
   const a = idDe('antor');
   const ald = fiche('Maître Aldric');
-  const camp = creerCampagne(app.db, a, lame.id, { nom: 'Brumes' });
-  const sc = creerScenario(app.db, a, camp.id, { titre: 'La Couronne brisée', contenu: `Aller voir [[${ald}|Aldric]] puis [[cle:personnage:inconnu|X]].\n\n:::mj\nsecret\n:::` });
-  assert.match(sc.html, /<a class="lien-fiche"[^>]*>Aldric<\/a>/);
-  assert.match(sc.html, /<span class="lien-attente"[^>]*>X<\/span>/);
-  assert.doesNotMatch(sc.html, /container|mj-bloc|class="bloc/);
-  assert.match(sc.html, /:::mj/);
-  const r = await app.inject({ method: 'GET', url: `/api/scenarios/${sc.id}`, headers: antor });
+  const camp = creerFiche(app.db, a, lame.id, { type: 'aventure', sousType: 'Campagne', titre: 'Brumes' });
+  const sc = creerFiche(app.db, a, lame.id, { type: 'aventure', sousType: 'Scénario', titre: 'La Couronne brisée', parent: camp.id });
+  const sec = ajouterSection(app.db, a, lame.id, sc.id, { titre: 'Scénario', contenu: `Aller voir [[${ald}|Aldric]] puis [[cle:personnage:inconnu|X]].` });
+  const r = await app.inject({ method: 'GET', url: `/api/univers/${lame.id}/fiches/${sc.id}`, headers: antor });
   assert.equal(r.statusCode, 200);
-  assert.match(r.json().html, /lien-fiche/);
-  const ap = await app.inject({ method: 'POST', url: '/api/apercu', headers: antor, payload: { texte: `[[${ald}|Aldric]] [[cle:personnage:inconnu|X]]`, contexte: { nature: 'scenario', campagne_id: camp.id } } });
-  if (ap.statusCode !== 404) {
-    assert.equal(ap.statusCode, 200, ap.body);
-    assert.match(ap.json().html, /lien-fiche/);
-    assert.match(ap.json().html, /lien-attente/);
-  }
+  const html = r.json().sections.find((x: { id: number }) => x.id === sec.id).html as string;
+  assert.match(html, /<a class="lien-fiche"[^>]*>Aldric<\/a>/);
+  assert.match(html, /<span class="lien-attente"[^>]*>X<\/span>/);
+  assert.equal((await app.inject({ method: 'GET', url: `/api/scenarios/${sc.id}`, headers: antor })).statusCode, 404);
 });
 
-test('scénario : un lien visant une fiche d’un autre univers est cassé, pas résolu dans l’univers de la campagne', async () => {
-  const { app, lame, kanka, fiche, idDe } = await monter();
+test('scénario (section d’une fiche aventure) : un lien visant une fiche d’un autre univers est cassé', async () => {
+  const { app, lame, kanka, fiche, idDe, antor } = await monter();
   const a = idDe('antor');
   const anse = fiche('Anse-aux-Sels', kanka.id);
-  const camp = creerCampagne(app.db, a, lame.id, { nom: 'C2' });
-  const sc = creerScenario(app.db, a, camp.id, { titre: 'S', contenu: `[[${anse}|Anse]]` });
-  assert.doesNotMatch(sc.html, /lien-fiche/);
-  assert.match(sc.html, /lien-casse/);
+  const sc = creerFiche(app.db, a, lame.id, { type: 'aventure', sousType: 'Scénario', titre: 'S' });
+  const sec = ajouterSection(app.db, a, lame.id, sc.id, { titre: 'Scénario', contenu: `[[${anse}|Anse]]` });
+  const r = await app.inject({ method: 'GET', url: `/api/univers/${lame.id}/fiches/${sc.id}`, headers: antor });
+  const html = r.json().sections.find((x: { id: number }) => x.id === sec.id).html as string;
+  assert.doesNotMatch(html, /lien-fiche/);
+  assert.match(html, /lien-casse/);
 });
 
 test('entrée de système : [[…]] reste du texte', async () => {

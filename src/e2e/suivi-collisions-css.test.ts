@@ -22,21 +22,15 @@ before(async () => {
   await page.getByRole('heading', { name: 'Collisions', level: 1 }).waitFor();
   uid = new URL(page.url()).pathname.split('/').pop()!;
   await creerFiche(page, 'personnage', 'Fiche css');
-  const c = await (await page.request.post(`/api/univers/${uid}/campagnes`, { data: { nom: 'Camp css' } })).json();
-  await page.request.patch(`/api/campagnes/${c.id}`, { data: { statut: 'active' } });
-  await page.request.post(`/api/campagnes/${c.id}/scenarios`, { data: { titre: 'Scén css' } });
-  const ss = await (await page.request.get(`/api/campagnes/${c.id}/scenarios`)).json();
-  const sid = (ss.scenarios ?? ss.items ?? ss)[0].id;
-  await page.request.post(`/api/univers/${uid}/campagnes/${c.id}/comptes-rendus`, { data: { titre: 'CR css', contenu: 'x' } }).catch(() => undefined);
-  urls.e7 = `/univers/${uid}/scenarios/${sid}`;
+  const c = await (await page.request.post(`/api/univers/${uid}/fiches`, { data: { type: 'aventure', sousType: 'Campagne', titre: 'Camp css', sections: [{ titre: 'Présentation', joueursLisent: true }] } })).json();
+  await page.request.patch(`/api/univers/${uid}/fiches/${c.id}`, { data: { statut: 'en_cours' } });
+  await page.request.post(`/api/univers/${uid}/fiches/${c.id}/taches`, { data: { categorie: 'pnj', libelle: 'Tâche css' } });
 }, { timeout: 120000 });
 
 after(async () => {
   await browser?.close();
   srv?.stop();
 });
-
-const urls: Record<string, string> = {};
 
 async function h1(p: Any): Promise<{ color: string; ref: string; padding: string }> {
   return p.evaluate(() => {
@@ -51,14 +45,12 @@ async function h1(p: Any): Promise<{ color: string; ref: string; padding: string
   });
 }
 
-test('les h1 de E-4, E-7, E-8, E-13, E-14 sont en --texte et sans décalage de colonne', opts, async () => {
+test('les h1 de E-4, E-8, E-13, E-14 sont en --texte et sans décalage de colonne', opts, async () => {
   const chemins = [
     ['E-8', `/univers/${uid}/fiches/personnages`],
     ['E-13', `/univers/${uid}/comptes-rendus`],
     ['E-4', `/univers/${uid}/membres`],
     ['E-14', `/univers/${uid}/parametres`],
-    ['E-6', `/univers/${uid}/campagnes`],
-    ['E-7', urls.e7!],
   ];
   for (const [nom, u] of chemins) {
     await page.goto(u!);
