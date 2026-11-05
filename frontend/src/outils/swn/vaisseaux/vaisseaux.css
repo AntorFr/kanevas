@@ -83,7 +83,6 @@
 .vx-bande { display: flex; flex-direction: column; align-items: flex-start; gap: var(--e-3); padding: var(--e-3) var(--e-4); border: 1px solid var(--mj-bord); border-radius: var(--rayon-panneau); background: var(--mj-fond); }
 .vx-bande p { margin: 0; }
 .vx-bande-titre { color: var(--mj); font-weight: 600; }
-.vx-etiquette { margin: 0 0 var(--e-2); color: var(--texte-2); font-size: var(--t-12); }
 .vx-generer-liste { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; border: 1px solid var(--bord); border-radius: var(--rayon-panneau); }
 .vx-generer-ligne { display: flex; align-items: center; gap: var(--e-2); flex-wrap: wrap; padding: var(--e-2) var(--e-3); border-top: 1px solid var(--bord); }
 .vx-generer-ligne:first-child { border-top: 0; }
