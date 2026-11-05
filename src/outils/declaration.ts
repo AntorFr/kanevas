@@ -38,6 +38,10 @@ export interface StockageCatalogue {
   poserMasque(db: Db, universId: number, nature: string, cle: string, masque: boolean, versionLue: number): LigneCatalogue;
   retraits(db: Db, universId: number): { nature: string; cle: string }[];
   poserRetrait(db: Db, universId: number, nature: string, cle: string, retire: boolean): void;
+  /** Rows of **one level** per nature (D-1); for a universe, its withdrawals count under the nature `retraits`. Read only. */
+  compter(db: Db, cible: CibleCatalogue): { nature: string; nombre: number }[];
+  /** Deletes the rows of **one level**, a universe's withdrawals included; the core's transaction wraps it (D-1). */
+  effacer(db: Db, cible: CibleCatalogue): void;
 }
 /** What a nature may check beyond its own schema: whether another element is known at the import's level (V-10). */
 export interface ContexteVerification { existe(nature: string, cle: string): boolean }
@@ -50,6 +54,19 @@ export interface DeclarationCatalogue {
    * rely on the valid ones of the same file declared before it. A refusal gives the field and the reason.
    */
   verifier?(nature: string, donnees: Record<string, unknown>, ctx: ContexteVerification): { champ: string; raison: string } | null;
+}
+/** Where a tool's data are counted and erased: one universe, or one system's shared level (D-1). */
+export type Portee = { niveau: 'univers'; universId: number } | { niveau: 'systeme'; systemeId: number };
+/** One line of a deletion summary: `cle` identifies it between the reading and the confirmation. */
+export interface LigneDonnees { cle: string; singulier: string; pluriel: string; nombre: number }
+/** What a tool keeps besides its sheets and its catalogue; the core counts and erases through it (D-1, D-2). */
+export interface DonneesOutil {
+  /** Read only. A line at 0 is dropped by the core. */
+  compter(db: Db, portee: Portee): LigneDonnees[];
+  /** Runs inside the core's transaction; leaves the sheets and the catalogue to the core. */
+  effacer(db: Db, portee: Portee): void;
+  /** System level only: what still uses the system's data. */
+  utilisations?(db: Db, systemeId: number): LigneDonnees[];
 }
 /** A tool a script pushes data into without a catalogue (T-9): the natures key the batch's counters. */
 export interface DeclarationImportation {
@@ -66,6 +83,7 @@ interface BaseOutil {
   usages: { nom: string; mjSeul: boolean }[];
   reglages: Reglages;
   catalogue?: DeclarationCatalogue;
+  donnees?: DonneesOutil;
   importation?: DeclarationImportation;
   outilsAssistant?(ctx: ContexteOutil): Outil[];
   ecran: { libelle: string; icone: string };
@@ -167,9 +185,10 @@ const declaration = z.strictObject({
         schema: z.instanceof(z.ZodObject).refine((s) => s._zod.def.catchall instanceof z.ZodNever && !('cle' in s.shape)),
         resume: fonction })).min(1),
       stockage: z.strictObject({ lister: fonction, lirePar: fonction, ecrire: fonction,
-        poserMasque: fonction, retraits: fonction, poserRetrait: fonction }),
+        poserMasque: fonction, retraits: fonction, poserRetrait: fonction, compter: fonction, effacer: fonction }),
       verifier: fonction.optional(),
     }).optional(),
+    donnees: z.strictObject({ compter: fonction, effacer: fonction, utilisations: fonction.optional() }).optional(),
     importation: z.strictObject({
       natures: z.array(z.strictObject({ nom: z.string().regex(/^[a-z][a-z0-9_-]*$/),
         libelle: z.string().min(1), libellePluriel: z.string().min(1) })).min(1),

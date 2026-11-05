@@ -147,6 +147,21 @@ export const stockageVaisseaux: StockageCatalogue = {
     } else db.prepare('DELETE FROM swn_catalogue_retraits WHERE univers_id = ? AND nature = ? AND cle = ?')
       .run(universId, nature, cle);
   },
+  compter(db, cible) {
+    const o = proprietaire(cible);
+    const lignes: { nature: string; nombre: number }[] = NATURES_VAISSEAU.map((nature) => ({ nature, nombre: (db.prepare(
+      `SELECT COUNT(*) AS n FROM ${table(nature)} WHERE proprietaire = ? AND ${o.colonne} = ?`).get(o.niveau, o.id) as { n: number }).n }));
+    if ('universId' in cible) {
+      lignes.push({ nature: 'retraits', nombre: (db.prepare('SELECT COUNT(*) AS n FROM swn_catalogue_retraits WHERE univers_id = ?')
+        .get(cible.universId) as { n: number }).n });
+    }
+    return lignes;
+  },
+  effacer(db, cible) {
+    const o = proprietaire(cible);
+    for (const nature of NATURES_VAISSEAU) db.prepare(`DELETE FROM ${table(nature)} WHERE proprietaire = ? AND ${o.colonne} = ?`).run(o.niveau, o.id);
+    if ('universId' in cible) db.prepare('DELETE FROM swn_catalogue_retraits WHERE univers_id = ?').run(cible.universId);
+  },
 };
 
 const LIBELLES: Record<NatureCatalogueVaisseau, [string, string]> = {
