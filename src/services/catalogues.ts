@@ -95,6 +95,7 @@ function issueReason(issue: z.core.$ZodIssue): string {
     case 'too_small': return `au moins ${issue.minimum}`;
     case 'too_big': return `au plus ${issue.maximum}`;
     case 'invalid_value': return `valeur attendue : ${issue.values.join(', ')}`;
+    case 'not_multiple_of': return `multiple de ${String(issue.divisor).replace('.', ',')} attendu`;
     case 'unrecognized_keys': return 'champ inconnu';
     default: return 'texte attendu';
   }

@@ -1,6 +1,7 @@
 // Text of the rule and example sheets (R-3, AD-131): pure Markdown, no `:::` block, no link, no database.
 // Inputs are already resolved (the reader's level is chosen by the caller).
 import type { CoqueResolue, ElementResolu, NatureVaisseau, ResultatVaisseau } from './vaisseau.js'
+import { texteMasse } from './masse.js'
 import { credits, entier, listeChoix, tableMesures } from './texte-vaisseau.js'
 
 export type NatureRegles = 'coques' | NatureVaisseau
@@ -46,7 +47,7 @@ const COLONNES_COQUE: Cellule<CoqueRegle>[] = [
   ['PV', (e) => nombre(e.pv)],
   ['CA', (e) => nombre(e.ca)],
   ['Puissance', (e) => nombre(e.puissance)],
-  ['Masse', (e) => nombre(e.masse)],
+  ['Masse', (e) => texteMasse(e.masse)],
   ['Emports', (e) => nombre(e.emports)],
   ['Facteur de coût', (e) => nombre(e.facteur_cout)],
   ['Facteur de puissance', (e) => nombre(e.facteur_puissance)],
@@ -56,7 +57,7 @@ const COLONNES_COQUE: Cellule<CoqueRegle>[] = [
 const COLONNES_ELEMENT: Cellule<ElementRegle>[] = [
   ['Coût', (e) => credits(e.cout)],
   ['Puissance', (e) => nombre(e.puissance)],
-  ['Masse', (e) => nombre(e.masse)],
+  ['Masse', (e) => texteMasse(e.masse)],
   ['PV', (e) => nombre(e.pv)],
   ['CA', (e) => nombre(e.ca)],
   ['Limite', (e) => (e.limite === 0 ? '—' : nombre(e.limite))],

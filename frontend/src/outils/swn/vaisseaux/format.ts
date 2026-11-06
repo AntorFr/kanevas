@@ -6,6 +6,12 @@ export const nombre = (n: number) => {
   const signe = n < 0 ? '−' : '';
   return signe + String(Math.abs(n)).replace(/\B(?=(\d{3})+(?!\d))/g, NBSP);
 };
+/** A mass (B-80): a decimal comma only when it has one, « 1,5 », « 7 », « −0,5 ». Twin of `texteMasse` (src/outils/swn/regles/masse.ts). */
+export const masse = (n: number) => {
+  const signe = n < 0 ? '−' : '';
+  const [entiere = '', decimale] = String(Math.abs(n)).split('.');
+  return signe + entiere.replace(/\B(?=(\d{3})+(?!\d))/g, NBSP) + (decimale === undefined ? '' : `,${decimale}`);
+};
 export const credits = (n: number) => `${nombre(n)}${NBSP}cr`;
 export const jours = (n: number) => `${nombre(n)} ${n === 1 ? 'jour' : 'jours'}`;
 export const entretien = (n: number) => `${credits(n)} / an`;
@@ -26,7 +32,7 @@ export const memeBrouillon = (a: Brouillon, b: Brouillon) => JSON.stringify(choi
 /** « Puissance insuffisante : −2 » → « Puissance insuffisante (−2) »: the reason repeated under « Enregistrer ». */
 export function motifDe(a: Alerte): string {
   if (a.code === 'element_retire') return 'élément retiré de cet univers';
-  const m = /^(.*?) : (−?\d+)\.?$/.exec(a.texte);
+  const m = /^(.*?) : (−?\d+(?:,\d+)?)\.?$/.exec(a.texte);
   return m ? `${m[1]} (${m[2]})` : a.texte.replace(/\.$/, '');
 }
 

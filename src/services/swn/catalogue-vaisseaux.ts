@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import type { Db } from '../../db/db.js';
 import type { CibleCatalogue, DeclarationCatalogue, LigneCatalogue, StockageCatalogue } from '../../outils/declaration.js';
+import { texteMasse } from '../../outils/swn/regles/masse.js';
 import { ErreurService, introuvable } from '../erreurs.js';
 
 // The catalogue of the ship designer (V-1, V-10): the seven natures, one declared list of columns per nature, from which the
@@ -8,15 +9,17 @@ import { ErreurService, introuvable } from '../erreurs.js';
 
 type Champ =
   | { nom: string; type: 'entier'; min: number; max?: number }
+  | { nom: string; type: 'masse' }
   | { nom: string; type: 'oui-non' }
   | { nom: string; type: 'texte' }
   | { nom: string; type: 'choix' };
 const entier = (nom: string, min = 0, max?: number): Champ => ({ nom, type: 'entier', min, ...(max === undefined ? {} : { max }) });
+const masse = (): Champ => ({ nom: 'masse', type: 'masse' });
 const ouiNon = (nom: string): Champ => ({ nom, type: 'oui-non' });
 
 /** Element fields, shared by engines, fittings, defences, weapons and modifications. */
 const ELEMENT: Champ[] = [
-  entier('cout'), entier('puissance'), entier('masse'), entier('pv'), entier('ca'),
+  entier('cout'), entier('puissance'), masse(), entier('pv'), entier('ca'),
   ouiNon('x_cout'), ouiNon('x_puissance'), ouiNon('x_masse'), entier('limite'),
 ];
 export const NATURES_VAISSEAU = ['coques', 'moteurs', 'amenagements', 'defenses', 'armes', 'modifications', 'exemples'] as const;
@@ -25,7 +28,7 @@ export type NatureCatalogueVaisseau = (typeof NATURES_VAISSEAU)[number];
 export const NATURES_DE_LIGNE = ['moteurs', 'amenagements', 'defenses', 'armes', 'modifications'] as const;
 
 const CHAMPS: Record<NatureCatalogueVaisseau, Champ[]> = {
-  coques: [entier('classe', 1, 4), entier('cout'), entier('pv'), entier('ca'), entier('puissance'), entier('masse'),
+  coques: [entier('classe', 1, 4), entier('cout'), entier('pv'), entier('ca'), entier('puissance'), masse(),
     entier('emports'), entier('facteur_cout', 1), entier('facteur_puissance', 1), entier('facteur_masse', 1)],
   moteurs: [entier('niveau', 1, 6), ...ELEMENT],
   amenagements: ELEMENT,
@@ -42,7 +45,8 @@ const ligneChoix = z.strictObject({
 function schemaDe(nature: NatureCatalogueVaisseau): z.ZodObject {
   const forme: Record<string, z.ZodType> = { nom: z.string().min(1).max(200) };
   for (const c of CHAMPS[nature]) {
-    forme[c.nom] = c.type === 'entier' ? (() => {
+    forme[c.nom] = c.type === 'masse' ? z.number().min(0).max(1_000_000).multipleOf(0.5)
+      : c.type === 'entier' ? (() => {
       const n = z.number().int().min(c.min);
       return c.max === undefined ? n : n.max(c.max);
     })()
@@ -172,7 +176,7 @@ const LIBELLES: Record<NatureCatalogueVaisseau, [string, string]> = {
 const n = (v: unknown) => String(v).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
 function resume(nature: NatureCatalogueVaisseau, d: Record<string, unknown>): string {
   if (nature === 'exemples') return `${d.coque} · ${(d.choix as unknown[]).length} lignes`;
-  return `${nature === 'coques' ? `classe ${d.classe} · ` : ''}coût ${n(d.cout)} · puissance ${d.puissance} · masse ${d.masse}`;
+  return `${nature === 'coques' ? `classe ${d.classe} · ` : ''}coût ${n(d.cout)} · puissance ${d.puissance} · masse ${texteMasse(d.masse as number)}`;
 }
 
 export const catalogueVaisseaux: DeclarationCatalogue = {
