@@ -251,9 +251,10 @@ describe('B-77 : le MJ génère les fiches de règles', { skip: skipBrowser, tim
     assert.equal(await d.getByText('À créer', { exact: true }).count(), 7);
     await d.getByRole('button', { name: 'Générer', exact: true }).click();
     await d.getByText('7 fiches créées.').waitFor();
+    // the list is reloaded after the success phrase is set (Generer.tsx: setSucces then await charger()): wait for it
+    await d.getByText('Les fiches sont à jour.').waitFor({ timeout: 60_000 });
     assert.equal(await d.getByText('À jour', { exact: true }).count(), 7);
     assert.equal(await d.getByRole('button', { name: 'Générer', exact: true }).isDisabled(), true);
-    await d.getByText('Les fiches sont à jour.').waitFor();
     await page.screenshot({ path: `${SHOTS}-generees.png`, fullPage: true });
 
     // sept fiches de type Règle, titres exacts, une section gérée chacune
