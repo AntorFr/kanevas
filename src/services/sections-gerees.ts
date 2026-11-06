@@ -246,3 +246,30 @@ export function appliquerRecalcul(
     : undefined;
   poserSectionGeree(db, compteId, universId, { ficheId: s.fiche_id, outil: cle, type, sectionId: s.id, contenu, sourceVersion, version, charge });
 }
+
+const prefixeOutil = (outilCle: string) => `${outilCle.replace(/[\\%_]/g, '\\$&')}/%`;
+
+/** How many sections of the universe a tool manages (`gere_par` starts with `<module>/<outil>/`): the dialog's reassurance line (D-2). */
+export function compterSectionsGerees(db: Db, universId: number, outilCle: string): number {
+  return (db.prepare(
+    `SELECT COUNT(*) AS n FROM sections s JOIN fiches f ON f.id = s.fiche_id
+     WHERE f.univers_id = ? AND s.gere_par LIKE ? ESCAPE '\\'`,
+  ).get(universId, prefixeOutil(outilCle)) as { n: number }).n;
+}
+
+/**
+ * Frees the sections a tool managed in a universe (D-3): `gere_par` and `source_version` go to null together,
+ * the text, its public form, `version` and `modifie_le` stay as they are, and the pending source proposals of
+ * those sections go (they would apply to a text nobody maintains). Caller's transaction and guard.
+ */
+export function libererSections(db: Db, universId: number, outilCle: string): number {
+  const ids = (db.prepare(
+    `SELECT s.id FROM sections s JOIN fiches f ON f.id = s.fiche_id
+     WHERE f.univers_id = ? AND s.gere_par LIKE ? ESCAPE '\\'`,
+  ).all(universId, prefixeOutil(outilCle)) as { id: number }[]).map((r) => r.id);
+  for (const id of ids) {
+    db.prepare('DELETE FROM propositions WHERE section_id = ? AND source_version IS NOT NULL AND appliquee_le IS NULL').run(id);
+    db.prepare('UPDATE sections SET gere_par = NULL, source_version = NULL WHERE id = ?').run(id);
+  }
+  return ids.length;
+}

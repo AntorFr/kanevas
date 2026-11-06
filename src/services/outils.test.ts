@@ -414,9 +414,9 @@ test('semis du bouchon : systèmes, univers, rôles, responsables, seuls swn/gal
     FROM systemes_jeu s LEFT JOIN comptes c ON c.id = s.responsable_id WHERE s.nom = ?`, nom)[0];
   assert.deepEqual(sys("Système d'essai"), { nom: "Système d'essai", resp: 'antor', us: "Univers voisin|Éneria d'essai" });
   assert.deepEqual(sys('Système ancien'), { nom: 'Système ancien', resp: null, us: 'Univers ancien' });
-  // B-71, V-11 : les seuls outils activés sont la galaxie et le concepteur de vaisseaux, au système ; la seule ligne d'univers est le catalogue d'essai de la lance
+  // B-71, V-11 : les seuls outils activés sont la galaxie et le concepteur de vaisseaux, au système ; les lignes d'univers : le catalogue d'essai d'Éneria (suit) et le concepteur forcé « Activé » d'Univers voisin
   assert.deepEqual(q('SELECT outil FROM outils_systeme ORDER BY outil').map((x) => x.outil), ['swn/galaxie', 'swn/vaisseaux']);
-  assert.deepEqual(q('SELECT outil, active FROM outils_univers').map((x) => `${x.outil}:${x.active}`), ['swn/vaisseaux:null']);
+  assert.deepEqual(q('SELECT outil, active FROM outils_univers').map((x) => `${x.outil}:${x.active}`), ['swn/vaisseaux:null', 'swn/vaisseaux:1']);
   // comportement : responsable effectif / repli
   const id = (u: string) => q('SELECT id FROM comptes WHERE username = ?', u)[0].id as number;
   const sid = (n: string) => q('SELECT id FROM systemes_jeu WHERE nom = ?', n)[0].id as number;

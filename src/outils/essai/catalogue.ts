@@ -71,6 +71,22 @@ export const stockageEssai: StockageCatalogue = {
     else db.prepare('DELETE FROM essai_catalogue_retraits WHERE univers_id = ? AND nature = ? AND cle = ?')
       .run(universId, nature, cle);
   },
+  compter(db, c) {
+    const o = owner(c);
+    const lignes = db.prepare(`SELECT nature, COUNT(*) AS nombre FROM essai_catalogue_elements
+      WHERE niveau = ? AND ${o.colonne} = ? GROUP BY nature ORDER BY nature`).all(o.niveau, o.id) as { nature: string; nombre: number }[];
+    if ('universId' in c) {
+      const { nombre } = db.prepare('SELECT COUNT(*) AS nombre FROM essai_catalogue_retraits WHERE univers_id = ?')
+        .get(c.universId) as { nombre: number };
+      lignes.push({ nature: 'retraits', nombre });
+    }
+    return lignes;
+  },
+  effacer(db, c) {
+    const o = owner(c);
+    db.prepare(`DELETE FROM essai_catalogue_elements WHERE niveau = ? AND ${o.colonne} = ?`).run(o.niveau, o.id);
+    if ('universId' in c) db.prepare('DELETE FROM essai_catalogue_retraits WHERE univers_id = ?').run(c.universId);
+  },
 };
 const hull = { nom: z.string().min(1), masse: z.number().nonnegative(), cout: z.number().int().nonnegative() };
 export const catalogueEssai: DeclarationCatalogue = {

@@ -3306,7 +3306,7 @@ l'abonnement » button; status messages are in an `aria-live="polite"` region, e
 
 ## Screen details for `kanevas-outils` (scope)
 
-> **Built so far (`kanevas-outils-cadre`):** the « Outils » tab of E-14 and E-15 without catalogue at that point (`kanevas-outils-catalogue` then adds « Importer un catalogue… » and « Voir les éléments »; « Supprimer les données de l'outil… » is not built), the system's responsible and « Transférer la responsabilité », the sidebar's « Outils » section; E-21 (read side: see « What `kanevas-outils-galaxie-lire` builds of E-21 and E-10 » below), E-22 and removal are other slices and not built.
+> **Built so far (`kanevas-outils-cadre`):** the « Outils » tab of E-14 and E-15 without catalogue at that point (`kanevas-outils-catalogue` then adds « Importer un catalogue… » and « Voir les éléments »; « Supprimer les données de l'outil… » is added by `kanevas-outils-retrait`, below), the system's responsible and « Transférer la responsabilité », the sidebar's « Outils » section; E-21 (read side: see « What `kanevas-outils-galaxie-lire` builds of E-21 and E-10 » below), E-22 and removal are other slices and not built.
 >
 > Scope proposed on 2026-10-16 (`epic/kanevas-outils`). Needs B-57 to B-79, journeys P-17 to P-21,
 > decisions AD-121 to AD-137. Key screens, with finished mockups: **E-20** (`docs/maquettes/e20-outils.html`,
@@ -3546,6 +3546,44 @@ Criteria:
   réglages » and its text has not changed until someone recalculates.
 - Given the designer disabled, the sheet shows « Caractéristiques » as text with « Outil désactivé ».
 - Given Teo, without a role in the universe, when he forces a design's address, « Page introuvable. ».
+
+## What `kanevas-outils-retrait` builds (E-20 deletion dialog)
+
+Architecture: `ARCHITECTURE.md`, « Detail of `kanevas-outils-retrait` » (D-1 to D-8). Mockup: `docs/maquettes/e20-suppression.html` (states `#etat-univers`, `#etat-systeme`, `#etat-galaxie`, `#etat-vide`, `#etat-changement`, `#etat-refus`); where it and this text differ, this text wins. Format: desktop and phone — below 760 px the dialog is a full-height sheet and its buttons are 44 px high, stacked, the destructive one last. Disabling needs no screen of its own: it is the toggle of the card (`kanevas-outils-cadre`), and the banner of a managed section is E-9's (`kanevas-outils-sections-gerees`).
+
+### « Supprimer les données de l'outil… » (structuring screen: a dialog from the card's foot)
+
+- **Where and who**: at the foot of each tool card that declares data, on the universe tab (E-14) and on the system tab (E-15), always apart from the toggle, in the destructive style, with the line « Désactiver garde tout ; supprimer efface. » above it. *Universe tab*: any GM of the universe, outside Player mode, even when the tool is disabled. *System tab*: only the system's responsible (or any GM when there is none); another GM of an attached universe sees neither the button nor the line (**hidden**, not in the DOM, not a refusal); a Player never sees the tab.
+- **A card with nothing to erase** (no `donnees`, no catalogue) shows no button. A card whose data are empty keeps the button active (never dimmed) and opens the empty state below, so that the user learns that there is nothing rather than guessing.
+- **Opening** reads the summary (`GET …/suppression`) — never the card's list, which may be stale. While it loads, the dialog shows « Lecture des données de l'outil… » and the confirmation button is absent.
+- **Content, universe level** — title « Supprimer les données de « Carte de la galaxie » ? » (the tool's name); the sentence « 14 conceptions, 3 éléments locaux de catalogue seront effacés. » (the lines of the summary, comma-separated, the count first, singular for 1, no line at 0, « et » before the last line when there are three or more); a reassurance line « Les fiches et leur texte sont conservés : leurs sections ne seront plus gérées par l'outil. » shown only when the summary's `sectionsGerees` is above 0; « Cette action est définitive. » ; the buttons « Supprimer les données » (destructive) and « Annuler ». The activation, visibility and settings of the tool are not touched, and the dialog does not say otherwise.
+- **Content, system level** — same title and sentence about the system catalogue (« 4 coques, 8 armes du catalogue du système seront effacées. » is written as one sum line: « 12 éléments du catalogue du système seront effacés. »), then, when `encoreUtilise` is not empty, a block « Encore utilisé par : » listing the universes (« Univers voisin ») and, after them, one line for all of them together (« Ensemble : 3 conceptions. » — the designs of the listed universes, counted as a whole), and the sentence « Ces univers perdent les éléments du système : leurs conceptions seront à recalculer. ». The system level never erases an element of a universe, a design or a sheet: the block informs, it does not extend the deletion.
+- **Galaxy tool** — the universe level says « Les 4 systèmes, 3 routes et 1 zone de cette galaxie seront effacés. » (the sentence of E-21's « Supprimer la galaxie… », counted the same way); its system level has no data and no button.
+- **Frame** (`docs/charte.md` § Dialog): a `trash-2` badge (danger on danger background) before the title, 440 px wide at most, footer « Annuler » (neutral) then « Supprimer les données » (danger) on the desktop; on the phone the buttons are stacked full width, the danger one last.
+- **Confirmation**: no typed name (the sentence is read and counted; the typed name is reserved for the universe itself, AD-119). While the deletion runs the button reads « Suppression… » and the dialog cannot be closed. The result replaces the content: « Données supprimées : 14 conceptions, 3 éléments locaux de catalogue. » and « Fermer »; the card refreshes its counts (« aucun catalogue importé », no design in the list).
+
+| State | What the user sees | Text |
+|---|---|---|
+| empty | the recount is zero everywhere | « Cet outil n'a aucune donnée à supprimer. » + « Fermer »; no destructive button |
+| loading | summary being read | « Lecture des données de l'outil… » |
+| error | the summary or the deletion does not answer (5xx) | « L'action n'a pas abouti. Rien n'est supprimé. » + « Réessayer » (replays the summary read, then asks again: the lines shown are always those just read) |
+| offline | the connection drops | banner « Connexion perdue. », the destructive button disabled; during the deletion: « Connexion perdue pendant la suppression. Rien n'est supprimé à moitié : rouvrez la fenêtre pour voir l'état. » |
+| changed meanwhile | the recount differs from the lines read (`contenu_change`) | « Les données ont changé depuis que vous avez ouvert cette fenêtre. » + the new lines + « Recharger » (re-reads; nothing is erased until the user confirms the new lines) |
+| refusal | the role was lost meanwhile (no longer GM, no longer responsible, Player mode) | « Vous ne pouvez plus supprimer ces données. » + « Fermer »; the address of a player or non-member: « Page introuvable. » |
+| long content | 14 000 conceptions; a universe name of 80 characters in the system block | counts with thin spaces (« 14 000 conceptions »); names wrap, the block scrolls beyond 6 universes with « … et N autres » |
+
+*Criteria.*
+- Given « Éneria d'essai » with 2 designs and 2 local catalogue elements (« Lance d'essai » and one more), when Antor opens « Supprimer les données de l'outil… » on « Concepteur de vaisseaux », then he reads « 2 conceptions, 2 éléments locaux de catalogue seront effacés. », and when he confirms he reads « Données supprimées : 2 conceptions, 2 éléments locaux de catalogue. »; the designer list is empty and the two ship sheets are still in « Vaisseaux », their « Caractéristiques » section shown as ordinary text, without banner.
+- Given « Univers voisin », which holds one design, when Antor erased « Éneria d'essai »'s data, then that design is intact.
+- Given Antor who disabled the designer, when he re-enables it without deleting, then the same 2 designs and the same managed sections are there (counts before and after are equal).
+- Given Antor, responsible of « Système d'essai », when he first disables the designer on the system tab and then opens the deletion there, then the dialog adds « Encore utilisé par : » « Univers voisin », which forced the tool « Activé », and not « Éneria d'essai », which follows the system and so now has the tool disabled.
+- Given Mira, GM of an attached universe but not responsible, on the system tab, then neither the button nor its line exists in the DOM; on the tab of her own universe she has them.
+- Given the galaxy tool of « Éneria d'essai » (4 systems, 3 routes, 1 zone), when Antor opens the deletion, then the dialog reads « Les 4 systèmes, 3 routes et 1 zone de cette galaxie seront effacés. »; once confirmed, the galaxy no longer appears in E-10.
+- Given Antor with the dialog open while Mira adds a design, when he confirms, then the dialog reads « Les données ont changé depuis que vous avez ouvert cette fenêtre. » with 3 designs, and nothing was erased.
+- Given Léa, Player, who forces the address of the tab or of the summary, then she reads « Page introuvable. ».
+- Given Antor in Player mode, when he forces the deletion, then the tab is absent and the call is refused.
+- Given the network cut while « Supprimer les données » is pressed, then the dialog reads « Connexion perdue pendant la suppression. Rien n'est supprimé à moitié… » and the rows are all there or all gone.
+- Given Antor deleting the universe « Éneria d'essai » (AD-119), then no `swn_*` row of that universe remains and « Univers voisin » is intact.
 
 **What `kanevas-outils-vaisseaux` builds of E-22 and E-9** (the first designer: list, workshop, creation, save, share link, the E-9 component and the assistant's calculation; **not** built here, and leaving no empty slot: the stale banner and « Recalculer », « Générer les fiches de règles… » and the rule and example sheets — `kanevas-outils-vaisseaux-regles`). Mockup: `docs/maquettes/e22-concepteur-vaisseaux.html` (the document wins; its « calculée avec d'anciens réglages » state belongs to the later slice). Architecture: `ARCHITECTURE.md`, « Detail of `kanevas-outils-vaisseaux` » (V-1 to V-12). Format: web, desktop and phone/tablet (390 px is the proof width).
 

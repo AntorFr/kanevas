@@ -4,6 +4,7 @@ import { apresEcriture, produire, versionSource } from '../../services/swn/secti
 import { apresEcritureRegles, produireRegles, versionSourceRegles } from '../../services/swn/regles-hooks.js';
 import { produireDocument, versionSourceDocument } from '../../services/swn/document-source.js';
 import { importerGalaxie, NATURES_GALAXIE } from '../../services/swn/import-galaxie.js';
+import { donneesGalaxie, donneesVaisseaux } from '../../services/swn/donnees-outils.js';
 import { outilTrajet } from './assistant.js';
 import { outilVaisseau } from './assistant-vaisseaux.js';
 import type { DeclarationCarte, DeclarationGenerateur, DeclarationModule, SectionGeree } from '../declaration.js';
@@ -15,6 +16,7 @@ export const swnGalaxie: DeclarationCarte = {
   ecran: { libelle: 'Galaxie', icone: 'Map' },
   cartes: (db, acteur, universId) => cartesGalaxies(db, acteur, universId),
   outilsAssistant: outilTrajet,
+  donnees: donneesGalaxie,
   importation: { natures: NATURES_GALAXIE, appliquer: importerGalaxie },
   sections: [{
     type: 'document_mj', libelle: 'Document MJ', usage: 'maintenir', recalcul: 'proposition',
@@ -46,6 +48,7 @@ export const swnVaisseaux: DeclarationGenerateur = {
   usages: [{ nom: 'concevoir', mjSeul: false }, { nom: 'creer', mjSeul: true }, { nom: 'generer', mjSeul: true }],
   reglages: {},
   catalogue: catalogueVaisseaux,
+  donnees: donneesVaisseaux,
   ecran: { libelle: 'Concepteur de vaisseaux', icone: 'Rocket' },
   outilsAssistant: outilVaisseau,
   sections: [{

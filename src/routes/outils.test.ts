@@ -178,8 +178,8 @@ test('PUT univers : MJ de l’univers, joueur 404, mode Joueur refusé', async (
   assert.equal((await appel(w.app, w.lea, 'PUT', url, { active: true })).statusCode, 404);
   assert.equal((await appel(w.app, w.teo, 'PUT', url, { active: true })).statusCode, 404);
   assert.ok((await appel(w.app, w.antor, 'PUT', url + '?mode=joueur', { active: true })).statusCode >= 403);
-  // The seed holds the universe's own spear catalogue (V-11): its row is the only one, no activation is added.
-  assert.equal(w.app.db.prepare('SELECT count(*) n FROM outils_univers').get()!['n' as never], 1);
+  // The seed holds Éneria's own catalogue row (V-11) and Univers voisin's forced designer: two rows, no activation is added by the refusals.
+  assert.equal(w.app.db.prepare('SELECT count(*) n FROM outils_univers').get()!['n' as never], 2);
   assert.equal((await appel(w.app, w.mira, 'PUT', url, { active: true })).statusCode, 204); // a GM of the universe, not the system's owner
 });
 

@@ -32,6 +32,8 @@ export interface Outil extends Omit<Communs, 'effectif'> {
   type: string;
   dependances: string[];
   catalogue?: CatalogueSummary;
+  /** Present (true) only for who may delete this level of this tool's data (D-5). */
+  supprimable?: boolean;
   effectif: { active: boolean; visibilite: { mj: boolean; joueur: boolean }; reglages: Record<string, Resolue> };
 }
 export interface CatalogueSummary {
@@ -50,3 +52,12 @@ export interface VueOutils {
 }
 export const afficher = (v: Valeur) => typeof v === 'boolean' ? (v ? 'Oui' : 'Non') : String(v);
 export const origine = (v: Resolue) => `${v.origine === 'defaut' ? 'Par défaut' : v.origine === 'systeme' ? 'Système' : 'Univers'} · ${afficher(v.valeur)}`;
+export interface LigneDonnees { cle: string; singulier: string; pluriel: string; nombre: number }
+export interface ResumeSuppression {
+  outil: { cle: string; libelle: string };
+  niveau: Niveau;
+  efface: LigneDonnees[];
+  total: number;
+  sectionsGerees: number;
+  encoreUtilise: null | { univers: { id: number; nom: string }[]; lignes: LigneDonnees[] };
+}
