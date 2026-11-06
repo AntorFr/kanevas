@@ -13,6 +13,8 @@
 .gx-route line:not(.gx-route-touche) { stroke: var(--texte-2); stroke-width: 2; }
 .gx-route.privee line:not(.gx-route-touche) { stroke: var(--mj); }
 .gx-route text { fill: var(--mj); font-size: var(--t-12); }
+.gx-route text.gx-route-type { fill: var(--texte); pointer-events: none; paint-order: stroke; stroke: var(--surface); stroke-width: 3px; }
+.gx-type-lien { overflow-wrap: anywhere; }
 .gx-chemin { stroke: var(--accent); stroke-width: 5; stroke-linecap: round; stroke-linejoin: round; opacity: .85; pointer-events: none; }
 .gx-zone polygon:not(.gx-zone-bord) { fill: var(--accent-fond); stroke: var(--accent); stroke-width: 1; pointer-events: none; }
 .gx-zone.secrete polygon:not(.gx-zone-bord) { fill: var(--mj-trame); stroke: var(--mj); stroke-dasharray: 4 4; }

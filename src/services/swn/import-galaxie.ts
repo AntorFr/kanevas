@@ -3,7 +3,7 @@ import { ErreurService } from '../erreurs.js';
 import type { Acteur } from '../types.js';
 import type { Issue } from '../lots.js';
 import {
-  apresEcriture, booleenImport, dessinerZone, modifierRoute, modifierSysteme, modifierZone, normaliserSysteme,
+  apresEcriture, booleenImport, dessinerZone, modifierRoute, modifierSysteme, modifierZone, normaliserSysteme, typeLienValide,
   normaliserZone, placerSysteme, routesDeSysteme, sansSignal, tracerRoute,
 } from './ecriture-carte.js';
 import { exigerEcritureGalaxie, exigerMJOutil, OUTIL_GALAXIE, type LigneRoute, type LigneSysteme, type LigneZone } from './galaxies.js';
@@ -63,7 +63,7 @@ function lireFichier(corps: unknown): Fichier {
 
 const CHAMPS_SYSTEME = ['cle', 'nom', 'q', 'r', 'taille', 'couleur', 'notes', 'secret'];
 const CHAMPS_ZONE = ['cle', 'nom', 'contour', 'couleur', 'densite', 'secret'];
-const CHAMPS_ROUTE = ['depuis', 'vers', 'publique'];
+const CHAMPS_ROUTE = ['depuis', 'vers', 'publique', 'type_lien'];
 
 function champInconnu(item: Record<string, unknown>, permis: string[]): string | null {
   return Object.keys(item).find((k) => !permis.includes(k)) ?? null;
@@ -183,16 +183,18 @@ export function importerGalaxie(db: Db, acteur: Acteur, universId: number, galax
         paires.add(paire);
         item('routes', i, cle, () => {
           const publique = Object.hasOwn(brut, 'publique') && brut.publique !== undefined ? booleenImport('publique', brut.publique) : true;
+          const typeLien = Object.hasOwn(brut, 'type_lien') && brut.type_lien !== undefined && brut.type_lien !== null
+            ? typeLienValide(brut.type_lien) : null;
           const ligne = db.prepare(`SELECT * FROM swn_routes WHERE (depuis_id = ? AND vers_id = ?) OR (depuis_id = ? AND vers_id = ?)`)
             .get(d.id, v.id, v.id, d.id) as (LigneRoute & { version_importee: number | null }) | undefined;
           if (!ligne) {
-            const { id } = tracerRoute(db, acteur, universId, g.id, { depuis, vers, publique });
+            const { id } = tracerRoute(db, acteur, universId, g.id, { depuis, vers, publique, ...(typeLien === null ? {} : { type_lien: typeLien }) });
             db.prepare('UPDATE swn_routes SET version_importee = version WHERE id = ?').run(id);
             return 'creees';
           }
-          if ((ligne.publique === 1) === publique) return deplacees.has(ligne.id) ? 'mises_a_jour' : 'inchangees';
+          if ((ligne.publique === 1) === publique && ligne.type_lien === typeLien) return deplacees.has(ligne.id) ? 'mises_a_jour' : 'inchangees';
           if (ligne.version !== ligne.version_importee) throw new ErreurService('conflit', HORS_SYNCHRO, 'hors_synchro');
-          const { version } = modifierRoute(db, acteur, universId, g.id, ligne.id, { publique, version: ligne.version });
+          const { version } = modifierRoute(db, acteur, universId, g.id, ligne.id, { publique, type_lien: typeLien, version: ligne.version });
           db.prepare('UPDATE swn_routes SET version_importee = ? WHERE id = ?').run(version, ligne.id);
           return 'mises_a_jour';
         });

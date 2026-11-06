@@ -14,7 +14,7 @@ export interface SystemeVue {
   version?: number;
 }
 export interface BoutRoute { cle: string; q: number; r: number }
-export interface RouteVue { id: number; depuis: BoutRoute; vers: BoutRoute; longueur: number; publique?: boolean; version?: number }
+export interface RouteVue { id: number; depuis: BoutRoute; vers: BoutRoute; longueur: number; publique?: boolean; version?: number; type_lien?: string }
 export interface ZoneVue { id: number; nom: string; contour: Point[]; couleur: string; secret?: boolean; cle?: string; version?: number; densite?: number | null }
 export interface VueBlocs { blocs: BlocGenere[]; systemes: SystemeVue[]; routes: RouteVue[]; zones: ZoneVue[] }
 
@@ -47,6 +47,7 @@ export function lireBlocs(
     if (!d || !v || (!dedans(d) && !dedans(v))) continue;
     const route: RouteVue = { id: ro.id, depuis: { cle: d.cle, q: d.q, r: d.r },
       vers: { cle: v.cle, q: v.q, r: v.r }, longueur: ro.longueur };
+    if (ro.type_lien !== null) route.type_lien = ro.type_lien;
     if (niveau === 'mj') { route.publique = ro.publique === 1; route.version = ro.version; }
     routes.push(route);
   }
@@ -117,6 +118,7 @@ export function lireRoute(db: Db, acteur: Acteur, universId: number, galaxieId: 
   const d = ro && parId.get(ro.depuis_id), v = ro && parId.get(ro.vers_id);
   if (!ro || !d || !v) throw introuvable();
   const route: RouteVue = { id: ro.id, depuis: { cle: d.cle, q: d.q, r: d.r }, vers: { cle: v.cle, q: v.q, r: v.r }, longueur: ro.longueur };
+  if (ro.type_lien !== null) route.type_lien = ro.type_lien;
   if (niveau === 'mj') { route.publique = ro.publique === 1; route.version = ro.version; }
   return route;
 }

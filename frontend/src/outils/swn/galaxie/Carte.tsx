@@ -3,7 +3,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { ErreurApi, lire, useConnexionPerdue } from '../../../api';
 import { Bouton } from '../../../ui';
-import { abreger, BLOCS_MAX, bloc, cases, COTE_BLOC, distanceHex, TAILLE_MAX, TAILLE_MIN, tailleMinimale, versHex, versPlan } from './geo';
+import { abreger, abregerType, BLOCS_MAX, bloc, cases, COTE_BLOC, distanceHex, TAILLE_MAX, TAILLE_MIN, tailleMinimale, versHex, versPlan } from './geo';
 import type { Geste, Reference, RouteCarte, Selection, SystemeCarte, Touche, VueBlocs, VueGalaxie, ZoneCarte } from './types';
 
 const RACINE_3 = Math.sqrt(3);
@@ -379,6 +379,11 @@ export function CarteHex({ base, suffixe, galaxie, selection, onSelection, mesur
                   onClick={(e) => { e.stopPropagation(); if (!geste.current.bouge) onSelection({ k: 'route', id: r.id }); }} />
               )}
               {prive && vue.s >= SEUIL_ETIQUETTES && <text x={(a.x + b.x) / 2} y={(a.y + b.y) / 2 - 6} textAnchor="middle">Privée</text>}
+              {r.type_lien && vue.s >= SEUIL_ETIQUETTES && (
+                <text className="gx-route-type" x={(a.x + b.x) / 2} y={(a.y + b.y) / 2 + 6 + 12} textAnchor="middle">
+                  {abregerType(r.type_lien)}
+                </text>
+              )}
             </g>
           );
         })}

@@ -47,3 +47,9 @@ export function tailleMinimale(largeur: number, hauteur: number): number {
   const parR = hauteur / 1.5 / 56;
   return Math.min(TAILLE_MAX, Math.max(TAILLE_MIN, parQ, parR));
 }
+
+/** A type of link on the map: cut with « … » beyond 14 characters (the panel shows it whole). */
+export function abregerType(t: string): string {
+  const c = [...t.replace(/\s+/g, ' ').trim()];
+  return c.length > 14 ? `${c.slice(0, 13).join('')}…` : c.join('');
+}
