@@ -171,9 +171,15 @@ describe('B-67 : un réglage change, la conception de Léa est périmée et se r
     await m.portee(6);
     const { page } = await ouvrir(m, 'Léa', `?fiche=${m.orak}`);
     await page.getByText(BANDE).waitFor();
+    // The change triggers a debounced calculation; « Enregistrer » is only usable once its answer is back.
+    const calcul = page.waitForResponse((r: Any) => r.request().method() === 'POST' && /\/calcul$/.test(new URL(r.url()).pathname));
     await page.getByRole('button', { name: 'Augmenter la quantité : Laser' }).click();
-    await page.getByRole('button', { name: 'Enregistrer' }).click();
-    await page.getByText('Conception enregistrée.').waitFor();
+    await calcul;
+    const enregistrer = page.getByRole('button', { name: 'Enregistrer' });
+    await enregistrer.waitFor();
+    await page.waitForFunction(() => [...document.querySelectorAll('button')].some((b) => b.textContent?.trim() === 'Enregistrer' && !b.disabled));
+    await enregistrer.click();
+    await page.getByText('Conception enregistrée.').waitFor({ timeout: 60_000 });
     const apres = plat(await m.caracteristiques('lea', m.orak));
     assert.match(apres, /Prix 810 000 cr/);
     assert.match(apres, /Portée de saut 18 cases/);
