@@ -821,15 +821,16 @@ session.*
    routes appears with its duration (« 7 cases · 4,5 jours »).
 3. She copies the « Vael » link (stable address); the assistant, on request, calculates the same path.
 4. Antor (E-21, GM mode; the galaxy was created from E-10 « Nouvelle carte » ▸ « Carte de la galaxie », not visible until he makes it so): he **places** a system in an anonymous hex (promotes it: name, notes, size,
-   colour), **draws** a route to « Vael » (exact length), **draws** a territory marked secret, then
+   colour), **draws** a route to « Vael » (exact length) and types it « Pirate » (the type is optional), **draws** a territory marked secret, then
    switches to **Player mode**: the ghost system, private route and territory no longer exist.
    From the « Galaxie ▾ » menu he also renames the galaxy, makes it visible (« Rendre visible »; he can hide it again),
    changes its **seed** (« Graine… »: the undefined systems move, those he placed or promoted stay) and, apart,
    « Supprimer la galaxie… » (the dialog counts what will be erased).
+   Léa, reloading the map at the next step, reads « Pirate » on the route while it is public; once Antor makes it private, she reads nothing of it.
 5. « Document MJ… »: he chooses the « Galaxie — notes MJ » sheet (or creates one); the tool writes the managed « Document MJ » section there, GM-only. When he later places a system, the tool files an update **proposal** (« Proposition en attente »); the section changes only when he applies it, never on its own.
 *Highlight*: the same journey, seen by Léa then Antor, does not follow the same route: the smuggling
 route does not exist for her.
-*Failure*: Léa searches for « Station fantôme » — no result, never « masqué »; a write refused while Antor's form is open (role lost, tool disabled) — the form keeps his input and says « Action refusée. »; he abandons the document proposal — « Proposer la mise à jour » comes back; Antor saves a system from a
+*Failure*: a type of 41 characters — « Le type de lien fait 1 à 40 caractères. » under the field, nothing sent; Léa searches for « Station fantôme » — no result, never « masqué »; a write refused while Antor's form is open (role lost, tool disabled) — the form keeps his input and says « Action refusée. »; he abandons the document proposal — « Proposer la mise à jour » comes back; Antor saves a system from a
 stale version (modified meanwhile by the other GM) — « Ce système a changé depuis que vous l'avez ouvert. »
 and « Recharger »; connection lost — the map keeps the displayed view, writing actions are disabled;
 the density of generated systems never changes based on a territory she cannot see.
@@ -842,7 +843,8 @@ the density of generated systems never changes based on a territory she cannot s
 2. Léa opens the **designer** from the sheet (the banner link) or the « Outils » bar, where she first sees the
    **list** of the designs she may read (E-22), then opens « Vent d'Orak »: she chooses an engine, a hold, a laser
    and a test lance; free power and mass, price, HP and AC recalculate with each choice; she adds a second test
-   lance, a blocking alert appears (« Puissance insuffisante : −2 »), then disappears when she removes it.
+   lance, a blocking alert appears (« Puissance insuffisante : −2 »), then disappears when she removes it. A test
+   element of mass 0,5 taken three times uses « 1,5 » of mass; a half unit too many reads « Masse insuffisante : −0,5 ».
 3. She saves: the sheet (**E-9**) shows « Caractéristiques » under the « Générée par le concepteur de
    vaisseaux » banner linking to the tool; Léa cannot manually edit the text.
 4. Later, Antor changes the jump range of the universe setting (or imports a catalogue of the universe): the design is
