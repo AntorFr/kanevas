@@ -6,7 +6,7 @@ export interface VueGalaxie {
 export interface SystemeCarte { id: number; cle: string; nom: string; q: number; r: number; taille: number; couleur: string; secret?: boolean; version?: number }
 export interface RouteCarte {
   id: number; depuis: { cle: string; q: number; r: number }; vers: { cle: string; q: number; r: number };
-  longueur: number; publique?: boolean; version?: number;
+  longueur: number; publique?: boolean; version?: number; type_lien?: string;
 }
 export interface ZoneCarte { id: number; nom: string; contour: [number, number][]; couleur: string; secret?: boolean; cle?: string; version?: number; densite?: number | null }
 export interface VueBlocs {

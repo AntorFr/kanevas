@@ -130,17 +130,33 @@ export function FormSysteme({ base, mode, q, r, brouillon, version, cle, nbRoute
   );
 }
 
+const MSG_TYPE = 'Le type de lien fait 1 à 40 caractères.';
+/** The form sends an empty or blank field as « none »: `undefined` (nothing to write); over 40 characters it stops here. */
+const typeEnvoye = (t: string): string | undefined => t.trim() === '' ? undefined : t.trim();
+const typeTrop = (t: string) => [...t.trim()].length > 40;
+
+function ChampTypeLien({ valeur, onChange, erreur }: { valeur: string; onChange: (t: string) => void; erreur?: string }) {
+  return (
+    <Champ etiquette="Type de lien (facultatif)" value={valeur} maxLength={200} compteur="40 caractères au plus"
+      erreur={typeTrop(valeur) ? MSG_TYPE : erreur}
+      onChange={(ev: { target: { value: string } }) => onChange(ev.target.value)} />
+  );
+}
+
 /** « Nouvelle route »: the length is shown, computed by the grid, and is not an input. */
 export function FormRoute({ base, depart, arrivee, onFini, onAnnuler, onIntrouvable }: {
   base: string; depart: SystemeCarte; arrivee: SystemeCarte; onFini: () => void; onAnnuler: () => void; onIntrouvable: () => void;
 }) {
   const [publique, setPublique] = useState(true);
+  const [typeLien, setTypeLien] = useState('');
   const e = useEnvoi('route', onIntrouvable);
   const longueur = Math.max(1, distanceHex(depart, arrivee));
   const dejaLa = e.echec?.code === 'route_existante';
   async function soumettre(ev: FormEvent) {
     ev.preventDefault();
-    const res = await e.envoyer(() => appeler('POST', `${base}/routes`, { depuis: depart.cle, vers: arrivee.cle, publique }));
+    if (typeTrop(typeLien)) return;
+    const t = typeEnvoye(typeLien);
+    const res = await e.envoyer(() => appeler('POST', `${base}/routes`, { depuis: depart.cle, vers: arrivee.cle, publique, ...(t === undefined ? {} : { type_lien: t }) }));
     if (res) onFini();
   }
   return (
@@ -150,6 +166,7 @@ export function FormRoute({ base, depart, arrivee, onFini, onAnnuler, onIntrouva
         <fieldset disabled={e.enCours} className="gx-gele">
           <p>De {depart.nom} à {arrivee.nom}</p>
           <p>Longueur : {cases(longueur)}</p>
+          <ChampTypeLien valeur={typeLien} onChange={setTypeLien} erreur={e.echec?.sorte === 'champ' && e.echec.champ === 'type_lien' ? MSG_TYPE : undefined} />
           <Interrupteur etiquette="Route publique" coche={publique} onChange={setPublique} />
         </fieldset>
         {dejaLa && <p className="echec" role="alert">Ces deux systèmes sont déjà reliés.</p>}
@@ -221,21 +238,26 @@ export function FormZone({ base, points, cle, version, brouillon, onFini, onAnnu
 export const brouillonSystemeVide = (): BrouillonSysteme => ({ nom: '', taille: 'moyenne', couleur: 'accent', notes: '', secret: false });
 export const brouillonZoneVide = (): BrouillonZone => ({ nom: '', couleur: 'danger', densite: '', secret: false });
 
-/** « Modifier » of a route: only its visibility changes (the ends and the length do not). */
+/** « Modifier » of a route: its visibility and its type of link change (the ends and the length do not). */
 export function FormRoutePublique({ base, route, onFini, onAnnuler, onRecharger, onIntrouvable }: {
   base: string; route: RouteCarte; onFini: () => void; onAnnuler: () => void; onRecharger: () => void; onIntrouvable: () => void;
 }) {
   const [publique, setPublique] = useState(route.publique !== false);
+  const [typeLien, setTypeLien] = useState(route.type_lien ?? '');
   const [version] = useState(route.version);
   const e = useEnvoi('route', onIntrouvable);
   async function soumettre(ev: FormEvent) {
     ev.preventDefault();
-    const res = await e.envoyer(() => appeler('PATCH', `${base}/routes/${route.id}`, { publique, version }));
+    if (typeTrop(typeLien)) return;
+    const res = await e.envoyer(() => appeler('PATCH', `${base}/routes/${route.id}`, { publique, type_lien: typeEnvoye(typeLien) ?? null, version }));
     if (res) onFini();
   }
   return (
     <form onSubmit={(ev) => void soumettre(ev)} noValidate aria-label="Modifier la route">
-      <fieldset disabled={e.enCours} className="gx-gele"><Interrupteur etiquette="Route publique" coche={publique} onChange={setPublique} /></fieldset>
+      <fieldset disabled={e.enCours} className="gx-gele">
+        <ChampTypeLien valeur={typeLien} onChange={setTypeLien} erreur={e.echec?.sorte === 'champ' && e.echec.champ === 'type_lien' ? MSG_TYPE : undefined} />
+        <Interrupteur etiquette="Route publique" coche={publique} onChange={setPublique} />
+      </fieldset>
       {e.messages()}
       <Pied enCours={e.enCours} conflit={e.conflit} onRecharger={onRecharger} onAnnuler={onAnnuler} libelle="Enregistrer" />
     </form>

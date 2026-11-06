@@ -1,4 +1,5 @@
 // Ship calculation (V-2, B-75): pure, no database, no clock, no file read.
+import { texteMasse } from './masse.js'
 
 /** Credits of ship price built per day of construction (book mechanics, not catalogue data). */
 export const CADENCE_CHANTIER = 25000
@@ -78,6 +79,7 @@ function moins(n: number): string {
   return n < 0 ? `−${-n}` : String(n)
 }
 
+
 export function calculer(
   coque: CoqueResolue,
   lignes: LigneResolue[],
@@ -120,7 +122,7 @@ export function calculer(
     bloquantes.push({ niveau: 'bloquante', code: 'puissance_insuffisante', texte: `Puissance insuffisante : ${moins(puissanceLibre)}` })
   }
   if (masseLibre < 0) {
-    bloquantes.push({ niveau: 'bloquante', code: 'masse_insuffisante', texte: `Masse insuffisante : ${moins(masseLibre)}` })
+    bloquantes.push({ niveau: 'bloquante', code: 'masse_insuffisante', texte: `Masse insuffisante : ${texteMasse(masseLibre)}` })
   }
   if (emports.utilises > emports.total) {
     bloquantes.push({ niveau: 'bloquante', code: 'emports_insuffisants', texte: `Emports insuffisants : ${emports.utilises} sur ${emports.total}` })

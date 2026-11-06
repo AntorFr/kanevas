@@ -47,3 +47,24 @@ export function tailleMinimale(largeur: number, hauteur: number): number {
   const parR = hauteur / 1.5 / 56;
   return Math.min(TAILLE_MAX, Math.max(TAILLE_MIN, parQ, parR));
 }
+
+/** A type of link on the map: cut with « … » beyond 14 characters (the panel shows it whole). */
+export function abregerType(t: string): string {
+  const c = [...t.replace(/\s+/g, ' ').trim()];
+  return c.length > 14 ? `${c.slice(0, 13).join('')}…` : c.join('');
+}
+
+/**
+ * Centre of a type-of-link label: the middle of the segment pushed along its normal (downwards) far enough
+ * that the horizontal text box (width `l`, height `h`, plus `marge`) never meets the segment, whatever its slope.
+ */
+export function placerEtiquetteType(a: { x: number; y: number }, b: { x: number; y: number }, l: number, h: number, marge = 6): { x: number; y: number } {
+  const dx = b.x - a.x;
+  const dy = b.y - a.y;
+  const long = Math.hypot(dx, dy) || 1;
+  let nx = -dy / long;
+  let ny = dx / long;
+  if (ny < 0 || (ny === 0 && nx < 0)) { nx = -nx; ny = -ny; }
+  const d = Math.abs(nx) * l / 2 + Math.abs(ny) * h / 2 + marge;
+  return { x: (a.x + b.x) / 2 + nx * d, y: (a.y + b.y) / 2 + ny * d };
+}
