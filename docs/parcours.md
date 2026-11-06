@@ -844,7 +844,7 @@ the density of generated systems never changes based on a territory she cannot s
    **list** of the designs she may read (E-22), then opens « Vent d'Orak »: she chooses an engine, a hold, a laser
    and a test lance; free power and mass, price, HP and AC recalculate with each choice; she adds a second test
    lance, a blocking alert appears (« Puissance insuffisante : −2 »), then disappears when she removes it. A test
-   element of mass 0,5 taken three times uses « 1,5 » of mass; a half unit too many reads « Masse insuffisante : −0,5 ».
+   element of mass 0,5 taken three times lowers the free mass by 1,5 (a hull of mass 7 reads « 5,5 »); a half unit too many reads « Masse insuffisante : −0,5 ».
 3. She saves: the sheet (**E-9**) shows « Caractéristiques » under the « Générée par le concepteur de
    vaisseaux » banner linking to the tool; Léa cannot manually edit the text.
 4. Later, Antor changes the jump range of the universe setting (or imports a catalogue of the universe): the design is
