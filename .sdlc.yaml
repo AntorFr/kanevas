@@ -2,3 +2,8 @@
 # langue_publique: the language of what a version publishes (Release notes, tag messages);
 # the merge pod's language guard refuses French ones.
 langue_publique: en
+# deploiement: the images this repository builds and its application names (vault paths
+# apps/<name>, oidc/<name>); the chain deploys them to k8s-home-lab after a release.
+deploiement:
+  images: [ghcr.io/antorfr/kanevas]
+  applis: [kanevas]
