@@ -34,7 +34,10 @@ test('0023 : montée depuis 0022 peuplée, rien de perdu, version_importee nulle
   const apres = tables.map((t) => db.prepare(`SELECT * FROM ${t}`).all());
   apres.slice(1).forEach((lignes: any[], i) => lignes.forEach((l, j) => {
     assert.equal(l.version_importee, null);
-    const { version_importee, ...reste } = l;
+    const { version_importee, ...sans } = l;
+    // 0027 (B-81) adds the nullable `type_lien` to the routes: nothing else of the row may have moved.
+    const { type_lien, ...reste } = sans;
+    assert.equal(type_lien === null || type_lien === undefined, true);
     assert.deepEqual(reste, (avant[i + 1] as any[])[j]);
   }));
   assert.deepEqual(apres[0], avant[0]);
