@@ -153,4 +153,62 @@ describe('E-21 : le type de lien d’une route', { skip: skipBrowser, timeout: 6
     assert.equal(Object.hasOwn(await rep.json(), 'type_lien'), false);
     await ctx.close();
   });
+
+  for (const largeur of [1280, 390]) {
+    it(`${largeur} px : étiquette d’un type long sur une route oblique : infobulle du type complet, jamais traversée, un clic la sélectionne`, async () => {
+      const nom = `Oblique ${largeur}`;
+      const long = 'Convoi de contrebandiers armés du Rift'.slice(0, 40);
+      await nouveauSysteme(nom, largeur === 1280 ? -1 : 0, largeur === 1280 ? 4 : 5);
+      const { page, ctx } = await ouvre('Antor', largeur);
+      await systeme(page, nom).waitFor();
+      await commande(page, 'Tracer une route');
+      await systeme(page, nom).click();
+      await systeme(page, 'Vael').click();
+      const form = section(page, 'Nouvelle route');
+      await form.getByLabel('Type de lien (facultatif)').fill(long);
+      const [rep] = await Promise.all([
+        page.waitForResponse((r: Any) => r.url().endsWith('/routes') && r.request().method() === 'POST'),
+        form.getByRole('button', { name: 'Tracer', exact: true }).click(),
+      ]);
+      assert.equal(rep.status(), 201);
+      const rid = (await rep.json()).id as number;
+      await form.waitFor({ state: 'detached' });
+      const etiquette = page.locator(`g[data-route="${rid}"] text.gx-route-type`);
+      await zoomer(page, etiquette);
+      await etiquette.waitFor();
+      await hors(page, `${largeur}-08-long`);
+      // abridged on the map, the full type as the tooltip
+      const texte = (await etiquette.evaluate((e: Element) => e.lastChild?.textContent)) as string;
+      assert.ok(texte.endsWith('…') && [...texte].length === 14, texte);
+      assert.equal(await etiquette.locator('title').textContent(), long);
+      // the rendered box never meets the route (screen space)
+      const m = await page.evaluate(`(() => {
+        const g = document.querySelector('g[data-route="${rid}"]');
+        const l = g.querySelector('line:not(.gx-route-touche)');
+        const t = g.querySelector('text.gx-route-type');
+        const ctm = l.getScreenCTM();
+        const a = new DOMPoint(l.x1.baseVal.value, l.y1.baseVal.value).matrixTransform(ctm);
+        const b = new DOMPoint(l.x2.baseVal.value, l.y2.baseVal.value).matrixTransform(ctm);
+        const r = t.getBoundingClientRect();
+        return { a: { x: a.x, y: a.y }, b: { x: b.x, y: b.y }, box: { x: r.x, y: r.y, w: r.width, h: r.height } };
+      })()`);
+      const { a, b, box } = m;
+      let t0 = 0, t1 = 1, croise = true;
+      for (const [o, d, lo, hi] of [[a.x, b.x - a.x, box.x, box.x + box.w], [a.y, b.y - a.y, box.y, box.y + box.h]] as const) {
+        if (Math.abs(d) < 1e-9) { if (o < lo || o > hi) croise = false; continue; }
+        let u = (lo - o) / d, v = (hi - o) / d;
+        if (u > v) [u, v] = [v, u];
+        t0 = Math.max(t0, u); t1 = Math.min(t1, v);
+        if (t0 > t1) croise = false;
+      }
+      assert.equal(croise, false, `la route traverse l’étiquette ${JSON.stringify(m)}`);
+      // a click on the label selects the route (its panel opens)
+      await etiquette.dispatchEvent('click');
+      await page.getByText(`Type : ${long}`).waitFor();
+      // clean up
+      const v = (await (await page.request.get(`${base}/blocs?de=-2,-2&a=9,9`)).json()).routes.find((x: Any) => x.id === rid).version;
+      assert.equal((await page.request.fetch(`${base}/routes/${rid}?version=${v}`, { method: 'DELETE' })).status(), 204);
+      await ctx.close();
+    });
+  }
 });
