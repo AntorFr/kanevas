@@ -43,7 +43,7 @@ const cleSchema = z.string().min(1).max(64);
 const ligneChoix = z.strictObject({
   nature: z.enum(NATURES_DE_LIGNE), cle: cleSchema, quantite: z.number().int().min(1).max(99),
   magasins: z.number().int().min(1).max(9).optional(),
-});
+}).refine((l) => l.magasins === undefined || l.nature === 'armes', { message: 'magasins : armes seulement' });
 function schemaDe(nature: NatureCatalogueVaisseau): z.ZodObject {
   const forme: Record<string, z.ZodType> = { nom: z.string().min(1).max(200) };
   for (const c of CHAMPS[nature]) {
