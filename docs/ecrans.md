@@ -3379,8 +3379,10 @@ The one-line summary of a ship element carries its mass as E-22 writes it (`kane
 B-80): « masse 0,5 · coût 4 », the comma only when the mass has a decimal, never « 0.5 » nor « 1,0 ».
 - Given the trial catalogue's element of mass 0.5, when Antor opens « Voir les éléments », then its line
   reads « masse 0,5 · coût 4 » and an element of mass 8 reads « masse 8 ».
-- Given an import file carrying an element of mass 0.3, when the GM imports it, then the item is refused
-  with « multiple de 0,5 attendu » on the field `masse` and the catalogue does not change.
+- Given an import file carrying an element of mass 0.3, when the GM chooses it in the import dialog, then
+  the preview (step 4, before « Appliquer ») lists « Arme « … », champ `masse` : multiple de 0,5 attendu. »
+  (the reason of a mass that is a number but not a multiple of 0.5; « nombre attendu » stays the reason of a
+  missing or non-numeric mass) and the catalogue does not change.
 - Given the universe weapon « Lance d'Orak'Ziel » hidden by Antor, when Léa opens the designer,
   it appears in no list, and nothing says an element is missing; Antor sees it, marked « MJ seul ».
 - Given Léa's design already carrying the « Lance d'Orak'Ziel », when Antor hides it, Léa still sees it
