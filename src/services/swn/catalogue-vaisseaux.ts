@@ -8,12 +8,13 @@ import { ErreurService, introuvable } from '../erreurs.js';
 // zod schemas AND the statements of the adapter are built — written once, never seven copies. The only SQL on `swn_catalogue_*`.
 
 type Champ =
-  | { nom: string; type: 'entier'; min: number; max?: number }
+  | { nom: string; type: 'entier'; min: number; max?: number; defaut?: number }
   | { nom: string; type: 'masse' }
   | { nom: string; type: 'oui-non' }
   | { nom: string; type: 'texte' }
   | { nom: string; type: 'choix' };
-const entier = (nom: string, min = 0, max?: number): Champ => ({ nom, type: 'entier', min, ...(max === undefined ? {} : { max }) });
+const entier = (nom: string, min = 0, max?: number, defaut?: number): Champ =>
+  ({ nom, type: 'entier', min, ...(max === undefined ? {} : { max }), ...(defaut === undefined ? {} : { defaut }) });
 const masse = (): Champ => ({ nom: 'masse', type: 'masse' });
 const ouiNon = (nom: string): Champ => ({ nom, type: 'oui-non' });
 
@@ -33,7 +34,7 @@ const CHAMPS: Record<NatureCatalogueVaisseau, Champ[]> = {
   moteurs: [entier('niveau', 1, 6), ...ELEMENT],
   amenagements: ELEMENT,
   defenses: ELEMENT,
-  armes: [entier('emport'), entier('munitions'), entier('cout_munition'), ...ELEMENT],
+  armes: [entier('emport'), entier('munitions'), entier('cout_munition'), entier('classe_min', 1, 4, 1), ...ELEMENT],
   modifications: ELEMENT,
   exemples: [{ nom: 'coque', type: 'texte' }, { nom: 'choix', type: 'choix' }],
 };
@@ -41,6 +42,7 @@ const CHAMPS: Record<NatureCatalogueVaisseau, Champ[]> = {
 const cleSchema = z.string().min(1).max(64);
 const ligneChoix = z.strictObject({
   nature: z.enum(NATURES_DE_LIGNE), cle: cleSchema, quantite: z.number().int().min(1).max(99),
+  magasins: z.number().int().min(1).max(9).optional(),
 });
 function schemaDe(nature: NatureCatalogueVaisseau): z.ZodObject {
   const forme: Record<string, z.ZodType> = { nom: z.string().min(1).max(200) };
@@ -48,7 +50,8 @@ function schemaDe(nature: NatureCatalogueVaisseau): z.ZodObject {
     forme[c.nom] = c.type === 'masse' ? z.number().min(0).max(1_000_000).multipleOf(0.5)
       : c.type === 'entier' ? (() => {
       const n = z.number().int().min(c.min);
-      return c.max === undefined ? n : n.max(c.max);
+      const bornee = c.max === undefined ? n : n.max(c.max);
+      return c.defaut === undefined ? bornee : bornee.default(c.defaut);
     })()
       : c.type === 'oui-non' ? z.boolean()
       : c.type === 'texte' ? cleSchema
@@ -113,9 +116,11 @@ export const stockageVaisseaux: StockageCatalogue = {
     const n = nature as NatureCatalogueVaisseau;
     const o = proprietaire(cible);
     const avant = lire(db, cible, n, cle);
-    if (avant && avant.nom === donnees.nom && egal(avant.donnees, donnees)) return 'inchange';
+    const complet = { ...donnees };
+    for (const c of CHAMPS[n]) if (c.type === 'entier' && c.defaut !== undefined) complet[c.nom] ??= c.defaut;
+    if (avant && avant.nom === donnees.nom && egal(avant.donnees, complet)) return 'inchange';
     const champs = CHAMPS[n];
-    const valeurs = [donnees.nom, ...champs.map((c) => aStocker(c, donnees[c.nom]))];
+    const valeurs = [donnees.nom, ...champs.map((c) => aStocker(c, donnees[c.nom] ?? (c.type === 'entier' ? c.defaut : undefined)))];
     if (avant) {
       db.prepare(`UPDATE ${table(n)} SET nom = ?, ${colonnes(n).map((c) => `${c} = ?`).join(', ')},
         version_catalogue = ?, version = version + 1 WHERE proprietaire = ? AND ${o.colonne} = ? AND cle = ?`)

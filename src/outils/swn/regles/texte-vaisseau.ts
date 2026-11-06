@@ -35,7 +35,7 @@ export function listeChoix(r: ResultatVaisseau): string {
   const choix = r.lignes
     .map((l, i) => ({ l, i }))
     .sort((a, b) => ORDRE.indexOf(a.l.nature) - ORDRE.indexOf(b.l.nature) || a.l.nom.localeCompare(b.l.nom, 'fr') || a.i - b.i)
-    .map(({ l }) => `- ${l.quantite} × ${l.nom}`)
+    .map(({ l }) => `- ${l.quantite} × ${l.nom}${l.magasins ? ` (+${l.magasins} ${l.magasins < 2 ? 'magasin' : 'magasins'})` : ''}`)
   return ['**Choix**', ...choix].join('\n')
 }
 
