@@ -69,6 +69,7 @@ export function PanneauRoute({ base, route, systemes, onFini, onRecharger, onInt
       <div className="gx-tete"><h2>Route de {nom(route.depuis.cle)} à {nom(route.vers.cle)}</h2>
         {route.publique === false ? <Pastille sens="mj">Privée</Pastille> : <Pastille sens="table">Publique</Pastille>}</div>
       <dl className="gx-kv"><dt>Longueur</dt><dd>{cases(route.longueur)}</dd></dl>
+      {route.type_lien && <p className="gx-type-lien">Type : {route.type_lien}</p>}
       {modif ? (
         <FormRoutePublique key={modif.version} base={base} route={modif} onFini={() => { setModif(null); onFini(); }} onAnnuler={() => setModif(null)}
           onRecharger={() => { setAttente(true); onRecharger(); }} onIntrouvable={onIntrouvable} />

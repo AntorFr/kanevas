@@ -91,7 +91,7 @@ test('redigerDocumentMJ : galaxie d’essai, texte littéral', () => {
     '- **Vael** (7, 0) · grande',
     '## Routes',
     '- Argent — Port-Sel · 3 cases',
-    '- Ombre — Vael · 1 case (privée)',
+    '- Ombre — Vael · 1 case · privée',
     '- Port-Sel — Vael · 7 cases',
     '## Zones',
     '- Brume · densité 40 % (secrète)',

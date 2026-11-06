@@ -20,6 +20,8 @@ export interface RouteDoc {
   vers: string
   longueur: number
   publique: boolean
+  /** The type of link, if the route has one. */
+  typeLien?: string | null
 }
 
 export interface ZoneDoc {
@@ -50,7 +52,7 @@ function ligneSysteme(s: SystemeDoc): string {
 }
 
 function ligneRoute(r: RouteDoc): string {
-  return `- ${aplatir(r.depuis)} — ${aplatir(r.vers)} · ${r.longueur} ${r.longueur < 2 ? 'case' : 'cases'}${r.publique ? '' : ' (privée)'}`
+  return `- ${aplatir(r.depuis)} — ${aplatir(r.vers)} · ${r.longueur} ${r.longueur < 2 ? 'case' : 'cases'}${r.typeLien ? ` · ${aplatir(r.typeLien)}` : ''}${r.publique ? '' : ' · privée'}`
 }
 
 function ligneZone(z: ZoneDoc): string {

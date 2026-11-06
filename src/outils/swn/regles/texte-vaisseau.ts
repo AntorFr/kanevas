@@ -1,4 +1,5 @@
 // Text version of a ship (V-6, AD-127): deterministic Markdown, no `:::` block, no link.
+import { texteMasse } from './masse.js'
 import type { NatureVaisseau, ResultatVaisseau } from './vaisseau.js'
 
 export const NBSP = '\u00A0'
@@ -23,7 +24,7 @@ export function tableMesures(r: ResultatVaisseau): string {
     ['Entretien', `${credits(r.entretien)} / an`],
     ['Portée de saut', portee],
     ['Puissance libre', entier(r.puissanceLibre)],
-    ['Masse libre', entier(r.masseLibre)],
+    ['Masse libre', texteMasse(r.masseLibre)],
     ['Emports', `${r.emports.utilises} / ${r.emports.total}`],
   ]
   return ['| Mesure | Valeur |', '|---|---|', ...mesures.map(([k, v]) => `| ${k} | ${v} |`)].join('\n')

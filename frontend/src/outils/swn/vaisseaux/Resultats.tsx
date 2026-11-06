@@ -1,5 +1,5 @@
 import { Bouton } from '../../../ui';
-import { AIDES, credits, entretien, jours, nombre } from './format';
+import { AIDES, credits, entretien, jours, masse, nombre } from './format';
 import type { Alerte, Resultat } from './types';
 
 /** The figures of a result, with the labels of the text version (V-6). */
@@ -12,7 +12,7 @@ export function Chiffres({ r }: { r: Resultat }) {
     ['CA', nombre(r.ca)],
     ['Portée de saut', r.porteeSaut === null ? '—' : `${r.porteeSaut} cases`],
     ['Puissance libre', nombre(r.puissanceLibre)],
-    ['Masse libre', nombre(r.masseLibre)],
+    ['Masse libre', masse(r.masseLibre)],
     ['Emports', `${r.emports.utilises} / ${r.emports.total}`],
   ];
   return (
