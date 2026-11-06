@@ -15,7 +15,7 @@
 //                   « multiple de 0,5 attendu » for a number off the grid, « nombre attendu » for a non-number; a hull of 0.3 refused
 //   B-80 exclusion: a refused mass writes nothing to the catalogue; an integer mass is shown without comma (« 7 », never « 7,0 »)
 //   B-80 textes   : summary of the element « masse 0,5 »; saved design text « Masse libre » 6,5; generated rules sheet row « 0,5 »
-//   B-80 E-22     : Antor reads « 1,5 » used and « 6,5 » free (1280 and 390 px), the choice list row « Coupleur d'essai » reads « masse 0,5 » (as the mock-up lays it out: name, then « puissance 0 · masse 0,5 »);
+//   B-80 E-22     : Antor reads « 6,5 » free (no mass used is shown) (1280 and 390 px), the choice list row « Coupleur d'essai » reads « masse 0,5 » (as the mock-up lays it out: name, then « puissance 0 · masse 0,5 »);
 //                   free mass exactly 0 shows no alert, one more element → « Masse insuffisante : −0,5 », save disabled
 import assert from 'node:assert/strict';
 import { mkdirSync } from 'node:fs';
@@ -269,9 +269,11 @@ describe('B-80 E-22 et E-20 à l’écran', { skip: skipBrowser, timeout: 300000
       await ctx.close();
     });
 
-    it(`${largeur} px : trois coupleurs de 0,5 → E-22 écrit « 1,5 » (masse utilisée)`, async () => {
+    it(`${largeur} px : trois coupleurs de 0,5 → E-22 écrit la masse libre exacte, sans masse utilisée`, async () => {
       const { ctx, page } = await conceptionDeTrois(largeur);
-      assert.match(await txt(page), /1,5/, 'la masse utilisée 1,5 doit se lire sur E-22');
+      const t = await txt(page);
+      assert.match(t, /Masse libre\s*6,5/, 'la masse libre exacte se lit sur E-22');
+      assert.ok(!/utilisée/i.test(t), 'aucune masse utilisée ajoutée à E-22');
       await ctx.close();
     });
   }

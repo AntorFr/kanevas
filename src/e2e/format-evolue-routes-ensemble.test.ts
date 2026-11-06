@@ -310,7 +310,7 @@ describe('B-81 E-21 à l’écran', { skip: skipBrowser, timeout: 600000 }, () =
     ]);
     assert.equal(rep.status(), 201);
     await form.waitFor({ state: 'detached' });
-    const etiquette = antor.page.locator('svg').getByText('Pirate', { exact: true });
+    const etiquette = antor.page.locator('svg text.gx-route-type', { hasText: 'Pirate' });
     await zoomer(antor.page, etiquette);
     await etiquette.waitFor();
     await antor.page.screenshot({ path: `${SHOTS}/1280-02-etiquette.png`, fullPage: true });
@@ -324,7 +324,7 @@ describe('B-81 E-21 à l’écran', { skip: skipBrowser, timeout: 600000 }, () =
     await antor.page.screenshot({ path: `${SHOTS}/1280-03-panneau.png`, fullPage: true });
 
     const lea = await ouvre(m, 'Léa', 1280);
-    const etiquetteLea = lea.page.locator('svg').getByText('Pirate', { exact: true });
+    const etiquetteLea = lea.page.locator('svg text.gx-route-type', { hasText: 'Pirate' });
     await zoomer(lea.page, etiquetteLea);
     await etiquetteLea.waitFor();
     await lea.page.screenshot({ path: `${SHOTS}/1280-04-lea-publique.png`, fullPage: true });
@@ -338,13 +338,13 @@ describe('B-81 E-21 à l’écran', { skip: skipBrowser, timeout: 600000 }, () =
       fm.getByRole('button', { name: 'Enregistrer' }).click(),
     ]);
     await antor.page.getByText('Privée').first().waitFor();
-    const gardee = antor.page.locator('svg').getByText('Pirate', { exact: true });
+    const gardee = antor.page.locator('svg text.gx-route-type', { hasText: 'Pirate' });
     await zoomer(antor.page, gardee);
     await gardee.first().waitFor();
     await antor.page.screenshot({ path: `${SHOTS}/1280-04b-antor-privee.png`, fullPage: true });
     await lea.page.reload();
     await systeme(lea.page, 'Vael').waitFor();
-    await zoomer(lea.page, lea.page.locator('svg').getByText('Pirate', { exact: true }));
+    await zoomer(lea.page, lea.page.locator('svg text.gx-route-type', { hasText: 'Pirate' }));
     assert.equal(await lea.page.getByText('Pirate').count(), 0, 'Léa ne lit plus rien de la route');
     await lea.page.screenshot({ path: `${SHOTS}/1280-05-lea-privee.png`, fullPage: true });
     await antor.ctx.close(); await lea.ctx.close();
@@ -382,10 +382,10 @@ describe('B-81 E-21 à l’écran', { skip: skipBrowser, timeout: 600000 }, () =
     const r = await trace(m, { type_lien: long });
     assert.equal(r.status, 201, r.texte);
     const antor = await ouvre(m, 'Antor', 390);
-    const etiquette = antor.page.locator('svg text', { hasText: '…' });
+    const etiquette = antor.page.locator('svg text.gx-route-type', { hasText: '…' });
     await zoomer(antor.page, etiquette);
     await etiquette.first().waitFor();
-    const lu = (await etiquette.first().textContent()) as string;
+    const lu = (await etiquette.first().evaluate((n: Element) => [...n.childNodes].filter((c) => c.nodeName !== 'title').map((c) => c.textContent).join(''))) as string;
     assert.ok(lu.endsWith('…') && lu.length <= 15 && long.startsWith(lu.slice(0, -1)), `étiquette coupée : « ${lu} »`);
     assert.equal(await sansDebordement(antor.page), true);
     await antor.page.screenshot({ path: `${SHOTS}/390-etiquette-longue.png`, fullPage: true });
