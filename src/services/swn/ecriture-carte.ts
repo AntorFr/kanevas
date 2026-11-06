@@ -68,6 +68,12 @@ function notesValides(v: unknown): string {
   if (typeof v !== 'string' || v.length > NOTES_MAX) throw invalideChamp('notes', 'Les notes : 2 000 caractères au plus.');
   return v;
 }
+/** A type of link: 1 to 40 characters after trimming; a blank string is refused, never turned into « none » (T-4). */
+export function typeLienValide(v: unknown, champ = 'type_lien'): string {
+  const t = typeof v === 'string' ? v.trim() : '';
+  if (t.length < 1 || t.length > 40) throw invalideChamp(champ, 'Le type de lien fait 1 à 40 caractères.');
+  return t;
+}
 function boolValide(champ: string, v: unknown): boolean {
   if (typeof v !== 'boolean') throw invalideChamp(champ, 'Valeur invalide.');
   return v;
@@ -218,13 +224,14 @@ export function retirerSysteme(db: Db, acteur: Acteur | number, universId: numbe
 }
 
 export function tracerRoute(db: Db, acteur: Acteur | number, universId: number, galaxieId: number,
-  entree: { depuis: unknown; vers: unknown; publique?: unknown; longueur?: unknown }): { id: number; longueur: number; version: number } {
+  entree: { depuis: unknown; vers: unknown; publique?: unknown; longueur?: unknown; type_lien?: unknown }): { id: number; longueur: number; version: number } {
   const ac = acteurDe(acteur);
   return db.transaction(() => {
     const g = exigerEcritureGalaxie(db, ac, universId, galaxieId);
     const c = corps(entree);
     if (a(c, 'longueur')) throw invalideChamp('longueur', 'La longueur est calculée.');
     const publique = a(c, 'publique') ? boolValide('publique', c.publique) : true;
+    const typeLien = a(c, 'type_lien') && c.type_lien !== null ? typeLienValide(c.type_lien) : null;
     const bout = (champ: 'depuis' | 'vers'): LigneSysteme => {
       const cle = c[champ];
       const s = typeof cle === 'string'
@@ -238,8 +245,8 @@ export function tracerRoute(db: Db, acteur: Acteur | number, universId: number, 
       .get(d.id, v.id, v.id, d.id);
     if (deja) throw new ErreurService('conflit', 'Cette route existe déjà.', 'route_existante');
     const longueur = Math.max(1, distanceHex(d, v));
-    const id = Number(db.prepare(`INSERT INTO swn_routes (galaxie_id, univers_id, depuis_id, vers_id, publique, longueur)
-      VALUES (?, ?, ?, ?, ?, ?)`).run(g.id, universId, d.id, v.id, publique ? 1 : 0, longueur).lastInsertRowid);
+    const id = Number(db.prepare(`INSERT INTO swn_routes (galaxie_id, univers_id, depuis_id, vers_id, publique, longueur, type_lien)
+      VALUES (?, ?, ?, ?, ?, ?, ?)`).run(g.id, universId, d.id, v.id, publique ? 1 : 0, longueur, typeLien).lastInsertRowid);
     apresEcriture(db, ac.compteId, universId);
     return { id, longueur, version: 1 };
   })();
@@ -255,10 +262,12 @@ export function modifierRoute(db: Db, acteur: Acteur | number, universId: number
     for (const k of ['depuis', 'vers', 'longueur']) {
       if (a(c, k)) throw invalideChamp(k, k === 'longueur' ? 'La longueur est calculée.' : 'Les extrémités ne changent pas : retirez la route et tracez-la à nouveau.');
     }
-    const publique = boolValide('publique', c.publique);
+    const publique = a(c, 'publique') ? boolValide('publique', c.publique) : ro.publique === 1;
+    const typeLien = a(c, 'type_lien') ? (c.type_lien === null ? null : typeLienValide(c.type_lien)) : ro.type_lien;
+    if (!a(c, 'publique') && !a(c, 'type_lien')) throw invalideChamp('publique', 'Rien à modifier : la visibilité ou le type de lien.');
     const version = versionValide(c.version);
     if (ro.version !== version) throw PERIME('route');
-    db.prepare('UPDATE swn_routes SET publique = ?, version = version + 1 WHERE id = ?').run(publique ? 1 : 0, ro.id);
+    db.prepare('UPDATE swn_routes SET publique = ?, type_lien = ?, version = version + 1 WHERE id = ?').run(publique ? 1 : 0, typeLien, ro.id);
     apresEcriture(db, ac.compteId, universId);
     return { version: version + 1 };
   })();

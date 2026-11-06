@@ -52,7 +52,7 @@ export function produireGalaxie(db: Db, acteur: ContexteSection['acteur'], unive
       nom: s.nom, q: s.q, r: s.r, taille: TAILLES[Math.min(Math.max(s.taille, 1), 3) - 1]!, notes: s.notes, secret: s.secret === 1,
     })),
     routes: routesLisibles(db, g.id, 'mj').map((r) => ({
-      depuis: noms.get(r.depuis_id) ?? '', vers: noms.get(r.vers_id) ?? '', longueur: r.longueur, publique: r.publique === 1,
+      depuis: noms.get(r.depuis_id) ?? '', vers: noms.get(r.vers_id) ?? '', longueur: r.longueur, publique: r.publique === 1, typeLien: r.type_lien,
     })),
     zones: zonesLisibles(db, g.id, 'mj').map((z) => ({ nom: z.nom, densite: z.densite, secret: z.secret === 1 })),
   };

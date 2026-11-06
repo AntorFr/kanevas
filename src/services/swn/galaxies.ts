@@ -21,7 +21,7 @@ export interface LigneSysteme {
   couleur: string; notes: string; secret: number; promu: number; version: number;
 }
 export interface LigneRoute {
-  id: number; galaxie_id: number; depuis_id: number; vers_id: number; publique: number; longueur: number; version: number;
+  id: number; galaxie_id: number; depuis_id: number; vers_id: number; publique: number; longueur: number; version: number; type_lien: string | null;
 }
 export interface LigneZone {
   id: number; galaxie_id: number; cle: string; nom: string; contour: string; couleur: string;
