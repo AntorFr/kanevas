@@ -45,9 +45,9 @@ function lireFichier(corps: unknown): unknown[] {
   return v;
 }
 
-/** The ordered key of a set of lines: the order of a file never changes equality (M-4). */
+/** The ordered key of a set of lines (extra magazines included, absent = 0): the order of a file never changes equality (M-4). */
 const empreinte = (coque: string, choix: LigneChoix[]) =>
-  JSON.stringify([coque, choix.map((l) => [l.nature, l.cle, l.quantite]).sort((a, b) => JSON.stringify(a) < JSON.stringify(b) ? -1 : 1)]);
+  JSON.stringify([coque, choix.map((l) => [l.nature, l.cle, l.quantite, l.magasins ?? 0]).sort((a, b) => JSON.stringify(a) < JSON.stringify(b) ? -1 : 1)]);
 
 class Refus extends Error {
   constructor(readonly champ: string | undefined, readonly raison: string) { super(raison); }
@@ -71,7 +71,7 @@ function lireItem(brut: unknown): Voulue {
   const vus = new Set<string>();
   const choix = brut.choix.map((l: unknown, j): LigneChoix => {
     if (!objet(l)) throw new Refus(`choix[${j}]`, 'Une ligne est un objet.');
-    const autre = Object.keys(l).find((k) => !['nature', 'cle', 'quantite'].includes(k));
+    const autre = Object.keys(l).find((k) => !['nature', 'cle', 'quantite', 'magasins'].includes(k));
     if (autre) throw new Refus(`choix[${j}].${autre}`, 'Champ inconnu.');
     if (typeof l.nature !== 'string' || !(NATURES_DE_LIGNE as readonly string[]).includes(l.nature)) {
       throw new Refus(`choix[${j}].nature`, 'Nature inconnue.');
@@ -80,10 +80,17 @@ function lireItem(brut: unknown): Voulue {
     if (!Number.isInteger(l.quantite) || (l.quantite as number) < 1 || (l.quantite as number) > 99) {
       throw new Refus(`choix[${j}].quantite`, 'Quantité : de 1 à 99.');
     }
+    if (l.magasins !== undefined) {
+      if (l.nature !== 'armes') throw new Refus(`choix[${j}].magasins`, 'magasins : armes seulement.');
+      if (!Number.isInteger(l.magasins) || (l.magasins as number) < 1 || (l.magasins as number) > 9) {
+        throw new Refus(`choix[${j}].magasins`, 'Magasins : de 1 à 9.');
+      }
+    }
     const k = JSON.stringify([l.nature, l.cle]);
     if (vus.has(k)) throw new Refus(`choix[${j}]`, 'Un élément ne peut figurer qu\'une fois.');
     vus.add(k);
-    return { nature: l.nature as LigneChoix['nature'], cle: l.cle, quantite: l.quantite as number };
+    return { nature: l.nature as LigneChoix['nature'], cle: l.cle, quantite: l.quantite as number,
+      ...(l.magasins === undefined ? {} : { magasins: l.magasins as number }) };
   });
   return { cle: brut.cle, titre: brut.titre, coque: brut.coque, choix, joueurs: brut.visibilite === 'joueurs' };
 }
