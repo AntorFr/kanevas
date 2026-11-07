@@ -49,6 +49,7 @@ async function monde() {
 test('fichier d\'essai : 4 créées dans un lot, rejeu 4 inchangées sans version qui bouge ni fiche en double', async () => {
   const w = await monde();
   const lid = await w.ouvrir();
+  const semis = w.un('SELECT COUNT(*) n FROM swn_conceptions').n as number; // conceptions du semis, avant l'import
   const r = await w.put(fichier(), lid);
   assert.equal(r.statusCode, 200, r.body);
   assert.equal(r.json().refusTotal, 0);
@@ -60,7 +61,7 @@ test('fichier d\'essai : 4 créées dans un lot, rejeu 4 inchangées sans versio
   const avant = w.lignes();
   assert.equal(avant.length, 4);
   assert.ok(avant.every((x) => x.version_importee === x.version));
-  assert.equal(w.un('SELECT COUNT(*) n FROM swn_conceptions WHERE version_importee IS NULL').n, 2); // les conceptions du semis restent à nul
+  assert.equal(w.un('SELECT COUNT(*) n FROM swn_conceptions WHERE version_importee IS NULL').n, semis); // les conceptions du semis restent à nul
   const r2 = await w.put(fichier(), lid);
   assert.deepEqual(r2.json().natures.conceptions, { creees: 0, mises_a_jour: 0, inchangees: 4, refusees: 0 });
   assert.deepEqual(w.lignes(), avant);
@@ -226,4 +227,60 @@ test('sans ?lot= : le rapport n\'est que la réponse', async () => {
   const r = await w.put({ conceptions: [{ ...fichier().conceptions[0], coque: 'nope' }] });
   assert.equal(r.json().natures.conceptions.refusees, 1);
   assert.equal(w.un('SELECT COUNT(*) n FROM lots_import').n, n0);
+});
+
+test('magasins (E-4) : création, rejeu inchangé, changement seul = mise à jour, refus hors arme et hors 1..9', async () => {
+  const w = await monde();
+  const avecMag = (m?: number) => {
+    const f = fichier();
+    f.conceptions = [f.conceptions[0]];
+    f.conceptions[0].choix.find((l: any) => l.cle === 'laser').magasins = m;
+    if (m === undefined) delete f.conceptions[0].choix.find((l: any) => l.cle === 'laser').magasins;
+    return f;
+  };
+  const r1 = await w.put(avecMag(3));
+  assert.deepEqual(r1.json().natures.conceptions, { creees: 1, mises_a_jour: 0, inchangees: 0, refusees: 0 }, r1.body);
+  const fid = w.fiche('vent-d-essai').id;
+  const stock = () => JSON.parse(w.un('SELECT choix FROM swn_conceptions WHERE fiche_id = ?', fid).choix);
+  assert.equal(stock().find((l: any) => l.cle === 'laser').magasins, 3);
+  const v0 = w.un('SELECT version FROM swn_conceptions WHERE fiche_id = ?', fid).version;
+  assert.equal((await w.put(avecMag(3))).json().natures.conceptions.inchangees, 1);
+  assert.equal(w.un('SELECT version FROM swn_conceptions WHERE fiche_id = ?', fid).version, v0);
+  const r2 = await w.put(avecMag(4));
+  assert.equal(r2.json().natures.conceptions.mises_a_jour, 1, r2.body);
+  assert.equal(stock().find((l: any) => l.cle === 'laser').magasins, 4);
+  assert.ok(w.un('SELECT version FROM swn_conceptions WHERE fiche_id = ?', fid).version > v0);
+  // absent = 0 : retirer magasins change l'empreinte
+  const r3 = await w.put(avecMag(undefined));
+  assert.equal(r3.json().natures.conceptions.mises_a_jour, 1, r3.body);
+  assert.equal((await w.put(avecMag(undefined))).json().natures.conceptions.inchangees, 1);
+  const v1 = w.un('SELECT version FROM swn_conceptions WHERE fiche_id = ?', fid).version;
+  // refus
+  const f = fichier();
+  const mal = (cle: string, nature: string, ec: string, m: unknown) => {
+    const c = structuredClone(f.conceptions[0]); c.cle = cle; c.titre = cle;
+    const l = c.choix.find((x: any) => x.cle === ec); l.magasins = m; return c;
+  };
+  const g = { conceptions: [
+    mal('m-moteur', 'moteurs', 'moteur-2', 2),
+    mal('m-zero', 'armes', 'laser', 0),
+    mal('m-dix', 'armes', 'laser', 10),
+    mal('m-frac', 'armes', 'laser', 1.5),
+    mal('m-texte', 'armes', 'laser', '2'),
+    mal('m-ok', 'armes', 'laser', 2),
+  ] };
+  const avantFiches = w.nbFiches();
+  const r4 = await w.put(g);
+  assert.equal(r4.statusCode, 200, r4.body);
+  const j = (cle: string) => f.conceptions[0].choix.findIndex((x: any) => x.cle === cle);
+  assert.deepEqual(r4.json().refus.map((x: any) => [x.cle, x.champ]), [
+    ['m-moteur', `conceptions[0].choix[${j('moteur-2')}].magasins`],
+    ['m-zero', `conceptions[1].choix[${j('laser')}].magasins`],
+    ['m-dix', `conceptions[2].choix[${j('laser')}].magasins`],
+    ['m-frac', `conceptions[3].choix[${j('laser')}].magasins`],
+    ['m-texte', `conceptions[4].choix[${j('laser')}].magasins`],
+  ]);
+  assert.equal(r4.json().natures.conceptions.creees, 1);
+  assert.equal(w.nbFiches(), avantFiches + 1); // seule m-ok est créée
+  assert.equal(w.un('SELECT version FROM swn_conceptions WHERE fiche_id = ?', fid).version, v1);
 });
