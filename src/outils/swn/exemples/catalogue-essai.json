@@ -141,6 +141,7 @@
       "emport": 1,
       "munitions": 10,
       "cout_munition": 100,
+      "classe_min": 3,
       "cout": 12000,
       "puissance": 1,
       "masse": 1,

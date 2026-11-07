@@ -5,6 +5,7 @@ import { apresEcritureRegles, produireRegles, versionSourceRegles } from '../../
 import { produireDocument, versionSourceDocument } from '../../services/swn/document-source.js';
 import { importerGalaxie, NATURES_GALAXIE } from '../../services/swn/import-galaxie.js';
 import { NATURES_CONCEPTIONS } from '../../services/swn/natures-conceptions.js';
+import { donneesGalaxie, donneesVaisseaux } from '../../services/swn/donnees-outils.js';
 import { outilTrajet } from './assistant.js';
 import { outilVaisseau } from './assistant-vaisseaux.js';
 import type { DeclarationCarte, DeclarationGenerateur, DeclarationModule, SectionGeree } from '../declaration.js';
@@ -16,6 +17,7 @@ export const swnGalaxie: DeclarationCarte = {
   ecran: { libelle: 'Galaxie', icone: 'Map' },
   cartes: (db, acteur, universId) => cartesGalaxies(db, acteur, universId),
   outilsAssistant: outilTrajet,
+  donnees: donneesGalaxie,
   importation: { natures: NATURES_GALAXIE, appliquer: importerGalaxie },
   sections: [{
     type: 'document_mj', libelle: 'Document MJ', usage: 'maintenir', recalcul: 'proposition',
@@ -49,6 +51,7 @@ export const swnVaisseaux: DeclarationGenerateur = {
   catalogue: catalogueVaisseaux,
   // The route applies the file (`import-conceptions-lot.ts`): it needs the sheet services, which this declaration cannot import (M-1).
   importation: { natures: NATURES_CONCEPTIONS },
+  donnees: donneesVaisseaux,
   ecran: { libelle: 'Concepteur de vaisseaux', icone: 'Rocket' },
   outilsAssistant: outilVaisseau,
   sections: [{

@@ -84,3 +84,10 @@ export function apresEcritureRegles(ctx: ContexteSection, ecrit: EcritSection): 
   }
 }
 
+
+export const compterFichesGenerees = (db: Db, universId: number): number =>
+  (db.prepare('SELECT COUNT(*) AS n FROM swn_fiches_generees WHERE univers_id = ?').get(universId) as { n: number }).n;
+/** Forgets which sheets were generated; the sheets stay and the core frees their sections (D-3). */
+export function effacerFichesGenerees(db: Db, universId: number): void {
+  db.prepare('DELETE FROM swn_fiches_generees WHERE univers_id = ?').run(universId);
+}

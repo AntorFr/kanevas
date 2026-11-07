@@ -183,6 +183,7 @@ test('un document ajouté par la barre d’outils est un lien dans le texte ; r�
   assert.equal((await antor.request.patch(api(`/fichiers/${f.id}`), { data: { visibilite: 'mj' } })).status(), 200);
   await lea.goto(`/univers/${uid}/fiche/${ids['Port-Sel']}`);
   await attendre(lea);
+  await lea.getByRole('region', { name: /Description/ }).getByText('Fichier réservé au MJ.').waitFor({ timeout: 20000 });
   await lea.screenshot({ path: '/tmp/scr/ver-document-reserve.png' });
   const lue = await lea.getByRole('region', { name: /Description/ }).innerText();
   assert.match(lue, /Fichier réservé au MJ\./);

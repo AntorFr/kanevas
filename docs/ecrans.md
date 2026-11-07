@@ -3311,7 +3311,7 @@ l'abonnement » button; status messages are in an `aria-live="polite"` region, e
 
 ## Screen details for `kanevas-outils` (scope)
 
-> **Built so far (`kanevas-outils-cadre`):** the « Outils » tab of E-14 and E-15 without catalogue at that point (`kanevas-outils-catalogue` then adds « Importer un catalogue… » and « Voir les éléments »; « Supprimer les données de l'outil… » is not built), the system's responsible and « Transférer la responsabilité », the sidebar's « Outils » section; E-21 (read side: see « What `kanevas-outils-galaxie-lire` builds of E-21 and E-10 » below), E-22 and removal are other slices and not built.
+> **Built so far (`kanevas-outils-cadre`):** the « Outils » tab of E-14 and E-15 without catalogue at that point (`kanevas-outils-catalogue` then adds « Importer un catalogue… » and « Voir les éléments »; « Supprimer les données de l'outil… » is added by `kanevas-outils-retrait`, below), the system's responsible and « Transférer la responsabilité », the sidebar's « Outils » section; E-21 (read side: see « What `kanevas-outils-galaxie-lire` builds of E-21 and E-10 » below), E-22 and removal are other slices and not built.
 >
 > Scope proposed on 2026-10-16 (`epic/kanevas-outils`). Needs B-57 to B-79, journeys P-17 to P-21,
 > decisions AD-121 to AD-137. Key screens, with finished mockups: **E-20** (`docs/maquettes/e20-outils.html`,
@@ -3380,6 +3380,14 @@ nature, each element with its origin (« Système », « Univers », « Remplac�
 l'univers ») and, for a universe element, « Visible des joueurs » / « MJ seul ». Universe GM actions:
 « Masquer aux joueurs » and « Rendre visible » on a universe element; « Retirer de cet univers » and
 « Rétablir » on a system element. On E-15 (system), the list is read without any of these actions.
+The one-line summary of a ship element carries its mass as E-22 writes it (`kanevas-outils-format-evolue`,
+B-80): « masse 0,5 · coût 4 », the comma only when the mass has a decimal, never « 0.5 » nor « 1,0 ».
+- Given the trial catalogue's element of mass 0.5, when Antor opens « Voir les éléments », then its line
+  reads « masse 0,5 · coût 4 » and an element of mass 8 reads « masse 8 ».
+- Given an import file carrying an element of mass 0.3, when the GM chooses it in the import dialog, then
+  the preview (step 4, before « Appliquer ») lists « Arme « … », champ `masse` : multiple de 0,5 attendu. »
+  (the reason of a mass that is a number but not a multiple of 0.5; « nombre attendu » stays the reason of a
+  missing or non-numeric mass) and the catalogue does not change.
 - Given the universe weapon « Lance d'Orak'Ziel » hidden by Antor, when Léa opens the designer,
   it appears in no list, and nothing says an element is missing; Antor sees it, marked « MJ seul ».
 - Given Léa's design already carrying the « Lance d'Orak'Ziel », when Antor hides it, Léa still sees it
@@ -3396,7 +3404,7 @@ l'univers ») and, for a universe element, « Visible des joueurs » / « MJ seu
 (name, size, readable notes, routes, shareable link), measurement on hover (touch: tap), the
 « Trajet » tool (departure, arrival, routes: all / public, drive → distance and duration), system search
 (among readable systems). GM: « Placer un système », « Promouvoir », « Tracer une route », « Dessiner une zone »,
-« Renommer », « Supprimer la galaxie… » (confirmation: « Les 214 systèmes, 49 routes et 6 zones de cette galaxie seront effacés. »), « Graine… », « Document MJ… » (choose the sheet, or create one of type Savoir; the tool writes the GM-only « Document MJ » managed section there), Player mode. The view requests only the blocks it shows.
+« Renommer », « Supprimer la galaxie… » (confirmation: « Les 214 systèmes, 52 routes et 6 zones de cette galaxie seront effacés. »), « Graine… », « Document MJ… » (choose the sheet, or create one of type Savoir; the tool writes the GM-only « Document MJ » managed section there), Player mode. The view requests only the blocks it shows.
 
 | State | Text |
 |---|---|
@@ -3405,7 +3413,7 @@ l'univers ») and, for a universe element, « Visible des joueurs » / « MJ seu
 | error | block not arriving: block stays empty, « Impossible de charger une partie de la carte. » + « Réessayer » |
 | offline | displayed view stays, « Connexion perdue. » banner, writes disabled |
 | refusal | map not visible to role, or tool invisible: « Page introuvable. » (GM in Player mode on hidden map: E-11 notice) |
-| long content | 500 defined systems, 49 routes: name labels collapse on zooming out; 80-character names truncated |
+| long content | 500 defined systems, 52 routes: name labels collapse on zooming out; 80-character names truncated |
 | conflict | « Ce système a changé depuis que vous l'avez ouvert. » + « Recharger » |
 
 Criteria:
@@ -3481,10 +3489,19 @@ Criteria:
 | Gesture | Instruction | Then |
 |---|---|---|
 | Placer un système | « Touchez un hexagone. » | an empty hexagon opens the form « Nouveau système »; a **generated** one (« Système non défini » in the panel) opens « Promouvoir ce système » (same form, title only differs: it keeps the hexagon); an hexagon already holding a system selects it instead |
-| « Tracer une route » | « Touchez le système de départ, puis celui d'arrivée. » | the form « Nouvelle route »: « De Port Noir à Vael », « Longueur : 6 cases » (shown, calculated, not an input), « Route publique » switch (on by default), « Tracer » |
+| « Tracer une route » | « Touchez le système de départ, puis celui d'arrivée. » | the form « Nouvelle route »: « De Port Noir à Vael », « Longueur : 6 cases » (shown, calculated, not an input), « Type de lien (facultatif) » (the `Champ` text field, the word « facultatif » written in its label — the component's own « facultative » tag is not used, it agrees in the feminine; 40 characters at most, empty by default; the helper « 40 caractères au plus » in its `compteur` slot), « Route publique » switch (on by default), « Tracer » |
 | « Dessiner une zone » | « Touchez les sommets du contour, puis « Terminer ». » | the outline is drawn as the vertices are tapped; « Annuler le dernier point », « Terminer » (enabled from 3); then the form « Nouvelle zone »: « Nom », « Couleur », « Densité de systèmes » (a percentage, empty: the zone does not change the density), « Secrète » switch (off by default) |
 
-*The system form* (also « Modifier » in the panel of a defined system): « Nom » (1 to 80), « Taille » (three segmented buttons « Petite », « Moyenne », « Grande »; « Moyenne » by default), « Couleur » (six swatches, each named in text for assistive technology), « Notes » (plain text, 2 000 characters), « Secret (MJ seul) » switch, « Hexagone (4, −2) » read-only with « Déplacer » (the map then asks « Touchez le nouvel hexagone. »; the routes of the system are recomputed and the form says so: « Ses 2 routes seront recalculées. »). The panel of a defined system gains, for the GM, « Modifier » and « Retirer » (confirmation: « Retirer « Vael » ? Ses 2 routes seront effacées. »); a route and a zone, selected on the map, open a panel with « Modifier » (visibility for a route, every field for a zone) and « Retirer ». The map marks, for the GM only, secret systems (« MJ seul »), private routes (dashed, « Privée ») and secret zones (« Secret »), as `galaxie-lire` did.
+*The system form* (also « Modifier » in the panel of a defined system): « Nom » (1 to 80), « Taille » (three segmented buttons « Petite », « Moyenne », « Grande »; « Moyenne » by default), « Couleur » (six swatches, each named in text for assistive technology), « Notes » (plain text, 2 000 characters), « Secret (MJ seul) » switch, « Hexagone (4, −2) » read-only with « Déplacer » (the map then asks « Touchez le nouvel hexagone. »; the routes of the system are recomputed and the form says so: « Ses 2 routes seront recalculées. »). The panel of a defined system gains, for the GM, « Modifier » and « Retirer » (confirmation: « Retirer « Vael » ? Ses 2 routes seront effacées. »); a route and a zone, selected on the map, open a panel with « Modifier » (visibility and type of link for a route, every field for a zone) and « Retirer ». The route's panel and form carry the **type of link** (B-81): the panel adds the line « Type : Pirate » under the length when there is one (no line otherwise); « Modifier » shows the same field as the creation form, and emptying it removes the label. The map marks, for the GM only, secret systems (« MJ seul »), private routes (dashed, « Privée ») and secret zones (« Secret »), as `galaxie-lire` did.
+
+*Type of link on the map (`kanevas-outils-format-evolue`, B-81).* A route that has a type shows it as a small SVG text (the secondary-label style of the map, `--texte` with the halo of the system names, not the GM colour) at the middle of the segment, kept horizontal and pushed off the segment **along its normal** (downwards) by half of its own extent on that axis plus 6 px, so that the oblique route never crosses the text, whatever its slope, on a halo of the background colour (as the graph labels, below) — « Privée » stays 6 px above the line, so a private typed route reads « Privée » over the line and « Pirate » under it; the labels fold away with the system names when the map is zoomed out and a click on a label selects its route (it is the route's, never a second target); the full type is the label's tooltip. Everyone who can read the route sees the label (Léa on a public route, the GMs on all); a private route is absent for a player and so is its label. The label and the panel's « Type : … » line both read the `type_lien` carried by the route in the block reading of G-6 (`galaxies/:gid/blocs`, the same filtered rows for each level; a private route is absent from the player's response as a whole). The route panel is the GM's only (a player gets no route panel), so the label on the map is the player's single place to read it; the « Trajet » tool is unchanged. A route without a type looks exactly as before. Refusals: a type of 41 characters or more stops at the field, « Le type de lien fait 1 à 40 caractères. », nothing is sent; the form sends an empty or blank field as « none » (nothing is written), while the service, the route and the import refuse a blank string. The GM document (T-7) says the type after the length (`Port-Sel — Vael · 7 cases · Pirate`, before « privée » when both apply).
+
+*States added by the type of link (E-21).* Long content: a 40-character type is the longest the label can be; it stays on one line, centred on the segment, and is cut with « … » (tooltip: the full type) beyond 14 characters on the map, so it never passes under the system names; the panel line wraps. Error: saving a route whose type is refused keeps the form open with its input and the sentence under the field; a version conflict on the route reads « Cette route a changé depuis que vous l'avez ouverte. » with « Recharger »; a refused write (role lost, tool disabled) reads « Action refusée. » and keeps the input — the lines every write form of E-21 already has. Empty, loading, connection lost: unchanged (a route without a type draws no label and no panel line).
+
+- Given Antor, GM, tracing a route Port-Sel → Vael with the type « Pirate », when he saves, then the label « Pirate » is on the map under the middle of the segment and the route panel reads « Type : Pirate ».
+- Given that public route, when Léa opens the map, then she reads « Pirate » on it; when Antor makes it private, then Léa's `galaxies/:gid/blocs` response holds neither the route nor its type, Antor's holds `type_lien` in both states, and Antor in Player mode does not see it either.
+- Given Antor typing 41 characters in « Type de lien (facultatif) », then « Le type de lien fait 1 à 40 caractères. » shows under the field and nothing is sent; given routes drawn before this slice, then they show no label and no « Type : » line, exactly as before.
+- Given a route typed with 40 characters, when the map is shown at 390 px, then the label is cut with « … » and the panel line wraps.
 
 *API import.* Pushing a galaxy by the import API has no screen of its own in this slice: its batch report (« 0 refusé, n créés », each refusal with its field) is read in the batches of E-18, which `kanevas-outils-catalogue` extends to tool batches; the galaxy reached by E-21 shows the imported elements.
 
@@ -3524,6 +3541,14 @@ Criteria:
 
 ### E-22 — Ship designer
 
+*Masses (`kanevas-outils-format-evolue`, B-80).* A mass — the hull's, an element's, a line's, the free mass in the results, the amounts in a « Masse insuffisante : … » alert and in the choice lists — is a multiple of 0.5 and **shows its decimal with a comma, only when it has one**: « 1,5 », « 7 », « −0,5 ». Nothing else moves: same blocks, same places, the quantity stepper stays integer. The mock-up shows the choice « Coupleur d'essai · masse 0,5 ». One formatter serves the results and the lists (a support file of `frontend/src/outils/swn/vaisseaux/`, not a component of `ui/`). Example: in the trial catalogue, a design that takes an element of mass 0.5 three times has a free mass that reads the exact remainder (no « mass used » is added to the results). The one-line summary of an element in E-20's « Voir les éléments » panel (« masse 0,5 · coût 4 ») uses the same formatter; the catalogue import dialog reports a mass that is not a multiple of 0.5 as a refusal of the field `masse` (« multiple de 0,5 attendu »).
+
+*States added by the masses (E-22).* Long content: a free mass like « −12,5 » and a line of 99 × 0,5 (« 49,5 ») stay on one line in the results block and in an alert (the alert wraps, the figure does not); lists keep their one-column phone layout. Error, empty, loading, connection lost, refusal: unchanged (a mass is displayed, never typed on this screen).
+
+- Given the trial catalogue and a design that takes the element of mass 0,5 three times, then the free mass of E-22 reads « coque − 1,5 » exactly (a hull of mass 7 gives « 5,5 »), with no block or value of mass used added; a free mass that is a whole number reads « 7 », without comma.
+- Given a design whose mass exceeds the hull by half a unit, then the alert reads « Masse insuffisante : −0,5 » and saving is refused; given a free mass of exactly 0, then there is no alert.
+- Given the choice list of the engines, then the trial element reads « Coupleur d'essai · masse 0,5 ».
+
 **Content**: the **list** of readable designs (name, hull, class, price, alerts) and a design's **workshop**: on the
 left, choices by nature (hull, drive, fittings, defenses, weapons, modifications) taken from the system
 catalogue supplemented by the universe's (a local element is marked « Univers »); on the right, results
@@ -3551,6 +3576,44 @@ Criteria:
   réglages » and its text has not changed until someone recalculates.
 - Given the designer disabled, the sheet shows « Caractéristiques » as text with « Outil désactivé ».
 - Given Teo, without a role in the universe, when he forces a design's address, « Page introuvable. ».
+
+## What `kanevas-outils-retrait` builds (E-20 deletion dialog)
+
+Architecture: `ARCHITECTURE.md`, « Detail of `kanevas-outils-retrait` » (D-1 to D-8). Mockup: `docs/maquettes/e20-suppression.html` (states `#etat-univers`, `#etat-systeme`, `#etat-galaxie`, `#etat-vide`, `#etat-changement`, `#etat-refus`); where it and this text differ, this text wins. Format: desktop and phone — below 760 px the dialog is a full-height sheet and its buttons are 44 px high, stacked, the destructive one last. Disabling needs no screen of its own: it is the toggle of the card (`kanevas-outils-cadre`), and the banner of a managed section is E-9's (`kanevas-outils-sections-gerees`).
+
+### « Supprimer les données de l'outil… » (structuring screen: a dialog from the card's foot)
+
+- **Where and who**: at the foot of each tool card that declares data, on the universe tab (E-14) and on the system tab (E-15), always apart from the toggle, in the destructive style, with the line « Désactiver garde tout ; supprimer efface. » above it. *Universe tab*: any GM of the universe, outside Player mode, even when the tool is disabled. *System tab*: only the system's responsible (or any GM when there is none); another GM of an attached universe sees neither the button nor the line (**hidden**, not in the DOM, not a refusal); a Player never sees the tab.
+- **A card with nothing to erase** (no `donnees`, no catalogue) shows no button. A card whose data are empty keeps the button active (never dimmed) and opens the empty state below, so that the user learns that there is nothing rather than guessing.
+- **Opening** reads the summary (`GET …/suppression`) — never the card's list, which may be stale. While it loads, the dialog shows « Lecture des données de l'outil… » and the confirmation button is absent.
+- **Content, universe level** — title « Supprimer les données de « Carte de la galaxie » ? » (the tool's name); the sentence « 14 conceptions, 3 éléments locaux de catalogue seront effacés. » (the lines of the summary, comma-separated, the count first, singular for 1, no line at 0, « et » before the last line when there are three or more); a reassurance line « Les fiches et leur texte sont conservés : leurs sections ne seront plus gérées par l'outil. » shown only when the summary's `sectionsGerees` is above 0; « Cette action est définitive. » ; the buttons « Supprimer les données » (destructive) and « Annuler ». The activation, visibility and settings of the tool are not touched, and the dialog does not say otherwise.
+- **Content, system level** — same title and sentence about the system catalogue (« 4 coques, 8 armes du catalogue du système seront effacées. » is written as one sum line: « 12 éléments du catalogue du système seront effacés. »), then, when `encoreUtilise` is not empty, a block « Encore utilisé par : » listing the universes (« Univers voisin ») and, after them, one line for all of them together (« Ensemble : 3 conceptions. » — the designs of the listed universes, counted as a whole), and the sentence « Ces univers perdent les éléments du système : leurs conceptions seront à recalculer. ». The system level never erases an element of a universe, a design or a sheet: the block informs, it does not extend the deletion.
+- **Galaxy tool** — the universe level says « Les 4 systèmes, 3 routes et 1 zone de cette galaxie seront effacés. » (the sentence of E-21's « Supprimer la galaxie… », counted the same way); its system level has no data and no button.
+- **Frame** (`docs/charte.md` § Dialog): a `trash-2` badge (danger on danger background) before the title, 440 px wide at most, footer « Annuler » (neutral) then « Supprimer les données » (danger) on the desktop; on the phone the buttons are stacked full width, the danger one last.
+- **Confirmation**: no typed name (the sentence is read and counted; the typed name is reserved for the universe itself, AD-119). While the deletion runs the button reads « Suppression… » and the dialog cannot be closed. The result replaces the content: « Données supprimées : 14 conceptions, 3 éléments locaux de catalogue. » and « Fermer »; the card refreshes its counts (« aucun catalogue importé », no design in the list).
+
+| State | What the user sees | Text |
+|---|---|---|
+| empty | the recount is zero everywhere | « Cet outil n'a aucune donnée à supprimer. » + « Fermer »; no destructive button |
+| loading | summary being read | « Lecture des données de l'outil… » |
+| error | the summary or the deletion does not answer (5xx) | « L'action n'a pas abouti. Rien n'est supprimé. » + « Réessayer » (replays the summary read, then asks again: the lines shown are always those just read) |
+| offline | the connection drops | banner « Connexion perdue. », the destructive button disabled; during the deletion: « Connexion perdue pendant la suppression. Rien n'est supprimé à moitié : rouvrez la fenêtre pour voir l'état. » |
+| changed meanwhile | the recount differs from the lines read (`contenu_change`) | « Les données ont changé depuis que vous avez ouvert cette fenêtre. » + the new lines + « Recharger » (re-reads; nothing is erased until the user confirms the new lines) |
+| refusal | the role was lost meanwhile (no longer GM, no longer responsible, Player mode) | « Vous ne pouvez plus supprimer ces données. » + « Fermer »; the address of a player or non-member: « Page introuvable. » |
+| long content | 14 000 conceptions; a universe name of 80 characters in the system block | counts with thin spaces (« 14 000 conceptions »); names wrap, the block scrolls beyond 6 universes with « … et N autres » |
+
+*Criteria.*
+- Given « Éneria d'essai » with 2 designs and 2 local catalogue elements (« Lance d'essai » and one more), when Antor opens « Supprimer les données de l'outil… » on « Concepteur de vaisseaux », then he reads « 2 conceptions, 2 éléments locaux de catalogue seront effacés. », and when he confirms he reads « Données supprimées : 2 conceptions, 2 éléments locaux de catalogue. »; the designer list is empty and the two ship sheets are still in « Vaisseaux », their « Caractéristiques » section shown as ordinary text, without banner.
+- Given « Univers voisin », which holds one design, when Antor erased « Éneria d'essai »'s data, then that design is intact.
+- Given Antor who disabled the designer, when he re-enables it without deleting, then the same 2 designs and the same managed sections are there (counts before and after are equal).
+- Given Antor, responsible of « Système d'essai », when he first disables the designer on the system tab and then opens the deletion there, then the dialog adds « Encore utilisé par : » « Univers voisin », which forced the tool « Activé », and not « Éneria d'essai », which follows the system and so now has the tool disabled.
+- Given Mira, GM of an attached universe but not responsible, on the system tab, then neither the button nor its line exists in the DOM; on the tab of her own universe she has them.
+- Given the galaxy tool of « Éneria d'essai » (4 systems, 3 routes, 1 zone), when Antor opens the deletion, then the dialog reads « Les 4 systèmes, 3 routes et 1 zone de cette galaxie seront effacés. »; once confirmed, the galaxy no longer appears in E-10.
+- Given Antor with the dialog open while Mira adds a design, when he confirms, then the dialog reads « Les données ont changé depuis que vous avez ouvert cette fenêtre. » with 3 designs, and nothing was erased.
+- Given Léa, Player, who forces the address of the tab or of the summary, then she reads « Page introuvable. ».
+- Given Antor in Player mode, when he forces the deletion, then the tab is absent and the call is refused.
+- Given the network cut while « Supprimer les données » is pressed, then the dialog reads « Connexion perdue pendant la suppression. Rien n'est supprimé à moitié… » and the rows are all there or all gone.
+- Given Antor deleting the universe « Éneria d'essai » (AD-119), then no `swn_*` row of that universe remains and « Univers voisin » is intact.
 
 **What `kanevas-outils-vaisseaux` builds of E-22 and E-9** (the first designer: list, workshop, creation, save, share link, the E-9 component and the assistant's calculation; **not** built here, and leaving no empty slot: the stale banner and « Recalculer », « Générer les fiches de règles… » and the rule and example sheets — `kanevas-outils-vaisseaux-regles`). Mockup: `docs/maquettes/e22-concepteur-vaisseaux.html` (the document wins; its « calculée avec d'anciens réglages » state belongs to the later slice). Architecture: `ARCHITECTURE.md`, « Detail of `kanevas-outils-vaisseaux` » (V-1 to V-12). Format: web, desktop and phone/tablet (390 px is the proof width).
 

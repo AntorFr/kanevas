@@ -21,7 +21,7 @@ export interface LigneSysteme {
   couleur: string; notes: string; secret: number; promu: number; version: number;
 }
 export interface LigneRoute {
-  id: number; galaxie_id: number; depuis_id: number; vers_id: number; publique: number; longueur: number; version: number;
+  id: number; galaxie_id: number; depuis_id: number; vers_id: number; publique: number; longueur: number; version: number; type_lien: string | null;
 }
 export interface LigneZone {
   id: number; galaxie_id: number; cle: string; nom: string; contour: string; couleur: string;
@@ -235,8 +235,22 @@ export function supprimerGalaxie(db: Db, acteur: Acteur | number, universId: num
     }
     // The managed document section goes with the galaxy; the sheet stays (T-6, AD-135).
     if (g.fiche_id !== null && g.section_id !== null) retirerSectionGeree(db, a.compteId, universId, g.fiche_id, g.section_id);
-    db.prepare('DELETE FROM swn_galaxies WHERE id = ?').run(g.id);
+    effacerGalaxie(db, g.id);
   })();
+}
+
+/** The rows of a galaxy, its systems, routes and zones with it (cascade). No guard, no `vu`: the callers carry them (D-1). */
+export function effacerGalaxie(db: Db, galaxieId: number): void {
+  db.prepare('DELETE FROM swn_galaxies WHERE id = ?').run(galaxieId);
+}
+
+/** Everything the galaxy tool keeps in one universe, for the deletion summary and the erasure of the tool's data (D-1). */
+export function donneesGalaxiesDe(db: Db, universId: number): { galaxies: number } & DecomptesGalaxie {
+  const n = (table: string) => (db.prepare(`SELECT count(*) AS n FROM ${table} WHERE univers_id = ?`).get(universId) as { n: number }).n;
+  return { galaxies: n('swn_galaxies'), systemes: n('swn_systemes'), routes: n('swn_routes'), zones: n('swn_zones') };
+}
+export function effacerGalaxiesDe(db: Db, universId: number): void {
+  for (const { id } of db.prepare('SELECT id FROM swn_galaxies WHERE univers_id = ?').all(universId) as { id: number }[]) effacerGalaxie(db, id);
 }
 
 /** Seed-only (stub mode): the invented trial galaxy. Never exposed by a route. */

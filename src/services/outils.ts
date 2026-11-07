@@ -57,7 +57,7 @@ function systemeDeCible(db: Db, cible: CibleOutils) {
   if (!u || u.systeme_id === null) throw introuvable();
   return systeme(db, u.systeme_id);
 }
-function exigerApplicable(db: Db, cible: CibleOutils, cle: string) {
+export function exigerApplicable(db: Db, cible: CibleOutils, cle: string) {
   const d = declaration(cle);
   const s = systemeDeCible(db, cible);
   if (d.outil ? !applicable(d.outil, s.nom) : !d.module.outils.some((o) => applicable(o, s.nom))) throw introuvable();

@@ -265,6 +265,7 @@ describe('médiathèque — réserver et supprimer « Carte des Sphères »', { 
     assert.match(await texte(p), /Fichier réservé au MJ\./);
     for (const id of [8, 1, 12]) {
       await ouvrirFiche(l.page, id);
+      await l.page.waitForFunction(() => /Image réservée au MJ\./.test(document.body.innerText), undefined, { timeout: 20000 });
       assert.match(await texte(l.page), /Image réservée au MJ\./, `fiche ${id}`);
     }
     await l.page.screenshot({ path: '/tmp/work/shots/lea-reservee.png', fullPage: true });

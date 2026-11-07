@@ -300,6 +300,10 @@ export function semerBouchon(db: Db): boolean {
         poserActivation(db, id.antor, { niveau: 'systeme', id: systeme.id }, 'swn/galaxie', true);
         semerGalaxieEssai(db, eneria.id);
         semerVaisseauxEssai(db, { antor: id.antor, lea: id.lea }, systeme.id, eneria.id);
+        // Starting activation of the retirement slice: « Univers voisin » forces the designer on, « Éneria d'essai » follows the system.
+        poserActivation(db, id.antor, { niveau: 'univers', id: voisin.id }, 'swn/vaisseaux', true);
+        const sentinelle = creerFiche(db, id.antor, voisin.id, { type: 'vaisseau', titre: 'Sentinelle du voisin' }).id;
+        creerConception(db, { compteId: id.antor }, voisin.id, { ficheId: sentinelle, coque: 'eclaireur' });
       }
     }
 
@@ -334,6 +338,12 @@ function semerVaisseauxEssai(db: Db, id: { antor: number; lea: number }, systeme
   poserActivation(db, id.antor, { niveau: 'systeme', id: systemeId }, 'swn/vaisseaux', true);
   appliquerCatalogue(db, antor, { niveau: 'systeme', id: systemeId }, 'swn/vaisseaux', exemple('catalogue-essai.json'));
   appliquerCatalogue(db, antor, { niveau: 'univers', id: universId }, 'swn/vaisseaux', exemple('catalogue-essai-univers.json'));
+  // A second local element (with « Lance d'essai »: two), added by a further import of the universe's catalogue.
+  appliquerCatalogue(db, antor, { niveau: 'univers', id: universId }, 'swn/vaisseaux', {
+    catalogue: 'swn/vaisseaux', version: '2026-11-essai-vaisseaux-univers-2',
+    modifications: [{ cle: 'plaque-d-essai', nom: "Plaque d'essai", cout: 6000, puissance: 1, masse: 1, x_cout: true,
+      x_puissance: false, x_masse: true, pv: 3, ca: 1, limite: 0 }],
+  });
   const fiche = (titre: string) => creerFiche(db, id.antor, universId, { type: 'vaisseau', titre }).id;
   const ligne = (nature: string, cle: string) => ({ nature, cle, quantite: 1 });
 

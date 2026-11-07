@@ -308,7 +308,7 @@ test('forcer : « Activé » pour Univers voisin puis éteint au système : Éne
   await antor.goto(`/univers/${ENERIA}/outils/essai/a`);
   await antor.getByText(PAS_TROUVE).first().waitFor();
 
-  assert.deepEqual(await entreesBarre(antor, VOISIN), ['Essai A']);
+  assert.deepEqual(await entreesBarre(antor, VOISIN), ['Essai A', 'Concepteur de vaisseaux']);
   assert.equal((await api(antor, 'GET', `/api/univers/${VOISIN}/outils/essai/a/description`)).status, 200);
   await antor.goto(`/univers/${VOISIN}/outils/essai/a`);
   await antor.getByRole('heading', { name: 'Essai A' }).waitFor();
@@ -322,7 +322,7 @@ test('forcer : « Désactivé » pour l’univers alors que le système active �
   await api(antor, 'PUT', `/api/univers/${ENERIA}/outils/essai/a/activation`, { active: false });
   try {
     assert.deepEqual(await entreesBarre(lea, ENERIA), []);
-    assert.deepEqual(await entreesBarre(antor, VOISIN), ['Essai A'], 'the other universe is untouched');
+    assert.deepEqual(await entreesBarre(antor, VOISIN), ['Essai A', 'Concepteur de vaisseaux'], 'the other universe is untouched');
   } finally {
     await api(antor, 'PUT', `/api/univers/${ENERIA}/outils/essai/a/activation`, { active: null });
   }

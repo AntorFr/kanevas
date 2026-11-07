@@ -1,4 +1,5 @@
 // Text version of a ship (V-6, AD-127): deterministic Markdown, no `:::` block, no link.
+import { texteMasse } from './masse.js'
 import type { NatureVaisseau, ResultatVaisseau } from './vaisseau.js'
 
 export const NBSP = '\u00A0'
@@ -23,7 +24,7 @@ export function tableMesures(r: ResultatVaisseau): string {
     ['Entretien', `${credits(r.entretien)} / an`],
     ['Portée de saut', portee],
     ['Puissance libre', entier(r.puissanceLibre)],
-    ['Masse libre', entier(r.masseLibre)],
+    ['Masse libre', texteMasse(r.masseLibre)],
     ['Emports', `${r.emports.utilises} / ${r.emports.total}`],
   ]
   return ['| Mesure | Valeur |', '|---|---|', ...mesures.map(([k, v]) => `| ${k} | ${v} |`)].join('\n')
@@ -34,7 +35,7 @@ export function listeChoix(r: ResultatVaisseau): string {
   const choix = r.lignes
     .map((l, i) => ({ l, i }))
     .sort((a, b) => ORDRE.indexOf(a.l.nature) - ORDRE.indexOf(b.l.nature) || a.l.nom.localeCompare(b.l.nom, 'fr') || a.i - b.i)
-    .map(({ l }) => `- ${l.quantite} × ${l.nom}`)
+    .map(({ l }) => `- ${l.quantite} × ${l.nom}${l.magasins ? ` (+${l.magasins} ${l.magasins < 2 ? 'magasin' : 'magasins'})` : ''}`)
   return ['**Choix**', ...choix].join('\n')
 }
 

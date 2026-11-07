@@ -11,7 +11,7 @@ import { NATURES_DE_LIGNE } from './catalogue-vaisseaux.js';
 export const OUTIL_VAISSEAUX = 'swn/vaisseaux';
 export const TYPE_CARACTERISTIQUES = 'caracteristiques';
 
-export interface LigneChoix { nature: NatureVaisseau; cle: string; quantite: number }
+export interface LigneChoix { nature: NatureVaisseau; cle: string; quantite: number; magasins?: number }
 export interface EntreeCalcul { coque: string; choix: LigneChoix[] }
 export interface SortieCalcul { resultat: ResultatVaisseau | null; alertes: AlerteVaisseau[] }
 /** What the stored design already carries: the keys that may still resolve although masked (V-3). */
@@ -34,13 +34,15 @@ export function validerChoix(coque: unknown, choix: unknown): EntreeCalcul {
     if (!o || typeof o !== 'object' || Array.isArray(o)
       || typeof o.nature !== 'string' || !(NATURES_DE_LIGNE as readonly string[]).includes(o.nature)
       || typeof o.cle !== 'string' || o.cle.length < 1 || o.cle.length > 64
-      || !Number.isInteger(o.quantite) || (o.quantite as number) < 1 || (o.quantite as number) > 99) {
+      || !Number.isInteger(o.quantite) || (o.quantite as number) < 1 || (o.quantite as number) > 99
+      || (o.magasins !== undefined && (o.nature !== 'armes' || !Number.isInteger(o.magasins) || (o.magasins as number) < 1 || (o.magasins as number) > 9))) {
       throw invalide('Choix invalides.', 'choix_invalide', 'choix');
     }
     const k = JSON.stringify([o.nature, o.cle]);
     if (vus.has(k)) throw invalide('Un élément ne peut figurer qu\'une fois.', 'choix_en_double', 'choix');
     vus.add(k);
-    return { nature: o.nature as NatureVaisseau, cle: o.cle, quantite: o.quantite as number };
+    return { nature: o.nature as NatureVaisseau, cle: o.cle, quantite: o.quantite as number,
+      ...(o.magasins === undefined ? {} : { magasins: o.magasins as number }) };
   });
   return { coque, choix: lignes };
 }
@@ -103,7 +105,8 @@ export function resoudreChoix(db: Db, universId: number, e: EntreeCalcul, porte:
       if (!portee && !inconnu) inconnu = { champ: 'choix' };
       return null;
     }
-    return { nature: l.nature, cle: l.cle, nom: el.nom, quantite: l.quantite, element: el.donnees as unknown as ElementCalcul };
+    return { nature: l.nature, cle: l.cle, nom: el.nom, quantite: l.quantite,
+      ...(l.magasins === undefined ? {} : { magasins: l.magasins }), element: el.donnees as unknown as ElementCalcul };
   });
   return { coque, lignes, retirees, nomsRetires, inconnu };
 }

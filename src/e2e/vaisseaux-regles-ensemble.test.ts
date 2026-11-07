@@ -171,9 +171,15 @@ describe('B-67 : un réglage change, la conception de Léa est périmée et se r
     await m.portee(6);
     const { page } = await ouvrir(m, 'Léa', `?fiche=${m.orak}`);
     await page.getByText(BANDE).waitFor();
+    // The change triggers a debounced calculation; « Enregistrer » is only usable once its answer is back.
+    const calcul = page.waitForResponse((r: Any) => r.request().method() === 'POST' && /\/calcul$/.test(new URL(r.url()).pathname));
     await page.getByRole('button', { name: 'Augmenter la quantité : Laser' }).click();
-    await page.getByRole('button', { name: 'Enregistrer' }).click();
-    await page.getByText('Conception enregistrée.').waitFor();
+    await calcul;
+    const enregistrer = page.getByRole('button', { name: 'Enregistrer' });
+    await enregistrer.waitFor();
+    await page.waitForFunction(() => [...document.querySelectorAll('button')].some((b) => b.textContent?.trim() === 'Enregistrer' && !b.disabled));
+    await enregistrer.click();
+    await page.getByText('Conception enregistrée.').waitFor({ timeout: 60_000 });
     const apres = plat(await m.caracteristiques('lea', m.orak));
     assert.match(apres, /Prix 810 000 cr/);
     assert.match(apres, /Portée de saut 18 cases/);
@@ -251,9 +257,10 @@ describe('B-77 : le MJ génère les fiches de règles', { skip: skipBrowser, tim
     assert.equal(await d.getByText('À créer', { exact: true }).count(), 7);
     await d.getByRole('button', { name: 'Générer', exact: true }).click();
     await d.getByText('7 fiches créées.').waitFor();
+    // the list is reloaded after the success phrase is set (Generer.tsx: setSucces then await charger()): wait for it
+    await d.getByText('Les fiches sont à jour.').waitFor({ timeout: 60_000 });
     assert.equal(await d.getByText('À jour', { exact: true }).count(), 7);
     assert.equal(await d.getByRole('button', { name: 'Générer', exact: true }).isDisabled(), true);
-    await d.getByText('Les fiches sont à jour.').waitFor();
     await page.screenshot({ path: `${SHOTS}-generees.png`, fullPage: true });
 
     // sept fiches de type Règle, titres exacts, une section gérée chacune

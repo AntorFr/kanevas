@@ -132,13 +132,14 @@ test('POST conceptions : 201 pour Antor sur Aube de Sel, 403 Léa, doublon refus
   const lea = await w.req('lea', 'POST', '/conceptions', { ficheId: w.aube, coque: 'eclaireur' });
   assert.equal(lea.statusCode, 403);
   assert.deepEqual(Object.keys(lea.json()).sort(), ['message']);
-  assert.equal(w.versions().length, 2);
+  // The seed holds 3 designs: 2 in Éneria d'essai, 1 in Univers voisin (retirement slice).
+  assert.equal(w.versions().length, 3);
   const a = await w.req('antor', 'POST', '/conceptions', { ficheId: w.aube, coque: 'eclaireur' });
   assert.equal(a.statusCode, 201);
-  assert.equal(w.versions().length, 3);
+  assert.equal(w.versions().length, 4);
   const bis = await w.req('antor', 'POST', '/conceptions', { ficheId: w.aube, coque: 'eclaireur' });
   assert.ok(bis.statusCode >= 400 && bis.statusCode < 500, String(bis.statusCode));
-  assert.equal(w.versions().length, 3);
+  assert.equal(w.versions().length, 4);
   assert.ok([400, 404, 422].includes((await w.req('antor', 'POST', '/conceptions', {})).statusCode));
   assert.equal((await w.req('teo', 'POST', '/conceptions', { ficheId: w.aube, coque: 'eclaireur' })).statusCode, 404);
 });
