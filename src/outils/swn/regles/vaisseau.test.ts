@@ -260,3 +260,72 @@ test('catalogues JSON : clés et comptes de V-11', () => {
   assert.equal(univers.armes[0].x_puissance, false)
   for (const n of NATURES) if (n !== 'armes') assert.equal(univers[n], undefined)
 })
+
+// ── E-2 / E-3 : munitions selon la classe de la coque, magasins supplémentaires ──
+// Cas inventé, calculé à la main. Croiseur : classe 3, cout 1 000 000, puissance 50, masse 40.
+// Arme « bidule » : emport 1, munitions 5, cout_munition 200, cout 10 000 (non multiplié), puissance 1, masse 2.
+const bidule = (classe_min?: number): ElementResolu => ({
+  cout: 10000, puissance: 1, masse: 2, x_cout: false, x_puissance: false, x_masse: false, pv: 0, ca: 0, limite: 0,
+  emport: 1, munitions: 5, cout_munition: 200, ...(classe_min === undefined ? {} : { classe_min }),
+} as ElementResolu)
+function croiseurAvec(classeMin: number | undefined, quantite: number, magasins?: number) {
+  const l: LigneResolue = { nature: 'armes', cle: 'bidule', nom: 'Bidule', quantite, ...(magasins === undefined ? {} : { magasins }), element: bidule(classeMin) }
+  return calculer(coque('croiseur'), [l], { porteeSaut: 5 })
+}
+
+test('munitions doublées par classe de coque au-dessus de classe_min : 1 000 000 + 20 000 + 2 × 4 000', () => {
+  // 5 × 200 = 1 000 ; classe 3 − classe_min 1 = 2 doublements → 4 000 par arme ; 2 armes.
+  const r = croiseurAvec(1, 2)
+  assert.equal(r.prix, 1028000)
+  assert.equal(r.chantierJours, 42)
+  assert.equal(r.entretien, 51400)
+  assert.equal(r.masseLibre, 36)
+})
+test('classe_min égale à la classe de la coque : munitions non multipliées', () => {
+  assert.equal(croiseurAvec(3, 2).prix, 1022000)
+})
+test('classe_min au-dessus de la classe de la coque : jamais de réduction', () => {
+  assert.equal(croiseurAvec(4, 2).prix, 1022000)
+})
+test('sans classe_min dans l\'élément passé à calculer : jamais multiplié', () => {
+  assert.equal(croiseurAvec(undefined, 2).prix, 1022000)
+})
+test('une seule classe au-dessus : munitions × 2', () => {
+  assert.equal(croiseurAvec(2, 1).prix, 1000000 + 10000 + 2000)
+})
+test('magasins : une charge de munitions et 1 de masse en plus par magasin et par unité', () => {
+  // classe_min 1 : 4 000 × (1 + 1) × 2 = 16 000 ; masse 2×2 + 1×1×2 = 6.
+  const r = croiseurAvec(1, 2, 1)
+  assert.equal(r.prix, 1036000)
+  assert.equal(r.masseLibre, 34)
+  assert.equal(r.puissanceLibre, 48)
+  assert.equal(r.chantierJours, 42)
+  assert.equal(r.entretien, 51800)
+  assert.deepEqual(r.lignes, [{ nature: 'armes', cle: 'bidule', nom: 'Bidule', quantite: 2, magasins: 1 }])
+})
+test('magasins 3 sur classe_min 3 : 1 000 × 4 × 1 arme, masse + 3', () => {
+  const r = croiseurAvec(3, 1, 3)
+  assert.equal(r.prix, 1000000 + 10000 + 4000)
+  assert.equal(r.masseLibre, 40 - 2 - 3)
+})
+test('sans magasins : la ligne du résultat n\'a pas de clé magasins', () => {
+  assert.deepEqual(croiseurAvec(1, 1).lignes, [{ nature: 'armes', cle: 'bidule', nom: 'Bidule', quantite: 1 }])
+})
+test('magasins qui font passer la masse sous zéro : bloquante masse insuffisante', () => {
+  // masse libre 40 − 2 − 9 = 29 : pas de dépassement ; avec 9 magasins × 5 armes : 40 − 10 − 45 = −15.
+  const r = croiseurAvec(1, 5, 9)
+  assert.equal(r.masseLibre, -15)
+  assert.ok(r.alertes.some((a) => a.code === 'masse_insuffisante' && a.niveau === 'bloquante'))
+})
+test('texte V-6 : « (+2 magasins) » et « (+1 magasin) » au singulier', () => {
+  const l = (m: number): LigneResolue => ({ nature: 'armes', cle: 'bidule', nom: 'Bidule', quantite: 1, magasins: m, element: bidule(1) })
+  const t2 = texteVaisseau(calculer(coque('croiseur'), [l(2)], { porteeSaut: 5 }))
+  assert.ok(t2.includes('- 1 × Bidule (+2 magasins)'), t2)
+  const t1 = texteVaisseau(calculer(coque('croiseur'), [l(1)], { porteeSaut: 5 }))
+  assert.ok(t1.includes('- 1 × Bidule (+1 magasin)\n') || t1.endsWith('- 1 × Bidule (+1 magasin)'), t1)
+  assert.ok(!texteVaisseau(croiseurAvec(1, 1)).includes('magasin'))
+})
+test('canon-leger du jeu d\'essai : classe_min 3, le croiseur du tableau V-11 ne bouge pas', () => {
+  assert.equal(essai.armes.find((a: { cle: string }) => a.cle === 'canon-leger').classe_min, 3)
+  assert.equal(exemple('croiseur-de-transport').prix, 1966000)
+})

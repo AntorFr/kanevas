@@ -129,8 +129,12 @@ test('montée : un élément de masse 8 (semis) reste lisible et inchangé, comp
   const fichiers = readdirSync(source).filter((f) => /^\d{4}-.+\.sql$/.test(f));
   for (const f of fichiers) if (Number(f.slice(0, 4)) <= 25) copyFileSync(new URL(f, source), join(dir, f));
   migrate(db, dir + '/');
+  // The seed writes `classe_min` (0028): the old schema gets a stand-in column for the seeding only, dropped before the climb.
+  db.exec('ALTER TABLE swn_catalogue_armes ADD COLUMN classe_min INTEGER');
   semerBouchon(db);
-  const snap = () => TABLES.map((t) => db.prepare(`SELECT * FROM swn_catalogue_${t} ORDER BY rowid`).all());
+  db.exec('ALTER TABLE swn_catalogue_armes DROP COLUMN classe_min');
+  // 0028 adds `classe_min` to the weapons: the rows are compared without it, which is checked apart below.
+  const snap = () => TABLES.map((t) => (db.prepare(`SELECT * FROM swn_catalogue_${t} ORDER BY rowid`).all() as any[]).map(({ classe_min, ...r }) => r));
   const idx = () => db.prepare("SELECT name, tbl_name FROM sqlite_master WHERE type = 'index' AND name LIKE 'swn_catalogue_%' ORDER BY name").all();
   const avant = snap();
   const indexAvant = idx();
@@ -138,6 +142,7 @@ test('montée : un élément de masse 8 (semis) reste lisible et inchangé, comp
   assert.ok((avant[0] as any[]).some((r) => r.masse === 8));
   assert.deepEqual(migrate(db), fichiers.map((f) => Number(f.slice(0, 4))).filter((n) => n > 25));
   assert.deepEqual(snap(), avant);
+  assert.ok((db.prepare('SELECT classe_min FROM swn_catalogue_armes').all() as any[]).every((r) => r.classe_min === 1));
   assert.deepEqual(idx(), indexAvant);
   assert.deepEqual(db.pragma('foreign_key_check'), []);
   for (const t of TABLES) {
