@@ -873,10 +873,10 @@ blocking alerts, « Enregistrer » refuses and explains why; Antor withdraws the
 1. In `AntorFr/eneria` (private), a script converts files to the module format (`_outils/kanevas/`
    folder); converted output and reference values are versioned alongside.
 2. With an API token scoped to « galaxie » then another scoped to « vaisseaux » (**E-18**), he pushes batches: the
-   catalogue, then the designs (one per ship, keyed, the sheet created if missing — the 11 example ships among them), then
+   catalogue, then the designs (one per ship, keyed, the sheet created if missing — every example ship of the sources among them), then
    the galaxy; **E-18** shows created, updated, refused, each refusal with its field.
 3. He replays: no duplicates, a design he changed in Kanevas in the meantime is refused (« Modifié dans Kanevas depuis le
-   dernier import. ») and the rest passes. Tests on real data (49 routes, the 11 ships, the two named corrections)
+   dernier import. ») and the rest passes. Tests on real data (every route, every example ship, the two named corrections)
    run **in pods**, which read `eneria`; `kanevas` CI remains synthetic (Monsieur's decision, 2026-10-16). Any gap the
    real import reveals in the format is written down and corrected in `kanevas`, never worked around in the converter.
 *Failure*: malformed element — refused with its field, the rest goes through; a token lacking the tool's scope —
