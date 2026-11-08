@@ -130,11 +130,21 @@ test('montée : un élément de masse 8 (semis) reste lisible et inchangé, comp
   for (const f of fichiers) if (Number(f.slice(0, 4)) <= 25) copyFileSync(new URL(f, source), join(dir, f));
   migrate(db, dir + '/');
   // The seed writes `classe_min` (0028): the old schema gets a stand-in column for the seeding only, dropped before the climb.
-  db.exec('ALTER TABLE swn_catalogue_armes ADD COLUMN classe_min INTEGER');
+  // The seed also writes the optional columns of 0029 (null): stand-ins on every catalogue table, same lifetime.
+  const AJOUTS: Record<string, string[]> = {
+    coques: ['vitesse', 'armure', 'equipage_min', 'equipage_max'],
+    moteurs: ['classe_min', 'classe_max', 'condition'], amenagements: ['classe_min', 'classe_max', 'condition'],
+    defenses: ['classe_min', 'classe_max', 'condition', 'bonus_vitesse'],
+    armes: ['classe_min', 'degats', 'perforation', 'qualites', 'niveau_tech'], exemples: ['equipage'],
+  };
+  const stub = (verbe: 'ADD COLUMN' | 'DROP COLUMN') => {
+    for (const [t, cols] of Object.entries(AJOUTS)) for (const c of cols) db.exec(`ALTER TABLE swn_catalogue_${t} ${verbe} ${c}${verbe === 'ADD COLUMN' ? ' INTEGER' : ''}`);
+  };
+  stub('ADD COLUMN');
   semerBouchon(db);
-  db.exec('ALTER TABLE swn_catalogue_armes DROP COLUMN classe_min');
+  stub('DROP COLUMN');
   // 0028 adds `classe_min` to the weapons: the rows are compared without it, which is checked apart below.
-  const snap = () => TABLES.map((t) => (db.prepare(`SELECT * FROM swn_catalogue_${t} ORDER BY rowid`).all() as any[]).map(({ classe_min, ...r }) => r));
+  const snap = () => TABLES.map((t) => (db.prepare(`SELECT * FROM swn_catalogue_${t} ORDER BY rowid`).all() as any[]).map(({ classe_min, vitesse, armure, equipage_min, equipage_max, classe_max, condition, bonus_vitesse, degats, perforation, qualites, niveau_tech, equipage, ...r }) => r));
   const idx = () => db.prepare("SELECT name, tbl_name FROM sqlite_master WHERE type = 'index' AND name LIKE 'swn_catalogue_%' ORDER BY name").all();
   const avant = snap();
   const indexAvant = idx();
