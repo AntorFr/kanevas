@@ -2057,12 +2057,12 @@ on them is ignored. Only in a **section** or a compte-rendu (scenarios and syste
 interpret `fichier:`, see above).
 
 **Editor (E-taille-1).** In « Écrire », the caret inside an `![…](fichier:N…)` reference enables the
-toolbar button « Image » (icon `image`); it opens a small panel (same panel family as the toolbar's
-other pickers — verdict of the design-system guardian below) with two single-choice groups,
+toolbar button « Image » (icon `image`); it opens a `Menu` (existing component, trigger variant `outil`,
+charte « Menu ») with two single-choice `groupe`s,
 « Taille » (Petit, Moyen, Grand) and « Placement » (À gauche, À droite, Centrée), and a « Sans
 réglage » action. Choosing writes the title in the text at once (both groups needed: the first choice
-completes the other with `moyen` / `centre`); « Sans réglage » removes it. Keyboard: arrows inside
-a group, Échap closes. The text stays the single source: the panel reads the title back from the
+completes the other with `moyen` / `centre`); « Sans réglage » removes it. Keyboard: ↑ ↓ cross the choices, Échap closes
+and the focus returns to the field. Icons: placement `align-left` / `align-right` / `align-center`, size three `square` of growing size. The text stays the single source: the panel reads the title back from the
 reference at the caret, so a hand-typed setting shows selected. « Aperçu » renders it as in reading.
 Who may write the text sees the button; a reader never gets the editor.
 
