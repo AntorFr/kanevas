@@ -1,6 +1,7 @@
 // Generated blocks (G-3, AD-132): pure, deterministic. No database, no clock.
 import { createHash } from 'node:crypto'
-import { pointDansPolygone, type Hex, type Point } from './hex.js'
+import { contient, type Plage } from './forme.js'
+import type { Hex, Point } from './hex.js'
 
 export const TAILLE_BLOC = 5
 
@@ -8,6 +9,8 @@ export type ChampDensite = (q: number, r: number) => number
 
 export interface ZoneDensite {
   contour: readonly Point[]
+  /** Ranges of a zone that is a set of hexagons (Z-1); its `contour` is then empty. */
+  plages?: readonly Plage[] | null
   densite: number | null
 }
 
@@ -41,7 +44,7 @@ export function densiteHexagone(
   let mini: number | null = null
   for (const z of zones) {
     if (z.densite === null) continue
-    if (!pointDansPolygone(q, r, z.contour)) continue
+    if (!contient(z, q, r)) continue
     if (mini === null || z.densite < mini) mini = z.densite
   }
   return mini ?? defaut
