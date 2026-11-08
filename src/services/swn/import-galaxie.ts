@@ -155,10 +155,11 @@ export function importerGalaxie(db: Db, acteur: Acteur, universId: number, galax
         zonesVues.add(cle);
         item('zones', i, cle, () => {
           const v = normaliserZone(brut);
+          const entree = brut as typeof brut & { nom: unknown; contour: unknown };
           const ligne = db.prepare('SELECT * FROM swn_zones WHERE galaxie_id = ? AND cle = ?').get(g.id, cle) as
             (LigneZone & { version_importee: number | null }) | undefined;
           if (!ligne) {
-            const { id } = dessinerZone(db, acteur, universId, g.id, v, { cle });
+            const { id } = dessinerZone(db, acteur, universId, g.id, entree, { cle });
             db.prepare('UPDATE swn_zones SET version_importee = version WHERE id = ?').run(id);
             return 'creees';
           }
@@ -166,7 +167,7 @@ export function importerGalaxie(db: Db, acteur: Acteur, universId: number, galax
             && ligne.couleur === v.couleur && ligne.densite === v.densite && (ligne.secret === 1) === v.secret;
           if (egal) return 'inchangees';
           if (ligne.version !== ligne.version_importee) throw new ErreurService('conflit', HORS_SYNCHRO, 'hors_synchro');
-          const { version } = modifierZone(db, acteur, universId, g.id, cle, { ...v, version: ligne.version });
+          const { version } = modifierZone(db, acteur, universId, g.id, cle, { ...entree, version: ligne.version });
           db.prepare('UPDATE swn_zones SET version_importee = ? WHERE id = ?').run(version, ligne.id);
           return 'mises_a_jour';
         });
