@@ -21,6 +21,18 @@ function cleDeAdresse(adresse: unknown): string | null {
   }
 }
 
+/** The sizes and placements of an image in the text (AD-taille-1): the one table, the editor's twin reads the same. */
+export const TAILLES_IMAGE = ['petit', 'moyen', 'grand'] as const;
+export const PLACEMENTS_IMAGE = ['gauche', 'droite', 'centre'] as const;
+export type TailleImage = (typeof TAILLES_IMAGE)[number];
+export type PlacementImage = (typeof PLACEMENTS_IMAGE)[number];
+
+/** Reads the title of an image: exactly `<taille>-<placement>` is a setting, anything else (or none) is not. */
+export function lireReglageImage(titre: string | null | undefined): { taille: TailleImage; placement: PlacementImage } | null {
+  const m = /^(petit|moyen|grand)-(gauche|droite|centre)$/.exec(titre ?? '');
+  return m ? { taille: m[1] as TailleImage, placement: m[2] as PlacementImage } : null;
+}
+
 /** The three forms of the grammar (`docs/ecrans.md`): text and key are 1 to 200 characters, no `]`, `|` nor line break. */
 const LIEN = /\[\[(?:([1-9]\d{0,14})|cle:([^|\]\r\n]{1,200}))(?:\|([^|\]\r\n]{1,200}))?\]\]/y;
 
@@ -164,13 +176,15 @@ interface EnvRendu {
   fichiersEnAttente?: ResolveurFichiersEnAttente;
   liens?: ResolveurLiens;
   formeLiens?: 'html' | 'markdown';
+  /** Only the text of a section or a report carries image settings (AD-taille-2). */
+  reglagesImage?: boolean;
   /** Reading only (`extraireReferencesFichier`): the `fichiers` rule leaves the tokens as the engine made them. */
   lectureSeule?: boolean;
 }
 
 export function rendreMarkdown(source: string, options: OptionsRendu = {}): string {
   const md = options.nature === 'section' ? mdSection : options.nature === 'scenario' ? mdScenario : mdTexte;
-  const env: EnvRendu = { liens: options.liens, formeLiens: options.formeLiens, fichiers: options.fichiers, fichiersEnAttente: options.fichiersEnAttente };
+  const env: EnvRendu = { liens: options.liens, formeLiens: options.formeLiens, fichiers: options.fichiers, fichiersEnAttente: options.fichiersEnAttente, reglagesImage: options.nature === 'section' };
   return md.render(source, env as Record<string, unknown>);
 }
 
@@ -255,10 +269,14 @@ function decider(
       const r = env.fichiers(Number(m[1]));
       const alt = md.renderer.renderInlineAsText(t.children ?? [], md.options, {});
       if (r.genre === 'fichier') {
-        if (env.formeLiens === 'markdown') sortie.push(brut(md.utils.escapeHtml(`![${alt}](fichier:${r.id})`)));
-        else if (r.image) {
+        if (env.formeLiens === 'markdown') {
+          const titre = String(t.attrGet('title') ?? '');
+          sortie.push(brut(md.utils.escapeHtml(`![${alt}](fichier:${r.id}${titre ? ` "${titre.replace(/"/g, '\\"')}"` : ''})`)));
+        } else if (r.image) {
+          const reglage = env.reglagesImage ? lireReglageImage(String(t.attrGet('title') ?? '')) : null;
+          const classe = reglage ? ` class="img-${reglage.taille} img-${reglage.placement}"` : '';
           sortie.push(
-            brut(`<img src="${md.utils.escapeHtml(r.adresse)}" alt="${md.utils.escapeHtml(alt)}" loading="lazy">`),
+            brut(`<img src="${md.utils.escapeHtml(r.adresse)}" alt="${md.utils.escapeHtml(alt)}"${classe} loading="lazy">`),
           );
         } else {
           sortie.push(
