@@ -3,10 +3,11 @@
 - Language (public repository): code, comments, README, `docs/` (the product's design docs
   included), ADRs and release notes in **English**; `.agent/*` stays French. Existing French
   docs are translated by a feature of their own, not rewritten in passing: new text is English.
-- Attested tests: `npm run tests:attestes` plays the whole suite (typecheck, build, every test,
-  none skipped, two files at a time by default, `--concurrence N` to change it) on the committed tree and rewrites `rapport-tests.json` (git-ignored) at each run; `-- --publier` posts the
-  `tests-complets` commit status when green. The image build and the `main` rule require it; the
-  CI runs no test by itself.
+- Attested tests: the suite is declared in `.sdlc.yaml` (`tests:`), and `attester --publier` plays it on the pushed
+  commit and posts the `tests-complets` status when green — the only way to post it, never by hand. `npm run tests:attestes`
+  is just the suite (typecheck, build, every test, two files at a time by default, `--concurrence N` to change it) and writes
+  the per-test TAP report `resultats.tap` (git-ignored); it writes no report and posts no status. The image build (tag `v*`
+  only) and the `main` rule require the status; no workflow plays a test or runs on a branch push or a pull request.
 - Commit messages in French: subject, then the *why*. Explicit paths
   (`git add <path>...`, never `git add -A`/`.`), no AI attribution trailers —
   same convention as `k8s-home-lab`.
