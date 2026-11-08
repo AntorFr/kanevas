@@ -146,7 +146,7 @@ Forme de la skill `exigences` ; chaque besoin cite les parcours qui le réalisen
   L'illustration suit la même double garde (la fiche et l'image). *(P-12, P-16 ; décisions de Monsieur
   du 2026-10-11)*
 
-- **B-taille-1** — *(`kanevas-taille-images`)* When a GM who may write a section has an image in its text
+- **B-taille-1** — *(`kanevas-taille-images`)* When a GM, or a player who may write a section, has an image in its text
   (`![…](fichier:N)`, E-9), they can set its **size** (small, medium, large) and its **placement**
   (left or right with the text wrapping it, or centred without wrapping) from the editor's « Image » button;
   in reading, the image shows at that size and placement, on desktop and on a phone where it stays a
@@ -556,10 +556,10 @@ a expiré — la ligne dit « Expiré », le script reçoit 401.
    lecture le texte de « Histoire » entoure l'image à droite ; sur le téléphone de Léa l'image est un
    bloc centré, lisible.
 *Moment fort* : la même fiche, lue par Antor puis par Léa — le secret n'est ni montré, ni trouvable,
-ni deviné.
+ni deviné. (L'étape 7 est un geste d'édition, hors de ce moment fort.)
 *Échec* : une image insérée ne se charge pas — « Image indisponible. » à sa place ; un lien vers une
 fiche supprimée — texte simple pour Léa, « lien cassé » pour Antor ; une fiche dont Léa ne lit plus
-rien depuis le dernier import — absente de l'arbre, de la recherche et des « Mentionnée dans ».
+rien depuis le dernier import — absente de l'arbre, de la recherche et des « Mentionnée dans ». Réglage d'image (étape 7) : « Image » est grisé tant que le curseur n'est pas dans une image ; si l'enregistrement échoue, le titre écrit reste dans le champ avec le message d'enregistrement de la section.
 
 ### P-13 — Choisir les types d'un système et d'un univers (MJ)
 *Antor joue « CoF Mini » dans « Lame d'Ébène », sauf que son univers a des vaisseaux.*
