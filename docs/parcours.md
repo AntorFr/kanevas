@@ -462,7 +462,7 @@ Format from the `exigences` skill; each need cites the journeys that fulfill it.
   and a text **condition** on its cost or technology; a defence may add a speed bonus; a weapon has its **damage**,
   **armour piercing**, **qualities** and **technology level**; an example design carries its **crew**. The
   workshop shows them, alerts when a design leaves them (a hull too small for an element, a crew under the hull's
-  minimum or over what life support holds) and keeps them in the rule sheets. A catalogue without these fields keeps
+  minimum or over the hull's maximum) and keeps them in the rule sheets. A catalogue without these fields keeps
   working as before. *(P-19, P-20)*
 - **B-83** — A **modification** may cost a **percentage of the hull** (not only a fixed amount) and carries an **effect
   in play** the workshop applies to the result: a change of speed or armour, an exchange between power and mass, a
