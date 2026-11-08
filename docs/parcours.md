@@ -551,6 +551,10 @@ a expiré — la ligne dit « Expiré », le script reçoit 401.
 5. Elle ouvre « Maître Aldric » par un lien, puis revient par le fil d'Ariane.
 6. Elle demande à son **assistant** (E-12) « que sait-on de Port-Sel ? » : il ne cite rien du bloc
    MJ.
+7. *(kanevas-taille-images, B-taille-1)* Antor, de retour sur « Port-Sel », place le curseur dans l'image
+   du port, ouvre « Image » (E-9, « Écrire ») et choisit « Moyen » puis « À droite » ; il enregistre. En
+   lecture le texte de « Histoire » entoure l'image à droite ; sur le téléphone de Léa l'image est un
+   bloc centré, lisible.
 *Moment fort* : la même fiche, lue par Antor puis par Léa — le secret n'est ni montré, ni trouvable,
 ni deviné.
 *Échec* : une image insérée ne se charge pas — « Image indisponible. » à sa place ; un lien vers une

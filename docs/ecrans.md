@@ -2066,6 +2066,22 @@ and the focus returns to the field. Icons: placement `align-left` / `align-right
 reference at the caret, so a hand-typed setting shows selected. « Aperçu » renders it as in reading.
 Who may write the text sees the button; a reader never gets the editor.
 
+**Where it lives, who, states.** E-taille-1 is not a screen of its own: it is a button of the section
+editor of **E-9** (and of a compte-rendu's editor, E-13, which opens on E-9); reading is E-9's, a
+compte-rendu's included. Roles: a GM outside player mode and a player who may write the section (a
+compte-rendu's author writes his own text) get the button; a GM in player mode and a plain reader have
+no editor at all, so **hidden**, never refused. States: *empty* — caret outside an image reference, the
+button is `desactive` and its `title` says « Placez le curseur sur une image » ; *loading* — none, the
+choice is a local edit of the field, and « Aperçu » renders as it already does; *error, version conflict,
+offline* — those of saving the section, unchanged: the written title stays in the field with the rest of
+the text, nothing of its own is added. A reference that is closed, deleted or waiting is still a
+reference: the button is active and writes the title, reading ignores it (above). Extreme content: a
+very long alt text or several images on one line change nothing (the caret's reference is the one
+between the nearest `![` and `)`); an image narrower than its share is never enlarged, so the sizes may
+look alike; two floats in a row stack on their side and the `.md` container clears them. Labels: the menu says « Centrée », the
+notation says `centre`, the reading is a centred block — one setting, three spellings, mapped once in
+the shared table.
+
 ### Le Markdown — ce que `kanevas-import-markdown` construit (E-9, E-7, E-15, E-12)
 
 > *Since `kanevas-scenarios-suivi`, E-7 no longer exists: what this passage says about a scenario's text applies to its section on E-9 (a sheet of type « Aventure »), and what it says about E-6 applies to the « Comptes-rendus » block of E-9.*
