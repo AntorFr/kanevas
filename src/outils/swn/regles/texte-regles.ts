@@ -146,7 +146,7 @@ export function texteExemples(exemples: ExempleResolu[]): string {
   const blocs = [...exemples]
     .sort((a, b) => cmp(a.nom, b.nom) || cmp(a.cle ?? '', b.cle ?? ''))
     .map((x) =>
-      [`### ${x.nom}`, `${x.resultat.coque.nom} — classe ${x.resultat.coque.classe}`, listeChoix(x.resultat), tableMesures(x.resultat)].join('\n\n'),
+      [`### ${x.nom}`, `${x.resultat.coque.nom} — classe ${x.resultat.coque.classe}`, listeChoix(x.resultat), tableMesures(x.resultat, false)].join('\n\n'),
     )
   return `${[entete, ...blocs].join('\n\n')}\n`
 }

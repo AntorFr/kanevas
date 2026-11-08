@@ -13,6 +13,7 @@ const plier = (s: string) => s.normalize('NFD').replace(/\p{M}/gu, '').toLowerCa
 const schema = z.strictObject({
   conception: z.string().optional(),
   coque: z.string().optional(),
+  equipage: z.number().int().min(0).max(100000).optional(),
   choix: z.array(z.strictObject({
     nature: z.enum(NATURES_DE_LIGNE), nom: z.string(), quantite: z.number().int().min(1).max(99).optional(),
   })).max(100).optional(),
@@ -31,14 +32,14 @@ export function outilVaisseau({ db, acteur, universId }: ContexteOutil): Outil[]
   };
   return [{
     nom: 'swn_vaisseau_calculer',
-    description: "Calcule un vaisseau : soit `conception` (le titre d'une conception lisible : son résultat enregistré et ses alertes), soit `coque` (nom) et `choix` (`nature` : moteurs, amenagements, defenses, armes ou modifications, `nom`, `quantite` facultative) : prix, budgets, chantier, alertes. N'écrit rien.",
+    description: "Calcule un vaisseau : soit `conception` (le titre d'une conception lisible : son résultat enregistré et ses alertes), soit `coque` (nom) et `choix` (`nature` : moteurs, amenagements, defenses, armes ou modifications, `nom`, `quantite` facultative) et `equipage` facultatif (entier, le minimum de la coque par défaut) : vitesse, armure, équipage, prix, budgets, chantier, alertes. N'écrit rien.",
     schema,
     // The services are loaded at the call: a static import closes a cycle (see `index.ts`).
     async executer(args): Promise<Resultat> {
       const p = schema.safeParse(args ?? {});
       if (!p.success) return { ok: false, erreur: 'Paramètres invalides.' };
-      const { conception, coque, choix } = p.data;
-      if ((conception !== undefined) === (coque !== undefined) || (conception !== undefined && choix !== undefined)) return PRECISER;
+      const { conception, coque, choix, equipage } = p.data;
+      if ((conception !== undefined) === (coque !== undefined) || (conception !== undefined && (choix !== undefined || equipage !== undefined))) return PRECISER;
       const { resoudreElements } = await import('../../services/catalogues.js');
       const { calculerDepuisChoix, OUTIL_VAISSEAUX } = await import('../../services/swn/calcul-vaisseau.js');
       const { lireConception, listerConceptions } = await import('../../services/swn/conceptions.js');
@@ -57,7 +58,7 @@ export function outilVaisseau({ db, acteur, universId }: ContexteOutil): Outil[]
           if (typeof cle !== 'string') return cle;
           lignes.push({ nature: l.nature, cle, quantite: l.quantite ?? 1 });
         }
-        return { ok: true, donnees: calculerDepuisChoix(db, acteur, universId, { coque: c, choix: lignes }) };
+        return { ok: true, donnees: calculerDepuisChoix(db, acteur, universId, { coque: c, choix: lignes, equipage }) };
       } catch (e) {
         if (!(e instanceof ErreurService)) throw e;
         return e.code === 'introuvable' ? INTROUVABLE : { ok: false, erreur: e.message };
