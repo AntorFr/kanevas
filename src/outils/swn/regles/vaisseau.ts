@@ -23,6 +23,11 @@ export interface CoqueResolue {
   facteur_cout: number
   facteur_puissance: number
   facteur_masse: number
+  /** Stated by the catalogue only (F-1); absent = not stated. */
+  vitesse?: number
+  armure?: number
+  equipage_min?: number
+  equipage_max?: number
 }
 
 export interface ElementResolu {
@@ -43,6 +48,14 @@ export interface ElementResolu {
   cout_munition?: number
   /** Weapons only: the smallest hull class the weapon is made for; munitions double per class above it (E-2). Absent: never multiplied. */
   classe_min?: number
+  /** Stated by the catalogue only (F-1); absent = not stated. `classe_min` above is also the weapon's own (E-2). */
+  classe_max?: number
+  condition?: string
+  bonus_vitesse?: number
+  degats?: string
+  perforation?: number
+  qualites?: string
+  niveau_tech?: number
 }
 
 export interface LigneResolue {
