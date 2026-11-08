@@ -27,6 +27,10 @@ export interface Resultat {
   chantierJours: number;
   entretien: number;
   porteeSaut: number | null;
+  /** Absent in a result stored before B-82: read as `null`. */
+  vitesse?: number | null;
+  armure?: number | null;
+  equipage?: { choisi: number; min: number | null; max: number | null } | null;
   alertes: Alerte[];
 }
 
@@ -77,6 +81,14 @@ export interface ElementCatalogue {
   origine?: string;
   masque?: boolean;
   univers?: true;
+  /** The fields the catalogue states (null omitted); read by the player and, since B-82, by the GM. */
+  donnees?: Donnees;
+}
+
+export interface Donnees {
+  classe_min?: number; classe_max?: number; condition?: string; bonus_vitesse?: number;
+  vitesse?: number; armure?: number; equipage_min?: number; equipage_max?: number;
+  degats?: string; perforation?: number; qualites?: string; niveau_tech?: number;
 }
 
 export interface PageCatalogue {
@@ -88,6 +100,8 @@ export interface PageCatalogue {
 export interface Brouillon {
   coque: { cle: string; nom: string };
   lignes: Ligne[];
+  /** The crew typed or stepped; `null` = not chosen, the server takes the hull's minimum (F-2). */
+  equipage: number | null;
 }
 
 export const NATURES: { nature: Nature; titre: string; singulier: string; ajout: string }[] = [
