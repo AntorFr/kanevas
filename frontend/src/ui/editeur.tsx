@@ -98,6 +98,9 @@ export function EditeurMarkdown({ etiquette, valeur, onChange, max, rows = 8, au
   // « Image » (E-taille-1): whether the caret stands in an image reference, and the reference frozen when the menu opened.
   const [surImage, setSurImage] = useState(false);
   const [imageFigee, setImageFigee] = useState<number>();
+  // The caret as it stood when the menu opened: put back after a write (a controlled field sends it to the end), focus untouched.
+  const caretFige = useRef<number | undefined>(undefined);
+  const caretARendre = useRef<number | undefined>(undefined);
   const reglageImage = imageFigee === undefined ? null : lireReglageImage(referenceImageEn(valeur, imageFigee)?.titre);
   const trop = depasse(valeur, max);
   const message = erreur ?? (trop && max !== undefined ? messageTropLong(max) : undefined);
@@ -109,6 +112,10 @@ export function EditeurMarkdown({ etiquette, valeur, onChange, max, rows = 8, au
 
   // Puts the selection back after a wrap re-rendered the field.
   useLayoutEffect(() => {
+    if (caretARendre.current !== undefined && champ.current) {
+      champ.current.setSelectionRange(caretARendre.current, caretARendre.current);
+      caretARendre.current = undefined;
+    }
     const s = selection.current;
     if (s && champ.current) {
       champ.current.focus();
@@ -204,14 +211,18 @@ export function EditeurMarkdown({ etiquette, valeur, onChange, max, rows = 8, au
 
   function ouvrirImage() {
     const c = champ.current;
-    setImageFigee(c ? referenceImageAuCurseur(valeurRef.current, c.selectionStart)?.debut : undefined);
+    const r = c ? referenceImageAuCurseur(valeurRef.current, c.selectionStart) : null;
+    setImageFigee(r?.debut);
+    caretFige.current = c?.selectionStart;
   }
 
   /** Writes the title at the frozen position, the field's selection untouched. */
   function reglerImage(reglage: ReturnType<typeof lireReglageImage>) {
     if (imageFigee === undefined) return;
     const r = ecrireReglageImage(valeurRef.current, imageFigee, reglage);
-    if (r.texte !== valeurRef.current) onChange(r.texte);
+    if (r.texte === valeurRef.current) return;
+    caretARendre.current = Math.min(caretFige.current ?? r.fin, r.fin);
+    onChange(r.texte);
   }
 
   const optionImage = (libelle: string, icone: typeof Square, actif: boolean, onChoisir: () => void, tailleIcone?: number) => ({ libelle, icone, actif, onChoisir, tailleIcone });
