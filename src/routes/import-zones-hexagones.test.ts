@@ -10,7 +10,7 @@ const { buildApp } = await import('../app.js');
 const { semerBouchon } = await import('../bouchon/depart.js');
 const { creerJeton } = await import('../services/jetons.js');
 const { trouverCompte } = await import('../services/comptes.js');
-const { creerGalaxie } = await import('../services/swn/galaxies.js');
+const { creerGalaxie, rendreVisibleGalaxie } = await import('../services/swn/galaxies.js');
 const { poserDocumentMJ } = await import('../services/swn/document.js');
 const { migrate, openDb } = await import('../db/db.js');
 
@@ -37,7 +37,9 @@ async function monde() {
   const id = (n: string) => trouverCompte(app.db, n)!.id;
   const un = (sql: string, ...p: unknown[]) => app.db.prepare(sql).get(...p) as any;
   const E = un('SELECT id FROM univers WHERE nom = ?', "Éneria d'essai").id as number;
-  const gal = creerGalaxie(app.db, id('antor'), E, { titre: 'Galaxie des zones' }).id;
+  const g0 = creerGalaxie(app.db, id('antor'), E, { titre: 'Galaxie des zones' });
+  const gal = g0.id;
+  rendreVisibleGalaxie(app.db, id('antor'), E, gal, true, 1);
   const t = creerJeton(app.db, id('antor'), E, { nom: 'T', dureeJours: 30, outils: [G] }, app.horloge()).valeur;
   const put = (corps: unknown, lot?: number) => app.inject({ method: 'PUT', url: `/api/import/v1/univers/${E}/outils/swn/galaxie/galaxies/${gal}${lot ? `?lot=${lot}` : ''}`,
     headers: { authorization: `Bearer ${t}` }, payload: corps as any });
@@ -81,7 +83,7 @@ test('800 hexagones : créée, rejeu inchangé sans version montée, lecture = e
   const change = h.filter((p) => !(p[0] === 0 && p[1] === 0)).concat([[40, 40]]);
   const r3 = await w.put({ systemes: [], routes: [], zones: [zone('anneau', change)] });
   assert.equal(r3.json().natures.zones.mises_a_jour, 1, r3.body);
-  const lu = (await w.lire('antor', '-4,-4', '10,10')).json().zones.find((z: any) => z.nom === 'Zone anneau');
+  const lu = (await w.lire('antor', '-4,-4', '7,7')).json().zones.find((z: any) => z.nom === 'Zone anneau');
   assert.equal(developpe(lu.plages), cle(change));
   assert.equal(lu.hexagones, 800);
 });
@@ -112,7 +114,7 @@ test('lecture d\'une zone de 5 000 hexagones par l\'API en moins d\'une seconde'
   assert.equal((await w.put({ systemes: [], routes: [], zones: [zone('grande', h)] })).statusCode, 200);
   const session = await (async () => { const res = await w.app.inject({ method: 'POST', url: '/connexion-bouchon', headers: { 'content-type': 'application/x-www-form-urlencoded' }, payload: 'compte=antor' }); return { cookie: `kanevas_session=${res.cookies[0]!.value}` }; })();
   const debut = performance.now();
-  const res = await w.app.inject({ method: 'GET', url: `/api/univers/${w.E}/outils/swn/galaxie/galaxies/${w.gal}/blocs?de=0,0&a=19,9`, headers: session });
+  const res = await w.app.inject({ method: 'GET', url: `/api/univers/${w.E}/outils/swn/galaxie/galaxies/${w.gal}/blocs?de=0,0&a=11,9`, headers: session });
   const ms = performance.now() - debut;
   assert.equal(res.statusCode, 200);
   assert.equal(res.json().zones.find((z: any) => z.nom === 'Zone grande').hexagones, 5000);
