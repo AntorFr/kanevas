@@ -189,6 +189,7 @@ test('migration depuis 0013 : la recherche du titre existant trouve toujours la 
   // The designs' reads also go through the aliases and labels of 0014 (plain scratch tables, no triggers).
   db.exec('CREATE TABLE fiche_alias (fiche_id, alias); CREATE TABLE etiquettes (id INTEGER PRIMARY KEY, univers_id, nom, cree_le); CREATE TABLE fiche_etiquettes (fiche_id, etiquette_id)');
   db.exec(scratch);
+  db.exec('ALTER TABLE swn_conceptions ADD COLUMN equipage INTEGER'); // 0030: the seed writes it
   db.exec('ALTER TABLE swn_catalogue_armes ADD COLUMN classe_min INTEGER'); // 0028: the seed writes it
   // 0029: the seed writes the optional columns of the catalogue too.
   for (const [t, cs] of Object.entries({ coques: ['vitesse', 'armure', 'equipage_min', 'equipage_max'], moteurs: ['classe_min', 'classe_max', 'condition'],
@@ -204,7 +205,7 @@ test('migration depuis 0013 : la recherche du titre existant trouve toujours la 
   db.exec('DROP TABLE fichiers_attente; DROP TABLE fichiers_sections; DROP TABLE fichiers; ALTER TABLE fiches DROP COLUMN illustration_fichier_id; ALTER TABLE systemes_jeu DROP COLUMN responsable_id');
   const avant = db.prepare('SELECT id, titre FROM fiches ORDER BY id').all() as { id: number; titre: string }[];
   assert.ok(avant.length >= 5);
-  assert.deepEqual(migrate(db), [14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29]);
+  assert.deepEqual(migrate(db), [14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30]);
   for (const f of avant) {
     const mot = f.titre.split(/[^\p{L}\p{N}]+/u)[0]!;
     const ids = (db.prepare('SELECT rowid FROM recherche_fiches WHERE recherche_fiches MATCH ?').all(`titre:${mot}*`) as Any[]).map((r) => r.rowid);

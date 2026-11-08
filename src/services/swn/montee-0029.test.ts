@@ -25,11 +25,12 @@ test('0029 : montée depuis 0028 avec le semis, comptes inchangés, colonnes nou
   migrate(db, dir + '/');
   // Le semis écrit les colonnes de 0029 : bouchons le temps du semis.
   const stub = (v: 'ADD COLUMN' | 'DROP COLUMN') => { for (const [t, cs] of Object.entries(NOUVELLES)) for (const c of cs) db.exec(`ALTER TABLE swn_catalogue_${t} ${v} ${c}${v === 'ADD COLUMN' ? ' INTEGER' : ''}`); };
-  stub('ADD COLUMN'); semerBouchon(db); stub('DROP COLUMN');
+  stub('ADD COLUMN'); db.exec('ALTER TABLE swn_conceptions ADD COLUMN equipage INTEGER'); // 0030, written by the seed
+  semerBouchon(db); db.exec('ALTER TABLE swn_conceptions DROP COLUMN equipage'); stub('DROP COLUMN');
   const comptes = () => TABLES.map((t) => (db.prepare(`SELECT COUNT(*) n FROM swn_catalogue_${t}`).get() as any).n as number);
   const avant = comptes();
   assert.ok(avant.every((n) => n > 0));
-  assert.deepEqual(migrate(db), [29]);
+  assert.deepEqual(migrate(db), [29, 30]);
   assert.deepEqual(comptes(), avant);
   assert.deepEqual(db.pragma('foreign_key_check'), []);
   for (const [t, cs] of Object.entries(NOUVELLES)) for (const c of cs) {

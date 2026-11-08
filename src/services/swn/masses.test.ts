@@ -141,7 +141,9 @@ test('montée : un élément de masse 8 (semis) reste lisible et inchangé, comp
     for (const [t, cols] of Object.entries(AJOUTS)) for (const c of cols) db.exec(`ALTER TABLE swn_catalogue_${t} ${verbe} ${c}${verbe === 'ADD COLUMN' ? ' INTEGER' : ''}`);
   };
   stub('ADD COLUMN');
+  db.exec('ALTER TABLE swn_conceptions ADD COLUMN equipage INTEGER'); // 0030, written by the seed
   semerBouchon(db);
+  db.exec('ALTER TABLE swn_conceptions DROP COLUMN equipage');
   stub('DROP COLUMN');
   // 0028 adds `classe_min` to the weapons: the rows are compared without it, which is checked apart below.
   const snap = () => TABLES.map((t) => (db.prepare(`SELECT * FROM swn_catalogue_${t} ORDER BY rowid`).all() as any[]).map(({ classe_min, vitesse, armure, equipage_min, equipage_max, classe_max, condition, bonus_vitesse, degats, perforation, qualites, niveau_tech, equipage, ...r }) => r));
