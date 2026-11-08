@@ -146,6 +146,13 @@ Forme de la skill `exigences` ; chaque besoin cite les parcours qui le réalisen
   L'illustration suit la même double garde (la fiche et l'image). *(P-12, P-16 ; décisions de Monsieur
   du 2026-10-11)*
 
+- **B-taille-1** — *(`kanevas-taille-images`)* When a GM who may write a section has an image in its text
+  (`![…](fichier:N)`, E-9), they can set its **size** (small, medium, large) and its **placement**
+  (left or right with the text wrapping it, or centred without wrapping) from the editor's « Image » button;
+  in reading, the image shows at that size and placement, on desktop and on a phone where it stays a
+  readable centred block; an image with no setting shows as before. The setting is the image's Markdown
+  title (`"moyen-droite"`), so the import and the export carry it as text. *(P-12)*
+
 ### Import et accès par API (`kanevas-import`)
 - **B-45** — Un MJ crée un **jeton d'API** pour son univers depuis « Accès par API » (E-18) : un nom,
   une durée (30 jours par défaut, un an au plus) ; Kanevas le montre **une seule fois** ; le jeton agit
@@ -718,6 +725,8 @@ recherche, ni dans le compte.
 
 ## Hors périmètre
 
+- *(kanevas-taille-images)* **A free size in pixels, cropping, a caption and a gallery** for the images of a
+  text: three standard sizes and three placements cover the need; reopened if a GM asks for more.
 - **Jeu en direct** : pas d'initiative, de combat animé, de brouillard de guerre ; la table reste
   physique.
 - *(kanevas-scenarios)* **A calendar of sessions** (dates, who was there) and a **play log per
