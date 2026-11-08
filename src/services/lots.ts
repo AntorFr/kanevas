@@ -65,7 +65,7 @@ function natureDeclaree(cle: string): { outil: { cle: string; libelle: string };
     const d = declarationOutil(cle);
     return {
       outil: { cle, libelle: d.libelle },
-      natures: (d.catalogue?.natures ?? d.importation?.natures ?? []).map(({ nom, libellePluriel }) => ({ nom, libelle: libellePluriel })),
+      natures: [...(d.catalogue?.natures ?? []), ...(d.importation?.natures ?? [])].map(({ nom, libellePluriel }) => ({ nom, libelle: libellePluriel })),
     };
   } catch {
     return null;

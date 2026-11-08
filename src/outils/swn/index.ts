@@ -4,6 +4,7 @@ import { apresEcriture, produire, versionSource } from '../../services/swn/secti
 import { apresEcritureRegles, produireRegles, versionSourceRegles } from '../../services/swn/regles-hooks.js';
 import { produireDocument, versionSourceDocument } from '../../services/swn/document-source.js';
 import { importerGalaxie, NATURES_GALAXIE } from '../../services/swn/import-galaxie.js';
+import { NATURES_CONCEPTIONS } from '../../services/swn/natures-conceptions.js';
 import { donneesGalaxie, donneesVaisseaux } from '../../services/swn/donnees-outils.js';
 import { outilTrajet } from './assistant.js';
 import { outilVaisseau } from './assistant-vaisseaux.js';
@@ -48,6 +49,8 @@ export const swnVaisseaux: DeclarationGenerateur = {
   usages: [{ nom: 'concevoir', mjSeul: false }, { nom: 'creer', mjSeul: true }, { nom: 'generer', mjSeul: true }],
   reglages: {},
   catalogue: catalogueVaisseaux,
+  // The route applies the file (`import-conceptions-lot.ts`): it needs the sheet services, which this declaration cannot import (M-1).
+  importation: { natures: NATURES_CONCEPTIONS },
   donnees: donneesVaisseaux,
   ecran: { libelle: 'Concepteur de vaisseaux', icone: 'Rocket' },
   outilsAssistant: outilVaisseau,

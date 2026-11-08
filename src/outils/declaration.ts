@@ -71,7 +71,8 @@ export interface DonneesOutil {
 /** A tool a script pushes data into without a catalogue (T-9): the natures key the batch's counters. */
 export interface DeclarationImportation {
   natures: { nom: string; libelle: string; libellePluriel: string }[];
-  appliquer(db: Db, acteur: Acteur, universId: number, cibleId: number, corps: unknown): unknown;
+  /** Absent when the tool's route applies the file itself (the ship designer, M-1: its services close a cycle with the registry). */
+  appliquer?(db: Db, acteur: Acteur, universId: number, cibleId: number, corps: unknown): unknown;
 }
 interface BaseOutil {
   cle: string;
@@ -192,7 +193,7 @@ const declaration = z.strictObject({
     importation: z.strictObject({
       natures: z.array(z.strictObject({ nom: z.string().regex(/^[a-z][a-z0-9_-]*$/),
         libelle: z.string().min(1), libellePluriel: z.string().min(1) })).min(1),
-      appliquer: fonction,
+      appliquer: fonction.optional(),
     }).optional(),
     reglages, outilsAssistant: fonction.optional(), cartes: fonction.optional(),
     creation: z.strictObject({ libelle: z.string().min(1), creer: fonction, rendreVisible: fonction }).optional(),
@@ -243,7 +244,7 @@ export function verifierDeclaration(module: DeclarationModule): void {
       }
     }
     if (outil.importation) {
-      const noms = outil.importation.natures.map((n) => n.nom);
+      const noms = [...(outil.catalogue?.natures ?? []), ...outil.importation.natures].map((n) => n.nom);
       if (new Set(noms).size !== noms.length) throw new Error('Duplicate importation nature.');
     }
     verifierReglages(outil.reglages);
