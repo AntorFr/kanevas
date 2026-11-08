@@ -446,7 +446,9 @@ Format from the `exigences` skill; each need cites the journeys that fulfill it.
   (B-65); current tools remain usable until switchover. None of that data — SWN
   catalogues, rule sheets, expected values calculated from them — enters the public repository.
   **Nothing is left out of the conversion for want of a format** (decision of 2026-11-05): when the
-  data says something the format cannot, the format grows (B-80, B-81) before the conversion. *(P-20)*
+  data says something the format cannot, the format grows (B-80 to B-84) before the conversion. Decision of 2026-11-08: the SWN tool replaces the
+  prototype, so it carries **all** of its rules; the elements the conversion first listed as not converted
+  all enter the format. *(P-20)*
 - **B-80** — A **mass** — a hull's or an element's, in the catalogue — is a number, not only an
   integer: a multiple of 0.5 (the workshop weighs 0.5 × the hull class: 0.5, 1, 1.5…). Free mass,
   the sum of the lines and the alerts stay exact; the screens show the decimal with a comma. *(P-19, P-20)*
@@ -454,6 +456,23 @@ Format from the `exigences` skill; each need cites the journeys that fulfill it.
   « Privée »…, 40 characters at most), set by the GM and imported with the route. It is shown beside the
   route on the map and in the route's panel, to whoever can read the route (a private route is
   absent for a player, label included). A route without label is as before. *(P-18, P-20)*
+- **B-82** — A **hull** and an **element** of the ship catalogue say everything the book's tables say about them,
+  not only what the first workshop computed. A hull has a **speed**, an **armour** and a **minimum and a maximum crew**;
+  an element (accommodation, defence, engine) may have a **smallest hull class** and a **largest hull class** it fits,
+  and a text **condition** on its cost or technology; a defence may add a speed bonus; a weapon has its **damage**,
+  **armour piercing**, **qualities** and **technology level**; an example design carries its **crew**. The
+  workshop shows them, alerts when a design leaves them (a hull too small for an element, a crew under the hull's
+  minimum or over what life support holds) and keeps them in the rule sheets. A catalogue without these fields keeps
+  working as before. *(P-19, P-20)*
+- **B-83** — A **modification** may cost a **percentage of the hull** (not only a fixed amount) and carries an **effect
+  in play** the workshop applies to the result: a change of speed or armour, an exchange between power and mass, a
+  doubling of cargo or magazines, a minimum repair skill. The **system engine** is the same kind of rule: an
+  accommodation that replaces the hull's engine and gives back power and mass according to the hull class. These effects are
+  **data of the catalogue, chosen among a closed list of effects the module knows** — never a formula or code
+  carried by the data. A catalogue without them keeps working as before. *(P-19, P-20)*
+- **B-84** — A **zone** of the galaxy map may cover any set of hexagons, however large (hundreds to thousands), not only
+  what a simple outline of 64 vertices says exactly. It is drawn, imported, listed and read like any zone; a
+  player sees it only if it is public (B-73). Zones already stored are unchanged. *(P-18, P-20)*
 
 ### Cross-cutting
 - **B-28** — Every page requires sign-in; no content is served without an account, and
@@ -1034,7 +1053,7 @@ Done on 2026-10-16 on the proposal (`cadrage` skill, step 6).
 
 | Cross-check | Result |
 |---|---|
-| Each need has a journey | B-57 P-17 · B-58 P-17, P-21 · B-59 P-17, P-18 · B-60 P-17 · B-61 P-17 · B-62 P-17, P-19 · B-63 P-21 · B-64 P-18, P-19 · B-65 P-20 · B-66 P-19 · B-67 P-19 · B-68 P-18, P-19 · B-69 P-18, P-19 · B-70 P-18, P-19 · B-71 P-18 · B-72 P-18 · B-73 P-18 · B-74 P-18 · B-75 P-19 · B-76 P-19 · B-77 P-19 · B-78 P-18, P-19, P-20 · B-79 P-20 · B-80 P-19, P-20 · B-81 P-18, P-20 — **holds**. |
+| Each need has a journey | B-57 P-17 · B-58 P-17, P-21 · B-59 P-17, P-18 · B-60 P-17 · B-61 P-17 · B-62 P-17, P-19 · B-63 P-21 · B-64 P-18, P-19 · B-65 P-20 · B-66 P-19 · B-67 P-19 · B-68 P-18, P-19 · B-69 P-18, P-19 · B-70 P-18, P-19 · B-71 P-18 · B-72 P-18 · B-73 P-18 · B-74 P-18 · B-75 P-19 · B-76 P-19 · B-77 P-19 · B-78 P-18, P-19, P-20 · B-79 P-20 · B-80 P-19, P-20 · B-81 P-18, P-20 · B-82 P-19, P-20 · B-83 P-19, P-20 · B-84 P-18, P-20 — **holds**. |
 | Each human action in a journey has a screen | P-17: E-15, E-20, E-14 · P-18: E-10, E-21, E-9 (GM document) · P-19: E-8/E-9, E-22 · P-20: the script (outside the product, like Kanka import); its result is read on E-18; real tests are in the private repository · P-21: E-20 — **holds**, with one action without a screen: conversion and replay (Monsieur's decision). |
 | Each screen has its data | E-20: `outils_systeme`, `outils_univers`, owner, catalogues (version, counts) · E-21: `swn_systemes`, `swn_routes`, `swn_zones`, generated blocks (not stored), seed · E-22: `swn_conceptions`, catalogues, `sections.gere_par` · E-9: `gere_par`, `source_version` — **holds**. |
 | Each entity serves a journey | tool setting P-17, P-21 · owner P-17 · managed section P-19 · token scope P-20 · catalogues P-17, P-19 · placed systems, routes, zones P-18 · design P-19 — **holds**. |
