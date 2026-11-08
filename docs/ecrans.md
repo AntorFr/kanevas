@@ -2036,6 +2036,36 @@ section, à sa place dans le texte ; en mode Joueur et pour tout autre lecteur, 
 blanc, pas de filet, le paragraphe suivant suit le précédent. Un tableau large défile dans son cadre
 au téléphone, jamais la page.
 
+### Image size and placement in a text (`kanevas-taille-images`, B-taille-1, AD-taille-1, E-taille-1)
+
+**Notation.** The image's own Markdown *title*: `![alt](fichier:12 "moyen-droite")`. The title is
+`<size>-<placement>` with size in `petit`, `moyen`, `grand` and placement in `gauche`, `droite`,
+`centre`, written exactly so (lowercase, one hyphen). Anything else in the title — a real tooltip, a
+typo, a size alone — is **not a setting**: the image shows as it does today and the text is left
+untouched. No title: the image shows as today (full column width of its natural size, in the flow).
+The address stays `fichier:<id>`, so the references, the import's `fichier:cle:` rewriting, the export
+and the assistant's `[…](fichier:<id>)` form carry the setting as plain text.
+
+**Reading.** A set image is `<img class="img-<size> img-<placement>">`: `gauche` / `droite` float the image
+to that side, the paragraph text wraps it with a `--e-4` gap; `centre` is a block centred between two
+paragraphs' flow, no wrap. Widths, as a share of the text column, capped by the file's natural width
+(an image is never enlarged): `petit` 25 %, `moyen` 40 %, `grand` 60 %. **Phone** (≤ 760 px, the width
+the charte already uses for `.md`): no float — every placement becomes a centred block, `petit` 40 %,
+`moyen` 70 %, `grand` 100 %, so text stays one readable column. A float never leaks out of its section
+(the `.md` container clears it). Closed, deleted and waiting references keep their frames; a setting
+on them is ignored. Only in a **section** or a compte-rendu (scenarios and system entries do not
+interpret `fichier:`, see above).
+
+**Editor (E-taille-1).** In « Écrire », the caret inside an `![…](fichier:N…)` reference enables the
+toolbar button « Image » (icon `image`); it opens a small panel (same panel family as the toolbar's
+other pickers — verdict of the design-system guardian below) with two single-choice groups,
+« Taille » (Petit, Moyen, Grand) and « Placement » (À gauche, À droite, Centrée), and a « Sans
+réglage » action. Choosing writes the title in the text at once (both groups needed: the first choice
+completes the other with `moyen` / `centre`); « Sans réglage » removes it. Keyboard: arrows inside
+a group, Échap closes. The text stays the single source: the panel reads the title back from the
+reference at the caret, so a hand-typed setting shows selected. « Aperçu » renders it as in reading.
+Who may write the text sees the button; a reader never gets the editor.
+
 ### Le Markdown — ce que `kanevas-import-markdown` construit (E-9, E-7, E-15, E-12)
 
 > *Since `kanevas-scenarios-suivi`, E-7 no longer exists: what this passage says about a scenario's text applies to its section on E-9 (a sheet of type « Aventure »), and what it says about E-6 applies to the « Comptes-rendus » block of E-9.*
