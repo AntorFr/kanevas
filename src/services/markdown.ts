@@ -141,6 +141,8 @@ export interface OptionsRendu {
   fichiers?: ResolveurFichiers;
   /** How a `fichier:cle:<clé>` reference (a file the import has not delivered yet) reads for the reader (E-9). */
   fichiersEnAttente?: ResolveurFichiersEnAttente;
+  /** Image settings (AD-taille-2): default true for `nature: 'section'` only; a section's public text sets it too. */
+  reglagesImage?: boolean;
 }
 
 /** What a link reads as for one reader (AD-116): decided by the target, never by the `liens` table. */
@@ -184,7 +186,7 @@ interface EnvRendu {
 
 export function rendreMarkdown(source: string, options: OptionsRendu = {}): string {
   const md = options.nature === 'section' ? mdSection : options.nature === 'scenario' ? mdScenario : mdTexte;
-  const env: EnvRendu = { liens: options.liens, formeLiens: options.formeLiens, fichiers: options.fichiers, fichiersEnAttente: options.fichiersEnAttente, reglagesImage: options.nature === 'section' };
+  const env: EnvRendu = { liens: options.liens, formeLiens: options.formeLiens, fichiers: options.fichiers, fichiersEnAttente: options.fichiersEnAttente, reglagesImage: options.reglagesImage ?? options.nature === 'section' };
   return md.render(source, env as Record<string, unknown>);
 }
 
@@ -582,5 +584,5 @@ export function rendreApercu(
   if (mj === null) return rendreMarkdown(source, { nature, liens });
   return mj
     ? rendreMarkdown(source, { nature: 'section', liens })
-    : rendreMarkdown(contenuPublic(source), { nature: 'scenario', liens });
+    : rendreMarkdown(contenuPublic(source), { nature: 'scenario', liens, reglagesImage: true });
 }

@@ -205,6 +205,7 @@ export function rendreSection(
   const source = lecteurMJ ? s.contenu : s.contenu_public;
   return rendreMarkdown(source, {
     nature: lecteurMJ ? 'section' : 'scenario',
+    reglagesImage: true,
     liens: resolveurLiens(db, universId, role, acteur, source),
     fichiers: resolveurFichiers(db, universId, role, acteur, source),
     fichiersEnAttente: resolveurFichiersEnAttente(role, acteur),
