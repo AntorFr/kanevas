@@ -228,4 +228,33 @@ describe('B-82 · E-22 : l’atelier dit vitesse, armure et équipage', { skip: 
       assert.ok(b.width >= 44 && b.height >= 44, `44 px target, got ${b.width}x${b.height}`);
     }
   });
+
+  // Sheet: the « Classe » mark shows « beside its name ». Failure if the mark sits away from the name line (after the whole text block).
+  for (const largeur of [1280, 390]) {
+    it(`${largeur} px : la marque « Classe » est à côté du nom de l’élément, sur la même ligne, à moins de 24 px`, async () => {
+      const m = await monde(true);
+      await m.poser(m.etoile, { coque: 'croiseur-r', choix: [{ nature: 'amenagements', cle: 'hangar', quantite: 1 }] });
+      const p = await ouvrir(m, 'Léa', m.etoile, largeur);
+      await p.getByText(/Hangar d'essai/).first().waitFor();
+      await p.getByRole('button', { name: 'Changer de coque' }).click();
+      await p.locator('li').filter({ hasText: 'Frégate R' }).last().getByRole('button').first().click();
+      await p.getByText("« Hangar d'essai » : classe de coque 3 au moins.").first().waitFor();
+      const ligne = p.locator('li').filter({ hasText: "Hangar d'essai" }).last();
+      const g = await ligne.evaluate(new Function('li', `
+        const rectDe = function (txt) {
+          const w = document.createTreeWalker(li, NodeFilter.SHOW_TEXT);
+          for (let n = w.nextNode(); n; n = w.nextNode()) {
+            if ((n.textContent || '').trim() === txt) { const r = document.createRange(); r.selectNodeContents(n); const b = r.getBoundingClientRect(); return { l: b.left, r: b.right, t: b.top, b: b.bottom }; }
+          }
+          return null;
+        };
+        return { nom: rectDe("Hangar d'essai"), marque: rectDe('Classe') };
+      `) as Any);
+      assert.ok(g.nom && g.marque, JSON.stringify(g));
+      const cy = (g.marque.t + g.marque.b) / 2;
+      assert.ok(cy >= g.nom.t - 2 && cy <= g.nom.b + 2, `mark on the name line: mark y ${cy}, name ${g.nom.t}..${g.nom.b}`);
+      assert.ok(g.marque.l - g.nom.r >= 0 && g.marque.l - g.nom.r <= 24, `mark within 24 px right of the name, gap ${g.marque.l - g.nom.r}`);
+      await p.screenshot({ path: `${SHOTS}-marque-classe-${largeur}.png`, fullPage: true });
+    });
+  }
 });
