@@ -1,6 +1,8 @@
 # Status — kanevas
 
 > MàJ : 2026-11-09 (assemblage de `rouge-kanevas-5` : le bloc « Fiches liées » attend les types avant d'afficher ses groupes ; tests seuls pour le reste)
+> MàJ : 2026-11-09 (assemblage de `rouge-kanevas-11` : deux e2e instables sous charge corrigés côté procédé de test, produit inchangé)
+> MàJ : 2026-11-09 (assemblage de `rouge-kanevas-4` : trois fichiers e2e attendent l'effet de l'action avant de lire l'instantané — filtre « En cours » des aventures, bloc « Fiches liées », filtre « Taverne » des types ; tests seuls, produit inchangé)
 > MàJ : 2026-11-09 (assemblage de `rouge-kanevas-6` : le test e2e « Antor ajoute un PDF depuis E-19 » attend la tuile `regles-guilde.pdf` remontée après chaque changement de filtre, le squelette de chargement démontant la grille ; test seul, produit inchangé)
 > MàJ : 2026-11-09 (assemblage de `rouge-kanevas-3` : doc remise d'accord avec `main` — epic des fiches liées livrée, entrée « Campagnes » retirée de docs/ecrans.md ; le test de la marque « Mort » des Corvalis attend la réponse du `PATCH` avant de quitter la fiche, et le bloc « Fiches liées » des e2e attend les libellés de type avant de lire les titres de groupe ; tests seuls, produit inchangé)
 > MàJ : 2026-11-09 (assemblage de `rouge-kanevas-2` : trois tests e2e instables stabilisés, tests seuls, produit inchangé — médiathèque (filtres) : sonde le texte de `main` jusqu'à l'état attendu en entier au lieu d'attendre une tuile `detached` ; bloc « Fiches liées » en mode Joueur : attend le groupe « S'y trouvent » et son titre avant de lire ; filtre Statut d'E-8 : attend la disparition de l'arbre et d'« Acte II »)
@@ -32,6 +34,7 @@
 
 ## Reste
 
+- **`rouge-kanevas-11` (correctif, PR vers `main`)** : tests seuls, produit inchangé. `aventures-liste-critere.test.ts` (filtre « Statut » ▸ « En cours ») attend l'effet du filtre (arbre démonté, « La Couronne brisée » visible, « Acte II » absent) avant de lire la page, et après chaque `goto` à filtre ; `arbre-fiche-pied-alerte-bascule.test.ts` : `boite()` attend l'écran calme (`attendre`) avant d'ouvrir « Autres actions », puis `.actions` de la boîte « Déplacer sous… ». Aucune assertion relâchée, aucun délai fixe.
 - **`kanevas-icones` (PR vers `main`, non fusionnée)** : l'icône « Marge » est l'identité de Kanevas (AD-135). Sept fichiers dans `frontend/public/` (copies du pack `assets/brand/kanevas-marge/web/`, comparées par test), servis par `routes/session.ts` avant la garde, sans session ; `index.html` les déclare ; la barre hors univers montre `/favicon.svg` à la place du carré « K » (le sceau d'univers est inchangé). Ni service worker ni hors ligne. Les maquettes `docs/maquettes/` dessinent encore le « K » : la charte prime. Reste à Monsieur : voir l'onglet, l'écran d'accueil et l'installation sur un vrai navigateur/téléphone (recette).
 - Recette de Monsieur de l'epic `kanevas-scenarios`, si elle n'est pas faite (README : « Assistant creation recipe », « World update recipe », « Adventure recipe », « Sub-type recipe » (`kanevas-sous-type-dialogue`), « Import sample acceptance »).
 - Contrat final à signaler à Monsieur pour son script (discussion de l'epic) : plus de `PUT …/campagnes/:cle` ni `…/scenarios/:scle` ; tout passe par `PUT …/fiches/:cle` (`type: aventure`, `sousType`, `statut`, `parent`).
