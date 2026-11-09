@@ -97,6 +97,10 @@ async function blocPret(page: Any): Promise<Any> {
   const b = bloc(page);
   await b.waitFor();
   await b.getByText('Chargement…').waitFor({ state: 'detached' });
+  // The type labels load apart from the block: until they do, a group count shows the raw type key (« personnage (2) »).
+  await b.page().waitForFunction(
+    () => [...document.querySelectorAll('.groupe-liees .comptes')].every((c) => !/(^|, )[a-z_]+ \(\d+\)/.test(c.textContent ?? '')),
+  );
   return b;
 }
 const norm = (s: string): string => s.replace(/\s+/g, ' ').replace(/’/g, "'").trim();
