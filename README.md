@@ -68,7 +68,7 @@ reste désactivé (`/api/auth/oidc/login` répond 404). Pour l'activer, créer `
 aussi `node_modules/` dans le dépôt de l'hôte (ignoré par git) ; il appartient à root : à supprimer par
 `docker run --rm -v "$PWD":/src -w /src node:20-bookworm-slim rm -rf node_modules` ou `sudo rm -rf node_modules`.
 
-Ou, avec un Node 20+ installé localement (`engines` : `>=20` ; la suite passe aussi sous Node 22, la CI joue Node 20) :
+Ou, avec un Node 20+ installé localement (`engines` : `>=20` ; la suite passe aussi sous Node 22, la CI joue Node 20 ; `better-sqlite3` reste en `^12` parce que la 13 exige Node ≥ 22) :
 
 ```bash
 npm ci   # not `npm install`; run it to the end, also on a clone that already has a node_modules/
@@ -133,6 +133,8 @@ the original command with their id and token: the first-run counts must match. T
 token belongs to the deleted universe and cannot be reused for the new one.
 
 ### Sans Authelia : le mode bouchon
+
+Le « bouchon » (*stub*) est le mode `KANEVAS_STUB=1` : pas d'Authelia, des comptes de test et un script qui répond à la place du modèle. C'est la commande pour voir l'application ; le bloc `docker run … npm run dev` plus haut ne sert que l'API (`/healthz`).
 
 ```bash
 npm ci && npm run build && KANEVAS_STUB=1 npm start   # puis ouvrir http://localhost:3001/ : choix d'un compte de test

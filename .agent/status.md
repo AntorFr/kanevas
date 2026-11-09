@@ -1,6 +1,6 @@
 # Status — kanevas
 
-> MàJ : 2026-11-09 (assemblage de `rouge-kanevas-2` : test des filtres de la médiathèque stabilisé — il sonde le texte de `main` jusqu'à l'état attendu en entier au lieu d'attendre une tuile `detached` ; test seul, produit inchangé)
+> MàJ : 2026-11-09 (assemblage de `rouge-kanevas-2` : trois tests e2e instables stabilisés, tests seuls, produit inchangé — médiathèque (filtres) : sonde le texte de `main` jusqu'à l'état attendu en entier au lieu d'attendre une tuile `detached` ; bloc « Fiches liées » en mode Joueur : attend le groupe « S'y trouvent » et son titre avant de lire ; filtre Statut d'E-8 : attend la disparition de l'arbre et d'« Acte II »)
 > MàJ : 2026-11-09 (assemblage de `rouge-kanevas-1` : tests de Release par `gh` retirés, test de la médiathèque « fichier vide » stabilisé ; tests seuls, produit inchangé)
 > MàJ : 2026-11-02 (livraison de l'epic `kanevas-fiches-liees` vers `main` : `origin/main` fusionnée dans `epic/kanevas-fiches-liees`, AD-129 des natures décalé en AD-136, la numérotation 130 à 134 inchangée)
 > MàJ : 2026-11-01 (assemblage de `kanevas-connexion-claude-entree`, dernier paragraphe)
