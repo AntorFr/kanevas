@@ -466,11 +466,13 @@ describe('B-84 E-21 à l’écran', { skip: skipBrowser, timeout: 600000 }, () =
     const hexL = await reperes(lea.page);
     assert.equal(await sous(lea.page, hexL(0, 0), 'reserve'), false);
 
-    await antor.page.getByRole('button', { name: /Mode Joueur/ }).click();
+    await antor.page.getByRole('radio', { name: /Joueur/ }).click();
     await antor.page.locator('g.gx-zone[data-zone="reserve"]').waitFor({ state: 'detached' });
     assert.equal(await antor.page.getByText('Réserve privée').count(), 0);
-    assert.equal(await antor.page.locator('g.gx-zone').count(), 1, 'en mode Joueur, Antor voit comme Léa');
+    await systeme(antor.page, 'Vael').waitFor();
+    await antor.page.locator('g.gx-zone').first().waitFor();
     await antor.page.screenshot({ path: `${SHOTS}/1280-06-antor-joueur.png`, fullPage: true });
+    assert.equal(await antor.page.locator('g.gx-zone').count(), 1, 'en mode Joueur, Antor voit comme Léa');
   });
 
   it('mesure : 5 000 hexagones se dessinent en moins de deux secondes une fois la carte chargée', async () => {
