@@ -297,6 +297,7 @@ describe('kanevas-import-types : écrans', { skip: skipBrowser }, () => {
     await lea.page.getByLabel('Sous-type').selectOption({ label: 'Taverne (1)' });
     await attendre(lea.page);
     await lea.page.getByText('Le Pendu Joyeux').first().waitFor();
+    await lea.page.getByText('Val-Fortin').first().waitFor({ state: 'detached' });
     const t = await texte(lea.page);
     assert.doesNotMatch(t, /Val-Fortin/);
     assert.doesNotMatch(t, /Rue des Cordiers/);
