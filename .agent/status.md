@@ -1,5 +1,6 @@
 # Status — kanevas
 
+> MàJ : 2026-11-09 (assemblage de `rouge-kanevas-11` : deux e2e instables sous charge corrigés côté procédé de test, produit inchangé)
 > MàJ : 2026-11-09 (assemblage de `rouge-kanevas-3` : doc remise d'accord avec `main` — epic des fiches liées livrée, entrée « Campagnes » retirée de docs/ecrans.md ; le test de la marque « Mort » des Corvalis attend la réponse du `PATCH` avant de quitter la fiche, et le bloc « Fiches liées » des e2e attend les libellés de type avant de lire les titres de groupe ; tests seuls, produit inchangé)
 > MàJ : 2026-11-09 (assemblage de `rouge-kanevas-1` : tests de Release par `gh` retirés, test de la médiathèque « fichier vide » stabilisé ; tests seuls, produit inchangé)
 > MàJ : 2026-11-02 (livraison de l'epic `kanevas-fiches-liees` vers `main` : `origin/main` fusionnée dans `epic/kanevas-fiches-liees`, AD-129 des natures décalé en AD-136, la numérotation 130 à 134 inchangée)
@@ -29,6 +30,7 @@
 
 ## Reste
 
+- **`rouge-kanevas-11` (correctif, PR vers `main`)** : tests seuls, produit inchangé. `aventures-liste-critere.test.ts` (filtre « Statut » ▸ « En cours ») attend l'effet du filtre (arbre démonté, « La Couronne brisée » visible, « Acte II » absent) avant de lire la page, et après chaque `goto` à filtre ; `arbre-fiche-pied-alerte-bascule.test.ts` : `boite()` attend l'écran calme (`attendre`) avant d'ouvrir « Autres actions », puis `.actions` de la boîte « Déplacer sous… ». Aucune assertion relâchée, aucun délai fixe.
 - **`kanevas-icones` (PR vers `main`, non fusionnée)** : l'icône « Marge » est l'identité de Kanevas (AD-135). Sept fichiers dans `frontend/public/` (copies du pack `assets/brand/kanevas-marge/web/`, comparées par test), servis par `routes/session.ts` avant la garde, sans session ; `index.html` les déclare ; la barre hors univers montre `/favicon.svg` à la place du carré « K » (le sceau d'univers est inchangé). Ni service worker ni hors ligne. Les maquettes `docs/maquettes/` dessinent encore le « K » : la charte prime. Reste à Monsieur : voir l'onglet, l'écran d'accueil et l'installation sur un vrai navigateur/téléphone (recette).
 - Recette de Monsieur de l'epic `kanevas-scenarios`, si elle n'est pas faite (README : « Assistant creation recipe », « World update recipe », « Adventure recipe », « Sub-type recipe » (`kanevas-sous-type-dialogue`), « Import sample acceptance »).
 - Contrat final à signaler à Monsieur pour son script (discussion de l'epic) : plus de `PUT …/campagnes/:cle` ni `…/scenarios/:scle` ; tout passe par `PUT …/fiches/:cle` (`type: aventure`, `sousType`, `statut`, `parent`).
