@@ -97,6 +97,8 @@ async function blocPret(page: Any): Promise<Any> {
   const b = bloc(page);
   await b.waitFor();
   await b.getByText('Chargement…').waitFor({ state: 'detached' });
+  // « Chargement… » is also absent before the block posted it: wait for the loaded content (a line, or the failure)
+  await b.locator('li.ligne-liee').or(b.getByRole('alert')).first().waitFor();
   return b;
 }
 const norm = (s: string): string => s.replace(/\s+/g, ' ').replace(/’/g, "'").trim();
@@ -303,6 +305,7 @@ describe('kanevas-fiches-liees-bloc, le bloc « Fiches liées » (B-64)', { skip
     assert.equal((await lignes(b)).length, 5);
     await b.getByRole('button', { name: 'Afficher les 56' }).click();
     await b.getByRole('button', { name: /^Afficher les \d+ suivants$/ }).waitFor();
+    await b.locator('li.ligne-liee').nth(49).waitFor();
     const apres = (await lignes(b)).length;
     assert.ok(apres >= 50 && apres < 56, `une page de 50 de plus : ${apres} lignes`);
     const reste = 56 - apres;
