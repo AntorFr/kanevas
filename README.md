@@ -68,7 +68,7 @@ reste désactivé (`/api/auth/oidc/login` répond 404). Pour l'activer, créer `
 aussi `node_modules/` dans le dépôt de l'hôte (ignoré par git) ; il appartient à root : à supprimer par
 `docker run --rm -v "$PWD":/src -w /src node:20-bookworm-slim rm -rf node_modules` ou `sudo rm -rf node_modules`.
 
-Ou, avec un Node 20+ installé localement (`engines` : `>=20` ; la suite passe aussi sous Node 22, la CI joue Node 20) :
+Ou, avec un Node 20+ installé localement (`engines` : `>=20` ; la suite passe aussi sous Node 22, l'image Docker est en Node 20, aucun workflow ne joue la suite) :
 
 ```bash
 npm ci   # not `npm install`; run it to the end, also on a clone that already has a node_modules/
