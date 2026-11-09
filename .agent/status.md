@@ -1,6 +1,6 @@
 # Status — kanevas
 
-> MàJ : 2026-11-09 (assemblage de `rouge-kanevas-1` : tests de Release par `gh` retirés, test de la médiathèque « fichier vide » stabilisé ; tests seuls, produit inchangé)
+> MàJ : 2026-11-09 (assemblage de `rouge-kanevas-5` : le bloc « Fiches liées » attend les types avant d'afficher ses groupes ; avant : assemblage de `rouge-kanevas-1` : tests de Release par `gh` retirés, test de la médiathèque « fichier vide » stabilisé ; tests seuls, produit inchangé)
 > MàJ : 2026-11-02 (livraison de l'epic `kanevas-fiches-liees` vers `main` : `origin/main` fusionnée dans `epic/kanevas-fiches-liees`, AD-129 des natures décalé en AD-136, la numérotation 130 à 134 inchangée)
 > MàJ : 2026-11-01 (assemblage de `kanevas-connexion-claude-entree`, dernier paragraphe)
 > MàJ : 2026-10-31 (assemblage de `kanevas-deplacer-arborescence`, PR vers `main`)
