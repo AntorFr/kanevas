@@ -44,7 +44,7 @@
   `dist/public`, located by `routes/frontend.ts` and served by `routes/session.ts` behind the session guard (`@fastify/static` for
   `/assets/`, `index.html` as the fallback of any other GET); the seven brand files of `frontend/public` (`favicon.ico`, `favicon.svg`, `apple-touch-icon.png`, `icon-192.png`, `icon-512.png`, `icon-maskable-512.png`, `site.webmanifest`) are served before the guard, without a session (AD-135). A screen is one file
   `frontend/src/ecrans/<nom>.tsx` exporting an `Ecran` (`registre.ts`) — never edit the router or
-  the sidebar for the screens of a universe; sidebar items live in `items.ts` and show only when a registered screen answers
+  the sidebar for the screens of a universe; sidebar items live in `frontend/src/items.ts` and show only when a registered screen answers
   their address. The two outside-universe links (« Mes univers », « Systèmes de jeu ») are fixed in
   `Barre.tsx` and the universe selector menu. Colours only through `frontend/src/ui/tokens.css` (`docs/charte.md`). Tests of the
   built-app routes set `FRONTEND_DIR` (under `NODE_ENV=test` no build is looked up otherwise).
