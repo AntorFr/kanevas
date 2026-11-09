@@ -556,10 +556,10 @@ a expiré — la ligne dit « Expiré », le script reçoit 401.
    lecture le texte de « Histoire » entoure l'image à droite ; sur le téléphone de Léa l'image est un
    bloc centré, lisible.
 *Moment fort* : la même fiche, lue par Antor puis par Léa — le secret n'est ni montré, ni trouvable,
-ni deviné. (L'étape 7 est un geste d'édition, hors de ce moment fort.)
+ni deviné. (Step 7 is an editing gesture, outside this key moment.)
 *Échec* : une image insérée ne se charge pas — « Image indisponible. » à sa place ; un lien vers une
 fiche supprimée — texte simple pour Léa, « lien cassé » pour Antor ; une fiche dont Léa ne lit plus
-rien depuis le dernier import — absente de l'arbre, de la recherche et des « Mentionnée dans ». Réglage d'image (étape 7) : « Image » est grisé tant que le curseur n'est pas dans une image ; si l'enregistrement échoue, le titre écrit reste dans le champ avec le message d'enregistrement de la section.
+rien depuis le dernier import — absente de l'arbre, de la recherche et des « Mentionnée dans ». Image setting (step 7): « Image » is greyed out while the caret is not in an image; if saving fails, the written title stays in the field with the section's save message.
 
 ### P-13 — Choisir les types d'un système et d'un univers (MJ)
 *Antor joue « CoF Mini » dans « Lame d'Ébène », sauf que son univers a des vaisseaux.*
