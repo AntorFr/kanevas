@@ -42,7 +42,7 @@
 .vx-bloc-tete { display: flex; align-items: center; justify-content: space-between; gap: var(--e-2); }
 .vx-lignes { list-style: none; margin: 0; padding: 0; }
 .vx-ligne-choix { display: flex; align-items: center; gap: var(--e-2); flex-wrap: wrap; padding: var(--e-2) 0; }
-.vx-element-texte { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.vx-element-texte { flex: 1 1 12rem; min-width: 0; display: flex; flex-direction: column; }
 .vx-nom { overflow-wrap: anywhere; }
 .vx-nom-ligne { display: flex; align-items: center; flex-wrap: wrap; gap: var(--e-1) var(--e-2); }
 .vx-vide-bloc { display: flex; align-items: center; justify-content: space-between; gap: var(--e-2); color: var(--texte-2); }
