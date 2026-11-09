@@ -4,8 +4,8 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
 
-// Revue de kanevas-outils-format-vaisseaux-fiches-calcul (F-2, F-3, F-4 part V-6, F-5, F-8) : catalogue d'essai inventé écrit par le test,
-// importé par la route, calculé par POST calcul, enregistré, recalculé. Attendus écrits en dur, calculés à la main (F-8).
+// Review of kanevas-outils-format-vaisseaux-fiches-calcul (F-2, F-3, F-4 part V-6, F-5, F-8): invented trial catalogue written by the test,
+// imported through the route, computed by POST calcul, saved, recomputed. Expected values hard-coded, worked out by hand (F-8).
 process.env.NODE_ENV = 'test';
 process.env.KANEVAS_STUB = '1';
 delete process.env.DB_PATH;
@@ -98,7 +98,7 @@ test('F-3 : équipage 6 et 20 ne lèvent rien (bornes exactes), 5 et 21 lèvent 
   const b = haut.alertes.find((x: any) => x.code === 'equipage_excessif');
   assert.equal(b.niveau, 'a_surveiller'); assert.equal(b.texte, 'Équipage excessif : 21 sur 20 au plus.');
   assert.deepEqual(codes(bas, 'bloquante'), []);
-  // équipage 0 : valeur dite, pas « absent »
+  // crew 0: a stated value, not "absent"
   assert.deepEqual((await w.ok({ coque: 'fregate-r', choix: [], equipage: 0 })).equipage, { choisi: 0, min: 6, max: 20 });
 });
 
@@ -114,12 +114,12 @@ test("F-3 : classe_inadaptee bloquante, une par ligne, textes de F-3 ; une arme 
   const pile = await w.ok({ coque: 'c3', choix: [L('amenagements', 'pile')] });
   assert.equal(pile.alertes.find((x: any) => x.code === 'classe_inadaptee').texte, '« Pile » : classe de coque 2 seulement.');
   assert.deepEqual(codes(await w.ok({ coque: 'fregate-r', choix: [L('amenagements', 'pile')] })), ['moteur_absent']);
-  // plafond seul (pas de classe_min)
+  // ceiling only (no classe_min)
   assert.equal((await w.ok({ coque: 'c4', choix: [L('amenagements', 'plafond')] })).alertes.find((x: any) => x.code === 'classe_inadaptee').texte,
     '« Plafond » : classe de coque 3 au plus.');
-  // une arme de classe_min 4 sur une coque de classe 2 : jamais classe_inadaptee
+  // a weapon with classe_min 4 on a class 2 hull: never classe_inadaptee
   assert.ok(!codes(await w.ok({ coque: 'fregate-r', choix: [L('armes', 'canon-r')] })).includes('classe_inadaptee'));
-  // une alerte par ligne fautive, indexée, et après moteur_multiple
+  // one alert per faulty line, indexed, and after moteur_multiple
   const m = await w.ok({ coque: 'fregate-r', choix: [L('moteurs', 'm1', 2), L('amenagements', 'salle'), L('amenagements', 'hangar')] });
   assert.deepEqual(m.alertes.filter((x: any) => x.niveau === 'bloquante').map((x: any) => [x.code, x.ligne ?? null]),
     [['moteur_multiple', null], ['classe_inadaptee', 2]]);
@@ -133,7 +133,7 @@ test('F-2 : équipage hors 0 à 100 000 ou non entier → refus champ equipage ;
     assert.equal(r.json().champ, 'equipage', String(v));
   }
   assert.equal((await w.ok({ coque: 'fregate-r', choix: [], equipage: 100000 })).equipage.choisi, 100000);
-  // enregistrement : même refus, rien n'est écrit
+  // saving: same refusal, nothing is written
   const c = await w.req('antor', 'POST', `${w.B}/conceptions`, { ficheId: w.aube, coque: 'fregate-r' });
   assert.equal(c.statusCode, 201, c.body);
   const v = c.json().version;
@@ -146,26 +146,26 @@ test("F-2 : l'équipage est résolu à l'enregistrement, stocké, et survit à u
   const w = await monde();
   const c = await w.req('antor', 'POST', `${w.B}/conceptions`, { ficheId: w.aube, coque: 'fregate-r' });
   assert.equal(c.statusCode, 201, c.body);
-  assert.equal(w.ligne(w.aube).equipage, 6); // défaut : minimum de la coque
+  assert.equal(w.ligne(w.aube).equipage, 6); // default: the hull's minimum
   assert.equal(c.json().resultat.equipage.choisi, 6);
-  // équipage 5 : alerte à surveiller, la conception reste enregistrable
+  // crew 5: watch-level alert, the design stays saveable
   const p = await w.req('antor', 'PUT', `${w.B}/conceptions/${w.aube}`, { coque: 'fregate-r', choix: [], version: c.json().version, equipage: 5 });
   assert.equal(p.statusCode, 200, p.body);
   assert.equal(w.ligne(w.aube).equipage, 5);
   assert.deepEqual(p.json().resultat.equipage, { choisi: 5, min: 6, max: 20 });
   assert.ok(codes(p.json().resultat).includes('equipage_insuffisant'));
-  // sans équipage dans la requête : le minimum de la coque (pas de report implicite)
+  // no crew in the request: the hull's minimum (no implicit carry-over)
   const q = await w.req('antor', 'PUT', `${w.B}/conceptions/${w.aube}`, { coque: 'fregate-r', choix: [], version: p.json().version });
   assert.equal(q.json().resultat.equipage.choisi, 6);
   assert.equal(w.ligne(w.aube).equipage, 6);
   const r5 = await w.req('antor', 'PUT', `${w.B}/conceptions/${w.aube}`, { coque: 'fregate-r', choix: [], version: q.json().version, equipage: 5 });
   assert.equal(r5.statusCode, 200);
-  // classe inadaptée : refus à l'enregistrement
+  // unsuitable class: refused on save
   const bloc = await w.req('antor', 'PUT', `${w.B}/conceptions/${w.aube}`,
     { coque: 'fregate-r', choix: [L('amenagements', 'hangar')], version: r5.json().version, equipage: 5 });
   assert.equal(bloc.statusCode, 422);
   assert.equal(bloc.json().alertes.find((a: any) => a.code === 'classe_inadaptee').texte, '« Hangar » : classe de coque 3 au moins.');
-  // import : le minimum devient 8
+  // import: the minimum becomes 8
   const imp = await w.importer(catalogue('v2', 8));
   assert.equal(imp.statusCode, 200, imp.body);
   const lu = (await w.req('antor', 'GET', `${w.B}/conceptions/${w.aube}`)).json();
@@ -186,7 +186,7 @@ test('F-4 : le texte gagne Vitesse, Armure, Équipage entre Portée de saut et P
   assert.equal(c.statusCode, 201, c.body);
   const txt = w.sec(w.aube).contenu as string;
   assert.match(txt, /\| Portée de saut \| — \|\n\| Vitesse \| 3 \|\n\| Armure \| 5 \|\n\| Équipage \| 6 \|\n\| Puissance libre \| /);
-  // conception du catalogue d'essai antérieur : aucune ligne nouvelle, texte identique après recalcul
+  // design on the earlier trial catalogue: no new line, identical text after recompute
   assert.ok(!/Vitesse|Armure|Équipage/.test(avant));
   const rc = await w.req('antor', 'POST', `/api/univers/${w.E}/fiches/${w.orak}/sections/${w.sec(w.orak).id}/recalcul`, { version: w.sec(w.orak).version });
   assert.equal(rc.statusCode, 200, rc.body);
@@ -205,7 +205,7 @@ test('F-3 : un résultat enregistré avant la tranche (sans les trois clés, éq
   assert.equal(v.prix, r.prix);
   const liste = await w.req('lea', 'GET', `${w.B}/conceptions`);
   assert.equal(liste.statusCode, 200);
-  // « Recalculer » d'une conception sans équipage stocké garde l'absence d'équipage
+  // "Recalculer" on a design with no stored crew keeps the crew absent
   const rc = await w.req('antor', 'POST', `/api/univers/${w.E}/fiches/${w.orak}/sections/${w.sec(w.orak).id}/recalcul`, { version: w.sec(w.orak).version });
   assert.equal(rc.statusCode, 200, rc.body);
   assert.equal(w.ligne(w.orak).equipage, null);
@@ -228,7 +228,7 @@ test("F-5 : l'outil de l'assistant rend les mêmes valeurs que POST calcul et ac
   assert.equal(mauvais.ok, false);
   const defaut: any = await outil.executer({ coque: 'Frégate R' });
   assert.equal(defaut.donnees.resultat.equipage.choisi, 6);
-  // une conception enregistrée n'accepte pas equipage en plus
+  // a saved design does not accept an extra equipage
   const double: any = await outil.executer({ conception: "Vent d'Orak", equipage: 5 });
   assert.equal(double.ok, false);
 });
