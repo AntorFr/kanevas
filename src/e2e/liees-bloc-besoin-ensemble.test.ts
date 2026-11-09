@@ -223,8 +223,11 @@ describe('kanevas-fiches-liees-bloc, le bloc « Fiches liées » (B-64)', { skip
     assert.equal(await b.getByRole('img', { name: 'Mort' }).count(), 0, 'pas de marque avant le geste');
     await ouvrir(antor, 'Bran Corvalis');
     await antor.getByRole('button', { name: /^Autres actions sur « Bran Corvalis »/ }).click();
+    // Wait for the proof that the gesture landed: the PATCH carrying `disparu: true`, then the mark on the sheet.
+    const marque = antor.waitForResponse((r: Any) => r.request().method() === 'PATCH' && /\/fiches\/[^/]+$/.test(r.url()) && /"disparu"\s*:\s*true/.test(r.request().postData() ?? ''));
     await antor.getByRole('menuitem', { name: 'Marquer mort' }).click();
-    await antor.getByText('Mort', { exact: true }).first().waitFor();
+    assert.ok((await marque).status() < 300);
+    await antor.locator('.marque-badge').filter({ hasText: 'Mort' }).waitFor();
     await ouvrir(antor, 'Les Corvalis');
     b = await blocPret(antor);
     const ligneBran = b.locator('li.ligne-liee').filter({ hasText: 'Bran Corvalis' });
