@@ -1,6 +1,7 @@
 # Status — kanevas
 
 > MàJ : 2026-11-09 (assemblage de `rouge-kanevas-8` : test « CLI embarqué réel » retiré ; « kanevas-import-types : écrans » non reproduit sous charge (3 essais, 29/29), test inchangé ; tests seuls, produit inchangé)
+> MàJ : 2026-11-09 (assemblage de `rouge-kanevas-6` : le test e2e « Antor ajoute un PDF depuis E-19 » attend la tuile `regles-guilde.pdf` remontée après chaque changement de filtre, le squelette de chargement démontant la grille ; test seul, produit inchangé)
 > MàJ : 2026-11-09 (assemblage de `rouge-kanevas-3` : doc remise d'accord avec `main` — epic des fiches liées livrée, entrée « Campagnes » retirée de docs/ecrans.md ; le test de la marque « Mort » des Corvalis attend la réponse du `PATCH` avant de quitter la fiche, et le bloc « Fiches liées » des e2e attend les libellés de type avant de lire les titres de groupe ; tests seuls, produit inchangé)
 > MàJ : 2026-11-09 (assemblage de `rouge-kanevas-2` : trois tests e2e instables stabilisés, tests seuls, produit inchangé — médiathèque (filtres) : sonde le texte de `main` jusqu'à l'état attendu en entier au lieu d'attendre une tuile `detached` ; bloc « Fiches liées » en mode Joueur : attend le groupe « S'y trouvent » et son titre avant de lire ; filtre Statut d'E-8 : attend la disparition de l'arbre et d'« Acte II »)
 > MàJ : 2026-11-09 (assemblage de `rouge-kanevas-1` : tests de Release par `gh` retirés, test de la médiathèque « fichier vide » stabilisé ; tests seuls, produit inchangé)
