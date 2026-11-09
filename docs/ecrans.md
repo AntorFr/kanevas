@@ -20,7 +20,7 @@ Web. Ordinateur d'abord pour écrire (souris, clavier, glisser des tokens) ; té
 Une barre latérale unique, sur tous les écrans d'un univers :
 
 - en tête, le **sélecteur d'univers** (les univers du compte, son rôle en badge) ;
-- **Vue d'ensemble** · **Campagnes** · **Comptes-rendus** · **Cartes** · depuis `kanevas-import`, **Médiathèque** (E-19) ;
+- **Vue d'ensemble** · **Comptes-rendus** · **Cartes** · depuis `kanevas-import`, **Médiathèque** (E-19) ;
 - **Lore** : Personnages, Lieux, Factions, Objets, Événements, Quêtes — depuis `kanevas-import`,
   les **types activés pour l'univers** (B-42), dans l'ordre de la liste du produit : Personnages,
   Lieux, Factions, Objets, Événements, Quêtes, Créatures, Races, Vaisseaux, Savoirs, Récits, Règles,
