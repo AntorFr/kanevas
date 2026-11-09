@@ -225,6 +225,8 @@ async function startServerUnlocked(extraEnv: Record<string, string>): Promise<Se
  */
 export async function attendreServeurPret(child: ChildProcess, base: string, sortie: () => string): Promise<void> {
   let sorti: string | null = null;
+  let ferme = false;
+  const flux = new Promise<void>((resolve) => child.once('close', () => { ferme = true; resolve(); }));
   const startup = new AbortController();
   child.on('exit', (code, signal) => {
     sorti = signal ? `signal ${signal}` : `code ${code}`;
@@ -263,6 +265,9 @@ export async function attendreServeurPret(child: ChildProcess, base: string, sor
   } finally {
     clearInterval(watchdog);
   }
+  // `exit` can precede the last chunks of stdout/stderr: wait for the streams to close (2 s at most)
+  // so that the end of the output, the reason of the exit, is in the message.
+  if (sorti !== null && !ferme && !sorti.startsWith('spawn error')) await Promise.race([flux, delay(2000)]);
   const cause = sorti !== null ? `the server exited (${sorti})`
     : `/healthz not ready after ${Date.now() - debutDemarrage} ms${lastStatus === null ? '' : ` (HTTP ${lastStatus})`}`;
   throw new Error(`server did not start: ${cause}\n--- server output (tail) ---\n${sortie()}`);

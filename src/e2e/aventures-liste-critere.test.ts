@@ -160,8 +160,10 @@ describe('kanevas-scenarios-type-liste, E-8 Aventures', { skip: skipBrowser }, (
     await antor.getByRole('button', { name: 'Arbre', exact: true }).click();
     await antor.getByLabel('Statut').selectOption({ label: 'En cours' });
     await antor.waitForURL(/statut=en_cours/);
+    await charge(antor);
     // the tree (title included) is still the old page: wait for the grid to replace it
     await antor.getByRole('tree').waitFor({ state: 'detached' });
+    await antor.getByText('Acte II').first().waitFor({ state: 'detached' });
     await antor.getByRole('main').getByText('La Couronne brisée').first().waitFor();
     assert.equal(await antor.getByRole('tree').count(), 0, 'la grille remplace l’arbre');
     const t = await antor.getByRole('main').innerText();

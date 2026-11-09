@@ -20,7 +20,7 @@ Web. Desktop first for writing (mouse, keyboard, dragging tokens); phone for rea
 A single sidebar on every screen within a universe:
 
 - at the top, the **universe selector** (the account's universes, with its role as a badge);
-- **« Vue d'ensemble »** · **« Campagnes »** · **« Comptes-rendus »** · **« Cartes »** · since `kanevas-import`, **« Médiathèque »** (E-19);
+- **« Vue d'ensemble »** · **« Comptes-rendus »** · **« Cartes »** · since `kanevas-import`, **« Médiathèque »** (E-19);
 - **« Lore »**: « Personnages », « Lieux », « Factions », « Objets », « Événements », « Quêtes » — since `kanevas-import`,
   the **types enabled for the universe** (B-42), in the order of the product's list: « Personnages »,
   « Lieux », « Factions », « Objets », « Événements », « Quêtes », « Créatures », « Races », « Vaisseaux », « Savoirs », « Récits », « Règles »,
