@@ -135,6 +135,7 @@ test('Antor ajoute un PDF depuis E-19 : « Visible des joueurs », 14 fichiers, 
   assert.match(norm(await texte(antor)), /14 fichiers/);
   await antor.getByText('Documents', { exact: true }).click();
   await antor.getByText('Carte des Sphères', { exact: true }).waitFor({ state: 'hidden' });
+  await antor.locator('.med-tuile').filter({ has: antor.locator('[title="regles-guilde.pdf"]') }).first().waitFor();
   await attendre(antor);
   let t = norm(await texte(antor));
   await antor.screenshot({ path: '/tmp/shots/antor-filtre-documents.png' });
@@ -148,6 +149,8 @@ test('Antor ajoute un PDF depuis E-19 : « Visible des joueurs », 14 fichiers, 
   assert.doesNotMatch(t, /regles-guilde\.pdf/);
   assert.match(t, /Carte des Sphères/);
   await antor.getByText('Tout', { exact: true }).click();
+  await antor.locator('.med-tuile').filter({ has: antor.locator('[title="regles-guilde.pdf"]') }).first().waitFor();
+  await antor.getByText('Carte des Sphères', { exact: true }).first().waitFor();
   await antor.getByPlaceholder('Chercher par nom').fill('zzz-introuvable');
   await attendre(antor);
   assert.ok(await dit(antor, 'Aucun fichier ne correspond.'));
