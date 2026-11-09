@@ -462,8 +462,12 @@ test('B-taille-1 aperçu : « Aperçu » rend le réglage comme la lecture', opt
   const img = page.locator('.apercu-md img.img-petit.img-gauche');
   await img.waitFor({ timeout: 8000 });
   await page.waitForFunction(() => (document.querySelector('.apercu-md img') as HTMLImageElement).complete);
-  const w = await img.evaluate((e: HTMLElement) => e.getBoundingClientRect().width / (e.closest('.apercu-md') as HTMLElement).getBoundingClientRect().width * 100);
-  proche(w, 25);
+  // The share is a ceiling of the column, i.e. the `.md` text block of the preview, itself capped by the natural width of the image.
+  const { w, naturel } = await img.evaluate((e: HTMLImageElement) => {
+    const colonne = (e.closest('.md') as HTMLElement).getBoundingClientRect().width;
+    return { w: (e.getBoundingClientRect().width / colonne) * 100, naturel: (e.naturalWidth / colonne) * 100 };
+  });
+  proche(w, Math.min(25, naturel));
   await page.screenshot({ path: '/tmp/scr/taille-apercu.png' });
   await page.close();
 });

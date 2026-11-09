@@ -2063,7 +2063,7 @@ charte « Menu ») with two single-choice `groupe`s,
 réglage » action. Choosing writes the title in the text at once (both groups needed: the first choice
 completes the other with `moyen` / `centre`); « Sans réglage » removes it. Keyboard: ↑ ↓ cross the choices, Échap closes
 and the focus returns to the field. Icons: placement `align-left` / `align-right` / `align-center`, size three `square` of growing size. The text stays the single source: the panel reads the title back from the
-reference at the caret, so a hand-typed setting shows selected. « Aperçu » does not render `fichier:N` images at all (it shows their alt text, as before this feature), so the setting is seen in reading, not there.
+reference at the caret, so a hand-typed setting shows selected. « Aperçu » renders it as in reading (the preview resolves the `fichier:N` files like the reading does).
 Who may write the text sees the button; a reader never gets the editor.
 
 **Where it lives, who, states.** E-taille-1 is not a screen of its own: it is a button of the section

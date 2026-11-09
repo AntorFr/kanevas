@@ -580,9 +580,10 @@ export function rendreApercu(
   mj: boolean | null,
   liens?: ResolveurLiens,
   nature: 'scenario' | 'texte' = 'texte',
+  fichiers?: Pick<OptionsRendu, 'fichiers' | 'fichiersEnAttente'>,
 ): string {
   if (mj === null) return rendreMarkdown(source, { nature, liens });
   return mj
-    ? rendreMarkdown(source, { nature: 'section', liens })
-    : rendreMarkdown(contenuPublic(source), { nature: 'scenario', liens, reglagesImage: true });
+    ? rendreMarkdown(source, { nature: 'section', liens, ...fichiers })
+    : rendreMarkdown(contenuPublic(source), { nature: 'scenario', liens, reglagesImage: true, ...fichiers });
 }
