@@ -98,6 +98,8 @@ export function EditeurMarkdown({ etiquette, valeur, onChange, max, rows = 8, au
   // « Image » (E-taille-1): whether the caret stands in an image reference, and the reference frozen when the menu opened.
   const [surImage, setSurImage] = useState(false);
   const [imageFigee, setImageFigee] = useState<number>();
+  // On a narrow screen the right-aligned panel would leave through the left edge: open it from the trigger's left side.
+  const [alignImage, setAlignImage] = useState<'debut' | 'fin'>('fin');
   // The caret as it stood when the menu opened: put back after a write (a controlled field sends it to the end), focus untouched.
   const caretFige = useRef<number | undefined>(undefined);
   const caretARendre = useRef<number | undefined>(undefined);
@@ -323,7 +325,14 @@ export function EditeurMarkdown({ etiquette, valeur, onChange, max, rows = 8, au
             </button>
           )}
           {fichier && !section?.modeJoueur && (
+            <span
+              className="outil-md-groupe"
+              style={{ display: 'inline-flex' }}
+              onPointerDownCapture={(e) => setAlignImage(e.currentTarget.getBoundingClientRect().right < 216 ? 'debut' : 'fin')}
+              onKeyDownCapture={(e) => setAlignImage(e.currentTarget.getBoundingClientRect().right < 216 ? 'debut' : 'fin')}
+            >
             <Menu
+              aligne={alignImage}
               etiquette="Image"
               titreDeclencheur={surImage ? 'Image · taille et placement' : 'Placez le curseur sur une image'}
               varianteDeclencheur="outil"
@@ -348,6 +357,7 @@ export function EditeurMarkdown({ etiquette, valeur, onChange, max, rows = 8, au
                 { libelle: 'Sans réglage', onChoisir: () => reglerImage(null) },
               ]}
             />
+            </span>
           )}
           {fichier?.({ inserer, dansBlocMJ: () => dansBlocMJ(valeurRef.current, champ.current?.selectionStart ?? valeurRef.current.length), sous, depot, ecriture: vue === 'ecrire' })}
           {section?.blocMJ && (
