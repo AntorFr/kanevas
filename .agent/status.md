@@ -2,6 +2,7 @@
 
 > MàJ : 2026-11-09 (assemblage de `rouge-kanevas-4` : trois fichiers e2e attendent l'effet de l'action avant de lire l'instantané — filtre « En cours » des aventures, bloc « Fiches liées », filtre « Taverne » des types ; tests seuls, produit inchangé)
 > MàJ : 2026-11-09 (assemblage de `rouge-kanevas-3` : doc remise d'accord avec `main` — epic des fiches liées livrée, entrée « Campagnes » retirée de docs/ecrans.md ; le test de la marque « Mort » des Corvalis attend la réponse du `PATCH` avant de quitter la fiche, et le bloc « Fiches liées » des e2e attend les libellés de type avant de lire les titres de groupe ; tests seuls, produit inchangé)
+> MàJ : 2026-11-09 (assemblage de `rouge-kanevas-2` : trois tests e2e instables stabilisés, tests seuls, produit inchangé — médiathèque (filtres) : sonde le texte de `main` jusqu'à l'état attendu en entier au lieu d'attendre une tuile `detached` ; bloc « Fiches liées » en mode Joueur : attend le groupe « S'y trouvent » et son titre avant de lire ; filtre Statut d'E-8 : attend la disparition de l'arbre et d'« Acte II »)
 > MàJ : 2026-11-09 (assemblage de `rouge-kanevas-1` : tests de Release par `gh` retirés, test de la médiathèque « fichier vide » stabilisé ; tests seuls, produit inchangé)
 > MàJ : 2026-11-02 (livraison de l'epic `kanevas-fiches-liees` vers `main` : `origin/main` fusionnée dans `epic/kanevas-fiches-liees`, AD-129 des natures décalé en AD-136, la numérotation 130 à 134 inchangée)
 > MàJ : 2026-11-01 (assemblage de `kanevas-connexion-claude-entree`, dernier paragraphe)
