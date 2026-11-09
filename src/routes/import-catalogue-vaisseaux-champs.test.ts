@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 
-// Revue de kanevas-outils-format-vaisseaux-fiches-catalogue (F-1, F-4, F-7, F-8) : catalogue d'essai inventé écrit par le test,
-// importé par la route de session, relu par GET catalogue, rejoué, puis rendu dans les fiches de règles. Attendus écrits en dur.
+// Review of kanevas-outils-format-vaisseaux-fiches-catalogue (F-1, F-4, F-7, F-8): invented trial catalogue written by the test,
+// imported through the session route, read back by GET catalogue, replayed, then rendered in the rules sheets. Expectations hard-coded.
 process.env.NODE_ENV = 'test';
 process.env.KANEVAS_STUB = '1';
 delete process.env.DB_PATH;
@@ -73,9 +73,9 @@ test('F-1 : chaque champ est créé, relu par GET catalogue (null omis), inchang
   const canon = await w.ligne('armes', 'canon-r');
   assert.equal(canon.donnees.degats, '1d8'); assert.equal(canon.donnees.perforation, 3);
   assert.equal(canon.donnees.qualites, 'Bruyant'); assert.equal(canon.donnees.niveau_tech, 3);
-  assert.equal(canon.donnees.classe_min, 1); // celui de l'arme (E-2), pas un champ de F-1
+  assert.equal(canon.donnees.classe_min, 1); // the weapon's own (E-2), not an F-1 field
   assert.equal((await w.ligne('exemples', 'ex')).donnees.equipage, 8);
-  // rejeu : tout inchangé, version du catalogue stable
+  // replay: everything unchanged, catalogue version stable
   const r2 = await w.post(catalogue());
   assert.equal(r2.statusCode, 200);
   const nat = r2.json().natures;
@@ -98,10 +98,10 @@ test('F-1 : un rejeu qui retire un champ remet null, modifie la ligne et monte l
   assert.deepEqual(row, { vitesse: null, armure: null, equipage_min: null, equipage_max: null });
   const ex = w.app.db.prepare("SELECT equipage FROM swn_catalogue_exemples WHERE cle = 'ex' AND proprietaire = 'univers'").get() as any;
   assert.equal(ex.equipage, null);
-  // version du catalogue (K-3) : la ligne modifiée porte celle du fichier qui l'a modifiée
+  // catalogue version (K-3): the modified row carries that of the file that modified it
   const vc = (t: string, c: string) => (w.app.db.prepare(`SELECT version_catalogue v FROM swn_catalogue_${t} WHERE cle = ? AND proprietaire = 'univers'`).get(c) as any).v;
   assert.equal(vc('coques', 'fregate-r'), 'v2'); assert.equal(vc('armes', 'canon-r'), 'v2');
-  assert.equal(vc('coques', 'nue'), 'v1'); // une ligne inchangée garde la version de son dernier changement
+  assert.equal(vc('coques', 'nue'), 'v1'); // an unchanged row keeps the version of its last change
 });
 
 test('F-1 : champs mal formés refusés avec leur champ, les autres lignes passent', async () => {
@@ -138,7 +138,7 @@ test('F-1 : champs mal formés refusés avec leur champ, les autres lignes passe
     assert.equal(refus.length, 1, `${nature}.${champ}=${JSON.stringify(val)} ${JSON.stringify(refus)}`);
     assert.equal(refus[0].nature, nature); assert.equal(refus[0].cle, cle); assert.equal(refus[0].champ, attendu);
   }
-  // le reste passe : le canon refusé, mais pas la frégate
+  // the rest passes: the cannon refused, not the frigate
   const f = catalogue(); f.armes[0].degats = 'x'.repeat(41);
   const r = await w.post(f);
   assert.equal(w.app.db.prepare("SELECT COUNT(*) n FROM swn_catalogue_coques WHERE proprietaire = 'univers'").get().n, 2);
@@ -177,7 +177,7 @@ test('F-4 : fiches de règles — colonnes présentes seulement quand une ligne 
   assert.ok(co.find((l) => l.includes('Nue'))!.endsWith('| — | — | — | — |'));
   assert.ok(co.find((l) => l.includes('Frégate R'))!.endsWith('| 3 | 5 | 6 | 20 |'));
   assert.match(t('defenses').split('\n').find((l) => l.startsWith('| Nom'))!, /Bonus de vitesse \|$/);
-  // les modifications ne portent aucune colonne facultative
+  // the modifications carry no optional column
   assert.doesNotMatch(t('modifications'), /Classe min|Vitesse|Condition/);
 });
 

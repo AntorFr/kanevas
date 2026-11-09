@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
 
-// 0029 (F-1) : montée depuis le schéma 0028 avec les lignes du semis ; comptes identiques, colonnes nulles, foreign_key_check vide.
+// 0029 (F-1): upgrade from the 0028 schema with the seed rows; identical counts, null columns, empty foreign_key_check.
 process.env.NODE_ENV = 'test';
 process.env.KANEVAS_STUB = '1';
 const { migrate, openDb } = await import('../../db/db.js');
@@ -23,7 +23,7 @@ test('0029 : montée depuis 0028 avec le semis, comptes inchangés, colonnes nou
   const source = new URL('../../db/migrations/', import.meta.url);
   for (const f of readdirSync(source).filter((x) => /^\d{4}-.+\.sql$/.test(x))) if (Number(f.slice(0, 4)) <= 28) copyFileSync(new URL(f, source), join(dir, f));
   migrate(db, dir + '/');
-  // Le semis écrit les colonnes de 0029 : bouchons le temps du semis.
+  // The seed writes the 0029 columns: stubs for the duration of the seed.
   const stub = (v: 'ADD COLUMN' | 'DROP COLUMN') => { for (const [t, cs] of Object.entries(NOUVELLES)) for (const c of cs) db.exec(`ALTER TABLE swn_catalogue_${t} ${v} ${c}${v === 'ADD COLUMN' ? ' INTEGER' : ''}`); };
   stub('ADD COLUMN'); db.exec('ALTER TABLE swn_conceptions ADD COLUMN equipage INTEGER'); // 0030, written by the seed
   semerBouchon(db); db.exec('ALTER TABLE swn_conceptions DROP COLUMN equipage'); stub('DROP COLUMN');
