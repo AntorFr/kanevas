@@ -160,8 +160,9 @@ describe('kanevas-scenarios-type-liste, E-8 Aventures', { skip: skipBrowser }, (
     await antor.getByRole('button', { name: 'Arbre', exact: true }).click();
     await antor.getByLabel('Statut').selectOption({ label: 'En cours' });
     await antor.waitForURL(/statut=en_cours/);
-    await charge(antor);
     await antor.getByRole('tree').waitFor({ state: 'detached' });
+    await antor.getByRole('button', { name: /changer le statut de « La Couronne brisée »/ }).waitFor();
+    await charge(antor);
     await antor.getByText('Acte II').first().waitFor({ state: 'detached' });
     assert.equal(await antor.getByRole('tree').count(), 0, 'la grille remplace l’arbre');
     const t = await antor.getByRole('main').innerText();
