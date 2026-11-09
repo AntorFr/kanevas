@@ -2053,8 +2053,8 @@ paragraphs' flow, no wrap. Widths, as a share of the text column, capped by the 
 the charte already uses for `.md`): no float — every placement becomes a centred block, `petit` 40 %,
 `moyen` 70 %, `grand` 100 %, so text stays one readable column. A float never leaks out of its section
 (the `.md` container clears it). Closed, deleted and waiting references keep their frames; a setting
-on them is ignored. Only in a **section** or a compte-rendu (scenarios and system entries do not
-interpret `fichier:`, see above).
+on them is ignored. Only in a **section** or a compte-rendu, preview of its public text included (`rendreApercu`);
+the standalone `scenario` and system-entry text natures do not interpret `fichier:`, see above.
 
 **Editor (E-taille-1).** In « Écrire », the caret inside an `![…](fichier:N…)` reference enables the
 toolbar button « Image » (icon `image`); it opens a `Menu` (existing component, trigger variant `outil`,
