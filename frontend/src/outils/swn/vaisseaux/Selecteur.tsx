@@ -65,12 +65,14 @@ export function Selecteur({ universId, suffixe, nature, titre, classeCoque, onCh
           return (
             <li key={e.cle} className="vx-element">
               <div className="vx-element-texte">
-                <span className="vx-nom">{e.nom}</span>
+                <span className="vx-nom-ligne">
+                  <span className="vx-nom">{e.nom}</span>
+                  {classeCoque !== undefined && exclutLaClasse(e, classeCoque) && <Pastille sens="neutre">Classe</Pastille>}
+                </span>
                 <span className="vx-sous">{[e.resume, legende(e)].filter(Boolean).join(' · ')}</span>
                 {e.donnees?.condition && <span className="vx-sous vx-condition">{e.donnees.condition}</span>}
               </div>
               <span className="vx-etiquettes">
-                {classeCoque !== undefined && exclutLaClasse(e, classeCoque) && <Pastille sens="neutre">Classe</Pastille>}
                 {(e.univers || e.origine === 'univers' || e.origine === 'remplace') && <Pastille sens="neutre">Univers</Pastille>}
                 {masque && <Pastille sens="mj">Masqué</Pastille>}
               </span>

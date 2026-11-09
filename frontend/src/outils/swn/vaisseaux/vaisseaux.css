@@ -44,6 +44,7 @@
 .vx-ligne-choix { display: flex; align-items: center; gap: var(--e-2); flex-wrap: wrap; padding: var(--e-2) 0; }
 .vx-element-texte { flex: 1; min-width: 0; display: flex; flex-direction: column; }
 .vx-nom { overflow-wrap: anywhere; }
+.vx-nom-ligne { display: flex; align-items: center; flex-wrap: wrap; gap: var(--e-1) var(--e-2); }
 .vx-vide-bloc { display: flex; align-items: center; justify-content: space-between; gap: var(--e-2); color: var(--texte-2); }
 .vx-stepper { display: inline-flex; align-items: center; gap: var(--e-2); }
 .vx-stepper output { min-width: 2ch; text-align: center; font-variant-numeric: tabular-nums; }
@@ -87,6 +88,7 @@
   .vx-bouton, .vx .bouton { min-height: 44px; }
   .vx-elements { max-height: none; }
   .vx-equipage-champ { min-height: 44px; }
+  .vx-equipage-controle .bouton { min-width: 44px; }
 }
 .vx-tableau { border-collapse: collapse; margin: var(--e-2) 0; width: 100%; font-size: var(--t-13); font-variant-numeric: tabular-nums; }
 .vx-tableau th, .vx-tableau td { border: 1px solid var(--bord-fort); padding: var(--e-1) var(--e-2); text-align: left; white-space: nowrap; }
