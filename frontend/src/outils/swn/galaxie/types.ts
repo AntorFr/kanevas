@@ -8,7 +8,9 @@ export interface RouteCarte {
   id: number; depuis: { cle: string; q: number; r: number }; vers: { cle: string; q: number; r: number };
   longueur: number; publique?: boolean; version?: number; type_lien?: string;
 }
-export interface ZoneCarte { id: number; nom: string; contour: [number, number][]; couleur: string; secret?: boolean; cle?: string; version?: number; densite?: number | null }
+export interface ZoneCarte { id: number; nom: string; contour: [number, number][]; couleur: string; secret?: boolean; cle?: string; version?: number; densite?: number | null;
+  /** Set zone only (B-84): canonical ranges `[r, q0, q1]` and their hexagon count; `contour` is then empty. */
+  plages?: [number, number, number][]; hexagones?: number }
 export interface VueBlocs {
   blocs: { bx: number; by: number; generes: [number, number][] }[];
   systemes: SystemeCarte[]; routes: RouteCarte[]; zones: ZoneCarte[];

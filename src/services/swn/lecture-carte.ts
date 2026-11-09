@@ -1,5 +1,6 @@
 import type { Db } from '../../db/db.js';
 import { TAILLE_BLOC } from '../../outils/swn/regles/generation.js';
+import { boiteDePlages, compterPlages, lirePlages, type Plage } from '../../outils/swn/regles/forme.js';
 import type { Point } from '../../outils/swn/regles/hex.js';
 import { introuvable } from '../erreurs.js';
 import type { Acteur } from '../types.js';
@@ -15,7 +16,8 @@ export interface SystemeVue {
 }
 export interface BoutRoute { cle: string; q: number; r: number }
 export interface RouteVue { id: number; depuis: BoutRoute; vers: BoutRoute; longueur: number; publique?: boolean; version?: number; type_lien?: string }
-export interface ZoneVue { id: number; nom: string; contour: Point[]; couleur: string; secret?: boolean; cle?: string; version?: number; densite?: number | null }
+/** A set zone has `contour: []`, its ranges `[r, q0, q1]` in `plages` and the `hexagones` count (Z-3); a polygon zone has neither. */
+export interface ZoneVue { id: number; nom: string; contour: Point[]; plages?: Plage[]; hexagones?: number; couleur: string; secret?: boolean; cle?: string; version?: number; densite?: number | null }
 export interface VueBlocs { blocs: BlocGenere[]; systemes: SystemeVue[]; routes: RouteVue[]; zones: ZoneVue[] }
 
 function systemeVue(s: LigneSysteme, niveau: NiveauLecture): SystemeVue {
@@ -54,10 +56,17 @@ export function lireBlocs(
   const zones: ZoneVue[] = [];
   for (const z of zonesLisibles(db, galaxie.id, niveau)) {
     const contour = JSON.parse(z.contour) as Point[];
-    if (contour.length === 0) continue;
-    const qs = contour.map((p) => p[0]), rs = contour.map((p) => p[1]);
-    if (Math.max(...qs) < qMin || Math.min(...qs) > qMax || Math.max(...rs) < rMin || Math.min(...rs) > rMax) continue;
+    const plages = z.plages === null ? null : lirePlages(z.plages);
+    if (plages === null && contour.length === 0) continue;
+    let boite: [number, number, number, number];
+    if (plages) boite = boiteDePlages(plages);
+    else {
+      const qs = contour.map((p) => p[0]), rs = contour.map((p) => p[1]);
+      boite = [Math.min(...qs), Math.max(...qs), Math.min(...rs), Math.max(...rs)];
+    }
+    if (boite[1] < qMin || boite[0] > qMax || boite[3] < rMin || boite[2] > rMax) continue;
     const zone: ZoneVue = { id: z.id, nom: z.nom, contour, couleur: z.couleur };
+    if (plages) { zone.plages = plages; zone.hexagones = compterPlages(plages); }
     if (niveau === 'mj') { zone.secret = z.secret === 1; zone.cle = z.cle; zone.version = z.version; }
     zones.push(zone);
   }
@@ -129,6 +138,7 @@ export function lireZone(db: Db, acteur: Acteur, universId: number, galaxieId: n
   const z = zonesLisibles(db, galaxie.id, niveau).find((c) => c.cle === cle);
   if (!z) throw introuvable();
   const zone: ZoneVue = { id: z.id, nom: z.nom, contour: JSON.parse(z.contour) as Point[], couleur: z.couleur };
+  if (z.plages !== null) { zone.plages = lirePlages(z.plages); zone.hexagones = compterPlages(zone.plages); }
   if (niveau === 'mj') { zone.secret = z.secret === 1; zone.cle = z.cle; zone.version = z.version; zone.densite = z.densite; }
   return zone;
 }

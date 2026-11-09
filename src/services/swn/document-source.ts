@@ -2,6 +2,7 @@ import { createHash } from 'node:crypto';
 import type { Db } from '../../db/db.js';
 import type { ContexteSection } from '../../outils/declaration.js';
 import { redigerDocumentMJ, type VueDocument } from '../../outils/swn/regles/document.js';
+import { compterPlages, lirePlages } from '../../outils/swn/regles/forme.js';
 import { introuvable } from '../erreurs.js';
 import { niveauLecture, routesLisibles, systemesLisibles, zonesLisibles, type LigneGalaxie } from './galaxies.js';
 
@@ -54,7 +55,9 @@ export function produireGalaxie(db: Db, acteur: ContexteSection['acteur'], unive
     routes: routesLisibles(db, g.id, 'mj').map((r) => ({
       depuis: noms.get(r.depuis_id) ?? '', vers: noms.get(r.vers_id) ?? '', longueur: r.longueur, publique: r.publique === 1, typeLien: r.type_lien,
     })),
-    zones: zonesLisibles(db, g.id, 'mj').map((z) => ({ nom: z.nom, densite: z.densite, secret: z.secret === 1 })),
+    zones: zonesLisibles(db, g.id, 'mj').map((z) => ({
+      nom: z.nom, densite: z.densite, secret: z.secret === 1, ...(z.plages === null ? {} : { hexagones: compterPlages(lirePlages(z.plages)) }),
+    })),
   };
   return { contenu: redigerDocumentMJ(vue), sourceVersion: versionGalaxie(db, g) };
 }
