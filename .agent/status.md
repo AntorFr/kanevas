@@ -1,6 +1,7 @@
 # Status — kanevas
 
 > MàJ : 2026-11-09 (assemblage de `rouge-kanevas-8` : test « CLI embarqué réel » retiré ; « kanevas-import-types : écrans » non reproduit sous charge (3 essais, 29/29), test inchangé ; tests seuls, produit inchangé)
+> MàJ : 2026-11-09 (assemblage de `rouge-kanevas-5` : le bloc « Fiches liées » attend les types avant d'afficher ses groupes ; tests seuls pour le reste)
 > MàJ : 2026-11-09 (assemblage de `rouge-kanevas-11` : deux e2e instables sous charge corrigés côté procédé de test, produit inchangé)
 > MàJ : 2026-11-09 (assemblage de `rouge-kanevas-4` : trois fichiers e2e attendent l'effet de l'action avant de lire l'instantané — filtre « En cours » des aventures, bloc « Fiches liées », filtre « Taverne » des types ; tests seuls, produit inchangé)
 > MàJ : 2026-11-09 (assemblage de `rouge-kanevas-6` : le test e2e « Antor ajoute un PDF depuis E-19 » attend la tuile `regles-guilde.pdf` remontée après chaque changement de filtre, le squelette de chargement démontant la grille ; test seul, produit inchangé)
