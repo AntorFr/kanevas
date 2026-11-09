@@ -6,6 +6,7 @@ import {
   apresEcriture, booleenImport, dessinerZone, modifierRoute, modifierSysteme, modifierZone, normaliserSysteme, typeLienValide,
   normaliserZone, placerSysteme, routesDeSysteme, sansSignal, tracerRoute,
 } from './ecriture-carte.js';
+import { serialiserPlages } from '../../outils/swn/regles/forme.js';
 import { exigerEcritureGalaxie, exigerMJOutil, OUTIL_GALAXIE, type LigneRoute, type LigneSysteme, type LigneZone } from './galaxies.js';
 
 /**
@@ -20,6 +21,8 @@ export const NATURES_GALAXIE = [
 ];
 
 export const MAX_SYSTEMES = 2000, MAX_ZONES = 500, MAX_ROUTES = 4000;
+/** Hexagons of all the set zones of one request (Z-5): beyond, the whole request is `invalide`. */
+export const MAX_HEXAGONES_REQUETE = 50000;
 const CLE = /^[a-z0-9][a-z0-9-]{0,63}$/;
 export const HORS_SYNCHRO = 'Modifié dans Kanevas depuis le dernier import.';
 
@@ -58,7 +61,14 @@ function lireFichier(corps: unknown): Fichier {
     if (v.length > max) throw invalideCorps(k, `${k} : ${max} éléments au plus.`);
     return v;
   };
-  return { systemes: liste('systemes', MAX_SYSTEMES), zones: liste('zones', MAX_ZONES), routes: liste('routes', MAX_ROUTES) };
+  const zones = liste('zones', MAX_ZONES);
+  let hexagones = 0;
+  for (const z of zones) {
+    const forme = objet(z) ? z.contour : undefined;
+    if (objet(forme) && Array.isArray(forme.hexagones)) hexagones += forme.hexagones.length;
+  }
+  if (hexagones > MAX_HEXAGONES_REQUETE) throw invalideCorps('zones', `zones : ${MAX_HEXAGONES_REQUETE} hexagones au plus par requête.`);
+  return { systemes: liste('systemes', MAX_SYSTEMES), zones, routes: liste('routes', MAX_ROUTES) };
 }
 
 const CHAMPS_SYSTEME = ['cle', 'nom', 'q', 'r', 'taille', 'couleur', 'notes', 'secret'];
@@ -145,18 +155,19 @@ export function importerGalaxie(db: Db, acteur: Acteur, universId: number, galax
         zonesVues.add(cle);
         item('zones', i, cle, () => {
           const v = normaliserZone(brut);
+          const entree = brut as typeof brut & { nom: unknown; contour: unknown };
           const ligne = db.prepare('SELECT * FROM swn_zones WHERE galaxie_id = ? AND cle = ?').get(g.id, cle) as
             (LigneZone & { version_importee: number | null }) | undefined;
           if (!ligne) {
-            const { id } = dessinerZone(db, acteur, universId, g.id, v, { cle });
+            const { id } = dessinerZone(db, acteur, universId, g.id, entree, { cle });
             db.prepare('UPDATE swn_zones SET version_importee = version WHERE id = ?').run(id);
             return 'creees';
           }
-          const egal = ligne.nom === v.nom && JSON.stringify(JSON.parse(ligne.contour)) === JSON.stringify(v.contour)
+          const egal = ligne.nom === v.nom && JSON.stringify(JSON.parse(ligne.contour)) === JSON.stringify(v.contour) && ligne.plages === (v.plages && serialiserPlages(v.plages))
             && ligne.couleur === v.couleur && ligne.densite === v.densite && (ligne.secret === 1) === v.secret;
           if (egal) return 'inchangees';
           if (ligne.version !== ligne.version_importee) throw new ErreurService('conflit', HORS_SYNCHRO, 'hors_synchro');
-          const { version } = modifierZone(db, acteur, universId, g.id, cle, { ...v, version: ligne.version });
+          const { version } = modifierZone(db, acteur, universId, g.id, cle, { ...entree, version: ligne.version });
           db.prepare('UPDATE swn_zones SET version_importee = ? WHERE id = ?').run(version, ligne.id);
           return 'mises_a_jour';
         });

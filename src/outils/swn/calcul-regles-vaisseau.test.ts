@@ -233,11 +233,11 @@ test("F-5 : l'outil de l'assistant rend les mêmes valeurs que POST calcul et ac
   assert.equal(double.ok, false);
 });
 
-test('0030 : montée depuis 0029 avec le semis, conceptions gardées, equipage NULL, CHECK 0 à 100 000', () => {
+test('0031 : montée depuis 0030 avec le semis, conceptions gardées, equipage NULL, CHECK 0 à 100 000', () => {
   const dir = mkdtempSync(join(tmpdir(), 'migration-0030-'));
   const db = openDb(':memory:');
   const source = new URL('../../db/migrations/', import.meta.url);
-  for (const f of readdirSync(source).filter((x) => /^\d{4}-.+\.sql$/.test(x))) if (Number(f.slice(0, 4)) <= 29) copyFileSync(new URL(f, source), join(dir, f));
+  for (const f of readdirSync(source).filter((x) => /^\d{4}-.+\.sql$/.test(x))) if (Number(f.slice(0, 4)) <= 30) copyFileSync(new URL(f, source), join(dir, f));
   migrate(db, dir + '/');
   db.exec('ALTER TABLE swn_conceptions ADD COLUMN equipage INTEGER');
   semerBouchon(db);
@@ -245,7 +245,7 @@ test('0030 : montée depuis 0029 avec le semis, conceptions gardées, equipage N
   const n = () => (db.prepare('SELECT COUNT(*) n FROM swn_conceptions').get() as any).n as number;
   const avant = db.prepare('SELECT fiche_id, coque_cle, choix, resultat, version FROM swn_conceptions ORDER BY fiche_id').all();
   assert.ok(n() >= 2);
-  assert.deepEqual(migrate(db), [30]);
+  assert.deepEqual(migrate(db), [31]);
   assert.deepEqual(db.prepare('SELECT fiche_id, coque_cle, choix, resultat, version FROM swn_conceptions ORDER BY fiche_id').all(), avant);
   assert.equal((db.prepare('SELECT COUNT(*) n FROM swn_conceptions WHERE equipage IS NOT NULL').get() as any).n, 0);
   assert.deepEqual(db.pragma('foreign_key_check'), []);

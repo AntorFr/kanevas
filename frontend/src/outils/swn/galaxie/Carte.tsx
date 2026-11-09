@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ErreurApi, lire, useConnexionPerdue } from '../../../api';
 import { Bouton } from '../../../ui';
 import { abreger, abregerType, placerEtiquetteType, BLOCS_MAX, bloc, cases, COTE_BLOC, distanceHex, TAILLE_MAX, TAILLE_MIN, tailleMinimale, versHex, versPlan } from './geo';
+import { ZoneHexagones } from './ZoneHexagones';
 import type { Geste, Reference, RouteCarte, Selection, SystemeCarte, Touche, VueBlocs, VueGalaxie, ZoneCarte } from './types';
 
 const RACINE_3 = Math.sqrt(3);
@@ -352,6 +353,11 @@ export function CarteHex({ base, suffixe, galaxie, selection, onSelection, mesur
         <rect width="100%" height="100%" fill="url(#gx-grille)" />
         {manquants.map((m) => <polygon key={cleBloc(m.bx, m.by)} points={blocPoly(m)} fill="url(#gx-hachure)" className="gx-manquant" />)}
         {[...donnees.zones.values()].map((z) => {
+          if (z.plages) {
+            return <ZoneHexagones key={z.id} zone={z} decal={decal} echelle={vue.s} etiquettes={vue.s >= SEUIL_ETIQUETTES}
+              choisie={z.cle !== undefined && selection?.k === 'zone' && selection.cle === z.cle} cliquable={z.cle !== undefined} mode={!!mode}
+              onClic={() => { if (!geste.current.bouge) onSelection({ k: 'zone', cle: z.cle! }); }} />;
+          }
           const pts = z.contour.map(([q, r]) => px(q, r));
           const c = pts.reduce((a, p) => ({ x: a.x + p.x / pts.length, y: a.y + p.y / pts.length }), { x: 0, y: 0 });
           return (
