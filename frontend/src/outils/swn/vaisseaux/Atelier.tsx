@@ -374,11 +374,13 @@ function Corps({ universId, suffixe, saved, onSaved, onRecharger }: {
                     {lignes.map(({ l, i }) => (
                       <li key={`${l.nature}/${l.cle}`} className="vx-ligne-choix">
                         <div className="vx-element-texte">
-                          <span className="vx-nom">{l.nom}</span>
+                          <span className="vx-nom-ligne">
+                            <span className="vx-nom">{l.nom}</span>
+                            {classeInadaptee.has(i) && <Pastille sens="neutre">Classe</Pastille>}
+                          </span>
                           {infos[`${l.nature}/${l.cle}`]?.chiffres && <span className="vx-sous">{infos[`${l.nature}/${l.cle}`]?.chiffres}</span>}
                           {infos[`${l.nature}/${l.cle}`]?.el.donnees?.condition && <span className="vx-sous vx-condition">{infos[`${l.nature}/${l.cle}`]?.el.donnees?.condition}</span>}
                         </div>
-                        {classeInadaptee.has(i) && <Pastille sens="neutre">Classe</Pastille>}
                         {infos[`${l.nature}/${l.cle}`]?.univers && <Pastille sens="neutre">Univers</Pastille>}
                         {retirees.has(i) && <Pastille sens="danger">Élément retiré de cet univers</Pastille>}
                         {!ecriture ? (
