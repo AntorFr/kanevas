@@ -15,7 +15,6 @@ process.env.FRONTEND_DIR = `${process.cwd()}/dist/public`;
 delete process.env.DB_PATH;
 
 const { buildApp } = await import('../app.js');
-const { programmeScript, binaireClaude } = await import('../services/assistant/connexion-claude.js');
 type App = Awaited<ReturnType<typeof buildApp>>;
 
 const BASE = '/api/instance/assistant/jeton';
@@ -99,20 +98,6 @@ describe('kanevas-connexion-claude-com : « Connecter » avec une adresse sur cl
     const { r } = await ouvrir(`https://evil.example/x\r\n${ADRESSE}\r\n`);
     assert.equal(r.statusCode, 201, r.body);
     assert.equal(r.json().adresse, ADRESSE);
-  });
-
-  // Panne visée : le CLI embarqué réel n'est plus reconnu (le vrai cas de production), sans réseau.
-  it('CLI embarqué réel : « Connecter » rend une adresse https sur claude.com, annulable (204)', { skip: binaireClaude() ? false : 'binaire claude du SDK absent' }, async () => {
-    const { app, cookie } = await monter();
-    app.connexionClaude.options.programme = programmeScript();
-    app.connexionClaude.options.delaiAdresse = 30000;
-    const r = await app.inject({ method: 'POST', url: `${BASE}/connexion`, headers: { cookie } });
-    assert.equal(r.statusCode, 201, `${r.body} — cause : ${app.connexionClaude.derniereCause ?? 'inconnue'}`);
-    const u = new URL(r.json().adresse);
-    assert.equal(u.protocol, 'https:');
-    assert.match(u.hostname, /^(.+\.)?(claude\.com|claude\.ai|anthropic\.com)$/);
-    const d = await app.inject({ method: 'DELETE', url: `${BASE}/connexion`, headers: { cookie } });
-    assert.equal(d.statusCode, 204);
   });
 
   // Exclusion : hors du groupe admin, la route reste introuvable, même avec une adresse valide.

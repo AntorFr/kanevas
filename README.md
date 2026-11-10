@@ -68,7 +68,7 @@ reste désactivé (`/api/auth/oidc/login` répond 404). Pour l'activer, créer `
 aussi `node_modules/` dans le dépôt de l'hôte (ignoré par git) ; il appartient à root : à supprimer par
 `docker run --rm -v "$PWD":/src -w /src node:20-bookworm-slim rm -rf node_modules` ou `sudo rm -rf node_modules`.
 
-Ou, avec un Node 20+ installé localement (`engines` : `>=20` ; la suite passe aussi sous Node 22, la CI joue Node 20) :
+Ou, avec un Node 20+ installé localement (`engines` : `>=20` ; la suite passe aussi sous Node 22, la CI joue Node 20 ; `better-sqlite3` reste en `^12` parce que la 13 exige Node ≥ 22) :
 
 ```bash
 npm ci   # not `npm install`; run it to the end, also on a clone that already has a node_modules/
@@ -133,6 +133,8 @@ the original command with their id and token: the first-run counts must match. T
 token belongs to the deleted universe and cannot be reused for the new one.
 
 ### Sans Authelia : le mode bouchon
+
+Le « bouchon » (*stub*) est le mode `KANEVAS_STUB=1` : pas d'Authelia, des comptes de test et un script qui répond à la place du modèle. C'est la commande pour voir l'application ; le bloc `docker run … npm run dev` plus haut ne sert que l'API (`/healthz`).
 
 ```bash
 npm ci && npm run build && KANEVAS_STUB=1 npm start   # puis ouvrir http://localhost:3001/ : choix d'un compte de test
@@ -263,7 +265,7 @@ Playwright. Le build n'est lancé que si `dist/public/index.html` manque : aprè
 Les textes de `docs/ecrans.md` sont écrits avec l'apostrophe droite ; l'interface porte l'apostrophe typographique (’).
 Playwright n'est pas une dépendance du dépôt : il doit être installé globalement
 (`/usr/lib/node_modules` ou `/usr/local/lib/node_modules`) or in the current directory (`npm install --no-save playwright@1.63.0`) avec un Chromium, ce que ne fait pas
-`node:20-bookworm-slim` ; le workflow manuel `tests.yml` l'installe en local, donc il joue les e2e. Pour savoir s'il est vu : `ls /usr/lib/node_modules/playwright` (this only proves the package: Chromium must be installed too, possibly under `PLAYWRIGHT_BROWSERS_PATH`). Là où il manque, ces tests sont **ignorés avec un message**,
+`node:20-bookworm-slim` ; le workflow manuel `tests.yml` l'installe en local, donc il joue les e2e. Pour savoir s'il est vu : `ls /usr/lib/node_modules/playwright` (this only proves the package: install Chromium too with `npx playwright install --with-deps chromium`, as `tests.yml` does; it may live under `PLAYWRIGHT_BROWSERS_PATH`). Là où il manque, ces tests sont **ignorés avec un message**,
 sans échec ; les autres tests (services, routes HTTP) tournent partout. Every e2e server is ready once `/healthz` answers 200 (`attendreServeurPret`, `src/e2e/harnais.test.ts`, used by `startServer` and by the test files that spawn their own server): the wait stops as soon as the server exits and fails after 30 s without any CPU time consumed by the server (a starved server that still progresses keeps going, ceiling 180 s); the failure message ("server did not start") gives the elapsed time and the tail of the server's output. Allow about ten minutes without e2e tests and thirty with Playwright; a full `npm run tests:attestes` (typecheck, build and every test, two files at a time) took about 36 minutes on a 12-CPU pod, and a run silent for much longer than that is stuck. `npm run tests:attestes` writes the exact totals to `rapport-tests.json`; a skipped-browser message means Playwright was not found.
 An e2e test must wait for the state it reads (an element appearing or disappearing, navigation completing), never a fixed delay: under load, a test that reads the DOM too early fails at random. To reproduce the conditions of `tests.yml` (4 cores, two files at a time), run from the repository root (about 28 minutes for `src/e2e` in a pod), after `npm run build` (a stale `dist/` silently plays the old code: rebuild after any change to `src/` or `frontend/`) and without rerunning typecheck or build: `taskset -c 0-3 node --import tsx --test --test-concurrency=2 $(find src/e2e -name '*.test.ts')`. If an e2e test times out under heavy load (8 s in files that set it, Playwright's default of 30 s elsewhere), rerun it alone (`node --import tsx --test src/e2e/<fichier>.test.ts`) before treating it as a defect.
 Recette de l'administration en bouchon (le monde de démonstration est semé : « Lame d'Ébène », « Les Landes grises », « Les Cendres de Vaëlis », cinq comptes déjà connus) : se connecter en « Admin », ouvrir `/administration`, choisir « Lame d'Ébène » (où Admin n'a aucun rôle) et ajouter « mira ». Un compte jamais connecté (« nadia ») est refusé. Les e2e `src/e2e/administration*.test.ts` pilotent E-5.

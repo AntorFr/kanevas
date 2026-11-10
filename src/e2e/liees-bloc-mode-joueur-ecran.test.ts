@@ -25,11 +25,12 @@ let portSel = 0;
 
 const norm = (s: string): string => s.replace(/\s+/g, ' ').replace(/’/g, "'").trim();
 const bloc = (page: Any) => page.getByRole('region', { name: /^Fiches liées$/ });
-async function ouvrirPortSel(page: Any): Promise<Any> {
+async function ouvrirPortSel(page: Any, comptes: RegExp = /Personnages \(1\)/): Promise<Any> {
   await page.goto(`/univers/${U}/fiche/${portSel}`);
   const b = bloc(page);
   await b.waitFor();
   await b.getByText('Chargement…').waitFor({ state: 'detached' });
+  await b.getByRole('region', { name: "S'y trouvent" }).getByRole('heading', { level: 3, name: comptes }).waitFor();
   return b;
 }
 const titres = async (b: Any): Promise<string[]> => (await b.locator('li.ligne-liee a.titre-liee').allInnerTexts()).map(norm);
@@ -77,6 +78,7 @@ describe('kanevas-fiches-liees-bloc, le bloc lu par un joueur (B-64)', { skip: s
     const b = await ouvrirPortSel(lea);
     assert.equal(await entete(b), "S'y trouvent : Personnages (1)");
     await b.getByRole('checkbox', { name: 'sous-lieux compris' }).click();
+    await b.getByRole('region', { name: "S'y trouvent" }).getByRole('heading', { level: 3, name: /Personnages \(2\)/ }).waitFor();
     await b.getByText('Suie').waitFor();
     assert.match(await entete(b), /^S'y trouvent : Personnages \(2\)/);
     const t = await titres(b);
@@ -91,7 +93,7 @@ describe('kanevas-fiches-liees-bloc, le bloc lu par un joueur (B-64)', { skip: s
     // failure: a line of the block pushes the page wider than the 360 px screen
     await lea.setViewportSize({ width: 360, height: 780 });
     try {
-      const b = await ouvrirPortSel(lea);
+      const b = await ouvrirPortSel(lea, /Personnages \(\d+\)/); // the toggle of the previous case is remembered
       await b.getByText('Maître Aldric').waitFor();
       const { scroll, vue } = await lea.evaluate(() => ({ scroll: document.documentElement.scrollWidth, vue: window.innerWidth }));
       assert.ok(scroll <= vue, `scrollWidth ${scroll} > largeur ${vue}`);
