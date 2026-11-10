@@ -56,6 +56,17 @@ export interface ElementResolu {
   perforation?: number
   qualites?: string
   niveau_tech?: number
+  /** Stated by the catalogue only (X-1); absent = not stated. */
+  cout_pct?: number
+  effet?: string
+  valeur?: number
+  points_max?: number
+  sens?: string
+  echange_puissance?: number
+  echange_masse?: number
+  rend_puissance?: number[]
+  rend_masse?: number[]
+  soute?: number
 }
 
 export interface LigneResolue {
