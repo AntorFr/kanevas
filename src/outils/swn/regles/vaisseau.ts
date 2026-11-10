@@ -76,6 +76,9 @@ export interface LigneResolue {
   quantite: number
   /** Weapons only: extra magazines per unit (E-3), each one `MASSE_MAGASIN` of mass and its munitions. */
   magasins?: number
+  /** X-4: points of an `echange` line (default 0) and the line a doubling aims at. */
+  points?: number
+  vise?: { nature: NatureVaisseau; cle: string }
   element: ElementResolu
 }
 
@@ -92,7 +95,14 @@ export interface AlerteVaisseau {
 
 export interface ResultatVaisseau {
   coque: { cle: string; nom: string; classe: number }
-  lignes: { nature: NatureVaisseau; cle: string; nom: string; quantite: number; magasins?: number }[]
+  lignes: {
+    nature: NatureVaisseau; cle: string; nom: string; quantite: number; magasins?: number
+    /** X-3: only on a line whose element states `cout_pct`. */
+    cout?: number
+    points?: number
+    echange?: { puissance: number; masse: number }
+    vise?: { nature: NatureVaisseau; cle: string }
+  }[]
   prix: number
   pv: number
   ca: number
@@ -106,6 +116,9 @@ export interface ResultatVaisseau {
   vitesse?: number | null
   armure?: number | null
   equipage?: { choisi: number; min: number | null; max: number | null } | null
+  /** X-3: absent in a result stored before the slice, read as `null`. */
+  soutes?: number | null
+  reparation?: { choisie: number; min: number | null } | null
   alertes: AlerteVaisseau[]
 }
 
@@ -119,6 +132,7 @@ export function calculer(
   lignes: LigneResolue[],
   reglages: ReglagesVaisseau,
   equipage: number | null = null,
+  reparation = 0,
 ): ResultatVaisseau {
   let prix = coque.cout
   let pv = coque.pv
@@ -129,11 +143,27 @@ export function calculer(
   let uniteMoteur = 0
   let niveauMoteur: number | null = null
   let bonusVitesse = 0
+  let effetVitesse = 0
+  let effetArmure = 0
+  let soutes = null as number | null
+  let reparationMin = null as number | null
+  const coutsLigne = new Map<number, number>()
+  const echanges = new Map<number, { puissance: number; masse: number }>()
+  // X-2: a doubling aims at one line of the design, named by its pair.
+  const visee = (cible: LigneResolue | undefined, nature: NatureVaisseau, effet: string) =>
+    cible !== undefined && cible.nature === nature && lignes.some((m) => m.element.effet === effet && m.vise?.nature === cible.nature && m.vise.cle === cible.cle)
 
-  lignes.forEach((l) => {
+  lignes.forEach((l, i) => {
     const e = l.element
     const q = l.quantite
-    prix += e.cout * (e.x_cout ? coque.facteur_cout : 1) * q
+    let coutLigne = e.cout * (e.x_cout ? coque.facteur_cout : 1) * q
+    if (e.cout_pct !== undefined) coutLigne += Math.floor((coque.cout * e.cout_pct + 50) / 100) * q
+    prix += coutLigne
+    if (e.cout_pct !== undefined) coutsLigne.set(i, coutLigne)
+    if (e.effet === 'vitesse') effetVitesse += (e.valeur ?? 0) * q
+    if (e.effet === 'armure') effetArmure += (e.valeur ?? 0) * q
+    if (e.effet === 'reparation_min') reparationMin = Math.max(reparationMin ?? 0, e.valeur ?? 0)
+    if (e.soute !== undefined) soutes = (soutes ?? 0) + e.soute * q * (visee(l, 'amenagements', 'soutes_doublees') ? 2 : 1)
     puissanceUsee += e.puissance * (e.x_puissance ? coque.facteur_puissance : 1) * q
     masseUsee += e.masse * (e.x_masse ? coque.facteur_masse : 1) * q
     pv += e.pv * q
@@ -143,8 +173,9 @@ export function calculer(
       const doublements = e.classe_min === undefined ? 0 : Math.max(0, coque.classe - e.classe_min)
       const munitions = (e.munitions ?? 0) * (e.cout_munition ?? 0) * 2 ** doublements
       const magasins = l.magasins ?? 0
-      prix += munitions * (1 + magasins) * q
-      masseUsee += MASSE_MAGASIN * magasins * q
+      const double = visee(l, 'armes', 'magasins_doubles') ? 2 : 1
+      prix += munitions * (1 + magasins) * q * double
+      masseUsee += MASSE_MAGASIN * magasins * q * double
       emportsUtilises += (e.emport ?? 0) * q
     }
     if (l.nature === 'moteurs' && q > 0) {
@@ -153,8 +184,29 @@ export function calculer(
     }
   })
 
-  const puissanceLibre = coque.puissance - puissanceUsee
-  const masseLibre = coque.masse - masseUsee
+  let puissanceLibre = coque.puissance - puissanceUsee
+  let masseLibre = coque.masse - masseUsee
+  let unitesSysteme = 0
+  // X-3, in order: the sums above, then the system engine, then the exchange of points.
+  lignes.forEach((l) => {
+    const e = l.element
+    if (e.effet !== 'moteur_systeme') return
+    unitesSysteme += l.quantite
+    puissanceLibre += (e.rend_puissance?.[coque.classe - 1] ?? 0) * l.quantite
+    masseLibre += (e.rend_masse?.[coque.classe - 1] ?? 0) * l.quantite
+  })
+  lignes.forEach((l, i) => {
+    const e = l.element
+    if (e.effet !== 'echange') return
+    const p = l.points ?? 0
+    const puissance = p * (e.echange_puissance ?? 0)
+    const masse = p * (e.echange_masse ?? 0)
+    const vers = e.sens === 'masse_vers_puissance'
+    const delta = { puissance: vers ? puissance : 0 - puissance, masse: vers ? 0 - masse : masse }
+    puissanceLibre += delta.puissance
+    masseLibre += delta.masse
+    echanges.set(i, delta)
+  })
   const emports = { utilises: emportsUtilises, total: coque.emports }
 
   const bloquantes: AlerteVaisseau[] = []
@@ -187,6 +239,21 @@ export function calculer(
       bloquantes.push({ niveau: 'bloquante', code: 'classe_inadaptee', texte: `« ${l.nom} » : classe de coque ${borne}.`, ligne: i })
     }
   })
+  if (unitesSysteme > 1) {
+    bloquantes.push({ niveau: 'bloquante', code: 'moteur_systeme_multiple', texte: 'Un seul moteur système par vaisseau.' })
+  }
+  lignes.forEach((l, i) => {
+    const effet = l.element.effet
+    if (effet !== 'soutes_doublees' && effet !== 'magasins_doubles') return
+    let raison: string
+    const cible = l.vise === undefined ? undefined : lignes.find((m) => m.nature === l.vise!.nature && m.cle === l.vise!.cle)
+    if (l.vise === undefined) raison = 'choisissez l\'élément visé.'
+    else if (cible === undefined) raison = 'l\'élément visé n\'est pas dans cette conception.'
+    else if (effet === 'soutes_doublees' ? !(cible.nature === 'amenagements' && cible.element.soute !== undefined) : cible.nature !== 'armes') {
+      raison = 'cet élément ne peut pas être visé.'
+    } else return
+    bloquantes.push({ niveau: 'bloquante', code: 'cible_invalide', texte: `« ${l.nom} » : ${raison}`, ligne: i })
+  })
   if (uniteMoteur === 0) {
     surveiller.push({ niveau: 'a_surveiller', code: 'moteur_absent', texte: 'Aucun moteur de saut : ce vaisseau ne peut pas voyager.' })
   }
@@ -204,10 +271,24 @@ export function calculer(
   if (equipage !== null && max !== null && equipage > max) {
     surveiller.push({ niveau: 'a_surveiller', code: 'equipage_excessif', texte: `Équipage excessif : ${equipage} sur ${max} au plus.` })
   }
+  lignes.forEach((l, i) => {
+    const min = l.element.effet === 'reparation_min' ? (l.element.valeur ?? 0) : 0
+    if (min > reparation) {
+      surveiller.push({ niveau: 'a_surveiller', code: 'reparation_insuffisante', texte: `« ${l.nom} » : réparation ${min} au moins (${reparation} choisie).`, ligne: i })
+    }
+  })
+
+  const vitesseBase = coque.vitesse === undefined ? null : Math.max(0, coque.vitesse + bonusVitesse + effetVitesse)
+  const armureBase = coque.armure === undefined ? null : Math.max(0, coque.armure + effetArmure)
 
   return {
     coque: { cle: coque.cle, nom: coque.nom, classe: coque.classe },
-    lignes: lignes.map((l) => ({ nature: l.nature, cle: l.cle, nom: l.nom, quantite: l.quantite, ...(l.magasins ? { magasins: l.magasins } : {}) })),
+    lignes: lignes.map((l, i) => ({
+      nature: l.nature, cle: l.cle, nom: l.nom, quantite: l.quantite, ...(l.magasins ? { magasins: l.magasins } : {}),
+      ...(coutsLigne.has(i) ? { cout: coutsLigne.get(i)! } : {}),
+      ...(echanges.has(i) ? { points: l.points ?? 0, echange: echanges.get(i)! } : {}),
+      ...(l.vise ? { vise: { nature: l.vise.nature, cle: l.vise.cle } } : {}),
+    })),
     prix,
     pv,
     ca,
@@ -217,9 +298,11 @@ export function calculer(
     chantierJours: Math.ceil(prix / CADENCE_CHANTIER),
     entretien: Math.floor(prix * TAUX_ENTRETIEN + 0.5 + 1e-9),
     porteeSaut: niveauMoteur === null ? null : reglages.porteeSaut * (niveauMoteur + 1),
-    vitesse: coque.vitesse === undefined ? null : coque.vitesse + bonusVitesse,
-    armure: coque.armure ?? null,
+    vitesse: vitesseBase,
+    armure: armureBase,
     equipage: equipage === null ? null : { choisi: equipage, min, max },
+    soutes,
+    reparation: reparationMin === null && reparation === 0 ? null : { choisie: reparation, min: reparationMin },
     alertes: [...bloquantes, ...surveiller],
   }
 }

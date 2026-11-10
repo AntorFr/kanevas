@@ -12,13 +12,15 @@ import { calculerResolu, resoudreChoix, versionSourceVaisseaux, versionsSource, 
 
 export interface LigneConception {
   id: number; univers_id: number; fiche_id: number; section_id: number | null; coque_cle: string; choix: string;
-  version_reglages: string; version_catalogue: string; resultat: string; version: number; equipage: number | null;
+  version_reglages: string; version_catalogue: string; resultat: string; version: number; equipage: number | null; reparation: number;
 }
 /** Everything the hook stores; the opaque `charge` of V-4. */
 export interface ChargeConception {
   coque: string; lignes: LigneChoix[]; resultat: ResultatVaisseau; versionReglages: string; versionCatalogue: string;
   /** Resolved at the save (F-2). */
   equipage: number | null;
+  /** The repair skill, 0 to 20 (X-4). */
+  reparation: number;
 }
 
 export const ligneDe = (db: Db, ficheId: number): LigneConception | undefined =>
@@ -41,7 +43,7 @@ export function produire(ctx: ContexteSection): { contenu: string; sourceVersion
   const l = ligneDe(ctx.db, ctx.ficheId);
   if (!l) throw introuvable();
   const choix = JSON.parse(l.choix) as LigneChoix[];
-  const r = resoudreChoix(ctx.db, ctx.universId, { coque: l.coque_cle, choix, equipage: l.equipage }, porteDe(l));
+  const r = resoudreChoix(ctx.db, ctx.universId, { coque: l.coque_cle, choix, equipage: l.equipage, reparation: l.reparation }, porteDe(l));
   const s = calculerResolu(ctx.db, ctx.universId, r);
   if (s.resultat === null) {
     throw new ErreurService('invalide', `Élément retiré de cet univers : ${r.nomsRetires[0] ?? ''}. Remplacez-le dans le concepteur.`,
@@ -49,7 +51,7 @@ export function produire(ctx: ContexteSection): { contenu: string; sourceVersion
   }
   const v = versionsSource(ctx.db, ctx.universId);
   const charge: ChargeConception = { coque: l.coque_cle, lignes: choix, resultat: s.resultat,
-    versionReglages: v.reglages, versionCatalogue: v.catalogue, equipage: l.equipage };
+    versionReglages: v.reglages, versionCatalogue: v.catalogue, equipage: l.equipage, reparation: l.reparation };
   return { contenu: texteVaisseau(s.resultat), sourceVersion: versionSourceVaisseaux(ctx.db, ctx.universId), charge };
 }
 
@@ -60,12 +62,19 @@ export function apresEcriture(ctx: ContexteSection, ecrit: EcritSection): void {
     throw new ErreurService('invalide', 'Cette section ne s\'écrit que par le concepteur de vaisseaux.', 'section_geree');
   }
   const valeurs = [ctx.sectionId, c.coque, JSON.stringify(c.lignes), c.versionReglages, c.versionCatalogue, JSON.stringify(c.resultat), c.equipage];
-  if (ligneDe(ctx.db, ctx.ficheId)) {
+  const existante = ligneDe(ctx.db, ctx.ficheId);
+  if (existante) {
+    // The skill is written only when it moves: a row that already has it (or the default) is left as it is.
+    const change = (existante.reparation ?? 0) !== c.reparation;
     ctx.db.prepare(`UPDATE swn_conceptions SET section_id = ?, coque_cle = ?, choix = ?, version_reglages = ?,
-      version_catalogue = ?, resultat = ?, equipage = ?, version = version + 1 WHERE fiche_id = ?`).run(...valeurs, ctx.ficheId);
+      version_catalogue = ?, resultat = ?, equipage = ?${change ? ', reparation = ?' : ''}, version = version + 1 WHERE fiche_id = ?`)
+      .run(...valeurs, ...(change ? [c.reparation] : []), ctx.ficheId);
   } else {
+    // A new design has the column's default (0, X-4) unless the charge says otherwise.
+    const avecReparation = c.reparation !== 0;
     ctx.db.prepare(`INSERT INTO swn_conceptions (univers_id, fiche_id, section_id, coque_cle, choix, version_reglages,
-      version_catalogue, resultat, equipage) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`).run(ctx.universId, ctx.ficheId, ...valeurs);
+      version_catalogue, resultat, equipage${avecReparation ? ', reparation' : ''}) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?${avecReparation ? ', ?' : ''})`)
+      .run(ctx.universId, ctx.ficheId, ...valeurs, ...(avecReparation ? [c.reparation] : []));
   }
 }
 
