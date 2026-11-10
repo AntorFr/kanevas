@@ -15,6 +15,7 @@ type Champ =
   | { nom: string; type: 'reel'; min: number; max: number; facultatif: true }
   | { nom: string; type: 'code'; facultatif: true }
   | { nom: string; type: 'liste4'; facultatif: true }
+  | { nom: string; type: 'verifie'; min: number; max: number; phrase: string; facultatif: true }
   | { nom: string; type: 'oui-non' }
   | { nom: string; type: 'texte' }
   | { nom: string; type: 'choix' };
@@ -30,6 +31,8 @@ const reel = (nom: string, min: number, max: number): Champ => ({ nom, type: 're
 const code = (nom: string): Champ => ({ nom, type: 'code', facultatif: true });
 /** X-1: four optional numbers, one per hull class, checked by the import and stored as JSON text. */
 const liste4 = (nom: string): Champ => ({ nom, type: 'liste4', facultatif: true });
+/** Y-1: an optional integer whose malformed values the import refuses with its own sentence (E-20), in `verifier`; stored as an integer. */
+const verifie = (nom: string, min: number, max: number, phrase: string): Champ => ({ nom, type: 'verifie', min, max, phrase, facultatif: true });
 const masse = (): Champ => ({ nom: 'masse', type: 'masse' });
 const ouiNon = (nom: string): Champ => ({ nom, type: 'oui-non' });
 
@@ -51,12 +54,14 @@ const CHAMPS: Record<NatureCatalogueVaisseau, Champ[]> = {
     entier('emports'), entier('facteur_cout', 1), entier('facteur_puissance', 1), entier('facteur_masse', 1),
     facultatif('vitesse', 0, 99), facultatif('armure', 0, 99), facultatif('equipage_min', 0, 100_000), facultatif('equipage_max', 0, 100_000)],
   moteurs: [entier('niveau', 1, 6), ...ELEMENT, ...PLAGE_CLASSES],
-  amenagements: [...ELEMENT, ...PLAGE_CLASSES, code('effet'), liste4('rend_puissance'), liste4('rend_masse'), facultatif('soute', 0, 1_000_000)],
-  defenses: [...ELEMENT, ...PLAGE_CLASSES, facultatif('bonus_vitesse', 0, 9)],
+  amenagements: [...ELEMENT, ...PLAGE_CLASSES, code('effet'), liste4('rend_puissance'), liste4('rend_masse'), facultatif('soute', 0, 1_000_000),
+    liste4('soute_par_classe'), verifie('reduction_cout_pct', 1, 100, 'nombre entier de 1 à 100 attendu')],
+  defenses: [...ELEMENT, ...PLAGE_CLASSES, verifie('bonus_vitesse', -9, 9, 'nombre entier de −9 à 9 attendu')],
   armes: [entier('emport'), entier('munitions'), entier('cout_munition'), entier('classe_min', 1, 4, 1), ...ELEMENT,
     texteLibre('degats', 40), facultatif('perforation', 0, 99), texteLibre('qualites', 120), facultatif('niveau_tech', 0, 9)],
   modifications: [...ELEMENT, facultatif('cout_pct', 1, 1000), code('effet'), facultatif('valeur', -9, 20), facultatif('points_max', 1, 99),
-    code('sens'), facultatif('echange_puissance', 1, 99), reel('echange_masse', 0.5, 99)],
+    code('sens'), facultatif('echange_puissance', 1, 99), reel('echange_masse', 0.5, 99),
+    verifie('reparation_min', 1, 20, 'nombre entier de 1 à 20 attendu')],
   exemples: [{ nom: 'coque', type: 'texte' }, { nom: 'choix', type: 'choix' }, facultatif('equipage', 0, 100_000)],
 };
 
@@ -69,7 +74,7 @@ function schemaDe(nature: NatureCatalogueVaisseau): z.ZodObject {
   const forme: Record<string, z.ZodType> = { nom: z.string().min(1).max(200) };
   for (const c of CHAMPS[nature]) {
     if (c.type === 'code') { forme[c.nom] = z.string().optional(); continue; }
-    if (c.type === 'liste4') { forme[c.nom] = z.unknown().optional(); continue; }
+    if (c.type === 'liste4' || c.type === 'verifie') { forme[c.nom] = z.unknown().optional(); continue; }
     if (c.type === 'reel') { forme[c.nom] = z.number().min(c.min).max(c.max).multipleOf(0.5).optional(); continue; }
     if (c.type === 'texte-libre') { forme[c.nom] = z.string().trim().min(1).max(c.max).optional(); continue; }
     forme[c.nom] = c.type === 'masse' ? z.number().min(0).max(1_000_000).multipleOf(0.5)
@@ -82,6 +87,8 @@ function schemaDe(nature: NatureCatalogueVaisseau): z.ZodObject {
       : c.type === 'texte' ? cleSchema
       : z.array(ligneChoix).max(100);
   }
+  // Y-1: a modification may state the field to be refused with the reason of its own (checked in `verifier`).
+  if (nature === 'modifications') forme.reduction_cout_pct = z.unknown().optional();
   return z.strictObject(forme);
 }
 
@@ -211,6 +218,28 @@ function resume(nature: NatureCatalogueVaisseau, d: Record<string, unknown>): st
 }
 
 type Refus = { champ: string; raison: string } | null;
+const SOUTE_PAR_CLASSE = 'quatre nombres entiers de 0 à 1 000 000 attendus (classes 1 à 4)';
+const entierDans = (v: unknown, min: number, max: number): boolean => typeof v === 'number' && Number.isInteger(v) && v >= min && v <= max;
+/** Y-1: the fields whose malformed value carries a sentence of E-20 (a `null` included), the first one that is stated and wrong. */
+function verifierFormes(nature: NatureCatalogueVaisseau, d: Record<string, unknown>): Refus {
+  for (const c of CHAMPS[nature]) {
+    if (c.type === 'verifie' && d[c.nom] !== undefined && !entierDans(d[c.nom], c.min, c.max)) return { champ: c.nom, raison: c.phrase };
+  }
+  const s = d.soute_par_classe;
+  if (nature === 'amenagements' && s !== undefined
+    && !(Array.isArray(s) && s.length === 4 && s.every((x) => entierDans(x, 0, 1_000_000)))) return { champ: 'soute_par_classe', raison: SOUTE_PAR_CLASSE };
+  return null;
+}
+const REDUCTION_RESERVEE: Refus = { champ: 'reduction_cout_pct', raison: 'réduction du coût réservée au moteur système' };
+/** Y-1: the rules between the new fields and the effect. */
+function verifierCroises(nature: NatureCatalogueVaisseau, d: Record<string, unknown>): Refus {
+  if (nature === 'modifications') {
+    if (d.reduction_cout_pct !== undefined) return REDUCTION_RESERVEE;
+    if (d.reparation_min !== undefined && d.effet === 'reparation_min') return { champ: 'reparation_min', raison: "déjà dit par l'effet" };
+  }
+  if (nature === 'amenagements' && d.reduction_cout_pct !== undefined && d.effet !== 'moteur_systeme') return REDUCTION_RESERVEE;
+  return null;
+}
 const quatre = (v: unknown, masse: boolean): boolean => Array.isArray(v) && v.length === 4
   && v.every((x) => typeof x === 'number' && x >= 0 && x <= 1_000_000 && (masse ? x % 0.5 === 0 : Number.isInteger(x)));
 /** X-1: the rules between the fields of a modification or a fitting — the effect, its parameters (required with it, refused without it), `limite` 1. */
@@ -251,6 +280,8 @@ export const catalogueVaisseaux: DeclarationCatalogue = {
   stockage: stockageVaisseaux,
   /** V-10: a hull and every line of an example must resolve at the level of the import, else the example is refused. */
   verifier(nature, donnees, { existe }) {
+    const forme = verifierFormes(nature as NatureCatalogueVaisseau, donnees) ?? verifierCroises(nature as NatureCatalogueVaisseau, donnees);
+    if (forme) return forme;
     const bornes = (min: string, max: string, champ: string) => {
       const a = donnees[min], b = donnees[max];
       return typeof a === 'number' && typeof b === 'number' && a > b ? { champ, raison: `${min} au plus égal à ${max}` } : null;

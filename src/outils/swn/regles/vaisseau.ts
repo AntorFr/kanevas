@@ -67,6 +67,10 @@ export interface ElementResolu {
   rend_puissance?: number[]
   rend_masse?: number[]
   soute?: number
+  /** Stated by the catalogue only (Y-1); the sheets print them, the calculation reads them in its own slice. */
+  soute_par_classe?: number[]
+  reduction_cout_pct?: number
+  reparation_min?: number
 }
 
 export interface LigneResolue {
