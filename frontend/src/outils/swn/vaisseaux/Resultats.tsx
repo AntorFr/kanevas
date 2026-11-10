@@ -14,6 +14,7 @@ export function Chiffres({ r }: { r: Resultat }) {
     ...(r.vitesse != null ? [['Vitesse', String(r.vitesse)] as [string, string]] : []),
     ...(r.armure != null ? [['Armure', String(r.armure)] as [string, string]] : []),
     ...(r.equipage != null ? [['Équipage', String(r.equipage.choisi)] as [string, string]] : []),
+    ...(r.soutes != null ? [['Soutes', nombre(r.soutes)] as [string, string]] : []),
     ['Puissance libre', nombre(r.puissanceLibre)],
     ['Masse libre', masse(r.masseLibre)],
     ['Emports', `${r.emports.utilises} / ${r.emports.total}`],
