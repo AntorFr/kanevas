@@ -249,7 +249,7 @@ test('0031 : montée depuis 0030 avec le semis, conceptions gardées, equipage N
   const n = () => (db.prepare('SELECT COUNT(*) n FROM swn_conceptions').get() as any).n as number;
   const avant = db.prepare('SELECT fiche_id, coque_cle, choix, resultat, version FROM swn_conceptions ORDER BY fiche_id').all();
   assert.ok(n() >= 2);
-  assert.deepEqual(migrate(db), [31, 32, 33]);
+  assert.deepEqual(migrate(db), [31, 32, 33, 34]);
   assert.deepEqual(db.prepare('SELECT fiche_id, coque_cle, choix, resultat, version FROM swn_conceptions ORDER BY fiche_id').all(), avant);
   assert.equal((db.prepare('SELECT COUNT(*) n FROM swn_conceptions WHERE equipage IS NOT NULL').get() as any).n, 0);
   assert.deepEqual(db.pragma('foreign_key_check'), []);
