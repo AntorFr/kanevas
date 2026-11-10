@@ -1354,7 +1354,7 @@ the two guards), `descendantsDe` (point 3 of the `-recherche` notes), the sheet-
    of a nature (`lieu`, `faction`, `famille`, `objet`, `vaisseau`, plus `personnage` for the symmetric natures — the list is
    copied in `liees.tsx` from `natures.ts`: a new nature on another type needs it extended there) with `rang: 90, place: 'bas'`: « Mentionnée dans » is not a registry block (`fiche.tsx` draws it after the `bas` blocks), so the order comes from the slot, not from the rank; every role; the slot where the registry draws sheet blocks relative
    to the sections is AD-124 (1)'s and is not moved here, « before Mentionnée dans » holds in either slot. It loads its own
-   answer (`GET …/liees`), not carried by `lireFiche`: states « Chargement… », « Impossible de charger les fiches liées. » with
+   answer (`GET …/liees`), not carried by `lireFiche`: states « Chargement… » (kept until its data are read **and** the sheet types have arrived, `blocEnAttente`, so a group title is never composed with the raw type; types in error: the block shows, falling back on the raw type), « Impossible de charger les fiches liées. » with
    « Réessayer » (`docs/ecrans.md`), the sheet readable meanwhile. `groupes: []` renders nothing (not even the heading).
    The toggle « sous-lieux compris » exists on a `lieu` only; checked, the answer is read again with `descendants=1`; the choice is
    remembered **per browser** under one `localStorage` key (`kanevas-fiches-liees-sous-lieux`, `"1"` or `"0"`) — a preference of the reader, no data of
