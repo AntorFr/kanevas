@@ -14,3 +14,4 @@ logs
 *.db-shm
 data/
 rapport-tests.json
+resultats.tap
