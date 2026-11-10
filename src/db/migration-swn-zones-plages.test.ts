@@ -27,7 +27,7 @@ test('0029 : montée depuis 0028, la colonne plages apparaît, nulle, et la zone
   db.prepare("INSERT INTO swn_zones (galaxie_id, univers_id, cle, nom, contour, couleur, secret) VALUES (1, 1, 'z', 'Z', '[[0,0],[1,0],[0,1]]', 'accent', 0)").run();
   const avant = db.prepare('SELECT * FROM swn_zones').all() as Record<string, unknown>[];
 
-  assert.deepEqual(migrate(db), [29, 30, 31, 32]);
+  assert.deepEqual(migrate(db), [29, 30, 31, 32, 33]);
 
   const plages = colonnes(db).find((c) => c.name === 'plages');
   assert.ok(plages, 'la colonne plages existe');
