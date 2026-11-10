@@ -12,7 +12,8 @@ export const OUTIL_VAISSEAUX = 'swn/vaisseaux';
 export const TYPE_CARACTERISTIQUES = 'caracteristiques';
 
 export interface LigneChoix { nature: NatureVaisseau; cle: string; quantite: number; magasins?: number }
-export interface EntreeCalcul { coque: string; choix: LigneChoix[] }
+/** `equipage`: `undefined` = the hull's minimum (F-2); `null` = no crew, kept as such. */
+export interface EntreeCalcul { coque: string; choix: LigneChoix[]; equipage?: number | null }
 export interface SortieCalcul { resultat: ResultatVaisseau | null; alertes: AlerteVaisseau[] }
 /** What the stored design already carries: the keys that may still resolve although masked (V-3). */
 export interface Porte {
@@ -47,6 +48,13 @@ export function validerChoix(coque: unknown, choix: unknown): EntreeCalcul {
   return { coque, choix: lignes };
 }
 
+/** The `equipage` of a request (F-2): absent or `null` = the default, else an integer 0–100 000. */
+export function validerEquipage(v: unknown): number | undefined {
+  if (v === undefined || v === null) return undefined;
+  if (typeof v !== 'number' || !Number.isInteger(v) || v < 0 || v > 100000) throw invalide('Équipage invalide.', 'equipage_invalide', 'equipage');
+  return v;
+}
+
 const texteRetire = (nom: string) => `Élément retiré de cet univers : ${nom}. Remplacez-le pour enregistrer.`;
 export const alerteRetiree = (nom: string, ligne: number): AlerteVaisseau =>
   ({ niveau: 'bloquante', code: 'element_retire', texte: texteRetire(nom), ligne });
@@ -70,6 +78,8 @@ export interface Resolution {
   /** `null` when the hull or a line does not resolve: no number is invented. */
   coque: CoqueResolue | null;
   lignes: (LigneResolue | null)[];
+  /** The crew of the design, resolved (F-2). */
+  equipage: number | null;
   /** The `element_retire` alerts (hull `-1`, then each line by index). */
   retirees: AlerteVaisseau[];
   /** Their names, in the same order. */
@@ -108,13 +118,14 @@ export function resoudreChoix(db: Db, universId: number, e: EntreeCalcul, porte:
     return { nature: l.nature, cle: l.cle, nom: el.nom, quantite: l.quantite,
       ...(l.magasins === undefined ? {} : { magasins: l.magasins }), element: el.donnees as unknown as ElementCalcul };
   });
-  return { coque, lignes, retirees, nomsRetires, inconnu };
+  const equipage = e.equipage === undefined ? (coque?.equipage_min ?? null) : e.equipage;
+  return { coque, lignes, equipage, retirees, nomsRetires, inconnu };
 }
 
 /** Calculates from resolved elements; `null` result and the alerts alone when one does not resolve. */
 export function calculerResolu(db: Db, universId: number, r: Resolution): SortieCalcul {
   if (r.retirees.length > 0 || !r.coque || r.lignes.some((l) => l === null)) return { resultat: null, alertes: r.retirees };
-  const resultat = calculer(r.coque, r.lignes as LigneResolue[], { porteeSaut: porteeSaut(db, universId) });
+  const resultat = calculer(r.coque, r.lignes as LigneResolue[], { porteeSaut: porteeSaut(db, universId) }, r.equipage);
   return { resultat, alertes: resultat.alertes };
 }
 
@@ -125,8 +136,10 @@ export function calculerResolu(db: Db, universId: number, r: Resolution): Sortie
 export function calculerDepuisChoix(db: Db, acteur: Acteur, universId: number, entree: unknown,
   porte: Porte | null = null): SortieCalcul {
   if (!accessible(db, acteur, universId, OUTIL_VAISSEAUX)) throw introuvable();
-  const o = (entree ?? {}) as { coque?: unknown; choix?: unknown };
+  const o = (entree ?? {}) as { coque?: unknown; choix?: unknown; equipage?: unknown };
   const e = validerChoix(o.coque, o.choix);
+  const equipage = validerEquipage(o.equipage);
+  if (equipage !== undefined) e.equipage = equipage;
   return calculerResolu(db, universId, resoudreChoix(db, universId, e, porte));
 }
 

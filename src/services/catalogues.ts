@@ -223,7 +223,7 @@ function page(catalogue: DeclarationCatalogue, rows: ElementResolu[], mj: boolea
   }
   const elements = readable.slice(0, 50).map((r): VueElementCatalogue => ({
     nature: r.nature, cle: r.cle, nom: r.nom, resume: natureOf(catalogue, r.nature).resume(r.donnees),
-    ...(mj ? { origine: r.origine, masque: r.masque, version: r.version }
+    ...(mj ? { origine: r.origine, masque: r.masque, version: r.version, donnees: r.donnees }
       : { donnees: r.donnees, ...(r.origine === 'univers' || r.origine === 'remplace' ? { univers: true as const } : {}) }),
   }));
   return { elements, suivant: readable.length > 50 ? elements.at(-1)!.cle : null };

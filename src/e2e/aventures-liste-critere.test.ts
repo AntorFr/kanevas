@@ -160,19 +160,23 @@ describe('kanevas-scenarios-type-liste, E-8 Aventures', { skip: skipBrowser }, (
     await antor.getByRole('button', { name: 'Arbre', exact: true }).click();
     await antor.getByLabel('Statut').selectOption({ label: 'En cours' });
     await antor.waitForURL(/statut=en_cours/);
-    // the tree (title included) is still the old page: wait for the grid to replace it
+    await charge(antor);
+    // wait for the filter's effect (grid replaces the tree, only the campaign remains) before reading the page
     await antor.getByRole('tree').waitFor({ state: 'detached' });
     await antor.getByRole('main').getByText('La Couronne brisée').first().waitFor();
+    await antor.getByRole('main').getByText('Acte II').first().waitFor({ state: 'detached' });
     assert.equal(await antor.getByRole('tree').count(), 0, 'la grille remplace l’arbre');
     const t = await antor.getByRole('main').innerText();
     assert.match(t, /La Couronne brisée/);
     assert.doesNotMatch(t, /Acte II/);
     // unknown value ignored
     await antor.goto(`/univers/${U}/fiches/aventures?statut=nimporte`);
+    await charge(antor);
     await antor.getByText('La Couronne brisée').first().waitFor();
     assert.match(await corps(antor), /La Couronne brisée/);
     // status alone, empty
     await antor.goto(`/univers/${U}/fiches/aventures?statut=terminee`);
+    await charge(antor);
     await antor.getByText('Aucune aventure avec ce statut.').first().waitFor();
     assert.match(await corps(antor), /Aucune aventure avec ce statut\./);
     await shot(antor, 'statut-vide');

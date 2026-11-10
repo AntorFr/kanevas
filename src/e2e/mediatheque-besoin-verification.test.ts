@@ -186,6 +186,8 @@ test('B-53 · « Ajouter des fichiers » : un PDF et un type inconnu entrent « 
   await mediatheque(antor);
   await antor.getByRole('radio', { name: 'Documents' }).click();
   await antor.getByRole('button', { name: /port-sel-quais|Quais de Port-Sel/ }).first().waitFor({ state: 'detached' });
+  // Detached also holds before the grid has reloaded: wait for the document to be there.
+  await antor.getByRole('button', { name: /regles-de-la-guilde\.pdf/ }).first().waitFor({ state: 'visible' });
   assert.match(await grille(antor), /regles-de-la-guilde\.pdf/);
   assert.match(await grille(antor), /notes\.xyz/);
 });

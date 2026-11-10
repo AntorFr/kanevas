@@ -12,11 +12,13 @@ import { calculerResolu, resoudreChoix, versionSourceVaisseaux, versionsSource, 
 
 export interface LigneConception {
   id: number; univers_id: number; fiche_id: number; section_id: number | null; coque_cle: string; choix: string;
-  version_reglages: string; version_catalogue: string; resultat: string; version: number;
+  version_reglages: string; version_catalogue: string; resultat: string; version: number; equipage: number | null;
 }
 /** Everything the hook stores; the opaque `charge` of V-4. */
 export interface ChargeConception {
   coque: string; lignes: LigneChoix[]; resultat: ResultatVaisseau; versionReglages: string; versionCatalogue: string;
+  /** Resolved at the save (F-2). */
+  equipage: number | null;
 }
 
 export const ligneDe = (db: Db, ficheId: number): LigneConception | undefined =>
@@ -39,7 +41,7 @@ export function produire(ctx: ContexteSection): { contenu: string; sourceVersion
   const l = ligneDe(ctx.db, ctx.ficheId);
   if (!l) throw introuvable();
   const choix = JSON.parse(l.choix) as LigneChoix[];
-  const r = resoudreChoix(ctx.db, ctx.universId, { coque: l.coque_cle, choix }, porteDe(l));
+  const r = resoudreChoix(ctx.db, ctx.universId, { coque: l.coque_cle, choix, equipage: l.equipage }, porteDe(l));
   const s = calculerResolu(ctx.db, ctx.universId, r);
   if (s.resultat === null) {
     throw new ErreurService('invalide', `Élément retiré de cet univers : ${r.nomsRetires[0] ?? ''}. Remplacez-le dans le concepteur.`,
@@ -47,7 +49,7 @@ export function produire(ctx: ContexteSection): { contenu: string; sourceVersion
   }
   const v = versionsSource(ctx.db, ctx.universId);
   const charge: ChargeConception = { coque: l.coque_cle, lignes: choix, resultat: s.resultat,
-    versionReglages: v.reglages, versionCatalogue: v.catalogue };
+    versionReglages: v.reglages, versionCatalogue: v.catalogue, equipage: l.equipage };
   return { contenu: texteVaisseau(s.resultat), sourceVersion: versionSourceVaisseaux(ctx.db, ctx.universId), charge };
 }
 
@@ -57,13 +59,13 @@ export function apresEcriture(ctx: ContexteSection, ecrit: EcritSection): void {
   if (!c || ctx.sectionId === null) {
     throw new ErreurService('invalide', 'Cette section ne s\'écrit que par le concepteur de vaisseaux.', 'section_geree');
   }
-  const valeurs = [ctx.sectionId, c.coque, JSON.stringify(c.lignes), c.versionReglages, c.versionCatalogue, JSON.stringify(c.resultat)];
+  const valeurs = [ctx.sectionId, c.coque, JSON.stringify(c.lignes), c.versionReglages, c.versionCatalogue, JSON.stringify(c.resultat), c.equipage];
   if (ligneDe(ctx.db, ctx.ficheId)) {
     ctx.db.prepare(`UPDATE swn_conceptions SET section_id = ?, coque_cle = ?, choix = ?, version_reglages = ?,
-      version_catalogue = ?, resultat = ?, version = version + 1 WHERE fiche_id = ?`).run(...valeurs, ctx.ficheId);
+      version_catalogue = ?, resultat = ?, equipage = ?, version = version + 1 WHERE fiche_id = ?`).run(...valeurs, ctx.ficheId);
   } else {
     ctx.db.prepare(`INSERT INTO swn_conceptions (univers_id, fiche_id, section_id, coque_cle, choix, version_reglages,
-      version_catalogue, resultat) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`).run(ctx.universId, ctx.ficheId, ...valeurs);
+      version_catalogue, resultat, equipage) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`).run(ctx.universId, ctx.ficheId, ...valeurs);
   }
 }
 

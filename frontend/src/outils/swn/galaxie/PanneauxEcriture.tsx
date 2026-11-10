@@ -107,7 +107,7 @@ export function PanneauZone({ base, zone, onFini, onRecharger, onIntrouvable }: 
   return (
     <section className="gx-bloc gx-panneau" aria-label="Zone sélectionnée">
       <div className="gx-tete"><h2>{zone.nom}</h2>{zone.secret && <Pastille sens="mj">Secret</Pastille>}</div>
-      <dl className="gx-kv"><dt>Sommets</dt><dd>{zone.contour.length}</dd></dl>
+      <dl className="gx-kv">{zone.plages ? <><dt>Hexagones</dt><dd>{zone.hexagones ?? 0}</dd></> : <><dt>Sommets</dt><dd>{zone.contour.length}</dd></>}</dl>
       <div className="gx-actions">
         <Bouton icone={Pencil} ecrit onClick={() => setModif(zone)}>Modifier</Bouton>
         <Bouton icone={Trash2} variante="danger" ecrit onClick={() => setRetrait(zone)}>Retirer</Bouton>

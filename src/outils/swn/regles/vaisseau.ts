@@ -23,6 +23,11 @@ export interface CoqueResolue {
   facteur_cout: number
   facteur_puissance: number
   facteur_masse: number
+  /** Stated by the catalogue only (F-1); absent = not stated. */
+  vitesse?: number
+  armure?: number
+  equipage_min?: number
+  equipage_max?: number
 }
 
 export interface ElementResolu {
@@ -43,6 +48,14 @@ export interface ElementResolu {
   cout_munition?: number
   /** Weapons only: the smallest hull class the weapon is made for; munitions double per class above it (E-2). Absent: never multiplied. */
   classe_min?: number
+  /** Stated by the catalogue only (F-1); absent = not stated. `classe_min` above is also the weapon's own (E-2). */
+  classe_max?: number
+  condition?: string
+  bonus_vitesse?: number
+  degats?: string
+  perforation?: number
+  qualites?: string
+  niveau_tech?: number
 }
 
 export interface LigneResolue {
@@ -78,6 +91,10 @@ export interface ResultatVaisseau {
   chantierJours: number
   entretien: number
   porteeSaut: number | null
+  /** F-3: absent in a result stored before the slice, read as `null`. */
+  vitesse?: number | null
+  armure?: number | null
+  equipage?: { choisi: number; min: number | null; max: number | null } | null
   alertes: AlerteVaisseau[]
 }
 
@@ -90,6 +107,7 @@ export function calculer(
   coque: CoqueResolue,
   lignes: LigneResolue[],
   reglages: ReglagesVaisseau,
+  equipage: number | null = null,
 ): ResultatVaisseau {
   let prix = coque.cout
   let pv = coque.pv
@@ -99,6 +117,7 @@ export function calculer(
   let emportsUtilises = 0
   let uniteMoteur = 0
   let niveauMoteur: number | null = null
+  let bonusVitesse = 0
 
   lignes.forEach((l) => {
     const e = l.element
@@ -108,6 +127,7 @@ export function calculer(
     masseUsee += e.masse * (e.x_masse ? coque.facteur_masse : 1) * q
     pv += e.pv * q
     ca += e.ca * q
+    if (l.nature === 'defenses') bonusVitesse += (e.bonus_vitesse ?? 0) * q
     if (l.nature === 'armes') {
       const doublements = e.classe_min === undefined ? 0 : Math.max(0, coque.classe - e.classe_min)
       const munitions = (e.munitions ?? 0) * (e.cout_munition ?? 0) * 2 ** doublements
@@ -145,6 +165,17 @@ export function calculer(
   if (uniteMoteur > 1) {
     bloquantes.push({ niveau: 'bloquante', code: 'moteur_multiple', texte: 'Un seul moteur par vaisseau.' })
   }
+  lignes.forEach((l, i) => {
+    if (l.nature === 'armes') return
+    const { classe_min: mini, classe_max: maxi } = l.element
+    let borne: string | null = null
+    if (mini !== undefined && maxi !== undefined && mini === maxi && coque.classe !== mini) borne = `${mini} seulement`
+    else if (mini !== undefined && coque.classe < mini) borne = `${mini} au moins`
+    else if (maxi !== undefined && coque.classe > maxi) borne = `${maxi} au plus`
+    if (borne !== null) {
+      bloquantes.push({ niveau: 'bloquante', code: 'classe_inadaptee', texte: `« ${l.nom} » : classe de coque ${borne}.`, ligne: i })
+    }
+  })
   if (uniteMoteur === 0) {
     surveiller.push({ niveau: 'a_surveiller', code: 'moteur_absent', texte: 'Aucun moteur de saut : ce vaisseau ne peut pas voyager.' })
   }
@@ -153,6 +184,14 @@ export function calculer(
   }
   if (masseLibre === 0) {
     surveiller.push({ niveau: 'a_surveiller', code: 'reserve_nulle', texte: 'Plus aucune réserve de masse.' })
+  }
+  const min = coque.equipage_min ?? null
+  const max = coque.equipage_max ?? null
+  if (equipage !== null && min !== null && equipage < min) {
+    surveiller.push({ niveau: 'a_surveiller', code: 'equipage_insuffisant', texte: `Équipage insuffisant : ${equipage} sur ${min} au moins.` })
+  }
+  if (equipage !== null && max !== null && equipage > max) {
+    surveiller.push({ niveau: 'a_surveiller', code: 'equipage_excessif', texte: `Équipage excessif : ${equipage} sur ${max} au plus.` })
   }
 
   return {
@@ -167,6 +206,9 @@ export function calculer(
     chantierJours: Math.ceil(prix / CADENCE_CHANTIER),
     entretien: Math.floor(prix * TAUX_ENTRETIEN + 0.5 + 1e-9),
     porteeSaut: niveauMoteur === null ? null : reglages.porteeSaut * (niveauMoteur + 1),
+    vitesse: coque.vitesse === undefined ? null : coque.vitesse + bonusVitesse,
+    armure: coque.armure ?? null,
+    equipage: equipage === null ? null : { choisi: equipage, min, max },
     alertes: [...bloquantes, ...surveiller],
   }
 }

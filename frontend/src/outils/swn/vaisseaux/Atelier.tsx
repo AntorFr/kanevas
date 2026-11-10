@@ -5,15 +5,17 @@ import { Link } from 'react-router-dom';
 import { appeler, ErreurApi, lire, useConnexionPerdue } from '../../../api';
 import { useTitreAriane } from '../../../cadre-contexte';
 import { Bouton, BoiteDialogue, Chargement, ErreurChargement, PageIntrouvable, Pastille } from '../../../ui';
-import { brouillonDe, choixDe, memeBrouillon, motifDe, requete } from './format';
+import { Equipage } from './Equipage';
+import { bornesEquipage, brouillonDe, choixDe, legende, memeBrouillon, motifDe, requete } from './format';
 import { Alertes, Chiffres, ErreurCalcul } from './Resultats';
 import { Selecteur } from './Selecteur';
 import { NATURES, type PageCatalogue, type Alerte, type Brouillon, type Calcul, type Conception, type ElementCatalogue, type Ligne, type Nature } from './types';
 
 type Ouvert = { nature: string; titre: string } | null;
-interface Info { chiffres: string; univers: boolean }
+interface Info { chiffres: string; univers: boolean; el: ElementCatalogue }
 const infoDe = (e: ElementCatalogue): Info => ({
-  chiffres: e.resume.replace(/coût [^·]*· /, ''),
+  el: e,
+  chiffres: [e.resume.replace(/coût [^·]*· /, ''), legende(e)].filter(Boolean).join(' · '),
   univers: e.univers === true || e.origine === 'univers' || e.origine === 'remplace',
 });
 
@@ -76,6 +78,9 @@ function Corps({ universId, suffixe, saved, onSaved, onRecharger }: {
     { enCours: false, refus: null, echec: false, perdu: false, fait: false });
   const dernier = useRef(0);
   const premier = useRef(true);
+  const [equipageTouche, setEquipageTouche] = useState(false);
+  const [equipageInvalide, setEquipageInvalide] = useState(false);
+  const [cleEquipage, setCleEquipage] = useState(0);
   const [infos, setInfos] = useState<Record<string, Info>>({});
 
   // The key figures and the « Univers » mark of each line come from the catalogue the player may read (display only).
@@ -138,7 +143,8 @@ function Corps({ universId, suffixe, saved, onSaved, onRecharger }: {
   function choisir(e: ElementCatalogue) {
     setInfos((avant) => ({ ...avant, [`${e.nature}/${e.cle}`]: infoDe(e) }));
     if (e.nature === 'coques') {
-      change((b) => ({ ...b, coque: { cle: e.cle, nom: e.nom } }));
+      // Untouched crew: not sent, so the server takes the new hull's minimum (F-2); a touched one is kept.
+      change((b) => ({ ...b, coque: { cle: e.cle, nom: e.nom }, equipage: equipageTouche ? b.equipage : null }));
     } else {
       change((b) => {
         const nature = e.nature as Nature;
@@ -159,9 +165,17 @@ function Corps({ universId, suffixe, saved, onSaved, onRecharger }: {
   const retirees = new Set(alertes.filter((a) => a.code === 'element_retire').map((a) => a.ligne));
   const coqueRetiree = retirees.has(-1);
   const verrou = perdue || !ecriture;
+  const classeInadaptee = new Set(alertes.filter((a) => a.code === 'classe_inadaptee').map((a) => a.ligne));
+  // The crew block (E-22): the figure is the draft's, else the server's default; the bounds are the chosen hull's, as the catalogue states them.
+  const equipageAffiche = brouillon.equipage ?? resultat.equipage?.choisi ?? null;
+  const donneesCoque = infos[`coques/${brouillon.coque.cle}`]?.el.donnees;
+  const borneMin = donneesCoque ? donneesCoque.equipage_min : resultat.equipage?.min;
+  const borneMax = donneesCoque ? donneesCoque.equipage_max : resultat.equipage?.max;
+  const bornes = bornesEquipage(borneMin, borneMax);
+  const blocEquipage = bornes !== '' || equipageAffiche !== null;
 
   async function enregistrer() {
-    if (enregistrement || bloquante || etatCalcul !== 'ok' || perdue) return;
+    if (enregistrement || bloquante || equipageInvalide || etatCalcul !== 'ok' || perdue) return;
     setEnregistrement(true);
     setMessage(null);
     setRefus(null);
@@ -194,6 +208,9 @@ function Corps({ universId, suffixe, saved, onSaved, onRecharger }: {
   }
   function revenir() {
     setBrouillon(brouillonDe(saved));
+    setEquipageTouche(false);
+    setEquipageInvalide(false);
+    setCleEquipage((n) => n + 1);
     setCalcul({ resultat: saved.resultat, alertes: saved.alertes });
     setEtatCalcul('ok');
     dernier.current++;
@@ -242,7 +259,7 @@ function Corps({ universId, suffixe, saved, onSaved, onRecharger }: {
   }
 
   const raison = bloquante ? `Enregistrement refusé : ${motifDe(bloquante)}.` : null;
-  const peutEnregistrer = ecriture && !perdue && !bloquante && etatCalcul === 'ok' && !enregistrement;
+  const peutEnregistrer = ecriture && !perdue && !bloquante && !equipageInvalide && etatCalcul === 'ok' && !enregistrement;
   const estompe = etatCalcul === 'erreur';
 
   return (
@@ -329,6 +346,16 @@ function Corps({ universId, suffixe, saved, onSaved, onRecharger }: {
               <Selecteur universId={universId} suffixe={suffixe} nature="coques" titre={ouvert.titre} onChoisir={choisir} onFermer={() => setOuvert(null)} />
             )}
           </div>
+          {blocEquipage && (
+            <div className="vx-bloc">
+              <div className="vx-bloc-tete"><h2>Équipage</h2></div>
+              <Equipage
+                key={cleEquipage} valeur={equipageAffiche} bornes={bornes} lecture={!ecriture} desactive={verrou}
+                onChange={(n) => { setEquipageTouche(true); change((b) => ({ ...b, equipage: n })); }}
+                onInvalide={(v) => { setEquipageTouche(true); setEquipageInvalide(v); }}
+              />
+            </div>
+          )}
           {NATURES.map((n) => {
             const lignes = brouillon.lignes.map((l, i) => ({ l, i })).filter(({ l }) => l.nature === n.nature);
             return (
@@ -347,8 +374,12 @@ function Corps({ universId, suffixe, saved, onSaved, onRecharger }: {
                     {lignes.map(({ l, i }) => (
                       <li key={`${l.nature}/${l.cle}`} className="vx-ligne-choix">
                         <div className="vx-element-texte">
-                          <span className="vx-nom">{l.nom}</span>
+                          <span className="vx-nom-ligne">
+                            <span className="vx-nom">{l.nom}</span>
+                            {classeInadaptee.has(i) && <Pastille sens="neutre">Classe</Pastille>}
+                          </span>
                           {infos[`${l.nature}/${l.cle}`]?.chiffres && <span className="vx-sous">{infos[`${l.nature}/${l.cle}`]?.chiffres}</span>}
+                          {infos[`${l.nature}/${l.cle}`]?.el.donnees?.condition && <span className="vx-sous vx-condition">{infos[`${l.nature}/${l.cle}`]?.el.donnees?.condition}</span>}
                         </div>
                         {infos[`${l.nature}/${l.cle}`]?.univers && <Pastille sens="neutre">Univers</Pastille>}
                         {retirees.has(i) && <Pastille sens="danger">Élément retiré de cet univers</Pastille>}
@@ -369,7 +400,7 @@ function Corps({ universId, suffixe, saved, onSaved, onRecharger }: {
                   </ul>
                 )}
                 {ouvert?.nature === n.nature && (
-                  <Selecteur universId={universId} suffixe={suffixe} nature={n.nature} titre={ouvert.titre} onChoisir={choisir} onFermer={() => setOuvert(null)} />
+                  <Selecteur universId={universId} suffixe={suffixe} nature={n.nature} titre={ouvert.titre} classeCoque={resultat.coque.classe} onChoisir={choisir} onFermer={() => setOuvert(null)} />
                 )}
               </div>
             );

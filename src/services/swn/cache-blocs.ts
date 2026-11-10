@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto';
 import type { Db } from '../../db/db.js';
 import { bloc, densiteHexagone, TAILLE_BLOC } from '../../outils/swn/regles/generation.js';
+import { lirePlages } from '../../outils/swn/regles/forme.js';
 import type { Point } from '../../outils/swn/regles/hex.js';
 import { invalide } from '../erreurs.js';
 import type { Acteur } from '../types.js';
@@ -58,7 +59,9 @@ export function lireBlocsGeneres(
   const versions = zones.map((z) => [z.cle, z.version] as const)
     .sort((x, y) => x[0] < y[0] ? -1 : x[0] > y[0] ? 1 : 0);
   const empreinte = createHash('sha256').update(JSON.stringify(versions)).digest('hex');
-  const densites = zones.map((z) => ({ contour: JSON.parse(z.contour) as Point[], densite: z.densite }));
+  const densites = zones.map((z) => ({
+    contour: JSON.parse(z.contour) as Point[], plages: z.plages === null ? null : lirePlages(z.plages), densite: z.densite,
+  }));
   let base = bases.get(db);
   if (base === undefined) { base = ++prochaineBase; bases.set(db, base); }
   const resultat: BlocGenere[] = [];

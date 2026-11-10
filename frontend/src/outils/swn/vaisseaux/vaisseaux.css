@@ -43,7 +43,9 @@
 .vx-lignes { list-style: none; margin: 0; padding: 0; }
 .vx-ligne-choix { display: flex; align-items: center; gap: var(--e-2); flex-wrap: wrap; padding: var(--e-2) 0; }
 .vx-element-texte { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.vx-ligne-choix .vx-element-texte { flex: 1 1 12rem; }
 .vx-nom { overflow-wrap: anywhere; }
+.vx-nom-ligne { display: flex; align-items: center; flex-wrap: wrap; gap: var(--e-1) var(--e-2); }
 .vx-vide-bloc { display: flex; align-items: center; justify-content: space-between; gap: var(--e-2); color: var(--texte-2); }
 .vx-stepper { display: inline-flex; align-items: center; gap: var(--e-2); }
 .vx-stepper output { min-width: 2ch; text-align: center; font-variant-numeric: tabular-nums; }
@@ -63,6 +65,17 @@
     var(--surface);
   overflow-x: auto; }
 .vx-section .vx-tableau { margin-right: var(--e-3); width: calc(100% - var(--e-3)); }
+/* Crew stepper (F-6): local to the workshop, no token of its own. */
+.vx-condition { overflow-wrap: anywhere; }
+.vx-equipage { display: flex; flex-direction: column; gap: var(--e-1); }
+.vx-equipage-controle { display: inline-flex; align-items: center; gap: var(--e-2); }
+.vx-equipage-champ { width: 9ch; min-height: 34px; text-align: center; font: inherit; font-size: var(--t-14); font-variant-numeric: tabular-nums; color: var(--texte); background: var(--surface); border: 1px solid var(--bord-fort); border-radius: var(--rayon-champ); padding: 0 var(--e-2); }
+.vx-equipage-champ:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-fond); }
+.vx-equipage-champ[aria-invalid="true"] { border-color: var(--danger); }
+.vx-equipage-champ:disabled { opacity: .45; }
+.vx-equipage-bornes { margin: 0; font-size: var(--t-12); color: var(--texte-3); }
+.vx-equipage-erreur { color: var(--danger); font-weight: 500; }
+.vx-equipage-lu { font-variant-numeric: tabular-nums; font-size: var(--t-16); }
 @media (min-width: 760px) {
   .vx-corps { grid-template-columns: minmax(0, 1fr) 320px; }
   .vx-choix { grid-column: 1; grid-row: 1; }
@@ -75,6 +88,8 @@
   .vx-prix { flex-basis: 100%; order: 3; }
   .vx-bouton, .vx .bouton { min-height: 44px; }
   .vx-elements { max-height: none; }
+  .vx-equipage-champ { min-height: 44px; }
+  .vx-equipage-controle .bouton { min-width: 44px; }
 }
 .vx-tableau { border-collapse: collapse; margin: var(--e-2) 0; width: 100%; font-size: var(--t-13); font-variant-numeric: tabular-nums; }
 .vx-tableau th, .vx-tableau td { border: 1px solid var(--bord-fort); padding: var(--e-1) var(--e-2); text-align: left; white-space: nowrap; }

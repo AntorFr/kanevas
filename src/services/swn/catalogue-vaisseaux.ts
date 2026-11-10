@@ -8,13 +8,18 @@ import { ErreurService, introuvable } from '../erreurs.js';
 // zod schemas AND the statements of the adapter are built — written once, never seven copies. The only SQL on `swn_catalogue_*`.
 
 type Champ =
-  | { nom: string; type: 'entier'; min: number; max?: number; defaut?: number }
+  | { nom: string; type: 'entier'; min: number; max?: number; defaut?: number; facultatif?: true }
+  | { nom: string; type: 'texte-libre'; max: number; facultatif: true }
   | { nom: string; type: 'masse' }
   | { nom: string; type: 'oui-non' }
   | { nom: string; type: 'texte' }
   | { nom: string; type: 'choix' };
 const entier = (nom: string, min = 0, max?: number, defaut?: number): Champ =>
   ({ nom, type: 'entier', min, ...(max === undefined ? {} : { max }), ...(defaut === undefined ? {} : { defaut }) });
+/** F-1: an optional integer (`NULL` = not stated, omitted from the row's data). */
+const facultatif = (nom: string, min: number, max: number): Champ => ({ nom, type: 'entier', min, max, facultatif: true });
+/** F-1: an optional free text of 1 to `max` characters, stored trimmed and never read as Markdown. */
+const texteLibre = (nom: string, max: number): Champ => ({ nom, type: 'texte-libre', max, facultatif: true });
 const masse = (): Champ => ({ nom: 'masse', type: 'masse' });
 const ouiNon = (nom: string): Champ => ({ nom, type: 'oui-non' });
 
@@ -28,15 +33,20 @@ export type NatureCatalogueVaisseau = (typeof NATURES_VAISSEAU)[number];
 /** The natures a design line may name (an example's `choix`). */
 export const NATURES_DE_LIGNE = ['moteurs', 'amenagements', 'defenses', 'armes', 'modifications'] as const;
 
+/** Optional fields shared by engines, fittings and defences (F-1). */
+const PLAGE_CLASSES: Champ[] = [facultatif('classe_min', 1, 4), facultatif('classe_max', 1, 4), texteLibre('condition', 200)];
+
 const CHAMPS: Record<NatureCatalogueVaisseau, Champ[]> = {
   coques: [entier('classe', 1, 4), entier('cout'), entier('pv'), entier('ca'), entier('puissance'), masse(),
-    entier('emports'), entier('facteur_cout', 1), entier('facteur_puissance', 1), entier('facteur_masse', 1)],
-  moteurs: [entier('niveau', 1, 6), ...ELEMENT],
-  amenagements: ELEMENT,
-  defenses: ELEMENT,
-  armes: [entier('emport'), entier('munitions'), entier('cout_munition'), entier('classe_min', 1, 4, 1), ...ELEMENT],
+    entier('emports'), entier('facteur_cout', 1), entier('facteur_puissance', 1), entier('facteur_masse', 1),
+    facultatif('vitesse', 0, 99), facultatif('armure', 0, 99), facultatif('equipage_min', 0, 100_000), facultatif('equipage_max', 0, 100_000)],
+  moteurs: [entier('niveau', 1, 6), ...ELEMENT, ...PLAGE_CLASSES],
+  amenagements: [...ELEMENT, ...PLAGE_CLASSES],
+  defenses: [...ELEMENT, ...PLAGE_CLASSES, facultatif('bonus_vitesse', 0, 9)],
+  armes: [entier('emport'), entier('munitions'), entier('cout_munition'), entier('classe_min', 1, 4, 1), ...ELEMENT,
+    texteLibre('degats', 40), facultatif('perforation', 0, 99), texteLibre('qualites', 120), facultatif('niveau_tech', 0, 9)],
   modifications: ELEMENT,
-  exemples: [{ nom: 'coque', type: 'texte' }, { nom: 'choix', type: 'choix' }],
+  exemples: [{ nom: 'coque', type: 'texte' }, { nom: 'choix', type: 'choix' }, facultatif('equipage', 0, 100_000)],
 };
 
 const cleSchema = z.string().min(1).max(64);
@@ -47,11 +57,12 @@ const ligneChoix = z.strictObject({
 function schemaDe(nature: NatureCatalogueVaisseau): z.ZodObject {
   const forme: Record<string, z.ZodType> = { nom: z.string().min(1).max(200) };
   for (const c of CHAMPS[nature]) {
+    if (c.type === 'texte-libre') { forme[c.nom] = z.string().trim().min(1).max(c.max).optional(); continue; }
     forme[c.nom] = c.type === 'masse' ? z.number().min(0).max(1_000_000).multipleOf(0.5)
       : c.type === 'entier' ? (() => {
       const n = z.number().int().min(c.min);
       const bornee = c.max === undefined ? n : n.max(c.max);
-      return c.defaut === undefined ? bornee : bornee.default(c.defaut);
+      return c.facultatif ? bornee.optional() : c.defaut === undefined ? bornee : bornee.default(c.defaut);
     })()
       : c.type === 'oui-non' ? z.boolean()
       : c.type === 'texte' ? cleSchema
@@ -73,6 +84,7 @@ function ligne(nature: NatureCatalogueVaisseau, r: Ligne): LigneCatalogue {
   const donnees: Record<string, unknown> = { nom: r.nom };
   for (const c of CHAMPS[nature]) {
     const v = r[c.nom];
+    if ('facultatif' in c && c.facultatif && v === null) continue;
     donnees[c.nom] = c.type === 'oui-non' ? Boolean(v) : c.type === 'choix' ? JSON.parse(v as string) : v;
   }
   return { nature, cle: r.cle, nom: r.nom, donnees, masque: Boolean(r.masque), version: r.version };
@@ -120,7 +132,7 @@ export const stockageVaisseaux: StockageCatalogue = {
     for (const c of CHAMPS[n]) if (c.type === 'entier' && c.defaut !== undefined) complet[c.nom] ??= c.defaut;
     if (avant && avant.nom === donnees.nom && egal(avant.donnees, complet)) return 'inchange';
     const champs = CHAMPS[n];
-    const valeurs = [donnees.nom, ...champs.map((c) => aStocker(c, donnees[c.nom] ?? (c.type === 'entier' ? c.defaut : undefined)))];
+    const valeurs = [donnees.nom, ...champs.map((c) => aStocker(c, donnees[c.nom] ?? (c.type === 'entier' ? c.defaut : undefined) ?? null))];
     if (avant) {
       db.prepare(`UPDATE ${table(n)} SET nom = ?, ${colonnes(n).map((c) => `${c} = ?`).join(', ')},
         version_catalogue = ?, version = version + 1 WHERE proprietaire = ? AND ${o.colonne} = ? AND cle = ?`)
@@ -192,6 +204,12 @@ export const catalogueVaisseaux: DeclarationCatalogue = {
   stockage: stockageVaisseaux,
   /** V-10: a hull and every line of an example must resolve at the level of the import, else the example is refused. */
   verifier(nature, donnees, { existe }) {
+    const bornes = (min: string, max: string, champ: string) => {
+      const a = donnees[min], b = donnees[max];
+      return typeof a === 'number' && typeof b === 'number' && a > b ? { champ, raison: `${min} au plus égal à ${max}` } : null;
+    };
+    if (nature === 'coques') return bornes('equipage_min', 'equipage_max', 'equipage_max');
+    if (nature === 'moteurs' || nature === 'amenagements' || nature === 'defenses') return bornes('classe_min', 'classe_max', 'classe_max');
     if (nature !== 'exemples') return null;
     if (!existe('coques', donnees.coque as string)) {
       return { champ: 'coque', raison: `élément inconnu : coques/${donnees.coque as string}` };

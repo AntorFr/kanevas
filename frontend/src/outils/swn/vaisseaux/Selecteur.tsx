@@ -2,15 +2,17 @@ import { useEffect, useMemo, useState } from 'react';
 
 import { lire } from '../../../api';
 import { Bouton, Pastille } from '../../../ui';
-import { requete } from './format';
+import { exclutLaClasse, legende, requete } from './format';
 import type { ElementCatalogue, PageCatalogue } from './types';
 
 /** The catalogue of one nature, 50 per page, with a filter above the long list (E-22). */
-export function Selecteur({ universId, suffixe, nature, titre, onChoisir, onFermer }: {
+export function Selecteur({ universId, suffixe, nature, titre, classeCoque, onChoisir, onFermer }: {
   universId: number;
   suffixe: string;
   nature: string;
   titre: string;
+  /** The class of the chosen hull: only to mark the elements its class excludes (the alert is the server's). */
+  classeCoque?: number;
   onChoisir: (e: ElementCatalogue) => void;
   onFermer: () => void;
 }) {
@@ -63,8 +65,12 @@ export function Selecteur({ universId, suffixe, nature, titre, onChoisir, onFerm
           return (
             <li key={e.cle} className="vx-element">
               <div className="vx-element-texte">
-                <span className="vx-nom">{e.nom}</span>
-                <span className="vx-sous">{e.resume}</span>
+                <span className="vx-nom-ligne">
+                  <span className="vx-nom">{e.nom}</span>
+                  {classeCoque !== undefined && exclutLaClasse(e, classeCoque) && <Pastille sens="neutre">Classe</Pastille>}
+                </span>
+                <span className="vx-sous">{[e.resume, legende(e)].filter(Boolean).join(' · ')}</span>
+                {e.donnees?.condition && <span className="vx-sous vx-condition">{e.donnees.condition}</span>}
               </div>
               <span className="vx-etiquettes">
                 {(e.univers || e.origine === 'univers' || e.origine === 'remplace') && <Pastille sens="neutre">Univers</Pastille>}
