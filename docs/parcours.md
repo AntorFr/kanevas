@@ -862,7 +862,7 @@ the density of generated systems never changes based on a territory she cannot s
 2. Léa opens the **designer** from the sheet (the banner link) or the « Outils » bar, where she first sees the
    **list** of the designs she may read (E-22), then opens « Vent d'Orak »: she chooses an engine, a hold, a laser
    and a test lance; free power and mass, price, HP and AC recalculate with each choice; she adds a second test
-   lance, a blocking alert appears (« Puissance insuffisante : −2 »), then disappears when she removes it. A test
+   lance, a blocking alert appears (« Puissance insuffisante : −2 »), then disappears when she removes it. When the catalogue states the rules of the hull (`kanevas-outils-format-vaisseaux-fiches`, B-82), she also sets the **crew** (prefilled with the hull's minimum), reads the speed and the armour in the results, and sees that a fitting of too low a class for her hull raises the blocking alert « classe de coque 3 au moins » while a crew of 5 on a hull needing 6 only raises a watch alert and does not stop the save. A test
    element of mass 0,5 taken three times lowers the free mass by 1,5 (a hull of mass 7 reads « 5,5 »); a half unit too many reads « Masse insuffisante : −0,5 ».
 3. She saves: the sheet (**E-9**) shows « Caractéristiques » under the « Générée par le concepteur de
    vaisseaux » banner linking to the tool; Léa cannot manually edit the text.

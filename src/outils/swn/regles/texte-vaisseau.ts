@@ -12,8 +12,14 @@ export function entier(n: number): string {
 
 export const credits = (n: number): string => `${entier(n)}${NBSP}cr`
 
+/** The rows of F-4, only when stated. */
+function lignesRegles(r: ResultatVaisseau): [string, string][] {
+  const rows: [string, number | null][] = [['Vitesse', r.vitesse ?? null], ['Armure', r.armure ?? null], ['Équipage', r.equipage?.choisi ?? null]]
+  return rows.flatMap(([k, n]): [string, string][] => n === null ? [] : [[k, entier(n)]])
+}
+
 /** The measures table of V-6; shared with the example sheets so the layout cannot drift. */
-export function tableMesures(r: ResultatVaisseau): string {
+export function tableMesures(r: ResultatVaisseau, avecRegles = true): string {
   const jours = `${r.chantierJours} ${r.chantierJours < 2 ? 'jour' : 'jours'}`
   const portee = r.porteeSaut === null ? '—' : `${r.porteeSaut} ${r.porteeSaut < 2 ? 'case' : 'cases'}`
   const mesures: [string, string][] = [
@@ -23,6 +29,7 @@ export function tableMesures(r: ResultatVaisseau): string {
     ['Chantier', jours],
     ['Entretien', `${credits(r.entretien)} / an`],
     ['Portée de saut', portee],
+    ...(avecRegles ? lignesRegles(r) : []),
     ['Puissance libre', entier(r.puissanceLibre)],
     ['Masse libre', texteMasse(r.masseLibre)],
     ['Emports', `${r.emports.utilises} / ${r.emports.total}`],
