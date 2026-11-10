@@ -64,17 +64,14 @@ export function apresEcriture(ctx: ContexteSection, ecrit: EcritSection): void {
   const valeurs = [ctx.sectionId, c.coque, JSON.stringify(c.lignes), c.versionReglages, c.versionCatalogue, JSON.stringify(c.resultat), c.equipage];
   const existante = ligneDe(ctx.db, ctx.ficheId);
   if (existante) {
-    // The skill is written only when it moves: a row that already has it (or the default) is left as it is.
-    const change = (existante.reparation ?? 0) !== c.reparation;
+    // `reparation` is NOT NULL DEFAULT 0 (migration 0033): written unconditionally, the charge always carries the skill.
     ctx.db.prepare(`UPDATE swn_conceptions SET section_id = ?, coque_cle = ?, choix = ?, version_reglages = ?,
-      version_catalogue = ?, resultat = ?, equipage = ?${change ? ', reparation = ?' : ''}, version = version + 1 WHERE fiche_id = ?`)
-      .run(...valeurs, ...(change ? [c.reparation] : []), ctx.ficheId);
+      version_catalogue = ?, resultat = ?, equipage = ?, reparation = ?, version = version + 1 WHERE fiche_id = ?`)
+      .run(...valeurs, c.reparation, ctx.ficheId);
   } else {
-    // A new design has the column's default (0, X-4) unless the charge says otherwise.
-    const avecReparation = c.reparation !== 0;
     ctx.db.prepare(`INSERT INTO swn_conceptions (univers_id, fiche_id, section_id, coque_cle, choix, version_reglages,
-      version_catalogue, resultat, equipage${avecReparation ? ', reparation' : ''}) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?${avecReparation ? ', ?' : ''})`)
-      .run(ctx.universId, ctx.ficheId, ...valeurs, ...(avecReparation ? [c.reparation] : []));
+      version_catalogue, resultat, equipage, reparation) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
+      .run(ctx.universId, ctx.ficheId, ...valeurs, c.reparation);
   }
 }
 

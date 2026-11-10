@@ -1,5 +1,6 @@
-// The closed list of the effects a catalogue element may state (X-2, AD-130): the one list from which the import schema, the
-// columns of the adapter and the French labels derive. Adding an effect is a code change with its test, never a data change.
+// The closed list of the effects a catalogue element may state (X-2, AD-130): validated at the import and named on display
+// (French labels). The calculation and the screen name their own effects; they do not derive from this list. Adding an effect
+// is a code change with its test, never a data change.
 // Pure: no database. No formula or code ever travels in the data.
 
 export type CodeEffet = 'vitesse' | 'armure' | 'echange' | 'soutes_doublees' | 'magasins_doubles' | 'reparation_min' | 'moteur_systeme'

@@ -5,7 +5,7 @@ import { Bouton } from '../../../ui';
 import { EQUIPAGE_MAX } from './format';
 
 
-/** The crew stepper of the workshop (E-22, F-6): a whole number 0–100 000; a refused typed value stays in the field. */
+/** The crew stepper of the workshop (E-22, F-6): a whole number 0 to `EQUIPAGE_MAX`; a refused typed value stays in the field. */
 export function Equipage({ valeur, bornes, lecture, desactive, onChange, onInvalide, nom = 'Équipage', maximum = EQUIPAGE_MAX, ligne: ligneBornes, diminuer, augmenter, etiquette }: {
   valeur: number | null;
   /** The field's own name (the refusal line, the labels) and its upper bound: the crew by default, the repair skill (0–20) or the points of an exchange. */
@@ -28,7 +28,7 @@ export function Equipage({ valeur, bornes, lecture, desactive, onChange, onInval
   const aria = etiquette ?? nom;
   const moins = diminuer ?? (nom === 'Équipage' ? 'Diminuer l’équipage' : `Diminuer : ${aria}`);
   const plus = augmenter ?? (nom === 'Équipage' ? 'Augmenter l’équipage' : `Augmenter : ${aria}`);
-  const REFUS = `${nom} : un nombre entier de 0 à ${nom === 'Équipage' ? '100 000' : maximum}.`;
+  const REFUS = `${nom} : un nombre entier de 0 à ${nom === 'Équipage' ? String(EQUIPAGE_MAX).replace(/\B(?=(\d{3})+$)/g, ' ') : maximum}.`;
   const valide = (t: string) => /^\d+$/.test(t.trim()) && Number(t) <= maximum;
   const [texte, setTexte] = useState(valeur === null ? '' : String(valeur));
   const [invalide, setInvalide] = useState(false);
