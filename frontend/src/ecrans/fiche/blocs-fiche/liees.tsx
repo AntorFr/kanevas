@@ -63,10 +63,16 @@ const compte = (g: Groupe, descendants: boolean) =>
 const total = (g: Groupe, descendants: boolean) => compte(g, descendants).reduce((s, t) => s + t.n, 0);
 const majuscule = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
+/**
+ * The block keeps its « Chargement… » state until its data is read and the sheet types have
+ * arrived (`'erreur'` is not waiting: the titles fall back on the raw type).
+ */
+export function blocEnAttente({ donneesLues, typesEtat }: { donneesLues: boolean; typesEtat: 'chargement' | 'erreur' | 'ok' }): boolean {
+  return !donneesLues || typesEtat === 'chargement';
+}
+
 function Liees({ universId, fiche, suffixeMode }: PropsBlocFiche) {
   const { types, etat: etatTypes } = useTypes();
-  // Groups are not shown before the types are known: the plural label would flash as the raw type.
-  const attente = etatTypes === 'chargement';
   const perdue = useConnexionPerdue();
   const lieu = fiche.type === 'lieu';
   const base = `/api/univers/${universId}/fiches/${fiche.id}/liees`;
@@ -138,7 +144,7 @@ function Liees({ universId, fiche, suffixeMode }: PropsBlocFiche) {
 
   if (absent) return null;
   const groupes = affiche ? affiche.page.groupes.filter((g) => total(g, affiche.descendants) > 0) : [];
-  if (affiche && !attente && !enCours && groupes.length === 0 && !echec) return null;
+  if (affiche && !enCours && groupes.length === 0 && !echec) return null;
 
   const descendants = affiche?.descendants ?? false;
   const ailleurs = affiche?.force
@@ -165,6 +171,7 @@ function Liees({ universId, fiche, suffixeMode }: PropsBlocFiche) {
     }
   }
 
+  const attente = blocEnAttente({ donneesLues: affiche !== undefined, typesEtat: etatTypes });
   const occupe = enCours || plus !== undefined;
   const suffixeRecherche = suffixeMode.replace('?', '&');
 
@@ -176,7 +183,7 @@ function Liees({ universId, fiche, suffixeMode }: PropsBlocFiche) {
         Fiches liées
       </h2>
       <div className="bloc-contenu">
-      {(!affiche || attente) && (enCours || attente) && !echec && <p role="status" className="chargement-liees">Chargement…</p>}
+      {attente && !(echec && !affiche) && <p role="status" className="chargement-liees">Chargement…</p>}
       {!affiche && echec && <ErreurLiees perdue={perdue} onReessayer={() => setEssai((n) => n + 1)} />}
       {affiche && !attente && (
         <div className={`liees${occupe ? ' rafraichit' : ''}`} aria-busy={occupe || undefined}>
