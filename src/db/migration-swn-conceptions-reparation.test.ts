@@ -24,7 +24,7 @@ test('0033 : montée depuis 0032, la conception reste, reparation vaut 0, CHECK 
   db.prepare("INSERT INTO fiches (id, univers_id, type, titre, charge, cree_le, modifie_le) VALUES (1, 1, 'vaisseau', 'V', '{}', 'x', 'x')").run();
   db.prepare(`INSERT INTO swn_conceptions (univers_id, fiche_id, coque_cle, choix, version_reglages, version_catalogue, resultat)
     VALUES (1, 1, 'c', '[]', 'r', 'c', '{}')`).run();
-  assert.deepEqual(migrate(db), [33]);
+  assert.deepEqual(migrate(db), [33, 34]);
   const l = db.prepare('SELECT coque_cle, choix, reparation FROM swn_conceptions').all() as any[];
   assert.deepEqual(l, [{ coque_cle: 'c', choix: '[]', reparation: 0 }]);
   assert.deepEqual(db.pragma('foreign_key_check'), []);
