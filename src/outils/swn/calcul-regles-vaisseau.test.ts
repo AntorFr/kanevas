@@ -240,12 +240,16 @@ test('0031 : montée depuis 0030 avec le semis, conceptions gardées, equipage N
   for (const f of readdirSync(source).filter((x) => /^\d{4}-.+\.sql$/.test(x))) if (Number(f.slice(0, 4)) <= 30) copyFileSync(new URL(f, source), join(dir, f));
   migrate(db, dir + '/');
   db.exec('ALTER TABLE swn_conceptions ADD COLUMN equipage INTEGER');
+  // 0032: the seed writes the optional columns of the catalogue too (stubs for the duration of the seed).
+  const c32 = { modifications: ['cout_pct', 'effet', 'valeur', 'points_max', 'sens', 'echange_puissance', 'echange_masse'], amenagements: ['effet', 'rend_puissance', 'rend_masse', 'soute'] };
+  for (const [t, cs] of Object.entries(c32)) for (const c of cs) db.exec(`ALTER TABLE swn_catalogue_${t} ADD COLUMN ${c} INTEGER`);
   semerBouchon(db);
+  for (const [t, cs] of Object.entries(c32)) for (const c of cs) db.exec(`ALTER TABLE swn_catalogue_${t} DROP COLUMN ${c}`);
   db.exec('ALTER TABLE swn_conceptions DROP COLUMN equipage');
   const n = () => (db.prepare('SELECT COUNT(*) n FROM swn_conceptions').get() as any).n as number;
   const avant = db.prepare('SELECT fiche_id, coque_cle, choix, resultat, version FROM swn_conceptions ORDER BY fiche_id').all();
   assert.ok(n() >= 2);
-  assert.deepEqual(migrate(db), [31]);
+  assert.deepEqual(migrate(db), [31, 32, 33]);
   assert.deepEqual(db.prepare('SELECT fiche_id, coque_cle, choix, resultat, version FROM swn_conceptions ORDER BY fiche_id').all(), avant);
   assert.equal((db.prepare('SELECT COUNT(*) n FROM swn_conceptions WHERE equipage IS NOT NULL').get() as any).n, 0);
   assert.deepEqual(db.pragma('foreign_key_check'), []);

@@ -14,7 +14,7 @@ export const credits = (n: number): string => `${entier(n)}${NBSP}cr`
 
 /** The rows of F-4, only when stated. */
 function lignesRegles(r: ResultatVaisseau): [string, string][] {
-  const rows: [string, number | null][] = [['Vitesse', r.vitesse ?? null], ['Armure', r.armure ?? null], ['Équipage', r.equipage?.choisi ?? null]]
+  const rows: [string, number | null][] = [['Vitesse', r.vitesse ?? null], ['Armure', r.armure ?? null], ['Équipage', r.equipage?.choisi ?? null], ['Soutes', r.soutes ?? null]]
   return rows.flatMap(([k, n]): [string, string][] => n === null ? [] : [[k, entier(n)]])
 }
 
@@ -42,7 +42,13 @@ export function listeChoix(r: ResultatVaisseau): string {
   const choix = r.lignes
     .map((l, i) => ({ l, i }))
     .sort((a, b) => ORDRE.indexOf(a.l.nature) - ORDRE.indexOf(b.l.nature) || a.l.nom.localeCompare(b.l.nom, 'fr') || a.i - b.i)
-    .map(({ l }) => `- ${l.quantite} × ${l.nom}${l.magasins ? ` (+${l.magasins} ${l.magasins < 2 ? 'magasin' : 'magasins'})` : ''}`)
+    .map(({ l }) => {
+      const vise = l.vise ? r.lignes.find((m) => m.nature === l.vise!.nature && m.cle === l.vise!.cle)?.nom ?? l.vise.cle : null
+      return `- ${l.quantite} × ${l.nom}${l.magasins ? ` (+${l.magasins} ${l.magasins < 2 ? 'magasin' : 'magasins'})` : ''}`
+        + (l.points ? ` (${l.points} ${l.points < 2 ? 'point' : 'points'})` : '')
+        + (vise === null ? '' : ` (→ ${vise})`)
+        + (l.cout === undefined ? '' : ` — ${credits(l.cout)}`)
+    })
   return ['**Choix**', ...choix].join('\n')
 }
 

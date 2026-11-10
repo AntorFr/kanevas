@@ -1,6 +1,7 @@
 // Text of the rule and example sheets (R-3, AD-131): pure Markdown, no `:::` block, no link, no database.
 // Inputs are already resolved (the reader's level is chosen by the caller).
 import type { CoqueResolue, ElementResolu, NatureVaisseau, ResultatVaisseau } from './vaisseau.js'
+import { libelleEffet } from './effets.js'
 import { texteMasse } from './masse.js'
 import { credits, entier, listeChoix, tableMesures } from './texte-vaisseau.js'
 
@@ -85,10 +86,17 @@ const PLAGE: Facultative<ElementRegle>[] = [
   ['Condition', (e) => texteF(e.condition)],
 ]
 
+const EFFET: Facultative<ElementRegle> = ['Effet', (e) => (e.effet === undefined ? null : texteBrut(libelleEffet(e.effet)))]
+
 const FACULTATIVES: Partial<Record<NatureRegles, Facultative<ElementRegle>[]>> = {
   moteurs: PLAGE,
-  amenagements: PLAGE,
+  amenagements: [...PLAGE, EFFET, ['Soute', (e) => nombreF(e.soute)]],
   defenses: [...PLAGE, ['Bonus de vitesse', (e) => nombreF(e.bonus_vitesse)]],
+  modifications: [
+    ['Coût %', (e) => nombreF(e.cout_pct)],
+    EFFET,
+    ['Valeur / points max', (e) => nombreF(e.valeur ?? e.points_max)],
+  ],
   armes: [
     ['Dégâts', (e) => texteF(e.degats)],
     ['Perforation', (e) => nombreF(e.perforation)],

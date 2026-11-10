@@ -20,6 +20,7 @@ export const brouillonDe = (c: Pick<Conception, 'coque' | 'lignes' | 'resultat'>
   coque: { cle: c.coque.cle, nom: c.coque.nom },
   lignes: c.lignes.map((l) => ({ ...l })),
   equipage: c.resultat.equipage?.choisi ?? null,
+  reparation: c.resultat.reparation?.choisie ?? 0,
 });
 
 export const EQUIPAGE_MAX = 100_000;
@@ -31,7 +32,12 @@ export const bornesEquipage = (min: number | null | undefined, max: number | nul
 export const choixDe = (b: Brouillon) => ({
   coque: b.coque.cle,
   ...(b.equipage === null ? {} : { equipage: b.equipage }),
-  choix: b.lignes.map((l) => ({ nature: l.nature, cle: l.cle, quantite: l.quantite })),
+  ...(b.reparation > 0 ? { reparation: b.reparation } : {}),
+  choix: b.lignes.map((l) => ({
+    nature: l.nature, cle: l.cle, quantite: l.quantite,
+    ...(l.points === undefined ? {} : { points: l.points }),
+    ...(l.vise === undefined ? {} : { vise: { nature: l.vise.nature, cle: l.vise.cle } }),
+  })),
 });
 
 export const memeBrouillon = (a: Brouillon, b: Brouillon) => JSON.stringify(choixDe(a)) === JSON.stringify(choixDe(b));
@@ -62,8 +68,32 @@ export function plageClasses(d: Donnees | undefined): string {
   return min !== undefined ? `classe ${min} au moins` : `classe ${max} au plus`;
 }
 
-/** The positive captions of a choice row (E-22): only what the catalogue states, joined by « · ». */
-export function legende(e: Pick<ElementCatalogue, 'nature' | 'donnees'>): string {
+const signe = (n: number) => (n > 0 ? '+' : n < 0 ? '−' : '') + String(Math.abs(n));
+
+/** The effect of a modification in words (B-83), from the fields the catalogue states; empty when it states none. */
+export function motEffet(d: Donnees): string {
+  switch (d.effet) {
+    case 'vitesse': return d.valeur === undefined ? '' : `vitesse ${signe(d.valeur)}`;
+    case 'armure': return d.valeur === undefined ? '' : `armure ${signe(d.valeur)}`;
+    case 'soutes_doublees': return 'soutes doublées';
+    case 'magasins_doubles': return 'magasins doublés';
+    case 'reparation_min': return d.valeur === undefined ? '' : `réparation ${d.valeur} au moins`;
+    case 'echange': {
+      const sens = d.sens === 'masse_vers_puissance' ? 'masse → puissance' : 'puissance → masse';
+      return d.points_max === undefined ? sens : `${sens}, jusqu’à ${d.points_max} ${d.points_max === 1 ? 'point' : 'points'}`;
+    }
+    default: return '';
+  }
+}
+
+/** « 3 points : −3 puissance, +1,5 masse » — written from the deltas of the server's `echange`, nothing computed. */
+export function consequencePoints(points: number, e: { puissance: number; masse: number }): string {
+  const delta = (n: number) => (n > 0 ? '+' : '') + masse(n);
+  return `${points} ${points === 1 ? 'point' : 'points'} : ${delta(e.puissance)} puissance, ${delta(e.masse)} masse`;
+}
+
+/** The positive captions of a choice row (E-22): only what the catalogue states, joined by « · ». `classe` is the chosen hull's. */
+export function legende(e: Pick<ElementCatalogue, 'nature' | 'donnees'>, classe?: number): string {
   const d = e.donnees;
   if (!d) return '';
   const parts: (string | false)[] = [];
@@ -77,6 +107,17 @@ export function legende(e: Pick<ElementCatalogue, 'nature' | 'donnees'>): string
   } else if (e.nature === 'moteurs' || e.nature === 'amenagements' || e.nature === 'defenses') {
     parts.push(plageClasses(d) || false);
     parts.push(e.nature === 'defenses' && d.bonus_vitesse !== undefined && `vitesse ${d.bonus_vitesse > 0 ? '+' : d.bonus_vitesse < 0 ? '−' : ''}${Math.abs(d.bonus_vitesse)}`);
+    if (e.nature === 'amenagements') {
+      if (d.effet === 'moteur_systeme') {
+        parts.push('moteur système');
+        const p = classe === undefined ? undefined : d.rend_puissance?.[classe - 1];
+        const m = classe === undefined ? undefined : d.rend_masse?.[classe - 1];
+        parts.push(p !== undefined && m !== undefined && `rend puissance ${nombre(p)} et masse ${masse(m)}`);
+      }
+      parts.push(d.soute !== undefined && `soutes ${nombre(d.soute)}`);
+    }
+  } else if (e.nature === 'modifications') {
+    parts.push(d.cout_pct !== undefined && `${d.cout_pct} % de la coque`, motEffet(d) || false);
   }
   return parts.filter(Boolean).join(' · ');
 }

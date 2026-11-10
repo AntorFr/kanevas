@@ -69,7 +69,7 @@ export function Selecteur({ universId, suffixe, nature, titre, classeCoque, onCh
                   <span className="vx-nom">{e.nom}</span>
                   {classeCoque !== undefined && exclutLaClasse(e, classeCoque) && <Pastille sens="neutre">Classe</Pastille>}
                 </span>
-                <span className="vx-sous">{[e.resume, legende(e)].filter(Boolean).join(' · ')}</span>
+                <span className="vx-sous">{[e.resume, legende(e, classeCoque)].filter(Boolean).join(' · ')}</span>
                 {e.donnees?.condition && <span className="vx-sous vx-condition">{e.donnees.condition}</span>}
               </div>
               <span className="vx-etiquettes">

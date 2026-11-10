@@ -6,18 +6,22 @@ import { appeler, ErreurApi, lire, useConnexionPerdue } from '../../../api';
 import { useTitreAriane } from '../../../cadre-contexte';
 import { Bouton, BoiteDialogue, Chargement, ErreurChargement, PageIntrouvable, Pastille } from '../../../ui';
 import { Equipage } from './Equipage';
-import { bornesEquipage, brouillonDe, choixDe, legende, memeBrouillon, motifDe, requete } from './format';
+import { bornesEquipage, brouillonDe, choixDe, credits, legende, memeBrouillon, motifDe, requete } from './format';
+import { Effets } from './Effets';
 import { Alertes, Chiffres, ErreurCalcul } from './Resultats';
 import { Selecteur } from './Selecteur';
 import { NATURES, type PageCatalogue, type Alerte, type Brouillon, type Calcul, type Conception, type ElementCatalogue, type Ligne, type Nature } from './types';
 
 type Ouvert = { nature: string; titre: string } | null;
-interface Info { chiffres: string; univers: boolean; el: ElementCatalogue }
+interface Info { resume: string; univers: boolean; el: ElementCatalogue }
 const infoDe = (e: ElementCatalogue): Info => ({
   el: e,
-  chiffres: [e.resume.replace(/coût [^·]*· /, ''), legende(e)].filter(Boolean).join(' · '),
+  resume: e.resume.replace(/coût [^·]*· /, ''),
   univers: e.univers === true || e.origine === 'univers' || e.origine === 'remplace',
 });
+/** The captions of a row: the catalogue's figures, then what it states of the effect (the class is the chosen hull's). */
+const chiffresDe = (i: Info | undefined, classe: number): string =>
+  i ? [i.resume, legende(i.el, classe)].filter(Boolean).join(' · ') : '';
 
 /** E-22, the workshop of one design. The screen carries no rule: every change asks `POST calcul` (V-12). */
 export function Atelier({ universId, ficheId, suffixe, initiale }: {
@@ -80,6 +84,9 @@ function Corps({ universId, suffixe, saved, onSaved, onRecharger }: {
   const premier = useRef(true);
   const [equipageTouche, setEquipageTouche] = useState(false);
   const [equipageInvalide, setEquipageInvalide] = useState(false);
+  // Other steppers refused while typed (repair skill, points of a line): they block the save like the crew's.
+  const [invalides, setInvalides] = useState<Record<string, boolean>>({});
+  const marquer = useCallback((cle: string, v: boolean) => setInvalides((a) => (!!a[cle] === v ? a : { ...a, [cle]: v })), []);
   const [cleEquipage, setCleEquipage] = useState(0);
   const [infos, setInfos] = useState<Record<string, Info>>({});
 
@@ -157,7 +164,20 @@ function Corps({ universId, suffixe, saved, onSaved, onRecharger }: {
   }
   const quantite = (l: Ligne, delta: number) =>
     change((b) => ({ ...b, lignes: b.lignes.map((x) => (x === l ? { ...x, quantite: Math.max(1, Math.min(99, x.quantite + delta)) } : x)) }));
-  const retirer = (l: Ligne) => change((b) => ({ ...b, lignes: b.lignes.filter((x) => x !== l) }));
+  const retirer = (l: Ligne) => {
+    marquer(`points/${l.nature}/${l.cle}`, false);
+    change((b) => ({ ...b, lignes: b.lignes.filter((x) => x !== l) }));
+  };
+  const points = (l: Ligne, n: number) => change((b) => ({ ...b, lignes: b.lignes.map((x) => (x === l ? { ...x, points: n } : x)) }));
+  const viser = (l: Ligne, valeur: string) => change((b) => ({
+    ...b,
+    lignes: b.lignes.map((x) => {
+      if (x !== l) return x;
+      const { vise: _vise, ...sans } = x;
+      const [nature, ...cle] = valeur.split('/');
+      return valeur === '' ? sans : { ...sans, vise: { nature: nature!, cle: cle.join('/') } };
+    }),
+  }));
 
   const alertes: Alerte[] = calcul.alertes;
   const bloquante = alertes.find((a) => a.niveau === 'bloquante');
@@ -173,9 +193,15 @@ function Corps({ universId, suffixe, saved, onSaved, onRecharger }: {
   const borneMax = donneesCoque ? donneesCoque.equipage_max : resultat.equipage?.max;
   const bornes = bornesEquipage(borneMin, borneMax);
   const blocEquipage = bornes !== '' || equipageAffiche !== null;
+  const classe = resultat.coque.classe;
+  // The repair block (B-83): a chosen element asks for a skill, the server's result carries one, or the design has one above 0.
+  const demandeReparation = brouillon.lignes.some((l) => infos[`${l.nature}/${l.cle}`]?.el.donnees?.effet === 'reparation_min');
+  const blocReparation = demandeReparation || resultat.reparation != null || brouillon.reparation > 0;
+  const reparationAffichee = brouillon.reparation;
+  const invalide = equipageInvalide || Object.values(invalides).some(Boolean);
 
   async function enregistrer() {
-    if (enregistrement || bloquante || equipageInvalide || etatCalcul !== 'ok' || perdue) return;
+    if (enregistrement || bloquante || invalide || etatCalcul !== 'ok' || perdue) return;
     setEnregistrement(true);
     setMessage(null);
     setRefus(null);
@@ -210,6 +236,7 @@ function Corps({ universId, suffixe, saved, onSaved, onRecharger }: {
     setBrouillon(brouillonDe(saved));
     setEquipageTouche(false);
     setEquipageInvalide(false);
+    setInvalides({});
     setCleEquipage((n) => n + 1);
     setCalcul({ resultat: saved.resultat, alertes: saved.alertes });
     setEtatCalcul('ok');
@@ -259,7 +286,7 @@ function Corps({ universId, suffixe, saved, onSaved, onRecharger }: {
   }
 
   const raison = bloquante ? `Enregistrement refusé : ${motifDe(bloquante)}.` : null;
-  const peutEnregistrer = ecriture && !perdue && !bloquante && !equipageInvalide && etatCalcul === 'ok' && !enregistrement;
+  const peutEnregistrer = ecriture && !perdue && !bloquante && !invalide && etatCalcul === 'ok' && !enregistrement;
   const estompe = etatCalcul === 'erreur';
 
   return (
@@ -336,7 +363,7 @@ function Corps({ universId, suffixe, saved, onSaved, onRecharger }: {
             <div className="vx-ligne-choix">
               <div className="vx-element-texte">
                 <span className="vx-nom">{brouillon.coque.nom}</span>
-                <span className="vx-sous">{infos[`coques/${brouillon.coque.cle}`]?.chiffres ?? `classe ${resultat.coque.classe}`}</span>
+                <span className="vx-sous">{infos[`coques/${brouillon.coque.cle}`] ? chiffresDe(infos[`coques/${brouillon.coque.cle}`], classe) : `classe ${classe}`}</span>
               </div>
               {infos[`coques/${brouillon.coque.cle}`]?.univers && <Pastille sens="neutre">Univers</Pastille>}
               {coqueRetiree && <Pastille sens="danger">Élément retiré de cet univers</Pastille>}
@@ -354,6 +381,21 @@ function Corps({ universId, suffixe, saved, onSaved, onRecharger }: {
                 onChange={(n) => { setEquipageTouche(true); change((b) => ({ ...b, equipage: n })); }}
                 onInvalide={(v) => { setEquipageTouche(true); setEquipageInvalide(v); }}
               />
+            </div>
+          )}
+          {blocReparation && (
+            <div className="vx-bloc">
+              <div className="vx-bloc-tete"><h2>Compétence de réparation</h2></div>
+              {ecriture ? (
+                <Equipage
+                  key={`rep-${cleEquipage}`} nom="Compétence de réparation" maximum={20} valeur={reparationAffichee} bornes="" lecture={false} desactive={verrou}
+                  diminuer="Diminuer la compétence de réparation" augmenter="Augmenter la compétence de réparation"
+                  onChange={(n) => change((b) => ({ ...b, reparation: n }))}
+                  onInvalide={(v) => marquer('reparation', v)}
+                />
+              ) : (
+                <p className="vx-lu">Compétence de réparation : {reparationAffichee}</p>
+              )}
             </div>
           )}
           {NATURES.map((n) => {
@@ -378,7 +420,10 @@ function Corps({ universId, suffixe, saved, onSaved, onRecharger }: {
                             <span className="vx-nom">{l.nom}</span>
                             {classeInadaptee.has(i) && <Pastille sens="neutre">Classe</Pastille>}
                           </span>
-                          {infos[`${l.nature}/${l.cle}`]?.chiffres && <span className="vx-sous">{infos[`${l.nature}/${l.cle}`]?.chiffres}</span>}
+                          {chiffresDe(infos[`${l.nature}/${l.cle}`], classe) && <span className="vx-sous">{chiffresDe(infos[`${l.nature}/${l.cle}`], classe)}</span>}
+                          {resultat.lignes.find((r) => r.nature === l.nature && r.cle === l.cle)?.cout !== undefined && (
+                            <span className="vx-sous">Ligne : {credits(resultat.lignes.find((r) => r.nature === l.nature && r.cle === l.cle)!.cout!)}</span>
+                          )}
                           {infos[`${l.nature}/${l.cle}`]?.el.donnees?.condition && <span className="vx-sous vx-condition">{infos[`${l.nature}/${l.cle}`]?.el.donnees?.condition}</span>}
                         </div>
                         {infos[`${l.nature}/${l.cle}`]?.univers && <Pastille sens="neutre">Univers</Pastille>}
@@ -395,6 +440,12 @@ function Corps({ universId, suffixe, saved, onSaved, onRecharger }: {
                             <Bouton petit disabled={verrou} aria-label={`Retirer : ${l.nom}`} onClick={() => retirer(l)}>Retirer</Bouton>
                           </>
                         )}
+                        <Effets
+                          ligne={l} info={infos[`${l.nature}/${l.cle}`]} infos={infos} lignes={brouillon.lignes} resultat={resultat}
+                          alerte={alertes.find((a) => a.code === 'cible_invalide' && a.ligne === i)}
+                          ecriture={ecriture} verrou={verrou} cle={cleEquipage}
+                          onPoints={(n) => points(l, n)} onInvalide={(v) => marquer(`points/${l.nature}/${l.cle}`, v)} onVise={(v) => viser(l, v)}
+                        />
                       </li>
                     ))}
                   </ul>
