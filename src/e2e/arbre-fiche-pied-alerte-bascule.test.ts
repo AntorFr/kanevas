@@ -37,9 +37,12 @@ describe('kanevas-arbre-fiche, pied, bandeau de cycle et fil avec bascule', { sk
   const boite = async (page: Any, titre: string) => {
     await page.goto(`/univers/${U}/fiche/${ids[titre]}`);
     await page.getByRole('heading', { level: 1, name: titre, exact: true }).waitFor();
+    await attendre(page);
     await page.getByRole('button', { name: /^Autres actions sur/ }).first().click();
     await page.getByRole('menuitem', { name: 'Déplacer sous…' }).click();
-    return page.getByRole('dialog');
+    const d = page.getByRole('dialog');
+    await d.locator('.actions').waitFor();
+    return d;
   };
 
   for (const [nom, vp] of [['bureau', { width: 1280, height: 800 }], ['téléphone', { width: 390, height: 844 }]] as const) {

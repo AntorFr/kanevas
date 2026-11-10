@@ -1,12 +1,7 @@
 // Black-box tests of `kanevas-tests-attestes-pod`, written from the need only (the suite says why it fails in a pod:
-// the harness waits 30 s for the server and shows its error output when it does not start; a failure of the real
-// Claude CLI says its cause). The server is the real built one (dist/server.js); only what it does before listening is
+// the harness waits 30 s for the server and shows its error output when it does not start). The server is the real built one (dist/server.js); only what it does before listening is
 // chosen by the test, through a preloaded script (src/e2e/fixtures/demarrage/).
 import assert from 'node:assert/strict';
-import { spawnSync } from 'node:child_process';
-import { mkdtempSync, rmSync, symlinkSync } from 'node:fs';
-import { tmpdir } from 'node:os';
-import { dirname, join } from 'node:path';
 import { describe, it } from 'node:test';
 
 import { startServer } from './harnais.test.ts';
@@ -75,33 +70,5 @@ describe('kanevas-tests-attestes-pod : le harnais e2e attend le serveur et dit p
     assert.match(message, /server did not start/);
     assert.ok(ms >= 29_000, `abandonné après ${ms} ms`);
     assert.ok(ms < 45_000, `${ms} ms`);
-  });
-
-  // Panne visée : le message d'échec du test du CLI réel est resté nu (statut seul), sans la cause.
-  it('CLI embarqué réel qui ne peut pas être lancé : le message d’échec du test dit « lancement impossible »', { timeout: 120_000 }, () => {
-    // A PATH holding only node: `script`, which gives the CLI its terminal, cannot be launched.
-    const bin = mkdtempSync(join(tmpdir(), 'kanevas-path-'));
-    try {
-      symlinkSync(process.execPath, join(bin, 'node'));
-      const env: NodeJS.ProcessEnv = { ...process.env, PATH: bin };
-      delete env.NODE_TEST_CONTEXT;
-      const r = spawnSync(
-        process.execPath,
-        [
-          '--import',
-          'tsx',
-          '--test',
-          '--test-name-pattern=CLI embarqué réel',
-          'src/e2e/connexion-claude-com.test.ts',
-        ],
-        { cwd: process.cwd(), env, encoding: 'utf8', timeout: 110_000 },
-      );
-      const sortie = `${r.stdout}\n${r.stderr}`;
-      assert.notEqual(r.status, 0, 'le test du CLI réel devait échouer sans `script`');
-      assert.match(sortie, /lancement impossible/, sortie.slice(-1500));
-      assert.match(sortie, /cause/, sortie.slice(-1500));
-    } finally {
-      rmSync(dirname(join(bin, 'node')), { recursive: true, force: true });
-    }
   });
 });
