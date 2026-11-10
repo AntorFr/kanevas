@@ -25,7 +25,7 @@
 //  P-10 / critère Léa reads « Description » and nothing of « Vérité » (page, API, search).
 import assert from 'node:assert/strict';
 import { join } from 'node:path';
-import { after, before, describe, test } from 'node:test';
+import { after, afterEach, before, describe, test } from 'node:test';
 
 process.env.NODE_ENV = 'test';
 process.env.KANEVAS_STUB = '1';
@@ -607,9 +607,16 @@ describe('E-18 Accès par API au navigateur', { skip: skipBrowser }, () => {
     await browser?.close();
     await m.stop();
   });
+  // No test of the block leaves a server clock behind: the tokens of the next ones are created at the real date.
+  afterEach(() => {
+    m.app.horloge = () => new Date();
+  });
 
   test('P-11 / critère : Antor crée « Script Kanka — Mac », le jeton ne s’affiche qu’une fois, la ligne dit « jamais » et l’expiration', async () => {
-    m.app.horloge = () => new Date('2026-10-11T12:00:00.000Z');
+    // Dates expected by the screen's own format, from the real clock (creation = today, expiry = +30 days).
+    const dateEcran = (d: Date) => d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' }).replace(/[.]/g, '\\.');
+    const creation = new Date();
+    const expiration = new Date(creation.getTime() + 30 * 86400_000);
     const { ctx, page } = await ouvrirSession(browser, m, 'antor');
     await ouvrirE18(page, m);
     const t0 = await texte(page);
@@ -635,9 +642,9 @@ describe('E-18 Accès par API au navigateur', { skip: skipBrowser }, () => {
     const l = ligne(page, 'Script Kanka — Mac');
     await l.first().waitFor();
     const txt = ((await l.first().innerText()) as string).replace(/\s+/g, ' ');
-    assert.match(txt, /créé par antor le 11 oct\. 2026/);
+    assert.match(txt, new RegExp(`créé par antor le ${dateEcran(creation)}`));
     assert.match(txt, /jamais/);
-    assert.match(txt, /expire le 10 nov\. 2026/);
+    assert.match(txt, new RegExp(`expire le ${dateEcran(expiration)}`));
     assert.ok(!(await texte(page)).includes(valeur), 'token still on screen after closing');
     await page.reload();
     await attendre(page);
