@@ -119,7 +119,7 @@ export function Champ({
   const props = {
     ...reste,
     id,
-    'aria-invalid': erreur ? true : undefined,
+    'aria-invalid': erreur ? true : (reste['aria-invalid'] as boolean | undefined),
     'aria-describedby': decrit || undefined,
   };
   return (

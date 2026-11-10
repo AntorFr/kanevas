@@ -11,8 +11,11 @@ import { NATURES_DE_LIGNE } from './catalogue-vaisseaux.js';
 export const OUTIL_VAISSEAUX = 'swn/vaisseaux';
 export const TYPE_CARACTERISTIQUES = 'caracteristiques';
 
-export interface LigneChoix { nature: NatureVaisseau; cle: string; quantite: number; magasins?: number }
-export interface EntreeCalcul { coque: string; choix: LigneChoix[] }
+export interface LigneChoix { nature: NatureVaisseau; cle: string; quantite: number; magasins?: number;
+  /** X-4: points of an exchange line and the line a doubling aims at. */
+  points?: number; vise?: { nature: NatureVaisseau; cle: string } }
+/** `equipage`: `undefined` = the hull's minimum (F-2); `null` = no crew, kept as such. */
+export interface EntreeCalcul { coque: string; choix: LigneChoix[]; equipage?: number | null; reparation?: number }
 export interface SortieCalcul { resultat: ResultatVaisseau | null; alertes: AlerteVaisseau[] }
 /** What the stored design already carries: the keys that may still resolve although masked (V-3). */
 export interface Porte {
@@ -23,6 +26,13 @@ export interface Porte {
 }
 
 const invalide = (message: string, detail: string, champ: string) => new ErreurService('invalide', message, detail, champ);
+
+const viseValide = (v: unknown): boolean => {
+  const o = v as Record<string, unknown> | null;
+  return !!o && typeof o === 'object' && !Array.isArray(o) && Object.keys(o).length === 2
+    && typeof o.nature === 'string' && (NATURES_DE_LIGNE as readonly string[]).includes(o.nature)
+    && typeof o.cle === 'string' && o.cle.length >= 1 && o.cle.length <= 64;
+};
 
 /** Shape of a request: at most 100 lines, one per pair, quantity 1–99, known natures. */
 export function validerChoix(coque: unknown, choix: unknown): EntreeCalcul {
@@ -35,6 +45,8 @@ export function validerChoix(coque: unknown, choix: unknown): EntreeCalcul {
       || typeof o.nature !== 'string' || !(NATURES_DE_LIGNE as readonly string[]).includes(o.nature)
       || typeof o.cle !== 'string' || o.cle.length < 1 || o.cle.length > 64
       || !Number.isInteger(o.quantite) || (o.quantite as number) < 1 || (o.quantite as number) > 99
+      || (o.points !== undefined && (!Number.isInteger(o.points) || (o.points as number) < 0 || (o.points as number) > 99))
+      || (o.vise !== undefined && !viseValide(o.vise))
       || (o.magasins !== undefined && (o.nature !== 'armes' || !Number.isInteger(o.magasins) || (o.magasins as number) < 1 || (o.magasins as number) > 9))) {
       throw invalide('Choix invalides.', 'choix_invalide', 'choix');
     }
@@ -42,9 +54,25 @@ export function validerChoix(coque: unknown, choix: unknown): EntreeCalcul {
     if (vus.has(k)) throw invalide('Un élément ne peut figurer qu\'une fois.', 'choix_en_double', 'choix');
     vus.add(k);
     return { nature: o.nature as NatureVaisseau, cle: o.cle, quantite: o.quantite as number,
-      ...(o.magasins === undefined ? {} : { magasins: o.magasins as number }) };
+      ...(o.magasins === undefined ? {} : { magasins: o.magasins as number }),
+      ...(o.points === undefined ? {} : { points: o.points as number }),
+      ...(o.vise === undefined ? {} : { vise: { nature: (o.vise as { nature: NatureVaisseau }).nature, cle: (o.vise as { cle: string }).cle } }) };
   });
   return { coque, choix: lignes };
+}
+
+/** The `equipage` of a request (F-2): absent or `null` = the default, else an integer 0–100 000. */
+export function validerEquipage(v: unknown): number | undefined {
+  if (v === undefined || v === null) return undefined;
+  if (typeof v !== 'number' || !Number.isInteger(v) || v < 0 || v > 100000) throw invalide('Équipage invalide.', 'equipage_invalide', 'equipage');
+  return v;
+}
+
+/** The `reparation` of a request (X-4): absent or `null` = 0, else an integer 0–20. */
+export function validerReparation(v: unknown): number | undefined {
+  if (v === undefined || v === null) return undefined;
+  if (typeof v !== 'number' || !Number.isInteger(v) || v < 0 || v > 20) throw invalide('Réparation invalide.', 'reparation_invalide', 'reparation');
+  return v;
 }
 
 const texteRetire = (nom: string) => `Élément retiré de cet univers : ${nom}. Remplacez-le pour enregistrer.`;
@@ -70,12 +98,31 @@ export interface Resolution {
   /** `null` when the hull or a line does not resolve: no number is invented. */
   coque: CoqueResolue | null;
   lignes: (LigneResolue | null)[];
+  /** The crew of the design, resolved (F-2). */
+  equipage: number | null;
   /** The `element_retire` alerts (hull `-1`, then each line by index). */
   retirees: AlerteVaisseau[];
   /** Their names, in the same order. */
   nomsRetires: string[];
   /** The first request field that named an element not carried and not resolvable (never a masked-or-unknown distinction). */
   inconnu: { champ: 'coque' | 'choix' } | null;
+  /** The repair skill of the design (X-4). */
+  reparation: number;
+}
+
+/** X-4: `points` and `vise` must belong to an element that has the effect; one above `points_max` is refused. */
+export function controlerChoix(r: Resolution): void {
+  r.lignes.forEach((l) => {
+    if (l === null) return;
+    const e = l.element;
+    if (l.points !== undefined) {
+      if (e.effet !== 'echange') throw invalide('Points sur un élément sans échange.', 'points_invalides', 'points');
+      if (l.points > (e.points_max ?? 0)) throw invalide(`Points : ${e.points_max ?? 0} au plus.`, 'points_invalides', 'points');
+    }
+    if (l.vise !== undefined && e.effet !== 'soutes_doublees' && e.effet !== 'magasins_doubles') {
+      throw invalide('Élément visé sur un élément sans doublement.', 'vise_invalide', 'vise');
+    }
+  });
 }
 
 /**
@@ -106,15 +153,17 @@ export function resoudreChoix(db: Db, universId: number, e: EntreeCalcul, porte:
       return null;
     }
     return { nature: l.nature, cle: l.cle, nom: el.nom, quantite: l.quantite,
-      ...(l.magasins === undefined ? {} : { magasins: l.magasins }), element: el.donnees as unknown as ElementCalcul };
+      ...(l.magasins === undefined ? {} : { magasins: l.magasins }),
+      ...(l.points === undefined ? {} : { points: l.points }), ...(l.vise === undefined ? {} : { vise: l.vise }), element: el.donnees as unknown as ElementCalcul };
   });
-  return { coque, lignes, retirees, nomsRetires, inconnu };
+  const equipage = e.equipage === undefined ? (coque?.equipage_min ?? null) : e.equipage;
+  return { coque, lignes, equipage, reparation: e.reparation ?? 0, retirees, nomsRetires, inconnu };
 }
 
 /** Calculates from resolved elements; `null` result and the alerts alone when one does not resolve. */
 export function calculerResolu(db: Db, universId: number, r: Resolution): SortieCalcul {
   if (r.retirees.length > 0 || !r.coque || r.lignes.some((l) => l === null)) return { resultat: null, alertes: r.retirees };
-  const resultat = calculer(r.coque, r.lignes as LigneResolue[], { porteeSaut: porteeSaut(db, universId) });
+  const resultat = calculer(r.coque, r.lignes as LigneResolue[], { porteeSaut: porteeSaut(db, universId) }, r.equipage, r.reparation);
   return { resultat, alertes: resultat.alertes };
 }
 
@@ -125,9 +174,15 @@ export function calculerResolu(db: Db, universId: number, r: Resolution): Sortie
 export function calculerDepuisChoix(db: Db, acteur: Acteur, universId: number, entree: unknown,
   porte: Porte | null = null): SortieCalcul {
   if (!accessible(db, acteur, universId, OUTIL_VAISSEAUX)) throw introuvable();
-  const o = (entree ?? {}) as { coque?: unknown; choix?: unknown };
+  const o = (entree ?? {}) as { coque?: unknown; choix?: unknown; equipage?: unknown; reparation?: unknown };
   const e = validerChoix(o.coque, o.choix);
-  return calculerResolu(db, universId, resoudreChoix(db, universId, e, porte));
+  const equipage = validerEquipage(o.equipage);
+  if (equipage !== undefined) e.equipage = equipage;
+  const reparation = validerReparation(o.reparation);
+  if (reparation !== undefined) e.reparation = reparation;
+  const r = resoudreChoix(db, universId, e, porte);
+  controlerChoix(r);
+  return calculerResolu(db, universId, r);
 }
 
 /** `-` for a missing row (V-5). */

@@ -135,6 +135,7 @@ test('Antor ajoute un PDF depuis E-19 : « Visible des joueurs », 14 fichiers, 
   assert.match(norm(await texte(antor)), /14 fichiers/);
   await antor.getByText('Documents', { exact: true }).click();
   await antor.getByText('Carte des Sphères', { exact: true }).waitFor({ state: 'hidden' });
+  await antor.locator('.med-tuile').filter({ has: antor.locator('[title="regles-guilde.pdf"]') }).first().waitFor();
   await attendre(antor);
   let t = norm(await texte(antor));
   await antor.screenshot({ path: '/tmp/shots/antor-filtre-documents.png' });
@@ -148,6 +149,8 @@ test('Antor ajoute un PDF depuis E-19 : « Visible des joueurs », 14 fichiers, 
   assert.doesNotMatch(t, /regles-guilde\.pdf/);
   assert.match(t, /Carte des Sphères/);
   await antor.getByText('Tout', { exact: true }).click();
+  await antor.locator('.med-tuile').filter({ has: antor.locator('[title="regles-guilde.pdf"]') }).first().waitFor();
+  await antor.getByText('Carte des Sphères', { exact: true }).first().waitFor();
   await antor.getByPlaceholder('Chercher par nom').fill('zzz-introuvable');
   await attendre(antor);
   assert.ok(await dit(antor, 'Aucun fichier ne correspond.'));
@@ -162,10 +165,15 @@ test('Antor ajoute un PDF depuis E-19 : « Visible des joueurs », 14 fichiers, 
 test('un fichier vide parmi deux : « « notes.txt » est vide. », ok.txt ajouté, notes.txt rien', opts, async () => {
   await mediatheque(antor);
   const ok = { name: 'ok.txt', mimeType: 'text/plain', buffer: Buffer.from('bonjour') };
+  // The message is a toast that may disappear: register its wait before the upload,
+  // then wait on the state (both uploads answered, ok.txt listed) before asserting it.
+  const message = antor.getByText(rx("« notes.txt » est vide.")).first().waitFor({ timeout: 30000 }).then(() => true, () => false);
+  const reponses = Promise.all([1, 2].map(() => antor.waitForResponse((r: Any) => r.request().method() === 'POST' && /\/fichiers$/.test(r.url()), { timeout: 30000 })));
   await antor.locator('input[type=file]').first().setInputFiles([VIDE('notes.txt'), ok]);
-  assert.ok(await dit(antor, "« notes.txt » est vide."));
-  await antor.getByText('ok.txt').first().waitFor();
+  await reponses;
+  await antor.getByText('ok.txt').first().waitFor({ timeout: 30000 });
   assert.ok(await parNom(antor, 'ok.txt'));
+  assert.ok(await message, "le message « notes.txt » est vide. s'est affiché");
   assert.equal(await parNom(antor, 'notes.txt'), undefined);
   await antor.screenshot({ path: '/tmp/shots/antor-vide.png' });
 });

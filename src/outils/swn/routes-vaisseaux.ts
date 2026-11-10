@@ -45,6 +45,6 @@ export function routesVaisseaux(app: FastifyInstance, garde: (cle: string) => pr
   app.put(`${BASE}/conceptions/:fid`, opts, async (request) => {
     const b = objet(request.body);
     return enregistrerConception(app.db, acteur(request), univers(request), fiche(request),
-      { coque: b.coque, choix: b.choix, version: b.version });
+      { coque: b.coque, choix: b.choix, version: b.version, equipage: b.equipage, reparation: b.reparation });
   });
 }

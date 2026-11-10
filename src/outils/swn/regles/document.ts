@@ -29,6 +29,8 @@ export interface ZoneDoc {
   /** 0 to 1, or null. */
   densite: number | null
   secret: boolean
+  /** Number of hexagons of a zone that is a set; absent for a polygon (Z-7). */
+  hexagones?: number
 }
 
 export interface VueDocument {
@@ -57,7 +59,8 @@ function ligneRoute(r: RouteDoc): string {
 
 function ligneZone(z: ZoneDoc): string {
   const densite = z.densite === null ? 'densité automatique' : `densité ${Math.round(z.densite * 100)} %`
-  return `- ${aplatir(z.nom)} · ${densite}${z.secret ? ' (secrète)' : ''}`
+  const taille = z.hexagones === undefined ? '' : ` · ${z.hexagones} ${z.hexagones < 2 ? 'hexagone' : 'hexagones'}`
+  return `- ${aplatir(z.nom)}${taille} · ${densite}${z.secret ? ' (secrète)' : ''}`
 }
 
 /** The lines that fit in `budget` characters, then a tail line counting the rest. */

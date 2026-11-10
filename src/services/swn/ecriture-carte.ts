@@ -1,5 +1,5 @@
 import type { Db } from '../../db/db.js';
-import { contourValide } from '../../outils/swn/regles/zone.js';
+import { estEnsemble, formeValide, plagesDe, serialiserPlages, type Plage } from '../../outils/swn/regles/forme.js';
 import { cleDe } from '../../outils/swn/regles/cle.js';
 import { TAILLE_BLOC } from '../../outils/swn/regles/generation.js';
 import { distanceHex } from '../../outils/swn/regles/hex.js';
@@ -83,13 +83,19 @@ function densiteValide(v: unknown): number | null {
   if (typeof v !== 'number' || !Number.isFinite(v) || v < 0 || v > 1) throw invalideChamp('densite', 'Densité : de 0 à 1.');
   return v;
 }
-function contourChoisi(v: unknown): [number, number][] {
-  const r = contourValide(v);
-  if (!r.ok) {
-    throw invalideChamp('contour', r.code === 'contour_trop_court' ? 'Un territoire a au moins trois sommets.'
-      : r.code === 'contour_croise' ? 'Le contour se croise.' : 'Contour invalide.');
-  }
-  return v as [number, number][];
+const MESSAGES_FORME: Record<string, string> = {
+  contour_trop_court: 'Un territoire a au moins trois sommets.',
+  contour_croise: 'Le contour se croise.',
+  hexagones_vides: 'Un territoire a au moins un hexagone.',
+  hexagones_trop_nombreux: 'Un territoire compte 5 000 hexagones au plus.',
+  hexagones_invalide: 'Hexagones invalides : des paires [q, r] d\'entiers.',
+};
+/** The shape of a zone, polygon or set (Z-2): `contour` is `[]` for a set, `plages` null for a polygon (Z-1). */
+function formeChoisie(v: unknown): { contour: [number, number][]; plages: Plage[] | null } {
+  const r = formeValide(v);
+  if (!r.ok) throw invalideChamp('contour', MESSAGES_FORME[r.code] ?? 'Contour invalide.');
+  if (estEnsemble(v)) return { contour: [], plages: plagesDe(v.hexagones as [number, number][]) };
+  return { contour: v as [number, number][], plages: null };
 }
 const corps = (c: unknown): Record<string, unknown> => (c !== null && typeof c === 'object' && !Array.isArray(c) ? c as Record<string, unknown> : {});
 const a = (c: Record<string, unknown>, k: string) => Object.hasOwn(c, k) && c[k] !== undefined;
@@ -137,11 +143,11 @@ export function normaliserSysteme(entree: unknown): SystemeNormalise {
     secret: a(c, 'secret') ? boolValide('secret', c.secret) : false,
   };
 }
-export interface ZoneNormalisee { nom: string; contour: [number, number][]; couleur: string; densite: number | null; secret: boolean }
+export interface ZoneNormalisee { nom: string; contour: [number, number][]; plages: Plage[] | null; couleur: string; densite: number | null; secret: boolean }
 export function normaliserZone(entree: unknown): ZoneNormalisee {
   const c = corps(entree);
   return {
-    nom: nomValide(c.nom), contour: contourChoisi(c.contour),
+    nom: nomValide(c.nom), ...formeChoisie(c.contour),
     couleur: a(c, 'couleur') ? couleurValide(c.couleur) : 'accent',
     densite: a(c, 'densite') ? densiteValide(c.densite) : null,
     secret: a(c, 'secret') ? boolValide('secret', c.secret) : false,
@@ -292,10 +298,10 @@ export function dessinerZone(db: Db, acteur: Acteur | number, universId: number,
   const ac = acteurDe(acteur);
   return db.transaction(() => {
     const g = exigerEcritureGalaxie(db, ac, universId, galaxieId);
-    const { nom, contour, couleur, densite, secret } = normaliserZone(z);
+    const { nom, contour, plages, couleur, densite, secret } = normaliserZone(z);
     const cle = importe?.cle ?? cleDe(nom, clesDe(db, 'swn_zones', g.id));
-    const id = Number(db.prepare(`INSERT INTO swn_zones (galaxie_id, univers_id, cle, nom, contour, couleur, densite, secret)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?)`).run(g.id, universId, cle, nom, JSON.stringify(contour), couleur, densite, secret ? 1 : 0).lastInsertRowid);
+    const id = Number(db.prepare(`INSERT INTO swn_zones (galaxie_id, univers_id, cle, nom, contour, plages, couleur, densite, secret)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`).run(g.id, universId, cle, nom, JSON.stringify(contour), plages && serialiserPlages(plages), couleur, densite, secret ? 1 : 0).lastInsertRowid);
     apresEcriture(db, ac.compteId, universId);
     return { id, cle, version: 1 };
   })();
@@ -311,7 +317,11 @@ export function modifierZone(db: Db, acteur: Acteur | number, universId: number,
     const version = versionValide(c.version);
     const sets: string[] = [], vals: unknown[] = [];
     if (a(c, 'nom')) { sets.push('nom = ?'); vals.push(nomValide(c.nom)); }
-    if (a(c, 'contour')) { sets.push('contour = ?'); vals.push(JSON.stringify(contourChoisi(c.contour))); }
+    if (a(c, 'contour')) {
+      const f = formeChoisie(c.contour);
+      sets.push('contour = ?', 'plages = ?');
+      vals.push(JSON.stringify(f.contour), f.plages && serialiserPlages(f.plages));
+    }
     if (a(c, 'couleur')) { sets.push('couleur = ?'); vals.push(couleurValide(c.couleur)); }
     if (a(c, 'densite')) { sets.push('densite = ?'); vals.push(densiteValide(c.densite)); }
     if (a(c, 'secret')) { sets.push('secret = ?'); vals.push(boolValide('secret', c.secret) ? 1 : 0); }

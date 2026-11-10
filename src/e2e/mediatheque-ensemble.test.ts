@@ -68,6 +68,16 @@ const mediatheque = async (p: Any) => {
 };
 const tuile = (p: Any, nom: string) => p.getByRole('button', { name: nom, exact: false }).filter({ hasText: nom });
 const tuilesNoms = async (p: Any): Promise<string> => (await p.locator('main').innerText()) as string;
+// Sonde le texte de `main` jusqu'à l'état attendu en entier (voulus présents ET exclus absents) : « détachée » seul est vrai sur une liste vide.
+const tuilesQuand = async (p: Any, presents: RegExp[], absents: RegExp[]): Promise<string> => {
+  const fin = Date.now() + 15_000;
+  for (;;) {
+    const t = await tuilesNoms(p);
+    if (presents.every((r) => r.test(t)) && !absents.some((r) => r.test(t))) return t;
+    if (Date.now() > fin) return t;
+    await p.waitForTimeout(50);
+  }
+};
 const ouvrirFichier = async (p: Any, nom: string) => {
   await tuile(p, nom).first().click();
   await p.locator('.med-panneau').waitFor();
@@ -378,20 +388,22 @@ test('supprimer « Carte des Sphères » : Annuler garde le fichier ; la boîte 
 test('Documents ne montre que des documents ; Images aucun ; le nom vide et de 201 caractères sont refusés', opts, async () => {
   await mediatheque(antor);
   await antor.getByRole('radio', { name: 'Documents' }).click();
-  await antor.getByRole('button', { name: /plan\.png/ }).first().waitFor({ state: 'detached' });
-  const docs = await tuilesNoms(antor);
+  await tuile(antor, 'tarifs-du-port.pdf').first().waitFor();
+  await tuile(antor, 'plan.png').first().waitFor({ state: 'detached' });
+  const docs = await tuilesQuand(antor, [/tarifs-du-port\.pdf/, /carnet\.pdf/], [/plan\.png/, /croquis\.png/, /port-sel-quais\.webp/]);
   assert.match(docs, /tarifs-du-port\.pdf/);
   assert.match(docs, /carnet\.pdf/);
   assert.doesNotMatch(docs, /plan\.png|croquis\.png|port-sel-quais\.webp/);
   await antor.getByRole('radio', { name: 'Images' }).click();
-  await antor.getByRole('button', { name: /carnet\.pdf/ }).first().waitFor({ state: 'detached' });
-  const imgs = await tuilesNoms(antor);
+  await tuile(antor, 'plan.png').first().waitFor();
+  const imgs = await tuilesQuand(antor, [/plan\.png/], [/tarifs-du-port\.pdf/, /carnet\.pdf/]);
   assert.doesNotMatch(imgs, /tarifs-du-port\.pdf|carnet\.pdf/);
   assert.match(imgs, /plan\.png/);
 
   await antor.getByLabel('Chercher par nom').fill('plan.png');
-  await antor.getByRole('button', { name: /croquis\.png/ }).first().waitFor({ state: 'detached' });
-  const filtre = await tuilesNoms(antor);
+  await tuile(antor, 'plan.png').first().waitFor();
+  await tuile(antor, 'croquis.png').first().waitFor({ state: 'detached' });
+  const filtre = await tuilesQuand(antor, [/plan\.png/], [/croquis\.png/]);
   assert.match(filtre, /plan\.png/);
   assert.doesNotMatch(filtre, /croquis\.png/);
   await antor.getByLabel('Chercher par nom').fill('zzz-rien');
