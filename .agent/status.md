@@ -163,7 +163,7 @@ catalogue MJ (événement `proposition_creee`) et sa règle du bouchon (« Mets 
   Un refus de lecture répond 404 comme un identifiant inconnu (AD-22) ; 100 fichiers joints au plus par section, pas de
   limite de taille ; joindre ou ôter une référence ne change pas la `version` de la section. La liste est `GET …/fichiers`.
   `stockage.ts` sert aussi aux fonds de carte (`services/cartes.ts`, AD-69), qui ne passent pas par `ajouterFichier`.
-- Rendu du bloc Pièces jointes vérifié par les tests e2e (Playwright) là où il est installé ; la CI l'installe et les joue.
+- Rendu du bloc Pièces jointes vérifié par les tests e2e (Playwright) là où il est installé ; `npm run tests:attestes` l'installe et les joue.
 - « Connexion perdue » (frontend/src/api.ts) : sondé toutes les 3 s sur `/healthz` tant que le bandeau
   est levé ; il disparaît seul au retour du serveur.
 - Tout texte Markdown (section, compte-rendu, scénario, entrée de système, contenu proposé) est plafonné à 100 000 caractères
@@ -271,7 +271,7 @@ outil `chercher` de l'assistant sans `type` = même fonction, « Introuvable. »
 `feature/kanevas-e2e-stables` (correctif, PR #32 non fusionnée : ce clone la porte, `main` ne l'a pas encore ; branché sur `main` v0.16.x) rend déterministes les tests d'écran rouges (main a entre-temps réparé à sa façon la déconnexion, `goBack`, E-10 et la page de campagne : ses versions sont gardées). Reste de la branche, chacun avec sa cause :
 **courses de test** (attente d'un état au lieu d'une lecture immédiate : en-tête « Rôle » mesuré une fois la liste rendue, erreur d'E-2 disparue avant comptage, section de Léa rendue avant lecture des titres ; puis, rejoués sous charge, E-9 Mode Joueur, B-12, B-46 (besoin et révocation), E-9 alias et le détail de la médiathèque : réponse attendue ou état rendu avant lecture) et une **régression du code**,
 `frontend/src/api.ts` : une réponse partie avant la coupure n'efface plus la « connexion perdue » déclarée depuis (compteur `pertes` ; la sonde `/healthz` et l'envoi de fichier suivent la même règle).
-Aucun test supprimé, sauté ni affaibli. Preuve : `src/e2e` joué sous `taskset -c 0-3 … --test-concurrency=2` (conditions de la CI), vert plusieurs fois, dont avec une seconde suite en parallèle.
+Aucun test supprimé, sauté ni affaibli. Preuve : `src/e2e` joué sous `taskset -c 0-3 … --test-concurrency=2` (conditions d'un pod à 4 cœurs), vert plusieurs fois, dont avec une seconde suite en parallèle.
 **Reste :** la suite verte trois fois de suite (constat de la vérification ; aucune CI ne tourne sur une PR : `attester`), puis la fusion ; la mise en production de 0.16.x est une PR GitOps à part (Monsieur).
 Piège encore vrai : un e2e qui lit le DOM juste après une navigation ou un `fill` sans attendre l'état visé se révèle sous charge — attendre l'élément ou sa disparition, jamais un délai.
 
