@@ -4,7 +4,7 @@
 MAQUETTE — E-23 Carte d'un système. Illustre docs/ecrans.md « Screen details for kanevas-carte-spatiale » (E-23) ;
 docs/parcours.md B-88, B-89, B-91, B-92, B-93, P-22. Tokens : frontend/src/ui/tokens.css (docs/charte.md). Données
 inventées (le dépôt public ne porte aucune donnée d'Éneria). Le document prime sur la maquette.
-Deux états côte à côte : MJ (astre sélectionné, « Ancrer ») et Joueur (même système, anomalie réservée au MJ absente).
+Trois états : MJ (planète sélectionnée, éléments non célestes, « Ancrer »), Joueur sur téléphone (390 px), et la galaxie vue par un joueur (système masqué = case vide). Les astres sont rendus par un moteur de pixels (sphère éclairée, bruit fractal, bandes, atmosphère, couronne) : jamais un rond de couleur ; le moteur réel est le cœur Rust (AD-149), ici une imitation en JS.
 */
 :root{--fond:#121317;--lat:#0e0f12;--s:#191a1f;--s2:#202128;--bord:rgba(255,255,255,.08);--bf:rgba(255,255,255,.14);--t:#ebecf0;--t2:#a6a7b0;--t3:#8b8c97;
 --ac:#8b9bf0;--act:#9aa6f5;--acf:rgba(154,166,245,.16);--mj:#f2a33c;--mjf:rgba(242,163,60,.14);--mjb:rgba(242,163,60,.42);--table:#3fc79a;
@@ -18,9 +18,14 @@ header h1{font:500 19px var(--titre);margin:0}.tag{font-size:11px;padding:2px 8p
 .tag.mj{background:var(--mjf);border-color:var(--mjb);color:var(--mj)}
 .body{display:flex;min-height:470px}.map{flex:1;position:relative;background:radial-gradient(circle at 50% 50%,#17182a,#0b0b10 70%)}
 .map svg{width:100%;height:100%;display:block}
-.panel{width:270px;border-left:1px solid var(--bord);background:var(--s);padding:14px;display:flex;flex-direction:column;gap:10px}
+.panel{width:300px;border-left:1px solid var(--bord);background:var(--s);padding:14px;display:flex;flex-direction:column;gap:10px}
 .panel h2{font:500 17px var(--titre);margin:0}.sub{color:var(--t2);font-size:12.5px}
-.ill{height:130px;border-radius:10px;background:radial-gradient(circle at 36% 34%,#9fd6c4,#2d6f63 55%,#0d2a2a 100%);border:1px solid var(--bord)}
+.ill{width:100%;aspect-ratio:4/3;border-radius:10px;border:1px solid var(--bord);display:block;background:#05060b}
+canvas.astre{position:absolute;pointer-events:none;transform:translate(-50%,-50%)}
+.etiq{position:absolute;transform:translate(-50%,0);font-size:11.5px;color:var(--t);text-shadow:0 0 4px #000,0 0 8px #000;white-space:nowrap;pointer-events:none}
+.etiq.nc{color:#7fe0d0}.nc-ic{position:absolute;transform:translate(-50%,-50%);width:14px;height:14px;border:1.5px solid #7fe0d0;background:#0b1a1a;border-radius:3px}
+.nc-ic.ville{border-radius:50%}.nc-ic.mj{border-style:dashed;border-color:var(--mj);background:var(--mjf)}
+.carte-gal{background:#04050c}
 .btn{display:block;width:100%;text-align:center;padding:8px;border-radius:8px;border:1px solid var(--bf);background:var(--s2);color:var(--t);font:inherit;cursor:pointer}
 .btn.p{background:var(--ac);color:#11142b;border-color:transparent}.btn.mj{border-color:var(--mjb);color:var(--mj);background:var(--mjf)}
 .opts{display:flex;gap:14px;padding:8px 16px;border-top:1px solid var(--bord);color:var(--t2);font-size:12.5px}
@@ -28,31 +33,127 @@ a.lien{color:var(--act)}ul.l{list-style:none;margin:0;padding:0;font-size:12.5px
 @media(max-width:560px){.body{flex-direction:column}.panel{width:auto;border-left:0;border-top:1px solid var(--bord)}.wrap{grid-template-columns:1fr}}
 </style></head><body><div class="wrap">
 
-<section><p class="lab m">MJ — Antor, système défini, planète sélectionnée</p><div class="frame">
+</style></head><body><div class="wrap">
+
+<section style="grid-column:1/-1"><p class="lab m">MJ — Antor, système défini, Vael II sélectionnée</p><div class="frame">
 <header><h1>Système Vael</h1><span class="tag mj">Défini</span><span class="tag">hexagone 12, −7</span></header>
-<div class="body"><div class="map"><svg viewBox="-300 -230 600 460" role="img" aria-label="Carte du système Vael : une étoile jaune, quatre planètes, une ceinture, une comète">
-<g fill="none" stroke="rgba(255,255,255,.09)"><circle r="50"/><circle r="100"/><circle r="150"/><circle r="200"/></g>
-<g stroke="rgba(255,255,255,.07)"><path d="M0 -215V215M-285 0H285"/></g>
-<g fill="var(--t3)" font-size="11"><text x="-6" y="-218">12 h</text><text x="262" y="4">3 h</text></g>
-<circle r="210" fill="none" stroke="rgba(139,124,246,.45)" stroke-dasharray="4 5"/><text x="150" y="-165" fill="#aca2f9" font-size="11">zone de transition</text>
-<circle cx="178" cy="-112" r="8" fill="#8b7cf6"/><text x="190" y="-108" fill="#aca2f9" font-size="11">→ Port-Sel</text>
-<circle r="150" fill="none" stroke="rgba(190,170,140,.35)" stroke-width="16" stroke-dasharray="1 4"/>
-<circle r="22" fill="#ffd27a"/><circle r="30" fill="rgba(255,210,122,.18)"/>
-<circle cx="52" cy="-8" r="6" fill="#c9835a"/><circle cx="-60" cy="75" r="13" fill="#9fd6c4"/><circle cx="-60" cy="75" r="19" fill="none" stroke="var(--act)" stroke-width="2"/>
-<circle cx="-90" cy="62" r="3" fill="#ddd"/><circle cx="-118" cy="-90" r="17" fill="#d9a46a"/><path d="M-250 120Q-200 100-165 150" stroke="#b9e3ff" stroke-width="3" fill="none"/>
-<circle cx="-165" cy="150" r="4" fill="#fff"/>
-<text x="-60" y="106" fill="var(--t)" font-size="12" text-anchor="middle">Vael II</text></svg></div>
-<aside class="panel"><div class="ill" role="img" aria-label="Illustration de Vael II"></div><h2>Vael II</h2>
+<div class="body"><div class="map" id="mapMJ" style="aspect-ratio:600/460;max-height:640px"></div>
+<aside class="panel"><canvas class="ill" id="illMJ" width="480" height="360" role="img" aria-label="Illustration de Vael II, planète tellurique à océans et nuages, rendue par le moteur"></canvas><h2>Vael II</h2>
 <div class="sub">Tellurique · Orbite 4 · 7 h · 1 lune</div><div class="sub">Fiche : <a class="lien" href="#">Vael II — monde-jardin</a></div>
-<button class="btn p">Voir l'illustration</button><button class="btn mj">Illustrer la fiche</button><button class="btn mj">Déplacer</button><button class="btn mj">Modifier… · Lier à une fiche…</button>
-<button class="btn mj">Réservé au MJ</button><button class="btn mj">Retirer l'astre</button></aside></div>
-<div class="opts"><label><input type="checkbox" checked> orbites</label><label><input type="checkbox" checked> heures</label><span style="margin-left:auto">Ajouter un astre · Ajouter une zone · Rayon de transition…</span></div></div></section>
+<button class="btn p">Voir l'illustration</button><button class="btn mj">Illustrer la fiche</button><button class="btn mj">Déplacer</button><button class="btn mj">Modifier… · Lier à une fiche…</button></aside></div>
+<div class="opts"><label><input type="checkbox" checked> orbites</label><label><input type="checkbox" checked> heures</label><label><input type="checkbox" checked> éléments</label><span style="margin-left:auto">Ajouter un astre · un élément · une zone</span></div></div></section>
 
 <section><p class="lab j">Joueur — Léa, téléphone, même système</p><div class="frame" style="max-width:390px">
 <header><h1>Système Vael</h1></header>
-<div class="body" style="flex-direction:column;min-height:0"><div class="map" style="height:260px"><svg viewBox="-300 -230 600 460"><g fill="none" stroke="rgba(255,255,255,.09)"><circle r="100"/><circle r="200"/></g>
-<circle r="22" fill="#ffd27a"/><circle cx="-60" cy="75" r="13" fill="#9fd6c4"/><circle cx="-118" cy="-90" r="17" fill="#d9a46a"/><circle cx="52" cy="-8" r="6" fill="#c9835a"/></svg></div>
+<div class="body" style="flex-direction:column;min-height:0"><div class="map" id="mapJ" style="aspect-ratio:600/460"></div>
 <div class="panel" style="width:auto;border:0;border-top:1px solid var(--bord)"><h2>Astre sans nom</h2><div class="sub">Gazeuse · Orbite 3 · 10 h</div>
-<ul class="l"><li>Étoile jaune</li><li>Vael II — tellurique</li><li>Astre sans nom — gazeuse</li><li>Astre sans nom — rocheux</li></ul>
-<div class="sub">Aucune trace de la anomalie réservée au MJ : ni place vide, ni compte.</div></div></div></div></section>
-</div></body></html>
+<ul class="l"><li>Étoile jaune</li><li>Vael II — tellurique</li><li>Astre sans nom — gazeuse</li><li>Ceinture · Comète · Nébuleuse</li><li>Station Port-Sel</li></ul>
+<div class="sub">Les astres sont tous visibles. Un élément réservé au MJ (le vaisseau pirate) est absent : ni place vide, ni compte.</div></div></div></div></section>
+
+<section><p class="lab j">Joueur — la galaxie, un système masqué</p><div class="frame"><header><h1>Galaxie</h1></header>
+<div class="map carte-gal" id="gal" style="aspect-ratio:600/300"></div>
+<div class="opts"><span>La case 12, −7 est vide pour Léa : ni étoile, ni nom, aucune route n'y mène. Pour le MJ, c'est le système Vael (tag « Réservé au MJ »).</span></div></div></section>
+</div>
+<script>
+// ---- moteur de rendu imité (le réel est le cœur Rust) : bruit de valeur 3D, éclairage, bandes, atmosphère
+function H(x,y,z,s){let h=(x*374761393+y*668265263+z*2147483647+s*1274126177)|0;h=(h^(h>>>13))*1274126177|0;return((h^(h>>>16))>>>0)/4294967295}
+function vn(x,y,z,s){const xi=Math.floor(x),yi=Math.floor(y),zi=Math.floor(z),fx=x-xi,fy=y-yi,fz=z-zi,u=fx*fx*(3-2*fx),v=fy*fy*(3-2*fy),w=fz*fz*(3-2*fz);
+const L=(a,b,t)=>a+(b-a)*t,h=(i,j,k)=>H(xi+i,yi+j,zi+k,s);
+return L(L(L(h(0,0,0),h(1,0,0),u),L(h(0,1,0),h(1,1,0),u),v),L(L(h(0,0,1),h(1,0,1),u),L(h(0,1,1),h(1,1,1),u),v),w)}
+function fbm(x,y,z,s,o=5){let t=0,a=.5,f=1,n=0;for(let i=0;i<o;i++){t+=a*vn(x*f,y*f,z*f,s+i*7);n+=a;a*=.5;f*=2.03}return t/n}
+const mix=(a,b,t)=>[a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t,a[2]+(b[2]-a[2])*t];
+const ramp=(st,t)=>{t=Math.max(0,Math.min(1,t));for(let i=1;i<st.length;i++)if(t<=st[i][0])return mix(st[i-1][1],st[i][1],(t-st[i-1][0])/(st[i][0]-st[i-1][0]));return st[st.length-1][1]};
+const LUM=(()=>{const v=[-.62,.38,.69],n=Math.hypot(...v);return v.map(a=>a/n)})();
+const PAL={
+ tellurique:{ramp:[[0,[10,34,70]],[.46,[28,92,150]],[.5,[196,184,130]],[.56,[70,128,70]],[.75,[104,96,70]],[1,[236,236,240]]],atm:[120,180,255],nuages:true},
+ gazeuse:{bandes:[[0,[226,196,150]],[.3,[170,120,82]],[.55,[236,214,176]],[.8,[150,100,70]],[1,[222,190,150]]],atm:[240,210,170]},
+ glace:{ramp:[[0,[150,185,215]],[.5,[214,232,246]],[1,[250,252,255]]],atm:[190,225,255]},
+ lave:{ramp:[[0,[18,10,10]],[.5,[60,26,18]],[.62,[220,90,24]],[.8,[255,190,60]],[1,[255,240,160]]],atm:[255,120,50],lave:true},
+ lune:{ramp:[[0,[70,70,76]],[.5,[140,138,140]],[1,[200,198,196]]],atm:null,crateres:true},
+ rocheux:{ramp:[[0,[84,62,48]],[.5,[150,116,88]],[1,[196,166,130]]],atm:[210,160,120],crateres:true}};
+function rendreSphere(c,type,seed,taille){const W=c.width,Hh=c.height,g=c.getContext('2d'),im=g.createImageData(W,Hh),d=im.data,P=PAL[type],R=W*taille,cx=W/2,cy=Hh/2;
+const incl=.35+H(seed,1,1,1)*.4;
+for(let py=0;py<Hh;py++)for(let px=0;px<W;px++){const i=(py*W+px)*4,x=(px-cx)/R,y=(py-cy)/R,r2=x*x+y*y;let col=null,a=0;
+ if(r2<=1){const z=Math.sqrt(1-r2),nx=x,ny=y,nz=z;
+  // rotation d'inclinaison
+  const ca=Math.cos(incl),sa=Math.sin(incl),Y=ny*ca-nz*sa,Z=ny*sa+nz*ca,X=nx,sc=2.2;
+  let c0;
+  if(P.bandes){const lat=Y,t=.5+.5*Math.sin(lat*9+fbm(X*2,Y*5,Z*2,seed,4)*3.2);c0=ramp(P.bandes,t*.7+fbm(X*3,Y*9,Z*3,seed+3,4)*.3)}
+  else{let h=fbm(X*sc,Y*sc,Z*sc,seed,6);
+   if(P.lave){const f=fbm(X*3,Y*3,Z*3,seed+9,5);h=Math.abs(f-.5)*2;h=1-Math.min(1,h*2.6);c0=ramp(P.ramp,.1+h*.9)}
+   else c0=ramp(P.ramp,h*(P.ramp===PAL.glace.ramp?1:1)+(P.ramp===PAL.tellurique.ramp?0:0));
+   if(P.crateres){const cr=vn(X*7,Y*7,Z*7,seed+5);const bord=Math.abs(cr-.5);const f=bord<.04?1.18:(cr<.5&&bord<.16?.82:1);c0=c0.map(v=>v*f)}
+   if(P.nuages){const n=fbm(X*3.4+4,Y*3.4,Z*3.4,seed+21,5),k=Math.max(0,Math.min(1,(n-.52)*4));c0=mix(c0,[246,248,252],k*.9)}}
+  const dif=Math.max(0,nx*LUM[0]+ny*LUM[1]+nz*LUM[2]),amb=.07,f=amb+(1-amb)*Math.pow(dif,.85);
+  const lim=Math.pow(1-z,2.4);let rgb=c0.map(v=>v*f);
+  if(P.lave){rgb=rgb.map((v,k)=>Math.max(v,c0[k]*.75))}
+  if(P.atm){const aa=lim*(.25+.9*dif);rgb=rgb.map((v,k)=>v+(P.atm[k]-v)*Math.min(.85,aa))}
+  col=rgb;a=Math.min(1,(1-Math.sqrt(r2))*R/1.4+.0);a=1}
+ else if(P.atm){const rr=Math.sqrt(r2),h=1-(rr-1)/.09;if(h>0){const sd=Math.max(0,x*LUM[0]+y*LUM[1]+.45);col=P.atm.map(v=>v);a=h*h*.55*Math.min(1,sd+.15)}}
+ if(col){d[i]=Math.min(255,col[0]);d[i+1]=Math.min(255,col[1]);d[i+2]=Math.min(255,col[2]);d[i+3]=a*255}}
+g.putImageData(im,0,0)}
+function rendreEtoile(c,seed,teinte){const W=c.width,g=c.getContext('2d'),im=g.createImageData(W,W),d=im.data,R=W*.13,cx=W/2;
+for(let py=0;py<W;py++)for(let px=0;px<W;px++){const i=(py*W+px)*4,x=(px-cx)/R,y=(py-cx)/R,r=Math.hypot(x,y);let o;
+ if(r<=1){const z=Math.sqrt(1-r*r),gr=fbm(x*5,y*5,z*5,seed,5),tache=fbm(x*2+9,y*2,z*2,seed+4,3)<.33?.55:1,lim=.45+.55*Math.pow(z,.5),k=(.55+gr*.7)*tache*lim;
+  o=[teinte[0]*k+60*k,teinte[1]*k+30*k,teinte[2]*k+10*k]; d[i+3]=255}
+ else{const h=Math.exp(-(r-1)*1.7)*.85,rayon=Math.max(0,Math.cos(Math.atan2(y,x)*4)*.5+.5),h2=h*(.8+.45*rayon*Math.exp(-(r-1)*.5)); o=[teinte[0]*h2+(255-teinte[0])*h*.35,teinte[1]*h2+(255-teinte[1])*h*.3,teinte[2]*h2];d[i+3]=Math.min(255,h2*255*(r>2.2?Math.max(0,(4.6-r)/2.4):1))}
+ d[i]=Math.min(255,o[0]);d[i+1]=Math.min(255,o[1]);d[i+2]=Math.min(255,o[2])}
+g.putImageData(im,0,0)}
+function rendreNebuleuse(c,seed,c1,c2){const W=c.width,Hh=c.height,g=c.getContext('2d'),im=g.createImageData(W,Hh),d=im.data;
+for(let py=0;py<Hh;py++)for(let px=0;px<W;px++){const i=(py*W+px)*4,x=px/W*2-1,y=py/Hh*2-1,r=Math.hypot(x,y),m=Math.max(0,1-r*r);
+ const n=fbm(x*3,y*3,0,seed,6),n2=fbm(x*5+7,y*5,3,seed+2,5),dens=Math.max(0,(n-.38)*2.4)*m,col=mix(c1,c2,n2);
+ d[i]=col[0];d[i+1]=col[1];d[i+2]=col[2];d[i+3]=Math.min(255,dens*210)}g.putImageData(im,0,0)}
+function rendreComete(c,seed){const W=c.width,Hh=c.height,g=c.getContext('2d');g.clearRect(0,0,W,Hh);
+const nx=W*.8,ny=Hh*.25;const gr=g.createLinearGradient(nx,ny,0,Hh);gr.addColorStop(0,'rgba(190,230,255,.95)');gr.addColorStop(1,'rgba(190,230,255,0)');
+g.save();g.fillStyle=gr;g.beginPath();g.moveTo(nx,ny-9);g.quadraticCurveTo(W*.4,Hh*.35,0,Hh*.92);g.lineTo(0,Hh*.78);g.quadraticCurveTo(W*.45,Hh*.5,nx,ny+9);g.fill();
+const gr2=g.createLinearGradient(nx,ny,W*.1,Hh*.1);gr2.addColorStop(0,'rgba(150,200,255,.55)');gr2.addColorStop(1,'rgba(150,200,255,0)');g.fillStyle=gr2;g.beginPath();g.moveTo(nx,ny-6);g.lineTo(W*.05,0);g.lineTo(W*.2,0);g.lineTo(nx,ny+6);g.fill();g.restore();
+const h=g.createRadialGradient(nx,ny,0,nx,ny,26);h.addColorStop(0,'rgba(255,255,255,1)');h.addColorStop(.25,'rgba(210,235,255,.8)');h.addColorStop(1,'rgba(150,200,255,0)');g.fillStyle=h;g.beginPath();g.arc(nx,ny,26,0,7);g.fill();
+g.fillStyle='#e8f3ff';g.beginPath();g.arc(nx,ny,5,0,7);g.fill()}
+function rendreAnomalie(c,seed){const W=c.width,g=c.getContext('2d'),im=g.createImageData(W,W),d=im.data;
+for(let py=0;py<W;py++)for(let px=0;px<W;px++){const i=(py*W+px)*4,x=px/W*2-1,y=py/W*2-1,r=Math.hypot(x,y),an=Math.atan2(y,x)+r*5,n=fbm(Math.cos(an)*r*3,Math.sin(an)*r*3,r*2,seed,5),m=Math.max(0,1-r);
+ const v=Math.max(0,(n-.3)*2.2)*m*m*1.6,tr=Math.exp(-Math.pow((r-.34)*9,2));d[i]=90*v+200*tr;d[i+1]=40*v+120*tr;d[i+2]=255*v+255*tr;d[i+3]=Math.min(255,(v+tr*.9)*255)}g.putImageData(im,0,0)}
+function etoileDeFond(c,seed,n){const g=c.getContext('2d');for(let i=0;i<n;i++){g.fillStyle=`rgba(255,255,255,${.15+H(i,3,3,seed)*.6})`;g.fillRect(H(i,1,1,seed)*c.width,H(i,2,2,seed)*c.height,H(i,5,5,seed)>.9?2:1,1)}}
+
+// ---- composition de la carte d'un système
+function pos(o,h){const U=44,r=o<1?1.5*U*o:U*(o+.5),a=h*Math.PI/6;return[r*Math.sin(a),-r*Math.cos(a)]}
+function place(map,x,y,w,fn){const c=document.createElement('canvas');c.className='astre';c.width=c.height=Math.round(w*4);fn(c);c.style.width=w/6+'%';c.style.left=(x+300)/6+'%';c.style.top=(y+230)/4.6+'%';map.appendChild(c);return c}
+function etiq(map,x,y,txt,cls){const e=document.createElement('div');e.className='etiq '+(cls||'');e.textContent=txt;e.style.left=(x+300)/6+'%';e.style.top=(y+230)/4.6+'%';map.appendChild(e)}
+function systeme(id,opt){const m=document.getElementById(id),bg=document.createElement('canvas');bg.width=800;bg.height=614;bg.style.cssText='position:absolute;inset:0;width:100%;height:100%';m.appendChild(bg);etoileDeFond(bg,5,260);
+ let s='<svg viewBox="-300 -230 600 460" style="position:absolute;inset:0">';
+ if(opt.orbites)for(const o of [1,2,3,4,5])s+=`<circle r="${44*(o+.5)}" fill="none" stroke="rgba(160,170,255,.3)"/>`;
+ if(opt.heures)s+='<path d="M0 -215V215M-285 0H285" stroke="rgba(255,255,255,.06)"/><g fill="#8b8c97" font-size="11"><text x="-8" y="-218">12 h</text><text x="262" y="4">3 h</text></g>';
+ s+='<circle r="252" fill="none" stroke="rgba(139,124,246,.5)" stroke-dasharray="4 6"/>';
+ // ceinture : nuées de cailloux sur l'orbite 3
+ const rb=44*3.5;for(let i=0;i<260;i++){const a=H(i,1,2,7)*6.283,rr=rb+(H(i,3,2,7)-.5)*15,sz=.5+H(i,4,2,7)*1.7,l=110+H(i,5,2,7)*90;s+=`<circle cx="${(rr*Math.cos(a)).toFixed(1)}" cy="${(rr*Math.sin(a)).toFixed(1)}" r="${sz.toFixed(1)}" fill="rgb(${l},${l-14},${l-34})"/>`}
+ s+='</svg>';m.insertAdjacentHTML('beforeend',s);
+ place(m,-170,-120,300,c=>rendreNebuleuse(c,11,[150,70,220],[70,170,240])).style.opacity=.8;
+ place(m,0,0,230,c=>rendreEtoile(c,3,[255,200,110]));etiq(m,0,34,'Vael','');
+ let p=pos(1,2.5);place(m,p[0],p[1],34,c=>rendreSphere(c,'lave',4,.46));etiq(m,p[0],p[1]+22,'Vael I');
+ p=pos(2,7);const pp=p;place(m,p[0],p[1],64,c=>rendreSphere(c,'tellurique',2,.46));
+ if(opt.sel){const s2=document.createElementNS('http://www.w3.org/2000/svg','svg');}
+ etiq(m,p[0],p[1]+36,'Vael II');
+ place(m,p[0]+38,p[1]-26,17,c=>rendreSphere(c,'lune',8,.46));
+ p=pos(4,10);place(m,p[0],p[1],104,c=>rendreSphere(c,'gazeuse',5,.46));etiq(m,p[0],p[1]+56,opt.noms?'Vael IV':'Astre sans nom');
+ p=pos(5,3.2);place(m,p[0],p[1],46,c=>rendreSphere(c,'glace',6,.46));etiq(m,p[0],p[1]+28,'Vael V');
+ place(m,-190,155,160,rendreComete);etiq(m,-170,196,'Comète');
+ place(m,150,150,84,c=>rendreAnomalie(c,2));
+ // éléments non célestes
+ const ic=(x,y,cl,t,mj)=>{const e=document.createElement('div');e.className='nc-ic '+cl+(mj?' mj':'');e.style.left=(x+300)/6+'%';e.style.top=(y+230)/4.6+'%';m.appendChild(e);etiq(m,x,y+11,t,'nc')};
+ ic(pp[0]-40,pp[1]-8,'ville','Aubépine (ville)');
+ ic(252*Math.sin(.95),-252*Math.cos(.95),'station','Station Port-Sel');
+ if(opt.mj)ic(-40,-150,'vaisseau','Vaisseau pirate — réservé au MJ',true);
+ if(opt.sel){const e=document.createElement('div');e.style.cssText=`position:absolute;left:${(pp[0]+300)/6}%;top:${(pp[1]+230)/4.6}%;width:13%;aspect-ratio:1;transform:translate(-50%,-50%);border:2px solid var(--act);border-radius:50%;box-shadow:0 0 14px var(--acf)`;m.appendChild(e)}
+}
+for(const m of document.querySelectorAll('.map'))m.style.position='relative';
+systeme('mapMJ',{orbites:1,heures:1,sel:1,mj:1,noms:1});
+systeme('mapJ',{orbites:0,heures:0,sel:0,mj:0,noms:0});
+rendreSphere(document.getElementById('illMJ'),'tellurique',2,.40);
+(function(){const c=document.getElementById('illMJ'),g=c.getContext('2d'),tmp=document.createElement('canvas');tmp.width=480;tmp.height=360;
+ // fond étoilé derrière l'illustration
+ const out=document.createElement('canvas');out.width=480;out.height=360;const o=out.getContext('2d');o.fillStyle='#05060b';o.fillRect(0,0,480,360);etoileDeFond(out,9,120);o.drawImage(c,0,0);g.clearRect(0,0,480,360);g.drawImage(out,0,0)})();
+// galaxie
+(function(){const m=document.getElementById('gal'),bg=document.createElement('canvas');bg.width=800;bg.height=400;bg.style.cssText='position:absolute;inset:0;width:100%;height:100%';m.appendChild(bg);
+ rendreNebuleuse(bg,31,[60,40,120],[40,90,140]);const g=bg.getContext('2d');etoileDeFond(bg,2,500);
+ for(let q=0;q<14;q++)for(let r=0;r<6;r++){const x=40+q*54+(r%2)*27,y=40+r*50;if(H(q,r,1,3)>.55&&!(q==6&&r==3)){g.fillStyle='rgba(255,230,180,.9)';g.beginPath();g.arc(x,y,3,0,7);g.fill();const gl=g.createRadialGradient(x,y,0,x,y,14);gl.addColorStop(0,'rgba(255,220,160,.35)');gl.addColorStop(1,'rgba(255,220,160,0)');g.fillStyle=gl;g.fillRect(x-14,y-14,28,28)}
+  g.strokeStyle='rgba(160,170,255,.1)';g.beginPath();for(let k=0;k<6;k++){const a=k*Math.PI/3+Math.PI/6;g.lineTo(x+22*Math.cos(a),y+22*Math.sin(a))}g.closePath();g.stroke()}})();
+</script></body></html>
