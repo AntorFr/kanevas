@@ -1608,3 +1608,89 @@ which had taken 0017, AD-51).
 9. **Seed** — `depart.ts` follows « Bouchons » above, minus `disparu` (`-disparu` adds the Prieur's death and
    Bran's mark). The existing free relation `Aldric → Port-Sel « maître de port »` is kept beside the new
    « se situe à — habite ».
+
+# Spatial map (`kanevas-carte-spatiale`, target)
+
+> Scoping proposed on 2026-11-11 (`epic/kanevas-carte-spatiale`, started from `epic/kanevas-outils` at aa1d49f). Decisions AD-138 to AD-149. Monsieur's decisions of the triage are
+> **[ADOPTED]**. They add to those above; none amends one. Nothing from Éneria enters this repository (AD-131 of the outils epic, « Nothing from Éneria enters the public repository »): the code is a port, the
+> test fixtures are drawn on a neutral seed, the real atlas is sent by a script of the private repository.
+
+## Target repositories
+
+| Repository | State | What it carries in this epic | Merge order |
+|---|---|---|---|
+| `AntorFr/kanevas` (public) | existing | the Rust core (`core/` crate, built to WebAssembly), the services, routes, screens E-23 and E-24, the catalogue tools, the Dockerfile stage, the documentation in English | 1 |
+| `AntorFr/eneria` (**private**) | existing | only the reprise script and its tests on the real atlas (P-25); never the atlas in this repository | 2 (after the import natures exist) |
+| `AntorFr/k8s-home-lab` | existing | a prepared PR (image tag), merged by Monsieur; no new secret or volume (the cache lives under the data volume already mounted) | 3 (always last) |
+
+The runner image has no Rust (Go and Node only): the chain must add it, in a session, **before the first Rust task** (decision of the triage). The `tests:attestes` suite then builds the core before the Node and frontend tests.
+
+## Components and state
+
+```mermaid
+flowchart LR
+  core["core (Rust → .wasm)\ngeneration · rendu"] --> nav["browser: E-21, E-23, E-24\nthumbnails, live samples"]
+  core --> node["Node server\nservices/swn/carte-spatiale"]
+  node --> db[("SQLite: swn_astres,\nswn_formations, swn_reglages, swn_aspects")]
+  node --> cache[("cache/astres/ (derived, lost without damage)")]
+  node --> tools["catalogue tools (assistant, MCP)"]
+  node --> imp["import API (natures of the atlas)"]
+```
+
+State: stored elements and settings in SQLite (backed up with it); drawn interiors and the illustration cache are **derived** and recomputed from the stored seed and settings.
+
+## Decisions
+
+**AD-138 — Éneria's generator is the reference, ported, and proven on fixtures.** [ADOPTED, decision 1]
+Binds: B-86, the `generation` module of the core. Prevents: a « roughly similar » port, a stars moving at the reprise. Rule: the port reproduces Éneria's `generateur.js` (hash `hash32`, PRNG `mulberry32`, Box-Muller, one draw per aspect `rng(hash32(key|aspect))`, same draw order, same frequencies and ranges) and replaces the SHA-256 draw of `regles/generation.ts` for the galaxy. Fixtures: the output of Éneria's own generator on a **neutral seed** over a block range (hundreds of hexagons, the 665 systems of its test), as JSON committed here; the Rust test compares structure and counts exactly and real numbers to 1e-9. The core's inputs are the seed, the block size (5, as `TAILLE_BLOC`), the density by default and by zone (`swn_galaxies`, `swn_zones`, as today), the hexagons of defined systems and their neighbours (excluded from the draw, as Éneria's lore cells) and the settings of E-24; Éneria's `forces` and `zone_etendue` are carried only if `generateur.js` reads them for the stars `[À VÉRIFIER]` in the file at the generator task. The conversion test of the outils epic that pinned the old seed draw is rewritten against the fixtures. Rejected: keeping the SHA-256 draw and adding the interior — it moves every star of Éneria, which decision 1 forbids; bit-exact libm parity as a goal — `[À VÉRIFIER]` V8 and Rust may differ in the last ulp of `log`, `cos`, `sin`; the tolerance and a structural comparison decide, the property tests of Éneria (15, frequencies and ranges) are ported besides.
+
+**AD-139 — One core, one binary, in the browser and on the server.** [ADOPTED, decision 2]
+Binds: B-87, every use of generation or drawing. Prevents: two implementations drifting (a thumbnail not matching the stored illustration), a service of its own to run. Rule: the Rust crate compiles to one `.wasm` with its JS binding; the browser and the Node server load the same artifact; the client never draws what the server must decide (it asks the core, the server asks the same core), and a result computed on both sides is identical. The artifact is built by `npm run build` (and the Dockerfile) and is not committed. Tool and version of the build (`wasm-pack` or `wasm-bindgen-cli`, Rust toolchain): `[À VÉRIFIER]` at the first Rust task, in the docs of the tool, and pinned in the Dockerfile like `@openai/codex`. Rejected: a Rust service next to Node — one more thing to operate for a household app; native Node addon — not shared with the browser; porting to TypeScript — decision 2.
+
+**AD-140 — The generator decides, the renderer draws.**
+Binds: the two modules of the core. Prevents: the future 3D zoom and the placement of bases re-deriving what a planet is. Rule: `generation` returns data only (types, orbits, hours, sizes, aspect parameters, relief and colour fields as parameters) and never touches pixels; `rendu` takes an aspect and a size and returns an image, and reads nothing from the database. The 3D epic reads the fields of `generation`.
+
+**AD-141 — A drawn interior is never stored; what is stored wins.** [ADOPTED in substance: Éneria's « le fichier gagne toujours »]
+Binds: `lireSysteme`, E-21, E-23, the tools. Prevents: a second read of a system that forgets the guards, a stored system changing with the settings. Rule: `lireSysteme` (`services/swn/`) is the only read of a system's interior: defined (the `swn_systemes` row exists) → its rows, otherwise the core draws from `(graine, q, r, version_generateur, valeurs)`; it applies the two guards (system readable, `secret` of each element and of its parent: moon → planet, planet and comet → star) and returns no count of hidden elements. Every write on a drawn system defines it first, in the same transaction, from the same draw (« anchoring » = the promotion of E-21: the row and the drawn elements); a system placed by hand starts defined and empty. Rejected: storing every drawn system — thousands of rows nobody wrote; drawing in the browser only — the guards and the agents could not read it.
+
+**AD-142 — Illustrations are a derived cache, served under the element's guard.**
+Binds: B-89, the illustration route, « Illustrer la fiche ». Prevents: a secret body leaking through its picture, an unbounded render, event-loop blocking. Rule: the high-definition render runs on the server, off the request thread (worker), with bounded concurrency and size (maximum side 2048 px, two renders at a time); cache files `<db dir>/cache/astres/<hash>.webp`, the hash of (rendering version, aspect, size); never in the media library; the route answers `introuvable` for an element the caller cannot read, the same for an unknown one. « Illustrer la fiche » copies the render into the media library by `ajouterFichier` (AD-117, visibility deduced). Thumbnails are drawn in the browser by the same core. Rejected: storing renders as files of the library — duplicates, and visibility would drift from the element's; rendering at each request — seconds of CPU.
+
+**AD-143 — Two coordinate systems, converted in the core.**
+Binds: B-91, the services, the tools. Prevents: a service and a screen disagreeing on where « 4 · 7 h » is. Rule: galactic = axial hexagon `(q, r)` as E-21; interior = `(orbite ≥ 0, heure ∈ [0, 12))`, 12 at the top, 3 at the right; hex-to-plane conversion and orbit-and-hour-to-plane are functions of the core; services validate bounds with the table's `CHECK`s. `[À VÉRIFIER]` the axes of Kanevas's hexagons (`regles/hex.ts`) are Éneria's `x = √3(q + r/2), y = 1.5r`: a fixture test on the neutral seed settles it before the generator task.
+
+**AD-144 — A link to a sheet is read under both guards.**
+Binds: B-92, E-23, the sheet view. Prevents: a hidden sheet's title or existence leaking through the map, or a hidden element through « Sur la carte ». Rule: `fiche_id` is nullable (`ON DELETE SET NULL`); the map returns the link only if the sheet is readable (as `chargeDeCible`, AD-64); the sheet view lists « Sur la carte » only for elements the reader reads; no count, no placeholder.
+
+**AD-145 — The atlas is the import format of a system.** [ADOPTED, decision of the triage (6)]
+Binds: B-93, B-95, the import API. Prevents: a second import path, a half-written system. Rule: new natures of the import API (AD-104) for stars, bodies with moons, zones and points, keyed by `cle`, with the schema of Éneria's atlas (`corps`, `zones`, `points`, `transition`, `aspect`) as JSON; YAML is read by the script, never by the server. Each write calls the service functions (AD-2), idempotent and non-overwriting as AD-104 (`version_importee`); a system receiving its elements by import is anchored; one request is one transaction. Rejected: a YAML parser in the server — a format learned for one source.
+
+**AD-146 — The agents tend the map through the catalogue, as the GM.**
+Binds: B-94, `swn` module's `outilsAssistant`, kanevas-synchro's MCP. Prevents: an agent seeing what a Player does not, or a second write path. Rule: tools `lire_systeme`, `placer_astre`, `deplacer_astre`, `completer_astre` (name, description, type, size, aspect, link, `secret`), `tracer_formation`, `retirer`, `ancrer_systeme` compose the service functions (AD-27), role from `membres` (AD-26); refusals as `{ok:false, erreur}` without event, a success returns its `evenement`. The tools return data, never pixels. This module is active only where `modulesActifs()` is (the outils epic activates the module for production at its end); the MCP exposure is that of kanevas-synchro, hence the dependency of the last slice.
+
+**AD-147 — Settings and aspects are the galaxy's, with the core's defaults.**
+Binds: B-90, E-24, `swn_reglages`, `swn_aspects`. Prevents: three copies of the defaults. Rule: defaults live only in the core; the tables hold overrides (absent key = default); the core validates a settings or an aspect object and returns the error with the bound, the service stores it; the count « N systèmes changent » is computed by the service from the rows (`ancre_le`) and the density, without drawing them all when only a setting that cannot move a position changes.
+
+**AD-148 — The algorithm is frozen per version; a galaxy keeps its own.**
+Binds: `swn_reglages.version_generateur`, the core. Prevents: a release silently moving the drawn systems of a running galaxy. Rule: the first version is Éneria's; a later change of the algorithm is a new version added next to it, the galaxy keeps the one it was created with (changing it asks the confirmation of E-21 and counts the systems moved). The renderer carries a version too, in the cache hash (AD-142): a better rendering never moves a body, only its picture.
+
+**AD-149 — The renderer is a port of Éneria's `astres.py`: the same look, not the same pixels.** [À TRANCHER — Monsieur, acceptance]
+Binds: B-89, the `rendu` module, the catalogue of aspects. Prevents: a « nice » renderer unrelated to Éneria's, or an endless pixel-parity chase. Rule: the module ports the scenes and surfaces of `astres.py` (star, body with its surfaces — tellurique, verrouillée, glace, rocheux —, nebula, comet, asteroids, system) and the types, palettes and parameters of `astres.yaml` as the default catalogue of aspects; the random streams (`numpy` `default_rng`, `scipy.ndimage` filters) are not reproducible in Rust, so a body keeps its type, palette and features but not its exact pixels; the renderer is deterministic for a given aspect, size and version (same image twice). Recommended: accept « same look » and judge on the captures of the recette, in every theme and width the charter fixes; reversed if Monsieur wants Éneria's already produced images kept — then they are imported as files of the library (AD-117) and the renderer only draws new bodies. Rejected: running Python on the server — numpy, scipy and PIL and a second runtime, against decision 2.
+
+## Interfaces, deployment, security, stubs
+
+**Interfaces.** Routes under the tool's scope (`/universes/:uid/…`, as the galaxy's): read a system, write an element, anchor, settings, aspects, illustration; refusal codes in `ErreurService.detail`: `orbite_invalide` (invalide), `astre_inconnu` (introuvable), `fiche_inconnue` (invalide), `reglage_invalide` (invalide, with `champ`). The browser requests a system only when opened.
+
+**Deployment and operations.** The `Dockerfile` gains a build stage with the Rust toolchain producing the `.wasm`, copied into the runtime stage; no new service, port or volume; the cache is under the data volume. Image size and build time are measured at the first Rust task. A galaxy created before the change keeps its `graine` and takes `version_generateur` 1 at the migration.
+
+**Security.** Threats: resource exhaustion by renders and by oversized JSON, a secret leaking by a picture or a link. Against: bounded aspect and settings JSON, bounded render size and concurrency (AD-142), the element's guard on every read (AD-141, AD-144), the type of an image sniffed from bytes as everywhere. The core runs sandboxed in the browser and in a worker on the server, and reads no file.
+
+**Stubs.** None needed: generation and drawing are deterministic and use no token; the recette plays on the stub universe of `KANEVAS_STUB=1`, seeded with a drawn galaxy on the neutral seed.
+
+## Deferred
+
+| Point | What reopens it |
+|---|---|
+| 3D zoom on a body, bases and cities | the future epic, reading `generation` (AD-140) |
+| A distance or travel time inside a system | a request from play |
+| Pixel-exact parity of Éneria's Python renders | never expected (AD-149); reopened if Monsieur rejects the captures of the recette |

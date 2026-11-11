@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Carte d'un système — Kanevas</title><style>
+/*
+MAQUETTE — E-23 Carte d'un système. Illustre docs/ecrans.md « Screen details for kanevas-carte-spatiale » (E-23) ;
+docs/parcours.md B-88, B-89, B-91, B-92, B-93, P-22. Tokens : frontend/src/ui/tokens.css (docs/charte.md). Données
+inventées (le dépôt public ne porte aucune donnée d'Éneria). Le document prime sur la maquette.
+Deux états côte à côte : MJ (astre sélectionné, « Ancrer ») et Joueur (même système, station secrète absente).
+*/
+:root{--fond:#121317;--lat:#0e0f12;--s:#191a1f;--s2:#202128;--bord:rgba(255,255,255,.08);--bf:rgba(255,255,255,.14);--t:#ebecf0;--t2:#a6a7b0;--t3:#8b8c97;
+--ac:#8b9bf0;--act:#9aa6f5;--acf:rgba(154,166,245,.16);--mj:#f2a33c;--mjf:rgba(242,163,60,.14);--mjb:rgba(242,163,60,.42);--table:#3fc79a;
+--titre:"Fraunces Variable","Fraunces","Iowan Old Style",Georgia,serif;--txt:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+*{box-sizing:border-box}body{margin:0;background:var(--fond);color:var(--t);font:14px var(--txt)}
+.wrap{padding:16px;display:grid;gap:22px;grid-template-columns:repeat(auto-fit,minmax(480px,1fr))}
+.lab{font-size:11px;text-transform:uppercase;letter-spacing:.08em;margin:0 0 6px;font-weight:600}.lab.j{color:var(--table)}.lab.m{color:var(--mj)}
+.frame{border:1px solid var(--bf);border-radius:12px;overflow:hidden;background:var(--fond)}
+header{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--bord)}
+header h1{font:500 19px var(--titre);margin:0}.tag{font-size:11px;padding:2px 8px;border-radius:99px;border:1px solid var(--bf);color:var(--t2)}
+.tag.mj{background:var(--mjf);border-color:var(--mjb);color:var(--mj)}
+.body{display:flex;min-height:470px}.map{flex:1;position:relative;background:radial-gradient(circle at 50% 50%,#17182a,#0b0b10 70%)}
+.map svg{width:100%;height:100%;display:block}
+.panel{width:270px;border-left:1px solid var(--bord);background:var(--s);padding:14px;display:flex;flex-direction:column;gap:10px}
+.panel h2{font:500 17px var(--titre);margin:0}.sub{color:var(--t2);font-size:12.5px}
+.ill{height:130px;border-radius:10px;background:radial-gradient(circle at 36% 34%,#9fd6c4,#2d6f63 55%,#0d2a2a 100%);border:1px solid var(--bord)}
+.btn{display:block;width:100%;text-align:center;padding:8px;border-radius:8px;border:1px solid var(--bf);background:var(--s2);color:var(--t);font:inherit;cursor:pointer}
+.btn.p{background:var(--ac);color:#11142b;border-color:transparent}.btn.mj{border-color:var(--mjb);color:var(--mj);background:var(--mjf)}
+.opts{display:flex;gap:14px;padding:8px 16px;border-top:1px solid var(--bord);color:var(--t2);font-size:12.5px}
+a.lien{color:var(--act)}ul.l{list-style:none;margin:0;padding:0;font-size:12.5px;color:var(--t2)}ul.l li{padding:3px 0}
+@media(max-width:560px){.body{flex-direction:column}.panel{width:auto;border-left:0;border-top:1px solid var(--bord)}.wrap{grid-template-columns:1fr}}
+</style></head><body><div class="wrap">
+
+<section><p class="lab m">MJ — Antor, système défini, planète sélectionnée</p><div class="frame">
+<header><h1>Système Vael</h1><span class="tag mj">Défini</span><span class="tag">hexagone 12, −7</span></header>
+<div class="body"><div class="map"><svg viewBox="-300 -230 600 460" role="img" aria-label="Carte du système Vael : une étoile jaune, quatre planètes, une ceinture, une comète">
+<g fill="none" stroke="rgba(255,255,255,.09)"><circle r="50"/><circle r="100"/><circle r="150"/><circle r="200"/></g>
+<g stroke="rgba(255,255,255,.07)"><path d="M0 -215V215M-285 0H285"/></g>
+<g fill="var(--t3)" font-size="11"><text x="-6" y="-218">12 h</text><text x="262" y="4">3 h</text></g>
+<circle r="210" fill="none" stroke="rgba(139,124,246,.45)" stroke-dasharray="4 5"/><text x="150" y="-165" fill="#aca2f9" font-size="11">zone de transition</text>
+<circle cx="178" cy="-112" r="8" fill="#8b7cf6"/><text x="190" y="-108" fill="#aca2f9" font-size="11">→ Port-Sel</text>
+<circle r="150" fill="none" stroke="rgba(190,170,140,.35)" stroke-width="16" stroke-dasharray="1 4"/>
+<circle r="22" fill="#ffd27a"/><circle r="30" fill="rgba(255,210,122,.18)"/>
+<circle cx="52" cy="-8" r="6" fill="#c9835a"/><circle cx="-60" cy="75" r="13" fill="#9fd6c4"/><circle cx="-60" cy="75" r="19" fill="none" stroke="var(--act)" stroke-width="2"/>
+<circle cx="-90" cy="62" r="3" fill="#ddd"/><circle cx="-118" cy="-90" r="17" fill="#d9a46a"/><path d="M-250 120Q-200 100-165 150" stroke="#b9e3ff" stroke-width="3" fill="none"/>
+<circle cx="-165" cy="150" r="4" fill="#fff"/>
+<text x="-60" y="106" fill="var(--t)" font-size="12" text-anchor="middle">Vael II</text></svg></div>
+<aside class="panel"><div class="ill" role="img" aria-label="Illustration de Vael II"></div><h2>Vael II</h2>
+<div class="sub">Tellurique · Orbite 4 · 7 h · 1 lune</div><div class="sub">Fiche : <a class="lien" href="#">Vael II — monde-jardin</a></div>
+<button class="btn p">Voir l'illustration</button><button class="btn mj">Illustrer la fiche</button><button class="btn mj">Déplacer</button><button class="btn mj">Modifier… · Lier à une fiche…</button>
+<button class="btn mj">Réservé au MJ</button><button class="btn mj">Retirer l'astre</button></aside></div>
+<div class="opts"><label><input type="checkbox" checked> orbites</label><label><input type="checkbox" checked> heures</label><span style="margin-left:auto">Ajouter un astre · Ajouter une zone · Rayon de transition…</span></div></div></section>
+
+<section><p class="lab j">Joueur — Léa, téléphone, même système</p><div class="frame" style="max-width:390px">
+<header><h1>Système Vael</h1></header>
+<div class="body" style="flex-direction:column;min-height:0"><div class="map" style="height:260px"><svg viewBox="-300 -230 600 460"><g fill="none" stroke="rgba(255,255,255,.09)"><circle r="100"/><circle r="200"/></g>
+<circle r="22" fill="#ffd27a"/><circle cx="-60" cy="75" r="13" fill="#9fd6c4"/><circle cx="-118" cy="-90" r="17" fill="#d9a46a"/><circle cx="52" cy="-8" r="6" fill="#c9835a"/></svg></div>
+<div class="panel" style="width:auto;border:0;border-top:1px solid var(--bord)"><h2>Astre sans nom</h2><div class="sub">Gazeuse · Orbite 3 · 10 h</div>
+<ul class="l"><li>Étoile jaune</li><li>Vael II — tellurique</li><li>Astre sans nom — gazeuse</li><li>Astre sans nom — rocheux</li></ul>
+<div class="sub">Aucune trace de la station secrète : ni place vide, ni compte.</div></div></div></div></section>
+</div></body></html>

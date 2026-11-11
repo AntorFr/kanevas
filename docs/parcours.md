@@ -481,6 +481,41 @@ Format from the `exigences` skill; each need cites the journeys that fulfill it.
   accommodation), and the **system engine** states the **percentage by which it reduces its cost** (10 % in the book).
   A catalogue that says none of it keeps working as before. *(P-19, P-20)*
 
+### Spatial map (`kanevas-carte-spatiale`, Monsieur's decisions of 2026-11-11)
+
+The SWN galaxy of the tool (`swn/galaxie`, B-68 to B-85) gets its interior: every star system, drawn or defined, opens on a
+map of its own, with illustrated bodies. Éneria's generator and atlas are the reference (decision 1 of the triage); Kanevas
+becomes the source of the map and Éneria keeps none (decision 3). Nothing in this public repository carries Éneria data (AD-131).
+
+- **B-86** — The generator of Éneria is the generator of Kanevas, ported to Rust (AD-138). For a seed and a hexagon it draws the
+  same nameless star at the same place and the same system interior as Éneria's does: planets, moons, belts, comet,
+  nebula, companion stars. It replaces the SHA-256 draw of `regles/generation.ts` for the stars of the galaxy. *Done when:* the
+  golden fixtures drawn by Éneria's own generator on a neutral seed are read back by the Rust core, hexagon by hexagon (positions,
+  classes, counts exactly; real numbers to 1e-9), and a galaxy created on the seed of Éneria's current galaxy shows its stars at their places.
+- **B-87** — One Rust core, compiled to WebAssembly, is loaded by the browser (map, live thumbnails, zoom) and by the Node
+  server (high-definition illustrations, cached); there is no service of its own (AD-139). *Done when:* the same fixtures pass
+  through the browser binding and the Node binding with identical results, and the image build carries the compiled core.
+- **B-88** — A system opens on **its map** (E-23): the star at the centre, each body at its **orbit and hour**, belts and
+  nebulae as ring and cloud zones, the transition zone and the exits towards neighbouring systems. Anyone who reads the system reads
+  its map; the GM edits it.
+- **B-89** — Every body, star and comet has an **illustration** drawn by the core from its aspect (type, palette, relief): live
+  thumbnails on the map, a high-definition image on demand, cached on the server. The GM may set it as the illustration of the linked sheet (existing
+  media library path, AD-117). *Done when:* two renderings of one aspect are the same image, and an aspect changed in the catalogue changes it.
+- **B-90** — **Configuration**, per galaxy (so per universe): the generator settings (seed, density, frequencies of comets and
+  zones, ranges of planets, moons and belts per star class) and the **catalogue of aspects** (the palettes and parameters of each body type)
+  (E-24). A change says how many drawn systems it moves before it is applied (like « Graine… », E-21).
+- **B-91** — Two **coordinate systems** are shown and accepted wherever an element is placed: the galactic one (hexagon `q`, `r`,
+  as E-21) and the system's own (orbit, a real ≥ 0, and hour, a real in [0, 12), 12 at the top). Conversions are the core's.
+- **B-92** — A star, body or zone **links to a sheet** when one exists: the map links to the sheet and the sheet shows « Sur la carte spatiale »
+  towards the element — each side only when the other is readable by the reader, without any count or placeholder for hidden ones (AD-64).
+- **B-93** — The **atlas format** of Éneria (bodies with moons, zones, points, `transition`, aspects) is the import format of a system
+  (JSON body of the import API, new natures). A system is either *drawn* (nobody wrote it: the generator gives it) or *defined* (it has a row and its elements are stored). To **anchor** a drawn system is to define it: the GM freezes its interior as drawn (the promotion of E-21), and the elements are then edited; what is stored wins over what would be drawn. In the atlas, `points` are the comets, and the per-body `aspect` and the entries of Éneria's `astres.yaml` become the body's aspect; the catalogue of aspects per type is not imported.
+- **B-94** — The elements of the map are read, edited, completed and defined (anchored) by **gestures of the tools catalogue** (read a
+  system, place or move a body, complete its aspect and its link, trace a zone, anchor a system), hence by the internal assistant
+  and, through kanevas-synchro's MCP, by an external agent holding a token — under the guards of the GM role (AD-26, AD-103).
+- **B-95** — The map of Éneria is **taken over once**: its defined systems, atlas bodies and aspects enter Kanevas by the import API, from a
+  script of the private Éneria repository (AD-131); Éneria keeps no map afterwards. *Done when:* the exit criterion of the epic holds on the taken-over galaxy.
+
 ### Cross-cutting
 - **B-28** — Every page requires sign-in; no content is served without an account, and
   `/healthz` only states the name and version. *(P-1)*
@@ -984,6 +1019,38 @@ types, the form shows only the natures of the pair (or « sans nature »); a rel
 section is closed to the players does not appear in « Fiches liées » for Léa, nor in her
 search, nor in the count.
 
+### P-22 — Read and tend a star system (Antor, GM, at a desk; Léa, Player, on a phone)
+
+Antor opens the galaxy (E-21) of Lame d'Ébène on the Éneria seed, taps a star and chooses « Ouvrir le système » (E-23).
+1. **E-23** shows the star at the centre, three planets, a belt, a comet, and the exits. He taps the second planet: the panel shows its illustration,
+   « Orbite 4 · 7 h », its type, and the link to its sheet when one exists (B-92).
+2. « Voir l'illustration » opens the high-definition image (cached after the first time); « Illustrer la fiche » adds it to the sheet.
+3. He drags the planet to another hour: orbit and hour update, the change is saved (it **anchors** the system if it was only drawn, that is defines it — the dialogue
+   says so first, B-93). He names the planet (a drawn element has no name until he gives one) and links it to the sheet « Vael II ».
+4. **Moment fort:** Léa, on her phone, opens the same system: she sees the nameless star, the bodies Antor left readable, the new name and, from the sheet, « Sur la carte spatiale ».
+   She sees nothing of the station Antor set « Réservé au MJ » — no empty slot, no count.
+
+*Failure path:* the core fails to load in the browser → the map is replaced by the list of bodies (text, illustrations by the server) and
+« La carte ne peut pas s'afficher ici. » (E-23 states); a body moved by another GM meanwhile → « Cet astre a changé depuis que vous l'avez ouvert. » + « Recharger ».
+
+### P-23 — Tune the generator (Antor, GM)
+
+From E-21 « Réglages du générateur… » opens **E-24**. Antor lowers the comet frequency, widens the planets of red dwarfs, and changes the palette of the « glace » type in the catalogue
+of aspects. Before applying, E-24 says « 214 systèmes tirés changent d'intérieur. 12 systèmes définis ne bougent pas. » *Moment fort:* the live thumbnails of three sample systems
+redraw as he moves the sliders. *Failure path:* a value out of range is refused at the field with the bound; a seed change asks the confirmation of E-21.
+
+### P-24 — An external agent completes a system (agent with a token, GM watching)
+
+The GM asks his agent (via kanevas-synchro's MCP) to flesh out a drawn system. The agent reads the system (all elements, coordinates, links), completes the aspect and the description of a body,
+names it, links it to an existing sheet, then **anchors** the system. *Moment fort:* the GM reloads E-23 and sees the named body, its link and the « Défini » mark. *Failure path:*
+a token whose creator is no longer GM, or an unknown system, gets the usual `jeton_invalide` / `introuvable` (AD-103); a body asked at an orbit out of bounds is refused with its code.
+
+### P-25 — Take over Éneria's map (Monsieur, Saturday, Mac and private repository)
+
+From the private Éneria repository, a script reads `atlas/systemes/*.yaml`, `systemes.yaml` and `astres.yaml`, and sends them to the import API of the target galaxy
+(the galaxy already created on Éneria's seed by the conversion of P-20); the batch report counts created, unchanged and refused elements. *Moment fort:* the GM opens the galaxy and a system of
+the lore and finds Éneria's bodies at their places with their illustrations. *Failure path:* a refused element is reported with its path in the file and nothing is half written (as P-20).
+
 ## Out of scope
 
 - **Tools in `kanevas-outils`** *(Monsieur's decisions, 2026-10-15 and 16)*: the **faction turn manager** (epic `kanevas-factions`, with
@@ -1040,6 +1107,14 @@ search, nor in the count.
   Since `kanevas-icones` (AD-135), Kanevas is installable (manifest, icons) but ships **no service worker and no offline cache**: the installed app needs the network, and offline use stays untriaged.
 - **Edit history, export, public sharing.**
 
+### Out of scope of `kanevas-carte-spatiale`
+
+- The skill `creation-systeme` and its agents: they stay in Éneria and move to MCP (a task of Éneria).
+- The 3D zoom on a body and the placement of bases or cities: a future epic. The generator keeps apart what it decides (parameters, relief and colour fields) from the drawing, so that it can reuse them (AD-140).
+- The overlay of factions (`kanevas-factions`).
+- Real-time movement of bodies, orbital mechanics, or a scale-true system map: the map is by orbit and hour, as Éneria's.
+- Editing the generator's algorithm from the interface: its settings change, not its code (AD-148).
+
 ## Cross-check of the `kanevas-import` scoping
 
 Done on 2026-10-11 on the proposal (`cadrage` skill, step 6), repeated after review 1, then
@@ -1065,3 +1140,12 @@ Done on 2026-10-16 on the proposal (`cadrage` skill, step 6).
 | Each screen has its data | E-20: `outils_systeme`, `outils_univers`, owner, catalogues (version, counts) · E-21: `swn_systemes`, `swn_routes`, `swn_zones`, generated blocks (not stored), seed · E-22: `swn_conceptions`, catalogues, `sections.gere_par` · E-9: `gere_par`, `source_version` — **holds**. |
 | Each entity serves a journey | tool setting P-17, P-21 · owner P-17 · managed section P-19 · token scope P-20 · catalogues P-17, P-19 · placed systems, routes, zones P-18 · design P-19 — **holds**. |
 | Gaps filled by a written choice | one `swn` module with two tools (AD-121); the galaxy map is a module table (`swn_galaxies`) that E-10 adds to its list, `cartes` does not change (AD-122); owner of a system created before the epic: any attached GM, since the creator is not stored; no real dependency between the two tools (the mechanism is exercised with a trial module); the GM document: a sheet chosen or created from E-21; a player sees all non-secret systems (no per-player “known systems”); the engine for a journey is chosen in the tool; who creates a ship (the GM creates the sheet, the player designs if they are its author: “a player does not create a sheet” rule retained); E-22 in two states (list, workshop); caching a block according to reading level ([TO VERIFY], AD-132). Tests on real data run in pods, never in CI (Monsieur's decision, 2026-10-16). |
+
+## Cross-check of the `kanevas-carte-spatiale` scoping
+
+| Check | Result |
+|---|---|
+| Each need has a journey | B-86 P-22, P-25 · B-87 P-22 · B-88 P-22 · B-89 P-22, P-23 · B-90 P-23 · B-91 P-22, P-24 · B-92 P-22, P-24 · B-93 P-22, P-24, P-25 · B-94 P-24 · B-95 P-25 — **holds**. |
+| Each human gesture has a screen | open, move, name, link, illustrate, anchor: E-23 · tune: E-24 · take over: no screen, the import script and its batch report (E-18 reports, P-20) · agent gestures: no screen, the catalogue — chosen. |
+| Each screen has its data | E-23: `swn_astres`, `swn_formations`, `swn_systemes`, `swn_routes` (the exits) · E-24: `swn_reglages`, `swn_aspects`, `swn_galaxies` (seed, default density), `swn_zones` (density per zone, read) · E-9: the block of the sheet reads `swn_astres`, `swn_formations` — **holds**. |
+| Each entity serves a journey | `swn_astres` P-22, P-24, P-25 · `swn_formations` P-22, P-24, P-25 · `swn_reglages`, `swn_aspects` P-23 — **holds**. |
