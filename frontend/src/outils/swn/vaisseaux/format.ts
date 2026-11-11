@@ -68,6 +68,9 @@ export function plageClasses(d: Donnees | undefined): string {
   return min !== undefined ? `classe ${min} au moins` : `classe ${max} au plus`;
 }
 
+/** True when the element asks for a repair skill, by the effect or by the field (Y-3). */
+export const exigeReparation = (d: Donnees | undefined) => d !== undefined && (d.effet === 'reparation_min' || d.reparation_min !== undefined);
+
 const signe = (n: number) => (n > 0 ? '+' : n < 0 ? '−' : '') + String(Math.abs(n));
 
 /** The effect of a modification in words (B-83), from the fields the catalogue states; empty when it states none. */
@@ -106,18 +109,22 @@ export function legende(e: Pick<ElementCatalogue, 'nature' | 'donnees'>, classe?
       d.qualites !== undefined && `qualités : ${d.qualites}`, d.niveau_tech !== undefined && `NT ${d.niveau_tech}`);
   } else if (e.nature === 'moteurs' || e.nature === 'amenagements' || e.nature === 'defenses') {
     parts.push(plageClasses(d) || false);
-    parts.push(e.nature === 'defenses' && d.bonus_vitesse !== undefined && `vitesse ${d.bonus_vitesse > 0 ? '+' : d.bonus_vitesse < 0 ? '−' : ''}${Math.abs(d.bonus_vitesse)}`);
+    parts.push(e.nature === 'defenses' && d.bonus_vitesse !== undefined && `vitesse ${d.bonus_vitesse < 0 ? '−' : d.bonus_vitesse > 0 ? '+' : ''}${Math.abs(d.bonus_vitesse)}`);
     if (e.nature === 'amenagements') {
       if (d.effet === 'moteur_systeme') {
         parts.push('moteur système');
         const p = classe === undefined ? undefined : d.rend_puissance?.[classe - 1];
         const m = classe === undefined ? undefined : d.rend_masse?.[classe - 1];
         parts.push(p !== undefined && m !== undefined && `rend puissance ${nombre(p)} et masse ${masse(m)}`);
+        parts.push(d.reduction_cout_pct !== undefined && `coût −${d.reduction_cout_pct} %`);
       }
-      parts.push(d.soute !== undefined && `soutes ${nombre(d.soute)}`);
+      // Y-6: a cargo per class (the chosen hull's class) wins over the flat one; nothing without a hull.
+      const soute = d.soute_par_classe !== undefined ? (classe === undefined ? undefined : d.soute_par_classe[classe - 1]) : d.soute;
+      parts.push(soute !== undefined && `soutes ${nombre(soute)}`);
     }
   } else if (e.nature === 'modifications') {
-    parts.push(d.cout_pct !== undefined && `${d.cout_pct} % de la coque`, motEffet(d) || false);
+    parts.push(d.cout_pct !== undefined && `${d.cout_pct} % de la coque`, motEffet(d) || false,
+      d.reparation_min !== undefined && d.effet !== 'reparation_min' && `réparation ${d.reparation_min} au moins`);
   }
   return parts.filter(Boolean).join(' · ');
 }

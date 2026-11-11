@@ -52,7 +52,7 @@ export function Effets({ ligne, info, infos, lignes, resultat, alerte, ecriture,
 
   if (d.effet === 'soutes_doublees' || d.effet === 'magasins_doubles') {
     const eligibles = lignes.filter((l) => d.effet === 'soutes_doublees'
-      ? l.nature === 'amenagements' && (infos[`${l.nature}/${l.cle}`]?.el.donnees?.soute !== undefined)
+      ? l.nature === 'amenagements' && (() => { const x = infos[`${l.nature}/${l.cle}`]?.el.donnees; return x?.soute !== undefined || x?.soute_par_classe !== undefined; })()
       : l.nature === 'armes');
     const valeur = ligne.vise ? `${ligne.vise.nature}/${ligne.vise.cle}` : '';
     const choisi = eligibles.some((l) => `${l.nature}/${l.cle}` === valeur) ? valeur : '';
