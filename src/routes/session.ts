@@ -7,6 +7,7 @@ import { assurerCompte, lireCompte } from '../services/comptes.js';
 import { invalide } from '../services/erreurs.js';
 import { contenuPublic, rendreApercu } from '../services/markdown.js';
 import { exigerRole, resolveurLiens } from '../services/droits.js';
+import { resolveurFichiers, resolveurFichiersEnAttente } from '../services/fichiers-lecture.js';
 import { MAX_CONTENU_SECTION, validerContenu } from '../services/sections.js';
 import {
   decoderSession,
@@ -184,6 +185,12 @@ function registerGuardedRoutes(app: FastifyInstance) {
     const mj = role === 'mj' && !acteur.modeJoueur;
     // The links resolve against what the preview shows: the public text for a non-GM.
     const liens = resolveurLiens(app.db, ctx.univers_id as number, role, acteur, mj ? texte : contenuPublic(texte));
-    return { html: rendreApercu(texte, mj, liens) };
+    // The files resolve like the reading does, so the preview shows an image at its size and placement.
+    const lisible = mj ? texte : contenuPublic(texte);
+    const fichiers = {
+      fichiers: resolveurFichiers(app.db, ctx.univers_id as number, role, acteur, lisible),
+      fichiersEnAttente: resolveurFichiersEnAttente(role, acteur),
+    };
+    return { html: rendreApercu(texte, mj, liens, 'texte', fichiers) };
   });
 }

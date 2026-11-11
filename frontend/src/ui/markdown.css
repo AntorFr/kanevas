@@ -69,3 +69,19 @@
 @media (max-width: 760px) {
   .md .image-reservee { min-height: 96px; }
 }
+
+/* Image size and placement (AD-taille-1, AD-taille-2): share of the column as a ceiling (width stays auto: never enlarged past the natural size). */
+.md { display: flow-root; }
+.md img.img-petit { max-width: 25%; }
+.md img.img-moyen { max-width: 40%; }
+.md img.img-grand { max-width: 60%; }
+.md img.img-petit, .md img.img-moyen, .md img.img-grand { width: auto; height: auto; }
+.md img.img-gauche { float: left; margin: var(--e-1) var(--e-4) var(--e-2) 0; }
+.md img.img-droite { float: right; margin: var(--e-1) 0 var(--e-2) var(--e-4); }
+.md img.img-centre { display: block; float: none; margin: var(--e-4) auto; }
+@media (max-width: 760px) {
+  .md img.img-petit, .md img.img-moyen, .md img.img-grand { float: none; display: block; margin: var(--e-4) auto; }
+  .md img.img-petit { max-width: 40%; }
+  .md img.img-moyen { max-width: 70%; }
+  .md img.img-grand { max-width: 100%; }
+}

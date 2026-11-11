@@ -1,11 +1,12 @@
-import { Bold, Italic, Link2, Lock, TriangleAlert } from 'lucide-react';
+import { AlignCenter, AlignLeft, AlignRight, Bold, ImageIcon, Italic, Link2, Lock, Square, TriangleAlert } from 'lucide-react';
 import { useEffect, useId, useLayoutEffect, useRef, useState, type KeyboardEvent, type MutableRefObject, type ReactNode } from 'react';
 
 import { appeler, useConnexionPerdue } from '../api';
 import { Bouton } from './composants';
-import { dansBlocMJ, depasse, entourer, entourerBlocMJ, estLienIllisible, idsFichiers, insererLien, insererTexte, referenceFichier, sansBlocsMJ, messageTropLong, ouvertureLien, ouvrirLien, refusServeur } from './editeur-logique';
+import { choisirReglageImage, ecrireReglageImage, lireReglageImage, referenceImageAuCurseur, referenceImageEn, PLACEMENTS_IMAGE, TAILLES_IMAGE, dansBlocMJ, depasse, entourer, entourerBlocMJ, estLienIllisible, idsFichiers, insererLien, insererTexte, referenceFichier, sansBlocsMJ, messageTropLong, ouvertureLien, ouvrirLien, refusServeur } from './editeur-logique';
 import { ListeLiens, useRechercheLiens, type FicheLien } from './liste-liens';
 import { Markdown } from './markdown';
+import { Menu } from './menu';
 import './editeur.css';
 
 export { depasse, idsFichiers, messageTropLong, referenceFichier, refusServeur, sansBlocsMJ };
@@ -94,6 +95,15 @@ export function EditeurMarkdown({ etiquette, valeur, onChange, max, rows = 8, au
   useEffect(() => {
     if (listeOuverte) bloc.current?.querySelector('.pied-md')?.scrollIntoView?.({ block: 'nearest' });
   }, [listeOuverte, recherche.etat, lignes]);
+  // « Image » (E-taille-1): whether the caret stands in an image reference, and the reference frozen when the menu opened.
+  const [surImage, setSurImage] = useState(false);
+  const [imageFigee, setImageFigee] = useState<number>();
+  // On a narrow screen the right-aligned panel would leave through the left edge: open it from the trigger's left side.
+  const [alignImage, setAlignImage] = useState<'debut' | 'fin'>('fin');
+  // The caret as it stood when the menu opened: put back after a write (a controlled field sends it to the end), focus untouched.
+  const caretFige = useRef<number | undefined>(undefined);
+  const caretARendre = useRef<number | undefined>(undefined);
+  const reglageImage = imageFigee === undefined ? null : lireReglageImage(referenceImageEn(valeur, imageFigee)?.titre);
   const trop = depasse(valeur, max);
   const message = erreur ?? (trop && max !== undefined ? messageTropLong(max) : undefined);
   const mac = typeof navigator !== 'undefined' && /Mac|iPhone|iPad/.test(navigator.platform);
@@ -104,6 +114,10 @@ export function EditeurMarkdown({ etiquette, valeur, onChange, max, rows = 8, au
 
   // Puts the selection back after a wrap re-rendered the field.
   useLayoutEffect(() => {
+    if (caretARendre.current !== undefined && champ.current) {
+      champ.current.setSelectionRange(caretARendre.current, caretARendre.current);
+      caretARendre.current = undefined;
+    }
     const s = selection.current;
     if (s && champ.current) {
       champ.current.focus();
@@ -192,6 +206,28 @@ export function EditeurMarkdown({ etiquette, valeur, onChange, max, rows = 8, au
     selection.current = { debut: r.debut, fin: r.fin };
     onChange(r.texte);
   }
+
+  function suivreImage(c: HTMLTextAreaElement) {
+    setSurImage(referenceImageAuCurseur(c.value, c.selectionStart) !== null);
+  }
+
+  function ouvrirImage() {
+    const c = champ.current;
+    const r = c ? referenceImageAuCurseur(valeurRef.current, c.selectionStart) : null;
+    setImageFigee(r?.debut);
+    caretFige.current = c?.selectionStart;
+  }
+
+  /** Writes the title at the frozen position, the field's selection untouched. */
+  function reglerImage(reglage: ReturnType<typeof lireReglageImage>) {
+    if (imageFigee === undefined) return;
+    const r = ecrireReglageImage(valeurRef.current, imageFigee, reglage);
+    if (r.texte === valeurRef.current) return;
+    caretARendre.current = Math.min(caretFige.current ?? r.fin, r.fin);
+    onChange(r.texte);
+  }
+
+  const optionImage = (libelle: string, icone: typeof Square, actif: boolean, onChoisir: () => void, tailleIcone?: number) => ({ libelle, icone, actif, onChoisir, tailleIcone });
 
   async function previsualiser() {
     if (valeur.trim() === '') {
@@ -288,6 +324,41 @@ export function EditeurMarkdown({ etiquette, valeur, onChange, max, rows = 8, au
               <Link2 size={16} strokeWidth={1.75} aria-hidden="true" />
             </button>
           )}
+          {fichier && !section?.modeJoueur && (
+            <span
+              className="outil-md-groupe"
+              style={{ display: 'inline-flex' }}
+              onPointerDownCapture={(e) => setAlignImage(e.currentTarget.getBoundingClientRect().right < 216 ? 'debut' : 'fin')}
+              onKeyDownCapture={(e) => setAlignImage(e.currentTarget.getBoundingClientRect().right < 216 ? 'debut' : 'fin')}
+            >
+            <Menu
+              aligne={alignImage}
+              etiquette="Image"
+              titreDeclencheur={surImage ? 'Image · taille et placement' : 'Placez le curseur sur une image'}
+              varianteDeclencheur="outil"
+              icone={ImageIcon}
+              desactive={vue !== 'ecrire' || !surImage}
+              onOuvrir={ouvrirImage}
+              focusFermeture={() => champ.current?.focus()}
+              entrees={[
+                {
+                  groupe: 'Taille',
+                  options: TAILLES_IMAGE.map((t, i) =>
+                    optionImage(t === 'petit' ? 'Petit' : t === 'moyen' ? 'Moyen' : 'Grand', Square, reglageImage?.taille === t, () => reglerImage(choisirReglageImage(reglageImage, { taille: t })), [12, 16, 20][i]),
+                  ),
+                },
+                {
+                  groupe: 'Placement',
+                  options: PLACEMENTS_IMAGE.map((p) =>
+                    optionImage(p === 'gauche' ? 'À gauche' : p === 'droite' ? 'À droite' : 'Centrée', p === 'gauche' ? AlignLeft : p === 'droite' ? AlignRight : AlignCenter, reglageImage?.placement === p, () => reglerImage(choisirReglageImage(reglageImage, { placement: p }))),
+                  ),
+                },
+                { separateur: true },
+                { libelle: 'Sans réglage', onChoisir: () => reglerImage(null) },
+              ]}
+            />
+            </span>
+          )}
           {fichier?.({ inserer, dansBlocMJ: () => dansBlocMJ(valeurRef.current, champ.current?.selectionStart ?? valeurRef.current.length), sous, depot, ecriture: vue === 'ecrire' })}
           {section?.blocMJ && (
             <button type="button" className="outil-mj" title="Bloc MJ · entoure la sélection" aria-label="Bloc MJ" disabled={vue !== 'ecrire'} onClick={blocMJ}>
@@ -321,6 +392,7 @@ export function EditeurMarkdown({ etiquette, valeur, onChange, max, rows = 8, au
           onKeyUp={(e) => {
             if (liens && ['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(e.key)) suivreCaret(e.currentTarget.value, e.currentTarget.selectionStart);
           }}
+          onSelect={(e) => suivreImage(e.currentTarget)}
           onClick={(e) => liens && suivreCaret(e.currentTarget.value, e.currentTarget.selectionStart)}
         />
         {ouvert && vue === 'ecrire' && (
