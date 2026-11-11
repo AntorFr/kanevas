@@ -88,13 +88,17 @@ table{width:100%;border-collapse:collapse;font-size:13px}th{text-align:left;font
 <div class="msg a">Voici une proposition, écrite dans la direction artistique.<div class="evt"><b>Direction artistique modifiée</b>Texte modifié par l'assistant<a href="e26-bibliotheque.html">Ouvrir</a></div></div>
 <div class="msg u">Lance le lot.</div>
 <div class="msg a err">Je ne lance pas les lots : c'est un geste du MJ. Ouvrez-le dans la génération.</div>
+<div class="msg u">Change le texte de la direction.</div>
+<div class="msg a err">Le texte a changé depuis que vous l'avez lu. Relisez-le.</div>
+<div class="msg u">Prépare un autre lot.</div>
+<div class="msg a err">Un lot est déjà préparé ou en cours. Ouvrez-le dans la génération.</div>
 <div class="msg u">Pose l'asset 9f3 sur la carte.</div>
 <div class="msg a">L'asset 9f3 n'existe pas dans la bibliothèque. Je n'ai rien placé.</div>
 </div></div>
 <div><div class="label">E-12 Joueur — pas de bloc, pas d'écriture</div>
 <div class="panel"><div class="msg u">Compose-moi une taverne.</div><div class="msg a">Je ne peux pas composer de carte : c'est réservé au MJ. Je peux seulement lister les assets de la bibliothèque.</div></div></div>
 <div><div class="label">E-12 — cible disparue (carte supprimée, outil désactivé)</div>
-<div class="panel mj"><div class="msg a">Carte composée plus tôt.<div class="evt"><b>Carte « Cantine » composée</b>20×14<a href="#">Ouvrir</a> → « Page introuvable. »</div></div></div></div>
+<div class="panel mj"><div class="msg a">Carte composée plus tôt.<div class="evt"><b>Carte « Cantine » composée</b>20×14, masquée aux joueurs<a href="#">Ouvrir</a> → « Page introuvable. »</div></div></div></div>
 <div><div class="label">E-26 onglet Direction — bouton et bannière après une écriture de l'assistant (MJ)</div>
 <div class="panel mj"><h1 style="margin:0 0 8px">Direction artistique <span class="btn sm" style="margin-left:12px">Demander à l'assistant</span></h1>
 <div class="msg" role="status" style="background:var(--vid);border:1px solid var(--vib)">Texte modifié par l'assistant <span class="btn sm" style="margin-left:8px">Annuler</span></div>
@@ -103,11 +107,13 @@ table{width:100%;border-collapse:collapse;font-size:13px}th{text-align:left;font
 <div><div class="label">E-26 — états de la bannière</div>
 <div class="panel mj"><div class="msg err" role="alert">Ce texte a changé depuis que vous l'avez ouvert. <span class="btn sm" style="margin-left:8px">Recharger</span></div>
 <div class="msg" style="background:var(--vid)">Texte modifié par l'assistant <span class="btn sm" aria-disabled="true" style="margin-left:8px;opacity:.5">Annuler</span> <span class="note">Connexion perdue : « Annuler » est désactivé.</span></div>
+<div class="msg" style="background:var(--vid)">Texte modifié par l'assistant <span class="btn sm" aria-disabled="true" style="margin-left:8px">Annulation…</span></div>
+<div class="msg err" role="alert">L'annulation a échoué. Réessayez. <span class="btn sm" style="margin-left:8px">Annuler</span></div>
 <div class="msg" style="background:var(--teb)" role="status">Texte précédent rétabli.</div></div></div>
 <div><div class="label">E-27 — lot préparé par l'assistant</div>
 <div class="panel mj"><h2>Lot « Décors de station abandonnée »</h2><span class="badge mj">Préparé</span> <span class="note">10 assets · en attente de lancement par le MJ</span></div></div>
 <div><div class="label">E-10 — carte composée par l'assistant</div>
 <div class="panel mj"><b>Cantine</b> <span class="badge mj">MJ seul</span></div></div>
 <div><div class="label">Téléphone (390 px) — le bloc suit le lien, le panneau se ferme</div>
-<div class="mob"><div class="frame"><div class="dock"><div class="hrow"><h2 style="flex:1;margin:0">Kanevas — assistant</h2><span class="btn sm">Fermer</span></div><div class="fil"><div class="msg a">La cantine est composée.<div class="evt"><b>Carte « Cantine » composée</b>20×14<a href="e28-editeur-carte.html">Ouvrir</a></div></div></div></div></div></div></div>
+<div class="mob"><div class="frame"><div class="dock"><div class="hrow"><h2 style="flex:1;margin:0">Kanevas — assistant</h2><span class="btn sm">Fermer</span></div><div class="fil"><div class="msg a">La cantine est composée.<div class="evt"><b>Carte « Cantine » composée</b>20×14, masquée aux joueurs<a href="e28-editeur-carte.html">Ouvrir</a></div></div></div></div></div></div></div>
 </div></body></html>

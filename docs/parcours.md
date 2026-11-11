@@ -1046,16 +1046,17 @@ search, nor in the count.
 
 ### P-26 — Fill a library in the universe's style (Antor, GM, Sunday evening, office)
 *« Éneria » is dark science-fiction, painted, worn metal; he wants a library for his ship interiors.*
-1. **E-26**: he writes the art direction (or asks the assistant, which proposes a text from the universe's sheets, he
-   corrects it) and adds three reference images from the media library.
+1. **E-26**: he writes the art direction (or asks the assistant — « Demander à l'assistant » opens E-12 with the request —
+   which writes a text from the universe's sheets; E-26 shows « Texte modifié par l'assistant » with « Annuler », he corrects
+   the text or cancels it) and adds three reference images from the media library.
 2. **E-25**: he drops fifteen images he already owns (Dungeonfog assets he bought, if any): each lands with the category
    of the drop, he fixes footprints in a selection (« 2×1 » for the bunks).
 3. For what is missing he opens **E-27**: twelve lines (« Couchette », « Console de commande »…), « Lancer » — twelve drafts
    arrive one by one, each shown on a neutral grid; he accepts nine, regenerates two with a remark (« plus usé »), discards one.
-4. The next day the assistant, asked for « dix décors de station abandonnée », drafts the list through the dedicated skill; he
-   starts the batch from E-27.
+4. The next day the assistant, asked for « dix décors de station abandonnée », drafts the list through the dedicated skill: the
+   answer carries « Lot préparé : 10 assets » and « Ouvrir »; in E-27 the batch waits as « Préparé », he starts it there.
 *Highlight*: step 3, the drafts that appear one by one in his style.
-*Failure*: no image engine — the generation entry is absent, steps 1 and 2 stand; one asset fails — its line says « Échec »
+*Failure*: no image engine — the generation entry is absent, steps 1 and 2 stand; a batch is already prepared or running — the assistant answers « Un lot est déjà préparé ou en cours. Ouvrez-le dans la génération. »; « Annuler » after a hand edit elsewhere — « Ce texte a changé depuis que vous l'avez ouvert. » and « Recharger »; offline — « Annuler » is disabled; one asset fails — its line says « Échec »
 with « Réessayer », the others go on; the batch is interrupted by a restart — the running line is marked
 « Interrompu » and « Reprendre » restarts it; a file that is not an image — refused with its name; the library holds 5 000 assets — « Bibliothèque pleine ».
 
@@ -1067,7 +1068,7 @@ with « Réessayer », the others go on; the batch is interrupted by a restart �
    answers with a link; **E-28** shows the map, he moves two tables and replaces a floor.
 4. On the console **element** (E-28, Properties) he links the sheet « Terminal de la passerelle »; at the table a player will open it from the map (E-29). A token is linked in E-29.
 *Highlight*: step 3, the assistant's map that he keeps by hand.
-*Failure*: the library lacks a kitchen asset — the answer names it and builds the rest; two writes at once — the second says
+*Failure*: a player asks the assistant for a map — it answers that this is the GM's, nothing is written; the library lacks a kitchen asset — the answer names it and builds the rest; two writes at once — the second says
 « Cette carte a changé » and « Recharger »; the map is full (limits of AD-163) — « Carte pleine »; an asset removed meanwhile — a
 placeholder « Asset retiré » for the GM, absent for players. Removed assets are counted on confirmation (« Utilisé sur 3 cartes »).
 
