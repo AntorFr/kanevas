@@ -1,5 +1,6 @@
 # Status — kanevas
 
+> MàJ : 2026-11-11 (assemblage de `rouge-kanevas-14` : le test e2e du filtre Images puis « Non utilisés » de la médiathèque attend l'effet du filtre avant de lire les noms ; test seul, produit inchangé)
 > MàJ : 2026-11-09 (assemblage de `kanevas-taille-images`, PR vers `main`)
 > MàJ : 2026-11-11 (assemblage de `rouge-kanevas-13` : deux e2e instables sous charge corrigés côté procédé de test, produit inchangé)
 > MàJ : 2026-11-09 (assemblage de `rouge-kanevas-8` : test « CLI embarqué réel » retiré ; « kanevas-import-types : écrans » non reproduit sous charge (3 essais, 29/29), test inchangé ; tests seuls, produit inchangé)
@@ -38,6 +39,7 @@
 
 ## Reste
 
+- **`rouge-kanevas-14` (correctif, PR vers `main`)** : test seul, produit inchangé. `mediatheque-ecran.test.ts` (« Antor filtre Images puis Non utilisés… ») attend la tuile « Plan secret de la Guilde » visible et « Carte des Sphères » détachée avant de lire `.med-nom` ; l'ancienne attente d'une tuile quelconque était déjà satisfaite par la liste non filtrée. Aucune assertion relâchée.
 - **`rouge-kanevas-13` (correctif, PR vers `main`)** : tests seuls, produit inchangé. `recours-admin-ensemble.test.ts` (« changer un rôle puis retirer un membre ») attend la réponse du `PATCH` avant de recharger, la visibilité de « Retirer lea » avant le clic, la disparition de la confirmation après « Annuler » ; `verif-refonte-besoin.test.ts` (E-2, création d'univers) attend le champ « Nom » activé avant le premier clic et sa valeur avant le second, et sa garde par page passe à 30 s comme celle du harnais. Cause de l'échec sous charge non reproduite (4 jeux verts) : remède de procédé, sans pause fixe ni re-jeu.
 - **`rouge-kanevas-11` (correctif, PR vers `main`)** : tests seuls, produit inchangé. `aventures-liste-critere.test.ts` (filtre « Statut » ▸ « En cours ») attend l'effet du filtre (arbre démonté, « La Couronne brisée » visible, « Acte II » absent) avant de lire la page, et après chaque `goto` à filtre ; `arbre-fiche-pied-alerte-bascule.test.ts` : `boite()` attend l'écran calme (`attendre`) avant d'ouvrir « Autres actions », puis `.actions` de la boîte « Déplacer sous… ». Aucune assertion relâchée, aucun délai fixe.
 - **`kanevas-icones` (PR vers `main`, non fusionnée)** : l'icône « Marge » est l'identité de Kanevas (AD-135). Sept fichiers dans `frontend/public/` (copies du pack `assets/brand/kanevas-marge/web/`, comparées par test), servis par `routes/session.ts` avant la garde, sans session ; `index.html` les déclare ; la barre hors univers montre `/favicon.svg` à la place du carré « K » (le sceau d'univers est inchangé). Ni service worker ni hors ligne. Les maquettes `docs/maquettes/` dessinent encore le « K » : la charte prime. Reste à Monsieur : voir l'onglet, l'écran d'accueil et l'installation sur un vrai navigateur/téléphone (recette).
