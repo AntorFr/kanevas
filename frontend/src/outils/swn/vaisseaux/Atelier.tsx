@@ -6,7 +6,7 @@ import { appeler, ErreurApi, lire, useConnexionPerdue } from '../../../api';
 import { useTitreAriane } from '../../../cadre-contexte';
 import { Bouton, BoiteDialogue, Chargement, ErreurChargement, PageIntrouvable, Pastille } from '../../../ui';
 import { Equipage } from './Equipage';
-import { bornesEquipage, brouillonDe, choixDe, credits, legende, memeBrouillon, motifDe, requete } from './format';
+import { bornesEquipage, brouillonDe, choixDe, credits, exigeReparation, legende, memeBrouillon, motifDe, requete } from './format';
 import { Effets } from './Effets';
 import { Alertes, Chiffres, ErreurCalcul } from './Resultats';
 import { Selecteur } from './Selecteur';
@@ -195,7 +195,7 @@ function Corps({ universId, suffixe, saved, onSaved, onRecharger }: {
   const blocEquipage = bornes !== '' || equipageAffiche !== null;
   const classe = resultat.coque.classe;
   // The repair block (B-83): a chosen element asks for a skill, the server's result carries one, or the design has one above 0.
-  const demandeReparation = brouillon.lignes.some((l) => infos[`${l.nature}/${l.cle}`]?.el.donnees?.effet === 'reparation_min');
+  const demandeReparation = brouillon.lignes.some((l) => exigeReparation(infos[`${l.nature}/${l.cle}`]?.el.donnees));
   const blocReparation = demandeReparation || resultat.reparation != null || brouillon.reparation > 0;
   const reparationAffichee = brouillon.reparation;
   const invalide = equipageInvalide || Object.values(invalides).some(Boolean);

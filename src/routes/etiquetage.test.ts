@@ -193,10 +193,10 @@ test('migration depuis 0013 : la recherche du titre existant trouve toujours la 
   db.exec('ALTER TABLE swn_catalogue_armes ADD COLUMN classe_min INTEGER'); // 0028: the seed writes it
   // 0029: the seed writes the optional columns of the catalogue too.
   for (const [t, cs] of Object.entries({ coques: ['vitesse', 'armure', 'equipage_min', 'equipage_max'], moteurs: ['classe_min', 'classe_max', 'condition'],
-    amenagements: ['classe_min', 'classe_max', 'condition', 'effet', 'rend_puissance', 'rend_masse', 'soute'], defenses: ['classe_min', 'classe_max', 'condition', 'bonus_vitesse'],
+    amenagements: ['classe_min', 'classe_max', 'condition', 'effet', 'rend_puissance', 'rend_masse', 'soute', 'soute_par_classe', 'reduction_cout_pct'], defenses: ['classe_min', 'classe_max', 'condition', 'bonus_vitesse'],
     armes: ['degats', 'perforation', 'qualites', 'niveau_tech'], exemples: ['equipage'],
     // 0032: the seed writes the optional columns of modifications and fittings too.
-    modifications: ['cout_pct', 'effet', 'valeur', 'points_max', 'sens', 'echange_puissance', 'echange_masse'] })) for (const c of cs) db.exec(`ALTER TABLE swn_catalogue_${t} ADD COLUMN ${c} INTEGER`);
+    modifications: ['cout_pct', 'effet', 'valeur', 'points_max', 'sens', 'echange_puissance', 'echange_masse', 'reparation_min'] })) for (const c of cs) db.exec(`ALTER TABLE swn_catalogue_${t} ADD COLUMN ${c} INTEGER`);
   const ajoutees = (db.prepare("SELECT name FROM sqlite_master WHERE type = 'table'").all() as Any[]).map((r) => r.name as string).filter((n) => !avantScratch.has(n) && !n.startsWith('sqlite_'));
   semerBouchon(db);
   db.exec('PRAGMA foreign_keys = OFF');
@@ -207,7 +207,7 @@ test('migration depuis 0013 : la recherche du titre existant trouve toujours la 
   db.exec('DROP TABLE fichiers_attente; DROP TABLE fichiers_sections; DROP TABLE fichiers; ALTER TABLE fiches DROP COLUMN illustration_fichier_id; ALTER TABLE systemes_jeu DROP COLUMN responsable_id');
   const avant = db.prepare('SELECT id, titre FROM fiches ORDER BY id').all() as { id: number; titre: string }[];
   assert.ok(avant.length >= 5);
-  assert.deepEqual(migrate(db), [14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33]);
+  assert.deepEqual(migrate(db), [14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34]);
   for (const f of avant) {
     const mot = f.titre.split(/[^\p{L}\p{N}]+/u)[0]!;
     const ids = (db.prepare('SELECT rowid FROM recherche_fiches WHERE recherche_fiches MATCH ?').all(`titre:${mot}*`) as Any[]).map((r) => r.rowid);

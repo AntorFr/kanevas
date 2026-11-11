@@ -101,6 +101,8 @@ export interface Donnees {
   /** B-83 (X-1): stated by the catalogue only when the element has them. */
   cout_pct?: number; effet?: string; valeur?: number; points_max?: number; sens?: string;
   echange_puissance?: number; echange_masse?: number; rend_puissance?: number[]; rend_masse?: number[]; soute?: number;
+  /** B-85 (Y-1): stated by the catalogue only when the element has them. */
+  reparation_min?: number; soute_par_classe?: number[]; reduction_cout_pct?: number;
 }
 
 export interface PageCatalogue {

@@ -67,6 +67,10 @@ export interface ElementResolu {
   rend_puissance?: number[]
   rend_masse?: number[]
   soute?: number
+  /** Stated by the catalogue only (Y-1); the sheets print them and the calculation reads them (Y-3). */
+  soute_par_classe?: number[]
+  reduction_cout_pct?: number
+  reparation_min?: number
 }
 
 export interface LigneResolue {
@@ -122,6 +126,12 @@ export interface ResultatVaisseau {
   alertes: AlerteVaisseau[]
 }
 
+/** Y-3: the cargo of an element for a hull class (the per-class value wins), `null` when it states none. */
+const souteDe = (e: ElementResolu, classe: number): number | null => e.soute_par_classe?.[classe - 1] ?? e.soute ?? null
+
+/** Y-3: the repair skill an element asks for, by the field or by the effect, `null` when none. */
+const exigence = (e: ElementResolu): number | null => e.reparation_min ?? (e.effet === 'reparation_min' ? (e.valeur ?? 0) : null)
+
 function moins(n: number): string {
   return n < 0 ? `−${-n}` : String(n)
 }
@@ -158,12 +168,17 @@ export function calculer(
     const q = l.quantite
     let coutLigne = e.cout * (e.x_cout ? coque.facteur_cout : 1) * q
     if (e.cout_pct !== undefined) coutLigne += Math.floor((coque.cout * e.cout_pct + 50) / 100) * q
+    // Y-3: the system engine's reduction is rounded half up on the reduction, taken off the line before the sums.
+    const reduit = e.effet === 'moteur_systeme' && e.reduction_cout_pct !== undefined
+    if (reduit) coutLigne = Math.max(0, coutLigne - Math.floor((coutLigne * e.reduction_cout_pct! + 50) / 100))
     prix += coutLigne
-    if (e.cout_pct !== undefined) coutsLigne.set(i, coutLigne)
+    if (e.cout_pct !== undefined || reduit) coutsLigne.set(i, coutLigne)
     if (e.effet === 'vitesse') effetVitesse += (e.valeur ?? 0) * q
     if (e.effet === 'armure') effetArmure += (e.valeur ?? 0) * q
-    if (e.effet === 'reparation_min') reparationMin = Math.max(reparationMin ?? 0, e.valeur ?? 0)
-    if (e.soute !== undefined) soutes = (soutes ?? 0) + e.soute * q * (visee(l, 'amenagements', 'soutes_doublees') ? 2 : 1)
+    const exig = exigence(e)
+    if (exig !== null) reparationMin = Math.max(reparationMin ?? 0, exig)
+    const soute = souteDe(e, coque.classe)
+    if (soute !== null) soutes = (soutes ?? 0) + soute * q * (visee(l, 'amenagements', 'soutes_doublees') ? 2 : 1)
     puissanceUsee += e.puissance * (e.x_puissance ? coque.facteur_puissance : 1) * q
     masseUsee += e.masse * (e.x_masse ? coque.facteur_masse : 1) * q
     pv += e.pv * q
@@ -249,7 +264,7 @@ export function calculer(
     const cible = l.vise === undefined ? undefined : lignes.find((m) => m.nature === l.vise!.nature && m.cle === l.vise!.cle)
     if (l.vise === undefined) raison = 'choisissez l\'élément visé.'
     else if (cible === undefined) raison = 'l\'élément visé n\'est pas dans cette conception.'
-    else if (effet === 'soutes_doublees' ? !(cible.nature === 'amenagements' && cible.element.soute !== undefined) : cible.nature !== 'armes') {
+    else if (effet === 'soutes_doublees' ? !(cible.nature === 'amenagements' && souteDe(cible.element, coque.classe) !== null) : cible.nature !== 'armes') {
       raison = 'cet élément ne peut pas être visé.'
     } else return
     bloquantes.push({ niveau: 'bloquante', code: 'cible_invalide', texte: `« ${l.nom} » : ${raison}`, ligne: i })
@@ -272,7 +287,7 @@ export function calculer(
     surveiller.push({ niveau: 'a_surveiller', code: 'equipage_excessif', texte: `Équipage excessif : ${equipage} sur ${max} au plus.` })
   }
   lignes.forEach((l, i) => {
-    const min = l.element.effet === 'reparation_min' ? (l.element.valeur ?? 0) : 0
+    const min = exigence(l.element) ?? 0
     if (min > reparation) {
       surveiller.push({ niveau: 'a_surveiller', code: 'reparation_insuffisante', texte: `« ${l.nom} » : réparation ${min} au moins (${reparation} choisie).`, ligne: i })
     }

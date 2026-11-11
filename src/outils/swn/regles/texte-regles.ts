@@ -44,6 +44,8 @@ const echapper = (s: string): string => s.replace(/\|/g, '\\|')
 /** Free text of the catalogue is plain text: the pipe and the backslash are escaped, line breaks flattened. */
 const texteBrut = (s: string): string => s.replace(/\\/g, '\\\\').replace(/\|/g, '\\|').replace(/\s*[\r\n\u2028\u2029]+\s*/g, ' ')
 const nombreF = (n: number | undefined): string | null => (n === undefined ? null : nombre(n))
+/** Y-5: a speed bonus prints a negative with U+2212; a positive or zero one as before, with no « + ». */
+const signe = (n: number | undefined): string | null => (n === undefined ? null : n < 0 ? `−${nombre(-n)}` : nombre(n))
 const texteF = (s: string | undefined): string | null => (s === undefined ? null : texteBrut(s))
 const nomAffiche = (e: { nom: string; proprietaire?: string }): string =>
   echapper(e.nom) + (e.proprietaire === 'univers' ? ' (Univers)' : '')
@@ -90,12 +92,15 @@ const EFFET: Facultative<ElementRegle> = ['Effet', (e) => (e.effet === undefined
 
 const FACULTATIVES: Partial<Record<NatureRegles, Facultative<ElementRegle>[]>> = {
   moteurs: PLAGE,
-  amenagements: [...PLAGE, EFFET, ['Soute', (e) => nombreF(e.soute)]],
-  defenses: [...PLAGE, ['Bonus de vitesse', (e) => nombreF(e.bonus_vitesse)]],
+  amenagements: [...PLAGE, EFFET, ['Soute', (e) => nombreF(e.soute)],
+    ['Soute par classe', (e) => (e.soute_par_classe === undefined ? null : e.soute_par_classe.map(nombre).join(' / '))],
+    ['Réduction du coût', (e) => (e.reduction_cout_pct === undefined ? null : `${nombre(e.reduction_cout_pct)} %`)]],
+  defenses: [...PLAGE, ['Bonus de vitesse', (e) => signe(e.bonus_vitesse)]],
   modifications: [
     ['Coût %', (e) => nombreF(e.cout_pct)],
     EFFET,
     ['Valeur / points max', (e) => nombreF(e.valeur ?? e.points_max)],
+    ['Réparation min.', (e) => nombreF(e.reparation_min)],
   ],
   armes: [
     ['Dégâts', (e) => texteF(e.degats)],
