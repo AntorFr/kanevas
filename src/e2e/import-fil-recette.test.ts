@@ -25,7 +25,7 @@
 //  P-10 / critère Léa reads « Description » and nothing of « Vérité » (page, API, search).
 import assert from 'node:assert/strict';
 import { join } from 'node:path';
-import { after, before, describe, test } from 'node:test';
+import { after, afterEach, before, describe, test } from 'node:test';
 
 process.env.NODE_ENV = 'test';
 process.env.KANEVAS_STUB = '1';
@@ -609,6 +609,10 @@ describe('E-18 Accès par API au navigateur', { skip: skipBrowser }, () => {
   after(async () => {
     await browser?.close();
     await m.stop();
+  });
+  // No test of the block leaves a server clock behind: the tokens of the next ones are created at the real date.
+  afterEach(() => {
+    m.app.horloge = () => new Date();
   });
 
   test('P-11 / critère : Antor crée « Script Kanka — Mac », le jeton ne s’affiche qu’une fois, la ligne dit « jamais » et l’expiration', async () => {

@@ -745,3 +745,6 @@ on restart without harm, AD-132). No generated data is stored.
 
 **`kanevas-outils-sections-gerees`** (one core migration, number taken at merge, AD-51): `sections.gere_par` (column `CHECK` on the form `module/outil/type`) and `sections.source_version`, both nullable, no backfill — set together or null together, held by the service; `propositions` rebuilt (procedure of migration 0009, foreign keys off then `foreign_key_check`) with `cr_id` nullable, `source_version TEXT` and `CHECK ((cr_id IS NULL) = (source_version IS NOT NULL))`: a proposal comes from a session report or from the recalculation of a managed section, never both. Rollback: an earlier image ignores the two columns and reads every section as free text (the text version is in `contenu`); before going back, delete the proposals whose `cr_id` is null (an earlier image expects a report on every proposal).
 Rollback: an earlier image ignores the new tables; managed sections keep their text (text version) and are read normally.
+**Rule `kanevas-taille-images` (B-taille-1).** No column: an image's size and placement are the title of its
+reference in the text of a section (`![alt](fichier:N "moyen-droite")`, AD-taille-1). Same read and write
+rights as the text; a title that is not one of the nine `<size>-<placement>` pairs changes nothing.
