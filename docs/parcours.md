@@ -1090,7 +1090,7 @@ screen keeps the map, actions disabled, « Connexion perdue. », and the state r
    player, kept in her browser).
 4. Roxane loses her connection: her screen says so and rejoins by itself, with the current state.
 5. Antor switches « Jeu à distance » off (E-20, the card of `battlemap/cartes`): the players keep following live, their rings and drag go, the line « Seul le MJ déplace les pions. » appears; switched on again, they come back.
-*Failure*: a player who owns no token (or the table account) sees the map and moves nothing, with no hint; a player moves a token that is not hers — refused, the token goes back, « Ce pion n'est pas à vous. »; a stale
+*Failure*: a player who owns no token (or the table account) sees the map and moves nothing, with no hint (remote play on; with it off she sees the line « Seul le MJ déplace les pions. » like everyone); a player moves a token that is not hers — refused, the token goes back, « Ce pion n'est pas à vous. »; a stale
 version — silently refetched; the GM hides the map (E-10) — « Page introuvable. » for the players.
 
 ## Out of scope
