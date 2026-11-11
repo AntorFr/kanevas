@@ -88,7 +88,7 @@ ne montre aucun écran). `npm run dev:front` lance Vite seul (port 5173 par déf
 serveur en bouchon (port 3001), s'y connecter sur `http://localhost:3001/`, puis ouvrir
 `http://localhost:5173/` (le cookie de session ne dépend pas du port).
 
-La voie de référence reste le conteneur Node 20 de `CLAUDE.md` (celle de la CI) ; sans Docker, un Node local
+La voie de référence reste le conteneur Node 20 de `CLAUDE.md` (no CI plays the suite: `attester` does) ; sans Docker, un Node local
 récent suffit pour les mêmes commandes (`npm ci && npm run typecheck && npm test`).
 
 ### Import sample acceptance
