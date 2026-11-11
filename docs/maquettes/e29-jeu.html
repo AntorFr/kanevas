@@ -12,8 +12,14 @@ button{background:var(--s2);color:var(--i1);border:1px solid var(--bs);border-ra
 .fog{position:absolute;background:rgba(0,0,0,.92)}.fogmj{background:repeating-linear-gradient(135deg,rgba(242,163,60,.28) 0 6px,rgba(0,0,0,.35) 6px 12px)}.tk{position:absolute;width:36px;height:36px;border-radius:50%;border:2px solid var(--te);background:var(--s2);display:flex;align-items:center;justify-content:center;font-size:12px}
 .lay{padding:10px;display:flex;flex-direction:column;gap:6px}.lay div{display:flex;gap:8px;padding:8px;background:var(--s1);border:1px solid var(--b);border-radius:8px}.lay .m{border-color:var(--am);color:var(--am)}
 @media(max-width:760px){.side{display:none}.tools{width:44px}}
+.st{margin:0;padding:14px 16px;border-top:1px dashed var(--bs);color:var(--i2)}.st b{color:var(--i1)}.st p{margin:4px 0}
 </style></head><body>
 <header><h1>Cantine de la station · en jeu</h1><span style="color:var(--te)">● Écran joueurs connecté</span><button>Écran joueurs</button><button>Réinitialiser la table…</button></header>
 <div class="row"><div class="tools"><button class="on" title="Pions">◉</button><button title="Révéler">☀</button><button title="Masquer">☾</button><button title="Vue partagée">⌖</button></div>
 <div class="cv"><div class="map"><div class="fl" style="left:80px;top:80px;width:360px;height:240px"></div><div class="ob" style="left:120px;top:120px;width:80px;height:40px"></div><div class="fog fogmj" style="left:240px;top:80px;width:200px;height:240px"></div><div class="fog fogmj" style="left:480px;top:80px;width:120px;height:240px"></div><div class="tk" style="left:130px;top:220px">Mi</div><div class="tk" style="left:180px;top:240px">Vo</div><div class="tk" style="left:300px;top:150px;border-color:var(--am)">Ga</div></div></div>
-<div class="side"><div class="tabs"><span class="on">Pions</span><span>Brouillard</span></div><div class="lay"><div>Mira · Léa</div><div>Vox · Roxane</div><div>Garde · <em>visible</em></div><div class="m">Capitaine · masqué</div></div></div></div></body></html>
+<div class="side"><div class="tabs"><span class="on">Pions</span><span>Brouillard</span></div><div class="lay"><div>Mira · Léa</div><div>Vox · Roxane</div><div>Garde · <em>visible</em></div><div class="m">Capitaine · masqué</div></div></div></div><section class="st"><b>États (maquette de texte)</b>
+<p><b>Joueur</b> : carte révélée seule, pas de colonne d'outils, interrupteur « Suivre le MJ » en bas à droite, aucune main sur les pions.</p>
+<p><b>Connexion perdue.</b> : bandeau en haut, carte gardée, outils désactivés.</p>
+<p><b>La partie n'a pas commencé.</b> : joueur ou écran, tant que le MJ n'a pas ouvert « Jouer ».</p>
+<p><b>Table pleine</b> : Alerte au-dessus de la liste de pions à 200 pions.</p>
+<p><b>Réinitialiser la table…</b> : « Les pions, le brouillard et la vue partagée seront effacés. »</p></section></body></html>

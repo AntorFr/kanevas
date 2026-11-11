@@ -1078,6 +1078,7 @@ placeholder « Asset retiré » for the GM, absent for players. Removed assets a
 3. The party opens the door: he reveals the room by painting it; the guard token is shown; he moves it.
 4. At the break he leaves; the next Saturday he reopens the map: tokens and fog are as he left them.
 *Highlight*: step 3, the room that appears on the TV.
+   *Detail of `kanevas-battlemap-table`.* Step 1: « Jouer » in the editor opens E-29 and creates the table; « Écran joueurs » opens E-30 in another window (or the TV's browser), whose account is an ordinary member of the universe. Step 2: with « Vue partagée » on, his zoom is the display's; « Ajouter un pion » ▸ Fiche (« Mira »), Asset, Disque (« Garde »), and « Propriétaire… » on two; the fog is the black ground at the display. Step 3: « Révéler » ▸ Pièce, a click in the room: it appears on the display within two seconds; the guard, in it, is seen; he drags it. Step 4: next Saturday « Jouer » finds the tokens and the fog as left; « Réinitialiser la table… » empties them. A player opening the map from E-10 reads the same revealed map on E-29, and « Suivre le MJ » is on.
 *Failure*: the display is closed — the GM sees « Aucun écran joueur connecté » (not an error); connection lost — the GM's
 screen keeps the map, actions disabled, « Connexion perdue. », and the state resumes on reconnection.
 
