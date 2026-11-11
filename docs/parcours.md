@@ -146,6 +146,13 @@ Forme de la skill `exigences` ; chaque besoin cite les parcours qui le réalisen
   L'illustration suit la même double garde (la fiche et l'image). *(P-12, P-16 ; décisions de Monsieur
   du 2026-10-11)*
 
+- **B-taille-1** — *(`kanevas-taille-images`)* When a GM, or a player who may write a section, has an image in its text
+  (`![…](fichier:N)`, E-9), they can set its **size** (small, medium, large) and its **placement**
+  (left or right with the text wrapping it, or centred without wrapping) from the editor's « Image » button;
+  in reading, the image shows at that size and placement, on desktop and on a phone where it stays a
+  readable centred block; an image with no setting shows as before. The setting is the image's Markdown
+  title (`"moyen-droite"`), so the import and the export carry it as text. *(P-12)*
+
 ### Import et accès par API (`kanevas-import`)
 - **B-45** — Un MJ crée un **jeton d'API** pour son univers depuis « Accès par API » (E-18) : un nom,
   une durée (30 jours par défaut, un an au plus) ; Kanevas le montre **une seule fois** ; le jeton agit
@@ -544,11 +551,15 @@ a expiré — la ligne dit « Expiré », le script reçoit 401.
 5. Elle ouvre « Maître Aldric » par un lien, puis revient par le fil d'Ariane.
 6. Elle demande à son **assistant** (E-12) « que sait-on de Port-Sel ? » : il ne cite rien du bloc
    MJ.
+7. *(kanevas-taille-images, B-taille-1)* Antor, de retour sur « Port-Sel », place le curseur dans l'image
+   du port, ouvre « Image » (E-9, « Écrire ») et choisit « Moyen » puis « À droite » ; il enregistre. En
+   lecture le texte de « Histoire » entoure l'image à droite ; sur le téléphone de Léa l'image est un
+   bloc centré, lisible.
 *Moment fort* : la même fiche, lue par Antor puis par Léa — le secret n'est ni montré, ni trouvable,
-ni deviné.
+ni deviné. (Step 7 is an editing gesture, outside this key moment.)
 *Échec* : une image insérée ne se charge pas — « Image indisponible. » à sa place ; un lien vers une
 fiche supprimée — texte simple pour Léa, « lien cassé » pour Antor ; une fiche dont Léa ne lit plus
-rien depuis le dernier import — absente de l'arbre, de la recherche et des « Mentionnée dans ».
+rien depuis le dernier import — absente de l'arbre, de la recherche et des « Mentionnée dans ». Image setting (step 7): « Image » is greyed out while the caret is not in an image; if saving fails, the written title stays in the field with the section's save message.
 
 ### P-13 — Choisir les types d'un système et d'un univers (MJ)
 *Antor joue « CoF Mini » dans « Lame d'Ébène », sauf que son univers a des vaisseaux.*
@@ -718,6 +729,8 @@ recherche, ni dans le compte.
 
 ## Hors périmètre
 
+- *(kanevas-taille-images)* **A free size in pixels, cropping, a caption and a gallery** for the images of a
+  text: three standard sizes and three placements cover the need; reopened if a GM asks for more.
 - **Jeu en direct** : pas d'initiative, de combat animé, de brouillard de guerre ; la table reste
   physique.
 - *(kanevas-scenarios)* **A calendar of sessions** (dates, who was there) and a **play log per
