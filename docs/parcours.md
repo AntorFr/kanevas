@@ -1010,7 +1010,7 @@ search, nor in the count.
   footprint, an optional hint each; or asks the assistant to draft the list from a theme), starts a **batch**
   and the image engine makes them one after the other, each prompt built from the art direction. Each result
   lands in the library as a **draft** to accept, regenerate with a remark, or discard; nothing enters a map
-  before it is accepted. The batch shows its progress, the GM can **stop** it (the lines still waiting or interrupted are discarded), and it survives a restart: the line that was running and the lines still waiting are marked *interrupted* and the GM resumes them with one click, never silently. Without an image engine the
+  before it is accepted. The batch shows its progress, the GM can **stop** it (every line not yet accepted is discarded after a confirmation, drafts and failures included — AD-157), and it survives a restart: the line that was running and the lines still waiting are marked *interrupted* and the GM resumes them with one click, never silently. Without an image engine the
   entry is absent and everything else works with a library filled by hand. *(P-26)*
 - **B-100** — The assistant has **dedicated skills** for the tool (writing an art direction, briefing an
   asset batch, composing a map from the library): instruction documents shipped with the tool, which it loads
