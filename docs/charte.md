@@ -520,4 +520,6 @@ change: the code reads them as they are).
 | `--duree` | 120 ms | 160 ms | within the 150–250 ms range; 120 ms felt abrupt on menus |
 | sheet title (`h1`) | `--t-22` | `--t-40` (`--t-32` on phones) | the title opens the page like a document; `--t-22` remains the section heading |
 
+**Table display (E-30, `kanevas-battlemap`) — Monsieur's mandate decision, 2026-11-11.** The players' screen is chrome-less and full frame: a pure black background (`#000`) and the dark theme forced, whatever the account's theme, because it is projected in a dark room. The text pair `--texte-2` (dark) on `#000` must be measured at 4.5:1 at build time; below it, the screen uses `--texte`. No other screen takes this deviation.
+
 Tokens marked *(new)* are added without changing anything existing.
