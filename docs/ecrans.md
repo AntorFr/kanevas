@@ -4334,44 +4334,45 @@ illustration, E-8 filter, the states below) is `e09-marque-disparu.html`; this t
 ## Screen details for `kanevas-carte-spatiale` (scope)
 
 > Scoping proposed on 2026-11-11 (`epic/kanevas-carte-spatiale`). Format: web, desktop and phone, pointer or touch; the map is a canvas
-> (2D), the rest is the usual layout. Vocabulary: « système », « astre » (star, planet, moon, comet), « zone » (ring or cloud), « orbite », « heure », « ancrer ».
+> (2D), the rest is the usual layout. Vocabulary: « système », « astre » (star, planet, moon, comet), « élément » (ship, city, station, base: not celestial), « zone » (ring or cloud), « orbite », « heure », « ancrer ».
+> Visual bar (Monsieur, 2026-11-11): the system map and the illustrations must be **more beautiful than Éneria's today** (`carte-interactive/systeme.html`, `astres.py`); each celestial body is drawn on the map with its engine illustration, never as a plain disc. The recette judges on captures, compared with Éneria's.
 > Mockup: `maquettes/e23-carte-systeme.html` (E-23). E-24 is a settings form in the manner of E-20's panels; no mockup of its own.
 
 ### Information architecture
 
-Objects: a **galaxy** (E-21) holds **systems**; a system holds **bodies** (star, planet, moon, comet — `astre`) and **zones**; an element may link to a **sheet**. A system is
+Objects: a **galaxy** (E-21) holds **systems**; a system holds **bodies** (star, planet, moon, comet — `astre`), **zones** and **elements** (non-celestial: ship, city, station, base — `élément`, B-96); a body, zone or element may link to a **sheet**. A system is
 **drawn** (nobody wrote it: the generator gives it) or **defined** (it has a row, its interior is stored and edited by the GM; « Ancrer ce système » is the act that defines a drawn one). Screens:
 
 | Screen | Reached from | Serves to |
 |---|---|---|
-| E-21 (amended) | the tool, as today | « Ouvrir le système » on the panel of a star, drawn or defined; « Réglages du générateur… » (GM) |
+| E-21 (amended) | the tool, as today | « Ouvrir le système » on the panel of a star, drawn or defined; « Réglages du générateur… » (GM); « Réservé au MJ » on a system, drawn or defined (B-97) |
 | E-9 Sheet (amended) | the sheet, as today | gains the block « Sur la carte spatiale » (below) |
-| E-23 System map | E-21; the « Sur la carte spatiale » block of a sheet (E-9); a shareable link | read the system, see and open the illustrations, follow links; GM: move, name, link, add, anchor |
+| E-23 System map | E-21; the « Sur la carte spatiale » block of a sheet (E-9); a shareable link | read the system, see and open the illustrations, follow links; GM: move, name, link, add a body, a zone or an element, anchor, hide an element |
 | E-24 Generator settings | E-21 (GM) | settings and catalogue of aspects of the galaxy |
 
 ### Roles × screens
 
 | Screen | Player | GM | GM in Player mode | No role |
 |---|---|---|---|---|
-| E-23 | reads the elements readable to them, illustrations included; follows the links of readable sheets | all, plus: move, name, link, add, remove, anchor, « Illustrer la fiche » | as Player | « Page introuvable. » (hidden, not refused) |
+| E-23 | reads every body and zone, the elements the GM left readable, illustrations included; follows the links of readable sheets | all, plus: move, name, link, add, remove, anchor, hide an element, « Illustrer la fiche » | as Player | « Page introuvable. » (hidden, not refused) |
 | E-24 | « Page introuvable. » (the entry is not shown) | reads and edits | the entry is shown, the screen opens read-only with « Mode joueur actif. » | « Page introuvable. » |
 
-An element with `secret` is **absent** for a Player — no slot, no count, no line in the list of bodies, no link from a sheet. **[À TRANCHER — Monsieur]** whether the nameless drawn interior of a system is readable by whoever reads its star on E-21 (recommended: yes, as the star itself is; the GM hides what he wants by defining the system and setting « Réservé au MJ »; reversed if Monsieur wants players to discover systems only once the GM defines them).
+**Visibility (decision of Monsieur, 2026-11-11).** Everything the draw produces — stars, planets, moons, belts, comets, nebulae, anomalies — and the celestial zones are **always visible** in a system the reader sees: no body has a secret. What hides is (1) a **whole system**: for a Player its hexagon on E-21 is an empty cell (no star, no name), the routes towards it are gone, and its address answers « Page introuvable. » (B-97); (2) one **non-celestial element**, marked « Réservé au MJ »: absent for a Player — no slot, no count, no line in the list, no link from a sheet. The interior of a drawn system is readable by whoever reads its star on E-21 (confirmed by Monsieur).
 
 ### E-23 — System map
 
 **Content**: a canvas with the star at the centre (companions at their orbit and hour), regularly spaced orbits (checkbox « orbites »), the 12 hours (checkbox « heures »; 12 at the top, 3 at the right), bodies and
-moons drawn with their illustration, ring and cloud zones, the transition circle with the exits towards neighbouring systems (one per route readable by the reader as on E-21 — public, or any for the GM outside Player mode — towards a system readable by the reader, at the hour of the neighbour; a private route or a secret neighbour draws nothing, leaves no gap and no count), a side panel (below the
+moons drawn as their engine illustration (a lit sphere with its surface, atmosphere and shadow, a star with its corona; the sprite follows the zoom, in the browser by the core), ring and cloud zones, the elements (an icon of the kind on a coloured ring, a label; on a body, in a small orbit around it), the transition circle with the exits towards neighbouring systems (one per route readable by the reader as on E-21 — public, or any for the GM outside Player mode — towards a system readable by the reader, at the hour of the neighbour; a private route or a secret neighbour draws nothing, leaves no gap and no count), a side panel (below the
 map on a phone) and a list of the bodies (text alternative, also the fallback when the core cannot run). Panel of a body: illustration, name or « Astre sans nom », type, « Orbite 4 · 7 h » (and the
 hexagon `q, r` of the system), link to the sheet or nothing, its description (plain text), « Voir l'illustration » (dialogue, high definition, zoom), and for the GM: « Déplacer », « Modifier… » (name, description, type from the catalogue, size, aspect preset and seed; for a zone, its parameters), « Lier à une fiche… »,
-« Réservé au MJ » (the `secret` switch of the element: it hides the element and, for a planet, its moons, for a star, its planets and comets), « Illustrer la fiche », « Retirer ». The header menu of a system holds « Rayon de transition… » (GM). Two bodies may share an orbit and an hour: the map draws them side by side, nothing is refused. Header: system name or « Système sans nom (q, r) », mark « Tiré » or « Défini ». GM: « Ancrer ce système » (dialogue: « L'intérieur de ce système sera figé tel que vous le voyez ; les réglages du générateur ne le
-changeront plus. »), « Ajouter un astre », « Ajouter une zone ». Any first edit of a drawn system asks the anchoring first.
+« Illustrer la fiche », « Retirer ». Panel of an element: name, kind, place (« Orbite 4 · 7 h » or « Sur Vael II »), description, link, and for the GM « Déplacer », « Modifier… », « Lier à une fiche… », « Réservé au MJ » (the `secret` switch: the only one on this screen), « Retirer ». The header menu of a system holds « Rayon de transition… » (GM). Two bodies may share an orbit and an hour: the map draws them side by side, nothing is refused. Header: system name or « Système sans nom (q, r) », mark « Tiré » or « Défini ». GM: « Ancrer ce système » (dialogue: « L'intérieur de ce système sera figé tel que vous le voyez ; les réglages du générateur ne le
+changeront plus. »), « Ajouter un astre », « Ajouter une zone », « Ajouter un élément ». Any first edit of a drawn system asks the anchoring first.
 
 | State | Text |
 |---|---|
 | empty | a defined system with no element: GM « Ce système est vide. Ajoutez un astre. » ; Player « Rien à voir dans ce système pour l'instant. » (a drawn system is never empty: the generator draws 4 to 12 bodies; a system placed by hand starts empty) |
-| loading | « Chargement du système… » (the core loads first; the illustrations arrive one by one, a body shows its colour disc until then) |
-| error | illustration not arriving: the disc stays, « Illustration indisponible. » + « Réessayer » ; core not loading: the list of bodies replaces the canvas, « La carte ne peut pas s'afficher ici. » |
+| loading | « Chargement du système… » (the core loads first; each body appears with a blurred low-resolution version of its illustration, then the sharp one: never a flat disc held on screen) |
+| error | illustration not arriving: the body shows the low-resolution version, « Illustration indisponible. » + « Réessayer » ; core not loading: the list of bodies replaces the canvas, « La carte ne peut pas s'afficher ici. » |
 | offline | the view stays, « Connexion perdue. » banner, writes disabled, illustrations already seen stay |
 | refusal | system not readable: « Page introuvable. » ; a write by a non-GM is not offered |
 | long content | 12 bodies, 4 moons each, 5 companions: labels collapse at the zoom-out; 80-character names truncated; a very high orbit extends the canvas, the view fits it |
@@ -4380,7 +4381,10 @@ changeront plus. »), « Ajouter un astre », « Ajouter une zone ». Any first 
 Criteria:
 - Given Antor, GM, on a drawn system of the Éneria seed, when he opens it twice, he sees the same star, the same bodies at the same orbits and hours, marked « Tiré ».
 - Given Antor moving a planet of a drawn system, then the anchoring dialogue appears first; once confirmed the mark reads « Défini » and the planet is at its new hour after a reload.
-- Given Léa, Player, on a system where Antor set an anomaly « Réservé au MJ », she sees neither the anomaly, nor a blank place, nor a count, in the map, the list or the sheet links; in Player mode, Antor sees what she sees.
+- Given Léa, Player, on a system where Antor set a station « Réservé au MJ », she sees all the bodies, anomaly included, and neither the station, nor a blank place, nor a count, in the map, the list or the sheet links; in Player mode, Antor sees what she sees.
+- Given Antor hiding the drawn system (3, −5), Léa sees on E-21 an empty cell there, no route towards it, and its address answers « Page introuvable. »; in Player mode, Antor sees the same.
+- Given Antor placing a ship on a planet, then moving the planet, the ship follows it; removing the planet asks the confirmation « Retirer Vael II ? Son élément (1) sera retiré. ».
+- Given the captures of E-23 at desktop and 390 px in every theme, each body is drawn with its engine illustration and the map is judged more beautiful than Éneria's system map, side by side.
 - Given a planet linked to a sheet Léa cannot read, she sees the planet without link; given one linked to a readable sheet, she follows the link, and the sheet shows « Sur la carte spatiale ».
 - Given the body's panel at 390 px width, when Léa taps a planet, the panel opens below the map with its illustration, name, « Orbite 4 · 7 h ».
 - Given the core failing to load, the list of bodies shows with the message and every panel action stays usable.
@@ -4414,13 +4418,13 @@ The sheet of an element linked to the map gains the block « Sur la carte spatia
 
 ### E-21 — what changes
 
-The stars of undefined hexagons come from the Rust core (B-86); the panel of any star gains « Ouvrir le système », and « Réglages du générateur… » joins the GM actions. The drawn-system rules
+The stars of undefined hexagons come from the Rust core (B-86); the panel of any star gains « Ouvrir le système », and « Réglages du générateur… » joins the GM actions. The existing switch « Secret (MJ seul) » of a system now also works on a drawn one (it anchors it first, the dialogue says so); for a Player a hidden system is an empty cell and the routes towards it are absent. The drawn-system rules
 of E-21 do not change: same visibility, same promotion — « Promouvoir » and « Ancrer ce système » are one act on a drawn system (promotion + frozen interior).
 
 ### Closing
 
 | Crossing | Result |
 |---|---|
-| each need has a screen | B-86 E-21 · B-87 E-23 · B-88 E-23 · B-89 E-23 · B-90 E-24 · B-91 E-23, E-24 · B-92 E-23 · B-93 E-23 · B-94 catalogue (no screen, chosen) · B-95 import report — **holds** |
+| each need has a screen | B-86 E-21 · B-87 E-23 · B-88 E-23 · B-89 E-23 · B-90 E-24 · B-91 E-23, E-24 · B-92 E-23 · B-93 E-23 · B-94 catalogue (no screen, chosen) · B-95 import report · B-96 E-23 · B-97 E-21 — **holds** |
 | each screen is reached by a journey | E-23 P-22, P-24 · E-24 P-23 · E-21 P-22 · E-9 P-22 — **holds** |
 | each role has its column and each screen its row | **holds** (above) |
