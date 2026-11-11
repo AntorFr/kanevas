@@ -16,6 +16,7 @@ type Champ =
   | { nom: string; type: 'code'; facultatif: true }
   | { nom: string; type: 'liste4'; facultatif: true }
   | { nom: string; type: 'verifie'; min: number; max: number; phrase: string; facultatif: true }
+  | { nom: string; type: 'libre'; valide: (v: unknown) => boolean; phrase: string; json?: true; facultatif: true }
   | { nom: string; type: 'oui-non' }
   | { nom: string; type: 'texte' }
   | { nom: string; type: 'choix' };
@@ -33,6 +34,9 @@ const code = (nom: string): Champ => ({ nom, type: 'code', facultatif: true });
 const liste4 = (nom: string): Champ => ({ nom, type: 'liste4', facultatif: true });
 /** Y-1: an optional integer whose malformed values the import refuses with its own sentence (E-20), in `verifier`; stored as an integer. */
 const verifie = (nom: string, min: number, max: number, phrase: string): Champ => ({ nom, type: 'verifie', min, max, phrase, facultatif: true });
+/** Z-1: an optional field of any JSON shape whose malformed values the import refuses with the sentence of E-20 (`valide` false); `json` stores it as text. */
+const libre = (nom: string, valide: (v: unknown) => boolean, phrase: string, json?: true): Champ =>
+  ({ nom, type: 'libre', valide, phrase, ...(json ? { json } : {}), facultatif: true });
 const masse = (): Champ => ({ nom: 'masse', type: 'masse' });
 const ouiNon = (nom: string): Champ => ({ nom, type: 'oui-non' });
 
@@ -55,13 +59,18 @@ const CHAMPS: Record<NatureCatalogueVaisseau, Champ[]> = {
     facultatif('vitesse', 0, 99), facultatif('armure', 0, 99), facultatif('equipage_min', 0, 100_000), facultatif('equipage_max', 0, 100_000)],
   moteurs: [entier('niveau', 1, 6), ...ELEMENT, ...PLAGE_CLASSES],
   amenagements: [...ELEMENT, ...PLAGE_CLASSES, code('effet'), liste4('rend_puissance'), liste4('rend_masse'), facultatif('soute', 0, 1_000_000),
-    liste4('soute_par_classe'), verifie('reduction_cout_pct', 1, 100, 'nombre entier de 1 à 100 attendu')],
+    liste4('soute_par_classe'), verifie('reduction_cout_pct', 1, 100, 'nombre entier de 1 à 100 attendu'),
+    libre('reduction_base', (v) => v === 'coque' || v === 'amenagement', '« coque » ou « amenagement » attendu')],
   defenses: [...ELEMENT, ...PLAGE_CLASSES, verifie('bonus_vitesse', -9, 9, 'nombre entier de −9 à 9 attendu')],
   armes: [entier('emport'), entier('munitions'), entier('cout_munition'), entier('classe_min', 1, 4, 1), ...ELEMENT,
     texteLibre('degats', 40), facultatif('perforation', 0, 99), texteLibre('qualites', 120), facultatif('niveau_tech', 0, 9)],
   modifications: [...ELEMENT, facultatif('cout_pct', 1, 1000), code('effet'), facultatif('valeur', -9, 20), facultatif('points_max', 1, 99),
     code('sens'), facultatif('echange_puissance', 1, 99), reel('echange_masse', 0.5, 99),
-    verifie('reparation_min', 1, 20, 'nombre entier de 1 à 20 attendu')],
+    verifie('reparation_min', 1, 20, 'nombre entier de 1 à 20 attendu'),
+    libre('effet_pct', () => true, ''), // range by effect, in `verifierEffet`
+    libre('armure_par_classe', (v) => Array.isArray(v) && v.length === 4 && v.every((x) => entierDans(x, 0, 9)),
+      'quatre nombres entiers de 0 à 9 attendus (classes 1 à 4)', true),
+    libre('echange_arrondi', (v) => v === 'installation', '« installation » attendu')],
   exemples: [{ nom: 'coque', type: 'texte' }, { nom: 'choix', type: 'choix' }, facultatif('equipage', 0, 100_000)],
 };
 
@@ -74,7 +83,7 @@ function schemaDe(nature: NatureCatalogueVaisseau): z.ZodObject {
   const forme: Record<string, z.ZodType> = { nom: z.string().min(1).max(200) };
   for (const c of CHAMPS[nature]) {
     if (c.type === 'code') { forme[c.nom] = z.string().optional(); continue; }
-    if (c.type === 'liste4' || c.type === 'verifie') { forme[c.nom] = z.unknown().optional(); continue; }
+    if (c.type === 'liste4' || c.type === 'verifie' || c.type === 'libre') { forme[c.nom] = z.unknown().optional(); continue; }
     if (c.type === 'reel') { forme[c.nom] = z.number().min(c.min).max(c.max).multipleOf(0.5).optional(); continue; }
     if (c.type === 'texte-libre') { forme[c.nom] = z.string().trim().min(1).max(c.max).optional(); continue; }
     forme[c.nom] = c.type === 'masse' ? z.number().min(0).max(1_000_000).multipleOf(0.5)
@@ -106,12 +115,12 @@ function ligne(nature: NatureCatalogueVaisseau, r: Ligne): LigneCatalogue {
   for (const c of CHAMPS[nature]) {
     const v = r[c.nom];
     if ('facultatif' in c && c.facultatif && v === null) continue;
-    donnees[c.nom] = c.type === 'oui-non' ? Boolean(v) : c.type === 'choix' || c.type === 'liste4' ? JSON.parse(v as string) : v;
+    donnees[c.nom] = c.type === 'oui-non' ? Boolean(v) : c.type === 'choix' || c.type === 'liste4' || (c.type === 'libre' && c.json) ? JSON.parse(v as string) : v;
   }
   return { nature, cle: r.cle, nom: r.nom, donnees, masque: Boolean(r.masque), version: r.version };
 }
 const colonnes = (nature: NatureCatalogueVaisseau) => CHAMPS[nature].map((c) => c.nom);
-const aStocker = (c: Champ, v: unknown) => c.type === 'oui-non' ? Number(v) : c.type === 'choix' || (c.type === 'liste4' && v !== null) ? JSON.stringify(v) : v;
+const aStocker = (c: Champ, v: unknown) => c.type === 'oui-non' ? Number(v) : c.type === 'choix' || ((c.type === 'liste4' || (c.type === 'libre' && c.json)) && v !== null) ? JSON.stringify(v) : v;
 
 function lire(db: Db, cible: CibleCatalogue, nature: NatureCatalogueVaisseau, cle: string): LigneCatalogue | null {
   const o = proprietaire(cible);
@@ -160,10 +169,12 @@ export const stockageVaisseaux: StockageCatalogue = {
         .run(...valeurs, versionCatalogue, o.niveau, o.id, cle);
       return 'modifie';
     }
-    db.prepare(`INSERT INTO ${table(n)} (proprietaire, systeme_id, univers_id, cle, nom, ${colonnes(n).join(', ')}, version_catalogue)
-      VALUES (?, ?, ?, ?, ?, ${colonnes(n).map(() => '?').join(', ')}, ?)`)
+    // A column not stated stays out of the INSERT (NULL by default): a row is written the same on a schema that predates the column.
+    const dites = champs.map((c, i) => ({ c: c.nom, v: valeurs[i + 1] })).filter((x) => x.v !== null);
+    db.prepare(`INSERT INTO ${table(n)} (proprietaire, systeme_id, univers_id, cle, nom, ${dites.map((x) => x.c).join(', ')}, version_catalogue)
+      VALUES (?, ?, ?, ?, ?, ${dites.map(() => '?').join(', ')}, ?)`)
       .run(o.niveau, 'systemeId' in cible ? cible.systemeId : null, 'universId' in cible ? cible.universId : null,
-        cle, ...valeurs, versionCatalogue);
+        cle, donnees.nom, ...dites.map((x) => x.v), versionCatalogue);
     return 'cree';
   },
   poserMasque(db, universId, nature, cle, masque, versionLue) {
@@ -224,6 +235,7 @@ const entierDans = (v: unknown, min: number, max: number): boolean => typeof v =
 function verifierFormes(nature: NatureCatalogueVaisseau, d: Record<string, unknown>): Refus {
   for (const c of CHAMPS[nature]) {
     if (c.type === 'verifie' && d[c.nom] !== undefined && !entierDans(d[c.nom], c.min, c.max)) return { champ: c.nom, raison: c.phrase };
+    if (c.type === 'libre' && d[c.nom] !== undefined && !c.valide(d[c.nom])) return { champ: c.nom, raison: c.phrase };
   }
   const s = d.soute_par_classe;
   if (nature === 'amenagements' && s !== undefined
@@ -238,6 +250,9 @@ function verifierCroises(nature: NatureCatalogueVaisseau, d: Record<string, unkn
     if (d.reparation_min !== undefined && d.effet === 'reparation_min') return { champ: 'reparation_min', raison: "déjà dit par l'effet" };
   }
   if (nature === 'amenagements' && d.reduction_cout_pct !== undefined && d.effet !== 'moteur_systeme') return REDUCTION_RESERVEE;
+  if (nature === 'amenagements' && d.reduction_base !== undefined && d.reduction_cout_pct === undefined) {
+    return { champ: 'reduction_base', raison: 'base réservée à la réduction du coût' };
+  }
   return null;
 }
 const quatre = (v: unknown, masse: boolean): boolean => Array.isArray(v) && v.length === 4
@@ -253,9 +268,17 @@ function verifierEffet(nature: 'modifications' | 'amenagements', d: Record<strin
   if (!estEffet(effet) || EFFETS[effet].nature !== nature) return { champ: 'effet', raison: `effet inconnu : ${String(effet)}` };
   const decl = EFFETS[effet];
   for (const p of parametres) {
-    const propre = (decl.parametres as readonly ParametreEffet[]).includes(p);
-    if (!propre && d[p] !== undefined) return { champ: p, raison: `paramètre étranger à l'effet ${effet}` };
-    if (propre && d[p] === undefined) return { champ: p, raison: `paramètre requis par l'effet ${effet}` };
+    const requis = (decl.parametres as readonly ParametreEffet[]).includes(p);
+    const propre = requis || (decl.facultatifs as readonly ParametreEffet[] | undefined)?.includes(p) === true;
+    if (!propre && d[p] !== undefined) return { champ: p, raison: 'paramètre réservé à son effet' };
+    if (requis && d[p] === undefined) return { champ: p, raison: "paramètre requis par l'effet" };
+  }
+  if (d.effet_pct !== undefined) {
+    const max = effet === 'soutes_optimisees' ? 100 : 1000;
+    if (!entierDans(d.effet_pct, 1, max)) return { champ: 'effet_pct', raison: `nombre entier de 1 à ${max === 100 ? '100' : '1 000'} attendu` };
+  }
+  if (effet === 'montage_specialise' && !(entierDans(d.valeur, -9, 9) && d.valeur !== 0)) {
+    return { champ: 'valeur', raison: 'nombre entier de −9 à 9, sauf 0, attendu' };
   }
   const v = d.valeur;
   if (typeof v === 'number') {
@@ -268,7 +291,8 @@ function verifierEffet(nature: 'modifications' | 'amenagements', d: Record<strin
   }
   if (d.rend_puissance !== undefined && !quatre(d.rend_puissance, false)) return { champ: 'rend_puissance', raison: 'quatre entiers positifs attendus' };
   if (d.rend_masse !== undefined && !quatre(d.rend_masse, true)) return { champ: 'rend_masse', raison: 'quatre masses (multiples de 0,5) attendues' };
-  if (decl.limiteUne && d.limite !== 1) return { champ: 'limite', raison: 'limite 1 attendue' };
+  const arrondi = effet === 'echange' && d.echange_arrondi !== undefined;
+  if (decl.limiteUne && !arrondi && d.limite !== 1) return { champ: 'limite', raison: 'limite 1 attendue' };
   return null;
 }
 

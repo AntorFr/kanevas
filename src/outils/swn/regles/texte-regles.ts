@@ -94,13 +94,17 @@ const FACULTATIVES: Partial<Record<NatureRegles, Facultative<ElementRegle>[]>> =
   moteurs: PLAGE,
   amenagements: [...PLAGE, EFFET, ['Soute', (e) => nombreF(e.soute)],
     ['Soute par classe', (e) => (e.soute_par_classe === undefined ? null : e.soute_par_classe.map(nombre).join(' / '))],
-    ['Réduction du coût', (e) => (e.reduction_cout_pct === undefined ? null : `${nombre(e.reduction_cout_pct)} %`)]],
+    ['Réduction du coût', (e) => (e.reduction_cout_pct === undefined ? null : `${nombre(e.reduction_cout_pct)} %`)],
+    ['Base de la réduction', (e) => (e.reduction_base === undefined ? null : e.reduction_base === 'coque' ? 'Coque' : 'Aménagement')]],
   defenses: [...PLAGE, ['Bonus de vitesse', (e) => signe(e.bonus_vitesse)]],
   modifications: [
     ['Coût %', (e) => nombreF(e.cout_pct)],
     EFFET,
     ['Valeur / points max', (e) => nombreF(e.valeur ?? e.points_max)],
     ['Réparation min.', (e) => nombreF(e.reparation_min)],
+    ['Pourcentage', (e) => (e.effet_pct === undefined ? null : `${nombre(e.effet_pct)} %`)],
+    ['Armure par classe', (e) => (e.armure_par_classe === undefined ? null : e.armure_par_classe.map(nombre).join(' / '))],
+    ["Arrondi de l'échange", (e) => (e.echange_arrondi === undefined ? null : 'par installation')],
   ],
   armes: [
     ['Dégâts', (e) => texteF(e.degats)],
