@@ -494,7 +494,7 @@ becomes the source of the map and Éneria keeps none (decision 3). Nothing in th
   classes, counts exactly; real numbers to 1e-9), and a galaxy created on the seed of Éneria's current galaxy shows its stars at their places.
 - **B-87** — One Rust core, compiled to WebAssembly, is loaded by the browser (map, live thumbnails, zoom) and by the Node
   server (high-definition illustrations, cached); there is no service of its own (AD-139). *Done when:* the same fixtures pass
-  through the browser binding and the Node binding with identical results, and the image build carries the compiled core.
+  through the browser binding and the Node binding with identical results, and the image build carries the compiled core (the Cargo/Wasm/Docker foundation is carried by the feature `kanevas-socle-rust`, on which this need depends).
 - **B-88** — A system opens on **its map** (E-23): the star at the centre, each body at its **orbit and hour**, belts and
   nebulae as ring and cloud zones, the transition zone and the exits towards neighbouring systems. **Every celestial body is
   always visible** in a system the reader sees (stars, planets, moons, belts, comets, nebulae, anomalies, zones): no body has a secret of its own. Anyone who reads
@@ -514,7 +514,7 @@ becomes the source of the map and Éneria keeps none (decision 3). Nothing in th
 - **B-93** — The **atlas format** of Éneria (bodies with moons, zones, points, `transition`, aspects) is the import format of a system
   (JSON body of the import API, new natures). A system is either *drawn* (nobody wrote it: the generator gives it) or *defined* (it has a row and its elements are stored). To **anchor** a drawn system is to define it: the GM freezes its interior as drawn (the promotion of E-21), and the elements are then edited; what is stored wins over what would be drawn. In the atlas, `points` are the comets, and the per-body `aspect` and the entries of Éneria's `astres.yaml` become the body's aspect; the catalogue of aspects per type is not imported.
 - **B-94** — The elements of the map are read, edited, completed and defined (anchored) by **gestures of the tools catalogue** (read a
-  system, place or move a body or an element, complete their aspect and link, trace a zone, anchor a system, hide an element), hence by the internal assistant
+  system, place or move a body or an element, complete their aspect and link, trace a zone, anchor a system, hide an element or a system), hence by the internal assistant
   and, through kanevas-synchro's MCP, by an external agent holding a token — under the guards of the GM role (AD-26, AD-103).
 - **B-95** — The map of Éneria is **taken over once**: its defined systems, atlas bodies and aspects enter Kanevas by the import API, from a
   script of the private Éneria repository (AD-131); Éneria keeps no map afterwards. *Done when:* the exit criterion of the epic holds on the taken-over galaxy.
@@ -1026,7 +1026,7 @@ search, nor in the count.
   a hidden element is absent for a Player — no slot, no count, no line, no link from a sheet. The GM places, moves, names, completes and removes elements; the catalogue tools (B-94) read and write
   them under the same guards. Placing an element on a drawn system anchors it first (B-93). *Done when:* a Player reads the elements the GM left readable and none of the others, on the map, in the list and from the sheets.
 - **B-97** — A GM can **hide a whole system**. For a Player the hexagon of a hidden system is **an empty cell on the galaxy map** (E-21): neither star nor name, no panel content, and the routes towards it
-  are hidden too (a route is readable only if both ends are, no gap and no count); the system's own address answers « Page introuvable. ». A drawn system can be hidden: hiding anchors it (B-93)
+  are hidden too (a route is readable only if both ends are, no gap and no count); the system's own address answers « Page introuvable. ». A drawn system can be hidden: hiding anchors it (B-93) and the row written is promoted (`promu` true), so the neighbouring drawn systems stay exactly as they were
   and the hidden state is stored with its row. The GM sees and marks hidden systems (« MJ seul »). Inside a system a Player reads, **nothing celestial is hidden** (B-88).
 
 ### P-22 — Read and tend a star system (Antor, GM, at a desk; Léa, Player, on a phone)
@@ -1120,7 +1120,7 @@ the lore and finds Éneria's bodies at their places with their illustrations. *F
 
 ### P-26 — Hide a system and its elements (Antor, GM; Léa, Player)
 
-On E-21 Antor selects the drawn system (3, −5), where the Hollow Fleet hides, and chooses « Réservé au MJ » (the dialogue says that hiding **defines** the system, B-93). *Moment fort:* Léa reloads the galaxy: the hexagon
+On E-21 Antor selects the drawn system (3, −5), where the Hollow Fleet hides, and turns on « Secret (MJ seul) » (the dialogue says that hiding **defines** the system, B-93). *Moment fort:* Léa reloads the galaxy: the hexagon
 is an empty cell, and the two routes that led to it are gone; the system's address answers « Page introuvable. ». On another, visible system, Antor sets a station « Réservé au MJ » (E-23): Léa still sees all the bodies,
 and not the station. *Failure path:* a write by a non-GM is not offered; an element on a system that no longer exists → « Ce système n'existe plus. ».
 
@@ -1164,5 +1164,5 @@ Done on 2026-10-16 on the proposal (`cadrage` skill, step 6).
 |---|---|
 | Each need has a journey | B-86 P-22, P-25 · B-87 P-22 · B-88 P-22 · B-89 P-22, P-23 · B-90 P-23 · B-91 P-22, P-24 · B-92 P-22, P-24 · B-93 P-22, P-24, P-25, P-26 · B-94 P-24 · B-95 P-25 · B-96 P-22, P-26 · B-97 P-26 — **holds**. |
 | Each human gesture has a screen | open, move, name, link, illustrate, anchor, place an element: E-23 · hide a system: E-21 · tune: E-24 · take over: no screen, the import script and its batch report (E-18 reports, P-20) · agent gestures: no screen, the catalogue — chosen. |
-| Each screen has its data | E-23: `swn_astres`, `swn_formations`, `swn_systemes`, `swn_routes` (the exits) · E-24: `swn_reglages`, `swn_aspects`, `swn_galaxies` (seed, default density), `swn_zones` (density per zone, read) · E-9: the block of the sheet reads `swn_astres`, `swn_formations` — **holds**. |
+| Each screen has its data | E-23: `swn_astres`, `swn_formations`, `swn_elements`, `swn_systemes`, `swn_routes` (the exits) · E-24: `swn_reglages`, `swn_aspects`, `swn_galaxies` (seed, default density), `swn_zones` (density per zone, read) · E-9: the block of the sheet reads `swn_astres`, `swn_formations`, `swn_elements` — **holds**. |
 | Each entity serves a journey | `swn_astres` P-22, P-24, P-25 · `swn_formations` P-22, P-24, P-25 · `swn_elements` P-22, P-26 · `swn_reglages`, `swn_aspects` P-23 — **holds**. |

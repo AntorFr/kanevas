@@ -4345,7 +4345,7 @@ Objects: a **galaxy** (E-21) holds **systems**; a system holds **bodies** (star,
 
 | Screen | Reached from | Serves to |
 |---|---|---|
-| E-21 (amended) | the tool, as today | « Ouvrir le système » on the panel of a star, drawn or defined; « Réglages du générateur… » (GM); « Réservé au MJ » on a system, drawn or defined (B-97) |
+| E-21 (amended) | the tool, as today | « Ouvrir le système » on the panel of a star, drawn or defined; « Réglages du générateur… » (GM); the existing « Secret (MJ seul) » switch on a system, drawn or defined (B-97) |
 | E-9 Sheet (amended) | the sheet, as today | gains the block « Sur la carte spatiale » (below) |
 | E-23 System map | E-21; the « Sur la carte spatiale » block of a sheet (E-9); a shareable link | read the system, see and open the illustrations, follow links; GM: move, name, link, add a body, a zone or an element, anchor, hide an element |
 | E-24 Generator settings | E-21 (GM) | settings and catalogue of aspects of the galaxy |
@@ -4414,7 +4414,7 @@ Criteria:
 
 ### E-9 — what changes
 
-The sheet of an element linked to the map gains the block « Sur la carte spatiale » (a line « <nom> — système <nom>, orbite 4 · 7 h » with a link to E-23, only for an element and a system the reader reads, AD-144; no block, no count otherwise). It is a different thing from the « Sur la carte » of the illustrated maps (E-11).
+The sheet of an element linked to the map gains the block « Sur la carte spatiale » (a line « <nom> — système <nom>, orbite 4 · 7 h » or « <nom> — système <nom>, sur <astre> » for an element placed on a body, with a link to E-23, only for an element and a system the reader reads, AD-144; no block, no count otherwise). It is a different thing from the « Sur la carte » of the illustrated maps (E-11).
 
 ### E-21 — what changes
 
