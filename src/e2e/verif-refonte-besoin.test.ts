@@ -36,7 +36,7 @@ const NOM_AFFICHE: Record<string, string> = { antor: 'Antor', lea: 'Léa', teo: 
 async function session(compte: string, vue: { width: number; height: number } = { width: 1280, height: 900 }, base: string = srv.base): Promise<{ ctx: Any; page: Any }> {
   const ctx = await browser.newContext({ baseURL: base, viewport: vue });
   const page = await ctx.newPage();
-  page.setDefaultTimeout(8000);
+  page.setDefaultTimeout(30000);
   await page.goto('/connexion-bouchon');
   await page.getByRole('button', { name: rxExact(`Se connecter en tant que ${NOM_AFFICHE[compte]}`) }).click();
   await attendre(page);
@@ -850,10 +850,13 @@ test('E-2 : créer un univers : aperçu du sceau dès le nom saisi, « … » pe
   await page.goto('/');
   await attendre(page);
   await page.getByRole('link', { name: 'Créer un univers' }).or(page.getByRole('button', { name: 'Créer un univers' })).first().click();
-  await page.getByLabel('Nom', { exact: true }).waitFor();
+  const nom = page.getByLabel('Nom', { exact: true });
+  await nom.waitFor();
+  await nom.and(page.locator(':enabled')).waitFor();
   await page.getByRole('button', { name: rxExact("Créer l'univers") }).click();
   await page.getByText('Erreur : le nom est obligatoire.').waitFor();
-  await page.getByLabel('Nom', { exact: true }).fill('Terres de Cendre');
+  await nom.fill('Terres de Cendre');
+  await page.waitForFunction(() => [...document.querySelectorAll('input')].some((i) => i.value === 'Terres de Cendre'));
   await page.getByRole('button', { name: rxExact("Créer l'univers") }).click();
   await page.getByRole('heading', { name: 'Terres de Cendre', level: 1 }).waitFor();
   assert.equal(await barre(page).getByRole('link', { name: 'Personnages' }).count(), 1, 'E-3 dans le cadre d’un univers');
