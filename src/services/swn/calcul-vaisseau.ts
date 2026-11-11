@@ -25,6 +25,7 @@ export interface Porte {
   noms: { coque: string | null; lignes: { nature: string; cle: string; nom: string }[] };
 }
 
+const EFFETS_VISANT = ['soutes_doublees', 'magasins_doubles', 'soutes_optimisees', 'montage_specialise', 'surcharge_arme'];
 const invalide = (message: string, detail: string, champ: string) => new ErreurService('invalide', message, detail, champ);
 
 const viseValide = (v: unknown): boolean => {
@@ -119,8 +120,8 @@ export function controlerChoix(r: Resolution): void {
       if (e.effet !== 'echange') throw invalide('Points sur un élément sans échange.', 'points_invalides', 'points');
       if (l.points > (e.points_max ?? 0)) throw invalide(`Points : ${e.points_max ?? 0} au plus.`, 'points_invalides', 'points');
     }
-    if (l.vise !== undefined && e.effet !== 'soutes_doublees' && e.effet !== 'magasins_doubles') {
-      throw invalide('Élément visé sur un élément sans doublement.', 'vise_invalide', 'vise');
+    if (l.vise !== undefined && !(e.effet !== undefined && EFFETS_VISANT.includes(e.effet))) {
+      throw invalide('Élément visé sur un élément sans effet ciblé.', 'vise_invalide', 'vise');
     }
   });
 }
