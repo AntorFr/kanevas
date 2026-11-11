@@ -74,7 +74,7 @@ export const exigeReparation = (d: Donnees | undefined) => d !== undefined && (d
 const signe = (n: number) => (n > 0 ? '+' : n < 0 ? '−' : '') + String(Math.abs(n));
 
 /** The effect of a modification in words (B-83), from the fields the catalogue states; empty when it states none. */
-export function motEffet(d: Donnees): string {
+export function motEffet(d: Donnees, classe?: number): string {
   switch (d.effet) {
     case 'vitesse': return d.valeur === undefined ? '' : `vitesse ${signe(d.valeur)}`;
     case 'armure': return d.valeur === undefined ? '' : `armure ${signe(d.valeur)}`;
@@ -83,8 +83,16 @@ export function motEffet(d: Donnees): string {
     case 'reparation_min': return d.valeur === undefined ? '' : `réparation ${d.valeur} au moins`;
     case 'echange': {
       const sens = d.sens === 'masse_vers_puissance' ? 'masse → puissance' : 'puissance → masse';
-      return d.points_max === undefined ? sens : `${sens}, jusqu’à ${d.points_max} ${d.points_max === 1 ? 'point' : 'points'}`;
+      const base = d.points_max === undefined ? sens : `${sens}, jusqu’à ${d.points_max} ${d.points_max === 1 ? 'point' : 'points'}`;
+      return d.echange_arrondi === 'installation' ? `${base} · arrondi par installation` : base;
     }
+    case 'soutes_optimisees': return d.effet_pct === undefined ? '' : `soutes −${d.effet_pct} % de masse`;
+    case 'armure_par_classe': {
+      const a = classe === undefined ? undefined : d.armure_par_classe?.[classe - 1];
+      return a ? `armure +${a}` : '';
+    }
+    case 'montage_specialise': return d.valeur === undefined ? '' : `emports ${signe(d.valeur)}`;
+    case 'surcharge_arme': return d.effet_pct === undefined ? '' : `puissance de l’arme +${nombre(d.effet_pct)} %`;
     default: return '';
   }
 }
@@ -116,14 +124,14 @@ export function legende(e: Pick<ElementCatalogue, 'nature' | 'donnees'>, classe?
         const p = classe === undefined ? undefined : d.rend_puissance?.[classe - 1];
         const m = classe === undefined ? undefined : d.rend_masse?.[classe - 1];
         parts.push(p !== undefined && m !== undefined && `rend puissance ${nombre(p)} et masse ${masse(m)}`);
-        parts.push(d.reduction_cout_pct !== undefined && `coût −${d.reduction_cout_pct} %`);
+        parts.push(d.reduction_cout_pct !== undefined && `coût −${d.reduction_cout_pct} %${d.reduction_base === 'coque' ? ' de la coque' : ''}`);
       }
       // Y-6: a cargo per class (the chosen hull's class) wins over the flat one; nothing without a hull.
       const soute = d.soute_par_classe !== undefined ? (classe === undefined ? undefined : d.soute_par_classe[classe - 1]) : d.soute;
       parts.push(soute !== undefined && `soutes ${nombre(soute)}`);
     }
   } else if (e.nature === 'modifications') {
-    parts.push(d.cout_pct !== undefined && `${d.cout_pct} % de la coque`, motEffet(d) || false,
+    parts.push(d.cout_pct !== undefined && `${d.cout_pct} % de la coque`, motEffet(d, classe) || false,
       d.reparation_min !== undefined && d.effet !== 'reparation_min' && `réparation ${d.reparation_min} au moins`);
   }
   return parts.filter(Boolean).join(' · ');
@@ -134,4 +142,13 @@ export function exclutLaClasse(e: Pick<ElementCatalogue, 'nature' | 'donnees'>, 
   if (e.nature !== 'moteurs' && e.nature !== 'amenagements' && e.nature !== 'defenses') return false;
   const d = e.donnees;
   return d !== undefined && (d.classe_min !== undefined && d.classe_min > classe || d.classe_max !== undefined && d.classe_max < classe);
+}
+
+/** « masse −1 », « emports −1 », « puissance +5 » — the server's `ajuste` of a targeted line, only the non-zero deltas; empty when none. */
+export function ligneAjuste(a: { masse?: number; puissance?: number; emports?: number } | undefined): string {
+  if (!a) return '';
+  const delta = (n: number) => (n > 0 ? '+' : '−') + masse(Math.abs(n));
+  return (['masse', 'puissance', 'emports'] as const)
+    .filter((k) => a[k] !== undefined && a[k] !== 0)
+    .map((k) => `${k} ${delta(a[k]!)}`).join(', ');
 }
