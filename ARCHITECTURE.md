@@ -1608,3 +1608,109 @@ which had taken 0017, AD-51).
 9. **Seed** — `depart.ts` follows « Bouchons » above, minus `disparu` (`-disparu` adds the Prieur's death and
    Bran's mark). The existing free relation `Aldric → Port-Sel « maître de port »` is kept beside the new
    « se situe à — habite ».
+
+## Cadrage `kanevas-battlemap` (2026-11-11)
+
+Epic `epic/kanevas-battlemap`, forked from `epic/kanevas-outils`. Prerequisite: `kanevas-socle-rust` (Cargo workspace, Wasm build,
+browser and server loaders, image). Ids AD-150…AD-165 (AD-138…AD-149 belong to `kanevas-carte-spatiale`). Needs B-96…B-110, screens E-25…E-30.
+
+**Shape.** One module `battlemap` in the tool registry (AD-121, `src/outils/battlemap/`, `modulesActifs()`), three tools, the Rust
+core `battlemap-core` in the socle's workspace, loaded by the browser (editor, play) and by the server (validation, filtering).
+No service of its own: one Node process, one SQLite, one pod.
+
+**AD-150 — One module, three tools.** `battlemap/assets` (*aide*: library, art direction), `battlemap/generation` (*generateur*,
+depends on `assets`; absent when `choisirAdaptateur()` says `aucun`, AD-88), `battlemap/cartes` (*carte*: composed maps in E-10,
+editor, play, display; depends on `assets`). Tables prefixed `bm_`. Hiding `assets` from a role hides the library entry and panel only: maps stay readable, their images being served by `fichierLisible`. **Data removal (D-1…D-8)**: the module's `donnees` / `compter` / `effacer` count and delete the `bm_*` rows only, before any library file is touched (hence `RESTRICT` is never hit, also at `supprimerUnivers`); library files stay, no managed section is involved. *Rejected*: a single tool (cannot disable generation or
+the VTT alone; B-99 says generation is optional); core changes to `cartes` (a third `forme` would rebuild a foreign-keyed table
+for no gain, AD-155).
+
+**AD-151 — An asset is a library file plus a row.** `ajouterFichier` (AD-117) stores the bytes; `bm_assets` adds what a map must
+know. The type is sniffed (`typeParSignature`); only images are assets; SVG is refused (script risk, AD-66). Visibility `mj`
+makes the asset GM-only. *Rejected*: a second store for asset bytes (two upload paths, AD-65 forbids).
+
+**AD-152 — The art direction is a plain text and files, written by the GM or on his request.** The assistant tool writes it
+under the GM guard, keeps `texte_precedent`, and returns an `evenement` for « Annuler » (AD-76). *Rejected*: proposals (AD-79) —
+a proposal is for a section others read; here one GM owns one text.
+
+**AD-153 — The core owns the map model.** `battlemap-core` (Rust → Wasm): the document types, the **commands** (paint floor, draw
+wall, reveal a room (flood fill from a cell, stopped by walls and doors), place / move / rotate / delete element, layer edits) and their inverses (undo), validation and limits (AD-163), snapping and
+hit-testing, and the **player filter** (AD-156). The browser draws with Canvas 2D from the document; the server runs the same
+functions on every write. The TypeScript side has no second implementation of a rule: types are generated from the core. *Rejected*: the core
+drawing everything (the cost of a Wasm raster for no gain at 200×200 cells); rules in TS and a Rust copy (two sources of truth).
+
+**AD-154 — A map is one versioned JSON document.** `bm_cartes.document`, ≤ 2 MB, replaced by command batches with
+`version` (optimistic, `conflit` / « Recharger »), like sections (AD-59). Commands are sent as batches (autosave ~1 s), the server
+applies them with the core and rejects an invalid one whole. *Rejected*: normalised tables per floor / wall / element (hundreds
+of rows per edit, the core would need SQL); CRDT (single GM writer; overkill). **The table state is separate** (`bm_tables`):
+it changes at the pace of play, the document at the pace of preparation.
+
+**AD-155 — A composed map is a tool map.** Listed in E-10 through `DeclarationCarte.cartes()`, created through `creation`, like
+the galaxy (`swn`); the creation dialog also asks the size, which the tool's `creation` receives beside the title (a contract extension for the first task of the map slice, defaults from E-20). The existing `cartes` / `elements_carte` and AD-68/AD-70 are untouched; a token's sheet link reuses
+`lireFiche` under the usual guards.
+
+**AD-156 — The server filters; the browser filters nothing.** Every read for a player (map document, table state, pushed update) runs
+the core's `vue_joueur(document, etat, lecteur)`: GM-only layers, elements and assets, hidden tokens, fog-covered content and
+sheet titles of unreadable sheets are removed; no count of what was removed; fog is applied to **content**, the revealed bitmap
+being the only shape sent. A GM in player mode gets the player view (as AD-47 elsewhere). Test: a fixture map with every kind of
+secret, the response of a player is searched for each secret string.
+
+**AD-157 — Batch generation is a sequential server job.** `bm_lots` / `bm_lots_lignes`; one line = one `generer()` call (AD-88,
+one image, 150 s, `verrou.ts` one engine at a time, so a batch also waits for the assistant's `generer_image`). The prompt = a fixed
+template + art direction text + the line (name, category, footprint, hint, remark) + top-down / background instructions of AD-158.
+The runner is started by the route; at startup the lines `en_cours` and `attente` of a running batch become `interrompu` and wait for the GM's « Reprendre » (one button for the batch, never resumed silently); « Arrêter le lot » discards every line not yet accepted (the running one ends first), so the batch is `termine`; a failed line can also be discarded alone; the assistant's `bm_lancer_lot` builds a `prepare` batch, only the GM's « Lancer » starts it. Visibility is deduced from where a file is added (AD-117, never sent by the client): the battlemap origins « direction artistique » and « brouillon » give `mj` (a library file chosen as a reference image is set `mj` by the art-direction service through the same visibility function), « bibliothèque » gives `joueurs`; accepting a draft moves its file to the library's through `services/fichiers.ts` (a visibility change owned by that service; the function itself is delivered by the library slice, which E-25 needs for its « visibility » control, and the generation slice only calls it). A result must pass `typeParSignature`; failures store a fixed `code_echec`, never engine text (AD-90). ≤ 20 lines per
+batch, one running batch per universe: the spending bound (the engine uses the owner's Codex plan; no money is engaged by the
+product). Drafts are assets in state `brouillon` until accepted. *Rejected*: parallel generation (the engine is single); automatic
+acceptance (the GM judges the style).
+
+**AD-158 — Transparent assets.** The generation instructions ask for a **transparent background** from the start (an object, a ship or a
+prop alone, top-down, on a transparent background); floor and wall textures keep their full picture. The first generation task
+runs a **spike on the real engine** (two assets per category, judged on captures) that checks the returned image really carries
+transparency (an alpha channel with transparent pixels, read from the PNG bytes by the core). Fallback only if the engine does not return it: the
+prompt then asks for a flat, unlikely-colour background and the core removes it (flood-fill from the edges with a tolerance),
+producing a PNG with alpha; if the result is poor too, assets stay opaque on a square footprint and the keying is off. Also
+[À VÉRIFIER] in the spike: whether the engine accepts reference images (then the art direction images join the prompt) or text
+only (then they serve the GM and the assistant, which can describe them). The cadrage does not depend on either answer.
+*Decided by Monsieur (11/11)*: transparency asked up front, keying as a safety net only.
+
+**AD-159 — Live play through an event stream.** `GET /api/univers/:id/outils/battlemap/cartes/:cid/flux` (SSE, session guard):
+the server pushes `{version}` after each accepted write to `bm_tables` and the client refetches the filtered state (small state, no
+diff protocol); the GM's moves and a player's own token moves go through `POST …/table/commandes` (the core validates: bounds,
+token ownership from `bm_pions_proprietaires`, never walls or fog — movement is free, the table judges). In-memory fan-out in the
+single process (the deployment has one replica, SQLite); the client reconnects with `Last-Event-ID` and falls back to a 3 s poll
+when the stream is blocked. A write needs the current `version`. The stream URL takes `?role=affichage` for E-30; the process counts these open streams per map, which gives the GM's « Écran joueurs connecté » (in memory, no table). *Rejected*: WebSocket (no need for client-to-server frames beyond POST); a
+broker (one process); the `kanevas-synchro` transport (an epic for external agents, not for browsers — [À VÉRIFIER] at the first live-play task).
+
+**AD-160 — The table display is a member's screen.** `…/affichage` is a chrome-less client route under the session guard; the server answers it with the player view whatever the session's mode (the route forces it, no session state changes); it reads the same filtered state and the GM's shared view. No capability link, no anonymous access.
+
+**AD-161 — Assistant tools and skills.** `outilsAssistant` adds, for a GM: `bm_lister_assets`, `bm_lire_direction`, `bm_ecrire_direction`,
+`bm_lancer_lot` (builds the batch from a list, the GM starts it), `bm_creer_carte`, `bm_appliquer_commandes` (a batch of core commands
+on a map, validated whole), `bm_lire_carte` (compact description); for a player: `bm_lister_assets` only. The universe and role
+are closed over (as every tool). **Skills** are Markdown documents `src/outils/battlemap/competences/*.md` (direction artistique, lot
+d'assets, composition de carte — the cell conventions, the layer order, how to pick assets by footprint), returned by the tool `bm_competence(nom)` and
+listed in the tool descriptions; they ship with the image. Composition is **commands**, not free JSON: an invalid command is
+refused with a sentence the assistant can act on.
+
+**AD-162 — Stub.** `KANEVAS_STUB=1` seeds a small library (generated flat PNGs), an art direction, one composed map and a table
+state in « Essai Kanka »; the image adapter `bouchon` serves the batch; no live engine is needed by any test.
+
+**AD-163 — Limits.** Map ≤ 200 × 200 cells, ≤ 5 000 elements and ≤ 2 MB document, ≤ 20 layers, ≤ 200 tokens, ≤ 5 000 assets per
+universe, ≤ 25 MB per asset file (library rule), ≤ 20 lines per batch, ≤ 8 reference images, art direction ≤ 5 000 chars. Checked in
+the core and answered with fixed codes (`carte_pleine`, …).
+
+**AD-164 — Security.** Bytes only through `stockage.ts`; assets served by `fichierLisible`; no HTML anywhere in a document (names
+are text); sheet titles in a token are resolved at read under the reader's guards; the stream and commands carry the session
+and the universe role read at each request (AD-9); a token owner must be a member (checked on write and on read).
+
+**AD-165 — Testing.** Core: native `cargo test` (commands, undo = inverse, filter, limits, fixtures shared with TS). Wasm: the same
+fixtures through the loader on both sides (browser build via the socle's test, server in `node --test`). Services: temp database,
+role matrix, secrets search (AD-156). Live play: two clients on a test server, a move seen by the other within the poll bound.
+Screens: captures in both themes at 1440 / 768 / 390 px; the editor and the display on a fixed fixture.
+
+**Registry settings (E-20).** `battlemap/cartes`: default cell size (70 px), « Jeu à distance » (on by default; off = players have no
+move commands, only the GM moves tokens). `battlemap/generation`: none.
+
+**Deployment.** No new pod, port, secret or volume (assets are library files; the engine is the existing Codex adapter). The image
+needs the socle's Wasm artefact. Nothing for `k8s-home-lab`.
+
+**Cross-check.** Each organ serves a journey: library / direction / generation → P-26; document, core, editor, assistant → P-27;
+table state, fog filter, display → P-28; stream, ownership → P-29. Each entity above serves one of them.

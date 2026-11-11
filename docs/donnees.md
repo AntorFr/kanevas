@@ -37,6 +37,11 @@ backend service functions, called in the same way by routes and agent tools
 | **API token** *(kanevas-import)* | name, fingerprint (never the value), creation date, expiry date, revocation date, last use | universe, account of the GM who created it (the actor) | universe GMs (without the value) | creation: GM; revocation: any universe GM (B-45, B-46) |
 | **import batch** *(kanevas-import)* | opening date, closing date, state, counters (created, updated, unchanged, refused, warnings), report of refusals and warnings | universe, token | universe GMs | the server, for a script presenting a token (B-49) |
 | **proposal** | proposed content, original content fingerprint (the section's `version`, AD-59), creation date, application date | universe, requesting account, section, source report | its requester only | created by the GM's agent; applied once by its requester, if the section has not changed (B-21) |
+| **asset** *(kanevas-battlemap)* | name, category, footprint in cells, top-down, tags, state (valid \| draft) | universe, file | the universe's members (a GM-only file: the GM) | GM; the generation |
+| **art direction** *(kanevas-battlemap)* | style text (+ previous text), reference images | universe, files | GM | GM; the assistant on the GM's request |
+| **asset batch** *(kanevas-battlemap)* | lines (name, category, footprint, hint, state, draft) | universe, assets | GM | GM; the engine run |
+| **composed map** *(kanevas-battlemap)* | title, size in cells, visible, document (layers, floors, walls, elements) | universe, assets, sheets | members, filtered by the core (AD-156) | GM |
+| **table state** *(kanevas-battlemap)* | tokens, fog, shared view, token owners | composed map, accounts | members, filtered by the core | GM; a player for her own tokens |
 
 **Search indexes**: two full-text indexes (FTS5), one on sheet titles, the other on section titles and content, kept
 up to date by the database (triggers); no answer comes out without going through the
@@ -743,3 +748,39 @@ on restart without harm, AD-132). No generated data is stored.
 
 **`kanevas-outils-sections-gerees`** (one core migration, number taken at merge, AD-51): `sections.gere_par` (column `CHECK` on the form `module/outil/type`) and `sections.source_version`, both nullable, no backfill — set together or null together, held by the service; `propositions` rebuilt (procedure of migration 0009, foreign keys off then `foreign_key_check`) with `cr_id` nullable, `source_version TEXT` and `CHECK ((cr_id IS NULL) = (source_version IS NOT NULL))`: a proposal comes from a session report or from the recalculation of a managed section, never both. Rollback: an earlier image ignores the two columns and reads every section as free text (the text version is in `contenu`); before going back, delete the proposals whose `cr_id` is null (an earlier image expects a report on every proposal).
 Rollback: an earlier image ignores the new tables; managed sections keep their text (text version) and are read normally.
+
+## `kanevas-battlemap` — data
+
+Module tables, prefixed `bm_`, created by the module's migrations (number taken at merge, AD-51). No change to the core
+tables: a composed map is **not** a row of `cartes` (its `forme` stays `illustree` | `graphe`); it is a tool map that E-10
+lists through `DeclarationCarte.cartes()` (AD-155). Every row is in a universe; deleting the universe or the tool's data
+removes them (the files stay in the media library unless the GM removes them).
+
+| Table | Columns (excluding keys) | Constraints |
+|---|---|---|
+| `bm_assets` | `id`, `univers_id`, `fichier_id` → `fichiers`, `nom`, `categorie` (`objet` \| `vaisseau` \| `decor` \| `sol` \| `mur`), `largeur`, `hauteur` (cells, null for `sol`/`mur`), `vue_dessus` (bool), `tags` (JSON array, ≤ 10 × 30 chars), `etat` (`valide` \| `brouillon`), `cree_le` | `nom` 1–80; footprint 1–20; one file may back one asset only; ≤ 5 000 per universe; the file's visibility is that of the library (AD-117), `mj` makes the asset GM-only |
+| `bm_direction` | `univers_id` (primary), `texte`, `texte_precedent`, `version`, `modifie_le` | `texte` ≤ 5 000 chars |
+| `bm_direction_images` | `univers_id`, `fichier_id`, `legende`, `rang` | ≤ 8 per universe |
+| `bm_lots` | `id`, `univers_id`, `cree_par`, `etat` (`prepare` \| `en_cours` \| `termine`), `cree_le` | ≤ 1 batch not `termine` per universe; `prepare` = built (by the GM's list or the assistant), not started; a batch is `termine` when every line is `accepte` or `ecarte` (a draft or a failure keeps it open; « Régénérer » / « Réessayer » reopen it as `en_cours`) |
+| `bm_lots_lignes` | `id`, `lot_id`, `nom`, `categorie`, `largeur`, `hauteur`, `indication`, `remarque`, `etat` (`attente` \| `en_cours` \| `brouillon` \| `echec` \| `interrompu` \| `accepte` \| `ecarte`), `asset_id` (the draft asset; the only link between a line and its asset), `code_echec` | ≤ 20 lines per batch; `code_echec` is a fixed code, never an engine message; « regenerate » and « discard » delete the draft asset and its file (`asset_id` becomes null); removing an accepted asset sets the line's `asset_id` to null (`ON DELETE SET NULL`); the draft file is created `mj` and goes to the library default only when accepted |
+| `bm_cartes` | `id`, `univers_id`, `titre`, `visible`, `largeur`, `hauteur` (cells, ≤ 200), `taille_case` (px of the reference raster, 70 by default), `document` (JSON, AD-154), `version`, `cree_le`, `modifie_le` | `titre` 1–80; `document` ≤ 2 MB, validated by the core |
+| `bm_tables` | `carte_id` (primary, → `bm_cartes` ON DELETE CASCADE), `etat` (JSON: tokens, fog bitmap, shared view, hidden layers), `version`, `modifie_le` | one per map; tokens ≤ 200; the fog is a bitmap of the map's cells |
+| `bm_pions_proprietaires` | `carte_id` (→ `bm_cartes` ON DELETE CASCADE), `pion` (token id in `etat`), `compte_id` | `compte_id` is a member of the universe; the token owner is read only here (AD-159); removing a token or resetting the table deletes its lines in the same transaction, and a line without a token in `etat` is ignored at read |
+
+**The map document** (`bm_cartes.document`) holds: `calques[]` (id, nom, type `sol` \| `mur` \| `objet`, `visible` (the editor's eye, never read by a player), `verrouille`, `mj_seul`),
+`sols` (per layer, a sparse list of cells with `asset_id`), `murs[]` (cell-edge segments with `asset_id`, `porte` and `calque`, a layer of type `mur`),
+`elements[]` (`asset_id`, x, y in cells with a fraction, `rotation` 0/90/180/270, `miroir`, `echelle`, `calque`, optional
+`fiche_id`). It never carries bytes or HTML. **The table state** holds `pions[]` (id, nom, `asset_id` or null, `fiche_id` or null,
+x, y, `visible`), the fog, the shared view (center, zoom) and the layers **hidden** from the players, a list of layer ids (`calques_masques`; the only per-layer switch a player's read follows, besides `mj_seul` which always hides): empty at the table's creation, so a layer created later is shown, and an id whose layer no longer exists is ignored. A token is a table object, an *element* a document object: the sheet link of an element is `elements[].fiche_id`, that of a token `pions[].fiche_id`.
+
+**Rules.** (1) Only the GM outside player mode writes a map, the library, the art direction, a batch, and moves any token; a
+player moves only the tokens of `bm_pions_proprietaires` whose `compte_id` is hers, within the map. (2) A player's read of a
+map or of the table state is **filtered on the server by the core** (AD-156): GM-only layers and elements, hidden tokens, GM-only
+assets, and everything under the fog are absent from what is sent; no count says what was filtered. (3) An `asset_id` or
+`fiche_id` in a document belongs to the same universe; a `fiche_id` reaches a player only if the sheet is readable (the
+element then carries no title otherwise). (4) Removing an asset leaves its references in the documents and in `pions[].asset_id` (the GM sees a
+placeholder, players nothing; a visible token whose asset is GM-only shows the players a plain disc with its name); `bm_direction_images.fichier_id` is `ON DELETE CASCADE` (the reference vanishes with its file); a media-library file still backing an asset cannot be deleted, E-19 saying « Ce fichier est utilisé par la bibliothèque d'assets. »; `bm_assets.fichier_id` is `ON DELETE RESTRICT` as `elements_carte` is, so rows of `bm_*` are always deleted before library files (see AD-150). (5) A draft asset (`brouillon`) is not
+offered by the editor, the assistant or players. (6) `bm_tables.version` and `bm_cartes.version` rise at each accepted write;
+a write with an older version is refused `conflit`.
+
+**Migration plan.** Expand only — new tables; nothing to migrate or contract; rollback: an earlier image ignores the tables.

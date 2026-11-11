@@ -76,6 +76,12 @@ have it (sheet, map and, since `kanevas-import`, search E-17).
 | **E-20 Tools** *(kanevas-outils)* | « Outils » tab of E-15 (system) and E-14 (universe) | enable a tool, set its visibility per role and its settings (system value, universe value), import a catalogue (preview then confirmation), see dependencies, disable, delete data; the system's responsible | P-17, P-21 |
 | **E-21 Galaxy map** *(kanevas-outils)* | E-10 (a tool map); E-3; a shareable link | explore the grid, measure, calculate a route; GM: place, promote, plot, draw, Player mode, GM document | P-18, P-20 |
 | **E-22 Ship designer** *(kanevas-outils)* | « Outils » sidebar; a ship sheet's managed section (E-9); a shareable link | readable designs list and a design's workshop: choices, budgets, warnings, save, recalculate | P-19 |
+| **E-25 Asset library** *(kanevas-battlemap)* | « Bibliothèque » (Outils bar, tool `battlemap/assets`); the library panel of E-28 | assets by category (grid of cards), search, filters; GM: drop or pick images, edit category / footprint / top-down / tags / visibility, remove | P-26 |
+| **E-26 Art direction** *(kanevas-battlemap)* | tab of E-25 (GM) | the style text and the reference images; edit, ask the assistant, « Annuler » the last assistant change | P-26 |
+| **E-27 Asset generation** *(kanevas-battlemap)* | tab of E-25 (GM), only when an image engine exists | write the list, start a batch, follow it, accept / regenerate with a remark / discard each draft | P-26 |
+| **E-28 Map editor** *(kanevas-battlemap)* | E-10 (a composed map); a link | grid, floors, walls, assets, layers, selection, undo; link a sheet; « Jouer » | P-27 |
+| **E-29 Play** *(kanevas-battlemap)* | E-28 « Jouer »; E-10 | GM: tokens, fog, shared view, display status; player: the revealed map, her tokens, « Suivre le MJ » | P-28, P-29 |
+| **E-30 Table display** *(kanevas-battlemap)* | E-29 « Écran joueurs » (a link to open on the second screen) | read-only, chrome-less, follows the GM's view and fog | P-28 |
 
 Screens **modified** by `kanevas-outils`: **E-9** (managed section: « Générée par … » banner, rendering
 by its component or its text version, « Outil désactivé »; no editor on a managed section),
@@ -4330,3 +4336,73 @@ illustration, E-8 filter, the states below) is `e09-marque-disparu.html`; this t
   B-69 → E-11, E-9. Holds.
 - Each screen is reached by a journey: P-17 (E-9, E-17), P-3 step 4 (Relier), P-6 step 6 (Léa). Holds.
 - Each role has its column: GM and player above ; instance admin: nothing new. Holds.
+
+## Screen details for `kanevas-battlemap` (scope)
+
+Tool module `battlemap` (AD-150): tools `battlemap/assets` (type *aide*: E-25…E-27, bar entry « Bibliothèque »),
+`battlemap/generation` (type *generateur*, depends on `assets`, absent without an image engine) and `battlemap/cartes`
+(type *carte*: composed maps join E-10 — « Nouvelle carte » ▸ « Carte composée » — and open E-28/E-29/E-30). Addresses:
+`/univers/:id/outils/battlemap/assets` (tabs `?onglet=direction|generation`),
+`/univers/:id/outils/battlemap/cartes/:cid` (editor), `…/:cid/jeu` (E-29), `…/:cid/affichage` (E-30). All follow the
+charter (`docs/charte.md`, both themes, 1440 / 768 / 390 px); the GM-only content uses the amber hatching; touch
+targets 44 px on a phone.
+
+### E-25 — Asset library
+**Content**: the five categories as segments (Objets, Vaisseaux, Décors, Sols, Murs) with counts, a search box and tag
+filters; a grid of cards (picture on a checkered background, name, footprint « 2×1 », a « Vue de dessus » mark absent when
+the asset is not top-down, « Brouillon » on a draft, « MJ » for a GM-only asset). **GM**: « Ajouter des images » (a drop zone
+and « Choisir dans la médiathèque »; a dialog asks the category of the drop), a selection bar (category, footprint,
+top-down, tags, visibility, « Retirer… »), a card side panel for one asset. **Player**: the grid without any write control.
+A draft card (left over from a batch) offers « Accepter » and « Écarter » only; « Retirer… » on a draft is « Écarter » (the same service function, so its batch line becomes `ecarte`). Removing says « Utilisé sur 3 cartes » (counted when the dialog opens by reading the universe's map documents through the core, nowhere else) and, on confirm, deletes the asset; the placed elements become placeholders for the GM
+and vanish for players.
+
+| State | Text |
+|---|---|
+| empty (GM) | « Aucun asset. Déposez des images ou lancez une génération. » |
+| empty (player) | « La bibliothèque est vide. » |
+| loading | « Chargement de la bibliothèque… » |
+| error | « Impossible de charger la bibliothèque. » + « Réessayer » |
+| refused file | « <nom> n'est pas une image. » (the others go through) |
+| full | « Bibliothèque pleine (5 000 assets). » |
+
+### E-26 — Art direction
+**Content**: a Markdown text area (the style: palette, light, material, what to avoid; up to 5 000 characters), the
+reference images (up to 8, dropped or chosen from the media library, with captions; a file chosen from the library becomes GM-only through the visibility function of `services/fichiers.ts` (the E-19 gesture), and the screen says so), « Enregistrer », « Demander à l'assistant » (opens E-12 with a
+prefilled request), and after an assistant change a banner « Texte modifié par l'assistant » with « Annuler » (one step).
+GM only: a player gets « Page introuvable. ». States: empty « Aucune direction artistique. La génération et l'assistant
+travailleront sans style. »; stale version « Ce texte a changé depuis que vous l'avez ouvert. » + « Recharger ».
+
+### E-27 — Asset generation
+**Content**: left, the **list** (one line = name, category, footprint, optional hint; add, remove, paste lines;
+« Lancer le lot » up to 20 lines); right, the **batch**: one row per line with its state (En attente, En cours, Brouillon
+prêt, Échec, Interrompu, Accepté, Écarté) and, for a draft, the picture on a neutral grid with « Accepter », « Régénérer… » (a
+remark) and « Écarter ». A banner reminds the art direction in force (link to E-26). The tab shows the last batch until every line is accepted or discarded (a draft or a failed line keeps « Accepter / Régénérer / Écarter » or « Réessayer » here; « Régénérer » and « Réessayer » put the line back to waiting and the batch back to running); a batch built by the assistant waits here, *Préparé*, editable, until the GM presses « Lancer le lot »; « Reprendre » (one button for the batch) restarts the *Interrompu* lines; « Arrêter le lot » discards **every line not yet accepted** (waiting, interrupted, draft, failed — the line running ends first and is discarded too), which closes the batch and frees the universe for a new list; a failed line has « Réessayer » and, to give it up alone, « Écarter ». States: no image engine — the tab is
+absent; no art direction — « Sans direction artistique, les images seront génériques. » (the batch still starts); engine busy
+— « Le moteur d'image est occupé, votre lot attend son tour. »; failure line « Échec : <cause fixe> » + « Réessayer ».
+
+### E-28 — Map editor
+**Layout**: centre, the canvas (grid, floors, walls, elements) with zoom and pan; left, the **tool column** (Sélection, Sol,
+Mur, Porte, Poser un asset, Gomme; an « Aimanter à la grille » switch); right, tabs **Bibliothèque** (E-25 grid, searchable, drag to place), **Calques** (list, « Nouveau calque » with a name and a type Sol / Mur / Objet, rename, delete with confirmation — its content goes with it —, eye (editor view only, players never read it), lock, « MJ seul », order) and **Propriétés** (the selected element: position, rotation, mirror, scale, layer, linked sheet; « Dupliquer », also Ctrl+C / Ctrl+V on a multiple selection);
+top bar: map name (editable), size and cell size (editable, « Des éléments sont hors des nouvelles limites. » when refused), undo / redo, « Jouer ». The editor is GM only (a player gets « Page introuvable. »). Deleting the map is done from E-10 (row menu « Supprimer… », confirmation; its table state, tokens and owners go with it by `ON DELETE CASCADE`). Resizing a map that has a table state: the fog is extended with hidden cells or cropped, and a token outside the new limits refuses the change with the same message as an element. On a phone the editor is read and move only (drawing needs a pointer; a
+banner says so). Writes are the document commands of the core (AD-153), saved as they happen with the version of AD-154.
+States: loading « Chargement de la carte… »; save failing « Enregistrement impossible, nouvelle tentative… » (changes kept
+locally until saved); stale « Cette carte a changé » + « Recharger »; full « Carte pleine » (limits AD-163); placeholder
+« Asset retiré ». Mockup: `docs/maquettes/e28-editeur-carte.html`.
+
+### E-29 — Play
+**GM**: the map full width, a tool strip (Pions, Brouillard: Révéler / Masquer, pinceau / rectangle / pièce, Vue partagée), a
+side list of tokens (show / hide, owner, remove), a status « Écran joueurs connecté / Aucun écran joueur connecté » (from the displays connected to the stream, AD-159), a
+« Écran joueurs » button (copies / opens the E-30 address), a **Calques** menu (one switch per layer shown to the players), « Ajouter un pion » (a dialog: a sheet by search, an asset of the library, or a plain disc; a name; an optional owner among the members), on a token « Lier une fiche… », « Ouvrir la fiche » on any element or token that carries a readable one (opens it in a panel, for the GM and the players), « Pièce » reveals the room around the clicked cell (walls and doors close it), « Réinitialiser la table… » (confirmation). He sees the fog as an
+amber hatched veil over the full map (GM view), so he can see what the players cannot. **Player**: the revealed map only, her
+tokens drag-movable, « Suivre le MJ » toggle (default on, kept in the browser, nothing stored server-side); with remote play off (E-20) she sees the tokens move but cannot drag them, a connection badge. States: not started « La partie n'a pas
+commencé. » (map hidden or no table state yet: the table state is created when the GM first opens « Jouer »; every layer not GM-only is shown to the players by default, including a layer created later — the table stores the layers the GM hides, not those shown); connection lost « Connexion perdue. » (map kept, actions disabled); token
+not hers « Ce pion n'est pas à vous. ». Mockup: `docs/maquettes/e29-jeu.html`.
+
+### E-30 — Table display
+Chrome-less, read-only, black ground, the shared view of the GM with the revealed area; no tokens list, no control; a discreet
+« En attente du MJ » when no view has been shown; it re-joins by itself and fades a small « Reconnexion… » badge. Opened by any member
+account (the GM uses a second window or a table account); it shows what a player sees, never more; for a map hidden from players the display answers « Page introuvable. » like E-29 does.
+
+### Closure
+- B-96/B-97 → E-25; B-98 → E-26 (+E-12); B-99 → E-27; B-100 → E-12 (skills); B-101/B-102 → E-28; B-103 → E-12 → E-28; B-104 → E-10, E-28; B-105 → E-29, E-30; B-106/B-107 → E-29; B-108 → E-29; B-109 → E-29; B-110 → E-20. Holds.
+- Screens **modified**: E-10 (« Carte composée » entry, whose creation dialog asks a name and a size, the composed maps in the list, and a « Supprimer… » row menu for the GM; the title of a composed map opens E-28 for the GM and E-29 for a player), E-20 (the three tools and their settings: default cell size, remote play on/off), E-12 (blocks for the events of the tools), E-9 (a sheet linked from a token: nothing to change), the bar (the « Bibliothèque » entry).
