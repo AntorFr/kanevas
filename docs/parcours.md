@@ -1054,10 +1054,11 @@ search, nor in the count.
    arrive one by one, each shown on a neutral grid; he accepts nine, regenerates two with a remark (« plus usé »), discards one.
 4. The next day the assistant, asked for « dix décors de station abandonnée », drafts the list through the dedicated skill; he
    starts the batch from E-27.
+5. Léa (player) opens **E-25** and finds the assets Antor left visible; nothing to write, no art direction. If the library loads badly she reads « Impossible de charger la bibliothèque. » and « Réessayer »; if it is empty, « La bibliothèque est vide. ».
 *Highlight*: step 3, the drafts that appear one by one in his style.
 *Failure*: no image engine — the generation entry is absent, steps 1 and 2 stand; one asset fails — its line says « Échec »
 with « Réessayer », the others go on; the batch is interrupted by a restart — the running line is marked
-« Interrompu » and « Reprendre » restarts it; a file that is not an image — refused with its name; the library holds 5 000 assets — « Bibliothèque pleine ».
+« Interrompu » and « Reprendre » restarts it; a file that is not an image — refused with its name; removing an asset says on how many maps it is placed; the art direction was changed elsewhere — « Ce texte a changé… » and « Recharger »; a ninth reference — refused; the library holds 5 000 assets — « Bibliothèque pleine ».
 
 ### P-27 — Compose a map (Antor, GM; the assistant)
 1. In **E-10** he chooses « Nouvelle carte » ▸ « Carte composée » (the tool enabled): the dialog asks a name and a size (30 × 20 cells); **E-28** opens.
