@@ -97,7 +97,7 @@ function schemaDe(nature: NatureCatalogueVaisseau): z.ZodObject {
       : z.array(ligneChoix).max(100);
   }
   // Y-1: a modification may state the field to be refused with the reason of its own (checked in `verifier`).
-  if (nature === 'modifications') forme.reduction_cout_pct = z.unknown().optional();
+  if (nature === 'modifications') { forme.reduction_cout_pct = z.unknown().optional(); forme.valeur = z.unknown().optional(); } // `valeur`: range by effect, in `verifierEffet`
   return z.strictObject(forme);
 }
 
@@ -281,6 +281,7 @@ function verifierEffet(nature: 'modifications' | 'amenagements', d: Record<strin
     return { champ: 'valeur', raison: 'nombre entier de −9 à 9, sauf 0, attendu' };
   }
   const v = d.valeur;
+  if (v !== undefined && !entierDans(v, -9, 20)) return { champ: 'valeur', raison: 'nombre entier de −9 à 20 attendu' };
   if (typeof v === 'number') {
     if (effet === 'reparation_min' ? v < 1 || v > 20 : v === 0 || v < -9 || v > 9) {
       return { champ: 'valeur', raison: effet === 'reparation_min' ? 'de 1 à 20 attendu' : 'de -9 à 9, hors 0, attendu' };
