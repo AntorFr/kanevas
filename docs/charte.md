@@ -450,7 +450,7 @@ instead of an image.
 
 **Reversible notice** (`BandeauAnnulable`, E-26 banner « Texte modifié par l'assistant »). A notice attached to a content, with one reversible gesture; not an application state, so not the `Bandeau`.
 - V: block in normal flow under the page title (neither sticky nor full width); `--accent-fond` background, `--texte` text 13 px (`--t-13`), 1 px `--accent` border, radius `--rayon-champ`, padding `--e-2` `--e-3`; text on the left, small neutral `Bouton` « Annuler » beside it. No new token.
-- C: `role="status"`, not dismissible; shown while the server says `source = 'assistant'`, removed by a hand save or by « Annuler » (after the toast « Texte précédent rétabli. »). « Annuler » is `aria-disabled` offline, « … » while sending, one shot; accessible name « Annuler la modification de l'assistant ». A stale version replaces the notice with the `Alerte` « Ce texte a changé depuis que vous l'avez ouvert. » + « Recharger ». GM only.
+- C: `role="status"`, not dismissible; shown while the server says `source = 'assistant'`, removed by a hand save or by « Annuler » (after the status line « Texte précédent rétabli. », `role="status"`, not a toast). « Annuler » is `aria-disabled` offline, « Annulation… » while sending, one shot; accessible name « Annuler la modification de l'assistant ». A stale version replaces the notice with the `Alerte` « Ce texte a changé depuis que vous l'avez ouvert. » + « Recharger ». GM only.
 
 **Loading state.** V: `--squelette` skeletons shaped like the sheet (type, title,
 rule, two sections). C: `role="status"`, « Chargement de la fiche… » read and written below.

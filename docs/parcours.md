@@ -1056,7 +1056,7 @@ search, nor in the count.
 4. The next day the assistant, asked for « dix décors de station abandonnée », drafts the list through the dedicated skill: the
    answer carries « Lot préparé : 10 assets » and « Ouvrir »; in E-27 the batch waits as « Préparé », he starts it there.
 *Highlight*: step 3, the drafts that appear one by one in his style.
-*Failure*: no image engine — the generation entry is absent, steps 1 and 2 stand; a batch is already prepared or running — the assistant answers « Un lot est déjà préparé ou en cours. Ouvrez-le dans la génération. »; « Annuler » after a hand edit elsewhere — « Ce texte a changé depuis que vous l'avez ouvert. » and « Recharger »; offline — « Annuler » is disabled; one asset fails — its line says « Échec »
+*Failure*: no image engine — the generation entry is absent, steps 1 and 2 stand; a batch is already prepared or running — the assistant answers « Un lot est déjà préparé ou en cours. Ouvrez-le dans la génération. »; « Annuler » after a hand edit elsewhere — « Ce texte a changé depuis que vous l'avez ouvert. » and « Recharger »; offline — « Annuler » is disabled; the cancellation fails — « L'annulation a échoué. Réessayez. »; the assistant is unavailable (no token) — the button « Demander à l'assistant » is absent, steps 1 to 3 stand by hand; one asset fails — its line says « Échec »
 with « Réessayer », the others go on; the batch is interrupted by a restart — the running line is marked
 « Interrompu » and « Reprendre » restarts it; a file that is not an image — refused with its name; the library holds 5 000 assets — « Bibliothèque pleine ».
 
@@ -1068,7 +1068,7 @@ with « Réessayer », the others go on; the batch is interrupted by a restart �
    answers with a link; **E-28** shows the map, he moves two tables and replaces a floor.
 4. On the console **element** (E-28, Properties) he links the sheet « Terminal de la passerelle »; at the table a player will open it from the map (E-29). A token is linked in E-29.
 *Highlight*: step 3, the assistant's map that he keeps by hand.
-*Failure*: a player asks the assistant for a map — it answers that this is the GM's, nothing is written; the library lacks a kitchen asset — the answer names it and builds the rest; two writes at once — the second says
+*Failure*: a player asks the assistant for a map — it answers that this is the GM's, nothing is written; the library lacks a kitchen asset — the answer names it and builds the rest; the assistant is unavailable — no panel, the map is made by hand (step 1); two writes at once — the second says
 « Cette carte a changé » and « Recharger »; the map is full (limits of AD-163) — « Carte pleine »; an asset removed meanwhile — a
 placeholder « Asset retiré » for the GM, absent for players. Removed assets are counted on confirmation (« Utilisé sur 3 cartes »).
 
