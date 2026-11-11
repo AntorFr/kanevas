@@ -1028,7 +1028,7 @@ Antor opens the galaxy (E-21) of Lame d'Ébène on the Éneria seed, taps a star
 3. He drags the planet to another hour: orbit and hour update, the change is saved (it **anchors** the system if it was only drawn, that is defines it — the dialogue
    says so first, B-93). He names the planet (a drawn element has no name until he gives one) and links it to the sheet « Vael II ».
 4. **Moment fort:** Léa, on her phone, opens the same system: she sees the nameless star, the bodies Antor left readable, the new name and, from the sheet, « Sur la carte spatiale ».
-   She sees nothing of the station Antor set « Réservé au MJ » — no empty slot, no count.
+   She sees nothing of the anomaly Antor set « Réservé au MJ » — no empty slot, no count.
 
 *Failure path:* the core fails to load in the browser → the map is replaced by the list of bodies (text, illustrations by the server) and
 « La carte ne peut pas s'afficher ici. » (E-23 states); a body moved by another GM meanwhile → « Cet astre a changé depuis que vous l'avez ouvert. » + « Recharger ».

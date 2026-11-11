@@ -4380,7 +4380,7 @@ changeront plus. »), « Ajouter un astre », « Ajouter une zone ». Any first 
 Criteria:
 - Given Antor, GM, on a drawn system of the Éneria seed, when he opens it twice, he sees the same star, the same bodies at the same orbits and hours, marked « Tiré ».
 - Given Antor moving a planet of a drawn system, then the anchoring dialogue appears first; once confirmed the mark reads « Défini » and the planet is at its new hour after a reload.
-- Given Léa, Player, on a system where Antor set a station « Réservé au MJ », she sees neither the station, nor a blank place, nor a count, in the map, the list or the sheet links; in Player mode, Antor sees what she sees.
+- Given Léa, Player, on a system where Antor set an anomaly « Réservé au MJ », she sees neither the anomaly, nor a blank place, nor a count, in the map, the list or the sheet links; in Player mode, Antor sees what she sees.
 - Given a planet linked to a sheet Léa cannot read, she sees the planet without link; given one linked to a readable sheet, she follows the link, and the sheet shows « Sur la carte spatiale ».
 - Given the body's panel at 390 px width, when Léa taps a planet, the panel opens below the map with its illustration, name, « Orbite 4 · 7 h ».
 - Given the core failing to load, the list of bodies shows with the message and every panel action stays usable.
@@ -4389,7 +4389,7 @@ Criteria:
 ### E-24 — Generator settings
 
 **Content**: two tabs. « Générateur »: the seed (the very dialogue of E-21 « Graine… », which stays the one rule and opens from both screens), the version of the generator (read-only; « Passer à la version N… » appears only when a newer one exists, with the count of drawn systems it moves, AD-148), the density by default, frequencies (comet, zone, nebula among zones), ranges of planets, moons, belts and total per star class, with
-three **sample systems** redrawn live as values move; « Aspects »: the catalogue of body types (tellurique, gazeuse, glace, rocheux, lave, verrouillée, astéroïdes, comète, nébuleuse, étoile) with
+three **sample systems** redrawn live as values move; « Aspects »: the catalogue of body types (tellurique, gazeuse, glace, rocheux, lave, verrouillée, astéroïdes, comète, nébuleuse, anomalie, étoile) with
 the palette and parameters of each, a live thumbnail, « Revenir au défaut » per type. « Appliquer » states the consequence: « N systèmes tirés changent d'intérieur. M systèmes définis ne bougent pas. » (counts the GM may read).
 
 | State | Text |
