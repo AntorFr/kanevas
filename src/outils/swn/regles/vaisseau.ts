@@ -71,7 +71,7 @@ export interface ElementResolu {
   soute_par_classe?: number[]
   reduction_cout_pct?: number
   reparation_min?: number
-  /** Stated by the catalogue only (Z-1); the sheets print them, the calculation of the next task reads them. */
+  /** Stated by the catalogue only (Z-1); the sheets print them, the calculation reads them (Z-3). */
   effet_pct?: number
   armure_par_classe?: number[]
   echange_arrondi?: string
