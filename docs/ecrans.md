@@ -4355,6 +4355,7 @@ Objects: a **galaxy** (E-21) holds **systems**; a system holds **bodies** (star,
 | Screen | Player | GM | GM in Player mode | No role |
 |---|---|---|---|---|
 | E-23 | reads every body and zone, the elements the GM left readable, illustrations included; follows the links of readable sheets (text version, `-systeme`: the same list for Player and GM in Player mode, a hidden system « Page introuvable. », no action) | all, plus: move, name and modify (« Modifier… »), link, add (body, zone, element), remove, transition radius, anchor, hide an element, « Illustrer la fiche » (text version, `-systeme`: the same list as the Player, plus the hidden systems, no action) | as Player | « Page introuvable. » (hidden, not refused) |
+| E-9, block « Sur la carte spatiale » | reads the lines whose system (and element) she reads, none otherwise: no block, no count | the same, and every line of the universe's readable systems | as a Player (never the GM-only reads) | « Page introuvable. » (the sheet) |
 | E-24 | « Page introuvable. » (the entry is not shown) | reads and edits | the entry is shown, the screen opens read-only with « Mode joueur actif. » | « Page introuvable. » |
 
 **Visibility (decision of Monsieur, 2026-11-11).** Everything the draw produces — stars, planets, moons, belts, comets, nebulae, anomalies — and the celestial zones are **always visible** in a system the reader sees: no body has a secret. What hides is (1) a **whole system**: for a Player its hexagon on E-21 is an empty cell (no star, no name), the routes towards it are gone, and its address answers « Page introuvable. » (B-97); (2) one **non-celestial element**, marked « Réservé au MJ »: absent for a Player — no slot, no count, no line in the list, no link from a sheet. The interior of a drawn system is readable by whoever reads its star on E-21 (confirmed by Monsieur).
@@ -4532,18 +4533,20 @@ The GM outside Player mode only (`peutEcrire`) for every action; a Player, and t
 
 **GM actions.** Panel of a body: « Lier à une fiche… » (« Changer la fiche liée… » when linked), « Délier » (when linked), « Illustrer la fiche » (when linked; bodies only). Panel of a zone: the first two. They sit after « Modifier… » and before « Retirer », in the amber action group of `-edition`. « Délier » acts at once (it is undone by linking again): toast « Fiche déliée. ».
 
-**Dialog « Lier <nom> à une fiche »** (`Fenetre`, a neutral dialog whose focus enters on the field — `BoiteDialogue` is the confirmation `alertdialog` and does not fit; title « Lier Vael II à une fiche »; « Astre sans nom » for a nameless body): a search field « Rechercher une fiche » over the sheets of the universe (`ListeLiens` with `useRechercheLiens`, the list of « Relier à une fiche »; every sheet, the GM reads them all; the field before « Annuler » in the DOM), the chosen sheet shown under the field, buttons « Annuler » (focus enters on the field) and « Lier » (disabled until a sheet is chosen). On a drawn system the anchoring dialog opens first, as for every first write. Done: toast « Vael II est liée à <titre>. », the panel shows the link line.
+**Dialog « Lier <nom> à une fiche »** (`Fenetre`, a neutral dialog whose focus enters on the field — `BoiteDialogue` is the confirmation `alertdialog` and does not fit; title « Lier Vael II à une fiche »; « Astre sans nom » for a nameless body, « Zone sans nom » for a nameless zone): a search field « Rechercher une fiche » over the sheets of the universe (`ListeLiens` with `useRechercheLiens`, the list of « Relier à une fiche »; every sheet, the GM reads them all; the field before « Annuler » in the DOM), the chosen sheet shown under the list as « Fiche choisie : <titre> » (in « Changer la fiche liée… » the dialog opens with the current sheet chosen and the field empty), buttons « Annuler » (focus enters on the field) and « Lier » (disabled until a sheet is chosen). On a drawn system the anchoring dialog opens first, as for every first write. Done: toast « <nom> : fiche liée, <titre>. » (no agreement to carry: « Vael II : fiche liée, Vael II (colonie). »), the panel shows the link line.
 
 | State | Text |
 |---|---|
-| empty | the search finds nothing: « Aucune fiche ne correspond. » ; the universe has no sheet: « Aucune fiche dans cet univers. » |
-| loading | the list reads « Recherche… » ; « Lier » and « Illustrer la fiche » show « … » while their request runs and are disabled |
-| error | the write fails: the dialog stays, « Impossible d'enregistrer. » + « Réessayer » ; the rendering fails: an `Alerte` with action that stays near the button, « L'illustration n'a pas pu être ajoutée. » + « Réessayer » (a failure is not a toast) |
+| initial | the field is empty and the list shows the first sheets of the universe (the same ordering as « Relier à une fiche »), « Lier » disabled |
+| empty | the search finds nothing: « Aucune fiche ne correspond. » ; the universe has no sheet: « Aucune fiche dans cet univers. » (no action beyond « Annuler »: creating a sheet is not this dialog's business) |
+| extreme content | a 80-character title and a long body name wrap on two lines inside the dialog, never truncated without a full-text title; hundreds of results scroll inside the list |
+| loading | the list reads « Recherche… » ; « Lier » shows « … » and « Illustrer la fiche » reads « Illustration en cours… » while their request runs, both disabled |
+| error | the write fails: the dialog stays, « Impossible d'enregistrer. » + « Réessayer » ; « Délier » (no dialog) and a failed « Illustrer la fiche » show the same `Alerte` with action near the button, which stays until « Réessayer » succeeds or the panel closes ; the rendering fails: an `Alerte` with action that stays near the button, « L'illustration n'a pas pu être ajoutée. » + « Réessayer » (a failure is not a toast) |
 | offline | the banner « Connexion perdue. » of `-carte`; the three actions disabled |
 | refusal | a non-GM sees none of the actions; a hidden system « Page introuvable. » (unchanged) |
-| conflict | « Cet astre a changé depuis que vous l'avez ouvert. » + « Recharger » (the dialog stays, the chosen sheet is kept; « Lier » disabled until « Recharger ») |
+| conflict | « Cet astre a changé depuis que vous l'avez ouvert. » (« Cette zone a changé… » for a zone) + « Recharger » (the dialog stays, the chosen sheet is kept; « Lier » disabled until « Recharger ») |
 | sheet gone | the chosen sheet was deleted meanwhile: « Cette fiche n'existe plus. » under the field, the choice cleared |
-| unlinked body | « Illustrer la fiche » is absent (not disabled): nothing to explain |
+| unlinked body | « Illustrer la fiche » is absent (not disabled): nothing to explain; if the body was unlinked or the sheet deleted meanwhile, « Ce corps n'est lié à aucune fiche. » in the `Alerte`, no retry |
 
 **Illustrer la fiche.** Renders the body (the high-definition image of the dialog « Voir l'illustration ») and adds it to the linked sheet's illustration through the media library (AD-117, AD-liens-4). While it runs the button reads « Illustration en cours… ». Done: toast « Illustration ajoutée à <titre>. » with the action « Ouvrir la fiche » (the `Toast` variant with an action, which stays while the pointer or focus is on it). The image is visible as the sheet's own rules decide (a sheet Léa does not read stays closed to her, and her view of it is the « illustration fermée » state of E-9).
 
@@ -4552,7 +4555,14 @@ The GM outside Player mode only (`peutEcrire`) for every action; a Player, and t
 - Given Antor linking Vael II to the sheet « Vael II (colonie) » that Léa reads, Léa's panel shows « Fiche : Vael II (colonie) », she follows it, and the sheet shows « Sur la carte spatiale » with « Vael II — système Vael, orbite 4 · 7 h » and a link to the system.
 - Given Antor linking Vael III to a sheet Léa cannot read, her panel and her list show Vael III with no link line, and that sheet shows her nothing.
 - Given Antor deleting the sheet linked to Vael II, Vael II stays on the map, with no link line, and no error appears.
-- Given Antor, « Illustrer la fiche » on a body linked to a sheet, the sheet gains the image as its illustration.
+- Given Antor, « Illustrer la fiche » on a body linked to a sheet, the sheet gains the image as its illustration; the button reads « Illustration en cours… » meanwhile.
+- Given an unlinked body, its panel has no « Illustrer la fiche »; given a body unlinked in another tab, the action answers « Ce corps n'est lié à aucune fiche. ».
+- Given the rendering failing, the `Alerte` « L'illustration n'a pas pu être ajoutée. » with « Réessayer » stays near the button and nothing is added to the sheet.
+- Given a search with no match, « Aucune fiche ne correspond. »; given a universe without sheet, « Aucune fiche dans cet univers. ».
+- Given the sheet chosen then deleted in another tab, « Lier » answers « Cette fiche n'existe plus. » under the field and the choice is cleared.
+- Given the write failing, the dialog stays with « Impossible d'enregistrer. » and « Réessayer »; offline, the three actions are disabled under « Connexion perdue. ».
+- Given Antor, « Délier » removes the line at once with the toast « Fiche déliée. »; the sheet then shows no « Sur la carte spatiale » line for that body.
+- Given Antor in Player mode before a body linked to a sheet only the GM reads, the panel shows no link line (the same rule as for Léa).
 - Given Antor opening « Lier à une fiche… » on a drawn system, the anchoring dialog comes first; cancelled, nothing is sent.
 - Given two GM tabs, the second « Lier » answers « Cet astre a changé depuis que vous l'avez ouvert. » and keeps the chosen sheet.
 - Given the dialog at 390 px, the search list and the buttons stay reachable without covering the field (the list scrolls inside the dialog).
@@ -4560,7 +4570,7 @@ The GM outside Player mode only (`peutEcrire`) for every action; a Player, and t
 
 ### E-9 — what changes
 
-The sheet of a body, a zone or an element linked to the map gains the block « Sur la carte spatiale » (`-liens`: bodies and zones; `-elements` adds the elements). One line per link: « <nom> — système <nom>, orbite 4 · 7 h » (« Astre sans nom » and « Système sans nom (q, r) » for what has no name; a moon « …, lune de Vael II » ; a ring « …, orbite 2,9 à 3,3 » ; an element placed on a body « …, sur <astre> »), each a link to its system on E-23, only for a system and an element the reader reads (AD-144): no block, no count, no empty heading otherwise; at most 50 lines, the rest not shown and not counted. Its place on the sheet is after « Fiches liées » and « Mentionnée dans »; the region is labelled « Sur la carte spatiale ». It is added through the tool's declaration (AD-liens-3), so it is absent when the tool is disabled or hidden from the reader. It is a different thing from the « Sur la carte » of the illustrated maps (E-11). The deletion of the sheet leaves the bodies in place, unlinked.
+The sheet of a body, a zone or an element linked to the map gains the block « Sur la carte spatiale » (`-liens`: bodies and zones; a nameless zone reads « Zone sans nom »; `-elements` adds the elements). One line per link: « <nom> — système <nom>, orbite 4 · 7 h » (« Astre sans nom » for a body and « Système sans nom (q, r) » for what has no name; a system with a name reads « système Vael », a nameless one « Système sans nom (q, r) » without the word « système » before it; a moon « …, lune de Vael II » ; a ring « …, orbite 2,9 à 3,3 » ; an element placed on a body « …, sur <astre> »), each a link to its system on E-23, only for a system and an element the reader reads (AD-144): no block, no count, no empty heading otherwise; at most 50 lines, the rest not shown and not counted. Its place on the sheet is after « Fiches liées » and « Mentionnée dans »; the region is labelled « Sur la carte spatiale ». It is added through the tool's declaration (AD-liens-3), so it is absent when the tool is disabled or hidden from the reader. It is a different thing from the « Sur la carte » of the illustrated maps (E-11). States: it follows the sheet's own loading and offline states (it rides with the sheet read, so no state of its own: a failed read of the sheet is the sheet's error); it is absent when empty, when the tool is disabled, or when every linked system is hidden from the reader; the GM in Player mode sees what a Player sees. Criteria: given the tool disabled or the only system hidden from Léa, the sheet shows no block; given 60 links, 50 lines and no count. The deletion of the sheet leaves the bodies in place, unlinked.
 
 ### E-21 — what changes
 
@@ -4571,6 +4581,6 @@ of E-21 do not change: same visibility, same promotion — « Promouvoir » and 
 
 | Crossing | Result |
 |---|---|
-| each need has a screen | B-86 E-21 · B-87 E-23 · B-88 E-23 · B-89 E-23 · B-90 E-24 · B-91 E-23, E-24 · B-92 E-23 · B-93 E-23 · B-94 catalogue (no screen, chosen) · B-95 import report · B-96 E-23 · B-97 E-21 — **holds** |
+| each need has a screen | B-86 E-21 · B-87 E-23 · B-88 E-23 · B-89 E-23 · B-90 E-24 · B-91 E-23, E-24 · B-92 E-23, E-9 · B-93 E-23 · B-94 catalogue (no screen, chosen) · B-95 import report · B-96 E-23 · B-97 E-21 — **holds** |
 | each screen is reached by a journey | E-23 P-22, P-24 · E-24 P-23 · E-21 P-22 · E-9 P-22 — **holds** |
 | each role has its column and each screen its row | **holds** (above) |
