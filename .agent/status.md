@@ -1,5 +1,6 @@
 # Status — kanevas
 
+> MàJ : 2026-11-12 (assemblage de `rouge-kanevas-battlemap-1` : le test e2e des types lus tardivement (B-64, `src/e2e/liees-bloc-types-tardifs.test.ts`) retient `/types` par une porte que le test ouvre lui-même au lieu d'un délai de 1 500 ms ; test seul, produit inchangé)
 > MàJ : 2026-11-11 (assemblage de kanevas-outils-format-vaisseaux-ecarts : migration 0034, doc Y-1 à Y-6 vérifiée contre le diff ; avant : assemblage de kanevas-outils-format-vaisseaux-effets : migrations 0032 et 0033, doc de la tranche vérifiée contre le diff)
 > MàJ : 2026-11-11 (assemblage de `rouge-kanevas-14` : le test e2e du filtre Images puis « Non utilisés » de la médiathèque attend l'effet du filtre avant de lire les noms ; test seul, produit inchangé)
 > MàJ : 2026-11-09 (assemblage de `kanevas-taille-images`, PR vers `main`)
