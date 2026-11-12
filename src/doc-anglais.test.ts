@@ -1,5 +1,5 @@
-// Feature kanevas-outils-doc-anglais: the public doc is English and the published
-// Releases are English. Counting is done here, independently of scripts/controle-langue.mjs.
+// Feature kanevas-outils-doc-anglais: the public doc is English. Counting is done here,
+// independently of scripts/controle-langue.mjs.
 // Nothing here compares the tree to a past commit: product changes stay free.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
