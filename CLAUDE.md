@@ -14,6 +14,7 @@
 - Build and test in containers (reference). In a pod without Docker, Node >= 20 on the host runs the same commands
   (`npm ci && npm run typecheck && npm test`), see the README:
   `docker run --rm -v "$PWD":/src -w /src node:20-bookworm-slim sh -c "npm ci && npm run typecheck && npm test"`
+- Rust → Wasm (`rust/`, AD-rust-1 to 10): the Node-only Docker command above is not enough any more, it has no Rust; `npm run build:wasm` (needs `cargo`, the wasm target and `wasm-bindgen`, see README « Rust / WebAssembly ») must have run before `typecheck`, `build` and `npm test`; `tests:attestes` runs it itself.
 - `npm run typecheck` : `tsc --noEmit` on the API and on `frontend/`. `npm test` : `node --import tsx --test`
   on the files found by `find` in `src` and `frontend/src` — Node 20 (CI, image) does not expand globs
   itself, so never pass it a quoted `src/**` pattern; no extra test runner

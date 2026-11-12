@@ -1,5 +1,26 @@
 # Pattern reused from Antre-du-maitre (AD-10), minus its Prisma steps.
 
+# Versions of the Wasm toolchain: each equals its source in the repository (a test reads both).
+# RUST_VERSION = rust/rust-toolchain.toml, WASM_BINDGEN_VERSION = the wasm-bindgen entry of rust/Cargo.lock.
+ARG RUST_VERSION=1.99.1
+ARG WASM_BINDGEN_VERSION=0.2.130
+
+# Wasm stage (AD-rust-5): the only one with a Rust toolchain. It copies the Rust workspace and its build
+# script alone, so a change to src/ or frontend/ does not rebuild it.
+FROM rust:${RUST_VERSION}-bookworm AS wasm
+
+ARG WASM_BINDGEN_VERSION
+
+WORKDIR /app
+
+RUN rustup target add wasm32-unknown-unknown \
+  && cargo install --locked --version =${WASM_BINDGEN_VERSION} wasm-bindgen-cli
+
+COPY rust ./rust
+COPY scripts/rust-wasm.sh ./scripts/rust-wasm.sh
+
+RUN bash scripts/rust-wasm.sh
+
 FROM node:20-bookworm-slim AS deps
 
 WORKDIR /app
@@ -21,6 +42,7 @@ COPY tsconfig.json ./
 COPY src ./src
 COPY frontend ./frontend
 COPY scripts ./scripts
+COPY --from=wasm /app/rust/pkg ./rust/pkg
 
 RUN npm run build
 
@@ -60,6 +82,9 @@ COPY scripts ./scripts
 RUN mkdir -p /data && chown -R node:node /data /app
 
 USER node
+
+# An image that cannot run its Wasm does not build (AD-rust-5).
+RUN node dist/wasm/verifier.mjs
 
 EXPOSE 3001
 
