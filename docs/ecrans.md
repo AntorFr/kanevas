@@ -4522,9 +4522,45 @@ Criteria:
 - Given a value of 2 for a frequency, the field refuses it with « Entre 0 et 1. » and nothing is saved.
 - Given Léa, Player, the entry « Réglages du générateur… » does not exist and the address answers « Page introuvable. ».
 
+#### E-23 — what `kanevas-carte-spatiale-liens` builds (text version)
+
+> Mockup: `maquettes/e23-liens.html` (panel with and without link, dialog « Lier à une fiche », illustrating the sheet, the block on the sheet). The text prevails.
+
+The GM outside Player mode only (`peutEcrire`) for every action; a Player, and the GM in Player mode, read the link and nothing else. Existing components only (`Panneau`, `Bouton`, `BoiteDialogue`, `ListeRecherche`, `Toast`); the gardien judges any other.
+
+**The link line (everyone).** In the panel of a body or a zone, and on its line of the text list, under the type and the place: « Fiche : <titre> », a link to the sheet (E-2). Only when the sheet is readable by the reader (AD-144, AD-liens-2): for a sheet she cannot read, a Player sees the body exactly as if it were unlinked — no line, no padlock, no « fiche privée ».
+
+**GM actions.** Panel of a body: « Lier à une fiche… » (« Changer la fiche liée… » when linked), « Délier » (when linked), « Illustrer la fiche » (when linked; bodies only). Panel of a zone: the first two. They sit after « Modifier… » and before « Retirer », in the amber action group of `-edition`. « Délier » acts at once (it is undone by linking again): toast « Fiche déliée. ».
+
+**Dialog « Lier <nom> à une fiche »** (`BoiteDialogue`, neutral, title « Lier Vael II à une fiche »; « Astre sans nom » for a nameless body): a search field « Rechercher une fiche » over the sheets of the universe (`ListeRecherche`, the list of « Relier à une fiche »; every sheet, the GM reads them all), the chosen sheet shown under the field, buttons « Annuler » (focus enters on the field) and « Lier » (disabled until a sheet is chosen). On a drawn system the anchoring dialog opens first, as for every first write. Done: toast « Vael II est liée à <titre>. », the panel shows the link line.
+
+| State | Text |
+|---|---|
+| empty | the search finds nothing: « Aucune fiche ne correspond. » ; the universe has no sheet: « Aucune fiche dans cet univers. » |
+| loading | the list reads « Recherche… » ; « Lier » and « Illustrer la fiche » show « … » while their request runs and are disabled |
+| error | the write fails: the dialog stays, « Impossible d'enregistrer. » + « Réessayer » ; the rendering fails: toast « L'illustration n'a pas pu être ajoutée. » + « Réessayer » |
+| offline | the banner « Connexion perdue. » of `-carte`; the three actions disabled |
+| refusal | a non-GM sees none of the actions; a hidden system « Page introuvable. » (unchanged) |
+| conflict | « Cet astre a changé depuis que vous l'avez ouvert. » + « Recharger » (the dialog stays, the chosen sheet is kept; « Lier » disabled until « Recharger ») |
+| sheet gone | the chosen sheet was deleted meanwhile: « Cette fiche n'existe plus. » under the field, the choice cleared |
+| unlinked body | « Illustrer la fiche » is absent (not disabled): nothing to explain |
+
+**Illustrer la fiche.** Renders the body (the high-definition image of the dialog « Voir l'illustration ») and adds it to the linked sheet's illustration through the media library (AD-117, AD-liens-4). While it runs the button reads « Illustration en cours… ». Done: toast « Illustration ajoutée à <titre>. » with the action « Ouvrir la fiche ». The image is visible as the sheet's own rules decide (a sheet Léa does not read stays closed to her, and her view of it is the « illustration fermée » state of E-9).
+
+**The sheet, E-9.** The block « Sur la carte spatiale » (below) appears on a sheet the map links to; see « E-9 — what changes ». The deletion of a linked sheet needs no extra word in its confirmation: the map keeps its bodies.
+
+- Given Antor linking Vael II to the sheet « Vael II (colonie) » that Léa reads, Léa's panel shows « Fiche : Vael II (colonie) », she follows it, and the sheet shows « Sur la carte spatiale » with « Vael II — système Vael, orbite 4 · 7 h » and a link to the system.
+- Given Antor linking Vael III to a sheet Léa cannot read, her panel and her list show Vael III with no link line, and that sheet shows her nothing.
+- Given Antor deleting the sheet linked to Vael II, Vael II stays on the map, with no link line, and no error appears.
+- Given Antor, « Illustrer la fiche » on a body linked to a sheet, the sheet gains the image as its illustration.
+- Given Antor opening « Lier à une fiche… » on a drawn system, the anchoring dialog comes first; cancelled, nothing is sent.
+- Given two GM tabs, the second « Lier » answers « Cet astre a changé depuis que vous l'avez ouvert. » and keeps the chosen sheet.
+- Given the dialog at 390 px, the search list and the buttons stay reachable without covering the field (the list scrolls inside the dialog).
+- Given Léa on the system, no « Lier à une fiche… », « Délier » or « Illustrer la fiche » is rendered, and the API refuses with `refuse`.
+
 ### E-9 — what changes
 
-The sheet of an element linked to the map gains the block « Sur la carte spatiale » (a line « <nom> — système <nom>, orbite 4 · 7 h » or « <nom> — système <nom>, sur <astre> » for an element placed on a body, with a link to E-23, only for an element and a system the reader reads, AD-144; no block, no count otherwise). It is a different thing from the « Sur la carte » of the illustrated maps (E-11).
+The sheet of a body, a zone or an element linked to the map gains the block « Sur la carte spatiale » (`-liens`: bodies and zones; `-elements` adds the elements). One line per link: « <nom> — système <nom>, orbite 4 · 7 h » (« Astre sans nom » and « Système sans nom (q, r) » for what has no name; a moon « …, lune de Vael II » ; a ring « …, orbite 2,9 à 3,3 » ; an element placed on a body « …, sur <astre> »), each a link to its system on E-23, only for a system and an element the reader reads (AD-144): no block, no count, no empty heading otherwise; at most 50 lines, the rest not shown and not counted. Its place on the sheet is after « Fiches liées » and « Mentionnée dans »; the region is labelled « Sur la carte spatiale ». It is added through the tool's declaration (AD-liens-3), so it is absent when the tool is disabled or hidden from the reader. It is a different thing from the « Sur la carte » of the illustrated maps (E-11). The deletion of the sheet leaves the bodies in place, unlinked.
 
 ### E-21 — what changes
 

@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Système, liens — Kanevas</title><style>
+/*
+MAQUETTE — E-23, liens (tranche kanevas-carte-spatiale-liens). Illustre docs/ecrans.md « E-23 — what
+`kanevas-carte-spatiale-liens` builds » : panneau d'un corps avec et sans lien (joueuse, MJ), dialogue « Lier à une fiche »,
+conflit, fiche disparue, « Illustrer la fiche », bloc « Sur la carte spatiale » de la fiche. Le ciel et les sprites sont ceux de e23-carte-systeme.html (non redessinés).
+Composants existants seuls ; l'ambre marque les actions du MJ, jamais « Tiré » / « Défini ». Tokens : frontend/src/ui/tokens.css
+(docs/charte.md). Données inventées. Le document prime sur la maquette.
+*/
+:root{--fond:#121317;--s:#191a1f;--s2:#202128;--bord:rgba(255,255,255,.08);--bf:rgba(255,255,255,.14);--t:#ebecf0;--t2:#a6a7b0;
+--act:#9aa6f5;--mj:#f2a33c;--mjf:rgba(242,163,60,.14);--mjb:rgba(242,163,60,.42);--err:#f08a8a;
+--titre:"Fraunces Variable","Fraunces",Georgia,serif;--txt:"Inter",system-ui,sans-serif}
+*{box-sizing:border-box}body{margin:0;background:var(--fond);color:var(--t);font:14px var(--txt)}
+.wrap{padding:16px;display:grid;gap:22px;grid-template-columns:repeat(auto-fit,minmax(360px,1fr))}
+.lab{font-size:11px;text-transform:uppercase;letter-spacing:.08em;margin:0 0 6px;font-weight:600;color:var(--mj)}
+.frame{border:1px solid var(--bf);border-radius:12px;overflow:hidden;background:var(--fond);position:relative}
+header{display:flex;align-items:center;flex-wrap:wrap;gap:10px;padding:12px 16px;border-bottom:1px solid var(--bord)}
+header h1{font:500 19px var(--titre);margin:0}.tag{font-size:11px;padding:2px 8px;border-radius:99px;border:1px solid var(--bf);color:var(--t2)}
+.sp{margin-left:auto}.btn{padding:8px 12px;border-radius:8px;border:1px solid var(--bf);background:var(--s2);color:var(--t);font:inherit;cursor:pointer}
+.btn.mj{border-color:var(--mjb);background:var(--mjf);color:var(--mj)}.btn.danger{border-color:var(--err);color:var(--err)}
+.menu{position:absolute;right:16px;top:50px;background:var(--s2);border:1px solid var(--bf);border-radius:10px;padding:4px;min-width:200px;z-index:2}
+.menu div{padding:8px 10px;border-radius:6px}.menu div:first-child{background:var(--mjf)}
+.corps{padding:16px;display:flex;flex-direction:column;gap:12px}
+.panel{border:1px solid var(--bord);border-radius:10px;background:var(--s);padding:14px;display:flex;flex-direction:column;gap:10px}
+.panel h2{font:500 15px var(--titre);margin:0}
+label{display:flex;flex-direction:column;gap:4px;font-size:12.5px;color:var(--t2)}
+input{background:var(--fond);border:1px solid var(--bf);border-radius:8px;color:var(--t);padding:8px 10px;font:inherit}
+input.bad{border-color:var(--err)}.err{color:var(--err);font-size:12.5px}.conv{color:var(--texte-2,#888);font-size:12.5px;margin:4px 0}
+.seg{display:flex;border:1px solid var(--bf);border-radius:8px;overflow:hidden}.seg span{flex:1;text-align:center;padding:7px 4px;color:var(--t2)}
+.seg span.on{background:var(--mjf);color:var(--mj)}
+.row{display:flex;gap:10px}.row>*{flex:1}.acts{display:flex;gap:8px;justify-content:flex-end}
+.dlg{position:relative;margin:16px;background:var(--s);border:1px solid var(--bf);border-radius:12px;padding:18px;display:flex;flex-direction:column;gap:12px}
+.dlg h2{font:500 17px var(--titre);margin:0}.dlg p{margin:0;color:var(--t2)}
+.alerte{background:var(--s2);border:1px solid var(--err);border-radius:8px;padding:8px 10px;display:flex;gap:10px;align-items:center}
+@media(max-width:560px){.wrap{grid-template-columns:1fr}.row{flex-direction:column}}
+.lien{color:var(--act);text-decoration:underline}.res{border:1px solid var(--bord);border-radius:8px;overflow:hidden}.res div{padding:8px 10px;border-bottom:1px solid var(--bord)}.res div:last-child{border:0}.res .sel{background:var(--mjf)}.toast{position:absolute;left:16px;right:16px;bottom:12px;background:var(--s2);border:1px solid var(--bf);border-radius:10px;padding:10px 12px;display:flex;gap:10px;align-items:center}.meta{color:var(--t2);font-size:12.5px;margin:0}ul.bloc{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:6px}h3{font:500 15px var(--titre);margin:0}</style></head><body><div class="wrap">
+
+<section><p class="lab">Joueuse — panneau d'une planète liée à une fiche qu'elle lit</p><div class="frame"><div class="corps">
+<div class="panel"><h2>Vael II</h2><p class="meta">Planète · Océanique — Orbite 4 · 7 h (12, −7)</p>
+<p class="meta">Fiche : <a class="lien" href="#">Vael II (colonie)</a></p>
+<p>Un monde d'eau, une colonie de pêcheurs.</p><div class="acts"><button class="btn">Voir l'illustration</button></div></div></div></div></section>
+
+<section><p class="lab">Joueuse — planète liée à une fiche qu'elle ne lit pas (identique à une planète non liée)</p><div class="frame"><div class="corps">
+<div class="panel"><h2>Vael III</h2><p class="meta">Planète · Désertique — Orbite 5 · 2 h (12, −7)</p>
+<p>Poussière et vent.</p><div class="acts"><button class="btn">Voir l'illustration</button></div></div></div></div></section>
+
+<section><p class="lab">MJ — panneau d'une planète liée</p><div class="frame"><div class="corps">
+<div class="panel"><h2>Vael II</h2><p class="meta">Planète · Océanique — Orbite 4 · 7 h (12, −7)</p>
+<p class="meta">Fiche : <a class="lien" href="#">Vael II (colonie)</a></p>
+<div class="acts" style="flex-wrap:wrap;justify-content:flex-start"><button class="btn mj">Déplacer</button><button class="btn mj">Modifier…</button><button class="btn mj">Changer la fiche liée…</button><button class="btn mj">Délier</button><button class="btn mj">Illustrer la fiche</button><button class="btn danger">Retirer</button></div></div></div></div></section>
+
+<section><p class="lab">MJ — panneau d'une planète non liée (ni « Délier » ni « Illustrer la fiche »)</p><div class="frame"><div class="corps">
+<div class="panel"><h2>Vael III</h2><p class="meta">Planète · Désertique — Orbite 5 · 2 h (12, −7)</p>
+<div class="acts" style="flex-wrap:wrap;justify-content:flex-start"><button class="btn mj">Déplacer</button><button class="btn mj">Modifier…</button><button class="btn mj">Lier à une fiche…</button><button class="btn danger">Retirer</button></div></div></div></div></section>
+
+<section><p class="lab">MJ — dialogue « Lier à une fiche », une fiche choisie</p><div class="frame" style="padding:8px 0">
+<div class="dlg" role="dialog" aria-label="Lier Vael III à une fiche"><h2>Lier Vael III à une fiche</h2>
+<label>Rechercher une fiche<input value="vael"></label>
+<div class="res"><div>Vael (système)</div><div class="sel">Vael III (désert)</div><div>Vaelin, pilote</div></div>
+<p class="meta">Fiche choisie : Vael III (désert)</p>
+<div class="acts"><button class="btn">Annuler</button><button class="btn mj">Lier</button></div></div></div></section>
+
+<section><p class="lab">MJ — dialogue, aucun résultat, puis fiche disparue</p><div class="frame" style="padding:8px 0">
+<div class="dlg" role="dialog" aria-label="Lier Vael III à une fiche"><h2>Lier Vael III à une fiche</h2>
+<label>Rechercher une fiche<input value="zzz"></label><p class="meta">Aucune fiche ne correspond.</p>
+<div class="acts"><button class="btn">Annuler</button><button class="btn mj" disabled>Lier</button></div></div>
+<div class="dlg" role="dialog" aria-label="Lier Vael III à une fiche"><h2>Lier Vael III à une fiche</h2>
+<label>Rechercher une fiche<input class="bad" value="vael" aria-invalid="true"></label><span class="err">Cette fiche n'existe plus.</span>
+<div class="acts"><button class="btn">Annuler</button><button class="btn mj" disabled>Lier</button></div></div></div></section>
+
+<section><p class="lab">MJ — conflit pendant « Lier »</p><div class="frame" style="padding:8px 0">
+<div class="dlg" role="dialog" aria-label="Lier Vael III à une fiche"><h2>Lier Vael III à une fiche</h2>
+<p class="meta">Fiche choisie : Vael III (désert)</p>
+<div class="alerte" role="alert"><span>Cet astre a changé depuis que vous l'avez ouvert.</span><button class="btn sp">Recharger</button></div>
+<div class="acts"><button class="btn">Annuler</button><button class="btn mj" disabled>Lier</button></div></div></div></section>
+
+<section><p class="lab">MJ — illustration ajoutée, puis échec (390 px)</p><div class="frame" style="max-width:390px;min-height:150px">
+<div class="corps"><div class="panel"><h2>Vael II</h2><div class="acts"><button class="btn mj" disabled>Illustration en cours…</button></div></div></div>
+<div class="toast" role="status"><span>Illustration ajoutée à Vael II (colonie).</span><a class="lien sp" href="#">Ouvrir la fiche</a></div></div>
+<div class="frame" style="max-width:390px;min-height:110px;margin-top:10px"><div class="toast" role="alert"><span>L'illustration n'a pas pu être ajoutée.</span><button class="btn sp">Réessayer</button></div></div></section>
+
+<section><p class="lab">Fiche — bloc « Sur la carte spatiale » (lecture, MJ ou joueuse d'une fiche liée)</p><div class="frame"><div class="corps">
+<div class="panel" role="region" aria-label="Sur la carte spatiale"><h3>Sur la carte spatiale</h3>
+<ul class="bloc"><li><a class="lien" href="#">Vael II — système Vael, orbite 4 · 7 h</a></li><li><a class="lien" href="#">Vael II-a — système Vael, lune de Vael II</a></li><li><a class="lien" href="#">Astre sans nom — système Système sans nom (3, −5), orbite 2,9 à 3,3</a></li></ul></div>
+<p class="meta">Une fiche liée à rien que le lecteur lise n'a pas ce bloc : ni titre, ni compte.</p></div></div></section>
+
+</div></body></html>
