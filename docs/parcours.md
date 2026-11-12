@@ -1058,8 +1058,8 @@ a token whose creator is no longer GM, or an unknown system, gets the usual `jet
 
 ### P-25 — Take over Éneria's map (Monsieur, Saturday, Mac and private repository)
 
-From the private Éneria repository, a script reads `atlas/systemes/*.yaml`, `systemes.yaml` and `astres.yaml`, and sends them to the import API of the target galaxy
-(the galaxy already created on Éneria's seed by the conversion of P-20); the batch report counts created, unchanged and refused elements. *Moment fort:* the GM opens the galaxy and a system of
+From the private Éneria repository, a script reads `atlas/systemes/*.yaml`, `systemes.yaml` and `astres.yaml` (the ships, cities and stations of a system's file travel as its `elements` list), and sends them to the import API of the target galaxy
+(the galaxy already created on Éneria's seed by the conversion of P-20); the batch report counts created, unchanged and refused elements (bodies and map elements alike, each by its key). *Moment fort:* the GM opens the galaxy and a system of
 the lore and finds Éneria's bodies at their places with their illustrations. *Failure path:* a refused element is reported with its path in the file and nothing is half written (as P-20).
 
 ## Out of scope
