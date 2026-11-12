@@ -594,9 +594,6 @@ async function ouvrirE18(page: Any, m: Monde, univers = m.essai) {
   await attendre(page);
 }
 
-// Same rendering as the screen's dates (`acces-api/format.ts`), escaped for a RegExp.
-const jour = (d: Date) => d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' }).replace(/[.]/g, '\\.');
-
 const ligne = (page: Any, texte_: string | RegExp) => page.getByRole('listitem').filter({ hasText: texte_ });
 
 describe('E-18 Accès par API au navigateur', { skip: skipBrowser }, () => {
@@ -654,32 +651,29 @@ describe('E-18 Accès par API au navigateur', { skip: skipBrowser }, () => {
     assert.ok(!(await texte(page)).includes(valeur), 'token on screen after reload');
     await page.screenshot({ path: join(SHOTS, 'e18-liste-jetons.png') });
 
-      // The token works, once, with the script's call; the value is nowhere in the lists of the API.
-      const r = await m.api('GET', `${m.essai}`, valeur);
-      assert.equal(r.status, 200);
-      assert.ok(!JSON.stringify((await m.session('antor', 'GET', `/api/univers/${m.essai}/jetons`)).json).includes(valeur));
+    // The token works, once, with the script's call; the value is nowhere in the lists of the API.
+    const r = await m.api('GET', `${m.essai}`, valeur);
+    assert.equal(r.status, 200);
+    assert.ok(!JSON.stringify((await m.session('antor', 'GET', `/api/univers/${m.essai}/jetons`)).json).includes(valeur));
 
-      // P-10 step 4-5 and the criterion: Port-Sel pushed, replayed; E-18 shows two batches.
-      const un = await pousserEnLot(m, valeur, 'lieu:port-sel', PORT_SEL);
-      assert.equal(un.r.json.etat, 'creee');
-      const deux = await pousserEnLot(m, valeur, 'lieu:port-sel', PORT_SEL);
-      assert.equal(deux.r.json.etat, 'inchangee');
-      await page.reload();
-      await attendre(page);
-      await page.getByText('Fiches : 1 inchangée').first().waitFor();
-      const t1 = await texte(page);
-      assert.match(t1, /Fiches : 1 créée/);
-      assert.match(t1, /Fiches : 1 inchangée/);
-      assert.ok(!/Fiches : 0 créée/.test(t1), 'a null count must be omitted');
-      assert.match(t1, /Clos/);
-      // « dernier usage » is no longer « jamais » once the token worked (the clock is fixed, so « il y a 0 min » or similar).
-      const apres = ((await ligne(page, 'Script Kanka — Mac').first().innerText()) as string).replace(/\s+/g, ' ');
-      assert.doesNotMatch(apres, /dernier usage jamais/);
-      await page.screenshot({ path: join(SHOTS, 'e18-lots.png'), fullPage: true });
-      await ctx.close();
-    } finally {
-      m.app.horloge = () => new Date();
-    }
+    // P-10 step 4-5 and the criterion: Port-Sel pushed, replayed; E-18 shows two batches.
+    const un = await pousserEnLot(m, valeur, 'lieu:port-sel', PORT_SEL);
+    assert.equal(un.r.json.etat, 'creee');
+    const deux = await pousserEnLot(m, valeur, 'lieu:port-sel', PORT_SEL);
+    assert.equal(deux.r.json.etat, 'inchangee');
+    await page.reload();
+    await attendre(page);
+    await page.getByText('Fiches : 1 inchangée').first().waitFor();
+    const t1 = await texte(page);
+    assert.match(t1, /Fiches : 1 créée/);
+    assert.match(t1, /Fiches : 1 inchangée/);
+    assert.ok(!/Fiches : 0 créée/.test(t1), 'a null count must be omitted');
+    assert.match(t1, /Clos/);
+    // « dernier usage » is no longer « jamais » once the token worked (the clock is fixed, so « il y a 0 min » or similar).
+    const apres = ((await ligne(page, 'Script Kanka — Mac').first().innerText()) as string).replace(/\s+/g, ' ');
+    assert.doesNotMatch(apres, /dernier usage jamais/);
+    await page.screenshot({ path: join(SHOTS, 'e18-lots.png'), fullPage: true });
+    await ctx.close();
   });
 
   test('B-49 : un refus et des avertissements se déplient avec la clé d’origine et la raison', async () => {
