@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Réglages du générateur — Kanevas</title><style>
+/*
+MAQUETTE — E-24 Réglages du générateur. Illustre docs/ecrans.md « Screen details for kanevas-carte-spatiale-reglages » (E-24) ;
+docs/parcours.md B-90, P-23. Tokens : frontend/src/ui/tokens.css (docs/charte.md). Données inventées. Le document prime sur la maquette.
+Quatre états : MJ sur « Générateur » avec un décompte affiché, MJ sur « Aspects » (type « glace »), valeur refusée (fréquence 2), et la page à 390 px.
+Les pastilles de couleur des astres sont ici des dégradés : le moteur réel est le cœur Rust (AD-149).
+*/
+:root{--fond:#121317;--lat:#0e0f12;--s:#191a1f;--s2:#202128;--bord:rgba(255,255,255,.08);--bf:rgba(255,255,255,.14);--bc:#74757f;--t:#ebecf0;--t2:#a6a7b0;--t3:#8b8c97;
+--ac:#8b9bf0;--act:#9aa6f5;--acf:rgba(154,166,245,.16);--mj:#f2a33c;--mjf:rgba(242,163,60,.14);--mjb:rgba(242,163,60,.42);--err:#e2685b;--errf:rgba(226,104,91,.14);--ciel:#0b0d14;
+--titre:"Fraunces Variable","Fraunces","Iowan Old Style",Georgia,serif;--txt:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+*{box-sizing:border-box}body{margin:0;background:var(--fond);color:var(--t);font:14px var(--txt)}
+.wrap{padding:16px;display:flex;flex-direction:column;gap:26px}
+.lab{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--mj);margin:0 0 6px;font-weight:600}
+.frame{border:1px solid var(--bf);border-radius:12px;overflow:hidden;background:var(--fond);position:relative}
+.frame.tel{width:390px;max-width:100%}
+header{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:14px 24px;border-bottom:1px solid var(--bord)}
+header a{color:var(--t2);font-size:13px}h1{font-family:var(--titre);font-size:22px;font-weight:500;margin:0;flex:1}
+.pas{font-size:11.5px;padding:3px 9px;border-radius:999px;border:1px solid var(--bf);color:var(--t2)}
+.pas.mj{border-color:var(--mjb);background:var(--mjf);color:var(--mj)}
+.tabs{display:flex;gap:2px;padding:0 24px;border-bottom:1px solid var(--bord)}
+.tabs span{padding:10px 14px;color:var(--t3);font-size:13.5px;border-bottom:2px solid transparent}.tabs .on{color:var(--t);border-color:var(--act)}
+.corps{display:grid;grid-template-columns:1fr 340px;gap:20px;padding:20px 24px 90px}
+.tel .corps{grid-template-columns:1fr;padding:16px 14px 110px}.tel header,.tel .tabs{padding-left:14px;padding-right:14px}
+.pan{background:var(--s);border:1px solid var(--bord);border-radius:12px;padding:14px 16px;margin-bottom:14px}
+.pan h2{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--t3);margin:0 0 10px;font-weight:600}
+.lg{display:flex;align-items:center;gap:10px;margin:8px 0;flex-wrap:wrap}.lg label{width:150px;font-size:13px;color:var(--t2)}
+.in{width:84px;font:inherit;font-size:13px;padding:7px 9px;border-radius:8px;border:1px solid var(--bc);background:var(--s2);color:var(--t);text-align:right}
+.in.bad{border-color:var(--err);background:var(--errf)}.err{font-size:12px;color:var(--err);flex-basis:100%;margin-left:160px}
+.tel .err{margin-left:0}.tel .lg label{width:100%}
+.cur{flex:1;min-width:120px;height:4px;border-radius:2px;background:var(--s2);position:relative}.cur i{position:absolute;left:0;top:0;bottom:0;border-radius:2px;background:var(--act)}
+.cur b{position:absolute;top:-6px;width:16px;height:16px;border-radius:50%;background:var(--t);border:2px solid var(--act);margin-left:-8px}
+.def{font-size:11.5px;color:var(--t3);flex-basis:100%;margin-left:160px}.def u{color:var(--act);text-decoration:none;cursor:pointer}.tel .def{margin-left:0}
+.mod::before{content:"";display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--act);margin-right:6px}
+table{width:100%;border-collapse:collapse;font-size:13px}th{font-weight:500;color:var(--t3);text-align:left;font-size:11.5px;padding:4px 6px}td{padding:5px 6px;border-top:1px solid var(--bord)}
+td .in{width:46px;padding:5px 6px}
+.tel table,.tel thead{display:none}.cls{display:none;border-top:1px solid var(--bord);padding:8px 0}.tel .cls{display:block}.cls b{display:block;margin-bottom:4px;font-weight:500}
+.sys{background:var(--ciel);border:1px solid var(--bord);border-radius:12px;padding:10px;margin-bottom:10px}
+.sys .row{display:flex;align-items:center;justify-content:space-around;height:62px}
+.sys .l{font-size:12px;color:var(--t2);margin-top:6px}.sys .l b{color:var(--t);font-weight:500}
+.o{border-radius:50%;display:inline-block}
+.st{position:sticky;top:12px;align-self:start}.tel .st{position:static}
+.barre{position:absolute;left:0;right:0;bottom:0;background:var(--lat);border-top:1px solid var(--bf);padding:12px 24px;display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.tel .barre{padding:10px 14px}.barre p{margin:0;flex:1;font-size:13.5px;min-width:200px}.barre p small{display:block;color:var(--t3);font-size:12px;margin-top:2px}
+.btn{font:inherit;font-size:13px;padding:8px 16px;border-radius:8px;border:1px solid var(--bf);background:var(--s2);color:var(--t);min-height:36px}
+.btn.pri{background:var(--act);border-color:var(--act);color:#14162a;font-weight:600}.btn[disabled]{opacity:.45}
+.lst{display:flex;flex-direction:column;gap:2px}.rw{display:flex;align-items:center;gap:12px;padding:8px 10px;border-radius:8px;font-size:13.5px;min-height:56px}
+.rw.on{background:var(--acf)}.rw .th{width:48px;height:48px;border-radius:8px;flex:none}.rw span{flex:1}
+.gr{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--t3);padding:10px 10px 4px}
+.big{height:200px;border-radius:12px;display:flex;align-items:center;justify-content:center;background:var(--ciel);margin-bottom:12px}
+.sw{width:30px;height:30px;border-radius:6px;border:1px solid var(--bc);flex:none}
+.hex{width:100px;text-align:left}
+.ban{padding:8px 24px;background:var(--mjf);color:var(--mj);font-size:13px;border-bottom:1px solid var(--mjb)}
+.dlg{position:absolute;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;padding:16px}
+.dlg div{background:var(--s);border:1px solid var(--bf);border-radius:12px;padding:20px;max-width:420px}.dlg h3{margin:0 0 8px;font-family:var(--titre);font-weight:500}
+.dlg p{color:var(--t2);margin:0 0 16px;line-height:1.45}.dlg .ac{display:flex;gap:10px;justify-content:flex-end}
+@media (max-width:760px){.corps{grid-template-columns:1fr}}
+</style></head><body><div class="wrap">
+
+<div><p class="lab">1 — MJ · « Générateur » · décompte affiché</p><div class="frame" style="min-height:760px">
+<header><a>← Galaxie</a><h1>Réglages du générateur</h1><span class="pas">Galaxie d'Éneria d'essai</span><span class="pas mj">MJ</span></header>
+<div class="tabs" role="tablist"><span class="on" role="tab">Générateur</span><span role="tab">Aspects</span></div>
+<div class="corps"><div>
+ <div class="pan"><h2>Graine et version</h2>
+  <div class="lg"><label>Graine</label><span style="font-family:ui-monospace,monospace">a3f9c2e1b7d4</span><button class="btn" style="margin-left:auto">Changer la graine…</button></div>
+  <div class="lg"><label>Version du générateur</label><span>1</span></div></div>
+ <div class="pan"><h2>Densité par défaut</h2>
+  <div class="lg"><label for="d">Densité (%)</label><input id="d" class="in" value="68"><span class="def" style="margin:0">Les zones de densité écrasent cette valeur.</span></div></div>
+ <div class="pan"><h2>Fréquences</h2>
+  <div class="lg"><label class="mod">Comètes</label><input class="in" value="1,00"><div class="cur"><i style="width:100%"></i><b style="left:100%"></b></div><div class="def">Défaut : 0,20 · <u>Revenir au défaut</u></div></div>
+  <div class="lg"><label>Zones (anneaux, nuages)</label><input class="in" value="0,35"><div class="cur"><i style="width:35%"></i><b style="left:35%"></b></div></div>
+  <div class="lg"><label>Nébuleuses</label><input class="in" value="0,10"><div class="cur"><i style="width:10%"></i><b style="left:10%"></b></div></div></div>
+ <div class="pan"><h2>Bornes par classe d'étoile</h2>
+  <table><thead><tr><th>Classe</th><th>Planètes</th><th>Lunes par planète</th><th>Ceintures</th><th>Total</th></tr></thead>
+  <tbody><tr><td>Naine rouge (M)</td><td><input class="in" value="1"> – <input class="in" value="5"></td><td><input class="in" value="0"> – <input class="in" value="2"></td><td><input class="in" value="0"> – <input class="in" value="1"></td><td><input class="in" value="1"> – <input class="in" value="6"></td></tr>
+  <tr><td>Étoile jaune (G)</td><td><input class="in" value="2"> – <input class="in" value="8"></td><td><input class="in" value="0"> – <input class="in" value="3"></td><td><input class="in" value="0"> – <input class="in" value="2"></td><td><input class="in" value="2"> – <input class="in" value="9"></td></tr></tbody></table>
+  <p class="def" style="margin:8px 0 0">Les autres classes (K, F, A, B) suivent le même tableau. <u style="color:var(--act)">Tout remettre aux valeurs par défaut</u></p></div>
+</div>
+<div class="st"><div class="pan" style="padding:12px"><h2>Systèmes d'exemple</h2><p style="margin:0 0 10px;font-size:12.5px;color:var(--t3)">Systèmes d'exemple, pas de votre galaxie.</p>
+ <div class="sys"><div class="row"><i class="o" style="width:30px;height:30px;background:radial-gradient(circle at 35% 30%,#ffb28a,#c2492a 70%)"></i><i class="o" style="width:14px;height:14px;background:radial-gradient(circle at 35% 30%,#9fb3c8,#46586c)"></i><i class="o" style="width:18px;height:18px;background:radial-gradient(circle at 35% 30%,#bcd9e8,#3f7aa3)"></i><i class="o" style="width:10px;height:10px;background:#8c93a6"></i><i class="o" style="width:22px;height:8px;background:linear-gradient(90deg,#fff,#7fd4ff 60%,transparent)"></i></div><div class="l"><b>Naine rouge</b> · 3 planètes · 2 lunes · 1 comète</div></div>
+ <div class="sys"><div class="row"><i class="o" style="width:34px;height:34px;background:radial-gradient(circle at 35% 30%,#fff4c2,#e8a92f 70%)"></i><i class="o" style="width:12px;height:12px;background:radial-gradient(circle at 35% 30%,#c9b79a,#6f5a42)"></i><i class="o" style="width:20px;height:20px;background:radial-gradient(circle at 35% 30%,#e8c79a,#a56b37)"></i><i class="o" style="width:26px;height:26px;background:radial-gradient(circle at 35% 30%,#d9c7a6,#8b6c46)"></i><i class="o" style="width:22px;height:8px;background:linear-gradient(90deg,#fff,#7fd4ff 60%,transparent)"></i></div><div class="l"><b>Étoile jaune</b> · 5 planètes · 4 lunes · 1 ceinture · 1 comète</div></div>
+ <div class="sys"><div class="row"><i class="o" style="width:38px;height:38px;background:radial-gradient(circle at 35% 30%,#fff,#9ec3ff 70%)"></i><i class="o" style="width:16px;height:16px;background:radial-gradient(circle at 35% 30%,#d6d6e8,#6c6c92)"></i><i class="o" style="width:22px;height:22px;background:radial-gradient(circle at 35% 30%,#ffd0a0,#a8542c)"></i><i class="o" style="width:22px;height:8px;background:linear-gradient(90deg,#fff,#7fd4ff 60%,transparent)"></i></div><div class="l"><b>Étoile blanche (A)</b> · 2 planètes · 1 lune · 1 comète</div></div></div></div>
+</div>
+<div class="barre"><p aria-live="polite">214 systèmes tirés changent d'intérieur. 12 systèmes définis ne bougent pas.<small>sur 250 × 250 hexagones</small></p><button class="btn">Annuler les changements</button><button class="btn pri">Appliquer</button></div>
+</div></div>
+
+<div><p class="lab">2 — Confirmation (ouverte par « Appliquer »)</p><div class="frame" style="height:260px"><div class="dlg"><div><h3>Appliquer ces réglages ?</h3><p>214 systèmes tirés changent d'intérieur. 12 systèmes définis ne bougent pas. Les étoiles de la galaxie ne bougent pas.</p><div class="ac"><button class="btn">Annuler</button><button class="btn pri">Appliquer</button></div></div></div></div></div>
+
+<div><p class="lab">3 — MJ · « Aspects » · type « glace »</p><div class="frame" style="min-height:560px">
+<header><a>← Galaxie</a><h1>Réglages du générateur</h1><span class="pas mj">MJ</span></header>
+<div class="tabs"><span>Générateur</span><span class="on">Aspects</span></div>
+<div class="corps" style="padding-bottom:24px"><div class="lst">
+ <div class="gr">Corps</div>
+ <div class="rw"><i class="th" style="background:radial-gradient(circle at 35% 30%,#c9b79a,#6f5a42)"></i><span>Tellurique</span></div>
+ <div class="rw"><i class="th" style="background:radial-gradient(circle at 35% 30%,#e8c79a,#a56b37)"></i><span>Gazeuse</span></div>
+ <div class="rw on"><i class="th" style="background:radial-gradient(circle at 35% 30%,#e6f4ff,#5fa3d6 70%)"></i><span>Glace</span><em style="font-style:normal" class="pas mj">Modifié</em></div>
+ <div class="rw"><i class="th" style="background:radial-gradient(circle at 35% 30%,#ff9a52,#8a1f0c)"></i><span>Lave</span></div>
+ <div class="gr">Étoile</div>
+ <div class="rw"><i class="th" style="background:radial-gradient(circle at 35% 30%,#fff4c2,#e8a92f 70%)"></i><span>Étoile jaune (G)</span></div></div>
+ <div class="st"><div class="pan"><h2>Glace</h2><div class="big"><i class="o" style="width:150px;height:150px;background:radial-gradient(circle at 35% 30%,#e6f4ff,#5fa3d6 70%)"></i></div>
+  <div class="lg"><label>Couleur claire</label><i class="sw" style="background:#e6f4ff"></i><input class="in hex" value="#e6f4ff"></div>
+  <div class="lg"><label>Couleur sombre</label><i class="sw" style="background:#5fa3d6"></i><input class="in hex" value="#5fa3d6"></div>
+  <div class="lg"><label>Relief</label><input class="in" value="0,40"><div class="cur"><i style="width:40%"></i><b style="left:40%"></b></div></div>
+  <div class="lg"><label>Atmosphère</label><input class="in" value="0,25"><div class="cur"><i style="width:25%"></i><b style="left:25%"></b></div></div>
+  <p style="font-size:12.5px;color:var(--t3);margin:10px 0">Les illustrations de tous les astres de ce type changent. Aucun astre ne bouge.</p>
+  <div style="display:flex;gap:10px"><button class="btn">Revenir au défaut</button><button class="btn pri" style="margin-left:auto">Enregistrer</button></div></div></div>
+</div></div></div>
+
+<div><p class="lab">4 — Valeur refusée (fréquence 2) · « Appliquer » désactivé</p><div class="frame" style="min-height:300px">
+<div class="corps" style="grid-template-columns:1fr;padding-bottom:90px"><div class="pan"><h2>Fréquences</h2>
+ <div class="lg"><label>Comètes</label><input class="in bad" value="2" aria-invalid="true"><div class="cur"><i style="width:100%"></i><b style="left:100%"></b></div><div class="err" role="alert">Entre 0 et 1.</div></div></div></div>
+<div class="barre"><p>Corrigez les champs marqués.</p><button class="btn pri" disabled>Appliquer</button></div></div></div>
+
+<div><p class="lab">5 — Téléphone (390 px) · MJ · « Générateur »</p><div class="frame tel" style="min-height:900px">
+<header><a>← Galaxie</a><h1 style="flex-basis:100%;font-size:19px">Réglages du générateur</h1></header>
+<div class="tabs"><span class="on">Générateur</span><span>Aspects</span></div>
+<div class="corps"><div>
+ <div class="pan"><h2>Fréquences</h2>
+  <div class="lg"><label class="mod">Comètes</label><input class="in" value="1,00"><div class="cur"><i style="width:100%"></i><b style="left:100%"></b></div><div class="def">Défaut : 0,20 · <u>Revenir au défaut</u></div></div></div>
+ <div class="pan"><h2>Bornes par classe d'étoile</h2>
+  <div class="cls" style="border:0"><b>Naine rouge (M)</b><div class="lg"><label>Planètes</label><input class="in" value="1"> – <input class="in" value="5"></div><div class="lg"><label>Lunes par planète</label><input class="in" value="0"> – <input class="in" value="2"></div><div class="lg"><label>Ceintures</label><input class="in" value="0"> – <input class="in" value="1"></div><div class="lg"><label>Total</label><input class="in" value="1"> – <input class="in" value="6"></div></div></div>
+ <div class="pan" style="padding:12px"><h2>Systèmes d'exemple</h2><div class="sys"><div class="row"><i class="o" style="width:30px;height:30px;background:radial-gradient(circle at 35% 30%,#ffb28a,#c2492a 70%)"></i><i class="o" style="width:14px;height:14px;background:radial-gradient(circle at 35% 30%,#9fb3c8,#46586c)"></i><i class="o" style="width:18px;height:18px;background:radial-gradient(circle at 35% 30%,#bcd9e8,#3f7aa3)"></i></div><div class="l"><b>Naine rouge</b> · 3 planètes · 2 lunes · 1 comète</div></div></div>
+</div>
+<div class="barre"><p>214 systèmes tirés changent d'intérieur. 12 systèmes définis ne bougent pas.</p><button class="btn pri" style="width:100%">Appliquer</button></div>
+</div></div>
+
+<div><p class="lab">6 — GM en mode Joueur (lecture seule)</p><div class="frame" style="min-height:200px"><div class="ban">Mode joueur actif.</div>
+<div class="corps" style="grid-template-columns:1fr;padding-bottom:20px"><div class="pan"><h2>Fréquences</h2><div class="lg"><label>Comètes</label><input class="in" value="0,20" disabled style="opacity:.6"><div class="cur"><i style="width:20%"></i><b style="left:20%"></b></div></div></div></div></div></div>
+
+</div></body></html>
