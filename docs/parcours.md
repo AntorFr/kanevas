@@ -1032,7 +1032,7 @@ search, nor in the count.
 ### P-22 — Read and tend a star system (Antor, GM, at a desk; Léa, Player, on a phone)
 
 Antor opens the galaxy (E-21) of Lame d'Ébène on the Éneria seed, taps a star and chooses « Ouvrir le système » (E-23).
-Until `kanevas-carte-spatiale-carte`, step 1 is the text version: the same system as lists « Corps » and « Zones » (each line: name, type, orbit and hour), read alike by Antor and by Léa, with « Page introuvable. » for a hidden system.
+Until `kanevas-carte-spatiale-carte`, only the opening is testable, and it is the text version: the same system as lists « Corps » and « Zones » (each line: name, type, orbit and hour), read alike by Antor and by Léa, with « Page introuvable. » for a hidden system. Its strong moment: Léa, on her phone, reads the very lines Antor read, anomaly included. Steps 1 to 5 below are those of the map: taps, illustrations, drag, names and the ship come with `-carte`, `-edition` and `-elements`.
 1. **E-23** shows the star at the centre, three planets, a belt, a comet, and the exits. He taps the second planet: the panel shows its illustration,
    « Orbite 4 · 7 h », its type, and the link to its sheet when one exists (B-92).
 2. « Voir l'illustration » opens the high-definition image (cached after the first time); « Illustrer la fiche » adds it to the sheet.
