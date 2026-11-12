@@ -1032,7 +1032,7 @@ search, nor in the count.
 ### P-22 — Read and tend a star system (Antor, GM, at a desk; Léa, Player, on a phone)
 
 Antor opens the galaxy (E-21) of Lame d'Ébène on the Éneria seed, taps a star and chooses « Ouvrir le système » (E-23).
-Until `kanevas-carte-spatiale-carte`, only the opening is testable, and it is the text version: the same system as lists « Corps » and « Zones » (each line: name, type, orbit and hour), read alike by Antor and by Léa, with « Page introuvable. » for a hidden system. Its strong moment: Léa, on her phone, reads the very lines Antor read, anomaly included. Steps 1 to 5 below are those of the map: taps, illustrations, drag, names and the ship come with `-carte`, `-edition` and `-elements`.
+Until `kanevas-carte-spatiale-carte`, only the opening is testable, and it is the text version: the same system as lists « Corps » and « Zones » (each line: name, type, orbit and hour), read alike by Antor and by Léa, with « Page introuvable. » for a hidden system. Its strong moment: Léa, on her phone, reads the very lines Antor read, anomaly included. Steps 1 to 5 below are those of the map: `-carte` brings the taps and the illustrations (step 1 without the sheet link, and the high-definition image of step 2), `-liens` the link and « Illustrer la fiche », `-edition` the drag and the names, `-elements` the ship. Moment fort of `-carte`: Léa, on her phone, taps a planet and sees its illustration sharpen, the same planet Antor sees.
 1. **E-23** shows the star at the centre, three planets, a belt, a comet, and the exits. He taps the second planet: the panel shows its illustration,
    « Orbite 4 · 7 h », its type, and the link to its sheet when one exists (B-92).
 2. « Voir l'illustration » opens the high-definition image (cached after the first time); « Illustrer la fiche » adds it to the sheet.
@@ -1042,7 +1042,7 @@ Until `kanevas-carte-spatiale-carte`, only the opening is testable, and it is th
 5. **Moment fort:** Léa, on her phone, opens the same system: every body is there with its illustration, the new name and, from the sheet, « Sur la carte spatiale ». The ship is there
    too, unless Antor set it « Réservé au MJ »: then there is no empty slot and no count.
 
-*Failure path:* the server does not answer → « Impossible de lire ce système. » + « Réessayer », or the list already read under « Connexion perdue. »; the core fails to load in the browser → the map is replaced by the list of bodies (text, illustrations by the server) and
+*Failure path:* an illustration that cannot arrive → the blurred version with « Illustration indisponible. » + « Réessayer »; the server does not answer → « Impossible de lire ce système. » + « Réessayer », or the list already read under « Connexion perdue. »; the core fails to load in the browser → the map is replaced by the list of bodies (text, illustrations by the server) and
 « La carte ne peut pas s'afficher ici. » (E-23 states); a body moved by another GM meanwhile → « Cet astre a changé depuis que vous l'avez ouvert. » + « Recharger ».
 
 ### P-23 — Tune the generator (Antor, GM)
