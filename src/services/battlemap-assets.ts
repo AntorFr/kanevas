@@ -286,3 +286,19 @@ export function retirerAssets(db: Db, acteur: Acteur, universId: number, ids: nu
     return uniques.length;
   })();
 }
+
+export interface FichierDisponible { id: number; nom: string; type: string; taille: number; visible: boolean; jeton: string }
+
+/**
+ * « Choisir dans la médiathèque »: the images of the library backing no asset, newest first. GM outside Player mode only
+ * (`exigerEcriture`): nobody else is handed a file, the GM-only ones included.
+ */
+export function listerFichiersDisponibles(db: Db, acteur: Acteur, universId: number): FichierDisponible[] {
+  exigerEcriture(db, acteur, universId);
+  const rows = db.prepare(
+    `SELECT f.id, f.nom, f.type, f.taille, f.visibilite, f.disque FROM fichiers f
+     WHERE f.univers_id = ? AND f.type IN ('image/png','image/jpeg','image/gif','image/webp')
+       AND NOT EXISTS (SELECT 1 FROM bm_assets a WHERE a.fichier_id = f.id) ORDER BY f.id DESC`,
+  ).all(universId) as { id: number; nom: string; type: string; taille: number; visibilite: string; disque: string }[];
+  return rows.map((r) => ({ id: r.id, nom: r.nom, type: r.type, taille: r.taille, visible: r.visibilite === 'joueurs', jeton: r.disque }));
+}

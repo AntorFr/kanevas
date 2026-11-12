@@ -28,4 +28,8 @@ export const battlemapAssets: DeclarationAide = {
 
 export const battlemap: DeclarationModule = {
   nom: 'battlemap', libelle: 'Battle map', reglagesCommuns: {}, outils: [battlemapAssets],
+  // Loaded at registration of the routes (same cycle as `swn`).
+  routes: async (app, garde) => {
+    (await import('./routes.js')).routesBattlemap(app, garde);
+  },
 };
