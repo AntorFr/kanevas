@@ -1046,8 +1046,8 @@ Antor opens the galaxy (E-21) of Lame d'Ébène on the Éneria seed, taps a star
 
 ### P-23 — Tune the generator (Antor, GM)
 
-From E-21 « Réglages du générateur… » opens **E-24**. Antor lowers the comet frequency, widens the planets of red dwarfs, and changes the palette of the « glace » type in the catalogue
-of aspects. Before applying, E-24 says « 214 systèmes tirés changent d'intérieur. 12 systèmes définis ne bougent pas. » *Moment fort:* the live thumbnails of three sample systems
+From E-21 « Réglages du générateur… » opens **E-24**. Antor lowers the comet frequency, widens the planets of red dwarfs, and then, on the « Aspects » tab, changes the palette of the « glace » type
+and saves it (no count, nothing moves: only the pictures change). Before applying the generator values, E-24 says « 214 systèmes tirés changent d'intérieur. 12 systèmes définis ne bougent pas. » *Moment fort:* the live thumbnails of three sample systems
 redraw as he moves the sliders. *Failure path:* a value out of range is refused at the field with the bound; a seed change asks the confirmation of E-21.
 
 ### P-24 — An external agent completes a system (agent with a token, GM watching)
