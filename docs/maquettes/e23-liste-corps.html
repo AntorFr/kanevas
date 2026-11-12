@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Système, liste des corps — Kanevas</title><style>
+/*
+MAQUETTE — E-23, version texte (tranche kanevas-carte-spatiale-systeme). Illustre docs/ecrans.md « E-23 — System map »
+(liste des corps, états) ; la carte à canvas est e23-carte-systeme.html, construite par -carte. Tokens : frontend/src/ui/tokens.css
+(docs/charte.md). Données inventées. Le document prime sur la maquette.
+*/
+:root{--fond:#121317;--lat:#0e0f12;--s:#191a1f;--s2:#202128;--bord:rgba(255,255,255,.08);--bf:rgba(255,255,255,.14);--t:#ebecf0;--t2:#a6a7b0;--t3:#8b8c97;
+--ac:#8b9bf0;--act:#9aa6f5;--acf:rgba(154,166,245,.16);--mj:#f2a33c;--mjf:rgba(242,163,60,.14);--mjb:rgba(242,163,60,.42);--table:#3fc79a;
+--titre:"Fraunces Variable","Fraunces","Iowan Old Style",Georgia,serif;--txt:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+*{box-sizing:border-box}body{margin:0;background:var(--fond);color:var(--t);font:14px var(--txt)}
+
+.wrap{padding:16px;display:grid;gap:22px;grid-template-columns:repeat(auto-fit,minmax(380px,1fr))}
+.lab{font-size:11px;text-transform:uppercase;letter-spacing:.08em;margin:0 0 6px;font-weight:600}.lab.j{color:var(--table)}.lab.m{color:var(--mj)}
+.frame{border:1px solid var(--bf);border-radius:12px;overflow:hidden;background:var(--fond)}
+header{display:flex;align-items:center;flex-wrap:wrap;gap:10px;padding:12px 16px;border-bottom:1px solid var(--bord)}
+header h1{font:500 19px var(--titre);margin:0}.tag{font-size:11px;padding:2px 8px;border-radius:99px;border:1px solid var(--bf);color:var(--t2)}
+.tag.mj{background:var(--mjf);border-color:var(--mjb);color:var(--mj)}
+.retour{color:var(--act);font-size:12.5px;margin-left:auto}
+main{padding:14px 16px;display:flex;flex-direction:column;gap:12px}
+h2{font:500 15px var(--titre);margin:0}
+ul.corps{list-style:none;margin:0;padding:0;border:1px solid var(--bord);border-radius:10px;background:var(--s)}
+ul.corps li{padding:9px 12px;border-top:1px solid var(--bord);display:grid;grid-template-columns:1fr auto;gap:2px 12px}
+ul.corps li:first-child{border-top:0}ul.corps li.lune{padding-left:30px}
+.nom{font-weight:600}.nom.vide{font-weight:400;color:var(--t2);font-style:italic}
+.meta{color:var(--t2);font-size:12.5px}.place{color:var(--t2);font-size:12.5px;text-align:right;white-space:nowrap}
+.etat{border:1px dashed var(--bf);border-radius:10px;padding:18px;text-align:center;color:var(--t2)}
+.banniere{background:var(--mjf);border:1px solid var(--mjb);color:var(--mj);border-radius:8px;padding:6px 10px;font-size:12.5px}
+.btn{padding:8px 12px;border-radius:8px;border:1px solid var(--bf);background:var(--s2);color:var(--t);font:inherit;cursor:pointer}
+.sk{height:14px;border-radius:6px;background:var(--s2);margin:10px 12px}
+@media(max-width:560px){.wrap{grid-template-columns:1fr}ul.corps li{grid-template-columns:1fr}.place{text-align:left}}
+</style></head><body><div class="wrap">
+
+<section><p class="lab m">MJ — Antor, système tiré (même lecture deux fois)</p><div class="frame">
+<header><h1>Système sans nom (12, −7)</h1><span class="tag">Tiré</span><span class="tag">Hexagone 12, −7</span><a class="retour" href="#">← Galaxie</a></header>
+<main><h2>Corps (6)</h2>
+<ul class="corps" aria-label="Corps du système">
+<li><span class="nom vide">Astre sans nom</span><span class="place">Orbite 0 · 0 h</span><span class="meta">Étoile jaune</span></li>
+<li><span class="nom vide">Astre sans nom</span><span class="place">Orbite 1,02 · 3,4 h</span><span class="meta">Rocheux</span></li>
+<li><span class="nom vide">Astre sans nom</span><span class="place">Orbite 2,03 · 6,1 h</span><span class="meta">Tellurique</span></li>
+<li class="lune"><span class="nom vide">Astre sans nom</span><span class="place">Orbite 0,4 · 9 h</span><span class="meta">Lune · Rocheux</span></li>
+<li><span class="nom vide">Astre sans nom</span><span class="place">Orbite 4,1 · 8,8 h</span><span class="meta">Gazeuse</span></li>
+<li><span class="nom vide">Astre sans nom</span><span class="place">Orbite 6,5 · 1,2 h</span><span class="meta">Comète</span></li></ul>
+<h2>Zones (2)</h2>
+<ul class="corps" aria-label="Zones du système">
+<li><span class="nom vide">Zone sans nom</span><span class="place">Orbite 2,9 à 3,3</span><span class="meta">Anneau</span></li>
+<li><span class="nom vide">Zone sans nom</span><span class="place">Orbite 5,2 · 4 h</span><span class="meta">Nuage</span></li></ul>
+</main></div></section>
+
+<section><p class="lab j">Joueuse — Léa, téléphone (390 px), système défini</p><div class="frame" style="max-width:390px">
+<header><h1>Système Vael</h1><span class="tag">Défini</span><span class="tag">Hexagone 3, −5</span><a class="retour" href="#">← Galaxie</a></header>
+<main><h2>Corps (4)</h2>
+<ul class="corps">
+<li><span class="nom">Vael</span><span class="meta">Étoile jaune</span><span class="place">Orbite 0 · 0 h</span></li>
+<li><span class="nom">Vael II</span><span class="meta">Tellurique</span><span class="place">Orbite 4 · 7 h</span></li>
+<li class="lune"><span class="nom vide">Astre sans nom</span><span class="meta">Lune · Rocheux</span><span class="place">Orbite 0,4 · 2 h</span></li>
+<li><span class="nom">Anomalie de Sel</span><span class="meta">Anomalie</span><span class="place">Orbite 8 · 11,5 h</span></li></ul>
+</main></div></section>
+
+<section><p class="lab m">Système défini, vide — MJ</p><div class="frame"><header><h1>Cache de Port-Sel</h1><span class="tag mj">Défini</span><span class="tag">Hexagone 1, 2</span></header>
+<main><div class="etat">Ce système est vide.</div></main></div></section>
+
+<section><p class="lab j">Système défini, vide — joueuse</p><div class="frame"><header><h1>Cache de Port-Sel</h1><span class="tag">Défini</span><span class="tag">Hexagone 1, 2</span></header>
+<main><div class="etat">Rien à voir dans ce système pour l'instant.</div></main></div></section>
+
+<section><p class="lab j">Chargement</p><div class="frame"><header><h1>Système</h1></header>
+<main><div class="etat" role="status">Chargement du système…</div><ul class="corps"><li><div class="sk" style="width:60%"></div></li><li><div class="sk" style="width:45%"></div></li></ul></main></div></section>
+
+<section><p class="lab j">Erreur</p><div class="frame"><header><h1>Système</h1></header>
+<main><div class="etat" role="alert">Impossible de lire ce système.<br><br><button class="btn">Réessayer</button></div></main></div></section>
+
+<section><p class="lab j">Hors ligne</p><div class="frame"><header><h1>Système Vael</h1><span class="tag">Défini</span></header>
+<main><div class="banniere" role="status">Connexion perdue.</div><ul class="corps"><li><span class="nom">Vael</span><span class="meta">Étoile jaune</span><span class="place">Orbite 0 · 0 h</span></li></ul></main></div></section>
+
+<section><p class="lab j">Refus — inconnu, masqué pour une joueuse, hors du rôle</p><div class="frame"><header><h1>Page introuvable.</h1></header>
+<main><div class="etat">Page introuvable.<br><br><a class="retour" style="margin:0" href="#">Retour</a></div></main></div></section>
+
+</div></body></html>

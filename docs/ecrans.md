@@ -4393,6 +4393,12 @@ Criteria:
 - Given the core failing to load, the list of bodies shows with the message and every panel action stays usable.
 - Given Antor, « Illustrer la fiche » on a linked body adds the image to the sheet's illustration through the media library, visible as the sheet's own rules decide.
 
+#### E-23 — what `kanevas-carte-spatiale-systeme` builds first (text version)
+
+Address `/univers/:id/outils/swn/galaxie/:gid/interieur/:q/:r` (a drawn system has no row, so the hexagon is the address). Until `-carte` the screen is the header and the **list of bodies and zones** only
+(`docs/maquettes/e23-liste-corps.html`): name or « Astre sans nom » / « Zone sans nom », type (« Lune · Rocheux » under its planet), « Orbite 4 · 7 h » (a ring: « Orbite 2,9 à 3,3 »), « Hexagone q, r » in the header, the mark « Tiré » or « Défini ».
+States: empty (« Ce système est vide. » for the GM, « Rien à voir dans ce système pour l'instant. » for a Player), loading (« Chargement du système… »), error (« Impossible de lire ce système. » + « Réessayer »), offline (banner « Connexion perdue. »), refusal (« Page introuvable. »: unknown, no star at the hexagon, hidden for a Player or for the GM in Player mode). No panel, no action: they come with `-carte` and `-edition`. On E-21 the panel of a readable star gains « Ouvrir le système ».
+
 ### E-24 — Generator settings
 
 **Content**: two tabs. « Générateur »: the seed (the very dialogue of E-21 « Graine… », which stays the one rule and opens from both screens), the version of the generator (read-only; « Passer à la version N… » appears only when a newer one exists, with the count of drawn systems it moves, AD-148), the density by default, frequencies (comet, zone, nebula among zones), ranges of planets, moons, belts and total per star class, with
