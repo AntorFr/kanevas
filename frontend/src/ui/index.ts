@@ -18,3 +18,4 @@ export * from './carte-asset';
 export * from './zone-depot';
 export * from './barre-selection';
 export * from './panneau-lateral';
+export * from './vignette-reference';

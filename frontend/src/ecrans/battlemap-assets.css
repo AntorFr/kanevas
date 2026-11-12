@@ -31,3 +31,9 @@ body:has(.bm-panneau-ouvert) .asst-bouton { right: calc(400px + var(--e-5)); }
   .bm-outils { max-width: none; }
   .bm-assets .bouton { min-height: 44px; }
 }
+
+/* E-26 — Direction artistique (docs/maquettes/e26-direction.html). Tokens only. */
+.bm-direction { display: flex; flex-direction: column; gap: var(--e-3); margin-top: var(--e-3); }
+.bm-direction-texte, .bm-direction textarea { min-height: 130px; max-height: 50vh; overflow-y: auto; resize: vertical; }
+.bm-references { list-style: none; margin: var(--e-3) 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: var(--e-3); }
+@media (max-width: 760px) { .bm-references { grid-template-columns: repeat(2, minmax(0, 1fr)); } .bm-direction .bouton { min-height: 44px; } }

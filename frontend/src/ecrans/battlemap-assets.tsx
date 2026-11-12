@@ -10,6 +10,7 @@ import {
   Alerte, BarreSelection, Bouton, BoiteDialogue, CarteAsset, Champ, Chargement, ErreurChargement, Fenetre, Interrupteur, Menu, Onglets,
   PageIntrouvable, PanneauLateral, PuceFiltre, Segments, useSurvolPage, useToasts, VoileDepot, ZoneDepot,
 } from '../ui';
+import { DirectionArtistique } from './battlemap/direction';
 import './ecrans.css';
 import './battlemap-assets.css';
 
@@ -520,6 +521,7 @@ function BibliothequeEcran() {
 
   const ecriture = mj && !joueur;
   // The art direction tab is the GM's only; a player (or the GM in Player mode) has no tab bar at all.
+  if (!ecriture && params.get('onglet') === 'direction') return <PageIntrouvable />;
   const onglet = ecriture && params.get('onglet') === 'direction' ? 'direction' : 'assets';
   return (
     <div className="page-liste bm-page">
@@ -538,7 +540,7 @@ function BibliothequeEcran() {
       <div role={ecriture ? 'tabpanel' : undefined}>
         {onglet === 'assets'
           ? <Bibliotheque id={id!} ecriture={ecriture} suffixe={suffixe} />
-          : <p className="etat">La direction artistique s’ouvre ici.</p>}
+          : <DirectionArtistique id={id!} />}
       </div>
     </div>
   );

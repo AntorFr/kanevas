@@ -341,3 +341,12 @@ a.jeton:hover { box-shadow: inset 0 0 0 1px var(--bord-champ); }
 .panneau-lateral-tete { display: flex; align-items: center; gap: var(--e-2); margin-bottom: var(--e-3); }
 .panneau-lateral-libelle { flex: 1; display: flex; align-items: center; gap: var(--e-2); color: var(--texte-3); font-size: var(--t-13); }
 @media (max-width: 760px) { .panneau-lateral { width: 100%; z-index: 35; } }
+
+/* Attachment thumbnail with an editable caption (E-26 reference images): GM-only file, 2 px --mj-bord frame. */
+.vignette-ref { display: flex; flex-direction: column; gap: var(--e-2); min-width: 0; }
+.vignette-ref-image { display: block; aspect-ratio: 4 / 3; overflow: hidden; border-radius: var(--rayon-champ); border: 2px solid var(--mj-bord); background: var(--surface-2); }
+.vignette-ref-image img { display: block; width: 100%; height: 100%; object-fit: contain; }
+.vignette-ref-legende { width: 100%; min-width: 0; height: 30px; padding: 0 var(--e-2); font: inherit; font-size: var(--t-13); color: var(--texte);
+  background: var(--champ-fond, var(--surface)); border: 1px solid var(--bord-champ); border-radius: var(--rayon-champ); }
+.vignette-ref-legende:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
+.vignette-ref .bouton-icone { align-self: flex-end; }
