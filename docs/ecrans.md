@@ -4424,6 +4424,30 @@ The sheet of an element linked to the map gains the block « Sur la carte spatia
 The stars of undefined hexagons come from the Rust core (B-86); the panel of any star gains « Ouvrir le système », and « Réglages du générateur… » joins the GM actions. The existing switch « Secret (MJ seul) » of a system now also works on a drawn one (it anchors it first, the dialogue says so); for a Player a hidden system is an empty cell and the routes towards it are absent. The drawn-system rules
 of E-21 do not change: same visibility, same promotion — « Promouvoir » and « Ancrer ce système » are one act on a drawn system (promotion + frozen interior).
 
+### E-21 — hiding a system (`kanevas-carte-spatiale-masquer`, B-97, P-26)
+
+*Gesture.* The « Secret (MJ seul) » switch of the system panel (GM, outside Player mode; nothing is offered otherwise). On a **defined** system it writes the flag and nothing else. On a **drawn** one it opens the anchoring dialog of `-edition` first (same `BoiteDialogue`, title « Masquer ce système ? », text « Masquer ce système le définit : son intérieur sera figé tel que vous le voyez, les réglages du générateur ne le changeront plus. », buttons « Annuler » / « Masquer ») and, once confirmed, anchors and hides in **one transaction** (the row has `promu` true and `secret` true; the neighbouring drawn systems are unchanged because the draw is the same). Turning the switch off needs no dialog and does not un-anchor.
+
+*What each role reads.*
+
+| Who | Galaxy map (E-21) | System map (E-23) and address | Routes, search, counts |
+|---|---|---|---|
+| Antor, Mira (GM) | the star with the badge « MJ seul » | readable, header badge « MJ seul » | all routes, the system found by search |
+| Léa (Player) | **an empty cell**: no star, no name, no halo, nothing to click, no title for assistive technology | « Page introuvable. » (same page as an unknown address) | the routes towards it absent (a route needs both ends readable), no gap, no count; the system is not found by search; a « Mentionnée dans » or a link never names it |
+| Antor in Player mode | what Léa sees | what Léa sees | what Léa sees |
+
+On E-23 of a visible neighbour, the exit towards a hidden system is absent for a Player (and for the GM in Player mode), never greyed. The panel of an empty cell is not opened by a click; a keyboard focus skips it.
+
+*States.* Switch pending: disabled with « Enregistrement… ». Refusal `systeme_inconnu` (deleted meanwhile): « Ce système n'existe plus. », the map reloads. Conflict (`a_change`, another write since the panel opened): « Ce système a changé depuis que vous l'avez ouvert. » and the panel reloads. Network failure: « Impossible d'enregistrer. Réessayer. », the switch returns to its previous position.
+
+*Criteria.*
+- Given Antor on the drawn system (3, −5), when he turns the switch on, then the dialog « Masquer ce système ? » appears first; after « Masquer » the mark reads « Défini » and « MJ seul », and the six neighbouring drawn systems are identical after a reload.
+- Given Léa reloads the galaxy, then (3, −5) is an empty cell, the two routes that led to it are absent, searching its former name finds nothing, and its address reads « Page introuvable. ».
+- Given Antor in Player mode, then he reads exactly what Léa reads; leaving the mode gives the system back.
+- Given Antor turns the switch off, then Léa reads the system again, with its stored interior.
+- Given a Player forcing the write (API), then the answer is a refusal, and the system is unchanged.
+- Given a hidden system, then its name, element count and body count appear in no search result, route list, link, « Mentionnée dans » block, illustration address or error message for a Player.
+
 ### Closing
 
 | Crossing | Result |
