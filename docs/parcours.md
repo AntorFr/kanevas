@@ -714,10 +714,10 @@ has expired — the row says « Expiré », the script receives 401.
 5. She opens « Maître Aldric » through a link, then returns through the breadcrumb.
 6. She asks her **assistant** (E-12) « que sait-on de Port-Sel ? »: it cites nothing from the GM
    block.
-7. *(kanevas-taille-images, B-taille-1)* Antor, de retour sur « Port-Sel », place le curseur dans l'image
-   du port, ouvre « Image » (E-9, « Écrire ») et choisit « Moyen » puis « À droite » ; il enregistre. En
-   lecture le texte de « Histoire » entoure l'image à droite ; sur le téléphone de Léa l'image est un
-   bloc centré, lisible.
+7. *(kanevas-taille-images, B-taille-1)* Back on « Port-Sel », Antor puts the caret inside the harbour
+   image, opens « Image » (E-9, « Écrire ») and picks « Moyen » then « À droite »; he saves. In reading,
+   the text of « Histoire » wraps the image on the right; on Léa's phone the image is a centred block,
+   readable.
 *Highlight*: the same sheet, read by Antor then Léa — the secret is neither shown, findable,
 nor hinted at. (Step 7 is an editing gesture, outside this key moment.)
 *Failure*: an inserted image does not load — « Image indisponible. » in its place; a link to a
