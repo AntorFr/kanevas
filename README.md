@@ -49,7 +49,7 @@ The brand (the « Marge » icon, `assets/brand/kanevas-marge/`) reaches the brow
 
 To **see the brand**: after `npm run build` (re-run it after any change under `frontend/public/`, the server serves `dist/public`), start the stub mode (`KANEVAS_STUB=1 npm start`), open `http://localhost:3001/`, choose an account on the stub sign-in page, then look at the tab and at the sidebar on « Mes univers » (the brand shows outside a universe only). `curl -sI http://localhost:3001/site.webmanifest` answers 200 without a cookie. To check the install manifest, open the browser's developer tools, Application ▸ Manifest. The sign-in page itself is Authelia's in production and the server's stub page in stub mode: it declares no brand (the browser may still show the icon in its tab, `/favicon.ico` being public). Also check both themes (avatar menu ▸ Clair / Sombre) and that inside a universe the sidebar shows the selector, not the brand.
 
-Tests sans Docker : `npm ci` d'abord (un `node_modules/` présent peut être incomplet ; si `npm ci` échoue sur `ENOTEMPTY`, le relancer, ou `rm -rf node_modules` avant), puis `npm run typecheck` puis `npm test` (ils jouent aussi les e2e là où Playwright est installé, ce qui est long : voir « Tests de bout en bout » ; un seul fichier, e2e ou non (`src/db/migration-types.test.ts` : moins d'une seconde) : `node --import tsx --test <fichier>.test.ts`, et, lancées à la main, jamais deux suites à la fois (`npm run tests:attestes` règle lui-même sa concurrence), les e2e démarrent leurs serveurs et échouent en masse sous concurrence ; après un renumérotage de migration, `rm -rf dist` avant `npm run build`, sinon l'ancien fichier copié reste dans `dist/db/migrations` et le serveur ne démarre plus) ; la voie Docker de référence est dans `CLAUDE.md`.
+Tests sans Docker : `npm ci` d'abord (un `node_modules/` présent peut être incomplet ; si `npm ci` échoue sur `ENOTEMPTY`, le relancer, ou `rm -rf node_modules` avant), puis `npm run build:wasm` (Rust, see « Rust / WebAssembly »), `npm run typecheck` puis `npm test` (ils jouent aussi les e2e là où Playwright est installé, ce qui est long : voir « Tests de bout en bout » ; un seul fichier, e2e ou non (`src/db/migration-types.test.ts` : moins d'une seconde) : `node --import tsx --test <fichier>.test.ts`, et, lancées à la main, jamais deux suites à la fois (`npm run tests:attestes` règle lui-même sa concurrence), les e2e démarrent leurs serveurs et échouent en masse sous concurrence ; après un renumérotage de migration, `rm -rf dist` avant `npm run build`, sinon l'ancien fichier copié reste dans `dist/db/migrations` et le serveur ne démarre plus) ; la voie Docker de référence est dans `CLAUDE.md`.
 
 ## Démarrage local
 
@@ -92,7 +92,7 @@ serveur en bouchon (port 3001), s'y connecter sur `http://localhost:3001/`, puis
 `http://localhost:5173/` (le cookie de session ne dépend pas du port).
 
 La voie de référence reste le conteneur Node 20 de `CLAUDE.md` (la même pile que celle des pods qui attestent) ; sans Docker, un Node local
-récent suffit pour les mêmes commandes (`npm ci && npm run typecheck && npm test`).
+récent suffit pour les mêmes commandes (`npm ci && npm run build:wasm && npm run typecheck && npm test`).
 
 ### Import sample acceptance
 
@@ -287,7 +287,7 @@ npm run build           # copies rust/pkg to dist/wasm/ (does not compile Rust; 
 cd rust && cargo test --workspace --locked   # the Rust tests; the suite plays them too, one TAP line each
 ```
 
-Server: `await chargerModule<typeof import('…')>('exemple')` (`src/wasm/charger.ts`; `WASM_DIR` overrides the directory, then `dist/wasm/`, then `rust/pkg/`). Browser: `frontend/src/wasm/charger.ts`; the proof page `frontend/src/wasm/essai/` is served by a Vite dev server started by the e2e test only, never routed nor built into `dist/public`. To add a module: `ARCHITECTURE.md` › « Adding a module » (nothing to touch in the scripts, `package.json` or Dockerfile). In the image, `node dist/wasm/verifier.mjs` runs at the end of the Dockerfile and fails the build on a Wasm that does not load; the `wasm` stage itself is only proven by the `v*` tag build (no Docker in the pods).
+Server: `await chargerModule<typeof import('…')>('exemple')` (`src/wasm/charger.ts`; `WASM_DIR` alone if set, otherwise the loader's own directory, then `dist/wasm/`, then `rust/pkg/`). Browser: `frontend/src/wasm/charger.ts`; the proof page `frontend/src/wasm/essai/` is served by a Vite dev server started by the e2e test only, never routed nor built into `dist/public`. To add a module: `ARCHITECTURE.md` › « Adding a module » (add the module to the closed table of the browser loader; nothing to touch in the scripts, `package.json` or Dockerfile). Node >= 20 as everywhere else; `rustup` must be installed, it fetches the toolchain pinned in `rust/rust-toolchain.toml`. In the image, `node dist/wasm/verifier.mjs` runs at the end of the Dockerfile and fails the build on a Wasm that does not load; the `wasm` stage itself is only proven by the `v*` tag build (no Docker in the pods).
 
 Recipe (stub mode, no Docker): `npm ci && npm run build:wasm && npm run build && node dist/wasm/verifier.mjs` exits 0; then `KANEVAS_STUB=1 npm start` and `curl http://localhost:3001/healthz` answers as before (the product does not call the module yet).
 

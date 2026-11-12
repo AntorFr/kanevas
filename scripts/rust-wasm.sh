@@ -24,6 +24,8 @@ if [ "$installee" != "$attendue" ]; then
 fi
 
 cd "$rust"
+# The .wasm is read from rust/target below: a CARGO_TARGET_DIR from the environment would split the two.
+unset CARGO_TARGET_DIR
 cargo build --release --target wasm32-unknown-unknown --workspace --locked
 
 rm -rf pkg
