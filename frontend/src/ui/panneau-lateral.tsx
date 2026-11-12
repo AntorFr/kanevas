@@ -12,6 +12,7 @@ export function PanneauLateral({
   icone: Icone,
   onFermer,
   echap = true,
+  classe,
   children,
 }: {
   /** Accessible name of the `aside`. */
@@ -20,6 +21,8 @@ export function PanneauLateral({
   icone: LucideIcon;
   onFermer: () => void;
   echap?: boolean;
+  /** An extra class of the `aside` (the screen's own hook, `med-panneau` for E-19). */
+  classe?: string;
   children: ReactNode;
 }) {
   const ouvrant = useRef<HTMLElement | null>(null);
@@ -34,7 +37,7 @@ export function PanneauLateral({
     };
   }, []);
   return (
-    <aside ref={racine} tabIndex={-1} className="panneau-lateral" aria-label={nom} onKeyDown={(e) => e.key === 'Escape' && echap && onFermer()}>
+    <aside ref={racine} tabIndex={-1} className={`panneau-lateral${classe ? ` ${classe}` : ''}`} aria-label={nom} onKeyDown={(e) => e.key === 'Escape' && echap && onFermer()}>
       <div className="panneau-lateral-tete">
         <span className="panneau-lateral-libelle"><Icone size={14} strokeWidth={1.75} aria-hidden="true" />{libelle}</span>
         <button type="button" className="bouton-icone" aria-label="Fermer" title="Fermer" onClick={onFermer}>

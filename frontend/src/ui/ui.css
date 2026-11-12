@@ -322,10 +322,10 @@ a.jeton:hover { box-shadow: inset 0 0 0 1px var(--bord-champ); }
 @media (max-width: 760px) { .carte-asset-case { width: 44px; height: 44px; } }
 
 .barre-selection { display: flex; align-items: center; gap: var(--e-3); flex-wrap: wrap; min-height: 44px; padding: var(--e-1) var(--e-3);
-  background: var(--accent-fond); border: 1px solid color-mix(in srgb, var(--accent-texte) 40%, transparent); border-radius: var(--rayon-panneau); }
+  background-color: var(--surface); background-image: linear-gradient(var(--accent-fond), var(--accent-fond)); box-shadow: inset 0 0 0 1px var(--accent-fond), 0 0 0 1px var(--accent-fond); border-radius: var(--rayon-panneau); }
 .barre-selection-nombre { color: var(--accent-texte); font-size: var(--t-13); font-weight: 500; }
 .barre-selection-controles { display: flex; align-items: center; flex-wrap: wrap; gap: var(--e-2); }
-@media (max-width: 760px) { .barre-selection { position: sticky; bottom: var(--e-3); z-index: 20; background-color: var(--surface); background-image: linear-gradient(var(--accent-fond), var(--accent-fond)); } }
+@media (max-width: 760px) { .barre-selection { position: sticky; bottom: var(--e-3); z-index: 20; } }
 
 .zone-depot { display: flex; align-items: center; flex-wrap: wrap; gap: var(--e-3); padding: var(--e-3) var(--e-4); border: 1px dashed var(--bord-champ); border-radius: var(--rayon-panneau); color: var(--texte-2); }
 .zone-depot.dessus { border-color: var(--accent); background: var(--accent-fond); }

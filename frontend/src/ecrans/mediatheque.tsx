@@ -499,7 +499,7 @@ function Mediatheque() {
       )}
 
       {fid && (
-        <PanneauLateral nom="Fichier" libelle="Fichier" icone={Images} echap={!boite} onFermer={() => ouvrir(null)}>
+        <PanneauLateral classe="med-panneau" nom="Fichier" libelle="Fichier" icone={Images} echap={!boite} onFermer={() => ouvrir(null)}>
           {detailEtat === 'chargement' && <div className="etat" role="status">Chargement…</div>}
           {detailEtat === 'erreur' && <ErreurChargement texte="Impossible de charger la médiathèque." onReessayer={recharger} />}
           {detailEtat === 'ok' && f && (
