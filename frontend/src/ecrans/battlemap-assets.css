@@ -1,0 +1,33 @@
+/* E-25 — Bibliothèque (docs/maquettes/e25-bibliotheque.html). Tokens only. */
+.page-liste.bm-page { max-width: 1120px; }
+.bm-assets { display: flex; flex-direction: column; gap: var(--e-3); margin-top: var(--e-3); }
+.zone-principale:has(.bm-panneau-ouvert) { margin-right: 400px; }
+body:has(.bm-panneau-ouvert) .asst-bouton { right: calc(400px + var(--e-5)); }
+.bm-outils { max-width: 360px; }
+.bm-puces { display: flex; flex-wrap: wrap; gap: var(--e-2); }
+.bm-grille { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: var(--e-4) var(--e-3); }
+.bm-vide { padding: var(--e-6) var(--e-4); display: flex; flex-direction: column; align-items: center; gap: var(--e-3); }
+.bm-vide p { margin: 0; }
+.bm-etiquette { min-width: 160px; }
+.bm-etiquette .lib-champ { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.bm-etiquette .champ { margin: 0; }
+.barre-selection .bouton { min-height: 30px; }
+.barre-selection .champ input { height: 30px; }
+.bm-fichiers { list-style: none; margin: var(--e-2) 0 var(--e-3); padding: 0; max-height: 160px; overflow-y: auto; font-size: var(--t-13); color: var(--texte-2); }
+.bm-fichiers li { overflow-wrap: anywhere; padding: 2px 0; }
+.bm-choix { list-style: none; margin: var(--e-3) 0; padding: 0; max-height: 50vh; overflow-y: auto; display: flex; flex-direction: column; gap: var(--e-2); }
+.bm-choix li { display: flex; align-items: center; gap: var(--e-3); }
+.bm-choix img { width: 48px; height: 36px; object-fit: contain; border-radius: var(--rayon-item); background: var(--surface-2); flex: none; }
+.bm-choix-nom { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bm-vide-choix { color: var(--texte-2); }
+.bm-panneau-image { height: 140px; aspect-ratio: auto; margin-bottom: var(--e-3); }
+.bm-panneau-titre { font: 500 var(--t-22)/1.25 var(--police-titre); overflow-wrap: anywhere; margin: 0 0 var(--e-3); }
+.bm-empreinte { display: grid; grid-template-columns: 1fr 1fr; gap: var(--e-3); }
+.bm-note { color: var(--texte-3); font-size: var(--t-13); margin: var(--e-2) 0; }
+@media (max-width: 1024px) { .zone-principale:has(.bm-panneau-ouvert) { margin-right: 0; } }
+@media (max-width: 760px) {
+  .bm-grille { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  body:has(.bm-panneau-ouvert) .asst-bouton { visibility: hidden; }
+  .bm-outils { max-width: none; }
+  .bm-assets .bouton { min-height: 44px; }
+}

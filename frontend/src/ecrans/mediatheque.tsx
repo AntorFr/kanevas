@@ -7,7 +7,7 @@ import { useCharge } from '../cadre-contexte';
 import type { Ecran } from '../registre';
 import type { UniversListe } from '../types';
 import { iconeDuType, useTypes } from '../types-contexte';
-import { Bouton, BoutonIcone, BoiteDialogue, Champ, ErreurChargement, Pastille, PageIntrouvable, useToasts, VideIcone } from '../ui';
+import { Bouton, BoutonIcone, BoiteDialogue, Champ, ErreurChargement, PanneauLateral, Pastille, PageIntrouvable, useSurvolPage, useToasts, VideIcone, VoileDepot } from '../ui';
 import './ecrans.css';
 import './mediatheque/mediatheque.css';
 import {
@@ -79,8 +79,6 @@ function Mediatheque() {
   const prochain = useRef(1);
   const [vides, setVides] = useState<string[]>([]);
   const [echec, setEchec] = useState<string>();
-  const [survol, setSurvol] = useState(false);
-  const compteurSurvol = useRef(0);
   const saisie = useRef<HTMLInputElement>(null);
 
   const fid = params.get('fichier');
@@ -212,11 +210,12 @@ function Mediatheque() {
     return () => a.forEach((f) => f());
   }, []);
 
-  const glisse = (e: React.DragEvent) => Array.from(e.dataTransfer?.types ?? []).includes('Files');
+  const survolPage = useSurvolPage(mj, ajouter);
 
   // --- changes of the panel ----------------------------------------------------------------------
   function refus(e: unknown) {
     if (e instanceof ErreurApi && e.statut === 403) setEchec('Vous ne pouvez plus modifier ce fichier.');
+    else if (e instanceof ErreurApi && e.statut === 409 && e.code === 'fichier_bibliotheque') setEchec('Ce fichier est utilisé par la bibliothèque d’assets.');
     else if (e instanceof ErreurApi && e.statut === 404) {
       setEchec('Ce fichier n’existe plus.');
       ouvrir(null);
@@ -354,33 +353,9 @@ function Mediatheque() {
   return (
     <div
       className={`mediatheque${fid ? ' med-panneau-ouvert' : ''}`}
-      onDragEnter={(e) => {
-        if (!mj || !glisse(e)) return;
-        compteurSurvol.current += 1;
-        setSurvol(true);
-      }}
-      onDragOver={(e) => {
-        if (mj && glisse(e)) e.preventDefault();
-      }}
-      onDragLeave={(e) => {
-        if (!mj || !glisse(e)) return;
-        compteurSurvol.current = Math.max(0, compteurSurvol.current - 1);
-        if (compteurSurvol.current === 0) setSurvol(false);
-      }}
-      onDrop={(e) => {
-        if (!mj || !glisse(e)) return;
-        e.preventDefault();
-        compteurSurvol.current = 0;
-        setSurvol(false);
-        ajouter(e.dataTransfer.files);
-      }}
+      {...survolPage.props}
     >
-      {survol && (
-        <div className="med-depot" role="status">
-          <Upload size={24} strokeWidth={1.75} aria-hidden="true" />
-          Déposez les fichiers pour les ajouter.
-        </div>
-      )}
+      {survolPage.survol && <VoileDepot />}
       <div className="med-tete">
         <span className="med-glyphe" aria-hidden="true"><Images size={20} strokeWidth={1.75} /></span>
         <h1>Médiathèque</h1>
@@ -524,13 +499,7 @@ function Mediatheque() {
       )}
 
       {fid && (
-        <aside className="med-panneau" aria-label="Fichier" onKeyDown={(e) => e.key === 'Escape' && !boite && ouvrir(null)}>
-          <div className="med-panneau-tete">
-            <span className="med-panneau-libelle"><Images size={14} strokeWidth={1.75} aria-hidden="true" />Fichier</span>
-            <button type="button" className="bouton-icone" aria-label="Fermer" title="Fermer" onClick={() => ouvrir(null)}>
-              <X size={14} strokeWidth={1.75} aria-hidden="true" />
-            </button>
-          </div>
+        <PanneauLateral nom="Fichier" libelle="Fichier" icone={Images} echap={!boite} onFermer={() => ouvrir(null)}>
           {detailEtat === 'chargement' && <div className="etat" role="status">Chargement…</div>}
           {detailEtat === 'erreur' && <ErreurChargement texte="Impossible de charger la médiathèque." onReessayer={recharger} />}
           {detailEtat === 'ok' && f && (
@@ -651,7 +620,7 @@ function Mediatheque() {
               )}
             </div>
           )}
-        </aside>
+        </PanneauLateral>
       )}
 
       {boite && f && (

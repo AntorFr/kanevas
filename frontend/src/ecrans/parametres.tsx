@@ -6,7 +6,7 @@ import { ErreurApi, appeler } from '../api';
 import { useCharge, useUnivers } from '../cadre-contexte';
 import type { Ecran } from '../registre';
 import type { UniversListe } from '../types';
-import { BoiteDialogue, Bouton, Champ, ChargementListe, ErreurChargement, PageIntrouvable, Panneau, useToasts } from '../ui';
+import { BoiteDialogue, Bouton, Champ, ChargementListe, ErreurChargement, Onglets, PageIntrouvable, Panneau, useToasts } from '../ui';
 import { PanneauTypesUnivers } from './types-reglage/panneau-univers';
 import { PanneauOutils } from './outils/panneau';
 import './ecrans.css';
@@ -270,14 +270,12 @@ function Parametres() {
         </span>
         <h1>Paramètres de l’univers</h1>
       </header>
-      <div className="onglets outils-onglets" role="tablist" aria-label="Paramètres de l’univers">
-        <button type="button" role="tab" aria-selected={!surOutils && !surTypes} className={!surOutils && !surTypes ? 'actif' : undefined}
-          onClick={() => setParams({}, { replace: true })}>Général</button>
-        <button type="button" role="tab" aria-selected={surTypes} className={surTypes ? 'actif' : undefined}
-          onClick={() => setParams({ onglet: 'types' }, { replace: true })}>Types de fiche</button>
-        <button type="button" role="tab" aria-selected={surOutils} className={surOutils ? 'actif' : undefined}
-          onClick={() => setParams({ onglet: 'outils' }, { replace: true })}>Outils</button>
-      </div>
+      <Onglets
+        legende="Paramètres de l’univers"
+        actif={surOutils ? 'outils' : surTypes ? 'types' : 'general'}
+        onglets={[{ valeur: 'general', libelle: 'Général' }, { valeur: 'types', libelle: 'Types de fiche' }, { valeur: 'outils', libelle: 'Outils' }]}
+        onChange={(v) => setParams(v === 'general' ? {} : { onglet: v }, { replace: true })}
+      />
       {surOutils && <div role="tabpanel"><PanneauOutils key={`${id}-${systeme?.id ?? 'sans'}`} id={id!} niveau="univers" sansSysteme={systeme === null} /></div>}
       {surTypes && <div role="tabpanel"><PanneauTypesUnivers universId={id!} universNom={nomUnivers} avecSysteme={systeme !== null} /></div>}
       {!surOutils && !surTypes && <div className="panneaux-suivi">
