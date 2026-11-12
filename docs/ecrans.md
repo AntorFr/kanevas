@@ -4446,6 +4446,8 @@ Criteria (this slice):
 
 #### E-23 — what `kanevas-carte-spatiale-edition` builds (text version)
 
+> Mockup: `maquettes/e23-edition.html` (menu « Système », anchoring dialog, « Déplacer » with its refusals, conflict, removal, network error). The sky is that of `e23-carte-systeme.html`; the text prevails.
+
 The GM outside Player mode only (`peutEcrire`); a Player, and the GM in Player mode, read exactly what `-carte` shows: no button, no handle, no menu entry, and the API refuses the writes (`refuse`). Existing components only (`Panneau`, `Bouton`, `Champ`, `Case`, `BoiteDialogue`, `Menu`, `Toast`); the gardien judges any other. Amber, the GM's colour, marks the actions (never the marks « Tiré » / « Défini »).
 
 **Where the gestures sit.** The header menu « Système » (GM): « Ancrer ce système » (hidden once defined), « Ajouter un astre… », « Ajouter une zone… », « Rayon de transition… ». The panel of a body or a zone: « Déplacer », « Modifier… », « Retirer » (the others — « Lier à une fiche… », « Illustrer la fiche », « Réservé au MJ » — come with their slices and are not drawn here). On a defined system with no body the empty state offers « Ajouter un astre… ». The star of rank 0 has no « Retirer ».

@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Système, édition — Kanevas</title><style>
+/*
+MAQUETTE — E-23, édition (tranche kanevas-carte-spatiale-edition). Illustre docs/ecrans.md « E-23 — what
+`kanevas-carte-spatiale-edition` builds » : menu « Système », dialogue d'ancrage, formulaire « Déplacer » à trois repères,
+confirmation « Retirer », états de conflit et d'erreur. Le ciel et les sprites sont ceux de e23-carte-systeme.html (non redessinés).
+Composants existants seuls ; l'ambre marque les actions du MJ, jamais « Tiré » / « Défini ». Tokens : frontend/src/ui/tokens.css
+(docs/charte.md). Données inventées. Le document prime sur la maquette.
+*/
+:root{--fond:#121317;--s:#191a1f;--s2:#202128;--bord:rgba(255,255,255,.08);--bf:rgba(255,255,255,.14);--t:#ebecf0;--t2:#a6a7b0;
+--act:#9aa6f5;--mj:#f2a33c;--mjf:rgba(242,163,60,.14);--mjb:rgba(242,163,60,.42);--err:#f08a8a;
+--titre:"Fraunces Variable","Fraunces",Georgia,serif;--txt:"Inter",system-ui,sans-serif}
+*{box-sizing:border-box}body{margin:0;background:var(--fond);color:var(--t);font:14px var(--txt)}
+.wrap{padding:16px;display:grid;gap:22px;grid-template-columns:repeat(auto-fit,minmax(360px,1fr))}
+.lab{font-size:11px;text-transform:uppercase;letter-spacing:.08em;margin:0 0 6px;font-weight:600;color:var(--mj)}
+.frame{border:1px solid var(--bf);border-radius:12px;overflow:hidden;background:var(--fond);position:relative}
+header{display:flex;align-items:center;flex-wrap:wrap;gap:10px;padding:12px 16px;border-bottom:1px solid var(--bord)}
+header h1{font:500 19px var(--titre);margin:0}.tag{font-size:11px;padding:2px 8px;border-radius:99px;border:1px solid var(--bf);color:var(--t2)}
+.sp{margin-left:auto}.btn{padding:8px 12px;border-radius:8px;border:1px solid var(--bf);background:var(--s2);color:var(--t);font:inherit;cursor:pointer}
+.btn.mj{border-color:var(--mjb);background:var(--mjf);color:var(--mj)}.btn.danger{border-color:var(--err);color:var(--err)}
+.menu{position:absolute;right:16px;top:50px;background:var(--s2);border:1px solid var(--bf);border-radius:10px;padding:4px;min-width:200px;z-index:2}
+.menu div{padding:8px 10px;border-radius:6px}.menu div:first-child{background:var(--mjf)}
+.corps{padding:16px;display:flex;flex-direction:column;gap:12px}
+.panel{border:1px solid var(--bord);border-radius:10px;background:var(--s);padding:14px;display:flex;flex-direction:column;gap:10px}
+.panel h2{font:500 15px var(--titre);margin:0}
+label{display:flex;flex-direction:column;gap:4px;font-size:12.5px;color:var(--t2)}
+input{background:var(--fond);border:1px solid var(--bf);border-radius:8px;color:var(--t);padding:8px 10px;font:inherit}
+input.bad{border-color:var(--err)}.err{color:var(--err);font-size:12.5px}
+.seg{display:flex;border:1px solid var(--bf);border-radius:8px;overflow:hidden}.seg span{flex:1;text-align:center;padding:7px 4px;color:var(--t2)}
+.seg span.on{background:var(--mjf);color:var(--mj)}
+.row{display:flex;gap:10px}.row>*{flex:1}.acts{display:flex;gap:8px;justify-content:flex-end}
+.dlg{position:relative;margin:16px;background:var(--s);border:1px solid var(--bf);border-radius:12px;padding:18px;display:flex;flex-direction:column;gap:12px}
+.dlg h2{font:500 17px var(--titre);margin:0}.dlg p{margin:0;color:var(--t2)}
+.alerte{background:var(--s2);border:1px solid var(--err);border-radius:8px;padding:8px 10px;display:flex;gap:10px;align-items:center}
+@media(max-width:560px){.wrap{grid-template-columns:1fr}.row{flex-direction:column}}
+</style></head><body><div class="wrap">
+
+<section><p class="lab">MJ — menu « Système » (système tiré)</p><div class="frame">
+<header><h1>Système sans nom (12, −7)</h1><span class="tag">Tiré</span><a class="btn mj sp" href="#">Système ▾</a></header>
+<div class="menu"><div>Ancrer ce système</div><div>Ajouter un astre…</div><div>Ajouter une zone…</div><div>Rayon de transition…</div></div>
+<div class="corps" style="min-height:230px;color:var(--t2)">Le ciel du système (voir e23-carte-systeme.html).</div></div></section>
+
+<section><p class="lab">MJ — dialogue d'ancrage (avant la première écriture)</p><div class="frame" style="padding:8px 0">
+<div class="dlg" role="dialog" aria-label="Ancrer ce système ?"><h2>Ancrer ce système ?</h2>
+<p>L'intérieur de ce système sera figé tel que vous le voyez ; les réglages du générateur ne le changeront plus.</p>
+<label>Nom du système<input placeholder="Système (12, −7)"></label>
+<div class="acts"><button class="btn">Annuler</button><button class="btn mj">Ancrer</button></div></div></div></section>
+
+<section><p class="lab">MJ — « Déplacer Vael II », repère Hexagone, valeur refusée</p><div class="frame">
+<div class="corps"><div class="panel"><h2>Déplacer Vael II</h2>
+<div class="seg" role="tablist"><span>Orbite et heure</span><span>Plan</span><span class="on">Hexagone</span></div>
+<div class="row"><label>q<input value="13,2"></label><label>r<input class="bad" value="abc" aria-invalid="true"></label></div>
+<span class="err">Nombre attendu.</span>
+<div class="acts"><button class="btn">Annuler</button><button class="btn mj">Enregistrer</button></div></div></div></div></section>
+
+<section><p class="lab">MJ — « Déplacer », orbite négative</p><div class="frame">
+<div class="corps"><div class="panel"><h2>Déplacer Vael II</h2>
+<div class="seg"><span class="on">Orbite et heure</span><span>Plan</span><span>Hexagone</span></div>
+<div class="row"><label>Orbite<input class="bad" value="-1"></label><label>Heure<input value="7"></label></div>
+<span class="err">Orbite invalide.</span>
+<div class="acts"><button class="btn">Annuler</button><button class="btn mj">Enregistrer</button></div></div></div></div></section>
+
+<section><p class="lab">MJ — conflit (a_change), valeurs saisies conservées</p><div class="frame">
+<div class="corps"><div class="panel"><h2>Modifier Vael II</h2>
+<label>Nom<input value="Vael II (colonie)"></label>
+<div class="alerte" role="alert"><span>Cet astre a changé depuis que vous l'avez ouvert.</span><button class="btn sp">Recharger</button></div>
+<div class="acts"><button class="btn">Annuler</button><button class="btn mj">Enregistrer</button></div></div></div></div></section>
+
+<section><p class="lab">MJ — retirer une planète avec lunes</p><div class="frame" style="padding:8px 0">
+<div class="dlg" role="dialog" aria-label="Retirer Vael II ?"><h2>Retirer Vael II ?</h2><p>Ses 2 lunes seront retirées.</p>
+<div class="acts"><button class="btn">Annuler</button><button class="btn danger">Retirer l'astre</button></div></div></div></section>
+
+<section><p class="lab">MJ — téléphone (390 px), erreur réseau pendant l'enregistrement</p><div class="frame" style="max-width:390px">
+<div class="corps"><div class="panel"><h2>Déplacer Vael II</h2>
+<div class="seg"><span class="on">Orbite et heure</span><span>Plan</span><span>Hexagone</span></div>
+<div class="row"><label>Orbite<input value="4"></label><label>Heure<input value="9"></label></div>
+<div class="alerte" role="alert"><span>Impossible d'enregistrer.</span><button class="btn sp">Réessayer</button></div>
+<div class="acts"><button class="btn">Annuler</button><button class="btn mj" disabled>Enregistrement…</button></div></div></div></div></section>
+
+</div></body></html>
