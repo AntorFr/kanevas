@@ -44,7 +44,7 @@ if (!playwrightVu) {
 }
 
 console.log(`Test file concurrency: ${concurrence}${iConc < 0 ? ' (default)' : ' (--concurrence)'}. Harness startups run one at a time.`);
-for (const script of ['typecheck', 'build']) {
+for (const script of ['build:wasm', 'typecheck', 'build']) {
   // The build too: a screen test checks what the built application serves and skips without dist/.
   const r = spawnSync('npm', ['run', script], { stdio: 'inherit' });
   if (r.status !== 0) process.exit(r.status ?? 1);
