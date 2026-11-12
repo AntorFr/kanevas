@@ -6,7 +6,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import { wasmDir } from '../config/env.js';
 
 interface Glue {
-  initSync(module: { module: BufferSource }): unknown;
+  initSync(module: { module: Uint8Array }): unknown;
 }
 
 const cache = new Map<string, unknown>();
