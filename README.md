@@ -12,10 +12,10 @@ univers se partagent, rattaché depuis les paramètres de l'univers. It also inc
 ## Structure
 
 ```txt
-Dockerfile                        Image unique : API Fastify + frontend construit ; un étage `wasm` compile le Rust, rien de Rust à l'exécution
-rust/                             Workspace Cargo (AD-rust-1) : `modules/<nom>/` un crate par module Wasm, `exemple` pour modèle ; `pkg/` généré, ignoré par git
-src/wasm/, frontend/src/wasm/       Chargeurs du Wasm (serveur, navigateur) et leurs tests ; section « Rust / WebAssembly » plus bas
-scripts/rust-wasm.sh              `npm run build:wasm` : compile chaque crate de `rust/modules/` en Wasm vers `rust/pkg/<module>/`
+Dockerfile                        Single image: Fastify API + built frontend; a `wasm` stage compiles the Rust, no Rust at runtime
+rust/                             Cargo workspace (AD-rust-1): `modules/<name>/` one crate per Wasm module, `exemple` as a template; `pkg/` is generated and git-ignored
+src/wasm/, frontend/src/wasm/       Wasm loaders (server, browser) and their tests; see the « Rust / WebAssembly » section below
+scripts/rust-wasm.sh              `npm run build:wasm`: compiles each crate of `rust/modules/` to Wasm into `rust/pkg/<module>/`
 scripts/faux-setup-token.mjs        Le `claude setup-token` du bouchon (copié dans l'image)
 scripts/tests-attestes.mjs           `npm run tests:attestes` : joue toute la suite sur l'arbre commité et écrit le TAP par test `resultats.tap` (ignoré par git) ; c'est la suite déclarée dans `.sdlc.yaml`, `attester` la joue et pose le statut
 src/
