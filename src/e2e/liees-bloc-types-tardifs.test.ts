@@ -28,23 +28,39 @@ describe('kanevas-fiches-liees-bloc, types lus tardivement (B-64)', { skip: skip
 
   test('le_libelle_n_est_jamais_le_type_brut_pendant_que_les_types_chargent', async () => {
     // failure: a group « personnage (2) » is on screen before /types answers
+    // the /types answer is held by a gate the test opens itself, not by a duration: the observation
+    // can last as long as the pod needs
+    let ouvrir: () => void = () => {};
+    const porte = new Promise<void>((r) => {
+      ouvrir = r;
+    });
+    let appelee: () => void = () => {};
+    const requeteParties = new Promise<void>((r) => {
+      appelee = r;
+    });
     await antor.route(/\/api\/univers\/\d+\/types$/, async (route: Any) => {
-      await new Promise((r) => setTimeout(r, 1500));
+      appelee();
+      await porte;
       await route.continue();
     });
-    const vus: string[] = [];
-    await antor.goto(`/univers/${U}/fiche/${portSel}`);
-    const b = antor.getByRole('region', { name: /^Fiches liées$/ });
-    await b.waitFor();
-    const fin = Date.now() + 1200;
-    while (Date.now() < fin) {
-      vus.push(await b.innerText());
-      await new Promise((r) => setTimeout(r, 50));
+    try {
+      const vus: string[] = [];
+      await antor.goto(`/univers/${U}/fiche/${portSel}`);
+      await requeteParties;
+      const b = antor.getByRole('region', { name: /^Fiches liées$/ });
+      await b.waitFor();
+      for (let i = 0; i < 10; i++) {
+        vus.push(await b.innerText());
+        await new Promise((r) => setTimeout(r, 50));
+      }
+      assert.ok(vus.every((t) => !/personnage \(2\)/.test(t)), 'le type brut a été affiché');
+      assert.ok(vus.every((t) => !/Personnages \(2\)/.test(t)), 'un groupe a été affiché avant les types');
+      ouvrir();
+      await b.getByText('Personnages (2)').waitFor();
+    } finally {
+      ouvrir();
+      await antor.unroute(/\/api\/univers\/\d+\/types$/);
     }
-    assert.ok(vus.every((t) => !/personnage \(2\)/.test(t)), 'le type brut a été affiché');
-    assert.ok(vus.every((t) => !/Personnages \(2\)/.test(t)), 'un groupe a été affiché avant les types');
-    await b.getByText('Personnages (2)').waitFor();
-    await antor.unroute(/\/api\/univers\/\d+\/types$/);
   });
 
   test('le_bloc_se_montre_avec_le_type_brut_quand_les_types_ne_chargent_pas', async () => {
