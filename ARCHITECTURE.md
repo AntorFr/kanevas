@@ -916,8 +916,8 @@ frontend/src/wasm/      browser side: charger.ts (loader), the browser proof pag
 
 1. `cargo new --lib rust/modules/<name>`, set `crate-type = ["cdylib", "rlib"]`, `wasm-bindgen` as dependency (workspace version), `#[wasm_bindgen]` on the exports.
 2. Rust tests in the crate (`#[cfg(test)]`); they join the suite on their own (AD-rust-6 layer 1).
-3. `npm run build:wasm`; the module appears in `rust/pkg/<name>/`. Server: `await chargerModule<typeof import(…)>('<name>')`. Browser: `frontend/src/wasm/charger.ts`.
-4. One JS test per side that pins a value computed by the Rust test. Nothing to touch in `package.json`, the Dockerfile, `.sdlc.yaml` or the scripts.
+3. `npm run build:wasm`; the module appears in `rust/pkg/<name>/`. Server: `await chargerModule<typeof import(…)>('<name>')`. Browser: add the module to the `Modules` interface and the `importeurs` table of `frontend/src/wasm/charger.ts` (a closed table, unlike the server loader).
+4. One JS test per side that pins a value computed by the Rust test (`src/wasm/image.test.ts` already checks the Dockerfile `ARG`s against `rust-toolchain.toml` and `Cargo.lock`). Nothing else to touch in `package.json`, the Dockerfile, `.sdlc.yaml` or the scripts.
 
 ### Proof and its limits
 
