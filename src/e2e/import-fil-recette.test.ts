@@ -25,7 +25,7 @@
 //  P-10 / critère Léa reads « Description » and nothing of « Vérité » (page, API, search).
 import assert from 'node:assert/strict';
 import { join } from 'node:path';
-import { after, before, describe, test } from 'node:test';
+import { after, afterEach, before, describe, test } from 'node:test';
 
 process.env.NODE_ENV = 'test';
 process.env.KANEVAS_STUB = '1';
@@ -610,45 +610,49 @@ describe('E-18 Accès par API au navigateur', { skip: skipBrowser }, () => {
     await browser?.close();
     await m.stop();
   });
+  // No test of the block leaves a server clock behind: the tokens of the next ones are created at the real date.
+  afterEach(() => {
+    m.app.horloge = () => new Date();
+  });
 
   test('P-11 / critère : Antor crée « Script Kanka — Mac », le jeton ne s’affiche qu’une fois, la ligne dit « jamais » et l’expiration', async () => {
-    // The server's clock is the real one, taken once: the creation date and the browser's day coincide, whatever the day the test runs.
-    const debut = new Date();
-    m.app.horloge = () => debut;
-    try {
-      const { ctx, page } = await ouvrirSession(browser, m, 'antor');
-      await ouvrirE18(page, m);
-      const t0 = await texte(page);
-      assert.match(t0, /Un jeton permet à un script d'écrire dans cet univers avec vos droits, par l'API d'import\./);
-      assert.match(t0, new RegExp(`/api/import/v1/univers/${m.essai}`));
-      await page.getByRole('button', { name: 'Nouveau jeton' }).click();
-      const boite = page.getByRole('dialog', { name: 'Nouveau jeton' });
-      await boite.waitFor();
-      await boite.getByLabel('Nom', { exact: true }).fill('Script Kanka — Mac');
-      await boite.getByRole('button', { name: 'Créer le jeton' }).click();
-      await boite.getByText('Il ne sera plus jamais affiché.').waitFor();
-      const dedans = ((await boite.innerText()) as string) + ' ' + (await boite.locator('input, textarea').evaluateAll((els: Any[]) => els.map((e) => e.value).join(' ')));
-      const valeur = /kvs_[A-Za-z0-9_-]+/.exec(dedans)?.[0];
-      assert.ok(valeur, 'the token must be shown in the box');
-      assert.ok(valeur.length >= 40, `token too short: ${valeur.length}`);
-      await page.screenshot({ path: join(SHOTS, 'e18-jeton-montre.png') });
-      // while the token is shown, Escape does not close the box
-      await page.keyboard.press('Escape');
-      assert.equal(await boite.isVisible(), true, 'Escape closed the box that shows the token');
-      await boite.getByRole('button', { name: rx("J'ai copié le jeton") }).click();
-      await boite.waitFor({ state: 'detached' });
-      await attendre(page);
-      const l = ligne(page, 'Script Kanka — Mac');
-      await l.first().waitFor();
-      const txt = ((await l.first().innerText()) as string).replace(/\s+/g, ' ');
-      assert.match(txt, new RegExp(`créé par antor le ${jour(debut)}`));
-      assert.match(txt, /jamais/);
-      assert.match(txt, new RegExp(`expire le ${jour(new Date(debut.getTime() + 30 * 86400_000))}`));
-      assert.ok(!(await texte(page)).includes(valeur), 'token still on screen after closing');
-      await page.reload();
-      await attendre(page);
-      assert.ok(!(await texte(page)).includes(valeur), 'token on screen after reload');
-      await page.screenshot({ path: join(SHOTS, 'e18-liste-jetons.png') });
+    // Dates expected by the screen's own format, from the real clock (creation = today, expiry = +30 days).
+    const dateEcran = (d: Date) => d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' }).replace(/[.]/g, '\\.');
+    const creation = new Date();
+    const expiration = new Date(creation.getTime() + 30 * 86400_000);
+    const { ctx, page } = await ouvrirSession(browser, m, 'antor');
+    await ouvrirE18(page, m);
+    const t0 = await texte(page);
+    assert.match(t0, /Un jeton permet à un script d'écrire dans cet univers avec vos droits, par l'API d'import\./);
+    assert.match(t0, new RegExp(`/api/import/v1/univers/${m.essai}`));
+    await page.getByRole('button', { name: 'Nouveau jeton' }).click();
+    const boite = page.getByRole('dialog', { name: 'Nouveau jeton' });
+    await boite.waitFor();
+    await boite.getByLabel('Nom', { exact: true }).fill('Script Kanka — Mac');
+    await boite.getByRole('button', { name: 'Créer le jeton' }).click();
+    await boite.getByText('Il ne sera plus jamais affiché.').waitFor();
+    const dedans = ((await boite.innerText()) as string) + ' ' + (await boite.locator('input, textarea').evaluateAll((els: Any[]) => els.map((e) => e.value).join(' ')));
+    const valeur = /kvs_[A-Za-z0-9_-]+/.exec(dedans)?.[0];
+    assert.ok(valeur, 'the token must be shown in the box');
+    assert.ok(valeur.length >= 40, `token too short: ${valeur.length}`);
+    await page.screenshot({ path: join(SHOTS, 'e18-jeton-montre.png') });
+    // while the token is shown, Escape does not close the box
+    await page.keyboard.press('Escape');
+    assert.equal(await boite.isVisible(), true, 'Escape closed the box that shows the token');
+    await boite.getByRole('button', { name: rx("J'ai copié le jeton") }).click();
+    await boite.waitFor({ state: 'detached' });
+    await attendre(page);
+    const l = ligne(page, 'Script Kanka — Mac');
+    await l.first().waitFor();
+    const txt = ((await l.first().innerText()) as string).replace(/\s+/g, ' ');
+    assert.match(txt, new RegExp(`créé par antor le ${dateEcran(creation)}`));
+    assert.match(txt, /jamais/);
+    assert.match(txt, new RegExp(`expire le ${dateEcran(expiration)}`));
+    assert.ok(!(await texte(page)).includes(valeur), 'token still on screen after closing');
+    await page.reload();
+    await attendre(page);
+    assert.ok(!(await texte(page)).includes(valeur), 'token on screen after reload');
+    await page.screenshot({ path: join(SHOTS, 'e18-liste-jetons.png') });
 
       // The token works, once, with the script's call; the value is nowhere in the lists of the API.
       const r = await m.api('GET', `${m.essai}`, valeur);

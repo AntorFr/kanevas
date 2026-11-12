@@ -638,6 +638,10 @@ Monsieur, 2026-10-25 : he redoes the import once the model is delivered). Test :
 the previous schema, three relations (`src/bouchon/depart.ts`) ; after start-up the three are free,
 with their former text as qualifier, and the graph of Port-Sel still shows them.
 
+**Rule `kanevas-taille-images` (B-taille-1).** No column: an image's size and placement are the title of its
+reference in the text of a section (`![alt](fichier:N "moyen-droite")`, AD-taille-1). Same read and write
+rights as the text; a title that is not one of the nine `<size>-<placement>` pairs changes nothing.
+
 ## `kanevas-outils` scope: the model
 
 > Proposed on 2026-10-16 (`epic/kanevas-outils`). Decisions: AD-121 to AD-137. The **core** adds three
