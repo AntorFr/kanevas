@@ -46,8 +46,8 @@ a.lien{color:var(--act)}ul.l{list-style:none;margin:0;padding:0;font-size:12.5px
 <section><p class="lab j">Joueur — Léa, téléphone, même système</p><div class="frame" style="max-width:390px">
 <header><h1>Système Vael</h1></header>
 <div class="body" style="flex-direction:column;min-height:0"><div class="map" id="mapJ" style="aspect-ratio:600/460"></div>
-<div class="panel" style="width:auto;border:0;border-top:1px solid var(--bord)"><h2>Astre sans nom</h2><div class="sub">Gazeuse · Orbite 3 · 10 h</div>
-<ul class="l"><li>Étoile jaune</li><li>Vael II — tellurique</li><li>Astre sans nom — gazeuse</li><li>Ceinture · Comète · Nébuleuse</li><li>Station Port-Sel</li></ul>
+<div class="panel" style="width:auto;border:0;border-top:1px solid var(--bord)"><h2>Vael IV</h2><div class="sub">Gazeuse · Orbite 3 · 10 h</div>
+<ul class="l"><li>Étoile jaune</li><li>Vael II — tellurique</li><li>Vael IV — gazeuse</li><li>Ceinture · Comète · Nébuleuse</li><li>Station Port-Sel</li></ul>
 <div class="sub">Les astres sont tous visibles. Un élément réservé au MJ (le vaisseau pirate) est absent : ni place vide, ni compte.</div></div></div></div></section>
 
 <section><p class="lab j">Joueur — la galaxie, un système masqué</p><div class="frame"><header><h1>Galaxie</h1></header>
@@ -133,7 +133,7 @@ function systeme(id,opt){const m=document.getElementById(id),bg=document.createE
  if(opt.sel){const s2=document.createElementNS('http://www.w3.org/2000/svg','svg');}
  etiq(m,p[0],p[1]+36,'Vael II');
  place(m,p[0]+38,p[1]-26,17,c=>rendreSphere(c,'lune',8,.46));
- p=pos(4,10);place(m,p[0],p[1],104,c=>rendreSphere(c,'gazeuse',5,.46));etiq(m,p[0],p[1]+56,opt.noms?'Vael IV':'Astre sans nom');
+ p=pos(4,10);place(m,p[0],p[1],104,c=>rendreSphere(c,'gazeuse',5,.46));etiq(m,p[0],p[1]+56,'Vael IV');
  p=pos(5,3.2);place(m,p[0],p[1],46,c=>rendreSphere(c,'glace',6,.46));etiq(m,p[0],p[1]+28,'Vael V');
  place(m,-190,155,160,rendreComete);etiq(m,-170,196,'Comète');
  place(m,150,150,84,c=>rendreAnomalie(c,2));

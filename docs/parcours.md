@@ -503,7 +503,7 @@ becomes the source of the map and Éneria keeps none (decision 3). Nothing in th
 - **B-89** — Every body, star and comet has an **illustration** drawn by the core from its aspect (type, palette, relief), **more beautiful than the thumbnails of Éneria's `astres.py`**
   (same families of bodies, richer surfaces, light and atmosphere; the engine redraws every body, AD-149): the illustration is the body on the map, live
   thumbnails at the size of the zoom, a high-definition image on demand, cached on the server. The GM may set it as the illustration of the linked sheet (existing
-  media library path, AD-117). *Done when:* two renderings of one aspect are the same image, and an aspect changed in the catalogue changes it.
+  media library path, AD-117). *Done when:* two renderings of one aspect are the same image, and an aspect changed in the catalogue changes it. The recette compares captures of the system map and of the illustrations (every theme, desktop and 390 px) with Éneria's `systeme.html` and `astres.py` thumbnails, and judges them more beautiful; no label overlaps a body, an element or another label at 390 px (E-23).
 - **B-90** — **Configuration**, per galaxy (so per universe): the generator settings (seed, density, frequencies of comets and
   zones, ranges of planets, moons and belts per star class) and the **catalogue of aspects** (the palettes and parameters of each body type)
   (E-24). A change says how many drawn systems it moves before it is applied (like « Graine… », E-21).
