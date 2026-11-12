@@ -4393,6 +4393,30 @@ Criteria:
 - Given the core failing to load, the list of bodies shows with the message and every panel action stays usable.
 - Given Antor, « Illustrer la fiche » on a linked body adds the image to the sheet's illustration through the media library, visible as the sheet's own rules decide.
 
+### E-23 — elements (`kanevas-carte-spatiale-elements`, B-96, P-22.4, P-22.5, P-26)
+
+*Drawing.* An element is an icon of its kind (`vaisseau`, `ville`, `station`, `base`, `autre`) on a coloured ring, with a label (the name, truncated at 80 characters). Placed by orbit and hour it sits on the orbit; placed on a body it turns in a small orbit around it and follows it when the body moves. Labels never overlay a body, a belt or another label: they move off, shorten or collapse at zoom-out (E-23 criteria); at 390 px an element's label appears on selection only when the map holds more than 8 elements. The list of bodies (text alternative) lists elements after the bodies, one line each: name, kind, place.
+
+*Panel of an element* (the panel of a body is unchanged): name, kind, place (« Orbite 4 · 7 h » or « Sur Vael II »), description (plain text), link to the sheet when it is readable. GM outside Player mode: « Déplacer » (by orbit and hour, or « Poser sur un corps » choosing among the bodies), « Modifier… » (name, kind, description, icon and colour from the core's list), « Lier à une fiche… » (the dialog of `-liens`), « Réservé au MJ » (a switch, the only one on this screen; on, the panel and the list show the badge « MJ seul »), « Retirer ». « Ajouter un élément » (system menu, GM) opens the same form: name (required), kind, place; on a drawn system the anchoring dialog of `-edition` comes first. A Player or the GM in Player mode is offered none of these.
+
+*Removing a body that carries elements.* The confirmation counts them: « Retirer Vael II ? Son élément (1) sera retiré. » / « Ses éléments (2) seront retirés. » (the GM's count includes the elements « Réservé au MJ »; a Player never removes anything). Removing an element asks « Retirer Aube-Brisée ? ».
+
+*States added.* Saving: buttons disabled, « Enregistrement… ». System deleted meanwhile: « Ce système n'existe plus. », the map reloads. Conflict: « Cet élément a changé depuis que vous l'avez ouvert. » + « Recharger ». Element removed meanwhile: « Cet élément n'existe plus. ». Empty name: « Donnez un nom à cet élément. ». Body gone while choosing: « Ce corps n'existe plus. ». System not readable: « Page introuvable. » (never the message above, which is for the GM who reads the system).
+
+*Reading by role.* A Player reads every element not marked « Réservé au MJ », on the map, in the list and in the sheet block; hidden ones are absent: no empty place, no hole in the list, no count, no link from a sheet, no label on the body they sit on. The GM in Player mode reads what she reads.
+
+*Sheet block (E-9).* The line « <nom> — système <nom>, sur <astre> » (or « …, orbite 4 · 7 h ») covers elements as it does bodies; a hidden element or a system the reader cannot read gives no line; the block disappears when no line is left.
+
+*Criteria.*
+- Given Antor placing the ship « Aube-Brisée » on a planet and then moving the planet, the ship follows it after a reload.
+- Given an element placed by orbit and hour, when Antor chooses « Poser sur un corps », its place reads « Sur Vael II » and `orbite`/`heure` are no longer stored.
+- Given the station « Réservé au MJ », Léa reads all the bodies and neither the station, nor a blank place, nor a count, nor a sheet link; in Player mode, Antor sees the same.
+- Given a planet with one element, « Retirer » asks « Retirer Vael II ? Son élément (1) sera retiré. »; after confirmation both are gone.
+- Given a drawn system, when Antor adds an element, the anchoring dialog appears first, then the mark reads « Défini » and the neighbouring drawn systems have not moved.
+- Given an element added on a system deleted meanwhile, then « Ce système n'existe plus. »; on a hidden system Léa cannot read, « Page introuvable. ».
+- Given 12 bodies, moons, a belt and 8 elements at 390 px and at desktop, no label overlaps a body, an element or another label.
+- Given the same atlas with one element imported twice, the second time reports « inchangée ».
+
 ### E-24 — Generator settings
 
 **Content**: two tabs. « Générateur »: the seed (the very dialogue of E-21 « Graine… », which stays the one rule and opens from both screens), the version of the generator (read-only; « Passer à la version N… » appears only when a newer one exists, with the count of drawn systems it moves, AD-148), the density by default, frequencies (comet, zone, nebula among zones), ranges of planets, moons, belts and total per star class, with
