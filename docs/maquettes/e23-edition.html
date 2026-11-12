@@ -25,7 +25,7 @@ header h1{font:500 19px var(--titre);margin:0}.tag{font-size:11px;padding:2px 8p
 .panel h2{font:500 15px var(--titre);margin:0}
 label{display:flex;flex-direction:column;gap:4px;font-size:12.5px;color:var(--t2)}
 input{background:var(--fond);border:1px solid var(--bf);border-radius:8px;color:var(--t);padding:8px 10px;font:inherit}
-input.bad{border-color:var(--err)}.err{color:var(--err);font-size:12.5px}
+input.bad{border-color:var(--err)}.err{color:var(--err);font-size:12.5px}.conv{color:var(--texte-2,#888);font-size:12.5px;margin:4px 0}
 .seg{display:flex;border:1px solid var(--bf);border-radius:8px;overflow:hidden}.seg span{flex:1;text-align:center;padding:7px 4px;color:var(--t2)}
 .seg span.on{background:var(--mjf);color:var(--mj)}
 .row{display:flex;gap:10px}.row>*{flex:1}.acts{display:flex;gap:8px;justify-content:flex-end}
@@ -50,15 +50,17 @@ input.bad{border-color:var(--err)}.err{color:var(--err);font-size:12.5px}
 <div class="corps"><div class="panel"><h2>Déplacer Vael II</h2>
 <div class="seg" role="tablist"><span>Orbite et heure</span><span>Plan</span><span class="on">Hexagone</span></div>
 <div class="row"><label>q<input value="13,2"></label><label>r<input class="bad" value="abc" aria-invalid="true"></label></div>
+<p class="conv" aria-live="polite">= —</p>
 <span class="err">Nombre attendu.</span>
-<div class="acts"><button class="btn">Annuler</button><button class="btn mj">Enregistrer</button></div></div></div></div></section>
+<div class="acts"><button class="btn">Annuler</button><button class="btn mj" disabled>Enregistrer</button></div></div></div></div></section>
 
 <section><p class="lab">MJ — « Déplacer », orbite négative</p><div class="frame">
 <div class="corps"><div class="panel"><h2>Déplacer Vael II</h2>
 <div class="seg"><span class="on">Orbite et heure</span><span>Plan</span><span>Hexagone</span></div>
 <div class="row"><label>Orbite<input class="bad" value="-1"></label><label>Heure<input value="7"></label></div>
+<p class="conv" aria-live="polite">= —</p>
 <span class="err">Orbite invalide.</span>
-<div class="acts"><button class="btn">Annuler</button><button class="btn mj">Enregistrer</button></div></div></div></div></section>
+<div class="acts"><button class="btn">Annuler</button><button class="btn mj" disabled>Enregistrer</button></div></div></div></div></section>
 
 <section><p class="lab">MJ — conflit (a_change), valeurs saisies conservées</p><div class="frame">
 <div class="corps"><div class="panel"><h2>Modifier Vael II</h2>

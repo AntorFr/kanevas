@@ -1037,13 +1037,13 @@ Until `kanevas-carte-spatiale-carte`, only the opening is testable, and it is th
    « Orbite 4 · 7 h », its type, and the link to its sheet when one exists (B-92).
 2. « Voir l'illustration » opens the high-definition image (cached after the first time); « Illustrer la fiche » adds it to the sheet.
 3. He drags the planet to another hour: orbit and hour update, the change is saved (it **anchors** the system if it was only drawn, that is defines it — the dialogue
-   says so first, B-93). He names the planet (a drawn element has no name until he gives one) and links it to the sheet « Vael II ».
+   says so first, B-93; the same dialog opens from the menu « Système › Ancrer ce système », and « Annuler » there leaves the system drawn). He may also enter the place by « Déplacer » in plane or hexagon coordinates, add a body or a zone from the menu « Système », remove a body (the dialog counts its moons) and set the transition radius. He names the planet (a drawn element has no name until he gives one) and links it to the sheet « Vael II ».
 4. He places the ship « Aube-Brisée » on the second planet, orbit and hour following the planet, linked to its sheet (B-96).
 5. **Moment fort:** Léa, on her phone, opens the same system: every body is there with its illustration, the new name and, from the sheet, « Sur la carte spatiale ». The ship is there
    too, unless Antor set it « Réservé au MJ »: then there is no empty slot and no count.
 
 *Failure path:* an illustration that cannot arrive → the blurred version with « Illustration indisponible. » + « Réessayer »; the server does not answer → « Impossible de lire ce système. » + « Réessayer », or the list already read under « Connexion perdue. »; the core fails to load in the browser → the map is replaced by the list of bodies (text, illustrations by the server) and
-« La carte ne peut pas s'afficher ici. » (E-23 states); a body moved by another GM meanwhile → « Cet astre a changé depuis que vous l'avez ouvert. » + « Recharger ».
+« La carte ne peut pas s'afficher ici. » (E-23 states); a body moved by another GM meanwhile → « Cet astre a changé depuis que vous l'avez ouvert. » + « Recharger »; an orbit or hour out of bounds in « Déplacer » → « Orbite invalide. » and nothing saved.
 
 ### P-23 — Tune the generator (Antor, GM)
 
