@@ -59,7 +59,8 @@ test('Antor filtre Images puis Non utilisés : seul « Plan secret de la Guilde 
   await antor.locator('label', { hasText: /^Images$/ }).click();
   await antor.getByLabel('Usage').selectOption({ label: 'Non utilisés' });
   await antor.waitForLoadState('networkidle');
-  await antor.locator('.med-tuile').first().waitFor();
+  await tuile(antor, 'Plan secret de la Guilde').waitFor({ state: 'visible' });
+  await tuile(antor, 'Carte des Sphères').waitFor({ state: 'detached' });
   const noms: string[] = await antor.locator('.med-tuile .med-nom').allInnerTexts();
   assert.ok(noms.includes('Plan secret de la Guilde'), JSON.stringify(noms));
   assert.ok(!noms.includes('Carte des Sphères'), JSON.stringify(noms));
