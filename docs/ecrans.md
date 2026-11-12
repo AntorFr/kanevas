@@ -4411,7 +4411,7 @@ the palette and parameters of each, a live thumbnail, « Revenir au défaut » p
 
 Criteria:
 - Given Antor, GM, when he raises the comet frequency to 1 and applies, the count of changed drawn systems appears before the confirmation, and every drawn system then shows a comet.
-- Given a defined system, when Antor changes any setting, that system is identical after the change.
+- Given a defined system, when Antor changes any setting of the generator, that system is identical after the change: same rows, same positions, same interior. A change of the aspects catalogue changes the picture of its bodies (AD-reglages-6), never a row.
 - Given a value of 2 for a frequency, the field refuses it with « Entre 0 et 1. » and nothing is saved.
 - Given Léa, Player, the entry « Réglages du générateur… » does not exist and the address answers « Page introuvable. ».
 
