@@ -1,5 +1,4 @@
-import { compterAssets, effacerAssets } from '../../services/battlemap-assets.js';
-import { compterDirection, effacerDirection } from '../../services/battlemap-direction.js';
+import { compterAssets, compterDirection, effacerDonneesBattlemap } from '../../services/battlemap-donnees.js';
 import type { DeclarationAide, DeclarationModule, LigneDonnees } from '../declaration.js';
 
 const ligne = (cle: string, singulier: string, pluriel: string, nombre: number): LigneDonnees => ({ cle, singulier, pluriel, nombre });
@@ -22,8 +21,7 @@ export const battlemapAssets: DeclarationAide = {
     },
     effacer(db, portee) {
       if (portee.niveau !== 'univers') return;
-      effacerAssets(db, portee.universId);
-      effacerDirection(db, portee.universId);
+      effacerDonneesBattlemap(db, portee.universId);
     },
   },
 };

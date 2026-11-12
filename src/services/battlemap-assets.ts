@@ -286,11 +286,3 @@ export function retirerAssets(db: Db, acteur: Acteur, universId: number, ids: nu
     return uniques.length;
   })();
 }
-
-export function compterAssets(db: Db, universId: number): number {
-  return (db.prepare('SELECT COUNT(*) AS n FROM bm_assets WHERE univers_id = ?').get(universId) as { n: number }).n;
-}
-
-export function effacerAssets(db: Db, universId: number): void {
-  db.prepare('DELETE FROM bm_assets WHERE univers_id = ?').run(universId);
-}

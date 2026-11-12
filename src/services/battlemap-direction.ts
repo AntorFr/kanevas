@@ -155,14 +155,3 @@ export function legenderReference(db: Db, acteur: Acteur, universId: number, fic
     return lire(db, universId);
   })();
 }
-
-export function compterDirection(db: Db, universId: number): { references: number; texte: number } {
-  const { n } = db.prepare('SELECT COUNT(*) AS n FROM bm_direction_images WHERE univers_id = ?').get(universId) as { n: number };
-  const t = db.prepare('SELECT 1 AS ok FROM bm_direction WHERE univers_id = ?').get(universId);
-  return { references: n, texte: t ? 1 : 0 };
-}
-
-export function effacerDirection(db: Db, universId: number): void {
-  db.prepare('DELETE FROM bm_direction_images WHERE univers_id = ?').run(universId);
-  db.prepare('DELETE FROM bm_direction WHERE univers_id = ?').run(universId);
-}
