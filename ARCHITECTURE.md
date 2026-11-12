@@ -1709,7 +1709,7 @@ Detail of the slice's part of AD-145, B-93 and B-95; nothing here adds a screen,
 
 ```
 { "transition": 12.5,                                  // real >= 0, the system's transition radius (null: the core's default)
-  "etoiles": [ { "cle", "type", "nom"?, "aspect"?, "fiche"?, "rang"? } ],   // rang: 0 main (default by list order), 1+ companions; orbite/heure/taille as for a body, defaults those of a star
+  "etoiles": [ { "cle", "type", "nom"?, "aspect"?, "fiche"?, "rang"? } ],   // rang: 0 main (default by list order), 1+ companions; orbite/heure/taille as for a body (taille required; orbite and heure default 0 for the main star)
   "corps":   [ { "cle", "type", "nom"?, "orbite", "heure", "taille", "etoile"?, "aspect"?, "fiche"?, "description"?,
                  "lunes": [ { "cle", "type", "nom"?, "orbite", "heure", "taille", "aspect"?, "fiche"?, "description"? } ] } ],
   "zones":   [ { "cle", "forme": "anneau"|"nuage", "nom"?, "parametres", "fiche"?, "description"? } ],
