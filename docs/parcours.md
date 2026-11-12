@@ -506,7 +506,7 @@ becomes the source of the map and Éneria keeps none (decision 3). Nothing in th
   media library path, AD-117). *Done when:* two renderings of one aspect are the same image, and an aspect changed in the catalogue changes it. The recette compares captures of the system map and of the illustrations (every theme, desktop and 390 px) with Éneria's `systeme.html` and `astres.py` thumbnails, and judges them more beautiful; no label overlaps a body, an element or another label at 390 px (E-23).
 - **B-90** — **Configuration**, per galaxy (so per universe): the generator settings (seed, density, frequencies of comets and
   zones, ranges of planets, moons and belts per star class) and the **catalogue of aspects** (the palettes and parameters of each body type)
-  (E-24). A change says how many drawn systems it moves before it is applied (like « Graine… », E-21).
+  (E-24). A change to the generator settings says how many drawn systems it moves before it is applied (like « Graine… », E-21); a change to the aspects moves no row and counts nothing, it only changes the pictures of the bodies of its type.
 - **B-91** — Two **coordinate systems** are shown and accepted wherever an element is placed: the galactic one (hexagon `q`, `r`,
   as E-21) and the system's own (orbit, a real ≥ 0, and hour, a real in [0, 12), 12 at the top). Conversions are the core's.
 - **B-92** — A star, body, zone or non-celestial element (B-96) **links to a sheet** when one exists: the map links to the sheet and the sheet shows « Sur la carte spatiale »
@@ -1048,7 +1048,7 @@ Antor opens the galaxy (E-21) of Lame d'Ébène on the Éneria seed, taps a star
 
 From E-21 « Réglages du générateur… » opens **E-24**. Antor lowers the comet frequency, widens the planets of red dwarfs, and then, on the « Aspects » tab, changes the palette of the « glace » type
 and saves it (no count, nothing moves: only the pictures change). Before applying the generator values, E-24 says « 214 systèmes tirés changent d'intérieur. 12 systèmes définis ne bougent pas. » *Moment fort:* the live thumbnails of three sample systems
-redraw as he moves the sliders. *Failure path:* a value out of range is refused at the field with the bound; a seed change asks the confirmation of E-21.
+redraw as he moves the sliders. *Failure path:* a value out of range is refused at the field with the bound; a seed change asks the confirmation of E-21; a save that fails keeps the draft and offers « Réessayer »; leaving with an unapplied draft asks « Quitter sans appliquer ? »; a lost connection makes the form read-only without losing the draft.
 
 ### P-24 — An external agent completes a system (agent with a token, GM watching)
 
