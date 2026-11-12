@@ -318,6 +318,26 @@ For each: **V** visual, **C** behavioural. All have the focus ring (2 px `--focu
 - C: `role="radiogroup"` labelled by the legend, one `role="radio"` per segment with `aria-checked`; a single tab stop
   (the checked segment); ← → ↑ ↓ move and select, wrapping around.
 
+**Tabs** (`frontend/src/ui/onglets.tsx`, E-24; the three screens that styled their own — settings, system, tool catalogue — take it when they are next touched).
+- V: a horizontal list under the header, `--texte-3`; the active tab `--texte` with a 2 px `--accent` rule; no literal value.
+- C: `role="tablist"`, `role="tab"` with `aria-selected`, one tab stop, ← → move; the tab rides in the address query (`?onglet=`).
+
+**Slider** (`frontend/src/ui/curseur.tsx`, E-24; twin of the neighbouring `Champ`).
+- V: a native `<input type="range">` styled: 4 px track `--surface-2`, fill `--accent`, 16 px thumb `--texte` bordered 2 px `--accent`, hit area at least 24 px, the standard focus ring.
+- C: step 0,05, arrows and Page keys; the same bounds as the field, which carries the error; labelled like the field.
+
+**Colour field** (`frontend/src/ui/champ-couleur.tsx`, E-24).
+- V: a 30 px square, radius `--rayon-champ`, bordered `--bord-champ`, filled with the typed colour, then a monospace `Champ`.
+- C: input `#rrggbb` else « Couleur invalide : #rrggbb. » and the field marked; the square is not a target; the hex is always shown (colour never alone).
+
+**Choice list with thumbnails** (`frontend/src/ui/liste-choix.tsx`, E-24 « Aspects »; a variant of `LigneFicheLiee` if it can carry a selected state and titled groups, else its own file).
+- V: 56 px rows (48 px thumbnail, label, `Pastille` on the right), selected `--surface-2` with a 2 px `--accent` left rule, group heading `--texte-3` 12 px.
+- C: `role="listbox"` / `role="option"` with `aria-selected`, one tab stop, ↑ ↓ move; scrolls inside, Enter or click opens the editor.
+
+**Apply bar** (`frontend/src/ui/barre-application.tsx`, E-24).
+- V: sticky at the foot, `--surface` with a `--bord` top rule; the sentence on the left (detail small below), the primary `Bouton` on the right; the content keeps a bottom margin so the bar never hides the focused field (WCAG 2.4.11). A translucent background no token covers would be a decision of Monsieur, not made here.
+- C: the sentence is an `aria-live="polite"` region; the button is disabled when nothing is to apply or the count failed; after the confirmation the focus returns to it.
+
 **Section block** (« Relations », « Pièces jointes »).
 - V: a row below the text, separated by `--bord`: label on the left (136 px, icon and 13 px
   `--texte-3`), content on the right; on phones, stacked. Relation: « membre de »
