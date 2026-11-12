@@ -15,3 +15,5 @@ logs
 data/
 rapport-tests.json
 resultats.tap
+rust/pkg/
+rust/target/
