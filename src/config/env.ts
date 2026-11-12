@@ -45,6 +45,7 @@ const envSchema = z.object({
   // ANTHROPIC_MODEL is read, by the assistant's claude-agent adapter (AD-73).
   ANTHROPIC_API_KEY: z.string().optional(),
   ANTHROPIC_MODEL: z.string().min(1).default('claude-sonnet-4-6'),
+  // Wasm modules directory (AD-rust-4), tests: `<dir>/<module>/<module>_bg.wasm`. Absent = dist/wasm, then rust/pkg.
   LLM_PROVIDER: z.enum(['mock', 'anthropic', 'claude-agent']).default('mock'),
 });
 
