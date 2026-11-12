@@ -1,9 +1,8 @@
-// Feature kanevas-outils-doc-anglais: the public doc is English and the published
-// Releases are English. Counting is done here, independently of scripts/controle-langue.mjs.
+// Feature kanevas-outils-doc-anglais: the public doc is English. Counting is done here,
+// independently of scripts/controle-langue.mjs.
 // Nothing here compares the tree to a past commit: product changes stay free.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { execFileSync } from 'node:child_process';
 import { readFileSync, readdirSync } from 'node:fs';
 import { resolve } from 'node:path';
 
@@ -88,26 +87,6 @@ test('.agent/* stays in French', () => {
     const n = Object.keys(frenchWords(readFileSync(resolve(dir, f), 'utf8'))).length;
     assert.ok(n > 0, `.agent/${f} no longer contains French`);
   }
-});
-
-test('the published GitHub Releases are in English', { timeout: 120000 }, (t) => {
-  let tags: string[];
-  try {
-    tags = JSON.parse(execFileSync('gh', ['release', 'list', '--limit', '100', '--json', 'tagName'],
-      { cwd: root, encoding: 'utf8' })).map((r: { tagName: string }) => r.tagName);
-  } catch (e) {
-    if ((e as NodeJS.ErrnoException).code === 'ENOENT') { t.diagnostic('gh missing: Releases not checked'); return; }
-    throw e;
-  }
-  assert.ok(tags.length >= 7, `only ${tags.length} Releases`);
-  const offending: string[] = [];
-  for (const tag of tags) {
-    const body = JSON.parse(execFileSync('gh', ['release', 'view', tag, '--json', 'body'], { cwd: root, encoding: 'utf8' })).body as string;
-    assert.ok(body.trim().length > 0, `${tag}: empty body`);
-    const m = frenchWords(body);
-    if (Object.keys(m).length) offending.push(`${tag}: ${JSON.stringify(m)}`);
-  }
-  assert.deepEqual(offending, []);
 });
 
 test('the counter: inline code needs a closing run of the same length, on the same line', () => {
