@@ -19,6 +19,8 @@ export interface Ligne {
   /** X-3, from the server's result only: the line's own cost (a percentage line) and the exchange's deltas. */
   cout?: number;
   echange?: { puissance: number; masse: number };
+  /** Z-3, from the server's result only: the signed deltas a targeted modification actually applies to its target. */
+  ajuste?: { masse?: number; puissance?: number; emports?: number };
 }
 
 export interface Resultat {
@@ -103,6 +105,8 @@ export interface Donnees {
   echange_puissance?: number; echange_masse?: number; rend_puissance?: number[]; rend_masse?: number[]; soute?: number;
   /** B-85 (Y-1): stated by the catalogue only when the element has them. */
   reparation_min?: number; soute_par_classe?: number[]; reduction_cout_pct?: number;
+  /** Z-1: stated by the catalogue only when the element has them. */
+  effet_pct?: number; armure_par_classe?: number[]; echange_arrondi?: string; reduction_base?: string;
 }
 
 export interface PageCatalogue {

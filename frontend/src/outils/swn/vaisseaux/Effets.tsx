@@ -50,8 +50,8 @@ export function Effets({ ligne, info, infos, lignes, resultat, alerte, ecriture,
     );
   }
 
-  if (d.effet === 'soutes_doublees' || d.effet === 'magasins_doubles') {
-    const eligibles = lignes.filter((l) => d.effet === 'soutes_doublees'
+  if (d.effet === 'soutes_doublees' || d.effet === 'magasins_doubles' || d.effet === 'soutes_optimisees' || d.effet === 'montage_specialise' || d.effet === 'surcharge_arme') {
+    const eligibles = lignes.filter((l) => d.effet === 'soutes_doublees' || d.effet === 'soutes_optimisees'
       ? l.nature === 'amenagements' && (() => { const x = infos[`${l.nature}/${l.cle}`]?.el.donnees; return x?.soute !== undefined || x?.soute_par_classe !== undefined; })()
       : l.nature === 'armes');
     const valeur = ligne.vise ? `${ligne.vise.nature}/${ligne.vise.cle}` : '';
