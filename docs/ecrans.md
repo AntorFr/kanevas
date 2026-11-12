@@ -119,7 +119,7 @@ E-16 live outside universes: their cells describe the role in a universe attache
 | E-6 | *retired (`kanevas-scenarios`)* | — | — |
 | E-7 | *retired (`kanevas-scenarios`)* | — | — |
 | E-8 | read, search, create; each sheet's thumbnail (its illustration, or the drawn fallback) ; *(kanevas-fiches-liees)* the mark on the thumbnail (Mort, Morte, Détruit, Détruite, Éteinte depending on the type), the type's filter (Vivants / Morts, Intacts / Détruits…) ; *(kanevas-scenarios)* for the « Aventure » type: the status badge, the « Statut » filter, the status menu on a card or a tree line (outside player mode), the creation form with sub-type suggestions and « Visible des joueurs » ; *(kanevas-fiche-mj-seul)* the « MJ seul » badge on a sheet players cannot see, the « Visibilité » filter | read, search; thumbnails of visible sheets ; *(kanevas-fiches-liees)* the « gone » mark and its filter, the same as the GM sees them (the « Marquer … » entry is on E-9 only, hidden from a player) ; *(kanevas-scenarios)* adventures: the status badge and the « Statut » filter; the status menu and « Nouvelle aventure » ; *(kanevas-fiche-mj-seul)* no « MJ seul » badge, no « Visibilité » filter (**hidden**) | — |
-| E-9 | everything; managed section: « Ouvrir dans l'outil », « Recalculer », « Proposer un recalcul », « Voir la proposition » (never an editor); Player mode; relate and remove relations; set, replace, remove the illustration (outside Player mode); *(kanevas-import)* subtype, restrict a file to the GM, see a file awaiting import (tile) | readable sections; write permitted ones; readable relations (section and target); their attachments; see the illustration, never set it; a managed section: banner and state, « Ouvrir dans l'outil » (author) and « Recalculer » (author with the tool's usage and « L'auteur l'écrit »), never an editor; *(kanevas-import)* in a section they write, add a file or choose a visible one (both paths of B-55) and remove a reference; files under both guards; never set visibility (**hidden**); a file awaiting import: nothing (**hidden**) | — |
+| E-9 | everything; managed section: « Ouvrir dans l'outil », « Recalculer », « Proposer un recalcul », « Voir la proposition » (never an editor); Player mode; relate and remove relations; set, replace, remove the illustration (outside Player mode); *(kanevas-import)* subtype, restrict a file to the GM, see a file awaiting import (tile) ; *(kanevas-taille-images)* the « Image » button (size, placement) in « Écrire », outside player mode — **hidden** in player mode | readable sections; write permitted ones; readable relations (section and target); their attachments; see the illustration, never set it; a managed section: banner and state, « Ouvrir dans l'outil » (author) and « Recalculer » (author with the tool's usage and « L'auteur l'écrit »), never an editor; *(kanevas-import)* in a section they write, add a file or choose a visible one (both paths of B-55) and remove a reference; files under both guards; never set visibility (**hidden**); a file awaiting import: nothing (**hidden**) ; *(kanevas-taille-images)* the « Image » button in the sections he may write — **hidden** elsewhere | — |
 | E-10 | everything, tool maps (the galaxy) included, with « MJ seul » on those not visible; « Nouvelle carte » ▸ « Carte de la galaxie », « Rendre visible » / « Cacher aux joueurs » | visible maps, tool maps included when visible and the tool is visible to their role (otherwise absent); « Nouvelle carte », « Carte de la galaxie » and « Rendre visible » / « Cacher aux joueurs » **hidden** | — |
 | E-11 | everything; Player mode | read a visible map, open a sheet | — |
 | E-12 | GM catalogue (including image generation, if an image engine is available); proposals: only the requesting GM sees, applies, abandons them | Player catalogue (no image: the tool is absent, the assistant answers that it cannot); proposals: **hidden** (neither tool nor block; what is checked is the absence of a proposal and block, not the assistant's free text) | — |
@@ -2058,6 +2058,54 @@ the GM-only section's styling (hatched texture, amber rule, « MJ seul » `lock`
 section, at its place in the text; in Player mode and for any other reader, it does not exist — no
 gap, no rule, the next paragraph follows the previous one. A wide table scrolls inside its frame
 on a phone, never the page.
+
+### Image size and placement in a text (`kanevas-taille-images`, B-taille-1, AD-taille-1, E-taille-1)
+
+**Notation.** The image's own Markdown *title*: `![alt](fichier:12 "moyen-droite")`. The title is
+`<size>-<placement>` with size in `petit`, `moyen`, `grand` and placement in `gauche`, `droite`,
+`centre`, written exactly so (lowercase, one hyphen). Anything else in the title — a real tooltip, a
+typo, a size alone — is **not a setting**: the image shows as it does today and the text is left
+untouched. No title: the image shows as today (full column width of its natural size, in the flow).
+The address stays `fichier:<id>`, so the references, the import's `fichier:cle:` rewriting, the export
+and the assistant's `[…](fichier:<id>)` form carry the setting as plain text.
+
+**Reading.** A set image is `<img class="img-<size> img-<placement>">`: `gauche` / `droite` float the image
+to that side, the paragraph text wraps it with a `--e-4` gap; `centre` is a block centred between two
+paragraphs' flow, no wrap. Widths, as a share of the text column, capped by the file's natural width
+(an image is never enlarged): `petit` 25 %, `moyen` 40 %, `grand` 60 %. **Phone** (≤ 760 px, the width
+the charte already uses for `.md`): no float — every placement becomes a centred block, `petit` 40 %,
+`moyen` 70 %, `grand` 100 %, so text stays one readable column. A float never leaks out of its section
+(the `.md` container clears it). Closed, deleted and waiting references keep their frames; a setting
+on them is ignored. Only in a **section** or a compte-rendu, preview of its public text included (`rendreApercu`);
+the standalone `scenario` and system-entry text natures do not interpret `fichier:`, see above.
+
+**Editor (E-taille-1).** In « Écrire », the caret inside an `![…](fichier:N…)` reference enables the
+toolbar button « Image » (icon `image`); it opens a `Menu` (existing component, trigger variant `outil`,
+charte « Menu ») with two single-choice `groupe`s,
+« Taille » (Petit, Moyen, Grand) and « Placement » (À gauche, À droite, Centrée), and a « Sans
+réglage » action. Choosing writes the title in the text at once (both groups needed: the first choice
+completes the other with `moyen` / `centre`); « Sans réglage » removes it. Keyboard: ↑ ↓ cross the choices, Échap closes
+and the focus returns to the field. Icons: placement `align-left` / `align-right` / `align-center`, size three `square` of growing size. The text stays the single source: the panel reads the title back from the
+reference at the caret, so a hand-typed setting shows selected. « Aperçu » renders it as in reading (the preview resolves the `fichier:N` files like the reading does).
+Who may write the text sees the button; a reader never gets the editor.
+
+**Where it lives, who, states.** E-taille-1 is not a screen of its own: it is a button of the section
+editor of **E-9** (and of a compte-rendu's editor, E-13, which opens on E-9); reading is E-9's, a
+compte-rendu's included. Roles: a GM outside player mode and a player who may write the section (a
+compte-rendu's author writes his own text) get the button; a GM in player mode and a plain reader have
+no editor at all, so **hidden**, never refused. States: *empty* — caret outside an image reference, the
+button is `desactive` and its `title` says « Placez le curseur sur une image » ; *loading* — none, the
+choice is a local edit of the field; « Aperçu » with a set image waits and fails like any preview
+(« Aperçu en cours… », « L'aperçu n'a pas abouti. Réessayez. » with « Réessayer », the field intact:
+« États de l'aperçu » of the Markdown section below); *error, version conflict, offline* — those of
+saving the section (E-9, « Écrire »), whose messages are read there and unchanged: the written title
+stays in the field with the rest of the text, nothing of its own is added. A reference that is closed, deleted or waiting is still a
+reference: the button is active and writes the title, reading ignores it (above). Extreme content: a
+very long alt text or several images on one line change nothing (the caret's reference is the one
+between the nearest `![` and `)`); an image narrower than its share is never enlarged, so the sizes may
+look alike; two floats in a row stack on their side and the `.md` container clears them. Labels: the menu says « Centrée », the
+notation says `centre`, the reading is a centred block — one setting, three spellings, mapped once in
+the shared table.
 
 ### Markdown — what `kanevas-import-markdown` builds (E-9, E-7, E-15, E-12)
 

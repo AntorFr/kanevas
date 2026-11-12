@@ -145,6 +145,13 @@ Format from the `exigences` skill; each need cites the journeys that fulfill it.
   The illustration follows the same double guard (sheet and image). *(P-12, P-16; Monsieur's decisions
   of 2026-10-11)*
 
+- **B-taille-1** — *(`kanevas-taille-images`)* When a GM, or a player who may write a section, has an image in its text
+  (`![…](fichier:N)`, E-9), they can set its **size** (small, medium, large) and its **placement**
+  (left or right with the text wrapping it, or centred without wrapping) from the editor's « Image » button;
+  in reading, the image shows at that size and placement, on desktop and on a phone where it stays a
+  readable centred block; an image with no setting shows as before. The setting is the image's Markdown
+  title (`"moyen-droite"`), so the import and the export carry it as text. *(P-12)*
+
 ### Import and API access (`kanevas-import`)
 - **B-45** — A GM creates an **API token** for their universe from « Accès par API » (E-18): a name,
   a lifetime (30 days by default, one year at most); Kanevas shows it **once only**; the token acts
@@ -707,11 +714,15 @@ has expired — the row says « Expiré », the script receives 401.
 5. She opens « Maître Aldric » through a link, then returns through the breadcrumb.
 6. She asks her **assistant** (E-12) « que sait-on de Port-Sel ? »: it cites nothing from the GM
    block.
+7. *(kanevas-taille-images, B-taille-1)* Antor, de retour sur « Port-Sel », place le curseur dans l'image
+   du port, ouvre « Image » (E-9, « Écrire ») et choisit « Moyen » puis « À droite » ; il enregistre. En
+   lecture le texte de « Histoire » entoure l'image à droite ; sur le téléphone de Léa l'image est un
+   bloc centré, lisible.
 *Highlight*: the same sheet, read by Antor then Léa — the secret is neither shown, findable,
-nor hinted at.
+nor hinted at. (Step 7 is an editing gesture, outside this key moment.)
 *Failure*: an inserted image does not load — « Image indisponible. » in its place; a link to a
 removed sheet — plain text for Léa, « lien cassé » for Antor; a sheet with nothing readable by Léa
-since the last import — absent from the tree, search and « Mentionnée dans ».
+since the last import — absent from the tree, search and « Mentionnée dans ». Image setting (step 7): « Image » is greyed out while the caret is not in an image; if saving fails, the written title stays in the field with the section's save message.
 
 ### P-13 — Choose a system's and universe's types (GM)
 *Antor plays « CoF Mini » in « Lame d'Ébène », except his universe has ships.*
@@ -1097,6 +1108,8 @@ version — silently refetched; the GM hides the map (E-10) — « Page introuva
   user **JSON export or import of a design**, **podcasts**, **offline maps**, **hot-loading** third-party code, a
   **generic tool engine**, and the **campaign link** (timeline, public part) deferred to faction turns. A player does not create a sheet
   (existing rule): the GM creates the ship sheet, the player designs as the section author.
+- *(kanevas-taille-images)* **A free size in pixels, cropping, a caption and a gallery** for the images of a
+  text: three standard sizes and three placements cover the need; reopened if a GM asks for more.
 - **Live play**: no initiative or animated combat; the table remains physical. *(Amended by
   `kanevas-battlemap`: a hand-driven fog of war and a table display are now in, B-105…B-108.)*
 - *(kanevas-scenarios)* **A calendar of sessions** (dates, who was there) and a **play log per

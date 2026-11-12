@@ -1609,6 +1609,14 @@ which had taken 0017, AD-51).
    Bran's mark). The existing free relation `Aldric → Port-Sel « maître de port »` is kept beside the new
    « se situe à — habite ».
 
+## `kanevas-taille-images`
+
+| AD | Decision |
+|---|---|
+| AD-taille-1 | **Size and placement are the image's Markdown title**, `"<petit\|moyen\|grand>-<gauche\|droite\|centre>"`, nothing else. Rejected: a fragment on the address (`fichier:12#moyen-droite`) — breaks `REFERENCE_FICHIER`, `idsFichiers`, the import's `](fichier:cle:…)` rewriting and every reader of the address; attribute syntax `{.moyen}` — needs a plugin and is not Markdown anywhere else; a column — a setting is text of a section, versioned and exported with it. A title that is not exactly a pair is no setting (rendered as today, kept as written): the parser lives in one pure function of `services/markdown.ts`, the frontend's editor has its twin in `editeur-logique.ts` with the same table, and a test feeds both the same cases. No migration, no new route, no new `liens`/`fichiers` rule. |
+| AD-taille-2 | Rendering stays in `rendreMarkdown` (AD-95): the `fichiers` rule adds the two classes to the `<img>`; CSS is in `ui/markdown.css`, widths as a share of the column with `max-width: 100%` of the natural size, floats off under 760 px. The `markdown` form for the assistant (`formeLiens`) re-emits the title so a round trip through the assistant keeps it. |
+| AD-taille-3 | The `kanevas-synchro` import/export carries the content verbatim: nothing to change there. Its replay comparison (AD-104) compares the content as written, so a setting is a content change like any other. The notation is documented in `docs/` for script authors. |
+
 ## Cadrage `kanevas-battlemap` (2026-11-11)
 
 Epic `epic/kanevas-battlemap`, forked from `epic/kanevas-outils`. Prerequisite: `kanevas-socle-rust` (Cargo workspace, Wasm build,

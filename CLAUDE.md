@@ -3,10 +3,11 @@
 - Language (public repository): code, comments, README, `docs/` (the product's design docs
   included), ADRs and release notes in **English**; `.agent/*` stays French. Existing French
   docs are translated by a feature of their own, not rewritten in passing: new text is English.
-- Attested tests: `npm run tests:attestes` plays the whole suite (typecheck, build, every test,
-  none skipped, two files at a time by default, `--concurrence N` to change it) on the committed tree and rewrites `rapport-tests.json` (git-ignored) at each run; `-- --publier` posts the
-  `tests-complets` commit status when green. The image build and the `main` rule require it; the
-  CI runs no test by itself.
+- Attested tests: the suite is declared in `.sdlc.yaml` (`tests:`), and `attester --publier` plays it on the pushed
+  commit and posts the `tests-complets` status when green — the only way to post it, never by hand. `npm run tests:attestes`
+  is just the suite (typecheck, build, every test, two files at a time by default, `--concurrence N` to change it) and writes
+  the per-test TAP report `resultats.tap` (git-ignored); it writes no report and posts no status. The image build (tag `v*`
+  only) and the `main` rule require the status; no workflow plays a test or runs on a branch push or a pull request.
 - Commit messages in French: subject, then the *why*. Explicit paths
   (`git add <path>...`, never `git add -A`/`.`), no AI attribution trailers —
   same convention as `k8s-home-lab`.
@@ -43,7 +44,7 @@
   `dist/public`, located by `routes/frontend.ts` and served by `routes/session.ts` behind the session guard (`@fastify/static` for
   `/assets/`, `index.html` as the fallback of any other GET); the seven brand files of `frontend/public` (`favicon.ico`, `favicon.svg`, `apple-touch-icon.png`, `icon-192.png`, `icon-512.png`, `icon-maskable-512.png`, `site.webmanifest`) are served before the guard, without a session (AD-135). A screen is one file
   `frontend/src/ecrans/<nom>.tsx` exporting an `Ecran` (`registre.ts`) — never edit the router or
-  the sidebar for the screens of a universe; sidebar items live in `items.ts` and show only when a registered screen answers
+  the sidebar for the screens of a universe; sidebar items live in `frontend/src/items.ts` and show only when a registered screen answers
   their address. The two outside-universe links (« Mes univers », « Systèmes de jeu ») are fixed in
   `Barre.tsx` and the universe selector menu. Colours only through `frontend/src/ui/tokens.css` (`docs/charte.md`). Tests of the
   built-app routes set `FRONTEND_DIR` (under `NODE_ENV=test` no build is looked up otherwise).
