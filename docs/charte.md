@@ -530,3 +530,8 @@ change: the code reads them as they are).
 | sheet title (`h1`) | `--t-22` | `--t-40` (`--t-32` on phones) | the title opens the page like a document; `--t-22` remains the section heading |
 
 Tokens marked *(new)* are added without changing anything existing.
+
+**Toast with an action** (E-23 « Illustrer la fiche », `kanevas-carte-spatiale-liens`; verdict of the gardien; variant of `Toast`, no new file).
+- V: the tokens of `Toast` (`--surface`, `--ombre-flottant`, radius `--rayon-champ`, 40 px, icon `circle-check` in `--table`, 13 px text); between the text and « Fermer », an action in `--accent-texte`, 13 px, weight 500, underlined on hover and focus, target at least 24 px, ring `--focus`; at 390 px full width minus the assistant button, the text wraps on two lines before the action is cut.
+- C: `ToastInfo.action?: {libelle; href | onClick}` and `useToasts().toast(texte, action?)`; the action is a real link or button reachable by keyboard; a toast with an action does not fade after 4 s but stays while the pointer or focus is on it, or until « Fermer » (WCAG 2.2.1); announced in the `role="status"` region, never takes the focus; no motion under `prefers-reduced-motion`. A failure is never a toast (`Alerte` with action).
+- Inventory by path: `CadreBlocFiche` lives in `frontend/src/ecrans/fiche/bloc-fiche.tsx` (not in `ui/`) and frames « Sur la carte spatiale ».

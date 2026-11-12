@@ -4526,26 +4526,26 @@ Criteria:
 
 > Mockup: `maquettes/e23-liens.html` (panel with and without link, dialog « Lier à une fiche », illustrating the sheet, the block on the sheet). The text prevails.
 
-The GM outside Player mode only (`peutEcrire`) for every action; a Player, and the GM in Player mode, read the link and nothing else. Existing components only (`Panneau`, `Bouton`, `BoiteDialogue`, `ListeRecherche`, `Toast`); the gardien judges any other.
+The GM outside Player mode only (`peutEcrire`) for every action; a Player, and the GM in Player mode, read the link and nothing else. Existing components (`Panneau`, `Bouton`, `Champ`, `Fenetre`, `ListeLiens`, `Alerte`, `Toast`) and one variant of `Toast` (an action, the gardien's spec in `docs/charte.md`).
 
 **The link line (everyone).** In the panel of a body or a zone, and on its line of the text list, under the type and the place: « Fiche : <titre> », a link to the sheet (E-2). Only when the sheet is readable by the reader (AD-144, AD-liens-2): for a sheet she cannot read, a Player sees the body exactly as if it were unlinked — no line, no padlock, no « fiche privée ».
 
 **GM actions.** Panel of a body: « Lier à une fiche… » (« Changer la fiche liée… » when linked), « Délier » (when linked), « Illustrer la fiche » (when linked; bodies only). Panel of a zone: the first two. They sit after « Modifier… » and before « Retirer », in the amber action group of `-edition`. « Délier » acts at once (it is undone by linking again): toast « Fiche déliée. ».
 
-**Dialog « Lier <nom> à une fiche »** (`BoiteDialogue`, neutral, title « Lier Vael II à une fiche »; « Astre sans nom » for a nameless body): a search field « Rechercher une fiche » over the sheets of the universe (`ListeRecherche`, the list of « Relier à une fiche »; every sheet, the GM reads them all), the chosen sheet shown under the field, buttons « Annuler » (focus enters on the field) and « Lier » (disabled until a sheet is chosen). On a drawn system the anchoring dialog opens first, as for every first write. Done: toast « Vael II est liée à <titre>. », the panel shows the link line.
+**Dialog « Lier <nom> à une fiche »** (`Fenetre`, a neutral dialog whose focus enters on the field — `BoiteDialogue` is the confirmation `alertdialog` and does not fit; title « Lier Vael II à une fiche »; « Astre sans nom » for a nameless body): a search field « Rechercher une fiche » over the sheets of the universe (`ListeLiens` with `useRechercheLiens`, the list of « Relier à une fiche »; every sheet, the GM reads them all; the field before « Annuler » in the DOM), the chosen sheet shown under the field, buttons « Annuler » (focus enters on the field) and « Lier » (disabled until a sheet is chosen). On a drawn system the anchoring dialog opens first, as for every first write. Done: toast « Vael II est liée à <titre>. », the panel shows the link line.
 
 | State | Text |
 |---|---|
 | empty | the search finds nothing: « Aucune fiche ne correspond. » ; the universe has no sheet: « Aucune fiche dans cet univers. » |
 | loading | the list reads « Recherche… » ; « Lier » and « Illustrer la fiche » show « … » while their request runs and are disabled |
-| error | the write fails: the dialog stays, « Impossible d'enregistrer. » + « Réessayer » ; the rendering fails: toast « L'illustration n'a pas pu être ajoutée. » + « Réessayer » |
+| error | the write fails: the dialog stays, « Impossible d'enregistrer. » + « Réessayer » ; the rendering fails: an `Alerte` with action that stays near the button, « L'illustration n'a pas pu être ajoutée. » + « Réessayer » (a failure is not a toast) |
 | offline | the banner « Connexion perdue. » of `-carte`; the three actions disabled |
 | refusal | a non-GM sees none of the actions; a hidden system « Page introuvable. » (unchanged) |
 | conflict | « Cet astre a changé depuis que vous l'avez ouvert. » + « Recharger » (the dialog stays, the chosen sheet is kept; « Lier » disabled until « Recharger ») |
 | sheet gone | the chosen sheet was deleted meanwhile: « Cette fiche n'existe plus. » under the field, the choice cleared |
 | unlinked body | « Illustrer la fiche » is absent (not disabled): nothing to explain |
 
-**Illustrer la fiche.** Renders the body (the high-definition image of the dialog « Voir l'illustration ») and adds it to the linked sheet's illustration through the media library (AD-117, AD-liens-4). While it runs the button reads « Illustration en cours… ». Done: toast « Illustration ajoutée à <titre>. » with the action « Ouvrir la fiche ». The image is visible as the sheet's own rules decide (a sheet Léa does not read stays closed to her, and her view of it is the « illustration fermée » state of E-9).
+**Illustrer la fiche.** Renders the body (the high-definition image of the dialog « Voir l'illustration ») and adds it to the linked sheet's illustration through the media library (AD-117, AD-liens-4). While it runs the button reads « Illustration en cours… ». Done: toast « Illustration ajoutée à <titre>. » with the action « Ouvrir la fiche » (the `Toast` variant with an action, which stays while the pointer or focus is on it). The image is visible as the sheet's own rules decide (a sheet Léa does not read stays closed to her, and her view of it is the « illustration fermée » state of E-9).
 
 **The sheet, E-9.** The block « Sur la carte spatiale » (below) appears on a sheet the map links to; see « E-9 — what changes ». The deletion of a linked sheet needs no extra word in its confirmation: the map keeps its bodies.
 
