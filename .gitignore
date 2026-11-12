@@ -14,3 +14,5 @@ logs
 *.db-shm
 data/
 rapport-tests.json
+rust/pkg/
+rust/target/

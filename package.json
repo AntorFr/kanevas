@@ -7,6 +7,7 @@
   },
   "scripts": {
     "dev": "tsx watch src/server.ts",
+    "build:wasm": "bash scripts/rust-wasm.sh",
     "build": "tsc -p tsconfig.json && cp -r src/db/migrations dist/db/ && cp -r src/bouchon/demo dist/bouchon/ && mkdir -p dist/outils/swn && cp -r src/outils/swn/exemples dist/outils/swn/ && vite build --config frontend/vite.config.ts",
     "start": "node dist/server.js",
     "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p frontend/tsconfig.json",
