@@ -1122,7 +1122,7 @@ the lore and finds Éneria's bodies at their places with their illustrations. *F
 
 On E-21 Antor selects the drawn system (3, −5), where the Hollow Fleet hides, and turns on « Secret (MJ seul) » (the dialogue says that hiding **defines** the system, B-93). *Moment fort:* Léa reloads the galaxy: the hexagon
 is an empty cell, and the two routes that led to it are gone; the system's address answers « Page introuvable. ». On another, visible system, Antor sets a station « Réservé au MJ » (E-23): Léa still sees all the bodies,
-and not the station. *Failure path:* a write by a non-GM is not offered; an element on a system that no longer exists → « Ce système n'existe plus. ».
+and not the station. Antor then moves the station onto a planet (« Poser sur un astre »), and removes the planet: the dialog says « Son élément (1) sera retiré. », and removing an element alone asks « Retirer <nom> ? ». *Failure path:* a write by a non-GM is not offered; an element on a system that no longer exists → « Ce système n'existe plus. »; an astre or an element removed by another GM meanwhile → « Cet astre n'existe plus. » / « Cet élément n'existe plus. »; an element changed meanwhile → « Cet élément a changé depuis que vous l'avez ouvert. » + « Recharger ».
 
 ### Out of scope of `kanevas-carte-spatiale`
 
