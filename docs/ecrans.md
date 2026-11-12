@@ -4415,6 +4415,30 @@ Criteria:
 - Given a server that does not answer, then « Impossible de lire ce système. » + « Réessayer »; once the list was read and the connection drops, the list stays under « Connexion perdue. ».
 - Given a system of 12 bodies with 4 moons each, 5 companions and a name of 90 characters, then every line is listed in order and the name is cut at 80 with « … ».
 
+#### E-23 — what `kanevas-carte-spatiale-carte` builds (text version)
+
+The canvas replaces nothing of the header: it sits **between the header and the lists**, which stay below as the text alternative (and alone when the core cannot load). Controls row above the canvas: the checkboxes « orbites » and « heures » (`Case`, both checked), the buttons « + », « − » and « Recentrer » (`BoutonIcone` with an accessible name). The canvas: the star at the centre with its corona, companions at their orbit and hour, planets and moons drawn by their illustration (moons in a small orbit around their planet), comets, anomalies, rings and clouds as points, the transition circle (dotted, `--accent`) and the exits towards neighbours (a mark on the circle at the neighbour's hour, labelled with its name or « Système sans nom (q, r) »; click opens that system). Sky colours are `--ciel`, `--ciel-trait`, `--ciel-halo`.
+Desktop: canvas on the left, **panel** on the right (320 px). 390 px: the canvas full width, the panel below it. Selecting a body (click, tap, Enter) opens its panel: illustration (4/3), name or « Astre sans nom », type, « Orbite 4 · 7 h », « Hexagone q, r », description (plain text; empty), « Voir l'illustration ». Tapping the empty sky closes the panel. No GM action yet; the GM and the Player read the same map.
+« Voir l'illustration » opens a dialog with the high-definition image (zoom « + » / « − », Esc to close, focus back on the button).
+
+| State | Text |
+|---|---|
+| loading | « Chargement du système… »; once the core is there, every body shows its blurred version, then the sharp one (160 ms fade, none under reduced motion) — never a flat disc |
+| illustration unavailable | the body keeps its blurred version; in the panel « Illustration indisponible. » + « Réessayer »; in the dialog the same |
+| core not loading | « La carte ne peut pas s'afficher ici. » above the lists, which show alone; the panel opens from a row |
+| offline | as `-systeme`: the view stays under « Connexion perdue. »; illustrations already seen stay, a new one that cannot arrive is « Illustration indisponible. » |
+| long content | 12 bodies, 4 moons each, 5 companions: labels collapse at zoom-out (moons and zones first), names cut at 80 characters with the whole name in the row's `title`; a very high orbit extends the canvas, « Recentrer » fits it |
+| empty, error, refusal | those of `-systeme` (the canvas is not drawn without a system) |
+
+Criteria (this slice):
+- Given the fixture system of 12 bodies, moons, a belt and companions, at 390 px and at 1280 px, no label overlaps a body or another label.
+- Given Léa, Player, and Antor, GM, on a system, they see the same map; in Player mode Antor sees what she sees.
+- Given Léa on a hidden system, the address and the illustration route answer the same « Page introuvable. » / `introuvable`.
+- Given a private route or a hidden neighbour, the circle shows no exit for Léa, no gap and no count.
+- Given the core made unavailable, « La carte ne peut pas s'afficher ici. » and the lists, with the panel still opening.
+- Given two renders of one aspect, the same image; a changed aspect, another image (Rust and route tests).
+- Given the recette's captures (every theme, 1280 and 390 px), each body is drawn by its illustration and the map is judged more beautiful than `systeme.html` of Éneria (the recette judges; the tests do not).
+
 ### E-24 — Generator settings
 
 **Content**: two tabs. « Générateur »: the seed (the very dialogue of E-21 « Graine… », which stays the one rule and opens from both screens), the version of the generator (read-only; « Passer à la version N… » appears only when a newer one exists, with the count of drawn systems it moves, AD-148), the density by default, frequencies (comet, zone, nebula among zones), ranges of planets, moons, belts and total per star class, with

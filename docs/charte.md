@@ -448,6 +448,15 @@ instead of an image.
   Player nor in Player mode; clicking the image opens the original in a new tab;
   removal is confirmed inline (« Annuler » takes focus).
 
+**System map** (E-23, `kanevas-carte-spatiale-carte`; verdict of the gardien).
+- V: a `<canvas>` on `--ciel` (new token: `#0b0b10`→`#17182a` gradient, the same in both themes, a space stays dark), orbit rings in `--ciel-trait` (1 px, low alpha), hours 12 and 3 in `--texte-3`, selected body ringed in `--accent`, transition circle and exits dotted `--accent`; labels in `--texte` over a `--ciel-halo` shadow (new token), 12 px; frame radius `--rayon-panneau`, border `--bord`. Panel at the right (320 px), below the map at 390 px (`Panneau`, `Bouton`, `Pastille`, `Case`, `BoutonIcone` as they are).
+- C: every body is a keyboard target (Tab, Enter opens the panel, `aria-label` name, type, place); the canvas is `role="application"` and points to the list, its text alternative and fallback; drag to pan, wheel / pinch / « + » « − » to zoom, « Recentrer »; no zoom animation under `prefers-reduced-motion`; labels never overlap (move, shorten, collapse).
+- New tokens `--ciel`, `--ciel-trait`, `--ciel-halo`: contrasts of `--texte-3` and the label over `--ciel` measured with `contraste.py` in both themes before the screen is built.
+
+**Body illustration** (panel, dialog, map sprite).
+- V: a 4/3 frame in the panel (`--bord`, radius `--rayon-champ`), the image `role="img"` with `aria-label` « Illustration de <nom>, <type> »; blurred low-resolution version first (never a flat disc), the sharp one in a 160 ms (`--duree`) fade; unavailable: the blurred version stays with « Illustration indisponible. » and « Réessayer » below (`Alerte` with action).
+- C: loading blocks nothing; click or Enter on it opens `Fenetre` in its **large image** variant (the window sized to the image, zoom buttons, Esc closes, focus returns to « Voir l'illustration »).
+
 **Loading state.** V: `--squelette` skeletons shaped like the sheet (type, title,
 rule, two sections). C: `role="status"`, « Chargement de la fiche… » read and written below.
 
