@@ -3670,6 +3670,14 @@ Criteria:
 
 *Design-system verdict (guardian): everything exists, nothing new.* No component, no token and no mockup is added; the select and the stepper are those of the effects slice.
 
+**What `kanevas-outils-format-vaisseaux-regles-livre` changes of E-22** (B-87, `ARCHITECTURE.md` W-1 to W-7): **captions and the same display filter only — no control, no state, no mockup frame**; it replaces the captions of the four effects of the previous slice. A catalogue that employs none renders as before.
+
+- *Modification row.* « soutes −10 % de masse libre, fret ×2 » (`soutes_optimisees_livre`), « armure +2 et réparation » (`blindage_renforce`, the value stated; the result block reads the sum with the repair skill she entered), « puissance et masse de l'arme visée ÷ 2 » (`montages_specialises`), « puissance de l'arme +50 % par installation » (`surcharge_cumulable`).
+- *Target element.* The « Élément visé » select serves the mounting and the overload (weapons) only; no other effect asks for a target any more.
+- *Consequence line.* Under the targeted rows and the two untargeted ones, the muted line reads the server's `ajuste` (« masse +1, puissance +5 », « puissance +10 », « armure +5 », « masse −2 »); a free mass of 0 or below reads no `ajuste` line.
+- *Import refusals (E-20).* The old codes read « effet inconnu : <code> »; new texts: « … champ `valeur` : nombre entier de 0 à 9 attendu. », « … champ `effet_pct` : paramètre réservé à son effet. »; « limite 1 attendue » for three effects, none for the overload.
+- *Rule sheets (E-9).* The sheets state each rule in words (W-6), with no figure of a real game.
+
 ## What `kanevas-outils-retrait` builds (E-20 deletion dialog)
 
 Architecture: `ARCHITECTURE.md`, « Detail of `kanevas-outils-retrait` » (D-1 to D-8). Mockup: `docs/maquettes/e20-suppression.html` (states `#etat-univers`, `#etat-systeme`, `#etat-galaxie`, `#etat-vide`, `#etat-changement`, `#etat-refus`); where it and this text differ, this text wins. Format: desktop and phone — below 760 px the dialog is a full-height sheet and its buttons are 44 px high, stacked, the destructive one last. Disabling needs no screen of its own: it is the toggle of the card (`kanevas-outils-cadre`), and the banner of a managed section is E-9's (`kanevas-outils-sections-gerees`).
