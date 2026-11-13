@@ -36,15 +36,42 @@ test('Z-3 base de la réduction', () => {
 const soute = (m: number) => L('amenagements', 'soute-z', { soute: 10, masse: m })
 const doublee = () => L('modifications', 'double-z', { effet: 'soutes_doublees', limite: 1 }, { vise: { nature: 'amenagements', cle: 'soute-z' } })
 
-// The four effects of the book are read without any rule of calculation yet (W-1): a line carrying one changes nothing.
-test('W-1 les quatre effets du livre sont lus sans effet de calcul', () => {
-  const nu = calculer(C2, [soute(8), L('armes', 'laser-z', { emport: 1, puissance: 10, masse: 1 })], R)
-  for (const [effet, extra] of [['soutes_optimisees_livre', {}], ['blindage_renforce', { valeur: 2 }], ['montages_specialises', {}], ['surcharge_cumulable', { effet_pct: 50 }]] as const) {
-    const r = calculer(C2, [soute(8), L('armes', 'laser-z', { emport: 1, puissance: 10, masse: 1 }),
-      L('modifications', 'm', { effet, limite: 1, ...extra }, effet === 'montages_specialises' || effet === 'surcharge_cumulable' ? { vise: { nature: 'armes', cle: 'laser-z' } } : {})], R)
-    for (const k of ['armure', 'puissanceLibre', 'masseLibre', 'soutes', 'prix'] as const) assert.deepEqual(r[k], nu[k], `${effet} ${k}`)
-    assert.equal(r.lignes[2]!.ajuste, undefined, effet)
-    assert.deepEqual(codes(r).filter((c) => c === 'cible_invalide'), [], effet)
+// W-2 / W-4: the four effects of the book, pure calculation, expected values written by hand from W-4.
+const laser = (q = 1) => L('armes', 'laser-z', { emport: 1, puissance: 10, masse: 1 }, { quantite: q })
+const mod = (effet: string, extra: Partial<ElementResolu> = {}, vise = false, q = 1) =>
+  L('modifications', effet, { effet, limite: 1, ...extra }, { quantite: q, ...(vise ? { vise: { nature: 'armes' as NatureVaisseau, cle: 'laser-z' } } : {}) })
+test('W-2 les quatre effets du livre : valeurs de W-4', () => {
+  const nu = calculer(C2, [], R)
+  const opt = calculer(C2, [mod('soutes_optimisees_livre')], R)
+  assert.equal(opt.masseLibre, 18); assert.deepEqual(opt.lignes[0]!.ajuste, { masse: -2 }); assert.equal(opt.soutes, null)
+  const s = calculer(C2, [soute(8), mod('soutes_optimisees_livre')], R)
+  assert.equal(s.masseLibre, 11); assert.equal(s.soutes, 20)
+  assert.equal(calculer(C2, [soute(7.5), mod('soutes_optimisees_livre')], R).masseLibre, 11.5)
+  assert.equal(calculer(C2, [L('amenagements', 'a', { masse: 3 }), mod('soutes_optimisees_livre')], R).masseLibre, 15.5)
+  assert.equal(calculer(C2, [L('amenagements', 'a', { masse: 19.5 }), mod('soutes_optimisees_livre')], R).masseLibre, 0.5)
+  assert.equal(calculer(C2, [L('amenagements', 'a', { masse: 22 }), mod('soutes_optimisees_livre')], R).masseLibre, -2)
+  assert.equal(calculer(C2, [{ ...reac(true), points: 4 }, mod('soutes_optimisees_livre')], R).masseLibre, 20)
+  assert.equal(calculer(C2, [mod('soutes_optimisees_livre'), mod('soutes_optimisees_livre')], R).masseLibre, 18)
+  for (const [valeur, rep, armure] of [[2, 0, 7], [2, 3, 10], [0, 4, 9], [2, 20, 27]] as const) {
+    assert.equal(calculer(C2, [mod('blindage_renforce', { valeur })], R, null, rep).armure, armure)
+    assert.equal(calculer(coque(4, 300000), [mod('blindage_renforce', { valeur })], R, null, rep).armure, armure)
+  }
+  assert.equal(nu.armure, 5)
+  for (const [p, m, ep, em] of [[10, 1, 5, 1], [7, 3, 4, 1.5], [6, 4, 3, 2], [1, 1, 1, 1], [4, 2.5, 2, 1.5]] as const) {
+    const r = calculer(C2, [L('armes', 'laser-z', { emport: 1, puissance: p, masse: m }), mod('montages_specialises', {}, true)], R)
+    assert.deepEqual(r.lignes[1]!.ajuste, { masse: em, puissance: ep }, `${p}/${m}`)
+  }
+  const m2 = calculer(C2, [laser(2), mod('montages_specialises', {}, true)], R)
+  assert.deepEqual(m2.lignes[1]!.ajuste, { masse: 1, puissance: 10 })
+  assert.equal(calculer(C2, [laser(), mod('montages_specialises', {}, true)], R).puissanceLibre, 5)
+  for (const [q, plus, libre] of [[1, 5, 5], [2, 10, 0], [3, 15, -5]] as const) {
+    const r = calculer(C2, [laser(), mod('surcharge_cumulable', { effet_pct: 50, limite: 3 }, true, q)], R)
+    assert.deepEqual(r.lignes[1]!.ajuste, { puissance: plus }); assert.equal(r.puissanceLibre, libre)
+  }
+  assert.ok(codes(calculer(C2, [laser(), mod('surcharge_cumulable', { effet_pct: 50, limite: 3 }, true, 3)], R)).includes('puissance_insuffisante'))
+  for (const effet of ['montages_specialises', 'surcharge_cumulable']) {
+    assert.ok(codes(calculer(C2, [laser(), mod(effet, { effet_pct: 50 })], R)).includes('cible_invalide'), effet)
+    assert.ok(codes(calculer(C2, [laser(), { ...mod(effet, { effet_pct: 50 }), vise: { nature: 'amenagements', cle: 'soute-z' } }, soute(8)], R)).includes('cible_invalide'), effet)
   }
 })
 
