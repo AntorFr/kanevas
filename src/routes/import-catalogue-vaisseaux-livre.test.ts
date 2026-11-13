@@ -67,7 +67,7 @@ test('W-7 : chaque élément employant l’un des quatre effets est créé, puis
   const rejeu = await w.post(catalogue());
   assert.deepEqual(rejeu.json().refus, []);
   for (const [n, c] of Object.entries<any>(rejeu.json().natures)) { assert.equal(c.ajoutes, 0, n); assert.equal(c.modifies, 0, `${n} modifiés au rejeu`); }
-  assert.equal(rejeu.json().versionCatalogue, undefined, 'la version du catalogue ne monte pas pour un rejeu identique');
+  assert.equal(rejeu.json().versionCatalogue, 'v1', 'la version du catalogue ne monte pas pour un rejeu identique');
 });
 
 test('W-7 : un rejeu qui retire l’effet remet l’élément sans effet et monte la version', async () => {
