@@ -20,7 +20,7 @@ export interface Ligne {
   cout?: number;
   echange?: { puissance: number; masse: number };
   /** Z-3, from the server's result only: the signed deltas a targeted modification actually applies to its target. */
-  ajuste?: { masse?: number; puissance?: number; emports?: number };
+  ajuste?: { masse?: number; puissance?: number; emports?: number; armure?: number };
 }
 
 export interface Resultat {
