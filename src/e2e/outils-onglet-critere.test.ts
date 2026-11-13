@@ -183,23 +183,24 @@ describe('onglet « Outils » de E-14 et E-15 et transfert de responsabilité', 
         await page.getByRole('button', { name: 'Transférer la responsabilité' }).click();
         const dlg = page.getByRole('alertdialog');
         await dlg.waitFor();
+        await dlg.getByRole('radio').first().waitFor(); // candidates loaded
         const noms = (await dlg.getByRole('radio').evaluateAll((l: Any[]) => l.map((x) => x.parentElement.textContent.trim())));
         assert.deepEqual(noms, ['mira']);
         await dlg.getByText(/pourra activer les outils et régler le système ; vous gardez vos droits de MJ\./).waitFor();
         await photo(page, 'transfert-dialogue');
         await dlg.getByRole('button', { name: 'Transférer', exact: true }).click();
         await page.getByText('Responsable : mira').waitFor();
-        assert.equal(await page.getByRole('button', { name: /Transférer/ }).count(), 0);
+        await page.getByRole('button', { name: /Transférer/ }).waitFor({ state: 'detached' });
         await carte(page, 'Essai A').waitFor();
-        assert.equal(await page.getByRole('checkbox').count(), 0, 'Antor n’a plus d’interrupteur sur le système');
+        await page.getByRole('checkbox').first().waitFor({ state: 'detached' }); // Antor n’a plus d’interrupteur sur le système
         // still all his gestures on his universe
         await page.goto(e14("Éneria d'essai"));
         await carte(page, 'Essai A').getByRole('radio').first().waitFor();
-        assert.ok(await page.getByRole('button', { name: 'Remplacer pour l’univers' }).count() >= 1);
+        await page.getByRole('button', { name: 'Remplacer pour l’univers' }).first().waitFor();
         const mira = await ouvre('Mira');
         await mira.page.goto(e15("Système d'essai"));
         await mira.page.getByText('Responsable : vous').waitFor();
-        assert.ok(await carte(mira.page, 'Essai A').getByRole('checkbox').count() >= 1);
+        await carte(mira.page, 'Essai A').getByRole('checkbox').first().waitFor();
         await mira.ctx.close();
         await ctx.close();
       });
