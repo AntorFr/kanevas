@@ -449,8 +449,8 @@ test('mira : sur « Système ancien » (sans responsable stocké) elle a l’int
   await mira.getByText('Aucun responsable : tout MJ d’un univers rattaché agit').or(mira.getByText(rx('Aucun responsable : tout MJ d’un univers rattaché agit'))).first().waitFor();
   const A = carte(mira, 'Essai A');
   assert.equal(await A.getByRole('switch').count(), 1);
-  // 4 interrupteurs : les trois outils d'essai et swn/galaxie (module swn, portée « tous »)
-  assert.equal(await mira.getByRole('switch').count(), 5);
+  // 6 interrupteurs : les trois outils d'essai, swn/galaxie (module swn) et battlemap/assets (module battlemap), portée « tous »
+  assert.equal(await mira.getByRole('switch').count(), 6);
   await ecrire(mira, /\/systemes\/4\/outils\/essai\/a\/activation$/, () => A.getByRole('switch').click());
   await A.getByText(rx('Système · Activé')).waitFor();
   await photo(mira, 'systeme-ancien-mira');
@@ -688,7 +688,7 @@ test('transfert : Antor transfère à Mira ; elle a l’interrupteur au système
 
   await ouvrirSysteme(mira);
   await mira.getByText(/Responsable : vous/).waitFor();
-  assert.equal(await mira.getByRole('switch').count(), 5);
+  assert.equal(await mira.getByRole('switch').count(), 6);
   await photo(mira, 'apres-transfert-mira');
   // Mira really writes at the system now; Antor's write is refused
   const avantG = await carte(mira, 'Essai G').getByRole('switch').getAttribute('aria-checked');

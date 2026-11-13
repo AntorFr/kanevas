@@ -456,6 +456,15 @@ instead of an image.
   Player nor in Player mode; clicking the image opens the original in a new tab;
   removal is confirmed inline (« Annuler » takes focus).
 
+**Components of `kanevas-battlemap-assets`** (verdict of the design-system guardian; mockups `e25-bibliotheque.html`, `e26-direction.html`; the mockups keep their own variables and hard-coded radii, the code takes the tokens).
+- **Tabs** (`ui/onglets.tsx`, extracted from the markup of `ecrans/parametres.tsx`, reused by E-27). V: 36 px bar, `--bord` bottom rule; tab `--texte-2`, hover `--texte`, active `--texte` with a 2 px `--accent` underline. C: `role="tablist"` / `tab` (`aria-selected`) / `tabpanel`, left/right arrows, one tab stop; the active tab is in the address (`?onglet=`). Not `Segments` (a value choice).
+- **Filter chip** (`ui/puce-filtre.tsx`, drawn from `Pastille`). V: 24 px, `--rayon-pastille`, 12 px, `--texte-2` on `--surface-2` with `--bord`; active `--accent-texte` on `--accent-fond` with a 12 px `check`. C: `<button aria-pressed>`, several at once, never colour alone; the row wraps, never scrolls sideways.
+- **Asset card** (`ui/carte-asset.tsx`, from the sheet card). V: 4:3 thumbnail on a transparency checkerboard of `--surface-2` and `--bord-fort` (never hatching), name then footprint « 2×1 » in `--texte-3` 12 px; no frame, no shadow; selected: 2 px `--accent` ring; GM-only asset: `--mj-bord`; 16 px selection box top right. C: the card is a `<button>` opening the side panel; the box is a separate checkbox « Sélectionner <nom> », shift-click selects a range; 44 px target on a phone; marks are `Pastille` (« Vue de dessus » neutral, « MJ » variant `mj`).
+- **Drop zone** (`ui/zone-depot.tsx`, extracted from `ecrans/mediatheque.tsx`, reused by E-19, E-25, E-26). V: 1 px dashed `--bord-champ`; a file over it: `--accent` and `--accent-fond`. C: the button opens the file picker, several files; `aria-live="polite"` « 3 images déposées »; a refused file is an `Alerte` naming it, the others go through.
+- **Selection bar** (`ui/barre-selection.tsx`, content are existing `Menu`, `Champ`, `Interrupteur`, `Bouton`). V: 44 px, `--accent-fond`, `--accent-texte` border at 40 %, `--rayon-panneau`, « N sélectionné » on the left; on a phone sticky at the bottom. C: `role="toolbar"` named; exists only with a selection and never for a player; arrows between controls, Esc clears; changes are saved at once with a toast.
+- **Side panel** (`ui/panneau-lateral.tsx`, promoted from `.med-panneau` of `ecrans/mediatheque.tsx`, reused by E-19 and E-25). V: 300 px, `--surface`, `--bord` left rule, icon label and « Fermer » header; full-screen sheet on a phone. C: named `aside`, Esc closes and returns the focus to the card.
+- **Variants added**: `Segments` « count » (a `--texte-3` number after the label); `Alerte` `avertissement` in a **neutral** tint (amber means « GM only »); the attachment thumbnail with an editable caption (E-26 reference images).
+
 **Loading state.** V: `--squelette` skeletons shaped like the sheet (type, title,
 rule, two sections). C: `role="status"`, « Chargement de la fiche… » read and written below.
 

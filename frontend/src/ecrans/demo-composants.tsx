@@ -3,8 +3,11 @@ import { useState } from 'react';
 
 import type { Ecran } from '../registre';
 import {
+  Alerte,
   Avatar,
   Bandeau,
+  BarreSelection,
+  CarteAsset,
   BlocSection,
   BoiteDialogue,
   Bouton,
@@ -15,17 +18,34 @@ import {
   LigneFichier,
   LigneRelation,
   Menu,
+  Onglets,
   PageIntrouvable,
   PastilleAudience,
   PastilleRole,
+  PuceFiltre,
+  Segments,
   SqueletteFiche,
   useToasts,
   Vignette,
+  ZoneDepot,
 } from '../ui';
 import './demo-composants.css';
 
 /** The stub flag the server injects (AD-55): the demo page exists only then, otherwise it is an unknown address. */
 const bouchon = typeof document !== 'undefined' && document.querySelector('meta[name="kanevas-bouchon"]') !== null;
+
+function DemoAssets() {
+  const [onglet, setOnglet] = useState('assets');
+  const [cat, setCat] = useState('objet');
+  const [puce, setPuce] = useState(true);
+  return (
+    <>
+      <Onglets legende="Démonstration" actif={onglet} onChange={setOnglet} onglets={[{ valeur: 'assets', libelle: 'Assets' }, { valeur: 'direction', libelle: 'Direction artistique' }]} />
+      <Segments legende="Catégorie" valeur={cat} onChange={setCat} options={[{ valeur: 'objet', libelle: 'Objets', compte: 12 }, { valeur: 'sol', libelle: 'Sols', compte: 3 }]} />
+      <div className="demo-ligne"><PuceFiltre actif={puce} onChange={setPuce}>métal</PuceFiltre><PuceFiltre actif={false} onChange={() => {}}>sommeil</PuceFiltre></div>
+    </>
+  );
+}
 
 const IMAGE_VIDE = 'data:image/svg+xml,%3Csvg xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22 width%3D%22160%22 height%3D%22120%22%2F%3E';
 
@@ -130,6 +150,24 @@ function Demo() {
               { libelle: 'Se déconnecter', icone: Users, onChoisir: () => {} },
             ]}
           />
+        </Etat>
+      </Groupe>
+
+      <Groupe id="d-bibliotheque" titre="Bibliothèque d’assets">
+        <Etat titre="Onglets, segments avec compte, puces de filtre">
+          <DemoAssets />
+        </Etat>
+        <Etat titre="Carte d’asset : normale, sélectionnée, MJ seul">
+          <div className="demo-ligne">
+            <div style={{ width: 160 }}><CarteAsset nom="Couchette" src={IMAGE_VIDE} empreinte="2×1" vueDessus mj={false} brouillon={false} selectionnable selectionnee={false} onOuvrir={() => {}} /></div>
+            <div style={{ width: 160 }}><CarteAsset nom="Console" src={IMAGE_VIDE} empreinte="1×1" vueDessus mj={false} brouillon={false} selectionnable selectionnee onOuvrir={() => {}} /></div>
+            <div style={{ width: 160 }}><CarteAsset nom="Caisse scellée" src={IMAGE_VIDE} empreinte={null} vueDessus={false} mj brouillon={false} selectionnable selectionnee={false} onOuvrir={() => {}} /></div>
+          </div>
+        </Etat>
+        <Etat titre="Zone de dépôt, alerte d’avertissement neutre, barre de sélection">
+          <ZoneDepot onFichiers={() => {}} annonce="3 images déposées" />
+          <Alerte sens="avertissement">Le fichier reste dans la médiathèque.</Alerte>
+          <BarreSelection nombre={2} onVider={() => {}}><Bouton petit>Catégorie</Bouton><Bouton petit variante="danger">Retirer…</Bouton></BarreSelection>
         </Etat>
       </Groupe>
 

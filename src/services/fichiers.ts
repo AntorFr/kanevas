@@ -85,7 +85,9 @@ export interface FichierVue {
 export type CibleFichier =
   | { ou: 'mediatheque' }
   | { ou: 'section'; sectionId: number; maniere: 'joint' | 'texte'; dansBlocMj?: boolean }
-  | { ou: 'illustration'; ficheId: number };
+  | { ou: 'illustration'; ficheId: number }
+  | { ou: 'bibliotheque' }
+  | { ou: 'direction' };
 
 export type FluxEntrant = Readable | AsyncIterable<Buffer | Uint8Array>;
 
@@ -359,6 +361,12 @@ function autoriser(db: Db, acteur: Acteur, universId: number, cible: CibleFichie
     case 'mediatheque':
       if (role !== 'mj') throw refuse();
       return { visibilite: 'joueurs' };
+    case 'bibliotheque':
+    case 'direction':
+      // The write surface of the battle map's library does not exist for a player (AD-battlemap-assets-5).
+      if (role !== 'mj') throw introuvable();
+      if (acteur.modeJoueur) throw refuse();
+      return { visibilite: cible.ou === 'bibliotheque' ? 'joueurs' : 'mj' };
     case 'illustration': {
       exigerMJDeFiche(db, universId, acteur, cible.ficheId);
       // Visible of the players when at least one section of the sheet is read by them (AD-111).
@@ -424,7 +432,7 @@ export async function ajouterFichier(
       throw new ErreurService('invalide', 'Le fichier est vide.', 'fichier_vide');
     }
     const type = typeParSignature(ecrit.debut);
-    if (cible.ou === 'illustration' && !estImage(type)) {
+    if ((cible.ou === 'illustration' || cible.ou === 'bibliotheque' || cible.ou === 'direction') && !estImage(type)) {
       throw new ErreurService(
         'invalide',
         'Ce fichier n’est pas une image (PNG, JPEG, GIF ou WebP).',
@@ -576,6 +584,9 @@ export function effacerFichier(
   const disque = db.transaction(() => {
     exigerMJReel(db, universId, acteur);
     const f = chargerFichier(db, universId, fichierId);
+    if (db.prepare('SELECT 1 AS ok FROM bm_assets WHERE fichier_id = ?').get(f.id)) {
+      throw new ErreurService('conflit', 'Ce fichier est utilisé par la bibliothèque d’assets.', 'fichier_bibliotheque');
+    }
     db.prepare('UPDATE fiches SET illustration_fichier_id = NULL WHERE illustration_fichier_id = ?').run(f.id);
     db.prepare('DELETE FROM fichiers_sections WHERE fichier_id = ?').run(f.id);
     db.prepare('DELETE FROM fichiers WHERE id = ?').run(f.id);

@@ -82,7 +82,7 @@ test('portée par noms : comparaison après trim et pliage de casse', () => {
 });
 
 test('registre : le module d\'essai n\'existe qu\'en test ou sous KANEVAS_STUB', () => {
-  assert.deepEqual(modulesActifs().map((m) => m.nom), ['essai', 'swn']);
+  assert.deepEqual(modulesActifs().map((m) => m.nom), ['essai', 'swn', 'battlemap']);
   assert.throws(() => verifierRegistre([essai, essai]), /duplicate/i);
   const code = `const m = await import('./src/outils/registre.js'); console.log(JSON.stringify(m.modulesActifs().map(x => x.nom)));`;
   const lancer = (env: Record<string, string>) => {
@@ -95,8 +95,8 @@ test('registre : le module d\'essai n\'existe qu\'en test ou sous KANEVAS_STUB',
   };
   assert.deepEqual(lancer({ NODE_ENV: 'production' }), []);
   assert.deepEqual(lancer({ NODE_ENV: 'development' }), []);
-  assert.deepEqual(lancer({ NODE_ENV: 'development', KANEVAS_STUB: '1' }), ['essai', 'swn']);
-  assert.deepEqual(lancer({ NODE_ENV: 'test' }), ['essai', 'swn']);
+  assert.deepEqual(lancer({ NODE_ENV: 'development', KANEVAS_STUB: '1' }), ['essai', 'swn', 'battlemap']);
+  assert.deepEqual(lancer({ NODE_ENV: 'test' }), ['essai', 'swn', 'battlemap']);
 });
 
 // --- un test par type de contrat : la déclaration seule, sans toucher routeur ni barre ---
