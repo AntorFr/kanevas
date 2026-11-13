@@ -148,15 +148,15 @@ describe('E-25 Bibliothèque au navigateur', { skip: skipBrowser }, () => {
     assert.match(await seg.first().innerText(), /Objets\s*2/);
     // forced direction tab: nothing GM
     await lea.goto(`${adresse}?onglet=direction`);
-    await lea.getByRole('heading', { name: 'Bibliothèque', level: 1 }).waitFor();
-    assert.equal(await lea.getByText('La direction artistique s’ouvre ici.').count(), 0);
+    await lea.getByText('Page introuvable.').waitFor();
+    assert.equal(await lea.getByText('Style').count(), 0);
   });
 
   it('mode joueur du MJ : lit comme une joueuse, sans onglets ni cases', async () => {
     await ouvrir(antor);
     assert.equal(await antor.getByRole('tab', { name: 'Direction artistique' }).count(), 1);
     await antor.getByRole('tab', { name: 'Direction artistique' }).click();
-    await antor.getByText('La direction artistique s’ouvre ici.').waitFor();
+    await antor.getByRole('button', { name: 'Enregistrer' }).waitFor();
     await antor.getByRole('tab', { name: 'Assets' }).click();
   });
 
