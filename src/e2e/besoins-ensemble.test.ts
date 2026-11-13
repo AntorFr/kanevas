@@ -787,6 +787,7 @@ describe('kanevas-premiere-fiche, du besoin', { skip: skipBrowser }, () => {
     await p.unroute('**/api/univers/*/membres');
     await p.getByRole('button', { name: rxExact('Réessayer') }).first().click();
     await attendre(p);
+    await p.getByRole('button', { name: /^Retirer / }).first().waitFor({ state: 'visible' });
     await antor.ctx.setOffline(true);
     await voit(p, 'Connexion perdue.');
     assert.equal(await p.getByRole('button', { name: rxExact('Ajouter') }).isDisabled(), true);
